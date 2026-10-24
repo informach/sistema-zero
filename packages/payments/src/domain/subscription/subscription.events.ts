@@ -79,6 +79,9 @@ export class SubscriptionActivatedEvent extends DomainEvent {
 
 export class SubscriptionChargePaidEvent extends DomainEvent {
   readonly eventName = 'subscription.charge_paid'
+  get chargeId(): string {
+    return this.data.chargeId
+  }
 
   constructor(
     aggregateId: string,

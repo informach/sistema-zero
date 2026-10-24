@@ -457,6 +457,25 @@ export const subscriptionOperations = paymentsSchema.table(
 )
 
 /** Caso durável: política congelada, relógio independente e lease com fencing. */
+/** Financial identity survives inbox/outbox retention; initial capture may precede the local payment row. */
+export const subscriptionPaidCycles = paymentsSchema.table(
+  'subscription_paid_cycles',
+  {
+    subscriptionId: uuid('subscription_id')
+      .notNull()
+      .references(() => subscriptions.id, { onDelete: 'cascade' }),
+    providerPaymentId: text('provider_payment_id').notNull(),
+    recordedAt: timestamp('recorded_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.subscriptionId, table.providerPaymentId] }),
+    check(
+      'subscription_paid_cycle_charge_check',
+      sql`length(${table.providerPaymentId}) between 1 and 200`,
+    ),
+  ],
+)
+
 export const subscriptionRecoveryCases = paymentsSchema.table(
   'subscription_recovery_cases',
   {
@@ -829,6 +848,7 @@ export const schema = {
   subscriptionPlans,
   subscriptionOperations,
   subscriptionRecoveryCases,
+  subscriptionPaidCycles,
   subscriptionRecoveryResolutions,
   subscriptionRecoveryNotices,
   subscriptionRecoveryPolicy,

@@ -121,6 +121,14 @@ e continua registrado como falho; não houve repetição cega. Relatório em
 
 ### Corte e ambiente — checkpoint 24/10, 18:21 UTC
 
+Full review posterior reproduziu recontagem de ciclo após retenção do inbox, com
+expiração prematura de plano finito. Corrigida por identidade persistente e
+confirmação atômica; migrations 0024/0025 e Payments 589/1850 em banco novo, sem
+falhas/skips. Ver `docs/qa/2026-10-24-subscription-cycle-idempotence.md`.
+Inspeção READ ONLY detectou uma divergência histórica de contador em assinatura
+ilimitada; GET da operadora confirmou quatro ciclos, contador local seis. Falta
+correção técnica auditada desse metadado, sem mexer em recibos/acesso/recorrência.
+
 Preparados: retirada do remetente antigo do Funil, seed restrito dos oito modelos,
 prontidão de modelos/remetente/fila antiga e download Windows limitado em etapa
 separada. Messaging 176/843 sem falhas/skips e tipos completos; Funil 596 sem

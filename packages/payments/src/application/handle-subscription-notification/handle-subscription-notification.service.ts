@@ -235,9 +235,14 @@ export class HandleSubscriptionNotificationService {
     // NÃO cancela a assinatura (a Efí pode tentar de novo) — o status da assinatura
     // só muda por sinal próprio (cancelamento/expiração).
     if (charge.status === 'PAID') {
-      if (subscription.status === 'PENDING') subscription.activate()
-      subscription.recordCharge(chargeId, charge.paidAt) // idempotente por chargeId
-      await this.subscriptions.save(subscription)
+      await this.subscriptions.recordPaidCycle({
+        subscriptionId: subscription.id,
+        consumerId: subscription.consumerId,
+        provider: this.gateway.provider,
+        providerSubscriptionId: subscriptionId,
+        chargeId,
+        paidAt: charge.paidAt,
+      })
     }
 
     await this.inbox.markProcessed(this.gateway.provider, eventId)

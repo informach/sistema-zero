@@ -277,7 +277,12 @@ export class SubscriptionAggregate extends AggregateRoot<string> {
         paidAt: chargePaidAt.toISOString(),
       }),
     )
-    if (this.state.repeats !== null && this.state.cyclesCompleted >= this.state.repeats) {
+    if (
+      this.state.repeats !== null &&
+      this.state.cyclesCompleted >= this.state.repeats &&
+      this.state.status !== 'CANCELED' &&
+      this.state.status !== 'EXPIRED'
+    ) {
       this.expire('SCHEDULE_COMPLETED')
     }
   }

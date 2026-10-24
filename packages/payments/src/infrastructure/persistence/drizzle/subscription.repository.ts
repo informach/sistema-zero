@@ -1,19 +1,24 @@
 import { and, eq, inArray, isNotNull, isNull, lte, or, sql } from 'drizzle-orm'
 import type { SubscriptionRepository } from '../../../domain/ports/subscription-repository.port'
+import { ValidationError } from '../../../domain/shared/errors'
 import {
   SubscriptionAggregate,
   type SubscriptionSnapshot,
 } from '../../../domain/subscription/subscription.aggregate'
-import { SubscriptionCancellationRecordedEvent } from '../../../domain/subscription/subscription.events'
+import {
+  SubscriptionCancellationRecordedEvent,
+  SubscriptionChargePaidEvent,
+} from '../../../domain/subscription/subscription.events'
 import type { Currency } from '../../../domain/value-objects/money'
 import { writeCancellationAudit } from './cancellation-audit.writer'
 import { cancellationRecordFromWire, cancellationRecordToWire } from './cancellation-record.mapper'
 import { PG_CHANNELS } from './channels'
 import { ConcurrencyConflictError } from './concurrency.error'
 import type { Database } from './db'
-import { outbox, subscriptions } from './schema'
+import { outbox, subscriptionPaidCycles, subscriptions } from './schema'
 
 type SubscriptionRow = typeof subscriptions.$inferSelect
+type SubscriptionTransaction = Parameters<Parameters<Database['transaction']>[0]>[0]
 
 /**
  * Repositório do agregado de assinatura (Drizzle/Postgres). Como o de pagamento,
@@ -24,53 +29,123 @@ export class DrizzleSubscriptionRepository implements SubscriptionRepository {
   constructor(private readonly db: Database) {}
 
   async save(subscription: SubscriptionAggregate): Promise<void> {
+    await this.db.transaction((tx) => this.write(tx, subscription))
+    subscription.pullEvents()
+  }
+
+  async recordPaidCycle(
+    input: Parameters<SubscriptionRepository['recordPaidCycle']>[0],
+  ): Promise<void> {
+    if (!input.chargeId || input.chargeId.length > 200)
+      throw new ValidationError('Identidade do ciclo inválida')
+    await this.db.transaction(async (tx) => {
+      const [row] = await tx
+        .select()
+        .from(subscriptions)
+        .where(
+          and(
+            eq(subscriptions.id, input.subscriptionId),
+            eq(subscriptions.consumerId, input.consumerId),
+            eq(subscriptions.provider, input.provider),
+            eq(subscriptions.providerSubscriptionId, input.providerSubscriptionId),
+          ),
+        )
+        .for('update')
+      if (!row) throw new ValidationError('A assinatura mudou durante a confirmação do ciclo')
+      const [recorded] = await tx
+        .select({ id: subscriptionPaidCycles.providerPaymentId })
+        .from(subscriptionPaidCycles)
+        .where(
+          and(
+            eq(subscriptionPaidCycles.subscriptionId, row.id),
+            eq(subscriptionPaidCycles.providerPaymentId, input.chargeId),
+          ),
+        )
+      if (recorded) return
+      // During a rolling deploy, an older writer may have recorded the parent
+      // after the migration snapshot. Its committed event is exact evidence,
+      // unlike a paid child alone (which can precede a failed parent write).
+      const [oldWriter] = await tx
+        .select({ id: outbox.id })
+        .from(outbox)
+        .where(
+          and(
+            eq(outbox.aggregateId, row.id),
+            eq(outbox.eventName, 'subscription.charge_paid'),
+            sql`${outbox.payload}->>'chargeId' = ${input.chargeId}`,
+          ),
+        )
+        .limit(1)
+      if (row.lastChargeId === input.chargeId || oldWriter) {
+        await tx
+          .insert(subscriptionPaidCycles)
+          .values({ subscriptionId: row.id, providerPaymentId: input.chargeId })
+        return
+      }
+      const subscription = SubscriptionAggregate.restore(rowToSnapshot(row))
+      if (subscription.status === 'PENDING') subscription.activate()
+      subscription.recordCharge(input.chargeId, input.paidAt)
+      await this.write(tx, subscription)
+    })
+  }
+
+  private async write(
+    tx: SubscriptionTransaction,
+    subscription: SubscriptionAggregate,
+  ): Promise<void> {
     const snap = subscription.toSnapshot()
     const events = [...subscription.events]
     const values = snapshotToRow(snap)
 
-    await this.db.transaction(async (tx) => {
-      if (subscription.isNew) {
-        // A unique (consumer_id, idempotency_key) protege contra duplicação por chave.
-        await tx.insert(subscriptions).values(values)
-      } else {
-        const updated = await tx
-          .update(subscriptions)
-          .set({
-            version: snap.version + 1,
-            status: values.status,
-            card: values.card,
-            providerSubscriptionId: values.providerSubscriptionId,
-            cyclesCompleted: values.cyclesCompleted,
-            lastChargeId: values.lastChargeId,
-            lastChargeAt: values.lastChargeAt,
-            metadata: values.metadata,
-            canceledAt: values.canceledAt,
-            cancelRequestedAt: values.cancelRequestedAt,
-            cancellationRecord: values.cancellationRecord,
-            updatedAt: values.updatedAt,
-          })
-          .where(and(eq(subscriptions.id, snap.id), eq(subscriptions.version, snap.version)))
-          .returning({ id: subscriptions.id })
+    if (subscription.isNew) {
+      // A unique (consumer_id, idempotency_key) protege contra duplicação por chave.
+      await tx.insert(subscriptions).values(values)
+    } else {
+      const updated = await tx
+        .update(subscriptions)
+        .set({
+          version: snap.version + 1,
+          status: values.status,
+          card: values.card,
+          providerSubscriptionId: values.providerSubscriptionId,
+          cyclesCompleted: values.cyclesCompleted,
+          lastChargeId: values.lastChargeId,
+          lastChargeAt: values.lastChargeAt,
+          metadata: values.metadata,
+          canceledAt: values.canceledAt,
+          cancelRequestedAt: values.cancelRequestedAt,
+          cancellationRecord: values.cancellationRecord,
+          updatedAt: values.updatedAt,
+        })
+        .where(and(eq(subscriptions.id, snap.id), eq(subscriptions.version, snap.version)))
+        .returning({ id: subscriptions.id })
 
-        if (updated.length === 0) throw new ConcurrencyConflictError(snap.id)
+      if (updated.length === 0) throw new ConcurrencyConflictError(snap.id)
+    }
+
+    for (const event of events) {
+      if (event instanceof SubscriptionChargePaidEvent) {
+        const inserted = await tx
+          .insert(subscriptionPaidCycles)
+          .values({ subscriptionId: snap.id, providerPaymentId: event.chargeId })
+          .onConflictDoNothing()
+          .returning({ chargeId: subscriptionPaidCycles.providerPaymentId })
+        if (inserted.length !== 1) throw new ConcurrencyConflictError(snap.id)
       }
+      if (event instanceof SubscriptionCancellationRecordedEvent)
+        await writeCancellationAudit(tx, snap.id, snap.consumerId, event.cancellationRecord)
+    }
 
-      for (const event of events)
-        if (event instanceof SubscriptionCancellationRecordedEvent)
-          await writeCancellationAudit(tx, snap.id, snap.consumerId, event.cancellationRecord)
-
-      if (events.length > 0) {
-        await tx.insert(outbox).values(
-          events.map((event) => ({
-            aggregateId: event.aggregateId,
-            eventName: event.eventName,
-            payload: event.toPayload(),
-          })),
-        )
-        await tx.execute(sql`select pg_notify(${PG_CHANNELS.outbox}, '')`)
-      }
-    })
-    subscription.pullEvents()
+    if (events.length > 0) {
+      await tx.insert(outbox).values(
+        events.map((event) => ({
+          aggregateId: event.aggregateId,
+          eventName: event.eventName,
+          payload: event.toPayload(),
+        })),
+      )
+      await tx.execute(sql`select pg_notify(${PG_CHANNELS.outbox}, '')`)
+    }
   }
 
   async findById(id: string): Promise<SubscriptionAggregate | null> {

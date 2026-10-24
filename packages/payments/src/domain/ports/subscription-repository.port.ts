@@ -7,6 +7,15 @@ import type { SubscriptionAggregate } from '../subscription/subscription.aggrega
  */
 export interface SubscriptionRepository {
   save(subscription: SubscriptionAggregate): Promise<void>
+  /** Permanent charge identity, parent update and outbox commit atomically; inbox retention cannot recount a cycle. */
+  recordPaidCycle(input: {
+    subscriptionId: string
+    consumerId: string
+    provider: string
+    providerSubscriptionId: string
+    chargeId: string
+    paidAt?: Date
+  }): Promise<void>
   findById(id: string): Promise<SubscriptionAggregate | null>
   findByIdempotencyKey(
     consumerId: string,
