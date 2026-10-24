@@ -8,6 +8,15 @@ Este documento não autoriza cancelamentos ou cobranças manuais em clientes rea
 
 ## Complemento verificável — auditoria de cancelamento, 24/10
 
+Coordenação de avisos e oito templates versionados foram implementados no lote
+posterior à retirada de intenções (`16bd9b966`). O prazo usa o aceite original;
+falta de envio no D7 vai para revisão; retiradas pendentes sobrevivem ao fechamento
+do caso com janela limitada. Payments 479/1349, Messaging 171/813, tipos completos
+dos dois pacotes exit 0. Detalhes em
+`docs/qa/2026-10-24-recovery-notice-coordination.md`. Ainda falta ligar o coordenador
+financeiro/D7 e ativar templates/configuração nos ambientes; nenhum envio real foi
+feito por esses testes.
+
 Lote seguinte implementou fila de admissão, política congelada, prova recente do
 provedor, revisão de origens ambíguas/antigas, dedupe após crash e worker limitado.
 Migration gerada 0015; PostgreSQL descartável desde zero; Payments 472/1309, sem

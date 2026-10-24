@@ -17,6 +17,7 @@ import { loadEnv } from '../src/infrastructure/config/env'
 import { createDbConnection } from '../src/infrastructure/persistence/drizzle/db'
 import { DrizzleSenderRepository } from '../src/infrastructure/persistence/drizzle/sender.repository'
 import { DrizzleTemplateRepository } from '../src/infrastructure/persistence/drizzle/template.repository'
+import { subscriptionRecoveryTemplates } from './subscription-recovery-templates'
 
 // Logos EMBUTIDAS no e-mail (attachment inline + Content-ID, padrão do
 // comunidade-sistema-zero): a imagem viaja DENTRO da mensagem — sem hospedagem
@@ -211,6 +212,7 @@ const adultGiftOrigin = (campaign: boolean) =>
 // ── Templates ─────────────────────────────────────────────────────────────────
 
 const seeds = [
+  ...subscriptionRecoveryTemplates({ emailLayout, p, ctaButton, fallbackLink }),
   ...(['kids-welcome', 'kids-new-access'] as const).flatMap((key) => {
     const first = key === 'kids-welcome'
     const greeting = first

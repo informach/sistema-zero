@@ -305,6 +305,20 @@ export class SubscriptionRecoveryCase extends AggregateRoot<string> {
     this.transition('MANUAL_REVIEW', 'CONTACT_FAILED', now)
   }
 
+  /** Persist a bounded next attempt without changing the announced deadline. */
+  defer(now: Date, delayMs = 120_000): void {
+    if (
+      !validDate(now) ||
+      now < this.data.openedAt ||
+      !Number.isSafeInteger(delayMs) ||
+      delayMs < 1_000 ||
+      delayMs > 900_000
+    )
+      throw new ValidationError('Próxima tentativa da regularização inválida')
+    if (['RECOVERED', 'CANCELED', 'MANUAL_REVIEW'].includes(this.data.state)) return
+    this.data.nextActionAt = new Date(now.getTime() + delayMs)
+  }
+
   private transition(state: RecoveryState, reason: RecoveryReason | null, now: Date): void {
     if (this.data.state === state && this.data.reason === reason) return
     this.data.state = state

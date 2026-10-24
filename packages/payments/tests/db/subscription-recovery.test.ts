@@ -3,12 +3,19 @@ import path from 'node:path'
 import { eq } from 'drizzle-orm'
 import { migrate } from 'drizzle-orm/postgres-js/migrator'
 import { buildCyclePayment } from '../../src/application/subscription/cycle-payment'
+import { RecoveryNoticeService } from '../../src/application/subscription-recovery/recovery-notice.service'
 import { SubscriptionAggregate } from '../../src/domain/subscription/subscription.aggregate'
 import { SubscriptionRecoveryCase } from '../../src/domain/subscription-recovery/recovery-case'
+import type {
+  RecoveryMessageReceipt,
+  RecoveryMessageRequest,
+  RecoveryMessagingGateway,
+} from '../../src/domain/subscription-recovery/recovery-messaging.port'
 import {
   DAY_MS,
   INITIAL_RECOVERY_POLICY,
 } from '../../src/domain/subscription-recovery/recovery-policy'
+import { Customer } from '../../src/domain/value-objects/customer'
 import { IdempotencyKey } from '../../src/domain/value-objects/idempotency-key'
 import { Money } from '../../src/domain/value-objects/money'
 import {
@@ -73,6 +80,226 @@ describe.skipIf(!databaseUrl)('Casos de regularização — PostgreSQL real', ()
     templateKey: 'recovery-kids-initial',
     recipient: { name: 'QA responsible', email: 'qa@example.invalid' },
     variables: { url: 'https://kids.example.invalid/pais/assinaturas', amount: '97,00' },
+  })
+
+  function noticeHarness(
+    options: {
+      loseFirstResponse?: boolean
+      unavailable?: boolean
+      status?: RecoveryMessageReceipt['status']
+    } = {},
+  ) {
+    let time = new Date(now)
+    let sends = 0
+    const requests: RecoveryMessageRequest[] = []
+    const messages = new Map<string, RecoveryMessageReceipt>()
+    const get = async (id: string) => {
+      const receipt = [...messages.values()].find((entry) => entry.id === id)
+      if (!receipt) throw new Error('Missing QA receipt')
+      return structuredClone(receipt)
+    }
+    const messaging: RecoveryMessagingGateway = {
+      async send(request) {
+        sends++
+        requests.push(structuredClone(request))
+        if (options.unavailable) throw new Error('QA messaging unavailable')
+        let receipt = messages.get(request.idempotencyKey)
+        if (!receipt) {
+          receipt = {
+            id: crypto.randomUUID(),
+            status: options.status ?? 'QUEUED',
+            acceptedAt: new Date(time),
+            deliveredAt: null,
+          }
+          messages.set(request.idempotencyKey, receipt)
+        }
+        if (options.loseFirstResponse && sends === 1) throw new Error('QA accepted response lost')
+        return structuredClone(receipt)
+      },
+      get,
+      async suppress(id) {
+        const receipt = await get(id)
+        receipt.status = 'SUPPRESSED'
+        for (const [key, value] of messages) if (value.id === id) messages.set(key, receipt)
+        return { suppressed: true, receipt }
+      },
+      async suppressIntent(request) {
+        let receipt = messages.get(request.idempotencyKey)
+        if (!receipt)
+          receipt = {
+            id: crypto.randomUUID(),
+            status: 'SUPPRESSED',
+            acceptedAt: new Date(time),
+            deliveredAt: null,
+          }
+        receipt.status = 'SUPPRESSED'
+        messages.set(request.idempotencyKey, receipt)
+        return { suppressed: true, receipt: structuredClone(receipt) }
+      },
+    }
+    const notices = new DrizzleRecoveryNoticeRepository(connection.db)
+    return {
+      service: new RecoveryNoticeService(
+        notices,
+        messaging,
+        new DrizzleSubscriptionRepository(connection.db),
+        {
+          kids: 'https://kids.example.invalid/pais/conta',
+          adult: 'https://adult.example.invalid/compras',
+        },
+        () => new Date(time),
+      ),
+      notices,
+      messages,
+      requests,
+      at: (value: Date) => {
+        time = new Date(value)
+      },
+    }
+  }
+
+  test('coordenação só inicia prazo com aceite identificado, guardando envelope e recibo antes do caso', async () => {
+    const lease = await ownedCase()
+    const harness = noticeHarness()
+    expect(await harness.service.ensure(lease, 'INITIAL')).toBe('ACCEPTED')
+    expect((await harness.notices.listForCase(lease.item.id))[0]?.receipt?.status).toBe('QUEUED')
+    expect((await repository.findById(lease.item.id))?.toSnapshot().initialNoticeId).toBeNull()
+    await repository.saveOwned(lease, now)
+    const saved = (await repository.findById(lease.item.id))?.toSnapshot()
+    expect(saved?.initialNoticeId).toBe([...harness.messages.values()][0]?.id)
+    expect(saved?.deadlineAt).toEqual(new Date(now.getTime() + 7 * DAY_MS))
+    expect(harness.requests[0]?.recipient.email).toBe('qa-responsible@example.invalid')
+    expect(harness.requests[0]?.templateKey).toBe('recovery-kids-initial')
+    expect(harness.requests[0]?.variables.prazo).toBe('')
+    expect(harness.requests[0]?.variables.dias).toBe('7')
+  })
+
+  test('resposta perdida retoma o mesmo envelope e aceite original, sem reiniciar sete dias', async () => {
+    const lease = await ownedCase()
+    const harness = noticeHarness({ loseFirstResponse: true })
+    expect(await harness.service.ensure(lease, 'INITIAL')).toBe('PENDING')
+    expect(lease.item.toSnapshot().deadlineAt).toBeNull()
+    await repository.saveOwned(lease, now)
+    const later = new Date(now.getTime() + 120_000)
+    harness.at(later)
+    const [resumed] = await repository.claimDue({ now: later, leaseMs: 10_000, limit: 1 })
+    if (!resumed) throw new Error('Missing QA resumed case')
+    expect(await harness.service.ensure(resumed, 'INITIAL')).toBe('ACCEPTED')
+    await repository.saveOwned(resumed, later)
+    expect(harness.messages.size).toBe(1)
+    expect(harness.requests[0]).toEqual(harness.requests[1])
+    expect((await repository.findById(lease.item.id))?.toSnapshot().deadlineAt).toEqual(
+      new Date(now.getTime() + 7 * DAY_MS),
+    )
+  })
+
+  test('aviso ainda na fila no D7 impede cancelar silenciosamente', async () => {
+    const lease = await ownedCase()
+    const harness = noticeHarness()
+    await harness.service.ensure(lease, 'INITIAL')
+    await repository.saveOwned(lease, now)
+    const deadline = new Date(now.getTime() + 7 * DAY_MS)
+    harness.at(deadline)
+    const [current] = await repository.claimDue({ now: deadline, leaseMs: 10_000, limit: 1 })
+    if (!current) throw new Error('Missing QA due case')
+    expect(await harness.service.initialHealthy(current)).toBe(false)
+    expect(current.item.toSnapshot()).toMatchObject({
+      state: 'MANUAL_REVIEW',
+      reason: 'CONTACT_FAILED',
+    })
+    await repository.saveOwned(current, deadline)
+    expect((await repository.findById(lease.item.id))?.state).toBe('MANUAL_REVIEW')
+  })
+
+  test('confirmação de pagamento retira aviso cuja resposta se perdeu, sem reenviá-lo', async () => {
+    const lease = await ownedCase()
+    const harness = noticeHarness({ loseFirstResponse: true })
+    await harness.service.ensure(lease, 'INITIAL')
+    lease.item.applySource(
+      {
+        checkedAt: now,
+        providerSubscriptionId: source.providerSubscriptionId,
+        providerPaymentId: source.providerPaymentId,
+        amountInCents: source.amountInCents,
+        subscriptionStatus: 'ACTIVE',
+        paymentStatus: 'PAID',
+        paymentOperationPending: false,
+      },
+      now,
+    )
+    expect(await harness.service.withdrawWarnings(lease)).toBe(true)
+    await repository.saveOwned(lease, now)
+    expect(harness.requests).toHaveLength(1)
+    expect(harness.messages.size).toBe(1)
+    expect((await harness.notices.listForCase(lease.item.id))[0]?.receipt?.status).toBe(
+      'SUPPRESSED',
+    )
+    expect((await repository.findById(lease.item.id))?.state).toBe('RECOVERED')
+  })
+
+  test('caso fechado retoma retirada pendente mesmo quando o aviso original é antigo', async () => {
+    const lease = await ownedCase()
+    const harness = noticeHarness({ loseFirstResponse: true })
+    await harness.service.ensure(lease, 'INITIAL')
+    await repository.saveOwned(lease, now)
+    const paidAt = new Date(now.getTime() + 7 * DAY_MS)
+    const [paid] = await repository.claimDue({ now: paidAt, leaseMs: 10_000, limit: 1 })
+    if (!paid) throw new Error('Missing QA paid lease')
+    paid.item.applySource(
+      {
+        checkedAt: paidAt,
+        providerSubscriptionId: source.providerSubscriptionId,
+        providerPaymentId: source.providerPaymentId,
+        amountInCents: source.amountInCents,
+        subscriptionStatus: 'ACTIVE',
+        paymentStatus: 'PAID',
+        paymentOperationPending: false,
+      },
+      paidAt,
+    )
+    await repository.saveOwned(paid, paidAt)
+    const resumedAt = new Date(paidAt.getTime() + 120_000)
+    const [withdrawal] = await repository.claimDue({ now: resumedAt, leaseMs: 10_000, limit: 1 })
+    expect(withdrawal?.item.state).toBe('RECOVERED')
+    if (!withdrawal) throw new Error('Missing QA withdrawal lease')
+    harness.at(resumedAt)
+    expect(await harness.service.withdrawWarnings(withdrawal)).toBe(true)
+    await repository.saveOwned(withdrawal, resumedAt)
+    expect(
+      await repository.claimDue({
+        now: new Date(resumedAt.getTime() + 120_000),
+        leaseMs: 10_000,
+        limit: 1,
+      }),
+    ).toHaveLength(0)
+    expect(harness.requests).toHaveLength(1)
+  })
+
+  test('falhas de contato têm cinco tentativas persistidas e terminam em revisão sem prazo fictício', async () => {
+    let lease = await ownedCase()
+    const harness = noticeHarness({ unavailable: true })
+    for (let index = 0; index <= 5; index++) {
+      const time = new Date(now.getTime() + index * 120_000)
+      harness.at(time)
+      const result = await harness.service.ensure(lease, 'INITIAL')
+      expect(result).toBe(index === 5 ? 'FAILED' : 'PENDING')
+      await repository.saveOwned(lease, time)
+      if (index < 5) {
+        const [next] = await repository.claimDue({
+          now: new Date(time.getTime() + 120_000),
+          leaseMs: 10_000,
+          limit: 1,
+        })
+        if (!next) throw new Error('Missing QA retry lease')
+        lease = next
+      }
+    }
+    expect(harness.requests).toHaveLength(5)
+    expect((await repository.findById(lease.item.id))?.toSnapshot()).toMatchObject({
+      state: 'MANUAL_REVIEW',
+      reason: 'CONTACT_FAILED',
+      deadlineAt: null,
+    })
   })
 
   test('aviso é persistido antes da rede e réplicas/reabertura usam o envelope original', async () => {
@@ -242,6 +469,14 @@ describe.skipIf(!databaseUrl)('Casos de regularização — PostgreSQL real', ()
     })
     expect(recovered.id).not.toBe(reminder.id)
     expect(recovered.purpose).toBe('RECOVERED')
+    // The closed-case backoff below concerns the confirmation only. Its queued
+    // reminder must have a withdrawal receipt, otherwise it is separate due work.
+    await notices.recordReceipt(
+      current!,
+      reminder.id,
+      { id: crypto.randomUUID(), status: 'SUPPRESSED', acceptedAt: due, deliveredAt: null },
+      due,
+    )
     expect(
       await failureOf(
         notices.prepare(current!, { purpose: 'REMINDER', day: 6, request: envelope(), now: due }),
@@ -335,6 +570,11 @@ describe.skipIf(!databaseUrl)('Casos de regularização — PostgreSQL real', ()
       intervalMonths: 1,
       card: { brand: 'visa', last4: '4242' },
       providerPlanId: 'qa-plan',
+      customer: Customer.create({
+        name: 'QA responsible',
+        email: 'qa-responsible@example.invalid',
+        document: '52998224725',
+      }),
       idempotencyKey: IdempotencyKey.create(crypto.randomUUID()),
     })
     subscription.registerProviderSubscription(`qa-provider-${crypto.randomUUID()}`)

@@ -1,4 +1,4 @@
-import { and, asc, eq, exists, gt, inArray, isNull, lte, or, sql } from 'drizzle-orm'
+import { and, asc, eq, exists, gt, inArray, isNull, lt, lte, or, sql } from 'drizzle-orm'
 import { ValidationError } from '../../../domain/shared/errors'
 import { SubscriptionRecoveryCase } from '../../../domain/subscription-recovery/recovery-case'
 import type {
@@ -94,17 +94,30 @@ export class DrizzleSubscriptionRecoveryRepository implements SubscriptionRecove
       throw new ValidationError('Lote de regularização inválido')
     const leaseUntil = new Date(input.now.getTime() + input.leaseMs)
     return this.db.transaction(async (tx) => {
-      // A lost confirmation response must not reopen the financial case. Resume only
-      // its original closeout envelope, with a finite 24h retry horizon and 2min backoff.
+      // Closing the financial case does not discard uncertain enqueue/withdrawal
+      // work. Retry its original envelopes only, within 24h of closing and 2min backoff.
       const pendingCloseout = tx
         .select({ id: notices.id })
         .from(notices)
         .where(
           and(
             eq(notices.caseId, cases.id),
-            isNull(notices.messageId),
-            inArray(notices.purpose, ['RECOVERED', 'CANCELED']),
-            gt(notices.createdAt, new Date(input.now.getTime() - 86_400_000)),
+            gt(cases.closedAt, new Date(input.now.getTime() - 86_400_000)),
+            or(
+              and(
+                isNull(notices.messageId),
+                inArray(notices.purpose, ['RECOVERED', 'CANCELED']),
+                lt(notices.attemptCount, 5),
+              ),
+              and(
+                inArray(notices.purpose, ['INITIAL', 'REMINDER']),
+                lt(notices.attemptCount, 10),
+                or(
+                  isNull(notices.messageId),
+                  inArray(notices.messageStatus, ['QUEUED', 'SCHEDULED', 'SENDING']),
+                ),
+              ),
+            ),
             or(
               isNull(notices.lastAttemptAt),
               lte(notices.lastAttemptAt, new Date(input.now.getTime() - 120_000)),
