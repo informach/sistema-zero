@@ -35,12 +35,14 @@ export class DrizzleSubscriptionRepository implements SubscriptionRepository {
           .set({
             version: snap.version + 1,
             status: values.status,
+            card: values.card,
             providerSubscriptionId: values.providerSubscriptionId,
             cyclesCompleted: values.cyclesCompleted,
             lastChargeId: values.lastChargeId,
             lastChargeAt: values.lastChargeAt,
             metadata: values.metadata,
             canceledAt: values.canceledAt,
+            cancelRequestedAt: values.cancelRequestedAt,
             updatedAt: values.updatedAt,
           })
           .where(and(eq(subscriptions.id, snap.id), eq(subscriptions.version, snap.version)))
@@ -159,6 +161,7 @@ function snapshotToRow(snap: SubscriptionSnapshot): typeof subscriptions.$inferI
     lastChargeAt: snap.lastChargeAt,
     description: snap.description,
     metadata: snap.metadata,
+    cancelRequestedAt: snap.cancelRequestedAt,
     canceledAt: snap.canceledAt,
     createdAt: snap.createdAt,
     updatedAt: snap.updatedAt,
@@ -186,6 +189,7 @@ export function rowToSnapshot(row: SubscriptionRow): SubscriptionSnapshot {
     lastChargeAt: row.lastChargeAt ?? null,
     description: row.description,
     metadata: row.metadata,
+    cancelRequestedAt: row.cancelRequestedAt,
     canceledAt: row.canceledAt ?? null,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,

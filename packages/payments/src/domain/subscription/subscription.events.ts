@@ -95,3 +95,29 @@ export class SubscriptionExpiredEvent extends DomainEvent {
     return { subscriptionId: this.aggregateId, ...this.data }
   }
 }
+
+export class SubscriptionCancellationRequestedEvent extends DomainEvent {
+  readonly eventName = 'subscription.cancellation_requested'
+  constructor(
+    aggregateId: string,
+    private readonly data: { consumerId: string },
+  ) {
+    super(aggregateId)
+  }
+  toPayload(): Record<string, unknown> {
+    return { subscriptionId: this.aggregateId, ...this.data }
+  }
+}
+
+export class SubscriptionCardUpdatedEvent extends DomainEvent {
+  readonly eventName = 'subscription.card_updated'
+  constructor(
+    aggregateId: string,
+    private readonly data: { consumerId: string },
+  ) {
+    super(aggregateId)
+  }
+  toPayload(): Record<string, unknown> {
+    return { subscriptionId: this.aggregateId, ...this.data }
+  }
+}

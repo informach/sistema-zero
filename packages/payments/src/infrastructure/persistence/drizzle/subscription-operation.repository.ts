@@ -1,11 +1,11 @@
-import { and, eq, gt, lte } from 'drizzle-orm'
+import { and, eq, gt, lte, or, sql } from 'drizzle-orm'
 import type {
   SubscriptionOperation,
   SubscriptionOperationRepository,
 } from '../../../domain/subscription/subscription-operation'
 import { ConcurrencyConflictError } from './concurrency.error'
 import type { Database } from './db'
-import { subscriptionOperations } from './schema'
+import { subscriptionOperations, subscriptions } from './schema'
 
 export class DrizzleSubscriptionOperationRepository implements SubscriptionOperationRepository {
   constructor(private readonly db: Database) {}
@@ -61,6 +61,15 @@ export class DrizzleSubscriptionOperationRepository implements SubscriptionOpera
           // SQL guarda o prazo no CAS; uma aba velha não revive uma intenção expirada.
           // >= não é aceito: no instante do vencimento já está encerrada.
           gt(subscriptionOperations.expiresAt, now),
+          or(
+            eq(subscriptionOperations.kind, 'CANCEL'),
+            sql`exists (
+            select 1 from ${subscriptions} where ${subscriptions.id} = ${subscriptionOperations.subscriptionId}
+              and ${subscriptions.consumerId} = ${subscriptionOperations.consumerId}
+              and ${subscriptions.providerSubscriptionId} = ${subscriptionOperations.providerSubscriptionId}
+              and ${subscriptions.status} = 'ACTIVE' and ${subscriptions.cancelRequestedAt} is null
+          )`,
+          ),
         ),
       )
       .returning()

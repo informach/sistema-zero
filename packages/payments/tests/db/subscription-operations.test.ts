@@ -105,6 +105,18 @@ describe.skipIf(!databaseUrl)('Intenções de assinatura no PostgreSQL real', ()
     expect((await repository.findById(first.id))?.result).toBe('INTENT_EXPIRED')
   })
 
+  test('pedido de cancelamento persistido invalida autorização de cartão já aberta', async () => {
+    const operation = createSubscriptionOperation({ ...input(), kind: 'CARD_UPDATE' })
+    await repository.create(operation)
+    const subscriptions = new DrizzleSubscriptionRepository(connection.db)
+    const subscription = await subscriptions.findById(subscriptionId)
+    if (!subscription) throw new Error('Assinatura QA ausente')
+    subscription.requestCancellation()
+    await subscriptions.save(subscription)
+    expect(await repository.start(operation.id, subscriptionId, now)).toBeNull()
+    expect((await subscriptions.findById(subscriptionId))?.cancelRequestedAt).toBeInstanceOf(Date)
+  })
+
   test('banco recusa retry sem valor mesmo se um writer contornar o domínio', async () => {
     const invalid = createSubscriptionOperation({
       ...input(),

@@ -227,6 +227,7 @@ export const subscriptions = paymentsSchema.table(
     lastReconciledAt: timestamp('last_reconciled_at', { withTimezone: true }),
     description: text('description'),
     metadata: jsonb('metadata').$type<Record<string, unknown>>().notNull().default({}),
+    cancelRequestedAt: timestamp('cancel_requested_at', { withTimezone: true }),
     canceledAt: timestamp('canceled_at', { withTimezone: true }),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),

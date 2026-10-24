@@ -57,6 +57,13 @@
       "when": 1792801622729,
       "tag": "0007_subscription_operations",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1792802396118,
+      "tag": "0008_subscription_cancellation_request",
+      "breakpoints": true
     }
   ]
 }

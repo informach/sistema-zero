@@ -6,6 +6,8 @@ import { type Currency, Money } from '../value-objects/money'
 import {
   SubscriptionActivatedEvent,
   SubscriptionCanceledEvent,
+  SubscriptionCancellationRequestedEvent,
+  SubscriptionCardUpdatedEvent,
   SubscriptionChargePaidEvent,
   SubscriptionCreatedEvent,
   SubscriptionExpiredEvent,
@@ -49,6 +51,7 @@ export interface SubscriptionSnapshot {
   lastChargeAt: Date | null
   description: string | null
   metadata: Record<string, unknown>
+  cancelRequestedAt: Date | null
   canceledAt: Date | null
   createdAt: Date
   updatedAt: Date
@@ -72,6 +75,7 @@ interface SubscriptionState {
   lastChargeAt: Date | null
   description: string | null
   metadata: Record<string, unknown>
+  cancelRequestedAt: Date | null
   canceledAt: Date | null
   createdAt: Date
   updatedAt: Date
@@ -147,6 +151,7 @@ export class SubscriptionAggregate extends AggregateRoot<string> {
         // Cópia defensiva: guardar a referência do caller permitiria mutação
         // por fora da fronteira do agregado (aliasing).
         metadata: { ...(input.metadata ?? {}) },
+        cancelRequestedAt: null,
         canceledAt: null,
         createdAt: now,
         updatedAt: now,
@@ -198,6 +203,7 @@ export class SubscriptionAggregate extends AggregateRoot<string> {
         lastChargeAt: snapshot.lastChargeAt,
         description: snapshot.description,
         metadata: { ...snapshot.metadata },
+        cancelRequestedAt: snapshot.cancelRequestedAt,
         canceledAt: snapshot.canceledAt,
         createdAt: snapshot.createdAt,
         updatedAt: snapshot.updatedAt,
@@ -262,6 +268,33 @@ export class SubscriptionAggregate extends AggregateRoot<string> {
     if (this.state.repeats !== null && this.state.cyclesCompleted >= this.state.repeats) {
       this.expire()
     }
+  }
+
+  /** Pedido durável: impede novas autorizações de débito antes da confirmação externa. */
+  requestCancellation(): boolean {
+    if (
+      this.state.cancelRequestedAt ||
+      this.state.status === 'CANCELED' ||
+      this.state.status === 'EXPIRED'
+    )
+      return false
+    this.state.cancelRequestedAt = new Date()
+    this.touch()
+    this.addEvent(
+      new SubscriptionCancellationRequestedEvent(this.id, { consumerId: this.state.consumerId }),
+    )
+    return true
+  }
+
+  /** Só após a Efí confirmar a troca; mantém plano, preço, ciclos e período. */
+  updateCard(card: SubscriptionCard): void {
+    if (this.state.status !== 'ACTIVE' || this.state.cancelRequestedAt) {
+      throw new InvalidStateTransitionError('Assinatura não aceita atualização de cartão')
+    }
+    if (!card.brand || !/^\d{4}$/.test(card.last4)) throw new ValidationError('Cartão inválido')
+    this.state.card = { brand: card.brand, last4: card.last4 }
+    this.touch()
+    this.addEvent(new SubscriptionCardUpdatedEvent(this.id, { consumerId: this.state.consumerId }))
   }
 
   /** Cancela a assinatura. Idempotente (cancelar uma já cancelada é no-op). */
@@ -366,6 +399,10 @@ export class SubscriptionAggregate extends AggregateRoot<string> {
     return this.state.canceledAt
   }
 
+  get cancelRequestedAt(): Date | null {
+    return this.state.cancelRequestedAt
+  }
+
   get createdAt(): Date {
     return this.state.createdAt
   }
@@ -401,6 +438,7 @@ export class SubscriptionAggregate extends AggregateRoot<string> {
       lastChargeAt: this.state.lastChargeAt,
       description: this.state.description,
       metadata: { ...this.state.metadata },
+      cancelRequestedAt: this.state.cancelRequestedAt,
       canceledAt: this.state.canceledAt,
       createdAt: this.state.createdAt,
       updatedAt: this.state.updatedAt,
