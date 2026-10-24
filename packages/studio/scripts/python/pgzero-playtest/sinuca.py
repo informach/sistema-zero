@@ -94,9 +94,11 @@ def play(t):
 
     # A abertura: a branca bate no triângulo com força.
     area = t.get('AREA')
+    antes = {id(b): b.ator.pos for b in t.get('bolas') if b is not t.get('branca')}
     tacar(t, 0, 10)
     bolas = t.get('bolas')
-    t.check('na abertura, as bolas se espalham', len({(round(b.ator.x), round(b.ator.y)) for b in bolas}) == len(bolas))
+    andaram = [b for b in bolas if id(b) in antes and b.ator.distance_to(antes[id(b)]) > 30]
+    t.check('na abertura, as bolas coloridas se espalham', len(andaram) >= 3, f'{len(andaram)} andaram mais de 30 px')
     t.check('nenhuma bola sai do pano', all(area.left <= b.ator.x <= area.right and area.top <= b.ator.y <= area.bottom for b in bolas))
 
     # Um jogador que mira pela bola fantasma limpa a mesa.

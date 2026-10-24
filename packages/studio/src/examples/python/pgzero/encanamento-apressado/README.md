@@ -14,7 +14,7 @@ Clique numa casa vazia para pôr a próxima peça da fila. Depois da contagem, a
 
 - Mude META para precisar de mais canos.
 - Deixe a água mais rápida.
-- Dê pontos a mais quando a água passa duas vezes pela cruz.
+- Crie uma variável de pontos e dê pontos a mais quando a água passar duas vezes pela cruz.
 
 ## Imagens e sons
 

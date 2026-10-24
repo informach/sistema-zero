@@ -139,7 +139,7 @@ def draw():
     if contagem > 0:
         screen.draw.text('A água sai em ' + str(contagem), topright=(WIDTH - 40, 30), fontsize=34, color='yellow')
     if fim == 'venceu':
-        screen.draw.text('A água chegou longe! Você venceu!', center=(WIDTH / 2, 570), fontsize=40, color='yellow', owidth=2, ocolor='black')
+        screen.draw.text('A água chegou longe! Clique para jogar de novo', center=(WIDTH / 2, 570), fontsize=40, color='yellow', owidth=2, ocolor='black')
     if fim == 'vazou':
         screen.draw.text('Vazou! Clique para tentar de novo', center=(WIDTH / 2, 570), fontsize=40, color='orange', owidth=2, ocolor='black')
 

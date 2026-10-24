@@ -100,7 +100,7 @@ def mover_astronauta():
 
 
 def cair(ator):
-    # Uma peça solta cai até uma plataforma (ou até o topo do foguete).
+    # Uma peça solta cai até pousar numa plataforma (o chão também é uma).
     if no_chao_de(ator) is None:
         ator.y = ator.y + 3
 
@@ -127,9 +127,9 @@ def carregar():
                 combustivel.pos = (-100, -100)
                 if tanque < 3:
                     soltar_combustivel()
-    elif proxima == 3 and combustivel.x > 0:
-        # A lata cai do céu (ela começa um pouco acima da tela) até pousar.
-        cair(combustivel)
+    elif item.x > 0:
+        # Peça solta cai até pousar: a lata que vem do céu, ou uma peça largada no ar.
+        cair(item)
 
 
 def novo_meteoro():

@@ -8,7 +8,7 @@ TOPO = 40
 TEMPO_TOTAL = 150
 
 # A caverna, linha por linha. Cada letra vira uma coisa da grade:
-# # parede   . terra   o pedra   * gema   M minerador   S saída
+# # parede   . terra   o pedra   * gema   M minerador   S saída   (espaço) vazio
 CAVERNA = [
     '####################',
     '#M..o...*..o....*..#',
@@ -32,6 +32,7 @@ NOMES = {
     '*': 'gema',
     'M': 'minerador',
     'S': 'saida',
+    ' ': 'vazio',
 }
 
 grade = []

@@ -4,6 +4,8 @@ WIDTH = 800
 HEIGHT = 600
 TITLE = 'Rali com Minimapa'
 LADO = 80
+# As velocidades precisam dividir LADO (1, 2, 4, 5, 8...): assim cada carro passa bem no
+# meio de cada esquina, que é onde ele pode virar.
 VELOCIDADE = 4
 VELOCIDADE_DOS_VERMELHOS = 2
 # O minimapa é o mapa inteiro, dez vezes menor.
@@ -114,10 +116,13 @@ def mover_jogador():
             jogador.dy = dy
         elif not pode_ir(jogador, jogador.dx, jogador.dy):
             # Bateu no muro: vira sozinho para um lado livre, como no jogo original.
+            # Num beco sem saída, dá meia-volta.
             if pode_ir(jogador, jogador.dy, -jogador.dx):
                 jogador.dx, jogador.dy = jogador.dy, -jogador.dx
-            else:
+            elif pode_ir(jogador, -jogador.dy, jogador.dx):
                 jogador.dx, jogador.dy = -jogador.dy, jogador.dx
+            else:
+                jogador.dx, jogador.dy = -jogador.dx, -jogador.dy
     jogador.mapa_x = jogador.mapa_x + jogador.dx * VELOCIDADE
     jogador.mapa_y = jogador.mapa_y + jogador.dy * VELOCIDADE
     virar_o_carro(jogador)
@@ -140,6 +145,9 @@ def mover_vermelho(carro):
                     menor = distancia
         if melhor is not None:
             carro.dx, carro.dy = melhor
+        else:
+            # Num beco sem saída, a única rua é voltar.
+            carro.dx, carro.dy = -carro.dx, -carro.dy
     carro.mapa_x = carro.mapa_x + carro.dx * VELOCIDADE_DOS_VERMELHOS
     carro.mapa_y = carro.mapa_y + carro.dy * VELOCIDADE_DOS_VERMELHOS
     virar_o_carro(carro)

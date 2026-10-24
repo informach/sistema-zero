@@ -58,7 +58,7 @@ def play(t):
         quadros += 1
         if not all(na_pista(c.x, c.y) for c in carros):
             sempre_na_pista = False
-        if quadros == 60 * 40:
+        if quadros <= 60 * 40:
             voltas_do_computador = [c.voltas for c in carros[1:]]
     segurar(t, [])
     t.check('nenhum carro sai da pista durante a corrida', sempre_na_pista)

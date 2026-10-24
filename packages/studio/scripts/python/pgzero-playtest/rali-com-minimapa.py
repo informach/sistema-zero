@@ -1,7 +1,7 @@
 """Rali com Minimapa: the car only drives on roads, turns where the arrow says, turns by itself at
-a wall and can go back at any time; the red cars stay on roads and come after it; a crash costs
-a life; the fuel runs out; a driver that plans the way to the flags, keeping away from the red
-cars, takes all eight; the mini-map draws a dot for every car and flag."""
+a wall and can go back at any time; the red cars stay on roads and come after it; a dead end
+turns it around; a crash costs a life; the fuel runs out; a driver that plans the way to the
+flags, keeping away from the red cars, takes all eight."""
 
 from collections import deque
 
@@ -42,12 +42,32 @@ def play(t):
     t.step(1)
     t.check('o carro começa andando para a direita', jogador.dx == 1 and jogador.mapa_x > 120)
     sempre_na_estrada = True
+    direcoes = set()
     for _ in range(200):
         t.step(1)
+        direcoes.add((jogador.dx, jogador.dy))
         sempre_na_estrada = sempre_na_estrada and na_estrada(t, jogador) and all(na_estrada(t, c) for c in vermelhos)
-    t.check('no muro, o carro vira sozinho e segue', jogador.dx != 0 or jogador.dy != 0)
+    # Andando para a direita sem apertar nada, ele bate no muro da coluna 11 e desce sozinho.
+    t.check('no muro, o carro vira sozinho e segue', (0, 1) in direcoes, f'{direcoes}')
     t.check('carros sempre na estrada', sempre_na_estrada)
     t.shot('andando')
+
+    # Num beco sem saída (um muro a mais na coluna 10), o carro dá meia-volta.
+    labirinto = t.get('LABIRINTO')
+    original = labirinto[2]
+    labirinto[2] = original[:10] + '#' + original[11:]
+    t.get('novo_jogo')()
+    voltou = False
+    for _ in range(300):
+        t.step(1)
+        if not na_estrada(t, jogador):
+            break
+        if jogador.dx == -1 and jogador.mapa_x < 10 * lado + 40:
+            voltou = True
+            break
+    t.check('num beco sem saída, o carro dá meia-volta sem entrar no muro', voltou and na_estrada(t, jogador),
+            f'{jogador.mapa_x},{jogador.mapa_y}')
+    labirinto[2] = original
 
     # Meia-volta a qualquer hora.
     t.get('novo_jogo')()

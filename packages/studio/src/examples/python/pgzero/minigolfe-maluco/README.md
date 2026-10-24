@@ -13,7 +13,7 @@ As setas dos lados giram a seta da mira e as de cima e de baixo mudam a força. 
 ## Ideias para mudar
 
 - Mude ATRITO para a grama ficar mais rápida ou mais lenta.
-- Mude o lugar de onde cada buraco começa em INICIOS.
+- Faça o lago devolver a bola para o começo do buraco, em vez de para onde ela estava.
 - Mude o par de cada buraco em PARES.
 
 ## Imagens e sons

@@ -8,7 +8,7 @@ galeria.
 
 ## Como jogar
 
-Os bichinhos saem da porta e andam para a frente. Clique num bichinho para ele parar e mandar os outros de volta (você tem três bloqueios). Leve pelo menos seis até a casinha.
+Os bichinhos saem da porta e andam para a frente. Clique num bichinho para ele parar e mandar os outros de volta (você tem três bloqueios); clique de novo nele para soltar. Leve pelo menos seis até a casinha.
 
 ## Ideias para mudar
 

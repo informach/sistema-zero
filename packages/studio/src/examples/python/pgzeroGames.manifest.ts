@@ -60,7 +60,7 @@ export const PGZERO_GAMES = [
     ],
     sounds: [],
     music: [],
-    receipt: 'ola-pgzero-r5.json.snapshot',
+    receipt: 'ola-pgzero-r6.json.snapshot',
   },
   {
     key: 'acerte-a-maca',
@@ -85,7 +85,7 @@ export const PGZERO_GAMES = [
       { path: 'erro.wav', notes: [330, 220], noteMilliseconds: 120 },
     ],
     music: [],
-    receipt: 'acerte-a-maca-r5.json.snapshot',
+    receipt: 'acerte-a-maca-r6.json.snapshot',
   },
   {
     key: 'raposa-moedas',
@@ -109,7 +109,7 @@ export const PGZERO_GAMES = [
       { path: 'fim.wav', notes: [523, 392, 262], noteMilliseconds: 150 },
     ],
     music: [],
-    receipt: 'raposa-moedas-r5.json.snapshot',
+    receipt: 'raposa-moedas-r6.json.snapshot',
   },
   {
     key: 'ligue-os-pontos',
@@ -135,7 +135,7 @@ export const PGZERO_GAMES = [
       { path: 'fim.wav', notes: [523, 659, 784, 1047], noteMilliseconds: 110 },
     ],
     music: [],
-    receipt: 'ligue-os-pontos-r5.json.snapshot',
+    receipt: 'ligue-os-pontos-r6.json.snapshot',
   },
   {
     key: 'estrela-vermelha',
@@ -160,7 +160,7 @@ export const PGZERO_GAMES = [
       { path: 'erro.wav', notes: [300, 200], noteMilliseconds: 120 },
     ],
     music: [],
-    receipt: 'estrela-vermelha-r5.json.snapshot',
+    receipt: 'estrela-vermelha-r6.json.snapshot',
   },
   {
     key: 'quiz-relampago',
@@ -184,7 +184,7 @@ export const PGZERO_GAMES = [
       { path: 'erro.wav', notes: [220, 165], noteMilliseconds: 140 },
     ],
     music: [],
-    receipt: 'quiz-relampago-r5.json.snapshot',
+    receipt: 'quiz-relampago-r6.json.snapshot',
   },
   {
     key: 'voo-de-balao',
@@ -207,7 +207,7 @@ export const PGZERO_GAMES = [
     ],
     sounds: [{ path: 'fim.wav', notes: [440, 330, 220], noteMilliseconds: 140 }],
     music: [],
-    receipt: 'voo-de-balao-r5.json.snapshot',
+    receipt: 'voo-de-balao-r6.json.snapshot',
   },
   {
     key: 'desafio-da-danca',
@@ -239,7 +239,7 @@ export const PGZERO_GAMES = [
         noteMilliseconds: 250,
       },
     ],
-    receipt: 'desafio-da-danca-r5.json.snapshot',
+    receipt: 'desafio-da-danca-r6.json.snapshot',
   },
   {
     key: 'jardim-feliz',
@@ -264,7 +264,7 @@ export const PGZERO_GAMES = [
       { path: 'fim.wav', notes: [392, 330, 262], noteMilliseconds: 150 },
     ],
     music: [],
-    receipt: 'jardim-feliz-r6.json.snapshot',
+    receipt: 'jardim-feliz-r7.json.snapshot',
   },
   {
     key: 'dragoes-dorminhocos',
@@ -289,7 +289,7 @@ export const PGZERO_GAMES = [
       { path: 'dano.wav', notes: [200, 150], noteMilliseconds: 120, noise: true },
     ],
     music: [],
-    receipt: 'dragoes-dorminhocos-r5.json.snapshot',
+    receipt: 'dragoes-dorminhocos-r6.json.snapshot',
   },
   {
     key: 'barris-na-rampa',
@@ -316,7 +316,7 @@ export const PGZERO_GAMES = [
       { path: 'vitoria.wav', notes: [523, 659, 784, 1047], noteMilliseconds: 120 },
     ],
     music: [],
-    receipt: 'barris-na-rampa-r4.json.snapshot',
+    receipt: 'barris-na-rampa-r5.json.snapshot',
   },
   {
     key: 'salto-nas-plataformas',
@@ -342,7 +342,7 @@ export const PGZERO_GAMES = [
       { path: 'pulo.wav', notes: [440, 660], noteMilliseconds: 50 },
     ],
     music: [],
-    receipt: 'salto-nas-plataformas-r4.json.snapshot',
+    receipt: 'salto-nas-plataformas-r5.json.snapshot',
   },
   {
     key: 'piramide-de-cubos',
@@ -371,7 +371,7 @@ export const PGZERO_GAMES = [
       { path: 'vitoria.wav', notes: [523, 659, 784, 1047], noteMilliseconds: 120 },
     ],
     music: [],
-    receipt: 'piramide-de-cubos-r4.json.snapshot',
+    receipt: 'piramide-de-cubos-r5.json.snapshot',
   },
   {
     key: 'cipo-sobre-o-poco',
@@ -399,7 +399,7 @@ export const PGZERO_GAMES = [
       { path: 'tesouro.wav', notes: [784, 988, 1175, 1568], noteMilliseconds: 90 },
     ],
     music: [],
-    receipt: 'cipo-sobre-o-poco-r4.json.snapshot',
+    receipt: 'cipo-sobre-o-poco-r5.json.snapshot',
   },
   {
     key: 'mina-que-desmorona',
@@ -429,7 +429,7 @@ export const PGZERO_GAMES = [
       { path: 'vitoria.wav', notes: [523, 659, 784, 1047], noteMilliseconds: 120 },
     ],
     music: [],
-    receipt: 'mina-que-desmorona-r4.json.snapshot',
+    receipt: 'mina-que-desmorona-r5.json.snapshot',
   },
   {
     key: 'escudos-contra-invasores',
@@ -457,7 +457,7 @@ export const PGZERO_GAMES = [
       { path: 'vitoria.wav', notes: [523, 659, 784, 1047], noteMilliseconds: 120 },
     ],
     music: [],
-    receipt: 'escudos-contra-invasores-r4.json.snapshot',
+    receipt: 'escudos-contra-invasores-r5.json.snapshot',
   },
   {
     key: 'mergulho-alienigena',
@@ -487,7 +487,7 @@ export const PGZERO_GAMES = [
       { path: 'vitoria.wav', notes: [523, 659, 784, 1047], noteMilliseconds: 120 },
     ],
     music: [],
-    receipt: 'mergulho-alienigena-r4.json.snapshot',
+    receipt: 'mergulho-alienigena-r5.json.snapshot',
   },
   {
     key: 'nave-mae',
@@ -515,7 +515,7 @@ export const PGZERO_GAMES = [
       { path: 'vitoria.wav', notes: [523, 659, 784, 1047], noteMilliseconds: 120 },
     ],
     music: [],
-    receipt: 'nave-mae-r4.json.snapshot',
+    receipt: 'nave-mae-r5.json.snapshot',
   },
   {
     key: 'rastro-de-ajudantes',
@@ -543,7 +543,7 @@ export const PGZERO_GAMES = [
       { path: 'capsula.wav', notes: [523, 659, 784], noteMilliseconds: 60 },
     ],
     music: [],
-    receipt: 'rastro-de-ajudantes-r3.json.snapshot',
+    receipt: 'rastro-de-ajudantes-r4.json.snapshot',
   },
   {
     key: 'helicoptero-bombardeiro',
@@ -561,7 +561,7 @@ export const PGZERO_GAMES = [
       'Mova o helicóptero com as setas. Aperte espaço para soltar a bomba: ela se abre em doze pedaços e explode. Fuja das balas dos tanques.',
     ideas: [
       'Mude PEDACOS para a bomba se abrir em mais pedaços.',
-      'Faça a bomba demorar mais para explodir.',
+      'Mude TEMPO_DA_BOMBA para a bomba voar mais antes de explodir.',
       'Ponha mais tanques no chão.',
     ],
     sounds: [
@@ -570,7 +570,7 @@ export const PGZERO_GAMES = [
       { path: 'dano.wav', notes: [200, 130], noteMilliseconds: 140, noise: true },
     ],
     music: [],
-    receipt: 'helicoptero-bombardeiro-r3.json.snapshot',
+    receipt: 'helicoptero-bombardeiro-r4.json.snapshot',
   },
   {
     key: 'cauda-espacial',
@@ -600,7 +600,7 @@ export const PGZERO_GAMES = [
       { path: 'vitoria.wav', notes: [523, 659, 784, 1047], noteMilliseconds: 120 },
     ],
     music: [],
-    receipt: 'cauda-espacial-r3.json.snapshot',
+    receipt: 'cauda-espacial-r4.json.snapshot',
   },
   {
     key: 'mochila-a-jato',
@@ -631,7 +631,7 @@ export const PGZERO_GAMES = [
       { path: 'decola.wav', notes: [262, 330, 392, 523, 659, 784], noteMilliseconds: 90 },
     ],
     music: [],
-    receipt: 'mochila-a-jato-r3.json.snapshot',
+    receipt: 'mochila-a-jato-r4.json.snapshot',
   },
   {
     key: 'propulsor-no-espaco',
@@ -659,7 +659,7 @@ export const PGZERO_GAMES = [
       { path: 'batida.wav', notes: [130, 98], noteMilliseconds: 160, noise: true },
     ],
     music: [],
-    receipt: 'propulsor-no-espaco-r3.json.snapshot',
+    receipt: 'propulsor-no-espaco-r4.json.snapshot',
   },
   {
     key: 'encanamento-apressado',
@@ -678,7 +678,7 @@ export const PGZERO_GAMES = [
     ideas: [
       'Mude META para precisar de mais canos.',
       'Deixe a água mais rápida.',
-      'Dê pontos a mais quando a água passa duas vezes pela cruz.',
+      'Crie uma variável de pontos e dê pontos a mais quando a água passar duas vezes pela cruz.',
     ],
     sounds: [
       { path: 'encaixe.wav', notes: [523, 659], noteMilliseconds: 40 },
@@ -687,7 +687,7 @@ export const PGZERO_GAMES = [
       { path: 'venceu.wav', notes: [523, 659, 784, 1047], noteMilliseconds: 120 },
     ],
     music: [],
-    receipt: 'encanamento-apressado-r3.json.snapshot',
+    receipt: 'encanamento-apressado-r4.json.snapshot',
   },
   {
     key: 'troca-de-joias',
@@ -695,7 +695,7 @@ export const PGZERO_GAMES = [
     name: 'Troca de Joias',
     emoji: '💎',
     description:
-      'Troque duas joias vizinhas para formar três iguais em fila e veja a cascata acontecer.',
+      'Troque duas joias vizinhas lado a lado para formar três iguais em fila e veja a cascata acontecer.',
     genre: 'Quebra-cabeça',
     concepts: ['Blocos', 'Ponte', 'Código', 'Listas de listas', 'Gravidade da grade', 'Relógio'],
     difficulty: 'advanced',
@@ -705,7 +705,7 @@ export const PGZERO_GAMES = [
     howToPlay:
       'As setas movem a moldura de duas joias e espaço troca as duas. A troca só vale se formar três iguais em fila. Você tem 20 jogadas.',
     ideas: [
-      'Mude CORES para ter mais ou menos tipos de joia.',
+      'Mude CORES (de 3 a 6, que são as joias desenhadas) para ter mais ou menos tipos de joia.',
       'Dê pontos em dobro para quatro iguais.',
       'Mude o número de jogadas.',
     ],
@@ -714,7 +714,7 @@ export const PGZERO_GAMES = [
       { path: 'erro.wav', notes: [220, 196], noteMilliseconds: 70 },
     ],
     music: [],
-    receipt: 'troca-de-joias-r3.json.snapshot',
+    receipt: 'troca-de-joias-r4.json.snapshot',
   },
   {
     key: 'bichinhos-em-fila',
@@ -730,7 +730,7 @@ export const PGZERO_GAMES = [
     inspiration: 'Lemmings',
     book: 'wireframe',
     howToPlay:
-      'Os bichinhos saem da porta e andam para a frente. Clique num bichinho para ele parar e mandar os outros de volta (você tem três bloqueios). Leve pelo menos seis até a casinha.',
+      'Os bichinhos saem da porta e andam para a frente. Clique num bichinho para ele parar e mandar os outros de volta (você tem três bloqueios); clique de novo nele para soltar. Leve pelo menos seis até a casinha.',
     ideas: [
       'Mude QUEDA_MAXIMA e veja de que altura eles aguentam cair.',
       'Desenhe outra fase no Pinta (o transparente é ar).',
@@ -742,7 +742,7 @@ export const PGZERO_GAMES = [
       { path: 'ai.wav', notes: [330, 196], noteMilliseconds: 90 },
     ],
     music: [],
-    receipt: 'bichinhos-em-fila-r3.json.snapshot',
+    receipt: 'bichinhos-em-fila-r4.json.snapshot',
   },
   {
     key: 'cavando-por-gemas',
@@ -771,7 +771,7 @@ export const PGZERO_GAMES = [
       { path: 'vitoria.wav', notes: [784, 988, 1175, 1568], noteMilliseconds: 90 },
     ],
     music: [],
-    receipt: 'cavando-por-gemas-r2.json.snapshot',
+    receipt: 'cavando-por-gemas-r3.json.snapshot',
   },
   {
     key: 'editor-de-cavernas',
@@ -800,7 +800,7 @@ export const PGZERO_GAMES = [
       { path: 'vitoria.wav', notes: [784, 988, 1175, 1568], noteMilliseconds: 90 },
     ],
     music: [],
-    receipt: 'editor-de-cavernas-r2.json.snapshot',
+    receipt: 'editor-de-cavernas-r3.json.snapshot',
   },
   {
     key: 'corrida-vista-de-cima',
@@ -828,7 +828,7 @@ export const PGZERO_GAMES = [
       { path: 'chegada.wav', notes: [784, 988, 1175, 1568], noteMilliseconds: 90 },
     ],
     music: [],
-    receipt: 'corrida-vista-de-cima-r2.json.snapshot',
+    receipt: 'corrida-vista-de-cima-r3.json.snapshot',
   },
   {
     key: 'sinuca',
@@ -858,7 +858,7 @@ export const PGZERO_GAMES = [
       { path: 'vitoria.wav', notes: [784, 988, 1175, 1568], noteMilliseconds: 90 },
     ],
     music: [],
-    receipt: 'sinuca-r2.json.snapshot',
+    receipt: 'sinuca-r3.json.snapshot',
   },
   {
     key: 'fliperama',
@@ -887,7 +887,7 @@ export const PGZERO_GAMES = [
       { path: 'perdeu.wav', notes: [330, 262, 196], noteMilliseconds: 90 },
     ],
     music: [],
-    receipt: 'fliperama-r2.json.snapshot',
+    receipt: 'fliperama-r3.json.snapshot',
   },
   {
     key: 'minigolfe-maluco',
@@ -906,7 +906,7 @@ export const PGZERO_GAMES = [
       'As setas dos lados giram a seta da mira e as de cima e de baixo mudam a força. Espaço (ou Enter) dá a tacada. A bola volta nas paredes; se cair no lago, volta para onde estava e você ganha uma tacada a mais.',
     ideas: [
       'Mude ATRITO para a grama ficar mais rápida ou mais lenta.',
-      'Mude o lugar de onde cada buraco começa em INICIOS.',
+      'Faça o lago devolver a bola para o começo do buraco, em vez de para onde ela estava.',
       'Mude o par de cada buraco em PARES.',
     ],
     sounds: [
@@ -917,7 +917,7 @@ export const PGZERO_GAMES = [
       { path: 'vitoria.wav', notes: [784, 988, 1175, 1568], noteMilliseconds: 90 },
     ],
     music: [],
-    receipt: 'minigolfe-maluco-r2.json.snapshot',
+    receipt: 'minigolfe-maluco-r3.json.snapshot',
   },
   {
     key: 'tiro-ao-prato',
@@ -946,7 +946,7 @@ export const PGZERO_GAMES = [
       { path: 'fim.wav', notes: [784, 659, 784, 1047], noteMilliseconds: 90 },
     ],
     music: [],
-    receipt: 'tiro-ao-prato-r2.json.snapshot',
+    receipt: 'tiro-ao-prato-r3.json.snapshot',
   },
   {
     key: 'rali-com-minimapa',
@@ -964,7 +964,7 @@ export const PGZERO_GAMES = [
     howToPlay:
       'As setas dizem para onde virar na próxima esquina (dá para dar meia-volta a qualquer hora). Pegue as oito bandeiras antes de o combustível acabar; cada bandeira dá um pouco de combustível. Encostar num carro vermelho custa uma vida.',
     ideas: [
-      'Mude VELOCIDADE_DOS_VERMELHOS para eles correrem mais.',
+      'Mude VELOCIDADE_DOS_VERMELHOS para 4 e eles correm tanto quanto você (use um número que divide 80).',
       'Redesenhe o LABIRINTO (cada # vira um quarteirão).',
       'Ponha mais bandeiras em BANDEIRAS.',
     ],
@@ -974,7 +974,7 @@ export const PGZERO_GAMES = [
       { path: 'vitoria.wav', notes: [784, 988, 1175, 1568], noteMilliseconds: 90 },
     ],
     music: [],
-    receipt: 'rali-com-minimapa-r2.json.snapshot',
+    receipt: 'rali-com-minimapa-r3.json.snapshot',
   },
 ] as const satisfies readonly PgzeroGame[]
 

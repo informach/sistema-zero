@@ -13,7 +13,7 @@ Mova o helicóptero com as setas. Aperte espaço para soltar a bomba: ela se abr
 ## Ideias para mudar
 
 - Mude PEDACOS para a bomba se abrir em mais pedaços.
-- Faça a bomba demorar mais para explodir.
+- Mude TEMPO_DA_BOMBA para a bomba voar mais antes de explodir.
 - Ponha mais tanques no chão.
 
 ## Imagens e sons

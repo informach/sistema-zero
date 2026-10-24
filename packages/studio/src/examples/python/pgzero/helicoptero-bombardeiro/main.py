@@ -6,12 +6,15 @@ WIDTH = 600
 HEIGHT = 800
 TITLE = 'Helicóptero Bombardeiro'
 PEDACOS = 12
+# Quantos quadros os pedaços voam antes de explodir, e quanto tempo a explosão fica na tela.
+TEMPO_DA_BOMBA = 30
+TEMPO_DA_EXPLOSAO = 10
 
 heli = Actor('heli0')
 heli.pos = (300, 680)
 chao_y = 0
 quadros = 0
-# A bomba se abre em 12 pedaços que voam em roda; depois de 30 quadros, explodem.
+# A bomba se abre em pedaços que voam em roda; depois de TEMPO_DA_BOMBA quadros, explodem.
 pedacos = []
 idade_da_bomba = -1
 tanques = []
@@ -63,7 +66,7 @@ def mover_bomba():
     idade_da_bomba = idade_da_bomba + 1
     for numero in range(PEDACOS):
         pedaco = pedacos[numero]
-        if idade_da_bomba < 30:
+        if idade_da_bomba < TEMPO_DA_BOMBA:
             # Cada pedaço vai numa direção da roda: 360 graus divididos em 12.
             angulo = math.radians(numero * 360 / PEDACOS)
             pedaco.x = pedaco.x + 3 * math.cos(angulo)
@@ -75,7 +78,7 @@ def mover_bomba():
                     explodindo[outro] = 1
                     pontos = pontos + 50
                     sounds.explode.play()
-    if idade_da_bomba == 40:
+    if idade_da_bomba == TEMPO_DA_BOMBA + TEMPO_DA_EXPLOSAO:
         idade_da_bomba = -1
         pedacos.clear()
 

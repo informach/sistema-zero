@@ -1,6 +1,6 @@
 # Troca de Joias
 
-Troque duas joias vizinhas para formar três iguais em fila e veja a cascata acontecer.
+Troque duas joias vizinhas lado a lado para formar três iguais em fila e veja a cascata acontecer.
 
 Um exemplo original feito com [Pygame Zero](https://pygame-zero.readthedocs.io/): o
 programa inteiro está em `main.py` e é o mesmo nas versões de Blocos e de Código da
@@ -12,7 +12,7 @@ As setas movem a moldura de duas joias e espaço troca as duas. A troca só vale
 
 ## Ideias para mudar
 
-- Mude CORES para ter mais ou menos tipos de joia.
+- Mude CORES (de 3 a 6, que são as joias desenhadas) para ter mais ou menos tipos de joia.
 - Dê pontos em dobro para quatro iguais.
 - Mude o número de jogadas.
 

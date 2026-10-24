@@ -34,3 +34,12 @@ def play(t):
     t.get('direcoes_das_balas').append((0, 4))
     t.step(25)
     t.check('a bala do tanque tira uma vida', t.get('vidas') == 2, f"vidas={t.get('vidas')}")
+    # Mudando o tempo da bomba (uma das ideias), ela ainda explode antes de sumir.
+    t.set('TEMPO_DA_BOMBA', 45)
+    t.get('soltar_bomba')()
+    explodiu = False
+    for _ in range(60):
+        t.step(1)
+        explodiu = explodiu or any(p.image == 'explosao' for p in t.get('pedacos'))
+    t.check('com TEMPO_DA_BOMBA = 45, a bomba ainda explode', explodiu)
+    t.check('e depois some', t.get('idade_da_bomba') == -1)

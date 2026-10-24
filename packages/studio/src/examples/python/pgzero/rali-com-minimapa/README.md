@@ -12,7 +12,7 @@ As setas dizem para onde virar na próxima esquina (dá para dar meia-volta a qu
 
 ## Ideias para mudar
 
-- Mude VELOCIDADE_DOS_VERMELHOS para eles correrem mais.
+- Mude VELOCIDADE_DOS_VERMELHOS para 4 e eles correm tanto quanto você (use um número que divide 80).
 - Redesenhe o LABIRINTO (cada # vira um quarteirão).
 - Ponha mais bandeiras em BANDEIRAS.
 

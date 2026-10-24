@@ -67,3 +67,17 @@ def play(t):
     t.tap('SPACE')
     t.step(2)
     t.check('espaço recomeça com 20 jogadas e 0 pontos', t.get('jogadas') == 20 and t.get('pontos') == 0)
+
+    # Sem nenhuma troca possível no fim da cascata, o tabuleiro é montado de novo.
+    tabuleiro = t.get('tabuleiro')
+    tabuleiro.clear()
+    for linha in range(t.get('LINHAS')):
+        tabuleiro.append([(linha * 2 + coluna) % 4 for coluna in range(t.get('COLUNAS'))])
+    t.check('o tabuleiro de teste não tem trio nem jogada', not achar() and not t.get('tem_jogada')())
+    t.set('jogadas', 5)
+    t.set('esperando', True)
+    t.get('tirar_trios')()
+    t.check('sem jogada, vêm joias novas com jogada', t.get('tem_jogada')() and not achar() and not t.get('esperando'))
+    t.check('e o jogo avisa', 'Sem jogadas' in t.get('aviso'))
+    t.step(150)
+    t.check('o aviso some depois de um tempo', t.get('aviso') == '')

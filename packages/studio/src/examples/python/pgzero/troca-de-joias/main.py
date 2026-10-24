@@ -17,6 +17,7 @@ coluna_escolhida = 0
 pontos = 0
 jogadas = 20
 esperando = False
+aviso = ''
 
 
 def sortear_sem_trio(linha, coluna):
@@ -36,6 +37,9 @@ def montar_tabuleiro():
         for coluna in range(COLUNAS):
             tabuleiro[linha].append(-1)
             tabuleiro[linha][coluna] = sortear_sem_trio(linha, coluna)
+    # Um tabuleiro sem nenhuma troca possível não serve: monta outro.
+    if not tem_jogada():
+        montar_tabuleiro()
 
 
 def achar_trios():
@@ -57,18 +61,44 @@ def achar_trios():
     return marcadas
 
 
+def trocar_em(linha, coluna):
+    proxima = tabuleiro[linha][coluna + 1]
+    tabuleiro[linha][coluna + 1] = tabuleiro[linha][coluna]
+    tabuleiro[linha][coluna] = proxima
+
+
 def trocar():
-    proxima = tabuleiro[linha_escolhida][coluna_escolhida + 1]
-    tabuleiro[linha_escolhida][coluna_escolhida + 1] = tabuleiro[linha_escolhida][coluna_escolhida]
-    tabuleiro[linha_escolhida][coluna_escolhida] = proxima
+    trocar_em(linha_escolhida, coluna_escolhida)
+
+
+def tem_jogada():
+    # Experimenta cada troca: se alguma forma três iguais, ainda dá para jogar.
+    for linha in range(LINHAS):
+        for coluna in range(COLUNAS - 1):
+            trocar_em(linha, coluna)
+            forma_trio = len(achar_trios()) > 0
+            trocar_em(linha, coluna)
+            if forma_trio:
+                return True
+    return False
+
+
+def apagar_aviso():
+    global aviso
+    aviso = ''
 
 
 def tirar_trios():
     # Some com as joias dos trios. Se não havia nenhum, a cascata acabou.
-    global pontos, esperando
+    global pontos, esperando, aviso
     marcadas = achar_trios()
     if not marcadas:
         esperando = False
+        if jogadas > 0 and not tem_jogada():
+            # Acabaram as trocas possíveis: joias novas para continuar.
+            montar_tabuleiro()
+            aviso = 'Sem jogadas: joias novas!'
+            clock.schedule(apagar_aviso, 2)
         return
     for linha, coluna in marcadas:
         tabuleiro[linha][coluna] = -1
@@ -106,6 +136,8 @@ def draw():
     screen.draw.rect(Rect((caixa.x - 2, caixa.y - 2), (caixa.width + 4, caixa.height + 4)), 'white')
     screen.draw.text('Pontos: ' + str(pontos), topleft=(X0, 22), fontsize=32, color='white')
     screen.draw.text('Jogadas: ' + str(jogadas), topright=(WIDTH - X0, 22), fontsize=32, color='white')
+    if aviso != '':
+        screen.draw.text(aviso, center=(WIDTH / 2, 54), fontsize=26, color='yellow')
     if jogadas == 0 and not esperando:
         screen.draw.text('Fim! ' + str(pontos) + ' pontos', center=(WIDTH / 2, HEIGHT / 2), fontsize=56, color='yellow', owidth=2, ocolor='black')
         screen.draw.text('Espaço joga de novo', center=(WIDTH / 2, HEIGHT / 2 + 50), fontsize=32, color='white', owidth=1.5, ocolor='black')

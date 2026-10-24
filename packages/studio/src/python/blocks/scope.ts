@@ -551,17 +551,21 @@ export function pythonBindingResolver(
   // Infer the class of objects assigned only from one official constructor (or one built-in
   // collection kind). Rebinding from anything else keeps the generic blocks.
   const evidence = new Map<Scope, Map<string, { binding: Binding; count: number } | null>>()
-  // Names given a value with `=` (or `with ... as`), per scope: unlike a parameter or a loop
-  // target, what they hold is written in the program.
-  const assignedNames = new Map<Scope, Set<string>>()
+  // Names given `= Something()` where Something is not an official constructor (t =
+  // OutraClasse()): proof that they hold another kind of object. Taking one from a list or a
+  // draw (a = carros[0], alvo = random.choice(aliens)) proves nothing either way.
+  const otherObjects = new Map<Scope, Set<string>>()
   for (const candidate of typed) {
-    let names = assignedNames.get(candidate.scope)
-    if (!names) {
-      names = new Set()
-      assignedNames.set(candidate.scope, names)
-    }
-    names.add(candidate.target)
     const inferred = inferValue(candidate.value)
+    const func = candidate.value.fields.func
+    if (!inferred && candidate.value.kind === 'Call' && isNode(func) && func.kind === 'Name') {
+      let names = otherObjects.get(candidate.scope)
+      if (!names) {
+        names = new Set()
+        otherObjects.set(candidate.scope, names)
+      }
+      names.add(candidate.target)
+    }
     let byName = evidence.get(candidate.scope)
     if (!byName) {
       byName = new Map()
@@ -840,9 +844,9 @@ export function pythonBindingResolver(
           if (found.kind === 'instance')
             return !provider || (found.builtin ?? found.module) === provider
           if (found.kind === 'module') return !found.member && found.module === provider
-          // A parameter or a loop target may hold one; a variable set with `=` from anything
-          // but the official constructor does not prove it.
-          return !assignedNames.get(scope)?.has(binding.root)
+          // A parameter, a loop target or an item taken from a list may hold one; a variable
+          // made by another class's constructor does not.
+          return !otherObjects.get(scope)?.has(binding.root)
         }
         scope = scope.parent
       }

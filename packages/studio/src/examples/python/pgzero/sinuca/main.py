@@ -60,13 +60,14 @@ mira = 0
 forca = 6
 tacadas = TACADAS
 encacapadas = 0
+total_de_bolas = 0
 branca_caiu = False
 # 'mirando', 'rolando', 'venceu' ou 'perdeu'
 estado = 'mirando'
 
 
 def arrumar_mesa():
-    global mira, forca, tacadas, encacapadas, branca_caiu, estado
+    global mira, forca, tacadas, encacapadas, branca_caiu, estado, total_de_bolas
     bolas.clear()
     branca.ator.pos = (240, 300)
     branca.vx = 0
@@ -74,6 +75,8 @@ def arrumar_mesa():
     bolas.append(branca)
     # Seis bolas coloridas num triângulo, encostadas umas nas outras.
     lugares = [(520, 300), (545, 286), (545, 314), (570, 272), (570, 300), (570, 328)]
+    # A mesa fica limpa quando todas as bolas coloridas caírem.
+    total_de_bolas = len(lugares)
     for numero in range(len(lugares)):
         x, y = lugares[numero]
         bolas.append(Bola('bola' + str(numero + 1), x, y))
@@ -146,7 +149,7 @@ def fim_da_tacada():
                 branca.ator.y = branca.ator.y - 3 * RAIO
         bolas.append(branca)
         branca_caiu = False
-    if encacapadas == 6:
+    if encacapadas == total_de_bolas:
         estado = 'venceu'
         sounds.vitoria.play()
     elif tacadas == 0:
@@ -212,7 +215,7 @@ def draw():
         bola.ator.draw()
     if estado == 'mirando':
         desenhar_mira()
-    screen.draw.text('Bolas na caçapa: ' + str(encacapadas) + ' de 6', topleft=(16, 12), fontsize=32, color='white')
+    screen.draw.text('Bolas na caçapa: ' + str(encacapadas) + ' de ' + str(total_de_bolas), topleft=(16, 12), fontsize=32, color='white')
     screen.draw.text('Tacadas: ' + str(tacadas), topright=(WIDTH - 16, 12), fontsize=32, color='white')
     screen.draw.text('Força', midleft=(240, 560), fontsize=30, color='white')
     for numero in range(10):

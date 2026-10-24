@@ -361,7 +361,6 @@ export const PGZERO_GAME_BLOCKS = {
       'sz_py_list',
       'sz_py_list_append',
       'sz_py_list_clear',
-      'sz_py_method_value',
       'sz_py_negative',
       'sz_py_not',
       'sz_py_or',
@@ -905,7 +904,6 @@ export const PGZERO_GAME_BLOCKS = {
       'sz_py_list_clear',
       'sz_py_list_insert',
       'sz_py_math_sin',
-      'sz_py_method_value',
       'sz_py_negative',
       'sz_py_not',
       'sz_py_or',
@@ -939,7 +937,7 @@ export const PGZERO_GAME_BLOCKS = {
     ],
   },
   'helicoptero-bombardeiro': {
-    sourceSha256: '22fc791f6170d7cd540cc42c6c981b51402b0383cfd28cc901048c9e127ec72e',
+    sourceSha256: 'c44b2fc74b03bf8e7764b61483c12daf3813d4e9f75caf6b0ea5b8335f71b719',
     blockIds: [
       'sz_py_and',
       'sz_py_arithmetic',
@@ -962,12 +960,12 @@ export const PGZERO_GAME_BLOCKS = {
       'sz_py_math_cos',
       'sz_py_math_radians',
       'sz_py_math_sin',
-      'sz_py_method_value',
       'sz_py_negative',
       'sz_py_or',
       'sz_py_pgzero_actor',
       'sz_py_pgzero_actor_draw',
       'sz_py_pgzero_actor_property',
+      'sz_py_pgzero_colliderect',
       'sz_py_pgzero_draw',
       'sz_py_pgzero_draw_text',
       'sz_py_pgzero_go',
@@ -992,7 +990,7 @@ export const PGZERO_GAME_BLOCKS = {
     ],
   },
   'cauda-espacial': {
-    sourceSha256: '3d2ab1e450825f3a9f42dbacdcab6f3ef7ebececd33069e19a431754d88bd578',
+    sourceSha256: '5c6d93fdfd9ab96f67ef39a7637a3c6fb999275e37e0be2bcc3e41edeb4dbb76',
     blockIds: [
       'sz_py_and',
       'sz_py_arithmetic',
@@ -1048,7 +1046,7 @@ export const PGZERO_GAME_BLOCKS = {
     ],
   },
   'mochila-a-jato': {
-    sourceSha256: 'd40d549215791b6e5d0ce04db3bac7818949f1a09aea1d51c7b1dff92da5dcc0',
+    sourceSha256: '74fd7fab3b6bbf2ceb512f8307a13e2cafd761418802837734ebf27e76167dba',
     blockIds: [
       'sz_py_abs',
       'sz_py_and',
@@ -1167,7 +1165,7 @@ export const PGZERO_GAME_BLOCKS = {
     ],
   },
   'encanamento-apressado': {
-    sourceSha256: '43cef4532caf731d5950d992a06ee97fd9545531df8f7be2509d8d2e8e11e233',
+    sourceSha256: '1c987ab5c2593d407805005e9155933dd6ddc70817345c83ff4742087aaacfc1',
     blockIds: [
       'sz_py_and',
       'sz_py_arithmetic',
@@ -1219,7 +1217,7 @@ export const PGZERO_GAME_BLOCKS = {
     ],
   },
   'troca-de-joias': {
-    sourceSha256: '3142f8f5691af3d7ac86bfa463a66b8d33ed2f1c86fdcd946ba4b5c170f7fb23',
+    sourceSha256: '7b9e7abdc59087df39dddcdd5e91469dfeb352678b7cca703a66910104b7faf2',
     blockIds: [
       'sz_py_and',
       'sz_py_arithmetic',
@@ -1269,7 +1267,7 @@ export const PGZERO_GAME_BLOCKS = {
     ],
   },
   'bichinhos-em-fila': {
-    sourceSha256: 'ccb95c1232777f13fb00e541134ba0e2f580108549c214da4c96c7005b9dd6cc',
+    sourceSha256: '214181ca5a70a869a59b8bab2285515ef054002d61c7366d22765518d63e29ae',
     blockIds: [
       'sz_py_abs',
       'sz_py_and',
@@ -1278,6 +1276,7 @@ export const PGZERO_GAME_BLOCKS = {
       'sz_py_attribute',
       'sz_py_boolean',
       'sz_py_compare',
+      'sz_py_continue',
       'sz_py_def',
       'sz_py_float',
       'sz_py_for',
@@ -1291,7 +1290,6 @@ export const PGZERO_GAME_BLOCKS = {
       'sz_py_list',
       'sz_py_list_append',
       'sz_py_list_clear',
-      'sz_py_method_value',
       'sz_py_negative',
       'sz_py_not',
       'sz_py_or',
@@ -1300,6 +1298,7 @@ export const PGZERO_GAME_BLOCKS = {
       'sz_py_pgzero_actor_property',
       'sz_py_pgzero_clock_schedule_interval',
       'sz_py_pgzero_collidepoint',
+      'sz_py_pgzero_colliderect',
       'sz_py_pgzero_draw',
       'sz_py_pgzero_draw_text',
       'sz_py_pgzero_go',
@@ -1323,7 +1322,7 @@ export const PGZERO_GAME_BLOCKS = {
     ],
   },
   'cavando-por-gemas': {
-    sourceSha256: '7b0e8fcba6e68c4206253734ee5dc4a15ef487eb7a8979bf3858217efd0f1c5d',
+    sourceSha256: 'e0cc682c4a036d4342460c025763164eb55233741bc7879a696616728983c028',
     blockIds: [
       'sz_py_and',
       'sz_py_arithmetic',
@@ -1436,8 +1435,9 @@ export const PGZERO_GAME_BLOCKS = {
     ],
   },
   'corrida-vista-de-cima': {
-    sourceSha256: '88aca9d7cfa3acd7bc3fac6efedc5cf27db1aec04fc68d15a8a29fdfeada737a',
+    sourceSha256: '919dd4f202feb888697c3cb6e51bc31e366a3af48a7bf8473953b1c13ba6bb84',
     blockIds: [
+      'sz_py_abs',
       'sz_py_and',
       'sz_py_arithmetic',
       'sz_py_assign',
@@ -1460,7 +1460,6 @@ export const PGZERO_GAME_BLOCKS = {
       'sz_py_math_radians',
       'sz_py_math_sin',
       'sz_py_max',
-      'sz_py_method_value',
       'sz_py_min',
       'sz_py_negative',
       'sz_py_not',
@@ -1470,6 +1469,7 @@ export const PGZERO_GAME_BLOCKS = {
       'sz_py_pgzero_actor_property',
       'sz_py_pgzero_clock_schedule_interval',
       'sz_py_pgzero_clock_unschedule',
+      'sz_py_pgzero_distance_to',
       'sz_py_pgzero_draw',
       'sz_py_pgzero_draw_text',
       'sz_py_pgzero_go',
@@ -1496,7 +1496,7 @@ export const PGZERO_GAME_BLOCKS = {
     ],
   },
   sinuca: {
-    sourceSha256: '56b5b65a35dd4dd2d9b6271a829422d33b9fd800e34f65d95e383084166ca0e3',
+    sourceSha256: 'be27c338d316fbddce9bf2dbe550f8c7b82e798834f50bd88dc5ea9bf7db8708',
     blockIds: [
       'sz_py_abs',
       'sz_py_and',
@@ -1721,7 +1721,7 @@ export const PGZERO_GAME_BLOCKS = {
     ],
   },
   'rali-com-minimapa': {
-    sourceSha256: '33cd591abc3ba21d43c85c0889d38929ab3df037554752ee32d7e29745972dbe',
+    sourceSha256: 'cbf84c479a2360a8685d6f657241da5d19f765e2826f826bff5b3dc696bbdf3f',
     blockIds: [
       'sz_py_abs',
       'sz_py_and',

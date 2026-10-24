@@ -92,7 +92,8 @@ def guiar_o_jogador(carro):
         carro.velocidade = max(carro.velocidade - 0.2, -1.5)
     else:
         carro.velocidade = carro.velocidade * 0.98
-    if carro.velocidade != 0:
+    # Só vira andando: parado (ou quase), o volante não faz nada.
+    if abs(carro.velocidade) > 0.1:
         if keyboard.left:
             carro.angle = carro.angle + 3
         if keyboard.right:

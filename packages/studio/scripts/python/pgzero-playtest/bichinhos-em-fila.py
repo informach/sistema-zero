@@ -29,3 +29,13 @@ def play(t):
     t.check('com um bloqueio, a maioria chega à saída', t.get('salvos') >= t.get('PARA_VENCER'),
             f"salvos={t.get('salvos')} {estados}")
     t.shot('salvos')
+    # Clicar num bloqueador solta ele: um bichinho preso para sempre sempre tem saída.
+    t.click((400, 300))
+    t.step(2)
+    t.until(lambda: bichos and estados[0] == 'andando' and bichos[0].x >= 300, 2000)
+    t.click(bichos[0].pos)
+    t.step(2)
+    t.check('com o bloqueio posto, sobram dois', estados[0] == 'bloqueando' and t.get('bloqueios') == 1)
+    t.click(bichos[0].pos)
+    t.step(2)
+    t.check('clicar de novo no bloqueador solta ele e devolve o bloqueio', estados[0] == 'andando' and t.get('bloqueios') == 0)

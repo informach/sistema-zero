@@ -102,7 +102,7 @@ def draw():
     screen.draw.text('Bloqueios: ' + str(3 - bloqueios), topright=(WIDTH - 12, 8), fontsize=30, color='white', owidth=1.5, ocolor='black')
     if acabou():
         if salvos >= PARA_VENCER:
-            mensagem = 'Você salvou ' + str(salvos) + ' bichinhos!'
+            mensagem = 'Você salvou ' + str(salvos) + ' bichinhos! Clique para jogar de novo'
         else:
             mensagem = 'Só ' + str(salvos) + ' chegaram. Clique para tentar de novo'
         screen.draw.text(mensagem, center=(WIDTH / 2, 560), fontsize=36, color='yellow', owidth=2, ocolor='black')
@@ -142,10 +142,18 @@ def on_mouse_down(pos):
         bloqueios = 0
         return
     # Clicar num bichinho andando faz ele parar e mandar os outros de volta.
+    # Clicar num que está bloqueando solta ele: assim os bichinhos nunca ficam presos.
     for numero in range(len(bichos)):
-        if estados[numero] == 'andando' and bichos[numero].collidepoint(pos) and bloqueios < 3:
+        if not bichos[numero].collidepoint(pos):
+            continue
+        if estados[numero] == 'andando' and bloqueios < 3:
             estados[numero] = 'bloqueando'
             bloqueios = bloqueios + 1
+            sounds.bloqueio.play()
+            return
+        if estados[numero] == 'bloqueando':
+            estados[numero] = 'andando'
+            bloqueios = bloqueios - 1
             sounds.bloqueio.play()
             return
 

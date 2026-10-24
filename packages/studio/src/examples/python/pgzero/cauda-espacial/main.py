@@ -61,9 +61,10 @@ def novo_jogo():
 
 def draw():
     screen.blit('fundo', (0, 0))
-    for gomo in gomos:
-        gomo.draw()
     if vida_do_monstro > 0:
+        # A cauda vai embora junto com o monstro.
+        for gomo in gomos:
+            gomo.draw()
         monstro.draw()
         olho.draw()
     for tiro in tiros:
@@ -75,6 +76,7 @@ def draw():
     screen.draw.rect(Rect((WIDTH - 220, 14), (15 * 13, 14)), 'white')
     if vida_do_monstro == 0:
         screen.draw.text('Você venceu o monstro!', center=(WIDTH / 2, HEIGHT / 2), fontsize=56, color='yellow')
+        screen.draw.text('Espaço joga de novo', center=(WIDTH / 2, HEIGHT / 2 + 50), fontsize=36, color='white')
     if vidas == 0:
         screen.draw.text('Fim de jogo! Espaço recomeça', center=(WIDTH / 2, HEIGHT / 2), fontsize=48, color='orange')
 

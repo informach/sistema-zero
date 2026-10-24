@@ -189,3 +189,11 @@ def play(t):
     t.step(150)
     t.check('o tempo acabando termina o jogo', t.get('estado') == 'sem_tempo' and t.get('tempo') == 0)
     t.shot('sem-tempo')
+
+    # Uma caverna feita no Editor de Cavernas tem espaços vazios: ela abre aqui também.
+    caverna(t, [
+        '######',
+        '#M *S#',
+        '######',
+    ])
+    t.check('o espaço do editor vira casa vazia', t.get('grade')[1][2] == 'vazio')

@@ -291,6 +291,12 @@ test('a distinctive method keeps its block on a parameter, but not on proof of a
     type_params: [],
   })
   expect(used([imported(), parameter])).toContain('sz_py_turtle_turtle_forward')
+  // Taken from a list (t = tartarugas[0]) it may be a turtle too.
+  const fromList = assigned(
+    't',
+    node('Subscript', { value: name('tartarugas'), slice: integer('0'), ctx: node('Load') }),
+  )
+  expect(used([imported(), fromList, forward])).toContain('sz_py_turtle_turtle_forward')
   // Rebuilt from another class, or made by a module that is only called turtle: not a turtle.
   expect(
     used([imported(), fromTurtle, assigned('t', call(name('OutraClasse'))), forward]),
