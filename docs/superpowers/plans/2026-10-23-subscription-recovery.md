@@ -127,6 +127,30 @@ Entrega: equipe consegue operar exceções sem SQL manual e sem marcar “pago�
 
 ## Critério de conclusão
 
+## Sequência final aprovada em 24/10
+
+1. Concluir assinaturas, atualização de cartão, regularização, avisos e cancelamento
+   para Kids e Adultos. Fazer full review de domínio, segurança, concorrência,
+   persistência, acesso, comunicação e interface; corrigir e verificar os achados.
+2. Implementar o lote visual da lista de aulas adulta conforme
+   `2026-10-24-adult-lesson-outline-theme.md`.
+3. Implementar “Objetivos do projeto” / “Verificar projeto” conforme
+   `2026-10-24-project-objective-names.md`, incluindo roteiros e todos os textos
+   derivados de falas ElevenLabs afetados. Preservar as demais falas e instruções.
+4. Fazer outro full review da composição completa e corrigir os achados antes de
+   integrar. Atualização dos textos não significa substituição de áudio já gravado;
+   entregar a relação exata dos trechos de gravação afetados.
+5. Fazer commit dos lotes verificados, atualizar o staging local com o remoto,
+   integrar, enviar a staging e validar CI e implantação. Promover a mesma árvore
+   aprovada a produção pelo fluxo canônico e conferir versões, configuração,
+   migrações, saúde e fluxos implantados nos dois ambientes.
+
+A implantação anterior já iniciada continua separadamente, com seu SHA congelado.
+Nenhum lote financeiro incompleto entra nessa promoção. A conclusão de deploy
+exige evidência dos ambientes; disparar o workflow não basta.
+
+## Critério de conclusão operacional
+
 Não basta a interface mostrar “cancelada”: a Efí deve confirmar encerramento e deixar
 de agendar novos ciclos. Pagamento confirmado encerra o caso e concede somente seu
 acesso legítimo. A prova cobre os dois públicos, efeitos externos e falhas concorrentes.
