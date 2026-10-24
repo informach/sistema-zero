@@ -46,8 +46,8 @@ export const ADULT_JOURNEY_TEMPLATE: readonly {
  * Cursos vendidos como PRODUTO AVULSO que nunca entram na jornada adulta pelo seed, mesmo que
  * tenham o nível e a trilha de uma etapa. Quem compra só o curso não pode ficar com a etapa
  * travada esperando outro produto, e quem assina a Comunidade não pode depender de um curso que a
- * assinatura não inclui. `no-comando-da-ia` ("No Comando da IA") é vendido à parte. A equipe ainda
- * pode colocá-lo numa etapa pelo Admin, de propósito.
+ * assinatura não inclui. `no-comando-da-ia` foi retirado em 23/10/2026 e permanece excluído
+ * caso um catálogo histórico seja apresentado ao planejador; o seed não o recria.
  */
 export const ADULT_JOURNEY_STANDALONE_COURSE_SLUGS: readonly string[] = ['no-comando-da-ia']
 
@@ -78,16 +78,15 @@ export interface AdultJourneySeedPlan {
     tier: CourseTier
     courses: { slug: string; title: string; milestone: AdultSeedMilestone }[]
   }[]
-  /** A primeira etapa que ficou de fora por não ter curso publicado (e todas depois dela). */
-  stoppedAt: { title: string; tier: CourseTier } | null
+  /** Etapas pré-carregadas sem cursos: ficam bloqueadas até o vínculo pelo Admin. */
+  pendingStages: { id: string; title: string; tier: CourseTier }[]
   /** Cursos publicados deixados de fora por serem produto avulso (`ADULT_JOURNEY_STANDALONE_COURSE_SLUGS`). */
   excluded: { slug: string; title: string }[]
 }
 
 /**
- * Monta a política a partir dos cursos ADULTOS, GRAVADOS e PUBLICADOS, um nível por etapa. Para na
- * primeira etapa sem curso: uma etapa sem requisito não existe (a política exige ao menos um), e
- * pular uma etapa no meio deixaria a cor e o nome de cada posição fora do lugar. Rascunho não entra
+ * Monta todas as etapas, vinculando cursos ADULTOS, GRAVADOS e PUBLICADOS por nível. Etapas sem
+ * curso continuam planejadas e bloqueadas, sem pular níveis ou conceder ferramentas. Rascunho não entra
  * (ninguém conclui um curso que não está no ar) e os cursos `lenda` ficam fora da jornada, como no
  * Kids. Produto avulso (`ADULT_JOURNEY_STANDALONE_COURSE_SLUGS`) também fica fora e sai em `excluded`.
  */
@@ -113,18 +112,14 @@ export function buildAdultJourneySeed(
     byTier.set(tier, [...(byTier.get(tier) ?? []), course])
   }
   const stages: AdultJourneySeedPlan['stages'] = []
+  const pendingStages: AdultJourneySeedPlan['pendingStages'] = []
   const policyStages: AdultJourneyPolicy['stages'] = []
   for (const template of ADULT_JOURNEY_TEMPLATE) {
     const tierCourses = (byTier.get(template.tier) ?? [])
       .slice()
       .sort((a, b) => a.title.localeCompare(b.title, 'pt-BR'))
     if (tierCourses.length === 0)
-      return {
-        policy: { schemaVersion: 1, stages: policyStages },
-        stages,
-        stoppedAt: { title: template.title, tier: template.tier },
-        excluded,
-      }
+      pendingStages.push({ id: template.id, title: template.title, tier: template.tier })
     policyStages.push({
       id: template.id,
       title: template.title,
@@ -145,5 +140,5 @@ export function buildAdultJourneySeed(
       })),
     })
   }
-  return { policy: { schemaVersion: 1, stages: policyStages }, stages, stoppedAt: null, excluded }
+  return { policy: { schemaVersion: 1, stages: policyStages }, stages, pendingStages, excluded }
 }

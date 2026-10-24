@@ -31,7 +31,7 @@ export class InvalidPurchasedOfferSnapshotError extends Error {
   }
 }
 
-/** A versão do Termo da oferta do funil; lead legado sem funil é do NCI (`DEFAULT_FUNNEL`). */
+/** A versão do Termo da oferta do funil; sem funil usa o default ativo; compras guardam a versão no snapshot. */
 export function termsVersionForFunnel(funnel: string | null): string {
   return (getFunnelByKey(funnel) ?? DEFAULT_FUNNEL).legal.termsVersion
 }

@@ -234,7 +234,7 @@ describe('adminFunnel', () => {
     const b = await repo.createLead()
     await repo.insertEvent(a.id, 'entrou_landing')
     await repo.insertEvent(b.id, 'entrou_landing')
-    await repo.insertEvent(a.id, 'respondeu_pergunta_1')
+    await repo.insertEvent(a.id, 'respondeu_comunidade_adulto_v1_tempo_jogo')
 
     const res = await adminFunnel(getReq(accessCookie(fg)), deps)
     expect(res.status).toBe(200)
@@ -244,7 +244,7 @@ describe('adminFunnel', () => {
     }
     expect(body.total).toBe(2)
     const landing = body.steps.find((s) => s.name === 'entrou_landing')
-    const p1 = body.steps.find((s) => s.name === 'respondeu_pergunta_1')
+    const p1 = body.steps.find((s) => s.name === 'respondeu_comunidade_adulto_v1_tempo_jogo')
     expect(landing?.count).toBe(2)
     expect(p1?.count).toBe(1)
     expect(p1?.fromTop).toBeCloseTo(0.5)
@@ -482,15 +482,15 @@ describe('adminPerfis', () => {
     expect(res.status).toBe(401)
   })
 
-  test('com funil selecionado: os 4 perfis do funil, na ordem, com rótulo e total', async () => {
+  test('com funil selecionado: os perfis do funil, na ordem, com rótulo e total', async () => {
     const { repo, fg, deps } = setup()
     const a = await repo.createLead(DEFAULT_FUNNEL.key)
     const b = await repo.createLead(DEFAULT_FUNNEL.key)
     const c = await repo.createLead(DEFAULT_FUNNEL.key)
     await repo.createLead(DEFAULT_FUNNEL.key) // sem perfil → não conta
-    await repo.updateLead(a.id, { perfilResultado: 'ideia_parada' })
-    await repo.updateLead(b.id, { perfilResultado: 'ideia_parada' })
-    await repo.updateLead(c.id, { perfilResultado: 'sem_criterio' })
+    await repo.updateLead(a.id, { perfilResultado: 'adulto-ideia' })
+    await repo.updateLead(b.id, { perfilResultado: 'adulto-ideia' })
+    await repo.updateLead(c.id, { perfilResultado: 'adulto-por-dentro' })
 
     const req = new Request(
       `http://localhost/api/admin?funnel=${encodeURIComponent(DEFAULT_FUNNEL.key)}`,
@@ -505,17 +505,16 @@ describe('adminPerfis', () => {
     expect(body.total).toBe(3)
     // Perfis do funil (mesmo zerados), na ordem do funil.
     expect(body.counts.map((c) => c.perfil)).toEqual([
-      'ideia_parada',
-      'criando_no_escuro',
-      'refem_ajustes',
-      'sem_criterio',
+      'adulto-horas-livres',
+      'adulto-ideia',
+      'adulto-por-dentro',
     ])
     const byPerfil = new Map(body.counts.map((c) => [c.perfil, c.count]))
-    expect(byPerfil.get('ideia_parada')).toBe(2)
-    expect(byPerfil.get('sem_criterio')).toBe(1)
-    expect(byPerfil.get('criando_no_escuro')).toBe(0)
+    expect(byPerfil.get('adulto-ideia')).toBe(2)
+    expect(byPerfil.get('adulto-por-dentro')).toBe(1)
+    expect(byPerfil.get('adulto-horas-livres')).toBe(0)
     // Rótulo legível (não a chave crua) quando o funil é selecionado.
-    expect(body.counts.find((c) => c.perfil === 'ideia_parada')?.label).toBe('Ideia Parada')
+    expect(body.counts.find((c) => c.perfil === 'adulto-ideia')?.label).toBe('Ideia')
   })
 
   test('sem funil: só os perfis presentes nos dados (rótulo = a chave)', async () => {

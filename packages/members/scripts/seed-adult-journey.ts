@@ -6,20 +6,20 @@
  *   bun run journey:seed-adult -- --apply          # grava, se ainda não houver jornada
  *   bun run journey:seed-adult -- --apply --force  # troca uma jornada já configurada
  *   bun run journey:seed-adult -- --milestone=complete  # só terminar, mesmo com o Mural no curso
- *   bun run journey:seed-adult -- --apply --allow-partial  # grava mesmo faltando etapas
+ *   bun run journey:seed-adult -- --apply --allow-partial  # inclui etapas que aguardam cursos
  *   bun run journey:seed-adult -- --once           # o modo automático do boot (ver abaixo)
  *
  * `--once` (20/10/2026) é o MESMO caminho que o Members roda sozinho no boot
  * (`runAdultJourneySeedOnce`): grava só se ainda NÃO existe política, sob advisory lock, e nunca
- * sobrescreve (ignora `--force`); sem curso no primeiro nível, só registra e sai com 0. Usa
+ * sobrescreve (ignora `--force`); sem cursos, cadastra as sete etapas bloqueadas. Usa
  * sempre o marco por curso (como o boot): `--once` com `--milestone` é ERRO, nada roda.
  *
  * Cursos vendidos como produto avulso (`ADULT_JOURNEY_STANDALONE_COURSE_SLUGS`, hoje
  * `no-comando-da-ia`) nunca entram no plano e aparecem como "excluídos".
  *
- * Faltando curso publicado em algum nível, o plano para antes dele e o `--apply` RECUSA gravar:
- * uma jornada pela metade faria a pessoa virar Lenda cedo e deixaria a Ponte, a IA e o Pro sem
- * como abrir. `--allow-partial` grava assim mesmo (a equipe completa depois no Admin).
+ * Faltando curso publicado em algum nível, a etapa continua no plano mas fica bloqueada.
+ * O apply manual pede `--allow-partial` para confirmar os vínculos ainda incompletos;
+ * a equipe completa depois no Admin. Não há avanço a Lenda por etapas vazias.
  *
  * Como no Kids, cada curso pede terminar E publicar no Mural quando tem a atividade de publicar
  * (bloco do Estúdio com vitrine); sem ela, só terminar (`--milestone=showcase` força o Mural em
@@ -92,9 +92,9 @@ try {
     const libera = plan.policy.stages[index]?.capabilities ?? []
     if (libera.length) console.log(`    Ao concluir, libera: ${libera.join(', ')}`)
   }
-  if (plan.stoppedAt)
+  if (plan.pendingStages.length)
     console.log(
-      `\n  Parou antes de "${plan.stoppedAt.title}": nenhum curso adulto publicado no nível ${plan.stoppedAt.tier}.`,
+      `\n  Aguardando cursos (etapas bloqueadas): ${plan.pendingStages.map((stage) => stage.title).join(', ')}.`,
     )
   if (plan.excluded.length) {
     console.log('\n  Excluídos (produto avulso, nunca entram na jornada pelo seed):')
@@ -105,17 +105,14 @@ try {
   )
 
   const exists = current.policy.stages.length > 0
-  const partial = plan.stoppedAt !== null
-  if (plan.stages.length === 0) {
-    console.log('\nNada a gravar: nenhum curso adulto publicado no primeiro nível.')
-    process.exitCode = 1
-  } else if (!apply) {
+  const partial = plan.pendingStages.length > 0
+  if (!apply) {
     console.log('\nNada foi gravado. Rode de novo com --apply para cadastrar.')
-    if (partial) console.log('  Atenção: faltam etapas; o --apply vai recusar sem --allow-partial.')
+    if (partial) console.log('  Há etapas que aguardam cursos; confirme com --allow-partial.')
     if (exists) console.log('  Atenção: já existe uma jornada; o --apply vai recusar sem --force.')
   } else if (partial && !allowPartial) {
     console.log(
-      '\nO plano para antes do fim (faltam cursos publicados). Nada foi gravado; publique os cursos que faltam ou use --allow-partial.',
+      '\nHá etapas que aguardam cursos publicados. Nada foi gravado; use --allow-partial para cadastrá-las bloqueadas.',
     )
     process.exitCode = 1
   } else if (exists && !force) {

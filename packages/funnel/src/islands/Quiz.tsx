@@ -26,7 +26,7 @@ export interface QuizProps {
   /** Total de perguntas (para a barra de progresso). */
   total: number
   landing: { badge?: string; h1: string; subtitulo: string; tempo: string }
-  /** Chave do funil (`pro/no-comando-da-ia`) — gravada na criação do lead. */
+  /** Chave do funil (`pro/comunidade-dos-criadores`) — gravada na criação do lead. */
   funnel: string
   quizDefinitionId?: string
   /** Para onde ir ao concluir o quiz (resultado do funil, ou direto à oferta). */

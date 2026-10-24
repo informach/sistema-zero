@@ -47,8 +47,8 @@ const communityUrl = f.audience === 'kids' ? env.KIDS_COMMUNITY_URL : env.COMMUN
 
 // O que a compra entrega + próximos passos vêm do conteúdo do funil.
 const { entrega, passos, titulo, acesso, passosTitulo, botao } = f.content.obrigado
-// Frase de abertura por funil (kids fala da criança; default = NCI "assumir o comando").
-const introObrigado = f.content.obrigado.intro ?? 'Obrigado por assumir o comando.'
+// Frase de abertura por funil (cada produto declara seu texto; default genérico).
+const introObrigado = f.content.obrigado.intro ?? 'Obrigado pela compra.'
 const productName = f.productName
 // Artigo do produto ("acesso AO Desafio" × "acesso À Comunidade") — do FunnelCopy.
 const acessoArtigo = f.content.copy.artigo === 'a' ? 'à' : 'ao'

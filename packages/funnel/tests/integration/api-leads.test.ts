@@ -2,6 +2,7 @@ import { describe, expect, test } from 'bun:test'
 import { DEFAULT_FUNNEL } from '../../src/funnels/registry'
 import { LEAD_COOKIE } from '../../src/lib/lead-session'
 import { createLead, getLeadView, patchLead, recordEvent } from '../../src/server/leads'
+import { quizSessionToken } from '../../src/server/quiz-session'
 import { createFakeRepo } from '../fakes/fake-db'
 
 const deps = (repo: ReturnType<typeof createFakeRepo>['repo']) => ({ repo, secureCookie: false })
@@ -12,7 +13,19 @@ function req(method: string, body?: unknown, cookie?: string): Request {
   return new Request('http://localhost/api/leads', {
     method,
     headers,
-    body: body === undefined ? undefined : JSON.stringify(body),
+    body:
+      body === undefined
+        ? undefined
+        : JSON.stringify(
+            method === 'PATCH' && cookie
+              ? {
+                  funnel: DEFAULT_FUNNEL.key,
+                  revision: 0,
+                  sessionToken: quizSessionToken(cookie.slice(LEAD_COOKIE.length + 1)),
+                  ...(body as Record<string, unknown>),
+                }
+              : body,
+          ),
   })
 }
 
@@ -211,24 +224,26 @@ describe('PATCH /api/leads (lead do cookie)', () => {
       req(
         'PATCH',
         {
-          key: 'segmento',
-          value: 'B',
-          lastStep: 'quiz_pergunta_1',
-          eventName: 'respondeu_pergunta_1',
+          key: 'tempo_jogo',
+          value: '3_7',
+          lastStep: 'comunidade_adulto_v1_tempo_jogo',
+          eventName: 'respondeu_comunidade_adulto_v1_tempo_jogo',
         },
         cookieFor(id),
       ),
       deps(repo),
     )
     expect(res.status).toBe(200)
-    expect(leads.get(id)?.quizAnswers?.segmento).toBe('B')
-    expect(leads.get(id)?.lastStep).toBe('quiz_pergunta_1')
-    expect(events.some((e) => e.eventName === 'respondeu_pergunta_1')).toBe(true)
+    expect(leads.get(id)?.quizAnswers?.tempo_jogo).toBe('3_7')
+    expect(leads.get(id)?.lastStep).toBe('comunidade_adulto_v1_tempo_jogo')
+    expect(events.some((e) => e.eventName === 'respondeu_comunidade_adulto_v1_tempo_jogo')).toBe(
+      true,
+    )
   })
 
   test('401 quando não há cookie de lead', async () => {
     const { repo } = createFakeRepo()
-    const res = await patchLead(req('PATCH', { key: 'segmento', value: 'A' }), deps(repo))
+    const res = await patchLead(req('PATCH', { key: 'tempo_jogo', value: 'A' }), deps(repo))
     expect(res.status).toBe(401)
   })
 
@@ -236,7 +251,7 @@ describe('PATCH /api/leads (lead do cookie)', () => {
     const { repo } = createFakeRepo()
     const { id } = await repo.createLead() // sem funnel → não resolve quiz
     const res = await patchLead(
-      req('PATCH', { key: 'segmento', value: 'A' }, cookieFor(id)),
+      req('PATCH', { key: 'tempo_jogo', value: 'A' }, cookieFor(id)),
       deps(repo),
     )
     expect(res.status).toBe(400)
@@ -260,7 +275,7 @@ describe('PATCH /api/leads (lead do cookie)', () => {
       req(
         'PATCH',
         {
-          key: 'segmento',
+          key: 'tempo_jogo',
           value: 'A',
           lastStep: 'pagamento_confirmado',
           eventName: 'pagamento_confirmado',
@@ -278,65 +293,77 @@ describe('PATCH /api/leads (lead do cookie)', () => {
     const { repo, leads } = createFakeRepo()
     const { id } = await repo.createLead(DEFAULT_FUNNEL.key)
     const res = await patchLead(
-      req('PATCH', { key: 'segmento', value: 'A', lastStep: 'quiz_pergunta_10' }, cookieFor(id)),
+      req(
+        'PATCH',
+        { key: 'tempo_jogo', value: 'A', lastStep: 'comunidade_adulto_v1_tempo_jogo0' },
+        cookieFor(id),
+      ),
       deps(repo),
     )
     expect(res.status).toBe(400)
     expect(leads.get(id)?.quizAnswers).toBeNull()
   })
 
-  test('o funil deriva custo_mensal quando horas e valor_hora chegam (centavos)', async () => {
+  test('quiz retirado não aceita novas respostas', async () => {
     const { repo, leads } = createFakeRepo()
-    const { id } = await repo.createLead(DEFAULT_FUNNEL.key)
-    await patchLead(req('PATCH', { key: 'horas_retrabalho', value: 10 }, cookieFor(id)), deps(repo))
-    await patchLead(req('PATCH', { key: 'valor_hora', value: 5000 }, cookieFor(id)), deps(repo))
-    // 10 horas * R$50,00 (5000 centavos) * 4 = R$2.000,00 = 200000 centavos
-    expect(leads.get(id)?.quizAnswers?.custo_mensal).toBe(200000)
+    const { id } = await repo.createLead('pro/no-comando-da-ia')
+    const before = JSON.stringify(leads.get(id))
+    const response = await patchLead(
+      req('PATCH', { funnel: 'pro/no-comando-da-ia', key: 'segmento', value: 'A' }, cookieFor(id)),
+      deps(repo),
+    )
+    expect(response.status).toBe(400)
+    expect(JSON.stringify(leads.get(id))).toBe(before)
   })
 
   test('rejeita número negativo', async () => {
     const { repo } = createFakeRepo()
     const { id } = await repo.createLead(DEFAULT_FUNNEL.key)
     const res = await patchLead(
-      req('PATCH', { key: 'horas_retrabalho', value: -5 }, cookieFor(id)),
+      req('PATCH', { key: 'tempo_jogo', value: -5 }, cookieFor(id)),
       deps(repo),
     )
     expect(res.status).toBe(400)
   })
 
-  test('rejeita escolha fora de A-D', async () => {
+  test('rejeita escolha ausente no quiz', async () => {
     const { repo, leads } = createFakeRepo()
     const { id } = await repo.createLead(DEFAULT_FUNNEL.key)
     const res = await patchLead(
-      req('PATCH', { key: 'segmento', value: 'X' }, cookieFor(id)),
+      req('PATCH', { key: 'tempo_jogo', value: 'X' }, cookieFor(id)),
       deps(repo),
     )
     expect(res.status).toBe(400)
-    expect(leads.get(id)?.quizAnswers?.segmento).toBeUndefined()
+    expect(leads.get(id)?.quizAnswers?.tempo_jogo).toBeUndefined()
   })
 
-  test('aceita a 5ª opção (E) nas perguntas de 5 opções (tipo_criar/custo_principal)', async () => {
+  test('aceita uma opção publicada e recusa um valor fora das opções sem alterar a resposta', async () => {
     const { repo, leads } = createFakeRepo()
     const { id } = await repo.createLead(DEFAULT_FUNNEL.key)
-    const ok = await patchLead(
-      req('PATCH', { key: 'tipo_criar', value: 'E' }, cookieFor(id)),
-      deps(repo),
-    )
-    expect(ok.status).toBe(200)
-    expect(leads.get(id)?.quizAnswers?.tipo_criar).toBe('E')
-    // ja_quebrou agora é A-D (deixou de ser sim/não): 'sim' é inválido.
-    const bad = await patchLead(
-      req('PATCH', { key: 'ja_quebrou', value: 'sim' }, cookieFor(id)),
-      deps(repo),
-    )
-    expect(bad.status).toBe(400)
+    expect(
+      (
+        await patchLead(
+          req('PATCH', { key: 'tempo_jogo', value: 'mais_14' }, cookieFor(id)),
+          deps(repo),
+        )
+      ).status,
+    ).toBe(200)
+    expect(
+      (
+        await patchLead(
+          req('PATCH', { key: 'tempo_jogo', value: 'invalido' }, cookieFor(id)),
+          deps(repo),
+        )
+      ).status,
+    ).toBe(400)
+    expect(leads.get(id)?.quizAnswers?.tempo_jogo).toBe('mais_14')
   })
 
-  test('rejeita numérico acima do limite (anti-overflow int4)', async () => {
+  test('rejeita número no campo de escolha', async () => {
     const { repo } = createFakeRepo()
     const { id } = await repo.createLead(DEFAULT_FUNNEL.key)
     const res = await patchLead(
-      req('PATCH', { key: 'valor_hora', value: 9_999_999_999 }, cookieFor(id)),
+      req('PATCH', { key: 'tempo_jogo', value: 9_999_999_999 }, cookieFor(id)),
       deps(repo),
     )
     expect(res.status).toBe(400)
@@ -348,14 +375,18 @@ describe('GET /api/leads', () => {
     const { repo } = createFakeRepo()
     const { id } = await repo.createLead(DEFAULT_FUNNEL.key)
     await patchLead(
-      req('PATCH', { key: 'segmento', value: 'C', lastStep: 'quiz_pergunta_1' }, cookieFor(id)),
+      req(
+        'PATCH',
+        { key: 'tempo_jogo', value: '7_14', lastStep: 'comunidade_adulto_v1_tempo_jogo' },
+        cookieFor(id),
+      ),
       deps(repo),
     )
     const res = await getLeadView(req('GET', undefined, cookieFor(id)), deps(repo))
     expect(res.status).toBe(200)
     const body = (await res.json()) as { lastStep: string; answers: Record<string, unknown> }
-    expect(body.lastStep).toBe('quiz_pergunta_1')
-    expect(body.answers.segmento).toBe('C')
+    expect(body.lastStep).toBe('comunidade_adulto_v1_tempo_jogo')
+    expect(body.answers.tempo_jogo).toBe('7_14')
   })
 
   test('401 sem cookie', async () => {

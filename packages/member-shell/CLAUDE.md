@@ -97,7 +97,9 @@ Testes HTTP/Next precisam dos construtores nativos de Request/Response/Headers. 
 
 [`docs/plans/2026-10-18-objetivos-do-estudio.md`](../../docs/plans/2026-10-18-objetivos-do-estudio.md). `components/studio/section-project-check.tsx` (`SectionProjectCheck` → `ObjectivesCard`):
 UM botão ("Verificar esta parte"), a lista dos obrigatórios e, separada, a dos **Desafios extras**
-(5 XP uma vez). A dica só aparece num objetivo que FALTOU depois de verificar (antes tiraria a
+(5 XP uma vez). Desde 23/10/2026, a faixa mantém progresso e verificação visíveis; o título
+abre os detalhes, recolhidos no início e abertos quando há pendência na resposta. A dica só
+aparece num objetivo que FALTOU depois de verificar (antes tiraria a
 descoberta). O resultado guardado (`savedResults`) volta ao reabrir; o desta tela vence. Mexer no
 projeto depois de verificar marca o resultado como "de antes da mudança": o bloco passa
 `subscribeProjectChanges` (o `onChange` do Estúdio com `updatedAt`) e só uma edição POSTERIOR à
@@ -235,7 +237,7 @@ arrasta; ampliada a atividade, a transmissão vira o flutuante; no celular empil
   `community-kids/tests/live-lesson-room.test.tsx`, primeiro caso).
   - `stage` mora no alto da coluna da esquerda (`sz-lesson-stage`, gancho novo) e é o MESMO nó
     entre as partes (o painel da esquerda nunca desmonta). Com ele, a orientação vai num invólucro
-    (`sz-lesson-stage-content`) que some na aba "Criar" SEM levar a transmissão junto.
+    (`sz-lesson-stage-content`) que continua visível quando a bancada fica abaixo dela.
   - ⚠️⚠️ **Fixa (`sticky`) só ao lado da atividade e no estreito** (`arrastavel || largura < 768`).
     Lado a lado o painel ganha `self-stretch` para a transmissão grudar enquanto a criança rola a
     atividade; empilhado o painel vira `display: contents` e ela gruda no alto da PARTE inteira
@@ -1839,7 +1841,7 @@ cursos de quem está começando; o members manda `false` para a equipe.
 - **O desenho** é `components/lesson-video-gate.tsx` (`LessonVideoGate`): véu translúcido sobre a
   atividade (que continua à vista) + cartão `sticky` com o mascote (`videoGateMascot` do
   contexto: o kids passa o Zappy, o adulto fica sem), título, frase, a pílula "Você já viu N% do
-  vídeo" (some no 0%) e "Ver o vídeo" (volta à aba "Ver exemplo", leva o foco ao bloco do vídeo e
+  vídeo" (some no 0%) e "Ver o vídeo" (leva o foco ao bloco do vídeo e
   tenta o play). O conteúdo da ferramenta fica `inert`, então o botão de ampliar é inalcançável
   sem tocar nos quatro componentes de ampliar. ⚠️⚠️ O invólucro existe SEMPRE (desligado só passa
   os filhos): ele embrulha os editores da aula, e ligar/desligar a árvore os remontaria.
@@ -3062,7 +3064,8 @@ Testes por família em `tests/` (`scene-dino-numbers`, `scene-nucleo`, `conserto
   tolerante (`sceneActivityForReading`): cena que cita meta que saiu do catálogo continua sendo cena.
 - ⚠️⚠️ **Dividir exige conteúdo dos DOIS lados** (`podeDividir`): a seção cujo único bloco é a cena ocupa a largura
   toda. A visibilidade do painel da direita é `toolIds.length > 0`, nunca `podeDividir` (não dividir não pode virar
-  sumiço). As abas "Ver exemplo"/"Criar" só com EDITOR (`temEditor`).
+  sumiço). Desde 23/10/2026, não há abas de orientação/criação: editores e cenas ficam abaixo
+  da orientação em telas estreitas, com 24 px de separação entre os painéis.
 - ⚠️ **Empilhado, a bancada cai para o FIM da seção**: trocar a cena de painel pela largura a remontaria na abertura
   de toda aula larga (a medição começa em zero). Os templates já pedem a cena como último bloco.
 - ⚠️⚠️ **O editor fica montado entre seções; a cena, não** (`editores` é da AULA, `cenasAtivas` da SEÇÃO): cada cena
@@ -3109,7 +3112,7 @@ limitado". Os números de hoje:
 - ⚠️⚠️ `SPLIT_COMFORT_WIDTH_PX` **1080** é o limiar que LIGA o lado a lado, e é DELIBERADAMENTE
   maior que a soma dos pisos (744). Enquanto o limiar era a própria soma, uma coluna de 1010px
   mostrava a alça com curso ~zero — o que lê como "às vezes funciona, às vezes não". Abaixo do
-  conforto a aula empilha e oferece "Ver exemplo"/"Criar", que é a resposta honesta.
+  conforto a aula empilha a ferramenta depois da orientação, sem duplicar o diálogo do Zappy.
 - ⚠️ `SPLIT_DEFAULT_SIZE` **50** mora na régua, e não no componente, porque ele e os pisos são um
   PAR: padrão fora de `[piso, 100 − piso do outro]` é clampado pela lib em silêncio e a aula nasce
   num layout que ninguém escolheu. O antigo 30 já era isso — em 1080px ele ficava ABAIXO do piso do

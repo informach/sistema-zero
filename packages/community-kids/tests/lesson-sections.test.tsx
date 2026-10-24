@@ -890,10 +890,7 @@ describe('aula por seções', () => {
     expect(screen.getByRole('separator').tabIndex).toBe(-1)
   })
 
-  test('Ver exemplo e Criar preservam a mesma instância e o trabalho em tela estreita', () => {
-    // ⚠️ A parte precisa de conteúdo dos DOIS lados para as abas existirem (14/09/2026):
-    // seção cujo único bloco é a ferramenta não divide mais, ela ocupa a largura toda — e
-    // "Ver exemplo"/"Criar" sem exemplo nenhum à esquerda seria uma aba para o vazio.
+  test('tela estreita mostra orientação e editor juntos sem duplicar o diálogo nem perder o trabalho', () => {
     const comTexto: LessonDetailView = {
       ...lesson,
       blocks: [
@@ -920,11 +917,15 @@ describe('aula por seções', () => {
         />
       </LessonPlayerProvider>,
     )
-    fireEvent.click(screen.getByRole('button', { name: 'Criar' }))
+    expect(Boolean(screen.queryByRole('button', { name: 'Criar' }))).toBe(false)
+    expect(Boolean(screen.queryByRole('button', { name: 'Ver exemplo' }))).toBe(false)
+    expect(screen.getAllByText('Oi!')).toHaveLength(1)
     const project = screen.getByRole('textbox', { name: 'Trabalho no projeto' })
     fireEvent.change(project, { target: { value: 'Meu Dino salta' } })
-    fireEvent.click(screen.getByRole('button', { name: 'Ver exemplo' }))
-    fireEvent.click(screen.getByRole('button', { name: 'Criar' }))
+    const content = screen.getByText('Oi!').closest('[data-panel-id="lesson-content"]')
+    const tool = project.closest('[data-panel-id="lesson-tool"]')
+    expect(content?.classList.contains('hidden!')).toBe(false)
+    expect(tool?.classList.contains('hidden!')).toBe(false)
     expect(screen.getByRole('textbox', { name: 'Trabalho no projeto' })).toBe(project)
     expect(project).toHaveProperty('value', 'Meu Dino salta')
   })

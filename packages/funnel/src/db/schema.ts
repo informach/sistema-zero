@@ -42,7 +42,7 @@ export const leads = funil.table(
     // Mantido como coluna: a aba Perfis do /admin agrega por ele.
     perfilResultado: text('perfil_resultado'),
 
-    // Funil de origem do lead (`${audience}/${produto}`, ex.: `pro/no-comando-da-ia`),
+    // Funil de origem do lead (`${audience}/${produto}`, ex.: `pro/comunidade-dos-criadores`),
     // gravado na CRIAÇÃO. Resolve a oferta/conteúdo certos quando há mais de um produto;
     // nullable → leads legados (pré-multifunil) caem no funil default (ver src/funnels).
     funnel: text('funnel'),

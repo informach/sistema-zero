@@ -34,7 +34,7 @@
   -webkit-font-smoothing: antialiased;
 }
 
-/* ── Design system (No Comando da IA) ────────────────────────────────────────
+/* ── Design system compartilhado ────────────────────────────────────────
    Tema escuro. Tokens expostos como utilitários do Tailwind v4 (bg-bg, text-lime…)
    e como CSS custom properties (var(--color-lime)). */
 @theme {

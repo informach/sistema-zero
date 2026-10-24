@@ -10,8 +10,8 @@ Guia operacional da **área do aluno / comunidade** (full-stack). Leia antes de 
 
 ## O que é
 
-App que o **aluno** acessa: login/recuperação de senha, **meus cursos** (consumo do "No Comando da
-IA" via members — módulos, aulas em blocos, progresso), **todos os cursos** (`/cursos` — catálogo
+App que o **aluno** acessa: login/recuperação de senha, **meus cursos** (consumo dos cursos
+via members — módulos, aulas em blocos, progresso), **todos os cursos** (`/cursos` — catálogo
 com cadeado), **perfil** (nome/telefone/**foto** + trocar senha) e **minhas compras**. Front-end
 **Next.js 16 (App Router) + React 19 + Tailwind v4**; o back-end é um **BFF** que **chama o API
 Gateway** (NUNCA os serviços direto). Visual na paleta do Pen, com os temas **Padrão** e **Pink**
@@ -373,12 +373,8 @@ A URL é a constante `COMUNIDADE_ADULTO_CONTINUAR_URL` de **`member-shell/lib/ad
     jornada." `journey` e `advanced` levam à etapa atual ("Ver os cursos da etapa") ou a
     `/progresso` ("Ver a sua jornada"). O "Por quê" do `/criar` para `journey` também não diz
     "mais adiante" ("abre conforme você avança nas etapas da jornada.").
-- **Cursos** (`lib/continuity.ts`, `components/community/courses/continuity-card.tsx`): o cartão
-  "Você já tem o No Comando da IA. Com a Comunidade, os cursos adultos abrem nesta mesma conta, e as
-  ferramentas do Estúdio abrem conforme você avança nas etapas." aparece só com `no-comando-da-ia`
-  `true` e `adult-clube-dos-criadores` `false` em `checkCommunityContinuityAccessReadonly`
-  (member-shell; a rota `/members/access` ignora a chave-mestra de cursos). Falha fechada
-  (`showNciContinuityCard`).
+- **Cursos:** o cartão exclusivo do No Comando da IA e sua consulta de acesso foram removidos
+  em 23/10/2026, junto com o produto retirado pela dona. As entradas genéricas abaixo permanecem.
 - **Curso bloqueado** (catálogo, trilha e etapa): `lockedCourseLink(salesPageUrl)` sempre devolve
   destino, rótulo e aviso: com página própria, "Conhecer o curso" e "Abre a página do curso em outra
   aba."; sem ela, a oferta de continuidade (`curso-bloqueado`) com "Conhecer a Comunidade" e "Abre a
@@ -716,9 +712,8 @@ valida e só então importa o `server.js` standalone).
 1. Postgres :5433 + migrations (`db:auth:migrate`, `db:members:migrate`, `db:payments` via package).
 2. Suba auth :3002, catalog :3003, members :3004, payments :3001, messaging :3006, gateway :3000
    (MESMO `JWT_HS256_SECRET`; `MEMBERS_INTERNAL_TOKEN` casando gateway↔members).
-3. Aluno de teste: `bun run --filter @sistemazero/auth db:seed --email aluno@teste.com --password
-   <senha> --role customer` e matrícula:
-   `bun run db:members:seed --grant-user <userId>` (curso "No Comando da IA").
+3. Crie o aluno de teste no Auth e conceda acesso ao curso escolhido pelo Admin. O seed antigo
+   do No Comando da IA foi removido; não recrie o produto retirado para montar fixtures.
 4. `bun run dev:community` → `http://localhost:3007` → login → home → curso → aula.
 5. Materiais c/ marca d'água: exige `R2_*` + `R2_PRIVATE_BUCKET=testes-privado` no `.env`
    (bucket já criado na Cloudflare, 04/06/2026; o MESMO de `R2_PRIVATE_BUCKET` do admin —

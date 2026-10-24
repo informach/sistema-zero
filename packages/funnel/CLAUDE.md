@@ -23,7 +23,7 @@ com **upsell/downsell** opcionais. Só `oferta+checkout+obrigado` são obrigató
 única, e `/termos`, o índice dos Termos; cada oferta tem o seu Termo em `/<audience>/<produto>/termos`,
 e as URLs antigas redirecionam) e painel `/admin` (globais, fora dos funis).
 
-O 1º funil é **No Comando da IA** (R$ 37) em `/pro/no-comando-da-ia/*`. `/` é a página da bio (ver abaixo);
+O funil adulto de entrada é a **Comunidade dos Criadores** em `/pro/comunidade-dos-criadores/*`. O No Comando da IA foi retirado por decisão da dona em 23/10/2026. `/` é a página da bio (ver abaixo);
 `/pro` e `/kids` são landings de área (redirecionam ao produto, ou "em breve" se vazia); URLs
 planas antigas (`/quiz`, `/oferta`, …) redirecionam (301) ao funil default. **Ver `## Multi-funil`.**
 
@@ -50,10 +50,10 @@ devem passar (e idealmente `bun run build`, pois é o que valida a middleware/SS
 
 **Fonte da verdade:** `src/funnels/registry.ts` — `FUNNELS` (map por `${audience}/${produto}`),
 `getFunnel(audience, produto)`, `getFunnelByKey(key)`, `isFunnelKey`, `DEFAULT_FUNNEL`, `FUNNEL_KEYS`.
-Cada produto é um módulo (ex.: `src/funnels/no-comando-da-ia/index.ts`) que monta um `FunnelDef`:
+Cada produto é um módulo (ex.: `src/funnels/comunidade-adulto/index.ts`) que monta um `FunnelDef`:
 `catalogOfferSlug`, `productName/Sku`, `basePath`, `imagesBase`, `byline`, `seoTitle/seoDescription`,
 `steps {quiz,resultado,upsell,downsell}` e `content {copy, landing, sales, obrigado, quiz?, hero?,
-result?}`. Os módulos `src/content/*` são o conteúdo DESTE funil (referenciados pelo registry); um
+result?}`. Os módulos `src/content/*` guardam contratos e conteúdo compartilhado; um
 novo produto traz o seu próprio conteúdo + imagens. O registry é **client-safe** (sem env/segredo/IO)
 — importado por páginas e `/api`, **nunca** por uma ilha (passe dados por prop).
 

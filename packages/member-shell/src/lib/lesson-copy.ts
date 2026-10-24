@@ -46,6 +46,7 @@ export interface LessonCopy {
   verificacao: {
     botao: string
     objetivos: string
+    progresso: (cumpridos: number, total: number) => string
     cumprido: string
     faltou: string
     /** O projeto passou do limite da rota (413 `PAYLOAD_TOO_LARGE`, 2 MB) ao ser conferido. */
@@ -315,6 +316,7 @@ export const COMMON_LESSON_COPY: LessonCopy = {
   verificacao: {
     botao: 'Verificar esta parte',
     objetivos: 'Objetivos desta parte',
+    progresso: (cumpridos, total) => `${cumpridos} de ${total} cumpridos`,
     cumprido: 'Objetivo cumprido!',
     faltou: 'Ainda falta um objetivo. Veja a lista e tente de novo.',
     grandeDemais:

@@ -239,9 +239,9 @@ export function createFakeGateway(): FakeGatewayState {
           accessDurationUnit: cfg?.accessDurationUnit ?? null,
           billingIntervalMonths: cfg?.billingIntervalMonths ?? null,
           isAvailable: cfg?.isAvailable ?? true,
-          product: { name: 'No Comando da IA', sku: 'no-comando-da-ia' },
+          product: { name: 'Curso de teste', sku: 'curso-qa' },
           content: cfg?.altOffer ? { altOffer: cfg.altOffer } : {},
-          includes: [{ name: 'No Comando da IA', isPrimary: true }],
+          includes: [{ name: 'Curso de teste', isPrimary: true }],
         },
       }
     },

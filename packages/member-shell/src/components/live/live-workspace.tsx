@@ -336,7 +336,7 @@ export const LiveBlockWorkspace = memo(function LiveBlockWorkspace({
       ref={root}
       className={cn(
         'sz-live-block-workspace flex flex-col gap-3 rounded-lg border border-border bg-card p-4',
-        expanded && 'fixed inset-0 z-50 rounded-none',
+        expanded && 'fixed inset-0 z-50 overflow-y-auto rounded-none',
         fillHeight && !expanded && 'min-h-0 flex-1',
       )}
     >

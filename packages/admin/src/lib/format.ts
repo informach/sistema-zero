@@ -14,10 +14,16 @@ export function formatCentsStr(value: string | number, currency = 'BRL'): string
 
 /** Converte um valor em reais (string "37,00" / "37.00" / number) para centavos inteiros. */
 export function reaisToCents(value: string | number): number {
-  if (typeof value === 'number') return Math.round(value * 100)
-  const normalized = value.trim().replace(/\./g, '').replace(',', '.')
-  const num = Number(normalized)
-  return Number.isFinite(num) ? Math.round(num * 100) : Number.NaN
+  if (typeof value === 'number')
+    return Number.isFinite(value) ? Math.round(value * 100) : Number.NaN
+  const text = value.trim()
+  // Grouped Brazilian input and the decimal-dot values emitted by offer forms
+  // are distinct formats. Removing every dot changes 37.00 reais into 3700.
+  const brazilian = /^-?(?:\d{1,3}(?:\.\d{3})+|\d+)(?:,\d{1,2})?$/
+  const decimal = /^-?\d+(?:\.\d{1,2})?$/
+  if (!brazilian.test(text) && !decimal.test(text)) return Number.NaN
+  const normalized = brazilian.test(text) ? text.replace(/\./g, '').replace(',', '.') : text
+  return Math.round(Number(normalized) * 100)
 }
 
 /** ISO-8601 → data curta pt-BR (ou "—" se ausente). */

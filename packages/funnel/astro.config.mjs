@@ -18,14 +18,14 @@ export default defineConfig({
   adapter: node({ mode: 'standalone', bodySizeLimit: 64 * 1024 }),
   site,
   // Redireciona as URLs planas antigas (pré-multifunil) para o funil default em
-  // /pro/no-comando-da-ia/* (301). Cortesia — não havia tráfego nelas; mantém
+  // /pro/comunidade-dos-criadores/* (301). Cortesia — não havia tráfego nelas; mantém
   // qualquer link/anúncio antigo funcionando. Novos funis vivem em /<audience>/<produto>/*.
   redirects: {
-    '/quiz': '/pro/no-comando-da-ia/quiz',
-    '/oferta': '/pro/no-comando-da-ia/oferta',
-    '/resultado': '/pro/no-comando-da-ia/resultado',
-    '/checkout': '/pro/no-comando-da-ia/checkout',
-    '/obrigado': '/pro/no-comando-da-ia/obrigado',
+    '/quiz': '/pro/comunidade-dos-criadores/quiz',
+    '/oferta': '/pro/comunidade-dos-criadores/oferta',
+    '/resultado': '/pro/comunidade-dos-criadores/resultado',
+    '/checkout': '/pro/comunidade-dos-criadores/checkout',
+    '/obrigado': '/pro/comunidade-dos-criadores/obrigado',
     // Endereços legais antigos (301): o índice dos Termos (um por oferta) e a Política única.
     '/termos-de-uso': '/termos',
     '/politica-de-privacidade': '/privacidade',
@@ -37,7 +37,6 @@ export default defineConfig({
       // que o sitemap não enumera sozinho → listamos explicitamente. Ao adicionar
       // um funil indexável, inclua a URL da sua oferta aqui.
       customPages: [
-        `${site}/pro/no-comando-da-ia/oferta`,
         `${site}/pro/comunidade-dos-criadores/oferta`,
         `${site}/pro/comunidade-dos-criadores/oferta/continuar`,
         `${site}/pro/desafio-primeiro-jogo/oferta`,
@@ -50,10 +49,9 @@ export default defineConfig({
         // o Termo de cada oferta.
         `${site}/termos`,
         `${site}/privacidade`,
-        `${site}/pro/no-comando-da-ia/termos`,
+        `${site}/pro/comunidade-dos-criadores/termos`,
         `${site}/kids/desafio-primeiro-jogo/termos`,
         `${site}/kids/comunidade-dos-criadores/termos`,
-        `${site}/pro/comunidade-dos-criadores/termos`,
         `${site}/pro/desafio-primeiro-jogo/termos`,
       ],
       // Mantém no sitemap só as páginas indexáveis (exclui as noindex/privadas).

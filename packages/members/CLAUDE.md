@@ -1391,7 +1391,6 @@ src/
 ├── interfaces/http/  # server, routes/{members(aluno),webhooks(grant/subscription),health}, dtos (TypeBox), auth, webhook-auth, error-handler, raw-body
 ├── composition-root.ts  # injeção de dependências (ÚNICA) — async
 └── index.ts             # loadEnv → createApplication → start (+ sinais)
-scripts/seed-course.ts   # curso publicado (aula composta + quiz + anexo); --grant-user concede matrícula de teste
 ```
 
 ## Comandos (de dentro de `packages/members`)
@@ -2684,9 +2683,8 @@ na org `informach-nucleo-de-aprendizag`, us.sentry.io). Espelha o padrão do pay
 Serviço próprio no projeto `sistema-zero` via **`packages/members/railway.json`** (config-as-code:
 Dockerfile `oven/bun:1` com build context = RAIZ do repo, watchPatterns members/core/pinta/lockfile,
 healthcheck **`/readyz`**). `preDeployCommand` roda **`db:migrate` APENAS** — diferente do catalog
-(`db:deploy` = migrate+seed): o seed do members (`scripts/seed-course.ts`) é **conteúdo de exemplo
-de DEV** (curso demo com vídeo/anexos placeholder) e **NÃO pode rodar em produção**; o curso real é
-autorado pelo painel admin. **SEM domínio público por design** — members só é alcançado pelo gateway
+(`db:deploy` = migrate+seed). O seed de exemplo do No Comando da IA foi removido em 23/10/2026;
+o curso real é autorado pelo painel admin. **SEM domínio público por design** — members só é alcançado pelo gateway
 e recebe webhooks re-assinados por ele via private networking (`members.railway.internal:3004`).
 
 Envs de prod: `NODE_ENV=production` (liga os refines fail-closed), `PORT=3004`,

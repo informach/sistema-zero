@@ -10,6 +10,7 @@ import type { StudioHandle } from '@sistemazero/studio'
 import { Button } from '@sistemazero/ui/button'
 import {
   CheckCircle2,
+  ChevronDown,
   Circle,
   CircleDot,
   Lightbulb,
@@ -30,8 +31,8 @@ export type ProjectChangeSubscriber = (
 ) => () => void
 
 /**
- * Os OBJETIVOS da parte, embaixo do Estúdio (18/10/2026). Um botão só ("Verificar esta parte"),
- * a lista dos obrigatórios e, separada, a dos extras. Quem confere é o servidor: a criança manda
+ * Os OBJETIVOS da parte, embaixo do Estúdio. A faixa mantém o progresso e a verificação visíveis;
+ * os detalhes recolhíveis separam obrigatórios e extras. Quem confere é o servidor: a criança manda
  * o projeto e recebe o resultado de cada objetivo, que fica guardado e volta ao reabrir a aula.
  */
 export function SectionProjectCheck({
@@ -78,6 +79,8 @@ function ObjectivesCard({
   const player = useLessonPlayer()
   const { verificacao, erroDoServidor } = useLessonCopy()
   const titleId = useId()
+  const detailsId = useId()
+  const [detailsOpen, setDetailsOpen] = useState(false)
   const [busy, setBusy] = useState(false)
   const [feedback, setFeedback] = useState<{ text: string; tone: 'ok' | 'falta' | 'erro' } | null>(
     null,
@@ -125,6 +128,8 @@ function ObjectivesCard({
   }
   const required = objectives.filter((o) => !o.optional)
   const extras = objectives.filter((o) => o.optional)
+  const progressItems = required.length > 0 ? required : extras
+  const completed = progressItems.filter((o) => estadoDe(o.id) === 'passed').length
   // "O jogo faz algo" e "a função responde certo" abrem o jogo num navegador do servidor.
   const runsGame = objectives.some(
     (o) => o.kind === 'game' || o.kind === 'function' || o.kind === 'script',
@@ -201,6 +206,7 @@ function ObjectivesCard({
       assertCurrent()
       conferidoEm.current = project.updatedAt ?? Date.now()
       setResults(result.results)
+      if (result.results.some((objective) => !objective.passed)) setDetailsOpen(true)
       setStale(editadoEm.current > conferidoEm.current)
       const extraFaltando = extras.some((o) => !result.results.find((r) => r.id === o.id)?.passed)
       // Parte só com desafios extras: o servidor diz `passed: false` (não há obrigatório para
@@ -252,52 +258,78 @@ function ObjectivesCard({
 
   return (
     <section
-      className="sz-lesson-objectives space-y-3 rounded-xl border bg-card p-4"
+      className="sz-lesson-objectives flex shrink-0 flex-col gap-2 rounded-xl border bg-card px-3 py-2"
       aria-labelledby={titleId}
       data-stale={stale ? 'true' : undefined}
     >
-      <h3 id={titleId} className="sz-lesson-objectives-title flex items-center gap-2 font-semibold">
-        <Target className="size-4 text-primary" aria-hidden="true" />
-        {verificacao.objetivos}
-      </h3>
-      {required.length > 0 ? (
-        <ObjectiveList items={required} estadoDe={estadoDe} stale={stale} />
-      ) : null}
-      {extras.length > 0 ? (
-        <div className="sz-lesson-objectives-extras space-y-2">
-          <p className="sz-lesson-objectives-extras-title flex flex-wrap items-baseline gap-x-2 text-sm font-semibold">
-            <span className="inline-flex items-center gap-1.5">
-              <Sparkles className="size-4 text-primary" aria-hidden="true" />
-              {verificacao.extras}
+      <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1">
+        <h3 id={titleId} className="sz-lesson-objectives-title min-w-0 font-semibold">
+          <button
+            type="button"
+            className="flex min-h-11 items-center gap-2 rounded-lg text-left focus-visible:outline-2 focus-visible:outline-ring"
+            aria-expanded={detailsOpen}
+            aria-controls={detailsId}
+            onClick={() => setDetailsOpen((open) => !open)}
+          >
+            <Target className="size-4 shrink-0 text-primary" aria-hidden="true" />
+            <span className="flex flex-wrap items-baseline gap-x-3">
+              <span>{verificacao.objetivos}</span>
+              <span className="text-xs font-normal text-muted-foreground">
+                {required.length === 0 ? `${verificacao.extras}: ` : ''}
+                {verificacao.progresso(completed, progressItems.length)}
+              </span>
             </span>
-            <span className="sz-lesson-objectives-extras-note text-xs font-normal text-muted-foreground">
-              {verificacao.extrasNota}
+            <ChevronDown
+              className={`size-4 shrink-0 ${detailsOpen ? 'rotate-180' : ''}`}
+              aria-hidden="true"
+            />
+          </button>
+        </h3>
+        <div className="flex flex-wrap items-center gap-3">
+          <Button
+            className="sz-lesson-objectives-action"
+            variant={stale || !shown ? 'default' : 'outline'}
+            disabled={busy}
+            onClick={() => void verify()}
+          >
+            {busy ? (runsGame ? verificacao.testando : verificacao.verificando) : verificacao.botao}
+          </Button>
+          {xp ? (
+            <span className="sz-lesson-objectives-xp text-sm font-semibold text-primary">
+              {verificacao.xp(xp)}
             </span>
-          </p>
-          <ObjectiveList items={extras} estadoDe={estadoDe} stale={stale} extra />
+          ) : null}
         </div>
-      ) : null}
+      </div>
+      <div
+        id={detailsId}
+        hidden={!detailsOpen}
+        className="sz-lesson-objectives-details max-h-48 space-y-3 overflow-y-auto overscroll-contain pr-1"
+      >
+        {required.length > 0 ? (
+          <ObjectiveList items={required} estadoDe={estadoDe} stale={stale} />
+        ) : null}
+        {extras.length > 0 ? (
+          <div className="sz-lesson-objectives-extras space-y-2">
+            <p className="sz-lesson-objectives-extras-title flex flex-wrap items-baseline gap-x-2 text-sm font-semibold">
+              <span className="inline-flex items-center gap-1.5">
+                <Sparkles className="size-4 text-primary" aria-hidden="true" />
+                {verificacao.extras}
+              </span>
+              <span className="sz-lesson-objectives-extras-note text-xs font-normal text-muted-foreground">
+                {verificacao.extrasNota}
+              </span>
+            </p>
+            <ObjectiveList items={extras} estadoDe={estadoDe} stale={stale} extra />
+          </div>
+        ) : null}
+      </div>
       {stale && shown ? (
         <p className="sz-lesson-objectives-stale flex items-start gap-2 text-sm text-muted-foreground">
           <RefreshCw className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
           {verificacao.mudou}
         </p>
       ) : null}
-      <div className="flex flex-wrap items-center gap-3">
-        <Button
-          className="sz-lesson-objectives-action"
-          variant={stale || !shown ? 'default' : 'outline'}
-          disabled={busy}
-          onClick={() => void verify()}
-        >
-          {busy ? (runsGame ? verificacao.testando : verificacao.verificando) : verificacao.botao}
-        </Button>
-        {xp ? (
-          <span className="sz-lesson-objectives-xp text-sm font-semibold text-primary">
-            {verificacao.xp(xp)}
-          </span>
-        ) : null}
-      </div>
       {/* Sempre montada (região viva só anuncia o que muda dentro dela). */}
       <p
         role="status"

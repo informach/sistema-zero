@@ -163,7 +163,7 @@ export const PAGINA_ADULTO_CONTINUAR: PaginaAdultoContinuar = {
         rotulo: 'SAVE 2 · JÁ TEM CONTA',
         titulo: 'Você já tem conta no Sistema Zero',
         texto:
-          'Por No Comando da IA, por uma oficina ao vivo ou por outro curso. A Comunidade entra nessa mesma conta: use o mesmo e-mail no checkout, e o que você já tem continua lá.',
+          'Por uma oficina ao vivo ou por outro curso. A Comunidade entra nessa mesma conta: use o mesmo e-mail no checkout, e o que você já tem continua lá.',
         proximo: 'O PRIMEIRO JOGO, NA MESMA CONTA',
       },
       {
@@ -253,9 +253,9 @@ export const PAGINA_ADULTO_CONTINUAR: PaginaAdultoContinuar = {
           'Se você já tem conta adulta no Sistema Zero, não. Use o mesmo e-mail no checkout, e a Comunidade entra nessa conta.',
       },
       {
-        pergunta: 'Já tenho No Comando da IA. A Comunidade está incluída?',
+        pergunta: 'Já comprei um curso avulso. A Comunidade está incluída?',
         resposta:
-          'Não. A Comunidade dos Criadores é uma assinatura à parte, com os cursos, as ferramentas de criação de jogos, o Mural e o Clube. No Comando da IA continua na sua conta, do jeito que está.',
+          'Não. A Comunidade dos Criadores é uma assinatura à parte, com os cursos, as ferramentas de criação de jogos, o Mural e o Clube. O curso que você comprou continua na sua conta, do jeito que está.',
       },
       {
         pergunta: 'Usava a Comunidade Kids e fiz 18 anos. Levo meus jogos?',

@@ -48,14 +48,14 @@ function deps(
     repo,
     gateway: gw.gateway,
     resolveOffer: () => ({
-      offerSlug: 'no-comando-da-ia',
-      productName: 'No Comando da IA',
-      productSku: 'no-comando-da-ia',
+      offerSlug: 'curso-qa',
+      productName: 'Curso de teste',
+      productSku: 'curso-qa',
     }),
     fulfill: makeFulfill({ repo, gateway: gw.gateway }),
     grantMembers: makeGrantMembers({
       gateway: gw.gateway,
-      resolveOffer: () => ({ offerSlug: 'no-comando-da-ia' }),
+      resolveOffer: () => ({ offerSlug: 'curso-qa' }),
       repo,
     }),
     log,
@@ -202,7 +202,7 @@ describe('POST /api/checkout/pix', () => {
     expect(events.some((e) => e.eventName === 'pagamento_iniciado')).toBe(true)
     expect(payments.get('pay-1')?.offerSnapshot).toMatchObject({
       version: 1,
-      offerSlug: 'no-comando-da-ia',
+      offerSlug: 'curso-qa',
       pricingMode: 'one_time',
       accessMode: 'lifetime',
       accessDurationValue: null,
@@ -214,7 +214,7 @@ describe('POST /api/checkout/pix', () => {
   test('oferta fixa congela os 30 dias antes de criar a cobrança', async () => {
     const { repo, payments } = createFakeRepo()
     const gw = createFakeGateway()
-    gw.setOfferConfig('no-comando-da-ia', {
+    gw.setOfferConfig('curso-qa', {
       priceCents: 6700,
       accessMode: 'fixed',
       accessDurationValue: 30,
@@ -240,7 +240,7 @@ describe('POST /api/checkout/pix', () => {
     const paid = await pixStatus(req('GET', cookieFor(id)), 'pay-1', deps(repo, gw))
     expect(paid.status).toBe(200)
     expect(gw.calls.grant[0]?.input).toMatchObject({
-      offerRef: 'no-comando-da-ia',
+      offerRef: 'curso-qa',
       accessPolicy: { mode: 'fixed', durationValue: 30, durationUnit: 'days' },
     })
   })
@@ -249,8 +249,8 @@ describe('POST /api/checkout/pix', () => {
     clearOfferCache()
     const { repo } = createFakeRepo()
     const gw = createFakeGateway()
-    await getActiveOffer(gw.gateway, 'no-comando-da-ia')
-    gw.setOfferConfig('no-comando-da-ia', {
+    await getActiveOffer(gw.gateway, 'curso-qa')
+    gw.setOfferConfig('curso-qa', {
       pricingMode: 'subscription',
       billingIntervalMonths: 1,
       accessMode: 'billing_cycle',
@@ -290,11 +290,11 @@ describe('POST /api/checkout/pix', () => {
       metadata: { offerId: string; couponCode: string }
     }
     expect(input.amountInCents).toBe(2700)
-    expect(input.metadata.offerId).toBe('offer-no-comando-da-ia')
+    expect(input.metadata.offerId).toBe('offer-curso-qa')
     expect(input.metadata.couponCode).toBe('PROMO10')
     expect(leads.get(id)?.couponCode).toBe('PROMO10')
     // O checkout grava a oferta vendida no lead (fundação multi-oferta).
-    expect(leads.get(id)?.offerRef).toBe('no-comando-da-ia')
+    expect(leads.get(id)?.offerRef).toBe('curso-qa')
     expect(payments.get('pay-1')?.offerSnapshot).toMatchObject({
       listPriceCents: 3700,
       couponCode: 'PROMO10',
@@ -506,7 +506,7 @@ describe('POST /api/checkout/boleto', () => {
   test('boleto pendente preserva o contrato mesmo se a oferta mudar depois', async () => {
     const { repo, payments, id } = await paidLead()
     const gw = createFakeGateway()
-    gw.setOfferConfig('no-comando-da-ia', {
+    gw.setOfferConfig('curso-qa', {
       priceCents: 6700,
       accessMode: 'fixed',
       accessDurationValue: 30,
@@ -519,7 +519,7 @@ describe('POST /api/checkout/boleto', () => {
     )
     expect(res.status).toBe(200)
 
-    gw.setOfferConfig('no-comando-da-ia', {
+    gw.setOfferConfig('curso-qa', {
       priceCents: 9700,
       accessMode: 'lifetime',
       accessDurationValue: null,
@@ -832,7 +832,7 @@ describe('welcome no caminho síncrono (simetria com o webhook)', () => {
         fulfill: makeFulfill({ repo, gateway: gw.gateway }),
         grantMembers: makeGrantMembers({
           gateway: gw.gateway,
-          resolveOffer: () => ({ offerSlug: 'no-comando-da-ia' }),
+          resolveOffer: () => ({ offerSlug: 'curso-qa' }),
           repo,
         }),
         sendWelcome: makeSendWelcome({

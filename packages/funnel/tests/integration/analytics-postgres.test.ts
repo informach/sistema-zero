@@ -144,7 +144,7 @@ test.skipIf(!url)('PostgreSQL: duplicação, coorte, confirmação e revogação
       source,
     })
     expect(revenue.summary.revenue).toBe(6700)
-    const direct = await business.createLead('pro/no-comando-da-ia')
+    const direct = await business.createLead('pro/comunidade-dos-criadores')
     leadIds.push(direct.id)
     await analytics.linkLead(session.id, direct.id, now)
     await analytics.append(
@@ -153,8 +153,8 @@ test.skipIf(!url)('PostgreSQL: duplicação, coorte, confirmação e revogação
           ...input,
           id: crypto.randomUUID(),
           pageViewId: crypto.randomUUID(),
-          page: '/pro/no-comando-da-ia/checkout',
-          funnel: 'pro/no-comando-da-ia',
+          page: '/pro/comunidade-dos-criadores/checkout',
+          funnel: 'pro/comunidade-dos-criadores',
         },
       ],
       now,
@@ -164,7 +164,7 @@ test.skipIf(!url)('PostgreSQL: duplicação, coorte, confirmação e revogação
       to: new Date(now.getTime() + 60000),
       environment: 'development',
       source,
-      funnel: 'pro/no-comando-da-ia',
+      funnel: 'pro/comunidade-dos-criadores',
     })
     expect(scoped.summary.checkout).toBe(1)
     expect(scoped.journeys).toEqual([{ route: 'Sem quiz observado', sessions: 1, paid: 0 }])
@@ -174,7 +174,7 @@ test.skipIf(!url)('PostgreSQL: duplicação, coorte, confirmação e revogação
       to: new Date(now.getTime() + 86400000).toISOString().slice(0, 10),
       environment: 'development',
       source,
-      page: '/pro/no-comando-da-ia/checkout/',
+      page: '/pro/comunidade-dos-criadores/checkout/',
     })
     const response = await adminAnalytics(
       new Request(`http://localhost/api/admin/analytics?${query}`, {

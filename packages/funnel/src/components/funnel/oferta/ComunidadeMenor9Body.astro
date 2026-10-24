@@ -50,7 +50,7 @@ if (!P.heroi.titulo.includes(P.heroi.enfase)) throw new Error('Ênfase fora do t
 const [tituloInicio = '', tituloFim = ''] = P.heroi.titulo.split(P.heroi.enfase)
 
 // Preços AO VIVO, como na Comunidade917Body: a resolução por intervalo conserva qual oferta é a
-// principal e qual é a irmã; sem catálogo, vale o fallback da Comunidade (nunca o do NCI).
+// principal e qual é a irmã; sem catálogo, vale o fallback da Comunidade da própria página.
 const byInterval = (n: number) =>
   plans?.main.intervalMonths === n
     ? plans.main

@@ -87,6 +87,7 @@ export class AdultJourneyService {
         (requirement) => courses.get(requirement.courseId)?.level === 'avancado',
       )
       if (
+        stage.requirements.length > 0 &&
         stage.capabilities.some((capability) => capability === 'ai' || capability === 'pensa') &&
         !advancedCompleted
       )

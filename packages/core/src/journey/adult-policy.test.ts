@@ -26,6 +26,37 @@ const policy: AdultJourneyPolicy = {
     },
   ],
 }
+
+test('etapas planejadas são válidas, ficam bloqueadas e não concluem por ausência de cursos', () => {
+  const planned: AdultJourneyPolicy = {
+    schemaVersion: 1,
+    stages: policy.stages.map((stage) => ({ ...stage, requirements: [] })),
+  }
+  expect(AdultJourneyPolicySchema.safeParse(planned).success).toBe(true)
+  const view = projectAdultJourney(planned, 1, [])
+  expect(view.stages.map(({ available, completed }) => ({ available, completed }))).toEqual([
+    { available: false, completed: false },
+    { available: false, completed: false },
+  ])
+  expect(view.capabilities).toEqual([])
+  expect(adultJourneyPosition(view)?.position).toBe(1)
+})
+
+test('uma lacuna planejada impede novos avanços e capacidades posteriores mesmo com cursos feitos', () => {
+  const planned: AdultJourneyPolicy = {
+    ...policy,
+    stages: [{ ...policy.stages[0]!, requirements: [] }, policy.stages[1]!],
+  }
+  const done = [{ courseId: advanced, completed: true, showcased: true }]
+  const view = projectAdultJourney(planned, 2, done)
+  expect(view.stages.some((stage) => stage.completed || stage.available)).toBe(false)
+  expect(view.capabilities).toEqual([])
+  // O planejamento novo não retira piso nem ferramentas já conquistados.
+  const retained = projectAdultJourney(planned, 2, done, ['studio'], 2)
+  expect(retained.stages[0]?.completed).toBe(true)
+  expect(adultJourneyPosition(retained)?.position).toBeGreaterThanOrEqual(2)
+  expect(retained.capabilities).toEqual(['studio'])
+})
 test('curso avançado não pula etapa anterior; publicar sozinho não substitui conclusão', () => {
   expect(
     projectAdultJourney(policy, 1, [{ courseId: advanced, completed: true, showcased: true }])

@@ -1,10 +1,9 @@
 # @sistemazero/funnel
 
-Funil de vendas do produto **No Comando da IA** (ebook, R$ 37): quiz de 10 perguntas (em `/quiz`;
-`/` redireciona) → resultado personalizado → página de vendas → modal de pré-checkout →
-checkout estilo Hotmart (**Pix e cartão** na UI; boleto segue disponível só pela API) → painel
-admin (login via auth/IdP). Rodapé institucional com links para `/politica-de-privacidade` e
-`/termos-de-uso`.
+Funis de vendas Kids e adultos: quizzes, resultados, páginas de oferta e checkout Pix/cartão.
+A bio (`/`) abre os dois públicos; `/pro` entra na Comunidade dos Criadores adulta e `/kids`
+no Desafio do Primeiro Jogo. O registry em `src/funnels/registry.ts` define os quatro funis ativos.
+O No Comando da IA foi retirado em 23/10/2026; suas páginas e imagens não fazem parte do build.
 
 - **Stack**: Astro 6 (`output: server` + `@astrojs/node` standalone, no Bun), ilhas **React 19**
   só onde há interação, **Drizzle + postgres.js** (schema `funil`), **Tailwind CSS v4**, **Zod**.
@@ -77,31 +76,8 @@ leads sem carregar tudo de uma vez.
 
 ## Imagens
 
-Todas as imagens vivem em `public/img/` e são referenciadas por URL (o build nunca quebra
-se faltarem — o `ImageSlot` mostra um placeholder com a legenda até o arquivo existir).
-Desde o redesign da oferta (jun/2026) todos os arquivos abaixo estão versionados no repo
-(WebP otimizado, ≤1600px de largura, gerados com sharp a partir do design):
-
-| Arquivo (`public/img/…`) | Onde aparece |
-|---|---|
-| `q1-card-a.jpg` | Quiz P1, opção A (criador, notebook) |
-| `q1-card-b.jpg` | Quiz P1, opção B (empreendedora) |
-| `q1-card-c.jpg` | Quiz P1, opção C (dono de pequeno negócio) |
-| `q1-card-d.jpg` | Quiz P1, opção D (profissional de marketing) |
-| `sales-hero.webp` | Oferta, hero |
-| `recebe-ebook-kit.webp` | Oferta, "O que você recebe" (ebook + kit) |
-| `recebe-anexos.webp` | Oferta, "O que você recebe" (anexos do kit) |
-| `bonus-1.webp` | Oferta, card do Bônus 1 (mini-glossário) |
-| `bonus-2.webp` | Oferta, card do Bônus 2 (10 sinais) |
-| `quem-criou.webp` | Oferta, "Quem criou" (foto da Helena e do Júlio) |
-| `print-agenda-da-turma.webp` | Oferta, "Quem criou" (Agenda da Turma) |
-| `print-cozya.webp` | Oferta, "Quem criou" (Cozya) |
-| `produto-capa.webp` | Checkout, miniatura da capa do ebook |
-| `logo-sistema-zero.svg` | Rodapé (logo, copiado do admin) |
-
-Para trocar uma imagem, basta substituir o arquivo mantendo o nome (e o aspecto:
-hero/recebe/quem-criou são 16:9, bônus/prints são 4:3, capa é retrato A4).
-Os favicons (`favicon.ico` + PNGs 16/32 + `apple-touch-icon.png`) são os mesmos do admin.
+As imagens específicas de cada funil ficam em `public/img/<produto>/`. Os módulos ativos
+indicam seus caminhos; logo e favicons são compartilhados. Não incluir assets de produtos retirados.
 
 ## Checkout (Pix e cartão)
 

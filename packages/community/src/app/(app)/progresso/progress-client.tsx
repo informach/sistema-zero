@@ -242,6 +242,11 @@ function JourneySection({
             : undefined
         }
       />
+      {current && current.requirements.length === 0 ? (
+        <p role="status" className="m-0 text-muted-foreground">
+          Os cursos desta etapa ainda estão sendo preparados. Ela permanece bloqueada por enquanto.
+        </p>
+      ) : null}
       {current?.missing.length ? (
         <p className="m-0">
           <b>Para concluir a etapa {stage.position}:</b> {missingSentence(current.missing, titles)}
@@ -293,7 +298,13 @@ function JourneySection({
                       ? 'o título de Lenda'
                       : 'a próxima etapa'}
                 </span>
-                <StageState state={state} index={index} />
+                {item.requirements.length === 0 && !item.completed ? (
+                  <span className="sz-chip mt-auto self-start">
+                    <Lock aria-hidden /> Aguardando cursos
+                  </span>
+                ) : (
+                  <StageState state={state} index={index} />
+                )}
               </Link>
             </li>
           )

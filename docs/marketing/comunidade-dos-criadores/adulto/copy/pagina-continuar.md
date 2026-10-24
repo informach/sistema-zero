@@ -98,7 +98,7 @@ _Os preços aparecem como marcadores (`{{preco_mensal}}`, `{{preco_anual}}`…):
 
 **casos.itens[1].titulo**: Você já tem conta no Sistema Zero
 
-**casos.itens[1].texto**: Por No Comando da IA, por uma oficina ao vivo ou por outro curso. A Comunidade entra nessa mesma conta: use o mesmo e-mail no checkout, e o que você já tem continua lá.
+**casos.itens[1].texto**: Por uma oficina ao vivo ou por outro curso. A Comunidade entra nessa mesma conta: use o mesmo e-mail no checkout, e o que você já tem continua lá.
 
 **casos.itens[1].proximo**: O PRIMEIRO JOGO, NA MESMA CONTA
 
@@ -314,9 +314,9 @@ _Os preços aparecem como marcadores (`{{preco_mensal}}`, `{{preco_anual}}`…):
 
 **duvidas.itens[1].resposta**: Se você já tem conta adulta no Sistema Zero, não. Use o mesmo e-mail no checkout, e a Comunidade entra nessa conta.
 
-**duvidas.itens[2].pergunta**: Já tenho No Comando da IA. A Comunidade está incluída?
+**duvidas.itens[2].pergunta**: Já comprei um curso avulso. A Comunidade está incluída?
 
-**duvidas.itens[2].resposta**: Não. A Comunidade dos Criadores é uma assinatura à parte, com os cursos, as ferramentas de criação de jogos, o Mural e o Clube. No Comando da IA continua na sua conta, do jeito que está.
+**duvidas.itens[2].resposta**: Não. A Comunidade dos Criadores é uma assinatura à parte, com os cursos, as ferramentas de criação de jogos, o Mural e o Clube. O curso que você comprou continua na sua conta, do jeito que está.
 
 **duvidas.itens[3].pergunta**: Usava a Comunidade Kids e fiz 18 anos. Levo meus jogos?
 

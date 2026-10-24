@@ -110,7 +110,7 @@ describe('o funil adulto tem a mesma oferta do Kids', () => {
     const keys = Object.keys(FUNNELS)
     expect(keys.indexOf(DESAFIO_ADULTO.key)).toBeGreaterThan(keys.indexOf(COMUNIDADE_ADULTO.key))
     expect(Object.values(FUNNELS).find((f) => f.audience === 'pro')?.key).toBe(
-      'pro/no-comando-da-ia',
+      'pro/comunidade-dos-criadores',
     )
     expect(getFunnel('pro', 'desafio-primeiro-jogo')).toBe(DESAFIO_ADULTO)
     const quiz = ler('pages', '[audience]', '[produto]', 'quiz.astro')

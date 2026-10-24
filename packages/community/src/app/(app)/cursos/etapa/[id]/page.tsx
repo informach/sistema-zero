@@ -169,6 +169,8 @@ export default async function StagePage({ params }: { params: Promise<{ id: stri
                     <CheckCircle2 aria-hidden className="size-4 text-(--pen-ok-texto)" />
                     Etapa concluída
                   </>
+                ) : stage.requirements.length === 0 ? (
+                  'Aguardando os cursos desta etapa.'
                 ) : stage.available ? (
                   'Você está nesta etapa.'
                 ) : (
@@ -217,7 +219,9 @@ export default async function StagePage({ params }: { params: Promise<{ id: stri
           <p className="m-0 text-[0.9rem] text-muted-foreground">
             {stage.completed
               ? 'Os cursos continuam abertos para rever quando quiser.'
-              : 'Pronto quer dizer concluído e, quando o curso pede, com o jogo publicado no Mural.'}
+              : stage.requirements.length === 0
+                ? 'Os cursos desta etapa ainda estão sendo preparados. Ela permanece bloqueada até eles serem vinculados.'
+                : 'Pronto quer dizer concluído e, quando o curso pede, com o jogo publicado no Mural.'}
           </p>
         </section>
       </PageBody>

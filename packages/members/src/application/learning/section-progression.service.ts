@@ -650,7 +650,8 @@ export class SectionProgressionService {
       ...(context.signal ? [context.signal] : []),
     ])
     const owned = <Value>(operation: () => Promise<Value>) => awaitWithSignal(operation, signal)
-    await owned(() => this.assertSection(owner, lesson, sectionId, false, { signal }))
+    if (!context.privileged)
+      await owned(() => this.assertSection(owner, lesson, sectionId, false, { signal }))
     const structure = await owned(() => this.repository.getStructure(lesson.id))
     if (!structure || structure.revision !== revision) throw new LearningConflictError()
     const section = structure.sections.find((s) => s.id === sectionId)
@@ -718,9 +719,10 @@ export class SectionProgressionService {
           currentWorkspace.content.gallery
         )
           throw new LearningConflictError()
-        await authorizeOwned(() =>
-          this.assertSection(owner, fresh, sectionId, false, { signal: authorizationSignal }),
-        )
+        if (!context.privileged)
+          await authorizeOwned(() =>
+            this.assertSection(owner, fresh, sectionId, false, { signal: authorizationSignal }),
+          )
         let configuration: import('@sistemazero/core/studio/project-capabilities').StudioProjectCuration
         let admittedBaseline: string
         if (liveContext) {
@@ -834,9 +836,14 @@ export class SectionProgressionService {
         this.revision(freshSection, fresh) !== sectionRevision
       )
         throw new LearningConflictError()
-      await owned(() => this.assertSection(owner, fresh, sectionId, false, { signal }))
+      if (!context.privileged)
+        await owned(() => this.assertSection(owner, fresh, sectionId, false, { signal }))
     }
     const results = evaluation.results.map((r) => ({ id: r.checkId, passed: r.passed }))
+    // Ensaio da equipe: usa a regra publicada e a mesma avaliação, mas não cria
+    // evidência, conclusão ou XP de aluno. A autorização vem do ator do servidor.
+    if (context.privileged)
+      return { results, passed: evaluation.passed, sectionProgress: undefined, gamification: null }
     await owned(() =>
       this.repository.saveSectionProgress(
         owner,

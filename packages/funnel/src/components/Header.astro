@@ -1,11 +1,9 @@
 ---
-import { PRODUTO } from '../content/copy'
-
-// Nome do produto exibido ao lado do logo. Por funil — ausente cai no NCI (compat).
+// O nome vem do funil que está sendo exibido.
 interface Props {
-  productName?: string
+  productName: string
 }
-const { productName = PRODUTO.nome } = Astro.props
+const { productName } = Astro.props
 ---
 
 <header class="border-b border-line">

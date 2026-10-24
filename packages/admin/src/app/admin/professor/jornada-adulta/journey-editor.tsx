@@ -178,7 +178,8 @@ export function AdultJourneyEditor() {
             <>
               {!courses.length ? (
                 <Card className="p-5">
-                  Crie um curso gravado na Comunidade Sistema Zero para começar a montar as etapas.
+                  As etapas podem ficar planejadas. Vincule os cursos gravados adultos quando
+                  estiverem prontos; uma etapa sem cursos permanece bloqueada.
                 </Card>
               ) : null}
               {draft.stages.map((stage, index) => (
@@ -233,6 +234,12 @@ export function AdultJourneyEditor() {
                   </label>
                   <fieldset className="space-y-3">
                     <legend className="mb-2 font-medium">Cursos que esta etapa pede</legend>
+                    {stage.requirements.length === 0 ? (
+                      <p role="status" className="text-sm text-muted-foreground">
+                        Aguardando cursos. Esta etapa não libera avanços nem ferramentas enquanto
+                        não tiver cursos vinculados.
+                      </p>
+                    ) : null}
                     {stage.requirements.map((requirement, requirementIndex) => (
                       <div key={requirement.courseId} className="flex flex-wrap items-center gap-2">
                         <label className="grid min-w-48 flex-1 gap-1 text-sm">
@@ -291,7 +298,7 @@ export function AdultJourneyEditor() {
                         </label>
                         <Button
                           variant="outline"
-                          disabled={saving || stage.requirements.length === 1}
+                          disabled={saving}
                           onClick={() =>
                             updateStage(stage.id, (item) => ({
                               ...item,
@@ -364,26 +371,24 @@ export function AdultJourneyEditor() {
               <div className="flex flex-wrap gap-3">
                 <Button
                   variant="outline"
-                  disabled={saving || !courses.length}
+                  disabled={saving}
                   onClick={() => {
-                    const course = courses[0]
-                    if (course)
-                      setDraft((policy) =>
-                        policy
-                          ? {
-                              ...policy,
-                              stages: [
-                                ...policy.stages,
-                                {
-                                  id: `etapa-${crypto.randomUUID()}`,
-                                  title: 'Nova etapa',
-                                  requirements: [{ courseId: course.id, milestone: 'complete' }],
-                                  capabilities: [],
-                                },
-                              ],
-                            }
-                          : policy,
-                      )
+                    setDraft((policy) =>
+                      policy
+                        ? {
+                            ...policy,
+                            stages: [
+                              ...policy.stages,
+                              {
+                                id: `etapa-${crypto.randomUUID()}`,
+                                title: 'Nova etapa',
+                                requirements: [],
+                                capabilities: [],
+                              },
+                            ],
+                          }
+                        : policy,
+                    )
                   }}
                 >
                   Adicionar etapa

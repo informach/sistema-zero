@@ -1,6 +1,6 @@
 // Registry de funis — FONTE DA VERDADE de quais funis existem, sob qual caminho,
 // vendendo qual oferta, com qual conteúdo. Adicionar um produto = criar um módulo
-// (ex.: `no-comando-da-ia/`) e registrá-lo aqui; as rotas `[audience]/[produto]/*`
+// (ex.: `comunidade-adulto/`) e registrá-lo aqui; as rotas `[audience]/[produto]/*`
 // e a resolução de oferta no checkout passam a funcionar sem mais nenhuma mudança.
 //
 // IMPORTANTE: este módulo é client-safe-ish (sem env/segredos/IO). É importado por
@@ -13,7 +13,6 @@ import type { LegalDoc } from '../content/legal'
 import type { QuizStep } from '../content/quiz-config'
 import type { ResultProfile } from '../content/result-profiles'
 import type { ResultadoConversa } from '../content/resultado-conversa'
-import type { SalesSections } from '../content/sales-sections'
 import type { QuizAnswers, QuizAnswerValue } from '../lib/quiz-types'
 
 export type { QuizAnswers } from '../lib/quiz-types'
@@ -22,7 +21,6 @@ import { COMUNIDADE_ADULTO } from './comunidade-adulto'
 import { COMUNIDADE_DOS_CRIADORES } from './comunidade-dos-criadores'
 import { DESAFIO_ADULTO } from './desafio-adulto'
 import { DESAFIO_PRIMEIRO_JOGO } from './desafio-primeiro-jogo'
-import { NO_COMANDO_DA_IA } from './no-comando-da-ia'
 
 export type Audience = 'pro' | 'kids'
 export const AUDIENCES = ['pro', 'kids'] as const
@@ -136,7 +134,7 @@ export interface FunnelObrigadoPasso {
 export interface FunnelObrigado {
   /**
    * Frase de abertura da confirmação (antes de "O seu acesso ao <produto>…"). Ausente →
-   * "Obrigado por assumir o comando." (NCI). Por funil: o Desafio fala da criança.
+   * "Obrigado pela compra.". Cada funil pode declarar sua própria abertura.
    */
   intro?: string
   /** Título da confirmação aprovada. Ausente → "Pagamento confirmado!". */
@@ -162,9 +160,6 @@ export interface FunnelCheckoutIntro {
 export interface FunnelContent {
   copy: FunnelCopy
   landing: FunnelLanding
-  /** Conteúdo da página de vendas no template padrão (/oferta). Opcional: funis com
-   *  layout de oferta PRÓPRIO (ex.: o Desafio) trazem a cópia no seu próprio body. */
-  sales?: SalesSections
   /** Conteúdo da /obrigado. */
   obrigado: FunnelObrigado
   /** Abertura do checkout (opcional: sem ela, o card do produto é o h1 da página). */
@@ -231,11 +226,11 @@ export interface FunnelDef {
    */
   chargeName?: string
   productSku: string
-  /** Prefixo das imagens do funil em /public (ex.: `/img/no-comando-da-ia`). */
+  /** Prefixo das imagens do funil em /public (ex.: `/img/comunidade-adulto`). */
   imagesBase: string
   /**
    * Imagem do produto no card do CHECKOUT (arquivo dentro de `imagesBase`). Ausente →
-   * `produto-capa.webp` (padrão do NCI). Funis sem capa dedicada apontam p/ a arte do
+   * `produto-capa.webp`. Funis sem capa dedicada apontam p/ a arte do
    * hero (ex.: o Desafio usa `hero-desafio.webp`).
    */
   checkoutImage?: string
@@ -245,7 +240,7 @@ export interface FunnelDef {
   seoTitle: string
   /** `<meta description>` da página de vendas — por funil, para SEO. */
   seoDescription: string
-  /** Tema visual (ex.: `'kids'`) → `htmlClass="theme-kids"` no BaseLayout. Default: tema do NCI. */
+  /** Tema visual (ex.: `'kids'`) → `htmlClass="theme-kids"` no BaseLayout. Ausente: tema base. */
   theme?: string
   /** Oferta com acesso vitalício → exibe o disclaimer "vitalício = enquanto a empresa existir". */
   lifetimeAccess?: boolean
@@ -274,10 +269,9 @@ export function funnelKey(audience: string, produto: string): string {
  * novo produto, importe seu módulo e adicione aqui — nada mais precisa mudar.
  */
 export const FUNNELS: Record<string, FunnelDef> = {
-  [NO_COMANDO_DA_IA.key]: NO_COMANDO_DA_IA,
-  // DEPOIS do NCI: a landing /pro redireciona ao PRIMEIRO funil pro do map.
+  // A landing /pro abre a Comunidade adulta, primeiro funil deste público.
   [COMUNIDADE_ADULTO.key]: COMUNIDADE_ADULTO,
-  // O Desafio adulto (21/10/2026) entra depois: o `/pro` segue no NCI. A env
+  // O Desafio adulto entra depois: `/pro` segue na Comunidade. A env
   // `FUNNEL_OFFER_PRO_DESAFIO_PRIMEIRO_JOGO` existe no Railway de staging e de produção.
   [DESAFIO_ADULTO.key]: DESAFIO_ADULTO,
   [DESAFIO_PRIMEIRO_JOGO.key]: DESAFIO_PRIMEIRO_JOGO,
@@ -290,7 +284,7 @@ export const FUNNELS: Record<string, FunnelDef> = {
 export const FUNNEL_KEYS = Object.keys(FUNNELS) as [string, ...string[]]
 
 /** Funil de entrada do site (fallback de `/` e dos leads legados sem `funnel`). */
-export const DEFAULT_FUNNEL: FunnelDef = NO_COMANDO_DA_IA
+export const DEFAULT_FUNNEL: FunnelDef = COMUNIDADE_ADULTO
 
 function isAudience(value: unknown): value is Audience {
   return value === 'pro' || value === 'kids'
@@ -305,7 +299,7 @@ export function getFunnel(
   return FUNNELS[funnelKey(audience, produto)] ?? null
 }
 
-/** Resolve um funil pela chave composta gravada no lead (`pro/no-comando-da-ia`). */
+/** Resolve um funil pela chave composta gravada no lead (`pro/comunidade-dos-criadores`). */
 export function getFunnelByKey(key: string | null | undefined): FunnelDef | null {
   if (!key) return null
   return FUNNELS[key] ?? null

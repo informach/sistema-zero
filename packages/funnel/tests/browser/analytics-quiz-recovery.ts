@@ -17,7 +17,7 @@ try {
       })
     return route.continue()
   })
-  await page.goto(`${base}/pro/no-comando-da-ia/quiz`)
+  await page.goto(`${base}/pro/comunidade-dos-criadores/quiz`)
   const retry = page.getByRole('button', { name: 'Tentar novamente', exact: true })
   await retry.waitFor({ timeout: 10000 })
   assert.equal(await page.locator('[data-analytics-question]').count(), 0)
