@@ -73,7 +73,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Agora separe a abertura da partida! Leve os blocos da partida para dentro de Se jogando, crie o ramo da abertura e clique em Verificar esta parte. Depois, clique em Próxima parte."
+        "text": "Agora separe a abertura da partida! Leve os blocos da partida para dentro de Se jogando, crie o ramo da abertura e clique em Verificar projeto. Depois, clique em Próxima parte."
       }
     },
     {
@@ -85,7 +85,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Agora faça as pedras e os tiros esperarem a partida! Coloque a pergunta jogando no relógio e na barra de espaço e clique em Verificar esta parte. Depois, clique em Próxima parte."
+        "text": "Agora faça as pedras e os tiros esperarem a partida! Coloque a pergunta jogando no relógio e na barra de espaço e clique em Verificar projeto. Depois, clique em Próxima parte."
       }
     },
     {
@@ -97,7 +97,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Agora faça o Enter começar a partida! Programe o evento Enter, teste a abertura e a partida, clique em Verificar esta parte e envie o seu projeto. Depois, clique em Concluir aula."
+        "text": "Agora faça o Enter começar a partida! Programe o evento Enter, teste a abertura e a partida, clique em Verificar projeto e envie o seu projeto. Depois, clique em Concluir aula."
       }
     },
     {
@@ -1228,7 +1228,7 @@
       "key": "embrulhar",
       "title": "Separe a abertura da partida",
       "intent": "application",
-      "objective": "Agora separe a abertura da partida! Leve os blocos da partida para dentro de Se jogando, crie o ramo da abertura e clique em Verificar esta parte. Depois, clique em Próxima parte.",
+      "objective": "Agora separe a abertura da partida! Leve os blocos da partida para dentro de Se jogando, crie o ramo da abertura e clique em Verificar projeto. Depois, clique em Próxima parte.",
       "blockKeys": ["video-embrulhar", "fala-embrulhar"],
       "workspaceKey": "projeto",
       "externalTool": null,
@@ -1393,7 +1393,7 @@
       "key": "relogio-e-tiro",
       "title": "Espere a partida para criar pedras e tiros",
       "intent": "application",
-      "objective": "Agora faça as pedras e os tiros esperarem a partida! Coloque a pergunta jogando no relógio e na barra de espaço e clique em Verificar esta parte. Depois, clique em Próxima parte.",
+      "objective": "Agora faça as pedras e os tiros esperarem a partida! Coloque a pergunta jogando no relógio e na barra de espaço e clique em Verificar projeto. Depois, clique em Próxima parte.",
       "blockKeys": ["video-relogio-e-tiro", "fala-relogio-e-tiro"],
       "workspaceKey": "projeto",
       "externalTool": null,
@@ -1564,7 +1564,7 @@
       "key": "enter",
       "title": "Use Enter para começar",
       "intent": "delivery",
-      "objective": "Agora faça o Enter começar a partida! Programe o evento Enter, teste a abertura e a partida, clique em Verificar esta parte e envie o seu projeto. Depois, clique em Concluir aula.",
+      "objective": "Agora faça o Enter começar a partida! Programe o evento Enter, teste a abertura e a partida, clique em Verificar projeto e envie o seu projeto. Depois, clique em Concluir aula.",
       "blockKeys": ["video-enter", "fala-enter", "projeto"],
       "workspaceKey": "projeto",
       "externalTool": null,

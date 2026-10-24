@@ -64,7 +64,7 @@ export const aulasDino = JSON.parse(
 const CURSO = 'corre-dino'
 // Fórmulas fixas do vocabulário do curso (Diretrizes, seção 6): verificação, envio e saída.
 const checkExit =
-  'Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente.'
+  'Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente.'
 const send =
   'Quando aparecer Objetivo cumprido!, clique em Enviar meu projeto e confirme em Enviar.'
 // Na aula, o Compartilhar não mostra o campo Título e traz o resumo do manifesto (showcase).
@@ -235,7 +235,7 @@ function roteiro(lesson: AulaDino, index: number) {
         roteiroComAvatar(
           s,
           speech,
-          `${telaSecao(s)} ${s.checks?.length ? `Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido! e seguir o encaminhamento narrado${s.final ? ' (Enviar meu projeto, Enviar, Projeto enviado! e Concluir aula)' : ' (Próxima parte)'}.` : ''}${s.publish ? ' Na publicação opcional, mostrar Compartilhar com o resumo já preenchido, Gerar capa, Publicar e a comemoração Seu jogo está no Mural!, com o botão Copiar link de jogar.' : ''}`.trimEnd(),
+          `${telaSecao(s)} ${s.checks?.length ? `Ao terminar, clicar em Verificar projeto, mostrar Objetivo cumprido! e seguir o encaminhamento narrado${s.final ? ' (Enviar meu projeto, Enviar, Projeto enviado! e Concluir aula)' : ' (Próxima parte)'}.` : ''}${s.publish ? ' Na publicação opcional, mostrar Compartilhar com o resumo já preenchido, Gerar capa, Publicar e a comemoração Seu jogo está no Mural!, com o botão Copiar link de jogar.' : ''}`.trimEnd(),
           index,
         ),
         '',
@@ -307,7 +307,7 @@ function proposta(lesson: AulaDino, index: number, manifest: LearningManifest) {
       )
     if (s.checks?.length)
       lines.push(
-        '**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte' +
+        '**Conclui quando:** vídeo assistido e critérios conferidos em Verificar projeto' +
           (s.final ? ', com o envio em Enviar meu projeto confirmado em Enviar.' : '.'),
         '',
         ...s.checks.map((c) => `- ${c.label}`),

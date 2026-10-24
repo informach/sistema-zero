@@ -118,7 +118,7 @@
 
 **aula.passos[2].texto**: O botão mostra o que já está certo e o que falta.
 
-**aula.passos[2].imagem.alt**: O botão Verificar esta parte, com o que já está cumprido e o que falta
+**aula.passos[2].imagem.alt**: O botão Verificar projeto, com o que já está cumprido e o que falta
 
 **aula.passos[3].titulo**: 4. Publica e manda o link
 
@@ -250,7 +250,7 @@
 
 **faq[1].pergunta**: Ele consegue fazer sozinho?
 
-**faq[1].resposta**: Quem já lê sozinho consegue. O vídeo fica do lado dos blocos, e o botão Verificar esta parte mostra o que falta.
+**faq[1].resposta**: Quem já lê sozinho consegue. O vídeo fica do lado dos blocos, e o botão Verificar projeto mostra o que falta.
 
 **faq[2].pergunta**: Meu filho tem 15 anos. Vai achar infantil?
 

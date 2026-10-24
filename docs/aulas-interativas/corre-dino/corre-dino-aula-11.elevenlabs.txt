@@ -20,7 +20,7 @@
 
 [confident, clear, unhurried voice] Confira se ficou assim: no fim de Ao iniciar, está Criar variável pontos com valor 0. Na área do jogo, ainda não aparece nenhum número, porque guardar um número não desenha o placar. E, como Reiniciar o jogo repete a preparação de Ao iniciar, os pontos voltam para zero a cada partida nova.
 
-[engaging, energetic, conversational voice] Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Próxima parte.
+[engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Próxima parte.
 
 [long pause]
 
@@ -36,7 +36,7 @@
 
 [engaging, energetic, conversational voice] Agora comece uma partida. [interested, animated voice] Olha só: o placar aparece, mostrando zero, e ainda não cresce, porque nenhuma regra soma pontos! [reassuring, encouraging voice] Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: no fim do então de Se jogando, está Mostrar placar, com o valor da variável pontos no campo valor, x 12, y 30 e uma cor escura. [reassuring, encouraging voice] Depois de corrigir, teste de novo.
 
-[engaging, energetic, conversational voice] Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Próxima parte.
+[engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Próxima parte.
 
 [long pause]
 
@@ -74,7 +74,7 @@
 
 [upbeat, encouraging voice] Se quiser, você pode escolher um intervalo de 0.5 a 3 e comparar o ritmo.
 
-[engaging, energetic, conversational voice] Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Próxima parte.
+[engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Próxima parte.
 
 [long pause]
 
@@ -96,7 +96,7 @@
 
 [engaging, energetic, conversational voice] Agora comece, espere o placar crescer e deixe uma batida acontecer. [interested, animated voice] Olha só: a frase mostra os pontos da partida! [reassuring, encouraging voice] Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: no subtítulo da tela de fim, o juntar texto tem Você fez, com um espaço no fim, o valor de pontos no meio e o resto da frase, começando com um espaço. [reassuring, encouraging voice] Depois de corrigir, teste de novo.
 
-[engaging, energetic, conversational voice] Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Próxima parte.
+[engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Próxima parte.
 
 [long pause]
 
@@ -104,4 +104,4 @@
 
 [engaging, energetic, conversational voice] Deixe uma batida acontecer e confira o número na frase da tela de fim. Depois, volte à abertura, espere um pouco e comece outra partida: o placar tem que começar do zero. Se a contagem continuar fora da partida, confira o Se jogando no relógio da soma.
 
-[engaging, energetic, conversational voice] Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Concluir aula.
+[engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Concluir aula.

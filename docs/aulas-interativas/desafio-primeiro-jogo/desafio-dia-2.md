@@ -12,7 +12,7 @@
 
 **Revisão de 06/10/2026:** todas as falas conversam com a criança e chamam a atenção dela para o que aparece na tela ("Olha aqui", "Olha só", "Repare", "Tá vendo?"); as pontes do Zappy começam convidando. Cada fala virou uma conversa contínua, com o porquê de cada resultado. Em vez de dizer que a variável aviso "já veio preparada", a fala diz o que ela faz: mostra a mensagem na tela. Seções, blocos e critérios não mudaram.
 
-**Vocabulário do curso, 06/10/2026:** a comparação da variável passou de "anotar num caderno" para "anotar num papel" (o caderno lembra a escola), também no meme e na partida nova que "começa com o caderno em branco". As retomadas dizem "Lembra da experiência da parte anterior?" e "Lembra da experiência da primeira parte desta aula?", e as falas citam **Próxima parte**, **Verificar esta parte**, **Objetivo cumprido!**, **Enviar meu projeto** e **Concluir aula**.
+**Vocabulário do curso, 06/10/2026:** a comparação da variável passou de "anotar num caderno" para "anotar num papel" (o caderno lembra a escola), também no meme e na partida nova que "começa com o caderno em branco". As retomadas dizem "Lembra da experiência da parte anterior?" e "Lembra da experiência da primeira parte desta aula?", e as falas citam **Próxima parte**, **Verificar projeto**, **Objetivo cumprido!**, **Enviar meu projeto** e **Concluir aula**.
 
 **Full review de 06/10/2026:** "então" saiu de todas as falas como palavra de ligação (no Farol inteiro ele é o nome de um espaço do bloco Se); no lugar ficaram "por isso", "para o jogo responder" ou duas frases. A abertura da experiência ganhou o porquê ("Para o jogo saber que a chave foi pega, ele precisa guardar essa informação") e o evento passou a ser "uma coisa que acontece no jogo". Na criação da área **Quando acontecer**, o destino virou "um lugar sem blocos, ao lado das áreas", para não se confundir com o "espaço vazio" que se arrasta para abrir lugar. A ponte da experiência termina em "Quando terminar, clique em Próxima parte.". Seções, blocos e critérios não mudaram.
 
@@ -72,7 +72,7 @@ A verificação aceitava temChave verdadeiro em outro encontro e não cobrava a 
 - **Conclui quando:** vídeo e aprovação dos três critérios de movimento mais a retirada dentro do encontro.
 - **Blocos:** `video-d2-recolher`, `ponte-d2-recolher`; Estúdio pela `workspaceKey: projeto`.
 
-**Ponte do Zappy na página (não gravar):** Agora faça o seu personagem pegar a chave! Programe o encontro e faça a chave sair do chão. Depois teste e clique em Verificar esta parte. Quando aparecer Objetivo cumprido!, clique em Próxima parte.
+**Ponte do Zappy na página (não gravar):** Agora faça o seu personagem pegar a chave! Programe o encontro e faça a chave sair do chão. Depois teste e clique em Verificar projeto. Quando aparecer Objetivo cumprido!, clique em Próxima parte.
 
 O projeto do Dia 1 ainda não tem a área **Quando acontecer**: o Estúdio só cria as áreas que têm blocos. A fala ensina a pegá-la em **Áreas do projeto** e soltar num lugar sem blocos, ao lado das áreas, e só depois o encontro vai para dentro dela. O critério `recolher` exige o encontro nessa área.
 
@@ -83,7 +83,7 @@ O projeto do Dia 1 ainda não tem a área **Quando acontecer**: o Estúdio só c
 - **Conclui quando:** vídeo e aprovação de sete critérios: movimento, retirada e temChave começando em falso e mudando para verdadeiro no encontro. A montagem mantém a ordem ensinada; a verificação também aceita guardar a coleta antes de retirar a chave no mesmo encontro.
 - **Blocos:** `video-d2-guardar`, `ponte-d2-guardar`; Estúdio pela `workspaceKey: projeto`.
 
-**Ponte do Zappy na página (não gravar):** Agora ensine o seu jogo a lembrar da chave! Crie temChave começando em falso e mude para verdadeiro no encontro com a chave. Depois clique em Verificar esta parte. Quando aparecer Objetivo cumprido!, clique em Próxima parte.
+**Ponte do Zappy na página (não gravar):** Agora ensine o seu jogo a lembrar da chave! Crie temChave começando em falso e mude para verdadeiro no encontro com a chave. Depois clique em Verificar projeto. Quando aparecer Objetivo cumprido!, clique em Próxima parte.
 
 A mudança de temChave não aparece no jogo. A fala diz isso com honestidade: quem usa a informação é a porta, no Dia 3, e por enquanto quem confere é a verificação.
 
@@ -94,9 +94,9 @@ A mudança de temChave não aparece no jogo. A fala diz isso com honestidade: qu
 - **Conclui quando:** vídeo, aprovação dos oito critérios e envio confirmado do projeto.
 - **Blocos:** `video-d2-programar`, `ponte-d2-programar` e o Estúdio `projeto` com a cadeia existente.
 
-**Ponte do Zappy na página (não gravar):** Agora avise quem está jogando! Mostre uma mensagem quando a chave for encontrada. Teste a coleta e clique em Verificar esta parte. Depois clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Concluir aula.
+**Ponte do Zappy na página (não gravar):** Agora avise quem está jogando! Mostre uma mensagem quando a chave for encontrada. Teste a coleta e clique em Verificar projeto. Depois clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Concluir aula.
 
-Testar coleta, mudança do aviso e reinício por Atualizar, que a fala pede ("Agora clique em Atualizar. Começa uma partida nova: a chave volta para o chão, e o aviso diz de novo Encontre a chave e vá ao farol."). O texto do aviso com as palavras da criança fica para o mexa e veja do Dia 3. Conferir **Verificar esta parte → Objetivo cumprido! → Enviar meu projeto → Enviar → Concluir aula**. Entre o envio e **Concluir aula**, reconhecer a conquista com "Pronto, você programou a coleta da chave: ela sai do chão, o jogo guarda em temChave que ela foi pega, e o aviso muda!" e retomar uma vez só a surpresa que o narrador contou no Dia 1, sem mostrar nada dela ("E lembra da surpresa que eu te contei quando o curso começou? Ela está quase aqui! Na próxima aula você vai descobrir o que é.").
+Testar coleta, mudança do aviso e reinício por Atualizar, que a fala pede ("Agora clique em Atualizar. Começa uma partida nova: a chave volta para o chão, e o aviso diz de novo Encontre a chave e vá ao farol."). O texto do aviso com as palavras da criança fica para o mexa e veja do Dia 3. Conferir **Verificar projeto → Objetivo cumprido! → Enviar meu projeto → Enviar → Concluir aula**. Entre o envio e **Concluir aula**, reconhecer a conquista com "Pronto, você programou a coleta da chave: ela sai do chão, o jogo guarda em temChave que ela foi pega, e o aviso muda!" e retomar uma vez só a surpresa que o narrador contou no Dia 1, sem mostrar nada dela ("E lembra da surpresa que eu te contei quando o curso começou? Ela está quase aqui! Na próxima aula você vai descobrir o que é.").
 
 ## Experiências e demonstrações desta aula
 

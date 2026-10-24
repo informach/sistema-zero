@@ -36,17 +36,17 @@ Constrói primeiro um ciclo parcial que já pode ser testado: abertura e partida
 
 ### Seção 2. Separe a abertura da partida
 
-**Tarefa:** Agora separe a abertura da partida! Leve os blocos da partida para dentro de Se jogando, crie o ramo da abertura e clique em Verificar esta parte. Depois, clique em Próxima parte.
+**Tarefa:** Agora separe a abertura da partida! Leve os blocos da partida para dentro de Se jogando, crie o ramo da abertura e clique em Verificar projeto. Depois, clique em Próxima parte.
 
 **Blocos na página:** video-embrulhar → fala-embrulhar.
 
-**Recado na página (não gravar):** Agora separe a abertura da partida! Leve os blocos da partida para dentro de Se jogando, crie o ramo da abertura e clique em Verificar esta parte. Depois, clique em Próxima parte.
+**Recado na página (não gravar):** Agora separe a abertura da partida! Leve os blocos da partida para dentro de Se jogando, crie o ramo da abertura e clique em Verificar projeto. Depois, clique em Próxima parte.
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
 video-embrulhar-K1: Dedé substitui “E como o jogo sabe que deve começar na abertura?”. Antes: “é ela que avisa quem joga como começar a partida. O fundo já vem escuro, e o texto aparece bem nele: é só manter.”. Depois: “Falta dizer em que estado o jogo começa, e isso acontece uma vez, no fim de Ao iniciar: deixe esse lugar à vista. Ainda”.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar projeto.
 
 - Vá para inicio em Ao iniciar.
 - Leve a sequência para o então de Se jogando, começando por Limpar.
@@ -56,11 +56,11 @@ video-embrulhar-K1: Dedé substitui “E como o jogo sabe que deve começar na a
 
 ### Seção 3. Espere a partida para criar pedras e tiros
 
-**Tarefa:** Agora faça as pedras e os tiros esperarem a partida! Coloque a pergunta jogando no relógio e na barra de espaço e clique em Verificar esta parte. Depois, clique em Próxima parte.
+**Tarefa:** Agora faça as pedras e os tiros esperarem a partida! Coloque a pergunta jogando no relógio e na barra de espaço e clique em Verificar projeto. Depois, clique em Próxima parte.
 
 **Blocos na página:** video-relogio-e-tiro → fala-relogio-e-tiro.
 
-**Recado na página (não gravar):** Agora faça as pedras e os tiros esperarem a partida! Coloque a pergunta jogando no relógio e na barra de espaço e clique em Verificar esta parte. Depois, clique em Próxima parte.
+**Recado na página (não gravar):** Agora faça as pedras e os tiros esperarem a partida! Coloque a pergunta jogando no relógio e na barra de espaço e clique em Verificar projeto. Depois, clique em Próxima parte.
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
@@ -68,7 +68,7 @@ video-relogio-e-tiro-K1: Dedé substitui “Qual pergunta vai dentro desse reló
 
 video-relogio-e-tiro-K2: Dedé substitui “E como eu confiro se as pedras também esperam?”. Antes: “com a abertura na tela. Dessa vez não sai mais som de tiro, porque o Se responde não enquanto o jogo está em inicio.”. Depois: “Para isso, a gente precisa olhar os blocos. Já as pedras ficam escondidas atrás da tela de abertura, e olhar a imagem”.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar projeto.
 
 - No relógio de intervalo positivo, crie asteroides somente se o estado é jogando.
 - Não deixe outro criador de asteroides fora da condição.
@@ -77,11 +77,11 @@ video-relogio-e-tiro-K2: Dedé substitui “E como eu confiro se as pedras tamb�
 
 ### Seção 4. Use Enter para começar
 
-**Tarefa:** Agora faça o Enter começar a partida! Programe o evento Enter, teste a abertura e a partida, clique em Verificar esta parte e envie o seu projeto. Depois, clique em Concluir aula.
+**Tarefa:** Agora faça o Enter começar a partida! Programe o evento Enter, teste a abertura e a partida, clique em Verificar projeto e envie o seu projeto. Depois, clique em Concluir aula.
 
 **Blocos na página:** video-enter → fala-enter → projeto.
 
-**Recado na página (não gravar):** Agora faça o Enter começar a partida! Programe o evento Enter, teste a abertura e a partida, clique em Verificar esta parte e envie o seu projeto. Depois, clique em Concluir aula.
+**Recado na página (não gravar):** Agora faça o Enter começar a partida! Programe o evento Enter, teste a abertura e a partida, clique em Verificar projeto e envie o seu projeto. Depois, clique em Concluir aula.
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
@@ -89,7 +89,7 @@ video-enter-K1: Dedé substitui “Mas só pode começar se estiver na abertura,
 
 video-enter-K2: Dedé substitui “E se eu tocar em Enter no meio da partida?”. Antes: “e a partida começa! Mova a nave, atire e confira se as pedras caem, se os pontos contam e se as batidas tiram vidas.”. Depois: “Agora toque em Enter durante a partida. Repare: ela continua, sem recomeçar, porque o Se só muda o estado quando ele é”.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte, com o envio confirmado em Enviar meu projeto → Enviar.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar projeto, com o envio confirmado em Enviar meu projeto → Enviar.
 
 - Vá para inicio em Ao iniciar.
 - Leve a sequência para o então de Se jogando, começando por Limpar.

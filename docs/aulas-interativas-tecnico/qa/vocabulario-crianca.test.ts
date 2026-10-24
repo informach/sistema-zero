@@ -10,7 +10,7 @@ import { concordanciasErradas, guiasPessoa, PALAVRAS_DA_ESCOLA } from './palavra
  *
  * O validador de roteiros confere a narração; este teste confere o texto dos manifestos que
  * vira tela: título da aula e das seções, Zappy, experiências, quiz, materiais, certificado, os
- * critérios que aparecem em "Objetivos desta parte" (`completion.projectChecks[].label`) e o
+ * critérios que aparecem em "Objetivos do projeto" (`completion.projectChecks[].label`) e o
  * título e o resumo que já vêm prontos no Compartilhar (`showcase`). A régua é a única do repo,
  * em `palavras-da-escola.ts`.
  */
@@ -18,7 +18,7 @@ import { concordanciasErradas, guiasPessoa, PALAVRAS_DA_ESCOLA } from './palavra
 /**
  * Campos que a criança não lê: identificadores, direção de produção, o código do jogo e as
  * chaves técnicas dos blocos. `completion` e `showcase` NÃO estão aqui: o rótulo de cada
- * `projectChecks` aparece em "Objetivos desta parte" (`section-project-check.tsx`) e o `showcase`
+ * `projectChecks` aparece em "Objetivos do projeto" (`section-project-check.tsx`) e o `showcase`
  * preenche o título e o resumo do Compartilhar (`studio-block.tsx`). O que é técnico dentro deles
  * (`blockIds`, `rule`, `defaultCoverUrl`) fica de fora pelo nome.
  */

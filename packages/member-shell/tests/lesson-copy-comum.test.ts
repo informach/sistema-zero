@@ -6,7 +6,7 @@ test('as duas comunidades usam o mesmo contrato de linguagem', () => {
   expect(ADULT_LESSON_COPY).toBe(COMMON_LESSON_COPY)
   expect(KIDS_LESSON_COPY).toBe(COMMON_LESSON_COPY)
   expect(COMMON_LESSON_COPY.secoes.proxima).toBe('Próxima parte')
-  expect(COMMON_LESSON_COPY.verificacao.botao).toBe('Verificar esta parte')
+  expect(COMMON_LESSON_COPY.verificacao.botao).toBe('Verificar projeto')
   expect(COMMON_LESSON_COPY.estudio.enviar).toBe('Enviar meu projeto')
   expect(COMMON_LESSON_COPY.certificado.eligibleBtn).toBe('Baixar meu certificado')
 })

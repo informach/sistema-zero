@@ -40,17 +40,17 @@ video-vidas-no-comeco-K1: Debinha substitui “E se eu der as vidas o tempo todo
 
 ### Seção 2. Dê e mostre as três vidas
 
-**Tarefa:** Agora dê três vidas à sua nave! Coloque as vidas em Ao iniciar, desenhe os corações em cada quadro e clique em Verificar esta parte. Depois, clique em Próxima parte.
+**Tarefa:** Agora dê três vidas à sua nave! Coloque as vidas em Ao iniciar, desenhe os corações em cada quadro e clique em Verificar projeto. Depois, clique em Próxima parte.
 
 **Blocos na página:** video-vidas → fala-vidas.
 
-**Recado na página (não gravar):** Agora dê três vidas à sua nave! Coloque as vidas em Ao iniciar, desenhe os corações em cada quadro e clique em Verificar esta parte. Depois, clique em Próxima parte.
+**Recado na página (não gravar):** Agora dê três vidas à sua nave! Coloque as vidas em Ao iniciar, desenhe os corações em cada quadro e clique em Verificar projeto. Depois, clique em Próxima parte.
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
 video-vidas-K1: Debinha substitui “E como eu vejo quantas vidas tenho?”. Antes: “e solte no fim de Ao iniciar. Escolha nave. O número já vem em 3: mantenha, porque a nave começa com três vidas.”. Depois: “Agora os corações, que precisam ser desenhados em todo quadro. Deixe à vista o fim de A cada quadro do jogo, logo”.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar projeto.
 
 - Dê 3 vidas à nave em Ao iniciar.
 - Mostre as vidas atuais da nave a cada quadro.
@@ -71,11 +71,11 @@ video-protecao-K1: Debinha substitui “E quando esse tempinho de proteção aca
 
 ### Seção 4. Programe as vidas e a batida
 
-**Tarefa:** Agora programe a batida na nave! Monte a colisão da nave com as pedras, com explosão, dano e tremor, e clique em Verificar esta parte. Depois, clique em Próxima parte.
+**Tarefa:** Agora programe a batida na nave! Monte a colisão da nave com as pedras, com explosão, dano e tremor, e clique em Verificar projeto. Depois, clique em Próxima parte.
 
 **Blocos na página:** video-batida-e-coracoes → fala-batida.
 
-**Recado na página (não gravar):** Agora programe a batida na nave! Monte a colisão da nave com as pedras, com explosão, dano e tremor, e clique em Verificar esta parte. Depois, clique em Próxima parte.
+**Recado na página (não gravar):** Agora programe a batida na nave! Monte a colisão da nave com as pedras, com explosão, dano e tremor, e clique em Verificar projeto. Depois, clique em Próxima parte.
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
@@ -83,7 +83,7 @@ video-batida-e-coracoes-K1: Debinha substitui “Qual pedra o jogo vai tirar?”
 
 video-batida-e-coracoes-K2: Debinha substitui “Falta tirar a vida da nave, né?”. Antes: “o bloco Soltar explosão no sprite, solte nesse encaixe e escolha inimigo. Depois, escolha uma cor para a explosão.”. Depois: “Deixe à vista o encaixe logo abaixo da explosão. Abra Jogo 2D, depois Vida e placar e depois Vida, pegue o bloco”.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar projeto.
 
 - Na colisão nave × asteroides, remova inimigo antes da explosão.
 - A explosão da batida usa inimigo, antes de machucar a nave.
@@ -101,13 +101,13 @@ video-batida-e-coracoes-K2: Debinha substitui “Falta tirar a vida da nave, né
 
 ### Seção 6. Teste os pontos e as vidas
 
-**Tarefa:** Hora de testar os pontos e as vidas! Confira um erro, um acerto e uma batida, clique em Verificar esta parte e envie o seu projeto. Depois, clique em Concluir aula.
+**Tarefa:** Hora de testar os pontos e as vidas! Confira um erro, um acerto e uma batida, clique em Verificar projeto e envie o seu projeto. Depois, clique em Concluir aula.
 
 **Blocos na página:** video-fecho → fala-entrega → projeto.
 
-**Recado na página (não gravar):** Hora de testar os pontos e as vidas! Confira um erro, um acerto e uma batida, clique em Verificar esta parte e envie o seu projeto. Depois, clique em Concluir aula.
+**Recado na página (não gravar):** Hora de testar os pontos e as vidas! Confira um erro, um acerto e uma batida, clique em Verificar projeto e envie o seu projeto. Depois, clique em Concluir aula.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte, com o envio confirmado em Enviar meu projeto → Enviar.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar projeto, com o envio confirmado em Enviar meu projeto → Enviar.
 
 - Crie a variável pontos com 0 em Ao iniciar.
 - Some 1 em pontos dentro da colisão tiros × asteroides.

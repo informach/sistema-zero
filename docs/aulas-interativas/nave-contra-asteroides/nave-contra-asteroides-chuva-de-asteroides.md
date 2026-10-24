@@ -40,17 +40,17 @@ video-intervalo-das-pedras-K1: Dedé substitui “Se eu diminuir a espera, a ped
 
 ### Seção 2. Prepare a criação dos asteroides
 
-**Tarefa:** Agora prepare a chuva de pedras! Crie o grupo asteroides, coloque o relógio de 40 quadros ao lado de A cada quadro do jogo e clique em Verificar esta parte. Depois, clique em Próxima parte.
+**Tarefa:** Agora prepare a chuva de pedras! Crie o grupo asteroides, coloque o relógio de 40 quadros ao lado de A cada quadro do jogo e clique em Verificar projeto. Depois, clique em Próxima parte.
 
 **Blocos na página:** video-grupo-e-relogio → fala-relogio.
 
-**Recado na página (não gravar):** Agora prepare a chuva de pedras! Crie o grupo asteroides, coloque o relógio de 40 quadros ao lado de A cada quadro do jogo e clique em Verificar esta parte. Depois, clique em Próxima parte.
+**Recado na página (não gravar):** Agora prepare a chuva de pedras! Crie o grupo asteroides, coloque o relógio de 40 quadros ao lado de A cada quadro do jogo e clique em Verificar projeto. Depois, clique em Próxima parte.
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
 video-grupo-e-relogio-K1: Dedé substitui “E quando vai nascer cada pedra?”. Antes: “e solte no fim de Ao iniciar. Repare: o nome já vem asteroides, que é o nome certo para este grupo, por isso mantenha.”. Depois: “Agora o relógio. Ele fica fora de A cada quadro do jogo, porque não é para criar uma pedra em todo quadro, e sim de”.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar projeto.
 
 - Crie o grupo asteroides em Ao iniciar.
 - Crie os asteroides em um relógio com intervalo positivo, fora de A cada quadro.
@@ -72,17 +72,17 @@ video-posicao-sorteada-K1: Dedé substitui “Mas por que criar a pedra fora da 
 
 ### Seção 4. Crie e mostre as pedras caindo
 
-**Tarefa:** Agora faça as pedras caírem! Crie o asteroide dentro do relógio, com x sorteado, monte o movimento, a limpeza e o desenho do grupo e clique em Verificar esta parte. Depois, clique em Próxima parte.
+**Tarefa:** Agora faça as pedras caírem! Crie o asteroide dentro do relógio, com x sorteado, monte o movimento, a limpeza e o desenho do grupo e clique em Verificar projeto. Depois, clique em Próxima parte.
 
 **Blocos na página:** video-asteroide → fala-asteroide.
 
-**Recado na página (não gravar):** Agora faça as pedras caírem! Crie o asteroide dentro do relógio, com x sorteado, monte o movimento, a limpeza e o desenho do grupo e clique em Verificar esta parte. Depois, clique em Próxima parte.
+**Recado na página (não gravar):** Agora faça as pedras caírem! Crie o asteroide dentro do relógio, com x sorteado, monte o movimento, a limpeza e o desenho do grupo e clique em Verificar projeto. Depois, clique em Próxima parte.
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
 video-asteroide-K1: Dedé substitui “E como tira as pedras que saem da tela?”. Antes: “usando suas velocidades e solte nesse lugar. O grupo já vem asteroides, e nos dois próximos blocos também: é só manter.”. Depois: “Deixe à vista o encaixe logo abaixo do movimento dos asteroides. Abra Jogo 2D, depois Grupos e depois Participação e”.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar projeto.
 
 - No relógio, crie asteroides com x sorteado, acima da tela e descendo.
 - Mantenha um único comando de criar asteroide.
@@ -92,13 +92,13 @@ video-asteroide-K1: Dedé substitui “E como tira as pedras que saem da tela?�
 
 ### Seção 5. Teste e envie a sua chuva de pedras
 
-**Tarefa:** Hora de testar a sua chuva de pedras! Confira as pedras caindo, as setas e os tiros, clique em Verificar esta parte e envie o seu projeto. Depois, clique em Concluir aula.
+**Tarefa:** Hora de testar a sua chuva de pedras! Confira as pedras caindo, as setas e os tiros, clique em Verificar projeto e envie o seu projeto. Depois, clique em Concluir aula.
 
 **Blocos na página:** video-entrega → fala-entrega → projeto.
 
-**Recado na página (não gravar):** Hora de testar a sua chuva de pedras! Confira as pedras caindo, as setas e os tiros, clique em Verificar esta parte e envie o seu projeto. Depois, clique em Concluir aula.
+**Recado na página (não gravar):** Hora de testar a sua chuva de pedras! Confira as pedras caindo, as setas e os tiros, clique em Verificar projeto e envie o seu projeto. Depois, clique em Concluir aula.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte, com o envio confirmado em Enviar meu projeto → Enviar.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar projeto, com o envio confirmado em Enviar meu projeto → Enviar.
 
 - Crie o grupo asteroides em Ao iniciar.
 - Crie os asteroides em um relógio com intervalo positivo, fora de A cada quadro.

@@ -108,7 +108,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Agora faça o tiro acertar a pedra! Monte a colisão com os apelidos, tire o par atingido, coloque a explosão e o som e clique em Verificar esta parte. Depois, clique em Próxima parte."
+        "text": "Agora faça o tiro acertar a pedra! Monte a colisão com os apelidos, tire o par atingido, coloque a explosão e o som e clique em Verificar projeto. Depois, clique em Próxima parte."
       }
     },
     {
@@ -177,7 +177,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Hora de testar os acertos! Acerte pedras em lugares diferentes, confira se as outras continuam caindo, clique em Verificar esta parte e envie o seu projeto. Depois, clique em Concluir aula."
+        "text": "Hora de testar os acertos! Acerte pedras em lugares diferentes, confira se as outras continuam caindo, clique em Verificar projeto e envie o seu projeto. Depois, clique em Concluir aula."
       }
     },
     {
@@ -876,7 +876,7 @@
       "key": "colisao",
       "title": "Programe o acerto",
       "intent": "application",
-      "objective": "Agora faça o tiro acertar a pedra! Monte a colisão com os apelidos, tire o par atingido, coloque a explosão e o som e clique em Verificar esta parte. Depois, clique em Próxima parte.",
+      "objective": "Agora faça o tiro acertar a pedra! Monte a colisão com os apelidos, tire o par atingido, coloque a explosão e o som e clique em Verificar projeto. Depois, clique em Próxima parte.",
       "blockKeys": ["video-colisao", "fala-colisao"],
       "workspaceKey": "projeto",
       "externalTool": null,
@@ -1003,7 +1003,7 @@
       "key": "entrega",
       "title": "Confira os acertos e envie",
       "intent": "delivery",
-      "objective": "Hora de testar os acertos! Acerte pedras em lugares diferentes, confira se as outras continuam caindo, clique em Verificar esta parte e envie o seu projeto. Depois, clique em Concluir aula.",
+      "objective": "Hora de testar os acertos! Acerte pedras em lugares diferentes, confira se as outras continuam caindo, clique em Verificar projeto e envie o seu projeto. Depois, clique em Concluir aula.",
       "blockKeys": ["video-fecho", "fala-entrega", "projeto"],
       "workspaceKey": "projeto",
       "externalTool": null,

@@ -100,7 +100,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Agora prepare o grupo e o relógio dos cactos! Crie o grupo cactos em Ao iniciar e um relógio de 1.4 segundo, fora do quadro. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte."
+        "text": "Agora prepare o grupo e o relógio dos cactos! Crie o grupo cactos em Ao iniciar e um relógio de 1.4 segundo, fora do quadro. Depois, clique em Verificar projeto e, em seguida, em Próxima parte."
       }
     },
     {
@@ -146,19 +146,19 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Agora crie os cactos no relógio! Coloque No grupo criar obstáculo dentro do relógio, com x 560, vx -5 e tamanho 44. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte."
+        "text": "Agora crie os cactos no relógio! Coloque No grupo criar obstáculo dentro do relógio, com x 560, vx -5 e tamanho 44. Depois, clique em Verificar projeto e, em seguida, em Próxima parte."
       }
     },
     {
       "key": "video-mover-e-desenhar",
-      "plannedVideo": "Título: Mova e mostre o grupo de cactos\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Mostrar o projeto no estado de entrada. Começar pela fala de abertura, antes de qualquer bloco: fazer no jogo o teste que ela pede e, no “Tá vendo?”, manter o resultado à vista. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-mover-e-desenhar-K1: Debinha substitui “O cacto passou pelo Dino. Por que a partida não terminou?”. Antes: “No grupo criar obstáculo continua no relógio, fora do quadro, com x 560 e vx -5. Depois de corrigir, teste de novo.”. Depois: “A batida ainda não foi programada. Agora pule um deles para testar o controle. Funcionou? Clique em Verificar esta”.\n\nFala completa em corre-dino-aula-05.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Mova e mostre o grupo de cactos\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Mostrar o projeto no estado de entrada. Começar pela fala de abertura, antes de qualquer bloco: fazer no jogo o teste que ela pede e, no “Tá vendo?”, manter o resultado à vista. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-mover-e-desenhar-K1: Debinha substitui “O cacto passou pelo Dino. Por que a partida não terminou?”. Antes: “No grupo criar obstáculo continua no relógio, fora do quadro, com x 560 e vx -5. Depois de corrigir, teste de novo.”. Depois: “A batida ainda não foi programada. Agora pule um deles para testar o controle. Funcionou? Clique em Verificar projeto.”.\n\nFala completa em corre-dino-aula-05.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-mover-e-desenhar",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Agora faça os cactos aparecerem e andarem! Coloque Mover os sprites do grupo e Desenhar o grupo depois do desenho do Dino, a cada quadro. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte."
+        "text": "Agora faça os cactos aparecerem e andarem! Coloque Mover os sprites do grupo e Desenhar o grupo depois do desenho do Dino, a cada quadro. Depois, clique em Verificar projeto e, em seguida, em Próxima parte."
       }
     },
     {
@@ -170,7 +170,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Hora de testar e enviar o seu jogo! Espere os cactos entrarem, pule um deles, clique em Verificar esta parte e depois em Enviar meu projeto. Confirme em Enviar e, quando o envio terminar, clique em Concluir aula."
+        "text": "Hora de testar e enviar o seu jogo! Espere os cactos entrarem, pule um deles, clique em Verificar projeto e depois em Enviar meu projeto. Confirme em Enviar e, quando o envio terminar, clique em Concluir aula."
       }
     },
     {
@@ -548,7 +548,7 @@
       "key": "grupo-e-relogio",
       "title": "Prepare o grupo e o relógio",
       "intent": "application",
-      "objective": "Agora prepare o grupo e o relógio dos cactos! Crie o grupo cactos em Ao iniciar e um relógio de 1.4 segundo, fora do quadro. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.",
+      "objective": "Agora prepare o grupo e o relógio dos cactos! Crie o grupo cactos em Ao iniciar e um relógio de 1.4 segundo, fora do quadro. Depois, clique em Verificar projeto e, em seguida, em Próxima parte.",
       "blockKeys": ["video-grupo-e-relogio", "fala-grupo-e-relogio"],
       "workspaceKey": "projeto",
       "externalTool": null,
@@ -610,7 +610,7 @@
       "key": "criar-cactos",
       "title": "Crie os cactos no relógio",
       "intent": "application",
-      "objective": "Agora crie os cactos no relógio! Coloque No grupo criar obstáculo dentro do relógio, com x 560, vx -5 e tamanho 44. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.",
+      "objective": "Agora crie os cactos no relógio! Coloque No grupo criar obstáculo dentro do relógio, com x 560, vx -5 e tamanho 44. Depois, clique em Verificar projeto e, em seguida, em Próxima parte.",
       "blockKeys": ["video-criar-cactos", "fala-criar-cactos"],
       "workspaceKey": "projeto",
       "externalTool": null,
@@ -699,7 +699,7 @@
       "key": "mover-e-desenhar",
       "title": "Mova e mostre o grupo de cactos",
       "intent": "application",
-      "objective": "Agora faça os cactos aparecerem e andarem! Coloque Mover os sprites do grupo e Desenhar o grupo depois do desenho do Dino, a cada quadro. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.",
+      "objective": "Agora faça os cactos aparecerem e andarem! Coloque Mover os sprites do grupo e Desenhar o grupo depois do desenho do Dino, a cada quadro. Depois, clique em Verificar projeto e, em seguida, em Próxima parte.",
       "blockKeys": ["video-mover-e-desenhar", "fala-mover-e-desenhar"],
       "workspaceKey": "projeto",
       "externalTool": null,
@@ -756,7 +756,7 @@
       "key": "entrega",
       "title": "Teste e envie seu jogo",
       "intent": "delivery",
-      "objective": "Hora de testar e enviar o seu jogo! Espere os cactos entrarem, pule um deles, clique em Verificar esta parte e depois em Enviar meu projeto. Confirme em Enviar e, quando o envio terminar, clique em Concluir aula.",
+      "objective": "Hora de testar e enviar o seu jogo! Espere os cactos entrarem, pule um deles, clique em Verificar projeto e depois em Enviar meu projeto. Confirme em Enviar e, quando o envio terminar, clique em Concluir aula.",
       "blockKeys": ["video-entrega", "fala-entrega", "projeto"],
       "workspaceKey": "projeto",
       "externalTool": null,

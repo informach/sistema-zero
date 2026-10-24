@@ -12,22 +12,21 @@ import {
   LessonSections,
   useLessonLearning,
 } from '@sistemazero/member-shell/components/lesson-sections'
-import { ProgressBar } from '@sistemazero/member-shell/components/progress-bar'
 import { upToDateWorkspaceIds } from '@sistemazero/member-shell/lib/lesson-draft-cloud'
 import { lessonDraftCloudFor } from '@sistemazero/member-shell/lib/lesson-draft-transport'
 import type { LessonCompleteResult } from '@sistemazero/member-shell/lib/types'
 import { useLessonRefresh } from '@sistemazero/member-shell/lib/use-lesson-refresh'
 import { Button } from '@sistemazero/ui/button'
-import { Card } from '@sistemazero/ui/card'
 import { EdgePanelHandle } from '@sistemazero/ui/edge-panel-handle'
 import { Spinner } from '@sistemazero/ui/spinner'
-import { CheckCircle2, ChevronLeft, Circle, Lock, X } from 'lucide-react'
+import { CheckCircle2, ChevronLeft, X } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useCallback, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
-import { CourseRatingFlow, type RatingViewer } from '@/components/community/course-rating-flow'
+import type { RatingViewer } from '@/components/community/course-rating-flow'
 import { useAdultGamification } from '@/components/community/gamification-provider'
+import { LessonOutlineContent } from '@/components/community/lesson-outline-content'
 import { type ApiError, apiSend } from '@/lib/api'
 import { cn } from '@/lib/cn'
 import type { CourseDetailView, LessonDetailView } from '@/lib/types'
@@ -268,7 +267,7 @@ export function LessonPlayer({
           aria-hidden={!outlineOpen}
           inert={!outlineOpen}
           className={cn(
-            'fixed inset-y-0 right-0 z-[61] flex w-(--lesson-outline-width) flex-col overflow-hidden border-border border-l bg-card transition-transform duration-300 ease-in-out motion-reduce:transition-none lg:z-40',
+            'sz-lesson-outline fixed inset-y-0 right-0 z-[61] flex w-(--lesson-outline-width) flex-col overflow-hidden border-border border-l bg-card transition-transform duration-300 ease-in-out motion-reduce:transition-none lg:z-40',
             !outlineOpen ? 'pointer-events-none translate-x-full' : 'translate-x-0',
           )}
         >
@@ -280,73 +279,13 @@ export function LessonPlayer({
           >
             <X className="size-5" aria-hidden />
           </button>
-          <Card className="flex min-h-0 flex-1 flex-col overflow-hidden p-0 lg:rounded-none lg:border-0 lg:shadow-none">
-            <div className="border-b border-border px-4 py-3">
-              <p className="text-sm font-semibold">{course.title}</p>
-              <div className="mt-2 flex items-center gap-2">
-                <ProgressBar value={course.progress.percent} className="flex-1" />
-                <span className="sz-display text-primary text-xs">{course.progress.percent}%</span>
-              </div>
-              {/* Classificação do curso: o link some quando myRating != null. */}
-              <CourseRatingFlow
-                courseSlug={course.slug}
-                initialRating={course.myRating}
-                shareUrl={shareUrl}
-                viewer={viewer}
-              />
-            </div>
-            <nav className="scrollbar-subtle max-h-[28rem] overflow-y-auto lg:max-h-none lg:min-h-0 lg:flex-1">
-              {course.modules.map((module) => (
-                <div key={module.id}>
-                  <p className="bg-muted px-4 py-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                    {module.title}
-                  </p>
-                  <ul>
-                    {module.lessons.map((item) => {
-                      const active = item.id === lesson.id
-                      if (item.locked) {
-                        return (
-                          <li key={item.id}>
-                            <div
-                              aria-disabled="true"
-                              title="Conclua a aula anterior para liberar"
-                              className="flex cursor-not-allowed items-center gap-2 px-4 py-2 text-sm text-muted-foreground opacity-70"
-                            >
-                              <Lock className="size-3.5 shrink-0" />
-                              <span className="truncate">{item.title}</span>
-                            </div>
-                          </li>
-                        )
-                      }
-                      return (
-                        <li key={item.id}>
-                          <Link
-                            href={`${courseHref}/aulas/${encodeURIComponent(item.id)}`}
-                            className={cn(
-                              'flex items-center gap-2 px-4 py-2 text-sm transition-colors',
-                              // Aula atual: o tom da linha de cartão com a barrinha na cor de
-                              // ação à esquerda (o "você está aqui" do Pen).
-                              active
-                                ? 'bg-muted font-medium text-foreground shadow-[inset_3px_0_0_var(--primary)]'
-                                : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground',
-                            )}
-                            aria-current={active ? 'page' : undefined}
-                          >
-                            {item.completed ? (
-                              <CheckCircle2 className="size-3.5 shrink-0 text-accent" />
-                            ) : (
-                              <Circle className="size-3.5 shrink-0" />
-                            )}
-                            <span className="truncate">{item.title}</span>
-                          </Link>
-                        </li>
-                      )
-                    })}
-                  </ul>
-                </div>
-              ))}
-            </nav>
-          </Card>
+          <LessonOutlineContent
+            course={course}
+            courseHref={courseHref}
+            currentLessonId={lesson.id}
+            shareUrl={shareUrl}
+            viewer={viewer}
+          />
         </aside>
       </div>
     </LessonPlayerProvider>

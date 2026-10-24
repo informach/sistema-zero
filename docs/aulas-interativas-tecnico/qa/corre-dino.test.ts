@@ -338,7 +338,7 @@ test('falas conversam: ponte com convite e saída, retomada no jogo e sem "entã
             : /^Agora [^!]+! /
       expect(ponte, id).toMatch(convite)
       if (section.checks?.length && !section.final)
-        expect(ponte, id).toContain('Verificar esta parte e, em seguida, em Próxima parte.')
+        expect(ponte, id).toContain('Verificar projeto e, em seguida, em Próxima parte.')
       if (section.final) expect(ponte, id).toContain('Enviar meu projeto')
       // O botão real do quiz (kids-quiz.tsx): Responder! e, se faltar acerto, Tentar de novo!
       if (section.questions) expect(ponte, id).toContain('clicar em Responder!')
