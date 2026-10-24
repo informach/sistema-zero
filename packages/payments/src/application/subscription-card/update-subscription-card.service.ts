@@ -129,7 +129,7 @@ export class UpdateSubscriptionCardService {
       throw new ValidationError('A assinatura mudou; abra uma nova solicitação')
     }
     const operation = await this.operations.start(id, subscriptionId, this.clock())
-    if (!operation) throw new SubscriptionOperationInProgressError()
+    if (!operation?.executionId) throw new SubscriptionOperationInProgressError()
     let externalStarted = false
     try {
       const source = await this.gateway.getSubscription(operation.providerSubscriptionId)
@@ -149,13 +149,20 @@ export class UpdateSubscriptionCardService {
       // A escrita tem versão e conserva pedido concorrente de cancelamento.
       fresh.updateCard(card)
       await this.subscriptions.save(fresh)
-      await this.operations.finish(id, 'SUCCEEDED', 'CARD_UPDATED', this.clock())
+      await this.operations.finish(
+        id,
+        operation.executionId,
+        'SUCCEEDED',
+        'CARD_UPDATED',
+        this.clock(),
+      )
     } catch {
       // Não propagar o erro cru da operadora, que pode repetir o token/dados do cartão.
       // Se o banco caiu após a Efí aceitar, EXECUTING continua impedindo outro efeito.
       try {
         await this.operations.finish(
           id,
+          operation.executionId,
           externalStarted ? 'UNKNOWN' : 'REJECTED',
           externalStarted ? 'PROVIDER_UNKNOWN' : 'PRECONDITION_CHANGED',
           this.clock(),

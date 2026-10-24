@@ -22,11 +22,13 @@ export interface SubscriptionOperation {
   createdAt: Date
   expiresAt: Date
   startedAt: Date | null
+  executionId: string | null
+  executionAttempts: number
   completedAt: Date | null
   result: string | null
 }
 
-/** Não há retry automático de EXECUTING: efeito externo pode já ter acontecido. */
+/** Débitos e trocas incertos não são reexecutados; cancelamento tem retomada própria e cercada. */
 export function createSubscriptionOperation(input: {
   subscriptionId: string
   consumerId: string
@@ -69,6 +71,8 @@ export function createSubscriptionOperation(input: {
     createdAt: new Date(input.now),
     expiresAt: new Date(input.now.getTime() + 10 * 60_000),
     startedAt: null,
+    executionId: null,
+    executionAttempts: 0,
     completedAt: null,
     result: null,
   }
@@ -84,9 +88,19 @@ export interface SubscriptionOperationRepository {
   ): Promise<SubscriptionOperation | null>
   /** CAS único READY → EXECUTING, com prazo no banco. Nunca recupera EXECUTING para executar. */
   start(id: string, subscriptionId: string, now: Date): Promise<SubscriptionOperation | null>
+  /** Retires only unstarted intents after the durable cancellation request. */
+  rejectUnstartedForCancellation(subscriptionId: string, now: Date): Promise<void>
+  /** Only cancellation is safe to resume; never re-executes card updates or debits. */
+  resumeCancellation(
+    id: string,
+    subscriptionId: string,
+    now: Date,
+    staleAfterMs: number,
+  ): Promise<SubscriptionOperation | null>
   /** CAS do executor; UNKNOWN continua bloqueando nova cobrança até conciliação explícita. */
   finish(
     id: string,
+    executionId: string,
     state: 'UNKNOWN' | 'SUCCEEDED' | 'REJECTED',
     result: string,
     now: Date,

@@ -67,6 +67,7 @@ interface BuildOpts {
 function buildApp(opts: BuildOpts = {}) {
   const repo = new InMemoryPaymentRepository()
   const subscriptionRepo = new InMemorySubscriptionRepository()
+  const subscriptionOperations = new InMemorySubscriptionOperationRepository()
   const planRegistry = new InMemorySubscriptionPlanRegistry()
   const gateway = new FakePixGateway()
   const consumers = new InMemoryConsumerRepository()
@@ -205,13 +206,14 @@ function buildApp(opts: BuildOpts = {}) {
     updateSubscriptionCard: new UpdateSubscriptionCardService(
       subscriptionsMyRead,
       subscriptionRepo,
-      new InMemorySubscriptionOperationRepository(),
+      subscriptionOperations,
       gateway,
     ),
     cancelSubscription: new CancelSubscriptionService(
       subscriptionRepo,
       gateway,
       silentLogger,
+      subscriptionOperations,
       subscriptionsMyRead,
     ),
     handleWebhook: new HandleProviderWebhookService(

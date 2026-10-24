@@ -4,6 +4,10 @@ import type { SubscriptionRepository } from '../../domain/ports/subscription-rep
 import { DomainError } from '../../domain/shared/errors'
 import type { SubscriptionAggregate } from '../../domain/subscription/subscription.aggregate'
 import { SubscriptionNotFoundError } from '../../domain/subscription/subscription.errors'
+import {
+  createSubscriptionOperation,
+  type SubscriptionOperationRepository,
+} from '../../domain/subscription/subscription-operation'
 import type { Logger } from '../../infrastructure/logging/logger'
 import {
   type MySubscriptionView,
@@ -21,8 +25,11 @@ export class CancelSubscriptionService {
     private readonly subscriptions: SubscriptionRepository,
     private readonly gateway: PaymentGateway,
     private readonly logger: Logger,
+    private readonly operations: SubscriptionOperationRepository,
     /** Leitura escopada por e-mail — exigida SÓ pelo `executeForEmail` (self-service). */
     private readonly myRead?: SubscriptionMyReadRepository,
+    private readonly clock: () => Date = () => new Date(),
+    private readonly reclaimAfterMs = 120_000,
   ) {}
 
   /**
@@ -68,35 +75,95 @@ export class CancelSubscriptionService {
     if (subscription.requestCancellation()) await this.subscriptions.save(subscription)
     if (!subscription.providerSubscriptionId) throw new SubscriptionCancellationPendingError()
 
-    if (subscription.providerSubscriptionId) {
-      try {
-        await this.gateway.cancelSubscription(subscription.providerSubscriptionId)
-      } catch {
-        // PUT pode ter sido aceito sem resposta. A consulta abaixo decide, não o erro.
-      }
-      try {
-        const confirmed = await this.gateway.getSubscription(subscription.providerSubscriptionId)
-        if (
-          confirmed.providerSubscriptionId !== subscription.providerSubscriptionId ||
-          confirmed.status !== 'CANCELED'
-        ) {
-          throw new SubscriptionCancellationPendingError()
-        }
-      } catch {
+    // A cancellation must not race an authorized debit: retry may reactivate a
+    // provider subscription. Only unstarted intents can be retired here.
+    await this.operations.rejectUnstartedForCancellation(subscription.id, this.clock())
+    let active = await this.operations.findActiveForSubscription(subscription.id, this.clock())
+    if (!active) {
+      const candidate = createSubscriptionOperation({
+        subscriptionId: subscription.id,
+        consumerId: subscription.consumerId,
+        providerSubscriptionId: subscription.providerSubscriptionId,
+        kind: 'CANCEL',
+        now: this.clock(),
+      })
+      if (!(await this.operations.create(candidate)))
         throw new SubscriptionCancellationPendingError()
+      active = candidate
+    }
+    if (
+      active.kind !== 'CANCEL' ||
+      active.consumerId !== subscription.consumerId ||
+      active.providerSubscriptionId !== subscription.providerSubscriptionId
+    )
+      throw new SubscriptionCancellationPendingError()
+    const execution =
+      active.state === 'READY'
+        ? await this.operations.start(active.id, subscription.id, this.clock())
+        : await this.operations.resumeCancellation(
+            active.id,
+            subscription.id,
+            this.clock(),
+            this.reclaimAfterMs,
+          )
+    if (!execution?.executionId) throw new SubscriptionCancellationPendingError()
+
+    let confirmedStatus: 'CANCELED' | 'EXPIRED'
+    try {
+      // On resume, first reconcile the existing effect. Never blindly resend.
+      let confirmed = await this.gateway.getSubscription(subscription.providerSubscriptionId)
+      if (confirmed.providerSubscriptionId !== subscription.providerSubscriptionId)
+        throw new SubscriptionCancellationPendingError()
+      if (confirmed.status !== 'CANCELED' && confirmed.status !== 'EXPIRED') {
+        try {
+          await this.gateway.cancelSubscription(subscription.providerSubscriptionId)
+        } catch {
+          /* GET decides whether the PUT was accepted. */
+        }
+        confirmed = await this.gateway.getSubscription(subscription.providerSubscriptionId)
       }
+      if (
+        confirmed.providerSubscriptionId !== subscription.providerSubscriptionId ||
+        (confirmed.status !== 'CANCELED' && confirmed.status !== 'EXPIRED')
+      )
+        throw new SubscriptionCancellationPendingError()
+      confirmedStatus = confirmed.status
+      // Record the source-confirmed result before local lifecycle persistence. A
+      // later database failure is resumed from that proof, without another debit.
+      await this.operations.finish(
+        execution.id,
+        execution.executionId,
+        'SUCCEEDED',
+        confirmedStatus,
+        this.clock(),
+      )
+    } catch {
+      try {
+        await this.operations.finish(
+          execution.id,
+          execution.executionId,
+          'UNKNOWN',
+          'PROVIDER_UNKNOWN',
+          this.clock(),
+        )
+      } catch {
+        /* Durable executing authority remains held. */
+      }
+      throw new SubscriptionCancellationPendingError()
     }
     // `save` usa a versão carregada; recarregar também preserva ciclos concorrentes.
     const fresh = await this.subscriptions.findById(subscription.id)
     if (!fresh) throw new SubscriptionNotFoundError(subscription.id)
     if (fresh.status !== 'CANCELED' && fresh.status !== 'EXPIRED') {
-      fresh.cancel()
+      if (confirmedStatus === 'EXPIRED') fresh.expire()
+      else fresh.cancel()
       await this.subscriptions.save(fresh)
     }
 
-    this.logger.info('subscription.canceled', {
+    this.logger.info('subscription.cancellation.confirmed', {
       subscriptionId: subscription.id,
       consumerId: subscription.consumerId,
+      status: fresh.status,
     })
 
     return toSubscriptionView(fresh)

@@ -18,6 +18,7 @@ import {
   InMemoryWebhookInbox,
   silentLogger,
 } from '../fakes/in-memory'
+import { InMemorySubscriptionOperationRepository } from '../fakes/subscription-operation-repository'
 
 const customer = {
   name: 'João da Silva',
@@ -232,7 +233,12 @@ describe('CancelSubscriptionService', () => {
   })
 
   test('cancela na Efí e marca CANCELED; escopado por consumidor', async () => {
-    const cancel = new CancelSubscriptionService(subscriptions, gateway, silentLogger)
+    const cancel = new CancelSubscriptionService(
+      subscriptions,
+      gateway,
+      silentLogger,
+      new InMemorySubscriptionOperationRepository(),
+    )
     const view = await cancel.execute('sys-a', subId)
 
     expect(view.status).toBe('CANCELED')
@@ -242,14 +248,24 @@ describe('CancelSubscriptionService', () => {
   })
 
   test('assinatura de outro consumidor → 404 (SubscriptionNotFound)', async () => {
-    const cancel = new CancelSubscriptionService(subscriptions, gateway, silentLogger)
+    const cancel = new CancelSubscriptionService(
+      subscriptions,
+      gateway,
+      silentLogger,
+      new InMemorySubscriptionOperationRepository(),
+    )
     await expect(cancel.execute('sys-b', subId)).rejects.toThrow()
   })
 
   test('não anuncia cancelamento se a Efí ainda retorna ACTIVE; conserva pedido durável', async () => {
     gateway.cancelSubscription = async () => {}
     gateway.subscriptionStatus = 'ACTIVE'
-    const cancel = new CancelSubscriptionService(subscriptions, gateway, silentLogger)
+    const cancel = new CancelSubscriptionService(
+      subscriptions,
+      gateway,
+      silentLogger,
+      new InMemorySubscriptionOperationRepository(),
+    )
     await expect(cancel.execute('sys-a', subId)).rejects.toThrow('confirmando')
     const current = await subscriptions.findById(subId)
     expect(current?.status).toBe('ACTIVE')
@@ -265,7 +281,12 @@ describe('CancelSubscriptionService', () => {
       gateway.subscriptionStatus = 'CANCELED'
       throw new Error('Resposta perdida')
     }
-    const cancel = new CancelSubscriptionService(subscriptions, gateway, silentLogger)
+    const cancel = new CancelSubscriptionService(
+      subscriptions,
+      gateway,
+      silentLogger,
+      new InMemorySubscriptionOperationRepository(),
+    )
     expect((await cancel.execute('sys-a', subId)).status).toBe('CANCELED')
     expect(
       subscriptions.outbox.filter((event) => event.eventName === 'subscription.canceled'),
@@ -273,7 +294,12 @@ describe('CancelSubscriptionService', () => {
   })
 
   test('cancelar uma já cancelada é idempotente (não chama a Efí de novo)', async () => {
-    const cancel = new CancelSubscriptionService(subscriptions, gateway, silentLogger)
+    const cancel = new CancelSubscriptionService(
+      subscriptions,
+      gateway,
+      silentLogger,
+      new InMemorySubscriptionOperationRepository(),
+    )
     await cancel.execute('sys-a', subId)
     await cancel.execute('sys-a', subId)
     expect(gateway.canceledSubscriptionIds.filter((id) => id === providerSubId)).toHaveLength(1)

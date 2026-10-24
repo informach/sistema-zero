@@ -48,16 +48,58 @@ export class InMemorySubscriptionOperationRepository implements SubscriptionOper
       return null
     operation.state = 'EXECUTING'
     operation.startedAt = now
+    operation.executionId = crypto.randomUUID()
+    operation.executionAttempts += 1
     return structuredClone(operation)
   }
   async finish(
     id: string,
+    executionId: string,
     state: 'UNKNOWN' | 'SUCCEEDED' | 'REJECTED',
     result: string,
     now: Date,
   ): Promise<void> {
     const operation = this.items.get(id)
-    if (operation?.state !== 'EXECUTING') throw new Error('Operation state conflict')
+    if (operation?.state !== 'EXECUTING' || operation.executionId !== executionId)
+      throw new Error('Operation state conflict')
     Object.assign(operation, { state, result, completedAt: now })
+  }
+  async rejectUnstartedForCancellation(subscriptionId: string, now: Date): Promise<void> {
+    for (const item of this.items.values())
+      if (
+        item.subscriptionId === subscriptionId &&
+        item.kind !== 'CANCEL' &&
+        item.state === 'READY'
+      )
+        Object.assign(item, {
+          state: 'REJECTED',
+          result: 'CANCELLATION_REQUESTED',
+          completedAt: now,
+        })
+  }
+  async resumeCancellation(
+    id: string,
+    subscriptionId: string,
+    now: Date,
+    staleAfterMs: number,
+  ): Promise<SubscriptionOperation | null> {
+    const item = this.items.get(id)
+    if (
+      !item ||
+      item.subscriptionId !== subscriptionId ||
+      item.kind !== 'CANCEL' ||
+      !['EXECUTING', 'UNKNOWN'].includes(item.state) ||
+      !item.startedAt ||
+      item.startedAt.getTime() > now.getTime() - staleAfterMs
+    )
+      return null
+    Object.assign(item, {
+      state: 'EXECUTING',
+      startedAt: now,
+      completedAt: null,
+      executionId: crypto.randomUUID(),
+      executionAttempts: item.executionAttempts + 1,
+    })
+    return structuredClone(item)
   }
 }

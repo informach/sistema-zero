@@ -71,6 +71,89 @@ describe.skipIf(!databaseUrl)('Intenções de assinatura no PostgreSQL real', ()
     expect(attempts.sort()).toEqual([false, true])
   })
 
+  test('cancelamento retoma com nova autoridade; executor antigo não conclui o novo trabalho', async () => {
+    const subscriptions = new DrizzleSubscriptionRepository(connection.db)
+    const subscription = await subscriptions.findById(subscriptionId)
+    if (!subscription) throw new Error('Missing QA subscription')
+    subscription.requestCancellation()
+    await subscriptions.save(subscription)
+    const operation = createSubscriptionOperation({ ...input(), kind: 'CANCEL' })
+    await repository.create(operation)
+    const first = await repository.start(operation.id, subscriptionId, now)
+    if (!first?.executionId) throw new Error('Missing first executor')
+    expect(
+      await repository.resumeCancellation(
+        operation.id,
+        subscriptionId,
+        new Date(now.getTime() + 29_999),
+        30_000,
+      ),
+    ).toBeNull()
+    await repository.finish(operation.id, first.executionId, 'UNKNOWN', 'PROVIDER_UNKNOWN', now)
+    const later = new Date(now.getTime() + 30_000)
+    const [left, right] = await Promise.all([
+      repository.resumeCancellation(operation.id, subscriptionId, later, 30_000),
+      repository.resumeCancellation(operation.id, subscriptionId, later, 30_000),
+    ])
+    const current = left ?? right
+    expect(Number(Boolean(left)) + Number(Boolean(right))).toBe(1)
+    expect(current?.executionId).not.toBe(first.executionId)
+    expect(current?.executionAttempts).toBe(2)
+    let staleError: unknown
+    try {
+      await repository.finish(operation.id, first.executionId, 'SUCCEEDED', 'STALE_FINISH', later)
+    } catch (error) {
+      staleError = error
+    }
+    expect(staleError).toBeInstanceOf(Error)
+    if (!current?.executionId) throw new Error('Missing replacement executor')
+    await repository.finish(operation.id, current.executionId, 'SUCCEEDED', 'CANCELED', later)
+    expect((await repository.findById(operation.id))?.result).toBe('CANCELED')
+  })
+
+  test('retomada nunca reexecuta débito/troca e pedido só retira intenções ainda não iniciadas', async () => {
+    const operation = createSubscriptionOperation({ ...input(), kind: 'CARD_UPDATE' })
+    await repository.create(operation)
+    await repository.rejectUnstartedForCancellation(subscriptionId, now)
+    expect((await repository.findById(operation.id))?.state).toBe('READY')
+    const started = await repository.start(operation.id, subscriptionId, now)
+    if (!started?.executionId) throw new Error('Missing QA card execution')
+    await repository.finish(operation.id, started.executionId, 'UNKNOWN', 'PROVIDER_UNKNOWN', now)
+    const subscriptions = new DrizzleSubscriptionRepository(connection.db)
+    const subscription = await subscriptions.findById(subscriptionId)
+    if (!subscription) throw new Error('Missing QA subscription')
+    subscription.requestCancellation()
+    await subscriptions.save(subscription)
+    await repository.rejectUnstartedForCancellation(subscriptionId, now)
+    expect((await repository.findById(operation.id))?.state).toBe('UNKNOWN')
+    expect(
+      await repository.resumeCancellation(
+        operation.id,
+        subscriptionId,
+        new Date(now.getTime() + 60_000),
+        30_000,
+      ),
+    ).toBeNull()
+    expect(
+      await repository.create(createSubscriptionOperation({ ...input(), kind: 'CANCEL' })),
+    ).toBe(false)
+  })
+
+  test('autorização de cancelamento exige pedido durável e identidade real da assinatura', async () => {
+    const operation = createSubscriptionOperation({ ...input(), kind: 'CANCEL' })
+    await repository.create(operation)
+    expect(await repository.start(operation.id, subscriptionId, now)).toBeNull()
+    const subscriptions = new DrizzleSubscriptionRepository(connection.db)
+    const subscription = await subscriptions.findById(subscriptionId)
+    if (!subscription) throw new Error('Missing QA subscription')
+    subscription.requestCancellation()
+    await subscriptions.save(subscription)
+    await connection.sql`update payments.subscription_operations set consumer_id='qa-other-owner' where id=${operation.id}`
+    expect(await repository.start(operation.id, subscriptionId, now)).toBeNull()
+    await connection.sql`update payments.subscription_operations set consumer_id='qa-owner' where id=${operation.id}`
+    expect((await repository.start(operation.id, subscriptionId, now))?.executionId).toBeString()
+  })
+
   test('CAS concede uma execução, recusa outra assinatura e não repete após resposta desconhecida', async () => {
     const operation = createSubscriptionOperation({
       ...input(),
@@ -85,7 +168,9 @@ describe.skipIf(!databaseUrl)('Intenções de assinatura no PostgreSQL real', ()
       repository.start(operation.id, subscriptionId, now),
     ])
     expect(attempts.filter(Boolean)).toHaveLength(1)
-    await repository.finish(operation.id, 'UNKNOWN', 'PROVIDER_UNKNOWN', now)
+    const executor = attempts.find(Boolean)
+    if (!executor?.executionId) throw new Error('QA execution authority missing')
+    await repository.finish(operation.id, executor.executionId, 'UNKNOWN', 'PROVIDER_UNKNOWN', now)
     expect(await repository.start(operation.id, subscriptionId, now)).toBeNull()
     const later = new Date(now.getTime() + 86_400_000)
     expect(

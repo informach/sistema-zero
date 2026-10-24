@@ -400,6 +400,8 @@ export const subscriptionOperations = paymentsSchema.table(
     createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
     expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
     startedAt: timestamp('started_at', { withTimezone: true }),
+    executionId: uuid('execution_id'),
+    executionAttempts: integer('execution_attempts').notNull().default(0),
     completedAt: timestamp('completed_at', { withTimezone: true }),
     result: text('result'),
   },
@@ -418,6 +420,10 @@ export const subscriptionOperations = paymentsSchema.table(
     ),
     check('subscription_operations_currency_check', sql`${table.currency} = 'BRL'`),
     check('subscription_operations_deadline_check', sql`${table.expiresAt} > ${table.createdAt}`),
+    check(
+      'subscription_operations_execution_check',
+      sql`(${table.executionAttempts} = 0 and ${table.executionId} is null) or (${table.executionAttempts} > 0 and ${table.executionId} is not null and ${table.startedAt} is not null)`,
+    ),
   ],
 )
 

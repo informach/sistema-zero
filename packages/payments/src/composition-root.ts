@@ -213,20 +213,24 @@ export function createApplication(env: Env): Application {
     logger,
   )
   const getSubscription = new GetSubscriptionService(subscriptions)
-  // O 4º dep (leitura por e-mail) habilita o cancelamento SELF-SERVICE do
+  // A leitura por e-mail habilita o cancelamento SELF-SERVICE do
   // assinante (executeForEmail — "minhas assinaturas").
   const subscriptionsMyRead = new DrizzleSubscriptionMyReadRepository(db)
+  const subscriptionOperations = new DrizzleSubscriptionOperationRepository(db)
   const updateSubscriptionCard = new UpdateSubscriptionCardService(
     subscriptionsMyRead,
     subscriptions,
-    new DrizzleSubscriptionOperationRepository(db),
+    subscriptionOperations,
     gateway,
   )
   const cancelSubscription = new CancelSubscriptionService(
     subscriptions,
     gateway,
     logger,
+    subscriptionOperations,
     subscriptionsMyRead,
+    () => new Date(),
+    2 * env.EFI_TOTAL_RETRY_BUDGET_MS + 30_000,
   )
   const subscriptionCancellationWorker = new SubscriptionCancellationWorker(
     subscriptions,

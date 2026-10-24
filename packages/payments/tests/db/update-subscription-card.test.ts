@@ -1,8 +1,10 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, test } from 'bun:test'
 import path from 'node:path'
 import { migrate } from 'drizzle-orm/postgres-js/migrator'
+import { CancelSubscriptionService } from '../../src/application/cancel-subscription/cancel-subscription.service'
 import { UpdateSubscriptionCardService } from '../../src/application/subscription-card/update-subscription-card.service'
 import { SubscriptionAggregate } from '../../src/domain/subscription/subscription.aggregate'
+import { createSubscriptionOperation } from '../../src/domain/subscription/subscription-operation'
 import { Customer } from '../../src/domain/value-objects/customer'
 import { IdempotencyKey } from '../../src/domain/value-objects/idempotency-key'
 import { Money } from '../../src/domain/value-objects/money'
@@ -13,7 +15,7 @@ import {
 import { DrizzleSubscriptionRepository } from '../../src/infrastructure/persistence/drizzle/subscription.repository'
 import { DrizzleSubscriptionMyReadRepository } from '../../src/infrastructure/persistence/drizzle/subscription-my-read.repository'
 import { DrizzleSubscriptionOperationRepository } from '../../src/infrastructure/persistence/drizzle/subscription-operation.repository'
-import { FakePixGateway } from '../fakes/in-memory'
+import { FakePixGateway, silentLogger } from '../fakes/in-memory'
 import { prepareTestDatabase } from './test-database'
 
 const databaseUrl = await prepareTestDatabase('sistemazero_card_update_test')
@@ -119,6 +121,100 @@ describe.skipIf(!databaseUrl)('Atualização preventiva de cartão — aplicaç�
     expect(results.some((result) => result.status === 'fulfilled')).toBe(true)
     expect(gateway.updatedCardSubscriptionIds).toHaveLength(1)
     expect((await service.getIntent(email, id, intent.id)).state).toBe('SUCCEEDED')
+  })
+
+  test('cancelamento usa o mesmo ledger e retira apenas formulário que ainda não executou', async () => {
+    const intent = await service.createIntent(email, id)
+    const cancellation = new CancelSubscriptionService(
+      subscriptions,
+      gateway,
+      silentLogger,
+      operations,
+      undefined,
+      () => now,
+      30_000,
+    )
+    expect((await cancellation.executeAdmin(id)).status).toBe('CANCELED')
+    expect((await operations.findById(intent.id))?.state).toBe('REJECTED')
+    expect((await operations.findById(intent.id))?.result).toBe('CANCELLATION_REQUESTED')
+    expect(gateway.canceledSubscriptionIds).toEqual(['provider-qa'])
+    expect(gateway.updatedCardSubscriptionIds).toHaveLength(0)
+  })
+
+  test('cancelamento não disputa com débito de resultado desconhecido e mantém pedido visível', async () => {
+    const retry = createSubscriptionOperation({
+      subscriptionId: id,
+      consumerId: 'qa-owner',
+      providerSubscriptionId: 'provider-qa',
+      kind: 'RETRY',
+      providerPaymentId: 'qa-failed-renewal',
+      amountInCents: 9700n,
+      now,
+    })
+    await operations.create(retry)
+    const started = await operations.start(retry.id, id, now)
+    if (!started?.executionId) throw new Error('Missing QA debit authority')
+    await operations.finish(retry.id, started.executionId, 'UNKNOWN', 'PROVIDER_UNKNOWN', now)
+    const cancellation = new CancelSubscriptionService(
+      subscriptions,
+      gateway,
+      silentLogger,
+      operations,
+      undefined,
+      () => now,
+      30_000,
+    )
+    expect(await failureOf(cancellation.executeAdmin(id))).toBeInstanceOf(Error)
+    expect((await subscriptions.findById(id))?.cancelRequestedAt).toBeInstanceOf(Date)
+    expect((await subscriptions.findById(id))?.status).toBe('ACTIVE')
+    expect((await operations.findById(retry.id))?.state).toBe('UNKNOWN')
+    expect(gateway.canceledSubscriptionIds).toHaveLength(0)
+    expect(gateway.retriedSubscriptionChargeIds).toHaveLength(0)
+  })
+
+  test('reinício reconcilia cancelamento aceito com resposta perdida sem repetir PUT', async () => {
+    const getSource = gateway.getSubscription.bind(gateway)
+    let lost = false
+    gateway.getSubscription = async (providerId) => {
+      if (lost) throw new Error('QA unavailable receipt')
+      return getSource(providerId)
+    }
+    gateway.cancelSubscription = async (providerId) => {
+      gateway.canceledSubscriptionIds.push(providerId)
+      gateway.subscriptionStatus = 'CANCELED'
+      lost = true
+      throw new Error('QA response lost')
+    }
+    const cancellation = new CancelSubscriptionService(
+      subscriptions,
+      gateway,
+      silentLogger,
+      operations,
+      undefined,
+      () => now,
+      30_000,
+    )
+    expect(await failureOf(cancellation.executeAdmin(id))).toBeInstanceOf(Error)
+    const pending = await operations.findActiveForSubscription(id, now)
+    expect(pending?.kind).toBe('CANCEL')
+    expect(pending?.state).toBe('UNKNOWN')
+    expect(await failureOf(cancellation.executeAdmin(id))).toBeInstanceOf(Error)
+    expect(gateway.canceledSubscriptionIds).toHaveLength(1)
+    now = new Date(now.getTime() + 30_000)
+    gateway.getSubscription = getSource
+    const reopened = new CancelSubscriptionService(
+      new DrizzleSubscriptionRepository(connection.db),
+      gateway,
+      silentLogger,
+      new DrizzleSubscriptionOperationRepository(connection.db),
+      undefined,
+      () => now,
+      30_000,
+    )
+    expect((await reopened.executeAdmin(id)).status).toBe('CANCELED')
+    expect(gateway.canceledSubscriptionIds).toHaveLength(1)
+    expect((await operations.findById(pending!.id))?.executionAttempts).toBe(2)
+    expect((await operations.findById(pending!.id))?.state).toBe('SUCCEEDED')
   })
 
   test('reabrir recupera somente a intenção vigente do titular, sem criar novo efeito', async () => {
