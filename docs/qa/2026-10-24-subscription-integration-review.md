@@ -38,6 +38,12 @@ Após conciliar o código commitado do Estúdio, Payments completo passou com
 financeira do lote anterior passou. Os testes focados adicionais acima não devem
 ser somados como se fossem novos casos de produto ou homologação ponta a ponta.
 
+O commit posterior `3d0eb050d`, da outra sessão, não altera o domínio financeiro
+nem entradas do perfil gerado do container. Sua composição passou em 101 testes
+focados / 1.609 asserções de blocos, mídia, áudio, entrada, ritmo e renderização
+Pygame Zero; o `check:validation-profile` continuou aprovado. Essa seleção não é
+prova de todas as partidas, navegador real ou desempenho do novo conjunto de jogos.
+
 A tokenização real em Chromium/Node, pelo helper da aplicação e SDK Efí em sandbox,
 passou para Visa e Mastercard. A primeira tentativa sob Bun foi interrompida e
 os processos próprios foram reconciliados; não é resultado funcional aprovado.
