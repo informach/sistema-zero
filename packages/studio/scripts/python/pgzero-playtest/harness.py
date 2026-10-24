@@ -57,7 +57,12 @@ class Tester:
     def down(self, key):
         code = KEYS[key]
         game.keyboard._press(code)
-        game.dispatch_event(pygame.event.Event(pygame.KEYDOWN, key=code, mod=0, unicode=' ' if key == 'SPACE' else ''))
+        game.dispatch_event(pygame.event.Event(pygame.KEYDOWN, key=code, mod=0, unicode=' ' if key == 'SPACE' else key if len(key) == 1 else ''))
+
+    def type(self, text):
+        """Types each character of text (letters and digits only) as a key press."""
+        for letra in text:
+            self.tap(letra)
 
     def up(self, key):
         code = KEYS[key]

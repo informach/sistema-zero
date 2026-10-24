@@ -564,4 +564,100 @@ export const PGZERO_GAME_LOADERS = {
       assets: pgzeroGameAssets('corredor-do-kung-fu', CORREDOR_DO_KUNG_FU_MEDIA),
     }
   },
+  'bolinha-rolante': async () => {
+    const [{ BOLINHA_ROLANTE_SOURCES }, { BOLINHA_ROLANTE_MEDIA }, { pgzeroGameAssets }] =
+      await Promise.all([
+        import('./bolinhaRolante.sources.generated'),
+        import('./bolinhaRolante.media.generated'),
+        import('./pgzeroGameAssets'),
+      ])
+    return {
+      entrypoint: 'main.py',
+      files: BOLINHA_ROLANTE_SOURCES,
+      assets: pgzeroGameAssets('bolinha-rolante', BOLINHA_ROLANTE_MEDIA),
+    }
+  },
+  'bolhas-que-se-dividem': async () => {
+    const [
+      { BOLHAS_QUE_SE_DIVIDEM_SOURCES },
+      { BOLHAS_QUE_SE_DIVIDEM_MEDIA },
+      { pgzeroGameAssets },
+    ] = await Promise.all([
+      import('./bolhasQueSeDividem.sources.generated'),
+      import('./bolhasQueSeDividem.media.generated'),
+      import('./pgzeroGameAssets'),
+    ])
+    return {
+      entrypoint: 'main.py',
+      files: BOLHAS_QUE_SE_DIVIDEM_SOURCES,
+      assets: pgzeroGameAssets('bolhas-que-se-dividem', BOLHAS_QUE_SE_DIVIDEM_MEDIA),
+    }
+  },
+  'masmorra-para-quatro': async () => {
+    const [{ MASMORRA_PARA_QUATRO_SOURCES }, { MASMORRA_PARA_QUATRO_MEDIA }, { pgzeroGameAssets }] =
+      await Promise.all([
+        import('./masmorraParaQuatro.sources.generated'),
+        import('./masmorraParaQuatro.media.generated'),
+        import('./pgzeroGameAssets'),
+      ])
+    return {
+      entrypoint: 'main.py',
+      files: MASMORRA_PARA_QUATRO_SOURCES,
+      assets: pgzeroGameAssets('masmorra-para-quatro', MASMORRA_PARA_QUATRO_MEDIA),
+    }
+  },
+  'duelo-por-turnos': async () => {
+    const [{ DUELO_POR_TURNOS_SOURCES }, { DUELO_POR_TURNOS_MEDIA }, { pgzeroGameAssets }] =
+      await Promise.all([
+        import('./dueloPorTurnos.sources.generated'),
+        import('./dueloPorTurnos.media.generated'),
+        import('./pgzeroGameAssets'),
+      ])
+    return {
+      entrypoint: 'main.py',
+      files: DUELO_POR_TURNOS_SOURCES,
+      assets: pgzeroGameAssets('duelo-por-turnos', DUELO_POR_TURNOS_MEDIA),
+    }
+  },
+  'passarinho-saltitante': async () => {
+    const [
+      { PASSARINHO_SALTITANTE_SOURCES },
+      { PASSARINHO_SALTITANTE_MEDIA },
+      { pgzeroGameAssets },
+    ] = await Promise.all([
+      import('./passarinhoSaltitante.sources.generated'),
+      import('./passarinhoSaltitante.media.generated'),
+      import('./pgzeroGameAssets'),
+    ])
+    return {
+      entrypoint: 'main.py',
+      files: PASSARINHO_SALTITANTE_SOURCES,
+      assets: pgzeroGameAssets('passarinho-saltitante', PASSARINHO_SALTITANTE_MEDIA),
+    }
+  },
+  'placar-dos-campeoes': async () => {
+    const [{ PLACAR_DOS_CAMPEOES_SOURCES }, { PLACAR_DOS_CAMPEOES_MEDIA }, { pgzeroGameAssets }] =
+      await Promise.all([
+        import('./placarDosCampeoes.sources.generated'),
+        import('./placarDosCampeoes.media.generated'),
+        import('./pgzeroGameAssets'),
+      ])
+    return {
+      entrypoint: 'main.py',
+      files: PLACAR_DOS_CAMPEOES_SOURCES,
+      assets: pgzeroGameAssets('placar-dos-campeoes', PLACAR_DOS_CAMPEOES_MEDIA),
+    }
+  },
+  continuar: async () => {
+    const [{ CONTINUAR_SOURCES }, { CONTINUAR_MEDIA }, { pgzeroGameAssets }] = await Promise.all([
+      import('./continuar.sources.generated'),
+      import('./continuar.media.generated'),
+      import('./pgzeroGameAssets'),
+    ])
+    return {
+      entrypoint: 'main.py',
+      files: CONTINUAR_SOURCES,
+      assets: pgzeroGameAssets('continuar', CONTINUAR_MEDIA),
+    }
+  },
 } satisfies Record<PgzeroGameKey, () => Promise<unknown>>
