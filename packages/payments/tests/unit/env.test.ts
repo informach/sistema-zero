@@ -15,6 +15,36 @@ const BASE: Record<string, string> = {
 }
 
 describe('loadEnv — refines críticos (fail-fast no boot)', () => {
+  test('links de regularização recusam protocolos inseguros, credenciais e tokens na URL', () => {
+    for (const value of [
+      'ftp://kids.example.invalid/pais',
+      'http://kids.example.invalid/pais',
+      'https://user:qa-marker@kids.example.invalid/pais',
+      'https://kids.example.invalid/pais?token=qa-marker',
+    ])
+      expect(() => loadEnv({ ...BASE, RECOVERY_KIDS_BILLING_URL: value })).toThrow(
+        'RECOVERY_KIDS_BILLING_URL',
+      )
+    expect(
+      loadEnv({ ...BASE, RECOVERY_KIDS_BILLING_URL: 'http://localhost:3008/pais/assinaturas' })
+        .RECOVERY_KIDS_BILLING_URL,
+    ).toBe('http://localhost:3008/pais/assinaturas')
+  })
+  test('mensageria de recuperação exige origem e credencial próprias juntas', () => {
+    expect(() => loadEnv({ ...BASE, GATEWAY_URL: 'http://gateway.example.invalid' })).toThrow(
+      'PAYMENTS_HMAC_SECRET',
+    )
+    expect(() => loadEnv({ ...BASE, PAYMENTS_HMAC_SECRET: 'qa-only-outbound-secret' })).toThrow(
+      'GATEWAY_URL',
+    )
+    expect(
+      loadEnv({
+        ...BASE,
+        GATEWAY_URL: 'http://gateway.example.invalid',
+        PAYMENTS_HMAC_SECRET: 'qa-only-outbound-secret',
+      }).GATEWAY_URL,
+    ).toBe('http://gateway.example.invalid')
+  })
   test('config mínima válida carrega com os defaults documentados', () => {
     const env = loadEnv(BASE)
     expect(env.EFI_REQUEST_TIMEOUT_MS).toBe(20_000)

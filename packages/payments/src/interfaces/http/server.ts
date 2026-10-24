@@ -20,6 +20,7 @@ import type { GetSubscriptionStatsService } from '../../application/payments-sta
 import type { ProcessPaymentService } from '../../application/process-payment/process-payment.service'
 import type { RefundPaymentService } from '../../application/refund-payment/refund-payment.service'
 import type { UpdateSubscriptionCardService } from '../../application/subscription-card/update-subscription-card.service'
+import type { RecoveryPolicyService } from '../../application/subscription-recovery/recovery-policy.service'
 import type { ConsumerRepository } from '../../domain/ports/consumer-repository.port'
 import type { Env } from '../../infrastructure/config/env'
 import type { Logger } from '../../infrastructure/logging/logger'
@@ -51,6 +52,7 @@ export interface HttpDeps {
   createSubscription: CreateSubscriptionService
   getSubscription: GetSubscriptionService
   cancelSubscription: CancelSubscriptionService
+  recoveryPolicy: RecoveryPolicyService
   updateSubscriptionCard: UpdateSubscriptionCardService
   handleWebhook: HandleProviderWebhookService
   handleBoletoNotification: HandleBoletoNotificationService
@@ -234,6 +236,7 @@ export function createServer(deps: HttpDeps) {
     )
     .use(
       adminRoutes({
+        recoveryPolicy: deps.recoveryPolicy,
         requireAdminEnabled: deps.requireAdminEnabled,
         internalToken: deps.internalToken,
         listPayments: deps.listPayments,

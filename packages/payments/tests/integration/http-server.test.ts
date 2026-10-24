@@ -20,6 +20,7 @@ import { GetSubscriptionStatsService } from '../../src/application/payments-stat
 import { ProcessPaymentService } from '../../src/application/process-payment/process-payment.service'
 import { RefundPaymentService } from '../../src/application/refund-payment/refund-payment.service'
 import { UpdateSubscriptionCardService } from '../../src/application/subscription-card/update-subscription-card.service'
+import { RecoveryPolicyService } from '../../src/application/subscription-recovery/recovery-policy.service'
 import type { PaymentAdminReadRepository } from '../../src/domain/ports/payment-admin-read.port'
 import type { PaymentMyReadRepository } from '../../src/domain/ports/payment-my-read.port'
 import type { SubscriptionAdminReadRepository } from '../../src/domain/ports/subscription-admin-read.port'
@@ -42,9 +43,11 @@ import {
   InMemoryWebhookInbox,
   silentLogger,
 } from '../fakes/in-memory'
+import { InMemoryRecoveryPolicyRepository } from '../fakes/recovery-policy-repository'
 import { InMemorySubscriptionOperationRepository } from '../fakes/subscription-operation-repository'
 
 interface BuildOpts {
+  recoveryConfigurationReady?: boolean
   async?: boolean
   rateLimit?: number
   allowedCidrsA?: string[]
@@ -68,6 +71,7 @@ function buildApp(opts: BuildOpts = {}) {
   const repo = new InMemoryPaymentRepository()
   const subscriptionRepo = new InMemorySubscriptionRepository()
   const subscriptionOperations = new InMemorySubscriptionOperationRepository()
+  const recoveryPolicies = new InMemoryRecoveryPolicyRepository()
   const planRegistry = new InMemorySubscriptionPlanRegistry()
   const gateway = new FakePixGateway()
   const consumers = new InMemoryConsumerRepository()
@@ -173,6 +177,10 @@ function buildApp(opts: BuildOpts = {}) {
   }
 
   const app = createServer({
+    recoveryPolicy: new RecoveryPolicyService(
+      recoveryPolicies,
+      () => opts.recoveryConfigurationReady ?? false,
+    ),
     env,
     logger: silentLogger,
     consumers,
@@ -262,8 +270,89 @@ function buildApp(opts: BuildOpts = {}) {
     listMySubscriptions: new ListMySubscriptionsService(subscriptionsMyRead),
   })
 
-  return { app, repo, subscriptionRepo, gateway }
+  return { app, repo, subscriptionRepo, gateway, recoveryPolicies }
 }
+
+describe('Admin: política de regularização autenticada e auditada', () => {
+  const path = 'http://localhost/payments/admin/subscription-recovery/policy'
+  const body = { expectedVersion: 1, windowDays: 7, reminderDays: [3, 6], enabled: false }
+  const staff = {
+    'x-auth-user-role': 'staff',
+    'x-auth-user-status': 'active',
+    'x-auth-user-id': 'qa-staff',
+  }
+  const admin = {
+    ...staff,
+    'x-auth-user-role': 'admin',
+    'x-auth-user-id': 'qa-admin',
+    'content-type': 'application/json',
+  }
+  const put = (headers: Record<string, string>, value: unknown = body) =>
+    new Request(path, { method: 'PUT', headers, body: JSON.stringify(value) })
+  test('equipe lê; só admin altera e o autor vem do transporte confiável', async () => {
+    const { app, recoveryPolicies } = buildApp({ requireAdmin: true })
+    await recoveryPolicies.initialize(new Date())
+    const read = await app.handle(new Request(path, { headers: staff }))
+    expect(read.status).toBe(200)
+    expect(await read.json()).toMatchObject({
+      configurationReady: false,
+      configuration: { version: 1, enabled: false, windowDays: 7 },
+    })
+    expect((await app.handle(put({ ...staff, 'content-type': 'application/json' }))).status).toBe(
+      403,
+    )
+    expect(
+      (await app.handle(put(admin, { ...body, actorId: 'forged-browser-actor' }))).status,
+    ).toBe(400)
+    const saved = await app.handle(put(admin))
+    expect(saved.status).toBe(200)
+    expect(await saved.json()).toMatchObject({
+      configuration: { version: 2, updatedBy: 'qa-admin' },
+    })
+    const stale = await app.handle(put(admin))
+    expect(stale.status).toBe(409)
+    expect(await stale.json()).toEqual({
+      error: {
+        code: 'CONCURRENCY_CONFLICT',
+        message: 'Este registro mudou. Recarregue antes de tentar novamente.',
+      },
+    })
+  })
+  test('configuração incompleta não ativa; própria conta e prova interna são obrigatórias', async () => {
+    const { app, recoveryPolicies } = buildApp({
+      requireAdmin: true,
+      internalToken: 'qa-policy-internal-token',
+    })
+    await recoveryPolicies.initialize(new Date())
+    expect((await app.handle(put(admin))).status).toBe(401)
+    const trusted = { ...admin, 'x-internal-token': 'qa-policy-internal-token' }
+    expect((await app.handle(put({ ...trusted, 'x-auth-user-id': '' }))).status).toBe(401)
+    expect(
+      (await app.handle(put({ ...trusted, 'x-auth-impersonator-id': 'qa-support' }))).status,
+    ).toBe(403)
+    const denied = await app.handle(put(trusted, { ...body, enabled: true }))
+    expect(denied.status).toBe(409)
+    expect(await denied.json()).toMatchObject({
+      error: { code: 'RECOVERY_CONFIGURATION_UNAVAILABLE' },
+    })
+    expect((await recoveryPolicies.get())?.enabled).toBe(false)
+    expect((await recoveryPolicies.get())?.policy.version).toBe(1)
+  })
+  test('configuração pronta pode ativar; agenda incoerente é recusada sem escrita', async () => {
+    const { app, recoveryPolicies } = buildApp({
+      requireAdmin: true,
+      recoveryConfigurationReady: true,
+    })
+    await recoveryPolicies.initialize(new Date())
+    expect((await app.handle(put(admin, { ...body, reminderDays: [6, 3] }))).status).toBe(400)
+    const saved = await app.handle(put(admin, { ...body, enabled: true }))
+    expect(saved.status).toBe(200)
+    expect(await saved.json()).toMatchObject({
+      configurationReady: true,
+      configuration: { version: 2, enabled: true, updatedBy: 'qa-admin' },
+    })
+  })
+})
 
 const now = () => Math.floor(Date.now() / 1000)
 function sig(secret: string, msg: string): string {

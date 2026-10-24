@@ -606,6 +606,28 @@ const config: GatewayConfigInput = {
       audit: {},
     },
     // ── Minhas compras (app community — self-service do COMPRADOR) ──────────
+    {
+      id: 'payments-admin-recovery-policy-read',
+      methods: ['GET'],
+      pathPattern: '/payments/admin/subscription-recovery/policy',
+      service: 'payments',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { roles: ['superadmin', 'admin', 'staff'], statuses: ['active'] },
+      transforms: paymentsInternalTransforms,
+      rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
+    },
+    {
+      id: 'payments-admin-recovery-policy-write',
+      methods: ['PUT'],
+      pathPattern: '/payments/admin/subscription-recovery/policy',
+      service: 'payments',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { roles: ['superadmin', 'admin'], statuses: ['active'] },
+      transforms: paymentsInternalTransforms,
+      rateLimit: { max: 30, windowMs: 60_000, by: 'principal' },
+      maxBodyBytes: 1024,
+      audit: {},
+    },
     // JWT obrigatório (qualquer conta ativa, inclusive `customer` — sem `roles`).
     // O gateway injeta X-Auth-User-* (inclui o e-mail) e o payments filtra as
     // compras por `customer->>'email'` = e-mail das claims. O literal `my` vence

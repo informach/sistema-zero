@@ -10,6 +10,30 @@ const env = loadEnv({})
 const service = { name: 'p', upstreamGroups: { default: [{ url: 'http://p' }] } }
 
 describe('loadGatewayConfig', () => {
+  test('política de regularização tem leitura staff e escrita admin, limitada e auditada', () => {
+    const registry = new RouteRegistry(
+      realConfig.routes.map((route) => routeConfigSchema.parse(route)),
+    )
+    expect(
+      registry.resolve('GET', '/payments/admin/subscription-recovery/policy', 'v1')?.route,
+    ).toMatchObject({
+      id: 'payments-admin-recovery-policy-read',
+      auth: { strategies: ['jwt'] },
+      authorize: { roles: ['superadmin', 'admin', 'staff'], statuses: ['active'] },
+    })
+    expect(
+      registry.resolve('PUT', '/payments/admin/subscription-recovery/policy', 'v1')?.route,
+    ).toMatchObject({
+      id: 'payments-admin-recovery-policy-write',
+      auth: { strategies: ['jwt'] },
+      authorize: { roles: ['superadmin', 'admin'], statuses: ['active'] },
+      maxBodyBytes: 1024,
+      audit: {},
+    })
+    expect(
+      registry.resolve('POST', '/payments/admin/subscription-recovery/policy', 'v1'),
+    ).toBeUndefined()
+  })
   test('retirada de mensagem exige consumidor HMAC e rota própria limitada', () => {
     const registry = new RouteRegistry(
       realConfig.routes.map((route) => routeConfigSchema.parse(route)),

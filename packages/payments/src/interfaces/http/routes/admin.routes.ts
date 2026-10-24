@@ -1,4 +1,6 @@
+import { ForbiddenError, UnauthorizedError } from '@sistemazero/core/http'
 import { Elysia } from 'elysia'
+import { z } from 'zod'
 import type { CancelSubscriptionService } from '../../../application/cancel-subscription/cancel-subscription.service'
 import type { GetAdminPaymentService } from '../../../application/get-admin-payment/get-admin-payment.service'
 import type { GetAdminSubscriptionService } from '../../../application/get-admin-subscription/get-admin-subscription.service'
@@ -9,6 +11,7 @@ import type { GetDailyPaymentsStatsService } from '../../../application/payments
 import type { GetPaymentsStatsService } from '../../../application/payments-stats/get-payments-stats.service'
 import type { GetSubscriptionStatsService } from '../../../application/payments-stats/get-subscription-stats.service'
 import type { RefundPaymentService } from '../../../application/refund-payment/refund-payment.service'
+import type { RecoveryPolicyService } from '../../../application/subscription-recovery/recovery-policy.service'
 import { requireAdmin, requireAdminWrite } from '../admin-auth'
 import {
   AdminIdParam,
@@ -40,6 +43,7 @@ export interface AdminRoutesDeps {
   // Escrita admin
   refundPayment: RefundPaymentService
   cancelSubscription: CancelSubscriptionService
+  recoveryPolicy: RecoveryPolicyService
 }
 
 /**
@@ -52,6 +56,31 @@ export interface AdminRoutesDeps {
 export function adminRoutes(deps: AdminRoutesDeps) {
   return (
     new Elysia({ prefix: '/payments/admin' })
+      .get('/subscription-recovery/policy', ({ headers }) => {
+        requireAdmin(headers, deps.requireAdminEnabled, deps.internalToken)
+        return deps.recoveryPolicy.get()
+      })
+      .put(
+        '/subscription-recovery/policy',
+        ({ headers, body }) => {
+          requireAdminWrite(headers, deps.requireAdminEnabled, deps.internalToken)
+          if (headers['x-auth-impersonator-id'])
+            throw new ForbiddenError(
+              'Entre com a própria conta da equipe para alterar esta configuração.',
+            )
+          const actorId = headers['x-auth-user-id']?.trim()
+          if (!actorId) throw new UnauthorizedError('Autenticação necessária')
+          return deps.recoveryPolicy.update(body, actorId)
+        },
+        {
+          body: z.strictObject({
+            expectedVersion: z.number().int().min(1),
+            windowDays: z.number().int().min(1).max(30),
+            reminderDays: z.array(z.number().int().min(1).max(29)).max(3),
+            enabled: z.boolean(),
+          }),
+        },
+      )
       .get(
         '/payments',
         async ({ query, headers }) => {

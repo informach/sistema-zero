@@ -20,12 +20,14 @@ import { GetSubscriptionStatsService } from './application/payments-stats/get-su
 import { ProcessPaymentService } from './application/process-payment/process-payment.service'
 import { RefundPaymentService } from './application/refund-payment/refund-payment.service'
 import { UpdateSubscriptionCardService } from './application/subscription-card/update-subscription-card.service'
+import { RecoveryPolicyService } from './application/subscription-recovery/recovery-policy.service'
 import type { Env } from './infrastructure/config/env'
 import { InProcessEventPublisher } from './infrastructure/events/in-process-event-publisher'
 import { loadEfiCertificate } from './infrastructure/gateways/efi/certificate'
 import { EfiClient } from './infrastructure/gateways/efi/efi.client'
 import { EfiPaymentGateway } from './infrastructure/gateways/efi/efi.gateway'
 import { EfiCobrancasClient } from './infrastructure/gateways/efi/efi-cobrancas.client'
+import { createRecoveryMessagingGateway } from './infrastructure/gateways/recovery-messaging.gateway'
 import { createLogger, type Logger } from './infrastructure/logging/logger'
 import { withSentryMirror } from './infrastructure/observability/sentry'
 import { OutboxPoller } from './infrastructure/outbox/outbox-poller'
@@ -40,6 +42,7 @@ import { DrizzlePaymentRepository } from './infrastructure/persistence/drizzle/p
 import { DrizzlePaymentAdminReadRepository } from './infrastructure/persistence/drizzle/payment-admin-read.repository'
 import { DrizzlePaymentMyReadRepository } from './infrastructure/persistence/drizzle/payment-my-read.repository'
 import { PgNotificationListener } from './infrastructure/persistence/drizzle/pg-notification-listener'
+import { DrizzleRecoveryPolicyRepository } from './infrastructure/persistence/drizzle/recovery-policy.repository'
 import { DrizzleSubscriptionRepository } from './infrastructure/persistence/drizzle/subscription.repository'
 import { DrizzleSubscriptionAdminReadRepository } from './infrastructure/persistence/drizzle/subscription-admin-read.repository'
 import { DrizzleSubscriptionMyReadRepository } from './infrastructure/persistence/drizzle/subscription-my-read.repository'
@@ -99,6 +102,22 @@ export function createApplication(env: Env): Application {
     max: env.DATABASE_POOL_MAX,
   })
   const db = connection.db
+  const recoveryPolicies = new DrizzleRecoveryPolicyRepository(db)
+  const recoveryMessaging =
+    env.GATEWAY_URL && env.PAYMENTS_HMAC_SECRET
+      ? createRecoveryMessagingGateway({
+          gatewayUrl: env.GATEWAY_URL,
+          hmacSecret: env.PAYMENTS_HMAC_SECRET,
+        })
+      : null
+  const recoveryPolicy = new RecoveryPolicyService(recoveryPolicies, () =>
+    Boolean(
+      recoveryMessaging &&
+        env.EFI_ACCOUNT_IDENTIFIER &&
+        env.RECOVERY_KIDS_BILLING_URL &&
+        env.RECOVERY_ADULT_BILLING_URL,
+    ),
+  )
 
   // Adapters de persistência
   const payments = new DrizzlePaymentRepository(db)
@@ -318,6 +337,7 @@ export function createApplication(env: Env): Application {
 
   // Borda HTTP
   const server = createServer({
+    recoveryPolicy,
     env,
     logger,
     consumers,
@@ -355,6 +375,8 @@ export function createApplication(env: Env): Application {
   return {
     logger,
     async start() {
+      // Idempotent default seed, never overwrites operator policy or enables it.
+      await recoveryPolicies.initialize(new Date())
       outboxPoller.start()
       reconciliationWorker.start()
       subscriptionReconciliationWorker.start()
