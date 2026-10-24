@@ -75,8 +75,8 @@ for (const theme of ['light', 'dark'] as const) {
     await page.screenshot({ path: `.cache/component-panel-mirror-${theme}.png` })
     await panel.getByRole('button', { name: 'Cancelar', exact: true }).click()
     await panel.getByRole('button', { name: 'Cortar', exact: true }).click()
-    await panel.getByRole('button', { name: 'Em volta', exact: true }).click()
-    await expect(panel.getByRole('button', { name: 'Em volta', exact: true })).toHaveCSS(
+    await panel.getByRole('button', { name: 'Corte em faixa', exact: true }).click()
+    await expect(panel.getByRole('button', { name: 'Corte em faixa', exact: true })).toHaveCSS(
       'background-color',
       await page
         .getByRole('button', { name: 'Modelar', exact: true })

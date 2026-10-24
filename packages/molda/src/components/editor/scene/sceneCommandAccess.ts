@@ -49,6 +49,7 @@ export const SCENE_COMMAND_ACCESS: Readonly<Record<SceneCommandId, SceneCommandF
   'tool.lasso': 'model.area-select',
   // Em Animar as mesmas alças posam a peça: `animate.create` está na mesma faixa (a básica).
   'tool.move': 'model.pieces',
+  'tool.pull': 'model.mesh',
   'tool.rotate': 'model.pieces',
   'tool.scale': 'model.pieces',
   'node.duplicate': 'model.pieces',
@@ -64,6 +65,7 @@ export const SCENE_COMMAND_ACCESS: Readonly<Record<SceneCommandId, SceneCommandF
   'view.isolate': 'always',
   'view.frame': 'always',
   'view.grid': 'always',
+  'view.xray': 'always',
   'view.supports': 'always',
   'view.reference': 'model.reference',
   'mesh.extrude': 'model.mesh',

@@ -24,7 +24,7 @@ export function SceneComponentOperation({
     mirror: 'Espelhar',
     duplicate: 'Duplicar',
     extrude: 'Puxar',
-    create: COPY.scene.createFaceEdge.label,
+    create: selection?.mode === 'edge' ? 'Criar face' : COPY.scene.createFaceEdge.label,
     fill: 'Fechar buraco',
     ring: 'Cortar',
   }[spec.kind]
@@ -32,24 +32,62 @@ export function SceneComponentOperation({
     operation.cancel()
     onBack()
   }
+  const help = {
+    mirror: (
+      <>
+        <p>Copie as faces para o outro lado ou vire as faces escolhidas.</p>
+        <p>O espelho usa o meio da peça e fica fixo enquanto você edita.</p>
+        <p>Continuar espelhando mantém os dois lados ligados no projeto.</p>
+      </>
+    ),
+    duplicate: (
+      <>
+        <p>Crie uma cópia das faces e mova com as setas ou os valores X, Y e Z.</p>
+        <p>Aplicar confirma a cópia e o movimento. Cancelar conserva as faces originais.</p>
+      </>
+    ),
+    extrude: (
+      <>
+        <p>
+          {selection?.mode === 'edge'
+            ? 'Arraste a linha no modelo, use as setas de Mover ou ajuste os valores.'
+            : 'Arraste a face no modelo, use as setas de Mover ou ajuste os valores.'}
+        </p>
+        <p>Aplicar cria uma parte ligada à peça. Cancelar descarta a prévia.</p>
+      </>
+    ),
+    create: (
+      <>
+        <p>
+          {selection?.mode === 'vertex'
+            ? COPY.scene.createFaceEdge.vertexHint
+            : COPY.scene.createFaceEdge.edgeHint}
+        </p>
+        {selection?.mode === 'vertex' && <p>Use Shift para escolher vários pontos.</p>}
+        {selection?.mode === 'edge' && (
+          <p>Com duas linhas, a nova face usa a pintura da primeira linha escolhida.</p>
+        )}
+        <p>{COPY.scene.createFaceEdge.preserveHint}</p>
+      </>
+    ),
+    fill: (
+      <>
+        <p>Escolha as linhas ao redor do buraco. Use Shift para escolher várias.</p>
+        <p>O contorno precisa ser plano. A pintura das faces ao redor é preservada.</p>
+      </>
+    ),
+    ring: (
+      <>
+        <p>Clique em uma linha da peça. A prévia mostra por onde o corte passa.</p>
+        <p>Ajuste de 1 a 16 cortes. O corte segue uma faixa de faces com 4 lados.</p>
+        <p>Escolha outra linha para mudar a faixa. Na posição, 0% centraliza os cortes.</p>
+      </>
+    ),
+  }[spec.kind]
   return (
     <ComponentPage
       title={title}
-      description={
-        spec.kind === 'mirror'
-          ? 'Crie o outro lado igualzinho.'
-          : spec.kind === 'create'
-            ? COPY.scene.createFaceEdge.description
-            : spec.kind === 'extrude'
-              ? selection?.mode === 'edge'
-                ? 'Puxe as linhas para criar novas faces ligadas a elas.'
-                : 'Puxe os pontos para criar novas linhas ligadas a eles.'
-              : spec.kind === 'duplicate'
-                ? 'Crie uma cópia das faces na mesma peça.'
-                : spec.kind === 'ring'
-                  ? 'Adicione linhas sem separar a peça.'
-                  : 'Crie uma face no contorno escolhido.'
-      }
+      help={{ title: `Como usar ${title}`, content: help }}
       backLabel={
         spec.kind === 'extrude' || spec.kind === 'create'
           ? selection?.mode === 'edge'
@@ -104,9 +142,6 @@ export function SceneComponentOperation({
               </ComponentButton>
             ),
           )}
-          <p className="mld-component-description">
-            Usar o meio da peça como espelho. O plano fica fixo enquanto você edita.
-          </p>
           <div className="mld-component-note">
             <label className="flex min-h-11 items-center gap-2 font-bold">
               <input
@@ -119,54 +154,33 @@ export function SceneComponentOperation({
               />
               Continuar espelhando
             </label>
-            <p>
-              {spec.copy
-                ? 'Ao mudar um lado, o outro muda junto. O vínculo fica salvo no projeto.'
-                : 'Continuar espelhando está disponível ao copiar para o outro lado.'}
-            </p>
           </div>
         </>
       )}
-      {(spec.kind === 'duplicate' || spec.kind === 'extrude') && (
-        <>
-          <div className="mld-component-note">
-            {spec.kind === 'extrude'
-              ? 'Arraste as setas de Mover ou ajuste quanto puxar em cada eixo.'
-              : 'Mova a cópia para outro lugar. Arraste as setas de Mover ou ajuste os valores abaixo.'}
-          </div>
-          {(['X', 'Y', 'Z'] as const).map((axis, i) => (
-            <NumberField
-              key={axis}
-              label={`${spec.kind === 'extrude' ? 'Puxar' : 'Mover cópia'} ${axis}`}
-              name={`component${spec.kind === 'extrude' ? 'Extrude' : 'Duplicate'}${axis}`}
-              value={spec.offset[i]!}
-              measurementStep={spec.kind === 'extrude' ? measurementStep : undefined}
-              change={(n) => {
-                const offset: Vec3 = [...spec.offset]
-                offset[i] = n
-                operation.configure({ ...spec, offset })
-              }}
-            />
-          ))}
-          <p className="mld-component-description">
-            {spec.kind === 'extrude'
-              ? 'Aplicar cria a parte nova e mantém a ligação com a peça. Cancelar descarta a prévia.'
-              : 'Aplicar confirma a cópia e o movimento juntos. Cancelar conserva as faces originais.'}
-          </p>
-        </>
-      )}
+      {(spec.kind === 'duplicate' || spec.kind === 'extrude') &&
+        (['X', 'Y', 'Z'] as const).map((axis, i) => (
+          <NumberField
+            key={axis}
+            label={`${spec.kind === 'extrude' ? 'Puxar' : 'Mover cópia'} ${axis}`}
+            name={`component${spec.kind === 'extrude' ? 'Extrude' : 'Duplicate'}${axis}`}
+            value={spec.offset[i]!}
+            measurementStep={spec.kind === 'extrude' ? measurementStep : undefined}
+            change={(n) => {
+              const offset: Vec3 = [...spec.offset]
+              offset[i] = n
+              operation.configure({ ...spec, offset })
+            }}
+          />
+        ))}
       {(spec.kind === 'fill' || spec.kind === 'create') && (
         <>
-          <div className="mld-component-note">
-            <strong>
-              {spec.kind === 'create'
-                ? selection?.mode === 'vertex'
-                  ? COPY.scene.createFaceEdge.vertexHint
-                  : COPY.scene.createFaceEdge.edgeHint
-                : 'Escolha as linhas ao redor do buraco.'}
-            </strong>
-            <p>Use Shift para escolher várias partes.</p>
-          </div>
+          <p className="mld-component-description">
+            {selection?.mode === 'vertex'
+              ? 'Escolha os pontos.'
+              : spec.kind === 'create'
+                ? 'Clique em duas linhas da mesma peça.'
+                : 'Escolha as linhas.'}
+          </p>
           <p role="status">
             {selection?.ids.length ?? 0}{' '}
             {selection?.mode === 'vertex' ? 'pontos escolhidos' : 'linhas escolhidas'}
@@ -194,11 +208,6 @@ export function SceneComponentOperation({
               </select>
             </label>
           )}
-          <p className="mld-component-description">
-            {spec.kind === 'create'
-              ? COPY.scene.createFaceEdge.preserveHint
-              : 'O contorno precisa ser plano. A pintura das faces ao redor é preservada.'}
-          </p>
         </>
       )}
       {spec.kind === 'ring' && (
@@ -213,23 +222,14 @@ export function SceneComponentOperation({
               Livre
             </ComponentButton>
             <ComponentButton tone="primary" aria-pressed>
-              Em volta
+              Corte em faixa
             </ComponentButton>
           </fieldset>
-          <div className="mld-component-note">
-            <strong>1. Clique em uma linha da peça.</strong>
-            <p>2. Ajuste onde cortar.</p>
-            <p>A prévia mostra por onde o corte passa.</p>
-          </div>
           <SceneLoopCutControls
             count={spec.count}
             offset={spec.offset}
             change={(count, offset) => operation.configure({ ...spec, count, offset })}
           />
-          <p className="mld-component-description">
-            De 1 a 16 cortes. O corte em volta segue uma faixa de faces com 4 lados. Marque uma
-            linha diferente para mudar a faixa.
-          </p>
         </>
       )}
       <label className="flex min-h-11 items-center gap-2 text-sm font-bold">
@@ -242,7 +242,7 @@ export function SceneComponentOperation({
         />
         Mostrar o resultado antes de aplicar
       </label>
-      {operation.error && (
+      {operation.error && !(spec.kind === 'create' && (selection?.ids.length ?? 0) < 2) && (
         <p
           role={operation.owner?.targets.length ? 'alert' : 'status'}
           className="mld-component-description"

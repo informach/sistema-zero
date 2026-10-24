@@ -46,11 +46,16 @@ export function useSceneFacePreview(
     [busy, setBusy] = useState(false),
     [amount, setAmount] = useState(0),
     [dragging, setDragging] = useState(false),
-    active = useRef<SurfaceOwner | null>(null)
+    active = useRef<SurfaceOwner | null>(null),
+    // O motivo da última recusa, lido logo depois de um arrasto que fecha a prévia sozinho.
+    refusal = useRef<string | null>(null)
   const gesture = useMemo(
     () =>
       createSceneMeshGesture(editor, (error) => {
-        setError(error instanceof SceneValidationError ? error.message : COPY.scene.commandFailed)
+        const message =
+          error instanceof SceneValidationError ? error.message : COPY.scene.commandFailed
+        refusal.current = message
+        setError(message)
       }),
     [editor],
   )
@@ -216,6 +221,11 @@ export function useSceneFacePreview(
         owner.surface = prepareMeshThickness(expected, selection.faceIds)
     },
     update: (amount: number) => update(amount),
+    takeRefusal() {
+      const message = refusal.current
+      refusal.current = null
+      return message
+    },
     transform: {
       dragging,
       error,

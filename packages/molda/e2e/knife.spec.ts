@@ -166,18 +166,16 @@ test('surface knife closes an interior contour, extrudes its center and undoes b
   expect(errors).toEqual([])
 })
 
-test('Loop cut is available from Cortar, previews three shifted loops and applies one undoable surface edit', async ({
-  page,
-}) => {
+test('Corte em faixa fica disponível em Cortar e aplica um corte reversível', async ({ page }) => {
   const errors: string[] = []
   page.on('pageerror', (error) => errors.push(error.message))
   const source = addScenePrimitive(
-    createSceneProject({ kind: 'empty', name: 'Loop cut' }),
+    createSceneProject({ kind: 'empty', name: 'Corte em faixa' }),
     'box',
     'corpo',
   )
   const { panel, canvas, screen } = await openKnife(page, source)
-  await panel.getByRole('button', { name: 'Loop cut', exact: true }).click()
+  await panel.getByRole('button', { name: 'Corte em faixa', exact: true }).click()
   const seed = screen(0, 0.5)
   await page.mouse.move(seed.x, seed.y)
   await expect(panel.getByRole('button', { name: 'Aplicar corte' })).toBeDisabled()
@@ -201,7 +199,7 @@ test('Loop cut is available from Cortar, previews three shifted loops and applie
   const cut = await downloadProject(page)
   expect(cut.nodes).toEqual(sceneToJson(source).nodes)
   const mesh = cut.geometries[0]!
-  if (mesh.kind !== 'mesh') throw new Error('Loop cut não criou uma malha editável')
+  if (mesh.kind !== 'mesh') throw new Error('Corte em faixa não criou uma malha editável')
   expect(Object.keys(mesh.faces)).toHaveLength(18)
   expect(Object.keys(mesh.vertices)).toHaveLength(20)
   await page
@@ -221,7 +219,7 @@ test('Loop cut is available from Cortar, previews three shifted loops and applie
     .getByRole('button', { name: 'Cortar', exact: true })
     .and(page.locator('[aria-keyshortcuts="K"]'))
     .click()
-  await panel.getByRole('button', { name: 'Loop cut', exact: true }).click()
+  await panel.getByRole('button', { name: 'Corte em faixa', exact: true }).click()
   await panel.getByRole('button', { name: 'Aumentar quantidade de cortes' }).click()
   await expect(panel.getByLabel('Quantidade de cortes', { exact: true })).toHaveText('2')
   const position = panel.getByRole('spinbutton', { name: 'Posição do conjunto (%)' })

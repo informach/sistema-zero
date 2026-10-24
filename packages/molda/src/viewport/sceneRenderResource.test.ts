@@ -1,5 +1,13 @@
 import { describe, expect, test } from 'bun:test'
-import { DataTexture, Mesh, MeshStandardMaterial, Raycaster, SRGBColorSpace, Vector3 } from 'three'
+import {
+  BackSide,
+  DataTexture,
+  Mesh,
+  MeshStandardMaterial,
+  Raycaster,
+  SRGBColorSpace,
+  Vector3,
+} from 'three'
 import {
   addSceneMirror,
   deleteSceneNodes,
@@ -319,4 +327,28 @@ describe('scene draw resource ownership', () => {
     resource.dispose()
     expect(() => new RgbaTexture(new Uint8Array(4), 2, 2)).toThrow('Dimensões')
   })
+})
+
+test('open meshes show a dark back that never takes a click and fades with the X-ray', () => {
+  const source = migrateLegacyModel(makeModel()).document
+  const resource = new SceneRenderResource()
+  try {
+    resource.update(source)
+    const mesh = resource.root.children.find((child) => child instanceof Mesh) as Mesh
+    const back = mesh.children.find((child) => child instanceof Mesh) as Mesh
+    expect(back.geometry).toBe(mesh.geometry)
+    expect((back.material as MeshStandardMaterial).side).toBe(BackSide)
+    expect(resource.backSides()).toContain(back)
+    // From inside the piece, only its real material decides what is hit.
+    const ray = new Raycaster(new Vector3(0, 0, 0), new Vector3(0, 1, 0))
+    const hits: unknown[] = []
+    back.raycast(ray, hits as never)
+    expect(hits).toHaveLength(0)
+    resource.setXray(true)
+    expect((back.material as MeshStandardMaterial).transparent).toBe(true)
+    resource.setXray(false)
+    expect((back.material as MeshStandardMaterial).transparent).toBe(false)
+  } finally {
+    resource.dispose()
+  }
 })

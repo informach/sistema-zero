@@ -15,6 +15,7 @@ import { sceneBaseColor, scenePalette } from '../../../scene/composite'
 import type { MoldaSceneDocument, SceneMeshGeometry } from '../../../scene/document'
 import { indexSceneDocument } from '../../../scene/documentIndex'
 import { evaluateSceneNodeFlags } from '../../../scene/evaluate'
+import type { AffineMatrix } from '../../../scene/matrix'
 import { bevelMeshEdges } from '../../../scene/meshBevel'
 import {
   meshComponentIds,
@@ -47,6 +48,7 @@ import type { SceneSkinInfluence } from '../../../scene/skin'
 import { setSceneSkinWeights } from '../../../scene/skinCommands'
 import { SceneValidationError } from '../../../scene/validation'
 import type { EditorStore } from '../../../state/editorStore'
+import type { SceneTransformIntent } from '../../../viewport/sceneViewportTypes'
 import { useMoldaToolGate } from '../../toolAccess'
 import type { SceneUvTexture } from './SceneUvCanvas'
 import { useSceneComponentTransform } from './useSceneComponentTransform'
@@ -67,6 +69,7 @@ export function useSceneComponents({
   additive,
   cancel,
   run,
+  notify,
 }: {
   editor: EditorStore<MoldaSceneDocument>
   index: ReturnType<typeof indexSceneDocument>
@@ -74,6 +77,8 @@ export function useSceneComponents({
   covered: ReadonlySet<string>
   additive: boolean
   cancel(): void
+  /** Um puxar pelo palco que não deu certo explica o motivo, em vez de sumir calado. */
+  notify?(message: string): void
   run(
     command: (source: MoldaSceneDocument) => MoldaSceneDocument,
     selection?: 'created' | 'clear',
@@ -203,6 +208,9 @@ export function useSceneComponents({
     [mesh, selection],
   )
   const softMove = selection?.mode === 'vertex' && softEnabled
+  // Arrastar a face ou a linha escolhida já puxa: o Puxar abre no começo do arrasto e, ao soltar,
+  // fica aberto no painel com os números para ajustar, como quando começa pelo botão Puxar.
+  const pull = useRef<{ kind: 'face' | 'edge'; moved: boolean } | null>(null)
   const softRadius = Number(softReach)
   const softValid = softReach.trim() !== '' && Number.isFinite(softRadius) && softRadius > 0
 
@@ -283,6 +291,22 @@ export function useSceneComponents({
       if (expandFaces) ids = meshCoplanarFaces(liveMesh, ids)
       activeWeights.current = null
       const previous = current.ids.filter((id) => alive.has(id))
+      const createFacePair =
+        operation.kind === 'create' && current.mode === 'edge' && toggle && ids.length === 1
+      if (createFacePair) {
+        const id = ids[0]!
+        const next = {
+          ...current,
+          ids: previous.includes(id)
+            ? previous.filter((chosen) => chosen !== id)
+            : previous.length >= 2
+              ? [id]
+              : [...previous, id],
+        }
+        setSession(next)
+        operation.target(next.ids)
+        return
+      }
       const chosen = new Set(previous)
       const grouped = expandLoop || expandFaces
       const removeGroup = grouped && ids.every((id) => chosen.has(id))
@@ -363,6 +387,38 @@ export function useSceneComponents({
       mode: selection.mode,
       ids: updatedIds,
     })
+  }
+  function startPull(): 'face' | 'edge' | null {
+    if (!selection?.ids.length || !mesh || !fullMesh || !editable || blocked) return null
+    if (selection.mode === 'face') {
+      preview.takeRefusal()
+      beginPreview('extrude')
+      if (preview.transform.begin()) return 'face'
+      preview.cancel()
+      return null
+    }
+    if (selection.mode !== 'edge') return null
+    meshCheck.cancel()
+    transform.cancel()
+    if (!operation.start('extrude', { ...selection, geometryId: mesh.id }, fullMesh)) return null
+    if (operation.transform.begin()) return 'edge'
+    operation.cancel()
+    return null
+  }
+  function endPull(commit: boolean) {
+    const active = pull.current
+    pull.current = null
+    if (active?.kind === 'face') {
+      preview.transform.end(commit)
+      if (!commit || !active.moved) preview.cancel()
+      // A prévia de faces fecha sozinha quando recusa: o motivo não pode sumir junto.
+      const refusal = preview.takeRefusal()
+      if (commit && refusal) notify?.(refusal)
+    } else if (active?.kind === 'edge') {
+      // Linhas recusadas continuam abertas: o painel mostra o motivo ao lado dos números.
+      operation.transform.end(commit)
+      if (!commit || !active.moved) operation.cancel()
+    }
   }
   function beginPreview(tool: SceneFacePreviewTool) {
     if ((tool === 'thickness' || tool === 'subdivide') && !mirrorGate.canUse()) return
@@ -701,7 +757,12 @@ export function useSceneComponents({
           ? operation.transform
           : {
               ...transform,
-              begin: () => {
+              begin: (intent?: SceneTransformIntent) => {
+                if (intent === 'pull') {
+                  const kind = startPull()
+                  pull.current = kind ? { kind, moved: false } : null
+                  return !!kind
+                }
                 if (!selection?.ids.length || !editable || blocked || (softMove && !softValid))
                   return false
                 activeWeights.current = null
@@ -713,6 +774,22 @@ export function useSceneComponents({
                 )
                 if (!started) activeWeights.current = weightOwner
                 return started
+              },
+              preview: (delta: AffineMatrix) => {
+                const active = pull.current
+                if (!active) return transform.preview(delta)
+                active.moved = delta[12] !== 0 || delta[13] !== 0 || delta[14] !== 0
+                return active.kind === 'face'
+                  ? preview.transform.preview(delta)
+                  : operation.transform.preview(delta)
+              },
+              end: (commit: boolean) => {
+                if (pull.current) endPull(commit)
+                else transform.end(commit)
+              },
+              cancel: () => {
+                if (pull.current) endPull(false)
+                else transform.cancel()
               },
             },
   }

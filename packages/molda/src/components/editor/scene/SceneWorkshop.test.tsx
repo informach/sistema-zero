@@ -10,7 +10,11 @@ import {
   captureSceneAnimationPoseSet,
   pasteSceneAnimationPoseSet,
 } from '../../../scene/animationPoseSet'
-import { addScenePrimitive, convertSceneNodesToMesh } from '../../../scene/commands'
+import {
+  addScenePrimitive,
+  convertSceneNodesToMesh,
+  transformSceneNodes,
+} from '../../../scene/commands'
 import { sceneFlipbookRegion } from '../../../scene/imageFlipbook'
 import { setSceneImageFlipbook } from '../../../scene/imageFlipbookCommands'
 import { paintSceneImageGradient } from '../../../scene/imageGradient'
@@ -22,12 +26,13 @@ import { paintSceneImageStamp } from '../../../scene/imageStamp'
 import { SCENE_MATERIAL_IMAGE_FIELDS } from '../../../scene/materialImages'
 import { identityMatrix } from '../../../scene/matrix'
 import type { SceneComponentSelection } from '../../../scene/meshComponents'
-import { meshComponentEdges } from '../../../scene/meshComponents'
+import { meshComponentEdges, meshComponentIds } from '../../../scene/meshComponents'
 import { meshEdgeKey } from '../../../scene/meshTopology'
 import { autoMeshUv } from '../../../scene/meshUvAuto'
 import { editMeshUv } from '../../../scene/meshUvOperations'
 import { unfoldMeshUv } from '../../../scene/meshUvUnfold'
 import { migrateLegacyModel } from '../../../scene/migrateLegacy'
+import { sceneGeometryMesh } from '../../../scene/parametricGeometry'
 import { prepareSceneAnimation, type SceneAnimationPose } from '../../../scene/sampleAnimation'
 import {
   createSceneSkin,
@@ -135,6 +140,8 @@ function setup(
     weightTarget: { nodeId: string; jointId: string } | null
     frames: Array<{ id: string; frame: number | null }>
     poses: Array<SceneAnimationPose | null>
+    xray: boolean
+    through: boolean
   }> = []
   const factory: SceneViewportFactory = (_canvas, callbacks) => {
     const state = {
@@ -149,6 +156,8 @@ function setup(
       weightTarget: null as { nodeId: string; jointId: string } | null,
       frames: [] as Array<{ id: string; frame: number | null }>,
       poses: [] as Array<SceneAnimationPose | null>,
+      xray: false,
+      through: false,
     }
     ports.push(state)
     const port: SceneViewportPort = {
@@ -165,7 +174,12 @@ function setup(
       setView: () => {},
       setTransformTool: () => {},
       setFaceExtrusion: (active) => state.faceExtrusion.push(active),
-      setAreaTool: () => {},
+      setAreaTool: (_tool, through) => {
+        state.through = through
+      },
+      setXray: (on) => {
+        state.xray = on
+      },
       setComponentSelection: (selection) => {
         state.faces = selection
       },
@@ -221,6 +235,48 @@ function swatch(
 }
 
 describe('scene workshop integration', () => {
+  test('Unir peças junta dois cilindros sobrepostos numa peça só, com um desfazer', async () => {
+    let serial = 0
+    const id = () => `join-ui-${++serial}`
+    let asset = migrateLegacyModel(makeModel({ parts: [] })).document
+    asset = addScenePrimitive(asset, 'cylinder', 'Base', id)
+    const base = asset.nodes.at(-1)!.id
+    asset = addScenePrimitive(asset, 'cylinder', 'Ponta', id)
+    const tool = asset.nodes.at(-1)!.id
+    const offset = identityMatrix()
+    offset[12] = 0.5
+    asset = transformSceneNodes(asset, [tool], offset)
+    const faces = (document: typeof asset, nodeId: string) => {
+      const node = document.nodes.find((candidate) => candidate.id === nodeId)
+      if (node?.kind !== 'mesh') throw new Error('Peça ausente')
+      const geometry = document.geometries.find((candidate) => candidate.id === node.geometryId)!
+      return Object.keys(sceneGeometryMesh(geometry).faces).length
+    }
+    const expected = faces(asset, base) + faces(asset, tool)
+    const { editor, ports, view, openInspector } = setup(asset)
+    try {
+      await waitFor(() => expect(ports.length).toBeGreaterThan(0))
+      act(() => {
+        ports.at(-1)!.callbacks.select(base, false)
+        ports.at(-1)!.callbacks.select(tool, true)
+      })
+      openInspector()
+      expect(screen.queryByRole('region', { name: 'Ligar faces' })).toBeNull()
+      const layers = await screen.findByRole('region', { name: 'Lista de peças' })
+      fireEvent.click(within(layers).getByRole('button', { name: 'Unir peças' }))
+      await waitFor(() =>
+        expect(editor.getState().asset.nodes.some((node) => node.id === tool)).toBe(false),
+      )
+      expect(faces(editor.getState().asset, base)).toBe(expected)
+      expect(ports.at(-1)?.selected).toEqual([base])
+      act(() => editor.getState().undo())
+      expect(editor.getState().asset.nodes.some((node) => node.id === tool)).toBe(true)
+      expect(editor.getState().canUndo).toBe(false)
+    } finally {
+      view.unmount()
+    }
+  })
+
   test('trocar a paleta no Pintar é um passo de desfazer', async () => {
     const paletteKey = moldaPreferenceKey('scene.palettes')
     localStorage.removeItem(paletteKey)
@@ -3628,6 +3684,119 @@ describe('scene workshop integration', () => {
       editor.getState().dispose()
     }
   })
+  test('a ferramenta Puxar faz as alças puxarem a face, e Mover continua movendo', async () => {
+    const initial = migrateLegacyModel(makeModel()).document
+    const body = initial.nodes.find((n) => n.id === 'body')!
+    if (body.kind !== 'mesh') throw new Error('Missing body')
+    const grid = makeSceneGridGeometry(2, body.geometryId)
+    const source = {
+      ...initial,
+      geometries: initial.geometries.map((g) => (g.id === grid.id ? grid : g)),
+    }
+    const mesh = () => {
+      const node = editor.getState().asset.nodes.find((n) => n.id === 'body')
+      if (node?.kind !== 'mesh') throw new Error('Missing body')
+      return sceneGeometryMesh(
+        editor.getState().asset.geometries.find((g) => g.id === node.geometryId)!,
+      )
+    }
+    const { editor, ports, view, openInspector } = setup(source)
+    try {
+      await waitFor(() => expect(ports.length).toBeGreaterThan(0))
+      openInspector()
+      fireEvent.click(screen.getByRole('button', { name: COPY.scene.select('corpo') }))
+      expect(view.container.querySelector('[aria-keyshortcuts="E"]')).toBeNull()
+      fireEvent.click(screen.getByRole('button', { name: COPY.scene.editFaces }))
+      act(() => ports.at(-1)!.callbacks.selectComponents!(['f_0_0'], false))
+      const pull = view.container.querySelector<HTMLButtonElement>('[aria-keyshortcuts="E"]')!
+      expect(pull.textContent).toContain(COPY.scene.pull)
+      fireEvent.click(pull)
+      expect(pull.getAttribute('aria-pressed')).toBe('true')
+      const actions = ports.at(-1)!.callbacks.transform!
+      const delta = identityMatrix()
+      delta[14] = 0.5
+      // As alças chegam sem intenção, como o gizmo: com Puxar ativo, puxam.
+      act(() => {
+        expect(actions.begin()).toBe(true)
+        expect(actions.preview(delta)).toBe(true)
+        actions.end(true)
+      })
+      // Soltar deixa o Puxar aberto no painel, para ajustar a distância e aplicar.
+      await waitFor(() => expect(Object.keys(mesh().faces)).toHaveLength(8))
+      expect(editor.getState().canUndo).toBe(false)
+      fireEvent.click(screen.getByRole('button', { name: COPY.scene.previewConfirm }))
+      expect(editor.getState().canUndo).toBe(true)
+      fireEvent.click(screen.getByRole('button', { name: COPY.editor.undo }))
+      expect(editor.getState().asset.geometries).toEqual(source.geometries)
+      // Com Mover, a mesma alça move a face sem criar paredes.
+      fireEvent.click(view.container.querySelector<HTMLButtonElement>('[aria-keyshortcuts="G"]')!)
+      act(() => ports.at(-1)!.callbacks.selectComponents!(['f_0_0'], false))
+      act(() => {
+        expect(actions.begin()).toBe(true)
+        expect(actions.preview(delta)).toBe(true)
+        actions.end(true)
+      })
+      expect(Object.keys(mesh().faces)).toHaveLength(4)
+      expect(mesh().vertices.v_0_0).toEqual([0, 0, 0.5])
+    } finally {
+      view.unmount()
+      editor.getState().dispose()
+    }
+  })
+  test('arrastar a face escolhida abre o Puxar com a distância no painel e aplica num desfazer', async () => {
+    const initial = migrateLegacyModel(makeModel()).document
+    const body = initial.nodes.find((n) => n.id === 'body')!
+    if (body.kind !== 'mesh') throw new Error('Missing body')
+    const grid = makeSceneGridGeometry(2, body.geometryId)
+    const source = {
+      ...initial,
+      geometries: initial.geometries.map((g) => (g.id === grid.id ? grid : g)),
+    }
+    const faceCount = () => {
+      const node = editor.getState().asset.nodes.find((n) => n.id === 'body')
+      if (node?.kind !== 'mesh') throw new Error('Missing body')
+      const geometry = editor.getState().asset.geometries.find((g) => g.id === node.geometryId)!
+      return Object.keys(sceneGeometryMesh(geometry).faces).length
+    }
+    const { editor, ports, view, openInspector } = setup(source)
+    try {
+      await waitFor(() => expect(ports.length).toBeGreaterThan(0))
+      openInspector()
+      fireEvent.click(screen.getByRole('button', { name: COPY.scene.select('corpo') }))
+      fireEvent.click(screen.getByRole('button', { name: COPY.scene.editFaces }))
+      act(() => ports.at(-1)!.callbacks.selectComponents!(['f_0_0'], false))
+      const before = faceCount()
+      const actions = ports.at(-1)!.callbacks.transform!
+      // Sem distância, soltar não grava nada.
+      act(() => {
+        expect(actions.begin('pull')).toBe(true)
+        actions.end(true)
+      })
+      expect(editor.getState().canUndo).toBe(false)
+      act(() => {
+        expect(actions.begin('pull')).toBe(true)
+        const delta = identityMatrix()
+        delta[14] = 0.5
+        expect(actions.preview(delta)).toBe(true)
+        actions.end(true)
+      })
+      await waitFor(() => expect(faceCount()).toBe(before + 4))
+      expect(editor.getState().canUndo).toBe(false)
+      expect(
+        (screen.getByRole('spinbutton', { name: COPY.scene.extrudeAmount }) as HTMLInputElement)
+          .value,
+      ).not.toBe('0')
+      fireEvent.click(screen.getByRole('button', { name: COPY.scene.previewConfirm }))
+      expect(faceCount()).toBe(before + 4)
+      expect(editor.getState().canUndo).toBe(true)
+      fireEvent.click(screen.getByRole('button', { name: COPY.editor.undo }))
+      expect(editor.getState().asset.geometries).toEqual(source.geometries)
+      expect(editor.getState().canUndo).toBe(false)
+    } finally {
+      view.unmount()
+      editor.getState().dispose()
+    }
+  })
   test('UV corner controls share 3D selection, explicitly align a neighbor and keep separate undo for keyboard and numeric positions', async () => {
     const initial = migrateLegacyModel(makeModel()).document
     const body = initial.nodes.find((n) => n.id === 'body')!
@@ -4178,7 +4347,12 @@ describe('scene workshop integration', () => {
       act(() => editor.getState().commit(addScenePrimitive(editor.getState().asset, kind, 'Curva')))
       openInspector()
       fireEvent.click(screen.getByRole('button', { name: COPY.scene.select('Curva') }))
-      fireEvent.click(screen.getByText(COPY.scene.curveDetail))
+      expect(screen.getByRole('region', { name: COPY.scene.curveDetail })).toBeTruthy()
+      const curveHelp = screen.getByRole('button', { name: 'Como ajustar os lados da curva' })
+      fireEvent.click(curveHelp)
+      expect(screen.getByRole('dialog', { name: 'Como ajustar os lados da curva' })).toBeDefined()
+      fireEvent.keyDown(screen.getByRole('dialog'), { key: 'Escape' })
+      expect(screen.queryByRole('dialog')).toBeNull()
       const before = editor.getState().asset
       const around = () =>
         screen.getByRole('spinbutton', { name: COPY.scene.curveDetailFields.around })
@@ -4380,7 +4554,7 @@ describe('scene workshop integration', () => {
       editor.getState().dispose()
     }
   })
-  test('a strip cut selects its resulting faces, keeps materials and is a single undo from the edge panel', async () => {
+  test('a strip cut stays in Linhas with the new cut lines, keeps materials and is a single undo from the edge panel', async () => {
     const { editor, ports, view, openInspector } = setup()
     try {
       await waitFor(() => expect(ports.length).toBeGreaterThan(0))
@@ -4400,7 +4574,7 @@ describe('scene workshop integration', () => {
           { name: 'Cortar' },
         ),
       )
-      fireEvent.click(screen.getByRole('button', { name: 'Em volta' }))
+      fireEvent.click(screen.getByRole('button', { name: 'Corte em faixa' }))
       fireEvent.click(screen.getByRole('button', { name: 'Aplicar corte' }))
       const after = editor.getState().asset
       const result = after.geometries[0]!
@@ -4409,8 +4583,11 @@ describe('scene workshop integration', () => {
       expect(Object.keys(result.vertices)).toHaveLength(12)
       expect(after.images).toBe(before.images)
       expect(after.materials).toBe(before.materials)
-      expect(ports.at(-1)!.faces?.ids).toHaveLength(8)
-      for (const id of ports.at(-1)!.faces!.ids) expect(Object.hasOwn(result.faces, id)).toBe(true)
+      // O corte começou em Linhas: continua em Linhas, com as linhas novas do corte.
+      expect(ports.at(-1)!.faces?.mode).toBe('edge')
+      expect(ports.at(-1)!.faces?.ids).toHaveLength(4)
+      const lines = new Set(meshComponentIds(result, 'edge'))
+      for (const id of ports.at(-1)!.faces!.ids) expect(lines.has(id)).toBe(true)
       fireEvent.click(screen.getByRole('button', { name: COPY.editor.undo }))
       expect(editor.getState().asset.geometries).toEqual(before.geometries)
     } finally {
@@ -5124,6 +5301,31 @@ describe('scene workshop integration', () => {
       fireEvent.click(screen.getByRole('button', { name: COPY.scene.addSelection }))
       fireEvent.click(screen.getByRole('button', { name: COPY.scene.select('corpo') }))
       expect(screen.getByText(COPY.scene.dimensions)).toBeDefined()
+    } finally {
+      view.unmount()
+      editor.getState().dispose()
+    }
+  })
+  test('Raio-X deixa ver e alcançar atrás das peças sem mexer no documento', async () => {
+    const { editor, ports, view } = setup()
+    try {
+      await waitFor(() => expect(ports.length).toBeGreaterThan(0))
+      const source = editor.getState().asset
+      const xray = screen.getByRole('button', { name: COPY.scene.xray })
+      expect(xray.getAttribute('aria-pressed')).toBe('false')
+      fireEvent.click(xray)
+      expect(xray.getAttribute('aria-pressed')).toBe('true')
+      expect(ports.at(-1)?.xray).toBe(true)
+      expect(ports.at(-1)?.through).toBe(true)
+      fireEvent.click(screen.getByRole('button', { name: COPY.scene.selectBox }))
+      const through = screen.getByRole('checkbox', { name: COPY.scene.selectThrough })
+      expect((through as HTMLInputElement).checked).toBe(true)
+      expect(through.hasAttribute('disabled')).toBe(true)
+      fireEvent.click(xray)
+      expect(ports.at(-1)?.xray).toBe(false)
+      expect(ports.at(-1)?.through).toBe(false)
+      expect(editor.getState().asset).toBe(source)
+      expect(editor.getState().canUndo).toBe(false)
     } finally {
       view.unmount()
       editor.getState().dispose()

@@ -1,6 +1,8 @@
 import type { ButtonHTMLAttributes, ReactNode, Ref } from 'react'
 import { type SceneMeasurementStep, snapSceneMeasurement } from '../../../scene/measurementStep'
+import { isMoldaDialogOpen } from '../../ui/Dialog'
 import { ArrowLeft, ChevronRight, type LucideIcon } from '../../ui/icons'
+import { SceneHelpButton } from './SceneHelpButton'
 
 /** Compact controls share the host's type and color tokens with the rest of the workshop. */
 export function ComponentButton({
@@ -65,27 +67,27 @@ export function ComponentNumberField({
 
 export function ComponentPage({
   title,
-  description,
   backLabel,
   onBack,
   onEscape = onBack,
   children,
   footer,
+  help,
 }: {
   title: string
-  description?: string
   backLabel: string
   onBack(): void
   onEscape?(): void
   children: ReactNode
   footer?: ReactNode
+  help?: { title: string; content: ReactNode }
 }) {
   return (
     <section
       className="mld-component-panel"
       aria-label={title}
       onKeyDown={(event) => {
-        if (event.key === 'Escape' && !event.defaultPrevented) {
+        if (event.key === 'Escape' && !event.defaultPrevented && !isMoldaDialogOpen()) {
           event.preventDefault()
           event.stopPropagation()
           onEscape()
@@ -96,8 +98,14 @@ export function ComponentPage({
         <ArrowLeft aria-hidden="true" />
         {backLabel}
       </button>
-      <h3 className="mld-display mld-component-title">{title}</h3>
-      {description && <p className="mld-component-description">{description}</p>}
+      {help ? (
+        <div className="mld-component-heading">
+          <h3 className="mld-display mld-component-title">{title}</h3>
+          <SceneHelpButton title={help.title}>{help.content}</SceneHelpButton>
+        </div>
+      ) : (
+        <h3 className="mld-display mld-component-title">{title}</h3>
+      )}
       {children}
       {footer && <div className="mld-component-footer">{footer}</div>}
     </section>

@@ -1,5 +1,24 @@
 # CLAUDE.md — @sistemazero/molda
 
+## Raio-X, Unir peças, Puxar e verso — 24/10/2026
+
+- **Raio-X** (alternância ao lado da grade) é só vista: `SceneMaterialResource.setXray` esmaece
+  depois do `alphaTest` por uniform, sem tocar opacidade, recorte ou material guardado. Ligado,
+  também alcança o que está atrás (o "Alcançar peças atrás" fica marcado e travado).
+- **Unir peças** é o Ctrl+J do Blender (`joinSceneMeshes`): leva as outras peças ao espaço da
+  primeira, sem costurar, soldar nem recortar; volume sobreposto continua sobreposto. O antigo
+  "Ligar faces" e o preenchimento entre aberturas saíram.
+- **Puxar**: arrastar a face ou a linha escolhida, ou as alças com a ferramenta Puxar (E, só em
+  Faces e Linhas), abre a mesma prévia do botão do painel e a deixa aberta com os números para
+  Aplicar. ⚠️ O `begin(intent)` das ações leva `'pull'`; o palco não cancela o próprio gesto
+  quando a prévia troca a seleção ou o modo do gizmo (`pulling`, `handleDragging`). Um clique
+  sem distância continua sendo escolha. Linhas recusadas mostram o motivo no painel.
+- Em **Linhas**, criar, preencher ou cortar mantém Linhas (`convertMeshComponents`); Pontos e
+  Faces seguem o que a operação criou.
+- **Verso**: o material da oficina respeita `doubleSided` como o GLB; o lado de trás aparece num
+  filho escuro (`BackSide`, sem raycast, fora da miniatura, recuado por `polygonOffset`).
+  Peças com skin não ganham verso. Clique e pincel nunca alcançam um verso escondido.
+
 ## Recuperação local, UV e animação — 18/10/2026
 
 - `maxGalleryBytes` é o fallback da capacidade adaptativa, não um orçamento de importação.

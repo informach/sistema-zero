@@ -2,6 +2,7 @@ import { COPY } from '../../../core/copy'
 import { setSceneNodeFlag } from '../../../scene/commands'
 import type { ModelSceneNode } from '../../../scene/document'
 import { useMoldaToolAccess } from '../../toolAccess'
+import { Button } from '../../ui/Button'
 import { Group, ListChecks, Ungroup } from '../../ui/icons'
 import { focusWorkshopStage } from './focusStage'
 import { SceneHierarchy, type SceneHierarchyShape } from './SceneHierarchy'
@@ -11,9 +12,11 @@ import type { useSceneWorkshop } from './useSceneWorkshop'
 export function SceneHierarchyPanel({
   workshop,
   shapeOf,
+  joinPieces,
 }: {
   workshop: ReturnType<typeof useSceneWorkshop>
   shapeOf(node: ModelSceneNode): SceneHierarchyShape
+  joinPieces?: () => void
 }) {
   const { can } = useMoldaToolAccess()
   const { document, mode, selected, run } = workshop
@@ -136,6 +139,14 @@ export function SceneHierarchyPanel({
             : undefined
         }
       />
+      {joinPieces && (
+        <div className="px-1 pt-2">
+          <Button variant="primary" className="w-full" onClick={joinPieces}>
+            {COPY.scene.joinPieces}
+          </Button>
+          <p className="mt-1 text-xs text-mld-muted">{COPY.scene.joinPiecesHint}</p>
+        </div>
+      )}
       {mode === 'paint' && workshop.paintColorsStatus && (
         <p role="status" className="px-1 text-xs text-mld-muted">
           {workshop.paintColorsStatus}

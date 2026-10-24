@@ -47,6 +47,17 @@ test('two opposite border edges create the missing quad without needing the othe
   expect(mesh).toEqual(before)
 })
 
+test('two border edges can create a bent face without moving their points', () => {
+  const { mesh, opposite } = hole()
+  const [, far] = meshComponentEdges(mesh).get(opposite[1]!)!
+  mesh.vertices[far] = [mesh.vertices[far]![0], mesh.vertices[far]![1], 1.4]
+  const before = structuredClone(mesh)
+  const result = prepareMeshCreation(mesh, { mode: 'edge', ids: opposite }).apply()
+  expect(result.mesh.faces[result.ids[0]!]!.corners).toHaveLength(4)
+  expect(result.mesh.vertices).toBe(mesh.vertices)
+  expect(mesh).toEqual(before)
+})
+
 test('two adjacent edges create a triangle while unordered points create the full face', () => {
   const { mesh, border } = hole()
   // Find an adjacent pair without depending on the primitive vertex naming.
@@ -114,21 +125,65 @@ test('a concave contour keeps every authorial corner and does not depend on clic
   expect(readSceneGeometry(result.mesh)).toEqual(result.mesh)
 })
 
-test('mixed border paint needs an explicit material and preserves the neighboring UVs', () => {
+test('two edges use the first line paint automatically and preserve neighboring UVs', () => {
   const { mesh, opposite } = hole()
   mesh.faces.py!.materialId = 'paint-a'
+  mesh.faces.ny!.materialId = 'paint-b'
   const before = structuredClone(mesh)
-  const plan = prepareMeshCreation(mesh, { mode: 'edge', ids: opposite })
-  expect(plan.materials).toContain('paint-a')
-  expect(plan.materials).toContain('')
-  expect(() => plan.apply()).toThrow('pintura')
-  const result = plan.apply('paint-a')
-  expect(result.mesh.faces[result.ids[0]!]!.materialId).toBe('paint-a')
-  for (const [id, face] of Object.entries(mesh.faces)) expect(result.mesh.faces[id]).toEqual(face)
+  for (const ids of [opposite, [...opposite].reverse()]) {
+    const plan = prepareMeshCreation(mesh, { mode: 'edge', ids })
+    expect(plan.materials).toEqual([])
+    const firstFaceId = indexMeshEdges(mesh).edges.get(ids[0]!)![0]!.faceId
+    const result = plan.apply()
+    expect(result.mesh.faces[result.ids[0]!]!.materialId ?? '').toBe(
+      mesh.faces[firstFaceId]!.materialId ?? '',
+    )
+    for (const [id, face] of Object.entries(mesh.faces)) expect(result.mesh.faces[id]).toEqual(face)
+  }
   expect(mesh).toEqual(before)
 })
 
-test('invalid, nonplanar, branched or duplicate creations preserve the original mesh', () => {
+test('two lines inside a closed piece keep the paint choice of the faces they touch', () => {
+  const mesh = primitiveMesh({
+    id: 'box',
+    kind: 'box',
+    from: [-1, -1, -1],
+    to: [1, 1, 1],
+    surfaces: {},
+  }).mesh
+  for (const [id, face] of Object.entries(mesh.faces)) face.materialId = `paint-${id}`
+  const edges = meshComponentEdges(mesh)
+  const at = (y: number, z: number) =>
+    [...edges].find(([, ends]) =>
+      ends.every((v) => mesh.vertices[v]![1] === y && mesh.vertices[v]![2] === z),
+    )![0]
+  // A top-front and a bottom-back line cut the box diagonally; both touch two painted faces.
+  const ids = [at(1, 1), at(-1, -1)]
+  expect(ids.every((id) => indexMeshEdges(mesh).edges.get(id)!.length === 2)).toBe(true)
+  const plan = prepareMeshCreation(mesh, { mode: 'edge', ids })
+  expect(plan.materials.length).toBeGreaterThan(1)
+})
+
+test('two neighboring edges also create a face without a paint choice', () => {
+  const { mesh, border } = hole()
+  for (const [id, face] of Object.entries(mesh.faces)) face.materialId = `paint-${id}`
+  const first = border[0]!
+  const firstVertices = meshComponentEdges(mesh).get(first)!
+  const second = border.find(
+    (id) =>
+      id !== first &&
+      meshComponentEdges(mesh)
+        .get(id)!
+        .some((vertex) => firstVertices.includes(vertex)),
+  )!
+  const plan = prepareMeshCreation(mesh, { mode: 'edge', ids: [first, second] })
+  expect(plan.materials).toEqual([])
+  const firstFaceId = indexMeshEdges(mesh).edges.get(first)![0]!.faceId
+  const result = plan.apply()
+  expect(result.mesh.faces[result.ids[0]!]!.materialId).toBe(`paint-${firstFaceId}`)
+})
+
+test('invalid, nonplanar point selections, branched or duplicate creations preserve the original mesh', () => {
   const { mesh, opposite } = hole()
   const before = structuredClone(mesh)
   expect(() => prepareMeshCreation(mesh, { mode: 'vertex', ids: ['gone', 'missing'] })).toThrow()
@@ -143,7 +198,8 @@ test('invalid, nonplanar, branched or duplicate creations preserve the original 
   const twisted = structuredClone(mesh)
   const vertex = meshComponentEdges(mesh).get(opposite[0]!)![0]
   twisted.vertices[vertex]![2] += 0.2
-  expect(() => prepareMeshCreation(twisted, { mode: 'edge', ids: opposite }).apply()).toThrow()
+  const corners = opposite.flatMap((edgeId) => meshComponentEdges(mesh).get(edgeId)!)
+  expect(() => prepareMeshCreation(twisted, { mode: 'vertex', ids: corners }).apply()).toThrow()
   expect(() =>
     prepareMeshCreation(mesh, { mode: 'edge', ids: opposite }).apply(undefined, () => 'py'),
   ).toThrow()

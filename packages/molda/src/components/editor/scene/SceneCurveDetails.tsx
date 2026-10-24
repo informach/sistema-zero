@@ -49,7 +49,7 @@ export function SceneCurveDetails({ geometry, onApply, ...props }: SceneCurveDet
         if (valid) onApply(detail)
       }}
     >
-      <p id={`${prefix}-hint`} className="text-sm text-mld-muted">
+      <p id={`${prefix}-hint`} className="sr-only">
         {COPY.scene.curveDetailHint}
       </p>
       {fields.map((field) => (

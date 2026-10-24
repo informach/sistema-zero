@@ -71,6 +71,7 @@ export class SceneComponentPicker {
     pointer: { x: number; y: number; width: number; height: number; radius: number },
     through = false,
     authorialOnly = false,
+    allowedIds?: ReadonlySet<string>,
   ): string | null {
     if (this.disposed || selection.mode === 'face' || pointer.width <= 0 || pointer.height <= 0)
       return null
@@ -86,6 +87,7 @@ export class SceneComponentPicker {
       const edges = selection.mode === 'edge' ? meshComponentEdges(mesh) : null
       const best = { id: null as string | null, pixels: Infinity, depth: Infinity }
       const consider = (id: string, world: Vector3, pixels: number) => {
+        if (allowedIds && !allowedIds.has(id)) return
         if (pixels > pointer.radius || !Number.isFinite(pixels)) return
         const projected = world.clone().project(camera)
         ray.setFromCamera(new Vector2(projected.x, projected.y), camera)

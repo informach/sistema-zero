@@ -12,7 +12,15 @@ export function SceneComponentCut({
   return (
     <ComponentPage
       title="Cortar"
-      description="Adicione linhas sem separar a peça."
+      help={{
+        title: 'Como cortar',
+        content: (
+          <p>
+            Escolha Livre para marcar pontos na superfície ou Corte em faixa para adicionar linhas
+            sem separar a peça.
+          </p>
+        ),
+      }}
       backLabel={COPY.scene.componentModes[selection?.mode ?? 'face']}
       onBack={onBack}
       footer={<ComponentButton onClick={onBack}>Cancelar</ComponentButton>}
@@ -22,12 +30,9 @@ export function SceneComponentCut({
           Livre
         </ComponentButton>
         <ComponentButton disabled={blocked} onClick={() => operation.start('ring')}>
-          Em volta
+          Corte em faixa
         </ComponentButton>
       </fieldset>
-      <p className="mld-component-note">
-        Escolha Livre para marcar pontos na superfície ou Em volta para cortar uma faixa de faces.
-      </p>
     </ComponentPage>
   )
 }

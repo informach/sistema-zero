@@ -19,7 +19,11 @@ import {
   meshLocalBox,
   mirrorMeshFaces,
 } from '../../../scene/meshComponentOperations'
-import type { SceneComponentSelection, SceneComponentSession } from '../../../scene/meshComponents'
+import {
+  convertMeshComponents,
+  type SceneComponentSelection,
+  type SceneComponentSession,
+} from '../../../scene/meshComponents'
 import { prepareMeshCreation } from '../../../scene/meshCreate'
 import { cutMeshEdgeRings } from '../../../scene/meshRingCuts'
 import { meshSymmetrySource, symmetrySourceIds } from '../../../scene/meshSymmetry'
@@ -168,10 +172,30 @@ export function useSceneMeshOperation(
             !!owner.full.symmetry,
         },
       )
+      // Em Linhas, o resultado continua em Linhas: criar, preencher ou cortar não troca o modo.
+      // Em Pontos e Faces a escolha segue o que foi criado (dois pontos viram a linha a puxar).
+      const mode =
+        owner.selection.mode === 'edge'
+          ? 'edge'
+          : creation
+            ? creation.mode
+            : extrusion
+              ? owner.selection.mode
+              : 'face'
       const selection: SceneComponentSelection = {
         nodeId: owner.selection.nodeId,
-        mode: creation ? creation.mode : extrusion ? owner.selection.mode : 'face',
-        ids: creation ? creation.ids : extrusion ? extrusion.ids : result.faceIds,
+        mode,
+        ids: extrusion
+          ? extrusion.ids
+          : convertMeshComponents(
+              result.mesh,
+              creation
+                ? { mode: creation.mode, ids: creation.ids }
+                : ring && mode === 'edge'
+                  ? { mode: 'edge', ids: ring.edgeIds }
+                  : { mode: 'face', ids: result.faceIds },
+              mode,
+            ),
       }
       return { result, document, selection, materials, segments: ring?.segments ?? [], error: null }
     } catch (reason) {

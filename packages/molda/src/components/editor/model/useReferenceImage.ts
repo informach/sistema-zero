@@ -1,39 +1,50 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { ReferenceImageFailure } from '../../../import/rasterHeader'
 import type { ReferenceImage } from '../../../import/referenceImage'
+import type { CameraView } from '../../../viewport/types'
 
 export function useReferenceImage() {
-  const [image, setImage] = useState<ReferenceImage | null>(null)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<ReferenceImageFailure | null>(null)
-  const owned = useRef<ReferenceImage | null>(null)
-  const pending = useRef<AbortController | null>(null)
+  const [images, setImages] = useState<Partial<Record<CameraView, ReferenceImage>>>({})
+  const [loadingView, setLoadingView] = useState<CameraView | null>(null)
+  const [error, setError] = useState<{ view: CameraView; reason: ReferenceImageFailure } | null>(
+    null,
+  )
+  const owned = useRef(new Map<CameraView, ReferenceImage>())
+  const pending = useRef<{ view: CameraView; controller: AbortController } | null>(null)
   const cancel = useCallback(() => {
-    pending.current?.abort()
+    pending.current?.controller.abort()
     pending.current = null
-    setLoading(false)
+    setLoadingView(null)
   }, [])
-  const remove = useCallback(() => {
-    cancel()
-    owned.current?.dispose()
-    owned.current = null
-    setImage(null)
-    setError(null)
-  }, [cancel])
+  const remove = useCallback(
+    (view: CameraView) => {
+      if (pending.current?.view === view) cancel()
+      owned.current.get(view)?.dispose()
+      owned.current.delete(view)
+      setImages((current) => {
+        if (!current[view]) return current
+        const next = { ...current }
+        delete next[view]
+        return next
+      })
+      setError((current) => (current?.view === view ? null : current))
+    },
+    [cancel],
+  )
   useEffect(
     () => () => {
-      pending.current?.abort()
+      pending.current?.controller.abort()
       pending.current = null
-      owned.current?.dispose()
-      owned.current = null
+      for (const image of owned.current.values()) image.dispose()
+      owned.current.clear()
     },
     [],
   )
-  const choose = useCallback(async (file: File): Promise<boolean> => {
-    pending.current?.abort()
+  const choose = useCallback(async (view: CameraView, file: File): Promise<boolean> => {
+    pending.current?.controller.abort()
     const controller = new AbortController()
-    pending.current = controller
-    setLoading(true)
+    pending.current = { view, controller }
+    setLoadingView(view)
     setError(null)
     try {
       const { loadReferenceImage } = await import('../../../import/referenceImage')
@@ -43,25 +54,27 @@ export function useReferenceImage() {
         next.dispose()
         return false
       }
-      owned.current?.dispose()
-      owned.current = next
-      setImage(next)
+      owned.current.get(view)?.dispose()
+      owned.current.set(view, next)
+      setImages((current) => ({ ...current, [view]: next }))
       return true
     } catch (failure) {
       if (!controller.signal.aborted) {
         const reason =
           failure && typeof failure === 'object' && 'reason' in failure ? failure.reason : null
-        setError(
-          reason === 'size' || reason === 'format' || reason === 'animated' ? reason : 'decode',
-        )
+        setError({
+          view,
+          reason:
+            reason === 'size' || reason === 'format' || reason === 'animated' ? reason : 'decode',
+        })
       }
       return false
     } finally {
-      if (pending.current === controller) {
+      if (pending.current?.controller === controller) {
         pending.current = null
-        setLoading(false)
+        setLoadingView(null)
       }
     }
   }, [])
-  return { image, loading, error, choose, remove, cancel }
+  return { images, loadingView, error, choose, remove, cancel }
 }

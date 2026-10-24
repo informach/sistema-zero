@@ -25,7 +25,7 @@ export function ScenePlaneCut({ onApply }: { onApply(plane: MeshCutPlane): void 
           onApply({ normal, origin })
         }}
       >
-        <p id={`${prefix}-hint`} className="text-xs text-mld-muted">
+        <p id={`${prefix}-hint`} className="sr-only">
           {COPY.scene.planeCutHint}
         </p>
         <label className="block space-y-1 text-sm">

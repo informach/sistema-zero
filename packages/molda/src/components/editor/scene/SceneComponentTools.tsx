@@ -6,10 +6,10 @@ import {
   ArrowUpFromLine,
   Check,
   ChevronRight,
+  CircleHelp,
   Copy,
   FlipHorizontal2,
   Grid3x3,
-  Info,
   Layers,
   Lightbulb,
   Merge,
@@ -141,6 +141,12 @@ export function SceneComponentTools(props: SceneComponentToolsProps) {
   const count = selection.ids.length
   const isFace = selection.mode === 'face'
   const modeLabel = copy.componentModes[selection.mode]
+  const selectionActions = [
+    'grow',
+    'shrink',
+    'invert',
+    ...(selection.mode === 'edge' ? (['ring', 'loop'] as const) : []),
+  ] as const
   const go = (next: Page) => {
     returnTo.current = next
     setPage(next)
@@ -199,16 +205,7 @@ export function SceneComponentTools(props: SceneComponentToolsProps) {
     )
   } else if (page === 'more') {
     content = (
-      <ComponentPage
-        title="Mais ferramentas"
-        description={
-          isFace
-            ? 'Outros jeitos de mudar suas faces.'
-            : `Outros jeitos de mudar ${modeLabel.toLowerCase()}.`
-        }
-        backLabel={modeLabel}
-        onBack={back}
-      >
+      <ComponentPage title="Mais ferramentas" backLabel={modeLabel} onBack={back}>
         {isFace && pro && (
           <div className="mld-component-entries">
             <ComponentEntry
@@ -261,9 +258,6 @@ export function SceneComponentTools(props: SceneComponentToolsProps) {
             />
           </div>
         )}
-        <p className="mld-component-description">
-          As ferramentas mostram o que escolher antes de aplicar.
-        </p>
         {!isFace && pro && selection.mode === 'edge' && (
           <ComponentEntry
             icon={Square}
@@ -295,33 +289,65 @@ export function SceneComponentTools(props: SceneComponentToolsProps) {
     )
   } else if (page === 'selection' && pro) {
     content = (
-      <ComponentPage title="Mais formas de escolher" backLabel={modeLabel} onBack={back}>
+      <ComponentPage
+        title="Mais formas de escolher"
+        backLabel={modeLabel}
+        onBack={back}
+        help={{
+          title: 'Como escolher mais partes',
+          content: (
+            <ul className="list-disc space-y-2 pl-5">
+              {selectionActions.map((action) => (
+                <li key={action}>
+                  <strong>{copy.componentSelectionActions[action]}:</strong>{' '}
+                  {copy.componentSelectionHints[action]}
+                </li>
+              ))}
+            </ul>
+          ),
+        }}
+      >
         <fieldset disabled={blocked} className="mld-component-stack">
           <legend className="sr-only">Seleção</legend>
-          {(
-            [
-              'grow',
-              'shrink',
-              'invert',
-              ...(selection.mode === 'edge' ? (['ring', 'loop'] as const) : []),
-            ] as const
-          ).map((action) => (
-            <div key={action} className="mld-component-stack">
-              <ComponentButton
-                disabled={action !== 'invert' && !count}
-                onClick={() => choose(action)}
-              >
-                {copy.componentSelectionActions[action]}
-              </ComponentButton>
-              <p className="mld-component-description">{copy.componentSelectionHints[action]}</p>
-            </div>
+          {selectionActions.map((action) => (
+            <ComponentButton
+              key={action}
+              disabled={action !== 'invert' && !count}
+              onClick={() => choose(action)}
+            >
+              {copy.componentSelectionActions[action]}
+            </ComponentButton>
           ))}
         </fieldset>
       </ComponentPage>
     )
   } else if (page === 'advanced' && pro) {
     content = (
-      <ComponentPage title="Mais ajustes da malha" backLabel={modeLabel} onBack={back}>
+      <ComponentPage
+        title="Mais ajustes da malha"
+        backLabel={modeLabel}
+        onBack={back}
+        help={{
+          title: 'Como usar os ajustes da malha',
+          content: (
+            <>
+              {selection.mode === 'vertex' && (
+                <>
+                  <p>{copy.softMovementHint}</p>
+                  <p>{copy.weldPointsHint}</p>
+                </>
+              )}
+              {selection.mode === 'edge' && (
+                <>
+                  <p>{copy.bevelHint}</p>
+                  <p>{copy.pathCreateHint}</p>
+                </>
+              )}
+              <p>{copy.planeCutHint}</p>
+            </>
+          ),
+        }}
+      >
         <SceneComponentAdvanced {...props} />
       </ComponentPage>
     )
@@ -373,6 +399,8 @@ export function SceneComponentTools(props: SceneComponentToolsProps) {
           Escolha uma ação para ver seus ajustes. Mover, Girar e Tamanho usam as alças no modelo.
         </p>
         <p>{copy.componentModeHint}</p>
+        <p>Use as opções para escolher partes ligadas, faces planas ou uma linha inteira.</p>
+        <p>Apagar uma face abre um buraco. Você pode desfazer.</p>
         <p>Cancelar descarta a prévia. Desfazer traz de volta o último ajuste aplicado.</p>
         <ComponentButton tone="soft" onClick={back}>
           Entendi
@@ -391,7 +419,7 @@ export function SceneComponentTools(props: SceneComponentToolsProps) {
             className="mld-component-help"
             onClick={() => go('help')}
           >
-            <Info aria-hidden="true" />
+            <CircleHelp aria-hidden="true" />
           </button>
         </div>
         {props.symmetry && pro && (
@@ -459,17 +487,6 @@ export function SceneComponentTools(props: SceneComponentToolsProps) {
               Limpar
             </ComponentButton>
           </fieldset>
-          <p className="mld-component-description">
-            {isFace
-              ? props.coplanarSelection.enabled
-                ? copy.componentCoplanarHint
-                : 'Clique nas faces para escolher.'
-              : selection.mode === 'edge'
-                ? props.loopSelection.enabled
-                  ? 'Clique em uma linha para selecionar o loop inteiro.'
-                  : 'Clique em uma linha para selecionar apenas um trecho.'
-                : 'Clique nos pontos para escolher.'}
-          </p>
         </div>
         <fieldset disabled={blocked} className="mld-component-shape">
           <legend className="sr-only">Mudar a forma</legend>
@@ -479,13 +496,13 @@ export function SceneComponentTools(props: SceneComponentToolsProps) {
               <ComponentButton
                 icon={Square}
                 data-component-trigger="create"
-                disabled={count < 2}
+                disabled={selection.mode === 'vertex' && count < 2}
                 onClick={() => {
                   returnTo.current = 'create'
                   operation.start('create')
                 }}
               >
-                {copy.createFaceEdge.label}
+                {selection.mode === 'edge' ? 'Criar face' : copy.createFaceEdge.label}
               </ComponentButton>
             )}
             {!isFace && (
@@ -629,16 +646,12 @@ export function SceneComponentTools(props: SceneComponentToolsProps) {
             )}
           </div>
         </fieldset>
-        <div className="mld-component-tip">
-          <Lightbulb aria-hidden="true" />
-          <p>
-            {props.empty
-              ? 'Esta peça ficou sem faces. Desfaça para recuperar.'
-              : !count
-                ? 'Escolha uma parte da peça para começar.'
-                : 'Escolha uma ação para ver como usar.'}
-          </p>
-        </div>
+        {props.empty && (
+          <div className="mld-component-tip">
+            <Lightbulb aria-hidden="true" />
+            <p>Esta peça ficou sem faces. Desfaça para recuperar.</p>
+          </div>
+        )}
         <div className="mld-component-links">
           {(pro || weights) && (
             <ComponentButton icon={Shapes} data-component-trigger="more" onClick={() => go('more')}>
@@ -680,13 +693,11 @@ export function SceneComponentTools(props: SceneComponentToolsProps) {
               ? copy.faceActions.remove
               : copy.componentRemove[selection.mode]}
           </ComponentButton>
-          <p className="mld-component-description mld-component-removal">
-            {isFace
-              ? 'Abre um buraco. Você pode desfazer.'
-              : removal
-                ? copy.componentRemovalImpact(removal.faces, removal.looseEdges)
-                : 'Você pode desfazer.'}
-          </p>
+          {removal && !isFace && (
+            <p className="mld-component-description mld-component-removal">
+              {copy.componentRemovalImpact(removal.faces, removal.looseEdges)}
+            </p>
+          )}
         </div>
         <div className="mld-component-footer">
           <ComponentButton tone="soft" icon={Check} onClick={close}>
