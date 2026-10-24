@@ -391,6 +391,31 @@ test('files: open with a mode, read and write are blocks that round-trip exactly
   ])
   for (const id of ['sz_py_file_write', 'sz_py_file_read', 'sz_py_list_clear'])
     expect(unproven).not.toContain(id)
+  // A binary file is not "texto"; a file whose method was replaced is not a file block either.
+  const binario = exact([
+    node('Assign', {
+      targets: [name('arquivo', 'Store')],
+      value: call(name('open'), [text('x.png'), text('rb')]),
+      type_comment: null,
+    }),
+    node('Assign', {
+      targets: [name('dados', 'Store')],
+      value: call(attribute(name('arquivo'), 'read')),
+      type_comment: null,
+    }),
+  ])
+  expect(binario).not.toContain('sz_py_file_read')
+  const trocado = exact([
+    opened('w', [
+      node('Assign', {
+        targets: [node('Attribute', { value: name('arquivo'), attr: 'write', ctx: node('Store') })],
+        value: name('print'),
+        type_comment: null,
+      }),
+      expression(call(attribute(name('arquivo'), 'write'), [text('oi')])),
+    ]),
+  ])
+  expect(trocado).not.toContain('sz_py_file_write')
 })
 
 test('a list filled only with Actor(...) makes its loop target an actor; anything else does not', async () => {
@@ -474,6 +499,12 @@ test('a list filled only with Actor(...) makes its loop target an actor; anythin
         type_comment: null,
       }),
     ],
+    // A dunder method can refill the object behind the evidence.
+    [
+      expression(
+        call(attribute(name('estrelas'), '__init__'), [listLiteral(integer('1'), integer('2'))]),
+      ),
+    ],
     // A shadowed "read-only" built-in is a function of the child's: it may fill the list.
     [
       fn('len', [expression(call(attribute(name('l'), 'append'), [integer('5')]))], ['l']),
@@ -509,6 +540,30 @@ test('a list filled only with Actor(...) makes its loop target an actor; anythin
       ]),
     ),
     expression(call(attribute(name('estrelas'), 'clear'))),
+    node('Assign', {
+      targets: [name('vivas', 'Store')],
+      value: node('ListComp', {
+        elt: name('e'),
+        generators: [
+          node('comprehension', {
+            target: name('e', 'Store'),
+            iter: name('estrelas'),
+            ifs: [],
+            is_async: { literal: 'int', value: '0' },
+          }),
+        ],
+      }),
+      type_comment: null,
+    }),
+    expression(
+      call(name('print'), [
+        node('BinOp', {
+          left: name('estrelas'),
+          op: node('Add'),
+          right: node('List', { elts: [], ctx: node('Load') }),
+        }),
+      ]),
+    ),
     node('If', {
       test: node('UnaryOp', { op: node('Not'), operand: name('estrelas') }),
       body: [pass()],
@@ -571,6 +626,72 @@ test('an attribute named like a built-in or a list method keeps the official blo
   // Replacing an official name, or anything of the builtins module, still turns them off.
   expect(used('draw')).not.toContain('sz_py_pgzero_actor_draw')
   expect(used('open', 'builtins')).not.toContain('sz_py_pgzero_actor_draw')
+  // Any name of the interpreter's namespaces replaces things: an alias, __main__, sys.modules.
+  const replaced = (prelude: PythonNode[], target: PythonNode) =>
+    ids(
+      pythonASTToVisual(
+        moduleNode([
+          ...prelude,
+          node('Assign', { targets: [target], value: integer('3'), type_comment: null }),
+          fn('update', [pass()]),
+          fn('draw', [pass()]),
+        ]),
+        { codecs: pgzero, officialModules: new Set(['pgzero', 'pgzrun']) },
+      ).body,
+    )
+  const importAs = (module: string, asname: string | null) =>
+    node('Import', { names: [node('alias', { name: module, asname })] })
+  const store = (root: PythonNode, attr: string) =>
+    node('Attribute', { value: root, attr, ctx: node('Store') })
+  expect(replaced([], store(name('nada'), 'velocidade'))).toContain('sz_py_pgzero_update')
+  for (const [prelude, target] of [
+    [[importAs('builtins', 'b')], store(name('b'), 'range')],
+    [[importAs('__main__', null)], store(name('__main__'), 'update')],
+    [
+      [importAs('sys', null)],
+      store(
+        node('Subscript', {
+          value: attribute(name('sys'), 'modules'),
+          slice: name('__name__'),
+          ctx: node('Load'),
+        }),
+        'update',
+      ),
+    ],
+  ] as [PythonNode[], PythonNode][])
+    expect(replaced(prelude, target)).not.toContain('sz_py_pgzero_update')
+})
+
+test('keyboard[keys.X] needs both official names', async () => {
+  const { PYTHON_PGZERO_CODECS, PGZERO_RESOLVER_OPTIONS } = await import(
+    '../extensions/pgzero/catalog'
+  )
+  const { attachPythonResolverOptions } = await import('./resolverOptions')
+  const pgzero = attachPythonResolverOptions(
+    [...PYTHON_PGZERO_CODECS, ...PYTHON_PROGRAMMING_CODECS],
+    PGZERO_RESOLVER_OPTIONS,
+  )
+  const pressed = node('If', {
+    test: node('Subscript', {
+      value: name('keyboard'),
+      slice: attribute(name('keys'), 'SPACE'),
+      ctx: node('Load'),
+    }),
+    body: [pass()],
+    orelse: [],
+  })
+  const used = (prelude: PythonNode[]) =>
+    ids(
+      pythonASTToVisual(moduleNode([...prelude, fn('update', [pressed])]), {
+        codecs: pgzero,
+        officialModules: new Set(['pgzero', 'pgzrun']),
+      }).body,
+    )
+  expect(used([])).toContain('sz_py_pgzero_keyboard_index')
+  const shadow = (id: string) =>
+    node('Assign', { targets: [name(id, 'Store')], value: integer('3'), type_comment: null })
+  expect(used([shadow('keys')])).not.toContain('sz_py_pgzero_keyboard_index')
+  expect(used([shadow('keyboard')])).not.toContain('sz_py_pgzero_keyboard_index')
 })
 
 test('a list written with actors inside also makes its loop target an actor', async () => {

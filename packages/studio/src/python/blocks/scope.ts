@@ -76,6 +76,21 @@ const READ_ONLY_BUILTINS = new Set([
   'str',
 ])
 
+/** `open(nome)` or `open(nome, 'r'|'w'|'a'...)` without 'b': a text file (read gives text). */
+function textMode(call: PythonNode): boolean {
+  const args = nodes(call.fields.args) ? call.fields.args : []
+  const keywords = nodes(call.fields.keywords) ? call.fields.keywords : []
+  let mode: PythonNode | undefined = args[1]
+  for (const keyword of keywords)
+    if (keyword.fields.arg === 'mode' && isNode(keyword.fields.value)) mode = keyword.fields.value
+  if (!mode) return true
+  return (
+    mode.kind === 'Constant' &&
+    typeof mode.fields.value === 'string' &&
+    !mode.fields.value.includes('b')
+  )
+}
+
 /** Functions of the random module that only read (or reorder) a list passed to them. */
 const READ_ONLY_RANDOM = new Set(['choice', 'choices', 'sample', 'shuffle'])
 
@@ -129,7 +144,13 @@ export function pythonBindingResolver(
   /** Arguments of these built-ins, still unshadowed, never change the list. */
   const builtinReads: { scope: Scope; list: string; via: string }[] = []
   /** Attribute writes to an official name, judged once every binding is known. */
-  const attributeWrites: { scope: Scope; root: PythonNode | undefined; dunder: boolean }[] = []
+  const attributeWrites: {
+    scope: Scope
+    root: PythonNode | undefined
+    dunder: boolean
+    /** The attribute is an official name: replacing it is dangerous on any official object. */
+    official: boolean
+  }[] = []
   let hasDynamicBindings = false
   // Private internals (turtle.Turtle._goto, random._inst) implement the official API too.
   const replacesOfficialName = (attr: string) => attr.startsWith('_') || guardedAttributes.has(attr)
@@ -181,8 +202,12 @@ export function pythonBindingResolver(
       if (isNode(item) && item.kind === 'Name') safeReads.add(item)
     }
     if (value.kind === 'Call' && isNode(fields.func)) {
-      if (fields.func.kind === 'Attribute') mark(fields.func.fields.value)
-      else if (
+      // A method call reads its receiver, except a dunder one (`estrelas.__init__([1])`), which
+      // can refill or replace the object behind the evidence.
+      if (fields.func.kind === 'Attribute') {
+        const attr = String(fields.func.fields.attr)
+        if (!(attr.startsWith('__') && attr.endsWith('__'))) mark(fields.func.fields.value)
+      } else if (
         fields.func.kind === 'Name' &&
         typeof fields.func.fields.id === 'string' &&
         READ_ONLY_BUILTINS.has(fields.func.fields.id) &&
@@ -204,6 +229,11 @@ export function pythonBindingResolver(
     if (value.kind === 'For' || value.kind === 'AsyncFor') mark(fields.iter)
     if (value.kind === 'comprehension') mark(fields.iter)
     if (value.kind === 'Subscript') mark(fields.value)
+    // `[nave] + ajudantes` builds a new list: the old one is only read.
+    if (value.kind === 'BinOp' && isNode(fields.op) && fields.op.kind === 'Add') {
+      mark(fields.left)
+      mark(fields.right)
+    }
     // Asking whether it is empty (`if not estrelas and vivo:`) only reads it: a condition is
     // checked, never kept. (`x = lista or []` keeps it, so only conditions count.)
     if (['If', 'While', 'IfExp', 'Assert'].includes(value.kind)) markCondition(fields.test)
@@ -324,17 +354,14 @@ export function pythonBindingResolver(
     )
       loops.push({ scope, target: fields.target.fields.id, list: fields.iter })
     if (value.kind === 'Attribute' && isNode(fields.ctx) && typeof fields.attr === 'string') {
-      if (
-        ['Store', 'Del'].includes(fields.ctx.kind) &&
-        (replacesOfficialName(fields.attr) ||
-          (isNode(fields.value) &&
-            fields.value.kind === 'Name' &&
-            fields.value.fields.id === 'builtins'))
-      )
+      // Every store is kept: whether it is harmless depends on what its root turns out to be
+      // (any name of the builtins or __main__ module replaces things whatever the attribute).
+      if (['Store', 'Del'].includes(fields.ctx.kind))
         attributeWrites.push({
           scope,
           root: rootName(isNode(fields.value) ? fields.value : undefined),
           dunder: fields.attr.startsWith('__') && fields.attr.endsWith('__'),
+          official: replacesOfficialName(fields.attr),
         })
       // object.__setattr__ and __dict__ reach the same mutation without an attribute Store.
       else if (MUTATING_DUNDERS.has(fields.attr)) hasDynamicBindings = true
@@ -403,7 +430,7 @@ export function pythonBindingResolver(
       value.kind === 'Call' &&
       isNode(fields.func) &&
       fields.func.kind === 'Name' &&
-      (['exec', 'eval', 'globals', 'locals', 'vars', 'setattr', 'delattr'].includes(
+      (['exec', 'eval', 'globals', 'locals', 'vars', 'setattr', 'delattr', '__import__'].includes(
         String(fields.func.fields.id),
       ) ||
         (fields.func.fields.id === 'getattr' && !harmlessGetattr(fields.args)))
@@ -477,6 +504,8 @@ export function pythonBindingResolver(
       const generators = nodes(fields.generators) ? fields.generators : []
       generators.forEach((generator, index) => {
         scopes.set(generator, local)
+        // Looping over a list inside a comprehension only reads it.
+        markSafeReads(generator)
         const iter = generator.fields.iter
         if (isNode(iter)) visit(iter, index === 0 ? scope : local)
         if (isNode(generator.fields.target)) visit(generator.fields.target, local)
@@ -522,7 +551,16 @@ export function pythonBindingResolver(
   // Infer the class of objects assigned only from one official constructor (or one built-in
   // collection kind). Rebinding from anything else keeps the generic blocks.
   const evidence = new Map<Scope, Map<string, { binding: Binding; count: number } | null>>()
+  // Names given a value with `=` (or `with ... as`), per scope: unlike a parameter or a loop
+  // target, what they hold is written in the program.
+  const assignedNames = new Map<Scope, Set<string>>()
   for (const candidate of typed) {
+    let names = assignedNames.get(candidate.scope)
+    if (!names) {
+      names = new Set()
+      assignedNames.set(candidate.scope, names)
+    }
+    names.add(candidate.target)
     const inferred = inferValue(candidate.value)
     let byName = evidence.get(candidate.scope)
     if (!byName) {
@@ -558,7 +596,11 @@ export function pythonBindingResolver(
       if (func.kind === 'Name' && typeof func.fields.id === 'string') {
         const found = bindingAt(func)
         const builtin = builtins.get(func.fields.id)
-        if (!found && CONSTRUCTOR_KINDS[func.fields.id])
+        if (
+          !found &&
+          CONSTRUCTOR_KINDS[func.fields.id] &&
+          (func.fields.id !== 'open' || textMode(value))
+        )
           inferred = {
             kind: 'instance',
             module: 'builtins',
@@ -741,9 +783,32 @@ export function pythonBindingResolver(
       return !found || found.kind === 'other'
     })
   }
+  /** The interpreter's own namespaces: a store on them replaces a built-in or a handler. */
+  function replacesNamespace(write: (typeof attributeWrites)[number]) {
+    const key = write.root?.fields.id
+    if (typeof key !== 'string') return false
+    if (key === '__builtins__') return true
+    const found = write.root && bindingAt(write.root)
+    if (!found && (key === 'builtins' || key === '__main__')) return true
+    // sys.modules[...] reaches every module, __main__ included.
+    return (
+      found?.kind === 'module' &&
+      !found.member &&
+      ['builtins', '__main__', 'sys'].includes(String(found.module))
+    )
+  }
+  // A file object accepts new attributes: after `f.write = print`, f is no longer a plain file.
+  for (const write of attributeWrites) {
+    if (!write.root) continue
+    const found = bindingAt(write.root)
+    if (found?.kind === 'instance' && found.module === 'builtins' && found.instance === 'file') {
+      const owner = holder(scopes.get(write.root), String(write.root.fields.id))
+      owner?.bindings.set(String(write.root.fields.id), { kind: 'other' })
+    }
+  }
   let hasAttributeWrites = false
   for (const write of attributeWrites)
-    if (!ownObjectState(write)) {
+    if (replacesNamespace(write) || (write.official && !ownObjectState(write))) {
       hasAttributeWrites = true
       break
     }
@@ -762,6 +827,27 @@ export function pythonBindingResolver(
       )
     }
     if (!binding.root) return !binding.builtin || officialModules.has(binding.builtin)
+    if (binding.anyReceiver) {
+      if (binding.builtin && !officialModules.has(binding.builtin)) return false
+      while (scope) {
+        if (scope.uncertain) return false
+        if (scope.globals?.has(binding.root)) scope = moduleScope(scope)
+        const found = scope.bindings.get(binding.root)
+        if (found) {
+          // A proven object counts only if it comes from the same provider (turtle.Turtle()
+          // for turtle's forward); a module only if it is that module under another name.
+          const provider = binding.builtin ?? binding.module
+          if (found.kind === 'instance')
+            return !provider || (found.builtin ?? found.module) === provider
+          if (found.kind === 'module') return !found.member && found.module === provider
+          // A parameter or a loop target may hold one; a variable set with `=` from anything
+          // but the official constructor does not prove it.
+          return !assignedNames.get(scope)?.has(binding.root)
+        }
+        scope = scope.parent
+      }
+      return true
+    }
     while (scope) {
       if (scope.uncertain) return false
       if (scope.globals?.has(binding.root)) scope = moduleScope(scope)

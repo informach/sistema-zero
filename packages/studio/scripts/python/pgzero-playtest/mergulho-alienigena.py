@@ -1,3 +1,7 @@
+"""Mergulho Alienígena: a shot destroys an alien in formation, a dive curves and returns to its
+place, two bombs (or two aliens) in the same frame never crash the game nor take lives below
+zero, and clearing the squadron wins and stops the game."""
+
 import random
 
 
@@ -5,45 +9,60 @@ def play(t):
     random.seed(3)
     n = t.get('nave')
     aliens = t.get('aliens')
-    estados = t.get('estados')
     tiro = t.get('tiro')
+    Actor = t.get('Actor')
     t.set('quadros', 0)
-    # Mira no alien 3 da fileira de baixo (índice 11) e atira.
-    alvo = 11
-    t.until(lambda: abs(n.x - aliens[alvo].x) < 4, 300, key='RIGHT' if aliens[alvo].x > n.x else 'LEFT')
-    for _ in range(4):
-        if estados[alvo] != 'fila':
-            break
-        t.until(lambda: abs(n.x - aliens[alvo].x) < 4, 60, key='RIGHT' if aliens[alvo].x > n.x else 'LEFT')
+    acertado = None
+    for _ in range(6):
+        # Mira num alien que está na fila (algum pode ter saído para mergulhar).
+        alvo = [a for a in aliens if a.estado == 'fila'][-1]
+        t.until(lambda: abs(n.x - alvo.x) < 4, 300, key='RIGHT' if alvo.x > n.x else 'LEFT')
         t.tap('SPACE')
         t.until(lambda: tiro.y <= -20, 120)
-    t.check('o tiro acerta o alien da fila e ele explode', estados[alvo] in ('explodindo', 'fora'), f'estado={estados[alvo]} pontos={t.get("pontos")}')
+        if alvo.estado in ('explodindo', 'fora'):
+            acertado = alvo
+            break
+    t.check('o tiro acerta o alien da fila e ele explode', acertado is not None, f'pontos={t.get("pontos")}')
+    alvo = acertado or alvo
     t.step(20)
-    t.check('depois da explosão ele sai do jogo', estados[alvo] == 'fora' and aliens[alvo].x < 0)
-    t.shot('1-explodiu')
-    # Um mergulho: sobe virando, desce, e se ninguém acerta, volta para a casa na formação.
-    mergulhador = 3
+    t.check('depois da explosão ele sai do jogo', alvo.estado == 'fora' and alvo.x < 0)
+    mergulhador = aliens[3]
     n.x = 50
-    estados[mergulhador] = 'mergulho'
-    viu_angulo = 0
+    mergulhador.estado = 'mergulho'
+    maior_angulo = 0
     for _ in range(400):
         t.step(1)
-        viu_angulo = max(viu_angulo, abs(aliens[mergulhador].angle))
-        if estados[mergulhador] != 'mergulho':
+        maior_angulo = max(maior_angulo, abs(mergulhador.angle))
+        if mergulhador.estado != 'mergulho':
             break
-    t.check('o mergulho faz a curva (o alien vira até 180°)', viu_angulo >= 180, f'ângulo máximo={viu_angulo}')
-    t.check('sai por baixo e volta para a formação', estados[mergulhador] == 'fila' and aliens[mergulhador].angle == 0)
-    # Um alien que mergulha em cima da nave tira uma vida.
+    t.check('o mergulho faz a curva (o alien vira até 180°)', maior_angulo >= 180, f'ângulo máximo={maior_angulo}')
+    t.check('sai por baixo e volta para a formação', mergulhador.estado == 'fila' and mergulhador.angle == 0)
+    # Duas bombas acertando no mesmo quadro: uma vida só, e nada quebra.
+    bombas = t.get('bombas')
+    for _ in range(2):
+        bomba = Actor('bomba')
+        bomba.midbottom = (n.x, n.top + 2)
+        bombas.append(bomba)
     vidas = t.get('vidas')
-    aliens[mergulhador].pos = n.pos
-    estados[mergulhador] = 'mergulho'
     t.step(2)
-    t.check('o alien que encosta na nave tira uma vida', t.get('vidas') == vidas - 1, f"vidas={t.get('vidas')}")
-    # Acabando todos, vence; espaço recomeça.
-    for i in range(len(estados)):
-        estados[i] = 'fora'
+    t.check('duas bombas no mesmo quadro tiram uma vida só, sem travar', t.get('vidas') == vidas - 1, f"vidas={t.get('vidas')}")
+    # Com uma vida, dois aliens encostando juntos: as vidas param no zero.
+    t.set('vidas', 1)
+    for alien in aliens[4:6]:
+        alien.estado = 'mergulho'
+        alien.pos = n.pos
     t.step(2)
-    t.shot('2-venceu')
+    t.check('as vidas nunca ficam negativas', t.get('vidas') == 0, f"vidas={t.get('vidas')}")
     t.tap('SPACE')
     t.step(2)
-    t.check('espaço recomeça com 16 aliens na fila', estados.count('fila') == 16 and t.get('vidas') == 3)
+    t.check('espaço recomeça com 16 aliens na fila', all(a.estado == 'fila' for a in aliens) and t.get('vidas') == 3)
+    # Acabando todos, vence e o jogo para.
+    for alien in aliens:
+        alien.estado = 'fora'
+        alien.pos = (-100, -100)
+    t.step(2)
+    t.check('sem aliens, vence', t.get('venceu'))
+    nave_x = n.x
+    t.hold('LEFT', 10)
+    t.check('depois de vencer, o jogo para', n.x == nave_x)
+    t.shot('venceu')

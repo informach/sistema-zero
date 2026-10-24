@@ -16,7 +16,11 @@ class MediaElement extends EventTarget {
   paused = false
   muted = false
   loads = 0
+  plays = 0
+  currentTime = 0
   play() {
+    this.paused = false
+    ++this.plays
     return begin()
   }
   pause() {
@@ -263,6 +267,105 @@ describe('session-owned Python audio', () => {
     instances[2]!.dispatchEvent(new Event('ended'))
     expect(await f.play(4)).toMatchObject({ ok: false, ended: [3, 4] })
     expect((await f.exchange({ version: 1, op: 'poll' })).ended).toBeUndefined()
+  })
+
+  test('a play refused at the voice limit is reported as ended; a repeated live id is not', async () => {
+    const f = await fixture()
+    for (let id = 1; id <= 16; id++) await f.play(id)
+    expect(await f.play(17)).toMatchObject({ ok: false, ended: [17] })
+    // Voice 1 is still playing: its id must not be reported as ended.
+    const repeated = await f.play(1)
+    expect(repeated.ok).toBe(false)
+    expect(repeated.ended).toBeUndefined()
+  })
+
+  test('the music has its own channel: a crowd of sounds never refuses it', async () => {
+    const f = await fixture()
+    const music = (id: number) =>
+      f.exchange({
+        version: 1,
+        op: 'play',
+        id,
+        path: 'bgm.wav',
+        loop: true,
+        volume: 1,
+        music: true,
+      })
+    for (let id = 1; id <= 16; id++) await f.play(id)
+    expect((await music(100)).ok).toBe(true)
+    expect((await music(101)).ok).toBe(true)
+    expect(await music(102)).toMatchObject({ ok: false, ended: [102] })
+  })
+
+  test('a play over the per-second command budget is reported as ended', async () => {
+    const clock = spyOn(performance, 'now').mockReturnValue(100)
+    try {
+      const f = await fixture()
+      for (let i = 0; i < 64; i++) await f.exchange({ version: 1, op: 'stop', id: null })
+      expect(await f.play(9)).toMatchObject({ ok: false, ended: [9] })
+    } finally {
+      clock.mockRestore()
+    }
+  })
+
+  test('loops=N plays the same element again at once and reports only the last end', async () => {
+    const f = await fixture()
+    await f.exchange({
+      version: 1,
+      op: 'play',
+      id: 1,
+      path: 'bgm.wav',
+      loop: false,
+      volume: 1,
+      repeat: 2,
+    })
+    const audio = instances[0]!
+    for (let round = 1; round <= 2; round++) {
+      audio.currentTime = 0.4
+      audio.dispatchEvent(new Event('ended'))
+      expect(audio.currentTime).toBe(0)
+      expect(audio.plays).toBe(1 + round)
+      expect(audio.src).not.toBe('')
+      expect((await f.exchange({ version: 1, op: 'poll' })).ended).toBeUndefined()
+    }
+    audio.dispatchEvent(new Event('ended'))
+    expect(audio.src).toBe('')
+    expect((await f.exchange({ version: 1, op: 'poll' })).ended).toEqual([1])
+  })
+
+  test('pause really pauses (the track keeps its place) and resume plays on', async () => {
+    const f = await fixture()
+    await f.play(1)
+    const audio = instances[0]!
+    audio.currentTime = 0.3
+    expect((await f.exchange({ version: 1, op: 'pause', id: 1 })).ok).toBe(true)
+    expect(audio.paused).toBe(true)
+    expect(audio.currentTime).toBe(0.3)
+    expect(audio.src).not.toBe('')
+    expect((await f.exchange({ version: 1, op: 'resume', id: 1 })).ok).toBe(true)
+    expect(audio.paused).toBe(false)
+    expect(audio.currentTime).toBe(0.3)
+  })
+
+  test('a voice paused while it still loads starts paused', async () => {
+    const f = await fixture()
+    const pending = Promise.withResolvers<void>()
+    begin = () => pending.promise
+    const playing = f.play(1)
+    while (instances.length === 0) await new Promise((resolve) => setTimeout(resolve, 0))
+    await f.exchange({ version: 1, op: 'pause', id: 1 })
+    pending.resolve()
+    expect((await playing).ok).toBe(true)
+    expect(instances[0]!.paused).toBe(true)
+  })
+
+  test('one stop or volume request reaches every voice it names', async () => {
+    const f = await fixture()
+    for (let id = 1; id <= 3; id++) await f.play(id)
+    await f.exchange({ version: 1, op: 'volume', ids: [1, 3], volume: 0.25 })
+    expect(instances.map((audio) => audio.volume)).toEqual([0.25, 0.8, 0.25])
+    await f.exchange({ version: 1, op: 'stop', ids: [2, 3] })
+    expect(instances.map((audio) => audio.src === '')).toEqual([false, true, true])
   })
 
   test('a poll carries nothing else', async () => {

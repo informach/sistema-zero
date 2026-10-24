@@ -26,11 +26,20 @@ def play(t):
     t.step(60)
     t.check('pular para fora da pirâmide cai e perde uma vida', t.get('vidas') == 2, f"vidas={t.get('vidas')}")
     t.check('depois da queda, volta ao topo', t.get('linha_atual') == 0 and not t.get('caiu'))
-    # A bolinha: solta, desce, e encostar nela tira vida.
+    # A bolinha de verdade: quem fica parado no topo nunca é atingido (ela nasce no 2º andar)...
+    t.get('clock').schedule_interval(t.get('soltar_bolinha'), 5)
+    vidas = t.get('vidas')
+    soltou = False
+    for _ in range(60 * 30):
+        t.step(1)
+        soltou = soltou or t.get('bola_linha') != -1
+    t.check('a bolinha cai e desce, mas nunca em cima de quem está no topo', soltou and t.get('vidas') == vidas, f"vidas={t.get('vidas')}")
+    # ... e quem encosta nela no caminho perde uma vida.
     bola = t.get('bolinha')
-    t.set('bola_linha', 0)
+    t.get('clock').unschedule(t.get('descer_bolinha'))
+    t.set('bola_linha', 1)
     t.set('bola_coluna', 0)
-    bola.pos = t.get('lugar')(0, 0)
-    t.step(2)
-    t.check('encostar na bolinha tira uma vida', t.get('vidas') == 1 and t.get('bola_linha') == -1, f"vidas={t.get('vidas')}")
+    bola.pos = t.get('lugar')(1, 0)
+    pular('LEFT')
+    t.check('encostar na bolinha tira uma vida', t.get('vidas') == vidas - 1, f"vidas={t.get('vidas')}")
     t.shot('2-bolinha')

@@ -73,3 +73,7 @@ def play(t):
     h.midbottom = (60, 540)
     barris.clear()
     caminho_ate_a_bandeira(t)
+    t.set('fim_de_jogo', True)
+    t.tap('SPACE')
+    t.step(2)
+    t.check('espaço recomeça depois do fim', not t.get('fim_de_jogo') and t.get('vidas') == 3 and t.get('pontos') == 0)

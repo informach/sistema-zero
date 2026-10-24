@@ -116,7 +116,7 @@ class Limits(Case):
         plays = [command for command in audio if command[0] == 'play']
         self.assertEqual(len(plays), self.sz.MAX_PLAYS_PER_FRAME)
         # The volume changed the plays of this frame instead of adding commands.
-        self.assertTrue(all(command[-1] == 0.5 for command in plays))
+        self.assertTrue(all(command[4] == 0.5 for command in plays))
         self.assertLessEqual(len(audio), self.sz.MAX_AUDIO_COMMANDS)
 
     def test_a_long_text_fails_where_it_is_drawn_and_a_long_title_is_cut(self):
@@ -207,16 +207,35 @@ class Audio(Case):
         return [command for header in self.browser.headers for command in header['audio']
                 if command[0] == 'play']
 
-    def test_a_sound_with_loops_plays_that_many_more_times(self):
-        self.loaders.sounds.bip.play(loops=2)
+    def test_a_sound_with_loops_asks_the_browser_for_the_repeats_in_one_play(self):
+        bip = self.loaders.sounds.bip
+        bip.play(loops=2)
         self.present()
+        # One play repeated by the browser: no gap waiting for a reply between the plays.
+        self.assertEqual([command[3] for command in self.plays()], [2])
         self.assertTrue(self.browser.headers[-1]['watch'])
-        for _ in range(3):
-            voice = self.plays()[-1][1]
-            self.browser.replies.append({'ended': [voice]})
-            self.present()
-            self.present()
-        self.assertEqual(len(self.plays()), 3)
+        self.assertEqual(bip.get_num_channels(), 1)
+        self.browser.replies.append({'ended': [self.plays()[-1][1]]})
+        self.present()
+        self.present()
+        self.assertEqual(len(self.plays()), 1)
+        self.assertFalse(self.browser.headers[-1]['watch'])
+        self.assertEqual(bip.get_num_channels(), 0)
+
+    def test_get_num_channels_drops_a_sound_that_ended_by_itself(self):
+        bip = self.loaders.sounds.bip
+        bip.play()
+        bip.play(loops=-1)
+        self.present()
+        self.assertEqual(bip.get_num_channels(), 2)
+        once, forever = [command[1] for command in self.plays()]
+        self.assertEqual([command[3] for command in self.plays()], [0, -1])
+        self.assertTrue(self.browser.headers[-1]['watch'])
+        self.browser.replies.append({'ended': [once]})
+        self.present()
+        self.present()
+        self.assertEqual(bip.get_num_channels(), 1)
+        # Only the looping one is left, and it never ends by itself.
         self.assertFalse(self.browser.headers[-1]['watch'])
 
     def test_looping_voices_are_kept_so_stop_always_reaches_them(self):
@@ -229,7 +248,39 @@ class Audio(Case):
             self.present()
         bip.stop()
         self.present()
-        self.assertIn(['stop', looping], self.browser.headers[-1]['audio'])
+        stops = [command[1] for command in self.browser.headers[-1]['audio'] if command[0] == 'stop']
+        self.assertTrue(any(looping == target or looping in target for target in stops))
+
+    def test_stopping_and_turning_down_many_voices_sends_one_command_per_sound(self):
+        sounds = []
+        for name in ('a', 'b', 'c'):
+            self.write(f'sounds/{name}.wav', b'RIFF\0\0\0\0WAVE')
+            sound = getattr(self.loaders.sounds, name)
+            for _ in range(32):
+                sound.play(loops=-1)
+                self.present()
+            sounds.append(sound)
+        for sound in sounds:
+            sound.set_volume(0.5)
+        self.present()
+        audio = self.browser.headers[-1]['audio']
+        self.assertEqual(len(audio), 3)
+        self.assertEqual(sorted(len(command[1]) for command in audio), [32, 32, 32])
+        for sound in sounds:
+            sound.stop()
+        self.present()
+        audio = self.browser.headers[-1]['audio']
+        self.assertEqual([command[0] for command in audio], ['stop'] * 3)
+        named = sorted(voice for command in audio for voice in command[1])
+        self.assertEqual(named, sorted(command[1] for command in self.plays()))
+
+    def test_stopping_a_sound_whose_play_was_not_sent_sends_nothing(self):
+        bip = self.loaders.sounds.bip
+        bip.play()
+        bip.set_volume(0.3)
+        bip.stop()
+        self.present()
+        self.assertEqual(self.browser.headers[-1]['audio'], [])
 
     def test_music_end_runs_on_music_end_and_starts_the_queued_track(self):
         self.music.play_once('a')
@@ -253,6 +304,66 @@ class Audio(Case):
         self.music.play('a')
         self.present()
         self.assertFalse(self.browser.headers[-1]['watch'])
+
+    def test_the_music_has_its_own_channel(self):
+        bip = self.loaders.sounds.bip
+        for _ in range(self.sz.MAX_PLAYS_PER_FRAME):
+            bip.play()
+        self.music.play('a')
+        self.present()
+        music = [command for command in self.plays() if command[5]]
+        self.assertEqual([command[2] for command in music], ['music/a.ogg'])
+        self.assertEqual(music[0][3], -1)
+        self.assertTrue(self.music.is_playing('a'))
+
+    def test_stop_posts_music_end_like_pygame_ce_but_changing_tracks_does_not(self):
+        from pgzero import constants
+        self.music.stop()
+        self.assertEqual(self.sz.posted, [])
+        self.music.play('a')
+        self.music.play('b')
+        self.assertEqual(self.sz.posted, [])
+        self.music.stop()
+        self.assertEqual(self.sz.posted, [constants.MUSIC_END])
+        self.music.play('a')
+        self.music.pause()
+        self.music.stop()
+        self.assertEqual(self.sz.posted, [constants.MUSIC_END] * 2)
+        self.music.play('a')
+        self.music.fadeout(1)
+        self.assertEqual(self.sz.posted, [constants.MUSIC_END] * 3)
+
+    def test_queue_with_nothing_playing_does_not_play(self):
+        self.music.queue('b')
+        self.present()
+        self.assertEqual(self.plays(), [])
+        self.assertFalse(self.music.is_playing(None))
+        # Nor does it wait: a later track plays alone.
+        self.music.play_once('a')
+        self.present()
+        self.browser.replies.append({'ended': [self.plays()[-1][1]]})
+        self.present()
+        self.present()
+        self.assertEqual([command[2] for command in self.plays()], ['music/a.ogg'])
+
+    def test_pause_really_pauses_and_unpause_resumes(self):
+        self.music.set_volume(0.7)
+        self.music.play('a')
+        self.present()
+        voice = self.plays()[-1][1]
+        self.music.pause()
+        self.present()
+        self.assertEqual(self.browser.headers[-1]['audio'], [['pause', voice]])
+        self.assertFalse(self.music.is_playing('a'))
+        self.music.unpause()
+        self.present()
+        self.assertEqual(self.browser.headers[-1]['audio'], [['resume', voice]])
+        self.assertTrue(self.music.is_playing('a'))
+        # Pausing and resuming in the same frame sends only the last of the two.
+        self.music.pause()
+        self.music.unpause()
+        self.present()
+        self.assertEqual(self.browser.headers[-1]['audio'], [['resume', voice]])
 
 
 class Loop(Case):

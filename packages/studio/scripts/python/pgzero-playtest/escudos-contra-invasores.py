@@ -27,8 +27,11 @@ def play(t):
         if subiu_alem:
             furou = True
             break
+    # O buraco é de verdade: a coluna do tiro está vazia em todas as fileiras do escudo.
+    coluna = int((330 - t.get('ESCUDO_X')[1]) // t.get('TAMANHO'))
+    vazia = all(not linha[coluna] for linha in escudos[1])
     t.check('cada tiro arranca pedaços do escudo', pedacos(1) < inteiro, f'pedaços: {inteiro} -> {pedacos(1)}')
-    t.check('atirando no mesmo lugar, abre um buraco e o tiro passa', furou, f'tiros depois de começar: {tiros}')
+    t.check('atirando no mesmo lugar, abre um buraco e o tiro passa', furou and vazia, f'tiros: {tiros}, coluna vazia: {vazia}')
     t.shot('1-buraco')
     # Um invasor alinhado com o canhão: o tiro acerta e conta 10 pontos.
     invasores = t.get('invasores')

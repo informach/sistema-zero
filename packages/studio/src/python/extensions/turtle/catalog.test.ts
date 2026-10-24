@@ -36,7 +36,7 @@ const codecs = attachPythonResolverOptions(
 const official = { codecs, officialModules: new Set(['turtle']) }
 const imported = (asname: string | null = null) =>
   node('Import', { names: [node('alias', { name: 'turtle', asname })] })
-const assigned = (id: string, value: ReturnType<typeof call>) =>
+const assigned = (id: string, value: ReturnType<typeof node>) =>
   node('Assign', { targets: [name(id, 'Store')], value, type_comment: null })
 const turtleCall = (receiver: string, method: string, args = [integer('10')]) =>
   expression(call(attribute(name(receiver), method), args))
@@ -264,6 +264,45 @@ test('custom modules, reassigned objects and unavailable official modules stay g
   }
   const unavailable = pythonASTToVisual(moduleNode([...base, command]), { codecs })
   expect(types(unavailable.body).some((id) => id.startsWith('sz_py_turtle_'))).toBe(false)
+})
+
+test('a distinctive method keeps its block on a parameter, but not on proof of another object', () => {
+  const forward = turtleCall('t', 'forward')
+  const used = (body: ReturnType<typeof node>[]) =>
+    types(pythonASTToVisual(moduleNode(body), official).body)
+  const fromTurtle = assigned('t', call(attribute(name('turtle'), 'Turtle')))
+  expect(used([imported(), fromTurtle, forward])).toContain('sz_py_turtle_turtle_forward')
+  // A parameter or a loop target may hold a turtle kept in a list.
+  const parameter = node('FunctionDef', {
+    name: 'andar',
+    args: node('arguments', {
+      posonlyargs: [],
+      args: [node('arg', { arg: 't', annotation: null, type_comment: null })],
+      vararg: null,
+      kwonlyargs: [],
+      kw_defaults: [],
+      kwarg: null,
+      defaults: [],
+    }),
+    body: [forward],
+    decorator_list: [],
+    returns: null,
+    type_comment: null,
+    type_params: [],
+  })
+  expect(used([imported(), parameter])).toContain('sz_py_turtle_turtle_forward')
+  // Rebuilt from another class, or made by a module that is only called turtle: not a turtle.
+  expect(
+    used([imported(), fromTurtle, assigned('t', call(name('OutraClasse'))), forward]),
+  ).not.toContain('sz_py_turtle_turtle_forward')
+  const otherModule = node('Import', {
+    names: [node('alias', { name: 'meu_desenho', asname: 'turtle' })],
+  })
+  expect(used([otherModule, fromTurtle, forward])).not.toContain('sz_py_turtle_turtle_forward')
+  // A list is never a turtle.
+  expect(
+    used([imported(), assigned('t', node('List', { elts: [], ctx: node('Load') })), forward]),
+  ).not.toContain('sz_py_turtle_turtle_forward')
 })
 
 test('object state keeps specialized blocks; replacing an official name or a dunder does not', () => {

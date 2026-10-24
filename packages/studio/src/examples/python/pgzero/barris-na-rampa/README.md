@@ -12,7 +12,7 @@ Ande com as setas, suba e desça as escadas com cima e baixo e pule com espaço.
 
 ## Ideias para mudar
 
-- Mude no Pinta as cores do mapa (images/mapa.png) para criar outra fase.
+- Mude a força do pulo (o -9) e veja se ainda dá para passar os barris.
 - Faça os barris saírem mais depressa.
 - Dê mais vidas ao herói.
 

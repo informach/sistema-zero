@@ -19,7 +19,7 @@ import pgzero.clock  # noqa: E402
 from pgzero.game import PGZeroGame  # noqa: E402
 from pgzero.runner import prepare_mod  # noqa: E402
 
-folder, script, shots = sys.argv[1], sys.argv[2], sys.argv[3]
+folder, script, shots = (os.path.abspath(path) for path in sys.argv[1:4])
 os.makedirs(shots, exist_ok=True)
 os.chdir(folder)
 sys._pgzrun = True  # pgzrun.go() returns at once; we run the loop ourselves
@@ -75,6 +75,10 @@ class Tester:
 
     def move(self, pos):
         game.dispatch_event(pygame.event.Event(pygame.MOUSEMOTION, pos=pos, rel=(0, 0), buttons=(0, 0, 0)))
+
+    def drag(self, pos):
+        """Moves the mouse with the left button held."""
+        game.dispatch_event(pygame.event.Event(pygame.MOUSEMOTION, pos=pos, rel=(0, 0), buttons=(1, 0, 0)))
 
     def click(self, pos):
         game.dispatch_event(pygame.event.Event(pygame.MOUSEBUTTONDOWN, pos=pos, button=1))

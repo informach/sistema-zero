@@ -537,6 +537,9 @@ export function AssetsPanel({
           setError(err)
           break
         }
+        // The store may keep another name (in Pygame Zero, the name the code uses): reserve
+        // every name the project really has now.
+        for (const asset of storeApi.getState().project?.assets ?? []) taken.add(asset.name)
         taken.add(name)
       }
     } catch (e) {
@@ -571,6 +574,9 @@ export function AssetsPanel({
           setError(err)
           break
         }
+        // The store may keep another name (in Pygame Zero, the name the code uses): reserve
+        // every name the project really has now.
+        for (const asset of storeApi.getState().project?.assets ?? []) taken.add(asset.name)
         taken.add(name)
       }
     } catch (e) {
@@ -598,6 +604,9 @@ export function AssetsPanel({
           setError(err)
           break
         }
+        // The store may keep another name (in Pygame Zero, the name the code uses): reserve
+        // every name the project really has now.
+        for (const asset of storeApi.getState().project?.assets ?? []) taken.add(asset.name)
         taken.add(name)
       }
     } catch (e) {

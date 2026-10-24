@@ -3,7 +3,7 @@ import {
   studioPortableFileConflict,
 } from '@sistemazero/core/studio/portable-path'
 import { pgzeroSvgSize } from '../runtime/python/pgzero/svgSize'
-import { decodeProjectAsset } from './assetBinary'
+import { decodeProjectAsset, isSvgDataUrl } from './assetBinary'
 import { normalizeAssetName, type ProjectAsset } from './projectAssets'
 import type { PythonProjectDocument } from './pythonProject'
 
@@ -306,12 +306,21 @@ export function pgzeroRelocatedAssets(
   const unreadable: string[] = []
   let cover = project.coverAssetName
   for (const [index, asset] of assets.entries()) {
+    // An SVG must say its own size, as when it is uploaded to a Pygame Zero project.
+    if (asset.kind === 'image' && isSvgDataUrl(asset.dataUrl)) {
+      const size = pgzeroSvgAssetSize(asset.dataUrl)
+      if ('error' in size) {
+        unreadable.push(`${asset.name} (SVG sem tamanho)`)
+        continue
+      }
+      assets[index] = { ...asset, width: size.width, height: size.height }
+    }
     const path = asset.proPath
     if (path && pgzeroFolderOf(path, entrypoint)) {
       const placed = pgzeroMediaFolder(asset.kind, extensionOf(path))
       if (!('error' in placed)) continue
     }
-    const moved = pgzeroRenamedAsset({ ...project, assets }, asset, asset.name)
+    const moved = pgzeroRenamedAsset({ ...project, assets }, assets[index]!, asset.name)
     if ('error' in moved) {
       unreadable.push(unreadableLabel(asset))
       continue

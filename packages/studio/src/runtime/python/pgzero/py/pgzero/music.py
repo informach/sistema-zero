@@ -35,7 +35,8 @@ def _play(name, loop):
     path = _loader.load(name)
     if _voice is not None:
         _sz.audio_stop(_voice)
-    _voice = _sz.audio_play(path, loop, _volume)
+    # Changing the track posts no MUSIC_END (pygame-ce 2.5.8, measured).
+    _voice = _sz.audio_play(path, -1 if loop else 0, _volume, music=True)
     _paused = False
     _current = name
     # Like pygame: changing the music loses the queued track.
@@ -73,12 +74,11 @@ def queue(name):
     """Queue a music file to follow the current track.
 
     It starts as soon as the current music ends by itself; stopping or changing the music loses
-    it. With nothing playing, it plays now.
+    it. Like pygame-ce, with nothing playing it does not play (nor wait).
     """
     global _queued
     _loader.load(name)
     if _voice is None:
-        play_once(name)
         return
     # A track playing once is already watched (_play); a looping one never ends, as in pygame.
     _queued = name
@@ -90,9 +90,11 @@ def is_playing(name):
 
 
 def stop():
+    """Stop the music. Like pygame-ce, stopping a track (playing or paused) posts MUSIC_END."""
     global _voice, _paused, _current, _queued
     if _voice is not None:
         _sz.audio_stop(_voice)
+        _sz.posted.append(constants.MUSIC_END)
     _voice = None
     _paused = False
     _current = None
@@ -100,18 +102,18 @@ def stop():
 
 
 def pause():
-    """Temporarily stop playback of the music stream (here: stops it)."""
+    """Temporarily stop playback of the music stream; it keeps its place."""
     global _paused
-    if _voice is not None:
-        _sz.audio_volume(_voice, 0.0)
-    _paused = True
+    if _voice is not None and not _paused:
+        _sz.audio_pause(_voice)
+        _paused = True
 
 
 def unpause():
     """Resume playback of the music stream after it has been paused."""
     global _paused
-    if _voice is not None:
-        _sz.audio_volume(_voice, _volume)
+    if _voice is not None and _paused:
+        _sz.audio_resume(_voice)
     _paused = False
 
 
@@ -123,7 +125,7 @@ def fadeout(seconds):
 def set_volume(volume):
     global _volume
     _volume = min(1.0, max(0.0, float(volume)))
-    if _voice is not None and not _paused:
+    if _voice is not None:
         _sz.audio_volume(_voice, _volume)
 
 

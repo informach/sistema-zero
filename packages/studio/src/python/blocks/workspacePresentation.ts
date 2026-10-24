@@ -48,17 +48,23 @@ export function updatePythonWorkspacePresentation(
     for (const block of workspace.getAllBlocks(false)) {
       const codec = registry.get(block.type)
       if (!codec || !(codec.binding || codec.bindingFor || codec.receiverKinds)) continue
-      // Only calls fall back to "chamada Python": a statement with a body (with open(...) as f)
-      // is not a call, and its own shape still describes it.
-      if (codec.match?.kinds?.some((kind) => kind !== 'Call' && kind !== 'Expr')) continue
       const origin = origins.get(block.id)
       const current = origin?.id ? projected.get(origin.id) : undefined
       const qualified = current?.kind === 'block' && current.codecId === codec.id
       // The codec still emits the original call. Only its instructional claim
       // changes when the built-in/module/receiver is no longer proven.
+      // A call becomes a generic "chamada Python"; anything else (a handler, a with, a window
+      // constant) keeps its shape but says the claim must be checked in the code.
+      const call = !codec.match?.kinds?.some((kind) => kind !== 'Call' && kind !== 'Expr')
       block
         .getField('PYTHON_TITLE')
-        ?.setValue(qualified ? codec.title : 'chamada Python (ver código)')
+        ?.setValue(
+          qualified
+            ? codec.title
+            : call
+              ? 'chamada Python (ver código)'
+              : `${codec.title} (confira no código)`,
+        )
       block.setTooltip(
         qualified
           ? `${codec.help}\nPython: ${codec.api}`

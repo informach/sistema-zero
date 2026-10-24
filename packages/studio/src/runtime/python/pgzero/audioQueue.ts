@@ -1,8 +1,8 @@
 import type { PgzeroAudioCommand } from './protocol'
 
-/** A play still waiting after this long is dropped: a late sound effect is worse than none. */
+/** A sound effect still waiting after this long is dropped: a late effect is worse than none. */
 export const PGZERO_AUDIO_STALE_MS = 250
-/** Plays waiting at once; past this the oldest waiting play is dropped. */
+/** Sound effects waiting at once; past this the oldest waiting effect is dropped. */
 export const PGZERO_AUDIO_QUEUED_PLAYS = 16
 /** While Python waits for sounds to end, the host is asked this often. */
 export const PGZERO_AUDIO_POLL_MS = 250
@@ -11,8 +11,13 @@ const SKIPPED = JSON.stringify({ version: 1, ok: true })
 
 interface Entry {
   request: string
-  /** Voice of a Pygame Zero play: it may be dropped when stale. */
+  /** Voice of a Pygame Zero play: reported as ended if it never plays. */
   voice?: number
+  /**
+   * A sound effect played once may be dropped when stale or crowded. The music and a sound that
+   * repeats are never dropped: the game would go silent, or on_music_end would run for nothing.
+   */
+  droppable?: boolean
   poll?: boolean
   at: number
   resolve(value: string): void
@@ -25,6 +30,35 @@ interface Entry {
  * a Pygame Zero play that waited too long, or that would make the backlog grow, is dropped and
  * reported as ended, so the program's bookkeeping (Sound voices, music) stays right.
  */
+/** The media service's request for one frame command. */
+function serviceRequest(command: PgzeroAudioCommand) {
+  switch (command[0]) {
+    case 'play': {
+      const [, id, path, repeat, volume, music] = command
+      return {
+        version: 1,
+        op: 'play',
+        id,
+        path,
+        loop: repeat < 0,
+        volume,
+        ...(repeat > 0 ? { repeat } : {}),
+        ...(music ? { music: true } : {}),
+      }
+    }
+    case 'stop':
+      return Array.isArray(command[1])
+        ? { version: 1, op: 'stop', ids: command[1] }
+        : { version: 1, op: 'stop', id: command[1] }
+    case 'volume':
+      return Array.isArray(command[1])
+        ? { version: 1, op: 'volume', ids: command[1], volume: command[2] }
+        : { version: 1, op: 'volume', id: command[1], volume: command[2] }
+    default:
+      return { version: 1, op: command[0], id: command[1] }
+  }
+}
+
 export function createPgzeroAudioQueue(options: {
   send(request: string): Promise<string>
   now?: () => number
@@ -60,7 +94,7 @@ export function createPgzeroAudioQueue(options: {
     while (!busy && !closed) {
       const next = queue.shift()
       if (!next) return
-      if (next.voice !== undefined && now() - next.at > PGZERO_AUDIO_STALE_MS) {
+      if (next.droppable && now() - next.at > PGZERO_AUDIO_STALE_MS) {
         drop(next)
         continue
       }
@@ -77,7 +111,11 @@ export function createPgzeroAudioQueue(options: {
             harvest(response)
             next.resolve(response)
           },
-          (reason: unknown) => next.reject(reason),
+          (reason: unknown) => {
+            // The play never reached the host: for the program it has ended.
+            if (next.voice !== undefined) report(next.voice)
+            next.reject(reason)
+          },
         )
         .finally(() => {
           busy = false
@@ -103,29 +141,17 @@ export function createPgzeroAudioQueue(options: {
     /** The commands of one Pygame Zero frame. Fire and forget: a sound never stops the game. */
     pgzero(commands: readonly PgzeroAudioCommand[], watch: boolean) {
       for (const command of commands) {
-        if (command[0] === 'play') {
-          const plays = queue.filter((entry) => entry.voice !== undefined)
-          if (plays.length >= PGZERO_AUDIO_QUEUED_PLAYS) {
-            queue.splice(queue.indexOf(plays[0]!), 1)
-            drop(plays[0]!)
+        const droppable = command[0] === 'play' && command[3] === 0 && !command[5]
+        if (droppable) {
+          const effects = queue.filter((entry) => entry.droppable)
+          if (effects.length >= PGZERO_AUDIO_QUEUED_PLAYS) {
+            queue.splice(queue.indexOf(effects[0]!), 1)
+            drop(effects[0]!)
           }
         }
-        const request =
-          command[0] === 'play'
-            ? {
-                version: 1,
-                op: 'play',
-                id: command[1],
-                path: command[2],
-                loop: command[3],
-                volume: command[4],
-              }
-            : command[0] === 'stop'
-              ? { version: 1, op: 'stop', id: command[1] }
-              : { version: 1, op: 'volume', id: command[1], volume: command[2] }
         void enqueue({
-          request: JSON.stringify(request),
-          ...(command[0] === 'play' ? { voice: command[1] } : {}),
+          request: JSON.stringify(serviceRequest(command)),
+          ...(command[0] === 'play' ? { voice: command[1], droppable } : {}),
         }).catch(() => {})
       }
       const time = now()

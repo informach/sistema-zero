@@ -43,6 +43,8 @@ export const PGZERO_LIMITS = Object.freeze({
   textPixels: 16 * 1024 * 1024,
   /** Sounds that ended, reported with one reply. */
   endedVoices: 64,
+  /** Sound.play(loops=N): how many extra plays one command may ask for. */
+  soundRepeats: 1000,
 })
 
 export const PGZERO_LIST_ATTACHMENT = 0
@@ -92,10 +94,16 @@ export interface PgzeroTextStyle {
   angle?: number
   fit?: number
 }
+/**
+ * Sound commands of one frame. A play names its voice, file, extra plays (-1: forever, as
+ * Sound.play(loops=-1)), volume and whether it is the music, which has its own channel. Stop
+ * and volume may name several voices at once (Sound.stop() stops all of its own).
+ */
 export type PgzeroAudioCommand =
-  | readonly ['play', number, string, boolean, number]
-  | readonly ['stop', number | null]
-  | readonly ['volume', number, number]
+  | readonly ['play', number, string, number, number, boolean]
+  | readonly ['stop', number | null | readonly number[]]
+  | readonly ['volume', number | readonly number[], number]
+  | readonly ['pause' | 'resume', number]
 export interface PgzeroFrameHeader {
   w: number
   h: number
@@ -184,22 +192,39 @@ function readStyle(value: unknown): PgzeroTextStyle | null {
   return style as PgzeroTextStyle
 }
 
+const voices = (value: unknown): value is number[] =>
+  Array.isArray(value) &&
+  value.length > 0 &&
+  value.length <= PGZERO_LIMITS.audioCommands &&
+  value.every((item) => id(item, 2 ** 31))
+
 function readAudio(value: unknown): PgzeroAudioCommand {
   if (!Array.isArray(value)) invalid()
-  const [op, a, b, c, d] = value
+  const [op, a, b, c, d, e] = value
   if (
     op === 'play' &&
-    value.length === 5 &&
+    value.length === 6 &&
     id(a, 2 ** 31) &&
     path(b) &&
-    typeof c === 'boolean' &&
+    Number.isSafeInteger(c) &&
+    c >= -1 &&
+    c <= PGZERO_LIMITS.soundRepeats &&
     finite(d, 1) &&
-    d >= 0
+    d >= 0 &&
+    typeof e === 'boolean'
   )
-    return ['play', a, b, c, d]
-  if (op === 'stop' && value.length === 2 && (a === null || id(a, 2 ** 31))) return ['stop', a]
-  if (op === 'volume' && value.length === 3 && id(a, 2 ** 31) && finite(b, 1) && b >= 0)
+    return ['play', a, b, c, d, e]
+  if (op === 'stop' && value.length === 2 && (a === null || id(a, 2 ** 31) || voices(a)))
+    return ['stop', a]
+  if (
+    op === 'volume' &&
+    value.length === 3 &&
+    (id(a, 2 ** 31) || voices(a)) &&
+    finite(b, 1) &&
+    b >= 0
+  )
     return ['volume', a, b]
+  if ((op === 'pause' || op === 'resume') && value.length === 2 && id(a, 2 ** 31)) return [op, a]
   invalid()
 }
 

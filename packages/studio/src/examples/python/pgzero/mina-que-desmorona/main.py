@@ -58,24 +58,24 @@ def recomecar():
 
 
 def pisando_em(pes_antes):
-    # O número do bloco embaixo dos pés do mineiro, ou -1 se não houver nenhum.
+    # Os números dos blocos embaixo dos pés do mineiro (a lista fica vazia se ele está no ar).
     # Vale se os pés estavam em cima do bloco e agora chegaram nele ou passaram dele: caindo
     # rápido, os pés pulam vários pixels de uma vez e passariam direto pelo chão.
+    embaixo = []
     for numero in range(len(blocos)):
         bloco = blocos[numero]
         if tipos[numero] != 'x' and mineiro.right > bloco.left + 4 and mineiro.left < bloco.right - 4:
             if pes_antes <= bloco.top + 1 and mineiro.bottom >= bloco.top and velocidade_y >= 0:
-                return numero
-    return -1
+                embaixo.append(numero)
+    return embaixo
 
 
 def desmoronar(numero):
-    # O chão frágil afunda um pouquinho a cada quadro e some quando acaba.
+    # O chão frágil afunda um pixel a cada quatro quadros e some quando acaba.
     bloco = blocos[numero]
     if passos % 4 == 0:
         bloco.top = bloco.top + 1
         bloco.height = bloco.height - 1
-        mineiro.bottom = bloco.top
     if bloco.height <= 0:
         tipos[numero] = 'x'
         sounds.desmorona.play()
@@ -100,13 +100,23 @@ def mover_mineiro():
     pes_antes = mineiro.bottom
     velocidade_y = velocidade_y + GRAVIDADE
     mineiro.y = mineiro.y + velocidade_y
-    numero = pisando_em(pes_antes)
-    no_chao = numero != -1
+    embaixo = pisando_em(pes_antes)
+    no_chao = len(embaixo) > 0
     if no_chao:
-        mineiro.bottom = blocos[numero].top
         velocidade_y = 0
-        if tipos[numero] == '~':
-            desmoronar(numero)
+        # Todo chão frágil embaixo dos pés afunda junto; o mineiro fica no mais alto deles.
+        for numero in embaixo:
+            if tipos[numero] == '~':
+                desmoronar(numero)
+        mais_alto = HEIGHT
+        for numero in embaixo:
+            if tipos[numero] != 'x':
+                mais_alto = min(mais_alto, blocos[numero].top)
+        if mais_alto < HEIGHT:
+            mineiro.bottom = mais_alto
+        else:
+            # O chão acabou de sumir: começa a cair.
+            no_chao = False
 
 
 def mover_robo():

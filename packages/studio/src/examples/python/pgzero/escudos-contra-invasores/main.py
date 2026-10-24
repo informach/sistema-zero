@@ -76,7 +76,8 @@ def estragar(numero, linha, coluna):
             perto_linha = linha + mais_linha
             perto_coluna = coluna + mais_coluna
             if 0 <= perto_linha < len(grade) and 0 <= perto_coluna < len(grade[0]):
-                if mais_linha == 0 and mais_coluna == 0 or random.randint(1, 3) > 1:
+                # O pedaço atingido sempre sai; os vizinhos saem duas vezes em três.
+                if (mais_linha == 0 and mais_coluna == 0) or random.randint(1, 3) > 1:
                     grade[perto_linha][perto_coluna] = False
 
 
@@ -161,9 +162,13 @@ def update():
         canhao.x = canhao.x + 5
     marchar()
     if tiro.y > -20:
-        tiro.y = tiro.y - 9
-        if bateu_no_escudo(tiro.x, tiro.top):
-            tiro.y = -20
+        # Anda 9 pixels em três passinhos de 3: assim não pula nenhuma fileira do escudo,
+        # que tem pedaços de 6 pixels.
+        for passo in range(3):
+            tiro.y = tiro.y - 3
+            if bateu_no_escudo(tiro.x, tiro.top):
+                tiro.y = -20
+                break
     for invasor in list(invasores):
         if invasor.colliderect(tiro):
             invasores.remove(invasor)

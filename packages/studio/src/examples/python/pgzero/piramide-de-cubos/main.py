@@ -7,7 +7,7 @@ TITLE = 'Pirâmide de Cubos'
 ANDARES = 7
 
 # Cada cubo mora numa linha (0 é o topo) e numa coluna (de 0 até o número da linha).
-# cubos[linha] é a fileira daquela linha; todos_os_cubos tem os 28 juntos, para desenhar.
+# cubos[linha] é a fileira daquela linha; todos_os_cubos tem todos juntos, para desenhar.
 cubos = []
 todos_os_cubos = []
 for linha in range(ANDARES):
@@ -53,7 +53,7 @@ def pintar_cubo():
         cubo.image = 'cubo_pintado'
         pintados = pintados + 1
         sounds.pinta.play()
-    if pintados == 28:
+    if pintados == len(todos_os_cubos):
         venceu = True
         sounds.vitoria.play()
 
@@ -88,10 +88,11 @@ def pular(mais_linha, mais_coluna):
 
 def soltar_bolinha():
     global bola_linha, bola_coluna
+    # A bolinha cai no segundo andar, nunca em cima de quem está no topo.
     if bola_linha == -1 and not venceu and vidas > 0:
-        bola_linha = 0
-        bola_coluna = 0
-        bolinha.pos = lugar(0, 0)
+        bola_linha = 1
+        bola_coluna = random.randint(0, 1)
+        bolinha.pos = lugar(bola_linha, bola_coluna)
 
 
 def descer_bolinha():
@@ -116,7 +117,7 @@ def draw():
     if vidas > 0:
         pulador.draw()
     screen.draw.text('Vidas: ' + str(vidas), topleft=(12, 10), fontsize=30, color='white')
-    screen.draw.text('Cubos: ' + str(pintados) + '/28', topright=(WIDTH - 12, 10), fontsize=30, color='white')
+    screen.draw.text('Cubos: ' + str(pintados) + '/' + str(len(todos_os_cubos)), topright=(WIDTH - 12, 10), fontsize=30, color='white')
     if venceu:
         screen.draw.text('Você pintou a pirâmide!', center=(WIDTH / 2, 460), fontsize=44, color='yellow', owidth=2, ocolor='black')
     if vidas == 0:

@@ -70,3 +70,28 @@ test('text styles that would block the page are refused', () => {
   ])
     expect(() => readPgzeroFrameHeader(frame({ styles: [[1, style]] }))).toThrow()
 })
+
+test('audio commands: music, loops=N, several voices at once, pause and resume', () => {
+  const audio = [
+    ['play', 1, 'sounds/bip.wav', 0, 1, false],
+    ['play', 2, 'music/tema.ogg', -1, 0.5, true],
+    ['play', 3, 'sounds/motor.wav', 3, 1, false],
+    ['stop', [4, 5, 6]],
+    ['volume', [7, 8], 0.25],
+    ['pause', 2],
+    ['resume', 2],
+    ['stop', null],
+  ]
+  expect(readPgzeroFrameHeader(frame({ audio })).audio as unknown).toEqual(audio)
+  for (const command of [
+    ['play', 1, 'sounds/bip.wav', false, 1],
+    ['play', 1, 'sounds/bip.wav', -2, 1, false],
+    ['play', 1, 'sounds/bip.wav', 1001, 1, false],
+    ['play', 1, 'sounds/bip.wav', 0, 1, 'sim'],
+    ['stop', []],
+    ['stop', Array.from({ length: PGZERO_LIMITS.audioCommands + 1 }, (_, i) => i + 1)],
+    ['volume', [1], 2],
+    ['pause', null],
+  ])
+    expect(() => readPgzeroFrameHeader(frame({ audio: [command] }))).toThrow()
+})

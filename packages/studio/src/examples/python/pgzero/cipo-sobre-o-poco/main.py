@@ -120,7 +120,8 @@ def update():
         vidas = vidas - 1
         sounds.queda.play()
         recomecar()
-    if explorador.colliderect(tronco) and no_chao():
+    # O tronco gira, e girar muda o tamanho do retângulo dele: a batida conta pela distância.
+    if explorador.distance_to(tronco) < 30 and no_chao():
         vidas = vidas - 1
         sounds.queda.play()
         tronco.left = WIDTH

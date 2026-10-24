@@ -9,7 +9,7 @@ import {
   STUDIO_PYTHON_MATERIAL_DATA_LIMITS,
   STUDIO_PYTHON_MATERIAL_LIMITS,
 } from '@sistemazero/core/studio/python-material-policy'
-import { decodeProjectAsset, digestAssetBytes, projectAssetFileExtension } from './assetBinary'
+import { decodeProjectAsset, digestAssetBytes, pythonAssetFileExtension } from './assetBinary'
 import { assertPintaImageAssetBytes } from './pintaImageAsset'
 import { type ProjectAsset, sanitizeProjectAssets } from './projectAssets'
 import { assertProjectContentPreserved } from './projectDocumentGuards'
@@ -81,12 +81,9 @@ export async function buildPythonAssetBundle(
         : STUDIO_PYTHON_MATERIAL_LIMITS.audioBytes
     if (bytes.byteLength > limit || totalBytes > STUDIO_PYTHON_MATERIAL_LIMITS.totalBytes)
       throw new Error('Os materiais Python excedem o limite de bytes do perfil.')
-    // Python preserves portable FLAC files without changing the historical JS
-    // materializer's fallback names for these MIME types.
-    const extension =
-      mime === 'audio/flac' || mime === 'audio/x-flac'
-        ? 'flac'
-        : projectAssetFileExtension(mime, asset.kind)
+    // Python preserves portable FLAC (and every WAV MIME name) without changing the historical
+    // JS materializer's fallback names for these MIME types.
+    const extension = pythonAssetFileExtension(mime, asset.kind)
     const path = asset.proPath ?? `assets/${await sha256Hex(asset.id)}.${extension}`
     if (!isStudioPythonAssetPath(path))
       throw new Error(`O material ${asset.name} precisa de um formato de mídia portátil.`)

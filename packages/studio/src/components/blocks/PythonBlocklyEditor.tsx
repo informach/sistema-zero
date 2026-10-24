@@ -493,7 +493,8 @@ export function PythonBlocklyEditor(props: PythonBlocklyEditorProps) {
     // the Ponte, a button that rewrites the file): once the source changes, the blocks can no
     // longer be committed against it and the gesture would be lost.
     const leave = (event: Event) => {
-      if (commitTimer === undefined) return
+      // Mid-drag the block is detached: the scheduled commit applies it when it is dropped.
+      if (commitTimer === undefined || workspace.isDragging()) return
       const target = event instanceof FocusEvent ? event.relatedTarget : event.target
       if (target instanceof Node && element.contains(target)) return
       // Blockly's own widgets (dropdowns, the field editor) live outside the workspace element.

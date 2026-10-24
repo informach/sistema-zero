@@ -1,6 +1,6 @@
 import { spawnSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
-import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
+import { mkdir, mkdtemp, readdir, readFile, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -210,6 +210,16 @@ for (const game of PGZERO_GAMES as readonly PgzeroGame[]) {
   for (const [name, text] of Object.entries(texts))
     await put(join(folder, name), encoder.encode(text))
   for (const [path, bytes] of Object.entries(media)) await put(join(folder, path), bytes)
+  // A media file the example no longer makes would still show up in the materials panel
+  // (and editing it would change nothing in the game): it goes away, and --check reports it.
+  for (const kind of ['images', 'sounds', 'music']) {
+    const files = await readdir(join(folder, kind)).catch(() => [] as string[])
+    for (const file of files)
+      if (!(`${kind}/${file}` in media)) {
+        if (check) problems.push(join(folder, kind, file))
+        else await rm(join(folder, kind, file))
+      }
+  }
 
   const sources: Record<string, string> = {}
   for (const name of PGZERO_GAME_FILES)
