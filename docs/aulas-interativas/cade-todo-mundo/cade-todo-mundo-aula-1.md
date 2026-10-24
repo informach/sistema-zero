@@ -26,7 +26,7 @@ quando ajuda a ação, como o evento que já está em **Quando acontecer**.
 Ainda em 06/10/2026, o vocabulário do curso (Diretrizes, seção 6): no que a criança vê e ouve,
 aula virou fase, seção virou parte, o caderno virou Passo a passo do projeto (a parte se chama **Seu Mapa
 da Aventura**) e professor virou equipe. As falas citam os botões novos (**Próxima parte**,
-**Verificar esta parte**, **Objetivo cumprido!**, **Enviar meu projeto**, **Concluir aula**);
+**Verificar projeto**, **Objetivo cumprido!**, **Enviar meu projeto**, **Concluir aula**);
 seções, blocos e critérios não mudaram. Na mesma noite, o botão de envio passou a dizer o que
 ela envia (**Enviar meu projeto**), e quem recebe passou a ser a equipe.
 
@@ -134,7 +134,7 @@ ensinar o caminho **Jogo 2D > Sprites > Aparência** e o bloco de visibilidade, 
 A prévia atualiza automaticamente. Pedir o toque em dois esconderijos e conferir a revelação.
 Depois do teste, iniciar a conferência com "Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim:", seguida do encaixe, sprite e valor. Essa abertura deixa claro quando a criança deve conferir. **Achados** ainda fica em zero nesta aula.
 
-Após o teste, clicar em **Verificar esta parte**. Se faltar algo, corrigir os blocos e verificar
+Após o teste, clicar em **Verificar projeto**. Se faltar algo, corrigir os blocos e verificar
 novamente. Quando aparecer **Objetivo cumprido!**, esperar **Salvo**, usar **Enviar
 meu projeto**, confirmar em **Enviar** e aguardar a conclusão do envio antes de **Concluir
 fase**. O recado é opcional. Entre o envio e **Concluir aula**, reconhecer a conquista com
@@ -172,4 +172,4 @@ A parte 4 recebeu duas inserções entre trechos do áudio já gravado. Na parte
 | Entrada | Depois da professora | Criança | Retomada da professora |
 | --- | --- | --- | --- |
 | A1P4-R01 | “Olha aqui: nessa área já tem o bloco Quando clicar ou tocar num sprite do grupo esconderijos, chamá-lo de escolhido. É ele que percebe quando alguém toca num esconderijo. Cada esconderijo é um sprite, que é um objeto do jogo. E escolhido é o nome que o jogo dá ao esconderijo que você tocar.” | Debinha: “Ah! Se eu tocar no arbusto, ele vira o escolhido!” | “A reação vai ficar dentro desse bloco, no espaço vazio ao lado da palavra fazer. Então deixe esse espaço à vista.” |
-| A1P4-R02 | “Funcionou?” | Debinha: “Agora sim!” | “Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente.” |
+| A1P4-R02 | “Funcionou?” | Debinha: “Agora sim!” | “Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente.” |

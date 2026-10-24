@@ -69,7 +69,7 @@ for (const [index, manifest] of manifests.entries())
         expect(falasSecao(aulasMeuJeito[index]!.sections[i]!).join(' ')).toMatch(/confira|compare/i)
       }
     }
-    // As aplicações externas não usam a verificação da aula (antes Verificar esta parte).
+    // As aplicações externas não usam a verificação da aula (antes Verificar projeto).
     expect(script).not.toMatch(
       /Dia 5|Desafio do Primeiro Jogo|Verificar esta (?:etapa|parte)|Meu jogo novo/,
     )

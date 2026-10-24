@@ -291,6 +291,80 @@ main:has(.sz-aula-adulto) {
   --lesson-outline-width: min(20rem, 90vw);
 }
 
+/* Lista de aulas na mesma identidade dos cartões adultos, em todas as cores do perfil. */
+.sz-aula-adulto .sz-lesson-outline {
+  box-shadow: -0.5rem 0 1.5rem color-mix(in srgb, var(--foreground) 8%, transparent);
+}
+.sz-lesson-outline-header {
+  border-bottom: 1px solid var(--border);
+  background: var(--background-alt);
+  padding: 1.25rem;
+}
+.sz-lesson-outline-title {
+  font-family: var(--font-display), sans-serif;
+  font-size: 1.05rem;
+  font-weight: 700;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+.sz-lesson-outline-list {
+  overscroll-behavior: contain;
+  padding: 0.5rem 0.75rem 1.25rem;
+}
+.sz-lesson-outline-module + .sz-lesson-outline-module {
+  border-top: 1px solid var(--border);
+  margin-top: 0.75rem;
+  padding-top: 0.5rem;
+}
+.sz-lesson-outline-module-title {
+  padding: 0.75rem 0.5rem 0.5rem;
+  color: var(--muted-foreground);
+  font-size: 0.85rem;
+  font-weight: 700;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+.sz-lesson-outline-link {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+  min-height: 2.75rem;
+  margin-block: 0.25rem;
+  border: 1px solid transparent;
+  border-radius: 0.65rem;
+  padding: 0.65rem 0.75rem;
+  color: var(--foreground);
+  font-size: 0.85rem;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+  transition:
+    background-color 150ms,
+    border-color 150ms;
+}
+.sz-lesson-outline-link > svg {
+  margin-top: 0.15rem;
+}
+.sz-lesson-outline-link[href]:hover {
+  background: var(--muted);
+}
+.sz-lesson-outline-link[href]:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+.sz-lesson-outline-link[aria-current="page"] {
+  border-color: color-mix(in srgb, var(--primary) 40%, var(--border));
+  background: color-mix(in srgb, var(--primary) 9%, var(--card));
+  box-shadow: inset 3px 0 0 var(--primary);
+  font-weight: 700;
+}
+.sz-lesson-outline-locked {
+  cursor: not-allowed;
+  color: var(--muted-foreground);
+}
+.sz-lesson-outline-completed {
+  color: var(--pen-ok-texto);
+}
+
 /* ── A AULA NO DESENHO DO PEN ─────────────────────────────────────────────────────────────
    O fundo alternativo e os cartões de cada bloco continuam. Só o chrome externo
    mudou: o título é acessível, mas não ocupa espaço visual, e a navegação fica

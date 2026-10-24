@@ -58,7 +58,7 @@ const CURSO = 'nave-contra-asteroides'
 // Vocabulário do curso (Diretrizes, seção 6, 06/10/2026): as falas citam os botões da aula
 // pelo nome exato. Por dentro, a equipe continua dizendo aula, seção e caderno.
 const checkExit =
-  'Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente.'
+  'Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente.'
 const send =
   'Quando aparecer Objetivo cumprido!, clique em Enviar meu projeto e confirme em Enviar.'
 // Na aula, o Compartilhar não mostra o campo de título e já traz o resumo do curso. A comemoração
@@ -232,7 +232,7 @@ function roteiro(lesson: AulaNave, index: number) {
         roteiroComAvatar(
           s,
           speech,
-          `${s.screen} ${s.checks?.length ? 'Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido! e seguir o encaminhamento narrado.' : ''}`.trimEnd(),
+          `${s.screen} ${s.checks?.length ? 'Ao terminar, clicar em Verificar projeto, mostrar Objetivo cumprido! e seguir o encaminhamento narrado.' : ''}`.trimEnd(),
           index,
         ),
         '',
@@ -304,7 +304,7 @@ function proposta(lesson: AulaNave, index: number, manifest: LearningManifest) {
       )
     if (s.checks?.length)
       lines.push(
-        '**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte' +
+        '**Conclui quando:** vídeo assistido e critérios conferidos em Verificar projeto' +
           (s.final ? ', com o envio confirmado em Enviar meu projeto → Enviar.' : '.'),
         '',
         ...s.checks.map((c) => `- ${c.label}`),

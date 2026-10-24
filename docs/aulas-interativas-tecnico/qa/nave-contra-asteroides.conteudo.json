@@ -127,7 +127,7 @@
       {
         "key": "montar-areas-e-tela",
         "title": "Prepare a tela do jogo",
-        "bridge": "Agora prepare a tela do seu jogo! Monte Ao iniciar e Enquanto estiver rodando, coloque a tela de 800 por 480 e clique em Verificar esta parte. Depois, clique em Próxima parte.",
+        "bridge": "Agora prepare a tela do seu jogo! Monte Ao iniciar e Enquanto estiver rodando, coloque a tela de 800 por 480 e clique em Verificar projeto. Depois, clique em Próxima parte.",
         "screen": "Começar pela retomada, antes de qualquer bloco: no \"Tá vendo?\", mostrar o espaço dos blocos vazio e a prévia sem nada. Montar as duas áreas do zero, com um lugar vazio à vista antes de cada uma. Mostrar o bloco da tela dentro de Ao iniciar e a prévia automática; não acrescentar estrelas.",
         "speech": [
           "Olhe a prévia do seu jogo. Tá vendo? Não aparece nada, porque ainda não tem nenhum bloco.",
@@ -268,7 +268,7 @@
       {
         "key": "criar-nave",
         "title": "Crie a nave nos bastidores",
-        "bridge": "Agora crie a sua nave! Coloque Criar nave em Ao iniciar, com x 400 e y 410, e clique em Verificar esta parte. Depois, clique em Próxima parte.",
+        "bridge": "Agora crie a sua nave! Coloque Criar nave em Ao iniciar, com x 400 e y 410, e clique em Verificar projeto. Depois, clique em Próxima parte.",
         "screen": "Começar pela retomada, sem teste no jogo: a criação não aparece na tela. Mostrar a criação em Ao iniciar, com nome, posição, tamanho e cores, deixando à vista Preparar o jogo em tela cheia antes de abrir a paleta. Conferir os blocos e manter a prévia ainda vazia: o desenho será montado depois.",
         "speech": [
           "Lembra da experiência da parte anterior? A nave criada ficou nos bastidores e só apareceu na tela depois de desenhada. No seu jogo, o desenho vem depois da próxima experiência, por isso a nave ainda não vai aparecer. Agora a gente vai criar a nave do seu jogo!",
@@ -415,7 +415,7 @@
       {
         "key": "motor-e-nave",
         "title": "Mostre a nave a cada quadro",
-        "bridge": "Agora faça a sua nave aparecer! Coloque o desenho da nave dentro de A cada quadro do jogo, clique em Verificar esta parte e envie o seu projeto. Depois, clique em Concluir aula.",
+        "bridge": "Agora faça a sua nave aparecer! Coloque o desenho da nave dentro de A cada quadro do jogo, clique em Verificar projeto e envie o seu projeto. Depois, clique em Concluir aula.",
         "screen": "Começar pela retomada, antes de qualquer bloco: no \"Tá vendo?\", mostrar a tela ainda lisa, sem a nave. Montar A cada quadro do jogo e Desenhar o sprite, escolhendo nave, com o destino à vista antes de abrir a paleta. Mostrar a nave aparecer e permanecer parada.",
         "speech": [
           "Olhe a tela do seu jogo. Tá vendo? A nave não aparece, porque ela foi criada, mas ainda não foi desenhada.",
@@ -596,7 +596,7 @@
       {
         "key": "setas",
         "title": "Faça a nave responder às setas",
-        "bridge": "Agora faça a sua nave andar! Coloque o movimento com velocidade 7 antes do desenho da nave, teste as duas setas e clique em Verificar esta parte. Depois, clique em Próxima parte.",
+        "bridge": "Agora faça a sua nave andar! Coloque o movimento com velocidade 7 antes do desenho da nave, teste as duas setas e clique em Verificar projeto. Depois, clique em Próxima parte.",
         "screen": "Começar pela retomada, antes de qualquer bloco: clicar na área do jogo, segurar uma seta e, no \"Tá vendo?\", manter a nave parada à vista. Mostrar o destino antes de abrir a paleta. Montar apenas o movimento, testar as setas no fundo liso e mostrar o rastro, ainda sem limpeza.",
         "speech": [
           "Clique no seu jogo e segure uma seta. Tá vendo? A nave fica parada, porque ainda não tem a regra das setas.",
@@ -649,7 +649,7 @@
       {
         "key": "limpeza",
         "title": "Tire o rastro da nave",
-        "bridge": "Agora tire o rastro da nave! Coloque Limpar a tela no começo de A cada quadro do jogo, teste a seta de novo e clique em Verificar esta parte. Depois, clique em Próxima parte.",
+        "bridge": "Agora tire o rastro da nave! Coloque Limpar a tela no começo de A cada quadro do jogo, teste a seta de novo e clique em Verificar projeto. Depois, clique em Próxima parte.",
         "screen": "Começar pela retomada, antes de qualquer bloco: segurar uma seta e, no \"Tá vendo?\", manter o rastro à vista. Montar somente Limpar a tela antes do movimento, com o primeiro encaixe à vista antes de abrir a paleta, e repetir o mesmo teste. Ainda não há estrelas.",
         "speech": [
           "Clique no seu jogo e segure uma seta. Tá vendo? Fica um rastro de naves, porque nada apaga o desenho de antes.",
@@ -724,7 +724,7 @@
       {
         "key": "borda",
         "title": "Mantenha a nave na tela",
-        "bridge": "Agora mantenha a sua nave na tela! Coloque o limite entre o movimento e o desenho, teste as duas bordas e clique em Verificar esta parte. Depois, clique em Próxima parte.",
+        "bridge": "Agora mantenha a sua nave na tela! Coloque o limite entre o movimento e o desenho, teste as duas bordas e clique em Verificar projeto. Depois, clique em Próxima parte.",
         "screen": "Começar pela retomada, antes de qualquer bloco: segurar uma seta até a nave passar da borda e, no \"Tá vendo?\", manter a saída à vista. Depois deixar à vista o espaço entre o movimento e o desenho, montar o limite e repetir os dois testes. Conferir o sprite escolhido no bloco de limite.",
         "speech": [
           "Clique no seu jogo e segure uma seta até a borda. Tá vendo? A nave sai da tela, porque ainda não tem limite.",
@@ -834,7 +834,7 @@
       {
         "key": "fundo-estrelado",
         "title": "Coloque as estrelas atrás da nave",
-        "bridge": "Agora coloque as estrelas no seu jogo! Deixe o fundo de estrelas logo abaixo de Limpar a tela, confira a ordem dos cinco blocos e clique em Verificar esta parte. Depois, clique em Próxima parte.",
+        "bridge": "Agora coloque as estrelas no seu jogo! Deixe o fundo de estrelas logo abaixo de Limpar a tela, confira a ordem dos cinco blocos e clique em Verificar projeto. Depois, clique em Próxima parte.",
         "screen": "Começar pela retomada, antes de qualquer bloco: no \"Tá vendo?\", mostrar o fundo liso. Mostrar a cobertura real do canvas pelo starfield e mover o mesmo bloco, sem duplicar. Não dizer que ausência de rastro com estrelas comprova a presença de Limpar.",
         "speech": [
           "Olhe o fundo do seu jogo. Tá vendo? Ele é liso, porque o jogo ainda não desenha nenhuma estrela.",
@@ -946,7 +946,7 @@
       {
         "key": "entrega",
         "title": "Teste e envie sua nave",
-        "bridge": "Hora de testar a sua nave! Leve a nave até as duas bordas, confira a ordem dos blocos, clique em Verificar esta parte e envie o seu projeto. Depois, clique em Concluir aula.",
+        "bridge": "Hora de testar a sua nave! Leve a nave até as duas bordas, confira a ordem dos blocos, clique em Verificar projeto e envie o seu projeto. Depois, clique em Concluir aula.",
         "screen": "Conferir a sequência e os testes, depois demonstrar a verificação e a confirmação de envio.",
         "speech": [
           "Agora teste a sua nave antes de enviar. Clique na área do jogo e leve a nave até cada borda: ela tem que parar inteira na tela e continuar na frente das estrelas, porque o limite e a ordem dos desenhos estão funcionando juntos.",
@@ -1388,7 +1388,7 @@
       {
         "key": "criar-tiro",
         "title": "Monte o disparo da barra de espaço",
-        "bridge": "Agora faça a sua nave atirar! Crie o grupo tiros, monte o disparo da barra de espaço e clique em Verificar esta parte. Depois, clique em Próxima parte.",
+        "bridge": "Agora faça a sua nave atirar! Crie o grupo tiros, monte o disparo da barra de espaço e clique em Verificar projeto. Depois, clique em Próxima parte.",
         "screen": "Começar pela retomada, antes de qualquer bloco: clicar na área do jogo, tocar na barra de espaço e, no \"Tá vendo?\", mostrar que nada acontece. Abrir cada caminho com o destino à vista antes. Trocar os números de x e y por blocos de leitura, com nave selecionada. Não testar visibilidade antes do desenho. Confirmar o grupo e as duas velocidades.",
         "speech": [
           "Clique no seu jogo e toque na barra de espaço. Tá vendo? Nada acontece, porque o jogo ainda não tem nada ligado a essa tecla.",
@@ -1573,7 +1573,7 @@
       {
         "key": "tiros-voam",
         "title": "Mova e desenhe os tiros",
-        "bridge": "Agora faça os tiros voarem! Mova e desenhe o grupo tiros em cada quadro, atire de dois lugares e clique em Verificar esta parte. Depois, clique em Próxima parte.",
+        "bridge": "Agora faça os tiros voarem! Mova e desenhe o grupo tiros em cada quadro, atire de dois lugares e clique em Verificar projeto. Depois, clique em Próxima parte.",
         "screen": "Começar mostrando o som sem tiro: clicar na área do jogo e tocar na barra de espaço, deixando ouvir o disparo com a tela sem tiros. Testar a tecla com foco no jogo, em duas posições. Enquadrar a sequência da nave seguida pelo movimento e desenho de tiros.",
         "speech": [
           "Clique na área do seu jogo e toque na barra de espaço. Dá para ouvir o disparo, mas nenhum tiro aparece, porque o jogo já cria o tiro e ainda não manda mover nem desenhar o grupo. Agora vamos fazer esses tiros aparecerem e subirem.",
@@ -1671,7 +1671,7 @@
       {
         "key": "faxina",
         "title": "Retire os tiros que saíram",
-        "bridge": "Agora limpe o grupo dos tiros! Coloque a limpeza entre mover e desenhar os tiros, teste os disparos, clique em Verificar esta parte e envie o seu projeto. Depois, clique em Concluir aula.",
+        "bridge": "Agora limpe o grupo dos tiros! Coloque a limpeza entre mover e desenhar os tiros, teste os disparos, clique em Verificar projeto e envie o seu projeto. Depois, clique em Concluir aula.",
         "screen": "Começar pela retomada: atirar algumas vezes e, no \"Tá vendo?\", mostrar os tiros sumindo pela borda de cima, sem prometer que o grupo foi limpo. Montar o bloco com interior vazio. A ausência visual de tiros não prova limpeza: mostrar a ordem e usar o verificador.",
         "speech": [
           "Clique no seu jogo e atire. Tá vendo? Os tiros somem porque saíram da tela, mas isso não mostra se saíram do grupo.",
@@ -2016,7 +2016,7 @@
       {
         "key": "relogio",
         "title": "Prepare a criação dos asteroides",
-        "bridge": "Agora prepare a chuva de pedras! Crie o grupo asteroides, coloque o relógio de 40 quadros ao lado de A cada quadro do jogo e clique em Verificar esta parte. Depois, clique em Próxima parte.",
+        "bridge": "Agora prepare a chuva de pedras! Crie o grupo asteroides, coloque o relógio de 40 quadros ao lado de A cada quadro do jogo e clique em Verificar projeto. Depois, clique em Próxima parte.",
         "screen": "Começar pela retomada: clicar na área do jogo, esperar alguns segundos e, no \"Tá vendo?\", mostrar que nenhuma pedra aparece. Mostrar a diferença entre encaixar depois do bloco inteiro e dentro dele. O intervalo começa vazio.",
         "speech": [
           "Clique no seu jogo e espere um pouco. Tá vendo? Nenhuma pedra aparece, porque o jogo ainda não cria pedras.",
@@ -2135,7 +2135,7 @@
       {
         "key": "asteroide",
         "title": "Crie e mostre as pedras caindo",
-        "bridge": "Agora faça as pedras caírem! Crie o asteroide dentro do relógio, com x sorteado, monte o movimento, a limpeza e o desenho do grupo e clique em Verificar esta parte. Depois, clique em Próxima parte.",
+        "bridge": "Agora faça as pedras caírem! Crie o asteroide dentro do relógio, com x sorteado, monte o movimento, a limpeza e o desenho do grupo e clique em Verificar projeto. Depois, clique em Próxima parte.",
         "screen": "Começar pela retomada: esperar alguns segundos e, no \"Tá vendo?\", mostrar que ainda não cai nenhuma pedra. Mostrar a criação no intervalo e o movimento, a limpeza e o desenho no bloco de cada quadro, sempre com o destino à vista antes de abrir a paleta. Não montar colisão. Registrar que a travessia é o estado esperado desta etapa.",
         "speech": [
           "Clique no seu jogo e espere um pouco. Tá vendo? Ainda não cai nenhuma pedra, porque o relógio está vazio.",
@@ -2265,7 +2265,7 @@
       {
         "key": "entrega",
         "title": "Teste e envie a sua chuva de pedras",
-        "bridge": "Hora de testar a sua chuva de pedras! Confira as pedras caindo, as setas e os tiros, clique em Verificar esta parte e envie o seu projeto. Depois, clique em Concluir aula.",
+        "bridge": "Hora de testar a sua chuva de pedras! Confira as pedras caindo, as setas e os tiros, clique em Verificar projeto e envie o seu projeto. Depois, clique em Concluir aula.",
         "screen": "Clicar na área do jogo e dar tempo para observar algumas pedras nascendo e caindo. Depois mover a nave e atirar, mostrando o tiro atravessando as pedras. Não trocar valores nesta parte. Não confundir quadros com segundos.",
         "speech": [
           "Agora teste o seu jogo inteiro. Clique na área do jogo e olhe as pedras: elas entram pela parte de cima, uma a cada 40 quadros, e caem sempre no mesmo ritmo, porque a velocidade de cada uma é vy 3.",
@@ -2494,7 +2494,7 @@
       {
         "key": "colisao",
         "title": "Programe o acerto",
-        "bridge": "Agora faça o tiro acertar a pedra! Monte a colisão com os apelidos, tire o par atingido, coloque a explosão e o som e clique em Verificar esta parte. Depois, clique em Próxima parte.",
+        "bridge": "Agora faça o tiro acertar a pedra! Monte a colisão com os apelidos, tire o par atingido, coloque a explosão e o som e clique em Verificar projeto. Depois, clique em Próxima parte.",
         "screen": "Começar pela retomada: atirar numa pedra e, no \"Tá vendo?\", mostrar o tiro atravessando. Mostrar os nomes dos dois grupos e os dois apelidos sem inverter. Seletores de objetos locais devem ser preenchidos dentro da colisão.",
         "speech": [
           "Clique no seu jogo e atire numa pedra. Tá vendo? O tiro atravessa a pedra, porque o acerto ainda não existe no jogo.",
@@ -2672,7 +2672,7 @@
       {
         "key": "entrega",
         "title": "Confira os acertos e envie",
-        "bridge": "Hora de testar os acertos! Acerte pedras em lugares diferentes, confira se as outras continuam caindo, clique em Verificar esta parte e envie o seu projeto. Depois, clique em Concluir aula.",
+        "bridge": "Hora de testar os acertos! Acerte pedras em lugares diferentes, confira se as outras continuam caindo, clique em Verificar projeto e envie o seu projeto. Depois, clique em Concluir aula.",
         "screen": "Usar o projeto completo desta etapa. Testar sem pontos ou vidas, que ainda não foram construídos.",
         "speech": [
           "Agora teste os acertos do seu jogo. Mova a nave, atire e confira se cada tiro nasce nela. Depois, acerte pedras em lugares diferentes da tela.",
@@ -3142,7 +3142,7 @@
       {
         "key": "placar",
         "title": "Some um ponto a cada acerto",
-        "bridge": "Agora faça o seu jogo contar os pontos! Crie pontos, some 1 no acerto e mostre o placar. Depois, teste, clique em Verificar esta parte e envie o seu projeto. Por último, clique em Concluir aula.",
+        "bridge": "Agora faça o seu jogo contar os pontos! Crie pontos, some 1 no acerto e mostre o placar. Depois, teste, clique em Verificar projeto e envie o seu projeto. Por último, clique em Concluir aula.",
         "screen": "Começar pela retomada: acertar uma pedra e, no \"Tá vendo?\", mostrar que nenhum placar aparece. Mostrar o contador inicial, um erro e dois acertos. O bloco de placar fica fora da colisão e depois dela.",
         "speech": [
           "Clique no seu jogo e acerte uma pedra. Tá vendo? Nenhum ponto aparece, porque o jogo ainda não conta os acertos.",
@@ -3375,7 +3375,7 @@
       {
         "key": "vidas",
         "title": "Dê e mostre as três vidas",
-        "bridge": "Agora dê três vidas à sua nave! Coloque as vidas em Ao iniciar, desenhe os corações em cada quadro e clique em Verificar esta parte. Depois, clique em Próxima parte.",
+        "bridge": "Agora dê três vidas à sua nave! Coloque as vidas em Ao iniciar, desenhe os corações em cada quadro e clique em Verificar projeto. Depois, clique em Próxima parte.",
         "screen": "Começar pela retomada: no \"Tá vendo?\", mostrar a tela sem corações. Dar as vidas em Ao iniciar e desenhar os corações depois do placar. Mostrar três corações. Ainda não montar nem simular perda de vida.",
         "speech": [
           "Olhe a tela do seu jogo. Tá vendo? Não tem nenhum coração, porque a nave ainda não tem vidas.",
@@ -3512,7 +3512,7 @@
       {
         "key": "batida",
         "title": "Programe as vidas e a batida",
-        "bridge": "Agora programe a batida na nave! Monte a colisão da nave com as pedras, com explosão, dano e tremor, e clique em Verificar esta parte. Depois, clique em Próxima parte.",
+        "bridge": "Agora programe a batida na nave! Monte a colisão da nave com as pedras, com explosão, dano e tremor, e clique em Verificar projeto. Depois, clique em Próxima parte.",
         "screen": "Começar pela retomada: deixar uma pedra bater na nave e, no \"Tá vendo?\", mostrar que os corações continuam três. Encaixar a colisão entre o placar e o desenho dos corações, com o destino à vista antes de abrir a paleta. Confirmar a ordem final original: placar, colisão da nave, corações.",
         "speech": [
           "Clique no seu jogo e deixe uma pedra bater na nave. Tá vendo? Os corações continuam três, porque a batida ainda não existe no jogo.",
@@ -3686,7 +3686,7 @@
       {
         "key": "entrega",
         "title": "Teste os pontos e as vidas",
-        "bridge": "Hora de testar os pontos e as vidas! Confira um erro, um acerto e uma batida, clique em Verificar esta parte e envie o seu projeto. Depois, clique em Concluir aula.",
+        "bridge": "Hora de testar os pontos e as vidas! Confira um erro, um acerto e uma batida, clique em Verificar projeto e envie o seu projeto. Depois, clique em Concluir aula.",
         "screen": "Testar as duas colisões e inspecionar os encaixes, preservando os blocos anteriores.",
         "speech": [
           "Agora teste os pontos e as vidas do seu jogo. Faça um tiro errar: os pontos têm que ficar iguais. Depois, acerte uma pedra e confira se soma um ponto. Por último, deixe uma pedra bater na nave e confira se ela perde uma vida.",
@@ -4198,7 +4198,7 @@
       {
         "key": "embrulhar",
         "title": "Separe a abertura da partida",
-        "bridge": "Agora separe a abertura da partida! Leve os blocos da partida para dentro de Se jogando, crie o ramo da abertura e clique em Verificar esta parte. Depois, clique em Próxima parte.",
+        "bridge": "Agora separe a abertura da partida! Leve os blocos da partida para dentro de Se jogando, crie o ramo da abertura e clique em Verificar projeto. Depois, clique em Próxima parte.",
         "screen": "Começar pela retomada: abrir o jogo e, no \"Tá vendo?\", mostrar as pedras caindo desde o começo. A pergunta x > 0 do Se é um bloco de verdade: arrastá-la para a lixeira do espaço dos blocos antes de encaixar a pergunta nova; conferir antes da gravação onde fica a lixeira. O bloco de estado inicial entra depois de criar os ramos, para reduzir tempo em tela vazia. Mostrar toda a pilha transferida. No \"Olha aqui\", apontar os dois + da linha de baixo do Se e clicar no que fica antes de senão se. Não colocar o relógio de 40 quadros dentro do quadro principal.",
         "speech": [
           "Olhe o seu jogo logo que ele abre. Tá vendo? As pedras já caem, porque o jogo ainda não tem abertura.",
@@ -4382,7 +4382,7 @@
       {
         "key": "relogio-e-tiro",
         "title": "Espere a partida para criar pedras e tiros",
-        "bridge": "Agora faça as pedras e os tiros esperarem a partida! Coloque a pergunta jogando no relógio e na barra de espaço e clique em Verificar esta parte. Depois, clique em Próxima parte.",
+        "bridge": "Agora faça as pedras e os tiros esperarem a partida! Coloque a pergunta jogando no relógio e na barra de espaço e clique em Verificar projeto. Depois, clique em Próxima parte.",
         "screen": "Começar tocando na barra de espaço com a abertura na tela e, no \"Percebeu?\", deixar ouvir o som do tiro, sem música por cima. A pergunta x > 0 de cada Se vai para a lixeira antes de encaixar a pergunta nova. Conferir condições e contagem única dos criadores. A abertura opaca esconde objetos: não usar sua aparência isolada como prova de que nada nasce.",
         "speech": [
           "Com a abertura na tela, clique na área do jogo e toque na barra de espaço. Percebeu? O som do tiro toca antes de a partida começar. É que o relógio das pedras e o evento da barra de espaço ficam fora do Se que você montou. Agora vamos fazer essas duas ações esperarem a partida também.",
@@ -4574,7 +4574,7 @@
       {
         "key": "enter",
         "title": "Use Enter para começar",
-        "bridge": "Agora faça o Enter começar a partida! Programe o evento Enter, teste a abertura e a partida, clique em Verificar esta parte e envie o seu projeto. Depois, clique em Concluir aula.",
+        "bridge": "Agora faça o Enter começar a partida! Programe o evento Enter, teste a abertura e a partida, clique em Verificar projeto e envie o seu projeto. Depois, clique em Concluir aula.",
         "screen": "Começar tocando em Enter com a abertura na tela e, no \"Tá vendo?\", mostrar que nada muda. Testar a transição real inicio → jogando e Enter durante jogando. Não exigir reinício, vitória ou derrota ainda.",
         "speech": [
           "Primeiro, clique na área do jogo e toque em Enter. Tá vendo? A abertura continua na tela, porque o seu jogo ainda não sabe o que fazer quando alguém toca nessa tecla. Agora programe o Enter para começar a partida.",
@@ -4978,7 +4978,7 @@
       {
         "key": "finais",
         "title": "Defina quando ganhar e perder",
-        "bridge": "Agora defina quando a partida termina! Crie a meta alvo, monte as perguntas de vitória e de derrota dentro de jogando e clique em Verificar esta parte. Depois, clique em Próxima parte.",
+        "bridge": "Agora defina quando a partida termina! Crie a meta alvo, monte as perguntas de vitória e de derrota dentro de jogando e clique em Verificar projeto. Depois, clique em Próxima parte.",
         "screen": "Começar mostrando a partida que continua sem vidas. Não apresentar uma tela final ainda ausente como teste aprovado. Manter a prioridade real da derrota no empate e a comparação >= do código original. Na pergunta da derrota, a pergunta x > 0 vai para a lixeira antes de encaixar as vidas do sprite acabaram?.",
         "speech": [
           "No seu jogo, comece uma partida e deixe as vidas acabarem. A partida continua, porque você ainda não programou quando ela termina. Agora faça a partida acabar quando chegar a 26 pontos ou quando as vidas acabarem.",
@@ -5196,7 +5196,7 @@
       {
         "key": "telas",
         "title": "Mostre a vitória e a derrota",
-        "bridge": "Agora mostre a vitória e a derrota! Crie os ramos vitoria e fim depois do ramo inicio, com os textos de cada tela, e clique em Verificar esta parte. Depois, clique em Próxima parte.",
+        "bridge": "Agora mostre a vitória e a derrota! Crie os ramos vitoria e fim depois do ramo inicio, com os textos de cada tela, e clique em Verificar projeto. Depois, clique em Próxima parte.",
         "screen": "Começar mostrando a partida parada sem tela de fim. Criar um ramo por vez, sem remontar inicio, clicando no + que fica antes de senão se; a pergunta x > 0 de cada ramo novo vai para a lixeira. Não alegar que Enter reinicia nesta etapa.",
         "speech": [
           "Repare: quando as vidas acabam, a partida para, mas nenhuma tela de fim aparece. É que o Se grande de A cada quadro do jogo só tem os ramos de jogando e de inicio, e nenhum para vitoria ou fim. Agora mostre uma tela para cada final.",
@@ -5397,7 +5397,7 @@
       {
         "key": "enter",
         "title": "Faça Enter preparar outra partida",
-        "bridge": "Agora faça o Enter preparar outra partida! Acrescente ao evento Enter os ramos fim e vitoria, com Reiniciar o jogo, e clique em Verificar esta parte. Depois, clique em Próxima parte.",
+        "bridge": "Agora faça o Enter preparar outra partida! Acrescente ao evento Enter os ramos fim e vitoria, com Reiniciar o jogo, e clique em Verificar projeto. Depois, clique em Próxima parte.",
         "screen": "Começar pela retomada: perder, tocar em Enter e, no \"Tá vendo?\", mostrar que a tela Você perdeu continua. Ampliar o evento existente, sem criar um segundo Enter, clicando no + que fica antes de senão se; a pergunta x > 0 de cada ramo novo vai para a lixeira. Verificar pontos e corações somente após começar, porque a tela de abertura os cobre.",
         "speech": [
           "No seu jogo, comece uma partida, perca e toque em Enter. Tá vendo? Você perdeu continua na tela, porque o Enter só sabe começar a partida.",
@@ -5544,7 +5544,7 @@
       {
         "key": "entrega",
         "title": "Teste o jogo completo e compartilhe",
-        "bridge": "Hora do teste final! Confira a derrota, a vitória e o recomeço, clique em Verificar esta parte e envie o seu projeto. Se quiser, publique o seu jogo no Mural. Depois, clique em Concluir aula.",
+        "bridge": "Hora do teste final! Confira a derrota, a vitória e o recomeço, clique em Verificar projeto e envie o seu projeto. Se quiser, publique o seu jogo no Mural. Depois, clique em Concluir aula.",
         "screen": "Gravar os testes completos, encurtando só o tempo repetido de partida. Não reduzir alvo, retirar dano ou alterar o jogo para forjar vitória. Mostrar verificação, envio, confirmação e publicação opcional, com o resumo já preenchido, Seu jogo está no Mural!, Copiar link de jogar e Fechar. A comemoração nomeia o que a pessoa programou e o resultado no jogo; o preparo dos desenhos fica nas notas da equipe, sem ressalva na fala.",
         "speech": [
           "Agora teste o ciclo completo do seu jogo. Na abertura, clique na área do jogo e toque na barra de espaço. Repare: não sai som de tiro, porque criar tiros e criar asteroides ficam dentro de Se jogando. Confira também nos blocos se os dois estão lá.",

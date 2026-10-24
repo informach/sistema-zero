@@ -49,17 +49,17 @@ video-dedo-e-pulo-K1: Dedé substitui “Como faz para o som tocar em todo pulo?
 
 ### Seção 3. Ligue o som ao pulo do Dino
 
-**Tarefa:** Agora ligue o som ao pulo do seu Dino! Crie a área Quando acontecer e coloque um único Tocar efeito pulo dentro de Quando o sprite pular. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
+**Tarefa:** Agora ligue o som ao pulo do seu Dino! Crie a área Quando acontecer e coloque um único Tocar efeito pulo dentro de Quando o sprite pular. Depois, clique em Verificar projeto e, em seguida, em Próxima parte.
 
 **Blocos na página:** video-som-no-pulo → fala-som-no-pulo.
 
-**Recado na página (não gravar):** Agora ligue o som ao pulo do seu Dino! Crie a área Quando acontecer e coloque um único Tocar efeito pulo dentro de Quando o sprite pular. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
+**Recado na página (não gravar):** Agora ligue o som ao pulo do seu Dino! Crie a área Quando acontecer e coloque um único Tocar efeito pulo dentro de Quando o sprite pular. Depois, clique em Verificar projeto e, em seguida, em Próxima parte.
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
 video-som-no-pulo-K1: Dedé substitui “No meu jogo, o segundo toque também fez som.”. Antes: “toque não faz outro salto nem outro som, porque o som está ligado ao pulo, e não à tecla. Aí você pode me dizer:”. Depois: “Se aconteceu aí, volte aos blocos. Confira se ficou assim: o projeto tem um único Tocar efeito, com pulo, e ele está”.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar projeto.
 
 - Coloque o Tocar efeito, com o efeito que você escolheu, dentro de Quando o dino pular.
 - Mantenha apenas um Tocar efeito no projeto inteiro.
@@ -67,13 +67,13 @@ video-som-no-pulo-K1: Dedé substitui “No meu jogo, o segundo toque também fe
 
 ### Seção 4. Teste e envie seu jogo
 
-**Tarefa:** Hora de testar e enviar o seu jogo! Teste um salto com cada controle, clique em Verificar esta parte e depois em Enviar meu projeto. Confirme em Enviar e, quando o envio terminar, clique em Concluir aula.
+**Tarefa:** Hora de testar e enviar o seu jogo! Teste um salto com cada controle, clique em Verificar projeto e depois em Enviar meu projeto. Confirme em Enviar e, quando o envio terminar, clique em Concluir aula.
 
 **Blocos na página:** video-entrega → fala-entrega → projeto.
 
-**Recado na página (não gravar):** Hora de testar e enviar o seu jogo! Teste um salto com cada controle, clique em Verificar esta parte e depois em Enviar meu projeto. Confirme em Enviar e, quando o envio terminar, clique em Concluir aula.
+**Recado na página (não gravar):** Hora de testar e enviar o seu jogo! Teste um salto com cada controle, clique em Verificar projeto e depois em Enviar meu projeto. Confirme em Enviar e, quando o envio terminar, clique em Concluir aula.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte, com o envio em Enviar meu projeto confirmado em Enviar.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar projeto, com o envio em Enviar meu projeto confirmado em Enviar.
 
 - Coloque o Tocar efeito, com o efeito que você escolheu, dentro de Quando o dino pular.
 - Mantenha apenas um Tocar efeito no projeto inteiro.

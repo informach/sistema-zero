@@ -60,13 +60,13 @@ video-uma-vez-e-sempre-K1: Debinha substitui “E para ela continuar andando?”
 
 ### Seção 4. Prepare a tela do jogo
 
-**Tarefa:** Agora prepare a tela do seu jogo! Monte Ao iniciar e Enquanto estiver rodando, coloque a tela de 800 por 480 e clique em Verificar esta parte. Depois, clique em Próxima parte.
+**Tarefa:** Agora prepare a tela do seu jogo! Monte Ao iniciar e Enquanto estiver rodando, coloque a tela de 800 por 480 e clique em Verificar projeto. Depois, clique em Próxima parte.
 
 **Blocos na página:** video-montar-areas-tela → fala-montar-areas-e-tela.
 
-**Recado na página (não gravar):** Agora prepare a tela do seu jogo! Monte Ao iniciar e Enquanto estiver rodando, coloque a tela de 800 por 480 e clique em Verificar esta parte. Depois, clique em Próxima parte.
+**Recado na página (não gravar):** Agora prepare a tela do seu jogo! Monte Ao iniciar e Enquanto estiver rodando, coloque a tela de 800 por 480 e clique em Verificar projeto. Depois, clique em Próxima parte.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar projeto.
 
 - Coloque Ao iniciar.
 - Coloque Enquanto estiver rodando.
@@ -94,17 +94,17 @@ video-uma-vez-e-sempre-K1: Debinha substitui “E para ela continuar andando?”
 
 ### Seção 7. Crie a nave nos bastidores
 
-**Tarefa:** Agora crie a sua nave! Coloque Criar nave em Ao iniciar, com x 400 e y 410, e clique em Verificar esta parte. Depois, clique em Próxima parte.
+**Tarefa:** Agora crie a sua nave! Coloque Criar nave em Ao iniciar, com x 400 e y 410, e clique em Verificar projeto. Depois, clique em Próxima parte.
 
 **Blocos na página:** video-criar-nave → fala-criar-nave.
 
-**Recado na página (não gravar):** Agora crie a sua nave! Coloque Criar nave em Ao iniciar, com x 400 e y 410, e clique em Verificar esta parte. Depois, clique em Próxima parte.
+**Recado na página (não gravar):** Agora crie a sua nave! Coloque Criar nave em Ao iniciar, com x 400 e y 410, e clique em Verificar projeto. Depois, clique em Próxima parte.
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
 video-criar-nave-K1: Debinha substitui “Para que servem todos esses campos?”. Antes: “e pegue o bloco Criar nave. Arraste e solte logo abaixo de Preparar o jogo em tela cheia, quando aparecer o encaixe.”. Depois: “Cada campo diz uma coisa da nave: o nome, o lugar na tela e o tamanho. Repare: o bloco já chega com o nome nave. É por”.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar projeto.
 
 - Crie uma única nave em Ao iniciar, com posição dentro da tela e tamanho positivo.
 - Prepare a tela em Ao iniciar, com o mundo de 800 por 480 usado neste curso.
@@ -127,13 +127,13 @@ video-desenho-por-quadro-K2: Debinha substitui “E como apaga esse rastro?”. 
 
 ### Seção 9. Mostre a nave a cada quadro
 
-**Tarefa:** Agora faça a sua nave aparecer! Coloque o desenho da nave dentro de A cada quadro do jogo, clique em Verificar esta parte e envie o seu projeto. Depois, clique em Concluir aula.
+**Tarefa:** Agora faça a sua nave aparecer! Coloque o desenho da nave dentro de A cada quadro do jogo, clique em Verificar projeto e envie o seu projeto. Depois, clique em Concluir aula.
 
 **Blocos na página:** video-motor-e-nave → fala-motor-e-nave → projeto.
 
-**Recado na página (não gravar):** Agora faça a sua nave aparecer! Coloque o desenho da nave dentro de A cada quadro do jogo, clique em Verificar esta parte e envie o seu projeto. Depois, clique em Concluir aula.
+**Recado na página (não gravar):** Agora faça a sua nave aparecer! Coloque o desenho da nave dentro de A cada quadro do jogo, clique em Verificar projeto e envie o seu projeto. Depois, clique em Concluir aula.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte, com o envio confirmado em Enviar meu projeto → Enviar.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar projeto, com o envio confirmado em Enviar meu projeto → Enviar.
 
 - Crie uma única nave em Ao iniciar, com posição dentro da tela e tamanho positivo.
 - Coloque A cada quadro do jogo em Enquanto estiver rodando.

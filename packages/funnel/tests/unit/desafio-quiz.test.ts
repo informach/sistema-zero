@@ -342,7 +342,7 @@ describe('Desafio v5: o resultado em conversa', () => {
       'O que você disse que precisa',
     ])
     expect(p.at(-1)).toBe(
-      'Você quer ter ajuda quando ele travar. Em cada parte da aula, o botão Verificar esta parte mostra o que falta, e o vídeo fica do lado dos blocos. E o computador é dividido em casa: o projeto fica guardado na conta dele, então ele para num dia e continua no outro, do mesmo ponto.',
+      'Você quer ter ajuda quando ele travar. Em cada parte da aula, o botão Verificar projeto mostra o que falta, e o vídeo fica do lado dos blocos. E o computador é dividido em casa: o projeto fica guardado na conta dele, então ele para num dia e continua no outro, do mesmo ponto.',
     )
     expect(cta(r)).toEqual({
       tipo: 'cta',

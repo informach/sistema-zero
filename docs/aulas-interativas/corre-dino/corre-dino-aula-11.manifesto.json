@@ -76,7 +76,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Agora prepare os pontos do seu jogo! Crie a variável pontos com valor 0 no fim de Ao iniciar. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte."
+        "text": "Agora prepare os pontos do seu jogo! Crie a variável pontos com valor 0 no fim de Ao iniciar. Depois, clique em Verificar projeto e, em seguida, em Próxima parte."
       }
     },
     {
@@ -88,7 +88,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Agora mostre os pontos na tela! Coloque Mostrar placar no fim do Se jogando, lendo a variável pontos. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte."
+        "text": "Agora mostre os pontos na tela! Coloque Mostrar placar no fim do Se jogando, lendo a variável pontos. Depois, clique em Verificar projeto e, em seguida, em Próxima parte."
       }
     },
     {
@@ -128,7 +128,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Agora some um ponto por segundo de partida! Crie um relógio só para os pontos, com um Se jogando e, dentro dele, Somar em variável pontos. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte."
+        "text": "Agora some um ponto por segundo de partida! Crie um relógio só para os pontos, com um Se jogando e, dentro dele, Somar em variável pontos. Depois, clique em Verificar projeto e, em seguida, em Próxima parte."
       }
     },
     {
@@ -140,7 +140,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Agora mostre os pontos na tela de fim! Troque o subtítulo da tela de fim por um juntar texto com texto, valor de pontos e texto. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte."
+        "text": "Agora mostre os pontos na tela de fim! Troque o subtítulo da tela de fim por um juntar texto com texto, valor de pontos e texto. Depois, clique em Verificar projeto e, em seguida, em Próxima parte."
       }
     },
     {
@@ -229,7 +229,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Hora de testar e enviar o seu jogo! Confira o placar na partida e na tela de fim, clique em Verificar esta parte e depois em Enviar meu projeto. Confirme em Enviar e, quando o envio terminar, clique em Concluir aula."
+        "text": "Hora de testar e enviar o seu jogo! Confira o placar na partida e na tela de fim, clique em Verificar projeto e depois em Enviar meu projeto. Confirme em Enviar e, quando o envio terminar, clique em Concluir aula."
       }
     },
     {
@@ -1205,7 +1205,7 @@
       "key": "caixinha-dos-pontos",
       "title": "Prepare os pontos em zero",
       "intent": "application",
-      "objective": "Agora prepare os pontos do seu jogo! Crie a variável pontos com valor 0 no fim de Ao iniciar. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.",
+      "objective": "Agora prepare os pontos do seu jogo! Crie a variável pontos com valor 0 no fim de Ao iniciar. Depois, clique em Verificar projeto e, em seguida, em Próxima parte.",
       "blockKeys": ["video-caixinha-dos-pontos", "fala-caixinha-dos-pontos"],
       "workspaceKey": "projeto",
       "externalTool": null,
@@ -1236,7 +1236,7 @@
       "key": "numero-na-tela",
       "title": "Mostre o número guardado",
       "intent": "application",
-      "objective": "Agora mostre os pontos na tela! Coloque Mostrar placar no fim do Se jogando, lendo a variável pontos. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.",
+      "objective": "Agora mostre os pontos na tela! Coloque Mostrar placar no fim do Se jogando, lendo a variável pontos. Depois, clique em Verificar projeto e, em seguida, em Próxima parte.",
       "blockKeys": ["video-numero-na-tela", "fala-numero-na-tela"],
       "workspaceKey": "projeto",
       "externalTool": null,
@@ -1323,7 +1323,7 @@
       "key": "relogio-dos-pontos",
       "title": "Some um ponto por segundo de partida",
       "intent": "application",
-      "objective": "Agora some um ponto por segundo de partida! Crie um relógio só para os pontos, com um Se jogando e, dentro dele, Somar em variável pontos. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.",
+      "objective": "Agora some um ponto por segundo de partida! Crie um relógio só para os pontos, com um Se jogando e, dentro dele, Somar em variável pontos. Depois, clique em Verificar projeto e, em seguida, em Próxima parte.",
       "blockKeys": ["video-relogio-dos-pontos", "fala-relogio-dos-pontos"],
       "workspaceKey": "projeto",
       "externalTool": null,
@@ -1389,7 +1389,7 @@
       "key": "frase-da-tela-de-fim",
       "title": "Mostre os pontos na tela de fim",
       "intent": "application",
-      "objective": "Agora mostre os pontos na tela de fim! Troque o subtítulo da tela de fim por um juntar texto com texto, valor de pontos e texto. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.",
+      "objective": "Agora mostre os pontos na tela de fim! Troque o subtítulo da tela de fim por um juntar texto com texto, valor de pontos e texto. Depois, clique em Verificar projeto e, em seguida, em Próxima parte.",
       "blockKeys": ["video-frase-da-tela-de-fim", "fala-frase-da-tela-de-fim"],
       "workspaceKey": "projeto",
       "externalTool": null,
@@ -1469,7 +1469,7 @@
       "key": "entrega",
       "title": "Teste e envie seu jogo",
       "intent": "delivery",
-      "objective": "Hora de testar e enviar o seu jogo! Confira o placar na partida e na tela de fim, clique em Verificar esta parte e depois em Enviar meu projeto. Confirme em Enviar e, quando o envio terminar, clique em Concluir aula.",
+      "objective": "Hora de testar e enviar o seu jogo! Confira o placar na partida e na tela de fim, clique em Verificar projeto e depois em Enviar meu projeto. Confirme em Enviar e, quando o envio terminar, clique em Concluir aula.",
       "blockKeys": ["video-entrega", "fala-entrega", "projeto"],
       "workspaceKey": "projeto",
       "externalTool": null,

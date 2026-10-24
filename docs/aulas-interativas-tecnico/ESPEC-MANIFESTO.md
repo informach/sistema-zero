@@ -328,7 +328,7 @@ trabalham nele.
 
 `blockIds` lista as chaves dos blocos que precisam ser concluídos (vídeo assistido a 90%, cena com
 as metas caídas, quiz respondido). `projectChecks` são os **Objetivos** da seção, conferidos no
-servidor em **Verificar esta parte** (até 20; [especificação](../plans/2026-10-18-objetivos-do-estudio.md)):
+servidor em **Verificar projeto** (até 20; [especificação](../plans/2026-10-18-objetivos-do-estudio.md)):
 
 ```json
 { "id": "anda", "label": "Faça o herói andar com a seta", "hint": "Use o bloco de mover com as setas.",

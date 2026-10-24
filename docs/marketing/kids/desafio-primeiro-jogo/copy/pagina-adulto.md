@@ -126,7 +126,7 @@
 
 **aula.passos[2].texto**: Ele mostra o que já está certo e o que falta.
 
-**aula.passos[2].imagem.alt**: O botão Verificar esta parte, com o que já está cumprido e o que falta
+**aula.passos[2].imagem.alt**: O botão Verificar projeto, com o que já está cumprido e o que falta
 
 **aula.passos[3].titulo**: 4. Publica e manda o link
 

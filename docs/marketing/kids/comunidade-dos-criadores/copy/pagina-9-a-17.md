@@ -112,11 +112,11 @@
 
 **aulas.passos[1].text**: Ele pausa e monta no Estúdio, o editor de blocos. O botão Ouvir lê as instruções em voz alta.
 
-**aulas.passos[2].imagem.alt**: O botão Verificar esta parte, com o que já está cumprido e o que falta
+**aulas.passos[2].imagem.alt**: O botão Verificar projeto, com o que já está cumprido e o que falta
 
 **aulas.passos[2].title**: 3 · Então confere cada parte
 
-**aulas.passos[2].text**: O botão "Verificar esta parte" mostra o que já está certo antes de ele seguir.
+**aulas.passos[2].text**: O botão "Verificar projeto" mostra o que já está certo antes de ele seguir.
 
 **aulas.passos[3].imagem.alt**: O Mural dos Criadores com os botões Jogar, Copiar link e Fazer a minha versão
 
