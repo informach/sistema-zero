@@ -1,3 +1,4 @@
+import type { SubscriptionCycleAccess } from '@sistemazero/core/billing'
 import { sql } from 'drizzle-orm'
 import {
   bigint,
@@ -160,6 +161,9 @@ export const payments = paymentsSchema.table(
     description: text('description'),
     metadata: jsonb('metadata').$type<Record<string, unknown>>().notNull().default({}),
     failureReason: text('failure_reason'),
+    cycleAccess: jsonb('cycle_access').$type<SubscriptionCycleAccess>(),
+    priorFailureReason: text('prior_failure_reason'),
+    priorFailedAt: timestamp('prior_failed_at', { withTimezone: true }),
     // Assinatura-pai quando o pagamento é um ciclo recorrente (senão null).
     subscriptionId: uuid('subscription_id'),
     // Modo assíncrono: controle do worker que cria a cobrança no provedor.

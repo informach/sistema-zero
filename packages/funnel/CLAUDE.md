@@ -1352,3 +1352,12 @@ O referrals e o funil precisam ser liberados de forma coordenada, após a migrat
 ## Acesso infantil por aparelho (10/10/2026)
 
 No funil `kids/*`, o pós-compra usa `kids-welcome` (comprador novo, link de definir senha) e `kids-new-access` (recorrente, link `<kids>/login/responsavel`); o adulto continua em `welcome`/`new-access` com `/cursos`. A orientação do Desafio (`challenge-access-approved`) manda clicar em **Adicionar criança** (a conta nasce sem perfil) e, na página da criança, em **Autorizar aparelho** (desde 11/10/2026 cada criança tem página própria; o embaixador mora em `/pais/conta#embaixador`). Se o Messaging responder 404 `TEMPLATE_NOT_FOUND` para a chave Kids, `sendOne` reenvia com a chave antiga (`LEGACY_TEMPLATE_KEYS`), as mesmas variáveis e a mesma Idempotency-Key: o comprador nunca fica sem o link de senha, mesmo que o Funil suba antes do seed. O dunning Kids leva a `/pais/conta` (Área dos pais, seção Conta, com Minhas compras; até 11/10/2026 era `/pais`). `tests/unit/message-templates-contract.test.ts` confere as chaves usadas contra `packages/messaging/scripts/seed-templates.ts`, nos dois canais.
+
+## Acesso por período confirmado (24/10/2026)
+
+Webhooks `payment.paid` e `payment.subscription_period_confirmed` aceitam `cycleAccess`
+validado por Core. `REVIEW_REQUIRED` registra entrega sem conceder acesso; confirmação
+posterior usa evento separado e encaminha `billingPeriod` ao Members sem repetir evento
+financeiro. Renovação de comprador já pago não refaz aquisição/boas-vindas. `paidAt` é
+preservado e o período antigo nunca é calculado a partir da data tardia do pagamento.
+Deploy consumidor primeiro: Members, depois Funnel, só então produtor Payments.

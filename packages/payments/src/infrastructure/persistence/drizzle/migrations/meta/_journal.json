@@ -113,6 +113,20 @@
       "when": 1792836450471,
       "tag": "0015_subscription_recovery_admissions",
       "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "7",
+      "when": 1792841171537,
+      "tag": "0016_subscription_cycle_access",
+      "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1792841681579,
+      "tag": "0017_preserve_subscription_failure",
+      "breakpoints": true
     }
   ]
 }

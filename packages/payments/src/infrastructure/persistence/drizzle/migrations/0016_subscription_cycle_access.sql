@@ -1,0 +1,1 @@
+ALTER TABLE "payments"."payments" ADD COLUMN "cycle_access" jsonb;

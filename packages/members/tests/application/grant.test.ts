@@ -37,6 +37,70 @@ function setup() {
 }
 
 describe('GrantEntitlementService', () => {
+  test('renovação paga atrasada respeita período original e não acrescenta mês a partir do pagamento', async () => {
+    const { catalog, entitlements, grant } = setup()
+    catalog.set('offer-sub', offerWithCourse('offer-sub', 'curso-demo'))
+    await grant.execute({
+      userId: 'u1',
+      offerRef: 'offer-sub',
+      paymentId: 'qa-late',
+      grantedAt: T('2026-11-02T12:00:00Z'),
+      subscription: {
+        subscriptionId: 'sub1',
+        intervalMonths: 1,
+        billingPeriod: { startsAt: '2026-09-16T12:00:00.000Z', endsAt: '2026-10-16T12:00:00.000Z' },
+      },
+    })
+    const list = await entitlements.listByUserId('u1')
+    expect(list[0]?.expiresAt?.toISOString()).toBe('2026-10-19T12:00:00.000Z')
+    expect(await entitlements.listActiveByUser('u1', T('2026-11-02T12:00:00Z'))).toHaveLength(0)
+  })
+  test('período antigo não reduz acesso mais recente já conquistado', async () => {
+    const { catalog, entitlements, grant } = setup()
+    catalog.set('offer-sub', offerWithCourse('offer-sub', 'curso-demo'))
+    await grant.execute({
+      userId: 'u1',
+      offerRef: 'offer-sub',
+      paymentId: 'qa-current',
+      grantedAt: T('2026-10-16T12:00:00Z'),
+      subscription: { subscriptionId: 'sub1', intervalMonths: 1 },
+    })
+    await grant.execute({
+      userId: 'u1',
+      offerRef: 'offer-sub',
+      paymentId: 'qa-late',
+      grantedAt: T('2026-11-02T12:00:00Z'),
+      subscription: {
+        subscriptionId: 'sub1',
+        intervalMonths: 1,
+        billingPeriod: { startsAt: '2026-09-16T12:00:00.000Z', endsAt: '2026-10-16T12:00:00.000Z' },
+      },
+    })
+    expect((await entitlements.listByUserId('u1'))[0]?.expiresAt?.toISOString()).toBe(
+      '2026-11-19T12:00:00.000Z',
+    )
+  })
+  test('período incoerente com o contrato é recusado antes de conceder qualquer item', async () => {
+    const { catalog, entitlements, grant } = setup()
+    catalog.set('offer-sub', offerWithMural('offer-sub', 'curso-demo'))
+    await expect(
+      grant.execute({
+        userId: 'u1',
+        offerRef: 'offer-sub',
+        paymentId: 'qa-bad',
+        grantedAt: T('2026-11-02T12:00:00Z'),
+        subscription: {
+          subscriptionId: 'sub1',
+          intervalMonths: 1,
+          billingPeriod: {
+            startsAt: '2026-09-16T12:00:00.000Z',
+            endsAt: '2026-12-16T12:00:00.000Z',
+          },
+        },
+      }),
+    ).rejects.toThrow('incoerente')
+    expect(await entitlements.listByUserId('u1')).toHaveLength(0)
+  })
   test('assinatura com Mural concede visitante permanente uma vez, preservado no cancelamento', async () => {
     const { catalog, entitlements, grant } = setup()
     const offerSlug = 'comunidade-dos-criadores-mensal'

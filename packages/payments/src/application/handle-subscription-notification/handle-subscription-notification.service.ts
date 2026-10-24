@@ -1,3 +1,4 @@
+import type { SubscriptionCycleAccess } from '@sistemazero/core/billing'
 import type { PaymentGateway } from '../../domain/ports/payment-gateway.port'
 import type { PaymentRepository } from '../../domain/ports/payment-repository.port'
 import type { SubscriptionRepository } from '../../domain/ports/subscription-repository.port'
@@ -7,6 +8,7 @@ import { Money } from '../../domain/value-objects/money'
 import type { Logger } from '../../infrastructure/logging/logger'
 import { ConcurrencyConflictError } from '../../infrastructure/persistence/drizzle/concurrency.error'
 import { buildCyclePayment } from '../subscription/cycle-payment'
+import { subscriptionCycleAccess } from '../subscription-recovery/subscription-period'
 
 /**
  * Processa as notificações da Efí (Cobranças) que pertencem a um **ciclo de
@@ -26,6 +28,7 @@ export class HandleSubscriptionNotificationService {
     private readonly gateway: PaymentGateway,
     private readonly inbox: WebhookInbox,
     private readonly logger: Logger,
+    private readonly clock: () => Date = () => new Date(),
   ) {}
 
   async handleCycle(input: { subscriptionId: string; chargeId: string }): Promise<void> {
@@ -65,6 +68,24 @@ export class HandleSubscriptionNotificationService {
     }
 
     const existing = await this.payments.findByProviderPaymentId(this.gateway.provider, chargeId)
+    let access: SubscriptionCycleAccess | { kind: 'INITIAL_CAPTURE' } = { kind: 'INITIAL_CAPTURE' }
+    if (
+      charge.status === 'PAID' &&
+      subscription.cyclesCompleted > 0 &&
+      existing?.status !== 'PAID'
+    ) {
+      try {
+        access = subscriptionCycleAccess({
+          providerSubscription: await this.gateway.getSubscription(subscriptionId),
+          providerSubscriptionId: subscriptionId,
+          providerPaymentId: chargeId,
+          intervalMonths: subscription.intervalMonths,
+          observedAt: this.clock(),
+        })
+      } catch {
+        access = { version: 1, kind: 'REVIEW_REQUIRED', reason: 'PERIOD_UNAVAILABLE' }
+      }
+    }
 
     if (existing) {
       if (
@@ -81,6 +102,7 @@ export class HandleSubscriptionNotificationService {
           return
         }
         existing.confirmSubscriptionChargePaid({
+          access,
           subscriptionId: subscription.id,
           provider: this.gateway.provider,
           providerPaymentId: chargeId,
@@ -117,6 +139,7 @@ export class HandleSubscriptionNotificationService {
         status: charge.status,
         paidAt: charge.paidAt,
         failureReason: charge.failureReason,
+        cycleAccess: access.kind === 'INITIAL_CAPTURE' ? undefined : access,
       })
       try {
         await this.payments.save(cyclePayment)
@@ -133,6 +156,7 @@ export class HandleSubscriptionNotificationService {
               throw new ValidationError('Cobrança já vinculada a outro consumidor')
             }
             reloaded.confirmSubscriptionChargePaid({
+              access,
               subscriptionId: subscription.id,
               provider: this.gateway.provider,
               providerPaymentId: chargeId,

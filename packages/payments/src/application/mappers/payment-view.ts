@@ -1,9 +1,11 @@
+import type { SubscriptionCycleAccess } from '@sistemazero/core/billing'
 import type { PaymentAggregate } from '../../domain/payment/payment.aggregate'
 import type { PaymentStatus } from '../../domain/payment/payment.status'
 import type { PaymentMethodType } from '../../domain/value-objects/payment-method'
 
 /** Representação de leitura de um pagamento, exposta na API (sem dados sensíveis). */
 export interface PaymentView {
+  cycleAccess?: SubscriptionCycleAccess
   id: string
   consumerId: string
   status: PaymentStatus
@@ -49,6 +51,7 @@ export function toPaymentView(payment: PaymentAggregate): PaymentView {
   }
 
   const qr = payment.pixQrCode
+  if (payment.cycleAccess) view.cycleAccess = payment.cycleAccess
   if (payment.method.type === 'PIX' && payment.txid && qr) {
     view.pix = {
       txid: payment.txid,

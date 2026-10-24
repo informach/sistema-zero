@@ -1,3 +1,4 @@
+import type { SubscriptionCycleAccess } from '@sistemazero/core/billing'
 import { PaymentAggregate } from '../../domain/payment/payment.aggregate'
 import type { ProviderChargeStatus } from '../../domain/ports/payment-gateway.port'
 import type { SubscriptionAggregate } from '../../domain/subscription/subscription.aggregate'
@@ -17,6 +18,7 @@ export function buildCyclePayment(input: {
   status: ProviderChargeStatus
   paidAt?: Date
   failureReason?: string
+  cycleAccess?: SubscriptionCycleAccess
 }): PaymentAggregate {
   const { subscription, chargeId, status, paidAt } = input
 
@@ -39,7 +41,16 @@ export function buildCyclePayment(input: {
 
   payment.registerProviderCharge({ providerPaymentId: chargeId })
 
-  if (status === 'PAID') payment.markPaid(paidAt)
+  if (status === 'PAID' && input.cycleAccess)
+    payment.confirmSubscriptionChargePaid({
+      subscriptionId: subscription.id,
+      provider: subscription.provider,
+      providerPaymentId: chargeId,
+      amount: subscription.amount,
+      paidAt,
+      access: input.cycleAccess,
+    })
+  else if (status === 'PAID') payment.markPaid(paidAt)
   else if (status === 'FAILED')
     payment.markFailed(input.failureReason ?? 'Cobrança recorrente recusada pelo provedor')
   // PENDING (em análise): fica PENDING; a reconciliação/notificação fecha depois.

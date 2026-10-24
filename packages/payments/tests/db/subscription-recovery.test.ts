@@ -253,6 +253,7 @@ describe.skipIf(!databaseUrl)('Casos de regularização — PostgreSQL real', ()
           gateway,
           new DrizzleWebhookInbox(connection.db),
           silentLogger,
+          () => new Date(time),
         ),
         () => new Date(time),
       ),

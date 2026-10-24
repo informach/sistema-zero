@@ -597,6 +597,123 @@ describe('webhook: renovação de ciclo + falha de cobrança', () => {
     expect(fake.processed.has('d-1')).toBe(true)
   })
 
+  test('renovação quitada tarde leva período original ao Members e conserva paidAt financeiro', async () => {
+    const fake = createFakeRepo()
+    const gw = createFakeGateway()
+    await paidSubscriber(fake)
+    const period = { startsAt: '2026-09-16T12:00:00.000Z', endsAt: '2026-10-16T12:00:00.000Z' }
+    const response = await handlePaymentWebhook(
+      whReq({
+        event: 'payment.paid',
+        data: {
+          paymentId: 'pay-cycle-2',
+          subscriptionId: 'sub-1',
+          paidAt: '2026-10-24T12:00:00.000Z',
+          cycleAccess: { version: 1, kind: 'VERIFIED_PERIOD', period },
+        },
+      }),
+      webhookDeps(fake, gw),
+    )
+    expect(response.status).toBe(200)
+    expect(gw.calls.grant[0]?.input).toMatchObject({
+      paymentId: 'pay-cycle-2',
+      paidAt: '2026-10-24T12:00:00.000Z',
+      subscription: { subscriptionId: 'sub-1', intervalMonths: 1, billingPeriod: period },
+    })
+    expect(gw.calls.messages).toHaveLength(0)
+    expect(gw.calls.ensureBuyer).toHaveLength(0)
+  })
+
+  test('período em revisão não concede acesso; confirmação posterior não repete compra ou boas-vindas', async () => {
+    const fake = createFakeRepo()
+    const gw = createFakeGateway()
+    await paidSubscriber(fake)
+    const data = {
+      paymentId: 'pay-cycle-2',
+      subscriptionId: 'sub-1',
+      paidAt: '2026-10-24T12:00:00.000Z',
+    }
+    const review = await handlePaymentWebhook(
+      whReq(
+        {
+          event: 'payment.paid',
+          data: {
+            ...data,
+            cycleAccess: { version: 1, kind: 'REVIEW_REQUIRED', reason: 'PERIOD_UNAVAILABLE' },
+          },
+        },
+        'qa-review',
+      ),
+      webhookDeps(fake, gw),
+    )
+    expect(await review.json()).toMatchObject({ accessReviewRequired: true })
+    expect(gw.calls.grant).toHaveLength(0)
+    expect(fake.processed.has('qa-review')).toBe(true)
+    const period = { startsAt: '2026-09-16T12:00:00.000Z', endsAt: '2026-10-16T12:00:00.000Z' }
+    const confirmed = await handlePaymentWebhook(
+      whReq(
+        {
+          event: 'payment.subscription_period_confirmed',
+          data: { ...data, cycleAccess: { version: 1, kind: 'VERIFIED_PERIOD', period } },
+        },
+        'qa-confirmed',
+      ),
+      webhookDeps(fake, gw),
+    )
+    expect(confirmed.status).toBe(200)
+    expect(gw.calls.grant).toHaveLength(1)
+    expect(gw.calls.grant[0]?.input).toMatchObject({ subscription: { billingPeriod: period } })
+    expect(gw.calls.messages).toHaveLength(0)
+    expect(gw.calls.ensureBuyer).toHaveLength(0)
+  })
+
+  test('período malformado ou confirmação de outra assinatura não concede nem consome a entrega', async () => {
+    const fake = createFakeRepo()
+    const gw = createFakeGateway()
+    await paidSubscriber(fake)
+    const bad = await handlePaymentWebhook(
+      whReq(
+        {
+          event: 'payment.paid',
+          data: {
+            paymentId: 'pay-cycle-2',
+            subscriptionId: 'sub-1',
+            cycleAccess: {
+              version: 1,
+              kind: 'VERIFIED_PERIOD',
+              period: { startsAt: '2026-10-16T12:00:00.000Z', endsAt: '2026-09-16T12:00:00.000Z' },
+            },
+          },
+        },
+        'qa-bad',
+      ),
+      webhookDeps(fake, gw),
+    )
+    expect(bad.status).toBe(400)
+    expect(fake.processed.has('qa-bad')).toBe(false)
+    const wrong = await handlePaymentWebhook(
+      whReq(
+        {
+          event: 'payment.subscription_period_confirmed',
+          data: {
+            paymentId: 'pay-sub-1',
+            subscriptionId: 'wrong-sub',
+            cycleAccess: {
+              version: 1,
+              kind: 'VERIFIED_PERIOD',
+              period: { startsAt: '2026-09-16T12:00:00.000Z', endsAt: '2026-10-16T12:00:00.000Z' },
+            },
+          },
+        },
+        'qa-wrong',
+      ),
+      webhookDeps(fake, gw),
+    )
+    expect(wrong.status).toBe(409)
+    expect(gw.calls.grant).toHaveLength(0)
+    expect(fake.processed.has('qa-wrong')).toBe(false)
+  })
+
   test('extend falhou → 502 GRANT_RETRY sem marcar a entrega (gateway re-entrega)', async () => {
     const fake = createFakeRepo()
     const gw = createFakeGateway()

@@ -127,6 +127,7 @@ export class RecoveryCoordinatorService {
       const paid = await this.payments.findById(item.paymentId)
       if (
         paid?.status !== 'PAID' ||
+        paid.cycleAccess?.kind === 'REVIEW_REQUIRED' ||
         paid.consumerId !== item.consumerId ||
         paid.subscriptionId !== item.subscriptionId
       ) {
