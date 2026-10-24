@@ -50,6 +50,9 @@ export interface RecoverySourceProof {
   subscriptionStatus: 'ACTIVE' | 'CANCELED' | 'EXPIRED' | 'PENDING'
   paymentStatus: 'PAID' | 'FAILED' | 'PENDING' | 'EXPIRED'
   paymentOperationPending: boolean
+  cancellationOperationPending: boolean
+  /** True only when the local audited request belongs to this exact case. */
+  automaticCancellationRequested?: boolean
 }
 
 class RecoveryChangedEvent extends DomainEvent {
@@ -268,9 +271,11 @@ export class SubscriptionRecoveryCase extends AggregateRoot<string> {
     if (proof.subscriptionStatus === 'CANCELED' || proof.subscriptionStatus === 'EXPIRED') {
       this.transition(
         'CANCELED',
-        this.data.state === 'CANCEL_PENDING' ? 'UNPAID_AFTER_NOTICE' : 'EXTERNAL_CANCELLATION',
+        proof.automaticCancellationRequested ? 'UNPAID_AFTER_NOTICE' : 'EXTERNAL_CANCELLATION',
         now,
       )
+    } else if (proof.paymentStatus === 'PAID' && proof.cancellationOperationPending) {
+      this.transition('MANUAL_REVIEW', 'PAYMENT_UNCERTAIN', now)
     } else if (proof.paymentStatus === 'PAID') {
       this.transition('RECOVERED', 'PAID', now)
     } else if (proof.subscriptionStatus !== 'ACTIVE') {

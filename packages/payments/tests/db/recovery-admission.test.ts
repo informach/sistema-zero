@@ -351,6 +351,7 @@ describe.skipIf(!databaseUrl)('Entrada de regularização — PostgreSQL real', 
         subscriptionStatus: 'ACTIVE',
         paymentStatus: 'PAID',
         paymentOperationPending: false,
+        cancellationOperationPending: false,
       },
       now,
     )

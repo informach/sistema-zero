@@ -34,6 +34,7 @@ function proof(now: Date, extra: Partial<RecoverySourceProof> = {}): RecoverySou
     subscriptionStatus: 'ACTIVE',
     paymentStatus: 'FAILED',
     paymentOperationPending: false,
+    cancellationOperationPending: false,
     ...extra,
   }
 }
@@ -49,6 +50,21 @@ test.each([
   expect(item.toSnapshot().deadlineAt).toBeNull()
   item.acceptInitialNotice('notice-qa', atDay(30), atDay(30))
   expect(item.toSnapshot().deadlineAt).toEqual(atDay(37))
+})
+
+test('pagamento durante cancelamento com resultado incerto exige revisão, sem anunciar recuperação', () => {
+  const item = open()
+  item.acceptInitialNotice('qa-notice', start, start)
+  item.applySource(proof(atDay(7)), atDay(7))
+  item.applySource(
+    proof(atDay(7), { paymentStatus: 'PAID', cancellationOperationPending: true }),
+    atDay(7),
+  )
+  expect(item.toSnapshot()).toMatchObject({
+    state: 'MANUAL_REVIEW',
+    reason: 'PAYMENT_UNCERTAIN',
+    closedAt: null,
+  })
 })
 test('D0/D3/D6/D7 e atualização de política não alteram o caso aberto', () => {
   const item = open()
@@ -93,7 +109,10 @@ test('D7 só solicita cancelamento após prova nova, nunca declara cancelado', (
   item.applySource(proof(atDay(7)), atDay(7))
   expect(item.state).toBe('CANCEL_PENDING')
   expect(item.toSnapshot().closedAt).toBeNull()
-  item.applySource(proof(atDay(7), { subscriptionStatus: 'CANCELED' }), atDay(7))
+  item.applySource(
+    proof(atDay(7), { subscriptionStatus: 'CANCELED', automaticCancellationRequested: true }),
+    atDay(7),
+  )
   expect(item.state).toBe('CANCELED')
   expect(item.toSnapshot().reason).toBe('UNPAID_AFTER_NOTICE')
 })
@@ -102,6 +121,11 @@ test('cancelamento externo confirmado não é confundido com encerramento D7', (
   const item = open()
   item.applySource(proof(start, { subscriptionStatus: 'CANCELED' }), start)
   expect(item.toSnapshot().reason).toBe('EXTERNAL_CANCELLATION')
+  const due = open()
+  due.acceptInitialNotice('qa-notice', start, start)
+  due.applySource(proof(atDay(7)), atDay(7))
+  due.applySource(proof(atDay(7), { subscriptionStatus: 'CANCELED' }), atDay(7))
+  expect(due.toSnapshot().reason).toBe('EXTERNAL_CANCELLATION')
 })
 
 test('fim da análise antes de D7 retoma a agenda, sem ficar em polling vencido', () => {

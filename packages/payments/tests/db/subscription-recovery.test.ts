@@ -2,8 +2,10 @@ import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test } fr
 import path from 'node:path'
 import { eq } from 'drizzle-orm'
 import { migrate } from 'drizzle-orm/postgres-js/migrator'
+import { CancelSubscriptionService } from '../../src/application/cancel-subscription/cancel-subscription.service'
 import { buildCyclePayment } from '../../src/application/subscription/cycle-payment'
 import { RecoveryNoticeService } from '../../src/application/subscription-recovery/recovery-notice.service'
+import { RecoverySourceService } from '../../src/application/subscription-recovery/recovery-source.service'
 import { SubscriptionAggregate } from '../../src/domain/subscription/subscription.aggregate'
 import { SubscriptionRecoveryCase } from '../../src/domain/subscription-recovery/recovery-case'
 import type {
@@ -29,7 +31,9 @@ import {
   subscriptionRecoveryNotices,
 } from '../../src/infrastructure/persistence/drizzle/schema'
 import { DrizzleSubscriptionRepository } from '../../src/infrastructure/persistence/drizzle/subscription.repository'
+import { DrizzleSubscriptionOperationRepository } from '../../src/infrastructure/persistence/drizzle/subscription-operation.repository'
 import { DrizzleSubscriptionRecoveryRepository } from '../../src/infrastructure/persistence/drizzle/subscription-recovery.repository'
+import { FakePixGateway, silentLogger } from '../fakes/in-memory'
 import { prepareTestDatabase } from './test-database'
 
 const databaseUrl = await prepareTestDatabase('sistemazero_recovery_cases_test')
@@ -62,6 +66,8 @@ describe.skipIf(!databaseUrl)('Casos de regularização — PostgreSQL real', ()
   })
   afterAll(async () => connection?.close())
   afterEach(async () => {
+    await connection.sql`delete from payments.subscription_cancellation_audit where consumer_id=${consumerId}`
+    await connection.sql`delete from payments.subscription_operations where consumer_id=${consumerId}`
     await connection.sql`delete from payments.subscription_recovery_notices where case_id in (select id from payments.subscription_recovery_cases where consumer_id=${consumerId})`
     await connection.db
       .delete(subscriptionRecoveryCases)
@@ -158,6 +164,162 @@ describe.skipIf(!databaseUrl)('Casos de regularização — PostgreSQL real', ()
     }
   }
 
+  async function d7Fixture(checkpoint = true) {
+    const initial = await ownedCase()
+    const communication = noticeHarness({ status: 'SENT' })
+    await communication.service.ensure(initial, 'INITIAL')
+    await repository.saveOwned(initial, now)
+    let time = new Date(now.getTime() + 7 * DAY_MS)
+    communication.at(time)
+    const [due] = await repository.claimDue({ now: time, leaseMs: 180_000, limit: 1 })
+    if (!due) throw new Error('Missing QA D7 lease')
+    const subscriptions = new DrizzleSubscriptionRepository(connection.db)
+    const operations = new DrizzleSubscriptionOperationRepository(connection.db)
+    const gateway = new FakePixGateway()
+    gateway.cardStatus = 'FAILED'
+    gateway.setSubscriptionCharges(source.providerSubscriptionId, [
+      { chargeId: source.providerPaymentId, status: 'FAILED', createdAt: now },
+    ])
+    gateway.getCardCharge = async () => ({
+      providerPaymentId: source.providerPaymentId,
+      status: gateway.cardStatus,
+      amountInCents: source.amountInCents,
+    })
+    const provider = new RecoverySourceService(
+      subscriptions,
+      new DrizzlePaymentRepository(connection.db),
+      operations,
+      gateway,
+      () => new Date(time),
+    )
+    due.item.applySource(await provider.inspect(due.item.toSnapshot()), time)
+    const lease = checkpoint ? await repository.checkpointOwned(due, time) : due
+    const service = new CancelSubscriptionService(
+      subscriptions,
+      gateway,
+      silentLogger,
+      operations,
+      undefined,
+      () => new Date(time),
+      90_000,
+      {
+        cases: repository,
+        source: provider,
+        notices: communication.service,
+        effectBudgetMs: 30_000,
+      },
+    )
+    return {
+      lease,
+      previous: due,
+      gateway,
+      operations,
+      subscriptions,
+      service,
+      provider,
+      clock: () => new Date(time),
+      at: (value: Date) => {
+        time = new Date(value)
+        communication.at(time)
+      },
+    }
+  }
+
+  test('D7 persiste decisão antes do efeito e confirma cancelamento com origem/caso sem ampliar lease', async () => {
+    const fixture = await d7Fixture()
+    expect(fixture.lease.leaseUntil).toEqual(fixture.previous.leaseUntil)
+    expect(fixture.lease.item.toSnapshot().version).toBe(
+      fixture.previous.item.toSnapshot().version + 1,
+    )
+    expect((await repository.findById(fixture.lease.item.id))?.state).toBe('CANCEL_PENDING')
+    expect(
+      await failureOf(repository.assertOwned(fixture.previous, fixture.clock())),
+    ).toBeInstanceOf(Error)
+    await fixture.service.executeForRecovery(fixture.lease)
+    expect(fixture.gateway.canceledSubscriptionIds).toEqual([source.providerSubscriptionId])
+    expect(
+      (await fixture.subscriptions.findById(source.subscriptionId))?.cancellationRecord,
+    ).toMatchObject({
+      origin: 'NONPAYMENT',
+      actorId: 'system:subscription-recovery',
+      recoveryCaseId: fixture.lease.item.id,
+      endedStatus: 'CANCELED',
+    })
+    fixture.lease.item.applySource(
+      await fixture.provider.inspect(fixture.lease.item.toSnapshot()),
+      fixture.clock(),
+    )
+    await repository.saveOwned(fixture.lease, fixture.clock())
+    expect((await repository.findById(fixture.lease.item.id))?.toSnapshot()).toMatchObject({
+      state: 'CANCELED',
+      reason: 'UNPAID_AFTER_NOTICE',
+    })
+  })
+
+  test('decisão apenas em memória e executor com lease expirada não autorizam cancelamento', async () => {
+    const fixture = await d7Fixture(false)
+    expect(await failureOf(fixture.service.executeForRecovery(fixture.lease))).toBeInstanceOf(Error)
+    expect(fixture.gateway.canceledSubscriptionIds).toHaveLength(0)
+    expect(
+      (await fixture.subscriptions.findById(source.subscriptionId))?.cancelRequestedAt,
+    ).toBeNull()
+    const stored = await repository.checkpointOwned(fixture.lease, fixture.clock())
+    fixture.at(stored.leaseUntil)
+    expect(await failureOf(fixture.service.executeForRecovery(stored))).toBeInstanceOf(Error)
+    expect(fixture.gateway.canceledSubscriptionIds).toHaveLength(0)
+  })
+
+  test('pagamento que chega após preparar cancelamento impede PUT e retira autoridade da operação', async () => {
+    const fixture = await d7Fixture()
+    fixture.gateway.getCardCharge = async () => ({
+      providerPaymentId: source.providerPaymentId,
+      amountInCents: source.amountInCents,
+      status:
+        (await fixture.operations.findActiveForSubscription(source.subscriptionId, fixture.clock()))
+          ?.kind === 'CANCEL'
+          ? 'PAID'
+          : 'FAILED',
+    })
+    expect(await failureOf(fixture.service.executeForRecovery(fixture.lease))).toBeInstanceOf(Error)
+    expect(fixture.gateway.canceledSubscriptionIds).toHaveLength(0)
+    expect((await fixture.subscriptions.findById(source.subscriptionId))?.status).toBe('ACTIVE')
+    const rows =
+      await connection.sql`select state,result from payments.subscription_operations where subscription_id=${source.subscriptionId}`
+    expect(rows).toHaveLength(1)
+    expect(rows[0]).toMatchObject({ state: 'REJECTED', result: 'RECOVERY_AUTHORIZATION_CHANGED' })
+  })
+
+  test('pedido do cliente que chega durante D7 prevalece sem ser reclassificado como automático', async () => {
+    const fixture = await d7Fixture()
+    fixture.gateway.getCardCharge = async () => {
+      const active = await fixture.operations.findActiveForSubscription(
+        source.subscriptionId,
+        fixture.clock(),
+      )
+      if (active?.kind === 'CANCEL') {
+        const subscription = await fixture.subscriptions.findById(source.subscriptionId)
+        if (!subscription) throw new Error('Missing QA subscription')
+        if (
+          subscription.requestCancellation(
+            { origin: 'CUSTOMER', actorId: 'qa-owner' },
+            fixture.clock(),
+          )
+        )
+          await fixture.subscriptions.save(subscription)
+      }
+      return {
+        providerPaymentId: source.providerPaymentId,
+        status: 'FAILED',
+        amountInCents: source.amountInCents,
+      }
+    }
+    expect(await failureOf(fixture.service.executeForRecovery(fixture.lease))).toBeInstanceOf(Error)
+    expect(fixture.gateway.canceledSubscriptionIds).toHaveLength(0)
+    expect(
+      (await fixture.subscriptions.findById(source.subscriptionId))?.cancellationRecord,
+    ).toMatchObject({ origin: 'CUSTOMER', actorId: 'qa-owner' })
+  })
+
   test('coordenação só inicia prazo com aceite identificado, guardando envelope e recibo antes do caso', async () => {
     const lease = await ownedCase()
     const harness = noticeHarness()
@@ -224,6 +386,7 @@ describe.skipIf(!databaseUrl)('Casos de regularização — PostgreSQL real', ()
         subscriptionStatus: 'ACTIVE',
         paymentStatus: 'PAID',
         paymentOperationPending: false,
+        cancellationOperationPending: false,
       },
       now,
     )
@@ -254,6 +417,7 @@ describe.skipIf(!databaseUrl)('Casos de regularização — PostgreSQL real', ()
         subscriptionStatus: 'ACTIVE',
         paymentStatus: 'PAID',
         paymentOperationPending: false,
+        cancellationOperationPending: false,
       },
       paidAt,
     )
@@ -458,6 +622,7 @@ describe.skipIf(!databaseUrl)('Casos de regularização — PostgreSQL real', ()
         subscriptionStatus: 'ACTIVE',
         paymentStatus: 'PAID',
         paymentOperationPending: false,
+        cancellationOperationPending: false,
       },
       due,
     )
@@ -514,6 +679,7 @@ describe.skipIf(!databaseUrl)('Casos de regularização — PostgreSQL real', ()
         subscriptionStatus: 'CANCELED',
         paymentStatus: 'FAILED',
         paymentOperationPending: false,
+        cancellationOperationPending: false,
       },
       now,
     )

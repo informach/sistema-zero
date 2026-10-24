@@ -79,16 +79,16 @@ export class RecoveryNoticeService {
       lease.item.contactFailed(this.clock())
       return false
     }
-    if (initial.attemptCount >= 8) {
-      lease.item.contactFailed(this.clock())
-      return false
-    }
+    if (initial.receipt.status === 'DELIVERED' || initial.receipt.status === 'READ') return true
     await this.notices.recordAttempt(lease, initial.id, this.clock())
     let receipt: RecoveryMessageReceipt
     try {
       receipt = await this.messaging.get(initial.receipt.id)
     } catch {
-      lease.item.defer(this.clock())
+      const lastKnown = initial.observedAt ?? initial.createdAt
+      if (this.clock().getTime() - lastKnown.getTime() >= 86_400_000)
+        lease.item.contactFailed(this.clock())
+      else lease.item.defer(this.clock())
       return false
     }
     if (this.clock() >= lease.leaseUntil) return false

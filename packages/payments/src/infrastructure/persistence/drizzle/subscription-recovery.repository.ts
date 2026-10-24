@@ -157,14 +157,56 @@ export class DrizzleSubscriptionRecoveryRepository implements SubscriptionRecove
   }
 
   async saveOwned(lease: RecoveryLease, now: Date): Promise<void> {
+    await this.writeOwned(lease, now, true)
+  }
+
+  async checkpointOwned(lease: RecoveryLease, now: Date): Promise<RecoveryLease> {
+    const row = await this.writeOwned(lease, now, false)
+    if (!row.leaseId || !row.leaseUntil)
+      throw new ValidationError('Checkpoint perdeu a autoridade do caso')
+    return { item: restoreCase(row), leaseId: row.leaseId, leaseUntil: row.leaseUntil }
+  }
+
+  async assertOwned(lease: RecoveryLease, now: Date, minimumRemainingMs = 0): Promise<void> {
+    if (
+      !Number.isFinite(now.getTime()) ||
+      !Number.isSafeInteger(minimumRemainingMs) ||
+      minimumRemainingMs < 0 ||
+      minimumRemainingMs > 900_000
+    )
+      throw new ValidationError('Conferência da autoridade inválida')
+    const [row] = await this.db
+      .select({ id: cases.id })
+      .from(cases)
+      .where(
+        and(
+          eq(cases.id, lease.item.id),
+          eq(cases.version, lease.item.toSnapshot().version),
+          eq(cases.state, lease.item.state),
+          eq(cases.leaseId, lease.leaseId),
+          gt(cases.leaseUntil, new Date(now.getTime() + minimumRemainingMs)),
+        ),
+      )
+    if (!row) throw new ConcurrencyConflictError(lease.item.id)
+  }
+
+  private async writeOwned(
+    lease: RecoveryLease,
+    now: Date,
+    release: boolean,
+  ): Promise<typeof cases.$inferSelect> {
     if (!Number.isFinite(now.getTime()) || lease.item.isNew)
       throw new ValidationError('Escrita do caso exige lease válido')
     const snapshot = lease.item.toSnapshot()
     const events = [...lease.item.events]
-    await this.db.transaction(async (tx) => {
+    const saved = await this.db.transaction(async (tx) => {
       const rows = await tx
         .update(cases)
-        .set({ ...snapshot, version: snapshot.version + 1, leaseId: null, leaseUntil: null })
+        .set({
+          ...snapshot,
+          version: snapshot.version + 1,
+          ...(release ? { leaseId: null, leaseUntil: null } : {}),
+        })
         .where(
           and(
             eq(cases.id, snapshot.id),
@@ -173,7 +215,7 @@ export class DrizzleSubscriptionRecoveryRepository implements SubscriptionRecove
             gt(cases.leaseUntil, now),
           ),
         )
-        .returning({ id: cases.id })
+        .returning()
       if (rows.length !== 1) throw new ConcurrencyConflictError(snapshot.id)
       if (events.length) {
         await tx.insert(outbox).values(
@@ -185,8 +227,12 @@ export class DrizzleSubscriptionRecoveryRepository implements SubscriptionRecove
         )
         await tx.execute(sql`select pg_notify(${PG_CHANNELS.outbox}, '')`)
       }
+      const row = rows[0]
+      if (!row) throw new ConcurrencyConflictError(snapshot.id)
+      return row
     })
     lease.item.pullEvents()
+    return saved
   }
 }
 

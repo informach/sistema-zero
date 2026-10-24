@@ -116,6 +116,25 @@ test('falha de consulta não vira prova de recusa e não cria cobrança ou cance
   expect(gateway.canceledSubscriptionIds).toHaveLength(0)
 })
 
+test('cancelamento incerto é identificado, preservando a autoridade da própria execução cercada', async () => {
+  const { service, item, operations } = await setup()
+  const operation = createSubscriptionOperation({
+    subscriptionId: item.subscriptionId,
+    consumerId: item.consumerId,
+    providerSubscriptionId: item.providerSubscriptionId,
+    kind: 'CANCEL',
+    now: item.openedAt,
+  })
+  await operations.create(operation)
+  const executing = await operations.start(operation.id, item.subscriptionId, item.openedAt)
+  if (!executing?.executionId) throw new Error('Missing QA cancellation execution')
+  expect((await service.inspect(item)).cancellationOperationPending).toBe(true)
+  expect((await service.inspect(item, executing.executionId)).cancellationOperationPending).toBe(
+    false,
+  )
+  expect((await service.inspect(item, crypto.randomUUID())).cancellationOperationPending).toBe(true)
+})
+
 test('prova com GETs demorados expira a partir do início, não do fim da resposta', async () => {
   const { service, item, gateway, advance } = await setup()
   gateway.getCardCharge = async () => {

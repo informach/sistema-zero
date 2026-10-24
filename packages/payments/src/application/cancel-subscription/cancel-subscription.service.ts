@@ -9,6 +9,10 @@ import {
   createSubscriptionOperation,
   type SubscriptionOperationRepository,
 } from '../../domain/subscription/subscription-operation'
+import type {
+  RecoveryLease,
+  SubscriptionRecoveryRepository,
+} from '../../domain/subscription-recovery/recovery-repository.port'
 import type { Logger } from '../../infrastructure/logging/logger'
 import {
   type MySubscriptionView,
@@ -16,6 +20,15 @@ import {
   toMySubscriptionView,
   toSubscriptionView,
 } from '../mappers/subscription-view'
+import type { RecoveryNoticeService } from '../subscription-recovery/recovery-notice.service'
+import type { RecoverySourceService } from '../subscription-recovery/recovery-source.service'
+
+interface RecoveryCancellationAuthority {
+  cases: Pick<SubscriptionRecoveryRepository, 'assertOwned'>
+  source: Pick<RecoverySourceService, 'inspect'>
+  notices: Pick<RecoveryNoticeService, 'initialHealthy'>
+  effectBudgetMs: number
+}
 
 /**
  * Caso de uso: cancela uma assinatura. Idempotente: cancelar uma já cancelada é
@@ -31,6 +44,7 @@ export class CancelSubscriptionService {
     private readonly myRead?: SubscriptionMyReadRepository,
     private readonly clock: () => Date = () => new Date(),
     private readonly reclaimAfterMs = 120_000,
+    private readonly recovery?: RecoveryCancellationAuthority,
   ) {}
 
   /**
@@ -59,6 +73,57 @@ export class CancelSubscriptionService {
     return this.cancel(subscription, null)
   }
 
+  /** Only a persisted D7 decision and its current case lease authorize this path. */
+  async executeForRecovery(lease: RecoveryLease): Promise<SubscriptionView> {
+    await this.assertRecoveryAuthority(lease)
+    const item = lease.item.toSnapshot()
+    const subscription = await this.subscriptions.findById(item.subscriptionId)
+    if (!subscription || subscription.consumerId !== item.consumerId)
+      throw new SubscriptionNotFoundError(item.subscriptionId)
+    return this.cancel(
+      subscription,
+      { origin: 'NONPAYMENT', actorId: 'system:subscription-recovery', recoveryCaseId: item.id },
+      async (executionId) => this.assertRecoveryAuthority(lease, executionId),
+      lease.leaseUntil,
+    )
+  }
+
+  private async assertRecoveryAuthority(lease: RecoveryLease, executionId?: string): Promise<void> {
+    const authority = this.recovery
+    const item = lease.item.toSnapshot()
+    if (
+      !authority ||
+      item.state !== 'CANCEL_PENDING' ||
+      !item.deadlineAt ||
+      !item.initialNoticeId ||
+      this.clock() < item.deadlineAt
+    )
+      throw new SubscriptionCancellationPendingError()
+    await authority.cases.assertOwned(lease, this.clock(), authority.effectBudgetMs + 30_000)
+    if (!(await authority.notices.initialHealthy(lease)))
+      throw new SubscriptionCancellationPendingError()
+    const proof = await authority.source.inspect(item, executionId)
+    if (
+      proof.subscriptionStatus !== 'ACTIVE' ||
+      proof.paymentStatus !== 'FAILED' ||
+      proof.paymentOperationPending ||
+      (executionId && proof.cancellationOperationPending) ||
+      !proof.chargeCreatedAt
+    )
+      throw new SubscriptionCancellationPendingError()
+    const subscription = await this.subscriptions.findById(item.subscriptionId)
+    if (
+      !subscription ||
+      subscription.consumerId !== item.consumerId ||
+      subscription.providerSubscriptionId !== item.providerSubscriptionId ||
+      (subscription.cancelRequestedAt &&
+        (subscription.cancellationRecord?.origin !== 'NONPAYMENT' ||
+          subscription.cancellationRecord.recoveryCaseId !== item.id))
+    )
+      throw new SubscriptionCancellationPendingError()
+    await authority.cases.assertOwned(lease, this.clock(), authority.effectBudgetMs + 30_000)
+  }
+
   /**
    * Cancelamento SELF-SERVICE do assinante ("minhas assinaturas"): escopado pelo
    * E-MAIL das claims (anti-IDOR — id de outro e-mail = inexistente/404). O
@@ -78,6 +143,8 @@ export class CancelSubscriptionService {
   private async cancel(
     subscription: SubscriptionAggregate,
     context: CancellationContext | null,
+    beforeAutomaticEffect?: (executionId: string) => Promise<void>,
+    automaticDeadline?: Date,
   ): Promise<SubscriptionView> {
     if (subscription.status === 'CANCELED' || subscription.status === 'EXPIRED')
       return toSubscriptionView(subscription)
@@ -90,7 +157,11 @@ export class CancelSubscriptionService {
     if (
       !subscription.cancelRequestedAt ||
       !subscription.cancellationRecord ||
-      subscription.cancellationRecord.origin === 'NONPAYMENT'
+      (subscription.cancellationRecord.origin === 'NONPAYMENT' && !beforeAutomaticEffect) ||
+      (beforeAutomaticEffect &&
+        (subscription.cancellationRecord.origin !== 'NONPAYMENT' ||
+          subscription.cancellationRecord.recoveryCaseId !==
+            (context?.origin === 'NONPAYMENT' ? context.recoveryCaseId : null)))
     )
       throw new SubscriptionCancellationPendingError()
     if (!subscription.providerSubscriptionId) throw new SubscriptionCancellationPendingError()
@@ -135,6 +206,33 @@ export class CancelSubscriptionService {
       if (confirmed.providerSubscriptionId !== subscription.providerSubscriptionId)
         throw new SubscriptionCancellationPendingError()
       if (confirmed.status !== 'CANCELED' && confirmed.status !== 'EXPIRED') {
+        if (beforeAutomaticEffect) {
+          try {
+            await beforeAutomaticEffect(execution.executionId)
+          } catch {
+            await this.operations.finish(
+              execution.id,
+              execution.executionId,
+              'REJECTED',
+              'RECOVERY_AUTHORIZATION_CHANGED',
+              this.clock(),
+            )
+            throw new RecoveryCancellationAuthorizationChangedError()
+          }
+        }
+        const current = await this.operations.findById(execution.id)
+        const effectTime = this.clock()
+        if (
+          current?.state !== 'EXECUTING' ||
+          current.executionId !== execution.executionId ||
+          !current.startedAt ||
+          effectTime < current.startedAt ||
+          effectTime.getTime() - current.startedAt.getTime() >= this.reclaimAfterMs ||
+          (automaticDeadline &&
+            effectTime.getTime() + (this.recovery?.effectBudgetMs ?? 0) >=
+              automaticDeadline.getTime())
+        )
+          throw new RecoveryCancellationAuthorizationChangedError()
         try {
           await this.gateway.cancelSubscription(subscription.providerSubscriptionId)
         } catch {
@@ -157,7 +255,9 @@ export class CancelSubscriptionService {
         confirmedStatus,
         this.clock(),
       )
-    } catch {
+    } catch (error) {
+      if (error instanceof RecoveryCancellationAuthorizationChangedError)
+        throw new SubscriptionCancellationPendingError()
       try {
         await this.operations.finish(
           execution.id,
@@ -189,6 +289,8 @@ export class CancelSubscriptionService {
     return toSubscriptionView(fresh)
   }
 }
+
+class RecoveryCancellationAuthorizationChangedError extends Error {}
 
 export class SubscriptionCancellationPendingError extends DomainError {
   readonly code = 'SUBSCRIPTION_CANCELLATION_PENDING'

@@ -16,4 +16,7 @@ export interface SubscriptionRecoveryRepository {
   claimDue(input: { now: Date; leaseMs: number; limit: number }): Promise<RecoveryLease[]>
   /** CAS + fencing e prazo do lease; grava eventos na mesma transação. */
   saveOwned(lease: RecoveryLease, now: Date): Promise<void>
+  /** Persists a decision before effects, retaining the same unextended lease. */
+  checkpointOwned(lease: RecoveryLease, now: Date): Promise<RecoveryLease>
+  assertOwned(lease: RecoveryLease, now: Date, minimumRemainingMs?: number): Promise<void>
 }

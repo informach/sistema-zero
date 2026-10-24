@@ -20,6 +20,7 @@ export class RecoverySourceService {
 
   async inspect(
     item: RecoverySnapshot,
+    ownCancellationExecutionId?: string,
   ): Promise<RecoverySourceProof & { chargeCreatedAt: Date | null }> {
     const subscription = await this.subscriptions.findById(item.subscriptionId)
     const payment = await this.payments.findById(item.paymentId)
@@ -75,6 +76,16 @@ export class RecoverySourceService {
       throw new ValidationError('Há uma renovação posterior paga; a origem exige revisão')
 
     const active = await this.operations.findActiveForSubscription(item.subscriptionId, now)
+    const currentSubscription = await this.subscriptions.findById(item.subscriptionId)
+    const currentPayment = await this.payments.findById(item.paymentId)
+    if (
+      !currentSubscription ||
+      !currentPayment ||
+      currentSubscription.consumerId !== item.consumerId ||
+      currentSubscription.providerSubscriptionId !== item.providerSubscriptionId ||
+      (currentPayment.status === 'PAID' && charge.status !== 'PAID')
+    )
+      throw new ValidationError('A origem mudou durante a conferência do provedor')
     const checkedAt = this.clock()
     if (checkedAt < now || checkedAt.getTime() - startedAt.getTime() > 60_000)
       throw new ValidationError('A consulta ao provedor está vencida')
@@ -87,6 +98,13 @@ export class RecoverySourceService {
       paymentStatus: charge.status,
       // A prepared debit also blocks D7: it may be starting in another tab now.
       paymentOperationPending: active?.kind === 'RETRY',
+      cancellationOperationPending:
+        active?.kind === 'CANCEL' &&
+        active.state !== 'READY' &&
+        active.executionId !== ownCancellationExecutionId,
+      automaticCancellationRequested:
+        currentSubscription.cancellationRecord?.origin === 'NONPAYMENT' &&
+        currentSubscription.cancellationRecord.recoveryCaseId === item.id,
       chargeCreatedAt: cycle?.createdAt ?? null,
     }
   }

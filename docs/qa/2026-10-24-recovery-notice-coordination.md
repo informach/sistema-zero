@@ -47,3 +47,33 @@ e-mail. Nenhum cliente real recebeu mensagem ou operação financeira.
 Próximos: integrar worker/coordenador/D7 com autoridade persistida e prova nova,
 pagamento explícito/período original, Admin/exceções, corte do dunning antigo,
 configuração/seeds, sandbox/UI e os dois reviews globais/lotes finais autorizados.
+
+## Complemento — autoridade de execução D7
+
+O caso pode gravar um checkpoint com CAS/outbox e conservar a mesma lease, sem
+ampliar seu prazo. A autorização consulta versão, identidade, estado efetivamente
+persistido e orçamento restante antes dos efeitos. Um estado alterado só em memória
+não autoriza cancelamento; a versão anterior perde autoridade após o checkpoint.
+
+`executeForRecovery` no caso de uso compartilhado de cancelamento exige a decisão
+CANCEL_PENDING persistida, prazo vencido, aviso inicial saudável e nova prova da
+cobrança/assinatura. Registra pedido automático com o ID do caso antes da rede.
+Revalida antes do PUT; pagamento novo ou pedido humano concorrente rejeita a
+autoridade da operação sem enviar cancelamento. Executores antigos/vencidos não
+concluem a nova operação. A confirmação permanece por GET no provedor.
+
+Pagamento durante cancelamento incerto vai para revisão, sem anunciar recuperação.
+Razão UNPAID_AFTER_NOTICE exige pedido auditado do próprio caso; apenas estar em
+CANCEL_PENDING não transforma um cancelamento externo em decisão automática.
+Consultas saudáveis do aviso não esgotam um contador de falhas de entrega; se o
+Messaging fica indisponível, a verificação usa reagendamento e janela finita.
+
+Verificação: Payments **485 pass, 0 fail, 1374 asserções**, PostgreSQL real, 39
+arquivos; tipagem completa exit 0 e Biome/diffcheck antes do commit. Inclui quatro
+cenários D7 com repositórios reais: confirmação, decisão não gravada/lease expirada,
+pagamento na janela anterior ao PUT e pedido humano concorrente. Transporte Efí
+é simulado nesses testes; não há qualificação de sandbox ou implantação.
+
+O coordenador/worker de casos ainda precisa ser ligado à composição. Permanecem
+pendentes regularização/período, operações/Admin, configuração, integração e os
+reviews globais. Nenhuma política ou assinatura real foi ativada por este lote.
