@@ -17,6 +17,7 @@ import { type FormEvent, useEffect, useId, useRef, useState } from 'react'
 import { apiGet, apiSend } from '../../lib/api'
 import type {
   SubscriptionCardConfigView,
+  SubscriptionCardContextView,
   SubscriptionCardIntentView,
 } from '../../lib/subscription-card'
 
@@ -83,7 +84,7 @@ function CardUpdateForm({
       apiGet<SubscriptionCardConfigView>('/api/payments/my/card-config', undefined, {
         signal: controller.signal,
       }),
-      apiGet<{ intent: SubscriptionCardIntentView | null }>(path, undefined, {
+      apiGet<SubscriptionCardContextView>(path, undefined, {
         signal: controller.signal,
       }),
     ])
@@ -91,11 +92,18 @@ function CardUpdateForm({
         if (controller.signal.aborted) return
         setConfig(currentConfig)
         setIntent(current.intent)
-        if (!currentConfig.available || !currentConfig.accountIdentifier) {
+        if (current.intent && current.intent.state !== 'READY') {
+          setPhase('RESULT')
+        } else if (!current.canUpdate) {
+          setMessage(
+            'A assinatura está encerrada ou com cancelamento solicitado. Não é possível alterar seu cartão.',
+          )
+          setPhase('UNAVAILABLE')
+        } else if (!currentConfig.available || !currentConfig.accountIdentifier) {
           setMessage('A alteração de cartão está indisponível. Entre em contato com o atendimento.')
           setPhase('UNAVAILABLE')
         } else {
-          setPhase(current.intent && current.intent.state !== 'READY' ? 'RESULT' : 'FORM')
+          setPhase('FORM')
         }
       })
       .catch(() => {

@@ -122,14 +122,14 @@ describe.skipIf(!databaseUrl)('Atualização preventiva de cartão — aplicaç�
   })
 
   test('reabrir recupera somente a intenção vigente do titular, sem criar novo efeito', async () => {
-    expect(await service.getActiveIntent(email, id)).toEqual({ intent: null })
+    expect(await service.getActiveIntent(email, id)).toEqual({ intent: null, canUpdate: true })
     const intent = await service.createIntent(email, id)
     expect((await service.getActiveIntent(email, id)).intent?.id).toBe(intent.id)
     expect(await failureOf(service.getActiveIntent('another@example.test', id))).toBeInstanceOf(
       Error,
     )
     now = new Date(intent.expiresAt)
-    expect(await service.getActiveIntent(email, id)).toEqual({ intent: null })
+    expect(await service.getActiveIntent(email, id)).toEqual({ intent: null, canUpdate: true })
     const replacement = await service.createIntent(email, id)
     expect(replacement.id).not.toBe(intent.id)
     expect((await service.getIntent(email, id, intent.id)).state).toBe('REJECTED')
@@ -147,6 +147,22 @@ describe.skipIf(!databaseUrl)('Atualização preventiva de cartão — aplicaç�
     expect(active?.id).toBe(intent.id)
     expect(active?.state).toBe('UNKNOWN')
     expect(await failureOf(service.createIntent(email, id))).toBeInstanceOf(Error)
+  })
+
+  test('cancelamento após abrir a tela impede novo formulário, mas mantém consulta de resultado incerto', async () => {
+    gateway.updateSubscriptionCard = async () => {
+      throw new Error('Rede QA')
+    }
+    const intent = await service.createIntent(email, id)
+    await service.execute(email, id, intent.id, input)
+    const subscription = await subscriptions.findById(id)
+    if (!subscription) throw new Error('Assinatura QA ausente')
+    subscription.requestCancellation()
+    await subscriptions.save(subscription)
+    const current = await service.getActiveIntent(email, id)
+    expect(current.canUpdate).toBe(false)
+    expect(current.intent?.state).toBe('UNKNOWN')
+    expect(current.intent?.id).toBe(intent.id)
   })
 
   test('resposta perdida mantém UNKNOWN e não reaproveita o token nem cria outra intenção', async () => {

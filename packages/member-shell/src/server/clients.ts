@@ -1949,7 +1949,7 @@ export function createPaymentsClient(gw: GatewayModule) {
     },
     getActiveCardIntent(
       id: string,
-    ): Promise<GatewayResponse<{ intent: SubscriptionCardIntentView | null }>> {
+    ): Promise<GatewayResponse<{ intent: SubscriptionCardIntentView | null; canUpdate: boolean }>> {
       return gw.gatewayFetch(`/payments/my/subscriptions/${enc(id)}/card-intents`)
     },
     createCardIntent(id: string): Promise<GatewayResponse<SubscriptionCardIntentView>> {

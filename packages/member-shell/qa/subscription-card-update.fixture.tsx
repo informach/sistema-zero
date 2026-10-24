@@ -56,6 +56,7 @@ function button(label: string) {
 async function mount(
   currentIntent: unknown = null,
   execution: () => Promise<Response> = async () => Response.json({ ...intent, state: 'SUCCEEDED' }),
+  availability = { canUpdate: true, tokenization: true },
 ) {
   const calls: Array<{ path: string; method: string; body: unknown }> = []
   globalThis.fetch = Object.assign(
@@ -65,12 +66,14 @@ async function mount(
       calls.push({ path, method, body: init?.body ? JSON.parse(String(init.body)) : null })
       if (path.endsWith('/card-config'))
         return Response.json({
-          available: true,
-          accountIdentifier: 'qa-public-account',
+          available: availability.tokenization,
+          accountIdentifier: availability.tokenization ? 'qa-public-account' : null,
           environment: 'sandbox',
         })
       if (path.endsWith('/card-intents'))
-        return Response.json(method === 'GET' ? { intent: currentIntent } : intent)
+        return Response.json(
+          method === 'GET' ? { intent: currentIntent, canUpdate: availability.canUpdate } : intent,
+        )
       if (method === 'GET') return Response.json({ ...intent, state: 'UNKNOWN' })
       return execution()
     },
@@ -143,6 +146,25 @@ test('solicitação desconhecida bloqueia dados e apenas consulta, inclusive ao 
   expect(view.calls.every((call) => call.method === 'GET')).toBe(true)
   expect(tokenization).not.toHaveBeenCalled()
   expect(view.updated()).toBe(0)
+})
+
+test('estado fresco de cancelamento recusa formulário apesar do cartão antigo na página', async () => {
+  const view = await mount(null, undefined, { canUpdate: false, tokenization: true })
+  expect(document.querySelector('form')).toBeNull()
+  expect(document.body.textContent).toContain('cancelamento solicitado')
+  expect(view.calls.every((call) => call.method === 'GET')).toBe(true)
+  expect(tokenization).not.toHaveBeenCalled()
+})
+
+test('consulta de solicitação pendente funciona mesmo sem configuração para novo cartão', async () => {
+  const view = await mount({ ...intent, state: 'UNKNOWN' }, undefined, {
+    canUpdate: false,
+    tokenization: false,
+  })
+  expect(document.querySelector('form')).toBeNull()
+  await act(async () => button('Conferir solicitação').click())
+  expect(view.calls.every((call) => call.method === 'GET')).toBe(true)
+  expect(tokenization).not.toHaveBeenCalled()
 })
 
 test('resposta perdida consulta o estado e não repete a alteração', async () => {

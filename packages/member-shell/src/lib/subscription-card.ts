@@ -13,3 +13,8 @@ export interface SubscriptionCardConfigView {
   accountIdentifier: string | null
   environment: 'sandbox' | 'production'
 }
+
+export interface SubscriptionCardContextView {
+  intent: SubscriptionCardIntentView | null
+  canUpdate: boolean
+}

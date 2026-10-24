@@ -1587,7 +1587,11 @@ export interface MySubscriptionView {
   createdAt: string
 }
 
-export type { SubscriptionCardConfigView, SubscriptionCardIntentView } from './subscription-card'
+export type {
+  SubscriptionCardConfigView,
+  SubscriptionCardContextView,
+  SubscriptionCardIntentView,
+} from './subscription-card'
 
 export const SUBSCRIPTION_STATUS_LABELS: Record<string, string> = {
   PENDING: 'Pendente',

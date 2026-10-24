@@ -38,6 +38,13 @@ consulta atualizada, sem falso sucesso.
 
 ## Limites antes de liberar
 
+Revisão adicional: a leitura autenticada agora informa a disponibilidade atual
+da assinatura. Cancelamento ocorrido depois de abrir Compras não deixa pedir dados
+de um cartão novo. A consulta de operação pendente permanece disponível mesmo se
+a tokenização estiver desconfigurada. Provas adicionais: dois cenários DOM (seis
+no total), um cenário PostgreSQL (nove na seleção de cartão), tipos focados e
+Payments sem erros. Não amplia a evidência para navegador/Efí real.
+
 Este lote não é a entrega completa de regularização. Ainda requer revisão integral,
 CI dos BFFs/apps, navegador real, configuração pública da Efí nos ambientes e prova
 em sandbox. A operação de pagar atraso, seu valor/período, casos D0/D3/D6/D7,
