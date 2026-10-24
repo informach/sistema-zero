@@ -19,6 +19,45 @@ const request = {
   variables: { nome: 'QA' },
 }
 
+test('retira a intenção original com a mesma chave, corpo assinado e recibo mínimo', async () => {
+  const gateway = createRecoveryMessagingGateway({
+    gatewayUrl: 'http://gateway.test',
+    hmacSecret: secret,
+    fetchImpl: async (url, init) => {
+      expect(url).toBe('http://gateway.test/messaging/intents/suppress')
+      const headers = new Headers(init.headers)
+      expect(headers.get('idempotency-key')).toBe(request.idempotencyKey)
+      expect(JSON.parse(String(init.body))).toEqual({
+        channel: request.channel,
+        templateKey: request.templateKey,
+        recipient: request.recipient,
+        variables: request.variables,
+      })
+      const signatureHeader = headers.get('x-signature')
+      if (!signatureHeader) throw new Error('Missing QA signature')
+      expect(
+        verifyHmacSignature({
+          secret,
+          body: canonicalHmacMessage({
+            method: 'POST',
+            path: '/messaging/intents/suppress',
+            idempotencyKey: request.idempotencyKey,
+            body: String(init.body),
+          }),
+          signatureHeader,
+          nowSeconds: Math.floor(Date.now() / 1000),
+          toleranceSeconds: 300,
+        }).valid,
+      ).toBe(true)
+      return Response.json({ suppressed: true, message: { ...row, status: 'SUPPRESSED' } })
+    },
+  })
+  expect(await gateway.suppressIntent(request)).toEqual({
+    suppressed: true,
+    receipt: { id, status: 'SUPPRESSED', acceptedAt: new Date(row.createdAt), deliveredAt: null },
+  })
+})
+
 test('assina a intenção exata e retorna só recibo seguro, sem reenviar automaticamente', async () => {
   let count = 0
   const gateway = createRecoveryMessagingGateway({

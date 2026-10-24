@@ -270,6 +270,7 @@ const config: GatewayConfigInput = {
               'messaging-send',
               'messaging-message-get',
               'messaging-message-suppress',
+              'messaging-intent-suppress',
             ],
           },
         ]
@@ -3879,6 +3880,16 @@ const config: GatewayConfigInput = {
       auth: { required: true, mode: 'any', strategies: ['hmac'] },
       transforms: messagingInternalTransforms,
       maxBodyBytes: 1024,
+      rateLimit: { max: 600, windowMs: 60_000, by: 'principal' },
+    },
+    {
+      id: 'messaging-intent-suppress',
+      methods: ['POST'],
+      pathPattern: '/messaging/intents/suppress',
+      service: 'messaging',
+      auth: { required: true, mode: 'any', strategies: ['hmac'] },
+      transforms: messagingInternalTransforms,
+      maxBodyBytes: 65_536,
       rateLimit: { max: 600, windowMs: 60_000, by: 'principal' },
     },
     // Admin (painel): JWT + RBAC. `/messaging/admin/*` distinto das rotas S2S acima.

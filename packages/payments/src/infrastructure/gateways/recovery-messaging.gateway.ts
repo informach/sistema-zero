@@ -138,5 +138,20 @@ export function createRecoveryMessagingGateway(options: {
         throw new RecoveryMessagingUnavailableError()
       }
     },
+    async suppressIntent(request) {
+      if (!request.idempotencyKey || request.idempotencyKey.length > 200)
+        throw new ValidationError('Identidade do aviso inválida')
+      const { idempotencyKey, ...body } = request
+      try {
+        const result = suppressionSchema.parse(
+          await call('POST', '/messaging/intents/suppress', body, idempotencyKey),
+        )
+        if (result.suppressed !== (result.message.status === 'SUPPRESSED'))
+          throw new RecoveryMessagingUnavailableError()
+        return { suppressed: result.suppressed, receipt: receipt(result.message) }
+      } catch {
+        throw new RecoveryMessagingUnavailableError()
+      }
+    },
   }
 }

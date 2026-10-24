@@ -736,7 +736,7 @@ describe('gateway.config.ts (configuração real)', () => {
     expect(result.stderr).toMatch(/members-internal-studio-builder.*MAX_REQUEST_BODY_BYTES/)
   })
 
-  test('Payments só é cadastrado com segredo próprio e recebe três capacidades de comunicação', async () => {
+  test('Payments só é cadastrado com segredo próprio e recebe quatro capacidades de comunicação', async () => {
     const result = await bootRealConfig(undefined, 'qa-payments-secret-with-32-characters')
     expect(result.code).toBe(0)
     expect(result.stderr).toBe('')
@@ -744,6 +744,7 @@ describe('gateway.config.ts (configuração real)', () => {
       'messaging-send',
       'messaging-message-get',
       'messaging-message-suppress',
+      'messaging-intent-suppress',
     ])
     const ids = new Set(realConfig.routes.map((route) => route.id))
     for (const id of JSON.parse(result.stdout).paymentsRoutes) expect(ids.has(id)).toBe(true)

@@ -24,4 +24,8 @@ export interface RecoveryMessagingGateway {
   send(request: RecoveryMessageRequest): Promise<RecoveryMessageReceipt>
   get(id: string): Promise<RecoveryMessageReceipt>
   suppress(id: string): Promise<{ suppressed: boolean; receipt: RecoveryMessageReceipt }>
+  /** Closes the original idempotent intent even if enqueue's response was lost. */
+  suppressIntent(
+    request: RecoveryMessageRequest,
+  ): Promise<{ suppressed: boolean; receipt: RecoveryMessageReceipt }>
 }

@@ -40,6 +40,39 @@ export interface SendRoutesDeps {
 export function sendRoutes(deps: SendRoutesDeps) {
   return new Elysia()
     .post(
+      '/messaging/intents/suppress',
+      async ({ body, headers }) => {
+        if (!deps.internalToken)
+          throw new UnauthorizedError('Configuração de autenticação necessária')
+        requireInternalToken(headers, deps.internalToken)
+        const consumerId = optionalHeader(
+          headers['x-consumer-id'],
+          'X-Consumer-Id',
+          MAX_CONSUMER_ID_LENGTH,
+        )
+        const idempotencyKey = optionalHeader(
+          headers['idempotency-key'],
+          'Idempotency-Key',
+          MAX_IDEMPOTENCY_KEY_LENGTH,
+        )
+        if (!consumerId || !idempotencyKey)
+          throw new UnauthorizedError('Consumer e intenção autenticados são obrigatórios')
+        return deps.suppressMessage.executeIntent({
+          channel: body.channel,
+          templateKey: body.templateKey,
+          recipient: body.recipient,
+          variables: body.variables,
+          attachments: body.attachments,
+          senderId: body.senderId ?? null,
+          scheduledAt: body.scheduledAt ? new Date(body.scheduledAt) : undefined,
+          priority: body.priority,
+          consumerId,
+          idempotencyKey,
+        })
+      },
+      { body: SendBody },
+    )
+    .post(
       '/messaging/messages/:id/suppress',
       async ({ params, headers }) => {
         requireInternalToken(headers, deps.internalToken)
