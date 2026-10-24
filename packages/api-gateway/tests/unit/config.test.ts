@@ -10,6 +10,18 @@ const env = loadEnv({})
 const service = { name: 'p', upstreamGroups: { default: [{ url: 'http://p' }] } }
 
 describe('loadGatewayConfig', () => {
+  test('retirada de mensagem exige consumidor HMAC e rota própria limitada', () => {
+    const registry = new RouteRegistry(
+      realConfig.routes.map((route) => routeConfigSchema.parse(route)),
+    )
+    expect(registry.resolve('POST', '/messaging/messages/id/suppress', 'v1')?.route).toMatchObject({
+      id: 'messaging-message-suppress',
+      service: 'messaging',
+      maxBodyBytes: 1024,
+      auth: { required: true, strategies: ['hmac'] },
+    })
+    expect(registry.resolve('DELETE', '/messaging/messages/id/suppress', 'v1')).toBeUndefined()
+  })
   test('alteração de cartão usa rotas próprias autenticadas e limites de escrita', () => {
     const registry = new RouteRegistry(
       realConfig.routes.map((route) => routeConfigSchema.parse(route)),

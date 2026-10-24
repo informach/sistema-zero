@@ -3829,6 +3829,16 @@ const config: GatewayConfigInput = {
       transforms: messagingInternalTransforms,
       rateLimit: { max: 600, windowMs: 60_000, by: 'principal' },
     },
+    {
+      id: 'messaging-message-suppress',
+      methods: ['POST'],
+      pathPattern: '/messaging/messages/:id/suppress',
+      service: 'messaging',
+      auth: { required: true, mode: 'any', strategies: ['hmac'] },
+      transforms: messagingInternalTransforms,
+      maxBodyBytes: 1024,
+      rateLimit: { max: 600, windowMs: 60_000, by: 'principal' },
+    },
     // Admin (painel): JWT + RBAC. `/messaging/admin/*` distinto das rotas S2S acima.
     // LEITURA (GET) → superadmin/admin/staff; ESCRITA → superadmin/admin. Wildcard
     // `/*` casa todos os subpaths (templates/senders/whatsapp-instances/messages).

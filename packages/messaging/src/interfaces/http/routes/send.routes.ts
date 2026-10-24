@@ -1,7 +1,9 @@
 import { UnauthorizedError } from '@sistemazero/core/http'
 import { Elysia } from 'elysia'
+import { z } from 'zod'
 import type { GetMessageService } from '../../../application/get-message/get-message.service'
 import type { SendMessageService } from '../../../application/send-message/send-message.service'
+import type { SuppressMessageService } from '../../../application/suppress-message/suppress-message.service'
 import { ValidationError } from '../../../domain/shared/errors'
 import { requireInternalToken } from '../auth'
 import { IdParams, SendBody } from '../dtos'
@@ -26,6 +28,7 @@ function optionalHeader(value: string | undefined, name: string, maxLength: numb
 export interface SendRoutesDeps {
   sendMessage: SendMessageService
   getMessage: GetMessageService
+  suppressMessage: SuppressMessageService
   /** Token interno do gateway (S2S). Vazio → checagem desligada (dev). */
   internalToken: string | undefined
 }
@@ -36,6 +39,20 @@ export interface SendRoutesDeps {
  */
 export function sendRoutes(deps: SendRoutesDeps) {
   return new Elysia()
+    .post(
+      '/messaging/messages/:id/suppress',
+      async ({ params, headers }) => {
+        requireInternalToken(headers, deps.internalToken)
+        const consumerId = optionalHeader(
+          headers['x-consumer-id'],
+          'X-Consumer-Id',
+          MAX_CONSUMER_ID_LENGTH,
+        )
+        if (!consumerId) throw new UnauthorizedError('Consumer autenticado ausente')
+        return deps.suppressMessage.execute(params.id, consumerId)
+      },
+      { params: IdParams, body: z.strictObject({}) },
+    )
     .post(
       '/messaging/send',
       async ({ body, headers, set }) => {

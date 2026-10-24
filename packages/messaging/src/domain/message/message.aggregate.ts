@@ -302,6 +302,14 @@ export class Message extends AggregateRoot<string> {
     )
   }
 
+  /** Retirada pelo consumidor antes do claim; não suprime o destinatário globalmente. */
+  withdrawQueued(now: Date): boolean {
+    if (!Number.isFinite(now.getTime())) throw new ValidationError('Relógio inválido')
+    if (this.props.status !== 'QUEUED' && this.props.status !== 'SCHEDULED') return false
+    this.suppress({ reason: 'REQUEST_NO_LONGER_NEEDED', now })
+    return true
+  }
+
   /** Destinatário em supressão → não envia. */
   suppress(input: { reason: string; now: Date }): void {
     if (this.props.status === 'SUPPRESSED') return
