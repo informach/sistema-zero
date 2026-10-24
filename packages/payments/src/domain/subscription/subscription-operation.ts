@@ -90,6 +90,8 @@ export interface SubscriptionOperationRepository {
   start(id: string, subscriptionId: string, now: Date): Promise<SubscriptionOperation | null>
   /** Retires only unstarted intents after the durable cancellation request. */
   rejectUnstartedForCancellation(subscriptionId: string, now: Date): Promise<void>
+  /** Only READY cancellation, after the exact automatic request was withdrawn. */
+  rejectWithdrawnCancellation(subscriptionId: string, caseId: string, now: Date): Promise<void>
   /** Only cancellation is safe to resume; never re-executes card updates or debits. */
   resumeCancellation(
     id: string,

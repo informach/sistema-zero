@@ -21,6 +21,8 @@ import { ProcessPaymentService } from './application/process-payment/process-pay
 import { RefundPaymentService } from './application/refund-payment/refund-payment.service'
 import { UpdateSubscriptionCardService } from './application/subscription-card/update-subscription-card.service'
 import { RecoveryAdmissionService } from './application/subscription-recovery/recovery-admission.service'
+import { RecoveryCoordinatorService } from './application/subscription-recovery/recovery-coordinator.service'
+import { RecoveryNoticeService } from './application/subscription-recovery/recovery-notice.service'
 import { RecoveryPolicyService } from './application/subscription-recovery/recovery-policy.service'
 import { RecoverySourceService } from './application/subscription-recovery/recovery-source.service'
 import type { Env } from './infrastructure/config/env'
@@ -45,6 +47,7 @@ import { DrizzlePaymentAdminReadRepository } from './infrastructure/persistence/
 import { DrizzlePaymentMyReadRepository } from './infrastructure/persistence/drizzle/payment-my-read.repository'
 import { PgNotificationListener } from './infrastructure/persistence/drizzle/pg-notification-listener'
 import { DrizzleRecoveryAdmissionRepository } from './infrastructure/persistence/drizzle/recovery-admission.repository'
+import { DrizzleRecoveryNoticeRepository } from './infrastructure/persistence/drizzle/recovery-notice.repository'
 import { DrizzleRecoveryPolicyRepository } from './infrastructure/persistence/drizzle/recovery-policy.repository'
 import { DrizzleSubscriptionRepository } from './infrastructure/persistence/drizzle/subscription.repository'
 import { DrizzleSubscriptionAdminReadRepository } from './infrastructure/persistence/drizzle/subscription-admin-read.repository'
@@ -59,6 +62,7 @@ import { WebhookRateLimiter } from './infrastructure/security/webhook-rate-limit
 import { ChargeCreationWorker } from './infrastructure/workers/charge-creation-worker'
 import { ReconciliationWorker } from './infrastructure/workers/reconciliation-worker'
 import { RecoveryAdmissionWorker } from './infrastructure/workers/recovery-admission-worker'
+import { RecoveryCaseWorker } from './infrastructure/workers/recovery-case-worker'
 import { SubscriptionCancellationWorker } from './infrastructure/workers/subscription-cancellation-worker'
 import { SubscriptionReconciliationWorker } from './infrastructure/workers/subscription-reconciliation-worker'
 import { WebhookDeliveryWorker } from './infrastructure/workers/webhook-delivery-worker'
@@ -256,6 +260,15 @@ export function createApplication(env: Env): Application {
     payments,
     recoverySource,
   )
+  const recoveryNotices =
+    recoveryMessaging && env.RECOVERY_KIDS_BILLING_URL && env.RECOVERY_ADULT_BILLING_URL
+      ? new RecoveryNoticeService(
+          new DrizzleRecoveryNoticeRepository(db),
+          recoveryMessaging,
+          subscriptions,
+          { kids: env.RECOVERY_KIDS_BILLING_URL, adult: env.RECOVERY_ADULT_BILLING_URL },
+        )
+      : null
   const recoveryAdmissionWorker = new RecoveryAdmissionWorker(
     recoveryAdmissions,
     recoveryAdmission,
@@ -280,6 +293,15 @@ export function createApplication(env: Env): Application {
     subscriptionsMyRead,
     () => new Date(),
     2 * env.EFI_TOTAL_RETRY_BUDGET_MS + 30_000,
+    recoveryNotices
+      ? {
+          cases: recoveryCases,
+          source: recoverySource,
+          notices: recoveryNotices,
+          policies: recoveryPolicies,
+          effectBudgetMs: env.EFI_TOTAL_RETRY_BUDGET_MS,
+        }
+      : undefined,
   )
   const subscriptionCancellationWorker = new SubscriptionCancellationWorker(
     subscriptions,
@@ -300,6 +322,24 @@ export function createApplication(env: Env): Application {
     webhookInbox,
     logger,
   )
+  const recoveryCaseWorker = recoveryNotices
+    ? new RecoveryCaseWorker(
+        recoveryPolicies,
+        recoveryCases,
+        new RecoveryCoordinatorService(
+          recoveryCases,
+          subscriptions,
+          payments,
+          subscriptionOperations,
+          recoverySource,
+          recoveryNotices,
+          cancelSubscription,
+          handleSubscriptionNotification,
+        ),
+        logger,
+        { intervalMs: 30_000, batchSize: 4, leaseMs: 360_000 },
+      )
+    : null
   // O handler de Cobranças resolve o token uma vez e despacha ciclos de assinatura
   // ao handler recorrente (5º argumento) — cobranças avulsas seguem o caminho normal.
   const handleBoletoNotification = new HandleBoletoNotificationService(
@@ -412,6 +452,7 @@ export function createApplication(env: Env): Application {
       subscriptionReconciliationWorker.start()
       subscriptionCancellationWorker.start()
       recoveryAdmissionWorker.start()
+      recoveryCaseWorker?.start()
       webhookWorker.start()
       if (env.ASYNC_CHARGE_CREATION) chargeWorker.start()
       // Assina os canais para acordar os workers na hora (fail-safe: cai no poll).
@@ -513,6 +554,7 @@ export function createApplication(env: Env): Application {
         subscriptionReconciliationWorker.stop(),
         subscriptionCancellationWorker.stop(),
         recoveryAdmissionWorker.stop(),
+        recoveryCaseWorker?.stop(),
         webhookWorker.stop(),
         outboxPoller.stop(),
       ])

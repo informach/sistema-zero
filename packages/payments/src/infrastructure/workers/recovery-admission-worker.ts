@@ -7,6 +7,7 @@ import { ConcurrencyConflictError } from '../persistence/drizzle/concurrency.err
 export class RecoveryAdmissionWorker {
   private timer: ReturnType<typeof setInterval> | null = null
   private inFlight: Promise<void> | null = null
+  private stopping = false
   constructor(
     private readonly admissions: RecoveryAdmissionRepository,
     private readonly service: Pick<RecoveryAdmissionService, 'process'>,
@@ -16,17 +17,20 @@ export class RecoveryAdmissionWorker {
   ) {}
   start(): void {
     if (this.timer) return
+    this.stopping = false
     void this.tick()
     this.timer = setInterval(() => {
       void this.tick()
     }, this.options.intervalMs)
   }
   async stop(): Promise<void> {
+    this.stopping = true
     if (this.timer) clearInterval(this.timer)
     this.timer = null
     await this.inFlight
   }
   tick(): Promise<void> {
+    if (this.stopping) return Promise.resolve()
     if (this.inFlight) return this.inFlight
     const work = this.runTick()
     this.inFlight = work
@@ -39,6 +43,7 @@ export class RecoveryAdmissionWorker {
     try {
       await this.admissions.discover({ now: this.clock(), limit: this.options.batchSize })
       for (let count = 0; count < this.options.batchSize; count++) {
+        if (this.stopping) return
         const [lease] = await this.admissions.claim({
           now: this.clock(),
           limit: 1,

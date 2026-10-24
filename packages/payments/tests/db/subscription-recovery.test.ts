@@ -3,10 +3,13 @@ import path from 'node:path'
 import { eq } from 'drizzle-orm'
 import { migrate } from 'drizzle-orm/postgres-js/migrator'
 import { CancelSubscriptionService } from '../../src/application/cancel-subscription/cancel-subscription.service'
+import { HandleSubscriptionNotificationService } from '../../src/application/handle-subscription-notification/handle-subscription-notification.service'
 import { buildCyclePayment } from '../../src/application/subscription/cycle-payment'
+import { RecoveryCoordinatorService } from '../../src/application/subscription-recovery/recovery-coordinator.service'
 import { RecoveryNoticeService } from '../../src/application/subscription-recovery/recovery-notice.service'
 import { RecoverySourceService } from '../../src/application/subscription-recovery/recovery-source.service'
 import { SubscriptionAggregate } from '../../src/domain/subscription/subscription.aggregate'
+import { createSubscriptionOperation } from '../../src/domain/subscription/subscription-operation'
 import { SubscriptionRecoveryCase } from '../../src/domain/subscription-recovery/recovery-case'
 import type {
   RecoveryMessageReceipt,
@@ -33,6 +36,8 @@ import {
 import { DrizzleSubscriptionRepository } from '../../src/infrastructure/persistence/drizzle/subscription.repository'
 import { DrizzleSubscriptionOperationRepository } from '../../src/infrastructure/persistence/drizzle/subscription-operation.repository'
 import { DrizzleSubscriptionRecoveryRepository } from '../../src/infrastructure/persistence/drizzle/subscription-recovery.repository'
+import { DrizzleWebhookInbox } from '../../src/infrastructure/persistence/drizzle/webhook-inbox.repository'
+import { RecoveryCaseWorker } from '../../src/infrastructure/workers/recovery-case-worker'
 import { FakePixGateway, silentLogger } from '../fakes/in-memory'
 import { prepareTestDatabase } from './test-database'
 
@@ -164,12 +169,12 @@ describe.skipIf(!databaseUrl)('Casos de regularização — PostgreSQL real', ()
     }
   }
 
-  async function d7Fixture(checkpoint = true) {
+  async function d7Fixture(checkpoint = true, day = 7) {
     const initial = await ownedCase()
     const communication = noticeHarness({ status: 'SENT' })
     await communication.service.ensure(initial, 'INITIAL')
     await repository.saveOwned(initial, now)
-    let time = new Date(now.getTime() + 7 * DAY_MS)
+    let time = new Date(now.getTime() + day * DAY_MS)
     communication.at(time)
     const [due] = await repository.claimDue({ now: time, leaseMs: 180_000, limit: 1 })
     if (!due) throw new Error('Missing QA D7 lease')
@@ -184,6 +189,7 @@ describe.skipIf(!databaseUrl)('Casos de regularização — PostgreSQL real', ()
       providerPaymentId: source.providerPaymentId,
       status: gateway.cardStatus,
       amountInCents: source.amountInCents,
+      ...(gateway.cardStatus === 'PAID' ? { paidAt: new Date(time) } : {}),
     })
     const provider = new RecoverySourceService(
       subscriptions,
@@ -194,6 +200,16 @@ describe.skipIf(!databaseUrl)('Casos de regularização — PostgreSQL real', ()
     )
     due.item.applySource(await provider.inspect(due.item.toSnapshot()), time)
     const lease = checkpoint ? await repository.checkpointOwned(due, time) : due
+    let policyEnabled = true
+    const policy = {
+      get: async () => ({
+        enabled: policyEnabled,
+        policy: INITIAL_RECOVERY_POLICY,
+        activatedAt: now,
+        updatedAt: now,
+        updatedBy: 'qa-policy',
+      }),
+    }
     const service = new CancelSubscriptionService(
       subscriptions,
       gateway,
@@ -206,6 +222,7 @@ describe.skipIf(!databaseUrl)('Casos de regularização — PostgreSQL real', ()
         cases: repository,
         source: provider,
         notices: communication.service,
+        policies: policy,
         effectBudgetMs: 30_000,
       },
     )
@@ -217,6 +234,28 @@ describe.skipIf(!databaseUrl)('Casos de regularização — PostgreSQL real', ()
       subscriptions,
       service,
       provider,
+      communication,
+      policy,
+      setPolicyEnabled: (enabled: boolean) => {
+        policyEnabled = enabled
+      },
+      coordinator: new RecoveryCoordinatorService(
+        repository,
+        subscriptions,
+        new DrizzlePaymentRepository(connection.db),
+        operations,
+        provider,
+        communication.service,
+        service,
+        new HandleSubscriptionNotificationService(
+          subscriptions,
+          new DrizzlePaymentRepository(connection.db),
+          gateway,
+          new DrizzleWebhookInbox(connection.db),
+          silentLogger,
+        ),
+        () => new Date(time),
+      ),
       clock: () => new Date(time),
       at: (value: Date) => {
         time = new Date(value)
@@ -224,6 +263,237 @@ describe.skipIf(!databaseUrl)('Casos de regularização — PostgreSQL real', ()
       },
     }
   }
+
+  test.each([
+    'kids',
+    'adult',
+  ] as const)('coordenador %s percorre D3/D6/D7 com mesmos prazos e confirmação real persistida', async (audience) => {
+    source = { ...source, audience }
+    const fixture = await d7Fixture(false, 3)
+    await fixture.coordinator.process(fixture.lease)
+    for (const day of [6, 7]) {
+      fixture.at(new Date(now.getTime() + day * DAY_MS))
+      const [lease] = await repository.claimDue({
+        now: fixture.clock(),
+        leaseMs: 360_000,
+        limit: 1,
+      })
+      if (!lease) throw new Error('Missing QA scheduled case')
+      await fixture.coordinator.process(lease)
+    }
+    expect((await repository.findById(fixture.lease.item.id))?.toSnapshot()).toMatchObject({
+      state: 'CANCELED',
+      reason: 'UNPAID_AFTER_NOTICE',
+      deadlineAt: new Date(now.getTime() + 7 * DAY_MS),
+    })
+    expect(fixture.communication.requests.map((request) => request.templateKey)).toEqual([
+      `recovery-${audience}-initial`,
+      `recovery-${audience}-reminder`,
+      `recovery-${audience}-reminder`,
+      `recovery-${audience}-canceled`,
+    ])
+    expect(fixture.gateway.canceledSubscriptionIds).toEqual([source.providerSubscriptionId])
+    expect((await fixture.subscriptions.findById(source.subscriptionId))?.status).toBe('CANCELED')
+  })
+
+  test('coordenador registra pagamento confirmado uma vez, fecha caso e não cancela', async () => {
+    const fixture = await d7Fixture(false, 3)
+    fixture.gateway.cardStatus = 'PAID'
+    await fixture.coordinator.process(fixture.lease)
+    expect((await repository.findById(fixture.lease.item.id))?.state).toBe('RECOVERED')
+    expect(
+      (await new DrizzlePaymentRepository(connection.db).findById(source.paymentId))?.status,
+    ).toBe('PAID')
+    expect(fixture.gateway.canceledSubscriptionIds).toHaveLength(0)
+    expect(fixture.communication.requests.map((request) => request.templateKey)).toEqual([
+      'recovery-kids-initial',
+      'recovery-kids-recovered',
+    ])
+    expect(await failureOf(fixture.coordinator.process(fixture.lease))).toBeInstanceOf(Error)
+    const events =
+      await connection.sql`select id from payments.outbox where aggregate_id=${source.paymentId} and event_name='payment.paid'`
+    expect(events).toHaveLength(1)
+  })
+
+  test('pagamento na janela D7 fecha recuperação e retira apenas o pedido automático não executado', async () => {
+    const fixture = await d7Fixture(false)
+    fixture.gateway.getCardCharge = async () => {
+      const active = await fixture.operations.findActiveForSubscription(
+        source.subscriptionId,
+        fixture.clock(),
+      )
+      if (active?.kind === 'CANCEL') fixture.gateway.cardStatus = 'PAID'
+      return {
+        providerPaymentId: source.providerPaymentId,
+        amountInCents: source.amountInCents,
+        status: fixture.gateway.cardStatus,
+        paidAt: fixture.clock(),
+      }
+    }
+    await fixture.coordinator.process(fixture.lease)
+    expect(fixture.gateway.canceledSubscriptionIds).toHaveLength(0)
+    expect((await repository.findById(fixture.lease.item.id))?.state).toBe('RECOVERED')
+    const subscription = await fixture.subscriptions.findById(source.subscriptionId)
+    expect(subscription?.cancelRequestedAt).toBeNull()
+    expect(subscription?.cancellationRecord).toMatchObject({
+      origin: 'NONPAYMENT',
+      withdrawalReason: 'RECOVERED',
+      confirmedAt: null,
+    })
+    expect(subscription?.status).toBe('ACTIVE')
+    expect(fixture.communication.requests.map((request) => request.templateKey)).toEqual([
+      'recovery-kids-initial',
+      'recovery-kids-recovered',
+    ])
+  })
+
+  test('cancelamento solicitado pelo cliente interrompe novos avisos e mantém sua intenção', async () => {
+    const fixture = await d7Fixture(false, 3)
+    const subscription = await fixture.subscriptions.findById(source.subscriptionId)
+    if (!subscription) throw new Error('Missing QA subscription')
+    subscription.requestCancellation({ origin: 'CUSTOMER', actorId: 'qa-owner' }, fixture.clock())
+    await fixture.subscriptions.save(subscription)
+    await fixture.coordinator.process(fixture.lease)
+    expect(fixture.communication.requests).toHaveLength(1)
+    expect(fixture.gateway.canceledSubscriptionIds).toHaveLength(0)
+    expect(
+      (await fixture.subscriptions.findById(source.subscriptionId))?.cancellationRecord?.origin,
+    ).toBe('CUSTOMER')
+  })
+
+  test('pagamento retira solicitação automática e descarta CANCEL READY só depois de confirmar quitação', async () => {
+    const fixture = await d7Fixture(false, 3)
+    const subscription = await fixture.subscriptions.findById(source.subscriptionId)
+    if (!subscription) throw new Error('Missing QA subscription')
+    subscription.requestCancellation(
+      {
+        origin: 'NONPAYMENT',
+        actorId: 'system:subscription-recovery',
+        recoveryCaseId: fixture.lease.item.id,
+      },
+      fixture.clock(),
+    )
+    await fixture.subscriptions.save(subscription)
+    const operation = createSubscriptionOperation({
+      subscriptionId: source.subscriptionId,
+      consumerId: source.consumerId,
+      providerSubscriptionId: source.providerSubscriptionId,
+      kind: 'CANCEL',
+      now: fixture.clock(),
+    })
+    await fixture.operations.create(operation)
+    await fixture.operations.rejectWithdrawnCancellation(
+      source.subscriptionId,
+      fixture.lease.item.id,
+      fixture.clock(),
+    )
+    expect((await fixture.operations.findById(operation.id))?.state).toBe('READY')
+    fixture.gateway.cardStatus = 'PAID'
+    await fixture.coordinator.process(fixture.lease)
+    expect((await fixture.operations.findById(operation.id))?.state).toBe('REJECTED')
+    expect(
+      (await fixture.subscriptions.findById(source.subscriptionId))?.cancelRequestedAt,
+    ).toBeNull()
+    expect((await repository.findById(fixture.lease.item.id))?.state).toBe('RECOVERED')
+  })
+
+  test('pagamento com CANCEL em execução permanece em revisão, sem liberar outra intenção financeira', async () => {
+    const fixture = await d7Fixture(false, 3)
+    const subscription = await fixture.subscriptions.findById(source.subscriptionId)
+    if (!subscription) throw new Error('Missing QA subscription')
+    subscription.requestCancellation(
+      {
+        origin: 'NONPAYMENT',
+        actorId: 'system:subscription-recovery',
+        recoveryCaseId: fixture.lease.item.id,
+      },
+      fixture.clock(),
+    )
+    await fixture.subscriptions.save(subscription)
+    const operation = createSubscriptionOperation({
+      subscriptionId: source.subscriptionId,
+      consumerId: source.consumerId,
+      providerSubscriptionId: source.providerSubscriptionId,
+      kind: 'CANCEL',
+      now: fixture.clock(),
+    })
+    await fixture.operations.create(operation)
+    await fixture.operations.start(operation.id, source.subscriptionId, fixture.clock())
+    fixture.gateway.cardStatus = 'PAID'
+    await fixture.coordinator.process(fixture.lease)
+    expect((await repository.findById(fixture.lease.item.id))?.toSnapshot()).toMatchObject({
+      state: 'MANUAL_REVIEW',
+      reason: 'PAYMENT_UNCERTAIN',
+    })
+    expect((await fixture.operations.findById(operation.id))?.state).toBe('EXECUTING')
+    expect(
+      (await fixture.subscriptions.findById(source.subscriptionId))?.cancelRequestedAt,
+    ).not.toBeNull()
+    expect(fixture.communication.requests).toHaveLength(1)
+  })
+
+  test('política pausada durante conferência retira autorização D7 antes de enviar PUT', async () => {
+    const fixture = await d7Fixture(false)
+    fixture.gateway.getCardCharge = async () => {
+      if (
+        (await fixture.operations.findActiveForSubscription(source.subscriptionId, fixture.clock()))
+          ?.kind === 'CANCEL'
+      )
+        fixture.setPolicyEnabled(false)
+      return {
+        providerPaymentId: source.providerPaymentId,
+        amountInCents: source.amountInCents,
+        status: 'FAILED',
+      }
+    }
+    await fixture.coordinator.process(fixture.lease)
+    expect(fixture.gateway.canceledSubscriptionIds).toHaveLength(0)
+    expect((await repository.findById(fixture.lease.item.id))?.state).toBe('CANCEL_PENDING')
+  })
+
+  test('worker respeita pausa e stop drena a rodada sem sobrepor ticks', async () => {
+    const fixture = await d7Fixture(false, 3)
+    await repository.saveOwned(fixture.lease, fixture.clock())
+    let release = () => {}
+    let entered = () => {}
+    const ready = new Promise<void>((resolve) => {
+      entered = resolve
+    })
+    const barrier = new Promise<void>((resolve) => {
+      release = resolve
+    })
+    const worker = new RecoveryCaseWorker(
+      fixture.policy,
+      repository,
+      {
+        process: async (lease) => {
+          entered()
+          await barrier
+          await fixture.coordinator.process(lease)
+        },
+      },
+      silentLogger,
+      { intervalMs: 30_000, batchSize: 4, leaseMs: 360_000 },
+      fixture.clock,
+    )
+    fixture.setPolicyEnabled(false)
+    await worker.tick()
+    expect(fixture.communication.requests).toHaveLength(1)
+    fixture.setPolicyEnabled(true)
+    const first = worker.tick()
+    expect(worker.tick()).toBe(first)
+    await ready
+    let stopped = false
+    const stop = worker.stop().then(() => {
+      stopped = true
+    })
+    await Promise.resolve()
+    expect(stopped).toBe(false)
+    release()
+    await stop
+    expect(stopped).toBe(true)
+    expect(fixture.communication.requests).toHaveLength(2)
+  })
 
   test('D7 persiste decisão antes do efeito e confirma cancelamento com origem/caso sem ampliar lease', async () => {
     const fixture = await d7Fixture()

@@ -77,6 +77,19 @@ export class InMemorySubscriptionOperationRepository implements SubscriptionOper
           completedAt: now,
         })
   }
+  async rejectWithdrawnCancellation(
+    subscriptionId: string,
+    _caseId: string,
+    now: Date,
+  ): Promise<void> {
+    for (const item of this.items.values())
+      if (
+        item.subscriptionId === subscriptionId &&
+        item.kind === 'CANCEL' &&
+        item.state === 'READY'
+      )
+        Object.assign(item, { state: 'REJECTED', result: 'RECOVERY_PAID', completedAt: now })
+  }
   async resumeCancellation(
     id: string,
     subscriptionId: string,

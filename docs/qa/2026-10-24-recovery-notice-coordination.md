@@ -1,7 +1,7 @@
 # Coordenação de avisos de regularização — 24/10/2026
 
-Lote posterior a `16bd9b966`. O serviço de coordenação de avisos está implementado
-e testado, mas ainda não ligado a um worker de execução D7 em produção. Templates
+Lotes posteriores a `16bd9b966`. O coordenador e o worker D7 estão ligados na
+composição da branch financeira e testados localmente; não implantados. Templates
 foram acrescentados ao seed versionado; o seed não foi executado em ambientes reais.
 
 ## Comportamentos
@@ -74,6 +74,37 @@ cenários D7 com repositórios reais: confirmação, decisão não gravada/lease
 pagamento na janela anterior ao PUT e pedido humano concorrente. Transporte Efí
 é simulado nesses testes; não há qualificação de sandbox ou implantação.
 
-O coordenador/worker de casos ainda precisa ser ligado à composição. Permanecem
-pendentes regularização/período, operações/Admin, configuração, integração e os
-reviews globais. Nenhuma política ou assinatura real foi ativada por este lote.
+A integração do coordenador/worker foi verificada no complemento seguinte. Nenhuma
+política ou assinatura real foi ativada por esses testes.
+
+## Complemento mais recente — coordenador e worker integrados
+
+O passo acima foi concluído na composição: worker serial reivindica uma lease
+somente quando o caso vai iniciar, consulta a política entre casos e drena a execução
+ativa ao parar, sem iniciar outro caso durante shutdown. Ausência da configuração
+de Messaging impede instanciar esse worker; a política continua desativada por padrão.
+A autorização D7 também consulta a política novamente antes do PUT, protegendo
+contra uma pausa administrativa durante as consultas anteriores.
+
+O coordenador consulta a fonte, ingere o ciclo pago pelo handler canônico e confere
+o pagamento persistido antes de comunicar recuperação. Se faltar confirmação,
+reagenda ou encaminha à revisão, com janela de indisponibilidade limitada. Novo
+pedido humano interrompe os avisos. Lembrete mais recente retira intenções antigas
+ainda pendentes após indisponibilidade, conservando a agenda original.
+
+Após quitação, somente a solicitação automática do mesmo caso pode ser retirada;
+CANCEL READY é rejeitado apenas depois da retirada auditada. CANCEL em execução
+ou incerto com pagamento novo mantém revisão e não libera outra ação financeira.
+Encerramentos confirmados sincronizam assinatura/caso e usam confirmação própria;
+falhas de comunicação permanecem como trabalho separado do caso financeiro fechado.
+
+Verificação da composição: **494 testes Payments, 0 falhas, 1412 asserções**, 39
+arquivos com PostgreSQL real, nenhum skip; tipos completos exit 0. Nove cenários
+novos cobrem Kids/Adultos D3/D6/D7, quitação e reentrega idempotente, chegada de
+pagamento entre decisão e PUT, solicitação humana, pausa durante a execução, parada
+do worker e distinção CANCEL READY/EXECUTING. Transporte Efí e Messaging é simulado
+nos testes do coordenador; as transações, leases, auditoria e outbox são reais.
+
+Falta concluir pagamento autorizado e período original de acesso, operação/Admin,
+corte do dunning antigo, configuração/seeds, sandbox/UI e reviews globais. Esta
+composição não autoriza afirmar que a entrega financeira completa está pronta.

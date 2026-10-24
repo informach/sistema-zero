@@ -136,6 +136,24 @@ export class DrizzleSubscriptionOperationRepository implements SubscriptionOpera
       )
   }
 
+  async rejectWithdrawnCancellation(
+    subscriptionId: string,
+    caseId: string,
+    now: Date,
+  ): Promise<void> {
+    await this.db
+      .update(subscriptionOperations)
+      .set({ state: 'REJECTED', result: 'RECOVERY_PAID', completedAt: now })
+      .where(
+        and(
+          eq(subscriptionOperations.subscriptionId, subscriptionId),
+          eq(subscriptionOperations.kind, 'CANCEL'),
+          eq(subscriptionOperations.state, 'READY'),
+          sql`exists (select 1 from ${subscriptions} where ${subscriptions.id} = ${subscriptionOperations.subscriptionId} and ${subscriptions.consumerId} = ${subscriptionOperations.consumerId} and ${subscriptions.cancelRequestedAt} is null and ${subscriptions.cancellationRecord}->>'origin' = 'NONPAYMENT' and ${subscriptions.cancellationRecord}->>'recoveryCaseId' = ${caseId} and ${subscriptions.cancellationRecord}->>'withdrawnAt' is not null)`,
+        ),
+      )
+  }
+
   async resumeCancellation(
     id: string,
     subscriptionId: string,

@@ -107,9 +107,23 @@ export class RecoveryNoticeService {
 
   /** Also covers an accepted enqueue whose response never reached Payments. */
   async withdrawWarnings(lease: RecoveryLease): Promise<boolean> {
+    return this.withdraw(
+      lease,
+      (notice) => notice.purpose === 'INITIAL' || notice.purpose === 'REMINDER',
+    )
+  }
+
+  async withdrawSupersededReminders(lease: RecoveryLease, day: number): Promise<boolean> {
+    return this.withdraw(lease, (notice) => notice.purpose === 'REMINDER' && notice.day < day)
+  }
+
+  private async withdraw(
+    lease: RecoveryLease,
+    matches: (notice: RecoveryNoticeSnapshot) => boolean,
+  ): Promise<boolean> {
     let complete = true
     for (const notice of await this.notices.listForCase(lease.item.id)) {
-      if (notice.purpose !== 'INITIAL' && notice.purpose !== 'REMINDER') continue
+      if (!matches(notice)) continue
       if (notice.receipt && terminal.has(notice.receipt.status)) continue
       if (notice.receipt && arrived.has(notice.receipt.status)) continue
       if (notice.attemptCount >= 10) {

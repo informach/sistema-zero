@@ -310,6 +310,21 @@ export class SubscriptionRecoveryCase extends AggregateRoot<string> {
     this.transition('MANUAL_REVIEW', 'CONTACT_FAILED', now)
   }
 
+  sourceDiverged(now: Date): void {
+    if (!validDate(now) || now < this.data.openedAt) throw new ValidationError('Relógio inválido')
+    if (['RECOVERED', 'CANCELED', 'MANUAL_REVIEW'].includes(this.data.state)) return
+    this.transition('MANUAL_REVIEW', 'PROVIDER_DIVERGENCE', now)
+  }
+
+  sourceUnavailable(now: Date): void {
+    if (!validDate(now) || now < this.data.openedAt) throw new ValidationError('Relógio inválido')
+    if (['RECOVERED', 'CANCELED', 'MANUAL_REVIEW'].includes(this.data.state)) return
+    const lastKnown = this.data.lastProviderCheckAt ?? this.data.openedAt
+    if (now.getTime() - lastKnown.getTime() >= DAY_MS)
+      this.transition('MANUAL_REVIEW', 'PAYMENT_UNCERTAIN', now)
+    else this.defer(now)
+  }
+
   /** Persist a bounded next attempt without changing the announced deadline. */
   defer(now: Date, delayMs = 120_000): void {
     if (

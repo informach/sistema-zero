@@ -9,6 +9,7 @@ import {
   createSubscriptionOperation,
   type SubscriptionOperationRepository,
 } from '../../domain/subscription/subscription-operation'
+import type { RecoveryPolicyRepository } from '../../domain/subscription-recovery/recovery-policy-repository.port'
 import type {
   RecoveryLease,
   SubscriptionRecoveryRepository,
@@ -27,6 +28,7 @@ interface RecoveryCancellationAuthority {
   cases: Pick<SubscriptionRecoveryRepository, 'assertOwned'>
   source: Pick<RecoverySourceService, 'inspect'>
   notices: Pick<RecoveryNoticeService, 'initialHealthy'>
+  policies: Pick<RecoveryPolicyRepository, 'get'>
   effectBudgetMs: number
 }
 
@@ -99,6 +101,7 @@ export class CancelSubscriptionService {
       this.clock() < item.deadlineAt
     )
       throw new SubscriptionCancellationPendingError()
+    if (!(await authority.policies.get())?.enabled) throw new SubscriptionCancellationPendingError()
     await authority.cases.assertOwned(lease, this.clock(), authority.effectBudgetMs + 30_000)
     if (!(await authority.notices.initialHealthy(lease)))
       throw new SubscriptionCancellationPendingError()
@@ -122,6 +125,7 @@ export class CancelSubscriptionService {
     )
       throw new SubscriptionCancellationPendingError()
     await authority.cases.assertOwned(lease, this.clock(), authority.effectBudgetMs + 30_000)
+    if (!(await authority.policies.get())?.enabled) throw new SubscriptionCancellationPendingError()
   }
 
   /**
