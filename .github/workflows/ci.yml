@@ -786,54 +786,15 @@ jobs:
             echo "  $s → deployment $ID"
           }
 
-          # espera os serviços pedidos chegarem a estado terminal (healthcheck gateia o SUCCESS)
-          # a API às vezes devolve corpo não-JSON transitório num poll — conta como
-          # poll perdido (segue tentando) e só aborta após 5 rounds ruins SEGUIDOS
+          # Uma consulta readonly por round para toda a onda, com backoff da API.
+          # Os IDs vêm somente dos ACKs; o monitor nunca dispara/repete deployments.
           esperar() {
-            local deadline=$((SECONDS + 60 * 60))
-            local i=0 REMAINING HTTP_TIMEOUT
-            FAIL=0; PENDING=1; BADPOLLS=0
-            while [ "$SECONDS" -lt "$deadline" ]; do
-              i=$((i+1))
-              REMAINING=$((deadline - SECONDS))
-              sleep "$((REMAINING < 20 ? REMAINING : 20))"
-              if [ "$SECONDS" -ge "$deadline" ]; then PENDING=1; break; fi
-              PENDING=0; LINE=""; ROUND_OK=1
-              for s in "$@"; do
-                REMAINING=$((deadline - SECONDS))
-                if [ "$REMAINING" -le 0 ]; then PENDING=1; break; fi
-                HTTP_TIMEOUT=$((REMAINING < 15 ? REMAINING : 15))
-                Q=$(jq -nc --arg id "${DEP[$s]}" '{query:"query($id:String!){deployment(id:$id){status}}",variables:{id:$id}}')
-                RESP=$(gql "$Q" "$HTTP_TIMEOUT") || RESP=""
-                if [ "$SECONDS" -ge "$deadline" ]; then PENDING=1; break; fi
-                if ! echo "$RESP" | jq -e . >/dev/null 2>&1; then
-                  echo "  poll de $s devolveu corpo não-JSON: $(echo "$RESP" | head -c 120)"
-                  ROUND_OK=0; PENDING=1; LINE="$LINE $s=?"
-                  continue
-                fi
-                ST=$(echo "$RESP" | jq -r '.data.deployment.status // "?"')
-                LINE="$LINE $s=$ST"
-                case "$ST" in
-                  SUCCESS) ;;
-                  FAILED|CRASHED|REMOVED) FAIL=1 ;;
-                  *) PENDING=1 ;;
-                esac
-              done
-              if [ "$ROUND_OK" -eq 1 ]; then
-                BADPOLLS=0
-              else
-                BADPOLLS=$((BADPOLLS+1))
-                if [ "$BADPOLLS" -ge 5 ]; then
-                  echo "::error::API do Railway sem resposta válida em $BADPOLLS polls consecutivos"
-                  exit 1
-                fi
-              fi
-              echo "[$i]$LINE"
-              [ "$PENDING" -eq 0 ] && break
+            local entries='[]' s
+            for s in "$@"; do
+              entries=$(jq -c --arg service "$s" --arg id "${DEP[$s]}" --arg serviceId "${SVC_ID[$s]}" \
+                '. + [{service:$service,id:$id,serviceId:$serviceId}]' <<< "$entries")
             done
-            # FAIL/PENDING são conferidos pelo caller. Um predicado falso no
-            # último round não pode abortar sob errexit antes desse diagnóstico.
-            return 0
+            RAILWAY_DEPLOYMENTS="$entries" node scripts/ci/staging-deploy-monitor.mjs "$GITHUB_SHA"
           }
 
           # O wrapper é a barreira canônica: migrations/V0 -> Auth novo e antigos
@@ -849,5 +810,4 @@ jobs:
           if [ "${#DEP[@]}" -eq 0 ]; then echo "onda canônica concluída; nenhum outro serviço solicitado"; exit 0; fi
 
           esperar "${!DEP[@]}"
-          if [ "$FAIL" -eq 1 ] || [ "$PENDING" -eq 1 ]; then echo "::error::deploy do staging não convergiu"; exit 1; fi
           echo "staging atualizado ✅"
