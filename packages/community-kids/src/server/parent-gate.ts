@@ -29,6 +29,16 @@ export function requireParentGateAccountOnly<Ctx>(handler: RouteHandler<Ctx>): R
     const user = await getSession()
     if (user?.kids?.kind !== 'parent')
       return NextResponse.json({ error: { code: 'PARENT_SESSION_REQUIRED' } }, { status: 403 })
+    if (user.act)
+      return NextResponse.json(
+        {
+          error: {
+            code: 'IMPERSONATION_FORBIDDEN',
+            message: 'Esta ação exige a própria conta do responsável, sem sessão de suporte.',
+          },
+        },
+        { status: 403 },
+      )
     return handler(req, ctx)
   }
 }

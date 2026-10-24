@@ -1,5 +1,7 @@
 'use client'
 
+import { SubscriptionCardUpdate } from '@sistemazero/member-shell/components/billing/subscription-card-update'
+
 import { comunidadeAdultoContinuarUrl } from '@sistemazero/member-shell/lib/adult-links'
 import { Button } from '@sistemazero/ui/button'
 import { Dialog } from '@sistemazero/ui/dialog'
@@ -97,8 +99,19 @@ export function SubscriptionsSection() {
       toast.success('Assinatura cancelada. Seu acesso continua até o fim do período já pago.')
       setConfirming(null)
       await load()
-    } catch {
-      toast.error('Não foi possível cancelar. Tente novamente.')
+    } catch (error) {
+      const pending =
+        error &&
+        typeof error === 'object' &&
+        'code' in error &&
+        error.code === 'SUBSCRIPTION_CANCELLATION_PENDING'
+      toast.error(
+        pending
+          ? 'Pedido de cancelamento recebido. Estamos aguardando a confirmação da operadora.'
+          : 'Não foi possível confirmar o cancelamento. Confira a situação da assinatura.',
+      )
+      setConfirming(null)
+      await load()
     } finally {
       setCanceling(false)
     }
@@ -136,7 +149,16 @@ export function SubscriptionsSection() {
                 </p>
               </div>
               <SubscriptionStatusChip status={sub.status} />
-              {sub.status === 'ACTIVE' ? (
+              {sub.cancelRequestedAt && sub.status === 'ACTIVE' ? (
+                <p role="status" className="text-sm text-muted-foreground">
+                  Cancelamento solicitado. Aguardando confirmação da operadora; seu período já pago
+                  continua preservado.
+                </p>
+              ) : null}
+              {sub.status === 'ACTIVE' && !sub.cancelRequestedAt ? (
+                <SubscriptionCardUpdate subscriptionId={sub.id} onUpdated={() => void load()} />
+              ) : null}
+              {sub.status === 'ACTIVE' && !sub.cancelRequestedAt ? (
                 <button
                   type="button"
                   className="sz-btn-outline sz-btn-sm"

@@ -20,6 +20,19 @@ export class InMemorySubscriptionOperationRepository implements SubscriptionOper
     const operation = this.items.get(id)
     return operation ? structuredClone(operation) : null
   }
+  async findActiveForSubscription(
+    subscriptionId: string,
+    now: Date,
+  ): Promise<SubscriptionOperation | null> {
+    const operation = [...this.items.values()].find(
+      (item) =>
+        item.subscriptionId === subscriptionId &&
+        ['READY', 'EXECUTING', 'UNKNOWN'].includes(item.state) &&
+        (item.state !== 'READY' || item.expiresAt > now),
+    )
+    return operation ? structuredClone(operation) : null
+  }
+
   async start(
     id: string,
     subscriptionId: string,

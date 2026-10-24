@@ -83,6 +83,17 @@ export class UpdateSubscriptionCardService {
     return toView(await this.ownedOperation(subscriptionId, id))
   }
 
+  async getActiveIntent(
+    email: string,
+    subscriptionId: string,
+  ): Promise<{ intent: CardUpdateIntentView | null }> {
+    await this.ownedSubscription(email, subscriptionId)
+    const operation = await this.operations.findActiveForSubscription(subscriptionId, this.clock())
+    if (operation && operation.kind !== 'CARD_UPDATE')
+      throw new SubscriptionOperationInProgressError()
+    return { intent: operation ? toView(operation) : null }
+  }
+
   async execute(
     email: string,
     subscriptionId: string,

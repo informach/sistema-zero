@@ -1,5 +1,7 @@
 'use client'
 
+import { SubscriptionCardUpdate } from '@sistemazero/member-shell/components/billing/subscription-card-update'
+
 import {
   comebackSubscriptionId,
   isKidsComunidadeSubscription,
@@ -161,8 +163,19 @@ export function ParentSubscriptions() {
       toast.success('Assinatura cancelada. O acesso continua até o fim do período já pago.')
       setConfirming(null)
       await load()
-    } catch {
-      toast.error('Não foi possível cancelar. Tente novamente.')
+    } catch (error) {
+      const pending =
+        error &&
+        typeof error === 'object' &&
+        'code' in error &&
+        error.code === 'SUBSCRIPTION_CANCELLATION_PENDING'
+      toast.error(
+        pending
+          ? 'Pedido de cancelamento recebido. Estamos aguardando a confirmação da operadora.'
+          : 'Não foi possível confirmar o cancelamento. Confira a situação da assinatura.',
+      )
+      setConfirming(null)
+      await load()
     } finally {
       setCanceling(false)
     }
@@ -214,7 +227,20 @@ export function ParentSubscriptions() {
                 O acesso continua até o fim do período já pago.
               </p>
             ) : null}
-            {active ? (
+            {subscription.cancelRequestedAt && active ? (
+              <p role="status" className="text-sm text-muted-foreground">
+                Cancelamento solicitado. Aguardando confirmação da operadora; seu período já pago
+                continua preservado.
+              </p>
+            ) : null}
+            {active && !subscription.cancelRequestedAt ? (
+              <SubscriptionCardUpdate
+                subscriptionId={subscription.id}
+                onUpdated={() => void load()}
+                className="self-start"
+              />
+            ) : null}
+            {active && !subscription.cancelRequestedAt ? (
               <button
                 type="button"
                 className="min-h-11 self-start font-bold text-destructive text-sm underline-offset-4 hover:underline"

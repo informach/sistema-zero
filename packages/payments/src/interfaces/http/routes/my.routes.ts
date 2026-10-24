@@ -1,3 +1,4 @@
+import { ForbiddenError } from '@sistemazero/core/http'
 import { Elysia, t } from 'elysia'
 import { z } from 'zod'
 import type { CancelSubscriptionService } from '../../../application/cancel-subscription/cancel-subscription.service'
@@ -44,6 +45,15 @@ export interface MyRoutesDeps {
  * TODA consulta é escopada pelo e-mail — id alheio → 404 (anti-IDOR).
  */
 export function myRoutes(deps: MyRoutesDeps) {
+  const cardBuyer = (headers: Record<string, string | undefined>) => {
+    const buyer = requireBuyer(headers, deps.internalToken)
+    if (headers['x-auth-account-id'] || headers['x-auth-impersonator-id']) {
+      throw new ForbiddenError(
+        'Entre com a própria conta do responsável ou titular para alterar o cartão.',
+      )
+    }
+    return buyer
+  }
   return (
     new Elysia({ prefix: '/payments/my' })
       .get(
@@ -65,17 +75,25 @@ export function myRoutes(deps: MyRoutesDeps) {
         return deps.listMySubscriptions.execute(email)
       })
       .get('/card-config', ({ headers }) => {
-        requireBuyer(headers, deps.internalToken)
+        cardBuyer(headers)
         return {
           available: Boolean(deps.cardConfig.accountIdentifier),
           accountIdentifier: deps.cardConfig.accountIdentifier ?? null,
           environment: deps.cardConfig.environment,
         }
       })
+      .get(
+        '/subscriptions/:id/card-intents',
+        async ({ params, headers }) => {
+          const { email } = cardBuyer(headers)
+          return deps.updateSubscriptionCard.getActiveIntent(email, params.id)
+        },
+        { params: AdminIdParam },
+      )
       .post(
         '/subscriptions/:id/card-intents',
         async ({ params, headers }) => {
-          const { email } = requireBuyer(headers, deps.internalToken)
+          const { email } = cardBuyer(headers)
           return deps.updateSubscriptionCard.createIntent(email, params.id)
         },
         { params: AdminIdParam, body: EmptyCardIntentBody },
@@ -83,7 +101,7 @@ export function myRoutes(deps: MyRoutesDeps) {
       .get(
         '/subscriptions/:id/card-intents/:intentId',
         async ({ params, headers }) => {
-          const { email } = requireBuyer(headers, deps.internalToken)
+          const { email } = cardBuyer(headers)
           return deps.updateSubscriptionCard.getIntent(email, params.id, params.intentId)
         },
         {
@@ -96,7 +114,7 @@ export function myRoutes(deps: MyRoutesDeps) {
       .post(
         '/subscriptions/:id/card-intents/:intentId',
         async ({ params, headers, body }) => {
-          const { email } = requireBuyer(headers, deps.internalToken)
+          const { email } = cardBuyer(headers)
           return deps.updateSubscriptionCard.execute(email, params.id, params.intentId, body)
         },
         {

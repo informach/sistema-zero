@@ -3,8 +3,8 @@
 // browser) e pelos handlers `startPix`/`startCard`/`startBoleto` (validação no
 // servidor). Espelha o DTO do payments (`AddressSchema`, customer, card).
 
+import { CARD_BRANDS, isValidCpf, luhnCheck } from '@sistemazero/ui/credit-card'
 import { z } from 'zod'
-import { CARD_BRANDS, luhnCheck } from './card-utils'
 import { ContactSchema } from './contact-schema'
 
 // Reexporta o achatador de erros do contato (mesma utilidade nos forms de checkout).
@@ -23,20 +23,7 @@ export function pathErrors(error: z.ZodError): Record<string, string> {
   return out
 }
 
-/** Valida CPF (dígitos verificadores). Portado de `payments/.../value-objects/document.ts`. */
-export function isValidCpf(raw: string): boolean {
-  const cpf = (raw ?? '').replace(/\D/g, '')
-  if (cpf.length !== 11) return false
-  if (/^(\d)\1{10}$/.test(cpf)) return false
-  const nums = cpf.split('').map(Number)
-  const calc = (len: number): number => {
-    let sum = 0
-    for (let i = 0; i < len; i++) sum += nums[i]! * (len + 1 - i)
-    const rest = (sum * 10) % 11
-    return rest === 10 ? 0 : rest
-  }
-  return calc(9) === nums[9]! && calc(10) === nums[10]!
-}
+export { isValidCpf } from '@sistemazero/ui/credit-card'
 
 export const CpfSchema = z
   .string()

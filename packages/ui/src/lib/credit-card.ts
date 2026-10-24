@@ -1,4 +1,4 @@
-// Utilitários de cartão de crédito — client-safe: funções puras, sem env/server
+// Campos de cartão compartilhados — client-safe: funções puras, sem env/server
 // e sem importar `payment-token-efi` (testável com bun:test sem o SDK do browser).
 // Bandeiras/limites seguem a doc oficial da Efí (payment-token-efi): visa,
 // mastercard, elo e hipercard têm 16 dígitos e CVV de 3; amex tem 15 (grupos
@@ -88,6 +88,20 @@ export function maskCpf(v: string): string {
   if (d.length > 6) return `${d.slice(0, 3)}.${d.slice(3, 6)}.${d.slice(6)}`
   if (d.length > 3) return `${d.slice(0, 3)}.${d.slice(3)}`
   return d
+}
+
+/** CPF do titular, compartilhado pelos formulários de checkout e assinatura. */
+export function isValidCpf(raw: string): boolean {
+  const cpf = raw.replace(/\D/g, '')
+  if (!/^\d{11}$/.test(cpf) || /^(\d)\1{10}$/.test(cpf)) return false
+  const digits = [...cpf].map(Number)
+  const check = (length: number) => {
+    let sum = 0
+    for (let index = 0; index < length; index++) sum += digits[index]! * (length + 1 - index)
+    const rest = (sum * 10) % 11
+    return rest === 10 ? 0 : rest
+  }
+  return check(9) === digits[9] && check(10) === digits[10]
 }
 
 /** Nome de exibição da bandeira (pt-BR). */

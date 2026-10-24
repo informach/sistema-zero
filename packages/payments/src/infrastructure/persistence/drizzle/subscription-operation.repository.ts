@@ -1,4 +1,4 @@
-import { and, eq, gt, lte, or, sql } from 'drizzle-orm'
+import { and, desc, eq, gt, inArray, lte, ne, or, sql } from 'drizzle-orm'
 import type {
   SubscriptionOperation,
   SubscriptionOperationRepository,
@@ -40,6 +40,25 @@ export class DrizzleSubscriptionOperationRepository implements SubscriptionOpera
       .select()
       .from(subscriptionOperations)
       .where(eq(subscriptionOperations.id, id))
+      .limit(1)
+    return row ? restore(row) : null
+  }
+
+  async findActiveForSubscription(
+    subscriptionId: string,
+    now: Date,
+  ): Promise<SubscriptionOperation | null> {
+    const [row] = await this.db
+      .select()
+      .from(subscriptionOperations)
+      .where(
+        and(
+          eq(subscriptionOperations.subscriptionId, subscriptionId),
+          inArray(subscriptionOperations.state, ['READY', 'EXECUTING', 'UNKNOWN']),
+          or(ne(subscriptionOperations.state, 'READY'), gt(subscriptionOperations.expiresAt, now)),
+        ),
+      )
+      .orderBy(desc(subscriptionOperations.createdAt))
       .limit(1)
     return row ? restore(row) : null
   }

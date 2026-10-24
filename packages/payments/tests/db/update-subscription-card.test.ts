@@ -121,6 +121,34 @@ describe.skipIf(!databaseUrl)('Atualização preventiva de cartão — aplicaç�
     expect((await service.getIntent(email, id, intent.id)).state).toBe('SUCCEEDED')
   })
 
+  test('reabrir recupera somente a intenção vigente do titular, sem criar novo efeito', async () => {
+    expect(await service.getActiveIntent(email, id)).toEqual({ intent: null })
+    const intent = await service.createIntent(email, id)
+    expect((await service.getActiveIntent(email, id)).intent?.id).toBe(intent.id)
+    expect(await failureOf(service.getActiveIntent('another@example.test', id))).toBeInstanceOf(
+      Error,
+    )
+    now = new Date(intent.expiresAt)
+    expect(await service.getActiveIntent(email, id)).toEqual({ intent: null })
+    const replacement = await service.createIntent(email, id)
+    expect(replacement.id).not.toBe(intent.id)
+    expect((await service.getIntent(email, id, intent.id)).state).toBe('REJECTED')
+    expect(gateway.updatedCardSubscriptionIds).toHaveLength(0)
+  })
+
+  test('resultado desconhecido continua visível e bloqueia outro token após o prazo', async () => {
+    gateway.updateSubscriptionCard = async () => {
+      throw new Error('Resposta perdida QA')
+    }
+    const intent = await service.createIntent(email, id)
+    await service.execute(email, id, intent.id, input)
+    now = new Date(Date.parse(intent.expiresAt) + 86_400_000)
+    const active = (await service.getActiveIntent(email, id)).intent
+    expect(active?.id).toBe(intent.id)
+    expect(active?.state).toBe('UNKNOWN')
+    expect(await failureOf(service.createIntent(email, id))).toBeInstanceOf(Error)
+  })
+
   test('resposta perdida mantém UNKNOWN e não reaproveita o token nem cria outra intenção', async () => {
     gateway.updateSubscriptionCard = async () => {
       throw new Error('resposta perdida com token-qa-never-persist')

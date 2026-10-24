@@ -1609,6 +1609,54 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
     },
   }
 
+  const paymentsMyCardConfig = {
+    GET: async () => {
+      const { status, body } = await payments.getCardConfig()
+      return NextResponse.json(body, { status })
+    },
+  }
+  const paymentsMyCardIntents = {
+    GET: async (_req: Request, ctx: { params: Promise<{ id: string }> }) => {
+      const { id } = await ctx.params
+      if (!UUID_RE.test(id)) return invalidInput()
+      const { status, body } = await payments.getActiveCardIntent(id)
+      return NextResponse.json(body, { status })
+    },
+    POST: async (_req: Request, ctx: { params: Promise<{ id: string }> }) => {
+      const readonly = await requireWritableSession()
+      if (readonly) return readonly
+      const { id } = await ctx.params
+      if (!UUID_RE.test(id)) return invalidInput()
+      const { status, body } = await payments.createCardIntent(id)
+      return NextResponse.json(body, { status })
+    },
+  }
+  const cardUpdateBody = z.strictObject({
+    paymentToken: z.string().min(1).max(255),
+    card: z.strictObject({
+      brand: z.string().regex(/^[a-z][a-z0-9-]{1,31}$/),
+      last4: z.string().regex(/^\d{4}$/),
+    }),
+  })
+  const paymentsMyCardIntent = {
+    GET: async (_req: Request, ctx: { params: Promise<{ id: string; intentId: string }> }) => {
+      const { id, intentId } = await ctx.params
+      if (!UUID_RE.test(id) || !UUID_RE.test(intentId)) return invalidInput()
+      const { status, body } = await payments.getCardIntent(id, intentId)
+      return NextResponse.json(body, { status })
+    },
+    POST: async (req: Request, ctx: { params: Promise<{ id: string; intentId: string }> }) => {
+      const readonly = await requireWritableSession()
+      if (readonly) return readonly
+      const { id, intentId } = await ctx.params
+      if (!UUID_RE.test(id) || !UUID_RE.test(intentId)) return invalidInput()
+      const parsed = cardUpdateBody.safeParse(await req.json().catch(() => null))
+      if (!parsed.success) return invalidInput()
+      const { status, body } = await payments.updateSubscriptionCard(id, intentId, parsed.data)
+      return NextResponse.json(body, { status })
+    },
+  }
+
   /**
    * Cancela a PRÓPRIA assinatura (o acesso segue até o fim do ciclo pago +
    * carência). Escrita → sessão real (impersonação read-only).
@@ -1859,6 +1907,9 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
     teacherThreadRead,
     paymentsMy,
     paymentsMySubscriptions,
+    paymentsMyCardConfig,
+    paymentsMyCardIntents,
+    paymentsMyCardIntent,
     paymentsMySubscriptionCancel,
     profilesList,
     profileCreate,

@@ -29,6 +29,21 @@ beforeEach(() => {
   legacyCookie = null
 })
 describe('área dos pais separada da sessão infantil', () => {
+  test('sessão de suporte com claim de responsável não administra cartão ou conta', async () => {
+    const handler = mock(async () => new Response('ok'))
+    for (const mode of ['read-only', 'read-write']) {
+      getSession.mockResolvedValue({ ...parent, act: { mode, actorId: 'support-qa' } })
+      expect(
+        (
+          await requireParentGateAccountOnly(handler)(
+            new Request('https://kids.test/api/payments/my/card-config'),
+            {},
+          )
+        ).status,
+      ).toBe(403)
+    }
+    expect(handler).not.toHaveBeenCalled()
+  })
   test('ausência de sessão e cookie legado não liberam a gestão', async () => {
     const handler = mock(async () => new Response('ok'))
     legacyCookie = 'qualquer-cookie-do-portao-antigo'

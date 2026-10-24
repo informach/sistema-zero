@@ -78,6 +78,10 @@ export interface SubscriptionOperationRepository {
   /** Expira READY antigos; unique parcial impede operações simultâneas na mesma assinatura. */
   create(operation: SubscriptionOperation): Promise<boolean>
   findById(id: string): Promise<SubscriptionOperation | null>
+  findActiveForSubscription(
+    subscriptionId: string,
+    now: Date,
+  ): Promise<SubscriptionOperation | null>
   /** CAS único READY → EXECUTING, com prazo no banco. Nunca recupera EXECUTING para executar. */
   start(id: string, subscriptionId: string, now: Date): Promise<SubscriptionOperation | null>
   /** CAS do executor; UNKNOWN continua bloqueando nova cobrança até conciliação explícita. */

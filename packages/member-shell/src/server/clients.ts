@@ -79,6 +79,8 @@ import type {
   StreakFreezeResult,
   StudioSubmissionResultView,
   StudioUnlocksView,
+  SubscriptionCardConfigView,
+  SubscriptionCardIntentView,
   TeacherThreadSummaryView,
   TeacherThreadView,
   UserView,
@@ -1941,6 +1943,39 @@ export function createPaymentsClient(gw: GatewayModule) {
     /** "Minhas assinaturas" (mesmo escopo por e-mail das claims). */
     listMySubscriptions(): Promise<GatewayResponse<{ items: MySubscriptionView[] }>> {
       return gw.gatewayFetch('/payments/my/subscriptions')
+    },
+    getCardConfig(): Promise<GatewayResponse<SubscriptionCardConfigView>> {
+      return gw.gatewayFetch('/payments/my/card-config')
+    },
+    getActiveCardIntent(
+      id: string,
+    ): Promise<GatewayResponse<{ intent: SubscriptionCardIntentView | null }>> {
+      return gw.gatewayFetch(`/payments/my/subscriptions/${enc(id)}/card-intents`)
+    },
+    createCardIntent(id: string): Promise<GatewayResponse<SubscriptionCardIntentView>> {
+      return gw.gatewayFetch(`/payments/my/subscriptions/${enc(id)}/card-intents`, {
+        method: 'POST',
+        body: {},
+      })
+    },
+    getCardIntent(
+      id: string,
+      intentId: string,
+    ): Promise<GatewayResponse<SubscriptionCardIntentView>> {
+      return gw.gatewayFetch(`/payments/my/subscriptions/${enc(id)}/card-intents/${enc(intentId)}`)
+    },
+    updateSubscriptionCard(
+      id: string,
+      intentId: string,
+      input: {
+        paymentToken: string
+        card: { brand: string; last4: string }
+      },
+    ): Promise<GatewayResponse<SubscriptionCardIntentView>> {
+      return gw.gatewayFetch(
+        `/payments/my/subscriptions/${enc(id)}/card-intents/${enc(intentId)}`,
+        { method: 'POST', body: input },
+      )
     },
 
     /**

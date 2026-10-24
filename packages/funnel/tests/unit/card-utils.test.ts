@@ -11,7 +11,7 @@ import {
   maskCpf,
   normalizeBrand,
   onlyDigits,
-} from '../../src/lib/card-utils'
+} from '@sistemazero/ui/credit-card'
 
 describe('normalizeBrand', () => {
   test('aceita as 5 bandeiras suportadas pela Efí', () => {

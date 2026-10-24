@@ -10,6 +10,32 @@ const env = loadEnv({})
 const service = { name: 'p', upstreamGroups: { default: [{ url: 'http://p' }] } }
 
 describe('loadGatewayConfig', () => {
+  test('alteração de cartão usa rotas próprias autenticadas e limites de escrita', () => {
+    const registry = new RouteRegistry(
+      realConfig.routes.map((route) => routeConfigSchema.parse(route)),
+    )
+    for (const [method, path, id] of [
+      ['GET', '/payments/my/card-config', 'payments-my-card-config'],
+      ['GET', '/payments/my/subscriptions/sub/card-intents', 'payments-my-card-intent-read'],
+      ['POST', '/payments/my/subscriptions/sub/card-intents', 'payments-my-card-intent-create'],
+      [
+        'GET',
+        '/payments/my/subscriptions/sub/card-intents/intent',
+        'payments-my-card-intent-status',
+      ],
+      ['POST', '/payments/my/subscriptions/sub/card-intents/intent', 'payments-my-card-update'],
+    ]) {
+      const route = registry.resolve(method!, path!, 'v1')?.route
+      expect(route).toMatchObject({
+        id,
+        service: 'payments',
+        auth: { required: true, strategies: ['jwt'] },
+        authorize: { statuses: ['active'] },
+      })
+      if (method === 'POST') expect(route).toMatchObject({ maxBodyBytes: 1024, audit: {} })
+      expect(registry.resolve('PUT', path!, 'v1')).toBeUndefined()
+    }
+  })
   test('jornada adulta tem leitura autenticada e configuração restrita à equipe', () => {
     const registry = new RouteRegistry(
       realConfig.routes.map((route) => routeConfigSchema.parse(route)),

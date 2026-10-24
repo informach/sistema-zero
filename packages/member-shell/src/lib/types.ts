@@ -1582,9 +1582,12 @@ export interface MySubscriptionView {
   cyclesCompleted: number
   lastChargeAt: string | null
   description: string | null
+  cancelRequestedAt?: string | null
   canceledAt: string | null
   createdAt: string
 }
+
+export type { SubscriptionCardConfigView, SubscriptionCardIntentView } from './subscription-card'
 
 export const SUBSCRIPTION_STATUS_LABELS: Record<string, string> = {
   PENDING: 'Pendente',

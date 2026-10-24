@@ -1567,6 +1567,45 @@ describe('Minhas assinaturas (/payments/my/subscriptions — self-service do ass
     expect(error).not.toContain('qa-token-transient')
   })
 
+  test('cartão recusa perfil infantil e sessão de suporte em todas as operações', async () => {
+    const { app, subscriptionRepo, gateway } = buildApp()
+    const id = await seedSubscription(subscriptionRepo, 'ana@example.com')
+    const headers = { 'x-auth-user-email': 'ana@example.com', 'content-type': 'application/json' }
+    const path = `http://localhost/payments/my/subscriptions/${id}/card-intents`
+    const created = await app.handle(new Request(path, { method: 'POST', headers, body: '{}' }))
+    const intent = (await created.json()) as { id: string }
+    for (const deniedHeader of ['x-auth-account-id', 'x-auth-impersonator-id']) {
+      for (const [url, method, body] of [
+        ['http://localhost/payments/my/card-config', 'GET', undefined],
+        [path, 'GET', undefined],
+        [path, 'POST', '{}'],
+        [`${path}/${intent.id}`, 'GET', undefined],
+        [
+          `${path}/${intent.id}`,
+          'POST',
+          JSON.stringify({ paymentToken: 'qa-token', card: { brand: 'visa', last4: '1234' } }),
+        ],
+      ] as const) {
+        const response = await app.handle(
+          new Request(url, {
+            method,
+            headers: { ...headers, [deniedHeader]: 'other-actor-qa' },
+            body,
+          }),
+        )
+        expect(response.status).toBe(403)
+      }
+    }
+    const active = await app.handle(new Request(path, { headers }))
+    expect(active.status).toBe(200)
+    expect(((await active.json()) as { intent: { id: string } }).intent.id).toBe(intent.id)
+    const stranger = await app.handle(
+      new Request(path, { headers: { ...headers, 'x-auth-user-email': 'other@example.test' } }),
+    )
+    expect(stranger.status).toBe(404)
+    expect(gateway.updatedCardSubscriptionIds).toHaveLength(0)
+  })
+
   test('literal /my/subscriptions VENCE o param /my/:id (não vira 400 de uuid)', async () => {
     const { app } = buildApp()
     const res = await app.handle(
