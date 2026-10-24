@@ -99,6 +99,13 @@
       "when": 1792810582043,
       "tag": "0013_subscription_operation_fencing",
       "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1792833885620,
+      "tag": "0014_subscription_cancellation_audit",
+      "breakpoints": true
     }
   ]
 }

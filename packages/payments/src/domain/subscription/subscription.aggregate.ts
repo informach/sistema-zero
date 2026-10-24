@@ -4,8 +4,14 @@ import { type Address, Customer } from '../value-objects/customer'
 import type { IdempotencyKey } from '../value-objects/idempotency-key'
 import { type Currency, Money } from '../value-objects/money'
 import {
+  type CancellationContext,
+  CancellationRecord,
+  type CancellationRecordSnapshot,
+} from './cancellation-record'
+import {
   SubscriptionActivatedEvent,
   SubscriptionCanceledEvent,
+  SubscriptionCancellationRecordedEvent,
   SubscriptionCancellationRequestedEvent,
   SubscriptionCardUpdatedEvent,
   SubscriptionChargePaidEvent,
@@ -52,6 +58,7 @@ export interface SubscriptionSnapshot {
   description: string | null
   metadata: Record<string, unknown>
   cancelRequestedAt: Date | null
+  cancellationRecord: CancellationRecordSnapshot | null
   canceledAt: Date | null
   createdAt: Date
   updatedAt: Date
@@ -76,6 +83,7 @@ interface SubscriptionState {
   description: string | null
   metadata: Record<string, unknown>
   cancelRequestedAt: Date | null
+  cancellationRecord: CancellationRecord | null
   canceledAt: Date | null
   createdAt: Date
   updatedAt: Date
@@ -152,6 +160,7 @@ export class SubscriptionAggregate extends AggregateRoot<string> {
         // por fora da fronteira do agregado (aliasing).
         metadata: { ...(input.metadata ?? {}) },
         cancelRequestedAt: null,
+        cancellationRecord: null,
         canceledAt: null,
         createdAt: now,
         updatedAt: now,
@@ -204,6 +213,9 @@ export class SubscriptionAggregate extends AggregateRoot<string> {
         description: snapshot.description,
         metadata: { ...snapshot.metadata },
         cancelRequestedAt: snapshot.cancelRequestedAt,
+        cancellationRecord: snapshot.cancellationRecord
+          ? CancellationRecord.restore(snapshot.cancellationRecord)
+          : null,
         canceledAt: snapshot.canceledAt,
         createdAt: snapshot.createdAt,
         updatedAt: snapshot.updatedAt,
@@ -266,24 +278,62 @@ export class SubscriptionAggregate extends AggregateRoot<string> {
       }),
     )
     if (this.state.repeats !== null && this.state.cyclesCompleted >= this.state.repeats) {
-      this.expire()
+      this.expire('SCHEDULE_COMPLETED')
     }
   }
 
   /** Pedido durável: impede novas autorizações de débito antes da confirmação externa. */
-  requestCancellation(): boolean {
+  requestCancellation(context: CancellationContext, now = new Date()): boolean {
+    if (this.state.status === 'CANCELED' || this.state.status === 'EXPIRED') return false
+    const previous = this.state.cancellationRecord?.toSnapshot()
     if (
-      this.state.cancelRequestedAt ||
-      this.state.status === 'CANCELED' ||
-      this.state.status === 'EXPIRED'
+      this.state.cancelRequestedAt &&
+      previous &&
+      !previous.withdrawnAt &&
+      !(previous.origin === 'NONPAYMENT' && context.origin !== 'NONPAYMENT')
     )
       return false
-    this.state.cancelRequestedAt = new Date()
+    this.state.cancellationRecord = CancellationRecord.request(context, now, previous?.id ?? null)
+    this.state.cancelRequestedAt ??= new Date(now)
     this.touch()
+    this.recordCancellationEvidence()
     this.addEvent(
       new SubscriptionCancellationRequestedEvent(this.id, { consumerId: this.state.consumerId }),
     )
     return true
+  }
+
+  /** A paid renewal can withdraw only its own automatic request, never a person's request. */
+  withdrawNonpaymentCancellation(
+    caseId: string,
+    reason: 'RECOVERED' | 'OPERATOR_REVIEW',
+    now: Date,
+  ): boolean {
+    const record = this.state.cancellationRecord?.toSnapshot()
+    if (
+      record?.origin !== 'NONPAYMENT' ||
+      record.recoveryCaseId !== caseId ||
+      record.withdrawnAt ||
+      record.confirmedAt
+    )
+      return false
+    this.state.cancellationRecord = this.state.cancellationRecord!.withdraw(reason, now)
+    this.state.cancelRequestedAt = null
+    this.touch()
+    this.recordCancellationEvidence()
+    return true
+  }
+
+  private recordCancellationEvidence() {
+    const record = this.state.cancellationRecord
+    if (record)
+      this.addEvent(
+        new SubscriptionCancellationRecordedEvent(
+          this.id,
+          this.state.consumerId,
+          record.toSnapshot(),
+        ),
+      )
   }
 
   /** Só após a Efí confirmar a troca; mantém plano, preço, ciclos e período. */
@@ -298,17 +348,31 @@ export class SubscriptionAggregate extends AggregateRoot<string> {
   }
 
   /** Cancela a assinatura. Idempotente (cancelar uma já cancelada é no-op). */
-  cancel(): void {
+  cancel(now = new Date()): void {
     if (this.state.status === SubscriptionStatus.CANCELED) return
+    const prior = this.state.cancellationRecord
+    const record =
+      prior && !prior.toSnapshot().withdrawnAt
+        ? prior.confirm('CANCELED', now)
+        : CancellationRecord.observed('EXTERNAL', 'CANCELED', now)
     this.transitionTo(SubscriptionStatus.CANCELED)
-    this.state.canceledAt = new Date()
+    this.state.canceledAt = new Date(now)
+    this.state.cancellationRecord = record
+    this.recordCancellationEvidence()
     this.addEvent(new SubscriptionCanceledEvent(this.id, { consumerId: this.state.consumerId }))
   }
 
   /** Expira a assinatura (fim das repetições ou sinal de expiração da Efí). */
-  expire(): void {
+  expire(origin: 'EXTERNAL' | 'SCHEDULE_COMPLETED' = 'EXTERNAL', now = new Date()): void {
     if (this.state.status === SubscriptionStatus.EXPIRED) return
+    const prior = this.state.cancellationRecord
+    const record =
+      prior && !prior.toSnapshot().withdrawnAt
+        ? prior.confirm('EXPIRED', now)
+        : CancellationRecord.observed(origin, 'EXPIRED', now)
     this.transitionTo(SubscriptionStatus.EXPIRED)
+    this.state.cancellationRecord = record
+    this.recordCancellationEvidence()
     this.addEvent(new SubscriptionExpiredEvent(this.id, { consumerId: this.state.consumerId }))
   }
 
@@ -403,6 +467,10 @@ export class SubscriptionAggregate extends AggregateRoot<string> {
     return this.state.cancelRequestedAt
   }
 
+  get cancellationRecord(): CancellationRecordSnapshot | null {
+    return this.state.cancellationRecord?.toSnapshot() ?? null
+  }
+
   get createdAt(): Date {
     return this.state.createdAt
   }
@@ -439,6 +507,7 @@ export class SubscriptionAggregate extends AggregateRoot<string> {
       description: this.state.description,
       metadata: { ...this.state.metadata },
       cancelRequestedAt: this.state.cancelRequestedAt,
+      cancellationRecord: this.state.cancellationRecord?.toSnapshot() ?? null,
       canceledAt: this.state.canceledAt,
       createdAt: this.state.createdAt,
       updatedAt: this.state.updatedAt,

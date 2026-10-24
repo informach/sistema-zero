@@ -36,10 +36,10 @@ describe('SubscriptionAggregate', () => {
   test('pedido de cancelamento é durável e idempotente e bloqueia troca antes da confirmação', () => {
     const subscription = build()
     subscription.activate()
-    expect(subscription.requestCancellation()).toBe(true)
+    expect(subscription.requestCancellation({ origin: 'ADMIN', actorId: 'qa-admin' })).toBe(true)
     const requestedAt = subscription.cancelRequestedAt
     expect(requestedAt).toBeInstanceOf(Date)
-    expect(subscription.requestCancellation()).toBe(false)
+    expect(subscription.requestCancellation({ origin: 'ADMIN', actorId: 'qa-admin' })).toBe(false)
     expect(subscription.cancelRequestedAt).toBe(requestedAt)
     expect(subscription.status).toBe('ACTIVE')
     expect(subscription.canceledAt).toBeNull()

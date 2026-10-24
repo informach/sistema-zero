@@ -19,6 +19,7 @@ import type {
   PixQrCode,
 } from '../../../domain/payment/payment.aggregate'
 import type { PaymentStatus } from '../../../domain/payment/payment.status'
+import type { CancellationOrigin } from '../../../domain/subscription/cancellation-record'
 import type { RecoveryReason } from '../../../domain/subscription-recovery/recovery-case'
 import type {
   RecoveryMessageReceipt,
@@ -28,6 +29,7 @@ import type { RecoveryNoticePurpose } from '../../../domain/subscription-recover
 import type { RecoveryPolicy } from '../../../domain/subscription-recovery/recovery-policy'
 import type { Address } from '../../../domain/value-objects/customer'
 import type { CardData } from '../../../domain/value-objects/payment-method'
+import type { CancellationRecordWire } from './cancellation-record.mapper'
 
 // Este package compartilha o Postgres `sistemazero` do monorepo, mas é dono do
 // schema `payments` (isolamento por `pgSchema`). Todo o DDL gerado fica em `payments.*`.
@@ -243,6 +245,7 @@ export const subscriptions = paymentsSchema.table(
     description: text('description'),
     metadata: jsonb('metadata').$type<Record<string, unknown>>().notNull().default({}),
     cancelRequestedAt: timestamp('cancel_requested_at', { withTimezone: true }),
+    cancellationRecord: jsonb('cancellation_record').$type<CancellationRecordWire>(),
     cancellationNextAttemptAt: timestamp('cancellation_next_attempt_at', { withTimezone: true }),
     canceledAt: timestamp('canceled_at', { withTimezone: true }),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
@@ -562,6 +565,70 @@ export const subscriptionRecoveryNotices = paymentsSchema.table(
   ],
 )
 
+/** Permanent cancellation evidence; outbox retention never removes this history. */
+export const subscriptionCancellationAudit = paymentsSchema.table(
+  'subscription_cancellation_audit',
+  {
+    id: uuid('id').primaryKey(),
+    subscriptionId: uuid('subscription_id')
+      .notNull()
+      .references(() => subscriptions.id),
+    consumerId: text('consumer_id').notNull(),
+    origin: text('origin').$type<CancellationOrigin>().notNull(),
+    actorId: text('actor_id'),
+    recoveryCaseId: uuid('recovery_case_id').references(() => subscriptionRecoveryCases.id),
+    requestedAt: timestamp('requested_at', { withTimezone: true }),
+    recordedAt: timestamp('recorded_at', { withTimezone: true }).notNull(),
+    confirmedAt: timestamp('confirmed_at', { withTimezone: true }),
+    endedStatus: text('ended_status').$type<'CANCELED' | 'EXPIRED'>(),
+    withdrawnAt: timestamp('withdrawn_at', { withTimezone: true }),
+    withdrawalReason: text('withdrawal_reason').$type<'RECOVERED' | 'OPERATOR_REVIEW'>(),
+    supersedesId: uuid('supersedes_id'),
+    supersededBy: uuid('superseded_by'),
+    supersededAt: timestamp('superseded_at', { withTimezone: true }),
+  },
+  (t) => [
+    index('subscription_cancellation_audit_history_idx').on(t.subscriptionId, t.recordedAt),
+    index('subscription_cancellation_audit_case_idx').on(t.recoveryCaseId),
+    check(
+      'subscription_cancellation_audit_origin_check',
+      sql`${t.origin} in ('CUSTOMER','ADMIN','CONSUMER','NONPAYMENT','EXTERNAL','SCHEDULE_COMPLETED')`,
+    ),
+    check(
+      'subscription_cancellation_audit_actor_check',
+      sql`(${t.origin} = 'EXTERNAL' and ${t.actorId} is null) or (${t.origin} <> 'EXTERNAL' and ${t.actorId} is not null and length(${t.actorId}) between 1 and 128)`,
+    ),
+    check(
+      'subscription_cancellation_audit_case_check',
+      sql`(${t.origin} = 'NONPAYMENT' and ${t.recoveryCaseId} is not null and ${t.actorId} = 'system:subscription-recovery') or (${t.origin} <> 'NONPAYMENT' and ${t.recoveryCaseId} is null)`,
+    ),
+    check(
+      'subscription_cancellation_audit_request_check',
+      sql`(${t.origin} in ('EXTERNAL','SCHEDULE_COMPLETED') and ${t.requestedAt} is null) or (${t.origin} not in ('EXTERNAL','SCHEDULE_COMPLETED') and ${t.requestedAt} is not null and ${t.requestedAt} <= ${t.recordedAt})`,
+    ),
+    check(
+      'subscription_cancellation_audit_confirmation_check',
+      sql`(${t.confirmedAt} is null and ${t.endedStatus} is null) or (${t.confirmedAt} is not null and ${t.endedStatus} is not null and ${t.endedStatus} in ('CANCELED','EXPIRED') and ${t.confirmedAt} >= ${t.recordedAt})`,
+    ),
+    check(
+      'subscription_cancellation_audit_observed_check',
+      sql`${t.origin} not in ('EXTERNAL','SCHEDULE_COMPLETED') or ${t.confirmedAt} is not null`,
+    ),
+    check(
+      'subscription_cancellation_audit_schedule_check',
+      sql`${t.origin} <> 'SCHEDULE_COMPLETED' or (${t.actorId} = 'system:subscription-schedule' and ${t.endedStatus} = 'EXPIRED')`,
+    ),
+    check(
+      'subscription_cancellation_audit_withdrawal_check',
+      sql`(${t.withdrawnAt} is null and ${t.withdrawalReason} is null) or (${t.withdrawnAt} is not null and ${t.withdrawalReason} is not null and ${t.origin} = 'NONPAYMENT' and ${t.confirmedAt} is null and ${t.withdrawalReason} in ('RECOVERED','OPERATOR_REVIEW') and ${t.withdrawnAt} >= ${t.recordedAt})`,
+    ),
+    check(
+      'subscription_cancellation_audit_superseded_check',
+      sql`((${t.supersededBy} is null and ${t.supersededAt} is null) or (${t.supersededBy} is not null and ${t.supersededAt} is not null and ${t.supersededBy} <> ${t.id} and ${t.supersededAt} >= ${t.recordedAt})) and (${t.supersedesId} is null or ${t.supersedesId} <> ${t.id})`,
+    ),
+  ],
+)
+
 export const subscriptionRecoveryPolicy = paymentsSchema.table(
   'subscription_recovery_policy',
   {
@@ -610,6 +677,7 @@ export const schema = {
   subscriptionRecoveryCases,
   subscriptionRecoveryNotices,
   subscriptionRecoveryPolicy,
+  subscriptionCancellationAudit,
   subscriptionRecoveryPolicyAudit,
   idempotencyKeys,
   outbox,

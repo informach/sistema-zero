@@ -43,6 +43,7 @@ async function setup() {
     service,
     worker,
     id: subscription.id,
+    clock: () => new Date(now),
     advance: () => {
       now = new Date(now.getTime() + 30_000)
     },
@@ -79,10 +80,10 @@ describe('Retomada dos pedidos explícitos de cancelamento', () => {
   })
 
   test('tick não sobrepõe execução e stop drena a chamada que já começou', async () => {
-    const { subscriptions, gateway, worker, id } = await setup()
+    const { subscriptions, gateway, worker, id, clock } = await setup()
     const subscription = await subscriptions.findById(id)
     if (!subscription) throw new Error('Assinatura QA ausente')
-    subscription.requestCancellation()
+    subscription.requestCancellation({ origin: 'ADMIN', actorId: 'qa-admin' }, clock())
     await subscriptions.save(subscription)
     let release: () => void = () => {}
     let started: () => void = () => {}

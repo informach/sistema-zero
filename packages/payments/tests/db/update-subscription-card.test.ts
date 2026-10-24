@@ -134,7 +134,7 @@ describe.skipIf(!databaseUrl)('Atualização preventiva de cartão — aplicaç�
       () => now,
       30_000,
     )
-    expect((await cancellation.executeAdmin(id)).status).toBe('CANCELED')
+    expect((await cancellation.executeAdmin(id, 'qa-admin')).status).toBe('CANCELED')
     expect((await operations.findById(intent.id))?.state).toBe('REJECTED')
     expect((await operations.findById(intent.id))?.result).toBe('CANCELLATION_REQUESTED')
     expect(gateway.canceledSubscriptionIds).toEqual(['provider-qa'])
@@ -164,7 +164,7 @@ describe.skipIf(!databaseUrl)('Atualização preventiva de cartão — aplicaç�
       () => now,
       30_000,
     )
-    expect(await failureOf(cancellation.executeAdmin(id))).toBeInstanceOf(Error)
+    expect(await failureOf(cancellation.executeAdmin(id, 'qa-admin'))).toBeInstanceOf(Error)
     expect((await subscriptions.findById(id))?.cancelRequestedAt).toBeInstanceOf(Date)
     expect((await subscriptions.findById(id))?.status).toBe('ACTIVE')
     expect((await operations.findById(retry.id))?.state).toBe('UNKNOWN')
@@ -194,11 +194,11 @@ describe.skipIf(!databaseUrl)('Atualização preventiva de cartão — aplicaç�
       () => now,
       30_000,
     )
-    expect(await failureOf(cancellation.executeAdmin(id))).toBeInstanceOf(Error)
+    expect(await failureOf(cancellation.executeAdmin(id, 'qa-admin'))).toBeInstanceOf(Error)
     const pending = await operations.findActiveForSubscription(id, now)
     expect(pending?.kind).toBe('CANCEL')
     expect(pending?.state).toBe('UNKNOWN')
-    expect(await failureOf(cancellation.executeAdmin(id))).toBeInstanceOf(Error)
+    expect(await failureOf(cancellation.executeAdmin(id, 'qa-admin'))).toBeInstanceOf(Error)
     expect(gateway.canceledSubscriptionIds).toHaveLength(1)
     now = new Date(now.getTime() + 30_000)
     gateway.getSubscription = getSource
@@ -211,7 +211,7 @@ describe.skipIf(!databaseUrl)('Atualização preventiva de cartão — aplicaç�
       () => now,
       30_000,
     )
-    expect((await reopened.executeAdmin(id)).status).toBe('CANCELED')
+    expect((await reopened.executeAdmin(id, 'qa-admin')).status).toBe('CANCELED')
     expect(gateway.canceledSubscriptionIds).toHaveLength(1)
     expect((await operations.findById(pending!.id))?.executionAttempts).toBe(2)
     expect((await operations.findById(pending!.id))?.state).toBe('SUCCEEDED')
@@ -253,7 +253,7 @@ describe.skipIf(!databaseUrl)('Atualização preventiva de cartão — aplicaç�
     await service.execute(email, id, intent.id, input)
     const subscription = await subscriptions.findById(id)
     if (!subscription) throw new Error('Assinatura QA ausente')
-    subscription.requestCancellation()
+    subscription.requestCancellation({ origin: 'ADMIN', actorId: 'qa-admin' })
     await subscriptions.save(subscription)
     const current = await service.getActiveIntent(email, id)
     expect(current.canUpdate).toBe(false)
@@ -286,7 +286,7 @@ describe.skipIf(!databaseUrl)('Atualização preventiva de cartão — aplicaç�
     expect(await failureOf(service.execute(email, id, intent.id, input))).toBeInstanceOf(Error)
     const subscription = await subscriptions.findById(id)
     if (!subscription) throw new Error('Assinatura QA ausente')
-    subscription.requestCancellation()
+    subscription.requestCancellation({ origin: 'ADMIN', actorId: 'qa-admin' })
     await subscriptions.save(subscription)
     expect(await failureOf(service.createIntent(email, id))).toBeInstanceOf(Error)
     expect(gateway.updatedCardSubscriptionIds).toHaveLength(0)

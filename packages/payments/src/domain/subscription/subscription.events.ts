@@ -1,4 +1,35 @@
 import { DomainEvent } from '../shared/domain-event'
+import type { CancellationRecordSnapshot } from './cancellation-record'
+
+/** Complete cancellation evidence is retained by the repository in its own audit table. */
+export class SubscriptionCancellationRecordedEvent extends DomainEvent {
+  readonly eventName = 'subscription.cancellation.recorded'
+  private readonly record: CancellationRecordSnapshot
+  constructor(
+    id: string,
+    readonly consumerId: string,
+    record: CancellationRecordSnapshot,
+  ) {
+    super(id)
+    this.record = structuredClone(record)
+  }
+  get cancellationRecord() {
+    return structuredClone(this.record)
+  }
+  toPayload(): Record<string, unknown> {
+    return {
+      subscriptionId: this.aggregateId,
+      consumerId: this.consumerId,
+      cancellation: {
+        ...this.record,
+        requestedAt: this.record.requestedAt?.toISOString() ?? null,
+        recordedAt: this.record.recordedAt.toISOString(),
+        confirmedAt: this.record.confirmedAt?.toISOString() ?? null,
+        withdrawnAt: this.record.withdrawnAt?.toISOString() ?? null,
+      },
+    }
+  }
+}
 
 /**
  * Eventos da assinatura. Todo `toPayload` carrega `consumerId` porque o pipeline

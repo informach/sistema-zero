@@ -184,7 +184,13 @@ export function adminRoutes(deps: AdminRoutesDeps) {
         '/subscriptions/:id',
         async ({ params, headers }) => {
           requireAdminWrite(headers, deps.requireAdminEnabled, deps.internalToken)
-          return deps.cancelSubscription.executeAdmin(params.id)
+          if (headers['x-auth-impersonator-id'])
+            throw new ForbiddenError(
+              'Entre com a própria conta da equipe para cancelar a assinatura.',
+            )
+          const actorId = headers['x-auth-user-id']?.trim()
+          if (!actorId) throw new UnauthorizedError('Autenticação necessária')
+          return deps.cancelSubscription.executeAdmin(params.id, actorId)
         },
         { params: AdminIdParam },
       )

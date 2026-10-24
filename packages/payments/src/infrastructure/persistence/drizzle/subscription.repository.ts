@@ -4,7 +4,10 @@ import {
   SubscriptionAggregate,
   type SubscriptionSnapshot,
 } from '../../../domain/subscription/subscription.aggregate'
+import { SubscriptionCancellationRecordedEvent } from '../../../domain/subscription/subscription.events'
 import type { Currency } from '../../../domain/value-objects/money'
+import { writeCancellationAudit } from './cancellation-audit.writer'
+import { cancellationRecordFromWire, cancellationRecordToWire } from './cancellation-record.mapper'
 import { PG_CHANNELS } from './channels'
 import { ConcurrencyConflictError } from './concurrency.error'
 import type { Database } from './db'
@@ -22,7 +25,7 @@ export class DrizzleSubscriptionRepository implements SubscriptionRepository {
 
   async save(subscription: SubscriptionAggregate): Promise<void> {
     const snap = subscription.toSnapshot()
-    const events = subscription.pullEvents()
+    const events = [...subscription.events]
     const values = snapshotToRow(snap)
 
     await this.db.transaction(async (tx) => {
@@ -43,6 +46,7 @@ export class DrizzleSubscriptionRepository implements SubscriptionRepository {
             metadata: values.metadata,
             canceledAt: values.canceledAt,
             cancelRequestedAt: values.cancelRequestedAt,
+            cancellationRecord: values.cancellationRecord,
             updatedAt: values.updatedAt,
           })
           .where(and(eq(subscriptions.id, snap.id), eq(subscriptions.version, snap.version)))
@@ -50,6 +54,10 @@ export class DrizzleSubscriptionRepository implements SubscriptionRepository {
 
         if (updated.length === 0) throw new ConcurrencyConflictError(snap.id)
       }
+
+      for (const event of events)
+        if (event instanceof SubscriptionCancellationRecordedEvent)
+          await writeCancellationAudit(tx, snap.id, snap.consumerId, event.cancellationRecord)
 
       if (events.length > 0) {
         await tx.insert(outbox).values(
@@ -62,6 +70,7 @@ export class DrizzleSubscriptionRepository implements SubscriptionRepository {
         await tx.execute(sql`select pg_notify(${PG_CHANNELS.outbox}, '')`)
       }
     })
+    subscription.pullEvents()
   }
 
   async findById(id: string): Promise<SubscriptionAggregate | null> {
@@ -150,6 +159,7 @@ export class DrizzleSubscriptionRepository implements SubscriptionRepository {
         .where(
           and(
             isNotNull(subscriptions.cancelRequestedAt),
+            sql`(${subscriptions.cancellationRecord}->>'origin') is distinct from 'NONPAYMENT'`,
             inArray(subscriptions.status, ['ACTIVE', 'PENDING']),
             or(
               isNull(subscriptions.cancellationNextAttemptAt),
@@ -201,6 +211,7 @@ function snapshotToRow(snap: SubscriptionSnapshot): typeof subscriptions.$inferI
     description: snap.description,
     metadata: snap.metadata,
     cancelRequestedAt: snap.cancelRequestedAt,
+    cancellationRecord: cancellationRecordToWire(snap.cancellationRecord),
     canceledAt: snap.canceledAt,
     createdAt: snap.createdAt,
     updatedAt: snap.updatedAt,
@@ -229,6 +240,7 @@ export function rowToSnapshot(row: SubscriptionRow): SubscriptionSnapshot {
     description: row.description,
     metadata: row.metadata,
     cancelRequestedAt: row.cancelRequestedAt,
+    cancellationRecord: cancellationRecordFromWire(row.cancellationRecord),
     canceledAt: row.canceledAt ?? null,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,

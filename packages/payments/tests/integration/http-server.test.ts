@@ -1189,7 +1189,7 @@ describe('HTTP server', () => {
 
 /** Headers `X-Auth-User-*` que o gateway injeta (anti-spoof) para as rotas admin. */
 function adminHeaders(role = 'admin', status = 'active'): Record<string, string> {
-  return { 'x-auth-user-role': role, 'x-auth-user-status': status }
+  return { 'x-auth-user-role': role, 'x-auth-user-status': status, 'x-auth-user-id': 'qa-admin' }
 }
 
 describe('Rotas admin (/payments/admin/*)', () => {
@@ -1440,10 +1440,24 @@ describe('Rotas admin (/payments/admin/*)', () => {
     const res = await app.handle(
       new Request(
         'http://localhost/payments/admin/subscriptions/00000000-0000-0000-0000-000000000000',
-        { method: 'DELETE' },
+        { method: 'DELETE', headers: adminHeaders() },
       ),
     )
     expect(res.status).toBe(404)
+  })
+
+  test('cancelamento administrativo exige autor e recusa conta impersonada antes de procurar assinatura', async () => {
+    const { app, gateway } = buildApp({ requireAdmin: true })
+    const path =
+      'http://localhost/payments/admin/subscriptions/00000000-0000-0000-0000-000000000000'
+    for (const [headers, expected] of [
+      [{ ...adminHeaders(), 'x-auth-user-id': '' }, 401],
+      [{ ...adminHeaders(), 'x-auth-impersonator-id': 'qa-support' }, 403],
+    ] as const) {
+      const response = await app.handle(new Request(path, { method: 'DELETE', headers }))
+      expect(response.status).toBe(expected)
+    }
+    expect(gateway.canceledSubscriptionIds).toHaveLength(0)
   })
 })
 
@@ -1733,7 +1747,7 @@ describe('Minhas assinaturas (/payments/my/subscriptions — self-service do ass
     const { app, subscriptionRepo } = buildApp()
     const mine = await seedSubscription(subscriptionRepo, 'ana@example.com')
     const others = await seedSubscription(subscriptionRepo, 'outra@example.com')
-    const headers = { 'x-auth-user-email': 'ana@example.com' }
+    const headers = { 'x-auth-user-email': 'ana@example.com', 'x-auth-user-id': 'qa-customer' }
 
     const forbidden = await app.handle(
       new Request(`http://localhost/payments/my/subscriptions/${others}`, {
@@ -1753,6 +1767,11 @@ describe('Minhas assinaturas (/payments/my/subscriptions — self-service do ass
     expect(ok.status).toBe(200)
     expect(((await ok.json()) as { status: string }).status).toBe('CANCELED')
     expect((await subscriptionRepo.findById(mine))?.status).toBe('CANCELED')
+    expect((await subscriptionRepo.findById(mine))?.cancellationRecord).toMatchObject({
+      origin: 'CUSTOMER',
+      actorId: 'qa-customer',
+      endedStatus: 'CANCELED',
+    })
 
     // Idempotente: re-cancelar devolve a view cancelada (sem erro).
     const again = await app.handle(
@@ -1768,6 +1787,31 @@ describe('Minhas assinaturas (/payments/my/subscriptions — self-service do ass
     const { app } = buildApp()
     const res = await app.handle(new Request('http://localhost/payments/my/subscriptions'))
     expect(res.status).toBe(401)
+  })
+
+  test('cancelamento exige autor próprio e recusa perfil de criança ou sessão de suporte', async () => {
+    const { app, subscriptionRepo, gateway } = buildApp()
+    const id = await seedSubscription(subscriptionRepo, 'ana@example.com')
+    const path = `http://localhost/payments/my/subscriptions/${id}`
+    const headers = { 'x-auth-user-email': 'ana@example.com', 'x-auth-user-id': 'qa-customer' }
+    for (const deniedHeader of ['x-auth-account-id', 'x-auth-impersonator-id']) {
+      const response = await app.handle(
+        new Request(path, {
+          method: 'DELETE',
+          headers: { ...headers, [deniedHeader]: 'qa-other-context' },
+        }),
+      )
+      expect(response.status).toBe(403)
+    }
+    const noActor = await app.handle(
+      new Request(path, {
+        method: 'DELETE',
+        headers: { 'x-auth-user-email': 'ana@example.com' },
+      }),
+    )
+    expect(noActor.status).toBe(401)
+    expect((await subscriptionRepo.findById(id))?.cancelRequestedAt).toBeNull()
+    expect(gateway.canceledSubscriptionIds).toHaveLength(0)
   })
 })
 

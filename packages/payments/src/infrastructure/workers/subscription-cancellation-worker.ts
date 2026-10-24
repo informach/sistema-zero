@@ -9,7 +9,7 @@ export class SubscriptionCancellationWorker {
   private inFlight: Promise<void> | null = null
   constructor(
     private readonly subscriptions: SubscriptionRepository,
-    private readonly cancellation: Pick<CancelSubscriptionService, 'executeAdmin'>,
+    private readonly cancellation: Pick<CancelSubscriptionService, 'resume'>,
     private readonly logger: Logger,
     private readonly options: {
       intervalMs: number
@@ -54,7 +54,7 @@ export class SubscriptionCancellationWorker {
         await Promise.all(
           group.map(async (subscription) => {
             try {
-              await this.cancellation.executeAdmin(subscription.id)
+              await this.cancellation.resume(subscription.id)
             } catch (error) {
               if (error instanceof ConcurrencyConflictError) {
                 this.logger.info('subscription.cancel.lost_race', {

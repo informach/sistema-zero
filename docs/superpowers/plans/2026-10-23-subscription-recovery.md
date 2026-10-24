@@ -6,6 +6,59 @@ após sete dias sem regularização, com período pago e histórico preservados.
 **Estado:** implementação autorizada pelo usuário; lotes financeiros ainda não ativados.
 Este documento não autoriza cancelamentos ou cobranças manuais em clientes reais.
 
+## Complemento verificável — auditoria de cancelamento, 24/10
+
+O CI `40080180893` da composição `c974f61cb` terminou SUCCESS, incluindo tipos
+completos e os nove jobs adicionais; o deploy de staging foi pulado por ser branch
+financeira. Isso não constitui implantação ou aceite financeiro ponta a ponta.
+
+O lote local posterior acrescenta origem/autor/caso do pedido, confirmação observada
+e histórico permanente na mesma transação da assinatura/outbox, com migration
+gerada 0014. Pedido explícito substitui o automático sem perder suas evidências;
+recuperação não retira pedido humano. O worker de cancelamento genérico não
+reivindica solicitações NONPAYMENT: a decisão D7 continua do coordenador pendente.
+Revisão causal identificou e corrigiu vínculo de caso de outra assinatura.
+PostgreSQL descartável dedicado: Payments 453 testes / 1267 asserções, zero falhas
+ou skips. Tipagem do Payments passou; resultados e limites em
+`docs/qa/2026-10-24-subscription-cancellation-audit.md`.
+
+Ainda faltam coordenação integrada/admissão dos casos, revalidação D7, pagamento
+explícito com período original, templates/seeds, operação de exceções, configuração
+dos ambientes e ensaios sandbox/UI. Os dois full reviews globais, os dois lotes
+finais e os deploys desta entrega permanecem pendentes na sequência aprovada.
+
+## Checkpoint anterior — 24/10, 09:00 UTC
+
+Implementados e commitados na branch financeira: diagnóstico seguro de recusa;
+liquidação estreita de renovação FAILED confirmada PAID; intenções de operação;
+troca preventiva de cartão com UI/BFF nas duas comunidades; confirmação durável de
+cancelamento com fencing de execução e bloqueio de débito incerto; casos e política
+persistentes; retirada de mensagens ainda na fila; adapter HMAC de comunicação com
+capacidade limitada; ledger de envelopes/recibos; público da compra validado pelo
+registry; editor administrativo de prazos/lembretes e auditoria de sua configuração.
+
+Últimos lotes: `553ef6f42` (avisos), `68d14f8de` (origem do público), `e783b6560`
+(fencing/cancelamento), `2b5f9e528` (política/Admin/IaC); conciliação com staging
+remoto em `c974f61cb`. CI manual da composição `c974f61cb`: run `40080180893`, em
+andamento neste checkpoint, sem deploy por estar na branch financeira.
+Provas locais: Payments 438/1206 sem skip contra PostgreSQL real; Admin 916/3819;
+Gateway 290/1214 com dois testes Redis opcionais não executados. Tipos locais de
+Payments/Gateway e foco UI Admin passaram; tipos completos Admin/BFF são parte do CI.
+
+Ainda não entregar como fluxo concluído: falta admissão e coordenação integrada dos
+casos, motivo/autor do cancelamento, D7 com revalidação, regularização com pagamento
+explícito/período original seguro, templates e seeds de comunicação, fila de
+exceções/ações operacionais, migração/configuração de ambientes, sandbox e prova real
+dos dois públicos. A coordenação antiga do Funnel só sai no corte para o novo motor.
+O primeiro full review global só ocorre após isso. Os dois lotes finais e o segundo
+full review continuam na sequência aprovada ao fim deste documento.
+
+A implantação anterior, separada deste fluxo financeiro, foi conferida em produção
+no SHA `6067b14e7`: sete serviços alvo SUCCESS, nenhum pending e antigo Kids REMOVED;
+health público das três interfaces 200. O workflow expirou antes do Kids terminar
+e continua registrado como falho; não houve repetição cega. Relatório em
+`docs/qa/2026-10-24-production-lesson-release.md`.
+
 ## Restrições comuns a todos os lotes
 
 - Payments coordena dinheiro/assinatura; Members controla acesso; Messaging entrega.

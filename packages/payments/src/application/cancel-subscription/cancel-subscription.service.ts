@@ -2,6 +2,7 @@ import type { PaymentGateway } from '../../domain/ports/payment-gateway.port'
 import type { SubscriptionMyReadRepository } from '../../domain/ports/subscription-my-read.port'
 import type { SubscriptionRepository } from '../../domain/ports/subscription-repository.port'
 import { DomainError } from '../../domain/shared/errors'
+import type { CancellationContext } from '../../domain/subscription/cancellation-record'
 import type { SubscriptionAggregate } from '../../domain/subscription/subscription.aggregate'
 import { SubscriptionNotFoundError } from '../../domain/subscription/subscription.errors'
 import {
@@ -41,14 +42,21 @@ export class CancelSubscriptionService {
     if (!subscription || subscription.consumerId !== consumerId) {
       throw new SubscriptionNotFoundError(id)
     }
-    return this.cancel(subscription)
+    return this.cancel(subscription, { origin: 'CONSUMER', actorId: consumerId })
   }
 
   /** Cancelamento ADMIN (painel) — **cross-consumer** (não escopado). */
-  async executeAdmin(id: string): Promise<SubscriptionView> {
+  async executeAdmin(id: string, actorId: string): Promise<SubscriptionView> {
     const subscription = await this.subscriptions.findById(id)
     if (!subscription) throw new SubscriptionNotFoundError(id)
-    return this.cancel(subscription)
+    return this.cancel(subscription, { origin: 'ADMIN', actorId })
+  }
+
+  /** Reconciliation of an already recorded request cannot invent an administrator. */
+  async resume(id: string): Promise<SubscriptionView> {
+    const subscription = await this.subscriptions.findById(id)
+    if (!subscription) throw new SubscriptionNotFoundError(id)
+    return this.cancel(subscription, null)
   }
 
   /**
@@ -57,22 +65,34 @@ export class CancelSubscriptionService {
    * acesso segue até o fim do ciclo pago + carência (o members expira sozinho —
    * cancelar NÃO revoga na hora).
    */
-  async executeForEmail(email: string, id: string): Promise<MySubscriptionView> {
+  async executeForEmail(email: string, id: string, actorId: string): Promise<MySubscriptionView> {
     if (!this.myRead) throw new Error('executeForEmail exige o SubscriptionMyReadRepository')
     const scoped = await this.myRead.findByEmailAndId(email, id)
     if (!scoped) throw new SubscriptionNotFoundError(id)
-    await this.cancel(scoped)
+    await this.cancel(scoped, { origin: 'CUSTOMER', actorId })
     const fresh = await this.subscriptions.findById(scoped.id)
     if (!fresh) throw new SubscriptionNotFoundError(scoped.id)
     return toMySubscriptionView(fresh)
   }
 
-  private async cancel(subscription: SubscriptionAggregate): Promise<SubscriptionView> {
+  private async cancel(
+    subscription: SubscriptionAggregate,
+    context: CancellationContext | null,
+  ): Promise<SubscriptionView> {
     if (subscription.status === 'CANCELED' || subscription.status === 'EXPIRED')
       return toSubscriptionView(subscription)
 
     // Antes da rede: uma aba com intenção de cartão já aberta perde autoridade.
-    if (subscription.requestCancellation()) await this.subscriptions.save(subscription)
+    if (context && subscription.requestCancellation(context, this.clock()))
+      await this.subscriptions.save(subscription)
+    // Automatic nonpayment requests belong to the recovery coordinator, which
+    // rechecks the charge and deadline. The generic cancellation scan cannot bypass it.
+    if (
+      !subscription.cancelRequestedAt ||
+      !subscription.cancellationRecord ||
+      subscription.cancellationRecord.origin === 'NONPAYMENT'
+    )
+      throw new SubscriptionCancellationPendingError()
     if (!subscription.providerSubscriptionId) throw new SubscriptionCancellationPendingError()
 
     // A cancellation must not race an authorized debit: retry may reactivate a
@@ -155,8 +175,8 @@ export class CancelSubscriptionService {
     const fresh = await this.subscriptions.findById(subscription.id)
     if (!fresh) throw new SubscriptionNotFoundError(subscription.id)
     if (fresh.status !== 'CANCELED' && fresh.status !== 'EXPIRED') {
-      if (confirmedStatus === 'EXPIRED') fresh.expire()
-      else fresh.cancel()
+      if (confirmedStatus === 'EXPIRED') fresh.expire('EXTERNAL', this.clock())
+      else fresh.cancel(this.clock())
       await this.subscriptions.save(fresh)
     }
 
