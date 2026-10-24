@@ -11,6 +11,28 @@ export interface RecoveryPolicyView {
   configurationReady: boolean
 }
 
+export interface RecoveryReviewItem {
+  kind: 'CASE' | 'ADMISSION' | 'OPERATION' | 'PERIOD'
+  id: string
+  subscriptionId: string | null
+  paymentId: string | null
+  audience: 'kids' | 'adult' | 'unknown'
+  state: string
+  reason: string | null
+  amountInCents: string
+  version: number
+  openedAt: string
+  deadlineAt: string | null
+  customerName: string | null
+  customerEmail: string | null
+}
+export interface RecoveryReviewPage {
+  items: RecoveryReviewItem[]
+  total: number
+  limit: number
+  offset: number
+}
+
 export function recoveryPolicyInput(input: {
   version: number
   days: string

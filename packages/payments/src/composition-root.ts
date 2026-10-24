@@ -21,6 +21,7 @@ import { ProcessPaymentService } from './application/process-payment/process-pay
 import { RefundPaymentService } from './application/refund-payment/refund-payment.service'
 import { RetrySubscriptionChargeService } from './application/subscription-card/retry-subscription-charge.service'
 import { UpdateSubscriptionCardService } from './application/subscription-card/update-subscription-card.service'
+import { ListRecoveryReviewService } from './application/subscription-recovery/list-recovery-review.service'
 import { RecoveryAdmissionService } from './application/subscription-recovery/recovery-admission.service'
 import { RecoveryCoordinatorService } from './application/subscription-recovery/recovery-coordinator.service'
 import { RecoveryNoticeService } from './application/subscription-recovery/recovery-notice.service'
@@ -50,6 +51,7 @@ import { PgNotificationListener } from './infrastructure/persistence/drizzle/pg-
 import { DrizzleRecoveryAdmissionRepository } from './infrastructure/persistence/drizzle/recovery-admission.repository'
 import { DrizzleRecoveryNoticeRepository } from './infrastructure/persistence/drizzle/recovery-notice.repository'
 import { DrizzleRecoveryPolicyRepository } from './infrastructure/persistence/drizzle/recovery-policy.repository'
+import { DrizzleRecoveryReviewRepository } from './infrastructure/persistence/drizzle/recovery-review.repository'
 import { DrizzleSubscriptionRepository } from './infrastructure/persistence/drizzle/subscription.repository'
 import { DrizzleSubscriptionAdminReadRepository } from './infrastructure/persistence/drizzle/subscription-admin-read.repository'
 import { DrizzleSubscriptionMyReadRepository } from './infrastructure/persistence/drizzle/subscription-my-read.repository'
@@ -428,6 +430,7 @@ export function createApplication(env: Env): Application {
     createSubscription,
     getSubscription,
     cancelSubscription,
+    recoveryReview: new ListRecoveryReviewService(new DrizzleRecoveryReviewRepository(db)),
     updateSubscriptionCard,
     retrySubscriptionCharge,
     handleWebhook,

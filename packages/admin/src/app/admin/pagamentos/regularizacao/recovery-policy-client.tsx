@@ -9,6 +9,7 @@ import { PaymentsTabs } from '@/components/admin/payments-tabs'
 import { ReadOnlyNotice } from '@/components/admin/read-only-notice'
 import { type ApiError, apiGet, apiSend } from '@/lib/api'
 import { type RecoveryPolicyView, recoveryPolicyInput } from '@/lib/subscription-recovery'
+import { RecoveryReviewClient } from './recovery-review-client'
 
 const endpoint = '/api/payments/recovery/policy'
 export function RecoveryPolicyClient({ currentRole }: { currentRole: string }) {
@@ -212,6 +213,7 @@ export function RecoveryPolicyClient({ currentRole }: { currentRole: string }) {
           </form>
         )}
       </Card>
+      <RecoveryReviewClient />
     </div>
   )
 }

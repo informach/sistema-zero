@@ -542,3 +542,8 @@ sem prova, acesso fica REVIEW_REQUIRED. `confirmSubscriptionPeriod` emite soment
 `payment.subscription_period_confirmed`, nunca outro `payment.paid`/recibo fiscal.
 Pagamento + outbox são atômicos; eventos só são retirados do agregado após commit.
 Deploy Members/Funnel antes do Payments para que o consumidor respeite esse contrato.
+
+A fila administrativa `/payments/admin/subscription-recovery/review` reúne CASE,
+ADMISSION, OPERATION e PERIOD, com paginação/busca limitadas e SQL parametrizado.
+Dinheiro PAID não oculta UNKNOWN ou período pendente; audiência não validada continua
+unknown. É leitura da equipe, sem enviar aviso, cobrar, cancelar ou conceder acesso.

@@ -21,6 +21,7 @@ import { ProcessPaymentService } from '../../src/application/process-payment/pro
 import { RefundPaymentService } from '../../src/application/refund-payment/refund-payment.service'
 import { RetrySubscriptionChargeService } from '../../src/application/subscription-card/retry-subscription-charge.service'
 import { UpdateSubscriptionCardService } from '../../src/application/subscription-card/update-subscription-card.service'
+import { ListRecoveryReviewService } from '../../src/application/subscription-recovery/list-recovery-review.service'
 import { RecoveryPolicyService } from '../../src/application/subscription-recovery/recovery-policy.service'
 import type { PaymentAdminReadRepository } from '../../src/domain/ports/payment-admin-read.port'
 import type { PaymentMyReadRepository } from '../../src/domain/ports/payment-my-read.port'
@@ -178,6 +179,9 @@ function buildApp(opts: BuildOpts = {}) {
   }
 
   const app = createServer({
+    recoveryReview: new ListRecoveryReviewService({
+      list: async (query) => ({ items: [], total: 0, limit: query.limit, offset: query.offset }),
+    }),
     recoveryPolicy: new RecoveryPolicyService(
       recoveryPolicies,
       () => opts.recoveryConfigurationReady ?? false,
@@ -290,6 +294,40 @@ function buildApp(opts: BuildOpts = {}) {
 
 describe('Admin: política de regularização autenticada e auditada', () => {
   const path = 'http://localhost/payments/admin/subscription-recovery/policy'
+
+  test('fila permite leitura da equipe, valida filtros e recusa origem sem autenticação', async () => {
+    const { app, gateway } = buildApp({ requireAdmin: true, internalToken: 'qa-review-internal' })
+    const url = 'http://localhost/payments/admin/subscription-recovery/review'
+    const headers = {
+      'x-internal-token': 'qa-review-internal',
+      'x-auth-user-id': 'qa-staff',
+      'x-auth-user-role': 'staff',
+      'x-auth-user-status': 'active',
+    }
+    expect((await app.handle(new Request(url))).status).toBe(401)
+    const response = await app.handle(
+      new Request(`${url}?kind=PERIOD&audience=unknown&limit=1&offset=2`, { headers }),
+    )
+    expect(response.status).toBe(200)
+    expect(await response.json()).toEqual({ items: [], total: 0, limit: 1, offset: 2 })
+    expect(
+      (
+        await app.handle(
+          new Request(url, { headers: { ...headers, 'x-auth-user-role': 'customer' } }),
+        )
+      ).status,
+    ).toBe(403)
+    for (const query of [
+      'limit=101',
+      'offset=-1',
+      'kind=wrong',
+      'audience=wrong',
+      `q=${'x'.repeat(121)}`,
+    ])
+      expect((await app.handle(new Request(`${url}?${query}`, { headers }))).status).toBe(400)
+    expect(gateway.retriedSubscriptionChargeIds).toHaveLength(0)
+    expect(gateway.canceledSubscriptionIds).toHaveLength(0)
+  })
   const body = { expectedVersion: 1, windowDays: 7, reminderDays: [3, 6], enabled: false }
   const staff = {
     'x-auth-user-role': 'staff',

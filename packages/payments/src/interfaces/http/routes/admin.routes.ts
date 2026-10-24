@@ -11,6 +11,7 @@ import type { GetDailyPaymentsStatsService } from '../../../application/payments
 import type { GetPaymentsStatsService } from '../../../application/payments-stats/get-payments-stats.service'
 import type { GetSubscriptionStatsService } from '../../../application/payments-stats/get-subscription-stats.service'
 import type { RefundPaymentService } from '../../../application/refund-payment/refund-payment.service'
+import type { ListRecoveryReviewService } from '../../../application/subscription-recovery/list-recovery-review.service'
 import type { RecoveryPolicyService } from '../../../application/subscription-recovery/recovery-policy.service'
 import { requireAdmin, requireAdminWrite } from '../admin-auth'
 import {
@@ -44,6 +45,7 @@ export interface AdminRoutesDeps {
   refundPayment: RefundPaymentService
   cancelSubscription: CancelSubscriptionService
   recoveryPolicy: RecoveryPolicyService
+  recoveryReview: ListRecoveryReviewService
 }
 
 /**
@@ -56,6 +58,23 @@ export interface AdminRoutesDeps {
 export function adminRoutes(deps: AdminRoutesDeps) {
   return (
     new Elysia({ prefix: '/payments/admin' })
+      .get(
+        '/subscription-recovery/review',
+        ({ headers, query }) => {
+          requireAdmin(headers, deps.requireAdminEnabled, deps.internalToken)
+          return deps.recoveryReview.execute(query)
+        },
+        {
+          query: z.strictObject({
+            kind: z.enum(['CASE', 'ADMISSION', 'OPERATION', 'PERIOD']).optional(),
+            audience: z.enum(['kids', 'adult', 'unknown']).optional(),
+            subscriptionId: z.uuid().optional(),
+            q: z.string().max(120).optional(),
+            limit: z.coerce.number().int().min(1).max(100).default(25),
+            offset: z.coerce.number().int().min(0).max(100000).default(0),
+          }),
+        },
+      )
       .get('/subscription-recovery/policy', ({ headers }) => {
         requireAdmin(headers, deps.requireAdminEnabled, deps.internalToken)
         return deps.recoveryPolicy.get()

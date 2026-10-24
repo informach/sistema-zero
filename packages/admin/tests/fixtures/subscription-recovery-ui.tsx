@@ -19,10 +19,14 @@ const close: Array<() => Promise<void>> = []
 const calls: { method: string; body: unknown }[] = []
 let record: RecoveryPolicyView
 let failRead = false
+const reviewCalls: string[] = []
+let review: (path: string) => Promise<Response>
 let write: () => Promise<Response>
 beforeEach(() => {
   calls.length = 0
   failRead = false
+  reviewCalls.length = 0
+  review = async () => Response.json({ items: [], total: 0, limit: 25, offset: 0 })
   record = {
     configurationReady: true,
     configuration: {
@@ -39,6 +43,10 @@ beforeEach(() => {
     Response.json({ ...record, configuration: { ...record.configuration, version: 2 } })
   globalThis.fetch = Object.assign(
     async (input: Parameters<typeof fetch>[0], init?: Parameters<typeof fetch>[1]) => {
+      if (String(input).startsWith('/api/payments/recovery/review?')) {
+        reviewCalls.push(String(input))
+        return review(String(input))
+      }
       if (String(input) !== '/api/payments/recovery/policy')
         throw new Error('Unexpected QA request')
       const method = init?.method ?? 'GET'
@@ -85,7 +93,9 @@ async function submit(element: HTMLElement) {
 test('staff sees both-audience policy, with writes disabled', async () => {
   const element = await mount('staff')
   expect(element.textContent).toContain('Kids e Adultos')
-  expect([...element.querySelectorAll('input')].every((input) => input.disabled)).toBe(true)
+  expect(
+    [...element.querySelector('form')!.querySelectorAll('input')].every((input) => input.disabled),
+  ).toBe(true)
   expect(button(element, 'Salvar configuração').disabled).toBe(true)
   await submit(element)
   expect(calls.filter((call) => call.method === 'PUT')).toHaveLength(0)
@@ -94,7 +104,11 @@ test('failed load never exposes seeded defaults as current server policy', async
   failRead = true
   const element = await mount()
   expect(element.querySelector('[role=alert]')?.textContent).toContain('Falha de leitura QA')
-  expect(element.querySelector('form')).toBeNull()
+  expect(
+    [...element.querySelectorAll('button')].some(
+      (item) => item.textContent === 'Salvar configuração',
+    ),
+  ).toBe(false)
   expect(calls.filter((call) => call.method === 'PUT')).toHaveLength(0)
 })
 test('unconfigured communications disable activation but allow an explicit inactive policy', async () => {
@@ -136,4 +150,63 @@ test('uncertain save is not retried automatically; explicit reload reconciles it
   await act(async () => button(element, 'Recarregar configuração').click())
   expect(element.querySelector<HTMLInputElement>('input[type=checkbox]')?.checked).toBe(true)
   expect(calls.filter((call) => call.method === 'PUT')).toHaveLength(1)
+})
+
+const reviewItem = {
+  kind: 'OPERATION',
+  id: 'qa-operation',
+  subscriptionId: 'qa-subscription',
+  paymentId: 'qa-payment',
+  audience: 'unknown',
+  state: 'UNKNOWN',
+  reason: 'PAYMENT_CONFIRMATION_REQUIRED',
+  amountInCents: '9700',
+  version: 1,
+  openedAt: '2026-10-24T12:00:00Z',
+  deadlineAt: null,
+  customerName: 'Titular QA',
+  customerEmail: 'qa@example.invalid',
+}
+const reviewPage = (item = reviewItem) => ({ items: [item], total: 1, limit: 25, offset: 0 })
+
+test('queue exposes uncertain payment with audience unknown, with no financial action', async () => {
+  review = async () => Response.json(reviewPage())
+  const element = await mount('staff')
+  expect(element.textContent).toContain('Titular QA')
+  expect(element.textContent).toContain('qa@example.invalid')
+  expect(element.textContent).toContain('Resultado ainda não confirmado')
+  expect(element.textContent).toContain('Não repetir a cobrança')
+  expect(element.textContent).toContain('Público a confirmar')
+  expect(element.textContent).not.toContain('PAYMENT_CONFIRMATION_REQUIRED')
+  expect(calls.every((call) => call.method === 'GET')).toBe(true)
+  expect(reviewCalls).toHaveLength(1)
+})
+
+test('queue read failure stays visible instead of claiming no cases', async () => {
+  review = async () => Response.json({ error: { code: 'QA_UNAVAILABLE' } }, { status: 503 })
+  const element = await mount()
+  expect(element.textContent).toContain('Não foi possível carregar as conferências')
+  expect(element.textContent).not.toContain('Nenhuma conferência neste filtro')
+})
+
+test('audience change discards late response from previous queue filter', async () => {
+  const pending = Promise.withResolvers<Response>()
+  review = async (path) =>
+    path.includes('audience=adult')
+      ? Response.json(reviewPage({ ...reviewItem, audience: 'adult', customerName: 'Adulto QA' }))
+      : pending.promise
+  const element = await mount()
+  const select = element.querySelector<HTMLSelectElement>('select')!
+  await act(async () => {
+    select.value = 'adult'
+    select.dispatchEvent(new Event('change', { bubbles: true }))
+  })
+  expect(element.textContent).toContain('Adulto QA')
+  await act(async () =>
+    pending.resolve(
+      Response.json(reviewPage({ ...reviewItem, customerName: 'Resposta antiga QA' })),
+    ),
+  )
+  expect(element.textContent).not.toContain('Resposta antiga QA')
+  expect(element.textContent).toContain('Adulto QA')
 })

@@ -21,6 +21,7 @@ mock.module('../../src/server/gateway', () => ({
   },
 }))
 const route = await import('../../src/app/api/payments/recovery/policy/route')
+const reviewRoute = await import('../../src/app/api/payments/recovery/review/route')
 beforeEach(() => {
   allowed = true
   guards.length = 0
@@ -58,5 +59,41 @@ test('denial, oversized body, malformed JSON and wrong media type never reach up
   )
   expect((await route.PUT(request('{'))).status).toBe(400)
   expect((await route.PUT(request('{}', 'text/plain'))).status).toBe(400)
+  expect(calls).toHaveLength(0)
+})
+
+test('review query is read-only, guarded and bounded before forwarding', async () => {
+  const request = new Request(
+    'https://admin.example.invalid/api/payments/recovery/review?audience=unknown&kind=PERIOD&q=qa%40example.invalid',
+  )
+  const response = await reviewRoute.GET(request)
+  expect(response.status).toBe(200)
+  expect(response.headers.get('cache-control')).toBe('private, no-store')
+  expect(guards).toEqual([true])
+  expect(calls[0]).toMatchObject({
+    path: '/payments/admin/subscription-recovery/review',
+    options: {
+      query: { audience: 'unknown', kind: 'PERIOD', q: 'qa@example.invalid', limit: 25, offset: 0 },
+    },
+  })
+  calls.length = 0
+  for (const query of [
+    'limit=101',
+    'offset=-1',
+    'audience=wrong',
+    'kind=PERIOD&kind=CASE',
+    'extra=raw',
+    'subscriptionId=wrong',
+  ])
+    expect(
+      (
+        await reviewRoute.GET(
+          new Request(`https://admin.example.invalid/api/payments/recovery/review?${query}`),
+        )
+      ).status,
+    ).toBe(400)
+  expect(calls).toHaveLength(0)
+  allowed = false
+  expect((await reviewRoute.GET(request)).status).toBe(403)
   expect(calls).toHaveLength(0)
 })
