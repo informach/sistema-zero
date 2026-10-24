@@ -4,7 +4,10 @@ import { migrate } from 'drizzle-orm/postgres-js/migrator'
 import { HandleSubscriptionNotificationService } from '../../src/application/handle-subscription-notification/handle-subscription-notification.service'
 import { buildCyclePayment } from '../../src/application/subscription/cycle-payment'
 import { RetrySubscriptionChargeService } from '../../src/application/subscription-card/retry-subscription-charge.service'
+import { ConfirmSubscriptionPeriodService } from '../../src/application/subscription-recovery/confirm-subscription-period.service'
+import { ConfirmSubscriptionRetryService } from '../../src/application/subscription-recovery/confirm-subscription-retry.service'
 import { SubscriptionAggregate } from '../../src/domain/subscription/subscription.aggregate'
+import { createSubscriptionOperation } from '../../src/domain/subscription/subscription-operation'
 import { Customer } from '../../src/domain/value-objects/customer'
 import { IdempotencyKey } from '../../src/domain/value-objects/idempotency-key'
 import { Money } from '../../src/domain/value-objects/money'
@@ -44,6 +47,7 @@ describe.skipIf(!url)('Pagamento explícito do ciclo — PostgreSQL real', () =>
   let operations: DrizzleSubscriptionOperationRepository
   let gateway: FakePixGateway
   let service: RetrySubscriptionChargeService
+  let confirm: ConfirmSubscriptionRetryService
   let id: string
   let paymentId: string
   let providerId: string
@@ -63,7 +67,7 @@ describe.skipIf(!url)('Pagamento explícito do ciclo — PostgreSQL real', () =>
     })
     subscriptions = new DrizzleSubscriptionRepository(connection.db)
     payments = new DrizzlePaymentRepository(connection.db)
-    operations = new DrizzleSubscriptionOperationRepository(connection.db)
+    operations = new DrizzleSubscriptionOperationRepository(connection.db, () => now)
   })
   afterAll(async () => connection?.close())
   afterEach(async () => {
@@ -116,22 +120,266 @@ describe.skipIf(!url)('Pagamento explícito do ciclo — PostgreSQL real', () =>
       gateway.cardStatus = 'PAID'
       gateway.setSubscriptionCharges(providerId, [{ chargeId, status: 'PAID', createdAt: started }])
     }
+    const cycles = new HandleSubscriptionNotificationService(
+      subscriptions,
+      payments,
+      gateway,
+      new DrizzleWebhookInbox(connection.db),
+      silentLogger,
+      () => now,
+    )
+    confirm = new ConfirmSubscriptionRetryService(
+      operations,
+      subscriptions,
+      payments,
+      gateway,
+      cycles,
+      () => now,
+    )
     service = new RetrySubscriptionChargeService(
       new DrizzleSubscriptionMyReadRepository(connection.db),
       subscriptions,
       payments,
       operations,
       gateway,
-      new HandleSubscriptionNotificationService(
-        subscriptions,
-        payments,
-        gateway,
-        new DrizzleWebhookInbox(connection.db),
-        silentLogger,
-        () => now,
-      ),
+      cycles,
       () => now,
     )
+  })
+
+  async function lostReply(paid = true) {
+    const original = gateway.retrySubscriptionCharge.bind(gateway)
+    gateway.retrySubscriptionCharge = async (request) => {
+      if (paid) await original(request)
+      else gateway.retriedSubscriptionChargeIds.push(request.providerPaymentId)
+      throw new Error('QA lost reply')
+    }
+    const intent = await service.createIntent(email, id, paymentId)
+    expect((await service.execute(email, id, intent.id, input)).state).toBe('UNKNOWN')
+    return {
+      operationId: intent.id,
+      expectedAttempt: 1,
+      actorId: 'qa-admin',
+      requestId: crypto.randomUUID(),
+    }
+  }
+
+  test('conferência de resposta perdida liquida uma vez, audita e não repete débito', async () => {
+    const command = await lostReply()
+    expect(await confirm.execute(command)).toEqual({
+      operationId: command.operationId,
+      confirmed: true,
+    })
+    const saved = await operations.findById(command.operationId)
+    expect(saved).toMatchObject({
+      state: 'SUCCEEDED',
+      result: 'CHARGE_PAID_RECONCILED',
+      confirmation: {
+        actorId: command.actorId,
+        requestId: command.requestId,
+        paymentId,
+        sourceObservedAt: now.toISOString(),
+        confirmedAt: now.toISOString(),
+        period: { startsAt: started.toISOString(), endsAt: '2026-11-16T12:00:00.000Z' },
+      },
+    })
+    gateway.getCardCharge = async () => {
+      throw new Error('Replay must not query provider')
+    }
+    expect(await confirm.execute(command)).toMatchObject({ confirmed: true })
+    expect(gateway.retriedSubscriptionChargeIds).toEqual([chargeId])
+    const events =
+      await connection.sql`select 1 from payments.outbox where aggregate_id=${paymentId} and event_name='payment.paid'`
+    expect(events).toHaveLength(1)
+    const [row] =
+      await connection.sql`select row_to_json(o)::text as data from payments.subscription_operations o where id=${command.operationId}`
+    expect(String(row?.data)).not.toContain(input.paymentToken)
+    expect((await payments.findById(paymentId))?.cycleAccess).toMatchObject({
+      kind: 'VERIFIED_PERIOD',
+      period: saved!.confirmation!.period,
+    })
+  })
+
+  test('duas conferências concorrentes não sobrescrevem a autoria nem duplicam evento', async () => {
+    const command = await lostReply()
+    const results = await Promise.allSettled([
+      confirm.execute(command),
+      confirm.execute({ ...command, actorId: 'qa-other-admin', requestId: crypto.randomUUID() }),
+    ])
+    expect(results.filter((result) => result.status === 'fulfilled')).toHaveLength(1)
+    const audit = (await operations.findById(command.operationId))?.confirmation
+    if (!audit) throw new Error('Confirmation audit missing')
+    expect(['qa-admin', 'qa-other-admin']).toContain(audit.actorId)
+    expect(gateway.retriedSubscriptionChargeIds).toHaveLength(1)
+    const events =
+      await connection.sql`select 1 from payments.outbox where aggregate_id=${paymentId} and event_name='payment.paid'`
+    expect(events).toHaveLength(1)
+  })
+
+  test.each([
+    'unpaid',
+    'wrong-amount',
+    'wrong-period',
+  ] as const)('fonte inconclusiva %s não libera outra cobrança nem concede acesso errado', async (scenario) => {
+    const command = await lostReply(scenario !== 'unpaid')
+    if (scenario === 'wrong-amount') gateway.overrideAmountInCents = 9701n
+    if (scenario === 'wrong-period')
+      gateway.setSubscriptionCharges(providerId, [
+        { chargeId, status: 'PAID', createdAt: new Date('2026-10-17T12:00:00Z') },
+      ])
+    expect(await failureOf(confirm.execute(command))).toBeInstanceOf(Error)
+    expect(await operations.findById(command.operationId)).toMatchObject({
+      state: 'UNKNOWN',
+      confirmation: null,
+    })
+    const payment = await payments.findById(paymentId)
+    expect(payment?.status).toBe(scenario === 'wrong-period' ? 'PAID' : 'FAILED')
+    if (scenario === 'wrong-period')
+      expect(payment?.cycleAccess).toMatchObject({
+        kind: 'REVIEW_REQUIRED',
+        reason: 'SOURCE_DIVERGENCE',
+      })
+    expect(await failureOf(service.createIntent(email, id, paymentId))).toBeInstanceOf(Error)
+    expect(gateway.retriedSubscriptionChargeIds).toHaveLength(1)
+  })
+
+  test('executor vivo não pode ser confirmado; executor abandonado exige o fim da janela', async () => {
+    const intent = await service.createIntent(email, id, paymentId)
+    await operations.start(intent.id, id, now)
+    const command = {
+      operationId: intent.id,
+      expectedAttempt: 1,
+      actorId: 'qa-admin',
+      requestId: crypto.randomUUID(),
+    }
+    expect(await failureOf(confirm.execute(command))).toBeInstanceOf(Error)
+    gateway.cardStatus = 'PAID'
+    gateway.setSubscriptionCharges(providerId, [{ chargeId, status: 'PAID', createdAt: started }])
+    now = new Date(now.getTime() + 11 * 60_000)
+    expect(await confirm.execute(command)).toMatchObject({ confirmed: true })
+    expect(gateway.retriedSubscriptionChargeIds).toHaveLength(0)
+    const confirmed = (await operations.findById(intent.id))!
+    expect(
+      await failureOf(
+        operations.finish(intent.id, confirmed.executionId!, 'UNKNOWN', 'STALE_EXECUTOR', now),
+      ),
+    ).toBeInstanceOf(Error)
+    expect((await operations.findById(intent.id))?.confirmation?.requestId).toBe(command.requestId)
+  })
+
+  test('troca de cartão não tem confirmação de pagamento e tentativa divergente é recusada', async () => {
+    const operation = createSubscriptionOperation({
+      subscriptionId: id,
+      consumerId,
+      providerSubscriptionId: providerId,
+      kind: 'CARD_UPDATE',
+      now,
+    })
+    await operations.create(operation)
+    const startedOperation = await operations.start(operation.id, id, now)
+    await operations.finish(
+      operation.id,
+      startedOperation!.executionId!,
+      'UNKNOWN',
+      'PROVIDER_UNKNOWN',
+      now,
+    )
+    const command = {
+      operationId: operation.id,
+      expectedAttempt: 1,
+      actorId: 'qa-admin',
+      requestId: crypto.randomUUID(),
+    }
+    expect(await failureOf(confirm.execute(command))).toBeInstanceOf(Error)
+    expect(await failureOf(confirm.execute({ ...command, expectedAttempt: 2 }))).toBeInstanceOf(
+      Error,
+    )
+    expect(await operations.findById(operation.id)).toMatchObject({
+      state: 'UNKNOWN',
+      confirmation: null,
+    })
+  })
+
+  test('pagamento sem período coerente fica recebido/em revisão e pode ser conferido sem novo débito', async () => {
+    const command = await lostReply()
+    gateway.setSubscriptionCharges(providerId, [
+      { chargeId, status: 'PAID', createdAt: new Date('2026-10-17T12:00:00Z') },
+    ])
+    expect(await failureOf(confirm.execute(command))).toBeInstanceOf(Error)
+    const payment = await payments.findById(paymentId)
+    expect(payment?.status).toBe('PAID')
+    expect(payment?.cycleAccess?.kind).toBe('REVIEW_REQUIRED')
+    gateway.setSubscriptionCharges(providerId, [{ chargeId, status: 'PAID', createdAt: started }])
+    await new ConfirmSubscriptionPeriodService(payments, subscriptions, gateway, () => now).execute(
+      {
+        paymentId,
+        expectedVersion: payment!.toSnapshot().version,
+        actorId: 'qa-admin',
+        requestId: crypto.randomUUID(),
+      },
+    )
+    expect(await confirm.execute(command)).toMatchObject({ confirmed: true })
+    const events =
+      await connection.sql`select 1 from payments.outbox where aggregate_id=${paymentId} and event_name='payment.paid'`
+    expect(events).toHaveLength(1)
+    expect(gateway.retriedSubscriptionChargeIds).toHaveLength(1)
+    await connection.sql`delete from payments.outbox where aggregate_id=${paymentId}`
+    expect((await operations.findById(command.operationId))?.confirmation?.actorId).toBe('qa-admin')
+  })
+
+  test('observação que vence antes da liquidação não altera pagamento nem intenção', async () => {
+    const command = await lostReply()
+    const read = gateway.getSubscription.bind(gateway)
+    gateway.getSubscription = async (providerId) => {
+      const result = await read(providerId)
+      now = new Date(now.getTime() + 61_000)
+      return result
+    }
+    expect(await failureOf(confirm.execute(command))).toBeInstanceOf(Error)
+    expect((await payments.findById(paymentId))?.status).toBe('FAILED')
+    expect(await operations.findById(command.operationId)).toMatchObject({
+      state: 'UNKNOWN',
+      confirmation: null,
+    })
+  })
+
+  test('a auditoria é recusada se a prova envelhece durante a transação', async () => {
+    const command = await lostReply()
+    const operation = (await operations.findById(command.operationId))!
+    await new HandleSubscriptionNotificationService(
+      subscriptions,
+      payments,
+      gateway,
+      new DrizzleWebhookInbox(connection.db),
+      silentLogger,
+      () => now,
+    ).handleCycle({ subscriptionId: providerId, chargeId })
+    const payment = (await payments.findById(paymentId))!
+    let reads = 0
+    const checking = new DrizzleSubscriptionOperationRepository(connection.db, () =>
+      ++reads === 1 ? now : new Date(now.getTime() + 61_000),
+    )
+    expect(
+      await failureOf(
+        checking.confirmPaidRetry({
+          operation,
+          now,
+          confirmation: {
+            actorId: command.actorId,
+            requestId: command.requestId,
+            paymentId,
+            paymentVersion: payment.toSnapshot().version,
+            sourceObservedAt: now.toISOString(),
+            confirmedAt: now.toISOString(),
+            period: operation.retryTerms!.period,
+          },
+        }),
+      ),
+    ).toBeInstanceOf(Error)
+    expect(await operations.findById(command.operationId)).toMatchObject({
+      state: 'UNKNOWN',
+      confirmation: null,
+    })
   })
 
   test('congela termos, paga uma vez e confirma dinheiro na fonte antes de sucesso', async () => {

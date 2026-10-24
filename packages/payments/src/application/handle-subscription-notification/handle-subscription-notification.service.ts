@@ -1,5 +1,5 @@
-import type { SubscriptionCycleAccess } from '@sistemazero/core/billing'
-import type { PaymentGateway } from '../../domain/ports/payment-gateway.port'
+import type { BillingPeriod, SubscriptionCycleAccess } from '@sistemazero/core/billing'
+import type { PaymentGateway, ProviderChargeStatus } from '../../domain/ports/payment-gateway.port'
 import type { PaymentRepository } from '../../domain/ports/payment-repository.port'
 import type { SubscriptionRepository } from '../../domain/ports/subscription-repository.port'
 import type { WebhookInbox } from '../../domain/ports/webhook-inbox.port'
@@ -32,6 +32,27 @@ export class HandleSubscriptionNotificationService {
   ) {}
 
   async handleCycle(input: { subscriptionId: string; chargeId: string }): Promise<void> {
+    await this.reconcileCycle(input)
+  }
+
+  /** Same canonical settlement path; also exposes the fresh, sanitized observation to reconciliation. */
+  async reconcileCycle(
+    input: { subscriptionId: string; chargeId: string },
+    expected?: {
+      subscriptionId: string
+      consumerId: string
+      amountInCents: bigint
+      period: BillingPeriod
+    },
+  ): Promise<
+    | {
+        providerPaymentId: string
+        status: ProviderChargeStatus
+        amountInCents: bigint
+        observedAt: Date
+      }
+    | undefined
+  > {
     const { subscriptionId, chargeId } = input
 
     const subscription = await this.subscriptions.findByProviderSubscriptionId(
@@ -47,10 +68,46 @@ export class HandleSubscriptionNotificationService {
       })
       return
     }
+    if (
+      expected &&
+      (subscription.id !== expected.subscriptionId ||
+        subscription.consumerId !== expected.consumerId ||
+        subscription.amount.amountInCents !== expected.amountInCents)
+    )
+      throw new ValidationError('A conferência pertence a outra assinatura')
 
+    const observedAt = new Date(this.clock())
     const charge = await this.gateway.getCardCharge(chargeId)
     if (charge.providerPaymentId !== chargeId) {
       throw new ValidationError('Provedor retornou outra cobrança na confirmação do ciclo')
+    }
+    const observation = {
+      providerPaymentId: charge.providerPaymentId,
+      status: charge.status,
+      amountInCents: charge.amountInCents,
+      observedAt,
+    }
+    let authorizedAccess: SubscriptionCycleAccess | null = null
+    if (expected && charge.status === 'PAID') {
+      if (charge.amountInCents !== expected.amountInCents)
+        throw new ValidationError('Valor recebido diverge da autorização original')
+      authorizedAccess = subscriptionCycleAccess({
+        providerSubscription: await this.gateway.getSubscription(subscriptionId),
+        providerSubscriptionId: subscriptionId,
+        providerPaymentId: chargeId,
+        intervalMonths: subscription.intervalMonths,
+        observedAt: this.clock(),
+      })
+      const checkedAt = this.clock()
+      if (checkedAt < observedAt || checkedAt.getTime() - observedAt.getTime() > 60_000)
+        throw new ValidationError('A observação da operadora venceu')
+      // Money and access are distinct. Keep a paid receipt truthful without granting a different period.
+      if (
+        authorizedAccess.kind === 'VERIFIED_PERIOD' &&
+        (authorizedAccess.period.startsAt !== expected.period.startsAt ||
+          authorizedAccess.period.endsAt !== expected.period.endsAt)
+      )
+        authorizedAccess = { version: 1, kind: 'REVIEW_REQUIRED', reason: 'SOURCE_DIVERGENCE' }
     }
 
     // Dedupe por (assinatura + cobrança + status): o token só é consumido em
@@ -64,13 +121,16 @@ export class HandleSubscriptionNotificationService {
     })
     if (!isNew) {
       this.logger.info('subscription.notification.duplicate_ignored', { eventId })
-      return
+      return observation
     }
 
     const existing = await this.payments.findByProviderPaymentId(this.gateway.provider, chargeId)
-    let access: SubscriptionCycleAccess | { kind: 'INITIAL_CAPTURE' } = { kind: 'INITIAL_CAPTURE' }
+    let access: SubscriptionCycleAccess | { kind: 'INITIAL_CAPTURE' } = authorizedAccess ?? {
+      kind: 'INITIAL_CAPTURE',
+    }
     if (
       charge.status === 'PAID' &&
+      !authorizedAccess &&
       subscription.cyclesCompleted > 0 &&
       existing?.status !== 'PAID'
     ) {
@@ -99,7 +159,7 @@ export class HandleSubscriptionNotificationService {
         if (charge.amountInCents !== subscription.amount.amountInCents) {
           this.logAmountMismatch(subscription.id, chargeId, subscription, charge)
           await this.inbox.markProcessed(this.gateway.provider, eventId)
-          return
+          return observation
         }
         existing.confirmSubscriptionChargePaid({
           access,
@@ -122,7 +182,7 @@ export class HandleSubscriptionNotificationService {
           paymentStatus: existing.status,
         })
         await this.inbox.markProcessed(this.gateway.provider, eventId)
-        return
+        return observation
       }
       await this.payments.save(existing)
     } else {
@@ -131,7 +191,7 @@ export class HandleSubscriptionNotificationService {
         // Mismatch determinístico → consome o dedupe e NÃO cria a linha (revisão manual).
         this.logAmountMismatch(subscription.id, chargeId, subscription, charge)
         await this.inbox.markProcessed(this.gateway.provider, eventId)
-        return
+        return observation
       }
       const cyclePayment = buildCyclePayment({
         subscription,
@@ -186,6 +246,7 @@ export class HandleSubscriptionNotificationService {
       chargeId,
       chargeStatus: charge.status,
     })
+    return observation
   }
 
   private logAmountMismatch(

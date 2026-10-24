@@ -22,6 +22,7 @@ import { RefundPaymentService } from '../../src/application/refund-payment/refun
 import { RetrySubscriptionChargeService } from '../../src/application/subscription-card/retry-subscription-charge.service'
 import { UpdateSubscriptionCardService } from '../../src/application/subscription-card/update-subscription-card.service'
 import { ConfirmSubscriptionPeriodService } from '../../src/application/subscription-recovery/confirm-subscription-period.service'
+import { ConfirmSubscriptionRetryService } from '../../src/application/subscription-recovery/confirm-subscription-retry.service'
 import { ListRecoveryReviewService } from '../../src/application/subscription-recovery/list-recovery-review.service'
 import { RecoveryPolicyService } from '../../src/application/subscription-recovery/recovery-policy.service'
 import type { PaymentAdminReadRepository } from '../../src/domain/ports/payment-admin-read.port'
@@ -180,6 +181,19 @@ function buildApp(opts: BuildOpts = {}) {
   }
 
   const app = createServer({
+    confirmSubscriptionRetry: new ConfirmSubscriptionRetryService(
+      subscriptionOperations,
+      subscriptionRepo,
+      repo,
+      gateway,
+      new HandleSubscriptionNotificationService(
+        subscriptionRepo,
+        repo,
+        gateway,
+        new InMemoryWebhookInbox(),
+        silentLogger,
+      ),
+    ),
     confirmSubscriptionPeriod: new ConfirmSubscriptionPeriodService(
       repo,
       subscriptionRepo,
@@ -301,9 +315,15 @@ function buildApp(opts: BuildOpts = {}) {
 describe('Admin: política de regularização autenticada e auditada', () => {
   const path = 'http://localhost/payments/admin/subscription-recovery/policy'
 
-  test('confirmação do período exige admin próprio e não aceita datas ou autor no corpo', async () => {
+  test.each([
+    'period',
+    'payment',
+  ] as const)('confirmação %s exige admin próprio e não aceita datas ou autor no corpo', async (kind) => {
     const { app, gateway } = buildApp({ requireAdmin: true, internalToken: 'qa-confirm-internal' })
-    const url = `http://localhost/payments/admin/subscription-recovery/payments/${crypto.randomUUID()}/confirm-period`
+    const url =
+      kind === 'period'
+        ? `http://localhost/payments/admin/subscription-recovery/payments/${crypto.randomUUID()}/confirm-period`
+        : `http://localhost/payments/admin/subscription-recovery/operations/${crypto.randomUUID()}/confirm-payment`
     const headers = {
       'x-internal-token': 'qa-confirm-internal',
       'x-auth-user-id': 'qa-admin',
@@ -311,7 +331,10 @@ describe('Admin: política de regularização autenticada e auditada', () => {
       'x-auth-user-status': 'active',
       'content-type': 'application/json',
     }
-    const body = { expectedVersion: 0, requestId: crypto.randomUUID() }
+    const body = {
+      ...(kind === 'period' ? { expectedVersion: 0 } : { expectedAttempt: 1 }),
+      requestId: crypto.randomUUID(),
+    }
     const post = (current: Record<string, string>, value: unknown = body) =>
       app.handle(
         new Request(url, { method: 'POST', headers: current, body: JSON.stringify(value) }),

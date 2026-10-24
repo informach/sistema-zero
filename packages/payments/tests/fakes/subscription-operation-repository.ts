@@ -16,6 +16,12 @@ export class InMemorySubscriptionOperationRepository implements SubscriptionOper
     this.items.set(operation.id, structuredClone(operation))
     return true
   }
+  async confirmPaidRetry(
+    _input: Parameters<SubscriptionOperationRepository['confirmPaidRetry']>[0],
+  ): Promise<SubscriptionOperation> {
+    // This HTTP fake cannot prove the paid payment row or transactional locks. Those cases use PostgreSQL.
+    throw new Error('Confirmation requires the database-backed repository')
+  }
   async findById(id: string): Promise<SubscriptionOperation | null> {
     const operation = this.items.get(id)
     return operation ? structuredClone(operation) : null

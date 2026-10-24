@@ -1,0 +1,2 @@
+ALTER TABLE "payments"."subscription_operations" ADD COLUMN "confirmation" jsonb;--> statement-breakpoint
+ALTER TABLE "payments"."subscription_operations" ADD CONSTRAINT "subscription_operations_confirmation_check" CHECK ("payments"."subscription_operations"."confirmation" is null or ("payments"."subscription_operations"."kind" = 'RETRY' and "payments"."subscription_operations"."state" = 'SUCCEEDED' and jsonb_typeof("payments"."subscription_operations"."confirmation") = 'object'));

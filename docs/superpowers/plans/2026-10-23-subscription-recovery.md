@@ -22,7 +22,12 @@ cancelamento auditado/fenced, troca preventiva de cartão e pagamento explícito
 ciclo original, fila Admin e confirmação auditada do período por fonte recente.
 As caixas abaixo continuam representando o aceite integrado, não ausência de código.
 
-Próximos pontos: operar resultados UNKNOWN com prova e auditoria sem repetir POST;
+Conferência de RETRY incerto implementada: consulta canônica do pagamento original,
+auditoria permanente, CAS por executor/tentativa e revisão separada do período,
+sem repetir POST. Migration gerada 0020; prova local em
+`docs/qa/2026-10-24-subscription-retry-confirmation.md`. Ainda não ativada.
+
+Próximos pontos: operar os demais resultados UNKNOWN com prova sem repetir POST;
 revisar o caso histórico individual com aviso/prazo novos; fechar UX/contratos de
 regularização e projeção da próxima cobrança; retirar a coordenação antiga só no
 corte; configurar templates/ambientes, provar migrações e ensaiar os dois públicos.

@@ -22,6 +22,7 @@ let failRead = false
 const reviewCalls: string[] = []
 let review: (path: string) => Promise<Response>
 const confirmationCalls: unknown[] = []
+const confirmationPaths: string[] = []
 let confirmation: () => Promise<Response>
 let write: () => Promise<Response>
 beforeEach(() => {
@@ -29,6 +30,7 @@ beforeEach(() => {
   failRead = false
   reviewCalls.length = 0
   confirmationCalls.length = 0
+  confirmationPaths.length = 0
   confirmation = async () => Response.json({ confirmed: true })
   review = async () => Response.json({ items: [], total: 0, limit: 25, offset: 0 })
   record = {
@@ -51,7 +53,8 @@ beforeEach(() => {
         reviewCalls.push(String(input))
         return review(String(input))
       }
-      if (String(input).endsWith('/confirm-period')) {
+      if (String(input).endsWith('/confirm-period') || String(input).endsWith('/confirm-payment')) {
+        confirmationPaths.push(String(input))
         confirmationCalls.push(typeof init?.body === 'string' ? JSON.parse(init.body) : null)
         return confirmation()
       }
@@ -219,28 +222,49 @@ test('audience change discards late response from previous queue filter', async 
   expect(element.textContent).toContain('Adulto QA')
 })
 
-test('staff cannot confirm a period and administrator sends only version and request id once', async () => {
+test.each([
+  'period',
+  'payment',
+] as const)('staff cannot confirm %s and administrator sends only the fence and request id once', async (kind) => {
+  const label =
+    kind === 'period' ? 'Conferir período na operadora' : 'Conferir pagamento na operadora'
+  const field = kind === 'period' ? 'expectedVersion' : 'expectedAttempt'
   review = async () =>
-    Response.json(reviewPage({ ...reviewItem, kind: 'PERIOD', state: 'REVIEW_REQUIRED' }))
+    Response.json(
+      reviewPage({
+        ...reviewItem,
+        kind: kind === 'period' ? 'PERIOD' : 'OPERATION',
+        state: kind === 'period' ? 'REVIEW_REQUIRED' : 'UNKNOWN',
+      }),
+    )
   const staff = await mount('staff')
-  expect(button(staff, 'Conferir período na operadora').disabled).toBe(true)
+  expect(button(staff, label).disabled).toBe(true)
   expect(confirmationCalls).toHaveLength(0)
   await close.pop()?.()
   const pending = Promise.withResolvers<Response>()
   confirmation = () => pending.promise
   const admin = await mount()
   await act(async () => {
-    button(admin, 'Conferir período na operadora').click()
-    button(admin, 'Conferir período na operadora').click()
+    button(admin, label).click()
+    button(admin, label).click()
   })
   expect(confirmationCalls).toHaveLength(1)
+  expect(confirmationPaths).toEqual([
+    kind === 'period'
+      ? '/api/payments/recovery/payments/qa-payment/confirm-period'
+      : '/api/payments/recovery/operations/qa-operation/confirm-payment',
+  ])
   const body = confirmationCalls[0] as Record<string, unknown>
-  expect(body.expectedVersion).toBe(1)
+  expect(body[field]).toBe(1)
   expect(typeof body.requestId).toBe('string')
-  expect(Object.keys(body).sort()).toEqual(['expectedVersion', 'requestId'])
+  expect(Object.keys(body).sort()).toEqual([field, 'requestId'])
   review = async () => Response.json({ items: [], total: 0, limit: 25, offset: 0 })
   await act(async () => pending.resolve(Response.json({ confirmed: true })))
-  expect(admin.textContent).toContain('Período conferido e registrado')
+  expect(admin.textContent).toContain(
+    kind === 'period'
+      ? 'Período conferido e registrado'
+      : 'Pagamento confirmado e conferência registrada',
+  )
   expect(admin.textContent).toContain('Nenhuma conferência neste filtro')
   expect(confirmationCalls).toHaveLength(1)
 })

@@ -418,6 +418,10 @@ export const subscriptionOperations = paymentsSchema.table(
     executionAttempts: integer('execution_attempts').notNull().default(0),
     completedAt: timestamp('completed_at', { withTimezone: true }),
     result: text('result'),
+    confirmation:
+      jsonb('confirmation').$type<
+        import('../../../domain/subscription/subscription-operation').SubscriptionOperationConfirmation
+      >(),
   },
   (table) => [
     uniqueIndex('subscription_operations_active_uq')
@@ -433,6 +437,10 @@ export const subscriptionOperations = paymentsSchema.table(
   )`,
     ),
     check('subscription_operations_currency_check', sql`${table.currency} = 'BRL'`),
+    check(
+      'subscription_operations_confirmation_check',
+      sql`${table.confirmation} is null or (${table.kind} = 'RETRY' and ${table.state} = 'SUCCEEDED' and jsonb_typeof(${table.confirmation}) = 'object')`,
+    ),
     check(
       'subscription_operations_retry_terms_check',
       sql`(${table.kind} = 'RETRY' and ${table.retryTerms} is not null and jsonb_typeof(${table.retryTerms}) = 'object') or (${table.kind} <> 'RETRY' and ${table.retryTerms} is null)`,

@@ -12,6 +12,7 @@ import type { GetPaymentsStatsService } from '../../../application/payments-stat
 import type { GetSubscriptionStatsService } from '../../../application/payments-stats/get-subscription-stats.service'
 import type { RefundPaymentService } from '../../../application/refund-payment/refund-payment.service'
 import type { ConfirmSubscriptionPeriodService } from '../../../application/subscription-recovery/confirm-subscription-period.service'
+import type { ConfirmSubscriptionRetryService } from '../../../application/subscription-recovery/confirm-subscription-retry.service'
 import type { ListRecoveryReviewService } from '../../../application/subscription-recovery/list-recovery-review.service'
 import type { RecoveryPolicyService } from '../../../application/subscription-recovery/recovery-policy.service'
 import { requireAdmin, requireAdminWrite } from '../admin-auth'
@@ -48,6 +49,7 @@ export interface AdminRoutesDeps {
   recoveryPolicy: RecoveryPolicyService
   recoveryReview: ListRecoveryReviewService
   confirmSubscriptionPeriod: ConfirmSubscriptionPeriodService
+  confirmSubscriptionRetry: ConfirmSubscriptionRetryService
 }
 
 /**
@@ -60,6 +62,23 @@ export interface AdminRoutesDeps {
 export function adminRoutes(deps: AdminRoutesDeps) {
   return (
     new Elysia({ prefix: '/payments/admin' })
+      .post(
+        '/subscription-recovery/operations/:id/confirm-payment',
+        ({ headers, params, body }) => {
+          requireAdminWrite(headers, deps.requireAdminEnabled, deps.internalToken)
+          if (headers['x-auth-impersonator-id'] || headers['x-auth-account-id'])
+            throw new ForbiddenError(
+              'Use a própria conta administrativa para conferir o pagamento.',
+            )
+          const actorId = headers['x-auth-user-id']?.trim()
+          if (!actorId) throw new UnauthorizedError('Autenticação necessária')
+          return deps.confirmSubscriptionRetry.execute({ operationId: params.id, actorId, ...body })
+        },
+        {
+          params: AdminIdParam,
+          body: z.strictObject({ expectedAttempt: z.number().int().min(1), requestId: z.uuid() }),
+        },
+      )
       .get(
         '/subscription-recovery/review',
         ({ headers, query }) => {

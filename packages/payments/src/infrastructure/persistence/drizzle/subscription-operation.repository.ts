@@ -4,13 +4,20 @@ import type {
   SubscriptionOperation,
   SubscriptionOperationRepository,
 } from '../../../domain/subscription/subscription-operation'
-import { readRetryTerms } from '../../../domain/subscription/subscription-operation'
+import {
+  assertRetryConfirmationCandidate,
+  readOperationConfirmation,
+  readRetryTerms,
+} from '../../../domain/subscription/subscription-operation'
 import { ConcurrencyConflictError } from './concurrency.error'
 import type { Database } from './db'
-import { subscriptionOperations, subscriptions } from './schema'
+import { payments, subscriptionOperations, subscriptions } from './schema'
 
 export class DrizzleSubscriptionOperationRepository implements SubscriptionOperationRepository {
-  constructor(private readonly db: Database) {}
+  constructor(
+    private readonly db: Database,
+    private readonly clock: () => Date = () => new Date(),
+  ) {}
 
   async create(operation: SubscriptionOperation): Promise<boolean> {
     return this.db.transaction(async (tx) => {
@@ -137,6 +144,101 @@ export class DrizzleSubscriptionOperationRepository implements SubscriptionOpera
       )
   }
 
+  async confirmPaidRetry(
+    input: Parameters<SubscriptionOperationRepository['confirmPaidRetry']>[0],
+  ): Promise<SubscriptionOperation> {
+    const confirmation = readOperationConfirmation(input.confirmation)
+    if (confirmation.confirmedAt !== input.now.toISOString())
+      throw new ValidationError('Instante de conferência divergente')
+    return this.db.transaction(async (tx) => {
+      // Same subscription-first order as cancellation. Never wait for this lock while holding its operation.
+      const [subscription] = await tx
+        .select()
+        .from(subscriptions)
+        .where(eq(subscriptions.id, input.operation.subscriptionId))
+        .for('update')
+      const [row] = await tx
+        .select()
+        .from(subscriptionOperations)
+        .where(eq(subscriptionOperations.id, input.operation.id))
+        .for('update')
+      if (
+        !row ||
+        !subscription ||
+        row.subscriptionId !== subscription.id ||
+        row.consumerId !== subscription.consumerId ||
+        row.providerSubscriptionId !== subscription.providerSubscriptionId
+      )
+        throw new ValidationError('Origem da operação divergente')
+      const current = restore(row)
+      if (
+        current.state === 'SUCCEEDED' &&
+        current.confirmation?.requestId === confirmation.requestId &&
+        current.confirmation.actorId === confirmation.actorId
+      )
+        return current
+      assertRetryConfirmationCandidate(current, this.clock())
+      if (
+        current.executionAttempts !== input.operation.executionAttempts ||
+        current.executionId !== input.operation.executionId ||
+        current.state !== input.operation.state ||
+        current.providerPaymentId !== input.operation.providerPaymentId ||
+        current.amountInCents !== input.operation.amountInCents
+      )
+        throw new ConcurrencyConflictError(current.id)
+      const [payment] = await tx
+        .select()
+        .from(payments)
+        .where(eq(payments.id, confirmation.paymentId))
+        .for('update')
+      if (
+        payment?.status !== 'PAID' ||
+        payment.method !== 'CREDIT_CARD' ||
+        payment.version !== confirmation.paymentVersion ||
+        payment.consumerId !== current.consumerId ||
+        payment.subscriptionId !== current.subscriptionId ||
+        payment.providerPaymentId !== current.providerPaymentId ||
+        payment.provider !== subscription.provider ||
+        payment.currency !== current.currency ||
+        payment.amountInCents !== current.amountInCents ||
+        subscription.amountInCents !== current.amountInCents ||
+        subscription.currency !== current.currency ||
+        payment.cycleAccess?.kind !== 'VERIFIED_PERIOD' ||
+        payment.cycleAccess.period.startsAt !== confirmation.period.startsAt ||
+        payment.cycleAccess.period.endsAt !== confirmation.period.endsAt ||
+        current.retryTerms?.period.startsAt !== confirmation.period.startsAt ||
+        current.retryTerms?.period.endsAt !== confirmation.period.endsAt
+      )
+        throw new ValidationError('O pagamento ou seu período mudou durante a conferência')
+      // Revalidate after lock waits: a fresh proof cannot grow stale while waiting for another writer.
+      const persistedAt = new Date(this.clock())
+      if (persistedAt < input.now) throw new ValidationError('Relógio da conferência divergente')
+      const persistedConfirmation = readOperationConfirmation({
+        ...confirmation,
+        confirmedAt: persistedAt.toISOString(),
+      })
+      const [saved] = await tx
+        .update(subscriptionOperations)
+        .set({
+          state: 'SUCCEEDED',
+          result: 'CHARGE_PAID_RECONCILED',
+          completedAt: persistedAt,
+          confirmation: persistedConfirmation,
+        })
+        .where(
+          and(
+            eq(subscriptionOperations.id, current.id),
+            eq(subscriptionOperations.state, current.state),
+            eq(subscriptionOperations.executionId, current.executionId),
+            eq(subscriptionOperations.executionAttempts, current.executionAttempts),
+          ),
+        )
+        .returning()
+      if (!saved) throw new ConcurrencyConflictError(current.id)
+      return restore(saved)
+    })
+  }
+
   async rejectWithdrawnCancellation(
     subscriptionId: string,
     caseId: string,
@@ -198,5 +300,6 @@ function restore(row: typeof subscriptionOperations.$inferSelect): SubscriptionO
     ...row,
     currency: row.currency,
     retryTerms: row.retryTerms ? readRetryTerms(row.retryTerms) : null,
+    confirmation: row.confirmation ? readOperationConfirmation(row.confirmation) : null,
   }
 }

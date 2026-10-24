@@ -90,22 +90,36 @@ export function RecoveryReviewClient({ canWrite }: { canWrite: boolean }) {
     return () => requestRef.current?.abort()
   }, [load])
   useEffect(() => () => actionRef.current?.abort(), [])
-  async function confirmPeriod(item: RecoveryReviewItem) {
-    if (!canWrite || actionRef.current || item.kind !== 'PERIOD' || !item.paymentId) return
+  async function confirmItem(item: RecoveryReviewItem) {
+    if (
+      !canWrite ||
+      actionRef.current ||
+      !item.paymentId ||
+      !['PERIOD', 'OPERATION'].includes(item.kind)
+    )
+      return
+    const period = item.kind === 'PERIOD'
     const controller = new AbortController()
     actionRef.current = controller
     setPendingAction(item.id)
     setNotice('')
     try {
       await apiSend(
-        `/api/payments/recovery/payments/${encodeURIComponent(item.paymentId)}/confirm-period`,
+        period
+          ? `/api/payments/recovery/payments/${encodeURIComponent(item.paymentId)}/confirm-period`
+          : `/api/payments/recovery/operations/${encodeURIComponent(item.id)}/confirm-payment`,
         'POST',
-        { expectedVersion: item.version, requestId: crypto.randomUUID() },
+        {
+          ...(period ? { expectedVersion: item.version } : { expectedAttempt: item.version }),
+          requestId: crypto.randomUUID(),
+        },
         { signal: controller.signal },
       )
       if (!controller.signal.aborted)
         setNotice(
-          'Período conferido e registrado. A área de membros receberá o período original; a validade não recomeça hoje.',
+          period
+            ? 'Período conferido e registrado. A área de membros receberá o período original; a validade não recomeça hoje.'
+            : 'Pagamento confirmado e conferência registrada. Nenhuma nova cobrança foi feita; o período original foi preservado.',
         )
     } catch {
       if (!controller.signal.aborted)
@@ -241,16 +255,18 @@ export function RecoveryReviewClient({ canWrite }: { canWrite: boolean }) {
                   {reasons[item.reason] ?? 'A equipe precisa conferir os dados deste caso.'}
                 </p>
               ) : null}
-              {item.kind === 'PERIOD' ? (
+              {item.kind === 'PERIOD' || (item.kind === 'OPERATION' && item.paymentId) ? (
                 <div className="space-y-1">
                   <Button
                     variant="outline"
                     disabled={!canWrite || pendingAction !== null}
-                    onClick={() => void confirmPeriod(item)}
+                    onClick={() => void confirmItem(item)}
                   >
                     {pendingAction === item.id
-                      ? 'Conferindo período…'
-                      : 'Conferir período na operadora'}
+                      ? 'Conferindo na operadora…'
+                      : item.kind === 'PERIOD'
+                        ? 'Conferir período na operadora'
+                        : 'Conferir pagamento na operadora'}
                   </Button>
                   <p className="text-xs text-muted-foreground">
                     Consulta a fonte e registra a confirmação com auditoria. Não permite escolher

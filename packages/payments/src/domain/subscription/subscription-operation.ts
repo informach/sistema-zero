@@ -28,6 +28,82 @@ export type SubscriptionOperationState =
   | 'SUCCEEDED'
   | 'REJECTED'
 
+/** Administrative observation of money already received, never authority to issue another debit. */
+export interface SubscriptionOperationConfirmation {
+  actorId: string
+  requestId: string
+  paymentId: string
+  paymentVersion: number
+  sourceObservedAt: string
+  confirmedAt: string
+  period: BillingPeriod
+}
+
+export function readOperationConfirmation(
+  value: SubscriptionOperationConfirmation,
+): SubscriptionOperationConfirmation {
+  const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+  const observed = new Date(value.sourceObservedAt)
+  const confirmed = new Date(value.confirmedAt)
+  if (
+    !value.actorId?.trim() ||
+    value.actorId.length > 200 ||
+    !uuid.test(value.requestId) ||
+    !uuid.test(value.paymentId) ||
+    !Number.isSafeInteger(value.paymentVersion) ||
+    value.paymentVersion < 0 ||
+    !Number.isFinite(observed.getTime()) ||
+    !Number.isFinite(confirmed.getTime()) ||
+    confirmed < observed ||
+    confirmed.getTime() - observed.getTime() > 60_000 ||
+    observed.toISOString() !== value.sourceObservedAt ||
+    confirmed.toISOString() !== value.confirmedAt
+  )
+    throw new ValidationError('Conferência da operação inválida ou vencida')
+  return {
+    actorId: value.actorId.trim(),
+    requestId: value.requestId,
+    paymentId: value.paymentId,
+    paymentVersion: value.paymentVersion,
+    sourceObservedAt: value.sourceObservedAt,
+    confirmedAt: value.confirmedAt,
+    period: readBillingPeriod(value.period),
+  }
+}
+
+/** A crashed executor stays fenced through its authorization window plus the external request budget. */
+export function assertRetryConfirmationCandidate(
+  operation: SubscriptionOperation,
+  now: Date,
+): asserts operation is SubscriptionOperation & {
+  kind: 'RETRY'
+  state: 'UNKNOWN' | 'EXECUTING'
+  executionId: string
+  startedAt: Date
+  providerPaymentId: string
+  amountInCents: bigint
+  retryTerms: SubscriptionRetryTerms
+} {
+  if (
+    operation.kind !== 'RETRY' ||
+    !operation.executionId ||
+    !Number.isSafeInteger(operation.executionAttempts) ||
+    operation.executionAttempts < 1 ||
+    !operation.startedAt ||
+    !Number.isFinite(operation.startedAt.getTime()) ||
+    !Number.isFinite(operation.expiresAt.getTime()) ||
+    now < operation.startedAt ||
+    !Number.isFinite(now.getTime()) ||
+    !operation.providerPaymentId ||
+    !operation.amountInCents ||
+    operation.amountInCents < 1n ||
+    !operation.retryTerms ||
+    !['UNKNOWN', 'EXECUTING'].includes(operation.state) ||
+    (operation.state === 'EXECUTING' && now.getTime() < operation.expiresAt.getTime() + 60_000)
+  )
+    throw new ValidationError('A operação mudou ou ainda está em execução. Atualize a lista.')
+}
+
 /** Sem token, PAN, CVV ou payload do provedor. A intenção pertence à assinatura local. */
 export interface SubscriptionOperation {
   id: string
@@ -47,6 +123,7 @@ export interface SubscriptionOperation {
   executionAttempts: number
   completedAt: Date | null
   result: string | null
+  confirmation: SubscriptionOperationConfirmation | null
 }
 
 /** Débitos e trocas incertos não são reexecutados; cancelamento tem retomada própria e cercada. */
@@ -103,6 +180,7 @@ export function createSubscriptionOperation(input: {
     executionAttempts: 0,
     completedAt: null,
     result: null,
+    confirmation: null,
   }
 }
 
@@ -135,4 +213,10 @@ export interface SubscriptionOperationRepository {
     result: string,
     now: Date,
   ): Promise<void>
+  /** CAS plus permanent audit; requires the exact locally paid original cycle in the same transaction. */
+  confirmPaidRetry(input: {
+    operation: SubscriptionOperation
+    confirmation: SubscriptionOperationConfirmation
+    now: Date
+  }): Promise<SubscriptionOperation>
 }

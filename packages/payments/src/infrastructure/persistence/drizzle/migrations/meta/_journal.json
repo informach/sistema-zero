@@ -141,6 +141,13 @@
       "when": 1792844903192,
       "tag": "0019_subscription_period_confirmation_audit",
       "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1792854574917,
+      "tag": "0020_pink_loki",
+      "breakpoints": true
     }
   ]
 }

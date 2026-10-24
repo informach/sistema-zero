@@ -28,3 +28,13 @@ export function confirmRecoveryPeriod(
     { method: 'POST', body, signal },
   )
 }
+export function confirmRecoveryPayment(
+  id: string,
+  body: { expectedAttempt: number; requestId: string },
+  signal?: AbortSignal,
+) {
+  return gatewayFetch<{ operationId: string; confirmed: true }>(
+    `/payments/admin/subscription-recovery/operations/${encodeURIComponent(id)}/confirm-payment`,
+    { method: 'POST', body, signal },
+  )
+}

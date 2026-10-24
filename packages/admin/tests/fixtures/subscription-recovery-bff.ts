@@ -25,6 +25,9 @@ const reviewRoute = await import('../../src/app/api/payments/recovery/review/rou
 const confirmRoute = await import(
   '../../src/app/api/payments/recovery/payments/[id]/confirm-period/route'
 )
+const confirmPaymentRoute = await import(
+  '../../src/app/api/payments/recovery/operations/[id]/confirm-payment/route'
+)
 beforeEach(() => {
   allowed = true
   guards.length = 0
@@ -101,22 +104,32 @@ test('review query is read-only, guarded and bounded before forwarding', async (
   expect(calls).toHaveLength(0)
 })
 
-test('period confirmation requires write guard, bounded JSON and no arbitrary period or actor', async () => {
+test.each([
+  'period',
+  'payment',
+] as const)('confirmation %s requires write guard, bounded JSON and no arbitrary period or actor', async (kind) => {
+  const confirmationRoute = kind === 'period' ? confirmRoute : confirmPaymentRoute
   const id = crypto.randomUUID()
   const context = { params: Promise.resolve({ id }) }
-  const body = { expectedVersion: 2, requestId: crypto.randomUUID() }
+  const body = {
+    ...(kind === 'period' ? { expectedVersion: 2 } : { expectedAttempt: 1 }),
+    requestId: crypto.randomUUID(),
+  }
   const post = (value: string) =>
     new Request('https://admin.example.invalid/api', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       body: value,
     })
-  const response = await confirmRoute.POST(post(JSON.stringify(body)), context)
+  const response = await confirmationRoute.POST(post(JSON.stringify(body)), context)
   expect(response.status).toBe(200)
   expect(response.headers.get('cache-control')).toBe('private, no-store')
   expect(guards).toEqual([false])
   expect(calls[0]).toMatchObject({
-    path: `/payments/admin/subscription-recovery/payments/${id}/confirm-period`,
+    path:
+      kind === 'period'
+        ? `/payments/admin/subscription-recovery/payments/${id}/confirm-period`
+        : `/payments/admin/subscription-recovery/operations/${id}/confirm-payment`,
     options: { method: 'POST', body },
   })
   calls.length = 0
@@ -125,13 +138,14 @@ test('period confirmation requires write guard, bounded JSON and no arbitrary pe
     { actorId: 'forged' },
   ])
     expect(
-      (await confirmRoute.POST(post(JSON.stringify({ ...body, ...extra })), context)).status,
+      (await confirmationRoute.POST(post(JSON.stringify({ ...body, ...extra })), context)).status,
     ).toBe(400)
   expect(
-    (await confirmRoute.POST(post(JSON.stringify({ padding: 'x'.repeat(2000) })), context)).status,
+    (await confirmationRoute.POST(post(JSON.stringify({ padding: 'x'.repeat(2000) })), context))
+      .status,
   ).toBe(413)
-  expect((await confirmRoute.POST(post('{'), context)).status).toBe(400)
+  expect((await confirmationRoute.POST(post('{'), context)).status).toBe(400)
   allowed = false
-  expect((await confirmRoute.POST(post(JSON.stringify(body)), context)).status).toBe(403)
+  expect((await confirmationRoute.POST(post(JSON.stringify(body)), context)).status).toBe(403)
   expect(calls).toHaveLength(0)
 })
