@@ -58,6 +58,13 @@ def play(t):
     t.step(3)
     t.check('a seta da esquerda vira para a esquerda', jogador.direcao == 1 and jogador.angle == 90)
 
+    t.tap('UP')
+    t.tap('RIGHT')
+    t.step(3)
+    t.check('duas setas rápidas não fazem meia-volta (a segunda é recusada)', jogador.direcao == 0 and not jogador.bateu)
+    t.tap('LEFT')
+    t.step(3)
+
     # Seguindo reto até a parede da esquerda, bate.
     t.until(lambda: t.get('estado') != 'correndo', 60 * 30)
     t.check('bater na parede termina a rodada e o computador marca', t.get('pontos_computador') == 1 and jogador.bateu)
@@ -70,6 +77,28 @@ def play(t):
     t.get('grade')[jogador.coluna][jogador.linha - 3] = 2
     t.until(lambda: t.get('estado') != 'correndo', 60)
     t.check('passar por um rastro termina a rodada', jogador.bateu)
+    t.tap('SPACE')
+
+    # Ninguém atravessa a moto do outro: a casa que a moto deixa já é rastro.
+    def lado_a_lado(jc, jl, jd, cc, cl, cd):
+        t.get('grade').clear()
+        for _ in range(t.get('COLUNAS')):
+            t.get('grade').append([0] * t.get('LINHAS'))
+        t.get('colocar')(jogador, jc, jl, jd)
+        t.get('colocar')(computador, cc, cl, cd)
+        t.set('estado', 'correndo')
+        t.set('pensar', lambda: None)
+        t.until(lambda: t.get('estado') != 'correndo', 10)
+        t.set('pensar', pensar)
+    pensar = t.get('pensar')
+    lado_a_lado(30, 20, 3, 31, 20, 2)
+    t.check('entrar na casa que a outra moto acabou de deixar derruba', jogador.bateu and not computador.bateu)
+    t.tap('SPACE')
+    lado_a_lado(30, 20, 3, 31, 20, 1)
+    t.check('frente a frente, em casas vizinhas, é empate', jogador.bateu and computador.bateu and t.get('resultado') == 'Empate!')
+    t.tap('SPACE')
+    lado_a_lado(30, 20, 3, 32, 20, 1)
+    t.check('frente a frente, com uma casa no meio, também é empate', jogador.bateu and computador.bateu)
     t.tap('SPACE')
 
     # Jogando com cuidado, numa corrida nova, o jogador ganha rodadas, e alguém chega a três.

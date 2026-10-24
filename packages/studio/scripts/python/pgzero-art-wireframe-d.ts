@@ -1015,6 +1015,18 @@ export const WIREFRAME_D_ART: Record<string, () => Record<string, Uint8Array>> =
       POSES_DE_LUTA.andando4!,
       true,
     ),
+    'capanga_agarrando_direita.svg': lutador(
+      'kungfu-capanga-agarrando-direita',
+      CAPANGA,
+      POSES_DE_LUTA.soco!,
+      false,
+    ),
+    'capanga_agarrando_esquerda.svg': lutador(
+      'kungfu-capanga-agarrando-esquerda',
+      CAPANGA,
+      POSES_DE_LUTA.soco!,
+      true,
+    ),
     'capanga_caindo_direita.svg': lutador(
       'kungfu-capanga-caindo-direita',
       CAPANGA,

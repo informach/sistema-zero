@@ -74,6 +74,11 @@ def update():
         modulo.angle = modulo.angle + 2
     if keyboard.right:
         modulo.angle = modulo.angle - 2
+    # Depois de uma volta inteira, o ângulo volta a ficar entre -180 e 180.
+    if modulo.angle > 180:
+        modulo.angle = modulo.angle - 360
+    if modulo.angle < -180:
+        modulo.angle = modulo.angle + 360
     modulo.image = 'modulo'
     if keyboard.up and combustivel > 0:
         # O motor empurra para onde o bico aponta.

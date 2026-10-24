@@ -37,7 +37,8 @@ draw = game.get_draw_func()
 game.load_handlers()
 clock = pgzero.clock.clock
 KEYS = {name: getattr(pygame, 'K_' + name) for name in
-        ['LEFT', 'RIGHT', 'UP', 'DOWN', 'SPACE', 'RETURN', 'a', 'd', 'w', 's']}
+        ['LEFT', 'RIGHT', 'UP', 'DOWN', 'SPACE', 'RETURN', 'BACKSPACE', 'a', 'd', 'w', 's',
+         'i', 'j', 'k', 'l', 't', 'f', 'g', 'h', 'q', 'n', '1', '2', '3']}
 
 
 class Tester:

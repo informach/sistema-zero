@@ -59,6 +59,30 @@ def play(t):
     t.check('o tijolo atingido some', alvo not in tijolos and len(tijolos) == 59)
     t.check('o de baixo vale 10', t.get('pontos') == pontos + 10, f"{t.get('pontos') - pontos}")
     t.check('e a bola volta para baixo', t.get('vy') > 0)
+    topo = tijolos[0]
+    tijolos.clear()
+    tijolos.append(topo)
+    pontos = t.get('pontos')
+    bola.midtop = (topo.centerx, topo.bottom + 2)
+    t.set('vx', 0)
+    t.set('vy', -6)
+    t.step(2)
+    t.check('o de cima vale 60', t.get('pontos') == pontos + 60, f"{t.get('pontos') - pontos}")
+
+    # A raquete para nas bordas, e a bola que chega pelo lado dela passa.
+    t.get('novo_jogo')()
+    raquete = t.get('raquete')
+    t.hold('LEFT', 200)
+    t.check('a raquete para na borda da esquerda', raquete.left == 0)
+    t.hold('RIGHT', 200)
+    t.check('e na da direita', raquete.right == t.get('WIDTH'))
+    t.click((300, 700))
+    t.step(1)
+    bola.midright = (raquete.left + 2, raquete.centery + 4)
+    t.set('vx', 2)
+    t.set('vy', 3)
+    t.step(1)
+    t.check('a bola que bate no lado da raquete não é jogada para cima', t.get('vy') > 0)
 
     # Seguindo a bola, derruba a parede toda.
     t.get('novo_jogo')()

@@ -69,6 +69,37 @@ def play(t):
     t.check('chegar devagar num morro quebra: só as pistas são planas',
             t.get('estado') == 'quebrou' and 'pista' in t.get('mensagem'), t.get('mensagem'))
 
+    # Numa pista, chegar rápido demais ou torto também quebra.
+    comeco, fim, altura, vale = t.get('PISTAS')[0]
+    for vy, angulo, motivo in ((2.5, 0, 'rápido'), (0.3, 30, 'torto')):
+        t.tap('SPACE')
+        t.step(1)
+        modulo.pos = ((comeco + fim) / 2, altura - 18)
+        modulo.angle = angulo
+        t.set('vx', 0)
+        t.set('vy', vy)
+        t.until(lambda: t.get('estado') != 'voando', 120)
+        t.check(f'numa pista, chegar {motivo} quebra o módulo', t.get('estado') == 'quebrou' and motivo in t.get('mensagem'), t.get('mensagem'))
+    t.tap('SPACE')
+    t.step(1)
+    modulo.pos = ((comeco + fim) / 2, altura - 18)
+    modulo.angle = 0
+    t.set('vx', 0)
+    t.set('vy', 0.3)
+    t.until(lambda: t.get('estado') != 'voando', 120)
+    t.check('e devagar e em pé, pousa', t.get('estado') == 'pousou', t.get('mensagem'))
+
+    # Uma volta inteira deixa o módulo em pé de novo.
+    t.tap('SPACE')
+    t.step(1)
+    t.down('LEFT')
+    for _ in range(180):
+        modulo.pos = (400, 100)
+        t.set('vy', 0)
+        t.step(1)
+    t.up('LEFT')
+    t.check('depois de uma volta inteira, o ângulo volta perto de zero', abs(modulo.angle) < 10, f'ângulo {modulo.angle}')
+
     # O piloto pousa em cada pista.
     for comeco, fim, altura, vale in t.get('PISTAS'):
         t.tap('SPACE')

@@ -88,7 +88,7 @@ def morrer(motivo):
     aviso = motivo
     mancha.pos = sapo.pos
     sounds.morreu.play()
-    clock.schedule(apagar_aviso, 1.5)
+    clock.schedule_unique(apagar_aviso, 1.5)
     novo_sapo()
 
 
@@ -122,7 +122,7 @@ def chegar():
             if False not in ocupadas:
                 fase = fase + 1
                 aviso = 'Fase ' + str(fase) + '!'
-                clock.schedule(apagar_aviso, 1.5)
+                clock.schedule_unique(apagar_aviso, 1.5)
                 nova_fase()
             else:
                 novo_sapo()
@@ -190,7 +190,7 @@ def on_key_down(key):
         sapo.angle = 270
     else:
         return
-    if CHEGADA_Y <= y <= INICIO[1] and 20 <= x <= WIDTH - 20:
+    if y >= CHEGADA_Y and y <= INICIO[1] and x >= 20 and x <= WIDTH - 20:
         sapo.pos = (x, y)
         sapo.image = 'sapo_pulando'
         clock.schedule(pular_de_volta, 0.15)

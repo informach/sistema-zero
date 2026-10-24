@@ -1779,7 +1779,7 @@ export const PGZERO_GAME_BLOCKS = {
     ],
   },
   'pouso-lunar': {
-    sourceSha256: '0ef22bae6d75f66c7fd348d12b41703ff0e55954ea2c8fa508f7a57618e52b06',
+    sourceSha256: 'de9515406ced09584b39e98f985646f110f9ec39a3a4e53e46e194adf6ef5fb3',
     blockIds: [
       'sz_py_abs',
       'sz_py_and',
@@ -1831,7 +1831,7 @@ export const PGZERO_GAME_BLOCKS = {
     ],
   },
   'quebra-tijolos': {
-    sourceSha256: '84d294f562ccd706403aae9a7f98256499a72975d48acc3194009659c58b9af4',
+    sourceSha256: 'd698e9526944d477c50a38f79a19f01744c4dcfbd27708f416d98bb70e9048db',
     blockIds: [
       'sz_py_abs',
       'sz_py_and',
@@ -1888,7 +1888,7 @@ export const PGZERO_GAME_BLOCKS = {
     ],
   },
   'sapo-atravessa': {
-    sourceSha256: 'c317018e7bd578a0c789d65e0789b59f14f2e7de572558b750797f0fdd099fba',
+    sourceSha256: '68425cd5236fd5d1a175c8c29d07b6f45261562f6a9092635665a01971272794',
     blockIds: [
       'sz_py_abs',
       'sz_py_and',
@@ -1918,6 +1918,7 @@ export const PGZERO_GAME_BLOCKS = {
       'sz_py_pgzero_actor_draw',
       'sz_py_pgzero_actor_property',
       'sz_py_pgzero_clock_schedule',
+      'sz_py_pgzero_clock_schedule_unique',
       'sz_py_pgzero_draw',
       'sz_py_pgzero_draw_filled_rect',
       'sz_py_pgzero_draw_text',
@@ -1943,7 +1944,7 @@ export const PGZERO_GAME_BLOCKS = {
     ],
   },
   'patrulha-em-camadas': {
-    sourceSha256: 'a1c0122aa5b8f3ef0354187f935ccce1aad5b8c0722e84cdd91b58450e8e3c36',
+    sourceSha256: '23ac997545bab04eb64d7fbae0a83dce5c403911bb817bf34c708659e17e69ec',
     blockIds: [
       'sz_py_abs',
       'sz_py_and',
@@ -1995,7 +1996,7 @@ export const PGZERO_GAME_BLOCKS = {
     ],
   },
   'motos-de-luz': {
-    sourceSha256: '4159a2b74449b1f4f65c3f378d76e30722879faca5685b5b0f95c3473c4815d2',
+    sourceSha256: 'a6a2df7b79b306dadb10f66f2291d0ac69f386373dcb531d4623bde05a97790e',
     blockIds: [
       'sz_py_and',
       'sz_py_arithmetic',
@@ -2020,7 +2021,6 @@ export const PGZERO_GAME_BLOCKS = {
       'sz_py_or',
       'sz_py_pgzero_actor',
       'sz_py_pgzero_actor_draw',
-      'sz_py_pgzero_actor_property',
       'sz_py_pgzero_draw',
       'sz_py_pgzero_draw_filled_rect',
       'sz_py_pgzero_draw_text',
@@ -2110,7 +2110,7 @@ export const PGZERO_GAME_BLOCKS = {
     ],
   },
   'bombas-no-labirinto': {
-    sourceSha256: '639235373f47b152108e6b9a0d153cb26a565c70aa138d19d530902054c4d245',
+    sourceSha256: '888d65396e2b517ae214c09fa572dbd2f4830faee2416e0ee6032693691d3344',
     blockIds: [
       'sz_py_and',
       'sz_py_arithmetic',
@@ -2164,7 +2164,7 @@ export const PGZERO_GAME_BLOCKS = {
     ],
   },
   'corredor-do-kung-fu': {
-    sourceSha256: '48324d328e6df0fe8e4af39f21b5e08c4c83c8e042960757dca6096f21ebf1ce',
+    sourceSha256: 'f267d667e8e5a88036ae906a36b41df52db339ec371d070e0f10aab62ac5e386',
     blockIds: [
       'sz_py_abs',
       'sz_py_and',
@@ -2180,12 +2180,15 @@ export const PGZERO_GAME_BLOCKS = {
       'sz_py_global',
       'sz_py_if',
       'sz_py_import_one',
+      'sz_py_int',
       'sz_py_integer',
       'sz_py_len',
       'sz_py_list',
       'sz_py_list_append',
       'sz_py_list_call',
       'sz_py_list_clear',
+      'sz_py_max',
+      'sz_py_method',
       'sz_py_negative',
       'sz_py_not',
       'sz_py_or',
@@ -2193,12 +2196,14 @@ export const PGZERO_GAME_BLOCKS = {
       'sz_py_pgzero_actor_draw',
       'sz_py_pgzero_actor_property',
       'sz_py_pgzero_draw',
+      'sz_py_pgzero_draw_filled_rect',
       'sz_py_pgzero_draw_text',
       'sz_py_pgzero_go',
       'sz_py_pgzero_height',
       'sz_py_pgzero_keyboard',
       'sz_py_pgzero_keys',
       'sz_py_pgzero_on_key_down',
+      'sz_py_pgzero_rect',
       'sz_py_pgzero_screen_blit',
       'sz_py_pgzero_screen_fill',
       'sz_py_pgzero_sound_play',
@@ -2208,6 +2213,7 @@ export const PGZERO_GAME_BLOCKS = {
       'sz_py_random_randint',
       'sz_py_return',
       'sz_py_run',
+      'sz_py_run_value',
       'sz_py_str',
       'sz_py_text',
       'sz_py_tuple',

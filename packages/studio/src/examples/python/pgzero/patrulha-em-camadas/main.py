@@ -68,7 +68,7 @@ def criar_obstaculo():
 def bateu(coisa):
     if coisa.tipo == 'buraco':
         # Cai no buraco se as rodas estão no chão bem em cima dele.
-        return no_chao() and coisa.left + 10 < jipe.x < coisa.right - 10
+        return no_chao() and coisa.left + 10 < jipe.x and jipe.x < coisa.right - 10
     return abs(coisa.x - jipe.x) < (coisa.width + jipe.width) / 2 - 8 and jipe.bottom > coisa.top + 6
 
 
@@ -82,9 +82,9 @@ def update():
         velocidade = min(8, velocidade + 0.1)
     for camada in camadas:
         camada.left = camada.left - velocidade * camada.ritmo
-        # A imagem tem duas cópias lado a lado: quando a segunda chega ao começo, volta.
+        # A imagem tem duas cópias lado a lado: quando a segunda chega ao começo, volta uma tela.
         if camada.right <= WIDTH:
-            camada.left = 0
+            camada.left = camada.left + WIDTH
     vy = vy + GRAVIDADE
     jipe.y = jipe.y + vy
     if no_chao():

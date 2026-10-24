@@ -23,6 +23,8 @@ porta = (0, 0)
 heroi_coluna = 0
 heroi_linha = 0
 vidas = 3
+# Quadros em que o herói pisca protegido, logo depois de perder uma vida.
+protegido = 0
 pontos = 0
 fase = 1
 quadros = 0
@@ -79,9 +81,10 @@ def novo_jogo():
 
 
 def colocar_heroi():
-    global heroi_coluna, heroi_linha
+    global heroi_coluna, heroi_linha, protegido
     heroi_coluna = 0
     heroi_linha = 0
+    protegido = 0
 
 
 def centro(coluna, linha):
@@ -117,13 +120,15 @@ def explodir(coluna, linha):
 
 
 def perder_vida():
-    global vidas, estado
+    global vidas, estado, protegido
     vidas = vidas - 1
     sounds.ai.play()
     if vidas == 0:
         estado = 'fim'
     else:
         colocar_heroi()
+        # Volta ao começo protegido por dois segundos: o fogo e os monstros não machucam.
+        protegido = 120
 
 
 def mover_monstros():
@@ -137,10 +142,12 @@ def mover_monstros():
 
 
 def update():
-    global quadros, pontos, estado
+    global quadros, pontos, estado, protegido
     if estado != 'jogando':
         return
     quadros = quadros + 1
+    if protegido > 0:
+        protegido = protegido - 1
     # Os relógios das bombas e do fogo.
     for linha in range(LINHAS):
         for coluna in range(COLUNAS):
@@ -158,10 +165,10 @@ def update():
             monstros.remove(monstro)
             pontos = pontos + 100
             sounds.monstro.play()
-        elif monstro.coluna == heroi_coluna and monstro.linha == heroi_linha:
+        elif monstro.coluna == heroi_coluna and monstro.linha == heroi_linha and protegido == 0:
             perder_vida()
             return
-    if mapa[heroi_linha][heroi_coluna] == 'fogo':
+    if mapa[heroi_linha][heroi_coluna] == 'fogo' and protegido == 0:
         perder_vida()
         return
     # Sem monstros, a porta descoberta leva para a fase seguinte.
@@ -184,7 +191,7 @@ def draw():
     for monstro in monstros:
         monstro.pos = centro(monstro.coluna, monstro.linha)
         monstro.draw()
-    if estado != 'fim':
+    if estado != 'fim' and protegido // 6 % 2 == 0:
         heroi.pos = centro(heroi_coluna, heroi_linha)
         heroi.draw()
     screen.draw.text('Pontos: ' + str(pontos), topleft=(10, 12), fontsize=30, color='white')

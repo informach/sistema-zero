@@ -78,7 +78,8 @@ def andar_um_passo():
         bola.top = 0
         vy = abs(vy)
     # A raquete: o lugar em que a bola bate decide para que lado ela vai.
-    if vy > 0 and bola.colliderect(raquete):
+    # (Só vale a batida por cima: a bola que chega pelo lado da raquete passa direto.)
+    if vy > 0 and bola.colliderect(raquete) and bola.centery < raquete.top:
         bola.bottom = raquete.top
         vy = -abs(vy)
         vx = (bola.centerx - raquete.centerx) / 6
@@ -111,6 +112,10 @@ def update():
         raquete.x = raquete.x - 8
     if keyboard.right and raquete.right < WIDTH:
         raquete.x = raquete.x + 8
+    if raquete.left < 0:
+        raquete.left = 0
+    if raquete.right > WIDTH:
+        raquete.right = WIDTH
     if estado == 'esperando':
         bola.midbottom = raquete.midtop
     if estado == 'jogando':

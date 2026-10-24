@@ -17,8 +17,9 @@ def play(t):
     for camada in camadas:
         camada.left = -799.5
     t.step(1)
-    t.check('quando a segunda metade chega ao começo, a camada volta ao zero sem buraco',
-            all(-10 < camada.left <= 0 for camada in camadas), f'{[c.left for c in camadas]}')
+    esperado = [-799.5 - t.get('velocidade') * c.ritmo + t.get('WIDTH') for c in camadas]
+    t.check('quando a segunda metade chega ao começo, a camada volta uma tela, sem pulo',
+            all(abs(c.left - e) < 0.01 for c, e in zip(camadas, esperado)), f'{[c.left for c in camadas]}')
 
     # Um buraco bem debaixo das rodas.
     t.get('obstaculos').clear()
@@ -32,6 +33,18 @@ def play(t):
     t.check('passar por cima de um buraco com as rodas no chão custa uma vida', t.get('vidas') == 2)
     t.step(70)
     t.check('depois da batida, o jipe recomeça', t.get('estado') == 'andando' and not t.get('obstaculos'))
+
+    # Sem pular, a pedra custa uma vida.
+    t.set('proximo', 99999)
+    t.get('criar_obstaculo')()
+    pedra = t.get('obstaculos')[-1]
+    pedra.tipo = 'pedra'
+    pedra.image = 'pedra'
+    pedra.midbottom = (jipe.x + 120, t.get('CHAO') + 4)
+    t.until(lambda: t.get('vidas') < 2 or pedra.x < jipe.x - 60, 120)
+    t.check('sem pular, bater na pedra custa uma vida', t.get('vidas') == 1)
+    t.step(70)
+    t.set('vidas', 2)
 
     # Pulando, passa por cima da pedra.
     t.set('proximo', 99999)

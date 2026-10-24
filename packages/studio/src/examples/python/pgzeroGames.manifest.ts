@@ -1001,7 +1001,7 @@ export const PGZERO_GAMES = [
       { path: 'quebrou.wav', notes: [220, 165, 110], noteMilliseconds: 110 },
     ],
     music: [],
-    receipt: 'pouso-lunar-r1.json.snapshot',
+    receipt: 'pouso-lunar-r2.json.snapshot',
   },
   {
     key: 'quebra-tijolos',
@@ -1030,7 +1030,7 @@ export const PGZERO_GAMES = [
       { path: 'fase.wav', notes: [523, 659, 784, 1047], noteMilliseconds: 80 },
     ],
     music: [],
-    receipt: 'quebra-tijolos-r1.json.snapshot',
+    receipt: 'quebra-tijolos-r2.json.snapshot',
   },
   {
     key: 'sapo-atravessa',
@@ -1058,7 +1058,7 @@ export const PGZERO_GAMES = [
       { path: 'toca.wav', notes: [523, 659, 784], noteMilliseconds: 70 },
     ],
     music: [],
-    receipt: 'sapo-atravessa-r1.json.snapshot',
+    receipt: 'sapo-atravessa-r2.json.snapshot',
   },
   {
     key: 'patrulha-em-camadas',
@@ -1086,7 +1086,7 @@ export const PGZERO_GAMES = [
       { path: 'chegou.wav', notes: [523, 659, 784, 1047], noteMilliseconds: 90 },
     ],
     music: [],
-    receipt: 'patrulha-em-camadas-r1.json.snapshot',
+    receipt: 'patrulha-em-camadas-r2.json.snapshot',
   },
   {
     key: 'motos-de-luz',
@@ -1110,7 +1110,7 @@ export const PGZERO_GAMES = [
     ],
     sounds: [{ path: 'batida.wav', notes: [196, 147, 98], noteMilliseconds: 110 }],
     music: [],
-    receipt: 'motos-de-luz-r1.json.snapshot',
+    receipt: 'motos-de-luz-r2.json.snapshot',
   },
   {
     key: 'arena-de-dois-comandos',
@@ -1169,7 +1169,7 @@ export const PGZERO_GAMES = [
       { path: 'porta.wav', notes: [523, 659, 784, 1047], noteMilliseconds: 90 },
     ],
     music: [],
-    receipt: 'bombas-no-labirinto-r1.json.snapshot',
+    receipt: 'bombas-no-labirinto-r2.json.snapshot',
   },
   {
     key: 'corredor-do-kung-fu',
@@ -1192,10 +1192,10 @@ export const PGZERO_GAMES = [
     inspiration: 'Kung-Fu Master',
     book: 'wireframe',
     howToPlay:
-      'As setas andam pelo corredor. A dá um soco (rápido e curto) e S dá um chute (vai mais longe). O golpe só acerta quem está na frente do herói, então vire para o capanga que vem por trás. Chegue à escada para subir de andar.',
+      'As setas andam pelo corredor. A dá um soco (rápido e curto) e S dá um chute (vai mais longe). O capanga que chega agarra o herói: ele não anda mais e vai perdendo energia até derrubar o capanga. O golpe só acerta quem está na frente, então vire para quem vem por trás. Chegue à escada para subir de andar.',
     ideas: [
       'Mude ALCANCE_DO_CHUTE para o chute ir mais longe.',
-      'Deixe os capangas mais rápidos a cada andar.',
+      'Mude APERTO para o agarrão tirar menos energia.',
       'Dê mais pontos para quem derrubar com soco.',
     ],
     sounds: [
@@ -1204,7 +1204,7 @@ export const PGZERO_GAMES = [
       { path: 'escada.wav', notes: [392, 494, 587, 784], noteMilliseconds: 90 },
     ],
     music: [],
-    receipt: 'corredor-do-kung-fu-r1.json.snapshot',
+    receipt: 'corredor-do-kung-fu-r2.json.snapshot',
   },
 ] as const satisfies readonly PgzeroGame[]
 

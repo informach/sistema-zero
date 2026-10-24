@@ -8,12 +8,12 @@ galeria.
 
 ## Como jogar
 
-As setas andam pelo corredor. A dá um soco (rápido e curto) e S dá um chute (vai mais longe). O golpe só acerta quem está na frente do herói, então vire para o capanga que vem por trás. Chegue à escada para subir de andar.
+As setas andam pelo corredor. A dá um soco (rápido e curto) e S dá um chute (vai mais longe). O capanga que chega agarra o herói: ele não anda mais e vai perdendo energia até derrubar o capanga. O golpe só acerta quem está na frente, então vire para quem vem por trás. Chegue à escada para subir de andar.
 
 ## Ideias para mudar
 
 - Mude ALCANCE_DO_CHUTE para o chute ir mais longe.
-- Deixe os capangas mais rápidos a cada andar.
+- Mude APERTO para o agarrão tirar menos energia.
 - Dê mais pontos para quem derrubar com soco.
 
 ## Imagens e sons

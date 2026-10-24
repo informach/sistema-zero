@@ -183,7 +183,41 @@ def play(t):
     t.get('relogio')[t.get('heroi_linha')][t.get('heroi_coluna')] = 10
     t.step(1)
     t.check('o herói no fogo perde uma vida e volta ao começo', t.get('vidas') == vidas - 1 and t.get('heroi_coluna') == 0)
-    t.step(15)
+    t.check('volta protegido, piscando', t.get('protegido') > 0)
+    t.step(130)
+
+    # O monstro que encosta custa uma vida.
+    vidas = t.get('vidas')
+    monstro = t.get('Actor')('monstro')
+    monstro.coluna, monstro.linha = t.get('heroi_coluna'), t.get('heroi_linha')
+    t.get('monstros').append(monstro)
+    mover = t.get('mover_monstros')
+    t.set('mover_monstros', lambda: None)
+    t.step(1)
+    t.check('o monstro que encosta no herói custa uma vida', t.get('vidas') == vidas - 1)
+    t.step(1)
+    t.check('protegido, o mesmo monstro não tira outra vida logo em seguida', t.get('vidas') == vidas - 1)
+
+    # A porta só leva adiante depois de derrotar todos os monstros.
+    coluna, linha = t.get('porta')
+    mapa[linha][coluna] = 'chao'
+    t.set('heroi_coluna', coluna)
+    t.set('heroi_linha', linha)
+    t.step(1)
+    t.check('com monstros vivos, a porta não leva adiante', t.get('estado') == 'jogando')
+    t.get('monstros').clear()
+    t.step(1)
+    t.check('sem monstros, a porta descoberta termina a fase', t.get('estado') == 'passou')
+    t.set('mover_monstros', mover)
+
+    # Uma bomba logo no começo custa uma vida só: o herói volta protegido do fogo.
+    random.seed(4)
+    t.get('novo_jogo')()
+    t.get('monstros').clear()
+    t.tap('SPACE')
+    t.tap('RIGHT')
+    t.step(t.get('TEMPO_DA_BOMBA') + t.get('TEMPO_DO_FOGO') + 10)
+    t.check('a própria bomba perto do começo tira uma vida só', t.get('vidas') == 2, f"vidas={t.get('vidas')}")
 
     # Um jogador cuidadoso limpa a fase.
     random.seed(4)

@@ -50,6 +50,8 @@ def colocar(moto, coluna, linha, direcao):
     moto.coluna = coluna
     moto.linha = linha
     moto.direcao = direcao
+    # A direção pedida pelas setas só vale quando a moto anda uma casa.
+    moto.pedido = direcao
     moto.bateu = False
     posicionar(moto)
 
@@ -60,7 +62,7 @@ def posicionar(moto):
 
 
 def livre(coluna, linha):
-    return 0 <= coluna < COLUNAS and 0 <= linha < LINHAS and grade[coluna][linha] == 0
+    return coluna >= 0 and coluna < COLUNAS and linha >= 0 and linha < LINHAS and grade[coluna][linha] == 0
 
 
 def espaco_livre(coluna, linha, limite):
@@ -104,9 +106,12 @@ def pensar():
     computador.direcao = melhor
 
 
-def andar(moto, cor):
+def deixar_rastro(moto, cor):
     grade[moto.coluna][moto.linha] = cor
     rastros.append((moto.coluna, moto.linha, cor))
+
+
+def andar(moto):
     dc, dl = DIRECOES[moto.direcao]
     moto.coluna = moto.coluna + dc
     moto.linha = moto.linha + dl
@@ -140,8 +145,12 @@ def update():
     if quadros % RITMO != 0:
         return
     pensar()
-    andar(jogador, 1)
-    andar(computador, 2)
+    jogador.direcao = jogador.pedido
+    # As duas motos deixam o rastro antes de andar: assim nenhuma passa pela casa da outra.
+    deixar_rastro(jogador, 1)
+    deixar_rastro(computador, 2)
+    andar(jogador)
+    andar(computador)
     # As duas cabeças na mesma casa: as duas batem.
     if jogador.coluna == computador.coluna and jogador.linha == computador.linha:
         jogador.bateu = True
@@ -180,7 +189,7 @@ def on_key_down(key):
         elif estado == 'fim':
             novo_jogo()
         return
-    # A moto não dá meia-volta: só vira para os lados.
+    # A moto não dá meia-volta: só vira para os lados de onde ela está indo.
     pedido = -1
     if key == keys.UP:
         pedido = 0
@@ -191,8 +200,7 @@ def on_key_down(key):
     elif key == keys.RIGHT:
         pedido = 3
     if pedido != -1 and pedido != (jogador.direcao + 2) % 4:
-        jogador.direcao = pedido
-        jogador.angle = pedido * 90
+        jogador.pedido = pedido
 
 
 novo_jogo()
