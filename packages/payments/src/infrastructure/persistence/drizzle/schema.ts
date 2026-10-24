@@ -20,6 +20,7 @@ import type {
 } from '../../../domain/payment/payment.aggregate'
 import type { PaymentStatus } from '../../../domain/payment/payment.status'
 import type { CancellationOrigin } from '../../../domain/subscription/cancellation-record'
+import type { RecoveryAdmissionReason } from '../../../domain/subscription-recovery/recovery-admission.port'
 import type { RecoveryReason } from '../../../domain/subscription-recovery/recovery-case'
 import type {
   RecoveryMessageReceipt,
@@ -668,6 +669,54 @@ export const subscriptionRecoveryPolicyAudit = paymentsSchema.table(
   (table) => [uniqueIndex('subscription_recovery_policy_audit_version_uq').on(table.version)],
 )
 
+export const subscriptionRecoveryAdmissions = paymentsSchema.table(
+  'subscription_recovery_admissions',
+  {
+    paymentId: uuid('payment_id')
+      .primaryKey()
+      .references(() => payments.id),
+    policy: jsonb('policy').$type<RecoveryPolicy>().notNull(),
+    activatedAt: timestamp('activated_at', { withTimezone: true }).notNull(),
+    discoveredAt: timestamp('discovered_at', { withTimezone: true }).notNull(),
+    state: text('state').$type<'PENDING' | 'ADMITTED' | 'REVIEW' | 'IGNORED'>().notNull(),
+    reason: text('reason').$type<RecoveryAdmissionReason>(),
+    caseId: uuid('case_id').references(() => subscriptionRecoveryCases.id),
+    attempts: integer('attempts').notNull().default(0),
+    nextAttemptAt: timestamp('next_attempt_at', { withTimezone: true }),
+    leaseId: uuid('lease_id'),
+    leaseUntil: timestamp('lease_until', { withTimezone: true }),
+  },
+  (t) => [
+    index('subscription_recovery_admissions_due_idx')
+      .on(t.nextAttemptAt)
+      .where(sql`${t.state} = 'PENDING'`),
+    check(
+      'subscription_recovery_admissions_state_check',
+      sql`${t.state} in ('PENDING','ADMITTED','REVIEW','IGNORED')`,
+    ),
+    check(
+      'subscription_recovery_admissions_result_check',
+      sql`(${t.state} = 'PENDING' and ${t.reason} is null and ${t.caseId} is null and ${t.nextAttemptAt} is not null) or (${t.state} = 'ADMITTED' and ${t.reason} is null and ${t.caseId} is not null and ${t.nextAttemptAt} is null) or (${t.state} in ('REVIEW','IGNORED') and ${t.reason} is not null and ${t.caseId} is null and ${t.nextAttemptAt} is null)`,
+    ),
+    check(
+      'subscription_recovery_admissions_reason_check',
+      sql`${t.reason} is null or ${t.reason} in ('AUDIENCE_UNKNOWN','LEGACY_RENEWAL','SOURCE_DATE_UNKNOWN','NO_LONGER_ELIGIBLE','CASE_EXISTS','PROVIDER_DIVERGENCE','PROVIDER_UNAVAILABLE')`,
+    ),
+    check(
+      'subscription_recovery_admissions_lease_check',
+      sql`(${t.leaseId} is null) = (${t.leaseUntil} is null)`,
+    ),
+    check(
+      'subscription_recovery_admissions_attempts_check',
+      sql`${t.attempts} >= 0 and ${t.attempts} <= 5`,
+    ),
+    check(
+      'subscription_recovery_admissions_dates_check',
+      sql`${t.activatedAt} <= ${t.discoveredAt}`,
+    ),
+  ],
+)
+
 export const schema = {
   consumers,
   payments,
@@ -679,6 +728,7 @@ export const schema = {
   subscriptionRecoveryPolicy,
   subscriptionCancellationAudit,
   subscriptionRecoveryPolicyAudit,
+  subscriptionRecoveryAdmissions,
   idempotencyKeys,
   outbox,
   webhookEvents,

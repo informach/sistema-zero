@@ -43,6 +43,7 @@ export class DrizzleSubscriptionRecoveryRepository implements SubscriptionRecove
             eq(subscriptions.consumerId, snapshot.consumerId),
             eq(subscriptions.providerSubscriptionId, snapshot.providerSubscriptionId),
             eq(subscriptions.status, 'ACTIVE'),
+            isNull(subscriptions.cancelRequestedAt),
             gt(subscriptions.cyclesCompleted, 0),
           ),
         )
@@ -61,6 +62,11 @@ export class DrizzleSubscriptionRecoveryRepository implements SubscriptionRecove
 
   async findById(id: string): Promise<SubscriptionRecoveryCase | null> {
     const [row] = await this.db.select().from(cases).where(eq(cases.id, id)).limit(1)
+    return row ? restoreCase(row) : null
+  }
+
+  async findByPaymentId(paymentId: string): Promise<SubscriptionRecoveryCase | null> {
+    const [row] = await this.db.select().from(cases).where(eq(cases.paymentId, paymentId)).limit(1)
     return row ? restoreCase(row) : null
   }
 

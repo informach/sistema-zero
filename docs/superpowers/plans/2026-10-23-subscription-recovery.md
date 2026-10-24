@@ -8,6 +8,13 @@ Este documento não autoriza cancelamentos ou cobranças manuais em clientes rea
 
 ## Complemento verificável — auditoria de cancelamento, 24/10
 
+Lote seguinte implementou fila de admissão, política congelada, prova recente do
+provedor, revisão de origens ambíguas/antigas, dedupe após crash e worker limitado.
+Migration gerada 0015; PostgreSQL descartável desde zero; Payments 472/1309, sem
+falhas ou skips, tipos completos exit 0. Detalhes e limites em
+`docs/qa/2026-10-24-subscription-recovery-admission.md`. Coordenação dos avisos e D7
+ainda não executa nessa etapa; o processo não foi ativado nos ambientes.
+
 O CI `40080180893` da composição `c974f61cb` terminou SUCCESS, incluindo tipos
 completos e os nove jobs adicionais; o deploy de staging foi pulado por ser branch
 financeira. Isso não constitui implantação ou aceite financeiro ponta a ponta.

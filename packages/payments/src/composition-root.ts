@@ -20,7 +20,9 @@ import { GetSubscriptionStatsService } from './application/payments-stats/get-su
 import { ProcessPaymentService } from './application/process-payment/process-payment.service'
 import { RefundPaymentService } from './application/refund-payment/refund-payment.service'
 import { UpdateSubscriptionCardService } from './application/subscription-card/update-subscription-card.service'
+import { RecoveryAdmissionService } from './application/subscription-recovery/recovery-admission.service'
 import { RecoveryPolicyService } from './application/subscription-recovery/recovery-policy.service'
+import { RecoverySourceService } from './application/subscription-recovery/recovery-source.service'
 import type { Env } from './infrastructure/config/env'
 import { InProcessEventPublisher } from './infrastructure/events/in-process-event-publisher'
 import { loadEfiCertificate } from './infrastructure/gateways/efi/certificate'
@@ -42,18 +44,21 @@ import { DrizzlePaymentRepository } from './infrastructure/persistence/drizzle/p
 import { DrizzlePaymentAdminReadRepository } from './infrastructure/persistence/drizzle/payment-admin-read.repository'
 import { DrizzlePaymentMyReadRepository } from './infrastructure/persistence/drizzle/payment-my-read.repository'
 import { PgNotificationListener } from './infrastructure/persistence/drizzle/pg-notification-listener'
+import { DrizzleRecoveryAdmissionRepository } from './infrastructure/persistence/drizzle/recovery-admission.repository'
 import { DrizzleRecoveryPolicyRepository } from './infrastructure/persistence/drizzle/recovery-policy.repository'
 import { DrizzleSubscriptionRepository } from './infrastructure/persistence/drizzle/subscription.repository'
 import { DrizzleSubscriptionAdminReadRepository } from './infrastructure/persistence/drizzle/subscription-admin-read.repository'
 import { DrizzleSubscriptionMyReadRepository } from './infrastructure/persistence/drizzle/subscription-my-read.repository'
 import { DrizzleSubscriptionOperationRepository } from './infrastructure/persistence/drizzle/subscription-operation.repository'
 import { DrizzleSubscriptionPlanRegistry } from './infrastructure/persistence/drizzle/subscription-plan-registry.repository'
+import { DrizzleSubscriptionRecoveryRepository } from './infrastructure/persistence/drizzle/subscription-recovery.repository'
 import { DrizzleWebhookDeliveryRepository } from './infrastructure/persistence/drizzle/webhook-delivery.repository'
 import { DrizzleWebhookInbox } from './infrastructure/persistence/drizzle/webhook-inbox.repository'
 import { InMemoryRateLimiter } from './infrastructure/security/rate-limiter'
 import { WebhookRateLimiter } from './infrastructure/security/webhook-rate-limiter'
 import { ChargeCreationWorker } from './infrastructure/workers/charge-creation-worker'
 import { ReconciliationWorker } from './infrastructure/workers/reconciliation-worker'
+import { RecoveryAdmissionWorker } from './infrastructure/workers/recovery-admission-worker'
 import { SubscriptionCancellationWorker } from './infrastructure/workers/subscription-cancellation-worker'
 import { SubscriptionReconciliationWorker } from './infrastructure/workers/subscription-reconciliation-worker'
 import { WebhookDeliveryWorker } from './infrastructure/workers/webhook-delivery-worker'
@@ -236,6 +241,31 @@ export function createApplication(env: Env): Application {
   // assinante (executeForEmail — "minhas assinaturas").
   const subscriptionsMyRead = new DrizzleSubscriptionMyReadRepository(db)
   const subscriptionOperations = new DrizzleSubscriptionOperationRepository(db)
+  const recoveryCases = new DrizzleSubscriptionRecoveryRepository(db)
+  const recoveryAdmissions = new DrizzleRecoveryAdmissionRepository(db)
+  const recoverySource = new RecoverySourceService(
+    subscriptions,
+    payments,
+    subscriptionOperations,
+    gateway,
+  )
+  const recoveryAdmission = new RecoveryAdmissionService(
+    recoveryAdmissions,
+    recoveryCases,
+    subscriptions,
+    payments,
+    recoverySource,
+  )
+  const recoveryAdmissionWorker = new RecoveryAdmissionWorker(
+    recoveryAdmissions,
+    recoveryAdmission,
+    logger,
+    {
+      intervalMs: 30_000,
+      batchSize: 4,
+      leaseMs: 180_000,
+    },
+  )
   const updateSubscriptionCard = new UpdateSubscriptionCardService(
     subscriptionsMyRead,
     subscriptions,
@@ -381,6 +411,7 @@ export function createApplication(env: Env): Application {
       reconciliationWorker.start()
       subscriptionReconciliationWorker.start()
       subscriptionCancellationWorker.start()
+      recoveryAdmissionWorker.start()
       webhookWorker.start()
       if (env.ASYNC_CHARGE_CREATION) chargeWorker.start()
       // Assina os canais para acordar os workers na hora (fail-safe: cai no poll).
@@ -481,6 +512,7 @@ export function createApplication(env: Env): Application {
         reconciliationWorker.stop(),
         subscriptionReconciliationWorker.stop(),
         subscriptionCancellationWorker.stop(),
+        recoveryAdmissionWorker.stop(),
         webhookWorker.stop(),
         outboxPoller.stop(),
       ])
