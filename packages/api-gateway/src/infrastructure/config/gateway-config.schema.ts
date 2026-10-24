@@ -185,6 +185,7 @@ export const consumerConfigSchema = z.object({
   // (default '') suba com auth efetivamente desabilitada (assinatura com chave vazia).
   hmacSecret: z.string().min(16, 'hmacSecret deve ter ao menos 16 caracteres'),
   allowedCidrs: z.array(z.string()).default(['0.0.0.0/0']),
+  allowedRouteIds: z.array(z.string().min(1).max(200)).max(1_000).optional(),
   isActive: z.boolean().default(true),
 })
 

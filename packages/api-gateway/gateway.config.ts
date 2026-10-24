@@ -106,6 +106,11 @@ const FUNNEL_ALLOWED_CIDRS = (process.env.FUNNEL_ALLOWED_CIDRS ?? '0.0.0.0/0,::/
 // O auth como consumer HMAC de borda (para chamar /messaging/send — e-mail de
 // reset de senha). Espelha o funnel. DEVE bater com o AUTH_HMAC_SECRET do auth.
 const AUTH_HMAC_SECRET = process.env.AUTH_HMAC_SECRET ?? ''
+const PAYMENTS_HMAC_SECRET = process.env.PAYMENTS_HMAC_SECRET ?? ''
+const PAYMENTS_ALLOWED_CIDRS = (process.env.PAYMENTS_ALLOWED_CIDRS ?? '0.0.0.0/0,::/0')
+  .split(',')
+  .map((c) => c.trim())
+  .filter(Boolean)
 const AUTH_ALLOWED_CIDRS = (process.env.AUTH_ALLOWED_CIDRS ?? '0.0.0.0/0,::/0')
   .split(',')
   .map((c) => c.trim())
@@ -254,6 +259,21 @@ const config: GatewayConfigInput = {
   // precisa liberar origem; mantenha restritivo se algum dia expor ao browser.
   cors: { origins: ['*'], credentials: false },
   consumers: [
+    // Credencial própria do Payments: não concede operações de outros serviços.
+    ...(PAYMENTS_HMAC_SECRET
+      ? [
+          {
+            id: 'payments',
+            hmacSecret: PAYMENTS_HMAC_SECRET,
+            allowedCidrs: PAYMENTS_ALLOWED_CIDRS,
+            allowedRouteIds: [
+              'messaging-send',
+              'messaging-message-get',
+              'messaging-message-suppress',
+            ],
+          },
+        ]
+      : []),
     // O funil como cliente HMAC de borda do gateway. Segredo via FUNNEL_HMAC_SECRET.
     {
       id: 'funnel',

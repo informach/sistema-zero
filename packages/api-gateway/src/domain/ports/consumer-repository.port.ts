@@ -6,6 +6,8 @@ export interface Consumer {
   readonly id: string
   readonly hmacSecret: string
   readonly allowedCidrs: readonly string[]
+  /** Absent preserves existing capabilities; an explicit empty list denies every route. */
+  readonly allowedRouteIds?: readonly string[]
   readonly isActive: boolean
 }
 
