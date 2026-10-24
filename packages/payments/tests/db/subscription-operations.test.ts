@@ -133,4 +133,24 @@ describe.skipIf(!databaseUrl)('Intenções de assinatura no PostgreSQL real', ()
     expect(failure).toBeInstanceOf(Error)
     expect(await repository.findById(invalid.id)).toBeNull()
   })
+
+  test('lease de cancelamento é durável e não depende do cursor da reconciliação geral', async () => {
+    const subscriptions = new DrizzleSubscriptionRepository(connection.db)
+    const subscription = await subscriptions.findById(subscriptionId)
+    if (!subscription) throw new Error('Assinatura QA ausente')
+    subscription.requestCancellation()
+    await subscriptions.save(subscription)
+    await connection.sql`update payments.subscriptions set last_reconciled_at=now() where id=${subscriptionId}`
+    const attempts = await Promise.all([
+      subscriptions.claimCancellationRequests(100, 90_000),
+      new DrizzleSubscriptionRepository(connection.db).claimCancellationRequests(100, 90_000),
+    ])
+    expect(attempts.flat().filter((item) => item.id === subscriptionId)).toHaveLength(1)
+    const restarted = new DrizzleSubscriptionRepository(connection.db)
+    expect(
+      (await restarted.claimCancellationRequests(100, 90_000)).some(
+        (item) => item.id === subscriptionId,
+      ),
+    ).toBe(false)
+  })
 })

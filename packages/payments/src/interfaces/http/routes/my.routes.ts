@@ -1,19 +1,31 @@
-import { Elysia } from 'elysia'
+import { Elysia, t } from 'elysia'
+import { z } from 'zod'
 import type { CancelSubscriptionService } from '../../../application/cancel-subscription/cancel-subscription.service'
 import type { GetMyPaymentService } from '../../../application/get-my-payment/get-my-payment.service'
 import type { ListMyPaymentsService } from '../../../application/list-my-payments/list-my-payments.service'
 import type { ListMySubscriptionsService } from '../../../application/list-my-subscriptions/list-my-subscriptions.service'
+import type { UpdateSubscriptionCardService } from '../../../application/subscription-card/update-subscription-card.service'
 import { AdminIdParam, MyPaymentsQuery } from '../dtos'
 import { requireBuyer } from '../my-auth'
 
 const DEFAULT_LIMIT = 20
 const MAX_LIMIT = 100
+const EmptyCardIntentBody = z.strictObject({})
+const CardExecutionBody = z.strictObject({
+  paymentToken: z.string().min(1).max(255),
+  card: z.strictObject({
+    brand: z.string().regex(/^[a-z][a-z0-9-]{1,31}$/),
+    last4: z.string().regex(/^\d{4}$/),
+  }),
+})
 
 export interface MyRoutesDeps {
   listMyPayments: ListMyPaymentsService
   getMyPayment: GetMyPaymentService
   listMySubscriptions: ListMySubscriptionsService
   cancelSubscription: CancelSubscriptionService
+  updateSubscriptionCard: UpdateSubscriptionCardService
+  cardConfig: { accountIdentifier?: string; environment: 'sandbox' | 'production' }
   /**
    * Token interno do gateway (`x-internal-token`) — prova de que o e-mail do
    * X-Auth-User-Email veio de lá. Ausente (dev/local) = checagem desligada.
@@ -52,6 +64,51 @@ export function myRoutes(deps: MyRoutesDeps) {
         const { email } = requireBuyer(headers, deps.internalToken)
         return deps.listMySubscriptions.execute(email)
       })
+      .get('/card-config', ({ headers }) => {
+        requireBuyer(headers, deps.internalToken)
+        return {
+          available: Boolean(deps.cardConfig.accountIdentifier),
+          accountIdentifier: deps.cardConfig.accountIdentifier ?? null,
+          environment: deps.cardConfig.environment,
+        }
+      })
+      .post(
+        '/subscriptions/:id/card-intents',
+        async ({ params, headers }) => {
+          const { email } = requireBuyer(headers, deps.internalToken)
+          return deps.updateSubscriptionCard.createIntent(email, params.id)
+        },
+        { params: AdminIdParam, body: EmptyCardIntentBody },
+      )
+      .get(
+        '/subscriptions/:id/card-intents/:intentId',
+        async ({ params, headers }) => {
+          const { email } = requireBuyer(headers, deps.internalToken)
+          return deps.updateSubscriptionCard.getIntent(email, params.id, params.intentId)
+        },
+        {
+          params: t.Object({
+            id: t.String({ format: 'uuid' }),
+            intentId: t.String({ format: 'uuid' }),
+          }),
+        },
+      )
+      .post(
+        '/subscriptions/:id/card-intents/:intentId',
+        async ({ params, headers, body }) => {
+          const { email } = requireBuyer(headers, deps.internalToken)
+          return deps.updateSubscriptionCard.execute(email, params.id, params.intentId, body)
+        },
+        {
+          params: t.Object({
+            id: t.String({ format: 'uuid' }),
+            intentId: t.String({ format: 'uuid' }),
+          }),
+          // Standard Schema preserva a rejeição de extras; a normalização TypeBox
+          // da aplicação não deve descartar silenciosamente PAN/CVV recebidos.
+          body: CardExecutionBody,
+        },
+      )
       .delete(
         '/subscriptions/:id',
         async ({ params, headers }) => {

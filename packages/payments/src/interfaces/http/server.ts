@@ -19,6 +19,7 @@ import type { GetPaymentsStatsService } from '../../application/payments-stats/g
 import type { GetSubscriptionStatsService } from '../../application/payments-stats/get-subscription-stats.service'
 import type { ProcessPaymentService } from '../../application/process-payment/process-payment.service'
 import type { RefundPaymentService } from '../../application/refund-payment/refund-payment.service'
+import type { UpdateSubscriptionCardService } from '../../application/subscription-card/update-subscription-card.service'
 import type { ConsumerRepository } from '../../domain/ports/consumer-repository.port'
 import type { Env } from '../../infrastructure/config/env'
 import type { Logger } from '../../infrastructure/logging/logger'
@@ -50,6 +51,7 @@ export interface HttpDeps {
   createSubscription: CreateSubscriptionService
   getSubscription: GetSubscriptionService
   cancelSubscription: CancelSubscriptionService
+  updateSubscriptionCard: UpdateSubscriptionCardService
   handleWebhook: HandleProviderWebhookService
   handleBoletoNotification: HandleBoletoNotificationService
   getMetrics: () => Promise<MetricsSnapshot>
@@ -131,7 +133,16 @@ export function createServer(deps: HttpDeps) {
       }
       return undefined
     })
-    .onError({ as: 'global' }, ({ code, error, set }) => {
+    .onError({ as: 'global' }, ({ code, error, set, request }) => {
+      if (code === 'VALIDATION' && new URL(request.url).pathname.includes('/card-intents')) {
+        set.status = 400
+        return {
+          error: {
+            code: 'VALIDATION_ERROR',
+            message: 'Dados inválidos para a solicitação de cartão.',
+          },
+        }
+      }
       if (error instanceof TooManyRequestsError && error.retryAfterSeconds) {
         set.headers['retry-after'] = String(error.retryAfterSeconds)
       }
@@ -205,6 +216,11 @@ export function createServer(deps: HttpDeps) {
         getMyPayment: deps.getMyPayment,
         listMySubscriptions: deps.listMySubscriptions,
         cancelSubscription: deps.cancelSubscription,
+        updateSubscriptionCard: deps.updateSubscriptionCard,
+        cardConfig: {
+          accountIdentifier: deps.env.EFI_ACCOUNT_IDENTIFIER,
+          environment: deps.env.EFI_SANDBOX ? 'sandbox' : 'production',
+        },
         internalToken: deps.internalToken,
       }),
     )

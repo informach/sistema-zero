@@ -18,6 +18,7 @@ export interface SubscriptionView {
   description: string | null
   metadata: Record<string, unknown>
   providerSubscriptionId: string | null
+  cancelRequestedAt: string | null
   canceledAt: string | null
   createdAt: string
   /**
@@ -43,6 +44,7 @@ export interface MySubscriptionView {
   cyclesCompleted: number
   lastChargeAt: string | null
   description: string | null
+  cancelRequestedAt: string | null
   canceledAt: string | null
   createdAt: string
 }
@@ -59,6 +61,7 @@ export function toMySubscriptionView(subscription: SubscriptionAggregate): MySub
     cyclesCompleted: subscription.cyclesCompleted,
     lastChargeAt: subscription.lastChargeAt ? subscription.lastChargeAt.toISOString() : null,
     description: subscription.description,
+    cancelRequestedAt: subscription.cancelRequestedAt?.toISOString() ?? null,
     canceledAt: subscription.canceledAt ? subscription.canceledAt.toISOString() : null,
     createdAt: subscription.createdAt.toISOString(),
   }
@@ -82,6 +85,7 @@ export function toSubscriptionView(
     description: subscription.description,
     metadata: subscription.metadata,
     providerSubscriptionId: subscription.providerSubscriptionId,
+    cancelRequestedAt: subscription.cancelRequestedAt?.toISOString() ?? null,
     canceledAt: subscription.canceledAt ? subscription.canceledAt.toISOString() : null,
     createdAt: subscription.createdAt.toISOString(),
     firstPayment: firstPayment ?? null,

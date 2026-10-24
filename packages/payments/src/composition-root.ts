@@ -19,6 +19,7 @@ import { GetPaymentsStatsService } from './application/payments-stats/get-paymen
 import { GetSubscriptionStatsService } from './application/payments-stats/get-subscription-stats.service'
 import { ProcessPaymentService } from './application/process-payment/process-payment.service'
 import { RefundPaymentService } from './application/refund-payment/refund-payment.service'
+import { UpdateSubscriptionCardService } from './application/subscription-card/update-subscription-card.service'
 import type { Env } from './infrastructure/config/env'
 import { InProcessEventPublisher } from './infrastructure/events/in-process-event-publisher'
 import { loadEfiCertificate } from './infrastructure/gateways/efi/certificate'
@@ -42,6 +43,7 @@ import { PgNotificationListener } from './infrastructure/persistence/drizzle/pg-
 import { DrizzleSubscriptionRepository } from './infrastructure/persistence/drizzle/subscription.repository'
 import { DrizzleSubscriptionAdminReadRepository } from './infrastructure/persistence/drizzle/subscription-admin-read.repository'
 import { DrizzleSubscriptionMyReadRepository } from './infrastructure/persistence/drizzle/subscription-my-read.repository'
+import { DrizzleSubscriptionOperationRepository } from './infrastructure/persistence/drizzle/subscription-operation.repository'
 import { DrizzleSubscriptionPlanRegistry } from './infrastructure/persistence/drizzle/subscription-plan-registry.repository'
 import { DrizzleWebhookDeliveryRepository } from './infrastructure/persistence/drizzle/webhook-delivery.repository'
 import { DrizzleWebhookInbox } from './infrastructure/persistence/drizzle/webhook-inbox.repository'
@@ -49,6 +51,7 @@ import { InMemoryRateLimiter } from './infrastructure/security/rate-limiter'
 import { WebhookRateLimiter } from './infrastructure/security/webhook-rate-limiter'
 import { ChargeCreationWorker } from './infrastructure/workers/charge-creation-worker'
 import { ReconciliationWorker } from './infrastructure/workers/reconciliation-worker'
+import { SubscriptionCancellationWorker } from './infrastructure/workers/subscription-cancellation-worker'
 import { SubscriptionReconciliationWorker } from './infrastructure/workers/subscription-reconciliation-worker'
 import { WebhookDeliveryWorker } from './infrastructure/workers/webhook-delivery-worker'
 import { createServer } from './interfaces/http/server'
@@ -213,11 +216,28 @@ export function createApplication(env: Env): Application {
   // O 4º dep (leitura por e-mail) habilita o cancelamento SELF-SERVICE do
   // assinante (executeForEmail — "minhas assinaturas").
   const subscriptionsMyRead = new DrizzleSubscriptionMyReadRepository(db)
+  const updateSubscriptionCard = new UpdateSubscriptionCardService(
+    subscriptionsMyRead,
+    subscriptions,
+    new DrizzleSubscriptionOperationRepository(db),
+    gateway,
+  )
   const cancelSubscription = new CancelSubscriptionService(
     subscriptions,
     gateway,
     logger,
     subscriptionsMyRead,
+  )
+  const subscriptionCancellationWorker = new SubscriptionCancellationWorker(
+    subscriptions,
+    cancelSubscription,
+    logger,
+    {
+      intervalMs: 30_000,
+      batchSize: 10,
+      concurrency: 2,
+      leaseMs: 2 * env.EFI_TOTAL_RETRY_BUDGET_MS + 30_000,
+    },
   )
   const handleWebhook = new HandleProviderWebhookService(payments, gateway, webhookInbox, logger)
   const handleSubscriptionNotification = new HandleSubscriptionNotificationService(
@@ -305,6 +325,7 @@ export function createApplication(env: Env): Application {
     createSubscription,
     getSubscription,
     cancelSubscription,
+    updateSubscriptionCard,
     handleWebhook,
     handleBoletoNotification,
     getMetrics: () => metrics.getMetrics(),
@@ -333,6 +354,7 @@ export function createApplication(env: Env): Application {
       outboxPoller.start()
       reconciliationWorker.start()
       subscriptionReconciliationWorker.start()
+      subscriptionCancellationWorker.start()
       webhookWorker.start()
       if (env.ASYNC_CHARGE_CREATION) chargeWorker.start()
       // Assina os canais para acordar os workers na hora (fail-safe: cai no poll).
@@ -432,6 +454,7 @@ export function createApplication(env: Env): Application {
         chargeWorker.stop(),
         reconciliationWorker.stop(),
         subscriptionReconciliationWorker.stop(),
+        subscriptionCancellationWorker.stop(),
         webhookWorker.stop(),
         outboxPoller.stop(),
       ])

@@ -23,4 +23,6 @@ export interface SubscriptionRepository {
    * transação aberta durante a chamada externa.
    */
   claimActiveForReconcile(limit: number): Promise<SubscriptionAggregate[]>
+  /** Lease curto persistido; apenas pedidos explícitos ainda não encerrados. */
+  claimCancellationRequests(limit: number, leaseMs: number): Promise<SubscriptionAggregate[]>
 }

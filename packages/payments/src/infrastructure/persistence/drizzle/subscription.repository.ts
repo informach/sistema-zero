@@ -1,4 +1,4 @@
-import { and, eq, inArray, isNotNull, sql } from 'drizzle-orm'
+import { and, eq, inArray, isNotNull, isNull, lte, or, sql } from 'drizzle-orm'
 import type { SubscriptionRepository } from '../../../domain/ports/subscription-repository.port'
 import {
   SubscriptionAggregate,
@@ -129,6 +129,45 @@ export class DrizzleSubscriptionRepository implements SubscriptionRepository {
       await tx
         .update(subscriptions)
         .set({ lastReconciledAt: sql`now()` })
+        .where(
+          inArray(
+            subscriptions.id,
+            rows.map((row) => row.id),
+          ),
+        )
+      return rows.map((row) => SubscriptionAggregate.restore(rowToSnapshot(row)))
+    })
+  }
+
+  async claimCancellationRequests(
+    limit: number,
+    leaseMs: number,
+  ): Promise<SubscriptionAggregate[]> {
+    return this.db.transaction(async (tx) => {
+      const rows = await tx
+        .select()
+        .from(subscriptions)
+        .where(
+          and(
+            isNotNull(subscriptions.cancelRequestedAt),
+            inArray(subscriptions.status, ['ACTIVE', 'PENDING']),
+            or(
+              isNull(subscriptions.cancellationNextAttemptAt),
+              lte(subscriptions.cancellationNextAttemptAt, sql`now()`),
+            ),
+          ),
+        )
+        .orderBy(
+          sql`${subscriptions.cancellationNextAttemptAt} asc nulls first`,
+          subscriptions.cancelRequestedAt,
+          subscriptions.id,
+        )
+        .limit(limit)
+        .for('update', { skipLocked: true })
+      if (rows.length === 0) return []
+      await tx
+        .update(subscriptions)
+        .set({ cancellationNextAttemptAt: sql`now() + ${leaseMs} * interval '1 millisecond'` })
         .where(
           inArray(
             subscriptions.id,

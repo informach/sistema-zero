@@ -246,6 +246,32 @@ describe('CancelSubscriptionService', () => {
     await expect(cancel.execute('sys-b', subId)).rejects.toThrow()
   })
 
+  test('não anuncia cancelamento se a Efí ainda retorna ACTIVE; conserva pedido durável', async () => {
+    gateway.cancelSubscription = async () => {}
+    gateway.subscriptionStatus = 'ACTIVE'
+    const cancel = new CancelSubscriptionService(subscriptions, gateway, silentLogger)
+    await expect(cancel.execute('sys-a', subId)).rejects.toThrow('confirmando')
+    const current = await subscriptions.findById(subId)
+    expect(current?.status).toBe('ACTIVE')
+    expect(current?.cancelRequestedAt).toBeInstanceOf(Date)
+    expect(current?.canceledAt).toBeNull()
+    expect(
+      subscriptions.outbox.filter((event) => event.eventName === 'subscription.canceled'),
+    ).toHaveLength(0)
+  })
+
+  test('resposta do PUT perdida mas GET confirma cancelamento: conclui sem falso erro financeiro', async () => {
+    gateway.cancelSubscription = async () => {
+      gateway.subscriptionStatus = 'CANCELED'
+      throw new Error('Resposta perdida')
+    }
+    const cancel = new CancelSubscriptionService(subscriptions, gateway, silentLogger)
+    expect((await cancel.execute('sys-a', subId)).status).toBe('CANCELED')
+    expect(
+      subscriptions.outbox.filter((event) => event.eventName === 'subscription.canceled'),
+    ).toHaveLength(1)
+  })
+
   test('cancelar uma já cancelada é idempotente (não chama a Efí de novo)', async () => {
     const cancel = new CancelSubscriptionService(subscriptions, gateway, silentLogger)
     await cancel.execute('sys-a', subId)

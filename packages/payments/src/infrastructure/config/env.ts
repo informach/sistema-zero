@@ -54,6 +54,8 @@ const EnvSchema = z
     EFI_CLIENT_ID: z.string().min(1, 'EFI_CLIENT_ID é obrigatória'),
     EFI_CLIENT_SECRET: z.string().min(1, 'EFI_CLIENT_SECRET é obrigatória'),
     EFI_SANDBOX: optionalBool(true),
+    // Identificador PÚBLICO da conta Efí para tokenização no navegador. Não é client_secret.
+    EFI_ACCOUNT_IDENTIFIER: z.string().trim().min(1).max(128).optional(),
     // Certificado P12 da Efí: por caminho de arquivo OU por conteúdo em base64
     // (preferível em PaaS como Railway, que não têm upload de arquivo persistente).
     EFI_CERTIFICATE_PATH: z.string().optional(),

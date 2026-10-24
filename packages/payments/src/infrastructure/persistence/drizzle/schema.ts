@@ -228,6 +228,7 @@ export const subscriptions = paymentsSchema.table(
     description: text('description'),
     metadata: jsonb('metadata').$type<Record<string, unknown>>().notNull().default({}),
     cancelRequestedAt: timestamp('cancel_requested_at', { withTimezone: true }),
+    cancellationNextAttemptAt: timestamp('cancellation_next_attempt_at', { withTimezone: true }),
     canceledAt: timestamp('canceled_at', { withTimezone: true }),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
@@ -236,6 +237,9 @@ export const subscriptions = paymentsSchema.table(
     uniqueIndex('subscriptions_consumer_idem_uq').on(t.consumerId, t.idempotencyKey),
     index('subscriptions_provider_sub_idx').on(t.provider, t.providerSubscriptionId),
     index('subscriptions_status_idx').on(t.status),
+    index('subscriptions_cancellation_requests_idx')
+      .on(t.cancellationNextAttemptAt, t.cancelRequestedAt)
+      .where(sql`${t.cancelRequestedAt} is not null and ${t.status} in ('ACTIVE', 'PENDING')`),
     index('subscriptions_reconcile_idx')
       .on(t.lastReconciledAt.asc().nullsFirst(), t.lastChargeAt.asc().nullsFirst(), t.id.asc())
       .where(sql`status = 'ACTIVE' AND provider_subscription_id IS NOT NULL`),

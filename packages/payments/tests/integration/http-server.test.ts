@@ -19,6 +19,7 @@ import { GetPaymentsStatsService } from '../../src/application/payments-stats/ge
 import { GetSubscriptionStatsService } from '../../src/application/payments-stats/get-subscription-stats.service'
 import { ProcessPaymentService } from '../../src/application/process-payment/process-payment.service'
 import { RefundPaymentService } from '../../src/application/refund-payment/refund-payment.service'
+import { UpdateSubscriptionCardService } from '../../src/application/subscription-card/update-subscription-card.service'
 import type { PaymentAdminReadRepository } from '../../src/domain/ports/payment-admin-read.port'
 import type { PaymentMyReadRepository } from '../../src/domain/ports/payment-my-read.port'
 import type { SubscriptionAdminReadRepository } from '../../src/domain/ports/subscription-admin-read.port'
@@ -41,6 +42,7 @@ import {
   InMemoryWebhookInbox,
   silentLogger,
 } from '../fakes/in-memory'
+import { InMemorySubscriptionOperationRepository } from '../fakes/subscription-operation-repository'
 
 interface BuildOpts {
   async?: boolean
@@ -200,6 +202,12 @@ function buildApp(opts: BuildOpts = {}) {
       silentLogger,
     ),
     getSubscription: new GetSubscriptionService(subscriptionRepo),
+    updateSubscriptionCard: new UpdateSubscriptionCardService(
+      subscriptionsMyRead,
+      subscriptionRepo,
+      new InMemorySubscriptionOperationRepository(),
+      gateway,
+    ),
     cancelSubscription: new CancelSubscriptionService(
       subscriptionRepo,
       gateway,
@@ -1490,6 +1498,74 @@ describe('Minhas assinaturas (/payments/my/subscriptions — self-service do ass
     sub.activate()
     return subscriptionRepo.save(sub).then(() => sub.id)
   }
+
+  test('troca de cartão é autenticada e vinculada ao comprador; reentrega não cobra', async () => {
+    const { app, subscriptionRepo, gateway } = buildApp()
+    const id = await seedSubscription(subscriptionRepo, 'ana@example.com')
+    const headers = { 'x-auth-user-email': 'ana@example.com', 'content-type': 'application/json' }
+    const path = `http://localhost/payments/my/subscriptions/${id}/card-intents`
+    expect(
+      (
+        await app.handle(
+          new Request(path, {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: '{}',
+          }),
+        )
+      ).status,
+    ).toBe(401)
+    const stranger = await app.handle(
+      new Request(path, {
+        method: 'POST',
+        headers: { ...headers, 'x-auth-user-email': 'another@example.test' },
+        body: '{}',
+      }),
+    )
+    expect(stranger.status).toBe(404)
+    const created = await app.handle(new Request(path, { method: 'POST', headers, body: '{}' }))
+    expect(created.status).toBe(200)
+    const intent = (await created.json()) as { id: string; chargesNow: boolean }
+    expect(intent.chargesNow).toBe(false)
+    const body = JSON.stringify({
+      paymentToken: 'qa-token-transient',
+      card: { brand: 'visa', last4: '1234' },
+    })
+    const first = await app.handle(
+      new Request(`${path}/${intent.id}`, { method: 'POST', headers, body }),
+    )
+    expect(first.status).toBe(200)
+    expect(((await first.json()) as { state: string }).state).toBe('SUCCEEDED')
+    const duplicate = await app.handle(
+      new Request(`${path}/${intent.id}`, { method: 'POST', headers, body }),
+    )
+    expect(duplicate.status).toBe(200)
+    expect(gateway.updatedCardSubscriptionIds).toHaveLength(1)
+    expect(gateway.retriedSubscriptionChargeIds).toHaveLength(0)
+  })
+
+  test('DTO de cartão recusa dados crus e não os devolve no erro', async () => {
+    const { app, subscriptionRepo } = buildApp()
+    const id = await seedSubscription(subscriptionRepo, 'ana@example.com')
+    const response = await app.handle(
+      new Request(
+        `http://localhost/payments/my/subscriptions/${id}/card-intents/${crypto.randomUUID()}`,
+        {
+          method: 'POST',
+          headers: { 'x-auth-user-email': 'ana@example.com', 'content-type': 'application/json' },
+          body: JSON.stringify({
+            paymentToken: 'qa-token-transient',
+            card: { brand: 'visa', last4: '1234', number: 'raw-qa-marker', cvv: 'cvv-qa-marker' },
+          }),
+        },
+      ),
+    )
+    expect(response.status).toBe(400)
+    const error = await response.text()
+    expect(error).not.toContain('raw-qa-marker')
+    expect(error).not.toContain('cvv-qa-marker')
+    expect(error).not.toContain('qa-token-transient')
+  })
 
   test('literal /my/subscriptions VENCE o param /my/:id (não vira 400 de uuid)', async () => {
     const { app } = buildApp()

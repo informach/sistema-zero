@@ -1,6 +1,7 @@
 import type { PaymentGateway } from '../../domain/ports/payment-gateway.port'
 import type { SubscriptionMyReadRepository } from '../../domain/ports/subscription-my-read.port'
 import type { SubscriptionRepository } from '../../domain/ports/subscription-repository.port'
+import { DomainError } from '../../domain/shared/errors'
 import type { SubscriptionAggregate } from '../../domain/subscription/subscription.aggregate'
 import { SubscriptionNotFoundError } from '../../domain/subscription/subscription.errors'
 import type { Logger } from '../../infrastructure/logging/logger'
@@ -54,23 +55,59 @@ export class CancelSubscriptionService {
     const scoped = await this.myRead.findByEmailAndId(email, id)
     if (!scoped) throw new SubscriptionNotFoundError(id)
     await this.cancel(scoped)
-    return toMySubscriptionView(scoped)
+    const fresh = await this.subscriptions.findById(scoped.id)
+    if (!fresh) throw new SubscriptionNotFoundError(scoped.id)
+    return toMySubscriptionView(fresh)
   }
 
   private async cancel(subscription: SubscriptionAggregate): Promise<SubscriptionView> {
-    if (subscription.status === 'CANCELED') return toSubscriptionView(subscription)
+    if (subscription.status === 'CANCELED' || subscription.status === 'EXPIRED')
+      return toSubscriptionView(subscription)
+
+    // Antes da rede: uma aba com intenção de cartão já aberta perde autoridade.
+    if (subscription.requestCancellation()) await this.subscriptions.save(subscription)
+    if (!subscription.providerSubscriptionId) throw new SubscriptionCancellationPendingError()
 
     if (subscription.providerSubscriptionId) {
-      await this.gateway.cancelSubscription(subscription.providerSubscriptionId)
+      try {
+        await this.gateway.cancelSubscription(subscription.providerSubscriptionId)
+      } catch {
+        // PUT pode ter sido aceito sem resposta. A consulta abaixo decide, não o erro.
+      }
+      try {
+        const confirmed = await this.gateway.getSubscription(subscription.providerSubscriptionId)
+        if (
+          confirmed.providerSubscriptionId !== subscription.providerSubscriptionId ||
+          confirmed.status !== 'CANCELED'
+        ) {
+          throw new SubscriptionCancellationPendingError()
+        }
+      } catch {
+        throw new SubscriptionCancellationPendingError()
+      }
     }
-    subscription.cancel()
-    await this.subscriptions.save(subscription)
+    // `save` usa a versão carregada; recarregar também preserva ciclos concorrentes.
+    const fresh = await this.subscriptions.findById(subscription.id)
+    if (!fresh) throw new SubscriptionNotFoundError(subscription.id)
+    if (fresh.status !== 'CANCELED' && fresh.status !== 'EXPIRED') {
+      fresh.cancel()
+      await this.subscriptions.save(fresh)
+    }
 
     this.logger.info('subscription.canceled', {
       subscriptionId: subscription.id,
       consumerId: subscription.consumerId,
     })
 
-    return toSubscriptionView(subscription)
+    return toSubscriptionView(fresh)
+  }
+}
+
+export class SubscriptionCancellationPendingError extends DomainError {
+  readonly code = 'SUBSCRIPTION_CANCELLATION_PENDING'
+  constructor() {
+    super(
+      'Pedido de cancelamento registrado. Estamos confirmando o encerramento com a operadora; não faça uma nova assinatura enquanto isso.',
+    )
   }
 }
