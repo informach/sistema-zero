@@ -528,7 +528,7 @@ export const subscriptionRecoveryCases = paymentsSchema.table(
     ),
     check(
       'subscription_recovery_reason_check',
-      sql`${table.reason} is null or ${table.reason} in ('PAID', 'EXTERNAL_CANCELLATION', 'UNPAID_AFTER_NOTICE', 'PAYMENT_UNCERTAIN', 'CONTACT_FAILED', 'PROVIDER_DIVERGENCE')`,
+      sql`${table.reason} is null or ${table.reason} in ('PAID', 'SUBSEQUENT_CYCLE_PAID', 'EXTERNAL_CANCELLATION', 'UNPAID_AFTER_NOTICE', 'PAYMENT_UNCERTAIN', 'CONTACT_FAILED', 'PROVIDER_DIVERGENCE')`,
     ),
     check(
       'subscription_recovery_cancel_notice_check',
@@ -537,6 +537,45 @@ export const subscriptionRecoveryCases = paymentsSchema.table(
     check(
       'subscription_recovery_lease_check',
       sql`(${table.leaseId} is null) = (${table.leaseUntil} is null)`,
+    ),
+  ],
+)
+
+/** Permanent closeout audit; no synthetic payment, period grant or provider mutation. */
+export const subscriptionRecoveryResolutions = paymentsSchema.table(
+  'subscription_recovery_resolutions',
+  {
+    caseId: uuid('case_id')
+      .primaryKey()
+      .references(() => subscriptionRecoveryCases.id),
+    actorId: text('actor_id').notNull(),
+    requestId: uuid('request_id').notNull(),
+    paymentId: uuid('payment_id')
+      .notNull()
+      .references(() => payments.id),
+    paymentVersion: integer('payment_version').notNull(),
+    subscriptionVersion: integer('subscription_version').notNull(),
+    originalPaymentVersion: integer('original_payment_version').notNull(),
+    providerPaymentId: text('provider_payment_id').notNull(),
+    originalChargeCreatedAt: timestamp('original_charge_created_at', {
+      withTimezone: true,
+    }).notNull(),
+    chargeCreatedAt: timestamp('charge_created_at', { withTimezone: true }).notNull(),
+    periodStartsAt: timestamp('period_starts_at', { withTimezone: true }).notNull(),
+    periodEndsAt: timestamp('period_ends_at', { withTimezone: true }).notNull(),
+    observedAt: timestamp('observed_at', { withTimezone: true }).notNull(),
+    resolvedAt: timestamp('resolved_at', { withTimezone: true }).notNull(),
+  },
+  (table) => [
+    uniqueIndex('recovery_resolution_request_uq').on(table.requestId),
+    check(
+      'recovery_resolution_version_check',
+      sql`${table.paymentVersion} >= 0 and ${table.subscriptionVersion} >= 0 and ${table.originalPaymentVersion} >= 0`,
+    ),
+    check('recovery_resolution_actor_check', sql`length(trim(${table.actorId})) between 1 and 200`),
+    check(
+      'recovery_resolution_dates_check',
+      sql`${table.originalChargeCreatedAt} < ${table.chargeCreatedAt} and ${table.chargeCreatedAt} <= ${table.observedAt} and ${table.periodStartsAt} <= ${table.observedAt} and ${table.periodStartsAt} < ${table.periodEndsAt} and ${table.observedAt} <= ${table.resolvedAt} and ${table.resolvedAt} <= ${table.observedAt} + interval '60 seconds'`,
     ),
   ],
 )
@@ -790,6 +829,7 @@ export const schema = {
   subscriptionPlans,
   subscriptionOperations,
   subscriptionRecoveryCases,
+  subscriptionRecoveryResolutions,
   subscriptionRecoveryNotices,
   subscriptionRecoveryPolicy,
   subscriptionCancellationAudit,

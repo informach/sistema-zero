@@ -15,6 +15,7 @@ import type { ConfirmSubscriptionPeriodService } from '../../../application/subs
 import type { ConfirmSubscriptionRetryService } from '../../../application/subscription-recovery/confirm-subscription-retry.service'
 import type { ListRecoveryReviewService } from '../../../application/subscription-recovery/list-recovery-review.service'
 import type { RecoveryPolicyService } from '../../../application/subscription-recovery/recovery-policy.service'
+import type { ResolveSupersededRecoveryService } from '../../../application/subscription-recovery/resolve-superseded-recovery.service'
 import type { ReviewHistoricalAdmissionService } from '../../../application/subscription-recovery/review-historical-admission.service'
 import { requireAdmin, requireAdminWrite } from '../admin-auth'
 import {
@@ -52,6 +53,7 @@ export interface AdminRoutesDeps {
   confirmSubscriptionPeriod: ConfirmSubscriptionPeriodService
   confirmSubscriptionRetry: ConfirmSubscriptionRetryService
   reviewHistoricalAdmission: ReviewHistoricalAdmissionService
+  resolveSupersededRecovery: ResolveSupersededRecoveryService
 }
 
 /**
@@ -64,6 +66,23 @@ export interface AdminRoutesDeps {
 export function adminRoutes(deps: AdminRoutesDeps) {
   return (
     new Elysia({ prefix: '/payments/admin' })
+      .post(
+        '/subscription-recovery/cases/:id/resolve-subsequent-payment',
+        ({ headers, params, body }) => {
+          requireAdminWrite(headers, deps.requireAdminEnabled, deps.internalToken)
+          if (headers['x-auth-impersonator-id'] || headers['x-auth-account-id'])
+            throw new ForbiddenError(
+              'Use a própria conta administrativa para revisar o acompanhamento.',
+            )
+          const actorId = headers['x-auth-user-id']?.trim()
+          if (!actorId) throw new UnauthorizedError('Autenticação necessária')
+          return deps.resolveSupersededRecovery.execute({ caseId: params.id, actorId, ...body })
+        },
+        {
+          params: AdminIdParam,
+          body: z.strictObject({ expectedVersion: z.number().int().min(0), requestId: z.uuid() }),
+        },
+      )
       .post(
         '/subscription-recovery/payments/:id/admit',
         ({ headers, params, body }) => {

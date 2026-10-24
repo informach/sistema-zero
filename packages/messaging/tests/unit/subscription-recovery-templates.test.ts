@@ -47,5 +47,12 @@ test('contrato contém quatro avisos próprios de cada público, sem depender do
     }
     if (seed.key.endsWith('-reminder'))
       expect(result.value.body).toContain('31 de outubro de 2026 às 09:00')
+    if (seed.key.endsWith('-recovered')) {
+      expect(result.value.body).toContain('qual cobrança foi paga')
+      expect(result.value.body).toContain(
+        'não significa que todas as cobranças antigas foram pagas',
+      )
+      expect(result.value.body).not.toContain('acompanhamento dessa cobrança')
+    }
   }
 })

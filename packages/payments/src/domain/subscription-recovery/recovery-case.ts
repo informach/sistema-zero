@@ -12,6 +12,7 @@ export type RecoveryState =
   | 'MANUAL_REVIEW'
 export type RecoveryReason =
   | 'PAID'
+  | 'SUBSEQUENT_CYCLE_PAID'
   | 'EXTERNAL_CANCELLATION'
   | 'UNPAID_AFTER_NOTICE'
   | 'PAYMENT_UNCERTAIN'
@@ -308,6 +309,18 @@ export class SubscriptionRecoveryCase extends AggregateRoot<string> {
     if (!validDate(now)) throw new ValidationError('Relógio inválido')
     if (['RECOVERED', 'CANCELED'].includes(this.data.state)) return
     this.transition('MANUAL_REVIEW', 'CONTACT_FAILED', now)
+  }
+
+  /** Only a reviewed, independently paid later receipt authorizes this distinct closeout. */
+  resolveAfterSubsequentPayment(now: Date): void {
+    if (
+      !validDate(now) ||
+      now < this.data.openedAt ||
+      ['RECOVERED', 'CANCELED'].includes(this.data.state)
+    )
+      throw new ValidationError('O acompanhamento não aceita esta resolução')
+    this.data.lastProviderCheckAt = new Date(now)
+    this.transition('RECOVERED', 'SUBSEQUENT_CYCLE_PAID', now)
   }
 
   sourceDiverged(now: Date): void {

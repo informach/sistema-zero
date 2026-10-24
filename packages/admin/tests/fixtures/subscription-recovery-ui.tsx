@@ -56,7 +56,8 @@ beforeEach(() => {
       if (
         String(input).endsWith('/confirm-period') ||
         String(input).endsWith('/confirm-payment') ||
-        String(input).endsWith('/admit')
+        String(input).endsWith('/admit') ||
+        String(input).endsWith('/resolve-subsequent-payment')
       ) {
         confirmationPaths.push(String(input))
         confirmationCalls.push(typeof init?.body === 'string' ? JSON.parse(init.body) : null)
@@ -278,15 +279,20 @@ test('audience change discards late response from previous queue filter', async 
 test.each([
   'period',
   'payment',
+  'resolution',
 ] as const)('staff cannot confirm %s and administrator sends only the fence and request id once', async (kind) => {
   const label =
-    kind === 'period' ? 'Conferir período na operadora' : 'Conferir pagamento na operadora'
-  const field = kind === 'period' ? 'expectedVersion' : 'expectedAttempt'
+    kind === 'resolution'
+      ? 'Conferir ciclo posterior pago'
+      : kind === 'period'
+        ? 'Conferir período na operadora'
+        : 'Conferir pagamento na operadora'
+  const field = kind === 'payment' ? 'expectedAttempt' : 'expectedVersion'
   review = async () =>
     Response.json(
       reviewPage({
         ...reviewItem,
-        kind: kind === 'period' ? 'PERIOD' : 'OPERATION',
+        kind: kind === 'resolution' ? 'CASE' : kind === 'period' ? 'PERIOD' : 'OPERATION',
         state: kind === 'period' ? 'REVIEW_REQUIRED' : 'UNKNOWN',
       }),
     )
@@ -303,9 +309,11 @@ test.each([
   })
   expect(confirmationCalls).toHaveLength(1)
   expect(confirmationPaths).toEqual([
-    kind === 'period'
-      ? '/api/payments/recovery/payments/qa-payment/confirm-period'
-      : '/api/payments/recovery/operations/qa-operation/confirm-payment',
+    kind === 'resolution'
+      ? '/api/payments/recovery/cases/qa-operation/resolve-subsequent-payment'
+      : kind === 'period'
+        ? '/api/payments/recovery/payments/qa-payment/confirm-period'
+        : '/api/payments/recovery/operations/qa-operation/confirm-payment',
   ])
   const body = confirmationCalls[0] as Record<string, unknown>
   expect(body[field]).toBe(1)
@@ -314,9 +322,11 @@ test.each([
   review = async () => Response.json({ items: [], total: 0, limit: 25, offset: 0 })
   await act(async () => pending.resolve(Response.json({ confirmed: true })))
   expect(admin.textContent).toContain(
-    kind === 'period'
-      ? 'Período conferido e registrado'
-      : 'Pagamento confirmado e conferência registrada',
+    kind === 'resolution'
+      ? 'Acompanhamento encerrado com prova'
+      : kind === 'period'
+        ? 'Período conferido e registrado'
+        : 'Pagamento confirmado e conferência registrada',
   )
   expect(admin.textContent).toContain('Nenhuma conferência neste filtro')
   expect(confirmationCalls).toHaveLength(1)

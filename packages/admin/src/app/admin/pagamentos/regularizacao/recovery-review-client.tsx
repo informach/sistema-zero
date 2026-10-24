@@ -106,10 +106,11 @@ export function RecoveryReviewClient({
       !canWrite ||
       actionRef.current ||
       !item.paymentId ||
-      !['PERIOD', 'OPERATION', 'ADMISSION'].includes(item.kind)
+      !['PERIOD', 'OPERATION', 'ADMISSION', 'CASE'].includes(item.kind)
     )
       return
     const period = item.kind === 'PERIOD'
+    const resolution = item.kind === 'CASE'
     const admission = item.kind === 'ADMISSION'
     if (admission && (!canAdmit || !audience)) return
     const controller = new AbortController()
@@ -118,14 +119,16 @@ export function RecoveryReviewClient({
     setNotice('')
     try {
       await apiSend(
-        admission
-          ? `/api/payments/recovery/payments/${encodeURIComponent(item.paymentId)}/admit`
-          : period
-            ? `/api/payments/recovery/payments/${encodeURIComponent(item.paymentId)}/confirm-period`
-            : `/api/payments/recovery/operations/${encodeURIComponent(item.id)}/confirm-payment`,
+        resolution
+          ? `/api/payments/recovery/cases/${encodeURIComponent(item.id)}/resolve-subsequent-payment`
+          : admission
+            ? `/api/payments/recovery/payments/${encodeURIComponent(item.paymentId)}/admit`
+            : period
+              ? `/api/payments/recovery/payments/${encodeURIComponent(item.paymentId)}/confirm-period`
+              : `/api/payments/recovery/operations/${encodeURIComponent(item.id)}/confirm-payment`,
         'POST',
         {
-          ...(period || admission
+          ...(period || admission || resolution
             ? { expectedVersion: item.version }
             : { expectedAttempt: item.version }),
           ...(admission ? { audience } : {}),
@@ -135,18 +138,22 @@ export function RecoveryReviewClient({
       )
       if (!controller.signal.aborted)
         setNotice(
-          admission
-            ? 'Revisão registrada. O prazo começará no aceite do primeiro aviso. Esta ação não cobra nem cancela a assinatura.'
-            : period
-              ? 'Período conferido e registrado. A área de membros receberá o período original; a validade não recomeça hoje.'
-              : 'Pagamento confirmado e conferência registrada. Nenhuma nova cobrança foi feita; o período original foi preservado.',
+          resolution
+            ? 'Acompanhamento encerrado com prova de um ciclo posterior pago. A cobrança antiga continua recusada; nenhum novo pagamento foi feito.'
+            : admission
+              ? 'Revisão registrada. O prazo começará no aceite do primeiro aviso. Esta ação não cobra nem cancela a assinatura.'
+              : period
+                ? 'Período conferido e registrado. A área de membros receberá o período original; a validade não recomeça hoje.'
+                : 'Pagamento confirmado e conferência registrada. Nenhuma nova cobrança foi feita; o período original foi preservado.',
         )
     } catch {
       if (!controller.signal.aborted)
         setNotice(
-          admission
-            ? 'A abertura não foi confirmada. A lista será atualizada; confira se o acompanhamento já aparece. A operadora precisa confirmar a cobrança mais recente e a assinatura ativa.'
-            : 'Não foi possível confirmar a resposta. A lista será consultada novamente; nenhum pagamento foi solicitado por esta ação.',
+          resolution
+            ? 'O encerramento não foi confirmado. Confira o recibo posterior e as solicitações pendentes; a lista será atualizada. Nenhuma cobrança foi feita.'
+            : admission
+              ? 'A abertura não foi confirmada. A lista será atualizada; confira se o acompanhamento já aparece. A operadora precisa confirmar a cobrança mais recente e a assinatura ativa.'
+              : 'Não foi possível confirmar a resposta. A lista será consultada novamente; nenhum pagamento foi solicitado por esta ação.',
         )
     } finally {
       if (actionRef.current === controller) actionRef.current = null
@@ -341,6 +348,24 @@ export function RecoveryReviewClient({
                   <p className="text-xs text-muted-foreground">
                     Consulta a fonte e registra a confirmação com auditoria. Não permite escolher
                     datas ou cobrar novamente.
+                  </p>
+                </div>
+              ) : null}
+              {item.kind === 'CASE' ? (
+                <div className="space-y-1">
+                  <Button
+                    variant="outline"
+                    disabled={!canWrite || pendingAction !== null}
+                    onClick={() => void confirmItem(item)}
+                  >
+                    {pendingAction === item.id
+                      ? 'Conferindo recibo posterior…'
+                      : 'Conferir ciclo posterior pago'}
+                  </Button>
+                  <p className="text-xs text-muted-foreground">
+                    Encerra este acompanhamento somente se a operadora e um recibo posterior
+                    confirmarem o pagamento. Preserva a recusa antiga; não cobra nem concede outro
+                    período.
                   </p>
                 </div>
               ) : null}

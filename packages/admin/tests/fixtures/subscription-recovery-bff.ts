@@ -29,6 +29,9 @@ const confirmPaymentRoute = await import(
   '../../src/app/api/payments/recovery/operations/[id]/confirm-payment/route'
 )
 const admitRoute = await import('../../src/app/api/payments/recovery/payments/[id]/admit/route')
+const resolveRoute = await import(
+  '../../src/app/api/payments/recovery/cases/[id]/resolve-subsequent-payment/route'
+)
 beforeEach(() => {
   allowed = true
   guards.length = 0
@@ -109,9 +112,16 @@ test.each([
   'period',
   'payment',
   'admission',
+  'resolution',
 ] as const)('confirmation %s requires write guard, bounded JSON and no arbitrary period or actor', async (kind) => {
   const confirmationRoute =
-    kind === 'admission' ? admitRoute : kind === 'period' ? confirmRoute : confirmPaymentRoute
+    kind === 'resolution'
+      ? resolveRoute
+      : kind === 'admission'
+        ? admitRoute
+        : kind === 'period'
+          ? confirmRoute
+          : confirmPaymentRoute
   const id = crypto.randomUUID()
   const context = { params: Promise.resolve({ id }) }
   const body = {
@@ -131,11 +141,13 @@ test.each([
   expect(guards).toEqual([false])
   expect(calls[0]).toMatchObject({
     path:
-      kind === 'admission'
-        ? `/payments/admin/subscription-recovery/payments/${id}/admit`
-        : kind === 'period'
-          ? `/payments/admin/subscription-recovery/payments/${id}/confirm-period`
-          : `/payments/admin/subscription-recovery/operations/${id}/confirm-payment`,
+      kind === 'resolution'
+        ? `/payments/admin/subscription-recovery/cases/${id}/resolve-subsequent-payment`
+        : kind === 'admission'
+          ? `/payments/admin/subscription-recovery/payments/${id}/admit`
+          : kind === 'period'
+            ? `/payments/admin/subscription-recovery/payments/${id}/confirm-period`
+            : `/payments/admin/subscription-recovery/operations/${id}/confirm-payment`,
     options: { method: 'POST', body },
   })
   calls.length = 0

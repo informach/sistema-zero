@@ -1,4 +1,4 @@
-import { and, asc, eq, gt, gte, isNull, lt, lte, notExists, or } from 'drizzle-orm'
+import { and, asc, eq, gt, gte, isNull, lt, lte, notExists, or, sql } from 'drizzle-orm'
 import { ValidationError } from '../../../domain/shared/errors'
 import type {
   RecoveryAdmissionLease,
@@ -44,6 +44,30 @@ export class DrizzleRecoveryAdmissionRepository implements RecoveryAdmissionRepo
       )
         return 0
       const activatedAt = configuration.activatedAt
+      // A different case may have closed after this origin was ignored. Reconsider
+      // bounded origins, retaining their frozen policy and total attempt count.
+      const rearmed = await tx.execute<{ payment_id: string }>(sql`
+        with eligible as (
+          select a.payment_id from payments.subscription_recovery_admissions a
+          join payments.payments p on p.id = a.payment_id
+          join payments.subscriptions s on s.id = p.subscription_id and s.consumer_id = p.consumer_id
+          where a.state = 'IGNORED' and a.reason = 'CASE_EXISTS' and a.attempts < 5
+            and p.status = 'FAILED' and p.method = 'CREDIT_CARD' and p.updated_at >= a.activated_at
+            and s.status = 'ACTIVE' and s.cancel_requested_at is null and s.cycles_completed > 0
+            and p.provider = s.provider and p.currency = 'BRL' and p.amount_in_cents = s.amount_in_cents
+            and s.currency = 'BRL' and p.provider_payment_id is not null and s.provider_subscription_id is not null
+            and not exists (select 1 from payments.subscription_recovery_cases c where c.payment_id = p.id)
+            and not exists (select 1 from payments.subscription_recovery_cases c where c.subscription_id = s.id
+              and c.state in ('OPEN', 'PAYMENT_PENDING', 'CANCEL_PENDING', 'MANUAL_REVIEW'))
+          order by a.discovered_at, a.payment_id limit ${input.limit} for update of a skip locked
+        )
+        update payments.subscription_recovery_admissions a
+        set state = 'PENDING', reason = null, next_attempt_at = ${input.now.toISOString()}::timestamptz,
+          lease_id = null, lease_until = null
+        from eligible e where a.payment_id = e.payment_id returning a.payment_id
+      `)
+      const remaining = input.limit - rearmed.length
+      if (!remaining) return rearmed.length
       const rows = await tx
         .select({ id: payments.id })
         .from(payments)
@@ -66,9 +90,9 @@ export class DrizzleRecoveryAdmissionRepository implements RecoveryAdmissionRepo
           ),
         )
         .orderBy(asc(payments.updatedAt), asc(payments.id))
-        .limit(input.limit)
+        .limit(remaining)
         .for('share')
-      if (!rows.length) return 0
+      if (!rows.length) return rearmed.length
       const inserted = await tx
         .insert(admissions)
         .values(
@@ -87,7 +111,7 @@ export class DrizzleRecoveryAdmissionRepository implements RecoveryAdmissionRepo
         )
         .onConflictDoNothing()
         .returning({ id: admissions.paymentId })
-      return inserted.length
+      return inserted.length + rearmed.length
     })
   }
 

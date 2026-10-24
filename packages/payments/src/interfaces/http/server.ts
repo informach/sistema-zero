@@ -62,6 +62,7 @@ export interface HttpDeps {
   confirmSubscriptionPeriod: ConfirmSubscriptionPeriodService
   confirmSubscriptionRetry: ConfirmSubscriptionRetryService
   reviewHistoricalAdmission: ReviewHistoricalAdmissionService
+  resolveSupersededRecovery: import('../../application/subscription-recovery/resolve-superseded-recovery.service').ResolveSupersededRecoveryService
   retrySubscriptionCharge: RetrySubscriptionChargeService
   updateSubscriptionCard: UpdateSubscriptionCardService
   handleWebhook: HandleProviderWebhookService
@@ -257,6 +258,7 @@ export function createServer(deps: HttpDeps) {
         confirmSubscriptionPeriod: deps.confirmSubscriptionPeriod,
         confirmSubscriptionRetry: deps.confirmSubscriptionRetry,
         reviewHistoricalAdmission: deps.reviewHistoricalAdmission,
+        resolveSupersededRecovery: deps.resolveSupersededRecovery,
         requireAdminEnabled: deps.requireAdminEnabled,
         internalToken: deps.internalToken,
         listPayments: deps.listPayments,

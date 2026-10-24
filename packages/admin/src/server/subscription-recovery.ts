@@ -3,6 +3,16 @@ import type { RecoveryPolicyView, RecoveryReviewPage } from '@/lib/subscription-
 import { gatewayFetch } from './gateway'
 
 const path = '/payments/admin/subscription-recovery/policy'
+export function resolveSubsequentPayment(
+  id: string,
+  body: { expectedVersion: number; requestId: string },
+  signal?: AbortSignal,
+) {
+  return gatewayFetch<{ caseId: string; resolved: true }>(
+    `/payments/admin/subscription-recovery/cases/${encodeURIComponent(id)}/resolve-subsequent-payment`,
+    { method: 'POST', body, signal },
+  )
+}
 export function getRecoveryPolicy() {
   return gatewayFetch<RecoveryPolicyView>(path)
 }

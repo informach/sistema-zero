@@ -166,12 +166,25 @@ Não falsificar metadata de registry nem repetir efeito em replay. Uma admissão
 automática concorrente fica fenced pelo mesmo caso/recibo. A ação não cobra,
 cancela nem concede acesso. Testes locais não atuam sobre a cliente real.
 
-Achado a fechar antes da ativação: hoje `RecoverySourceService` envia para revisão
-quando há ciclo posterior pago. É seguro contra cancelamento indevido, mas falta
-encerrar esse acompanhamento com prova do recibo posterior, sem marcar a cobrança
-antiga como paga, e liberar a admissão de futuras recusas antes ignoradas por
-CASE_EXISTS. A reutilização auditável do público revisado já está implementada,
+Fechamento por ciclo posterior implementado e validado localmente: ação Admin
+própria, auditoria permanente e reavaliação de CASE_EXISTS em lote limitado.
+Payments completo 582/1824; 18 cenários de banco/68 asserções revalidados após as
+últimas guardas. Detalhes: `docs/qa/2026-10-24-subscription-subsequent-payment.md`.
+Sem implantação/ativação ou ensaio sandbox/UI. A reutilização do público já está implementada,
 sem inventar `billingAudienceSource=funnel-registry-v1`.
+
+Implementação do fechamento por ciclo posterior: ação administrativa própria e
+idempotente no caso, com versão/request. Exigir consulta nova da assinatura e da
+cobrança posterior, mesma origem/valor/titular, recibo local PAID com período
+VERIFIED_PERIOD e ciclo original ainda FAILED. Sem operação financeira ativa ou
+lease vigente do coordenador. Gravar fechamento com motivo distinto
+SUBSEQUENT_CYCLE_PAID, auditoria permanente referindo o recibo posterior e outbox
+atomicamente; não mudar o pagamento antigo nem produzir outro payment.paid.
+Replays retornam a decisão já auditada. Reavaliar CASE_EXISTS em lote limitado,
+somente com assinatura ativa sem cancelamento e sem outro caso ativo, preservando
+política e contador de tentativas. Nenhuma cobrança ou novo período é criado pela
+ação. Provas vencidas após locks/escritas fazem rollback. Cobrir casos sem recibo,
+fonte divergente, operação/lease ativo, concorrência e reavaliação futura em banco.
 
 - Payments coordena dinheiro/assinatura; Members controla acesso; Messaging entrega.
 - Kids fala com responsável e exige seu portão; Adultos fala com o titular.

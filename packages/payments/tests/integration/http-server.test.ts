@@ -26,6 +26,7 @@ import { ConfirmSubscriptionRetryService } from '../../src/application/subscript
 import { ListRecoveryReviewService } from '../../src/application/subscription-recovery/list-recovery-review.service'
 import { RecoveryPolicyService } from '../../src/application/subscription-recovery/recovery-policy.service'
 import { RecoverySourceService } from '../../src/application/subscription-recovery/recovery-source.service'
+import { ResolveSupersededRecoveryService } from '../../src/application/subscription-recovery/resolve-superseded-recovery.service'
 import { ReviewHistoricalAdmissionService } from '../../src/application/subscription-recovery/review-historical-admission.service'
 import type { PaymentAdminReadRepository } from '../../src/domain/ports/payment-admin-read.port'
 import type { PaymentMyReadRepository } from '../../src/domain/ports/payment-my-read.port'
@@ -184,6 +185,19 @@ function buildApp(opts: BuildOpts = {}) {
   }
 
   const app = createServer({
+    resolveSupersededRecovery: new ResolveSupersededRecoveryService(
+      { findById: async () => null },
+      {
+        findByCaseId: async () => null,
+        resolve: async () => {
+          throw new Error('Resolution requires PostgreSQL proof')
+        },
+      },
+      repo,
+      subscriptionRepo,
+      subscriptionOperations,
+      gateway,
+    ),
     reviewHistoricalAdmission: new ReviewHistoricalAdmissionService(
       repo,
       subscriptionRepo,
@@ -339,14 +353,17 @@ describe('Admin: política de regularização autenticada e auditada', () => {
     'period',
     'payment',
     'admission',
+    'resolution',
   ] as const)('confirmação %s exige admin próprio e não aceita datas ou autor no corpo', async (kind) => {
     const { app, gateway } = buildApp({ requireAdmin: true, internalToken: 'qa-confirm-internal' })
     const url =
-      kind === 'admission'
-        ? `http://localhost/payments/admin/subscription-recovery/payments/${crypto.randomUUID()}/admit`
-        : kind === 'period'
-          ? `http://localhost/payments/admin/subscription-recovery/payments/${crypto.randomUUID()}/confirm-period`
-          : `http://localhost/payments/admin/subscription-recovery/operations/${crypto.randomUUID()}/confirm-payment`
+      kind === 'resolution'
+        ? `http://localhost/payments/admin/subscription-recovery/cases/${crypto.randomUUID()}/resolve-subsequent-payment`
+        : kind === 'admission'
+          ? `http://localhost/payments/admin/subscription-recovery/payments/${crypto.randomUUID()}/admit`
+          : kind === 'period'
+            ? `http://localhost/payments/admin/subscription-recovery/payments/${crypto.randomUUID()}/confirm-period`
+            : `http://localhost/payments/admin/subscription-recovery/operations/${crypto.randomUUID()}/confirm-payment`
     const headers = {
       'x-internal-token': 'qa-confirm-internal',
       'x-auth-user-id': 'qa-admin',

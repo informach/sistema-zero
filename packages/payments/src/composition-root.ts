@@ -29,6 +29,7 @@ import { RecoveryCoordinatorService } from './application/subscription-recovery/
 import { RecoveryNoticeService } from './application/subscription-recovery/recovery-notice.service'
 import { RecoveryPolicyService } from './application/subscription-recovery/recovery-policy.service'
 import { RecoverySourceService } from './application/subscription-recovery/recovery-source.service'
+import { ResolveSupersededRecoveryService } from './application/subscription-recovery/resolve-superseded-recovery.service'
 import { ReviewHistoricalAdmissionService } from './application/subscription-recovery/review-historical-admission.service'
 import type { Env } from './infrastructure/config/env'
 import { InProcessEventPublisher } from './infrastructure/events/in-process-event-publisher'
@@ -54,6 +55,7 @@ import { PgNotificationListener } from './infrastructure/persistence/drizzle/pg-
 import { DrizzleRecoveryAdmissionRepository } from './infrastructure/persistence/drizzle/recovery-admission.repository'
 import { DrizzleRecoveryNoticeRepository } from './infrastructure/persistence/drizzle/recovery-notice.repository'
 import { DrizzleRecoveryPolicyRepository } from './infrastructure/persistence/drizzle/recovery-policy.repository'
+import { DrizzleRecoveryResolutionRepository } from './infrastructure/persistence/drizzle/recovery-resolution.repository'
 import { DrizzleRecoveryReviewRepository } from './infrastructure/persistence/drizzle/recovery-review.repository'
 import { DrizzleReviewedAdmissionRepository } from './infrastructure/persistence/drizzle/reviewed-admission.repository'
 import { DrizzleSubscriptionRepository } from './infrastructure/persistence/drizzle/subscription.repository'
@@ -454,6 +456,14 @@ export function createApplication(env: Env): Application {
     confirmSubscriptionPeriod: new ConfirmSubscriptionPeriodService(
       payments,
       subscriptions,
+      gateway,
+    ),
+    resolveSupersededRecovery: new ResolveSupersededRecoveryService(
+      recoveryCases,
+      new DrizzleRecoveryResolutionRepository(db),
+      payments,
+      subscriptions,
+      subscriptionOperations,
       gateway,
     ),
     reviewHistoricalAdmission: new ReviewHistoricalAdmissionService(

@@ -162,6 +162,13 @@
       "when": 1792862218524,
       "tag": "0022_tan_hitman",
       "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "7",
+      "when": 1792864670384,
+      "tag": "0023_normal_scorpion",
+      "breakpoints": true
     }
   ]
 }

@@ -58,9 +58,9 @@ export function subscriptionRecoveryTemplates(
         subject: 'Pagamento de {{produto}} confirmado',
         title: 'O pagamento foi confirmado',
         paragraphs: [
-          'Olá, {{nome}}. Confirmamos o pagamento de <strong>{{valor}}</strong> referente a <strong>{{produto}}</strong>.',
-          `O acompanhamento dessa cobrança ${owner} foi encerrado. Consulte na conta o período correspondente ao pagamento e a situação da assinatura.`,
-          'O histórico dos pagamentos permanece disponível. Se houver outra pendência, ela aparecerá separadamente na conta.',
+          'Olá, {{nome}}. Confirmamos um pagamento de <strong>{{valor}}</strong> referente a <strong>{{produto}}</strong>.',
+          `O acompanhamento de regularização ${owner} foi encerrado. Consulte na conta qual cobrança foi paga, o período correspondente e a situação da assinatura.`,
+          'O histórico das cobranças, inclusive recusas anteriores, permanece disponível. Este aviso não significa que todas as cobranças antigas foram pagas. Se houver outra pendência, ela aparecerá separadamente na conta.',
         ],
         variables: ['nome', 'produto', 'valor', 'link'],
         button: 'Ver assinatura e período',

@@ -1,4 +1,4 @@
-import { and, asc, eq, exists, gt, inArray, isNull, lt, lte, or, sql } from 'drizzle-orm'
+import { and, asc, eq, exists, gt, inArray, isNull, lt, lte, notExists, or, sql } from 'drizzle-orm'
 import { ValidationError } from '../../../domain/shared/errors'
 import { verifiedBillingAudience } from '../../../domain/subscription-recovery/billing-audience'
 import { SubscriptionRecoveryCase } from '../../../domain/subscription-recovery/recovery-case'
@@ -158,6 +158,18 @@ export class DrizzleSubscriptionRecoveryRepository implements SubscriptionRecove
             or(
               lte(cases.nextActionAt, input.now),
               and(inArray(cases.state, ['RECOVERED', 'CANCELED']), exists(pendingCloseout)),
+              and(
+                eq(cases.state, 'RECOVERED'),
+                eq(cases.reason, 'SUBSEQUENT_CYCLE_PAID'),
+                gt(cases.closedAt, new Date(input.now.getTime() - 86_400_000)),
+                lte(cases.closedAt, input.now),
+                notExists(
+                  tx
+                    .select({ id: notices.id })
+                    .from(notices)
+                    .where(and(eq(notices.caseId, cases.id), eq(notices.purpose, 'RECOVERED'))),
+                ),
+              ),
             ),
             or(isNull(cases.leaseUntil), lte(cases.leaseUntil, input.now)),
           ),
