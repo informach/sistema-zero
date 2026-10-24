@@ -17,20 +17,22 @@ export function SceneSolidCutBar({ workshop }: { workshop: ReturnType<typeof use
             : !cut.owner
               ? 'Escolha uma peça para cortar'
               : cut.owner.numericPlane
-                ? 'Confira a linha do plano na peça'
+                ? 'Veja onde a peça será separada'
                 : 'Clique nas bordas para marcar o corte')}
       </span>
-      <label title="Ligado, cada ponto fica exatamente no meio da aresta. Desligado, escolha qualquer posição nela.">
-        <input
-          type="checkbox"
-          name="cutMidpoint"
-          className="mld-cut-switch"
-          checked={cut.midpoint}
-          disabled={cut.busy}
-          onChange={(event) => cut.setMidpoint(event.target.checked)}
-        />
-        Grudar no meio
-      </label>
+      {!cut.owner?.numericPlane && (
+        <label title="Ligado, cada ponto fica exatamente no meio da aresta. Desligado, escolha qualquer posição nela.">
+          <input
+            type="checkbox"
+            name="cutMidpoint"
+            className="mld-cut-switch"
+            checked={cut.midpoint}
+            disabled={cut.busy}
+            onChange={(event) => cut.setMidpoint(event.target.checked)}
+          />
+          Grudar no meio
+        </label>
+      )}
       {can('model.precise') && <SceneCutPrecision cut={cut} />}
       <button
         type="button"

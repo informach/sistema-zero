@@ -1,5 +1,16 @@
 # CLAUDE.md — @sistemazero/molda
 
+## Separar linha — 24/10/2026
+
+- Em **Linhas**, escolha uma linha interna entre duas faces coplanares ou um loop fechado e plano.
+  **Separar linha** abre a prévia do corte. O mesmo fluxo de **Separar peça**
+  fecha os dois volumes, cria duas peças 3D independentes e registra um único Desfazer.
+- Uma linha isolada de canto, bordas abertas, seleções com pontas ou ramificações, loops não
+  planos e planos que não atravessam o volume são recusados com uma explicação. A peça original
+  permanece intacta até a confirmação.
+- **Selecionar loop inteiro** segue a topologia da malha e pode alcançar uma cadeia aberta. Nesse
+  caso, a prévia explica por que aquela seleção não forma um corte válido.
+
 ## Raio-X, Unir peças, Puxar e verso — 24/10/2026
 
 - **Raio-X** (alternância ao lado da grade) é só vista: `SceneMaterialResource.setXray` esmaece

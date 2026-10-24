@@ -76,6 +76,7 @@ export type SceneComponentToolsProps = Pick<
   onOpenUv?(): void
   onOpenWeights?(): void
   onKnife(): void
+  onSeparateLine(): void
   onMove(): void
   onAlignPivot(): void
 }
@@ -401,6 +402,13 @@ export function SceneComponentTools(props: SceneComponentToolsProps) {
         <p>{copy.componentModeHint}</p>
         <p>Use as opções para escolher partes ligadas, faces planas ou uma linha inteira.</p>
         <p>Apagar uma face abre um buraco. Você pode desfazer.</p>
+        {selection.mode === 'edge' && (
+          <p>
+            Separar linha usa uma linha interna de uma face plana ou um loop fechado no mesmo plano
+            para cortar a peça inteira. Confira a prévia e toque em Separar para criar duas peças
+            3D.
+          </p>
+        )}
         <p>Cancelar descarta a prévia. Desfazer traz de volta o último ajuste aplicado.</p>
         <ComponentButton tone="soft" onClick={back}>
           Entendi
@@ -590,6 +598,19 @@ export function SceneComponentTools(props: SceneComponentToolsProps) {
               </>
             ) : selection.mode === 'edge' ? (
               <>
+                {can('model.cut') && (
+                  <ComponentButton
+                    icon={Scissors}
+                    data-component-trigger="separate-line"
+                    disabled={blocked || count === 0}
+                    title={
+                      count === 0 ? 'Escolha uma linha ou um loop para separar a peça.' : undefined
+                    }
+                    onClick={props.onSeparateLine}
+                  >
+                    Separar linha
+                  </ComponentButton>
+                )}
                 {pro && (
                   <ComponentButton
                     icon={Grid3x3}

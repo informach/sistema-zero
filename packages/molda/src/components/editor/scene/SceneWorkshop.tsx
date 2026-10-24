@@ -1093,6 +1093,11 @@ export function SceneWorkshop({
                 measurementStep={workshop.measurementStep}
                 close={closeFaces}
                 onKnife={() => workshop.setTool('knife')}
+                onSeparateLine={() => {
+                  const selection = workshop.components.selection
+                  if (selection?.mode === 'edge' && selection.ids.length > 0)
+                    workshop.setTool('cut', [...selection.ids])
+                }}
                 onMove={() => workshop.setTool('move')}
                 onAlignPivot={() => {
                   const selection = workshop.components.selection

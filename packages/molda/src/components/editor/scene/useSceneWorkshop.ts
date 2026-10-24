@@ -970,7 +970,7 @@ export function useSceneWorkshop(editor: EditorStore<MoldaSceneDocument>) {
     },
     mode,
     tool,
-    setTool: (next: SceneWorkshopTool) => {
+    setTool: (next: SceneWorkshopTool, cutLineEdgeIds?: readonly string[]) => {
       const choose = () => {
         if (next === 'pivot' && !pivotGate.canUse()) return
         pivotGesture.cancel()
@@ -985,7 +985,7 @@ export function useSceneWorkshop(editor: EditorStore<MoldaSceneDocument>) {
         }
         if (next === 'cut') {
           components.close()
-          if (chosenRef.current.length === 1) solidCut.start(chosenRef.current[0]!)
+          if (chosenRef.current.length === 1) solidCut.start(chosenRef.current[0]!, cutLineEdgeIds)
         }
         gesture.cancel()
         setLooking(false)

@@ -49,6 +49,7 @@ import { nativeDatabase } from '../../../testing/nativeDatabase'
 import { animatedScene } from '../../../testing/sceneAnimation'
 import { makeSceneAtlasDocument } from '../../../testing/sceneAtlasFixture'
 import { makeSceneGridGeometry } from '../../../testing/sceneFixtures'
+import { makeSceneKnifeLoop } from '../../../testing/sceneKnifeLoop'
 import { makeSceneSkinFixture } from '../../../testing/sceneSkin'
 import { makeSceneTwoBoneFixture } from '../../../testing/sceneTwoBone'
 import type {
@@ -235,6 +236,59 @@ function swatch(
 }
 
 describe('scene workshop integration', () => {
+  test('Separar linha opens a cut preview without changing the piece until confirmation', async () => {
+    const { document: asset, nodeId, seed } = makeSceneKnifeLoop()
+    const { editor, ports, view, openInspector } = setup(asset)
+    try {
+      await waitFor(() => expect(ports.length).toBeGreaterThan(0))
+      act(() => ports.at(-1)!.callbacks.select(nodeId, false))
+      openInspector()
+      fireEvent.click(screen.getByRole('button', { name: COPY.scene.editFaces }))
+      fireEvent.click(screen.getByRole('button', { name: COPY.scene.componentModes.edge }))
+      const separate = screen.getByRole('button', { name: 'Separar linha' })
+      expect(separate.hasAttribute('disabled')).toBe(true)
+      act(() => ports.at(-1)!.callbacks.selectComponent?.(seed, false))
+      expect(separate.hasAttribute('disabled')).toBe(false)
+      fireEvent.click(separate)
+      const bar = screen.getByRole('region', { name: 'Separar a peça' })
+      expect(within(bar).getByText('Veja onde a peça será separada')).toBeTruthy()
+      expect(within(bar).getByRole('button', { name: 'Separar' }).hasAttribute('disabled')).toBe(
+        false,
+      )
+      expect(editor.getState().asset).toBe(asset)
+      fireEvent.click(within(bar).getByRole('button', { name: 'Cancelar' }))
+      expect(editor.getState().asset).toBe(asset)
+      expect(editor.getState().canUndo).toBe(false)
+    } finally {
+      view.unmount()
+      editor.getState().dispose()
+    }
+  })
+
+  test('Separar linha accepts a selected closed loop', async () => {
+    const { document: asset, nodeId, seed } = makeSceneKnifeLoop()
+    const { editor, ports, view, openInspector } = setup(asset)
+    try {
+      await waitFor(() => expect(ports.length).toBeGreaterThan(0))
+      act(() => ports.at(-1)!.callbacks.select(nodeId, false))
+      openInspector()
+      fireEvent.click(screen.getByRole('button', { name: COPY.scene.editFaces }))
+      fireEvent.click(screen.getByRole('button', { name: COPY.scene.componentModes.edge }))
+      fireEvent.click(screen.getByRole('checkbox', { name: COPY.scene.componentWholeLoop }))
+      act(() => ports.at(-1)!.callbacks.selectComponent?.(seed, false))
+      expect(ports.at(-1)!.faces?.ids.length).toBeGreaterThan(1)
+      const separate = screen.getByRole('button', { name: 'Separar linha' })
+      expect(separate.hasAttribute('disabled')).toBe(false)
+      fireEvent.click(separate)
+      const bar = screen.getByRole('region', { name: 'Separar a peça' })
+      expect(within(bar).getByText('Veja onde a peça será separada')).toBeTruthy()
+      expect(editor.getState().asset).toBe(asset)
+    } finally {
+      view.unmount()
+      editor.getState().dispose()
+    }
+  })
+
   test('Unir peças junta dois cilindros sobrepostos numa peça só, com um desfazer', async () => {
     let serial = 0
     const id = () => `join-ui-${++serial}`
