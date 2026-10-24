@@ -5,7 +5,7 @@ import {
   isTerminal,
   type PaymentStatus,
 } from '../../src/domain/payment/payment.status'
-import { InvalidStateTransitionError } from '../../src/domain/shared/errors'
+import { InvalidStateTransitionError, ValidationError } from '../../src/domain/shared/errors'
 import { IdempotencyKey } from '../../src/domain/value-objects/idempotency-key'
 import { Money } from '../../src/domain/value-objects/money'
 import { PaymentMethod } from '../../src/domain/value-objects/payment-method'
@@ -47,6 +47,87 @@ describe('PaymentAggregate', () => {
     payment.markFailed('recusado')
     expect(payment.status).toBe('FAILED')
     expect(() => payment.markPaid()).toThrow(InvalidStateTransitionError)
+  })
+
+  test('confirma o mesmo ciclo recusado sem apagar o evento de recusa ou duplicar liquidação', () => {
+    const payment = PaymentAggregate.create({
+      consumerId: 'sys-a',
+      amount: Money.fromCents(1000),
+      method: PaymentMethod.recurringCard({ brand: 'visa', last4: '4242' }),
+      subscriptionId: 'subscription-a',
+      idempotencyKey: IdempotencyKey.create('cycle-idem-123'),
+    })
+    payment.registerProviderCharge({ providerPaymentId: 'charge-a' })
+    payment.markFailed('Cartão vencido')
+    const proof = {
+      subscriptionId: 'subscription-a',
+      provider: 'EFI',
+      providerPaymentId: 'charge-a',
+      amount: Money.fromCents(1000),
+      paidAt: new Date('2026-10-23T10:00:00Z'),
+    }
+    payment.confirmSubscriptionChargePaid(proof)
+    payment.confirmSubscriptionChargePaid(proof)
+    expect(payment.status).toBe('PAID')
+    expect(payment.paidAt?.toISOString()).toBe('2026-10-23T10:00:00.000Z')
+    expect(payment.toSnapshot().failureReason).toBeNull()
+    const events = payment.pullEvents()
+    expect(events.filter((event) => event.eventName === 'payment.failed')).toHaveLength(1)
+    expect(events.filter((event) => event.eventName === 'payment.paid')).toHaveLength(1)
+  })
+
+  test.each([
+    ['assinatura', { subscriptionId: 'another-subscription' }],
+    ['cobrança', { providerPaymentId: 'another-charge' }],
+    ['provedor', { provider: 'another-provider' }],
+    ['valor', { amount: Money.fromCents(999) }],
+  ] as const)('não liquida recusa com confirmação divergente: %s', (_label, mismatch) => {
+    const payment = PaymentAggregate.create({
+      consumerId: 'sys-a',
+      amount: Money.fromCents(1000),
+      method: PaymentMethod.recurringCard({ brand: 'visa', last4: '4242' }),
+      subscriptionId: 'subscription-a',
+      idempotencyKey: IdempotencyKey.create('cycle-idem-123'),
+    })
+    payment.registerProviderCharge({ providerPaymentId: 'charge-a' })
+    payment.markFailed('Recusado')
+    payment.pullEvents()
+    expect(() =>
+      payment.confirmSubscriptionChargePaid({
+        subscriptionId: 'subscription-a',
+        provider: 'EFI',
+        providerPaymentId: 'charge-a',
+        amount: Money.fromCents(1000),
+        ...mismatch,
+      }),
+    ).toThrow(ValidationError)
+    expect(payment.status).toBe('FAILED')
+    expect(payment.pullEvents()).toHaveLength(0)
+  })
+
+  test('não usa a exceção de ciclo para recuperar Pix ou cartão avulso', () => {
+    for (const method of [
+      PaymentMethod.pix(),
+      PaymentMethod.recurringCard({ brand: 'visa', last4: '4242' }),
+    ]) {
+      const payment = PaymentAggregate.create({
+        consumerId: 'sys-a',
+        method,
+        amount: Money.fromCents(1000),
+        idempotencyKey: IdempotencyKey.create('one-off-idem-123'),
+      })
+      payment.registerProviderCharge({ providerPaymentId: 'charge-a' })
+      payment.markFailed('Recusado')
+      expect(() =>
+        payment.confirmSubscriptionChargePaid({
+          subscriptionId: 'subscription-a',
+          provider: 'EFI',
+          providerPaymentId: 'charge-a',
+          amount: Money.fromCents(1000),
+        }),
+      ).toThrow(ValidationError)
+      expect(payment.status).toBe('FAILED')
+    }
   })
 
   test('markFailed/markExpired são idempotentes (entrega ≥1 vez não lança)', () => {

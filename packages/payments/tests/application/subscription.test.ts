@@ -358,6 +358,34 @@ describe('HandleSubscriptionNotificationService (ciclos)', () => {
     expect((await subscriptions.findById(subId))?.status).not.toBe('CANCELED')
   })
 
+  test('recusa seguida de confirmação real liquida o mesmo ciclo uma única vez', async () => {
+    gateway.setCycleChargeAmount('recovered-cycle', 1000n)
+    gateway.cardStatus = 'FAILED'
+    await handler.handleCycle({ subscriptionId: providerSubId, chargeId: 'recovered-cycle' })
+    const failed = await payments.findByProviderPaymentId('EFI', 'recovered-cycle')
+    gateway.cardStatus = 'PAID'
+    await handler.handleCycle({ subscriptionId: providerSubId, chargeId: 'recovered-cycle' })
+    await handler.handleCycle({ subscriptionId: providerSubId, chargeId: 'recovered-cycle' })
+    const recovered = await payments.findByProviderPaymentId('EFI', 'recovered-cycle')
+    expect(recovered?.id).toBe(failed?.id)
+    expect(recovered?.status).toBe('PAID')
+    expect(payments.outbox.filter((e) => e.eventName === 'payment.paid')).toHaveLength(1)
+    expect((await subscriptions.findById(subId))?.cyclesCompleted).toBe(1)
+  })
+
+  test('recusa não é regularizada quando o valor confirmado diverge', async () => {
+    gateway.setCycleChargeAmount('mismatched-cycle', 1000n)
+    gateway.cardStatus = 'FAILED'
+    await handler.handleCycle({ subscriptionId: providerSubId, chargeId: 'mismatched-cycle' })
+    gateway.cardStatus = 'PAID'
+    gateway.setCycleChargeAmount('mismatched-cycle', 500n)
+    await handler.handleCycle({ subscriptionId: providerSubId, chargeId: 'mismatched-cycle' })
+    expect((await payments.findByProviderPaymentId('EFI', 'mismatched-cycle'))?.status).toBe(
+      'FAILED',
+    )
+    expect(payments.outbox.filter((e) => e.eventName === 'payment.paid')).toHaveLength(0)
+  })
+
   test.each([
     false,
     true,

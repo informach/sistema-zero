@@ -279,6 +279,46 @@ export class PaymentAggregate extends AggregateRoot<string> {
     // Idempotente: se já está pago, não reprocessa nem reemite evento.
     if (this.state.status === PaymentStatus.PAID) return
     this.transitionTo(PaymentStatus.PAID)
+    this.recordPaid(paidAt)
+  }
+
+  /**
+   * Liquidação de um ciclo após retry confirmado no provedor. Uma recusa de
+   * cartão não encerra a cobrança na Efí. A exceção é restrita ao MESMO ciclo,
+   * assinatura, provedor e valor; não altera as transições dos pagamentos avulsos.
+   * O chamador deve obter a confirmação na fonte, nunca no corpo do webhook.
+   */
+  confirmSubscriptionChargePaid(input: {
+    subscriptionId: string
+    provider: string
+    providerPaymentId: string
+    amount: Money
+    paidAt?: Date
+  }): void {
+    if (
+      !this.state.subscriptionId ||
+      this.state.subscriptionId !== input.subscriptionId ||
+      this.state.method.type !== 'CREDIT_CARD' ||
+      this.state.provider !== input.provider ||
+      !this.state.providerPaymentId ||
+      this.state.providerPaymentId !== input.providerPaymentId ||
+      this.state.amount.currency !== input.amount.currency ||
+      this.state.amount.amountInCents !== input.amount.amountInCents
+    ) {
+      throw new ValidationError('Confirmação não corresponde ao ciclo de assinatura')
+    }
+    if (this.state.status === PaymentStatus.PAID) return
+    if (this.state.status !== PaymentStatus.FAILED) {
+      this.markPaid(input.paidAt)
+      return
+    }
+    this.state.status = PaymentStatus.PAID
+    this.state.failureReason = null
+    this.touch()
+    this.recordPaid(input.paidAt)
+  }
+
+  private recordPaid(paidAt?: Date): void {
     // Defesa em profundidade: um `Date` inválido (timestamp garbage do provedor)
     // faria `toISOString()` abaixo lançar e travaria a confirmação. Cai para "agora".
     this.state.paidAt = paidAt && !Number.isNaN(paidAt.getTime()) ? paidAt : new Date()

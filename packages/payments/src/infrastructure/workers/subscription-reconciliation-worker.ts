@@ -116,7 +116,9 @@ export class SubscriptionReconciliationWorker {
           this.gateway.provider,
           charge.chargeId,
         )
-        if (known) continue
+        // A Efí pode liquidar a MESMA cobrança antes recusada após trocar cartão.
+        // Não basta existir uma linha local: o estado pago precisa estar conciliado.
+        if (known && known.status !== 'FAILED' && known.status !== 'PENDING') continue
 
         await this.cycles.handleCycle({ subscriptionId: providerId, chargeId: charge.chargeId })
 
@@ -128,7 +130,7 @@ export class SubscriptionReconciliationWorker {
           this.gateway.provider,
           charge.chargeId,
         )
-        if (!registrado) {
+        if (registrado?.status !== 'PAID') {
           // Quieto de propósito: quem sabe o motivo é o `handleCycle`, e ele já
           // falou (em ERROR) na primeira vez — repetir aqui vira ruído de 6 em 6h.
           this.logger.info('subscription.reconcile.cycle_not_ingested', {

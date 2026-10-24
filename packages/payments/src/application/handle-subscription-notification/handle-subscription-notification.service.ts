@@ -2,6 +2,8 @@ import type { PaymentGateway } from '../../domain/ports/payment-gateway.port'
 import type { PaymentRepository } from '../../domain/ports/payment-repository.port'
 import type { SubscriptionRepository } from '../../domain/ports/subscription-repository.port'
 import type { WebhookInbox } from '../../domain/ports/webhook-inbox.port'
+import { ValidationError } from '../../domain/shared/errors'
+import { Money } from '../../domain/value-objects/money'
 import type { Logger } from '../../infrastructure/logging/logger'
 import { ConcurrencyConflictError } from '../../infrastructure/persistence/drizzle/concurrency.error'
 import { buildCyclePayment } from '../subscription/cycle-payment'
@@ -44,6 +46,9 @@ export class HandleSubscriptionNotificationService {
     }
 
     const charge = await this.gateway.getCardCharge(chargeId)
+    if (charge.providerPaymentId !== chargeId) {
+      throw new ValidationError('Provedor retornou outra cobrança na confirmação do ciclo')
+    }
 
     // Dedupe por (assinatura + cobrança + status): o token só é consumido em
     // markProcessed → falha no meio NÃO descarta a reentrega. Status novo reprocessa.
@@ -62,6 +67,12 @@ export class HandleSubscriptionNotificationService {
     const existing = await this.payments.findByProviderPaymentId(this.gateway.provider, chargeId)
 
     if (existing) {
+      if (
+        existing.subscriptionId !== subscription.id ||
+        existing.consumerId !== subscription.consumerId
+      ) {
+        throw new ValidationError('Cobrança já vinculada a outra assinatura')
+      }
       // Ciclo já registrado (ex.: criado na assinatura ou em análise): transiciona.
       if (charge.status === 'PAID') {
         if (charge.amountInCents !== subscription.amount.amountInCents) {
@@ -69,7 +80,13 @@ export class HandleSubscriptionNotificationService {
           await this.inbox.markProcessed(this.gateway.provider, eventId)
           return
         }
-        existing.markPaid(charge.paidAt)
+        existing.confirmSubscriptionChargePaid({
+          subscriptionId: subscription.id,
+          provider: this.gateway.provider,
+          providerPaymentId: chargeId,
+          amount: Money.fromCents(charge.amountInCents, subscription.amount.currency),
+          paidAt: charge.paidAt,
+        })
       } else if (charge.status === 'EXPIRED' && existing.status === 'PENDING') {
         existing.markExpired()
       } else if (charge.status === 'FAILED' && existing.status === 'PENDING') {
@@ -112,7 +129,16 @@ export class HandleSubscriptionNotificationService {
             chargeId,
           )
           if (reloaded && charge.status === 'PAID') {
-            reloaded.markPaid(charge.paidAt)
+            if (reloaded.consumerId !== subscription.consumerId) {
+              throw new ValidationError('Cobrança já vinculada a outro consumidor')
+            }
+            reloaded.confirmSubscriptionChargePaid({
+              subscriptionId: subscription.id,
+              provider: this.gateway.provider,
+              providerPaymentId: chargeId,
+              amount: Money.fromCents(charge.amountInCents, subscription.amount.currency),
+              paidAt: charge.paidAt,
+            })
             await this.payments.save(reloaded)
           }
         } else {

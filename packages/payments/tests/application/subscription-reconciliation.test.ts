@@ -121,6 +121,25 @@ describe('SubscriptionReconciliationWorker', () => {
     ).toBe(true)
   })
 
+  test('recupera pagamento confirmado de ciclo local recusado, mesmo sem webhook novo', async () => {
+    const chargeId = 'declined-then-paid'
+    gateway.setCycleChargeAmount(chargeId, 9700n)
+    gateway.cardStatus = 'FAILED'
+    await cycles.handleCycle({ subscriptionId: providerSubscriptionId, chargeId })
+    const original = await payments.findByProviderPaymentId('EFI', chargeId)
+    gateway.cardStatus = 'PAID'
+    gateway.setSubscriptionCharges(providerSubscriptionId, [{ chargeId, status: 'PAID' }])
+    await newWorker().tick()
+    const recovered = await payments.findByProviderPaymentId('EFI', chargeId)
+    expect(recovered?.id).toBe(original?.id)
+    expect(recovered?.status).toBe('PAID')
+    expect(
+      payments.outbox.filter(
+        (event) => event.eventName === 'payment.paid' && event.aggregateId === original?.id,
+      ),
+    ).toHaveLength(1)
+  })
+
   test('a 2ª varredura não duplica nada (dedupe do inbox + linha já existente)', async () => {
     const ciclo = 'charge-agosto'
     gateway.setCycleChargeAmount(ciclo, 9700n)
