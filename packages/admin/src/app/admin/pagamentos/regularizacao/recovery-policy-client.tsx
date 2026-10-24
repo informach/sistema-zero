@@ -213,7 +213,7 @@ export function RecoveryPolicyClient({ currentRole }: { currentRole: string }) {
           </form>
         )}
       </Card>
-      <RecoveryReviewClient canWrite={canWrite} />
+      <RecoveryReviewClient canWrite={canWrite} canAdmit={view?.configuration?.enabled === true} />
     </div>
   )
 }

@@ -591,6 +591,47 @@ export const subscriptionRecoveryNotices = paymentsSchema.table(
   ],
 )
 
+/** Permanent human decision for one historical/reviewed admission, never a backdated notice. */
+export const subscriptionRecoveryAdmissionReviews = paymentsSchema.table(
+  'subscription_recovery_admission_reviews',
+  {
+    caseId: uuid('case_id')
+      .primaryKey()
+      .references(() => subscriptionRecoveryCases.id),
+    paymentId: uuid('payment_id')
+      .notNull()
+      .references(() => payments.id),
+    actorId: text('actor_id').notNull(),
+    requestId: uuid('request_id').notNull(),
+    audience: text('audience').$type<'kids' | 'adult'>().notNull(),
+    policyVersion: integer('policy_version').notNull(),
+    paymentVersion: integer('payment_version').notNull(),
+    sourceObservedAt: timestamp('source_observed_at', { withTimezone: true }).notNull(),
+    sourceChargeCreatedAt: timestamp('source_charge_created_at', { withTimezone: true }).notNull(),
+    approvedAt: timestamp('approved_at', { withTimezone: true }).notNull(),
+  },
+  (t) => [
+    uniqueIndex('subscription_recovery_admission_reviews_request_uq').on(t.requestId),
+    uniqueIndex('subscription_recovery_admission_reviews_payment_uq').on(t.paymentId),
+    check(
+      'subscription_recovery_admission_reviews_actor_check',
+      sql`length(btrim(${t.actorId})) between 1 and 200`,
+    ),
+    check(
+      'subscription_recovery_admission_reviews_audience_check',
+      sql`${t.audience} in ('kids', 'adult')`,
+    ),
+    check(
+      'subscription_recovery_admission_reviews_version_check',
+      sql`${t.policyVersion} >= 0 and ${t.paymentVersion} >= 0`,
+    ),
+    check(
+      'subscription_recovery_admission_reviews_source_check',
+      sql`${t.sourceChargeCreatedAt} <= ${t.sourceObservedAt} and ${t.sourceObservedAt} <= ${t.approvedAt} and ${t.approvedAt} - ${t.sourceObservedAt} <= interval '60 seconds'`,
+    ),
+  ],
+)
+
 /** Permanent cancellation evidence; outbox retention never removes this history. */
 export const subscriptionCancellationAudit = paymentsSchema.table(
   'subscription_cancellation_audit',
@@ -754,6 +795,7 @@ export const schema = {
   subscriptionCancellationAudit,
   subscriptionRecoveryPolicyAudit,
   subscriptionRecoveryAdmissions,
+  subscriptionRecoveryAdmissionReviews,
   idempotencyKeys,
   outbox,
   webhookEvents,

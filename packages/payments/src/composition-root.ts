@@ -29,6 +29,7 @@ import { RecoveryCoordinatorService } from './application/subscription-recovery/
 import { RecoveryNoticeService } from './application/subscription-recovery/recovery-notice.service'
 import { RecoveryPolicyService } from './application/subscription-recovery/recovery-policy.service'
 import { RecoverySourceService } from './application/subscription-recovery/recovery-source.service'
+import { ReviewHistoricalAdmissionService } from './application/subscription-recovery/review-historical-admission.service'
 import type { Env } from './infrastructure/config/env'
 import { InProcessEventPublisher } from './infrastructure/events/in-process-event-publisher'
 import { loadEfiCertificate } from './infrastructure/gateways/efi/certificate'
@@ -54,6 +55,7 @@ import { DrizzleRecoveryAdmissionRepository } from './infrastructure/persistence
 import { DrizzleRecoveryNoticeRepository } from './infrastructure/persistence/drizzle/recovery-notice.repository'
 import { DrizzleRecoveryPolicyRepository } from './infrastructure/persistence/drizzle/recovery-policy.repository'
 import { DrizzleRecoveryReviewRepository } from './infrastructure/persistence/drizzle/recovery-review.repository'
+import { DrizzleReviewedAdmissionRepository } from './infrastructure/persistence/drizzle/reviewed-admission.repository'
 import { DrizzleSubscriptionRepository } from './infrastructure/persistence/drizzle/subscription.repository'
 import { DrizzleSubscriptionAdminReadRepository } from './infrastructure/persistence/drizzle/subscription-admin-read.repository'
 import { DrizzleSubscriptionBillingRepository } from './infrastructure/persistence/drizzle/subscription-billing.repository'
@@ -254,6 +256,7 @@ export function createApplication(env: Env): Application {
   const subscriptionBilling = new DrizzleSubscriptionBillingRepository(db)
   const recoveryCases = new DrizzleSubscriptionRecoveryRepository(db)
   const recoveryAdmissions = new DrizzleRecoveryAdmissionRepository(db)
+  const reviewedAdmissions = new DrizzleReviewedAdmissionRepository(db)
   const recoverySource = new RecoverySourceService(
     subscriptions,
     payments,
@@ -266,6 +269,7 @@ export function createApplication(env: Env): Application {
     subscriptions,
     payments,
     recoverySource,
+    reviewedAdmissions,
   )
   const recoveryNotices =
     recoveryMessaging && env.RECOVERY_KIDS_BILLING_URL && env.RECOVERY_ADULT_BILLING_URL
@@ -451,6 +455,14 @@ export function createApplication(env: Env): Application {
       payments,
       subscriptions,
       gateway,
+    ),
+    reviewHistoricalAdmission: new ReviewHistoricalAdmissionService(
+      payments,
+      subscriptions,
+      recoveryPolicies,
+      recoveryCases,
+      reviewedAdmissions,
+      recoverySource,
     ),
     updateSubscriptionCard,
     retrySubscriptionCharge,

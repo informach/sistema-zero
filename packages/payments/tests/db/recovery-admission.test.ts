@@ -17,6 +17,7 @@ import {
 import { DrizzlePaymentRepository } from '../../src/infrastructure/persistence/drizzle/payment.repository'
 import { DrizzleRecoveryAdmissionRepository } from '../../src/infrastructure/persistence/drizzle/recovery-admission.repository'
 import { DrizzleRecoveryPolicyRepository } from '../../src/infrastructure/persistence/drizzle/recovery-policy.repository'
+import { DrizzleReviewedAdmissionRepository } from '../../src/infrastructure/persistence/drizzle/reviewed-admission.repository'
 import {
   subscriptionRecoveryAdmissions as admissions,
   subscriptionRecoveryCases as cases,
@@ -150,6 +151,7 @@ describe.skipIf(!databaseUrl)('Entrada de regularização — PostgreSQL real', 
         gateway,
         () => now,
       ),
+      new DrizzleReviewedAdmissionRepository(connection.db, () => now),
       () => now,
     )
   }

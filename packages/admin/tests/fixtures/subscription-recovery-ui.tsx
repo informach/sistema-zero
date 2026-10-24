@@ -53,7 +53,11 @@ beforeEach(() => {
         reviewCalls.push(String(input))
         return review(String(input))
       }
-      if (String(input).endsWith('/confirm-period') || String(input).endsWith('/confirm-payment')) {
+      if (
+        String(input).endsWith('/confirm-period') ||
+        String(input).endsWith('/confirm-payment') ||
+        String(input).endsWith('/admit')
+      ) {
         confirmationPaths.push(String(input))
         confirmationCalls.push(typeof init?.body === 'string' ? JSON.parse(init.body) : null)
         return confirmation()
@@ -191,6 +195,55 @@ test('queue exposes uncertain payment with audience unknown, with no financial a
   expect(element.textContent).not.toContain('PAYMENT_CONFIRMATION_REQUIRED')
   expect(calls.every((call) => call.method === 'GET')).toBe(true)
   expect(reviewCalls).toHaveLength(1)
+})
+
+test('entrada histórica exige política ativa e público explícito, com um único POST auditável', async () => {
+  if (!record.configuration) throw new Error('Missing QA policy')
+  record.configuration = { ...record.configuration, enabled: true }
+  review = async () =>
+    Response.json(reviewPage({ ...reviewItem, kind: 'ADMISSION', state: 'HISTORICAL' }))
+  const staff = await mount('staff')
+  expect(button(staff, 'Revisar e iniciar acompanhamento').disabled).toBe(true)
+  await close.pop()?.()
+  const pending = Promise.withResolvers<Response>()
+  confirmation = () => pending.promise
+  const admin = await mount()
+  expect(button(admin, 'Revisar e iniciar acompanhamento').disabled).toBe(true)
+  const select = [...admin.querySelectorAll('label')]
+    .find((label) => label.textContent?.includes('Público da assinatura'))
+    ?.querySelector('select')
+  if (!select) throw new Error('Missing audience selection')
+  await act(async () => {
+    select.value = 'adult'
+    select.dispatchEvent(new Event('change', { bubbles: true }))
+  })
+  await act(async () => {
+    button(admin, 'Revisar e iniciar acompanhamento').click()
+    button(admin, 'Revisar e iniciar acompanhamento').click()
+  })
+  expect(confirmationPaths).toEqual(['/api/payments/recovery/payments/qa-payment/admit'])
+  expect(confirmationCalls).toHaveLength(1)
+  expect(confirmationCalls[0]).toMatchObject({ expectedVersion: 1, audience: 'adult' })
+  const command = confirmationCalls[0]
+  if (!command || typeof command !== 'object') throw new Error('Missing admission command')
+  expect(Object.keys(command).sort()).toEqual(['audience', 'expectedVersion', 'requestId'])
+  review = async () =>
+    Response.json(reviewPage({ ...reviewItem, kind: 'CASE', audience: 'adult', state: 'OPEN' }))
+  await act(async () => pending.resolve(Response.json({ admitted: true, caseId: 'qa-case' })))
+  expect(admin.textContent).toContain('Revisão registrada')
+  expect(admin.textContent).toContain('O prazo começará no aceite do primeiro aviso')
+  expect(admin.textContent).not.toContain('Revisar e iniciar acompanhamento')
+})
+
+test('política inativa não permite iniciar entrada histórica', async () => {
+  review = async () =>
+    Response.json(
+      reviewPage({ ...reviewItem, kind: 'ADMISSION', audience: 'kids', state: 'HISTORICAL' }),
+    )
+  const admin = await mount()
+  expect(button(admin, 'Revisar e iniciar acompanhamento').disabled).toBe(true)
+  expect(admin.textContent).toContain('Ative a política')
+  expect(confirmationCalls).toHaveLength(0)
 })
 
 test('queue read failure stays visible instead of claiming no cases', async () => {

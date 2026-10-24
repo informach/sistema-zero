@@ -24,6 +24,7 @@ const states: Record<string, string> = {
   UNKNOWN: 'Resultado ainda não confirmado',
   EXECUTING: 'Solicitação em andamento',
   REVIEW_REQUIRED: 'Período ainda não confirmado',
+  HISTORICAL: 'Entrada histórica para revisão',
 }
 const reasons: Record<string, string> = {
   AUDIENCE_UNKNOWN: 'Confirmar se a assinatura pertence ao Kids ou à comunidade adulta.',
@@ -44,7 +45,13 @@ const date = (value: string) =>
 const selectClass = 'min-h-10 rounded-md border border-input bg-background px-3 text-sm'
 
 /** Bounded queue; source confirmation has separate authorization and durable audit. */
-export function RecoveryReviewClient({ canWrite }: { canWrite: boolean }) {
+export function RecoveryReviewClient({
+  canWrite,
+  canAdmit,
+}: {
+  canWrite: boolean
+  canAdmit: boolean
+}) {
   const formId = useId()
   const [kind, setKind] = useState('')
   const [audience, setAudience] = useState('')
@@ -55,6 +62,7 @@ export function RecoveryReviewClient({ canWrite }: { canWrite: boolean }) {
   const actionRef = useRef<AbortController | null>(null)
   const loadRef = useRef<() => void>(() => {})
   const [pendingAction, setPendingAction] = useState<string | null>(null)
+  const [audiences, setAudiences] = useState<Record<string, 'kids' | 'adult' | ''>>({})
   const [notice, setNotice] = useState('')
   const [page, setPage] = useState<RecoveryReviewPage | null>(null)
   const [error, setError] = useState('')
@@ -90,41 +98,55 @@ export function RecoveryReviewClient({ canWrite }: { canWrite: boolean }) {
     return () => requestRef.current?.abort()
   }, [load])
   useEffect(() => () => actionRef.current?.abort(), [])
-  async function confirmItem(item: RecoveryReviewItem) {
+  function audienceFor(item: RecoveryReviewItem): 'kids' | 'adult' | '' {
+    return item.audience === 'unknown' ? (audiences[item.id] ?? '') : item.audience
+  }
+  async function confirmItem(item: RecoveryReviewItem, audience?: 'kids' | 'adult') {
     if (
       !canWrite ||
       actionRef.current ||
       !item.paymentId ||
-      !['PERIOD', 'OPERATION'].includes(item.kind)
+      !['PERIOD', 'OPERATION', 'ADMISSION'].includes(item.kind)
     )
       return
     const period = item.kind === 'PERIOD'
+    const admission = item.kind === 'ADMISSION'
+    if (admission && (!canAdmit || !audience)) return
     const controller = new AbortController()
     actionRef.current = controller
     setPendingAction(item.id)
     setNotice('')
     try {
       await apiSend(
-        period
-          ? `/api/payments/recovery/payments/${encodeURIComponent(item.paymentId)}/confirm-period`
-          : `/api/payments/recovery/operations/${encodeURIComponent(item.id)}/confirm-payment`,
+        admission
+          ? `/api/payments/recovery/payments/${encodeURIComponent(item.paymentId)}/admit`
+          : period
+            ? `/api/payments/recovery/payments/${encodeURIComponent(item.paymentId)}/confirm-period`
+            : `/api/payments/recovery/operations/${encodeURIComponent(item.id)}/confirm-payment`,
         'POST',
         {
-          ...(period ? { expectedVersion: item.version } : { expectedAttempt: item.version }),
+          ...(period || admission
+            ? { expectedVersion: item.version }
+            : { expectedAttempt: item.version }),
+          ...(admission ? { audience } : {}),
           requestId: crypto.randomUUID(),
         },
         { signal: controller.signal },
       )
       if (!controller.signal.aborted)
         setNotice(
-          period
-            ? 'Período conferido e registrado. A área de membros receberá o período original; a validade não recomeça hoje.'
-            : 'Pagamento confirmado e conferência registrada. Nenhuma nova cobrança foi feita; o período original foi preservado.',
+          admission
+            ? 'Revisão registrada. O prazo começará no aceite do primeiro aviso. Esta ação não cobra nem cancela a assinatura.'
+            : period
+              ? 'Período conferido e registrado. A área de membros receberá o período original; a validade não recomeça hoje.'
+              : 'Pagamento confirmado e conferência registrada. Nenhuma nova cobrança foi feita; o período original foi preservado.',
         )
     } catch {
       if (!controller.signal.aborted)
         setNotice(
-          'Não foi possível confirmar a resposta. A lista será consultada novamente; nenhum pagamento foi solicitado por esta ação.',
+          admission
+            ? 'A abertura não foi confirmada. A lista será atualizada; confira se o acompanhamento já aparece. A operadora precisa confirmar a cobrança mais recente e a assinatura ativa.'
+            : 'Não foi possível confirmar a resposta. A lista será consultada novamente; nenhum pagamento foi solicitado por esta ação.',
         )
     } finally {
       if (actionRef.current === controller) actionRef.current = null
@@ -254,6 +276,54 @@ export function RecoveryReviewClient({ canWrite }: { canWrite: boolean }) {
                 <p className="text-sm">
                   {reasons[item.reason] ?? 'A equipe precisa conferir os dados deste caso.'}
                 </p>
+              ) : null}
+              {item.kind === 'ADMISSION' && item.paymentId ? (
+                <div className="space-y-2">
+                  <label className="grid gap-1 text-sm" htmlFor={`${formId}-${item.id}-audience`}>
+                    Público da assinatura
+                    <select
+                      id={`${formId}-${item.id}-audience`}
+                      className={selectClass}
+                      value={audienceFor(item)}
+                      disabled={
+                        !canWrite ||
+                        !canAdmit ||
+                        pendingAction !== null ||
+                        item.audience !== 'unknown'
+                      }
+                      onChange={(event) => {
+                        const value = event.target.value
+                        if (value === '' || value === 'kids' || value === 'adult')
+                          setAudiences((current) => ({ ...current, [item.id]: value }))
+                      }}
+                    >
+                      <option value="">Selecione a comunidade</option>
+                      <option value="kids">Kids — responsável</option>
+                      <option value="adult">Adultos — titular</option>
+                    </select>
+                  </label>
+                  <Button
+                    variant="outline"
+                    disabled={
+                      !canWrite || !canAdmit || pendingAction !== null || !audienceFor(item)
+                    }
+                    onClick={() => {
+                      const audience = audienceFor(item)
+                      if (audience) void confirmItem(item, audience)
+                    }}
+                  >
+                    {pendingAction === item.id
+                      ? 'Conferindo entrada…'
+                      : 'Revisar e iniciar acompanhamento'}
+                  </Button>
+                  <p className="text-xs text-muted-foreground">
+                    Consulta a operadora e registra sua revisão. Abre um aviso com prazo novo, sem
+                    cobrança ou cancelamento imediato.
+                    {!canAdmit
+                      ? ' Ative a política e confira as comunicações antes de iniciar.'
+                      : ''}
+                  </p>
+                </div>
               ) : null}
               {item.kind === 'PERIOD' || (item.kind === 'OPERATION' && item.paymentId) ? (
                 <div className="space-y-1">

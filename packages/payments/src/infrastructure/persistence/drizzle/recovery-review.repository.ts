@@ -19,7 +19,12 @@ export class DrizzleRecoveryReviewRepository implements RecoveryReviewRepository
   async list(query: RecoveryReviewQuery): Promise<RecoveryReviewPage> {
     const audience = sql`case when s.metadata->>'billingAudienceSource' = 'funnel-registry-v1'
       and jsonb_typeof(s.metadata->'billingFunnelKey') = 'string' and s.metadata->>'billingFunnelKey' <> ''
-      and s.metadata->>'billingAudience' in ('kids','adult') then s.metadata->>'billingAudience' else 'unknown' end`
+      and s.metadata->>'billingAudience' in ('kids','adult') then s.metadata->>'billingAudience'
+      else coalesce((select r.audience from payments.subscription_recovery_admission_reviews r
+        join payments.subscription_recovery_cases rc on rc.id = r.case_id
+        where rc.subscription_id = s.id and rc.consumer_id = s.consumer_id
+          and rc.provider_subscription_id = s.provider_subscription_id and rc.audience = r.audience
+        order by r.approved_at desc, r.policy_version desc, r.case_id limit 1), 'unknown') end`
     const [row] = await this.db.execute<{ total: number; items: ReviewRow[] }>(sql`
       with queue as (
         select 'CASE' as kind, c.id::text as id, c.subscription_id::text as "subscriptionId",
@@ -32,12 +37,27 @@ export class DrizzleRecoveryReviewRepository implements RecoveryReviewRepository
         where c.state not in ('RECOVERED','CANCELED')
         union all
         select 'ADMISSION', a.payment_id::text, p.subscription_id::text, a.payment_id::text,
-          ${audience}, a.state::text, a.reason, p.amount_in_cents::text, a.attempts,
+          ${audience}, a.state::text, a.reason, p.amount_in_cents::text, p.version,
           a.discovered_at, null::timestamptz, s.customer->>'name', s.customer->>'email'
         from payments.subscription_recovery_admissions a
         join payments.payments p on p.id = a.payment_id
         left join payments.subscriptions s on s.id = p.subscription_id and s.consumer_id = p.consumer_id
         where a.state = 'REVIEW'
+        union all
+        select 'ADMISSION', p.id::text, p.subscription_id::text, p.id::text,
+          ${audience}, 'HISTORICAL', 'LEGACY_RENEWAL', p.amount_in_cents::text, p.version,
+          p.updated_at, null::timestamptz, s.customer->>'name', s.customer->>'email'
+        from payments.payments p
+        join payments.subscriptions s on s.id = p.subscription_id and s.consumer_id = p.consumer_id
+        where p.status = 'FAILED' and p.method = 'CREDIT_CARD' and p.currency = 'BRL'
+          and p.provider = s.provider and p.amount_in_cents = s.amount_in_cents
+          and s.status = 'ACTIVE' and s.cycles_completed > 0 and s.cancel_requested_at is null
+          and s.provider_subscription_id is not null
+          and not exists (select 1 from payments.subscription_recovery_admissions a where a.payment_id = p.id)
+          and not exists (select 1 from payments.subscription_recovery_cases c where c.payment_id = p.id)
+          and not exists (select 1 from payments.subscription_recovery_cases c where c.subscription_id = s.id and c.state not in ('RECOVERED','CANCELED'))
+          and ((select activated_at from payments.subscription_recovery_policy where id = 1) is null
+            or p.updated_at < (select activated_at from payments.subscription_recovery_policy where id = 1))
         union all
         select 'OPERATION', o.id::text, o.subscription_id::text, p.id::text,
           ${audience}, o.state::text, o.result, coalesce(o.amount_in_cents,s.amount_in_cents)::text,

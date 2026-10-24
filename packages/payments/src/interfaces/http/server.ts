@@ -25,6 +25,7 @@ import type { ConfirmSubscriptionPeriodService } from '../../application/subscri
 import type { ConfirmSubscriptionRetryService } from '../../application/subscription-recovery/confirm-subscription-retry.service'
 import type { ListRecoveryReviewService } from '../../application/subscription-recovery/list-recovery-review.service'
 import type { RecoveryPolicyService } from '../../application/subscription-recovery/recovery-policy.service'
+import type { ReviewHistoricalAdmissionService } from '../../application/subscription-recovery/review-historical-admission.service'
 import type { ConsumerRepository } from '../../domain/ports/consumer-repository.port'
 import type { Env } from '../../infrastructure/config/env'
 import type { Logger } from '../../infrastructure/logging/logger'
@@ -60,6 +61,7 @@ export interface HttpDeps {
   recoveryReview: ListRecoveryReviewService
   confirmSubscriptionPeriod: ConfirmSubscriptionPeriodService
   confirmSubscriptionRetry: ConfirmSubscriptionRetryService
+  reviewHistoricalAdmission: ReviewHistoricalAdmissionService
   retrySubscriptionCharge: RetrySubscriptionChargeService
   updateSubscriptionCard: UpdateSubscriptionCardService
   handleWebhook: HandleProviderWebhookService
@@ -254,6 +256,7 @@ export function createServer(deps: HttpDeps) {
         recoveryReview: deps.recoveryReview,
         confirmSubscriptionPeriod: deps.confirmSubscriptionPeriod,
         confirmSubscriptionRetry: deps.confirmSubscriptionRetry,
+        reviewHistoricalAdmission: deps.reviewHistoricalAdmission,
         requireAdminEnabled: deps.requireAdminEnabled,
         internalToken: deps.internalToken,
         listPayments: deps.listPayments,

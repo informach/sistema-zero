@@ -28,6 +28,7 @@ const confirmRoute = await import(
 const confirmPaymentRoute = await import(
   '../../src/app/api/payments/recovery/operations/[id]/confirm-payment/route'
 )
+const admitRoute = await import('../../src/app/api/payments/recovery/payments/[id]/admit/route')
 beforeEach(() => {
   allowed = true
   guards.length = 0
@@ -107,12 +108,15 @@ test('review query is read-only, guarded and bounded before forwarding', async (
 test.each([
   'period',
   'payment',
+  'admission',
 ] as const)('confirmation %s requires write guard, bounded JSON and no arbitrary period or actor', async (kind) => {
-  const confirmationRoute = kind === 'period' ? confirmRoute : confirmPaymentRoute
+  const confirmationRoute =
+    kind === 'admission' ? admitRoute : kind === 'period' ? confirmRoute : confirmPaymentRoute
   const id = crypto.randomUUID()
   const context = { params: Promise.resolve({ id }) }
   const body = {
-    ...(kind === 'period' ? { expectedVersion: 2 } : { expectedAttempt: 1 }),
+    ...(kind === 'payment' ? { expectedAttempt: 1 } : { expectedVersion: 2 }),
+    ...(kind === 'admission' ? { audience: 'adult' } : {}),
     requestId: crypto.randomUUID(),
   }
   const post = (value: string) =>
@@ -127,9 +131,11 @@ test.each([
   expect(guards).toEqual([false])
   expect(calls[0]).toMatchObject({
     path:
-      kind === 'period'
-        ? `/payments/admin/subscription-recovery/payments/${id}/confirm-period`
-        : `/payments/admin/subscription-recovery/operations/${id}/confirm-payment`,
+      kind === 'admission'
+        ? `/payments/admin/subscription-recovery/payments/${id}/admit`
+        : kind === 'period'
+          ? `/payments/admin/subscription-recovery/payments/${id}/confirm-period`
+          : `/payments/admin/subscription-recovery/operations/${id}/confirm-payment`,
     options: { method: 'POST', body },
   })
   calls.length = 0

@@ -139,6 +139,40 @@ fallback para paidAt. Testar atraso, fim de mês/ano bissexto, calendário de Br
 leitura vencida, observações fora de ordem e ausência de dados. Gerar migration
 pelo Drizzle e aplicar somente na base QA nova antes da ativação financeira.
 
+### Entrada histórica controlada — contrato de implementação
+
+Implementada e validada localmente com migration gerada 0022: Payments completo
+563/1748, tipos completos exit 0; Admin quatro testes externos/13 asserções e
+Biome 21 arquivos. Revisão individual, concorrência, prova vencida, auditoria e
+reuso do público Kids/Adulto na próxima recusa estão cobertos. Detalhes e limites:
+`docs/qa/2026-10-24-subscription-historical-admission.md`. Sem ativação nos ambientes.
+
+Inventário readonly de renovações FAILED anteriores à ativação, sem acompanhamento
+ou admissão; registros revisados já existentes também aparecem. Não somar valores
+como dívida nem criar casos em massa. O Admin age em uma cobrança por vez, com
+versão esperada, request ID e público explícito quando a origem não o informa.
+Público comprovado pelo registry não pode ser sobrescrito por esse comando.
+
+A aplicação confere assinatura/valor/titular/estado atuais e o histórico do provedor:
+exige a cobrança mais recente identificável, ainda FAILED, assinatura ACTIVE, data
+original conhecida e nenhuma tentativa de pagamento pendente. Informação ambígua
+recusa a abertura. O caso usa política atual e abertura atual; o prazo começa só
+no aceite do primeiro aviso, nunca na primeira falha histórica.
+
+Persistir caso, auditoria permanente da revisão e recibo de admissão na mesma
+transação, revalidando fonte local/versão/política e frescor depois das esperas.
+Auditoria identifica autor/request/público/versão/instante observado e data original.
+Não falsificar metadata de registry nem repetir efeito em replay. Uma admissão
+automática concorrente fica fenced pelo mesmo caso/recibo. A ação não cobra,
+cancela nem concede acesso. Testes locais não atuam sobre a cliente real.
+
+Achado a fechar antes da ativação: hoje `RecoverySourceService` envia para revisão
+quando há ciclo posterior pago. É seguro contra cancelamento indevido, mas falta
+encerrar esse acompanhamento com prova do recibo posterior, sem marcar a cobrança
+antiga como paga, e liberar a admissão de futuras recusas antes ignoradas por
+CASE_EXISTS. A reutilização auditável do público revisado já está implementada,
+sem inventar `billingAudienceSource=funnel-registry-v1`.
+
 - Payments coordena dinheiro/assinatura; Members controla acesso; Messaging entrega.
 - Kids fala com responsável e exige seu portão; Adultos fala com o titular.
 - Não estender acesso por tentativa; não cobrar meses recusados em bloco.

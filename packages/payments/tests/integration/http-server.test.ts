@@ -25,6 +25,8 @@ import { ConfirmSubscriptionPeriodService } from '../../src/application/subscrip
 import { ConfirmSubscriptionRetryService } from '../../src/application/subscription-recovery/confirm-subscription-retry.service'
 import { ListRecoveryReviewService } from '../../src/application/subscription-recovery/list-recovery-review.service'
 import { RecoveryPolicyService } from '../../src/application/subscription-recovery/recovery-policy.service'
+import { RecoverySourceService } from '../../src/application/subscription-recovery/recovery-source.service'
+import { ReviewHistoricalAdmissionService } from '../../src/application/subscription-recovery/review-historical-admission.service'
 import type { PaymentAdminReadRepository } from '../../src/domain/ports/payment-admin-read.port'
 import type { PaymentMyReadRepository } from '../../src/domain/ports/payment-my-read.port'
 import type { SubscriptionAdminReadRepository } from '../../src/domain/ports/subscription-admin-read.port'
@@ -182,6 +184,19 @@ function buildApp(opts: BuildOpts = {}) {
   }
 
   const app = createServer({
+    reviewHistoricalAdmission: new ReviewHistoricalAdmissionService(
+      repo,
+      subscriptionRepo,
+      recoveryPolicies,
+      { findByPaymentId: async () => null, findActiveForSubscription: async () => null },
+      {
+        findByPaymentId: async () => null,
+        create: async () => {
+          throw new Error('Reviewed admission requires PostgreSQL proof')
+        },
+      },
+      new RecoverySourceService(subscriptionRepo, repo, subscriptionOperations, gateway),
+    ),
     confirmSubscriptionRetry: new ConfirmSubscriptionRetryService(
       subscriptionOperations,
       subscriptionRepo,
@@ -323,12 +338,15 @@ describe('Admin: política de regularização autenticada e auditada', () => {
   test.each([
     'period',
     'payment',
+    'admission',
   ] as const)('confirmação %s exige admin próprio e não aceita datas ou autor no corpo', async (kind) => {
     const { app, gateway } = buildApp({ requireAdmin: true, internalToken: 'qa-confirm-internal' })
     const url =
-      kind === 'period'
-        ? `http://localhost/payments/admin/subscription-recovery/payments/${crypto.randomUUID()}/confirm-period`
-        : `http://localhost/payments/admin/subscription-recovery/operations/${crypto.randomUUID()}/confirm-payment`
+      kind === 'admission'
+        ? `http://localhost/payments/admin/subscription-recovery/payments/${crypto.randomUUID()}/admit`
+        : kind === 'period'
+          ? `http://localhost/payments/admin/subscription-recovery/payments/${crypto.randomUUID()}/confirm-period`
+          : `http://localhost/payments/admin/subscription-recovery/operations/${crypto.randomUUID()}/confirm-payment`
     const headers = {
       'x-internal-token': 'qa-confirm-internal',
       'x-auth-user-id': 'qa-admin',
@@ -337,7 +355,8 @@ describe('Admin: política de regularização autenticada e auditada', () => {
       'content-type': 'application/json',
     }
     const body = {
-      ...(kind === 'period' ? { expectedVersion: 0 } : { expectedAttempt: 1 }),
+      ...(kind === 'payment' ? { expectedAttempt: 1 } : { expectedVersion: 0 }),
+      ...(kind === 'admission' ? { audience: 'kids' } : {}),
       requestId: crypto.randomUUID(),
     }
     const post = (current: Record<string, string>, value: unknown = body) =>

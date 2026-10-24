@@ -38,3 +38,14 @@ export function confirmRecoveryPayment(
     { method: 'POST', body, signal },
   )
 }
+
+export function admitReviewedRecovery(
+  id: string,
+  body: { expectedVersion: number; audience: 'kids' | 'adult'; requestId: string },
+  signal?: AbortSignal,
+) {
+  return gatewayFetch<{ caseId: string; admitted: true }>(
+    `/payments/admin/subscription-recovery/payments/${encodeURIComponent(id)}/admit`,
+    { method: 'POST', body, signal },
+  )
+}

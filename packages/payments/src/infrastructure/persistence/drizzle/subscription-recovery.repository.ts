@@ -1,5 +1,6 @@
 import { and, asc, eq, exists, gt, inArray, isNull, lt, lte, or, sql } from 'drizzle-orm'
 import { ValidationError } from '../../../domain/shared/errors'
+import { verifiedBillingAudience } from '../../../domain/subscription-recovery/billing-audience'
 import { SubscriptionRecoveryCase } from '../../../domain/subscription-recovery/recovery-case'
 import type {
   RecoveryLease,
@@ -18,46 +19,71 @@ import {
 
 const activeStates = ['OPEN', 'PAYMENT_PENDING', 'CANCEL_PENDING', 'MANUAL_REVIEW'] as const
 
+type RecoveryTransaction = Parameters<Parameters<Database['transaction']>[0]>[0]
+
+/** Shared source validation/lock order for automatic and explicitly reviewed admissions. */
+export async function insertNewRecoveryCase(
+  tx: RecoveryTransaction,
+  item: SubscriptionRecoveryCase,
+  expectedPaymentVersion?: number,
+): Promise<boolean> {
+  if (!item.isNew) throw new ValidationError('Caso já persistido')
+  const snapshot = item.toSnapshot()
+  // Subscription before payment, matching the financial writers' order. No provider I/O in this transaction.
+  const [subscription] = await tx
+    .select()
+    .from(subscriptions)
+    .where(
+      and(
+        eq(subscriptions.id, snapshot.subscriptionId),
+        eq(subscriptions.consumerId, snapshot.consumerId),
+        eq(subscriptions.providerSubscriptionId, snapshot.providerSubscriptionId),
+        eq(subscriptions.status, 'ACTIVE'),
+        isNull(subscriptions.cancelRequestedAt),
+        gt(subscriptions.cyclesCompleted, 0),
+        eq(subscriptions.amountInCents, snapshot.amountInCents),
+        eq(subscriptions.currency, 'BRL'),
+      ),
+    )
+    .for('share')
+  if (!subscription)
+    throw new ValidationError('Assinatura mudou durante a entrada da regularização')
+  const audience = verifiedBillingAudience(subscription.metadata)
+  if (audience && audience !== snapshot.audience)
+    throw new ValidationError('Público diverge da compra comprovada')
+  const [payment] = await tx
+    .select({ id: payments.id, version: payments.version })
+    .from(payments)
+    .where(
+      and(
+        eq(payments.id, snapshot.paymentId),
+        eq(payments.status, 'FAILED'),
+        eq(payments.subscriptionId, snapshot.subscriptionId),
+        eq(payments.consumerId, snapshot.consumerId),
+        eq(payments.providerPaymentId, snapshot.providerPaymentId),
+        eq(payments.provider, subscription.provider),
+        eq(payments.amountInCents, snapshot.amountInCents),
+        eq(payments.currency, 'BRL'),
+        eq(payments.method, 'CREDIT_CARD'),
+      ),
+    )
+    .for('share')
+  if (!payment) throw new ValidationError('Caso exige uma renovação recusada de assinatura já paga')
+  if (expectedPaymentVersion !== undefined && payment.version !== expectedPaymentVersion)
+    throw new ConcurrencyConflictError(payment.id)
+  const rows = await tx
+    .insert(cases)
+    .values(snapshot)
+    .onConflictDoNothing()
+    .returning({ id: cases.id })
+  return rows.length === 1
+}
+
 export class DrizzleSubscriptionRecoveryRepository implements SubscriptionRecoveryRepository {
   constructor(private readonly db: Database) {}
 
   async create(item: SubscriptionRecoveryCase): Promise<boolean> {
-    if (!item.isNew) throw new ValidationError('Caso já persistido')
-    const snapshot = item.toSnapshot()
-    return this.db.transaction(async (tx) => {
-      // Mantém a origem estável até o INSERT; não há chamada externa na transação.
-      const [source] = await tx
-        .select({ id: payments.id })
-        .from(payments)
-        .innerJoin(subscriptions, eq(subscriptions.id, payments.subscriptionId))
-        .where(
-          and(
-            eq(payments.id, snapshot.paymentId),
-            eq(payments.status, 'FAILED'),
-            eq(payments.subscriptionId, snapshot.subscriptionId),
-            eq(payments.consumerId, snapshot.consumerId),
-            eq(payments.providerPaymentId, snapshot.providerPaymentId),
-            eq(payments.amountInCents, snapshot.amountInCents),
-            eq(payments.currency, 'BRL'),
-            eq(payments.method, 'CREDIT_CARD'),
-            eq(subscriptions.consumerId, snapshot.consumerId),
-            eq(subscriptions.providerSubscriptionId, snapshot.providerSubscriptionId),
-            eq(subscriptions.status, 'ACTIVE'),
-            isNull(subscriptions.cancelRequestedAt),
-            gt(subscriptions.cyclesCompleted, 0),
-          ),
-        )
-        .for('share')
-        .limit(1)
-      if (!source)
-        throw new ValidationError('Caso exige uma renovação recusada de assinatura já paga')
-      const rows = await tx
-        .insert(cases)
-        .values(snapshot)
-        .onConflictDoNothing()
-        .returning({ id: cases.id })
-      return rows.length === 1
-    })
+    return this.db.transaction((tx) => insertNewRecoveryCase(tx, item))
   }
 
   async findById(id: string): Promise<SubscriptionRecoveryCase | null> {

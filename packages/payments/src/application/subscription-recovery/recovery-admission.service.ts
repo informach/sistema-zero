@@ -1,6 +1,7 @@
 import type { PaymentRepository } from '../../domain/ports/payment-repository.port'
 import type { SubscriptionRepository } from '../../domain/ports/subscription-repository.port'
 import { ValidationError } from '../../domain/shared/errors'
+import { verifiedBillingAudience } from '../../domain/subscription-recovery/billing-audience'
 import type {
   RecoveryAdmissionLease,
   RecoveryAdmissionReason,
@@ -8,6 +9,7 @@ import type {
 } from '../../domain/subscription-recovery/recovery-admission.port'
 import { SubscriptionRecoveryCase } from '../../domain/subscription-recovery/recovery-case'
 import type { SubscriptionRecoveryRepository } from '../../domain/subscription-recovery/recovery-repository.port'
+import type { ReviewedAdmissionRepository } from '../../domain/subscription-recovery/reviewed-admission.port'
 import type { RecoverySourceService } from './recovery-source.service'
 
 /** Opening a case never sends a message, charges a card or cancels a subscription. */
@@ -18,6 +20,7 @@ export class RecoveryAdmissionService {
     private readonly subscriptions: SubscriptionRepository,
     private readonly payments: PaymentRepository,
     private readonly source: Pick<RecoverySourceService, 'inspect'>,
+    private readonly reviewedAudiences: Pick<ReviewedAdmissionRepository, 'resolveAudience'>,
     private readonly clock: () => Date = () => new Date(),
   ) {}
 
@@ -68,15 +71,15 @@ export class RecoveryAdmissionService {
         )
       return finish('IGNORED', 'CASE_EXISTS')
     }
-    const metadata = subscription.metadata
-    const audience = metadata.billingAudience
-    if (
-      metadata.billingAudienceSource !== 'funnel-registry-v1' ||
-      typeof metadata.billingFunnelKey !== 'string' ||
-      !metadata.billingFunnelKey ||
-      (audience !== 'kids' && audience !== 'adult')
-    )
-      return finish('REVIEW', 'AUDIENCE_UNKNOWN')
+    const audience =
+      verifiedBillingAudience(subscription.metadata) ??
+      (await this.reviewedAudiences.resolveAudience({
+        subscriptionId: subscription.id,
+        consumerId: subscription.consumerId,
+        providerSubscriptionId: subscription.providerSubscriptionId,
+        now: this.clock(),
+      }))
+    if (!audience) return finish('REVIEW', 'AUDIENCE_UNKNOWN')
 
     const candidate = SubscriptionRecoveryCase.open({
       subscriptionId: subscription.id,

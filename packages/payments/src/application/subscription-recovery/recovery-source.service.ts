@@ -21,7 +21,7 @@ export class RecoverySourceService {
   async inspect(
     item: RecoverySnapshot,
     ownCancellationExecutionId?: string,
-  ): Promise<RecoverySourceProof & { chargeCreatedAt: Date | null }> {
+  ): Promise<RecoverySourceProof & { chargeCreatedAt: Date | null; hasLaterCharge: boolean }> {
     const subscription = await this.subscriptions.findById(item.subscriptionId)
     const payment = await this.payments.findById(item.paymentId)
     if (
@@ -106,6 +106,18 @@ export class RecoverySourceService {
         currentSubscription.cancellationRecord?.origin === 'NONPAYMENT' &&
         currentSubscription.cancellationRecord.recoveryCaseId === item.id,
       chargeCreatedAt: cycle?.createdAt ?? null,
+      // Manual historical admission must identify the latest cycle without guessing from local ingestion dates.
+      hasLaterCharge:
+        !cycleCreatedAt ||
+        providerSubscription.charges.filter((entry) => entry.chargeId === item.providerPaymentId)
+          .length !== 1 ||
+        providerSubscription.charges.some(
+          (entry) =>
+            entry.chargeId !== item.providerPaymentId &&
+            (!entry.createdAt ||
+              !Number.isFinite(entry.createdAt.getTime()) ||
+              entry.createdAt >= cycleCreatedAt),
+        ),
     }
   }
 }
