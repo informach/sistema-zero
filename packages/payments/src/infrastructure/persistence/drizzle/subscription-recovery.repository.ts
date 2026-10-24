@@ -1,4 +1,4 @@
-import { and, asc, eq, gt, inArray, isNull, lte, or, sql } from 'drizzle-orm'
+import { and, asc, eq, exists, gt, inArray, isNull, lte, or, sql } from 'drizzle-orm'
 import { ValidationError } from '../../../domain/shared/errors'
 import { SubscriptionRecoveryCase } from '../../../domain/subscription-recovery/recovery-case'
 import type {
@@ -8,7 +8,13 @@ import type {
 import { PG_CHANNELS } from './channels'
 import { ConcurrencyConflictError } from './concurrency.error'
 import type { Database } from './db'
-import { subscriptionRecoveryCases as cases, outbox, payments, subscriptions } from './schema'
+import {
+  subscriptionRecoveryCases as cases,
+  subscriptionRecoveryNotices as notices,
+  outbox,
+  payments,
+  subscriptions,
+} from './schema'
 
 const activeStates = ['OPEN', 'PAYMENT_PENDING', 'CANCEL_PENDING', 'MANUAL_REVIEW'] as const
 
@@ -82,12 +88,32 @@ export class DrizzleSubscriptionRecoveryRepository implements SubscriptionRecove
       throw new ValidationError('Lote de regularização inválido')
     const leaseUntil = new Date(input.now.getTime() + input.leaseMs)
     return this.db.transaction(async (tx) => {
+      // A lost confirmation response must not reopen the financial case. Resume only
+      // its original closeout envelope, with a finite 24h retry horizon and 2min backoff.
+      const pendingCloseout = tx
+        .select({ id: notices.id })
+        .from(notices)
+        .where(
+          and(
+            eq(notices.caseId, cases.id),
+            isNull(notices.messageId),
+            inArray(notices.purpose, ['RECOVERED', 'CANCELED']),
+            gt(notices.createdAt, new Date(input.now.getTime() - 86_400_000)),
+            or(
+              isNull(notices.lastAttemptAt),
+              lte(notices.lastAttemptAt, new Date(input.now.getTime() - 120_000)),
+            ),
+          ),
+        )
       const rows = await tx
         .select()
         .from(cases)
         .where(
           and(
-            lte(cases.nextActionAt, input.now),
+            or(
+              lte(cases.nextActionAt, input.now),
+              and(inArray(cases.state, ['RECOVERED', 'CANCELED']), exists(pendingCloseout)),
+            ),
             or(isNull(cases.leaseUntil), lte(cases.leaseUntil, input.now)),
           ),
         )

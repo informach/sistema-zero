@@ -16,7 +16,11 @@ import {
   type DbConnection,
 } from '../../src/infrastructure/persistence/drizzle/db'
 import { DrizzlePaymentRepository } from '../../src/infrastructure/persistence/drizzle/payment.repository'
-import { subscriptionRecoveryCases } from '../../src/infrastructure/persistence/drizzle/schema'
+import { DrizzleRecoveryNoticeRepository } from '../../src/infrastructure/persistence/drizzle/recovery-notice.repository'
+import {
+  subscriptionRecoveryCases,
+  subscriptionRecoveryNotices,
+} from '../../src/infrastructure/persistence/drizzle/schema'
 import { DrizzleSubscriptionRepository } from '../../src/infrastructure/persistence/drizzle/subscription.repository'
 import { DrizzleSubscriptionRecoveryRepository } from '../../src/infrastructure/persistence/drizzle/subscription-recovery.repository'
 import { prepareTestDatabase } from './test-database'
@@ -51,9 +55,278 @@ describe.skipIf(!databaseUrl)('Casos de regularização — PostgreSQL real', ()
   })
   afterAll(async () => connection?.close())
   afterEach(async () => {
+    await connection.sql`delete from payments.subscription_recovery_notices where case_id in (select id from payments.subscription_recovery_cases where consumer_id=${consumerId})`
     await connection.db
       .delete(subscriptionRecoveryCases)
       .where(eq(subscriptionRecoveryCases.consumerId, consumerId))
+  })
+
+  async function ownedCase() {
+    const item = SubscriptionRecoveryCase.open(source)
+    await repository.create(item)
+    const [lease] = await repository.claimDue({ now, leaseMs: 10_000, limit: 1 })
+    if (!lease) throw new Error('QA case was not claimed')
+    return lease
+  }
+  const envelope = () => ({
+    channel: 'email' as const,
+    templateKey: 'recovery-kids-initial',
+    recipient: { name: 'QA responsible', email: 'qa@example.invalid' },
+    variables: { url: 'https://kids.example.invalid/pais/assinaturas', amount: '97,00' },
+  })
+
+  test('aviso é persistido antes da rede e réplicas/reabertura usam o envelope original', async () => {
+    const lease = await ownedCase()
+    const notices = new DrizzleRecoveryNoticeRepository(connection.db)
+    const request = envelope()
+    const create = () => notices.prepare(lease, { purpose: 'INITIAL', day: 0, request, now })
+    const [left, right] = await Promise.all([create(), create()])
+    expect(left.id).toBe(right.id)
+    expect(left.request.idempotencyKey).toBe(`subscription-recovery:${lease.item.id}:INITIAL:0`)
+    request.recipient.email = 'changed@example.invalid'
+    const reloaded = await new DrizzleRecoveryNoticeRepository(connection.db).prepare(lease, {
+      purpose: 'INITIAL',
+      day: 0,
+      request,
+      now,
+    })
+    expect(reloaded.request.recipient.email).toBe('qa@example.invalid')
+    expect(reloaded.attemptCount).toBe(0)
+    expect(reloaded.receipt).toBeNull()
+    reloaded.request.variables.amount = 'changed'
+    expect((await notices.listForCase(lease.item.id))[0]?.request.variables.amount).toBe('97,00')
+  })
+
+  test('writer vencido não prepara, conta tentativa nem altera recibo após takeover', async () => {
+    const lease = await ownedCase()
+    const notices = new DrizzleRecoveryNoticeRepository(connection.db)
+    const notice = await notices.prepare(lease, {
+      purpose: 'INITIAL',
+      day: 0,
+      request: envelope(),
+      now,
+    })
+    const later = new Date(now.getTime() + 10_000)
+    const [replacement] = await repository.claimDue({ now: later, leaseMs: 10_000, limit: 1 })
+    expect(replacement?.leaseId).not.toBe(lease.leaseId)
+    expect(
+      await failureOf(
+        notices.prepare(lease, { purpose: 'INITIAL', day: 0, request: envelope(), now: later }),
+      ),
+    ).toBeInstanceOf(Error)
+    expect(await failureOf(notices.recordAttempt(lease, notice.id, later))).toBeInstanceOf(Error)
+    expect(
+      await failureOf(
+        notices.recordReceipt(
+          lease,
+          notice.id,
+          { id: crypto.randomUUID(), status: 'QUEUED', acceptedAt: now, deliveredAt: null },
+          later,
+        ),
+      ),
+    ).toBeInstanceOf(Error)
+    await notices.recordAttempt(replacement!, notice.id, later)
+    expect((await notices.listForCase(lease.item.id))[0]?.attemptCount).toBe(1)
+  })
+
+  test('recibo mantém identidade/aceite e evidência terminal, sem trocar histórico nem relógio', async () => {
+    const lease = await ownedCase()
+    const notices = new DrizzleRecoveryNoticeRepository(connection.db)
+    const notice = await notices.prepare(lease, {
+      purpose: 'INITIAL',
+      day: 0,
+      request: envelope(),
+      now,
+    })
+    const receipt = {
+      id: crypto.randomUUID(),
+      status: 'QUEUED' as const,
+      acceptedAt: now,
+      deliveredAt: null,
+    }
+    await notices.recordAttempt(lease, notice.id, now)
+    await notices.recordReceipt(lease, notice.id, receipt, now)
+    expect(
+      await failureOf(
+        notices.recordReceipt(lease, notice.id, { ...receipt, id: crypto.randomUUID() }, now),
+      ),
+    ).toBeInstanceOf(Error)
+    const later = new Date(now.getTime() + 1_000)
+    expect(
+      await failureOf(
+        notices.recordReceipt(lease, notice.id, { ...receipt, acceptedAt: later }, later),
+      ),
+    ).toBeInstanceOf(Error)
+    await notices.recordReceipt(
+      lease,
+      notice.id,
+      { ...receipt, status: 'DELIVERED', deliveredAt: later },
+      later,
+    )
+    expect(await failureOf(notices.recordReceipt(lease, notice.id, receipt, later))).toBeInstanceOf(
+      Error,
+    )
+    const current = (await notices.listForCase(lease.item.id))[0]!
+    expect(current.receipt?.status).toBe('DELIVERED')
+    expect(current.receipt?.acceptedAt).toEqual(now)
+    expect(current.receipt?.deliveredAt).toEqual(later)
+    expect((await repository.findById(lease.item.id))?.toSnapshot().deadlineAt).toBeNull()
+  })
+
+  test('aviso de outro caso, lembrete antecipado e envelope com dados extras são recusados', async () => {
+    const lease = await ownedCase()
+    const notices = new DrizzleRecoveryNoticeRepository(connection.db)
+    const invalidRecipient = { ...envelope().recipient, card: 'qa-marker' }
+    expect(await failureOf(notices.recordAttempt(lease, crypto.randomUUID(), now))).toBeInstanceOf(
+      Error,
+    )
+    expect(
+      await failureOf(
+        notices.prepare(lease, { purpose: 'REMINDER', day: 3, request: envelope(), now }),
+      ),
+    ).toBeInstanceOf(Error)
+    expect(
+      await failureOf(
+        notices.prepare(lease, {
+          purpose: 'INITIAL',
+          day: 0,
+          request: { ...envelope(), recipient: invalidRecipient },
+          now,
+        }),
+      ),
+    ).toBeInstanceOf(Error)
+    expect(
+      await connection.db
+        .select()
+        .from(subscriptionRecoveryNotices)
+        .where(eq(subscriptionRecoveryNotices.caseId, lease.item.id)),
+    ).toHaveLength(0)
+  })
+
+  test('lembrete só usa dia conquistado na política congelada e fechamento tem aviso próprio', async () => {
+    const lease = await ownedCase()
+    lease.item.acceptInitialNotice(crypto.randomUUID(), now, now)
+    await repository.saveOwned(lease, now)
+    const due = new Date(now.getTime() + 3 * DAY_MS)
+    const [current] = await repository.claimDue({ now: due, leaseMs: 10_000, limit: 1 })
+    const notices = new DrizzleRecoveryNoticeRepository(connection.db)
+    expect(
+      await failureOf(
+        notices.prepare(current!, { purpose: 'REMINDER', day: 6, request: envelope(), now: due }),
+      ),
+    ).toBeInstanceOf(Error)
+    const reminder = await notices.prepare(current!, {
+      purpose: 'REMINDER',
+      day: 3,
+      request: envelope(),
+      now: due,
+    })
+    expect(reminder.day).toBe(3)
+    current!.item.applySource(
+      {
+        checkedAt: due,
+        providerSubscriptionId: source.providerSubscriptionId,
+        providerPaymentId: source.providerPaymentId,
+        amountInCents: source.amountInCents,
+        subscriptionStatus: 'ACTIVE',
+        paymentStatus: 'PAID',
+        paymentOperationPending: false,
+      },
+      due,
+    )
+    const recovered = await notices.prepare(current!, {
+      purpose: 'RECOVERED',
+      day: 0,
+      request: { ...envelope(), templateKey: 'recovery-kids-recovered' },
+      now: due,
+    })
+    expect(recovered.id).not.toBe(reminder.id)
+    expect(recovered.purpose).toBe('RECOVERED')
+    expect(
+      await failureOf(
+        notices.prepare(current!, { purpose: 'REMINDER', day: 6, request: envelope(), now: due }),
+      ),
+    ).toBeInstanceOf(Error)
+    await repository.saveOwned(current!, due)
+    expect((await repository.findById(current!.item.id))?.state).toBe('RECOVERED')
+    expect(await notices.listForCase(current!.item.id)).toHaveLength(2)
+    const [closeout] = await repository.claimDue({ now: due, leaseMs: 10_000, limit: 1 })
+    expect(closeout?.item.state).toBe('RECOVERED')
+    await notices.recordAttempt(closeout!, recovered.id, due)
+    await repository.saveOwned(closeout!, due)
+    expect(await repository.claimDue({ now: due, leaseMs: 10_000, limit: 1 })).toHaveLength(0)
+    const retryAt = new Date(due.getTime() + 120_000)
+    const [retry] = await repository.claimDue({ now: retryAt, leaseMs: 10_000, limit: 1 })
+    expect(retry?.item.state).toBe('RECOVERED')
+    await notices.recordReceipt(
+      retry!,
+      recovered.id,
+      { id: crypto.randomUUID(), status: 'QUEUED', acceptedAt: retryAt, deliveredAt: null },
+      retryAt,
+    )
+    await repository.saveOwned(retry!, retryAt)
+    expect(await repository.claimDue({ now: retryAt, leaseMs: 10_000, limit: 1 })).toHaveLength(0)
+  })
+
+  test('confirmação sem aceite para após 24h e fica no histórico sem reabrir o financeiro', async () => {
+    const lease = await ownedCase()
+    lease.item.applySource(
+      {
+        checkedAt: now,
+        providerSubscriptionId: source.providerSubscriptionId,
+        providerPaymentId: source.providerPaymentId,
+        amountInCents: source.amountInCents,
+        subscriptionStatus: 'CANCELED',
+        paymentStatus: 'FAILED',
+        paymentOperationPending: false,
+      },
+      now,
+    )
+    const notices = new DrizzleRecoveryNoticeRepository(connection.db)
+    await notices.prepare(lease, { purpose: 'CANCELED', day: 0, request: envelope(), now })
+    await repository.saveOwned(lease, now)
+    expect(
+      await repository.claimDue({
+        now: new Date(now.getTime() + DAY_MS),
+        leaseMs: 10_000,
+        limit: 1,
+      }),
+    ).toHaveLength(0)
+    expect((await repository.findById(lease.item.id))?.state).toBe('CANCELED')
+    expect((await notices.listForCase(lease.item.id))[0]?.receipt).toBeNull()
+  })
+
+  test('banco recusa tentativa sem instante e entrega sem evidência mesmo fora do adapter', async () => {
+    const lease = await ownedCase()
+    const notices = new DrizzleRecoveryNoticeRepository(connection.db)
+    const notice = await notices.prepare(lease, {
+      purpose: 'INITIAL',
+      day: 0,
+      request: envelope(),
+      now,
+    })
+    expect(
+      await failureOf(
+        connection.db
+          .update(subscriptionRecoveryNotices)
+          .set({ attemptCount: 1 })
+          .where(eq(subscriptionRecoveryNotices.id, notice.id)),
+      ),
+    ).toBeInstanceOf(Error)
+    expect(
+      await failureOf(
+        connection.db
+          .update(subscriptionRecoveryNotices)
+          .set({
+            messageId: crypto.randomUUID(),
+            messageStatus: 'DELIVERED',
+            acceptedAt: now,
+            observedAt: now,
+          })
+          .where(eq(subscriptionRecoveryNotices.id, notice.id)),
+      ),
+    ).toBeInstanceOf(Error)
+    expect((await notices.listForCase(lease.item.id))[0]?.attemptCount).toBe(0)
   })
   beforeEach(async () => {
     const subscription = SubscriptionAggregate.create({

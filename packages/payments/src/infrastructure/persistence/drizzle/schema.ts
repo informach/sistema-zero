@@ -20,6 +20,11 @@ import type {
 } from '../../../domain/payment/payment.aggregate'
 import type { PaymentStatus } from '../../../domain/payment/payment.status'
 import type { RecoveryReason } from '../../../domain/subscription-recovery/recovery-case'
+import type {
+  RecoveryMessageReceipt,
+  RecoveryMessageRequest,
+} from '../../../domain/subscription-recovery/recovery-messaging.port'
+import type { RecoveryNoticePurpose } from '../../../domain/subscription-recovery/recovery-notice.port'
 import type { RecoveryPolicy } from '../../../domain/subscription-recovery/recovery-policy'
 import type { Address } from '../../../domain/value-objects/customer'
 import type { CardData } from '../../../domain/value-objects/payment-method'
@@ -501,6 +506,56 @@ export const subscriptionRecoveryCases = paymentsSchema.table(
   ],
 )
 
+/** Exact outbound envelope and receipt; no card data or raw provider response. */
+export const subscriptionRecoveryNotices = paymentsSchema.table(
+  'subscription_recovery_notices',
+  {
+    id: uuid('id').primaryKey(),
+    caseId: uuid('case_id')
+      .notNull()
+      .references(() => subscriptionRecoveryCases.id),
+    purpose: text('purpose').$type<RecoveryNoticePurpose>().notNull(),
+    day: integer('day').notNull(),
+    request: jsonb('request').$type<RecoveryMessageRequest>().notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+    attemptCount: integer('attempt_count').notNull().default(0),
+    lastAttemptAt: timestamp('last_attempt_at', { withTimezone: true }),
+    messageId: uuid('message_id'),
+    messageStatus: text('message_status').$type<RecoveryMessageReceipt['status']>(),
+    acceptedAt: timestamp('accepted_at', { withTimezone: true }),
+    deliveredAt: timestamp('delivered_at', { withTimezone: true }),
+    observedAt: timestamp('observed_at', { withTimezone: true }),
+  },
+  (t) => [
+    uniqueIndex('subscription_recovery_notices_purpose_uq').on(t.caseId, t.purpose, t.day),
+    uniqueIndex('subscription_recovery_notices_message_uq').on(t.messageId),
+    check(
+      'subscription_recovery_notices_purpose_check',
+      sql`${t.purpose} in ('INITIAL', 'REMINDER', 'RECOVERED', 'CANCELED')`,
+    ),
+    check(
+      'subscription_recovery_notices_day_check',
+      sql`(${t.purpose} = 'REMINDER' and ${t.day} between 1 and 29) or (${t.purpose} <> 'REMINDER' and ${t.day} = 0)`,
+    ),
+    check(
+      'subscription_recovery_notices_attempt_check',
+      sql`${t.attemptCount} >= 0 and ((${t.attemptCount} = 0 and ${t.lastAttemptAt} is null) or (${t.attemptCount} > 0 and ${t.lastAttemptAt} is not null and ${t.lastAttemptAt} >= ${t.createdAt}))`,
+    ),
+    check(
+      'subscription_recovery_notices_receipt_check',
+      sql`(${t.messageId} is null and ${t.messageStatus} is null and ${t.acceptedAt} is null and ${t.deliveredAt} is null and ${t.observedAt} is null) or (${t.messageId} is not null and ${t.messageStatus} is not null and ${t.acceptedAt} is not null and ${t.observedAt} is not null and ${t.acceptedAt} >= ${t.createdAt} and ${t.observedAt} >= ${t.acceptedAt} and (${t.deliveredAt} is null or ${t.deliveredAt} between ${t.acceptedAt} and ${t.observedAt}))`,
+    ),
+    check(
+      'subscription_recovery_notices_status_check',
+      sql`${t.messageStatus} is null or ${t.messageStatus} in ('QUEUED', 'SCHEDULED', 'SENDING', 'SENT', 'DELIVERED', 'READ', 'FAILED', 'SUPPRESSED')`,
+    ),
+    check(
+      'subscription_recovery_notices_delivery_check',
+      sql`${t.messageStatus} is null or ${t.messageStatus} not in ('DELIVERED', 'READ') or ${t.deliveredAt} is not null`,
+    ),
+  ],
+)
+
 export const subscriptionRecoveryPolicy = paymentsSchema.table(
   'subscription_recovery_policy',
   {
@@ -547,6 +602,7 @@ export const schema = {
   subscriptionPlans,
   subscriptionOperations,
   subscriptionRecoveryCases,
+  subscriptionRecoveryNotices,
   subscriptionRecoveryPolicy,
   subscriptionRecoveryPolicyAudit,
   idempotencyKeys,
