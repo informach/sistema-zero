@@ -192,7 +192,7 @@ function wave(
       if (options.failSecondPost && service === 'community') throw new Error('unknown POST')
       return service
     },
-    async waitRetired(service: string) {
+    async waitRetired(service: string, _id?: string, _deadline?: number) {
       order.push(`REMOVED-old-${service}`)
       if (options.failAuth && service === 'auth') throw new Error('old Auth still active')
     },
@@ -224,6 +224,20 @@ function wave(
 }
 
 describe('one production owner and canonical V1 barrier', () => {
+  test('application builds longer than twenty minutes retain a bounded sixty-minute budget', async () => {
+    const fixture = wave()
+    let clock = 0
+    fixture.ports.now = () => clock
+    fixture.ports.backend.now = () => clock
+    fixture.ports.backend.waitRetired = async (_service, _id, deadline) => {
+      clock = 30 * 60 * 1_000
+      if (deadline === undefined || clock >= deadline) throw new Error('Application budget expired')
+      expect(deadline).toBe(60 * 60 * 1_000)
+    }
+    expect(
+      (await runProductionRelease({ sha, services: 'community-kids', plan }, fixture.ports)).state,
+    ).toBe('PRODUCTION_WAVE_PASSED')
+  })
   test('recorder initialization is opt-in and its POST still follows V1', async () => {
     const fixture = wave()
     const result = await runProductionRelease(
