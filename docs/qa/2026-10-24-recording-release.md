@@ -19,6 +19,10 @@
 - PDFs: Cadê, 7 páginas; Farol, 29 páginas. Geradores conferiram fontes, imagens e limites. Extração não encontrou os rótulos antigos; inspeção visual das páginas 4 e 29 confirmou a nova ação sem cortes.
 - Biome: 28 arquivos TS/TSX/CSS afetados, zero erros; `git diff --check` sem erros.
 
+Revisão visual posterior: o componente real renderizado com o CSS adulto compilado passou em 12 combinações (390/1366 px e seis cores). Conferidos títulos completos, rolagem, ausência de transbordamento horizontal, alvos de pelo menos 44 px, foco visível, destaque da aula atual e conclusão verde independente da cor. Essa fixture não substitui navegação autenticada em ambiente publicado.
+
+O CI inicial encontrou um contrato estático do Kids que procurava a marcação adulta no arquivo anterior à extração. A correção liga a verificação ao componente real e mantém as guardas de dimensões/rodapé; inclui a retirada do limite móvel de 28 rem. Nova seleção local: 19 testes, 91 asserções, zero falhas. O resultado negativo do CI foi preservado; não foi tratado como aprovação.
+
 ## Publicação e material gravado
 
 Por orientação da responsável, não há migração direta dos textos das aulas em staging ou produção: os manifestos serão reimportados por ela. Não se deve substituir gravações existentes nem recriar progresso durante esta entrega.
