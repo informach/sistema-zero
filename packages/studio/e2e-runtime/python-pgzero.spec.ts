@@ -95,6 +95,14 @@ const EXAMPLES = [
   'minigolfe-maluco',
   'tiro-ao-prato',
   'rali-com-minimapa',
+  'pouso-lunar',
+  'quebra-tijolos',
+  'sapo-atravessa',
+  'patrulha-em-camadas',
+  'motos-de-luz',
+  'arena-de-dois-comandos',
+  'bombas-no-labirinto',
+  'corredor-do-kung-fu',
 ]
 
 for (const key of EXAMPLES)

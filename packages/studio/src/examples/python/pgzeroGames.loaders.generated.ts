@@ -457,4 +457,111 @@ export const PGZERO_GAME_LOADERS = {
       assets: pgzeroGameAssets('rali-com-minimapa', RALI_COM_MINIMAPA_MEDIA),
     }
   },
+  'pouso-lunar': async () => {
+    const [{ POUSO_LUNAR_SOURCES }, { POUSO_LUNAR_MEDIA }, { pgzeroGameAssets }] =
+      await Promise.all([
+        import('./pousoLunar.sources.generated'),
+        import('./pousoLunar.media.generated'),
+        import('./pgzeroGameAssets'),
+      ])
+    return {
+      entrypoint: 'main.py',
+      files: POUSO_LUNAR_SOURCES,
+      assets: pgzeroGameAssets('pouso-lunar', POUSO_LUNAR_MEDIA),
+    }
+  },
+  'quebra-tijolos': async () => {
+    const [{ QUEBRA_TIJOLOS_SOURCES }, { QUEBRA_TIJOLOS_MEDIA }, { pgzeroGameAssets }] =
+      await Promise.all([
+        import('./quebraTijolos.sources.generated'),
+        import('./quebraTijolos.media.generated'),
+        import('./pgzeroGameAssets'),
+      ])
+    return {
+      entrypoint: 'main.py',
+      files: QUEBRA_TIJOLOS_SOURCES,
+      assets: pgzeroGameAssets('quebra-tijolos', QUEBRA_TIJOLOS_MEDIA),
+    }
+  },
+  'sapo-atravessa': async () => {
+    const [{ SAPO_ATRAVESSA_SOURCES }, { SAPO_ATRAVESSA_MEDIA }, { pgzeroGameAssets }] =
+      await Promise.all([
+        import('./sapoAtravessa.sources.generated'),
+        import('./sapoAtravessa.media.generated'),
+        import('./pgzeroGameAssets'),
+      ])
+    return {
+      entrypoint: 'main.py',
+      files: SAPO_ATRAVESSA_SOURCES,
+      assets: pgzeroGameAssets('sapo-atravessa', SAPO_ATRAVESSA_MEDIA),
+    }
+  },
+  'patrulha-em-camadas': async () => {
+    const [{ PATRULHA_EM_CAMADAS_SOURCES }, { PATRULHA_EM_CAMADAS_MEDIA }, { pgzeroGameAssets }] =
+      await Promise.all([
+        import('./patrulhaEmCamadas.sources.generated'),
+        import('./patrulhaEmCamadas.media.generated'),
+        import('./pgzeroGameAssets'),
+      ])
+    return {
+      entrypoint: 'main.py',
+      files: PATRULHA_EM_CAMADAS_SOURCES,
+      assets: pgzeroGameAssets('patrulha-em-camadas', PATRULHA_EM_CAMADAS_MEDIA),
+    }
+  },
+  'motos-de-luz': async () => {
+    const [{ MOTOS_DE_LUZ_SOURCES }, { MOTOS_DE_LUZ_MEDIA }, { pgzeroGameAssets }] =
+      await Promise.all([
+        import('./motosDeLuz.sources.generated'),
+        import('./motosDeLuz.media.generated'),
+        import('./pgzeroGameAssets'),
+      ])
+    return {
+      entrypoint: 'main.py',
+      files: MOTOS_DE_LUZ_SOURCES,
+      assets: pgzeroGameAssets('motos-de-luz', MOTOS_DE_LUZ_MEDIA),
+    }
+  },
+  'arena-de-dois-comandos': async () => {
+    const [
+      { ARENA_DE_DOIS_COMANDOS_SOURCES },
+      { ARENA_DE_DOIS_COMANDOS_MEDIA },
+      { pgzeroGameAssets },
+    ] = await Promise.all([
+      import('./arenaDeDoisComandos.sources.generated'),
+      import('./arenaDeDoisComandos.media.generated'),
+      import('./pgzeroGameAssets'),
+    ])
+    return {
+      entrypoint: 'main.py',
+      files: ARENA_DE_DOIS_COMANDOS_SOURCES,
+      assets: pgzeroGameAssets('arena-de-dois-comandos', ARENA_DE_DOIS_COMANDOS_MEDIA),
+    }
+  },
+  'bombas-no-labirinto': async () => {
+    const [{ BOMBAS_NO_LABIRINTO_SOURCES }, { BOMBAS_NO_LABIRINTO_MEDIA }, { pgzeroGameAssets }] =
+      await Promise.all([
+        import('./bombasNoLabirinto.sources.generated'),
+        import('./bombasNoLabirinto.media.generated'),
+        import('./pgzeroGameAssets'),
+      ])
+    return {
+      entrypoint: 'main.py',
+      files: BOMBAS_NO_LABIRINTO_SOURCES,
+      assets: pgzeroGameAssets('bombas-no-labirinto', BOMBAS_NO_LABIRINTO_MEDIA),
+    }
+  },
+  'corredor-do-kung-fu': async () => {
+    const [{ CORREDOR_DO_KUNG_FU_SOURCES }, { CORREDOR_DO_KUNG_FU_MEDIA }, { pgzeroGameAssets }] =
+      await Promise.all([
+        import('./corredorDoKungFu.sources.generated'),
+        import('./corredorDoKungFu.media.generated'),
+        import('./pgzeroGameAssets'),
+      ])
+    return {
+      entrypoint: 'main.py',
+      files: CORREDOR_DO_KUNG_FU_SOURCES,
+      assets: pgzeroGameAssets('corredor-do-kung-fu', CORREDOR_DO_KUNG_FU_MEDIA),
+    }
+  },
 } satisfies Record<PgzeroGameKey, () => Promise<unknown>>
