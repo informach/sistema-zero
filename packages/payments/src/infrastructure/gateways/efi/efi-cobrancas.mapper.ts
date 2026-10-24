@@ -5,6 +5,7 @@ import type {
   ProviderSubscriptionCharge,
   ProviderSubscriptionStatus,
 } from '../../../domain/ports/payment-gateway.port'
+import { cardFailureReason } from './card-failure-reason'
 import { EfiGatewayError } from './efi.errors'
 
 /**
@@ -343,13 +344,16 @@ export function parseCardDetailCharge(
   status: ProviderChargeStatus
   amountInCents: bigint
   paidAt?: Date
+  failureReason?: string
 } {
   const data = dataOf(raw)
+  const status = mapCardStatus(data?.status)
   return {
     providerPaymentId: String(data?.charge_id ?? data?.id ?? fallbackId),
-    status: mapCardStatus(data?.status),
+    status,
     amountInCents: principalInCents(data),
     paidAt: parseProviderDate(cardPaidAtRaw(data)),
+    failureReason: status === 'FAILED' ? cardFailureReason(data) : undefined,
   }
 }
 

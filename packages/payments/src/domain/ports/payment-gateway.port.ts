@@ -52,6 +52,8 @@ export interface ProviderCharge {
   status: ProviderChargeStatus
   paidAt?: Date
   amountInCents: bigint
+  /** Motivo sanitizado para diagnóstico; não determina estado ou autorização financeira. */
+  failureReason?: string
 }
 
 /** Estorno de Pix (devolução): resolve o e2eId a partir do txid e devolve o valor. */

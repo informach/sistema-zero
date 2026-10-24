@@ -110,6 +110,12 @@ entrada em `/compras`, com autenticação do assinante. Links de mensagem locali
 fluxo; não autorizam cobrança por si só. A página continua acessível para regularizar
 mesmo se o produto estiver sem acesso. Criança não recebe ações ou alertas financeiros.
 
+Incluir também atualização preventiva em assinatura ativa e em dia: **Atualizar cartão**
+altera somente o cartão das próximas renovações, pela edição de assinatura da Efí
+(`PUT /v1/subscription/:id`, apenas `payment_token`). Não mudar preço, plano ou data,
+nem chamar a operação de retry nesse fluxo. Provar os efeitos em sandbox. A operação
+com parcela pendente é outra ação, **Atualizar cartão e pagar**, com confirmação do valor.
+
 Reaproveitar a tokenização usada em `funnel/src/islands/CardCheckout.tsx`, extraindo
 o que for compartilhável. Token segue uma única intenção autorizada, nunca logs ou
 armazenamento permanente. O servidor resolve a cobrança por posse da assinatura e
@@ -128,6 +134,13 @@ Após cancelamento, links antigos de recuperação deixam de executar retry. A E
 pode reativar assinatura cancelada se a última parcela pendente for paga por retry;
 somente uma nova autorização explícita pode iniciar a retomada. Não misturar recuperação
 de caso aberto com criação de uma nova assinatura.
+
+O domínio atual considera `FAILED` terminal, e o reconciliador ignora ciclos pagos
+que já têm linha local. A recuperação da mesma cobrança exige uma operação explícita
+para registrar liquidação confirmada de um ciclo recusado, com prova de identidade e
+valor. Não liberar genericamente toda transição de FAILED/EXPIRED/CANCELED para PAID,
+não zerar o registro para PENDING e não criar outro pagamento para o mesmo charge.
+Manter o histórico da recusa e emitir o pagamento confirmado apenas uma vez.
 
 ## 7. Cancelamento, falhas e concorrência
 

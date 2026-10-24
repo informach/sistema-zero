@@ -16,6 +16,7 @@ export function buildCyclePayment(input: {
   chargeId: string
   status: ProviderChargeStatus
   paidAt?: Date
+  failureReason?: string
 }): PaymentAggregate {
   const { subscription, chargeId, status, paidAt } = input
 
@@ -39,7 +40,8 @@ export function buildCyclePayment(input: {
   payment.registerProviderCharge({ providerPaymentId: chargeId })
 
   if (status === 'PAID') payment.markPaid(paidAt)
-  else if (status === 'FAILED') payment.markFailed('Cobrança recorrente recusada pelo provedor')
+  else if (status === 'FAILED')
+    payment.markFailed(input.failureReason ?? 'Cobrança recorrente recusada pelo provedor')
   // PENDING (em análise): fica PENDING; a reconciliação/notificação fecha depois.
 
   return payment

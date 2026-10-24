@@ -3,7 +3,8 @@
 **Objetivo:** fluxo único Kids/Adultos de aviso, recuperação e cancelamento automático
 após sete dias sem regularização, com período pago e histórico preservados.
 **Especificação:** `docs/superpowers/specs/2026-10-23-subscription-recovery.md`.
-**Estado:** planejamento; nenhuma implementação ou cancelamento autorizado por este arquivo.
+**Estado:** implementação autorizada pelo usuário; lotes financeiros ainda não ativados.
+Este documento não autoriza cancelamentos ou cobranças manuais em clientes reais.
 
 ## Restrições comuns a todos os lotes
 
@@ -24,12 +25,16 @@ Modificar em `packages/payments`: `src/domain/ports/payment-gateway.port.ts`,
 `src/application/subscription/cycle-payment.ts`, `handle-subscription-notification`,
 agregado/repositório/read models de pagamento e view administrativa.
 
-- [ ] Escrever testes de respostas reais anonimizadas: motivo no histórico,
+- [x] Escrever testes de respostas reais anonimizadas: motivo no histórico,
   `payment.message` vazio, código ausente e resposta desconhecida.
-- [ ] Definir dados seguros de recusa; preservar texto sem automatismo por texto livre.
-- [ ] Gerar migration aditiva e testar banco antigo/novo, sem preencher motivos fictícios.
-- [ ] Exibir diagnóstico no Admin sem mudar o resultado financeiro ou cancelar assinatura.
-- [ ] Validar contrato dos consumidores, logs redigidos e testes existentes.
+- [x] Definir dados seguros de recusa; preservar texto sem automatismo por texto livre.
+- [x] Reusar `payments.failure_reason`, já existente e exibido pelo Admin; nenhuma
+  migration necessária neste lote. Não preencher motivos fictícios em linhas antigas.
+- [x] Alimentar o diagnóstico existente do Admin sem mudar o resultado financeiro
+  ou cancelar assinatura. Conferência visual em staging pendente.
+- [x] Validar contrato dos consumidores, redação e testes existentes: 331 testes,
+  791 asserções, zero falhas; 10 casos de banco pulados sem PostgreSQL local.
+  Typecheck do Payments e Biome dos nove arquivos passaram.
 
 Entrega: diagnóstico confiável antes de qualquer automação.
 
@@ -62,6 +67,11 @@ do `packages/funnel/src/islands/CardCheckout.tsx`, sem copiar o checkout inteiro
 - [ ] Definir intenção de regularização ligada a usuário, assinatura, charge,
   moeda, valor/período e prazo; nunca aceitar provider ID arbitrário do cliente.
 - [ ] Criar página de confirmação: cobrança agora + atualização para ciclos futuros.
+- [ ] Criar atualização preventiva de cartão em assinatura ativa, sem débito imediato,
+  via edição `payment_token`, preservando preço/plano/data e separada do retry.
+- [ ] Provar liquidação de ciclo recusado existente: operação explícita do domínio
+  para confirmação financeira, sem reset de status, duplicação de charge ou evento;
+  reconciliador deve tratar a linha local FAILED ao receber confirmação PAID.
 - [ ] Bloquear link vencido/cancelado, repetição, troca de usuário e sessão de criança.
 - [ ] Provar `retry` com `update_card` em sandbox; não supor que seja operação sem débito.
 - [ ] Retorno muito antigo: provar cancelamento antigo antes de novo checkout,

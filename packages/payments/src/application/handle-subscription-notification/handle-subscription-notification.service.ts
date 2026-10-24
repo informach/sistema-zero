@@ -73,7 +73,9 @@ export class HandleSubscriptionNotificationService {
       } else if (charge.status === 'EXPIRED' && existing.status === 'PENDING') {
         existing.markExpired()
       } else if (charge.status === 'FAILED' && existing.status === 'PENDING') {
-        existing.markFailed('Cobrança recorrente cancelada/não paga no provedor')
+        existing.markFailed(
+          charge.failureReason ?? 'Cobrança recorrente cancelada/não paga no provedor',
+        )
       } else {
         this.logger.info('subscription.notification.no_op', {
           chargeId,
@@ -97,6 +99,7 @@ export class HandleSubscriptionNotificationService {
         chargeId,
         status: charge.status,
         paidAt: charge.paidAt,
+        failureReason: charge.failureReason,
       })
       try {
         await this.payments.save(cyclePayment)

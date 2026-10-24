@@ -357,4 +357,23 @@ describe('HandleSubscriptionNotificationService (ciclos)', () => {
     // Um ciclo falho NÃO cancela a assinatura (a Efí pode retentar).
     expect((await subscriptions.findById(subId))?.status).not.toBe('CANCELED')
   })
+
+  test.each([
+    false,
+    true,
+  ])('motivo da operadora acompanha ciclo recusado e seu evento, com linha pendente prévia: %s', async (pending) => {
+    gateway.setCycleChargeAmount('cycle-failure', 1000n)
+    if (pending) {
+      gateway.cardStatus = 'PENDING'
+      await handler.handleCycle({ subscriptionId: providerSubId, chargeId: 'cycle-failure' })
+    }
+    gateway.cardStatus = 'FAILED'
+    gateway.cardFailureReason = 'Falha no pagamento - 54 - Cartão vencido.'
+    await handler.handleCycle({ subscriptionId: providerSubId, chargeId: 'cycle-failure' })
+    const cycle = await payments.findByProviderPaymentId('EFI', 'cycle-failure')
+    expect(cycle?.toSnapshot().failureReason).toBe(gateway.cardFailureReason)
+    const event = payments.outbox.find((e) => e.eventName === 'payment.failed')
+    expect(event?.payload.reason).toBe(gateway.cardFailureReason)
+    expect((await subscriptions.findById(subId))?.status).not.toBe('CANCELED')
+  })
 })
