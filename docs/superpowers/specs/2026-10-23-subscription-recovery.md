@@ -1,6 +1,6 @@
 # Regularização e encerramento de assinaturas
 
-Estado: proposta para revisão, sem implementação financeira ou alteração em assinaturas.
+Estado: implementação autorizada, em lotes; fluxo completo ainda não ativado.
 Decisões confirmadas: atender Kids e Adultos; avisar o responsável no Kids e o próprio
 assinante no Adulto; cancelar automaticamente a recorrência após sete dias sem
 regularização, preservando histórico e período já pago.
@@ -45,6 +45,10 @@ Referências de código verificadas: `payments/src/application/handle-subscripti
 - D3: lembrete se ainda pendente. D6: último lembrete com data de encerramento.
 - D7: nova consulta ao provedor; se continuar sem pagamento e sem operação de pagamento
   pendente, solicitar cancelamento e confirmar seu resultado.
+- A falha e a abertura ficam registradas separadamente do aceite do aviso inicial
+  pelo serviço de comunicação. A janela anunciada começa nesse aceite identificado;
+  sem ele, não há contagem fictícia nem cancelamento automático. Falha de contato
+  fica visível para revisão. Aceite não é prova de leitura do destinatário.
 - Repetição de webhook ou outro ciclo não reinicia o prazo. Política e vencimento
   ficam fixados no caso; mudanças no Admin valem para casos novos.
 - Não adicionar novas retentativas automáticas de débito nesta primeira versão. A Efí

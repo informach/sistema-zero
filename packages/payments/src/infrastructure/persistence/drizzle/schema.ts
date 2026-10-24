@@ -19,6 +19,8 @@ import type {
   PixQrCode,
 } from '../../../domain/payment/payment.aggregate'
 import type { PaymentStatus } from '../../../domain/payment/payment.status'
+import type { RecoveryReason } from '../../../domain/subscription-recovery/recovery-case'
+import type { RecoveryPolicy } from '../../../domain/subscription-recovery/recovery-policy'
 import type { Address } from '../../../domain/value-objects/customer'
 import type { CardData } from '../../../domain/value-objects/payment-method'
 
@@ -86,6 +88,14 @@ export const subscriptionOperationStateEnum = paymentsSchema.enum('subscription_
   'UNKNOWN',
   'SUCCEEDED',
   'REJECTED',
+])
+export const subscriptionRecoveryStateEnum = paymentsSchema.enum('subscription_recovery_state', [
+  'OPEN',
+  'PAYMENT_PENDING',
+  'CANCEL_PENDING',
+  'RECOVERED',
+  'CANCELED',
+  'MANUAL_REVIEW',
 ])
 export const outboxStatusEnum = paymentsSchema.enum('outbox_status', [
   'PENDING',
@@ -406,12 +416,98 @@ export const subscriptionOperations = paymentsSchema.table(
   ],
 )
 
+/** Caso durável: política congelada, relógio independente e lease com fencing. */
+export const subscriptionRecoveryCases = paymentsSchema.table(
+  'subscription_recovery_cases',
+  {
+    id: uuid('id').primaryKey(),
+    version: integer('version').notNull().default(0),
+    subscriptionId: uuid('subscription_id')
+      .notNull()
+      .references(() => subscriptions.id),
+    consumerId: text('consumer_id').notNull(),
+    providerSubscriptionId: text('provider_subscription_id').notNull(),
+    paymentId: uuid('payment_id')
+      .notNull()
+      .references(() => payments.id),
+    providerPaymentId: text('provider_payment_id').notNull(),
+    audience: text('audience').$type<'kids' | 'adult'>().notNull(),
+    amountInCents: bigint('amount_in_cents', { mode: 'bigint' }).notNull(),
+    policy: jsonb('policy').$type<RecoveryPolicy>().notNull(),
+    state: subscriptionRecoveryStateEnum('state').notNull(),
+    reason: text('reason').$type<RecoveryReason>(),
+    firstFailureAt: timestamp('first_failure_at', { withTimezone: true }).notNull(),
+    openedAt: timestamp('opened_at', { withTimezone: true }).notNull(),
+    initialNoticeId: text('initial_notice_id'),
+    initialNoticeAcceptedAt: timestamp('initial_notice_accepted_at', { withTimezone: true }),
+    deadlineAt: timestamp('deadline_at', { withTimezone: true }),
+    lastReminderDay: integer('last_reminder_day').notNull().default(0),
+    lastProviderCheckAt: timestamp('last_provider_check_at', { withTimezone: true }),
+    nextActionAt: timestamp('next_action_at', { withTimezone: true }),
+    closedAt: timestamp('closed_at', { withTimezone: true }),
+    leaseId: uuid('lease_id'),
+    leaseUntil: timestamp('lease_until', { withTimezone: true }),
+  },
+  (table) => [
+    uniqueIndex('subscription_recovery_origin_uq').on(table.paymentId),
+    uniqueIndex('subscription_recovery_active_uq')
+      .on(table.subscriptionId)
+      .where(sql`${table.state} in ('OPEN', 'PAYMENT_PENDING', 'CANCEL_PENDING', 'MANUAL_REVIEW')`),
+    index('subscription_recovery_due_idx')
+      .on(table.nextActionAt)
+      .where(sql`${table.nextActionAt} is not null`),
+    index('subscription_recovery_audience_idx').on(table.audience, table.state, table.openedAt),
+    check('subscription_recovery_amount_check', sql`${table.amountInCents} > 0`),
+    check('subscription_recovery_version_check', sql`${table.version} >= 0`),
+    check('subscription_recovery_audience_check', sql`${table.audience} in ('kids', 'adult')`),
+    check('subscription_recovery_failure_check', sql`${table.firstFailureAt} <= ${table.openedAt}`),
+    check(
+      'subscription_recovery_policy_check',
+      sql`${table.policy} ? 'version' and ${table.policy} ? 'windowDays' and ${table.policy} ? 'reminderDays' and jsonb_typeof(${table.policy}->'version') = 'number' and jsonb_typeof(${table.policy}->'windowDays') = 'number' and (${table.policy}->>'version')::integer > 0 and (${table.policy}->>'windowDays')::integer between 1 and 30 and jsonb_typeof(${table.policy}->'reminderDays') = 'array'`,
+    ),
+    check(
+      'subscription_recovery_notice_check',
+      sql`(
+    (${table.initialNoticeId} is null and ${table.initialNoticeAcceptedAt} is null and ${table.deadlineAt} is null)
+    or (${table.initialNoticeId} is not null and ${table.initialNoticeAcceptedAt} is not null and ${table.deadlineAt} is not null
+      and ${table.initialNoticeAcceptedAt} >= ${table.openedAt}
+      and ${table.deadlineAt} = ${table.initialNoticeAcceptedAt} + ((${table.policy}->>'windowDays')::integer * interval '86400 seconds'))
+  )`,
+    ),
+    check(
+      'subscription_recovery_terminal_check',
+      sql`(${table.state} in ('RECOVERED', 'CANCELED')) = (${table.closedAt} is not null)`,
+    ),
+    check(
+      'subscription_recovery_due_check',
+      sql`(${table.state} in ('RECOVERED', 'CANCELED', 'MANUAL_REVIEW')) = (${table.nextActionAt} is null)`,
+    ),
+    check(
+      'subscription_recovery_closed_check',
+      sql`${table.closedAt} is null or ${table.closedAt} >= ${table.openedAt}`,
+    ),
+    check(
+      'subscription_recovery_reason_check',
+      sql`${table.reason} is null or ${table.reason} in ('PAID', 'EXTERNAL_CANCELLATION', 'UNPAID_AFTER_NOTICE', 'PAYMENT_UNCERTAIN', 'CONTACT_FAILED', 'PROVIDER_DIVERGENCE')`,
+    ),
+    check(
+      'subscription_recovery_cancel_notice_check',
+      sql`${table.state} <> 'CANCEL_PENDING' or ${table.initialNoticeId} is not null`,
+    ),
+    check(
+      'subscription_recovery_lease_check',
+      sql`(${table.leaseId} is null) = (${table.leaseUntil} is null)`,
+    ),
+  ],
+)
+
 export const schema = {
   consumers,
   payments,
   subscriptions,
   subscriptionPlans,
   subscriptionOperations,
+  subscriptionRecoveryCases,
   idempotencyKeys,
   outbox,
   webhookEvents,

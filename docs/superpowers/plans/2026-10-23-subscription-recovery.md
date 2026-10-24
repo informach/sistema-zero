@@ -56,6 +56,11 @@ casos de uso em `src/application/subscription-recovery/` e worker próprio. Alte
 
 Entrega: um único dono, estado auditável e ações operacionais recuperáveis.
 
+Base verificada em 24/10: caso/política congelada, agenda D0/D3/D6/D7,
+migration gerada 0010, repositório com lease/CAS/outbox e testes de concorrência
+em PostgreSQL real. A integração do worker, dos avisos, da política administrativa
+e das origens continua pendente; as caixas deste lote representam o fluxo inteiro.
+
 ## Lote 3 — Regularização autenticada e tokenização
 
 Modificar o port/gateway Efí e rotas Payments, os BFFs compartilhados em
