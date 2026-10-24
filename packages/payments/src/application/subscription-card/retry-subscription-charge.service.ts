@@ -17,6 +17,10 @@ import {
   type SubscriptionRetryTerms,
 } from '../../domain/subscription/subscription-operation'
 import type { HandleSubscriptionNotificationService } from '../handle-subscription-notification/handle-subscription-notification.service'
+import {
+  type PendingSubscriptionOperationView,
+  pendingOperationView,
+} from '../mappers/subscription-view'
 import { subscriptionCycleAccess } from '../subscription-recovery/subscription-period'
 import { SubscriptionOperationInProgressError } from './update-subscription-card.service'
 
@@ -109,13 +113,16 @@ export class RetrySubscriptionChargeService {
   ): Promise<{
     intent: RetrySubscriptionIntentView | null
     canRegularize: boolean
+    blockedBy: PendingSubscriptionOperationView | null
   }> {
     const subscription = await this.owned(email, subscriptionId)
     const active = await this.operations.findActiveForSubscription(subscriptionId, this.clock())
-    if (active && active.kind !== 'RETRY') throw new SubscriptionOperationInProgressError()
+    const blockedBy = active && active.kind !== 'RETRY' ? pendingOperationView(active) : null
     return {
-      intent: active ? view(active) : null,
+      intent: active?.kind === 'RETRY' ? view(active) : null,
+      blockedBy,
       canRegularize:
+        !blockedBy &&
         subscription.status === 'ACTIVE' &&
         !subscription.cancelRequestedAt &&
         subscription.cyclesCompleted > 0,

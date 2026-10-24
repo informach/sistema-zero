@@ -306,7 +306,10 @@ function buildApp(opts: BuildOpts = {}) {
     refundPayment: new RefundPaymentService(repo, gateway, silentLogger),
     listMyPayments: new ListMyPaymentsService(paymentsMyRead),
     getMyPayment: new GetMyPaymentService(paymentsMyRead),
-    listMySubscriptions: new ListMySubscriptionsService(subscriptionsMyRead),
+    listMySubscriptions: new ListMySubscriptionsService(
+      subscriptionsMyRead,
+      subscriptionOperations,
+    ),
   })
 
   return { app, repo, subscriptionRepo, gateway, recoveryPolicies }

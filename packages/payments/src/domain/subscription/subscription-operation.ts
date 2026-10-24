@@ -188,6 +188,8 @@ export interface SubscriptionOperationRepository {
   /** Expira READY antigos; unique parcial impede operações simultâneas na mesma assinatura. */
   create(operation: SubscriptionOperation): Promise<boolean>
   findById(id: string): Promise<SubscriptionOperation | null>
+  /** One bounded read for a list already scoped to the authenticated purchaser. */
+  listActiveForSubscriptions(ids: string[], now: Date): Promise<SubscriptionOperation[]>
   findActiveForSubscription(
     subscriptionId: string,
     now: Date,

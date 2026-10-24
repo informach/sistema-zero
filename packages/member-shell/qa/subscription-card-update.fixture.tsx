@@ -1,6 +1,7 @@
 import { afterEach, expect, mock, test } from 'bun:test'
 import { GlobalRegistrator } from '@happy-dom/global-registrator'
 import { act } from 'react'
+import type { PendingSubscriptionOperationView } from '../src/lib/subscription-card'
 
 GlobalRegistrator.register({ url: 'https://kids.test/' })
 ;(globalThis as Record<string, unknown>).IS_REACT_ACT_ENVIRONMENT = true
@@ -19,9 +20,9 @@ mock.module('@sistemazero/ui/efi-card-token', () => ({
   tokenizeEfiCard: tokenization,
 }))
 const { createRoot } = await import('react-dom/client')
-const { SubscriptionCardUpdate, SubscriptionChargeRetry } = await import(
-  '../src/components/billing/subscription-card-update'
-)
+const { SubscriptionCardUpdate, SubscriptionChargeRetry, SubscriptionOperationNotice } =
+  await import('../src/components/billing/subscription-card-update')
+const { useMySubscriptions } = await import('../src/components/billing/use-my-subscriptions')
 const nativeFetch = globalThis.fetch
 const subscriptionId = '514f6c84-bf26-4a96-b0c9-e8bf49a32327'
 const intent = {
@@ -68,6 +69,7 @@ async function mount(
   execution?: () => Promise<Response>,
   availability = { canUpdate: true, tokenization: true },
   retry = false,
+  blockedBy: PendingSubscriptionOperationView | null = null,
 ) {
   const displayIntent = retry ? retryIntent : intent
   const calls: Array<{ path: string; method: string; body: unknown }> = []
@@ -86,8 +88,8 @@ async function mount(
         return Response.json(
           method === 'GET'
             ? retry
-              ? { intent: currentIntent, canRegularize: availability.canUpdate }
-              : { intent: currentIntent, canUpdate: availability.canUpdate }
+              ? { intent: currentIntent, canRegularize: availability.canUpdate, blockedBy }
+              : { intent: currentIntent, canUpdate: availability.canUpdate, blockedBy }
             : displayIntent,
         )
       if (method === 'GET') return Response.json({ ...displayIntent, state: 'UNKNOWN' })
@@ -126,7 +128,13 @@ async function mount(
   expect(calls).toHaveLength(0)
   await act(async () => button(retry ? 'Conferir regularização' : 'Alterar cartão').click())
   await until(() => !host.textContent?.includes('Consultando assinatura'))
-  if (retry && !currentIntent && availability.canUpdate && availability.tokenization) {
+  if (
+    retry &&
+    !currentIntent &&
+    !blockedBy &&
+    availability.canUpdate &&
+    availability.tokenization
+  ) {
     expect(calls.every((call) => call.method === 'GET')).toBe(true)
     await act(async () => button('Conferir cobrança').click())
     await until(() => !host.textContent?.includes('Conferindo valor e período'))
@@ -251,6 +259,96 @@ test('regularização mostra termos e exige consentimento antes de tokenizar e c
   expect(JSON.stringify(writes)).not.toContain('52998224725')
   expect(document.body.textContent).toContain('Pagamento confirmado')
   expect(document.querySelector('input')).toBeNull()
+})
+
+test.each([
+  false,
+  true,
+])('outra operação pendente aparece sem formulário, token ou POST: retry=%s', async (retry) => {
+  const pending: PendingSubscriptionOperationView = {
+    kind: retry ? 'CARD_UPDATE' : 'RETRY',
+    state: 'UNKNOWN',
+  }
+  const view = await mount(null, undefined, undefined, retry, pending)
+  expect(document.querySelector('form')).toBeNull()
+  expect(document.body.textContent).toContain(
+    retry ? 'alteração de cartão está em conferência' : 'pagamento está em conferência',
+  )
+  expect(document.body.textContent).not.toContain('Não foi possível consultar')
+  expect(view.calls.every((call) => call.method === 'GET')).toBe(true)
+  expect(tokenization).not.toHaveBeenCalled()
+})
+
+test('aviso da assinatura não depende da presença de uma cobrança recusada no histórico', async () => {
+  const host = document.createElement('div')
+  document.body.append(host)
+  const root = createRoot(host)
+  unmount = async () => {
+    await act(async () => root.unmount())
+    host.remove()
+  }
+  await act(async () =>
+    root.render(<SubscriptionOperationNotice operation={{ kind: 'RETRY', state: 'UNKNOWN' }} />),
+  )
+  expect(host.querySelector('[role=status]')?.textContent).toContain('Não repita a cobrança')
+  expect(host.querySelector('button, input, form')).toBeNull()
+  await act(async () => root.render(<SubscriptionOperationNotice operation={null} />))
+  expect(host.textContent).toBe('')
+  expect(tokenization).not.toHaveBeenCalled()
+})
+
+test('leitura antiga não substitui a nova lista nem remove pendência da leitura atual', async () => {
+  const old = Promise.withResolvers<Response>()
+  let calls = 0
+  const signals: Array<AbortSignal | null | undefined> = []
+  globalThis.fetch = Object.assign(
+    async (_input: RequestInfo | URL, init?: RequestInit) => {
+      signals.push(init?.signal)
+      expect(new Headers(init?.headers).has('signal')).toBe(false)
+      return ++calls === 1
+        ? old.promise
+        : Response.json({
+            items: [
+              {
+                id: 'newer',
+                pendingOperation: { kind: 'RETRY', state: 'UNKNOWN' },
+              },
+            ],
+          })
+    },
+    { preconnect: nativeFetch.preconnect },
+  )
+  function Probe() {
+    const { subscriptions, refresh } = useMySubscriptions()
+    return (
+      <>
+        <button type="button" onClick={() => void refresh()}>
+          Refresh QA
+        </button>
+        <pre>{JSON.stringify(subscriptions)}</pre>
+      </>
+    )
+  }
+  const host = document.createElement('div')
+  document.body.append(host)
+  const root = createRoot(host)
+  unmount = async () => {
+    await act(async () => root.unmount())
+    host.remove()
+  }
+  await act(async () => root.render(<Probe />))
+  await act(async () => button('Refresh QA').click())
+  expect(signals).toHaveLength(2)
+  expect(signals[0]?.aborted).toBe(true)
+  expect(signals[1]?.aborted).toBe(false)
+  expect(host.textContent).toContain('newer')
+  expect(host.textContent).toContain('UNKNOWN')
+  await act(async () =>
+    old.resolve(Response.json({ items: [{ id: 'stale', pendingOperation: null }] })),
+  )
+  expect(host.textContent).not.toContain('stale')
+  expect(host.textContent).toContain('UNKNOWN')
+  expect(calls).toBe(2)
 })
 
 test('regularização incerta ao reabrir consulta sem recriar intenção ou débito', async () => {

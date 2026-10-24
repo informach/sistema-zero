@@ -2,6 +2,7 @@ import { afterAll, beforeAll, beforeEach, describe, expect, test } from 'bun:tes
 import path from 'node:path'
 import { migrate } from 'drizzle-orm/postgres-js/migrator'
 import { CancelSubscriptionService } from '../../src/application/cancel-subscription/cancel-subscription.service'
+import { ListMySubscriptionsService } from '../../src/application/list-my-subscriptions/list-my-subscriptions.service'
 import { UpdateSubscriptionCardService } from '../../src/application/subscription-card/update-subscription-card.service'
 import { SubscriptionAggregate } from '../../src/domain/subscription/subscription.aggregate'
 import { createSubscriptionOperation } from '../../src/domain/subscription/subscription-operation'
@@ -222,18 +223,75 @@ describe.skipIf(!databaseUrl)('Atualização preventiva de cartão — aplicaç�
   })
 
   test('reabrir recupera somente a intenção vigente do titular, sem criar novo efeito', async () => {
-    expect(await service.getActiveIntent(email, id)).toEqual({ intent: null, canUpdate: true })
+    expect(await service.getActiveIntent(email, id)).toEqual({
+      intent: null,
+      canUpdate: true,
+      blockedBy: null,
+    })
     const intent = await service.createIntent(email, id)
     expect((await service.getActiveIntent(email, id)).intent?.id).toBe(intent.id)
     expect(await failureOf(service.getActiveIntent('another@example.test', id))).toBeInstanceOf(
       Error,
     )
     now = new Date(intent.expiresAt)
-    expect(await service.getActiveIntent(email, id)).toEqual({ intent: null, canUpdate: true })
+    expect(await service.getActiveIntent(email, id)).toEqual({
+      intent: null,
+      canUpdate: true,
+      blockedBy: null,
+    })
     const replacement = await service.createIntent(email, id)
     expect(replacement.id).not.toBe(intent.id)
     expect((await service.getIntent(email, id, intent.id)).state).toBe('REJECTED')
     expect(gateway.updatedCardSubscriptionIds).toHaveLength(0)
+  })
+
+  test('pagamento incerto aparece na assinatura e bloqueia cartão com explicação, sem novos efeitos', async () => {
+    const operation = createSubscriptionOperation({
+      subscriptionId: id,
+      consumerId: 'qa-owner',
+      providerSubscriptionId: 'provider-qa',
+      kind: 'RETRY',
+      providerPaymentId: 'qa-private-charge',
+      amountInCents: 9700n,
+      retryTerms: {
+        period: { startsAt: '2026-10-16T12:00:00.000Z', endsAt: '2026-11-16T12:00:00.000Z' },
+        nextExecution: '2026-11-16',
+      },
+      now,
+    })
+    await operations.create(operation)
+    const started = await operations.start(operation.id, id, now)
+    if (!started?.executionId) throw new Error('Executor QA ausente')
+    await operations.finish(operation.id, started.executionId, 'UNKNOWN', 'PROVIDER_UNKNOWN', now)
+    now = new Date(now.getTime() + 24 * 60 * 60_000)
+    expect(await service.getActiveIntent(email, id)).toEqual({
+      intent: null,
+      canUpdate: false,
+      blockedBy: { kind: 'RETRY', state: 'UNKNOWN' },
+    })
+    const list = new ListMySubscriptionsService(
+      new DrizzleSubscriptionMyReadRepository(connection.db),
+      operations,
+      () => now,
+    )
+    const mine = (await list.execute(email)).items.find((item) => item.id === id)
+    expect(mine?.pendingOperation).toEqual({ kind: 'RETRY', state: 'UNKNOWN' })
+    expect(JSON.stringify(mine)).not.toContain('qa-private-charge')
+    expect(JSON.stringify(mine)).not.toContain(started.executionId)
+    expect(await list.execute('another@example.test')).toEqual({ items: [] })
+    expect(gateway.updatedCardSubscriptionIds).toHaveLength(0)
+    expect(gateway.retriedSubscriptionChargeIds).toHaveLength(0)
+  })
+
+  test('lista de intenções não inclui outros IDs ou READY vencido; leitura vazia não inventa pendência', async () => {
+    const operation = await service.createIntent(email, id)
+    expect((await operations.listActiveForSubscriptions([id], now)).map((item) => item.id)).toEqual(
+      [operation.id],
+    )
+    expect(await operations.listActiveForSubscriptions([crypto.randomUUID()], now)).toEqual([])
+    expect(await operations.listActiveForSubscriptions([], now)).toEqual([])
+    now = new Date(operation.expiresAt)
+    expect(await operations.listActiveForSubscriptions([id], now)).toEqual([])
   })
 
   test('resultado desconhecido continua visível e bloqueia outro token após o prazo', async () => {

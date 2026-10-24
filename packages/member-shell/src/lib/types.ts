@@ -12,6 +12,7 @@ import type {
   ZappySpeechOverride,
 } from '@sistemazero/core/learning/scene'
 import type { AmbassadorShareUrls } from '@sistemazero/core/referrals'
+import type { MySubscriptionView } from './subscription-card'
 
 // "Como fazer" (biblioteca de ajuda do Kids): as views nascem no core e valem nos dois lados.
 export type {
@@ -1570,25 +1571,8 @@ export const PAYMENT_METHOD_LABELS: Record<string, string> = {
 }
 
 // ── Assinaturas ("minhas assinaturas" — view PÚBLICA do payments) ───────────
-export interface MySubscriptionView {
-  id: string
-  status: string
-  /** Mensal = 1, anual = 12. */
-  intervalMonths: number
-  repeats: number | null
-  /** Centavos serializados como STRING (bigint) → use `formatCentsStr`. */
-  amountInCents: string
-  currency: string
-  card: { brand: string; last4: string }
-  cyclesCompleted: number
-  lastChargeAt: string | null
-  description: string | null
-  cancelRequestedAt?: string | null
-  canceledAt: string | null
-  createdAt: string
-}
-
 export type {
+  MySubscriptionView,
   SubscriptionCardConfigView,
   SubscriptionCardContextView,
   SubscriptionCardIntentView,

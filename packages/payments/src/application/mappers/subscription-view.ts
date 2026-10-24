@@ -1,5 +1,27 @@
 import type { SubscriptionAggregate } from '../../domain/subscription/subscription.aggregate'
 import type { SubscriptionStatus } from '../../domain/subscription/subscription.status'
+import type { SubscriptionOperation } from '../../domain/subscription/subscription-operation'
+
+/** Purchaser-facing status only: no provider IDs, financial proof, actor or execution details. */
+export interface PendingSubscriptionOperationView {
+  kind: SubscriptionOperation['kind']
+  state: 'READY' | 'EXECUTING' | 'UNKNOWN'
+}
+
+export function pendingOperationView(
+  operation: SubscriptionOperation | null,
+): PendingSubscriptionOperationView | null {
+  if (!operation || !['READY', 'EXECUTING', 'UNKNOWN'].includes(operation.state)) return null
+  return {
+    kind: operation.kind,
+    state:
+      operation.state === 'READY'
+        ? 'READY'
+        : operation.state === 'EXECUTING'
+          ? 'EXECUTING'
+          : 'UNKNOWN',
+  }
+}
 
 /** Representação de leitura de uma assinatura, exposta na API (sem dados sensíveis). */
 export interface SubscriptionView {
@@ -47,6 +69,7 @@ export interface MySubscriptionView {
   cancelRequestedAt: string | null
   canceledAt: string | null
   createdAt: string
+  pendingOperation: PendingSubscriptionOperationView | null
 }
 
 export function toMySubscriptionView(subscription: SubscriptionAggregate): MySubscriptionView {
@@ -64,6 +87,7 @@ export function toMySubscriptionView(subscription: SubscriptionAggregate): MySub
     cancelRequestedAt: subscription.cancelRequestedAt?.toISOString() ?? null,
     canceledAt: subscription.canceledAt ? subscription.canceledAt.toISOString() : null,
     createdAt: subscription.createdAt.toISOString(),
+    pendingOperation: null,
   }
 }
 

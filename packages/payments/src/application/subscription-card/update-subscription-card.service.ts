@@ -12,6 +12,10 @@ import {
   type SubscriptionOperation,
   type SubscriptionOperationRepository,
 } from '../../domain/subscription/subscription-operation'
+import {
+  type PendingSubscriptionOperationView,
+  pendingOperationView,
+} from '../mappers/subscription-view'
 
 export class SubscriptionOperationInProgressError extends DomainError {
   readonly code = 'SUBSCRIPTION_OPERATION_IN_PROGRESS'
@@ -86,14 +90,19 @@ export class UpdateSubscriptionCardService {
   async getActiveIntent(
     email: string,
     subscriptionId: string,
-  ): Promise<{ intent: CardUpdateIntentView | null; canUpdate: boolean }> {
+  ): Promise<{
+    intent: CardUpdateIntentView | null
+    canUpdate: boolean
+    blockedBy: PendingSubscriptionOperationView | null
+  }> {
     const subscription = await this.ownedSubscription(email, subscriptionId)
     const operation = await this.operations.findActiveForSubscription(subscriptionId, this.clock())
-    if (operation && operation.kind !== 'CARD_UPDATE')
-      throw new SubscriptionOperationInProgressError()
+    const blockedBy =
+      operation && operation.kind !== 'CARD_UPDATE' ? pendingOperationView(operation) : null
     return {
-      intent: operation ? toView(operation) : null,
-      canUpdate: subscription.status === 'ACTIVE' && !subscription.cancelRequestedAt,
+      intent: operation?.kind === 'CARD_UPDATE' ? toView(operation) : null,
+      canUpdate: !blockedBy && subscription.status === 'ACTIVE' && !subscription.cancelRequestedAt,
+      blockedBy,
     }
   }
 

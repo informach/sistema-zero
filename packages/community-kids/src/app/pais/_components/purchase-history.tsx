@@ -3,7 +3,9 @@
 import {
   SubscriptionCardUpdate,
   SubscriptionChargeRetry,
+  SubscriptionOperationNotice,
 } from '@sistemazero/member-shell/components/billing/subscription-card-update'
+import { useMySubscriptions } from '@sistemazero/member-shell/components/billing/use-my-subscriptions'
 
 import {
   comebackSubscriptionId,
@@ -152,22 +154,9 @@ export function PurchaseHistory() {
 
 /** As assinaturas da conta, cada uma num cartão, com o cancelamento confirmado. */
 export function ParentSubscriptions() {
-  const [subs, setSubs] = useState<MySubscriptionView[]>([])
+  const { subscriptions: subs, loading, error, refresh: load } = useMySubscriptions()
   const [confirming, setConfirming] = useState<MySubscriptionView | null>(null)
   const [canceling, setCanceling] = useState(false)
-
-  const load = useCallback(async () => {
-    try {
-      const data = await apiGet<{ items: MySubscriptionView[] }>('/api/payments/my/subscriptions')
-      setSubs(data.items)
-    } catch {
-      // Sem assinaturas em falha: o histórico de compras segue útil.
-    }
-  }, [])
-
-  useEffect(() => {
-    void load()
-  }, [load])
 
   async function cancel(subscription: MySubscriptionView) {
     setCanceling(true)
@@ -194,6 +183,16 @@ export function ParentSubscriptions() {
     }
   }
 
+  if (loading) return <p role="status">Consultando assinaturas…</p>
+  if (error)
+    return (
+      <div role="alert" className="kids-carta space-y-3 p-6">
+        <p>Não foi possível consultar suas assinaturas.</p>
+        <Button variant="outline" onClick={() => void load()}>
+          Atualizar assinaturas
+        </Button>
+      </div>
+    )
   if (subs.length === 0) return null
   // Só a Comunidade Kids Encerrada mais recente leva à continuidade, e nenhuma com outra ativa
   // (régua do member-shell). A Cancelada ainda tem acesso: o botão ali faria pagar duas vezes.
@@ -202,6 +201,9 @@ export function ParentSubscriptions() {
 
   return (
     <>
+      <Button variant="outline" className="self-start" onClick={() => void load()}>
+        Atualizar assinaturas
+      </Button>
       {subs.map((subscription) => {
         const next = nextChargeDate(subscription)
         const suffix =
@@ -235,6 +237,7 @@ export function ParentSubscriptions() {
                 {next ? ` · próxima cobrança por volta de ${formatDay(next)}` : null}
               </span>
             </p>
+            <SubscriptionOperationNotice operation={subscription.pendingOperation} />
             {paidPeriodRunning(subscription, now) ? (
               <p className="text-muted-foreground text-sm">
                 O acesso continua até o fim do período já pago.

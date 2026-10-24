@@ -23,12 +23,30 @@ import type {
   SubscriptionRetryContextView,
   SubscriptionRetryIntentView,
 } from '../../lib/subscription-card'
+import {
+  type PendingSubscriptionOperationView,
+  pendingSubscriptionMessage,
+} from '../../lib/subscription-card'
 
 type Intent = SubscriptionCardIntentView | SubscriptionRetryIntentView
 type OperationProps = { subscriptionId: string; onUpdated: () => void; className?: string }
 
 export function SubscriptionCardUpdate(props: OperationProps) {
   return <SubscriptionCardOperation {...props} />
+}
+
+/** Visible independently of the payment history, including after its status becomes PAID. */
+export function SubscriptionOperationNotice({
+  operation,
+}: {
+  operation: PendingSubscriptionOperationView | null | undefined
+}) {
+  if (!operation || operation.kind === 'CANCEL') return null
+  return (
+    <p role="status" className="basis-full text-sm text-muted-foreground">
+      {pendingSubscriptionMessage(operation)}
+    </p>
+  )
 }
 
 export function SubscriptionChargeRetry({
@@ -118,7 +136,10 @@ function CardUpdateForm({
         const allowed = 'canRegularize' in current ? current.canRegularize : current.canUpdate
         const currentIntent: Intent | null = current.intent
         setIntent(currentIntent)
-        if (currentIntent && currentIntent.state !== 'READY') {
+        if (current.blockedBy) {
+          setMessage(pendingSubscriptionMessage(current.blockedBy))
+          setPhase('UNAVAILABLE')
+        } else if (currentIntent && currentIntent.state !== 'READY') {
           setPhase('RESULT')
         } else if (!allowed) {
           setMessage(

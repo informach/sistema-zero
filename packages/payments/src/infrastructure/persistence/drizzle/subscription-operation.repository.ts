@@ -57,19 +57,23 @@ export class DrizzleSubscriptionOperationRepository implements SubscriptionOpera
     subscriptionId: string,
     now: Date,
   ): Promise<SubscriptionOperation | null> {
-    const [row] = await this.db
+    return (await this.listActiveForSubscriptions([subscriptionId], now))[0] ?? null
+  }
+
+  async listActiveForSubscriptions(ids: string[], now: Date): Promise<SubscriptionOperation[]> {
+    if (!ids.length) return []
+    const rows = await this.db
       .select()
       .from(subscriptionOperations)
       .where(
         and(
-          eq(subscriptionOperations.subscriptionId, subscriptionId),
+          inArray(subscriptionOperations.subscriptionId, ids),
           inArray(subscriptionOperations.state, ['READY', 'EXECUTING', 'UNKNOWN']),
           or(ne(subscriptionOperations.state, 'READY'), gt(subscriptionOperations.expiresAt, now)),
         ),
       )
       .orderBy(desc(subscriptionOperations.createdAt))
-      .limit(1)
-    return row ? restore(row) : null
+    return rows.map(restore)
   }
 
   async start(

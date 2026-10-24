@@ -76,6 +76,7 @@ const subscription: MySubscriptionView = {
   description: 'Plano da família',
   canceledAt: null,
   createdAt: '2026-06-01T12:00:00.000Z',
+  pendingOperation: null,
 }
 
 function installFetch(handler: (path: string, method: string, init?: RequestInit) => Response) {
@@ -211,6 +212,23 @@ describe('os cartões da conta', () => {
     )
     expect(conta).toContain('<FamilyAiCredits />')
     expect(conta).toContain('<AiTransparencyNotice />')
+  })
+
+  test('assinatura mostra pagamento incerto sem depender do histórico e falha de leitura permite atualizar', async () => {
+    let read = 0
+    const calls = installFetch((path) => {
+      if (path !== '/api/payments/my/subscriptions') throw new Error('Unexpected QA request')
+      if (++read === 1) return Response.json({ error: { code: 'QA_UNAVAILABLE' } }, { status: 503 })
+      return Response.json({
+        items: [{ ...subscription, pendingOperation: { kind: 'RETRY', state: 'UNKNOWN' } }],
+      })
+    })
+    render(<ParentSubscriptions />)
+    expect(await screen.findByRole('alert')).toBeTruthy()
+    fireEvent.click(screen.getByRole('button', { name: 'Atualizar assinaturas' }))
+    expect(await screen.findByText(/Não repita a cobrança/)).toBeTruthy()
+    expect(screen.queryByRole('button', { name: 'Conferir regularização' })).toBeNull()
+    expect(calls.map((call) => call.method)).toEqual(['GET', 'GET'])
   })
 
   test('pagina as compras e cancela a assinatura com confirmação', async () => {

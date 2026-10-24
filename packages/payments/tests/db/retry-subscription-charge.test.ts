@@ -2,6 +2,7 @@ import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test } fr
 import path from 'node:path'
 import { migrate } from 'drizzle-orm/postgres-js/migrator'
 import { HandleSubscriptionNotificationService } from '../../src/application/handle-subscription-notification/handle-subscription-notification.service'
+import { ListMySubscriptionsService } from '../../src/application/list-my-subscriptions/list-my-subscriptions.service'
 import { buildCyclePayment } from '../../src/application/subscription/cycle-payment'
 import { RetrySubscriptionChargeService } from '../../src/application/subscription-card/retry-subscription-charge.service'
 import { ConfirmSubscriptionPeriodService } from '../../src/application/subscription-recovery/confirm-subscription-period.service'
@@ -48,6 +49,7 @@ describe.skipIf(!url)('Pagamento explícito do ciclo — PostgreSQL real', () =>
   let gateway: FakePixGateway
   let service: RetrySubscriptionChargeService
   let confirm: ConfirmSubscriptionRetryService
+  let cycles: HandleSubscriptionNotificationService
   let id: string
   let paymentId: string
   let providerId: string
@@ -120,7 +122,7 @@ describe.skipIf(!url)('Pagamento explícito do ciclo — PostgreSQL real', () =>
       gateway.cardStatus = 'PAID'
       gateway.setSubscriptionCharges(providerId, [{ chargeId, status: 'PAID', createdAt: started }])
     }
-    const cycles = new HandleSubscriptionNotificationService(
+    cycles = new HandleSubscriptionNotificationService(
       subscriptions,
       payments,
       gateway,
@@ -163,6 +165,42 @@ describe.skipIf(!url)('Pagamento explícito do ciclo — PostgreSQL real', () =>
       requestId: crypto.randomUUID(),
     }
   }
+
+  test('liquidação por webhook não esconde o pagamento incerto na assinatura após recarregar', async () => {
+    const command = await lostReply()
+    await cycles.handleCycle({ subscriptionId: providerId, chargeId })
+    expect((await payments.findById(paymentId))?.status).toBe('PAID')
+    const list = new ListMySubscriptionsService(
+      new DrizzleSubscriptionMyReadRepository(connection.db),
+      operations,
+      () => now,
+    )
+    expect(
+      (await list.execute(email)).items.find((item) => item.id === id)?.pendingOperation,
+    ).toEqual({ kind: 'RETRY', state: 'UNKNOWN' })
+    await confirm.execute(command)
+    expect(
+      (await list.execute(email)).items.find((item) => item.id === id)?.pendingOperation,
+    ).toBeNull()
+    expect(gateway.retriedSubscriptionChargeIds).toEqual([chargeId])
+  })
+
+  test('troca de cartão pendente bloqueia regularização com contexto legível, sem novo débito', async () => {
+    const operation = createSubscriptionOperation({
+      subscriptionId: id,
+      consumerId,
+      providerSubscriptionId: providerId,
+      kind: 'CARD_UPDATE',
+      now,
+    })
+    await operations.create(operation)
+    expect(await service.getActiveIntent(email, id)).toEqual({
+      intent: null,
+      canRegularize: false,
+      blockedBy: { kind: 'CARD_UPDATE', state: 'READY' },
+    })
+    expect(gateway.retriedSubscriptionChargeIds).toHaveLength(0)
+  })
 
   test('conferência de resposta perdida liquida uma vez, audita e não repete débito', async () => {
     const command = await lostReply()

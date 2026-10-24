@@ -33,6 +33,14 @@ regularização e projeção da próxima cobrança; retirar a coordenação anti
 corte; configurar templates/ambientes, provar migrações e ensaiar os dois públicos.
 Depois, full review financeiro, correções, revisão final da composição e ativação.
 
+Atualização da retomada: o status de operação pendente passou a aparecer na própria
+assinatura das duas comunidades, inclusive depois do webhook PAID. Os contextos
+explicam o bloqueio entre cartão/regularização; a leitura da conta distingue falha
+de lista vazia e descarta respostas obsoletas. Provas e limites em
+`docs/qa/2026-10-24-subscription-pending-status.md`. O polling em lote/backoff também
+foi implementado (`80d0ea698`), conforme
+`docs/qa/2026-10-24-deployment-monitor-backoff.md`; permanece para a entrega financeira.
+
 Por pedido expresso, as correções do acompanhamento serão publicadas junto da
 entrega financeira: orçamento de produção de 60 minutos (já presente nesta branch,
 agora conciliado com a revisão e controles adicionais de limite global) e polling

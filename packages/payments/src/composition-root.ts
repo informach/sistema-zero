@@ -395,7 +395,10 @@ export function createApplication(env: Env): Application {
   const paymentsMyRead = new DrizzlePaymentMyReadRepository(db)
   const listMyPayments = new ListMyPaymentsService(paymentsMyRead)
   const getMyPayment = new GetMyPaymentService(paymentsMyRead)
-  const listMySubscriptions = new ListMySubscriptionsService(subscriptionsMyRead)
+  const listMySubscriptions = new ListMySubscriptionsService(
+    subscriptionsMyRead,
+    subscriptionOperations,
+  )
 
   // Readiness (`/readyz`, healthcheck do Railway): a réplica só é promovida
   // quando o banco responde E o warm-up da Efí TERMINOU (sucesso OU falha — o
