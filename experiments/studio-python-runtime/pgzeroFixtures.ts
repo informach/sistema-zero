@@ -1,4 +1,27 @@
+import { PGZERO_GAME_LOADERS } from '../../packages/studio/src/examples/python/pgzeroGames.loaders.generated'
+import type { PgzeroGameKey } from '../../packages/studio/src/examples/python/pgzeroGames.manifest'
 import { PGZERO_EXTENSION } from '../../packages/studio/src/runtime/python/pgzero/contract'
+import { documentFixture } from '../../packages/studio/src/state/fixtures/projectDocuments'
+
+/** `pgzero-example-<key>`: the gallery example itself, as a Pro project at the same paths. */
+export function isPgzeroExampleFixture(name: string) {
+  return name.startsWith('pgzero-example-') && name.slice(15) in PGZERO_GAME_LOADERS
+}
+export async function pgzeroExampleProject(name: string) {
+  const key = name.slice(15) as PgzeroGameKey
+  const payload = await PGZERO_GAME_LOADERS[key]()
+  const project = documentFixture('python', 'pro')
+  if (project.programmingLanguage !== 'python' || project.kind !== 'pro') throw new Error('fixture')
+  project.id = name
+  project.name = key
+  project.python.entrypoint = payload.entrypoint
+  project.tree = Object.fromEntries(
+    Object.entries(payload.files).map(([path, content]) => [path, { kind: 'file', content }]),
+  )
+  project.assets = [...payload.assets]
+  project.installedExtensions = [{ ...PGZERO_EXTENSION, installedAt: project.createdAt }]
+  return project
+}
 
 /** Behavioral Pygame Zero fixtures: real game loop, images, text, input and sound. */
 export const pgzeroFixtures: Record<string, string> = {
@@ -7,6 +30,7 @@ WIDTH = 320
 HEIGHT = 240
 TITLE = 'Teste Pygame Zero'
 heroi = Actor('heroi', (160, 120))
+estrela = Actor('estrela', (60, 120))
 pontos = 0
 quadros = 0
 caixa = Rect((20, 180), (60, 30))
@@ -17,6 +41,7 @@ def draw():
     screen.draw.circle((280, 40), 20, 'white')
     screen.draw.line((0, 0), (320, 240), (255, 0, 0))
     heroi.draw()
+    estrela.draw()
     screen.draw.text('Pontos: ' + str(pontos), (10, 10), color='white', fontsize=24)
 
 def update():
@@ -27,6 +52,7 @@ def update():
         heroi.x += 4
     if quadros == 30:
         print('quadros-30', heroi.width, heroi.height, images.heroi.get_at((16, 16)))
+        print('estrela', estrela.width, estrela.height, images.estrela.get_at((20, 20)), images.estrela.get_at((1, 1)))
 
 def on_key_down(key):
     global pontos
@@ -56,6 +82,15 @@ export const PGZERO_FIXTURE_ASSETS = [
     proPath: 'src/images/heroi.png',
     dataUrl:
       'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAfElEQVR4nO3VQQrAIAxE0Rwnh+2dFReFUqyYZIZgyUDW/61UpGZcu6StLi1Mg1jDUEg0Pk5VfQhE/AaYEaj4E7CNQMbfgC1EKgAdnwGWiFQAI/4FmCIKUIACpANYiHNeQhbirN+QgTDH0QhXHIlwx1GIUDwCgYWtEFr4t+uS6rU8mOKQewAAAABJRU5ErkJggg==',
+  },
+  {
+    id: 'estrela',
+    name: 'estrela',
+    kind: 'image' as const,
+    source: 'upload' as const,
+    proPath: 'src/images/estrela.svg',
+    dataUrl:
+      'data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2240%22%20height%3D%2240%22%20viewBox%3D%220%200%2040%2040%22%3E%3Cpolygon%20points%3D%2220%2C2%2025%2C15%2038%2C15%2027%2C23%2031%2C37%2020%2C29%209%2C37%2013%2C23%202%2C15%2015%2C15%22%20fill%3D%22%2322cc44%22%2F%3E%3C%2Fsvg%3E',
   },
   {
     id: 'bip',

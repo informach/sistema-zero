@@ -53,6 +53,7 @@ if (extension === 'python-turtle') {
   codecs = [...catalog.PYTHON_PGZERO_CODECS, ...PYTHON_PROGRAMMING_CODECS]
   resolver = catalog.PGZERO_RESOLVER_OPTIONS
   official.add('pgzero')
+  official.add('pgzrun')
 }
 codecs = attachPythonResolverOptions([...codecs], resolver)
 

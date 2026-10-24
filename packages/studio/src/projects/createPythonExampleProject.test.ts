@@ -9,11 +9,13 @@ import {
 } from '@sistemazero/core/studio/runtime-catalog'
 import { IDBFactory } from 'fake-indexeddb'
 import { unzipSync } from 'fflate'
+import { PGZERO_GAMES } from '../examples/python/pgzeroGames.manifest'
 import { VISUAL_REFERENCE_GAMES } from '../examples/python/visualReferenceGames.manifest'
 import type { PythonExampleCreationPort, PythonExampleEntry } from '../examples/pythonCatalog'
 import { PYTHON_EXAMPLE_SUMMARIES } from '../examples/pythonCatalog'
 import { exportProjectSource } from '../export/sourceExport'
 import { PYTHON_PROGRAMMING_CODECS } from '../python/blocks/catalog'
+import { PYTHON_PGZERO_CODECS } from '../python/extensions/pgzero/catalog'
 import { PYTHON_TURTLE_CODECS } from '../python/extensions/turtle/catalog'
 import { TURTLE_EXTENSION } from '../runtime/python/turtle/contract'
 import { pythonEnvironmentFixture } from '../state/fixtures/pythonEnvironment'
@@ -56,9 +58,11 @@ async function fixture(
       catalog: f.environment.catalog,
       runtime: f.project.runtime,
       releaseStatus: 'active' as const,
-      authoringBlockIds: [...PYTHON_PROGRAMMING_CODECS, ...PYTHON_TURTLE_CODECS].map(
-        ({ id }) => id,
-      ),
+      authoringBlockIds: [
+        ...PYTHON_PROGRAMMING_CODECS,
+        ...PYTHON_TURTLE_CODECS,
+        ...PYTHON_PGZERO_CODECS,
+      ].map(({ id }) => id),
       authoringCuration: {
         pythonLevel: 3 as const,
         allowedModes: ['blocks', 'bridge', 'code'] as ('blocks' | 'bridge' | 'code')[],
@@ -452,6 +456,7 @@ test('module compatibility never substitutes the fresh host authorization', asyn
     expect(await listAllProjects()).toEqual([])
   }))
 
+const pgzeroKeys = PGZERO_GAMES.flatMap(({ key }) => [`python:${key}:blocks`, `python:${key}:code`])
 const visualKeys = VISUAL_REFERENCE_GAMES.flatMap(({ key }) => [
   `python:${key}:blocks`,
   `python:${key}:code`,
@@ -462,6 +467,7 @@ test('the Python catalog keeps the original race and adds the separately license
     'python:turtle-race-original',
     'python:maze-lights',
     ...visualKeys,
+    ...pgzeroKeys,
   ])
 })
 
@@ -764,3 +770,36 @@ test('invalid material cannot be silently dropped or leave a saved candidate', a
     ).rejects.toThrow()
     expect(await listAllProjects()).toEqual([])
   }))
+
+for (const key of pgzeroKeys)
+  test(`${key} creates and reopens its whole program and media; the desktop copy reads every SVG as PNG`, async () => {
+    const entry = PYTHON_EXAMPLE_SUMMARIES.find((candidate) => candidate.key === key)
+    if (!entry) throw new Error(`Missing Pygame Zero game ${key}`)
+    await fixture(async (port) => {
+      const payload = await entry.load()
+      const saved = await createPythonExampleProject(entry, port, options())
+      expect(saved.kind).toBe(entry.kind)
+      expect(saved.installedExtensions.map(({ id }) => id)).toEqual(['python-pgzero'])
+      const reopened = await loadSanitizedProjectById(saved.id)
+      if (reopened?.programmingLanguage !== 'python') throw new Error('Saved Python game required')
+      expect(reopened.assets).toEqual(payload.assets ? [...payload.assets] : undefined)
+      for (const asset of payload.assets ?? [])
+        expect(asset.proPath).toMatch(
+          /^(images\/[a-z_0-9]+\.(svg|png)|sounds\/[a-z_]+\.wav|music\/[a-z_]+\.ogg)$/,
+        )
+      const { buildPythonSourceFiles } = await import('../export/pythonSource')
+      const sizes: [number, number][] = []
+      const { files } = await buildPythonSourceFiles(reopened, null, {
+        rasterizeSvg: async (_svg, width, height) => {
+          sizes.push([width, height])
+          return new Uint8Array([137, 80, 78, 71])
+        },
+      })
+      for (const [path, text] of Object.entries(payload.files)) expect(files[path]).toEqual(text)
+      const vectors = (payload.assets ?? []).filter(({ proPath }) => proPath?.endsWith('.svg'))
+      for (const asset of vectors)
+        expect(files[asset.proPath!.replace(/\.svg$/, '.png')]).toBeDefined()
+      expect(sizes).toHaveLength(vectors.length)
+      expect(files['requisitos-pygame-zero.txt']).toBe('pygame-ce==2.5.8\nnumpy\n')
+    }, entry.kind)
+  })

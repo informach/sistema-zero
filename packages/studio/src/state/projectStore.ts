@@ -45,6 +45,12 @@ import {
   type PythonProjectDocument,
   type PythonProProjectDocument,
 } from '../core/editableProject'
+import {
+  type PgzeroAudioRole,
+  pgzeroMediaPath,
+  projectUsesPgzero,
+  pythonProjectOccupiedPaths,
+} from '../core/pgzeroMediaPaths'
 import { readPintaImageAssetMetadata } from '../core/pintaImageAsset'
 import { parseProAssistance } from '../core/proAssistance'
 import {
@@ -327,6 +333,8 @@ export interface NewAssetInput {
   pintaImage?: unknown
   /** Attribution travels with the bytes through native/web export and publication. */
   license?: ProjectAsset['license']
+  /** Pygame Zero only: the child chose a short sound (`sounds/`) or a song (`music/`). */
+  pgzeroAudio?: PgzeroAudioRole
   /** Metadados do Pinta (animações/tiles/mapa) — saneados no store antes de guardar. */
   sprite?: unknown
   tileset?: unknown
@@ -1326,7 +1334,24 @@ export function createProjectStore(
             mime === 'audio/flac' || mime === 'audio/x-flac'
               ? 'flac'
               : projectAssetFileExtension(mime, kind)
-          asset.proPath = `assets/${name}.${extension}`
+          if (projectUsesPgzero(p)) {
+            // Pygame Zero finds media by name in the folders next to the main file.
+            const placed = pgzeroMediaPath({
+              entrypoint: p.python.entrypoint,
+              name,
+              kind,
+              extension,
+              role: kind === 'audio' ? input.pgzeroAudio : undefined,
+              occupied: pythonProjectOccupiedPaths(p),
+            })
+            if ('error' in placed) return placed.error
+            asset.proPath = placed.path
+          } else {
+            // Turtle reads PNG/GIF only: a vector recipe never belongs to it.
+            if (pintaImage?.output.mime === 'image/svg+xml')
+              return 'O Turtle abre só imagens PNG ou GIF. Traga este desenho do Pinta como PNG.'
+            asset.proPath = `assets/${name}.${extension}`
+          }
           if (!isStudioPythonAssetPath(asset.proPath))
             return 'Este formato de imagem ou som ainda não é compatível com o projeto Python.'
           return commitPython({ ...p, assets: [...assets, asset] })

@@ -106,7 +106,9 @@ class ResourceLoader:
 
 
 class ImageLoader(ResourceLoader):
-    EXTNS = ['png', 'gif', 'jpg', 'jpeg', 'bmp']
+    # 'svg' is a Studio addition: vector drawings from Pinta stay vector in the browser. The
+    # desktop export turns each one into a PNG of the same size, which pgzero 1.2.1 finds.
+    EXTNS = ['png', 'gif', 'jpg', 'jpeg', 'bmp', 'svg']
     TYPE = 'image'
     TYPE_PT = 'a imagem'
 

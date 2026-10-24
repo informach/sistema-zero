@@ -29,6 +29,7 @@ const method = (
 const LIST = { label: 'lista', default: v('lista'), kinds: ['List' as const] }
 /** append/insert are taught on any receiver: lists often live in dicts, objects and lists. */
 const ANY_LIST = { label: 'lista', default: v('lista'), any: true }
+const ANY_FILE = { label: 'arquivo', default: v('arquivo'), any: true }
 const TEXT = { label: 'texto', default: v('texto'), kinds: ['text' as const] }
 const DICT = { label: 'dicionário', default: v('dados'), kinds: ['Dict' as const] }
 
@@ -452,6 +453,30 @@ const specs: Spec[] = [
     params: [required('obj', '', v('lista'), 'pos')],
   },
   {
+    id: 'file_read',
+    title: 'o conteúdo do arquivo',
+    category: 'Entrada e saída',
+    level: 2,
+    role: 'value',
+    callee: { kind: 'method', names: ['read'], receiver: ANY_FILE },
+    api: 'arquivo.read()',
+    help: 'Todo o texto do arquivo aberto com "abrir o arquivo … para ler".',
+    dependencies: ['sz_py_with_open'],
+    params: [],
+  },
+  {
+    id: 'file_write',
+    title: 'escrever no arquivo',
+    category: 'Entrada e saída',
+    level: 2,
+    role: 'statement',
+    callee: { kind: 'method', names: ['write'], receiver: ANY_FILE },
+    api: 'arquivo.write(texto)',
+    help: 'Grava o texto no arquivo aberto para escrever ou acrescentar. Para mudar de linha, termine o texto com \n.',
+    dependencies: ['sz_py_with_open'],
+    params: [required('s', 'o texto', t('olá'), 'pos')],
+  },
+  {
     id: 'list_append',
     title: 'pôr no fim de',
     category: 'Listas e coleções',
@@ -462,6 +487,18 @@ const specs: Spec[] = [
     help: 'Acrescenta um item no fim da lista.',
     dependencies: ['sz_py_list', 'sz_py_assign'],
     params: [required('object', 'o valor', n(10), 'pos')],
+  },
+  {
+    id: 'list_clear',
+    title: 'esvaziar',
+    category: 'Listas e coleções',
+    level: 2,
+    role: 'statement',
+    callee: { kind: 'method', names: ['clear'], receiver: ANY_LIST },
+    api: 'lista.clear()',
+    help: 'Tira todos os itens da lista (ou do dicionário), deixando-a vazia.',
+    dependencies: ['sz_py_list', 'sz_py_assign'],
+    params: [],
   },
   {
     id: 'list_insert',

@@ -52,6 +52,7 @@ export const PYTHON_ADVANCED_BLOCK_CODECS: readonly PythonBlockCodec[] = [
       'float',
       'Um número decimal Python. Use ponto, como 2.5; o valor segue a precisão binária oficial.',
     ),
+    compact: 'plain',
     defaultNode: () =>
       node('Constant', { value: { literal: 'float', value: '0x1.4000000000000p+1' }, kind: null }),
     decode(value) {

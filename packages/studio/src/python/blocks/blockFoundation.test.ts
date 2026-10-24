@@ -345,3 +345,129 @@ test('Blockly keeps how a call was written (alias, module root) through save and
     workspace.dispose()
   }
 })
+
+test('files: open with a mode, read and write are blocks that round-trip exactly', () => {
+  const opened = (mode: string, body: PythonNode[]) =>
+    node('With', {
+      items: [
+        node('withitem', {
+          context_expr: call(name('open'), [text('recorde.txt'), text(mode)]),
+          optional_vars: name('arquivo', 'Store'),
+        }),
+      ],
+      body,
+      type_comment: null,
+    })
+  const used = exact([
+    opened('w', [expression(call(attribute(name('arquivo'), 'write'), [text('10')]))]),
+    opened('r', [
+      node('Assign', {
+        targets: [name('recorde', 'Store')],
+        value: call(name('int'), [call(attribute(name('arquivo'), 'read'))]),
+        type_comment: null,
+      }),
+    ]),
+    node('Assign', {
+      targets: [name('itens', 'Store')],
+      value: node('List', { elts: [], ctx: node('Load') }),
+      type_comment: null,
+    }),
+    expression(call(attribute(name('itens'), 'clear'))),
+  ])
+  for (const id of ['sz_py_with_open', 'sz_py_file_write', 'sz_py_file_read', 'sz_py_list_clear'])
+    expect(used).toContain(id)
+  expect(used).not.toContain('<source>')
+  // An unknown mode (binary) stays Python source instead of a wrong block.
+  expect(exact([opened('rb', [pass()])])).not.toContain('sz_py_with_open')
+})
+
+test('a list filled only with Actor(...) makes its loop target an actor; anything else does not', async () => {
+  const { PYTHON_PGZERO_CODECS, PGZERO_RESOLVER_OPTIONS } = await import(
+    '../extensions/pgzero/catalog'
+  )
+  const { attachPythonResolverOptions } = await import('./resolverOptions')
+  const pgzero = attachPythonResolverOptions(
+    [...PYTHON_PGZERO_CODECS, ...PYTHON_PROGRAMMING_CODECS],
+    PGZERO_RESOLVER_OPTIONS,
+  )
+  const program = (extra: PythonNode[] = []) =>
+    moduleNode([
+      node('Assign', {
+        targets: [name('estrelas', 'Store')],
+        value: node('List', { elts: [], ctx: node('Load') }),
+        type_comment: null,
+      }),
+      expression(
+        call(attribute(name('estrelas'), 'append'), [call(name('Actor'), [text('estrela')])]),
+      ),
+      ...extra,
+      fn('draw', [
+        node('For', {
+          target: name('estrela', 'Store'),
+          iter: name('estrelas'),
+          body: [expression(call(attribute(name('estrela'), 'draw')))],
+          orelse: [],
+          type_comment: null,
+        }),
+      ]),
+    ])
+  const usedIn = (tree: PythonNode) => {
+    const projection = pythonASTToVisual(tree, {
+      codecs: pgzero,
+      officialModules: new Set(['pgzero', 'pgzrun']),
+    })
+    expect(pythonSemanticTree(pythonVisualToAST(projection, pgzero))).toEqual(
+      pythonSemanticTree(tree),
+    )
+    return ids(projection.body)
+  }
+  expect(usedIn(program())).toContain('sz_py_pgzero_actor_draw')
+  const mixed = usedIn(
+    program([expression(call(attribute(name('estrelas'), 'append'), [integer('3')]))]),
+  )
+  expect(mixed).not.toContain('sz_py_pgzero_actor_draw')
+  expect(mixed).toContain('sz_py_method')
+  const inserted = usedIn(
+    program([
+      expression(call(attribute(name('estrelas'), 'insert'), [integer('0'), call(name('pegar'))])),
+    ]),
+  )
+  expect(inserted).not.toContain('sz_py_pgzero_actor_draw')
+})
+
+test('a list written with actors inside also makes its loop target an actor', async () => {
+  const { PYTHON_PGZERO_CODECS, PGZERO_RESOLVER_OPTIONS } = await import(
+    '../extensions/pgzero/catalog'
+  )
+  const { attachPythonResolverOptions } = await import('./resolverOptions')
+  const pgzero = attachPythonResolverOptions(
+    [...PYTHON_PGZERO_CODECS, ...PYTHON_PROGRAMMING_CODECS],
+    PGZERO_RESOLVER_OPTIONS,
+  )
+  const loop = node('For', {
+    target: name('ninho', 'Store'),
+    iter: name('ninhos'),
+    body: [expression(call(attribute(name('ninho'), 'draw')))],
+    orelse: [],
+    type_comment: null,
+  })
+  const listOf = (...elts: PythonNode[]) =>
+    node('Assign', {
+      targets: [name('ninhos', 'Store')],
+      value: node('List', { elts, ctx: node('Load') }),
+      type_comment: null,
+    })
+  const used = (first: PythonNode) =>
+    ids(
+      pythonASTToVisual(moduleNode([first, fn('draw', [loop])]), {
+        codecs: pgzero,
+        officialModules: new Set(['pgzero', 'pgzrun']),
+      }).body,
+    )
+  expect(
+    used(listOf(call(name('Actor'), [text('ovos')]), call(name('Actor'), [text('ovos')]))),
+  ).toContain('sz_py_pgzero_actor_draw')
+  expect(used(listOf(call(name('Actor'), [text('ovos')]), integer('1')))).not.toContain(
+    'sz_py_pgzero_actor_draw',
+  )
+})

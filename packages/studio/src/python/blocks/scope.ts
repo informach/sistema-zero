@@ -93,6 +93,11 @@ export function pythonBindingResolver(
   /** Constructor/literal assignments to a Name, to infer the class of its object. */
   const typed: { scope: Scope; target: string; value: PythonNode }[] = []
   const augmented = new Map<Scope, Map<string, number>>()
+  /** `lista.append(valor)` and the loops over a list name, for the element class of a list. */
+  const appends: { scope: Scope; list: string; value: PythonNode }[] = []
+  const loops: { scope: Scope; target: string; list: PythonNode }[] = []
+  /** Lists also changed by other means: their elements are not proven. */
+  const otherwiseFilled: { scope: Scope; list: string }[] = []
   /** Attribute writes to an official name, judged once every binding is known. */
   const attributeWrites: { scope: Scope; root: PythonNode | undefined; dunder: boolean }[] = []
   let hasDynamicBindings = false
@@ -174,6 +179,41 @@ export function pythonBindingResolver(
       }
       counts.set(fields.target.fields.id, (counts.get(fields.target.fields.id) ?? 0) + 1)
     }
+    if (
+      value.kind === 'Call' &&
+      isNode(fields.func) &&
+      fields.func.kind === 'Attribute' &&
+      isNode(fields.func.fields.value) &&
+      fields.func.fields.value.kind === 'Name' &&
+      typeof fields.func.fields.value.fields.id === 'string' &&
+      nodes(fields.args)
+    ) {
+      const list = fields.func.fields.value.fields.id
+      if (fields.func.fields.attr === 'append' && fields.args.length === 1)
+        appends.push({ scope, list, value: fields.args[0]! })
+      else if (
+        ['insert', 'extend', '__setitem__', '__iadd__'].includes(String(fields.func.fields.attr))
+      )
+        otherwiseFilled.push({ scope, list })
+    }
+    if (
+      value.kind === 'Subscript' &&
+      isNode(fields.ctx) &&
+      fields.ctx.kind === 'Store' &&
+      isNode(fields.value) &&
+      fields.value.kind === 'Name' &&
+      typeof fields.value.fields.id === 'string'
+    )
+      otherwiseFilled.push({ scope, list: fields.value.fields.id })
+    if (
+      value.kind === 'For' &&
+      isNode(fields.target) &&
+      fields.target.kind === 'Name' &&
+      typeof fields.target.fields.id === 'string' &&
+      isNode(fields.iter) &&
+      fields.iter.kind === 'Name'
+    )
+      loops.push({ scope, target: fields.target.fields.id, list: fields.iter })
     if (value.kind === 'Attribute' && isNode(fields.ctx) && typeof fields.attr === 'string') {
       if (['Store', 'Del'].includes(fields.ctx.kind) && replacesOfficialName(fields.attr))
         attributeWrites.push({
@@ -355,12 +395,43 @@ export function pythonBindingResolver(
     if (builtin && officialModules.has(builtin.provider))
       return { kind: 'module', module: builtin.provider, member: key }
   }
+  /** The scope that holds this name for a reader at `scope` (global/nonlocal followed). */
+  function holder(scope: Scope | undefined, key: string): Scope | undefined {
+    while (scope) {
+      if (scope.uncertain) return undefined
+      if (scope.globals?.has(key)) scope = moduleScope(scope)
+      if (scope.bindings.has(key)) return scope
+      scope = scope.parent
+    }
+  }
   // Infer the class of objects assigned only from one official constructor (or one built-in
   // collection kind). Rebinding from anything else keeps the generic blocks.
   const evidence = new Map<Scope, Map<string, { binding: Binding; count: number } | null>>()
   for (const candidate of typed) {
+    const inferred = inferValue(candidate.value)
+    let byName = evidence.get(candidate.scope)
+    if (!byName) {
+      byName = new Map()
+      evidence.set(candidate.scope, byName)
+    }
+    const previous = byName.get(candidate.target)
+    if (previous === null) continue
+    if (
+      !inferred ||
+      (previous &&
+        (previous.binding.kind !== 'instance' ||
+          inferred.kind !== 'instance' ||
+          previous.binding.instance !== inferred.instance ||
+          previous.binding.module !== inferred.module ||
+          previous.binding.builtin !== inferred.builtin))
+    ) {
+      byName.set(candidate.target, null)
+      continue
+    }
+    byName.set(candidate.target, { binding: inferred, count: (previous?.count ?? 0) + 1 })
+  }
+  function inferValue(value: PythonNode): Binding | undefined {
     let inferred: Binding | undefined
-    const value = candidate.value
     const literal = LITERAL_KINDS[value.kind]
     if (literal) inferred = { kind: 'instance', module: 'builtins', instance: literal }
     else if (value.kind === 'Constant' && typeof value.fields.value === 'string')
@@ -398,26 +469,7 @@ export function pythonBindingResolver(
           inferred = { kind: 'instance', module: found.module, instance: func.fields.attr }
       }
     }
-    let byName = evidence.get(candidate.scope)
-    if (!byName) {
-      byName = new Map()
-      evidence.set(candidate.scope, byName)
-    }
-    const previous = byName.get(candidate.target)
-    if (previous === null) continue
-    if (
-      !inferred ||
-      (previous &&
-        (previous.binding.kind !== 'instance' ||
-          inferred.kind !== 'instance' ||
-          previous.binding.instance !== inferred.instance ||
-          previous.binding.module !== inferred.module ||
-          previous.binding.builtin !== inferred.builtin))
-    ) {
-      byName.set(candidate.target, null)
-      continue
-    }
-    byName.set(candidate.target, { binding: inferred, count: (previous?.count ?? 0) + 1 })
+    return inferred
   }
   for (const [scope, byName] of evidence)
     for (const [key, found] of byName) {
@@ -429,6 +481,74 @@ export function pythonBindingResolver(
       if (scope.writes.get(key) === found.count + (builtinCollection ? augmentedWrites : 0))
         scope.bindings.set(key, found.binding)
     }
+  // A list made empty and filled only with `lista.append(Actor(...))` holds actors: a loop over
+  // it (`for estrela in estrelas`) keeps the actor blocks for its target.
+  const elementOf = new Map<Scope, Map<string, Binding | null>>()
+  const listScope = (scope: Scope, key: string) => {
+    const found = holder(scope, key)
+    const binding = found?.bindings.get(key)
+    if (
+      !found ||
+      binding?.kind !== 'instance' ||
+      binding.module !== 'builtins' ||
+      binding.instance !== 'List' ||
+      typed.some(
+        (candidate) =>
+          candidate.scope === found &&
+          candidate.target === key &&
+          (candidate.value.kind !== 'List' || !nodes(candidate.value.fields.elts)),
+      )
+    )
+      return undefined
+    return found
+  }
+  // Items written in the list itself ([Actor('a'), Actor('b')]) count like appended ones.
+  const filled = [...appends]
+  for (const candidate of typed)
+    if (candidate.value.kind === 'List' && nodes(candidate.value.fields.elts))
+      for (const item of candidate.value.fields.elts)
+        filled.push({ scope: candidate.scope, list: candidate.target, value: item })
+  for (const { scope, list, value } of filled) {
+    const found = listScope(scope, list)
+    if (!found) continue
+    let byName = elementOf.get(found)
+    if (!byName) {
+      byName = new Map()
+      elementOf.set(found, byName)
+    }
+    const element =
+      value.kind === 'Name' && typeof value.fields.id === 'string'
+        ? (() => {
+            const binding = lookup(scopes.get(value), value.fields.id)
+            return binding?.kind === 'instance' ? binding : undefined
+          })()
+        : inferValue(value)
+    const previous = byName.get(list)
+    if (previous === null) continue
+    byName.set(
+      list,
+      element?.kind === 'instance' &&
+        (!previous ||
+          (previous.kind === 'instance' &&
+            previous.instance === element.instance &&
+            previous.module === element.module &&
+            previous.builtin === element.builtin))
+        ? element
+        : null,
+    )
+  }
+  for (const { scope, list } of otherwiseFilled) {
+    const found = listScope(scope, list)
+    if (found) elementOf.get(found)?.set(list, null)
+  }
+  for (const loop of loops) {
+    const key = loop.list.fields.id as string
+    const found = listScope(scopes.get(loop.list) ?? loop.scope, key)
+    const element = found && elementOf.get(found)?.get(key)
+    const target = owner(loop.scope, loop.target)
+    if (element && (target.writes.get(loop.target) ?? 0) === 1)
+      target.bindings.set(loop.target, element)
+  }
   // `self` in a class that inherits an official class (Actor, turtle.Turtle) is one of its
   // objects: self.draw(), self.forward(10) keep their blocks.
   for (const method of methodScopes) {

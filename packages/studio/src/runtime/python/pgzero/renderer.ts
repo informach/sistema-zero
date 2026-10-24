@@ -14,6 +14,22 @@ import {
   readPgzeroFrameHeader,
 } from './protocol'
 
+/** A loaded image: pixels (PNG, GIF, JPG, BMP) or a vector drawing (SVG) at its module size. */
+interface Sprite {
+  source: CanvasImageSource
+  width: number
+  height: number
+  vector: boolean
+  close(): void
+}
+
+function toBase64(bytes: Uint8ClampedArray) {
+  let text = ''
+  for (let at = 0; at < bytes.length; at += 0x8000)
+    text += String.fromCharCode(...bytes.subarray(at, at + 0x8000))
+  return btoa(text)
+}
+
 export interface PgzeroRenderer {
   exchange(
     raw: string,
@@ -55,7 +71,9 @@ export function createPgzeroRenderer(
     onTitle?(title: string): void
   } = {},
 ): PgzeroRenderer {
-  const images = new Map<number, ImageBitmap>()
+  const images = new Map<number, Sprite>()
+  // RGBA of a vector image while its rows are being read (`images.x.get_at` on an SVG).
+  const decoding = new Map<number, Uint8ClampedArray>()
   const families = new Map<number, string>()
   const fontFaces: FontFace[] = []
   const strings = new Map<number, string>()
@@ -499,7 +517,11 @@ export function createPgzeroRenderer(
           break
         case PGZERO_OP.BLIT: {
           const image = images.get(r[at]!)
-          if (image) ctx.drawImage(image, r[at + 1]!, r[at + 2]!)
+          if (!image) break
+          // Pixels stay sharp like pygame; a vector drawing is drawn as a vector.
+          ctx.imageSmoothingEnabled = image.vector
+          ctx.drawImage(image.source, r[at + 1]!, r[at + 2]!, image.width, image.height)
+          ctx.imageSmoothingEnabled = false
           break
         }
         case PGZERO_OP.BLIT_ROT: {
@@ -508,8 +530,15 @@ export function createPgzeroRenderer(
           ctx.save()
           ctx.translate(r[at + 1]! + r[at + 3]! / 2, r[at + 2]! + r[at + 4]! / 2)
           ctx.rotate((-r[at + 5]! * Math.PI) / 180)
-          ctx.imageSmoothingEnabled = true
-          ctx.drawImage(image, -image.width / 2, -image.height / 2)
+          // pygame-ce's transform.rotate does not filter: pixel art keeps its pixels.
+          ctx.imageSmoothingEnabled = image.vector
+          ctx.drawImage(
+            image.source,
+            -image.width / 2,
+            -image.height / 2,
+            image.width,
+            image.height,
+          )
           ctx.restore()
           break
         }
@@ -577,9 +606,42 @@ export function createPgzeroRenderer(
   }
 
   // Resources --------------------------------------------------------------------------------
-  async function decodeImage(id: number, bytes: Uint8Array<ArrayBuffer>, filePath: string) {
+  async function decodeVector(bytes: Uint8Array<ArrayBuffer>, filePath: string) {
+    // CSP: img-src blob:. The element keeps the drawing as a vector for every later draw.
+    const url = URL.createObjectURL(new Blob([bytes], { type: 'image/svg+xml' }))
+    const element = new Image()
+    element.decoding = 'async'
+    element.src = url
+    try {
+      await element.decode()
+    } catch {
+      URL.revokeObjectURL(url)
+      throw new Error(`Não consegui abrir o desenho ${filePath}.`)
+    }
+    return { source: element as CanvasImageSource, close: () => URL.revokeObjectURL(url) }
+  }
+  async function decodeImage(
+    id: number,
+    bytes: Uint8Array<ArrayBuffer>,
+    filePath: string,
+    w: number,
+    h: number,
+  ) {
     if (bytes.byteLength > PGZERO_LIMITS.imageBytes)
       throw new Error(`A imagem ${filePath} é grande demais.`)
+    if (imagePixels + w * h > PGZERO_LIMITS.totalImagePixels)
+      throw new Error('As imagens do jogo passaram do limite de tamanho.')
+    if (/\.svg$/i.test(filePath)) {
+      const vector = await decodeVector(bytes, filePath)
+      if (disposed) {
+        vector.close()
+        active()
+      }
+      imagePixels += w * h
+      images.get(id)?.close()
+      images.set(id, { ...vector, width: w, height: h, vector: true })
+      return
+    }
     const type = /\.png$/i.test(filePath)
       ? 'image/png'
       : /\.gif$/i.test(filePath)
@@ -592,25 +654,50 @@ export function createPgzeroRenderer(
       bitmap = await createImageBitmap(new Blob([bytes], { type }), {
         premultiplyAlpha: 'default',
         colorSpaceConversion: 'none',
+        // pygame ignores EXIF rotation; the size must match what the module read.
+        imageOrientation: 'none',
       })
     } catch {
       throw new Error(`Não consegui abrir a imagem ${filePath}.`)
     }
-    if (
-      bitmap.width > PGZERO_LIMITS.imageDimension ||
-      bitmap.height > PGZERO_LIMITS.imageDimension ||
-      imagePixels + bitmap.width * bitmap.height > PGZERO_LIMITS.totalImagePixels
-    ) {
+    if (bitmap.width !== w || bitmap.height !== h) {
       bitmap.close()
-      throw new Error('As imagens do jogo passaram do limite de tamanho.')
+      throw new Error(`A imagem ${filePath} não tem o tamanho que o jogo leu.`)
     }
     if (disposed) {
       bitmap.close()
       active()
     }
-    imagePixels += bitmap.width * bitmap.height
+    imagePixels += w * h
     images.get(id)?.close()
-    images.set(id, bitmap)
+    images.set(id, {
+      source: bitmap,
+      width: w,
+      height: h,
+      vector: false,
+      close: () => bitmap.close(),
+    })
+  }
+  function vectorRows(id: number, row: number, rows: number) {
+    const image = images.get(id)
+    if (!image?.vector) throw new Error('Só os desenhos SVG têm os pixels lidos assim.')
+    if (row + rows > image.height || image.width * rows * 4 > PGZERO_LIMITS.decodeBytes)
+      throw new Error('Pedido de pixels do Pygame Zero inválido.')
+    let pixels = decoding.get(id)
+    if (!pixels || row === 0) {
+      const surface = document.createElement('canvas')
+      surface.width = image.width
+      surface.height = image.height
+      const ctx = surface.getContext('2d', { willReadFrequently: true })
+      if (!ctx) throw new Error('Não consegui ler os pixels do desenho.')
+      ctx.drawImage(image.source, 0, 0, image.width, image.height)
+      pixels = ctx.getImageData(0, 0, image.width, image.height).data
+      decoding.set(id, pixels)
+    }
+    const start = row * image.width * 4
+    const chunk = pixels.subarray(start, start + rows * image.width * 4)
+    if (row + rows === image.height) decoding.delete(id)
+    return toBase64(chunk)
   }
   async function loadFont(id: number, bytes: Uint8Array<ArrayBuffer>) {
     if (bytes.byteLength > PGZERO_LIMITS.fontBytes) throw new Error('A fonte é grande demais.')
@@ -646,11 +733,12 @@ export function createPgzeroRenderer(
           await loadFont(0, defaultFont)
           defaultFontReady = true
         }
-        for (const [id, filePath] of header.images) {
+        for (const [id, filePath, w, h] of header.images) {
           const bytes = supplied.get(id)
           if (!bytes) throw new Error(`Faltou a imagem ${filePath}.`)
-          await decodeImage(id, bytes, filePath)
+          await decodeImage(id, bytes, filePath, w, h)
         }
+        if (header.decode) return JSON.stringify({ pixels: vectorRows(...header.decode) })
         for (const [id] of header.fonts) {
           const bytes = supplied.get(PGZERO_FONT_ATTACHMENT_BASE + id)
           if (!bytes) throw new Error('Faltou uma fonte do jogo.')
@@ -745,6 +833,7 @@ export function createPgzeroRenderer(
       pendingPaint = undefined
       for (const image of images.values()) image.close()
       images.clear()
+      decoding.clear()
       for (const face of fontFaces) (container.ownerDocument.fonts as FontFaceSet).delete(face)
       fontFaces.length = 0
       textCache.clear()

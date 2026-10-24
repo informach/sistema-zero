@@ -1,4 +1,5 @@
 import { describe, expect, test } from 'bun:test'
+import { createHash } from 'node:crypto'
 import { createCanvas, loadImage } from '@napi-rs/canvas'
 import { sha256Hex } from '@sistemazero/core/creations'
 import {
@@ -497,6 +498,154 @@ describe('Pinta portable PNGs — actual native raster and PNG decoder', () => {
     expect(renderer.svgs[0]).toStartWith(
       '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1536" height="24" viewBox="0 0 6144 96"',
     )
+  })
+})
+
+/** A destination asking for SVG never allocates a canvas: the vector document IS the output. */
+function noCanvas(): PintaImageRaster {
+  return {
+    createCanvas() {
+      throw new Error('An SVG recipe must not rasterize')
+    },
+    releaseCanvas() {},
+    async drawSvg() {
+      throw new Error('An SVG recipe must not rasterize')
+    },
+  }
+}
+const svgRecipe = (
+  asset: PintaAsset,
+  selection: PintaImageRecipe['selection'],
+  scale = 1,
+): PintaImageRecipe => ({ ...recipe(asset, selection, scale), output: 'svg' })
+function svgText(image: PintaPortableImage) {
+  const prefix = 'data:image/svg+xml;charset=utf-8,'
+  expect(image.dataUrl).toStartWith(prefix)
+  return decodeURIComponent(image.dataUrl.slice(prefix.length))
+}
+const rootTag = (svg: string) => /<svg\b[^>]*>/.exec(svg)?.[0] ?? ''
+
+describe('Pinta portable SVGs — the real vector for a Pygame Zero destination', () => {
+  test('vector frame becomes SVG whose root width/height are the scaled output size', async () => {
+    const source = createVectorSpriteAsset({ name: 'nave', frameSize: 16 })
+    source.animations[0]!.frames = [[rect('#ff0000', 16)], [rect('#0000ff', 16)]]
+    const animationId = source.animations[0]!.id
+    const selection = { kind: 'frame', animationId, frameIndex: 1 } as const
+    const image = await deriveLoadedPintaImage(source, svgRecipe(source, selection, 2), limits, {
+      raster: noCanvas(),
+    })
+    const svg = svgText(image)
+    const root = rootTag(svg)
+    expect(root).toContain(' width="32"')
+    expect(root).toContain(' height="32"')
+    // The content keeps its own coordinates; only the viewport is the chosen scale.
+    expect(root).toContain(' viewBox="0 0 16 16"')
+    expect(image.derivation.output).toMatchObject({ mime: 'image/svg+xml', width: 32, height: 32 })
+    const bytes = new TextEncoder().encode(svg)
+    expect(image.derivation.output.bytes).toBe(bytes.byteLength)
+    expect(image.derivation.output.sha256).toBe(createHash('sha256').update(bytes).digest('hex'))
+    expect(image.derivation.recipe.output).toBe('svg')
+    // The chosen frame, not the first one, drawn by an independent SVG rasterizer.
+    const png = await sharp(Buffer.from(svg)).png().toBuffer()
+    const meta = await sharp(png).metadata()
+    expect([meta.width, meta.height]).toEqual([32, 32])
+    const decoded = await loadImage(png)
+    const canvas = createCanvas(32, 32)
+    canvas.getContext('2d').drawImage(decoded, 0, 0)
+    expect([...canvas.getContext('2d').getImageData(20, 20, 1, 1).data]).toEqual([0, 0, 255, 255])
+    canvas.width = canvas.height = 1
+    // PNG and SVG of the same selection are distinct identities.
+    expect(pintaImageRecipeKey(svgRecipe(source, selection, 2))).not.toBe(
+      pintaImageRecipeKey(recipe(source, selection, 2)),
+    )
+  })
+
+  test('output size rounds like the PNG path; background and vector tile keep their viewBox', async () => {
+    const background = createVectorBackgroundAsset({ name: 'ceu', width: 10, height: 6 })
+    background.shapes = [rect('#00ff00', 10)]
+    const small = await deriveLoadedPintaImage(
+      background,
+      svgRecipe(background, { kind: 'background' }, 0.25),
+      limits,
+      { raster: noCanvas() },
+    )
+    // Math.round(2.5) = 3 and Math.round(1.5) = 2, the same numbers the PNG path uses.
+    expect([small.derivation.output.width, small.derivation.output.height]).toEqual([3, 2])
+    expect(rootTag(svgText(small))).toContain(' width="3" height="2" viewBox="0 0 10 6"')
+    const tileset = createVectorTilesetAsset({ name: 'pecas', tileSize: 16 })
+    tileset.tiles = [[rect('#ff0000', 16)], [rect('#0000ff', 16)]]
+    const tile = await deriveLoadedPintaImage(
+      tileset,
+      svgRecipe(tileset, { kind: 'tile', tileIndex: 1 }),
+      limits,
+      { raster: noCanvas() },
+    )
+    expect(rootTag(svgText(tile))).toContain(' width="16" height="16" viewBox="0 0 16 16"')
+  })
+
+  test('a map over vector tiles has a portable SVG path; its root carries the scaled map size', async () => {
+    const tileset = createVectorTilesetAsset({ name: 'pecas', tileSize: 48 })
+    tileset.tiles = [[rect('#ff0000', 48)]]
+    const source = createTilemapAsset({ name: 'mapa', tilesetId: tileset.id, cols: 4, rows: 2 })
+    source.layers[0]!.cells.fill(0)
+    const image = await deriveLoadedPintaImage(
+      source,
+      svgRecipe(source, { kind: 'tilemap' }, 0.5),
+      limits,
+      { tileset, raster: noCanvas() },
+    )
+    expect(rootTag(svgText(image))).toContain(' width="96" height="48" viewBox="0 0 192 96"')
+    expect(image.derivation.provenance.dependencies).toHaveLength(1)
+  })
+
+  test('pixel art and maps over pixel tiles refuse SVG instead of falling back to PNG', async () => {
+    const sprite = pixelSprite()
+    const animationId = sprite.animations[0]!.id
+    await expect(
+      deriveLoadedPintaImage(
+        sprite,
+        svgRecipe(sprite, { kind: 'frame', animationId, frameIndex: 0 }),
+        limits,
+        { raster: noCanvas() },
+      ),
+    ).rejects.toThrow('Este desenho é de pixels e só pode vir como imagem PNG.')
+    const background = createPixelBackgroundAsset({ name: 'chao', width: 8, height: 8 })
+    await expect(
+      deriveLoadedPintaImage(background, svgRecipe(background, { kind: 'background' }), limits, {
+        raster: noCanvas(),
+      }),
+    ).rejects.toThrow('pixels')
+    const tileset = createTilesetAsset({ name: 'pecas', tileSize: 8 })
+    tileset.tiles = [createBitmap(8, 8)]
+    await expect(
+      deriveLoadedPintaImage(tileset, svgRecipe(tileset, { kind: 'tile', tileIndex: 0 }), limits, {
+        raster: noCanvas(),
+      }),
+    ).rejects.toThrow('pixels')
+    const map = createTilemapAsset({ name: 'mapa', tilesetId: tileset.id, cols: 2, rows: 1 })
+    map.layers[0]!.cells.fill(0)
+    await expect(
+      deriveLoadedPintaImage(map, svgRecipe(map, { kind: 'tilemap' }), limits, {
+        tileset,
+        raster: noCanvas(),
+      }),
+    ).rejects.toThrow('Este mapa usa peças de pixels e só pode vir como imagem PNG.')
+  })
+
+  test('an SVG over the destination byte or dataURL limits is refused, never rasterized instead', async () => {
+    const source = createVectorBackgroundAsset({ name: 'ceu', width: 32, height: 32 })
+    source.shapes = Array.from({ length: 40 }, (_, index) =>
+      rect(index % 2 ? '#ff0000' : '#0000ff'),
+    )
+    for (const tight of [{ dataUrlChars: 500 }, { imageBytes: 300 }])
+      await expect(
+        deriveLoadedPintaImage(
+          source,
+          svgRecipe(source, { kind: 'background' }),
+          { ...limits, ...tight },
+          { raster: noCanvas() },
+        ),
+      ).rejects.toThrow('O desenho vetorial ficou grande demais para o projeto.')
   })
 })
 

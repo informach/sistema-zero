@@ -2,9 +2,11 @@ import { afterEach, describe, expect, it } from 'bun:test'
 import { fileToAssetDataUrl } from './imageProcessing'
 
 const OriginalImage = globalThis.Image
+const originalCreateElement = document.createElement.bind(document)
 
 afterEach(() => {
   globalThis.Image = OriginalImage
+  document.createElement = originalCreateElement
 })
 
 describe('fileToAssetDataUrl', () => {
@@ -28,5 +30,39 @@ describe('fileToAssetDataUrl', () => {
       expect(result.width).toBe(64)
       expect(result.height).toBe(64)
     }
+  })
+
+  it('a Pygame Zero destination gets PNG (it opens no WebP); the default stays compact', async () => {
+    class RasterImage {
+      naturalWidth = 10
+      naturalHeight = 10
+      onload: (() => void) | null = null
+      onerror: (() => void) | null = null
+      set src(_value: string) {
+        queueMicrotask(() => this.onload?.())
+      }
+    }
+    globalThis.Image = RasterImage as unknown as typeof Image
+    const requested: string[] = []
+    document.createElement = ((tag: string) => {
+      if (tag !== 'canvas') return originalCreateElement(tag)
+      return {
+        width: 0,
+        height: 0,
+        getContext: () => ({ drawImage() {} }),
+        toDataURL: (type: string) => {
+          requested.push(type)
+          return type === 'image/webp'
+            ? 'data:image/webp;base64,AAAA'
+            : 'data:image/png;base64,AAAA'
+        },
+      }
+    }) as typeof document.createElement
+    const file = () => new File(['x'], 'heroi.png', { type: 'image/png' })
+    expect((await fileToAssetDataUrl(file(), undefined, 'png')).dataUrl).toStartWith(
+      'data:image/png;',
+    )
+    expect(requested).toEqual(['image/png'])
+    expect((await fileToAssetDataUrl(file())).dataUrl).toStartWith('data:image/webp;')
   })
 })

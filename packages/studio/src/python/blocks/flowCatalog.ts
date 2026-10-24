@@ -950,6 +950,105 @@ const formatSpecCodec: PythonBlockCodec = {
   },
 }
 
+const FILE_MODES = [
+  ['ler', 'r'],
+  ['escrever (apaga o que havia)', 'w'],
+  ['acrescentar no fim', 'a'],
+] as const
+
+/** `with open(arquivo, modo) as nome:` — reading and saving a file, closed at the end. */
+const withOpenCodec: PythonBlockCodec = {
+  ...metadata(
+    'with_open',
+    'abrir o arquivo',
+    'Entrada e saída',
+    2,
+    'statement',
+    'with open(arquivo, modo) as nome',
+    'Abre um arquivo para ler, escrever ou acrescentar, faz os comandos de dentro com ele e o fecha no fim. Escrever apaga o conteúdo anterior.',
+  ),
+  binding: { root: 'open' },
+  match: { kinds: ['With'] },
+  defaultNode: () =>
+    node('With', {
+      items: [
+        node('withitem', {
+          context_expr: call(name('open'), [text('recorde.txt'), text('r')]),
+          optional_vars: name('arquivo', 'Store'),
+        }),
+      ],
+      body: [pass()],
+      type_comment: null,
+    }),
+  decode(value) {
+    const { items, body, type_comment } = value.fields
+    if (
+      value.kind !== 'With' ||
+      !exact(value, ['items', 'body', 'type_comment']) ||
+      type_comment !== null ||
+      !nodes(items) ||
+      items.length !== 1 ||
+      !nodes(body)
+    )
+      return
+    const item = items[0]!
+    const { context_expr: opened, optional_vars: target } = item.fields
+    if (
+      item.kind !== 'withitem' ||
+      !isNode(opened) ||
+      opened.kind !== 'Call' ||
+      !isLoadName(opened.fields.func, 'open') ||
+      !nodes(opened.fields.args) ||
+      opened.fields.args.length !== 2 ||
+      !nodes(opened.fields.keywords) ||
+      opened.fields.keywords.length ||
+      !isNode(target) ||
+      target.kind !== 'Name' ||
+      typeof target.fields.id !== 'string' ||
+      !IDENTIFIER.test(target.fields.id)
+    )
+      return
+    const mode = opened.fields.args[1]!
+    if (
+      mode.kind !== 'Constant' ||
+      mode.fields.kind !== null ||
+      !FILE_MODES.some(([, option]) => option === mode.fields.value)
+    )
+      return
+    return {
+      fields: [
+        {
+          name: 'MODE',
+          label: 'para',
+          value: String(mode.fields.value),
+          options: FILE_MODES.map(([label, option]) => [label, option] as const),
+        },
+        { name: 'NAME', label: 'como', value: target.fields.id },
+      ],
+      inputs: [
+        { name: 'file', label: 'arquivo', role: 'value', nodes: [opened.fields.args[0]!] },
+        statementInput('body', '', body),
+      ],
+    }
+  },
+  encode(shape) {
+    const mode = shape.fields.find((item) => item.name === 'MODE')?.value ?? ''
+    const target = shape.fields.find((item) => item.name === 'NAME')?.value ?? ''
+    if (!FILE_MODES.some(([, option]) => option === mode)) throw new Error('Escolha como abrir.')
+    if (!IDENTIFIER.test(target)) throw new Error('Dê um nome para o arquivo aberto.')
+    return node('With', {
+      items: [
+        node('withitem', {
+          context_expr: call(name('open'), [one(shape, 'file'), text(mode)]),
+          optional_vars: name(target, 'Store'),
+        }),
+      ],
+      body: suite(shape, 'body'),
+      type_comment: null,
+    })
+  },
+}
+
 /** Blocks for everyday Python flow, ordered before the general structural codecs. */
 export const PYTHON_FLOW_BLOCK_CODECS: readonly PythonBlockCodec[] = [
   ifCodec,
@@ -969,4 +1068,5 @@ export const PYTHON_FLOW_BLOCK_CODECS: readonly PythonBlockCodec[] = [
   importOneCodec,
   importAllCodec,
   formatSpecCodec,
+  withOpenCodec,
 ]

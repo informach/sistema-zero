@@ -6,6 +6,10 @@
  *            + attachments: the display list (Float64 records, id 0), new image bytes
  *            (ids 1…1024) and new font bytes (ids FONT_ATTACHMENT_BASE + n).
  * response = JSON with the input events since the previous frame and the paint timestamp.
+ *
+ * A header with `decode: [image, row, rows]` is not a frame: it asks for the RGBA pixels of
+ * those rows of a vector image (`images.x.get_at` on an SVG), answered at once as
+ * `{ pixels: base64 }` with at most `decodeBytes` bytes.
  */
 export const PGZERO_LIMITS = Object.freeze({
   headerChars: 512_000,
@@ -25,6 +29,7 @@ export const PGZERO_LIMITS = Object.freeze({
   maxHeight: 1080,
   pathChars: 512,
   titleChars: 200,
+  decodeBytes: 90_000,
 })
 
 export const PGZERO_LIST_ATTACHMENT = 0
@@ -83,11 +88,13 @@ export interface PgzeroFrameHeader {
   h: number
   title: string
   keep: boolean
-  images: readonly (readonly [number, string])[]
+  /** [id, path, width, height]: the size the module computed (SVG: from its root element). */
+  images: readonly (readonly [number, string, number, number])[]
   fonts: readonly (readonly [number, string])[]
   strings: readonly (readonly [number, string])[]
   styles: readonly (readonly [number, PgzeroTextStyle | null])[]
   audio: readonly PgzeroAudioCommand[]
+  decode?: readonly [number, number, number]
 }
 
 const object = (value: unknown): value is Record<string, unknown> =>
@@ -161,6 +168,21 @@ function readAudio(value: unknown): PgzeroAudioCommand {
 }
 
 /** Strict, bounded parse of one frame header produced by pgzero/_sz.py. */
+function readDecode(value: unknown, keep: boolean): readonly [number, number, number] {
+  if (
+    !keep ||
+    !Array.isArray(value) ||
+    value.length !== 3 ||
+    !id(value[0], PGZERO_LIMITS.images) ||
+    value[0] < 1 ||
+    !id(value[1], PGZERO_LIMITS.imageDimension - 1) ||
+    !id(value[2], PGZERO_LIMITS.imageDimension) ||
+    value[2] < 1
+  )
+    invalid()
+  return [value[0], value[1], value[2]] as const
+}
+
 export function readPgzeroFrameHeader(raw: unknown): PgzeroFrameHeader {
   if (typeof raw !== 'string' || raw.length > PGZERO_LIMITS.headerChars) invalid()
   let value: unknown
@@ -170,7 +192,7 @@ export function readPgzeroFrameHeader(raw: unknown): PgzeroFrameHeader {
     invalid()
   }
   if (!object(value)) invalid()
-  const { w, h, title, keep, images, fonts, strings, styles, audio } = value
+  const { w, h, title, keep, images, fonts, strings, styles, audio, decode } = value
   if (
     !id(w, PGZERO_LIMITS.maxWidth) ||
     !id(h, PGZERO_LIMITS.maxHeight) ||
@@ -198,13 +220,17 @@ export function readPgzeroFrameHeader(raw: unknown): PgzeroFrameHeader {
     images: images.map((entry) => {
       if (
         !Array.isArray(entry) ||
-        entry.length !== 2 ||
+        entry.length !== 4 ||
         !id(entry[0], PGZERO_LIMITS.images) ||
         entry[0] < 1 ||
-        !path(entry[1])
+        !path(entry[1]) ||
+        !id(entry[2], PGZERO_LIMITS.imageDimension) ||
+        !id(entry[3], PGZERO_LIMITS.imageDimension) ||
+        entry[2] < 1 ||
+        entry[3] < 1
       )
         invalid()
-      return [entry[0], entry[1]] as const
+      return [entry[0], entry[1], entry[2], entry[3]] as const
     }),
     fonts: fonts.map((entry) => {
       if (
@@ -233,6 +259,7 @@ export function readPgzeroFrameHeader(raw: unknown): PgzeroFrameHeader {
       return [entry[0], readStyle(entry[1])] as const
     }),
     audio: audio.map(readAudio),
+    ...(decode === undefined ? {} : { decode: readDecode(decode, keep) }),
   }
 }
 

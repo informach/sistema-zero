@@ -31,6 +31,10 @@ console.log(JSON.stringify({ initial, javascript, metadata, selected: loaded() }
   expect(result.javascript).toEqual([])
   const metadata = [
     'examples/python/mazeLights.ts',
+    'examples/python/pgzeroGames.blocks.generated.ts',
+    'examples/python/pgzeroGames.loaders.generated.ts',
+    'examples/python/pgzeroGames.manifest.ts',
+    'examples/python/pgzeroGames.ts',
     'examples/python/turtleRace.ts',
     'examples/python/visualReferenceGames.ts',
     'examples/python/visualReferenceGames.blocks.generated.ts',

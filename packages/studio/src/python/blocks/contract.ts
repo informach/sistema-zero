@@ -63,6 +63,12 @@ export interface PythonBlockCodec {
   starter?: boolean
   /** Hidden codecs decode existing code but are not offered in the palette. */
   hidden?: boolean
+  /**
+   * Value pieces read as their value inside a sentence, as in Scratch: no title, no field label.
+   * 'quoted' frames a text in quotes so a text and a variable of the same name differ.
+   * The title still names the block in the palette search and tooltips.
+   */
+  compact?: 'plain' | 'quoted'
   /** A specialized label is valid only when this root resolves to the official binding. */
   binding?: PythonBlockBinding
   /** Alias-aware extensions may derive the required binding from the actual call. */

@@ -11,8 +11,10 @@ Replaces the parts of Pygame Zero that need pygame/SDL:
 
 Behaviour follows pygame-ce (rotated image sizes, integer blit positions, colour names).
 """
+import base64
 import json
 import math
+import re
 import struct
 from array import array
 
@@ -34,6 +36,7 @@ OP_TEXT = 7
 MAX_RECORDS = 50_000
 MAX_STRINGS = 4096
 MAX_IMAGES = 1024
+MAX_IMAGE_SIDE = 4096
 
 
 class PgzeroLimitError(RuntimeError):
@@ -177,7 +180,63 @@ def _bmp_size(head):
         return width, abs(height)
 
 
+# SVG lengths in CSS pixels (96 per inch), as pygame-ce's SVG loader (nanosvg) reads them.
+_SVG_UNITS = {'': 1.0, 'px': 1.0, 'pt': 96 / 72, 'pc': 16.0, 'in': 96.0, 'cm': 96 / 2.54,
+              'mm': 96 / 25.4}
+_SVG_TAG = re.compile(rb'<svg\b[^>]*>', re.IGNORECASE | re.DOTALL)
+
+
+def _svg_attribute(tag, name):
+    match = re.search(rb'\s' + name + rb'\s*=\s*(["\'])(.*?)\1', tag, re.DOTALL)
+    return match.group(2).decode('utf-8', 'replace').strip() if match else None
+
+
+def _svg_length(value):
+    match = re.fullmatch(r'([0-9]*\.?[0-9]+(?:[eE][-+]?[0-9]+)?)\s*([a-z]*)', value or '')
+    if not match or match.group(2) not in _SVG_UNITS:
+        return None
+    return float(match.group(1)) * _SVG_UNITS[match.group(2)]
+
+
+def _svg_size(path):
+    """Vector images are drawn at the size their root element declares."""
+    with open(path, 'rb') as stream:
+        head = stream.read(65536)
+    tag = _SVG_TAG.search(head)
+    if not tag:
+        return None
+    tag = tag.group(0)
+    width = _svg_length(_svg_attribute(tag, b'width'))
+    height = _svg_length(_svg_attribute(tag, b'height'))
+    box = _svg_attribute(tag, b'viewBox')
+    if box and (width is None or height is None):
+        parts = [part for part in re.split(r'[\s,]+', box) if part]
+        if len(parts) == 4:
+            try:
+                box_w, box_h = float(parts[2]), float(parts[3])
+            except ValueError:
+                box_w = box_h = 0.0
+            # As pygame-ce (nanosvg): a missing side takes the viewBox side, not its ratio.
+            if box_w > 0 and box_h > 0:
+                width = box_w if width is None else width
+                height = box_h if height is None else height
+    if not width or not height:
+        raise ValueError(
+            f'O desenho {path!r} precisa dizer o próprio tamanho (width e height, ou viewBox).'
+        )
+    return math.ceil(width), math.ceil(height)
+
+
+def is_vector(path):
+    return str(path).lower().endswith('.svg')
+
+
 def image_size(path):
+    if is_vector(path):
+        size = _svg_size(path)
+        if not size:
+            raise ValueError(f'O arquivo {path!r} não é um desenho SVG válido.')
+        return size
     with open(path, 'rb') as stream:
         head = stream.read(32)
     size = _png_size(head) or _gif_size(head) or _bmp_size(head) or _jpeg_size(path)
@@ -193,7 +252,11 @@ class Surface:
     def __init__(self, path):
         self._path = path
         self._w, self._h = image_size(path)
-        self._id = _images.register(path)
+        if self._w > MAX_IMAGE_SIDE or self._h > MAX_IMAGE_SIDE:
+            raise PgzeroLimitError(
+                f'A imagem {path!r} é grande demais ({self._w}x{self._h}); o limite é 4096.'
+            )
+        self._id = _images.register(path, self._w, self._h)
         self._pixels = None
 
     def get_size(self):
@@ -217,9 +280,12 @@ class Surface:
         if not (0 <= x < self._w and 0 <= y < self._h):
             raise IndexError('pixel index out of range')
         if self._pixels is None:
-            if _decoder is None:
+            if is_vector(self._path):
+                self._pixels = _vector_pixels(self._id, self._w, self._h)
+            elif _decoder is None:
                 raise RuntimeError('A leitura de pixels não está disponível aqui.')
-            self._pixels = _decoder(self._path)
+            else:
+                self._pixels = _decoder(self._path)
             if len(self._pixels) != self._w * self._h * 4:
                 raise RuntimeError('A imagem mudou de tamanho ao ser lida.')
         offset = (y * self._w + x) * 4
@@ -298,7 +364,7 @@ class _ImageRegistry:
         self.ids = {}
         self.pending = []
 
-    def register(self, path):
+    def register(self, path, width, height):
         found = self.ids.get(path)
         if found is not None:
             return found
@@ -306,7 +372,7 @@ class _ImageRegistry:
             raise PgzeroLimitError('O jogo usa imagens demais (o limite é 1024).')
         identifier = len(self.ids) + 1
         self.ids[path] = identifier
-        self.pending.append([identifier, path])
+        self.pending.append([identifier, path, width, height])
         return identifier
 
 
@@ -487,8 +553,42 @@ def audio_volume(voice, volume):
 _ATTACHMENTS_PER_FRAME = 120
 
 
+# A reply carries at most this many pixel bytes (the channel answers in text, base64).
+_DECODE_CHUNK_BYTES = 90_000
+_last_window = [1, 1, '']
+
+
 def attachments_pending():
     return bool(_images.pending or _fonts.pending)
+
+
+def _vector_pixels(identifier, width, height):
+    """RGBA of a vector image at its own size, rasterized by the browser that draws it."""
+    if _transport is None:
+        raise RuntimeError('A leitura de pixels não está disponível aqui.')
+    own = [entry for entry in _images.pending if entry[0] == identifier]
+    rest = [entry for entry in _images.pending if entry[0] != identifier]
+    images = own + rest[: _ATTACHMENTS_PER_FRAME - len(own)]
+    _images.pending = rest[len(images) - len(own):]
+    rows = max(1, _DECODE_CHUNK_BYTES // (width * 4))
+    pixels = bytearray()
+    for row in range(0, height, rows):
+        header = {
+            'w': _last_window[0],
+            'h': _last_window[1],
+            'title': _last_window[2],
+            'keep': True,
+            'images': images,
+            'fonts': [],
+            'strings': [],
+            'styles': [],
+            'audio': [],
+            'decode': [identifier, row, min(rows, height - row)],
+        }
+        images = []
+        reply = json.loads(_transport(json.dumps(header, separators=(',', ':')), b''))
+        pixels += base64.b64decode(reply['pixels'])
+    return bytes(pixels)
 
 
 def present(width, height, title, keep):
@@ -496,6 +596,7 @@ def present(width, height, title, keep):
     # The worker channel carries at most 128 attachments per message (list and default font
     # included). A game that loads more files at once receives them over the next frames;
     # until then those images simply are not drawn.
+    _last_window[:] = [width, height, title]
     images = _images.pending[:_ATTACHMENTS_PER_FRAME]
     fonts = _fonts.pending[:_ATTACHMENTS_PER_FRAME - len(images)]
     header = {

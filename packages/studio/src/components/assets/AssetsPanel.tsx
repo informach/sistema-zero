@@ -17,6 +17,7 @@ import {
   takeDrawingSyncFailures,
 } from '../../asset-library/personalSync'
 import { isPythonProject, type EditableStudioProject as Project } from '../../core/editableProject'
+import { type PgzeroAudioRole, projectUsesPgzero } from '../../core/pgzeroMediaPaths'
 import { captureAndStoreProjectThumb } from '../../cover/thumbCapture'
 import { useProjectStore, useProjectStoreApi } from '../../state/projectStore'
 import { retryProApplication } from '../../state/proRevision'
@@ -112,6 +113,10 @@ export function AssetsPanel({
   const t = useT()
   const isPro = useProjectStore((s) => s.project?.kind === 'pro')
   const isPython = useProjectStore((s) => !!s.project && isPythonProject(s.project))
+  // Pygame Zero reads images/, sounds/ and music/ by name: the store places each upload.
+  const usesPgzero = useProjectStore(
+    (s) => !!s.project && isPythonProject(s.project) && projectUsesPgzero(s.project),
+  )
   const { hasProject, assets, has3DExtension, has3DMaterials, coverAssetName } = useProjectStore(
     useShallow((s) => ({
       hasProject: Boolean(s.project),
@@ -149,6 +154,8 @@ export function AssetsPanel({
   }
   const fileRef = useRef<HTMLInputElement>(null)
   const soundRef = useRef<HTMLInputElement>(null)
+  // Which Pygame Zero door opened the sound picker (a short sound or a song).
+  const audioRoleRef = useRef<PgzeroAudioRole | undefined>(undefined)
   const modelRef = useRef<HTMLInputElement>(null)
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
@@ -499,7 +506,11 @@ export function AssetsPanel({
     const taken = new Set(assets.map((a) => a.name))
     try {
       for (const file of Array.from(files)) {
-        const { dataUrl, width, height } = await fileToAssetDataUrl(file)
+        const { dataUrl, width, height } = await fileToAssetDataUrl(
+          file,
+          undefined,
+          usesPgzero ? 'png' : 'compact',
+        )
         const base = file.name.replace(/\.[^.]+$/, '')
         const name = uniqueAssetName(base, taken)
         const err = addAsset({ name, dataUrl, width, height, source: 'upload' })
@@ -527,7 +538,13 @@ export function AssetsPanel({
         const { dataUrl } = await fileToAudioAssetDataUrl(file)
         const base = file.name.replace(/\.[^.]+$/, '')
         const name = uniqueAssetName(base, taken)
-        const err = addAsset({ name, dataUrl, kind: 'audio', source: 'upload' })
+        const err = addAsset({
+          name,
+          dataUrl,
+          kind: 'audio',
+          source: 'upload',
+          ...(usesPgzero && audioRoleRef.current ? { pgzeroAudio: audioRoleRef.current } : {}),
+        })
         if (err) {
           setError(err)
           break
@@ -845,7 +862,11 @@ export function AssetsPanel({
                 sounds={sounds}
                 allowUpload={allowUpload}
                 busy={busy}
-                onUpload={() => soundRef.current?.click()}
+                pgzero={usesPgzero}
+                onUpload={(role) => {
+                  audioRoleRef.current = role
+                  soundRef.current?.click()
+                }}
                 onRename={handleRename}
                 onDelete={deleteFromProject}
               />

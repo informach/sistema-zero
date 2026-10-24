@@ -12,6 +12,8 @@ const DEFAULT_MAX_DIM = 512
 export async function fileToAssetDataUrl(
   file: File,
   maxDim = DEFAULT_MAX_DIM,
+  /** `png`: the destination cannot open WebP (Pygame Zero finds png/gif/jpg/bmp/svg). */
+  format: 'compact' | 'png' = 'compact',
 ): Promise<ProcessedImage> {
   const isSvg = file.type === 'image/svg+xml' || file.name.toLowerCase().endsWith('.svg')
   if (!file.type.startsWith('image/') && !isSvg) {
@@ -45,16 +47,18 @@ export async function fileToAssetDataUrl(
   ctx.drawImage(img, 0, 0, width, height)
 
   let dataUrl = ''
-  try {
-    dataUrl = canvas.toDataURL('image/webp', 0.85)
-  } catch {
-    // canvas pode lançar se a imagem "tingiu" (cross-origin) — improvável p/ upload local.
+  if (format === 'compact') {
+    try {
+      dataUrl = canvas.toDataURL('image/webp', 0.85)
+    } catch {
+      // canvas pode lançar se a imagem "tingiu" (cross-origin) — improvável p/ upload local.
+    }
   }
   if (!dataUrl.startsWith('data:image/webp')) {
     dataUrl = canvas.toDataURL('image/png')
   }
   // Acima do teto: tenta WebP em qualidade menor antes de desistir.
-  if (dataUrl.length > PROJECT_ASSET_LIMITS.maxAssetDataUrlChars) {
+  if (format === 'compact' && dataUrl.length > PROJECT_ASSET_LIMITS.maxAssetDataUrlChars) {
     try {
       const retry = canvas.toDataURL('image/webp', 0.6)
       if (retry.startsWith('data:image/webp') && retry.length < dataUrl.length) dataUrl = retry

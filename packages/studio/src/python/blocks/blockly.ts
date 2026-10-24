@@ -196,9 +196,10 @@ function applyLayout(block: PythonBlocklyBlock, state: VisualState, codec: Pytho
   block.pythonState = state
   const header = block
     .appendDummyInput('HEADER')
-    .appendField(new Blockly.FieldLabel(title), 'PYTHON_TITLE')
+    .appendField(new Blockly.FieldLabel(codec.compact ? '' : title), 'PYTHON_TITLE')
+  if (codec.compact === 'quoted') header.appendField('“')
   for (const field of state.layout.fields) {
-    header.appendField(field.label)
+    if (!codec.compact) header.appendField(field.label)
     if (field.options)
       header.appendField(
         new Blockly.FieldDropdown(field.options.map(([label, value]) => [label, value])),
@@ -207,6 +208,7 @@ function applyLayout(block: PythonBlocklyBlock, state: VisualState, codec: Pytho
     else header.appendField(new Blockly.FieldTextInput(field.value), field.name)
     block.setFieldValue(field.value, field.name)
   }
+  if (codec.compact === 'quoted') header.appendField('”')
   for (const input of state.layout.inputs) {
     if (!block.getInput(input.name)) {
       const target =

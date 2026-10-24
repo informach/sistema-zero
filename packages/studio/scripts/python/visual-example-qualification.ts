@@ -36,6 +36,7 @@ import type {
   PythonNode,
   PythonValue,
 } from '../../src/python/language/types'
+import { PGZERO_EXTENSION } from '../../src/runtime/python/pgzero/contract'
 import { TURTLE_EXTENSION } from '../../src/runtime/python/turtle/contract'
 
 const digest = (value: string) => createHash('sha256').update(value).digest('hex')
@@ -64,10 +65,21 @@ export interface VisualExampleAnalysis {
 }
 
 /** Supplied release configures this QA host; it does not attest a deployed approval. */
+/** The canvas extension an example installs: its modules join the official ones. */
+const EXAMPLE_EXTENSIONS: Readonly<
+  Record<string, { extension: { id: string; version: string }; modules: readonly string[] }>
+> = {
+  [TURTLE_EXTENSION.id]: { extension: TURTLE_EXTENSION, modules: ['turtle'] },
+  [PGZERO_EXTENSION.id]: { extension: PGZERO_EXTENSION, modules: ['pgzero', 'pgzrun'] },
+} as const
+
 export async function loadVisualExampleAuthoring(options: {
   release: StudioRuntimeRelease
   approvedBlockIds: readonly string[]
+  extension?: string
 }) {
+  const chosen = EXAMPLE_EXTENSIONS[options.extension ?? TURTLE_EXTENSION.id]
+  if (!chosen) throw new Error('Extensão de exemplo desconhecida.')
   const { release } = options
   if (!release.manifest.python) throw new Error('A qualificação exige uma release Python.')
   const runtime = {
@@ -89,13 +101,19 @@ export async function loadVisualExampleAuthoring(options: {
     ],
   })
   const loaded = await loadPythonAuthoring(
-    { runtime, installedExtensions: [TURTLE_EXTENSION] },
+    { runtime, installedExtensions: [chosen.extension] },
     {
       catalog,
       pythonAuthoring: [{ runtime, blockIds: options.approvedBlockIds }],
     },
   )
-  return { ...loaded, runtime, runtimeFeatures: release.manifest.python.features }
+  return {
+    ...loaded,
+    runtime,
+    runtimeFeatures: release.manifest.python.features,
+    extension: chosen.extension.id,
+    officialModules: new Set(['math', 'random', ...chosen.modules]),
+  }
 }
 
 type VisualExampleAuthoring = Awaited<ReturnType<typeof loadVisualExampleAuthoring>>
@@ -150,7 +168,7 @@ export function inspectPythonVisualProjection(projection: PythonBlockProjection)
 
 function checkedProjection(tree: PythonNode, authoring: VisualExampleAuthoring) {
   // Editorial constraints for self-contained examples, not a general Python sandbox.
-  const imports = new Set(['turtle', 'math', 'random', 'time', 'sz_audio'])
+  const imports = new Set(['math', 'random', 'time', 'sz_audio', ...authoring.officialModules])
   function editorial(value: PythonValue) {
     if (Array.isArray(value)) {
       for (const child of value) editorial(child)
@@ -183,7 +201,7 @@ function checkedProjection(tree: PythonNode, authoring: VisualExampleAuthoring) 
   editorial(tree)
   const projection = pythonASTToVisual(tree, {
     codecs: authoring.codecs,
-    officialModules: new Set(['turtle', 'math', 'random']),
+    officialModules: authoring.officialModules,
   })
   const coverage = inspectPythonVisualProjection(projection)
   assert.equal(
@@ -317,6 +335,7 @@ export async function qualifyPythonVisualExample(options: {
       authoringRuntime: options.authoring.runtime,
       authoringRuntimeFeatures: options.authoring.runtimeFeatures,
       authoringLoader: 'loadPythonAuthoring',
+      extension: options.authoring.extension,
       codecOrderSha256: digest(canonicalJson(codecs.map(({ id }) => id))),
       sourceSha256: digest(options.source),
       generatedSha256: digest(generated),
@@ -457,12 +476,13 @@ if (import.meta.main) {
         JSON.parse(await readFile(get('runtime-release'), 'utf8')),
       ),
       approvedBlockIds: approved,
+      extension: args.includes('--extension') ? get('extension') : undefined,
     })
     if (args.includes('--inspect')) {
       const tree = await parse(analysis, source, sourcePath)
       const projection = pythonASTToVisual(tree, {
         codecs: authoring.codecs,
-        officialModules: new Set(['turtle', 'math', 'random']),
+        officialModules: authoring.officialModules,
       })
       console.log(
         JSON.stringify(

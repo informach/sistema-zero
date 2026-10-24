@@ -76,15 +76,22 @@ describe('listGalleryForStudio', () => {
       height: 8,
       animations: [{ id: animation.id, name: animation.name, frameCount: 2 }],
     })
+    // Vector drawings (and maps over vector tiles) advertise their portable SVG path.
     expect(choices.get(tileset.id)).toEqual({
       kind: 'tile',
       width: 16,
       height: 16,
       tileCount: 1,
+      vector: true,
     })
-    expect(choices.get(map.id)).toEqual({ kind: 'tilemap', width: 48, height: 32 })
+    expect(choices.get(map.id)).toEqual({ kind: 'tilemap', width: 48, height: 32, vector: true })
     expect(choices.get(missing.id)).toEqual({ kind: 'unavailable', reason: 'needs-tileset' })
-    expect(choices.get(background.id)).toEqual({ kind: 'background', width: 30, height: 20 })
+    expect(choices.get(background.id)).toEqual({
+      kind: 'background',
+      width: 30,
+      height: 20,
+      vector: true,
+    })
     expect(JSON.stringify([...choices.values()])).not.toContain('dataUrl')
     expect(JSON.stringify([...choices.values()])).not.toContain('shapes')
   })

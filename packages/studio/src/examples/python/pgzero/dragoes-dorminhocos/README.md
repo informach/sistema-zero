@@ -1,0 +1,40 @@
+# Dragões Dorminhocos
+
+Pegue os ovos enquanto os dragões dormem. Se acordarem, cuidado! Pixel art.
+
+Um exemplo original feito com [Pygame Zero](https://pygame-zero.readthedocs.io/): o
+programa inteiro está em `main.py` e é o mesmo nas versões de Blocos e de Código da
+galeria.
+
+## Como jogar
+
+Use as setas para chegar aos ovos quando o dragão estiver dormindo. Se ele acordar com você no ninho, você perde uma vida.
+
+## Ideias para mudar
+
+- Mude quanto tempo cada dragão dorme.
+- Dê mais vidas ao herói.
+- Faça um ninho valer mais ovos.
+
+## Imagens e sons
+
+O Pygame Zero procura as imagens em `images/`, os sons em `sounds/` e as músicas em
+`music/`, pelo nome do arquivo sem a extensão: `Actor('nave')` usa `images/nave`.
+Você pode trocar qualquer um deles por um desenho seu do Pinta, com o mesmo nome.
+
+## Jogar no computador
+
+O Pygame Zero roda no computador com o pygame-ce:
+
+```
+python -m pip install pygame-ce numpy
+python -m pip install --no-deps pgzero
+python main.py
+```
+
+O programa termina com `pgzrun.go()`, então `python main.py` já abre o jogo. Num programa
+sem essa linha, use `python -X utf8 -m pgzero main.py` (o `-X utf8` mantém os acentos
+certos no Windows).
+
+Ao baixar o projeto pelo Estúdio, os desenhos em SVG ganham uma cópia em PNG, que é o
+formato que o Pygame Zero do computador abre.

@@ -47,6 +47,7 @@ const literals: PythonBlockCodec[] = [
       'Um texto Python. Pode conter acentos, emojis e quebras de linha.',
     ),
     role: 'value',
+    compact: 'quoted',
     defaultNode: () => text('Olá!'),
     decode(value) {
       return value.kind === 'Constant' &&
@@ -69,6 +70,7 @@ const literals: PythonBlockCodec[] = [
       'Um número inteiro, sem perder precisão em valores grandes.',
     ),
     role: 'value',
+    compact: 'plain',
     defaultNode: integer,
     decode(value) {
       const literal = value.fields.value
@@ -149,6 +151,7 @@ const literals: PythonBlockCodec[] = [
   {
     ...base('variable', 'variável', 'Variáveis', 1, 'name', 'Lê uma variável no escopo atual.'),
     role: 'value',
+    compact: 'plain',
     defaultNode: name,
     decode(value) {
       return value.kind === 'Name' &&
@@ -254,7 +257,7 @@ const statements: PythonBlockCodec[] = [
   {
     ...base(
       'assign',
-      'guardar valor',
+      'guardar',
       'Variáveis',
       1,
       'target = value',
@@ -280,7 +283,7 @@ const statements: PythonBlockCodec[] = [
             fields: [],
             inputs: [
               { name: 'TARGET', label: 'em', role: 'value', nodes: [targets[0]] },
-              { name: 'VALUE', label: 'guardar', role: 'value', nodes: [value.fields.value] },
+              { name: 'VALUE', label: 'o valor', role: 'value', nodes: [value.fields.value] },
             ],
           }
         : undefined

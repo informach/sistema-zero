@@ -541,3 +541,59 @@ describe('Materiais do jogo — a capa que não dá miniatura', () => {
     expect(useProjectStore.getState().project?.coverAssetName).toBe('heroi')
   })
 })
+
+describe('Materiais do jogo — Pygame Zero lê sounds/ e music/', () => {
+  async function seedPgzero(extension?: string) {
+    const raw = documentFixture('python', 'classic')
+    raw.assets = []
+    if (extension) raw.installedExtensions = [{ id: extension, version: '1.0.0', installedAt: 1 }]
+    useProjectStore.setState({
+      project: await refinePythonProjectDocument(raw),
+      isDirty: false,
+      saveError: null,
+    })
+  }
+  function abrir(tab: 'Sons') {
+    render(<AssetsPanel open onClose={() => {}} />)
+    fireEvent.click(screen.getByRole('tab', { name: tab }))
+  }
+  async function enviar(porta: string, file: File) {
+    fireEvent.click(screen.getByRole('button', { name: porta }))
+    const input = document.querySelector('input[name="project-audio-files"]')
+    if (!(input instanceof HTMLInputElement)) throw new Error('Audio input required')
+    fireEvent.change(input, { target: { files: [file] } })
+  }
+
+  it('duas portas: o som curto vai para sounds/ e a música para music/', async () => {
+    await seedPgzero('python-pgzero')
+    abrir('Sons')
+    expect(screen.queryByText('🔊 Enviar som')).toBeNull()
+    await enviar('🔊 Enviar som curto', new File(['RIFF'], 'Pulo Alto.wav', { type: 'audio/wav' }))
+    await waitFor(() => expect(useProjectStore.getState().project?.assets).toHaveLength(1))
+    await enviar('🎵 Enviar música', new File(['ID3'], 'Tema.ogg', { type: 'audio/ogg' }))
+    await waitFor(() => expect(useProjectStore.getState().project?.assets).toHaveLength(2))
+    expect(useProjectStore.getState().project?.assets?.map((asset) => asset.proPath)).toEqual([
+      'sounds/pulo_alto.wav',
+      'music/tema.ogg',
+    ])
+    // A song in the short-sound door is explained, not stored where Pygame Zero cannot find it.
+    await enviar('🔊 Enviar som curto', new File(['ID3'], 'fundo.mp3', { type: 'audio/mpeg' }))
+    expect(await screen.findByText(/precisa ser um arquivo WAV ou OGG/)).not.toBeNull()
+    expect(useProjectStore.getState().project?.assets).toHaveLength(2)
+  })
+
+  it('Turtle mantém uma porta só e o caminho assets/', async () => {
+    await seedPgzero('python-turtle')
+    abrir('Sons')
+    expect(screen.queryByText('🎵 Enviar música')).toBeNull()
+    fireEvent.click(screen.getByText('🔊 Enviar som'))
+    const input = document.querySelector('input[name="project-audio-files"]')
+    if (!(input instanceof HTMLInputElement)) throw new Error('Audio input required')
+    fireEvent.change(input, {
+      target: { files: [new File(['ID3'], 'tema.mp3', { type: 'audio/mpeg' })] },
+    })
+    await waitFor(() =>
+      expect(useProjectStore.getState().project?.assets?.[0]?.proPath).toBe('assets/tema.mp3'),
+    )
+  })
+})

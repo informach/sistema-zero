@@ -26,20 +26,35 @@ export const PintaImageRecipeSchema = z.strictObject({
   ]),
   // Explicit user choice. Output dimensions round to the nearest pixel; zero is rejected.
   scale: z.number().positive(),
+  /** Requested by the DESTINATION (a Pygame Zero project) for a vector drawing. Absent = PNG,
+   * so recipes captured before this field keep their exact identity key. */
+  output: z.literal('svg').optional(),
 })
 export type PintaImageRecipe = z.infer<typeof PintaImageRecipeSchema>
+
+export type PintaImageOutputMime = 'image/png' | 'image/svg+xml'
+
+/** The one rule mapping a recipe to its output format. */
+export function pintaImageOutputMime(recipe: PintaImageRecipe): PintaImageOutputMime {
+  return recipe.output === 'svg' ? 'image/svg+xml' : 'image/png'
+}
 
 /** Opt-in gallery facts from validated native drawings. No source, pixels or write authority.
  * Counts and names retain the Pinta model's bounds; frame/tile indexes remain positional. */
 export type PintaImageSelectionSummary =
-  | { kind: 'background' | 'tilemap'; width: number; height: number }
-  | {
-      kind: 'frame'
-      width: number
-      height: number
-      animations: Array<{ id: string; name: string; frameCount: number }>
-    }
-  | { kind: 'tile'; width: number; height: number; tileCount: number }
+  | ((
+      | { kind: 'background' | 'tilemap'; width: number; height: number }
+      | {
+          kind: 'frame'
+          width: number
+          height: number
+          animations: Array<{ id: string; name: string; frameCount: number }>
+        }
+      | { kind: 'tile'; width: number; height: number; tileCount: number }
+    ) & {
+      /** True when the selection has a portable vector path (an SVG recipe may be requested). */
+      vector?: boolean
+    })
   | { kind: 'unavailable'; reason: 'needs-tileset' }
 
 /** Supplied by the destination, including its remaining aggregate pixel budget. No defaults. */
@@ -61,7 +76,7 @@ export const PintaImageDerivationSchema = z
       dependencies: z.array(z.strictObject({ drawingId: id, sha256 })).max(1),
     }),
     output: z.strictObject({
-      mime: z.literal('image/png'),
+      mime: z.enum(['image/png', 'image/svg+xml']),
       width: positiveInteger,
       height: positiveInteger,
       bytes: positiveInteger,
@@ -69,6 +84,13 @@ export const PintaImageDerivationSchema = z
     }),
   })
   .superRefine((value, context) => {
+    if (value.output.mime !== pintaImageOutputMime(value.recipe)) {
+      context.addIssue({
+        code: 'custom',
+        path: ['output', 'mime'],
+        message: 'The output format must be the one the recipe requested.',
+      })
+    }
     if (
       value.provenance.dependencies.length !== (value.recipe.selection.kind === 'tilemap' ? 1 : 0)
     ) {

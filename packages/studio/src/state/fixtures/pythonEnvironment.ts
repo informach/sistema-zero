@@ -4,6 +4,7 @@ import {
 } from '@sistemazero/core/studio/runtime-catalog'
 import { createStudioProjectDocument } from '../../core/projectFactory'
 import type { StudioRuntimeEnvironment } from '../../runtime/environment'
+import { PGZERO_EXTENSION } from '../../runtime/python/pgzero/contract'
 import { TURTLE_EXTENSION } from '../../runtime/python/turtle/contract'
 import { createStudioRuntimeRegistry } from '../../runtime/registry'
 import { refinePythonProjectDocument } from '../pythonProjectValidation'
@@ -18,7 +19,10 @@ export async function pythonEnvironmentFixture(kind: 'classic' | 'pro') {
     kinds: ['classic', 'pro'],
     modes: ['blocks', 'bridge', 'code'],
     capabilities: ['edit', 'execute', 'export-source', 'python-repl'],
-    extensions: [{ id: TURTLE_EXTENSION.id, versions: [TURTLE_EXTENSION.version] }],
+    extensions: [
+      { id: TURTLE_EXTENSION.id, versions: [TURTLE_EXTENSION.version] },
+      { id: PGZERO_EXTENSION.id, versions: [PGZERO_EXTENSION.version] },
+    ],
     sourceTargets: ['browser', 'desktop'],
     requiredBrowserFeatures: [],
     artifacts: [{ path: 'test.txt', sha256: 'a'.repeat(64) }],
