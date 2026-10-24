@@ -109,6 +109,44 @@ beforeEach(() => {
 })
 
 describe('POST /api/checkout/subscription', () => {
+  test.each([
+    ['kids/comunidade-dos-criadores', 'kids'],
+    ['pro/comunidade-dos-criadores', 'adult'],
+    ['kids/not-a-registered-funnel', undefined],
+    [null, undefined],
+  ] as const)('compra fixa público pela origem registrada, sem inferir pelo nome/SKU: %s', async (funnel, expectedAudience) => {
+    const { repo } = createFakeRepo()
+    const { id } = await repo.createLead(funnel)
+    const gw = subscriptionGateway()
+    const response = await startSubscription(
+      req(cookieFor(id), { ...SUB_CARD, billingAudience: 'forged-browser-value' }),
+      deps(repo, gw),
+    )
+    expect(response.status).toBe(200)
+    expect(gw.calls.createSubscription).toHaveLength(1)
+    expect(gw.calls.createSubscription[0]?.input).toMatchObject({
+      metadata: expectedAudience
+        ? {
+            billingAudience: expectedAudience,
+            billingAudienceSource: 'funnel-registry-v1',
+            billingFunnelKey: funnel,
+          }
+        : { sku: 'clube-dos-criadores' },
+    })
+    const input = gw.calls.createSubscription[0]?.input
+    if (
+      !input ||
+      typeof input !== 'object' ||
+      !('metadata' in input) ||
+      !input.metadata ||
+      typeof input.metadata !== 'object'
+    )
+      throw new Error('Missing canonical metadata')
+    if (!expectedAudience) {
+      expect('billingAudience' in input.metadata).toBe(false)
+      expect('billingAudienceSource' in input.metadata).toBe(false)
+    }
+  })
   test('cria a assinatura (mensal), grava subscription no lead e marca pago no ACTIVE', async () => {
     const { repo, leads, events, payments } = createFakeRepo()
     const gw = subscriptionGateway()
