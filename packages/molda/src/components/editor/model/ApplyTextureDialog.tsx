@@ -1,6 +1,6 @@
 /**
- * "Vestir a peça com uma textura": escolhe uma textura da galeria e o modo
- * (repetir ou esticar) e veste TODAS as faces da peça selecionada. É um bake
+ * Aplica uma textura pronta da galeria em todas as faces da peça selecionada.
+ * O modo repetir/esticar copia pixels para a pintura do modelo. É um bake
  * (copia os pixels para as peles; apagar a textura depois não afeta o modelo),
  * num commit só.
  */
@@ -76,6 +76,10 @@ function TextureChooser({ onClose, onApply }: Omit<ApplyTextureDialogProps, 'ope
 
   return (
     <>
+      <p className="mb-3 text-sm text-mld-text-soft">
+        A textura escolhida aparece na peça inteira. Depois você pode pintar detalhes diretamente no
+        modelo. Esta é uma cópia: mudar a textura da galeria não altera a peça.
+      </p>
       {textures.length === 0 ? (
         <p className="text-base text-mld-text-soft">{copy.empty}</p>
       ) : (

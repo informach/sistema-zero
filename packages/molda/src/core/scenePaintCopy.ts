@@ -62,7 +62,7 @@ export const SCENE_PAINT_COPY = {
   pickerHint: 'Clique na cor que quer usar. Depois, continue com o Pincel.',
   choosePiece: 'Toque numa peça para pintar.',
   modelHint: 'Arraste na peça para pintar. Para girar, arraste no fundo.',
-  more: 'Camadas e ferramentas de pintura',
+  more: 'Mais jeitos de pintar',
   /** "Mais jeitos de pintar" sem peça escolhida: o painel não fica vazio e mudo. */
   moreChoose: 'Toque numa peça para ver os outros jeitos de pintar nela.',
   crooked: (count: number) =>

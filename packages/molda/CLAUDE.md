@@ -11,6 +11,21 @@
 - **Selecionar loop inteiro** segue a topologia da malha e pode alcançar uma cadeia aberta. Nesse
   caso, a prévia explica por que aquela seleção não forma um corte válido.
 
+## Textura pintada no modelo — 24/10/2026
+
+- A ação principal da aba **Pintar** continua sendo escolher uma peça e desenhar nela. A
+  preparação da imagem e do mapa acompanha o primeiro traço; a **Folha de pintura** mostra os
+  mesmos pixels ao lado do modelo.
+- No nível intermediário, **Textura e camadas** fica à vista no inspetor, separada de **Mais jeitos
+  de pintar**. Criar uma textura de cor ou usar um PNG/JPEG abre um modal; ao concluir, a nova
+  imagem vira o alvo do pincel no modelo. Tamanho, formato das cores e efeitos de material ficam
+  progressivos. Criar um mapa avançado mantém o painel de materiais aberto para seus ajustes.
+- **Usar textura pronta** é uma ação separada dos pincéis. Ela copia uma textura da galeria para
+  a peça; editar ou apagar a origem não altera a cópia. Não apresentar essa operação como o
+  caminho para começar a pintar no modelo.
+- Explicações opcionais usam `SceneHelpButton` e `Dialog`, como no editor de componentes. Os
+  painéis mostram o estado e a próxima ação; avisos que afetam outras peças continuam visíveis.
+
 ## Raio-X, Unir peças, Puxar e verso — 24/10/2026
 
 - **Raio-X** (alternância ao lado da grade) é só vista: `SceneMaterialResource.setXray` esmaece
@@ -1213,16 +1228,18 @@ código do Blockbench. Primeiro lote: guardas de formato, recuperação e benchm
   Tetos: 262.144 chaves derivadas/65.536 canais. Não normalizar chaves autorais:
   quaternions unitários só na saída. Clipes vazios/ocultos são relatados.
   Benchmark integral ultrapassa 50 ms; integração UI deve usar worker cancelável.
-- `sceneStudioCompatibility` confere uma cópia contra os limites atuais dos dois
-  runtimes Studio, não o orçamento do jogo inteiro. No GLB nativo, malhas carregadas
-  pelo GLTFLoader são primitivas × instâncias (`stats.drawCalls`), não definições
+- `sceneStudioCompatibility` confere uma cópia contra os limites do carregador de
+  modelos COMUM do Studio (`studio/src/official-extensions/three3dModelsRuntime.ts`,
+  `MAX_MODEL_*`, o mesmo nos três jogos 3D), não o orçamento do jogo inteiro. No GLB
+  nativo, malhas carregadas pelo GLTFLoader são primitivas × instâncias (`stats.drawCalls`), não definições
   (`stats.meshes`) nem só peças. Calcular base64 pelo comprimento + prefixo/padding,
   sem alocar string. Aviso de destino não concede perdas nem impede export portátil;
-  clipes ainda exigem Jogo 3D Avançado e a ponte pública nativa não está ativada.
+  desde o review 3D do Studio (24/10/2026) Jogo 3D, Mundo 3D e Jogo 3D Avançado tocam
+  clipes, ossos e pintura animada; a ponte pública nativa não está ativada.
   `stats.bones` conta nós distintos citados por skins exportadas, incluindo juntas
   refletidas, mas sem repetir ossos compartilhados por vínculos/materiais. O limite
-  de 256 ossos vem do motor avançado; o básico ainda não tem contrato de clones de
-  esqueleto. Orientar peças vinculadas ao Avançado mesmo sem clipes; testar 256/258
+  de 256 ossos é do carregador comum, que copia o esqueleto por objeto (SkeletonUtils)
+  nos três. Peças vinculadas valem em qualquer um dos três jogos 3D; testar 256/258
   contra GLTFLoader real e o protocolo deve exigir estatística finita/inteira limitada.
 - `sceneGlbRequest` compacta somente chaves do pedido privado em Float64 e códigos
   de curva, sem alterar documento/persistência/encoder. Validar campos reservados,
@@ -1602,7 +1619,8 @@ código do Blockbench. Primeiro lote: guardas de formato, recuperação e benchm
   ⚠️ `sceneUnavailable` no `galleryStore`: a galeria v1 não vai a branco, mas "Baixar tudo"
   RECUSA em vez de anunciar completo um pacote sem as criações promovidas.
   ⚠️ `stats.animatedPaints` existe para o relatório de destino: pintura animada é MOVIMENTO
-  e só o Jogo 3D Avançado toca. Perdas na ponte continuam SILENCIOSAS (peça escondida some,
+  e os três jogos 3D do Estúdio tocam (review 3D, 24/10/2026). Perdas na ponte
+  continuam SILENCIOSAS (peça escondida some,
   ao contrário do v1) — decisão de produto em aberto, registrada no review.
   ⚠️ `resetMoldaPersistenceForTests()` zera a fábrica da geração seguinte: deixá-la de pé
   faz o teste seguinte passar por um motivo errado (lista vazia de um banco fechado).

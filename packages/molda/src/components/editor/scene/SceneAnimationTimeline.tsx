@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react'
 import { COPY } from '../../../core/copy'
 import { editSceneAnimationPoses } from '../../../scene/animationArrival'
+import { configureSceneAnimation, retimeSceneAnimation } from '../../../scene/animationCommands'
 import { sceneAnimationKeySelection } from '../../../scene/animationKeySelection'
 import { evaluateSceneNodeFlags } from '../../../scene/evaluate'
 import { useMoldaToolAccess } from '../../toolAccess'
@@ -15,6 +16,7 @@ import {
 } from '../../ui/icons'
 import { SceneAnimationCurves } from './SceneAnimationCurves'
 import { SceneAnimationKeyStrip } from './SceneAnimationKeyStrip'
+import { SceneAnimationPoseRecordButton } from './SceneAnimationPoseControls'
 import { SceneAnimationRuler } from './SceneAnimationRuler'
 import type { useSceneWorkshop } from './useSceneWorkshop'
 import { useTimelineHeight } from './useTimelineHeight'
@@ -79,6 +81,12 @@ export function SceneAnimationTimeline({
     player.seek(time)
   }
   const editable = can('animate.create') && !snapshot.playing && !snapshot.source?.preview
+  const setDuration = (duration: number) => {
+    if (!clip || !Number.isFinite(duration) || duration <= 0 || duration > 600) return
+    workshop.requestTransition(() =>
+      workshop.run((source) => retimeSceneAnimation(source, clip.id, duration)),
+    )
+  }
   const toggle = (id: string) =>
     setExpanded((before) => {
       const next = new Set(before)
@@ -171,6 +179,16 @@ export function SceneAnimationTimeline({
             >
               <SkipForward aria-hidden="true" />
             </button>
+            {can('animate.create') && (
+              <SceneAnimationPoseRecordButton
+                gesture={workshop.animationPose}
+                enabled={editable}
+                canMark={
+                  selected.length === 1 && ['move', 'rotate', 'scale'].includes(workshop.tool)
+                }
+                onRecord={workshop.recordAnimationPose}
+              />
+            )}
             <label className="flex shrink-0 items-center gap-1 px-1 text-xs tabular-nums">
               <span className="sr-only">{copy.animationTime}</span>
               <span className="mld-time-readout">
@@ -203,6 +221,88 @@ export function SceneAnimationTimeline({
                 de {clip.duration.toLocaleString('pt-BR')} s
               </span>
             </label>
+            {can('animate.create') && (
+              <>
+                <label
+                  htmlFor="mld-animation-duration"
+                  className="flex shrink-0 items-center gap-2 px-1 text-xs font-bold"
+                >
+                  <span>Duração</span>
+                  {can('animate.batch') ? (
+                    <input
+                      id="mld-animation-duration"
+                      key={`${clip.id}:${clip.duration}`}
+                      name="animationDuration"
+                      aria-label="Duração do movimento"
+                      type="number"
+                      min={Number.MIN_VALUE}
+                      max={600}
+                      step="any"
+                      defaultValue={clip.duration}
+                      disabled={!editable}
+                      className="min-h-10 w-16 rounded-lg border border-mld-border bg-mld-bg px-2 text-mld-text"
+                      onBlur={(event) => {
+                        const value = Number(event.target.value)
+                        if (event.target.value && value > 0 && value <= 600) setDuration(value)
+                        else event.target.value = String(clip.duration)
+                      }}
+                      onKeyDown={(event) => {
+                        if (event.key === 'Enter') event.currentTarget.blur()
+                        if (event.key === 'Escape') {
+                          event.currentTarget.value = String(clip.duration)
+                          event.currentTarget.blur()
+                        }
+                      }}
+                    />
+                  ) : (
+                    <select
+                      id="mld-animation-duration"
+                      name="animationDuration"
+                      aria-label="Duração do movimento"
+                      value={clip.duration}
+                      disabled={!editable}
+                      className="min-h-10 rounded-lg border border-mld-border bg-mld-bg px-2 text-mld-text"
+                      onChange={(event) => setDuration(Number(event.target.value))}
+                    >
+                      {[...new Set([1, 1.5, 2, 3, 5, clip.duration])]
+                        .sort((a, b) => a - b)
+                        .map((duration) => (
+                          <option key={duration} value={duration}>
+                            {duration.toLocaleString('pt-BR')} s
+                          </option>
+                        ))}
+                    </select>
+                  )}
+                </label>
+                <label className="mld-auto-key shrink-0" data-enabled={clip.loop}>
+                  <span>Repetir</span>
+                  <input
+                    name="animationLoop"
+                    aria-label={copy.animationLoop}
+                    type="checkbox"
+                    className="sr-only"
+                    checked={clip.loop}
+                    disabled={!editable}
+                    onChange={(event) => {
+                      const loop = event.target.checked
+                      workshop.requestTransition(() =>
+                        workshop.run((source) => {
+                          const current = source.animations?.find((entry) => entry.id === clip.id)
+                          return current
+                            ? configureSceneAnimation(source, clip.id, {
+                                duration: current.duration,
+                                fps: current.fps,
+                                loop,
+                              })
+                            : source
+                        }),
+                      )
+                    }}
+                  />
+                  <span aria-hidden="true" className="mld-auto-switch" />
+                </label>
+              </>
+            )}
           </div>
           {curves ? (
             <SceneAnimationCurves key={`${clip.id}:${workshop.primary?.id}`} workshop={workshop} />

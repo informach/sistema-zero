@@ -3084,10 +3084,12 @@ describe('scene workshop integration', () => {
         (screen.getByRole('combobox', { name: COPY.scene.materialMapImage }) as HTMLSelectElement)
           .options.length,
       ).toBe(1)
-      const create = screen.getByText(COPY.scene.imageCreate).closest('details')!
+      fireEvent.click(screen.getByRole('button', { name: COPY.scene.imageCreateMap }))
+      const create = screen.getByRole('dialog', { name: COPY.scene.imageCreateMap })
+      const settings = within(create).getByText('Tamanho e cores da textura').closest('details')!
       act(() => {
-        create.open = true
-        fireEvent(create, new Event('toggle'))
+        settings.open = true
+        fireEvent(settings, new Event('toggle'))
       })
       const width = screen.getByRole('spinbutton', { name: COPY.scene.imageDimensions.width })
       fireEvent.change(width, { target: { value: '2' } })
@@ -3375,8 +3377,12 @@ describe('scene workshop integration', () => {
       key('Enter')
       expect(editor.getState().asset).toBe(converted)
       fireEvent.click(screen.getByRole('button', { name: COPY.scene.paintShapeTools.gradient }))
+      expect(screen.getByText(COPY.scene.paintGradientHint)).toBeTruthy()
       const color = view.container.querySelector<HTMLInputElement>('input[name="paintColorRgba"]')!
       fireEvent.change(color, { target: { value: '#ff0000' } })
+      fireEvent.change(screen.getByRole('slider', { name: COPY.scene.paintGradientStartAlpha }), {
+        target: { value: '50' },
+      })
       fireEvent.change(screen.getByLabelText(COPY.scene.paintGradientEndColor), {
         target: { value: '#0000ff' },
       })
@@ -3396,7 +3402,7 @@ describe('scene workshop integration', () => {
           layerId: image.layers[0]!.id,
           from: [2, 1],
           to: [0, 1],
-          color: [255, 0, 0, 255],
+          color: [255, 0, 0, 128],
           endColor: [0, 0, 255, 0],
           region: { x0: 0, y0: 0, x1: 2, y1: 1 },
         }),
@@ -3406,11 +3412,30 @@ describe('scene workshop integration', () => {
         expect(ports.at(-1)!.callbacks.paint!.begin({ point: [1, 1], region: 'face' })).toBe(false),
       )
       expect(editor.getState().asset).toBe(result)
-      // Half-opaque red over the blue base (#003fad), as displayed on the piece.
-      expect(color.value).toBe('#801f56')
+      // The picker reads the blended result over the blue base (#003fad).
+      expect(
+        view.container.querySelector<HTMLInputElement>('input[name="paintColorRgba"]')!.value,
+      ).toBe('#402f82')
       expect(
         (screen.getByRole('slider', { name: COPY.scene.paintAlpha }) as HTMLInputElement).value,
-      ).toBe('255')
+      ).toBe('100')
+      fireEvent.click(screen.getByRole('button', { name: COPY.scene.paintShapeTools.gradient }))
+      fireEvent.click(screen.getByRole('button', { name: COPY.scene.paintTransparentBase }))
+      const transparent = editor.getState().asset
+      expect(transparent.materials.find((entry) => entry.id === material.id)?.baseColor).toEqual({
+        kind: 'rgba',
+        value: [0, 0, 0, 0],
+      })
+      expect(
+        screen
+          .getByRole('button', { name: COPY.scene.paintTransparentBase })
+          .getAttribute('aria-pressed'),
+      ).toBe('true')
+      fireEvent.click(screen.getByRole('button', { name: COPY.editor.undo }))
+      expect(
+        editor.getState().asset.materials.find((entry) => entry.id === material.id)?.baseColor,
+      ).toEqual(result.materials.find((entry) => entry.id === material.id)?.baseColor)
+      expect(editor.getState().asset.images).toEqual(result.images)
       fireEvent.click(screen.getByRole('button', { name: COPY.editor.undo }))
       expect(editor.getState().asset.images).toEqual(converted.images)
       fireEvent.click(screen.getByRole('button', { name: COPY.editor.undo }))
@@ -3492,7 +3517,9 @@ describe('scene workshop integration', () => {
       key('ArrowDown')
       key('Enter')
       expect(editor.getState().canUndo).toBe(false)
-      expect(screen.queryByText(COPY.scene.paintSelectedArea) !== null).toBe(true)
+      expect(screen.queryByRole('button', { name: COPY.scene.paintClearSelection }) !== null).toBe(
+        true,
+      )
       fireEvent.click(screen.getByRole('button', { name: COPY.scene.paintPencil }))
       fireEvent.click(screen.getByRole('button', { name: SCENE_PAINT_COPY.width[1] }))
       key('ArrowLeft')
@@ -3503,7 +3530,9 @@ describe('scene workshop integration', () => {
       expect(editor.getState().asset.images[0]!.layers[0]!.pixels[2 * image.width + 2]).toBe(7)
       fireEvent.click(screen.getByRole('button', { name: COPY.editor.undo }))
       expect(editor.getState().asset.images).toEqual(source.images)
-      expect(screen.queryByText(COPY.scene.paintSelectedArea) !== null).toBe(true)
+      expect(screen.queryByRole('button', { name: COPY.scene.paintClearSelection }) !== null).toBe(
+        true,
+      )
       fireEvent.click(screen.getByRole('button', { name: COPY.scene.paintClearSelection }))
       key('ArrowLeft')
       key('Enter')
@@ -3633,10 +3662,12 @@ describe('scene workshop integration', () => {
           true,
         ),
       )
-      const creation = screen.getByText(COPY.scene.imageCreate).closest('details')!
+      fireEvent.click(screen.getByRole('button', { name: COPY.scene.imageCreate }))
+      const creation = screen.getByRole('dialog', { name: COPY.scene.imageCreate })
+      const settings = within(creation).getByText('Tamanho e cores da textura').closest('details')!
       act(() => {
-        creation.open = true
-        fireEvent(creation, new Event('toggle'))
+        settings.open = true
+        fireEvent(settings, new Event('toggle'))
       })
       fireEvent.change(screen.getByRole('spinbutton', { name: COPY.scene.imageDimensions.width }), {
         target: { value: '7' },
@@ -3649,6 +3680,10 @@ describe('scene workshop integration', () => {
       const created = editor.getState().asset
       const image = created.images.at(-1)!
       expect([image.width, image.height, image.encoding]).toEqual([7, 3, 'indexed'])
+      fireEvent.click(await materialsWorkspaceButton())
+      await waitFor(() =>
+        expect(screen.queryByRole('img', { name: COPY.scene.imagePreview })).not.toBeNull(),
+      )
       expect(screen.queryByRole('img', { name: COPY.scene.imagePreview }) !== null).toBe(true)
       expect(image.layers[0]!.pixels).toEqual(new Uint8Array(21))
       fireEvent.click(screen.getByRole('button', { name: COPY.scene.imageLayerAdd }))

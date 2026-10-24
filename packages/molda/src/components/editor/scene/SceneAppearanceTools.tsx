@@ -7,7 +7,7 @@ const SceneAppearancePanel = lazy(() =>
 )
 
 /**
- * "Materiais e camadas", na aba Pintar. ⚠️ É uma tela OU a pintura, nunca as duas: abrir o
+ * "Textura e camadas", na aba Pintar. ⚠️ É uma tela OU a pintura, nunca as duas: abrir o
  * painel fecha a pintura (`onOpen`), e a pintura que abre (`closed`, por "Pintar nesta
  * camada") recolhe o painel. Juntas, repetiriam controles (a escolha de quadro, por exemplo).
  */

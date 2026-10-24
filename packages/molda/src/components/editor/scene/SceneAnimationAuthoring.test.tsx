@@ -76,6 +76,50 @@ test('New creates an empty two-second movement without selection, grouping, or i
   }
 })
 
+test('repeat in the timeline applies immediately with advanced animation tools enabled', async () => {
+  const f = setup()
+  try {
+    fireEvent.click(screen.getByRole('button', { name: COPY.scene.animationMode }))
+    const timeline = within(
+      await screen.findByRole('region', { name: COPY.scene.animationTimeline }),
+    )
+    const repeat = timeline.getByRole('checkbox', { name: COPY.scene.animationLoop })
+    expect((repeat as HTMLInputElement).checked).toBe(true)
+    fireEvent.click(repeat)
+    expect(f.editor.getState().content.animations![0]!.loop).toBe(false)
+    expect((repeat as HTMLInputElement).checked).toBe(false)
+    fireEvent.click(repeat)
+    expect(f.editor.getState().content.animations![0]!.loop).toBe(true)
+    act(() => f.editor.getState().undo())
+    expect(f.editor.getState().content.animations![0]!.loop).toBe(false)
+  } finally {
+    f.close()
+  }
+})
+
+test('duration in the timeline retimes every pose and can be undone', async () => {
+  const f = setup()
+  try {
+    fireEvent.click(screen.getByRole('button', { name: COPY.scene.animationMode }))
+    const timeline = within(
+      await screen.findByRole('region', { name: COPY.scene.animationTimeline }),
+    )
+    const duration = timeline.getByRole('spinbutton', { name: 'Duração do movimento' })
+    const before = f.editor.getState().content.animations![0]!
+    fireEvent.change(duration, { target: { value: '4' } })
+    fireEvent.blur(duration)
+    const after = f.editor.getState().content.animations![0]!
+    expect(after.duration).toBe(4)
+    expect(after.tracks[0]!.keys.map((key) => key.time)).toEqual(
+      before.tracks[0]!.keys.map((key) => key.time * 2),
+    )
+    act(() => f.editor.getState().undo())
+    expect(f.editor.getState().content.animations![0]).toEqual(before)
+  } finally {
+    f.close()
+  }
+})
+
 test('the loop repair action keeps the last pose and gives it time to return', async () => {
   const source = animatedScene()
   source.animations[0]!.tracks[0]!.keys = [
@@ -181,7 +225,7 @@ test('a two-pose spinning wheel can complete its loop from the pose card', async
   }
 })
 
-test('pose controls stay together in the right inspector before and after choosing a key', async () => {
+test('mark pose stays in the timeline header while automatic marking stays in the inspector', async () => {
   const f = setup()
   try {
     fireEvent.click(screen.getByRole('button', { name: COPY.scene.select('corpo') }))
@@ -189,7 +233,9 @@ test('pose controls stay together in the right inspector before and after choosi
     const inspector = within(await screen.findByRole('region', { name: 'Ajustes do contexto' }))
     const pose = within(inspector.getByRole('region', { name: COPY.scene.animationMode }))
     const timeline = within(screen.getByRole('region', { name: COPY.scene.animationTimeline }))
-    expect(pose.getByRole('button', { name: 'Marcar pose' })).toBeTruthy()
+    expect(timeline.getByRole('button', { name: 'Marcar pose' })).toBeTruthy()
+    expect(timeline.getByRole('checkbox', { name: COPY.scene.animationLoop })).toBeTruthy()
+    expect(pose.queryByRole('button', { name: 'Marcar pose' })).toBeNull()
     expect(pose.queryByRole('button', { name: 'Descartar ajustes' })).toBeNull()
     expect(pose.queryByRole('region', { name: 'Pose escolhida' })).toBeNull()
     expect(pose.getByText(/Marcação automática/).closest('details')?.open).toBe(false)
@@ -197,7 +243,6 @@ test('pose controls stay together in the right inspector before and after choosi
     expect(pose.getByRole('checkbox', { name: 'Marcar sozinho' })).toBeTruthy()
     expect(pose.getByLabelText(COPY.scene.animationAxes.translation[0]!)).toBeTruthy()
     expect(pose.getByText('Mais ferramentas de pose')).toBeTruthy()
-    expect(timeline.queryByRole('button', { name: 'Marcar pose' })).toBeNull()
     expect(timeline.queryByRole('checkbox', { name: 'Marcar sozinho' })).toBeNull()
     fireEvent.click(timeline.getByRole('button', { name: 'Canais de corpo' }))
     fireEvent.keyDown(
@@ -211,7 +256,7 @@ test('pose controls stay together in the right inspector before and after choosi
     expect(pose.getByRole('button', { name: 'Ritmo constante' })).toBeTruthy()
     expect(pose.getByRole('button', { name: 'De uma vez' })).toBeTruthy()
     expect(pose.getByText('Mudar tempo da pose').closest('details')?.open).toBe(false)
-    expect(pose.getByRole('button', { name: 'Marcar pose' })).toBeTruthy()
+    expect(timeline.getByRole('button', { name: 'Marcar pose' })).toBeTruthy()
   } finally {
     f.close()
   }

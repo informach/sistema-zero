@@ -200,7 +200,7 @@ export const COPY = {
         'Uma cópia que qualquer programa de 3D abre. Pintura que se mexe fica parada no primeiro quadro.',
       destinationStudio: 'Para o Estúdio',
       destinationStudioHint:
-        'Leva a folha inteira da pintura que se mexe, para ela continuar se mexendo no Jogo 3D Avançado.',
+        'Leva a folha inteira da pintura que se mexe, para ela continuar se mexendo nos jogos 3D do Estúdio.',
       prepare: 'Preparar GLB',
       validating: 'Conferindo a criação…',
       encoding: 'Preparando peças, pintura e movimentos…',
@@ -208,7 +208,7 @@ export const COPY = {
       noChanges: 'Nenhuma conversão com aviso foi necessária.',
       clipsTitle: 'Movimentos nesta cópia',
       clipsHint:
-        'Estes são os nomes para usar nos blocos de animação do Jogo 3D Avançado. No jogo, o bloco escolhe se o movimento repete ou toca uma vez.',
+        'Estes são os nomes que aparecem na lista dos blocos de animação do Jogo 3D, do Mundo 3D e do Jogo 3D Avançado. É só escolher o nome no bloco.',
       clipSummary: (duration: number, fps: number, loop: boolean) =>
         `${duration.toLocaleString('pt-BR', { maximumFractionDigits: 3 })} s · ${fps} quadros por segundo · no Molda: ${loop ? 'repetir' : 'uma vez'}`,
       changes: 'O que muda nesta cópia',
@@ -238,10 +238,10 @@ export const COPY = {
         tooComplex:
           'Esta cópia ultrapassa os limites de modelos do Estúdio. Você ainda pode baixar o GLB para outros programas.',
         animated:
-          'Para tocar os movimentos, use o Jogo 3D Avançado e seus blocos de animação. No Jogo 3D básico, o modelo fica parado.',
+          'Os três jogos 3D do Estúdio tocam os movimentos e a pintura que se mexe. No Jogo 3D, use "Tocar a animação". No Mundo 3D, use "Pôr o modelo" ou o modelo do personagem e do amigo. O "Espalhar" deixa o modelo parado. No Jogo 3D Avançado, dê uma animação para cada estado.',
         static: 'Esta cópia não contém movimentos.',
         skinned:
-          'Para usar peças com ossos, escolha o Jogo 3D Avançado, mesmo se a cópia não tiver movimentos.',
+          'Peças com ossos funcionam nos três jogos 3D do Estúdio: Jogo 3D, Mundo 3D e Jogo 3D Avançado.',
         scope:
           'Isso confere os limites de uma cópia, não a velocidade do jogo inteiro. Outras cópias, modelos e efeitos também têm custo.',
         manual:
@@ -610,7 +610,7 @@ export const COPY = {
     uvPackHint:
       'Organiza ilhas inteiras dentro do quadrado, mantendo suas proporções. Use uma margem menor se faltar espaço. Ilhas não escolhidas ficam no lugar e podem se sobrepor às novas posições.',
     uvPack: 'Organizar ilhas escolhidas',
-    appearanceTitle: 'Materiais e camadas',
+    appearanceTitle: 'Textura e camadas',
     atlasTitle: 'Juntar pinturas desta peça',
     atlasHint:
       'Organiza duas ou mais imagens em uma pintura compartilhada, sem reduzir pixels. Só esta peça muda; as imagens originais ficam guardadas.',
@@ -680,17 +680,18 @@ export const COPY = {
     materialBaseHint:
       'A cor de base aparece onde a pintura deixa transparência. Escolher uma cor da paleta cria um vínculo: mudanças nessa cor acompanham o material.',
     materialApplyColor: 'Aplicar cor de base',
-    materialImage: 'Imagem de pintura',
+    materialImage: 'Textura da peça',
     materialNoImage: 'Só a cor de base',
-    imageCreate: 'Criar imagem em branco',
+    imageCreate: 'Criar nova textura',
+    imageCreateMap: 'Criar mapa',
     imageCreateHint:
-      'Liga uma imagem nova a este material. A imagem anterior continua guardada na lista; você pode escolhê-la de novo ou usar Desfazer.',
-    imageName: 'Nome da imagem',
+      'Cria uma textura dentro deste modelo e abre a pintura nela. A anterior continua guardada; você pode escolhê-la de novo ou usar Desfazer.',
+    imageName: 'Nome da textura',
     imageDefaultName: 'Minha pintura',
     imageDimensions: { width: 'Largura em pixels', height: 'Altura em pixels' },
     imageEncoding: 'Como guardar as cores?',
     imageEncodings: { indexed: 'Cores ligadas à paleta', rgba: 'Cores livres com transparência' },
-    imageCreateApply: 'Criar e ligar imagem',
+    imageCreateApply: 'Criar e pintar',
     imageLayers: 'Camadas da pintura',
     imagePreview: 'Prévia das camadas com a cor de base do material',
     flipbookTitle: 'Pintura que se mexe',
@@ -776,8 +777,8 @@ export const COPY = {
     imageImportBusy: 'Lendo a imagem…',
     imageImportPreview: 'Prévia da imagem escolhida',
     imageImportConfirmHint:
-      'Aplicar cria uma nova imagem e a vincula a este material, incluindo as peças que o compartilham. A imagem anterior fica na biblioteca. Os UVs não mudam. Você pode desfazer.',
-    imageImportConfirm: 'Aplicar esta imagem ao material',
+      'A imagem passa a ser a textura desta pintura, inclusive nas peças que a compartilham. A anterior fica guardada, o mapa não muda e você pode desfazer.',
+    imageImportConfirm: 'Usar imagem e pintar',
     imageImportCancel: 'Descartar importação',
     imageImportStale: 'A criação mudou. Escolha a imagem novamente para conferir onde aplicá-la.',
     imageImportErrors: {
@@ -805,7 +806,7 @@ export const COPY = {
     paintBrush: 'Largura do traço',
     paintBrushSize: (size: number) => `${size} ${size === 1 ? 'pixel' : 'pixels'}`,
     paintColor: 'Cor do traço',
-    paintAlpha: 'Quanto a cor aparece (0 a 255)',
+    paintAlpha: 'Opacidade',
     paintFill: 'Balde',
     paintFillHint:
       'Toque para preencher a área conectada da mesma cor nesta camada. O balde pode alcançar outras faces que usam essa área da imagem.',
@@ -825,10 +826,22 @@ export const COPY = {
     paintShapeFilled: 'Preencher a forma',
     paintGradientNeedsRgba:
       'Gradientes e carimbos precisam de cores livres. Converta a imagem para RGBA; você pode desfazer a conversão.',
+    paintGradientConvertHint: 'Para usar gradiente ou carimbo, libere as cores desta textura.',
     paintGradientHint:
-      'Arraste do começo até o fim da mistura. O gradiente preenche a área selecionada, ou a imagem toda quando não há seleção.',
-    paintGradientEndColor: 'Cor no fim do gradiente',
-    paintGradientEndAlpha: 'Quanto a cor final aparece (0 a 255)',
+      'Arraste do começo até o fim da mistura. O gradiente preenche a área selecionada, ou a imagem toda quando não há seleção. Se a peça tiver cor de base, ela aparece nas partes transparentes.',
+    paintGradientColors: 'Cores do gradiente',
+    paintGradientHelp: 'Como usar o gradiente',
+    paintGradientOpacityHint:
+      'Escolha a cor e a opacidade de cada ponta. Em 0% a ponta fica transparente; em 100% a cor aparece por inteiro. O quadriculado na prévia mostra a transparência.',
+    paintGradientPreview: 'Prévia das cores e da transparência do gradiente',
+    paintGradientStartColor: 'Cor inicial',
+    paintGradientStartAlpha: 'Opacidade inicial',
+    paintGradientEndColor: 'Cor final',
+    paintGradientEndAlpha: 'Opacidade final',
+    paintTransparentBase: 'Deixar base da peça transparente',
+    paintTransparentBaseHelp: 'Como revelar o fundo da cena',
+    paintTransparentBaseHint:
+      'Remove a cor de base desta peça para o gradiente revelar a cena. Uma peça sem tinta fica invisível até você pintar. A tinta que já está nas camadas continua. Desfazer restaura a base anterior. Em peças fechadas, outras faces pintadas ainda podem aparecer através da frente.',
     paintStampMissing: 'Escolha uma imagem ou copie a área selecionada antes de carimbar.',
     paintStampHint:
       'Posicione pelo contorno e solte para carimbar uma vez. No teclado, espaço começa, setas movem e espaço confirma. O carimbo mistura sua transparência com a camada e respeita a área selecionada. Fora da imagem não pinta.',
@@ -1272,10 +1285,12 @@ export const COPY = {
         '',
         'Cada pasta tem um tipo de criação, pronta para o Estúdio ou para qualquer editor 3D:',
         '  modelos/   arquivos .glb  → no Jogo 3D, o bloco "Criar o objeto ... com o modelo"',
+        '                              → no Mundo 3D, o bloco "Pôr o modelo" (o personagem e o amigo também)',
+        '                              → no Jogo 3D Avançado, a peça "modelo importado" do molde',
         '  texturas/  arquivos .png  → o bloco "Vestir ... com a imagem"',
         '  ceus/      arquivos .hdr  → o bloco "Usar o céu 360°"',
         '',
-        'No Estúdio, o jeito mais fácil continua sendo o botão "Trazer do Molda" do painel de imagens.',
+        'No Estúdio, o jeito mais fácil continua sendo o botão "Trazer do Molda" na aba Modelos 3D (menu ⋯ → Materiais → Modelos 3D).',
         'Para abrir seus projetos no Molda, use o botão "Importar projeto" e escolha este .zip.',
         'Conserve galeria.molda.json e a pasta projetos/: juntos, eles guardam toda a galeria.',
         'Importar projeto cria novas cópias, sem substituir seus projetos guardados.',
@@ -1310,7 +1325,7 @@ export const COPY = {
     resultCount: (count: number, total: number) =>
       count === total ? (count === 1 ? '1 criação' : `${count} criações`) : `${count} de ${total}`,
     openStudio: 'Abrir o Estúdio',
-    studioHint: 'No Estúdio, procure "Trazer do Molda" no painel de imagens.',
+    studioHint: 'No Estúdio, abra o menu ⋯ → Materiais → Modelos 3D e use "Trazer do Molda".',
     cardMenu: (name: string) => `Mais opções de ${name}`,
     updated: 'Mexido',
   },
@@ -1325,7 +1340,7 @@ export const COPY = {
     texture: {
       title: 'Textura',
       plural: 'Texturas',
-      description: 'Uma folha de pixels para vestir cubos e bolas.',
+      description: 'Uma folha de pixels para usar nos seus modelos 3D.',
       emoji: '🧱',
       file: '.png',
     },
@@ -1809,18 +1824,18 @@ export const COPY = {
         removeColorBase:
           'As 16 cores da paleta são fixas. Só as cores que você adicionou podem ser apagadas.',
         removedColor: 'Cor apagada.',
-        /** "Vestir a peça com uma textura" da galeria. */
+        /** Textura pronta da galeria, copiada para a pintura do modelo. */
         apply: {
-          button: 'Vestir com textura',
-          title: 'Vestir a peça com uma textura',
+          button: 'Usar textura pronta',
+          title: 'Usar textura no modelo',
           pick: 'Suas texturas',
           empty: 'Você ainda não tem texturas. Crie uma na galeria e volte aqui.',
-          modeLabel: 'Como vestir',
+          modeLabel: 'Como aplicar na peça',
           modeTile: 'Repetir',
           modeStretch: 'Esticar',
-          apply: 'Vestir',
+          apply: 'Aplicar textura',
           loadFailed: 'Não consegui abrir essa textura. Tente de novo ou escolha outra.',
-          applied: 'Peça vestida!',
+          applied: 'Textura aplicada!',
           selectPart: 'Toque numa peça primeiro.',
         },
       },
