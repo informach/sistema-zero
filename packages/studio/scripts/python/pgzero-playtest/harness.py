@@ -37,7 +37,8 @@ draw = game.get_draw_func()
 game.load_handlers()
 clock = pgzero.clock.clock
 KEYS = {name: getattr(pygame, 'K_' + name) for name in
-        ['LEFT', 'RIGHT', 'UP', 'DOWN', 'SPACE', 'RETURN', 'a', 'd', 'w', 's']}
+        ['LEFT', 'RIGHT', 'UP', 'DOWN', 'SPACE', 'RETURN', 'BACKSPACE', 'a', 'd', 'w', 's',
+         'i', 'j', 'k', 'l', 't', 'f', 'g', 'h', 'q', 'n', '1', '2', '3']}
 
 
 class Tester:
@@ -56,7 +57,12 @@ class Tester:
     def down(self, key):
         code = KEYS[key]
         game.keyboard._press(code)
-        game.dispatch_event(pygame.event.Event(pygame.KEYDOWN, key=code, mod=0, unicode=' ' if key == 'SPACE' else ''))
+        game.dispatch_event(pygame.event.Event(pygame.KEYDOWN, key=code, mod=0, unicode=' ' if key == 'SPACE' else key if len(key) == 1 else ''))
+
+    def type(self, text):
+        """Types each character of text (letters and digits only) as a key press."""
+        for letra in text:
+            self.tap(letra)
 
     def up(self, key):
         code = KEYS[key]
