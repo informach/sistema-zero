@@ -21,11 +21,15 @@ let record: RecoveryPolicyView
 let failRead = false
 const reviewCalls: string[] = []
 let review: (path: string) => Promise<Response>
+const confirmationCalls: unknown[] = []
+let confirmation: () => Promise<Response>
 let write: () => Promise<Response>
 beforeEach(() => {
   calls.length = 0
   failRead = false
   reviewCalls.length = 0
+  confirmationCalls.length = 0
+  confirmation = async () => Response.json({ confirmed: true })
   review = async () => Response.json({ items: [], total: 0, limit: 25, offset: 0 })
   record = {
     configurationReady: true,
@@ -46,6 +50,10 @@ beforeEach(() => {
       if (String(input).startsWith('/api/payments/recovery/review?')) {
         reviewCalls.push(String(input))
         return review(String(input))
+      }
+      if (String(input).endsWith('/confirm-period')) {
+        confirmationCalls.push(typeof init?.body === 'string' ? JSON.parse(init.body) : null)
+        return confirmation()
       }
       if (String(input) !== '/api/payments/recovery/policy')
         throw new Error('Unexpected QA request')
@@ -209,4 +217,30 @@ test('audience change discards late response from previous queue filter', async 
   )
   expect(element.textContent).not.toContain('Resposta antiga QA')
   expect(element.textContent).toContain('Adulto QA')
+})
+
+test('staff cannot confirm a period and administrator sends only version and request id once', async () => {
+  review = async () =>
+    Response.json(reviewPage({ ...reviewItem, kind: 'PERIOD', state: 'REVIEW_REQUIRED' }))
+  const staff = await mount('staff')
+  expect(button(staff, 'Conferir período na operadora').disabled).toBe(true)
+  expect(confirmationCalls).toHaveLength(0)
+  await close.pop()?.()
+  const pending = Promise.withResolvers<Response>()
+  confirmation = () => pending.promise
+  const admin = await mount()
+  await act(async () => {
+    button(admin, 'Conferir período na operadora').click()
+    button(admin, 'Conferir período na operadora').click()
+  })
+  expect(confirmationCalls).toHaveLength(1)
+  const body = confirmationCalls[0] as Record<string, unknown>
+  expect(body.expectedVersion).toBe(1)
+  expect(typeof body.requestId).toBe('string')
+  expect(Object.keys(body).sort()).toEqual(['expectedVersion', 'requestId'])
+  review = async () => Response.json({ items: [], total: 0, limit: 25, offset: 0 })
+  await act(async () => pending.resolve(Response.json({ confirmed: true })))
+  expect(admin.textContent).toContain('Período conferido e registrado')
+  expect(admin.textContent).toContain('Nenhuma conferência neste filtro')
+  expect(confirmationCalls).toHaveLength(1)
 })

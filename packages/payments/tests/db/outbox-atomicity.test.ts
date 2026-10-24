@@ -222,21 +222,28 @@ describe.skipIf(!testDatabaseUrl)('Atomicidade no Postgres real (outbox/version/
       failureReason: null,
       cycleAccess: { version: 1, kind: 'REVIEW_REQUIRED', reason: 'PERIOD_UNAVAILABLE' },
     })
+    const authority = {
+      actorId: 'qa-admin',
+      requestId: crypto.randomUUID(),
+      providerSubscriptionId: 'qa-provider',
+      sourceObservedAt: new Date('2026-10-24T13:00:00Z'),
+    }
     const period = { startsAt: '2026-09-16T12:00:00.000Z', endsAt: '2026-10-16T12:00:00.000Z' }
-    paid.confirmSubscriptionPeriod(period, new Date('2026-10-24T13:00:00Z'))
+    paid.confirmSubscriptionPeriod(period, new Date('2026-10-24T13:00:00Z'), authority)
     addPoisonEvent(paid)
     expect(await rejectionOf(repo.save(paid))).toBeInstanceOf(Error)
     expect(paid.events).toHaveLength(2)
     expect(paid.events[0]?.eventName).toBe('payment.subscription_period_confirmed')
     expect(paid.events[1]?.eventName as unknown).toBeNull()
     expect((await repo.findById(payment.id))?.cycleAccess?.kind).toBe('REVIEW_REQUIRED')
+    expect((await repo.findById(payment.id))?.toSnapshot().periodConfirmation).toBeNull()
     const uncommitted = await conn.sql`
       select 1 from payments.outbox where aggregate_id = ${payment.id}
       and event_name = 'payment.subscription_period_confirmed'`
     expect(uncommitted).toHaveLength(0)
     const retry = await repo.findById(payment.id)
     if (!retry) throw new Error('Pagamento QA ausente')
-    retry.confirmSubscriptionPeriod(period, new Date('2026-10-24T13:00:00Z'))
+    retry.confirmSubscriptionPeriod(period, new Date('2026-10-24T13:00:00Z'), authority)
     await repo.save(retry)
     expect(retry.events).toHaveLength(0)
     expect((await repo.findById(payment.id))?.cycleAccess).toEqual({
@@ -244,6 +251,9 @@ describe.skipIf(!testDatabaseUrl)('Atomicidade no Postgres real (outbox/version/
       kind: 'VERIFIED_PERIOD',
       period,
     })
+    expect((await repo.findById(payment.id))?.toSnapshot().periodConfirmation?.actorId).toBe(
+      'qa-admin',
+    )
     const events = await conn.sql`
       select event_name from payments.outbox where aggregate_id = ${payment.id}
       and event_name in ('payment.paid', 'payment.failed', 'payment.subscription_period_confirmed')`

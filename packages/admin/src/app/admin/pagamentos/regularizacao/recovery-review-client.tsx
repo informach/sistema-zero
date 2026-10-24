@@ -5,7 +5,7 @@ import { Card } from '@sistemazero/ui/card'
 import { Input } from '@sistemazero/ui/input'
 import { type FormEvent, useCallback, useEffect, useId, useRef, useState } from 'react'
 import { EmptyState } from '@/components/admin/empty-state'
-import { apiGet } from '@/lib/api'
+import { apiGet, apiSend } from '@/lib/api'
 import { formatCentsStr } from '@/lib/format'
 import type { RecoveryReviewItem, RecoveryReviewPage } from '@/lib/subscription-recovery'
 
@@ -43,8 +43,8 @@ const date = (value: string) =>
   new Date(value).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' })
 const selectClass = 'min-h-10 rounded-md border border-input bg-background px-3 text-sm'
 
-/** Read-only operational queue. Loading failure never masquerades as a cleared queue. */
-export function RecoveryReviewClient() {
+/** Bounded queue; source confirmation has separate authorization and durable audit. */
+export function RecoveryReviewClient({ canWrite }: { canWrite: boolean }) {
   const formId = useId()
   const [kind, setKind] = useState('')
   const [audience, setAudience] = useState('')
@@ -52,6 +52,10 @@ export function RecoveryReviewClient() {
   const [q, setQ] = useState('')
   const [offset, setOffset] = useState(0)
   const requestRef = useRef<AbortController | null>(null)
+  const actionRef = useRef<AbortController | null>(null)
+  const loadRef = useRef<() => void>(() => {})
+  const [pendingAction, setPendingAction] = useState<string | null>(null)
+  const [notice, setNotice] = useState('')
   const [page, setPage] = useState<RecoveryReviewPage | null>(null)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(true)
@@ -81,9 +85,41 @@ export function RecoveryReviewClient() {
       })
   }, [kind, audience, q, offset])
   useEffect(() => {
+    loadRef.current = load
     load()
     return () => requestRef.current?.abort()
   }, [load])
+  useEffect(() => () => actionRef.current?.abort(), [])
+  async function confirmPeriod(item: RecoveryReviewItem) {
+    if (!canWrite || actionRef.current || item.kind !== 'PERIOD' || !item.paymentId) return
+    const controller = new AbortController()
+    actionRef.current = controller
+    setPendingAction(item.id)
+    setNotice('')
+    try {
+      await apiSend(
+        `/api/payments/recovery/payments/${encodeURIComponent(item.paymentId)}/confirm-period`,
+        'POST',
+        { expectedVersion: item.version, requestId: crypto.randomUUID() },
+        { signal: controller.signal },
+      )
+      if (!controller.signal.aborted)
+        setNotice(
+          'Período conferido e registrado. A área de membros receberá o período original; a validade não recomeça hoje.',
+        )
+    } catch {
+      if (!controller.signal.aborted)
+        setNotice(
+          'Não foi possível confirmar a resposta. A lista será consultada novamente; nenhum pagamento foi solicitado por esta ação.',
+        )
+    } finally {
+      if (actionRef.current === controller) actionRef.current = null
+      if (!controller.signal.aborted) {
+        setPendingAction(null)
+        loadRef.current()
+      }
+    }
+  }
   function filter(event: FormEvent) {
     event.preventDefault()
     setOffset(0)
@@ -165,6 +201,11 @@ export function RecoveryReviewClient() {
           {error}
         </p>
       ) : null}
+      {notice ? (
+        <p role="status" className="text-sm">
+          {notice}
+        </p>
+      ) : null}
       {page?.items.length === 0 ? (
         <EmptyState
           title="Nenhuma conferência neste filtro"
@@ -199,6 +240,23 @@ export function RecoveryReviewClient() {
                 <p className="text-sm">
                   {reasons[item.reason] ?? 'A equipe precisa conferir os dados deste caso.'}
                 </p>
+              ) : null}
+              {item.kind === 'PERIOD' ? (
+                <div className="space-y-1">
+                  <Button
+                    variant="outline"
+                    disabled={!canWrite || pendingAction !== null}
+                    onClick={() => void confirmPeriod(item)}
+                  >
+                    {pendingAction === item.id
+                      ? 'Conferindo período…'
+                      : 'Conferir período na operadora'}
+                  </Button>
+                  <p className="text-xs text-muted-foreground">
+                    Consulta a fonte e registra a confirmação com auditoria. Não permite escolher
+                    datas ou cobrar novamente.
+                  </p>
+                </div>
               ) : null}
               <p className="text-xs text-muted-foreground">
                 Registrado em {date(item.openedAt)}

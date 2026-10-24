@@ -20,6 +20,7 @@ import type {
   PixQrCode,
 } from '../../../domain/payment/payment.aggregate'
 import type { PaymentStatus } from '../../../domain/payment/payment.status'
+import type { PeriodConfirmationAudit } from '../../../domain/payment/period-confirmation'
 import type { CancellationOrigin } from '../../../domain/subscription/cancellation-record'
 import type { RecoveryAdmissionReason } from '../../../domain/subscription-recovery/recovery-admission.port'
 import type { RecoveryReason } from '../../../domain/subscription-recovery/recovery-case'
@@ -162,6 +163,7 @@ export const payments = paymentsSchema.table(
     metadata: jsonb('metadata').$type<Record<string, unknown>>().notNull().default({}),
     failureReason: text('failure_reason'),
     cycleAccess: jsonb('cycle_access').$type<SubscriptionCycleAccess>(),
+    periodConfirmation: jsonb('period_confirmation').$type<PeriodConfirmationAudit>(),
     priorFailureReason: text('prior_failure_reason'),
     priorFailedAt: timestamp('prior_failed_at', { withTimezone: true }),
     // Assinatura-pai quando o pagamento é um ciclo recorrente (senão null).

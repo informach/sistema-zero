@@ -11,6 +11,7 @@ import type { GetDailyPaymentsStatsService } from '../../../application/payments
 import type { GetPaymentsStatsService } from '../../../application/payments-stats/get-payments-stats.service'
 import type { GetSubscriptionStatsService } from '../../../application/payments-stats/get-subscription-stats.service'
 import type { RefundPaymentService } from '../../../application/refund-payment/refund-payment.service'
+import type { ConfirmSubscriptionPeriodService } from '../../../application/subscription-recovery/confirm-subscription-period.service'
 import type { ListRecoveryReviewService } from '../../../application/subscription-recovery/list-recovery-review.service'
 import type { RecoveryPolicyService } from '../../../application/subscription-recovery/recovery-policy.service'
 import { requireAdmin, requireAdminWrite } from '../admin-auth'
@@ -46,6 +47,7 @@ export interface AdminRoutesDeps {
   cancelSubscription: CancelSubscriptionService
   recoveryPolicy: RecoveryPolicyService
   recoveryReview: ListRecoveryReviewService
+  confirmSubscriptionPeriod: ConfirmSubscriptionPeriodService
 }
 
 /**
@@ -73,6 +75,21 @@ export function adminRoutes(deps: AdminRoutesDeps) {
             limit: z.coerce.number().int().min(1).max(100).default(25),
             offset: z.coerce.number().int().min(0).max(100000).default(0),
           }),
+        },
+      )
+      .post(
+        '/subscription-recovery/payments/:id/confirm-period',
+        ({ headers, params, body }) => {
+          requireAdminWrite(headers, deps.requireAdminEnabled, deps.internalToken)
+          if (headers['x-auth-impersonator-id'] || headers['x-auth-account-id'])
+            throw new ForbiddenError('Use a própria conta administrativa para confirmar o período.')
+          const actorId = headers['x-auth-user-id']?.trim()
+          if (!actorId) throw new UnauthorizedError('Autenticação necessária')
+          return deps.confirmSubscriptionPeriod.execute({ paymentId: params.id, actorId, ...body })
+        },
+        {
+          params: AdminIdParam,
+          body: z.strictObject({ expectedVersion: z.number().int().min(0), requestId: z.uuid() }),
         },
       )
       .get('/subscription-recovery/policy', ({ headers }) => {

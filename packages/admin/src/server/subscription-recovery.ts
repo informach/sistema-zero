@@ -18,3 +18,13 @@ export function getRecoveryReview(
     signal,
   })
 }
+export function confirmRecoveryPeriod(
+  id: string,
+  body: { expectedVersion: number; requestId: string },
+  signal?: AbortSignal,
+) {
+  return gatewayFetch<{ paymentId: string; version: number; confirmed: true }>(
+    `/payments/admin/subscription-recovery/payments/${encodeURIComponent(id)}/confirm-period`,
+    { method: 'POST', body, signal },
+  )
+}

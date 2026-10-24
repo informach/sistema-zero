@@ -22,6 +22,11 @@ import {
   PaymentSubscriptionPeriodConfirmedEvent,
 } from './payment.events'
 import { canTransition, PaymentStatus } from './payment.status'
+import {
+  confirmPeriodAuthority,
+  type PeriodConfirmationAudit,
+  type PeriodConfirmationAuthority,
+} from './period-confirmation'
 
 /** Dados do QR Code Pix retornados pelo provedor. */
 export interface PixQrCode {
@@ -65,6 +70,7 @@ export interface PaymentSnapshot {
   priorFailureReason: string | null
   priorFailedAt: Date | null
   cycleAccess: SubscriptionCycleAccess | null
+  periodConfirmation: PeriodConfirmationAudit | null
   id: string
   /** Versão para controle de concorrência otimista (bumped a cada gravação). */
   version: number
@@ -97,6 +103,7 @@ interface PaymentState {
   priorFailureReason: string | null
   priorFailedAt: Date | null
   cycleAccess: SubscriptionCycleAccess | null
+  periodConfirmation: PeriodConfirmationAudit | null
   version: number
   consumerId: string
   amount: Money
@@ -165,6 +172,7 @@ export class PaymentAggregate extends AggregateRoot<string> {
       {
         version: 0,
         cycleAccess: null,
+        periodConfirmation: null,
         priorFailureReason: null,
         priorFailedAt: null,
         consumerId: input.consumerId,
@@ -240,6 +248,7 @@ export class PaymentAggregate extends AggregateRoot<string> {
       {
         version: snapshot.version,
         cycleAccess: decodeCycleAccess(snapshot.cycleAccess),
+        periodConfirmation: structuredClone(snapshot.periodConfirmation ?? null),
         priorFailureReason: snapshot.priorFailureReason ?? null,
         priorFailedAt: snapshot.priorFailedAt ? new Date(snapshot.priorFailedAt) : null,
         consumerId: snapshot.consumerId,
@@ -375,7 +384,11 @@ export class PaymentAggregate extends AggregateRoot<string> {
   }
 
   /** Resolves access evidence without emitting a second financial receipt. */
-  confirmSubscriptionPeriod(period: BillingPeriod, now: Date): void {
+  confirmSubscriptionPeriod(
+    period: BillingPeriod,
+    now: Date,
+    authority: PeriodConfirmationAuthority,
+  ): void {
     if (
       this.state.status !== PaymentStatus.PAID ||
       !this.state.subscriptionId ||
@@ -396,6 +409,11 @@ export class PaymentAggregate extends AggregateRoot<string> {
     }
     if (this.state.cycleAccess?.kind !== 'REVIEW_REQUIRED')
       throw new ValidationError('Pagamento sem revisão de período pendente')
+    this.state.periodConfirmation = confirmPeriodAuthority(
+      authority,
+      now,
+      this.state.cycleAccess.reason,
+    )
     this.state.cycleAccess = access
     this.touch()
     this.addEvent(
@@ -584,6 +602,7 @@ export class PaymentAggregate extends AggregateRoot<string> {
     return {
       id: this.id,
       cycleAccess: structuredClone(this.state.cycleAccess),
+      periodConfirmation: structuredClone(this.state.periodConfirmation),
       priorFailureReason: this.state.priorFailureReason,
       priorFailedAt: this.state.priorFailedAt ? new Date(this.state.priorFailedAt) : null,
       version: this.state.version,

@@ -21,6 +21,7 @@ import { ProcessPaymentService } from './application/process-payment/process-pay
 import { RefundPaymentService } from './application/refund-payment/refund-payment.service'
 import { RetrySubscriptionChargeService } from './application/subscription-card/retry-subscription-charge.service'
 import { UpdateSubscriptionCardService } from './application/subscription-card/update-subscription-card.service'
+import { ConfirmSubscriptionPeriodService } from './application/subscription-recovery/confirm-subscription-period.service'
 import { ListRecoveryReviewService } from './application/subscription-recovery/list-recovery-review.service'
 import { RecoveryAdmissionService } from './application/subscription-recovery/recovery-admission.service'
 import { RecoveryCoordinatorService } from './application/subscription-recovery/recovery-coordinator.service'
@@ -431,6 +432,11 @@ export function createApplication(env: Env): Application {
     getSubscription,
     cancelSubscription,
     recoveryReview: new ListRecoveryReviewService(new DrizzleRecoveryReviewRepository(db)),
+    confirmSubscriptionPeriod: new ConfirmSubscriptionPeriodService(
+      payments,
+      subscriptions,
+      gateway,
+    ),
     updateSubscriptionCard,
     retrySubscriptionCharge,
     handleWebhook,

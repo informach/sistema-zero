@@ -11,6 +11,7 @@ function snapshot(over: Partial<PaymentSnapshot> = {}): PaymentSnapshot {
     id: crypto.randomUUID(),
     version: 1,
     cycleAccess: null,
+    periodConfirmation: null,
     priorFailureReason: null,
     priorFailedAt: null,
     consumerId: 'sys-a',

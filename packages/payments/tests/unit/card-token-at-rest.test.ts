@@ -14,6 +14,7 @@ describe('card.token nunca vai para o banco (PCI hardening)', () => {
     id: '11111111-1111-1111-1111-111111111111',
     version: 0,
     cycleAccess: null,
+    periodConfirmation: null,
     priorFailureReason: null,
     priorFailedAt: null,
     consumerId: 'sys-a',

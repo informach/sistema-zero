@@ -547,3 +547,10 @@ A fila administrativa `/payments/admin/subscription-recovery/review` reúne CASE
 ADMISSION, OPERATION e PERIOD, com paginação/busca limitadas e SQL parametrizado.
 Dinheiro PAID não oculta UNKNOWN ou período pendente; audiência não validada continua
 unknown. É leitura da equipe, sem enviar aviso, cobrar, cancelar ou conceder acesso.
+
+A confirmação administrativa de período exige consulta nova na Efí e versão do
+pagamento. O corpo HTTP não aceita datas/ator: somente expectedVersion/requestId;
+ator vem da sessão administrativa própria, nunca staff/impersonação/perfil infantil.
+A migration0019 guarda period_confirmation permanentemente no pagamento, na mesma
+transação do ciclo/outbox; retenção de outbox não apaga a autoria. Só emite evento de
+confirmação de período, sem segundo payment.paid. Não usar essa operação para débito.

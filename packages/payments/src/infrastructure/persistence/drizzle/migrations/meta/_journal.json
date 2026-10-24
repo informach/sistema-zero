@@ -134,6 +134,13 @@
       "when": 1792842404851,
       "tag": "0018_subscription_retry_terms",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1792844903192,
+      "tag": "0019_subscription_period_confirmation_audit",
+      "breakpoints": true
     }
   ]
 }

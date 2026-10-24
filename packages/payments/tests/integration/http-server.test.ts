@@ -21,6 +21,7 @@ import { ProcessPaymentService } from '../../src/application/process-payment/pro
 import { RefundPaymentService } from '../../src/application/refund-payment/refund-payment.service'
 import { RetrySubscriptionChargeService } from '../../src/application/subscription-card/retry-subscription-charge.service'
 import { UpdateSubscriptionCardService } from '../../src/application/subscription-card/update-subscription-card.service'
+import { ConfirmSubscriptionPeriodService } from '../../src/application/subscription-recovery/confirm-subscription-period.service'
 import { ListRecoveryReviewService } from '../../src/application/subscription-recovery/list-recovery-review.service'
 import { RecoveryPolicyService } from '../../src/application/subscription-recovery/recovery-policy.service'
 import type { PaymentAdminReadRepository } from '../../src/domain/ports/payment-admin-read.port'
@@ -179,6 +180,11 @@ function buildApp(opts: BuildOpts = {}) {
   }
 
   const app = createServer({
+    confirmSubscriptionPeriod: new ConfirmSubscriptionPeriodService(
+      repo,
+      subscriptionRepo,
+      gateway,
+    ),
     recoveryReview: new ListRecoveryReviewService({
       list: async (query) => ({ items: [], total: 0, limit: query.limit, offset: query.offset }),
     }),
@@ -294,6 +300,35 @@ function buildApp(opts: BuildOpts = {}) {
 
 describe('Admin: política de regularização autenticada e auditada', () => {
   const path = 'http://localhost/payments/admin/subscription-recovery/policy'
+
+  test('confirmação do período exige admin próprio e não aceita datas ou autor no corpo', async () => {
+    const { app, gateway } = buildApp({ requireAdmin: true, internalToken: 'qa-confirm-internal' })
+    const url = `http://localhost/payments/admin/subscription-recovery/payments/${crypto.randomUUID()}/confirm-period`
+    const headers = {
+      'x-internal-token': 'qa-confirm-internal',
+      'x-auth-user-id': 'qa-admin',
+      'x-auth-user-role': 'admin',
+      'x-auth-user-status': 'active',
+      'content-type': 'application/json',
+    }
+    const body = { expectedVersion: 0, requestId: crypto.randomUUID() }
+    const post = (current: Record<string, string>, value: unknown = body) =>
+      app.handle(
+        new Request(url, { method: 'POST', headers: current, body: JSON.stringify(value) }),
+      )
+    expect((await post({ ...headers, 'x-auth-user-role': 'staff' })).status).toBe(403)
+    expect((await post({ ...headers, 'x-auth-impersonator-id': 'qa-other' })).status).toBe(403)
+    expect((await post({ ...headers, 'x-auth-account-id': 'qa-parent' })).status).toBe(403)
+    const { 'x-auth-user-id': _actor, ...withoutActor } = headers
+    expect((await post(withoutActor)).status).toBe(401)
+    for (const extra of [
+      { actorId: 'forged' },
+      { period: { startsAt: '2030-01-01', endsAt: '2031-01-01' } },
+    ])
+      expect((await post(headers, { ...body, ...extra })).status).toBe(400)
+    expect(gateway.listedSubscriptionIds).toHaveLength(0)
+    expect(gateway.retriedSubscriptionChargeIds).toHaveLength(0)
+  })
 
   test('fila permite leitura da equipe, valida filtros e recusa origem sem autenticação', async () => {
     const { app, gateway } = buildApp({ requireAdmin: true, internalToken: 'qa-review-internal' })

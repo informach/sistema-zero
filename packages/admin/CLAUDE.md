@@ -1896,3 +1896,8 @@ A fila é somente leitura; staff consulta, inclusive filtros Kids/Adultos/públi
 Sem inferência de audiência pelo nome do produto. Consulta com erro não vira fila vazia;
 a troca de filtros aborta a consulta anterior. BFF revalida sessão/filtros/duplicação de
 parâmetros e aplica private/no-store. Ações financeiras auditadas são lote separado.
+
+A fila agora oferece a ação separada de conferir período PAID na operadora, exclusiva
+admin/superadmin (staff vê o botão desabilitado). A escrita usa versão e requestId,
+sem datas/ator escolhidos pelo cliente. Resposta perdida gera consulta, sem repetir
+POST automaticamente. Auditoria permanente e CAS pertencem ao Payments, não ao BFF.

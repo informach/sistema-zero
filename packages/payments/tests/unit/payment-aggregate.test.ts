@@ -77,9 +77,15 @@ describe('PaymentAggregate', () => {
     const events = payment.pullEvents()
     expect(events.filter((event) => event.eventName === 'payment.failed')).toHaveLength(1)
     expect(events.filter((event) => event.eventName === 'payment.paid')).toHaveLength(1)
+    const authority = {
+      actorId: 'qa-admin',
+      requestId: crypto.randomUUID(),
+      providerSubscriptionId: 'qa-provider',
+      sourceObservedAt: new Date('2026-10-24T12:00:00Z'),
+    }
     const period = { startsAt: '2026-09-01T10:00:00.000Z', endsAt: '2026-10-01T10:00:00.000Z' }
-    payment.confirmSubscriptionPeriod(period, new Date('2026-10-24T12:00:00Z'))
-    payment.confirmSubscriptionPeriod(period, new Date('2026-10-24T12:00:00Z'))
+    payment.confirmSubscriptionPeriod(period, new Date('2026-10-24T12:00:00Z'), authority)
+    payment.confirmSubscriptionPeriod(period, new Date('2026-10-24T12:00:00Z'), authority)
     expect(payment.paidAt?.toISOString()).toBe('2026-10-23T10:00:00.000Z')
     expect(payment.cycleAccess).toMatchObject({ kind: 'VERIFIED_PERIOD', period })
     expect(payment.events.map((event) => event.eventName)).toEqual([
@@ -89,6 +95,7 @@ describe('PaymentAggregate', () => {
       payment.confirmSubscriptionPeriod(
         { ...period, endsAt: '2026-10-02T10:00:00.000Z' },
         new Date(),
+        authority,
       ),
     ).toThrow('substituído')
   })

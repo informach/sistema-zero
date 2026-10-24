@@ -1,4 +1,5 @@
 import type { PaymentAggregate } from '../../domain/payment/payment.aggregate'
+import type { PeriodConfirmationAudit } from '../../domain/payment/period-confirmation'
 import { type PaymentView, toPaymentView } from './payment-view'
 
 /**
@@ -13,6 +14,9 @@ export interface AdminPaymentView extends PaymentView {
   providerPaymentId: string | null
   txid: string | null
   failureReason: string | null
+  priorFailureReason: string | null
+  priorFailedAt: string | null
+  periodConfirmation: PeriodConfirmationAudit | null
   /** Assinatura-pai quando é um ciclo recorrente. */
   subscriptionId: string | null
   expiresAt: string | null
@@ -33,6 +37,9 @@ export function toAdminPaymentView(payment: PaymentAggregate): AdminPaymentView 
     providerPaymentId: snap.providerPaymentId,
     txid: snap.txid,
     failureReason: snap.failureReason,
+    priorFailureReason: snap.priorFailureReason,
+    priorFailedAt: snap.priorFailedAt?.toISOString() ?? null,
+    periodConfirmation: snap.periodConfirmation,
     subscriptionId: snap.subscriptionId,
     expiresAt: snap.expiresAt ? snap.expiresAt.toISOString() : null,
     updatedAt: snap.updatedAt.toISOString(),
