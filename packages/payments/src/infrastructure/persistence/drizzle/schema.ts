@@ -22,6 +22,7 @@ import type {
 import type { PaymentStatus } from '../../../domain/payment/payment.status'
 import type { PeriodConfirmationAudit } from '../../../domain/payment/period-confirmation'
 import type { CancellationOrigin } from '../../../domain/subscription/cancellation-record'
+import type { CycleHistoryReview } from '../../../domain/subscription/cycle-history-review'
 import type { SubscriptionScheduleObservation } from '../../../domain/subscription/subscription-billing'
 import type { RecoveryAdmissionReason } from '../../../domain/subscription-recovery/recovery-admission.port'
 import type { RecoveryReason } from '../../../domain/subscription-recovery/recovery-case'
@@ -252,6 +253,8 @@ export const subscriptions = paymentsSchema.table(
     lastReconciledAt: timestamp('last_reconciled_at', { withTimezone: true }),
     // Advisory provider calendar; deliberately outside aggregate saves and access authority.
     billingSchedule: jsonb('billing_schedule').$type<SubscriptionScheduleObservation>(),
+    // Written once by the reviewed legacy repair, never by normal aggregate saves.
+    cycleHistoryReview: jsonb('cycle_history_review').$type<CycleHistoryReview>(),
     description: text('description'),
     metadata: jsonb('metadata').$type<Record<string, unknown>>().notNull().default({}),
     cancelRequestedAt: timestamp('cancel_requested_at', { withTimezone: true }),

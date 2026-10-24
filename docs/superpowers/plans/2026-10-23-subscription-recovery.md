@@ -129,6 +129,13 @@ Inspeção READ ONLY detectou uma divergência histórica de contador em assinat
 ilimitada; GET da operadora confirmou quatro ciclos, contador local seis. Falta
 correção técnica auditada desse metadado, sem mexer em recibos/acesso/recorrência.
 
+A correção técnica está implementada e validada localmente, com prova nova da Efí,
+igualdade exata de identidades, CAS e auditoria protegida em coluna própria.
+Payments 598/1882 sem falhas/skips e tipos completos. Ver
+`docs/qa/2026-10-24-subscription-legacy-cycle-review.md`. Resta executar preview/apply
+na imagem qualificada após deploy e confirmar o resultado por leitura. Não houve
+escrita no registro real.
+
 Preparados: retirada do remetente antigo do Funil, seed restrito dos oito modelos,
 prontidão de modelos/remetente/fila antiga e download Windows limitado em etapa
 separada. Messaging 176/843 sem falhas/skips e tipos completos; Funil 596 sem

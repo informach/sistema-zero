@@ -183,6 +183,13 @@
       "when": 1792867325777,
       "tag": "0025_subscription_paid_cycle_history",
       "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "7",
+      "when": 1792869908104,
+      "tag": "0026_curvy_namor",
+      "breakpoints": true
     }
   ]
 }
