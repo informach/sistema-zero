@@ -79,6 +79,12 @@ export function runConfig(command, environment, planPath, exec = execFileSync) {
     throw new Error('A configuração precisa estar commitada e limpa')
   const tree = git('rev-parse', 'HEAD:.railway')
   const env = { ...process.env }
+  // IaC must use the explicit link below, not the application's runtime context.
+  // CLI 5.62.1 clears linked.environment_name when ENVIRONMENT_ID overrides it;
+  // the TypeScript evaluator then receives ctx.environment=null despite link.
+  // These IDs remain in the parent for rollout ports; only this child is scoped.
+  for (const key of ['RAILWAY_PROJECT_ID', 'RAILWAY_ENVIRONMENT_ID', 'RAILWAY_SERVICE_ID'])
+    delete env[key]
   // O SDK usa `_` como executável para conferir a CLI. No runner ele pode
   // apontar para bash/node; sem a variável, o SDK resolve railway pelo PATH.
   delete env._
