@@ -45,6 +45,7 @@ def jogar(t, quadros):
 def play(t):
     jogador = t.get('jogador')
     bolhas = t.get('bolhas')
+    mover = t.get('mover_bolhas')
     t.check('o nível 1 tem uma bolha grande', len(bolhas) == 1 and bolhas[0].tamanho == 3)
     y = bolhas[0].y
     t.tap('SPACE')
@@ -107,6 +108,31 @@ def play(t):
     t.step(1)
     t.check('logo depois, o jogador fica protegido', t.get('vidas') == 2 and t.get('protegido') > 0)
     t.step(130)
+
+    # Encostar é encostar na bolha redonda, não no quadrado em volta dela.
+    t.step(130)
+    vidas = t.get('vidas')
+    del t.get('bolhas')[1:]
+    perto = t.get('bolhas')[0]
+    perto.tamanho = 3
+    perto.x = jogador.x + 58
+    perto.y = 476
+    perto.vx = 0
+    perto.vy = 0
+    t.set('mover_bolhas', lambda: None)
+    t.step(1)
+    t.check('a bolha que só passa perto, sem encostar, não tira vida', t.get('vidas') == vidas)
+    perto.x = jogador.x + 30
+    t.step(1)
+    t.check('e a que encosta tira', t.get('vidas') == vidas - 1)
+    t.set('mover_bolhas', mover)
+
+    # A última bolha estourada termina o nível na hora, mesmo protegido.
+    t.get('bolhas').clear()
+    t.step(1)
+    t.check('estourando a última bolha piscando, o nível termina na hora', t.get('estado') == 'passou' and t.get('protegido') > 0)
+    t.tap('SPACE')
+    t.get('novo_jogo')()
 
     # Sem bolhas, o nível acaba.
     t.get('bolhas').clear()

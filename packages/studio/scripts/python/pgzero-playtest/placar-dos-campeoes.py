@@ -59,7 +59,9 @@ def play(t):
     # Quem não chega ao último lugar não digita nome.
     t.tap('SPACE')
     t.until(lambda: t.get('estado') != 'jogando', 60 * 20)
-    t.check('sem pontos para o placar, volta direto para ele', t.get('estado') == 'placar')
+    t.check('sem pontos para o placar, volta direto para ele', t.get('estado') == 'placar' and t.get('jogou'))
+    t.set('pontos', 1)
+    t.check('um ponto se escreve no singular', t.get('pontos_por_extenso')() == '1 ponto')
 
     # Um arquivo estragado não quebra o jogo.
     with open(t.get('ARQUIVO'), 'w') as arquivo:

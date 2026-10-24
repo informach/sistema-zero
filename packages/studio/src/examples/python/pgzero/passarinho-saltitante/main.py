@@ -120,6 +120,9 @@ def on_key_down(key):
     if estado == 'esperando':
         estado = 'voando'
         bater_asas()
+    elif estado == 'voando':
+        # Cada toque no espaço bate as asas, mesmo subindo.
+        bater_asas()
     elif estado == 'caiu':
         recomecar()
 

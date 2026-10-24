@@ -87,6 +87,10 @@ def play(t):
     heroi.vida = 100
     t.tap('3')
     t.check('sem poções, a tecla 3 não faz nada', not t.get('esperando'))
+    t.set('pocoes', 1)
+    t.tap('3')
+    t.check('com a vida cheia, a poção não é gasta', not t.get('esperando') and t.get('pocoes') == 1)
+    t.set('pocoes', 0)
 
     # Quem chega a zero perde.
     dragao.vida = 1
@@ -95,8 +99,11 @@ def play(t):
     t.shot('venceu')
     t.tap('SPACE')
     t.check('espaço começa outra luta, tudo cheio', t.get('estado') == 'lutando' and dragao.vida == 120 and t.get('pocoes') == 2)
+    t.tap('1')
+    t.get('nova_luta')()
     t.step(espera * 4)
-    t.check('a luta nova não herda a vez da anterior', t.get('vez') == 0 and not t.get('esperando'))
+    t.check('uma luta nova no meio de uma vez não herda o relógio da anterior',
+            t.get('vez') == 0 and not t.get('esperando') and heroi.vida == 100 and dragao.vida == 120)
 
     # Atacando e tomando poção na hora certa, ganha quase sempre; só se defendendo, nunca.
     vitorias = 0

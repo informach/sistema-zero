@@ -159,7 +159,7 @@ def on_key_down(key):
         esperando = True
         defender(heroi)
         terminar_vez()
-    elif key == keys.K_3 and pocoes > 0:
+    elif key == keys.K_3 and pocoes > 0 and heroi.vida < heroi.vida_maxima:
         esperando = True
         tomar_pocao()
         terminar_vez()

@@ -54,6 +54,17 @@ def play(t):
     t.step(1)
     t.check('a pedra que bate na nave tira uma vida', t.get('vidas') == 2)
 
+    # Duas pedras no mesmo quadro com uma vida só também levam à tela de continuar.
+    t.set('vidas', 1)
+    pedras.clear()
+    for dx in (-10, 10):
+        pedra = t.get('Actor')('pedra', (nave.x + dx, nave.y - 30))
+        pedra.velocidade = 5
+        pedras.append(pedra)
+    t.step(1)
+    t.check('duas pedras de uma vez com uma vida: tela de continuar', t.get('estado') == 'continuar')
+    t.tap('SPACE')
+
     # Sem vidas, a tela de continuar.
     t.set('vidas', 1)
     pedras.clear()

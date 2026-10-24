@@ -99,7 +99,9 @@ def livre(x, y):
 def bate_em_heroi(heroi, x, y):
     for outro in herois:
         if outro != heroi and outro.jogando and abs(outro.x - x) < 22 and abs(outro.y - y) < 22:
-            return True
+            # Só não deixa chegar MAIS perto: dois heróis encavalados conseguem se separar.
+            if abs(outro.x - x) + abs(outro.y - y) < abs(outro.x - heroi.x) + abs(outro.y - heroi.y):
+                return True
     return False
 
 
@@ -189,6 +191,18 @@ def mover_fantasma(fantasma):
         fantasma.direcao = random.choice(DIRECOES)
 
 
+def soltar_fantasma():
+    toca = random.choice(tocas)
+    # O fantasma não nasce em cima de um herói: se a toca estiver ocupada, fica para a próxima.
+    for heroi in herois:
+        if heroi.jogando and heroi.distance_to(toca) < 64:
+            return
+    fantasma = Actor('fantasma', toca)
+    fantasma.vagando = 0
+    fantasma.direcao = (0, 0)
+    fantasmas.append(fantasma)
+
+
 def update():
     global quadros, pontos, vidas, estado
     if estado != 'jogando':
@@ -198,14 +212,11 @@ def update():
         mover_heroi(heroi)
     # Das tocas sai um fantasma a cada três segundos, até um limite.
     if quadros % 180 == 0 and len(fantasmas) < 1 + nivel:
-        fantasma = Actor('fantasma', random.choice(tocas))
-        fantasma.vagando = 0
-        fantasma.direcao = (0, 0)
-        fantasmas.append(fantasma)
+        soltar_fantasma()
     for fantasma in list(fantasmas):
         mover_fantasma(fantasma)
         for heroi in herois:
-            if heroi.jogando and fantasma.colliderect(heroi) and fantasma in fantasmas:
+            if heroi.jogando and fantasma.colliderect(heroi) and fantasma in fantasmas and estado == 'jogando':
                 # O fantasma some e o herói volta ao começo; o grupo perde uma vida.
                 fantasmas.remove(fantasma)
                 heroi.pos = heroi.inicio
@@ -252,7 +263,7 @@ def draw():
     if quadros < 240 and estado == 'jogando':
         screen.draw.text('Setas, WASD, IJKL ou TFGH: cada herói entra quando você o move', center=(WIDTH / 2, HEIGHT - 40), fontsize=26, color='white', owidth=1, ocolor='black')
     if estado == 'passou':
-        screen.draw.text('Saíram da masmorra!', center=(WIDTH / 2, HEIGHT / 2), fontsize=56, color='yellow', owidth=1, ocolor='black')
+        screen.draw.text('Fora da masmorra!', center=(WIDTH / 2, HEIGHT / 2), fontsize=56, color='yellow', owidth=1, ocolor='black')
     if estado == 'fim':
         screen.draw.text('Fim de jogo!', center=(WIDTH / 2, HEIGHT / 2), fontsize=56, color='orange', owidth=1, ocolor='black')
     if estado != 'jogando':

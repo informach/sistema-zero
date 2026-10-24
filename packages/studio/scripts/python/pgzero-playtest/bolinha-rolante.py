@@ -36,8 +36,14 @@ def play(t):
     t.shot('inicio')
     t.hold('RIGHT', 20)
     t.check('a seta empurra a bolinha', t.get('x') > 300 and t.get('vx') > 0)
-    t.hold('LEFT', 200)
-    t.check('a velocidade tem limite', abs(t.get('vx')) <= t.get('VELOCIDADE_MAXIMA'))
+
+    # Rápida demais (descendo uma rampa com a seta apertada), a velocidade volta ao limite.
+    t.set('x', 300)
+    t.set('y', 40)
+    t.set('vx', 0)
+    t.set('vy', 5)
+    t.hold('DOWN', 1)
+    t.check('a velocidade nunca passa do limite', t.get('vy') == t.get('VELOCIDADE_MAXIMA'), f"vy={t.get('vy')}")
 
     # Na rampa ela desce sozinha; no chão reto, não.
     t.set('estado', 'jogando')

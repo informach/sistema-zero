@@ -8,7 +8,7 @@ galeria.
 
 ## Como jogar
 
-Na sua vez, aperte 1 para atacar, 2 para se proteger com o escudo (o próximo golpe tira só metade) ou 3 para tomar uma poção (são duas por luta). Depois o dragão escolhe a jogada dele. Quem ficar sem vida perde.
+Na sua vez, aperte 1 para atacar, 2 para se proteger com o escudo (o próximo golpe tira só metade) ou 3 para tomar uma poção quando estiver ferido (são duas por luta). Depois o dragão escolhe a jogada dele. Quem ficar sem vida perde.
 
 ## Ideias para mudar
 

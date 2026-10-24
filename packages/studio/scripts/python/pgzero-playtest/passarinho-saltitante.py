@@ -44,6 +44,11 @@ def play(t):
     t.up('SPACE')
     t.check('segurando o espaço, bate as asas de vez em quando, sem parar no ar', 2 <= subidas <= 6, f'{subidas} batidas em 90 quadros')
 
+    # Cada toque no espaço bate as asas, mesmo subindo.
+    t.set('vy', -2)
+    t.tap('SPACE')
+    t.check('um toque no espaço bate as asas mesmo subindo', t.get('vy') < -4, f"vy={t.get('vy')}")
+
     # O céu segura em cima.
     passarinho.top = 2
     t.set('vy', -5)

@@ -15,6 +15,8 @@ placar = []
 pontos = 0
 quadros_restantes = 0
 nome = ''
+# Se já houve uma rodada (para mostrar os pontos dela no placar).
+jogou = False
 # 'placar', 'jogando' ou 'nome'
 estado = 'placar'
 
@@ -78,12 +80,13 @@ def comecar():
 
 
 def update():
-    global quadros_restantes, estado, nome
+    global quadros_restantes, estado, nome, jogou
     if estado != 'jogando':
         return
     quadros_restantes = quadros_restantes - 1
     if quadros_restantes <= 0:
         sounds.fim.play()
+        jogou = True
         if entra_no_placar(pontos):
             nome = ''
             estado = 'nome'
@@ -115,6 +118,12 @@ def on_key_down(key, unicode):
             nome = nome + unicode
 
 
+def pontos_por_extenso():
+    if pontos == 1:
+        return '1 ponto'
+    return str(pontos) + ' pontos'
+
+
 def draw():
     screen.blit('fundo', (0, 0))
     if estado == 'jogando':
@@ -124,7 +133,7 @@ def draw():
         return
     screen.draw.text('Placar dos Campeões', center=(WIDTH / 2, 50), fontsize=56, color='yellow', owidth=1, ocolor='black')
     if estado == 'nome':
-        screen.draw.text('Você fez ' + str(pontos) + ' pontos e entrou no placar!', center=(WIDTH / 2, 200), fontsize=40, color='white')
+        screen.draw.text('Você fez ' + pontos_por_extenso() + ' e entrou no placar!', center=(WIDTH / 2, 200), fontsize=40, color='white')
         screen.draw.text('Digite seu nome e aperte Enter:', center=(WIDTH / 2, 260), fontsize=34, color='white')
         screen.draw.text(nome + '_', center=(WIDTH / 2, 330), fontsize=60, color='yellow', owidth=1, ocolor='black')
         return
@@ -133,7 +142,9 @@ def draw():
         screen.draw.text(str(lugar + 1) + '.', topright=(250, y), fontsize=34, color='white')
         screen.draw.text(placar[lugar][1], topleft=(280, y), fontsize=34, color='white')
         screen.draw.text(str(placar[lugar][0]), topright=(560, y), fontsize=34, color='yellow')
-    screen.draw.text('Espaço começa: clique em quantas estrelas puder em ' + str(TEMPO) + ' segundos', center=(WIDTH / 2, 520), fontsize=28, color='white', owidth=1, ocolor='black')
+    if jogou:
+        screen.draw.text('Sua última rodada: ' + pontos_por_extenso(), center=(WIDTH / 2, 490), fontsize=30, color='yellow')
+    screen.draw.text('Espaço começa: clique em quantas estrelas puder em ' + str(TEMPO) + ' segundos', center=(WIDTH / 2, 530), fontsize=28, color='white', owidth=1, ocolor='black')
 
 
 carregar_placar()

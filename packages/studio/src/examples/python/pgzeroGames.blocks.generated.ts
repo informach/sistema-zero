@@ -2221,7 +2221,7 @@ export const PGZERO_GAME_BLOCKS = {
     ],
   },
   'bolinha-rolante': {
-    sourceSha256: 'c5cad9f002096c8c2fc44c31fa574b07922e0720ef23d5dfbb7b40e299fefaff',
+    sourceSha256: '6366ee601b14d9a014f96697b1a4bb63880c0713c9586ccaa96298c25ae86844',
     blockIds: [
       'sz_py_and',
       'sz_py_arithmetic',
@@ -2266,7 +2266,7 @@ export const PGZERO_GAME_BLOCKS = {
     ],
   },
   'bolhas-que-se-dividem': {
-    sourceSha256: 'e6ef237728f116cd0d35fa897e62226209346ca0bb0cb853112b6e16eff28d53',
+    sourceSha256: '244080f4524b1843cc23a4f98c47b02821bd747cb693c9fc4b1d7c734f3d542f',
     blockIds: [
       'sz_py_abs',
       'sz_py_and',
@@ -2286,6 +2286,8 @@ export const PGZERO_GAME_BLOCKS = {
       'sz_py_list',
       'sz_py_list_append',
       'sz_py_list_clear',
+      'sz_py_math_hypot',
+      'sz_py_max',
       'sz_py_min',
       'sz_py_negative',
       'sz_py_not',
@@ -2317,7 +2319,7 @@ export const PGZERO_GAME_BLOCKS = {
     ],
   },
   'masmorra-para-quatro': {
-    sourceSha256: '876b709f048cd93e5cbd4f88191432df32e52c4dc8e18ac34afe21725d4af105',
+    sourceSha256: '2dd104cbd3763602ab643126f38e81b0d54bb95695dae5001938cfa203ecfc62',
     blockIds: [
       'sz_py_abs',
       'sz_py_and',
@@ -2340,7 +2342,6 @@ export const PGZERO_GAME_BLOCKS = {
       'sz_py_list_append',
       'sz_py_list_call',
       'sz_py_list_clear',
-      'sz_py_method',
       'sz_py_negative',
       'sz_py_none',
       'sz_py_not',
@@ -2376,7 +2377,7 @@ export const PGZERO_GAME_BLOCKS = {
     ],
   },
   'duelo-por-turnos': {
-    sourceSha256: 'ba843f7efb63b9e5bfaf944e510344f6e48529f5319a2ee5712829300c0879b7',
+    sourceSha256: 'b2b225234e0f1bcaacf497df8dea29469b688d60b421a972b9caca7272ec2974',
     blockIds: [
       'sz_py_and',
       'sz_py_arithmetic',
@@ -2426,7 +2427,7 @@ export const PGZERO_GAME_BLOCKS = {
     ],
   },
   'passarinho-saltitante': {
-    sourceSha256: '43a9d081d4278c00c26568e7b6511fecfda5f38acf8de599bd94b1366e0bb1bd',
+    sourceSha256: 'ab9a58ae22740432ec68e54063c82c6fff9ec84e8bcc74338cb36ca1a835f152',
     blockIds: [
       'sz_py_and',
       'sz_py_arithmetic',
@@ -2477,11 +2478,12 @@ export const PGZERO_GAME_BLOCKS = {
     ],
   },
   'placar-dos-campeoes': {
-    sourceSha256: '0c23f7c3cec81cb26731063ea0f54b5ce19a0985d324f105871e0f72fd405788',
+    sourceSha256: 'e65f85995de9b6cc3e351844fcfc1b7bf940abdf2646d098c79cb3bddd2e24f7',
     blockIds: [
       'sz_py_and',
       'sz_py_arithmetic',
       'sz_py_assign',
+      'sz_py_boolean',
       'sz_py_compare',
       'sz_py_def',
       'sz_py_except',
@@ -2532,7 +2534,7 @@ export const PGZERO_GAME_BLOCKS = {
     ],
   },
   continuar: {
-    sourceSha256: 'fefa78f6dae3a97eebd78f546af0be0bb0c742bb4ad103cc9296fff8a3f1c2bb',
+    sourceSha256: 'c39635211e17b54827bfa301d5a80d0cae754d1c7d4554235ad5ee3cbe2d47fc',
     blockIds: [
       'sz_py_and',
       'sz_py_arithmetic',

@@ -2,7 +2,7 @@
   {
     "label": "width",
     "path": {
-      "body": 1,
+      "body": 2,
       "inputs": [
         {
           "name": "value",
@@ -18,7 +18,7 @@
   {
     "label": "height",
     "path": {
-      "body": 2,
+      "body": 3,
       "inputs": [
         {
           "name": "value",
@@ -34,7 +34,7 @@
   {
     "label": "title",
     "path": {
-      "body": 3,
+      "body": 4,
       "inputs": [
         {
           "name": "value",

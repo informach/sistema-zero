@@ -77,7 +77,7 @@ def atualizar_continuar():
 # A condição é uma função pequena, escrita com lambda, que responde True ou False.
 REGRAS = {
     'titulo': [(lambda: apertou_espaco, 'jogo')],
-    'jogo': [(lambda: vidas == 0, 'continuar')],
+    'jogo': [(lambda: vidas <= 0, 'continuar')],
     'continuar': [(lambda: apertou_espaco, 'jogo'), (lambda: quadros_da_contagem <= 0, 'titulo')],
 }
 AO_ENTRAR = {'titulo': entrar_no_titulo, 'jogo': entrar_no_jogo, 'continuar': entrar_no_continuar}

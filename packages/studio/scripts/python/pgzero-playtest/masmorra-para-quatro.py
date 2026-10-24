@@ -116,6 +116,14 @@ def play(t):
     t.hold('RIGHT', 30)
     t.check('um herói não atravessa o outro', elfa.x - guerreira.x >= 22, f'distância {elfa.x - guerreira.x}')
 
+    # Dois heróis encavalados (um entrou em cima do outro) conseguem se separar.
+    mago = herois[1]
+    mago.jogando = True
+    guerreira.jogando = True
+    mago.pos = (guerreira.x + 5, guerreira.y)
+    t.hold('LEFT', 30)
+    t.check('dois heróis encavalados conseguem se separar', abs(mago.x - guerreira.x) >= 22, f'{guerreira.pos} {mago.pos}')
+
     # Fantasmas saem das tocas e perseguem só quem está em jogo.
     for h in herois:
         h.jogando = False
@@ -129,6 +137,17 @@ def play(t):
     guerreira.jogando = True
     t.step(60)
     t.check('com alguém em jogo, ele vai atrás', fantasma.pos not in t.get('tocas'))
+    # O fantasma vai atrás do herói em jogo MAIS PERTO dele.
+    elfa = herois[2]
+    elfa.jogando = True
+    fantasma.pos = t.get('centro')(1, 9)
+    fantasma.vagando = 0
+    elfa.pos = t.get('centro')(4, 9)
+    guerreira.pos = guerreira.inicio
+    antes = fantasma.distance_to(elfa)
+    t.step(20)
+    t.check('o fantasma persegue o herói mais perto', fantasma.distance_to(elfa) < antes, f'{antes:.0f} -> {fantasma.distance_to(elfa):.0f}')
+    elfa.jogando = False
     vidas = t.get('vidas')
     guerreira.pos = (300, 300)
     fantasma.pos = guerreira.pos
@@ -176,7 +195,11 @@ def play(t):
     fantasma.vagando = 0
     fantasma.direcao = (0, 0)
     t.get('fantasmas').append(fantasma)
+    outro = t.get('Actor')('fantasma', guerreira.pos)
+    outro.vagando = 0
+    outro.direcao = (0, 0)
+    t.get('fantasmas').append(outro)
     t.step(1)
-    t.check('sem vidas, fim de jogo', t.get('estado') == 'fim')
+    t.check('sem vidas, fim de jogo', t.get('estado') == 'fim' and t.get('vidas') == 0)
     t.tap('SPACE')
     t.check('espaço começa de novo', t.get('estado') == 'jogando' and t.get('vidas') == 5 and t.get('nivel') == 1)

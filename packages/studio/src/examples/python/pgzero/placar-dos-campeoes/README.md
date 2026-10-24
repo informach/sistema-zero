@@ -1,6 +1,6 @@
 # Placar dos Campeões
 
-Clique em quantas estrelas puder e escreva seu nome no placar dos dez melhores, que fica guardado num arquivo.
+Clique em quantas estrelas puder e escreva seu nome no placar dos dez melhores, que o jogo escreve num arquivo.
 
 Um exemplo original feito com [Pygame Zero](https://pygame-zero.readthedocs.io/): o
 programa inteiro está em `main.py` e é o mesmo nas versões de Blocos e de Código da
@@ -8,7 +8,7 @@ galeria.
 
 ## Como jogar
 
-Espaço começa a rodada: clique em quantas estrelas puder em 15 segundos. Se você fizer mais pontos que o último do placar, digite seu nome na tela (a tecla de apagar volta uma letra) e aperte Enter. O placar fica guardado e volta da próxima vez.
+Espaço começa a rodada: clique em quantas estrelas puder em 15 segundos. Se você fizer mais pontos que o último do placar, digite seu nome na tela (a tecla de apagar volta uma letra) e aperte Enter. O placar é escrito no arquivo placar.txt.
 
 ## Ideias para mudar
 

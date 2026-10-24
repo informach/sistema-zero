@@ -1232,7 +1232,7 @@ export const PGZERO_GAMES = [
       { path: 'fim.wav', notes: [294, 247, 196], noteMilliseconds: 140 },
     ],
     music: [],
-    receipt: 'bolinha-rolante-r1.json.snapshot',
+    receipt: 'bolinha-rolante-r2.json.snapshot',
   },
   {
     key: 'bolhas-que-se-dividem',
@@ -1261,7 +1261,7 @@ export const PGZERO_GAMES = [
       { path: 'nivel.wav', notes: [523, 659, 784, 1047], noteMilliseconds: 90 },
     ],
     music: [],
-    receipt: 'bolhas-que-se-dividem-r1.json.snapshot',
+    receipt: 'bolhas-que-se-dividem-r2.json.snapshot',
   },
   {
     key: 'masmorra-para-quatro',
@@ -1289,7 +1289,7 @@ export const PGZERO_GAMES = [
       { path: 'saida.wav', notes: [523, 659, 784, 1047], noteMilliseconds: 90 },
     ],
     music: [],
-    receipt: 'masmorra-para-quatro-r1.json.snapshot',
+    receipt: 'masmorra-para-quatro-r2.json.snapshot',
   },
   {
     key: 'duelo-por-turnos',
@@ -1305,7 +1305,7 @@ export const PGZERO_GAMES = [
     inspiration: 'Combate por turnos de RPG',
     book: 'wireframe',
     howToPlay:
-      'Na sua vez, aperte 1 para atacar, 2 para se proteger com o escudo (o próximo golpe tira só metade) ou 3 para tomar uma poção (são duas por luta). Depois o dragão escolhe a jogada dele. Quem ficar sem vida perde.',
+      'Na sua vez, aperte 1 para atacar, 2 para se proteger com o escudo (o próximo golpe tira só metade) ou 3 para tomar uma poção quando estiver ferido (são duas por luta). Depois o dragão escolhe a jogada dele. Quem ficar sem vida perde.',
     ideas: [
       'Mude POCOES para ter mais poções.',
       'Mude a vida máxima do dragão.',
@@ -1319,7 +1319,7 @@ export const PGZERO_GAMES = [
       { path: 'derrota.wav', notes: [392, 330, 262, 196], noteMilliseconds: 140 },
     ],
     music: [],
-    receipt: 'duelo-por-turnos-r1.json.snapshot',
+    receipt: 'duelo-por-turnos-r2.json.snapshot',
   },
   {
     key: 'passarinho-saltitante',
@@ -1347,7 +1347,7 @@ export const PGZERO_GAMES = [
       { path: 'batida.wav', notes: [196, 147, 110], noteMilliseconds: 80 },
     ],
     music: [],
-    receipt: 'passarinho-saltitante-r1.json.snapshot',
+    receipt: 'passarinho-saltitante-r2.json.snapshot',
   },
   {
     key: 'placar-dos-campeoes',
@@ -1355,7 +1355,7 @@ export const PGZERO_GAMES = [
     name: 'Placar dos Campeões',
     emoji: '🏆',
     description:
-      'Clique em quantas estrelas puder e escreva seu nome no placar dos dez melhores, que fica guardado num arquivo.',
+      'Clique em quantas estrelas puder e escreva seu nome no placar dos dez melhores, que o jogo escreve num arquivo.',
     genre: 'Reflexo',
     concepts: ['Blocos', 'Ponte', 'Código', 'Listas de pares', 'Fatias de lista', 'Arquivos'],
     difficulty: 'intermediate',
@@ -1363,7 +1363,7 @@ export const PGZERO_GAMES = [
     inspiration: 'Tabelas de recordes dos fliperamas',
     book: 'wireframe',
     howToPlay:
-      'Espaço começa a rodada: clique em quantas estrelas puder em 15 segundos. Se você fizer mais pontos que o último do placar, digite seu nome na tela (a tecla de apagar volta uma letra) e aperte Enter. O placar fica guardado e volta da próxima vez.',
+      'Espaço começa a rodada: clique em quantas estrelas puder em 15 segundos. Se você fizer mais pontos que o último do placar, digite seu nome na tela (a tecla de apagar volta uma letra) e aperte Enter. O placar é escrito no arquivo placar.txt.',
     ideas: [
       'Mude TEMPO para a rodada durar mais.',
       'Mude TAMANHO_DO_PLACAR para guardar mais nomes.',
@@ -1375,7 +1375,7 @@ export const PGZERO_GAMES = [
       { path: 'recorde.wav', notes: [523, 659, 784, 1047], noteMilliseconds: 90 },
     ],
     music: [],
-    receipt: 'placar-dos-campeoes-r1.json.snapshot',
+    receipt: 'placar-dos-campeoes-r2.json.snapshot',
   },
   {
     key: 'continuar',
@@ -1402,7 +1402,7 @@ export const PGZERO_GAMES = [
       { path: 'fim.wav', notes: [392, 330, 262, 196], noteMilliseconds: 120 },
     ],
     music: [],
-    receipt: 'continuar-r1.json.snapshot',
+    receipt: 'continuar-r2.json.snapshot',
   },
 ] as const satisfies readonly PgzeroGame[]
 

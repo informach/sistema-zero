@@ -1,3 +1,4 @@
+import math
 import pgzrun
 
 WIDTH = 800
@@ -97,7 +98,10 @@ def acertar():
 def encostou():
     for bolha in bolhas:
         raio = RAIOS[bolha.tamanho]
-        if abs(bolha.x - jogador.x) < raio + 12 and bolha.y + raio > jogador.top + 10:
+        # O ponto do jogador mais perto do centro da bolha: encosta se ele estiver dentro dela.
+        perto_x = max(jogador.left + 6, min(bolha.x, jogador.right - 6))
+        perto_y = max(jogador.top + 4, min(bolha.y, jogador.bottom))
+        if math.hypot(bolha.x - perto_x, bolha.y - perto_y) < raio:
             return True
     return False
 
@@ -135,7 +139,7 @@ def update():
         protegido = protegido - 1
     elif encostou():
         perder_vida()
-    elif not bolhas:
+    if estado == 'jogando' and not bolhas:
         estado = 'passou'
         sounds.nivel.play()
 

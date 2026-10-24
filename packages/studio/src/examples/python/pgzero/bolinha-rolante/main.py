@@ -135,7 +135,12 @@ def draw():
     screen.draw.text('Tempo: ' + str((quadros_restantes + 59) // 60), topleft=(10, 10), fontsize=34, color='white')
     if estado == 'chegou':
         screen.draw.text('Chegou!', center=(WIDTH / 2, 250), fontsize=72, color='yellow', owidth=1, ocolor='black')
-        screen.draw.text('Sobraram ' + str((quadros_restantes + 59) // 60) + ' segundos', center=(WIDTH / 2, 310), fontsize=36, color='white', owidth=1, ocolor='black')
+        segundos = (quadros_restantes + 59) // 60
+        if segundos == 1:
+            sobra = 'Sobrou 1 segundo'
+        else:
+            sobra = 'Sobraram ' + str(segundos) + ' segundos'
+        screen.draw.text(sobra, center=(WIDTH / 2, 310), fontsize=36, color='white', owidth=1, ocolor='black')
     if estado == 'fim':
         screen.draw.text('O tempo acabou!', center=(WIDTH / 2, 280), fontsize=64, color='orange', owidth=1, ocolor='black')
     if estado == 'chegou' or estado == 'fim':

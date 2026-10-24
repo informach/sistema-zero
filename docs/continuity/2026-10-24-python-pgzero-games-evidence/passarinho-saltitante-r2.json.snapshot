@@ -17,10 +17,10 @@
   "authoringLoader": "loadPythonAuthoring",
   "extension": "python-pgzero",
   "codecOrderSha256": "16f21dbe7403256a8759a0692a7cda9f1ce6b643db0a0193b68bfed49dfefebe",
-  "sourceSha256": "43a9d081d4278c00c26568e7b6511fecfda5f38acf8de599bd94b1366e0bb1bd",
-  "generatedSha256": "44b1398d2bdcdf0ea4bfd0d69cff3288d0b87aab76d67cfc379cee465ccb90a1",
+  "sourceSha256": "ab9a58ae22740432ec68e54063c82c6fff9ec84e8bcc74338cb36ca1a835f152",
+  "generatedSha256": "746f73e95ef02b43bfbeea71b4a254dae489a4e667010d470d73ffea0de12574",
   "opaqueCount": 0,
-  "blockCount": 420,
+  "blockCount": 424,
   "referencedBlocks": [
     {
       "id": "sz_py_and",
@@ -44,7 +44,7 @@
     },
     {
       "id": "sz_py_compare",
-      "count": 14
+      "count": 15
     },
     {
       "id": "sz_py_def",
@@ -184,7 +184,7 @@
     },
     {
       "id": "sz_py_run",
-      "count": 8
+      "count": 9
     },
     {
       "id": "sz_py_str",
@@ -196,7 +196,7 @@
     },
     {
       "id": "sz_py_text",
-      "count": 32
+      "count": 33
     },
     {
       "id": "sz_py_tuple",
@@ -204,13 +204,13 @@
     },
     {
       "id": "sz_py_variable",
-      "count": 125
+      "count": 126
     }
   ],
   "approvedBlockIdsSha256": "8d7b56b8b3f707f8d53fb38f560dce55ce9871b429a7dc0103ff9d2f32f58027",
   "fullWorkspaceRoundtrip": true,
-  "initialWorkspaceSha256": "1528a755bdd4c56b78d361fadce1b6c15d7d0bcc3140a35abe987cf8dbd01aee",
-  "editedWorkspaceSha256": "6ceff1caa080cd1ebc34e4f3f04388e70a5d87e3bd12ea65796e2c82427e67da",
+  "initialWorkspaceSha256": "b340561d3cb1adfd897cb4576397aed155fd9d78ef187d77bcb6ce2180be06b6",
+  "editedWorkspaceSha256": "20127880ab22d3c0eddd22b92e2e0239034e56b2730b1f02dae4e1587dbc9d12",
   "canonicalRenderReanalysis": true,
   "runtimeCapabilitiesQualified": false,
   "browserInteractionQualified": false,
@@ -230,8 +230,8 @@
       "field": "NUMBER",
       "before": "800",
       "after": "810",
-      "beforeSourceSha256": "92fe75497b21787a2dbb4f1c56e5f4755e34d608a903959fd5798e97feecb940",
-      "afterSourceSha256": "4f60e1285c95efde117fbe29238c297c637969d357672456373275354a2761e2"
+      "beforeSourceSha256": "51dba26aece8c87eb8d538c9f406a70e6ce084f9a57395884c75d315b5465ee5",
+      "afterSourceSha256": "324e4ca85b08e9bada01ed65e9fe1d5c49fb8e5a4ece9c7e51f554c103e68e1b"
     },
     {
       "label": "height",
@@ -248,8 +248,8 @@
       "field": "NUMBER",
       "before": "600",
       "after": "610",
-      "beforeSourceSha256": "4f60e1285c95efde117fbe29238c297c637969d357672456373275354a2761e2",
-      "afterSourceSha256": "51f80dd44b5dc7af35170133ae2876913d356e69ef9fa278d73e10f1f3056154"
+      "beforeSourceSha256": "324e4ca85b08e9bada01ed65e9fe1d5c49fb8e5a4ece9c7e51f554c103e68e1b",
+      "afterSourceSha256": "dbb2bfd595798d5b34cd3760f07d72d074db786597b56d40b2e79d130fbadb01"
     },
     {
       "label": "title",
@@ -266,8 +266,8 @@
       "field": "TEXT",
       "before": "Passarinho Saltitante",
       "after": "Passarinho Saltitante!",
-      "beforeSourceSha256": "51f80dd44b5dc7af35170133ae2876913d356e69ef9fa278d73e10f1f3056154",
-      "afterSourceSha256": "44b1398d2bdcdf0ea4bfd0d69cff3288d0b87aab76d67cfc379cee465ccb90a1"
+      "beforeSourceSha256": "dbb2bfd595798d5b34cd3760f07d72d074db786597b56d40b2e79d130fbadb01",
+      "afterSourceSha256": "746f73e95ef02b43bfbeea71b4a254dae489a4e667010d470d73ffea0de12574"
     }
   ]
 }
