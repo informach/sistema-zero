@@ -15,6 +15,7 @@ import {
   readPythonExecutionIdentity,
   samePythonExecutionIdentity,
 } from './frameProtocol'
+import { createPgzeroAudioQueue } from './pgzero/audioQueue'
 import type { PgzeroAudioCommand } from './pgzero/protocol'
 import type { PgzeroRenderer } from './pgzero/renderer'
 import { installPythonPlayerBridge } from './playerBridge'
@@ -73,54 +74,22 @@ async function initialize(event: MessageEvent<unknown>) {
     | undefined
   // sz_audio (one request at a time from Python) and Pygame Zero (commands that travel with
   // each frame) share the host's media channel through one ordered queue.
-  const audioQueue: {
-    request: string
-    resolve(value: string): void
-    reject(reason: unknown): void
-  }[] = []
-  function pumpAudio() {
-    if (pendingAudio || closed || !prepared) return
-    const next = audioQueue.shift()
-    if (!next) return
-    const id = `audio-${++audioSequence}`
-    pendingAudio = {
-      id,
-      resolve(value) {
-        next.resolve(value)
-        queueMicrotask(pumpAudio)
-      },
-      reject(reason) {
-        next.reject(reason)
-        queueMicrotask(pumpAudio)
-      },
-    }
-    send({ type: 'audio-request', requestId: id, request: next.request })
-  }
-  function queueAudio(request: string) {
-    return new Promise<string>((resolve, reject) => {
-      audioQueue.push({ request, resolve, reject })
-      pumpAudio()
-    })
-  }
-  function pgzeroAudio(commands: readonly PgzeroAudioCommand[]) {
-    for (const command of commands) {
-      const request =
-        command[0] === 'play'
-          ? {
-              version: 1,
-              op: 'play',
-              id: command[1],
-              path: command[2],
-              loop: command[3],
-              volume: command[4],
-            }
-          : command[0] === 'stop'
-            ? { version: 1, op: 'stop', id: command[1] }
-            : { version: 1, op: 'volume', id: command[1], volume: command[2] }
-      // Fire and forget: a sound that cannot play never stops the game.
-      void queueAudio(JSON.stringify(request)).catch(() => {})
-    }
-  }
+  const audio = createPgzeroAudioQueue({
+    send(request) {
+      return new Promise<string>((resolve, reject) => {
+        if (closed || !prepared) {
+          reject(new Error('O canal de áudio não está disponível.'))
+          return
+        }
+        const id = `audio-${++audioSequence}`
+        pendingAudio = { id, resolve, reject }
+        send({ type: 'audio-request', requestId: id, request })
+      })
+    },
+  })
+  const queueAudio = (request: string) => audio.request(request)
+  const pgzeroAudio = (commands: readonly PgzeroAudioCommand[], watch: boolean) =>
+    audio.pgzero(commands, watch)
   const playerBridge = new AbortController()
   function send(
     message:
@@ -151,8 +120,7 @@ async function initialize(event: MessageEvent<unknown>) {
     closed = true
     pendingAudio?.reject(new DOMException('Execução encerrada.', 'AbortError'))
     pendingAudio = undefined
-    for (const waiting of audioQueue.splice(0))
-      waiting.reject(new DOMException('Execução encerrada.', 'AbortError'))
+    audio.close()
     playerBridge.abort()
     supervisor?.stop()
     if (!supervisor) bootstrap?.worker.terminate()
@@ -363,6 +331,7 @@ async function initialize(event: MessageEvent<unknown>) {
           if (closed) return
           renderer = module.createPgzeroRenderer(document.body, {
             onAudio: pgzeroAudio,
+            takeEndedVoices: (limit) => audio.takeEnded(limit),
             onTitle: (title) => {
               if (document.title !== title) document.title = title
             },

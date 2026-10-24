@@ -82,6 +82,8 @@ def draw():
         screen.draw.text('Os dragões acordaram! Fim de jogo', center=(WIDTH / 2, 360), fontsize=48, color='orange', owidth=2, ocolor='black')
     if venceu:
         screen.draw.text('Você juntou ' + str(ovos) + ' ovos e venceu!', center=(WIDTH / 2, 360), fontsize=48, color='yellow', owidth=2, ocolor='black')
+    if fim_de_jogo or venceu:
+        screen.draw.text('Aperte espaço para jogar de novo', center=(WIDTH / 2, 410), fontsize=32, color='white', owidth=1.5, ocolor='black')
 
 
 def update():
@@ -101,6 +103,20 @@ def update():
         protegido = protegido - 1
     else:
         pegar_ou_perder()
+
+
+def on_key_down(key):
+    global ovos, vidas, fim_de_jogo, venceu
+    if key == keys.SPACE and (fim_de_jogo or venceu):
+        ovos = 0
+        vidas = 3
+        fim_de_jogo = False
+        venceu = False
+        for numero in range(3):
+            acordado[numero] = False
+            dragoes[numero].image = 'dragao_dormindo'
+            contadores[numero] = numero * 40
+        voltar_ao_comeco()
 
 
 pgzrun.go()

@@ -12,18 +12,38 @@ import { PincelSvg, svgEmTexto } from '../../src/arte/pincelSvg'
 
 const encoder = new TextEncoder()
 
+const RGBA =
+  /(fill|stroke|stop-color|flood-color)="rgba\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)\s*\)"/g
+const OPACITY: Record<string, string> = {
+  fill: 'fill-opacity',
+  stroke: 'stroke-opacity',
+  'stop-color': 'stop-opacity',
+  'flood-color': 'flood-opacity',
+}
+/**
+ * `rgba(...)` as a colour is CSS, not SVG 1.1: browsers read it, but nanosvg (pygame-ce) and
+ * other readers draw it opaque. The opacity goes to its own SVG attribute instead.
+ */
+export function portableSvgColors(body: string) {
+  return body.replace(
+    RGBA,
+    (_, attribute: string, r: string, g: string, b: string, alpha: string) =>
+      `${attribute}="rgb(${r},${g},${b})" ${OPACITY[attribute]}="${alpha}"`,
+  )
+}
+
 /** An SVG with its own size in its root element: Pygame Zero (and pygame-ce) read it there. */
-function svg(id: string, width: number, height: number, draw: (p: Pincel) => void) {
+export function svg(id: string, width: number, height: number, draw: (p: Pincel) => void) {
   const pincel = new PincelSvg(id)
   draw(pincel)
-  const body = svgEmTexto(pincel.arvore())
+  const body = portableSvgColors(svgEmTexto(pincel.arvore()))
   return encoder.encode(
     `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">${body}</svg>\n`,
   )
 }
 
 /** One Jogo 2D figure, centred in its own box, optionally mirrored. */
-function figura(
+export function figura(
   id: string,
   nome: NomeDaFigura,
   width: number,
@@ -88,13 +108,13 @@ export function png(width: number, height: number, rgba: Uint8Array) {
   }
   return out
 }
-const hex = (value: string) => [
+export const hex = (value: string) => [
   Number.parseInt(value.slice(1, 3), 16),
   Number.parseInt(value.slice(3, 5), 16),
   Number.parseInt(value.slice(5, 7), 16),
 ]
 /** Pixel art: one character per pixel ('.' is transparent), each pixel `scale` screen pixels. */
-function pixelArt(rows: readonly string[], palette: Record<string, string>, scale: number) {
+export function pixelArt(rows: readonly string[], palette: Record<string, string>, scale: number) {
   const width = rows[0]!.length * scale
   const height = rows.length * scale
   const rgba = new Uint8Array(width * height * 4)
@@ -117,7 +137,7 @@ function pixelArt(rows: readonly string[], palette: Record<string, string>, scal
 
 // Vector drawings ----------------------------------------------------------------------------
 
-function circle(p: Pincel, x: number, y: number, r: number, fill: string, stroke?: string) {
+export function circle(p: Pincel, x: number, y: number, r: number, fill: string, stroke?: string) {
   p.beginPath()
   p.arc(x, y, r, 0, Math.PI * 2)
   p.fillStyle = fill
@@ -127,13 +147,13 @@ function circle(p: Pincel, x: number, y: number, r: number, fill: string, stroke
     p.stroke()
   }
 }
-function ellipse(p: Pincel, x: number, y: number, rx: number, ry: number, fill: string) {
+export function ellipse(p: Pincel, x: number, y: number, rx: number, ry: number, fill: string) {
   p.beginPath()
   p.ellipse(x, y, rx, ry, 0, 0, Math.PI * 2)
   p.fillStyle = fill
   p.fill()
 }
-function roundRect(
+export function roundRect(
   p: Pincel,
   x: number,
   y: number,
@@ -152,7 +172,7 @@ function roundRect(
     p.stroke()
   }
 }
-function polygon(p: Pincel, points: readonly (readonly [number, number])[], fill: string) {
+export function polygon(p: Pincel, points: readonly (readonly [number, number])[], fill: string) {
   p.beginPath()
   p.moveTo(points[0]![0], points[0]![1])
   for (const [x, y] of points.slice(1)) p.lineTo(x, y)
@@ -532,7 +552,7 @@ const florMonstro = () =>
   })
 
 /** A background drawn by the Jogo 2D art at the game's window size. */
-const fundo = (
+export const fundo = (
   id: string,
   nome: keyof typeof FUNDOS,
   width: number,
@@ -547,7 +567,7 @@ const fundo = (
 const raposa = () => {
   const { viewBox, body } = JARDIM_ASSETS.raposa
   return encoder.encode(
-    `<svg xmlns="http://www.w3.org/2000/svg" width="72" height="87" viewBox="${viewBox}">${body}</svg>\n`,
+    `<svg xmlns="http://www.w3.org/2000/svg" width="72" height="87" viewBox="${viewBox}">${portableSvgColors(body)}</svg>\n`,
   )
 }
 
@@ -670,7 +690,7 @@ const masmorra = () => {
 // Per game -----------------------------------------------------------------------------------
 
 /** Every image of each example, by file name in its images/ folder. */
-export const PGZERO_GAME_ART: Record<string, () => Record<string, Uint8Array>> = {
+export const DK_ART: Record<string, () => Record<string, Uint8Array>> = {
   'ola-pgzero': () => ({ 'nave.svg': figura('nave', 'nave', 64, 74) }),
   'acerte-a-maca': () => ({ 'maca.svg': maca() }),
   'raposa-moedas': () => ({

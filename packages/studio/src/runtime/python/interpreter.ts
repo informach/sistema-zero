@@ -18,7 +18,7 @@ import { type PythonCanvasExtension, pythonCanvasExtension } from './canvasExten
 import bridgeSource from './interpreter.py'
 import { PGZERO_EXTENSION } from './pgzero/contract'
 import { loadPgzeroModuleSources } from './pgzero/moduleSources'
-import type { PythonConsoleStream, PythonExecutionSnapshot } from './protocol'
+import type { PythonConsoleStream, PythonExecutionSnapshot, PythonGraphicsReply } from './protocol'
 import { loadTurtleModuleSources } from './turtle/moduleSources'
 
 import { PYODIDE_VERSION, PYTHON_VERSION } from './versions'
@@ -126,6 +126,8 @@ async function decodeProjectImage(bytes: Uint8Array<ArrayBuffer>, path: string) 
   const bitmap = await createImageBitmap(new Blob([bytes], { type }), {
     premultiplyAlpha: 'none',
     colorSpaceConversion: 'none',
+    // pygame ignores EXIF rotation, and so does the renderer: the pixels must match its size.
+    imageOrientation: 'none',
   })
   try {
     if (bitmap.width * bitmap.height > 16 * 1024 * 1024)
@@ -178,7 +180,7 @@ export async function createPythonInterpreter(options: {
   graphics?(
     request: string,
     images: { id: number; bytes: Uint8Array<ArrayBuffer> }[],
-  ): Promise<string>
+  ): Promise<PythonGraphicsReply>
   audio?(request: string): Promise<string>
 }) {
   const base = new URL('./', import.meta.url)
@@ -357,14 +359,22 @@ export async function createPythonInterpreter(options: {
             (raw: unknown, payload: unknown) => {
               const header = readPgzeroFrameHeader(raw)
               const attachments: { id: number; bytes: Uint8Array<ArrayBuffer> }[] = []
-              // Python hands over a Uint8Array copy (to_js), never a proxy to free here.
+              // Python hands over a Uint8Array copy (to_js), never a proxy to free here. That
+              // copy owns its buffer, which is transferred as is: no third copy of the list.
               if (!header.keep) {
                 if (
                   !(payload instanceof Uint8Array) ||
+                  !(payload.buffer instanceof ArrayBuffer) ||
                   payload.byteLength > PGZERO_LIMITS.listBytes
                 )
                   throw new Error('Quadro do Pygame Zero acima do limite.')
-                attachments.push({ id: PGZERO_LIST_ATTACHMENT, bytes: new Uint8Array(payload) })
+                attachments.push({
+                  id: PGZERO_LIST_ATTACHMENT,
+                  bytes:
+                    payload.byteOffset === 0 && payload.byteLength === payload.buffer.byteLength
+                      ? (payload as Uint8Array<ArrayBuffer>)
+                      : new Uint8Array(payload),
+                })
               }
               if (!sentFont) {
                 sentFont = true
@@ -373,26 +383,38 @@ export async function createPythonInterpreter(options: {
                   bytes: new Uint8Array(runtime.FS.readFile(`${directory}/freesansbold.ttf`)),
                 })
               }
-              let total = 0
+              // The draw list, images and fonts of one frame share one budget (Python keeps it).
+              let total = header.keep ? 0 : (payload as Uint8Array).byteLength
               for (const [id, path] of header.images) {
                 if (!inProject(path)) throw new Error('A imagem precisa estar dentro do projeto.')
                 const source = runtime.FS.readFile(path)
                 total += source.byteLength
-                if (source.byteLength > PGZERO_LIMITS.imageBytes || total > 64 * 1024 * 1024)
+                // _sz.present keeps each frame within this budget; more is a broken module.
+                if (
+                  source.byteLength > PGZERO_LIMITS.imageBytes ||
+                  total > PGZERO_LIMITS.frameAttachmentBytes
+                )
                   throw new Error('As imagens do jogo passaram do limite de bytes.')
                 attachments.push({ id, bytes: new Uint8Array(source) })
               }
               for (const [id, path] of header.fonts) {
                 if (!inProject(path)) throw new Error('A fonte precisa estar dentro do projeto.')
                 const source = runtime.FS.readFile(path)
-                if (source.byteLength > PGZERO_LIMITS.fontBytes)
+                total += source.byteLength
+                if (
+                  source.byteLength > PGZERO_LIMITS.fontBytes ||
+                  total > PGZERO_LIMITS.frameAttachmentBytes
+                )
                   throw new Error('A fonte é grande demais.')
                 attachments.push({
                   id: PGZERO_FONT_ATTACHMENT_BASE + id,
                   bytes: new Uint8Array(source),
                 })
               }
-              return options.graphics!(raw as string, attachments)
+              // A reply with bytes (pixels) reaches Python as [text, bytes].
+              return options.graphics!(raw as string, attachments).then((reply) =>
+                typeof reply === 'string' ? reply : [reply.text, reply.bytes],
+              )
             },
             (path: unknown) => {
               if (typeof path !== 'string' || !inProject(path))

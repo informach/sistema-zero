@@ -32,9 +32,15 @@ def nova_flor():
 def novo_monstro():
     if fim_de_jogo or not flores:
         return
-    numero = random.randint(0, len(flores) - 1)
+    # Só nasce longe da vaca: um monstro em cima dela acabaria o jogo sem aviso.
+    longe = []
+    for flor in flores:
+        if flor.distance_to(vaca) > 200:
+            longe.append(flor)
+    if not longe:
+        return
     monstro = Actor('flor_monstro')
-    monstro.pos = flores[numero].pos
+    monstro.pos = random.choice(longe).pos
     monstros.append(monstro)
     velocidades.append([random.choice([-3, 3]), random.choice([-3, 3])])
 
@@ -68,6 +74,7 @@ def draw():
     if fim_de_jogo:
         screen.draw.text('O jardim não está mais feliz!', center=(WIDTH / 2, 200), fontsize=56, color='red', owidth=2, ocolor='white')
         screen.draw.text('Você cuidou dele por ' + str(int(tempo)) + ' segundos', center=(WIDTH / 2, 270), fontsize=36, color='black')
+        screen.draw.text('Aperte espaço para plantar de novo', center=(WIDTH / 2, 320), fontsize=30, color='black')
 
 
 def update(dt):
@@ -103,8 +110,22 @@ def update(dt):
         sounds.fim.play()
 
 
+def recomecar():
+    global tempo, fim_de_jogo
+    flores.clear()
+    prazos.clear()
+    monstros.clear()
+    velocidades.clear()
+    tempo = 0.0
+    fim_de_jogo = False
+    vaca.pos = (100, 500)
+    nova_flor()
+
+
 def on_key_down(key):
-    if key == keys.SPACE and not regando and not fim_de_jogo:
+    if key == keys.SPACE and fim_de_jogo:
+        recomecar()
+    elif key == keys.SPACE and not regando:
         regar()
 
 

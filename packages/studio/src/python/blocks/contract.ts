@@ -28,6 +28,9 @@ export type PythonBlockRole =
   | 'handler'
   | 'alias'
   | 'format'
+/** Built-in receivers a method block can require: a literal, a collection or an open file. */
+export type PythonReceiverKind = 'text' | 'List' | 'Tuple' | 'Dict' | 'Set' | 'file'
+
 export interface PythonBlockField {
   name: string
   label: string
@@ -74,7 +77,7 @@ export interface PythonBlockCodec {
   /** Alias-aware extensions may derive the required binding from the actual call. */
   bindingFor?(node: PythonNode): PythonBlockBinding | undefined
   /** Method specialization needs a proven built-in receiver, not just a matching name. */
-  receiverKinds?: readonly ('text' | 'List' | 'Tuple' | 'Dict' | 'Set')[]
+  receiverKinds?: readonly PythonReceiverKind[]
   /**
    * Projection index. Syntax kinds this codec can decode (default: the default node's kind),
    * and, for calls/command statements and definitions, the callee or definition names it

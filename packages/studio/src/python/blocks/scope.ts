@@ -1,5 +1,5 @@
 import type { PythonNode, PythonValue } from '../language/types'
-import type { PythonBlockBinding } from './contract'
+import type { PythonBlockBinding, PythonReceiverKind } from './contract'
 import { isNode, nodes } from './nodes'
 
 type Binding =
@@ -56,8 +56,28 @@ export interface PythonBindingResolver {
   /** True when this Name refers to the given imported module at its position. */
   isModule(nameNode: PythonNode, module: string): boolean
   /** Built-in collection kind proven for this Name (assigned only from that kind of value). */
-  receiverKind(nameNode: PythonNode): 'text' | 'List' | 'Tuple' | 'Dict' | 'Set' | undefined
+  receiverKind(nameNode: PythonNode): PythonReceiverKind | undefined
 }
+
+/** Built-ins that only read a list passed to them. */
+const READ_ONLY_BUILTINS = new Set([
+  'len',
+  'list',
+  'tuple',
+  'sorted',
+  'reversed',
+  'enumerate',
+  'min',
+  'max',
+  'sum',
+  'any',
+  'all',
+  'print',
+  'str',
+])
+
+/** Functions of the random module that only read (or reorder) a list passed to them. */
+const READ_ONLY_RANDOM = new Set(['choice', 'choices', 'sample', 'shuffle'])
 
 const LITERAL_KINDS: Readonly<Record<string, 'List' | 'Tuple' | 'Dict' | 'Set'>> = {
   List: 'List',
@@ -68,7 +88,8 @@ const LITERAL_KINDS: Readonly<Record<string, 'List' | 'Tuple' | 'Dict' | 'Set'>>
   Set: 'Set',
   SetComp: 'Set',
 }
-const CONSTRUCTOR_KINDS: Readonly<Record<string, 'List' | 'Tuple' | 'Dict' | 'Set'>> = {
+const CONSTRUCTOR_KINDS: Readonly<Record<string, PythonReceiverKind>> = {
+  open: 'file',
   list: 'List',
   tuple: 'Tuple',
   dict: 'Dict',
@@ -98,6 +119,15 @@ export function pythonBindingResolver(
   const loops: { scope: Scope; target: string; list: PythonNode }[] = []
   /** Lists also changed by other means: their elements are not proven. */
   const otherwiseFilled: { scope: Scope; list: string }[] = []
+  /**
+   * Reads of a name where a list cannot escape: a method receiver (`lista.append`), a loop
+   * (`for x in lista`), an index (`lista[0]`), `x in lista`, a test (`if not lista:`), or an
+   * argument of a read-only built-in (`len(lista)`). Any other read (an alias, an argument of a function the child
+   * wrote, a list stored inside another) lets the list be filled elsewhere.
+   */
+  const safeReads = new WeakSet<PythonNode>()
+  /** Arguments of these built-ins, still unshadowed, never change the list. */
+  const builtinReads: { scope: Scope; list: string; via: string }[] = []
   /** Attribute writes to an official name, judged once every binding is known. */
   const attributeWrites: { scope: Scope; root: PythonNode | undefined; dunder: boolean }[] = []
   let hasDynamicBindings = false
@@ -144,6 +174,53 @@ export function pythonBindingResolver(
         : { kind: 'other' },
     )
   }
+  const readOnlyCallOf = new WeakMap<PythonNode, string>()
+  function markSafeReads(value: PythonNode) {
+    const fields = value.fields
+    const mark = (item: PythonValue | undefined) => {
+      if (isNode(item) && item.kind === 'Name') safeReads.add(item)
+    }
+    if (value.kind === 'Call' && isNode(fields.func)) {
+      if (fields.func.kind === 'Attribute') mark(fields.func.fields.value)
+      else if (
+        fields.func.kind === 'Name' &&
+        typeof fields.func.fields.id === 'string' &&
+        READ_ONLY_BUILTINS.has(fields.func.fields.id) &&
+        nodes(fields.args)
+      )
+        for (const arg of fields.args)
+          if (arg.kind === 'Name') readOnlyCallOf.set(arg, fields.func.fields.id)
+      // random.choice(lista) draws one of its items; shuffle only reorders them.
+      if (
+        fields.func.kind === 'Attribute' &&
+        isNode(fields.func.fields.value) &&
+        fields.func.fields.value.kind === 'Name' &&
+        fields.func.fields.value.fields.id === 'random' &&
+        READ_ONLY_RANDOM.has(String(fields.func.fields.attr)) &&
+        nodes(fields.args)
+      )
+        for (const arg of fields.args) if (arg.kind === 'Name') readOnlyCallOf.set(arg, 'random')
+    }
+    if (value.kind === 'For' || value.kind === 'AsyncFor') mark(fields.iter)
+    if (value.kind === 'comprehension') mark(fields.iter)
+    if (value.kind === 'Subscript') mark(fields.value)
+    // Asking whether it is empty (`if not estrelas and vivo:`) only reads it: a condition is
+    // checked, never kept. (`x = lista or []` keeps it, so only conditions count.)
+    if (['If', 'While', 'IfExp', 'Assert'].includes(value.kind)) markCondition(fields.test)
+    const { ops, comparators } = fields
+    if (value.kind === 'Compare' && nodes(ops) && nodes(comparators))
+      ops.forEach((op, index) => {
+        if (op.kind === 'In' || op.kind === 'NotIn') mark(comparators[index])
+      })
+  }
+  function markCondition(test: PythonValue | undefined) {
+    if (!isNode(test)) return
+    if (test.kind === 'Name') safeReads.add(test)
+    else if (test.kind === 'BoolOp' && nodes(test.fields.values))
+      for (const item of test.fields.values) markCondition(item)
+    else if (test.kind === 'UnaryOp' && isNode(test.fields.op) && test.fields.op.kind === 'Not')
+      markCondition(test.fields.operand)
+  }
   /** The Name at the start of `a.b.c` / `a[0].b`, if any. */
   function rootName(value: PythonNode | undefined): PythonNode | undefined {
     while (value && (value.kind === 'Attribute' || value.kind === 'Subscript'))
@@ -153,6 +230,38 @@ export function pythonBindingResolver(
   function visit(value: PythonNode, scope: Scope) {
     scopes.set(value, scope)
     const fields = value.fields
+    markSafeReads(value)
+    // `with open(...) as arquivo` binds the file like `arquivo = open(...)` does.
+    if (
+      value.kind === 'withitem' &&
+      isNode(fields.optional_vars) &&
+      fields.optional_vars.kind === 'Name' &&
+      typeof fields.optional_vars.fields.id === 'string' &&
+      isNode(fields.context_expr)
+    )
+      typed.push({
+        scope: owner(scope, fields.optional_vars.fields.id),
+        target: fields.optional_vars.fields.id,
+        value: fields.context_expr,
+      })
+    if (
+      value.kind === 'Name' &&
+      typeof fields.id === 'string' &&
+      isNode(fields.ctx) &&
+      fields.ctx.kind === 'Load' &&
+      !safeReads.has(value)
+    ) {
+      const via = readOnlyCallOf.get(value)
+      if (via) builtinReads.push({ scope, list: fields.id, via })
+      else otherwiseFilled.push({ scope, list: fields.id })
+    }
+    if (
+      value.kind === 'AugAssign' &&
+      isNode(fields.target) &&
+      fields.target.kind === 'Name' &&
+      typeof fields.target.fields.id === 'string'
+    )
+      otherwiseFilled.push({ scope, list: fields.target.fields.id })
     if (
       value.kind === 'Assign' &&
       nodes(fields.targets) &&
@@ -215,7 +324,13 @@ export function pythonBindingResolver(
     )
       loops.push({ scope, target: fields.target.fields.id, list: fields.iter })
     if (value.kind === 'Attribute' && isNode(fields.ctx) && typeof fields.attr === 'string') {
-      if (['Store', 'Del'].includes(fields.ctx.kind) && replacesOfficialName(fields.attr))
+      if (
+        ['Store', 'Del'].includes(fields.ctx.kind) &&
+        (replacesOfficialName(fields.attr) ||
+          (isNode(fields.value) &&
+            fields.value.kind === 'Name' &&
+            fields.value.fields.id === 'builtins'))
+      )
         attributeWrites.push({
           scope,
           root: rootName(isNode(fields.value) ? fields.value : undefined),
@@ -484,6 +599,18 @@ export function pythonBindingResolver(
   // A list made empty and filled only with `lista.append(Actor(...))` holds actors: a loop over
   // it (`for estrela in estrelas`) keeps the actor blocks for its target.
   const elementOf = new Map<Scope, Map<string, Binding | null>>()
+  // Names also assigned from something other than a list literal, per scope (one pass, not
+  // one search per fill).
+  const notOnlyLiterals = new Map<Scope, Set<string>>()
+  for (const candidate of typed)
+    if (candidate.value.kind !== 'List' || !nodes(candidate.value.fields.elts)) {
+      let names = notOnlyLiterals.get(candidate.scope)
+      if (!names) {
+        names = new Set()
+        notOnlyLiterals.set(candidate.scope, names)
+      }
+      names.add(candidate.target)
+    }
   const listScope = (scope: Scope, key: string) => {
     const found = holder(scope, key)
     const binding = found?.bindings.get(key)
@@ -492,12 +619,7 @@ export function pythonBindingResolver(
       binding?.kind !== 'instance' ||
       binding.module !== 'builtins' ||
       binding.instance !== 'List' ||
-      typed.some(
-        (candidate) =>
-          candidate.scope === found &&
-          candidate.target === key &&
-          (candidate.value.kind !== 'List' || !nodes(candidate.value.fields.elts)),
-      )
+      notOnlyLiterals.get(found)?.has(key)
     )
       return undefined
     return found
@@ -536,6 +658,15 @@ export function pythonBindingResolver(
         ? element
         : null,
     )
+  }
+  for (const { scope, list, via } of builtinReads) {
+    const found = lookup(scope, via)
+    // A built-in must still be unbound; `random` must be the random module itself.
+    const official =
+      via === 'random'
+        ? found?.kind === 'module' && found.module === 'random' && !found.member
+        : !found
+    if (!official) otherwiseFilled.push({ scope, list })
   }
   for (const { scope, list } of otherwiseFilled) {
     const found = listScope(scope, list)
@@ -672,7 +803,7 @@ export function pythonBindingResolver(
   resolver.receiverKind = (nameNode) => {
     const found = bindingAt(nameNode)
     return found?.kind === 'instance' && found.module === 'builtins'
-      ? (found.instance as 'text' | 'List' | 'Tuple' | 'Dict' | 'Set')
+      ? (found.instance as PythonReceiverKind)
       : undefined
   }
   return resolver

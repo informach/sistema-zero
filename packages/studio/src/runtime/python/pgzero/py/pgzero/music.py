@@ -2,8 +2,8 @@
 
 Like Pygame Zero, music files live in music/ and must be MP3 or OGG.
 """
-from . import _sz
-from .loaders import ResourceLoader, root as _initial_root
+from . import _sz, constants
+from .loaders import ResourceLoader
 
 __all__ = [
     'rewind', 'stop', 'fadeout', 'set_volume', 'get_volume', 'get_pos',
@@ -18,9 +18,8 @@ class _MusicLoader(ResourceLoader):
     TYPE_PT = 'a música'
 
     def _load(self, path):
-        from . import loaders
-        import os.path
-        return os.path.relpath(path, loaders.root).replace(os.sep, '/')
+        # Relative to the project root, where the Studio's media service finds the file.
+        return _sz.project_path(path)
 
 
 _loader = _MusicLoader('music')
@@ -29,7 +28,6 @@ _volume = 1.0
 _paused = False
 _current = None
 _queued = None
-del _initial_root
 
 
 def _play(name, loop):
@@ -40,7 +38,25 @@ def _play(name, loop):
     _voice = _sz.audio_play(path, loop, _volume)
     _paused = False
     _current = name
+    # Like pygame: changing the music loses the queued track.
     _queued = None
+    if _voice is not None and not loop:
+        voice = _voice
+        _sz.on_audio_end(voice, lambda: _ended(voice), wait=True)
+
+
+def _ended(voice):
+    """The track finished by itself: on_music_end runs, then the queued track starts."""
+    global _voice, _paused, _current, _queued
+    if voice != _voice:
+        return
+    _voice = None
+    _paused = False
+    _current = None
+    _sz.posted.append(constants.MUSIC_END)
+    if _queued is not None:
+        name, _queued = _queued, None
+        _play(name, False)
 
 
 def play(name):
@@ -54,27 +70,33 @@ def play_once(name):
 
 
 def queue(name):
-    """Queue a music file to follow the current track (here: plays when nothing is playing)."""
+    """Queue a music file to follow the current track.
+
+    It starts as soon as the current music ends by itself; stopping or changing the music loses
+    it. With nothing playing, it plays now.
+    """
     global _queued
     _loader.load(name)
     if _voice is None:
         play_once(name)
-    else:
-        _queued = name
+        return
+    # A track playing once is already watched (_play); a looping one never ends, as in pygame.
+    _queued = name
 
 
 def is_playing(name):
-    """Return True if the music is playing and not paused."""
-    return _voice is not None and not _paused and (name is None or name == _current)
+    """Return True if the music is playing and not paused (any track, as Pygame Zero)."""
+    return _voice is not None and not _paused
 
 
 def stop():
-    global _voice, _paused, _current
+    global _voice, _paused, _current, _queued
     if _voice is not None:
         _sz.audio_stop(_voice)
     _voice = None
     _paused = False
     _current = None
+    _queued = None
 
 
 def pause():

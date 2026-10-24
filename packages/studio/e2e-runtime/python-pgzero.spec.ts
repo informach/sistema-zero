@@ -71,6 +71,14 @@ const EXAMPLES = [
   'desafio-da-danca',
   'jardim-feliz',
   'dragoes-dorminhocos',
+  'barris-na-rampa',
+  'salto-nas-plataformas',
+  'piramide-de-cubos',
+  'cipo-sobre-o-poco',
+  'mina-que-desmorona',
+  'escudos-contra-invasores',
+  'mergulho-alienigena',
+  'nave-mae',
 ]
 
 for (const key of EXAMPLES)

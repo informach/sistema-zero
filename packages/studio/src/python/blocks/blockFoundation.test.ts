@@ -379,6 +379,18 @@ test('files: open with a mode, read and write are blocks that round-trip exactly
   expect(used).not.toContain('<source>')
   // An unknown mode (binary) stays Python source instead of a wrong block.
   expect(exact([opened('rb', [pass()])])).not.toContain('sz_py_with_open')
+  // A pen or a screen is not a file nor a list: write/clear on an unproven name stay generic.
+  const unproven = exact([
+    fn(
+      'placar',
+      [expression(call(attribute(name('caneta'), 'write'), [text('Pontos')]))],
+      ['caneta'],
+    ),
+    fn('apagar', [expression(call(attribute(name('caneta'), 'clear')))], ['caneta']),
+    fn('ler', [expression(call(attribute(name('caneta'), 'read')))], ['caneta']),
+  ])
+  for (const id of ['sz_py_file_write', 'sz_py_file_read', 'sz_py_list_clear'])
+    expect(unproven).not.toContain(id)
 })
 
 test('a list filled only with Actor(...) makes its loop target an actor; anything else does not', async () => {
@@ -433,6 +445,132 @@ test('a list filled only with Actor(...) makes its loop target an actor; anythin
     ]),
   )
   expect(inserted).not.toContain('sz_py_pgzero_actor_draw')
+  // Every other way to fill the list elsewhere also drops the proof.
+  const listLiteral = (...elts: PythonNode[]) => node('List', { elts, ctx: node('Load') })
+  const escapes: PythonNode[][] = [
+    [
+      node('AugAssign', {
+        target: name('estrelas', 'Store'),
+        op: node('Add'),
+        value: listLiteral(integer('5')),
+      }),
+    ],
+    [
+      node('Assign', {
+        targets: [name('outra', 'Store')],
+        value: name('estrelas'),
+        type_comment: null,
+      }),
+      expression(call(attribute(name('outra'), 'append'), [integer('5')])),
+    ],
+    [
+      fn('encher', [expression(call(attribute(name('l'), 'append'), [integer('5')]))], ['l']),
+      expression(call(name('encher'), [name('estrelas')])),
+    ],
+    [
+      node('Assign', {
+        targets: [name('caixa', 'Store')],
+        value: listLiteral(name('estrelas')),
+        type_comment: null,
+      }),
+    ],
+    // A shadowed "read-only" built-in is a function of the child's: it may fill the list.
+    [
+      fn('len', [expression(call(attribute(name('l'), 'append'), [integer('5')]))], ['l']),
+      expression(call(name('len'), [name('estrelas')])),
+    ],
+  ]
+  for (const extra of escapes)
+    expect(usedIn(program(extra))).not.toContain('sz_py_pgzero_actor_draw')
+  // Outside a condition, `or` hands the list itself to another name.
+  expect(
+    usedIn(
+      program([
+        node('Assign', {
+          targets: [name('outra', 'Store')],
+          value: node('BoolOp', { op: node('Or'), values: [name('estrelas'), listLiteral()] }),
+          type_comment: null,
+        }),
+        expression(call(attribute(name('outra'), 'append'), [integer('5')])),
+      ]),
+    ),
+  ).not.toContain('sz_py_pgzero_actor_draw')
+  // Reading it keeps the proof: its length, an index, membership, a loop, its own methods.
+  const reads: PythonNode[] = [
+    expression(call(name('print'), [call(name('len'), [name('estrelas')])])),
+    expression(
+      call(name('print'), [
+        node('Subscript', { value: name('estrelas'), slice: integer('0'), ctx: node('Load') }),
+      ]),
+    ),
+    expression(
+      call(name('print'), [
+        node('Compare', { left: integer('1'), ops: [node('In')], comparators: [name('estrelas')] }),
+      ]),
+    ),
+    expression(call(attribute(name('estrelas'), 'clear'))),
+    node('If', {
+      test: node('UnaryOp', { op: node('Not'), operand: name('estrelas') }),
+      body: [pass()],
+      orelse: [],
+    }),
+    node('While', {
+      test: node('BoolOp', {
+        op: node('And'),
+        values: [name('estrelas'), node('UnaryOp', { op: node('Not'), operand: name('fim') })],
+      }),
+      body: [node('Break')],
+      orelse: [],
+    }),
+  ]
+  expect(usedIn(program(reads))).toContain('sz_py_pgzero_actor_draw')
+  // random.choice only draws one of the items: with the real random module it keeps the proof.
+  const importRandom = node('Import', { names: [node('alias', { name: 'random', asname: null })] })
+  const choice = expression(call(attribute(name('random'), 'choice'), [name('estrelas')]))
+  expect(usedIn(program([importRandom, choice]))).toContain('sz_py_pgzero_actor_draw')
+  const notRandom = node('Assign', {
+    targets: [name('random', 'Store')],
+    value: integer('3'),
+    type_comment: null,
+  })
+  expect(usedIn(program([notRandom, choice]))).not.toContain('sz_py_pgzero_actor_draw')
+})
+
+test('an attribute named like a built-in or a list method keeps the official blocks', async () => {
+  const { PYTHON_PGZERO_CODECS, PGZERO_RESOLVER_OPTIONS } = await import(
+    '../extensions/pgzero/catalog'
+  )
+  const { attachPythonResolverOptions } = await import('./resolverOptions')
+  const pgzero = attachPythonResolverOptions(
+    [...PYTHON_PGZERO_CODECS, ...PYTHON_PROGRAMMING_CODECS],
+    PGZERO_RESOLVER_OPTIONS,
+  )
+  const used = (attr: string, root = 'porta') =>
+    ids(
+      pythonASTToVisual(
+        moduleNode([
+          node('Assign', {
+            targets: [name('heroi', 'Store')],
+            value: call(name('Actor'), [text('a')]),
+            type_comment: null,
+          }),
+          node('Assign', {
+            targets: [node('Attribute', { value: name(root), attr, ctx: node('Store') })],
+            value: boolean(true),
+            type_comment: null,
+          }),
+          fn('draw', [expression(call(attribute(name('heroi'), 'draw')))]),
+        ]),
+        { codecs: pgzero, officialModules: new Set(['pgzero', 'pgzrun']) },
+      ).body,
+    )
+  // `clear` stays guarded here: Pygame Zero's screen.clear() is an official method, and a write
+  // is judged by its name.
+  for (const attr of ['open', 'range', 'write', 'read'])
+    expect([attr, used(attr).includes('sz_py_pgzero_actor_draw')]).toEqual([attr, true])
+  // Replacing an official name, or anything of the builtins module, still turns them off.
+  expect(used('draw')).not.toContain('sz_py_pgzero_actor_draw')
+  expect(used('open', 'builtins')).not.toContain('sz_py_pgzero_actor_draw')
 })
 
 test('a list written with actors inside also makes its loop target an actor', async () => {
@@ -470,4 +608,81 @@ test('a list written with actors inside also makes its loop target an actor', as
   expect(used(listOf(call(name('Actor'), [text('ovos')]), integer('1')))).not.toContain(
     'sz_py_pgzero_actor_draw',
   )
+})
+
+test('a command on a typed receiver gets its own block, not the generic one', () => {
+  const list = node('Assign', {
+    targets: [name('itens', 'Store')],
+    value: node('List', { elts: [], ctx: node('Load') }),
+    type_comment: null,
+  })
+  const statement = (method: string, args: PythonNode[] = []) =>
+    expression(call(attribute(name('itens'), method), args))
+  const used = exact([
+    list,
+    statement('remove', [integer('1')]),
+    statement('sort'),
+    statement('pop'),
+  ])
+  for (const id of ['sz_py_collection_remove', 'sz_py_list_sort', 'sz_py_collection_pop_statement'])
+    expect(used).toContain(id)
+  expect(used).not.toContain('sz_py_method')
+  // The same method on a name with no proven kind stays the generic method block.
+  expect(exact([expression(call(attribute(name('outra'), 'remove'), [integer('1')]))])).toContain(
+    'sz_py_method',
+  )
+})
+
+test('an animation kept in a variable or a list can be stopped by its own block', async () => {
+  const { PYTHON_PGZERO_CODECS, PGZERO_RESOLVER_OPTIONS } = await import(
+    '../extensions/pgzero/catalog'
+  )
+  const { attachPythonResolverOptions } = await import('./resolverOptions')
+  const pgzero = attachPythonResolverOptions(
+    [...PYTHON_PGZERO_CODECS, ...PYTHON_PROGRAMMING_CODECS],
+    PGZERO_RESOLVER_OPTIONS,
+  )
+  const animation = () =>
+    call(name('animate'), [name('heroi')], [node('keyword', { arg: 'y', value: integer('10') })])
+  const used = (body: PythonNode[]) => {
+    const tree = moduleNode(body)
+    const projection = pythonASTToVisual(tree, {
+      codecs: pgzero,
+      officialModules: new Set(['pgzero', 'pgzrun']),
+    })
+    expect(pythonSemanticTree(pythonVisualToAST(projection, pgzero))).toEqual(
+      pythonSemanticTree(tree),
+    )
+    return ids(projection.body)
+  }
+  const stop = (target: string) => expression(call(attribute(name(target), 'stop')))
+  expect(
+    used([
+      node('Assign', {
+        targets: [name('animacao', 'Store')],
+        value: animation(),
+        type_comment: null,
+      }),
+      stop('animacao'),
+    ]),
+  ).toContain('sz_py_pgzero_animation_stop')
+  expect(
+    used([
+      node('Assign', {
+        targets: [name('animacoes', 'Store')],
+        value: node('List', { elts: [], ctx: node('Load') }),
+        type_comment: null,
+      }),
+      expression(call(attribute(name('animacoes'), 'append'), [animation()])),
+      node('For', {
+        target: name('animacao', 'Store'),
+        iter: name('animacoes'),
+        body: [stop('animacao')],
+        orelse: [],
+        type_comment: null,
+      }),
+    ]),
+  ).toContain('sz_py_pgzero_animation_stop')
+  // Anything else called "stop" (a sound, a timer of the child's) is not an animation.
+  expect(used([stop('cronometro')])).not.toContain('sz_py_pgzero_animation_stop')
 })

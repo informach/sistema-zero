@@ -198,15 +198,15 @@ class PGZeroGame:
             now = float(reply.get('now', 0.0))
             dt = 0.0 if last is None else min(MAX_DT, max(0.0, (now - last) / 1000.0))
             last = now
-            if reply.get('focusLost'):
-                # A key held while the page lost focus would stay pressed forever.
-                self.keyboard._pressed.clear()
+            # A page that loses focus releases its keys with key-up events (as SDL does).
             for event in _events(reply.get('events', ())):
                 if event.type == KEYDOWN:
                     self.keyboard._press(event.key)
                 elif event.type == KEYUP:
                     self.keyboard._release(event.key)
                 self.dispatch_event(event)
+            while _sz.posted:
+                self.dispatch_event(_Event(_sz.posted.pop(0)))
 
             pgzclock.tick(dt)
 

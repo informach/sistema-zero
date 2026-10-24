@@ -1,7 +1,12 @@
 import type { PythonNode } from '../language/types'
 import { optional, type PythonApiSpec, pythonApiCallCodec, required } from './apiCallCodec'
 import { metadata } from './catalogHelpers'
-import type { PythonBlockCodec, PythonBlockInput, PythonCategory } from './contract'
+import type {
+  PythonBlockCodec,
+  PythonBlockInput,
+  PythonCategory,
+  PythonReceiverKind,
+} from './contract'
 import { attribute, boolean, call, integer, isNode, name, node, nodes, text } from './nodes'
 import { samePythonValue } from './semantic'
 
@@ -23,13 +28,14 @@ const method = (
   receiver: {
     label: string
     default(): PythonNode
-    kinds: ('text' | 'List' | 'Tuple' | 'Dict' | 'Set')[]
+    kinds: PythonReceiverKind[]
   },
 ) => ({ kind: 'method' as const, names, receiver })
 const LIST = { label: 'lista', default: v('lista'), kinds: ['List' as const] }
 /** append/insert are taught on any receiver: lists often live in dicts, objects and lists. */
 const ANY_LIST = { label: 'lista', default: v('lista'), any: true }
-const ANY_FILE = { label: 'arquivo', default: v('arquivo'), any: true }
+/** A file is proven by `with open(...) as arquivo` (or `arquivo = open(...)`). */
+const FILE = { label: 'arquivo', default: v('arquivo'), kinds: ['file' as const] }
 const TEXT = { label: 'texto', default: v('texto'), kinds: ['text' as const] }
 const DICT = { label: 'dicionário', default: v('dados'), kinds: ['Dict' as const] }
 
@@ -458,7 +464,7 @@ const specs: Spec[] = [
     category: 'Entrada e saída',
     level: 2,
     role: 'value',
-    callee: { kind: 'method', names: ['read'], receiver: ANY_FILE },
+    callee: { kind: 'method', names: ['read'], receiver: FILE },
     api: 'arquivo.read()',
     help: 'Todo o texto do arquivo aberto com "abrir o arquivo … para ler".',
     dependencies: ['sz_py_with_open'],
@@ -470,7 +476,7 @@ const specs: Spec[] = [
     category: 'Entrada e saída',
     level: 2,
     role: 'statement',
-    callee: { kind: 'method', names: ['write'], receiver: ANY_FILE },
+    callee: { kind: 'method', names: ['write'], receiver: FILE },
     api: 'arquivo.write(texto)',
     help: 'Grava o texto no arquivo aberto para escrever ou acrescentar. Para mudar de linha, termine o texto com \n.',
     dependencies: ['sz_py_with_open'],
@@ -494,7 +500,7 @@ const specs: Spec[] = [
     category: 'Listas e coleções',
     level: 2,
     role: 'statement',
-    callee: { kind: 'method', names: ['clear'], receiver: ANY_LIST },
+    callee: method(['clear'], { ...LIST, kinds: ['List', 'Dict', 'Set'] }),
     api: 'lista.clear()',
     help: 'Tira todos os itens da lista (ou do dicionário), deixando-a vazia.',
     dependencies: ['sz_py_list', 'sz_py_assign'],

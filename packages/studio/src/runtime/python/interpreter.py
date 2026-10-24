@@ -135,10 +135,15 @@ class _StudioExecution:
 
         def transport(header, payload):
             # A Uint8Array copy crosses the boundary: no PyProxy for the browser to keep or free.
-            return run_sync(exchange(header, to_js(payload)))
+            # The reply is the text, or [text, pixels] when the browser sends bytes back.
+            reply = run_sync(exchange(header, to_js(payload)))
+            if isinstance(reply, str):
+                return reply, None
+            return str(reply[0]), reply[1].to_bytes()
 
         def decoder(path):
-            return bytes(run_sync(decode(path)).to_py())
+            # One copy into Python memory (to_bytes), not two.
+            return run_sync(decode(path)).to_bytes()
 
         _sz.configure(transport, decoder, str(Path.cwd()))
         runner.prepare_mod(self._main)

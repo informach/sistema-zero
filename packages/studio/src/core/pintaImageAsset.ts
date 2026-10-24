@@ -2,7 +2,7 @@ import {
   type PintaImageDerivation,
   PintaImageDerivationSchema,
 } from '@sistemazero/core/studio/pinta-image'
-import { decodeProjectAsset, digestAssetBytes } from './assetBinary'
+import { decodeProjectAsset, digestAssetBytes, isSvgDataUrl } from './assetBinary'
 import type { ProjectAsset } from './projectAssets'
 
 type ImageBinding = {
@@ -21,9 +21,11 @@ type ImageBinding = {
 }
 
 /** The captured bytes keep the format the recipe asked for, and so does the Python file. */
-const OUTPUT_PREFIX: Readonly<Record<PintaImageDerivation['output']['mime'], string>> = {
-  'image/png': 'data:image/png;base64,',
-  'image/svg+xml': 'data:image/svg+xml',
+const OUTPUT_DATA_URL: Readonly<
+  Record<PintaImageDerivation['output']['mime'], (dataUrl: string) => boolean>
+> = {
+  'image/png': (dataUrl) => dataUrl.startsWith('data:image/png;base64,'),
+  'image/svg+xml': isSvgDataUrl,
 }
 const OUTPUT_EXTENSION: Readonly<Record<PintaImageDerivation['output']['mime'], RegExp>> = {
   'image/png': /\.png$/i,
@@ -51,7 +53,7 @@ export function readPintaImageAssetMetadata(asset: ImageBinding): PintaImageDeri
     asset.libOrigin !== 'pinta' ||
     asset.libId !== `personal:${metadata.recipe.drawingId}` ||
     typeof asset.dataUrl !== 'string' ||
-    !asset.dataUrl.startsWith(OUTPUT_PREFIX[metadata.output.mime]) ||
+    !OUTPUT_DATA_URL[metadata.output.mime](asset.dataUrl) ||
     asset.width !== metadata.output.width ||
     asset.height !== metadata.output.height ||
     (asset.proPath !== undefined &&

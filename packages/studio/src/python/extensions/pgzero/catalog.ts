@@ -25,7 +25,7 @@ export const PGZERO_BUILTINS: ReadonlyMap<string, PythonProvidedBuiltin> = new M
   ['keymods', { provider: PROVIDER }],
   ['mouse', { provider: PROVIDER }],
   ['clock', { provider: PROVIDER }],
-  ['animate', { provider: PROVIDER }],
+  ['animate', { provider: PROVIDER, constructs: 'Animation' }],
   ['images', { provider: PROVIDER }],
   ['sounds', { provider: PROVIDER }],
   ['music', { provider: PROVIDER }],
@@ -1093,6 +1093,27 @@ export const PYTHON_PGZERO_CODECS: readonly PythonBlockCodec[] = [
       ],
     }),
   ),
+  // `animacao = animate(...)` keeps the animation: it can be stopped before it ends.
+  api({
+    id: 'sz_py_pgzero_animation_stop',
+    title: 'parar a animação',
+    category: 'Animação',
+    level: 3,
+    role: 'statement',
+    callee: {
+      kind: 'method',
+      names: ['stop'],
+      receiver: {
+        label: 'animação',
+        default: () => name('animacao'),
+        instance: { builtin: PROVIDER, name: 'Animation' },
+      },
+    },
+    api: 'animacao.stop()',
+    help: 'Para a animação onde ela estiver. Guarde a animação numa variável (animacao = animate(...)) para poder pará-la.',
+    dependencies: ['sz_py_assign', 'sz_py_pgzero_animate'],
+    params: [],
+  }),
   // 🔊 Sons e música
   resourceCall({
     id: 'sz_py_pgzero_sound_play',

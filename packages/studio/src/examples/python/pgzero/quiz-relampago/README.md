@@ -20,15 +20,16 @@ Leia a pergunta e clique na resposta certa antes que o contador chegue a zero.
 
 O Pygame Zero procura as imagens em `images/`, os sons em `sounds/` e as músicas em
 `music/`, pelo nome do arquivo sem a extensão: `Actor('nave')` usa `images/nave`.
-Você pode trocar qualquer um deles por um desenho seu do Pinta, com o mesmo nome.
+Para trocar um desenho, edite-o no Pinta pelo Estúdio, ou traga outro e use no código o
+nome que o painel mostra em "nome no código".
 
 ## Jogar no computador
 
 O Pygame Zero roda no computador com o pygame-ce:
 
 ```
-python -m pip install pygame-ce numpy
-python -m pip install --no-deps pgzero
+python -m pip install pygame-ce==2.5.8 numpy
+python -m pip install --no-deps pgzero==1.2.1
 python main.py
 ```
 

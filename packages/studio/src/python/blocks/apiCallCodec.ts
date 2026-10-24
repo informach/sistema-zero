@@ -8,6 +8,7 @@ import type {
   PythonBlockShape,
   PythonCategory,
   PythonDecodeContext,
+  PythonReceiverKind,
 } from './contract'
 import { attribute, call, isNode, name, node, nodes } from './nodes'
 
@@ -50,7 +51,7 @@ export type PythonApiCallee =
         /** Accept any receiver: the method name alone is distinctive enough to teach it. */
         any?: boolean
         /** Literal or constructed built-in receivers ('List' for [] etc.). */
-        kinds?: readonly ('text' | 'List' | 'Tuple' | 'Dict' | 'Set')[]
+        kinds?: readonly PythonReceiverKind[]
       }
       /** The same function called on the module's default object (turtle.forward). */
       module?: string

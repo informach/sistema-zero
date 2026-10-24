@@ -16,13 +16,13 @@ def draw():
 
 
 def update():
-    if keyboard.left:
+    if keyboard.left and nave.left > 0:
         nave.x = nave.x - 4
-    if keyboard.right:
+    if keyboard.right and nave.right < WIDTH:
         nave.x = nave.x + 4
-    if keyboard.up:
+    if keyboard.up and nave.top > 0:
         nave.y = nave.y - 4
-    if keyboard.down:
+    if keyboard.down and nave.bottom < HEIGHT:
         nave.y = nave.y + 4
 
 

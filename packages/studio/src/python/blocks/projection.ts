@@ -48,10 +48,18 @@ function guardedAttributes(codecs: readonly PythonBlockCodec[]): ReadonlySet<str
   const found = new Set<string>()
   for (const codec of codecs) {
     if (!codec.binding && !codec.bindingFor) continue
-    if (codec.binding) found.add(codec.binding.root)
+    // A bare Python built-in (open, range) is not an attribute of anything the child can
+    // reassign with `x.open = ...`; only `builtins.open = ...` could, and the resolver
+    // treats every write to the builtins module as a replacement.
+    const bareBuiltin = codec.binding && !codec.binding.module && !codec.binding.builtin
+    if (codec.binding && !bareBuiltin) found.add(codec.binding.root)
     if (codec.binding?.member) found.add(codec.binding.member)
     let template = codec.defaultNode()
     if (template.kind === 'Expr' && isNode(template.fields.value)) template = template.fields.value
+    // A method of a built-in type (lista.clear, arquivo.write) cannot be replaced by an
+    // attribute store either: the receiver is a list or a file, never an official object.
+    const receiverBinding = codec.bindingFor?.(codec.defaultNode())
+    if (receiverBinding && !receiverBinding.root && !receiverBinding.builtin) continue
     // Only callables are guarded: writing a data property (actor.x) is ordinary use.
     if (template.kind !== 'Call') continue
     let path: PythonNode | undefined = isNode(template.fields.func)
@@ -62,7 +70,12 @@ function guardedAttributes(codecs: readonly PythonBlockCodec[]): ReadonlySet<str
       path = isNode(path.fields.value) ? path.fields.value : undefined
     }
     // A method template's receiver is only a sample variable, not an API name.
-    if (!codec.bindingFor && path?.kind === 'Name' && typeof path.fields.id === 'string')
+    if (
+      !codec.bindingFor &&
+      !bareBuiltin &&
+      path?.kind === 'Name' &&
+      typeof path.fields.id === 'string'
+    )
       found.add(path.fields.id)
   }
   names = found
@@ -95,7 +108,10 @@ export function pythonASTToVisual(
       const binding = codec.bindingFor ? codec.bindingFor(value) : codec.binding
       if ((codec.bindingFor && !binding) || !resolves(value, binding)) continue
       if (codec.receiverKinds) {
-        const func = value.fields.func
+        // A command is an Expr statement around the call; the receiver is on the call.
+        const callNode =
+          value.kind === 'Expr' && isNode(value.fields.value) ? value.fields.value : value
+        const func = callNode.fields.func
         const receiver = isNode(func) && func.kind === 'Attribute' ? func.fields.value : undefined
         const kind = isNode(receiver)
           ? receiver.kind === 'Constant' && typeof receiver.fields.value === 'string'

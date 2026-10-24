@@ -37,25 +37,37 @@ def draw():
     if fim_de_jogo:
         screen.draw.filled_rect(Rect((120, 160), (400, 160)), (40, 30, 60))
         screen.draw.text('Fim de jogo!', center=(WIDTH / 2, 210), fontsize=56, color='yellow')
-        screen.draw.text('Você pegou ' + str(pontos) + ' moedas', center=(WIDTH / 2, 270), fontsize=32, color='white')
+        screen.draw.text('Você pegou ' + str(pontos) + ' moedas', center=(WIDTH / 2, 260), fontsize=32, color='white')
+        screen.draw.text('Aperte espaço para jogar de novo', center=(WIDTH / 2, 295), fontsize=26, color='white')
 
 
 def update():
     global pontos
     if fim_de_jogo:
         return
-    if keyboard.left:
+    if keyboard.left and raposa.left > 0:
         raposa.x = raposa.x - VELOCIDADE
-    if keyboard.right:
+    if keyboard.right and raposa.right < WIDTH:
         raposa.x = raposa.x + VELOCIDADE
-    if keyboard.up:
+    if keyboard.up and raposa.top > 0:
         raposa.y = raposa.y - VELOCIDADE
-    if keyboard.down:
+    if keyboard.down and raposa.bottom < HEIGHT:
         raposa.y = raposa.y + VELOCIDADE
     if raposa.colliderect(moeda):
         pontos = pontos + 1
         sounds.moeda.play()
         colocar_moeda()
+
+
+def on_key_down(key):
+    global pontos, tempo, fim_de_jogo
+    if fim_de_jogo and key == keys.SPACE:
+        pontos = 0
+        tempo = 30
+        fim_de_jogo = False
+        raposa.pos = (100, 300)
+        colocar_moeda()
+        clock.schedule_interval(contar_tempo, 1.0)
 
 
 colocar_moeda()

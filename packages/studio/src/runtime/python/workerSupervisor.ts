@@ -7,7 +7,12 @@ import {
 } from '@sistemazero/core/studio/python-activity'
 import type { StudioRuntimeInput } from '../types'
 import type { PythonRuntimePayload } from './frameProtocol'
-import type { PythonExecutionSnapshot, PythonWorkerCommand } from './protocol'
+import {
+  PYTHON_GRAPHICS_REPLY_LIMITS,
+  type PythonExecutionSnapshot,
+  type PythonGraphicsReply,
+  type PythonWorkerCommand,
+} from './protocol'
 import vendor from './vendor-manifest.json'
 import { isPythonRequestId, readPythonWorkerEvent } from './workerEvents'
 
@@ -20,6 +25,9 @@ type Phase =
   | 'completed'
   | 'failed'
   | 'stopped'
+
+/** Hard ceiling for graphics messages per second (frames and pixel requests). */
+const GRAPHICS_MESSAGES_PER_SECOND = 2000
 
 /** Trusted frame boundary. Worker FFI can forge every event, including result and booted. */
 export function createPythonWorkerSupervisor(options: {
@@ -35,7 +43,7 @@ export function createPythonWorkerSupervisor(options: {
   graphics?(
     request: string,
     images: { id: number; bytes: Uint8Array<ArrayBuffer> }[],
-  ): Promise<string>
+  ): Promise<PythonGraphicsReply>
 }) {
   const { worker } = options
   const activity =
@@ -49,6 +57,9 @@ export function createPythonWorkerSupervisor(options: {
   let inputId: string | undefined
   let windowStart = performance.now()
   let messages = 0
+  // A game exchanges one graphics message per frame (60 per second) plus pixel requests: they
+  // have their own budget, so a fast game never trips the limit meant for other messages.
+  let graphicsMessages = 0
   let consoleChars = 0
   let consoleChunks = 0
   let released = false
@@ -87,8 +98,8 @@ export function createPythonWorkerSupervisor(options: {
     release()
     if (phase === 'failed') options.emit({ type: 'failed', code, message })
   }
-  function send(command: PythonWorkerCommand) {
-    worker.postMessage(command)
+  function send(command: PythonWorkerCommand, transfer: Transferable[] = []) {
+    worker.postMessage(command, { transfer })
   }
   function state(next: 'ready' | 'running' | 'waiting-input' | 'completed') {
     phase = next
@@ -109,9 +120,13 @@ export function createPythonWorkerSupervisor(options: {
     const now = performance.now()
     if (now - windowStart >= 1000) {
       windowStart = now
-      messages = consoleChars = consoleChunks = 0
+      messages = graphicsMessages = consoleChars = consoleChunks = 0
     }
-    if (++messages > 256) {
+    const graphics =
+      !!event.data &&
+      typeof event.data === 'object' &&
+      (event.data as { type?: unknown }).type === 'graphics'
+    if (graphics ? ++graphicsMessages > GRAPHICS_MESSAGES_PER_SECOND : ++messages > 256) {
       fail('quota-exceeded', 'O programa excedeu o limite de mensagens.')
       return
     }
@@ -157,12 +172,38 @@ export function createPythonWorkerSupervisor(options: {
             if (terminal()) return undefined
             return options.graphics!(value.request, value.images)
           })
-          .then((response) => {
+          .then((reply) => {
             if (terminal() || pendingGraphics !== value.requestId) return
-            if (typeof response !== 'string' || response.length > 128_000)
+            const text = typeof reply === 'string' ? reply : reply?.text
+            const bytes = typeof reply === 'string' ? undefined : reply?.bytes
+            if (
+              typeof text !== 'string' ||
+              text.length > PYTHON_GRAPHICS_REPLY_LIMITS.textChars ||
+              (bytes !== undefined &&
+                (!(bytes instanceof Uint8Array) ||
+                  !(bytes.buffer instanceof ArrayBuffer) ||
+                  bytes.byteLength > PYTHON_GRAPHICS_REPLY_LIMITS.bytes))
+            )
               throw new Error('Resposta gráfica inválida.')
             pendingGraphics = undefined
-            send({ type: 'graphics-response', requestId: value.requestId, response })
+            if (bytes === undefined)
+              send({ type: 'graphics-response', requestId: value.requestId, response: text })
+            else {
+              // A whole buffer is transferred; a view on a bigger one is copied first.
+              const own =
+                bytes.byteOffset === 0 && bytes.byteLength === bytes.buffer.byteLength
+                  ? bytes
+                  : bytes.slice()
+              send(
+                {
+                  type: 'graphics-response',
+                  requestId: value.requestId,
+                  response: text,
+                  bytes: own,
+                },
+                [own.buffer],
+              )
+            }
           })
           .catch((error) =>
             fail(

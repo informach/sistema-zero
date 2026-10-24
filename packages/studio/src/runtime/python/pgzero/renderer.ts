@@ -1,6 +1,8 @@
 import { STUDIO_SNAPSHOT_LIMITS } from '../../snapshotImage'
 import type { StudioRuntimeImage } from '../../types'
-import { PGZERO_KEY_CODES, PGZERO_KEY_MODS, PGZERO_LETTER_BASE } from './keyCodes.generated'
+import { createPgzeroInputQueue, readPgzeroKey } from './inputQueue'
+import { PGZERO_KEY_MODS } from './keyCodes.generated'
+import { createPgzeroFramePacer } from './pacing'
 import {
   PGZERO_DEFAULT_FONT_ATTACHMENT,
   PGZERO_FONT_ATTACHMENT_BASE,
@@ -9,7 +11,6 @@ import {
   PGZERO_OP,
   PGZERO_OP_ARITY,
   type PgzeroAudioCommand,
-  type PgzeroInputEvent,
   type PgzeroTextStyle,
   readPgzeroFrameHeader,
 } from './protocol'
@@ -23,18 +24,17 @@ interface Sprite {
   close(): void
 }
 
-function toBase64(bytes: Uint8ClampedArray) {
-  let text = ''
-  for (let at = 0; at < bytes.length; at += 0x8000)
-    text += String.fromCharCode(...bytes.subarray(at, at + 0x8000))
-  return btoa(text)
+/** A reply with bytes: the pixels of a vector image, sent as a transferable buffer. */
+export interface PgzeroBinaryReply {
+  text: string
+  bytes: Uint8Array<ArrayBuffer>
 }
 
 export interface PgzeroRenderer {
   exchange(
     raw: string,
     attachments: { id: number; bytes: Uint8Array<ArrayBuffer> }[],
-  ): Promise<string>
+  ): Promise<string | PgzeroBinaryReply>
   capture(): Promise<StudioRuntimeImage | null>
   dispose(): void
 }
@@ -67,13 +67,14 @@ const css = (color: readonly number[] | undefined, fallback: string, alpha = tru
 export function createPgzeroRenderer(
   container: HTMLElement,
   options: {
-    onAudio?(commands: readonly PgzeroAudioCommand[]): void
+    /** `watch`: Python waits for sounds to end, so the host should report them. */
+    onAudio?(commands: readonly PgzeroAudioCommand[], watch: boolean): void
+    /** At most `limit` sounds that ended since the previous frame (their voice ids). */
+    takeEndedVoices?(limit: number): number[]
     onTitle?(title: string): void
   } = {},
 ): PgzeroRenderer {
   const images = new Map<number, Sprite>()
-  // RGBA of a vector image while its rows are being read (`images.x.get_at` on an SVG).
-  const decoding = new Map<number, Uint8ClampedArray>()
   const families = new Map<number, string>()
   const fontFaces: FontFace[] = []
   const strings = new Map<number, string>()
@@ -81,9 +82,8 @@ export function createPgzeroRenderer(
   const textCache = new Map<string, TextSurface>()
   let textCachePixels = 0
   let imagePixels = 0
-  const events: PgzeroInputEvent[] = []
-  let focusLost = false
-  const held = new Set<number>()
+  const input = createPgzeroInputQueue()
+  const pacer = createPgzeroFramePacer()
   const listeners = new AbortController()
   let canvas: HTMLCanvasElement | undefined
   let context: CanvasRenderingContext2D | undefined
@@ -105,29 +105,6 @@ export function createPgzeroRenderer(
   function active() {
     if (disposed) throw new Error('A execução do Pygame Zero foi encerrada.')
   }
-  function push(event: PgzeroInputEvent) {
-    if (disposed) return
-    const last = events.at(-1)
-    if (event[0] === 'mm' && last?.[0] === 'mm') {
-      // Merge motion: keep the latest position, add up the relative movement.
-      events[events.length - 1] = [
-        'mm',
-        event[1],
-        event[2],
-        last[3] + event[3],
-        last[4] + event[4],
-        event[5],
-      ]
-      return
-    }
-    if (events.length >= PGZERO_LIMITS.events) {
-      const motion = events.findIndex((item) => item[0] === 'mm')
-      if (motion < 0) return
-      events.splice(motion, 1)
-    }
-    events.push(event)
-  }
-
   function ensureCanvas() {
     active()
     if (context) return context
@@ -170,12 +147,6 @@ export function createPgzeroRenderer(
       mod |= PGZERO_KEY_MODS.caps
     return mod
   }
-  function keyCode(event: KeyboardEvent) {
-    // Letters follow the layout, like pygame; everything else by physical key.
-    if (/^[a-z]$/i.test(event.key) && event.code.startsWith('Key'))
-      return PGZERO_LETTER_BASE + event.key.toLowerCase().charCodeAt(0) - 97
-    return PGZERO_KEY_CODES[event.code]
-  }
   function position(event: PointerEvent | MouseEvent): [number, number] | undefined {
     if (!canvas || !width) return
     const bounds = canvas.getBoundingClientRect()
@@ -199,18 +170,16 @@ export function createPgzeroRenderer(
       (event) => {
         if (disposed) return
         const key = event as KeyboardEvent
-        if (key.ctrlKey || key.metaKey) return
-        const code = keyCode(key)
-        if (code === undefined) return
-        if (key.key !== 'Tab') key.preventDefault()
-        if (key.repeat || held.has(code)) return
-        held.add(code)
-        push([
-          'kd',
-          code,
+        const read = readPgzeroKey(key)
+        if (read.key === undefined) return
+        if (read.preventDefault) key.preventDefault()
+        input.keyDown(
+          key.code,
+          read.key,
           modifiers(key),
           key.key.length === 1 ? key.key : key.key === 'Enter' ? '\r' : '',
-        ])
+          key.repeat,
+        )
       },
       settings,
     )
@@ -219,16 +188,13 @@ export function createPgzeroRenderer(
       (event) => {
         if (disposed) return
         const key = event as KeyboardEvent
-        const code = keyCode(key)
-        if (code === undefined) return
-        held.delete(code)
-        push(['ku', code, modifiers(key)])
+        input.keyUp(key.code, modifiers(key))
       },
       settings,
     )
+    // SDL reports a key-up for every held key when the window loses focus.
     const release = () => {
-      if (held.size) focusLost = true
-      held.clear()
+      if (!disposed) input.releaseKeys()
     }
     target.addEventListener('blur', release, settings)
     element.ownerDocument.addEventListener(
@@ -247,7 +213,7 @@ export function createPgzeroRenderer(
         element.focus({ preventScroll: true })
         element.setPointerCapture?.(event.pointerId)
         lastMouse = pos
-        push(['md', pos[0], pos[1], button])
+        if (!disposed) input.buttonDown(pos[0], pos[1], button)
         event.preventDefault()
       },
       settings,
@@ -257,8 +223,8 @@ export function createPgzeroRenderer(
       (event) => {
         const pos = position(event)
         const button = BUTTONS[event.button === 1 ? 1 : event.button === 2 ? 2 : 0]
-        if (!pos || event.button > 2) return
-        push(['mu', pos[0], pos[1], button])
+        if (!pos || event.button > 2 || disposed) return
+        input.buttonUp(pos[0], pos[1], button)
       },
       settings,
     )
@@ -266,10 +232,10 @@ export function createPgzeroRenderer(
       'pointermove',
       (event) => {
         const pos = position(event)
-        if (!pos) return
+        if (!pos || disposed) return
         const previous = lastMouse ?? pos
         lastMouse = pos
-        push(['mm', pos[0], pos[1], pos[0] - previous[0], pos[1] - previous[1], buttonsMask(event)])
+        input.motion(pos[0], pos[1], pos[0] - previous[0], pos[1] - previous[1], buttonsMask(event))
       },
       settings,
     )
@@ -278,9 +244,7 @@ export function createPgzeroRenderer(
       (event) => {
         const pos = position(event)
         if (!pos || !event.deltaY) return
-        const button = event.deltaY < 0 ? 4 : 5
-        push(['md', pos[0], pos[1], button])
-        push(['mu', pos[0], pos[1], button])
+        if (!disposed) input.wheel(pos[0], pos[1], event.deltaY < 0 ? 4 : 5)
         event.preventDefault()
       },
       { ...settings, passive: false },
@@ -371,12 +335,23 @@ export function createPgzeroRenderer(
     return a
   }
   function makeCanvas(w: number, h: number) {
-    const surface = new OffscreenCanvas(Math.max(1, w), Math.max(1, h))
-    return { surface, ctx: surface.getContext('2d')! }
+    w = Math.max(1, Math.ceil(w))
+    h = Math.max(1, Math.ceil(h))
+    if (
+      w > PGZERO_LIMITS.textWidth ||
+      h > PGZERO_LIMITS.textWidth ||
+      w * h > PGZERO_LIMITS.textPixels
+    )
+      throw new Error(
+        'O texto ficou grande demais para desenhar. Use letras menores ou menos texto.',
+      )
+    const surface = new OffscreenCanvas(w, h)
+    const ctx = surface.getContext('2d')
+    if (!ctx) throw new Error('Não há memória para desenhar este texto.')
+    return { surface, ctx }
   }
   /** The text image ptext.getsurf would produce. */
-  function textSurface(value: string, style: PgzeroTextStyle): TextSurface {
-    const key = `${value}\u0000${JSON.stringify(style)}`
+  function textSurface(key: string, value: string, style: PgzeroTextStyle): TextSurface {
     const cached = textCache.get(key)
     if (cached) {
       textCache.delete(key)
@@ -405,6 +380,12 @@ export function createPgzeroRenderer(
     const outline =
       style.owidth !== undefined ? Math.ceil(style.owidth * size * OUTLINE_UNIT) : undefined
     const shadow = style.shadow?.map((part) => Math.ceil(part * size * SHADOW_UNIT))
+    // textbox picks its own letter size, so the outline and shadow are checked here as well.
+    if (
+      (outline ?? 0) > PGZERO_LIMITS.outlinePixels ||
+      shadow?.some((part) => Math.abs(part) > PGZERO_LIMITS.shadowPixels)
+    )
+      throw new Error('O contorno ou a sombra do texto ficou grande demais. Use números menores.')
     const pad = outline ?? 0
     const sx = shadow?.[0] ?? 0
     const sy = shadow?.[1] ?? 0
@@ -473,11 +454,13 @@ export function createPgzeroRenderer(
     const value = strings.get(record[at]!)
     const style = styles.get(record[at + 1]!)
     if (value === undefined || !style) throw new Error('Texto do Pygame Zero ausente.')
+    // The ids name a text and a style until their tables are renewed (the cache is cleared then).
+    const key = `${record[at]}:${record[at + 1]}`
     let x = record[at + 2]!
     let y = record[at + 3]!
     const hanchor = record[at + 4]!
     const vanchor = record[at + 5]!
-    const surface = textSurface(value, style)
+    const surface = textSurface(key, value, style)
     const angle = (((style.angle ?? 0) % 360) + 360) % 360
     if (angle) {
       const [w0, h0] = surface.unrotated
@@ -588,11 +571,18 @@ export function createPgzeroRenderer(
     }
     frameSequence++
   }
-  /** Waits for the display (the game's ~60 Hz clock) and paints when the frame changed. */
+  /**
+   * Waits for the next game frame on the display (60 per second, like Pygame Zero's
+   * clock.tick(60), whatever the display's refresh rate) and paints when the frame changed.
+   */
   function nextFrame(repaint: boolean) {
     return new Promise<void>((resolve, reject) => {
       pendingPaint = { resolve, reject }
-      raf = requestAnimationFrame(() => {
+      const tick = (now: number) => {
+        if (!pacer.ready(now)) {
+          raf = requestAnimationFrame(tick)
+          return
+        }
         raf = undefined
         pendingPaint = undefined
         try {
@@ -601,7 +591,8 @@ export function createPgzeroRenderer(
         } catch (error) {
           reject(error as Error)
         }
-      })
+      }
+      raf = requestAnimationFrame(tick)
     })
   }
 
@@ -678,26 +669,16 @@ export function createPgzeroRenderer(
       close: () => bitmap.close(),
     })
   }
-  function vectorRows(id: number, row: number, rows: number) {
+  /** RGBA of a vector image at its own size, in one transferable buffer. */
+  function vectorPixels(id: number) {
     const image = images.get(id)
     if (!image?.vector) throw new Error('Só os desenhos SVG têm os pixels lidos assim.')
-    if (row + rows > image.height || image.width * rows * 4 > PGZERO_LIMITS.decodeBytes)
-      throw new Error('Pedido de pixels do Pygame Zero inválido.')
-    let pixels = decoding.get(id)
-    if (!pixels || row === 0) {
-      const surface = document.createElement('canvas')
-      surface.width = image.width
-      surface.height = image.height
-      const ctx = surface.getContext('2d', { willReadFrequently: true })
-      if (!ctx) throw new Error('Não consegui ler os pixels do desenho.')
-      ctx.drawImage(image.source, 0, 0, image.width, image.height)
-      pixels = ctx.getImageData(0, 0, image.width, image.height).data
-      decoding.set(id, pixels)
-    }
-    const start = row * image.width * 4
-    const chunk = pixels.subarray(start, start + rows * image.width * 4)
-    if (row + rows === image.height) decoding.delete(id)
-    return toBase64(chunk)
+    const surface = new OffscreenCanvas(image.width, image.height)
+    const ctx = surface.getContext('2d', { willReadFrequently: true })
+    if (!ctx) throw new Error('Não consegui ler os pixels do desenho.')
+    ctx.drawImage(image.source, 0, 0, image.width, image.height)
+    const data = ctx.getImageData(0, 0, image.width, image.height).data
+    return new Uint8Array(data.buffer, data.byteOffset, data.byteLength) as Uint8Array<ArrayBuffer>
   }
   async function loadFont(id: number, bytes: Uint8Array<ArrayBuffer>) {
     if (bytes.byteLength > PGZERO_LIMITS.fontBytes) throw new Error('A fonte é grande demais.')
@@ -738,21 +719,30 @@ export function createPgzeroRenderer(
           if (!bytes) throw new Error(`Faltou a imagem ${filePath}.`)
           await decodeImage(id, bytes, filePath, w, h)
         }
-        if (header.decode) return JSON.stringify({ pixels: vectorRows(...header.decode) })
+        if (header.decode !== undefined) return { text: '{}', bytes: vectorPixels(header.decode) }
         for (const [id] of header.fonts) {
           const bytes = supplied.get(PGZERO_FONT_ATTACHMENT_BASE + id)
           if (!bytes) throw new Error('Faltou uma fonte do jogo.')
           await loadFont(id, bytes)
         }
+        let renewed = false
         for (const [id, value] of header.strings) {
-          if (id === 0) strings.clear()
-          else strings.set(id, value)
+          if (id === 0) {
+            strings.clear()
+            renewed = true
+          } else strings.set(id, value)
         }
         for (const [id, style] of header.styles) {
-          if (id === 0) styles.clear()
-          else if (style) styles.set(id, style)
+          if (id === 0) {
+            styles.clear()
+            renewed = true
+          } else if (style) styles.set(id, style)
         }
-        if (header.audio.length) options.onAudio?.(header.audio)
+        if (renewed) {
+          textCache.clear()
+          textCachePixels = 0
+        }
+        if (header.audio.length || header.watch) options.onAudio?.(header.audio, header.watch)
         options.onTitle?.(header.title)
         const resized = header.w !== width || header.h !== height
         resize(header.w, header.h)
@@ -765,13 +755,21 @@ export function createPgzeroRenderer(
         // Always wait for the display: this is the game's frame clock (about 60 per second).
         await nextFrame(!header.keep || resized || !frameSequence)
         active()
-        const reply = {
-          events: events.splice(0),
+        const ended = options.takeEndedVoices?.(PGZERO_LIMITS.endedVoices) ?? []
+        return JSON.stringify({
+          events: input.take(),
           now: performance.now(),
-          ...(focusLost ? { focusLost: true } : {}),
-        }
-        focusLost = false
-        return JSON.stringify(reply)
+          ...(ended.length ? { ended } : {}),
+        })
+      } catch (error) {
+        // The program stops with a Python traceback, not with a silent failure of the page.
+        if (disposed) throw error
+        return JSON.stringify({
+          error:
+            error instanceof Error
+              ? error.message.slice(0, 1000)
+              : 'O navegador não conseguiu mostrar o quadro.',
+        })
       } finally {
         busy = false
       }
@@ -833,11 +831,10 @@ export function createPgzeroRenderer(
       pendingPaint = undefined
       for (const image of images.values()) image.close()
       images.clear()
-      decoding.clear()
       for (const face of fontFaces) (container.ownerDocument.fonts as FontFaceSet).delete(face)
       fontFaces.length = 0
       textCache.clear()
-      events.length = 0
+      input.clear()
       canvas?.remove()
       canvas = undefined
       context = undefined

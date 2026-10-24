@@ -32,6 +32,7 @@ export function SoundsTab({
   onUpload,
   onRename,
   onDelete,
+  codeNameOf,
 }: SoundsTabProps): JSX.Element {
   return (
     <div className="flex flex-col gap-4">
@@ -88,6 +89,7 @@ export function SoundsTab({
                   asset={asset}
                   what="o som"
                   onRename={onRename}
+                  codeName={codeNameOf?.(asset)}
                   className="min-w-0 flex-1"
                 />
                 {/* biome-ignore lint/a11y/useMediaCaption: efeito sonoro de jogo, sem fala/legenda */}

@@ -2,7 +2,9 @@ import {
   isStudioPythonAssetPath,
   studioPortableFileConflict,
 } from '@sistemazero/core/studio/portable-path'
-import type { ProjectAsset } from './projectAssets'
+import { pgzeroSvgSize } from '../runtime/python/pgzero/svgSize'
+import { decodeProjectAsset } from './assetBinary'
+import { normalizeAssetName, type ProjectAsset } from './projectAssets'
 import type { PythonProjectDocument } from './pythonProject'
 
 /**
@@ -12,8 +14,8 @@ import type { PythonProjectDocument } from './pythonProject'
  * `sounds.pulo.play()`, `music.play('tema')`). Turtle and Python without an extension keep the
  * historical `assets/<name>.<ext>` path; this module only speaks for Pygame Zero.
  *
- * Pure on purpose (no runtime import): the extension id is pinned against the runtime
- * contract by `pgzeroMediaPaths.test.ts`.
+ * Pure on purpose: the only runtime import is the pure SVG size rule the module itself uses,
+ * and the extension id is pinned against the runtime contract by `pgzeroMediaPaths.test.ts`.
  */
 export const PGZERO_EXTENSION_ID = 'python-pgzero'
 
@@ -65,6 +67,19 @@ const PYTHON_KEYWORDS = new Set([
   'while',
   'with',
   'yield',
+])
+
+/**
+ * Attributes of pgzero 1.2.1's `ResourceLoader` that a stem could spell: `images.load` or
+ * `sounds.cache` are the loader's own members, so `__getattr__` never reaches the file.
+ */
+const LOADER_ATTRIBUTES = new Set([
+  'load',
+  'cache',
+  'cache_key',
+  'subpath',
+  'have_root',
+  'validate_root',
 ])
 
 const STEM_PREFIX: Readonly<Record<PgzeroMediaFolder, string>> = {
@@ -184,7 +199,12 @@ export function pgzeroMediaPath(input: {
   const ext = input.extension.toLowerCase()
   for (let index = 1; index <= 999; index++) {
     const candidate = index === 1 ? stem : `${stem}_${index}`
-    if (takenStems.has(candidate) || PYTHON_KEYWORDS.has(candidate)) continue
+    if (
+      takenStems.has(candidate) ||
+      PYTHON_KEYWORDS.has(candidate) ||
+      LOADER_ATTRIBUTES.has(candidate)
+    )
+      continue
     const path = `${dir}/${candidate}.${ext}`
     if (!isStudioPythonAssetPath(path)) break
     if (
@@ -194,4 +214,143 @@ export function pgzeroMediaPath(input: {
     return { path }
   }
   return { error: 'Não encontrei um nome livre para este arquivo na pasta do Pygame Zero.' }
+}
+
+const FOLDERS: readonly PgzeroMediaFolder[] = ['images', 'sounds', 'music']
+
+/** The folder of a path that sits in `<main dir>/<folder>/`, if any. */
+function pgzeroFolderOf(path: string, entrypoint: string): PgzeroMediaFolder | undefined {
+  const base = parentOf(entrypoint)
+  return FOLDERS.find((folder) => parentOf(path) === (base ? `${base}/${folder}` : folder))
+}
+
+function extensionOf(path: string): string {
+  const leaf = path.slice(path.lastIndexOf('/') + 1)
+  const dot = leaf.lastIndexOf('.')
+  return dot < 0 ? '' : leaf.slice(dot + 1).toLowerCase()
+}
+
+/**
+ * The name the child writes in the code (`Actor('nave_azul')`, `sounds.pulo.play()`): the file
+ * stem, which can differ from the material name (`nave-azul`, or `acerto_2` beside an `acerto`
+ * already in the folder). Undefined outside the Pygame Zero folders.
+ */
+export function pgzeroCodeName(
+  asset: Pick<ProjectAsset, 'proPath'>,
+  entrypoint: string,
+): string | undefined {
+  if (!asset.proPath || !pgzeroFolderOf(asset.proPath, entrypoint)) return
+  return stemOf(asset.proPath)
+}
+
+/**
+ * The material name that reads like its code name (`acerto_2` → `acerto-2`), so the panel and
+ * the code say the same thing. Keeps `fallback` when another material already has that name.
+ */
+export function pgzeroNameForPath(
+  path: string,
+  fallback: string,
+  assets: readonly ProjectAsset[],
+  id: string,
+): string {
+  const name = normalizeAssetName(stemOf(path))
+  return name && !assets.some((other) => other.id !== id && other.name === name) ? name : fallback
+}
+
+/**
+ * Where a Pygame Zero material goes when it is (re)named: the file follows the name, so
+ * `sounds.<new name>` finds it. The asset's own file never blocks its new path.
+ */
+export function pgzeroRenamedAsset(
+  project: PythonProjectDocument,
+  asset: ProjectAsset,
+  name: string,
+): { asset: ProjectAsset } | { error: string } {
+  const folder = asset.proPath
+    ? pgzeroFolderOf(asset.proPath, project.python.entrypoint)
+    : undefined
+  const placed = pgzeroMediaPath({
+    entrypoint: project.python.entrypoint,
+    name,
+    kind: asset.kind,
+    extension: asset.proPath ? extensionOf(asset.proPath) : '',
+    role: folder === 'sounds' ? 'sound' : folder === 'music' ? 'music' : undefined,
+    occupied: pythonProjectOccupiedPaths(project, asset.id),
+  })
+  if ('error' in placed) return placed
+  return {
+    asset: {
+      ...asset,
+      name: pgzeroNameForPath(placed.path, name, project.assets ?? [], asset.id),
+      proPath: placed.path,
+    },
+  }
+}
+
+/** The Pygame Zero name of a file the child sees in a message: the WebP or FLAC it cannot open. */
+function unreadableLabel(asset: ProjectAsset): string {
+  const ext = asset.proPath ? extensionOf(asset.proPath) : ''
+  return ext ? `${asset.name} (${ext.toUpperCase()})` : asset.name
+}
+
+/**
+ * Installing Pygame Zero on a project that already has materials: each image and sound moves to
+ * the folder Pygame Zero searches (`assets/nave.png` → `images/nave.png`). A format Pygame Zero
+ * cannot open (WebP, FLAC, M4A, a 3D model) is listed instead of being left unreachable.
+ */
+export function pgzeroRelocatedAssets(
+  project: PythonProjectDocument,
+): { assets: ProjectAsset[]; coverAssetName?: string } | { error: string } {
+  const entrypoint = project.python.entrypoint
+  const assets = [...(project.assets ?? [])]
+  const unreadable: string[] = []
+  let cover = project.coverAssetName
+  for (const [index, asset] of assets.entries()) {
+    const path = asset.proPath
+    if (path && pgzeroFolderOf(path, entrypoint)) {
+      const placed = pgzeroMediaFolder(asset.kind, extensionOf(path))
+      if (!('error' in placed)) continue
+    }
+    const moved = pgzeroRenamedAsset({ ...project, assets }, asset, asset.name)
+    if ('error' in moved) {
+      unreadable.push(unreadableLabel(asset))
+      continue
+    }
+    if (cover === asset.name) cover = moved.asset.name
+    assets[index] = moved.asset
+  }
+  if (unreadable.length)
+    return {
+      error: `O Pygame Zero não abre ${unreadable.length === 1 ? 'este material' : 'estes materiais'}: ${unreadable.join(', ')}. Apague ou envie de novo como imagem PNG, GIF, JPG, BMP ou SVG, som WAV ou OGG, ou música MP3 ou OGG.`,
+    }
+  return { assets, ...(cover !== undefined ? { coverAssetName: cover } : {}) }
+}
+
+/** The side Pygame Zero's image loader accepts (`MAX_IMAGE_SIDE` in py/pgzero/_sz.py). */
+export const PGZERO_MAX_IMAGE_SIDE = 4096
+
+/**
+ * The size Pygame Zero reads from an SVG (root width/height, else the viewBox), or why the game
+ * would refuse it at `Actor(...)`. The browser can still show an SVG Pygame Zero cannot size
+ * (`width="100%"`, `em` units), so the check happens when the file enters the project.
+ */
+export function pgzeroSvgAssetSize(
+  dataUrl: string,
+): { width: number; height: number } | { error: string } {
+  let size: { width: number; height: number } | null = null
+  try {
+    size = pgzeroSvgSize(new TextDecoder().decode(decodeProjectAsset(dataUrl).bytes))
+  } catch {
+    size = null
+  }
+  if (!size)
+    return {
+      error:
+        'Este SVG não diz o próprio tamanho em pixels (largura e altura, ou viewBox), e o Pygame Zero precisa saber. Salve de novo no Pinta ou envie um PNG.',
+    }
+  if (size.width > PGZERO_MAX_IMAGE_SIDE || size.height > PGZERO_MAX_IMAGE_SIDE)
+    return {
+      error: `Este SVG é grande demais para o Pygame Zero (${size.width}×${size.height}); cada lado pode ter até ${PGZERO_MAX_IMAGE_SIDE} pixels.`,
+    }
+  return size
 }

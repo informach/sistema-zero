@@ -55,21 +55,31 @@ export function pythonCodecIndex(codecs: readonly PythonBlockCodec[]): PythonCod
         bucket.push({ order, codec })
       }
   })
+  // Only keys a codec declares are cached: the names of a child's own functions and methods
+  // (any name, one per program) share the general list of their syntax kind.
   const merged = new Map<string, readonly PythonBlockCodec[]>()
+  const generalOf = new Map<string, readonly PythonBlockCodec[]>()
   const empty: readonly PythonBlockCodec[] = Object.freeze([])
+  const general = (kind: string) => {
+    let found = generalOf.get(kind)
+    if (!found) {
+      const entries = buckets.get(`${kind}\u0000${ANY}`) ?? []
+      found = entries.length ? entries.map((entry) => entry.codec) : empty
+      generalOf.set(kind, found)
+    }
+    return found
+  }
   const index: PythonCodecIndex = {
     candidates(value) {
       const name = nodeName(value)
-      const key = name === undefined ? `${value.kind}\u0000${ANY}` : `${value.kind}\u0000${name}`
+      const key = `${value.kind}\u0000${name}`
+      const specific = name === undefined ? undefined : buckets.get(key)
+      if (!specific) return general(value.kind)
       const found = merged.get(key)
       if (found) return found
-      const general = buckets.get(`${value.kind}\u0000${ANY}`) ?? []
-      const specific = name === undefined ? [] : (buckets.get(key) ?? [])
-      const result = specific.length
-        ? [...specific, ...general].sort((a, b) => a.order - b.order).map((entry) => entry.codec)
-        : general.length
-          ? general.map((entry) => entry.codec)
-          : empty
+      const result = [...specific, ...(buckets.get(`${value.kind}\u0000${ANY}`) ?? [])]
+        .sort((a, b) => a.order - b.order)
+        .map((entry) => entry.codec)
       merged.set(key, result)
       return result
     },

@@ -9,8 +9,9 @@ import {
   PGZERO_GAMES,
   type PgzeroGame,
 } from '../src/examples/python/pgzeroGames.manifest'
+import { PGZERO_UPSTREAM } from '../src/runtime/python/pgzero/contract'
 import { readVisualExampleBlockMetadata } from './python/generate-visual-example-block-metadata'
-import { PGZERO_GAME_ART } from './python/pgzero-art'
+import { PGZERO_GAME_ART } from './python/pgzero-art-index'
 import { renderReferenceSound } from './python/reference-game-audio'
 
 /**
@@ -74,7 +75,8 @@ ${
 
 O Pygame Zero procura as imagens em \`images/\`, os sons em \`sounds/\` e as músicas em
 \`music/\`, pelo nome do arquivo sem a extensão: \`Actor('nave')\` usa \`images/nave\`.
-Você pode trocar qualquer um deles por um desenho seu do Pinta, com o mesmo nome.
+Para trocar um desenho, edite-o no Pinta pelo Estúdio, ou traga outro e use no código o
+nome que o painel mostra em "nome no código".
 `
     : ''
 }
@@ -83,8 +85,8 @@ Você pode trocar qualquer um deles por um desenho seu do Pinta, com o mesmo nom
 O Pygame Zero roda no computador com o pygame-ce:
 
 \`\`\`
-python -m pip install pygame-ce numpy
-python -m pip install --no-deps pgzero
+python -m pip install pygame-ce==${PGZERO_UPSTREAM.pygameCe} numpy
+python -m pip install --no-deps pgzero==${PGZERO_UPSTREAM.pgzero}
 python main.py
 \`\`\`
 
@@ -97,6 +99,18 @@ formato que o Pygame Zero do computador abre.
 `
 }
 
+function inspirationText(game: PgzeroGame) {
+  if ('book' in game && game.book === 'wireframe')
+    return `A mecânica do jogo se inspira na receita "${game.inspiration}" da série "Source Code"
+da revista *Wireframe* (reunida no *Wireframe Game Dev Cookbook*, Raspberry Pi Press). Nenhum
+código, texto ou imagem da revista foi incorporado. Este é um projeto educacional
+independente, sem afiliação à Raspberry Pi Ltd nem aos donos dos jogos que inspiraram a
+receita.`
+  return `A mecânica do jogo se inspira no projeto "${game.inspiration}" do livro *Coding Games in
+Python* (DK, 2018). Nenhum código, texto ou imagem do livro foi incorporado. Este é um
+projeto educacional independente, sem afiliação à DK.`
+}
+
 function notice(game: PgzeroGame) {
   return `# Autoria e recursos
 
@@ -105,9 +119,7 @@ são originais, distribuídos sob a licença MIT em \`LICENSE\`. Os desenhos for
 como código (\`scripts/python/pgzero-art.ts\` no repositório do Sistema Zero), e os sons
 foram sintetizados a partir de partituras.
 
-A mecânica do jogo se inspira no projeto "${game.inspiration}" do livro *Coding Games in
-Python* (DK, 2018). Nenhum código, texto ou imagem do livro foi incorporado. Este é um
-projeto educacional independente, sem afiliação à DK.
+${inspirationText(game)}
 
 O programa usa a API do Pygame Zero (pgzero 1.2.1, LGPL-3.0) e roda no computador com o
 pygame-ce.

@@ -20,9 +20,20 @@ def novo_desenho():
     terminou = False
     for numero in range(QUANTIDADE):
         ponto = Actor('ponto')
+        sortear_lugar_livre(ponto)
+        pontos.append(ponto)
+
+
+def sortear_lugar_livre(ponto):
+    # Sorteia de novo enquanto o ponto cair perto demais de outro: os números não se cobrem.
+    perto = True
+    while perto:
         ponto.x = random.randint(40, WIDTH - 40)
         ponto.y = random.randint(60, HEIGHT - 40)
-        pontos.append(ponto)
+        perto = False
+        for outro in pontos:
+            if ponto.distance_to(outro) < 60:
+                perto = True
 
 
 def draw():

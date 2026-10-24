@@ -489,6 +489,20 @@ export function PythonBlocklyEditor(props: PythonBlocklyEditorProps) {
     }
     workspace.addChangeListener(changed)
     const unregisterFlush = pending?.register(flushNow)
+    // A pending gesture is applied before the child acts anywhere else (typing in the code of
+    // the Ponte, a button that rewrites the file): once the source changes, the blocks can no
+    // longer be committed against it and the gesture would be lost.
+    const leave = (event: Event) => {
+      if (commitTimer === undefined) return
+      const target = event instanceof FocusEvent ? event.relatedTarget : event.target
+      if (target instanceof Node && element.contains(target)) return
+      // Blockly's own widgets (dropdowns, the field editor) live outside the workspace element.
+      if (target instanceof Element && target.closest('.blocklyWidgetDiv, .blocklyDropDownDiv'))
+        return
+      flushNow()
+    }
+    element.addEventListener('focusout', leave)
+    document.addEventListener('pointerdown', leave, true)
     const adapter = createBlocklyHistory(workspace)
     const unregisterHistory = history?.register('blocks', adapter)
     const activate = () => history?.markActive('blocks')
@@ -618,7 +632,12 @@ export function PythonBlocklyEditor(props: PythonBlocklyEditorProps) {
         projectId: project.id,
         path: props.path,
         sourceHash: studioTutorSourceHash(source),
-        synchronization: draft?.pending || offer ? 'pending' : sameSource ? 'ready' : 'unavailable',
+        synchronization:
+          draft?.pending || offer || commitTimer !== undefined
+            ? 'pending'
+            : sameSource
+              ? 'ready'
+              : 'unavailable',
         // A parse still in flight must not describe old blocks as current source.
         ...(sameSource ? { workspace: Blockly.serialization.workspaces.save(workspace) } : {}),
       }
@@ -638,6 +657,8 @@ export function PythonBlocklyEditor(props: PythonBlocklyEditorProps) {
       adapter.dispose()
       resize.disconnect()
       element.removeEventListener('pointerdown', activate)
+      element.removeEventListener('focusout', leave)
+      document.removeEventListener('pointerdown', leave, true)
       element.removeEventListener('focusin', activate)
       workspace.removeChangeListener(changed)
       parser.dispose()

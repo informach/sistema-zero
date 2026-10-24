@@ -39,6 +39,7 @@ def draw():
     if acabou:
         screen.draw.textbox('Fim! Você acertou ' + str(pontos) + ' de ' + str(len(perguntas)), caixa_pergunta, color='white')
         screen.draw.textbox(':)', caixa_tempo, color='white')
+        screen.draw.text('Clique para jogar de novo', bottomleft=(20, 474), fontsize=24, color='white')
         return
     pergunta = perguntas[numero]
     screen.draw.textbox(pergunta[0], caixa_pergunta, color='white')
@@ -54,23 +55,30 @@ def proxima_pergunta():
     global numero, tempo, acabou
     numero = numero + 1
     tempo = TEMPO_POR_PERGUNTA
+    # O relógio recomeça junto com a pergunta: cada uma tem os segundos inteiros.
+    clock.unschedule(contar_tempo)
     if numero == len(perguntas):
         acabou = True
-        clock.unschedule(contar_tempo)
+    else:
+        clock.schedule_interval(contar_tempo, 1)
 
 
 def contar_tempo():
     global tempo
-    if tempo > 0:
-        tempo = tempo - 1
-    else:
+    tempo = tempo - 1
+    if tempo == 0:
         sounds.erro.play()
         proxima_pergunta()
 
 
 def on_mouse_down(pos):
-    global pontos
+    global pontos, numero, tempo, acabou
     if acabou:
+        numero = 0
+        pontos = 0
+        tempo = TEMPO_POR_PERGUNTA
+        acabou = False
+        clock.schedule_interval(contar_tempo, 1)
         return
     certa = perguntas[numero][5]
     indice = 1

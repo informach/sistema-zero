@@ -8,6 +8,8 @@ export type PythonAudioRequest =
   | { version: 1; op: 'play'; id: number; path: string; loop: boolean; volume: number }
   | { version: 1; op: 'stop'; id: number | null }
   | { version: 1; op: 'volume'; id: number; volume: number }
+  /** Nothing to do: only collects the sounds that ended (Pygame Zero waits for them). */
+  | { version: 1; op: 'poll' }
 
 /** WAV for sz_audio and sound effects; MP3/OGG for Pygame Zero's music folder. */
 export const PYTHON_AUDIO_EXTENSIONS = ['.wav', '.ogg', '.oga', '.mp3'] as const
@@ -46,6 +48,10 @@ export function readPythonAudioRequest(raw: unknown): PythonAudioRequest {
   if (!value || typeof value !== 'object' || Array.isArray(value)) invalid()
   const request = value as Record<string, unknown>
   if (request.version !== 1) invalid()
+  if (request.op === 'poll') {
+    if (Object.keys(request).some((key) => !['version', 'op'].includes(key))) invalid()
+    return { version: 1, op: 'poll' }
+  }
   if (request.op === 'volume') {
     if (
       Object.keys(request).some((key) => !['version', 'op', 'id', 'volume'].includes(key)) ||

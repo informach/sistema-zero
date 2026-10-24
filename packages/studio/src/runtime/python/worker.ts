@@ -4,7 +4,12 @@ import { StudioPythonActivitySchema } from '@sistemazero/core/studio/python-acti
 import { isPythonCanvasExtension, type PythonCanvasExtension } from './canvasExtension'
 import { createPythonConsoleBuffer } from './consoleBuffer'
 import { createPythonInterpreter, PYODIDE_VERSION, PYTHON_VERSION } from './interpreter'
-import { PYTHON_CONSOLE_LIMITS, type PythonWorkerEvent } from './protocol'
+import {
+  PYTHON_CONSOLE_LIMITS,
+  PYTHON_GRAPHICS_REPLY_LIMITS,
+  type PythonGraphicsReply,
+  type PythonWorkerEvent,
+} from './protocol'
 import { readPythonWireSnapshot } from './wireSnapshot'
 
 const post = globalThis.postMessage.bind(globalThis)
@@ -16,7 +21,7 @@ let phase: 'booting' | 'booted' | 'preparing' | 'prepared' | 'running' | 'comple
 let pendingInput: { id: string; resolve(value: string): void } | undefined
 let inputSequence = 0
 let graphicsSequence = 0
-let pendingGraphics: { id: string; resolve(value: string): void } | undefined
+let pendingGraphics: { id: string; resolve(value: PythonGraphicsReply): void } | undefined
 let audioSequence = 0
 let pendingAudio: { id: string; resolve(value: string): void } | undefined
 let activityRequest: string | undefined
@@ -141,12 +146,24 @@ export async function startPythonWorker(options: { canvas?: PythonCanvasExtensio
             message.requestId !== pendingGraphics.id ||
             !('response' in message) ||
             typeof message.response !== 'string' ||
-            message.response.length > 128_000
+            message.response.length > PYTHON_GRAPHICS_REPLY_LIMITS.textChars
+          )
+            throw new Error('Resposta gráfica fora de ordem.')
+          const bytes = 'bytes' in message ? message.bytes : undefined
+          if (
+            bytes !== undefined &&
+            (!(bytes instanceof Uint8Array) ||
+              !(bytes.buffer instanceof ArrayBuffer) ||
+              bytes.byteLength > PYTHON_GRAPHICS_REPLY_LIMITS.bytes)
           )
             throw new Error('Resposta gráfica fora de ordem.')
           const pending = pendingGraphics
           pendingGraphics = undefined
-          pending.resolve(message.response)
+          pending.resolve(
+            bytes === undefined
+              ? message.response
+              : { text: message.response, bytes: bytes as Uint8Array<ArrayBuffer> },
+          )
           return
         }
         if (message.type === 'input') {

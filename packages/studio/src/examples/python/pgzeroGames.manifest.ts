@@ -23,6 +23,8 @@ export interface PgzeroGame {
   experience: ExampleExperience
   /** Which book chapter inspired the mechanics (documented in the game's NOTICE.md). */
   inspiration: string
+  /** The book of the recipe: DK's Coding Games in Python (default) or Wireframe's cookbook. */
+  book?: 'wireframe'
   howToPlay: string
   /** Small changes a child can try, in the README. */
   ideas: readonly string[]
@@ -34,8 +36,8 @@ export interface PgzeroGame {
 }
 
 /**
- * The Pygame Zero examples of the gallery (lote 1: the nine games of DK's Coding Games in Python
- * and its warm-up). Each one is an original implementation of the mechanics with original art
+ * The Pygame Zero examples of the gallery: the nine games of DK's Coding Games in Python and its
+ * warm-up, then the recipes of Wireframe's "Source Code" series (book: 'wireframe'). Each one is an original implementation of the mechanics with original art
  * (scripts/python/pgzero-art.ts) and sounds; nothing from the book is copied.
  */
 export const PGZERO_GAMES = [
@@ -58,7 +60,7 @@ export const PGZERO_GAMES = [
     ],
     sounds: [],
     music: [],
-    receipt: 'ola-pgzero-r1.json.snapshot',
+    receipt: 'ola-pgzero-r3.json.snapshot',
   },
   {
     key: 'acerte-a-maca',
@@ -83,7 +85,7 @@ export const PGZERO_GAMES = [
       { path: 'erro.wav', notes: [330, 220], noteMilliseconds: 120 },
     ],
     music: [],
-    receipt: 'acerte-a-maca-r1.json.snapshot',
+    receipt: 'acerte-a-maca-r3.json.snapshot',
   },
   {
     key: 'raposa-moedas',
@@ -107,7 +109,7 @@ export const PGZERO_GAMES = [
       { path: 'fim.wav', notes: [523, 392, 262], noteMilliseconds: 150 },
     ],
     music: [],
-    receipt: 'raposa-moedas-r1.json.snapshot',
+    receipt: 'raposa-moedas-r3.json.snapshot',
   },
   {
     key: 'ligue-os-pontos',
@@ -133,7 +135,7 @@ export const PGZERO_GAMES = [
       { path: 'fim.wav', notes: [523, 659, 784, 1047], noteMilliseconds: 110 },
     ],
     music: [],
-    receipt: 'ligue-os-pontos-r1.json.snapshot',
+    receipt: 'ligue-os-pontos-r3.json.snapshot',
   },
   {
     key: 'estrela-vermelha',
@@ -158,7 +160,7 @@ export const PGZERO_GAMES = [
       { path: 'erro.wav', notes: [300, 200], noteMilliseconds: 120 },
     ],
     music: [],
-    receipt: 'estrela-vermelha-r1.json.snapshot',
+    receipt: 'estrela-vermelha-r3.json.snapshot',
   },
   {
     key: 'quiz-relampago',
@@ -182,7 +184,7 @@ export const PGZERO_GAMES = [
       { path: 'erro.wav', notes: [220, 165], noteMilliseconds: 140 },
     ],
     music: [],
-    receipt: 'quiz-relampago-r1.json.snapshot',
+    receipt: 'quiz-relampago-r3.json.snapshot',
   },
   {
     key: 'voo-de-balao',
@@ -205,7 +207,7 @@ export const PGZERO_GAMES = [
     ],
     sounds: [{ path: 'fim.wav', notes: [440, 330, 220], noteMilliseconds: 140 }],
     music: [],
-    receipt: 'voo-de-balao-r1.json.snapshot',
+    receipt: 'voo-de-balao-r3.json.snapshot',
   },
   {
     key: 'desafio-da-danca',
@@ -237,7 +239,7 @@ export const PGZERO_GAMES = [
         noteMilliseconds: 250,
       },
     ],
-    receipt: 'desafio-da-danca-r1.json.snapshot',
+    receipt: 'desafio-da-danca-r3.json.snapshot',
   },
   {
     key: 'jardim-feliz',
@@ -262,7 +264,7 @@ export const PGZERO_GAMES = [
       { path: 'fim.wav', notes: [392, 330, 262], noteMilliseconds: 150 },
     ],
     music: [],
-    receipt: 'jardim-feliz-r2.json.snapshot',
+    receipt: 'jardim-feliz-r4.json.snapshot',
   },
   {
     key: 'dragoes-dorminhocos',
@@ -287,7 +289,232 @@ export const PGZERO_GAMES = [
       { path: 'dano.wav', notes: [200, 150], noteMilliseconds: 120, noise: true },
     ],
     music: [],
-    receipt: 'dragoes-dorminhocos-r1.json.snapshot',
+    receipt: 'dragoes-dorminhocos-r3.json.snapshot',
+  },
+  {
+    key: 'barris-na-rampa',
+    stem: 'barrisNaRampa',
+    name: 'Barris na Rampa',
+    emoji: '🛢️',
+    description: 'Suba as vigas e as escadas até o topo, pulando os barris que rolam rampa abaixo.',
+    genre: 'Plataforma',
+    concepts: ['Blocos', 'Ponte', 'Código', 'Mapa de cores', 'Gravidade', 'Pixel art'],
+    difficulty: 'advanced',
+    experience: 'game',
+    inspiration: 'Donkey Kong',
+    book: 'wireframe',
+    howToPlay:
+      'Ande com as setas, suba e desça as escadas com cima e baixo e pule com espaço. Para passar um barril, pule correndo na direção dele. Antes de subir, olhe se não vem barril lá em cima. Chegue à bandeira no alto.',
+    ideas: [
+      'Mude no Pinta as cores do mapa (images/mapa.png) para criar outra fase.',
+      'Faça os barris saírem mais depressa.',
+      'Dê mais vidas ao herói.',
+    ],
+    sounds: [
+      { path: 'pulo.wav', notes: [523, 784], noteMilliseconds: 50 },
+      { path: 'batida.wav', notes: [180, 120], noteMilliseconds: 120, noise: true },
+      { path: 'vitoria.wav', notes: [523, 659, 784, 1047], noteMilliseconds: 120 },
+    ],
+    music: [],
+    receipt: 'barris-na-rampa-r2.json.snapshot',
+  },
+  {
+    key: 'salto-nas-plataformas',
+    stem: 'saltoNasPlataformas',
+    name: 'Salto nas Plataformas',
+    emoji: '🦖',
+    description:
+      'O Dino pula de plataforma em plataforma pegando as estrelas, com gravidade e colisão.',
+    genre: 'Plataforma',
+    concepts: ['Blocos', 'Ponte', 'Código', 'Gravidade', 'Colisão', 'Retângulos'],
+    difficulty: 'intermediate',
+    experience: 'game',
+    inspiration: 'Super Mario',
+    book: 'wireframe',
+    howToPlay: 'Ande com as setas e pule com espaço. Pegue todas as estrelas das plataformas.',
+    ideas: [
+      'Mude a força do pulo e a gravidade e veja como o Dino salta.',
+      'Crie uma plataforma nova na lista `plataformas`.',
+      'Conte o tempo que você leva para pegar todas as estrelas.',
+    ],
+    sounds: [
+      { path: 'estrela.wav', notes: [988, 1319], noteMilliseconds: 50 },
+      { path: 'pulo.wav', notes: [440, 660], noteMilliseconds: 50 },
+    ],
+    music: [],
+    receipt: 'salto-nas-plataformas-r2.json.snapshot',
+  },
+  {
+    key: 'piramide-de-cubos',
+    stem: 'piramideDeCubos',
+    name: 'Pirâmide de Cubos',
+    emoji: '🧊',
+    description:
+      'Pule de cubo em cubo pintando a pirâmide inteira, sem cair dela e fugindo da bolinha.',
+    genre: 'Quebra-cabeça de ação',
+    concepts: ['Blocos', 'Ponte', 'Código', 'Listas de listas', 'Animação', 'Vetor'],
+    difficulty: 'advanced',
+    experience: 'game',
+    inspiration: 'Q*bert',
+    book: 'wireframe',
+    howToPlay:
+      'As setas pulam na diagonal: esquerda e baixo descem a pirâmide, direita e cima sobem. Pinte os 28 cubos. Cuidado com a beirada e com a bolinha vermelha.',
+    ideas: [
+      'Aumente a pirâmide mudando ANDARES (e o 28 da vitória).',
+      'Faça a bolinha aparecer mais vezes.',
+      'Troque as cores dos cubos no Pinta.',
+    ],
+    sounds: [
+      { path: 'pulo.wav', notes: [392, 523], noteMilliseconds: 40 },
+      { path: 'pinta.wav', notes: [784, 988], noteMilliseconds: 40 },
+      { path: 'queda.wav', notes: [523, 392, 262, 196], noteMilliseconds: 90 },
+      { path: 'vitoria.wav', notes: [523, 659, 784, 1047], noteMilliseconds: 120 },
+    ],
+    music: [],
+    receipt: 'piramide-de-cubos-r2.json.snapshot',
+  },
+  {
+    key: 'cipo-sobre-o-poco',
+    stem: 'cipoSobreOPoco',
+    name: 'Cipó sobre o Poço',
+    emoji: '🌿',
+    description: 'Agarre o cipó que balança, atravesse o poço e pegue o tesouro do outro lado.',
+    genre: 'Aventura',
+    concepts: ['Blocos', 'Ponte', 'Código', 'Ângulos', 'Matemática', 'Camadas'],
+    difficulty: 'advanced',
+    experience: 'game',
+    inspiration: 'Pitfall!',
+    book: 'wireframe',
+    howToPlay:
+      'Ande com as setas e pule com espaço. Pule na ponta do cipó quando ele chegar perto, espere o balanço e aperte espaço para soltar do outro lado. Pule o tronco que rola.',
+    ideas: [
+      'Mude o COMPRIMENTO do cipó e veja até onde ele alcança.',
+      'Faça o tronco rolar mais rápido.',
+      'Coloque um segundo poço no caminho.',
+    ],
+    sounds: [
+      { path: 'pulo.wav', notes: [440, 660], noteMilliseconds: 50 },
+      { path: 'agarra.wav', notes: [330, 440], noteMilliseconds: 40 },
+      { path: 'queda.wav', notes: [392, 262, 196], noteMilliseconds: 110 },
+      { path: 'tesouro.wav', notes: [784, 988, 1175, 1568], noteMilliseconds: 90 },
+    ],
+    music: [],
+    receipt: 'cipo-sobre-o-poco-r2.json.snapshot',
+  },
+  {
+    key: 'mina-que-desmorona',
+    stem: 'minaQueDesmorona',
+    name: 'Mina que Desmorona',
+    emoji: '⛏️',
+    description:
+      'Junte as três chaves da mina antes que o chão frágil desmorone e saia pela porta.',
+    genre: 'Plataforma',
+    concepts: ['Blocos', 'Ponte', 'Código', 'Mapa em texto', 'Gravidade', 'Pixel art'],
+    difficulty: 'advanced',
+    experience: 'game',
+    inspiration: 'Manic Miner',
+    book: 'wireframe',
+    howToPlay:
+      'Ande com as setas e pule com espaço. O chão amarelo afunda quando você para nele. Pegue as três chaves, fuja do robô e volte para a porta.',
+    ideas: [
+      'Desenhe outra caverna trocando os # e ~ do MAPA.',
+      'Faça o chão frágil durar mais.',
+      'Coloque um segundo robô patrulhando.',
+    ],
+    sounds: [
+      { path: 'pulo.wav', notes: [523, 698], noteMilliseconds: 40 },
+      { path: 'chave.wav', notes: [988, 1319, 1568], noteMilliseconds: 60 },
+      { path: 'desmorona.wav', notes: [200, 140], noteMilliseconds: 90, noise: true },
+      { path: 'dano.wav', notes: [220, 160], noteMilliseconds: 120, noise: true },
+      { path: 'vitoria.wav', notes: [523, 659, 784, 1047], noteMilliseconds: 120 },
+    ],
+    music: [],
+    receipt: 'mina-que-desmorona-r2.json.snapshot',
+  },
+  {
+    key: 'escudos-contra-invasores',
+    stem: 'escudosContraInvasores',
+    name: 'Escudos contra Invasores',
+    emoji: '🛡️',
+    description: 'Defenda a Terra atrás de escudos que se desfazem pedaço por pedaço a cada tiro.',
+    genre: 'Tiro',
+    concepts: ['Blocos', 'Ponte', 'Código', 'Grades', 'Listas de listas', 'Pixel art'],
+    difficulty: 'advanced',
+    experience: 'game',
+    inspiration: 'Space Invaders',
+    book: 'wireframe',
+    howToPlay:
+      'Mova o canhão com as setas e atire com espaço (um tiro de cada vez). Os escudos protegem, mas se desfazem: dá até para abrir um buraco atirando por baixo.',
+    ideas: [
+      'Mude o desenho dos escudos na lista FORMA.',
+      'Faça a explosão arrancar mais pedaços.',
+      'Acrescente uma quarta fila de invasores.',
+    ],
+    sounds: [
+      { path: 'tiro.wav', notes: [880, 660], noteMilliseconds: 30 },
+      { path: 'acerto.wav', notes: [330, 220], noteMilliseconds: 60, noise: true },
+      { path: 'dano.wav', notes: [200, 130], noteMilliseconds: 140, noise: true },
+      { path: 'vitoria.wav', notes: [523, 659, 784, 1047], noteMilliseconds: 120 },
+    ],
+    music: [],
+    receipt: 'escudos-contra-invasores-r2.json.snapshot',
+  },
+  {
+    key: 'mergulho-alienigena',
+    stem: 'mergulhoAlienigena',
+    name: 'Mergulho Alienígena',
+    emoji: '🛸',
+    description:
+      'A esquadra balança no céu e, de repente, um alien sai da fila e mergulha em curva.',
+    genre: 'Tiro',
+    concepts: ['Blocos', 'Ponte', 'Código', 'Estados', 'Ângulos', 'Céu que rola'],
+    difficulty: 'advanced',
+    experience: 'game',
+    inspiration: 'Galaxian',
+    book: 'wireframe',
+    howToPlay:
+      'Mova a nave com as setas e atire com espaço. Acerte os aliens na fila ou no meio do mergulho e desvie das bombas.',
+    ideas: [
+      'Faça os aliens mergulharem mais vezes.',
+      'Mude a curva do mergulho trocando os números do ângulo.',
+      'Dê mais pontos para quem acerta um alien mergulhando.',
+    ],
+    sounds: [
+      { path: 'tiro.wav', notes: [988, 740], noteMilliseconds: 30 },
+      { path: 'mergulho.wav', notes: [1047, 784, 523], noteMilliseconds: 70 },
+      { path: 'acerto.wav', notes: [330, 220], noteMilliseconds: 60, noise: true },
+      { path: 'dano.wav', notes: [200, 130], noteMilliseconds: 140, noise: true },
+    ],
+    music: [],
+    receipt: 'mergulho-alienigena-r2.json.snapshot',
+  },
+  {
+    key: 'nave-mae',
+    stem: 'naveMae',
+    name: 'Nave-Mãe',
+    emoji: '👾',
+    description:
+      'Fure a barra que gira e os escudos da Nave-Mãe para acertar o piloto antes que ela desça.',
+    genre: 'Tiro',
+    concepts: ['Blocos', 'Ponte', 'Código', 'Mouse', 'Resto da divisão', 'Retângulos'],
+    difficulty: 'intermediate',
+    experience: 'game',
+    inspiration: 'Phoenix',
+    book: 'wireframe',
+    howToPlay:
+      'Mova a nave com o mouse e clique para atirar. Cada bloco aguenta quatro tiros. Abra caminho até o piloto no meio da Nave-Mãe.',
+    ideas: [
+      'Faça a barra girar mais depressa.',
+      'Acrescente uma quarta fileira de escudos em FILEIRAS.',
+      'Faça a Nave-Mãe descer mais rápido.',
+    ],
+    sounds: [
+      { path: 'tiro.wav', notes: [880, 660], noteMilliseconds: 30 },
+      { path: 'dano.wav', notes: [200, 130], noteMilliseconds: 140, noise: true },
+      { path: 'vitoria.wav', notes: [523, 659, 784, 1047], noteMilliseconds: 120 },
+    ],
+    music: [],
+    receipt: 'nave-mae-r2.json.snapshot',
   },
 ] as const satisfies readonly PgzeroGame[]
 

@@ -133,4 +133,113 @@ export const PGZERO_GAME_LOADERS = {
       assets: pgzeroGameAssets('dragoes-dorminhocos', DRAGOES_DORMINHOCOS_MEDIA),
     }
   },
+  'barris-na-rampa': async () => {
+    const [{ BARRIS_NA_RAMPA_SOURCES }, { BARRIS_NA_RAMPA_MEDIA }, { pgzeroGameAssets }] =
+      await Promise.all([
+        import('./barrisNaRampa.sources.generated'),
+        import('./barrisNaRampa.media.generated'),
+        import('./pgzeroGameAssets'),
+      ])
+    return {
+      entrypoint: 'main.py',
+      files: BARRIS_NA_RAMPA_SOURCES,
+      assets: pgzeroGameAssets('barris-na-rampa', BARRIS_NA_RAMPA_MEDIA),
+    }
+  },
+  'salto-nas-plataformas': async () => {
+    const [
+      { SALTO_NAS_PLATAFORMAS_SOURCES },
+      { SALTO_NAS_PLATAFORMAS_MEDIA },
+      { pgzeroGameAssets },
+    ] = await Promise.all([
+      import('./saltoNasPlataformas.sources.generated'),
+      import('./saltoNasPlataformas.media.generated'),
+      import('./pgzeroGameAssets'),
+    ])
+    return {
+      entrypoint: 'main.py',
+      files: SALTO_NAS_PLATAFORMAS_SOURCES,
+      assets: pgzeroGameAssets('salto-nas-plataformas', SALTO_NAS_PLATAFORMAS_MEDIA),
+    }
+  },
+  'piramide-de-cubos': async () => {
+    const [{ PIRAMIDE_DE_CUBOS_SOURCES }, { PIRAMIDE_DE_CUBOS_MEDIA }, { pgzeroGameAssets }] =
+      await Promise.all([
+        import('./piramideDeCubos.sources.generated'),
+        import('./piramideDeCubos.media.generated'),
+        import('./pgzeroGameAssets'),
+      ])
+    return {
+      entrypoint: 'main.py',
+      files: PIRAMIDE_DE_CUBOS_SOURCES,
+      assets: pgzeroGameAssets('piramide-de-cubos', PIRAMIDE_DE_CUBOS_MEDIA),
+    }
+  },
+  'cipo-sobre-o-poco': async () => {
+    const [{ CIPO_SOBRE_O_POCO_SOURCES }, { CIPO_SOBRE_O_POCO_MEDIA }, { pgzeroGameAssets }] =
+      await Promise.all([
+        import('./cipoSobreOPoco.sources.generated'),
+        import('./cipoSobreOPoco.media.generated'),
+        import('./pgzeroGameAssets'),
+      ])
+    return {
+      entrypoint: 'main.py',
+      files: CIPO_SOBRE_O_POCO_SOURCES,
+      assets: pgzeroGameAssets('cipo-sobre-o-poco', CIPO_SOBRE_O_POCO_MEDIA),
+    }
+  },
+  'mina-que-desmorona': async () => {
+    const [{ MINA_QUE_DESMORONA_SOURCES }, { MINA_QUE_DESMORONA_MEDIA }, { pgzeroGameAssets }] =
+      await Promise.all([
+        import('./minaQueDesmorona.sources.generated'),
+        import('./minaQueDesmorona.media.generated'),
+        import('./pgzeroGameAssets'),
+      ])
+    return {
+      entrypoint: 'main.py',
+      files: MINA_QUE_DESMORONA_SOURCES,
+      assets: pgzeroGameAssets('mina-que-desmorona', MINA_QUE_DESMORONA_MEDIA),
+    }
+  },
+  'escudos-contra-invasores': async () => {
+    const [
+      { ESCUDOS_CONTRA_INVASORES_SOURCES },
+      { ESCUDOS_CONTRA_INVASORES_MEDIA },
+      { pgzeroGameAssets },
+    ] = await Promise.all([
+      import('./escudosContraInvasores.sources.generated'),
+      import('./escudosContraInvasores.media.generated'),
+      import('./pgzeroGameAssets'),
+    ])
+    return {
+      entrypoint: 'main.py',
+      files: ESCUDOS_CONTRA_INVASORES_SOURCES,
+      assets: pgzeroGameAssets('escudos-contra-invasores', ESCUDOS_CONTRA_INVASORES_MEDIA),
+    }
+  },
+  'mergulho-alienigena': async () => {
+    const [{ MERGULHO_ALIENIGENA_SOURCES }, { MERGULHO_ALIENIGENA_MEDIA }, { pgzeroGameAssets }] =
+      await Promise.all([
+        import('./mergulhoAlienigena.sources.generated'),
+        import('./mergulhoAlienigena.media.generated'),
+        import('./pgzeroGameAssets'),
+      ])
+    return {
+      entrypoint: 'main.py',
+      files: MERGULHO_ALIENIGENA_SOURCES,
+      assets: pgzeroGameAssets('mergulho-alienigena', MERGULHO_ALIENIGENA_MEDIA),
+    }
+  },
+  'nave-mae': async () => {
+    const [{ NAVE_MAE_SOURCES }, { NAVE_MAE_MEDIA }, { pgzeroGameAssets }] = await Promise.all([
+      import('./naveMae.sources.generated'),
+      import('./naveMae.media.generated'),
+      import('./pgzeroGameAssets'),
+    ])
+    return {
+      entrypoint: 'main.py',
+      files: NAVE_MAE_SOURCES,
+      assets: pgzeroGameAssets('nave-mae', NAVE_MAE_MEDIA),
+    }
+  },
 } satisfies Record<PgzeroGameKey, () => Promise<unknown>>

@@ -131,3 +131,40 @@ test('curated operations include the building blocks needed to create their rece
       for (const id of entry.dependencies) expect(ids.has(id)).toBe(true)
   }
 })
+
+test('every shadow the palette shows is a declared dependency of its block', async () => {
+  const { PYTHON_TURTLE_CODECS } = await import('../extensions/turtle/catalog')
+  const { PYTHON_PGZERO_CODECS } = await import('../extensions/pgzero/catalog')
+  const { pythonPaletteBlockState } = await import('./paletteBlocks')
+  const { PYTHON_PROGRAMMING_CODECS } = await import('./catalog')
+  for (const codecs of [
+    PYTHON_PROGRAMMING_CODECS,
+    [...PYTHON_TURTLE_CODECS, ...PYTHON_PROGRAMMING_CODECS],
+    [...PYTHON_PGZERO_CODECS, ...PYTHON_PROGRAMMING_CODECS],
+  ]) {
+    const catalog = new Map(describePythonCatalog(codecs).map((entry) => [entry.id, entry]))
+    const missing: string[] = []
+    let checked = 0
+    for (const codec of codecs) {
+      if (codec.hidden) continue
+      const declared = new Set(catalog.get(codec.id)?.dependencies)
+      const queue = [pythonPaletteBlockState(codec, codecs)] as {
+        type?: string
+        inputs?: Record<string, { shadow: unknown }>
+      }[]
+      while (queue.length) {
+        const state = queue.pop()!
+        for (const input of Object.values(state.inputs ?? {})) {
+          const shadow = input.shadow as { type: string }
+          checked++
+          if (shadow.type !== codec.id && !declared.has(shadow.type))
+            missing.push(`${codec.id} → ${shadow.type}`)
+          queue.push(shadow)
+        }
+      }
+    }
+    expect(missing).toEqual([])
+    // Not vacuous: the palette really nests shadows (a sound inside a call inside a print).
+    expect(checked).toBeGreaterThan(100)
+  }
+})

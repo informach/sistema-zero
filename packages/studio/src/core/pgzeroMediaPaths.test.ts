@@ -4,8 +4,10 @@ import { TURTLE_EXTENSION } from '../runtime/python/turtle/contract'
 import { documentFixture } from '../state/fixtures/projectDocuments'
 import { createProjectStore } from '../state/projectStore'
 import { refinePythonProjectDocument } from '../state/pythonProjectValidation'
+import { isSvgDataUrl, projectAssetFileExtension } from './assetBinary'
 import {
   PGZERO_EXTENSION_ID,
+  pgzeroCodeName,
   pgzeroFileStem,
   pgzeroMediaFolder,
   pgzeroMediaPath,
@@ -111,11 +113,12 @@ for (const kind of ['classic', 'pro'] as const) {
       `${base}sounds/vento.ogg`,
       `${base}music/chuva.ogg`,
     ])
-    // A renamed material keeps its file: a new one with the old name must not hide behind it.
+    // The file follows a rename (Pygame Zero opens it by name), freeing the old name.
     const first = store.getState().project!.assets![0]!
     expect(store.getState().renameAsset(first.id, 'nave-velha')).toBeNull()
+    expect(paths(store)[0]).toBe(`${base}images/nave_velha.png`)
     expect(add({ name: 'nave-azul', dataUrl: SVG, width: 8, height: 8 })).toBeNull()
-    expect(paths(store).at(-1)).toBe(`${base}images/nave_azul_2.svg`)
+    expect(paths(store).at(-1)).toBe(`${base}images/nave_azul.svg`)
     const before = store.getState().project
     expect(add({ name: 'grito', dataUrl: MP3, kind: 'audio', pgzeroAudio: 'sound' })).toContain(
       'WAV ou OGG',
@@ -142,3 +145,131 @@ for (const kind of ['classic', 'pro'] as const) {
     }
   })
 }
+
+const svgOf = (attributes: string) =>
+  `data:image/svg+xml;charset=utf-8,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" ${attributes}/>`)}`
+
+for (const kind of ['classic', 'pro'] as const) {
+  const base = kind === 'pro' ? 'src/' : ''
+
+  test(`${kind} Pygame Zero: the panel name reads like the code name, and a rename moves the file`, async () => {
+    // An example's sound: named `sounds-acerto`, the file is sounds/acerto.wav.
+    const store = createProjectStore()
+    const raw = documentFixture('python', kind)
+    raw.installedExtensions = [{ ...PGZERO_EXTENSION, installedAt: 1 }]
+    raw.assets = [
+      {
+        id: 'exemplo',
+        name: 'sounds-acerto',
+        kind: 'audio',
+        source: 'upload',
+        proPath: `${base}sounds/acerto.wav`,
+        dataUrl: WAV,
+      },
+    ]
+    store.getState().hydrateProject(await refinePythonProjectDocument(raw))
+    const state = () => store.getState()
+    const entrypoint = (state().project as { python: { entrypoint: string } }).python.entrypoint
+    const last = () => state().project!.assets!.at(-1)!
+    // The child's own acerto.wav cannot be sounds.acerto (taken): its name says acerto-2.
+    expect(state().addAsset({ name: 'acerto', dataUrl: WAV, kind: 'audio' })).toBeNull()
+    expect(last()).toMatchObject({ name: 'acerto-2', proPath: `${base}sounds/acerto_2.wav` })
+    expect(pgzeroCodeName(last(), entrypoint)).toBe('acerto_2')
+    expect(pgzeroCodeName(state().project!.assets![0]!, entrypoint)).toBe('acerto')
+    // "nave azul.png": the panel shows nave-azul, the code says nave_azul.
+    expect(state().addAsset({ name: 'nave-azul', dataUrl: PNG, width: 1, height: 1 })).toBeNull()
+    const image = last()
+    expect(pgzeroCodeName(image, entrypoint)).toBe('nave_azul')
+    // A rename moves the file, so `Actor('heroi')` finds it; the chosen cover follows.
+    expect(state().setCoverAsset(image.id)).toBeNull()
+    expect(state().renameAsset(image.id, 'heroi')).toBeNull()
+    expect(last()).toMatchObject({ name: 'heroi', proPath: `${base}images/heroi.png` })
+    expect(state().project!.coverAssetName).toBe('heroi')
+    // Renaming the example's sound frees acerto.wav for nobody else: its own path is never a
+    // collision with itself.
+    expect(state().renameAsset('exemplo', 'acerto')).toBeNull()
+    expect(state().project!.assets![0]).toMatchObject({
+      name: 'acerto',
+      proPath: `${base}sounds/acerto.wav`,
+    })
+  })
+
+  test(`${kind} installing Pygame Zero moves the materials to the folders it searches`, async () => {
+    for (const extension of [TURTLE_EXTENSION, undefined]) {
+      const store = await pythonStore(kind, extension)
+      const state = () => store.getState()
+      expect(state().addAsset({ name: 'nave', dataUrl: PNG, width: 1, height: 1 })).toBeNull()
+      expect(state().addAsset({ name: 'pulo', dataUrl: WAV, kind: 'audio' })).toBeNull()
+      expect(state().addAsset({ name: 'tema', dataUrl: MP3, kind: 'audio' })).toBeNull()
+      expect(state().setCoverAsset(state().project!.assets![0]!.id)).toBeNull()
+      expect(paths(store)).toEqual(['assets/nave.png', 'assets/pulo.wav', 'assets/tema.mp3'])
+      const result = await state().applyPythonExtensions(state().project as never, [
+        { ...PGZERO_EXTENSION, installedAt: 2 },
+      ])
+      expect(result).toBeNull()
+      expect(paths(store)).toEqual([
+        `${base}images/nave.png`,
+        `${base}sounds/pulo.wav`,
+        `${base}music/tema.mp3`,
+      ])
+      expect(state().project!.coverAssetName).toBe('nave')
+    }
+  })
+
+  test(`${kind} installing Pygame Zero names the materials it cannot open`, async () => {
+    const store = await pythonStore(kind)
+    const state = () => store.getState()
+    const WEBP = 'data:image/webp;base64,UklGRhoAAABXRUJQVlA4TA0AAAAvAAAAEAcQERGIiP4HAA=='
+    expect(state().addAsset({ name: 'foto', dataUrl: WEBP, width: 1, height: 1 })).toBeNull()
+    expect(state().addAsset({ name: 'voz', dataUrl: M4A, kind: 'audio' })).toBeNull()
+    expect(state().addAsset({ name: 'nave', dataUrl: PNG, width: 1, height: 1 })).toBeNull()
+    const before = state().project
+    const result = await state().applyPythonExtensions(state().project as never, [
+      { ...PGZERO_EXTENSION, installedAt: 2 },
+    ])
+    expect(result).toContain('foto (WEBP), voz (M4A)')
+    expect(result).not.toContain('nave')
+    expect(state().project).toBe(before)
+  })
+
+  test(`${kind} Pygame Zero refuses an SVG it cannot size and keeps the size it reads`, async () => {
+    const store = await pythonStore(kind, PGZERO_EXTENSION)
+    const state = () => store.getState()
+    // The browser reports 300x150 for an SVG without a size of its own.
+    const add = (name: string, dataUrl: string) =>
+      state().addAsset({ name, dataUrl, width: 300, height: 150 })
+    expect(add('cheio', svgOf('width="100%" height="100%"'))).toContain('tamanho')
+    expect(add('letras', svgOf('width="10em" height="4em"'))).toContain('tamanho')
+    expect(add('enorme', svgOf('width="5000" height="10"'))).toContain('4096')
+    expect(state().project!.assets).toEqual([])
+    expect(add('caixa', svgOf('viewBox="0 0 40 20"'))).toBeNull()
+    const box = state().project!.assets![0]!
+    expect(box).toMatchObject({ width: 40, height: 20 })
+    expect(state().updateAssetImage(box.id, { dataUrl: svgOf('width="auto"') })).toContain(
+      'tamanho',
+    )
+  })
+}
+
+test('a material named like a loader member gets _2 (`images.load` is the loader method)', () => {
+  for (const name of ['load', 'cache', 'cache_key', 'subpath', 'have_root', 'validate_root'])
+    expect(
+      pgzeroMediaPath({
+        entrypoint: 'main.py',
+        name,
+        kind: 'audio',
+        extension: 'wav',
+        occupied: { files: ['main.py'], directories: [] },
+      }),
+    ).toEqual({ path: `sounds/${name}_2.wav` })
+})
+
+test('every WAV MIME a browser reports maps to .wav; an SVG data URL matches exactly', () => {
+  for (const mime of ['audio/wav', 'audio/x-wav', 'audio/wave', 'audio/vnd.wave', 'audio/vnd.wav'])
+    expect(projectAssetFileExtension(mime, 'audio')).toBe('wav')
+  expect(isSvgDataUrl('data:image/svg+xml;charset=utf-8,%3Csvg')).toBe(true)
+  expect(isSvgDataUrl('data:image/svg+xml;base64,PHN2Zw==')).toBe(true)
+  expect(isSvgDataUrl('data:image/svg+xml,%3Csvg')).toBe(true)
+  expect(isSvgDataUrl('data:image/svg+xmlX,%3Csvg')).toBe(false)
+  expect(isSvgDataUrl('data:image/svg+xml;charset=latin1,%3Csvg')).toBe(false)
+})

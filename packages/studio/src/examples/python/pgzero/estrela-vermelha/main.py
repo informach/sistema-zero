@@ -57,17 +57,17 @@ def update():
     for estrela in estrelas:
         if estrela.y >= HEIGHT:
             fim = True
+            sounds.erro.play()
             parar_estrelas()
 
 
 def on_mouse_down(pos):
     global fase, fim, venceu
-    if fim:
+    if fim or venceu:
         fase = 1
         fim = False
+        venceu = False
         nova_fase()
-        return
-    if venceu:
         return
     for estrela in estrelas:
         if estrela.collidepoint(pos):

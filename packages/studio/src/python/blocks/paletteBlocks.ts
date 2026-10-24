@@ -49,6 +49,14 @@ export function pythonPaletteBlockState(
       if (candidate.hidden) continue
       if (!(candidate.role === role || (role === 'format' && candidate.id === 'sz_py_text')))
         continue
+      // The same rule as the catalog dependencies (selection.ts): a method block only for
+      // the receiver its own example uses.
+      if (
+        candidate.bindingFor &&
+        JSON.stringify(candidate.bindingFor(value)) !==
+          JSON.stringify(candidate.bindingFor(candidate.defaultNode()))
+      )
+        continue
       const shape = candidate.decode(value)
       if (shape) return { codec: candidate, shape }
     }

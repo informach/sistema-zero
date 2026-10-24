@@ -140,26 +140,47 @@ def _wav_length(path):
     return None
 
 
+# Voices a sound remembers; the oldest that do not repeat forever are forgotten first.
+_MAX_VOICES = 32
+
+
 class Sound:
     """A sound effect from sounds/ (pygame.mixer.Sound subset)."""
 
     def __init__(self, path):
-        self._path = os.path.relpath(path, root).replace(os.sep, '/')
+        # The Studio's media service names files from the project root.
+        self._path = _sz.project_path(path)
         self._volume = 1.0
-        self._voices = []
+        # voice → plays still to come after this one (-1: repeats until stop()).
+        self._voices = {}
         self._length = _wav_length(path)
 
     def play(self, loops=0, maxtime=0, fade_ms=0):
-        """Play the sound. loops=-1 repeats it until stop()."""
-        self._voices = self._voices[-15:]
-        voice = _sz.audio_play(self._path, loops != 0, self._volume)
-        self._voices.append(voice)
+        """Play the sound. loops=N plays it N more times; loops=-1 repeats it until stop()."""
+        self._start(-1 if loops < 0 else int(loops))
         return None
+
+    def _start(self, remaining):
+        voice = _sz.audio_play(self._path, remaining < 0, self._volume)
+        if voice is None:
+            return  # Like pygame with every channel busy: the sound is not played.
+        self._voices[voice] = remaining
+        _sz.on_audio_end(voice, lambda: self._ended(voice), wait=remaining > 0)
+        if len(self._voices) > _MAX_VOICES:
+            for old, left in list(self._voices.items()):
+                if left >= 0:
+                    del self._voices[old]
+                    break
+
+    def _ended(self, voice):
+        remaining = self._voices.pop(voice, 0)
+        if remaining > 0:
+            self._start(remaining - 1)
 
     def stop(self):
         for voice in self._voices:
             _sz.audio_stop(voice)
-        self._voices = []
+        self._voices = {}
 
     fadeout = lambda self, ms=0: self.stop()  # noqa: E731
 
@@ -196,7 +217,8 @@ class FontLoader(ResourceLoader):
     TYPE_PT = 'a fonte'
 
     def _load(self, path, fontsize=None):
-        return os.path.relpath(path, root).replace(os.sep, '/')
+        # Relative to the project root, where the browser reads it from.
+        return _sz.project_path(path)
 
 
 images = ImageLoader('images')

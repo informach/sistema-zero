@@ -6,7 +6,7 @@ import {
 } from '@sistemazero/core/studio/pinta-image'
 import { STUDIO_PYTHON_MATERIAL_DATA_LIMITS } from '@sistemazero/core/studio/python-material-policy'
 import type { ProjectAsset } from '#core'
-import { decodeProjectAsset } from '../core/assetBinary'
+import { decodeProjectAsset, isSvgDataUrl } from '../core/assetBinary'
 import { pgzeroSvgSize } from '../runtime/python/pgzero/svgSize'
 import {
   TURTLE_GRAPHICS_LIMITS,
@@ -68,11 +68,7 @@ export function assertPintaImageFits(
   if (!PintaImageDerivationSchema.safeParse(image.derivation).success)
     throw new Error('Os dados da seleção de imagem são inválidos. Escolha a imagem novamente.')
   const svg = image.derivation.output.mime === 'image/svg+xml'
-  if (
-    svg
-      ? !image.dataUrl.startsWith('data:image/svg+xml')
-      : !image.dataUrl.startsWith('data:image/png;base64,')
-  )
+  if (svg ? !isSvgDataUrl(image.dataUrl) : !image.dataUrl.startsWith('data:image/png;base64,'))
     throw new Error(
       svg ? 'A prévia precisa ser um desenho SVG.' : 'A prévia precisa ser uma imagem PNG.',
     )

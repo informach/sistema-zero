@@ -96,6 +96,12 @@ def passou(obstaculo, velocidade, de, ate):
         pontos = pontos + 1
 
 
+def bateu(obstaculo):
+    # A caixa do obstáculo, um pouco menor que o desenho: encostar de raspão não conta.
+    caixa = Rect((obstaculo.left + 10, obstaculo.top + 10), (obstaculo.width - 20, obstaculo.height - 20))
+    return balao.colliderect(caixa)
+
+
 def update():
     global fim_de_jogo
     if fim_de_jogo:
@@ -108,7 +114,7 @@ def update():
     passou(arvore, 2, 450, 450)
     if balao.top < 0 or balao.bottom > 560:
         fim_de_jogo = True
-    if balao.collidepoint(passaro.pos) or balao.collidepoint(casa.pos) or balao.collidepoint(arvore.pos):
+    if bateu(passaro) or bateu(casa) or bateu(arvore):
         fim_de_jogo = True
     if fim_de_jogo:
         sounds.fim.play()

@@ -11,12 +11,13 @@ Replaces the parts of Pygame Zero that need pygame/SDL:
 
 Behaviour follows pygame-ce (rotated image sizes, integer blit positions, colour names).
 """
-import base64
 import json
 import math
+import os
 import re
 import struct
 from array import array
+from collections import OrderedDict
 
 from ._colors import COLORS
 
@@ -35,20 +36,56 @@ OP_TEXT = 7
 
 MAX_RECORDS = 50_000
 MAX_STRINGS = 4096
+MAX_STRING_CHARS = 4000
 MAX_IMAGES = 1024
 MAX_IMAGE_SIDE = 4096
+MAX_IMAGE_BYTES = 16 * 1024 * 1024
+# Pixels of every image the game loaded (the browser keeps all of them ready to draw).
+MAX_TOTAL_PIXELS = 32 * 1024 * 1024
+MAX_FONT_BYTES = 4 * 1024 * 1024
+MAX_PATH_CHARS = 512
+MAX_TITLE_CHARS = 200
+MAX_AUDIO_COMMANDS = 64
+# Like pygame's mixer channels: more sounds in one frame are not played.
+MAX_PLAYS_PER_FRAME = 16
+# Draw list, images and fonts sent with one frame; the rest follows in the next frames.
+FRAME_ATTACHMENT_BYTES = 24 * 1024 * 1024
+# Pixels read by get_at that stay in memory (the least recently read are read again later).
+PIXEL_CACHE_BYTES = 64 * 1024 * 1024
+# Text styles (kept in sync with protocol.ts).
+MAX_FONT_SIZE = 512
+MAX_OUTLINE_PIXELS = 32
+MAX_SHADOW_PIXELS = 64
+MAX_LINE_HEIGHT = 16
+MAX_TEXT_WIDTH = 8192
 
 
 class PgzeroLimitError(RuntimeError):
     pass
 
 
+class PgzeroRendererError(RuntimeError):
+    """The browser could not show a frame (an image it cannot open, for example)."""
+
+
 def configure(transport, decoder, root):
-    """Called once by the runtime before the learner program runs."""
+    """Called once by the runtime before the learner program runs.
+
+    ``transport(header, payload)`` returns ``(text, pixels)``: the browser's reply and, for a
+    pixel request, the RGBA bytes (otherwise None).
+    """
     global _transport, _decoder, _root
     _transport = transport
     _decoder = decoder
     _root = root
+
+
+def project_path(path):
+    """A file path relative to the project root, as the Studio's media service names files."""
+    relative = os.path.relpath(os.path.abspath(path), os.path.abspath(_root)).replace(os.sep, '/')
+    if len(relative) > MAX_PATH_CHARS:
+        raise PgzeroLimitError(f'O caminho {relative[:60]!r}… é longo demais (o limite é 512).')
+    return relative
 
 
 # Colours -------------------------------------------------------------------------------------
@@ -256,7 +293,12 @@ class Surface:
             raise PgzeroLimitError(
                 f'A imagem {path!r} é grande demais ({self._w}x{self._h}); o limite é 4096.'
             )
-        self._id = _images.register(path, self._w, self._h)
+        size = os.path.getsize(path)
+        if size > MAX_IMAGE_BYTES:
+            raise PgzeroLimitError(
+                f'O arquivo da imagem {path!r} tem {size // (1024 * 1024)} MB; o limite é 16 MB.'
+            )
+        self._id = _images.register(path, self._w, self._h, size)
         self._pixels = None
 
     def get_size(self):
@@ -281,13 +323,15 @@ class Surface:
             raise IndexError('pixel index out of range')
         if self._pixels is None:
             if is_vector(self._path):
-                self._pixels = _vector_pixels(self._id, self._w, self._h)
+                pixels = _vector_pixels(self._id, self._w, self._h)
             elif _decoder is None:
                 raise RuntimeError('A leitura de pixels não está disponível aqui.')
             else:
-                self._pixels = _decoder(self._path)
-            if len(self._pixels) != self._w * self._h * 4:
+                pixels = _decoder(self._path)
+            if len(pixels) != self._w * self._h * 4:
                 raise RuntimeError('A imagem mudou de tamanho ao ser lida.')
+            self._pixels = pixels
+        _pixel_cache.remember(self)
         offset = (y * self._w + x) * 4
         p = self._pixels
         return Color(p[offset], p[offset + 1], p[offset + 2], p[offset + 3])
@@ -363,17 +407,52 @@ class _ImageRegistry:
     def __init__(self):
         self.ids = {}
         self.pending = []
+        self.sizes = {}
+        self.pixels = 0
 
-    def register(self, path, width, height):
+    def register(self, path, width, height, size=0):
         found = self.ids.get(path)
         if found is not None:
             return found
         if len(self.ids) >= MAX_IMAGES:
             raise PgzeroLimitError('O jogo usa imagens demais (o limite é 1024).')
+        if len(path) > MAX_PATH_CHARS:
+            raise PgzeroLimitError(f'O caminho da imagem {path[:60]!r}… é longo demais.')
+        if self.pixels + width * height > MAX_TOTAL_PIXELS:
+            raise PgzeroLimitError(
+                f'Não cabe mais a imagem {path!r}: as imagens do jogo somam mais de 32 milhões '
+                'de pixels. Use imagens menores.'
+            )
         identifier = len(self.ids) + 1
         self.ids[path] = identifier
+        self.sizes[identifier] = size
+        self.pixels += width * height
         self.pending.append([identifier, path, width, height])
         return identifier
+
+
+class _PixelCache:
+    """Images whose pixels were read, least recently read first; bounded in bytes."""
+
+    def __init__(self, limit):
+        self.limit = limit
+        self.order = OrderedDict()
+        self.bytes = 0
+
+    def remember(self, surface):
+        key = id(surface)
+        if key in self.order:
+            self.order.move_to_end(key)
+            return
+        self.order[key] = surface
+        self.bytes += len(surface._pixels)
+        while self.bytes > self.limit and len(self.order) > 1:
+            _, oldest = self.order.popitem(last=False)
+            self.bytes -= len(oldest._pixels)
+            oldest._pixels = None
+
+
+_pixel_cache = _PixelCache(PIXEL_CACHE_BYTES)
 
 
 _images = _ImageRegistry()
@@ -385,6 +464,7 @@ class _FontRegistry:
     def __init__(self):
         self.ids = {}
         self.pending = []
+        self.sizes = {}
 
     def register(self, path):
         found = self.ids.get(path)
@@ -392,8 +472,14 @@ class _FontRegistry:
             return found
         if len(self.ids) >= 32:
             raise PgzeroLimitError('O jogo usa fontes demais (o limite é 32).')
+        if len(path) > MAX_PATH_CHARS:
+            raise PgzeroLimitError(f'O caminho da fonte {path[:60]!r}… é longo demais.')
+        size = os.path.getsize(path)
+        if size > MAX_FONT_BYTES:
+            raise PgzeroLimitError(f'A fonte {path!r} é grande demais (o limite é 4 MB).')
         identifier = len(self.ids) + 1
         self.ids[path] = identifier
+        self.sizes[identifier] = size
         self.pending.append([identifier, path])
         return identifier
 
@@ -437,6 +523,10 @@ class _Frame:
         found = self.strings.get(text)
         if found is not None:
             return found
+        if len(text) > MAX_STRING_CHARS:
+            raise PgzeroLimitError(
+                f'O texto tem {len(text)} letras; screen.draw.text escreve até 4000 de uma vez.'
+            )
         if len(self.strings) >= MAX_STRINGS:
             raise PgzeroLimitError('Este quadro escreveu textos diferentes demais.')
         identifier = len(self.strings) + 1
@@ -445,7 +535,11 @@ class _Frame:
         return identifier
 
     def style(self, values):
-        key = json.dumps(values, sort_keys=True, separators=(',', ':'))
+        # A cheap, hashable key (this runs for every text drawn in every frame).
+        key = tuple(sorted(
+            (name, tuple(item) if isinstance(item, list) else item)
+            for name, item in values.items()
+        ))
         found = self.styles.get(key)
         if found is not None:
             return found
@@ -521,40 +615,118 @@ def text(value, x, y, hanchor, vanchor, style):
         elif key in ('bold', 'italic', 'underline', 'strip'):
             item = bool(item)
         elif key == 'fontname':
-            key, item = 'font', _fonts.register(_root + '/' + str(item))
+            key, item = 'font', _fonts.register(os.path.join(_root, str(item)))
         else:
             item = float(item)
         values[key] = item
+    _check_style(values)
     frame.record(OP_TEXT, frame.string(str(value)), frame.style(values), x, y, hanchor, vanchor)
+
+
+def _check_style(values):
+    """Styles that would block the browser while it draws the text (kept with protocol.ts)."""
+    size = values.get('fontsize', 24.0)
+    if not 0 <= size <= MAX_FONT_SIZE:
+        raise PgzeroLimitError(f'O tamanho da letra (fontsize={size:g}) vai de 0 a 512.')
+    # ptext: the outline is owidth/24 of the letter size, the shadow shadow/18 of it.
+    if values.get('owidth', 0) * size / 24 > MAX_OUTLINE_PIXELS:
+        raise PgzeroLimitError('O contorno do texto (owidth) ficou grosso demais. Use um número menor.')
+    if any(abs(part) * size / 18 > MAX_SHADOW_PIXELS for part in values.get('shadow', ())):
+        raise PgzeroLimitError('A sombra do texto (shadow) ficou longe demais. Use números menores.')
+    if not 0 <= values.get('lineheight', 1.0) <= MAX_LINE_HEIGHT:
+        raise PgzeroLimitError('O espaço entre as linhas (lineheight) vai de 0 a 16.')
+    for name in ('width', 'widthem', 'fit'):
+        if not 0 <= values.get(name, 0) <= MAX_TEXT_WIDTH:
+            raise PgzeroLimitError(f'A largura do texto ({name}) vai de 0 a 8192.')
 
 
 # Audio ---------------------------------------------------------------------------------------
 
 _voice = 0
+# voice → called once when the sound ends by itself (or could not be played).
+_on_end = {}
+# Voices whose end changes the game (music.play_once, Sound.play(loops=N)): while there are any,
+# the browser is asked to report sounds that end.
+_waiting = set()
+# Events for the game loop (on_music_end), as pygame's event queue.
+posted = []
+
+
+def _commands(kind, voice):
+    return [index for index, command in enumerate(frame.audio)
+            if command[0] == kind and (voice is None or command[1] == voice)]
+
+
+def _check_audio():
+    if len(frame.audio) >= MAX_AUDIO_COMMANDS:
+        raise PgzeroLimitError(
+            'O jogo mandou comandos de som demais num quadro só (o limite é 64).'
+        )
 
 
 def audio_play(path, loop, volume):
+    """Start a sound; returns its voice, or None when this frame already plays too many."""
     global _voice
+    if len(_commands('play', None)) >= MAX_PLAYS_PER_FRAME:
+        return None
+    _check_audio()
     _voice += 1
     frame.audio.append(['play', _voice, path, bool(loop), float(volume)])
     return _voice
 
 
+def on_audio_end(voice, callback, wait=False):
+    """Call ``callback()`` once when the voice ends by itself."""
+    _on_end[voice] = callback
+    if wait:
+        _waiting.add(voice)
+
+
 def audio_stop(voice=None):
+    if voice is None:
+        frame.audio[:] = [command for command in frame.audio if command[0] == 'play']
+        _on_end.clear()
+        _waiting.clear()
+        frame.audio.append(['stop', None])
+        return
+    _on_end.pop(voice, None)
+    _waiting.discard(voice)
+    plays = _commands('play', voice)
+    if plays:
+        # It never reached the browser: nothing to stop.
+        del frame.audio[plays[0]]
+        frame.audio[:] = [command for command in frame.audio if command[1] != voice]
+        return
+    if _commands('stop', voice) or _commands('stop', None):
+        return
+    frame.audio[:] = [command for command in frame.audio
+                      if not (command[0] == 'volume' and command[1] == voice)]
+    _check_audio()
     frame.audio.append(['stop', voice])
 
 
 def audio_volume(voice, volume):
-    frame.audio.append(['volume', voice, float(volume)])
+    volume = float(volume)
+    for command in frame.audio:
+        if command[1] == voice and command[0] in ('play', 'volume'):
+            command[-1] = volume
+            return
+    _check_audio()
+    frame.audio.append(['volume', voice, volume])
+
+
+def audio_ended(voices):
+    """Sounds the browser reports as ended: run their callbacks (which may play more)."""
+    for voice in voices:
+        _waiting.discard(voice)
+        callback = _on_end.pop(voice, None)
+        if callback is not None:
+            callback()
 
 
 # Exchange ------------------------------------------------------------------------------------
 
 _ATTACHMENTS_PER_FRAME = 120
-
-
-# A reply carries at most this many pixel bytes (the channel answers in text, base64).
-_DECODE_CHUNK_BYTES = 90_000
 _last_window = [1, 1, '']
 
 
@@ -562,43 +734,64 @@ def attachments_pending():
     return bool(_images.pending or _fonts.pending)
 
 
+def _exchange(header, payload):
+    text, pixels = _transport(json.dumps(header, separators=(',', ':')), payload)
+    reply = json.loads(text)
+    if 'error' in reply:
+        raise PgzeroRendererError(str(reply['error']))
+    return reply, pixels
+
+
 def _vector_pixels(identifier, width, height):
     """RGBA of a vector image at its own size, rasterized by the browser that draws it."""
     if _transport is None:
         raise RuntimeError('A leitura de pixels não está disponível aqui.')
+    # The browser draws the image from its file: send it first if it has not gone yet.
     own = [entry for entry in _images.pending if entry[0] == identifier]
-    rest = [entry for entry in _images.pending if entry[0] != identifier]
-    images = own + rest[: _ATTACHMENTS_PER_FRAME - len(own)]
-    _images.pending = rest[len(images) - len(own):]
-    rows = max(1, _DECODE_CHUNK_BYTES // (width * 4))
-    pixels = bytearray()
-    for row in range(0, height, rows):
-        header = {
-            'w': _last_window[0],
-            'h': _last_window[1],
-            'title': _last_window[2],
-            'keep': True,
-            'images': images,
-            'fonts': [],
-            'strings': [],
-            'styles': [],
-            'audio': [],
-            'decode': [identifier, row, min(rows, height - row)],
-        }
-        images = []
-        reply = json.loads(_transport(json.dumps(header, separators=(',', ':')), b''))
-        pixels += base64.b64decode(reply['pixels'])
-    return bytes(pixels)
+    header = {
+        'w': _last_window[0],
+        'h': _last_window[1],
+        'title': _last_window[2],
+        'keep': True,
+        'images': own,
+        'fonts': [],
+        'strings': [],
+        'styles': [],
+        'audio': [],
+        'decode': identifier,
+    }
+    _, pixels = _exchange(header, b'')
+    _images.pending = [entry for entry in _images.pending if entry[0] != identifier]
+    if pixels is None or len(pixels) != width * height * 4:
+        raise RuntimeError('O navegador não devolveu os pixels do desenho.')
+    return pixels
+
+
+def _within_budget(pending, sizes, budget, count):
+    """The first pending files that fit this frame's bytes and attachment count."""
+    taken = []
+    for entry in pending:
+        size = sizes.get(entry[0], 0)
+        if len(taken) >= count or size > budget:
+            break
+        taken.append(entry)
+        budget -= size
+    return taken, budget
 
 
 def present(width, height, title, keep):
     """Send this frame (or ask the browser to keep the previous one) and return the reply."""
-    # The worker channel carries at most 128 attachments per message (list and default font
-    # included). A game that loads more files at once receives them over the next frames;
-    # until then those images simply are not drawn.
+    # One message carries at most 128 attachments and a bounded number of bytes (list and
+    # default font included). A game that loads more files at once receives them over the next
+    # frames; until then those images simply are not drawn.
+    title = str(title)[:MAX_TITLE_CHARS]
     _last_window[:] = [width, height, title]
-    images = _images.pending[:_ATTACHMENTS_PER_FRAME]
-    fonts = _fonts.pending[:_ATTACHMENTS_PER_FRAME - len(images)]
+    payload = b'' if keep else frame.ops.tobytes()
+    images, budget = _within_budget(
+        _images.pending, _images.sizes, FRAME_ATTACHMENT_BYTES - len(payload),
+        _ATTACHMENTS_PER_FRAME)
+    fonts, _ = _within_budget(
+        _fonts.pending, _fonts.sizes, budget, _ATTACHMENTS_PER_FRAME - len(images))
     header = {
         'w': width,
         'h': height,
@@ -609,13 +802,14 @@ def present(width, height, title, keep):
         'strings': frame.new_strings,
         'styles': frame.new_styles,
         'audio': frame.audio,
+        'watch': bool(_waiting),
     }
-    payload = b'' if keep else frame.ops.tobytes()
-    reply = _transport(json.dumps(header, separators=(',', ':')), payload)
+    reply, _ = _exchange(header, payload)
     _images.pending = _images.pending[len(images):]
     _fonts.pending = _fonts.pending[len(fonts):]
     frame.new_strings = []
     frame.new_styles = []
     frame.audio = []
     frame.drawn = False
-    return json.loads(reply)
+    audio_ended(reply.get('ended', ()))
+    return reply

@@ -5,11 +5,14 @@
  * request  = JSON header (new images/fonts/strings/styles, audio commands, window size)
  *            + attachments: the display list (Float64 records, id 0), new image bytes
  *            (ids 1…1024) and new font bytes (ids FONT_ATTACHMENT_BASE + n).
- * response = JSON with the input events since the previous frame and the paint timestamp.
+ * response = JSON with the input events since the previous frame, the paint timestamp and the
+ *            sounds that finished (`ended`), or `{ error }` when the browser could not show
+ *            the frame (Python raises it, so the program stops with a traceback).
  *
- * A header with `decode: [image, row, rows]` is not a frame: it asks for the RGBA pixels of
- * those rows of a vector image (`images.x.get_at` on an SVG), answered at once as
- * `{ pixels: base64 }` with at most `decodeBytes` bytes.
+ * A header with `decode: image` is not a frame: it asks for the RGBA pixels of a vector image
+ * (`images.x.get_at` on an SVG), answered at once with the pixels as a binary attachment.
+ * A header with `watch: true` asks the host to report sounds that end (music.play_once,
+ * Sound.play(loops=N)).
  */
 export const PGZERO_LIMITS = Object.freeze({
   headerChars: 512_000,
@@ -29,7 +32,17 @@ export const PGZERO_LIMITS = Object.freeze({
   maxHeight: 1080,
   pathChars: 512,
   titleChars: 200,
-  decodeBytes: 90_000,
+  /** Image and font bytes sent with one frame; the rest follows in the next frames. */
+  frameAttachmentBytes: 24 * 1024 * 1024,
+  /** Text styles: bigger text would block the page while it is drawn. */
+  fontSize: 512,
+  outlinePixels: 32,
+  shadowPixels: 64,
+  lineHeight: 16,
+  textWidth: 8192,
+  textPixels: 16 * 1024 * 1024,
+  /** Sounds that ended, reported with one reply. */
+  endedVoices: 64,
 })
 
 export const PGZERO_LIST_ATTACHMENT = 0
@@ -94,7 +107,9 @@ export interface PgzeroFrameHeader {
   strings: readonly (readonly [number, string])[]
   styles: readonly (readonly [number, PgzeroTextStyle | null])[]
   audio: readonly PgzeroAudioCommand[]
-  decode?: readonly [number, number, number]
+  /** Python waits for sounds to end: the host should report them. */
+  watch: boolean
+  decode?: number
 }
 
 const object = (value: unknown): value is Record<string, unknown> =>
@@ -127,6 +142,15 @@ const NUMBER_KEYS = new Set([
 ])
 const BOOLEAN_KEYS = new Set(['bold', 'italic', 'underline', 'strip'])
 
+const STYLE_BOUNDS: Readonly<Record<string, readonly [number, number]>> = {
+  fontsize: [0, PGZERO_LIMITS.fontSize],
+  lineheight: [0, PGZERO_LIMITS.lineHeight],
+  width: [0, PGZERO_LIMITS.textWidth],
+  widthem: [0, PGZERO_LIMITS.textWidth],
+  fit: [0, PGZERO_LIMITS.textWidth],
+  font: [0, PGZERO_LIMITS.fonts],
+}
+
 function readStyle(value: unknown): PgzeroTextStyle | null {
   if (value === null) return null
   if (!object(value)) invalid()
@@ -140,11 +164,23 @@ function readStyle(value: unknown): PgzeroTextStyle | null {
         invalid()
     } else if (NUMBER_KEYS.has(key)) {
       if (!finite(item, 1e6)) invalid()
+      const bounds = STYLE_BOUNDS[key]
+      if (bounds && (item < bounds[0] || item > bounds[1])) invalid()
     } else if (BOOLEAN_KEYS.has(key)) {
       if (typeof item !== 'boolean') invalid()
     } else invalid()
     style[key] = item
   }
+  // ptext's outline and shadow grow with the letter size (owidth/24, shadow/18 of it).
+  const size = typeof style.fontsize === 'number' ? style.fontsize : 24
+  if (
+    typeof style.owidth === 'number' &&
+    style.owidth * size * (1 / 24) > PGZERO_LIMITS.outlinePixels
+  )
+    invalid()
+  const shadow = style.shadow as readonly number[] | undefined
+  if (shadow?.some((part) => Math.abs(part) * size * (1 / 18) > PGZERO_LIMITS.shadowPixels))
+    invalid()
   return style as PgzeroTextStyle
 }
 
@@ -167,22 +203,12 @@ function readAudio(value: unknown): PgzeroAudioCommand {
   invalid()
 }
 
-/** Strict, bounded parse of one frame header produced by pgzero/_sz.py. */
-function readDecode(value: unknown, keep: boolean): readonly [number, number, number] {
-  if (
-    !keep ||
-    !Array.isArray(value) ||
-    value.length !== 3 ||
-    !id(value[0], PGZERO_LIMITS.images) ||
-    value[0] < 1 ||
-    !id(value[1], PGZERO_LIMITS.imageDimension - 1) ||
-    !id(value[2], PGZERO_LIMITS.imageDimension) ||
-    value[2] < 1
-  )
-    invalid()
-  return [value[0], value[1], value[2]] as const
+function readDecode(value: unknown, keep: boolean): number {
+  if (!keep || !id(value, PGZERO_LIMITS.images) || value < 1) invalid()
+  return value
 }
 
+/** Strict, bounded parse of one frame header produced by pgzero/_sz.py. */
 export function readPgzeroFrameHeader(raw: unknown): PgzeroFrameHeader {
   if (typeof raw !== 'string' || raw.length > PGZERO_LIMITS.headerChars) invalid()
   let value: unknown
@@ -192,7 +218,7 @@ export function readPgzeroFrameHeader(raw: unknown): PgzeroFrameHeader {
     invalid()
   }
   if (!object(value)) invalid()
-  const { w, h, title, keep, images, fonts, strings, styles, audio, decode } = value
+  const { w, h, title, keep, images, fonts, strings, styles, audio, decode, watch } = value
   if (
     !id(w, PGZERO_LIMITS.maxWidth) ||
     !id(h, PGZERO_LIMITS.maxHeight) ||
@@ -209,7 +235,8 @@ export function readPgzeroFrameHeader(raw: unknown): PgzeroFrameHeader {
     !Array.isArray(styles) ||
     styles.length > PGZERO_LIMITS.styles + 1 ||
     !Array.isArray(audio) ||
-    audio.length > PGZERO_LIMITS.audioCommands
+    audio.length > PGZERO_LIMITS.audioCommands ||
+    (watch !== undefined && typeof watch !== 'boolean')
   )
     invalid()
   return {
@@ -259,6 +286,7 @@ export function readPgzeroFrameHeader(raw: unknown): PgzeroFrameHeader {
       return [entry[0], readStyle(entry[1])] as const
     }),
     audio: audio.map(readAudio),
+    watch: watch === true,
     ...(decode === undefined ? {} : { decode: readDecode(decode, keep) }),
   }
 }

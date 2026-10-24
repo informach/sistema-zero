@@ -60,6 +60,7 @@ const receiverDependencies = {
   Tuple: ['sz_py_tuple'],
   Dict: ['sz_py_dictionary'],
   Set: ['sz_py_set', 'sz_py_set_create'],
+  file: ['sz_py_with_open'],
 } as const
 export interface PythonCatalogEntry {
   id: string
@@ -92,7 +93,9 @@ export function describePythonCatalog(
       dependencies.add('sz_py_assign')
     }
     const seen = new Set<PythonNode>()
-    function child(value: PythonNode, role: PythonBlockRole) {
+    // Recursive like the palette's shadows (paletteBlocks.ts): a shadow inside a shadow is
+    // shown too, so it is a dependency too.
+    function child(value: PythonNode, role: PythonBlockRole, depth = 0) {
       if (seen.has(value)) return
       seen.add(value)
       // Defaults are trusted catalog examples, not learner code: no alias inference here.
@@ -107,6 +110,11 @@ export function describePythonCatalog(
       )
       if (!found) throw new Error(`O exemplo de ${codec.id} depende de uma sintaxe sem bloco.`)
       if (found.id !== codec.id) dependencies.add(found.id)
+      const inner = found.decode(value)
+      if (inner && depth < 6)
+        for (const input of inner.inputs)
+          if (input.role !== 'statement' && input.nodes.length === 1)
+            child(input.nodes[0]!, input.role, depth + 1)
     }
     const shape = codec.decode(codec.defaultNode())
     if (!shape) throw new Error(`O bloco ${codec.id} não possui exemplo válido.`)

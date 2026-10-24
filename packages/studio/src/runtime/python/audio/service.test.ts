@@ -243,6 +243,33 @@ describe('session-owned Python audio', () => {
     expect(instances.every((audio) => audio.src === '')).toBe(true)
   })
 
+  test('reports the voices that ended by themselves or could not play, never the stopped ones', async () => {
+    const f = await fixture()
+    expect((await f.play(1)).ended).toBeUndefined()
+    await f.play(2)
+    await f.play(3)
+    // Stopped: never reported. Ended by itself: reported with the next reply, whatever it is.
+    await f.exchange({ version: 1, op: 'stop', id: 2 })
+    instances[0]!.dispatchEvent(new Event('ended'))
+    // A poll does nothing but collect what ended.
+    expect(await f.exchange({ version: 1, op: 'poll' })).toEqual({
+      version: 1,
+      ok: true,
+      ended: [1],
+    })
+    expect(await f.exchange({ version: 1, op: 'poll' })).toEqual({ version: 1, ok: true })
+    // A play that fails is over for the program as well.
+    begin = () => Promise.reject(new Error('no'))
+    instances[2]!.dispatchEvent(new Event('ended'))
+    expect(await f.play(4)).toMatchObject({ ok: false, ended: [3, 4] })
+    expect((await f.exchange({ version: 1, op: 'poll' })).ended).toBeUndefined()
+  })
+
+  test('a poll carries nothing else', async () => {
+    const f = await fixture()
+    expect((await f.exchange({ version: 1, op: 'poll', id: 1 })).ok).toBe(false)
+  })
+
   test('abort cancels pending native play and prevents a late success from restoring authority', async () => {
     const f = await fixture()
     let entered!: () => void

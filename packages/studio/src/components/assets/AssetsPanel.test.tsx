@@ -582,6 +582,21 @@ describe('Materiais do jogo — Pygame Zero lê sounds/ e music/', () => {
     expect(useProjectStore.getState().project?.assets).toHaveLength(2)
   })
 
+  it('cada material mostra o nome que o código usa, e renomear leva o arquivo junto', async () => {
+    await seedPgzero('python-pgzero')
+    abrir('Sons')
+    await enviar('🔊 Enviar som curto', new File(['RIFF'], 'Pulo Alto.wav', { type: 'audio/wav' }))
+    const campo = await screen.findByRole('textbox', { name: 'Nome do som pulo-alto' })
+    expect(campo.getAttribute('aria-describedby')).not.toBeNull()
+    const nomeNoCodigo = document.getElementById(campo.getAttribute('aria-describedby')!)
+    expect(nomeNoCodigo?.textContent).toBe('nome no código: pulo_alto')
+    fireEvent.blur(campo, { target: { value: 'grito' } })
+    await waitFor(() =>
+      expect(useProjectStore.getState().project?.assets?.[0]?.proPath).toBe('sounds/grito.wav'),
+    )
+    expect(screen.getByText('grito', { selector: 'code' })).not.toBeNull()
+  })
+
   it('Turtle mantém uma porta só e o caminho assets/', async () => {
     await seedPgzero('python-turtle')
     abrir('Sons')
@@ -595,5 +610,7 @@ describe('Materiais do jogo — Pygame Zero lê sounds/ e music/', () => {
     await waitFor(() =>
       expect(useProjectStore.getState().project?.assets?.[0]?.proPath).toBe('assets/tema.mp3'),
     )
+    // Turtle opens files by their path: no Pygame Zero code name.
+    expect(screen.queryByText(/nome no código/)).toBeNull()
   })
 })
