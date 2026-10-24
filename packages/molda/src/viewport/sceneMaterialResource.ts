@@ -4,6 +4,9 @@ import type { SceneMaterial } from '../scene/document'
 import type { SceneMaterialImageKind } from '../scene/materialImages'
 import type { ScenePaintResource } from './scenePaintResource'
 
+/** X-ray alpha, close to Blender's default: enough to read the front, see what's behind. */
+export const SCENE_XRAY_ALPHA = 0.4
+
 export interface PreparedSceneMaterial {
   source: SceneMaterial
   base: SceneRgba
@@ -15,12 +18,17 @@ export interface PreparedSceneMaterial {
 export class SceneMaterialResource {
   readonly material = new MeshStandardMaterial()
   private disposed = false
+  private xray = false
+  private authoredTransparent = false
+  // Fades after alphaTest: the cutout and authored opacity stay as painted.
+  private readonly xrayAlpha = { value: 1 }
 
   constructor() {
     // With MSAA, a covered fragment's center may lie outside its triangle. Sampling
     // UV there reads the next atlas tile, leaving dots around an erased plane.
     // Centroid interpolation samples inside the covered triangle without shrinking UVs.
     this.material.onBeforeCompile = (shader) => {
+      shader.uniforms.moldaXrayAlpha = this.xrayAlpha
       shader.vertexShader = shader.vertexShader.replace(
         '#include <uv_pars_vertex>',
         ShaderChunk.uv_pars_vertex.replace('varying vec2 vMapUv;', 'centroid varying vec2 vMapUv;'),
@@ -32,8 +40,14 @@ export class SceneMaterialResource {
           'centroid varying vec2 vMapUv;',
         ),
       )
+      shader.fragmentShader = shader.fragmentShader
+        .replace('void main() {', 'uniform float moldaXrayAlpha;\nvoid main() {')
+        .replace(
+          '#include <alphatest_fragment>',
+          '#include <alphatest_fragment>\ndiffuseColor.a *= moldaXrayAlpha;',
+        )
     }
-    this.material.customProgramCacheKey = () => 'molda-centroid-color-uv-v1'
+    this.material.customProgramCacheKey = () => 'molda-centroid-color-uv-xray-v2'
   }
 
   update({ source, base, maps }: PreparedSceneMaterial): void {
@@ -61,7 +75,8 @@ export class SceneMaterialResource {
       this.material.opacity *= source.alphaMask.opacity
       this.material.transparent = false
     }
-    this.material.depthWrite = !this.material.transparent
+    this.authoredTransparent = this.material.transparent
+    this.applyXray()
     this.material.roughness = source.roughness
     this.material.metalness = source.metalness
     this.material.normalMap = maps.normal?.texture ?? null
@@ -69,6 +84,8 @@ export class SceneMaterialResource {
     this.material.metalnessMap = maps.metalness?.texture ?? null
     const strength = source.normalStrength ?? 1
     this.material.normalScale.set(strength, source.normalFlipY ? -strength : strength)
+    // Same sides as the exported GLB, so picking and painting never reach a hidden back.
+    // The workshop shows that back separately, in a dark tone (SceneRenderResource).
     this.material.side = source.doubleSided ? DoubleSide : FrontSide
     this.material.name = source.name
     if (
@@ -80,6 +97,21 @@ export class SceneMaterialResource {
       wasTransparent !== this.material.transparent
     )
       this.material.needsUpdate = true
+  }
+
+  /** Workshop view only: the authored material and its export stay unchanged. */
+  setXray(on: boolean): void {
+    if (this.disposed || this.xray === on) return
+    this.xray = on
+    const wasTransparent = this.material.transparent
+    this.applyXray()
+    if (wasTransparent !== this.material.transparent) this.material.needsUpdate = true
+  }
+
+  private applyXray(): void {
+    this.material.transparent = this.authoredTransparent || this.xray
+    this.material.depthWrite = !this.material.transparent
+    this.xrayAlpha.value = this.xray ? SCENE_XRAY_ALPHA : 1
   }
 
   dispose(): void {

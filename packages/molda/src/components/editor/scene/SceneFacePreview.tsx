@@ -23,7 +23,11 @@ export function SceneFacePreview({
   compact = false,
   currentAmount,
 }: SceneFacePreviewProps) {
-  const [draft, setDraft] = useState({ source: currentAmount, text: '0' })
+  // Um arrasto pode abrir a prévia já puxada: o campo começa na distância que está valendo.
+  const [draft, setDraft] = useState(() => ({
+    source: currentAmount,
+    text: currentAmount === undefined ? '0' : String(Number(currentAmount.toPrecision(12))),
+  }))
   const raw =
     currentAmount !== undefined && currentAmount !== draft.source
       ? String(Number(currentAmount.toPrecision(12)))

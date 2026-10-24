@@ -2105,6 +2105,67 @@ describe('scene viewport lifecycle and picking', () => {
       editor.getState().dispose()
     }
   })
+  test('Puxar aceita arrastar a face e a linha escolhidas diretamente no modelo', () => {
+    const deltas: AffineMatrix[] = []
+    const ends: boolean[] = []
+    let begins = 0
+    const f = setup({
+      begin: () => {
+        begins++
+        return true
+      },
+      preview: (delta) => {
+        deltas.push(delta)
+        return true
+      },
+      end: (commit) => ends.push(commit),
+    })
+    try {
+      const id = f.source.nodes[0]!.id
+      const document = convertSceneNodesToMesh(f.source, [id])
+      const mesh = document.geometries[0]!
+      if (mesh.kind !== 'mesh') throw new Error('Missing mesh')
+      f.viewport.setDocument(document)
+      f.viewport.setSelection([id])
+      f.viewport.setComponentSelection({ nodeId: id, mode: 'face', ids: ['pz'] })
+      f.viewport.setTransformTool('move')
+      f.viewport.setDirectPull(true)
+      f.tick()
+      const center = new Vector3(0, 1, 0).project(f.count().camera!)
+      const centerY = (1 - center.y) * 90
+      f.pointer('pointerdown', 1, { buttons: 1 })
+      f.pointer('pointermove', 1, { clientY: centerY - 20, button: -1, buttons: 1 })
+      f.pointer('pointerup', 1, { clientY: centerY - 20 })
+      expect(begins).toBe(1)
+      expect(deltas.at(-1)![14]).toBeGreaterThan(0)
+      expect(ends).toEqual([true])
+      expect(f.faces).toEqual([])
+
+      const corners = mesh.faces.pz!.corners
+      const a = mesh.vertices[corners[0]!.vertexId]!
+      const b = mesh.vertices[corners[1]!.vertexId]!
+      const edgeId = meshEdgeKey(corners[0]!.vertexId, corners[1]!.vertexId)
+      const world = indexSceneDocument(document).scene.worldMatrices.get(id)!
+      const midpoint = new Vector3(
+        ...transformPoint(world, [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2, (a[2] + b[2]) / 2]),
+      )
+      const projected = midpoint.project(f.count().camera!)
+      const x = (projected.x + 1) * 160
+      const y = (1 - projected.y) * 90
+      f.viewport.setComponentSelection({ nodeId: id, mode: 'edge', ids: [edgeId] })
+      f.tick()
+      f.pointer('pointerdown', 2, { clientX: x, clientY: y, buttons: 1 })
+      f.pointer('pointermove', 2, { clientX: x + 20, clientY: y, button: -1, buttons: 1 })
+      f.pointer('pointerup', 2, { clientX: x + 20, clientY: y })
+      expect(begins).toBe(2)
+      expect(Math.hypot(...deltas.at(-1)!.slice(12, 15))).toBeGreaterThan(0)
+      expect(ends).toEqual([true, true])
+      expect(f.faces).toEqual([])
+    } finally {
+      f.close()
+    }
+  })
+
   test('Puxar orienta a seta Y pela normal da face inclinada e restaura os eixos ao sair', () => {
     const deltas: AffineMatrix[] = []
     const f = setup({

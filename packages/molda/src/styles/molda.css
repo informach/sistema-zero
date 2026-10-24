@@ -1232,6 +1232,11 @@
   .mld-disclosure[open] {
     padding-bottom: 8px;
   }
+  .mld-disclosure.mld-palette-disclosure,
+  .mld-disclosure.mld-palette-disclosure[open] {
+    border: 0;
+    padding-bottom: 0;
+  }
   /* A régua do tempo: trilho fino, o andado no acento e a bolinha com o anel branco. */
   .mld-scrubber {
     width: 100%;
@@ -3138,8 +3143,8 @@
 }
 [data-molda-theme] .mld-piece-heading {
   display: flex;
-  flex-wrap: wrap;
-  align-items: center;
+  flex-direction: column;
+  align-items: stretch;
   gap: 8px;
 }
 @media (pointer: coarse) {

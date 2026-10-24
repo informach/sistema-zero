@@ -247,9 +247,10 @@ describe('a oficina no nível de entrada', () => {
     // The requested Plano adds one visible creation button, within model.pieces.
     expect(vazio.view.getByRole('button', { name: COPY.scene.plane })).toBeDefined()
     // A biblioteca de paletas acrescenta um único gatilho recolhido no Modelar.
-    expect(montadosVazio.length, montadosVazio.join(' | ')).toBeLessThanOrEqual(64)
+    // O Raio-X pedido acrescenta uma alternância de vista, ao lado da grade.
+    expect(montadosVazio.length, montadosVazio.join(' | ')).toBeLessThanOrEqual(65)
     // Cut, import, pivot and component selection are now explicit basic authoring actions.
-    expect(encaradosVazio.length, encaradosVazio.join(' | ')).toBeLessThanOrEqual(47)
+    expect(encaradosVazio.length, encaradosVazio.join(' | ')).toBeLessThanOrEqual(48)
     cleanup()
 
     const comPeca = mount(withPiece())
@@ -259,7 +260,7 @@ describe('a oficina no nível de entrada', () => {
     // Position, size, pivot and rotation contribute 12 inputs in the approved basic inspector.
     // Flip contributes one disclosure, three axis actions and the in-place option.
     expect(montadosPeca.length, montadosPeca.join(' | ')).toBeLessThanOrEqual(113)
-    expect(encaradosPeca.length, encaradosPeca.join(' | ')).toBeLessThanOrEqual(86)
+    expect(encaradosPeca.length, encaradosPeca.join(' | ')).toBeLessThanOrEqual(87)
   })
 
   test('nenhum controle de família trancada aparece, em nenhuma aba, nem abrindo tudo', async () => {

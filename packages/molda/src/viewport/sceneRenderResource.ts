@@ -1,10 +1,12 @@
 import {
+  BackSide,
   BufferAttribute,
   BufferGeometry,
   type ColorSpace,
   Group,
   type Intersection,
   Mesh,
+  MeshBasicMaterial,
   MeshStandardMaterial,
   NoColorSpace,
   type Object3D,
@@ -53,7 +55,7 @@ import { requireScene } from '../scene/validation'
 import { SceneSkinResource } from './SceneSkinResource'
 import { SceneSurfaceQuery } from './SceneSurfaceQuery'
 import { applySceneGeometryUvUpload } from './sceneGeometryUvUpload'
-import { SceneMaterialResource } from './sceneMaterialResource'
+import { SCENE_XRAY_ALPHA, SceneMaterialResource } from './sceneMaterialResource'
 import { ScenePaintResource } from './scenePaintResource'
 import { type SceneEdgeSegments, sceneVisibleEdges } from './sceneVisibleEdges'
 
@@ -127,6 +129,18 @@ export class SceneRenderResource {
   private readonly geometries = new Map<string, GeometryEntry>()
   private readonly materials = new Map<string, MaterialEntry>()
   private materialRevision = 0
+  private xray = false
+  // The back of open meshes and of flipped faces: a dark workshop-only tone that never takes a
+  // click or a brush and stays out of photos. Pushed back in depth, a double-sided material's
+  // own back still wins where it exists.
+  private readonly backMaterial = new MeshBasicMaterial({
+    color: 0x1d2333,
+    side: BackSide,
+    polygonOffset: true,
+    polygonOffsetFactor: 1,
+    polygonOffsetUnits: 1,
+  })
+  private readonly backs = new Map<Mesh, Mesh>()
   private readonly paints = new Map<string, PaintEntry>()
   private readonly frames = new Map<string, { source: SceneImageFlipbook; frame: number }>()
   private readonly meshes = new Map<string, Mesh<BufferGeometry, MeshStandardMaterial[]>>()
@@ -182,6 +196,22 @@ export class SceneRenderResource {
     this.formBaseNode = next
     this.root.updateMatrixWorld(true)
     return true
+  }
+
+  /** View-only: fades every material, including ones the next document brings. */
+  setXray(on: boolean): void {
+    if (this.disposed) return
+    this.xray = on
+    for (const entry of this.materials.values()) entry.resource.setXray(on)
+    if (this.backMaterial.transparent !== on) this.backMaterial.needsUpdate = true
+    this.backMaterial.transparent = on
+    this.backMaterial.depthWrite = !on
+    this.backMaterial.opacity = on ? SCENE_XRAY_ALPHA : 1
+  }
+
+  /** Workshop-only backs, hidden while the thumbnail is taken. */
+  backSides(): Object3D[] {
+    return [...this.backs.values()]
   }
 
   instanceFor(object: Object3D): SceneInstance | null {
@@ -537,6 +567,7 @@ export class SceneRenderResource {
     }
     for (const [id, prepared] of preparedMaterials) {
       const resource = this.materials.get(id)?.resource ?? new SceneMaterialResource()
+      resource.setXray(this.xray)
       resource.update({
         source: prepared.source,
         base: prepared.base,
@@ -628,6 +659,8 @@ export class SceneRenderResource {
     this.paints.clear()
     this.frames.clear()
     this.meshes.clear()
+    this.backs.clear()
+    this.backMaterial.dispose()
     this.instances.clear()
     this.source = null
     this.index = null
@@ -639,6 +672,7 @@ export class SceneRenderResource {
   private releaseMesh(id: string, mesh: Mesh) {
     if (mesh instanceof SkinnedMesh) this.skinOwners.get(mesh)?.releaseMesh(mesh)
     mesh.removeFromParent()
+    this.backs.delete(mesh)
     this.skinOwners.delete(mesh)
     this.identity.delete(mesh)
     this.meshes.delete(id)
@@ -658,12 +692,22 @@ export class SceneRenderResource {
       mesh.castShadow = true
       mesh.receiveShadow = true
       if (skin) this.skinOwners.set(mesh, skin)
+      else {
+        // A skinned back would need its own skeleton binding; skinned pieces show no back.
+        const back = new Mesh(geometry.geometry, this.backMaterial)
+        back.raycast = () => {}
+        back.name = 'verso'
+        mesh.add(back)
+        this.backs.set(mesh, back)
+      }
       mesh.matrixAutoUpdate = false
       this.meshes.set(instance.id, mesh)
       this.identity.set(mesh, instance.id)
       this.root.add(mesh)
     } else {
       mesh.geometry = skin?.geometry ?? geometry.geometry
+      const back = this.backs.get(mesh)
+      if (back) back.geometry = mesh.geometry
       const previous = mesh.material
       if (
         previous.length !== materials.length ||

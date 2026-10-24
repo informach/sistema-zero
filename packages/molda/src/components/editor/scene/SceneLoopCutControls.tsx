@@ -54,9 +54,6 @@ export function SceneLoopCutControls({
         value={offset * 100}
         change={(n) => change(count, n / 100)}
       />
-      <p className="mld-component-description">
-        0% centraliza os cortes. Valores positivos ou negativos deslocam o conjunto.
-      </p>
     </>
   )
 }

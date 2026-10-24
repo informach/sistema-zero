@@ -26,6 +26,8 @@ interface BodySample {
   additive?: boolean
   guide?: boolean
   point?: [number, number, number]
+  pull?: { point: Vec3; axis: Vec3 | null }
+  touch?: boolean
 }
 
 import type { Vec3 } from '../core/model'
@@ -47,6 +49,7 @@ import {
 } from '../scene/matrix'
 import { sceneMeasurementReference } from '../scene/measurementReference'
 import {
+  meshComponentEdges,
   meshComponentIds,
   meshComponentVertices,
   type SceneComponentSelection,
@@ -151,6 +154,13 @@ export class SceneViewport implements SceneViewportPort {
   private transformTool: SceneTransformTool = 'select'
   private transformSpace: 'world' | 'local' | 'pivot' = 'world'
   private faceExtrusion = false
+  private directPull = false
+  // A drag on the chosen face or line opens Puxar by itself; the panel reacting to it
+  // must not cancel the very gesture that opened it.
+  private pulling = false
+  // A press on the chosen face or line that never travels is a click: it still chooses.
+  private pullClick: BodySample | null = null
+  private handleDragging = false
   private movementStep: number | null = null
   private measurementOrigin: Vec3 | null = null
   /** `null` = quem chama não conhece a aba Pintar: a pintura é deduzida do alvo, como antes. */
@@ -262,6 +272,7 @@ export class SceneViewport implements SceneViewportPort {
           this.rig.camera,
           callbacks.transform,
           (dragging) => {
+            this.handleDragging = dragging
             if (this.orbit) this.orbit.enabled = !dragging && !this.contextLost
           },
           this.request,
@@ -418,11 +429,76 @@ export class SceneViewport implements SceneViewportPort {
             }
             return { ...pointer, guide: true, point }
           }
+          if (this.componentSelection) {
+            const selection = this.componentSelection
+            const press = event as PointerEvent
+            const pullPress = {
+              touch: press.pointerType === 'touch',
+              additive: !!(press.shiftKey || press.ctrlKey || press.metaKey),
+            }
+            if (
+              this.contextLost ||
+              !this.bodyMove ||
+              (this.transformTool !== 'move' && this.transformTool !== 'select') ||
+              this.paintMode === 'paint' ||
+              this.paintMode === 'look' ||
+              this.areaTool !== 'point' ||
+              (selection.mode !== 'face' && selection.mode !== 'edge') ||
+              !selection.ids.length
+            )
+              return null
+            const node = this.index?.scene.nodes.get(selection.nodeId)
+            const geometry =
+              node?.kind === 'mesh' ? this.index?.geometries.get(node.geometryId) : null
+            const mesh = geometry ? sceneGeometryMesh(geometry) : null
+            const world = this.index?.scene.worldMatrices.get(selection.nodeId)
+            if (!mesh || !world) return null
+            const rect = canvas.getBoundingClientRect()
+            if (selection.mode === 'face') {
+              if (selection.ids.length !== 1) return null
+              const hit = sceneSurfaceHit(canvas, this.rig.camera, this.resource, event)
+              const instance = hit && this.resource.instanceFor(hit.object)
+              const faceId =
+                hit?.faceIndex == null ? null : this.resource.faceFor(hit.object, hit.faceIndex)
+              if (
+                !hit ||
+                instance?.sourceNodeId !== selection.nodeId ||
+                !faceId ||
+                !selection.ids.includes(faceId)
+              )
+                return null
+              const normal = transformDirection(world, meshFaceFrame(mesh, faceId).normal)
+              return {
+                ...pointer,
+                ...pullPress,
+                pull: { point: hit.point.toArray() as Vec3, axis: normal },
+              }
+            }
+            const edgeId = this.componentPicker.pick(
+              this.resource,
+              mesh,
+              selection,
+              this.rig.camera,
+              {
+                x: event.clientX - rect.left,
+                y: event.clientY - rect.top,
+                width: rect.width,
+                height: rect.height,
+                radius: 12,
+              },
+              this.selectThrough,
+              false,
+              new Set(selection.ids),
+            )
+            if (!edgeId || !selection.ids.includes(edgeId)) return null
+            const ends = meshComponentEdges(mesh).get(edgeId)
+            const point = ends ? meshVertexCenter(mesh, ends, world) : null
+            return point ? { ...pointer, ...pullPress, pull: { point, axis: null } } : null
+          }
           if (
             this.contextLost ||
             (this.pose && !this.animationEditing) ||
             this.paintMode === 'look' ||
-            this.componentSelection ||
             this.areaTool !== 'point' ||
             this.skinPaintEnabled
           )
@@ -455,6 +531,21 @@ export class SceneViewport implements SceneViewportPort {
             if (sample.guide) {
               if (sample.point) this.callbacks.guidePoint?.(sample.point)
               return false
+            }
+            if (sample.pull) {
+              this.bodyMoving =
+                this.bodyMove?.begin(
+                  new Vector3(...sample.pull.point),
+                  sample.x,
+                  sample.y,
+                  this.rig.view,
+                  null,
+                  sample.pull.axis,
+                  'pull',
+                ) ?? false
+              this.pulling = this.bodyMoving
+              this.pullClick = this.pulling ? sample : null
+              return this.bodyMoving
             }
             if (!sample.id || !sample.hit) return false
             const { hit, id } = sample
@@ -516,9 +607,19 @@ export class SceneViewport implements SceneViewportPort {
           },
           end: (commit) => {
             const selection = this.bodySelection
+            const pullClick = this.pullClick
             this.bodySelection = null
+            this.pullClick = null
             this.bodyMoving = false
-            this.bodyMove?.end(commit)
+            this.pulling = false
+            const travelled = this.bodyMove?.end(commit) ?? false
+            if (commit && pullClick && !travelled)
+              this.selectComponentAt(
+                pullClick.x,
+                pullClick.y,
+                !!pullClick.touch,
+                !!pullClick.additive,
+              )
             if (commit && selection)
               this.callbacks.select(
                 selection.id,
@@ -1054,6 +1155,7 @@ export class SceneViewport implements SceneViewportPort {
         this.brushCursor.root,
         this.previewGuide.root,
         ...(this.paint ? [this.paint.guides.root] : []),
+        ...this.resource.backSides(),
       ],
       capture,
     )
@@ -1163,6 +1265,12 @@ export class SceneViewport implements SceneViewportPort {
     this.request()
   }
 
+  setXray(on: boolean): void {
+    if (this.disposed) return
+    this.resource.setXray(on)
+    this.request()
+  }
+
   setMovementStep(step: number | null): void {
     if (step === this.movementStep || this.disposed) return
     this.bodyMove?.end(false)
@@ -1182,10 +1290,20 @@ export class SceneViewport implements SceneViewportPort {
   }
   setFaceExtrusion(active: boolean): void {
     if (this.disposed || this.faceExtrusion === active) return
-    this.cancelGesture()
+    if (!this.pulling) this.cancelGesture()
     this.faceExtrusion = active
     this.gizmo?.setSpace(active || this.transformSpace !== 'world' ? 'local' : 'world')
     this.updateVisibility()
+  }
+  setDirectPull(active: boolean): void {
+    if (this.disposed || this.directPull === active) return
+    if (!this.pulling) this.body?.cancel()
+    this.directPull = active
+    this.gizmo?.setPlanePointerEnabled(!active)
+  }
+  setPullTool(label: string | null): void {
+    if (this.disposed) return
+    this.gizmo?.setPulling(label)
   }
   setTransformTool(tool: SceneTransformTool): void {
     if (this.disposed) return
@@ -1209,11 +1327,18 @@ export class SceneViewport implements SceneViewportPort {
   }
   setComponentSelection(selection: SceneComponentSelection | null): void {
     if (this.disposed) return
+    // Puxar troca a linha de origem pela nova linha assim que a distância sai de zero.
+    // Essa troca faz parte da prévia e não deve soltar o arraste ainda capturado.
+    const continuingPull =
+      ((this.pulling && this.bodyMoving) || (this.directPull && this.handleDragging)) &&
+      selection?.nodeId === this.componentSelection?.nodeId &&
+      selection?.mode === this.componentSelection?.mode
     if (
-      selection?.nodeId !== this.componentSelection?.nodeId ||
-      selection?.mode !== this.componentSelection?.mode ||
-      selection?.ids.length !== this.componentSelection?.ids.length ||
-      selection?.ids.some((id, i) => id !== this.componentSelection?.ids[i])
+      !continuingPull &&
+      (selection?.nodeId !== this.componentSelection?.nodeId ||
+        selection?.mode !== this.componentSelection?.mode ||
+        selection?.ids.length !== this.componentSelection?.ids.length ||
+        selection?.ids.some((id, i) => id !== this.componentSelection?.ids[i]))
     )
       this.cancelGesture()
     this.componentSelection = selection ? { ...selection, ids: [...selection.ids] } : null
@@ -1361,6 +1486,45 @@ export class SceneViewport implements SceneViewportPort {
     this.clearBrushCursor()
     if (this.weightPoints.preview(null)) this.request()
     this.pointer = null
+  }
+  private selectComponentAt(clientX: number, clientY: number, touch: boolean, additive: boolean) {
+    const selection = this.componentSelection
+    if (!selection) return
+    const rect = this.canvas.getBoundingClientRect()
+    if (rect.width <= 0 || rect.height <= 0) return
+    this.rig.camera.updateWorldMatrix(true, false)
+    const ray = new Raycaster()
+    ray.setFromCamera(
+      new Vector2(
+        ((clientX - rect.left) / rect.width) * 2 - 1,
+        (-(clientY - rect.top) / rect.height) * 2 + 1,
+      ),
+      this.rig.camera,
+    )
+    const node = this.index?.scene.nodes.get(selection.nodeId)
+    const geometry = node?.kind === 'mesh' ? this.index?.geometries.get(node.geometryId) : null
+    const mesh = geometry ? sceneGeometryMesh(geometry) : null
+    this.callbacks.selectComponent?.(
+      selection.mode === 'face'
+        ? this.faces.pick(ray, this.resource, selection.nodeId, this.selectThrough)
+        : mesh?.kind === 'mesh'
+          ? this.componentPicker.pick(
+              this.resource,
+              mesh,
+              selection,
+              this.rig.camera,
+              {
+                x: clientX - rect.left,
+                y: clientY - rect.top,
+                width: rect.width,
+                height: rect.height,
+                radius: touch ? 14 : 8,
+              },
+              this.selectThrough,
+            )
+          : null,
+      additive,
+    )
   }
   private readonly onDown = (event: PointerEvent) => {
     if (this.contextLost || this.disposed) return
@@ -1581,28 +1745,10 @@ export class SceneViewport implements SceneViewportPort {
       this.rig.camera,
     )
     if (this.componentSelection) {
-      const node = this.index?.scene.nodes.get(this.componentSelection.nodeId)
-      const geometry = node?.kind === 'mesh' ? this.index?.geometries.get(node.geometryId) : null
-      const mesh = geometry ? sceneGeometryMesh(geometry) : null
-      this.callbacks.selectComponent?.(
-        this.componentSelection.mode === 'face'
-          ? this.faces.pick(ray, this.resource, this.componentSelection.nodeId, this.selectThrough)
-          : mesh?.kind === 'mesh'
-            ? this.componentPicker.pick(
-                this.resource,
-                mesh,
-                this.componentSelection,
-                this.rig.camera,
-                {
-                  x: event.clientX - rect.left,
-                  y: event.clientY - rect.top,
-                  width: rect.width,
-                  height: rect.height,
-                  radius: event.pointerType === 'touch' ? 14 : 8,
-                },
-                this.selectThrough,
-              )
-            : null,
+      this.selectComponentAt(
+        event.clientX,
+        event.clientY,
+        event.pointerType === 'touch',
         event.shiftKey || event.ctrlKey || event.metaKey,
       )
       return

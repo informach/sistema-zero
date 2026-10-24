@@ -18,6 +18,7 @@ import type {
   SceneSelectDetail,
   SceneSkinPaintActions,
   SceneTransformActions,
+  SceneTransformIntent,
   SceneTransformTool,
   SceneViewportFactory,
   SceneViewportPort,
@@ -197,13 +198,13 @@ export function useSceneViewport({
           }
         },
         transform: {
-          begin: () => {
+          begin: (intent?: SceneTransformIntent) => {
             if (cancelled) return false
             endTransform(false)
             const actions = onTransform.current
             if (!actions) return false
             activeTransform = actions
-            const accepted = actions.begin()
+            const accepted = actions.begin(intent)
             if (!accepted && activeTransform === actions) endTransform(false)
             return accepted && !cancelled && activeTransform === actions
           },

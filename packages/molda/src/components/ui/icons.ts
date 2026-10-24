@@ -4,6 +4,7 @@
  */
 export type { LucideIcon } from 'lucide-react'
 export {
+  ArrowBigUpDash,
   ArrowDownToLine,
   ArrowLeft,
   ArrowUpFromLine,
@@ -95,6 +96,7 @@ export {
   Square,
   SquareDashedMousePointer,
   SquarePlus,
+  SquaresIntersect,
   Star,
   Sun,
   Trash2,

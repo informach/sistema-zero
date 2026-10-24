@@ -26,6 +26,7 @@ import { useMoldaToolAccess } from '../../toolAccess'
 import { Button } from '../../ui/Button'
 import { isMoldaDialogOpen } from '../../ui/Dialog'
 import {
+  ArrowBigUpDash,
   Camera,
   ChevronDown,
   Grid3x3,
@@ -42,9 +43,11 @@ import {
   ScanEye,
   SlidersHorizontal,
   SquareDashedMousePointer,
+  SquaresIntersect,
   X,
 } from '../../ui/icons'
 import { isTypingTarget } from '../../ui/interaction'
+import { useMediaQuery } from '../../ui/useMediaQuery'
 import { ReferenceImageGuide } from '../model/ReferenceImageGuide'
 import { SceneAnimationPoseControls } from './SceneAnimationPoseControls'
 import { SceneFirstSteps } from './SceneFirstSteps'
@@ -57,7 +60,7 @@ import { useCanvasHints } from './useCanvasHints'
 import { useSceneViewport } from './useSceneViewport'
 import type { SceneWorkshopTool } from './useSceneWorkshop'
 
-type SceneCanvasTool = SceneTransformTool | 'box' | 'lasso'
+type SceneCanvasTool = SceneTransformTool | 'box' | 'lasso' | 'pull'
 
 /**
  * Onde a CASCA quer cada grupo de controles do palco (11/09/2026, as telas-modelo). O palco
@@ -109,6 +112,7 @@ interface Props {
   transformTools?: readonly Exclude<SceneTransformTool, 'select'>[]
   componentSelection?: SceneComponentSelection | null
   faceExtruding?: boolean
+  directPull?: boolean
   facePreviewOpen?: boolean
   onSelectComponent?(id: string | null, additive: boolean): void
   onSelectComponents?(ids: readonly string[], additive: boolean): void
@@ -145,6 +149,7 @@ const TOOL_ICONS: Record<SceneCanvasTool, LucideIcon> = {
   box: SquareDashedMousePointer,
   lasso: Lasso,
   move: Move3d,
+  pull: ArrowBigUpDash,
   rotate: Rotate3d,
   scale: Scale3d,
 }
@@ -180,6 +185,7 @@ function SceneCanvasAttempt({
   transformTools = ['move', 'rotate', 'scale'],
   componentSelection = null,
   faceExtruding = false,
+  directPull = false,
   facePreviewOpen = false,
   onSelectComponent,
   onSelectComponents,
@@ -222,6 +228,8 @@ function SceneCanvasAttempt({
   const tool = controlledTool ?? localTool
   const setTool = onToolChange ?? setLocalTool
   const [through, setThrough] = useState(false)
+  // Raio-X, como no Blender: ver através das peças também alcança o que está atrás.
+  const [xray, setXray] = useState(false)
   const [localLook, setLocalLook] = useState(false)
   const look = looking ?? localLook
   const setLook = onLookingChange ?? setLocalLook
@@ -305,7 +313,12 @@ function SceneCanvasAttempt({
     name === 'select' ||
     (name === 'box' || name === 'lasso'
       ? can('model.area-select')
-      : can(mode === 'animation' ? 'animate.create' : 'model.pieces'))
+      : name === 'pull'
+        ? can('model.mesh')
+        : can(mode === 'animation' ? 'animate.create' : 'model.pieces'))
+  // Puxar é uma ferramenta de Faces e Linhas; fora delas a escolha volta a ser Escolher.
+  const pullAvailable =
+    mode === 'model' && (componentSelection?.mode === 'face' || componentSelection?.mode === 'edge')
   const activeTool =
     look ||
     guideInput?.rig ||
@@ -313,6 +326,7 @@ function SceneCanvasAttempt({
     tool === 'cut' ||
     tool === 'knife' ||
     mode === 'paint' ||
+    (tool === 'pull' && !pullAvailable) ||
     !allowedTool(tool) ||
     reviewingSet ||
     (mode === 'animation' && (!canAnimate || tool === 'box' || tool === 'lasso')) ||
@@ -338,9 +352,14 @@ function SceneCanvasAttempt({
     selectMany: onSelectMany,
     factory,
     transform,
-    tool: activeTool === 'box' || activeTool === 'lasso' ? 'select' : activeTool,
+    tool:
+      activeTool === 'box' || activeTool === 'lasso'
+        ? 'select'
+        : activeTool === 'pull'
+          ? 'move'
+          : activeTool,
     areaTool,
-    through,
+    through: through || xray,
     componentSelection,
     selectComponent: onSelectComponent,
     selectComponents: onSelectComponents,
@@ -415,15 +434,34 @@ function SceneCanvasAttempt({
     view.viewport?.setMovementStep?.(movementStep)
   }, [view.viewport, gridVisible, movementStep])
   useEffect(() => {
+    view.viewport?.setXray?.(xray)
+  }, [view.viewport, xray])
+  useEffect(() => {
     view.viewport?.setTransformSpace?.(preciseSpace)
   }, [view.viewport, preciseSpace])
   useEffect(() => {
     view.viewport?.setFaceExtrusion?.(faceExtruding)
   }, [view.viewport, faceExtruding])
+  useEffect(() => {
+    view.viewport?.setDirectPull?.(directPull)
+  }, [view.viewport, directPull])
+  useEffect(() => {
+    view.viewport?.setPullTool?.(activeTool === 'pull' ? copy.pull : null)
+  }, [view.viewport, activeTool])
 
   // ── as ferramentas ──────────────────────────────────────────────────────────────────────
   const showTools = mode !== 'paint' && !paintTarget
-  const tools = (['select', 'box', 'lasso', 'move', 'rotate', 'scale'] as const).filter(
+  const tools = (
+    [
+      'select',
+      'box',
+      'lasso',
+      'move',
+      ...(pullAvailable ? (['pull'] as const) : []),
+      'rotate',
+      'scale',
+    ] as const
+  ).filter(
     (name) => (mode === 'model' || (name !== 'box' && name !== 'lasso')) && allowedTool(name),
   )
   const toolLabel = (name: SceneCanvasTool) =>
@@ -440,6 +478,7 @@ function SceneCanvasAttempt({
     (assisting && (name === 'rotate' || name === 'scale')) ||
     (mode === 'animation' && name !== 'select' && !canAnimate) ||
     (facePreviewOpen && name !== 'select') ||
+    (name === 'pull' && !componentSelection?.ids.length) ||
     ((name === 'move' || name === 'rotate' || name === 'scale') &&
       !transformTools.includes(name)) ||
     (componentSelection !== null &&
@@ -516,7 +555,19 @@ function SceneCanvasAttempt({
                     ? componentSelection.mode === 'face'
                       ? copy.faceHint
                       : copy.componentPickHints[componentSelection.mode]
-                    : copy.componentTransformHint
+                    : directPull
+                      ? componentSelection.mode === 'face'
+                        ? componentSelection.ids.length === 1
+                          ? copy.pullDragHint.face
+                          : copy.pullDragHint.faces
+                        : copy.pullDragHint.edge
+                      : (tool === 'select' || tool === 'move') &&
+                          ((componentSelection.mode === 'face' &&
+                            componentSelection.ids.length === 1) ||
+                            (componentSelection.mode === 'edge' &&
+                              componentSelection.ids.length > 0))
+                        ? copy.componentPullHint(componentSelection.mode)
+                        : copy.componentTransformHint
                 : areaTool === 'point'
                   ? copy.gizmoHint
                   : copy.areaHint
@@ -525,7 +576,8 @@ function SceneCanvasAttempt({
       <input
         type="checkbox"
         name="selectThrough"
-        checked={through}
+        checked={through || xray}
+        disabled={xray}
         onChange={(event) => setThrough(event.target.checked)}
         className="size-5 accent-mld-accent"
       />
@@ -578,6 +630,32 @@ function SceneCanvasAttempt({
       onClick={() => setGridVisible((visible) => !visible)}
     >
       {copy.showGrid}
+    </Button>
+  )
+  // No celular a barra do palco não cabe mais um botão: lá o Raio-X mora nos ajustes do palco.
+  const narrowStage = useMediaQuery('(max-width: 639px)')
+  const xrayButton = narrowStage ? null : shell ? (
+    <button
+      type="button"
+      className="sz-tool-pill sz-tool-pill--outline mld-toggle px-3 text-[0.8125rem]"
+      aria-pressed={xray}
+      title={copy.xrayHint}
+      disabled={!view.viewport?.setXray}
+      onClick={() => setXray((on) => !on)}
+    >
+      <SquaresIntersect aria-hidden="true" />
+      <span className="sr-only">{copy.xray}</span>
+    </button>
+  ) : (
+    <Button
+      variant="ghost"
+      className="px-3 text-sm"
+      aria-pressed={xray}
+      title={copy.xrayHint}
+      disabled={!view.viewport?.setXray}
+      onClick={() => setXray((on) => !on)}
+    >
+      {copy.xray}
     </Button>
   )
   const frame = () => {
@@ -702,6 +780,18 @@ function SceneCanvasAttempt({
             </select>
           </label>
         )}
+        {narrowStage && (
+          <Button
+            variant="ghost"
+            className="justify-start px-3 text-sm"
+            aria-pressed={xray}
+            title={copy.xrayHint}
+            disabled={!view.viewport?.setXray}
+            onClick={() => setXray((on) => !on)}
+          >
+            {copy.xray}
+          </Button>
+        )}
         {mode !== 'paint' && !paintTarget && !componentSelection && (
           <Button
             variant="ghost"
@@ -736,6 +826,7 @@ function SceneCanvasAttempt({
       aria-label={COPY.editor.model.viewControls}
     >
       {gridButton}
+      {xrayButton}
       {frameButton}
       {cameraMenu}
       {settingsMenu}
@@ -756,6 +847,7 @@ function SceneCanvasAttempt({
       {slots.toggles === undefined && (
         <>
           {gridButton}
+          {xrayButton}
           {settingsMenu}
         </>
       )}
@@ -963,6 +1055,7 @@ function SceneCanvasAttempt({
         slots?.toggles,
         <>
           {slots?.view === undefined && gridButton}
+          {slots?.view === undefined && xrayButton}
           {settingsMenu}
         </>,
         () => null,
@@ -973,6 +1066,7 @@ function SceneCanvasAttempt({
           {lookButton}
           {cameraMenu}
           {slots?.view !== undefined && gridButton}
+          {slots?.view !== undefined && xrayButton}
           {frameButton}
         </>,
         () => null,

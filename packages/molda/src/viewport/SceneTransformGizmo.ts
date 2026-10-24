@@ -146,6 +146,13 @@ export class SceneTransformGizmo {
     this.enabled = enabled
     this.refresh()
   }
+  setPlanePointerEnabled(enabled: boolean) {
+    this.handles.move.setPlanePointerEnabled(enabled)
+  }
+  /** O texto vem de quem chama; `null` devolve às alças o nome de mover. */
+  setPulling(label: string | null) {
+    this.handles.move.setVerb(label)
+  }
   setTarget(
     point: Vec3 | null,
     basis?: AffineMatrix,

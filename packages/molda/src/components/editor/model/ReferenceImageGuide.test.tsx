@@ -61,6 +61,87 @@ test('a reference is view-bound, non-interactive and adjustable without touching
   }
 })
 
+test('front and side keep separate images and adjustments when changing views', async () => {
+  const runtime = installReferenceImageRuntime()
+  try {
+    const { container, rerender, unmount } = render(
+      <ReferenceImageGuide view="front" disabled={false}>
+        <canvas />
+      </ReferenceImageGuide>,
+    )
+    fireEvent.click(screen.getByRole('button', { name: copy.title }))
+    expect((screen.getByRole('combobox', { name: copy.view }) as HTMLSelectElement).value).toBe(
+      'front',
+    )
+    choose(container, 'frente.png')
+    await waitFor(() => expect(runtime.images).toHaveLength(1))
+    await act(async () => runtime.images[0]!.finish())
+    await screen.findByText('frente.png')
+    fireEvent.change(screen.getByRole('slider', { name: copy.opacity }), {
+      target: { value: '50' },
+    })
+    fireEvent.click(screen.getByRole('button', { name: copy.done }))
+    rerender(
+      <ReferenceImageGuide view="left" disabled={false}>
+        <canvas />
+      </ReferenceImageGuide>,
+    )
+    expect(container.querySelector('img')).toBeNull()
+    fireEvent.click(screen.getByRole('button', { name: copy.title }))
+    expect((screen.getByRole('combobox', { name: copy.view }) as HTMLSelectElement).value).toBe(
+      'left',
+    )
+    expect(screen.getByRole('button', { name: copy.choose })).toBeTruthy()
+    choose(container, 'lado.png')
+    await waitFor(() => expect(runtime.images).toHaveLength(2))
+    await act(async () => runtime.images[1]!.finish())
+    await screen.findByText('lado.png')
+    fireEvent.change(screen.getByRole('slider', { name: copy.opacity }), {
+      target: { value: '70' },
+    })
+    expect(container.querySelector('img')?.getAttribute('src')).toBe('blob:reference-1')
+    expect(container.querySelector('img')?.style.opacity).toBe('0.7')
+    fireEvent.change(screen.getByRole('combobox', { name: copy.view }), {
+      target: { value: 'front' },
+    })
+    expect(screen.getByText('frente.png')).toBeTruthy()
+    expect((screen.getByRole('slider', { name: copy.opacity }) as HTMLInputElement).value).toBe(
+      '50',
+    )
+    fireEvent.click(screen.getByRole('button', { name: copy.done }))
+    rerender(
+      <ReferenceImageGuide view="front" disabled={false}>
+        <canvas />
+      </ReferenceImageGuide>,
+    )
+    expect(container.querySelector('img')?.getAttribute('src')).toBe('blob:reference-0')
+    expect(container.querySelector('img')?.style.opacity).toBe('0.5')
+    rerender(
+      <ReferenceImageGuide view="left" disabled={false}>
+        <canvas />
+      </ReferenceImageGuide>,
+    )
+    expect(container.querySelector('img')?.getAttribute('src')).toBe('blob:reference-1')
+    expect(container.querySelector('img')?.style.opacity).toBe('0.7')
+    expect(runtime.revoke).toHaveBeenCalledTimes(0)
+    fireEvent.click(screen.getByRole('button', { name: copy.title }))
+    fireEvent.click(screen.getByRole('button', { name: copy.remove }))
+    expect(container.querySelector('img')).toBeNull()
+    expect(runtime.revoke).toHaveBeenCalledTimes(1)
+    fireEvent.click(screen.getByRole('button', { name: copy.done }))
+    rerender(
+      <ReferenceImageGuide view="front" disabled={false}>
+        <canvas />
+      </ReferenceImageGuide>,
+    )
+    expect(container.querySelector('img')?.getAttribute('src')).toBe('blob:reference-0')
+    unmount()
+    expect(runtime.revoke).toHaveBeenCalledTimes(2)
+  } finally {
+    runtime.restore()
+  }
+})
+
 test('failed replacement keeps the previous guide; cancel does not install late decoded data', async () => {
   const runtime = installReferenceImageRuntime()
   try {

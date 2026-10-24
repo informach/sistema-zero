@@ -14,6 +14,7 @@ const COLORS = [
 export class SceneAxisHandles {
   readonly element: SVGSVGElement
   private readonly handles = new Map<Axis, SVGGElement>()
+  private readonly label: string
   private point: Vec3 | null = null
   private axes: Vec3[] = [
     [1, 0, 0],
@@ -21,6 +22,7 @@ export class SceneAxisHandles {
     [0, 0, 1],
   ]
   private enabled = false
+  private planePointerEnabled = true
   private readonly pointers = new Set<number>()
   private active: {
     id: number
@@ -50,6 +52,7 @@ export class SceneAxisHandles {
     this.element = canvas.ownerDocument.createElementNS(NS, 'svg')
     this.element.setAttribute('class', 'mld-axis-handles')
     const label = { pivot: 'Pivô', move: 'Mover', scale: 'Tamanho', rotate: 'Girar' }[kind]
+    this.label = label
     this.element.setAttribute(
       'aria-label',
       kind === 'pivot'
@@ -93,8 +96,18 @@ export class SceneAxisHandles {
             stroke: 'transparent',
             'stroke-linecap': 'round',
           }),
-          create('line', { stroke: '#fff', 'stroke-width': 9, 'stroke-linecap': 'round' }),
-          create('line', { stroke: COLORS[axis]!, 'stroke-width': 5, 'stroke-linecap': 'round' }),
+          create('line', {
+            stroke: '#fff',
+            'stroke-width': 9,
+            'stroke-linecap': 'round',
+            'pointer-events': 'none',
+          }),
+          create('line', {
+            stroke: COLORS[axis]!,
+            'stroke-width': 5,
+            'stroke-linecap': 'round',
+            'pointer-events': 'none',
+          }),
           kind === 'scale'
             ? create('rect', {
                 class: 'mld-axis-tip',
@@ -226,9 +239,23 @@ export class SceneAxisHandles {
     this.draw()
   }
   /** Precision mode exposes Y without changing the pivot's basic X/Z affordance. */
+  /** Puxar usa as setas de Mover: só o nome falado muda, para quem navega pelo teclado. */
+  setVerb(verb: string | null) {
+    if (this.kind !== 'move') return
+    const label = verb ?? this.label
+    this.element.setAttribute('aria-label', `Alças para ${label.toLowerCase()}`)
+    for (const [axis, group] of this.handles)
+      if (axis !== 'plane') group.setAttribute('aria-label', `${label} no eixo ${'XYZ'[axis]}`)
+  }
   setVerticalVisible(visible: boolean) {
     const y = this.handles.get(1)
     if (this.kind === 'pivot' && y) y.style.display = visible ? '' : 'none'
+  }
+  setPlanePointerEnabled(enabled: boolean) {
+    this.planePointerEnabled = enabled
+    const plane = this.handles.get('plane')
+    if (plane) plane.style.pointerEvents = enabled ? 'auto' : 'none'
+    this.draw()
   }
   draw() {
     const point = this.point,
@@ -302,6 +329,11 @@ export class SceneAxisHandles {
         line.setAttribute('x2', String(ex))
         line.setAttribute('y2', String(ey))
       }
+      const hitLine = group.querySelector('.mld-axis-hit-line')
+      // Deixe o centro livre para pegar a própria face ou linha durante Puxar.
+      const padding = this.planePointerEnabled ? 0 : 30
+      hitLine?.setAttribute('x1', String((ex / reach) * padding))
+      hitLine?.setAttribute('y1', String((ey / reach) * padding))
       const tip = group.querySelector('.mld-axis-tip')!
       tip.setAttribute(
         this.kind === 'scale' ? 'x' : 'cx',

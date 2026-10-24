@@ -10,7 +10,7 @@ import {
   type SceneComponentSelection,
 } from './meshComponents'
 import { createMeshLooseEdge } from './meshCut'
-import { meshEdgeKey } from './meshTopology'
+import { indexMeshEdges, meshEdgeKey } from './meshTopology'
 import { requireScene } from './validation'
 
 type Selection = Pick<SceneComponentSelection, 'mode' | 'ids'>
@@ -145,12 +145,28 @@ export function prepareMeshCreation(
     selection.mode === 'edge'
       ? [...new Set(selection.ids)].map((id) => edges.get(id)!)
       : [...edges.values()].filter(([a, b]) => chosen.has(a) && chosen.has(b))
-  const cycle = creationCycle(mesh, vertices, constraints, selection.mode === 'edge')
+  const edgePair = selection.mode === 'edge' && selection.ids.length === 2
+  const edgeIndex = edgePair ? indexMeshEdges(mesh).edges : null
+  const borderPair = edgePair && selection.ids.every((id) => edgeIndex?.get(id)?.length === 1)
+  const boundaryPair = borderPair && vertices.length === 4
+  const first = boundaryPair ? edgeIndex!.get(selection.ids[0]!)![0]! : null
+  const second = boundaryPair ? edgeIndex!.get(selection.ids[1]!)![0]! : null
+  const cycle =
+    first && second
+      ? [first.b, first.a, second.b, second.a]
+      : creationCycle(mesh, vertices, constraints, selection.mode === 'edge')
   const border = cycle.map((a, i) => meshEdgeKey(a, cycle[(i + 1) % cycle.length]!))
+  const choices = meshHoleMaterials(mesh, border)
+  // Two border lines close an opening: the new face continues the first line's face. Lines
+  // inside the surface may touch faces painted differently, so the choice stays with the child.
+  const firstBorder = borderPair ? edgeIndex!.get(selection.ids[0]!)![0]! : null
+  const edgeMaterial = firstBorder ? (mesh.faces[firstBorder.faceId]!.materialId ?? '') : undefined
   return {
-    materials: meshHoleMaterials(mesh, border),
+    materials: borderPair ? [] : choices,
     apply(material?: string, nextId = newId) {
-      const result = createMeshFaceFromCycle(mesh, cycle, material, nextId)
+      const result = createMeshFaceFromCycle(mesh, cycle, material ?? edgeMaterial, nextId, {
+        allowNonPlanar: boundaryPair,
+      })
       return { ...result, mode: 'face', ids: result.faceIds }
     },
   }

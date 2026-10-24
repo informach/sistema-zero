@@ -350,6 +350,7 @@ export function createMeshFaceFromCycle(
   vertexIds: readonly string[],
   material?: string,
   nextId = newId,
+  options: { allowNonPlanar?: boolean } = {},
 ): MeshOperationResult {
   let cycle = [...vertexIds]
   requireScene(
@@ -423,9 +424,13 @@ export function createMeshFaceFromCycle(
   while (Object.hasOwn(mesh.faces, temp)) temp += ':'
   let frame: ReturnType<typeof meshFaceFrame>
   try {
-    frame = meshFaceFrame({ ...mesh, faces: { ...mesh.faces, [temp]: face } }, temp)
+    frame = meshFaceFrame({ ...mesh, faces: { ...mesh.faces, [temp]: face } }, temp, options)
   } catch {
-    throw new Error('Esse contorno precisa estar em uma superfície plana e não se cruzar.')
+    throw new Error(
+      options.allowNonPlanar
+        ? 'Essas linhas se cruzam ou não formam uma face. Escolha outras linhas.'
+        : 'Esse contorno precisa estar em uma superfície plana e não se cruzar.',
+    )
   }
   requireMeshOperationBudget(mesh, 0, cycle.length - 2)
   const id = meshIdAllocator(mesh, nextId)()

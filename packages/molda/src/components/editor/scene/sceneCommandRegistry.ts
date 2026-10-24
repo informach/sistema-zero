@@ -33,6 +33,7 @@ import { COPY } from '../../../core/copy'
 import { NATIVE_IMPORT_COPY } from '../../../core/nativeImportCopy'
 import { SCENE_PAINT_COPY } from '../../../core/scenePaintCopy'
 import {
+  ArrowBigUpDash,
   ArrowLeft,
   ArrowUpFromLine,
   Box,
@@ -65,6 +66,7 @@ import {
   Sparkles,
   Spline,
   Square,
+  SquaresIntersect,
   Trash2,
   Triangle,
   Undo2,
@@ -279,6 +281,18 @@ const COMMAND_DEFINITIONS = [
     toggle: true,
   },
   {
+    // Como o E do Blender: com Faces ou Linhas, as alças e o arrasto na escolha puxam.
+    id: 'tool.pull',
+    shortcut: key('E', 'e'),
+    label: scene.pull,
+    icon: ArrowBigUpDash,
+    contexts: ['mesh-edge', 'mesh-face'],
+    slot: 'rail',
+    tier: 1,
+    group: 'tools',
+    toggle: true,
+  },
+  {
     id: 'tool.rotate',
     shortcut: key('R', 'r'),
     label: scene.rotate,
@@ -408,6 +422,15 @@ const COMMAND_DEFINITIONS = [
     id: 'view.grid',
     label: scene.showGrid,
     icon: Grid3x3,
+    contexts: anyEdit,
+    slot: 'stage',
+    tier: 1,
+    toggle: true,
+  },
+  {
+    id: 'view.xray',
+    label: scene.xray,
+    icon: SquaresIntersect,
     contexts: anyEdit,
     slot: 'stage',
     tier: 1,
