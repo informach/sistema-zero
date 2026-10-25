@@ -18,14 +18,21 @@ export const PAL = {
 
 /** A deterministic hash in [0, 1) of integer coordinates and a seed. */
 export function hash(x: number, y: number, seed = 0): number {
-  let h = Math.imul(x | 0, 374761393) ^ Math.imul(y | 0, 668265263) ^ Math.imul(seed | 0, 2147483647)
+  let h =
+    Math.imul(x | 0, 374761393) ^ Math.imul(y | 0, 668265263) ^ Math.imul(seed | 0, 2147483647)
   h = Math.imul(h ^ (h >>> 13), 1274126177)
   h ^= h >>> 16
   return (h >>> 0) / 4294967296
 }
 
 /** Value noise that repeats every `period` pixels in both directions (seamless tiles). */
-export function periodicNoise(x: number, y: number, cell: number, period: number, seed = 0): number {
+export function periodicNoise(
+  x: number,
+  y: number,
+  cell: number,
+  period: number,
+  seed = 0,
+): number {
   const cells = Math.max(1, Math.round(period / cell))
   const gx = x / cell
   const gy = y / cell
@@ -33,7 +40,8 @@ export function periodicNoise(x: number, y: number, cell: number, period: number
   const y0 = Math.floor(gy)
   const fx = gx - x0
   const fy = gy - y0
-  const at = (cx: number, cy: number) => hash(((cx % cells) + cells) % cells, ((cy % cells) + cells) % cells, seed)
+  const at = (cx: number, cy: number) =>
+    hash(((cx % cells) + cells) % cells, ((cy % cells) + cells) % cells, seed)
   const sx = fx * fx * (3 - 2 * fx)
   const sy = fy * fy * (3 - 2 * fy)
   const top = at(x0, y0) + (at(x0 + 1, y0) - at(x0, y0)) * sx
@@ -42,7 +50,14 @@ export function periodicNoise(x: number, y: number, cell: number, period: number
 }
 
 /** Paint a shape (a function that fills the canvas), then rim light/shade and outline it. */
-export function shaded(width: number, height: number, paint: (p: Px) => void, light?: string, shade?: string, ink = INK) {
+export function shaded(
+  width: number,
+  height: number,
+  paint: (p: Px) => void,
+  light?: string,
+  shade?: string,
+  ink = INK,
+) {
   const p = new Px(width, height)
   paint(p)
   if (light || shade) p.rim(light ?? null, shade ?? null)
@@ -59,7 +74,8 @@ export function moved(source: Px, dx: number, dy: number): Px {
 
 /** Pixels painted with `color` only inside an existing shape, with a soft dither between two colours. */
 export function shadeInside(p: Px, test: (x: number, y: number) => boolean, color: string) {
-  for (let y = 0; y < p.height; y++) for (let x = 0; x < p.width; x++) if (p.get(x, y) !== null && test(x, y)) p.set(x, y, color)
+  for (let y = 0; y < p.height; y++)
+    for (let x = 0; x < p.width; x++) if (p.get(x, y) !== null && test(x, y)) p.set(x, y, color)
   return p
 }
 
@@ -73,7 +89,8 @@ export function bayer(x: number, y: number): number {
 export function crop(source: Px, x: number, y: number, width: number, height: number): Px {
   const out = new Px(width, height)
   for (let row = 0; row < height; row++)
-    for (let column = 0; column < width; column++) out.set(column, row, source.get(x + column, y + row))
+    for (let column = 0; column < width; column++)
+      out.set(column, row, source.get(x + column, y + row))
   return out
 }
 
@@ -93,7 +110,8 @@ export function shrink(source: Px, factor: number): Px {
       let best: string | null = null
       let most = 0
       for (const [color, count] of counts) if (count > most) [best, most] = [color, count]
-      if (best && most * 2 >= factor * factor - empty && empty < factor * factor * 0.75) out.set(x, y, best)
+      if (best && most * 2 >= factor * factor - empty && empty < factor * factor * 0.75)
+        out.set(x, y, best)
     }
   return out
 }

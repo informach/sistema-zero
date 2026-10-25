@@ -11,5 +11,11 @@ import { objectDrawings } from './python-monsters/objects'
 
 export function drawings(): Drawing[] {
   const { maps } = buildMaps()
-  return [...peopleDrawings(), ...monsterDrawings(), ...battleDrawings(), ...objectDrawings(), ...maps]
+  return [
+    ...peopleDrawings(),
+    ...monsterDrawings(),
+    ...battleDrawings(),
+    ...objectDrawings(),
+    ...maps,
+  ]
 }

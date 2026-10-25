@@ -40,7 +40,11 @@ const ROUND = { edge: 9, ridge: 7, cliff: 7 } as const
 function wobble(t: number, kind: 'edge' | 'ridge' | 'cliff', seed: number): number {
   const a = kind === 'cliff' ? 0.7 : 1.3
   const phase = Math.PI * 2 * (t / TILE)
-  return a * Math.sin(phase + 0) * (seed % 2 ? 1 : -1) + 0.6 * Math.sin(phase * 2) + 0.4 * Math.sin(phase * 3 + seed * 0)
+  return (
+    a * Math.sin(phase + 0) * (seed % 2 ? 1 : -1) +
+    0.6 * Math.sin(phase * 2) +
+    0.4 * Math.sin(phase * 3 + seed * 0)
+  )
 }
 
 /** Positive inside the strips/pockets, negative in the body (a soft signed distance). */
@@ -92,7 +96,10 @@ const VOID = '#000000'
 const wrap = (v: number) => ((v % TILE) + TILE) % TILE
 
 /** Small tufts at fixed spots of every tile (seamless: they stay inside the tile). */
-const TUFTS = Array.from({ length: 6 }, (_, index) => [3 + Math.floor(hash(index, 5, 33) * 26), 4 + Math.floor(hash(index, 6, 33) * 25)])
+const TUFTS = Array.from({ length: 6 }, (_, index) => [
+  3 + Math.floor(hash(index, 5, 33) * 26),
+  4 + Math.floor(hash(index, 6, 33) * 25),
+])
 
 function grassAt(x: number, y: number, variant = 0): string {
   const g = PAL.grass
@@ -122,8 +129,8 @@ function sandAt(x: number, y: number): string {
   if (n > 0.66 && bayer(x, y) < 0.2) color = s[4]
   // Wind ripples: short soft arcs.
   const ripple = (tx + Math.round(Math.sin((ty / TILE) * Math.PI * 2) * 3) + ty * 2) % 16
-  if (ripple === 0 && (ty % 8) < 5) color = s[2]
-  if (ripple === 1 && (ty % 8) < 5) color = s[4]
+  if (ripple === 0 && ty % 8 < 5) color = s[2]
+  if (ripple === 1 && ty % 8 < 5) color = s[4]
   const h = hash(tx, ty, 23)
   if (h < 0.02) color = s[1]
   else if (h < 0.045) color = s[5]
@@ -154,7 +161,10 @@ function iceAt(x: number, y: number): string {
 }
 
 /** Small wave crests at fixed spots of the tile; they drift right along the four frames. */
-const CRESTS = Array.from({ length: 7 }, (_, index) => [Math.floor(hash(index, 1, 63) * 32), 2 + Math.floor(hash(index, 2, 63) * 28)])
+const CRESTS = Array.from({ length: 7 }, (_, index) => [
+  Math.floor(hash(index, 1, 63) * 32),
+  2 + Math.floor(hash(index, 2, 63) * 28),
+])
 
 export function waterAt(x: number, y: number, frame = 0): string {
   const w = PAL.water
@@ -197,7 +207,7 @@ function rockAt(x: number, y: number): string {
   }
   if (second - best < 1.2) return r[1]
   const [sx, sy, tone] = STONES[owner]!
-  const lit = (wrap(x) - sx!) + (wrap(y) - sy!)
+  const lit = wrap(x) - sx! + (wrap(y) - sy!)
   const base = [r[2], r[3], r[3]][tone!]!
   if (lit < -best * 0.9 && best > 2) return r[4]
   if (lit > best * 0.9 && best > 3) return r[1]
@@ -261,7 +271,8 @@ export function renderTile(spec: TileSpec): Px {
   const mat = (x: number, y: number) => matAt(spec, x, y)
   // 1. Materials with their textures.
   for (let y = 0; y < TILE; y++)
-    for (let x = 0; x < TILE; x++) p.set(x, y, textureAt(mat(x, y), x, y, spec.variant ?? 0, spec.frame ?? 0))
+    for (let x = 0; x < TILE; x++)
+      p.set(x, y, textureAt(mat(x, y), x, y, spec.variant ?? 0, spec.frame ?? 0))
 
   const kind = spec.kind ?? 'edge'
   if (spec.strip && kind === 'ridge') {
@@ -287,7 +298,8 @@ export function renderTile(spec: TileSpec): Px {
       for (let x = 0; x < TILE; x++) {
         const here = Math.abs(d(x, y))
         if (here <= width + 1.25) continue
-        if (Math.abs(d(x, y - 1)) <= width + 1.25 || Math.abs(d(x, y - 2)) <= width + 1.25) p.set(x, y, SHADE[mat(x, y)])
+        if (Math.abs(d(x, y - 1)) <= width + 1.25 || Math.abs(d(x, y - 2)) <= width + 1.25)
+          p.set(x, y, SHADE[mat(x, y)])
       }
   } else if (spec.strip) {
     // 2b. Material borders: the upper material gets a dark lip, the lower one a shadow.
@@ -305,7 +317,12 @@ export function renderTile(spec: TileSpec): Px {
         if (here === 'W' && higher) p.set(x, y, PAL.water[5])
         // Shadow cast downwards by a higher material.
         if (mat(x, y - 1) !== here && HEIGHT[mat(x, y - 1)] > HEIGHT[here]) p.set(x, y, SHADE[here])
-        else if (mat(x, y - 2) !== here && HEIGHT[mat(x, y - 2)] > HEIGHT[here] && bayer(x, y) < 0.5) p.set(x, y, SHADE[here])
+        else if (
+          mat(x, y - 2) !== here &&
+          HEIGHT[mat(x, y - 2)] > HEIGHT[here] &&
+          bayer(x, y) < 0.5
+        )
+          p.set(x, y, SHADE[here])
       }
     // Grass tufts hanging over the border.
     if (spec.strip === 'G' || spec.body === 'G')
@@ -332,7 +349,8 @@ export function renderTile(spec: TileSpec): Px {
       for (let x = 0; x < TILE; x++) {
         if (mat(x, y) !== 'W') continue
         const d = -field(spec, x + 0.5, y + 0.5)
-        if (d > reach - 0.7 && d < reach + 0.5) p.set(x, y, bayer(x, y) < 0.6 ? PAL.water[5] : PAL.water[4])
+        if (d > reach - 0.7 && d < reach + 0.5)
+          p.set(x, y, bayer(x, y) < 0.6 ? PAL.water[5] : PAL.water[4])
       }
   }
   if (spec.stairs) drawStairs(p, spec.stairs)
@@ -356,23 +374,36 @@ function drawStairs(p: Px, kind: NonNullable<TileSpec['stairs']>) {
   }
   const x0 = kind === 'left' ? 3 : 13
   p.rect(x0, 0, 16, TILE, s[2])
-  for (let x = x0; x < x0 + 16; x += 5) p.rect(x, 0, 2, TILE, s[4]).rect(x + 2, 0, 1, TILE, s[3]).rect(x + 4, 0, 1, TILE, s[1])
+  for (let x = x0; x < x0 + 16; x += 5)
+    p.rect(x, 0, 2, TILE, s[4])
+      .rect(x + 2, 0, 1, TILE, s[3])
+      .rect(x + 4, 0, 1, TILE, s[1])
   p.rect(x0 - 1, 0, 1, TILE, s[0]).rect(x0 + 16, 0, 1, TILE, s[0])
 }
 
 /** Small decorations on plain tiles so a big field does not repeat one tile. */
 function decorate(p: Px, mat: Mat, variant: number) {
-  const at = (index: number) => [6 + Math.floor(hash(variant, index, 101) * 20), 6 + Math.floor(hash(variant, index, 102) * 20)]
+  const at = (index: number) => [
+    6 + Math.floor(hash(variant, index, 101) * 20),
+    6 + Math.floor(hash(variant, index, 102) * 20),
+  ]
   if (mat === 'G') {
     if (variant === 1) {
       const [x, y] = at(0)
-      p.set(x!, y!, '#ffffff').set(x! - 1, y!, '#f6e05e').set(x! + 1, y!, '#f6e05e').set(x!, y! - 1, '#f6e05e').set(x!, y! + 1, '#f6e05e')
+      p.set(x!, y!, '#ffffff')
+        .set(x! - 1, y!, '#f6e05e')
+        .set(x! + 1, y!, '#f6e05e')
+        .set(x!, y! - 1, '#f6e05e')
+        .set(x!, y! + 1, '#f6e05e')
       const [a, b] = at(1)
       p.set(a!, b!, '#ffffff').set(a! + 1, b! + 1, PAL.grass[1])
     } else if (variant === 2) {
       for (let k = 0; k < 3; k++) {
         const [x, y] = at(k + 3)
-        p.set(x!, y!, PAL.grass[1]).set(x! - 1, y! - 1, PAL.grass[5]).set(x! + 1, y! - 1, PAL.grass[5]).set(x!, y! - 2, PAL.grass[5])
+        p.set(x!, y!, PAL.grass[1])
+          .set(x! - 1, y! - 1, PAL.grass[5])
+          .set(x! + 1, y! - 1, PAL.grass[5])
+          .set(x!, y! - 2, PAL.grass[5])
       }
     }
   } else if (mat === 'S' && variant === 1) {
@@ -380,10 +411,16 @@ function decorate(p: Px, mat: Mat, variant: number) {
     p.rect(x!, y!, 3, 2, PAL.sand[5]).rect(x!, y! + 2, 3, 1, PAL.sand[1])
   } else if (mat === 'S' && variant === 2) {
     const [x, y] = at(4)
-    p.set(x!, y!, PAL.rock[2]).set(x! + 1, y!, PAL.rock[3]).set(x!, y! + 1, PAL.rock[1])
+    p.set(x!, y!, PAL.rock[2])
+      .set(x! + 1, y!, PAL.rock[3])
+      .set(x!, y! + 1, PAL.rock[1])
   } else if (mat === 'N' && variant === 1) {
     const [x, y] = at(0)
-    p.set(x!, y!, '#ffffff').set(x! - 1, y!, PAL.snow[5]).set(x! + 1, y!, PAL.snow[5]).set(x!, y! - 1, PAL.snow[5]).set(x!, y! + 1, PAL.snow[5])
+    p.set(x!, y!, '#ffffff')
+      .set(x! - 1, y!, PAL.snow[5])
+      .set(x! + 1, y!, PAL.snow[5])
+      .set(x!, y! - 1, PAL.snow[5])
+      .set(x!, y! + 1, PAL.snow[5])
   } else if (mat === 'N' && variant === 2) {
     const [x, y] = at(2)
     p.rect(x!, y!, 4, 1, PAL.snow[1]).rect(x! + 1, y! - 1, 2, 1, PAL.snow[5])
@@ -393,9 +430,26 @@ function decorate(p: Px, mat: Mat, variant: number) {
 // The table: original tile → description -----------------------------------------------------
 
 const plain = (body: Mat): TileSpec => ({ body })
-const edge = (body: Mat, strip: Mat, sides = '', pockets: Corner[] = []): TileSpec => ({ body, strip, kind: 'edge', sides, pockets })
-const ridge = (body: Mat, strip: Mat, sides = '', pockets: Corner[] = []): TileSpec => ({ body, strip, kind: 'ridge', sides, pockets })
-const cliff = (body: Mat, strip: Mat, sides: string): TileSpec => ({ body, strip, kind: 'cliff', sides })
+const edge = (body: Mat, strip: Mat, sides = '', pockets: Corner[] = []): TileSpec => ({
+  body,
+  strip,
+  kind: 'edge',
+  sides,
+  pockets,
+})
+const ridge = (body: Mat, strip: Mat, sides = '', pockets: Corner[] = []): TileSpec => ({
+  body,
+  strip,
+  kind: 'ridge',
+  sides,
+  pockets,
+})
+const cliff = (body: Mat, strip: Mat, sides: string): TileSpec => ({
+  body,
+  strip,
+  kind: 'cliff',
+  sides,
+})
 
 /** The three biome blocks of the original world tileset share one layout. */
 function biomeBlock(ground: Mat): Record<number, TileSpec> {
@@ -461,7 +515,8 @@ function biomeBlock(ground: Mat): Record<number, TileSpec> {
 function worldTable(): Map<number, { tileset: string; spec: TileSpec }> {
   const table = new Map<number, { tileset: string; spec: TileSpec }>()
   const put = (tileset: string, offset: number, block: Record<number, TileSpec>) => {
-    for (const [id, spec] of Object.entries(block)) table.set(offset + Number(id), { tileset, spec })
+    for (const [id, spec] of Object.entries(block))
+      table.set(offset + Number(id), { tileset, spec })
   }
   // Grass: a patch of sand inside the grass.
   put('terreno-grama', 0, {
@@ -536,7 +591,10 @@ function worldTable(): Map<number, { tileset: string; spec: TileSpec }> {
 }
 
 /** The indoor tiles (hospital and house) are drawn one by one. */
-const INDOOR_IDS = [5, 6, 7, 16, 17, 18, 19, 26, 27, 28, 29, 35, 36, 37, 38, 39, 46, 47, 55, 56, 57, 64, 65, 74, 75, 84, 85]
+const INDOOR_IDS = [
+  5, 6, 7, 16, 17, 18, 19, 26, 27, 28, 29, 35, 36, 37, 38, 39, 46, 47, 55, 56, 57, 64, 65, 74, 75,
+  84, 85,
+]
 
 export const WORLD_TABLE = worldTable()
 
@@ -606,10 +664,14 @@ function wall(p: Px, top: boolean) {
 /** The thick white frame around the room, on the side(s) given. */
 function frame(p: Px, sides: string) {
   const f = (x: number, y: number, w: number, h: number) => p.rect(x, y, w, h, ROOM.frame)
-  if (sides.includes('L')) f(20, 0, 8, TILE), p.rect(20, 0, 1, TILE, ROOM.frameDark).rect(27, 0, 1, TILE, ROOM.frameShade)
-  if (sides.includes('R')) f(4, 0, 8, TILE), p.rect(4, 0, 1, TILE, ROOM.frameShade).rect(11, 0, 1, TILE, ROOM.frameDark)
-  if (sides.includes('T')) f(0, 20, TILE, 8), p.rect(0, 20, TILE, 1, ROOM.frameDark).rect(0, 27, TILE, 1, ROOM.frameShade)
-  if (sides.includes('B')) f(0, 4, TILE, 8), p.rect(0, 4, TILE, 1, ROOM.frameShade).rect(0, 11, TILE, 1, ROOM.frameDark)
+  if (sides.includes('L'))
+    f(20, 0, 8, TILE), p.rect(20, 0, 1, TILE, ROOM.frameDark).rect(27, 0, 1, TILE, ROOM.frameShade)
+  if (sides.includes('R'))
+    f(4, 0, 8, TILE), p.rect(4, 0, 1, TILE, ROOM.frameShade).rect(11, 0, 1, TILE, ROOM.frameDark)
+  if (sides.includes('T'))
+    f(0, 20, TILE, 8), p.rect(0, 20, TILE, 1, ROOM.frameDark).rect(0, 27, TILE, 1, ROOM.frameShade)
+  if (sides.includes('B'))
+    f(0, 4, TILE, 8), p.rect(0, 4, TILE, 1, ROOM.frameShade).rect(0, 11, TILE, 1, ROOM.frameDark)
 }
 
 function indoorTile(id: number): Px {
@@ -617,7 +679,10 @@ function indoorTile(id: number): Px {
   switch (id) {
     case 5: // top-left corner of the frame
       p.rect(20, 20, 12, 8, ROOM.frame).rect(20, 20, 8, 12, ROOM.frame)
-      p.rect(20, 20, 12, 1, ROOM.frameDark).rect(20, 20, 1, 12, ROOM.frameDark).rect(27, 27, 5, 1, ROOM.frameShade).rect(27, 27, 1, 5, ROOM.frameShade)
+      p.rect(20, 20, 12, 1, ROOM.frameDark)
+        .rect(20, 20, 1, 12, ROOM.frameDark)
+        .rect(27, 27, 5, 1, ROOM.frameShade)
+        .rect(27, 27, 1, 5, ROOM.frameShade)
       break
     case 6:
       frame(p, 'T')
@@ -625,7 +690,10 @@ function indoorTile(id: number): Px {
       break
     case 7:
       p.rect(0, 20, 12, 8, ROOM.frame).rect(4, 20, 8, 12, ROOM.frame)
-      p.rect(0, 20, 12, 1, ROOM.frameDark).rect(11, 20, 1, 12, ROOM.frameDark).rect(0, 27, 5, 1, ROOM.frameShade).rect(4, 27, 1, 5, ROOM.frameShade)
+      p.rect(0, 20, 12, 1, ROOM.frameDark)
+        .rect(11, 20, 1, 12, ROOM.frameDark)
+        .rect(0, 27, 5, 1, ROOM.frameShade)
+        .rect(4, 27, 1, 5, ROOM.frameShade)
       break
     case 16:
     case 28:
@@ -644,7 +712,9 @@ function indoorTile(id: number): Px {
       frame(p, 'R')
       break
     case 27:
-      p.rect(0, 0, 4, 22, ROOM.wall).rect(0, 22, 4, 2, ROOM.wallLight).rect(0, 24, 4, 8, ROOM.wallDark)
+      p.rect(0, 0, 4, 22, ROOM.wall)
+        .rect(0, 22, 4, 2, ROOM.wallLight)
+        .rect(0, 24, 4, 8, ROOM.wallDark)
       frame(p, 'R')
       break
     case 35: // left frame column
@@ -653,7 +723,9 @@ function indoorTile(id: number): Px {
       break
     case 36: // baseboard where the wall meets the floor
       floor(p)
-      p.rect(0, 0, TILE, 6, ROOM.base).rect(0, 6, TILE, 1, ROOM.floorLine).rect(0, 7, TILE, 2, '#c5d5e3')
+      p.rect(0, 0, TILE, 6, ROOM.base)
+        .rect(0, 6, TILE, 1, ROOM.floorLine)
+        .rect(0, 7, TILE, 2, '#c5d5e3')
       break
     case 37:
     case 47:
@@ -666,7 +738,10 @@ function indoorTile(id: number): Px {
       break
     case 55:
       p.rect(20, 0, 8, 12, ROOM.frame).rect(20, 4, 12, 8, ROOM.frame)
-      p.rect(20, 0, 1, 12, ROOM.frameDark).rect(20, 11, 12, 1, ROOM.frameDark).rect(27, 0, 1, 5, ROOM.frameShade).rect(27, 4, 5, 1, ROOM.frameShade)
+      p.rect(20, 0, 1, 12, ROOM.frameDark)
+        .rect(20, 11, 12, 1, ROOM.frameDark)
+        .rect(27, 0, 1, 5, ROOM.frameShade)
+        .rect(27, 4, 5, 1, ROOM.frameShade)
       p.rect(28, 0, 4, 4, ROOM.floor)
       break
     case 56:
@@ -675,7 +750,10 @@ function indoorTile(id: number): Px {
       break
     case 57:
       p.rect(4, 0, 8, 12, ROOM.frame).rect(0, 4, 12, 8, ROOM.frame)
-      p.rect(11, 0, 1, 12, ROOM.frameDark).rect(0, 11, 12, 1, ROOM.frameDark).rect(4, 0, 1, 5, ROOM.frameShade).rect(0, 4, 5, 1, ROOM.frameShade)
+      p.rect(11, 0, 1, 12, ROOM.frameDark)
+        .rect(0, 11, 12, 1, ROOM.frameDark)
+        .rect(4, 0, 1, 5, ROOM.frameShade)
+        .rect(0, 4, 5, 1, ROOM.frameShade)
       p.rect(0, 0, 4, 4, ROOM.floor)
       break
     case 18:

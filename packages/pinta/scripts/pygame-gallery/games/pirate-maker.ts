@@ -26,7 +26,12 @@ import { TERRAIN_TILES, terrainTile, waterDeep, waterSurface } from './pirate-ma
 
 const PALMS: PalmKind[] = ['pequena', 'grande', 'esquerda', 'direita']
 
-function sprite(name: string, width: number, height: number, animations: SpriteDrawing['animations']): SpriteDrawing {
+function sprite(
+  name: string,
+  width: number,
+  height: number,
+  animations: SpriteDrawing['animations'],
+): SpriteDrawing {
   return { kind: 'sprite', name, frameWidth: width, frameHeight: height, animations }
 }
 
@@ -39,7 +44,8 @@ function place(width: number, height: number, picture: Px, x: number, y: number)
 function palmIcon(picture: Px, kind: PalmKind, far: boolean): Px {
   const icon = new Px(40, 40)
   const left = crownX(kind, far) - 20
-  for (let y = 0; y < 40; y++) for (let x = 0; x < 40; x++) icon.set(x, y + 2, picture.get(x + left, y))
+  for (let y = 0; y < 40; y++)
+    for (let x = 0; x < 40; x++) icon.set(x, y + 2, picture.get(x + left, y))
   return icon
 }
 
@@ -52,7 +58,9 @@ export function drawings(): Drawing[] {
   const terrain = TERRAIN_TILES.map(terrainTile)
   const lonely = terrain[TERRAIN_TILES.indexOf('X')]!
   const nearPalms = PALMS.map((kind) => [0, 1, 2, 3].map((frame) => palm(kind, frame, NEAR_PALM)))
-  const farPalms = PALMS.map((kind) => [0, 1, 2, 3].map((frame) => palm(kind, frame, FAR_PALM, true)))
+  const farPalms = PALMS.map((kind) =>
+    [0, 1, 2, 3].map((frame) => palm(kind, frame, FAR_PALM, true)),
+  )
   const one = (name: string, frame: Px) => ({ name, fps: 1, loop: false, frames: [frame] })
 
   return [
@@ -74,11 +82,21 @@ export function drawings(): Drawing[] {
     ]),
     sprite('dente', 26, 23, [
       { name: 'parado', fps: 8, loop: true, frames: idleTooth },
-      { name: 'correr', fps: 8, loop: true, frames: [0, 1, 2, 3, 4, 5].map((frame) => tooth(frame, true)) },
+      {
+        name: 'correr',
+        fps: 8,
+        loop: true,
+        frames: [0, 1, 2, 3, 4, 5].map((frame) => tooth(frame, true)),
+      },
     ]),
     sprite('concha', 38, 23, [
       one('parada', closedClam),
-      { name: 'atacar', fps: 8, loop: true, frames: SHELL_ATTACK.map((angle, index) => clam(angle, index === 1)) },
+      {
+        name: 'atacar',
+        fps: 8,
+        loop: true,
+        frames: SHELL_ATTACK.map((angle, index) => clam(angle, index === 1)),
+      },
     ]),
     sprite('perola', 16, 16, [one('parada', pearlImage())]),
     sprite('espinhos', 32, 32, [one('parado', spikes())]),
@@ -86,8 +104,12 @@ export function drawings(): Drawing[] {
       { name: 'ouro', fps: 8, loop: true, frames: COIN_TURNS.map((turn) => coin(turn, 'gold')) },
       { name: 'prata', fps: 8, loop: true, frames: COIN_TURNS.map((turn) => coin(turn, 'silver')) },
     ]),
-    sprite('diamante', 24, 24, [{ name: 'brilhar', fps: 8, loop: true, frames: [0, 1, 2, 3].map((frame) => diamond(frame)) }]),
-    sprite('brilho', 16, 16, [{ name: 'estourar', fps: 8, loop: false, frames: [0, 1, 2].map(sparkle) }]),
+    sprite('diamante', 24, 24, [
+      { name: 'brilhar', fps: 8, loop: true, frames: [0, 1, 2, 3].map((frame) => diamond(frame)) },
+    ]),
+    sprite('brilho', 16, 16, [
+      { name: 'estourar', fps: 8, loop: false, frames: [0, 1, 2].map(sparkle) },
+    ]),
     sprite(
       'palmeira',
       64,
@@ -100,7 +122,9 @@ export function drawings(): Drawing[] {
       80,
       PALMS.map((name, index) => ({ name, fps: 8, loop: true, frames: farPalms[index]! })),
     ),
-    sprite('nuvem', 128, 40, [{ name: 'formas', fps: 1, loop: true, frames: [0, 1, 2].map(cloud) }]),
+    sprite('nuvem', 128, 40, [
+      { name: 'formas', fps: 1, loop: true, frames: [0, 1, 2].map(cloud) },
+    ]),
     sprite('cursor', 14, 20, [one('seta', arrow()), one('alca', skyHandle())]),
     // the hearts and the coin counter of the play mode
     sprite('hud', 16, 16, [
@@ -118,7 +142,12 @@ export function drawings(): Drawing[] {
       one('dente', place(40, 40, idleTooth[0]!, 7, 9)),
       one('concha-esquerda', place(40, 40, closedClam, 1, 9)),
       one('concha-direita', place(40, 40, closedClam.flipX(), 1, 9)),
-      { name: 'palmeiras', fps: 1, loop: false, frames: PALMS.map((kind, index) => palmIcon(nearPalms[index]![0]!, kind, false)) },
+      {
+        name: 'palmeiras',
+        fps: 1,
+        loop: false,
+        frames: PALMS.map((kind, index) => palmIcon(nearPalms[index]![0]!, kind, false)),
+      },
       {
         name: 'palmeiras-fundo',
         fps: 1,

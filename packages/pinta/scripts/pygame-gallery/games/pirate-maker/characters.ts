@@ -35,7 +35,9 @@ export function pirate(pose: PiratePose): Px {
   // torso: striped shirt
   s.ellipse(19, 15 + b, 12, 11, P.white)
   for (let y = 16 + b; y < 25 + b; y++) if ((y - b) % 3 === 1) s.rect(19, y, 12, 1, P.blue)
-  for (let y = 15 + b; y < 26 + b; y++) for (let x = 19; x < 31; x++) if (s.get(x, y) && x >= 28) s.tint(x, y, s.get(x, y) === P.blue ? P.navy : P.steel)
+  for (let y = 15 + b; y < 26 + b; y++)
+    for (let x = 19; x < 31; x++)
+      if (s.get(x, y) && x >= 28) s.tint(x, y, s.get(x, y) === P.blue ? P.navy : P.steel)
   // belt
   s.rect(19, 23 + b, 12, 2, P.brown)
   s.rect(24, 23 + b, 3, 2, P.gold).set(25, 23 + b, P.goldLight)
@@ -45,12 +47,24 @@ export function pirate(pose: PiratePose): Px {
   s.ellipse(17, 2 + b, 15, 14, P.skin)
   shade(s, P.skin, null, P.skinDark, 24.5, 9 + b, 7.5, 7, -2, 0.62)
   // hair at the back
-  s.rect(17, 8 + b, 3, 4, P.hair).set(20, 9 + b, P.hair).set(18, 12 + b, P.hair)
+  s.rect(17, 8 + b, 3, 4, P.hair)
+    .set(20, 9 + b, P.hair)
+    .set(18, 12 + b, P.hair)
   // bandana with dots, knot and tails at the back
-  for (let y = 0; y < 8 + b; y++) for (let x = 15; x < 34; x++) if (s.get(x, y) === P.skin || s.get(x, y) === P.skinDark || s.get(x, y) === P.hair) s.set(x, y, P.red)
+  for (let y = 0; y < 8 + b; y++)
+    for (let x = 15; x < 34; x++)
+      if (s.get(x, y) === P.skin || s.get(x, y) === P.skinDark || s.get(x, y) === P.hair)
+        s.set(x, y, P.red)
   s.rect(17, 2 + b, 14, 1, P.red).rect(19, 1 + b, 10, 1, P.red)
   s.rect(17, 7 + b, 15, 1, P.redDark)
-  for (const [x, y] of [[20, 3], [25, 2], [29, 4], [22, 5], [27, 6]] as const) s.set(x, y + b, P.white)
+  for (const [x, y] of [
+    [20, 3],
+    [25, 2],
+    [29, 4],
+    [22, 5],
+    [27, 6],
+  ] as const)
+    s.set(x, y + b, P.white)
   s.rect(15, 4 + b, 3, 3, P.red).set(15, 4 + b, P.redDark)
   const t = pose.tails
   s.line(14, 5 + b, 11, 5 + b - t, P.red, 2)
@@ -75,9 +89,23 @@ export function pirate(pose: PiratePose): Px {
   const ux = (tx - hx) / len
   const uy = (ty - hy) / len
   // guard across the blade
-  s.line(hx + ux * 2 - uy * 2, hy + uy * 2 + ux * 2, hx + ux * 2 + uy * 2, hy + uy * 2 - ux * 2, P.gold, 1)
+  s.line(
+    hx + ux * 2 - uy * 2,
+    hy + uy * 2 + ux * 2,
+    hx + ux * 2 + uy * 2,
+    hy + uy * 2 - ux * 2,
+    P.gold,
+    1,
+  )
   s.line(hx + ux * 3, hy + uy * 3, tx, ty, P.steel, 2)
-  s.line(hx + ux * 3 + Math.abs(uy), hy + uy * 3 + Math.abs(ux), tx, ty + (Math.abs(ux) > 0.5 ? 1 : 0), P.steelDark, 1)
+  s.line(
+    hx + ux * 3 + Math.abs(uy),
+    hy + uy * 3 + Math.abs(ux),
+    tx,
+    ty + (Math.abs(ux) > 0.5 ? 1 : 0),
+    P.steelDark,
+    1,
+  )
   s.set(tx, ty, P.white)
   s.outline(P.ink)
   return s
@@ -115,8 +143,12 @@ export function pirateFrames() {
       tails: index % 2 ? 1 : 0,
     }),
   )
-  const jump = [pirate({ bob: -1, back: [21, 28], front: [30, 27], hand: [32, 15], tip: [40, 7], tails: -1 })]
-  const fall = [pirate({ bob: 0, back: [23, 31], front: [28, 31], hand: [33, 17], tip: [43, 12], tails: 1 })]
+  const jump = [
+    pirate({ bob: -1, back: [21, 28], front: [30, 27], hand: [32, 15], tip: [40, 7], tails: -1 }),
+  ]
+  const fall = [
+    pirate({ bob: 0, back: [23, 31], front: [28, 31], hand: [33, 17], tip: [43, 12], tails: 1 }),
+  ]
   return { idle, run, jump, fall }
 }
 
@@ -126,15 +158,31 @@ export function tooth(frame: number, running: boolean): Px {
   const bob = running ? [0, 1, 1, 0, 1, 1][frame % 6]! : [0, 0, 1, 1, 1, 0][frame % 6]!
   const open = running ? frame % 3 !== 2 : frame % 6 < 3
   // feet
-  const steps = running ? [[5, 13], [7, 11], [9, 9], [13, 5], [11, 7], [9, 9]][frame % 6]! : [7, 13]
+  const steps = running
+    ? [
+        [5, 13],
+        [7, 11],
+        [9, 9],
+        [13, 5],
+        [11, 7],
+        [9, 9],
+      ][frame % 6]!
+    : [7, 13]
   for (const [index, x] of steps.entries()) {
-    const lift = running && ((frame % 6 < 3) === (index === 0)) ? 1 : 0
+    const lift = running && frame % 6 < 3 === (index === 0) ? 1 : 0
     s.rect(x, 20 - lift, 5, 3, P.teal0)
     s.rect(x + 1, 20 - lift, 3, 1, P.teal1)
   }
   // fin on the back
   const fin = running ? frame % 2 : 0
-  s.polygon([[6, 5 + bob], [8 - fin, 1 + bob], [12, 4 + bob]], P.teal0)
+  s.polygon(
+    [
+      [6, 5 + bob],
+      [8 - fin, 1 + bob],
+      [12, 4 + bob],
+    ],
+    P.teal0,
+  )
   // body
   s.ellipse(2, 3 + bob, 22, 18, P.teal1)
   s.ellipse(4, 10 + bob, 14, 10, P.belly)
@@ -142,7 +190,15 @@ export function tooth(frame: number, running: boolean): Px {
   // mouth with teeth
   const mouthTop = 10 + bob
   const mouthBottom = open ? 17 + bob : 14 + bob
-  s.polygon([[11, mouthTop], [24, mouthTop - 1], [24, mouthBottom + 1], [13, mouthBottom]], P.mouth)
+  s.polygon(
+    [
+      [11, mouthTop],
+      [24, mouthTop - 1],
+      [24, mouthBottom + 1],
+      [13, mouthBottom],
+    ],
+    P.mouth,
+  )
   for (let x = 12; x < 24; x += 3) {
     s.rect(x, mouthTop, 2, 2, P.white).set(x, mouthTop + 2, P.white)
     if (open) s.rect(x + 1, mouthBottom - 1, 2, 2, P.white).set(x + 2, mouthBottom - 2, P.white)
@@ -188,7 +244,10 @@ export function clam(angle: number, withPearl: boolean, width = 38, height = 23)
   const turn = ([x, y]: [number, number]): [number, number] => {
     const dx = x - hinge[0]
     const dy = y - hinge[1]
-    return [hinge[0] + dx * Math.cos(rad) - dy * Math.sin(rad), hinge[1] + dx * Math.sin(rad) + dy * Math.cos(rad)]
+    return [
+      hinge[0] + dx * Math.cos(rad) - dy * Math.sin(rad),
+      hinge[1] + dx * Math.sin(rad) + dy * Math.cos(rad),
+    ]
   }
   const dome: [number, number][] = []
   for (let i = 0; i <= 18; i++) {

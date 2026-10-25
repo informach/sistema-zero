@@ -83,7 +83,9 @@ function explorer(pose: Pose): Px {
   const b = pose.bob
   // Back leg, backpack, body.
   leg(p, 13, 24 + b, pose.back[0], pose.back[1], false)
-  p.rect(6, 15 + b, 5, 9, PACK).rect(6, 15 + b, 1, 9, PACK_DARK).rect(7, 17 + b, 3, 1, PACK_DARK)
+  p.rect(6, 15 + b, 5, 9, PACK)
+    .rect(6, 15 + b, 1, 9, PACK_DARK)
+    .rect(7, 17 + b, 3, 1, PACK_DARK)
   p.rect(10, 15 + b, 10, 8, SHIRT)
   p.rect(10, 15 + b, 2, 8, SHIRT_DARK)
   p.rect(11, 19 + b, 9, 6, OVERALL).rect(11, 19 + b, 9, 1, OVERALL_LIGHT)
@@ -92,7 +94,9 @@ function explorer(pose: Pose): Px {
   leg(p, 17, 24 + b, pose.front[0], pose.front[1], true)
   // Head: round face, cap with a visor to the right, hair tuft at the back.
   p.ellipse(9, 3 + b, 14, 13, SKIN)
-  p.rect(9, 9 + b, 3, 5, HAIR).set(8, 10 + b, HAIR).set(8, 12 + b, HAIR)
+  p.rect(9, 9 + b, 3, 5, HAIR)
+    .set(8, 10 + b, HAIR)
+    .set(8, 12 + b, HAIR)
   p.ellipse(9, 2 + b, 14, 9, CAP)
   p.rect(9, 7 + b, 14, 2, CAP)
   p.rect(20, 7 + b, 6, 2, CAP_DARK).rect(20, 7 + b, 5, 1, CAP)
@@ -101,7 +105,11 @@ function explorer(pose: Pose): Px {
   p.rect(9, 8 + b, 14, 1, CAP_DARK)
   // Face.
   if (pose.hurt) {
-    p.set(18, 10 + b, EYE).set(20, 10 + b, EYE).set(19, 11 + b, EYE).set(18, 12 + b, EYE).set(20, 12 + b, EYE)
+    p.set(18, 10 + b, EYE)
+      .set(20, 10 + b, EYE)
+      .set(19, 11 + b, EYE)
+      .set(18, 12 + b, EYE)
+      .set(20, 12 + b, EYE)
     p.rect(18, 14 + b, 3, 1, EYE)
   } else if (pose.blink) p.rect(18, 11 + b, 3, 1, EYE)
   else p.rect(19, 10 + b, 2, 3, EYE).set(19, 10 + b, WHITE)
@@ -164,8 +172,34 @@ function shot(): Px {
 function flash(): Px {
   // 16×20: a star of light, opening to the right of the barrel.
   const f = new Px(16, 20)
-  f.polygon([[0, 7], [6, 1], [7, 6], [15, 3], [10, 10], [15, 17], [7, 14], [6, 19], [0, 13]], GLOW_WARM)
-  f.polygon([[1, 8], [6, 4], [8, 7], [12, 6], [9, 10], [12, 14], [8, 13], [6, 16], [1, 12]], GLOW)
+  f.polygon(
+    [
+      [0, 7],
+      [6, 1],
+      [7, 6],
+      [15, 3],
+      [10, 10],
+      [15, 17],
+      [7, 14],
+      [6, 19],
+      [0, 13],
+    ],
+    GLOW_WARM,
+  )
+  f.polygon(
+    [
+      [1, 8],
+      [6, 4],
+      [8, 7],
+      [12, 6],
+      [9, 10],
+      [12, 14],
+      [8, 13],
+      [6, 16],
+      [1, 12],
+    ],
+    GLOW,
+  )
   f.ellipse(1, 7, 8, 6, GLOW_HOT)
   f.rect(2, 9, 4, 2, WHITE)
   return f
@@ -186,14 +220,40 @@ function bee(frame: number): Px {
   const bob = [0, 1, 1, 0][frame]!
   // Wings behind the body: up, middle, down, middle.
   const wing = [
-    [[8, 9], [6, 1], [11, 0], [12, 8]],
-    [[8, 9], [4, 3], [10, 2], [12, 8]],
-    [[8, 9], [3, 7], [8, 7], [12, 9]],
-    [[8, 9], [4, 3], [10, 2], [12, 8]],
+    [
+      [8, 9],
+      [6, 1],
+      [11, 0],
+      [12, 8],
+    ],
+    [
+      [8, 9],
+      [4, 3],
+      [10, 2],
+      [12, 8],
+    ],
+    [
+      [8, 9],
+      [3, 7],
+      [8, 7],
+      [12, 9],
+    ],
+    [
+      [8, 9],
+      [4, 3],
+      [10, 2],
+      [12, 8],
+    ],
   ][frame]! as [number, number][]
   b.polygon(wing, WING)
-  b.polygon(wing.map(([x, y]) => [x + 4, y + 1] as [number, number]), WING_SHADE)
-  b.polygon(wing.map(([x, y]) => [x + 3, y] as [number, number]), WING)
+  b.polygon(
+    wing.map(([x, y]) => [x + 4, y + 1] as [number, number]),
+    WING_SHADE,
+  )
+  b.polygon(
+    wing.map(([x, y]) => [x + 3, y] as [number, number]),
+    WING,
+  )
   // Body and head.
   b.ellipse(5, 9 + bob, 13, 10, BEE)
   b.rect(9, 9 + bob, 2, 10, BEE_STRIPE).rect(13, 10 + bob, 2, 8, BEE_STRIPE)
@@ -227,7 +287,12 @@ function worm(frame: number): Px {
     const x = 3 + t * (13 + stretch)
     const rise = Math.max(0, 1 - Math.abs(t - 0.45) * 2.4) * (2 + hump * 1.5)
     const y = 9 - rise
-    w.circle(x, y, index === segments - 1 ? 3.6 : 2.8, index % 2 ? WORM : mix(WORM, WORM_DARK, 0.25))
+    w.circle(
+      x,
+      y,
+      index === segments - 1 ? 3.6 : 2.8,
+      index % 2 ? WORM : mix(WORM, WORM_DARK, 0.25),
+    )
   }
   // Belly and light along the back.
   for (let x = 0; x < 22; x++) {
@@ -278,7 +343,11 @@ function flag(frame: number): Px {
   }
   // A star on the cloth.
   const sy = 12 + Math.round(Math.sin(0.4 * 5 - frame * (Math.PI / 2)) * 1.6 * 0.4)
-  f.rect(14, sy, 3, 3, GLOW).set(15, sy - 1, GLOW).set(15, sy + 3, GLOW).set(13, sy + 1, GLOW).set(17, sy + 1, GLOW)
+  f.rect(14, sy, 3, 3, GLOW)
+    .set(15, sy - 1, GLOW)
+    .set(15, sy + 3, GLOW)
+    .set(13, sy + 1, GLOW)
+    .set(17, sy + 1, GLOW)
   f.set(15, sy + 1, GLOW_HOT)
   f.outline(INK)
   return f
@@ -293,7 +362,14 @@ function heart(full: boolean): Px {
   const h = new Px(16, 15)
   const fill = full ? HEART : '#6d5a6b'
   h.circle(5, 5, 3.8, fill).circle(11, 5, 3.8, fill)
-  h.polygon([[1.2, 6], [14.8, 6], [8, 13.4]], fill)
+  h.polygon(
+    [
+      [1.2, 6],
+      [14.8, 6],
+      [8, 13.4],
+    ],
+    fill,
+  )
   h.rect(4, 4, 8, 3, fill)
   if (full) {
     h.rim(null, HEART_DARK)
@@ -326,7 +402,9 @@ interface TerrainKey {
 
 function terrain(key: TerrainKey): Px {
   const { open, variant } = key
-  const rng = random(open * 7 + variant * 101 + (key.innerLeft ? 13 : 0) + (key.innerRight ? 29 : 0) + 5)
+  const rng = random(
+    open * 7 + variant * 101 + (key.innerLeft ? 13 : 0) + (key.innerRight ? 29 : 0) + 5,
+  )
   const t = new Px(32, 32, DIRT)
   // Strata: soft horizontal bands of a lighter and a darker earth.
   for (let y = 0; y < 32; y++) {
@@ -340,11 +418,16 @@ function terrain(key: TerrainKey): Px {
     const x = rng.int(3, 26)
     const y = rng.int(10, 25)
     const w = rng.int(2, 4)
-    t.rect(x, y, w, 2, STONE).rect(x, y + 2, w, 1, STONE_DARK).set(x, y, lighten(STONE, 0.35))
+    t.rect(x, y, w, 2, STONE)
+      .rect(x, y + 2, w, 1, STONE_DARK)
+      .set(x, y, lighten(STONE, 0.35))
   }
   if (variant === 1 && !(open & TOP)) {
     // A buried bone-shaped root: the second version of a buried piece.
-    t.rect(9, 14, 12, 2, BARK).rect(9, 14, 12, 1, BARK_LIGHT).rect(7, 13, 3, 4, BARK).rect(20, 13, 3, 4, BARK)
+    t.rect(9, 14, 12, 2, BARK)
+      .rect(9, 14, 12, 1, BARK_LIGHT)
+      .rect(7, 13, 3, 4, BARK)
+      .rect(20, 13, 3, 4, BARK)
     t.set(7, 13, BARK_LIGHT).set(20, 13, BARK_LIGHT)
   }
   // Light from the top-left, shade towards the bottom-right on open sides.
@@ -353,12 +436,14 @@ function terrain(key: TerrainKey): Px {
   if (open & BOTTOM) {
     t.rect(0, 28, 32, 3, DIRT_DARK).rect(0, 30, 32, 1, DIRT_DEEP)
     // Little roots hanging out of the bottom.
-    for (const x of variant ? [6, 19, 26] : [4, 13, 23]) t.rect(x, 26, 1, 4, BARK_DARK).set(x + 1, 29, BARK_DARK)
+    for (const x of variant ? [6, 19, 26] : [4, 13, 23])
+      t.rect(x, 26, 1, 4, BARK_DARK).set(x + 1, 29, BARK_DARK)
   }
   // Grass on top, with a wavy edge and drips down the open sides.
   if (open & TOP) {
     for (let x = 0; x < 32; x++) {
-      const depth = 5 + Math.round(1.6 * Math.sin((x + variant * 3) * 0.9) + 0.8 * Math.sin(x * 2.3 + variant))
+      const depth =
+        5 + Math.round(1.6 * Math.sin((x + variant * 3) * 0.9) + 0.8 * Math.sin(x * 2.3 + variant))
       t.rect(x, 1, 1, depth, GRASS)
       t.set(x, 1 + depth, GRASS_DARK)
       if (x % 5 === (variant ? 1 : 3)) t.set(x, 2 + depth, GRASS_DARK)
@@ -367,13 +452,30 @@ function terrain(key: TerrainKey): Px {
     for (let x = variant ? 2 : 0; x < 32; x += 4) t.set(x, 1, GRASS_TIP).set(x + 1, 3, GRASS_LIGHT)
     if (variant === 1) {
       // A little flower in the grass of the second version.
-      t.set(22, 3, '#ffe36e').set(21, 3, WHITE).set(23, 3, WHITE).set(22, 2, WHITE).set(22, 4, WHITE)
+      t.set(22, 3, '#ffe36e')
+        .set(21, 3, WHITE)
+        .set(23, 3, WHITE)
+        .set(22, 2, WHITE)
+        .set(22, 4, WHITE)
     }
-    if (open & LEFT) t.rect(1, 1, 2, 9, GRASS).rect(1, 1, 1, 8, GRASS_LIGHT).set(2, 10, GRASS_DARK).set(1, 11, GRASS)
-    if (open & RIGHT) t.rect(29, 1, 2, 10, GRASS).rect(30, 1, 1, 10, GRASS_DARK).set(29, 11, GRASS_DARK)
+    if (open & LEFT)
+      t.rect(1, 1, 2, 9, GRASS)
+        .rect(1, 1, 1, 8, GRASS_LIGHT)
+        .set(2, 10, GRASS_DARK)
+        .set(1, 11, GRASS)
+    if (open & RIGHT)
+      t.rect(29, 1, 2, 10, GRASS).rect(30, 1, 1, 10, GRASS_DARK).set(29, 11, GRASS_DARK)
   }
-  if (key.innerLeft) t.rect(0, 0, 3, 3, GRASS).rect(0, 0, 2, 1, GRASS_LIGHT).set(0, 3, GRASS_DARK).set(3, 0, GRASS_DARK)
-  if (key.innerRight) t.rect(29, 0, 3, 3, GRASS).rect(30, 0, 2, 1, GRASS_LIGHT).set(31, 3, GRASS_DARK).set(28, 0, GRASS_DARK)
+  if (key.innerLeft)
+    t.rect(0, 0, 3, 3, GRASS)
+      .rect(0, 0, 2, 1, GRASS_LIGHT)
+      .set(0, 3, GRASS_DARK)
+      .set(3, 0, GRASS_DARK)
+  if (key.innerRight)
+    t.rect(29, 0, 3, 3, GRASS)
+      .rect(30, 0, 2, 1, GRASS_LIGHT)
+      .set(31, 3, GRASS_DARK)
+      .set(28, 0, GRASS_DARK)
   // Dark border on the open sides.
   if (open & TOP) t.rect(0, 0, 32, 1, INK)
   if (open & BOTTOM) t.rect(0, 31, 32, 1, INK)
@@ -398,11 +500,15 @@ function terrainKeys(): TerrainKey[] {
 }
 
 const sameKey = (a: TerrainKey, b: TerrainKey) =>
-  a.open === b.open && a.variant === b.variant && !!a.innerLeft === !!b.innerLeft && !!a.innerRight === !!b.innerRight
+  a.open === b.open &&
+  a.variant === b.variant &&
+  !!a.innerLeft === !!b.innerLeft &&
+  !!a.innerRight === !!b.innerRight
 
 /** The terrain piece of each cell of the Main layer, from its solid neighbours. */
 function terrainCells(keys: TerrainKey[]): number[] {
-  const solid = (x: number, y: number) => x >= 0 && y >= 0 && x < COLS && y < ROWS && MAIN[y]![x] === '#'
+  const solid = (x: number, y: number) =>
+    x >= 0 && y >= 0 && x < COLS && y < ROWS && MAIN[y]![x] === '#'
   const cells: number[] = []
   for (let y = 0; y < ROWS; y++)
     for (let x = 0; x < COLS; x++) {
@@ -411,12 +517,20 @@ function terrainCells(keys: TerrainKey[]): number[] {
         continue
       }
       const open =
-        (solid(x, y - 1) ? 0 : TOP) | (solid(x + 1, y) ? 0 : RIGHT) | (solid(x, y + 1) ? 0 : BOTTOM) | (solid(x - 1, y) ? 0 : LEFT)
+        (solid(x, y - 1) ? 0 : TOP) |
+        (solid(x + 1, y) ? 0 : RIGHT) |
+        (solid(x, y + 1) ? 0 : BOTTOM) |
+        (solid(x - 1, y) ? 0 : LEFT)
       const innerLeft = !(open & TOP) && !(open & LEFT) && !solid(x - 1, y - 1)
       const innerRight = !(open & TOP) && !(open & RIGHT) && !solid(x + 1, y - 1)
       const key: TerrainKey =
         innerLeft || innerRight
-          ? { open, variant: 0, ...(innerLeft ? { innerLeft } : {}), ...(innerRight ? { innerRight } : {}) }
+          ? {
+              open,
+              variant: 0,
+              ...(innerLeft ? { innerLeft } : {}),
+              ...(innerRight ? { innerRight } : {}),
+            }
           : { open, variant: (x * 7 + y * 3) % 5 === 0 ? 1 : 0 }
       const index = keys.findIndex((candidate) => sameKey(candidate, key))
       if (index < 0) throw new Error(`peça de terreno sem desenho em ${x},${y}`)
@@ -454,7 +568,13 @@ function mushroom(big: boolean): Px {
   m.rect(x + 3, capY + 1, big ? 4 : 2, 1, CAP_BLUE_LIGHT)
   m.rect(x + 2, capY + 3, big ? 3 : 2, 2, SPOT).rect(x + w - (big ? 6 : 4), capY + 2, 2, 2, SPOT)
   if (big) m.rect(x + 8, capY + 5, 3, 2, SPOT)
-  m.rect(stemX, capY + h - 1, stemW, 31 - (capY + h - 1), STEM).rect(stemX, capY + h - 1, 1, 31 - (capY + h - 1), STEM_SHADE)
+  m.rect(stemX, capY + h - 1, stemW, 31 - (capY + h - 1), STEM).rect(
+    stemX,
+    capY + h - 1,
+    1,
+    31 - (capY + h - 1),
+    STEM_SHADE,
+  )
   m.rect(stemX - 1, 30, stemW + 2, 1, STEM_SHADE)
   m.outline(INK)
   return m
@@ -464,7 +584,10 @@ function flower(m: Px, x: number, top: number, color: string, light: string, dar
   m.rect(x, top + 4, 1, 31 - top - 4, GRASS_DARK).rect(x + 1, top + 4, 1, 31 - top - 4, GRASS)
   m.rect(x + 2, top + 12, 3, 2, GRASS).rect(x + 2, top + 12, 3, 1, GRASS_LIGHT)
   m.rect(x - 2, top + 1, 6, 3, color).rect(x - 1, top, 4, 5, color)
-  m.set(x - 1, top + 1, light).set(x, top, light).set(x + 2, top + 4, dark).set(x + 3, top + 3, dark)
+  m.set(x - 1, top + 1, light)
+    .set(x, top, light)
+    .set(x + 2, top + 4, dark)
+    .set(x + 3, top + 3, dark)
   m.rect(x, top + 2, 2, 1, CENTER).set(x, top + 1, CENTER)
 }
 
@@ -482,7 +605,9 @@ function sprout(m: Px, x: number, top: number, flip: boolean) {
   const dir = flip ? -1 : 1
   m.rect(x, top + 4, 2, 31 - top - 4, GRASS)
   m.rect(x, top + 4, 1, 31 - top - 4, GRASS_DARK)
-  m.rect(x, top + 1, 2, 3, GRASS).rect(x + dir * 2, top, 2, 2, GRASS).rect(x + dir * 4, top + 1, 2, 3, GRASS_LIGHT)
+  m.rect(x, top + 1, 2, 3, GRASS)
+    .rect(x + dir * 2, top, 2, 2, GRASS)
+    .rect(x + dir * 4, top + 1, 2, 3, GRASS_LIGHT)
   m.set(x + dir * 3, top, GRASS_LIGHT)
   m.rect(x - dir * 3, top + 9, 3, 2, GRASS_LIGHT).set(x - dir, top + 10, GRASS)
 }
@@ -512,14 +637,22 @@ function trunk(leavesLeft: boolean, leavesRight: boolean, base: boolean): Px {
   if (leavesLeft) clump(7, 10, -1)
   if (leavesRight) clump(25, base ? 6 : 16, 1)
   if (base) {
-    m.rect(12, 28, 8, 4, BARK).rect(11, 30, 10, 2, BARK).rect(12, 28, 1, 3, BARK_LIGHT).rect(19, 29, 1, 3, BARK_DARK)
-    m.rect(9, 30, 3, 2, GRASS).rect(20, 29, 3, 3, GRASS).set(21, 28, GRASS_LIGHT).set(10, 29, GRASS_LIGHT)
+    m.rect(12, 28, 8, 4, BARK)
+      .rect(11, 30, 10, 2, BARK)
+      .rect(12, 28, 1, 3, BARK_LIGHT)
+      .rect(19, 29, 1, 3, BARK_DARK)
+    m.rect(9, 30, 3, 2, GRASS)
+      .rect(20, 29, 3, 3, GRASS)
+      .set(21, 28, GRASS_LIGHT)
+      .set(10, 29, GRASS_LIGHT)
   }
   m.outline(INK)
   // The trunk continues across the piece edges: no border at the top or bottom of it.
   for (let x = 13; x <= 18; x++) {
-    if (m.get(x, 0) === INK) m.set(x, 0, x === 14 ? BARK_LIGHT : x === 17 ? BARK_DARK : x === 13 || x === 18 ? INK : BARK)
-    if (!base && m.get(x, 31) === INK) m.set(x, 31, x === 14 ? BARK_LIGHT : x === 17 ? BARK_DARK : x === 13 || x === 18 ? INK : BARK)
+    if (m.get(x, 0) === INK)
+      m.set(x, 0, x === 14 ? BARK_LIGHT : x === 17 ? BARK_DARK : x === 13 || x === 18 ? INK : BARK)
+    if (!base && m.get(x, 31) === INK)
+      m.set(x, 31, x === 14 ? BARK_LIGHT : x === 17 ? BARK_DARK : x === 13 || x === 18 ? INK : BARK)
   }
   return m
 }
@@ -533,10 +666,16 @@ function crown(): Px {
   m.ellipse(8, 4, 6, 4, LEAF_TIP)
   const rng = random(39)
   m.speckle(rng, 0.07, [LEAF_DARK, LEAF_LIGHT], LEAF)
-  for (const [x, y] of [[20, 16], [11, 18], [24, 10]] as const) m.rect(x, y, 2, 1, LEAF_DARK)
+  for (const [x, y] of [
+    [20, 16],
+    [11, 18],
+    [24, 10],
+  ] as const)
+    m.rect(x, y, 2, 1, LEAF_DARK)
   m.outline(INK)
   for (let x = 13; x <= 18; x++)
-    if (m.get(x, 31) === INK) m.set(x, 31, x === 14 ? BARK_LIGHT : x === 17 ? BARK_DARK : x === 13 || x === 18 ? INK : BARK)
+    if (m.get(x, 31) === INK)
+      m.set(x, 31, x === 14 ? BARK_LIGHT : x === 17 ? BARK_DARK : x === 13 || x === 18 ? INK : BARK)
   return m
 }
 
@@ -588,7 +727,10 @@ export function drawings(): Drawing[] {
     tileSize: 32,
     tiles: [...DECORATION_PIECES].map((letter) => ({ image: decorationPieces[letter]!() })),
   }
-  const objects: MapObject[] = ENTITIES.map((entity) => ({ ...entity, type: OBJECT_TYPES[entity.name] ?? '' }))
+  const objects: MapObject[] = ENTITIES.map((entity) => ({
+    ...entity,
+    type: OBJECT_TYPES[entity.name] ?? '',
+  }))
   const mundo: MapDrawing = {
     kind: 'map',
     name: 'mundo',
@@ -600,7 +742,9 @@ export function drawings(): Drawing[] {
         type: 'tiles',
         name: 'Decoration',
         tileset: enfeites,
-        cells: DECORATION.flatMap((row) => [...row].map((letter) => DECORATION_PIECES.indexOf(letter))),
+        cells: DECORATION.flatMap((row) =>
+          [...row].map((letter) => DECORATION_PIECES.indexOf(letter)),
+        ),
       },
       { type: 'objects', name: 'Entities', objects },
     ],
@@ -621,8 +765,20 @@ export function drawings(): Drawing[] {
       frameHeight: 14,
       animations: [{ name: 'rastejar', fps: 10, loop: true, frames: [0, 1, 2, 3].map(worm) }],
     },
-    { kind: 'sprite', name: 'tiro', frameWidth: 24, frameHeight: 12, animations: [{ name: 'voar', fps: 1, loop: true, frames: [shot()] }] },
-    { kind: 'sprite', name: 'clarao', frameWidth: 16, frameHeight: 20, animations: [{ name: 'brilhar', fps: 1, loop: false, frames: [flash()] }] },
+    {
+      kind: 'sprite',
+      name: 'tiro',
+      frameWidth: 24,
+      frameHeight: 12,
+      animations: [{ name: 'voar', fps: 1, loop: true, frames: [shot()] }],
+    },
+    {
+      kind: 'sprite',
+      name: 'clarao',
+      frameWidth: 16,
+      frameHeight: 20,
+      animations: [{ name: 'brilhar', fps: 1, loop: false, frames: [flash()] }],
+    },
     {
       kind: 'sprite',
       name: 'bandeira',
@@ -645,4 +801,3 @@ export function drawings(): Drawing[] {
     mundo,
   ]
 }
-

@@ -524,7 +524,15 @@ export const moveisDeCima = [
   '..................................................',
 ]
 
-export interface ObjectData { name: string; type: string; x: number; y: number; width?: number; height?: number; properties?: Record<string, string> }
+export interface ObjectData {
+  name: string
+  type: string
+  x: number
+  y: number
+  width?: number
+  height?: number
+  properties?: Record<string, string>
+}
 /** Trees */
 export const arvores: ObjectData[] = [
   { name: 'Large', type: 'arvore', x: 635, y: 391, properties: { imagem: 'arvores/grande' } },

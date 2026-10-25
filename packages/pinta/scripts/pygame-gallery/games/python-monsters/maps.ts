@@ -103,9 +103,19 @@ function arenaMap(arena: SourceMap, plant: SourceMap): SourceMap {
     return token[0] === 'w' && id < 60 ? `w${id + 60}` : token
   }
   const layers = Object.fromEntries(
-    Object.entries(arena.layers).map(([name, rows]) => [name, rows.map((row) => row.split(' ').map(desert).join(' '))]),
+    Object.entries(arena.layers).map(([name, rows]) => [
+      name,
+      rows.map((row) => row.split(' ').map(desert).join(' ')),
+    ]),
   )
-  const person = (id: string, x: number, y: number, direction: string, graphic: string, radius: string): SourceObject => ({
+  const person = (
+    id: string,
+    x: number,
+    y: number,
+    direction: string,
+    graphic: string,
+    radius: string,
+  ): SourceObject => ({
     layer: 'Entities',
     name: 'Character',
     x,
@@ -134,8 +144,24 @@ function arenaMap(arena: SourceMap, plant: SourceMap): SourceMap {
 
 /** The entrance in the world: the ruin gate on the beach, its guard and the arrival point. */
 const ARENA_GATE: SourceObject[] = [
-  { layer: 'Transition', name: '', x: 4364, y: 4548, width: 76, height: 8, properties: { pos: 'entrance', target: 'arena' } },
-  { layer: 'Entities', name: 'Player', x: 4400, y: 4690, width: 0, height: 0, properties: { direction: 'down', pos: 'arena' } },
+  {
+    layer: 'Transition',
+    name: '',
+    x: 4364,
+    y: 4548,
+    width: 76,
+    height: 8,
+    properties: { pos: 'entrance', target: 'arena' },
+  },
+  {
+    layer: 'Entities',
+    name: 'Player',
+    x: 4400,
+    y: 4690,
+    width: 0,
+    height: 0,
+    properties: { direction: 'down', pos: 'arena' },
+  },
   // The guard stands in the gate (fechada) until the three temple bosses are defeated; then he
   // waits beside it (aberta). The game creates the one that matches.
   {
@@ -145,7 +171,13 @@ const ARENA_GATE: SourceObject[] = [
     y: 4580,
     width: 0,
     height: 0,
-    properties: { character_id: 'Porteiro', direction: 'down', graphic: 'guarda', radius: '0', aberta: false },
+    properties: {
+      character_id: 'Porteiro',
+      direction: 'down',
+      graphic: 'guarda',
+      radius: '0',
+      aberta: false,
+    },
   },
   {
     layer: 'Entities',
@@ -154,17 +186,26 @@ const ARENA_GATE: SourceObject[] = [
     y: 4700,
     width: 0,
     height: 0,
-    properties: { character_id: 'Porteiro', direction: 'right', graphic: 'guarda', radius: '0', aberta: true },
+    properties: {
+      character_id: 'Porteiro',
+      direction: 'right',
+      graphic: 'guarda',
+      radius: '0',
+      aberta: true,
+    },
   },
 ]
 
 const MAPS: SourceMap[] = SOURCE_MAPS.map((map) => {
-  if (map.name === 'arena') return arenaMap(map, SOURCE_MAPS.find((source) => source.name === 'plant')!)
+  if (map.name === 'arena')
+    return arenaMap(map, SOURCE_MAPS.find((source) => source.name === 'plant')!)
   if (map.name === 'world') {
     // The palm just south of the gate stood half in front of the opening: it moves a little to
     // the right so the way into the gate is as wide as the gate.
     const objects = map.objects.map((object) =>
-      object.image === 'palm' && object.x === 4424 && object.y === 4626 ? { ...object, x: 4544 } : object,
+      object.image === 'palm' && object.x === 4424 && object.y === 4626
+        ? { ...object, x: 4544 }
+        : object,
     )
     return { ...map, objects: [...objects, ...ARENA_GATE] }
   }
@@ -223,14 +264,14 @@ function planTerrain(): TerrainPlan {
   const tiles = new Map<string, Map<string, TerrainTile>>()
   for (const map of MAPS)
     for (const rows of Object.values(map.layers))
-      rows.forEach((row, y) =>
+      rows.forEach((row, y) => {
         row.split(' ').forEach((token, x) => {
           const tile = tileFor(token, x, y)
           if (!tile || tile.tileset === '*') return
           if (!tiles.has(tile.tileset)) tiles.set(tile.tileset, new Map())
           tiles.get(tile.tileset)!.set(tile.key, tile)
-        }),
-      )
+        })
+      })
   // The void (around the indoor and the trainers' maps) joins the tileset its cells share a
   // layer with: decided per map below, so each tileset that needs it gets one copy.
   for (const map of MAPS)
@@ -246,19 +287,20 @@ function planTerrain(): TerrainPlan {
 
 function countTilesets(rows: string[]) {
   const counts = new Map<string, number>()
-  rows.forEach((row, y) =>
+  rows.forEach((row, y) => {
     row.split(' ').forEach((token, x) => {
       const tile = tileFor(token, x, y)
       if (tile) counts.set(tile.tileset, (counts.get(tile.tileset) ?? 0) + 1)
-    }),
-  )
+    })
+  })
   return counts
 }
 
 function majority(counts: Map<string, number>): string {
   let best = ''
   let most = -1
-  for (const [name, count] of [...counts].sort()) if (name !== '*' && count > most) [best, most] = [name, count]
+  for (const [name, count] of [...counts].sort())
+    if (name !== '*' && count > most) [best, most] = [name, count]
   return best
 }
 
@@ -274,8 +316,14 @@ export function buildMaps(): { tilesets: TilesetDrawing[]; maps: MapDrawing[] } 
   const tilesets = new Map<string, TilesetDrawing>()
   const indexOf = new Map<string, Map<string, number>>()
   for (const [name, tiles] of plan.tiles) {
-    if (tiles.size > 64) throw new Error(`O tileset ${name} ficou com ${tiles.size} peças (máximo 64).`)
-    tilesets.set(name, { kind: 'tileset', name, tileSize: 32, tiles: [...tiles.values()].map((tile) => ({ image: tile.draw() })) })
+    if (tiles.size > 64)
+      throw new Error(`O tileset ${name} ficou com ${tiles.size} peças (máximo 64).`)
+    tilesets.set(name, {
+      kind: 'tileset',
+      name,
+      tileSize: 32,
+      tiles: [...tiles.values()].map((tile) => ({ image: tile.draw() })),
+    })
     indexOf.set(name, new Map([...tiles.keys()].map((key, index) => [key, index])))
   }
   const maps = MAPS.map((map): MapDrawing => {
@@ -283,28 +331,38 @@ export function buildMaps(): { tilesets: TilesetDrawing[]; maps: MapDrawing[] } 
     for (const [original, rows] of Object.entries(map.layers)) {
       const counts = countTilesets(rows)
       const host = majority(counts)
-      const names = [...counts.keys()].filter((name) => name !== '*').sort((a, b) => (a === host ? -1 : b === host ? 1 : a.localeCompare(b)))
+      const names = [...counts.keys()]
+        .filter((name) => name !== '*')
+        .sort((a, b) => (a === host ? -1 : b === host ? 1 : a.localeCompare(b)))
       for (const name of names) {
         const cells = new Array<number>(map.cols * map.rows).fill(-1)
         const keys = indexOf.get(name)!
-        rows.forEach((row, y) =>
+        rows.forEach((row, y) => {
           row.split(' ').forEach((token, x) => {
             const tile = tileFor(token, x, y)
             if (!tile) return
             const owner = tile.tileset === '*' ? host : tile.tileset
             if (owner !== name) return
             cells[y * map.cols + x] = keys.get(tile.key)!
-          }),
-        )
+          })
+        })
         const base = original === 'Terrain' ? 'Terreno' : 'Terreno de cima'
-        layers.push({ type: 'tiles', name: names.length > 1 ? `${base} ${LAYER_LABEL[name]}` : base, tileset: tilesets.get(name)!, cells })
+        layers.push({
+          type: 'tiles',
+          name: names.length > 1 ? `${base} ${LAYER_LABEL[name]}` : base,
+          tileset: tilesets.get(name)!,
+          cells,
+        })
       }
     }
     for (const [name, originals] of OBJECT_LAYERS) {
-      const objects = map.objects.filter((object) => originals.includes(object.layer)).map((object) => convertObject(object, map))
+      const objects = map.objects
+        .filter((object) => originals.includes(object.layer))
+        .map((object) => convertObject(object, map))
       if (objects.length) layers.push({ type: 'objects', name, objects })
     }
-    if (layers.length > 8) throw new Error(`O mapa ${map.name} ficou com ${layers.length} camadas (máximo 8).`)
+    if (layers.length > 8)
+      throw new Error(`O mapa ${map.name} ficou com ${layers.length} camadas (máximo 8).`)
     return { kind: 'map', name: MAP_NAMES[map.name]!, cols: map.cols, rows: map.rows, layers }
   })
   return { tilesets: [...tilesets.values()], maps }

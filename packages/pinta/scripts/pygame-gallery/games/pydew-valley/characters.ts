@@ -69,7 +69,13 @@ function armFront(s: Px, x: number, y: number, kind: Pose['arms'], side: -1 | 1)
     return
   }
   if (kind === 'forward') {
-    s.rect(x + (side < 0 ? 2 : -2), y + 1, 3, 6, SHIRT).rect(x + (side < 0 ? 3 : -3), y + 7, 3, 2, SKIN)
+    s.rect(x + (side < 0 ? 2 : -2), y + 1, 3, 6, SHIRT).rect(
+      x + (side < 0 ? 3 : -3),
+      y + 7,
+      3,
+      2,
+      SKIN,
+    )
     return
   }
   const swing = kind === 'swingA' ? side : kind === 'swingB' ? -side : 0
@@ -92,7 +98,9 @@ function front(pose: Pose): Px {
   armFront(s, CX + 7, y + 20, pose.arms, 1)
   // Head.
   s.ellipse(CX - 8, y + 7, 16, 13, SKIN)
-  s.rect(CX - 8, y + 9, 16, 3, HAIR).rect(CX - 8, y + 12, 2, 4, HAIR).rect(CX + 6, y + 12, 2, 4, HAIR)
+  s.rect(CX - 8, y + 9, 16, 3, HAIR)
+    .rect(CX - 8, y + 12, 2, 4, HAIR)
+    .rect(CX + 6, y + 12, 2, 4, HAIR)
   s.rect(CX - 4, y + 12, 1, 1, HAIR_DARK).rect(CX + 2, y + 12, 1, 1, HAIR_DARK)
   s.rect(CX - 4, y + 13, 1, 2, INK).rect(CX + 3, y + 13, 1, 2, INK)
   s.set(CX - 4, y + 13, '#ffffff').set(CX + 3, y + 13, '#ffffff')
@@ -117,7 +125,9 @@ function back(pose: Pose): Px {
   armFront(s, CX - 10, y + 20, pose.arms, -1)
   armFront(s, CX + 7, y + 20, pose.arms, 1)
   s.ellipse(CX - 8, y + 7, 16, 13, HAIR)
-  s.rect(CX - 6, y + 14, 12, 3, HAIR_DARK).rect(CX - 8, y + 12, 1, 4, SKIN).rect(CX + 7, y + 12, 1, 4, SKIN)
+  s.rect(CX - 6, y + 14, 12, 3, HAIR_DARK)
+    .rect(CX - 8, y + 12, 1, 4, SKIN)
+    .rect(CX + 7, y + 12, 1, 4, SKIN)
   s.rect(CX - 4, y + 18, 8, 1, SKIN_DARK)
   hatFront(s, y)
   s.rect(CX - 7, y + 4, 14, 3, HAT).rect(CX - 6, y + 2, 4, 3, HAT_LIGHT)
@@ -142,19 +152,25 @@ function side(pose: Pose, armForward?: [number, number]): Px {
     s.rect(CX - 1 + swing, y + 20, 3, 7, SHIRT_DARK).rect(CX - 1 + swing, y + 27, 3, 2, SKIN_DARK)
   }
   s.rect(CX - 5, y + 19, 11, 11, SHIRT).rect(CX - 5, y + 19, 2, 11, SHIRT_LIGHT)
-  s.rect(CX - 1, y + 22, 7, 9, DENIM).rect(CX - 5, y + 28, 11, 3, DENIM).rect(CX - 5, y + 30, 11, 1, DENIM_DARK)
+  s.rect(CX - 1, y + 22, 7, 9, DENIM)
+    .rect(CX - 5, y + 28, 11, 3, DENIM)
+    .rect(CX - 5, y + 30, 11, 1, DENIM_DARK)
   s.rect(CX + 1, y + 19, 2, 3, DENIM).set(CX + 3, y + 23, BUTTON)
   leg(pose.legA, DENIM, BOOT)
   // Head facing right.
   s.ellipse(CX - 7, y + 7, 15, 13, SKIN)
-  s.rect(CX - 7, y + 9, 9, 3, HAIR).rect(CX - 7, y + 12, 5, 5, HAIR).rect(CX - 6, y + 17, 3, 1, HAIR_DARK)
+  s.rect(CX - 7, y + 9, 9, 3, HAIR)
+    .rect(CX - 7, y + 12, 5, 5, HAIR)
+    .rect(CX - 6, y + 17, 3, 1, HAIR_DARK)
   s.rect(CX + 4, y + 13, 1, 2, INK).set(CX + 4, y + 13, '#ffffff')
   s.rect(CX + 7, y + 14, 2, 2, SKIN).set(CX + 8, y + 15, SKIN_DARK)
   s.rect(CX + 3, y + 16, 2, 1, '#f29a8e')
   s.set(CX - 1, y + 13, SKIN_DARK).set(CX - 1, y + 14, SKIN_DARK)
   // Hat (the brim reaches further to the front).
   s.ellipse(CX - 11, y + 5, 25, 6, HAT).ellipse(CX - 9, y + 5, 21, 3, HAT_LIGHT)
-  s.rect(CX - 6, y, 12, 7, HAT).rect(CX - 5, y - 1, 10, 1, HAT).rect(CX - 5, y, 3, 5, HAT_LIGHT)
+  s.rect(CX - 6, y, 12, 7, HAT)
+    .rect(CX - 5, y - 1, 10, 1, HAT)
+    .rect(CX - 5, y, 3, 5, HAT_LIGHT)
   s.rect(CX - 6, y + 5, 12, 2, BAND)
   // Front arm.
   if (armForward) {
@@ -183,7 +199,9 @@ function toolCanvas(tool: Tool, hands: [number, number], tip: [number, number], 
     // The can hangs from the hands; `tilt` 1 pours towards the tip.
     const bx = tilt ? tx - (tx > hx ? 9 : tx < hx ? -1 : 4) : hx - 4
     const by = tilt ? ty - 7 : hy
-    t.rect(bx, by, 9, 7, CAN).rect(bx, by, 9, 1, CAN_LIGHT).rect(bx, by + 6, 9, 1, CAN_DARK)
+    t.rect(bx, by, 9, 7, CAN)
+      .rect(bx, by, 9, 1, CAN_LIGHT)
+      .rect(bx, by + 6, 9, 1, CAN_DARK)
     t.rect(bx + 2, by - 2, 5, 2, CAN_DARK)
     const spoutX = tx >= hx ? bx + 9 : bx - 1
     const dir = tx > hx ? 1 : tx < hx ? -1 : 1
@@ -193,7 +211,13 @@ function toolCanvas(tool: Tool, hands: [number, number], tip: [number, number], 
     t.outline(INK)
     if (tilt) {
       const sx = spoutX + dir * 5
-      for (const [dx, dy] of [[0, 2], [1, 5], [-1, 7], [2, 9], [0, 11]] as const)
+      for (const [dx, dy] of [
+        [0, 2],
+        [1, 5],
+        [-1, 7],
+        [2, 9],
+        [0, 11],
+      ] as const)
         t.set(sx + dx * dir, by + 6 + dy, WATER.light).set(sx + dx * dir, by + 7 + dy, WATER.base)
     }
     return t
@@ -233,14 +257,16 @@ function layered(...layers: Px[]): Px {
 
 const IDLE: Pose = { bob: 0, legA: 0, legB: 0, arms: 'side' }
 
-function useTool(tool: Tool, direction: Direction, frame: 0 | 1): Px {
-  if (direction === 'esquerda') return useTool(tool, 'direita', frame).flipX()
+function drawToolAction(tool: Tool, direction: Direction, frame: 0 | 1): Px {
+  if (direction === 'esquerda') return drawToolAction(tool, 'direita', frame).flipX()
   const raised: Pose = { bob: 0, legA: 0, legB: 0, arms: 'up' }
   const down: Pose = { bob: -1, legA: 0, legB: 0, arms: 'forward' }
   if (direction === 'direita') {
     if (tool === 'regador') {
       const body = side(IDLE, frame ? [52, 32] : [47, 35])
-      const can = frame ? toolCanvas(tool, [52, 32], [62, 44], 1) : toolCanvas(tool, [47, 35], [50, 36])
+      const can = frame
+        ? toolCanvas(tool, [52, 32], [62, 44], 1)
+        : toolCanvas(tool, [47, 35], [50, 36])
       return layered(body, can)
     }
     if (frame === 0) {
@@ -253,7 +279,9 @@ function useTool(tool: Tool, direction: Direction, frame: 0 | 1): Px {
   if (direction === 'baixo') {
     if (tool === 'regador') {
       const body = front(frame ? down : IDLE)
-      const can = frame ? toolCanvas(tool, [CX, 41], [CX + 4, 49], 1) : toolCanvas(tool, [CX + 9, 37], [CX + 12, 37])
+      const can = frame
+        ? toolCanvas(tool, [CX, 41], [CX + 4, 49], 1)
+        : toolCanvas(tool, [CX + 9, 37], [CX + 12, 37])
       return layered(body, can)
     }
     if (frame === 0) return layered(front(raised), toolCanvas(tool, [CX + 9, 19], [CX + 9, 3]))
@@ -261,7 +289,9 @@ function useTool(tool: Tool, direction: Direction, frame: 0 | 1): Px {
   }
   // Up: the tool is in front of the farmer, so it is drawn behind them.
   if (tool === 'regador') {
-    const can = frame ? toolCanvas(tool, [CX, 22], [CX + 4, 22], 1) : toolCanvas(tool, [CX + 9, 36], [CX + 12, 36])
+    const can = frame
+      ? toolCanvas(tool, [CX, 22], [CX + 4, 22], 1)
+      : toolCanvas(tool, [CX + 9, 36], [CX + 12, 36])
     return frame ? layered(can, back(down)) : layered(back(IDLE), can)
   }
   if (frame === 0) return layered(back(raised), toolCanvas(tool, [CX - 9, 19], [CX - 9, 2]))
@@ -273,7 +303,12 @@ function walk(direction: Direction, frame: number): Px {
   const bob = frame % 2 ? 1 : 0
   const step = [1, 0, -1, 0][frame]!
   if (direction === 'direita')
-    return side({ bob, legA: step * 2, legB: step * 2, arms: step > 0 ? 'swingA' : step < 0 ? 'swingB' : 'side' })
+    return side({
+      bob,
+      legA: step * 2,
+      legB: step * 2,
+      arms: step > 0 ? 'swingA' : step < 0 ? 'swingB' : 'side',
+    })
   const pose: Pose = {
     bob,
     legA: step > 0 ? 2 : 0,
@@ -327,7 +362,7 @@ export function farmerTools(): SpriteDrawing {
         name: `${tool}-${direction}`,
         fps: 4,
         loop: true,
-        frames: [useTool(tool, direction, 0), useTool(tool, direction, 1)],
+        frames: [drawToolAction(tool, direction, 0), drawToolAction(tool, direction, 1)],
       })),
     ),
   }
@@ -344,20 +379,28 @@ export function trader(): SpriteDrawing {
   const vest = '#a0663f'
   const apron = '#f1e3c6'
   // Sack behind.
-  s.ellipse(17, 14, 11, 13, '#c9a26b').ellipse(18, 15, 8, 9, '#dcbb85').rect(20, 12, 4, 3, '#a8834f')
+  s.ellipse(17, 14, 11, 13, '#c9a26b')
+    .ellipse(18, 15, 8, 9, '#dcbb85')
+    .rect(20, 12, 4, 3, '#a8834f')
   // Legs and body.
   s.rect(cx - 5, 27, 4, 5, '#5a4636').rect(cx + 1, 27, 4, 5, '#5a4636')
-  s.rect(cx - 6, 15, 12, 13, vest).rect(cx - 4, 17, 8, 11, apron).rect(cx - 4, 17, 8, 1, '#ffffff')
+  s.rect(cx - 6, 15, 12, 13, vest)
+    .rect(cx - 4, 17, 8, 11, apron)
+    .rect(cx - 4, 17, 8, 1, '#ffffff')
   s.rect(cx - 8, 16, 3, 8, vest).rect(cx + 5, 16, 3, 8, vest)
   s.rect(cx - 8, 24, 3, 2, SKIN).rect(cx + 5, 24, 3, 2, SKIN)
   // Head.
   s.ellipse(cx - 6, 4, 12, 12, SKIN)
   s.rect(cx - 3, 9, 1, 2, INK).rect(cx + 2, 9, 1, 2, INK)
-  s.rect(cx - 4, 12, 8, 2, '#e8e0d0').set(cx - 4, 13, '#c8bfae').set(cx + 3, 13, '#c8bfae')
+  s.rect(cx - 4, 12, 8, 2, '#e8e0d0')
+    .set(cx - 4, 13, '#c8bfae')
+    .set(cx + 3, 13, '#c8bfae')
   s.rect(cx - 1, 11, 2, 1, SKIN_DARK)
   s.rect(cx - 6, 7, 1, 4, '#c8bfae').rect(cx + 5, 7, 1, 4, '#c8bfae')
   // Cap with a visor.
-  s.ellipse(cx - 6, 1, 12, 8, cap).rect(cx - 7, 6, 14, 2, capDark).rect(cx - 3, 2, 3, 2, lighten(cap, 0.3))
+  s.ellipse(cx - 6, 1, 12, 8, cap)
+    .rect(cx - 7, 6, 14, 2, capDark)
+    .rect(cx - 3, 2, 3, 2, lighten(cap, 0.3))
   s.outline(INK)
   return {
     kind: 'sprite',

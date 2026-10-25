@@ -13,6 +13,7 @@
 import { createHash } from 'node:crypto'
 import { mkdir, readdir, readFile, rm, writeFile } from 'node:fs/promises'
 import { join, relative } from 'node:path'
+import { formatGeneratedSource } from '../../../scripts/format-generated-source'
 import { PYGAME_GAMES } from '../src/examples/python/pygameGames.manifest'
 import { encodeOgg, songWav } from './python/pygame-audio'
 import { loadGalleryAudio } from './python/pygame-gallery-audio'
@@ -31,6 +32,8 @@ const TEXT = /\.(py|md|txt|json|csv)$/
 const written = new Set<string>()
 async function put(path: string, bytes: Uint8Array | string) {
   if (path.startsWith(output)) written.add(relative(output, path))
+  if (path.endsWith('.ts') && typeof bytes === 'string')
+    bytes = await formatGeneratedSource(bytes, path, studio)
   const data = typeof bytes === 'string' ? new TextEncoder().encode(bytes) : bytes
   if (check) {
     const current = await readFile(path).catch(() => null)

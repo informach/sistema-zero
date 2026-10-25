@@ -32,7 +32,11 @@ interface Look {
   ribbons?: string
 }
 
-const ramp = (color: string) => ({ dark: darken(color, 0.3), mid: color, light: lighten(color, 0.28) })
+const ramp = (color: string) => ({
+  dark: darken(color, 0.3),
+  mid: color,
+  light: lighten(color, 0.28),
+})
 
 function figure(look: Look, dir: Dir, step: number): Px {
   const p = new Px(64, 64)
@@ -48,13 +52,39 @@ function figure(look: Look, dir: Dir, step: number): Px {
     // Behind the body: seen at the sides from the front, trailing behind from the side.
     const cape = ramp(look.cape)
     const sway = step % 2
-    if (side) p.polygon([[33, capeY], [40, capeY], [45 + sway, capeY + 20], [36, capeY + 21]], cape.mid).line(40, capeY + 2, 44 + sway, capeY + 19, cape.dark)
-    else p.polygon([[22, capeY], [42, capeY], [45, capeY + 21 - sway], [19, capeY + 21 - sway]], cape.dark)
+    if (side)
+      p.polygon(
+        [
+          [33, capeY],
+          [40, capeY],
+          [45 + sway, capeY + 20],
+          [36, capeY + 21],
+        ],
+        cape.mid,
+      ).line(40, capeY + 2, 44 + sway, capeY + 19, cape.dark)
+    else
+      p.polygon(
+        [
+          [22, capeY],
+          [42, capeY],
+          [45, capeY + 21 - sway],
+          [19, capeY + 21 - sway],
+        ],
+        cape.dark,
+      )
   }
   // Legs and shoes (the walk: one foot up, the other planted).
-  const lift = (leg: 0 | 1) => (step === 1 && leg === 0) || (step === 3 && leg === 1) ? 2 : 0
+  const lift = (leg: 0 | 1) => ((step === 1 && leg === 0) || (step === 3 && leg === 1) ? 2 : 0)
   const legY = 49 + bob
-  const legs: [number, 0 | 1][] = side ? [[29, 0], [33, 1]] : [[27, 0], [33, 1]]
+  const legs: [number, 0 | 1][] = side
+    ? [
+        [29, 0],
+        [33, 1],
+      ]
+    : [
+        [27, 0],
+        [33, 1],
+      ]
   for (const [x0, leg] of legs) {
     let x = x0
     if (side && step === 1) x += leg === 0 ? -3 : 2
@@ -65,7 +95,13 @@ function figure(look: Look, dir: Dir, step: number): Px {
     p.rect(x, top, 4, footY - top, showSkin ? skin.mid : bottom.mid)
     if (showSkin) p.rect(x, top, 4, 2, bottom.dark)
     p.rect(x + 3, top, 1, footY - top, showSkin ? skin.dark : bottom.dark)
-    p.rect(x - (side ? 1 : 0), footY, side ? 6 : 4, 3, shoe.mid).rect(x - (side ? 1 : 0), footY, side ? 6 : 4, 1, shoe.light)
+    p.rect(x - (side ? 1 : 0), footY, side ? 6 : 4, 3, shoe.mid).rect(
+      x - (side ? 1 : 0),
+      footY,
+      side ? 6 : 4,
+      1,
+      shoe.light,
+    )
   }
   // Torso.
   const torsoX = side ? 26 : 25
@@ -75,21 +111,53 @@ function figure(look: Look, dir: Dir, step: number): Px {
   p.rect(torsoX, torsoY, 2, 13, shirt.light).rect(torsoX + torsoW - 2, torsoY, 2, 13, shirt.dark)
   if (look.bottomKind === 'skirt' || look.bottomKind === 'dress') {
     const color = look.bottomKind === 'dress' ? shirt : bottom
-    p.polygon([[torsoX - 1, torsoY + 9], [torsoX + torsoW + 1, torsoY + 9], [torsoX + torsoW + 4, torsoY + 17], [torsoX - 4, torsoY + 17]], color.mid)
-    p.rect(torsoX - 4, torsoY + 16, torsoW + 8, 1, color.dark).rect(torsoX - 1, torsoY + 9, torsoW + 2, 1, color.light)
+    p.polygon(
+      [
+        [torsoX - 1, torsoY + 9],
+        [torsoX + torsoW + 1, torsoY + 9],
+        [torsoX + torsoW + 4, torsoY + 17],
+        [torsoX - 4, torsoY + 17],
+      ],
+      color.mid,
+    )
+    p.rect(torsoX - 4, torsoY + 16, torsoW + 8, 1, color.dark).rect(
+      torsoX - 1,
+      torsoY + 9,
+      torsoW + 2,
+      1,
+      color.light,
+    )
   } else {
-    p.rect(torsoX, torsoY + 10, torsoW, 3, bottom.mid).rect(torsoX, torsoY + 10, torsoW, 1, bottom.dark)
+    p.rect(torsoX, torsoY + 10, torsoW, 3, bottom.mid).rect(
+      torsoX,
+      torsoY + 10,
+      torsoW,
+      1,
+      bottom.dark,
+    )
   }
   // Shirt patterns.
   if (look.accent) {
     const accent = ramp(look.accent)
-    if (look.pattern === 'stripes') for (let y = torsoY + 2; y < torsoY + 10; y += 3) p.rect(torsoX, y, torsoW, 1, accent.mid)
-    if (look.pattern === 'cross' && dir === 'down') p.rect(31, torsoY + 2, 2, 6, accent.mid).rect(29, torsoY + 4, 6, 2, accent.mid)
-    if (look.pattern === 'collar') p.rect(torsoX + 3, torsoY, torsoW - 6, 2, accent.mid).rect(torsoX + torsoW / 2 - 1, torsoY, 2, 9, accent.mid)
-    if (look.pattern === 'tube') p.rect(torsoX, torsoY, torsoW, 3, skin.mid).rect(torsoX, torsoY + 7, torsoW, 3, skin.mid)
+    if (look.pattern === 'stripes')
+      for (let y = torsoY + 2; y < torsoY + 10; y += 3) p.rect(torsoX, y, torsoW, 1, accent.mid)
+    if (look.pattern === 'cross' && dir === 'down')
+      p.rect(31, torsoY + 2, 2, 6, accent.mid).rect(29, torsoY + 4, 6, 2, accent.mid)
+    if (look.pattern === 'collar')
+      p.rect(torsoX + 3, torsoY, torsoW - 6, 2, accent.mid).rect(
+        torsoX + torsoW / 2 - 1,
+        torsoY,
+        2,
+        9,
+        accent.mid,
+      )
+    if (look.pattern === 'tube')
+      p.rect(torsoX, torsoY, torsoW, 3, skin.mid).rect(torsoX, torsoY + 7, torsoW, 3, skin.mid)
     if (look.pattern === 'rainbow') {
       const colors = ['#f05a6a', '#f6b04a', '#f6e05e', '#5fc46e', '#57a8e8']
-      colors.forEach((c, index) => p.rect(torsoX + 1, torsoY + 1 + index * 2, torsoW - 2, 2, c))
+      colors.forEach((c, index) => {
+        p.rect(torsoX + 1, torsoY + 1 + index * 2, torsoW - 2, 2, c)
+      })
     }
   }
   // Arms swing with the steps.
@@ -103,20 +171,51 @@ function figure(look: Look, dir: Dir, step: number): Px {
   }
   if (look.backpack && dir !== 'down') {
     const pack = ramp(look.backpack)
-    if (dir === 'up') p.rect(26, torsoY + 1, 12, 10, pack.mid).rect(26, torsoY + 1, 12, 2, pack.light).rect(28, torsoY + 5, 8, 3, pack.dark)
+    if (dir === 'up')
+      p.rect(26, torsoY + 1, 12, 10, pack.mid)
+        .rect(26, torsoY + 1, 12, 2, pack.light)
+        .rect(28, torsoY + 5, 8, 3, pack.dark)
     else p.rect(36, torsoY + 1, 5, 10, pack.mid).rect(36, torsoY + 1, 5, 2, pack.light)
   }
   if (look.cape && dir === 'up') {
     const cape = ramp(look.cape)
     const sway = step % 2
-    p.polygon([[torsoX - 2, torsoY], [torsoX + torsoW + 2, torsoY], [torsoX + torsoW + 5, torsoY + 21 - sway], [torsoX - 5, torsoY + 21 - sway]], cape.mid)
-    p.line(torsoX + 3, torsoY + 3, torsoX + 1, torsoY + 19, cape.dark).line(torsoX + torsoW - 3, torsoY + 3, torsoX + torsoW - 1, torsoY + 19, cape.dark)
+    p.polygon(
+      [
+        [torsoX - 2, torsoY],
+        [torsoX + torsoW + 2, torsoY],
+        [torsoX + torsoW + 5, torsoY + 21 - sway],
+        [torsoX - 5, torsoY + 21 - sway],
+      ],
+      cape.mid,
+    )
+    p.line(torsoX + 3, torsoY + 3, torsoX + 1, torsoY + 19, cape.dark).line(
+      torsoX + torsoW - 3,
+      torsoY + 3,
+      torsoX + torsoW - 1,
+      torsoY + 19,
+      cape.dark,
+    )
     p.rect(torsoX - 2, torsoY, torsoW + 4, 2, cape.light)
   }
   if (look.flames) {
     for (const x of side ? [35] : [20, 41]) {
-      p.polygon([[x - 2, torsoY + 4], [x + 1, torsoY - 4 + (step % 2)], [x + 4, torsoY + 4]], '#f6a33a')
-      p.polygon([[x - 1, torsoY + 4], [x + 1, torsoY - 1 + (step % 2)], [x + 3, torsoY + 4]], '#ffe27a')
+      p.polygon(
+        [
+          [x - 2, torsoY + 4],
+          [x + 1, torsoY - 4 + (step % 2)],
+          [x + 4, torsoY + 4],
+        ],
+        '#f6a33a',
+      )
+      p.polygon(
+        [
+          [x - 1, torsoY + 4],
+          [x + 1, torsoY - 1 + (step % 2)],
+          [x + 3, torsoY + 4],
+        ],
+        '#ffe27a',
+      )
     }
   }
   // Head.
@@ -126,10 +225,16 @@ function figure(look: Look, dir: Dir, step: number): Px {
   drawHair(p, look, dir, headY, hair)
   // Face.
   if (dir === 'down') {
-    for (const ex of [26, 35]) p.rect(ex, headY + 11, 3, 4, '#2a1d2b').set(ex, headY + 11, '#ffffff').set(ex + 2, headY + 14, '#4a3a5a')
+    for (const ex of [26, 35])
+      p.rect(ex, headY + 11, 3, 4, '#2a1d2b')
+        .set(ex, headY + 11, '#ffffff')
+        .set(ex + 2, headY + 14, '#4a3a5a')
     p.rect(24, headY + 15, 3, 1, '#f39a9a').rect(37, headY + 15, 3, 1, '#f39a9a')
     p.rect(31, headY + 16, 2, 1, skin.dark)
-    if (look.beard) p.rect(25, headY + 15, 14, 5, look.beard).rect(29, headY + 16, 6, 1, skin.dark).rect(31, headY + 17, 2, 1, '#c26a5a')
+    if (look.beard)
+      p.rect(25, headY + 15, 14, 5, look.beard)
+        .rect(29, headY + 16, 6, 1, skin.dark)
+        .rect(31, headY + 17, 2, 1, '#c26a5a')
   } else if (dir === 'left') {
     p.rect(23, headY + 11, 3, 4, '#2a1d2b').set(23, headY + 11, '#ffffff')
     p.rect(23, headY + 15, 2, 1, '#f39a9a')
@@ -148,40 +253,108 @@ function drawHair(p: Px, look: Look, dir: Dir, headY: number, hair: ReturnType<t
   p.ellipse(20, headY - 1, 24, 13, hair.mid)
   p.ellipse(23, headY, 10, 5, hair.light)
   if (back) p.ellipse(20, headY, 24, 20, hair.mid).ellipse(23, headY + 2, 9, 6, hair.light)
-  else if (side) p.polygon([[31, headY], [44, headY + 3], [44, headY + 15], [36, headY + 14]], hair.mid).rect(41, headY + 4, 3, 10, hair.dark)
+  else if (side)
+    p.polygon(
+      [
+        [31, headY],
+        [44, headY + 3],
+        [44, headY + 15],
+        [36, headY + 14],
+      ],
+      hair.mid,
+    ).rect(41, headY + 4, 3, 10, hair.dark)
   else {
     // Fringe.
     p.rect(21, headY + 5, 22, 4, hair.mid)
-    for (let x = 22; x < 43; x += 4) p.polygon([[x, headY + 8], [x + 4, headY + 8], [x + 2, headY + 11]], hair.mid)
+    for (let x = 22; x < 43; x += 4)
+      p.polygon(
+        [
+          [x, headY + 8],
+          [x + 4, headY + 8],
+          [x + 2, headY + 11],
+        ],
+        hair.mid,
+      )
     p.rect(21, headY + 5, 3, 10, hair.mid).rect(40, headY + 5, 3, 10, hair.dark)
   }
   switch (look.style) {
     case 'long':
     case 'flowing': {
       const length = look.style === 'flowing' ? 30 : 22
-      if (back) p.rect(20, headY + 8, 24, length - 4, hair.mid).rect(20, headY + 8, 3, length - 4, hair.light).rect(41, headY + 8, 3, length - 4, hair.dark)
-      else if (side) p.rect(34, headY + 6, 10, length - 4, hair.mid).rect(41, headY + 6, 3, length - 4, hair.dark)
-      else p.rect(18, headY + 6, 5, length - 6, hair.mid).rect(41, headY + 6, 5, length - 6, hair.dark)
+      if (back)
+        p.rect(20, headY + 8, 24, length - 4, hair.mid)
+          .rect(20, headY + 8, 3, length - 4, hair.light)
+          .rect(41, headY + 8, 3, length - 4, hair.dark)
+      else if (side)
+        p.rect(34, headY + 6, 10, length - 4, hair.mid).rect(
+          41,
+          headY + 6,
+          3,
+          length - 4,
+          hair.dark,
+        )
+      else
+        p.rect(18, headY + 6, 5, length - 6, hair.mid).rect(41, headY + 6, 5, length - 6, hair.dark)
       if (look.style === 'flowing' && look.fins) {
         const fin = look.fins
-        for (const x of side ? [40] : [17, 45]) p.polygon([[x, headY + 4], [x + (x < 32 ? -4 : 4), headY - 2], [x + (x < 32 ? -3 : 3), headY + 9]], fin)
+        for (const x of side ? [40] : [17, 45])
+          p.polygon(
+            [
+              [x, headY + 4],
+              [x + (x < 32 ? -4 : 4), headY - 2],
+              [x + (x < 32 ? -3 : 3), headY + 9],
+            ],
+            fin,
+          )
       }
       break
     }
     case 'buns':
-      for (const x of side ? [38] : [17, 41]) p.circle(x + 3, headY + 1, 5, hair.mid).circle(x + 2, headY, 2, hair.light)
-      if (look.ribbons) for (const x of side ? [37] : [18, 42]) p.rect(x, headY + 4, 5, 2, look.ribbons)
+      for (const x of side ? [38] : [17, 41])
+        p.circle(x + 3, headY + 1, 5, hair.mid).circle(x + 2, headY, 2, hair.light)
+      if (look.ribbons)
+        for (const x of side ? [37] : [18, 42]) p.rect(x, headY + 4, 5, 2, look.ribbons)
       break
     case 'spiky':
-      for (const [x, h] of [[21, 7], [26, 10], [31, 12], [36, 10], [41, 7]] as const) p.polygon([[x - 3, headY + 2], [x, headY - h], [x + 3, headY + 2]], hair.mid)
-      p.polygon([[29, headY - 2], [31, headY - 10], [33, headY - 2]], hair.light)
+      for (const [x, h] of [
+        [21, 7],
+        [26, 10],
+        [31, 12],
+        [36, 10],
+        [41, 7],
+      ] as const)
+        p.polygon(
+          [
+            [x - 3, headY + 2],
+            [x, headY - h],
+            [x + 3, headY + 2],
+          ],
+          hair.mid,
+        )
+      p.polygon(
+        [
+          [29, headY - 2],
+          [31, headY - 10],
+          [33, headY - 2],
+        ],
+        hair.light,
+      )
       break
     case 'curly':
-      for (const [x, y] of [[18, 8], [45, 8], [17, 14], [46, 14], [19, 20], [44, 20]] as const)
-        if (!(side && x < 32)) p.circle(x, headY + y, 3.5, hair.mid).set(x - 1, headY + y - 1, hair.light)
+      for (const [x, y] of [
+        [18, 8],
+        [45, 8],
+        [17, 14],
+        [46, 14],
+        [19, 20],
+        [44, 20],
+      ] as const)
+        if (!(side && x < 32))
+          p.circle(x, headY + y, 3.5, hair.mid).set(x - 1, headY + y - 1, hair.light)
       break
     case 'wavy':
-      if (!side || back) p.rect(18, headY + 6, 4, 12, hair.mid).rect(42, headY + 6, 4, 12, hair.dark)
+      if (!side || back)
+        p.rect(18, headY + 6, 4, 12, hair.mid).rect(42, headY + 6, 4, 12, hair.dark)
       break
     case 'short':
       break
@@ -195,21 +368,37 @@ function drawHat(p: Px, look: Look, dir: Dir, headY: number) {
   if (look.hat.kind === 'cap') {
     p.ellipse(20, headY - 3, 24, 12, c.mid).ellipse(23, headY - 2, 9, 4, c.light)
     p.rect(20, headY + 3, 24, 2, c.dark)
-    if (dir === 'down') p.ellipse(22, headY + 3, 20, 5, look.hat.band ?? c.dark).rect(29, headY - 2, 6, 4, look.hat.band ?? '#ffffff')
+    if (dir === 'down')
+      p.ellipse(22, headY + 3, 20, 5, look.hat.band ?? c.dark).rect(
+        29,
+        headY - 2,
+        6,
+        4,
+        look.hat.band ?? '#ffffff',
+      )
     if (side) p.ellipse(13, headY + 2, 14, 4, look.hat.band ?? c.dark)
   } else if (look.hat.kind === 'bucket') {
     p.ellipse(20, headY - 4, 24, 13, c.mid).ellipse(23, headY - 3, 9, 4, c.light)
     p.ellipse(15, headY + 3, 34, 7, c.mid).rect(16, headY + 6, 32, 1, c.dark)
   } else if (look.hat.kind === 'helmet') {
     // A round metal helmet with a plume.
-    p.polygon([[31, headY - 12], [34, headY - 12], [36, headY - 3], [29, headY - 3]], look.hat.band ?? '#d8402f')
+    p.polygon(
+      [
+        [31, headY - 12],
+        [34, headY - 12],
+        [36, headY - 3],
+        [29, headY - 3],
+      ],
+      look.hat.band ?? '#d8402f',
+    )
     p.ellipse(19, headY - 5, 26, 16, c.mid).ellipse(22, headY - 4, 10, 6, c.light)
     p.rect(19, headY + 5, 26, 3, c.dark).rect(19, headY + 5, 26, 1, c.light)
     if (dir === 'down') p.rect(31, headY + 5, 2, 6, c.dark)
   } else if (look.hat.kind === 'band') {
     // A headband with a gem on the forehead.
     p.rect(20, headY + 4, 24, 3, c.mid).rect(20, headY + 4, 24, 1, c.light)
-    if (dir === 'down') p.rect(30, headY + 3, 4, 4, look.hat.band ?? '#5fd0f0').set(30, headY + 3, '#ffffff')
+    if (dir === 'down')
+      p.rect(30, headY + 3, 4, 4, look.hat.band ?? '#5fd0f0').set(30, headY + 3, '#ffffff')
     if (dir === 'left') p.rect(40, headY + 5, 5, 2, c.mid).rect(43, headY + 7, 2, 5, c.dark)
   } else {
     p.ellipse(10, headY + 1, 44, 10, c.mid).ellipse(14, headY + 2, 22, 4, c.light)
@@ -352,7 +541,8 @@ export const PEOPLE: Record<string, Look> = {
 }
 
 export function personDrawing(name: string, look: Look): SpriteDrawing {
-  const walk = (dir: Dir, flip = false) => [0, 1, 2, 3].map((step) => (flip ? figure(look, dir, step).flipX() : figure(look, dir, step)))
+  const walk = (dir: Dir, flip = false) =>
+    [0, 1, 2, 3].map((step) => (flip ? figure(look, dir, step).flipX() : figure(look, dir, step)))
   return {
     kind: 'sprite',
     name,

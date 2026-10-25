@@ -51,7 +51,23 @@ O seletor não altera direitos por conta, conquistas, privilégios de admin ou c
 É somente a origem da configuração de implantação. Revogar uma release ou excluir seu arquivo
 é uma decisão separada: não faça isso para reduzir tamanho de variável.
 
-## Catálogo desta entrega
+## Catálogos empacotados
+
+- Catálogo integrado Pygame-ce: `2747a0372378b1bf6768796e11b9b261625aa6a5cebac0bfff6c18778fffff5f`.
+- Tamanho: 80.597 bytes formatados.
+- Conteúdo igual a `configuration.members` dos planos Pygame R1 de staging e produção.
+- Release nova: `2026-10-25-pygame-1`, com Turtle, Pygame Zero, Pygame-ce e Raylib 2D/3D.
+- A release `2026-10-22-visual-games-3` é mantida como `retired`; seus manifestos não mudam.
+- Empacotamento não significa ativação: o seletor só muda após a qualificação e o deploy da imagem.
+
+O plano canônico também permite concluir uma implantação interrompida: se Worker e Members
+divergem apenas entre `active` e `retired` para a mesma identidade imutável do perfil substituído,
+uma nova release pode retirar essa versão nas duas autoridades. O plano registra o estado real
+anterior sem reescrevê-lo. A configuração final continua exigindo estados iguais. Divergências
+envolvendo `revoked`, outro perfil, identidade ou conteúdo são recusadas; repetir uma versão
+retirada não a reativa.
+
+Catálogo anterior, preservado como artefato de rollback (não selecionado automaticamente):
 
 - SHA256: `88a14e73605fa5b3ddaee7344c35b3571db8bba7cd9d1e7722856e356430e6c7`.
 - Tamanho: 74.491 bytes formatados; o JSON compacto tinha 51.612 bytes.

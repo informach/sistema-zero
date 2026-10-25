@@ -10,6 +10,7 @@ import { createHash } from 'node:crypto'
 import { readdir, readFile, writeFile } from 'node:fs/promises'
 import { join, relative } from 'node:path'
 import { canonicalJson } from '@sistemazero/core/creations'
+import { formatGeneratedSource } from '../../../../scripts/format-generated-source'
 import { PYGAME_GAMES } from '../../src/examples/python/pygameGames.manifest'
 import { PYTHON_PROGRAMMING_CODECS } from '../../src/python/blocks/catalog'
 import { pythonSemanticTree } from '../../src/python/blocks/nodes'
@@ -128,7 +129,11 @@ for (const game of chosen.length ? chosen : PYGAME_GAMES.map(({ key }) => key)) 
 
 if (!process.exitCode && !chosen.length) {
   const output = join(studio, 'src/examples/python/pygameGames.blocks.generated.ts')
-  const contents = `// Gerado por scripts/python/pygame-block-coverage.ts. Não edite este arquivo.\nexport const PYGAME_GAME_BLOCKS: Readonly<Record<string, { sourceSha256: string; blockIds: readonly string[] }>> = ${JSON.stringify(coverage, null, 2)}\n`
+  const contents = await formatGeneratedSource(
+    `// Gerado por scripts/python/pygame-block-coverage.ts. Não edite este arquivo.\nexport const PYGAME_GAME_BLOCKS: Readonly<Record<string, { sourceSha256: string; blockIds: readonly string[] }>> = ${JSON.stringify(coverage, null, 2)}\n`,
+    output,
+    studio,
+  )
   if (process.argv.includes('--check')) {
     if ((await readFile(output, 'utf8').catch(() => '')) !== contents)
       throw new Error('Metadados de blocos Pygame-ce desatualizados.')

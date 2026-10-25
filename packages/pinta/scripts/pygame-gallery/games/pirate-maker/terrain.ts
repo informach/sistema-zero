@@ -28,7 +28,9 @@ export const TERRAIN_TILES: string[] = (() => {
   const names: string[] = []
   for (let mask = 0; mask < 256; mask++) {
     const all = [...'ABCDEFGH'].filter((_, bit) => (mask >> bit) & 1).join('')
-    const kept = [...all].filter((name) => 'ACEG'.includes(name) || [...SIDES[name]!].every((side) => all.includes(side)))
+    const kept = [...all].filter(
+      (name) => 'ACEG'.includes(name) || [...SIDES[name]!].every((side) => all.includes(side)),
+    )
     const name = kept.join('') || 'X'
     if (!names.includes(name)) names.push(name)
   }
@@ -58,13 +60,22 @@ const ROCK = (() => {
       }
   rock.speckle(rng, 0.05, [P.rock0], P.rock1)
   // a few cracks
-  for (const [x, y] of [[12, 8], [22, 19], [6, 20]] as const)
-    rock.set(x, y, P.rock0).set(x + 1, y + 1, P.rock0).set(x + 1, y + 2, P.rock0)
+  for (const [x, y] of [
+    [12, 8],
+    [22, 19],
+    [6, 20],
+  ] as const)
+    rock
+      .set(x, y, P.rock0)
+      .set(x + 1, y + 1, P.rock0)
+      .set(x + 1, y + 2, P.rock0)
   return rock
 })()
 
 /** Jagged lower edge of the grass (period 32, so neighbours meet). */
-const GRASS_DEPTH = [6, 7, 6, 5, 6, 8, 7, 6, 5, 6, 7, 6, 6, 8, 6, 5, 6, 7, 8, 6, 5, 6, 6, 7, 6, 5, 7, 8, 6, 6, 5, 6]
+const GRASS_DEPTH = [
+  6, 7, 6, 5, 6, 8, 7, 6, 5, 6, 7, 6, 6, 8, 6, 5, 6, 7, 8, 6, 5, 6, 6, 7, 6, 5, 7, 8, 6, 6, 5, 6,
+]
 const BORDER = 6
 const RADIUS = 7
 
@@ -135,7 +146,8 @@ export function terrainTile(name: string): Px {
         const joint = (along + (vertical ? 3 : 5)) % brick === 0
         if (distance > BORDER - 1) color = P.rock0
         else if (joint) color = P.stone0
-        else if ((along + (vertical ? 3 : 5)) % brick === 1 || distance < 2) color = lit ? P.stone2 : P.stone1
+        else if ((along + (vertical ? 3 : 5)) % brick === 1 || distance < 2)
+          color = lit ? P.stone2 : P.stone1
         else if (distance > BORDER - 2.2) color = P.stone0
         else color = P.stone1
       } else color = ROCK.get(x, y)!
@@ -146,14 +158,25 @@ export function terrainTile(name: string): Px {
 
 /** Water surface (3 frames: the waves travel) and the deep water below a surface. */
 function waterBody(water: Px, from: number, frame: number) {
-  for (let y = from; y < SIZE; y++)
-    for (let x = 0; x < SIZE; x++) water.set(x, y, P.water1)
+  for (let y = from; y < SIZE; y++) for (let x = 0; x < SIZE; x++) water.set(x, y, P.water1)
   // darker streaks, the same in every frame and in the deep water (they line up)
-  for (const [x, y, w] of [[3, 12, 5], [19, 17, 6], [9, 24, 4], [24, 28, 5], [14, 6, 3], [27, 8, 3]] as const)
+  for (const [x, y, w] of [
+    [3, 12, 5],
+    [19, 17, 6],
+    [9, 24, 4],
+    [24, 28, 5],
+    [14, 6, 3],
+    [27, 8, 3],
+  ] as const)
     if (y >= from + 2) water.rect(x, y, w, 1, P.water0)
   // glints that move with the waves
   if (frame >= 0)
-    for (const [x, y] of [[6, 9], [21, 13], [12, 20], [28, 23]] as const)
+    for (const [x, y] of [
+      [6, 9],
+      [21, 13],
+      [12, 20],
+      [28, 23],
+    ] as const)
       if (y >= from + 2) water.rect((x + frame * 3) % SIZE, y, 2, 1, P.water2)
 }
 

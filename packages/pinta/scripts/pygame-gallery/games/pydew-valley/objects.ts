@@ -23,14 +23,17 @@ const CREAM = '#fbf5e6'
 function crown(s: Px, puffs: [number, number, number][], seed: number) {
   for (const [x, y, r] of puffs) s.circle(x, y, r, LEAF.dark)
   for (const [x, y, r] of puffs) s.circle(x - 1, y - 1, r - 1.5, LEAF.base)
-  for (const [x, y, r] of puffs) if (r > 4) s.circle(x - r * 0.35, y - r * 0.4, r * 0.45, LEAF.light)
+  for (const [x, y, r] of puffs)
+    if (r > 4) s.circle(x - r * 0.35, y - r * 0.4, r * 0.45, LEAF.light)
   const rng = random(seed)
   s.speckle(rng, 0.06, [LEAF.light, LEAF.dark], LEAF.base)
   s.speckle(rng, 0.08, [LEAF.bright], LEAF.light)
 }
 
 function trunk(s: Px, x: number, y: number, w: number, h: number) {
-  s.rect(x, y, w, h, BARK.base).rect(x, y, 2, h, BARK.light).rect(x + w - 2, y, 2, h, BARK.dark)
+  s.rect(x, y, w, h, BARK.base)
+    .rect(x, y, 2, h, BARK.light)
+    .rect(x + w - 2, y, 2, h, BARK.dark)
   s.rect(x - 2, y + h - 2, w + 4, 2, BARK.base).rect(x - 2, y + h - 1, w + 4, 1, BARK.dark)
   s.set(x + Math.floor(w / 2), y + 3, BARK.dark).set(x + Math.floor(w / 2), y + 4, BARK.dark)
 }
@@ -79,9 +82,13 @@ function smallTree(): Px {
 function stump(w: number, h: number): Px {
   const s = new Px(w, h)
   const cx = w / 2
-  s.rect(cx - 6, 6, 12, h - 9, BARK.base).rect(cx - 6, 6, 2, h - 9, BARK.light).rect(cx + 4, 6, 2, h - 9, BARK.dark)
+  s.rect(cx - 6, 6, 12, h - 9, BARK.base)
+    .rect(cx - 6, 6, 2, h - 9, BARK.light)
+    .rect(cx + 4, 6, 2, h - 9, BARK.dark)
   s.rect(cx - 8, h - 4, 16, 3, BARK.base).rect(cx - 8, h - 2, 16, 1, BARK.dark)
-  s.ellipse(cx - 6, 3, 12, 6, WOOD.pale).ellipse(cx - 4, 4, 8, 4, WOOD.light).ellipse(cx - 2, 5, 4, 2, WOOD.pale)
+  s.ellipse(cx - 6, 3, 12, 6, WOOD.pale)
+    .ellipse(cx - 4, 4, 8, 4, WOOD.light)
+    .ellipse(cx - 2, 5, 4, 2, WOOD.pale)
   s.outline(INK)
   return s
 }
@@ -89,7 +96,10 @@ function stump(w: number, h: number): Px {
 function apple(): Px {
   const s = new Px(14, 10)
   s.ellipse(2, 1, 10, 9, FLOWER.red)
-  s.rect(4, 2, 2, 2, '#f39283').set(9, 7, FLOWER.redDark).set(10, 6, FLOWER.redDark).set(8, 8, FLOWER.redDark)
+  s.rect(4, 2, 2, 2, '#f39283')
+    .set(9, 7, FLOWER.redDark)
+    .set(10, 6, FLOWER.redDark)
+    .set(8, 8, FLOWER.redDark)
   s.rect(7, 0, 1, 2, BARK.dark)
   s.rect(8, 0, 3, 1, LEAF.light).set(9, 1, LEAF.dark)
   s.outline(INK)
@@ -127,7 +137,12 @@ function sunflower(): Px {
   s.ellipse(4, 30, 8, 3, GRASS.light).ellipse(16, 38, 8, 3, GRASS.light)
   for (let index = 0; index < 12; index++) {
     const angle = (index / 12) * Math.PI * 2
-    s.circle(14 + Math.cos(angle) * 8, 11 + Math.sin(angle) * 8, 3.2, index % 2 ? FLOWER.yellow : '#f8e07a')
+    s.circle(
+      14 + Math.cos(angle) * 8,
+      11 + Math.sin(angle) * 8,
+      3.2,
+      index % 2 ? FLOWER.yellow : '#f8e07a',
+    )
   }
   s.circle(14, 11, 6, '#7a4a28').circle(13, 10, 3, '#9a6234')
   s.set(11, 8, '#c08850').set(15, 12, '#5a361e').set(12, 13, '#5a361e')
@@ -147,18 +162,37 @@ function bush(): Px {
     ],
     21,
   )
-  for (const [x, y] of [[9, 14], [20, 10], [23, 20], [13, 22]] as const)
-    s.set(x, y, FLOWER.pink).set(x + 1, y, FLOWER.pink).set(x, y + 1, FLOWER.pinkDark)
+  for (const [x, y] of [
+    [9, 14],
+    [20, 10],
+    [23, 20],
+    [13, 22],
+  ] as const)
+    s.set(x, y, FLOWER.pink)
+      .set(x + 1, y, FLOWER.pink)
+      .set(x, y + 1, FLOWER.pinkDark)
   s.outline(LEAF.outline)
   return s
 }
 
 function flowerPlant(): Px {
   const s = new Px(22, 24)
-  s.ellipse(2, 16, 9, 6, GRASS.dark).ellipse(11, 17, 9, 6, GRASS.dark).ellipse(4, 17, 6, 3, GRASS.light)
-  for (const [x, y] of [[7, 8], [15, 11], [10, 14]] as const) {
+  s.ellipse(2, 16, 9, 6, GRASS.dark)
+    .ellipse(11, 17, 9, 6, GRASS.dark)
+    .ellipse(4, 17, 6, 3, GRASS.light)
+  for (const [x, y] of [
+    [7, 8],
+    [15, 11],
+    [10, 14],
+  ] as const) {
     s.line(x, y + 3, x, y + 8, GRASS.edge)
-    for (const [dx, dy] of [[0, -2], [2, 0], [0, 2], [-2, 0]] as const) s.circle(x + dx, y + dy, 1.6, CREAM)
+    for (const [dx, dy] of [
+      [0, -2],
+      [2, 0],
+      [0, 2],
+      [-2, 0],
+    ] as const)
+      s.circle(x + dx, y + dy, 1.6, CREAM)
     s.set(x, y, FLOWER.yellow)
   }
   s.outline(INK)
@@ -170,7 +204,13 @@ function mushroomBig(): Px {
   s.rect(7, 11, 6, 10, CREAM).rect(7, 11, 2, 10, '#ffffff').rect(11, 11, 2, 10, '#e3d6bd')
   s.ellipse(1, 2, 18, 12, FLOWER.red).ellipse(3, 3, 9, 5, '#ef7468')
   s.rect(1, 11, 18, 2, FLOWER.redDark)
-  for (const [x, y] of [[5, 5], [12, 4], [14, 8], [8, 9]] as const) s.rect(x, y, 2, 2, CREAM)
+  for (const [x, y] of [
+    [5, 5],
+    [12, 4],
+    [14, 8],
+    [8, 9],
+  ] as const)
+    s.rect(x, y, 2, 2, CREAM)
   s.outline(INK)
   return s
 }
@@ -245,8 +285,13 @@ function cornStage(stage: number): Px {
     }
     s.rect(14, base - height - 2, 4, 3, STEM_LIGHT)
     if (stage === 3) {
-      for (const [x, y] of [[9, 12], [19, 15]] as const) {
-        s.ellipse(x, y, 5, 10, CORN).rect(x + 1, y + 1, 1, 7, '#fbe48a').rect(x + 3, y + 2, 1, 6, CORN_DARK)
+      for (const [x, y] of [
+        [9, 12],
+        [19, 15],
+      ] as const) {
+        s.ellipse(x, y, 5, 10, CORN)
+          .rect(x + 1, y + 1, 1, 7, '#fbe48a')
+          .rect(x + 3, y + 2, 1, 6, CORN_DARK)
         s.line(x, y + 6, x + 1, y + 10, HUSK).line(x + 4, y + 6, x + 3, y + 10, HUSK)
       }
       s.rect(14, base - height - 4, 4, 3, CORN_DARK)
@@ -267,7 +312,13 @@ function tomatoStage(stage: number): Px {
     s.ellipse(11, base - 7, 6, 4, STEM_LIGHT).ellipse(16, base - 8, 6, 4, STEM_LIGHT)
   } else {
     const height = [0, 12, 20, 24][stage]!
-    s.rect(9, base - height + 2, 2, height - 1, WOOD.base).rect(21, base - height + 2, 2, height - 1, WOOD.base)
+    s.rect(9, base - height + 2, 2, height - 1, WOOD.base).rect(
+      21,
+      base - height + 2,
+      2,
+      height - 1,
+      WOOD.base,
+    )
     s.rect(15, base - height + 4, 2, height - 3, STEM)
     const puffs: [number, number, number][] = [
       [16, base - height + 6, 5 + stage],
@@ -280,7 +331,12 @@ function tomatoStage(stage: number): Px {
     for (const [x, y, r] of puffs) s.circle(x - r * 0.3, y - r * 0.4, r * 0.35, LEAF.light)
     if (stage >= 2) {
       const color = stage === 3 ? TOMATO : TOMATO_GREEN
-      for (const [x, y] of [[10, base - 13], [19, base - 16], [15, base - 9], [21, base - 8]] as const) {
+      for (const [x, y] of [
+        [10, base - 13],
+        [19, base - 16],
+        [15, base - 9],
+        [21, base - 8],
+      ] as const) {
         s.circle(x, y, 2.6, color)
         s.set(x - 1, y - 1, lighten(color, 0.45))
         s.set(x, y - 3, STEM)
@@ -351,7 +407,8 @@ export function water(): SpriteDrawing {
   const frame = (phase: number) => {
     const s = new Px(32, 32, WATER.base)
     const rng = random(77)
-    for (let index = 0; index < 40; index++) s.set(rng.int(0, 31), rng.int(0, 31), mix(WATER.base, WATER.deep, 0.5))
+    for (let index = 0; index < 40; index++)
+      s.set(rng.int(0, 31), rng.int(0, 31), mix(WATER.base, WATER.deep, 0.5))
     const waves: [number, number, number][] = [
       [3, 4, 6],
       [18, 9, 5],
@@ -469,7 +526,8 @@ export function wetSoilTiles(): TilesetDrawing {
       s.ellipse(rng.int(3, 29 - w), rng.int(3, 29 - h), w, h, SOIL.wet)
     }
     s.ellipse(5, 5, 22, 22, SOIL.wet)
-    for (let y = 0; y < 32; y++) for (let x = 0; x < 32; x++) if (s.get(x, y) && y % 6 === 0) s.set(x, y, SOIL.wetLight)
+    for (let y = 0; y < 32; y++)
+      for (let x = 0; x < 32; x++) if (s.get(x, y) && y % 6 === 0) s.set(x, y, SOIL.wetLight)
     s.speckle(rng, 0.06, [SOIL.wetLight], SOIL.wet)
     return s
   }
@@ -492,7 +550,17 @@ function framed(s: Px): Px {
 function iconHoe(): Px {
   const s = new Px(32, 32)
   s.line(8, 26, 22, 8, WOOD.base, 3).line(8, 25, 21, 8, WOOD.light)
-  s.polygon([[18, 4], [27, 4], [27, 13], [24, 13], [24, 8], [18, 8]], METAL.base)
+  s.polygon(
+    [
+      [18, 4],
+      [27, 4],
+      [27, 13],
+      [24, 13],
+      [24, 8],
+      [18, 8],
+    ],
+    METAL.base,
+  )
   s.rect(19, 5, 7, 1, METAL.light).rect(25, 9, 1, 3, METAL.dark)
   return framed(s)
 }
@@ -500,7 +568,15 @@ function iconHoe(): Px {
 function iconAxe(): Px {
   const s = new Px(32, 32)
   s.line(9, 27, 21, 7, WOOD.base, 3).line(9, 26, 20, 7, WOOD.light)
-  s.polygon([[18, 4], [28, 2], [29, 14], [20, 12]], METAL.base)
+  s.polygon(
+    [
+      [18, 4],
+      [28, 2],
+      [29, 14],
+      [20, 12],
+    ],
+    METAL.base,
+  )
   s.line(28, 3, 29, 13, METAL.light).rect(19, 6, 3, 5, METAL.dark)
   return framed(s)
 }
@@ -517,8 +593,25 @@ function iconCan(): Px {
 function iconCorn(): Px {
   const s = new Px(32, 32)
   s.ellipse(10, 4, 11, 21, CORN)
-  for (let y = 7; y < 23; y += 3) for (let x = 12; x < 20; x += 3) s.set(x, y, '#fbe48a').set(x + 1, y + 1, CORN_DARK)
-  s.polygon([[7, 14], [12, 27], [16, 29], [10, 16]], HUSK).polygon([[24, 14], [19, 27], [15, 29], [21, 16]], HUSK)
+  for (let y = 7; y < 23; y += 3)
+    for (let x = 12; x < 20; x += 3) s.set(x, y, '#fbe48a').set(x + 1, y + 1, CORN_DARK)
+  s.polygon(
+    [
+      [7, 14],
+      [12, 27],
+      [16, 29],
+      [10, 16],
+    ],
+    HUSK,
+  ).polygon(
+    [
+      [24, 14],
+      [19, 27],
+      [15, 29],
+      [21, 16],
+    ],
+    HUSK,
+  )
   s.line(8, 15, 13, 26, STEM).line(23, 15, 18, 26, STEM)
   return framed(s)
 }
@@ -527,7 +620,16 @@ function iconTomato(): Px {
   const s = new Px(32, 32)
   s.ellipse(5, 9, 22, 18, TOMATO).ellipse(8, 11, 7, 5, '#f07a6c').set(10, 12, '#ffffff')
   s.ellipse(14, 20, 11, 6, darken(TOMATO, 0.15))
-  s.polygon([[10, 8], [16, 11], [22, 8], [18, 12], [14, 12]], STEM_LIGHT).rect(15, 5, 2, 5, STEM)
+  s.polygon(
+    [
+      [10, 8],
+      [16, 11],
+      [22, 8],
+      [18, 12],
+      [14, 12],
+    ],
+    STEM_LIGHT,
+  ).rect(15, 5, 2, 5, STEM)
   return framed(s)
 }
 

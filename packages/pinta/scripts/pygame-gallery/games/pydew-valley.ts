@@ -9,14 +9,30 @@ import type { Drawing, MapDrawing, MapObject, TilesetDrawing } from '../drawing'
 import { farmer, farmerTools, trader } from './pydew-valley/characters'
 import { houseTiles } from './pydew-valley/house'
 import * as maps from './pydew-valley/maps'
-import { crops, icons, rain, soilTiles, trees, water, wetSoilTiles, wildPlants } from './pydew-valley/objects'
+import {
+  crops,
+  icons,
+  rain,
+  soilTiles,
+  trees,
+  water,
+  wetSoilTiles,
+  wildPlants,
+} from './pydew-valley/objects'
 import { decorationTiles, markTiles, terrainTiles } from './pydew-valley/terrain'
 
 function cells(rows: string[]): number[] {
-  return rows.flatMap((row) => [...row].map((char) => (char === '.' ? -1 : maps.ALPHABET.indexOf(char))))
+  return rows.flatMap((row) =>
+    [...row].map((char) => (char === '.' ? -1 : maps.ALPHABET.indexOf(char))),
+  )
 }
 
-function tiles(name: string, tileset: TilesetDrawing, rows: string[], extra: { visible?: boolean } = {}) {
+function tiles(
+  name: string,
+  tileset: TilesetDrawing,
+  rows: string[],
+  extra: { visible?: boolean } = {},
+) {
   return { type: 'tiles' as const, name, tileset, cells: cells(rows), ...extra }
 }
 

@@ -266,6 +266,83 @@ test('repeating the current deployment preserves its exact approved policy and p
 })
 
 test.each([
+  'worker',
+  'members',
+] as const)('a new release reconciles an interrupted retirement in %s without rewriting its baseline', async (authority) => {
+  const f = await fixture()
+  const previous = await preparePythonPromotion(f.input)
+  const baseline = structuredClone(previous.configuration)
+  if (authority === 'worker') baseline.worker.deployments[0]!.status = 'retired'
+  else baseline.members.releases[0]!.status = 'retired'
+  const observed = canonicalJson(baseline)
+  const next = await preparePythonPromotion({
+    ...f.input,
+    baseline,
+    release: { ...f.input.release, releaseId: 'recovered-1' },
+  })
+  expect(next.configuration.worker.deployments.map(({ status }) => status)).toEqual([
+    'retired',
+    'active',
+  ])
+  expect(next.configuration.members.releases.map(({ status }) => status)).toEqual([
+    'retired',
+    'active',
+  ])
+  expect(canonicalJson(baseline)).toBe(observed)
+  expect(canonicalJson(next.input.baseline)).toBe(observed)
+  expect(next.configuration.members.catalog.releases[0]).toEqual(previous.deployment.release)
+  expect(await verifyPythonPromotionPlan(next, next.planSha256)).toEqual(next)
+
+  // Repeating the old identity cannot be used as a reactivation mechanism.
+  await expect(preparePythonPromotion({ ...f.input, baseline })).rejects.toThrow(
+    'Os estados anteriores da release divergem.',
+  )
+  await expect(
+    preparePythonPromotion({
+      ...f.input,
+      baseline,
+      release: { ...f.input.release, profileId: 'unrelated', releaseId: 'new-1' },
+    }),
+  ).rejects.toThrow('Os estados anteriores da release divergem.')
+})
+
+test.each([
+  'worker',
+  'members',
+] as const)('interrupted retirement recovery never reconciles a revoked release in %s', async (authority) => {
+  const f = await fixture()
+  const previous = await preparePythonPromotion(f.input)
+  const baseline = structuredClone(previous.configuration)
+  if (authority === 'worker') baseline.worker.deployments[0]!.status = 'revoked'
+  else baseline.members.releases[0]!.status = 'revoked'
+  await expect(
+    preparePythonPromotion({
+      ...f.input,
+      baseline,
+      release: { ...f.input.release, releaseId: 'new-1' },
+    }),
+  ).rejects.toThrow('Os estados anteriores da release divergem.')
+})
+
+test('recovery still rejects a divergent final state when the requested release is retired', async () => {
+  const f = await fixture()
+  const first = await preparePythonPromotion(f.input)
+  const secondInput = {
+    ...f.input,
+    baseline: first.configuration,
+    release: { ...f.input.release, releaseId: 'second-1' },
+  }
+  const second = await preparePythonPromotion(secondInput)
+  const baseline = structuredClone(second.configuration)
+  baseline.worker.deployments[0]!.status = 'active'
+  baseline.worker.deployments[1]!.status = 'retired'
+  baseline.members.releases[1]!.status = 'retired'
+  await expect(preparePythonPromotion({ ...secondInput, baseline })).rejects.toThrow(
+    'Os estados anteriores da release divergem.',
+  )
+})
+
+test.each([
   'staging',
   'production',
 ] as const)('a new active release retires only superseded releases of its Python profile in %s', async (environment) => {

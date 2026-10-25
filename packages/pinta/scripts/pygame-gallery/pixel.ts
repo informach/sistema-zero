@@ -155,7 +155,14 @@ export class Px {
     let error = dx + dy
     for (;;) {
       if (thickness <= 1) this.set(x0, y0, color)
-      else this.rect(x0 - Math.floor((thickness - 1) / 2), y0 - Math.floor((thickness - 1) / 2), thickness, thickness, color)
+      else
+        this.rect(
+          x0 - Math.floor((thickness - 1) / 2),
+          y0 - Math.floor((thickness - 1) / 2),
+          thickness,
+          thickness,
+          color,
+        )
       if (x0 === x1 && y0 === y1) break
       const twice = 2 * error
       if (twice >= dy) {
@@ -179,11 +186,16 @@ export class Px {
       for (let index = 0; index < points.length; index++) {
         const [ax, ay] = points[index]!
         const [bx, by] = points[(index + 1) % points.length]!
-        if ((ay <= y && by > y) || (by <= y && ay > y)) crossings.push(ax + ((y - ay) / (by - ay)) * (bx - ax))
+        if ((ay <= y && by > y) || (by <= y && ay > y))
+          crossings.push(ax + ((y - ay) / (by - ay)) * (bx - ax))
       }
       crossings.sort((a, b) => a - b)
       for (let index = 0; index + 1 < crossings.length; index += 2)
-        for (let column = Math.round(crossings[index]!); column < Math.round(crossings[index + 1]!); column++)
+        for (
+          let column = Math.round(crossings[index]!);
+          column < Math.round(crossings[index + 1]!);
+          column++
+        )
           this.set(column, row, color)
     }
     return this
@@ -219,7 +231,8 @@ export class Px {
     for (let turn = 0; turn < ((turns % 4) + 4) % 4; turn++) {
       const next = new Px(current.height, current.width)
       for (let y = 0; y < current.height; y++)
-        for (let x = 0; x < current.width; x++) next.set(current.height - 1 - y, x, current.get(x, y))
+        for (let x = 0; x < current.width; x++)
+          next.set(current.height - 1 - y, x, current.get(x, y))
       current = next
     }
     return current
@@ -228,7 +241,8 @@ export class Px {
   /** Mirror the left half onto the right (symmetric characters). */
   mirrorX() {
     for (let y = 0; y < this.height; y++)
-      for (let x = 0; x < Math.floor(this.width / 2); x++) this.set(this.width - 1 - x, y, this.get(x, y))
+      for (let x = 0; x < Math.floor(this.width / 2); x++)
+        this.set(this.width - 1 - x, y, this.get(x, y))
     return this
   }
 
@@ -240,8 +254,12 @@ export class Px {
       for (let x = 0; x < this.width; x++) {
         if (at(x, y)) continue
         const near =
-          at(x - 1, y) || at(x + 1, y) || at(x, y - 1) || at(x, y + 1) ||
-          (diagonal && (at(x - 1, y - 1) || at(x + 1, y - 1) || at(x - 1, y + 1) || at(x + 1, y + 1)))
+          at(x - 1, y) ||
+          at(x + 1, y) ||
+          at(x, y - 1) ||
+          at(x, y + 1) ||
+          (diagonal &&
+            (at(x - 1, y - 1) || at(x + 1, y - 1) || at(x - 1, y + 1) || at(x + 1, y + 1)))
         if (near) this.set(x, y, color)
       }
     return this
@@ -264,7 +282,8 @@ export class Px {
 
   /** Replace one colour by another everywhere. */
   replace(from: Color, to: Color | null) {
-    for (let index = 0; index < this.data.length; index++) if (this.data[index] === from) this.data[index] = to
+    for (let index = 0; index < this.data.length; index++)
+      if (this.data[index] === from) this.data[index] = to
     return this
   }
 
@@ -281,8 +300,10 @@ export class Px {
   /** Vertical bands from `colors` (top to bottom), only on painted pixels when `onlyPainted`. */
   bands(colors: readonly Color[], onlyPainted = true, from = 0, to = this.height) {
     for (let y = from; y < to; y++) {
-      const color = colors[Math.min(colors.length - 1, Math.floor(((y - from) / (to - from)) * colors.length))]!
-      for (let x = 0; x < this.width; x++) if (!onlyPainted || this.get(x, y) !== null) this.set(x, y, color)
+      const color =
+        colors[Math.min(colors.length - 1, Math.floor(((y - from) / (to - from)) * colors.length))]!
+      for (let x = 0; x < this.width; x++)
+        if (!onlyPainted || this.get(x, y) !== null) this.set(x, y, color)
     }
     return this
   }
@@ -318,6 +339,7 @@ export function shift(canvas: Px, dx: number, dy: number): Px {
 export function upscale(canvas: Px, factor: number): Px {
   const big = new Px(canvas.width * factor, canvas.height * factor)
   for (let y = 0; y < big.height; y++)
-    for (let x = 0; x < big.width; x++) big.set(x, y, canvas.get(Math.floor(x / factor), Math.floor(y / factor)))
+    for (let x = 0; x < big.width; x++)
+      big.set(x, y, canvas.get(Math.floor(x / factor), Math.floor(y / factor)))
   return big
 }

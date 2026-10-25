@@ -16,9 +16,12 @@ function mapDrawing(data: MapData, sets: ReturnType<typeof tilesets>): MapDrawin
       type: 'tiles',
       name,
       tileset: sets[info.tileset],
-      cells: info.rows.flatMap((row) => [...row].map((char) => (char === '.' ? -1 : ALPHABET.indexOf(char)))),
+      cells: info.rows.flatMap((row) =>
+        [...row].map((char) => (char === '.' ? -1 : ALPHABET.indexOf(char))),
+      ),
     })
-  for (const [name, objects] of Object.entries(data.objects)) layers.push({ type: 'objects', name, objects })
+  for (const [name, objects] of Object.entries(data.objects))
+    layers.push({ type: 'objects', name, objects })
   return { kind: 'map', name: data.name, cols: data.cols, rows: data.rows, layers }
 }
 

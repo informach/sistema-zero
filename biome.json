@@ -78,6 +78,10 @@
   },
   "overrides": [
     {
+      "includes": ["packages/studio/src/examples/python/pygame/*/desenhos.pinta.json"],
+      "formatter": { "enabled": false }
+    },
+    {
       "includes": ["packages/tui/**"],
       "linter": {
         "rules": {

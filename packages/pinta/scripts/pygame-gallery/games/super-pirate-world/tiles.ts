@@ -4,7 +4,8 @@
  * corner bit 0 is an inner corner. 32 px pieces (64 px in the game).
  */
 import type { TilesetDrawing } from '../../drawing'
-import { mix, Px, random, type Random } from '../../pixel'
+import { mix, Px, type Random, random } from '../../pixel'
+import { TILE_KEYS, type TilesetKey } from './maps'
 import {
   BRICK,
   COPPER,
@@ -20,7 +21,6 @@ import {
   WALL,
   WOOD,
 } from './palette'
-import { TILE_KEYS, type TilesetKey } from './maps'
 
 const T = 32
 
@@ -75,7 +75,8 @@ function roundCorners(p: Px, s: Sides, r: number) {
       for (let x = 0; x < r; x++) {
         const dx = r - x - 0.5
         const dy = r - y - 0.5
-        if (dx * dx + dy * dy > r * r) p.set(cx === 0 ? x : T - 1 - x, cy === 0 ? y : T - 1 - y, null)
+        if (dx * dx + dy * dy > r * r)
+          p.set(cx === 0 ? x : T - 1 - x, cy === 0 ? y : T - 1 - y, null)
       }
   }
 }
@@ -92,7 +93,10 @@ function inkEdges(p: Px, s: Sides, color = INK) {
   const marks: [number, number][] = []
   for (let y = 0; y < T; y++)
     for (let x = 0; x < T; x++)
-      if (p.get(x, y) !== null && (open(x - 1, y) || open(x + 1, y) || open(x, y - 1) || open(x, y + 1)))
+      if (
+        p.get(x, y) !== null &&
+        (open(x - 1, y) || open(x + 1, y) || open(x, y - 1) || open(x, y + 1))
+      )
         marks.push([x, y])
   for (const [x, y] of marks) p.set(x, y, color)
 }
@@ -132,7 +136,16 @@ function grassTop(p: Px, rng: Random, from = 0, to = T) {
   for (let x = from; x < to; x++) {
     const hang = 5 + ((x * 7 + 3) % 5 === 0 ? 3 : 0) + ((x * 3) % 7 === 0 ? 1 : 0)
     for (let y = 0; y < hang; y++) {
-      const color = y === 0 ? INK : y === 1 ? GRASS.shine : y < 3 ? GRASS.light : y < hang - 1 ? GRASS.base : GRASS.dark
+      const color =
+        y === 0
+          ? INK
+          : y === 1
+            ? GRASS.shine
+            : y < 3
+              ? GRASS.light
+              : y < hang - 1
+                ? GRASS.base
+                : GRASS.dark
       if (p.get(x, y) !== null) p.set(x, y, color)
     }
     if (rng.chance(0.18) && p.get(x, 2) !== null) p.set(x, 2, GRASS.shine)
@@ -167,7 +180,11 @@ function island(s: Sides, rng: Random): Px {
     if (top) {
       for (let x = 0; x < 6; x++)
         for (let y = 0; y < 4 - (x > 3 ? 1 : 0); y++)
-          p.set(cx === 0 ? x : T - 1 - x, y, y === 0 ? GRASS.light : y < 2 ? GRASS.base : GRASS.dark)
+          p.set(
+            cx === 0 ? x : T - 1 - x,
+            y,
+            y === 0 ? GRASS.light : y < 2 ? GRASS.base : GRASS.dark,
+          )
     }
   }
   if (s.ne) corner(T, 0, true)
@@ -175,7 +192,9 @@ function island(s: Sides, rng: Random): Px {
   if (s.se) corner(T, T, false)
   if (s.sw) corner(0, T, false)
   inkEdges(p, s)
-  if (s.n) for (let x = 0; x < T; x++) if (p.get(x, 0) === INK && p.get(x, 1) !== null) p.set(x, 1, GRASS.shine)
+  if (s.n)
+    for (let x = 0; x < T; x++)
+      if (p.get(x, 0) === INK && p.get(x, 1) !== null) p.set(x, 1, GRASS.shine)
   return p
 }
 
@@ -197,7 +216,19 @@ function trimBand(p: Px, s: Sides) {
   const paint = (x: number, y: number, edge: 'n' | 'e' | 's' | 'w', depth: number) => {
     if (p.get(x, y) === null) return
     const color =
-      depth === 0 ? INK : edge === 'n' || edge === 'w' ? (depth === 1 ? TRIM.shine : depth < band - 1 ? TRIM.light : TRIM.dark) : depth === 1 ? TRIM.base : depth < band - 1 ? TRIM.base : TRIM.dark
+      depth === 0
+        ? INK
+        : edge === 'n' || edge === 'w'
+          ? depth === 1
+            ? TRIM.shine
+            : depth < band - 1
+              ? TRIM.light
+              : TRIM.dark
+          : depth === 1
+            ? TRIM.base
+            : depth < band - 1
+              ? TRIM.base
+              : TRIM.dark
     p.set(x, y, color)
   }
   for (let d = 0; d < band; d++)
@@ -259,7 +290,15 @@ function frame(s: Sides, rng: Random, metal: typeof STEEL, ornament: boolean): P
   for (let d = 0; d < band; d++)
     for (let i = 0; i < T; i++) {
       const color = (edge: 'n' | 'e' | 's' | 'w') =>
-        d === 0 ? INK : d === band - 1 ? metal.dark : d === 1 ? (edge === 'n' || edge === 'w' ? metal.shine : metal.light) : metal.base
+        d === 0
+          ? INK
+          : d === band - 1
+            ? metal.dark
+            : d === 1
+              ? edge === 'n' || edge === 'w'
+                ? metal.shine
+                : metal.light
+              : metal.base
       if (s.n) p.set(i, d, color('n'))
       if (s.s) p.set(i, T - 1 - d, color('s'))
       if (s.w) p.set(d, i, color('w'))
@@ -277,7 +316,14 @@ function frame(s: Sides, rng: Random, metal: typeof STEEL, ornament: boolean): P
     const block = new Px(7, 7, metal.base)
     block.rim(metal.shine, metal.dark)
     block.frame(0, 0, 7, 7, INK)
-    if (ornament) block.set(2, 2, metal.dark).set(3, 2, metal.dark).set(4, 2, metal.dark).set(4, 3, metal.dark).set(4, 4, metal.dark).set(3, 4, metal.dark)
+    if (ornament)
+      block
+        .set(2, 2, metal.dark)
+        .set(3, 2, metal.dark)
+        .set(4, 2, metal.dark)
+        .set(4, 3, metal.dark)
+        .set(4, 4, metal.dark)
+        .set(3, 4, metal.dark)
     else block.set(3, 3, metal.shine)
     p.draw(block, x, y)
   }
@@ -305,14 +351,22 @@ function slab(s: Sides, metal: typeof STEEL, face: string): Px {
       const d = Math.min(dn, ds, dw, de)
       if (d === 0) p.set(x, y, INK)
       else if (d <= bevel) {
-        const color = d === dn ? metal.shine : d === dw ? metal.light : d === ds ? metal.dark : mix(metal.dark, metal.base, 0.5)
+        const color =
+          d === dn
+            ? metal.shine
+            : d === dw
+              ? metal.light
+              : d === ds
+                ? metal.dark
+                : mix(metal.dark, metal.base, 0.5)
         p.set(x, y, color)
       }
     }
   // A soft highlight on the face.
   for (let y = 0; y < T; y++)
     for (let x = 0; x < T; x++)
-      if (p.get(x, y) === face && (x + y) % 11 === 0 && y < T / 2) p.set(x, y, mix(face, metal.shine, 0.35))
+      if (p.get(x, y) === face && (x + y) % 11 === 0 && y < T / 2)
+        p.set(x, y, mix(face, metal.shine, 0.35))
   return p
 }
 
@@ -355,13 +409,17 @@ function plank(index: number): Px {
   p.rect(x0 + (left ? 1 : 0), 1, x1 - x0 - (left ? 1 : 0) - (right ? 1 : 0), 1, WOOD.shine)
   p.rect(x0 + (left ? 1 : 0), 5, x1 - x0 - (left ? 1 : 0) - (right ? 1 : 0), 1, WOOD.dark)
   // Wood grain and nails.
-  for (const gx of [5, 13, 22, 27]) if (gx > x0 + 2 && gx < x1 - 3) p.set(gx, 3, WOOD.dark).set(gx + 1, 3, WOOD.dark)
-  for (const gx of [9, 18]) if (gx > x0 + 2 && gx < x1 - 3) p.set(gx, 2, WOOD.light).set(gx + 1, 2, WOOD.light)
+  for (const gx of [5, 13, 22, 27])
+    if (gx > x0 + 2 && gx < x1 - 3) p.set(gx, 3, WOOD.dark).set(gx + 1, 3, WOOD.dark)
+  for (const gx of [9, 18])
+    if (gx > x0 + 2 && gx < x1 - 3) p.set(gx, 2, WOOD.light).set(gx + 1, 2, WOOD.light)
   if (caps) {
     const cap = (x: number) => {
       p.rect(x, 0, 5, 7, INK)
       p.rect(x + 1, 1, 3, 5, STEEL.base)
-      p.set(x + 1, 1, STEEL.shine).set(x + 2, 1, STEEL.shine).set(x + 1, 2, STEEL.light)
+      p.set(x + 1, 1, STEEL.shine)
+        .set(x + 2, 1, STEEL.shine)
+        .set(x + 1, 2, STEEL.light)
       p.rect(x + 1, 5, 3, 1, STEEL.dark)
     }
     if (left) cap(0)
@@ -388,7 +446,9 @@ function tufts(index: number): Px {
       p.set(x, T - 1 - y, y === height - 1 ? GRASS.shine : GRASS.light)
       if (y < height - 1) p.set(x + 1, T - 1 - y, GRASS.base)
     }
-    p.set(x - 1, T - 1, GRASS.base).set(x - 1, T - 2, GRASS.light).set(x + 2, T - 1, GRASS.dark)
+    p.set(x - 1, T - 1, GRASS.base)
+      .set(x - 1, T - 2, GRASS.light)
+      .set(x + 2, T - 1, GRASS.dark)
   }
   p.outline(INK)
   for (let x = 0; x < T; x++) p.set(x, T - 1, p.get(x, T - 2) === null ? null : p.get(x, T - 1))
@@ -397,15 +457,29 @@ function tufts(index: number): Px {
 
 // ---- world map ----------------------------------------------------------------------------
 
-const MAP_GRASS = { dark: '#3f7d4a', base: '#5c9e57', light: '#79b867', shine: '#9fd27e', tuft: '#4a8a4c' }
-const CLIFF = { dark: '#5b5580', base: '#8780ab', light: '#aaa4c9', stripe: '#6a6491', shine: '#c9c4e0' }
+const MAP_GRASS = {
+  dark: '#3f7d4a',
+  base: '#5c9e57',
+  light: '#79b867',
+  shine: '#9fd27e',
+  tuft: '#4a8a4c',
+}
+const CLIFF = {
+  dark: '#5b5580',
+  base: '#8780ab',
+  light: '#aaa4c9',
+  stripe: '#6a6491',
+  shine: '#c9c4e0',
+}
 
 function mapGrass(p: Px, rng: Random, height = T) {
   p.rect(0, 0, T, height, MAP_GRASS.base)
   for (let i = 0; i < 6; i++) {
     const x = rng.int(1, 29)
     const y = rng.int(1, height - 4)
-    p.set(x, y, MAP_GRASS.tuft).set(x + 1, y - 1, MAP_GRASS.light).set(x + 2, y, MAP_GRASS.tuft)
+    p.set(x, y, MAP_GRASS.tuft)
+      .set(x + 1, y - 1, MAP_GRASS.light)
+      .set(x + 2, y, MAP_GRASS.tuft)
   }
   p.speckle(rng, 0.04, [MAP_GRASS.light, MAP_GRASS.dark])
 }
@@ -415,7 +489,11 @@ function cliffFace(p: Px, from: number, to: number) {
     for (let x = 0; x < T; x++) {
       const wave = Math.round(Math.sin((x / T) * Math.PI * 2) * 2)
       const band = (y + wave + Math.floor(x / 3)) % 10
-      p.set(x, y, band === 0 ? CLIFF.stripe : band === 1 ? CLIFF.dark : band === 5 ? CLIFF.light : CLIFF.base)
+      p.set(
+        x,
+        y,
+        band === 0 ? CLIFF.stripe : band === 1 ? CLIFF.dark : band === 5 ? CLIFF.light : CLIFF.base,
+      )
     }
 }
 
@@ -424,15 +502,35 @@ function worldTile(key: string, rng: Random): Px {
   const [kind, bits = ''] = key.split(':') as [string, string?]
   const closed = (i: number) => bits[i] === '1'
   if (kind === 'G') {
-    const s = { n: !closed(0), e: !closed(1), s: !closed(2), w: !closed(3), ne: false, se: false, sw: false, nw: false }
+    const s = {
+      n: !closed(0),
+      e: !closed(1),
+      s: !closed(2),
+      w: !closed(3),
+      ne: false,
+      se: false,
+      sw: false,
+      nw: false,
+    }
     mapGrass(p, rng)
     roundCorners(p, s, 5)
     inkEdges(p, s)
     // A darker rim of turf inside the outline.
     for (let y = 0; y < T; y++)
       for (let x = 0; x < T; x++) {
-        if (p.get(x, y) !== MAP_GRASS.base && p.get(x, y) !== MAP_GRASS.light && p.get(x, y) !== MAP_GRASS.tuft && p.get(x, y) !== MAP_GRASS.dark) continue
-        const near = Math.min(s.n ? y : 99, s.s ? T - 1 - y : 99, s.w ? x : 99, s.e ? T - 1 - x : 99)
+        if (
+          p.get(x, y) !== MAP_GRASS.base &&
+          p.get(x, y) !== MAP_GRASS.light &&
+          p.get(x, y) !== MAP_GRASS.tuft &&
+          p.get(x, y) !== MAP_GRASS.dark
+        )
+          continue
+        const near = Math.min(
+          s.n ? y : 99,
+          s.s ? T - 1 - y : 99,
+          s.w ? x : 99,
+          s.e ? T - 1 - x : 99,
+        )
         if (near <= 2) p.set(x, y, near === 1 && s.n && y === 1 ? MAP_GRASS.shine : MAP_GRASS.dark)
       }
     return p
@@ -445,7 +543,8 @@ function worldTile(key: string, rng: Random): Px {
     // Wavy grass lip hanging over the cliff.
     for (let x = 0; x < T; x++) {
       const lip = 15 + ((x * 5) % 4 === 0 ? 2 : (x * 3) % 5 === 0 ? 1 : 0)
-      for (let y = 13; y <= lip; y++) p.set(x, y, y === lip ? INK : y >= lip - 1 ? MAP_GRASS.dark : MAP_GRASS.base)
+      for (let y = 13; y <= lip; y++)
+        p.set(x, y, y === lip ? INK : y >= lip - 1 ? MAP_GRASS.dark : MAP_GRASS.base)
       p.set(x, lip + 1, CLIFF.dark)
     }
     const s = { n: false, e, s: false, w, ne: false, se: false, sw: false, nw: false }
@@ -568,7 +667,11 @@ export function tilesets(): Record<TilesetKey, TilesetDrawing> {
       tileSize: T,
       tiles: TILE_KEYS[key].map((tileKey) => ({
         image: tileImage(tileKey),
-        ...(SOLID.includes(key) ? { collision: 'solid' as const } : key === 'plataformas' ? { collision: 'platform' as const } : {}),
+        ...(SOLID.includes(key)
+          ? { collision: 'solid' as const }
+          : key === 'plataformas'
+            ? { collision: 'platform' as const }
+            : {}),
       })),
     }
   return result

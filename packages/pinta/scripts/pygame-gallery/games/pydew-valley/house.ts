@@ -85,7 +85,20 @@ function walls(): Px[] {
   const cornerBR = new Px(T, T)
   wallFace(cornerBR, 0, 10)
   cornerBR.rect(9, 0, 1, T, INK)
-  return [withWindow, endLeft, cornerTL, plain, cornerTR, endRight, left, floor, right, cornerBL, bottom, cornerBR]
+  return [
+    withWindow,
+    endLeft,
+    cornerTL,
+    plain,
+    cornerTR,
+    endRight,
+    left,
+    floor,
+    right,
+    cornerBL,
+    bottom,
+    cornerBR,
+  ]
 }
 
 function furniture(): Px[] {
@@ -133,9 +146,12 @@ function furniture(): Px[] {
     const tile = new Px(T, T)
     tile.rect(w0, 5, w1 - w0, 22, BLUE).rect(w0 + 2, 7, w1 - w0 - 4, 18, BLUE_LIGHT)
     tile.rect(w0 + 4, 9, w1 - w0 - 8, 14, BLUE)
-    for (let y = 11; y < 21; y += 4) for (let x = w0 + 6; x < w1 - 5; x += 4) tile.set(x, y, '#fbf5e6')
-    if (fringeLeft) for (let y = 6; y < 27; y += 2) tile.set(w0 - 1, y, '#fbf5e6').set(w0 - 2, y, '#fbf5e6')
-    if (fringeRight) for (let y = 6; y < 27; y += 2) tile.set(w1, y, '#fbf5e6').set(w1 + 1, y, '#fbf5e6')
+    for (let y = 11; y < 21; y += 4)
+      for (let x = w0 + 6; x < w1 - 5; x += 4) tile.set(x, y, '#fbf5e6')
+    if (fringeLeft)
+      for (let y = 6; y < 27; y += 2) tile.set(w0 - 1, y, '#fbf5e6').set(w0 - 2, y, '#fbf5e6')
+    if (fringeRight)
+      for (let y = 6; y < 27; y += 2) tile.set(w1, y, '#fbf5e6').set(w1 + 1, y, '#fbf5e6')
     tile.rect(w0, 5, w1 - w0, 1, BLUE_DARK).rect(w0, 26, w1 - w0, 1, BLUE_DARK)
     return tile
   }

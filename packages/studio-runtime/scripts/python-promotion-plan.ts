@@ -124,7 +124,10 @@ const union = <T>(previous: readonly T[], added: readonly T[]) => [
   ...new Set([...previous, ...added]),
 ]
 
-async function validateConfiguration(configuration: z.infer<typeof configurationSchema>) {
+async function validateConfiguration(
+  configuration: z.infer<typeof configurationSchema>,
+  superseding?: { profileId: string; releaseId: string },
+) {
   if (
     Buffer.byteLength(canonicalJson(configuration.members)) > 2_000_000 ||
     Buffer.byteLength(canonicalJson(configuration.hosts)) > 200_000
@@ -149,7 +152,16 @@ async function validateConfiguration(configuration: z.infer<typeof configuration
     const policy = configuration.members?.releases.find(
       ({ runtime }) => runtime.manifestSha256 === deployment.release.manifestSha256,
     )
-    if (policy && policy.status !== status)
+    // An interrupted rollout can retire a release in only one authority. A new
+    // release of that same profile may retire it in both; never revive a revoked
+    // release, reconcile another profile, or accept divergent immutable bytes.
+    // The resulting configuration is checked again without this allowance.
+    const interruptedRetirement =
+      superseding?.profileId === deployment.release.profileId &&
+      superseding.releaseId !== deployment.release.releaseId &&
+      ((status === 'active' && policy?.status === 'retired') ||
+        (status === 'retired' && policy?.status === 'active'))
+    if (policy && policy.status !== status && !interruptedRetirement)
       throw new Error('Os estados anteriores da release divergem.')
   }
 }
@@ -162,7 +174,7 @@ export async function preparePythonPromotion(raw: unknown, baseDirectory = proce
     throw new Error('O runtime deve ter uma origem distinta dos aplicativos.')
   if (input.baseline.previewOrigin && input.baseline.previewOrigin !== input.target.runtimeOrigin)
     throw new Error('A promoção não troca a origem de previews existente.')
-  await validateConfiguration(input.baseline)
+  await validateConfiguration(input.baseline, input.release)
   const distribution = await verifyPythonDistributionFiles(
     input.distribution.directory,
     input.distribution.sha256,
