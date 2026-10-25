@@ -15,4 +15,10 @@ A revisão reproduziu e corrigiu um canvas/estilos remanescentes quando a criaç
 - Tipagem completa do Studio passou antes da conciliação posterior do Raylib 3D. A composição final ainda exige nova tipagem, navegador e CI.
 - Índice dos exemplos para o tutor foi regenerado. Não houve alteração dos roteiros dos cursos.
 
-Logs locais em `.cache/python-missions-20261024`: `three-full-native-r3.log`, `three-kit-touch-{red,green}-r1.log`, `three-kits-lifecycle-red-r1.log`, `three-closure-regression-r3.log`. Publicação e prova gráfica final permanecem como gates da entrega integrada.
+## Navegador real
+
+Na composição `4d5c1558a`, os 21 exemplos abriram, renderizaram em WebGL e receberam os controles da galeria tanto no Chromium quanto no Chrome. A execução inicial teve 48 testes aprovados e quatro falhas: as duas provas adicionais de fim/reinício da Torre Maluca, nos dois navegadores, falhavam ao fotografar o `body` sem altura, pois o canvas e o HUD do motor usam posicionamento fixo. O jogo já havia alcançado a tela final.
+
+O teste foi corrigido para capturar o iframe visível, preservando a execução negativa. A repetição focada no Chrome aprovou os dois casos: erro de empilhamento com teclado e com botão de toque, tela final, reinício, placar zerado, exatamente um canvas e um conjunto de controles. O teste de botão exerce a ativação por ponteiro; não equivale a uma prova em dispositivo móvel físico. Não houve repetição da galeria nem retry oculto. A configuração final usa somente Chrome, um worker e retries zero.
+
+Logs locais em `.cache/python-missions-20261024`: `three-full-native-r3.log`, `three-kit-touch-{red,green}-r1.log`, `three-kits-lifecycle-red-r1.log`, `three-closure-regression-r3.log`, `three-real-browser-{r1,r2}.log`; relatórios e capturas nos diretórios correspondentes. As seleções se sobrepõem: não são 50 cenários únicos. A prova não cobre todas as condições finais dos 21 jogos. Tipagem da composição final, CI e publicação permanecem gates da entrega integrada.
