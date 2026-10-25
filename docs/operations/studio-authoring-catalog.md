@@ -36,10 +36,12 @@ Ausência de ambas preserva o comportamento JavaScript sem catálogo Python.
 Após a qualificação do runtime e sem uma onda concorrente de deploy:
 
 1. Confira o plano aprovado e leia as variáveis atuais sem registrar credenciais.
-2. Com deploy automático suprimido, configure o SHA256, remova a variável JSON e configure
-   `STUDIO_RUNTIME_HOSTS_JSON` com os hosts do mesmo plano. Antes de reiniciar, releia e confira
-   os três valores. Não implante estados intermediários.
-3. Faça o redeploy do Members, aguarde a saúde da nova instância e confirme o ambiente realmente
+2. Com `variable set --skip-deploys`, configure juntos o SHA256 e `STUDIO_RUNTIME_HOSTS_JSON`
+   do mesmo plano. Releia e confira os valores. A CLI não oferece `--skip-deploys` em
+   `variable delete`: remova `STUDIO_AUTHORING_POLICY_JSON` **por último**, quando essa remoção
+   já puder disparar o deploy da configuração final coerente. Não reinicie no estado intermediário.
+3. Releia as três variáveis e acompanhe o deployment disparado. Se a remoção não iniciar um,
+   faça o redeploy do Members. Aguarde a saúde da nova instância e confirme o ambiente realmente
    carregado. Verifique descoberta, abertura de projeto existente e execução na release nova.
 4. Para rollback, restaure o conjunto completo de política e hosts anteriores, com a mesma
    supressão de deploys intermediários, releia e reinicie. Não deixe os hosts de uma release que
