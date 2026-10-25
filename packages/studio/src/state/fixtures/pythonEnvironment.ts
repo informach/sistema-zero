@@ -5,6 +5,7 @@ import {
 import { createStudioProjectDocument } from '../../core/projectFactory'
 import type { StudioRuntimeEnvironment } from '../../runtime/environment'
 import { PGZERO_EXTENSION } from '../../runtime/python/pgzero/contract'
+import { RAYLIB_2D_EXTENSION, RAYLIB_3D_EXTENSION } from '../../runtime/python/raylib/contract'
 import { TURTLE_EXTENSION } from '../../runtime/python/turtle/contract'
 import { createStudioRuntimeRegistry } from '../../runtime/registry'
 import { refinePythonProjectDocument } from '../pythonProjectValidation'
@@ -22,6 +23,8 @@ export async function pythonEnvironmentFixture(kind: 'classic' | 'pro') {
     extensions: [
       { id: TURTLE_EXTENSION.id, versions: [TURTLE_EXTENSION.version] },
       { id: PGZERO_EXTENSION.id, versions: [PGZERO_EXTENSION.version] },
+      { id: RAYLIB_2D_EXTENSION.id, versions: [RAYLIB_2D_EXTENSION.version] },
+      { id: RAYLIB_3D_EXTENSION.id, versions: [RAYLIB_3D_EXTENSION.version] },
     ],
     sourceTargets: ['browser', 'desktop'],
     requiredBrowserFeatures: [],

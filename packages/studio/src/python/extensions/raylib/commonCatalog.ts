@@ -834,6 +834,15 @@ export function raylibCommonCodecs(owner: RaylibOwner): PythonBlockCodec[] {
       help: 'Pinta um único pixel.',
       params: [p('posX', '', n(400)), p('posY', 'y', n(225)), color('BLACK')],
     }),
+    api({
+      fn: 'draw_pixel_v',
+      title: 'desenhar um pixel no ponto',
+      category: F,
+      level: 2,
+      role: 'statement',
+      help: 'Pinta um único pixel num ponto (um Vector2).',
+      params: [p('position', '', v2(400, 225)), color('BLACK')],
+    }),
     // 🖼️ Imagens e texturas
     api({
       fn: 'load_texture',

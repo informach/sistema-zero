@@ -162,6 +162,8 @@ export async function runtimeFixtureProject(
   }
   const { isPgzeroExampleFixture, pgzeroExampleProject } = await import('./pgzeroFixtures')
   if (isPgzeroExampleFixture(name)) return pgzeroExampleProject(name)
+  const { isRaylibExampleFixture, raylibExampleProject } = await import('./raylibFixtures')
+  if (isRaylibExampleFixture(name)) return raylibExampleProject(name)
   const { isGameFixture, gameFixtureProject } = await import('./gameFixtures')
   if (isGameFixture(name)) return gameFixtureProject(name)
   const source = cases[name]

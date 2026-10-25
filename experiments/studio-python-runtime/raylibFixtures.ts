@@ -1,9 +1,15 @@
 import { readdirSync, readFileSync } from 'node:fs'
 import { sep } from 'node:path'
+import { RAYLIB_GAME_LOADERS } from '../../packages/studio/src/examples/python/raylibGames.loaders.generated'
+import {
+  RAYLIB_GAMES,
+  type RaylibGameKey,
+} from '../../packages/studio/src/examples/python/raylibGames.manifest'
 import {
   RAYLIB_2D_EXTENSION,
   RAYLIB_3D_EXTENSION,
 } from '../../packages/studio/src/runtime/python/raylib/contract'
+import { documentFixture } from '../../packages/studio/src/state/fixtures/projectDocuments'
 import { PGZERO_FIXTURE_ASSETS } from './pgzeroFixtures'
 
 const scenes = new URL('../../packages/studio/scripts/raylib/scenes/', import.meta.url)
@@ -102,3 +108,25 @@ export const RAYLIB_FIXTURE_ASSETS = [
   ...SCENE_ASSETS,
 ]
 export { RAYLIB_2D_EXTENSION, RAYLIB_3D_EXTENSION }
+
+/** `raylib-example-<key>`: the gallery example itself, as a Pro project at the same paths. */
+export function isRaylibExampleFixture(name: string) {
+  return name.startsWith('raylib-example-') && name.slice(15) in RAYLIB_GAME_LOADERS
+}
+export async function raylibExampleProject(name: string) {
+  const key = name.slice(15) as RaylibGameKey
+  const payload = await RAYLIB_GAME_LOADERS[key]()
+  const game = RAYLIB_GAMES.find((entry) => entry.key === key)!
+  const extension = (game.extension as string) === '3d' ? RAYLIB_3D_EXTENSION : RAYLIB_2D_EXTENSION
+  const project = documentFixture('python', 'pro')
+  if (project.programmingLanguage !== 'python' || project.kind !== 'pro') throw new Error('fixture')
+  project.id = name
+  project.name = key
+  project.python.entrypoint = payload.entrypoint
+  project.tree = Object.fromEntries(
+    Object.entries(payload.files).map(([path, content]) => [path, { kind: 'file', content }]),
+  )
+  project.assets = [...payload.assets]
+  project.installedExtensions = [{ ...extension, installedAt: project.createdAt }]
+  return project
+}

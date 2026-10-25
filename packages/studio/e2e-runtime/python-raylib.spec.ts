@@ -2,6 +2,7 @@ import { readdirSync } from 'node:fs'
 import { readFile, writeFile } from 'node:fs/promises'
 import { expect, type Page, test } from '@playwright/test'
 import type {} from '../../../experiments/studio-python-runtime/providerHost'
+import { RAYLIB_GAMES } from '../src/examples/python/raylibGames.manifest'
 
 const scenes = new URL('../scripts/raylib/scenes/', import.meta.url)
 /** The same list the probe fixtures build (experiments/studio-python-runtime/raylibFixtures.ts). */
@@ -137,3 +138,50 @@ for (const scene of RAYLIB_SCENES) {
     await page.evaluate(() => globalThis.providerProbe.dispose('game'))
   })
 }
+
+/** Every gallery game: it opens from the gallery payload, draws and takes input without errors. */
+for (const { key } of RAYLIB_GAMES)
+  test(`Raylib: exemplo da galeria ${key} roda, desenha e recebe teclado e mouse`, async ({
+    page,
+  }, testInfo) => {
+    await page.goto('/provider')
+    await page.waitForFunction(() => !!globalThis.providerProbe)
+    await page.evaluate(
+      (name) => globalThis.providerProbe.prepare('game', name),
+      `raylib-example-${key}`,
+    )
+    const ready = await page.evaluate(() => globalThis.providerProbe.read('game'))
+    expect(ready.status, JSON.stringify(ready)).toBe('ready')
+    await page.evaluate(() => globalThis.providerProbe.run('game'))
+    const frame = page.frames().find((candidate) => candidate.url().includes('/frame.html'))!
+    const canvas = frame.locator('canvas')
+    await expect(canvas).toHaveCount(1, { timeout: 30_000 })
+    await page.waitForTimeout(1500)
+    const box = await canvas.boundingBox()
+    if (box) await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2)
+    for (const pressed of ['ArrowRight', 'ArrowUp', 'Space']) await canvas.press(pressed)
+    await page.waitForTimeout(1000)
+    const state = await page.evaluate(() => globalThis.providerProbe.read('game'))
+    const output = state.events
+      .flatMap((event) => (event.type === 'console' ? [event.text] : []))
+      .join('')
+    await testInfo.attach('stdout', { body: output, contentType: 'text/plain' })
+    expect(state.status, `${JSON.stringify(state.events.at(-1))}\n${output}`).toBe('running')
+    const png = await canvas.evaluate((node: HTMLCanvasElement) => node.toDataURL('image/png'))
+    const path = testInfo.outputPath(`${key}.png`)
+    await writeFile(path, Buffer.from(png.split(',')[1]!, 'base64'))
+    await testInfo.attach(key, { path, contentType: 'image/png' })
+    const colours = await page.evaluate(async (url) => {
+      const bitmap = await createImageBitmap(await (await fetch(url)).blob())
+      const canvas = new OffscreenCanvas(bitmap.width, bitmap.height)
+      const context = canvas.getContext('2d')!
+      context.drawImage(bitmap, 0, 0)
+      const data = context.getImageData(0, 0, bitmap.width, bitmap.height).data
+      const seen = new Set<number>()
+      for (let at = 0; at < data.length; at += 4 * 97)
+        seen.add((data[at]! << 16) | (data[at + 1]! << 8) | data[at + 2]!)
+      return seen.size
+    }, png)
+    expect(colours).toBeGreaterThan(3)
+    await page.evaluate(() => globalThis.providerProbe.dispose('game'))
+  })
