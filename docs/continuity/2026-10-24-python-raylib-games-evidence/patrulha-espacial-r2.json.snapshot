@@ -1,0 +1,412 @@
+{
+  "kind": "python-visual-authoring",
+  "analyzer": {
+    "pythonVersion": "3.14.2",
+    "pyodideVersion": "314.0.7",
+    "distributionSha256": "f92f982520a1925d2b291e311332de654967140dbdc9902ff2036e9a52fe2391",
+    "analyzerSha256": "030eee7115db46c8c19831372a0948f71bbda0a8ad751235d4da889ed68bdf9b"
+  },
+  "authoringRuntime": {
+    "profileId": "python-probe",
+    "releaseId": "probe-1",
+    "manifestSha256": "fb95d42f28f28a54193fd64ce94b2fe2de81136236b3475ec02f665726f71ccd"
+  },
+  "authoringRuntimeFeatures": [
+    "turtle-compound-shapes",
+    "project-missions-v1"
+  ],
+  "authoringLoader": "loadPythonAuthoring",
+  "extension": "python-raylib-3d",
+  "codecOrderSha256": "b871a02dbbe158ce9b618ca5c0ac1b86497ef04f237bd07d2056ffe0691c0aed",
+  "sourceSha256": "5fe8fd1c331e89d4d4bf9a13af1d29c8758c1a9e1074dee07a2089e59f8df41b",
+  "generatedSha256": "e92411296950c795a87c30106fbffb91d02e193301d48d8e3802b6f70f5f2947",
+  "opaqueCount": 0,
+  "blockCount": 713,
+  "referencedBlocks": [
+    {
+      "id": "sz_py_alias",
+      "count": 2
+    },
+    {
+      "id": "sz_py_and",
+      "count": 3
+    },
+    {
+      "id": "sz_py_arithmetic",
+      "count": 32
+    },
+    {
+      "id": "sz_py_assign",
+      "count": 58
+    },
+    {
+      "id": "sz_py_attribute",
+      "count": 34
+    },
+    {
+      "id": "sz_py_boolean",
+      "count": 4
+    },
+    {
+      "id": "sz_py_class",
+      "count": 1
+    },
+    {
+      "id": "sz_py_compare",
+      "count": 5
+    },
+    {
+      "id": "sz_py_def",
+      "count": 4
+    },
+    {
+      "id": "sz_py_float",
+      "count": 23
+    },
+    {
+      "id": "sz_py_for",
+      "count": 11
+    },
+    {
+      "id": "sz_py_format_value",
+      "count": 3
+    },
+    {
+      "id": "sz_py_global",
+      "count": 1
+    },
+    {
+      "id": "sz_py_if",
+      "count": 9
+    },
+    {
+      "id": "sz_py_if_value",
+      "count": 1
+    },
+    {
+      "id": "sz_py_import_all",
+      "count": 1
+    },
+    {
+      "id": "sz_py_import_from",
+      "count": 2
+    },
+    {
+      "id": "sz_py_int",
+      "count": 2
+    },
+    {
+      "id": "sz_py_integer",
+      "count": 106
+    },
+    {
+      "id": "sz_py_interpolation",
+      "count": 3
+    },
+    {
+      "id": "sz_py_len",
+      "count": 1
+    },
+    {
+      "id": "sz_py_list",
+      "count": 5
+    },
+    {
+      "id": "sz_py_list_append",
+      "count": 3
+    },
+    {
+      "id": "sz_py_list_comprehension",
+      "count": 2
+    },
+    {
+      "id": "sz_py_math_sin",
+      "count": 1
+    },
+    {
+      "id": "sz_py_max",
+      "count": 3
+    },
+    {
+      "id": "sz_py_method",
+      "count": 2
+    },
+    {
+      "id": "sz_py_min",
+      "count": 2
+    },
+    {
+      "id": "sz_py_negative",
+      "count": 16
+    },
+    {
+      "id": "sz_py_not",
+      "count": 2
+    },
+    {
+      "id": "sz_py_random_randint",
+      "count": 6
+    },
+    {
+      "id": "sz_py_range",
+      "count": 2
+    },
+    {
+      "id": "sz_py_rl3d_begin_drawing",
+      "count": 1
+    },
+    {
+      "id": "sz_py_rl3d_begin_mode_3d",
+      "count": 1
+    },
+    {
+      "id": "sz_py_rl3d_BoundingBox",
+      "count": 1
+    },
+    {
+      "id": "sz_py_rl3d_Camera3D",
+      "count": 1
+    },
+    {
+      "id": "sz_py_rl3d_check_collision_box_sphere",
+      "count": 1
+    },
+    {
+      "id": "sz_py_rl3d_check_collision_spheres",
+      "count": 1
+    },
+    {
+      "id": "sz_py_rl3d_clear_background",
+      "count": 1
+    },
+    {
+      "id": "sz_py_rl3d_close_audio_device",
+      "count": 1
+    },
+    {
+      "id": "sz_py_rl3d_close_window",
+      "count": 1
+    },
+    {
+      "id": "sz_py_rl3d_color",
+      "count": 11
+    },
+    {
+      "id": "sz_py_rl3d_Color",
+      "count": 2
+    },
+    {
+      "id": "sz_py_rl3d_draw_cube",
+      "count": 1
+    },
+    {
+      "id": "sz_py_rl3d_draw_cylinder",
+      "count": 2
+    },
+    {
+      "id": "sz_py_rl3d_draw_model",
+      "count": 1
+    },
+    {
+      "id": "sz_py_rl3d_draw_model_ex",
+      "count": 2
+    },
+    {
+      "id": "sz_py_rl3d_draw_rectangle",
+      "count": 1
+    },
+    {
+      "id": "sz_py_rl3d_draw_text",
+      "count": 5
+    },
+    {
+      "id": "sz_py_rl3d_end_drawing",
+      "count": 1
+    },
+    {
+      "id": "sz_py_rl3d_end_mode_3d",
+      "count": 1
+    },
+    {
+      "id": "sz_py_rl3d_fade",
+      "count": 1
+    },
+    {
+      "id": "sz_py_rl3d_ffi_new",
+      "count": 1
+    },
+    {
+      "id": "sz_py_rl3d_field",
+      "count": 34
+    },
+    {
+      "id": "sz_py_rl3d_gen_mesh_cube",
+      "count": 1
+    },
+    {
+      "id": "sz_py_rl3d_gen_mesh_sphere",
+      "count": 1
+    },
+    {
+      "id": "sz_py_rl3d_get_frame_time",
+      "count": 1
+    },
+    {
+      "id": "sz_py_rl3d_get_model_bounding_box",
+      "count": 1
+    },
+    {
+      "id": "sz_py_rl3d_get_shader_location",
+      "count": 1
+    },
+    {
+      "id": "sz_py_rl3d_get_time",
+      "count": 1
+    },
+    {
+      "id": "sz_py_rl3d_init_audio_device",
+      "count": 1
+    },
+    {
+      "id": "sz_py_rl3d_init_window",
+      "count": 1
+    },
+    {
+      "id": "sz_py_rl3d_is_key_down",
+      "count": 2
+    },
+    {
+      "id": "sz_py_rl3d_is_key_pressed",
+      "count": 2
+    },
+    {
+      "id": "sz_py_rl3d_key",
+      "count": 4
+    },
+    {
+      "id": "sz_py_rl3d_load_model",
+      "count": 1
+    },
+    {
+      "id": "sz_py_rl3d_load_model_from_mesh",
+      "count": 2
+    },
+    {
+      "id": "sz_py_rl3d_load_shader_from_memory",
+      "count": 1
+    },
+    {
+      "id": "sz_py_rl3d_load_sound",
+      "count": 2
+    },
+    {
+      "id": "sz_py_rl3d_load_texture",
+      "count": 2
+    },
+    {
+      "id": "sz_py_rl3d_material_map",
+      "count": 2
+    },
+    {
+      "id": "sz_py_rl3d_play_sound",
+      "count": 3
+    },
+    {
+      "id": "sz_py_rl3d_projection",
+      "count": 1
+    },
+    {
+      "id": "sz_py_rl3d_set_material_texture",
+      "count": 2
+    },
+    {
+      "id": "sz_py_rl3d_set_shader_value",
+      "count": 1
+    },
+    {
+      "id": "sz_py_rl3d_set_target_fps",
+      "count": 1
+    },
+    {
+      "id": "sz_py_rl3d_uniform_type",
+      "count": 1
+    },
+    {
+      "id": "sz_py_rl3d_Vector3",
+      "count": 16
+    },
+    {
+      "id": "sz_py_rl3d_window_loop",
+      "count": 1
+    },
+    {
+      "id": "sz_py_run",
+      "count": 2
+    },
+    {
+      "id": "sz_py_run_value",
+      "count": 1
+    },
+    {
+      "id": "sz_py_subscript",
+      "count": 4
+    },
+    {
+      "id": "sz_py_text",
+      "count": 18
+    },
+    {
+      "id": "sz_py_update",
+      "count": 8
+    },
+    {
+      "id": "sz_py_variable",
+      "count": 206
+    }
+  ],
+  "approvedBlockIdsSha256": "dc9c0f928b1a473cd82fd35ffd54c623f73061745af8c9c0d11fc6991418860e",
+  "fullWorkspaceRoundtrip": true,
+  "initialWorkspaceSha256": "670796e4fc750e825125555f8dc0d672ee10cb3f40f9ff86eb4e225802fee5d7",
+  "editedWorkspaceSha256": "94d89a139f313b40edbb37e3a7abdb5144dce3a3751c1178929c96cca4eb3727",
+  "canonicalRenderReanalysis": true,
+  "runtimeCapabilitiesQualified": false,
+  "browserInteractionQualified": false,
+  "edits": [
+    {
+      "label": "velocidade da nave",
+      "path": {
+        "body": 5,
+        "inputs": [
+          {
+            "name": "VALUE",
+            "index": 0
+          }
+        ]
+      },
+      "codecId": "sz_py_integer",
+      "field": "NUMBER",
+      "before": "7",
+      "after": "9",
+      "beforeSourceSha256": "63f8dac3e4bc2785a0aef26b7565f8267cbc9e908f27a798d5a8660c4342729b",
+      "afterSourceSha256": "1ece34de3cd90d8f2117a7964c6ca2970f6de65996125b9ddfd31a6c65011f1d"
+    },
+    {
+      "label": "velocidade do laser",
+      "path": {
+        "body": 6,
+        "inputs": [
+          {
+            "name": "VALUE",
+            "index": 0
+          }
+        ]
+      },
+      "codecId": "sz_py_integer",
+      "field": "NUMBER",
+      "before": "12",
+      "after": "15",
+      "beforeSourceSha256": "1ece34de3cd90d8f2117a7964c6ca2970f6de65996125b9ddfd31a6c65011f1d",
+      "afterSourceSha256": "e92411296950c795a87c30106fbffb91d02e193301d48d8e3802b6f70f5f2947"
+    }
+  ]
+}

@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto'
 import { type APIRequestContext, type Browser, expect, test } from '@playwright/test'
-import { prepareSpaceQualification } from '../../../experiments/studio-python-runtime/qualification/space_arena'
+import { refinePythonProjectDocument } from '../src/state/pythonProjectValidation'
 import { evaluate, providerState } from './gamePerformance'
 
 // The renderer keeps the unchanged start of a long drawing as pixels (retained layer). A
@@ -70,8 +70,15 @@ wn.mainloop()
 `
 
 async function paintScene(browser: Browser, request: APIRequestContext, progressive: boolean) {
-  const baseline = await prepareSpaceQualification(request)
-  const project = structuredClone(baseline.project)
+  // This synthetic scene needs the approved Turtle runtime, not an external game's corpus.
+  const response = await request.get('/project/turtleDrawing')
+  expect(response.ok()).toBe(true)
+  const project = await refinePythonProjectDocument(await response.json())
+  if (project.kind !== 'pro') throw new Error('The Turtle fixture must be Pro')
+  expect(project.runtime).toEqual((await (await request.get('/configuration')).json()).runtime)
+  expect(project.installedExtensions.map(({ id, version }) => ({ id, version }))).toEqual([
+    { id: 'python-turtle', version: '1.0.0' },
+  ])
   project.tree['scene.py'] = { kind: 'file', content: scene(progressive) }
   project.python.entrypoint = 'scene.py'
   const page = await browser.newPage()

@@ -208,7 +208,10 @@ def flip():
     _present(_original['pygame.display.flip'])
 
 
-def update(rectangle=None, *rectangles):
+def update(*rectangles):
+    # pygame distinguishes update() (all pixels) from update(None) (no pixels).
+    if len(rectangles) == 1 and rectangles[0] is None:
+        return _original['pygame.display.update'](None)
     # The browser always receives the whole screen: updating part of it shows the same pixels.
     _present(_original['pygame.display.flip'])
 

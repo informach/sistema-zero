@@ -61,6 +61,13 @@ frame = sent[-1]
 assert frame['title'] == 'Ponte' and frame['w'] == 320 and frame['keep'] is False
 assert frame['cursor'] is True
 
+# update() refreshes the screen; update(None) deliberately refreshes nothing (pygame-ce API).
+before = len(sent)
+pygame.display.update(None)
+assert len(sent) == before, 'display.update(None) must not present a new frame'
+pygame.display.update()
+assert len(sent) == before + 1 and sent[-1]['keep'] is False
+
 # Keyboard: state, just pressed/released, events with scancodes, text input -----------------
 queue.append([['kd', pygame.K_RIGHT, 0, ''], ['kd', pygame.K_a, 0, 'a']])
 pygame.display.flip()

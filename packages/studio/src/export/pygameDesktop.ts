@@ -13,10 +13,14 @@ import type { ExportFileMap } from './fileMap'
 export function buildPygameDesktopFiles(input: {
   occupied: readonly string[]
   directories: readonly string[]
+  entrypoint?: string
 }): { files: ExportFileMap; generated: string[] } {
   const occupied = [...input.occupied]
   const files: ExportFileMap = {}
+  const entrypoint = input.entrypoint ?? 'main.py'
+  const base = entrypoint.slice(0, entrypoint.lastIndexOf('/') + 1)
   const add = (path: string, bytes: ExportFileMap[string]) => {
+    path = `${base}${path}`
     if (studioPortableFileConflict([...occupied, path], input.directories)) return
     files[path] = bytes
     occupied.push(path)

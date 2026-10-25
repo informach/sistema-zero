@@ -1,0 +1,398 @@
+{
+  "kind": "python-visual-authoring",
+  "analyzer": {
+    "pythonVersion": "3.14.2",
+    "pyodideVersion": "314.0.7",
+    "distributionSha256": "f92f982520a1925d2b291e311332de654967140dbdc9902ff2036e9a52fe2391",
+    "analyzerSha256": "030eee7115db46c8c19831372a0948f71bbda0a8ad751235d4da889ed68bdf9b"
+  },
+  "authoringRuntime": {
+    "profileId": "python-probe",
+    "releaseId": "probe-1",
+    "manifestSha256": "fb95d42f28f28a54193fd64ce94b2fe2de81136236b3475ec02f665726f71ccd"
+  },
+  "authoringRuntimeFeatures": [
+    "turtle-compound-shapes",
+    "project-missions-v1"
+  ],
+  "authoringLoader": "loadPythonAuthoring",
+  "extension": "python-turtle",
+  "codecOrderSha256": "7aa373d62f16788faa8c1990aaa02019d44768657114c7ce6484ba259330eb9e",
+  "sourceSha256": "9a3d1a2953a02d73161d40f3a4c638c48587f5b1fcdac8957f4eaf5584b18c13",
+  "generatedSha256": "9e65bea748cb7c576a1fd1b280c8d6a0fd534591b34601b98b691433e1878ab8",
+  "opaqueCount": 0,
+  "blockCount": 1073,
+  "referencedBlocks": [
+    {
+      "id": "sz_py_abs",
+      "count": 2
+    },
+    {
+      "id": "sz_py_and",
+      "count": 1
+    },
+    {
+      "id": "sz_py_arithmetic",
+      "count": 37
+    },
+    {
+      "id": "sz_py_assign",
+      "count": 81
+    },
+    {
+      "id": "sz_py_attribute",
+      "count": 2
+    },
+    {
+      "id": "sz_py_boolean",
+      "count": 11
+    },
+    {
+      "id": "sz_py_call",
+      "count": 2
+    },
+    {
+      "id": "sz_py_compare",
+      "count": 24
+    },
+    {
+      "id": "sz_py_def",
+      "count": 19
+    },
+    {
+      "id": "sz_py_dictionary",
+      "count": 1
+    },
+    {
+      "id": "sz_py_expression",
+      "count": 3
+    },
+    {
+      "id": "sz_py_float",
+      "count": 3
+    },
+    {
+      "id": "sz_py_for",
+      "count": 4
+    },
+    {
+      "id": "sz_py_if",
+      "count": 27
+    },
+    {
+      "id": "sz_py_import_one",
+      "count": 5
+    },
+    {
+      "id": "sz_py_integer",
+      "count": 78
+    },
+    {
+      "id": "sz_py_keyword",
+      "count": 2
+    },
+    {
+      "id": "sz_py_lambda",
+      "count": 4
+    },
+    {
+      "id": "sz_py_len",
+      "count": 4
+    },
+    {
+      "id": "sz_py_list",
+      "count": 8
+    },
+    {
+      "id": "sz_py_list_append",
+      "count": 3
+    },
+    {
+      "id": "sz_py_math_cos",
+      "count": 3
+    },
+    {
+      "id": "sz_py_math_hypot",
+      "count": 1
+    },
+    {
+      "id": "sz_py_math_radians",
+      "count": 3
+    },
+    {
+      "id": "sz_py_math_sin",
+      "count": 3
+    },
+    {
+      "id": "sz_py_max",
+      "count": 3
+    },
+    {
+      "id": "sz_py_method",
+      "count": 2
+    },
+    {
+      "id": "sz_py_method_value",
+      "count": 3
+    },
+    {
+      "id": "sz_py_min",
+      "count": 1
+    },
+    {
+      "id": "sz_py_negative",
+      "count": 3
+    },
+    {
+      "id": "sz_py_none",
+      "count": 3
+    },
+    {
+      "id": "sz_py_not",
+      "count": 6
+    },
+    {
+      "id": "sz_py_or",
+      "count": 2
+    },
+    {
+      "id": "sz_py_parameters",
+      "count": 4
+    },
+    {
+      "id": "sz_py_random_randint",
+      "count": 2
+    },
+    {
+      "id": "sz_py_range",
+      "count": 3
+    },
+    {
+      "id": "sz_py_return",
+      "count": 11
+    },
+    {
+      "id": "sz_py_round",
+      "count": 2
+    },
+    {
+      "id": "sz_py_run",
+      "count": 23
+    },
+    {
+      "id": "sz_py_run_value",
+      "count": 6
+    },
+    {
+      "id": "sz_py_str",
+      "count": 7
+    },
+    {
+      "id": "sz_py_subscript",
+      "count": 102
+    },
+    {
+      "id": "sz_py_text",
+      "count": 179
+    },
+    {
+      "id": "sz_py_tuple",
+      "count": 8
+    },
+    {
+      "id": "sz_py_tuple_call",
+      "count": 1
+    },
+    {
+      "id": "sz_py_turtle_new_screen",
+      "count": 1
+    },
+    {
+      "id": "sz_py_turtle_new_turtle",
+      "count": 4
+    },
+    {
+      "id": "sz_py_turtle_screen_bgcolor",
+      "count": 1
+    },
+    {
+      "id": "sz_py_turtle_screen_bye",
+      "count": 1
+    },
+    {
+      "id": "sz_py_turtle_screen_listen",
+      "count": 1
+    },
+    {
+      "id": "sz_py_turtle_screen_mainloop",
+      "count": 1
+    },
+    {
+      "id": "sz_py_turtle_screen_onclick",
+      "count": 1
+    },
+    {
+      "id": "sz_py_turtle_screen_onkey",
+      "count": 7
+    },
+    {
+      "id": "sz_py_turtle_screen_onkeypress",
+      "count": 4
+    },
+    {
+      "id": "sz_py_turtle_screen_ontimer",
+      "count": 1
+    },
+    {
+      "id": "sz_py_turtle_screen_register_shape",
+      "count": 1
+    },
+    {
+      "id": "sz_py_turtle_screen_setup",
+      "count": 1
+    },
+    {
+      "id": "sz_py_turtle_screen_title",
+      "count": 1
+    },
+    {
+      "id": "sz_py_turtle_screen_tracer",
+      "count": 1
+    },
+    {
+      "id": "sz_py_turtle_screen_update",
+      "count": 2
+    },
+    {
+      "id": "sz_py_turtle_turtle_clear",
+      "count": 1
+    },
+    {
+      "id": "sz_py_turtle_turtle_clearstamps",
+      "count": 1
+    },
+    {
+      "id": "sz_py_turtle_turtle_color",
+      "count": 6
+    },
+    {
+      "id": "sz_py_turtle_turtle_goto",
+      "count": 9
+    },
+    {
+      "id": "sz_py_turtle_turtle_hideturtle",
+      "count": 1
+    },
+    {
+      "id": "sz_py_turtle_turtle_penup",
+      "count": 1
+    },
+    {
+      "id": "sz_py_turtle_turtle_setheading",
+      "count": 2
+    },
+    {
+      "id": "sz_py_turtle_turtle_shape",
+      "count": 3
+    },
+    {
+      "id": "sz_py_turtle_turtle_shapesize",
+      "count": 1
+    },
+    {
+      "id": "sz_py_turtle_turtle_showturtle",
+      "count": 2
+    },
+    {
+      "id": "sz_py_turtle_turtle_speed",
+      "count": 1
+    },
+    {
+      "id": "sz_py_turtle_turtle_stamp",
+      "count": 1
+    },
+    {
+      "id": "sz_py_turtle_turtle_write",
+      "count": 5
+    },
+    {
+      "id": "sz_py_update",
+      "count": 5
+    },
+    {
+      "id": "sz_py_variable",
+      "count": 304
+    }
+  ],
+  "approvedBlockIdsSha256": "3537d2f517a3f2daf75d063d9e8473ee7a872c9a7d610755b34e59e49c20c045",
+  "fullWorkspaceRoundtrip": true,
+  "initialWorkspaceSha256": "e5bd4f4223d02788756df0aeb61fc17e2cc1e92e542680e903070e905609d3c3",
+  "editedWorkspaceSha256": "cc3199dc2309a65b2f28658472792853f64782e086490ccb9a70d5cb59e20884",
+  "canonicalRenderReanalysis": true,
+  "runtimeCapabilitiesQualified": false,
+  "browserInteractionQualified": false,
+  "edits": [
+    {
+      "label": "coordinate",
+      "path": {
+        "body": 34,
+        "inputs": [
+          {
+            "name": "body",
+            "index": 10
+          },
+          {
+            "name": "y",
+            "index": 0
+          }
+        ]
+      },
+      "codecId": "sz_py_integer",
+      "field": "NUMBER",
+      "before": "300",
+      "after": "310",
+      "beforeSourceSha256": "6fbff5103c617c78a6ad1a8cd4230f00af6dc7c9849166328322f1a80e4e6037",
+      "afterSourceSha256": "d55b13b0662e209c1f9a13aeea3cf4195ac137820e9e4d1db4731ac4b46efa85"
+    },
+    {
+      "label": "speed",
+      "path": {
+        "body": 12,
+        "inputs": [
+          {
+            "name": "VALUE",
+            "index": 0
+          }
+        ]
+      },
+      "codecId": "sz_py_integer",
+      "field": "NUMBER",
+      "before": "450",
+      "after": "350",
+      "beforeSourceSha256": "d55b13b0662e209c1f9a13aeea3cf4195ac137820e9e4d1db4731ac4b46efa85",
+      "afterSourceSha256": "06e557175257d266303b3d2b9663c2a9b78fbfed0bd699364c49a81308374fc6"
+    },
+    {
+      "label": "color",
+      "path": {
+        "body": 21,
+        "inputs": [
+          {
+            "name": "VALUE",
+            "index": 0
+          },
+          {
+            "name": "elts:0",
+            "index": 0
+          }
+        ]
+      },
+      "codecId": "sz_py_text",
+      "field": "TEXT",
+      "before": "#4ade80",
+      "after": "#22c55e",
+      "beforeSourceSha256": "06e557175257d266303b3d2b9663c2a9b78fbfed0bd699364c49a81308374fc6",
+      "afterSourceSha256": "9e65bea748cb7c576a1fd1b280c8d6a0fd534591b34601b98b691433e1878ab8"
+    }
+  ]
+}

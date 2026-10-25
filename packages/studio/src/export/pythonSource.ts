@@ -67,7 +67,11 @@ export async function buildPythonSourceFiles(
   let pygameFiles: string[] = []
   if (hasPygameExtension(project.installedExtensions)) {
     const { buildPygameDesktopFiles } = await import('./pygameDesktop')
-    const desktop = buildPygameDesktopFiles({ occupied: Object.keys(files), directories })
+    const desktop = buildPygameDesktopFiles({
+      occupied: Object.keys(files),
+      directories,
+      entrypoint: project.python.entrypoint,
+    })
     Object.assign(files, desktop.files)
     pygameFiles = desktop.generated
   }

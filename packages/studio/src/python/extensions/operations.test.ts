@@ -1,6 +1,8 @@
 import { describe, expect, test } from 'bun:test'
 import { isPythonProject } from '../../core/editableProject'
 import { createStudioRuntimeAuthority } from '../../runtime/authority'
+import { PGZERO_EXTENSION } from '../../runtime/python/pgzero/contract'
+import { PYGAME_EXTENSION } from '../../runtime/python/pygame/contract'
 import { RAYLIB_2D_EXTENSION, RAYLIB_3D_EXTENSION } from '../../runtime/python/raylib/contract'
 import { TURTLE_EXTENSION } from '../../runtime/python/turtle/contract'
 import { pythonEnvironmentFixture } from '../../state/fixtures/pythonEnvironment'
@@ -58,6 +60,64 @@ async function raylibEnvironment(kind: 'classic' | 'pro') {
 }
 
 describe('Python extension actions', () => {
+  for (const extension of [PGZERO_EXTENSION, PYGAME_EXTENSION])
+    for (const kind of ['classic', 'pro'] as const) {
+      test(`${kind}: ${extension.id} removal requires analysis and preserves code that imports its modules`, async () => {
+        const { project, environment } = await pythonEnvironmentFixture(kind)
+        const expected = { ...project, installedExtensions: [{ ...extension, installedAt: 1 }] }
+        const store = createProjectStore()
+        store.getState().setProject(expected)
+        expect(
+          pythonExtensionCodeCheck(expected.installedExtensions, extension, 'remove'),
+        ).not.toBeNull()
+        await expect(
+          changePythonExtension({
+            store,
+            expected,
+            policy: () => ({ environment }),
+            extension,
+            action: 'remove',
+          }),
+        ).rejects.toThrow('análise')
+        for (const module of extension.id === PGZERO_EXTENSION.id
+          ? ['pgzero', 'pgzrun', 'pygame']
+          : ['pygame', 'pinta']) {
+          await expect(
+            changePythonExtension({
+              store,
+              expected,
+              policy: () => ({ environment }),
+              extension,
+              action: 'remove',
+              analysis: removalAnalysis({
+                kind: 'Module',
+                fields: {
+                  body: [
+                    {
+                      kind: 'Import',
+                      fields: {
+                        names: [{ kind: 'alias', fields: { name: module, asname: null } }],
+                      },
+                    },
+                  ],
+                },
+              }),
+            }),
+          ).rejects.toThrow('main.py:1')
+          expect(store.getState().project).toBe(expected)
+        }
+        await changePythonExtension({
+          store,
+          expected,
+          policy: () => ({ environment }),
+          extension,
+          action: 'remove',
+          analysis: removalAnalysis(),
+        })
+        expect(store.getState().project!.installedExtensions).toEqual([])
+      })
+    }
+
   for (const kind of ['classic', 'pro'] as const) {
     test(`${kind}: changed authority in the same environment fences installation before React observes it`, async () => {
       const { project, environment } = await pythonEnvironmentFixture(kind)
@@ -349,6 +409,14 @@ describe('Python extension actions', () => {
         kind: 'Module',
         fields: {
           body: [
+            {
+              kind: 'ImportFrom',
+              fields: {
+                module: 'pyray',
+                level: { literal: 'int', value: '0' },
+                names: [{ kind: 'alias', fields: { name: '*', asname: null } }],
+              },
+            },
             {
               kind: 'Expr',
               fields: {

@@ -1,0 +1,286 @@
+{
+  "kind": "python-visual-authoring",
+  "analyzer": {
+    "pythonVersion": "3.14.2",
+    "pyodideVersion": "314.0.7",
+    "distributionSha256": "f92f982520a1925d2b291e311332de654967140dbdc9902ff2036e9a52fe2391",
+    "analyzerSha256": "030eee7115db46c8c19831372a0948f71bbda0a8ad751235d4da889ed68bdf9b"
+  },
+  "authoringRuntime": {
+    "profileId": "python-probe",
+    "releaseId": "probe-1",
+    "manifestSha256": "fb95d42f28f28a54193fd64ce94b2fe2de81136236b3475ec02f665726f71ccd"
+  },
+  "authoringRuntimeFeatures": [
+    "turtle-compound-shapes",
+    "project-missions-v1"
+  ],
+  "authoringLoader": "loadPythonAuthoring",
+  "extension": "python-pgzero",
+  "codecOrderSha256": "7dc0c6647e6c38a27d732f6c43dd50e7dccd2546f49c785edd557815eaa9cbf9",
+  "sourceSha256": "888d65396e2b517ae214c09fa572dbd2f4830faee2416e0ee6032693691d3344",
+  "generatedSha256": "5067ad55327ac603203cc2e71e62d3ba324e22b2039e2fa3b5aad9bfb50e804a",
+  "opaqueCount": 0,
+  "blockCount": 950,
+  "referencedBlocks": [
+    {
+      "id": "sz_py_and",
+      "count": 7
+    },
+    {
+      "id": "sz_py_arithmetic",
+      "count": 57
+    },
+    {
+      "id": "sz_py_assign",
+      "count": 74
+    },
+    {
+      "id": "sz_py_attribute",
+      "count": 14
+    },
+    {
+      "id": "sz_py_boolean",
+      "count": 1
+    },
+    {
+      "id": "sz_py_break",
+      "count": 3
+    },
+    {
+      "id": "sz_py_collection_remove",
+      "count": 1
+    },
+    {
+      "id": "sz_py_compare",
+      "count": 55
+    },
+    {
+      "id": "sz_py_def",
+      "count": 8
+    },
+    {
+      "id": "sz_py_for",
+      "count": 15
+    },
+    {
+      "id": "sz_py_global",
+      "count": 6
+    },
+    {
+      "id": "sz_py_if",
+      "count": 33
+    },
+    {
+      "id": "sz_py_import_one",
+      "count": 2
+    },
+    {
+      "id": "sz_py_integer",
+      "count": 105
+    },
+    {
+      "id": "sz_py_len",
+      "count": 2
+    },
+    {
+      "id": "sz_py_list",
+      "count": 8
+    },
+    {
+      "id": "sz_py_list_append",
+      "count": 7
+    },
+    {
+      "id": "sz_py_list_call",
+      "count": 1
+    },
+    {
+      "id": "sz_py_list_clear",
+      "count": 3
+    },
+    {
+      "id": "sz_py_negative",
+      "count": 4
+    },
+    {
+      "id": "sz_py_not",
+      "count": 1
+    },
+    {
+      "id": "sz_py_or",
+      "count": 3
+    },
+    {
+      "id": "sz_py_pgzero_actor",
+      "count": 2
+    },
+    {
+      "id": "sz_py_pgzero_actor_draw",
+      "count": 2
+    },
+    {
+      "id": "sz_py_pgzero_actor_property",
+      "count": 2
+    },
+    {
+      "id": "sz_py_pgzero_draw",
+      "count": 1
+    },
+    {
+      "id": "sz_py_pgzero_draw_text",
+      "count": 6
+    },
+    {
+      "id": "sz_py_pgzero_go",
+      "count": 1
+    },
+    {
+      "id": "sz_py_pgzero_height",
+      "count": 1
+    },
+    {
+      "id": "sz_py_pgzero_keys",
+      "count": 7
+    },
+    {
+      "id": "sz_py_pgzero_on_key_down",
+      "count": 1
+    },
+    {
+      "id": "sz_py_pgzero_screen_blit",
+      "count": 3
+    },
+    {
+      "id": "sz_py_pgzero_screen_fill",
+      "count": 1
+    },
+    {
+      "id": "sz_py_pgzero_sound_play",
+      "count": 4
+    },
+    {
+      "id": "sz_py_pgzero_title",
+      "count": 1
+    },
+    {
+      "id": "sz_py_pgzero_update",
+      "count": 1
+    },
+    {
+      "id": "sz_py_pgzero_width",
+      "count": 1
+    },
+    {
+      "id": "sz_py_random_choice",
+      "count": 2
+    },
+    {
+      "id": "sz_py_random_randint",
+      "count": 3
+    },
+    {
+      "id": "sz_py_range",
+      "count": 9
+    },
+    {
+      "id": "sz_py_return",
+      "count": 10
+    },
+    {
+      "id": "sz_py_run",
+      "count": 10
+    },
+    {
+      "id": "sz_py_run_value",
+      "count": 4
+    },
+    {
+      "id": "sz_py_str",
+      "count": 5
+    },
+    {
+      "id": "sz_py_subscript",
+      "count": 54
+    },
+    {
+      "id": "sz_py_text",
+      "count": 56
+    },
+    {
+      "id": "sz_py_tuple",
+      "count": 24
+    },
+    {
+      "id": "sz_py_variable",
+      "count": 328
+    },
+    {
+      "id": "sz_py_while",
+      "count": 1
+    }
+  ],
+  "approvedBlockIdsSha256": "d447df688843ce29be5142e1aefe192a7099be67f72ce751ed1223af520ddae0",
+  "fullWorkspaceRoundtrip": true,
+  "initialWorkspaceSha256": "be950d6d7090a6eae0a5b304d920f7349aaa6fefdef88fc3050474f8bbe15778",
+  "editedWorkspaceSha256": "001c54887cc27cb87c9529b1778cdb19381b9b08c875fb0deb7ea0084afe56d4",
+  "canonicalRenderReanalysis": true,
+  "runtimeCapabilitiesQualified": false,
+  "browserInteractionQualified": false,
+  "edits": [
+    {
+      "label": "lado",
+      "path": {
+        "body": 2,
+        "inputs": [
+          {
+            "name": "VALUE",
+            "index": 0
+          }
+        ]
+      },
+      "codecId": "sz_py_integer",
+      "field": "NUMBER",
+      "before": "48",
+      "after": "52",
+      "beforeSourceSha256": "035612d0a7b4a002b2ee634403f6bfd8dad4248b3e8c9f7e12fc08e13137385d",
+      "afterSourceSha256": "433cc137292dee796179b4cd8641a138a1a9b1d077292257441dae228adc8abd"
+    },
+    {
+      "label": "title",
+      "path": {
+        "body": 8,
+        "inputs": [
+          {
+            "name": "value",
+            "index": 0
+          }
+        ]
+      },
+      "codecId": "sz_py_text",
+      "field": "TEXT",
+      "before": "Bombas no Labirinto",
+      "after": "Bombas no Labirinto!",
+      "beforeSourceSha256": "433cc137292dee796179b4cd8641a138a1a9b1d077292257441dae228adc8abd",
+      "afterSourceSha256": "1ac9ab6963e7ee81cc6f8f50e2fbe5a440a78aec146693c9498d62023894842b"
+    },
+    {
+      "label": "alcance",
+      "path": {
+        "body": 9,
+        "inputs": [
+          {
+            "name": "VALUE",
+            "index": 0
+          }
+        ]
+      },
+      "codecId": "sz_py_integer",
+      "field": "NUMBER",
+      "before": "3",
+      "after": "4",
+      "beforeSourceSha256": "1ac9ab6963e7ee81cc6f8f50e2fbe5a440a78aec146693c9498d62023894842b",
+      "afterSourceSha256": "5067ad55327ac603203cc2e71e62d3ba324e22b2039e2fa3b5aad9bfb50e804a"
+    }
+  ]
+}
