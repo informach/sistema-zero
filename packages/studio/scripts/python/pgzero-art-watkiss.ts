@@ -466,7 +466,84 @@ const pedraDoEspaco = (nome: string, lado: number) =>
     circle(p, meio * 0.9, meio * 1.4, lado * 0.07, '#6d4c41')
   })
 
+// Boing! ----------------------------------------------------------------------------------
+
+/** A bat, 16 x 100: a bright bar with a lighter stripe down the middle. */
+const raquete = (nome: string, cor: string, clara: string) =>
+  svg(nome, 16, 100, (p) => {
+    roundRect(p, 0, 0, 16, 100, 8, cor)
+    roundRect(p, 5, 8, 6, 84, 3, clara)
+  })
+
+const bolaDoBoing = () =>
+  svg('bola-boing', 16, 16, (p) => {
+    circle(p, 8, 8, 8, '#ffffff')
+    circle(p, 6, 6, 3, '#e3f2fd')
+  })
+
+// Centopeia -------------------------------------------------------------------------------
+
+/** A body part, 40 x 40: a round green segment with little legs on both sides. */
+const corpoDaCentopeia = () =>
+  svg('corpo-centopeia', 40, 40, (p) => {
+    for (const x of [10, 20, 30]) {
+      roundRect(p, x - 2, 2, 4, 8, 2, '#33691e')
+      roundRect(p, x - 2, 30, 4, 8, 2, '#33691e')
+    }
+    circle(p, 20, 20, 15, '#7cb342')
+    circle(p, 20, 20, 9, '#9ccc65')
+  })
+
+/** The head, 40 x 40, looking at us: so it works going left and going right. */
+const cabecaDaCentopeia = () =>
+  svg('cabeca-centopeia', 40, 40, (p) => {
+    roundRect(p, 9, 0, 4, 12, 2, '#33691e')
+    roundRect(p, 27, 0, 4, 12, 2, '#33691e')
+    circle(p, 20, 22, 16, '#e53935')
+    for (const lado of [-1, 1]) {
+      circle(p, 20 + lado * 6, 19, 5, '#ffffff')
+      circle(p, 20 + lado * 6, 20, 2.5, '#212121')
+    }
+    ellipse(p, 20, 30, 5, 2, '#b71c1c')
+  })
+
+/** A rock of the field, 40 x 40, with moss on top. */
+const pedraDoCampo = () =>
+  svg('pedra-campo', 40, 40, (p) => {
+    ellipse(p, 20, 23, 17, 15, '#8d6e63')
+    ellipse(p, 20, 13, 14, 6, '#689f38')
+    circle(p, 13, 26, 3, '#6d4c41')
+    circle(p, 26, 29, 2.5, '#6d4c41')
+  })
+
+/** The player, 32 x 36: a little blaster pointing up. */
+const jogadorDaCentopeia = () =>
+  svg('jogador-centopeia', 32, 36, (p) => {
+    roundRect(p, 13, 0, 6, 14, 3, '#90a4ae')
+    roundRect(p, 4, 12, 24, 18, 8, '#1e88e5')
+    circle(p, 16, 20, 5, '#e3f2fd')
+    roundRect(p, 2, 28, 10, 8, 4, '#263238')
+    roundRect(p, 20, 28, 10, 8, 4, '#263238')
+  })
+
+const tiroDaCentopeia = () =>
+  svg('tiro-centopeia', 6, 18, (p) => {
+    roundRect(p, 0, 0, 6, 18, 3, '#ffeb3b')
+  })
+
 export const WATKISS_ART: Record<string, () => Record<string, Uint8Array>> = {
+  centopeia: () => ({
+    'corpo.svg': corpoDaCentopeia(),
+    'cabeca.svg': cabecaDaCentopeia(),
+    'pedra.svg': pedraDoCampo(),
+    'jogador.svg': jogadorDaCentopeia(),
+    'tiro.svg': tiroDaCentopeia(),
+  }),
+  boing: () => ({
+    'raquete_azul.svg': raquete('raquete-azul', '#1e88e5', '#90caf9'),
+    'raquete_laranja.svg': raquete('raquete-laranja', '#fb8c00', '#ffcc80'),
+    'bola.svg': bolaDoBoing(),
+  }),
   'atirador-espacial': () => ({
     'fundo.svg': fundoDoEspaco(),
     'nave.svg': naveDoAtirador(),

@@ -140,7 +140,7 @@ def play(t):
     with open('ondas_teste.txt', 'w', encoding='utf-8') as arquivo:
         arquivo.write('2, pedra_gigante, 100, 2, 2\n')
     t.get('ler_ondas')()
-    t.check('imagem que não existe vira aviso', 'imagem que não existe' in t.get('aviso'))
+    t.check('imagem que o jogo não conhece vira aviso', 'veja PONTOS' in t.get('aviso'))
     with open('ondas_teste.txt', 'wb') as arquivo:
         arquivo.write(bytes([0x81]) + b', fim')
     t.get('ler_ondas')()
@@ -148,3 +148,18 @@ def play(t):
     os.remove('ondas_teste.txt')
     t.get('ler_ondas')()
     t.check('sem o arquivo, o jogo avisa', t.get('aviso') == 'Não achei o arquivo ondas_teste.txt.')
+
+    # A linha "fim" manda na duração da onda.
+    with open('ondas_teste.txt', 'w', encoding='utf-8') as arquivo:
+        arquivo.write('0.5, pedra_pequena, 100, 2, 1\n3, fim\n')
+    t.set('protegida', 0)
+    t.get('novo_jogo')()
+    t.set('protegida', 999)
+    quadros = t.until(lambda: t.get('onda') == 2, 60 * 10)
+    t.check('a onda dura os segundos da linha "fim"', 175 <= quadros <= 185, f'{quadros} quadros')
+    os.remove('ondas_teste.txt')
+
+    # Velocidade de pedra fora do razoável fica entre o mínimo e o máximo.
+    for velocidade, esperada in [(-5, 0.5), (0, 0.5), (500, 12)]:
+        t.get('soltar')({'imagem': 'pedra_pequena', 'x': 100, 'velocidade': velocidade, 'vida': 1})
+        t.check(f'pedra com velocidade {velocidade} desce a {esperada}', t.get('pedras')[-1].velocidade == esperada)

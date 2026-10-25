@@ -5,7 +5,8 @@
 #   x: onde ela aparece, de 0 (esquerda) a 800 (direita)
 #   velocidade: quanto ela desce a cada quadro
 #   vida: quantos tiros ela aguenta
-# A linha com "fim" diz em que segundo a onda acaba. Aí ela recomeça, mais rápida.
+# A linha com "fim" diz em que segundo a onda acaba (pedra marcada depois disso não
+# aparece). Aí a onda recomeça, mais rápida.
 0.5, pedra_pequena, 200, 3, 1
 1.0, pedra_pequena, 600, 3, 1
 1.8, pedra_media, 400, 2, 2

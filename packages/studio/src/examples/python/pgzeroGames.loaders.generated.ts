@@ -754,4 +754,28 @@ export const PGZERO_GAME_LOADERS = {
       assets: pgzeroGameAssets('atirador-espacial', ATIRADOR_ESPACIAL_MEDIA),
     }
   },
+  boing: async () => {
+    const [{ BOING_SOURCES }, { BOING_MEDIA }, { pgzeroGameAssets }] = await Promise.all([
+      import('./boing.sources.generated'),
+      import('./boing.media.generated'),
+      import('./pgzeroGameAssets'),
+    ])
+    return {
+      entrypoint: 'main.py',
+      files: BOING_SOURCES,
+      assets: pgzeroGameAssets('boing', BOING_MEDIA),
+    }
+  },
+  centopeia: async () => {
+    const [{ CENTOPEIA_SOURCES }, { CENTOPEIA_MEDIA }, { pgzeroGameAssets }] = await Promise.all([
+      import('./centopeia.sources.generated'),
+      import('./centopeia.media.generated'),
+      import('./pgzeroGameAssets'),
+    ])
+    return {
+      entrypoint: 'main.py',
+      files: CENTOPEIA_SOURCES,
+      assets: pgzeroGameAssets('centopeia', CENTOPEIA_MEDIA),
+    }
+  },
 } satisfies Record<PgzeroGameKey, () => Promise<unknown>>

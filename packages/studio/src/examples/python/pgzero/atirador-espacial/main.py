@@ -12,6 +12,9 @@ VIDAS = 3
 TEMPO_PROTEGIDA = 2.0
 # Cada onda nova é esta fração mais rápida que a anterior.
 ACELERACAO_POR_ONDA = 0.2
+# A velocidade de uma pedra fica sempre entre estas duas.
+VELOCIDADE_MINIMA_DA_PEDRA = 0.5
+VELOCIDADE_MAXIMA_DA_PEDRA = 12
 PONTOS = {'pedra_pequena': 30, 'pedra_media': 20, 'pedra_grande': 10}
 
 nave = Actor('nave')
@@ -36,6 +39,7 @@ rolagem = 0
 def ler_ondas():
     global fim_da_onda, aviso
     roteiro.clear()
+    fim_da_onda = 10
     aviso = ''
     try:
         with open(ARQUIVO_DAS_ONDAS, 'r') as arquivo:
@@ -49,7 +53,8 @@ def ler_ondas():
                 partes = linha.split(',')
                 try:
                     if partes[1].strip() == 'fim':
-                        fim_da_onda = float(partes[0])
+                        # Uma onda dura pelo menos um segundo.
+                        fim_da_onda = max(float(partes[0]), 1)
                     elif partes[1].strip() in PONTOS:
                         roteiro.append({
                             'tempo': float(partes[0]),
@@ -59,7 +64,7 @@ def ler_ondas():
                             'vida': int(partes[4]),
                         })
                     else:
-                        aviso = 'A linha ' + str(numero) + ' de ' + ARQUIVO_DAS_ONDAS + ' tem uma imagem que não existe.'
+                        aviso = 'A linha ' + str(numero) + ' de ' + ARQUIVO_DAS_ONDAS + ' tem uma imagem que o jogo não conhece (veja PONTOS no código).'
                 except (ValueError, IndexError):
                     aviso = 'A linha ' + str(numero) + ' de ' + ARQUIVO_DAS_ONDAS + ' tem um erro.'
     except OSError:
@@ -88,7 +93,9 @@ def novo_jogo():
 def soltar(linha):
     pedra = Actor(linha['imagem'])
     pedra.midbottom = (linha['x'], 0)
-    pedra.velocidade = linha['velocidade'] * (1 + ACELERACAO_POR_ONDA * (onda - 1))
+    velocidade = linha['velocidade'] * (1 + ACELERACAO_POR_ONDA * (onda - 1))
+    # Nem parada (ela ficaria escondida em cima da tela), nem tão rápida que o tiro a atravesse.
+    pedra.velocidade = min(max(velocidade, VELOCIDADE_MINIMA_DA_PEDRA), VELOCIDADE_MAXIMA_DA_PEDRA)
     pedra.vida = linha['vida']
     pedras.append(pedra)
 
@@ -166,7 +173,7 @@ def mover_pedras():
             explodir(nave.pos)
             vidas = vidas - 1
             protegida = TEMPO_PROTEGIDA
-            if vidas == 0:
+            if vidas <= 0:
                 estado = 'fim'
                 espera = 1.0
 

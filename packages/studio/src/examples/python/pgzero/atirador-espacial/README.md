@@ -7,7 +7,9 @@ programa inteiro está em `main.py` e é o mesmo nas versões de Blocos e de Có
 galeria.
 
 O jogo também lê `inimigos.txt` quando começa: dá
-para mudar o jogo editando esse arquivo de texto, sem mexer no código.
+para mudar o jogo editando esse arquivo de texto, sem mexer no código. No computador, abra o
+terminal dentro da pasta do jogo e use `python -X utf8 main.py`: assim ele acha o arquivo e
+lê os acentos certos.
 
 ## Como jogar
 

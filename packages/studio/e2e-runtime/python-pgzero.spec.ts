@@ -117,6 +117,8 @@ const EXAMPLES = [
   'memoria-contra-o-computador',
   'batalha-naval',
   'atirador-espacial',
+  'boing',
+  'centopeia',
 ]
 
 for (const key of EXAMPLES)
