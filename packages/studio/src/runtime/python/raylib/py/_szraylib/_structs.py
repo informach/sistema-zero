@@ -73,11 +73,24 @@ def _converter(struct, field, kind):
         return lambda value: _int_value(value, struct, field, 0, 255)
     if kind == 'bool':
         return lambda value: bool(_int_value(value, struct, field, -2147483648, 2147483647))
+    if kind.startswith('array:float:'):
+        return lambda value: _float_array(value, int(kind[12:]), struct, field)
     # Ponteiros e vetores do C ficam como objetos do motor: o jogo não os monta à mão.
     return lambda value: value
 
 
+def _float_array(value, size, struct, field):
+    """Um campo float[n] (float3.v, float16.v): como no cffi, a lista é copiada e o que falta
+    fica zero; passar do tamanho é erro."""
+    values = list(value)
+    if len(values) > size:
+        raise IndexError(f'{struct}.{field} tem {size} números, mas recebeu {len(values)}.')
+    return array('f', [f32(v, struct, field) for v in values] + [0.0] * (size - len(values)))
+
+
 def _zero(kind):
+    if kind.startswith('array:float:'):
+        return array('f', [0.0] * int(kind[12:]))
     if kind == 'float':
         return 0.0
     if kind in ('int', 'uint', 'uchar', 'char'):

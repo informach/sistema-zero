@@ -311,10 +311,10 @@
       "count": 265
     }
   ],
-  "approvedBlockIdsSha256": "c24c4a223b4e88527f12117eae3b22f1ba6ce79071edc6fce5b4142db202515f",
+  "approvedBlockIdsSha256": "c95af172c8af1f6eb49a57d097657b696fb472c58f9be50046330c24edb754ac",
   "fullWorkspaceRoundtrip": true,
-  "initialWorkspaceSha256": "00496911e611984f4876338542f3daefc7da97a43e4172f40a1b239fba54a0ef",
-  "editedWorkspaceSha256": "b949982660d4885f51c048c07bdce6909496a5ed7fe539b98e87828de904e298",
+  "initialWorkspaceSha256": "39d203949930545ba1cec85dc92aeeb283f19a8712e84f1ee9cb41709f7769fa",
+  "editedWorkspaceSha256": "88f11ffb4e2adca5e26e512f617bb80e9ed06b1ee4009c4bd2c158967dcb9ba8",
   "canonicalRenderReanalysis": true,
   "runtimeCapabilitiesQualified": false,
   "browserInteractionQualified": false,

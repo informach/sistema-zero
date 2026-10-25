@@ -23,6 +23,8 @@ def init_window(width, height, title, /):
         raise ValueError(f'{f}: a janela vai até 3840 x 2160 pixels.')
     win = rt.window
     win.open = True
+    if not win.frame_counter:
+        win.mark = rt._clock()
     win.closed = False
     win.width, win.height, win.title = w, h, name
     win.should_close = False
@@ -270,7 +272,8 @@ def get_frame_time():
 
 def get_time():
     w = rt.window
-    elapsed = rt._clock() - w.mark if w.frame_counter else 0.0
+    # GetTime conta desde o init_window, mesmo antes do primeiro quadro (wait_time anda).
+    elapsed = rt._clock() - w.mark if w.frame_counter or w.open else 0.0
     w.returned = max(w.returned, w.now + max(0.0, elapsed))
     return w.returned
 

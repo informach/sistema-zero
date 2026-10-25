@@ -299,10 +299,10 @@
       "count": 218
     }
   ],
-  "approvedBlockIdsSha256": "c24c4a223b4e88527f12117eae3b22f1ba6ce79071edc6fce5b4142db202515f",
+  "approvedBlockIdsSha256": "c95af172c8af1f6eb49a57d097657b696fb472c58f9be50046330c24edb754ac",
   "fullWorkspaceRoundtrip": true,
-  "initialWorkspaceSha256": "ad7eb320e79e683091c600d185cfe40ee0624cd3f2436806a7dac984390d3438",
-  "editedWorkspaceSha256": "d4861c411d8a0996ac06eadc2032398b4778103153cd666094b3cd3685458ed1",
+  "initialWorkspaceSha256": "6aa89f571287bed331cd9915d9bc5b7bb243a6543d868ef75a8b1ca7e337596d",
+  "editedWorkspaceSha256": "407065153f411dbaf1bf2aeb13c1db18592d5c1a433622fc0a1cf686b873614e",
   "canonicalRenderReanalysis": true,
   "runtimeCapabilitiesQualified": false,
   "browserInteractionQualified": false,

@@ -16,7 +16,7 @@
   ],
   "authoringLoader": "loadPythonAuthoring",
   "extension": "python-raylib-3d",
-  "codecOrderSha256": "71040f6cf253cdd01533095e78d46df6ead440642dd826630816ef1e424be3bb",
+  "codecOrderSha256": "b97aff73b43a3e56ca7a03f3f6c220c60e42b69f1988151109b1b99f145073b3",
   "sourceSha256": "663e8cc1daf8275c6b2a1114994062371855665c9ffab7c9769f91377ca1e169",
   "generatedSha256": "9dd93deb9cdcea3cd65e8cb9b1594f412489486bd089334327c6a8612ae35c02",
   "opaqueCount": 0,
@@ -455,10 +455,10 @@
       "count": 369
     }
   ],
-  "approvedBlockIdsSha256": "c24c4a223b4e88527f12117eae3b22f1ba6ce79071edc6fce5b4142db202515f",
+  "approvedBlockIdsSha256": "c95af172c8af1f6eb49a57d097657b696fb472c58f9be50046330c24edb754ac",
   "fullWorkspaceRoundtrip": true,
-  "initialWorkspaceSha256": "d2565ee25395f60e413b6c7ebc22e3c91b92ea858bbe018b77de957c609001a0",
-  "editedWorkspaceSha256": "73a9366d24c0495a62f0aca28796df8695cb1c849d64d1fafa380d7df5d1a340",
+  "initialWorkspaceSha256": "431d9bdd15085247fbc872ea30394d0b9e1b0adef85656f5202fe96d7fd21ea7",
+  "editedWorkspaceSha256": "eb84768c957ffe63fc6e677fa65f9bdca9a3381d26f8e96d1d172a35b19ce98c",
   "canonicalRenderReanalysis": true,
   "runtimeCapabilitiesQualified": false,
   "browserInteractionQualified": false,

@@ -11,12 +11,14 @@ import os
 import struct as _bin
 
 from . import _rt as rt
+from ._float32 import f32
 from ._args import number, struct, text
 from ._structs import AudioStream, Music, Sound
 
 _SUPPORTED = ('.wav', '.ogg', '.mp3', '.flac', '.qoa')
 _ready = False
-_master = 1.0
+# O volume mestre do miniaudio: 0 sem o dispositivo de áudio, 1 ao abrir (medido no raylib).
+_master = 0.0
 _warned = set()
 _voices = {}        # voz -> _Voice
 _next_voice = 0
@@ -144,6 +146,55 @@ def _qoa_frames(data):
     return frames, (frames / rate if rate else 0.0)
 
 
+# O dispositivo de áudio do raylib: float de 32 bits, estéreo, na taxa do sistema (48000 Hz
+# na maioria dos computadores e navegadores).
+DEVICE_RATE = 48000
+_MUSIC_CONTEXT = {'.wav': 1, '.ogg': 2, '.flac': 3, '.mp3': 4, '.qoa': 5}
+
+
+def _media_format(absolute, extension):
+    """(taxa, canais, bits por amostra) do arquivo, lidos do cabeçalho."""
+    try:
+        with open(absolute, 'rb') as stream:
+            data = stream.read(1024 * 1024)
+    except OSError:
+        return 0, 0, 0
+    try:
+        if extension == '.wav':
+            position = 12
+            while position + 8 <= len(data):
+                chunk, size = data[position:position + 4], _bin.unpack('<I', data[position + 4:position + 8])[0]
+                if chunk == b'fmt ':
+                    channels, rate = _bin.unpack('<HI', data[position + 10:position + 16])
+                    return rate, channels, _bin.unpack('<H', data[position + 22:position + 24])[0]
+                position += 8 + size + (size & 1)
+        elif extension == '.ogg':
+            vorbis = data.find(b'vorbis')
+            if vorbis >= 0:
+                return _bin.unpack('<I', data[vorbis + 12:vorbis + 16])[0], data[vorbis + 11], 16
+        elif extension == '.mp3':
+            position = 0
+            if data[:3] == b'ID3' and len(data) >= 10:
+                size = data[6:10]
+                position = 10 + ((size[0] & 127) << 21 | (size[1] & 127) << 14
+                                 | (size[2] & 127) << 7 | (size[3] & 127))
+            while position + 4 <= len(data):
+                a, b, c, d = data[position:position + 4]
+                version, layer, rate_index = (b >> 3) & 3, (b >> 1) & 3, (c >> 2) & 3
+                if a == 0xFF and (b & 0xE0) == 0xE0 and version != 1 and layer == 1 and rate_index != 3:
+                    return _MP3_RATES[version][rate_index], 1 if d >> 6 == 3 else 2, 32
+                position += 1
+        elif extension == '.flac' and data[:4] == b'fLaC' and len(data) >= 26:
+            info = data[18:26]
+            rate = (info[0] << 12) | (info[1] << 4) | (info[2] >> 4)
+            return rate, ((info[2] >> 1) & 7) + 1, ((info[2] & 1) << 4 | info[3] >> 4) + 1
+        elif extension == '.qoa' and data[:4] == b'qoaf' and len(data) >= 12:
+            return int.from_bytes(data[9:12], 'big'), data[8], 32
+    except (IndexError, _bin.error, KeyError):
+        pass
+    return 0, 0, 0
+
+
 def _media_frames(absolute, extension):
     """Quadros e duração do arquivo, lidos do cabeçalho como o raylib os conhece."""
     if extension == '.wav':
@@ -178,7 +229,17 @@ def _load(path, function, music):
         _warn_once('early', 'carregue os sons e as músicas DEPOIS de init_audio_device(): '
                             'o que foi carregado antes nunca toca.')
     _voices[voice.id] = voice
-    stream = AudioStream(voice, None, 44100, 16, 2)
+    rate, channels, bits = _media_format(absolute, extension)
+    if music:
+        # LoadMusicStream: o stream fica no formato do arquivo (24 bits viram 16).
+        size = 16 if bits == 24 else bits
+        stream = AudioStream(voice, None, rate, size, channels)
+    else:
+        # LoadSound converte para o dispositivo: float, estéreo, na taxa dele, e a contagem
+        # de quadros vem da conversão (arredondada para cima, medido no raylib).
+        stream = AudioStream(voice, None, DEVICE_RATE, 32, 2)
+        if frames and rate:
+            frames = (frames * DEVICE_RATE + rate - 1) // rate
     return voice, stream, frames
 
 
@@ -256,15 +317,17 @@ def watch_music():
 # Dispositivo ------------------------------------------------------------------------------------
 
 def init_audio_device():
-    global _ready
+    global _ready, _master
     _ready = True
+    _master = 1.0
 
 
 def close_audio_device():
-    global _ready
+    global _ready, _master
     for voice in _voices.values():
         _stop(voice)
     _ready = False
+    _master = 0.0
 
 
 def is_audio_device_ready():
@@ -273,7 +336,12 @@ def is_audio_device_ready():
 
 def set_master_volume(volume, /):
     global _master
-    _master = max(0.0, min(1.0, number(volume, 'set_master_volume', 'volume')))
+    # ma_device_set_master_volume: guarda o float sem limite em cima (2.0 fica 2.0, e o som sai
+    # mais alto) e ignora um volume negativo.
+    value = f32(number(volume, 'set_master_volume', 'volume'))
+    if value < 0.0:
+        return
+    _master = value
     for voice in _voices.values():
         if voice.playing:
             _send(['volume', voice.id, voice.volume * _master])
@@ -294,7 +362,9 @@ def load_sound_alias(source, /):
     item, voice = _voice(source, Sound, 'load_sound_alias')
     copy = _Voice(voice.path, False, voice.length)
     _voices[copy.id] = copy
-    return Sound(AudioStream(copy, None, 44100, 16, 2), item.frameCount)
+    source = item.stream
+    return Sound(AudioStream(copy, None, source.sampleRate, source.sampleSize, source.channels),
+                 item.frameCount)
 
 
 def unload_sound(sound, /):
@@ -369,7 +439,8 @@ def set_sound_pan(sound, pan, /):
 
 def load_music_stream(fileName, /):
     voice, stream, frames = _load(fileName, 'load_music_stream', True)
-    return Music(stream, frames, True, 0, None)
+    extension = os.path.splitext(voice.path)[1].lower()
+    return Music(stream, frames, True, _MUSIC_CONTEXT.get(extension, 0), None)
 
 
 def unload_music_stream(music, /):

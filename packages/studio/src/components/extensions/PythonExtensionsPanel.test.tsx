@@ -2,6 +2,7 @@ import { afterEach, expect, test } from 'bun:test'
 import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { createEmptyProject } from '#core'
 import { createStudioRuntimeAuthority } from '../../runtime/authority'
+import { RAYLIB_2D_EXTENSION, RAYLIB_3D_EXTENSION } from '../../runtime/python/raylib/contract'
 import { pythonEnvironmentFixture } from '../../state/fixtures/pythonEnvironment'
 import { StudioStoresContext } from '../../state/storesContext'
 import { createStudioStores } from '../../state/studioStores'
@@ -250,3 +251,34 @@ for (const retirement of ['unmount', 'close', 'source', 'curation'] as const) {
     expect(document.querySelectorAll('iframe')).toHaveLength(0)
   })
 }
+
+test('com a Raylib 2D instalada, a Raylib 3D oferece a troca em vez de pedir para remover', async () => {
+  const { project, environment } = await pythonEnvironmentFixture('classic')
+  const granted = {
+    ...environment,
+    access: (current: Parameters<typeof environment.access>[0]) => ({
+      ...environment.access(current),
+      grantedExtensionIds: [RAYLIB_2D_EXTENSION.id, RAYLIB_3D_EXTENSION.id],
+    }),
+  }
+  const stores = createStudioStores({ persistence: 'none' })
+  stores.project.getState().setProject({
+    ...project,
+    installedExtensions: [{ ...RAYLIB_2D_EXTENSION, installedAt: 1 }],
+  })
+  render(
+    <StudioStoresContext.Provider value={stores}>
+      <StudioRuntimeEnvironmentProvider value={granted}>
+        <ExtensionsPanel open onClose={() => {}} />
+      </StudioRuntimeEnvironmentProvider>
+    </StudioStoresContext.Provider>,
+  )
+  const swap = await screen.findByRole('button', { name: 'Trocar para Raylib 3D' })
+  expect(swap.hasAttribute('disabled')).toBe(false)
+  expect(swap.textContent).toBe('Trocar para Raylib 3D')
+  expect(screen.getByText('Entra no lugar da Raylib 2D, e o código continua o mesmo.')).toBeTruthy()
+  // As outras extensões de tela continuam pedindo para remover antes.
+  expect(screen.getByRole('button', { name: 'Instalar Turtle' }).hasAttribute('disabled')).toBe(
+    true,
+  )
+})

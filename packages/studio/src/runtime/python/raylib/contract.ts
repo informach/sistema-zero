@@ -25,6 +25,8 @@ export const RAYLIB_MODULE_FILES = [
   '_szraylib/_draw2d.py',
   '_szraylib/_draw3d.py',
   '_szraylib/_ffi.py',
+  '_szraylib/_float32.py',
+  '_szraylib/_floatvec.py',
   '_szraylib/_gltf.py',
   '_szraylib/_models.py',
   '_szraylib/_names.py',

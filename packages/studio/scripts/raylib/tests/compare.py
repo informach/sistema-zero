@@ -1,9 +1,12 @@
-"""Compara duas saídas dos diferenciais (real x Estúdio) com tolerância de float32."""
+"""Compara duas saídas dos diferenciais (real x Estúdio) bit a bit.
+
+O motor faz as contas em float como o C (ver _float32.py), então cada número tem de ser igual,
+inclusive o sinal do zero; nan só é igual a nan. Rode o lado do Estúdio com --ucrt no Windows:
+sem ele, sobram as diferenças de uma unidade do sinf/cosf/acosf da UCRT (ver ucrt.py).
+"""
 import json
 import math
 import sys
-
-TOLERANCE = 2e-4
 
 
 def close(a, b):
@@ -12,9 +15,7 @@ def close(a, b):
     if isinstance(a, float) and isinstance(b, float):
         if math.isnan(a) and math.isnan(b):
             return True
-        if math.isinf(a) or math.isinf(b):
-            return a == b
-        return abs(a - b) <= TOLERANCE * max(1.0, abs(a), abs(b))
+        return a == b and math.copysign(1.0, a) == math.copysign(1.0, b)
     return a == b
 
 

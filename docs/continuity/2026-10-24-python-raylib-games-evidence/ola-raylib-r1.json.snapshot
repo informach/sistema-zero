@@ -187,10 +187,10 @@
       "count": 38
     }
   ],
-  "approvedBlockIdsSha256": "c24c4a223b4e88527f12117eae3b22f1ba6ce79071edc6fce5b4142db202515f",
+  "approvedBlockIdsSha256": "c95af172c8af1f6eb49a57d097657b696fb472c58f9be50046330c24edb754ac",
   "fullWorkspaceRoundtrip": true,
-  "initialWorkspaceSha256": "0affe47987fdc271f060d195cc0f3cb200e8f682304d8a9bd1593942361c7f34",
-  "editedWorkspaceSha256": "e544596247dddd04b1d06505db99b5b91d4543c6a0d7d0ba1cf7d9aab7fa36f6",
+  "initialWorkspaceSha256": "06c397340a765769a845b149696cbfbad74d4c91197b1f0f7df22a16d10bfc3a",
+  "editedWorkspaceSha256": "82035e3d4ebff3b8fb4c0c13bf232b2170306247eb668487c7015a6a319984c6",
   "canonicalRenderReanalysis": true,
   "runtimeCapabilitiesQualified": false,
   "browserInteractionQualified": false,

@@ -4,27 +4,31 @@ As contas são as do raylib, inclusive os detalhes que mudam o resultado: o raio
 da caixa (distância negativa), a normal da caixa arredondada para o eixo e o triângulo que só
 conta no sentido em que o raio o atravessa (sem descartar a face de trás).
 """
-import math
-
 from . import _raymath as rm
-from ._args import number, struct, vec3
+from ._args import struct
+from ._float32 import F, c_int, sqrtf
+from ._raymath import number, vec3
 from ._structs import BoundingBox, Ray, RayCollision, Vector3
 
-_EPSILON = 0.000001
+# As contas em float, operação por operação, como no C (ver _float32.py).
+_EPSILON = F(0.000001)
 
 
 def _box(value, function, param='box'):
     b = struct(value, BoundingBox, function, param)
-    return (b.min.x, b.min.y, b.min.z), (b.max.x, b.max.y, b.max.z)
+    return (F(b.min.x), F(b.min.y), F(b.min.z)), (F(b.max.x), F(b.max.y), F(b.max.z))
 
 
 def _ray(value, function):
     r = struct(value, Ray, function, 'ray')
-    return (r.position.x, r.position.y, r.position.z), (r.direction.x, r.direction.y, r.direction.z)
+    return ((F(r.position.x), F(r.position.y), F(r.position.z)),
+            (F(r.direction.x), F(r.direction.y), F(r.direction.z)))
 
 
 def _dist2(a, b):
-    return (b[0] - a[0]) ** 2 + (b[1] - a[1]) ** 2 + (b[2] - a[2]) ** 2
+    # Vector3DistanceSqr(a, b)
+    dx, dy, dz = b[0] - a[0], b[1] - a[1], b[2] - a[2]
+    return dx * dx + dy * dy + dz * dz
 
 
 def _clamp(value, low, high):
@@ -75,7 +79,7 @@ def get_ray_collision_sphere(ray, center, radius, /):
     distance = rm._length3(to_center)
     d = r * r - (distance * distance - along * along)
     hit = d >= 0.0
-    root = math.sqrt(d) if d >= 0.0 else math.nan
+    root = sqrtf(d)
     if distance < r:
         t = along + root
         point = rm._add3(origin, (direction[0] * t, direction[1] * t, direction[2] * t))
@@ -105,35 +109,31 @@ def _fmax(a, b):
     return a if a > b else b
 
 
-def _divide(a, b):
-    return a / b if b else (math.copysign(math.inf, a) if a else math.nan)
-
-
 def ray_box(origin, direction, low, high):
+    """GetRayCollisionBox do rmodels.c, conta por conta."""
+    origin, direction, low, high = rm._f(origin), rm._f(direction), rm._f(low), rm._f(high)
     inside = all(low[i] < origin[i] < high[i] for i in range(3))
     if inside:
         direction = (-direction[0], -direction[1], -direction[2])
-    inv = [_divide(1.0, direction[i]) if direction[i] else math.copysign(math.inf, direction[i])
-           for i in range(3)]
+    inv = [1.0 / direction[i] for i in range(3)]
     t = []
     for i in range(3):
         t.append((low[i] - origin[i]) * inv[i])
         t.append((high[i] - origin[i]) * inv[i])
-    t6 = _fmax(_fmax(_fmin(t[0], t[1]), _fmin(t[2], t[3])), _fmin(t[4], t[5]))
-    t7 = _fmin(_fmin(_fmax(t[0], t[1]), _fmax(t[2], t[3])), _fmax(t[4], t[5]))
+    t6 = F(_fmax(_fmax(_fmin(t[0], t[1]), _fmin(t[2], t[3])), _fmin(t[4], t[5])))
+    t7 = F(_fmin(_fmin(_fmax(t[0], t[1]), _fmax(t[2], t[3])), _fmax(t[4], t[5])))
     hit = not (t7 < 0 or t6 > t7)
     distance = t6
     point = rm._add3(origin, (direction[0] * distance, direction[1] * distance,
                               direction[2] * distance))
-    center = ((low[0] + high[0]) * 0.5, (low[1] + high[1]) * 0.5, (low[2] + high[2]) * 0.5)
+    # O centro é Vector3Lerp(min, max, 0.5): min + 0.5*(max - min), não (min + max)/2.
+    center = tuple(low[i] + 0.5 * (high[i] - low[i]) for i in range(3))
     raw = rm._sub3(point, center)
-    normal = []
-    for i in range(3):
-        value = _divide(raw[i] * 2.01, high[i] - low[i])
-        normal.append(float(int(value)) if math.isfinite(value) else 0.0)
-    normal = rm._normalize3(tuple(normal))
+    # (float)((int)x): o C trunca; nan ou infinito vira o menor int (como no x86).
+    normal = tuple(F(c_int(raw[i] * 2.01 / (high[i] - low[i]))) for i in range(3))
+    normal = rm._normalize3(normal)
     if inside:
-        distance *= -1.0
+        distance = distance * -1.0
         normal = (-normal[0], -normal[1], -normal[2])
     return hit, distance, point, normal
 

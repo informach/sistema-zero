@@ -22,6 +22,11 @@ if '--ours' in sys.argv:
 
 import pyray as P  # noqa: E402
 
+if '--ucrt' in sys.argv:
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    from ucrt import use_ucrt_libm  # noqa: E402
+    use_ucrt_libm()
+
 PREFIXES = ('vector2_', 'vector3_', 'vector4_', 'matrix_', 'quaternion_')
 EXTRA = ('clamp', 'lerp', 'normalize', 'remap', 'wrap', 'float_equals', 'get_collision_rec',
          'get_world_to_screen_2d', 'get_screen_to_world_2d', 'get_camera_matrix_2d',
@@ -66,7 +71,11 @@ def dump(result):
             return [float(getattr(result, f)) for f in fields]
         except (AttributeError, TypeError):
             continue
-    return repr(result)
+    try:
+        # float3 e float16 (Vector3ToFloatV, MatrixToFloatV): os números do campo v.
+        return [float(v) for v in result.v]
+    except (AttributeError, TypeError):
+        return repr(result)
 
 
 def main():
