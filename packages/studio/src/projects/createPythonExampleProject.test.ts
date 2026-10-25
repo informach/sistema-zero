@@ -11,7 +11,7 @@ import {
 } from '@sistemazero/core/studio/runtime-catalog'
 import { IDBFactory } from 'fake-indexeddb'
 import { unzipSync } from 'fflate'
-import { PGZERO_GAMES } from '../examples/python/pgzeroGames.manifest'
+import { PGZERO_GAMES, type PgzeroGame } from '../examples/python/pgzeroGames.manifest'
 import { RAYLIB_GAMES } from '../examples/python/raylibGames.manifest'
 import { VISUAL_REFERENCE_GAMES } from '../examples/python/visualReferenceGames.manifest'
 import type { PythonExampleCreationPort, PythonExampleEntry } from '../examples/pythonCatalog'
@@ -805,6 +805,15 @@ for (const key of pgzeroKeys)
         },
       })
       for (const [path, text] of Object.entries(payload.files)) expect(files[path]).toEqual(text)
+      // The text files the game reads with open() (the waves of the space shooter) travel too.
+      const game = PGZERO_GAMES.find(
+        (candidate) =>
+          key === `python:${candidate.key}:blocks` || key === `python:${candidate.key}:code`,
+      ) as PgzeroGame
+      for (const name of game.dataFiles ?? []) {
+        expect(Object.keys(payload.files)).toContain(name)
+        expect(files[name]).toBe((payload.files as Record<string, string>)[name])
+      }
       const vectors = (payload.assets ?? []).filter(({ proPath }) => proPath?.endsWith('.svg'))
       for (const asset of vectors)
         expect(files[asset.proPath!.replace(/\.svg$/, '.png')]).toBeDefined()

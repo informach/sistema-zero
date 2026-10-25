@@ -23,11 +23,16 @@ export interface PgzeroGame {
   experience: ExampleExperience
   /** Which book chapter inspired the mechanics (documented in the game's NOTICE.md). */
   inspiration: string
-  /** The book of the recipe: DK's Coding Games in Python (default) or Wireframe's cookbook. */
-  book?: 'wireframe'
+  /**
+   * The book of the recipe: DK's Coding Games in Python (default), Wireframe's cookbook,
+   * Stewart Watkiss's Beginning Game Programming with Pygame Zero, or Code the Classics.
+   */
+  book?: 'wireframe' | 'watkiss' | 'classics'
   howToPlay: string
   /** Small changes a child can try, in the README. */
   ideas: readonly string[]
+  /** Text files the game reads with open() (hand-written next to main.py), shipped with the project. */
+  dataFiles?: readonly string[]
   /** Sound effects, written to sounds/<path>. */
   sounds: readonly VisualReferenceSound[]
   music: readonly PgzeroMusic[]
@@ -1403,6 +1408,194 @@ export const PGZERO_GAMES = [
     ],
     music: [],
     receipt: 'continuar-r2.json.snapshot',
+  },
+  {
+    key: 'bussola-maluca',
+    stem: 'bussolaMaluca',
+    name: 'Bússola Maluca',
+    emoji: '🧭',
+    description:
+      'Corra até a borda que a bússola mostra antes de o tempo acabar e desvie das pedras. O recorde fica guardado.',
+    genre: 'Corrida contra o tempo',
+    concepts: ['Blocos', 'Ponte', 'Código', 'Funções', 'Dicionários', 'Arquivos'],
+    difficulty: 'beginner',
+    experience: 'game',
+    inspiration: 'Compass Game',
+    book: 'watkiss',
+    howToPlay:
+      'Espaço começa. A agulha da bússola e a palavra embaixo dela mostram para onde ir: corra com as setas até aquela borda antes de o tempo acabar. Cada borda certa vale um ponto, e a cada dez pontos aparece mais uma pedra no caminho. O recorde fica no arquivo recorde.txt e continua lá na próxima vez que você jogar.',
+    ideas: [
+      'Mude TEMPO_INICIAL para ter mais tempo em cada direção.',
+      'Mude PONTOS_POR_NIVEL para as pedras chegarem mais cedo.',
+      'Ponha mais lugares em LUGARES_DAS_PEDRAS.',
+    ],
+    sounds: [
+      { path: 'ponto.wav', notes: [659, 880], noteMilliseconds: 70 },
+      { path: 'fim.wav', notes: [392, 330, 262], noteMilliseconds: 130 },
+    ],
+    music: [],
+    receipt: 'bussola-maluca-r3.json.snapshot',
+  },
+  {
+    key: 'cores-e-bolinha',
+    stem: 'coresEBolinha',
+    name: 'Cores e Bolinha',
+    emoji: '🎨',
+    description: 'Misture vermelho, verde e azul com os botões até a bolinha ficar da cor pedida.',
+    genre: 'Quebra-cabeça',
+    concepts: ['Blocos', 'Ponte', 'Código', 'Cores RGB', 'Listas', 'Mouse'],
+    difficulty: 'beginner',
+    experience: 'game',
+    inspiration: 'Color Selector',
+    book: 'watkiss',
+    howToPlay:
+      'Clique nos botões de mais e de menos para pôr ou tirar vermelho, verde e azul da bolinha. Quando ela ficar igual à cor do círculo lá em cima, você ganha um ponto e vem uma cor nova. O espaço liga e desliga o modo arco-íris.',
+    ideas: [
+      'Mude PASSO para 17 e faça cores mais difíceis.',
+      'Mude RAIO para a bolinha ficar maior.',
+      'Conte quantos cliques você gastou em cada cor.',
+    ],
+    sounds: [
+      { path: 'clique.wav', notes: [880], noteMilliseconds: 30 },
+      { path: 'acerto.wav', notes: [523, 659, 784, 1047], noteMilliseconds: 80 },
+    ],
+    music: [],
+    receipt: 'cores-e-bolinha-r2.json.snapshot',
+  },
+  {
+    key: 'piano-maluco',
+    stem: 'pianoMaluco',
+    name: 'Piano Maluco',
+    emoji: '🎹',
+    description:
+      'Um piano de verdade na tela: ouça a música e depois toque junto, na tecla certa e na hora certa.',
+    genre: 'Música',
+    concepts: ['Blocos', 'Ponte', 'Código', 'Notas musicais', 'Dicionários', 'Mouse'],
+    difficulty: 'intermediate',
+    experience: 'game',
+    inspiration: 'Piano Game',
+    book: 'watkiss',
+    howToPlay:
+      'Clique nas teclas para tocar. "Ouvir" toca a música sozinho e mostra as teclas. Em "Jogar", as notas descem até a linha: clique na tecla da nota verde enquanto ela passa pela linha. Cada nota certa é um acerto; tecla errada conta como erro, e a nota que passa sem você tocar fica perdida. Nas pausas, a tecla só toca.',
+    ideas: [
+      'Mude BATIDAS_POR_MINUTO para a música ficar mais rápida.',
+      'Crie uma FRASE_D com as notas de BRANCAS e ponha na MUSICA.',
+      'Use as teclas pretas: escreva C#4 ou F#4 na música.',
+    ],
+    sounds: [],
+    music: [],
+    receipt: 'piano-maluco-r3.json.snapshot',
+  },
+  {
+    key: 'duelo-de-tanques',
+    stem: 'dueloDeTanques',
+    name: 'Duelo de Tanques',
+    emoji: '💥',
+    description:
+      'Acerte o tanque do outro lado do morro escolhendo o ângulo e a força do tiro. O vento muda a cada vez.',
+    genre: 'Artilharia',
+    concepts: ['Blocos', 'Ponte', 'Código', 'pygame.draw', 'Cor da tela', 'Física'],
+    difficulty: 'advanced',
+    experience: 'game',
+    inspiration: 'Tank Game',
+    book: 'watkiss',
+    howToPlay:
+      'Você é o tanque azul. As setas para cima e para baixo mudam o ângulo do cano; para a esquerda e para a direita, a força. O espaço atira. O vento empurra o tiro: veja a seta lá em cima. O computador joga com o tanque laranja e corrige a mira a cada tiro. Quem acertar primeiro vence a rodada; espaço começa outra.',
+    ideas: [
+      'Mude COMPUTADOR para False e jogue com um amigo no mesmo teclado.',
+      'Mude GRAVIDADE e veja como o tiro voa.',
+      'Mude SUBIDA para fazer morros mais altos.',
+    ],
+    sounds: [
+      { path: 'tiro.wav', notes: [220, 110], noteMilliseconds: 60 },
+      { path: 'chao.wav', notes: [98, 73], noteMilliseconds: 110 },
+      { path: 'acerto.wav', notes: [523, 659, 784, 1047], noteMilliseconds: 90 },
+    ],
+    music: [],
+    receipt: 'duelo-de-tanques-r3.json.snapshot',
+  },
+  {
+    key: 'memoria-contra-o-computador',
+    stem: 'memoriaContraOComputador',
+    name: 'Memória contra o Computador',
+    emoji: '🃏',
+    description:
+      'O jogo da memória com oito bichos, contra um computador que lembra das cartas que viu.',
+    genre: 'Memória',
+    concepts: ['Blocos', 'Ponte', 'Código', 'Classes', 'Dicionários', 'Mouse'],
+    difficulty: 'advanced',
+    experience: 'game',
+    inspiration: 'Memory Game',
+    book: 'watkiss',
+    howToPlay:
+      'Clique em duas cartas para virá-las. Se forem do mesmo bicho, o par é seu e você joga de novo; se não, elas voltam e é a vez do computador. Ele também vê as cartas que você vira e quase sempre lembra delas. Quem fizer mais pares vence; espaço começa outra partida.',
+    ideas: [
+      'Mude MEMORIA_DO_COMPUTADOR para 1 e jogue contra um computador que nunca esquece.',
+      'Mude TEMPO_PARA_OLHAR para ter mais tempo de decorar as cartas.',
+      'Crie um método novo na classe Carta que faça a carta piscar.',
+    ],
+    sounds: [
+      { path: 'virar.wav', notes: [660], noteMilliseconds: 35 },
+      { path: 'par.wav', notes: [523, 784, 1047], noteMilliseconds: 80 },
+    ],
+    music: [],
+    receipt: 'memoria-contra-o-computador-r2.json.snapshot',
+  },
+  {
+    key: 'batalha-naval',
+    stem: 'batalhaNaval',
+    name: 'Batalha Naval',
+    emoji: '🚢',
+    description: 'Esconda cinco navios e afunde os do computador antes que ele afunde os seus.',
+    genre: 'Estratégia',
+    concepts: ['Blocos', 'Ponte', 'Código', 'Classes', 'Dicionários', 'Mouse'],
+    difficulty: 'advanced',
+    experience: 'game',
+    inspiration: 'Battleships',
+    book: 'watkiss',
+    howToPlay:
+      'Clique na sua grade para pôr os cinco navios; espaço gira o próximo antes de pôr e R tira todos para recomeçar. Depois, clique na grade do computador para atirar: cada um tem um tiro por vez. O computador procura em casas alternadas, como as pretas de um tabuleiro, e quando acerta atira nas casas em volta. Quem afundar os cinco navios do outro vence; espaço começa outra partida.',
+    ideas: [
+      'Mude TAMANHOS para jogar com mais navios, ou com navios maiores (até 10 casas cada um).',
+      'Mude TEMPO_DO_COMPUTADOR para o computador pensar mais devagar.',
+      'Tire a regra das casas alternadas do Computador e veja se ele demora mais para achar os seus navios.',
+    ],
+    sounds: [
+      { path: 'colocar.wav', notes: [440, 660], noteMilliseconds: 50 },
+      { path: 'agua.wav', notes: [330, 220], noteMilliseconds: 70 },
+      { path: 'acerto.wav', notes: [784, 523], noteMilliseconds: 70 },
+      { path: 'afundou.wav', notes: [523, 392, 262, 196], noteMilliseconds: 90 },
+    ],
+    music: [],
+    receipt: 'batalha-naval-r3.json.snapshot',
+  },
+  {
+    key: 'atirador-espacial',
+    stem: 'atiradorEspacial',
+    name: 'Atirador Espacial',
+    emoji: '☄️',
+    description:
+      'Pilote a nave entre ondas de pedras que vêm de um arquivo de texto que você pode mudar.',
+    genre: 'Tiro',
+    concepts: ['Blocos', 'Ponte', 'Código', 'Arquivos', 'Dicionários', 'Teclado', 'Tempo'],
+    difficulty: 'advanced',
+    experience: 'game',
+    inspiration: 'Space Shooter',
+    book: 'watkiss',
+    howToPlay:
+      'Espaço começa. As setas pilotam a nave e o espaço atira. Pedras pequenas valem 30 pontos e caem com um tiro; as médias aguentam dois e as grandes, três. Bater numa pedra custa uma vida e deixa a nave piscando, protegida, por dois segundos. Cada onda recomeça mais rápida; sem vidas, o jogo acaba.',
+    ideas: [
+      'Abra o arquivo inimigos.txt e invente a sua onda: mude os segundos, os lugares e a vida das pedras.',
+      'Mude ACELERACAO_POR_ONDA para as ondas ficarem mais rápidas, ou mais calmas.',
+      'Mude TEMPO_ENTRE_TIROS para a nave atirar mais vezes.',
+    ],
+    dataFiles: ['inimigos.txt'],
+    sounds: [
+      { path: 'tiro.wav', notes: [988, 784], noteMilliseconds: 30 },
+      { path: 'explosao.wav', notes: [196, 147, 110], noteMilliseconds: 60 },
+    ],
+    music: [],
+    receipt: 'atirador-espacial-r2.json.snapshot',
   },
 ] as const satisfies readonly PgzeroGame[]
 

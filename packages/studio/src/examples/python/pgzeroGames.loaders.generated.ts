@@ -660,4 +660,98 @@ export const PGZERO_GAME_LOADERS = {
       assets: pgzeroGameAssets('continuar', CONTINUAR_MEDIA),
     }
   },
+  'bussola-maluca': async () => {
+    const [{ BUSSOLA_MALUCA_SOURCES }, { BUSSOLA_MALUCA_MEDIA }, { pgzeroGameAssets }] =
+      await Promise.all([
+        import('./bussolaMaluca.sources.generated'),
+        import('./bussolaMaluca.media.generated'),
+        import('./pgzeroGameAssets'),
+      ])
+    return {
+      entrypoint: 'main.py',
+      files: BUSSOLA_MALUCA_SOURCES,
+      assets: pgzeroGameAssets('bussola-maluca', BUSSOLA_MALUCA_MEDIA),
+    }
+  },
+  'cores-e-bolinha': async () => {
+    const [{ CORES_E_BOLINHA_SOURCES }, { CORES_E_BOLINHA_MEDIA }, { pgzeroGameAssets }] =
+      await Promise.all([
+        import('./coresEBolinha.sources.generated'),
+        import('./coresEBolinha.media.generated'),
+        import('./pgzeroGameAssets'),
+      ])
+    return {
+      entrypoint: 'main.py',
+      files: CORES_E_BOLINHA_SOURCES,
+      assets: pgzeroGameAssets('cores-e-bolinha', CORES_E_BOLINHA_MEDIA),
+    }
+  },
+  'piano-maluco': async () => {
+    const [{ PIANO_MALUCO_SOURCES }, { PIANO_MALUCO_MEDIA }, { pgzeroGameAssets }] =
+      await Promise.all([
+        import('./pianoMaluco.sources.generated'),
+        import('./pianoMaluco.media.generated'),
+        import('./pgzeroGameAssets'),
+      ])
+    return {
+      entrypoint: 'main.py',
+      files: PIANO_MALUCO_SOURCES,
+      assets: pgzeroGameAssets('piano-maluco', PIANO_MALUCO_MEDIA),
+    }
+  },
+  'duelo-de-tanques': async () => {
+    const [{ DUELO_DE_TANQUES_SOURCES }, { DUELO_DE_TANQUES_MEDIA }, { pgzeroGameAssets }] =
+      await Promise.all([
+        import('./dueloDeTanques.sources.generated'),
+        import('./dueloDeTanques.media.generated'),
+        import('./pgzeroGameAssets'),
+      ])
+    return {
+      entrypoint: 'main.py',
+      files: DUELO_DE_TANQUES_SOURCES,
+      assets: pgzeroGameAssets('duelo-de-tanques', DUELO_DE_TANQUES_MEDIA),
+    }
+  },
+  'memoria-contra-o-computador': async () => {
+    const [
+      { MEMORIA_CONTRA_O_COMPUTADOR_SOURCES },
+      { MEMORIA_CONTRA_O_COMPUTADOR_MEDIA },
+      { pgzeroGameAssets },
+    ] = await Promise.all([
+      import('./memoriaContraOComputador.sources.generated'),
+      import('./memoriaContraOComputador.media.generated'),
+      import('./pgzeroGameAssets'),
+    ])
+    return {
+      entrypoint: 'main.py',
+      files: MEMORIA_CONTRA_O_COMPUTADOR_SOURCES,
+      assets: pgzeroGameAssets('memoria-contra-o-computador', MEMORIA_CONTRA_O_COMPUTADOR_MEDIA),
+    }
+  },
+  'batalha-naval': async () => {
+    const [{ BATALHA_NAVAL_SOURCES }, { BATALHA_NAVAL_MEDIA }, { pgzeroGameAssets }] =
+      await Promise.all([
+        import('./batalhaNaval.sources.generated'),
+        import('./batalhaNaval.media.generated'),
+        import('./pgzeroGameAssets'),
+      ])
+    return {
+      entrypoint: 'main.py',
+      files: BATALHA_NAVAL_SOURCES,
+      assets: pgzeroGameAssets('batalha-naval', BATALHA_NAVAL_MEDIA),
+    }
+  },
+  'atirador-espacial': async () => {
+    const [{ ATIRADOR_ESPACIAL_SOURCES }, { ATIRADOR_ESPACIAL_MEDIA }, { pgzeroGameAssets }] =
+      await Promise.all([
+        import('./atiradorEspacial.sources.generated'),
+        import('./atiradorEspacial.media.generated'),
+        import('./pgzeroGameAssets'),
+      ])
+    return {
+      entrypoint: 'main.py',
+      files: ATIRADOR_ESPACIAL_SOURCES,
+      assets: pgzeroGameAssets('atirador-espacial', ATIRADOR_ESPACIAL_MEDIA),
+    }
+  },
 } satisfies Record<PgzeroGameKey, () => Promise<unknown>>
