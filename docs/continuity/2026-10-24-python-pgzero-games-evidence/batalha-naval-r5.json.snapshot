@@ -17,10 +17,10 @@
   "authoringLoader": "loadPythonAuthoring",
   "extension": "python-pgzero",
   "codecOrderSha256": "9230bb48f54aec7ba76bd4b69d279ee17895c6104123e6a07dccdb6b266b8c5f",
-  "sourceSha256": "ab9f5f8f30969da1989a65d109e8a3b32af7d7e573da1e249f1bdfc715206369",
-  "generatedSha256": "76aed550f1bb54d002a6ab01eb70f00c7cbcb5558d8a109b5dc07afa37ba5332",
+  "sourceSha256": "5e99aad70b89b8f2127a922ae0a970851da1b4b8fcf65f85f837246c90de9e1a",
+  "generatedSha256": "9212d399a2cf1d198dc43778821040e53ae77a2d150f5eb8462c50f845dd9e90",
   "opaqueCount": 0,
-  "blockCount": 1061,
+  "blockCount": 1095,
   "referencedBlocks": [
     {
       "id": "sz_py_and",
@@ -32,11 +32,11 @@
     },
     {
       "id": "sz_py_assign",
-      "count": 75
+      "count": 77
     },
     {
       "id": "sz_py_attribute",
-      "count": 45
+      "count": 51
     },
     {
       "id": "sz_py_boolean",
@@ -48,11 +48,11 @@
     },
     {
       "id": "sz_py_compare",
-      "count": 44
+      "count": 45
     },
     {
       "id": "sz_py_def",
-      "count": 18
+      "count": 19
     },
     {
       "id": "sz_py_dictionary",
@@ -68,7 +68,7 @@
     },
     {
       "id": "sz_py_for",
-      "count": 13
+      "count": 14
     },
     {
       "id": "sz_py_global",
@@ -96,15 +96,15 @@
     },
     {
       "id": "sz_py_list",
-      "count": 13
+      "count": 14
     },
     {
       "id": "sz_py_list_append",
-      "count": 7
+      "count": 8
     },
     {
       "id": "sz_py_list_comprehension",
-      "count": 1
+      "count": 2
     },
     {
       "id": "sz_py_max",
@@ -112,11 +112,11 @@
     },
     {
       "id": "sz_py_method",
-      "count": 5
+      "count": 7
     },
     {
       "id": "sz_py_method_value",
-      "count": 28
+      "count": 29
     },
     {
       "id": "sz_py_none",
@@ -248,7 +248,7 @@
     },
     {
       "id": "sz_py_variable",
-      "count": 340
+      "count": 357
     },
     {
       "id": "sz_py_while",
@@ -257,8 +257,8 @@
   ],
   "approvedBlockIdsSha256": "54202db5e7bad445cab6e6263ea549dc48128724392cd438eaab19555b4dc547",
   "fullWorkspaceRoundtrip": true,
-  "initialWorkspaceSha256": "5eb41e189ef6bbcdab58931e1f3e80a30e0e6459b156a4ffd2e8c60721dc0a6d",
-  "editedWorkspaceSha256": "b9105b20232e857dbea3012f48d5441057749c0993cd28549112735a6db0706c",
+  "initialWorkspaceSha256": "dabbe0c598ee151480209f6d56004f77057dca1ce0a6c9dec6de6a9b43bbb392",
+  "editedWorkspaceSha256": "419b51b169890d05af59b1c6f8a233f3e1cec58c02c1e398666b184ff134267a",
   "canonicalRenderReanalysis": true,
   "runtimeCapabilitiesQualified": false,
   "browserInteractionQualified": false,
@@ -278,8 +278,8 @@
       "field": "NUMBER",
       "before": "800",
       "after": "810",
-      "beforeSourceSha256": "5f38a70f2b26bf632e2384c30b173e252cbc4a2f1679544a76a9a99e32be5c15",
-      "afterSourceSha256": "031db76ee55e3b6bbb956f48cc6eae7bee7f809e0fe5fe2ce91022ebb62183b8"
+      "beforeSourceSha256": "db992188e89557574854d12a6d7cf62dfae24fd96aef69c3d658b0906320d498",
+      "afterSourceSha256": "1768ccfdf59f83f8cd85058ededbd4dce6c656c526d028ea0b625d905d7d246d"
     },
     {
       "label": "height",
@@ -296,8 +296,8 @@
       "field": "NUMBER",
       "before": "600",
       "after": "610",
-      "beforeSourceSha256": "031db76ee55e3b6bbb956f48cc6eae7bee7f809e0fe5fe2ce91022ebb62183b8",
-      "afterSourceSha256": "88f198da3d10e480a48a8f5a2577f15be952120209bea475b9c6de3f7c6eed5e"
+      "beforeSourceSha256": "1768ccfdf59f83f8cd85058ededbd4dce6c656c526d028ea0b625d905d7d246d",
+      "afterSourceSha256": "4c9e232eef3982b7abbf50f383c3f616a4349fa3ae9c83f402fe53c1dc600b0c"
     },
     {
       "label": "title",
@@ -314,8 +314,8 @@
       "field": "TEXT",
       "before": "Batalha Naval",
       "after": "Batalha Naval!",
-      "beforeSourceSha256": "88f198da3d10e480a48a8f5a2577f15be952120209bea475b9c6de3f7c6eed5e",
-      "afterSourceSha256": "76aed550f1bb54d002a6ab01eb70f00c7cbcb5558d8a109b5dc07afa37ba5332"
+      "beforeSourceSha256": "4c9e232eef3982b7abbf50f383c3f616a4349fa3ae9c83f402fe53c1dc600b0c",
+      "afterSourceSha256": "9212d399a2cf1d198dc43778821040e53ae77a2d150f5eb8462c50f845dd9e90"
     }
   ]
 }

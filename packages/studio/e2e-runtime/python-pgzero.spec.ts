@@ -183,6 +183,12 @@ test('Pygame Zero: pygame.draw, get_at and tone, and the files a game saves come
     await expect
       .poll(() => stdout(page))
       .toContain('pixels [(255, 0, 0, 255), (0, 255, 0, 255), (0, 0, 0, 255)]')
+    // The edges are pygame-ce's pixels (measured on 2.5.8): no colour mixed by smoothing.
+    const red = '(255, 0, 0), (0, 0, 0)'
+    const green = '(0, 255, 0), (0, 0, 0)'
+    expect(await stdout(page)).toContain(
+      `bordas [${red}, ${red}, ${red}, ${green}, ${green}, ${green}]`,
+    )
     await expect
       .poll(() => page.evaluate(() => globalThis.providerProbe.savedKeys()))
       .toEqual(['py-file:contador.txt', 'py-file:dados/nome.txt'])
@@ -191,6 +197,23 @@ test('Pygame Zero: pygame.draw, get_at and tone, and the files a game saves come
     expect(await stdout(page)).not.toContain('Traceback')
     await page.evaluate(() => globalThis.providerProbe.dispose('game'))
   }
+})
+
+test.describe('on a display of scale 1.25 (many Windows laptops)', () => {
+  test.use({ deviceScaleFactor: 1.25 })
+  test('get_at reads the edges of pygame.draw shapes as pygame-ce does', async ({ page }) => {
+    await page.goto('/provider')
+    await page.waitForFunction(() => !!globalThis.providerProbe)
+    await page.evaluate(() => globalThis.providerProbe.prepare('game', 'pgzeroSavesFiles'))
+    await page.evaluate(() => globalThis.providerProbe.run('game'))
+    const red = '(255, 0, 0), (0, 0, 0)'
+    const green = '(0, 255, 0), (0, 0, 0)'
+    await expect
+      .poll(() => stdout(page), { timeout: 40_000 })
+      .toContain(`bordas [${red}, ${red}, ${red}, ${green}, ${green}, ${green}]`)
+    expect(await page.evaluate(() => devicePixelRatio)).toBe(1.25)
+    await page.evaluate(() => globalThis.providerProbe.dispose('game'))
+  })
 })
 
 test('what a program deletes or renames stays deleted or renamed in the next runs', async ({

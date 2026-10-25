@@ -2891,7 +2891,7 @@ export const PGZERO_GAME_BLOCKS = {
     ],
   },
   'batalha-naval': {
-    sourceSha256: 'ab9f5f8f30969da1989a65d109e8a3b32af7d7e573da1e249f1bdfc715206369',
+    sourceSha256: '5e99aad70b89b8f2127a922ae0a970851da1b4b8fcf65f85f837246c90de9e1a',
     blockIds: [
       'sz_py_and',
       'sz_py_arithmetic',

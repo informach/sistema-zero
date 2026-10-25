@@ -201,6 +201,38 @@ class PygamePart(Case):
         self.assertIn(float(self.sz.OP_ELLIPSE), list(ops))
         self.assertNotIn(float(self.sz.OP_RECT), list(ops))  # a negative width draws nothing
 
+    def test_draw_sends_what_pygame_ce_draws_pixel_by_pixel(self):
+        import pygame
+        surface = self.surface()
+        frame = self.sz.frame
+        # The coordinates go as written: the browser keeps their whole part, as pygame does.
+        pygame.draw.line(surface, (1, 2, 3), (1.7, 2.6), (10.9, -0.5), 3)
+        self.assertEqual(list(frame.ops[:10]), [self.sz.OP_LINE, 1.7, 2.6, 10.9, -0.5, 1, 2, 3, 255, 3])
+        # Rounded corners and parts of a circle are drawn, no longer warned about.
+        del frame.ops[:]
+        pygame.draw.rect(surface, (1, 2, 3), (5, 6, 30, 20), 2, border_radius=4,
+                         border_bottom_right_radius=9)
+        self.assertEqual(list(frame.ops), [self.sz.OP_ROUND_RECT, 5, 6, 30, 20, 1, 2, 3, 255, 2, 4,
+                                           -1, -1, -1, 9])
+        del frame.ops[:]
+        pygame.draw.circle(surface, (1, 2, 3), (40.5, 30), 12, 0, draw_top_left=True)
+        self.assertEqual(list(frame.ops), [self.sz.OP_CIRCLE_PART, 40.5, 30, 12, 1, 2, 3, 255, 0,
+                                           0, 1, 0, 0])
+        # A square rectangle and a whole circle keep their usual instructions.
+        del frame.ops[:]
+        pygame.draw.rect(surface, (1, 2, 3), (5, 6, 30, 20), border_radius=0)
+        pygame.draw.circle(surface, (1, 2, 3), (40, 30), 12)
+        self.assertEqual([frame.ops[0], frame.ops[10]], [self.sz.OP_RECT, self.sz.OP_CIRCLE])
+        # The border of a polygon is pygame.draw.lines, closed: one line per side.
+        del frame.ops[:]
+        pygame.draw.polygon(surface, (1, 2, 3), [(0, 0), (9, 0), (9, 9), (0, 9)], 2)
+        self.assertEqual(list(frame.ops).count(self.sz.OP_LINE), 4)
+        self.assertNotIn(float(self.sz.OP_POLY), list(frame.ops))
+        # Two points do not close: pygame draws a single line.
+        del frame.ops[:]
+        pygame.draw.lines(surface, (1, 2, 3), True, [(0, 0), (9, 9)], 2)
+        self.assertEqual(list(frame.ops).count(self.sz.OP_LINE), 1)
+
     def test_draw_only_on_the_screen(self):
         import pygame
         with self.assertRaises(TypeError) as caught:

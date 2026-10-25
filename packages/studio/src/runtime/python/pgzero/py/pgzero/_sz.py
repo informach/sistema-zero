@@ -38,6 +38,8 @@ OP_TEXT = 7
 OP_POLY = 8
 OP_ELLIPSE = 9
 OP_ARC = 10
+OP_ROUND_RECT = 11
+OP_CIRCLE_PART = 12
 MAX_POLY_POINTS = 4096
 # screen.surface.get_at asks the browser each time: a bounded number of reads per frame.
 MAX_READS_PER_FRAME = 512
@@ -626,18 +628,27 @@ def _position(pos):
         raise TypeError('A posição precisa ser um par (x, y).') from None
 
 
+# The browser draws each shape pixel by pixel like pygame-ce, truncating the coordinates as
+# pygame's int conversion does (screen.draw rounds them first, as Pygame Zero does).
 def line(start, end, color, width=1):
     (x1, y1), (x2, y2) = start, end
-    frame.record(OP_LINE, round(x1), round(y1), round(x2), round(y2), *rgba(color), width)
+    frame.record(OP_LINE, float(x1), float(y1), float(x2), float(y2), *rgba(color), width)
 
 
-def rect(x, y, w, h, color, width):
-    frame.record(OP_RECT, x, y, w, h, *rgba(color), width)
+def rect(x, y, w, h, color, width, radius=0, corners=(-1, -1, -1, -1)):
+    if radius > 0 or max(corners) > 0:
+        frame.record(OP_ROUND_RECT, x, y, w, h, *rgba(color), width, radius, *corners)
+    else:
+        frame.record(OP_RECT, x, y, w, h, *rgba(color), width)
 
 
-def circle(pos, radius, color, width):
+def circle(pos, radius, color, width, quarters=(0, 0, 0, 0)):
     x, y = pos
-    frame.record(OP_CIRCLE, round(x), round(y), radius, *rgba(color), width)
+    if any(quarters):
+        frame.record(OP_CIRCLE_PART, float(x), float(y), float(radius), *rgba(color), width,
+                     *quarters)
+    else:
+        frame.record(OP_CIRCLE, float(x), float(y), float(radius), *rgba(color), width)
 
 
 def polygon(points, color, width):
@@ -645,8 +656,8 @@ def polygon(points, color, width):
         raise PgzeroLimitError(f'O polígono tem {len(points)} pontos; o limite é {MAX_POLY_POINTS}.')
     coords = []
     for point in points:
-        x, y = _position(point)
-        coords.extend((x, y))
+        x, y = point
+        coords.extend((float(x), float(y)))
     frame.record(OP_POLY, len(points), width, *rgba(color), *coords)
 
 

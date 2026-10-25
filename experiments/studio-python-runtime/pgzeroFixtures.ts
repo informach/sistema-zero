@@ -125,6 +125,10 @@ def draw():
         lido = True
         cores = [tuple(screen.surface.get_at(ponto)) for ponto in [(50, 50), (150, 35), (10, 90)]]
         print('pixels', cores)
+        # Right on the edge of the circle and the triangle: the colours pygame-ce gives.
+        bordas = [(30, 50), (29, 50), (69, 50), (70, 50), (36, 36), (35, 35), (180, 20),
+                  (181, 20), (135, 50), (134, 50), (165, 50), (166, 50)]
+        print('bordas', [tuple(screen.surface.get_at(ponto))[:3] for ponto in bordas])
         nota.play()
 
 

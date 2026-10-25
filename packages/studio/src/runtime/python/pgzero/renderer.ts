@@ -4,6 +4,15 @@ import { createPgzeroInputQueue, readPgzeroKey } from './inputQueue'
 import { PGZERO_KEY_MODS } from './keyCodes.generated'
 import { createPgzeroFramePacer } from './pacing'
 import {
+  drawArc,
+  drawCircle,
+  drawEllipse,
+  drawLine,
+  drawPolygon,
+  drawRect,
+  type PixelTarget,
+} from './pixelShapes'
+import {
   PGZERO_DEFAULT_FONT_ATTACHMENT,
   PGZERO_FONT_ATTACHMENT_BASE,
   PGZERO_LIMITS,
@@ -138,7 +147,9 @@ export function createPgzeroRenderer(
     if (w === width && h === height) return ctx
     width = w
     height = h
-    scale = Math.min(2, Math.max(1, globalThis.devicePixelRatio || 1))
+    // A whole number of display pixels per game pixel: with 1.25 or 1.5 a game pixel would
+    // straddle display pixels, the shapes would blur and get_at would read a mix of two colours.
+    scale = (globalThis.devicePixelRatio || 1) > 1 ? 2 : 1
     canvas!.width = Math.round(w * scale)
     canvas!.height = Math.round(h * scale)
     canvas!.style.aspectRatio = `${w} / ${h}`
@@ -559,6 +570,23 @@ export function createPgzeroRenderer(
     return css
   }
 
+  /** The screen as pixelShapes sees it: each pixel of a shape joins the path being built. */
+  const pixels: PixelTarget = {
+    get width() {
+      return width
+    },
+    get height() {
+      return height
+    },
+    fill(x, y, w, h) {
+      context!.rect(x, y, w, h)
+    },
+  }
+  function fillShape(ctx: CanvasRenderingContext2D, record: Float64Array, colorAt: number) {
+    ctx.fillStyle = cssColor(record[colorAt]!, record[colorAt + 1]!, record[colorAt + 2]!)
+    ctx.fill()
+  }
+
   /** Paints a batch on top of what the screen already shows (the screen is never wiped here). */
   function paint(list: Float64Array) {
     const ctx = context
@@ -610,98 +638,74 @@ export function createPgzeroRenderer(
           ctx.restore()
           break
         }
+        // The shapes of pygame.draw and screen.draw fill whole pixels, exactly pygame-ce's
+        // (pixelShapes.ts): the browser would smooth their edges, and get_at would read a mix.
         case PGZERO_OP.LINE:
-          ctx.strokeStyle = cssColor(r[at + 4]!, r[at + 5]!, r[at + 6]!)
-          ctx.lineWidth = Math.max(1, r[at + 8]!)
-          ctx.lineCap = 'square'
           ctx.beginPath()
-          ctx.moveTo(r[at]! + 0.5, r[at + 1]! + 0.5)
-          ctx.lineTo(r[at + 2]! + 0.5, r[at + 3]! + 0.5)
-          ctx.stroke()
+          drawLine(pixels, r[at]!, r[at + 1]!, r[at + 2]!, r[at + 3]!, r[at + 8]!)
+          fillShape(ctx, r, at + 4)
           break
-        case PGZERO_OP.RECT: {
-          const [x, y, w, h] = [r[at]!, r[at + 1]!, r[at + 2]!, r[at + 3]!]
-          const color = cssColor(r[at + 4]!, r[at + 5]!, r[at + 6]!)
-          const border = r[at + 8]!
-          if (border === 0) {
-            ctx.fillStyle = color
-            ctx.fillRect(x, y, w, h)
-          } else if (border * 2 >= Math.min(w, h)) {
-            // A border as thick as half the rectangle fills it, like pygame.
-            ctx.fillStyle = color
-            ctx.fillRect(x, y, w, h)
-          } else {
-            // pygame draws the border inside the rectangle.
-            ctx.strokeStyle = color
-            ctx.lineWidth = border
-            ctx.strokeRect(x + border / 2, y + border / 2, w - border, h - border)
-          }
-          break
-        }
-        case PGZERO_OP.CIRCLE: {
-          const radius = Math.max(0, r[at + 2]!)
-          const color = cssColor(r[at + 3]!, r[at + 4]!, r[at + 5]!)
+        case PGZERO_OP.RECT:
           ctx.beginPath()
-          if (r[at + 7] === 0) {
-            ctx.fillStyle = color
-            ctx.arc(r[at]! + 0.5, r[at + 1]! + 0.5, radius, 0, Math.PI * 2)
-            ctx.fill()
-          } else {
-            // The ring grows inwards from the radius, like pygame.
-            const ring = Math.min(r[at + 7]!, radius)
-            ctx.strokeStyle = color
-            ctx.lineWidth = ring
-            ctx.arc(r[at]! + 0.5, r[at + 1]! + 0.5, Math.max(0, radius - ring / 2), 0, Math.PI * 2)
-            ctx.stroke()
-          }
+          drawRect(pixels, r[at]!, r[at + 1]!, r[at + 2]!, r[at + 3]!, r[at + 8]!)
+          fillShape(ctx, r, at + 4)
           break
-        }
+        case PGZERO_OP.ROUND_RECT:
+          ctx.beginPath()
+          drawRect(pixels, r[at]!, r[at + 1]!, r[at + 2]!, r[at + 3]!, r[at + 8]!, r[at + 9]!, {
+            topLeft: r[at + 10]!,
+            topRight: r[at + 11]!,
+            bottomLeft: r[at + 12]!,
+            bottomRight: r[at + 13]!,
+          })
+          fillShape(ctx, r, at + 4)
+          break
+        case PGZERO_OP.CIRCLE:
+          ctx.beginPath()
+          drawCircle(pixels, r[at]!, r[at + 1]!, r[at + 2]!, r[at + 7]!)
+          fillShape(ctx, r, at + 3)
+          break
+        case PGZERO_OP.CIRCLE_PART:
+          ctx.beginPath()
+          drawCircle(pixels, r[at]!, r[at + 1]!, r[at + 2]!, r[at + 7]!, {
+            topRight: r[at + 8]!,
+            topLeft: r[at + 9]!,
+            bottomLeft: r[at + 10]!,
+            bottomRight: r[at + 11]!,
+          })
+          fillShape(ctx, r, at + 3)
+          break
         case PGZERO_OP.POLY: {
-          const width = r[at + 1]!
-          const color = cssColor(r[at + 2]!, r[at + 3]!, r[at + 4]!)
-          ctx.beginPath()
+          const xs: number[] = []
+          const ys: number[] = []
           for (let point = 0; point < points; point++) {
-            const px = r[at + 6 + point * 2]! + 0.5
-            const py = r[at + 7 + point * 2]! + 0.5
-            if (point === 0) ctx.moveTo(px, py)
-            else ctx.lineTo(px, py)
+            xs.push(r[at + 6 + point * 2]!)
+            ys.push(r[at + 7 + point * 2]!)
           }
-          ctx.closePath()
-          if (width === 0) {
-            ctx.fillStyle = color
-            ctx.fill()
-          } else {
-            ctx.strokeStyle = color
-            ctx.lineWidth = width
-            ctx.lineJoin = 'miter'
-            ctx.stroke()
-          }
+          ctx.beginPath()
+          drawPolygon(pixels, xs, ys, r[at + 1]!)
+          fillShape(ctx, r, at + 2)
           break
         }
         case PGZERO_OP.ELLIPSE:
-        case PGZERO_OP.ARC: {
-          const [x, y, w, h] = [r[at]!, r[at + 1]!, r[at + 2]!, r[at + 3]!]
-          const arc = op === PGZERO_OP.ARC
-          const c = arc ? at + 6 : at + 4
-          const width = r[c + 4]!
-          const color = cssColor(r[c]!, r[c + 1]!, r[c + 2]!)
-          const inset = width === 0 ? 0 : Math.min(width, w / 2, h / 2) / 2
-          const rx = Math.max(0, w / 2 - inset)
-          const ry = Math.max(0, h / 2 - inset)
           ctx.beginPath()
-          // pygame's angles turn counter-clockwise on the screen (y grows downwards).
-          if (arc) ctx.ellipse(x + w / 2, y + h / 2, rx, ry, 0, -r[at + 4]!, -r[at + 5]!, true)
-          else ctx.ellipse(x + w / 2, y + h / 2, rx, ry, 0, 0, Math.PI * 2)
-          if (width === 0 && !arc) {
-            ctx.fillStyle = color
-            ctx.fill()
-          } else {
-            ctx.strokeStyle = color
-            ctx.lineWidth = Math.max(1, Math.min(width, w / 2, h / 2))
-            ctx.stroke()
-          }
+          drawEllipse(pixels, r[at]!, r[at + 1]!, r[at + 2]!, r[at + 3]!, r[at + 8]!)
+          fillShape(ctx, r, at + 4)
           break
-        }
+        case PGZERO_OP.ARC:
+          ctx.beginPath()
+          drawArc(
+            pixels,
+            r[at]!,
+            r[at + 1]!,
+            r[at + 2]!,
+            r[at + 3]!,
+            r[at + 4]!,
+            r[at + 5]!,
+            r[at + 10]!,
+          )
+          fillShape(ctx, r, at + 6)
+          break
         case PGZERO_OP.TEXT:
           drawText(ctx, r, at)
           break

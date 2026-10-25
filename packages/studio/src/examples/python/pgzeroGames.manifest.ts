@@ -1569,7 +1569,7 @@ export const PGZERO_GAMES = [
       { path: 'afundou.wav', notes: [523, 392, 262, 196], noteMilliseconds: 90 },
     ],
     music: [],
-    receipt: 'batalha-naval-r4.json.snapshot',
+    receipt: 'batalha-naval-r5.json.snapshot',
   },
   {
     key: 'atirador-espacial',

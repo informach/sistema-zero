@@ -1,6 +1,4 @@
 """pygame.draw on screen.surface: each shape joins the same drawing as screen.draw."""
-import sys
-
 from pgzero import _sz
 from pgzero.rect import Rect
 from pgzero.screen import ScreenSurface
@@ -13,29 +11,18 @@ def _screen(surface):
         )
 
 
-_warned = set()
-
-
-def _not_yet(what):
-    # pygame-ce draws these; the Studio draws the plain shape and says so once.
-    if what in _warned:
-        return
-    _warned.add(what)
-    print(f'Aviso: no Estúdio, pygame.draw ainda não desenha {what}: a forma sai sem eles.',
-          file=sys.stderr)
-
-
 def _points(points):
+    # pygame keeps each coordinate as it is and draws at its whole part (int), like here.
     result = []
     for point in points:
         x, y = point
-        result.append((round(x), round(y)))
+        result.append((x, y))
     return result
 
 
 def _bounds(points, width=0):
-    xs = [x for x, _ in points]
-    ys = [y for _, y in points]
+    xs = [int(x) for x, _ in points]
+    ys = [int(y) for _, y in points]
     grow = max(0, width) // 2
     left, top = min(xs) - grow, min(ys) - grow
     return Rect(left, top, max(xs) - min(xs) + 1 + grow * 2, max(ys) - min(ys) + 1 + grow * 2)
@@ -46,41 +33,41 @@ def rect(surface, color, rect, width=0, border_radius=0, border_top_left_radius=
          border_bottom_right_radius=-1):
     """A rectangle: filled (width=0) or its border width pixels thick."""
     _screen(surface)
-    if border_radius > 0 or max(border_top_left_radius, border_top_right_radius,
-                                border_bottom_left_radius, border_bottom_right_radius) >= 0:
-        _not_yet('os cantos arredondados (border_radius)')
     area = Rect(rect)
     if width < 0:
         return Rect(area.x, area.y, 0, 0)
-    _sz.rect(area.x, area.y, area.w, area.h, color, int(width))
+    corners = (int(border_top_left_radius), int(border_top_right_radius),
+               int(border_bottom_left_radius), int(border_bottom_right_radius))
+    _sz.rect(area.x, area.y, area.w, area.h, color, int(width), int(border_radius), corners)
     return Rect(area)
 
 
 def polygon(surface, color, points, width=0):
     """A shape with corners at the points: filled (width=0) or only its border."""
     _screen(surface)
+    if width:
+        # pygame draws the border of a polygon with pygame.draw.lines, closed.
+        return lines(surface, color, True, points, width)
     points = _points(points)
     if len(points) < 3:
         raise ValueError('Um polígono precisa de pelo menos 3 pontos.')
-    if width < 0:
-        return Rect(points[0][0], points[0][1], 0, 0)
-    _sz.polygon(points, color, int(width))
-    return _bounds(points, width)
+    _sz.polygon(points, color, 0)
+    return _bounds(points)
 
 
 def circle(surface, color, center, radius, width=0, draw_top_right=None, draw_top_left=None,
            draw_bottom_left=None, draw_bottom_right=None):
     """A circle: filled (width=0) or a ring width pixels thick."""
     _screen(surface)
-    if any(part is not None for part in (draw_top_right, draw_top_left, draw_bottom_left,
-                                         draw_bottom_right)):
-        _not_yet('só um pedaço do círculo (draw_top_right e os outros)')
-    x, y = round(center[0]), round(center[1])
+    x, y = center
     radius = int(radius)
     if width < 0 or radius < 1:
-        return Rect(x, y, 0, 0)
-    _sz.circle((x, y), radius, color, int(width))
-    return Rect(x - radius, y - radius, radius * 2, radius * 2)
+        return Rect(int(x), int(y), 0, 0)
+    # As in pygame-ce, a quarter is drawn when its value is above zero.
+    quarters = tuple(int(part or 0) for part in (draw_top_right, draw_top_left,
+                                                 draw_bottom_left, draw_bottom_right))
+    _sz.circle((x, y), radius, color, int(width), quarters)
+    return Rect(int(x) - radius, int(y) - radius, radius * 2, radius * 2)
 
 
 def ellipse(surface, color, rect, width=0):
@@ -122,7 +109,7 @@ def lines(surface, color, closed, points, width=1):
     if width < 1:
         return Rect(points[0][0], points[0][1], 0, 0)
     pairs = list(zip(points, points[1:]))
-    if closed:
+    if closed and len(points) > 2:
         pairs.append((points[-1], points[0]))
     for start, end in pairs:
         _sz.line(start, end, color, int(width))
@@ -130,7 +117,7 @@ def lines(surface, color, closed, points, width=1):
 
 
 def aaline(surface, color, start_pos, end_pos, blend=1):
-    """A thin line (the browser always smooths lines)."""
+    """A thin line (in the Studio without the smoothing pygame gives it)."""
     return line(surface, color, start_pos, end_pos, 1)
 
 

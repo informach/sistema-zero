@@ -366,12 +366,8 @@ const simpleFunctionCodec: PythonBlockCodec = {
     const field = (key: string) => shape.fields.find((item) => item.name === key)?.value ?? ''
     const functionName = field('NAME').trim()
     if (!IDENTIFIER.test(functionName)) throw new Error('Escolha um nome para a função.')
-    const params = field('PARAMS')
-      .split(',')
-      .map((item) => item.trim())
-      .filter(Boolean)
-    if (params.some((item) => !IDENTIFIER.test(item)) || new Set(params).size !== params.length)
-      throw new Error('Escreva nomes de parâmetros diferentes, separados por vírgula.')
+    const params = pythonDefinedParams(field('PARAMS'))
+    if (!params) throw new Error('Escreva nomes de parâmetros diferentes, separados por vírgula.')
     return node('FunctionDef', {
       name: functionName,
       args: node('arguments', {
@@ -390,6 +386,26 @@ const simpleFunctionCodec: PythonBlockCodec = {
       type_params: [],
     })
   },
+}
+
+/**
+ * "chamar mover com distancia ⟨10⟩, angulo ⟨90⟩": the label of each value names the parameter
+ * that receives it. Without the parameter (unknown function, extra value), the plain label.
+ */
+export function pythonCallArgumentLabel(index: number, params?: readonly string[]) {
+  const param = params?.[index]
+  return `${index ? ',' : 'com'}${param ? ` ${param}` : ''}`
+}
+
+/** The parameter names typed on a "definir a função" block, or undefined when one is not valid. */
+export function pythonDefinedParams(text: string): readonly string[] | undefined {
+  const params = text
+    .split(',')
+    .map((item) => item.trim())
+    .filter(Boolean)
+  if (params.some((item) => !IDENTIFIER.test(item)) || new Set(params).size !== params.length)
+    return
+  return params
 }
 
 /** `pular()` / `pular(10)` — calling the child's own function by name. */
@@ -428,13 +444,13 @@ function namedCall(role: 'statement' | 'value'): PythonBlockCodec {
       )
         return
       if (args.some((arg) => arg.kind === 'Starred')) return
-      // "chamar mover com distancia ⟨10⟩, angulo ⟨90⟩": the names come from the def.
+      // The names come from the def; in the editor, pythonCallLabels keeps them up to date.
       const params = context?.functionParams?.(func as PythonNode)
       return {
         fields: [{ name: 'NAME', label: '', value: (func as PythonNode).fields.id as string }],
         inputs: args.map((arg, index) => ({
           name: `args:${index}`,
-          label: `${index ? ',' : 'com'}${params?.[index] ? ` ${params[index]}` : ''}`,
+          label: pythonCallArgumentLabel(index, params),
           role: 'value' as const,
           nodes: [arg],
         })),
@@ -459,7 +475,7 @@ function namedCall(role: 'statement' | 'value'): PythonBlockCodec {
       for (let index = kept.length; index < value; index++)
         kept.push({
           name: `args:${index}`,
-          label: index ? ',' : 'com',
+          label: pythonCallArgumentLabel(index),
           role: 'value',
           nodes: [integer('0')],
         })
@@ -550,7 +566,7 @@ function methodCall(role: 'statement' | 'value'): PythonBlockCodec {
       for (let index = kept.length; index < value; index++)
         kept.push({
           name: `args:${index}`,
-          label: index ? ',' : 'com',
+          label: pythonCallArgumentLabel(index),
           role: 'value',
           nodes: [integer('0')],
         })

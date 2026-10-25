@@ -128,6 +128,15 @@ class Computador:
     def __init__(self):
         self.tentadas = []
         self.alvos = []
+        # Os acertos em navios que ainda não afundaram.
+        self.acertos = []
+
+    def mirar_em_volta(self, casa):
+        # As casas vizinhas viram os próximos alvos.
+        vizinhas = [(casa[0] + 1, casa[1]), (casa[0] - 1, casa[1]), (casa[0], casa[1] + 1), (casa[0], casa[1] - 1)]
+        for vizinha in vizinhas:
+            if 0 <= vizinha[0] < LADO and 0 <= vizinha[1] < LADO:
+                self.alvos.append(vizinha)
 
     def escolher(self):
         while self.alvos:
@@ -148,17 +157,18 @@ class Computador:
                         livres.append((coluna, linha))
         return random.choice(livres)
 
-    def resultado(self, casa, efeito):
+    def resultado(self, casa, efeito, navio):
         self.tentadas.append(casa)
         if efeito == 'acerto':
-            # Acertou: as casas vizinhas viram os próximos alvos.
-            vizinhas = [(casa[0] + 1, casa[1]), (casa[0] - 1, casa[1]), (casa[0], casa[1] + 1), (casa[0], casa[1] - 1)]
-            for vizinha in vizinhas:
-                if 0 <= vizinha[0] < LADO and 0 <= vizinha[1] < LADO:
-                    self.alvos.append(vizinha)
+            self.acertos.append(casa)
+            self.mirar_em_volta(casa)
         if efeito == 'afundou':
-            # Afundou o navio: volta a atirar ao acaso.
+            # Afundou o navio: esquece as casas dele, mas continua em volta dos
+            # acertos que eram de outro navio. Sem eles, volta a procurar.
+            self.acertos = [acerto for acerto in self.acertos if acerto not in navio.casas]
             self.alvos = []
+            for acerto in self.acertos:
+                self.mirar_em_volta(acerto)
 
 
 minha_frota = Frota((50, 160))
@@ -247,7 +257,7 @@ def update(dt):
         return
     casa = computador.escolher()
     efeito = minha_frota.atirar(casa)
-    computador.resultado(casa, efeito)
+    computador.resultado(casa, efeito, minha_frota.navio_em(casa))
     recado = contar('Computador', efeito)
     if minha_frota.afundados() == len(TAMANHOS):
         estado = 'fim'
