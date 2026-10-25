@@ -17,10 +17,10 @@
   "authoringLoader": "loadPythonAuthoring",
   "extension": "python-raylib-2d",
   "codecOrderSha256": "260d5420ed53ff196eab065c20843114564d95df4fff6d4f416fb06d8d25e26a",
-  "sourceSha256": "84191c4e3cac4730da66bec34591c7f4d13b192d13c01b8b14069c105d8d96c4",
-  "generatedSha256": "baa5a2e8a8d1cca37f7c31ef3f41d11b8b42318cf254132c7f3510f12c990158",
+  "sourceSha256": "e1240d62d0929cb5f54e5d19af2e00f5932dc311a10c281f6d1a438d3773112a",
+  "generatedSha256": "9beb5d32a5d18e0bbc4837a11733d1070ffb6bf3e5a1cbbd617308556267c8e8",
   "opaqueCount": 0,
-  "blockCount": 545,
+  "blockCount": 618,
   "referencedBlocks": [
     {
       "id": "sz_py_alias",
@@ -32,15 +32,15 @@
     },
     {
       "id": "sz_py_arithmetic",
-      "count": 37
+      "count": 47
     },
     {
       "id": "sz_py_assign",
-      "count": 51
+      "count": 62
     },
     {
       "id": "sz_py_attribute",
-      "count": 16
+      "count": 27
     },
     {
       "id": "sz_py_boolean",
@@ -56,7 +56,7 @@
     },
     {
       "id": "sz_py_def",
-      "count": 7
+      "count": 6
     },
     {
       "id": "sz_py_float",
@@ -96,19 +96,15 @@
     },
     {
       "id": "sz_py_integer",
-      "count": 82
+      "count": 89
     },
     {
       "id": "sz_py_interpolation",
       "count": 3
     },
     {
-      "id": "sz_py_len",
-      "count": 1
-    },
-    {
       "id": "sz_py_list",
-      "count": 4
+      "count": 1
     },
     {
       "id": "sz_py_list_append",
@@ -128,7 +124,7 @@
     },
     {
       "id": "sz_py_method_value",
-      "count": 3
+      "count": 1
     },
     {
       "id": "sz_py_negative",
@@ -156,7 +152,7 @@
     },
     {
       "id": "sz_py_return",
-      "count": 4
+      "count": 3
     },
     {
       "id": "sz_py_rl2d_begin_drawing",
@@ -192,7 +188,11 @@
     },
     {
       "id": "sz_py_rl2d_draw_texture_ex",
-      "count": 3
+      "count": 1
+    },
+    {
+      "id": "sz_py_rl2d_draw_texture_pro",
+      "count": 2
     },
     {
       "id": "sz_py_rl2d_end_drawing",
@@ -200,7 +200,7 @@
     },
     {
       "id": "sz_py_rl2d_field",
-      "count": 11
+      "count": 16
     },
     {
       "id": "sz_py_rl2d_get_frame_time",
@@ -236,7 +236,7 @@
     },
     {
       "id": "sz_py_rl2d_load_texture",
-      "count": 7
+      "count": 4
     },
     {
       "id": "sz_py_rl2d_measure_text_ex",
@@ -252,7 +252,7 @@
     },
     {
       "id": "sz_py_rl2d_Rectangle",
-      "count": 2
+      "count": 6
     },
     {
       "id": "sz_py_rl2d_set_target_fps",
@@ -268,7 +268,7 @@
     },
     {
       "id": "sz_py_rl2d_Vector2",
-      "count": 9
+      "count": 10
     },
     {
       "id": "sz_py_rl2d_window_loop",
@@ -283,12 +283,8 @@
       "count": 3
     },
     {
-      "id": "sz_py_subscript",
-      "count": 2
-    },
-    {
       "id": "sz_py_text",
-      "count": 16
+      "count": 13
     },
     {
       "id": "sz_py_tuple",
@@ -300,13 +296,13 @@
     },
     {
       "id": "sz_py_variable",
-      "count": 178
+      "count": 218
     }
   ],
   "approvedBlockIdsSha256": "d800f2e8f69feb7b077fd710bfaca8e2888d9494cdceea419df43fc2df941c2d",
   "fullWorkspaceRoundtrip": true,
-  "initialWorkspaceSha256": "9167338f1074c512d50b59bb5f0ae7d79153301d0570e7ab1f163ff7ce2dc684",
-  "editedWorkspaceSha256": "0327d1790e32d33dbed184f19a353720a3a6d08dfd976ecae0908d3d45df3cad",
+  "initialWorkspaceSha256": "c0abf64dac6eff618589c581b941295d294105b2bea927c9099216bdfa43254b",
+  "editedWorkspaceSha256": "a61018e397fff845710cde1d7648c7a76f8d5062c9de61abcf8e01956e632461",
   "canonicalRenderReanalysis": true,
   "runtimeCapabilitiesQualified": false,
   "browserInteractionQualified": false,
@@ -326,13 +322,13 @@
       "field": "NUMBER",
       "before": "300",
       "after": "310",
-      "beforeSourceSha256": "5f972c9511a3451e4f26e50780044db2f86dc8e99161891c9a253a923797ec7d",
-      "afterSourceSha256": "22c887c09417d42188bfb7aed8e7dcc07cd06139e1f1028d8d52be225ee75a39"
+      "beforeSourceSha256": "54636aad53c8dc3364f80022009706d37fc4bcd86020d2017756307174f48594",
+      "afterSourceSha256": "64feedf5acc0a3749383451d66e2d5c7de3f996785b4f3b38fcba0d20c841730"
     },
     {
       "label": "gravidade",
       "path": {
-        "body": 7,
+        "body": 6,
         "inputs": [
           {
             "name": "VALUE",
@@ -344,8 +340,8 @@
       "field": "NUMBER",
       "before": "2400",
       "after": "2200",
-      "beforeSourceSha256": "22c887c09417d42188bfb7aed8e7dcc07cd06139e1f1028d8d52be225ee75a39",
-      "afterSourceSha256": "baa5a2e8a8d1cca37f7c31ef3f41d11b8b42318cf254132c7f3510f12c990158"
+      "beforeSourceSha256": "64feedf5acc0a3749383451d66e2d5c7de3f996785b4f3b38fcba0d20c841730",
+      "afterSourceSha256": "9beb5d32a5d18e0bbc4837a11733d1070ffb6bf3e5a1cbbd617308556267c8e8"
     }
   ]
 }

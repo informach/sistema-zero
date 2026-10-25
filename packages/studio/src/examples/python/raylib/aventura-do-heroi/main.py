@@ -35,8 +35,18 @@ init_audio_device()
 set_target_fps(60)
 
 imagens = {}
-for nome in ['heroi-baixo', 'heroi-lado', 'heroi-cima', 'gosma0', 'gosma1', 'arvore', 'pedra', 'mato', 'coracao', 'folha', 'espada']:
+for nome in ['arvore', 'pedra', 'mato', 'coracao', 'folha', 'espada']:
     imagens[nome] = load_texture(f'images/{nome}.png')
+# O herói e a gosma são folhas de quadros, do jeito que o Pinta exporta: uma linha por animação.
+# O herói tem uma linha por direção (baixo, lado, cima); a gosma, uma linha com dois quadros.
+# O tamanho de um quadro sai da própria imagem: um desenho de qualquer tamanho entra no lugar.
+textura_heroi = load_texture('images/heroi.png')
+LINHA_DO_HEROI = {'baixo': 0, 'direita': 1, 'esquerda': 1, 'cima': 2}
+LARGURA_HEROI = textura_heroi.width
+ALTURA_HEROI = textura_heroi.height / 3
+textura_gosma = load_texture('images/gosma.png')
+LARGURA_GOSMA = textura_gosma.width / 2
+ALTURA_GOSMA = textura_gosma.height
 fonte = load_font_ex('fonts/pressstart2p.ttf', 16, None, 224)
 som_espada = load_sound('sounds/espada.wav')
 som_acerto = load_sound('sounds/acerto.wav')
@@ -138,12 +148,13 @@ class Heroi:
     def desenhar(self):
         if self.invencivel > 0 and int(self.invencivel * 10) % 2 == 0:
             return
-        nome = 'heroi-lado' if self.olhando in ('direita', 'esquerda') else f'heroi-{self.olhando}'
-        textura = imagens[nome]
         balanco = int(sin(get_time() * 18) * 2) if self.andando else 0
-        largura = -textura.width if self.olhando == 'esquerda' else textura.width
-        posicao = Vector2(self.pes.x - 6, self.pes.y - 18 + balanco)
-        draw_texture_rec(textura, Rectangle(0, 0, largura, textura.height), posicao, WHITE)
+        # A linha da folha é a da direção; para a esquerda, o mesmo desenho de lado espelhado.
+        y = LINHA_DO_HEROI[self.olhando] * ALTURA_HEROI
+        largura = -LARGURA_HEROI if self.olhando == 'esquerda' else LARGURA_HEROI
+        # O desenho fica centrado nos pés e com a base na base deles.
+        posicao = Vector2(self.pes.x + self.pes.width / 2 - LARGURA_HEROI / 2, self.base() - ALTURA_HEROI + balanco)
+        draw_texture_rec(textura_heroi, Rectangle(0, y, largura, ALTURA_HEROI), posicao, WHITE)
         if self.atacando > 0:
             area = self.golpe()
             giro = {'cima': 0, 'direita': 90, 'baixo': 180, 'esquerda': 270}[self.olhando]
@@ -183,8 +194,9 @@ class Gosma:
         bater_nas_paredes(self.pes, movimento.y, 'y')
 
     def desenhar(self):
-        textura = imagens[f'gosma{int(self.quadro)}']
-        draw_texture(textura, int(self.pes.x - 5), int(self.pes.y - 14), WHITE)
+        recorte = Rectangle(int(self.quadro) * LARGURA_GOSMA, 0, LARGURA_GOSMA, ALTURA_GOSMA)
+        posicao = Vector2(self.pes.x + self.pes.width / 2 - LARGURA_GOSMA / 2, self.base() - ALTURA_GOSMA)
+        draw_texture_rec(textura_gosma, recorte, posicao, WHITE)
 
 
 def soltar_folhas(x, y):

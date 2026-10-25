@@ -150,7 +150,7 @@ export const RAYLIB_GAMES = [
     ideas: [
       'Mude o 0.9 do cronômetro para as maçãs caírem mais depressa.',
       'Troque o 8 da animação para o herói mexer as pernas mais rápido.',
-      'Desenhe o seu herói no Pinta, com quatro quadros, e troque `images/heroi0.png` a `heroi3.png`.',
+      'Desenhe o seu herói no Pinta numa animação de quatro quadros, traga para o jogo e troque `images/heroi.png` pelo caminho dele.',
     ],
     sounds: [
       { path: 'pegar.wav', notes: [784, 1047], noteMilliseconds: 60 },
@@ -186,7 +186,7 @@ export const RAYLIB_GAMES = [
     ideas: [
       'Mude PULO e GRAVIDADE e veja o pulo ficar mais alto ou mais baixo.',
       'Faça o jogo acelerar mais depressa trocando o 8 de `velocidade`.',
-      'Desenhe o seu dino no Pinta e troque `images/dino0.png` e `images/dino1.png`.',
+      'Desenhe o seu dino no Pinta com duas animações, primeiro correndo (dois quadros) e depois pulando (um quadro), e troque `images/dino.png`.',
     ],
     sounds: [
       { path: 'pulo.wav', notes: [523, 784], noteMilliseconds: 50 },
@@ -229,6 +229,7 @@ export const RAYLIB_GAMES = [
       'Mude TEMPO_ENTRE_METEOROS para chover mais ou menos meteoros.',
       'Faça o laser mais rápido em VELOCIDADE_LASER.',
       'Desenhe a sua nave no Pinta e troque `images/nave.png`.',
+      'Desenhe uma explosão no Pinta numa animação de cinco quadros e troque `images/explosao.png`.',
     ],
     sounds: [
       { path: 'laser.wav', notes: [1568, 1175, 880], noteMilliseconds: 30 },
@@ -317,6 +318,7 @@ export const RAYLIB_GAMES = [
       'Desenhe uma ilha nova trocando as letras de MAPA.',
       'Dê mais corações ao herói em VIDAS.',
       'Faça as gosmas mais rápidas mudando o 70 em `Gosma.atualizar`.',
+      'Desenhe o seu herói no Pinta com três animações de um quadro (baixo, lado e cima) e troque `images/heroi.png`.',
     ],
     sounds: [
       { path: 'espada.wav', notes: [1175, 880], noteMilliseconds: 40 },

@@ -14,15 +14,17 @@ As setas andam para os lados. Pegue as maçãs antes que caiam no chão: cada um
 
 - Mude o 0.9 do cronômetro para as maçãs caírem mais depressa.
 - Troque o 8 da animação para o herói mexer as pernas mais rápido.
-- Desenhe o seu herói no Pinta, com quatro quadros, e troque `images/heroi0.png` a `heroi3.png`.
+- Desenhe o seu herói no Pinta numa animação de quatro quadros, traga para o jogo e troque `images/heroi.png` pelo caminho dele.
 
 ## Imagens, sons e fontes
 
 O raylib abre cada arquivo pelo caminho, com a extensão: `load_texture('images/nave.png')`
 abre `images/nave.png` (a barra `/` funciona também no Windows). As imagens ficam em `images/`, os sons em
 `sounds/`, as músicas em `music/` e as fontes em `fonts/`. Para trocar um desenho,
-edite-o no Pinta pelo Estúdio, ou traga outro e use no código o caminho que o painel mostra
-em "nome no código".
+faça o seu no Pinta e traga para o jogo pelo menu ⋯ → Imagens → "Trazer do Pinta"; depois
+use no código o caminho que o painel mostra em "nome no código". Um desenho animado é uma
+folha de quadros, igual à que o Pinta exporta: uma linha por animação, com os quadros lado a
+lado, e o jogo recorta um quadro de cada vez.
 
 ## Jogar no computador
 

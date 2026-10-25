@@ -1,21 +1,12 @@
 // Gerado por scripts/generate-raylib-games.ts. Não edite este arquivo.
 // Materiais: src/examples/python/raylib/sprites-timer-animacao
-// images/heroi0.png: eb889eda73e480f3eb3389d6573fb9346735c9222e98c48a307746d42a6327c0
-// images/heroi1.png: 4427b3d5181c84a2252234caef386730bad6cde1358daef8309ab999b9cf8024
-// images/heroi2.png: 25b286993eff7312959854719f2dfe72a1afd9c10e6d4cbfefed365aa3c0127a
-// images/heroi3.png: b50f4b8ed5899d7041005485d4e628b2aab593455898855d0c3729927b3d56a0
+// images/heroi.png: 3ea04dd4a1bb566698e95289f7b8f58d530b1f8986701878aba3fcf7cd368756
 // images/maca.png: 629a47c1fcb8d627c32ca398e268503139970a48636cf809f11baf06563a66c2
 // sounds/pegar.wav: 1ad5db78e63d6bc74a07e472518c2535473000bab59fca358e8b8357afcb82d2
 // sounds/perder.wav: 037d7368cc7a33921b7bc9395607f383b43560510d2383a1e24b3f7bcee170a0
 export const SPRITES_TIMER_ANIMACAO_MEDIA: Readonly<Record<string, string>> = {
-  'images/heroi0.png':
-    'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAwAAAAQCAYAAAAiYZ4HAAAAbElEQVR42mNgQAPWWnL/kTEDPoCumJAmhk+Hu/8jY6I0aGtro2si1gYIZiAESFJssTDzPzaMy+T/uDSAMLqNDDABXKbjciIDUc5BBto+Pf+RMVGKcfHxKiYkzpBtr/QfhIkShwni04BNjigAAG65r2IkTIvCAAAAAElFTkSuQmCC',
-  'images/heroi1.png':
-    'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAwAAAAQCAYAAAAiYZ4HAAAAYUlEQVR42mNgQAPWWnL/kTEDPoCumJAmhk+Hu/8jY6I0aGtro2si1gYIZiAESFJssTDzPzZMqgbstoEEiTUZry2E1DNo+/T8R8a00gBRSJSmbHul/yCMzsarGF0DXk2EAAD83qajzmVLsAAAAABJRU5ErkJggg==',
-  'images/heroi2.png':
-    'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAwAAAAQCAYAAAAiYZ4HAAAAbElEQVR42mNgQAPWWnL/kTEDPoCumJAmhk+Hu/8jY6I0aGtro2si1gYIZiAESFJssTDzPzaM1VRcikEY3TYGZAFcpuNyIgMh56ADBm2fnv/ImCjFuPh4FRMSZ8i2V/oPwkSJwwTxacAmRxQAANTJr2InEZ95AAAAAElFTkSuQmCC',
-  'images/heroi3.png':
-    'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAwAAAAQCAYAAAAiYZ4HAAAAYUlEQVR42mNgQAPWWnL/kTEDPoCumJAmhk+Hu/8jY6I0aGtro2si1gYIZiAESFJssTDzPzaMy+T/JGnAZxNe55FqOoO2T89/ZExdDciKiNKQba/0H4TR2XgVo2vAq4kYAAAcpaajeRUcRQAAAABJRU5ErkJggg==',
+  'images/heroi.png':
+    'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAQCAYAAABQrvyxAAAAuklEQVR42tWSwQnDMAxFNUkPOcYLBHLIAl2kdJRmic6SjbKAig0BI6wv1RCQBf9ivf9lGROJWucH1yKjQvEStkzReDqPD9eyDNH4YkgpSROPwsuNi9CXi8ZLkwVH44mW74tbGoLPG2qGrNYLeNmebOTRFuDWpWQfDUDfQFtay0cPBb+T91JReUrPnWsNxUvIY/pnwK35GmAZ6z5ie/K92aXe28RZ3vNWH7E9+d7sqwkHeHoa25PvzR6+fjpQrCXipa5UAAAAAElFTkSuQmCC',
   'images/maca.png':
     'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAARElEQVR42mNgQAcMDAzRVnL/GQgBkCKf9QG4FDIwPLU0/Q/C6GysinBhFEX/z17Cr5gYRTCF/4nBxCr8T6xnsAcPNj4AXhycxc1RuGkAAAAASUVORK5CYII=',
   'sounds/pegar.wav':

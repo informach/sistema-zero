@@ -10,7 +10,12 @@ init_window(LARGURA, ALTURA, 'Sprites, Timer e Animação')
 init_audio_device()
 set_target_fps(60)
 
-quadros_do_heroi = [load_texture(f'images/heroi{i}.png') for i in range(4)]
+# A folha do herói tem os quadros da caminhada lado a lado, do jeito que o Pinta exporta.
+# O tamanho de um quadro sai da própria imagem: um desenho de qualquer tamanho entra no lugar.
+textura_heroi = load_texture('images/heroi.png')
+QUADROS = 4
+LARGURA_QUADRO = textura_heroi.width / QUADROS
+ALTURA_QUADRO = textura_heroi.height
 textura_maca = load_texture('images/maca.png')
 som_pegar = load_sound('sounds/pegar.wav')
 som_perder = load_sound('sounds/perder.wav')
@@ -55,24 +60,25 @@ class Heroi(Sprite):
     def atualizar(self, dt):
         self.direcao.x = int(is_key_down(KEY_RIGHT)) - int(is_key_down(KEY_LEFT))
         self.mover(dt)
-        self.posicao.x = max(0, min(self.posicao.x, LARGURA - 12 * ESCALA))
+        self.posicao.x = max(0, min(self.posicao.x, LARGURA - LARGURA_QUADRO * ESCALA))
         if self.direcao.x != 0:
             # Andando: os quadros trocam 8 vezes por segundo.
-            self.quadro = (self.quadro + 8 * dt) % len(quadros_do_heroi)
+            self.quadro = (self.quadro + 8 * dt) % QUADROS
             self.olhando_esquerda = self.direcao.x < 0
         else:
             self.quadro = 0
 
     def caixa(self):
-        return Rectangle(self.posicao.x, self.posicao.y, 12 * ESCALA, 16 * ESCALA)
+        return Rectangle(self.posicao.x, self.posicao.y, LARGURA_QUADRO * ESCALA, ALTURA_QUADRO * ESCALA)
 
     def desenhar(self):
-        textura = quadros_do_heroi[int(self.quadro)]
+        # O recorte pega um quadro da folha: o quadro 2 começa duas larguras de quadro depois.
+        x = int(self.quadro) * LARGURA_QUADRO
         # Largura negativa no recorte espelha a imagem: o herói vira para a esquerda.
-        largura = -textura.width if self.olhando_esquerda else textura.width
-        origem = Rectangle(0, 0, largura, textura.height)
-        destino = Rectangle(self.posicao.x, self.posicao.y, textura.width * ESCALA, textura.height * ESCALA)
-        draw_texture_pro(textura, origem, destino, Vector2(0, 0), 0, WHITE)
+        largura = -LARGURA_QUADRO if self.olhando_esquerda else LARGURA_QUADRO
+        recorte = Rectangle(x, 0, largura, ALTURA_QUADRO)
+        destino = Rectangle(self.posicao.x, self.posicao.y, LARGURA_QUADRO * ESCALA, ALTURA_QUADRO * ESCALA)
+        draw_texture_pro(textura_heroi, recorte, destino, Vector2(0, 0), 0, WHITE)
 
 
 class Maca(Sprite):
@@ -81,7 +87,7 @@ class Maca(Sprite):
         self.direcao = Vector2(0, 1)
 
     def caixa(self):
-        return Rectangle(self.posicao.x, self.posicao.y, 10 * ESCALA, 10 * ESCALA)
+        return Rectangle(self.posicao.x, self.posicao.y, textura_maca.width * ESCALA, textura_maca.height * ESCALA)
 
     def desenhar(self):
         draw_texture_ex(textura_maca, self.posicao, 0, ESCALA, WHITE)
@@ -121,7 +127,7 @@ while not window_should_close():
 
     begin_drawing()
     clear_background((135, 206, 235, 255))
-    draw_rectangle(0, CHAO + 16 * ESCALA, LARGURA, ALTURA, (96, 160, 72, 255))
+    draw_rectangle(0, int(CHAO + ALTURA_QUADRO * ESCALA), LARGURA, ALTURA, (96, 160, 72, 255))
     for maca in macas:
         maca.desenhar()
     heroi.desenhar()

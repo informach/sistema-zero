@@ -5,7 +5,6 @@ LARGURA = 800
 ALTURA = 450
 CHAO = 300
 ESCALA = 4
-PE = CHAO + 16 * ESCALA
 GRAVIDADE = 2400
 PULO = -820
 COR = (83, 83, 83, 255)
@@ -14,10 +13,18 @@ init_window(LARGURA, ALTURA, 'Dino Corredor')
 init_audio_device()
 set_target_fps(60)
 
-correndo = [load_texture('images/dino0.png'), load_texture('images/dino1.png')]
-pulando = load_texture('images/dino-pulo.png')
+# A folha do dino tem uma linha por animação, do jeito que o Pinta exporta:
+# a de cima é correndo (dois quadros) e a de baixo é pulando (um quadro).
+# O tamanho de um quadro sai da própria imagem: um desenho de qualquer tamanho entra no lugar.
+textura_dino = load_texture('images/dino.png')
+COLUNAS_DINO = 2
+LINHAS_DINO = 2
+LARGURA_DINO = textura_dino.width / COLUNAS_DINO
+ALTURA_DINO = textura_dino.height / LINHAS_DINO
+PE = CHAO + ALTURA_DINO * ESCALA
 cactos = [load_texture(f'images/cacto{i}.png') for i in range(3)]
-passaro = [load_texture('images/passaro0.png'), load_texture('images/passaro1.png')]
+# O passarinho bate as asas: uma linha só, com dois quadros.
+textura_passaro = load_texture('images/passaro.png')
 textura_nuvem = load_texture('images/nuvem.png')
 fonte = load_font_ex('fonts/pressstart2p.ttf', 16, None, 224)
 som_pulo = load_sound('sounds/pulo.wav')
@@ -27,33 +34,34 @@ play_music_stream(musica)
 
 
 class Obstaculo:
-    def __init__(self, texturas, y, velocidade):
-        self.texturas = texturas
+    def __init__(self, textura, quadros, y, velocidade):
+        self.textura = textura
+        self.quadros = quadros
+        self.largura = textura.width / quadros
+        self.altura = textura.height
         self.posicao = Vector2(LARGURA, y)
         self.velocidade = velocidade
         self.quadro = 0
 
     def atualizar(self, dt):
         self.posicao.x -= self.velocidade * dt
-        self.quadro = (self.quadro + 6 * dt) % len(self.texturas)
-
-    def textura(self):
-        return self.texturas[int(self.quadro)]
+        self.quadro = (self.quadro + 6 * dt) % self.quadros
 
     def caixa(self):
-        t = self.textura()
         # Uma caixa um pouco menor que o desenho: só bate quando encosta de verdade.
-        return Rectangle(self.posicao.x + 4, self.posicao.y + 4, t.width * ESCALA - 8, t.height * ESCALA - 8)
+        return Rectangle(self.posicao.x + 4, self.posicao.y + 4, self.largura * ESCALA - 8, self.altura * ESCALA - 8)
 
     def desenhar(self):
-        draw_texture_ex(self.textura(), self.posicao, 0, ESCALA, WHITE)
+        recorte = Rectangle(int(self.quadro) * self.largura, 0, self.largura, self.altura)
+        destino = Rectangle(self.posicao.x, self.posicao.y, self.largura * ESCALA, self.altura * ESCALA)
+        draw_texture_pro(self.textura, recorte, destino, Vector2(0, 0), 0, WHITE)
 
 
 def novo_obstaculo(velocidade):
     if randint(0, 10) <= 7:
         textura = choice(cactos)
-        return Obstaculo([textura], PE - textura.height * ESCALA, velocidade)
-    return Obstaculo(passaro, PE - 8 * ESCALA - randint(0, 40), velocidade)
+        return Obstaculo(textura, 1, PE - textura.height * ESCALA, velocidade)
+    return Obstaculo(textura_passaro, 2, PE - textura_passaro.height * ESCALA - randint(0, 40), velocidade)
 
 
 def comecar():
@@ -92,7 +100,7 @@ while not window_should_close():
         if no_chao and (is_key_pressed(KEY_SPACE) or is_key_pressed(KEY_UP)):
             velocidade_y = PULO
             play_sound(som_pulo)
-        quadro_dino = (quadro_dino + 10 * dt) % 2
+        quadro_dino = (quadro_dino + 10 * dt) % COLUNAS_DINO
 
         falta -= dt
         if falta <= 0:
@@ -107,7 +115,7 @@ while not window_should_close():
             if nuvem.x < -60:
                 nuvem.x = LARGURA + randint(0, 100)
 
-        caixa_dino = Rectangle(100 + 8, dino_y + 6, 16 * ESCALA - 18, 16 * ESCALA - 8)
+        caixa_dino = Rectangle(100 + 8, dino_y + 6, LARGURA_DINO * ESCALA - 18, ALTURA_DINO * ESCALA - 8)
         for obstaculo in obstaculos:
             if check_collision_recs(caixa_dino, obstaculo.caixa()):
                 perdeu = True
@@ -121,11 +129,16 @@ while not window_should_close():
     draw_line_ex(Vector2(0, PE), Vector2(LARGURA, PE), 4, COR)
     for obstaculo in obstaculos:
         obstaculo.desenhar()
+    # No ar, o quadro da linha de baixo (pulando); no chão, um quadro da linha de cima.
     if dino_y < CHAO:
-        textura_dino = pulando
+        linha = 1
+        coluna = 0
     else:
-        textura_dino = correndo[int(quadro_dino)]
-    draw_texture_ex(textura_dino, Vector2(100, dino_y), 0, ESCALA, WHITE)
+        linha = 0
+        coluna = int(quadro_dino)
+    recorte = Rectangle(coluna * LARGURA_DINO, linha * ALTURA_DINO, LARGURA_DINO, ALTURA_DINO)
+    destino = Rectangle(100, dino_y, LARGURA_DINO * ESCALA, ALTURA_DINO * ESCALA)
+    draw_texture_pro(textura_dino, recorte, destino, Vector2(0, 0), 0, WHITE)
 
     pontos = f'{int(tempo * 10):05d}'
     largura_texto = measure_text_ex(fonte, pontos, 16, 0).x

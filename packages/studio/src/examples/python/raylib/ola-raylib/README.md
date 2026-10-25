@@ -21,8 +21,10 @@ Clique no círculo grande para trocar a cor dele.
 O raylib abre cada arquivo pelo caminho, com a extensão: `load_texture('images/nave.png')`
 abre `images/nave.png` (a barra `/` funciona também no Windows). As imagens ficam em `images/`, os sons em
 `sounds/`, as músicas em `music/` e as fontes em `fonts/`. Para trocar um desenho,
-edite-o no Pinta pelo Estúdio, ou traga outro e use no código o caminho que o painel mostra
-em "nome no código".
+faça o seu no Pinta e traga para o jogo pelo menu ⋯ → Imagens → "Trazer do Pinta"; depois
+use no código o caminho que o painel mostra em "nome no código". Um desenho animado é uma
+folha de quadros, igual à que o Pinta exporta: uma linha por animação, com os quadros lado a
+lado, e o jogo recorta um quadro de cada vez.
 
 ## Jogar no computador
 

@@ -16,7 +16,12 @@ textura_nave = load_texture('images/nave.png')
 textura_meteoro = load_texture('images/meteoro.png')
 textura_laser = load_texture('images/laser.png')
 textura_estrela = load_texture('images/estrela.png')
-quadros_explosao = [load_texture(f'images/explosao{i}.png') for i in range(5)]
+# A explosão é uma folha com os quadros lado a lado, do jeito que o Pinta exporta.
+# O tamanho de um quadro sai da própria imagem: um desenho de qualquer tamanho entra no lugar.
+textura_explosao = load_texture('images/explosao.png')
+QUADROS_EXPLOSAO = 5
+LARGURA_EXPLOSAO = textura_explosao.width / QUADROS_EXPLOSAO
+ALTURA_EXPLOSAO = textura_explosao.height
 fonte = load_font_ex('fonts/pressstart2p.ttf', 32, None, 224)
 som_laser = load_sound('sounds/laser.wav')
 som_explosao = load_sound('sounds/explosao.wav')
@@ -97,17 +102,18 @@ class Meteoro(Sprite):
 
 class Explosao:
     def __init__(self, centro):
-        self.posicao = Vector2(centro.x - quadros_explosao[0].width / 2, centro.y - quadros_explosao[0].height / 2)
+        self.posicao = Vector2(centro.x - LARGURA_EXPLOSAO / 2, centro.y - ALTURA_EXPLOSAO / 2)
         self.quadro = 0
         self.descartar = False
 
     def atualizar(self, dt):
         self.quadro += 12 * dt
-        self.descartar = self.quadro >= len(quadros_explosao)
+        self.descartar = self.quadro >= QUADROS_EXPLOSAO
 
     def desenhar(self):
         if not self.descartar:
-            draw_texture_v(quadros_explosao[int(self.quadro)], self.posicao, WHITE)
+            recorte = Rectangle(int(self.quadro) * LARGURA_EXPLOSAO, 0, LARGURA_EXPLOSAO, ALTURA_EXPLOSAO)
+            draw_texture_rec(textura_explosao, recorte, self.posicao, WHITE)
 
 
 def escrever_no_meio(texto, y, tamanho, cor):

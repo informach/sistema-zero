@@ -1,35 +1,26 @@
 // Gerado por scripts/generate-raylib-games.ts. Não edite este arquivo.
 // Materiais: src/examples/python/raylib/dino-corredor
-// images/dino0.png: 8e21b5564299ea79b3ff3fec5cab176bfb375cf83034eb4c03aafa371d4f272a
-// images/dino1.png: 8c866e73bde83e39ea685b9c403843d7ee2961102706343068bafce069d2e212
-// images/dino-pulo.png: 2f17a0aabd01a66a105427ff027b357abbb26806d01349c5acf9fd1881a2e5ec
+// images/dino.png: 80dc4a6e89962ab027f1863fe88f2840d62953718509a071d94fe893de2ce75b
 // images/cacto0.png: 21670cafbab7f5373d61525731a768b2f7613a22b52ace993e71207918502f0a
 // images/cacto1.png: cf522f9c7febab45a5e5fe1f353188c171739c69db435ab291d00fa93fa1ce9c
 // images/cacto2.png: 49a75118db96eeb11f438f32ad39a39243ea50ffc916472307b7effd4f5cd291
-// images/passaro0.png: a3bca96c17a47135eaf83c979b03bff4768b7a9c0c44ccf6bb601e06b3d1bd54
-// images/passaro1.png: c4d6efda8da1dd6e32d2900c0c66195580129050adca7397caba56364ff9d232
+// images/passaro.png: db117a12691fbb85032dc97810ea68a71f24c22e8bb0a5a5544783a859fa9ff4
 // images/nuvem.png: 5c607c69805bb413c5cc8e05fa89ed9ef4675d79470f8f9d3edc7d2f07cf40c7
 // fonts/pressstart2p.ttf: ac3e4aa06a8ebeef00e8f187697146936dc1cc248dbc93740931c5ee54032c73
 // sounds/pulo.wav: e682ae9f0058498f63bbb37c3c3af1f604cf6a4b470dc6899def62e26b9449f7
 // sounds/batida.wav: 8fdc023a1871a8e4bd38452c8d7cbbda884e65afcf47ed219048ec33095f4ab7
 // music/tema.ogg: dcae57a3cfddfb912cb5eec71bdb2e3a99017c9fb0e2fbbb1b5ce53cd4198ebf
 export const DINO_CORREDOR_MEDIA: Readonly<Record<string, string>> = {
-  'images/dino0.png':
-    'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAXUlEQVR42mNgIAQYGBh81gf8x4YZSNEMAmQZgst2igxgIAVgM0Cv1giMURQRo5mQLf+J9Ttem8gKOHyKjz5cCsPEeQOXZkIGYDWEJM1kBR6xsUJW4iEUzSS5gKYAACbJ9p08CKQVAAAAAElFTkSuQmCC',
-  'images/dino1.png':
-    'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAYElEQVR42mNgIAQYGBh81gf8x4YZSNEMAmQZgst2igxgIAVgM0Cv1giMURQRo5mQLf+J9Ttem8gKOHyKjz5cCsPEeQOXZkIGYDWEJM1kBR4+Q/DFELGu+E8onZBrIHUBAO/K9p16xTf3AAAAAElFTkSuQmCC',
-  'images/dino-pulo.png':
-    'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAXUlEQVR42mNgIAQYGBh81gf8x4YZSNEMAmQZgst2igxgIAVgM0Cv1giMURQRo5mQLf+J9Ttem8gKOHyKjz5cCsPEeQOXZkIGYDWEJM1kBR4+Q/DxiXXFf3zRPHgAALCO8gmaG4GdAAAAAElFTkSuQmCC',
+  'images/dino.png':
+    'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAzElEQVR42t2WwQ0CMQwEtyIe1MGDhiiHN1VQCJUcAukeIOcuu+vECEt+XWazSZz4gL0AcLqdlyjRGRa/Dn6FIuLyLfesAZWPBXq3PoMPBQ6X4zuzeLRc9Tp3eUQDmHNzeXx/ZAvH5TeB++O65tK71SzfEvmA9wRcPhShYJeXiiebb1W18vhs3RBKQBFxF6C5nqVXEm5RpUyu9vNRq681UH3+1P+AdO/Zfj7knk49d7efD610qaNlmWD7ebaJuZOXFB/Tjksen39pp78dT3h4318GAU9mAAAAAElFTkSuQmCC',
   'images/cacto0.png':
     'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAKCAYAAACJxx+AAAAAMUlEQVR42mNggAEGBga9WqP/IMyADcAkcSnCpQAiQa4CiBy6BLoCXG7AbhV5viCkAABQclWJxME/6QAAAABJRU5ErkJggg==',
   'images/cacto1.png':
     'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAMCAYAAABbayygAAAALUlEQVR42mNgQAN6tUb/QZgBH4ApwqoYWYBShRA1yIJ4FWJTgA0T6xmGYaUQABO/af2KJCCpAAAAAElFTkSuQmCC',
   'images/cacto2.png':
     'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAwAAAAICAYAAADN5B7xAAAALklEQVR42mNggAK9WqP/IMyABrCKwwTRJXGJk6YBXRAmgU0cryZcimntBzI0AAB3S3jdSYtPPQAAAABJRU5ErkJggg==',
-  'images/passaro0.png':
-    'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAwAAAAICAYAAADN5B7xAAAAKklEQVR42mNggIK68EP/QZiBWADTQCtNqIpx4f+bGf4TpRCvrSQppgkAAEc2Wp5g5Sj+AAAAAElFTkSuQmCC',
-  'images/passaro1.png':
-    'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAwAAAAICAYAAADN5B7xAAAALUlEQVR42mNgGCyA4f9mhv8oAnXhh/7jwyANYE2EFCJjdFsZ8EpSpBhZAyF1AAnyTeZjcAe5AAAAAElFTkSuQmCC',
+  'images/passaro.png':
+    'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAICAYAAADjoT9jAAAAP0lEQVR42mNggIK68EP/QZiBVgBmwVCxhOH/Zob/uAzHhf8jayJGLVg9MQYj+4pU9XiDiZBimsYbrRMF0ckaANs1qINccWz+AAAAAElFTkSuQmCC',
   'images/nuvem.png':
     'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAGCAYAAADKfB7nAAAAKElEQVR42mNgQAcMDAz/0QADseA/AUCRZryG/ScXgAz6TyGgyAUgvQDKEhL8EJfYGQAAAABJRU5ErkJggg==',
   'fonts/pressstart2p.ttf':

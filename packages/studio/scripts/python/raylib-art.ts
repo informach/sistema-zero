@@ -139,8 +139,7 @@ const HEROI_CORES = {
   b: '#2b4c8c',
   s: '#6b3f22',
 }
-export const heroiQuadro = (quadro: number, escala = 1) =>
-  pixelArt([...HEROI_CABECA, ...HEROI_QUADROS[quadro]!], HEROI_CORES, escala)
+const heroiLinhas = (quadro: number) => [...HEROI_CABECA, ...HEROI_QUADROS[quadro]!]
 
 // Maçã (10 x 10) e cesta (16 x 8).
 const MACA = [
@@ -179,8 +178,7 @@ const DINO_PERNAS = [
   ['.....g...g......', '.....gg..gg.....', '................', '................'],
 ]
 const DINO_CORES = { g: '#4caf50', w: '#ffffff', l: '#2e7d32', b: '#c5e1a5' }
-export const dino = (quadro: number, escala = 1) =>
-  pixelArt([...DINO_CORPO, ...DINO_PERNAS[quadro]!], DINO_CORES, escala)
+const dinoLinhas = (quadro: number) => [...DINO_CORPO, ...DINO_PERNAS[quadro]!]
 
 // Cactos de três tamanhos.
 const CACTOS = [
@@ -246,8 +244,7 @@ const PASSARO = [
     '..pp........',
   ],
 ]
-export const passaro = (quadro: number, escala = 1) =>
-  pixelArt(PASSARO[quadro]!, { p: '#7e57c2', o: '#ffb300' }, escala)
+const PASSARO_CORES = { p: '#7e57c2', o: '#ffb300' }
 
 // Nuvem (16 x 6).
 const NUVEM = [
@@ -282,8 +279,10 @@ const ESTRELINHA = ['..w..', '.wyw.', 'wyyyw', '.wyw.', '..w..']
 export const estrelinha = (escala = 1) =>
   pixelArt(ESTRELINHA, { w: '#fff8e1', y: '#ffe082' }, escala)
 
+const EXPLOSAO_CORES = { w: '#ffffff', y: '#ffeb3b', o: '#ff9800', r: '#9e3a1e' }
+
 /** Explosão em anéis (24 x 24): cada quadro tem o anel maior e mais apagado. */
-export function explosao(quadro: number, escala = 1) {
+function explosaoLinhas(quadro: number) {
   const raio = 3 + quadro * 2.2
   const linhas: string[] = []
   for (let y = 0; y < 24; y++) {
@@ -297,7 +296,7 @@ export function explosao(quadro: number, escala = 1) {
     }
     linhas.push(linha)
   }
-  return pixelArt(linhas, { w: '#ffffff', y: '#ffeb3b', o: '#ff9800', r: '#9e3a1e' }, escala)
+  return linhas
 }
 
 // Monstrinhos (16 x 16), virados para a esquerda (o jogo espelha o do jogador).
@@ -564,12 +563,40 @@ const CORACAO = ['.rr.rr.', 'rwrrrrr', 'rrrrrrr', 'rrrrrrr', '.rrrrr.', '..rrr..
 const FOLHA = ['.ll.', 'lldl', 'ldll', '.ll.']
 const ESPADA = ['.ww.', '.ww.', '.ww.', '.ww.', '.ww.', '.ww.', 'yyyy', '.bb.', '.bb.', '.yy.']
 
+/**
+ * Folha de quadros no formato que o Pinta exporta: uma LINHA por animação, os quadros lado a
+ * lado e `colunas = o maior número de quadros` (a animação mais curta deixa o fim da linha
+ * vazio). Todo quadro tem o mesmo tamanho, então o jogo acha o tamanho do quadro dividindo a
+ * largura da imagem pelas colunas e a altura pelas linhas: um desenho do Pinta de qualquer
+ * tamanho entra no lugar.
+ */
+export function folhaDeQuadros(
+  animacoes: readonly (readonly (readonly string[])[])[],
+  cores: Record<string, string>,
+  escala = 1,
+) {
+  const primeiro = animacoes[0]![0]!
+  const largura = primeiro[0]!.length
+  const altura = primeiro.length
+  const colunas = Math.max(...animacoes.map((animacao) => animacao.length))
+  const vazio = Array.from({ length: altura }, () => '.'.repeat(largura))
+  const linhas: string[] = []
+  for (const animacao of animacoes) {
+    for (let y = 0; y < altura; y++) {
+      linhas.push(Array.from({ length: colunas }, (_, c) => (animacao[c] ?? vazio)[y]).join(''))
+    }
+  }
+  return pixelArt(linhas, cores, escala)
+}
+
 export const AVENTURA_ART = () => ({
-  'images/heroi-baixo.png': pixelArt(HEROI_AVENTURA.baixo!, HEROI_AVENTURA_CORES, 2),
-  'images/heroi-lado.png': pixelArt(HEROI_AVENTURA.lado!, HEROI_AVENTURA_CORES, 2),
-  'images/heroi-cima.png': pixelArt(HEROI_AVENTURA.cima!, HEROI_AVENTURA_CORES, 2),
-  'images/gosma0.png': pixelArt(GOSMA[0]!, GOSMA_CORES, 2),
-  'images/gosma1.png': pixelArt(GOSMA[1]!, GOSMA_CORES, 2),
+  // Uma animação por direção, um quadro cada: baixo, lado e cima.
+  'images/heroi.png': folhaDeQuadros(
+    [[HEROI_AVENTURA.baixo!], [HEROI_AVENTURA.lado!], [HEROI_AVENTURA.cima!]],
+    HEROI_AVENTURA_CORES,
+    2,
+  ),
+  'images/gosma.png': folhaDeQuadros([[GOSMA[0]!, GOSMA[1]!]], GOSMA_CORES, 2),
   'images/arvore.png': pixelArt(ARVORE, { ...MATO_CORES, l: '#2e7d32', d: '#1b5e20' }, 2),
   'images/pedra.png': pixelArt(PEDRA_AVENTURA, MATO_CORES, 2),
   'images/mato.png': pixelArt(MATO, MATO_CORES, 2),
@@ -587,21 +614,19 @@ export const RAYLIB_GAME_ART: Record<string, () => Record<string, Uint8Array>> =
   encostou: () => ({}),
   'camera-que-segue': () => ({}),
   'sprites-timer-animacao': () => ({
-    'images/heroi0.png': heroiQuadro(0),
-    'images/heroi1.png': heroiQuadro(1),
-    'images/heroi2.png': heroiQuadro(2),
-    'images/heroi3.png': heroiQuadro(3),
+    'images/heroi.png': folhaDeQuadros([[0, 1, 2, 3].map(heroiLinhas)], HEROI_CORES),
     'images/maca.png': maca(),
   }),
   'dino-corredor': () => ({
-    'images/dino0.png': dino(0),
-    'images/dino1.png': dino(1),
-    'images/dino-pulo.png': dino(2),
+    // Linha 0 = correndo (dois quadros), linha 1 = pulando (um quadro).
+    'images/dino.png': folhaDeQuadros(
+      [[dinoLinhas(0), dinoLinhas(1)], [dinoLinhas(2)]],
+      DINO_CORES,
+    ),
     'images/cacto0.png': cacto(0),
     'images/cacto1.png': cacto(1),
     'images/cacto2.png': cacto(2),
-    'images/passaro0.png': passaro(0),
-    'images/passaro1.png': passaro(1),
+    'images/passaro.png': folhaDeQuadros([[PASSARO[0]!, PASSARO[1]!]], PASSARO_CORES),
     'images/nuvem.png': nuvem(),
     'fonts/pressstart2p.ttf': PRESS_START_2P,
   }),
@@ -610,11 +635,7 @@ export const RAYLIB_GAME_ART: Record<string, () => Record<string, Uint8Array>> =
     'images/meteoro.png': pedra(4),
     'images/laser.png': laser(3),
     'images/estrela.png': estrelinha(2),
-    'images/explosao0.png': explosao(0, 3),
-    'images/explosao1.png': explosao(1, 3),
-    'images/explosao2.png': explosao(2, 3),
-    'images/explosao3.png': explosao(3, 3),
-    'images/explosao4.png': explosao(4, 3),
+    'images/explosao.png': folhaDeQuadros([[0, 1, 2, 3, 4].map(explosaoLinhas)], EXPLOSAO_CORES, 3),
     'fonts/pressstart2p.ttf': PRESS_START_2P,
   }),
   'batalha-de-monstrinhos': () => ({
