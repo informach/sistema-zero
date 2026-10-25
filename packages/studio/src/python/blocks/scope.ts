@@ -50,6 +50,11 @@ export interface PythonResolverOptions {
   builtins?: ReadonlyMap<string, PythonProvidedBuiltin>
   /** Public names of modules whose `from module import *` is understood. */
   starExports?: ReadonlyMap<string, readonly string[]>
+  /**
+   * Modules that are where an extension's provided names come from (pgzero.builtins): importing
+   * a name from one gives the same provided name, not a module member.
+   */
+  builtinModules?: ReadonlyMap<string, string>
 }
 export interface PythonBindingResolver {
   (value: PythonNode, binding: PythonBlockBinding | undefined): boolean
@@ -123,6 +128,7 @@ export function pythonBindingResolver(
 ): PythonBindingResolver {
   const builtins = options.builtins ?? new Map()
   const starExports = options.starExports ?? new Map()
+  const builtinModules = options.builtinModules ?? new Map()
   const scopes = new WeakMap<PythonNode, Scope>()
   const classNodes = new WeakMap<Scope, PythonNode>()
   const methodScopes: Scope[] = []
@@ -132,6 +138,8 @@ export function pythonBindingResolver(
   /** `lista.append(valor)` and the loops over a list name, for the element class of a list. */
   const appends: { scope: Scope; list: string; value: PythonNode }[] = []
   const loops: { scope: Scope; target: string; list: PythonNode }[] = []
+  /** `for t in [a, b]:` over a list written right there, of names only. */
+  const literalLoops: { scope: Scope; target: string; items: PythonNode[] }[] = []
   /** Lists also changed by other means: their elements are not proven. */
   const otherwiseFilled: { scope: Scope; list: string }[] = []
   /**
@@ -150,7 +158,13 @@ export function pythonBindingResolver(
     dunder: boolean
     /** The attribute is an official name: replacing it is dangerous on any official object. */
     official: boolean
+    /** `nome.attr = ...` straight on a name (not `a.b.attr`, not `a[0].attr`). */
+    direct: boolean
   }[] = []
+  /** Classes the program writes, to tell its own objects apart from official ones. */
+  const classDefs: { scope: Scope; name: string; node: PythonNode }[] = []
+  /** Names read as a value of their own (an alias, an argument), not only as `nome.algo`. */
+  const bareReads = new Set<string>()
   let hasDynamicBindings = false
   // Private internals (turtle.Turtle._goto, random._inst) implement the official API too.
   const replacesOfficialName = (attr: string) => attr.startsWith('_') || guardedAttributes.has(attr)
@@ -353,6 +367,18 @@ export function pythonBindingResolver(
       fields.iter.kind === 'Name'
     )
       loops.push({ scope, target: fields.target.fields.id, list: fields.iter })
+    if (
+      value.kind === 'For' &&
+      isNode(fields.target) &&
+      fields.target.kind === 'Name' &&
+      typeof fields.target.fields.id === 'string' &&
+      isNode(fields.iter) &&
+      ['List', 'Tuple'].includes(fields.iter.kind) &&
+      nodes(fields.iter.fields.elts) &&
+      fields.iter.fields.elts.length > 0 &&
+      fields.iter.fields.elts.every((item) => item.kind === 'Name')
+    )
+      literalLoops.push({ scope, target: fields.target.fields.id, items: fields.iter.fields.elts })
     if (value.kind === 'Attribute' && isNode(fields.ctx) && typeof fields.attr === 'string') {
       // Every store is kept: whether it is harmless depends on what its root turns out to be
       // (any name of the builtins or __main__ module replaces things whatever the attribute).
@@ -362,6 +388,7 @@ export function pythonBindingResolver(
           root: rootName(isNode(fields.value) ? fields.value : undefined),
           dunder: fields.attr.startsWith('__') && fields.attr.endsWith('__'),
           official: replacesOfficialName(fields.attr),
+          direct: isNode(fields.value) && fields.value.kind === 'Name',
         })
       // object.__setattr__ and __dict__ reach the same mutation without an attribute Store.
       else if (MUTATING_DUNDERS.has(fields.attr)) hasDynamicBindings = true
@@ -409,7 +436,29 @@ export function pythonBindingResolver(
         'literal' in fields.level &&
         fields.level.literal === 'int' &&
         fields.level.value === '0'
+      const provider = absolute ? builtinModules.get(fields.module as string) : undefined
       for (const alias of fields.names) {
+        if (provider) {
+          // `from pgzero.builtins import Actor` (or *) names exactly what the extension
+          // already provides: the name stays the provided one. A renamed or unknown one does not.
+          const imported = alias.fields.name
+          const renamed =
+            typeof alias.fields.asname === 'string' && alias.fields.asname !== imported
+          if (imported === '*') continue
+          if (
+            typeof imported === 'string' &&
+            !renamed &&
+            builtins.get(imported)?.provider === provider
+          )
+            continue
+          if (typeof imported === 'string')
+            assign(
+              scope,
+              typeof alias.fields.asname === 'string' ? alias.fields.asname : imported,
+              { kind: 'other' },
+            )
+          continue
+        }
         if (alias.fields.name === '*') {
           const exports = absolute ? starExports.get(fields.module as string) : undefined
           if (!exports) scope.uncertain = true
@@ -440,6 +489,8 @@ export function pythonBindingResolver(
     }
     if (['FunctionDef', 'AsyncFunctionDef', 'ClassDef', 'Lambda'].includes(value.kind)) {
       if (typeof fields.name === 'string') assign(scope, fields.name, { kind: 'other' })
+      if (value.kind === 'ClassDef' && typeof fields.name === 'string')
+        classDefs.push({ scope, name: fields.name, node: value })
       // Function defaults, decorators and bases are evaluated in the enclosing scope.
       for (const [key, child] of Object.entries(fields))
         if (!['body', 'args'].includes(key)) for (const item of children(child)) visit(item, scope)
@@ -726,6 +777,24 @@ export function pythonBindingResolver(
     if (element && (target.writes.get(loop.target) ?? 0) === 1)
       target.bindings.set(loop.target, element)
   }
+  // Every name in the list holds the same kind of official object: so does the loop variable.
+  for (const loop of literalLoops) {
+    const found = loop.items.map((item) => bindingAt(item))
+    const first = found[0]
+    if (
+      first?.kind !== 'instance' ||
+      found.some(
+        (binding) =>
+          binding?.kind !== 'instance' ||
+          binding.instance !== first.instance ||
+          binding.module !== first.module ||
+          binding.builtin !== first.builtin,
+      )
+    )
+      continue
+    const target = owner(loop.scope, loop.target)
+    if ((target.writes.get(loop.target) ?? 0) === 1) target.bindings.set(loop.target, first)
+  }
   // `self` in a class that inherits an official class (Actor, turtle.Turtle) is one of its
   // objects: self.draw(), self.forward(10) keep their blocks.
   for (const method of methodScopes) {
@@ -787,6 +856,64 @@ export function pythonBindingResolver(
       return !found || found.kind === 'other'
     })
   }
+  function collectBareReads(value: PythonNode, receiver: boolean) {
+    if (
+      value.kind === 'Name' &&
+      !receiver &&
+      typeof value.fields.id === 'string' &&
+      isNode(value.fields.ctx) &&
+      value.fields.ctx.kind === 'Load'
+    )
+      bareReads.add(value.fields.id)
+    for (const [key, child] of Object.entries(value.fields))
+      for (const item of children(child))
+        collectBareReads(item, value.kind === 'Attribute' && key === 'value')
+  }
+  /** A class this program defines once, without an official class among its bases. */
+  function ownClass(nameNode: PythonNode) {
+    const key = nameNode.fields.id
+    if (typeof key !== 'string') return false
+    const scope = holder(scopes.get(nameNode), key)
+    if (!scope || (scope.writes.get(key) ?? 0) !== 1) return false
+    const found = classDefs.find((entry) => entry.scope === scope && entry.name === key)
+    if (!found) return false
+    const bases = nodes(found.node.fields.bases) ? found.node.fields.bases : []
+    return bases.every((base) => {
+      const baseRoot = rootName(base)
+      const binding = baseRoot ? bindingAt(baseRoot) : { kind: 'other' as const }
+      return !binding || binding.kind === 'other'
+    })
+  }
+  /**
+   * `botao.text = "Jogar"` on an object the program made itself changes only that object: it
+   * loses its own official blocks, the rest of the program keeps them. An object of the
+   * program's own class has no official methods to replace; an official object (an Actor, a
+   * turtle) counts only while nothing else can hold it (no alias, no argument).
+   */
+  function storesOnOwnObject(write: (typeof attributeWrites)[number]) {
+    const key = write.root?.fields.id
+    if (!write.direct || write.dunder || typeof key !== 'string') return false
+    const scope = holder(write.scope, key)
+    const found = scope?.bindings.get(key)
+    if (!scope || !found) return false
+    // A loop variable holds objects that other names hold too: only a constructor's own name.
+    if (found.kind === 'instance')
+      return (
+        !bareReads.has(key) &&
+        typed.filter((entry) => entry.scope === scope && entry.target === key).length ===
+          (scope.writes.get(key) ?? 0)
+      )
+    if (found.kind !== 'other' || (scope.writes.get(key) ?? 0) !== 1) return false
+    return typed.some(
+      (entry) =>
+        entry.scope === scope &&
+        entry.target === key &&
+        entry.value.kind === 'Call' &&
+        isNode(entry.value.fields.func) &&
+        entry.value.fields.func.kind === 'Name' &&
+        ownClass(entry.value.fields.func),
+    )
+  }
   /** The interpreter's own namespaces: a store on them replaces a built-in or a handler. */
   function replacesNamespace(write: (typeof attributeWrites)[number]) {
     const key = write.root?.fields.id
@@ -811,11 +938,29 @@ export function pythonBindingResolver(
     }
   }
   let hasAttributeWrites = false
-  for (const write of attributeWrites)
-    if (replacesNamespace(write) || (write.official && !ownObjectState(write))) {
+  collectBareReads(tree, false)
+  for (const write of attributeWrites) {
+    if (replacesNamespace(write)) {
       hasAttributeWrites = true
       break
     }
+    if (!write.official || ownObjectState(write)) continue
+    if (storesOnOwnObject(write)) {
+      // Only this object loses its proof (and so its official blocks).
+      const key = String(write.root!.fields.id)
+      const owner = holder(write.scope, key)!
+      owner.bindings.set(key, { kind: 'other' })
+      let names = otherObjects.get(owner)
+      if (!names) {
+        names = new Set()
+        otherObjects.set(owner, names)
+      }
+      names.add(key)
+      continue
+    }
+    hasAttributeWrites = true
+    break
+  }
 
   const resolver = ((value: PythonNode, binding: PythonBlockBinding | undefined) => {
     if (!binding) return true

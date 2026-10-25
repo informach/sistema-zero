@@ -807,3 +807,139 @@ test('an animation kept in a variable or a list can be stopped by its own block'
   // Anything else called "stop" (a sound, a timer of the child's) is not an animation.
   expect(used([stop('cronometro')])).not.toContain('sz_py_pgzero_animation_stop')
 })
+
+test('a store on an official name locks only that object when the program made it itself', async () => {
+  const { PYTHON_PGZERO_CODECS, PGZERO_RESOLVER_OPTIONS } = await import(
+    '../extensions/pgzero/catalog'
+  )
+  const { attachPythonResolverOptions } = await import('./resolverOptions')
+  const pgzero = attachPythonResolverOptions(
+    [...PYTHON_PGZERO_CODECS, ...PYTHON_PROGRAMMING_CODECS],
+    PGZERO_RESOLVER_OPTIONS,
+  )
+  const store = (target: PythonNode, value: PythonNode) =>
+    node('Assign', {
+      targets: [{ ...target, fields: { ...target.fields, ctx: node('Store') } }],
+      value,
+      type_comment: null,
+    })
+  const assign = (id: string, value: PythonNode) =>
+    node('Assign', { targets: [name(id, 'Store')], value, type_comment: null })
+  const draw = fn('draw', [
+    expression(call(attribute(name('screen'), 'fill'), [text('black')])),
+    expression(call(attribute(name('botao'), 'draw'))),
+  ])
+  const used = (body: PythonNode[]) => {
+    const tree = moduleNode(body)
+    const projection = pythonASTToVisual(tree, {
+      codecs: pgzero,
+      officialModules: new Set(['pgzero', 'pgzrun']),
+    })
+    expect(pythonSemanticTree(pythonVisualToAST(projection, pgzero))).toEqual(
+      pythonSemanticTree(tree),
+    )
+    return ids(projection.body)
+  }
+  const botao = assign('botao', call(name('Actor'), [text('botao')]))
+  const fill = 'sz_py_pgzero_screen_fill'
+  const actorDraw = 'sz_py_pgzero_actor_draw'
+  // Without the store: every block is official.
+  expect(used([botao, draw])).toEqual(expect.arrayContaining([fill, actorDraw]))
+  // `botao.text = "Jogar"`: the screen keeps its blocks; only botao loses its own.
+  const local = used([botao, store(attribute(name('botao'), 'text'), text('Jogar')), draw])
+  expect(local).toContain(fill)
+  expect(local).not.toContain(actorDraw)
+  // An object of the program's own class: nothing official to replace.
+  const bola = node('ClassDef', {
+    name: 'Bola',
+    bases: [],
+    keywords: [],
+    body: [pass()],
+    decorator_list: [],
+    type_params: [],
+  })
+  expect(
+    used([
+      botao,
+      bola,
+      assign('b', call(name('Bola'))),
+      store(attribute(name('b'), 'draw'), integer('1')),
+      draw,
+    ]),
+  ).toEqual(expect.arrayContaining([fill, actorDraw]))
+  // Still locked everywhere: a store through the official object, an aliased object and an
+  // object a function of the program returns (it may be the screen itself).
+  for (const body of [
+    [botao, store(attribute(attribute(name('screen'), 'draw'), 'text'), name('print')), draw],
+    [
+      botao,
+      assign('outro', name('botao')),
+      store(attribute(name('botao'), 'text'), text('Jogar')),
+      draw,
+    ],
+    [
+      botao,
+      fn('fazer', [node('Return', { value: name('screen') })]),
+      assign('tela', call(name('fazer'))),
+      store(attribute(name('tela'), 'fill'), name('print')),
+      draw,
+    ],
+  ])
+    expect(used(body)).not.toContain(fill)
+})
+
+test('importing from pgzero.builtins keeps the provided names and their blocks', async () => {
+  const { PYTHON_PGZERO_CODECS, PGZERO_RESOLVER_OPTIONS } = await import(
+    '../extensions/pgzero/catalog'
+  )
+  const { attachPythonResolverOptions } = await import('./resolverOptions')
+  const pgzero = attachPythonResolverOptions(
+    [...PYTHON_PGZERO_CODECS, ...PYTHON_PROGRAMMING_CODECS],
+    PGZERO_RESOLVER_OPTIONS,
+  )
+  const from = (names: [string, string | null][]) =>
+    node('ImportFrom', {
+      module: 'pgzero.builtins',
+      names: names.map(([imported, asname]) => node('alias', { name: imported, asname })),
+      level: integer('0').fields.value!,
+    })
+  const program = (head: PythonNode[], actor = 'Actor') =>
+    moduleNode([
+      ...head,
+      node('Assign', {
+        targets: [name('heroi', 'Store')],
+        value: call(name(actor), [text('heroi')]),
+        type_comment: null,
+      }),
+      fn('draw', [
+        expression(call(attribute(name('screen'), 'fill'), [text('black')])),
+        expression(call(attribute(name('heroi'), 'draw'))),
+      ]),
+    ])
+  const used = (tree: PythonNode) => {
+    const projection = pythonASTToVisual(tree, {
+      codecs: pgzero,
+      officialModules: new Set(['pgzero', 'pgzrun']),
+    })
+    expect(pythonSemanticTree(pythonVisualToAST(projection, pgzero))).toEqual(
+      pythonSemanticTree(tree),
+    )
+    return ids(projection.body)
+  }
+  const official = ['sz_py_pgzero_screen_fill', 'sz_py_pgzero_actor_draw']
+  expect(used(program([from([['*', null]])]))).toEqual(expect.arrayContaining(official))
+  expect(
+    used(
+      program([
+        from([
+          ['Actor', null],
+          ['screen', 'screen'],
+        ]),
+      ]),
+    ),
+  ).toEqual(expect.arrayContaining(official))
+  // A renamed import is a name of its own: its actor is not proven, the screen still is.
+  const renamed = used(program([from([['Actor', 'Ator']])], 'Ator'))
+  expect(renamed).toContain('sz_py_pgzero_screen_fill')
+  expect(renamed).not.toContain('sz_py_pgzero_actor_draw')
+})

@@ -35,6 +35,7 @@ export const PGZERO_BUILTINS: ReadonlyMap<string, PythonProvidedBuiltin> = new M
 export const PGZERO_RESOLVER_OPTIONS: PythonResolverOptions = {
   builtins: PGZERO_BUILTINS,
   starExports: new Map([['pgzero.builtins', [...PGZERO_BUILTINS.keys()]]]),
+  builtinModules: new Map([['pgzero.builtins', PROVIDER]]),
 }
 
 const n = (value: number) => () => integer(String(value))

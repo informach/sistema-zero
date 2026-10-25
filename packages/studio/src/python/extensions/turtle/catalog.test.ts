@@ -441,3 +441,31 @@ test('the first Turtle palette is a short teaching set without aliases or hidden
   })
   expect(plain.entries.every((entry) => entry.owner === 'programming')).toBe(true)
 })
+
+test('a loop over a list of turtles written right there gives each turtle block', () => {
+  const novo = () => call(attribute(name('turtle'), 'Turtle'))
+  const loop = (items: string[]) =>
+    node('For', {
+      target: name('desenho', 'Store'),
+      iter: node('List', { elts: items.map((item) => name(item)), ctx: node('Load') }),
+      body: [turtleCall('desenho', 'speed', [integer('0')]), turtleCall('desenho', 'penup', [])],
+      orelse: [],
+      type_comment: null,
+    })
+  const used = (body: ReturnType<typeof node>[]) => {
+    const original = moduleNode([imported(), ...body])
+    const projection = pythonASTToVisual(original, official)
+    expect(pythonSemanticTree(pythonVisualToAST(projection, codecs))).toEqual(
+      pythonSemanticTree(original),
+    )
+    return types(projection.body)
+  }
+  const turtles = [assigned('cenario', novo()), assigned('pincel', novo())]
+  const both = used([...turtles, loop(['cenario', 'pincel'])])
+  expect(both).toContain('sz_py_turtle_turtle_speed')
+  expect(both).toContain('sz_py_turtle_turtle_penup')
+  // Something that is not a turtle in the list: speed is a common name, it stays generic.
+  const mixed = used([...turtles, assigned('placar', integer('0')), loop(['cenario', 'placar'])])
+  expect(mixed).not.toContain('sz_py_turtle_turtle_speed')
+  expect(mixed).toContain('sz_py_method')
+})
