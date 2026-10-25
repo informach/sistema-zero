@@ -59,9 +59,34 @@ OP_SCALE = 38
 OP_LINE_BEZIER = 39
 OP_POINTS = 40
 OP_TEXTURE_NPATCH = 41
-# 3D (a extensão Raylib 3D): ver _models.py.
+# 3D (a extensão Raylib 3D): _camera3d.py, _draw3d.py e _models.py.
 OP_BEGIN_3D = 60
 OP_END_3D = 61
+OP_LINE_3D = 62
+OP_POINT_3D = 63
+OP_CIRCLE_3D = 64
+OP_TRIANGLE_3D = 65
+OP_CUBE = 66
+OP_CUBE_WIRES = 67
+OP_SPHERE = 68
+OP_SPHERE_WIRES = 69
+OP_CYLINDER = 70
+OP_CYLINDER_WIRES = 71
+OP_CYLINDER_EX = 72
+OP_CYLINDER_WIRES_EX = 73
+OP_CAPSULE = 74
+OP_CAPSULE_WIRES = 75
+OP_PLANE = 76
+OP_GRID = 77
+OP_QUAD_3D = 78
+OP_RL_STATE = 79
+# Malha de modelo: tamanho variável (ver _models.emit_mesh).
+OP_MESH = 80
+# Shaders (ver _shaders.py): o modo do lote, valores de uniform (tamanho variável), matriz e textura.
+OP_SHADER_MODE = 81
+OP_SHADER_VALUE = 82
+OP_SHADER_MATRIX = 83
+OP_SHADER_TEXTURE = 84
 
 MAX_RECORDS = 400_000
 MAX_TEXTURES = 2048
@@ -144,10 +169,11 @@ _root = '.'
 mode = '2d'
 
 # Recursos que o navegador ainda não recebeu, e os que o jogo descartou.
-pending_textures = []   # [id, 'f', path] | [id, 'p', w, h, bytes] | [id, 'r', w, h] | [id, 'h', path]
+pending_textures = []   # [id, 'f', path] | [id, 'p', w, h, bytes] | [id, 'r', w, h] | [id, 'e', size, bytes]
 pending_fonts = []      # [id, path, baseSize, emPx, ascentPx, [codepoints]]
 pending_free = []
-pending_models = []     # 3D: ver _models.py
+pending_models = []     # 3D: ['mesh', id, vertices, índices, partes, tamanho, bytes] (ver _models.py)
+#                       e ['shader', id, vs, fs, uniforms, 0, b''] (ver _shaders.py)
 audio = []
 _texture_count = 0
 _total_pixels = 0
@@ -265,10 +291,24 @@ def _attachments():
             budget -= size
             blobs.append(entry[4])
             textures.append([entry[0], 'p', entry[2], entry[3], size])
+        elif entry[1] == 'e':
+            size = entry[2]
+            if size > budget and taken:
+                break
+            budget -= size
+            blobs.append(entry[3])
+            textures.append([entry[0], 'e', size])
         else:
             textures.append(list(entry))
         taken += 1
-    return taken, textures, blobs
+    models = []
+    for entry in pending_models:
+        if len(models) >= 16 or (entry[5] > budget and (taken or models)):
+            break
+        budget -= entry[5]
+        blobs.append(entry[6])
+        models.append(entry[:6])
+    return taken, textures, blobs, models
 
 
 def present():
@@ -279,9 +319,8 @@ def present():
     w = window
     title = w.title[:MAX_TITLE_CHARS]
     payload = ops.tobytes()
-    taken, textures, blobs = _attachments()
+    taken, textures, blobs, models = _attachments()
     fonts = pending_fonts[:ATTACHMENTS_PER_FRAME]
-    models = pending_models[:16]
     keep = (payload == _previous_payload and not textures and not fonts and not models
             and not pending_free)
     header = {

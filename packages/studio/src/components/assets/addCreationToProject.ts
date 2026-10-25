@@ -67,15 +67,14 @@ export function pintaImageOutputFor(
   reviewing?: Pick<PintaImageRecipe, 'output'>,
 ): PintaImageRecipe['output'] {
   if (reviewing) return reviewing.output
-  // Pygame Zero opens SVG, and in a Turtle project the vector becomes a turtle shape
-  // (formas_do_pinta): both want the real vector.
-  if (
-    !project ||
-    !isPythonProject(project) ||
-    !(projectUsesPgzero(project) || hasTurtleExtension(project.installedExtensions))
-  )
+  if (!project || !isPythonProject(project) || !facts || facts.kind === 'unavailable')
     return undefined
-  return facts && facts.kind !== 'unavailable' && facts.vector === true ? 'svg' : undefined
+  // Pygame Zero opens SVG. In a Turtle project the vector becomes a turtle shape
+  // (formas_do_pinta), which needs shapes only; with text, a picture or a mask it stays PNG.
+  if (projectUsesPgzero(project)) return facts.vector === true ? 'svg' : undefined
+  if (hasTurtleExtension(project.installedExtensions))
+    return facts.vector === true && facts.turtleShape === true ? 'svg' : undefined
+  return undefined
 }
 
 /** Desenho do Pinta (imagem + animações/peças/mapa). */
@@ -140,6 +139,28 @@ export function addPintaCreationToProject(
 }
 
 /** Criação do Molda: modelo (`.glb`), textura (imagem) ou céu (`.hdr`). */
+/**
+ * A Molda creation as a Raylib project takes it: the 360° sky (.hdr), which the desktop raylib
+ * does not open, becomes a panorama PNG in `images/` (the game draws it inside a sphere). The
+ * converter loads on demand, only when a sky goes into a Raylib project.
+ */
+export async function raylibReadyCreation(
+  asset: MoldaCreationAsset,
+  raylib: boolean,
+): Promise<MoldaCreationAsset> {
+  if (!raylib || asset.kind !== 'environment3d') return asset
+  const { skyPanoramaPng } = await import('./skyPanorama')
+  const panorama = skyPanoramaPng(asset.dataUrl)
+  return {
+    ...asset,
+    kind: 'image',
+    dataUrl: panorama.dataUrl,
+    originalFileName: `${asset.name}.png`,
+    width: panorama.width,
+    height: panorama.height,
+  }
+}
+
 export function addMoldaCreationToProject(
   state: ProjectStoreActions,
   asset: MoldaCreationAsset,

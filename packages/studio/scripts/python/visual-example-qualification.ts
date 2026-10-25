@@ -70,8 +70,8 @@ export interface VisualExampleAnalysis {
 const EXAMPLE_EXTENSIONS: Readonly<
   Record<string, { extension: { id: string; version: string }; modules: readonly string[] }>
 > = {
-  [TURTLE_EXTENSION.id]: { extension: TURTLE_EXTENSION, modules: ['turtle'] },
-  [PGZERO_EXTENSION.id]: { extension: PGZERO_EXTENSION, modules: ['pgzero', 'pgzrun'] },
+  [TURTLE_EXTENSION.id]: { extension: TURTLE_EXTENSION, modules: ['turtle', 'formas_do_pinta'] },
+  [PGZERO_EXTENSION.id]: { extension: PGZERO_EXTENSION, modules: ['pgzero', 'pgzrun', 'pygame'] },
   [RAYLIB_2D_EXTENSION.id]: { extension: RAYLIB_2D_EXTENSION, modules: ['pyray', 'raylib'] },
   [RAYLIB_3D_EXTENSION.id]: { extension: RAYLIB_3D_EXTENSION, modules: ['pyray', 'raylib'] },
 } as const

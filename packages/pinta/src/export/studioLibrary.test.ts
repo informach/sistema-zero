@@ -66,7 +66,21 @@ describe('listGalleryForStudio', () => {
       rows: 1,
     })
     const background = createVectorBackgroundAsset({ name: 'ceu', width: 30, height: 20 })
-    await persistAssets([sprite, tileset, map, missing, background])
+    // A word in the drawing: it is still vector, but it cannot become a turtle shape.
+    const placa = createVectorBackgroundAsset({ name: 'placa', width: 30, height: 20 })
+    placa.shapes.push({
+      id: 'palavra',
+      type: 'text',
+      x: 2,
+      y: 12,
+      text: 'oi',
+      fontSize: 10,
+      fill: '#000000',
+      stroke: null,
+      opacity: 1,
+      rotation: 0,
+    })
+    await persistAssets([sprite, tileset, map, missing, background, placa])
     expect((await listGalleryForStudio()).every((item) => !('imageSelection' in item))).toBe(true)
     const summaries = await listGalleryForStudio({ includeImageSelection: true })
     const choices = new Map(summaries.map((item) => [item.id, item.imageSelection]))
@@ -83,10 +97,18 @@ describe('listGalleryForStudio', () => {
       height: 16,
       tileCount: 1,
       vector: true,
+      turtleShape: true,
     })
     expect(choices.get(map.id)).toEqual({ kind: 'tilemap', width: 48, height: 32, vector: true })
     expect(choices.get(missing.id)).toEqual({ kind: 'unavailable', reason: 'needs-tileset' })
     expect(choices.get(background.id)).toEqual({
+      kind: 'background',
+      width: 30,
+      height: 20,
+      vector: true,
+      turtleShape: true,
+    })
+    expect(choices.get(placa.id)).toEqual({
       kind: 'background',
       width: 30,
       height: 20,

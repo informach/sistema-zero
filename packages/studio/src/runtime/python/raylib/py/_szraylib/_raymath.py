@@ -5,6 +5,7 @@ C (``Vector2Add``). A matriz é coluna-maior, como no raylib (m0, m4, m8, m12 é
 O teste diferencial (scripts/raylib/tests) compara cada função com o raylib do computador.
 """
 import math
+import struct as _struct
 
 from ._args import number, vec2, vec3, vec4, struct
 from ._structs import Matrix, Vector2, Vector3, Vector4
@@ -413,6 +414,36 @@ def _normalize3(a):
     return a
 
 
+def _add3(a, b):
+    return (a[0] + b[0], a[1] + b[1], a[2] + b[2])
+
+
+def _sub3(a, b):
+    return (a[0] - b[0], a[1] - b[1], a[2] - b[2])
+
+
+def _length3(a):
+    return math.sqrt(a[0] * a[0] + a[1] * a[1] + a[2] * a[2])
+
+
+def _angle3(a, b):
+    c = _cross(a, b)
+    return math.atan2(_length3(c), a[0] * b[0] + a[1] * b[1] + a[2] * b[2])
+
+
+def _rotate_axis_angle(v, axis, angle):
+    """Vector3RotateByAxisAngle (fórmula de Euler-Rodrigues) sobre tuplas."""
+    vx, vy, vz = v
+    ax, ay, az = _normalize3(axis)
+    half = angle / 2.0
+    s = math.sin(half)
+    bx, by, bz, w = ax * s, ay * s, az * s, math.cos(half)
+    wx, wy, wz = _cross((bx, by, bz), (vx, vy, vz))
+    wwx, wwy, wwz = _cross((bx, by, bz), (wx, wy, wz))
+    w2 = w * 2
+    return (vx + wx * w2 + wwx * 2, vy + wy * w2 + wwy * 2, vz + wz * w2 + wwz * 2)
+
+
 def vector3_normalize(v, /):
     return Vector3(*_normalize3(vec3(v, 'vector3_normalize', 'v')))
 
@@ -450,15 +481,8 @@ def vector3_rotate_by_quaternion(v, q, /):
 
 def vector3_rotate_by_axis_angle(v, axis, angle, /):
     f = 'vector3_rotate_by_axis_angle'
-    vx, vy, vz = vec3(v, f, 'v')
-    ax, ay, az = _normalize3(vec3(axis, f, 'axis'))
-    a = number(angle, f, 'angle') / 2.0
-    s = math.sin(a)
-    bx, by, bz, w = ax * s, ay * s, az * s, math.cos(a)
-    wx, wy, wz = _cross((bx, by, bz), (vx, vy, vz))
-    wwx, wwy, wwz = _cross((bx, by, bz), (wx, wy, wz))
-    w2 = w * 2
-    return Vector3(vx + wx * w2 + wwx * 2, vy + wy * w2 + wwy * 2, vz + wz * w2 + wwz * 2)
+    return Vector3(*_rotate_axis_angle(vec3(v, f, 'v'), vec3(axis, f, 'axis'),
+                                       number(angle, f, 'angle')))
 
 
 def vector3_move_towards(v, target, maxDistance, /):
@@ -874,8 +898,18 @@ def quaternion_nlerp(q1, q2, amount, /):
     return Vector4(*_qnormalize(tuple(a[i] + t * (b[i] - a[i]) for i in range(4))))
 
 
+_F32 = _struct.Struct('<f')
+
+
+def _f32(value):
+    return _F32.unpack(_F32.pack(value))[0]
+
+
 def slerp(a, b, t):
-    cos_half = a[0] * b[0] + a[1] * b[1] + a[2] * b[2] + a[3] * b[3]
+    # O cosseno em float, como no C: com dois quadros quase iguais ele vira 1.0f e o raylib
+    # devolve o primeiro sem interpolar (em double daria 0.9999999 e uma interpolação).
+    cos_half = _f32(_f32(_f32(_f32(a[0] * b[0]) + _f32(a[1] * b[1])) + _f32(a[2] * b[2]))
+                    + _f32(a[3] * b[3]))
     if cos_half < 0:
         b = tuple(-v for v in b)
         cos_half = -cos_half

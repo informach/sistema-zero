@@ -110,6 +110,15 @@ const EXAMPLES = [
   'passarinho-saltitante',
   'placar-dos-campeoes',
   'continuar',
+  'bussola-maluca',
+  'cores-e-bolinha',
+  'piano-maluco',
+  'duelo-de-tanques',
+  'memoria-contra-o-computador',
+  'batalha-naval',
+  'atirador-espacial',
+  'boing',
+  'centopeia',
 ]
 
 for (const key of EXAMPLES)

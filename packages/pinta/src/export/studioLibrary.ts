@@ -22,6 +22,7 @@ import {
   type PintaAssetRole,
   type PintaAssetStyle,
   resolveAssetPalette,
+  type VectorFrame,
 } from '../core/project'
 import type { PintaExportedAsset } from '../core/types'
 import { flattenCels } from '../pixel/layers'
@@ -32,6 +33,7 @@ import {
 } from '../state/persistence'
 import { tilemapThumbnail } from '../tiles/renderTilemap'
 import { vectorTilemapPortableSvg } from '../tiles/renderVectorTilemap'
+import { visibleShapes } from '../vector/model'
 import { vectorToPortableSvg } from '../vector/portableSvg'
 import { svgToPngDataUrl } from '../vector/rasterize'
 import { bitmapToPngDataUrl } from './png'
@@ -283,6 +285,16 @@ export async function listGalleryForStudio(
   return summaries
 }
 
+/** Every frame is shapes only (no text, picture or mask): it can become a turtle shape. */
+function turtleShapeFacts(frames: readonly VectorFrame[]) {
+  const shapesOnly = frames.every((shapes) =>
+    visibleShapes(shapes).every(
+      (shape) => shape.type !== 'text' && shape.type !== 'image' && !shape.maskId,
+    ),
+  )
+  return shapesOnly ? ({ turtleShape: true } as const) : {}
+}
+
 function imageSelectionSummary(
   asset: PintaAsset,
   findAsset: (id: string) => PintaAsset | null,
@@ -301,7 +313,9 @@ function imageSelectionSummary(
           name,
           frameCount: frames.length,
         })),
-        ...(asset.kind === 'vector-sprite' ? vector : {}),
+        ...(asset.kind === 'vector-sprite'
+          ? { ...vector, ...turtleShapeFacts(asset.animations.flatMap(({ frames }) => frames)) }
+          : {}),
       }
     case 'pixel-background': {
       // Gallery records are sanitized: the first cel owns every layer's size,
@@ -311,7 +325,13 @@ function imageSelectionSummary(
       return { kind: 'background', width: first.width, height: first.height }
     }
     case 'vector-background':
-      return { kind: 'background', width: asset.width, height: asset.height, ...vector }
+      return {
+        kind: 'background',
+        width: asset.width,
+        height: asset.height,
+        ...vector,
+        ...turtleShapeFacts([asset.shapes]),
+      }
     case 'tileset':
     case 'vector-tileset':
       return {
@@ -319,7 +339,7 @@ function imageSelectionSummary(
         width: asset.tileSize,
         height: asset.tileSize,
         tileCount: asset.tiles.length,
-        ...(asset.kind === 'vector-tileset' ? vector : {}),
+        ...(asset.kind === 'vector-tileset' ? { ...vector, ...turtleShapeFacts(asset.tiles) } : {}),
       }
     case 'tilemap': {
       const tileset = findAsset(asset.tilesetId)

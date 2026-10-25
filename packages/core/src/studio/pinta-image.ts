@@ -54,6 +54,11 @@ export type PintaImageSelectionSummary =
     ) & {
       /** True when the selection has a portable vector path (an SVG recipe may be requested). */
       vector?: boolean
+      /**
+       * True when every frame is made only of shapes a turtle shape can carry (no text, picture
+       * or mask): a Turtle project asks for the SVG only then, else the PNG.
+       */
+      turtleShape?: boolean
     })
   | { kind: 'unavailable'; reason: 'needs-tileset' }
 
