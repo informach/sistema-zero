@@ -70,4 +70,30 @@ export const RAYLIB_GAME_LOADERS = {
       assets: raylibGameAssets('sprites-timer-animacao', SPRITES_TIMER_ANIMACAO_MEDIA),
     }
   },
+  'dino-corredor': async () => {
+    const [{ DINO_CORREDOR_SOURCES }, { DINO_CORREDOR_MEDIA }, { raylibGameAssets }] =
+      await Promise.all([
+        import('./dinoCorredor.sources.generated'),
+        import('./dinoCorredor.media.generated'),
+        import('./raylibGameAssets'),
+      ])
+    return {
+      entrypoint: 'main.py',
+      files: DINO_CORREDOR_SOURCES,
+      assets: raylibGameAssets('dino-corredor', DINO_CORREDOR_MEDIA),
+    }
+  },
+  'chuva-de-meteoros': async () => {
+    const [{ CHUVA_DE_METEOROS_SOURCES }, { CHUVA_DE_METEOROS_MEDIA }, { raylibGameAssets }] =
+      await Promise.all([
+        import('./chuvaDeMeteoros.sources.generated'),
+        import('./chuvaDeMeteoros.media.generated'),
+        import('./raylibGameAssets'),
+      ])
+    return {
+      entrypoint: 'main.py',
+      files: CHUVA_DE_METEOROS_SOURCES,
+      assets: raylibGameAssets('chuva-de-meteoros', CHUVA_DE_METEOROS_MEDIA),
+    }
+  },
 } satisfies Record<RaylibGameKey, () => Promise<unknown>>

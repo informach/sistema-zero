@@ -159,6 +159,90 @@ export const RAYLIB_GAMES = [
     music: [],
     receipt: 'sprites-timer-animacao-r1.json.snapshot',
   },
+  {
+    key: 'dino-corredor',
+    stem: 'dinoCorredor',
+    name: 'Dino Corredor',
+    emoji: '🦖',
+    description:
+      'O dino corre sozinho pelo deserto: pule os cactos e os passarinhos. Quanto mais longe, mais rápido.',
+    genre: 'Corrida sem fim',
+    concepts: [
+      'Blocos',
+      'Ponte',
+      'Código',
+      'Gravidade',
+      'Classes',
+      'Animação',
+      'Música',
+      'Recorde',
+    ],
+    difficulty: 'intermediate',
+    experience: 'game',
+    extension: '2d',
+    inspiration: 'Dino runner',
+    howToPlay:
+      'Espaço ou a seta para cima pulam. Desvie dos cactos e dos passarinhos; ao bater, Enter corre de novo e o recorde fica guardado.',
+    ideas: [
+      'Mude PULO e GRAVIDADE e veja o pulo ficar mais alto ou mais baixo.',
+      'Faça o jogo acelerar mais depressa trocando o 8 de `velocidade`.',
+      'Desenhe o seu dino no Pinta e troque `images/dino0.png` e `images/dino1.png`.',
+    ],
+    sounds: [
+      { path: 'pulo.wav', notes: [523, 784], noteMilliseconds: 50 },
+      { path: 'batida.wav', notes: [220, 165, 110], noteMilliseconds: 120 },
+    ],
+    music: [
+      {
+        path: 'tema.ogg',
+        notes: [392, 494, 587, 494, 440, 523, 659, 523, 392, 494, 587, 784, 698, 587, 523, 494],
+        noteMilliseconds: 180,
+      },
+    ],
+    receipt: 'dino-corredor-r1.json.snapshot',
+  },
+  {
+    key: 'chuva-de-meteoros',
+    stem: 'chuvaDeMeteoros',
+    name: 'Chuva de Meteoros',
+    emoji: '☄️',
+    description:
+      'Meteoros girando caem do céu: pilote a nave, atire com o laser e veja quantos segundos você aguenta.',
+    genre: 'Nave',
+    concepts: [
+      'Blocos',
+      'Ponte',
+      'Código',
+      'Classes',
+      'Herança',
+      'Colisão de círculos',
+      'Animação',
+      'Música',
+    ],
+    difficulty: 'advanced',
+    experience: 'game',
+    extension: '2d',
+    inspiration: 'game 2D (space shooter)',
+    howToPlay:
+      'As setas pilotam a nave e o espaço atira. Um meteoro que encostar na nave acaba o voo; Enter voa de novo e o recorde fica guardado.',
+    ideas: [
+      'Mude TEMPO_ENTRE_METEOROS para chover mais ou menos meteoros.',
+      'Faça o laser mais rápido em VELOCIDADE_LASER.',
+      'Desenhe a sua nave no Pinta e troque `images/nave.png`.',
+    ],
+    sounds: [
+      { path: 'laser.wav', notes: [1568, 1175, 880], noteMilliseconds: 30 },
+      { path: 'explosao.wav', notes: [196, 147, 110, 82], noteMilliseconds: 70 },
+    ],
+    music: [
+      {
+        path: 'tema.ogg',
+        notes: [220, 262, 330, 262, 247, 294, 370, 294, 220, 262, 330, 440, 392, 330, 294, 247],
+        noteMilliseconds: 200,
+      },
+    ],
+    receipt: 'chuva-de-meteoros-r1.json.snapshot',
+  },
 ] as const satisfies readonly RaylibGame[]
 
 export type RaylibGameKey = (typeof RAYLIB_GAMES)[number]['key']
