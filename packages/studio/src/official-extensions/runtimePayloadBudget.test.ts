@@ -75,7 +75,12 @@ const BUDGETS: readonly {
   // do grupo" vai ao console (com teto de um por segundo), o shift da direita vale o do
   // dropdown e o Kit Plataforma parou de criar 2 funções por tiro/inimigo por quadro.
   // Medido: 219_622 caracteres, 61_267 bytes gzip.
-  { extension: gameThreeDExtension, maxChars: 219_700, maxGzipBytes: 61_300 },
+  // 25/10: +5_254 caracteres / +1_515 gzip sobre a medida anterior: cenas dos
+  // kits sem canvas de página, controles de toque do motor (mesma entrada física,
+  // cancelamento/descarte), clique na cena, HUD central e limpeza ao falhar WebGL.
+  // É código compartilhado necessário para retirar HTML/CSS dos 19 exemplos;
+  // nenhum novo laço de renderização foi criado. Medido: 224_876 / 62_782.
+  { extension: gameThreeDExtension, maxChars: 224_900, maxGzipBytes: 62_800 },
   // ⬇️ Lote 14 do review 3D (P2): o Kit Plataforma (`runtimePlatform.ts`) só entra quando o
   // código do projeto usa um método dele (`game-3d/platformKitVariant.ts`); os outros 20
   // exemplos do catálogo recebem esta variante. O completo, acima, segue sendo o de quem usa o
@@ -87,8 +92,9 @@ const BUDGETS: readonly {
     context: { code: 'const cena = SZGame3D.createScene("tela");' },
     // ⚠️ SUBIU com a correção do review de 24/10/2026 (+4_470 / +1_067; o mesmo conjunto da
     // variante completa, acima, menos o do Kit). Medido: 185_682 caracteres, 51_568 bytes gzip.
-    maxChars: 185_700,
-    maxGzipBytes: 51_600,
+    // Mesmos recursos nativos, sem o Kit Plataforma: 190_794 / 53_051.
+    maxChars: 190_800,
+    maxGzipBytes: 53_100,
   },
   // Medido: 341_986 caracteres, 93_312 bytes gzip.
   // ⚠️ SUBIU nos lotes 8-9 do review 3D: o Mundo 3D passou a injetar o fragmento COMPARTILHADO
@@ -141,7 +147,8 @@ const BUDGETS: readonly {
   // do mundo" refeitos a partir de uma anotação), o "E: falar" sai por identidade e o "Levar o
   // carrinho para…" do Ao iniciar deixou de ser ignorado. Medido: 344_375 caracteres, 102_711 bytes
   // gzip.
-  { extension: worldThreeDExtension, maxChars: 344_400, maxGzipBytes: 102_750 },
+  // 25/10: HUD central compartilhado, sem controles dos kits: 344_930 / 102_843.
+  { extension: worldThreeDExtension, maxChars: 345_000, maxGzipBytes: 102_900 },
   // Medido: 213_707 caracteres, 62_113 bytes gzip.
   // ⬇️ DESCEU no lote 11 (o Avançado consome as regras comuns): entrou o fragmento
   // COMPARTILHADO `game3dRules/runtime.ts` (~15_900 caracteres / ~5_300 bytes gzip; placar,
@@ -178,7 +185,8 @@ const BUDGETS: readonly {
   // Soma das duas partes sobre o lote 14 (205_159 / 60_589): fragmentos compartilhados do Jogo 3D
   // +2_366 / +515 (o runtime montado SEM as mudanças do Avançado mede 207_525 / 61_104) e as
   // correções do Avançado +1_079 / +324. Medido FINAL: 208_604 caracteres, 61_428 bytes gzip.
-  { extension: gameKit3DExtension, maxChars: 208_700, maxGzipBytes: 61_500 },
+  // 25/10: HUD central compartilhado, sem controles dos kits: 209_159 / 61_537.
+  { extension: gameKit3DExtension, maxChars: 209_200, maxGzipBytes: 61_600 },
 ]
 
 async function bootstrapSource(

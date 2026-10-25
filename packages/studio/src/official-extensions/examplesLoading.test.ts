@@ -103,7 +103,10 @@ const goldenCatalogs = {
     // giros de 1375-5500 graus/s corrigidos para 45-180.
     // 24/10 (correção do review): o Pega-Estrelas conta os 30 s com a contagem que APARECE
     // ("Começar a contagem" + "Quando a contagem acabar") em vez do "Depois de 30 s".
-    sha256: '818a564ae8611c42ab5f68f93937b1ac405673025eef4bc901c56705dda77c1c',
+    // 25/10: os 19 exemplos de página foram convertidos para cenas/HUD/controles
+    // nativos. Os 21 preservam ordem e passam no contrato sem HTML/CSS e nos
+    // round-trips. Os outros quatro catálogos mantêm seus hashes anteriores.
+    sha256: '6c88448e40c568ee1c291db4d7d5926078ded206dba240536f29be0d638bdd57',
   },
   'game-3d-advanced': {
     count: 20,

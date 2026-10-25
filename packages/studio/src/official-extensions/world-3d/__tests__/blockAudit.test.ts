@@ -270,6 +270,7 @@ describe('Auditoria Mundo 3D — dropdowns comuns (cantos e teclas) e "onde o jo
       'bottom-left',
       'bottom-center',
       'bottom-right',
+      'center',
     ])
     for (const value of values) {
       const code = roundTrip({
