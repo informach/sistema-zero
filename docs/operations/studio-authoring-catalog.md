@@ -53,10 +53,11 @@ O seletor não altera direitos por conta, conquistas, privilégios de admin ou c
 
 ## Catálogos empacotados
 
-- Catálogo integrado Pygame-ce: `2747a0372378b1bf6768796e11b9b261625aa6a5cebac0bfff6c18778fffff5f`.
-- Tamanho: 80.597 bytes formatados.
-- Conteúdo igual a `configuration.members` dos planos Pygame R1 de staging e produção.
-- Release nova: `2026-10-25-pygame-1`, com Turtle, Pygame Zero, Pygame-ce e Raylib 2D/3D.
+- Catálogo após conciliação das extensões JavaScript e Python: `3cbc366dcb213c5f26d996aef7898e0a1d47bce340fe501539982fcd33f3231d`.
+- Tamanho: 79.822 bytes formatados.
+- Conteúdo igual a `configuration.members` dos planos integrados R1 de staging e produção.
+- Release nova: `2026-10-25-integrated-games-1`, com Turtle, Pygame Zero, Pygame-ce e Raylib 2D/3D.
+- Distribuição: `ecb8756beb4b6b0450aa3fdb5ffc9ec70a53d16f72a8ec4d264477e99de47735`.
 - A release `2026-10-22-visual-games-3` é mantida como `retired`; seus manifestos não mudam.
 - Empacotamento não significa ativação: o seletor só muda após a qualificação e o deploy da imagem.
 
@@ -67,7 +68,11 @@ anterior sem reescrevê-lo. A configuração final continua exigindo estados igu
 envolvendo `revoked`, outro perfil, identidade ou conteúdo são recusadas; repetir uma versão
 retirada não a reativa.
 
-Catálogo anterior, preservado como artefato de rollback (não selecionado automaticamente):
+Catálogos anteriores, preservados como artefatos de histórico (não selecionados automaticamente):
+
+- Pygame antes da conciliação: `2747a0372378b1bf6768796e11b9b261625aa6a5cebac0bfff6c18778fffff5f`,
+  80.597 bytes; release `2026-10-25-pygame-1`, distribuição `74b006e5…`. Não qualifica o motor
+  resultante da conciliação com as revisões locais.
 
 - SHA256: `88a14e73605fa5b3ddaee7344c35b3571db8bba7cd9d1e7722856e356430e6c7`.
 - Tamanho: 74.491 bytes formatados; o JSON compacto tinha 51.612 bytes.

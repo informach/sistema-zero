@@ -32,3 +32,16 @@ ativação final. Não reutilize os recibos antigos como prova do motor recém-c
 Continuam pendentes CI integrado, implantação/ativação coordenada, provas hospedadas finais
 e fechamento financeiro. As rotinas financeiras novas não foram habilitadas em produção.
 Nenhuma conta real foi usada para cobrar ou cancelar durante estas provas.
+
+## Complemento do catálogo integrado
+
+A nova distribuição foi gerada depois do merge: `ecb8756beb4b6b0450aa3fdb5ffc9ec70a53d16f72a8ec4d264477e99de47735`,
+125 arquivos. O catálogo empacotado correspondente é
+`3cbc366dcb213c5f26d996aef7898e0a1d47bce340fe501539982fcd33f3231d`.
+
+A aplicação do currículo real sobre esse catálogo detectou uma omissão: os codecs Pygame-ce
+não participavam de `PYTHON_COURSE_BLOCKS`, embora o runtime os aprovasse. O teste causal
+falhou antes e passou após incluir a extensão no catálogo de cursos. A prova do currículo
+integrado confirmou os 696 blocos aprovados para admin, cinco extensões e zero dependências
+ausentes; aluno sem conquistas continua com zero blocos/extensões. Isso verifica a seleção
+de permissões em código, não substitui a abertura autenticada de um projeto na interface.

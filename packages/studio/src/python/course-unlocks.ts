@@ -1,6 +1,7 @@
 import { PYTHON_PROGRAMMING_CODECS } from './blocks/catalog'
 import { describePythonCatalog } from './blocks/selection'
 import { PYTHON_PGZERO_CODECS } from './extensions/pgzero/catalog'
+import { PYTHON_PYGAME_CODECS } from './extensions/pygame/catalog'
 import { PYTHON_RAYLIB_2D_CODECS } from './extensions/raylib2d/catalog'
 import { PYTHON_RAYLIB_3D_CODECS } from './extensions/raylib3d/catalog'
 import { PYTHON_TURTLE_CODECS } from './extensions/turtle/catalog'
@@ -9,6 +10,7 @@ import { PYTHON_TURTLE_CODECS } from './extensions/turtle/catalog'
 const CATALOG = describePythonCatalog([
   ...PYTHON_TURTLE_CODECS,
   ...PYTHON_PGZERO_CODECS,
+  ...PYTHON_PYGAME_CODECS,
   ...PYTHON_RAYLIB_2D_CODECS,
   ...PYTHON_RAYLIB_3D_CODECS,
   ...PYTHON_PROGRAMMING_CODECS,

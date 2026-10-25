@@ -7,6 +7,14 @@ import {
   pythonCourseUnlockIssue,
   removePythonCourseBlocks,
 } from './course-unlocks'
+import { PYTHON_PYGAME_CODECS } from './extensions/pygame/catalog'
+
+test('Pygame-ce course rewards recognize every codec and unlock only their extension', () => {
+  for (const codec of PYTHON_PYGAME_CODECS) expect(isPythonCourseBlock(codec.id)).toBe(true)
+  const rewards = pythonCourseBlockClosure(PYTHON_PYGAME_CODECS.map(({ id }) => id))
+  expect(pythonCourseUnlockIssue(rewards)).toBeNull()
+  expect(pythonCourseExtensionsForBlocks(rewards)).toEqual(['python-pygame'])
+})
 
 test('course metadata uses actual unique Python codec IDs without language equivalents', () => {
   const ids = PYTHON_COURSE_BLOCKS.map(({ id }) => id)
