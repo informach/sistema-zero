@@ -12,6 +12,12 @@ A suíte ampla encontrou seis expectativas anteriores à conversão: hash do cat
 
 Medição do texto de bootstrap em caracteres/bytes gzip: Jogo 3D completo **224.876 / 62.782**, sem Plataforma **190.794 / 53.051**, Mundo 3D **344.930 / 102.843**, Avançado **209.159 / 61.537**. O custo adicional do básico é cerca de 1,5 KB gzip pelos controles/cenas nativos, HUD e descarte; os tetos continuam próximos da medida e têm justificativa no teste. A tipagem completa do Studio passou após a composição `4d5c1558a`; isso não encerra a suíte completa, o CI nem a publicação.
 
+## Carregamento inicial
+
+A repetição ampla encontrou **350.770 bytes** de JavaScript inicial para um teto de 350.000. A análise do build identificou a janela de criação no grafo estático da lista, mesmo fechada. O componente agora é importado e montado quando aberto; os contratos e guardas de criação permanecem os mesmos. Abrir/cancelar/reabrir reinicializa o formulário como antes, conferido em DOM real de componente (17 casos / 110 asserções no processo isolado).
+
+A medição posterior passou: **343.177 bytes crus / 112.096 gzip / dois arquivos iniciais**, com a janela fora do grafo inicial. Nenhum teto foi aumentado. O teste completo de orçamento também aprovou rota e os três modos, 27 asserções, em 15,56 s. Duas medições anteriores atingiram o prazo local de 20 s durante a geração; uma delas preservou o relatório de tamanho. Não foram classificadas como aprovação nem usadas para aumentar o prazo. A tipagem completa após a integração `d9a1cac98` passou, antes desta separação de componente; o CI final continua obrigatório.
+
 ## Baseline financeiro somente de leitura
 
 Consulta realizada dentro do serviço Payments correto, conferindo projeto/ambiente/serviço e usando transação read-only:
