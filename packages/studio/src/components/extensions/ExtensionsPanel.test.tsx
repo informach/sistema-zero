@@ -7,6 +7,11 @@ import { resolveLearning, STANDALONE_CONFIG, StudioConfigProvider } from '../../
 import { StudioExamplesVisibleProvider } from '../../studio/examples-visibility'
 import { JavaScriptExtensionsPanel as ExtensionsPanel } from './JavaScriptExtensionsPanel'
 
+// O painel importa e valida os catálogos reais de todas as extensões. A primeira
+// carga fria excede o padrão de 1 s do Testing Library (1,4 s na reprodução);
+// mantenha a espera limitada dentro dos 5 s do teste, sem sleeps ou catálogos falsos.
+const EXAMPLE_CATALOG_WAIT = { timeout: 4_000 }
+
 // Exemplos prontos (CORE_EXAMPLES + os das extensões) são material de TESTE do
 // admin — podem estar desatualizados/com erro. Só aparecem quando o host libera
 // (playground); para clientes o default `false` do contexto os esconde. O painel
@@ -43,7 +48,7 @@ describe('ExtensionsPanel — exemplos gated por showExamples', () => {
       </StudioExamplesVisibleProvider>,
     )
     expect(screen.getByText('Exemplos clássicos (sem extensão)')).not.toBeNull()
-    await screen.findByRole('button', { name: 'Pegue a moeda' })
+    await screen.findByRole('button', { name: 'Pegue a moeda' }, EXAMPLE_CATALOG_WAIT)
   })
 
   it('carrega o catálogo pesado somente quando o painel de exemplos está visível', async () => {
@@ -54,7 +59,9 @@ describe('ExtensionsPanel — exemplos gated por showExamples', () => {
       </StudioExamplesVisibleProvider>,
     )
 
-    expect(await screen.findByRole('button', { name: 'Pegue a moeda' })).not.toBeNull()
+    expect(
+      await screen.findByRole('button', { name: 'Pegue a moeda' }, EXAMPLE_CATALOG_WAIT),
+    ).not.toBeNull()
   })
 
   it('default do contexto (sem provider) esconde — cliente nunca vê exemplo à toa', () => {

@@ -59,6 +59,7 @@ let runtimeError: string | undefined
 let editorMounts = 0
 let editorUnmounts = 0
 const retryRuntime = mock(() => {})
+const exitEditor = mock(() => {})
 const loads: Array<{
   scope: string
   id: string
@@ -145,7 +146,7 @@ function ui(kind: 'classic' | 'pro', id: string, prepareProject?: () => Promise<
       mod={mod}
       projectId={id}
       viewerId="viewer"
-      onExit={() => {}}
+      onExit={exitEditor}
       share={{ generateDescription: async () => '', publish: async () => ({}) }}
       tutor={undefined}
       theme="light"
@@ -162,7 +163,7 @@ function ui(kind: 'classic' | 'pro', id: string, prepareProject?: () => Promise<
       viewerId="viewer"
       storageNamespace={namespace}
       theme="light"
-      onExit={() => {}}
+      onExit={exitEditor}
       prepareProject={prepareProject}
     />
   )
@@ -197,6 +198,7 @@ beforeEach(async () => {
   editorMounts = 0
   editorUnmounts = 0
   retryRuntime.mockClear()
+  exitEditor.mockClear()
   delete tier.allowBlocks
   loads.length = 0
   acquired.length = 0
@@ -370,6 +372,7 @@ test('Full editor observes authority in the same environment without reopening i
 
 test('Python opening waits for authority and presents preparation errors without a false denial', async () => {
   const fixture = await pythonEnvironmentFixture('classic')
+  fixture.project.name = 'Meu planetário Python'
   fixture.project.installedExtensions = [{ id: 'python-turtle', version: '1.0.0', installedAt: 1 }]
   runtimeEnvironment = undefined
   runtimeLoading = true
@@ -384,6 +387,13 @@ test('Python opening waits for authority and presents preparation errors without
   runtimeError = 'Não foi possível preparar Python.'
   view.rerender(ui('classic', fixture.project.id))
   expect(document.querySelector('[role="alert"]')?.textContent).toContain(runtimeError)
+  expect(document.querySelector('[role="alert"] h2')?.textContent).toBe(
+    'Não foi possível abrir o Python agora',
+  )
+  expect(document.querySelector('[role="alert"]')?.textContent).toContain(fixture.project.name)
+  expect(document.querySelector('[role="alert"]')?.textContent).toContain(
+    'Seu projeto continua salvo na galeria.',
+  )
   expect(editorProps).toBeUndefined()
   const retry = [...document.querySelectorAll('button')].find(
     (button) => button.textContent === 'Tentar novamente',
@@ -391,6 +401,12 @@ test('Python opening waits for authority and presents preparation errors without
   expect(retry).toBeTruthy()
   act(() => retry?.click())
   expect(retryRuntime).toHaveBeenCalledTimes(1)
+  const back = [...document.querySelectorAll('button')].find(
+    (button) => button.textContent === 'Voltar à galeria',
+  )
+  expect(back).toBeTruthy()
+  act(() => back?.click())
+  expect(exitEditor).toHaveBeenCalledTimes(1)
 
   runtimeError = undefined
   runtimeLoading = true
@@ -403,6 +419,38 @@ test('Python opening waits for authority and presents preparation errors without
   expect(editorProps?.initialProject).toBe(fixture.project)
   expect(editorProps?.allowExtensions).toEqual(['python-turtle'])
   expect(document.querySelector('[role="status"]')).toBeNull()
+  expect(loads).toHaveLength(1)
+})
+
+test('Python Pro runtime errors offer a themed way back and keep the existing edit buffer', async () => {
+  const fixture = await pythonEnvironmentFixture('pro')
+  runtimeEnvironment = fixture.environment
+  const view = render(ui('pro', fixture.project.id))
+  await waitFor(() => expect(loads.length).toBe(1))
+  await act(async () => loads[0]?.gate.resolve(fixture.project))
+  await waitFor(() => expect(editorProps?.initialProject).toBe(fixture.project))
+  const element = document.querySelector('[data-testid="editor"]')
+  act(() => element?.querySelector('button')?.click())
+  runtimeEnvironment = undefined
+  runtimeError = 'O ambiente Python precisa ser atualizado.'
+  view.rerender(ui('pro', fixture.project.id))
+  expect(document.querySelector('[role="alert"] h2')?.textContent).toBe(
+    'Não foi possível abrir o Python agora',
+  )
+  expect(element?.closest('[hidden][inert]')).toBeTruthy()
+  expect(editorProps?.editingAccess).toBe('observer')
+  const back = [...document.querySelectorAll('button')].find(
+    (button) => button.textContent === 'Voltar à galeria',
+  )
+  act(() => back?.click())
+  expect(exitEditor).toHaveBeenCalledTimes(1)
+  runtimeError = undefined
+  runtimeEnvironment = fixture.environment
+  view.rerender(ui('pro', fixture.project.id))
+  expect(element?.closest('[hidden]')).toBeNull()
+  expect(element?.querySelector('output')?.textContent).toBe('unsaved edit')
+  expect(editorMounts).toBe(1)
+  expect(editorUnmounts).toBe(0)
   expect(loads).toHaveLength(1)
 })
 

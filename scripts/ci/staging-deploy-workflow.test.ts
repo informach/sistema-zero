@@ -18,7 +18,7 @@ const { jobs } = Bun.YAML.parse(workflow) as {
 const deploy = workflow.slice(workflow.indexOf('\n  deploy-staging:'))
 const resolver = resolve('scripts/ci/staging-deploy-baseline.mjs')
 
-test('only the deployment job receives the larger wall-clock budget', () => {
+test('CI and deployment budgets preserve individual proofs and other job deadlines', () => {
   expect(STAGING_DEPLOYMENT_TIMEOUT_MS).toBe(60 * 60 * 1000)
   expect(STAGING_ROLLOUT_TIMEOUT_MS).toBe(140 * 60 * 1000)
   expect(deploy).toContain('timeout-minutes: 240')
@@ -35,7 +35,7 @@ test('only the deployment job receives the larger wall-clock budget', () => {
         .map(([name, job]) => [name, job['timeout-minutes']]),
     ),
   ).toEqual({
-    ci: 45,
+    ci: 60,
     'studio-storage-macos': 15,
     'desktop-windows': 20,
     'community-kids-e2e': 20,
@@ -49,6 +49,16 @@ test('only the deployment job receives the larger wall-clock budget', () => {
       (step) => step.name === 'Verificar cancelamento Python por RPC no runtime real',
     )?.['timeout-minutes'],
   ).toBe(2)
+  expect(
+    jobs.ci!.steps.find(
+      (step) => step.name === 'Provar objetivos Python com programas reais no sandbox sem rede',
+    )?.['timeout-minutes'],
+  ).toBe(8)
+  expect(
+    jobs.ci!.steps.find(
+      (step) => step.name === 'Provar objetivos Jogo 3D e three.js no sandbox sem rede',
+    )?.['timeout-minutes'],
+  ).toBe(5)
 })
 
 test('workflow resolves before installation, public/provider access, SSH and apply', () => {

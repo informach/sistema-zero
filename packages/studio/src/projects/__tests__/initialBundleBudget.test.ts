@@ -215,4 +215,8 @@ test('a lista inicial não pré-carrega o editor nem os catálogos pesados', asy
     expect(raw, evidence).toBeLessThanOrEqual(budget.raw)
     expect(gzip, evidence).toBeLessThanOrEqual(budget.gzip)
   }
-}, 20_000)
+  // This builds every lazy editor/catalog chunk to inspect the dependency graph.
+  // After the Python gallery expansion it took 23.75 s in a loaded Windows run
+  // (15.56 s serial). Bound the build tool separately from the unchanged byte/
+  // gzip/file budgets above; this is not an execution or UI-latency allowance.
+}, 60_000)

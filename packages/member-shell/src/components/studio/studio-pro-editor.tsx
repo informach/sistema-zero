@@ -27,6 +27,7 @@ import {
   loadStudioProModule,
   type StudioProModule,
 } from './studio-pro-loader'
+import { StudioRuntimeNotice } from './studio-runtime-notice'
 import { useFreeStudioRuntime } from './use-free-runtime'
 
 interface Props {
@@ -273,22 +274,20 @@ function StudioProEditorSession({
   }
 
   const StudioEditor = mod.StudioEditor
+  const pythonUnavailable =
+    state.project.programmingLanguage === 'python' && (free.loading || Boolean(free.error))
   return (
     <div className="flex h-full min-h-0 flex-col">
-      {state.project.programmingLanguage === 'python' && (free.loading || free.error) && (
-        <div
-          role={free.error ? 'alert' : 'status'}
-          className="flex items-center gap-2 px-3 py-2 text-sm"
-        >
-          {free.error ?? 'Preparando Python…'}
-          {free.error && (
-            <button type="button" onClick={free.retry}>
-              Tentar novamente
-            </button>
-          )}
-        </div>
+      {pythonUnavailable && (
+        <StudioRuntimeNotice
+          theme={theme}
+          projectName={state.project.name}
+          error={free.error}
+          onRetry={free.retry}
+          onExit={onExit}
+        />
       )}
-      <div className="min-h-0 flex-1">
+      <div className="min-h-0 flex-1" hidden={pythonUnavailable} inert={pythonUnavailable}>
         <StudioEditor
           initialProject={state.project}
           persistence={state.opening.persistence}
@@ -306,6 +305,7 @@ function StudioProEditorSession({
           onEditDrawing={onEditDrawing}
           onEditCreation={onEditCreation}
           runtimeEnvironment={runtimeEnvironment ?? free.environment}
+          editingAccess={pythonUnavailable ? 'observer' : undefined}
           prepareProDependencies={prepareDependencies}
           proRuntime={state.project.programmingLanguage === 'python' ? undefined : proRuntime}
           pythonLevel={
