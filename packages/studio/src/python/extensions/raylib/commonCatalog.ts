@@ -18,20 +18,21 @@ import { PYRAY_EXPORTS } from './pyrayExports.generated'
 export type RaylibOwner = 'python-raylib-2d' | 'python-raylib-3d'
 const MODULE = 'pyray'
 
+export const RAYLIB_MODULE = MODULE
 export const RAYLIB_RESOLVER_OPTIONS: PythonResolverOptions = {
   starExports: new Map([[MODULE, PYRAY_EXPORTS]]),
 }
 
 // Default values -----------------------------------------------------------------------------
-const n = (value: number) => () =>
+export const n = (value: number) => () =>
   value < 0
     ? node('UnaryOp', { op: node('USub'), operand: integer(String(-value)) })
     : integer(String(value))
-const d = (value: number) => () =>
+export const d = (value: number) => () =>
   node('Constant', { value: { literal: 'float', value: pythonFloatToHex(value) }, kind: null })
-const s = (value: string) => () => text(value)
-const id = (value: string) => () => name(value)
-const ctor =
+export const s = (value: string) => () => text(value)
+export const id = (value: string) => () => name(value)
+export const ctor =
   (type: string, ...values: (() => PythonNode)[]) =>
   () =>
     call(
@@ -41,7 +42,7 @@ const ctor =
 const v2 = (x: number, y: number) => ctor('Vector2', n(x), n(y))
 const rect = (x: number, y: number, w: number, h: number) =>
   ctor('Rectangle', n(x), n(y), n(w), n(h))
-const p = (paramName: string, label: string, value: () => PythonNode): PythonApiParam =>
+export const p = (paramName: string, label: string, value: () => PythonNode): PythonApiParam =>
   required(paramName, label, value, 'pos')
 
 interface Call {
@@ -56,19 +57,19 @@ interface Call {
   dependencies?: readonly string[]
 }
 
-const exact = (value: PythonNode, keys: readonly string[]) =>
+export const exact = (value: PythonNode, keys: readonly string[]) =>
   Object.keys(value.fields).length === keys.length &&
   keys.every((key) => Object.hasOwn(value.fields, key))
-const isLoadName = (value: unknown, expected?: string): value is PythonNode =>
+export const isLoadName = (value: unknown, expected?: string): value is PythonNode =>
   isNode(value as PythonNode) &&
   (value as PythonNode).kind === 'Name' &&
   typeof (value as PythonNode).fields.id === 'string' &&
   (expected === undefined || (value as PythonNode).fields.id === expected) &&
   isNode((value as PythonNode).fields.ctx) &&
   ((value as PythonNode).fields.ctx as PythonNode).kind === 'Load'
-const field = (shape: PythonBlockShape, key: string) =>
+export const field = (shape: PythonBlockShape, key: string) =>
   shape.fields.find((item) => item.name === key)?.value ?? ''
-const one = (shape: PythonBlockShape, key: string) => {
+export const one = (shape: PythonBlockShape, key: string) => {
   const found = shape.inputs.find((item) => item.name === key)
   if (found?.nodes.length !== 1) throw new Error('Preencha todas as entradas do bloco.')
   return found.nodes[0]!
@@ -163,6 +164,13 @@ export const RAYLIB_STRUCT_FIELDS: readonly (readonly [string, string])[] = [
   ['normal', 'normal'],
   ['transformação (transform)', 'transform'],
   ['direção (direction)', 'direction'],
+  ['materiais (materials)', 'materials'],
+  ['malhas (meshes)', 'meshes'],
+  ['shader', 'shader'],
+  ['mapas (maps)', 'maps'],
+  ['quadros da animação (keyframeCount)', 'keyframeCount'],
+  ['ossos (boneCount)', 'boneCount'],
+  ['quantas malhas (meshCount)', 'meshCount'],
 ]
 const BLEND_MODES: readonly (readonly [string, string])[] = [
   ['transparência normal', 'BLEND_ALPHA'],
@@ -170,7 +178,8 @@ const BLEND_MODES: readonly (readonly [string, string])[] = [
   ['multiplicar', 'BLEND_MULTIPLIED'],
 ]
 
-export function raylibCommonCodecs(owner: RaylibOwner): PythonBlockCodec[] {
+/** The pieces both catalogs build their blocks with: the ids, a pyray call and a constant list. */
+export function raylibCodecKit(owner: RaylibOwner) {
   const prefix = owner === 'python-raylib-2d' ? 'sz_py_rl2d_' : 'sz_py_rl3d_'
   const blockId = (key: string) => `${prefix}${key}`
   const api = (spec: Call): PythonBlockCodec =>
@@ -244,6 +253,12 @@ export function raylibCommonCodecs(owner: RaylibOwner): PythonBlockCodec[] {
       },
     }
   }
+
+  return { blockId, api, choice }
+}
+
+export function raylibCommonCodecs(owner: RaylibOwner): PythonBlockCodec[] {
+  const { blockId, api, choice } = raylibCodecKit(owner)
 
   /** `while not window_should_close():` — the game loop every raylib game is built around. */
   const windowLoop: PythonBlockCodec = {

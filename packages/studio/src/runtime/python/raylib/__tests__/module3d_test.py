@@ -170,6 +170,10 @@ class Models(unittest.TestCase):
         self.assertEqual(model.skeleton.boneCount, 2)
         # O pai do antebraço é o braço, mesmo com um nó "[base 1]" do Molda entre os dois.
         self.assertEqual(model.skeleton.bones[1].parent, 0)
+        # No computador, None derruba o programa e 0 dá TypeError: só a caixinha do ffi vale.
+        for wrong in (None, 0):
+            with self.assertRaises(TypeError):
+                P.load_model_animations('models/molda-pesos.glb', wrong)
         count = P.ffi.new('int *', 0)
         animations = P.load_model_animations('models/molda-pesos.glb', count)
         self.assertEqual(count[0], 2)
