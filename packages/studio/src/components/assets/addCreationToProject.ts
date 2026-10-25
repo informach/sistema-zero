@@ -67,15 +67,14 @@ export function pintaImageOutputFor(
   reviewing?: Pick<PintaImageRecipe, 'output'>,
 ): PintaImageRecipe['output'] {
   if (reviewing) return reviewing.output
-  // Pygame Zero opens SVG, and in a Turtle project the vector becomes a turtle shape
-  // (formas_do_pinta): both want the real vector.
-  if (
-    !project ||
-    !isPythonProject(project) ||
-    !(projectUsesPgzero(project) || hasTurtleExtension(project.installedExtensions))
-  )
+  if (!project || !isPythonProject(project) || !facts || facts.kind === 'unavailable')
     return undefined
-  return facts && facts.kind !== 'unavailable' && facts.vector === true ? 'svg' : undefined
+  // Pygame Zero opens SVG. In a Turtle project the vector becomes a turtle shape
+  // (formas_do_pinta), which needs shapes only; with text, a picture or a mask it stays PNG.
+  if (projectUsesPgzero(project)) return facts.vector === true ? 'svg' : undefined
+  if (hasTurtleExtension(project.installedExtensions))
+    return facts.vector === true && facts.turtleShape === true ? 'svg' : undefined
+  return undefined
 }
 
 /** Desenho do Pinta (imagem + animações/peças/mapa). */

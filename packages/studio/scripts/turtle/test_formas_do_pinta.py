@@ -152,9 +152,40 @@ class FromPinta(unittest.TestCase):
                      '<rect width="4" height="4" fill="#000" clip-path="url(#m)"/>']:
             with self.assertRaises(self.formas.DesenhoNaoServe) as error:
                 self.formas.forma(svg(body))
-            self.assertIn("como imagem", str(error.exception))
+            self.assertIn("imagem PNG", str(error.exception))
         with self.assertRaises(FileNotFoundError):
             self.formas.forma("images/nao-existe.svg")
+
+    def test_a_hole_stays_a_hole_in_one_part(self):
+        parts = self.components(self.formas.forma(svg(
+            '<path d="M 0 0 L 100 0 L 100 100 L 0 100 Z M 25 25 L 25 75 L 75 75 L 75 25 Z" '
+            'fill="#ff0000"/>', 100, 100)))
+        self.assertEqual(len(parts), 1)
+        polygon = parts[0][0]
+
+        def even_odd(point):
+            x, y = point
+            inside = False
+            for (x1, y1), (x2, y2) in zip(polygon, polygon[1:] + polygon[:1]):
+                if (y1 > y) != (y2 > y) and x < x1 + (y - y1) * (x2 - x1) / (y2 - y1):
+                    inside = not inside
+            return inside
+
+        def winding(point):
+            x, y = point
+            total = 0
+            for (x1, y1), (x2, y2) in zip(polygon, polygon[1:] + polygon[:1]):
+                if y1 <= y < y2 and (x2 - x1) * (y - y1) - (x - x1) * (y2 - y1) > 0:
+                    total += 1
+                elif y2 <= y < y1 and (x2 - x1) * (y - y1) - (x - x1) * (y2 - y1) < 0:
+                    total -= 1
+            return total
+
+        # Shape coordinates are centred: the hole is around (0, 0), the ring around (-40, -40).
+        self.assertFalse(even_odd((1, 2)))
+        self.assertEqual(winding((1, 2)), 0)
+        self.assertTrue(even_odd((-40, -38)))
+        self.assertNotEqual(winding((-40, -38)), 0)
 
     def test_a_drawing_with_too_many_points_is_simplified_into_the_budget(self):
         points = " ".join(

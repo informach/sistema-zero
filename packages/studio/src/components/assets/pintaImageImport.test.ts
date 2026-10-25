@@ -151,10 +151,21 @@ for (const kind of ['classic', 'pro'] as const) {
   })
 
   test(`${kind} Turtle: a vector drawing arrives as SVG (a turtle shape), pixel art as PNG`, async () => {
-    const vector = { kind: 'frame' as const, width: 16, height: 16, animations: [], vector: true }
+    const vector = {
+      kind: 'frame' as const,
+      width: 16,
+      height: 16,
+      animations: [],
+      vector: true,
+      turtleShape: true,
+    }
     const turtle = await pythonWith(kind, TURTLE_EXTENSION)
     // formas_do_pinta turns the vector into a shape that turns with the turtle.
     expect(pintaImageOutputFor(turtle.getState().project, vector)).toBe('svg')
+    // With text, a picture or a mask it cannot become a shape: it stays a PNG image.
+    expect(
+      pintaImageOutputFor(turtle.getState().project, { ...vector, turtleShape: undefined }),
+    ).toBeUndefined()
     expect(addPintaCreationToProject(turtle.getState(), imported(0))).toBeNull()
     expect(addPintaCreationToProject(turtle.getState(), importedSvg(1))).toBeNull()
     expect(turtle.getState().project!.assets!.map((asset) => asset.proPath)).toEqual([
@@ -184,7 +195,9 @@ test('the destination decides the format: Pygame Zero or Turtle + a vector drawi
   expect(pintaImageOutputFor(pgzero, vector, {})).toBeUndefined()
   expect(pintaImageOutputFor(pgzero, pixel, { output: 'svg' })).toBe('svg')
   const turtle = (await pythonWith('classic', TURTLE_EXTENSION)).getState().project
-  expect(pintaImageOutputFor(turtle, vector)).toBe('svg')
+  expect(pintaImageOutputFor(turtle, vector)).toBeUndefined()
+  expect(pintaImageOutputFor(turtle, { ...vector, turtleShape: true })).toBe('svg')
+  expect(pintaImageOutputFor(pgzero, { ...vector, turtleShape: true })).toBe('svg')
   expect(pintaImageOutputFor(turtle, pixel)).toBeUndefined()
   const plain = (await pythonWith('classic', undefined)).getState().project
   expect(pintaImageOutputFor(plain, vector)).toBeUndefined()

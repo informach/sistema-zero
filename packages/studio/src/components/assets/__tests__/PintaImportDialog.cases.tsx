@@ -909,7 +909,13 @@ describe('Python image selection through the real modal and project store', () =
         list: async () => [
           {
             ...DRAWINGS[1]!,
-            imageSelection: { kind: 'background', width: 1, height: 1, vector: true },
+            imageSelection: {
+              kind: 'background',
+              width: 1,
+              height: 1,
+              vector: true,
+              turtleShape: true,
+            },
           },
           {
             ...DRAWINGS[0]!,

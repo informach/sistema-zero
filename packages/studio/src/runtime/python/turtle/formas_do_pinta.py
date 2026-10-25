@@ -47,15 +47,13 @@ def forma(caminho, tamanho=None):
     partes = []
     for elemento in _desenhados(raiz):
         nome = elemento.tag.replace(_SVG, '')
-        if nome in ('text', 'image', 'use'):
+        if (nome in ('text', 'image', 'use') or elemento.get('clip-path')
+                or elemento.get('mask')):
+            # O Estúdio traz como imagem PNG o desenho que tem estas coisas.
             raise DesenhoNaoServe(
-                f"O desenho '{caminho}' tem texto ou figura: use ele como imagem "
-                f"(screen.addshape('{caminho}'))."
-            )
-        if elemento.get('clip-path') or elemento.get('mask'):
-            raise DesenhoNaoServe(
-                f"O desenho '{caminho}' usa máscara: use ele como imagem "
-                f"(screen.addshape('{caminho}'))."
+                f"O desenho '{caminho}' tem texto, figura ou máscara, que não viram forma da "
+                f"tartaruga: traga do Pinta um desenho só de formas, ou use a imagem PNG dele "
+                f"com screen.addshape."
             )
         anel = _forma_do_elemento(nome, elemento)
         if anel is None:
@@ -67,7 +65,9 @@ def forma(caminho, tamanho=None):
         espessura = float(elemento.get('stroke-width', '1') or 1)
         if preenchimento is not None and fechado:
             borda = _cor(contorno, degrades) if contorno else preenchimento
-            for pontos in aneis:
+            # Um furo (uma rosca, o "tirar a da frente" do Pinta) é costurado ao anel de fora:
+            # a forma da tartaruga não tem furos, mas um polígono só com o corte tem.
+            for pontos in _com_furos([anel for anel in aneis if len(anel) >= 3]):
                 if len(pontos) >= 3:
                     partes.append((pontos, preenchimento, borda or preenchimento))
         elif contorno and contorno != 'none':
@@ -335,6 +335,51 @@ def _girar(pontos, transformacao):
         (cx + (x - cx) * cosseno - (y - cy) * seno, cy + (x - cx) * seno + (y - cy) * cosseno)
         for x, y in pontos
     ]
+
+
+def _area(anel):
+    return sum(x1 * y2 - x2 * y1 for (x1, y1), (x2, y2) in zip(anel, anel[1:] + anel[:1])) / 2
+
+
+def _dentro(ponto, anel):
+    x, y = ponto
+    dentro = False
+    for (x1, y1), (x2, y2) in zip(anel, anel[1:] + anel[:1]):
+        if (y1 > y) != (y2 > y) and x < x1 + (y - y1) * (x2 - x1) / (y2 - y1):
+            dentro = not dentro
+    return dentro
+
+
+def _com_furos(aneis):
+    """Os anéis de um caminho: os de dentro (furos) costurados a quem os contém."""
+    if len(aneis) < 2:
+        return aneis
+    profundidade = [
+        sum(_dentro(anel[0], outro) for outro in aneis if outro is not anel) for anel in aneis
+    ]
+    poligonos = []
+    for i, anel in enumerate(aneis):
+        if profundidade[i] % 2:
+            continue
+        contorno = list(anel)
+        for j, furo in enumerate(aneis):
+            if profundidade[j] == profundidade[i] + 1 and _dentro(furo[0], anel):
+                contorno = _costurar(contorno, furo)
+        poligonos.append(contorno)
+    return poligonos
+
+
+def _costurar(contorno, furo):
+    """Fechadura: do ponto do contorno mais perto do furo, dá a volta no furo e volta."""
+    # O furo anda ao contrário do contorno: assim o polígono não se cruza.
+    if (_area(furo) > 0) == (_area(contorno) > 0):
+        furo = furo[::-1]
+    i, j = min(
+        ((i, j) for i in range(len(contorno)) for j in range(len(furo))),
+        key=lambda par: math.dist(contorno[par[0]], furo[par[1]]),
+    )
+    volta = furo[j:] + furo[:j] + [furo[j]]
+    return contorno[:i + 1] + volta + contorno[i:]
 
 
 def _engrossar(pontos, espessura):
