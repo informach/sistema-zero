@@ -128,6 +128,7 @@ test('offline artifact uses canonical factory, explicit approval and exact frame
     expect(await sha256(views.get(file.path)!)).toBe(file.sha256)
   const config = JSON.parse(await readFile(join(output, 'wrangler.jsonc'), 'utf8'))
   expect(config.name).toBe(f.approval.workerName)
+  expect(config.compatibility_flags).toEqual(['nodejs_compat'])
   expect(config.r2_buckets).toEqual([
     { binding: 'PYTHON_RUNTIME', bucket_name: 'sistemazero-studio-artifacts-staging' },
   ])
