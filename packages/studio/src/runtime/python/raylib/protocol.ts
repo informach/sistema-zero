@@ -81,6 +81,26 @@ export const RAYLIB_OP = Object.freeze({
   TEXTURE_NPATCH: 41,
   BEGIN_3D: 60,
   END_3D: 61,
+  LINE_3D: 62,
+  POINT_3D: 63,
+  CIRCLE_3D: 64,
+  TRIANGLE_3D: 65,
+  CUBE: 66,
+  CUBE_WIRES: 67,
+  SPHERE: 68,
+  SPHERE_WIRES: 69,
+  CYLINDER: 70,
+  CYLINDER_WIRES: 71,
+  CYLINDER_EX: 72,
+  CYLINDER_WIRES_EX: 73,
+  CAPSULE: 74,
+  CAPSULE_WIRES: 75,
+  PLANE: 76,
+  GRID: 77,
+  QUAD_3D: 78,
+  RL_STATE: 79,
+  /** mesh, shader, diffuse, specular, wires, 16 × matrix, maps (count, then index/texture), bones (count, then 16 each). */
+  MESH: 80,
 })
 
 /** Values after each fixed-size opcode. TEXT is variable: 4 + 3 × count. */
@@ -124,12 +144,34 @@ export const RAYLIB_OP_ARITY: Readonly<Record<number, number>> = Object.freeze({
   38: 3,
   39: 6,
   41: 21,
+  60: 11,
+  61: 0,
+  62: 7,
+  63: 4,
+  64: 9,
+  65: 10,
+  66: 7,
+  67: 7,
+  68: 7,
+  69: 7,
+  70: 8,
+  71: 8,
+  72: 10,
+  73: 10,
+  74: 10,
+  75: 10,
+  76: 6,
+  77: 2,
+  78: 22,
+  79: 2,
 })
 
 export type RaylibTexture =
   | readonly [number, 'f', string]
   | readonly [number, 'p', number, number, number]
   | readonly [number, 'r', number, number]
+  /** Encoded image bytes (a texture inside a .glb), decoded by the browser. */
+  | readonly [number, 'e', number]
   | readonly [number, 'filter' | 'wrap', number]
 /** [textureId, path, baseSize, emPx, ascentPx, codepoints]. */
 export type RaylibFont = readonly [number, string, number, number, number, readonly number[]]
@@ -184,6 +226,9 @@ function readTexture(entry: unknown): RaylibTexture {
     case 'r':
       if (entry.length !== 4 || !dimension(entry[2]) || !dimension(entry[3])) invalid()
       return [texture, 'r', entry[2], entry[3]]
+    case 'e':
+      if (entry.length !== 3 || !id(entry[2]) || entry[2] > RAYLIB_LIMITS.fileBytes) invalid()
+      return [texture, 'e', entry[2]]
     case 'filter':
     case 'wrap':
       if (entry.length !== 3 || !id(entry[2])) invalid()

@@ -1,4 +1,4 @@
-"""Compara duas saídas de diff_math.py (real x Estúdio) com tolerância de float32."""
+"""Compara duas saídas dos diferenciais (real x Estúdio) com tolerância de float32."""
 import json
 import math
 import sys

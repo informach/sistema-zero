@@ -56,7 +56,10 @@ def _functions():
     for module_name in _MODULES_3D:
         try:
             module = __import__(f'_szraylib.{module_name}', fromlist=['_'])
-        except ImportError:
+        except ModuleNotFoundError as error:
+            # Só um módulo que ainda não existe é pulado; um erro dentro dele aparece.
+            if error.name != f'_szraylib.{module_name}':
+                raise
             continue
         for name, value in vars(module).items():
             if callable(value) and not name.startswith('_') and name in FUNCTION_PARAMS:

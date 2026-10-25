@@ -1357,6 +1357,7 @@ export function createRaylibRenderer(
     g.frontFace(g.CCW)
     g.disable(g.SCISSOR_TEST)
     setBlend(0)
+    three?.frameStart()
     let at = 0
     const n = list.length
     while (at < n) {
@@ -1383,8 +1384,23 @@ export function createRaylibRenderer(
             view = identity()
           },
           size: () => [targetWidth, targetHeight],
+          matrices: () => ({ projection, view, transform: transformUsed ? transform : null }),
           vertex,
           begin,
+          push: pushMatrix,
+          pop: popMatrix,
+          translate(x, y, z) {
+            transform = multiply(translate(x, y, z), transform)
+            transformUsed = true
+          },
+          rotate(degrees, x, y, z) {
+            transform = multiply(rotate(x, y, z, degrees * DEG2RAD), transform)
+            transformUsed = true
+          },
+          scale(x, y, z) {
+            transform = multiply(scale(x, y, z), transform)
+            transformUsed = true
+          },
         })
         continue
       }
@@ -1619,15 +1635,10 @@ export function createRaylibRenderer(
           setBlend(0)
           break
         case RAYLIB_OP.PUSH:
-          if (stack.length >= RAYLIB_LIMITS.matrixDepth)
-            throw new Error(
-              'rl_push_matrix: a pilha de matrizes passou de 32. Falta um rl_pop_matrix?',
-            )
-          stack.push(transform)
+          pushMatrix()
           break
         case RAYLIB_OP.POP:
-          if (stack.length) transform = stack.pop()!
-          transformUsed = stack.length > 0 || !isIdentity(transform)
+          popMatrix()
           break
         case RAYLIB_OP.TRANSLATE:
           transform = multiply(translate(r[at]!, r[at + 1]!, r[at + 2]!), transform)
@@ -1650,6 +1661,15 @@ export function createRaylibRenderer(
     flush()
     if (renderingTexture) setTarget(0)
     frameSequence++
+  }
+  function pushMatrix() {
+    if (stack.length >= RAYLIB_LIMITS.matrixDepth)
+      throw new Error('rl_push_matrix: a pilha de matrizes passou de 32. Falta um rl_pop_matrix?')
+    stack.push(transform)
+  }
+  function popMatrix() {
+    if (stack.length) transform = stack.pop()!
+    transformUsed = stack.length > 0 || !isIdentity(transform)
   }
   const isIdentity = (m: Mat4) => m.every((value, index) => value === (index % 5 === 0 ? 1 : 0))
 
@@ -1777,7 +1797,10 @@ export function createRaylibRenderer(
     blobs: Uint8Array,
   ) {
     const g = ensureGl()
-    for (const id of header.free) release(id)
+    for (const id of header.free) {
+      release(id)
+      three?.free(id)
+    }
     let offset = 0
     for (const entry of header.textures) {
       const [id, kind] = entry
@@ -1790,6 +1813,13 @@ export function createRaylibRenderer(
         const [, , w, h, size] = entry
         if (offset + size > blobs.byteLength) throw new Error('Faltaram os pixels de uma imagem.')
         makeTexture(id, w, h, blobs.subarray(offset, offset + size))
+        offset += size
+      } else if (kind === 'e') {
+        const size = entry[2]
+        if (offset + size > blobs.byteLength) throw new Error('Faltou a imagem de um modelo.')
+        const encoded = blobs.slice(offset, offset + size)
+        const png = encoded[0] === 0x89 && encoded[1] === 0x50
+        await loadFile(id, encoded, png ? 'textura-do-modelo.png' : 'textura-do-modelo.jpg')
         offset += size
       } else if (kind === 'r') makeTexture(id, entry[2], entry[3], null, true)
       else {
@@ -1816,7 +1846,7 @@ export function createRaylibRenderer(
     }
     if (header.models.length) {
       three ??= createRaylib3D(g, { flush, textures: (id) => textures.get(id)?.texture })
-      three.load(header.models, supplied)
+      three.load(header.models, blobs.subarray(offset))
     }
   }
 

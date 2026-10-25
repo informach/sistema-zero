@@ -27,8 +27,12 @@ const sceneFixtures = Object.fromEntries(
   ]),
 )
 
-const SCENE_ASSET_TYPES: Record<string, { kind: 'image' | 'audio' | 'font'; mime: string }> = {
+const SCENE_ASSET_TYPES: Record<
+  string,
+  { kind: 'image' | 'audio' | 'font' | 'model3d'; mime: string }
+> = {
   png: { kind: 'image', mime: 'image/png' },
+  glb: { kind: 'model3d', mime: 'model/gltf-binary' },
   wav: { kind: 'audio', mime: 'audio/wav' },
   ttf: { kind: 'font', mime: 'font/ttf' },
   otf: { kind: 'font', mime: 'font/otf' },
@@ -108,6 +112,11 @@ export const RAYLIB_FIXTURE_ASSETS = [
   ...SCENE_ASSETS,
 ]
 export { RAYLIB_2D_EXTENSION, RAYLIB_3D_EXTENSION }
+
+/** A scene named `...3d` (shapes3d, models3d) runs with the Raylib 3D extension. */
+export function raylibFixtureExtension(name: string) {
+  return /3d$/i.test(name) ? RAYLIB_3D_EXTENSION : RAYLIB_2D_EXTENSION
+}
 
 /** `raylib-example-<key>`: the gallery example itself, as a Pro project at the same paths. */
 export function isRaylibExampleFixture(name: string) {

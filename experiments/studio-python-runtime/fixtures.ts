@@ -8,7 +8,7 @@ import { preparePythonExecutionSnapshot } from '../../packages/studio/src/runtim
 import { documentFixture } from '../../packages/studio/src/state/fixtures/projectDocuments'
 import { audioFixtures, portableAudioAsset } from './audioFixtures'
 import { PGZERO_EXTENSION, PGZERO_FIXTURE_ASSETS, pgzeroFixtures } from './pgzeroFixtures'
-import { RAYLIB_2D_EXTENSION, RAYLIB_FIXTURE_ASSETS, raylibFixtures } from './raylibFixtures'
+import { RAYLIB_FIXTURE_ASSETS, raylibFixtureExtension, raylibFixtures } from './raylibFixtures'
 import { TURTLE_EXTENSION, turtleFixtures } from './turtleFixtures'
 
 /** Behavioral fixtures, never a production runtime catalog or author template. */
@@ -191,7 +191,9 @@ export async function runtimeFixtureProject(
       }
   }
   if (name in raylibFixtures) {
-    project.installedExtensions = [{ ...RAYLIB_2D_EXTENSION, installedAt: project.createdAt }]
+    project.installedExtensions = [
+      { ...raylibFixtureExtension(name), installedAt: project.createdAt },
+    ]
     project.assets = [...RAYLIB_FIXTURE_ASSETS]
   }
   if (name in pgzeroFixtures) {
