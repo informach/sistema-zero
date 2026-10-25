@@ -18,6 +18,7 @@ import {
   PensaProjectLanguageRefused,
 } from '../../lib/pensa-studio-link'
 import { reportStudioError } from '../../lib/studio-error'
+import { StudioRuntimeNotice } from '../studio/studio-runtime-notice'
 import { useFocusMode } from './focus-mode'
 import { useStudioActivity } from './use-studio-activity'
 
@@ -222,17 +223,13 @@ export function StudioFullEditor({
   return (
     <div className="flex h-full min-h-0 flex-col">
       {pythonUnavailable && (
-        <div
-          role={runtime.error ? 'alert' : 'status'}
-          className="flex items-center gap-2 px-3 py-2 text-sm"
-        >
-          {runtime.error ?? 'Preparando Python…'}
-          {runtime.error && (
-            <button type="button" onClick={runtime.retry}>
-              Tentar novamente
-            </button>
-          )}
-        </div>
+        <StudioRuntimeNotice
+          theme={theme}
+          projectName={state.project.name}
+          error={runtime.error}
+          onRetry={runtime.retry}
+          onExit={onExit}
+        />
       )}
       <div className="min-h-0 flex-1" hidden={pythonUnavailable} inert={pythonUnavailable}>
         {mountEditor && (

@@ -352,10 +352,11 @@ test('Classic refuses an approved intersection missing dependencies without expa
   f.state.blocks = pythonCourseBlockClosure(['sz_py_print'])
   const options = await f.service.options(f.actor)
   expect(options.catalog?.releases[0]?.blockIds).toEqual(['sz_py_print'])
-  await expect(f.service.execute(f.actor, f.request)).rejects.toThrow('Python')
-  await expect(f.service.execute({ ...f.actor, privileged: true }, f.request)).rejects.toThrow(
-    'Python',
-  )
+  // An incomplete host approval is an environment problem, including for staff;
+  // it must not tell an admin to earn course achievements or expand the approval.
+  for (const actor of [f.actor, { ...f.actor, privileged: true }]) {
+    await expect(f.service.execute(actor, f.request)).rejects.toThrow('precisa ser atualizado')
+  }
 })
 
 test('a Pro code-only profile retains earned extension owners without a Classic palette', async () => {
@@ -466,8 +467,11 @@ test('builder Python denies missing execution configuration, mismatched metadata
   ).rejects.toThrow()
 })
 
-test('active staff bypasses achievement gates, while support cannot execute even as staff', async () => {
-  const f = await setup('pro')
+test.each([
+  'classic',
+  'pro',
+] as const)('active staff bypasses %s achievement gates, while support cannot execute even as staff', async (kind) => {
+  const f = await setup(kind)
   f.state.owned = false
   const staff = { ...f.actor, userId: f.actor.accountId, privileged: true }
   expect((await f.service.options(staff)).canCreatePython).toBe(true)

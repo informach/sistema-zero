@@ -52,3 +52,29 @@ Consulta realizada dentro do serviço Payments correto, conferindo projeto/ambie
 Em produção, um contador diverge dos recibos locais; a consulta não reescreveu contadores nem concluiu o histórico do provedor. Migrações canônicas, revisão de ciclos e seed da política são gates do deploy. O predeploy de Payments executa `db:migrate`. Avisos, cancelamentos e cobranças não foram acionados por essa consulta. As duas tentativas anteriores sem resposta JSON foram recusadas; a tentativa válida usa o transporte SSH de origem confiável, sem imprimir URL de banco ou credenciais.
 
 Evidências no namespace `.cache/python-missions-20261024/`. Nenhuma dessas provas, isoladamente, afirma implantação ou ativação financeira concluída.
+
+## Artefatos finais: transferência sem ativação
+
+A distribuição final `55aa3dd527450cab8bf3396aebf070432bda33fe7b81fd56db12dfccbdf6628d` contém 110 arquivos / 23.488.465 bytes. A imagem final tem fingerprint de validação `268a4ca6032d599b0105e773e73540e0be68dbab9358692b335aa8d41d5fa532` e digest de registry `acdfd9288797772115498873574711e9a72d84249284dcaff37f8447dfd67982`. O conjunto do runtime passou em **353 testes / 3.870 asserções**, com um teste nativo opcional não executado. Oito provas Raylib passaram no executor dessa imagem; os 17 exemplos passaram no navegador com essa distribuição.
+
+Os dois operadores R5 concluíram a escrita/leitura de **112 objetos por ambiente** (110 arquivos, marcador e catálogo), com checksum nativo, encerramento dos corpos e remoção dos Workers temporários confirmados. A etapa nativa levou 27.826 ms em staging e 45.927 ms em produção. Catálogos preparados: staging `9a9ddcb6dc256dbc6dd1bfcd3f9d2a93018a9f331507379228e8ac045677ca9c`; produção `f1be2e7a6d65a53455b82a034dfcdc6ad51970fa46307ac20189b33088155bcf`. A imagem também foi enviada aos dois repositórios corretos do registry.
+
+Essas ações **não alteraram os ponteiros ativos**, a política Members nem as aplicações em execução. Ainda são necessários CI, rollout da imagem, ativação coordenada e prova hospedada da composição final. O negativo R4 de deadline continua preservado; o R5 usa concorrência limitada com drenagem de todas as operações admitidas e mantém o deadline de 100 s.
+
+## Catálogo de exemplos: espera de carga fria no teste
+
+O CI `40186233031` aprovou os nove jobs auxiliares, mas parou no grupo de componentes: o teste do painel de extensões usava o timeout implícito de 1 s do Testing Library para importar e validar os catálogos reais. A reprodução isolada falhou da mesma forma (11 pass / 1 fail). Com uma espera explícita limitada a 4 s, a primeira carga concluiu em 1.406 ms e os **12 testes / 31 asserções** passaram. A seleção ampliada de componentes também passou: **510 testes / 2.769 asserções / 60 arquivos**, em 40,49 s. Ela inclui quatro arquivos que o runner canônico isola; não substitui essa execução CI. A espera continua dentro do limite de 5 s do teste, sem sleep, mock de catálogo, retry ou mudança de produção. As verificações de permissão e de conteúdo foram preservadas. O CI da nova composição ainda é obrigatório.
+
+## Modelos financeiros: leitura dos dois ambientes
+
+A leitura do Messaging encontrou os oito modelos canônicos ativos em staging, remetente padrão verificado e nenhuma mensagem antiga pendente. Em produção, nenhum dos oito corresponde à versão canônica; há dois modelos antigos ativos e uma mensagem antiga pendente. Atualizar os modelos e retirar a fila antiga depende do corte coordenado dos consumidores. Nenhum seed, aviso, cobrança ou cancelamento foi executado por essa leitura.
+
+## Abertura Python por admin e apresentação do bloqueio
+
+O relato foi confirmado pelo usuário em `https://community-kids-staging.up.railway.app/estudio`. A leitura das variáveis Members, sem imprimir credenciais, encontrou nos dois ambientes a release ativa `2026-10-22-visual-games-3`: 256 IDs aprovados, dos quais 144 pertencem ao catálogo atual, com uma dependência ausente. A exceção administrativa a cursos já existia; a recusa por catálogo incompleto reutilizava indevidamente a mensagem de conquista de curso. Os dois motivos agora são distintos. **Não foi removida a validação de dependências ou de aprovação da release.**
+
+Testes causais: a expectativa de mensagem de configuração falhou antes da mudança; depois, **26 testes / 288 asserções** passaram, incluindo admin sem conquistas em clássico e Pro, perfil próprio e recusa de suporte. A seleção do host passou em **cinco testes externos**, incluindo os subprocessos isolados de abertura e autoridade. Dentro da abertura há 15 cenários: o erro/retry preserva a mesma instância e seu buffer; em Pro, o editor retido fica oculto, inerte e em observação enquanto falta autoridade. As contagens externas e internas não são somadas.
+
+Clássico e Pro usam um aviso compartilhado com os tokens e botões do host, nome do projeto, estado de preparo/erro, tentativa e retorno à galeria. A renderização Chrome focada compilou o CSS real do Kids: quatro combinações Padrão/Rosa e 320/1280 px, sem rolagem horizontal, alvos de 44 px, ações funcionais e nenhum erro de página; preparo sem retry prematuro também passou. É uma prova de componente/tema, não um login ou fluxo remoto completo. A fixture inicial usou o valor inválido de paleta `default`; o erro de fixture e seus screenshots foram preservados, e a prova corrigida usa ausência do atributo para Padrão e `pink` para Rosa.
+
+Os planos R4 já preparados foram conferidos com a mesma função de currículo: ambos têm 619 IDs atuais e **nenhuma dependência ausente**, com as quatro extensões Python. A correção operacional ainda depende de ativar esse catálogo junto do runtime e validar a abertura real em staging. Atualizar apenas a mensagem não equivale a restaurar o ambiente.
