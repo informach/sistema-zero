@@ -1,5 +1,8 @@
 import { ValidationError } from '@sistemazero/core/errors'
-import { isSectionCompletion } from '@sistemazero/core/learning'
+import {
+  isSectionCompletion,
+  SectionPythonProjectTestRequestSchema,
+} from '@sistemazero/core/learning'
 import { PALETTES, readPalette } from '@sistemazero/core/palette'
 import { StudioAuthoringRuntimeRequestSchema } from '@sistemazero/core/studio/runtime-authorization'
 import { Elysia, t } from 'elysia'
@@ -132,6 +135,33 @@ export function learningRoutes(deps: LearningRoutesDeps) {
       .group('/admin', (app) =>
         app
           .onBeforeHandle(({ headers }) => requireAdmin(headers, deps.requireAdminEnabled))
+          .post(
+            '/python-project-checks/test',
+            ({ headers, body, request, set }) => {
+              set.headers['cache-control'] = 'private, no-store'
+              const currentActor = {
+                ...actor(headers),
+                readOnly: Boolean(headers['x-auth-impersonator-id']?.trim()),
+              }
+              return deps.learning.sections.testPythonObjectives({
+                ...body,
+                userId: currentActor.userId,
+                accountId: currentActor.accountId,
+                signal: request.signal,
+                async authorize(signal, subject) {
+                  signal.throwIfAborted()
+                  const result = await deps.authorizeStudioRuntime.authorizeContext(currentActor, {
+                    context: body.context,
+                    subject,
+                    operation: 'execute',
+                  })
+                  signal.throwIfAborted()
+                  return result.curation
+                },
+              })
+            },
+            { body: SectionPythonProjectTestRequestSchema },
+          )
           .post(
             '/studio/authoring-runtime',
             ({ headers, body, set }) => {

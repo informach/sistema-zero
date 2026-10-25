@@ -5,14 +5,16 @@
  */
 export const world3DPromptContext = `## Extensão instalada: Mundo 3D (world-3d)
 
-Mundo 3D aberto dirigível via \`window.SZWorld3D\` (facade global, já carregada
+Mundo 3D aberto via \`window.SZWorld3D\` (facade global, já carregada
 no preview). Modelo mental: a criança monta um MUNDO (não um jogo de fases) e
-dirige um carrinho nele. Unidades em METROS; o carrinho tem ~3 m.
+passeia nele a pé, de carrinho ou de barco. "Jogador" = quem ela controla AGORA
+(personagem, carro ou barco): pontos, áreas, moedas, clima, tornado, corrida,
+boliche, empurráveis e explosivos valem para o jogador. Unidades em METROS.
 
 ### Receita canônica por Área do projeto
 
 \`\`\`js
-// 🧩 Meus moldes (só receitas: carregar som) e depois ⚙️ Ao iniciar
+// ⚙️ Ao iniciar (mundo, chão, quem passeia e os sons carregados com loadSound)
 SZWorld3D.setup({ style: 'floresta', world: 160 });
 SZWorld3D.terrain(4, 5);
 SZWorld3D.car({ style: 'passeio', color: '#ef4444' });
@@ -22,10 +24,15 @@ SZWorld3D.onUpdate(function (dt) {
 });
 \`\`\`
 
-Use ⚡ Quando acontecer para os chapéus “Quando…” e
+🧩 Meus moldes fica VAZIO no Mundo 3D (não há moldes; loadSound é preparação de
+partida e vai em ⚙️ Ao iniciar). Use ⚡ Quando acontecer para os chapéus “Quando…” e
 🔁 Enquanto estiver rodando para onUpdate e outros loops-raiz. O Studio
 chama o ciclo de vida automaticamente. NÃO gere
 \`SZWorld3D.start()\`: esse método existe apenas para projetos legados.
+Podem nascer DURANTE o jogo (dentro de um "Quando…" ou do onUpdate): moedas
+(coinsScatter/coinsRing/coinsLine), marker, quest, placeThing, placeModel,
+pushPlace, explosive e npc (cada um com teto). flatten/path/crater durante o
+jogo marcam o chão e ele é refeito UMA vez por quadro (teto de 64 pedidos).
 
 ### API (1 método por bloco)
 
@@ -60,29 +67,29 @@ chama o ciclo de vida automaticamente. NÃO gere
 - \`SZWorld3D.carPaint('lisa'|'listras'|'chamas'|'arco-iris'|'estrelas')\` — pintura do carrinho (arco-iris muda de cor sozinho).
 - Segredo pronto: o código Konami (cima cima baixo baixo esq dir esq dir B A) vira o carrinho um FOGUETE.
 - \`SZWorld3D.confetti()\` — chuva de confete sobre o jogador. \`SZWorld3D.fireworks()\` — 1 foguete sobe e explode (use 3x p/ show).
-- \`SZWorld3D.tornado(segundos)\` — tornado passeia, PUXA o carrinho perto e arremessa se encostar; some sozinho (3..60 s).
+- \`SZWorld3D.tornado(segundos)\` — tornado passeia, PUXA o jogador perto e arremessa se encostar; some sozinho (3..60 s).
 - \`SZWorld3D.season('primavera'|'verao'|'outono'|'inverno')\` — recolore copas+grama; outono chove folhas, inverno neva (se o clima estiver limpo).
 - \`SZWorld3D.clouds('nenhuma'|'poucas'|'muitas')\` — nuvens no alto derivando com o vento.
-- \`SZWorld3D.pushPlace('tijolo'|'banco'|'cerca'|'lanterna'|'cone', x, z)\` — 1 objeto EMPURRÁVEL (desliza/gira/quica; renasce se cair na água).
+- \`SZWorld3D.pushPlace('tijolo'|'banco'|'cerca'|'lanterna'|'cone', x, z)\` — 1 objeto EMPURRÁVEL pelo jogador a pé ou dirigindo (desliza/gira/quica; renasce se cair na água).
   \`SZWorld3D.pushScatter(n, x, z, raio)\` — espalha uma bagunça variada (teto 256 no total).
-- \`SZWorld3D.letters('PALAVRA', x, z, tamanho)\` — cubos de letra empurráveis (cap 24; o "BRUNO" do folio).
-- \`SZWorld3D.explosive(x, z)\` — caixa TNT: encostão rápido detona (bola de fogo + impulso radial + cadeia entre caixas vizinhas + câmera lenta se te pegar).
+- \`SZWorld3D.letters('PALAVRA', x, z, tamanho)\` — cubos de letra empurráveis (cap 24).
+- \`SZWorld3D.explosive(x, z)\` — caixa TNT (cap 64): encostar andando/correndo a pé ou dirigindo detona (bola de fogo + impulso radial + cadeia entre caixas vizinhas + câmera lenta se te pegar).
   \`SZWorld3D.onExplosion(() => { … })\` — roda a cada explosão.
 - \`SZWorld3D.waterfall(x, z, altura, graus)\` — cortina d'água com espuma na base (esconda segredos atrás).
 - \`SZWorld3D.lamp(x, z)\` — poste que acende à noite (os 4 mais perto iluminam de verdade). \`SZWorld3D.fireflies('pouca'|'media'|'muita')\` — vaga-lumes noturnos.
 - \`SZWorld3D.campfire(x, z)\` — fogueira crepitando que vira CHECKPOINT: afundou na água → volta na última fogueira tocada. A água tem espuma na costa automaticamente.
 - weather agora aceita também 'tempestade' (chuva pesada + raios + trovão atrasado; raio no carrinho = chacoalhão + câmera lenta).
-- \`SZWorld3D.carPos('x'|'y'|'z')\` → número. \`SZWorld3D.carSpeed()\` → m/s.
+- \`SZWorld3D.playerPos('x'|'y'|'z')\` → posição do JOGADOR ATIVO (a pé, carro ou barco). \`SZWorld3D.carSpeed()\` → m/s.
 - \`SZWorld3D.person(corHex, 'nenhum'|'bone'|'palha'|'coroa'|'capacete')\` — personagem A PÉ (WASD/Shift/espaço); o passeio começa a pé; E perto do carrinho ENTRA, E dirigindo DESCE.
   \`SZWorld3D.personStats(andar, correr, pulo)\` · \`SZWorld3D.personPlace(x, z, graus)\` · \`SZWorld3D.personEmote('acenar'|'pular'|'girar'|'dancar')\`.
-- \`SZWorld3D.personAccessory('nenhum'|'jetpack'|'botas')\` — jetpack = segurar espaço no ar VOA; botas = corrida ×1,8 (Coastal-style).
-- \`SZWorld3D.onVehicle('entrar'|'sair', () => { … })\` — gancho da troca. \`SZWorld3D.personPos('x'|'y'|'z')\` → número (no carro = posição do carro). \`SZWorld3D.isDriving()\` → booleano.
+- \`SZWorld3D.personAccessory('nenhum'|'jetpack'|'botas')\` — jetpack = segurar espaço no ar VOA; botas = corrida ×1,8.
+- \`SZWorld3D.onVehicle('entrar'|'sair', () => { … })\` — gancho da troca. \`SZWorld3D.isDriving()\` → booleano.
 - \`SZWorld3D.islands(n, alturaDoMar)\` — vira ARQUIPÉLAGO (a água entra sozinha; você nasce na ilha 0, no centro).
 - \`SZWorld3D.boat(corHex)\` — barco dirigível: SÓ anda na água, encalha na praia; com personagem, E perto dele embarca; sem carro nem personagem, nasce pilotando.
 - \`SZWorld3D.bridge(x1, z1, x2, z2, largura)\` — ponte em arco: carro/personagem POR CIMA, barco POR BAIXO. \`SZWorld3D.lighthouse(x, z)\` — farol com luz girando à noite.
 - \`SZWorld3D.ambience('mar'|'passaros'|'grilos'|'desligado')\` — som de fundo sintetizado persistente. Gere fora de 🔁 Enquanto estiver rodando; repetir a mesma opção mantém o relógio atual. scatter/placeThing agora aceitam 'palmeiras' 🌴.
 - 🏙️ \`SZWorld3D.city(x, z, 'pequena'|'media'|'grande', 'dia'|'neon')\` — a
-  CIDADEZINHA completa (estilo Vocation Vista): praça com coreto + varais,
+  CIDADEZINHA completa: praça com coreto + varais,
   anel de rua com faixas de pedestre, 4 ruas de entrada, casinhas/lojas/
   predinhos coloridos instanciados, cercas-vivas, laguinho, postes nos
   cruzamentos; o chão aplaina sozinho e as ruas aparecem no minimapa. UMA
@@ -107,8 +114,8 @@ chama o ciclo de vida automaticamente. NÃO gere
   — bichinhos instanciados que perambulam e bicam (cap 16 total).
 - \`SZWorld3D.door(x, z, graus, 'Título', 'Texto', 'imagem')\` — porta
   interativa: E perto abre um overlay LOCAL (título + texto + imagem do
-  projeto via ASSETS; imagem '' = sem). É o "conteúdo do prédio" do
-  Vocation Vista sem rede. Cap 16 portas; prio 1 no árbitro do E; E fecha.
+  projeto via ASSETS; imagem '' = sem). É o "conteúdo do prédio", sem rede.
+  Cap 16 portas; prio 1 no árbitro do E; E fecha.
 - \`SZWorld3D.npcAsk('Nome', 'Pergunta?', 'OpA', fnA, 'OpB', fnB)\` — comando
   que só deve aparecer dentro do corpo de \`npcTalk\`;
   pergunta com 2 escolhas na fila de falas do amigo: balão typewriter + 2
@@ -123,12 +130,12 @@ chama o ciclo de vida automaticamente. NÃO gere
   postes (catenária; as lâmpadas acendem com o escurecer). Vale em qualquer
   mundo, com ou sem cidade.
 - \`SZWorld3D.npc('Nome', x, z, corHex, chapeu)\` — amigo que olha p/ você de perto (cap 8). \`SZWorld3D.npcWander('Nome', raio)\` — passeia ao redor de casa.
-- \`SZWorld3D.npcTalk('Nome', () => { … })\` — chapéu de **⚡ Quando acontecer**; roda no E perto do amigo. Dentro, \`SZWorld3D.npcSay('Nome', 'fala')\` ENFILEIRA falas (cada E mostra a próxima, typewriter + blip por letra à la Animal Crossing). \`SZWorld3D.npcEmote('Nome', 'acenar'|'pular'|'girar'|'dancar')\`.
+- \`SZWorld3D.npcTalk('Nome', () => { … })\` — chapéu de **⚡ Quando acontecer**; roda no E perto do amigo. Dentro, \`SZWorld3D.npcSay('Nome', 'fala')\` ENFILEIRA falas (cada E mostra a próxima, typewriter + blip por letra). \`SZWorld3D.npcEmote('Nome', 'acenar'|'pular'|'girar'|'dancar')\`.
 - \`SZWorld3D.coinsScatter(n)\` / \`coinsRing(n, x, z, raio)\` / \`coinsLine(n, x1, z1, x2, z2)\` — moedas girando (cap 512; nunca na água). Pegar = encostar: plim + HUD 🪙 automático + \`SZWorld3D.onCollect(() => { … })\`. \`SZWorld3D.coinCount()\` → total.
-- \`SZWorld3D.quest('nome', 'descrição')\` — a missão ATIVA aparece no painel sozinha. \`SZWorld3D.questDone('nome')\` — confete + fanfarra + \`SZWorld3D.onQuestDone('nome', () => { … })\`. Meta automática NÃO existe: componha com onCollect + se coinCount() >= N.
+- \`SZWorld3D.quest('nome', 'descrição')\` — a missão ATIVA aparece no painel sozinha (cap 32). \`SZWorld3D.questDone('nome')\` — confete + fanfarra + \`SZWorld3D.onQuestDone('nome', () => { … })\`. Meta automática NÃO existe: componha com onCollect + se coinCount() >= N.
 - \`SZWorld3D.marker('alerta'|'estrela'|'alvo'|'moeda', x, z)\` — ícone quicando sobre o lugar. \`SZWorld3D.guideArrow(x, z, 'ligada'|'desligada')\` — seta na tela que aponta o alvo e some ao chegar.
 - \`SZWorld3D.achievement('nome')\` — conquista PARA SEMPRE (salva no projeto; 1ª vez = toast+confete; repetir não refesteja). \`SZWorld3D.onAchievement('nome', () => { … })\` · \`SZWorld3D.hasAchievement('nome')\` → booleano (vale entre jogadas).
-- Inventário persistente: \`SZWorld3D.inventoryGive('item', n)\`,
+- Mochila 🎒 (PERSISTE entre partidas, salva no projeto): \`SZWorld3D.inventoryGive('item', n)\`,
   \`inventoryRemove('item', n)\`, \`inventoryCount('item')\` → número e
   \`inventoryHas('item', n)\` → booleano. Nunca fica negativo.
 - \`SZWorld3D.minimap('ver'|'teleporte')\` — minimapa no canto; M abre o mapa grande (teleporte = clicar viaja).
@@ -140,10 +147,11 @@ chama o ciclo de vida automaticamente. NÃO gere
   SÓLIDOS (colidem com o carro); flores/cogumelos não. Teto global ~12.000
   instâncias. Respeita as áreas do clearArea; o centro (spawn) já nasce limpo.
 - \`SZWorld3D.scatterModel(n, nomeDoModelo, tamanho)\` — espalha um .glb do
-  projeto (o aluno envia em "Imagens", no menu ⋯, e escolhe no seletor). Sólido se for
-  grandinho.
+  projeto (o aluno envia em "Modelos 3D", no menu ⋯, e escolhe no seletor). Sólido se for
+  grandinho. Cópias PARADAS (avisa se o modelo tem animação; a pintura animada anda).
 - \`SZWorld3D.placeThing(especie, x, z, tamanho)\` — UMA cópia num ponto exato.
-- \`SZWorld3D.placeModel(nome, x, z, tamanho, graus)\` — UM .glb num ponto.
+- \`SZWorld3D.placeModel(nome, x, z, metros, graus, clipe?)\` — UM .glb em pé no chão do ponto;
+  metros = lado maior; clipe opcional = animação tocando (teto 24 animados).
 - \`SZWorld3D.clearArea(x, z, raio)\` — círculo sem natureza espalhada; chame
   ANTES dos scatter.
 - \`SZWorld3D.grass('pouca'|'media'|'muita')\` — grama instanciada ao vento
@@ -152,8 +160,8 @@ chama o ciclo de vida automaticamente. NÃO gere
   dia): céu/sol/névoa/estrelas interpolados por keyframes.
 - \`SZWorld3D.setTime('manha'|'meiodia'|'entardecer'|'noite')\` — fixa a hora
   (ou escolhe a hora inicial do ciclo).
-- \`SZWorld3D.weather('limpo'|'chuva'|'neve'|'folhas')\` — partículas que
-  seguem o carro e obedecem ao vento.
+- \`SZWorld3D.weather('limpo'|'chuva'|'neve'|'folhas'|'tempestade')\` — partículas que
+  seguem o jogador e obedecem ao vento (sorteio semeado: chove igual sempre).
 - \`SZWorld3D.setWind(forca)\` — 0..5; mexe grama + clima.
 - \`SZWorld3D.onDayNight('dia'|'noite', function () { ... })\` — dispara na
   VIRADA (dia = 6h..18h).
@@ -165,16 +173,33 @@ chama o ciclo de vida automaticamente. NÃO gere
   automática mede FPS, desempenho reduz resolução interna/sombras/grama.
 - \`SZWorld3D.cameraMode('seguir'|'topo'|'cinema')\` — modo da câmera (seguir
   por trás / vista de cima / órbita cinema). \`SZWorld3D.cameraShake(forca, segundos)\`
-  — tremor. (Joystick mobile aparece sozinho em toque; não tem método.)
+  — tremor (o das regras de jogo). (Joystick mobile aparece sozinho em toque; não tem método.)
 - \`SZWorld3D.onCrash(function () { ... })\` — trombada forte do carro em coisa
   sólida (tem respiro de 0.4 s entre disparos).
 - \`SZWorld3D.loadSound(apelido, asset)\` / \`playSound(apelido)\` / \`playMusic(apelido)\` (loop) / \`stopMusic()\` — sons/música do projeto. \`playMusic\` é persistente: use em ⚙️ Ao iniciar, ⚡ Quando acontecer ou diretamente numa função, nunca em 🔁 Enquanto estiver rodando. Repetir o mesmo apelido não reinicia a faixa.
-- \`SZWorld3D.hud(texto, 'topo-esquerda'|'topo-direita'|'baixo-esquerda'|'baixo-direita')\` — texto fixo num canto (vazio apaga).
-- \`SZWorld3D.say(texto, segundos)\` — balão de fala sobre o carro.
+- \`SZWorld3D.hudText('top-left'|'top-center'|'top-right'|'bottom-left'|'bottom-center'|'bottom-right', texto)\` — texto num canto (vazio apaga). Divide o canto com os painéis automáticos (moedas, missão, conquista, corrida, minimapa) e fica sempre visível, primeiro da pilha.
+- 🏆 Regras de jogo (as MESMAS do Jogo 3D; a vida é SEMPRE do jogador, sem objeto):
+  \`addScore(n)\`/\`score()\`; \`setLife(n)\`/\`hurt(n)\`/\`heal(n)\`/\`lifeOf()\` +
+  \`onLifeOver(function(){})\`; \`setScreenText('inicio'|'fim'|'vitoria', titulo, texto, botao)\`
+  (Ao iniciar; o início segura o mundo até o botão); \`endGame('perdeu'|'ganhou')\` (pausa o jogador e
+  mostra a tela; o mundo continua desenhado); \`restart()\` (recomeço LEVE: jogador volta, moedas e
+  coletáveis voltam, pontos/vida/contagem zeram; o mundo NÃO é refeito e a mochila NÃO esvazia);
+  \`afterSeconds(s, function(){})\`; \`startTimer(s)\`/\`stopTimer()\`/\`timeLeft()\` +
+  \`onTimerEnd(function(){})\`; \`randomBetween(a, b)\`/\`randomChance(p)\`;
+  \`cameraShake(forca, segundos)\`. Não existem no Mundo 3D: blink, onKey, onClickObject, onTouchGroup.
+- \`SZWorld3D.collectible(n, 'estrela'|'cristal'|'fruta'|'chave'|'presente', nome, x, z, raio)\` —
+  coisas para pegar (procedurais; podem nascer no jogo) + \`onCollectItem(nome, function(){})\`.
+- \`SZWorld3D.removeNamed(nome)\` — tira do mundo o amigo, ponto, área, coletáveis ou ícones (tipo) com esse nome.
+- \`SZWorld3D.inventoryClear()\` — esvazia a mochila.
+- 🧊 Molda: \`personModel(modelo, altura)\`, \`npcModel(modelo, nomeDoAmigo, altura)\`,
+  \`carModel(modelo, comprimento)\` (rodas procedurais ficam) e
+  \`modelAnim('personagem'|'amigo', nomeDoAmigo, 'parado'|'andando'|'correndo'|'pulando', clipe)\`
+  (nomeDoAmigo = '' no personagem; sem clipe, balanço procedural). Frente do modelo = +z.
+- \`SZWorld3D.say(texto, segundos)\` — balão de fala ("recado") sobre o jogador.
 - \`SZWorld3D.point(nome, x, z)\` — ponto interativo (pilar + badge 'E').
   \`SZWorld3D.onPoint(nome, function () { ... })\` — aperte E perto do ponto.
 - \`SZWorld3D.zone(nome, x, z, raio)\` — área invisível.
-  \`SZWorld3D.onZone(nome, function () { ... })\` — dispara ao ENTRAR (1×/entrada).
+  \`SZWorld3D.onZone(nome, function () { ... })\` — dispara quando o JOGADOR entra (1×/entrada).
 - \`SZWorld3D.totemText(x, z, titulo, texto)\` — placa de madeira.
 - \`SZWorld3D.totemImage(x, z, nomeDaImagem, largura)\` — quadro com imagem do
   projeto.
@@ -184,22 +209,24 @@ chama o ciclo de vida automaticamente. NÃO gere
   \`SZWorld3D.raceCheckpoint(x, z, graus)\` (na ORDEM da pista) +
   \`raceOnStart/raceOnCheckpoint/raceOnFinish(function(){})\` +
   \`raceTime()\`/\`raceBest()\` (segundos; recorde persiste no localStorage).
-  Cronômetro e contador i/N no HUD são automáticos.
+  Cronômetro e contador i/N no HUD são automáticos. Vale a pé ou dirigindo.
 - 🎳 Boliche: \`SZWorld3D.bowlingCreate(x, z, graus)\` (10 pinos) +
   \`bowlingReset()\` + \`bowlingOnStrike(function(){})\` + \`pinsDown()\` +
   \`SZWorld3D.stack(n, 'caixas'|'latas', x, z)\` (torre) + \`knockedCount()\`.
-  Objetos tombam de verdade quando o carro bate (knockdown arcade).
+  Objetos tombam de verdade quando o jogador encosta rápido, a pé ou dirigindo.
 - \`SZWorld3D.onUpdate(function (dt) { ... })\` — gancho por quadro; dt em
   segundos, clampado em 1/30.
-- \`SZWorld3D.keyDown(tecla)\` / \`SZWorld3D.keyPressed(tecla)\` → boolean.
-  Apelidos PT: 'cima', 'baixo', 'esquerda', 'direita', 'espaco'.
+- \`SZWorld3D.keyDown(tecla)\` / \`SZWorld3D.keyPressed(tecla)\` → boolean. A tecla é o
+  CÓDIGO do dropdown comum das extensões 3D: 'KeyW', 'KeyS', 'KeyA', 'KeyD', 'Space',
+  'KeyF', 'ShiftLeft', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Enter',
+  'KeyE', 'KeyQ', 'KeyR', 'KeyP' (outro valor vira código avançado na Ponte).
 
 ### O que NÃO existe (não invente)
 
 - Sem rede no preview (fetch/XHR morrem) — modelos .glb só do PROJETO (o
   runtime parseia o ArrayBuffer; nada de carregar por URL).
-- Sem Rapier/física de biblioteca: o carro é arcade na unha do motor.
-- Sem menu/pausa/vidas: não é um jogo de fases, é um mundo.
+- Sem física de biblioteca: o carro é arcade na unha do motor.
+- Sem fases nem inimigos: o jogo é o MUNDO + as regras (pontos, vida, cronômetro, telas).
 - No toque aparecem direção, pulo, interação, turbo/corrida, buzina, mapa e pódio.
 - Use APENAS UMA extensão de jogo/mundo por projeto (brigam pelo canvas).
 `

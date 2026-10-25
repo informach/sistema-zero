@@ -1,6 +1,14 @@
 import { describe, expect, it } from 'bun:test'
 import { ACESFilmicToneMapping, AmbientLight, Fog, PointLight } from 'three'
-import { type KitApi, loadStartedKit, makeFakeThree, runtimeBody } from './kitHarness'
+import { makeAnimatedGlb } from '../../__tests__/three3d/assetFixtures'
+import {
+  countGridHandles,
+  type KitApi,
+  loadStartedKit,
+  makeFakeThree,
+  runtimeBody,
+  runtimeBodyWithGridProbe,
+} from './kitHarness'
 
 /** Comportamento do motor: pool, FSM, vizinhança, combate e FÍSICA. A
  *  orientação/câmera vive em `direction.test.ts`; a bancada é a mesma. */
@@ -228,7 +236,7 @@ describe('SZGameKit3D — motor (fake THREE + happy-dom)', () => {
     const statesSeen: string[] = []
     api.onEnterState('jogando', () => {
       statesSeen.push(api.state())
-      api.endGame()
+      api.endGame('perdeu')
     })
     api.onEnterState('jogando', () => statesSeen.push(api.state()))
 
@@ -446,7 +454,9 @@ describe('SZGameKit3D — motor (fake THREE + happy-dom)', () => {
 
     expect(pointLights.length).toBeLessThanOrEqual(8)
     expect(warnings.filter((message) => message.includes('luzes')).length).toBe(1)
-    expect(warnings.filter((message) => message.includes('atratores')).length).toBe(1)
+    // "Puxar as faíscas" é o nome do bloco (a palavra "atrator" não aparece para a criança).
+    expect(warnings.filter((message) => message.includes('já são puxadas para')).length).toBe(1)
+    expect(warnings.some((message) => message.includes('atrator'))).toBe(false)
   })
 
   it('limita a quantidade global de moldes e efeitos que alocam recursos', async () => {
@@ -502,10 +512,14 @@ describe('SZGameKit3D — motor (fake THREE + happy-dom)', () => {
     expect(menu?.getAttribute('role')).toBe('dialog')
     expect(menu?.getAttribute('aria-hidden')).toBe('false')
 
-    api.setHud('top-left', 'Pontos: 3')
+    api.hudText('top-left', 'Pontos: 3')
     const hudStatus = stage.querySelector('#szg3k-hud-status')
     expect(hudStatus?.getAttribute('aria-live')).toBe('polite')
     expect(hudStatus?.textContent).toContain('Pontos: 3')
+    // O texto mora no gerenciador de cantos das regras COMUNS (o mesmo do Jogo 3D e do Mundo 3D).
+    expect(stage.querySelector('.szr-top-left [data-szr-panel="texto"]')?.textContent).toBe(
+      'Pontos: 3',
+    )
 
     api.defineMold('heroi', { health: 10, speed: 0 }, () => {})
     api.showHealthBar('heroi', true)
@@ -615,6 +629,22 @@ describe('SZGameKit3D — motor (fake THREE + happy-dom)', () => {
       if (audioDescriptor) Object.defineProperty(globalThis, 'Audio', audioDescriptor)
       else Reflect.deleteProperty(globalThis, 'Audio')
     }
+  })
+
+  it('a entidade já nasce com a forma final: o spawn não acrescenta propriedade nova', async () => {
+    // O blankEntity declara TODO campo para o objeto nascer com a forma final (trocar a
+    // forma depois faz o motor de JS re-otimizar o objeto quente). Campo escrito só no
+    // spawn vai para o FIM da lista de chaves, depois do último declarado (_stamp).
+    const { api } = await loadStartedKit()
+    api.defineMold('guarda', { health: 1, speed: 0 }, () => {
+      api.part({ shape: 'box', w: 1, h: 1, d: 1, x: 0, y: 0.5, z: 0 })
+    })
+    api.setState('jogando')
+    const guarda = api.spawn('guarda', 0, 0, 0) as Record<string, unknown>
+    const keys = Object.keys(guarda)
+    expect(keys.slice(keys.indexOf('_stamp') + 1)).toEqual([])
+    expect(keys).toContain('_patrolLeg')
+    expect(keys).toContain('_patrolWait')
   })
 })
 
@@ -1200,14 +1230,13 @@ describe('SZGameKit3D — física', () => {
       acabou += 1
     })
     api.setState('jogando')
-    api.startTimer(1)
-    step(15) // ~0.5s
-    const meio = api.timeLeft()
-    expect(meio).toBeLessThan(1)
-    expect(meio).toBeGreaterThan(0.2)
+    // A contagem é a das regras comuns: "o tempo que falta" vem em segundos inteiros.
+    api.startTimer(2)
+    step(45) // ~1,5 s
+    expect(api.timeLeft()).toBe(1)
     api.setState('pausado')
-    step(20)
-    expect(api.timeLeft()).toBeCloseTo(meio, 5) // congelou
+    step(40)
+    expect(api.timeLeft()).toBe(1) // congelou
     api.setState('jogando') // despausar NÃO reseta a arena
     step(30)
     expect(api.timeLeft()).toBe(0)
@@ -1895,5 +1924,241 @@ describe('SZGameKit3D — 6º review: identidade, rumo, barras e jorros', () => 
     const map = ent.mesh.children[0]?.material?.map
     expect(map?.colorSpace).toBe('srgb')
     delete (globalThis.window as unknown as Record<string, unknown>).__SZGAME_ASSETS
+  })
+})
+
+// ---- 🕺 Animação do modelo (review 3D, lote 11): "uma vez", velocidade e o fim da animação ----
+
+function seedAnimatedModel(clips: string[]) {
+  ;(globalThis.window as unknown as Record<string, unknown>).__SZGAME_ASSETS_3D = {
+    robo: { kind: 'model3d', dataUrl: makeAnimatedGlb('Boneco', clips), fileName: 'robo.glb' },
+  }
+}
+
+function clearSeededModels() {
+  delete (globalThis.window as unknown as Record<string, unknown>).__SZGAME_ASSETS_3D
+}
+
+type Animado = { _action?: { getClip(): { name: string }; timeScale: number } | null }
+
+async function kitComRobo() {
+  seedAnimatedModel(['Andar', 'Pular'])
+  return loadStartedKit((a) => {
+    a.defineMold('heroi', { health: 5, speed: 0 }, () => {
+      a.part({ shape: 'modelo', model: 'robo', w: 1, h: 1, d: 1, x: 0, y: 0.5, z: 0 })
+    })
+    a.setStateAnim('heroi', 'parado', 'Andar')
+    a.setStateAnim('heroi', 'pulando', 'Pular', false)
+  })
+}
+
+describe('SZGameKit3D — animação do modelo', () => {
+  it('⭐ estado com animação "uma vez" toca até o fim e dispara o "Quando terminar a animação"', async () => {
+    try {
+      const { api, step } = await kitComRobo()
+      const fim: unknown[] = []
+      api.onAnimEnd('heroi', 'Pular', (ela) => fim.push(ela))
+      api.onAnimEnd('heroi', 'Andar', () => fim.push('andar não termina: repete'))
+      api.setState('jogando')
+      const heroi = api.spawn('heroi', 0, 0, 0) as Animado
+      expect(heroi._action?.getClip().name).toBe('Andar')
+      step(40)
+      expect(fim).toEqual([]) // "repetindo" nunca termina
+      api.setEntityState(heroi, 'pulando')
+      expect(heroi._action?.getClip().name).toBe('Pular')
+      step(40) // o clipe tem 1 s
+      expect(fim).toEqual([heroi])
+      step(40)
+      expect(fim).toEqual([heroi]) // uma vez só
+    } finally {
+      clearSeededModels()
+    }
+  })
+
+  it('⭐ o aviso de fim não roda num objeto que saiu do jogo nem na receita trocada', async () => {
+    try {
+      const { api, step } = await kitComRobo()
+      const fim: unknown[] = []
+      api.onAnimEnd('heroi', 'Pular', (ela) => fim.push(ela))
+      api.setState('jogando')
+      // (a) Saiu do jogo no meio do pulo: o animador ainda termina o clipe (aqui à mão, como
+      // um quadro atrasado faria), mas ninguém responde por ele.
+      const morto = api.spawn('heroi', 0, 0, 0) as Animado & {
+        _alive?: boolean
+        _mixer?: { update(dt: number): void }
+      }
+      api.setEntityState(morto, 'pulando')
+      morto._alive = false
+      morto._mixer?.update(2)
+      expect(morto._action?.getClip().name).toBe('Pular')
+      expect(fim).toEqual([])
+      // (b) O recurso do pool passa para a vida NOVA: quem termina é ela, nunca o handle velho.
+      morto._alive = true
+      api.recycle(morto)
+      const novo = api.spawn('heroi', 0, 0, 0) as Animado
+      expect(novo).not.toBe(morto)
+      api.setEntityState(novo, 'pulando')
+      step(40)
+      expect(fim).toEqual([novo])
+      // (c) A receita do molde foi trocada no meio: o recurso antigo não chama o gancho.
+      api.setEntityState(novo, 'parado')
+      api.setEntityState(novo, 'pulando')
+      api.defineMold('heroi', { health: 5, speed: 0 }, () => {
+        api.part({ shape: 'box', w: 1, h: 1, d: 1, x: 0, y: 0.5, z: 0 })
+      })
+      step(40)
+      expect(fim).toEqual([novo])
+    } finally {
+      clearSeededModels()
+    }
+  })
+
+  it('velocidade da animação vale para a atual e as próximas, e volta ao normal no pool', async () => {
+    try {
+      const { api, step } = await kitComRobo()
+      api.setState('jogando')
+      const heroi = api.spawn('heroi', 0, 0, 0) as Animado
+      api.animSpeed(heroi, 2)
+      expect(heroi._action?.timeScale).toBe(2)
+      api.playAnim(heroi, 'Pular', false)
+      expect(heroi._action?.timeScale).toBe(2)
+      step(1)
+      api.recycle(heroi)
+      const outro = api.spawn('heroi', 0, 0, 0) as Animado
+      expect(outro._action?.timeScale).toBe(1)
+      api.animSpeed(outro, 'x' as unknown as number) // valor sem sentido volta ao normal
+      expect(outro._action?.timeScale).toBe(1)
+    } finally {
+      clearSeededModels()
+    }
+  })
+
+  it('⭐ tirar do jogo no "Quando terminar a animação" não deixa o morto na grade', async () => {
+    // O "finished" do mixer roda o gancho DENTRO do passo da entidade. Antes, o passo
+    // seguia no handle morto e o gridSync do fim o devolvia à grade: um morto a mais
+    // por ciclo nascer → animação uma vez → sair, para sempre.
+    seedAnimatedModel(['Andar', 'Morrer'])
+    try {
+      const { api, step } = await loadStartedKit(
+        (a) => {
+          a.defineMold('heroi', { health: 5, speed: 0 }, () => {
+            a.part({ shape: 'modelo', model: 'robo', w: 1, h: 1, d: 1, x: 0, y: 0.5, z: 0 })
+          })
+          a.setStateAnim('heroi', 'morrendo', 'Morrer', false)
+        },
+        { body: runtimeBodyWithGridProbe },
+      )
+      const fim: unknown[] = []
+      api.onAnimEnd('heroi', 'Morrer', (ela) => {
+        fim.push(ela)
+        api.recycle(ela)
+      })
+      api.setState('jogando')
+      expect(countGridHandles()).toEqual({ total: 0, dead: 0 })
+      for (let ciclo = 0; ciclo < 5; ciclo++) {
+        const heroi = api.spawn('heroi', 0, 0, 0)
+        // Andando: o passo da entidade não cai no ramo "parado" (que não sincroniza a grade).
+        api.setVelocity(heroi, 1, 0, 0)
+        api.setEntityState(heroi, 'morrendo')
+        step(40) // o clipe tem 1 s
+        expect(api.exists(heroi)).toBe(false)
+      }
+      expect(fim).toHaveLength(5)
+      expect(api.countAlive('heroi')).toBe(0)
+      expect(countGridHandles()).toEqual({ total: 0, dead: 0 })
+    } finally {
+      clearSeededModels()
+    }
+  })
+})
+
+// ---- 🏆 Regras comuns no Avançado: placar, telas, fim, contagem, sorteio e tremor ----
+
+describe('SZGameKit3D — regras de jogo comuns (as mesmas do Jogo 3D e do Mundo 3D)', () => {
+  function palco() {
+    const stages = document.querySelectorAll('#szg3k-stage')
+    const stage = stages[stages.length - 1]
+    if (!stage) throw new Error('palco não montado')
+    return stage
+  }
+  const painel = (canto: string, chave: string) =>
+    palco().querySelector(`.szr-${canto} [data-szr-panel="${chave}"]`)?.textContent ?? null
+
+  it('texto nos cantos, pontos e contagem aparecem no gerenciador de cantos e zeram no recomeço', async () => {
+    const { api, step } = await loadStartedKit()
+    api.setState('jogando')
+    api.hudText('bottom-center', 'Vamos!')
+    api.addScore(3)
+    api.addScore(2)
+    api.startTimer(10)
+    step(1)
+    expect(painel('bottom-center', 'texto')).toBe('Vamos!')
+    expect(api.score()).toBe(5)
+    expect(painel('top-right', 'pontos')).toBe('⭐ 5')
+    expect(painel('top-center', 'tempo')).toBe('⏱️ 10')
+    api.hudText('bottom-center', '')
+    expect(painel('bottom-center', 'texto')).toBeNull()
+    // Fim → Jogar de novo: entrar em "jogando" fora da pausa recomeça a partida.
+    api.endGame('perdeu')
+    expect(api.state()).toBe('fim')
+    api.setState('jogando')
+    expect(api.score()).toBe(0)
+    expect(api.timeLeft()).toBe(0)
+    expect(painel('top-right', 'pontos')).toBeNull()
+  })
+
+  it('"Na tela de início/fim/vitória" escreve nas telas prontas, e "Fim de jogo" escolhe a tela', async () => {
+    const { api } = await loadStartedKit((a) => {
+      a.setScreenText('inicio', 'Meu jogo', 'Pegue as estrelas!', 'Bora')
+      a.setScreenText('vitoria', 'Ganhou!', 'Parabéns', 'De novo')
+    })
+    const titulo = (tela: string) =>
+      palco().querySelector(`[data-szg3k-screen="${tela}"] h1, [data-szg3k-screen="${tela}"] h2`)
+        ?.textContent
+    expect(api.state()).toBe('menu')
+    expect(titulo('menu')).toBe('Meu jogo')
+    expect(palco().querySelector('[data-szg3k-screen="menu"] button')?.textContent).toBe('Bora')
+    api.setState('jogando')
+    api.endGame('ganhou')
+    expect(api.state()).toBe('vitoria')
+    expect(titulo('vitoria')).toBe('Ganhou!')
+  })
+
+  it('a contagem avisa no fim só no estado jogando; o sorteio é inteiro e repetível com o código', async () => {
+    const { api, step } = await loadStartedKit()
+    let acabou = 0
+    api.onTimerEnd(() => {
+      acabou += 1
+    })
+    api.setState('jogando')
+    api.startTimer(1)
+    step(45)
+    expect(acabou).toBe(1)
+    const dado = () => {
+      api.setSeed(9)
+      return Array.from({ length: 12 }, () => api.randomBetween(1, 6))
+    }
+    const a = dado()
+    expect(dado()).toEqual(a)
+    for (const n of a) {
+      expect(Number.isInteger(n)).toBe(true)
+      expect(n).toBeGreaterThanOrEqual(1)
+      expect(n).toBeLessThanOrEqual(6)
+    }
+  })
+
+  it('tremer a câmera mexe nela e volta ao lugar quando acaba', async () => {
+    const { api, step, renderers } = await loadStartedKit()
+    api.setState('jogando')
+    api.cameraTop(30)
+    step(2)
+    const camera = renderers[0]?.camera
+    if (!camera) throw new Error('câmera não capturada')
+    const antes = camera.position.clone()
+    api.cameraShake(1, 0.3)
+    step(2)
+    expect(camera.position.distanceTo(antes)).toBeGreaterThan(0)
+    step(30)
+    expect(camera.position.distanceTo(antes)).toBeLessThan(1e-9)
   })
 })

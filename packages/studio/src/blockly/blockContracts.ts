@@ -223,6 +223,7 @@ const BODY_CONTEXTS: readonly StatementContext[] = [
   'cutscene-steps',
   'trainer-team',
   'g3k-mold-parts',
+  'game-event-body',
 ]
 
 /**
@@ -366,6 +367,7 @@ const CHECK_BY_CONTEXT: Readonly<Record<StatementContext, string>> = {
   'cutscene-steps': 'JSStmt',
   'trainer-team': 'JSStmt',
   'g3k-mold-parts': 'JSStmt',
+  'game-event-body': 'JSStmt',
 }
 
 export const NESTED_STATEMENT_CHECKS = [
@@ -504,6 +506,19 @@ export function requireBlockContract(type: string): BlockContract {
   const contract = contracts.get(type)
   if (!contract) throw new Error(`O bloco “${type}” não foi registrado no catálogo semântico`)
   return contract
+}
+
+/**
+ * Os contextos que o `bodyContext` de um bloco concede ao corpo. `game-event-body` é um corpo de
+ * EVENTO (roda uma vez por acontecimento) com o jogo rodando, então concede também `event-body`:
+ * é o que deixa o "Depois de N s", que não é chapéu de evento, aceitar o fim de jogo, a torre e
+ * a música como os "Quando…" aceitam.
+ */
+export function contextsGrantedByBodyContext(
+  context: StatementContext | undefined,
+): readonly StatementContext[] {
+  if (!context) return []
+  return context === 'game-event-body' ? ['game-event-body', 'event-body'] : [context]
 }
 
 /** Localiza o bloco que cria um contexto de corpo especializado. */

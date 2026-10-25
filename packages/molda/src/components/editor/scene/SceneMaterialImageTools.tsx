@@ -1,11 +1,12 @@
 import { COPY } from '../../../core/copy'
 import { patchSceneMaterial } from '../../../scene/appearanceCommands'
-import type { SceneImage, SceneMaterial } from '../../../scene/document'
+import type { MoldaSceneDocument, SceneImage, SceneMaterial } from '../../../scene/document'
 import {
   SCENE_MATERIAL_IMAGE_FIELDS,
   type SceneMaterialImageKind,
 } from '../../../scene/materialImages'
 import { Button } from '../../ui/Button'
+import { SceneHelpButton } from './SceneHelpButton'
 import { SceneImageCreateForm } from './SceneImageCreateForm'
 import { SCENE_APPEARANCE_FIELD as field, type SceneAppearanceApply } from './sceneAppearanceForm'
 
@@ -15,20 +16,30 @@ export function SceneMaterialImageTools({
   imageKind,
   disabled,
   apply,
+  onCreated,
 }: {
   material: SceneMaterial
   images: readonly SceneImage[]
   imageKind: SceneMaterialImageKind
   disabled: boolean
   apply: SceneAppearanceApply
+  onCreated?(document: MoldaSceneDocument): void
 }) {
   const copy = COPY.scene
   const binding = SCENE_MATERIAL_IMAGE_FIELDS[imageKind]
+  const sizeReference = images.find(
+    (image) => image.id === (material[binding] ?? material.colorImageId),
+  )
   return (
     <fieldset disabled={disabled} className="space-y-3">
       <legend className="text-sm font-bold">{copy.materialImageKinds[imageKind]}</legend>
       {imageKind !== 'color' && (
-        <p className="text-xs text-mld-muted">{copy.materialMapHints[imageKind]}</p>
+        <SceneHelpButton title={`Como funciona ${copy.materialImageKinds[imageKind]}`}>
+          <p>{copy.materialMapHints[imageKind]}</p>
+          {(imageKind === 'roughness' || imageKind === 'metalness') && (
+            <p>{copy.materialMapFactor(material[imageKind])}</p>
+          )}
+        </SceneHelpButton>
       )}
       <label className="block space-y-1 text-sm">
         <span>{imageKind === 'color' ? copy.materialImage : copy.materialMapImage}</span>
@@ -94,10 +105,14 @@ export function SceneMaterialImageTools({
           </Button>
         </form>
       )}
-      {(imageKind === 'roughness' || imageKind === 'metalness') && (
-        <p className="text-xs text-mld-muted">{copy.materialMapFactor(material[imageKind])}</p>
-      )}
-      <SceneImageCreateForm materialId={material.id} imageKind={imageKind} apply={apply} />
+      <SceneImageCreateForm
+        materialId={material.id}
+        imageKind={imageKind}
+        initialWidth={sizeReference?.width ?? 32}
+        initialHeight={sizeReference?.height ?? 32}
+        apply={apply}
+        onCreated={onCreated}
+      />
     </fieldset>
   )
 }

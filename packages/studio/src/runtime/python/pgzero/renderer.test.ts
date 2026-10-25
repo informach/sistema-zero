@@ -96,6 +96,22 @@ const list = (...ops: number[]) => ({
 })
 
 describe('Pygame Zero renderer exchange', () => {
+  test('mission actor poses appear only with a presented frame and disappear when no longer drawn', async () => {
+    const renderer = createPgzeroRenderer(document.createElement('div'), { mission: true })
+    try {
+      expect(renderer.missionPose(4)).toBeNull()
+      await renderer.exchange(header({ actors: [[4, 10, 20]] }), [list()])
+      expect(renderer.missionPose(4)).toMatchObject({ x: 10, y: 20, generation: 1 })
+      const first = renderer.missionPose(4)!.frame
+      await renderer.exchange(header({ keep: true }), [])
+      expect(renderer.missionPose(4)!.frame).toBeGreaterThan(first)
+      await renderer.exchange(header(), [list()])
+      expect(renderer.missionPose(4)).toBeNull()
+    } finally {
+      renderer.dispose()
+    }
+    expect(renderer.missionPose(4)).toBeNull()
+  })
   test('the screen keeps what was drawn: a batch paints on top, only a new size wipes it', async () => {
     const renderer = createPgzeroRenderer(document.createElement('div'))
     try {

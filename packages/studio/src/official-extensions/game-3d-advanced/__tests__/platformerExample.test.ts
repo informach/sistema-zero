@@ -25,8 +25,9 @@ import { collectTypes, stripIds } from './testUtils'
 const SOURCE = `
 SZGameKit3D.setup({ width: 1280, height: 720, world: 60, sky: "#0b1026", ground: "#1e293b" });
 SZGameKit3D.setEffects({ shadows: true, bloom: true, strength: 1.1, vignette: true });
-SZGameKit3D.setScreenText("menu", "Salto nas Nuvens", "Pule de plataforma em plataforma e junte as moedas. Cuidado para não cair!", "Pular");
+SZGameKit3D.setScreenText("inicio", "Salto nas Nuvens", "Pule de nuvem em nuvem e junte as moedas. Cuidado: quem cai lá embaixo perde!", "Pular");
 SZGameKit3D.setScreenText("vitoria", "Você juntou tudo!", "Que pulos!", "Jogar de novo");
+SZGameKit3D.setScreenText("fim", "Caiu das nuvens!", "Pule com calma de uma nuvem para a outra.", "Tentar de novo");
 SZGameKit3D.defineMold("heroi", { health: 1, speed: 0 }, function () {
   SZGameKit3D.part({ shape: "box", color: "#38bdf8", w: 0.9, h: 1.1, d: 0.9, x: 0, y: 0.55, z: 0 });
   SZGameKit3D.part({ shape: "sphere", color: "#e0f2fe", w: 0.7, h: 0.7, d: 0.7, x: 0, y: 1.3, z: 0 });
@@ -45,19 +46,23 @@ SZGameKit3D.onEnterState("jogando", function () {
   moedas = 0;
   SZGameKit3D.setAmbient(0.5);
   SZGameKit3D.addLight("#fef3c7", 0, 16, 6, 1.2);
-  SZGameKit3D.spawn("chao", 0, 0, 0);
-  SZGameKit3D.spawn("chao", 7, 1.5, -2);
-  SZGameKit3D.spawn("chao", -7, 3, 2);
-  SZGameKit3D.spawn("chao", 0, 4.5, -8);
-  SZGameKit3D.spawn("moeda", 7, 3, -2);
-  SZGameKit3D.spawn("moeda", -7, 4.5, 2);
-  SZGameKit3D.spawn("moeda", 0, 6, -8);
-  const heroi = SZGameKit3D.spawn("heroi", 0, 3, 0);
+  SZGameKit3D.spawn("chao", 0, 3, 0);
+  SZGameKit3D.spawn("chao", 7, 4.5, -2);
+  SZGameKit3D.spawn("chao", -7, 6, 2);
+  SZGameKit3D.spawn("chao", 0, 7.5, -8);
+  SZGameKit3D.spawn("moeda", 7, 6, -2);
+  SZGameKit3D.spawn("moeda", -7, 7.5, 2);
+  SZGameKit3D.spawn("moeda", 0, 9, -8);
+  const heroi = SZGameKit3D.spawn("heroi", 0, 6, 0);
+  SZGameKit3D.fall(heroi, 16);
   SZGameKit3D.cameraFollow(heroi, 12, 6);
   SZGameKit3D.emitterOn("poeira", heroi);
 });
 SZGameKit3D.onEntityStateUpdate("heroi", "parado", function (ela, dt) {
   SZGameKit3D.platformerKeys(ela, 8, 11);
+  if (SZGameKit3D.velocityOf(ela, "y") < -8 && SZGameKit3D.posOf(ela, "y") < 3) {
+    SZGameKit3D.say(ela, "Aaaah!", 1);
+  }
   SZGameKit3D.forEachNear(ela, "moeda", 1.4, function (m) {
     SZGameKit3D.burstOn("brilho", m);
     SZGameKit3D.recycle(m);
@@ -66,16 +71,16 @@ SZGameKit3D.onEntityStateUpdate("heroi", "parado", function (ela, dt) {
       SZGameKit3D.setState("vitoria");
     }
   });
-  if (SZGameKit3D.posOf(ela, "y") < -12) {
-    SZGameKit3D.setState("menu");
+  if (SZGameKit3D.onGround(ela) && SZGameKit3D.posOf(ela, "y") < 1) {
+    SZGameKit3D.endGame("perdeu");
   }
 });
 SZGameKit3D.onEntityStateUpdate("moeda", "parado", function (ela, dt) {
   SZGameKit3D.setYaw(ela, SZGameKit3D.stateTime(ela) * 120);
 });
 SZGameKit3D.onUpdate(function (dt) {
-  SZGameKit3D.setHud("top-left", "Moedas: " + moedas);
-  SZGameKit3D.setHud("top-right", "Faltam: " + (3 - moedas));
+  SZGameKit3D.hudText("top-left", "Moedas: " + moedas);
+  SZGameKit3D.hudText("top-right", "Faltam: " + (3 - moedas));
 });
 SZGameKit3D.start();
 `.trim()
@@ -107,6 +112,11 @@ describe('Exemplo Salto nas Nuvens — drift contra o parser real', () => {
     expect(types.has('g3k:emitterOn')).toBe(true)
     expect(types.has('g3k:addLight')).toBe(true)
     expect(types.has('g3k:setAmbient')).toBe(true)
+    // Cobertura total dos exemplos: a gravidade das nuvens é mais leve (cair com gravidade
+    // 16), o "Aaaah!" sai pela velocidade de queda e quem PISA no chão lá embaixo perde.
+    expect(types.has('g3k:fall')).toBe(true)
+    expect(types.has('g3k:velocityOf')).toBe(true)
+    expect(types.has('g3k:onGround')).toBe(true)
   })
 
   it('nenhum texto visível usa travessão', () => {

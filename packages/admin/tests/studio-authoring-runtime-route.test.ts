@@ -6,10 +6,12 @@ mock.module('server-only', () => ({}))
 const originalGateway = { ...(await import('../src/server/gateway')) }
 const calls: { path: string; body: unknown }[] = []
 let status = 200
+let unavailable = false
 mock.module('../src/server/gateway', () => ({
   ...originalGateway,
   gatewayFetch: async (path: string, options: { body: unknown }) => {
     calls.push({ path, body: options.body })
+    if (unavailable) throw new Error('Controlled upstream outage')
     return {
       status,
       body:
@@ -20,6 +22,9 @@ mock.module('../src/server/gateway', () => ({
   },
 }))
 const { POST } = await import('../src/app/api/members/studio/authoring-runtime/route')
+const { POST: checkProject } = await import(
+  '../src/app/api/members/python-project-checks/test/route'
+)
 afterAll(() => mock.module('../src/server/gateway', () => originalGateway))
 
 async function candidate() {
@@ -69,4 +74,52 @@ test('authoring BFF rejects malformed, oversized and authority-injecting request
     expect(response.headers.get('cache-control')).toBe('private, no-store')
   }
   expect(calls.length).toBe(before)
+})
+
+test('Python objective BFF forwards only bounded authored criteria, preserves denials and reports unavailable execution', async () => {
+  const fixture = await pythonEnvironmentFixture('classic')
+  const { context } = await candidate()
+  const body = {
+    project: fixture.project,
+    context,
+    checks: [
+      {
+        id: 'output',
+        label: 'Escreva sua mensagem',
+        programmingLanguage: 'python',
+        profileId: fixture.project.runtime.profileId,
+        rule: {
+          type: 'behavior',
+          steps: [],
+          expect: { target: { kind: 'console' }, compare: 'contains', value: 'Olá' },
+        },
+      },
+    ],
+  }
+  for (const code of [200, 401, 403, 409, 503]) {
+    status = code
+    const response = await checkProject(request(JSON.stringify(body)))
+    expect(response.status).toBe(code)
+    expect(response.headers.get('cache-control')).toBe('private, no-store')
+    expect(calls.at(-1)).toEqual({ path: '/members/admin/python-project-checks/test', body })
+  }
+  const before = calls.length
+  for (const [raw, headers, expected] of [
+    ['{', {}, 400],
+    [JSON.stringify({ ...body, passed: true }), {}, 400],
+    [JSON.stringify(body), { 'content-encoding': 'gzip' }, 400],
+    [JSON.stringify({ extra: 'x'.repeat(4_500_000) }), {}, 413],
+  ] satisfies [string, Record<string, string>, number][]) {
+    expect((await checkProject(request(raw, headers))).status).toBe(expected)
+  }
+  expect(calls.length).toBe(before)
+  unavailable = true
+  try {
+    const response = await checkProject(request(JSON.stringify(body)))
+    expect(response.status).toBe(504)
+    expect(response.headers.get('cache-control')).toBe('private, no-store')
+    expect(await response.json()).toMatchObject({ error: { code: 'PROJECT_CHECK_UNAVAILABLE' } })
+  } finally {
+    unavailable = false
+  }
 })

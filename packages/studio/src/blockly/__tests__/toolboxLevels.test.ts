@@ -2,6 +2,7 @@ import { describe, expect, it } from 'bun:test'
 import type { BlockLevel, LearningProfile } from '#core'
 import { gameTwoDToolboxCategory } from '../../official-extensions/game-2d/blocks'
 import { gameThreeDToolboxCategory } from '../../official-extensions/game-3d/blocks'
+import { gameKit3DToolboxCategory } from '../../official-extensions/game-3d-advanced/blocks'
 import { world3DToolboxCategory } from '../../official-extensions/world-3d/blocks'
 import { buildCoreToolbox } from '../toolbox'
 
@@ -56,7 +57,12 @@ function blockTypesIn(cat: Cat | null): string[] {
 function paletteAt(level: BlockLevel): { types: Set<string>; names: Set<string> } {
   const profile: LearningProfile = { level }
   const tb = buildCoreToolbox(
-    [gameTwoDToolboxCategory, gameThreeDToolboxCategory, world3DToolboxCategory],
+    [
+      gameTwoDToolboxCategory,
+      gameThreeDToolboxCategory,
+      world3DToolboxCategory,
+      gameKit3DToolboxCategory,
+    ],
     profile,
   )
   return { types: new Set(collectTypes(tb.contents)), names: new Set(collectNames(tb.contents)) }
@@ -276,6 +282,9 @@ describe('buildCoreToolbox — curadoria POR BLOCO por degrau', () => {
     expect(names.has('Jogo 3D')).toBe(true)
     // Mundo 3D (int-3d) entra exatamente aqui — como no intermediário antigo.
     expect(types.has('sz_w3d_setup')).toBe(true)
+    // O Jogo 3D Avançado é o degrau de cima (av-3d): ainda não.
+    expect(types.has('sz_g3k_setup')).toBe(false)
+    expect(names.has('Jogo 3D Avançado')).toBe(false)
     for (const n of ['🏛️ Classes', '📦 Objetos', 'Avançado']) expect(names.has(n)).toBe(false)
   })
 
@@ -286,29 +295,33 @@ describe('buildCoreToolbox — curadoria POR BLOCO por degrau', () => {
       'sz_adv_raw_js',
       'sz_g2d_apply_velocity',
       'sz_g3d_get_pos',
+      'sz_g3k_setup', // Jogo 3D Avançado = av-3d (uma extensão por degrau)
       'sz_math_trig',
       'sz_svg_path',
     ]) {
       expect(types.has(t)).toBe(true)
     }
     // Classes é flyout DINÂMICO (custom) → conferimos pela categoria.
-    for (const n of ['🏛️ Classes', '📦 Objetos', 'Avançado', 'Jogo 3D']) {
+    for (const n of ['🏛️ Classes', '📦 Objetos', 'Avançado', 'Jogo 3D', 'Jogo 3D Avançado']) {
       expect(names.has(n)).toBe(true)
     }
   })
 
   // ── Degraus NOVOS da escada (sem equivalente pré-reforma) ────────────────────
-  it('INICIANTE-3D: a porta do 3D — facilitadores g3d entram; programação real ainda não', () => {
+  it('INICIANTE-3D: a porta do 3D — só o núcleo do g3d entra; programação real ainda não', () => {
     const { types, names } = paletteAt('iniciante-3d')
     expect(types.has('sz_g2d_create_sprite')).toBe(true) // inclui o degrau abaixo
     expect(types.has('sz_g2d_apply_velocity')).toBe(true) // Jogo 2D completo abre aqui
-    expect(types.has('sz_g3d_create_scene')).toBe(true) // facilitador 3D
-    expect(types.has('sz_g3d_get_pos')).toBe(true) // toda a extensão é iniciante-3d
+    expect(types.has('sz_g3d_create_fullscreen_scene')).toBe(true) // núcleo do Jogo 3D
+    expect(types.has('sz_g3d_create_box')).toBe(true)
     expect(names.has('Jogo 3D')).toBe(true)
     for (const t of [
       'sz_js_while', // int-2d ainda não
       'sz_math_arithmetic',
+      'sz_g3d_create_scene', // fora do núcleo: int-3d
+      'sz_g3d_get_pos',
       'sz_w3d_setup', // Mundo 3D é int-3d
+      'sz_g3k_setup', // Jogo 3D Avançado é av-3d
     ]) {
       expect(types.has(t)).toBe(false)
     }
@@ -317,13 +330,14 @@ describe('buildCoreToolbox — curadoria POR BLOCO por degrau', () => {
 
   it('INTERMEDIÁRIO-2D: programação real entra e o iniciante-3d ABAIXO segue visível (escada única)', () => {
     const { types, names } = paletteAt('intermediario-2d')
-    for (const t of ['sz_js_while', 'sz_math_arithmetic', 'sz_g2d_sprite_vx', 'sz_g3d_get_pos']) {
+    for (const t of ['sz_js_while', 'sz_math_arithmetic', 'sz_g2d_sprite_vx']) {
       expect(types.has(t)).toBe(true)
     }
     // Pina a semântica de escada TOTAL: o degrau 2D inclui o iniciante-3d abaixo.
-    expect(types.has('sz_g3d_create_scene')).toBe(true)
+    expect(types.has('sz_g3d_create_fullscreen_scene')).toBe(true)
     expect(names.has('🧩 Funções')).toBe(true)
-    for (const t of ['sz_w3d_setup', 'sz_js_class', 'sz_adv_raw_js']) {
+    // O resto do Jogo 3D é int-3d, acima deste degrau.
+    for (const t of ['sz_g3d_get_pos', 'sz_w3d_setup', 'sz_js_class', 'sz_adv_raw_js']) {
       expect(types.has(t)).toBe(false)
     }
   })
@@ -339,7 +353,7 @@ describe('buildCoreToolbox — curadoria POR BLOCO por degrau', () => {
       'sz_canvas_arc', // Canvas 2D cru é av-2d (entra AQUI, 26/07)
       'sz_html_canvas',
       'sz_w3d_setup', // int-3d, abaixo do av-2d
-      'sz_g3d_get_pos', // Jogo 3D inteiro está no piso iniciante-3d
+      'sz_g3d_get_pos', // resto do Jogo 3D é int-3d, abaixo do av-2d
       'sz_g3d_body',
     ]) {
       expect(types.has(t), t).toBe(true)
@@ -350,6 +364,7 @@ describe('buildCoreToolbox — curadoria POR BLOCO por degrau', () => {
     // A categoria Canvas 3D INTEIRA subiu p/ avançado-3d (26/07) — some do av-2d,
     // só reaparece na Lenda (topo).
     expect(names.has('Canvas 3D')).toBe(false)
+    expect(types.has('sz_g3k_setup')).toBe(false) // Jogo 3D Avançado também é av-3d
     expect(types.has('sz_t3d_import')).toBe(false)
     expect(types.has('sz_t3d_scene_create')).toBe(false)
   })

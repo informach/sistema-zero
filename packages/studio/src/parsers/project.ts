@@ -219,7 +219,7 @@ const GENERATED_ENGINE_BOOTS = new Set([
 ])
 
 const GENERATED_PROJECT_RUN_CONTEXT =
-  /^const __szProjectRunContext(?:_\d+)? = window\.__SZProjectLifecycle\.begin\((?:\(\) => (?:SZGame2D\.restart|SZGameKit\.restartGame)\(\))?\);$/
+  /^const __szProjectRunContext(?:_\d+)? = window\.__SZProjectLifecycle\.begin\((?:\(\) => (?:SZGame2D\.restart|SZGameKit\.restartGame|SZGame3D\.restart)\(\))?\);$/
 
 /** Remove somente a casca exata emitida pelo gerador; código do aluno fica intacto. */
 function stripGeneratedLifecycleEnvelope(sourceLines: string[]): string[] {

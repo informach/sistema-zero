@@ -1,7 +1,7 @@
 /**
  * As ferramentas da aba Pintar à vista: Lápis, Borracha, Balde e Conta-gotas, a largura do
- * traço e os recursos do editor antigo (girar a pintura da face, pintar de perto, espelho e
- * vestir com textura). O resto (formas, área, degradê, carimbo, folha inteira) mora em "Mais
+ * traço e os recursos do editor antigo (girar a pintura da face, pintar de perto e espelho).
+ * O resto (formas, área, degradê, carimbo, folha inteira) mora em "Mais
  * jeitos de pintar".
  *
  * Desde a casca das telas-modelo (11/09/2026) as ferramentas são LADRILHOS com o nome embaixo
@@ -35,12 +35,9 @@ const WIDTHS = [
 
 export function ScenePaintToolbox({
   paint,
-  onDress,
   onChooseTool,
 }: {
   paint: ReturnType<typeof useScenePaint>
-  /** "Vestir com textura": só quando há galeria (dentro do app) e uma peça para vestir. */
-  onDress?: () => void
   onChooseTool?(): void
 }) {
   const { eraser, fill, picker, rotate, closeupTool, shape, brush } = paint
@@ -52,7 +49,6 @@ export function ScenePaintToolbox({
     ['paint.picker', picker],
     ['paint.closeup', closeupTool],
   ]
-  const dress = sceneCommand('paint.dress')
   return (
     <RequiresTool family="paint.brush">
       <fieldset
@@ -157,14 +153,6 @@ export function ScenePaintToolbox({
               />
             )
           })}
-          {onDress && (
-            <SceneTile
-              icon={dress.icon}
-              label={dress.label}
-              aria-haspopup="dialog"
-              onClick={onDress}
-            />
-          )}
         </div>
       </details>
     </RequiresTool>

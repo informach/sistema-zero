@@ -1,8 +1,17 @@
 import { describe, expect, it } from 'bun:test'
-import type { ExtensionToolboxCategory } from '#extensions'
+import { readdirSync, readFileSync } from 'node:fs'
+import { join } from 'node:path'
+import {
+  NO_PALETTE_TREE_DRIFT,
+  NO_TOOLBOX_DRIFT,
+  paletteTreeDrift,
+  toolboxCategoryNames,
+  toolboxDrift,
+} from '../../__tests__/paletteDrift'
 import { gameKit3DPromptContext } from '../ai'
 import { gameKit3DBlocks, gameKit3DToolboxCategory } from '../blocks'
 import { gameKit3DManifest } from '../manifest'
+import { GAME_KIT_THREE_D_PALETTE } from '../palette'
 import { gameKit3DRuntime } from '../runtime'
 
 /**
@@ -27,21 +36,7 @@ import { gameKit3DRuntime } from '../runtime'
  * ("… & ⏱️ tempo") não alegam nada.
  */
 
-/** Todo nome de categoria da toolbox, em qualquer nível. */
-function nomesDeCategoria(cat: ExtensionToolboxCategory, acc: string[] = []): string[] {
-  acc.push(cat.name)
-  for (const c of cat.contents) if (c.kind === 'category') nomesDeCategoria(c, acc)
-  return acc
-}
-
-/** Todo `type` de bloco na toolbox, em qualquer nível (com repetição). */
-function tiposNaToolbox(cat: ExtensionToolboxCategory, acc: string[] = []): string[] {
-  for (const c of cat.contents) {
-    if (c.kind === 'category') tiposNaToolbox(c, acc)
-    else acc.push(c.type)
-  }
-  return acc
-}
+const EXT_DIR = join(import.meta.dir, '..')
 
 // O "?" do U+FE0F importa: ♻️ 🖱️ 🗄️ ❤️ 🕹️ ⏱️ carregam o seletor de variação.
 const EMOJI = /(?:\p{Extended_Pictographic}|\p{Emoji_Presentation})️?/gu
@@ -85,7 +80,7 @@ function claimsDoTitulo(titulo: string): string[] {
 }
 
 describe('g3k — a doc não pode citar categoria que não existe', () => {
-  const chips = nomesDeCategoria(gameKit3DToolboxCategory).slice(1) // sem a raiz
+  const chips = toolboxCategoryNames(gameKit3DToolboxCategory).slice(1) // sem a raiz
   const chipsReais = new Set(chips)
   const porEmoji = new Map<string, string>()
   for (const chip of chips) {
@@ -168,22 +163,96 @@ describe('g3k — a doc não pode citar categoria que não existe', () => {
     expect(gameKit3DManifest.description.length).toBeLessThanOrEqual(480)
   })
 
-  it('todo bloco está na toolbox em UM lugar só — e a categoria "Mais" não existe', () => {
-    // Bloco fora do SUBCATS cai no grupo genérico "Mais" sem erro nenhum — é a
-    // versão silenciosa do chip fantasma (o bloco some do lugar certo).
-    const conta = new Map<string, number>()
-    for (const t of tiposNaToolbox(gameKit3DToolboxCategory)) conta.set(t, (conta.get(t) ?? 0) + 1)
-    const visiveis = gameKit3DBlocks
-      .filter((b) => !(b as { hidden?: boolean }).hidden)
-      .map((b) => b.type)
-    const conhecidos = new Set(gameKit3DBlocks.map((b) => b.type))
-    expect({
-      foraDaToolbox: visiveis.filter((t) => !conta.has(t)),
-      emDoisLugares: [...conta.entries()].filter(([, n]) => n > 1).map(([t]) => t),
-      // typo no SUBCATS: a toolbox citaria um tipo que nenhum bloco define
-      fantasmasNaToolbox: [...conta.keys()].filter((t) => !conhecidos.has(t)),
-      categoriaMais: nomesDeCategoria(gameKit3DToolboxCategory).filter((n) => n === 'Mais'),
-    }).toEqual({ foraDaToolbox: [], emDoisLugares: [], fantasmasNaToolbox: [], categoriaMais: [] })
+  it('o manual tem uma seção por família, na MESMA ordem da árvore, e cada seção de verdade', () => {
+    const docs = gameKit3DManifest.docs ?? ''
+    const at = GAME_KIT_THREE_D_PALETTE.map((family) => docs.indexOf(`### ${family.name}\n`))
+    expect(at.filter((index) => index < 0)).toEqual([])
+    expect([...at].sort((a, b) => a - b)).toEqual(at)
+    for (const family of GAME_KIT_THREE_D_PALETTE) {
+      if (family.sections.length < 2) continue
+      for (const section of family.sections) expect(docs).toContain(`**${section.name}**`)
+    }
+    // As 24 abas planas antigas viraram 11 famílias (review 3D, lote 11).
+    expect(GAME_KIT_THREE_D_PALETTE.length).toBe(11)
+  })
+
+  it('o vocabulário da criança: nada de entidade, gaveta, fábrica, semente, emissor nem dt', () => {
+    // A palavra técnica fica no código (e no contexto da IA); o que a criança LÊ no bloco
+    // fala em objeto, tirar do jogo, jorro de faíscas e sorteio repetível com o código.
+    const proibidas =
+      /entidade|gaveta|f[áa]brica|recolh|semente|emissor|atrator|b[úu]ssola|arrasto|vinheta|c[áa]psula|\bdt\b|radiano/i
+    const texts = gameKit3DBlocks.flatMap((block) => {
+      const b = block as unknown as Record<string, unknown>
+      return Object.entries(b)
+        .filter(([key]) => /^message\d+$/.test(key) || key === 'tooltip')
+        .map(([key, value]) => `${block.type}.${key}: ${String(value)}`)
+    })
+    expect(texts.filter((text) => proibidas.test(text))).toEqual([])
+    expect(gameKit3DManifest.description).not.toMatch(proibidas)
+  })
+
+  it('⭐ os avisos do motor falam a língua da criança e citam blocos que EXISTEM', () => {
+    // O aviso aparece no console da criança. Ele dizia "recolha uma entidade", "Criar o
+    // emissor 3D", "Preparar o jogo 3D" e "para cada vivo": palavras e blocos que ela não
+    // acha em lugar nenhum. Cada aviso vira o texto dos literais (o que vem de variável
+    // vira ¤); todo nome entre aspas que começa com maiúscula tem de ser o COMEÇO de um
+    // bloco de verdade ("…" vale qualquer pedaço, como o %1 do bloco).
+    // Os fragmentos DESTA extensão (runtime*.ts). As peças compartilhadas injetadas no
+    // runtime (regras de jogo, modelos) citam blocos dos três kits e têm a rede delas.
+    const fonte = readdirSync(EXT_DIR)
+      .filter((file) => /^runtime\w*\.ts$/.test(file))
+      .map((file) => readFileSync(join(EXT_DIR, file), 'utf8'))
+      .join('\n')
+    expect(gameKit3DRuntime).toContain('"Criar o jorro de faíscas" precisa de um nome')
+    // Um aviso pode quebrar a linha: o fim é o ");" que fecha a linha.
+    const avisos = [...fonte.matchAll(/\bwarn(?:Once)?\(([\s\S]*?)\);?\s*$/gm)].map((m) =>
+      [...(m[1] ?? '').matchAll(/'((?:[^'\\]|\\.)*)'/g)].map((l) => l[1]).join('¤'),
+    )
+    expect(avisos.length).toBeGreaterThan(70) // anti-vácuo: a varredura achou os avisos
+    const proibidas = /entidade|f[áa]brica|recolh|semente|emissor|atrator|gancho/i
+    expect(avisos.filter((aviso) => proibidas.test(aviso))).toEqual([])
+
+    const blocos = gameKit3DBlocks.map((block) =>
+      String((block as { message0?: unknown }).message0 ?? '').replace(/%\d+/g, '…'),
+    )
+    const escapar = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+    const existe = (nome: string) => {
+      const padrao = new RegExp(`^${nome.split('…').map(escapar).join('.+?')}`, 'u')
+      return blocos.some((bloco) => padrao.test(bloco))
+    }
+    // Nomes entre aspas que não são blocos: a aba do menu ⋯ e as áreas do projeto.
+    const naoBlocos = new Set(['Sons', 'Ao iniciar', 'Quando…'])
+    const citados = avisos.flatMap((aviso) =>
+      [...aviso.matchAll(/"([^"¤]+)"/g)]
+        .map((m) => m[1] ?? '')
+        .filter((nome) => /^\p{Lu}/u.test(nome) && !naoBlocos.has(nome)),
+    )
+    expect(citados.length).toBeGreaterThan(15) // anti-vácuo
+    expect(citados.filter((nome) => !existe(nome))).toEqual([])
+  })
+
+  it('os textos dos exemplos não usam o vocabulário antigo', () => {
+    const proibidas = /entidade|f[áa]brica|recolh|semente|emissor|atrator/i
+    const achados = gameKit3DExamples.flatMap((example) => {
+      const strings: string[] = []
+      JSON.stringify(example.ir, (_key, value) => {
+        if (typeof value === 'string') strings.push(value)
+        return value
+      })
+      return [example.name, example.description ?? '', ...strings]
+        .filter((text) => proibidas.test(text))
+        .map((text) => `${example.name}: ${text}`)
+    })
+    expect(achados).toEqual([])
+  })
+
+  it('todo bloco está na paleta em UM lugar só, sem fantasma e sem categoria "Mais"', () => {
+    // Bloco fora da árvore some da paleta sem erro nenhum: a versão silenciosa do
+    // chip fantasma. A rede é a comum das extensões (`paletteDrift.ts`).
+    expect(paletteTreeDrift(GAME_KIT_THREE_D_PALETTE, gameKit3DBlocks)).toEqual(
+      NO_PALETTE_TREE_DRIFT,
+    )
+    expect(toolboxDrift(gameKit3DToolboxCategory, gameKit3DBlocks)).toEqual(NO_TOOLBOX_DRIFT)
   })
 })
 

@@ -1,3 +1,4 @@
+import { SECTION_PYTHON_PROJECT_TEST_BODY_BYTES } from '@sistemazero/core/learning'
 import { z } from 'zod'
 
 /**
@@ -129,11 +130,16 @@ const EnvSchema = z
     TRUSTED_PROXY_HOPS: z.coerce.number().int().positive().default(1),
 
     // Teto GLOBAL do corpo (bytes) — enforçado pelo `maxRequestBodySize` do
-    // Bun.serve (413 automático). O builder do Studio precisa de 3.004.096 bytes;
+    // Bun.serve (413 automático). A verificação Python precisa do teto canônico;
+    // o builder mantém seu próprio limite de 3.004.096 bytes por rota;
     // os webhooks da SendGrid continuam limitados a 2 MB por rota.
     // Rotas individuais AFINAM o teto via
     // `maxBodyBytes` na config (nunca o aumentam — validado no boot).
-    MAX_REQUEST_BODY_BYTES: z.coerce.number().int().positive().default(3_004_096),
+    MAX_REQUEST_BODY_BYTES: z.coerce
+      .number()
+      .int()
+      .positive()
+      .default(SECTION_PYTHON_PROJECT_TEST_BODY_BYTES),
 
     // Rate limit global default (por identidade).
     RATE_LIMIT_PER_MINUTE: z.coerce.number().int().positive().default(600),

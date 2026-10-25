@@ -2,6 +2,9 @@ import { afterEach, describe, expect, it } from 'bun:test'
 import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import type { JSX } from 'react'
 import { createEmptyProject } from '#core'
+import { makeAnimatedGlb } from '../../official-extensions/__tests__/three3d/assetFixtures'
+import flipbookFixture from '../../official-extensions/__tests__/three3d/molda-flipbook.json'
+import skinnedFixture from '../../official-extensions/__tests__/three3d/molda-skinned.json'
 import { documentFixture } from '../../state/fixtures/projectDocuments'
 import { useProjectStore } from '../../state/projectStore'
 import { refinePythonProjectDocument } from '../../state/pythonProjectValidation'
@@ -275,6 +278,44 @@ describe('Materiais do jogo — a aba "Modelos 3D"', () => {
     fireEvent.change(input, { target: { value: 'nave-mae' } })
     fireEvent.blur(input)
     expect(useProjectStore.getState().project?.assets?.[0]?.name).toBe('nave-mae')
+  })
+
+  it('mostra os selos lidos do .glb e o que cada extensão faz com o modelo', () => {
+    seedProject({ with3DExtension: true })
+    const add = (name: string, dataUrl: string) =>
+      useProjectStore.getState().addAsset({
+        name,
+        dataUrl,
+        kind: 'model3d',
+        originalFileName: `${name}.glb`,
+        source: 'library',
+      })
+    add('boneco', skinnedFixture.dataUrl)
+    add('bandeira', flipbookFixture.dataUrl)
+    add('robo', makeAnimatedGlb('robo', ['Andar', 'Correr', 'Pular', 'Dancar']))
+    add('caixa', GLB_OK)
+    abrir3D()
+
+    expect(screen.getByText('🎬 Acenar, Esticar')).not.toBeNull()
+    expect(screen.getByText('🦴 com ossos')).not.toBeNull()
+    expect(screen.getByText('🎞️ pintura que se mexe')).not.toBeNull()
+    // Até 3 nomes; o resto vira "…", com a lista inteira na dica.
+    const many = screen.getByText('🎬 Andar, Correr, Pular…')
+    expect(many.getAttribute('title')).toBe('Animações deste modelo: Andar, Correr, Pular, Dancar')
+    // Só um modelo tem ossos e só um tem pintura que se mexe; o GLB sem JSON não ganha selo.
+    expect(screen.getAllByText('🦴 com ossos')).toHaveLength(1)
+    expect(screen.getAllByText(/^🎬 /)).toHaveLength(2)
+
+    expect(screen.getByText(/"Tocar a animação" faz ele se mexer/)).not.toBeNull()
+    expect(
+      screen.getByText(/peça "modelo importado" do molde, com uma animação para cada estado/),
+    ).not.toBeNull()
+    expect(
+      screen.getByText(/"Pôr o modelo" se mexe, e "Espalhar" deixa as cópias paradas/),
+    ).not.toBeNull()
+    expect(
+      screen.getByText('📦 Enviar modelo 3D').closest('button')?.getAttribute('title'),
+    ).toContain('com animações e ossos')
   })
 
   it('com a extensão e sem arquivo nenhum, a aba existe e ensina o caminho', () => {

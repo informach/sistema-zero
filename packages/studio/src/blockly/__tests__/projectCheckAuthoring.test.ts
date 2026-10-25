@@ -828,18 +828,26 @@ describe('objetivos que rodam o jogo (etapa 3, 18/10/2026)', () => {
     expect(pro('canvas-puzzle').issues({ ...dobro, module: 'src/regras.ts' })).toEqual([])
   })
 
-  test('o 3D clássico não roda no teste (precisa de internet): a autoria avisa', () => {
+  test('o Jogo 3D clássico usa módulos oficiais offline e aceita comportamento e função', () => {
     const tresD = projectCheckAuthoring({
       initialProject: { installedExtensions: [{ id: 'game-3d' }] },
     })
-    expect(tresD.issues(anda)).toEqual([
-      'Jogos 3D do modo Blocos não rodam no teste (ele roda sem internet e o 3D precisa dela). Use uma ideia de programação.',
-    ])
-    // Nem a função escapa: o arquivo inteiro para na importação do three.js, que o teste (sem
-    // internet) não alcança. Achado do review da etapa 3.
-    expect(tresD.issues(dobro)).toEqual([
-      'Jogos 3D do modo Blocos não rodam no teste (ele roda sem internet e o 3D precisa dela). Use uma ideia de programação.',
-    ])
+    expect(tresD.issues(anda)).toEqual([])
+    expect(tresD.issues(dobro)).toEqual([])
+  })
+  test('valores exportados são explícitos e exclusivos do Pro', () => {
+    const rule: SectionExecutionRule = {
+      type: 'behavior',
+      steps: [],
+      expect: {
+        target: { kind: 'moduleValue', module: 'src/main.ts', path: 'jogador.position.z' },
+        compare: 'decreased',
+      },
+    }
+    expect(pro('three-ts').issues(rule)).toEqual([])
+    expect(classico().issues(rule)).toContain(
+      'Valores exportados por arquivo só valem no projeto Pro.',
+    )
   })
 
   test('a vida só nos kits que a mostram', () => {
@@ -885,7 +893,7 @@ describe('objetivos que rodam o jogo (etapa 3, 18/10/2026)', () => {
 
   test('cada alvo só onde ele existe', () => {
     expect(pro('vanilla-vite').issues(anda)).toEqual([
-      'No projeto Pro, confira o texto da página, o console ou o estado do kit.',
+      'No projeto Pro, confira um valor exportado, o texto da página, o console ou o estado do kit.',
     ])
     expect(classico().issues(fase)).toEqual([
       'O estado do jogo (fase, pontos, meta, vida) só existe nos kits Pro.',

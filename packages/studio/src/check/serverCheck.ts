@@ -12,6 +12,7 @@ import { buildProAssetBundle } from '../core/proAssets'
 import { sanitizeProjectAssets } from '../core/project'
 import { assertProjectContentPreserved } from '../core/projectDocument'
 import { renderProjectToPreviewDocAsync } from '../preview/renderProject'
+import { THREE_CDN } from '../three/threeRuntimeContract'
 import { CHECK_SCOPE_PATTERN, instrumentCheckScript } from './instrumentCheckScript'
 
 export { CHECK_SCOPE_PATTERN, instrumentCheckScript }
@@ -43,6 +44,8 @@ export async function prepareClassicCheckDocument(
   return renderProjectToPreviewDocAsync(project as Project, {
     securityProfile: 'strict',
     runtimeInspection: true,
+    // The isolated image serves the exact npm ESM files directly, without CDN redirects.
+    runtimeImports: { three: `${THREE_CDN}/build/three.module.js` },
     transformScript: (script) => instrumentCheckScript(script, scope),
   })
 }

@@ -94,7 +94,7 @@ export function ScenePaletteLibrary({
   return (
     <>
       <details
-        className="mld-disclosure border-b border-mld-border pb-3"
+        className="mld-disclosure mld-palette-disclosure"
         onToggle={(event) => setExpanded(event.currentTarget.open)}
       >
         <summary className="text-sm font-bold">

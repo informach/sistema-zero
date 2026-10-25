@@ -27,6 +27,7 @@ let pendingAudio: { id: string; resolve(value: string): void } | undefined
 let activityRequest: string | undefined
 let activityFinished = false
 let hasActivity = false
+let missionRequest: string | undefined
 const requestId = (value: unknown): value is string =>
   typeof value === 'string' && /^[A-Za-z0-9_-]{1,80}$/.test(value)
 // Another message can invalidate the execution while Python is suspended.
@@ -152,6 +153,13 @@ export async function startPythonWorker(options: { canvas?: PythonCanvasExtensio
         flush()
         send({ type: 'activity-result', requestId: activityRequest, feedback })
       },
+      onMissionResult(observation) {
+        if (!missionRequest || hasFailed()) throw new Error('Observação de missão fora de ordem.')
+        const requestId = missionRequest
+        missionRequest = undefined
+        flush()
+        send({ type: 'mission-result', requestId, observation })
+      },
     })
     addEventListener('message', async (event: MessageEvent<unknown>) => {
       if (phase === 'failed') return
@@ -244,7 +252,13 @@ export async function startPythonWorker(options: { canvas?: PythonCanvasExtensio
               ? StudioPythonActivitySchema.parse(message.activity)
               : undefined
           hasActivity = activity !== undefined
-          await interpreter.prepare(readPythonWireSnapshot(message.snapshot), activity)
+          if ('mission' in message && message.mission !== undefined && message.mission !== true)
+            throw new Error('Modo de observação Python inválido.')
+          await interpreter.prepare(
+            readPythonWireSnapshot(message.snapshot),
+            activity,
+            'mission' in message && message.mission === true,
+          )
           if (hasFailed()) return
           phase = 'prepared'
           send({ type: 'prepared' })
@@ -253,6 +267,24 @@ export async function startPythonWorker(options: { canvas?: PythonCanvasExtensio
         if (!('requestId' in message) || !requestId(message.requestId))
           throw new Error('Comando sem identificação válida.')
         const id = message.requestId
+        if (message.type === 'mission-observe') {
+          if (
+            missionRequest ||
+            !('probe' in message) ||
+            !['running', 'completed'].includes(phase) ||
+            pendingInput ||
+            (activityRequest && !activityFinished)
+          )
+            throw new Error('A missão não pode ser observada agora.')
+          interpreter.requestMission(message.probe)
+          missionRequest = id
+          if (phase === 'completed') {
+            phase = 'running'
+            await interpreter.flushMission()
+            if (!hasFailed()) phase = 'completed'
+          }
+          return
+        }
         if (message.type === 'activity-check') {
           if (
             !hasActivity ||
@@ -281,6 +313,12 @@ export async function startPythonWorker(options: { canvas?: PythonCanvasExtensio
           if (hasFailed()) return
           phase = result.ok ? 'completed' : 'failed'
           send({ type: 'result', requestId: id, ...result })
+          if (result.ok && interpreter.hasPendingMission) {
+            phase = 'running'
+            await interpreter.flushMission()
+            if (hasFailed()) return
+            phase = 'completed'
+          }
           if (result.ok && activityRequest && !activityFinished) {
             phase = 'running'
             await interpreter.checkActivity()

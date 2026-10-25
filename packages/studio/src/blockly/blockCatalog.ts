@@ -332,6 +332,7 @@ export const SERVER_BLOCK_CATALOG: readonly ServerBlockCatalogEntry[] = GROUPS.f
                 'field_name_picker',
                 'field_sprite_picker',
                 'field_asset_picker',
+                'field_model_clip_picker',
               ].includes(String(data.type))
             )
               return []
@@ -369,7 +370,7 @@ export const SERVER_BLOCK_CATALOG: readonly ServerBlockCatalogEntry[] = GROUPS.f
                 label: labels[arg.name] ?? `Valor ${index + 1}`,
                 kind: input ? ('inputs' as const) : ('fields' as const),
                 numeric: data.type === 'field_number' || data.check === 'Number',
-                textual: data.type === 'field_input',
+                textual: data.type === 'field_input' || data.type === 'field_model_clip_picker',
                 min: typeof data.min === 'number' ? data.min : undefined,
                 max: typeof data.max === 'number' ? data.max : undefined,
                 precision: typeof data.precision === 'number' ? data.precision : undefined,

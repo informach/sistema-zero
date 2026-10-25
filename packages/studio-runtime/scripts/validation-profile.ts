@@ -35,6 +35,7 @@ const files = [
   'Dockerfile',
   '../core/src/creations/utf8.ts',
   '../core/src/learning/project-execution.ts',
+  '../core/src/learning/python-project-execution.ts',
   '../core/src/learning/execution-observation.ts',
 ]
 for (const directory of groups) {

@@ -10,12 +10,14 @@ import {
   studioPythonInspectionSandboxId,
   verifyStudioPythonInspectionJobState,
 } from '@sistemazero/core/studio/python-inspection-job'
+import { PYTHON_MISSION_LIMITS } from '@sistemazero/core/studio/python-mission-execution'
 import { StudioPythonPreviewAvailabilitySchema } from '@sistemazero/core/studio/python-preview-input'
 import { STUDIO_PYTHON_VALIDATION_LIMITS } from '@sistemazero/core/studio/python-validation'
 import {
   type StudioPythonInputReference,
   StudioPythonInputReferenceSchema,
   StudioPythonInspectionRequestSchema,
+  StudioPythonMissionRequestSchema,
   StudioPythonValidationRequestSchema,
 } from '@sistemazero/core/studio/python-validation-input'
 import validationProfile from '../runtime/validation-profile.json' with { type: 'json' }
@@ -98,7 +100,8 @@ export class PythonInspectionJob extends DurableObject<Env> {
   private retirePreview() {
     const state = this.store.read()
     if (
-      state?.operation?.preview &&
+      state?.operation?.mode === 'validate' &&
+      state.operation.preview &&
       !state.previewRetired &&
       !this.store.update(state, { previewRetired: true })
     )
@@ -116,6 +119,10 @@ export class PythonInspectionJob extends DurableObject<Env> {
       recipe: request.recipe,
       ...(request.preview ? { preview: request.preview } : {}),
     })
+  }
+  async check(raw: unknown): Promise<PythonInspectionJobResponse> {
+    const request = StudioPythonMissionRequestSchema.parse(raw)
+    return this.admit(request, { mode: 'check', mission: request.mission })
   }
 
   private async admit(
@@ -152,7 +159,13 @@ export class PythonInspectionJob extends DurableObject<Env> {
       ...(operation ? { operation } : {}),
       status: 'running',
       createdAt: now,
-      deadline: Math.min(now + STUDIO_PYTHON_JOB_DEADLINE_MS, input.expiresAt),
+      deadline: Math.min(
+        now +
+          (operation?.mode === 'check'
+            ? PYTHON_MISSION_LIMITS.jobMs
+            : STUDIO_PYTHON_JOB_DEADLINE_MS),
+        input.expiresAt,
+      ),
       sandboxCreated: false,
       cleanupConfirmed: false,
     }
@@ -210,23 +223,34 @@ export class PythonInspectionJob extends DurableObject<Env> {
         assertCurrent: check,
       })
       check()
-      const validation = state.operation
+      const validation = state.operation?.mode === 'validate' ? state.operation : undefined
+      const mission = state.operation?.mode === 'check' ? state.operation : undefined
       const response = await handlePythonRequest(
-        new Request(`https://python-job.invalid/v1/python/${validation ? 'validate' : 'inspect'}`, {
-          method: 'POST',
-          signal,
-          body: JSON.stringify(
-            validation
-              ? {
-                  version: 1,
-                  input: state.input,
-                  structure: state.structure,
-                  recipe: validation.recipe,
-                  ...(validation.preview ? { preview: validation.preview } : {}),
-                }
-              : { version: 1, input: state.input, structure: state.structure },
-          ),
-        }),
+        new Request(
+          `https://python-job.invalid/v1/python/${mission ? 'check' : validation ? 'validate' : 'inspect'}`,
+          {
+            method: 'POST',
+            signal,
+            body: JSON.stringify(
+              mission
+                ? {
+                    version: 1,
+                    input: state.input,
+                    structure: state.structure,
+                    mission: mission.mission,
+                  }
+                : validation
+                  ? {
+                      version: 1,
+                      input: state.input,
+                      structure: state.structure,
+                      recipe: validation.recipe,
+                      ...(validation.preview ? { preview: validation.preview } : {}),
+                    }
+                  : { version: 1, input: state.input, structure: state.structure },
+            ),
+          },
+        ),
         {
           bucket: createPythonR2InputStorage(bucket),
           runtimeBucket,
@@ -355,7 +379,8 @@ export class PythonInspectionJob extends DurableObject<Env> {
         !state.previewRetired &&
         state.input.projectId === scope.projectId &&
         state.input.revision === scope.revision &&
-        state.operation?.preview?.parentOrigin === scope.parentOrigin &&
+        state.operation?.mode === 'validate' &&
+        state.operation.preview?.parentOrigin === scope.parentOrigin &&
         scope.expiresAt > Date.now() &&
         scope.expiresAt <= studioPythonInspectionJobRetentionUntil(state),
     )

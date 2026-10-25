@@ -152,25 +152,28 @@ describe('game-3d — gerador', () => {
     expect(gen({ type: 'g3d:applyGravity', objVar: 'p', groundVar: 'chao' })).toBe(
       'SZGame3D.applyGravity(p, chao);',
     )
-    expect(gen({ type: 'g3d:controlWithKeys', objVar: 'p', speed: 0.05 })).toBe(
-      'SZGame3D.controlWithKeys(p, 0.05);',
+    expect(gen({ type: 'g3d:controlWithKeys', objVar: 'p', speed: 3 })).toBe(
+      'SZGame3D.controlWithKeys(p, 3);',
     )
-    expect(gen({ type: 'g3d:cameraFollow', worldVar: 'cena', objVar: 'p' })).toBe(
-      'SZGame3D.cameraFollow(cena, p);',
+    expect(gen({ type: 'g3d:cameraMode', worldVar: 'cena', mode: 'longe', objVar: 'p' })).toBe(
+      'SZGame3D.cameraMode(cena, "longe", p);',
+    )
+    expect(gen({ type: 'g3d:cameraDistance', worldVar: 'cena', dist: 6, height: 3 })).toBe(
+      'SZGame3D.cameraDistance(cena, 6, 3);',
     )
     expect(gen({ type: 'g3d:createGroup', varName: 'inimigos' })).toBe(
       'const inimigos = SZGame3D.createGroup();',
     )
-    expect(
-      gen({ type: 'g3d:spawnEnemy', worldVar: 'cena', groupVar: 'inimigos', speed: 0.1 }),
-    ).toBe('SZGame3D.spawnEnemy(cena, inimigos, 0.1);')
+    expect(gen({ type: 'g3d:spawnEnemy', worldVar: 'cena', groupVar: 'inimigos', speed: 6 })).toBe(
+      'SZGame3D.spawnEnemy(cena, inimigos, 6);',
+    )
     expect(gen({ type: 'g3d:updateGroup', groupVar: 'inimigos', groundVar: 'chao' })).toBe(
       'SZGame3D.updateGroup(inimigos, chao);',
     )
     expect(gen({ type: 'g3d:clearGroup', groupVar: 'inimigos' })).toBe(
       'SZGame3D.clearGroup(inimigos);',
     )
-    expect(gen({ type: 'g3d:stop', worldVar: 'cena' })).toBe('SZGame3D.stop(cena);')
+    expect(gen({ type: 'g3d:gameOver', result: 'perdeu' })).toBe('SZGame3D.endGame("perdeu");')
     // Pergunta (booleano) dentro de um "se": gera SZGame3D.keyDown(...).
     expect(gen({ type: 'if', cond: { type: 'g3d:keyDown', key: 'Space' }, then: [] })).toContain(
       'SZGame3D.keyDown("Space")',
@@ -198,15 +201,15 @@ describe('game-3d — gerador', () => {
       'SZGame3D.crosserStep(jogador, mundo);',
     )
     expect(gen({ type: 'g3d:moveTraffic', worldVar: 'mundo' })).toBe('SZGame3D.moveTraffic(mundo);')
-    expect(gen({ type: 'g3d:isometricCamera', worldVar: 'mundo', followVar: 'jogador' })).toBe(
-      'SZGame3D.isometricCamera(mundo, jogador);',
-    )
-    expect(gen({ type: 'g3d:isometricCamera', worldVar: 'mundo', followVar: '' })).toBe(
-      'SZGame3D.isometricCamera(mundo, null);',
+    expect(
+      gen({ type: 'g3d:cameraMode', worldVar: 'mundo', mode: 'isometrica', objVar: 'jogador' }),
+    ).toBe('SZGame3D.cameraMode(mundo, "isometrica", jogador);')
+    expect(gen({ type: 'g3d:cameraMode', worldVar: 'mundo', mode: 'isometrica', objVar: '' })).toBe(
+      'SZGame3D.cameraMode(mundo, "isometrica", null);',
     )
     expect(gen({ type: 'g3d:gridStep', objVar: 'p' })).toBe('SZGame3D.gridStep(p);')
-    expect(gen({ type: 'g3d:moveAcross', groupVar: 'carros', speed: 0.1, min: -10, max: 10 })).toBe(
-      'SZGame3D.moveAcross(carros, 0.1, -10, 10);',
+    expect(gen({ type: 'g3d:moveAcross', groupVar: 'carros', speed: 6, min: -10, max: 10 })).toBe(
+      'SZGame3D.moveAcross(carros, 6, -10, 10);',
     )
     expect(
       gen({
@@ -220,8 +223,8 @@ describe('game-3d — gerador', () => {
       gen({ type: 'if', cond: { type: 'g3d:crosserHit', objVar: 'p', worldVar: 'm' }, then: [] }),
     ).toContain('SZGame3D.crosserHit(p, m)')
     expect(
-      gen({ type: 'if', cond: { type: 'g3d:touchesBox', objVar: 'p', groupVar: 'g' }, then: [] }),
-    ).toContain('SZGame3D.touchesBox(p, g)')
+      gen({ type: 'if', cond: { type: 'g3d:hitAny', objVar: 'p', groupVar: 'g' }, then: [] }),
+    ).toContain('SZGame3D.hitAny(p, g)')
   })
 
   it('Corrida + genéricos top-down geram SZGame3D.*', () => {
@@ -241,14 +244,14 @@ describe('game-3d — gerador', () => {
     expect(gen({ type: 'g3d:raceControl', objVar: 'carro', mode: 'accelerate' })).toBe(
       'SZGame3D.raceControl(carro, "accelerate");',
     )
-    expect(gen({ type: 'g3d:topCamera', worldVar: 'mundo', followVar: 'carro' })).toBe(
-      'SZGame3D.topCamera(mundo, carro);',
+    expect(gen({ type: 'g3d:cameraMode', worldVar: 'mundo', mode: 'cima', objVar: 'carro' })).toBe(
+      'SZGame3D.cameraMode(mundo, "cima", carro);',
     )
-    expect(gen({ type: 'g3d:topCamera', worldVar: 'mundo', followVar: '' })).toBe(
-      'SZGame3D.topCamera(mundo, null);',
+    expect(gen({ type: 'g3d:cameraMode', worldVar: 'mundo', mode: 'cima', objVar: '' })).toBe(
+      'SZGame3D.cameraMode(mundo, "cima", null);',
     )
-    expect(gen({ type: 'g3d:moveInCircle', objVar: 'p', radius: 7, speed: 0.02 })).toBe(
-      'SZGame3D.moveInCircle(p, 7, 0.02);',
+    expect(gen({ type: 'g3d:moveInCircle', objVar: 'p', radius: 7, speed: 60 })).toBe(
+      'SZGame3D.moveInCircle(p, 7, 60);',
     )
     expect(
       gen({ type: 'if', cond: { type: 'g3d:raceHit', objVar: 'c', worldVar: 'm' }, then: [] }),
@@ -393,15 +396,15 @@ describe('game-3d — gerador', () => {
   })
 
   it('Câmera viva gera SZGame3D.*', () => {
-    expect(gen({ type: 'g3d:fpsCamera', worldVar: 'w', objVar: 'p' })).toBe(
-      'SZGame3D.fpsCamera(w, p);',
-    )
-    expect(gen({ type: 'g3d:orbitCamera', worldVar: 'w', objVar: 'p' })).toBe(
-      'SZGame3D.orbitCamera(w, p);',
-    )
     expect(
-      gen({ type: 'g3d:thirdPersonCamera', worldVar: 'w', objVar: 'p', dist: 6, height: 3 }),
-    ).toBe('SZGame3D.thirdPersonCamera(w, p, 6, 3);')
+      gen({ type: 'g3d:cameraMode', worldVar: 'w', mode: 'primeira-pessoa', objVar: 'p' }),
+    ).toBe('SZGame3D.cameraMode(w, "primeira-pessoa", p);')
+    expect(gen({ type: 'g3d:cameraMode', worldVar: 'w', mode: 'em-volta', objVar: 'p' })).toBe(
+      'SZGame3D.cameraMode(w, "em-volta", p);',
+    )
+    expect(gen({ type: 'g3d:cameraMode', worldVar: 'w', mode: 'tras', objVar: 'p' })).toBe(
+      'SZGame3D.cameraMode(w, "tras", p);',
+    )
     expect(gen({ type: 'g3d:cameraLookAt', worldVar: 'w', objVar: 'p' })).toBe(
       'SZGame3D.cameraLookAt(w, p);',
     )
@@ -504,26 +507,20 @@ describe('game-3d — gerador', () => {
     )
   })
 
-  it('Fase 8 — enxames e som geram SZGame3D.*', () => {
-    expect(gen({ type: 'g3d:createSwarm', varName: 'e', worldVar: 'w' })).toBe(
-      'const e = SZGame3D.createSwarm(w);',
+  it('Fase 8 — cópias num grupo e som geram SZGame3D.*', () => {
+    expect(gen({ type: 'g3d:spawnCopy', groupVar: 'e', originalVar: 'o', x: 1, y: 2, z: 3 })).toBe(
+      'SZGame3D.spawnCopy(e, o, 1, 2, 3);',
     )
-    expect(
-      gen({ type: 'g3d:spawnInSwarm', swarmVar: 'e', originalVar: 'o', x: 1, y: 2, z: 3 }),
-    ).toBe('SZGame3D.spawnInSwarm(e, o, 1, 2, 3);')
     const fe = gen({
-      type: 'g3d:forEachInSwarm',
-      swarmVar: 'e',
+      type: 'g3d:forEachInGroup',
+      groupVar: 'e',
       itemName: 'item',
-      body: [{ type: 'g3d:removeFromSwarm', swarmVar: 'e', itemVar: 'item' }],
+      body: [{ type: 'g3d:removeFromGroup', groupVar: 'e', objVar: 'item' }],
     })
-    expect(fe).toContain('SZGame3D.forEachInSwarm(e, (item) => {')
-    expect(fe).toContain('SZGame3D.removeFromSwarm(e, item);')
-    expect(gen({ type: 'g3d:removeFromSwarm', swarmVar: 'e', itemVar: 'it' })).toBe(
-      'SZGame3D.removeFromSwarm(e, it);',
-    )
-    expect(gen({ type: 'g3d:pruneSwarm', swarmVar: 'e', axis: 'y', min: -10, max: 10 })).toBe(
-      'SZGame3D.pruneSwarm(e, "y", -10, 10);',
+    expect(fe).toContain('SZGame3D.forEachInGroup(e, (item) => {')
+    expect(fe).toContain('SZGame3D.removeFromGroup(e, item);')
+    expect(gen({ type: 'g3d:pruneArea', groupVar: 'e', axis: 'y', min: -10, max: 10 })).toBe(
+      'SZGame3D.pruneArea(e, "y", -10, 10);',
     )
     expect(gen({ type: 'g3d:playNote', freq: 440, ms: 200 })).toBe('SZGame3D.playNote(440, 200);')
     expect(gen({ type: 'g3d:playEffect', kind: 'coin' })).toBe('SZGame3D.playEffect("coin");')
@@ -547,9 +544,9 @@ describe('game-3d — schema e exemplo', () => {
       'g3d:applyGravity',
       'g3d:controlWithKeys',
       'g3d:setScale',
-      'g3d:cameraFollow',
+      'g3d:cameraMode',
+      'g3d:cameraDistance',
       'g3d:createGroup',
-      'g3d:everyFrames',
       'g3d:everySeconds',
       'g3d:spawnEnemy',
       'g3d:updateGroup',
@@ -558,7 +555,8 @@ describe('game-3d — schema e exemplo', () => {
       'g3d:forEachInGroup',
       'g3d:removeFromGroup',
       'g3d:clearGroup',
-      'g3d:stop',
+      'g3d:gameOver',
+      'g3d:restart',
       'g3d:createCrossingScene',
       'g3d:createCrosser',
       'g3d:crosserMove',
@@ -568,11 +566,9 @@ describe('game-3d — schema e exemplo', () => {
       'g3d:addRow',
       'g3d:generateRows',
       'g3d:moveTraffic',
-      'g3d:isometricCamera',
       'g3d:gridStep',
       'g3d:gridMove',
       'g3d:moveAcross',
-      'g3d:topCamera',
       'g3d:moveInCircle',
       'g3d:createRaceScene',
       'g3d:createRaceTrack',
@@ -602,9 +598,6 @@ describe('game-3d — schema e exemplo', () => {
       'g3d:platformerControls',
       'g3d:fpsControls',
       'g3d:resolveCollision',
-      'g3d:fpsCamera',
-      'g3d:orbitCamera',
-      'g3d:thirdPersonCamera',
       'g3d:cameraLookAt',
       'g3d:setFOV',
       'g3d:createCylinder',
@@ -627,11 +620,8 @@ describe('game-3d — schema e exemplo', () => {
       'g3d:setFog',
       'g3d:setSky',
       'g3d:setShadows',
-      'g3d:createSwarm',
-      'g3d:spawnInSwarm',
-      'g3d:forEachInSwarm',
-      'g3d:removeFromSwarm',
-      'g3d:pruneSwarm',
+      'g3d:spawnCopy',
+      'g3d:pruneArea',
       'g3d:playNote',
       'g3d:playEffect',
     ]) {
@@ -647,14 +637,14 @@ describe('game-3d — schema e exemplo', () => {
     expect(SZIRV2Schema.safeParse(dodgeExample.ir).success).toBe(true)
   })
 
-  it('o "Desvie" vira BLOCOS (caminho KitGallery) com "A cada N quadros" IRMÃO do "A cada quadro 3D"', () => {
+  it('o "Desvie" vira BLOCOS (caminho KitGallery) com "A cada N segundos" IRMÃO do "A cada quadro"', () => {
     // buildWorkspaceStateFromIR é o que a vitrine de kits usa para popular o
     // workspace — provamos aqui (independente do browser) que os blocos nascem.
     const state = buildWorkspaceStateFromIR(dodgeExample.ir)
     const json = JSON.stringify(state)
     for (const type of [
       'sz_g3d_animate',
-      'sz_g3d_every_frames',
+      'sz_g3d_every_seconds',
       'sz_g3d_spawn_enemy',
       'sz_g3d_update_group',
       'sz_g3d_prune_offscreen',
@@ -691,12 +681,12 @@ describe('game-3d — schema e exemplo', () => {
     }
     const animate = findBlock(state, 'sz_g3d_animate')
     expect(animate).toBeTruthy()
-    // IRMÃO, não FILHO: o "A cada N quadros" NÃO está DENTRO do bloco animate...
-    expect(animate && findInside(animate, 'sz_g3d_every_frames')).toBeNull()
+    // IRMÃO, não FILHO: o "A cada N segundos" NÃO está DENTRO do bloco animate...
+    expect(animate && findInside(animate, 'sz_g3d_every_seconds')).toBeNull()
     // ...mas existe no estado (num nó irmão) com o "soltar 1 inimigo" dentro dele.
-    const everyFrames = findBlock(state, 'sz_g3d_every_frames')
-    expect(everyFrames).toBeTruthy()
-    expect(findBlock(everyFrames, 'sz_g3d_spawn_enemy')).toBeTruthy()
+    const everySeconds = findBlock(state, 'sz_g3d_every_seconds')
+    expect(everySeconds).toBeTruthy()
+    expect(findBlock(everySeconds, 'sz_g3d_spawn_enemy')).toBeTruthy()
   })
 
   it('o exemplo "Atravesse a Rua" tem IR válido', () => {
@@ -723,11 +713,11 @@ describe('game-3d — schema e exemplo', () => {
     expect(SZIRV2Schema.safeParse(swarmExample.ir).success).toBe(true)
   })
 
-  it('os exemplos com canvas fixo cabem em telas estreitas', () => {
+  it('as demonstrações usam a cena responsiva sem depender de canvas ou CSS da página', () => {
     for (const example of [shapesExample, nightExample, swarmExample, dodgeExample]) {
-      const css = generateCSS(example.ir.css)
-      expect(css).toContain('width: min(480px, calc(100vw - 24px))')
-      expect(css).toContain('max-height: calc(100vh - 24px)')
+      expect(example.ir.html).toEqual([])
+      expect(example.ir.css).toEqual([])
+      expect(JSON.stringify(example.ir.behavior)).toContain('g3d:createFullscreenScene')
     }
   })
 })

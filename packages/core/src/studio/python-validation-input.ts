@@ -2,6 +2,7 @@ import { z } from 'zod'
 import { StudioProjectIdSchema } from './project-document'
 import { StudioSha256Schema } from './project-environment'
 import { StudioPythonExecutionMetadataSchema } from './python-execution-content'
+import { PythonProjectExecutionRequestSchema } from './python-mission-execution'
 import { StudioPythonPlaytestRecipeSchema } from './python-playtest'
 import { StudioPythonPreviewRequestSchema } from './python-preview-input'
 import { STUDIO_EXECUTION_ID_PATTERN } from './runtime-identity'
@@ -47,6 +48,23 @@ export const StudioPythonValidationRequestSchema = z.strictObject({
   recipe: StudioPythonPlaytestRecipeSchema,
   preview: StudioPythonPreviewRequestSchema.optional(),
 })
+export const StudioPythonMissionOperationSchema = z.strictObject({
+  mode: z.literal('check'),
+  mission: PythonProjectExecutionRequestSchema,
+})
+export const StudioPythonMissionRequestSchema = z
+  .strictObject({
+    version: z.literal(1),
+    input: StudioPythonInputReferenceSchema,
+    structure: z.boolean(),
+    mission: PythonProjectExecutionRequestSchema,
+  })
+  .refine(
+    (request) =>
+      request.mission.identity.projectId === request.input.projectId &&
+      request.mission.identity.revision === request.input.revision,
+    'A missão precisa usar o projeto e a revisão do input autorizado.',
+  )
 
 /** Compilation and structural inspection share one explicit current request envelope. */
 export const StudioPythonInspectionRequestSchema = z.strictObject({

@@ -523,13 +523,14 @@ function runRestartScenario(
     'SZGame2D',
     'SZGameKit',
     'SZGameKit3D',
+    'SZGame3D',
     'window',
     'document',
     'requestAnimationFrame',
     'cancelAnimationFrame',
     'console',
     code,
-  )(engine, engine, engine, testWindow, documentTarget, requestFrame, cancelFrame, {
+  )(engine, engine, engine, engine, testWindow, documentTarget, requestFrame, cancelFrame, {
     log: (value: unknown) => logs.push(value),
   })
 
@@ -615,6 +616,7 @@ function runAllManagedResourcesScenario(
     'SZGame2D',
     'SZGameKit',
     'SZGameKit3D',
+    'SZGame3D',
     'window',
     'document',
     'requestAnimationFrame',
@@ -626,6 +628,7 @@ function runAllManagedResourcesScenario(
     'console',
     code,
   )(
+    engine,
     engine,
     engine,
     engine,
@@ -723,6 +726,14 @@ describe('recursos genéricos da execução do projeto', () => {
     runRestartScenario('game-3d-advanced', 'setStatePlaying')
   })
 
+  it('descarta listener e RAF anteriores ao reiniciar Jogo 3D (o "Recomeçar o jogo")', () => {
+    runRestartScenario('game-3d', 'restart')
+  })
+
+  it('descarta listeners nomeados, timers e RAFs avulsos ao reiniciar Jogo 3D', () => {
+    runAllManagedResourcesScenario('game-3d', 'restart')
+  })
+
   it('descarta listeners nomeados, timers e RAFs avulsos ao reiniciar Jogo 2D', () => {
     runAllManagedResourcesScenario('game-2d', 'restart')
   })
@@ -738,6 +749,7 @@ describe('recursos genéricos da execução do projeto', () => {
   it.each([
     'game-2d',
     'game-2d-advanced',
+    'game-3d',
     'game-3d-advanced',
   ] as const)('remove somente a infraestrutura gerada no round-trip de %s', (target) => {
     const code = generateJS({ behavior: ALL_MANAGED_RESOURCES_BEHAVIOR, lifecycle: target })

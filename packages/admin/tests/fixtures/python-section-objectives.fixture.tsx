@@ -72,9 +72,9 @@ test('Python objectives have their own rules, preserve unfinished drafts, and lo
       profileId: project.runtime.profileId,
       rule: { type: 'usesLoop' },
     })
-    expect(field('Conferir no código').textContent).not.toContain('Usar um bloco')
+    expect(field('Como conferir o objetivo').textContent).not.toContain('Usar um bloco')
     await change('O que o aluno precisa fazer', 'Mova a tartaruga')
-    await change('Conferir no código', 'callsFunction')
+    await change('Como conferir o objetivo', 'callsFunction')
     expect(isSectionCompletion(value)).toBe(true)
     await change('Nome esperado', 'turtle.forward')
     await change('Arquivo Python (opcional)', 'src/')
@@ -87,6 +87,19 @@ test('Python objectives have their own rules, preserve unfinished drafts, and lo
       file: 'src/main.py',
     })
     expect(value.blockIds).toEqual(['question'])
+    await change('Como conferir o objetivo', 'behavior')
+    expect(value.projectChecks?.[0]?.rule).toMatchObject({
+      type: 'behavior',
+      expect: { target: { kind: 'console' } },
+    })
+    expect(host.textContent).not.toContain('Regra em JavaScript')
+    await change('Como conferir o objetivo', 'functionReturns')
+    expect(value.projectChecks?.[0]?.rule).toMatchObject({
+      type: 'functionReturns',
+      name: 'somar',
+      cases: [{ args: [2, 3], expected: 5 }],
+    })
+    expect(isSectionCompletion(value)).toBe(true)
     expect(requests).toBe(0)
   } finally {
     await act(async () => root.unmount())

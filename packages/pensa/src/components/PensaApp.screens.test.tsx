@@ -468,6 +468,36 @@ describe('Regressões da revisão', () => {
 })
 
 describe('No celular', () => {
+  test('a ajuda acionada quando o projeto aparece não volta ao Plano', async () => {
+    const original = HTMLElement.prototype.getBoundingClientRect
+    HTMLElement.prototype.getBoundingClientRect = function () {
+      return { ...original.call(this), width: 390 } as DOMRect
+    }
+    let clicked = false
+    const observer = new MutationObserver(() => {
+      const button = [...document.querySelectorAll('button')].find(
+        (node) => node.textContent === 'Preciso de ajuda',
+      )
+      if (!clicked && button) {
+        clicked = true
+        button.click()
+      }
+    })
+    observer.observe(document.body, { childList: true, subtree: true })
+    try {
+      const { adapter } = setup()
+      render(<PensaApp adapter={adapter} initialProjectId={PROJECT_ID} />)
+      await waitFor(() => expect(clicked).toBe(true))
+      expect(await screen.findByLabelText('Sua dúvida')).toBeTruthy()
+      expect(clicked).toBe(true)
+      expect(screen.getByRole('tab', { name: 'Conversa' }).getAttribute('aria-selected')).toBe(
+        'true',
+      )
+    } finally {
+      observer.disconnect()
+      HTMLElement.prototype.getBoundingClientRect = original
+    }
+  })
   test('o projeto vira abas Plano, Conversa e Carta do jogo, e a ajuda abre a conversa', async () => {
     const original = HTMLElement.prototype.getBoundingClientRect
     HTMLElement.prototype.getBoundingClientRect = function () {
@@ -496,7 +526,7 @@ describe('No celular', () => {
       return { ...original.call(this), width: 390 } as DOMRect
     }
     try {
-      const { adapter } = setup()
+      const { adapter } = setup({ list: [listItem(projectFixture())] })
       render(
         <PensaApp
           adapter={adapter}
@@ -507,6 +537,13 @@ describe('No celular', () => {
       const conversa = await screen.findByRole('tab', { name: 'Conversa' })
       await waitFor(() => expect(conversa.getAttribute('aria-selected')).toBe('true'))
       expect(screen.getByLabelText('Sua dúvida')).toBeTruthy()
+      fireEvent.click(screen.getByRole('button', { name: 'Voltar aos meus jogos' }))
+      fireEvent.click(await screen.findByRole('button', { name: 'Continuar Memória dos animais' }))
+      await waitFor(() =>
+        expect(screen.getByRole('tab', { name: 'Plano' }).getAttribute('aria-selected')).toBe(
+          'true',
+        ),
+      )
     } finally {
       HTMLElement.prototype.getBoundingClientRect = original
     }

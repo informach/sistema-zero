@@ -69,14 +69,14 @@ describe('Exemplo Patrulha Espacial — drift contra o parser real', () => {
       'g3d:keyDown', // andar contínuo com as setas + atirar com espaço
       'g3d:dt', // o movimento no X é por dt (mesma velocidade em 60/120 Hz)
       'mathUnary', // ⭐ o balanço senoidal (Math.sin sobre o relógio somado)
-      'g3d:spawnInSwarm', // lasers e meteoros nascem em enxames
-      'g3d:forEachInSwarm',
+      'g3d:spawnCopy', // lasers e meteoros nascem em grupos
+      'g3d:forEachInGroup',
       'g3d:moveBy', // meteoros vêm à câmera; lasers vão embora no -Z
       'g3d:spin', // ⭐ os meteoros giram enquanto voam (como no original)
       'g3d:collides', // laser×meteoro = a caixa×esfera do original
       'g3d:isNear', // ⭐ nave×meteoro = a colisão de esferas do original
-      'g3d:removeFromSwarm', // acertou = os dois somem
-      'g3d:pruneSwarm', // higiene de quem passou da câmera
+      'g3d:removeFromGroup', // acertou = os dois somem
+      'g3d:pruneArea', // higiene de quem passou da câmera
       'g3d:everySeconds', // cadência do spawn + relógio da dificuldade
       'randomFloat', // o sorteio da pista e do tamanho do meteoro
       'g3d:playNote', // o pew do laser
@@ -84,9 +84,10 @@ describe('Exemplo Patrulha Espacial — drift contra o parser real', () => {
       'g3d:setSky', // o espaço escuro
       'g3d:setFog',
       'g3d:setMaterial', // bico e laser brilham (glow)
-      'setProperty', // HUD DOM de tempo e pontos
-      'classOp', // a tela de fim aparece/some por classe
-      'event', // o botão de recomeçar
+      'g3d:cornerText', // tempo no HUD do próprio motor
+      'g3d:addScore', // pontos e resultado final no placar do motor
+      'g3d:screenText', // tela de fim com o botão de recomeçar do motor
+      'g3d:gameOver',
     ]) {
       expect(types.has(t)).toBe(true)
     }
@@ -111,7 +112,7 @@ describe('Exemplo Patrulha Espacial — drift contra o parser real', () => {
     // O Desvie anda livre no plano (controlWithKeys), pula com gravidade sobre
     // um chão e usa o kit (spawnEnemy). Aqui NÃO: a nave desliza só no X por
     // variável clampada, o espaço é aberto (sem chão, sem gravidade) e os
-    // meteoros são enxames de moldes próprios.
+    // meteoros são grupos de moldes próprios.
     const types = collectTypes(behaviorStatements(patrulhaEspacialExample.ir))
     expect(types.has('g3d:controlWithKeys')).toBe(false)
     expect(types.has('g3d:spawnEnemy')).toBe(false)

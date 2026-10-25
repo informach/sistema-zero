@@ -14,6 +14,7 @@ import {
   readStageGeometryInPage,
   stagePointToViewport,
 } from './check-click-target.mjs'
+import { createImageThreeModuleResolver } from './check-javascript-modules.mjs'
 import { createExecutionObservationCodec } from './execution-observation.generated.mjs'
 
 const root = process.cwd()
@@ -42,6 +43,7 @@ const types = {
 }
 
 const resources = new Map()
+let officialModules, officialModuleFailure
 if (mode === 'classic') {
   resources.set('/index.html', {
     bytes: await fs.readFile(path.join(root, 'game.html')),
@@ -107,6 +109,7 @@ try {
       }
     }),
   )
+  if (officialModuleFailure) throw officialModuleFailure
   observations.push(...results)
   await fs.writeFile(path.join(root, 'check-result.json'), JSON.stringify({ observations }))
 } catch (error) {
@@ -131,6 +134,29 @@ async function runObjective(objective, index) {
         url.origin === origin && ['GET', 'HEAD'].includes(route.request().method())
           ? resources.get(url.pathname === '/' ? '/index.html' : url.pathname)
           : undefined
+      if (
+        !file &&
+        mode === 'classic' &&
+        url.origin === 'https://esm.sh' &&
+        url.pathname.startsWith('/three@')
+      ) {
+        try {
+          officialModules ??= createImageThreeModuleResolver()
+          const module = await (await officialModules)(url)
+          if (module?.bytes) {
+            await route.fulfill({
+              status: 200,
+              body: module.bytes,
+              headers: { 'Content-Type': module.type, 'Cache-Control': 'no-store' },
+            })
+            return
+          }
+        } catch {
+          officialModuleFailure = new Error(
+            'Os módulos oficiais 3D não puderam ser carregados no executor.',
+          )
+        }
+      }
       if (!file) {
         await route.abort('blockedbyclient')
         return
@@ -431,7 +457,14 @@ function readTargetInPage({ scope, target, maxChars }, codec) {
   }
   const [first, ...rest] = target.path.split('.')
   const reader = globalThis[scope]
-  const entry = reader && typeof reader.get === 'function' ? reader.get(first) : null
+  const entry =
+    target.kind === 'moduleValue'
+      ? reader?.modules?.[target.module] && Object.hasOwn(reader.modules[target.module], first)
+        ? { v: reader.modules[target.module][first] }
+        : null
+      : reader && typeof reader.get === 'function'
+        ? reader.get(first)
+        : null
   if (!entry) return { found: false }
   let current = entry.v
   for (const key of rest) {

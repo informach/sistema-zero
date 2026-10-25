@@ -140,6 +140,7 @@ export async function prepareOperationalPromotion(options: {
         account_id: canonical.input.target.accountId,
         main: 'index.ts',
         compatibility_date: '2026-10-20',
+        compatibility_flags: ['nodejs_compat'],
         workers_dev: true,
         preview_urls: false,
         routes: [],

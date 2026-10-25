@@ -8,6 +8,7 @@ import {
 import { useMoldaToolAccess } from '../../toolAccess'
 import { Button } from '../../ui/Button'
 import { ArrowDownToLine, CircleDot, MousePointer2 } from '../../ui/icons'
+import { SceneHelpButton } from './SceneHelpButton'
 import { ScenePieceCoordinates } from './ScenePieceCoordinates'
 import type { useSceneWorkshop } from './useSceneWorkshop'
 
@@ -28,11 +29,14 @@ export function ScenePivotChoices({ workshop }: { workshop: Workshop }) {
   }
   return (
     <section className="mld-pivot-controls space-y-3" aria-label="Onde a peça gira">
-      <div className="space-y-1">
+      <div className="flex items-center justify-between gap-2">
         <h3 className="text-sm font-bold">Onde a peça gira</h3>
-        <p className="text-xs leading-relaxed text-mld-muted">
-          Uma roda gira pelo meio. Uma porta gira pelo lado.
-        </p>
+        <SceneHelpButton title="Como escolher o ponto de giro">
+          <p>Uma roda gira pelo meio. Uma porta gira pelo lado.</p>
+          <p>Arraste as alças ou escolha um ponto na peça para mudar onde ela gira.</p>
+          <p>Se o eixo estiver alinhado a uma face, os próximos giros e poses usam essa direção.</p>
+          <p>As poses já gravadas continuam iguais.</p>
+        </SceneHelpButton>
       </div>
       <div className="grid grid-cols-2 gap-2">
         <button
@@ -88,9 +92,6 @@ export function ScenePivotChoices({ workshop }: { workshop: Workshop }) {
           </button>
         </div>
       )}
-      {workshop.mode === 'animation' && (
-        <p className="text-xs text-mld-muted">As poses já gravadas continuam iguais.</p>
-      )}
       {can('model.pivot') && (
         <details className="mld-disclosure">
           <summary>Ajuste fino</summary>
@@ -123,11 +124,13 @@ export function SceneDivisionChoices({ workshop }: { workshop: Workshop }) {
   const id = workshop.components.selection?.nodeId
   return (
     <div className="space-y-2 rounded-xl bg-mld-bg p-2">
-      <h4 className="font-bold text-sm">Criar divisão</h4>
-      <p className="text-xs text-mld-muted">
-        Escolha uma vista e marque dois pontos. A divisão mantém os dois lados da peça, sem criar
-        tampas.
-      </p>
+      <div className="flex items-center justify-between gap-2">
+        <h4 className="font-bold text-sm">Criar divisão</h4>
+        <SceneHelpButton title="Como criar uma divisão">
+          <p>Escolha uma vista e marque dois pontos.</p>
+          <p>A divisão mantém os dois lados da peça, sem criar tampas.</p>
+        </SceneHelpButton>
+      </div>
       <div className="flex flex-wrap gap-1">
         {(['front', 'left', 'top'] as const).map((view, i) => (
           <Button

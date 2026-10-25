@@ -1,5 +1,5 @@
 import { loadExtensionBootstrapScripts, uniqueExtensionIds } from '../../extensions/runtime'
-import type { ExtensionPermission } from '../../extensions/types'
+import type { ExtensionBootstrapContext, ExtensionPermission } from '../../extensions/types'
 import { findExtension } from '../../official-extensions'
 import { type GameUiFontId, loadGameUiFont } from '../../official-extensions/gameUiFont'
 import { type BuildPreviewDocInput, buildPreviewDoc } from '../../preview/bootstrap'
@@ -27,14 +27,19 @@ export interface JavaScriptClassicResources {
   gameUiFont?: BuildPreviewDocInput['gameUiFont']
 }
 
-/** Public player/capture preparation. The editor keeps its existing independent load gates. */
+/**
+ * Public player/capture preparation. The editor keeps its existing independent load gates.
+ * `bootstrapContext` (from `extensionBootstrapContext`) picks each runtime's variant; without
+ * it every runtime loads in full.
+ */
 export async function loadJavaScriptClassicResources(
   extensionIds: readonly string[],
   fontId: GameUiFontId,
+  bootstrapContext?: ExtensionBootstrapContext,
 ): Promise<JavaScriptClassicResources> {
   const context = resolveJavaScriptClassicExtensions(extensionIds)
   const [extensionScripts, gameUiFont] = await Promise.all([
-    loadExtensionBootstrapScripts(context.extensions),
+    loadExtensionBootstrapScripts(context.extensions, bootstrapContext),
     context.extensions.length ? loadGameUiFont(fontId) : undefined,
   ])
   return {

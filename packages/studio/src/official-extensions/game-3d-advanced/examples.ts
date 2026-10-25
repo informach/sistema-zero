@@ -1,4 +1,6 @@
 import type { ExtensionExample } from '#extensions'
+import { HEROI_DO_MOLDA_GLB } from '../game-3d/exampleAssets'
+import { CEU_ESTRELADO_HDR, MUSICA_DA_NOITE_WAV, SOM_DA_FOGUEIRA_WAV } from './exampleAssets'
 
 // Os campos `ir` deste arquivo são gerados por scripts/gen-game-3d-examples.ts.
 // Edite os fontes de referência e rode `bun run gen:game-3d-examples`.
@@ -405,52 +407,25 @@ export const defesaDaTorreExample: ExtensionExample = {
           vignette: true,
         },
         {
-          type: 'g3k:setScreenText',
-          screen: 'menu',
-          title: {
-            type: 'str',
-            value: 'Defesa da Torre Profissional',
-          },
-          text: {
-            type: 'str',
-            value: 'Os invasores vêm da beirada do mundo. Suas torres têm cérebro próprio!',
-          },
-          button: {
-            type: 'str',
-            value: 'Defender',
-          },
+          type: 'g3k:screenText',
+          screen: 'inicio',
+          title: 'Defesa da Torre Profissional',
+          text: 'Os invasores vêm da beirada do mundo. Suas torres têm cérebro próprio!',
+          button: 'Defender',
         },
         {
-          type: 'g3k:setScreenText',
+          type: 'g3k:screenText',
           screen: 'vitoria',
-          title: {
-            type: 'str',
-            value: 'O cristal sobreviveu!',
-          },
-          text: {
-            type: 'str',
-            value: 'As torres agradecem.',
-          },
-          button: {
-            type: 'str',
-            value: 'Defender de novo',
-          },
+          title: 'O cristal sobreviveu!',
+          text: 'As torres agradecem.',
+          button: 'Defender de novo',
         },
         {
-          type: 'g3k:setScreenText',
+          type: 'g3k:screenText',
           screen: 'fim',
-          title: {
-            type: 'str',
-            value: 'O cristal caiu!',
-          },
-          text: {
-            type: 'str',
-            value: 'Os invasores passaram. Proteja o cristal na próxima!',
-          },
-          button: {
-            type: 'str',
-            value: 'Tentar de novo',
-          },
+          title: 'O cristal caiu!',
+          text: 'Os invasores passaram. Proteja o cristal na próxima!',
+          button: 'Tentar de novo',
         },
         {
           type: 'var',
@@ -653,7 +628,8 @@ export const defesaDaTorreExample: ExtensionExample = {
               fx: 'gameover',
             },
             {
-              type: 'g3k:endGame',
+              type: 'g3k:gameOver',
+              result: 'perdeu',
             },
           ],
         },
@@ -882,8 +858,8 @@ export const defesaDaTorreExample: ExtensionExample = {
               },
             },
             {
-              type: 'g3k:hudText',
-              slot: 'top-left',
+              type: 'g3k:cornerText',
+              corner: 'top-left',
               text: {
                 type: 'binop',
                 op: '+',
@@ -898,8 +874,8 @@ export const defesaDaTorreExample: ExtensionExample = {
               },
             },
             {
-              type: 'g3k:hudText',
-              slot: 'top-right',
+              type: 'g3k:cornerText',
+              corner: 'top-right',
               text: {
                 type: 'binop',
                 op: '+',
@@ -1208,36 +1184,25 @@ export const saltoNasNuvensExample: ExtensionExample = {
           vignette: true,
         },
         {
-          type: 'g3k:setScreenText',
-          screen: 'menu',
-          title: {
-            type: 'str',
-            value: 'Salto nas Nuvens',
-          },
-          text: {
-            type: 'str',
-            value: 'Pule de plataforma em plataforma e junte as moedas. Cuidado para não cair!',
-          },
-          button: {
-            type: 'str',
-            value: 'Pular',
-          },
+          type: 'g3k:screenText',
+          screen: 'inicio',
+          title: 'Salto nas Nuvens',
+          text: 'Pule de nuvem em nuvem e junte as moedas. Cuidado: quem cai lá embaixo perde!',
+          button: 'Pular',
         },
         {
-          type: 'g3k:setScreenText',
+          type: 'g3k:screenText',
           screen: 'vitoria',
-          title: {
-            type: 'str',
-            value: 'Você juntou tudo!',
-          },
-          text: {
-            type: 'str',
-            value: 'Que pulos!',
-          },
-          button: {
-            type: 'str',
-            value: 'Jogar de novo',
-          },
+          title: 'Você juntou tudo!',
+          text: 'Que pulos!',
+          button: 'Jogar de novo',
+        },
+        {
+          type: 'g3k:screenText',
+          screen: 'fim',
+          title: 'Caiu das nuvens!',
+          text: 'Pule com calma de uma nuvem para a outra.',
+          button: 'Tentar de novo',
         },
         {
           type: 'g3k:makeSolid',
@@ -1301,7 +1266,7 @@ export const saltoNasNuvensExample: ExtensionExample = {
               },
               y: {
                 type: 'num',
-                value: 0,
+                value: 3,
               },
               z: {
                 type: 'num',
@@ -1317,7 +1282,7 @@ export const saltoNasNuvensExample: ExtensionExample = {
               },
               y: {
                 type: 'num',
-                value: 1.5,
+                value: 4.5,
               },
               z: {
                 type: 'num',
@@ -1333,7 +1298,7 @@ export const saltoNasNuvensExample: ExtensionExample = {
               },
               y: {
                 type: 'num',
-                value: 3,
+                value: 6,
               },
               z: {
                 type: 'num',
@@ -1349,7 +1314,7 @@ export const saltoNasNuvensExample: ExtensionExample = {
               },
               y: {
                 type: 'num',
-                value: 4.5,
+                value: 7.5,
               },
               z: {
                 type: 'num',
@@ -1365,7 +1330,7 @@ export const saltoNasNuvensExample: ExtensionExample = {
               },
               y: {
                 type: 'num',
-                value: 3,
+                value: 6,
               },
               z: {
                 type: 'num',
@@ -1381,7 +1346,7 @@ export const saltoNasNuvensExample: ExtensionExample = {
               },
               y: {
                 type: 'num',
-                value: 4.5,
+                value: 7.5,
               },
               z: {
                 type: 'num',
@@ -1397,7 +1362,7 @@ export const saltoNasNuvensExample: ExtensionExample = {
               },
               y: {
                 type: 'num',
-                value: 6,
+                value: 9,
               },
               z: {
                 type: 'num',
@@ -1414,11 +1379,19 @@ export const saltoNasNuvensExample: ExtensionExample = {
               },
               y: {
                 type: 'num',
-                value: 3,
+                value: 6,
               },
               z: {
                 type: 'num',
                 value: 0,
+              },
+            },
+            {
+              type: 'g3k:fall',
+              charVar: 'heroi',
+              g: {
+                type: 'num',
+                value: 16,
               },
             },
             {
@@ -1460,6 +1433,53 @@ export const saltoNasNuvensExample: ExtensionExample = {
                 type: 'num',
                 value: 11,
               },
+            },
+            {
+              type: 'if',
+              cond: {
+                type: 'logical',
+                op: '&&',
+                left: {
+                  type: 'binop',
+                  op: '<',
+                  left: {
+                    type: 'g3k:velocityOf',
+                    charVar: 'ela',
+                    axis: 'y',
+                  },
+                  right: {
+                    type: 'num',
+                    value: -8,
+                  },
+                },
+                right: {
+                  type: 'binop',
+                  op: '<',
+                  left: {
+                    type: 'g3k:posOf',
+                    axis: 'y',
+                    charVar: 'ela',
+                  },
+                  right: {
+                    type: 'num',
+                    value: 3,
+                  },
+                },
+              },
+              then: [
+                {
+                  type: 'g3k:say',
+                  charVar: 'ela',
+                  text: {
+                    type: 'str',
+                    value: 'Aaaah!',
+                  },
+                  seconds: {
+                    type: 'num',
+                    value: 1,
+                  },
+                },
+              ],
             },
             {
               type: 'g3k:forEachNear',
@@ -1522,22 +1542,30 @@ export const saltoNasNuvensExample: ExtensionExample = {
             {
               type: 'if',
               cond: {
-                type: 'binop',
-                op: '<',
+                type: 'logical',
+                op: '&&',
                 left: {
-                  type: 'g3k:posOf',
-                  axis: 'y',
+                  type: 'g3k:onGround',
                   charVar: 'ela',
                 },
                 right: {
-                  type: 'num',
-                  value: -12,
+                  type: 'binop',
+                  op: '<',
+                  left: {
+                    type: 'g3k:posOf',
+                    axis: 'y',
+                    charVar: 'ela',
+                  },
+                  right: {
+                    type: 'num',
+                    value: 1,
+                  },
                 },
               },
               then: [
                 {
-                  type: 'g3k:setState',
-                  name: 'menu',
+                  type: 'g3k:gameOver',
+                  result: 'perdeu',
                 },
               ],
             },
@@ -1573,8 +1601,8 @@ export const saltoNasNuvensExample: ExtensionExample = {
           dtName: 'dt',
           body: [
             {
-              type: 'g3k:hudText',
-              slot: 'top-left',
+              type: 'g3k:cornerText',
+              corner: 'top-left',
               text: {
                 type: 'binop',
                 op: '+',
@@ -1589,8 +1617,8 @@ export const saltoNasNuvensExample: ExtensionExample = {
               },
             },
             {
-              type: 'g3k:hudText',
-              slot: 'top-right',
+              type: 'g3k:cornerText',
+              corner: 'top-right',
               text: {
                 type: 'binop',
                 op: '+',
@@ -2032,7 +2060,7 @@ export const parkourDoVulcaoExample: ExtensionExample = {
             value: 60,
           },
           sky: '#0b1026',
-          ground: '#1e293b',
+          ground: '#9a3412',
         },
         {
           type: 'g3k:setEffects',
@@ -2045,37 +2073,25 @@ export const parkourDoVulcaoExample: ExtensionExample = {
           vignette: true,
         },
         {
-          type: 'g3k:setScreenText',
-          screen: 'menu',
-          title: {
-            type: 'str',
-            value: 'Parkour do Vulcão',
-          },
-          text: {
-            type: 'str',
-            value:
-              'Suba a rampa, pegue carona no elevador e junte as 3 gemas. O trampolim te joga longe!',
-          },
-          button: {
-            type: 'str',
-            value: 'Escalar',
-          },
+          type: 'g3k:screenText',
+          screen: 'inicio',
+          title: 'Parkour do Vulcão',
+          text: 'Suba a rampa, pegue carona no elevador e junte as 3 gemas. O trampolim te joga longe! O chão é lava: não pise nele.',
+          button: 'Escalar',
         },
         {
-          type: 'g3k:setScreenText',
+          type: 'g3k:screenText',
           screen: 'vitoria',
-          title: {
-            type: 'str',
-            value: 'Você pegou todas!',
-          },
-          text: {
-            type: 'str',
-            value: 'Que parkour!',
-          },
-          button: {
-            type: 'str',
-            value: 'Escalar de novo',
-          },
+          title: 'Você pegou todas!',
+          text: 'Que parkour!',
+          button: 'Escalar de novo',
+        },
+        {
+          type: 'g3k:screenText',
+          screen: 'fim',
+          title: 'Caiu na lava!',
+          text: 'Pule de pedra em pedra sem pisar no chão.',
+          button: 'Tentar de novo',
         },
         {
           type: 'g3k:setCollider',
@@ -2535,22 +2551,30 @@ export const parkourDoVulcaoExample: ExtensionExample = {
             {
               type: 'if',
               cond: {
-                type: 'binop',
-                op: '<',
+                type: 'logical',
+                op: '&&',
                 left: {
-                  type: 'g3k:posOf',
-                  axis: 'y',
+                  type: 'g3k:onGround',
                   charVar: 'ela',
                 },
                 right: {
-                  type: 'num',
-                  value: -12,
+                  type: 'binop',
+                  op: '<',
+                  left: {
+                    type: 'g3k:posOf',
+                    axis: 'y',
+                    charVar: 'ela',
+                  },
+                  right: {
+                    type: 'num',
+                    value: 0.2,
+                  },
                 },
               },
               then: [
                 {
-                  type: 'g3k:setState',
-                  name: 'menu',
+                  type: 'g3k:gameOver',
+                  result: 'perdeu',
                 },
               ],
             },
@@ -2561,8 +2585,8 @@ export const parkourDoVulcaoExample: ExtensionExample = {
           dtName: 'dt',
           body: [
             {
-              type: 'g3k:hudText',
-              slot: 'top-left',
+              type: 'g3k:cornerText',
+              corner: 'top-left',
               text: {
                 type: 'binop',
                 op: '+',
@@ -2585,8 +2609,8 @@ export const parkourDoVulcaoExample: ExtensionExample = {
               },
             },
             {
-              type: 'g3k:hudText',
-              slot: 'top-right',
+              type: 'g3k:cornerText',
+              corner: 'top-right',
               text: {
                 type: 'str',
                 value: 'WASD anda, espaço pula',
@@ -2945,37 +2969,18 @@ export const quadraMalucaExample: ExtensionExample = {
           vignette: true,
         },
         {
-          type: 'g3k:setScreenText',
-          screen: 'menu',
-          title: {
-            type: 'str',
-            value: 'Quadra Maluca',
-          },
-          text: {
-            type: 'str',
-            value:
-              'Arraste o mouse para girar a câmera: o WASD anda SEMPRE para onde você está olhando. Encoste nas 5 bolas quicantes, mas cuidado: o gelo escorrega!',
-          },
-          button: {
-            type: 'str',
-            value: 'Jogar',
-          },
+          type: 'g3k:screenText',
+          screen: 'inicio',
+          title: 'Quadra Maluca',
+          text: 'Arraste o mouse para girar a câmera: o WASD anda SEMPRE para onde você está olhando. Encoste nas 5 bolas quicantes, mas cuidado: o gelo escorrega!',
+          button: 'Jogar',
         },
         {
-          type: 'g3k:setScreenText',
+          type: 'g3k:screenText',
           screen: 'vitoria',
-          title: {
-            type: 'str',
-            value: 'Pegou todas!',
-          },
-          text: {
-            type: 'str',
-            value: 'Você domou as bolas malucas.',
-          },
-          button: {
-            type: 'str',
-            value: 'Jogar de novo',
-          },
+          title: 'Pegou todas!',
+          text: 'Você domou as bolas malucas.',
+          button: 'Jogar de novo',
         },
         {
           type: 'g3k:setPhysics',
@@ -3286,12 +3291,12 @@ export const quadraMalucaExample: ExtensionExample = {
                   fx: 'coin',
                 },
                 {
-                  type: 'g3k:cameraShake',
+                  type: 'g3k:shakeCamera',
                   strength: {
                     type: 'num',
                     value: 0.3,
                   },
-                  seconds: {
+                  secs: {
                     type: 'num',
                     value: 0.25,
                   },
@@ -3348,8 +3353,8 @@ export const quadraMalucaExample: ExtensionExample = {
           dtName: 'dt',
           body: [
             {
-              type: 'g3k:hudText',
-              slot: 'top-left',
+              type: 'g3k:cornerText',
+              corner: 'top-left',
               text: {
                 type: 'binop',
                 op: '+',
@@ -3372,8 +3377,8 @@ export const quadraMalucaExample: ExtensionExample = {
               },
             },
             {
-              type: 'g3k:hudText',
-              slot: 'top-right',
+              type: 'g3k:cornerText',
+              corner: 'top-right',
               text: {
                 type: 'str',
                 value: 'Arraste o mouse · ande com WASD',
@@ -3442,7 +3447,7 @@ export const guardiaoDoPortalExample: ExtensionExample = {
   name: 'Guardião do Portal',
   experience: 'game',
   description:
-    'Segure os invasores por 30 segundos! O guardião fala, a câmera treme no impacto, as pedras quicam. E a semente faz a partida se repetir igualzinha.',
+    'Segure os invasores por 30 segundos! O guardião fala, a câmera treme no impacto, as pedras quicam. E o sorteio repetível faz a partida se repetir igualzinha.',
   ir: {
     version: 2,
     html: [],
@@ -3821,53 +3826,25 @@ export const guardiaoDoPortalExample: ExtensionExample = {
           vignette: true,
         },
         {
-          type: 'g3k:setScreenText',
-          screen: 'menu',
-          title: {
-            type: 'str',
-            value: 'Guardião do Portal',
-          },
-          text: {
-            type: 'str',
-            value:
-              'Segure os invasores por 30 segundos! Fale com eles, tremam as pedras. E o acaso é sempre o mesmo, por causa da semente.',
-          },
-          button: {
-            type: 'str',
-            value: 'Guardar',
-          },
+          type: 'g3k:screenText',
+          screen: 'inicio',
+          title: 'Guardião do Portal',
+          text: 'Segure os invasores por 30 segundos! Fale com eles, tremam as pedras. E o sorteio é repetível: toda partida começa igual.',
+          button: 'Guardar',
         },
         {
-          type: 'g3k:setScreenText',
+          type: 'g3k:screenText',
           screen: 'vitoria',
-          title: {
-            type: 'str',
-            value: 'O portal resistiu!',
-          },
-          text: {
-            type: 'str',
-            value: 'Você segurou até o fim.',
-          },
-          button: {
-            type: 'str',
-            value: 'Guardar de novo',
-          },
+          title: 'O portal resistiu!',
+          text: 'Você segurou até o fim.',
+          button: 'Guardar de novo',
         },
         {
-          type: 'g3k:setScreenText',
+          type: 'g3k:screenText',
           screen: 'fim',
-          title: {
-            type: 'str',
-            value: 'O portal caiu...',
-          },
-          text: {
-            type: 'str',
-            value: 'Os invasores passaram.',
-          },
-          button: {
-            type: 'str',
-            value: 'Tentar de novo',
-          },
+          title: 'O portal caiu...',
+          text: 'Os invasores passaram.',
+          button: 'Tentar de novo',
         },
         {
           type: 'g3k:setPhysics',
@@ -3933,8 +3910,9 @@ export const guardiaoDoPortalExample: ExtensionExample = {
               },
             },
             {
-              type: 'g3k:startTimer',
-              seconds: {
+              type: 'g3k:timer',
+              op: 'comecar',
+              secs: {
                 type: 'num',
                 value: 30,
               },
@@ -4000,12 +3978,13 @@ export const guardiaoDoPortalExample: ExtensionExample = {
               type: 'g3k:spawn',
               mold: 'pedra',
               x: {
-                type: 'g3k:randomBetween',
-                from: {
+                type: 'g3k:random',
+                op: 'entre',
+                a: {
                   type: 'num',
                   value: -12,
                 },
-                to: {
+                b: {
                   type: 'num',
                   value: 12,
                 },
@@ -4015,12 +3994,13 @@ export const guardiaoDoPortalExample: ExtensionExample = {
                 value: 10,
               },
               z: {
-                type: 'g3k:randomBetween',
-                from: {
+                type: 'g3k:random',
+                op: 'entre',
+                a: {
                   type: 'num',
                   value: -12,
                 },
-                to: {
+                b: {
                   type: 'num',
                   value: 12,
                 },
@@ -4030,12 +4010,13 @@ export const guardiaoDoPortalExample: ExtensionExample = {
               type: 'g3k:spawn',
               mold: 'pedra',
               x: {
-                type: 'g3k:randomBetween',
-                from: {
+                type: 'g3k:random',
+                op: 'entre',
+                a: {
                   type: 'num',
                   value: -12,
                 },
-                to: {
+                b: {
                   type: 'num',
                   value: 12,
                 },
@@ -4045,12 +4026,13 @@ export const guardiaoDoPortalExample: ExtensionExample = {
                 value: 14,
               },
               z: {
-                type: 'g3k:randomBetween',
-                from: {
+                type: 'g3k:random',
+                op: 'entre',
+                a: {
                   type: 'num',
                   value: -12,
                 },
-                to: {
+                b: {
                   type: 'num',
                   value: 12,
                 },
@@ -4068,8 +4050,17 @@ export const guardiaoDoPortalExample: ExtensionExample = {
           ],
         },
         {
-          type: 'g3k:onTimerEnd',
+          type: 'g3k:onGame',
+          event: 'tempo-acabou',
           body: [
+            {
+              type: 'g3k:stopSpawner',
+              mold: 'invasor',
+            },
+            {
+              type: 'g3k:recycleAll',
+              mold: 'invasor',
+            },
             {
               type: 'g3k:setState',
               name: 'vitoria',
@@ -4091,7 +4082,8 @@ export const guardiaoDoPortalExample: ExtensionExample = {
               fx: 'gameover',
             },
             {
-              type: 'g3k:endGame',
+              type: 'g3k:gameOver',
+              result: 'perdeu',
             },
           ],
         },
@@ -4102,8 +4094,8 @@ export const guardiaoDoPortalExample: ExtensionExample = {
           dtName: 'dt',
           body: [
             {
-              type: 'g3k:hudText',
-              slot: 'top-left',
+              type: 'g3k:cornerText',
+              corner: 'top-left',
               text: {
                 type: 'binop',
                 op: '+',
@@ -4118,7 +4110,8 @@ export const guardiaoDoPortalExample: ExtensionExample = {
                     type: 'mathUnary',
                     fn: 'ceil',
                     arg: {
-                      type: 'g3k:timeLeft',
+                      type: 'g3k:gameValue',
+                      what: 'tempo',
                     },
                   },
                 },
@@ -4129,8 +4122,8 @@ export const guardiaoDoPortalExample: ExtensionExample = {
               },
             },
             {
-              type: 'g3k:hudText',
-              slot: 'top-right',
+              type: 'g3k:cornerText',
+              corner: 'top-right',
               text: {
                 type: 'binop',
                 op: '+',
@@ -4257,12 +4250,12 @@ export const guardiaoDoPortalExample: ExtensionExample = {
                   fx: 'hit',
                 },
                 {
-                  type: 'g3k:cameraShake',
+                  type: 'g3k:shakeCamera',
                   strength: {
                     type: 'num',
                     value: 0.25,
                   },
-                  seconds: {
+                  secs: {
                     type: 'num',
                     value: 0.2,
                   },
@@ -4270,8 +4263,9 @@ export const guardiaoDoPortalExample: ExtensionExample = {
                 {
                   type: 'if',
                   cond: {
-                    type: 'g3k:randomChance',
-                    percent: {
+                    type: 'g3k:random',
+                    op: 'chance',
+                    a: {
                       type: 'num',
                       value: 30,
                     },
@@ -4616,53 +4610,25 @@ export const tiroAoAlvoExample: ExtensionExample = {
           vignette: true,
         },
         {
-          type: 'g3k:setScreenText',
-          screen: 'menu',
-          title: {
-            type: 'str',
-            value: 'Tiro ao Alvo',
-          },
-          text: {
-            type: 'str',
-            value:
-              'Clique nos alvos antes que eles fujam. O dourado vale 3! Faça 12 pontos em 25 segundos. Aperte H para a dica.',
-          },
-          button: {
-            type: 'str',
-            value: 'Valendo!',
-          },
+          type: 'g3k:screenText',
+          screen: 'inicio',
+          title: 'Tiro ao Alvo',
+          text: 'Clique nos alvos antes que eles fujam. O dourado vale 3! Faça 12 pontos em 25 segundos. Aperte E para a dica.',
+          button: 'Valendo!',
         },
         {
-          type: 'g3k:setScreenText',
+          type: 'g3k:screenText',
           screen: 'vitoria',
-          title: {
-            type: 'str',
-            value: 'Olho de águia!',
-          },
-          text: {
-            type: 'str',
-            value: 'Pontaria perfeita.',
-          },
-          button: {
-            type: 'str',
-            value: 'De novo',
-          },
+          title: 'Olho de águia!',
+          text: 'Pontaria perfeita.',
+          button: 'De novo',
         },
         {
-          type: 'g3k:setScreenText',
+          type: 'g3k:screenText',
           screen: 'fim',
-          title: {
-            type: 'str',
-            value: 'O tempo acabou...',
-          },
-          text: {
-            type: 'str',
-            value: 'Foi por pouco!',
-          },
-          button: {
-            type: 'str',
-            value: 'Tentar de novo',
-          },
+          title: 'O tempo acabou...',
+          text: 'Foi por pouco!',
+          button: 'Tentar de novo',
         },
         {
           type: 'g3k:createScreen',
@@ -4674,7 +4640,7 @@ export const tiroAoAlvoExample: ExtensionExample = {
           text: {
             type: 'str',
             value:
-              'O dourado foge mais rápido! Aperte C para a lente de mira e V para a lente normal.',
+              'O dourado foge mais rápido! Aperte a seta para cima para a lente de mira e a seta para baixo para a lente normal.',
           },
         },
         {
@@ -4686,13 +4652,34 @@ export const tiroAoAlvoExample: ExtensionExample = {
           },
           body: [
             {
-              type: 'g3k:hideScreens',
+              type: 'g3k:setState',
+              name: 'jogando',
             },
           ],
         },
         {
+          type: 'g3k:createScreen',
+          name: 'pronto',
+          title: {
+            type: 'str',
+            value: 'Prepare a mira!',
+          },
+          text: {
+            type: 'str',
+            value: 'Os alvos vão aparecer pelo campo.',
+          },
+        },
+        {
           type: 'var',
           name: 'pontos',
+          value: {
+            type: 'num',
+            value: 0,
+          },
+        },
+        {
+          type: 'var',
+          name: 'preparo',
           value: {
             type: 'num',
             value: 0,
@@ -4757,8 +4744,9 @@ export const tiroAoAlvoExample: ExtensionExample = {
               },
             },
             {
-              type: 'g3k:startTimer',
-              seconds: {
+              type: 'g3k:timer',
+              op: 'comecar',
+              secs: {
                 type: 'num',
                 value: 25,
               },
@@ -4780,6 +4768,18 @@ export const tiroAoAlvoExample: ExtensionExample = {
                 value: 5,
               },
               where: 'anywhere',
+            },
+            {
+              type: 'assign',
+              name: 'preparo',
+              value: {
+                type: 'num',
+                value: 1.5,
+              },
+            },
+            {
+              type: 'g3k:showScreen',
+              name: 'pronto',
             },
           ],
         },
@@ -4850,12 +4850,12 @@ export const tiroAoAlvoExample: ExtensionExample = {
               fx: 'coin',
             },
             {
-              type: 'g3k:cameraShake',
+              type: 'g3k:shakeCamera',
               strength: {
                 type: 'num',
                 value: 0.15,
               },
-              seconds: {
+              secs: {
                 type: 'num',
                 value: 0.15,
               },
@@ -4863,10 +4863,12 @@ export const tiroAoAlvoExample: ExtensionExample = {
           ],
         },
         {
-          type: 'g3k:onTimerEnd',
+          type: 'g3k:onGame',
+          event: 'tempo-acabou',
           body: [
             {
-              type: 'g3k:endGame',
+              type: 'g3k:gameOver',
+              result: 'perdeu',
             },
           ],
         },
@@ -4877,8 +4879,8 @@ export const tiroAoAlvoExample: ExtensionExample = {
           dtName: 'dt',
           body: [
             {
-              type: 'g3k:hudText',
-              slot: 'top-left',
+              type: 'g3k:cornerText',
+              corner: 'top-left',
               text: {
                 type: 'binop',
                 op: '+',
@@ -4901,8 +4903,8 @@ export const tiroAoAlvoExample: ExtensionExample = {
               },
             },
             {
-              type: 'g3k:hudText',
-              slot: 'top-right',
+              type: 'g3k:cornerText',
+              corner: 'top-right',
               text: {
                 type: 'binop',
                 op: '+',
@@ -4917,7 +4919,8 @@ export const tiroAoAlvoExample: ExtensionExample = {
                     type: 'mathUnary',
                     fn: 'ceil',
                     arg: {
-                      type: 'g3k:timeLeft',
+                      type: 'g3k:gameValue',
+                      what: 'tempo',
                     },
                   },
                 },
@@ -4930,10 +4933,67 @@ export const tiroAoAlvoExample: ExtensionExample = {
             {
               type: 'if',
               cond: {
-                type: 'g3k:keyPressed',
-                key: 'h',
+                type: 'binop',
+                op: '>',
+                left: {
+                  type: 'var',
+                  name: 'preparo',
+                },
+                right: {
+                  type: 'num',
+                  value: 0,
+                },
               },
               then: [
+                {
+                  type: 'assign',
+                  name: 'preparo',
+                  value: {
+                    type: 'binop',
+                    op: '-',
+                    left: {
+                      type: 'var',
+                      name: 'preparo',
+                    },
+                    right: {
+                      type: 'var',
+                      name: 'dt',
+                    },
+                  },
+                },
+                {
+                  type: 'if',
+                  cond: {
+                    type: 'binop',
+                    op: '<=',
+                    left: {
+                      type: 'var',
+                      name: 'preparo',
+                    },
+                    right: {
+                      type: 'num',
+                      value: 0,
+                    },
+                  },
+                  then: [
+                    {
+                      type: 'g3k:hideScreens',
+                    },
+                  ],
+                },
+              ],
+            },
+            {
+              type: 'if',
+              cond: {
+                type: 'g3k:keyPressed',
+                key: 'KeyE',
+              },
+              then: [
+                {
+                  type: 'g3k:setState',
+                  name: 'pausado',
+                },
                 {
                   type: 'g3k:showScreen',
                   name: 'dica',
@@ -4944,7 +5004,7 @@ export const tiroAoAlvoExample: ExtensionExample = {
               type: 'if',
               cond: {
                 type: 'g3k:keyPressed',
-                key: 'c',
+                key: 'ArrowUp',
               },
               then: [
                 {
@@ -4960,7 +5020,7 @@ export const tiroAoAlvoExample: ExtensionExample = {
               type: 'if',
               cond: {
                 type: 'g3k:keyPressed',
-                key: 'v',
+                key: 'ArrowDown',
               },
               then: [
                 {
@@ -5510,53 +5570,25 @@ export const chefaoDasSombrasExample: ExtensionExample = {
           vignette: true,
         },
         {
-          type: 'g3k:setScreenText',
-          screen: 'menu',
-          title: {
-            type: 'str',
-            value: 'O Chefão das Sombras',
-          },
-          text: {
-            type: 'str',
-            value:
-              'Clique no chefão para atacar e desvie do anel de tiros com WASD. Ele fica mais bravo (e se cura) a cada fase!',
-          },
-          button: {
-            type: 'str',
-            value: 'Enfrentar',
-          },
+          type: 'g3k:screenText',
+          screen: 'inicio',
+          title: 'O Chefão das Sombras',
+          text: 'Clique no chefão para atacar e desvie do anel de tiros com WASD. Ele fica mais bravo (e se cura) a cada fase!',
+          button: 'Enfrentar',
         },
         {
-          type: 'g3k:setScreenText',
+          type: 'g3k:screenText',
           screen: 'vitoria',
-          title: {
-            type: 'str',
-            value: 'Sombra derrotada!',
-          },
-          text: {
-            type: 'str',
-            value: 'Você venceu as três fases do chefão.',
-          },
-          button: {
-            type: 'str',
-            value: 'Enfrentar de novo',
-          },
+          title: 'Sombra derrotada!',
+          text: 'Você venceu as três fases do chefão.',
+          button: 'Enfrentar de novo',
         },
         {
-          type: 'g3k:setScreenText',
+          type: 'g3k:screenText',
           screen: 'fim',
-          title: {
-            type: 'str',
-            value: 'O herói caiu...',
-          },
-          text: {
-            type: 'str',
-            value: 'O anel de tiros te pegou. Desvie mais na próxima!',
-          },
-          button: {
-            type: 'str',
-            value: 'Tentar de novo',
-          },
+          title: 'O herói caiu...',
+          text: 'O anel de tiros te pegou. Desvie mais na próxima!',
+          button: 'Tentar de novo',
         },
         {
           type: 'g3k:showHealthBar',
@@ -5711,12 +5743,12 @@ export const chefaoDasSombrasExample: ExtensionExample = {
               fx: 'laser',
             },
             {
-              type: 'g3k:cameraShake',
+              type: 'g3k:shakeCamera',
               strength: {
                 type: 'num',
                 value: 0.3,
               },
-              seconds: {
+              secs: {
                 type: 'num',
                 value: 0.2,
               },
@@ -5819,12 +5851,12 @@ export const chefaoDasSombrasExample: ExtensionExample = {
                   },
                 },
                 {
-                  type: 'g3k:cameraShake',
+                  type: 'g3k:shakeCamera',
                   strength: {
                     type: 'num',
                     value: 0.6,
                   },
-                  seconds: {
+                  secs: {
                     type: 'num',
                     value: 0.4,
                   },
@@ -5898,12 +5930,12 @@ export const chefaoDasSombrasExample: ExtensionExample = {
                       },
                     },
                     {
-                      type: 'g3k:cameraShake',
+                      type: 'g3k:shakeCamera',
                       strength: {
                         type: 'num',
                         value: 0.4,
                       },
-                      seconds: {
+                      secs: {
                         type: 'num',
                         value: 0.3,
                       },
@@ -5949,7 +5981,8 @@ export const chefaoDasSombrasExample: ExtensionExample = {
               fx: 'gameover',
             },
             {
-              type: 'g3k:endGame',
+              type: 'g3k:gameOver',
+              result: 'perdeu',
             },
           ],
         },
@@ -6061,13 +6094,20 @@ export const chefaoDasSombrasExample: ExtensionExample = {
               type: 'g3k:cullFar',
               mold: 'tiro',
               dist: {
-                type: 'num',
-                value: 28,
+                type: 'binop',
+                op: '/',
+                left: {
+                  type: 'g3k:worldSize',
+                },
+                right: {
+                  type: 'num',
+                  value: 2,
+                },
               },
             },
             {
-              type: 'g3k:hudText',
-              slot: 'top-left',
+              type: 'g3k:cornerText',
+              corner: 'top-left',
               text: {
                 type: 'binop',
                 op: '+',
@@ -6090,8 +6130,8 @@ export const chefaoDasSombrasExample: ExtensionExample = {
               },
             },
             {
-              type: 'g3k:hudText',
-              slot: 'top-right',
+              type: 'g3k:cornerText',
+              corner: 'top-right',
               text: {
                 type: 'str',
                 value: 'Clique no chefão!',
@@ -6712,37 +6752,18 @@ export const corridaInfinitaProfissionalExample: ExtensionExample = {
           vignette: true,
         },
         {
-          type: 'g3k:setScreenText',
-          screen: 'menu',
-          title: {
-            type: 'str',
-            value: 'Corrida Infinita Profissional',
-          },
-          text: {
-            type: 'str',
-            value:
-              'Troque de faixa com A e D (ou as setas) e pule com espaço. Desvie das barreiras, pegue moedas e aguente firme: a corrida acelera sem parar!',
-          },
-          button: {
-            type: 'str',
-            value: 'Correr',
-          },
+          type: 'g3k:screenText',
+          screen: 'inicio',
+          title: 'Corrida Infinita Profissional',
+          text: 'Troque de faixa com A e D (ou as setas) e pule com espaço. Desvie das barreiras, pegue moedas e aguente firme: a corrida acelera sem parar!',
+          button: 'Correr',
         },
         {
-          type: 'g3k:setScreenText',
+          type: 'g3k:screenText',
           screen: 'fim',
-          title: {
-            type: 'str',
-            value: 'Bateu!',
-          },
-          text: {
-            type: 'str',
-            value: 'A pista venceu desta vez. Desvie das barreiras e pegue mais moedas na próxima!',
-          },
-          button: {
-            type: 'str',
-            value: 'Correr de novo',
-          },
+          title: 'Bateu!',
+          text: 'A pista venceu desta vez. Desvie das barreiras e pegue mais moedas na próxima!',
+          button: 'Correr de novo',
         },
         {
           type: 'g3k:setPhysics',
@@ -7074,18 +7095,19 @@ export const corridaInfinitaProfissionalExample: ExtensionExample = {
                   fx: 'gameover',
                 },
                 {
-                  type: 'g3k:cameraShake',
+                  type: 'g3k:shakeCamera',
                   strength: {
                     type: 'num',
                     value: 0.6,
                   },
-                  seconds: {
+                  secs: {
                     type: 'num',
                     value: 0.5,
                   },
                 },
                 {
-                  type: 'g3k:endGame',
+                  type: 'g3k:gameOver',
+                  result: 'perdeu',
                 },
               ],
             },
@@ -7107,11 +7129,11 @@ export const corridaInfinitaProfissionalExample: ExtensionExample = {
                 op: '||',
                 left: {
                   type: 'g3k:keyPressed',
-                  key: 'a',
+                  key: 'KeyA',
                 },
                 right: {
                   type: 'g3k:keyPressed',
-                  key: 'esquerda',
+                  key: 'ArrowLeft',
                 },
               },
               then: [
@@ -7140,11 +7162,11 @@ export const corridaInfinitaProfissionalExample: ExtensionExample = {
                 op: '||',
                 left: {
                   type: 'g3k:keyPressed',
-                  key: 'd',
+                  key: 'KeyD',
                 },
                 right: {
                   type: 'g3k:keyPressed',
-                  key: 'direita',
+                  key: 'ArrowRight',
                 },
               },
               then: [
@@ -7248,7 +7270,7 @@ export const corridaInfinitaProfissionalExample: ExtensionExample = {
                 op: '&&',
                 left: {
                   type: 'g3k:keyPressed',
-                  key: 'espaco',
+                  key: 'Space',
                 },
                 right: {
                   type: 'g3k:onGround',
@@ -7400,12 +7422,13 @@ export const corridaInfinitaProfissionalExample: ExtensionExample = {
                   type: 'var',
                   name: 'sorteioBarreira',
                   value: {
-                    type: 'g3k:randomBetween',
-                    from: {
+                    type: 'g3k:random',
+                    op: 'entre',
+                    a: {
                       type: 'num',
-                      value: 0,
+                      value: 1,
                     },
-                    to: {
+                    b: {
                       type: 'num',
                       value: 3,
                     },
@@ -7423,7 +7446,7 @@ export const corridaInfinitaProfissionalExample: ExtensionExample = {
                     },
                     right: {
                       type: 'num',
-                      value: 1,
+                      value: 2,
                     },
                   },
                   then: [
@@ -7564,12 +7587,13 @@ export const corridaInfinitaProfissionalExample: ExtensionExample = {
                   type: 'var',
                   name: 'sorteioMoeda',
                   value: {
-                    type: 'g3k:randomBetween',
-                    from: {
+                    type: 'g3k:random',
+                    op: 'entre',
+                    a: {
                       type: 'num',
-                      value: 0,
+                      value: 1,
                     },
-                    to: {
+                    b: {
                       type: 'num',
                       value: 3,
                     },
@@ -7587,7 +7611,7 @@ export const corridaInfinitaProfissionalExample: ExtensionExample = {
                     },
                     right: {
                       type: 'num',
-                      value: 1,
+                      value: 2,
                     },
                   },
                   then: [
@@ -7727,8 +7751,9 @@ export const corridaInfinitaProfissionalExample: ExtensionExample = {
                 {
                   type: 'if',
                   cond: {
-                    type: 'g3k:randomChance',
-                    percent: {
+                    type: 'g3k:random',
+                    op: 'chance',
+                    a: {
                       type: 'num',
                       value: 50,
                     },
@@ -7812,8 +7837,8 @@ export const corridaInfinitaProfissionalExample: ExtensionExample = {
               },
             },
             {
-              type: 'g3k:hudText',
-              slot: 'top-left',
+              type: 'g3k:cornerText',
+              corner: 'top-left',
               text: {
                 type: 'binop',
                 op: '+',
@@ -7828,8 +7853,8 @@ export const corridaInfinitaProfissionalExample: ExtensionExample = {
               },
             },
             {
-              type: 'g3k:hudText',
-              slot: 'top-right',
+              type: 'g3k:cornerText',
+              corner: 'top-right',
               text: {
                 type: 'binop',
                 op: '+',
@@ -8592,53 +8617,25 @@ export const labirintoDosRobosProfissionalExample: ExtensionExample = {
           vignette: true,
         },
         {
-          type: 'g3k:setScreenText',
-          screen: 'menu',
-          title: {
-            type: 'str',
-            value: 'Labirinto dos Robôs',
-          },
-          text: {
-            type: 'str',
-            value:
-              'Clique para travar a mira. Ande com WASD, olhe com o mouse e atire com o clique. Robôs patrulham os corredores: desligue os 5!',
-          },
-          button: {
-            type: 'str',
-            value: 'Entrar',
-          },
+          type: 'g3k:screenText',
+          screen: 'inicio',
+          title: 'Labirinto dos Robôs',
+          text: 'Clique para travar a mira. Ande com WASD, olhe com o mouse e atire com o clique. Robôs patrulham os corredores: desligue os 5!',
+          button: 'Entrar',
         },
         {
-          type: 'g3k:setScreenText',
+          type: 'g3k:screenText',
           screen: 'vitoria',
-          title: {
-            type: 'str',
-            value: 'Labirinto limpo!',
-          },
-          text: {
-            type: 'str',
-            value: 'Todos os robôs foram desligados. Que pontaria!',
-          },
-          button: {
-            type: 'str',
-            value: 'Jogar de novo',
-          },
+          title: 'Labirinto limpo!',
+          text: 'Todos os robôs foram desligados. Que pontaria!',
+          button: 'Jogar de novo',
         },
         {
-          type: 'g3k:setScreenText',
+          type: 'g3k:screenText',
           screen: 'fim',
-          title: {
-            type: 'str',
-            value: 'Os robôs venceram...',
-          },
-          text: {
-            type: 'str',
-            value: 'Sua energia acabou. Atire de longe e recue pelos corredores!',
-          },
-          button: {
-            type: 'str',
-            value: 'Tentar de novo',
-          },
+          title: 'Os robôs venceram...',
+          text: 'Sua energia acabou. Atire de longe e recue pelos corredores!',
+          button: 'Tentar de novo',
         },
         {
           type: 'g3k:setPhysics',
@@ -9031,12 +9028,13 @@ export const labirintoDosRobosProfissionalExample: ExtensionExample = {
               charVar: 'ela',
               key: 'alvoX',
               value: {
-                type: 'g3k:randomBetween',
-                from: {
+                type: 'g3k:random',
+                op: 'entre',
+                a: {
                   type: 'num',
                   value: -13,
                 },
-                to: {
+                b: {
                   type: 'num',
                   value: 13,
                 },
@@ -9047,12 +9045,13 @@ export const labirintoDosRobosProfissionalExample: ExtensionExample = {
               charVar: 'ela',
               key: 'alvoZ',
               value: {
-                type: 'g3k:randomBetween',
-                from: {
+                type: 'g3k:random',
+                op: 'entre',
+                a: {
                   type: 'num',
                   value: -13,
                 },
-                to: {
+                b: {
                   type: 'num',
                   value: 13,
                 },
@@ -9107,12 +9106,13 @@ export const labirintoDosRobosProfissionalExample: ExtensionExample = {
               charVar: 'ela',
               key: 'alvoX',
               value: {
-                type: 'g3k:randomBetween',
-                from: {
+                type: 'g3k:random',
+                op: 'entre',
+                a: {
                   type: 'num',
                   value: -13,
                 },
-                to: {
+                b: {
                   type: 'num',
                   value: 13,
                 },
@@ -9123,12 +9123,13 @@ export const labirintoDosRobosProfissionalExample: ExtensionExample = {
               charVar: 'ela',
               key: 'alvoZ',
               value: {
-                type: 'g3k:randomBetween',
-                from: {
+                type: 'g3k:random',
+                op: 'entre',
+                a: {
                   type: 'num',
                   value: -13,
                 },
-                to: {
+                b: {
                   type: 'num',
                   value: 13,
                 },
@@ -9279,12 +9280,12 @@ export const labirintoDosRobosProfissionalExample: ExtensionExample = {
           itemName: 'ela',
           body: [
             {
-              type: 'g3k:cameraShake',
+              type: 'g3k:shakeCamera',
               strength: {
                 type: 'num',
                 value: 0.5,
               },
-              seconds: {
+              secs: {
                 type: 'num',
                 value: 0.4,
               },
@@ -9342,7 +9343,8 @@ export const labirintoDosRobosProfissionalExample: ExtensionExample = {
               fx: 'gameover',
             },
             {
-              type: 'g3k:endGame',
+              type: 'g3k:gameOver',
+              result: 'perdeu',
             },
           ],
         },
@@ -9421,8 +9423,8 @@ export const labirintoDosRobosProfissionalExample: ExtensionExample = {
               ],
             },
             {
-              type: 'g3k:hudText',
-              slot: 'top-left',
+              type: 'g3k:cornerText',
+              corner: 'top-left',
               text: {
                 type: 'binop',
                 op: '+',
@@ -9483,8 +9485,9 @@ export const labirintoDosRobosProfissionalExample: ExtensionExample = {
             {
               type: 'if',
               cond: {
-                type: 'g3k:randomChance',
-                percent: {
+                type: 'g3k:random',
+                op: 'chance',
+                a: {
                   type: 'num',
                   value: 1,
                 },
@@ -9495,12 +9498,13 @@ export const labirintoDosRobosProfissionalExample: ExtensionExample = {
                   charVar: 'ela',
                   key: 'alvoX',
                   value: {
-                    type: 'g3k:randomBetween',
-                    from: {
+                    type: 'g3k:random',
+                    op: 'entre',
+                    a: {
                       type: 'num',
                       value: -13,
                     },
-                    to: {
+                    b: {
                       type: 'num',
                       value: 13,
                     },
@@ -9511,12 +9515,13 @@ export const labirintoDosRobosProfissionalExample: ExtensionExample = {
                   charVar: 'ela',
                   key: 'alvoZ',
                   value: {
-                    type: 'g3k:randomBetween',
-                    from: {
+                    type: 'g3k:random',
+                    op: 'entre',
+                    a: {
                       type: 'num',
                       value: -13,
                     },
-                    to: {
+                    b: {
                       type: 'num',
                       value: 13,
                     },
@@ -9692,8 +9697,9 @@ export const labirintoDosRobosProfissionalExample: ExtensionExample = {
             {
               type: 'if',
               cond: {
-                type: 'g3k:randomChance',
-                percent: {
+                type: 'g3k:random',
+                op: 'chance',
+                a: {
                   type: 'num',
                   value: 1,
                 },
@@ -9704,12 +9710,13 @@ export const labirintoDosRobosProfissionalExample: ExtensionExample = {
                   charVar: 'ela',
                   key: 'alvoX',
                   value: {
-                    type: 'g3k:randomBetween',
-                    from: {
+                    type: 'g3k:random',
+                    op: 'entre',
+                    a: {
                       type: 'num',
                       value: -13,
                     },
-                    to: {
+                    b: {
                       type: 'num',
                       value: 13,
                     },
@@ -9720,12 +9727,13 @@ export const labirintoDosRobosProfissionalExample: ExtensionExample = {
                   charVar: 'ela',
                   key: 'alvoZ',
                   value: {
-                    type: 'g3k:randomBetween',
-                    from: {
+                    type: 'g3k:random',
+                    op: 'entre',
+                    a: {
                       type: 'num',
                       value: -13,
                     },
-                    to: {
+                    b: {
                       type: 'num',
                       value: 13,
                     },
@@ -9902,8 +9910,8 @@ export const labirintoDosRobosProfissionalExample: ExtensionExample = {
               },
             },
             {
-              type: 'g3k:hudText',
-              slot: 'top-right',
+              type: 'g3k:cornerText',
+              corner: 'top-right',
               text: {
                 type: 'binop',
                 op: '+',
@@ -9975,7 +9983,7 @@ export const mundoDeBlocosProfissionalExample: ExtensionExample = {
   name: 'Mundo de Blocos Profissional',
   experience: 'game',
   description:
-    'Construtor 3D em 3ª pessoa: ande, pule e clique no chão perto de você para plantar blocos sólidos (1, 2 e 3 trocam o tipo). Coloque um bloco, suba nele e pule até o topo da muralha. X recicla.',
+    'Construtor 3D em 3ª pessoa: ande, pule e clique no chão perto de você para plantar blocos sólidos (E, Q e F trocam o tipo). Coloque um bloco, suba nele e pule até o topo da muralha. Enter recicla.',
   ir: {
     version: 2,
     html: [],
@@ -10542,38 +10550,18 @@ export const mundoDeBlocosProfissionalExample: ExtensionExample = {
           vignette: false,
         },
         {
-          type: 'g3k:setScreenText',
-          screen: 'menu',
-          title: {
-            type: 'str',
-            value: 'Mundo de Blocos',
-          },
-          text: {
-            type: 'str',
-            value:
-              'Ande com WASD e pule com espaço. Escolha o bloco com 1, 2 e 3 e clique no chão perto de você para construir. Aperte X para reciclar. Coloque um bloco junto da muralha, suba nele e pule até o topo!',
-          },
-          button: {
-            type: 'str',
-            value: 'Construir',
-          },
+          type: 'g3k:screenText',
+          screen: 'inicio',
+          title: 'Mundo de Blocos',
+          text: 'Ande com WASD e pule com espaço. Escolha o bloco com E, Q e F e clique no chão perto de você para construir. Aperte Enter para reciclar. Coloque um bloco junto da muralha, suba nele e pule até o topo!',
+          button: 'Construir',
         },
         {
-          type: 'g3k:setScreenText',
+          type: 'g3k:screenText',
           screen: 'vitoria',
-          title: {
-            type: 'str',
-            value: 'Chegou ao topo!',
-          },
-          text: {
-            type: 'str',
-            value:
-              'Você colocou um bloco, subiu nele e pulou até o topo da muralha. Jogue de novo e invente outro caminho!',
-          },
-          button: {
-            type: 'str',
-            value: 'Construir de novo',
-          },
+          title: 'Chegou ao topo!',
+          text: 'Você colocou um bloco, subiu nele e pulou até o topo da muralha. Jogue de novo e invente outro caminho!',
+          button: 'Construir de novo',
         },
         {
           type: 'g3k:setPhysics',
@@ -10732,12 +10720,13 @@ export const mundoDeBlocosProfissionalExample: ExtensionExample = {
               type: 'g3k:spawn',
               mold: 'arvore',
               x: {
-                type: 'g3k:randomBetween',
-                from: {
+                type: 'g3k:random',
+                op: 'entre',
+                a: {
                   type: 'num',
                   value: -15,
                 },
-                to: {
+                b: {
                   type: 'num',
                   value: -8,
                 },
@@ -10747,12 +10736,13 @@ export const mundoDeBlocosProfissionalExample: ExtensionExample = {
                 value: 0,
               },
               z: {
-                type: 'g3k:randomBetween',
-                from: {
+                type: 'g3k:random',
+                op: 'entre',
+                a: {
                   type: 'num',
                   value: -12,
                 },
-                to: {
+                b: {
                   type: 'num',
                   value: -2,
                 },
@@ -10762,12 +10752,13 @@ export const mundoDeBlocosProfissionalExample: ExtensionExample = {
               type: 'g3k:spawn',
               mold: 'arvore',
               x: {
-                type: 'g3k:randomBetween',
-                from: {
+                type: 'g3k:random',
+                op: 'entre',
+                a: {
                   type: 'num',
                   value: -15,
                 },
-                to: {
+                b: {
                   type: 'num',
                   value: -8,
                 },
@@ -10777,12 +10768,13 @@ export const mundoDeBlocosProfissionalExample: ExtensionExample = {
                 value: 0,
               },
               z: {
-                type: 'g3k:randomBetween',
-                from: {
+                type: 'g3k:random',
+                op: 'entre',
+                a: {
                   type: 'num',
                   value: 0,
                 },
-                to: {
+                b: {
                   type: 'num',
                   value: 6,
                 },
@@ -10792,12 +10784,13 @@ export const mundoDeBlocosProfissionalExample: ExtensionExample = {
               type: 'g3k:spawn',
               mold: 'arvore',
               x: {
-                type: 'g3k:randomBetween',
-                from: {
+                type: 'g3k:random',
+                op: 'entre',
+                a: {
                   type: 'num',
                   value: -7,
                 },
-                to: {
+                b: {
                   type: 'num',
                   value: -2,
                 },
@@ -10807,12 +10800,13 @@ export const mundoDeBlocosProfissionalExample: ExtensionExample = {
                 value: 0,
               },
               z: {
-                type: 'g3k:randomBetween',
-                from: {
+                type: 'g3k:random',
+                op: 'entre',
+                a: {
                   type: 'num',
                   value: -14,
                 },
-                to: {
+                b: {
                   type: 'num',
                   value: -8,
                 },
@@ -10917,7 +10911,7 @@ export const mundoDeBlocosProfissionalExample: ExtensionExample = {
               type: 'if',
               cond: {
                 type: 'g3k:keyPressed',
-                key: '1',
+                key: 'KeyE',
               },
               then: [
                 {
@@ -10934,7 +10928,7 @@ export const mundoDeBlocosProfissionalExample: ExtensionExample = {
               type: 'if',
               cond: {
                 type: 'g3k:keyPressed',
-                key: '2',
+                key: 'KeyQ',
               },
               then: [
                 {
@@ -10951,7 +10945,7 @@ export const mundoDeBlocosProfissionalExample: ExtensionExample = {
               type: 'if',
               cond: {
                 type: 'g3k:keyPressed',
-                key: '3',
+                key: 'KeyF',
               },
               then: [
                 {
@@ -10968,7 +10962,7 @@ export const mundoDeBlocosProfissionalExample: ExtensionExample = {
               type: 'if',
               cond: {
                 type: 'g3k:keyPressed',
-                key: 'x',
+                key: 'Enter',
               },
               then: [
                 {
@@ -11097,7 +11091,7 @@ export const mundoDeBlocosProfissionalExample: ExtensionExample = {
                           charVar: 'ela',
                           text: {
                             type: 'str',
-                            value: 'O mundo lotou! Aperte X e recicle uns blocos.',
+                            value: 'O mundo lotou! Aperte Enter e recicle uns blocos.',
                           },
                           seconds: {
                             type: 'num',
@@ -11389,8 +11383,8 @@ export const mundoDeBlocosProfissionalExample: ExtensionExample = {
           dtName: 'dt',
           body: [
             {
-              type: 'g3k:hudText',
-              slot: 'top-left',
+              type: 'g3k:cornerText',
+              corner: 'top-left',
               text: {
                 type: 'binop',
                 op: '+',
@@ -11413,8 +11407,8 @@ export const mundoDeBlocosProfissionalExample: ExtensionExample = {
               },
             },
             {
-              type: 'g3k:hudText',
-              slot: 'bottom-left',
+              type: 'g3k:cornerText',
+              corner: 'bottom-left',
               text: {
                 type: 'binop',
                 op: '+',
@@ -11432,13 +11426,13 @@ export const mundoDeBlocosProfissionalExample: ExtensionExample = {
                 },
                 right: {
                   type: 'str',
-                  value: ' (1 2 3)',
+                  value: ' (E Q F)',
                 },
               },
             },
             {
-              type: 'g3k:hudText',
-              slot: 'top-right',
+              type: 'g3k:cornerText',
+              corner: 'top-right',
               text: {
                 type: 'binop',
                 op: '+',
@@ -11456,7 +11450,7 @@ export const mundoDeBlocosProfissionalExample: ExtensionExample = {
                 },
                 right: {
                   type: 'str',
-                  value: ' (X troca)',
+                  value: ' (Enter troca)',
                 },
               },
             },
@@ -11965,53 +11959,25 @@ export const patrulhaEspacialProfissionalExample: ExtensionExample = {
           vignette: true,
         },
         {
-          type: 'g3k:setScreenText',
-          screen: 'menu',
-          title: {
-            type: 'str',
-            value: 'Patrulha Espacial Profissional',
-          },
-          text: {
-            type: 'str',
-            value:
-              'Ande com A e D (ou as setas) e atire com espaço. O meteoro atingido brilha antes de explodir: destrua 20 para cumprir a patrulha!',
-          },
-          button: {
-            type: 'str',
-            value: 'Patrulhar',
-          },
+          type: 'g3k:screenText',
+          screen: 'inicio',
+          title: 'Patrulha Espacial Profissional',
+          text: 'Ande com A e D (ou as setas) e atire com espaço. O meteoro atingido brilha antes de explodir: destrua 20 para cumprir a patrulha!',
+          button: 'Patrulhar',
         },
         {
-          type: 'g3k:setScreenText',
+          type: 'g3k:screenText',
           screen: 'vitoria',
-          title: {
-            type: 'str',
-            value: 'Patrulha cumprida!',
-          },
-          text: {
-            type: 'str',
-            value: 'Você destruiu 20 meteoros e o setor está seguro. Que pontaria!',
-          },
-          button: {
-            type: 'str',
-            value: 'Patrulhar de novo',
-          },
+          title: 'Patrulha cumprida!',
+          text: 'Você destruiu 20 meteoros e o setor está seguro. Que pontaria!',
+          button: 'Patrulhar de novo',
         },
         {
-          type: 'g3k:setScreenText',
+          type: 'g3k:screenText',
           screen: 'fim',
-          title: {
-            type: 'str',
-            value: 'A nave caiu...',
-          },
-          text: {
-            type: 'str',
-            value: 'Os meteoros venceram desta vez. Atire de longe e não pare de se mexer!',
-          },
-          button: {
-            type: 'str',
-            value: 'Tentar de novo',
-          },
+          title: 'A nave caiu...',
+          text: 'Os meteoros venceram desta vez. Atire de longe e não pare de se mexer!',
+          button: 'Tentar de novo',
         },
         {
           type: 'g3k:setPhysics',
@@ -12409,12 +12375,12 @@ export const patrulhaEspacialProfissionalExample: ExtensionExample = {
           itemName: 'ela',
           body: [
             {
-              type: 'g3k:cameraShake',
+              type: 'g3k:shakeCamera',
               strength: {
                 type: 'num',
                 value: 0.6,
               },
-              seconds: {
+              secs: {
                 type: 'num',
                 value: 0.45,
               },
@@ -12440,7 +12406,8 @@ export const patrulhaEspacialProfissionalExample: ExtensionExample = {
               fx: 'gameover',
             },
             {
-              type: 'g3k:endGame',
+              type: 'g3k:gameOver',
+              result: 'perdeu',
             },
           ],
         },
@@ -12460,11 +12427,11 @@ export const patrulhaEspacialProfissionalExample: ExtensionExample = {
                 op: '||',
                 left: {
                   type: 'g3k:keyDown',
-                  key: 'a',
+                  key: 'KeyA',
                 },
                 right: {
                   type: 'g3k:keyDown',
-                  key: 'esquerda',
+                  key: 'ArrowLeft',
                 },
               },
               then: [
@@ -12501,11 +12468,11 @@ export const patrulhaEspacialProfissionalExample: ExtensionExample = {
                 op: '||',
                 left: {
                   type: 'g3k:keyDown',
-                  key: 'd',
+                  key: 'KeyD',
                 },
                 right: {
                   type: 'g3k:keyDown',
-                  key: 'direita',
+                  key: 'ArrowRight',
                 },
               },
               then: [
@@ -12668,7 +12635,7 @@ export const patrulhaEspacialProfissionalExample: ExtensionExample = {
                 op: '&&',
                 left: {
                   type: 'g3k:keyPressed',
-                  key: 'espaco',
+                  key: 'Space',
                 },
                 right: {
                   type: 'binop',
@@ -12704,8 +12671,8 @@ export const patrulhaEspacialProfissionalExample: ExtensionExample = {
               ],
             },
             {
-              type: 'g3k:hudText',
-              slot: 'top-left',
+              type: 'g3k:cornerText',
+              corner: 'top-left',
               text: {
                 type: 'binop',
                 op: '+',
@@ -12903,12 +12870,13 @@ export const patrulhaEspacialProfissionalExample: ExtensionExample = {
                   varName: 'pedra',
                   mold: 'meteoro',
                   x: {
-                    type: 'g3k:randomBetween',
-                    from: {
+                    type: 'g3k:random',
+                    op: 'entre',
+                    a: {
                       type: 'num',
                       value: -9,
                     },
-                    to: {
+                    b: {
                       type: 'num',
                       value: 9,
                     },
@@ -12948,12 +12916,13 @@ export const patrulhaEspacialProfissionalExample: ExtensionExample = {
                         name: 'velocidade',
                       },
                       right: {
-                        type: 'g3k:randomBetween',
-                        from: {
+                        type: 'g3k:random',
+                        op: 'entre',
+                        a: {
                           type: 'num',
                           value: 0,
                         },
-                        to: {
+                        b: {
                           type: 'num',
                           value: 6,
                         },
@@ -12966,12 +12935,13 @@ export const patrulhaEspacialProfissionalExample: ExtensionExample = {
                   charVar: 'pedra',
                   key: 'giro',
                   value: {
-                    type: 'g3k:randomBetween',
-                    from: {
+                    type: 'g3k:random',
+                    op: 'entre',
+                    a: {
                       type: 'num',
                       value: 0,
                     },
-                    to: {
+                    b: {
                       type: 'num',
                       value: 360,
                     },
@@ -12996,8 +12966,8 @@ export const patrulhaEspacialProfissionalExample: ExtensionExample = {
               },
             },
             {
-              type: 'g3k:hudText',
-              slot: 'top-right',
+              type: 'g3k:cornerText',
+              corner: 'top-right',
               text: {
                 type: 'binop',
                 op: '+',
@@ -13020,8 +12990,8 @@ export const patrulhaEspacialProfissionalExample: ExtensionExample = {
               },
             },
             {
-              type: 'g3k:hudText',
-              slot: 'bottom-right',
+              type: 'g3k:cornerText',
+              corner: 'bottom-right',
               text: {
                 type: 'binop',
                 op: '+',
@@ -13311,53 +13281,25 @@ export const atravesseProfissionalExample: ExtensionExample = {
           vignette: true,
         },
         {
-          type: 'g3k:setScreenText',
-          screen: 'menu',
-          title: {
-            type: 'str',
-            value: 'Atravesse a Rua Profissional',
-          },
-          text: {
-            type: 'str',
-            value:
-              'Pule com as setas (ou WASD) e atravesse 20 faixas sem ser atropelado. Espere a faixa abrir e pule na hora certa!',
-          },
-          button: {
-            type: 'str',
-            value: 'Atravessar',
-          },
+          type: 'g3k:screenText',
+          screen: 'inicio',
+          title: 'Atravesse a Rua Profissional',
+          text: 'Pule com as setas (ou WASD) e atravesse 20 faixas sem ser atropelado. Espere a faixa abrir e pule na hora certa!',
+          button: 'Atravessar',
         },
         {
-          type: 'g3k:setScreenText',
+          type: 'g3k:screenText',
           screen: 'vitoria',
-          title: {
-            type: 'str',
-            value: 'Voce atravessou!',
-          },
-          text: {
-            type: 'str',
-            value: 'Chegou do outro lado em seguranca depois de 20 faixas. Que reflexos!',
-          },
-          button: {
-            type: 'str',
-            value: 'Jogar de novo',
-          },
+          title: 'Voce atravessou!',
+          text: 'Chegou do outro lado em seguranca depois de 20 faixas. Que reflexos!',
+          button: 'Jogar de novo',
         },
         {
-          type: 'g3k:setScreenText',
+          type: 'g3k:screenText',
           screen: 'fim',
-          title: {
-            type: 'str',
-            value: 'Foi atropelado!',
-          },
-          text: {
-            type: 'str',
-            value: 'Um carro te pegou. Olhe as duas direcoes e pule na brecha!',
-          },
-          button: {
-            type: 'str',
-            value: 'Tentar de novo',
-          },
+          title: 'Foi atropelado!',
+          text: 'Um carro te pegou. Olhe as duas direcoes e pule na brecha!',
+          button: 'Tentar de novo',
         },
         {
           type: 'g3k:setPhysics',
@@ -13611,12 +13553,12 @@ export const atravesseProfissionalExample: ExtensionExample = {
           itemName: 'ela',
           body: [
             {
-              type: 'g3k:cameraShake',
+              type: 'g3k:shakeCamera',
               strength: {
                 type: 'num',
                 value: 0.6,
               },
-              seconds: {
+              secs: {
                 type: 'num',
                 value: 0.4,
               },
@@ -13626,7 +13568,8 @@ export const atravesseProfissionalExample: ExtensionExample = {
               fx: 'gameover',
             },
             {
-              type: 'g3k:endGame',
+              type: 'g3k:gameOver',
+              result: 'perdeu',
             },
           ],
         },
@@ -13646,11 +13589,11 @@ export const atravesseProfissionalExample: ExtensionExample = {
                 op: '||',
                 left: {
                   type: 'g3k:keyPressed',
-                  key: 'w',
+                  key: 'KeyW',
                 },
                 right: {
                   type: 'g3k:keyPressed',
-                  key: 'cima',
+                  key: 'ArrowUp',
                 },
               },
               then: [
@@ -13695,11 +13638,11 @@ export const atravesseProfissionalExample: ExtensionExample = {
                 op: '||',
                 left: {
                   type: 'g3k:keyPressed',
-                  key: 's',
+                  key: 'KeyS',
                 },
                 right: {
                   type: 'g3k:keyPressed',
-                  key: 'baixo',
+                  key: 'ArrowDown',
                 },
               },
               then: [
@@ -13761,11 +13704,11 @@ export const atravesseProfissionalExample: ExtensionExample = {
                 op: '||',
                 left: {
                   type: 'g3k:keyPressed',
-                  key: 'a',
+                  key: 'KeyA',
                 },
                 right: {
                   type: 'g3k:keyPressed',
-                  key: 'esquerda',
+                  key: 'ArrowLeft',
                 },
               },
               then: [
@@ -13827,11 +13770,11 @@ export const atravesseProfissionalExample: ExtensionExample = {
                 op: '||',
                 left: {
                   type: 'g3k:keyPressed',
-                  key: 'd',
+                  key: 'KeyD',
                 },
                 right: {
                   type: 'g3k:keyPressed',
-                  key: 'direita',
+                  key: 'ArrowRight',
                 },
               },
               then: [
@@ -13899,8 +13842,8 @@ export const atravesseProfissionalExample: ExtensionExample = {
               },
             },
             {
-              type: 'g3k:hudText',
-              slot: 'top-left',
+              type: 'g3k:cornerText',
+              corner: 'top-left',
               text: {
                 type: 'binop',
                 op: '+',
@@ -14012,14 +13955,23 @@ export const atravesseProfissionalExample: ExtensionExample = {
                   type: 'assign',
                   name: 'proximoCarro',
                   value: {
-                    type: 'g3k:randomBetween',
-                    from: {
-                      type: 'num',
-                      value: 0.5,
+                    type: 'binop',
+                    op: '/',
+                    left: {
+                      type: 'g3k:random',
+                      op: 'entre',
+                      a: {
+                        type: 'num',
+                        value: 5,
+                      },
+                      b: {
+                        type: 'num',
+                        value: 12,
+                      },
                     },
-                    to: {
+                    right: {
                       type: 'num',
-                      value: 1.2,
+                      value: 10,
                     },
                   },
                 },
@@ -14034,18 +13986,15 @@ export const atravesseProfissionalExample: ExtensionExample = {
                       name: 'linha',
                     },
                     right: {
-                      type: 'mathUnary',
-                      fn: 'floor',
-                      arg: {
-                        type: 'g3k:randomBetween',
-                        from: {
-                          type: 'num',
-                          value: 2,
-                        },
-                        to: {
-                          type: 'num',
-                          value: 8,
-                        },
+                      type: 'g3k:random',
+                      op: 'entre',
+                      a: {
+                        type: 'num',
+                        value: 2,
+                      },
+                      b: {
+                        type: 'num',
+                        value: 7,
                       },
                     },
                   },
@@ -14054,8 +14003,9 @@ export const atravesseProfissionalExample: ExtensionExample = {
                 {
                   type: 'if',
                   cond: {
-                    type: 'g3k:randomChance',
-                    percent: {
+                    type: 'g3k:random',
+                    op: 'chance',
+                    a: {
                       type: 'num',
                       value: 50,
                     },
@@ -14220,8 +14170,8 @@ export const atravesseProfissionalExample: ExtensionExample = {
               ],
             },
             {
-              type: 'g3k:hudText',
-              slot: 'top-right',
+              type: 'g3k:cornerText',
+              corner: 'top-right',
               text: {
                 type: 'str',
                 value: 'Chegue na faixa 20!',
@@ -14641,54 +14591,25 @@ export const reunirRebanhoProfissionalExample: ExtensionExample = {
           vignette: true,
         },
         {
-          type: 'g3k:setScreenText',
-          screen: 'menu',
-          title: {
-            type: 'str',
-            value: 'Reunir o Rebanho Profissional',
-          },
-          text: {
-            type: 'str',
-            value:
-              'Ande com WASD ou as setas. Chegue perto dos bichinhos que vagam para eles seguirem você e leve o rebanho ao curral dourado. Reúna 8 antes do tempo acabar!',
-          },
-          button: {
-            type: 'str',
-            value: 'Pastorear',
-          },
+          type: 'g3k:screenText',
+          screen: 'inicio',
+          title: 'Reunir o Rebanho Profissional',
+          text: 'Ande com WASD ou as setas. Chegue perto dos bichinhos que vagam para eles seguirem você e leve o rebanho ao curral dourado. Reúna 8 antes do tempo acabar! Clique num bichinho para ver o que ele está pensando.',
+          button: 'Pastorear',
         },
         {
-          type: 'g3k:setScreenText',
+          type: 'g3k:screenText',
           screen: 'vitoria',
-          title: {
-            type: 'str',
-            value: 'Rebanho reunido!',
-          },
-          text: {
-            type: 'str',
-            value: 'Você guiou 8 bichinhos até o curral. Que pastor!',
-          },
-          button: {
-            type: 'str',
-            value: 'Pastorear de novo',
-          },
+          title: 'Rebanho reunido!',
+          text: 'Você guiou 8 bichinhos até o curral. Que pastor!',
+          button: 'Pastorear de novo',
         },
         {
-          type: 'g3k:setScreenText',
+          type: 'g3k:screenText',
           screen: 'fim',
-          title: {
-            type: 'str',
-            value: 'O tempo acabou...',
-          },
-          text: {
-            type: 'str',
-            value:
-              'Faltaram bichinhos no curral. Chegue perto para eles seguirem e leve o grupo junto!',
-          },
-          button: {
-            type: 'str',
-            value: 'Tentar de novo',
-          },
+          title: 'O tempo acabou...',
+          text: 'Faltaram bichinhos no curral. Chegue perto para eles seguirem e leve o grupo junto!',
+          button: 'Tentar de novo',
         },
         {
           type: 'g3k:makeTrigger',
@@ -15031,12 +14952,13 @@ export const reunirRebanhoProfissionalExample: ExtensionExample = {
               charVar: 'ela',
               key: 'alvoX',
               value: {
-                type: 'g3k:randomBetween',
-                from: {
+                type: 'g3k:random',
+                op: 'entre',
+                a: {
                   type: 'num',
                   value: -16,
                 },
-                to: {
+                b: {
                   type: 'num',
                   value: 16,
                 },
@@ -15047,12 +14969,13 @@ export const reunirRebanhoProfissionalExample: ExtensionExample = {
               charVar: 'ela',
               key: 'alvoZ',
               value: {
-                type: 'g3k:randomBetween',
-                from: {
+                type: 'g3k:random',
+                op: 'entre',
+                a: {
                   type: 'num',
                   value: -16,
                 },
-                to: {
+                b: {
                   type: 'num',
                   value: 16,
                 },
@@ -15132,11 +15055,11 @@ export const reunirRebanhoProfissionalExample: ExtensionExample = {
                 op: '||',
                 left: {
                   type: 'g3k:keyDown',
-                  key: 'a',
+                  key: 'KeyA',
                 },
                 right: {
                   type: 'g3k:keyDown',
-                  key: 'esquerda',
+                  key: 'ArrowLeft',
                 },
               },
               then: [
@@ -15173,11 +15096,11 @@ export const reunirRebanhoProfissionalExample: ExtensionExample = {
                 op: '||',
                 left: {
                   type: 'g3k:keyDown',
-                  key: 'd',
+                  key: 'KeyD',
                 },
                 right: {
                   type: 'g3k:keyDown',
-                  key: 'direita',
+                  key: 'ArrowRight',
                 },
               },
               then: [
@@ -15214,11 +15137,11 @@ export const reunirRebanhoProfissionalExample: ExtensionExample = {
                 op: '||',
                 left: {
                   type: 'g3k:keyDown',
-                  key: 'w',
+                  key: 'KeyW',
                 },
                 right: {
                   type: 'g3k:keyDown',
-                  key: 'cima',
+                  key: 'ArrowUp',
                 },
               },
               then: [
@@ -15255,11 +15178,11 @@ export const reunirRebanhoProfissionalExample: ExtensionExample = {
                 op: '||',
                 left: {
                   type: 'g3k:keyDown',
-                  key: 's',
+                  key: 'KeyS',
                 },
                 right: {
                   type: 'g3k:keyDown',
-                  key: 'baixo',
+                  key: 'ArrowDown',
                 },
               },
               then: [
@@ -15406,8 +15329,8 @@ export const reunirRebanhoProfissionalExample: ExtensionExample = {
               },
             },
             {
-              type: 'g3k:hudText',
-              slot: 'top-left',
+              type: 'g3k:cornerText',
+              corner: 'top-left',
               text: {
                 type: 'binop',
                 op: '+',
@@ -15459,8 +15382,9 @@ export const reunirRebanhoProfissionalExample: ExtensionExample = {
             {
               type: 'if',
               cond: {
-                type: 'g3k:randomChance',
-                percent: {
+                type: 'g3k:random',
+                op: 'chance',
+                a: {
                   type: 'num',
                   value: 1,
                 },
@@ -15471,12 +15395,13 @@ export const reunirRebanhoProfissionalExample: ExtensionExample = {
                   charVar: 'ela',
                   key: 'alvoX',
                   value: {
-                    type: 'g3k:randomBetween',
-                    from: {
+                    type: 'g3k:random',
+                    op: 'entre',
+                    a: {
                       type: 'num',
                       value: -16,
                     },
-                    to: {
+                    b: {
                       type: 'num',
                       value: 16,
                     },
@@ -15487,12 +15412,13 @@ export const reunirRebanhoProfissionalExample: ExtensionExample = {
                   charVar: 'ela',
                   key: 'alvoZ',
                   value: {
-                    type: 'g3k:randomBetween',
-                    from: {
+                    type: 'g3k:random',
+                    op: 'entre',
+                    a: {
                       type: 'num',
                       value: -16,
                     },
-                    to: {
+                    b: {
                       type: 'num',
                       value: 16,
                     },
@@ -15675,12 +15601,13 @@ export const reunirRebanhoProfissionalExample: ExtensionExample = {
                   type: 'g3k:spawn',
                   mold: 'bicho',
                   x: {
-                    type: 'g3k:randomBetween',
-                    from: {
+                    type: 'g3k:random',
+                    op: 'entre',
+                    a: {
                       type: 'num',
                       value: -16,
                     },
-                    to: {
+                    b: {
                       type: 'num',
                       value: 16,
                     },
@@ -15690,12 +15617,13 @@ export const reunirRebanhoProfissionalExample: ExtensionExample = {
                     value: 0.5,
                   },
                   z: {
-                    type: 'g3k:randomBetween',
-                    from: {
+                    type: 'g3k:random',
+                    op: 'entre',
+                    a: {
                       type: 'num',
                       value: -16,
                     },
-                    to: {
+                    b: {
                       type: 'num',
                       value: 16,
                     },
@@ -15704,8 +15632,8 @@ export const reunirRebanhoProfissionalExample: ExtensionExample = {
               ],
             },
             {
-              type: 'g3k:hudText',
-              slot: 'top-right',
+              type: 'g3k:cornerText',
+              corner: 'top-right',
               text: {
                 type: 'binop',
                 op: '+',
@@ -15732,8 +15660,8 @@ export const reunirRebanhoProfissionalExample: ExtensionExample = {
               },
             },
             {
-              type: 'g3k:hudText',
-              slot: 'bottom-right',
+              type: 'g3k:cornerText',
+              corner: 'bottom-right',
               text: {
                 type: 'binop',
                 op: '+',
@@ -15746,6 +15674,50 @@ export const reunirRebanhoProfissionalExample: ExtensionExample = {
                   mold: 'bicho',
                 },
               },
+            },
+            {
+              type: 'if',
+              cond: {
+                type: 'g3k:mousePressed',
+              },
+              then: [
+                {
+                  type: 'g3k:forEachAlive',
+                  mold: 'bicho',
+                  itemName: 'bicho',
+                  body: [
+                    {
+                      type: 'if',
+                      cond: {
+                        type: 'g3k:pointerOver',
+                        charVar: 'bicho',
+                      },
+                      then: [
+                        {
+                          type: 'g3k:say',
+                          charVar: 'bicho',
+                          text: {
+                            type: 'binop',
+                            op: '+',
+                            left: {
+                              type: 'str',
+                              value: 'Estou ',
+                            },
+                            right: {
+                              type: 'g3k:stateOf',
+                              charVar: 'bicho',
+                            },
+                          },
+                          seconds: {
+                            type: 'num',
+                            value: 1.5,
+                          },
+                        },
+                      ],
+                    },
+                  ],
+                },
+              ],
             },
             {
               type: 'if',
@@ -16142,6 +16114,16 @@ export const aLendaDoHeroiProfissionalExample: ExtensionExample = {
           },
           next: 'vagando',
         },
+        {
+          type: 'g3k:stateTimer',
+          mold: 'monstro',
+          state: 'empurrado',
+          sec: {
+            type: 'num',
+            value: 0.5,
+          },
+          next: 'perseguindo',
+        },
       ],
       start: [
         {
@@ -16172,53 +16154,25 @@ export const aLendaDoHeroiProfissionalExample: ExtensionExample = {
           vignette: true,
         },
         {
-          type: 'g3k:setScreenText',
-          screen: 'menu',
-          title: {
-            type: 'str',
-            value: 'A Lenda do Herói Profissional',
-          },
-          text: {
-            type: 'str',
-            value:
-              'Ande com WASD ou as setas e ataque com a barra de espaço ou o clique. Cada monstro tem cérebro próprio: vaga pela clareira e persegue você. Derrote 10 antes que seus corações acabem!',
-          },
-          button: {
-            type: 'str',
-            value: 'Começar a aventura',
-          },
+          type: 'g3k:screenText',
+          screen: 'inicio',
+          title: 'A Lenda do Herói Profissional',
+          text: 'Ande com WASD ou as setas e ataque com a barra de espaço ou o clique. Cada monstro tem cérebro próprio: vaga pela clareira e persegue você. Derrote 10 antes que seus corações acabem!',
+          button: 'Começar a aventura',
         },
         {
-          type: 'g3k:setScreenText',
+          type: 'g3k:screenText',
           screen: 'vitoria',
-          title: {
-            type: 'str',
-            value: 'Herói lendário!',
-          },
-          text: {
-            type: 'str',
-            value: 'Você derrotou os 10 monstros da clareira. A floresta está a salvo!',
-          },
-          button: {
-            type: 'str',
-            value: 'Jogar de novo',
-          },
+          title: 'Herói lendário!',
+          text: 'Você derrotou os 10 monstros da clareira. A floresta está a salvo!',
+          button: 'Jogar de novo',
         },
         {
-          type: 'g3k:setScreenText',
+          type: 'g3k:screenText',
           screen: 'fim',
-          title: {
-            type: 'str',
-            value: 'O herói caiu...',
-          },
-          text: {
-            type: 'str',
-            value: 'Os monstros foram demais. Ataque de perto e recue quando estiver sem corações!',
-          },
-          button: {
-            type: 'str',
-            value: 'Tentar de novo',
-          },
+          title: 'O herói caiu...',
+          text: 'Os monstros foram demais. Ataque de perto e recue quando estiver sem corações!',
+          button: 'Tentar de novo',
         },
         {
           type: 'g3k:showHealthBar',
@@ -16246,6 +16200,14 @@ export const aLendaDoHeroiProfissionalExample: ExtensionExample = {
             value: 1.5,
           },
         },
+        {
+          type: 'var',
+          name: 'recarga',
+          value: {
+            type: 'num',
+            value: 0,
+          },
+        },
       ],
       events: [
         {
@@ -16266,6 +16228,14 @@ export const aLendaDoHeroiProfissionalExample: ExtensionExample = {
               value: {
                 type: 'num',
                 value: 1.5,
+              },
+            },
+            {
+              type: 'assign',
+              name: 'recarga',
+              value: {
+                type: 'num',
+                value: 0,
               },
             },
             {
@@ -16423,12 +16393,13 @@ export const aLendaDoHeroiProfissionalExample: ExtensionExample = {
               charVar: 'ela',
               key: 'alvoX',
               value: {
-                type: 'g3k:randomBetween',
-                from: {
+                type: 'g3k:random',
+                op: 'entre',
+                a: {
                   type: 'num',
                   value: -18,
                 },
-                to: {
+                b: {
                   type: 'num',
                   value: 18,
                 },
@@ -16439,15 +16410,48 @@ export const aLendaDoHeroiProfissionalExample: ExtensionExample = {
               charVar: 'ela',
               key: 'alvoZ',
               value: {
-                type: 'g3k:randomBetween',
-                from: {
+                type: 'g3k:random',
+                op: 'entre',
+                a: {
                   type: 'num',
                   value: -18,
                 },
-                to: {
+                b: {
                   type: 'num',
                   value: 18,
                 },
+              },
+            },
+          ],
+        },
+        {
+          type: 'g3k:onEnterEntityState',
+          mold: 'monstro',
+          state: 'empurrado',
+          itemName: 'ela',
+          body: [
+            {
+              type: 'g3k:setDrag',
+              charVar: 'ela',
+              drag: {
+                type: 'num',
+                value: 5,
+              },
+            },
+          ],
+        },
+        {
+          type: 'g3k:onExitEntityState',
+          mold: 'monstro',
+          state: 'empurrado',
+          itemName: 'ela',
+          body: [
+            {
+              type: 'g3k:setDrag',
+              charVar: 'ela',
+              drag: {
+                type: 'num',
+                value: 0,
               },
             },
           ],
@@ -16526,19 +16530,59 @@ export const aLendaDoHeroiProfissionalExample: ExtensionExample = {
               charVar: 'ela',
             },
             {
+              type: 'assign',
+              name: 'recarga',
+              value: {
+                type: 'binop',
+                op: '-',
+                left: {
+                  type: 'var',
+                  name: 'recarga',
+                },
+                right: {
+                  type: 'var',
+                  name: 'dt',
+                },
+              },
+            },
+            {
               type: 'if',
               cond: {
                 type: 'logical',
-                op: '||',
+                op: '&&',
                 left: {
-                  type: 'g3k:keyDown',
-                  key: 'espaço',
+                  type: 'logical',
+                  op: '||',
+                  left: {
+                    type: 'g3k:keyPressed',
+                    key: 'Space',
+                  },
+                  right: {
+                    type: 'g3k:mousePressed',
+                  },
                 },
                 right: {
-                  type: 'g3k:mousePressed',
+                  type: 'binop',
+                  op: '<=',
+                  left: {
+                    type: 'var',
+                    name: 'recarga',
+                  },
+                  right: {
+                    type: 'num',
+                    value: 0,
+                  },
                 },
               },
               then: [
+                {
+                  type: 'assign',
+                  name: 'recarga',
+                  value: {
+                    type: 'num',
+                    value: 0.5,
+                  },
+                },
                 {
                   type: 'g3k:forEachNear',
                   charVar: 'ela',
@@ -16565,6 +16609,63 @@ export const aLendaDoHeroiProfissionalExample: ExtensionExample = {
                     {
                       type: 'g3k:playEffect',
                       fx: 'hit',
+                    },
+                    {
+                      type: 'g3k:setVelocity',
+                      charVar: 'alvo',
+                      x: {
+                        type: 'binop',
+                        op: '*',
+                        left: {
+                          type: 'binop',
+                          op: '-',
+                          left: {
+                            type: 'g3k:posOf',
+                            axis: 'x',
+                            charVar: 'alvo',
+                          },
+                          right: {
+                            type: 'g3k:posOf',
+                            axis: 'x',
+                            charVar: 'ela',
+                          },
+                        },
+                        right: {
+                          type: 'num',
+                          value: 6,
+                        },
+                      },
+                      y: {
+                        type: 'num',
+                        value: 0,
+                      },
+                      z: {
+                        type: 'binop',
+                        op: '*',
+                        left: {
+                          type: 'binop',
+                          op: '-',
+                          left: {
+                            type: 'g3k:posOf',
+                            axis: 'z',
+                            charVar: 'alvo',
+                          },
+                          right: {
+                            type: 'g3k:posOf',
+                            axis: 'z',
+                            charVar: 'ela',
+                          },
+                        },
+                        right: {
+                          type: 'num',
+                          value: 6,
+                        },
+                      },
+                    },
+                    {
+                      type: 'g3k:setEntityState',
+                      charVar: 'alvo',
+                      state: 'empurrado',
                     },
                   ],
                 },
@@ -16600,8 +16701,9 @@ export const aLendaDoHeroiProfissionalExample: ExtensionExample = {
             {
               type: 'if',
               cond: {
-                type: 'g3k:randomChance',
-                percent: {
+                type: 'g3k:random',
+                op: 'chance',
+                a: {
                   type: 'num',
                   value: 1,
                 },
@@ -16612,12 +16714,13 @@ export const aLendaDoHeroiProfissionalExample: ExtensionExample = {
                   charVar: 'ela',
                   key: 'alvoX',
                   value: {
-                    type: 'g3k:randomBetween',
-                    from: {
+                    type: 'g3k:random',
+                    op: 'entre',
+                    a: {
                       type: 'num',
                       value: -18,
                     },
-                    to: {
+                    b: {
                       type: 'num',
                       value: 18,
                     },
@@ -16628,12 +16731,13 @@ export const aLendaDoHeroiProfissionalExample: ExtensionExample = {
                   charVar: 'ela',
                   key: 'alvoZ',
                   value: {
-                    type: 'g3k:randomBetween',
-                    from: {
+                    type: 'g3k:random',
+                    op: 'entre',
+                    a: {
                       type: 'num',
                       value: -18,
                     },
-                    to: {
+                    b: {
                       type: 'num',
                       value: 18,
                     },
@@ -16840,12 +16944,13 @@ export const aLendaDoHeroiProfissionalExample: ExtensionExample = {
                   type: 'g3k:spawn',
                   mold: 'monstro',
                   x: {
-                    type: 'g3k:randomBetween',
-                    from: {
+                    type: 'g3k:random',
+                    op: 'entre',
+                    a: {
                       type: 'num',
                       value: -18,
                     },
-                    to: {
+                    b: {
                       type: 'num',
                       value: 18,
                     },
@@ -16855,12 +16960,13 @@ export const aLendaDoHeroiProfissionalExample: ExtensionExample = {
                     value: 0.6,
                   },
                   z: {
-                    type: 'g3k:randomBetween',
-                    from: {
+                    type: 'g3k:random',
+                    op: 'entre',
+                    a: {
                       type: 'num',
                       value: -18,
                     },
-                    to: {
+                    b: {
                       type: 'num',
                       value: 18,
                     },
@@ -16869,8 +16975,8 @@ export const aLendaDoHeroiProfissionalExample: ExtensionExample = {
               ],
             },
             {
-              type: 'g3k:hudText',
-              slot: 'top-left',
+              type: 'g3k:cornerText',
+              corner: 'top-left',
               text: {
                 type: 'binop',
                 op: '+',
@@ -16893,8 +16999,8 @@ export const aLendaDoHeroiProfissionalExample: ExtensionExample = {
               },
             },
             {
-              type: 'g3k:hudText',
-              slot: 'top-right',
+              type: 'g3k:cornerText',
+              corner: 'top-right',
               text: {
                 type: 'str',
                 value: 'Ataque com espaço ou clique',
@@ -17366,53 +17472,25 @@ export const cacaEstelarProfissionalExample: ExtensionExample = {
           vignette: true,
         },
         {
-          type: 'g3k:setScreenText',
-          screen: 'menu',
-          title: {
-            type: 'str',
-            value: 'Caça Estelar Profissional',
-          },
-          text: {
-            type: 'str',
-            value:
-              'Voe com WASD ou as setas e atire com a barra de espaço ou o clique. As naves inimigas vagam, perseguem e fogem quando atingidas. Abata 10 antes que os escudos acabem!',
-          },
-          button: {
-            type: 'str',
-            value: 'Decolar',
-          },
+          type: 'g3k:screenText',
+          screen: 'inicio',
+          title: 'Caça Estelar Profissional',
+          text: 'Voe com WASD ou as setas e atire com a barra de espaço ou o clique. As naves inimigas vagam, perseguem e fogem quando atingidas. Abata 10 antes que os escudos acabem!',
+          button: 'Decolar',
         },
         {
-          type: 'g3k:setScreenText',
+          type: 'g3k:screenText',
           screen: 'vitoria',
-          title: {
-            type: 'str',
-            value: 'Ás dos céus!',
-          },
-          text: {
-            type: 'str',
-            value: 'Você abateu as 10 naves inimigas. O espaço está seguro!',
-          },
-          button: {
-            type: 'str',
-            value: 'Voar de novo',
-          },
+          title: 'Ás dos céus!',
+          text: 'Você abateu as 10 naves inimigas. O espaço está seguro!',
+          button: 'Voar de novo',
         },
         {
-          type: 'g3k:setScreenText',
+          type: 'g3k:screenText',
           screen: 'fim',
-          title: {
-            type: 'str',
-            value: 'Nave abatida...',
-          },
-          text: {
-            type: 'str',
-            value: 'Os inimigos foram demais. Persiga as naves que fogem e desvie das que atacam!',
-          },
-          button: {
-            type: 'str',
-            value: 'Tentar de novo',
-          },
+          title: 'Nave abatida...',
+          text: 'Os inimigos foram demais. Persiga as naves que fogem e desvie das que atacam!',
+          button: 'Tentar de novo',
         },
         {
           type: 'g3k:showHealthBar',
@@ -17649,12 +17727,13 @@ export const cacaEstelarProfissionalExample: ExtensionExample = {
               charVar: 'ela',
               key: 'alvoX',
               value: {
-                type: 'g3k:randomBetween',
-                from: {
+                type: 'g3k:random',
+                op: 'entre',
+                a: {
                   type: 'num',
                   value: -20,
                 },
-                to: {
+                b: {
                   type: 'num',
                   value: 20,
                 },
@@ -17665,12 +17744,13 @@ export const cacaEstelarProfissionalExample: ExtensionExample = {
               charVar: 'ela',
               key: 'alvoZ',
               value: {
-                type: 'g3k:randomBetween',
-                from: {
+                type: 'g3k:random',
+                op: 'entre',
+                a: {
                   type: 'num',
                   value: -20,
                 },
-                to: {
+                b: {
                   type: 'num',
                   value: 20,
                 },
@@ -17701,12 +17781,13 @@ export const cacaEstelarProfissionalExample: ExtensionExample = {
               charVar: 'ela',
               key: 'alvoX',
               value: {
-                type: 'g3k:randomBetween',
-                from: {
+                type: 'g3k:random',
+                op: 'entre',
+                a: {
                   type: 'num',
                   value: -22,
                 },
-                to: {
+                b: {
                   type: 'num',
                   value: 22,
                 },
@@ -17717,12 +17798,13 @@ export const cacaEstelarProfissionalExample: ExtensionExample = {
               charVar: 'ela',
               key: 'alvoZ',
               value: {
-                type: 'g3k:randomBetween',
-                from: {
+                type: 'g3k:random',
+                op: 'entre',
+                a: {
                   type: 'num',
                   value: -22,
                 },
-                to: {
+                b: {
                   type: 'num',
                   value: 22,
                 },
@@ -17891,7 +17973,7 @@ export const cacaEstelarProfissionalExample: ExtensionExample = {
                   op: '||',
                   left: {
                     type: 'g3k:keyDown',
-                    key: 'espaço',
+                    key: 'Space',
                   },
                   right: {
                     type: 'g3k:mousePressed',
@@ -17977,8 +18059,9 @@ export const cacaEstelarProfissionalExample: ExtensionExample = {
             {
               type: 'if',
               cond: {
-                type: 'g3k:randomChance',
-                percent: {
+                type: 'g3k:random',
+                op: 'chance',
+                a: {
                   type: 'num',
                   value: 1,
                 },
@@ -17989,12 +18072,13 @@ export const cacaEstelarProfissionalExample: ExtensionExample = {
                   charVar: 'ela',
                   key: 'alvoX',
                   value: {
-                    type: 'g3k:randomBetween',
-                    from: {
+                    type: 'g3k:random',
+                    op: 'entre',
+                    a: {
                       type: 'num',
                       value: -20,
                     },
-                    to: {
+                    b: {
                       type: 'num',
                       value: 20,
                     },
@@ -18005,12 +18089,13 @@ export const cacaEstelarProfissionalExample: ExtensionExample = {
                   charVar: 'ela',
                   key: 'alvoZ',
                   value: {
-                    type: 'g3k:randomBetween',
-                    from: {
+                    type: 'g3k:random',
+                    op: 'entre',
+                    a: {
                       type: 'num',
                       value: -20,
                     },
-                    to: {
+                    b: {
                       type: 'num',
                       value: 20,
                     },
@@ -18217,12 +18302,13 @@ export const cacaEstelarProfissionalExample: ExtensionExample = {
                   type: 'g3k:spawn',
                   mold: 'caca',
                   x: {
-                    type: 'g3k:randomBetween',
-                    from: {
+                    type: 'g3k:random',
+                    op: 'entre',
+                    a: {
                       type: 'num',
                       value: -20,
                     },
-                    to: {
+                    b: {
                       type: 'num',
                       value: 20,
                     },
@@ -18232,12 +18318,13 @@ export const cacaEstelarProfissionalExample: ExtensionExample = {
                     value: 1,
                   },
                   z: {
-                    type: 'g3k:randomBetween',
-                    from: {
+                    type: 'g3k:random',
+                    op: 'entre',
+                    a: {
                       type: 'num',
                       value: -20,
                     },
-                    to: {
+                    b: {
                       type: 'num',
                       value: 20,
                     },
@@ -18254,8 +18341,8 @@ export const cacaEstelarProfissionalExample: ExtensionExample = {
               },
             },
             {
-              type: 'g3k:hudText',
-              slot: 'top-left',
+              type: 'g3k:cornerText',
+              corner: 'top-left',
               text: {
                 type: 'binop',
                 op: '+',
@@ -18278,8 +18365,8 @@ export const cacaEstelarProfissionalExample: ExtensionExample = {
               },
             },
             {
-              type: 'g3k:hudText',
-              slot: 'top-right',
+              type: 'g3k:cornerText',
+              corner: 'top-right',
               text: {
                 type: 'str',
                 value: 'Atire com espaço ou clique',
@@ -18765,54 +18852,25 @@ export const cercoNaBaseProfissionalExample: ExtensionExample = {
           vignette: true,
         },
         {
-          type: 'g3k:setScreenText',
-          screen: 'menu',
-          title: {
-            type: 'str',
-            value: 'Cerco na Base Profissional',
-          },
-          text: {
-            type: 'str',
-            value:
-              'Olhe com o mouse e ande com WASD. Segure o espaço para CARREGAR o blaster e solte para atirar: quanto mais carregado, mais forte. A munição recarrega sozinha. Derrote 12 aliens antes que a vida acabe!',
-          },
-          button: {
-            type: 'str',
-            value: 'Defender',
-          },
+          type: 'g3k:screenText',
+          screen: 'inicio',
+          title: 'Cerco na Base Profissional',
+          text: 'Olhe com o mouse e ande com WASD. Segure o espaço para CARREGAR o blaster e solte para atirar: quanto mais carregado, mais forte. A munição recarrega sozinha. Derrote 12 aliens antes que a vida acabe!',
+          button: 'Defender',
         },
         {
-          type: 'g3k:setScreenText',
+          type: 'g3k:screenText',
           screen: 'vitoria',
-          title: {
-            type: 'str',
-            value: 'Base salva!',
-          },
-          text: {
-            type: 'str',
-            value: 'Você segurou a invasão e derrotou os 12 aliens.',
-          },
-          button: {
-            type: 'str',
-            value: 'Defender de novo',
-          },
+          title: 'Base salva!',
+          text: 'Você segurou a invasão e derrotou os 12 aliens.',
+          button: 'Defender de novo',
         },
         {
-          type: 'g3k:setScreenText',
+          type: 'g3k:screenText',
           screen: 'fim',
-          title: {
-            type: 'str',
-            value: 'A base caiu...',
-          },
-          text: {
-            type: 'str',
-            value:
-              'Os aliens passaram. Carregue o tiro para acertar mais forte e cuide da munição!',
-          },
-          button: {
-            type: 'str',
-            value: 'Tentar de novo',
-          },
+          title: 'A base caiu...',
+          text: 'Os aliens passaram. Carregue o tiro para acertar mais forte e cuide da munição!',
+          button: 'Tentar de novo',
         },
         {
           type: 'g3k:makeTrigger',
@@ -19175,7 +19233,7 @@ export const cercoNaBaseProfissionalExample: ExtensionExample = {
                 op: '||',
                 left: {
                   type: 'g3k:keyDown',
-                  key: 'espaço',
+                  key: 'Space',
                 },
                 right: {
                   type: 'g3k:mouseDown',
@@ -19422,12 +19480,12 @@ export const cercoNaBaseProfissionalExample: ExtensionExample = {
                       },
                     },
                     {
-                      type: 'g3k:cameraShake',
+                      type: 'g3k:shakeCamera',
                       strength: {
                         type: 'num',
                         value: 0.3,
                       },
-                      seconds: {
+                      secs: {
                         type: 'num',
                         value: 0.2,
                       },
@@ -19550,12 +19608,13 @@ export const cercoNaBaseProfissionalExample: ExtensionExample = {
                   type: 'g3k:spawn',
                   mold: 'alien',
                   x: {
-                    type: 'g3k:randomBetween',
-                    from: {
+                    type: 'g3k:random',
+                    op: 'entre',
+                    a: {
                       type: 'num',
                       value: -18,
                     },
-                    to: {
+                    b: {
                       type: 'num',
                       value: 18,
                     },
@@ -19565,12 +19624,13 @@ export const cercoNaBaseProfissionalExample: ExtensionExample = {
                     value: 0.5,
                   },
                   z: {
-                    type: 'g3k:randomBetween',
-                    from: {
+                    type: 'g3k:random',
+                    op: 'entre',
+                    a: {
                       type: 'num',
                       value: -18,
                     },
-                    to: {
+                    b: {
                       type: 'num',
                       value: 18,
                     },
@@ -19595,8 +19655,8 @@ export const cercoNaBaseProfissionalExample: ExtensionExample = {
               },
             },
             {
-              type: 'g3k:hudText',
-              slot: 'top-left',
+              type: 'g3k:cornerText',
+              corner: 'top-left',
               text: {
                 type: 'binop',
                 op: '+',
@@ -19619,8 +19679,8 @@ export const cercoNaBaseProfissionalExample: ExtensionExample = {
               },
             },
             {
-              type: 'g3k:hudText',
-              slot: 'top-right',
+              type: 'g3k:cornerText',
+              corner: 'top-right',
               text: {
                 type: 'binop',
                 op: '+',
@@ -19639,8 +19699,8 @@ export const cercoNaBaseProfissionalExample: ExtensionExample = {
               },
             },
             {
-              type: 'g3k:hudText',
-              slot: 'bottom-left',
+              type: 'g3k:cornerText',
+              corner: 'bottom-left',
               text: {
                 type: 'binop',
                 op: '+',
@@ -20070,54 +20130,25 @@ export const minaDeCristaisProfissionalExample: ExtensionExample = {
           vignette: true,
         },
         {
-          type: 'g3k:setScreenText',
-          screen: 'menu',
-          title: {
-            type: 'str',
-            value: 'Mina de Cristais Profissional',
-          },
-          text: {
-            type: 'str',
-            value:
-              'Ande com WASD e clique nos blocos para CAVAR. A pedra é só entulho, mas os cristais brilhantes valem ponto! Veias novas de minério vão surgindo. Colete 10 cristais antes que o tempo acabe.',
-          },
-          button: {
-            type: 'str',
-            value: 'Minerar',
-          },
+          type: 'g3k:screenText',
+          screen: 'inicio',
+          title: 'Mina de Cristais Profissional',
+          text: 'Ande com WASD e clique nos blocos para CAVAR. A pedra é só entulho, mas os cristais brilhantes valem ponto! Veias novas de minério vão surgindo. Colete 10 cristais antes que o tempo acabe.',
+          button: 'Minerar',
         },
         {
-          type: 'g3k:setScreenText',
+          type: 'g3k:screenText',
           screen: 'vitoria',
-          title: {
-            type: 'str',
-            value: 'Filão lendário!',
-          },
-          text: {
-            type: 'str',
-            value: 'Você garimpou os 10 cristais da mina.',
-          },
-          button: {
-            type: 'str',
-            value: 'Minerar de novo',
-          },
+          title: 'Filão lendário!',
+          text: 'Você garimpou os 10 cristais da mina.',
+          button: 'Minerar de novo',
         },
         {
-          type: 'g3k:setScreenText',
+          type: 'g3k:screenText',
           screen: 'fim',
-          title: {
-            type: 'str',
-            value: 'A mina fechou...',
-          },
-          text: {
-            type: 'str',
-            value:
-              'O tempo acabou. Cave a pedra rápido para achar os cristais escondidos entre ela!',
-          },
-          button: {
-            type: 'str',
-            value: 'Tentar de novo',
-          },
+          title: 'A mina fechou...',
+          text: 'O tempo acabou. Cave a pedra rápido para achar os cristais escondidos entre ela!',
+          button: 'Tentar de novo',
         },
         {
           type: 'var',
@@ -20750,8 +20781,9 @@ export const minaDeCristaisProfissionalExample: ExtensionExample = {
                 {
                   type: 'if',
                   cond: {
-                    type: 'g3k:randomChance',
-                    percent: {
+                    type: 'g3k:random',
+                    op: 'chance',
+                    a: {
                       type: 'num',
                       value: 40,
                     },
@@ -20761,12 +20793,13 @@ export const minaDeCristaisProfissionalExample: ExtensionExample = {
                       type: 'g3k:spawn',
                       mold: 'cristal',
                       x: {
-                        type: 'g3k:randomBetween',
-                        from: {
+                        type: 'g3k:random',
+                        op: 'entre',
+                        a: {
                           type: 'num',
                           value: -9,
                         },
-                        to: {
+                        b: {
                           type: 'num',
                           value: 9,
                         },
@@ -20776,12 +20809,13 @@ export const minaDeCristaisProfissionalExample: ExtensionExample = {
                         value: 0.8,
                       },
                       z: {
-                        type: 'g3k:randomBetween',
-                        from: {
+                        type: 'g3k:random',
+                        op: 'entre',
+                        a: {
                           type: 'num',
                           value: -9,
                         },
-                        to: {
+                        b: {
                           type: 'num',
                           value: 6,
                         },
@@ -20793,12 +20827,13 @@ export const minaDeCristaisProfissionalExample: ExtensionExample = {
                       type: 'g3k:spawn',
                       mold: 'pedra',
                       x: {
-                        type: 'g3k:randomBetween',
-                        from: {
+                        type: 'g3k:random',
+                        op: 'entre',
+                        a: {
                           type: 'num',
                           value: -9,
                         },
-                        to: {
+                        b: {
                           type: 'num',
                           value: 9,
                         },
@@ -20808,12 +20843,13 @@ export const minaDeCristaisProfissionalExample: ExtensionExample = {
                         value: 0.8,
                       },
                       z: {
-                        type: 'g3k:randomBetween',
-                        from: {
+                        type: 'g3k:random',
+                        op: 'entre',
+                        a: {
                           type: 'num',
                           value: -9,
                         },
-                        to: {
+                        b: {
                           type: 'num',
                           value: 6,
                         },
@@ -20824,8 +20860,8 @@ export const minaDeCristaisProfissionalExample: ExtensionExample = {
               ],
             },
             {
-              type: 'g3k:hudText',
-              slot: 'top-left',
+              type: 'g3k:cornerText',
+              corner: 'top-left',
               text: {
                 type: 'binop',
                 op: '+',
@@ -20848,8 +20884,8 @@ export const minaDeCristaisProfissionalExample: ExtensionExample = {
               },
             },
             {
-              type: 'g3k:hudText',
-              slot: 'top-right',
+              type: 'g3k:cornerText',
+              corner: 'top-right',
               text: {
                 type: 'binop',
                 op: '+',
@@ -20935,4 +20971,4088 @@ export const minaDeCristaisProfissionalExample: ExtensionExample = {
       },
     ],
   },
+}
+
+/**
+ * Exemplo "Arena dos Cristais" (review 3D, lote 12): o jogo completo mais curto do kit, logo
+ * depois do Chefão. Guardas que patrulham e perseguem, vida, pontos, contagem, a chave na
+ * mochila que abre a saída, duas fases e o recorde guardado neste computador. A IR é gerada
+ * de `__gen_arenaCristais.ts` por `bun run gen:game-3d-examples`.
+ */
+export const arenaDosCristaisExample: ExtensionExample = {
+  name: 'Arena dos Cristais',
+  experience: 'game',
+  description:
+    'Pegue os cristais, ache a chave e saia pela porta antes do tempo. Os guardas patrulham e correm atrás de você; a segunda fase tem mais guardas, e o recorde fica guardado no computador.',
+  ir: {
+    version: 2,
+    html: [],
+    css: [],
+    behavior: {
+      molds: [
+        {
+          type: 'g3k:defineMold',
+          name: 'heroi',
+          health: {
+            type: 'num',
+            value: 3,
+          },
+          speed: {
+            type: 'num',
+            value: 7,
+          },
+          body: [
+            {
+              type: 'g3k:part',
+              shape: 'box',
+              material: 'normal',
+              color: '#facc15',
+              texture: '',
+              model: '',
+              w: {
+                type: 'num',
+                value: 0.9,
+              },
+              h: {
+                type: 'num',
+                value: 1.2,
+              },
+              d: {
+                type: 'num',
+                value: 0.9,
+              },
+              x: {
+                type: 'num',
+                value: 0,
+              },
+              y: {
+                type: 'num',
+                value: 0.6,
+              },
+              z: {
+                type: 'num',
+                value: 0,
+              },
+            },
+            {
+              type: 'g3k:part',
+              shape: 'sphere',
+              material: 'normal',
+              color: '#fef9c3',
+              texture: '',
+              model: '',
+              w: {
+                type: 'num',
+                value: 0.7,
+              },
+              h: {
+                type: 'num',
+                value: 0.7,
+              },
+              d: {
+                type: 'num',
+                value: 0.7,
+              },
+              x: {
+                type: 'num',
+                value: 0,
+              },
+              y: {
+                type: 'num',
+                value: 1.5,
+              },
+              z: {
+                type: 'num',
+                value: 0,
+              },
+            },
+          ],
+        },
+        {
+          type: 'g3k:defineMold',
+          name: 'guarda',
+          health: {
+            type: 'num',
+            value: 10,
+          },
+          speed: {
+            type: 'num',
+            value: 4,
+          },
+          body: [
+            {
+              type: 'g3k:part',
+              shape: 'box',
+              material: 'normal',
+              color: '#dc2626',
+              texture: '',
+              model: '',
+              w: {
+                type: 'num',
+                value: 1,
+              },
+              h: {
+                type: 'num',
+                value: 1.4,
+              },
+              d: {
+                type: 'num',
+                value: 1,
+              },
+              x: {
+                type: 'num',
+                value: 0,
+              },
+              y: {
+                type: 'num',
+                value: 0.7,
+              },
+              z: {
+                type: 'num',
+                value: 0,
+              },
+            },
+            {
+              type: 'g3k:part',
+              shape: 'cone',
+              material: 'brilho',
+              color: '#fca5a5',
+              texture: '',
+              model: '',
+              w: {
+                type: 'num',
+                value: 0.4,
+              },
+              h: {
+                type: 'num',
+                value: 0.5,
+              },
+              d: {
+                type: 'num',
+                value: 0.4,
+              },
+              x: {
+                type: 'num',
+                value: 0,
+              },
+              y: {
+                type: 'num',
+                value: 1.1,
+              },
+              z: {
+                type: 'num',
+                value: 0.6,
+              },
+            },
+          ],
+        },
+        {
+          type: 'g3k:defineMold',
+          name: 'cristal',
+          health: {
+            type: 'num',
+            value: 1,
+          },
+          speed: {
+            type: 'num',
+            value: 0,
+          },
+          body: [
+            {
+              type: 'g3k:part',
+              shape: 'cone',
+              material: 'brilho',
+              color: '#22d3ee',
+              texture: '',
+              model: '',
+              w: {
+                type: 'num',
+                value: 0.8,
+              },
+              h: {
+                type: 'num',
+                value: 1.2,
+              },
+              d: {
+                type: 'num',
+                value: 0.8,
+              },
+              x: {
+                type: 'num',
+                value: 0,
+              },
+              y: {
+                type: 'num',
+                value: 0.8,
+              },
+              z: {
+                type: 'num',
+                value: 0,
+              },
+            },
+          ],
+        },
+        {
+          type: 'g3k:defineMold',
+          name: 'chave',
+          health: {
+            type: 'num',
+            value: 1,
+          },
+          speed: {
+            type: 'num',
+            value: 0,
+          },
+          body: [
+            {
+              type: 'g3k:part',
+              shape: 'torus',
+              material: 'brilho',
+              color: '#f59e0b',
+              texture: '',
+              model: '',
+              w: {
+                type: 'num',
+                value: 0.8,
+              },
+              h: {
+                type: 'num',
+                value: 0.8,
+              },
+              d: {
+                type: 'num',
+                value: 0.2,
+              },
+              x: {
+                type: 'num',
+                value: 0,
+              },
+              y: {
+                type: 'num',
+                value: 1,
+              },
+              z: {
+                type: 'num',
+                value: 0,
+              },
+            },
+          ],
+        },
+        {
+          type: 'g3k:defineMold',
+          name: 'porta',
+          health: {
+            type: 'num',
+            value: 1,
+          },
+          speed: {
+            type: 'num',
+            value: 0,
+          },
+          body: [
+            {
+              type: 'g3k:part',
+              shape: 'box',
+              material: 'brilho',
+              color: '#a855f7',
+              texture: '',
+              model: '',
+              w: {
+                type: 'num',
+                value: 3,
+              },
+              h: {
+                type: 'num',
+                value: 3,
+              },
+              d: {
+                type: 'num',
+                value: 0.5,
+              },
+              x: {
+                type: 'num',
+                value: 0,
+              },
+              y: {
+                type: 'num',
+                value: 1.5,
+              },
+              z: {
+                type: 'num',
+                value: 0,
+              },
+            },
+          ],
+        },
+      ],
+      start: [
+        {
+          type: 'g3k:setup',
+          w: {
+            type: 'num',
+            value: 1280,
+          },
+          h: {
+            type: 'num',
+            value: 720,
+          },
+          world: {
+            type: 'num',
+            value: 40,
+          },
+          sky: '#0c4a6e',
+          ground: '#1e3a5f',
+        },
+        {
+          type: 'g3k:setPauseKey',
+          key: 'KeyP',
+        },
+        {
+          type: 'g3k:screenText',
+          screen: 'inicio',
+          title: 'Arena dos Cristais',
+          text: 'Pegue os cristais, ache a chave e saia pela porta. Fuja dos guardas: eles patrulham e correm atrás de você! São duas fases.',
+          button: 'Jogar',
+        },
+        {
+          type: 'g3k:screenText',
+          screen: 'vitoria',
+          title: 'Você saiu da arena!',
+          text: 'Venceu as duas fases.',
+          button: 'Jogar de novo',
+        },
+        {
+          type: 'g3k:screenText',
+          screen: 'fim',
+          title: 'Não foi desta vez...',
+          text: 'Os guardas te pegaram ou o tempo acabou. Tente de novo por outro caminho!',
+          button: 'Tentar de novo',
+        },
+        {
+          type: 'g3k:setPhysics',
+          mold: 'heroi',
+          kind: 'personagem',
+        },
+        {
+          type: 'g3k:setPhysics',
+          mold: 'guarda',
+          kind: 'personagem',
+        },
+        {
+          type: 'g3k:makeTrigger',
+          mold: 'cristal',
+        },
+        {
+          type: 'g3k:makeTrigger',
+          mold: 'chave',
+        },
+        {
+          type: 'g3k:makeTrigger',
+          mold: 'porta',
+        },
+        {
+          type: 'g3k:showHealthBar',
+          mold: 'heroi',
+          on: true,
+        },
+        {
+          type: 'var',
+          name: 'recorde',
+          value: {
+            type: 'num',
+            value: 0,
+          },
+        },
+      ],
+      events: [
+        {
+          type: 'g3k:onEnterState',
+          name: 'jogando',
+          body: [
+            {
+              type: 'assign',
+              name: 'recorde',
+              value: {
+                type: 'g3k:savedValue',
+                name: 'recorde',
+                fallback: {
+                  type: 'num',
+                  value: 0,
+                },
+              },
+            },
+            {
+              type: 'g3k:setAmbient',
+              intensity: {
+                type: 'num',
+                value: 0.6,
+              },
+            },
+          ],
+        },
+        {
+          type: 'g3k:onLevelStart',
+          body: [
+            {
+              type: 'g3k:spawnNamed',
+              varName: 'heroi',
+              mold: 'heroi',
+              x: {
+                type: 'num',
+                value: 0,
+              },
+              y: {
+                type: 'num',
+                value: 1,
+              },
+              z: {
+                type: 'num',
+                value: 14,
+              },
+            },
+            {
+              type: 'g3k:cameraFollow',
+              charVar: 'heroi',
+              dist: {
+                type: 'num',
+                value: 12,
+              },
+              height: {
+                type: 'num',
+                value: 9,
+              },
+            },
+            {
+              type: 'g3k:say',
+              charVar: 'heroi',
+              text: {
+                type: 'binop',
+                op: '+',
+                left: {
+                  type: 'binop',
+                  op: '+',
+                  left: {
+                    type: 'str',
+                    value: 'Fase ',
+                  },
+                  right: {
+                    type: 'g3k:levelNumber',
+                  },
+                },
+                right: {
+                  type: 'str',
+                  value: '!',
+                },
+              },
+              seconds: {
+                type: 'num',
+                value: 2,
+              },
+            },
+            {
+              type: 'g3k:spawn',
+              mold: 'porta',
+              x: {
+                type: 'num',
+                value: 0,
+              },
+              y: {
+                type: 'num',
+                value: 0,
+              },
+              z: {
+                type: 'num',
+                value: -17,
+              },
+            },
+            {
+              type: 'g3k:spawn',
+              mold: 'cristal',
+              x: {
+                type: 'num',
+                value: -8,
+              },
+              y: {
+                type: 'num',
+                value: 0,
+              },
+              z: {
+                type: 'num',
+                value: 8,
+              },
+            },
+            {
+              type: 'g3k:spawn',
+              mold: 'cristal',
+              x: {
+                type: 'num',
+                value: 8,
+              },
+              y: {
+                type: 'num',
+                value: 0,
+              },
+              z: {
+                type: 'num',
+                value: 8,
+              },
+            },
+            {
+              type: 'g3k:spawn',
+              mold: 'cristal',
+              x: {
+                type: 'num',
+                value: -8,
+              },
+              y: {
+                type: 'num',
+                value: 0,
+              },
+              z: {
+                type: 'num',
+                value: -8,
+              },
+            },
+            {
+              type: 'g3k:spawn',
+              mold: 'cristal',
+              x: {
+                type: 'num',
+                value: 8,
+              },
+              y: {
+                type: 'num',
+                value: 0,
+              },
+              z: {
+                type: 'num',
+                value: -8,
+              },
+            },
+            {
+              type: 'g3k:spawn',
+              mold: 'guarda',
+              x: {
+                type: 'num',
+                value: 0,
+              },
+              y: {
+                type: 'num',
+                value: 1,
+              },
+              z: {
+                type: 'num',
+                value: 0,
+              },
+            },
+            {
+              type: 'if',
+              cond: {
+                type: 'binop',
+                op: '===',
+                left: {
+                  type: 'g3k:levelNumber',
+                },
+                right: {
+                  type: 'num',
+                  value: 1,
+                },
+              },
+              then: [
+                {
+                  type: 'g3k:spawn',
+                  mold: 'chave',
+                  x: {
+                    type: 'num',
+                    value: -15,
+                  },
+                  y: {
+                    type: 'num',
+                    value: 0,
+                  },
+                  z: {
+                    type: 'num',
+                    value: 0,
+                  },
+                },
+              ],
+              else: [
+                {
+                  type: 'g3k:spawn',
+                  mold: 'chave',
+                  x: {
+                    type: 'num',
+                    value: 15,
+                  },
+                  y: {
+                    type: 'num',
+                    value: 0,
+                  },
+                  z: {
+                    type: 'num',
+                    value: 0,
+                  },
+                },
+                {
+                  type: 'g3k:spawn',
+                  mold: 'guarda',
+                  x: {
+                    type: 'num',
+                    value: 0,
+                  },
+                  y: {
+                    type: 'num',
+                    value: 1,
+                  },
+                  z: {
+                    type: 'num',
+                    value: -10,
+                  },
+                },
+                {
+                  type: 'g3k:spawn',
+                  mold: 'guarda',
+                  x: {
+                    type: 'num',
+                    value: 0,
+                  },
+                  y: {
+                    type: 'num',
+                    value: 1,
+                  },
+                  z: {
+                    type: 'num',
+                    value: 5,
+                  },
+                },
+              ],
+            },
+            {
+              type: 'g3k:timer',
+              op: 'comecar',
+              secs: {
+                type: 'num',
+                value: 60,
+              },
+            },
+          ],
+        },
+        {
+          type: 'g3k:onExitEntityState',
+          mold: 'guarda',
+          state: 'perseguir',
+          itemName: 'ela',
+          body: [
+            {
+              type: 'g3k:say',
+              charVar: 'ela',
+              text: {
+                type: 'str',
+                value: 'Escapou...',
+              },
+              seconds: {
+                type: 'num',
+                value: 1,
+              },
+            },
+          ],
+        },
+        {
+          type: 'g3k:onOverlap',
+          mold: 'cristal',
+          zoneName: 'zona',
+          whoName: 'quem',
+          body: [
+            {
+              type: 'if',
+              cond: {
+                type: 'g3k:isMold',
+                charVar: 'quem',
+                mold: 'heroi',
+              },
+              then: [
+                {
+                  type: 'g3k:addScore',
+                  value: {
+                    type: 'num',
+                    value: 1,
+                  },
+                },
+                {
+                  type: 'g3k:playTone',
+                  freq: {
+                    type: 'num',
+                    value: 880,
+                  },
+                  ms: {
+                    type: 'num',
+                    value: 120,
+                  },
+                },
+                {
+                  type: 'g3k:recycle',
+                  charVar: 'zona',
+                },
+              ],
+            },
+          ],
+        },
+        {
+          type: 'g3k:onOverlap',
+          mold: 'chave',
+          zoneName: 'zona',
+          whoName: 'quem',
+          body: [
+            {
+              type: 'if',
+              cond: {
+                type: 'g3k:isMold',
+                charVar: 'quem',
+                mold: 'heroi',
+              },
+              then: [
+                {
+                  type: 'g3k:bag',
+                  op: 'dar',
+                  item: 'chave',
+                  amount: {
+                    type: 'num',
+                    value: 1,
+                  },
+                },
+                {
+                  type: 'g3k:say',
+                  charVar: 'quem',
+                  text: {
+                    type: 'str',
+                    value: 'Peguei a chave!',
+                  },
+                  seconds: {
+                    type: 'num',
+                    value: 2,
+                  },
+                },
+                {
+                  type: 'g3k:playEffect',
+                  fx: 'powerup',
+                },
+                {
+                  type: 'g3k:recycle',
+                  charVar: 'zona',
+                },
+              ],
+            },
+          ],
+        },
+        {
+          type: 'g3k:onOverlap',
+          mold: 'porta',
+          zoneName: 'zona',
+          whoName: 'quem',
+          body: [
+            {
+              type: 'if',
+              cond: {
+                type: 'g3k:isMold',
+                charVar: 'quem',
+                mold: 'heroi',
+              },
+              then: [
+                {
+                  type: 'if',
+                  cond: {
+                    type: 'g3k:bagValue',
+                    op: 'tem',
+                    item: 'chave',
+                  },
+                  then: [
+                    {
+                      type: 'g3k:bag',
+                      op: 'tirar',
+                      item: 'chave',
+                      amount: {
+                        type: 'num',
+                        value: 1,
+                      },
+                    },
+                    {
+                      type: 'g3k:playEffect',
+                      fx: 'win',
+                    },
+                    {
+                      type: 'if',
+                      cond: {
+                        type: 'binop',
+                        op: '<',
+                        left: {
+                          type: 'g3k:levelNumber',
+                        },
+                        right: {
+                          type: 'num',
+                          value: 2,
+                        },
+                      },
+                      then: [
+                        {
+                          type: 'g3k:nextLevel',
+                        },
+                      ],
+                      else: [
+                        {
+                          type: 'if',
+                          cond: {
+                            type: 'binop',
+                            op: '>',
+                            left: {
+                              type: 'g3k:gameValue',
+                              what: 'pontos',
+                            },
+                            right: {
+                              type: 'var',
+                              name: 'recorde',
+                            },
+                          },
+                          then: [
+                            {
+                              type: 'g3k:saveValue',
+                              name: 'recorde',
+                              value: {
+                                type: 'g3k:gameValue',
+                                what: 'pontos',
+                              },
+                            },
+                          ],
+                        },
+                        {
+                          type: 'g3k:timer',
+                          op: 'parar',
+                        },
+                        {
+                          type: 'g3k:gameOver',
+                          result: 'ganhou',
+                        },
+                      ],
+                    },
+                  ],
+                  else: [
+                    {
+                      type: 'g3k:say',
+                      charVar: 'quem',
+                      text: {
+                        type: 'str',
+                        value: 'Falta a chave!',
+                      },
+                      seconds: {
+                        type: 'num',
+                        value: 1.5,
+                      },
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+        {
+          type: 'g3k:onEntityDeath',
+          mold: 'heroi',
+          itemName: 'ela',
+          body: [
+            {
+              type: 'g3k:playEffect',
+              fx: 'gameover',
+            },
+            {
+              type: 'g3k:gameOver',
+              result: 'perdeu',
+            },
+          ],
+        },
+        {
+          type: 'g3k:onGame',
+          event: 'tempo-acabou',
+          body: [
+            {
+              type: 'g3k:gameOver',
+              result: 'perdeu',
+            },
+          ],
+        },
+      ],
+      loops: [
+        {
+          type: 'g3k:onEntityStateUpdate',
+          mold: 'heroi',
+          state: 'parado',
+          itemName: 'ela',
+          dtName: 'dt',
+          body: [
+            {
+              type: 'g3k:moveWithKeys',
+              charVar: 'ela',
+              speed: {
+                type: 'num',
+                value: 7,
+              },
+            },
+            {
+              type: 'g3k:faceVelocity',
+              charVar: 'ela',
+            },
+          ],
+        },
+        {
+          type: 'g3k:onEntityStateUpdate',
+          mold: 'guarda',
+          state: 'parado',
+          itemName: 'ela',
+          dtName: 'dt',
+          body: [
+            {
+              type: 'g3k:patrol',
+              charVar: 'ela',
+              ax: {
+                type: 'num',
+                value: -12,
+              },
+              az: {
+                type: 'g3k:posOf',
+                axis: 'z',
+                charVar: 'ela',
+              },
+              bx: {
+                type: 'num',
+                value: 12,
+              },
+              bz: {
+                type: 'g3k:posOf',
+                axis: 'z',
+                charVar: 'ela',
+              },
+              speed: {
+                type: 'num',
+                value: 3,
+              },
+            },
+            {
+              type: 'g3k:storeNearest',
+              varName: 'heroi',
+              mold: 'heroi',
+              charVar: 'ela',
+            },
+            {
+              type: 'if',
+              cond: {
+                type: 'logical',
+                op: '&&',
+                left: {
+                  type: 'g3k:exists',
+                  charVar: 'heroi',
+                },
+                right: {
+                  type: 'binop',
+                  op: '<',
+                  left: {
+                    type: 'g3k:distanceBetween',
+                    aVar: 'ela',
+                    bVar: 'heroi',
+                  },
+                  right: {
+                    type: 'num',
+                    value: 6,
+                  },
+                },
+              },
+              then: [
+                {
+                  type: 'g3k:setEntityState',
+                  charVar: 'ela',
+                  state: 'perseguir',
+                },
+              ],
+            },
+          ],
+        },
+        {
+          type: 'g3k:onEntityStateUpdate',
+          mold: 'guarda',
+          state: 'perseguir',
+          itemName: 'ela',
+          dtName: 'dt',
+          body: [
+            {
+              type: 'g3k:storeNearest',
+              varName: 'heroi',
+              mold: 'heroi',
+              charVar: 'ela',
+            },
+            {
+              type: 'if',
+              cond: {
+                type: 'logical',
+                op: '&&',
+                left: {
+                  type: 'g3k:exists',
+                  charVar: 'heroi',
+                },
+                right: {
+                  type: 'binop',
+                  op: '<',
+                  left: {
+                    type: 'g3k:distanceBetween',
+                    aVar: 'ela',
+                    bVar: 'heroi',
+                  },
+                  right: {
+                    type: 'num',
+                    value: 10,
+                  },
+                },
+              },
+              then: [
+                {
+                  type: 'g3k:seek',
+                  charVar: 'ela',
+                  targetVar: 'heroi',
+                },
+                {
+                  type: 'g3k:faceVelocity',
+                  charVar: 'ela',
+                },
+                {
+                  type: 'if',
+                  cond: {
+                    type: 'g3k:touches',
+                    aVar: 'ela',
+                    bVar: 'heroi',
+                    dist: {
+                      type: 'num',
+                      value: 1.4,
+                    },
+                  },
+                  then: [
+                    {
+                      type: 'g3k:hurt',
+                      charVar: 'heroi',
+                      amount: {
+                        type: 'num',
+                        value: 1,
+                      },
+                    },
+                    {
+                      type: 'g3k:shakeCamera',
+                      strength: {
+                        type: 'num',
+                        value: 0.3,
+                      },
+                      secs: {
+                        type: 'num',
+                        value: 0.2,
+                      },
+                    },
+                  ],
+                },
+              ],
+              else: [
+                {
+                  type: 'g3k:setEntityState',
+                  charVar: 'ela',
+                  state: 'parado',
+                },
+              ],
+            },
+          ],
+        },
+        {
+          type: 'g3k:onUpdate',
+          dtName: 'dt',
+          body: [
+            {
+              type: 'g3k:cornerText',
+              corner: 'top-left',
+              text: {
+                type: 'binop',
+                op: '+',
+                left: {
+                  type: 'binop',
+                  op: '+',
+                  left: {
+                    type: 'str',
+                    value: 'Fase ',
+                  },
+                  right: {
+                    type: 'g3k:levelNumber',
+                  },
+                },
+                right: {
+                  type: 'str',
+                  value: ' de 2',
+                },
+              },
+            },
+            {
+              type: 'g3k:cornerText',
+              corner: 'bottom-right',
+              text: {
+                type: 'binop',
+                op: '+',
+                left: {
+                  type: 'str',
+                  value: 'Recorde: ',
+                },
+                right: {
+                  type: 'var',
+                  name: 'recorde',
+                },
+              },
+            },
+          ],
+        },
+      ],
+    },
+    extensions: [{ extensionId: 'game-3d-advanced' }],
+  },
+}
+
+/**
+ * Exemplo "Herói do Molda" (review 3D, lote 12): o boneco com ossos do Molda (o mesmo .glb do
+ * "Meu herói do Molda" do Jogo 3D) como peça "modelo importado", uma animação por estado, o
+ * pulo "uma vez" e o "Quando … terminar a animação". A IR é gerada de `__gen_heroiMolda.ts`.
+ */
+export const heroiDoMoldaExample: ExtensionExample = {
+  name: 'Herói do Molda',
+  experience: 'game',
+  description:
+    'Um personagem feito no Molda anda, acena parado e se estica no pulo: cada estado toca uma animação. Pegue as cinco estrelas e depois troque pelo seu herói do Molda.',
+  ir: {
+    version: 2,
+    html: [],
+    css: [],
+    behavior: {
+      molds: [
+        {
+          type: 'g3k:defineMold',
+          name: 'heroi',
+          health: {
+            type: 'num',
+            value: 3,
+          },
+          speed: {
+            type: 'num',
+            value: 5,
+          },
+          body: [
+            {
+              type: 'g3k:part',
+              shape: 'modelo',
+              material: 'normal',
+              color: '#22d3ee',
+              texture: '',
+              model: 'heroi-do-molda',
+              w: {
+                type: 'num',
+                value: 1.4,
+              },
+              h: {
+                type: 'num',
+                value: 2,
+              },
+              d: {
+                type: 'num',
+                value: 1.4,
+              },
+              x: {
+                type: 'num',
+                value: 0,
+              },
+              y: {
+                type: 'num',
+                value: 1,
+              },
+              z: {
+                type: 'num',
+                value: 0,
+              },
+            },
+          ],
+        },
+        {
+          type: 'g3k:defineMold',
+          name: 'estrela',
+          health: {
+            type: 'num',
+            value: 1,
+          },
+          speed: {
+            type: 'num',
+            value: 0,
+          },
+          body: [
+            {
+              type: 'g3k:part',
+              shape: 'cone',
+              material: 'brilho',
+              color: '#facc15',
+              texture: '',
+              model: '',
+              w: {
+                type: 'num',
+                value: 0.8,
+              },
+              h: {
+                type: 'num',
+                value: 0.8,
+              },
+              d: {
+                type: 'num',
+                value: 0.8,
+              },
+              x: {
+                type: 'num',
+                value: 0,
+              },
+              y: {
+                type: 'num',
+                value: 0.8,
+              },
+              z: {
+                type: 'num',
+                value: 0,
+              },
+            },
+          ],
+        },
+        {
+          type: 'g3k:defineMold',
+          name: 'floco',
+          health: {
+            type: 'num',
+            value: 1,
+          },
+          speed: {
+            type: 'num',
+            value: 0,
+          },
+          body: [
+            {
+              type: 'g3k:part',
+              shape: 'box',
+              material: 'vidro',
+              color: '#bae6fd',
+              texture: '',
+              model: '',
+              w: {
+                type: 'num',
+                value: 1,
+              },
+              h: {
+                type: 'num',
+                value: 0.15,
+              },
+              d: {
+                type: 'num',
+                value: 0.15,
+              },
+              x: {
+                type: 'num',
+                value: 0,
+              },
+              y: {
+                type: 'num',
+                value: 0.8,
+              },
+              z: {
+                type: 'num',
+                value: 0,
+              },
+            },
+            {
+              type: 'g3k:part',
+              shape: 'box',
+              material: 'vidro',
+              color: '#bae6fd',
+              texture: '',
+              model: '',
+              w: {
+                type: 'num',
+                value: 0.15,
+              },
+              h: {
+                type: 'num',
+                value: 1,
+              },
+              d: {
+                type: 'num',
+                value: 0.15,
+              },
+              x: {
+                type: 'num',
+                value: 0,
+              },
+              y: {
+                type: 'num',
+                value: 0.8,
+              },
+              z: {
+                type: 'num',
+                value: 0,
+              },
+            },
+            {
+              type: 'g3k:part',
+              shape: 'sphere',
+              material: 'brilho',
+              color: '#e0f2fe',
+              texture: '',
+              model: '',
+              w: {
+                type: 'num',
+                value: 0.35,
+              },
+              h: {
+                type: 'num',
+                value: 0.35,
+              },
+              d: {
+                type: 'num',
+                value: 0.35,
+              },
+              x: {
+                type: 'num',
+                value: 0,
+              },
+              y: {
+                type: 'num',
+                value: 0.8,
+              },
+              z: {
+                type: 'num',
+                value: 0,
+              },
+            },
+          ],
+        },
+        {
+          type: 'g3k:stateTimer',
+          mold: 'heroi',
+          state: 'congelado',
+          sec: {
+            type: 'num',
+            value: 1.5,
+          },
+          next: 'parado',
+        },
+      ],
+      start: [
+        {
+          type: 'g3k:setup',
+          w: {
+            type: 'num',
+            value: 1280,
+          },
+          h: {
+            type: 'num',
+            value: 720,
+          },
+          world: {
+            type: 'num',
+            value: 30,
+          },
+          sky: '#7dd3fc',
+          ground: '#4ade80',
+        },
+        {
+          type: 'g3k:screenText',
+          screen: 'inicio',
+          title: 'Herói do Molda',
+          text: 'Um herói feito no Molda! Ande com WASD, pule com espaço e pegue as cinco estrelas. Cuidado com os flocos de gelo: eles congelam o herói. Troque pelo seu herói e use os nomes das animações dele.',
+          button: 'Jogar',
+        },
+        {
+          type: 'g3k:screenText',
+          screen: 'vitoria',
+          title: 'Todas as estrelas!',
+          text: 'O seu herói pegou as cinco.',
+          button: 'Jogar de novo',
+        },
+        {
+          type: 'g3k:setPhysics',
+          mold: 'heroi',
+          kind: 'personagem',
+        },
+        {
+          type: 'g3k:makeTrigger',
+          mold: 'estrela',
+        },
+        {
+          type: 'g3k:makeTrigger',
+          mold: 'floco',
+        },
+        {
+          type: 'g3k:setStateAnim',
+          mold: 'heroi',
+          state: 'parado',
+          clip: 'Acenar',
+        },
+        {
+          type: 'g3k:setStateAnim',
+          mold: 'heroi',
+          state: 'andando',
+          clip: 'Esticar',
+        },
+      ],
+      events: [
+        {
+          type: 'g3k:onEnterState',
+          name: 'jogando',
+          body: [
+            {
+              type: 'g3k:spawnNamed',
+              varName: 'heroi',
+              mold: 'heroi',
+              x: {
+                type: 'num',
+                value: 0,
+              },
+              y: {
+                type: 'num',
+                value: 0,
+              },
+              z: {
+                type: 'num',
+                value: 0,
+              },
+            },
+            {
+              type: 'g3k:cameraFollow',
+              charVar: 'heroi',
+              dist: {
+                type: 'num',
+                value: 8,
+              },
+              height: {
+                type: 'num',
+                value: 4,
+              },
+            },
+            {
+              type: 'g3k:spawn',
+              mold: 'estrela',
+              x: {
+                type: 'num',
+                value: 6,
+              },
+              y: {
+                type: 'num',
+                value: 0,
+              },
+              z: {
+                type: 'num',
+                value: 6,
+              },
+            },
+            {
+              type: 'g3k:spawn',
+              mold: 'estrela',
+              x: {
+                type: 'num',
+                value: -6,
+              },
+              y: {
+                type: 'num',
+                value: 0,
+              },
+              z: {
+                type: 'num',
+                value: 6,
+              },
+            },
+            {
+              type: 'g3k:spawn',
+              mold: 'estrela',
+              x: {
+                type: 'num',
+                value: 6,
+              },
+              y: {
+                type: 'num',
+                value: 0,
+              },
+              z: {
+                type: 'num',
+                value: -6,
+              },
+            },
+            {
+              type: 'g3k:spawn',
+              mold: 'estrela',
+              x: {
+                type: 'num',
+                value: -6,
+              },
+              y: {
+                type: 'num',
+                value: 0,
+              },
+              z: {
+                type: 'num',
+                value: -6,
+              },
+            },
+            {
+              type: 'g3k:spawn',
+              mold: 'estrela',
+              x: {
+                type: 'num',
+                value: 0,
+              },
+              y: {
+                type: 'num',
+                value: 0,
+              },
+              z: {
+                type: 'num',
+                value: -10,
+              },
+            },
+            {
+              type: 'g3k:spawn',
+              mold: 'floco',
+              x: {
+                type: 'num',
+                value: 4,
+              },
+              y: {
+                type: 'num',
+                value: 0,
+              },
+              z: {
+                type: 'num',
+                value: -3,
+              },
+            },
+            {
+              type: 'g3k:spawn',
+              mold: 'floco',
+              x: {
+                type: 'num',
+                value: -3,
+              },
+              y: {
+                type: 'num',
+                value: 0,
+              },
+              z: {
+                type: 'num',
+                value: 8,
+              },
+            },
+          ],
+        },
+        {
+          type: 'g3k:onEnterEntityState',
+          mold: 'heroi',
+          state: 'andando',
+          itemName: 'ela',
+          body: [
+            {
+              type: 'g3k:animSpeed',
+              charVar: 'ela',
+              speed: {
+                type: 'num',
+                value: 1.5,
+              },
+            },
+          ],
+        },
+        {
+          type: 'g3k:onEnterEntityState',
+          mold: 'heroi',
+          state: 'pulando',
+          itemName: 'ela',
+          body: [
+            {
+              type: 'g3k:animSpeed',
+              charVar: 'ela',
+              speed: {
+                type: 'num',
+                value: 1,
+              },
+            },
+            {
+              type: 'g3k:playAnim',
+              charVar: 'ela',
+              clip: 'Esticar',
+              loop: false,
+            },
+            {
+              type: 'g3k:jump',
+              charVar: 'ela',
+              force: {
+                type: 'num',
+                value: 7,
+              },
+            },
+            {
+              type: 'g3k:playEffect',
+              fx: 'jump',
+            },
+          ],
+        },
+        {
+          type: 'g3k:onAnimEnd',
+          mold: 'heroi',
+          clip: 'Esticar',
+          itemName: 'ela',
+          body: [
+            {
+              type: 'g3k:setEntityState',
+              charVar: 'ela',
+              state: 'parado',
+            },
+          ],
+        },
+        {
+          type: 'g3k:onEnterEntityState',
+          mold: 'heroi',
+          state: 'congelado',
+          itemName: 'ela',
+          body: [
+            {
+              type: 'g3k:setVelocity',
+              charVar: 'ela',
+              x: {
+                type: 'num',
+                value: 0,
+              },
+              y: {
+                type: 'num',
+                value: 0,
+              },
+              z: {
+                type: 'num',
+                value: 0,
+              },
+            },
+            {
+              type: 'g3k:stopAnim',
+              charVar: 'ela',
+            },
+            {
+              type: 'g3k:say',
+              charVar: 'ela',
+              text: {
+                type: 'str',
+                value: 'Brrr! Congelei!',
+              },
+              seconds: {
+                type: 'num',
+                value: 1.5,
+              },
+            },
+            {
+              type: 'g3k:playEffect',
+              fx: 'hurt',
+            },
+          ],
+        },
+        {
+          type: 'g3k:onOverlap',
+          mold: 'floco',
+          zoneName: 'zona',
+          whoName: 'quem',
+          body: [
+            {
+              type: 'if',
+              cond: {
+                type: 'g3k:isMold',
+                charVar: 'quem',
+                mold: 'heroi',
+              },
+              then: [
+                {
+                  type: 'g3k:setEntityState',
+                  charVar: 'quem',
+                  state: 'congelado',
+                },
+                {
+                  type: 'g3k:recycle',
+                  charVar: 'zona',
+                },
+              ],
+            },
+          ],
+        },
+        {
+          type: 'g3k:onOverlap',
+          mold: 'estrela',
+          zoneName: 'zona',
+          whoName: 'quem',
+          body: [
+            {
+              type: 'if',
+              cond: {
+                type: 'g3k:isMold',
+                charVar: 'quem',
+                mold: 'heroi',
+              },
+              then: [
+                {
+                  type: 'g3k:bag',
+                  op: 'dar',
+                  item: 'estrela',
+                  amount: {
+                    type: 'num',
+                    value: 1,
+                  },
+                },
+                {
+                  type: 'g3k:playEffect',
+                  fx: 'coin',
+                },
+                {
+                  type: 'g3k:recycle',
+                  charVar: 'zona',
+                },
+                {
+                  type: 'if',
+                  cond: {
+                    type: 'binop',
+                    op: '>=',
+                    left: {
+                      type: 'g3k:bagValue',
+                      op: 'quantos',
+                      item: 'estrela',
+                    },
+                    right: {
+                      type: 'num',
+                      value: 5,
+                    },
+                  },
+                  then: [
+                    {
+                      type: 'g3k:gameOver',
+                      result: 'ganhou',
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+      loops: [
+        {
+          type: 'g3k:onEntityStateUpdate',
+          mold: 'heroi',
+          state: 'parado',
+          itemName: 'ela',
+          dtName: 'dt',
+          body: [
+            {
+              type: 'g3k:moveWithKeys',
+              charVar: 'ela',
+              speed: {
+                type: 'num',
+                value: 5,
+              },
+            },
+            {
+              type: 'if',
+              cond: {
+                type: 'logical',
+                op: '||',
+                left: {
+                  type: 'logical',
+                  op: '||',
+                  left: {
+                    type: 'logical',
+                    op: '||',
+                    left: {
+                      type: 'g3k:keyDown',
+                      key: 'KeyW',
+                    },
+                    right: {
+                      type: 'g3k:keyDown',
+                      key: 'KeyA',
+                    },
+                  },
+                  right: {
+                    type: 'g3k:keyDown',
+                    key: 'KeyS',
+                  },
+                },
+                right: {
+                  type: 'g3k:keyDown',
+                  key: 'KeyD',
+                },
+              },
+              then: [
+                {
+                  type: 'g3k:setEntityState',
+                  charVar: 'ela',
+                  state: 'andando',
+                },
+              ],
+            },
+            {
+              type: 'if',
+              cond: {
+                type: 'g3k:keyPressed',
+                key: 'Space',
+              },
+              then: [
+                {
+                  type: 'g3k:setEntityState',
+                  charVar: 'ela',
+                  state: 'pulando',
+                },
+              ],
+            },
+          ],
+        },
+        {
+          type: 'g3k:onEntityStateUpdate',
+          mold: 'heroi',
+          state: 'andando',
+          itemName: 'ela',
+          dtName: 'dt',
+          body: [
+            {
+              type: 'g3k:moveWithKeys',
+              charVar: 'ela',
+              speed: {
+                type: 'num',
+                value: 5,
+              },
+            },
+            {
+              type: 'g3k:faceVelocity',
+              charVar: 'ela',
+            },
+            {
+              type: 'if',
+              cond: {
+                type: 'g3k:keyPressed',
+                key: 'Space',
+              },
+              then: [
+                {
+                  type: 'g3k:setEntityState',
+                  charVar: 'ela',
+                  state: 'pulando',
+                },
+              ],
+              elseif: [
+                {
+                  cond: {
+                    type: 'logicalNot',
+                    value: {
+                      type: 'logical',
+                      op: '||',
+                      left: {
+                        type: 'logical',
+                        op: '||',
+                        left: {
+                          type: 'logical',
+                          op: '||',
+                          left: {
+                            type: 'g3k:keyDown',
+                            key: 'KeyW',
+                          },
+                          right: {
+                            type: 'g3k:keyDown',
+                            key: 'KeyA',
+                          },
+                        },
+                        right: {
+                          type: 'g3k:keyDown',
+                          key: 'KeyS',
+                        },
+                      },
+                      right: {
+                        type: 'g3k:keyDown',
+                        key: 'KeyD',
+                      },
+                    },
+                  },
+                  then: [
+                    {
+                      type: 'g3k:setEntityState',
+                      charVar: 'ela',
+                      state: 'parado',
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+        {
+          type: 'g3k:onEntityStateUpdate',
+          mold: 'heroi',
+          state: 'pulando',
+          itemName: 'ela',
+          dtName: 'dt',
+          body: [
+            {
+              type: 'g3k:moveWithKeys',
+              charVar: 'ela',
+              speed: {
+                type: 'num',
+                value: 5,
+              },
+            },
+          ],
+        },
+        {
+          type: 'g3k:onUpdate',
+          dtName: 'dt',
+          body: [
+            {
+              type: 'g3k:cornerText',
+              corner: 'top-left',
+              text: {
+                type: 'binop',
+                op: '+',
+                left: {
+                  type: 'binop',
+                  op: '+',
+                  left: {
+                    type: 'str',
+                    value: 'Estrelas: ',
+                  },
+                  right: {
+                    type: 'g3k:bagValue',
+                    op: 'quantos',
+                    item: 'estrela',
+                  },
+                },
+                right: {
+                  type: 'str',
+                  value: ' de 5',
+                },
+              },
+            },
+          ],
+        },
+      ],
+    },
+    extensions: [{ extensionId: 'game-3d-advanced' }],
+  },
+  assets: [
+    {
+      id: 'example-heroi-do-molda',
+      name: 'heroi-do-molda',
+      kind: 'model3d',
+      dataUrl: HEROI_DO_MOLDA_GLB,
+      originalFileName: 'heroi-do-molda.glb',
+      source: 'library',
+      libId: 'example-heroi-do-molda',
+    },
+  ],
+}
+
+/**
+ * "Noite das Fogueiras" (review 3D, cobertura total dos exemplos): o jogo completo com os
+ * ARQUIVOS do projeto. O céu 360° (.hdr), a música e o som do fogo (.wav) são montados por
+ * código em `exampleAssets.ts` (nenhum binário colado aqui). Fonte em `__gen_noiteFogueiras.ts`.
+ */
+export const noiteDasFogueirasExample: ExtensionExample = {
+  name: 'Noite das Fogueiras',
+  experience: 'game',
+  description:
+    'Junte gravetos na mochila e acenda as quatro fogueiras antes de o dia nascer. Os fantasmas atravessam as pedras e roubam a lenha! Tem céu de estrelas, música e som de fogo.',
+  ir: {
+    version: 2,
+    html: [],
+    css: [],
+    behavior: {
+      molds: [
+        {
+          type: 'g3k:defineMold',
+          name: 'heroi',
+          health: {
+            type: 'num',
+            value: 3,
+          },
+          speed: {
+            type: 'num',
+            value: 7,
+          },
+          body: [
+            {
+              type: 'g3k:part',
+              shape: 'box',
+              material: 'normal',
+              color: '#f97316',
+              texture: '',
+              model: '',
+              w: {
+                type: 'num',
+                value: 0.9,
+              },
+              h: {
+                type: 'num',
+                value: 1.1,
+              },
+              d: {
+                type: 'num',
+                value: 0.9,
+              },
+              x: {
+                type: 'num',
+                value: 0,
+              },
+              y: {
+                type: 'num',
+                value: 0.55,
+              },
+              z: {
+                type: 'num',
+                value: 0,
+              },
+            },
+            {
+              type: 'g3k:part',
+              shape: 'sphere',
+              material: 'normal',
+              color: '#fed7aa',
+              texture: '',
+              model: '',
+              w: {
+                type: 'num',
+                value: 0.7,
+              },
+              h: {
+                type: 'num',
+                value: 0.7,
+              },
+              d: {
+                type: 'num',
+                value: 0.7,
+              },
+              x: {
+                type: 'num',
+                value: 0,
+              },
+              y: {
+                type: 'num',
+                value: 1.35,
+              },
+              z: {
+                type: 'num',
+                value: 0,
+              },
+            },
+            {
+              type: 'g3k:part',
+              shape: 'cone',
+              material: 'brilho',
+              color: '#facc15',
+              texture: '',
+              model: '',
+              w: {
+                type: 'num',
+                value: 0.3,
+              },
+              h: {
+                type: 'num',
+                value: 0.4,
+              },
+              d: {
+                type: 'num',
+                value: 0.3,
+              },
+              x: {
+                type: 'num',
+                value: 0,
+              },
+              y: {
+                type: 'num',
+                value: 1,
+              },
+              z: {
+                type: 'num',
+                value: 0.5,
+              },
+            },
+          ],
+        },
+        {
+          type: 'g3k:defineMold',
+          name: 'graveto',
+          health: {
+            type: 'num',
+            value: 1,
+          },
+          speed: {
+            type: 'num',
+            value: 0,
+          },
+          body: [
+            {
+              type: 'g3k:part',
+              shape: 'cylinder',
+              material: 'normal',
+              color: '#a16207',
+              texture: '',
+              model: '',
+              w: {
+                type: 'num',
+                value: 0.25,
+              },
+              h: {
+                type: 'num',
+                value: 1.2,
+              },
+              d: {
+                type: 'num',
+                value: 0.25,
+              },
+              x: {
+                type: 'num',
+                value: 0,
+              },
+              y: {
+                type: 'num',
+                value: 0.3,
+              },
+              z: {
+                type: 'num',
+                value: 0,
+              },
+            },
+            {
+              type: 'g3k:part',
+              shape: 'cylinder',
+              material: 'normal',
+              color: '#854d0e',
+              texture: '',
+              model: '',
+              w: {
+                type: 'num',
+                value: 0.2,
+              },
+              h: {
+                type: 'num',
+                value: 0.9,
+              },
+              d: {
+                type: 'num',
+                value: 0.2,
+              },
+              x: {
+                type: 'num',
+                value: 0.25,
+              },
+              y: {
+                type: 'num',
+                value: 0.3,
+              },
+              z: {
+                type: 'num',
+                value: 0.15,
+              },
+            },
+          ],
+        },
+        {
+          type: 'g3k:defineMold',
+          name: 'fogueira',
+          health: {
+            type: 'num',
+            value: 1,
+          },
+          speed: {
+            type: 'num',
+            value: 0,
+          },
+          body: [
+            {
+              type: 'g3k:part',
+              shape: 'torus',
+              material: 'normal',
+              color: '#78716c',
+              texture: '',
+              model: '',
+              w: {
+                type: 'num',
+                value: 2,
+              },
+              h: {
+                type: 'num',
+                value: 2,
+              },
+              d: {
+                type: 'num',
+                value: 0.5,
+              },
+              x: {
+                type: 'num',
+                value: 0,
+              },
+              y: {
+                type: 'num',
+                value: 0.2,
+              },
+              z: {
+                type: 'num',
+                value: 0,
+              },
+            },
+            {
+              type: 'g3k:part',
+              shape: 'box',
+              material: 'normal',
+              color: '#713f12',
+              texture: '',
+              model: '',
+              w: {
+                type: 'num',
+                value: 1.4,
+              },
+              h: {
+                type: 'num',
+                value: 0.3,
+              },
+              d: {
+                type: 'num',
+                value: 0.3,
+              },
+              x: {
+                type: 'num',
+                value: 0,
+              },
+              y: {
+                type: 'num',
+                value: 0.3,
+              },
+              z: {
+                type: 'num',
+                value: 0,
+              },
+            },
+            {
+              type: 'g3k:part',
+              shape: 'box',
+              material: 'normal',
+              color: '#713f12',
+              texture: '',
+              model: '',
+              w: {
+                type: 'num',
+                value: 0.3,
+              },
+              h: {
+                type: 'num',
+                value: 0.3,
+              },
+              d: {
+                type: 'num',
+                value: 1.4,
+              },
+              x: {
+                type: 'num',
+                value: 0,
+              },
+              y: {
+                type: 'num',
+                value: 0.45,
+              },
+              z: {
+                type: 'num',
+                value: 0,
+              },
+            },
+          ],
+        },
+        {
+          type: 'g3k:defineMold',
+          name: 'fantasma',
+          health: {
+            type: 'num',
+            value: 1,
+          },
+          speed: {
+            type: 'num',
+            value: 2.5,
+          },
+          body: [
+            {
+              type: 'g3k:part',
+              shape: 'sphere',
+              material: 'vidro',
+              color: '#e0e7ff',
+              texture: '',
+              model: '',
+              w: {
+                type: 'num',
+                value: 1.2,
+              },
+              h: {
+                type: 'num',
+                value: 1.2,
+              },
+              d: {
+                type: 'num',
+                value: 1.2,
+              },
+              x: {
+                type: 'num',
+                value: 0,
+              },
+              y: {
+                type: 'num',
+                value: 0,
+              },
+              z: {
+                type: 'num',
+                value: 0,
+              },
+            },
+            {
+              type: 'g3k:part',
+              shape: 'cone',
+              material: 'vidro',
+              color: '#c7d2fe',
+              texture: '',
+              model: '',
+              w: {
+                type: 'num',
+                value: 1.1,
+              },
+              h: {
+                type: 'num',
+                value: 1,
+              },
+              d: {
+                type: 'num',
+                value: 1.1,
+              },
+              x: {
+                type: 'num',
+                value: 0,
+              },
+              y: {
+                type: 'num',
+                value: -0.8,
+              },
+              z: {
+                type: 'num',
+                value: 0,
+              },
+            },
+            {
+              type: 'g3k:part',
+              shape: 'sphere',
+              material: 'normal',
+              color: '#1e1b4b',
+              texture: '',
+              model: '',
+              w: {
+                type: 'num',
+                value: 0.25,
+              },
+              h: {
+                type: 'num',
+                value: 0.25,
+              },
+              d: {
+                type: 'num',
+                value: 0.25,
+              },
+              x: {
+                type: 'num',
+                value: 0.25,
+              },
+              y: {
+                type: 'num',
+                value: 0.15,
+              },
+              z: {
+                type: 'num',
+                value: 0.55,
+              },
+            },
+            {
+              type: 'g3k:part',
+              shape: 'sphere',
+              material: 'normal',
+              color: '#1e1b4b',
+              texture: '',
+              model: '',
+              w: {
+                type: 'num',
+                value: 0.25,
+              },
+              h: {
+                type: 'num',
+                value: 0.25,
+              },
+              d: {
+                type: 'num',
+                value: 0.25,
+              },
+              x: {
+                type: 'num',
+                value: -0.25,
+              },
+              y: {
+                type: 'num',
+                value: 0.15,
+              },
+              z: {
+                type: 'num',
+                value: 0.55,
+              },
+            },
+          ],
+        },
+        {
+          type: 'g3k:defineMold',
+          name: 'coruja',
+          health: {
+            type: 'num',
+            value: 1,
+          },
+          speed: {
+            type: 'num',
+            value: 0,
+          },
+          body: [
+            {
+              type: 'g3k:part',
+              shape: 'cylinder',
+              material: 'normal',
+              color: '#57534e',
+              texture: '',
+              model: '',
+              w: {
+                type: 'num',
+                value: 0.5,
+              },
+              h: {
+                type: 'num',
+                value: 1.6,
+              },
+              d: {
+                type: 'num',
+                value: 0.5,
+              },
+              x: {
+                type: 'num',
+                value: 0,
+              },
+              y: {
+                type: 'num',
+                value: 0.8,
+              },
+              z: {
+                type: 'num',
+                value: 0,
+              },
+            },
+            {
+              type: 'g3k:part',
+              shape: 'sphere',
+              material: 'normal',
+              color: '#a8a29e',
+              texture: '',
+              model: '',
+              w: {
+                type: 'num',
+                value: 0.9,
+              },
+              h: {
+                type: 'num',
+                value: 1,
+              },
+              d: {
+                type: 'num',
+                value: 0.8,
+              },
+              x: {
+                type: 'num',
+                value: 0,
+              },
+              y: {
+                type: 'num',
+                value: 2,
+              },
+              z: {
+                type: 'num',
+                value: 0,
+              },
+            },
+            {
+              type: 'g3k:part',
+              shape: 'sphere',
+              material: 'brilho',
+              color: '#fde047',
+              texture: '',
+              model: '',
+              w: {
+                type: 'num',
+                value: 0.25,
+              },
+              h: {
+                type: 'num',
+                value: 0.25,
+              },
+              d: {
+                type: 'num',
+                value: 0.25,
+              },
+              x: {
+                type: 'num',
+                value: 0.2,
+              },
+              y: {
+                type: 'num',
+                value: 2.2,
+              },
+              z: {
+                type: 'num',
+                value: 0.35,
+              },
+            },
+            {
+              type: 'g3k:part',
+              shape: 'sphere',
+              material: 'brilho',
+              color: '#fde047',
+              texture: '',
+              model: '',
+              w: {
+                type: 'num',
+                value: 0.25,
+              },
+              h: {
+                type: 'num',
+                value: 0.25,
+              },
+              d: {
+                type: 'num',
+                value: 0.25,
+              },
+              x: {
+                type: 'num',
+                value: -0.2,
+              },
+              y: {
+                type: 'num',
+                value: 2.2,
+              },
+              z: {
+                type: 'num',
+                value: 0.35,
+              },
+            },
+          ],
+        },
+        {
+          type: 'g3k:defineMold',
+          name: 'pedra',
+          health: {
+            type: 'num',
+            value: 1,
+          },
+          speed: {
+            type: 'num',
+            value: 0,
+          },
+          body: [
+            {
+              type: 'g3k:part',
+              shape: 'sphere',
+              material: 'normal',
+              color: '#44403c',
+              texture: '',
+              model: '',
+              w: {
+                type: 'num',
+                value: 2.4,
+              },
+              h: {
+                type: 'num',
+                value: 1.6,
+              },
+              d: {
+                type: 'num',
+                value: 2.4,
+              },
+              x: {
+                type: 'num',
+                value: 0,
+              },
+              y: {
+                type: 'num',
+                value: 0.6,
+              },
+              z: {
+                type: 'num',
+                value: 0,
+              },
+            },
+          ],
+        },
+        {
+          type: 'g3k:defineMold',
+          name: 'portal',
+          health: {
+            type: 'num',
+            value: 1,
+          },
+          speed: {
+            type: 'num',
+            value: 0,
+          },
+          body: [
+            {
+              type: 'g3k:part',
+              shape: 'torus',
+              material: 'brilho',
+              color: '#a78bfa',
+              texture: '',
+              model: '',
+              w: {
+                type: 'num',
+                value: 3,
+              },
+              h: {
+                type: 'num',
+                value: 3,
+              },
+              d: {
+                type: 'num',
+                value: 0.5,
+              },
+              x: {
+                type: 'num',
+                value: 0,
+              },
+              y: {
+                type: 'num',
+                value: 1.8,
+              },
+              z: {
+                type: 'num',
+                value: 0,
+              },
+            },
+          ],
+        },
+        {
+          type: 'g3k:defineEmitter',
+          name: 'fogo',
+          colorFrom: '#fde047',
+          colorTo: '#7f1d1d',
+          sizeFrom: {
+            type: 'num',
+            value: 0.7,
+          },
+          sizeTo: {
+            type: 'num',
+            value: 0.1,
+          },
+          rate: {
+            type: 'num',
+            value: 30,
+          },
+          speed: {
+            type: 'num',
+            value: 2.5,
+          },
+          cone: {
+            type: 'num',
+            value: 25,
+          },
+          gravity: {
+            type: 'num',
+            value: -1,
+          },
+          glow: true,
+          curve: 'fogo',
+        },
+        {
+          type: 'g3k:defineEmitter',
+          name: 'magia',
+          colorFrom: '#c4b5fd',
+          colorTo: '#1e1b4b',
+          sizeFrom: {
+            type: 'num',
+            value: 0.45,
+          },
+          sizeTo: {
+            type: 'num',
+            value: 0,
+          },
+          rate: {
+            type: 'num',
+            value: 50,
+          },
+          speed: {
+            type: 'num',
+            value: 4,
+          },
+          cone: {
+            type: 'num',
+            value: 180,
+          },
+          gravity: {
+            type: 'num',
+            value: 0,
+          },
+          glow: true,
+          curve: 'suave',
+        },
+        {
+          type: 'g3k:defineEffect',
+          name: 'susto',
+          count: {
+            type: 'num',
+            value: 20,
+          },
+          colorFrom: '#e0e7ff',
+          colorTo: '#1e1b4b',
+          spread: {
+            type: 'num',
+            value: 5,
+          },
+          sizeFrom: {
+            type: 'num',
+            value: 0.5,
+          },
+          sizeTo: {
+            type: 'num',
+            value: 0,
+          },
+          life: {
+            type: 'num',
+            value: 0.5,
+          },
+          gravity: {
+            type: 'num',
+            value: 1,
+          },
+        },
+      ],
+      start: [
+        {
+          type: 'g3k:setup',
+          w: {
+            type: 'num',
+            value: 1280,
+          },
+          h: {
+            type: 'num',
+            value: 720,
+          },
+          world: {
+            type: 'num',
+            value: 40,
+          },
+          sky: '#0b1026',
+          ground: '#1c2a1f',
+        },
+        {
+          type: 'g3k:setSkyPhoto',
+          photo: 'ceu-estrelado',
+        },
+        {
+          type: 'g3k:setEffects',
+          shadows: true,
+          bloom: true,
+          strength: {
+            type: 'num',
+            value: 1.3,
+          },
+          vignette: true,
+        },
+        {
+          type: 'g3k:loadSound',
+          name: 'musica',
+          asset: 'musica-da-noite',
+        },
+        {
+          type: 'g3k:loadSound',
+          name: 'fogo',
+          asset: 'som-da-fogueira',
+        },
+        {
+          type: 'g3k:screenText',
+          screen: 'inicio',
+          title: 'Noite das Fogueiras',
+          text: 'Junte gravetos e acenda as 4 fogueiras antes de o dia nascer: cada uma pede 2 gravetos. Cuidado, os fantasmas atravessam as pedras e roubam a lenha da mochila!',
+          button: 'Acampar',
+        },
+        {
+          type: 'g3k:screenText',
+          screen: 'vitoria',
+          title: 'O portal se abriu!',
+          text: 'As fogueiras espantaram a noite.',
+          button: 'Acampar de novo',
+        },
+        {
+          type: 'g3k:screenText',
+          screen: 'fim',
+          title: 'O dia nasceu...',
+          text: 'Faltou fogueira. Acenda logo, antes que um fantasma leve a lenha!',
+          button: 'Tentar de novo',
+        },
+        {
+          type: 'g3k:createScreen',
+          name: 'dica',
+          title: {
+            type: 'str',
+            value: 'Dica da coruja',
+          },
+          text: {
+            type: 'str',
+            value:
+              'Pegue 2 gravetos e encoste numa fogueira apagada. Fantasma que encosta em você leva TODA a lenha da mochila.',
+          },
+        },
+        {
+          type: 'g3k:addButton',
+          screen: 'dica',
+          label: {
+            type: 'str',
+            value: 'Continuar',
+          },
+          body: [
+            {
+              type: 'g3k:setState',
+              name: 'jogando',
+            },
+          ],
+        },
+        {
+          type: 'g3k:addButton',
+          screen: 'dica',
+          label: {
+            type: 'str',
+            value: 'Voltar ao menu',
+          },
+          body: [
+            {
+              type: 'g3k:returnToMenu',
+            },
+          ],
+        },
+        {
+          type: 'g3k:setPhysics',
+          mold: 'heroi',
+          kind: 'personagem',
+        },
+        {
+          type: 'g3k:makeSolid',
+          mold: 'pedra',
+        },
+        {
+          type: 'g3k:makeTrigger',
+          mold: 'graveto',
+        },
+        {
+          type: 'g3k:makeTrigger',
+          mold: 'fogueira',
+        },
+        {
+          type: 'g3k:makeTrigger',
+          mold: 'portal',
+        },
+        {
+          type: 'g3k:addAttractor',
+          effect: 'magia',
+          x: {
+            type: 'num',
+            value: 0,
+          },
+          y: {
+            type: 'num',
+            value: 1.8,
+          },
+          z: {
+            type: 'num',
+            value: 0,
+          },
+          intensity: {
+            type: 'num',
+            value: 30,
+          },
+          radius: {
+            type: 'num',
+            value: 4,
+          },
+        },
+        {
+          type: 'var',
+          name: 'acesas',
+          value: {
+            type: 'num',
+            value: 0,
+          },
+        },
+      ],
+      events: [
+        {
+          type: 'g3k:onEnterState',
+          name: 'jogando',
+          body: [
+            {
+              type: 'assign',
+              name: 'acesas',
+              value: {
+                type: 'num',
+                value: 0,
+              },
+            },
+            {
+              type: 'g3k:setSeed',
+              seed: {
+                type: 'num',
+                value: 12,
+              },
+            },
+            {
+              type: 'g3k:setAmbient',
+              intensity: {
+                type: 'num',
+                value: 0.35,
+              },
+            },
+            {
+              type: 'g3k:setFog',
+              color: '#0b1026',
+              near: {
+                type: 'num',
+                value: 25,
+              },
+              far: {
+                type: 'num',
+                value: 70,
+              },
+            },
+            {
+              type: 'g3k:playMusic',
+              name: 'musica',
+            },
+            {
+              type: 'g3k:timer',
+              op: 'comecar',
+              secs: {
+                type: 'num',
+                value: 120,
+              },
+            },
+            {
+              type: 'g3k:spawn',
+              mold: 'fogueira',
+              x: {
+                type: 'num',
+                value: -12,
+              },
+              y: {
+                type: 'num',
+                value: 0,
+              },
+              z: {
+                type: 'num',
+                value: -12,
+              },
+            },
+            {
+              type: 'g3k:spawn',
+              mold: 'fogueira',
+              x: {
+                type: 'num',
+                value: 12,
+              },
+              y: {
+                type: 'num',
+                value: 0,
+              },
+              z: {
+                type: 'num',
+                value: -12,
+              },
+            },
+            {
+              type: 'g3k:spawn',
+              mold: 'fogueira',
+              x: {
+                type: 'num',
+                value: -12,
+              },
+              y: {
+                type: 'num',
+                value: 0,
+              },
+              z: {
+                type: 'num',
+                value: 12,
+              },
+            },
+            {
+              type: 'g3k:spawn',
+              mold: 'fogueira',
+              x: {
+                type: 'num',
+                value: 12,
+              },
+              y: {
+                type: 'num',
+                value: 0,
+              },
+              z: {
+                type: 'num',
+                value: 12,
+              },
+            },
+            {
+              type: 'g3k:spawn',
+              mold: 'pedra',
+              x: {
+                type: 'num',
+                value: -6,
+              },
+              y: {
+                type: 'num',
+                value: 0,
+              },
+              z: {
+                type: 'num',
+                value: 2,
+              },
+            },
+            {
+              type: 'g3k:spawn',
+              mold: 'pedra',
+              x: {
+                type: 'num',
+                value: 6,
+              },
+              y: {
+                type: 'num',
+                value: 0,
+              },
+              z: {
+                type: 'num',
+                value: -2,
+              },
+            },
+            {
+              type: 'g3k:spawn',
+              mold: 'pedra',
+              x: {
+                type: 'num',
+                value: 2,
+              },
+              y: {
+                type: 'num',
+                value: 0,
+              },
+              z: {
+                type: 'num',
+                value: 10,
+              },
+            },
+            {
+              type: 'g3k:spawn',
+              mold: 'pedra',
+              x: {
+                type: 'num',
+                value: -2,
+              },
+              y: {
+                type: 'num',
+                value: 0,
+              },
+              z: {
+                type: 'num',
+                value: -10,
+              },
+            },
+            {
+              type: 'g3k:spawn',
+              mold: 'graveto',
+              x: {
+                type: 'num',
+                value: -8,
+              },
+              y: {
+                type: 'num',
+                value: 0,
+              },
+              z: {
+                type: 'num',
+                value: 4,
+              },
+            },
+            {
+              type: 'g3k:spawn',
+              mold: 'graveto',
+              x: {
+                type: 'num',
+                value: 8,
+              },
+              y: {
+                type: 'num',
+                value: 0,
+              },
+              z: {
+                type: 'num',
+                value: 4,
+              },
+            },
+            {
+              type: 'g3k:spawn',
+              mold: 'graveto',
+              x: {
+                type: 'num',
+                value: -4,
+              },
+              y: {
+                type: 'num',
+                value: 0,
+              },
+              z: {
+                type: 'num',
+                value: -8,
+              },
+            },
+            {
+              type: 'g3k:spawn',
+              mold: 'graveto',
+              x: {
+                type: 'num',
+                value: 4,
+              },
+              y: {
+                type: 'num',
+                value: 0,
+              },
+              z: {
+                type: 'num',
+                value: -8,
+              },
+            },
+            {
+              type: 'g3k:spawn',
+              mold: 'fantasma',
+              x: {
+                type: 'num',
+                value: -16,
+              },
+              y: {
+                type: 'num',
+                value: 1,
+              },
+              z: {
+                type: 'num',
+                value: 0,
+              },
+            },
+            {
+              type: 'g3k:spawn',
+              mold: 'fantasma',
+              x: {
+                type: 'num',
+                value: 16,
+              },
+              y: {
+                type: 'num',
+                value: 1,
+              },
+              z: {
+                type: 'num',
+                value: 0,
+              },
+            },
+            {
+              type: 'g3k:spawnNamed',
+              varName: 'coruja',
+              mold: 'coruja',
+              x: {
+                type: 'num',
+                value: 0,
+              },
+              y: {
+                type: 'num',
+                value: 0,
+              },
+              z: {
+                type: 'num',
+                value: -4,
+              },
+            },
+            {
+              type: 'g3k:spawnNamed',
+              varName: 'heroi',
+              mold: 'heroi',
+              x: {
+                type: 'num',
+                value: 0,
+              },
+              y: {
+                type: 'num',
+                value: 1,
+              },
+              z: {
+                type: 'num',
+                value: 6,
+              },
+            },
+            {
+              type: 'g3k:cameraOrbit',
+              dist: {
+                type: 'num',
+                value: 24,
+              },
+            },
+            {
+              type: 'g3k:cameraAngle',
+              az: {
+                type: 'num',
+                value: 0,
+              },
+              el: {
+                type: 'num',
+                value: 55,
+              },
+            },
+            {
+              type: 'g3k:cameraLookAt',
+              charVar: 'heroi',
+            },
+            {
+              type: 'if',
+              cond: {
+                type: 'binop',
+                op: '===',
+                left: {
+                  type: 'g3k:savedValue',
+                  name: 'comoAcabou',
+                  fallback: {
+                    type: 'str',
+                    value: 'nada',
+                  },
+                },
+                right: {
+                  type: 'str',
+                  value: 'vitoria',
+                },
+              },
+              then: [
+                {
+                  type: 'g3k:say',
+                  charVar: 'coruja',
+                  text: {
+                    type: 'str',
+                    value: 'Você voltou! Da última vez o portal abriu.',
+                  },
+                  seconds: {
+                    type: 'num',
+                    value: 4,
+                  },
+                },
+              ],
+              else: [
+                {
+                  type: 'g3k:say',
+                  charVar: 'coruja',
+                  text: {
+                    type: 'str',
+                    value: 'Junte 2 gravetos para cada fogueira!',
+                  },
+                  seconds: {
+                    type: 'num',
+                    value: 30,
+                  },
+                },
+              ],
+            },
+          ],
+        },
+        {
+          type: 'g3k:onEnterState',
+          name: 'pausado',
+          body: [
+            {
+              type: 'g3k:showScreen',
+              name: 'dica',
+            },
+          ],
+        },
+        {
+          type: 'g3k:onEnterState',
+          name: 'menu',
+          body: [
+            {
+              type: 'g3k:stopMusic',
+            },
+          ],
+        },
+        {
+          type: 'g3k:onEnterState',
+          name: 'vitoria',
+          body: [
+            {
+              type: 'g3k:emit',
+              event: 'noite:acabou',
+            },
+          ],
+        },
+        {
+          type: 'g3k:onEnterState',
+          name: 'fim',
+          body: [
+            {
+              type: 'g3k:emit',
+              event: 'noite:acabou',
+            },
+          ],
+        },
+        {
+          type: 'g3k:onEvent',
+          event: 'noite:acabou',
+          body: [
+            {
+              type: 'g3k:stopMusic',
+            },
+            {
+              type: 'if',
+              cond: {
+                type: 'g3k:stateIs',
+                name: 'fim',
+              },
+              then: [
+                {
+                  type: 'g3k:stopEmitter',
+                  effect: 'fogo',
+                },
+              ],
+            },
+            {
+              type: 'g3k:saveValue',
+              name: 'comoAcabou',
+              value: {
+                type: 'g3k:gameState',
+              },
+            },
+          ],
+        },
+        {
+          type: 'g3k:onEnterEntityState',
+          mold: 'fantasma',
+          state: 'parado',
+          itemName: 'ela',
+          body: [
+            {
+              type: 'g3k:passThrough',
+              charVar: 'ela',
+              ghost: true,
+            },
+          ],
+        },
+        {
+          type: 'g3k:onOverlap',
+          mold: 'graveto',
+          zoneName: 'zona',
+          whoName: 'quem',
+          body: [
+            {
+              type: 'if',
+              cond: {
+                type: 'g3k:isMold',
+                charVar: 'quem',
+                mold: 'heroi',
+              },
+              then: [
+                {
+                  type: 'g3k:bag',
+                  op: 'dar',
+                  item: 'graveto',
+                  amount: {
+                    type: 'num',
+                    value: 1,
+                  },
+                },
+                {
+                  type: 'g3k:playEffect',
+                  fx: 'coin',
+                },
+                {
+                  type: 'g3k:recycle',
+                  charVar: 'zona',
+                },
+              ],
+            },
+          ],
+        },
+        {
+          type: 'g3k:onOverlap',
+          mold: 'fogueira',
+          zoneName: 'zona',
+          whoName: 'quem',
+          body: [
+            {
+              type: 'if',
+              cond: {
+                type: 'logical',
+                op: '&&',
+                left: {
+                  type: 'g3k:isMold',
+                  charVar: 'quem',
+                  mold: 'heroi',
+                },
+                right: {
+                  type: 'g3k:entityStateIs',
+                  charVar: 'zona',
+                  state: 'parado',
+                },
+              },
+              then: [
+                {
+                  type: 'if',
+                  cond: {
+                    type: 'binop',
+                    op: '>=',
+                    left: {
+                      type: 'g3k:bagValue',
+                      op: 'quantos',
+                      item: 'graveto',
+                    },
+                    right: {
+                      type: 'num',
+                      value: 2,
+                    },
+                  },
+                  then: [
+                    {
+                      type: 'g3k:bag',
+                      op: 'tirar',
+                      item: 'graveto',
+                      amount: {
+                        type: 'num',
+                        value: 2,
+                      },
+                    },
+                    {
+                      type: 'g3k:setEntityState',
+                      charVar: 'zona',
+                      state: 'acesa',
+                    },
+                  ],
+                  else: [
+                    {
+                      type: 'g3k:say',
+                      charVar: 'quem',
+                      text: {
+                        type: 'str',
+                        value: 'Preciso de 2 gravetos!',
+                      },
+                      seconds: {
+                        type: 'num',
+                        value: 1.5,
+                      },
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+        {
+          type: 'g3k:onEnterEntityState',
+          mold: 'fogueira',
+          state: 'acesa',
+          itemName: 'ela',
+          body: [
+            {
+              type: 'g3k:startEmitter',
+              effect: 'fogo',
+              x: {
+                type: 'g3k:posOf',
+                axis: 'x',
+                charVar: 'ela',
+              },
+              y: {
+                type: 'num',
+                value: 0.5,
+              },
+              z: {
+                type: 'g3k:posOf',
+                axis: 'z',
+                charVar: 'ela',
+              },
+            },
+            {
+              type: 'g3k:addLight',
+              color: '#fb923c',
+              x: {
+                type: 'g3k:posOf',
+                axis: 'x',
+                charVar: 'ela',
+              },
+              y: {
+                type: 'num',
+                value: 2,
+              },
+              z: {
+                type: 'g3k:posOf',
+                axis: 'z',
+                charVar: 'ela',
+              },
+              intensity: {
+                type: 'num',
+                value: 1.5,
+              },
+            },
+            {
+              type: 'g3k:playSound',
+              name: 'fogo',
+            },
+            {
+              type: 'assign',
+              name: 'acesas',
+              value: {
+                type: 'binop',
+                op: '+',
+                left: {
+                  type: 'var',
+                  name: 'acesas',
+                },
+                right: {
+                  type: 'num',
+                  value: 1,
+                },
+              },
+            },
+            {
+              type: 'g3k:storeNearest',
+              varName: 'coruja',
+              mold: 'coruja',
+              charVar: 'ela',
+            },
+            {
+              type: 'if',
+              cond: {
+                type: 'g3k:exists',
+                charVar: 'coruja',
+              },
+              then: [
+                {
+                  type: 'g3k:hideSay',
+                  charVar: 'coruja',
+                },
+              ],
+            },
+            {
+              type: 'if',
+              cond: {
+                type: 'binop',
+                op: '>=',
+                left: {
+                  type: 'var',
+                  name: 'acesas',
+                },
+                right: {
+                  type: 'num',
+                  value: 4,
+                },
+              },
+              then: [
+                {
+                  type: 'g3k:emit',
+                  event: 'portal:abrir',
+                },
+              ],
+            },
+          ],
+        },
+        {
+          type: 'g3k:onEvent',
+          event: 'portal:abrir',
+          body: [
+            {
+              type: 'g3k:spawn',
+              mold: 'portal',
+              x: {
+                type: 'num',
+                value: 0,
+              },
+              y: {
+                type: 'num',
+                value: 0,
+              },
+              z: {
+                type: 'num',
+                value: 0,
+              },
+            },
+            {
+              type: 'g3k:startEmitter',
+              effect: 'magia',
+              x: {
+                type: 'num',
+                value: 0,
+              },
+              y: {
+                type: 'num',
+                value: 0.5,
+              },
+              z: {
+                type: 'num',
+                value: 0,
+              },
+            },
+            {
+              type: 'g3k:cameraLookAtPoint',
+              x: {
+                type: 'num',
+                value: 0,
+              },
+              y: {
+                type: 'num',
+                value: 1,
+              },
+              z: {
+                type: 'num',
+                value: 0,
+              },
+            },
+            {
+              type: 'g3k:cameraDistance',
+              dist: {
+                type: 'num',
+                value: 34,
+              },
+            },
+            {
+              type: 'g3k:timer',
+              op: 'parar',
+            },
+            {
+              type: 'g3k:playEffect',
+              fx: 'powerup',
+            },
+          ],
+        },
+        {
+          type: 'g3k:onOverlap',
+          mold: 'portal',
+          zoneName: 'zona',
+          whoName: 'quem',
+          body: [
+            {
+              type: 'if',
+              cond: {
+                type: 'g3k:isMold',
+                charVar: 'quem',
+                mold: 'heroi',
+              },
+              then: [
+                {
+                  type: 'g3k:playEffect',
+                  fx: 'win',
+                },
+                {
+                  type: 'g3k:gameOver',
+                  result: 'ganhou',
+                },
+              ],
+            },
+          ],
+        },
+        {
+          type: 'g3k:onGame',
+          event: 'tempo-acabou',
+          body: [
+            {
+              type: 'g3k:gameOver',
+              result: 'perdeu',
+            },
+          ],
+        },
+      ],
+      loops: [
+        {
+          type: 'g3k:onEntityStateUpdate',
+          mold: 'heroi',
+          state: 'parado',
+          itemName: 'ela',
+          dtName: 'dt',
+          body: [
+            {
+              type: 'g3k:moveWithKeys',
+              charVar: 'ela',
+              speed: {
+                type: 'num',
+                value: 7,
+              },
+            },
+            {
+              type: 'g3k:faceVelocity',
+              charVar: 'ela',
+            },
+          ],
+        },
+        {
+          type: 'g3k:onEntityStateUpdate',
+          mold: 'coruja',
+          state: 'parado',
+          itemName: 'ela',
+          dtName: 'dt',
+          body: [
+            {
+              type: 'g3k:storeNearest',
+              varName: 'heroi',
+              mold: 'heroi',
+              charVar: 'ela',
+            },
+            {
+              type: 'if',
+              cond: {
+                type: 'logical',
+                op: '&&',
+                left: {
+                  type: 'g3k:exists',
+                  charVar: 'heroi',
+                },
+                right: {
+                  type: 'g3k:touches',
+                  aVar: 'ela',
+                  bVar: 'heroi',
+                  dist: {
+                    type: 'num',
+                    value: 6,
+                  },
+                },
+              },
+              then: [
+                {
+                  type: 'g3k:lookAt',
+                  charVar: 'ela',
+                  targetVar: 'heroi',
+                },
+                {
+                  type: 'if',
+                  cond: {
+                    type: 'g3k:keyPressed',
+                    key: 'KeyE',
+                  },
+                  then: [
+                    {
+                      type: 'g3k:setState',
+                      name: 'pausado',
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+        {
+          type: 'g3k:onEntityStateUpdate',
+          mold: 'fantasma',
+          state: 'parado',
+          itemName: 'ela',
+          dtName: 'dt',
+          body: [
+            {
+              type: 'g3k:storeNearest',
+              varName: 'heroi',
+              mold: 'heroi',
+              charVar: 'ela',
+            },
+            {
+              type: 'if',
+              cond: {
+                type: 'g3k:exists',
+                charVar: 'heroi',
+              },
+              then: [
+                {
+                  type: 'g3k:seek',
+                  charVar: 'ela',
+                  targetVar: 'heroi',
+                },
+                {
+                  type: 'g3k:faceVelocity',
+                  charVar: 'ela',
+                },
+                {
+                  type: 'if',
+                  cond: {
+                    type: 'g3k:touches',
+                    aVar: 'ela',
+                    bVar: 'heroi',
+                    dist: {
+                      type: 'num',
+                      value: 1.3,
+                    },
+                  },
+                  then: [
+                    {
+                      type: 'if',
+                      cond: {
+                        type: 'binop',
+                        op: '>',
+                        left: {
+                          type: 'g3k:bagValue',
+                          op: 'quantos',
+                          item: 'graveto',
+                        },
+                        right: {
+                          type: 'num',
+                          value: 0,
+                        },
+                      },
+                      then: [
+                        {
+                          type: 'g3k:bag',
+                          op: 'esvaziar',
+                        },
+                        {
+                          type: 'g3k:say',
+                          charVar: 'heroi',
+                          text: {
+                            type: 'str',
+                            value: 'O fantasma levou a lenha!',
+                          },
+                          seconds: {
+                            type: 'num',
+                            value: 2,
+                          },
+                        },
+                      ],
+                    },
+                    {
+                      type: 'g3k:burstOn',
+                      effect: 'susto',
+                      charVar: 'ela',
+                    },
+                    {
+                      type: 'g3k:playEffect',
+                      fx: 'hurt',
+                    },
+                    {
+                      type: 'g3k:shakeCamera',
+                      strength: {
+                        type: 'num',
+                        value: 0.3,
+                      },
+                      secs: {
+                        type: 'num',
+                        value: 0.2,
+                      },
+                    },
+                    {
+                      type: 'g3k:place',
+                      charVar: 'ela',
+                      x: {
+                        type: 'g3k:random',
+                        op: 'entre',
+                        a: {
+                          type: 'num',
+                          value: -15,
+                        },
+                        b: {
+                          type: 'num',
+                          value: 15,
+                        },
+                      },
+                      y: {
+                        type: 'num',
+                        value: 1,
+                      },
+                      z: {
+                        type: 'binop',
+                        op: '-',
+                        left: {
+                          type: 'num',
+                          value: 0,
+                        },
+                        right: {
+                          type: 'binop',
+                          op: '/',
+                          left: {
+                            type: 'g3k:worldSize',
+                          },
+                          right: {
+                            type: 'num',
+                            value: 2,
+                          },
+                        },
+                      },
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+        {
+          type: 'g3k:onUpdate',
+          dtName: 'dt',
+          body: [
+            {
+              type: 'if',
+              cond: {
+                type: 'binop',
+                op: '<',
+                left: {
+                  type: 'g3k:countAlive',
+                  mold: 'graveto',
+                },
+                right: {
+                  type: 'num',
+                  value: 3,
+                },
+              },
+              then: [
+                {
+                  type: 'g3k:spawn',
+                  mold: 'graveto',
+                  x: {
+                    type: 'binop',
+                    op: '*',
+                    left: {
+                      type: 'g3k:random',
+                      op: 'entre',
+                      a: {
+                        type: 'num',
+                        value: -4,
+                      },
+                      b: {
+                        type: 'num',
+                        value: 4,
+                      },
+                    },
+                    right: {
+                      type: 'num',
+                      value: 4,
+                    },
+                  },
+                  y: {
+                    type: 'num',
+                    value: 0,
+                  },
+                  z: {
+                    type: 'binop',
+                    op: '*',
+                    left: {
+                      type: 'g3k:random',
+                      op: 'entre',
+                      a: {
+                        type: 'num',
+                        value: -4,
+                      },
+                      b: {
+                        type: 'num',
+                        value: 4,
+                      },
+                    },
+                    right: {
+                      type: 'num',
+                      value: 4,
+                    },
+                  },
+                },
+              ],
+            },
+            {
+              type: 'if',
+              cond: {
+                type: 'binop',
+                op: '>=',
+                left: {
+                  type: 'var',
+                  name: 'acesas',
+                },
+                right: {
+                  type: 'num',
+                  value: 4,
+                },
+              },
+              then: [
+                {
+                  type: 'g3k:cornerText',
+                  corner: 'top-left',
+                  text: {
+                    type: 'str',
+                    value: 'O portal abriu: corra até o meio!',
+                  },
+                },
+              ],
+              else: [
+                {
+                  type: 'g3k:cornerText',
+                  corner: 'top-left',
+                  text: {
+                    type: 'binop',
+                    op: '+',
+                    left: {
+                      type: 'binop',
+                      op: '+',
+                      left: {
+                        type: 'str',
+                        value: 'Fogueiras: ',
+                      },
+                      right: {
+                        type: 'var',
+                        name: 'acesas',
+                      },
+                    },
+                    right: {
+                      type: 'str',
+                      value: ' de 4',
+                    },
+                  },
+                },
+              ],
+            },
+            {
+              type: 'g3k:cornerText',
+              corner: 'top-right',
+              text: {
+                type: 'str',
+                value: 'Perto da coruja, E mostra a dica',
+              },
+            },
+          ],
+        },
+      ],
+    },
+    extensions: [{ extensionId: 'game-3d-advanced' }],
+  },
+  assets: [
+    {
+      id: 'example-ceu-estrelado',
+      name: 'ceu-estrelado',
+      kind: 'environment3d',
+      dataUrl: CEU_ESTRELADO_HDR,
+      originalFileName: 'ceu-estrelado.hdr',
+      source: 'library',
+      libId: 'example-ceu-estrelado',
+    },
+    {
+      id: 'example-musica-da-noite',
+      name: 'musica-da-noite',
+      kind: 'audio',
+      dataUrl: MUSICA_DA_NOITE_WAV,
+      source: 'library',
+      libId: 'example-musica-da-noite',
+    },
+    {
+      id: 'example-som-da-fogueira',
+      name: 'som-da-fogueira',
+      kind: 'audio',
+      dataUrl: SOM_DA_FOGUEIRA_WAV,
+      source: 'library',
+      libId: 'example-som-da-fogueira',
+    },
+  ],
 }

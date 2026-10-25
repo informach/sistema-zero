@@ -26,10 +26,9 @@ import { HostMenuButton } from '../components/layout/HostMenuButton'
 import { HOST_STATUS_ICON } from '../components/layout/hostStatusIcons'
 import { ThemeToggle } from '../components/layout/ThemeToggle'
 import { ImportButton, type ImportButtonHandle } from '../components/projects/ImportButton'
-import {
-  type NewProjectCreateOptions,
-  NewProjectModal,
-  type NewProjectModalProps,
+import type {
+  NewProjectCreateOptions,
+  NewProjectModalProps,
 } from '../components/projects/NewProjectModal'
 import { ProjectCard } from '../components/projects/ProjectCard'
 import type { PythonProjectCreationEnvironment } from '../core/freeProjectOptions'
@@ -62,6 +61,11 @@ const REFRESH_COALESCE_MS = 40
 const LazyKitGallery = lazy(async () => {
   const module = await import('./KitGallery')
   return { default: module.KitGallery }
+})
+
+const LazyNewProjectModal = lazy(async () => {
+  const module = await import('../components/projects/NewProjectModal')
+  return { default: module.NewProjectModal }
 })
 
 export interface ProjectListProps {
@@ -858,18 +862,28 @@ export function ProjectList({
           </div>
         </div>
 
-        <NewProjectModal
-          open={modalOpen}
-          defaultName={defaultName}
-          onClose={() => setModalOpen(false)}
-          onCreate={handleCreate}
-          professionalAvailable={professional}
-          javascriptAvailable={javascriptAvailable}
-          pythonEnvironments={pythonCreation?.environments}
-          pythonDiscovery={pythonDiscovery}
-          templates={templates}
-          existingNames={existingNames}
-        />
+        {modalOpen ? (
+          <Suspense
+            fallback={
+              <p role="status" className="sr-only">
+                {t('app.loading')}
+              </p>
+            }
+          >
+            <LazyNewProjectModal
+              open
+              defaultName={defaultName}
+              onClose={() => setModalOpen(false)}
+              onCreate={handleCreate}
+              professionalAvailable={professional}
+              javascriptAvailable={javascriptAvailable}
+              pythonEnvironments={pythonCreation?.environments}
+              pythonDiscovery={pythonDiscovery}
+              templates={templates}
+              existingNames={existingNames}
+            />
+          </Suspense>
+        ) : null}
       </div>
     </StudioThemeProvider>
   )

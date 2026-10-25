@@ -1,4 +1,5 @@
 import { isStudioPortablePath } from '@sistemazero/core/studio/project-environment'
+import { readStudioPythonMissionFrameObservation } from '@sistemazero/core/studio/python-mission-observation'
 import { readStudioRuntimeImage } from '../snapshotImage'
 import {
   type PythonFrameMessage,
@@ -85,6 +86,19 @@ export function readPythonFrameMessage(raw: unknown): PythonFrameMessage | undef
     identity,
   }
   if (raw.type === 'prepared') return { ...common, type: 'prepared' }
+  if (raw.type === 'mission-result') {
+    if (!isPythonRequestId(raw.requestId)) return
+    try {
+      return {
+        ...common,
+        type: 'mission-result',
+        requestId: raw.requestId,
+        result: readStudioPythonMissionFrameObservation(raw.result),
+      }
+    } catch {
+      return
+    }
+  }
   if (raw.type === 'audio-request') {
     const parsed = readPythonWorkerEvent({ ...raw, type: 'audio' })
     if (parsed?.type === 'audio')

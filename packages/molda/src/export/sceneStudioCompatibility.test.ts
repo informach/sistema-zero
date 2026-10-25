@@ -13,25 +13,34 @@ import { makeSceneSkinFixture } from '../testing/sceneSkin'
 import { encodeSceneGlb } from './sceneGlb'
 import { inspectSceneStudioCompatibility, SCENE_STUDIO_LIMITS } from './sceneStudioCompatibility'
 
-test('Studio budget mirrors stay tied to both current runtimes, without cross-package imports', () => {
+test('Studio budget mirrors stay tied to the shared 3D model loader and all three runtimes inject it, without cross-package imports', () => {
   const root = resolve(import.meta.dir, '../../../..')
-  const { bones: _bones, ...staticLimits } = SCENE_STUDIO_LIMITS
-  for (const [file, limits] of [
-    ['official-extensions/game-3d/runtimeModelAssets.ts', staticLimits],
-    ['official-extensions/game-3d-advanced/runtime.ts', SCENE_STUDIO_LIMITS],
-    ['core/projectAssets.ts', { data_url_chars: MOLDA_LIMITS.studioMax3DChars }],
-  ] as const) {
-    const source = readFileSync(resolve(root, 'packages/studio/src', file), 'utf8')
-    for (const [key, maximum] of Object.entries(limits)) {
-      const constant =
-        key === 'data_url_chars'
-          ? 'MAX_MODEL3D_DATA_URL_CHARS'
-          : `MAX_MODEL_${key.replace(/[A-Z]/g, (letter) => `_${letter}`).toUpperCase()}`
-      const match = source.match(new RegExp(`(?:var|const) ${constant} = ([\\d_]+);?`))
-      expect(match !== null).toBe(true)
-      expect(Number(match?.[1]?.replaceAll('_', ''))).toBe(maximum)
-    }
+  const read = (file: string) =>
+    readFileSync(resolve(root, 'packages/studio/src/official-extensions', file), 'utf8')
+  const constantOf = (key: string) =>
+    `MAX_MODEL_${key.replace(/[A-Z]/g, (letter) => `_${letter}`).toUpperCase()}`
+  // Um carregador só para Jogo 3D, Mundo 3D e Jogo 3D Avançado: os limites INTEIROS
+  // (ossos incluídos) moram nele, e nenhum runtime guarda uma cópia própria.
+  const loader = read('three3dModelsRuntime.ts')
+  for (const [key, maximum] of Object.entries(SCENE_STUDIO_LIMITS)) {
+    const match = loader.match(new RegExp(`(?:var|const) ${constantOf(key)} = ([\\d_]+);?`))
+    expect(match !== null).toBe(true)
+    expect(Number(match?.[1]?.replaceAll('_', ''))).toBe(maximum)
   }
+  for (const file of ['game-3d/runtime.ts', 'game-3d-advanced/runtime.ts', 'world-3d/runtime.ts']) {
+    const source = read(file)
+    expect(source).toContain('withThreeModelsRuntime')
+    expect(source).not.toMatch(
+      /(?:var|const) MAX_MODEL_(?:MESHES|TRIANGLES|BONES|MATERIALS|DRAW_CALLS) =/,
+    )
+  }
+  const projectAssets = readFileSync(
+    resolve(root, 'packages/studio/src/core/projectAssets.ts'),
+    'utf8',
+  )
+  const dataUrl = projectAssets.match(/(?:var|const) MAX_MODEL3D_DATA_URL_CHARS = ([\d_]+);?/)
+  expect(dataUrl !== null).toBe(true)
+  expect(Number(dataUrl?.[1]?.replaceAll('_', ''))).toBe(MOLDA_LIMITS.studioMax3DChars)
 })
 
 test('shared definitions and multiple materials are counted as actual GLTFLoader meshes at the 48/50 boundary', async () => {

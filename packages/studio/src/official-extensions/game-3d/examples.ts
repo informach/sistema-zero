@@ -1,34 +1,5 @@
 import type { ExtensionExample } from '#extensions'
-import type { CSSRule } from '#ir'
-
-function centeredCanvasLayout(background: string): CSSRule[] {
-  return [
-    {
-      selector: 'body',
-      declarations: {
-        background,
-        display: 'flex',
-        'align-items': 'center',
-        'justify-content': 'center',
-        'box-sizing': 'border-box',
-        'min-height': '100vh',
-        padding: '12px',
-        margin: '0',
-        overflow: 'hidden',
-      },
-    },
-    {
-      selector: 'canvas',
-      declarations: {
-        display: 'block',
-        width: 'min(480px, calc(100vw - 24px))',
-        height: 'auto',
-        'max-height': 'calc(100vh - 24px)',
-        'object-fit': 'contain',
-      },
-    },
-  ]
-}
+import { HEROI_DO_MOLDA_GLB } from './exampleAssets'
 
 /**
  * Exemplo bundlado: "Cubo girando". Cria uma cena 3D, um cubo e gira-o a cada
@@ -40,21 +11,25 @@ export const rotatingCubeExample: ExtensionExample = {
   description: 'Uma cena 3D com um cubo que gira continuamente (Three.js).',
   ir: {
     html: [],
-    css: [
-      {
-        selector: 'body',
-        declarations: {
-          background: '#0b1020',
-          'min-height': '100vh',
-          margin: '0',
-        },
-      },
-    ],
+    css: [],
     version: 2,
     behavior: {
       start: [
-        { type: 'g3d:createFullscreenScene', varName: 'cena', bg: '#0b1020' },
-        { type: 'g3d:createBox', varName: 'caixa', worldVar: 'cena', size: 1.5, color: '#22d3ee' },
+        {
+          type: 'g3d:createFullscreenScene',
+          varName: 'cena',
+          bg: '#0b1020',
+        },
+        {
+          type: 'g3d:createBox',
+          varName: 'caixa',
+          worldVar: 'cena',
+          size: {
+            type: 'num',
+            value: 1.5,
+          },
+          color: '#22d3ee',
+        },
       ],
       events: [],
       loops: [
@@ -63,16 +38,22 @@ export const rotatingCubeExample: ExtensionExample = {
           worldVar: 'cena',
           body: [
             {
-              type: 'g3d:rotateBy',
+              type: 'g3d:spin',
               objVar: 'caixa',
               axis: 'x',
-              amount: { type: 'num', value: 0.01 },
+              speed: {
+                type: 'num',
+                value: 34,
+              },
             },
             {
-              type: 'g3d:rotateBy',
+              type: 'g3d:spin',
               objVar: 'caixa',
               axis: 'y',
-              amount: { type: 'num', value: 0.01 },
+              speed: {
+                type: 'num',
+                value: 34,
+              },
             },
           ],
         },
@@ -93,106 +74,220 @@ export const shapesExample: ExtensionExample = {
   description:
     'Um boneco montado com esferas, cone e cilindro (um modelo) sobre o chão, girando: mostra formas, materiais e montar modelo.',
   ir: {
-    html: [{ type: 'canvas', id: 'tela', width: 480, height: 360 }],
-    css: centeredCanvasLayout('#1e293b'),
+    html: [],
+    css: [],
     version: 2,
     behavior: {
       start: [
-        { type: 'g3d:createScene', canvasId: 'tela', varName: 'cena' },
-        { type: 'g3d:setBackground', worldVar: 'cena', color: '#1e293b' },
+        {
+          type: 'g3d:createFullscreenScene',
+          varName: 'cena',
+          bg: '#1e293b',
+        },
         {
           type: 'g3d:setCameraPosition',
           worldVar: 'cena',
-          x: { type: 'num', value: 3 },
-          y: { type: 'num', value: 2.5 },
-          z: { type: 'num', value: 6 },
+          x: {
+            type: 'num',
+            value: 3,
+          },
+          y: {
+            type: 'num',
+            value: 2.5,
+          },
+          z: {
+            type: 'num',
+            value: 6,
+          },
         },
         {
           type: 'g3d:createPlane',
           varName: 'chao',
           worldVar: 'cena',
-          width: 14,
-          depth: 14,
+          width: {
+            type: 'num',
+            value: 14,
+          },
+          depth: {
+            type: 'num',
+            value: 14,
+          },
           color: '#334155',
         },
         {
           type: 'g3d:setPosition',
           objVar: 'chao',
-          x: { type: 'num', value: 0 },
-          y: { type: 'num', value: -0.2 },
-          z: { type: 'num', value: 0 },
+          x: {
+            type: 'num',
+            value: 0,
+          },
+          y: {
+            type: 'num',
+            value: -0.2,
+          },
+          z: {
+            type: 'num',
+            value: 0,
+          },
         },
-        { type: 'g3d:createModel', varName: 'boneco', worldVar: 'cena' },
+        {
+          type: 'g3d:createModel',
+          varName: 'boneco',
+          worldVar: 'cena',
+        },
         {
           type: 'g3d:createSphere',
           varName: 'corpo',
           worldVar: 'cena',
-          radius: 0.8,
+          radius: {
+            type: 'num',
+            value: 0.8,
+          },
           color: '#e2e8f0',
         },
         {
           type: 'g3d:setPosition',
           objVar: 'corpo',
-          x: { type: 'num', value: 0 },
-          y: { type: 'num', value: 0.8 },
-          z: { type: 'num', value: 0 },
+          x: {
+            type: 'num',
+            value: 0,
+          },
+          y: {
+            type: 'num',
+            value: 0.8,
+          },
+          z: {
+            type: 'num',
+            value: 0,
+          },
         },
-        { type: 'g3d:addToModel', modelVar: 'boneco', partVar: 'corpo' },
+        {
+          type: 'g3d:addToModel',
+          modelVar: 'boneco',
+          partVar: 'corpo',
+        },
         {
           type: 'g3d:createSphere',
           varName: 'cabeca',
           worldVar: 'cena',
-          radius: 0.5,
+          radius: {
+            type: 'num',
+            value: 0.5,
+          },
           color: '#e2e8f0',
         },
         {
           type: 'g3d:setPosition',
           objVar: 'cabeca',
-          x: { type: 'num', value: 0 },
-          y: { type: 'num', value: 1.9 },
-          z: { type: 'num', value: 0 },
+          x: {
+            type: 'num',
+            value: 0,
+          },
+          y: {
+            type: 'num',
+            value: 1.9,
+          },
+          z: {
+            type: 'num',
+            value: 0,
+          },
         },
-        { type: 'g3d:addToModel', modelVar: 'boneco', partVar: 'cabeca' },
+        {
+          type: 'g3d:addToModel',
+          modelVar: 'boneco',
+          partVar: 'cabeca',
+        },
         {
           type: 'g3d:createCone',
           varName: 'nariz',
           worldVar: 'cena',
-          radius: 0.12,
-          height: 0.5,
+          radius: {
+            type: 'num',
+            value: 0.12,
+          },
+          height: {
+            type: 'num',
+            value: 0.5,
+          },
           color: '#f59e0b',
         },
         {
           type: 'g3d:setPosition',
           objVar: 'nariz',
-          x: { type: 'num', value: 0 },
-          y: { type: 'num', value: 1.9 },
-          z: { type: 'num', value: 0.5 },
+          x: {
+            type: 'num',
+            value: 0,
+          },
+          y: {
+            type: 'num',
+            value: 1.9,
+          },
+          z: {
+            type: 'num',
+            value: 0.5,
+          },
         },
         {
           type: 'g3d:setRotation',
           objVar: 'nariz',
-          x: { type: 'num', value: 1.5708 },
-          y: { type: 'num', value: 0 },
-          z: { type: 'num', value: 0 },
+          x: {
+            type: 'num',
+            value: 90,
+          },
+          y: {
+            type: 'num',
+            value: 0,
+          },
+          z: {
+            type: 'num',
+            value: 0,
+          },
         },
-        { type: 'g3d:addToModel', modelVar: 'boneco', partVar: 'nariz' },
+        {
+          type: 'g3d:addToModel',
+          modelVar: 'boneco',
+          partVar: 'nariz',
+        },
         {
           type: 'g3d:createCylinder',
           varName: 'chapeu',
           worldVar: 'cena',
-          radius: 0.45,
-          height: 0.5,
+          radius: {
+            type: 'num',
+            value: 0.45,
+          },
+          height: {
+            type: 'num',
+            value: 0.5,
+          },
           color: '#0ea5e9',
         },
         {
           type: 'g3d:setPosition',
           objVar: 'chapeu',
-          x: { type: 'num', value: 0 },
-          y: { type: 'num', value: 2.55 },
-          z: { type: 'num', value: 0 },
+          x: {
+            type: 'num',
+            value: 0,
+          },
+          y: {
+            type: 'num',
+            value: 2.55,
+          },
+          z: {
+            type: 'num',
+            value: 0,
+          },
         },
-        { type: 'g3d:setMaterial', objVar: 'chapeu', kind: 'metal' },
-        { type: 'g3d:addToModel', modelVar: 'boneco', partVar: 'chapeu' },
+        {
+          type: 'g3d:setMaterial',
+          objVar: 'chapeu',
+          kind: 'metal',
+        },
+        {
+          type: 'g3d:addToModel',
+          modelVar: 'boneco',
+          partVar: 'chapeu',
+        },
       ],
       events: [],
       loops: [
@@ -201,10 +296,13 @@ export const shapesExample: ExtensionExample = {
           worldVar: 'cena',
           body: [
             {
-              type: 'g3d:rotateBy',
+              type: 'g3d:spin',
               objVar: 'boneco',
               axis: 'y',
-              amount: { type: 'num', value: 0.01 },
+              speed: {
+                type: 'num',
+                value: 34,
+              },
             },
           ],
         },
@@ -225,47 +323,125 @@ export const nightExample: ExtensionExample = {
   description:
     'Cena à noite com céu degradê, neblina, sombras e uma luz pontual (tocha) sobre um cubo girando: mostra luz & céu.',
   ir: {
-    html: [{ type: 'canvas', id: 'tela', width: 480, height: 360 }],
-    css: centeredCanvasLayout('#05070f'),
+    html: [],
+    css: [],
     version: 2,
     behavior: {
       start: [
-        { type: 'g3d:createScene', canvasId: 'tela', varName: 'cena' },
-        { type: 'g3d:setSky', worldVar: 'cena', top: '#0b1026', bottom: '#1e3a5f' },
-        { type: 'g3d:setFog', worldVar: 'cena', color: '#1e3a5f', near: 4, far: 22 },
-        { type: 'g3d:setShadows', worldVar: 'cena', mode: 'on' },
-        { type: 'g3d:addSunLight', worldVar: 'cena', color: '#94a3b8', intensity: 0.35 },
+        {
+          type: 'g3d:createFullscreenScene',
+          varName: 'cena',
+          bg: '#05070f',
+        },
+        {
+          type: 'g3d:setSky',
+          worldVar: 'cena',
+          top: '#0b1026',
+          bottom: '#1e3a5f',
+        },
+        {
+          type: 'g3d:setFog',
+          worldVar: 'cena',
+          color: '#1e3a5f',
+          near: {
+            type: 'num',
+            value: 4,
+          },
+          far: {
+            type: 'num',
+            value: 22,
+          },
+        },
+        {
+          type: 'g3d:setShadows',
+          worldVar: 'cena',
+          mode: 'on',
+        },
+        {
+          type: 'g3d:addSunLight',
+          worldVar: 'cena',
+          color: '#94a3b8',
+          intensity: {
+            type: 'num',
+            value: 0.35,
+          },
+        },
         {
           type: 'g3d:addPointLight',
           worldVar: 'cena',
           color: '#ffd27f',
-          intensity: 2.5,
-          x: 0,
-          y: 3,
-          z: 0,
+          intensity: {
+            type: 'num',
+            value: 2.5,
+          },
+          x: {
+            type: 'num',
+            value: 0,
+          },
+          y: {
+            type: 'num',
+            value: 3,
+          },
+          z: {
+            type: 'num',
+            value: 0,
+          },
         },
         {
           type: 'g3d:createPlane',
           varName: 'chao',
           worldVar: 'cena',
-          width: 30,
-          depth: 30,
+          width: {
+            type: 'num',
+            value: 30,
+          },
+          depth: {
+            type: 'num',
+            value: 30,
+          },
           color: '#1f2937',
         },
         {
           type: 'g3d:setPosition',
           objVar: 'chao',
-          x: { type: 'num', value: 0 },
-          y: { type: 'num', value: -0.5 },
-          z: { type: 'num', value: 0 },
+          x: {
+            type: 'num',
+            value: 0,
+          },
+          y: {
+            type: 'num',
+            value: -0.5,
+          },
+          z: {
+            type: 'num',
+            value: 0,
+          },
         },
-        { type: 'g3d:createBox', varName: 'cubo', worldVar: 'cena', size: 1, color: '#f59e0b' },
+        {
+          type: 'g3d:createBox',
+          varName: 'cubo',
+          worldVar: 'cena',
+          size: {
+            type: 'num',
+            value: 1,
+          },
+          color: '#f59e0b',
+        },
         {
           type: 'g3d:setPosition',
           objVar: 'cubo',
-          x: { type: 'num', value: 0 },
-          y: { type: 'num', value: 0.5 },
-          z: { type: 'num', value: 0 },
+          x: {
+            type: 'num',
+            value: 0,
+          },
+          y: {
+            type: 'num',
+            value: 0.5,
+          },
+          z: {
+            type: 'num',
+            value: 0,
+          },
         },
       ],
       events: [],
@@ -275,10 +451,13 @@ export const nightExample: ExtensionExample = {
           worldVar: 'cena',
           body: [
             {
-              type: 'g3d:rotateBy',
+              type: 'g3d:spin',
               objVar: 'cubo',
               axis: 'y',
-              amount: { type: 'num', value: 0.02 },
+              speed: {
+                type: 'num',
+                value: 69,
+              },
             },
           ],
         },
@@ -289,43 +468,129 @@ export const nightExample: ExtensionExample = {
 }
 
 /**
- * Exemplo bundlado: "Enxame que gira". Mostra a Fase 8 (enxames): um cubo "molde"
- * fica escondido e vira 5 cópias num enxame; o "para cada" gira todas a cada quadro.
+ * Exemplo bundlado: "Enxame que gira". Mostra as cópias de um molde num GRUPO: um cubo
+ * "molde" fica escondido e vira 5 cópias; o "para cada" gira todas a cada quadro.
+ * O IR sai de `__gen_demoExamples.ts` (`bun run gen:game-3d-examples`).
  */
 export const swarmExample: ExtensionExample = {
   name: 'Enxame que gira',
   experience: 'demo',
   description:
-    'Um molde escondido vira 5 cópias num enxame, e o "para cada" gira todas juntas: mostra criar enxame, soltar cópias e repetir para cada uma.',
+    'Um molde escondido vira 5 cópias num grupo, e o "para cada" gira todas juntas: mostra criar um grupo, criar cópias e repetir para cada uma.',
   ir: {
-    html: [{ type: 'canvas', id: 'tela', width: 480, height: 360 }],
-    css: centeredCanvasLayout('#0b1020'),
+    html: [],
+    css: [],
     version: 2,
     behavior: {
       start: [
-        { type: 'g3d:createScene', canvasId: 'tela', varName: 'cena' },
-        { type: 'g3d:setBackground', worldVar: 'cena', color: '#0b1020' },
-        { type: 'g3d:createBox', varName: 'modelo', worldVar: 'cena', size: 0.6, color: '#22d3ee' },
-        { type: 'g3d:setVisible', objVar: 'modelo', mode: 'hide' },
-        { type: 'g3d:createSwarm', varName: 'enxame', worldVar: 'cena' },
-        { type: 'g3d:spawnInSwarm', swarmVar: 'enxame', originalVar: 'modelo', x: -2, y: 0, z: 0 },
-        { type: 'g3d:spawnInSwarm', swarmVar: 'enxame', originalVar: 'modelo', x: 0, y: 0.6, z: 0 },
-        { type: 'g3d:spawnInSwarm', swarmVar: 'enxame', originalVar: 'modelo', x: 2, y: 0, z: 0 },
         {
-          type: 'g3d:spawnInSwarm',
-          swarmVar: 'enxame',
-          originalVar: 'modelo',
-          x: -1,
-          y: -1.4,
-          z: 0,
+          type: 'g3d:createFullscreenScene',
+          varName: 'cena',
+          bg: '#0b1020',
         },
         {
-          type: 'g3d:spawnInSwarm',
-          swarmVar: 'enxame',
+          type: 'g3d:createBox',
+          varName: 'modelo',
+          worldVar: 'cena',
+          size: {
+            type: 'num',
+            value: 0.6,
+          },
+          color: '#22d3ee',
+        },
+        {
+          type: 'g3d:setVisible',
+          objVar: 'modelo',
+          mode: 'hide',
+        },
+        {
+          type: 'g3d:createGroup',
+          varName: 'enxame',
+        },
+        {
+          type: 'g3d:spawnCopy',
+          groupVar: 'enxame',
           originalVar: 'modelo',
-          x: 1,
-          y: -1.4,
-          z: 0,
+          x: {
+            type: 'num',
+            value: -2,
+          },
+          y: {
+            type: 'num',
+            value: 0,
+          },
+          z: {
+            type: 'num',
+            value: 0,
+          },
+        },
+        {
+          type: 'g3d:spawnCopy',
+          groupVar: 'enxame',
+          originalVar: 'modelo',
+          x: {
+            type: 'num',
+            value: 0,
+          },
+          y: {
+            type: 'num',
+            value: 0.6,
+          },
+          z: {
+            type: 'num',
+            value: 0,
+          },
+        },
+        {
+          type: 'g3d:spawnCopy',
+          groupVar: 'enxame',
+          originalVar: 'modelo',
+          x: {
+            type: 'num',
+            value: 2,
+          },
+          y: {
+            type: 'num',
+            value: 0,
+          },
+          z: {
+            type: 'num',
+            value: 0,
+          },
+        },
+        {
+          type: 'g3d:spawnCopy',
+          groupVar: 'enxame',
+          originalVar: 'modelo',
+          x: {
+            type: 'num',
+            value: -1,
+          },
+          y: {
+            type: 'num',
+            value: -1.4,
+          },
+          z: {
+            type: 'num',
+            value: 0,
+          },
+        },
+        {
+          type: 'g3d:spawnCopy',
+          groupVar: 'enxame',
+          originalVar: 'modelo',
+          x: {
+            type: 'num',
+            value: 1,
+          },
+          y: {
+            type: 'num',
+            value: -1.4,
+          },
+          z: {
+            type: 'num',
+            value: 0,
+          },
         },
       ],
       events: [],
@@ -335,15 +600,18 @@ export const swarmExample: ExtensionExample = {
           worldVar: 'cena',
           body: [
             {
-              type: 'g3d:forEachInSwarm',
-              swarmVar: 'enxame',
+              type: 'g3d:forEachInGroup',
+              groupVar: 'enxame',
               itemName: 'item',
               body: [
                 {
-                  type: 'g3d:rotateBy',
+                  type: 'g3d:spin',
                   objVar: 'item',
                   axis: 'y',
-                  amount: { type: 'num', value: 0.04 },
+                  speed: {
+                    type: 'num',
+                    value: 138,
+                  },
                 },
               ],
             },
@@ -357,66 +625,235 @@ export const swarmExample: ExtensionExample = {
 
 /**
  * Exemplo bundlado: "Desvie dos blocos". Um cubo jogador anda no plano (WASD),
- * pula com gravidade sobre o chão, e a cada 45 quadros nasce 1 bloco inimigo que
- * vem de longe numa velocidade estável — encostar em qualquer um encerra o jogo.
- * A LÓGICA é montada pela criança: "A cada N quadros" solta 1 inimigo, "Atualizar
- * o grupo" move, "Tirar quem saiu da tela" limpa, e "encostou em algum?" encerra.
+ * pula com gravidade sobre o chão, e a cada 0,75 s nasce 1 bloco inimigo que
+ * vem de longe numa velocidade estável. Reescrito no lote 7 do review 3D: três corações
+ * ("Quando … encostar em algum do grupo" machuca e tira o bloco), um ponto por segundo,
+ * "Quando a vida acabar" mostra a tela de fim e "Jogar de novo" recomeça. Sem HTML.
+ * O IR sai de `__gen_demoExamples.ts` (`bun run gen:game-3d-examples`).
  */
 export const dodgeExample: ExtensionExample = {
   name: 'Desvie dos blocos',
   experience: 'game',
   description:
-    'Cubo que anda (WASD), pula e desvia de blocos que aparecem de tempos em tempos. Encostar em um = fim de jogo.',
+    'Cubo que anda (WASD), pula e desvia dos blocos que vêm de longe. Tem três corações, um ponto por segundo vivo, fim de jogo e Jogar de novo.',
   ir: {
-    html: [{ type: 'canvas', id: 'tela', width: 480, height: 360 }],
-    css: centeredCanvasLayout('#0c4a6e'),
+    html: [],
+    css: [],
     version: 2,
     behavior: {
       start: [
-        { type: 'g3d:createScene', canvasId: 'tela', varName: 'cena' },
-        { type: 'g3d:setBackground', worldVar: 'cena', color: '#0c4a6e' },
+        {
+          type: 'g3d:createFullscreenScene',
+          varName: 'cena',
+          bg: '#0c4a6e',
+        },
         {
           type: 'g3d:setCameraPosition',
           worldVar: 'cena',
-          x: { type: 'num', value: 4.6 },
-          y: { type: 'num', value: 2.7 },
-          z: { type: 'num', value: 8 },
+          x: {
+            type: 'num',
+            value: 4.6,
+          },
+          y: {
+            type: 'num',
+            value: 2.7,
+          },
+          z: {
+            type: 'num',
+            value: 8,
+          },
         },
-        { type: 'g3d:createBox', varName: 'jogador', worldVar: 'cena', size: 1, color: '#34d399' },
+        {
+          type: 'g3d:screenText',
+          screen: 'inicio',
+          title: 'Desvie dos blocos',
+          text: 'Ande com WASD ou as setas e pule com espaço. Cada bloco que encostar tira um coração.',
+          button: 'Jogar',
+        },
+        {
+          type: 'g3d:screenText',
+          screen: 'fim',
+          title: 'Os blocos te pegaram!',
+          text: 'Cada segundo vivo vale um ponto.',
+          button: 'Jogar de novo',
+        },
+        {
+          type: 'g3d:createBox',
+          varName: 'jogador',
+          worldVar: 'cena',
+          size: {
+            type: 'num',
+            value: 1,
+          },
+          color: '#34d399',
+        },
         {
           type: 'g3d:createBlock',
           varName: 'chao',
           worldVar: 'cena',
-          width: 10,
-          height: 0.5,
-          depth: 50,
+          width: {
+            type: 'num',
+            value: 10,
+          },
+          height: {
+            type: 'num',
+            value: 0.5,
+          },
+          depth: {
+            type: 'num',
+            value: 50,
+          },
           color: '#0369a1',
         },
         {
           type: 'g3d:setPosition',
           objVar: 'chao',
-          x: { type: 'num', value: 0 },
-          y: { type: 'num', value: -2 },
-          z: { type: 'num', value: 0 },
+          x: {
+            type: 'num',
+            value: 0,
+          },
+          y: {
+            type: 'num',
+            value: -2,
+          },
+          z: {
+            type: 'num',
+            value: 0,
+          },
         },
-        { type: 'g3d:createGroup', varName: 'inimigos' },
+        {
+          type: 'g3d:cameraMode',
+          worldVar: 'cena',
+          mode: 'longe',
+          objVar: 'jogador',
+        },
+        {
+          type: 'g3d:life',
+          op: 'dar',
+          objVar: 'jogador',
+          value: {
+            type: 'num',
+            value: 3,
+          },
+        },
+        {
+          type: 'g3d:createGroup',
+          varName: 'inimigos',
+        },
       ],
-      events: [],
+      events: [
+        {
+          type: 'g3d:onGame',
+          event: 'encostar',
+          objVar: 'jogador',
+          groupVar: 'inimigos',
+          itemName: 'bloco',
+          body: [
+            {
+              type: 'g3d:life',
+              op: 'machucar',
+              objVar: 'jogador',
+              value: {
+                type: 'num',
+                value: 1,
+              },
+            },
+            {
+              type: 'g3d:playEffect',
+              kind: 'hit',
+            },
+            {
+              type: 'g3d:shakeCamera',
+              strength: {
+                type: 'num',
+                value: 0.3,
+              },
+              secs: {
+                type: 'num',
+                value: 0.3,
+              },
+            },
+            {
+              type: 'g3d:removeFromGroup',
+              groupVar: 'inimigos',
+              objVar: 'bloco',
+            },
+          ],
+        },
+        {
+          type: 'g3d:onGame',
+          event: 'vida-acabou',
+          objVar: 'jogador',
+          body: [
+            {
+              type: 'g3d:gameOver',
+              result: 'perdeu',
+            },
+          ],
+        },
+      ],
       loops: [
         {
           type: 'g3d:animate',
           worldVar: 'cena',
           body: [
-            { type: 'g3d:controlWithKeys', objVar: 'jogador', speed: 0.05 },
+            {
+              type: 'g3d:controlWithKeys',
+              objVar: 'jogador',
+              speed: {
+                type: 'num',
+                value: 3,
+              },
+            },
             {
               type: 'if',
-              cond: { type: 'g3d:keyDown', key: 'Space' },
-              then: [{ type: 'g3d:jump', objVar: 'jogador', force: { type: 'num', value: 0.08 } }],
+              cond: {
+                type: 'g3d:keyDown',
+                key: 'Space',
+              },
+              then: [
+                {
+                  type: 'g3d:jump',
+                  objVar: 'jogador',
+                  force: {
+                    type: 'num',
+                    value: 4.8,
+                  },
+                },
+              ],
             },
-            { type: 'g3d:applyGravity', objVar: 'jogador', groundVar: 'chao' },
-            { type: 'g3d:cameraFollow', worldVar: 'cena', objVar: 'jogador' },
-            // Mover o grupo (velocidade + gravidade) e limpar quem saiu da tela.
-            { type: 'g3d:updateGroup', groupVar: 'inimigos', groundVar: 'chao' },
+            {
+              type: 'g3d:applyGravity',
+              objVar: 'jogador',
+              groundVar: 'chao',
+            },
+            {
+              type: 'if',
+              cond: {
+                type: 'binop',
+                op: '<',
+                left: {
+                  type: 'g3d:getPos',
+                  objVar: 'jogador',
+                  axis: 'y',
+                },
+                right: {
+                  type: 'num',
+                  value: -12,
+                },
+              },
+              then: [
+                {
+                  type: 'g3d:gameOver',
+                  result: 'perdeu',
+                },
+              ],
+            },
+            {
+              type: 'g3d:updateGroup',
+              groupVar: 'inimigos',
+              groundVar: 'chao',
+            },
             {
               type: 'g3d:pruneOffscreen',
               worldVar: 'cena',
@@ -424,23 +861,504 @@ export const dodgeExample: ExtensionExample = {
               itemName: 'inimigo',
               body: [],
             },
+          ],
+        },
+        {
+          type: 'g3d:everySeconds',
+          secs: {
+            type: 'num',
+            value: 0.75,
+          },
+          body: [
             {
-              type: 'if',
-              cond: { type: 'g3d:hitAny', objVar: 'jogador', groupVar: 'inimigos' },
-              then: [{ type: 'g3d:stop', worldVar: 'cena' }],
+              type: 'g3d:spawnEnemy',
+              worldVar: 'cena',
+              groupVar: 'inimigos',
+              speed: {
+                type: 'num',
+                value: 6,
+              },
             },
           ],
         },
-        // IRMÃO do "A cada quadro 3D" (igual ao Jogo 2D): a cada 45 quadros, 1 inimigo.
         {
-          type: 'g3d:everyFrames',
-          n: 45,
-          body: [{ type: 'g3d:spawnEnemy', worldVar: 'cena', groupVar: 'inimigos', speed: 0.1 }],
+          type: 'g3d:everySeconds',
+          secs: {
+            type: 'num',
+            value: 1,
+          },
+          body: [
+            {
+              type: 'g3d:addScore',
+              value: {
+                type: 'num',
+                value: 1,
+              },
+            },
+          ],
         },
       ],
     },
     extensions: [{ extensionId: 'game-3d' }],
   },
+}
+
+/**
+ * Exemplo bundlado: "Pega-Estrelas" (review 3D, lote 7). O PRIMEIRO jogo completo do
+ * catálogo e o único que cabe inteiro no degrau iniciante-3d (só o núcleo do Jogo 3D e o
+ * "se"): tela de início, estrelas que nascem num grupo, encostar pega e soma ponto, 30 s
+ * e a tela final com os pontos e "Jogar de novo". Nenhum HTML: o placar e as telas são
+ * blocos. O IR sai de `__gen_primeirosJogos.ts` (`bun run gen:game-3d-examples`).
+ */
+export const pegaEstrelasExample: ExtensionExample = {
+  name: 'Pega-Estrelas',
+  experience: 'game',
+  description:
+    'Seu primeiro jogo completo: ande, pule e pegue as estrelas que aparecem num grupo. Cada estrela vale um ponto, e em 30 segundos o jogo acaba.',
+  ir: {
+    html: [],
+    css: [],
+    version: 2,
+    behavior: {
+      start: [
+        {
+          type: 'g3d:createFullscreenScene',
+          varName: 'cena',
+          bg: '#0b1026',
+        },
+        {
+          type: 'g3d:screenText',
+          screen: 'inicio',
+          title: 'Pega-Estrelas',
+          text: 'Ande com as setas ou WASD e pule com espaço. Pegue o máximo de estrelas em 30 segundos!',
+          button: 'Jogar',
+        },
+        {
+          type: 'g3d:screenText',
+          screen: 'vitoria',
+          title: 'Acabou o tempo!',
+          text: 'Veja quantas estrelas você pegou.',
+          button: 'Jogar de novo',
+        },
+        {
+          type: 'g3d:createBlock',
+          varName: 'chao',
+          worldVar: 'cena',
+          width: {
+            type: 'num',
+            value: 24,
+          },
+          height: {
+            type: 'num',
+            value: 1,
+          },
+          depth: {
+            type: 'num',
+            value: 24,
+          },
+          color: '#15803d',
+        },
+        {
+          type: 'g3d:setPosition',
+          objVar: 'chao',
+          x: {
+            type: 'num',
+            value: 0,
+          },
+          y: {
+            type: 'num',
+            value: -0.5,
+          },
+          z: {
+            type: 'num',
+            value: 0,
+          },
+        },
+        {
+          type: 'g3d:createBox',
+          varName: 'heroi',
+          worldVar: 'cena',
+          size: {
+            type: 'num',
+            value: 1,
+          },
+          color: '#38bdf8',
+        },
+        {
+          type: 'g3d:setPosition',
+          objVar: 'heroi',
+          x: {
+            type: 'num',
+            value: 0,
+          },
+          y: {
+            type: 'num',
+            value: 1,
+          },
+          z: {
+            type: 'num',
+            value: 0,
+          },
+        },
+        {
+          type: 'g3d:cameraMode',
+          worldVar: 'cena',
+          mode: 'tras',
+          objVar: 'heroi',
+        },
+        {
+          type: 'g3d:createSphere',
+          varName: 'estrela',
+          worldVar: 'cena',
+          radius: {
+            type: 'num',
+            value: 0.4,
+          },
+          color: '#facc15',
+        },
+        {
+          type: 'g3d:setPosition',
+          objVar: 'estrela',
+          x: {
+            type: 'num',
+            value: 0,
+          },
+          y: {
+            type: 'num',
+            value: -20,
+          },
+          z: {
+            type: 'num',
+            value: 0,
+          },
+        },
+        {
+          type: 'g3d:createGroup',
+          varName: 'estrelas',
+        },
+        {
+          type: 'g3d:cornerText',
+          corner: 'top-left',
+          text: {
+            type: 'str',
+            value: 'Pegue as estrelas amarelas!',
+          },
+        },
+        {
+          type: 'g3d:timer',
+          op: 'comecar',
+          secs: {
+            type: 'num',
+            value: 30,
+          },
+        },
+      ],
+      events: [
+        {
+          type: 'g3d:onGame',
+          event: 'encostar',
+          objVar: 'heroi',
+          groupVar: 'estrelas',
+          itemName: 'item',
+          body: [
+            {
+              type: 'g3d:addScore',
+              value: {
+                type: 'num',
+                value: 1,
+              },
+            },
+            {
+              type: 'g3d:playEffect',
+              kind: 'coin',
+            },
+            {
+              type: 'g3d:removeObject',
+              worldVar: 'cena',
+              objVar: 'item',
+            },
+          ],
+        },
+        {
+          type: 'g3d:onGame',
+          event: 'tempo-acabou',
+          body: [
+            {
+              type: 'g3d:gameOver',
+              result: 'ganhou',
+            },
+          ],
+        },
+      ],
+      loops: [
+        {
+          type: 'g3d:animate',
+          worldVar: 'cena',
+          body: [
+            {
+              type: 'g3d:controlWithKeys',
+              objVar: 'heroi',
+              speed: {
+                type: 'num',
+                value: 5,
+              },
+            },
+            {
+              type: 'if',
+              cond: {
+                type: 'g3d:keyDown',
+                key: 'Space',
+              },
+              then: [
+                {
+                  type: 'g3d:jump',
+                  objVar: 'heroi',
+                  force: {
+                    type: 'num',
+                    value: 6,
+                  },
+                },
+              ],
+            },
+            {
+              type: 'g3d:applyGravity',
+              objVar: 'heroi',
+              groundVar: 'chao',
+            },
+          ],
+        },
+        {
+          type: 'g3d:everySeconds',
+          secs: {
+            type: 'num',
+            value: 1,
+          },
+          body: [
+            {
+              type: 'g3d:spawnCopy',
+              groupVar: 'estrelas',
+              originalVar: 'estrela',
+              x: {
+                type: 'g3d:random',
+                op: 'entre',
+                a: {
+                  type: 'num',
+                  value: -9,
+                },
+                b: {
+                  type: 'num',
+                  value: 9,
+                },
+              },
+              y: {
+                type: 'num',
+                value: 0.6,
+              },
+              z: {
+                type: 'g3d:random',
+                op: 'entre',
+                a: {
+                  type: 'num',
+                  value: -9,
+                },
+                b: {
+                  type: 'num',
+                  value: 9,
+                },
+              },
+            },
+          ],
+        },
+      ],
+    },
+    extensions: [{ extensionId: 'game-3d' }],
+  },
+}
+
+/**
+ * Exemplo bundlado: "Meu herói do Molda" (review 3D, lote 7). Um boneco do Molda com
+ * ossos (asset `heroi-do-molda`, o GLB de `exampleAssets.ts`) anda com o teclado e toca
+ * "Esticar" andando e "Acenar" parado; câmera que segue de trás, céu e som pronto. O IR
+ * sai de `__gen_primeirosJogos.ts` (`bun run gen:game-3d-examples`).
+ */
+export const meuHeroiMoldaExample: ExtensionExample = {
+  name: 'Meu herói do Molda',
+  experience: 'game',
+  description:
+    'Um personagem feito no Molda anda pela cena e muda de animação quando para. Troque pelo seu herói do Molda e use os nomes das animações dele.',
+  ir: {
+    html: [],
+    css: [],
+    version: 2,
+    behavior: {
+      start: [
+        {
+          type: 'g3d:createFullscreenScene',
+          varName: 'cena',
+          bg: '#7dd3fc',
+        },
+        {
+          type: 'g3d:setSky',
+          worldVar: 'cena',
+          top: '#38bdf8',
+          bottom: '#e0f2fe',
+        },
+        {
+          type: 'g3d:createBlock',
+          varName: 'chao',
+          worldVar: 'cena',
+          width: {
+            type: 'num',
+            value: 30,
+          },
+          height: {
+            type: 'num',
+            value: 1,
+          },
+          depth: {
+            type: 'num',
+            value: 30,
+          },
+          color: '#4ade80',
+        },
+        {
+          type: 'g3d:setPosition',
+          objVar: 'chao',
+          x: {
+            type: 'num',
+            value: 0,
+          },
+          y: {
+            type: 'num',
+            value: -0.5,
+          },
+          z: {
+            type: 'num',
+            value: 0,
+          },
+        },
+        {
+          type: 'g3d:createModelFile',
+          varName: 'heroi',
+          worldVar: 'cena',
+          asset: 'heroi-do-molda',
+          size: {
+            type: 'num',
+            value: 2,
+          },
+        },
+        {
+          type: 'g3d:setPosition',
+          objVar: 'heroi',
+          x: {
+            type: 'num',
+            value: 0,
+          },
+          y: {
+            type: 'num',
+            value: 1.5,
+          },
+          z: {
+            type: 'num',
+            value: 0,
+          },
+        },
+        {
+          type: 'g3d:cameraMode',
+          worldVar: 'cena',
+          mode: 'tras',
+          objVar: 'heroi',
+        },
+        {
+          type: 'g3d:cornerText',
+          corner: 'top-left',
+          text: {
+            type: 'str',
+            value: 'Setas ou WASD: andar. Espaço: pular.',
+          },
+        },
+      ],
+      events: [
+        {
+          type: 'g3d:onGame',
+          event: 'tecla',
+          key: 'Space',
+          body: [
+            {
+              type: 'g3d:jump',
+              objVar: 'heroi',
+              force: {
+                type: 'num',
+                value: 6,
+              },
+            },
+            {
+              type: 'g3d:playEffect',
+              kind: 'jump',
+            },
+          ],
+        },
+      ],
+      loops: [
+        {
+          type: 'g3d:animate',
+          worldVar: 'cena',
+          body: [
+            {
+              type: 'g3d:controlWithKeys',
+              objVar: 'heroi',
+              speed: {
+                type: 'num',
+                value: 4,
+              },
+            },
+            {
+              type: 'g3d:applyGravity',
+              objVar: 'heroi',
+              groundVar: 'chao',
+            },
+            {
+              type: 'if',
+              cond: {
+                type: 'g3d:isMoving',
+                objVar: 'heroi',
+              },
+              then: [
+                {
+                  type: 'g3d:modelAnimation',
+                  op: 'tocar',
+                  objVar: 'heroi',
+                  clip: 'Esticar',
+                  mode: 'repetir',
+                },
+              ],
+              else: [
+                {
+                  type: 'g3d:modelAnimation',
+                  op: 'tocar',
+                  objVar: 'heroi',
+                  clip: 'Acenar',
+                  mode: 'repetir',
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    },
+    extensions: [{ extensionId: 'game-3d' }],
+  },
+  assets: [
+    {
+      id: 'example-heroi-do-molda',
+      name: 'heroi-do-molda',
+      kind: 'model3d',
+      dataUrl: HEROI_DO_MOLDA_GLB,
+      originalFileName: 'heroi-do-molda.glb',
+      source: 'library',
+      libId: 'example-heroi-do-molda',
+    },
+  ],
 }
 
 /**
@@ -455,172 +1373,149 @@ export const crossingExample: ExtensionExample = {
   description:
     'Pule de casa em casa numa grade isométrica e desvie dos carros e caminhões. Pontuação e fim de jogo no HUD.',
   ir: {
-    html: [
-      { type: 'canvas', id: 'jogo', width: 960, height: 540 },
-      { type: 'element', tag: 'div', id: 'score', text: '0' },
-      {
-        type: 'element',
-        tag: 'div',
-        id: 'controls',
-        children: [
-          { type: 'element', tag: 'button', id: 'forward', text: '▲' },
-          { type: 'element', tag: 'button', id: 'left', text: '◀' },
-          { type: 'element', tag: 'button', id: 'backward', text: '▼' },
-          { type: 'element', tag: 'button', id: 'right', text: '▶' },
-        ],
-      },
-      {
-        type: 'element',
-        tag: 'div',
-        id: 'result-container',
-        children: [
-          {
-            type: 'element',
-            tag: 'div',
-            id: 'result',
-            children: [
-              { type: 'element', tag: 'h1', text: 'Fim de jogo' },
-              {
-                type: 'element',
-                tag: 'p',
-                children: [
-                  { type: 'text', text: 'Pontos: ' },
-                  { type: 'element', tag: 'span', id: 'final-score' },
-                ],
-              },
-              { type: 'element', tag: 'button', id: 'retry', text: 'Recomeçar' },
-            ],
-          },
-        ],
-      },
-    ],
-    css: [
-      { type: 'googleFont', family: 'Press Start 2P' },
-      {
-        selector: 'body',
-        declarations: {
-          margin: '0',
-          overflow: 'hidden',
-          'font-family': '"Press Start 2P", cursive',
-        },
-      },
-      {
-        selector: 'canvas',
-        declarations: { display: 'block', width: '100vw', height: '100vh' },
-      },
-      {
-        selector: '#score',
-        declarations: {
-          position: 'absolute',
-          top: '20px',
-          left: '20px',
-          'font-size': '1.5em',
-          color: 'white',
-        },
-      },
-      {
-        selector: '#controls',
-        declarations: {
-          position: 'absolute',
-          bottom: '20px',
-          left: '0',
-          'min-width': '100%',
-          display: 'grid',
-          'grid-template-columns': '50px 50px 50px',
-          gap: '10px',
-          'justify-content': 'center',
-        },
-      },
-      { selector: '#forward', declarations: { 'grid-column': '1 / -1' } },
-      {
-        selector: '#controls button',
-        declarations: {
-          height: '40px',
-          'background-color': 'white',
-          border: '1px solid lightgray',
-          cursor: 'pointer',
-        },
-      },
-      {
-        selector: '#result-container',
-        declarations: {
-          position: 'absolute',
-          top: '0',
-          left: '0',
-          'min-width': '100%',
-          'min-height': '100%',
-          display: 'flex',
-          'align-items': 'center',
-          'justify-content': 'center',
-          visibility: 'hidden',
-        },
-      },
-      { selector: '#result-container.visivel', declarations: { visibility: 'visible' } },
-      {
-        selector: '#result',
-        declarations: {
-          display: 'flex',
-          'flex-direction': 'column',
-          'align-items': 'center',
-          'background-color': 'white',
-          padding: '20px',
-        },
-      },
-      {
-        selector: '#result button',
-        declarations: {
-          'background-color': '#ee2233',
-          color: 'white',
-          padding: '16px 32px',
-          'font-family': 'inherit',
-          cursor: 'pointer',
-        },
-      },
-    ],
+    html: [],
+    css: [],
     version: 2,
     behavior: {
       start: [
-        { type: 'g3d:createCrossingScene', canvasId: 'jogo', varName: 'mundo' },
-        { type: 'g3d:createCrosser', varName: 'jogador', worldVar: 'mundo', color: '#ffffff' },
-        { type: 'g3d:generateRows', worldVar: 'mundo', count: 20 },
+        {
+          type: 'g3d:createFullscreenScene',
+          varName: 'mundo',
+          bg: '#87ceeb',
+          kit: 'crossing',
+        },
+        {
+          type: 'g3d:screenText',
+          screen: 'fim',
+          title: 'Fim da travessia',
+          text: 'Cada linha atravessada vale um ponto.',
+          button: 'Tentar de novo',
+        },
+        {
+          type: 'g3d:createCrosser',
+          varName: 'jogador',
+          worldVar: 'mundo',
+          color: '#ffffff',
+        },
+        {
+          type: 'g3d:generateRows',
+          worldVar: 'mundo',
+          count: {
+            type: 'num',
+            value: 20,
+          },
+        },
+        {
+          type: 'g3d:addScore',
+          value: {
+            type: 'num',
+            value: 0,
+          },
+        },
+        {
+          type: 'g3d:cornerText',
+          corner: 'bottom-center',
+          text: {
+            type: 'str',
+            value: 'Setas ou WASD: pular para a próxima casa.',
+          },
+        },
       ],
       events: [
         {
-          type: 'event',
-          target: 'forward',
-          targetKind: 'id',
-          event: 'click',
-          body: [{ type: 'g3d:crosserMove', objVar: 'jogador', direction: 'forward' }],
-        },
-        {
-          type: 'event',
-          target: 'backward',
-          targetKind: 'id',
-          event: 'click',
-          body: [{ type: 'g3d:crosserMove', objVar: 'jogador', direction: 'backward' }],
-        },
-        {
-          type: 'event',
-          target: 'left',
-          targetKind: 'id',
-          event: 'click',
-          body: [{ type: 'g3d:crosserMove', objVar: 'jogador', direction: 'left' }],
-        },
-        {
-          type: 'event',
-          target: 'right',
-          targetKind: 'id',
-          event: 'click',
-          body: [{ type: 'g3d:crosserMove', objVar: 'jogador', direction: 'right' }],
-        },
-        {
-          type: 'event',
-          target: 'retry',
-          targetKind: 'id',
-          event: 'click',
+          type: 'g3d:onGame',
+          event: 'tecla',
+          key: 'ArrowUp',
           body: [
-            { type: 'g3d:crosserReset', objVar: 'jogador', worldVar: 'mundo' },
-            { type: 'classOp', targetId: 'result-container', op: 'remove', className: 'visivel' },
+            {
+              type: 'g3d:crosserMove',
+              objVar: 'jogador',
+              direction: 'forward',
+            },
+          ],
+        },
+        {
+          type: 'g3d:onGame',
+          event: 'tecla',
+          key: 'KeyW',
+          body: [
+            {
+              type: 'g3d:crosserMove',
+              objVar: 'jogador',
+              direction: 'forward',
+            },
+          ],
+        },
+        {
+          type: 'g3d:onGame',
+          event: 'tecla',
+          key: 'ArrowDown',
+          body: [
+            {
+              type: 'g3d:crosserMove',
+              objVar: 'jogador',
+              direction: 'backward',
+            },
+          ],
+        },
+        {
+          type: 'g3d:onGame',
+          event: 'tecla',
+          key: 'KeyS',
+          body: [
+            {
+              type: 'g3d:crosserMove',
+              objVar: 'jogador',
+              direction: 'backward',
+            },
+          ],
+        },
+        {
+          type: 'g3d:onGame',
+          event: 'tecla',
+          key: 'ArrowLeft',
+          body: [
+            {
+              type: 'g3d:crosserMove',
+              objVar: 'jogador',
+              direction: 'left',
+            },
+          ],
+        },
+        {
+          type: 'g3d:onGame',
+          event: 'tecla',
+          key: 'KeyA',
+          body: [
+            {
+              type: 'g3d:crosserMove',
+              objVar: 'jogador',
+              direction: 'left',
+            },
+          ],
+        },
+        {
+          type: 'g3d:onGame',
+          event: 'tecla',
+          key: 'ArrowRight',
+          body: [
+            {
+              type: 'g3d:crosserMove',
+              objVar: 'jogador',
+              direction: 'right',
+            },
+          ],
+        },
+        {
+          type: 'g3d:onGame',
+          event: 'tecla',
+          key: 'KeyD',
+          body: [
+            {
+              type: 'g3d:crosserMove',
+              objVar: 'jogador',
+              direction: 'right',
+            },
           ],
         },
       ],
@@ -629,24 +1524,41 @@ export const crossingExample: ExtensionExample = {
           type: 'g3d:animate',
           worldVar: 'mundo',
           body: [
-            { type: 'g3d:crosserStep', objVar: 'jogador', worldVar: 'mundo' },
-            { type: 'g3d:moveTraffic', worldVar: 'mundo' },
             {
-              type: 'setProperty',
-              targetId: 'score',
-              property: 'textContent',
-              value: { type: 'g3d:crosserRow', objVar: 'jogador' },
+              type: 'g3d:crosserStep',
+              objVar: 'jogador',
+              worldVar: 'mundo',
+            },
+            {
+              type: 'g3d:moveTraffic',
+              worldVar: 'mundo',
+            },
+            {
+              type: 'g3d:addScore',
+              value: {
+                type: 'binop',
+                op: '-',
+                left: {
+                  type: 'g3d:crosserRow',
+                  objVar: 'jogador',
+                },
+                right: {
+                  type: 'g3d:gameValue',
+                  what: 'pontos',
+                },
+              },
             },
             {
               type: 'if',
-              cond: { type: 'g3d:crosserHit', objVar: 'jogador', worldVar: 'mundo' },
+              cond: {
+                type: 'g3d:crosserHit',
+                objVar: 'jogador',
+                worldVar: 'mundo',
+              },
               then: [
-                { type: 'classOp', targetId: 'result-container', op: 'add', className: 'visivel' },
                 {
-                  type: 'setProperty',
-                  targetId: 'final-score',
-                  property: 'textContent',
-                  value: { type: 'g3d:crosserRow', objVar: 'jogador' },
+                  type: 'g3d:gameOver',
+                  result: 'perdeu',
                 },
               ],
             },
@@ -670,180 +1582,129 @@ export const raceExample: ExtensionExample = {
   description:
     'Dê voltas na pista (↑ acelera, ↓ freia) desviando dos rivais. A pontuação são as voltas completas.',
   ir: {
-    html: [
-      { type: 'canvas', id: 'pista', width: 960, height: 540 },
-      { type: 'element', tag: 'div', id: 'score', text: '0' },
-      {
-        type: 'element',
-        tag: 'div',
-        id: 'buttons',
-        children: [
-          { type: 'element', tag: 'button', id: 'accelerate', text: '▲ Acelerar' },
-          { type: 'element', tag: 'button', id: 'brake', text: '▼ Frear' },
-        ],
-      },
-      {
-        type: 'element',
-        tag: 'div',
-        id: 'results',
-        children: [
-          {
-            type: 'element',
-            tag: 'div',
-            id: 'results-box',
-            children: [
-              { type: 'element', tag: 'h1', text: 'Fim de jogo' },
-              {
-                type: 'element',
-                tag: 'p',
-                children: [
-                  { type: 'text', text: 'Voltas: ' },
-                  { type: 'element', tag: 'span', id: 'final-laps' },
-                ],
-              },
-              { type: 'element', tag: 'button', id: 'retry', text: 'Recomeçar' },
-            ],
-          },
-        ],
-      },
-    ],
-    css: [
-      { type: 'googleFont', family: 'Press Start 2P' },
-      {
-        selector: 'body',
-        declarations: {
-          margin: '0',
-          overflow: 'hidden',
-          'font-family': '"Press Start 2P", cursive',
-        },
-      },
-      {
-        selector: 'canvas',
-        declarations: { display: 'block', width: '100vw', height: '100vh' },
-      },
-      {
-        selector: '#score',
-        declarations: {
-          position: 'absolute',
-          top: '20px',
-          left: '20px',
-          'font-size': '1.5em',
-          color: 'white',
-        },
-      },
-      {
-        selector: '#buttons',
-        declarations: {
-          position: 'absolute',
-          bottom: '20px',
-          left: '0',
-          'min-width': '100%',
-          display: 'flex',
-          gap: '10px',
-          'justify-content': 'center',
-        },
-      },
-      {
-        selector: '#buttons button',
-        declarations: {
-          height: '44px',
-          'background-color': 'white',
-          border: '1px solid lightgray',
-          cursor: 'pointer',
-        },
-      },
-      {
-        selector: '#results',
-        declarations: {
-          position: 'absolute',
-          top: '0',
-          left: '0',
-          'min-width': '100%',
-          'min-height': '100%',
-          display: 'flex',
-          'align-items': 'center',
-          'justify-content': 'center',
-          visibility: 'hidden',
-        },
-      },
-      { selector: '#results.visivel', declarations: { visibility: 'visible' } },
-      {
-        selector: '#results-box',
-        declarations: {
-          display: 'flex',
-          'flex-direction': 'column',
-          'align-items': 'center',
-          'background-color': 'white',
-          padding: '20px',
-        },
-      },
-      {
-        selector: '#results-box button',
-        declarations: {
-          'background-color': '#ee2233',
-          color: 'white',
-          padding: '16px 32px',
-          'font-family': 'inherit',
-          cursor: 'pointer',
-        },
-      },
-    ],
+    html: [],
+    css: [],
     version: 2,
     behavior: {
       start: [
-        { type: 'g3d:createRaceScene', canvasId: 'pista', varName: 'mundo' },
-        { type: 'g3d:createRaceTrack', worldVar: 'mundo' },
-        { type: 'g3d:createRaceCar', varName: 'carro', worldVar: 'mundo', color: '#ef2d56' },
+        {
+          type: 'g3d:createFullscreenScene',
+          varName: 'mundo',
+          bg: '#bfe3ff',
+          kit: 'race',
+        },
+        {
+          type: 'g3d:screenText',
+          screen: 'fim',
+          title: 'Fim da corrida',
+          text: 'Cada volta completa vale um ponto.',
+          button: 'Correr de novo',
+        },
+        {
+          type: 'g3d:createRaceTrack',
+          worldVar: 'mundo',
+        },
+        {
+          type: 'g3d:createRaceCar',
+          varName: 'carro',
+          worldVar: 'mundo',
+          color: '#ef2d56',
+        },
+        {
+          type: 'g3d:addScore',
+          value: {
+            type: 'num',
+            value: 0,
+          },
+        },
+        {
+          type: 'g3d:cornerText',
+          corner: 'bottom-center',
+          text: {
+            type: 'str',
+            value:
+              'Seta para cima: acelerar. Seta para baixo: frear. Solte para manter a velocidade normal.',
+          },
+        },
       ],
-      events: [
-        {
-          type: 'event',
-          target: 'accelerate',
-          targetKind: 'id',
-          event: 'click',
-          body: [{ type: 'g3d:raceControl', objVar: 'carro', mode: 'accelerate' }],
-        },
-        {
-          type: 'event',
-          target: 'brake',
-          targetKind: 'id',
-          event: 'click',
-          body: [{ type: 'g3d:raceControl', objVar: 'carro', mode: 'decelerate' }],
-        },
-        {
-          type: 'event',
-          target: 'retry',
-          targetKind: 'id',
-          event: 'click',
-          body: [
-            { type: 'g3d:raceReset', objVar: 'carro', worldVar: 'mundo' },
-            { type: 'classOp', targetId: 'results', op: 'remove', className: 'visivel' },
-          ],
-        },
-      ],
+      events: [],
       loops: [
         {
           type: 'g3d:animate',
           worldVar: 'mundo',
           body: [
-            { type: 'g3d:raceStep', objVar: 'carro', worldVar: 'mundo' },
-            { type: 'g3d:runRivals', worldVar: 'mundo' },
             {
-              type: 'setProperty',
-              targetId: 'score',
-              property: 'textContent',
-              value: { type: 'g3d:raceLaps', objVar: 'carro' },
+              type: 'if',
+              cond: {
+                type: 'g3d:keyDown',
+                key: 'ArrowUp',
+              },
+              then: [
+                {
+                  type: 'g3d:raceControl',
+                  objVar: 'carro',
+                  mode: 'accelerate',
+                },
+              ],
+              else: [
+                {
+                  type: 'if',
+                  cond: {
+                    type: 'g3d:keyDown',
+                    key: 'ArrowDown',
+                  },
+                  then: [
+                    {
+                      type: 'g3d:raceControl',
+                      objVar: 'carro',
+                      mode: 'decelerate',
+                    },
+                  ],
+                  else: [
+                    {
+                      type: 'g3d:raceControl',
+                      objVar: 'carro',
+                      mode: 'normal',
+                    },
+                  ],
+                },
+              ],
+            },
+            {
+              type: 'g3d:raceStep',
+              objVar: 'carro',
+              worldVar: 'mundo',
+            },
+            {
+              type: 'g3d:runRivals',
+              worldVar: 'mundo',
+            },
+            {
+              type: 'g3d:addScore',
+              value: {
+                type: 'binop',
+                op: '-',
+                left: {
+                  type: 'g3d:raceLaps',
+                  objVar: 'carro',
+                },
+                right: {
+                  type: 'g3d:gameValue',
+                  what: 'pontos',
+                },
+              },
             },
             {
               type: 'if',
-              cond: { type: 'g3d:raceHit', objVar: 'carro', worldVar: 'mundo' },
+              cond: {
+                type: 'g3d:raceHit',
+                objVar: 'carro',
+                worldVar: 'mundo',
+              },
               then: [
-                { type: 'classOp', targetId: 'results', op: 'add', className: 'visivel' },
                 {
-                  type: 'setProperty',
-                  targetId: 'final-laps',
-                  property: 'textContent',
-                  value: { type: 'g3d:raceLaps', objVar: 'carro' },
+                  type: 'g3d:gameOver',
+                  result: 'perdeu',
                 },
               ],
             },
@@ -861,145 +1722,64 @@ export const stackExample: ExtensionExample = {
   description:
     'Empilhe os blocos! Clique em "Soltar" na hora certa: a parte que encaixa fica, a sobra cai. A pontuação são os andares.',
   ir: {
-    html: [
-      { type: 'canvas', id: 'jogo', width: 960, height: 540 },
-      { type: 'element', tag: 'div', id: 'score', text: '0' },
-      {
-        type: 'element',
-        tag: 'div',
-        id: 'buttons',
-        children: [{ type: 'element', tag: 'button', id: 'drop', text: 'Soltar bloco' }],
-      },
-      {
-        type: 'element',
-        tag: 'div',
-        id: 'results',
-        children: [
-          {
-            type: 'element',
-            tag: 'div',
-            id: 'results-box',
-            children: [
-              { type: 'element', tag: 'h1', text: 'Fim de jogo' },
-              {
-                type: 'element',
-                tag: 'p',
-                children: [
-                  { type: 'text', text: 'Andares: ' },
-                  { type: 'element', tag: 'span', id: 'final-score' },
-                ],
-              },
-              { type: 'element', tag: 'button', id: 'retry', text: 'Recomeçar' },
-            ],
-          },
-        ],
-      },
-    ],
-    css: [
-      { type: 'googleFont', family: 'Press Start 2P' },
-      {
-        selector: 'body',
-        declarations: {
-          margin: '0',
-          overflow: 'hidden',
-          'font-family': '"Press Start 2P", cursive',
-        },
-      },
-      {
-        selector: 'canvas',
-        declarations: { display: 'block', width: '100vw', height: '100vh' },
-      },
-      {
-        selector: '#score',
-        declarations: {
-          position: 'absolute',
-          top: '20px',
-          left: '20px',
-          'font-size': '2em',
-          color: '#7a4b12',
-        },
-      },
-      {
-        selector: '#buttons',
-        declarations: {
-          position: 'absolute',
-          bottom: '20px',
-          left: '0',
-          'min-width': '100%',
-          display: 'flex',
-          'justify-content': 'center',
-        },
-      },
-      {
-        selector: '#buttons button',
-        declarations: {
-          height: '52px',
-          padding: '0 28px',
-          'background-color': '#14b8a6',
-          color: 'white',
-          border: 'none',
-          'font-family': 'inherit',
-          cursor: 'pointer',
-        },
-      },
-      {
-        selector: '#results',
-        declarations: {
-          position: 'absolute',
-          top: '0',
-          left: '0',
-          'min-width': '100%',
-          'min-height': '100%',
-          display: 'flex',
-          'align-items': 'center',
-          'justify-content': 'center',
-          visibility: 'hidden',
-        },
-      },
-      { selector: '#results.visivel', declarations: { visibility: 'visible' } },
-      {
-        selector: '#results-box',
-        declarations: {
-          display: 'flex',
-          'flex-direction': 'column',
-          'align-items': 'center',
-          'background-color': 'white',
-          padding: '20px',
-        },
-      },
-      {
-        selector: '#results-box button',
-        declarations: {
-          'background-color': '#14b8a6',
-          color: 'white',
-          padding: '16px 32px',
-          'font-family': 'inherit',
-          cursor: 'pointer',
-        },
-      },
-    ],
+    html: [],
+    css: [],
     version: 2,
     behavior: {
       start: [
-        { type: 'g3d:createStackScene', canvasId: 'jogo', varName: 'torre' },
-        { type: 'g3d:createStackTower', worldVar: 'torre' },
+        {
+          type: 'g3d:createFullscreenScene',
+          varName: 'torre',
+          bg: '#fbe7c6',
+          kit: 'stack',
+        },
+        {
+          type: 'g3d:screenText',
+          screen: 'fim',
+          title: 'A torre terminou!',
+          text: 'Cada bloco encaixado vale um ponto.',
+          button: 'Empilhar de novo',
+        },
+        {
+          type: 'g3d:createStackTower',
+          worldVar: 'torre',
+        },
+        {
+          type: 'g3d:addScore',
+          value: {
+            type: 'num',
+            value: 0,
+          },
+        },
+        {
+          type: 'g3d:cornerText',
+          corner: 'bottom-center',
+          text: {
+            type: 'str',
+            value: 'Espaço ou clique: soltar o bloco sobre a torre.',
+          },
+        },
       ],
       events: [
         {
-          type: 'event',
-          target: 'drop',
-          targetKind: 'id',
-          event: 'click',
-          body: [{ type: 'g3d:stackDrop', worldVar: 'torre' }],
+          type: 'g3d:onGame',
+          event: 'tecla',
+          key: 'Space',
+          body: [
+            {
+              type: 'g3d:stackDrop',
+              worldVar: 'torre',
+            },
+          ],
         },
         {
-          type: 'event',
-          target: 'retry',
-          targetKind: 'id',
-          event: 'click',
+          type: 'g3d:onGame',
+          event: 'clique-cena',
           body: [
-            { type: 'g3d:stackReset', worldVar: 'torre' },
-            { type: 'classOp', targetId: 'results', op: 'remove', className: 'visivel' },
+            {
+              type: 'g3d:stackDrop',
+              worldVar: 'torre',
+            },
           ],
         },
       ],
@@ -1008,23 +1788,35 @@ export const stackExample: ExtensionExample = {
           type: 'g3d:animate',
           worldVar: 'torre',
           body: [
-            { type: 'g3d:stackStep', worldVar: 'torre' },
             {
-              type: 'setProperty',
-              targetId: 'score',
-              property: 'textContent',
-              value: { type: 'g3d:stackScore', worldVar: 'torre' },
+              type: 'g3d:stackStep',
+              worldVar: 'torre',
+            },
+            {
+              type: 'g3d:addScore',
+              value: {
+                type: 'binop',
+                op: '-',
+                left: {
+                  type: 'g3d:stackScore',
+                  worldVar: 'torre',
+                },
+                right: {
+                  type: 'g3d:gameValue',
+                  what: 'pontos',
+                },
+              },
             },
             {
               type: 'if',
-              cond: { type: 'g3d:stackGameOver', worldVar: 'torre' },
+              cond: {
+                type: 'g3d:stackGameOver',
+                worldVar: 'torre',
+              },
               then: [
-                { type: 'classOp', targetId: 'results', op: 'add', className: 'visivel' },
                 {
-                  type: 'setProperty',
-                  targetId: 'final-score',
-                  property: 'textContent',
-                  value: { type: 'g3d:stackScore', worldVar: 'torre' },
+                  type: 'g3d:gameOver',
+                  result: 'perdeu',
                 },
               ],
             },
@@ -1041,153 +1833,18 @@ export const stackExample: ExtensionExample = {
  * recriação do runner 3D do curso Clear Code): o herói fica PARADO no eixo Z e o
  * mundo vem até ele. Diferente do "Desvie dos blocos" (andar livre + WASD), aqui
  * há 3 PISTAS fixas (setas trocam, com deslize suave), pulo com espaço/seta para
- * cima, obstáculos que nascem longe numa pista sorteada via enxame, placar por
- * TEMPO de sobrevivência no HUD e velocidade que cresce a cada segundo.
+ * cima, obstáculos que nascem longe numa pista sorteada num grupo, placar por
+ * TEMPO de sobrevivência (pontos, fim de jogo e "Jogar de novo" pelos blocos de regras
+ * de jogo desde o lote 7 do review 3D, sem HTML) e velocidade que cresce a cada segundo.
  */
 export const corridaInfinitaExample: ExtensionExample = {
   name: 'Corrida Infinita 3D',
   experience: 'game',
   description:
-    'Você corre parado: o mundo vem até você! Troque de pista com as setas, pule com espaço e desvie das caixas, que ficam cada vez mais rápidas. O placar conta seus segundos de sobrevivência.',
+    'Você corre parado: o mundo vem até você! Troque de pista com as setas, pule com espaço e desvie das caixas, que ficam cada vez mais rápidas. Cada segundo vivo vale um ponto.',
   ir: {
-    html: [
-      {
-        type: 'element',
-        tag: 'div',
-        id: 'score',
-        text: '0',
-      },
-      {
-        type: 'element',
-        tag: 'div',
-        id: 'hint',
-        text: 'Setas: trocar de pista. Espaço ou seta para cima: pular.',
-      },
-      {
-        type: 'element',
-        tag: 'div',
-        id: 'results',
-        children: [
-          {
-            type: 'element',
-            tag: 'div',
-            id: 'results-box',
-            children: [
-              {
-                type: 'element',
-                tag: 'h1',
-                text: 'Bateu!',
-              },
-              {
-                type: 'element',
-                tag: 'p',
-                children: [
-                  {
-                    type: 'text',
-                    text: 'Você sobreviveu ',
-                  },
-                  {
-                    type: 'element',
-                    tag: 'span',
-                    id: 'final-score',
-                  },
-                  {
-                    type: 'text',
-                    text: ' segundos',
-                  },
-                ],
-              },
-              {
-                type: 'element',
-                tag: 'button',
-                id: 'retry',
-                text: 'Recomeçar',
-              },
-            ],
-          },
-        ],
-      },
-    ],
-    css: [
-      {
-        type: 'googleFont',
-        family: 'Press Start 2P',
-      },
-      {
-        selector: 'body',
-        declarations: {
-          margin: '0',
-          overflow: 'hidden',
-          'font-family': '"Press Start 2P", cursive',
-        },
-      },
-      {
-        selector: '#score',
-        declarations: {
-          position: 'absolute',
-          top: '20px',
-          left: '20px',
-          'font-size': '2em',
-          color: 'white',
-          'z-index': '1',
-        },
-      },
-      {
-        selector: '#hint',
-        declarations: {
-          position: 'absolute',
-          bottom: '20px',
-          left: '0',
-          'min-width': '100%',
-          'text-align': 'center',
-          'font-size': '0.7em',
-          color: 'white',
-          'z-index': '1',
-        },
-      },
-      {
-        selector: '#results',
-        declarations: {
-          position: 'absolute',
-          top: '0',
-          left: '0',
-          'min-width': '100%',
-          'min-height': '100%',
-          display: 'flex',
-          'align-items': 'center',
-          'justify-content': 'center',
-          visibility: 'hidden',
-          'z-index': '1',
-        },
-      },
-      {
-        selector: '#results.visivel',
-        declarations: {
-          visibility: 'visible',
-        },
-      },
-      {
-        selector: '#results-box',
-        declarations: {
-          display: 'flex',
-          'flex-direction': 'column',
-          'align-items': 'center',
-          'background-color': 'white',
-          padding: '20px',
-        },
-      },
-      {
-        selector: '#results-box button',
-        declarations: {
-          'background-color': '#f43f5e',
-          color: 'white',
-          padding: '16px 32px',
-          'font-family': 'inherit',
-          cursor: 'pointer',
-          border: 'none',
-        },
-      },
-    ],
+    html: [],
+    css: [],
     version: 2,
     behavior: {
       start: [
@@ -1375,9 +2032,8 @@ export const corridaInfinitaExample: ExtensionExample = {
           mode: 'hide',
         },
         {
-          type: 'g3d:createSwarm',
+          type: 'g3d:createGroup',
           varName: 'obstaculos',
-          worldVar: 'cena',
         },
         {
           type: 'var',
@@ -1400,103 +2056,52 @@ export const corridaInfinitaExample: ExtensionExample = {
           name: 'velocidade',
           value: {
             type: 'num',
-            value: 0.14,
+            value: 8.4,
           },
         },
         {
-          type: 'var',
-          name: 'tempo',
-          value: {
-            type: 'num',
-            value: 0,
-          },
+          type: 'g3d:screenText',
+          screen: 'fim',
+          title: 'Bateu!',
+          text: 'Cada segundo correndo vale um ponto.',
+          button: 'Jogar de novo',
         },
         {
-          type: 'var',
-          name: 'rodando',
-          value: {
-            type: 'bool',
-            value: true,
+          type: 'g3d:cornerText',
+          corner: 'bottom-center',
+          text: {
+            type: 'str',
+            value: 'Setas: trocar de pista. Espaço ou seta para cima: pular.',
           },
         },
       ],
       events: [
         {
-          type: 'event',
-          target: 'document',
-          targetKind: 'document',
-          event: 'keydown',
+          type: 'g3d:onGame',
+          event: 'tecla',
+          key: 'ArrowLeft',
           body: [
             {
               type: 'if',
               cond: {
                 type: 'binop',
-                op: '===',
+                op: '>',
                 left: {
-                  type: 'eventProp',
-                  prop: 'key',
+                  type: 'var',
+                  name: 'pista',
                 },
                 right: {
-                  type: 'str',
-                  value: 'ArrowLeft',
+                  type: 'num',
+                  value: -1,
                 },
               },
               then: [
                 {
-                  type: 'if',
-                  cond: {
+                  type: 'assign',
+                  name: 'pista',
+                  value: {
                     type: 'binop',
-                    op: '>',
-                    left: {
-                      type: 'var',
-                      name: 'pista',
-                    },
-                    right: {
-                      type: 'num',
-                      value: -1,
-                    },
-                  },
-                  then: [
-                    {
-                      type: 'assign',
-                      name: 'pista',
-                      value: {
-                        type: 'binop',
-                        op: '-',
-                        left: {
-                          type: 'var',
-                          name: 'pista',
-                        },
-                        right: {
-                          type: 'num',
-                          value: 1,
-                        },
-                      },
-                    },
-                  ],
-                },
-              ],
-            },
-            {
-              type: 'if',
-              cond: {
-                type: 'binop',
-                op: '===',
-                left: {
-                  type: 'eventProp',
-                  prop: 'key',
-                },
-                right: {
-                  type: 'str',
-                  value: 'ArrowRight',
-                },
-              },
-              then: [
-                {
-                  type: 'if',
-                  cond: {
-                    type: 'binop',
-                    op: '<',
+                    op: '-',
                     left: {
                       type: 'var',
                       name: 'pista',
@@ -1506,92 +2111,48 @@ export const corridaInfinitaExample: ExtensionExample = {
                       value: 1,
                     },
                   },
-                  then: [
-                    {
-                      type: 'assign',
-                      name: 'pista',
-                      value: {
-                        type: 'binop',
-                        op: '+',
-                        left: {
-                          type: 'var',
-                          name: 'pista',
-                        },
-                        right: {
-                          type: 'num',
-                          value: 1,
-                        },
-                      },
-                    },
-                  ],
                 },
               ],
             },
           ],
         },
         {
-          type: 'event',
-          target: 'retry',
-          event: 'click',
+          type: 'g3d:onGame',
+          event: 'tecla',
+          key: 'ArrowRight',
           body: [
             {
-              type: 'g3d:forEachInSwarm',
-              swarmVar: 'obstaculos',
-              itemName: 'item',
-              body: [
+              type: 'if',
+              cond: {
+                type: 'binop',
+                op: '<',
+                left: {
+                  type: 'var',
+                  name: 'pista',
+                },
+                right: {
+                  type: 'num',
+                  value: 1,
+                },
+              },
+              then: [
                 {
-                  type: 'g3d:removeFromSwarm',
-                  swarmVar: 'obstaculos',
-                  itemVar: 'item',
+                  type: 'assign',
+                  name: 'pista',
+                  value: {
+                    type: 'binop',
+                    op: '+',
+                    left: {
+                      type: 'var',
+                      name: 'pista',
+                    },
+                    right: {
+                      type: 'num',
+                      value: 1,
+                    },
+                  },
                 },
               ],
-            },
-            {
-              type: 'assign',
-              name: 'pista',
-              value: {
-                type: 'num',
-                value: 0,
-              },
-            },
-            {
-              type: 'assign',
-              name: 'velocidade',
-              value: {
-                type: 'num',
-                value: 0.14,
-              },
-            },
-            {
-              type: 'assign',
-              name: 'tempo',
-              value: {
-                type: 'num',
-                value: 0,
-              },
-            },
-            {
-              type: 'setProperty',
-              targetId: 'score',
-              property: 'textContent',
-              value: {
-                type: 'num',
-                value: 0,
-              },
-            },
-            {
-              type: 'classOp',
-              targetId: 'results',
-              op: 'remove',
-              className: 'visivel',
-            },
-            {
-              type: 'assign',
-              name: 'rodando',
-              value: {
-                type: 'bool',
-                value: true,
-              },
             },
           ],
         },
@@ -1604,152 +2165,123 @@ export const corridaInfinitaExample: ExtensionExample = {
             {
               type: 'if',
               cond: {
-                type: 'var',
-                name: 'rodando',
+                type: 'logical',
+                op: '||',
+                left: {
+                  type: 'g3d:keyDown',
+                  key: 'Space',
+                },
+                right: {
+                  type: 'g3d:keyDown',
+                  key: 'ArrowUp',
+                },
               },
               then: [
                 {
-                  type: 'if',
-                  cond: {
-                    type: 'logical',
-                    op: '||',
-                    left: {
-                      type: 'g3d:keyDown',
-                      key: 'Space',
-                    },
-                    right: {
-                      type: 'g3d:keyDown',
-                      key: 'ArrowUp',
-                    },
+                  type: 'g3d:jump',
+                  objVar: 'heroi',
+                  force: {
+                    type: 'num',
+                    value: 5.4,
                   },
-                  then: [
-                    {
-                      type: 'g3d:jump',
-                      objVar: 'heroi',
-                      force: {
-                        type: 'num',
-                        value: 0.09,
-                      },
-                    },
-                  ],
                 },
-                {
-                  type: 'g3d:applyGravity',
-                  objVar: 'heroi',
-                  groundVar: 'chao',
+              ],
+            },
+            {
+              type: 'g3d:applyGravity',
+              objVar: 'heroi',
+              groundVar: 'chao',
+            },
+            {
+              type: 'g3d:moveTowards',
+              objVar: 'heroi',
+              x: {
+                type: 'binop',
+                op: '*',
+                left: {
+                  type: 'var',
+                  name: 'pista',
                 },
+                right: {
+                  type: 'num',
+                  value: 2.2,
+                },
+              },
+              y: {
+                type: 'g3d:getPos',
+                objVar: 'heroi',
+                axis: 'y',
+              },
+              z: {
+                type: 'num',
+                value: 0,
+              },
+              factor: {
+                type: 'num',
+                value: 17.26,
+              },
+            },
+            {
+              type: 'g3d:forEachInGroup',
+              groupVar: 'obstaculos',
+              itemName: 'item',
+              body: [
                 {
-                  type: 'g3d:moveTowards',
-                  objVar: 'heroi',
+                  type: 'g3d:moveBy',
+                  objVar: 'item',
                   x: {
+                    type: 'num',
+                    value: 0,
+                  },
+                  y: {
+                    type: 'num',
+                    value: 0,
+                  },
+                  z: {
                     type: 'binop',
                     op: '*',
                     left: {
                       type: 'var',
-                      name: 'pista',
+                      name: 'velocidade',
                     },
                     right: {
-                      type: 'num',
-                      value: 2.2,
+                      type: 'g3d:dt',
+                      worldVar: 'cena',
                     },
-                  },
-                  y: {
-                    type: 'g3d:getPos',
-                    objVar: 'heroi',
-                    axis: 'y',
-                  },
-                  z: {
-                    type: 'num',
-                    value: 0,
-                  },
-                  factor: {
-                    type: 'num',
-                    value: 0.25,
                   },
                 },
                 {
-                  type: 'g3d:forEachInSwarm',
-                  swarmVar: 'obstaculos',
-                  itemName: 'item',
-                  body: [
+                  type: 'if',
+                  cond: {
+                    type: 'g3d:collides',
+                    aVar: 'heroi',
+                    bVar: 'item',
+                  },
+                  then: [
                     {
-                      type: 'g3d:moveBy',
-                      objVar: 'item',
-                      x: {
-                        type: 'num',
-                        value: 0,
-                      },
-                      y: {
-                        type: 'num',
-                        value: 0,
-                      },
-                      z: {
-                        type: 'var',
-                        name: 'velocidade',
-                      },
+                      type: 'g3d:playEffect',
+                      kind: 'hit',
                     },
                     {
-                      type: 'if',
-                      cond: {
-                        type: 'g3d:collides',
-                        aVar: 'heroi',
-                        bVar: 'item',
-                      },
-                      then: [
-                        {
-                          type: 'assign',
-                          name: 'rodando',
-                          value: {
-                            type: 'bool',
-                            value: false,
-                          },
-                        },
-                        {
-                          type: 'g3d:playEffect',
-                          kind: 'hit',
-                        },
-                        {
-                          type: 'setProperty',
-                          targetId: 'final-score',
-                          property: 'textContent',
-                          value: {
-                            type: 'var',
-                            name: 'tempo',
-                          },
-                        },
-                        {
-                          type: 'classOp',
-                          targetId: 'results',
-                          op: 'add',
-                          className: 'visivel',
-                        },
-                      ],
+                      type: 'g3d:gameOver',
+                      result: 'perdeu',
                     },
                   ],
                 },
-                {
-                  type: 'g3d:pruneSwarm',
-                  swarmVar: 'obstaculos',
-                  axis: 'z',
-                  min: {
-                    type: 'num',
-                    value: -80,
-                  },
-                  max: {
-                    type: 'num',
-                    value: 6,
-                  },
-                },
-                {
-                  type: 'setProperty',
-                  targetId: 'score',
-                  property: 'textContent',
-                  value: {
-                    type: 'var',
-                    name: 'tempo',
-                  },
-                },
               ],
+            },
+            {
+              type: 'g3d:pruneArea',
+              groupVar: 'obstaculos',
+              axis: 'z',
+              min: {
+                type: 'num',
+                value: -80,
+              },
+              max: {
+                type: 'num',
+                value: 6,
+              },
             },
           ],
         },
@@ -1761,68 +2293,50 @@ export const corridaInfinitaExample: ExtensionExample = {
           },
           body: [
             {
+              type: 'g3d:addScore',
+              value: {
+                type: 'num',
+                value: 1,
+              },
+            },
+            {
+              type: 'assign',
+              name: 'velocidade',
+              value: {
+                type: 'binop',
+                op: '+',
+                left: {
+                  type: 'var',
+                  name: 'velocidade',
+                },
+                right: {
+                  type: 'num',
+                  value: 0.3,
+                },
+              },
+            },
+            {
               type: 'if',
               cond: {
-                type: 'var',
-                name: 'rodando',
+                type: 'binop',
+                op: '>',
+                left: {
+                  type: 'var',
+                  name: 'velocidade',
+                },
+                right: {
+                  type: 'num',
+                  value: 33.6,
+                },
               },
               then: [
                 {
                   type: 'assign',
-                  name: 'tempo',
-                  value: {
-                    type: 'binop',
-                    op: '+',
-                    left: {
-                      type: 'var',
-                      name: 'tempo',
-                    },
-                    right: {
-                      type: 'num',
-                      value: 1,
-                    },
-                  },
-                },
-                {
-                  type: 'assign',
                   name: 'velocidade',
                   value: {
-                    type: 'binop',
-                    op: '+',
-                    left: {
-                      type: 'var',
-                      name: 'velocidade',
-                    },
-                    right: {
-                      type: 'num',
-                      value: 0.005,
-                    },
+                    type: 'num',
+                    value: 33.6,
                   },
-                },
-                {
-                  type: 'if',
-                  cond: {
-                    type: 'binop',
-                    op: '>',
-                    left: {
-                      type: 'var',
-                      name: 'velocidade',
-                    },
-                    right: {
-                      type: 'num',
-                      value: 0.56,
-                    },
-                  },
-                  then: [
-                    {
-                      type: 'assign',
-                      name: 'velocidade',
-                      value: {
-                        type: 'num',
-                        value: 0.56,
-                      },
-                    },
-                  ],
                 },
               ],
             },
@@ -1836,65 +2350,45 @@ export const corridaInfinitaExample: ExtensionExample = {
           },
           body: [
             {
-              type: 'if',
-              cond: {
-                type: 'var',
-                name: 'rodando',
+              type: 'assign',
+              name: 'sorteio',
+              value: {
+                type: 'g3d:random',
+                op: 'entre',
+                a: {
+                  type: 'num',
+                  value: -1,
+                },
+                b: {
+                  type: 'num',
+                  value: 1,
+                },
               },
-              then: [
-                {
-                  type: 'assign',
+            },
+            {
+              type: 'g3d:spawnCopy',
+              groupVar: 'obstaculos',
+              originalVar: 'molde',
+              x: {
+                type: 'binop',
+                op: '*',
+                left: {
+                  type: 'var',
                   name: 'sorteio',
-                  value: {
-                    type: 'binop',
-                    op: '-',
-                    left: {
-                      type: 'mathUnary',
-                      fn: 'floor',
-                      arg: {
-                        type: 'binop',
-                        op: '*',
-                        left: {
-                          type: 'randomFloat',
-                        },
-                        right: {
-                          type: 'num',
-                          value: 3,
-                        },
-                      },
-                    },
-                    right: {
-                      type: 'num',
-                      value: 1,
-                    },
-                  },
                 },
-                {
-                  type: 'g3d:spawnInSwarm',
-                  swarmVar: 'obstaculos',
-                  originalVar: 'molde',
-                  x: {
-                    type: 'binop',
-                    op: '*',
-                    left: {
-                      type: 'var',
-                      name: 'sorteio',
-                    },
-                    right: {
-                      type: 'num',
-                      value: 2.2,
-                    },
-                  },
-                  y: {
-                    type: 'num',
-                    value: 0.05,
-                  },
-                  z: {
-                    type: 'num',
-                    value: -60,
-                  },
+                right: {
+                  type: 'num',
+                  value: 2.2,
                 },
-              ],
+              },
+              y: {
+                type: 'num',
+                value: 0.05,
+              },
+              z: {
+                type: 'num',
+                value: -60,
+              },
             },
           ],
         },
@@ -1926,220 +2420,8 @@ export const labirintoRobosExample: ExtensionExample = {
   description:
     'Um labirinto em primeira pessoa: clique para travar a mira, ande com WASD e gire com o mouse. Robôs brilhantes te perseguem! Mire e atire com o clique antes que a vida acabe.',
   ir: {
-    html: [
-      {
-        type: 'element',
-        tag: 'div',
-        id: 'vida-caixa',
-        children: [
-          {
-            type: 'text',
-            text: 'Vida ',
-          },
-          {
-            type: 'element',
-            tag: 'span',
-            id: 'vida',
-            text: '3',
-          },
-        ],
-      },
-      {
-        type: 'element',
-        tag: 'div',
-        id: 'placar-caixa',
-        children: [
-          {
-            type: 'text',
-            text: 'Pontos ',
-          },
-          {
-            type: 'element',
-            tag: 'span',
-            id: 'placar',
-            text: '0',
-          },
-        ],
-      },
-      {
-        type: 'element',
-        tag: 'div',
-        id: 'mira',
-        text: '+',
-      },
-      {
-        type: 'element',
-        tag: 'div',
-        id: 'dano',
-      },
-      {
-        type: 'element',
-        tag: 'div',
-        id: 'hint',
-        text: 'Clique para mirar. WASD anda, o mouse gira, o clique atira. R recomeça.',
-      },
-      {
-        type: 'element',
-        tag: 'div',
-        id: 'fim',
-        children: [
-          {
-            type: 'element',
-            tag: 'div',
-            id: 'fim-caixa',
-            children: [
-              {
-                type: 'element',
-                tag: 'h1',
-                id: 'fim-titulo',
-                text: 'Fim de jogo',
-              },
-              {
-                type: 'element',
-                tag: 'p',
-                children: [
-                  {
-                    type: 'text',
-                    text: 'Pontos: ',
-                  },
-                  {
-                    type: 'element',
-                    tag: 'span',
-                    id: 'final-pontos',
-                  },
-                ],
-              },
-              {
-                type: 'element',
-                tag: 'button',
-                id: 'retry',
-                text: 'Recomeçar',
-              },
-            ],
-          },
-        ],
-      },
-    ],
-    css: [
-      {
-        type: 'googleFont',
-        family: 'Press Start 2P',
-      },
-      {
-        selector: 'body',
-        declarations: {
-          margin: '0',
-          overflow: 'hidden',
-          'font-family': '"Press Start 2P", cursive',
-        },
-      },
-      {
-        selector: '#vida-caixa',
-        declarations: {
-          position: 'absolute',
-          top: '20px',
-          left: '20px',
-          'font-size': '1em',
-          color: 'white',
-          'z-index': '2',
-        },
-      },
-      {
-        selector: '#placar-caixa',
-        declarations: {
-          position: 'absolute',
-          top: '20px',
-          right: '20px',
-          'font-size': '1em',
-          color: 'white',
-          'z-index': '2',
-        },
-      },
-      {
-        selector: '#mira',
-        declarations: {
-          position: 'absolute',
-          top: '50%',
-          left: '50%',
-          transform: 'translate(-50%, -50%)',
-          color: 'white',
-          'font-size': '1.6em',
-          'pointer-events': 'none',
-          'z-index': '2',
-        },
-      },
-      {
-        selector: '#dano',
-        declarations: {
-          position: 'absolute',
-          top: '0',
-          left: '0',
-          'min-width': '100%',
-          'min-height': '100%',
-          'background-color': '#dc2626',
-          opacity: '0',
-          transition: 'opacity 0.3s',
-          'pointer-events': 'none',
-          'z-index': '1',
-        },
-      },
-      {
-        selector: '#hint',
-        declarations: {
-          position: 'absolute',
-          bottom: '20px',
-          left: '0',
-          'min-width': '100%',
-          'text-align': 'center',
-          'font-size': '0.7em',
-          color: 'white',
-          'z-index': '2',
-        },
-      },
-      {
-        selector: '#fim',
-        declarations: {
-          position: 'absolute',
-          top: '0',
-          left: '0',
-          'min-width': '100%',
-          'min-height': '100%',
-          display: 'flex',
-          'align-items': 'center',
-          'justify-content': 'center',
-          visibility: 'hidden',
-          'z-index': '3',
-        },
-      },
-      {
-        selector: '#fim.visivel',
-        declarations: {
-          visibility: 'visible',
-        },
-      },
-      {
-        selector: '#fim-caixa',
-        declarations: {
-          display: 'flex',
-          'flex-direction': 'column',
-          'align-items': 'center',
-          'background-color': 'white',
-          padding: '20px',
-          'text-align': 'center',
-        },
-      },
-      {
-        selector: '#fim-caixa button',
-        declarations: {
-          'background-color': '#7c3aed',
-          color: 'white',
-          padding: '16px 32px',
-          'font-family': 'inherit',
-          cursor: 'pointer',
-          border: 'none',
-        },
-      },
-    ],
+    html: [],
+    css: [],
     version: 2,
     behavior: {
       start: [
@@ -2147,6 +2429,36 @@ export const labirintoRobosExample: ExtensionExample = {
           type: 'g3d:createFullscreenScene',
           varName: 'cena',
           bg: '#0f172a',
+        },
+        {
+          type: 'g3d:screenText',
+          screen: 'fim',
+          title: 'Os robôs te pegaram!',
+          text: 'Tente outra estratégia para vencer o labirinto.',
+          button: 'Jogar de novo',
+        },
+        {
+          type: 'g3d:screenText',
+          screen: 'vitoria',
+          title: 'Você venceu!',
+          text: 'O labirinto está livre dos robôs.',
+          button: 'Jogar de novo',
+        },
+        {
+          type: 'g3d:cornerText',
+          corner: 'center',
+          text: {
+            type: 'str',
+            value: '+',
+          },
+        },
+        {
+          type: 'g3d:cornerText',
+          corner: 'bottom-left',
+          text: {
+            type: 'str',
+            value: 'Clique: atirar. WASD: andar. R: recomeçar.',
+          },
         },
         {
           type: 'g3d:setSky',
@@ -2236,7 +2548,7 @@ export const labirintoRobosExample: ExtensionExample = {
           objVar: 'jogador',
           gravity: {
             type: 'num',
-            value: -0.02,
+            value: 72,
           },
         },
         {
@@ -2468,8 +2780,9 @@ export const labirintoRobosExample: ExtensionExample = {
           objVar: 'muroSul',
         },
         {
-          type: 'g3d:fpsCamera',
+          type: 'g3d:cameraMode',
           worldVar: 'cena',
+          mode: 'primeira-pessoa',
           objVar: 'jogador',
         },
         {
@@ -2513,14 +2826,12 @@ export const labirintoRobosExample: ExtensionExample = {
           mode: 'hide',
         },
         {
-          type: 'g3d:createSwarm',
+          type: 'g3d:createGroup',
           varName: 'robosLentos',
-          worldVar: 'cena',
         },
         {
-          type: 'g3d:createSwarm',
+          type: 'g3d:createGroup',
           varName: 'robosRapidos',
-          worldVar: 'cena',
         },
         {
           type: 'var',
@@ -2576,32 +2887,32 @@ export const labirintoRobosExample: ExtensionExample = {
           params: [],
           body: [
             {
-              type: 'g3d:forEachInSwarm',
-              swarmVar: 'robosLentos',
+              type: 'g3d:forEachInGroup',
+              groupVar: 'robosLentos',
               itemName: 'item',
               body: [
                 {
-                  type: 'g3d:removeFromSwarm',
-                  swarmVar: 'robosLentos',
-                  itemVar: 'item',
+                  type: 'g3d:removeFromGroup',
+                  groupVar: 'robosLentos',
+                  objVar: 'item',
                 },
               ],
             },
             {
-              type: 'g3d:forEachInSwarm',
-              swarmVar: 'robosRapidos',
+              type: 'g3d:forEachInGroup',
+              groupVar: 'robosRapidos',
               itemName: 'item',
               body: [
                 {
-                  type: 'g3d:removeFromSwarm',
-                  swarmVar: 'robosRapidos',
-                  itemVar: 'item',
+                  type: 'g3d:removeFromGroup',
+                  groupVar: 'robosRapidos',
+                  objVar: 'item',
                 },
               ],
             },
             {
-              type: 'g3d:spawnInSwarm',
-              swarmVar: 'robosLentos',
+              type: 'g3d:spawnCopy',
+              groupVar: 'robosLentos',
               originalVar: 'moldeLento',
               x: {
                 type: 'num',
@@ -2617,8 +2928,8 @@ export const labirintoRobosExample: ExtensionExample = {
               },
             },
             {
-              type: 'g3d:spawnInSwarm',
-              swarmVar: 'robosLentos',
+              type: 'g3d:spawnCopy',
+              groupVar: 'robosLentos',
               originalVar: 'moldeLento',
               x: {
                 type: 'num',
@@ -2634,8 +2945,8 @@ export const labirintoRobosExample: ExtensionExample = {
               },
             },
             {
-              type: 'g3d:spawnInSwarm',
-              swarmVar: 'robosLentos',
+              type: 'g3d:spawnCopy',
+              groupVar: 'robosLentos',
               originalVar: 'moldeLento',
               x: {
                 type: 'num',
@@ -2651,8 +2962,8 @@ export const labirintoRobosExample: ExtensionExample = {
               },
             },
             {
-              type: 'g3d:spawnInSwarm',
-              swarmVar: 'robosRapidos',
+              type: 'g3d:spawnCopy',
+              groupVar: 'robosRapidos',
               originalVar: 'moldeRapido',
               x: {
                 type: 'num',
@@ -2668,8 +2979,8 @@ export const labirintoRobosExample: ExtensionExample = {
               },
             },
             {
-              type: 'g3d:spawnInSwarm',
-              swarmVar: 'robosRapidos',
+              type: 'g3d:spawnCopy',
+              groupVar: 'robosRapidos',
               originalVar: 'moldeRapido',
               x: {
                 type: 'num',
@@ -2749,37 +3060,43 @@ export const labirintoRobosExample: ExtensionExample = {
               },
             },
             {
-              type: 'setProperty',
-              targetId: 'vida',
-              property: 'textContent',
-              value: {
-                type: 'var',
-                name: 'vida',
+              type: 'g3d:cornerText',
+              corner: 'top-left',
+              text: {
+                type: 'binop',
+                op: '+',
+                left: {
+                  type: 'str',
+                  value: 'Vida: ',
+                },
+                right: {
+                  type: 'var',
+                  name: 'vida',
+                },
               },
             },
             {
-              type: 'setProperty',
-              targetId: 'placar',
-              property: 'textContent',
+              type: 'g3d:addScore',
               value: {
-                type: 'var',
-                name: 'pontos',
+                type: 'binop',
+                op: '-',
+                left: {
+                  type: 'var',
+                  name: 'pontos',
+                },
+                right: {
+                  type: 'g3d:gameValue',
+                  what: 'pontos',
+                },
               },
             },
             {
-              type: 'setStyle',
-              targetId: 'dano',
-              property: 'opacity',
-              value: {
+              type: 'g3d:cornerText',
+              corner: 'bottom-center',
+              text: {
                 type: 'str',
-                value: '0',
+                value: '',
               },
-            },
-            {
-              type: 'classOp',
-              targetId: 'fim',
-              op: 'remove',
-              className: 'visivel',
             },
             {
               type: 'assign',
@@ -2799,10 +3116,8 @@ export const labirintoRobosExample: ExtensionExample = {
       ],
       events: [
         {
-          type: 'event',
-          target: 'document',
-          targetKind: 'document',
-          event: 'click',
+          type: 'g3d:onGame',
+          event: 'clique-cena',
           body: [
             {
               type: 'if',
@@ -2847,8 +3162,8 @@ export const labirintoRobosExample: ExtensionExample = {
                       },
                       then: [
                         {
-                          type: 'g3d:forEachInSwarm',
-                          swarmVar: 'robosLentos',
+                          type: 'g3d:forEachInGroup',
+                          groupVar: 'robosLentos',
                           itemName: 'item',
                           body: [
                             {
@@ -2867,9 +3182,9 @@ export const labirintoRobosExample: ExtensionExample = {
                               },
                               then: [
                                 {
-                                  type: 'g3d:removeFromSwarm',
-                                  swarmVar: 'robosLentos',
-                                  itemVar: 'item',
+                                  type: 'g3d:removeFromGroup',
+                                  groupVar: 'robosLentos',
+                                  objVar: 'item',
                                 },
                                 {
                                   type: 'assign',
@@ -2896,8 +3211,8 @@ export const labirintoRobosExample: ExtensionExample = {
                           ],
                         },
                         {
-                          type: 'g3d:forEachInSwarm',
-                          swarmVar: 'robosRapidos',
+                          type: 'g3d:forEachInGroup',
+                          groupVar: 'robosRapidos',
                           itemName: 'item',
                           body: [
                             {
@@ -2916,9 +3231,9 @@ export const labirintoRobosExample: ExtensionExample = {
                               },
                               then: [
                                 {
-                                  type: 'g3d:removeFromSwarm',
-                                  swarmVar: 'robosRapidos',
-                                  itemVar: 'item',
+                                  type: 'g3d:removeFromGroup',
+                                  groupVar: 'robosRapidos',
+                                  objVar: 'item',
                                 },
                                 {
                                   type: 'assign',
@@ -2945,12 +3260,18 @@ export const labirintoRobosExample: ExtensionExample = {
                           ],
                         },
                         {
-                          type: 'setProperty',
-                          targetId: 'placar',
-                          property: 'textContent',
+                          type: 'g3d:addScore',
                           value: {
-                            type: 'var',
-                            name: 'pontos',
+                            type: 'binop',
+                            op: '-',
+                            left: {
+                              type: 'var',
+                              name: 'pontos',
+                            },
+                            right: {
+                              type: 'g3d:gameValue',
+                              what: 'pontos',
+                            },
                           },
                         },
                         {
@@ -2962,12 +3283,12 @@ export const labirintoRobosExample: ExtensionExample = {
                               type: 'binop',
                               op: '+',
                               left: {
-                                type: 'g3d:countSwarm',
-                                swarmVar: 'robosLentos',
+                                type: 'g3d:countGroup',
+                                groupVar: 'robosLentos',
                               },
                               right: {
-                                type: 'g3d:countSwarm',
-                                swarmVar: 'robosRapidos',
+                                type: 'g3d:countGroup',
+                                groupVar: 'robosRapidos',
                               },
                             },
                             right: {
@@ -2985,28 +3306,23 @@ export const labirintoRobosExample: ExtensionExample = {
                               },
                             },
                             {
-                              type: 'setProperty',
-                              targetId: 'fim-titulo',
-                              property: 'textContent',
+                              type: 'g3d:addScore',
                               value: {
-                                type: 'str',
-                                value: 'Você venceu!',
+                                type: 'binop',
+                                op: '-',
+                                left: {
+                                  type: 'var',
+                                  name: 'pontos',
+                                },
+                                right: {
+                                  type: 'g3d:gameValue',
+                                  what: 'pontos',
+                                },
                               },
                             },
                             {
-                              type: 'setProperty',
-                              targetId: 'final-pontos',
-                              property: 'textContent',
-                              value: {
-                                type: 'var',
-                                name: 'pontos',
-                              },
-                            },
-                            {
-                              type: 'classOp',
-                              targetId: 'fim',
-                              op: 'add',
-                              className: 'visivel',
+                              type: 'g3d:gameOver',
+                              result: 'ganhou',
                             },
                             {
                               type: 'g3d:playEffect',
@@ -3023,66 +3339,12 @@ export const labirintoRobosExample: ExtensionExample = {
           ],
         },
         {
-          type: 'event',
-          target: 'document',
-          targetKind: 'document',
-          event: 'keydown',
+          type: 'g3d:onGame',
+          event: 'tecla',
+          key: 'KeyR',
           body: [
             {
-              type: 'if',
-              cond: {
-                type: 'binop',
-                op: '===',
-                left: {
-                  type: 'eventProp',
-                  prop: 'key',
-                },
-                right: {
-                  type: 'str',
-                  value: 'r',
-                },
-              },
-              then: [
-                {
-                  type: 'callFunction',
-                  name: 'recomecar',
-                  args: [],
-                },
-              ],
-            },
-            {
-              type: 'if',
-              cond: {
-                type: 'binop',
-                op: '===',
-                left: {
-                  type: 'eventProp',
-                  prop: 'key',
-                },
-                right: {
-                  type: 'str',
-                  value: 'R',
-                },
-              },
-              then: [
-                {
-                  type: 'callFunction',
-                  name: 'recomecar',
-                  args: [],
-                },
-              ],
-            },
-          ],
-        },
-        {
-          type: 'event',
-          target: 'retry',
-          event: 'click',
-          body: [
-            {
-              type: 'callFunction',
-              name: 'recomecar',
-              args: [],
+              type: 'g3d:restart',
             },
           ],
         },
@@ -3105,7 +3367,7 @@ export const labirintoRobosExample: ExtensionExample = {
                   worldVar: 'cena',
                   speed: {
                     type: 'num',
-                    value: 0.09,
+                    value: 5.4,
                   },
                 },
                 {
@@ -3188,12 +3450,11 @@ export const labirintoRobosExample: ExtensionExample = {
                       },
                       then: [
                         {
-                          type: 'setStyle',
-                          targetId: 'dano',
-                          property: 'opacity',
-                          value: {
+                          type: 'g3d:cornerText',
+                          corner: 'bottom-center',
+                          text: {
                             type: 'str',
-                            value: '0',
+                            value: '',
                           },
                         },
                       ],
@@ -3209,8 +3470,8 @@ export const labirintoRobosExample: ExtensionExample = {
                   },
                 },
                 {
-                  type: 'g3d:forEachInSwarm',
-                  swarmVar: 'robosLentos',
+                  type: 'g3d:forEachInGroup',
+                  groupVar: 'robosLentos',
                   itemName: 'item',
                   body: [
                     {
@@ -3233,7 +3494,7 @@ export const labirintoRobosExample: ExtensionExample = {
                       },
                       factor: {
                         type: 'num',
-                        value: 0.006,
+                        value: 0.36,
                       },
                     },
                     {
@@ -3257,8 +3518,8 @@ export const labirintoRobosExample: ExtensionExample = {
                   ],
                 },
                 {
-                  type: 'g3d:forEachInSwarm',
-                  swarmVar: 'robosRapidos',
+                  type: 'g3d:forEachInGroup',
+                  groupVar: 'robosRapidos',
                   itemName: 'item',
                   body: [
                     {
@@ -3281,7 +3542,7 @@ export const labirintoRobosExample: ExtensionExample = {
                       },
                       factor: {
                         type: 'num',
-                        value: 0.015,
+                        value: 0.91,
                       },
                     },
                     {
@@ -3351,21 +3612,38 @@ export const labirintoRobosExample: ExtensionExample = {
                           },
                         },
                         {
-                          type: 'setProperty',
-                          targetId: 'vida',
-                          property: 'textContent',
-                          value: {
-                            type: 'var',
-                            name: 'vida',
+                          type: 'g3d:cornerText',
+                          corner: 'top-left',
+                          text: {
+                            type: 'binop',
+                            op: '+',
+                            left: {
+                              type: 'str',
+                              value: 'Vida: ',
+                            },
+                            right: {
+                              type: 'var',
+                              name: 'vida',
+                            },
                           },
                         },
                         {
-                          type: 'setStyle',
-                          targetId: 'dano',
-                          property: 'opacity',
-                          value: {
+                          type: 'g3d:cornerText',
+                          corner: 'bottom-center',
+                          text: {
                             type: 'str',
-                            value: '0.5',
+                            value: 'Você foi atingido!',
+                          },
+                        },
+                        {
+                          type: 'g3d:shakeCamera',
+                          strength: {
+                            type: 'num',
+                            value: 0.15,
+                          },
+                          secs: {
+                            type: 'num',
+                            value: 0.3,
                           },
                         },
                         {
@@ -3396,28 +3674,23 @@ export const labirintoRobosExample: ExtensionExample = {
                               },
                             },
                             {
-                              type: 'setProperty',
-                              targetId: 'fim-titulo',
-                              property: 'textContent',
+                              type: 'g3d:addScore',
                               value: {
-                                type: 'str',
-                                value: 'Os robôs te pegaram!',
+                                type: 'binop',
+                                op: '-',
+                                left: {
+                                  type: 'var',
+                                  name: 'pontos',
+                                },
+                                right: {
+                                  type: 'g3d:gameValue',
+                                  what: 'pontos',
+                                },
                               },
                             },
                             {
-                              type: 'setProperty',
-                              targetId: 'final-pontos',
-                              property: 'textContent',
-                              value: {
-                                type: 'var',
-                                name: 'pontos',
-                              },
-                            },
-                            {
-                              type: 'classOp',
-                              targetId: 'fim',
-                              op: 'add',
-                              className: 'visivel',
+                              type: 'g3d:gameOver',
+                              result: 'perdeu',
                             },
                           ],
                         },
@@ -3451,146 +3724,8 @@ export const mundoBlocosExample: ExtensionExample = {
   description:
     'Um mundinho de blocos com câmera isométrica: mova o cursor com as setas, coloque blocos com espaço e quebre com o clique. Troque o tipo com 1, 2 e 3 e construa uma torre de 5 blocos!',
   ir: {
-    html: [
-      {
-        type: 'element',
-        tag: 'div',
-        id: 'tipo-caixa',
-        children: [
-          {
-            type: 'text',
-            text: 'Bloco: ',
-          },
-          {
-            type: 'element',
-            tag: 'span',
-            id: 'tipo',
-            text: 'grama',
-          },
-        ],
-      },
-      {
-        type: 'element',
-        tag: 'div',
-        id: 'torre-caixa',
-        children: [
-          {
-            type: 'text',
-            text: 'Torre: ',
-          },
-          {
-            type: 'element',
-            tag: 'span',
-            id: 'torre',
-            text: '0',
-          },
-        ],
-      },
-      {
-        type: 'element',
-        tag: 'div',
-        id: 'hint',
-        text: 'Setas movem o cursor. Espaço coloca o bloco e o clique quebra. Troque com 1, 2 e 3.',
-      },
-      {
-        type: 'element',
-        tag: 'div',
-        id: 'festa',
-        children: [
-          {
-            type: 'element',
-            tag: 'div',
-            id: 'festa-caixa',
-            children: [
-              {
-                type: 'element',
-                tag: 'h1',
-                text: 'Parabéns! Torre de 5 blocos!',
-              },
-            ],
-          },
-        ],
-      },
-    ],
-    css: [
-      {
-        type: 'googleFont',
-        family: 'Press Start 2P',
-      },
-      {
-        selector: 'body',
-        declarations: {
-          margin: '0',
-          overflow: 'hidden',
-          'font-family': '"Press Start 2P", cursive',
-        },
-      },
-      {
-        selector: '#tipo-caixa',
-        declarations: {
-          position: 'absolute',
-          top: '20px',
-          left: '20px',
-          'font-size': '0.9em',
-          color: 'white',
-          'z-index': '1',
-        },
-      },
-      {
-        selector: '#torre-caixa',
-        declarations: {
-          position: 'absolute',
-          top: '20px',
-          right: '20px',
-          'font-size': '0.9em',
-          color: 'white',
-          'z-index': '1',
-        },
-      },
-      {
-        selector: '#hint',
-        declarations: {
-          position: 'absolute',
-          bottom: '20px',
-          left: '0',
-          'min-width': '100%',
-          'text-align': 'center',
-          'font-size': '0.7em',
-          color: 'white',
-          'z-index': '1',
-        },
-      },
-      {
-        selector: '#festa',
-        declarations: {
-          position: 'absolute',
-          top: '0',
-          left: '0',
-          'min-width': '100%',
-          'min-height': '100%',
-          display: 'flex',
-          'align-items': 'center',
-          'justify-content': 'center',
-          visibility: 'hidden',
-          'pointer-events': 'none',
-          'z-index': '2',
-        },
-      },
-      {
-        selector: '#festa.visivel',
-        declarations: {
-          visibility: 'visible',
-        },
-      },
-      {
-        selector: '#festa-caixa',
-        declarations: {
-          'background-color': 'white',
-          padding: '20px',
-          'text-align': 'center',
-        },
-      },
-    ],
+    html: [],
+    css: [],
     version: 2,
     behavior: {
       start: [
@@ -3600,15 +3735,41 @@ export const mundoBlocosExample: ExtensionExample = {
           bg: '#0ea5e9',
         },
         {
+          type: 'g3d:cornerText',
+          corner: 'top-left',
+          text: {
+            type: 'str',
+            value: 'Material: grama',
+          },
+        },
+        {
+          type: 'g3d:cornerText',
+          corner: 'top-right',
+          text: {
+            type: 'str',
+            value: 'Torre: 0',
+          },
+        },
+        {
+          type: 'g3d:cornerText',
+          corner: 'bottom-center',
+          text: {
+            type: 'str',
+            value:
+              'Setas: mover uma célula por toque. 1, 2, 3: material. Espaço: colocar. Clique: retirar.',
+          },
+        },
+        {
           type: 'g3d:setSky',
           worldVar: 'mundo',
           top: '#38bdf8',
           bottom: '#bae6fd',
         },
         {
-          type: 'g3d:isometricCamera',
+          type: 'g3d:cameraMode',
           worldVar: 'mundo',
-          followVar: '',
+          mode: 'isometrica',
+          objVar: '',
         },
         {
           type: 'g3d:createBox',
@@ -3656,14 +3817,12 @@ export const mundoBlocosExample: ExtensionExample = {
           mode: 'hide',
         },
         {
-          type: 'g3d:createSwarm',
+          type: 'g3d:createGroup',
           varName: 'chao',
-          worldVar: 'mundo',
         },
         {
-          type: 'g3d:createSwarm',
+          type: 'g3d:createGroup',
           varName: 'blocos',
-          worldVar: 'mundo',
         },
         {
           type: 'forRange',
@@ -3698,8 +3857,8 @@ export const mundoBlocosExample: ExtensionExample = {
               },
               body: [
                 {
-                  type: 'g3d:spawnInSwarm',
-                  swarmVar: 'chao',
+                  type: 'g3d:spawnCopy',
+                  groupVar: 'chao',
                   originalVar: 'moldeGrama',
                   x: {
                     type: 'var',
@@ -3735,8 +3894,8 @@ export const mundoBlocosExample: ExtensionExample = {
           },
           body: [
             {
-              type: 'g3d:spawnInSwarm',
-              swarmVar: 'blocos',
+              type: 'g3d:spawnCopy',
+              groupVar: 'blocos',
               originalVar: 'moldePedra',
               x: {
                 type: 'var',
@@ -3752,8 +3911,8 @@ export const mundoBlocosExample: ExtensionExample = {
               },
             },
             {
-              type: 'g3d:spawnInSwarm',
-              swarmVar: 'blocos',
+              type: 'g3d:spawnCopy',
+              groupVar: 'blocos',
               originalVar: 'moldePedra',
               x: {
                 type: 'var',
@@ -3842,8 +4001,8 @@ export const mundoBlocosExample: ExtensionExample = {
               },
             },
             {
-              type: 'g3d:forEachInSwarm',
-              swarmVar: 'blocos',
+              type: 'g3d:forEachInGroup',
+              groupVar: 'blocos',
               itemName: 'item',
               body: [
                 {
@@ -3975,8 +4134,8 @@ export const mundoBlocosExample: ExtensionExample = {
               type: 'var',
               name: 'antes',
               value: {
-                type: 'g3d:countSwarm',
-                swarmVar: 'blocos',
+                type: 'g3d:countGroup',
+                groupVar: 'blocos',
               },
             },
             {
@@ -3995,8 +4154,8 @@ export const mundoBlocosExample: ExtensionExample = {
               },
               then: [
                 {
-                  type: 'g3d:spawnInSwarm',
-                  swarmVar: 'blocos',
+                  type: 'g3d:spawnCopy',
+                  groupVar: 'blocos',
                   originalVar: 'moldeGrama',
                   x: {
                     type: 'var',
@@ -4029,8 +4188,8 @@ export const mundoBlocosExample: ExtensionExample = {
               },
               then: [
                 {
-                  type: 'g3d:spawnInSwarm',
-                  swarmVar: 'blocos',
+                  type: 'g3d:spawnCopy',
+                  groupVar: 'blocos',
                   originalVar: 'moldePedra',
                   x: {
                     type: 'var',
@@ -4063,8 +4222,8 @@ export const mundoBlocosExample: ExtensionExample = {
               },
               then: [
                 {
-                  type: 'g3d:spawnInSwarm',
-                  swarmVar: 'blocos',
+                  type: 'g3d:spawnCopy',
+                  groupVar: 'blocos',
                   originalVar: 'moldeMadeira',
                   x: {
                     type: 'var',
@@ -4087,8 +4246,8 @@ export const mundoBlocosExample: ExtensionExample = {
                 type: 'binop',
                 op: '>',
                 left: {
-                  type: 'g3d:countSwarm',
-                  swarmVar: 'blocos',
+                  type: 'g3d:countGroup',
+                  groupVar: 'blocos',
                 },
                 right: {
                   type: 'var',
@@ -4140,12 +4299,19 @@ export const mundoBlocosExample: ExtensionExample = {
                       },
                     },
                     {
-                      type: 'setProperty',
-                      targetId: 'torre',
-                      property: 'textContent',
-                      value: {
-                        type: 'var',
-                        name: 'recorde',
+                      type: 'g3d:cornerText',
+                      corner: 'top-right',
+                      text: {
+                        type: 'binop',
+                        op: '+',
+                        left: {
+                          type: 'str',
+                          value: 'Torre: ',
+                        },
+                        right: {
+                          type: 'var',
+                          name: 'recorde',
+                        },
                       },
                     },
                     {
@@ -4168,23 +4334,27 @@ export const mundoBlocosExample: ExtensionExample = {
                           kind: 'coin',
                         },
                         {
-                          type: 'classOp',
-                          targetId: 'festa',
-                          op: 'add',
-                          className: 'visivel',
+                          type: 'g3d:cornerText',
+                          corner: 'top-center',
+                          text: {
+                            type: 'str',
+                            value: 'Parabéns! Sua torre chegou a cinco blocos!',
+                          },
                         },
                         {
-                          type: 'setTimeout',
-                          delay: {
+                          type: 'g3d:afterSeconds',
+                          secs: {
                             type: 'num',
-                            value: 2500,
+                            value: 2.5,
                           },
                           body: [
                             {
-                              type: 'classOp',
-                              targetId: 'festa',
-                              op: 'remove',
-                              className: 'visivel',
+                              type: 'g3d:cornerText',
+                              corner: 'top-center',
+                              text: {
+                                type: 'str',
+                                value: '',
+                              },
                             },
                           ],
                         },
@@ -4209,208 +4379,40 @@ export const mundoBlocosExample: ExtensionExample = {
       ],
       events: [
         {
-          type: 'event',
-          target: 'document',
-          targetKind: 'document',
-          event: 'keydown',
+          type: 'g3d:onGame',
+          event: 'tecla',
+          key: 'ArrowLeft',
           body: [
             {
               type: 'if',
               cond: {
                 type: 'binop',
-                op: '===',
+                op: '>',
                 left: {
-                  type: 'eventProp',
-                  prop: 'key',
+                  type: 'var',
+                  name: 'coluna',
                 },
                 right: {
-                  type: 'str',
-                  value: 'ArrowLeft',
+                  type: 'num',
+                  value: -4,
                 },
               },
               then: [
                 {
-                  type: 'if',
-                  cond: {
+                  type: 'assign',
+                  name: 'coluna',
+                  value: {
                     type: 'binop',
-                    op: '>',
+                    op: '-',
                     left: {
                       type: 'var',
                       name: 'coluna',
                     },
                     right: {
                       type: 'num',
-                      value: -4,
+                      value: 1,
                     },
                   },
-                  then: [
-                    {
-                      type: 'assign',
-                      name: 'coluna',
-                      value: {
-                        type: 'binop',
-                        op: '-',
-                        left: {
-                          type: 'var',
-                          name: 'coluna',
-                        },
-                        right: {
-                          type: 'num',
-                          value: 1,
-                        },
-                      },
-                    },
-                  ],
-                },
-              ],
-            },
-            {
-              type: 'if',
-              cond: {
-                type: 'binop',
-                op: '===',
-                left: {
-                  type: 'eventProp',
-                  prop: 'key',
-                },
-                right: {
-                  type: 'str',
-                  value: 'ArrowRight',
-                },
-              },
-              then: [
-                {
-                  type: 'if',
-                  cond: {
-                    type: 'binop',
-                    op: '<',
-                    left: {
-                      type: 'var',
-                      name: 'coluna',
-                    },
-                    right: {
-                      type: 'num',
-                      value: 4,
-                    },
-                  },
-                  then: [
-                    {
-                      type: 'assign',
-                      name: 'coluna',
-                      value: {
-                        type: 'binop',
-                        op: '+',
-                        left: {
-                          type: 'var',
-                          name: 'coluna',
-                        },
-                        right: {
-                          type: 'num',
-                          value: 1,
-                        },
-                      },
-                    },
-                  ],
-                },
-              ],
-            },
-            {
-              type: 'if',
-              cond: {
-                type: 'binop',
-                op: '===',
-                left: {
-                  type: 'eventProp',
-                  prop: 'key',
-                },
-                right: {
-                  type: 'str',
-                  value: 'ArrowUp',
-                },
-              },
-              then: [
-                {
-                  type: 'if',
-                  cond: {
-                    type: 'binop',
-                    op: '>',
-                    left: {
-                      type: 'var',
-                      name: 'linha',
-                    },
-                    right: {
-                      type: 'num',
-                      value: -4,
-                    },
-                  },
-                  then: [
-                    {
-                      type: 'assign',
-                      name: 'linha',
-                      value: {
-                        type: 'binop',
-                        op: '-',
-                        left: {
-                          type: 'var',
-                          name: 'linha',
-                        },
-                        right: {
-                          type: 'num',
-                          value: 1,
-                        },
-                      },
-                    },
-                  ],
-                },
-              ],
-            },
-            {
-              type: 'if',
-              cond: {
-                type: 'binop',
-                op: '===',
-                left: {
-                  type: 'eventProp',
-                  prop: 'key',
-                },
-                right: {
-                  type: 'str',
-                  value: 'ArrowDown',
-                },
-              },
-              then: [
-                {
-                  type: 'if',
-                  cond: {
-                    type: 'binop',
-                    op: '<',
-                    left: {
-                      type: 'var',
-                      name: 'linha',
-                    },
-                    right: {
-                      type: 'num',
-                      value: 4,
-                    },
-                  },
-                  then: [
-                    {
-                      type: 'assign',
-                      name: 'linha',
-                      value: {
-                        type: 'binop',
-                        op: '+',
-                        left: {
-                          type: 'var',
-                          name: 'linha',
-                        },
-                        right: {
-                          type: 'num',
-                          value: 1,
-                        },
-                      },
-                    },
-                  ],
                 },
               ],
             },
@@ -4419,137 +4421,227 @@ export const mundoBlocosExample: ExtensionExample = {
               name: 'moverCursor',
               args: [],
             },
+          ],
+        },
+        {
+          type: 'g3d:onGame',
+          event: 'tecla',
+          key: 'ArrowRight',
+          body: [
             {
               type: 'if',
               cond: {
                 type: 'binop',
-                op: '===',
+                op: '<',
                 left: {
-                  type: 'eventProp',
-                  prop: 'key',
+                  type: 'var',
+                  name: 'coluna',
                 },
                 right: {
-                  type: 'str',
-                  value: '1',
+                  type: 'num',
+                  value: 4,
                 },
               },
               then: [
                 {
                   type: 'assign',
-                  name: 'tipo',
+                  name: 'coluna',
                   value: {
-                    type: 'num',
-                    value: 1,
-                  },
-                },
-                {
-                  type: 'setProperty',
-                  targetId: 'tipo',
-                  property: 'textContent',
-                  value: {
-                    type: 'str',
-                    value: 'grama',
-                  },
-                },
-              ],
-            },
-            {
-              type: 'if',
-              cond: {
-                type: 'binop',
-                op: '===',
-                left: {
-                  type: 'eventProp',
-                  prop: 'key',
-                },
-                right: {
-                  type: 'str',
-                  value: '2',
-                },
-              },
-              then: [
-                {
-                  type: 'assign',
-                  name: 'tipo',
-                  value: {
-                    type: 'num',
-                    value: 2,
-                  },
-                },
-                {
-                  type: 'setProperty',
-                  targetId: 'tipo',
-                  property: 'textContent',
-                  value: {
-                    type: 'str',
-                    value: 'pedra',
+                    type: 'binop',
+                    op: '+',
+                    left: {
+                      type: 'var',
+                      name: 'coluna',
+                    },
+                    right: {
+                      type: 'num',
+                      value: 1,
+                    },
                   },
                 },
               ],
             },
             {
-              type: 'if',
-              cond: {
-                type: 'binop',
-                op: '===',
-                left: {
-                  type: 'eventProp',
-                  prop: 'key',
-                },
-                right: {
-                  type: 'str',
-                  value: '3',
-                },
-              },
-              then: [
-                {
-                  type: 'assign',
-                  name: 'tipo',
-                  value: {
-                    type: 'num',
-                    value: 3,
-                  },
-                },
-                {
-                  type: 'setProperty',
-                  targetId: 'tipo',
-                  property: 'textContent',
-                  value: {
-                    type: 'str',
-                    value: 'madeira',
-                  },
-                },
-              ],
-            },
-            {
-              type: 'if',
-              cond: {
-                type: 'binop',
-                op: '===',
-                left: {
-                  type: 'eventProp',
-                  prop: 'key',
-                },
-                right: {
-                  type: 'str',
-                  value: ' ',
-                },
-              },
-              then: [
-                {
-                  type: 'callFunction',
-                  name: 'colocarBloco',
-                  args: [],
-                },
-              ],
+              type: 'callFunction',
+              name: 'moverCursor',
+              args: [],
             },
           ],
         },
         {
-          type: 'event',
-          target: 'document',
-          targetKind: 'document',
-          event: 'click',
+          type: 'g3d:onGame',
+          event: 'tecla',
+          key: 'ArrowUp',
+          body: [
+            {
+              type: 'if',
+              cond: {
+                type: 'binop',
+                op: '>',
+                left: {
+                  type: 'var',
+                  name: 'linha',
+                },
+                right: {
+                  type: 'num',
+                  value: -4,
+                },
+              },
+              then: [
+                {
+                  type: 'assign',
+                  name: 'linha',
+                  value: {
+                    type: 'binop',
+                    op: '-',
+                    left: {
+                      type: 'var',
+                      name: 'linha',
+                    },
+                    right: {
+                      type: 'num',
+                      value: 1,
+                    },
+                  },
+                },
+              ],
+            },
+            {
+              type: 'callFunction',
+              name: 'moverCursor',
+              args: [],
+            },
+          ],
+        },
+        {
+          type: 'g3d:onGame',
+          event: 'tecla',
+          key: 'ArrowDown',
+          body: [
+            {
+              type: 'if',
+              cond: {
+                type: 'binop',
+                op: '<',
+                left: {
+                  type: 'var',
+                  name: 'linha',
+                },
+                right: {
+                  type: 'num',
+                  value: 4,
+                },
+              },
+              then: [
+                {
+                  type: 'assign',
+                  name: 'linha',
+                  value: {
+                    type: 'binop',
+                    op: '+',
+                    left: {
+                      type: 'var',
+                      name: 'linha',
+                    },
+                    right: {
+                      type: 'num',
+                      value: 1,
+                    },
+                  },
+                },
+              ],
+            },
+            {
+              type: 'callFunction',
+              name: 'moverCursor',
+              args: [],
+            },
+          ],
+        },
+        {
+          type: 'g3d:onGame',
+          event: 'tecla',
+          key: 'Digit1',
+          body: [
+            {
+              type: 'assign',
+              name: 'tipo',
+              value: {
+                type: 'num',
+                value: 1,
+              },
+            },
+            {
+              type: 'g3d:cornerText',
+              corner: 'top-left',
+              text: {
+                type: 'str',
+                value: 'Material: grama',
+              },
+            },
+          ],
+        },
+        {
+          type: 'g3d:onGame',
+          event: 'tecla',
+          key: 'Digit2',
+          body: [
+            {
+              type: 'assign',
+              name: 'tipo',
+              value: {
+                type: 'num',
+                value: 2,
+              },
+            },
+            {
+              type: 'g3d:cornerText',
+              corner: 'top-left',
+              text: {
+                type: 'str',
+                value: 'Material: pedra',
+              },
+            },
+          ],
+        },
+        {
+          type: 'g3d:onGame',
+          event: 'tecla',
+          key: 'Digit3',
+          body: [
+            {
+              type: 'assign',
+              name: 'tipo',
+              value: {
+                type: 'num',
+                value: 3,
+              },
+            },
+            {
+              type: 'g3d:cornerText',
+              corner: 'top-left',
+              text: {
+                type: 'str',
+                value: 'Material: madeira',
+              },
+            },
+          ],
+        },
+        {
+          type: 'g3d:onGame',
+          event: 'tecla',
+          key: 'Space',
+          body: [
+            {
+              type: 'callFunction',
+              name: 'colocarBloco',
+              args: [],
+            },
+          ],
+        },
+        {
+          type: 'g3d:onGame',
+          event: 'clique-cena',
           body: [
             {
               type: 'var',
@@ -4570,14 +4662,14 @@ export const mundoBlocosExample: ExtensionExample = {
                   type: 'var',
                   name: 'antes',
                   value: {
-                    type: 'g3d:countSwarm',
-                    swarmVar: 'blocos',
+                    type: 'g3d:countGroup',
+                    groupVar: 'blocos',
                   },
                 },
                 {
-                  type: 'g3d:removeFromSwarm',
-                  swarmVar: 'blocos',
-                  itemVar: 'alvo',
+                  type: 'g3d:removeFromGroup',
+                  groupVar: 'blocos',
+                  objVar: 'alvo',
                 },
                 {
                   type: 'if',
@@ -4585,8 +4677,8 @@ export const mundoBlocosExample: ExtensionExample = {
                     type: 'binop',
                     op: '<',
                     left: {
-                      type: 'g3d:countSwarm',
-                      swarmVar: 'blocos',
+                      type: 'g3d:countGroup',
+                      groupVar: 'blocos',
                     },
                     right: {
                       type: 'var',
@@ -4621,7 +4713,7 @@ export const mundoBlocosExample: ExtensionExample = {
               axis: 'y',
               speed: {
                 type: 'num',
-                value: 0.02,
+                value: 69,
               },
             },
           ],
@@ -4648,172 +4740,8 @@ export const patrulhaEspacialExample: ExtensionExample = {
   description:
     'Sua nave patrulha o espaço andando só de um lado para o outro. Incline nas curvas, atire lasers com espaço e desvie dos meteoros, que chegam cada vez mais rápidos. O placar conta tempo e pontos.',
   ir: {
-    html: [
-      {
-        type: 'element',
-        tag: 'div',
-        id: 'tempo',
-        text: '0',
-      },
-      {
-        type: 'element',
-        tag: 'div',
-        id: 'pontos',
-        text: '0',
-      },
-      {
-        type: 'element',
-        tag: 'div',
-        id: 'hint',
-        text: 'Setas ou A e D: mover. Espaço: atirar laser.',
-      },
-      {
-        type: 'element',
-        tag: 'div',
-        id: 'results',
-        children: [
-          {
-            type: 'element',
-            tag: 'div',
-            id: 'results-box',
-            children: [
-              {
-                type: 'element',
-                tag: 'h1',
-                text: 'A nave encostou!',
-              },
-              {
-                type: 'element',
-                tag: 'p',
-                children: [
-                  {
-                    type: 'text',
-                    text: 'Você patrulhou por ',
-                  },
-                  {
-                    type: 'element',
-                    tag: 'span',
-                    id: 'final-tempo',
-                  },
-                  {
-                    type: 'text',
-                    text: ' segundos e fez ',
-                  },
-                  {
-                    type: 'element',
-                    tag: 'span',
-                    id: 'final-pontos',
-                  },
-                  {
-                    type: 'text',
-                    text: ' pontos',
-                  },
-                ],
-              },
-              {
-                type: 'element',
-                tag: 'button',
-                id: 'retry',
-                text: 'Patrulhar de novo',
-              },
-            ],
-          },
-        ],
-      },
-    ],
-    css: [
-      {
-        type: 'googleFont',
-        family: 'Press Start 2P',
-      },
-      {
-        selector: 'body',
-        declarations: {
-          margin: '0',
-          overflow: 'hidden',
-          'font-family': '"Press Start 2P", cursive',
-        },
-      },
-      {
-        selector: '#tempo',
-        declarations: {
-          position: 'absolute',
-          top: '20px',
-          left: '20px',
-          'font-size': '1.6em',
-          color: 'white',
-          'z-index': '1',
-        },
-      },
-      {
-        selector: '#pontos',
-        declarations: {
-          position: 'absolute',
-          top: '20px',
-          right: '20px',
-          'font-size': '1.6em',
-          color: '#4ade80',
-          'z-index': '1',
-        },
-      },
-      {
-        selector: '#hint',
-        declarations: {
-          position: 'absolute',
-          bottom: '20px',
-          left: '0',
-          'min-width': '100%',
-          'text-align': 'center',
-          'font-size': '0.7em',
-          color: 'white',
-          'z-index': '1',
-        },
-      },
-      {
-        selector: '#results',
-        declarations: {
-          position: 'absolute',
-          top: '0',
-          left: '0',
-          'min-width': '100%',
-          'min-height': '100%',
-          display: 'flex',
-          'align-items': 'center',
-          'justify-content': 'center',
-          visibility: 'hidden',
-          'z-index': '1',
-        },
-      },
-      {
-        selector: '#results.visivel',
-        declarations: {
-          visibility: 'visible',
-        },
-      },
-      {
-        selector: '#results-box',
-        declarations: {
-          display: 'flex',
-          'flex-direction': 'column',
-          'align-items': 'center',
-          'background-color': '#0f172a',
-          color: 'white',
-          'text-align': 'center',
-          padding: '24px',
-        },
-      },
-      {
-        selector: '#results-box button',
-        declarations: {
-          'background-color': '#4ade80',
-          color: '#022c22',
-          padding: '16px 32px',
-          'font-family': 'inherit',
-          cursor: 'pointer',
-          border: 'none',
-        },
-      },
-    ],
+    html: [],
+    css: [],
     version: 2,
     behavior: {
       start: [
@@ -4827,6 +4755,36 @@ export const patrulhaEspacialExample: ExtensionExample = {
           worldVar: 'cena',
           top: '#020617',
           bottom: '#312e81',
+        },
+        {
+          type: 'g3d:screenText',
+          screen: 'fim',
+          title: 'Fim da patrulha',
+          text: 'Confira seus pontos e o tempo da viagem nos placares.',
+          button: 'Jogar de novo',
+        },
+        {
+          type: 'g3d:addScore',
+          value: {
+            type: 'num',
+            value: 0,
+          },
+        },
+        {
+          type: 'g3d:cornerText',
+          corner: 'top-center',
+          text: {
+            type: 'str',
+            value: 'Tempo: 0 s',
+          },
+        },
+        {
+          type: 'g3d:cornerText',
+          corner: 'bottom-center',
+          text: {
+            type: 'str',
+            value: 'Setas ou A e D: mover. Espaço: atirar.',
+          },
         },
         {
           type: 'g3d:setFog',
@@ -4988,7 +4946,7 @@ export const patrulhaEspacialExample: ExtensionExample = {
           objVar: 'bico',
           x: {
             type: 'num',
-            value: -1.57,
+            value: -90,
           },
           y: {
             type: 'num',
@@ -5094,19 +5052,16 @@ export const patrulhaEspacialExample: ExtensionExample = {
           mode: 'hide',
         },
         {
-          type: 'g3d:createSwarm',
+          type: 'g3d:createGroup',
           varName: 'meteoros',
-          worldVar: 'cena',
         },
         {
-          type: 'g3d:createSwarm',
+          type: 'g3d:createGroup',
           varName: 'meteorosRapidos',
-          worldVar: 'cena',
         },
         {
-          type: 'g3d:createSwarm',
+          type: 'g3d:createGroup',
           varName: 'tiros',
-          worldVar: 'cena',
         },
         {
           type: 'var',
@@ -5137,7 +5092,7 @@ export const patrulhaEspacialExample: ExtensionExample = {
           name: 'velocidade',
           value: {
             type: 'num',
-            value: 0.14,
+            value: 8.4,
           },
         },
         {
@@ -5197,171 +5152,7 @@ export const patrulhaEspacialExample: ExtensionExample = {
           },
         },
       ],
-      events: [
-        {
-          type: 'event',
-          target: 'retry',
-          event: 'click',
-          body: [
-            {
-              type: 'g3d:forEachInSwarm',
-              swarmVar: 'meteoros',
-              itemName: 'meteoro',
-              body: [
-                {
-                  type: 'g3d:removeFromSwarm',
-                  swarmVar: 'meteoros',
-                  itemVar: 'meteoro',
-                },
-              ],
-            },
-            {
-              type: 'g3d:forEachInSwarm',
-              swarmVar: 'meteorosRapidos',
-              itemName: 'meteoro',
-              body: [
-                {
-                  type: 'g3d:removeFromSwarm',
-                  swarmVar: 'meteorosRapidos',
-                  itemVar: 'meteoro',
-                },
-              ],
-            },
-            {
-              type: 'g3d:forEachInSwarm',
-              swarmVar: 'tiros',
-              itemName: 'tiro',
-              body: [
-                {
-                  type: 'g3d:removeFromSwarm',
-                  swarmVar: 'tiros',
-                  itemVar: 'tiro',
-                },
-              ],
-            },
-            {
-              type: 'assign',
-              name: 'naveX',
-              value: {
-                type: 'num',
-                value: 0,
-              },
-            },
-            {
-              type: 'assign',
-              name: 'inclinacao',
-              value: {
-                type: 'num',
-                value: 0,
-              },
-            },
-            {
-              type: 'assign',
-              name: 'relogio',
-              value: {
-                type: 'num',
-                value: 0,
-              },
-            },
-            {
-              type: 'assign',
-              name: 'velocidade',
-              value: {
-                type: 'num',
-                value: 0.14,
-              },
-            },
-            {
-              type: 'assign',
-              name: 'recarga',
-              value: {
-                type: 'num',
-                value: 0,
-              },
-            },
-            {
-              type: 'assign',
-              name: 'tempo',
-              value: {
-                type: 'num',
-                value: 0,
-              },
-            },
-            {
-              type: 'assign',
-              name: 'pontos',
-              value: {
-                type: 'num',
-                value: 0,
-              },
-            },
-            {
-              type: 'g3d:setPosition',
-              objVar: 'nave',
-              x: {
-                type: 'num',
-                value: 0,
-              },
-              y: {
-                type: 'num',
-                value: 1,
-              },
-              z: {
-                type: 'num',
-                value: 0,
-              },
-            },
-            {
-              type: 'g3d:setRotation',
-              objVar: 'nave',
-              x: {
-                type: 'num',
-                value: 0,
-              },
-              y: {
-                type: 'num',
-                value: 0,
-              },
-              z: {
-                type: 'num',
-                value: 0,
-              },
-            },
-            {
-              type: 'setProperty',
-              targetId: 'tempo',
-              property: 'textContent',
-              value: {
-                type: 'num',
-                value: 0,
-              },
-            },
-            {
-              type: 'setProperty',
-              targetId: 'pontos',
-              property: 'textContent',
-              value: {
-                type: 'num',
-                value: 0,
-              },
-            },
-            {
-              type: 'classOp',
-              targetId: 'results',
-              op: 'remove',
-              className: 'visivel',
-            },
-            {
-              type: 'assign',
-              name: 'rodando',
-              value: {
-                type: 'bool',
-                value: true,
-              },
-            },
-          ],
-        },
-      ],
+      events: [],
       loops: [
         {
           type: 'g3d:animate',
@@ -5441,7 +5232,7 @@ export const patrulhaEspacialExample: ExtensionExample = {
                         },
                         right: {
                           type: 'num',
-                          value: 0.05,
+                          value: 2.9,
                         },
                       },
                     },
@@ -5498,7 +5289,7 @@ export const patrulhaEspacialExample: ExtensionExample = {
                         },
                         right: {
                           type: 'num',
-                          value: 0.05,
+                          value: 2.9,
                         },
                       },
                     },
@@ -5581,7 +5372,7 @@ export const patrulhaEspacialExample: ExtensionExample = {
                     },
                     right: {
                       type: 'num',
-                      value: 0.26,
+                      value: 15,
                     },
                   },
                   then: [
@@ -5590,7 +5381,7 @@ export const patrulhaEspacialExample: ExtensionExample = {
                       name: 'inclinacao',
                       value: {
                         type: 'num',
-                        value: 0.26,
+                        value: 15,
                       },
                     },
                   ],
@@ -5606,7 +5397,7 @@ export const patrulhaEspacialExample: ExtensionExample = {
                     },
                     right: {
                       type: 'num',
-                      value: -0.26,
+                      value: -15,
                     },
                   },
                   then: [
@@ -5615,7 +5406,7 @@ export const patrulhaEspacialExample: ExtensionExample = {
                       name: 'inclinacao',
                       value: {
                         type: 'num',
-                        value: -0.26,
+                        value: -15,
                       },
                     },
                   ],
@@ -5736,8 +5527,8 @@ export const patrulhaEspacialExample: ExtensionExample = {
                       },
                       then: [
                         {
-                          type: 'g3d:spawnInSwarm',
-                          swarmVar: 'tiros',
+                          type: 'g3d:spawnCopy',
+                          groupVar: 'tiros',
                           originalVar: 'moldeTiro',
                           x: {
                             type: 'var',
@@ -5777,8 +5568,8 @@ export const patrulhaEspacialExample: ExtensionExample = {
                   ],
                 },
                 {
-                  type: 'g3d:forEachInSwarm',
-                  swarmVar: 'tiros',
+                  type: 'g3d:forEachInGroup',
+                  groupVar: 'tiros',
                   itemName: 'tiro',
                   body: [
                     {
@@ -5793,8 +5584,16 @@ export const patrulhaEspacialExample: ExtensionExample = {
                         value: 0,
                       },
                       z: {
-                        type: 'num',
-                        value: -0.9,
+                        type: 'binop',
+                        op: '*',
+                        left: {
+                          type: 'num',
+                          value: -54,
+                        },
+                        right: {
+                          type: 'g3d:dt',
+                          worldVar: 'cena',
+                        },
                       },
                     },
                   ],
@@ -5808,8 +5607,8 @@ export const patrulhaEspacialExample: ExtensionExample = {
                   },
                 },
                 {
-                  type: 'g3d:forEachInSwarm',
-                  swarmVar: 'meteoros',
+                  type: 'g3d:forEachInGroup',
+                  groupVar: 'meteoros',
                   itemName: 'meteoro',
                   body: [
                     {
@@ -5824,8 +5623,16 @@ export const patrulhaEspacialExample: ExtensionExample = {
                         value: 0,
                       },
                       z: {
-                        type: 'var',
-                        name: 'velocidade',
+                        type: 'binop',
+                        op: '*',
+                        left: {
+                          type: 'var',
+                          name: 'velocidade',
+                        },
+                        right: {
+                          type: 'g3d:dt',
+                          worldVar: 'cena',
+                        },
                       },
                     },
                     {
@@ -5834,7 +5641,7 @@ export const patrulhaEspacialExample: ExtensionExample = {
                       axis: 'x',
                       speed: {
                         type: 'num',
-                        value: 0.02,
+                        value: 69,
                       },
                     },
                     {
@@ -5843,7 +5650,7 @@ export const patrulhaEspacialExample: ExtensionExample = {
                       axis: 'y',
                       speed: {
                         type: 'num',
-                        value: 0.013,
+                        value: 45,
                       },
                     },
                     {
@@ -5877,8 +5684,8 @@ export const patrulhaEspacialExample: ExtensionExample = {
                       },
                     },
                     {
-                      type: 'g3d:forEachInSwarm',
-                      swarmVar: 'tiros',
+                      type: 'g3d:forEachInGroup',
+                      groupVar: 'tiros',
                       itemName: 'tiro',
                       body: [
                         {
@@ -5897,14 +5704,14 @@ export const patrulhaEspacialExample: ExtensionExample = {
                               },
                               then: [
                                 {
-                                  type: 'g3d:removeFromSwarm',
-                                  swarmVar: 'meteoros',
-                                  itemVar: 'meteoro',
+                                  type: 'g3d:removeFromGroup',
+                                  groupVar: 'meteoros',
+                                  objVar: 'meteoro',
                                 },
                                 {
-                                  type: 'g3d:removeFromSwarm',
-                                  swarmVar: 'tiros',
-                                  itemVar: 'tiro',
+                                  type: 'g3d:removeFromGroup',
+                                  groupVar: 'tiros',
+                                  objVar: 'tiro',
                                 },
                                 {
                                   type: 'assign',
@@ -5927,12 +5734,18 @@ export const patrulhaEspacialExample: ExtensionExample = {
                                   kind: 'hit',
                                 },
                                 {
-                                  type: 'setProperty',
-                                  targetId: 'pontos',
-                                  property: 'textContent',
+                                  type: 'g3d:addScore',
                                   value: {
-                                    type: 'var',
-                                    name: 'pontos',
+                                    type: 'binop',
+                                    op: '-',
+                                    left: {
+                                      type: 'var',
+                                      name: 'pontos',
+                                    },
+                                    right: {
+                                      type: 'g3d:gameValue',
+                                      what: 'pontos',
+                                    },
                                   },
                                 },
                                 {
@@ -5952,8 +5765,8 @@ export const patrulhaEspacialExample: ExtensionExample = {
                   ],
                 },
                 {
-                  type: 'g3d:forEachInSwarm',
-                  swarmVar: 'meteorosRapidos',
+                  type: 'g3d:forEachInGroup',
+                  groupVar: 'meteorosRapidos',
                   itemName: 'meteoro',
                   body: [
                     {
@@ -5971,12 +5784,20 @@ export const patrulhaEspacialExample: ExtensionExample = {
                         type: 'binop',
                         op: '*',
                         left: {
-                          type: 'var',
-                          name: 'velocidade',
+                          type: 'binop',
+                          op: '*',
+                          left: {
+                            type: 'var',
+                            name: 'velocidade',
+                          },
+                          right: {
+                            type: 'num',
+                            value: 1.6,
+                          },
                         },
                         right: {
-                          type: 'num',
-                          value: 1.6,
+                          type: 'g3d:dt',
+                          worldVar: 'cena',
                         },
                       },
                     },
@@ -5986,7 +5807,7 @@ export const patrulhaEspacialExample: ExtensionExample = {
                       axis: 'x',
                       speed: {
                         type: 'num',
-                        value: 0.03,
+                        value: 103,
                       },
                     },
                     {
@@ -5995,7 +5816,7 @@ export const patrulhaEspacialExample: ExtensionExample = {
                       axis: 'y',
                       speed: {
                         type: 'num',
-                        value: 0.02,
+                        value: 69,
                       },
                     },
                     {
@@ -6029,8 +5850,8 @@ export const patrulhaEspacialExample: ExtensionExample = {
                       },
                     },
                     {
-                      type: 'g3d:forEachInSwarm',
-                      swarmVar: 'tiros',
+                      type: 'g3d:forEachInGroup',
+                      groupVar: 'tiros',
                       itemName: 'tiro',
                       body: [
                         {
@@ -6049,14 +5870,14 @@ export const patrulhaEspacialExample: ExtensionExample = {
                               },
                               then: [
                                 {
-                                  type: 'g3d:removeFromSwarm',
-                                  swarmVar: 'meteorosRapidos',
-                                  itemVar: 'meteoro',
+                                  type: 'g3d:removeFromGroup',
+                                  groupVar: 'meteorosRapidos',
+                                  objVar: 'meteoro',
                                 },
                                 {
-                                  type: 'g3d:removeFromSwarm',
-                                  swarmVar: 'tiros',
-                                  itemVar: 'tiro',
+                                  type: 'g3d:removeFromGroup',
+                                  groupVar: 'tiros',
+                                  objVar: 'tiro',
                                 },
                                 {
                                   type: 'assign',
@@ -6079,12 +5900,18 @@ export const patrulhaEspacialExample: ExtensionExample = {
                                   kind: 'hit',
                                 },
                                 {
-                                  type: 'setProperty',
-                                  targetId: 'pontos',
-                                  property: 'textContent',
+                                  type: 'g3d:addScore',
                                   value: {
-                                    type: 'var',
-                                    name: 'pontos',
+                                    type: 'binop',
+                                    op: '-',
+                                    left: {
+                                      type: 'var',
+                                      name: 'pontos',
+                                    },
+                                    right: {
+                                      type: 'g3d:gameValue',
+                                      what: 'pontos',
+                                    },
                                   },
                                 },
                                 {
@@ -6123,34 +5950,53 @@ export const patrulhaEspacialExample: ExtensionExample = {
                       kind: 'explosion',
                     },
                     {
-                      type: 'setProperty',
-                      targetId: 'final-tempo',
-                      property: 'textContent',
-                      value: {
-                        type: 'var',
-                        name: 'tempo',
+                      type: 'g3d:cornerText',
+                      corner: 'top-center',
+                      text: {
+                        type: 'binop',
+                        op: '+',
+                        left: {
+                          type: 'binop',
+                          op: '+',
+                          left: {
+                            type: 'str',
+                            value: 'Tempo: ',
+                          },
+                          right: {
+                            type: 'var',
+                            name: 'tempo',
+                          },
+                        },
+                        right: {
+                          type: 'str',
+                          value: ' s',
+                        },
                       },
                     },
                     {
-                      type: 'setProperty',
-                      targetId: 'final-pontos',
-                      property: 'textContent',
+                      type: 'g3d:addScore',
                       value: {
-                        type: 'var',
-                        name: 'pontos',
+                        type: 'binop',
+                        op: '-',
+                        left: {
+                          type: 'var',
+                          name: 'pontos',
+                        },
+                        right: {
+                          type: 'g3d:gameValue',
+                          what: 'pontos',
+                        },
                       },
                     },
                     {
-                      type: 'classOp',
-                      targetId: 'results',
-                      op: 'add',
-                      className: 'visivel',
+                      type: 'g3d:gameOver',
+                      result: 'perdeu',
                     },
                   ],
                 },
                 {
-                  type: 'g3d:pruneSwarm',
-                  swarmVar: 'tiros',
+                  type: 'g3d:pruneArea',
+                  groupVar: 'tiros',
                   axis: 'z',
                   min: {
                     type: 'num',
@@ -6162,8 +6008,8 @@ export const patrulhaEspacialExample: ExtensionExample = {
                   },
                 },
                 {
-                  type: 'g3d:pruneSwarm',
-                  swarmVar: 'meteoros',
+                  type: 'g3d:pruneArea',
+                  groupVar: 'meteoros',
                   axis: 'z',
                   min: {
                     type: 'num',
@@ -6175,8 +6021,8 @@ export const patrulhaEspacialExample: ExtensionExample = {
                   },
                 },
                 {
-                  type: 'g3d:pruneSwarm',
-                  swarmVar: 'meteorosRapidos',
+                  type: 'g3d:pruneArea',
+                  groupVar: 'meteorosRapidos',
                   axis: 'z',
                   min: {
                     type: 'num',
@@ -6233,7 +6079,7 @@ export const patrulhaEspacialExample: ExtensionExample = {
                     },
                     right: {
                       type: 'num',
-                      value: 0.008,
+                      value: 0.48,
                     },
                   },
                 },
@@ -6248,7 +6094,7 @@ export const patrulhaEspacialExample: ExtensionExample = {
                     },
                     right: {
                       type: 'num',
-                      value: 0.5,
+                      value: 30,
                     },
                   },
                   then: [
@@ -6257,18 +6103,33 @@ export const patrulhaEspacialExample: ExtensionExample = {
                       name: 'velocidade',
                       value: {
                         type: 'num',
-                        value: 0.5,
+                        value: 30,
                       },
                     },
                   ],
                 },
                 {
-                  type: 'setProperty',
-                  targetId: 'tempo',
-                  property: 'textContent',
-                  value: {
-                    type: 'var',
-                    name: 'tempo',
+                  type: 'g3d:cornerText',
+                  corner: 'top-center',
+                  text: {
+                    type: 'binop',
+                    op: '+',
+                    left: {
+                      type: 'binop',
+                      op: '+',
+                      left: {
+                        type: 'str',
+                        value: 'Tempo: ',
+                      },
+                      right: {
+                        type: 'var',
+                        name: 'tempo',
+                      },
+                    },
+                    right: {
+                      type: 'str',
+                      value: ' s',
+                    },
                   },
                 },
               ],
@@ -6347,8 +6208,8 @@ export const patrulhaEspacialExample: ExtensionExample = {
                   },
                   then: [
                     {
-                      type: 'g3d:spawnInSwarm',
-                      swarmVar: 'meteorosRapidos',
+                      type: 'g3d:spawnCopy',
+                      groupVar: 'meteorosRapidos',
                       originalVar: 'moldeRapido',
                       x: {
                         type: 'var',
@@ -6366,8 +6227,8 @@ export const patrulhaEspacialExample: ExtensionExample = {
                   ],
                   else: [
                     {
-                      type: 'g3d:spawnInSwarm',
-                      swarmVar: 'meteoros',
+                      type: 'g3d:spawnCopy',
+                      groupVar: 'meteoros',
                       originalVar: 'moldeMeteoro',
                       x: {
                         type: 'var',
@@ -6411,126 +6272,8 @@ export const defesaDaTorreBasicoExample: ExtensionExample = {
   description:
     'Uma torre no centro defende o cristal sozinha: os invasores nascem na beirada e vêm ao meio, e a torre zapeia um por vez. Pare 20 invasores para vencer!',
   ir: {
-    html: [
-      {
-        type: 'element',
-        tag: 'div',
-        id: 'score',
-        text: '0',
-      },
-      {
-        type: 'element',
-        tag: 'div',
-        id: 'results',
-        children: [
-          {
-            type: 'element',
-            tag: 'div',
-            id: 'results-box',
-            children: [
-              {
-                type: 'element',
-                tag: 'h1',
-                text: 'Fim da rodada',
-              },
-              {
-                type: 'element',
-                tag: 'p',
-                children: [
-                  {
-                    type: 'text',
-                    text: 'Invasores parados: ',
-                  },
-                  {
-                    type: 'element',
-                    tag: 'span',
-                    id: 'final-score',
-                  },
-                ],
-              },
-              {
-                type: 'element',
-                tag: 'button',
-                id: 'retry',
-                text: 'Recomeçar',
-              },
-            ],
-          },
-        ],
-      },
-    ],
-    css: [
-      {
-        type: 'googleFont',
-        family: 'Press Start 2P',
-      },
-      {
-        selector: 'body',
-        declarations: {
-          margin: '0',
-          overflow: 'hidden',
-          'font-family': '"Press Start 2P", cursive',
-        },
-      },
-      {
-        selector: 'canvas',
-        declarations: {
-          display: 'block',
-          width: '100vw',
-          height: '100vh',
-        },
-      },
-      {
-        selector: '#score',
-        declarations: {
-          position: 'absolute',
-          top: '20px',
-          left: '20px',
-          'font-size': '1.5em',
-          color: 'white',
-        },
-      },
-      {
-        selector: '#results',
-        declarations: {
-          position: 'absolute',
-          top: '0',
-          left: '0',
-          'min-width': '100%',
-          'min-height': '100%',
-          display: 'flex',
-          'align-items': 'center',
-          'justify-content': 'center',
-          visibility: 'hidden',
-        },
-      },
-      {
-        selector: '#results.visivel',
-        declarations: {
-          visibility: 'visible',
-        },
-      },
-      {
-        selector: '#results-box',
-        declarations: {
-          display: 'flex',
-          'flex-direction': 'column',
-          'align-items': 'center',
-          'background-color': 'white',
-          padding: '20px',
-        },
-      },
-      {
-        selector: '#results-box button',
-        declarations: {
-          'background-color': '#38bdf8',
-          color: 'white',
-          padding: '16px 32px',
-          'font-family': 'inherit',
-          cursor: 'pointer',
-        },
-      },
-    ],
+    html: [],
+    css: [],
     extensions: [
       {
         extensionId: 'game-3d',
@@ -6545,15 +6288,45 @@ export const defesaDaTorreBasicoExample: ExtensionExample = {
           bg: '#0f172a',
         },
         {
+          type: 'g3d:screenText',
+          screen: 'vitoria',
+          title: 'Cristal protegido!',
+          text: 'Confira seus pontos no placar.',
+          button: 'Jogar de novo',
+        },
+        {
+          type: 'g3d:screenText',
+          screen: 'fim',
+          title: 'O cristal foi alcançado',
+          text: 'Confira seus pontos no placar.',
+          button: 'Tentar novamente',
+        },
+        {
+          type: 'g3d:addScore',
+          value: {
+            type: 'num',
+            value: 0,
+          },
+        },
+        {
+          type: 'g3d:cornerText',
+          corner: 'bottom-center',
+          text: {
+            type: 'str',
+            value: 'A torre age sozinha. Pare 20 invasores.',
+          },
+        },
+        {
           type: 'g3d:setSky',
           worldVar: 'cena',
           top: '#1e293b',
           bottom: '#334155',
         },
         {
-          type: 'g3d:topCamera',
+          type: 'g3d:cameraMode',
           worldVar: 'cena',
-          followVar: '',
+          mode: 'cima',
+          objVar: '',
         },
         {
           type: 'g3d:setFog',
@@ -6718,9 +6491,8 @@ export const defesaDaTorreBasicoExample: ExtensionExample = {
           mode: 'hide',
         },
         {
-          type: 'g3d:createSwarm',
+          type: 'g3d:createGroup',
           varName: 'inimigos',
-          worldVar: 'cena',
         },
         {
           type: 'var',
@@ -6747,66 +6519,7 @@ export const defesaDaTorreBasicoExample: ExtensionExample = {
           },
         },
       ],
-      events: [
-        {
-          type: 'event',
-          target: 'retry',
-          event: 'click',
-          body: [
-            {
-              type: 'g3d:forEachInSwarm',
-              swarmVar: 'inimigos',
-              itemName: 'item',
-              body: [
-                {
-                  type: 'g3d:removeFromSwarm',
-                  swarmVar: 'inimigos',
-                  itemVar: 'item',
-                },
-              ],
-            },
-            {
-              type: 'assign',
-              name: 'pontos',
-              value: {
-                type: 'num',
-                value: 0,
-              },
-            },
-            {
-              type: 'assign',
-              name: 'recarga',
-              value: {
-                type: 'num',
-                value: 0,
-              },
-            },
-            {
-              type: 'assign',
-              name: 'rodando',
-              value: {
-                type: 'bool',
-                value: true,
-              },
-            },
-            {
-              type: 'setProperty',
-              targetId: 'score',
-              property: 'textContent',
-              value: {
-                type: 'num',
-                value: 0,
-              },
-            },
-            {
-              type: 'classOp',
-              targetId: 'results',
-              op: 'remove',
-              className: 'visivel',
-            },
-          ],
-        },
-      ],
+      events: [],
       loops: [
         {
           type: 'g3d:animate',
@@ -6825,7 +6538,7 @@ export const defesaDaTorreBasicoExample: ExtensionExample = {
                   axis: 'y',
                   speed: {
                     type: 'num',
-                    value: 1.4,
+                    value: 90,
                   },
                 },
                 {
@@ -6834,7 +6547,7 @@ export const defesaDaTorreBasicoExample: ExtensionExample = {
                   axis: 'y',
                   speed: {
                     type: 'num',
-                    value: 0.6,
+                    value: 90,
                   },
                 },
                 {
@@ -6854,8 +6567,8 @@ export const defesaDaTorreBasicoExample: ExtensionExample = {
                   },
                 },
                 {
-                  type: 'g3d:forEachInSwarm',
-                  swarmVar: 'inimigos',
+                  type: 'g3d:forEachInGroup',
+                  groupVar: 'inimigos',
                   itemName: 'item',
                   body: [
                     {
@@ -6876,7 +6589,7 @@ export const defesaDaTorreBasicoExample: ExtensionExample = {
                       },
                       factor: {
                         type: 'num',
-                        value: 0.02,
+                        value: 1.21,
                       },
                     },
                     {
@@ -6904,19 +6617,23 @@ export const defesaDaTorreBasicoExample: ExtensionExample = {
                           kind: 'explosion',
                         },
                         {
-                          type: 'setProperty',
-                          targetId: 'final-score',
-                          property: 'textContent',
+                          type: 'g3d:addScore',
                           value: {
-                            type: 'var',
-                            name: 'pontos',
+                            type: 'binop',
+                            op: '-',
+                            left: {
+                              type: 'var',
+                              name: 'pontos',
+                            },
+                            right: {
+                              type: 'g3d:gameValue',
+                              what: 'pontos',
+                            },
                           },
                         },
                         {
-                          type: 'classOp',
-                          targetId: 'results',
-                          op: 'add',
-                          className: 'visivel',
+                          type: 'g3d:gameOver',
+                          result: 'perdeu',
                         },
                       ],
                     },
@@ -6949,9 +6666,9 @@ export const defesaDaTorreBasicoExample: ExtensionExample = {
                       },
                       then: [
                         {
-                          type: 'g3d:removeFromSwarm',
-                          swarmVar: 'inimigos',
-                          itemVar: 'item',
+                          type: 'g3d:removeFromGroup',
+                          groupVar: 'inimigos',
+                          objVar: 'item',
                         },
                         {
                           type: 'g3d:playEffect',
@@ -6982,12 +6699,18 @@ export const defesaDaTorreBasicoExample: ExtensionExample = {
                           },
                         },
                         {
-                          type: 'setProperty',
-                          targetId: 'score',
-                          property: 'textContent',
+                          type: 'g3d:addScore',
                           value: {
-                            type: 'var',
-                            name: 'pontos',
+                            type: 'binop',
+                            op: '-',
+                            left: {
+                              type: 'var',
+                              name: 'pontos',
+                            },
+                            right: {
+                              type: 'g3d:gameValue',
+                              what: 'pontos',
+                            },
                           },
                         },
                       ],
@@ -7022,19 +6745,23 @@ export const defesaDaTorreBasicoExample: ExtensionExample = {
                       kind: 'coin',
                     },
                     {
-                      type: 'setProperty',
-                      targetId: 'final-score',
-                      property: 'textContent',
+                      type: 'g3d:addScore',
                       value: {
-                        type: 'var',
-                        name: 'pontos',
+                        type: 'binop',
+                        op: '-',
+                        left: {
+                          type: 'var',
+                          name: 'pontos',
+                        },
+                        right: {
+                          type: 'g3d:gameValue',
+                          what: 'pontos',
+                        },
                       },
                     },
                     {
-                      type: 'classOp',
-                      targetId: 'results',
-                      op: 'add',
-                      className: 'visivel',
+                      type: 'g3d:gameOver',
+                      result: 'ganhou',
                     },
                   ],
                 },
@@ -7115,8 +6842,8 @@ export const defesaDaTorreBasicoExample: ExtensionExample = {
                   kind: 'const',
                 },
                 {
-                  type: 'g3d:spawnInSwarm',
-                  swarmVar: 'inimigos',
+                  type: 'g3d:spawnCopy',
+                  groupVar: 'inimigos',
                   originalVar: 'molde',
                   x: {
                     type: 'var',
@@ -7146,142 +6873,8 @@ export const reunirRebanhoBasicoExample: ExtensionExample = {
   description:
     'Os bichinhos vagam pelo campo. Chegue perto com as setas para eles seguirem você e leve o rebanho ao curral dourado. Reúna 8 antes do tempo acabar!',
   ir: {
-    html: [
-      {
-        type: 'element',
-        tag: 'div',
-        id: 'score',
-        text: '0',
-      },
-      {
-        type: 'element',
-        tag: 'div',
-        id: 'timer',
-        text: '45',
-      },
-      {
-        type: 'element',
-        tag: 'div',
-        id: 'results',
-        children: [
-          {
-            type: 'element',
-            tag: 'div',
-            id: 'results-box',
-            children: [
-              {
-                type: 'element',
-                tag: 'h1',
-                text: 'Fim do pastoreio',
-              },
-              {
-                type: 'element',
-                tag: 'p',
-                children: [
-                  {
-                    type: 'text',
-                    text: 'Bichinhos reunidos: ',
-                  },
-                  {
-                    type: 'element',
-                    tag: 'span',
-                    id: 'final-score',
-                  },
-                ],
-              },
-              {
-                type: 'element',
-                tag: 'button',
-                id: 'retry',
-                text: 'Jogar de novo',
-              },
-            ],
-          },
-        ],
-      },
-    ],
-    css: [
-      {
-        type: 'googleFont',
-        family: 'Press Start 2P',
-      },
-      {
-        selector: 'body',
-        declarations: {
-          margin: '0',
-          overflow: 'hidden',
-          'font-family': '"Press Start 2P", cursive',
-        },
-      },
-      {
-        selector: 'canvas',
-        declarations: {
-          display: 'block',
-          width: '100vw',
-          height: '100vh',
-        },
-      },
-      {
-        selector: '#score',
-        declarations: {
-          position: 'absolute',
-          top: '20px',
-          left: '20px',
-          'font-size': '1.5em',
-          color: 'white',
-        },
-      },
-      {
-        selector: '#timer',
-        declarations: {
-          position: 'absolute',
-          top: '20px',
-          right: '20px',
-          'font-size': '1.5em',
-          color: '#fbbf24',
-        },
-      },
-      {
-        selector: '#results',
-        declarations: {
-          position: 'absolute',
-          top: '0',
-          left: '0',
-          'min-width': '100%',
-          'min-height': '100%',
-          display: 'flex',
-          'align-items': 'center',
-          'justify-content': 'center',
-          visibility: 'hidden',
-        },
-      },
-      {
-        selector: '#results.visivel',
-        declarations: {
-          visibility: 'visible',
-        },
-      },
-      {
-        selector: '#results-box',
-        declarations: {
-          display: 'flex',
-          'flex-direction': 'column',
-          'align-items': 'center',
-          'background-color': 'white',
-          padding: '20px',
-        },
-      },
-      {
-        selector: '#results-box button',
-        declarations: {
-          'background-color': '#22d3ee',
-          color: 'white',
-          padding: '16px 32px',
-          'font-family': 'inherit',
-          cursor: 'pointer',
-        },
-      },
-    ],
+    html: [],
+    css: [],
     extensions: [
       {
         extensionId: 'game-3d',
@@ -7296,15 +6889,53 @@ export const reunirRebanhoBasicoExample: ExtensionExample = {
           bg: '#0f172a',
         },
         {
+          type: 'g3d:screenText',
+          screen: 'vitoria',
+          title: 'Rebanho reunido!',
+          text: 'Confira seus pontos no placar.',
+          button: 'Jogar de novo',
+        },
+        {
+          type: 'g3d:screenText',
+          screen: 'fim',
+          title: 'Acabou o tempo',
+          text: 'Confira seus pontos no placar.',
+          button: 'Tentar novamente',
+        },
+        {
+          type: 'g3d:addScore',
+          value: {
+            type: 'num',
+            value: 0,
+          },
+        },
+        {
+          type: 'g3d:cornerText',
+          corner: 'bottom-center',
+          text: {
+            type: 'str',
+            value: 'Setas ou WASD: andar. Leve oito bichinhos ao curral.',
+          },
+        },
+        {
+          type: 'g3d:cornerText',
+          corner: 'top-right',
+          text: {
+            type: 'str',
+            value: 'Tempo: 45',
+          },
+        },
+        {
           type: 'g3d:setSky',
           worldVar: 'cena',
           top: '#1e293b',
           bottom: '#334155',
         },
         {
-          type: 'g3d:topCamera',
+          type: 'g3d:cameraMode',
           worldVar: 'cena',
-          followVar: '',
+          mode: 'cima',
+          objVar: '',
         },
         {
           type: 'g3d:setFog',
@@ -7458,14 +7089,12 @@ export const reunirRebanhoBasicoExample: ExtensionExample = {
           mode: 'hide',
         },
         {
-          type: 'g3d:createSwarm',
+          type: 'g3d:createGroup',
           varName: 'errantes',
-          worldVar: 'cena',
         },
         {
-          type: 'g3d:createSwarm',
+          type: 'g3d:createGroup',
           varName: 'seguidores',
-          worldVar: 'cena',
         },
         {
           type: 'var',
@@ -7492,103 +7121,7 @@ export const reunirRebanhoBasicoExample: ExtensionExample = {
           },
         },
       ],
-      events: [
-        {
-          type: 'event',
-          target: 'retry',
-          event: 'click',
-          body: [
-            {
-              type: 'g3d:forEachInSwarm',
-              swarmVar: 'errantes',
-              itemName: 'item',
-              body: [
-                {
-                  type: 'g3d:removeFromSwarm',
-                  swarmVar: 'errantes',
-                  itemVar: 'item',
-                },
-              ],
-            },
-            {
-              type: 'g3d:forEachInSwarm',
-              swarmVar: 'seguidores',
-              itemName: 'item',
-              body: [
-                {
-                  type: 'g3d:removeFromSwarm',
-                  swarmVar: 'seguidores',
-                  itemVar: 'item',
-                },
-              ],
-            },
-            {
-              type: 'assign',
-              name: 'pontos',
-              value: {
-                type: 'num',
-                value: 0,
-              },
-            },
-            {
-              type: 'assign',
-              name: 'tempo',
-              value: {
-                type: 'num',
-                value: 45,
-              },
-            },
-            {
-              type: 'assign',
-              name: 'rodando',
-              value: {
-                type: 'bool',
-                value: true,
-              },
-            },
-            {
-              type: 'g3d:setPosition',
-              objVar: 'heroi',
-              x: {
-                type: 'num',
-                value: 0,
-              },
-              y: {
-                type: 'num',
-                value: 0.65,
-              },
-              z: {
-                type: 'num',
-                value: 0,
-              },
-            },
-            {
-              type: 'setProperty',
-              targetId: 'score',
-              property: 'textContent',
-              value: {
-                type: 'num',
-                value: 0,
-              },
-            },
-            {
-              type: 'setProperty',
-              targetId: 'timer',
-              property: 'textContent',
-              value: {
-                type: 'num',
-                value: 45,
-              },
-            },
-            {
-              type: 'classOp',
-              targetId: 'results',
-              op: 'remove',
-              className: 'visivel',
-            },
-          ],
-        },
-      ],
+      events: [],
       loops: [
         {
           type: 'g3d:animate',
@@ -7607,7 +7140,7 @@ export const reunirRebanhoBasicoExample: ExtensionExample = {
                   axis: 'y',
                   speed: {
                     type: 'num',
-                    value: 0.4,
+                    value: 45,
                   },
                 },
                 {
@@ -7629,8 +7162,16 @@ export const reunirRebanhoBasicoExample: ExtensionExample = {
                       type: 'g3d:moveBy',
                       objVar: 'heroi',
                       x: {
-                        type: 'num',
-                        value: -0.16,
+                        type: 'binop',
+                        op: '*',
+                        left: {
+                          type: 'num',
+                          value: -9.6,
+                        },
+                        right: {
+                          type: 'g3d:dt',
+                          worldVar: 'cena',
+                        },
                       },
                       y: {
                         type: 'num',
@@ -7662,8 +7203,16 @@ export const reunirRebanhoBasicoExample: ExtensionExample = {
                       type: 'g3d:moveBy',
                       objVar: 'heroi',
                       x: {
-                        type: 'num',
-                        value: 0.16,
+                        type: 'binop',
+                        op: '*',
+                        left: {
+                          type: 'num',
+                          value: 9.6,
+                        },
+                        right: {
+                          type: 'g3d:dt',
+                          worldVar: 'cena',
+                        },
                       },
                       y: {
                         type: 'num',
@@ -7703,8 +7252,16 @@ export const reunirRebanhoBasicoExample: ExtensionExample = {
                         value: 0,
                       },
                       z: {
-                        type: 'num',
-                        value: -0.16,
+                        type: 'binop',
+                        op: '*',
+                        left: {
+                          type: 'num',
+                          value: -9.6,
+                        },
+                        right: {
+                          type: 'g3d:dt',
+                          worldVar: 'cena',
+                        },
                       },
                     },
                   ],
@@ -7736,8 +7293,16 @@ export const reunirRebanhoBasicoExample: ExtensionExample = {
                         value: 0,
                       },
                       z: {
-                        type: 'num',
-                        value: 0.16,
+                        type: 'binop',
+                        op: '*',
+                        left: {
+                          type: 'num',
+                          value: 9.6,
+                        },
+                        right: {
+                          type: 'g3d:dt',
+                          worldVar: 'cena',
+                        },
                       },
                     },
                   ],
@@ -7883,8 +7448,8 @@ export const reunirRebanhoBasicoExample: ExtensionExample = {
                   ],
                 },
                 {
-                  type: 'g3d:forEachInSwarm',
-                  swarmVar: 'errantes',
+                  type: 'g3d:forEachInGroup',
+                  groupVar: 'errantes',
                   itemName: 'item',
                   body: [
                     {
@@ -7893,7 +7458,7 @@ export const reunirRebanhoBasicoExample: ExtensionExample = {
                       axis: 'y',
                       speed: {
                         type: 'num',
-                        value: 1.5,
+                        value: 180,
                       },
                     },
                     {
@@ -7909,8 +7474,8 @@ export const reunirRebanhoBasicoExample: ExtensionExample = {
                       },
                       then: [
                         {
-                          type: 'g3d:spawnInSwarm',
-                          swarmVar: 'seguidores',
+                          type: 'g3d:spawnCopy',
+                          groupVar: 'seguidores',
                           originalVar: 'moldeSeguidor',
                           x: {
                             type: 'g3d:getPos',
@@ -7928,9 +7493,9 @@ export const reunirRebanhoBasicoExample: ExtensionExample = {
                           },
                         },
                         {
-                          type: 'g3d:removeFromSwarm',
-                          swarmVar: 'errantes',
-                          itemVar: 'item',
+                          type: 'g3d:removeFromGroup',
+                          groupVar: 'errantes',
+                          objVar: 'item',
                         },
                         {
                           type: 'g3d:playEffect',
@@ -7941,8 +7506,8 @@ export const reunirRebanhoBasicoExample: ExtensionExample = {
                   ],
                 },
                 {
-                  type: 'g3d:forEachInSwarm',
-                  swarmVar: 'seguidores',
+                  type: 'g3d:forEachInGroup',
+                  groupVar: 'seguidores',
                   itemName: 'item',
                   body: [
                     {
@@ -7964,7 +7529,7 @@ export const reunirRebanhoBasicoExample: ExtensionExample = {
                       },
                       factor: {
                         type: 'num',
-                        value: 0.08,
+                        value: 5,
                       },
                     },
                     {
@@ -7980,9 +7545,9 @@ export const reunirRebanhoBasicoExample: ExtensionExample = {
                       },
                       then: [
                         {
-                          type: 'g3d:removeFromSwarm',
-                          swarmVar: 'seguidores',
-                          itemVar: 'item',
+                          type: 'g3d:removeFromGroup',
+                          groupVar: 'seguidores',
+                          objVar: 'item',
                         },
                         {
                           type: 'assign',
@@ -8005,12 +7570,18 @@ export const reunirRebanhoBasicoExample: ExtensionExample = {
                           kind: 'coin',
                         },
                         {
-                          type: 'setProperty',
-                          targetId: 'score',
-                          property: 'textContent',
+                          type: 'g3d:addScore',
                           value: {
-                            type: 'var',
-                            name: 'pontos',
+                            type: 'binop',
+                            op: '-',
+                            left: {
+                              type: 'var',
+                              name: 'pontos',
+                            },
+                            right: {
+                              type: 'g3d:gameValue',
+                              what: 'pontos',
+                            },
                           },
                         },
                       ],
@@ -8045,19 +7616,23 @@ export const reunirRebanhoBasicoExample: ExtensionExample = {
                       kind: 'coin',
                     },
                     {
-                      type: 'setProperty',
-                      targetId: 'final-score',
-                      property: 'textContent',
+                      type: 'g3d:addScore',
                       value: {
-                        type: 'var',
-                        name: 'pontos',
+                        type: 'binop',
+                        op: '-',
+                        left: {
+                          type: 'var',
+                          name: 'pontos',
+                        },
+                        right: {
+                          type: 'g3d:gameValue',
+                          what: 'pontos',
+                        },
                       },
                     },
                     {
-                      type: 'classOp',
-                      targetId: 'results',
-                      op: 'add',
-                      className: 'visivel',
+                      type: 'g3d:gameOver',
+                      result: 'ganhou',
                     },
                   ],
                 },
@@ -8085,8 +7660,8 @@ export const reunirRebanhoBasicoExample: ExtensionExample = {
                     type: 'binop',
                     op: '<',
                     left: {
-                      type: 'g3d:countSwarm',
-                      swarmVar: 'errantes',
+                      type: 'g3d:countGroup',
+                      groupVar: 'errantes',
                     },
                     right: {
                       type: 'num',
@@ -8111,8 +7686,8 @@ export const reunirRebanhoBasicoExample: ExtensionExample = {
                       kind: 'const',
                     },
                     {
-                      type: 'g3d:spawnInSwarm',
-                      swarmVar: 'errantes',
+                      type: 'g3d:spawnCopy',
+                      groupVar: 'errantes',
                       originalVar: 'moldeErrante',
                       x: {
                         type: 'binop',
@@ -8188,12 +7763,19 @@ export const reunirRebanhoBasicoExample: ExtensionExample = {
                   },
                 },
                 {
-                  type: 'setProperty',
-                  targetId: 'timer',
-                  property: 'textContent',
-                  value: {
-                    type: 'var',
-                    name: 'tempo',
+                  type: 'g3d:cornerText',
+                  corner: 'top-right',
+                  text: {
+                    type: 'binop',
+                    op: '+',
+                    left: {
+                      type: 'str',
+                      value: 'Tempo: ',
+                    },
+                    right: {
+                      type: 'var',
+                      name: 'tempo',
+                    },
                   },
                 },
                 {
@@ -8220,19 +7802,23 @@ export const reunirRebanhoBasicoExample: ExtensionExample = {
                       },
                     },
                     {
-                      type: 'setProperty',
-                      targetId: 'final-score',
-                      property: 'textContent',
+                      type: 'g3d:addScore',
                       value: {
-                        type: 'var',
-                        name: 'pontos',
+                        type: 'binop',
+                        op: '-',
+                        left: {
+                          type: 'var',
+                          name: 'pontos',
+                        },
+                        right: {
+                          type: 'g3d:gameValue',
+                          what: 'pontos',
+                        },
                       },
                     },
                     {
-                      type: 'classOp',
-                      targetId: 'results',
-                      op: 'add',
-                      className: 'visivel',
+                      type: 'g3d:gameOver',
+                      result: 'perdeu',
                     },
                   ],
                 },
@@ -8251,145 +7837,8 @@ export const aLendaDoHeroiBasicoExample: ExtensionExample = {
   description:
     'Um herói numa clareira cheia de monstros. Ande com as setas e ataque de perto com a barra de espaço. Os monstros vagam e perseguem você. Derrote 10 antes que os 3 corações acabem!',
   ir: {
-    html: [
-      {
-        type: 'element',
-        tag: 'div',
-        id: 'score',
-        text: 'Monstros: 0 de 10',
-      },
-      {
-        type: 'element',
-        tag: 'div',
-        id: 'hearts',
-        text: 'Vida: 3',
-      },
-      {
-        type: 'element',
-        tag: 'div',
-        id: 'results',
-        children: [
-          {
-            type: 'element',
-            tag: 'div',
-            id: 'results-box',
-            children: [
-              {
-                type: 'element',
-                tag: 'h1',
-                id: 'result-title',
-                text: 'Fim da aventura',
-              },
-              {
-                type: 'element',
-                tag: 'p',
-                children: [
-                  {
-                    type: 'text',
-                    text: 'Monstros derrotados: ',
-                  },
-                  {
-                    type: 'element',
-                    tag: 'span',
-                    id: 'final-score',
-                  },
-                ],
-              },
-              {
-                type: 'element',
-                tag: 'button',
-                id: 'retry',
-                text: 'Jogar de novo',
-              },
-            ],
-          },
-        ],
-      },
-    ],
-    css: [
-      {
-        type: 'googleFont',
-        family: 'Press Start 2P',
-      },
-      {
-        selector: 'body',
-        declarations: {
-          margin: '0',
-          overflow: 'hidden',
-          'font-family': '"Press Start 2P", cursive',
-        },
-      },
-      {
-        selector: 'canvas',
-        declarations: {
-          display: 'block',
-          width: '100vw',
-          height: '100vh',
-        },
-      },
-      {
-        selector: '#score',
-        declarations: {
-          position: 'absolute',
-          top: '20px',
-          left: '20px',
-          'font-size': '1.1em',
-          color: 'white',
-        },
-      },
-      {
-        selector: '#hearts',
-        declarations: {
-          position: 'absolute',
-          top: '20px',
-          right: '20px',
-          'font-size': '1.1em',
-          color: '#f87171',
-        },
-      },
-      {
-        selector: '#results',
-        declarations: {
-          position: 'absolute',
-          top: '0',
-          left: '0',
-          'min-width': '100%',
-          'min-height': '100%',
-          display: 'flex',
-          'align-items': 'center',
-          'justify-content': 'center',
-          visibility: 'hidden',
-        },
-      },
-      {
-        selector: '#results.visivel',
-        declarations: {
-          visibility: 'visible',
-        },
-      },
-      {
-        selector: '#results-box',
-        declarations: {
-          display: 'flex',
-          'flex-direction': 'column',
-          'align-items': 'center',
-          'background-color': 'white',
-          color: '#0f2417',
-          padding: '20px',
-          'text-align': 'center',
-        },
-      },
-      {
-        selector: '#results-box button',
-        declarations: {
-          'background-color': '#2563eb',
-          color: 'white',
-          padding: '16px 32px',
-          'font-family': 'inherit',
-          cursor: 'pointer',
-        },
-      },
-    ],
+    html: [],
+    css: [],
     extensions: [
       {
         extensionId: 'game-3d',
@@ -8404,15 +7853,53 @@ export const aLendaDoHeroiBasicoExample: ExtensionExample = {
           bg: '#0f2417',
         },
         {
+          type: 'g3d:screenText',
+          screen: 'vitoria',
+          title: 'Herói lendário!',
+          text: 'Confira seus pontos no placar.',
+          button: 'Jogar de novo',
+        },
+        {
+          type: 'g3d:screenText',
+          screen: 'fim',
+          title: 'O herói caiu...',
+          text: 'Confira seus pontos no placar.',
+          button: 'Tentar novamente',
+        },
+        {
+          type: 'g3d:addScore',
+          value: {
+            type: 'num',
+            value: 0,
+          },
+        },
+        {
+          type: 'g3d:cornerText',
+          corner: 'bottom-center',
+          text: {
+            type: 'str',
+            value: 'Setas ou WASD: andar. Espaço: atacar.',
+          },
+        },
+        {
+          type: 'g3d:cornerText',
+          corner: 'top-left',
+          text: {
+            type: 'str',
+            value: 'Vida: 3',
+          },
+        },
+        {
           type: 'g3d:setSky',
           worldVar: 'cena',
           top: '#1e3a2a',
           bottom: '#2f5541',
         },
         {
-          type: 'g3d:topCamera',
+          type: 'g3d:cameraMode',
           worldVar: 'cena',
-          followVar: '',
+          mode: 'cima',
+          objVar: '',
         },
         {
           type: 'g3d:setFog',
@@ -8582,9 +8069,8 @@ export const aLendaDoHeroiBasicoExample: ExtensionExample = {
           mode: 'hide',
         },
         {
-          type: 'g3d:createSwarm',
+          type: 'g3d:createGroup',
           varName: 'monstros',
-          worldVar: 'cena',
         },
         {
           type: 'var',
@@ -8627,107 +8113,7 @@ export const aLendaDoHeroiBasicoExample: ExtensionExample = {
           },
         },
       ],
-      events: [
-        {
-          type: 'event',
-          target: 'retry',
-          event: 'click',
-          body: [
-            {
-              type: 'g3d:forEachInSwarm',
-              swarmVar: 'monstros',
-              itemName: 'item',
-              body: [
-                {
-                  type: 'g3d:removeFromSwarm',
-                  swarmVar: 'monstros',
-                  itemVar: 'item',
-                },
-              ],
-            },
-            {
-              type: 'assign',
-              name: 'pontos',
-              value: {
-                type: 'num',
-                value: 0,
-              },
-            },
-            {
-              type: 'assign',
-              name: 'vida',
-              value: {
-                type: 'num',
-                value: 3,
-              },
-            },
-            {
-              type: 'assign',
-              name: 'heroiX',
-              value: {
-                type: 'num',
-                value: 0,
-              },
-            },
-            {
-              type: 'assign',
-              name: 'heroiZ',
-              value: {
-                type: 'num',
-                value: 0,
-              },
-            },
-            {
-              type: 'assign',
-              name: 'rodando',
-              value: {
-                type: 'bool',
-                value: true,
-              },
-            },
-            {
-              type: 'g3d:setPosition',
-              objVar: 'heroi',
-              x: {
-                type: 'num',
-                value: 0,
-              },
-              y: {
-                type: 'num',
-                value: 0.65,
-              },
-              z: {
-                type: 'num',
-                value: 0,
-              },
-            },
-            {
-              type: 'setProperty',
-              targetId: 'score',
-              property: 'textContent',
-              value: {
-                type: 'str',
-                value: 'Monstros: 0 de 10',
-              },
-            },
-            {
-              type: 'setProperty',
-              targetId: 'hearts',
-              property: 'textContent',
-              value: {
-                type: 'str',
-                value: 'Vida: 3',
-              },
-            },
-            {
-              type: 'classOp',
-              targetId: 'results',
-              op: 'remove',
-              className: 'visivel',
-            },
-          ],
-        },
-      ],
+      events: [],
       loops: [
         {
           type: 'g3d:animate',
@@ -8746,7 +8132,7 @@ export const aLendaDoHeroiBasicoExample: ExtensionExample = {
                   axis: 'y',
                   speed: {
                     type: 'num',
-                    value: 1.2,
+                    value: 90,
                   },
                 },
                 {
@@ -9014,8 +8400,8 @@ export const aLendaDoHeroiBasicoExample: ExtensionExample = {
                   },
                 },
                 {
-                  type: 'g3d:forEachInSwarm',
-                  swarmVar: 'monstros',
+                  type: 'g3d:forEachInGroup',
+                  groupVar: 'monstros',
                   itemName: 'item',
                   body: [
                     {
@@ -9039,9 +8425,9 @@ export const aLendaDoHeroiBasicoExample: ExtensionExample = {
                       },
                       then: [
                         {
-                          type: 'g3d:removeFromSwarm',
-                          swarmVar: 'monstros',
-                          itemVar: 'item',
+                          type: 'g3d:removeFromGroup',
+                          groupVar: 'monstros',
+                          objVar: 'item',
                         },
                         {
                           type: 'assign',
@@ -9064,27 +8450,17 @@ export const aLendaDoHeroiBasicoExample: ExtensionExample = {
                           kind: 'coin',
                         },
                         {
-                          type: 'setProperty',
-                          targetId: 'score',
-                          property: 'textContent',
+                          type: 'g3d:addScore',
                           value: {
                             type: 'binop',
-                            op: '+',
+                            op: '-',
                             left: {
-                              type: 'binop',
-                              op: '+',
-                              left: {
-                                type: 'str',
-                                value: 'Monstros: ',
-                              },
-                              right: {
-                                type: 'var',
-                                name: 'pontos',
-                              },
+                              type: 'var',
+                              name: 'pontos',
                             },
                             right: {
-                              type: 'str',
-                              value: ' de 10',
+                              type: 'g3d:gameValue',
+                              what: 'pontos',
                             },
                           },
                         },
@@ -9103,9 +8479,9 @@ export const aLendaDoHeroiBasicoExample: ExtensionExample = {
                           },
                           then: [
                             {
-                              type: 'g3d:removeFromSwarm',
-                              swarmVar: 'monstros',
-                              itemVar: 'item',
+                              type: 'g3d:removeFromGroup',
+                              groupVar: 'monstros',
+                              objVar: 'item',
                             },
                             {
                               type: 'assign',
@@ -9128,10 +8504,9 @@ export const aLendaDoHeroiBasicoExample: ExtensionExample = {
                               kind: 'hit',
                             },
                             {
-                              type: 'setProperty',
-                              targetId: 'hearts',
-                              property: 'textContent',
-                              value: {
+                              type: 'g3d:cornerText',
+                              corner: 'top-left',
+                              text: {
                                 type: 'binop',
                                 op: '+',
                                 left: {
@@ -9177,7 +8552,7 @@ export const aLendaDoHeroiBasicoExample: ExtensionExample = {
                                   },
                                   factor: {
                                     type: 'num',
-                                    value: 0.05,
+                                    value: 3.08,
                                   },
                                 },
                               ],
@@ -9188,7 +8563,7 @@ export const aLendaDoHeroiBasicoExample: ExtensionExample = {
                                   axis: 'y',
                                   speed: {
                                     type: 'num',
-                                    value: 1.6,
+                                    value: 180,
                                   },
                                 },
                               ],
@@ -9227,28 +8602,23 @@ export const aLendaDoHeroiBasicoExample: ExtensionExample = {
                       kind: 'coin',
                     },
                     {
-                      type: 'setProperty',
-                      targetId: 'result-title',
-                      property: 'textContent',
+                      type: 'g3d:addScore',
                       value: {
-                        type: 'str',
-                        value: 'Herói lendário!',
+                        type: 'binop',
+                        op: '-',
+                        left: {
+                          type: 'var',
+                          name: 'pontos',
+                        },
+                        right: {
+                          type: 'g3d:gameValue',
+                          what: 'pontos',
+                        },
                       },
                     },
                     {
-                      type: 'setProperty',
-                      targetId: 'final-score',
-                      property: 'textContent',
-                      value: {
-                        type: 'var',
-                        name: 'pontos',
-                      },
-                    },
-                    {
-                      type: 'classOp',
-                      targetId: 'results',
-                      op: 'add',
-                      className: 'visivel',
+                      type: 'g3d:gameOver',
+                      result: 'ganhou',
                     },
                   ],
                 },
@@ -9280,28 +8650,23 @@ export const aLendaDoHeroiBasicoExample: ExtensionExample = {
                       kind: 'explosion',
                     },
                     {
-                      type: 'setProperty',
-                      targetId: 'result-title',
-                      property: 'textContent',
+                      type: 'g3d:addScore',
                       value: {
-                        type: 'str',
-                        value: 'O herói caiu...',
+                        type: 'binop',
+                        op: '-',
+                        left: {
+                          type: 'var',
+                          name: 'pontos',
+                        },
+                        right: {
+                          type: 'g3d:gameValue',
+                          what: 'pontos',
+                        },
                       },
                     },
                     {
-                      type: 'setProperty',
-                      targetId: 'final-score',
-                      property: 'textContent',
-                      value: {
-                        type: 'var',
-                        name: 'pontos',
-                      },
-                    },
-                    {
-                      type: 'classOp',
-                      targetId: 'results',
-                      op: 'add',
-                      className: 'visivel',
+                      type: 'g3d:gameOver',
+                      result: 'perdeu',
                     },
                   ],
                 },
@@ -9329,8 +8694,8 @@ export const aLendaDoHeroiBasicoExample: ExtensionExample = {
                     type: 'binop',
                     op: '<',
                     left: {
-                      type: 'g3d:countSwarm',
-                      swarmVar: 'monstros',
+                      type: 'g3d:countGroup',
+                      groupVar: 'monstros',
                     },
                     right: {
                       type: 'num',
@@ -9355,8 +8720,8 @@ export const aLendaDoHeroiBasicoExample: ExtensionExample = {
                       kind: 'const',
                     },
                     {
-                      type: 'g3d:spawnInSwarm',
-                      swarmVar: 'monstros',
+                      type: 'g3d:spawnCopy',
+                      groupVar: 'monstros',
                       originalVar: 'moldeMonstro',
                       x: {
                         type: 'binop',
@@ -9412,145 +8777,8 @@ export const cacaEstelarBasicoExample: ExtensionExample = {
   description:
     'Uma nave numa arena espacial cheia de inimigos. Voe livre com as setas e dispare no inimigo mais perto com a barra de espaço. As naves vagam e perseguem você. Abata 10 antes que os 3 escudos acabem!',
   ir: {
-    html: [
-      {
-        type: 'element',
-        tag: 'div',
-        id: 'score',
-        text: 'Naves: 0 de 10',
-      },
-      {
-        type: 'element',
-        tag: 'div',
-        id: 'shields',
-        text: 'Escudos: 3',
-      },
-      {
-        type: 'element',
-        tag: 'div',
-        id: 'results',
-        children: [
-          {
-            type: 'element',
-            tag: 'div',
-            id: 'results-box',
-            children: [
-              {
-                type: 'element',
-                tag: 'h1',
-                id: 'result-title',
-                text: 'Fim da patrulha',
-              },
-              {
-                type: 'element',
-                tag: 'p',
-                children: [
-                  {
-                    type: 'text',
-                    text: 'Naves abatidas: ',
-                  },
-                  {
-                    type: 'element',
-                    tag: 'span',
-                    id: 'final-score',
-                  },
-                ],
-              },
-              {
-                type: 'element',
-                tag: 'button',
-                id: 'retry',
-                text: 'Jogar de novo',
-              },
-            ],
-          },
-        ],
-      },
-    ],
-    css: [
-      {
-        type: 'googleFont',
-        family: 'Press Start 2P',
-      },
-      {
-        selector: 'body',
-        declarations: {
-          margin: '0',
-          overflow: 'hidden',
-          'font-family': '"Press Start 2P", cursive',
-        },
-      },
-      {
-        selector: 'canvas',
-        declarations: {
-          display: 'block',
-          width: '100vw',
-          height: '100vh',
-        },
-      },
-      {
-        selector: '#score',
-        declarations: {
-          position: 'absolute',
-          top: '20px',
-          left: '20px',
-          'font-size': '1.1em',
-          color: 'white',
-        },
-      },
-      {
-        selector: '#shields',
-        declarations: {
-          position: 'absolute',
-          top: '20px',
-          right: '20px',
-          'font-size': '1.1em',
-          color: '#22d3ee',
-        },
-      },
-      {
-        selector: '#results',
-        declarations: {
-          position: 'absolute',
-          top: '0',
-          left: '0',
-          'min-width': '100%',
-          'min-height': '100%',
-          display: 'flex',
-          'align-items': 'center',
-          'justify-content': 'center',
-          visibility: 'hidden',
-        },
-      },
-      {
-        selector: '#results.visivel',
-        declarations: {
-          visibility: 'visible',
-        },
-      },
-      {
-        selector: '#results-box',
-        declarations: {
-          display: 'flex',
-          'flex-direction': 'column',
-          'align-items': 'center',
-          'background-color': 'white',
-          color: '#050818',
-          padding: '20px',
-          'text-align': 'center',
-        },
-      },
-      {
-        selector: '#results-box button',
-        declarations: {
-          'background-color': '#22d3ee',
-          color: 'white',
-          padding: '16px 32px',
-          'font-family': 'inherit',
-          cursor: 'pointer',
-        },
-      },
-    ],
+    html: [],
+    css: [],
     extensions: [
       {
         extensionId: 'game-3d',
@@ -9565,15 +8793,53 @@ export const cacaEstelarBasicoExample: ExtensionExample = {
           bg: '#050818',
         },
         {
+          type: 'g3d:screenText',
+          screen: 'vitoria',
+          title: 'Ás dos céus!',
+          text: 'Confira seus pontos no placar.',
+          button: 'Jogar de novo',
+        },
+        {
+          type: 'g3d:screenText',
+          screen: 'fim',
+          title: 'Nave abatida...',
+          text: 'Confira seus pontos no placar.',
+          button: 'Tentar novamente',
+        },
+        {
+          type: 'g3d:addScore',
+          value: {
+            type: 'num',
+            value: 0,
+          },
+        },
+        {
+          type: 'g3d:cornerText',
+          corner: 'bottom-center',
+          text: {
+            type: 'str',
+            value: 'Setas ou WASD: pilotar. Espaço: disparar.',
+          },
+        },
+        {
+          type: 'g3d:cornerText',
+          corner: 'top-left',
+          text: {
+            type: 'str',
+            value: 'Escudos: 3',
+          },
+        },
+        {
           type: 'g3d:setSky',
           worldVar: 'cena',
           top: '#0b1030',
           bottom: '#1e1b4b',
         },
         {
-          type: 'g3d:topCamera',
+          type: 'g3d:cameraMode',
           worldVar: 'cena',
-          followVar: '',
+          mode: 'cima',
+          objVar: '',
         },
         {
           type: 'g3d:setFog',
@@ -9704,9 +8970,8 @@ export const cacaEstelarBasicoExample: ExtensionExample = {
           mode: 'hide',
         },
         {
-          type: 'g3d:createSwarm',
+          type: 'g3d:createGroup',
           varName: 'cacas',
-          worldVar: 'cena',
         },
         {
           type: 'var',
@@ -9749,107 +9014,7 @@ export const cacaEstelarBasicoExample: ExtensionExample = {
           },
         },
       ],
-      events: [
-        {
-          type: 'event',
-          target: 'retry',
-          event: 'click',
-          body: [
-            {
-              type: 'g3d:forEachInSwarm',
-              swarmVar: 'cacas',
-              itemName: 'item',
-              body: [
-                {
-                  type: 'g3d:removeFromSwarm',
-                  swarmVar: 'cacas',
-                  itemVar: 'item',
-                },
-              ],
-            },
-            {
-              type: 'assign',
-              name: 'pontos',
-              value: {
-                type: 'num',
-                value: 0,
-              },
-            },
-            {
-              type: 'assign',
-              name: 'escudo',
-              value: {
-                type: 'num',
-                value: 3,
-              },
-            },
-            {
-              type: 'assign',
-              name: 'naveX',
-              value: {
-                type: 'num',
-                value: 0,
-              },
-            },
-            {
-              type: 'assign',
-              name: 'naveZ',
-              value: {
-                type: 'num',
-                value: 0,
-              },
-            },
-            {
-              type: 'assign',
-              name: 'rodando',
-              value: {
-                type: 'bool',
-                value: true,
-              },
-            },
-            {
-              type: 'g3d:setPosition',
-              objVar: 'nave',
-              x: {
-                type: 'num',
-                value: 0,
-              },
-              y: {
-                type: 'num',
-                value: 0.6,
-              },
-              z: {
-                type: 'num',
-                value: 0,
-              },
-            },
-            {
-              type: 'setProperty',
-              targetId: 'score',
-              property: 'textContent',
-              value: {
-                type: 'str',
-                value: 'Naves: 0 de 10',
-              },
-            },
-            {
-              type: 'setProperty',
-              targetId: 'shields',
-              property: 'textContent',
-              value: {
-                type: 'str',
-                value: 'Escudos: 3',
-              },
-            },
-            {
-              type: 'classOp',
-              targetId: 'results',
-              op: 'remove',
-              className: 'visivel',
-            },
-          ],
-        },
-      ],
+      events: [],
       loops: [
         {
           type: 'g3d:animate',
@@ -9868,7 +9033,7 @@ export const cacaEstelarBasicoExample: ExtensionExample = {
                   axis: 'y',
                   speed: {
                     type: 'num',
-                    value: 0.6,
+                    value: 90,
                   },
                 },
                 {
@@ -10120,8 +9285,8 @@ export const cacaEstelarBasicoExample: ExtensionExample = {
                   },
                 },
                 {
-                  type: 'g3d:forEachInSwarm',
-                  swarmVar: 'cacas',
+                  type: 'g3d:forEachInGroup',
+                  groupVar: 'cacas',
                   itemName: 'item',
                   body: [
                     {
@@ -10145,9 +9310,9 @@ export const cacaEstelarBasicoExample: ExtensionExample = {
                       },
                       then: [
                         {
-                          type: 'g3d:removeFromSwarm',
-                          swarmVar: 'cacas',
-                          itemVar: 'item',
+                          type: 'g3d:removeFromGroup',
+                          groupVar: 'cacas',
+                          objVar: 'item',
                         },
                         {
                           type: 'assign',
@@ -10170,27 +9335,17 @@ export const cacaEstelarBasicoExample: ExtensionExample = {
                           kind: 'coin',
                         },
                         {
-                          type: 'setProperty',
-                          targetId: 'score',
-                          property: 'textContent',
+                          type: 'g3d:addScore',
                           value: {
                             type: 'binop',
-                            op: '+',
+                            op: '-',
                             left: {
-                              type: 'binop',
-                              op: '+',
-                              left: {
-                                type: 'str',
-                                value: 'Naves: ',
-                              },
-                              right: {
-                                type: 'var',
-                                name: 'pontos',
-                              },
+                              type: 'var',
+                              name: 'pontos',
                             },
                             right: {
-                              type: 'str',
-                              value: ' de 10',
+                              type: 'g3d:gameValue',
+                              what: 'pontos',
                             },
                           },
                         },
@@ -10209,9 +9364,9 @@ export const cacaEstelarBasicoExample: ExtensionExample = {
                           },
                           then: [
                             {
-                              type: 'g3d:removeFromSwarm',
-                              swarmVar: 'cacas',
-                              itemVar: 'item',
+                              type: 'g3d:removeFromGroup',
+                              groupVar: 'cacas',
+                              objVar: 'item',
                             },
                             {
                               type: 'assign',
@@ -10234,10 +9389,9 @@ export const cacaEstelarBasicoExample: ExtensionExample = {
                               kind: 'hit',
                             },
                             {
-                              type: 'setProperty',
-                              targetId: 'shields',
-                              property: 'textContent',
-                              value: {
+                              type: 'g3d:cornerText',
+                              corner: 'top-left',
+                              text: {
                                 type: 'binop',
                                 op: '+',
                                 left: {
@@ -10283,7 +9437,7 @@ export const cacaEstelarBasicoExample: ExtensionExample = {
                                   },
                                   factor: {
                                     type: 'num',
-                                    value: 0.06,
+                                    value: 3.71,
                                   },
                                 },
                               ],
@@ -10294,7 +9448,7 @@ export const cacaEstelarBasicoExample: ExtensionExample = {
                                   axis: 'y',
                                   speed: {
                                     type: 'num',
-                                    value: 1.6,
+                                    value: 180,
                                   },
                                 },
                               ],
@@ -10333,28 +9487,23 @@ export const cacaEstelarBasicoExample: ExtensionExample = {
                       kind: 'coin',
                     },
                     {
-                      type: 'setProperty',
-                      targetId: 'result-title',
-                      property: 'textContent',
+                      type: 'g3d:addScore',
                       value: {
-                        type: 'str',
-                        value: 'Ás dos céus!',
+                        type: 'binop',
+                        op: '-',
+                        left: {
+                          type: 'var',
+                          name: 'pontos',
+                        },
+                        right: {
+                          type: 'g3d:gameValue',
+                          what: 'pontos',
+                        },
                       },
                     },
                     {
-                      type: 'setProperty',
-                      targetId: 'final-score',
-                      property: 'textContent',
-                      value: {
-                        type: 'var',
-                        name: 'pontos',
-                      },
-                    },
-                    {
-                      type: 'classOp',
-                      targetId: 'results',
-                      op: 'add',
-                      className: 'visivel',
+                      type: 'g3d:gameOver',
+                      result: 'ganhou',
                     },
                   ],
                 },
@@ -10386,28 +9535,23 @@ export const cacaEstelarBasicoExample: ExtensionExample = {
                       kind: 'explosion',
                     },
                     {
-                      type: 'setProperty',
-                      targetId: 'result-title',
-                      property: 'textContent',
+                      type: 'g3d:addScore',
                       value: {
-                        type: 'str',
-                        value: 'Nave abatida...',
+                        type: 'binop',
+                        op: '-',
+                        left: {
+                          type: 'var',
+                          name: 'pontos',
+                        },
+                        right: {
+                          type: 'g3d:gameValue',
+                          what: 'pontos',
+                        },
                       },
                     },
                     {
-                      type: 'setProperty',
-                      targetId: 'final-score',
-                      property: 'textContent',
-                      value: {
-                        type: 'var',
-                        name: 'pontos',
-                      },
-                    },
-                    {
-                      type: 'classOp',
-                      targetId: 'results',
-                      op: 'add',
-                      className: 'visivel',
+                      type: 'g3d:gameOver',
+                      result: 'perdeu',
                     },
                   ],
                 },
@@ -10435,8 +9579,8 @@ export const cacaEstelarBasicoExample: ExtensionExample = {
                     type: 'binop',
                     op: '<',
                     left: {
-                      type: 'g3d:countSwarm',
-                      swarmVar: 'cacas',
+                      type: 'g3d:countGroup',
+                      groupVar: 'cacas',
                     },
                     right: {
                       type: 'num',
@@ -10461,8 +9605,8 @@ export const cacaEstelarBasicoExample: ExtensionExample = {
                       kind: 'const',
                     },
                     {
-                      type: 'g3d:spawnInSwarm',
-                      swarmVar: 'cacas',
+                      type: 'g3d:spawnCopy',
+                      groupVar: 'cacas',
                       originalVar: 'moldeCaca',
                       x: {
                         type: 'binop',
@@ -10518,177 +9662,8 @@ export const cercoNaBaseBasicoExample: ExtensionExample = {
   description:
     'Um FPS em 1ª pessoa numa arena. Mire com o mouse e segure o espaço para carregar o tiro. Os aliens vêm em ondas e a munição recarrega sozinha. Abata 12 antes que as 3 vidas acabem!',
   ir: {
-    html: [
-      {
-        type: 'element',
-        tag: 'div',
-        id: 'status',
-        children: [
-          {
-            type: 'text',
-            text: 'Aliens: ',
-          },
-          {
-            type: 'element',
-            tag: 'span',
-            id: 'placar',
-            text: '0',
-          },
-          {
-            type: 'text',
-            text: ' de 12    Vida: ',
-          },
-          {
-            type: 'element',
-            tag: 'span',
-            id: 'vida',
-            text: '3',
-          },
-          {
-            type: 'text',
-            text: '    Munição: ',
-          },
-          {
-            type: 'element',
-            tag: 'span',
-            id: 'municao',
-            text: '6',
-          },
-        ],
-      },
-      {
-        type: 'element',
-        tag: 'div',
-        id: 'mira',
-        text: '+',
-      },
-      {
-        type: 'element',
-        tag: 'div',
-        id: 'fim',
-        children: [
-          {
-            type: 'element',
-            tag: 'div',
-            id: 'fim-caixa',
-            children: [
-              {
-                type: 'element',
-                tag: 'h1',
-                id: 'fim-titulo',
-                text: 'Fim do cerco',
-              },
-              {
-                type: 'element',
-                tag: 'p',
-                children: [
-                  {
-                    type: 'text',
-                    text: 'Aliens abatidos: ',
-                  },
-                  {
-                    type: 'element',
-                    tag: 'span',
-                    id: 'final-pontos',
-                  },
-                ],
-              },
-              {
-                type: 'element',
-                tag: 'button',
-                id: 'retry',
-                text: 'Jogar de novo',
-              },
-            ],
-          },
-        ],
-      },
-    ],
-    css: [
-      {
-        type: 'googleFont',
-        family: 'Press Start 2P',
-      },
-      {
-        selector: 'body',
-        declarations: {
-          margin: '0',
-          overflow: 'hidden',
-          'font-family': '"Press Start 2P", cursive',
-        },
-      },
-      {
-        selector: 'canvas',
-        declarations: {
-          display: 'block',
-          width: '100vw',
-          height: '100vh',
-        },
-      },
-      {
-        selector: '#status',
-        declarations: {
-          position: 'absolute',
-          top: '20px',
-          left: '20px',
-          'font-size': '0.9em',
-          color: 'white',
-        },
-      },
-      {
-        selector: '#mira',
-        declarations: {
-          position: 'absolute',
-          top: '50%',
-          left: '50%',
-          transform: 'translate(-50%, -50%)',
-          color: '#fde047',
-          'font-size': '1.6em',
-        },
-      },
-      {
-        selector: '#fim',
-        declarations: {
-          position: 'absolute',
-          top: '0',
-          left: '0',
-          'min-width': '100%',
-          'min-height': '100%',
-          display: 'flex',
-          'align-items': 'center',
-          'justify-content': 'center',
-          visibility: 'hidden',
-        },
-      },
-      {
-        selector: '#fim.visivel',
-        declarations: {
-          visibility: 'visible',
-        },
-      },
-      {
-        selector: '#fim-caixa',
-        declarations: {
-          display: 'flex',
-          'flex-direction': 'column',
-          'align-items': 'center',
-          'background-color': 'white',
-          color: '#1a0f2e',
-          padding: '20px',
-          'text-align': 'center',
-        },
-      },
-      {
-        selector: '#fim-caixa button',
-        declarations: {
-          'background-color': '#22d3ee',
-          color: 'white',
-          padding: '16px 32px',
-          'font-family': 'inherit',
-          cursor: 'pointer',
-        },
-      },
-    ],
+    html: [],
+    css: [],
     extensions: [
       {
         extensionId: 'game-3d',
@@ -10701,6 +9676,43 @@ export const cercoNaBaseBasicoExample: ExtensionExample = {
           type: 'g3d:createFullscreenScene',
           varName: 'cena',
           bg: '#1a0f2e',
+        },
+        {
+          type: 'g3d:screenText',
+          screen: 'vitoria',
+          title: 'Base salva!',
+          text: 'Confira seus pontos no placar.',
+          button: 'Jogar de novo',
+        },
+        {
+          type: 'g3d:screenText',
+          screen: 'fim',
+          title: 'A base caiu...',
+          text: 'Confira seus pontos no placar.',
+          button: 'Tentar novamente',
+        },
+        {
+          type: 'g3d:addScore',
+          value: {
+            type: 'num',
+            value: 0,
+          },
+        },
+        {
+          type: 'g3d:cornerText',
+          corner: 'bottom-center',
+          text: {
+            type: 'str',
+            value: 'WASD: andar. Mouse: mirar. Segure e solte espaço: disparar.',
+          },
+        },
+        {
+          type: 'g3d:cornerText',
+          corner: 'center',
+          text: {
+            type: 'str',
+            value: '+',
+          },
         },
         {
           type: 'g3d:setSky',
@@ -10790,7 +9802,7 @@ export const cercoNaBaseBasicoExample: ExtensionExample = {
           objVar: 'jogador',
           gravity: {
             type: 'num',
-            value: -0.02,
+            value: 72,
           },
         },
         {
@@ -10946,8 +9958,9 @@ export const cercoNaBaseBasicoExample: ExtensionExample = {
           objVar: 'muroLeste',
         },
         {
-          type: 'g3d:fpsCamera',
+          type: 'g3d:cameraMode',
           worldVar: 'cena',
+          mode: 'primeira-pessoa',
           objVar: 'jogador',
         },
         {
@@ -10971,9 +9984,8 @@ export const cercoNaBaseBasicoExample: ExtensionExample = {
           mode: 'hide',
         },
         {
-          type: 'g3d:createSwarm',
+          type: 'g3d:createGroup',
           varName: 'cacas',
-          worldVar: 'cena',
         },
         {
           type: 'var',
@@ -11037,20 +10049,20 @@ export const cercoNaBaseBasicoExample: ExtensionExample = {
           params: [],
           body: [
             {
-              type: 'g3d:forEachInSwarm',
-              swarmVar: 'cacas',
+              type: 'g3d:forEachInGroup',
+              groupVar: 'cacas',
               itemName: 'item',
               body: [
                 {
-                  type: 'g3d:removeFromSwarm',
-                  swarmVar: 'cacas',
-                  itemVar: 'item',
+                  type: 'g3d:removeFromGroup',
+                  groupVar: 'cacas',
+                  objVar: 'item',
                 },
               ],
             },
             {
-              type: 'g3d:spawnInSwarm',
-              swarmVar: 'cacas',
+              type: 'g3d:spawnCopy',
+              groupVar: 'cacas',
               originalVar: 'moldeAlien',
               x: {
                 type: 'num',
@@ -11066,8 +10078,8 @@ export const cercoNaBaseBasicoExample: ExtensionExample = {
               },
             },
             {
-              type: 'g3d:spawnInSwarm',
-              swarmVar: 'cacas',
+              type: 'g3d:spawnCopy',
+              groupVar: 'cacas',
               originalVar: 'moldeAlien',
               x: {
                 type: 'num',
@@ -11083,8 +10095,8 @@ export const cercoNaBaseBasicoExample: ExtensionExample = {
               },
             },
             {
-              type: 'g3d:spawnInSwarm',
-              swarmVar: 'cacas',
+              type: 'g3d:spawnCopy',
+              groupVar: 'cacas',
               originalVar: 'moldeAlien',
               x: {
                 type: 'num',
@@ -11180,37 +10192,51 @@ export const cercoNaBaseBasicoExample: ExtensionExample = {
               },
             },
             {
-              type: 'setProperty',
-              targetId: 'vida',
-              property: 'textContent',
-              value: {
-                type: 'var',
-                name: 'vida',
+              type: 'g3d:cornerText',
+              corner: 'top-left',
+              text: {
+                type: 'binop',
+                op: '+',
+                left: {
+                  type: 'str',
+                  value: 'Vida: ',
+                },
+                right: {
+                  type: 'var',
+                  name: 'vida',
+                },
               },
             },
             {
-              type: 'setProperty',
-              targetId: 'placar',
-              property: 'textContent',
+              type: 'g3d:addScore',
               value: {
-                type: 'var',
-                name: 'pontos',
+                type: 'binop',
+                op: '-',
+                left: {
+                  type: 'var',
+                  name: 'pontos',
+                },
+                right: {
+                  type: 'g3d:gameValue',
+                  what: 'pontos',
+                },
               },
             },
             {
-              type: 'setProperty',
-              targetId: 'municao',
-              property: 'textContent',
-              value: {
-                type: 'var',
-                name: 'municao',
+              type: 'g3d:cornerText',
+              corner: 'bottom-right',
+              text: {
+                type: 'binop',
+                op: '+',
+                left: {
+                  type: 'str',
+                  value: 'Munição: ',
+                },
+                right: {
+                  type: 'var',
+                  name: 'municao',
+                },
               },
-            },
-            {
-              type: 'classOp',
-              targetId: 'fim',
-              op: 'remove',
-              className: 'visivel',
             },
             {
               type: 'assign',
@@ -11228,20 +10254,7 @@ export const cercoNaBaseBasicoExample: ExtensionExample = {
           args: [],
         },
       ],
-      events: [
-        {
-          type: 'event',
-          target: 'retry',
-          event: 'click',
-          body: [
-            {
-              type: 'callFunction',
-              name: 'recomecar',
-              args: [],
-            },
-          ],
-        },
-      ],
+      events: [],
       loops: [
         {
           type: 'g3d:animate',
@@ -11260,7 +10273,7 @@ export const cercoNaBaseBasicoExample: ExtensionExample = {
                   worldVar: 'cena',
                   speed: {
                     type: 'num',
-                    value: 0.08,
+                    value: 4.8,
                   },
                 },
                 {
@@ -11361,12 +10374,19 @@ export const cercoNaBaseBasicoExample: ExtensionExample = {
                           },
                         },
                         {
-                          type: 'setProperty',
-                          targetId: 'municao',
-                          property: 'textContent',
-                          value: {
-                            type: 'var',
-                            name: 'municao',
+                          type: 'g3d:cornerText',
+                          corner: 'bottom-right',
+                          text: {
+                            type: 'binop',
+                            op: '+',
+                            left: {
+                              type: 'str',
+                              value: 'Munição: ',
+                            },
+                            right: {
+                              type: 'var',
+                              name: 'municao',
+                            },
                           },
                         },
                       ],
@@ -11484,8 +10504,8 @@ export const cercoNaBaseBasicoExample: ExtensionExample = {
                           },
                           then: [
                             {
-                              type: 'g3d:forEachInSwarm',
-                              swarmVar: 'cacas',
+                              type: 'g3d:forEachInGroup',
+                              groupVar: 'cacas',
                               itemName: 'item',
                               body: [
                                 {
@@ -11504,9 +10524,9 @@ export const cercoNaBaseBasicoExample: ExtensionExample = {
                                   },
                                   then: [
                                     {
-                                      type: 'g3d:removeFromSwarm',
-                                      swarmVar: 'cacas',
-                                      itemVar: 'item',
+                                      type: 'g3d:removeFromGroup',
+                                      groupVar: 'cacas',
+                                      objVar: 'item',
                                     },
                                     {
                                       type: 'assign',
@@ -11546,8 +10566,8 @@ export const cercoNaBaseBasicoExample: ExtensionExample = {
                           },
                           then: [
                             {
-                              type: 'g3d:forEachInSwarm',
-                              swarmVar: 'cacas',
+                              type: 'g3d:forEachInGroup',
+                              groupVar: 'cacas',
                               itemName: 'item',
                               body: [
                                 {
@@ -11563,9 +10583,9 @@ export const cercoNaBaseBasicoExample: ExtensionExample = {
                                   },
                                   then: [
                                     {
-                                      type: 'g3d:removeFromSwarm',
-                                      swarmVar: 'cacas',
-                                      itemVar: 'item',
+                                      type: 'g3d:removeFromGroup',
+                                      groupVar: 'cacas',
+                                      objVar: 'item',
                                     },
                                     {
                                       type: 'assign',
@@ -11618,21 +10638,34 @@ export const cercoNaBaseBasicoExample: ExtensionExample = {
                           kind: 'explosion',
                         },
                         {
-                          type: 'setProperty',
-                          targetId: 'placar',
-                          property: 'textContent',
+                          type: 'g3d:addScore',
                           value: {
-                            type: 'var',
-                            name: 'pontos',
+                            type: 'binop',
+                            op: '-',
+                            left: {
+                              type: 'var',
+                              name: 'pontos',
+                            },
+                            right: {
+                              type: 'g3d:gameValue',
+                              what: 'pontos',
+                            },
                           },
                         },
                         {
-                          type: 'setProperty',
-                          targetId: 'municao',
-                          property: 'textContent',
-                          value: {
-                            type: 'var',
-                            name: 'municao',
+                          type: 'g3d:cornerText',
+                          corner: 'bottom-right',
+                          text: {
+                            type: 'binop',
+                            op: '+',
+                            left: {
+                              type: 'str',
+                              value: 'Munição: ',
+                            },
+                            right: {
+                              type: 'var',
+                              name: 'municao',
+                            },
                           },
                         },
                         {
@@ -11659,28 +10692,23 @@ export const cercoNaBaseBasicoExample: ExtensionExample = {
                               },
                             },
                             {
-                              type: 'setProperty',
-                              targetId: 'fim-titulo',
-                              property: 'textContent',
+                              type: 'g3d:addScore',
                               value: {
-                                type: 'str',
-                                value: 'Base salva!',
+                                type: 'binop',
+                                op: '-',
+                                left: {
+                                  type: 'var',
+                                  name: 'pontos',
+                                },
+                                right: {
+                                  type: 'g3d:gameValue',
+                                  what: 'pontos',
+                                },
                               },
                             },
                             {
-                              type: 'setProperty',
-                              targetId: 'final-pontos',
-                              property: 'textContent',
-                              value: {
-                                type: 'var',
-                                name: 'pontos',
-                              },
-                            },
-                            {
-                              type: 'classOp',
-                              targetId: 'fim',
-                              op: 'add',
-                              className: 'visivel',
+                              type: 'g3d:gameOver',
+                              result: 'ganhou',
                             },
                             {
                               type: 'g3d:playEffect',
@@ -11703,8 +10731,8 @@ export const cercoNaBaseBasicoExample: ExtensionExample = {
                   ],
                 },
                 {
-                  type: 'g3d:forEachInSwarm',
-                  swarmVar: 'cacas',
+                  type: 'g3d:forEachInGroup',
+                  groupVar: 'cacas',
                   itemName: 'item',
                   body: [
                     {
@@ -11727,7 +10755,7 @@ export const cercoNaBaseBasicoExample: ExtensionExample = {
                       },
                       factor: {
                         type: 'num',
-                        value: 0.018,
+                        value: 1.09,
                       },
                     },
                     {
@@ -11778,12 +10806,19 @@ export const cercoNaBaseBasicoExample: ExtensionExample = {
                               },
                             },
                             {
-                              type: 'setProperty',
-                              targetId: 'vida',
-                              property: 'textContent',
-                              value: {
-                                type: 'var',
-                                name: 'vida',
+                              type: 'g3d:cornerText',
+                              corner: 'top-left',
+                              text: {
+                                type: 'binop',
+                                op: '+',
+                                left: {
+                                  type: 'str',
+                                  value: 'Vida: ',
+                                },
+                                right: {
+                                  type: 'var',
+                                  name: 'vida',
+                                },
                               },
                             },
                             {
@@ -11814,28 +10849,23 @@ export const cercoNaBaseBasicoExample: ExtensionExample = {
                                   },
                                 },
                                 {
-                                  type: 'setProperty',
-                                  targetId: 'fim-titulo',
-                                  property: 'textContent',
+                                  type: 'g3d:addScore',
                                   value: {
-                                    type: 'str',
-                                    value: 'A base caiu...',
+                                    type: 'binop',
+                                    op: '-',
+                                    left: {
+                                      type: 'var',
+                                      name: 'pontos',
+                                    },
+                                    right: {
+                                      type: 'g3d:gameValue',
+                                      what: 'pontos',
+                                    },
                                   },
                                 },
                                 {
-                                  type: 'setProperty',
-                                  targetId: 'final-pontos',
-                                  property: 'textContent',
-                                  value: {
-                                    type: 'var',
-                                    name: 'pontos',
-                                  },
-                                },
-                                {
-                                  type: 'classOp',
-                                  targetId: 'fim',
-                                  op: 'add',
-                                  className: 'visivel',
+                                  type: 'g3d:gameOver',
+                                  result: 'perdeu',
                                 },
                               ],
                             },
@@ -11869,8 +10899,8 @@ export const cercoNaBaseBasicoExample: ExtensionExample = {
                     type: 'binop',
                     op: '<',
                     left: {
-                      type: 'g3d:countSwarm',
-                      swarmVar: 'cacas',
+                      type: 'g3d:countGroup',
+                      groupVar: 'cacas',
                     },
                     right: {
                       type: 'num',
@@ -11895,8 +10925,8 @@ export const cercoNaBaseBasicoExample: ExtensionExample = {
                       kind: 'const',
                     },
                     {
-                      type: 'g3d:spawnInSwarm',
-                      swarmVar: 'cacas',
+                      type: 'g3d:spawnCopy',
+                      groupVar: 'cacas',
                       originalVar: 'moldeAlien',
                       x: {
                         type: 'binop',
@@ -11952,171 +10982,8 @@ export const minaDeCristaisBasicoExample: ExtensionExample = {
   description:
     'Uma mina isométrica de cristais. Clique nos blocos para cavar: a pedra é entulho, mas os cristais brilhantes valem ponto. Veias novas surgem sozinhas. Colete 10 cristais antes que o tempo acabe!',
   ir: {
-    html: [
-      {
-        type: 'element',
-        tag: 'div',
-        id: 'status',
-        children: [
-          {
-            type: 'text',
-            text: 'Cristais: ',
-          },
-          {
-            type: 'element',
-            tag: 'span',
-            id: 'placar',
-            text: '0',
-          },
-          {
-            type: 'text',
-            text: ' de 10    Tempo: ',
-          },
-          {
-            type: 'element',
-            tag: 'span',
-            id: 'tempo',
-            text: '50',
-          },
-          {
-            type: 'text',
-            text: 's',
-          },
-        ],
-      },
-      {
-        type: 'element',
-        tag: 'div',
-        id: 'dica',
-        text: 'Clique nos blocos para cavar!',
-      },
-      {
-        type: 'element',
-        tag: 'div',
-        id: 'fim',
-        children: [
-          {
-            type: 'element',
-            tag: 'div',
-            id: 'fim-caixa',
-            children: [
-              {
-                type: 'element',
-                tag: 'h1',
-                id: 'fim-titulo',
-                text: 'Fim da mina',
-              },
-              {
-                type: 'element',
-                tag: 'p',
-                children: [
-                  {
-                    type: 'text',
-                    text: 'Cristais coletados: ',
-                  },
-                  {
-                    type: 'element',
-                    tag: 'span',
-                    id: 'final-pontos',
-                  },
-                ],
-              },
-              {
-                type: 'element',
-                tag: 'button',
-                id: 'retry',
-                text: 'Minerar de novo',
-              },
-            ],
-          },
-        ],
-      },
-    ],
-    css: [
-      {
-        type: 'googleFont',
-        family: 'Press Start 2P',
-      },
-      {
-        selector: 'body',
-        declarations: {
-          margin: '0',
-          overflow: 'hidden',
-          'font-family': '"Press Start 2P", cursive',
-        },
-      },
-      {
-        selector: 'canvas',
-        declarations: {
-          display: 'block',
-          width: '100vw',
-          height: '100vh',
-        },
-      },
-      {
-        selector: '#status',
-        declarations: {
-          position: 'absolute',
-          top: '20px',
-          left: '20px',
-          'font-size': '0.9em',
-          color: 'white',
-        },
-      },
-      {
-        selector: '#dica',
-        declarations: {
-          position: 'absolute',
-          bottom: '20px',
-          left: '50%',
-          transform: 'translateX(-50%)',
-          color: '#67e8f9',
-          'font-size': '0.7em',
-        },
-      },
-      {
-        selector: '#fim',
-        declarations: {
-          position: 'absolute',
-          top: '0',
-          left: '0',
-          'min-width': '100%',
-          'min-height': '100%',
-          display: 'flex',
-          'align-items': 'center',
-          'justify-content': 'center',
-          visibility: 'hidden',
-        },
-      },
-      {
-        selector: '#fim.visivel',
-        declarations: {
-          visibility: 'visible',
-        },
-      },
-      {
-        selector: '#fim-caixa',
-        declarations: {
-          display: 'flex',
-          'flex-direction': 'column',
-          'align-items': 'center',
-          'background-color': 'white',
-          color: '#0f0a1e',
-          padding: '20px',
-          'text-align': 'center',
-        },
-      },
-      {
-        selector: '#fim-caixa button',
-        declarations: {
-          'background-color': '#22d3ee',
-          color: 'white',
-          padding: '16px 32px',
-          'font-family': 'inherit',
-          cursor: 'pointer',
-        },
-      },
-    ],
+    html: [],
+    css: [],
     extensions: [
       {
         extensionId: 'game-3d',
@@ -12129,6 +10996,35 @@ export const minaDeCristaisBasicoExample: ExtensionExample = {
           type: 'g3d:createFullscreenScene',
           varName: 'cena',
           bg: '#0f0a1e',
+        },
+        {
+          type: 'g3d:screenText',
+          screen: 'vitoria',
+          title: 'Filão lendário!',
+          text: 'Confira seus pontos no placar.',
+          button: 'Jogar de novo',
+        },
+        {
+          type: 'g3d:screenText',
+          screen: 'fim',
+          title: 'A mina fechou...',
+          text: 'Confira seus pontos no placar.',
+          button: 'Tentar novamente',
+        },
+        {
+          type: 'g3d:addScore',
+          value: {
+            type: 'num',
+            value: 0,
+          },
+        },
+        {
+          type: 'g3d:cornerText',
+          corner: 'bottom-center',
+          text: {
+            type: 'str',
+            value: 'Clique nos blocos para cavar. Colete dez cristais.',
+          },
         },
         {
           type: 'g3d:setSky',
@@ -12219,19 +11115,18 @@ export const minaDeCristaisBasicoExample: ExtensionExample = {
           mode: 'hide',
         },
         {
-          type: 'g3d:createSwarm',
+          type: 'g3d:createGroup',
           varName: 'pedras',
-          worldVar: 'cena',
         },
         {
-          type: 'g3d:createSwarm',
+          type: 'g3d:createGroup',
           varName: 'cristais',
-          worldVar: 'cena',
         },
         {
-          type: 'g3d:isometricCamera',
+          type: 'g3d:cameraMode',
           worldVar: 'cena',
-          followVar: '',
+          mode: 'isometrica',
+          objVar: '',
         },
         {
           type: 'var',
@@ -12284,26 +11179,26 @@ export const minaDeCristaisBasicoExample: ExtensionExample = {
           params: [],
           body: [
             {
-              type: 'g3d:forEachInSwarm',
-              swarmVar: 'pedras',
+              type: 'g3d:forEachInGroup',
+              groupVar: 'pedras',
               itemName: 'item',
               body: [
                 {
-                  type: 'g3d:removeFromSwarm',
-                  swarmVar: 'pedras',
-                  itemVar: 'item',
+                  type: 'g3d:removeFromGroup',
+                  groupVar: 'pedras',
+                  objVar: 'item',
                 },
               ],
             },
             {
-              type: 'g3d:forEachInSwarm',
-              swarmVar: 'cristais',
+              type: 'g3d:forEachInGroup',
+              groupVar: 'cristais',
               itemName: 'item',
               body: [
                 {
-                  type: 'g3d:removeFromSwarm',
-                  swarmVar: 'cristais',
-                  itemVar: 'item',
+                  type: 'g3d:removeFromGroup',
+                  groupVar: 'cristais',
+                  objVar: 'item',
                 },
               ],
             },
@@ -12348,8 +11243,8 @@ export const minaDeCristaisBasicoExample: ExtensionExample = {
                       },
                       then: [
                         {
-                          type: 'g3d:spawnInSwarm',
-                          swarmVar: 'cristais',
+                          type: 'g3d:spawnCopy',
+                          groupVar: 'cristais',
                           originalVar: 'moldeCristal',
                           x: {
                             type: 'var',
@@ -12367,8 +11262,8 @@ export const minaDeCristaisBasicoExample: ExtensionExample = {
                       ],
                       else: [
                         {
-                          type: 'g3d:spawnInSwarm',
-                          swarmVar: 'pedras',
+                          type: 'g3d:spawnCopy',
+                          groupVar: 'pedras',
                           originalVar: 'moldePedra',
                           x: {
                             type: 'var',
@@ -12397,21 +11292,34 @@ export const minaDeCristaisBasicoExample: ExtensionExample = {
           params: [],
           body: [
             {
-              type: 'setProperty',
-              targetId: 'placar',
-              property: 'textContent',
+              type: 'g3d:addScore',
               value: {
-                type: 'var',
-                name: 'pontos',
+                type: 'binop',
+                op: '-',
+                left: {
+                  type: 'var',
+                  name: 'pontos',
+                },
+                right: {
+                  type: 'g3d:gameValue',
+                  what: 'pontos',
+                },
               },
             },
             {
-              type: 'setProperty',
-              targetId: 'tempo',
-              property: 'textContent',
-              value: {
-                type: 'var',
-                name: 'tempo',
+              type: 'g3d:cornerText',
+              corner: 'top-right',
+              text: {
+                type: 'binop',
+                op: '+',
+                left: {
+                  type: 'str',
+                  value: 'Tempo: ',
+                },
+                right: {
+                  type: 'var',
+                  name: 'tempo',
+                },
               },
             },
           ],
@@ -12448,12 +11356,6 @@ export const minaDeCristaisBasicoExample: ExtensionExample = {
               args: [],
             },
             {
-              type: 'classOp',
-              targetId: 'fim',
-              op: 'remove',
-              className: 'visivel',
-            },
-            {
               type: 'assign',
               name: 'rodando',
               value: {
@@ -12471,22 +11373,8 @@ export const minaDeCristaisBasicoExample: ExtensionExample = {
       ],
       events: [
         {
-          type: 'event',
-          target: 'retry',
-          event: 'click',
-          body: [
-            {
-              type: 'callFunction',
-              name: 'recomecar',
-              args: [],
-            },
-          ],
-        },
-        {
-          type: 'event',
-          target: 'document',
-          targetKind: 'document',
-          event: 'click',
+          type: 'g3d:onGame',
+          event: 'clique-cena',
           body: [
             {
               type: 'if',
@@ -12515,14 +11403,14 @@ export const minaDeCristaisBasicoExample: ExtensionExample = {
                       type: 'var',
                       name: 'antesC',
                       value: {
-                        type: 'g3d:countSwarm',
-                        swarmVar: 'cristais',
+                        type: 'g3d:countGroup',
+                        groupVar: 'cristais',
                       },
                     },
                     {
-                      type: 'g3d:removeFromSwarm',
-                      swarmVar: 'cristais',
-                      itemVar: 'alvo',
+                      type: 'g3d:removeFromGroup',
+                      groupVar: 'cristais',
+                      objVar: 'alvo',
                     },
                     {
                       type: 'if',
@@ -12530,8 +11418,8 @@ export const minaDeCristaisBasicoExample: ExtensionExample = {
                         type: 'binop',
                         op: '<',
                         left: {
-                          type: 'g3d:countSwarm',
-                          swarmVar: 'cristais',
+                          type: 'g3d:countGroup',
+                          groupVar: 'cristais',
                         },
                         right: {
                           type: 'var',
@@ -12588,28 +11476,23 @@ export const minaDeCristaisBasicoExample: ExtensionExample = {
                               },
                             },
                             {
-                              type: 'setProperty',
-                              targetId: 'fim-titulo',
-                              property: 'textContent',
+                              type: 'g3d:addScore',
                               value: {
-                                type: 'str',
-                                value: 'Filão lendário!',
+                                type: 'binop',
+                                op: '-',
+                                left: {
+                                  type: 'var',
+                                  name: 'pontos',
+                                },
+                                right: {
+                                  type: 'g3d:gameValue',
+                                  what: 'pontos',
+                                },
                               },
                             },
                             {
-                              type: 'setProperty',
-                              targetId: 'final-pontos',
-                              property: 'textContent',
-                              value: {
-                                type: 'var',
-                                name: 'pontos',
-                              },
-                            },
-                            {
-                              type: 'classOp',
-                              targetId: 'fim',
-                              op: 'add',
-                              className: 'visivel',
+                              type: 'g3d:gameOver',
+                              result: 'ganhou',
                             },
                           ],
                         },
@@ -12619,14 +11502,14 @@ export const minaDeCristaisBasicoExample: ExtensionExample = {
                           type: 'var',
                           name: 'antesP',
                           value: {
-                            type: 'g3d:countSwarm',
-                            swarmVar: 'pedras',
+                            type: 'g3d:countGroup',
+                            groupVar: 'pedras',
                           },
                         },
                         {
-                          type: 'g3d:removeFromSwarm',
-                          swarmVar: 'pedras',
-                          itemVar: 'alvo',
+                          type: 'g3d:removeFromGroup',
+                          groupVar: 'pedras',
+                          objVar: 'alvo',
                         },
                         {
                           type: 'if',
@@ -12634,8 +11517,8 @@ export const minaDeCristaisBasicoExample: ExtensionExample = {
                             type: 'binop',
                             op: '<',
                             left: {
-                              type: 'g3d:countSwarm',
-                              swarmVar: 'pedras',
+                              type: 'g3d:countGroup',
+                              groupVar: 'pedras',
                             },
                             right: {
                               type: 'var',
@@ -12703,12 +11586,12 @@ export const minaDeCristaisBasicoExample: ExtensionExample = {
                       type: 'binop',
                       op: '+',
                       left: {
-                        type: 'g3d:countSwarm',
-                        swarmVar: 'pedras',
+                        type: 'g3d:countGroup',
+                        groupVar: 'pedras',
                       },
                       right: {
-                        type: 'g3d:countSwarm',
-                        swarmVar: 'cristais',
+                        type: 'g3d:countGroup',
+                        groupVar: 'cristais',
                       },
                     },
                     right: {
@@ -12782,8 +11665,8 @@ export const minaDeCristaisBasicoExample: ExtensionExample = {
                       },
                       then: [
                         {
-                          type: 'g3d:spawnInSwarm',
-                          swarmVar: 'cristais',
+                          type: 'g3d:spawnCopy',
+                          groupVar: 'cristais',
                           originalVar: 'moldeCristal',
                           x: {
                             type: 'var',
@@ -12801,8 +11684,8 @@ export const minaDeCristaisBasicoExample: ExtensionExample = {
                       ],
                       else: [
                         {
-                          type: 'g3d:spawnInSwarm',
-                          swarmVar: 'pedras',
+                          type: 'g3d:spawnCopy',
+                          groupVar: 'pedras',
                           originalVar: 'moldePedra',
                           x: {
                             type: 'var',
@@ -12845,28 +11728,23 @@ export const minaDeCristaisBasicoExample: ExtensionExample = {
                       },
                     },
                     {
-                      type: 'setProperty',
-                      targetId: 'fim-titulo',
-                      property: 'textContent',
+                      type: 'g3d:addScore',
                       value: {
-                        type: 'str',
-                        value: 'A mina fechou...',
+                        type: 'binop',
+                        op: '-',
+                        left: {
+                          type: 'var',
+                          name: 'pontos',
+                        },
+                        right: {
+                          type: 'g3d:gameValue',
+                          what: 'pontos',
+                        },
                       },
                     },
                     {
-                      type: 'setProperty',
-                      targetId: 'final-pontos',
-                      property: 'textContent',
-                      value: {
-                        type: 'var',
-                        name: 'pontos',
-                      },
-                    },
-                    {
-                      type: 'classOp',
-                      targetId: 'fim',
-                      op: 'add',
-                      className: 'visivel',
+                      type: 'g3d:gameOver',
+                      result: 'perdeu',
                     },
                   ],
                 },
@@ -12898,101 +11776,38 @@ export const reinoCogumeloExample: ExtensionExample = {
   description:
     'Corra e pule por 32 fases: pise nos inimigos, quebre tijolos, ache blocos escondidos e chegue ao mastro antes do tempo acabar.',
   ir: {
-    html: [
-      // ! O `g3d:createPlatformScene` abaixo resolve um canvas que PRECISA
-      // existir no HTML (`requireCanvas`), ao contrário do "criar cena em tela
-      // cheia", que cria o seu. Sem esta tela o exemplo subia sem canvas nenhum
-      // e o Console dizia "o canvas 'tela' não existe".
-      { type: 'canvas', id: 'tela', width: 480, height: 360 },
-      {
-        type: 'element',
-        tag: 'div',
-        id: 'placar',
-        children: [
-          { type: 'element', tag: 'span', text: 'PONTOS ' },
-          { type: 'element', tag: 'span', id: 'pontos', text: '0' },
-          { type: 'element', tag: 'span', text: ' MOEDAS ' },
-          { type: 'element', tag: 'span', id: 'moedas', text: '0' },
-          { type: 'element', tag: 'span', text: ' MUNDO ' },
-          { type: 'element', tag: 'span', id: 'mundo', text: '1-1' },
-          { type: 'element', tag: 'span', text: ' TEMPO ' },
-          { type: 'element', tag: 'span', id: 'tempo', text: '400' },
-          { type: 'element', tag: 'span', text: ' VIDAS ' },
-          { type: 'element', tag: 'span', id: 'vidas', text: '5' },
-        ],
-      },
-      {
-        type: 'element',
-        tag: 'div',
-        id: 'aviso',
-        text: 'Setas para andar, espaco para pular, shift para correr, F para o fogo',
-      },
-    ],
-    css: [
-      {
-        selector: 'body',
-        declarations: {
-          margin: '0',
-          background: '#5c94fc',
-          'font-family': 'monospace',
-          display: 'flex',
-          'align-items': 'center',
-          'justify-content': 'center',
-          'min-height': '100vh',
-          overflow: 'hidden',
-        },
-      },
-      {
-        // Mesmo enquadramento dos outros exemplos 3D. O placar e o aviso são
-        // `position: fixed`, então centralizar o palco não os desloca.
-        selector: 'canvas',
-        declarations: {
-          display: 'block',
-          width: 'min(480px, 100vw)',
-          height: 'auto',
-          'max-height': '100vh',
-          'object-fit': 'contain',
-        },
-      },
-      {
-        selector: '#placar',
-        declarations: {
-          position: 'fixed',
-          top: '8px',
-          left: '0',
-          width: '100%',
-          'text-align': 'center',
-          color: '#ffffff',
-          'font-size': '18px',
-          'font-weight': 'bold',
-          'text-shadow': '2px 2px 0 #000000',
-          'pointer-events': 'none',
-          'z-index': '2',
-        },
-      },
-      {
-        selector: '#aviso',
-        declarations: {
-          position: 'fixed',
-          bottom: '12px',
-          left: '0',
-          width: '100%',
-          'text-align': 'center',
-          color: '#ffe08a',
-          'font-size': '15px',
-          'text-shadow': '2px 2px 0 #000000',
-          'pointer-events': 'none',
-          'z-index': '2',
-        },
-      },
-    ],
+    html: [],
+    css: [],
     version: 2,
     behavior: {
       start: [
         {
-          type: 'g3d:createPlatformScene',
-          canvasId: 'tela',
+          type: 'g3d:createFullscreenScene',
           varName: 'jogo',
+          bg: '#7dd3fc',
+          kit: 'platform',
+        },
+        {
+          type: 'g3d:screenText',
+          screen: 'vitoria',
+          title: 'Reino salvo!',
+          text: 'Você venceu as 32 fases.',
+          button: 'Jogar de novo',
+        },
+        {
+          type: 'g3d:screenText',
+          screen: 'fim',
+          title: 'Fim de jogo',
+          text: 'Tente uma nova viagem pelo reino.',
+          button: 'Tentar novamente',
+        },
+        {
+          type: 'g3d:cornerText',
+          corner: 'bottom-center',
+          text: {
+            type: 'str',
+            value: 'Setas ou WASD: andar. Espaço: pular. F: lançar fogo com a flor.',
+          },
         },
         {
           type: 'g3d:createHero',
@@ -13192,69 +12007,103 @@ export const reinoCogumeloExample: ExtensionExample = {
           params: [],
           body: [
             {
-              type: 'setProperty',
-              targetId: 'pontos',
-              property: 'textContent',
+              type: 'g3d:addScore',
               value: {
-                type: 'g3d:stageAsk',
-                op: 'fase',
-                worldVar: 'jogo',
-                objVar: '',
-                what: 'pontos',
+                type: 'binop',
+                op: '-',
+                left: {
+                  type: 'g3d:stageAsk',
+                  op: 'fase',
+                  worldVar: 'jogo',
+                  objVar: '',
+                  what: 'pontos',
+                },
+                right: {
+                  type: 'g3d:gameValue',
+                  what: 'pontos',
+                },
               },
             },
             {
-              type: 'setProperty',
-              targetId: 'moedas',
-              property: 'textContent',
-              value: {
-                type: 'g3d:stageAsk',
-                op: 'fase',
-                worldVar: 'jogo',
-                objVar: '',
-                what: 'moedas',
+              type: 'g3d:cornerText',
+              corner: 'bottom-left',
+              text: {
+                type: 'binop',
+                op: '+',
+                left: {
+                  type: 'str',
+                  value: 'Moedas: ',
+                },
+                right: {
+                  type: 'g3d:stageAsk',
+                  op: 'fase',
+                  worldVar: 'jogo',
+                  objVar: '',
+                  what: 'moedas',
+                },
               },
             },
             {
-              type: 'setProperty',
-              targetId: 'vidas',
-              property: 'textContent',
-              value: {
-                type: 'g3d:stageAsk',
-                op: 'fase',
-                worldVar: 'jogo',
-                objVar: '',
-                what: 'vidas',
+              type: 'g3d:cornerText',
+              corner: 'top-right',
+              text: {
+                type: 'binop',
+                op: '+',
+                left: {
+                  type: 'str',
+                  value: 'Vidas: ',
+                },
+                right: {
+                  type: 'g3d:stageAsk',
+                  op: 'fase',
+                  worldVar: 'jogo',
+                  objVar: '',
+                  what: 'vidas',
+                },
               },
             },
             {
-              type: 'setProperty',
-              targetId: 'tempo',
-              property: 'textContent',
-              value: {
-                type: 'g3d:stageAsk',
-                op: 'fase',
-                worldVar: 'jogo',
-                objVar: '',
-                what: 'tempo',
+              type: 'g3d:cornerText',
+              corner: 'bottom-right',
+              text: {
+                type: 'binop',
+                op: '+',
+                left: {
+                  type: 'str',
+                  value: 'Tempo: ',
+                },
+                right: {
+                  type: 'g3d:stageAsk',
+                  op: 'fase',
+                  worldVar: 'jogo',
+                  objVar: '',
+                  what: 'tempo',
+                },
               },
             },
             {
-              type: 'setProperty',
-              targetId: 'mundo',
-              property: 'textContent',
-              value: {
+              type: 'g3d:cornerText',
+              corner: 'top-left',
+              text: {
                 type: 'binop',
                 op: '+',
                 left: {
                   type: 'binop',
                   op: '+',
                   left: {
-                    type: 'g3d:stageAsk',
-                    op: 'fase',
-                    worldVar: 'jogo',
-                    objVar: '',
-                    what: 'mundo',
+                    type: 'binop',
+                    op: '+',
+                    left: {
+                      type: 'str',
+                      value: 'Mundo: ',
+                    },
+                    right: {
+                      type: 'g3d:stageAsk',
+                      op: 'fase',
+                      worldVar: 'jogo',
+                      objVar: '',
+                      what: 'mundo',
+                    },
                   },
                   right: {
                     type: 'str',
@@ -13377,6 +12226,8 @@ export const reinoCogumeloExample: ExtensionExample = {
           name: 'abrirFase',
           args: [],
         },
+      ],
+      events: [
         {
           type: 'g3d:onStage',
           worldVar: 'jogo',
@@ -13435,10 +12286,9 @@ export const reinoCogumeloExample: ExtensionExample = {
           event: 'pegar-cogumelo',
           body: [
             {
-              type: 'setProperty',
-              targetId: 'aviso',
-              property: 'textContent',
-              value: {
+              type: 'g3d:cornerText',
+              corner: 'top-center',
+              text: {
                 type: 'str',
                 value: 'Cresceu!',
               },
@@ -13451,10 +12301,9 @@ export const reinoCogumeloExample: ExtensionExample = {
           event: 'pegar-flor',
           body: [
             {
-              type: 'setProperty',
-              targetId: 'aviso',
-              property: 'textContent',
-              value: {
+              type: 'g3d:cornerText',
+              corner: 'top-center',
+              text: {
                 type: 'str',
                 value: 'Agora joga fogo: aperte F',
               },
@@ -13467,10 +12316,9 @@ export const reinoCogumeloExample: ExtensionExample = {
           event: 'pegar-estrela',
           body: [
             {
-              type: 'setProperty',
-              targetId: 'aviso',
-              property: 'textContent',
-              value: {
+              type: 'g3d:cornerText',
+              corner: 'top-center',
+              text: {
                 type: 'str',
                 value: 'Invencivel!',
               },
@@ -13483,10 +12331,9 @@ export const reinoCogumeloExample: ExtensionExample = {
           event: 'levar-dano',
           body: [
             {
-              type: 'setProperty',
-              targetId: 'aviso',
-              property: 'textContent',
-              value: {
+              type: 'g3d:cornerText',
+              corner: 'top-center',
+              text: {
                 type: 'str',
                 value: 'Cuidado!',
               },
@@ -13504,10 +12351,9 @@ export const reinoCogumeloExample: ExtensionExample = {
           event: 'tocar-a-bandeira',
           body: [
             {
-              type: 'setProperty',
-              targetId: 'aviso',
-              property: 'textContent',
-              value: {
+              type: 'g3d:cornerText',
+              corner: 'top-center',
+              text: {
                 type: 'str',
                 value: 'Fase vencida!',
               },
@@ -13520,10 +12366,9 @@ export const reinoCogumeloExample: ExtensionExample = {
           event: 'derrotar-o-chefe',
           body: [
             {
-              type: 'setProperty',
-              targetId: 'aviso',
-              property: 'textContent',
-              value: {
+              type: 'g3d:cornerText',
+              corner: 'top-center',
+              text: {
                 type: 'str',
                 value: 'O castelo caiu!',
               },
@@ -13531,7 +12376,6 @@ export const reinoCogumeloExample: ExtensionExample = {
           ],
         },
       ],
-      events: [],
       loops: [
         {
           type: 'g3d:animate',
@@ -13543,11 +12387,11 @@ export const reinoCogumeloExample: ExtensionExample = {
               worldVar: 'jogo',
               speed: {
                 type: 'num',
-                value: 0.09,
+                value: 5.4,
               },
               jump: {
                 type: 'num',
-                value: 0.22,
+                value: 13.2,
               },
             },
             {
@@ -13662,13 +12506,8 @@ export const reinoCogumeloExample: ExtensionExample = {
                   ],
                   else: [
                     {
-                      type: 'setProperty',
-                      targetId: 'aviso',
-                      property: 'textContent',
-                      value: {
-                        type: 'str',
-                        value: 'Voce salvou o Reino Cogumelo!',
-                      },
+                      type: 'g3d:gameOver',
+                      result: 'ganhou',
                     },
                   ],
                 },
@@ -13710,13 +12549,8 @@ export const reinoCogumeloExample: ExtensionExample = {
                   ],
                   else: [
                     {
-                      type: 'setProperty',
-                      targetId: 'aviso',
-                      property: 'textContent',
-                      value: {
-                        type: 'str',
-                        value: 'Fim de jogo',
-                      },
+                      type: 'g3d:gameOver',
+                      result: 'perdeu',
                     },
                   ],
                 },

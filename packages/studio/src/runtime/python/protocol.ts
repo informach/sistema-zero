@@ -6,6 +6,10 @@ import type {
   StudioPythonActivity,
   StudioPythonActivityFeedback,
 } from '@sistemazero/core/studio/python-activity'
+import type {
+  StudioPythonMissionObservation,
+  StudioPythonMissionProbe,
+} from '@sistemazero/core/studio/python-mission-observation'
 
 /** Temporary execution filesystem. It never represents a persistence command. */
 export interface PythonExecutionSnapshot {
@@ -51,7 +55,13 @@ export const PYTHON_CONSOLE_LIMITS = Object.freeze({
 })
 
 export type PythonWorkerCommand =
-  | { type: 'prepare'; snapshot: PythonExecutionSnapshot; activity?: StudioPythonActivity }
+  | {
+      type: 'prepare'
+      snapshot: PythonExecutionSnapshot
+      activity?: StudioPythonActivity
+      mission?: true
+    }
+  | { type: 'mission-observe'; requestId: string; probe: StudioPythonMissionProbe }
   | { type: 'activity-check'; requestId: string }
   | { type: 'run'; requestId: string }
   | { type: 'evaluate'; requestId: string; source: string }
@@ -77,6 +87,7 @@ export const PYTHON_GRAPHICS_REPLY_LIMITS = Object.freeze({
 
 /** Worker output is always untrusted at the supervisor boundary, including these events. */
 export type PythonWorkerEvent =
+  | { type: 'mission-result'; requestId: string; observation: StudioPythonMissionObservation }
   | { type: 'booted'; pythonVersion: string; pyodideVersion: string }
   | { type: 'prepared' }
   | { type: 'activity-result'; requestId: string; feedback: StudioPythonActivityFeedback }

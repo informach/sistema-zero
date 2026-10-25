@@ -3,322 +3,302 @@ import type { ExtensionManifest } from '#extensions'
 export const gameKit3DManifest: ExtensionManifest = {
   id: 'game-3d-advanced',
   name: 'Jogo 3D Avançado',
-  version: '0.21.1',
+  version: '0.23.0',
   description:
-    'A base de um jogo 3D profissional, no jeito das engines de verdade. Um SANDBOX 3D completo. Entidades com máquina de estados que ANIMA o boneco .glb sozinha; física por TIPO (bola quica, personagem não, gelo escorrega) com pulo, rampas e plataformas; peças, modelos, luz e névoa; câmera que segue/orbita/1ª pessoa com zoom, tremor e WASD relativo a ela; partículas; enxames com pool; vizinhança por grade; combate com chefões, fala, cronômetro, sorteio semeado, HUD e música.',
+    'O motor dos jogos 3D grandes. Cada objeto tem o próprio estado (parado, mirar, atacar), os moldes viram exércitos que nascem e somem sem pesar, e a física tem bola que quica, rampa e plataforma. Tem modelos animados do Molda, câmera que segue ou em 1ª pessoa, faíscas, placar, vida e som. O Jogo 3D começa de uma cena vazia e o Mundo 3D traz um mundo pronto para passear; aqui você programa as regras de um jogo inteiro.',
   category: 'games',
   official: true,
   enabledByDefault: false,
   // mouse: botões das telas + câmera de órbita arrastável. Audio: sons/efeitos.
-  permissions: ['canvas', 'keyboard', 'mouse', 'audio'],
+  // storage: "Guardar … neste computador" (recorde, fase destravada).
+  permissions: ['canvas', 'keyboard', 'mouse', 'audio', 'storage'],
   docs: `## Jogo 3D Avançado
 
-Esta extensão te dá a **base de um jogo 3D profissional de verdade**, com a mesma
-arquitetura das engines de verdade. Ela usa \`window.SZGameKit3D\`.
-Diferente do "Jogo 3D" (que traz kits prontos de gêneros), aqui o motor cuida
-só do que **nunca muda** num jogo grande, e **as regras são suas**: você monta
-a mecânica nos ganchos, com blocos de matemática, "se" e variáveis.
-As telas e os HUDs prontos usam Baloo 2, uma fonte arredondada incorporada no
-runtime e disponível mesmo quando o jogo está offline.
+Esta extensão é a **base de um jogo 3D grande**, com a mesma arquitetura das
+engines de verdade. Ela usa \`window.SZGameKit3D\`. O motor cuida do que nunca
+muda (mundo, luz, câmera, telas, física, quem nasce e quem sai do jogo) e **as
+regras são suas**: você monta a mecânica nos "Quando…", com matemática, "se" e
+variáveis. As telas e o placar usam Baloo 2, uma fonte arredondada que vem junto
+e funciona mesmo sem internet.
 
-O que o motor já faz por você:
+Ela é o degrau de cima das extensões 3D. O **Jogo 3D** começa de uma cena vazia,
+um objeto por vez; o **Mundo 3D** traz um mundo aberto pronto para passear; o
+**Jogo 3D Avançado** dá os moldes, os estados de cada objeto e a física para um
+jogo inteiro. O placar, as telas de início e fim, a contagem, o sorteio e o
+tremor da câmera têm a MESMA cara nas três.
 
-- **Mundo pronto**. Céu em degradê, chão com sombra, luz de sol, câmera de
-  órbita (arraste o mouse) e telas de UI (menu, pausa, carregando, fim,
-  vitória). Um bloco: "Preparar o jogo 3D".
-- **Máquina de estados POR ENTIDADE**. O coração dos jogos profissionais:
-  cada torre e cada invasor vive num estado (\`parado\`, \`mirar\`,
-  \`atirar\`…) com ganchos de entrar, de ficar (a cada quadro) e de sair.
-  Um cérebro por MOLDE vale para o enxame inteiro.
-- **Moldes de peças 3D**. A aparência é montada de caixas, bolas, cilindros
-  e cones coloridos (como um brinquedo de montar). Nada de imagem: tudo
-  procedural.
-- **Enxames com pool**. Nascer/recolher reaproveita o mesh, o esqueleto e o
-  mixer, mas cada vida recebe uma entidade nova. Um alvo já recolhido nunca
-  passa a controlar quem nasceu depois.
-  As fábricas ("A cada X s, nascer…") soltam inimigos sem parar.
-- **Vizinhança rápida**. "para cada vizinho a até X" usa uma grade espacial
-  por dentro: nunca compara todo mundo com todo mundo (o truque de otimização
-  das engines).
-- **Combate com invencibilidade**. Machucar dá meio segundo de piscada
-  invencível; vida no zero roda o "quando for derrotado" e recolhe sozinho.
-- **Barra de vida flutuante**. "Mostrar a barra de vida do molde" pendura uma
-  barrinha sobre a cabeça de cada entidade viva do molde (verde → vermelha),
-  que acompanha ela pela tela. O chefão e o inimigo de RPG agradecem.
-- **Laço com delta-time (dt)**. O "A cada quadro" recebe quanto durou o
-  último quadro, em segundos. O jogo anda igual em qualquer computador.
+Duas palavras que aparecem em todo lugar:
+
+- **Molde**: a receita de um tipo de coisa (herói, torre, invasor, tiro). Você
+  cria uma vez e faz nascer quantos quiser.
+- **Objeto**: cada um que nasceu de um molde. Cada objeto tem a própria vida, o
+  próprio estado e os próprios dados.
 
 ### Começando (a receita)
 
-1. Em **⚙️ Ao iniciar**, use **Preparar o jogo 3D** uma vez: resolução, tamanho
-   do mundo, céu e chão.
+1. Em **⚙️ Ao iniciar**, use **Criar o mundo 3D** uma vez: tamanho da tela,
+   lado do chão em metros, céu e chão.
 2. Em **🧩 Meus moldes**, use **Criar o molde 3D** uma vez por tipo de coisa
    (herói, torre, invasor, tiro), com as peças dentro.
-3. Em **⚡ Quando acontecer**, use **Quando o jogo entrar no estado
-   jogando** para montar a partida: nascer o herói ("chamando de"), espalhar
-   enfeites e ligar as fábricas.
-4. Em **🔁 Enquanto estiver rodando**, use **A cada quadro (dt)** para a
-   mecânica geral: mover pelas teclas, placar e condição de vitória.
-5. Ainda em **🔁 Enquanto estiver rodando**, monte os cérebros com
-   **Enquanto ela do molde X estiver no estado Y** para cada estado de cada molde.
-6. Pronto: o motor **começa automaticamente**, uma única vez, depois que todos
-   os moldes, eventos e telas foram registrados.
+3. Em **⚡ Quando acontecer**, use **Quando o jogo entrar no estado jogando**
+   para montar a partida: nascer o herói ("chamando de"), espalhar enfeites e
+   começar a nascer inimigos.
+4. Em **🔁 Enquanto estiver rodando**, use **A cada quadro** para a mecânica
+   geral: mover pelas teclas, placar e a condição de vitória.
+5. Ainda em **🔁 Enquanto estiver rodando**, monte o comportamento de cada molde
+   com **Enquanto ela do molde X estiver no estado Y**.
+6. Pronto: o jogo **começa sozinho**, uma vez só, depois que os moldes, os
+   avisos e as telas foram registrados.
 
-### A máquina de estados (o coração do motor)
+Os exemplos vêm em ordem, do mais simples ao mais completo. Comece por **"Tiro
+ao Alvo"**, **"Quadra Maluca"** e **"Guardião do Portal"**; depois pule com
+**"Salto nas Nuvens"** e **"Parkour do Vulcão"**, enfrente **"O Chefão das
+Sombras"** e veja um jogo inteiro e curto na **"Arena dos Cristais"** (patrulha,
+mochila, duas fases e recorde). O **"Herói do Molda"** mostra um modelo animado, e a
+**"Noite das Fogueiras"** usa os arquivos do projeto: céu 360° de foto, música e som.
+Os "Profissional" são os jogos grandes, para estudar por partes.
 
-A torre profissional funciona assim, e você monta igual, em blocos:
+### 🌍 Mundo, telas e estados
 
-- No estado **parado**: guardar em \`alvo\` quem do molde invasor está mais
-  perto; se o alvo existe e está encostando (a menos de 14) → mudar para **mirar**.
-- No estado **mirar**: fazer mirar em \`alvo\` (suave); se "já está mirando?"
-  → mudar para **atirar**.
-- Ao entrar em **atirar**: nascer 1 tiro "no lugar dela (virado igual)",
-  tocar o som laser, mudar para **recarregar**.
-- No molde torre, depois de 1 s no estado **recarregar**, mudar para
-  **parado** (transição automática por tempo).
+**Preparar**. "Criar o mundo 3D" monta céu em degradê, chão com sombra, luz de
+sol, câmera de órbita (arraste o mouse) e as telas prontas. "Espalhar enfeites"
+põe pedras e cristais no chão. "Efeitos de cinema" liga ou desliga as sombras,
+o brilho nas coisas claras e as bordas escuras (desligue num computador fraco).
+O jogo pausa com Esc; troque com "Usar a tecla … para pausar".
 
-Toda entidade NASCE no estado \`parado\`. Mudar para o estado em que já está
-não faz nada (proteção dos jogos de verdade). Se um gancho de entrar/sair pedir
-outra mudança, o motor termina a transição atual e executa a nova em seguida,
-na ordem, sem repetir o gancho antigo nem perder o estado pedido.
+**Telas**. As telas prontas são o menu (a de início), a pausa, a de carregando,
+a de fim e a de vitória. "Na tela de início/fim/vitória" troca o título, o texto
+e o botão (a mesma cara do Jogo 3D e do Mundo 3D). "Criar a tela" faz uma tela
+sua (loja, instruções), "Botão … na tela" diz o que o clique faz, e "Mostrar a
+tela" e "Esconder todas as telas" abrem e fecham.
 
-A morte do "Machucar" recolhe NA HORA (de propósito). Quer uma morte DRAMÁTICA,
-em que o bicho cai uns segundos antes de sumir? Faça a SUA: guarde a vida
-numa gaveta e, quando zerar, mude para um estado "morrendo" (ligue a queda,
-espere 2 s com a transição por tempo e recolha ao entrar no estado seguinte).
+**Estados**. O jogo vive em UM estado por vez: menu, jogando, pausado, fim,
+vitoria ou um que você inventar. As telas prontas aparecem sozinhas. Entrar em
+"jogando" fora da pausa RECOMEÇA a partida (todo mundo sai do jogo, e placar,
+contagem e textos dos cantos voltam do zero). Por isso a partida se monta no
+"Quando o jogo entrar no estado jogando". Voltar da pausa não repete esse
+"Quando…". "Fim de jogo: você perdeu" vai para o estado fim; "você ganhou" vai
+para a vitória. As duas telas têm "Jogar de novo" e "Sair para o menu".
 
-### Enxames, alvos e vizinhos
+**Fases**. "Quando começar uma fase" roda no começo da partida (a fase 1,
+logo depois do "Quando o jogo entrar no estado jogando") e a cada "Ir para a
+próxima fase". Monte a fase ali: nascer o herói, os inimigos, a contagem; com
+"o número da fase" cada fase fica diferente. Ao trocar de fase, todos saem do
+jogo, o nascer sem parar e a contagem param, e as luzes e os jorros acesos
+durante a fase apagam (os acesos no Ao iniciar e no "Quando o jogo entrar no
+estado jogando" ficam a partida toda). Os pontos e a mochila continuam. Voltar
+ao menu ou jogar de novo volta para a fase 1.
 
-- O "Nascer 1… chamando de" dá um APELIDO (herói, cristal, chefão). Os
-  anônimos do enxame são controlados pelo cérebro do MOLDE.
-- "Guardar em alvo quem está mais perto" + "alvo ainda está no jogo?" é o
-  padrão de mira: o alvo pode ter sido derrotado. Pergunte antes de usar.
-- "Para cada vizinho a até X" é a colisão em área: o tiro pergunta quem do
-  molde invasor está a até 1 dele.
-- **"Andar rumo ao ponto x z"** leva a entidade a um LUGAR do mundo (waypoint)
-  na velocidade do molde, e para ao chegar. Com "sortear de … a …" nos dois
-  eixos + uma transição por tempo, vira PASSEIO: o bicho vagueia sozinho.
+**Guardar o progresso**. "Guardar … com o nome recorde neste computador" fica
+guardado mesmo fechando o jogo; "o valor guardado recorde (ou 0)" lê de volta
+(o "ou" vale enquanto nada foi guardado). Guarde números e textos.
 
-### Física & mundo sólido (🏃 Física)
+**Avisos**. "Avisar todo mundo: invasor:caiu" faz rodar todos os "Quando chegar
+o aviso invasor:caiu". Quem avisa não precisa conhecer quem escuta: é o jeito de
+ligar as partes de um jogo grande.
 
-O motor de entidade tem física de verdade. Feita à mão, sem biblioteca:
+### 🧩 Moldes
 
-- **Fazer o molde … ter física de** é o atalho: escolha 🏀 bola, 📦 caixa,
-  🧍 personagem, 🧊 gelo ou 🪶 flutuante e o molde já ganha, de uma vez, o
-  formato que colide, o quique, o atrito e a queda combinando entre si. Depois
-  dá para afinar cada coisa com os blocos abaixo.
-- **Quique é da COISA e do CHÃO. O maior manda.** Uma 🏀 bola quica em
-  qualquer chão, até no chão comum do mundo; um 🧍 personagem não quica em chão
-  nenhum; mas se o personagem cair num trampolim (quique alto), o trampolim
-  ganha e joga ele para cima. ⚠️ Mudou na v0.4.0: antes o quique era só do chão,
-  então uma bola era OBRIGADA a não quicar no chão comum.
-- **Atrito é o contrário: o mais escorregadio manda.** Chão de gelo escorrega
-  todo mundo; um disco de gelo escorrega em qualquer chão.
-- **Fazer … cair com gravidade** liga a queda numa entidade. Ela passa a cair
-  e a POUSAR no chão e nas plataformas sólidas.
-- **Fazer o molde … ser sólido** transforma aquele molde em parede/chão: ele
-  para **tudo** que não for fantasma. ⚠️ Mudou na v0.3.0: antes só quem tinha
-  gravidade era parado, então **tiro atravessava parede**. Agora ser sólido é
-  consequência de EXISTIR; se você QUER que algo atravesse, use "Fazer …
-  atravessar as paredes".
-- **Fazer … pular** dá um impulso para cima, mas só quando está no chão (nada
-  de voar segurando o pulo). **… está no chão?** conta o pulo.
-- **Mover … como plataforma** é o controle pronto: WASD/setas no plano + pulo
-  com espaço (liga a gravidade sozinho). Use dentro do "A cada quadro".
-- **Fazer o molde … colidir como** troca o formato invisível que bate: caixa
-  (padrão), bola ou **cápsula**. A melhor para gente e bicho, porque não
-  engancha em quina e sobe rampa lisinho.
-- **Rampa** é uma FORMA de peça: arraste uma peça "rampa" e o molde vira uma
-  ladeira que dá para subir (o desenho e a colisão casam sozinhos).
-- **Plataforma que anda** não precisa de bloco novo: um molde sólido + "Definir
-  velocidade" já CARREGA quem está em cima dele.
-- **Fazer o molde … ser uma zona** cria uma área que não empurra ninguém, mas
-  avisa: **Quando alguém encostar em … do molde …** roda na hora em que a
-  entidade ENTRA (uma vez por visitante e por entrada, não a cada quadro). Dois
-  visitantes podem entrar juntos, e até uma entidade parada que nasceu dentro
-  da zona é detectada. É a moeda, a porta, a armadilha, a linha de chegada.
-- ⭐ O "quem" da zona pode ser QUALQUER corpo que entrou. O herói, uma bola,
-  um tiro perdido. Pergunte **"… é do molde …?"** antes de contar o ponto: é o
-  filtro de alvo dos jogos de verdade (sem ele, uma bola caindo através de
-  outra contava como "pega").
-- **Quicar** (trampolim, bola pula-pula) e **atrito** (0 = gelo, 1 = gruda)
-  valem tanto para a coisa que cai quanto para o chão. Veja a regra do "maior
-  manda" lá em cima.
-- Um tiro rápido **não atravessa** mais parede fina: o motor varre todo o caminho
-  do quadro e encontra o primeiro impacto mesmo quando o passo pularia a parede.
+**Desenhar o molde**. O desenho é montado de PEÇAS (como um brinquedo de
+montar): caixa, bola, cilindro, cone, plano, rosca, pirâmide e rampa, cada uma
+com acabamento (normal, metal, vidro ou brilho), cor, tamanho, lugar e uma
+textura opcional (uma imagem do projeto). O y 0.5 põe um cubo de altura 1 no
+chão. Sem peça nenhuma, o molde vira um cubinho.
 
-### Formas, modelos, texturas & luz (🧊 Moldes & peças, 💡 Luz & céu)
+⭐ **Modelo importado (do Molda ou de um site)**: escolha a forma "modelo
+importado" e um arquivo **.glb** do projeto. O modelo **cabe inteiro na caixa
+da peça, sem esticar**: um boneco de 6 metros numa caixa 1 × 1 × 1 vira um
+boneco de 1 de altura, e com y 0.5 ele pisa no chão. A colisão fica do tamanho
+do que se vê. Enquanto o arquivo abre, a peça mostra um cubo de reserva.
 
-- As **peças** dos moldes vêm em muitas formas (caixa, bola, cilindro, cone,
-  **plano, rosca, pirâmide, rampa**), com **material** (fosco, metal, vidro,
-  brilho. O "brilho" acende o bloom) e uma **textura** (uma imagem do projeto
-  estampada na peça).
-- **Modelo importado**: escolha a forma "modelo importado" e selecione um
-  arquivo **.glb** do projeto. A peça vira o modelo 3D
-  de verdade (feito no Blender, baixado de um site de modelos…). A caixa que
-  colide continua sendo o tamanho que você deu, então o jogo não muda de
-  comportamento. **Céu de foto**: um arquivo **.hdr** vira o céu 360° E ilumina
-  a cena inteira (é o que faz o metal refletir o ambiente).
-- O motor mede malhas, triângulos, ossos, materiais e chamadas de desenho do
-  **.glb** depois de abrir o arquivo. Modelos acima dos tetos seguros usam a
-  forma de reserva. O orçamento das cópias vivas é global entre todos os
-  moldes; recolher uma entidade devolve o custo dela antes do próximo
-  nascimento.
-- **Pôr uma luz** acende uma luz colorida num ponto (tocha, fogueira). Declare
-  no começo; o motor aceita até 8 luzes extras para proteger o desempenho;
-  **Luz do ambiente** deixa o mundo mais claro ou escuro (modo noturno/caverna);
-  **Névoa** faz o longe sumir numa cor (mistério); **Trocar o céu** muda o
-  degradê em runtime (dia → pôr do sol → noite). Luz, ambiente e névoa são
-  persistentes: use na preparação ou em uma reação que acontece uma vez, nunca
-  dentro de um laço.
+**Corpo do molde**. "Ter física de" é o atalho: 🏀 bola quica e rola, 📦 caixa
+quase não quica e freia, 🧍 personagem não quica nem engancha em quina, 🧊 gelo
+escorrega e 🪶 flutuante não cai. Depois dá para afinar: "colidir como" (caixa,
+bola ou pílula, a melhor para gente e bicho), "ser sólido" (parede, chão ou
+plataforma: ninguém atravessa), "ser uma zona" (não empurra, mas avisa quem
+entrou), "quicar" e "atrito". Quique: o maior dos dois manda (a bola quica em
+qualquer chão; o trampolim joga até o personagem). Atrito: o mais escorregadio
+manda. Uma rampa é uma forma de peça, e uma plataforma que anda é um molde
+sólido com velocidade: ela carrega quem está em cima.
 
-### A câmera (🎥). E por que o WASD sempre acerta
+**Animação do modelo**. Um .glb traz as animações que fizeram nele (andar,
+pular, atacar). "No molde …, no estado …, tocar a animação …" amarra uma
+animação a um estado: quando o objeto muda de estado, a animação troca junto.
+Escolha *repetindo* (andar, parado) ou *uma vez* (pulo, golpe: toca até o fim e
+para). "Quando um … terminar a animação …" roda quando uma animação de *uma vez*
+chega ao fim (ex.: acabou o golpe, voltar a andar). "Velocidade da animação"
+deixa em câmera lenta (0.5) ou mais rápido (2). O nome da animação é o que vem
+dentro do arquivo (Idle, Run, Walk…); nome que não existe dá um aviso e o jogo
+não quebra.
 
-⭐ **Andar com as teclas é SEMPRE relativo à câmera**: o W entra na tela, o S
-volta, o A e o D andam para os lados DA TELA. Não importa se a câmera está de
-cima, seguindo alguém, em 1ª pessoa, ou se você girou a órbita com o mouse. É
-assim que os jogos 3D de verdade funcionam, e é o que faz o controle "acertar"
-sem você pensar nisso. (⚠️ Mudou na v0.4.0: antes o WASD andava por um eixo fixo
-do mundo, então com a câmera atrás do herói ele corria **ao contrário**.)
+### 👾 Nascer e sumir
 
-A **frente** de tudo no 3D é o lado +Z do molde: é para lá que aponta o "Mover
-para a frente", é isso que o "Encarar" e o "Fazer mirar" alinham, e é assim que
-os modelos **.glb** já vêm feitos. Ponha o nariz/cano das peças em z positivo.
+**Nascer**. "Nascer 1 do molde" põe um objeto no mundo, e "… chamando de" dá um
+apelido (herói, cristal, chefão) para usar nos outros blocos. "No lugar de …
+(virado igual)" é como o tiro da torre já nasce mirado. "Disparar um anel" é o
+ataque de chefão. "A cada … s, nascer 1 do molde" solta inimigos sem parar, e
+"Parar de nascer do molde" desliga.
 
-Escolha a câmera. **seguir** alguém, **girar em volta** (órbita, arrastável),
-**ver de cima** ou **1ª pessoa**. E depois mande nela por código:
+**Quem está no jogo**. "Para cada … do molde … que está no jogo" repete uma
+regra para todos; "quantos … estão no jogo" conta; "ainda está no jogo?"
+protege um alvo guardado, que pode já ter sido derrotado; "é do molde …?"
+descobre quem é quem (na zona, quem encostou pode ser um tiro perdido).
 
-- **Girar para … ° e inclinar … °** move a órbita sem esperar o mouse (abertura
-  de fase, virar para o chefão, girar devagar a cada quadro).
-- **Afastar** aproxima/afasta (na órbita E no seguir): perto na conversa, longe
-  na luta. **Lente de … °** é o zoom de verdade (60 é o normal; 30 = luneta de
-  mira; 100 = alarga tudo e dá sensação de velocidade).
-- **Olhar para …** faz a órbita/a de cima girarem em volta de uma ENTIDADE ou de
-  um ponto, em vez do meio do mundo. Num mundo grande, é o que deixa você
-  acompanhar o herói. (Antes era cravado no centro.)
-- **Tremer a câmera** é o impacto do cinema: explosão, tiro grande, chefão
-  pisando. Some sozinho.
-- **Suavidade do seguir**: baixo (1) = preguiçosa, cara de cinema; alto (10) =
-  colada.
+**Sumir**. "Tirar … do jogo" tira um objeto; "Tirar do jogo todos do molde"
+limpa a arena; "Tirar do jogo quem passar de … do centro" some com os tiros que
+erraram, para o jogo ficar leve. O motor reaproveita o desenho de quem saiu,
+mas quem saiu não volta: os blocos que ainda chamarem por ele não fazem nada.
 
-### Mira, clique & 1ª pessoa (🖱️)
+### 🏃 Movimento
 
-- **Guardar … a entidade do molde … sob o mouse** dispara um raio da câmera
-  pelo ponteiro e devolve quem está embaixo do mouse. O coração do
-  point-and-click, da estratégia e da torre-por-clique.
-- **O mouse está sobre …?** e **o ponto do chão sob o mouse** (eixo x/y/z)
-  completam a mira: brilhar ao passar o mouse, mover algo até o clique.
-- **"O mouse foi clicado agora?"** e **"o mouse está apertado?"** são o GATILHO
-  do point-and-click: "se o mouse foi clicado agora → guardar quem está sob o
-  mouse → acertou!". O primeiro vale só no quadro do clique (como a tecla
-  "apertada agora"); o segundo, enquanto o dedo segura.
-- **Câmera em 1ª pessoa em …** vê o mundo pelos olhos da entidade (clique para
-  capturar o mouse e olhar em volta); **Mover … em 1ª pessoa** anda para onde
-  a câmera olha (WASD relativo ao olhar). Trocar de câmera, pausar ou encerrar
-  devolve o cursor automaticamente.
+**Teclado**. "Mover … pelas teclas" anda no chão com WASD e setas; "como
+plataforma" anda e pula com o espaço; "em 1ª pessoa" anda para onde a câmera
+olha. ⭐ Andar com as teclas é SEMPRE relativo à câmera: o W entra na tela, em
+qualquer câmera.
 
-### Faíscas 3D, emissores & efeitos de cinema (💥 🌊)
+**Posição e direção**. "Colocar … em x y z" leva na hora; "Girar … para …
+graus" vira (0 = frente); "Virar … de uma vez para …" encara outro objeto;
+"Virar … para onde anda" acompanha o movimento. A frente de tudo é o lado +Z do
+molde: ponha o nariz e o cano das peças em z positivo, como os .glb já vêm.
 
-- **Faíscas** são o sistema de partículas dos jogos de verdade, feito só de
-  DADOS: "Criar o efeito 3D" define a receita da EXPLOSÃO (quantas, cor do
-  começo → cor do fim, espalhamento, tamanho, vida, gravidade) e "Soltar o
-  efeito" estoura quantas quiser. O motor reaproveita tudo (nunca pesa).
-- **Emissores contínuos** ("Criar o emissor 3D") jorram partículas SEM PARAR:
-  fogo, fumaça, rastro de nave, aura mágica. Você escolhe a cor, o tamanho,
-  quantos por segundo, a força, o cone (0° = raio reto, 180° = todas as
-  direções), a gravidade e se BRILHA (ligado = fogo; desligado = fumaça
-  transparente, ordenada por profundidade). "Ligar o jorro" prende num ponto
-  ou **em cima de uma entidade** (ele acompanha); "Desligar" para de jorrar.
-- **Atratores** ("Puxar as faíscas … para") criam um ímã que suga as
-  partículas para um ponto. Vórtice, buraco negro, vento. Registre uma vez,
-  fora do quadro; cada efeito aceita até 16.
-- **Vários jorros da MESMA receita convivem** (duas tochas na parede, rastro em
-  cada nave. Até 8 por efeito): religar no mesmo lugar não duplica, e
-  "Desligar o jorro" apaga todos os da receita. Para um jorro que ANDA, prenda
-  numa entidade.
-- A curva **"fogo"** faz o truque-assinatura dos jogos profissionais: o grão NASCE luz pura
-  (brilho que soma) e MORRE fumaça (cobre o fundo), numa passada só.
-- **Efeitos de cinema** já vêm ligados: sombras, brilho (bloom. As coisas
-  claras "vazam" luz, como o tiro amarelo) e vinheta (cantos escuros). Num
-  computador fraco, desligue no bloco "Efeitos de cinema" (modo turbo).
+**Velocidade e freio**. "Dar a … a velocidade x y z" em metros por segundo (o
+motor move sozinho); "Frear … aos poucos" faz a velocidade morrer sozinha;
+"Mover … para frente" empurra para onde ele está virado (é o motor do tiro).
 
-### 🕺 O boneco importado ganha VIDA (animação do modelo)
+**Pular e cair**. "Fazer … cair com gravidade" liga a queda; "pular" só sai do
+chão; "está no chão?" conta o pulo; "atravessar as paredes" vira fantasma. Um
+tiro rápido não atravessa parede fina: o motor varre o caminho do quadro. Quem
+cai para no chão do mundo (a altura 0): para perder ao cair, faça a derrota ser
+pisar lá embaixo ("está no chão?" com a altura perto de 0), como no "Salto nas
+Nuvens" e no "Parkour do Vulcão".
 
-Um **.glb** não traz só o desenho: traz as **animações** que fizeram nele (andar,
-pular, atacar). O motor lê todas.
+**Perseguir e mirar**. "Perseguir" aponta para o alvo com a velocidade do
+molde; "andar rumo ao ponto" leva até um lugar e para (com "um número de … a …"
+vira passeio); "patrulhar de … até …" vai e volta entre dois pontos, virado
+para onde anda (use a cada quadro ou no estado de patrulha); "mirar em" gira
+aos poucos, como uma torre, e "já está mirando?" diz a hora de atirar.
 
-- ⭐ **No molde …, no estado …, tocar a animação …** é o jeito profissional, e o
-  mesmo das engines: você amarra UMA vez e pronto. Quando o cérebro da entidade
-  muda de estado, a animação troca junto, com uma passagem suave. O personagem
-  não "pede para animar": ele só muda de estado, e o corpo acompanha.
-- **Tocar a animação … em …** serve para a hora exata (o pulo, o golpe): escolha
-  *repetindo* (andar/parado) ou *uma vez só* (fica no último quadro no fim e
-  pode ser tocada de novo no próximo pulo/golpe).
-- O NOME da animação é o que vem dentro do arquivo. Cada site nomeia do seu
-  jeito (Idle, Run, Walk…). Nome que não existe = aviso, o jogo não quebra.
+### 🎮 Controles
 
-### 🎲 Sorteio & ⏱️ tempo
+"a tecla … está apertada?" e "a tecla … acabou de ser apertada?" usam a MESMA
+lista de teclas do Jogo 3D e do Mundo 3D (W, A, S, D, setas, espaço, Enter, E,
+Q, F, R, P, shift). O segundo vale só no quadro do aperto: um aperto, uma ação.
+"o mouse foi clicado agora?" e "o mouse está apertado?" são o gatilho do
+apontar e clicar; "Guardar em … quem do molde … está sob o mouse" escolhe pelo
+clique; "o mouse está sobre …?" e "o ponto do chão sob o mouse" completam a
+mira (mover até o clique, construir onde você apontar).
 
-- **Sortear de … a …** e **sortear com …% de chance** são o acaso DO KIT.
-  ⚠️ Use estes, não o "número aleatório" comum: **só o sorteio do kit obedece à
-  semente**.
-- **Começar a contagem de … s** + **tempo que falta** + **Quando o tempo acabar**
-  são a corrida contra o relógio, a bomba, o tempo da fase. O relógio só corre
-  no estado jogando: na pausa ele CONGELA, e recomeçar a partida zera.
+### 💥 Encostar
 
-### 💬 Fala & 🎵 música
+"Quando alguém encostar em … do molde …" roda quando alguém ENTRA numa zona,
+uma vez por entrada (não a cada quadro), até para dois ao mesmo tempo. ⭐
+Pergunte "… é do molde …?" antes de contar o ponto. "… está encostando em … (a
+menos de …)?" responde sim ou não; "Para cada … do molde … a até … de …" olha só
+quem está perto (por dentro usa uma grade e nunca compara todo mundo com todo
+mundo); "Guardar em … quem está mais perto" é como a torre escolhe o alvo.
 
-- **… diz … por … s** põe um balão em cima da cabeça da entidade que ACOMPANHA
-  ela pela tela e some sozinho. É o que faz o jogo contar história (o HUD dos
-  cantos não conversa com ninguém).
-- **Tocar a música … sem parar** é a música de fundo, em repetição (uma por vez).
-  Carregue antes com "Carregar o som".
+### 🧠 Comportamento
 
-### Acaso com semente (jogo que se repete igual)
+**Estados de cada um**. O coração do motor: cada objeto vive num estado
+(\`parado\`, \`mirar\`, \`atirar\`…) com "Quando … entrar no estado", "Enquanto …
+estiver no estado …, a cada quadro" e "Quando … sair do estado". Todo objeto
+NASCE no estado \`parado\`. A torre profissional, em blocos:
 
-**Usar a semente … para o acaso** trava o sorteio do jogo: a MESMA semente dá
-exatamente a MESMA partida. Os enfeites nascem no mesmo lugar, os inimigos vêm
-na mesma ordem, as faíscas voam igual. Serve para testar (o bug acontece de novo,
-do mesmo jeito!) e para dar o mesmo desafio para todo mundo. Semente 0 volta ao
-acaso de verdade. ⚠️ Vale para o acaso do MOTOR (enfeites, faíscas, fábricas) e
-para os blocos **sortear** deste kit. O bloco "número aleatório" comum NÃO
-obedece à semente.
+- no **parado**: guardar em \`alvo\` o invasor mais perto; se ele existe e está a
+  menos de 14, mudar para **mirar**;
+- no **mirar**: mirar no alvo; se "já está mirando?", mudar para **atirar**;
+- ao entrar em **atirar**: nascer 1 tiro no lugar dela, tocar o laser e mudar
+  para **recarregar**;
+- "No molde torre, depois de 1 s no estado recarregar, mudar para parado".
 
-### Chefões: reagir a dano, atacar em anel e curar
+Mudar para o estado em que ele já está não faz nada. Se um "Quando entrar/sair"
+pedir outra mudança, o motor termina a atual e faz a nova em seguida, na ordem.
 
-O gênero CHEFÃO em três blocos, todos irmãos do que você já tem:
+**Dados de cada um**. "guardar … em … do objeto …" e "… do objeto …" (a mesma
+cara do Jogo 3D) dão a cada objeto os próprios dados: um cronômetro, quantos
+tiros deu, o alvo que escolheu. Tudo zera quando ele nasce.
 
-- **Quando um do molde … levar dano** (❤️ Combate) roda um "fazer" toda vez que
-  uma entidade daquele molde é machucada. Leia a vida dela ali dentro (com "a
-  vida de …" e "a vida máxima de …") para trocar de FASE, piscar ou revidar. É o
-  coração de um chefão em várias fases.
-- **Disparar um anel de … tiros** (👾 Nascer & fábricas) faz nascer vários tiros
-  ao redor de uma entidade, espalhados em círculo e voando para fora. É o ataque
-  clássico de chefão. Ligue o "cortar longe" para limpar os tiros que saem do mundo.
-- **Curar … somando … de vida** (❤️ Combate) devolve vida a uma entidade, sem
-  passar do máximo com que ela nasceu. É o oposto do "Machucar": poções, pontos de
-  descanso ou um chefão que se recupera entre as fases.
+### 🏆 Placar, vida e telas
 
-No exemplo "O Chefão das Sombras", você clica no chefão para machucá-lo e, a cada
-fase (por "quando levar dano" lendo a vida), ele fica mais bravo, dispara um anel
-maior e se cura um pouco. Desvie do anel com WASD.
+**Vida**. A vida é de CADA objeto, e nasce com a vida do molde. "Machucar …
+tirando … de vida" (a mesma cara do Jogo 3D) deixa o objeto piscando e meio
+segundo sem se machucar de novo; vida no zero roda o "Quando … for derrotado" e
+ele sai do jogo sozinho. "Quando … levar dano" é o chefão em várias fases (leia
+"a vida de …" e "a vida máxima de …" ali dentro). "Curar" devolve vida sem passar
+da vida com que ele nasceu, e "Mostrar a barra de vida do molde" pendura uma
+barrinha sobre a cabeça de cada um. Quer uma morte com queda antes de sumir?
+Guarde a vida nos dados do objeto e use um estado "morrendo".
+
+**Placar e falas**. "Escrever no canto … da tela" (a mesma lista de cantos das
+outras extensões 3D; texto vazio apaga) e "Somar … aos pontos" (os pontos
+aparecem sozinhos em cima, à direita). "… diz … por … s" põe um balão de fala
+que acompanha o objeto e some sozinho.
+
+**Mochila 🎒**. "Pôr 1 chave na mochila", "Tirar 1 chave da mochila",
+"quantas chave tem na mochila", "a mochila tem chave?" e "Esvaziar a mochila".
+Ela aparece sozinha embaixo, à esquerda, continua de uma fase para a outra e
+esvazia quando a partida recomeça (no Mundo 3D ela fica salva; aqui não).
+
+### 🎥 Câmera
+
+Escolha a câmera: **seguir** alguém, **girar em volta** do mundo (arrastando o
+mouse), **ver de cima** ou **1ª pessoa** (clique para olhar em volta com o
+mouse; trocar de câmera ou pausar devolve o cursor). Depois ajuste: "girar para
+… ° e inclinar … °" mexe na órbita sem o mouse; "afastar" aproxima ou afasta;
+"olhar para …" gira em volta de um objeto ou de um ponto; "lente de … °" é o
+zoom (60 é o normal, 30 é luneta); "suavidade do seguir" vai de preguiçosa (1)
+a colada (10); "Tremer a câmera" é o impacto da explosão, que some sozinho.
+
+### ✨ Luz, céu e faíscas
+
+**Luz e céu**. "Pôr uma luz" acende uma tocha ou fogueira (até 8 a mais); "Luz
+do ambiente" escurece para noite ou caverna; "Névoa" esconde o longe numa cor;
+"Trocar o céu" muda o degradê a qualquer hora; "Usar o céu 360°" troca o céu
+por uma foto (.hdr do projeto) que também ilumina o mundo e faz o metal
+refletir. Luz, ambiente e névoa: use no começo ou numa reação que acontece uma
+vez, nunca a cada quadro.
+
+**Faíscas**. "Criar o efeito 3D" é a receita de uma explosão (quantas, cores,
+quanto espalham, tamanho, duração, gravidade) e "Soltar o efeito" estoura num
+ponto ou em cima de um objeto.
+
+**Jorro de faíscas**. "Criar o jorro de faíscas" é a receita de um fogo, fumaça,
+rastro ou magia que não para: cores, tamanho, quantas por segundo, força,
+abertura (0° reto, 180° para todo lado), gravidade e brilho (ligado = fogo;
+desligado = fumaça). "Ligar o jorro" prende num ponto ou em cima de um objeto
+(ele vai junto); "Desligar o jorro" apaga. Vários jorros da mesma receita
+convivem (até 8). "Puxar as faíscas" cria um ímã, como um redemoinho (até 16).
+O jeito "fogo" nasce luz e morre fumaça.
+
+### ⏱️ Tempo, sorteio e som
+
+**Tempo e sorteio**. "A cada quadro" roda só no estado jogando e guarda quanto
+durou o quadro, em segundos: multiplique a velocidade por ele e o jogo anda
+igual em qualquer computador. "Começar a contagem de … segundos" mostra o tempo
+em cima, no meio; "o tempo que falta", "Parar a contagem" e "Quando a contagem
+acabar" completam. A contagem só anda no estado jogando: na pausa ela congela.
+"um número de … a …" sorteia um número inteiro (como um dado) e "tem chance de
+…%?" acontece de vez em quando. ⭐ "Deixar o sorteio repetível com o código …"
+faz o sorteio sair igual toda vez: mesmos enfeites, mesma ordem de inimigos. Bom
+para testar e para dar o mesmo desafio a todos (o código 0 volta ao sorteio de
+verdade). O sorteio deste kit obedece ao código; o "número aleatório" comum não.
+
+**Som**. "Carregar o som … do arquivo …" prepara um som importado (em "Sons", no
+menu ⋯) com um nome; "Tocar o som" toca; "Tocar a música … sem parar" é a
+música de fundo (uma por vez) e "Parar a música" silencia. "Tocar o som pronto"
+tem moeda, batida, explosão e outros, sem arquivo, e "Tocar uma nota de … Hz"
+faz um bipe (de 20 a 20000 Hz, até 10 segundos).
 
 ### Dicas
 
-- Unidades são METROS do mundo 3D: um boneco tem ~1 a 2 de altura, velocidades
-  boas ficam entre 3 e 18 por segundo, o mundo padrão tem 80 de lado.
-- A resolução interna mantém a proporção escolhida, mas é reduzida
-  automaticamente se ultrapassar o limite da GPU ou o orçamento de 1920×1080
-  pixels. O canvas continua ocupando o espaço disponível na tela.
-- O jogo pausa com Esc (troque com "Usar a tecla … para pausar"). Segurar a
-  tecla não alterna a pausa repetidamente.
-- Entrar em "jogando" fora da pausa RECOMEÇA a arena (recolhe todo mundo). Por
-  isso a partida se monta no "quando entrar no estado jogando". Retomar da
-  pausa preserva a arena e não repete esse gancho.
-- Pedir o estado que já está ativo não repete o gancho "quando entrar".
-- O placar fica nos cantos da tela com "Escrever no canto … da tela".
+- Unidades são METROS: um boneco tem de 1 a 2 de altura, boas velocidades
+  ficam entre 3 e 18 por segundo e o mundo padrão tem 80 de lado.
+- A tela mantém a proporção escolhida e diminui sozinha se passar do limite
+  seguro (1920 × 1080).
+- O motor mede cada .glb (malhas, ossos, materiais) e usa a forma de reserva se
+  passar dos limites seguros. Tirar um objeto do jogo devolve o custo dele.
 
 > ⚠️ Use APENAS UMA extensão de jogo por projeto (Jogo 2D, Jogo 2D Avançado,
-> Jogo 3D ou esta). Cada uma cria a própria tela e elas brigam pelo canvas.
+> Jogo 3D, Mundo 3D ou esta). Cada uma cria a própria tela e elas brigam pelo canvas.
 `,
 }

@@ -43,6 +43,7 @@ def end_drawing():
     rt.check_records()
     rt.present()
     del _ops[:]
+    rt.checkpoint()
 
 
 def begin_mode_2d(camera, /):

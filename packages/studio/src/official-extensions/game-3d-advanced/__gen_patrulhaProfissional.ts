@@ -29,7 +29,7 @@ import { collectTypes } from './exampleSourceUtils'
 export const PATRULHA_PROFISSIONAL_SOURCE = `
 SZGameKit3D.setup({ width: 1280, height: 720, world: 130, sky: "#020617", ground: "#0b1120" });
 SZGameKit3D.setEffects({ shadows: true, bloom: true, strength: 1.3, vignette: true });
-SZGameKit3D.setScreenText("menu", "Patrulha Espacial Profissional", "Ande com A e D (ou as setas) e atire com espaço. O meteoro atingido brilha antes de explodir: destrua 20 para cumprir a patrulha!", "Patrulhar");
+SZGameKit3D.setScreenText("inicio", "Patrulha Espacial Profissional", "Ande com A e D (ou as setas) e atire com espaço. O meteoro atingido brilha antes de explodir: destrua 20 para cumprir a patrulha!", "Patrulhar");
 SZGameKit3D.setScreenText("vitoria", "Patrulha cumprida!", "Você destruiu 20 meteoros e o setor está seguro. Que pontaria!", "Patrulhar de novo");
 SZGameKit3D.setScreenText("fim", "A nave caiu...", "Os meteoros venceram desta vez. Atire de longe e não pare de se mexer!", "Tentar de novo");
 SZGameKit3D.defineMold("nave", { health: 3, speed: 0 }, function () {
@@ -78,10 +78,10 @@ SZGameKit3D.onEnterState("jogando", function () {
   SZGameKit3D.say(patrulheira, "Patrulha iniciada!", 2);
 });
 SZGameKit3D.onEntityStateUpdate("nave", "parado", function (ela, dt) {
-  if (SZGameKit3D.keyDown("a") || SZGameKit3D.keyDown("esquerda")) {
+  if (SZGameKit3D.keyDown("KeyA") || SZGameKit3D.keyDown("ArrowLeft")) {
     naveX = naveX - 16 * dt;
   }
-  if (SZGameKit3D.keyDown("d") || SZGameKit3D.keyDown("direita")) {
+  if (SZGameKit3D.keyDown("KeyD") || SZGameKit3D.keyDown("ArrowRight")) {
     naveX = naveX + 16 * dt;
   }
   if (naveX < -9) {
@@ -93,12 +93,12 @@ SZGameKit3D.onEntityStateUpdate("nave", "parado", function (ela, dt) {
   balanco = balanco + dt;
   SZGameKit3D.place(ela, naveX, 1 + Math.sin(balanco * 5) * 0.2, 0);
   proximoTiro = proximoTiro - dt;
-  if (SZGameKit3D.keyPressed("espaco") && proximoTiro <= 0) {
+  if (SZGameKit3D.keyPressed("Space") && proximoTiro <= 0) {
     SZGameKit3D.spawnFrom("laser", ela);
     SZGameKit3D.playEffect("laser");
     proximoTiro = 0.4;
   }
-  SZGameKit3D.setHud("top-left", "Vida: " + SZGameKit3D.healthOf(ela));
+  SZGameKit3D.hudText("top-left", "Vida: " + SZGameKit3D.healthOf(ela));
 });
 SZGameKit3D.onEntityStateUpdate("laser", "parado", function (ela, dt) {
   SZGameKit3D.moveForward(ela, 42);
@@ -140,7 +140,7 @@ SZGameKit3D.onHurt("nave", function (ela) {
 SZGameKit3D.onEntityDeath("nave", function (ela) {
   SZGameKit3D.burstOn("explosao", ela);
   SZGameKit3D.playEffect("gameover");
-  SZGameKit3D.endGame();
+  SZGameKit3D.endGame("perdeu");
 });
 SZGameKit3D.onUpdate(function (dt) {
   tempoDeJogo = tempoDeJogo + dt;
@@ -157,8 +157,8 @@ SZGameKit3D.onUpdate(function (dt) {
   }
   SZGameKit3D.cullFar("meteoro", 90);
   SZGameKit3D.cullFar("laser", 80);
-  SZGameKit3D.setHud("top-right", "Meteoros: " + pontos + " de 20");
-  SZGameKit3D.setHud("bottom-right", "Tempo: " + Math.floor(tempoDeJogo) + "s");
+  SZGameKit3D.hudText("top-right", "Meteoros: " + pontos + " de 20");
+  SZGameKit3D.hudText("bottom-right", "Tempo: " + Math.floor(tempoDeJogo) + "s");
   if (pontos >= 20) {
     SZGameKit3D.playEffect("win");
     SZGameKit3D.setState("vitoria");

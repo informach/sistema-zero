@@ -74,10 +74,16 @@ export interface SceneViewportPort {
   setIsolation(ids: readonly string[] | null): void
   setView(view: CameraView): void
   setGridVisible?(visible: boolean): void
+  /** Raio-X: peças semitransparentes só na oficina; o material guardado não muda. */
+  setXray?(on: boolean): void
   setMovementStep?(step: number | null): void
   setTransformSpace?(space: SceneTransformSpace): void
   /** Durante Puxar faces, a alça Y acompanha a direção real da face escolhida. */
   setFaceExtrusion?(active: boolean): void
+  /** Arrastar a face ou linha escolhida ajusta a prévia do Puxar. */
+  setDirectPull?(active: boolean): void
+  /** Ferramenta Puxar: as alças de mover puxam e se chamam pelo rótulo dado; `null` desliga. */
+  setPullTool?(label: string | null): void
   frame(selectionOnly?: boolean): void
   zoom?(factor: number): void
   ensureVisible?(ids: readonly string[]): void
@@ -127,8 +133,11 @@ export interface SceneViewportCallbacks {
 export type SceneTransformTool = 'select' | 'move' | 'rotate' | 'scale'
 export type ScenePaintActions = CapturedPaintActions<ScenePaintInputSample>
 export type SceneSkinPaintActions = CapturedPaintActions<SceneSkinPaintSample>
+/** `pull`: the drag started on the chosen face or line, so it extrudes instead of moving. */
+export type SceneTransformIntent = 'pull'
+
 export interface SceneTransformActions {
-  begin(): boolean
+  begin(intent?: SceneTransformIntent): boolean
   preview(delta: AffineMatrix): boolean
   end(commit: boolean): void
 }

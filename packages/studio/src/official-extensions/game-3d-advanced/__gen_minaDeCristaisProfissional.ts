@@ -22,7 +22,7 @@ import { collectTypes } from './exampleSourceUtils'
 export const MINA_DE_CRISTAIS_PROFISSIONAL_SOURCE = `
 SZGameKit3D.setup({ width: 1280, height: 720, world: 44, sky: "#0f0a1e", ground: "#241a33" });
 SZGameKit3D.setEffects({ shadows: true, bloom: true, strength: 1.5, vignette: true });
-SZGameKit3D.setScreenText("menu", "Mina de Cristais Profissional", "Ande com WASD e clique nos blocos para CAVAR. A pedra é só entulho, mas os cristais brilhantes valem ponto! Veias novas de minério vão surgindo. Colete 10 cristais antes que o tempo acabe.", "Minerar");
+SZGameKit3D.setScreenText("inicio", "Mina de Cristais Profissional", "Ande com WASD e clique nos blocos para CAVAR. A pedra é só entulho, mas os cristais brilhantes valem ponto! Veias novas de minério vão surgindo. Colete 10 cristais antes que o tempo acabe.", "Minerar");
 SZGameKit3D.setScreenText("vitoria", "Filão lendário!", "Você garimpou os 10 cristais da mina.", "Minerar de novo");
 SZGameKit3D.setScreenText("fim", "A mina fechou...", "O tempo acabou. Cave a pedra rápido para achar os cristais escondidos entre ela!", "Tentar de novo");
 SZGameKit3D.defineMold("mineiro", { health: 1, speed: 0 }, function () {
@@ -105,8 +105,8 @@ SZGameKit3D.onUpdate(function (dt) {
       SZGameKit3D.spawn("pedra", SZGameKit3D.randomBetween(-9, 9), 0.8, SZGameKit3D.randomBetween(-9, 6));
     }
   }
-  SZGameKit3D.setHud("top-left", "Cristais: " + cristais + " de 10");
-  SZGameKit3D.setHud("top-right", "Tempo: " + Math.floor(tempo) + "s");
+  SZGameKit3D.hudText("top-left", "Cristais: " + cristais + " de 10");
+  SZGameKit3D.hudText("top-right", "Tempo: " + Math.floor(tempo) + "s");
   if (cristais >= 10) {
     SZGameKit3D.playEffect("win");
     SZGameKit3D.setState("vitoria");

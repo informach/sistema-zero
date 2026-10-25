@@ -24,69 +24,47 @@ const heroi = SZGame3D.createBox(cena, { size: 1, color: "#34d399" });
 SZGame3D.setPosition(heroi, 0, 2, 0);
 const molde = SZGame3D.createBox(cena, { size: 1.1, color: "#f43f5e" });
 SZGame3D.setVisible(molde, "hide");
-const obstaculos = SZGame3D.createSwarm(cena);
+const obstaculos = SZGame3D.createGroup();
 let pista = 0;
 let sorteio = 0;
-let velocidade = 0.14;
-let tempo = 0;
-let rodando = true;
-document.addEventListener("keydown", (event) => {
-  if (event.key === "ArrowLeft") {
-    if (pista > -1) {
-      pista = pista - 1;
-    }
-  }
-  if (event.key === "ArrowRight") {
-    if (pista < 1) {
-      pista = pista + 1;
-    }
+let velocidade = 8.4;
+SZGame3D.setScreenText("fim", "Bateu!", "Cada segundo correndo vale um ponto.", "Jogar de novo");
+SZGame3D.hudText("bottom-center", "Setas: trocar de pista. Espaço ou seta para cima: pular.");
+SZGame3D.onKey("ArrowLeft", () => {
+  if (pista > -1) {
+    pista = pista - 1;
   }
 });
-document.getElementById("retry")?.addEventListener("click", (event) => {
-  SZGame3D.forEachInSwarm(obstaculos, (item) => {
-    SZGame3D.removeFromSwarm(obstaculos, item);
-  });
-  pista = 0;
-  velocidade = 0.14;
-  tempo = 0;
-  document.getElementById("score").textContent = 0;
-  document.getElementById("results")?.classList.remove("visivel");
-  rodando = true;
+SZGame3D.onKey("ArrowRight", () => {
+  if (pista < 1) {
+    pista = pista + 1;
+  }
 });
 SZGame3D.animate(cena, () => {
-  if (rodando) {
-    if (SZGame3D.keyDown("Space") || SZGame3D.keyDown("ArrowUp")) {
-      SZGame3D.jump(heroi, 0.09);
-    }
-    SZGame3D.applyGravity(heroi, chao);
-    SZGame3D.moveTowards(heroi, pista * 2.2, SZGame3D.getPos(heroi, "y"), 0, 0.25);
-    SZGame3D.forEachInSwarm(obstaculos, (item) => {
-      SZGame3D.moveBy(item, 0, 0, velocidade);
-      if (SZGame3D.collides(heroi, item)) {
-        rodando = false;
-        SZGame3D.playEffect("hit");
-        document.getElementById("final-score").textContent = tempo;
-        document.getElementById("results")?.classList.add("visivel");
-      }
-    });
-    SZGame3D.pruneSwarm(obstaculos, "z", -80, 6);
-    document.getElementById("score").textContent = tempo;
+  if (SZGame3D.keyDown("Space") || SZGame3D.keyDown("ArrowUp")) {
+    SZGame3D.jump(heroi, 5.4);
   }
+  SZGame3D.applyGravity(heroi, chao);
+  SZGame3D.moveTowards(heroi, pista * 2.2, SZGame3D.getPos(heroi, "y"), 0, 17.26);
+  SZGame3D.forEachInGroup(obstaculos, (item) => {
+    SZGame3D.moveBy(item, 0, 0, velocidade * SZGame3D.dt(cena));
+    if (SZGame3D.collides(heroi, item)) {
+      SZGame3D.playEffect("hit");
+      SZGame3D.endGame("perdeu");
+    }
+  });
+  SZGame3D.pruneArea(obstaculos, "z", -80, 6);
 });
 SZGame3D.everySecondsLoop(1, () => {
-  if (rodando) {
-    tempo = tempo + 1;
-    velocidade = velocidade + 0.005;
-    if (velocidade > 0.56) {
-      velocidade = 0.56;
-    }
+  SZGame3D.addScore(1);
+  velocidade = velocidade + 0.3;
+  if (velocidade > 33.6) {
+    velocidade = 33.6;
   }
 });
 SZGame3D.everySecondsLoop(0.9, () => {
-  if (rodando) {
-    sorteio = Math.floor(Math.random() * 3) - 1;
-    SZGame3D.spawnInSwarm(obstaculos, molde, sorteio * 2.2, 0.05, -60);
-  }
+  sorteio = SZGame3D.randomBetween(-1, 1);
+  SZGame3D.spawnCopy(obstaculos, molde, sorteio * 2.2, 0.05, -60);
 });
 `.trim()
 

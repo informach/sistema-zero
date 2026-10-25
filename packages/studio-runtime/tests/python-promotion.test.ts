@@ -9,6 +9,13 @@ import {
   createStudioRuntimeRelease,
   StudioRuntimeReleaseSchema,
 } from '@sistemazero/core/studio/runtime-catalog'
+import {
+  prepareStudioAuthoringOptions,
+  studioAuthoringChoices,
+} from '../../studio/src/core/authoringOptions'
+import { PGZERO_MODULE_FILES } from '../../studio/src/runtime/python/pgzero/contract'
+import { RAYLIB_MODULE_FILES } from '../../studio/src/runtime/python/raylib/contract'
+import { TURTLE_MODULE_FILES } from '../../studio/src/runtime/python/turtle/contract'
 import { runPythonPromotionCommand } from '../scripts/promote-python-runtime'
 import {
   type PythonPromotionInput,
@@ -49,10 +56,17 @@ async function fixture(
     'analysis-frame.mjs',
     'turtle-renderer.mjs',
     'turtle-protocol.mjs',
-    'turtle/turtle.py',
-    'turtle/_sz_turtle_backend.py',
-    'turtle/_sz_turtle_colors.py',
-    'turtle/_sz_turtle_limits.py',
+    ...TURTLE_MODULE_FILES.map((name) => `turtle/${name}`),
+    'pgzero-renderer.mjs',
+    'pgzero-protocol.mjs',
+    ...PGZERO_MODULE_FILES.map((name) => `pgzero/${name}`),
+    'raylib-renderer.mjs',
+    'raylib-protocol.mjs',
+    ...RAYLIB_MODULE_FILES.map((name) => `raylib/${name}`),
+    'LICENSE-pgzero.txt',
+    'LICENSE-freefont.txt',
+    'LICENSE-raylib.txt',
+    'LICENSE-raylib-python-cffi.txt',
   ])
     storage.contents.set(path, new TextEncoder().encode(`fixture:${path}`))
   const distribution = {
@@ -130,6 +144,44 @@ test('offline plan is deterministic, binds distinct hashes and registers real Py
   expect(await verifyPythonPromotionPlan(first, first.planSha256)).toEqual(first)
 })
 
+test('a product promotion exposes the two Raylib extensions and their own blocks', async () => {
+  const f = await fixture()
+  const plan = await preparePythonPromotion(f.input)
+  expect(plan.deployment.release.manifest.extensions.map(({ id }) => id)).toEqual([
+    'python-turtle',
+    'python-pgzero',
+    'python-raylib-2d',
+    'python-raylib-3d',
+  ])
+  const blocks = plan.configuration.members.releases[0]!.blockIds
+  expect(blocks.some((id) => id.startsWith('sz_py_rl2d_'))).toBe(true)
+  expect(blocks.some((id) => id.startsWith('sz_py_rl3d_'))).toBe(true)
+})
+
+test.each([
+  'pgzero/pgzero/__init__.py',
+  'raylib/_szraylib/_camera3d.py',
+  'raylib-renderer.mjs',
+  'pgzero/freesansbold.ttf',
+  'LICENSE-raylib.txt',
+])('a product promotion refuses a manifest without %s even when the remaining hashes match', async (missing) => {
+  const f = await fixture()
+  const distribution = {
+    ...f.distribution,
+    files: f.distribution.files.filter(({ path }) => path !== missing),
+  }
+  await writeFile(join(f.directory, 'distribution.json'), JSON.stringify(distribution))
+  await expect(
+    preparePythonPromotion({
+      ...f.input,
+      distribution: {
+        directory: f.directory,
+        sha256: await sha256Hex(canonicalJson(distribution)),
+      },
+    }),
+  ).rejects.toThrow(`Artefato de produto obrigatório ausente: ${missing}.`)
+})
+
 test('promotion selects APIs from an explicit current-format implementation feature array', async () => {
   for (const features of [[], ['turtle-compound-shapes']] as const) {
     const f = await fixture('staging', features)
@@ -150,12 +202,64 @@ test('repeating the current deployment preserves its exact approved policy and p
   const previous = await preparePythonPromotion(f.input)
   const policy = previous.configuration.members.releases[0]!
   // One block per Turtle concept since the 2026-10 palette review (aliases and spellings share it).
-  expect(policy.blockIds.filter((id) => id.startsWith('sz_py_turtle_'))).toHaveLength(84)
+  expect(
+    policy.blockIds.filter(
+      (id) => id.startsWith('sz_py_turtle_') && id !== 'sz_py_turtle_pinta_shape',
+    ),
+  ).toHaveLength(84)
+  expect(policy.blockIds.filter((id) => id === 'sz_py_turtle_pinta_shape')).toHaveLength(1)
   const baseline = structuredClone(previous.configuration)
   const next = await preparePythonPromotion({ ...f.input, baseline })
   expect(next.configuration.members.releases).toEqual(baseline.members.releases)
   expect(next.configuration.worker.deployments).toEqual(baseline.worker.deployments)
   expect(next.deployment).toEqual(previous.deployment)
+  expect(await verifyPythonPromotionPlan(next, next.planSha256)).toEqual(next)
+})
+
+test.each([
+  'staging',
+  'production',
+] as const)('a new active release retires only superseded releases of its Python profile in %s', async (environment) => {
+  const f = await fixture(environment)
+  const first = await preparePythonPromotion(f.input)
+  const other = await preparePythonPromotion({
+    ...f.input,
+    baseline: first.configuration,
+    release: { ...f.input.release, profileId: 'another-python', releaseId: 'another-1' },
+  })
+  const untouched = canonicalJson(other.configuration)
+  const next = await preparePythonPromotion({
+    ...f.input,
+    baseline: other.configuration,
+    release: { ...f.input.release, releaseId: 'next-1' },
+  })
+  expect(next.configuration.members.releases.map(({ status }) => status)).toEqual([
+    'retired',
+    'active',
+    'active',
+  ])
+  expect(next.configuration.worker.deployments.map(({ status }) => status)).toEqual([
+    'retired',
+    'active',
+    'active',
+  ])
+  expect(next.configuration.members.catalog.releases).toContainEqual(first.deployment.release)
+  expect(next.configuration.hosts).toHaveLength(3)
+  expect(canonicalJson(other.configuration)).toBe(untouched)
+  const options = await prepareStudioAuthoringOptions({
+    legacyJavaScript: true,
+    catalog: next.configuration.members,
+  })
+  for (const kind of ['classic', 'pro'] as const) {
+    const choices = studioAuthoringChoices(options, kind)
+    expect(choices[0]?.key).toBe('javascript')
+    const targetProfile = choices.filter(
+      (choice) => choice.policy?.runtime.profileId === f.input.release.profileId,
+    )
+    expect(targetProfile.map(({ key }) => key)).toEqual([next.deployment.release.manifestSha256])
+  }
+  const old = await preparePythonPromotion({ ...f.input, baseline: next.configuration })
+  expect(old.configuration).toEqual(next.configuration)
   expect(await verifyPythonPromotionPlan(next, next.planSha256)).toEqual(next)
 })
 

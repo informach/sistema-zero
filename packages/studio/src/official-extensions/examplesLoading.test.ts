@@ -92,16 +92,55 @@ const goldenCatalogs = {
     sha256: 'f9f220d10a203c12d0d6df0b4634007f40e3621891c6315f66a37831d0d27841',
   },
   'game-3d': {
-    count: 19,
-    sha256: '4e1e5973eecc0738dfeed06d28bf7fb783441ec2ba1e62bfb09105627df3c3b8',
+    count: 21,
+    // 24/10 (review 3D, lotes 3-4): enxame virou grupo, a câmera virou um modo e a API
+    // passou a falar em graus e "por segundo"; os 19 exemplos foram regerados.
+    // 24/10 (lote 5): o "Desvie" troca o stop pelo "Fim de jogo" e o "Quando na fase …
+    // acontecer" do Reino Cogumelo passou a morar em ⚡ Quando acontecer.
+    // 24/10 (lote 7): ordem de progressão (demos → jogos simples → maiores → kits), dois
+    // novos ("Pega-Estrelas" e "Meu herói do Molda", com o GLB do Molda embutido), o
+    // "Desvie" com corações/pontos/fim, a "Corrida Infinita 3D" sem HTML de placar e os
+    // giros de 1375-5500 graus/s corrigidos para 45-180.
+    // 24/10 (correção do review): o Pega-Estrelas conta os 30 s com a contagem que APARECE
+    // ("Começar a contagem" + "Quando a contagem acabar") em vez do "Depois de 30 s".
+    // 25/10: os 19 exemplos de página foram convertidos para cenas/HUD/controles
+    // nativos. Os 21 preservam ordem e passam no contrato sem HTML/CSS e nos
+    // round-trips. Os outros quatro catálogos mantêm seus hashes anteriores.
+    sha256: '6c88448e40c568ee1c291db4d7d5926078ded206dba240536f29be0d638bdd57',
   },
   'game-3d-advanced': {
-    count: 17,
-    sha256: '5b38203f8294c4c18dc70c06fe95a8938e34b64a303906eb67809bcd7c90afca',
+    count: 20,
+    // 24/10 (review 3D, lote 11): placar, telas, fim, contagem, sorteio e tremor passaram a ser
+    // as regras de jogo compartilhadas (g3k:cornerText, g3k:screenText "inicio",
+    // g3k:gameOver "perdeu", g3k:random inteiro, g3k:timer, g3k:shakeCamera), e as teclas são
+    // as do dropdown comum (KeyW, Space, ArrowUp, Enter; o Mundo de Blocos troca o bloco com
+    // E/Q/F e recicla com Enter, o Tiro ao Alvo abre a dica com E).
+    // 24/10 (lote 12): ordem nova (Tiro ao Alvo primeiro, do mais simples ao mais conceitual;
+    // a Defesa da Torre abre os Profissional) e dois exemplos novos depois do Chefão: "Arena dos
+    // Cristais" (patrulha, mochila, fases e recorde) e "Herói do Molda" (o .glb com ossos do
+    // Molda como asset model3d, animação por estado).
+    // 24/10 (cobertura total dos blocos): entra a "Noite das Fogueiras" depois do Herói do Molda
+    // (céu .hdr e dois .wav montados por código), e seis exemplos ganham os blocos que faltavam
+    // (Salto: cair/velocidade/voltar ao menu; Guardião: parar de nascer/tirar todos; Chefão: o
+    // tamanho do mundo; Herói do Molda: tocar/parar a animação e o floco de gelo; Rebanho: clique
+    // mostra o estado; Lenda: o golpe empurra e o monstro freia).
+    // 24/10 (review dos exemplos do Avançado): Lenda com o golpe no APERTO e recarga (segurar
+    // o espaço parado não vence); Arena com o guarda da fase 2 longe do herói, o "Fase N!" e a
+    // tela "fim" que serve aos dois jeitos de perder; Salto (nuvens 3 m acima do chão) e
+    // Parkour (chão de lava) perdem ao pisar no chão lá embaixo; Noite e Tiro pausam na dica
+    // (o Tiro ganha o "Prepare a mira!" que se fecha sozinho); Guardião sem "semente".
+    sha256: '2b3f2a8858b2511160af0e4e72aa6082ad36dee8002452941b2d51fb60c820f0',
   },
   'world-3d': {
-    count: 13,
-    sha256: 'd015e060063e041bf2c96c15c7307b14c30815082444fd48d3f2da73c42b036e',
+    count: 14,
+    // 24/10 (review 3D, lote 8): nomes com acento, ordem nova da vitrine, os três mundos de
+    // referência com nomes próprios (sem marca de outro estúdio), cantos da lista única
+    // (top-left…) e textos do mundo acentuados.
+    // 24/10 (lote 10): o "Escrever no canto" e o "Tremer a câmera" passaram a ser os das
+    // regras de jogo compartilhadas (w3d:cornerText / w3d:shakeCamera) em sete exemplos, e
+    // entrou o "Caça às Estrelas" (coletáveis, pontos, vida, cronômetro e telas) depois do
+    // Parque dos Brinquedos.
+    sha256: '5dc441d78502fc7ce2234d49e0c0ddc602dbd3de2f0d2b72887baed4e5043540',
   },
 } as const
 

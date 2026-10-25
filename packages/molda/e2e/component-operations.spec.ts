@@ -324,6 +324,140 @@ test('pulling a face with the real Move handles cancels and applies one extrusio
   expect((await snapshot(page)).geometries).toEqual(changed.geometries)
 })
 
+test('Puxar permite arrastar a face diretamente e desfazer a extrusão', async ({ page }) => {
+  const source = model('Puxar direto')
+  await load(page, source)
+  const project = await view(page, source, 'free')
+  const local = sceneLocalBounds(source, source.nodes[0]!.id)!
+  const top = project([local.center[0], local.max[1], local.center[2]])
+  await page.mouse.click(top.x, top.y)
+  const panel = page.locator('.mld-component-root')
+  await expect(panel.getByText('1 face escolhida', { exact: true })).toBeVisible()
+  await panel.getByRole('button', { name: COPY.scene.facePreview.extrude, exact: true }).click()
+  const face = project([local.center[0] + 0.3, local.max[1], local.center[2] + 0.3])
+  await page.mouse.move(face.x, face.y)
+  await page.mouse.down()
+  await page.mouse.move(face.x, face.y - 100, { steps: 6 })
+  await page.mouse.up()
+  await expect(
+    panel.getByRole('spinbutton', { name: COPY.scene.extrudeAmount, exact: true }),
+  ).not.toHaveValue('0')
+  await panel.getByRole('button', { name: COPY.scene.previewConfirm, exact: true }).click()
+  expect(Object.keys(shape(await snapshot(page)).faces)).toHaveLength(10)
+  await page.getByRole('button', { name: COPY.editor.undo, exact: true }).click()
+  expect((await snapshot(page)).geometries).toEqual(sceneToJson(source).geometries)
+})
+
+test('arrastar a face escolhida abre o Puxar com a distância no painel, sem começar por ele', async ({
+  page,
+}) => {
+  const source = model('Puxar sem painel')
+  await load(page, source)
+  const project = await view(page, source, 'free')
+  const local = sceneLocalBounds(source, source.nodes[0]!.id)!
+  const top = project([local.center[0], local.max[1], local.center[2]])
+  await page.mouse.click(top.x, top.y)
+  const panel = page.locator('.mld-component-root')
+  await expect(panel.getByText('1 face escolhida', { exact: true })).toBeVisible()
+  const face = project([local.center[0] + 0.3, local.max[1], local.center[2] + 0.3])
+  await page.mouse.move(face.x, face.y)
+  await page.mouse.down()
+  await page.mouse.move(face.x, face.y - 100, { steps: 6 })
+  await page.mouse.up()
+  // Soltar deixa o Puxar aberto, com a distância que o arrasto deu, para ajustar e aplicar.
+  await expect(
+    panel.getByRole('spinbutton', { name: COPY.scene.extrudeAmount, exact: true }),
+  ).not.toHaveValue('0')
+  await expect(page.getByRole('button', { name: COPY.editor.undo, exact: true })).toBeDisabled()
+  await panel.getByRole('button', { name: COPY.scene.previewConfirm, exact: true }).click()
+  expect(Object.keys(shape(await snapshot(page)).faces)).toHaveLength(10)
+  await page.getByRole('button', { name: COPY.editor.undo, exact: true }).click()
+  expect((await snapshot(page)).geometries).toEqual(sceneToJson(source).geometries)
+})
+
+test('a ferramenta Puxar (E) faz as alças puxarem; Mover (G) volta a mover', async ({ page }) => {
+  const source = model('Puxar pela ferramenta')
+  const original = sceneGeometryMesh(source.geometries[0]!)
+  await load(page, source)
+  const project = await view(page, source, 'free')
+  const local = sceneLocalBounds(source, source.nodes[0]!.id)!
+  const top = project([local.center[0], local.max[1], local.center[2]])
+  await page.mouse.click(top.x, top.y)
+  const panel = page.locator('.mld-component-root')
+  await expect(panel.getByText('1 face escolhida', { exact: true })).toBeVisible()
+  const pullTool = page.locator('[aria-keyshortcuts="E"]')
+  await page.keyboard.press('e')
+  await expect(pullTool).toHaveAttribute('aria-pressed', 'true')
+  async function drag(name: string) {
+    const tip = page.getByRole('button', { name, exact: true }).locator('.mld-axis-tip')
+    const r = (await tip.boundingBox())!
+    await page.mouse.move(r.x + r.width / 2, r.y + r.height / 2)
+    await page.mouse.down()
+    await page.mouse.move(r.x + r.width / 2, r.y + r.height / 2 - 100, { steps: 6 })
+    await page.mouse.up()
+  }
+  await drag('Puxar no eixo Y')
+  const amount = panel.getByRole('spinbutton', { name: COPY.scene.extrudeAmount, exact: true })
+  await expect(amount).not.toHaveValue('0')
+  // O número do painel ajusta a mesma prévia antes de aplicar.
+  await amount.fill('2')
+  await panel.getByRole('button', { name: COPY.scene.previewConfirm, exact: true }).click()
+  const pulled = shape(await snapshot(page))
+  expect(Object.keys(pulled.faces)).toHaveLength(10)
+  expect(Math.max(...Object.values(pulled.vertices).map((p) => p[1]))).toBe(local.max[1] + 2)
+  await page.getByRole('button', { name: COPY.editor.undo, exact: true }).click()
+  expect((await snapshot(page)).geometries).toEqual(sceneToJson(source).geometries)
+  // Puxar continua ligado para a próxima face, até trocar de ferramenta.
+  await expect(pullTool).toHaveAttribute('aria-pressed', 'true')
+  await page.keyboard.press('g')
+  await expect(page.locator('[aria-keyshortcuts="G"]')).toHaveAttribute('aria-pressed', 'true')
+  await drag('Mover no eixo Y')
+  await expect(page.getByRole('button', { name: COPY.editor.undo, exact: true })).toBeEnabled()
+  const moved = shape(await snapshot(page))
+  expect(Object.keys(moved.faces)).toHaveLength(Object.keys(original.faces).length)
+  expect(moved.vertices).not.toEqual(original.vertices)
+})
+
+test('com Linhas, a ferramenta Puxar faz a alça puxar a linha e mostra os números X/Y/Z', async ({
+  page,
+}) => {
+  const source = model('Puxar linha pela ferramenta', 'front')
+  await load(page, source)
+  const project = await view(page, source)
+  const local = sceneLocalBounds(source, source.nodes[0]!.id)!
+  const modes = page.getByRole('group', { name: 'Escolher', exact: true })
+  await modes.getByRole('button', { name: 'Linhas', exact: true }).click()
+  const edge = project([local.center[0], local.max[1], local.max[2]])
+  await page.mouse.click(edge.x, edge.y)
+  const panel = page.locator('.mld-component-root')
+  await expect(panel.getByText('1 linha escolhida', { exact: true })).toBeVisible()
+  const before = Object.keys(shape(await snapshot(page)).faces).length
+  await page.keyboard.press('e')
+  await expect(page.locator('[aria-keyshortcuts="E"]')).toHaveAttribute('aria-pressed', 'true')
+  async function drag(name: string, dx: number, dy: number) {
+    const tip = page.getByRole('button', { name, exact: true }).locator('.mld-axis-tip')
+    const r = (await tip.boundingBox())!
+    await page.mouse.move(r.x + r.width / 2, r.y + r.height / 2)
+    await page.mouse.down()
+    await page.mouse.move(r.x + r.width / 2 + dx, r.y + r.height / 2 + dy, { steps: 8 })
+    await page.mouse.up()
+  }
+  // Puxar ao longo da própria linha não forma face: o painel explica e não deixa aplicar.
+  await drag('Puxar no eixo X', 220, 0)
+  await expect(panel).toContainText('Puxe em outra direção')
+  await expect(panel.getByRole('button', { name: 'Aplicar', exact: true })).toBeDisabled()
+  await panel.getByRole('button', { name: 'Cancelar', exact: true }).click()
+  await drag('Puxar no eixo Y', 0, -220)
+  await expect(panel.getByRole('spinbutton', { name: 'Puxar Y', exact: true })).not.toHaveValue('0')
+  await expect(panel.getByRole('spinbutton', { name: 'Puxar X', exact: true })).toHaveValue('0')
+  await panel.getByRole('button', { name: 'Aplicar', exact: true }).click()
+  expect(Object.keys(shape(await snapshot(page)).faces)).toHaveLength(before + 1)
+  await expect(modes.getByRole('button', { name: 'Linhas', exact: true })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  )
+})
+
 test('Move handles extrude a face on a large mesh through the surface worker', async ({ page }) => {
   let source = model('Puxar malha grande')
   source = editSceneMesh(source, source.nodes[0]!.id, (mesh) => makeSceneGridGeometry(33, mesh.id))
@@ -466,8 +600,21 @@ for (const mode of ['edge', 'vertex'] as const) {
       'step',
       '1',
     )
-    await page.getByRole('button', { name: 'Mover no eixo Y', exact: true }).press('ArrowUp')
-    await expect(panel.getByRole('spinbutton', { name: 'Puxar Y', exact: true })).toHaveValue('1')
+    if (mode === 'edge') {
+      await expect
+        .poll(() => page.evaluate(({ x, y }) => document.elementFromPoint(x, y)?.tagName, chosen))
+        .toBe('CANVAS')
+      await page.mouse.move(chosen.x, chosen.y)
+      await page.mouse.down()
+      await page.mouse.move(chosen.x, chosen.y - 160, { steps: 6 })
+      await page.mouse.up()
+      await expect(panel.getByRole('spinbutton', { name: 'Puxar Y', exact: true })).not.toHaveValue(
+        '0',
+      )
+    } else {
+      await page.getByRole('button', { name: 'Mover no eixo Y', exact: true }).press('ArrowUp')
+      await expect(panel.getByRole('spinbutton', { name: 'Puxar Y', exact: true })).toHaveValue('1')
+    }
     await panel.getByRole('button', { name: 'Cancelar', exact: true }).click()
     await expect(panel.getByText(count, { exact: true })).toBeVisible()
     expect((await snapshot(page)).geometries).toEqual(sceneToJson(source).geometries)
@@ -524,6 +671,31 @@ for (const mode of ['edge', 'vertex'] as const) {
   })
 }
 
+test('two clicks on lines of one piece create a face without Shift or selecting layers', async ({
+  page,
+}) => {
+  const source = model('Face entre linhas', 'front')
+  await load(page, source)
+  const project = await view(page, source)
+  const local = sceneLocalBounds(source, source.nodes[0]!.id)!
+  await page
+    .getByRole('group', { name: 'Escolher', exact: true })
+    .getByRole('button', { name: 'Linhas', exact: true })
+    .click()
+  const panel = page.locator('.mld-component-root')
+  await panel.getByRole('button', { name: 'Criar face', exact: true }).click()
+  const apply = panel.getByRole('button', { name: 'Aplicar', exact: true })
+  await expect(apply).toBeDisabled()
+  for (const y of [local.min[1], local.max[1]]) {
+    const point = project([local.center[0], y, local.max[2]])
+    await page.mouse.click(point.x, point.y)
+  }
+  await expect(panel.getByText('2 linhas escolhidas', { exact: true })).toBeVisible()
+  await expect(apply).toBeEnabled()
+  await apply.click()
+  expect(Object.keys(shape(await snapshot(page)).faces)).toHaveLength(6)
+})
+
 for (const mode of ['edge', 'vertex'] as const) {
   test(`creating a face from ${mode === 'edge' ? 'two opposite edges' : 'four points'} cancels, applies and then extrudes in separate undo steps`, async ({
     page,
@@ -558,14 +730,35 @@ for (const mode of ['edge', 'vertex'] as const) {
     const panel = page.locator('.mld-component-root')
     const count = mode === 'edge' ? '2 linhas escolhidas' : '4 pontos escolhidos'
     await expect(panel.getByText(count, { exact: true })).toBeVisible()
-    await panel.getByRole('button', { name: COPY.scene.createFaceEdge.label, exact: true }).click()
+    await panel
+      .getByRole('button', {
+        name: mode === 'edge' ? 'Criar face' : COPY.scene.createFaceEdge.label,
+        exact: true,
+      })
+      .click()
     await expect(panel.getByRole('button', { name: 'Aplicar', exact: true })).toBeEnabled()
     await page.screenshot({ path: `.cache/criar-face-previa-${mode}.png` })
     await panel.getByRole('button', { name: 'Cancelar', exact: true }).click()
     await expect(panel.getByText(count, { exact: true })).toBeVisible()
     expect((await snapshot(page)).geometries).toEqual(sceneToJson(source).geometries)
-    await panel.getByRole('button', { name: COPY.scene.createFaceEdge.label, exact: true }).click()
+    await panel
+      .getByRole('button', {
+        name: mode === 'edge' ? 'Criar face' : COPY.scene.createFaceEdge.label,
+        exact: true,
+      })
+      .click()
     await panel.getByRole('button', { name: 'Aplicar', exact: true }).click()
+    if (mode === 'edge') {
+      // Quem cria a face em Linhas continua em Linhas, com as linhas da face nova.
+      await expect(modes.getByRole('button', { name: 'Linhas', exact: true })).toHaveAttribute(
+        'aria-pressed',
+        'true',
+      )
+      await expect(panel.getByText('4 linhas escolhidas', { exact: true })).toBeVisible()
+      await modes.getByRole('button', { name: 'Faces', exact: true }).click()
+      const front = project([local.center[0], local.center[1], local.max[2]])
+      await page.mouse.click(front.x, front.y)
+    }
     await expect(modes.getByRole('button', { name: 'Faces', exact: true })).toHaveAttribute(
       'aria-pressed',
       'true',
@@ -801,7 +994,7 @@ test('three offset ring cuts preview their path and apply new selectable faces',
     local = sceneLocalBounds(source, source.nodes[0]!.id)!,
     panel = page.locator('.mld-component-root')
   await panel.getByRole('button', { name: 'Cortar', exact: true }).click()
-  await panel.getByRole('button', { name: 'Em volta', exact: true }).click()
+  await panel.getByRole('button', { name: 'Corte em faixa', exact: true }).click()
   const p = project([local.max[0], local.center[1], local.max[2]])
   await page.mouse.click(p.x, p.y)
   await panel

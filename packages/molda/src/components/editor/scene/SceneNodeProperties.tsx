@@ -19,6 +19,7 @@ import { SceneArrangeTools } from './SceneArrangeTools'
 import { SceneBooleanPanel, type SceneBooleanPreview } from './SceneBooleanPanel'
 import { SceneCurveDetails } from './SceneCurveDetails'
 import { SceneFlipControls } from './SceneFlipControls'
+import { SceneHelpButton } from './SceneHelpButton'
 import { SceneMirrors } from './SceneMirrors'
 import { ScenePivotChoices } from './SceneModelGuideControls'
 import { ScenePathProperties } from './ScenePathProperties'
@@ -81,10 +82,10 @@ export function SceneNodeProperties({
         ? 'var(--mld-shape-cylinder)'
         : 'var(--mld-shape-special)'
   return (
-    <div className="space-y-4 border-t border-mld-border pt-3">
+    <div className="space-y-4">
       <div className="mld-piece-heading">
-        <div className="flex min-w-0 flex-1 items-center gap-2">
-          <p className="mld-display min-w-0 truncate text-[1.0625rem] text-mld-text">
+        <div className="flex w-full min-w-0 items-center gap-2">
+          <p className="mld-display min-w-0 flex-1 truncate text-[1.0625rem] text-mld-text">
             {primary?.name ?? copy.selection(selected.length)}
           </p>
           {kindLabel && (
@@ -94,7 +95,7 @@ export function SceneNodeProperties({
           )}
         </div>
         <RequiresTool family="model.pieces">
-          <div className="flex flex-wrap gap-1.5">
+          <div className="flex flex-wrap justify-end gap-1.5">
             <button
               type="button"
               className="mld-chip-btn"
@@ -132,6 +133,28 @@ export function SceneNodeProperties({
             Object.keys(geometry.faces).length,
           )}
         </p>
+      )}
+      {precise && primary && (geometry?.kind === 'cylinder' || geometry?.kind === 'sphere') && (
+        <section
+          aria-label={copy.curveDetail}
+          className="rounded-xl border border-mld-border bg-mld-surface p-3"
+        >
+          <div className="flex items-center justify-between gap-2">
+            <h3 className="mld-kicker">{copy.curveDetail}</h3>
+            <SceneHelpButton title="Como ajustar os lados da curva">
+              <p>{copy.curveDetailHint}</p>
+              <p>Mais lados deixam a curva mais redonda. Cada espelho desenha outra cópia.</p>
+            </SceneHelpButton>
+          </div>
+          <SceneCurveDetails
+            key={`${primary.id}-${geometry.id}-${JSON.stringify(primitiveDetail(geometry))}`}
+            className="mt-3 space-y-3"
+            geometry={geometry}
+            onApply={(detail) =>
+              run((source) => setScenePrimitiveDetail(source, primary.id, detail))
+            }
+          />
+        </section>
       )}
       {primary && mode !== 'pivot' && (can('model.coordinates') || can('model.pivot')) && (
         <ScenePieceCoordinates workshop={workshop} />
@@ -190,7 +213,8 @@ export function SceneNodeProperties({
           >
             <h3 className="mld-kicker">Combinar volumes</h3>
             <p className="mt-2 text-sm text-mld-muted">
-              Selecione mais uma peça com Shift para usar União, Interseção ou Diferença.
+              Selecione mais uma peça com Shift para usar União, Interseção ou Diferença, ou juntar
+              as duas com Unir peças na lista.
             </p>
           </section>
         )}
@@ -220,18 +244,6 @@ export function SceneNodeProperties({
             step={SCENE_COORDINATE_STEP}
             twoDecimals
             onApply={(values) => run((source) => resizeScenePrimitive(source, primary.id, values))}
-          />
-        </details>
-      )}
-      {precise && primary && (geometry?.kind === 'cylinder' || geometry?.kind === 'sphere') && (
-        <details className={DISCLOSURE}>
-          <summary>{copy.curveDetail}</summary>
-          <SceneCurveDetails
-            key={`${primary.id}-${geometry.id}-${JSON.stringify(primitiveDetail(geometry))}`}
-            geometry={geometry}
-            onApply={(detail) =>
-              run((source) => setScenePrimitiveDetail(source, primary.id, detail))
-            }
           />
         </details>
       )}

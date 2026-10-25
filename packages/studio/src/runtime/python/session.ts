@@ -6,6 +6,12 @@ import {
   verifyStudioPythonActivityFeedback,
 } from '@sistemazero/core/studio/python-activity'
 import {
+  readStudioPythonMissionProbe,
+  type StudioPythonMissionFrameObservation,
+  type StudioPythonMissionProbe,
+  verifyStudioPythonMissionObservation,
+} from '@sistemazero/core/studio/python-mission-observation'
+import {
   type StudioExecutionIdentity,
   type StudioHostAudioPreference,
   type StudioRuntimeEvent,
@@ -42,6 +48,7 @@ export function preparePythonFrameSession(options: {
   snapshot: PythonExecutionSnapshot
   signal: AbortSignal
   activity?: StudioPythonActivity
+  mission?: true
   hostAudio?: StudioHostAudioPreference
   /**
    * A file the program saved; the host keeps it for the next run (savedFiles.ts). A deleted
@@ -108,6 +115,15 @@ export function preparePythonFrameSession(options: {
   let frameWindowStart = performance.now()
   let frameMessages = 0
   let activityRequested = false
+  let pendingMission:
+    | {
+        requestId: string
+        probe: StudioPythonMissionProbe
+        resolve(value: StudioPythonMissionFrameObservation): void
+        reject(reason: unknown): void
+        timer: ReturnType<typeof setTimeout>
+      }
+    | undefined
   let activityControlsApplied = false
   let activityControlsInFlight = false
   let pendingActivity:
@@ -140,7 +156,15 @@ export function preparePythonFrameSession(options: {
         }
       }
     }
+    function rejectMission(reason: unknown) {
+      if (pendingMission) {
+        clearTimeout(pendingMission.timer)
+        pendingMission.reject(reason)
+        pendingMission = undefined
+      }
+    }
     function rejectCommands(reason: unknown) {
+      rejectMission(reason)
       for (const waiting of pending.values()) {
         clearTimeout(waiting.timer)
         waiting.reject(reason)
@@ -266,6 +290,25 @@ export function preparePythonFrameSession(options: {
         return
       }
       if (!active) return
+      if (message.type === 'mission-result') {
+        const waiting = pendingMission
+        if (!options.mission || !waiting || message.requestId !== waiting.requestId) {
+          fail('Observação de missão fora de ordem.')
+          return
+        }
+        try {
+          verifyStudioPythonMissionObservation(message.result.observation, waiting.probe)
+          if (waiting.probe.type !== 'sprite' && message.result.pose !== undefined)
+            throw new Error('Posição gráfica não solicitada.')
+        } catch {
+          fail('A observação não corresponde à missão atual.')
+          return
+        }
+        pendingMission = undefined
+        clearTimeout(waiting.timer)
+        waiting.resolve(message.result)
+        return
+      }
       if (message.type === 'prepared') {
         if (prepared || state !== 'ready') {
           fail('Preparação Python fora de ordem.')
@@ -382,6 +425,7 @@ export function preparePythonFrameSession(options: {
             identity,
             snapshot: options.snapshot,
             ...(activity ? { activity } : {}),
+            ...(options.mission ? { mission: true } : {}),
             bootResources: 1,
           },
           '*',
@@ -525,6 +569,49 @@ export function preparePythonFrameSession(options: {
           captureInFlight = false
         }
       },
+      ...(options.mission
+        ? {
+            async observePythonMission(raw: StudioPythonMissionProbe) {
+              if (
+                !active ||
+                !prepared ||
+                pendingMission ||
+                pendingActivity ||
+                commandInFlight ||
+                captureInFlight ||
+                inputId ||
+                !['running', 'completed'].includes(state)
+              )
+                throw new Error('A missão não pode observar esta execução.')
+              const probe = readStudioPythonMissionProbe(raw)
+              const requestId = `mission-${crypto.randomUUID()}`
+              const result = new Promise<StudioPythonMissionFrameObservation>((resolve, reject) => {
+                pendingMission = {
+                  requestId,
+                  probe,
+                  resolve,
+                  reject,
+                  timer: setTimeout(
+                    () => fail('A observação Python não respondeu dentro do prazo.'),
+                    12_000,
+                  ),
+                }
+              })
+              try {
+                const [, observation] = await Promise.all([
+                  send({ type: 'mission-observe', requestId, probe }),
+                  result,
+                ])
+                if (!active) throw new DOMException('Execução encerrada.', 'AbortError')
+                return observation
+              } catch (error) {
+                rejectMission(error)
+                void stop()
+                throw error
+              }
+            },
+          }
+        : {}),
       subscribe(listener) {
         if (disposed) return () => {}
         listeners.add(listener)

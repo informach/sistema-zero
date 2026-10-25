@@ -119,7 +119,7 @@ describe('parseJS — helpers SZGame3D.* (game-3d)', () => {
 
 describe('parseJS — preservação do código manual de Jogo 3D', () => {
   const unknownDropdownCases = [
-    'const apertou = SZGame3D.keyDown("KeyQ");',
+    'const apertou = SZGame3D.keyDown("KeyZ");',
     'SZGame3D.gridMove(obj, "diagonal");',
     'SZGame3D.crosserMove(obj, "diagonal");',
     'SZGame3D.addRow(cena, 1, "lava", "right", 0.1);',
@@ -134,7 +134,8 @@ describe('parseJS — preservação do código manual de Jogo 3D', () => {
     'SZGame3D.setVisible(obj, "toggle");',
     'SZGame3D.setMaterial(obj, "lava");',
     'SZGame3D.setShadows(cena, "auto");',
-    'SZGame3D.pruneSwarm(enxame, "w", -10, 10);',
+    'SZGame3D.pruneArea(grupo, "w", -10, 10);',
+    'SZGame3D.cameraMode(cena, "voando", jogador);',
     'SZGame3D.playEffect("laser");',
   ]
 
@@ -180,7 +181,7 @@ describe('roundtrip do rotatingCubeExample (gerar → parsear)', () => {
       'g3d:createFullscreenScene',
       'g3d:createBox',
       'g3d:animate',
-      'g3d:rotateBy',
+      'g3d:spin',
     ]) {
       expect(types.has(expected)).toBe(true)
     }
@@ -231,8 +232,20 @@ describe('parseJS — física, Kit Desvie e câmera (game-3d)', () => {
     expect(parseJS('SZGame3D.setScale(caixa, 2);')).toEqual([
       { type: 'g3d:setScale', objVar: 'caixa', factor: { type: 'num', value: 2 } },
     ])
-    expect(parseJS('SZGame3D.cameraFollow(cena, jogador);')).toEqual([
-      { type: 'g3d:cameraFollow', worldVar: 'cena', objVar: 'jogador' },
+    expect(parseJS('SZGame3D.cameraMode(cena, "longe", jogador);')).toEqual([
+      { type: 'g3d:cameraMode', worldVar: 'cena', mode: 'longe', objVar: 'jogador' },
+    ])
+    // Modo desconhecido não vira bloco: o dropdown perderia o que a criança escreveu.
+    expect(parseJS('SZGame3D.cameraMode(cena, "voando", jogador);')[0]?.type).not.toBe(
+      'g3d:cameraMode',
+    )
+    expect(parseJS('SZGame3D.cameraDistance(cena, 8, 4);')).toEqual([
+      {
+        type: 'g3d:cameraDistance',
+        worldVar: 'cena',
+        dist: { type: 'num', value: 8 },
+        height: { type: 'num', value: 4 },
+      },
     ])
     expect(parseJS('SZGame3D.spawnEnemy(cena, inimigos, 0.1);')).toEqual([
       {
@@ -249,26 +262,30 @@ describe('parseJS — física, Kit Desvie e câmera (game-3d)', () => {
       { type: 'g3d:clearGroup', groupVar: 'inimigos' },
     ])
     expect(
-      parseJS('SZGame3D.everyFramesLoop(45, () => { SZGame3D.spawnEnemy(cena, inimigos, 0.1); });'),
+      parseJS(
+        'SZGame3D.everySecondsLoop(0.75, () => { SZGame3D.spawnEnemy(cena, inimigos, 6); });',
+      ),
     ).toMatchObject([
       {
-        type: 'g3d:everyFrames',
-        n: { type: 'num', value: 45 },
+        type: 'g3d:everySeconds',
+        secs: { type: 'num', value: 0.75 },
         body: [{ type: 'g3d:spawnEnemy' }],
       },
     ])
-    expect(parseJS('SZGame3D.stop(cena);')).toEqual([{ type: 'g3d:stop', worldVar: 'cena' }])
+    expect(parseJS('SZGame3D.endGame("perdeu");')).toEqual([
+      { type: 'g3d:gameOver', result: 'perdeu' },
+    ])
   })
 
   it('reconhece as perguntas (keyDown/collides/hitAny) dentro de um "se"', () => {
     expect(
       parseJS('if (SZGame3D.keyDown("Space")) { SZGame3D.jump(jogador, 0.08); }'),
     ).toMatchObject([{ type: 'if', cond: { type: 'g3d:keyDown', key: 'Space' } }])
-    expect(parseJS('if (SZGame3D.collides(jogador, chao)) { SZGame3D.stop(cena); }')).toMatchObject(
-      [{ type: 'if', cond: { type: 'g3d:collides', aVar: 'jogador', bVar: 'chao' } }],
-    )
     expect(
-      parseJS('if (SZGame3D.hitAny(jogador, inimigos)) { SZGame3D.stop(cena); }'),
+      parseJS('if (SZGame3D.collides(jogador, chao)) { SZGame3D.endGame("perdeu"); }'),
+    ).toMatchObject([{ type: 'if', cond: { type: 'g3d:collides', aVar: 'jogador', bVar: 'chao' } }])
+    expect(
+      parseJS('if (SZGame3D.hitAny(jogador, inimigos)) { SZGame3D.endGame("perdeu"); }'),
     ).toMatchObject([
       { type: 'if', cond: { type: 'g3d:hitAny', objVar: 'jogador', groupVar: 'inimigos' } },
     ])
@@ -282,8 +299,7 @@ describe('roundtrip do dodgeExample (gerar → parsear)', () => {
     const types = collectTypes(ir)
     expect(types.has('rawJS')).toBe(false)
     for (const expected of [
-      'g3d:createScene',
-      'g3d:setBackground',
+      'g3d:createFullscreenScene',
       'g3d:setCameraPosition',
       'g3d:createBox',
       'g3d:createBlock',
@@ -293,14 +309,18 @@ describe('roundtrip do dodgeExample (gerar → parsear)', () => {
       'g3d:controlWithKeys',
       'g3d:jump',
       'g3d:applyGravity',
-      'g3d:cameraFollow',
-      'g3d:everyFrames',
+      'g3d:cameraMode',
+      'g3d:everySeconds',
       'g3d:spawnEnemy',
       'g3d:updateGroup',
       'g3d:pruneOffscreen',
       'g3d:keyDown',
-      'g3d:hitAny',
-      'g3d:stop',
+      // Lote 7 do review 3D: corações, encostar no grupo, pontos e fim pelas regras de jogo.
+      'g3d:life',
+      'g3d:onGame',
+      'g3d:addScore',
+      'g3d:gameOver',
+      'g3d:screenText',
     ]) {
       expect(types.has(expected)).toBe(true)
     }
@@ -352,11 +372,11 @@ describe('roundtrip do swarmExample (gerar → parsear)', () => {
     const types = collectTypes(ir)
     expect(types.has('rawJS')).toBe(false)
     for (const expected of [
-      'g3d:createSwarm',
-      'g3d:spawnInSwarm',
+      'g3d:createGroup',
+      'g3d:spawnCopy',
       'g3d:setVisible',
-      'g3d:forEachInSwarm',
-      'g3d:rotateBy',
+      'g3d:forEachInGroup',
+      'g3d:spin',
     ]) {
       expect(types.has(expected)).toBe(true)
     }
@@ -399,11 +419,11 @@ describe('parseJS — Travessia + grade genérica (game-3d)', () => {
     expect(parseJS('SZGame3D.moveTraffic(mundo);')).toEqual([
       { type: 'g3d:moveTraffic', worldVar: 'mundo' },
     ])
-    expect(parseJS('SZGame3D.isometricCamera(mundo, jogador);')).toEqual([
-      { type: 'g3d:isometricCamera', worldVar: 'mundo', followVar: 'jogador' },
+    expect(parseJS('SZGame3D.cameraMode(mundo, "isometrica", jogador);')).toEqual([
+      { type: 'g3d:cameraMode', worldVar: 'mundo', mode: 'isometrica', objVar: 'jogador' },
     ])
-    expect(parseJS('SZGame3D.isometricCamera(mundo, null);')).toEqual([
-      { type: 'g3d:isometricCamera', worldVar: 'mundo', followVar: '' },
+    expect(parseJS('SZGame3D.cameraMode(mundo, "isometrica", null);')).toEqual([
+      { type: 'g3d:cameraMode', worldVar: 'mundo', mode: 'isometrica', objVar: '' },
     ])
     expect(parseJS('SZGame3D.gridStep(jogador);')).toEqual([
       { type: 'g3d:gridStep', objVar: 'jogador' },
@@ -430,17 +450,22 @@ describe('parseJS — Travessia + grade genérica (game-3d)', () => {
     ])
   })
 
-  it('reconhece as perguntas crosserHit / touchesBox / crosserRow em posição de valor', () => {
+  it('reconhece as perguntas crosserHit / hitAny / crosserRow em posição de valor', () => {
     expect(
       parseJS('if (SZGame3D.crosserHit(jogador, mundo)) { SZGame3D.moveTraffic(mundo); }'),
     ).toMatchObject([
       { type: 'if', cond: { type: 'g3d:crosserHit', objVar: 'jogador', worldVar: 'mundo' } },
     ])
     expect(
-      parseJS('if (SZGame3D.touchesBox(jogador, carros)) { SZGame3D.moveTraffic(mundo); }'),
+      parseJS('if (SZGame3D.hitAny(jogador, carros)) { SZGame3D.moveTraffic(mundo); }'),
     ).toMatchObject([
-      { type: 'if', cond: { type: 'g3d:touchesBox', objVar: 'jogador', groupVar: 'carros' } },
+      { type: 'if', cond: { type: 'g3d:hitAny', objVar: 'jogador', groupVar: 'carros' } },
     ])
+    // O antigo "encostando em algum de" (caixa real) foi absorvido pelo hitAny: código
+    // escrito com o nome antigo fica como código, sem virar um bloco que não existe mais.
+    expect(
+      parseJS('if (SZGame3D.touchesBox(jogador, carros)) { SZGame3D.moveTraffic(mundo); }'),
+    ).toMatchObject([{ type: 'if', cond: { type: 'memberCallExpr', method: 'touchesBox' } }])
     expect(parseJS('let p = SZGame3D.crosserRow(jogador);')).toMatchObject([
       { type: 'var', name: 'p', value: { type: 'g3d:crosserRow', objVar: 'jogador' } },
     ])
@@ -454,7 +479,7 @@ describe('roundtrip do crossingExample (gerar → parsear)', () => {
     const types = collectTypes(ir)
     expect(types.has('rawJS')).toBe(false)
     for (const expected of [
-      'g3d:createCrossingScene',
+      'g3d:createFullscreenScene',
       'g3d:createCrosser',
       'g3d:generateRows',
       'g3d:animate',
@@ -463,7 +488,9 @@ describe('roundtrip do crossingExample (gerar → parsear)', () => {
       'g3d:crosserRow',
       'g3d:crosserHit',
       'g3d:crosserMove',
-      'g3d:crosserReset',
+      'g3d:gameOver',
+      'g3d:screenText',
+      'g3d:addScore',
     ]) {
       expect(types.has(expected)).toBe(true)
     }
@@ -481,11 +508,11 @@ describe('parseJS — Corrida + genéricos top-down (game-3d)', () => {
   })
 
   it('reconhece os comandos de corrida e os genéricos', () => {
-    expect(parseJS('SZGame3D.topCamera(mundo, carro);')).toEqual([
-      { type: 'g3d:topCamera', worldVar: 'mundo', followVar: 'carro' },
+    expect(parseJS('SZGame3D.cameraMode(mundo, "cima", carro);')).toEqual([
+      { type: 'g3d:cameraMode', worldVar: 'mundo', mode: 'cima', objVar: 'carro' },
     ])
-    expect(parseJS('SZGame3D.topCamera(mundo, null);')).toEqual([
-      { type: 'g3d:topCamera', worldVar: 'mundo', followVar: '' },
+    expect(parseJS('SZGame3D.cameraMode(mundo, "cima", null);')).toEqual([
+      { type: 'g3d:cameraMode', worldVar: 'mundo', mode: 'cima', objVar: '' },
     ])
     expect(parseJS('SZGame3D.moveInCircle(planeta, 7, 0.02);')).toEqual([
       {
@@ -542,7 +569,7 @@ describe('roundtrip do raceExample (gerar → parsear)', () => {
     const types = collectTypes(ir)
     expect(types.has('rawJS')).toBe(false)
     for (const expected of [
-      'g3d:createRaceScene',
+      'g3d:createFullscreenScene',
       'g3d:createRaceTrack',
       'g3d:createRaceCar',
       'g3d:animate',
@@ -551,7 +578,9 @@ describe('roundtrip do raceExample (gerar → parsear)', () => {
       'g3d:raceLaps',
       'g3d:raceHit',
       'g3d:raceControl',
-      'g3d:raceReset',
+      'g3d:gameOver',
+      'g3d:screenText',
+      'g3d:addScore',
     ]) {
       expect(types.has(expected)).toBe(true)
     }
@@ -611,14 +640,16 @@ describe('roundtrip do stackExample (gerar → parsear)', () => {
     const types = collectTypes(ir)
     expect(types.has('rawJS')).toBe(false)
     for (const expected of [
-      'g3d:createStackScene',
+      'g3d:createFullscreenScene',
       'g3d:createStackTower',
       'g3d:animate',
       'g3d:stackStep',
       'g3d:stackScore',
       'g3d:stackGameOver',
       'g3d:stackDrop',
-      'g3d:stackReset',
+      'g3d:gameOver',
+      'g3d:screenText',
+      'g3d:addScore',
     ]) {
       expect(types.has(expected)).toBe(true)
     }
@@ -643,7 +674,7 @@ describe('parseJS — Posição & direção (genéricos)', () => {
 
   it('um getter aninha numa conta dentro de "se"', () => {
     expect(
-      parseJS('if (SZGame3D.getPos(jogador, "y") < 0) { SZGame3D.stop(cena); }'),
+      parseJS('if (SZGame3D.getPos(jogador, "y") < 0) { SZGame3D.endGame("perdeu"); }'),
     ).toMatchObject([
       {
         type: 'if',
@@ -718,7 +749,7 @@ describe('parseJS — Mira & clique (raycast)', () => {
       { type: 'var', name: 'o', value: { type: 'g3d:pickAtMouse', worldVar: 'cena' } },
     ])
     expect(
-      parseJS('if (SZGame3D.pointerOver(cena, botao)) { SZGame3D.stop(cena); }'),
+      parseJS('if (SZGame3D.pointerOver(cena, botao)) { SZGame3D.endGame("perdeu"); }'),
     ).toMatchObject([
       { type: 'if', cond: { type: 'g3d:pointerOver', worldVar: 'cena', objVar: 'botao' } },
     ])
@@ -734,9 +765,11 @@ describe('parseJS — Mira & clique (raycast)', () => {
         },
       },
     ])
-    expect(parseJS('if (SZGame3D.onGround(cena, jogador)) { SZGame3D.stop(cena); }')).toMatchObject(
-      [{ type: 'if', cond: { type: 'g3d:onGround', worldVar: 'cena', objVar: 'jogador' } }],
-    )
+    expect(
+      parseJS('if (SZGame3D.onGround(cena, jogador)) { SZGame3D.endGame("perdeu"); }'),
+    ).toMatchObject([
+      { type: 'if', cond: { type: 'g3d:onGround', worldVar: 'cena', objVar: 'jogador' } },
+    ])
     expect(parseJS('let h = SZGame3D.groundHeight(cena, jogador);')).toMatchObject([
       {
         type: 'var',
@@ -781,20 +814,14 @@ describe('parseJS — Física avançada (corpo/sólidos/presets)', () => {
 
 describe('parseJS — Câmera viva (FPS/orbital/3ª pessoa/FOV)', () => {
   it('reconhece as câmeras vivas', () => {
-    expect(parseJS('SZGame3D.fpsCamera(cena, jogador);')).toEqual([
-      { type: 'g3d:fpsCamera', worldVar: 'cena', objVar: 'jogador' },
+    expect(parseJS('SZGame3D.cameraMode(cena, "primeira-pessoa", jogador);')).toEqual([
+      { type: 'g3d:cameraMode', worldVar: 'cena', mode: 'primeira-pessoa', objVar: 'jogador' },
     ])
-    expect(parseJS('SZGame3D.orbitCamera(cena, jogador);')).toEqual([
-      { type: 'g3d:orbitCamera', worldVar: 'cena', objVar: 'jogador' },
+    expect(parseJS('SZGame3D.cameraMode(cena, "em-volta", jogador);')).toEqual([
+      { type: 'g3d:cameraMode', worldVar: 'cena', mode: 'em-volta', objVar: 'jogador' },
     ])
-    expect(parseJS('SZGame3D.thirdPersonCamera(cena, jogador, 6, 3);')).toEqual([
-      {
-        type: 'g3d:thirdPersonCamera',
-        worldVar: 'cena',
-        objVar: 'jogador',
-        dist: { type: 'num', value: 6 },
-        height: { type: 'num', value: 3 },
-      },
+    expect(parseJS('SZGame3D.cameraMode(cena, "tras", jogador);')).toEqual([
+      { type: 'g3d:cameraMode', worldVar: 'cena', mode: 'tras', objVar: 'jogador' },
     ])
     expect(parseJS('SZGame3D.cameraLookAt(cena, jogador);')).toEqual([
       { type: 'g3d:cameraLookAt', worldVar: 'cena', objVar: 'jogador' },
@@ -916,27 +943,24 @@ describe('parseJS — Câmera viva (FPS/orbital/3ª pessoa/FOV)', () => {
     ])
   })
 
-  it('Fase 8 — enxames e som fazem round-trip (incl. forEachInSwarm com corpo)', () => {
-    expect(parseJS('const e = SZGame3D.createSwarm(cena);')).toEqual([
-      { type: 'g3d:createSwarm', varName: 'e', worldVar: 'cena' },
-    ])
-    expect(parseJS('SZGame3D.spawnInSwarm(e, modelo, 1, 2, 3);')).toEqual([
+  it('Fase 8 — cópias num grupo e som fazem round-trip (incl. forEachInGroup com corpo)', () => {
+    expect(parseJS('SZGame3D.spawnCopy(e, modelo, 1, 2, 3);')).toEqual([
       {
-        type: 'g3d:spawnInSwarm',
-        swarmVar: 'e',
+        type: 'g3d:spawnCopy',
+        groupVar: 'e',
         originalVar: 'modelo',
         x: { type: 'num', value: 1 },
         y: { type: 'num', value: 2 },
         z: { type: 'num', value: 3 },
       },
     ])
-    expect(parseJS('SZGame3D.removeFromSwarm(e, item);')).toEqual([
-      { type: 'g3d:removeFromSwarm', swarmVar: 'e', itemVar: 'item' },
+    expect(parseJS('SZGame3D.removeFromGroup(e, item);')).toEqual([
+      { type: 'g3d:removeFromGroup', groupVar: 'e', objVar: 'item' },
     ])
-    expect(parseJS('SZGame3D.pruneSwarm(e, "y", -10, 10);')).toEqual([
+    expect(parseJS('SZGame3D.pruneArea(e, "y", -10, 10);')).toEqual([
       {
-        type: 'g3d:pruneSwarm',
-        swarmVar: 'e',
+        type: 'g3d:pruneArea',
+        groupVar: 'e',
         axis: 'y',
         min: { type: 'num', value: -10 },
         max: { type: 'num', value: 10 },
@@ -950,13 +974,13 @@ describe('parseJS — Câmera viva (FPS/orbital/3ª pessoa/FOV)', () => {
     ])
     // O hat com corpo: o "para cada" volta a virar bloco com o corpo dentro.
     expect(
-      parseJS('SZGame3D.forEachInSwarm(e, (item) => { SZGame3D.removeFromSwarm(e, item); });'),
+      parseJS('SZGame3D.forEachInGroup(e, (item) => { SZGame3D.removeFromGroup(e, item); });'),
     ).toEqual([
       {
-        type: 'g3d:forEachInSwarm',
-        swarmVar: 'e',
+        type: 'g3d:forEachInGroup',
+        groupVar: 'e',
         itemName: 'item',
-        body: [{ type: 'g3d:removeFromSwarm', swarmVar: 'e', itemVar: 'item' }],
+        body: [{ type: 'g3d:removeFromGroup', groupVar: 'e', objVar: 'item' }],
       },
     ])
   })

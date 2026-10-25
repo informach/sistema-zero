@@ -132,6 +132,24 @@ class Loop(unittest.TestCase):
         _rt.window.open = False
         P.init_window(320, 240, 'laço')
 
+    def test_checkpoint_runs_after_exchange_and_batch_clear_without_losing_new_draws(self):
+        observed = []
+
+        def checkpoint():
+            observed.append((len(FRAMES), list(_rt.ops), P.is_key_down(P.KEY_A)))
+            # A tested function may draw. This belongs to the next batch, not the cleared one.
+            P.draw_pixel(3, 4, P.RED)
+
+        _szraylib.configure(transport, None, ROOT, '2d', checkpoint=checkpoint)
+        try:
+            EVENTS.append([['kd', P.KEY_A]])
+            frame()
+            self.assertEqual(observed, [(1, [], True)])
+            self.assertEqual(list(_rt.ops), [_rt.OP_PIXEL, 3, 4, 0xE62937FF])
+        finally:
+            _szraylib.configure(transport, None, ROOT, '2d')
+            del _rt.ops[:]
+
     def test_one_exchange_per_end_drawing_and_keep(self):
         for _ in range(3):
             P.begin_drawing()

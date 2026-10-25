@@ -184,13 +184,24 @@ _total_pixels = 0
 next_id = 10
 
 
-def configure(transport, decoder, root, extension_mode='2d'):
+_checkpoint = None
+
+
+def configure(transport, decoder, root, extension_mode='2d', *, checkpoint=None):
     """Chamado uma vez pelo Estúdio antes do programa da criança."""
-    global _transport, _decoder, _root, mode
+    global _transport, _decoder, _root, mode, _checkpoint
     _transport = transport
     _decoder = decoder
     _root = root
     mode = extension_mode
+    if checkpoint is not None and not callable(checkpoint):
+        raise TypeError('O checkpoint interno precisa ser uma função.')
+    _checkpoint = checkpoint
+
+
+def checkpoint():
+    if _checkpoint is not None:
+        _checkpoint()
 
 
 def new_id():

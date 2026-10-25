@@ -110,6 +110,31 @@ describe('ExtensionsPanel — extensões para instalar gated por nível', () => 
     expect(screen.queryByText(w3d.manifest.name)).toBeNull()
   })
 
+  it('uma extensão 3D por degrau: intermediario-3d vê o Mundo 3D, só avancado-3d vê o Avançado', () => {
+    const w3d = OFFICIAL_CATALOG.find((e) => e.manifest.id === 'world-3d')
+    const g3k = OFFICIAL_CATALOG.find((e) => e.manifest.id === 'game-3d-advanced')
+    if (!w3d || !g3k) throw new Error('fixture: esperava world-3d e game-3d-advanced no catálogo')
+    expect(g3k.minLevel).toBe('avancado-3d')
+    for (const [level, seesAdvanced] of [
+      ['intermediario-3d', false],
+      ['avancado-3d', true],
+    ] as const) {
+      seedProject()
+      const config = {
+        ...STANDALONE_CONFIG,
+        learning: resolveLearning({ level, allowLevelReveal: false }),
+      }
+      render(
+        <StudioConfigProvider value={config}>
+          <ExtensionsPanel open onClose={() => {}} />
+        </StudioConfigProvider>,
+      )
+      expect(screen.getByText(w3d.manifest.name)).not.toBeNull()
+      expect(screen.queryByText(g3k.manifest.name) !== null, level).toBe(seesAdvanced)
+      cleanup()
+    }
+  })
+
   it('avançado (literal LEGADO → topo da escada) vê as duas (2D e 3D)', () => {
     seedProject()
     const config = {

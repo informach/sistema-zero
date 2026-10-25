@@ -121,12 +121,12 @@ describe('Lote C — regressões do full review', () => {
     api.spawn('pedra', 4, 0, 6)
     step(90) // câmera converge antes de projetar o clique
 
-    tecla('keydown', 'x')
+    tecla('keydown', 'Enter')
     step(1)
-    tecla('keyup', 'x')
+    tecla('keyup', 'Enter')
     step(1)
-    expect(stage.querySelector('.szg3k-hud-top-right')?.textContent).toBe(
-      'Modo: reciclar (X troca)',
+    expect(stage.querySelector('.szr-top-right [data-szr-panel="texto"]')?.textContent).toBe(
+      'Modo: reciclar (Enter troca)',
     )
 
     const canvas = stage.querySelector('canvas')

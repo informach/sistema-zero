@@ -65,6 +65,11 @@ describe('Exemplo O Chefão das Sombras — drift contra o parser real', () => {
     )
   })
 
+  it('os tiros somem na metade do tamanho do mundo', () => {
+    const types = collectTypes(behaviorStatements(chefaoDasSombrasExample.ir))
+    for (const t of ['g3k:cullFar', 'g3k:worldSize']) expect(types.has(t)).toBe(true)
+  })
+
   it('nenhum texto visível usa travessão', () => {
     expect(JSON.stringify(chefaoDasSombrasExample.ir)).not.toContain('—')
     expect(chefaoDasSombrasExample.name).not.toContain('—')

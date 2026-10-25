@@ -4,6 +4,7 @@ import {
   studioPythonRuntimePrefix,
   studioPythonRuntimeRoute,
 } from '@sistemazero/core/studio/python-runtime-distribution'
+import { PYTHON_PROJECT_MISSION_FEATURE } from '@sistemazero/core/studio/python-runtime-features'
 import {
   createStudioRuntimeRelease,
   type StudioRuntimeReleaseStatus,
@@ -16,7 +17,13 @@ import {
 } from '../src/python-distributions'
 
 export async function pythonDistributionFixture(
-  options: { playtest?: boolean; standalone?: boolean; boot?: boolean; compressed?: boolean } = {},
+  options: {
+    playtest?: boolean
+    standalone?: boolean
+    boot?: boolean
+    compressed?: boolean
+    missions?: boolean
+  } = {},
 ) {
   const contents = new Map<string, Uint8Array<ArrayBuffer>>()
   for (const path of [
@@ -53,7 +60,7 @@ export async function pythonDistributionFixture(
     pyodideVersion: '314.0.7',
     pythonVersion: '3.14.2',
     providedModules: [],
-    features: [],
+    features: options.missions === false ? [] : [PYTHON_PROJECT_MISSION_FEATURE],
     previewHostAudioVersion: 1,
     ...(httpRepresentations.length ? { httpRepresentations } : {}),
     files: await Promise.all(
@@ -80,7 +87,7 @@ export async function pythonDistributionFixture(
       version: distribution.pythonVersion,
       packages: [],
       providedModules: [],
-      features: [],
+      features: distribution.features,
     },
   })
   const deployment = { release, distribution }

@@ -27,7 +27,7 @@ import { newModelIntent } from '../../../state/newModelIntent'
 import { createScenePivotGesture } from '../../../state/scenePivotGesture'
 import { createSceneRigBuilder } from '../../../state/sceneRigBuilder'
 import { createSceneTransformGesture } from '../../../state/sceneTransformGesture'
-import type { SceneTransformTool } from '../../../viewport/sceneViewportTypes'
+import type { SceneTransformIntent, SceneTransformTool } from '../../../viewport/sceneViewportTypes'
 import { useMoldaToolAccess, useMoldaToolGate } from '../../toolAccess'
 import { useSceneAnimationEditPreview } from './useSceneAnimationEditPreview'
 import { useSceneAnimationPlayer } from './useSceneAnimationPlayer'
@@ -46,7 +46,14 @@ import { SCENE_WORKSPACE_AREAS, type SceneWorkspaceArea } from './workspaceAreaR
 
 /** As três abas. O modo mora aqui para Pintar poder escolher a peça e preparar a tinta. */
 export type SceneWorkshopMode = 'model' | 'paint' | 'animation'
-export type SceneWorkshopTool = SceneTransformTool | 'box' | 'lasso' | 'pivot' | 'cut' | 'knife'
+export type SceneWorkshopTool =
+  | SceneTransformTool
+  | 'box'
+  | 'lasso'
+  | 'pivot'
+  | 'cut'
+  | 'knife'
+  | 'pull'
 
 /** A peça tem faces tortas: pintar pede o consentimento de dividi-las em triângulos. */
 export type ScenePaintIssue = ScenePaintPreparationIssue
@@ -546,6 +553,7 @@ export function useSceneWorkshop(editor: EditorStore<MoldaSceneDocument>) {
       gesture.cancel()
     },
     run,
+    notify: setMessage,
   })
   const modelGuides = useSceneModelGuides(editor, (next) => !!run(() => next))
   const rigRun = useRef(run)
@@ -962,7 +970,7 @@ export function useSceneWorkshop(editor: EditorStore<MoldaSceneDocument>) {
     },
     mode,
     tool,
-    setTool: (next: SceneWorkshopTool) => {
+    setTool: (next: SceneWorkshopTool, cutLineEdgeIds?: readonly string[]) => {
       const choose = () => {
         if (next === 'pivot' && !pivotGate.canUse()) return
         pivotGesture.cancel()
@@ -977,7 +985,7 @@ export function useSceneWorkshop(editor: EditorStore<MoldaSceneDocument>) {
         }
         if (next === 'cut') {
           components.close()
-          if (chosenRef.current.length === 1) solidCut.start(chosenRef.current[0]!)
+          if (chosenRef.current.length === 1) solidCut.start(chosenRef.current[0]!, cutLineEdgeIds)
         }
         gesture.cancel()
         setLooking(false)
@@ -1261,13 +1269,16 @@ export function useSceneWorkshop(editor: EditorStore<MoldaSceneDocument>) {
     message,
     setMessage,
     transform: {
-      begin: () => {
+      begin: (intent?: SceneTransformIntent) => {
         skinPaint.cancel()
         animation.pause()
         flipbook.pause()
         const kind = components.selection ? 'components' : 'nodes'
+        // Com a ferramenta Puxar, as alças também puxam; nunca vira mover a peça inteira.
+        const pulling = intent ?? (tool === 'pull' ? 'pull' : undefined)
+        if (pulling === 'pull' && kind !== 'components') return false
         const accepted =
-          kind === 'components' ? components.transform.begin() : gesture.begin(selected)
+          kind === 'components' ? components.transform.begin(pulling) : gesture.begin(selected)
         activeTransform.current = accepted ? kind : null
         return accepted
       },

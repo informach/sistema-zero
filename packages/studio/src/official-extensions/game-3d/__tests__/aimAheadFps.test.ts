@@ -28,7 +28,7 @@ interface AimApi {
   createScene: (canvasId: string) => AimWorld
   createBox: (world: unknown, opts?: { size?: number; color?: string }) => RealTHREE.Object3D
   setPosition: (obj: unknown, x: number, y: number, z: number) => void
-  fpsCamera: (world: unknown, obj: unknown) => void
+  cameraMode: (world: unknown, mode: string, obj: unknown) => void
   aimAhead: (world: unknown, obj: unknown, dist?: number) => unknown
   moveForward: (obj: unknown, dist: number) => void
 }
@@ -74,7 +74,7 @@ describe('aimAhead — convenções de frente', () => {
     const iscaAtras = api.createBox(world, { size: 2 })
     api.setPosition(iscaAtras, 0, 1, 6)
 
-    api.fpsCamera(world, jogador)
+    api.cameraMode(world, 'primeira-pessoa', jogador)
     expect(api.aimAhead(world, jogador, 50)).toBe(alvoNaFrente)
 
     // Com o corpo girado 180° (yaw = π), a vista aponta +Z: agora é a isca.
@@ -96,7 +96,7 @@ describe('aimAhead — convenções de frente', () => {
     const alvoBaixo = api.createBox(world, { size: 2 })
     api.setPosition(alvoBaixo, 0, -3, -6)
 
-    api.fpsCamera(world, jogador)
+    api.cameraMode(world, 'primeira-pessoa', jogador)
     // Inclina a câmera-filha para CIMA na medida do alvo alto (dentro do clamp
     // de ±1.4 rad do mouse do FPS): o raio tem de subir junto.
     world.camera.rotation.x = Math.atan2(6 - 1.6, 6)
@@ -117,7 +117,7 @@ describe('aimAhead — convenções de frente', () => {
     const alvoMaisZ = api.createBox(world, { size: 2 })
     api.setPosition(alvoMaisZ, 0, 1, 6)
 
-    // Sem fpsCamera neste objeto: a frente clássica é o +Z do getWorldDirection.
+    // Sem câmera em 1ª pessoa neste objeto: a frente clássica é o +Z do getWorldDirection.
     expect(api.aimAhead(world, torreta, 50)).toBe(alvoMaisZ)
   })
 })
@@ -128,17 +128,18 @@ describe('moveForward — convenções de frente (mesma classe do aimAhead)', ()
     const world = api.createScene('tela')
     const jogador = api.createBox(world, { size: 1 })
     api.setPosition(jogador, 0, 1, 0)
-    api.fpsCamera(world, jogador)
+    api.cameraMode(world, 'primeira-pessoa', jogador)
 
+    // 30 por segundo = 0,5 num quadro de 60 Hz (sem dt, o quadro conta como 1/60 s).
     // Yaw 0: a câmera olha -Z. O passo tem de ir para -Z (o bug antigo, +Z do
     // getWorldDirection do corpo, andava 180° às costas da vista).
-    api.moveForward(jogador, 0.5)
+    api.moveForward(jogador, 30)
     expect(jogador.position.z).toBeCloseTo(-0.5, 6)
     expect(jogador.position.x).toBeCloseTo(0, 6)
 
     // Corpo girado 180° (yaw = π): a vista aponta +Z e o passo acompanha.
     jogador.rotation.y = Math.PI
-    api.moveForward(jogador, 0.5)
+    api.moveForward(jogador, 30)
     expect(jogador.position.z).toBeCloseTo(0, 6)
   })
 
@@ -147,12 +148,12 @@ describe('moveForward — convenções de frente (mesma classe do aimAhead)', ()
     const world = api.createScene('tela')
     const jogador = api.createBox(world, { size: 1 })
     api.setPosition(jogador, 0, 1, 0)
-    api.fpsCamera(world, jogador)
+    api.cameraMode(world, 'primeira-pessoa', jogador)
 
     // Pitch bem para cima (clamp do mouse é ±1.4 rad): y não pode mudar e o
     // passo no chão continua com o TAMANHO pedido (direção re-normalizada).
     world.camera.rotation.x = 1.2
-    api.moveForward(jogador, 0.5)
+    api.moveForward(jogador, 30)
     expect(jogador.position.y).toBeCloseTo(1, 6)
     expect(jogador.position.z).toBeCloseTo(-0.5, 6)
   })
@@ -163,14 +164,14 @@ describe('moveForward — convenções de frente (mesma classe do aimAhead)', ()
     const carrinho = api.createBox(world, { size: 1 })
     api.setPosition(carrinho, 0, 1, 0)
 
-    api.moveForward(carrinho, 0.5)
+    api.moveForward(carrinho, 30)
     expect(carrinho.position.z).toBeCloseTo(0.5, 6)
     expect(carrinho.position.y).toBeCloseTo(1, 6)
 
     // E com um FPS ativo em OUTRO objeto, este continua no +Z próprio.
     const jogador = api.createBox(world, { size: 1 })
-    api.fpsCamera(world, jogador)
-    api.moveForward(carrinho, 0.5)
+    api.cameraMode(world, 'primeira-pessoa', jogador)
+    api.moveForward(carrinho, 30)
     expect(carrinho.position.z).toBeCloseTo(1, 6)
   })
 })

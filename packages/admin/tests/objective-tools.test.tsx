@@ -147,7 +147,7 @@ describe('copiar e colar objetivos', () => {
     )
     expect(colado.checks).toHaveLength(1)
     expect(colado.notes).toEqual([
-      'Ajuste "O herói anda": No projeto Pro, confira o texto da página, o console ou o estado do kit.',
+      'Ajuste "O herói anda": No projeto Pro, confira um valor exportado, o texto da página, o console ou o estado do kit.',
     ])
   })
 
@@ -202,17 +202,26 @@ describe('copiar e colar objetivos', () => {
     expect(tres.notes[0]).toContain('passariam de 40 segundos')
   })
 
-  test('no 3D clássico, nenhum modelo que roda o jogo é oferecido', () => {
+  test('no 3D clássico, oferece observação real e funções, preservando a recusa dos alvos de sprite 2D', () => {
     const tresD = projectCheckAuthoring({
       initialProject: { installedExtensions: [{ id: 'game-3d' }] },
     })
     const oferecidos = templatesFor({ pro: false, kit: false, bridge: true }).filter(
       (template) => tresD.issues(checkFromTemplate(template, false).rule).length === 0,
     )
-    expect(oferecidos.map((t) => t.check.rule.type).sort()).toEqual([
+    expect([...new Set(oferecidos.map((t) => t.check.rule.type))].sort()).toEqual([
+      'behavior',
       'declaresVariable',
+      'functionReturns',
+      'script',
       'usesLoop',
     ])
+    for (const template of oferecidos) {
+      const rule = template.check.rule
+      if (rule.type === 'behavior') expect(rule.expect.target.kind).not.toBe('spritePosition')
+      if (rule.type === 'behavior' || rule.type === 'script')
+        expect(rule.steps.some((step) => step.action === 'clickTarget')).toBe(false)
+    }
   })
 })
 

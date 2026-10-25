@@ -163,7 +163,7 @@ describe('g3k — JOGAR os exemplos até o fim (não só abrir)', () => {
     expect(tituloDaTela(stage, 'vitoria')).toBe('Rebanho reunido!')
   })
 
-  it('⭐ Salto nas Nuvens: tecla REAL move, cair volta ao menu, moedas dão vitória', async () => {
+  it('⭐ Salto nas Nuvens: tecla REAL move, cair lá embaixo perde, moedas dão vitória', async () => {
     const { api, step, stage } = await loadExampleKit(jsDoExemplo(saltoNasNuvensExample))
     apertarBotaoDe(stage, 'menu') // "Pular"
     expect(api.state()).toBe('jogando')
@@ -171,7 +171,9 @@ describe('g3k — JOGAR os exemplos até o fim (não só abrir)', () => {
     // (a) smoke de teclado: o platformerKeys do gancho DO EXEMPLO vê o W real.
     let heroi = primeiroVivo(api, 'heroi')
     expect(heroi).not.toBeNull()
-    step(4) // pousa na plataforma de baixo
+    step(30) // pousa na nuvem de baixo (a 3 m do chão), e pisar nela não é cair
+    expect(api.onGround(heroi)).toBe(true)
+    expect(api.state()).toBe('jogando')
     tecla('keydown', 'w')
     step(3)
     const vx = api.velocityOf(heroi, 'x')
@@ -179,21 +181,23 @@ describe('g3k — JOGAR os exemplos até o fim (não só abrir)', () => {
     expect(vx * vx + vz * vz).toBeGreaterThan(1)
     tecla('keyup', 'w')
 
-    // (b) derrota: despencar abaixo de y=-12 volta ao menu (regra do exemplo).
-    api.place(heroi, 0, -20, 0)
-    step(2)
-    expect(api.state()).toBe('menu')
-    expect(telaAtiva(stage, 'menu')).toBe(true)
+    // (b) derrota: CAIR de verdade. Fora das nuvens, o herói despenca até o chão lá embaixo
+    // (o chão do mundo, em y = 0) e pisar nele perde. Antes a regra era "y < -12", que o
+    // chão do mundo nunca deixa acontecer: o teste só passava teleportando para y = -20.
+    api.place(heroi, 20, 6, 20)
+    expect(stepUntil(step, () => api.state() !== 'jogando', 90)).toBeGreaterThan(5)
+    expect(api.state()).toBe('fim')
+    expect(tituloDaTela(stage, 'fim')).toBe('Caiu das nuvens!')
 
     // (c) vitória: partida NOVA (o reset recicla os slots — recapturar!), e o
     // caminho real de coleta: o forEachNear(1.4) do gancho do herói.
-    apertarBotaoDe(stage, 'menu')
+    apertarBotaoDe(stage, 'fim')
     expect(api.state()).toBe('jogando')
     heroi = primeiroVivo(api, 'heroi')
     const moedas: Array<[number, number, number]> = [
-      [7, 3, -2],
-      [-7, 4.5, 2],
-      [0, 6, -8],
+      [7, 6, -2],
+      [-7, 7.5, 2],
+      [0, 9, -8],
     ]
     let vivas = 3
     for (const [x, y, z] of moedas) {
@@ -211,15 +215,21 @@ describe('g3k — JOGAR os exemplos até o fim (não só abrir)', () => {
     apertarBotaoDe(stage, 'menu') // "Escalar"
     expect(api.state()).toBe('jogando')
 
-    // derrota primeiro (mesma regra do Salto: y < -12 → menu)
+    // Em cima da pedra de partida (0,3 m acima do chão) o herói está a salvo.
     let heroi = primeiroVivo(api, 'heroi')
-    api.place(heroi, 0, -20, 0)
-    step(2)
-    expect(api.state()).toBe('menu')
+    step(30)
+    expect(api.onGround(heroi)).toBe(true)
+    expect(api.state()).toBe('jogando')
+    // derrota: o chão do vulcão é lava. Caído fora das pedras, pisar nele perde (a regra
+    // antiga, "y < -12", nunca acontecia: o chão do mundo segura em y = 0).
+    api.place(heroi, 20, 3, 20)
+    expect(stepUntil(step, () => api.state() !== 'jogando', 90)).toBeGreaterThan(5)
+    expect(api.state()).toBe('fim')
+    expect(tituloDaTela(stage, 'fim')).toBe('Caiu na lava!')
 
     // vitória: cada gema é um makeTrigger + onOverlap — o pickup passa pelo
     // disparo de ENTRADA do motor (o carimbo _inKey), não por distância crua.
-    apertarBotaoDe(stage, 'menu')
+    apertarBotaoDe(stage, 'fim')
     heroi = primeiroVivo(api, 'heroi')
     const gemas: Array<[number, number, number]> = [
       [0, 4.5, 12],
@@ -293,12 +303,14 @@ describe('g3k — JOGAR os exemplos até o fim (não só abrir)', () => {
         // Meio da partida: o relógio anda, o HUD mostra, a fábrica produz.
         expect(api.timeLeft()).toBeGreaterThan(19)
         expect(api.timeLeft()).toBeLessThan(21)
-        const hud = stage.querySelector('.szg3k-hud-top-left')?.textContent ?? ''
+        const hud = stage.querySelector('.szr-top-left [data-szr-panel="texto"]')?.textContent ?? ''
         expect(hud.startsWith('Faltam:')).toBe(true)
       }
     }
     expect(api.state()).toBe('vitoria')
     expect(tituloDaTela(stage, 'vitoria')).toBe('O portal resistiu!')
+    // O fim da contagem para de nascer invasores e tira do jogo os que sobraram.
+    expect(api.countAlive('invasor')).toBe(0)
   })
 
   it('⭐ Tiro ao Alvo: o CLIQUE acerta quem está sob o mouse até a vitória (point-and-click)', async () => {
@@ -306,24 +318,35 @@ describe('g3k — JOGAR os exemplos até o fim (não só abrir)', () => {
     apertarBotaoDe(stage, 'menu') // "Valendo!"
     expect(api.state()).toBe('jogando')
 
-    // A tela PRÓPRIA de dica abre com H e fecha no botão dela (createScreen/
-    // addButton/showScreen/hideScreens — a família que nenhum exemplo cobria).
-    tecla('keydown', 'h')
+    // O aviso "Prepare a mira!" é a tela que o próprio jogo fecha (hideScreens), sem pausar.
+    expect(telaAtiva(stage, 'pronto')).toBe(true)
+    step(50)
+    expect(telaAtiva(stage, 'pronto')).toBe(false)
+    expect(api.state()).toBe('jogando')
+
+    // A tela PRÓPRIA de dica abre com E e PAUSA (é para ler: a contagem não corre e os
+    // alvos não fogem); o botão dela volta a jogar (createScreen/addButton/showScreen).
+    tecla('keydown', 'e')
     step(1)
-    tecla('keyup', 'h')
+    tecla('keyup', 'e')
     expect(telaAtiva(stage, 'dica')).toBe(true)
-    apertarBotaoDe(stage, 'dica') // "Entendi!" → hideScreens
+    expect(api.state()).toBe('pausado')
+    const restante = api.timeLeft()
+    step(60)
+    expect(api.timeLeft()).toBe(restante)
+    apertarBotaoDe(stage, 'dica') // "Entendi!"
+    expect(api.state()).toBe('jogando')
     expect(telaAtiva(stage, 'dica')).toBe(false)
 
-    // A lente de mira por código: C troca o FOV 50 → 30, V devolve 50. (Caçar
+    // A lente de mira por código: a seta para cima troca o FOV 50 → 30, a seta para baixo devolve 50. (Caçar
     // com a lente NORMAL: na de mira o cone é estreito e meio mundo sai da tela.)
-    tecla('keydown', 'c')
+    tecla('keydown', 'ArrowUp')
     step(1)
-    tecla('keyup', 'c')
+    tecla('keyup', 'ArrowUp')
     expect(renderers[0]?.camera?.fov).toBe(30)
-    tecla('keydown', 'v')
+    tecla('keydown', 'ArrowDown')
     step(1)
-    tecla('keyup', 'v')
+    tecla('keyup', 'ArrowDown')
     expect(renderers[0]?.camera?.fov).toBe(50)
 
     // Caça por CLIQUE: projeta o alvo vivo na tela com a câmera REAL e despacha
@@ -400,7 +423,7 @@ describe('g3k — JOGAR os exemplos até o fim (não só abrir)', () => {
     for (let i = 0; i < 900 && api.state() === 'jogando'; i++) {
       clicarNoChefao()
       step(1)
-      const hud = stage.querySelector('.szg3k-hud-top-left')?.textContent ?? ''
+      const hud = stage.querySelector('.szr-top-left [data-szr-panel="texto"]')?.textContent ?? ''
       if (hud.includes('Fase 2') || hud.includes('Fase 3')) viuFaseAvancada = true
     }
     expect(api.state()).toBe('vitoria')
@@ -474,7 +497,9 @@ describe('g3k — JOGAR os exemplos até o fim (não só abrir)', () => {
     }
     expect(api.countAlive('vigia')).toBe(2)
     step(1)
-    expect(stage.querySelector('.szg3k-hud-top-right')?.textContent).toBe('Robôs: 4')
+    expect(stage.querySelector('.szr-top-right [data-szr-panel="texto"]')?.textContent).toBe(
+      'Robôs: 4',
+    )
 
     // (e) ATACAR: encostar liga a 3ª etapa e o dano do tanque é 15 (data-driven).
     // ⚠️ O tanque saiu de (d) ESTACIONADO no mesmo canto dos vigias — este
@@ -583,29 +608,33 @@ describe('g3k — JOGAR os exemplos até o fim (não só abrir)', () => {
     expect(api.posOf(heroi, 'y')).toBeGreaterThan(1)
     expect(api.posOf(heroi, 'y')).toBeLessThan(1.5)
 
-    // (d) tecla 2 troca o tipo (HUD mostra) e o clique planta PEDRA noutra célula.
-    tecla('keydown', '2')
+    // (d) a tecla Q troca o tipo (HUD mostra) e o clique planta PEDRA noutra célula.
+    tecla('keydown', 'q')
     step(1)
-    tecla('keyup', '2')
+    tecla('keyup', 'q')
     step(1)
-    expect(stage.querySelector('.szg3k-hud-bottom-left')?.textContent).toBe('Bloco: pedra (1 2 3)')
+    expect(stage.querySelector('.szr-bottom-left [data-szr-panel="texto"]')?.textContent).toBe(
+      'Bloco: pedra (E Q F)',
+    )
     api.place(heroi, 2, 0, 4) // a guarda de alcance pede o herói perto da célula (2, 2)
     step(60) // a câmera re-converge (o herói teleportou)
     clicarNoPonto(2, 0, 2)
     step(2)
     expect(api.countAlive('pedra')).toBe(1)
-    expect(stage.querySelector('.szg3k-hud-top-left')?.textContent).toBe('Blocos: 2 de 30')
+    expect(stage.querySelector('.szr-top-left [data-szr-panel="texto"]')?.textContent).toBe(
+      'Blocos: 2 de 30',
+    )
 
     // (e) X liga o modo reciclar e o clique NO bloco (pick ÚNICO sem molde +
     // cascata isMold, Lote C) recolhe SÓ o bloco da frente sob o mouse.
     api.place(heroi, -4, 0, -6) // sai de cima do alvo
     step(60)
-    tecla('keydown', 'x')
+    tecla('keydown', 'Enter')
     step(1)
-    tecla('keyup', 'x')
+    tecla('keyup', 'Enter')
     step(1)
-    expect(stage.querySelector('.szg3k-hud-top-right')?.textContent).toBe(
-      'Modo: reciclar (X troca)',
+    expect(stage.querySelector('.szr-top-right [data-szr-panel="texto"]')?.textContent).toBe(
+      'Modo: reciclar (Enter troca)',
     )
     clicarNoPonto(2, 0.6, 2) // o MIOLO do bloco de pedra (o mais próximo da câmera)
     step(2)
@@ -692,7 +721,9 @@ describe('g3k — JOGAR os exemplos até o fim (não só abrir)', () => {
       else step(1)
     }
     expect(api.stateOf(alvo)).toBe('morrendo')
-    expect(stage.querySelector('.szg3k-hud-top-right')?.textContent).toBe('Meteoros: 1 de 20')
+    expect(stage.querySelector('.szr-top-right [data-szr-panel="texto"]')?.textContent).toBe(
+      'Meteoros: 1 de 20',
+    )
 
     // (d) ⭐ o meteoro morrendo NÃO machuca: jogado em cima da nave, a vida não
     // mexe (o gancho da zona filtra por entityStateIs "parado").
@@ -707,7 +738,9 @@ describe('g3k — JOGAR os exemplos até o fim (não só abrir)', () => {
     // e o placar continua valendo UM abate só.
     step(12)
     expect(api.exists(alvo)).toBe(false)
-    expect(stage.querySelector('.szg3k-hud-top-right')?.textContent).toBe('Meteoros: 1 de 20')
+    expect(stage.querySelector('.szr-top-right [data-szr-panel="texto"]')?.textContent).toBe(
+      'Meteoros: 1 de 20',
+    )
     expect(api.healthOf(nave)).toBe(vidaAntes)
 
     // (f) derrota JOGÁVEL: meteoros VIVOS na cara da nave. Cada batida tira 1
@@ -767,14 +800,16 @@ describe('g3k — JOGAR os exemplos até o fim (não só abrir)', () => {
 
     // (b) vitória CAÇANDO: partida nova. Fixa o alvo no alcance da ESPADA (2,5 <
     // 3 do golpe, mas fora dos 1,6 do dano de contato) e estaciona os outros num
-    // canto, para o herói bater sem apanhar. Segurar a espada (espaço) abate cada
-    // monstro; 10 abates (onEntityDeath) fecham em vitória. Chegar lá prova que o
-    // laço caçar→abater FECHA (não trava) e que o herói não morre no alcance certo.
+    // canto, para o herói bater sem apanhar. Cada APERTO do espaço é um golpe (a
+    // recarga é meio segundo: um aperto a cada 15 quadros); 10 abates
+    // (onEntityDeath) fecham em vitória. Chegar lá prova que o laço caçar→abater
+    // FECHA (não trava) e que o herói não morre no alcance certo.
     apertarBotaoDe(stage, 'fim') // "Tentar de novo"
     expect(api.state()).toBe('jogando')
     heroi = primeiroVivo(api, 'heroi')
-    tecla('keydown', ' ') // a espada fica erguida
     for (let i = 0; i < 2400 && api.state() === 'jogando'; i++) {
+      if (i % 15 === 0) tecla('keydown', ' ')
+      if (i % 15 === 1) tecla('keyup', ' ')
       const alvo = primeiroVivo(api, 'monstro')
       if (alvo) {
         api.forEachAlive('monstro', (m) => {
@@ -788,6 +823,23 @@ describe('g3k — JOGAR os exemplos até o fim (não só abrir)', () => {
     tecla('keyup', ' ')
     expect(api.state()).toBe('vitoria')
     expect(tituloDaTela(stage, 'vitoria')).toBe('Herói lendário!')
+  })
+
+  it('⭐ A Lenda do Herói Profissional: segurar o espaço PARADO não vence (a espada não é aura)', async () => {
+    // Com o golpe no keyDown, segurar o espaço sem andar batia em todo monstro que
+    // chegava perto, a cada quadro, e o jogo se vencia sozinho em ~30 s. Agora o
+    // golpe é um aperto: segurar dá UM golpe, e os monstros derrubam o herói parado.
+    const { api, step, stage } = await loadExampleKit(jsDoExemplo(aLendaDoHeroiProfissionalExample))
+    apertarBotaoDe(stage, 'menu')
+    expect(api.state()).toBe('jogando')
+    tecla('keydown', ' ')
+    try {
+      for (let i = 0; i < 60 * 30 && api.state() === 'jogando'; i++) step(1)
+    } finally {
+      tecla('keyup', ' ')
+    }
+    expect(api.state()).not.toBe('vitoria')
+    expect(api.state()).toBe('fim')
   })
 
   it('⭐ Caça Estelar Profissional: as naves inimigas derrubam a nave parada; abater 10 vence', async () => {
@@ -954,7 +1006,7 @@ describe('g3k — JOGAR os exemplos até o fim (não só abrir)', () => {
       api.place(cavador, 0, 1, -3) // segura o ponto de vista (câmera estável)
       clicarNumCristalVisivel()
       step(1)
-      const hud = stage.querySelector('.szg3k-hud-top-left')?.textContent ?? ''
+      const hud = stage.querySelector('.szr-top-left [data-szr-panel="texto"]')?.textContent ?? ''
       if (hud.startsWith('Cristais:') && !hud.startsWith('Cristais: 0')) viuHudNoMeio = true
     }
     expect(api.state()).toBe('vitoria')

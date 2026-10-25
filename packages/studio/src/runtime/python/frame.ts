@@ -5,6 +5,10 @@ import {
   type StudioPythonActivityFeedback,
   StudioPythonActivitySchema,
 } from '@sistemazero/core/studio/python-activity'
+import {
+  readStudioPythonMissionProbe,
+  type StudioPythonMissionFrameObservation,
+} from '@sistemazero/core/studio/python-mission-observation'
 import type { StudioRuntimeImage } from '../types'
 import { pythonCanvasExtension } from './canvasExtension'
 import {
@@ -97,6 +101,7 @@ async function initialize(event: MessageEvent<unknown>) {
       | { type: 'prepared' }
       | { type: 'event'; event: PythonRuntimePayload }
       | { type: 'activity-result'; requestId: string; feedback: StudioPythonActivityFeedback }
+      | { type: 'mission-result'; requestId: string; result: StudioPythonMissionFrameObservation }
       | { type: 'audio-request'; requestId: string; request: string }
       | { type: 'saved-file'; path: string; bytes: Uint8Array<ArrayBuffer> | null }
       | {
@@ -232,6 +237,17 @@ async function initialize(event: MessageEvent<unknown>) {
           if (closed) return
           renderer.dispatchActivityControls(controls)
         }
+      } else if (command.type === 'mission-observe') {
+        if (!('mission' in value) || value.mission !== true)
+          throw new Error('Esta execução não oferece observação de missão.')
+        if (
+          !('requestId' in command) ||
+          typeof command.requestId !== 'string' ||
+          !('probe' in command)
+        )
+          throw new Error('A sonda da missão está incompleta.')
+        supervisor.observeMission(command.requestId, readStudioPythonMissionProbe(command.probe))
+        if (renderer && 'requestCheckpoint' in renderer) renderer.requestCheckpoint()
       } else if (
         command.type === 'activity-check' &&
         'requestId' in command &&
@@ -287,6 +303,8 @@ async function initialize(event: MessageEvent<unknown>) {
   addEventListener('pagehide', close, { once: true })
   port.start()
   try {
+    if ('mission' in value && value.mission !== undefined && value.mission !== true)
+      throw new Error('Modo de observação inválido.')
     activity =
       'activity' in value && value.activity !== undefined
         ? StudioPythonActivitySchema.parse(value.activity)
@@ -334,6 +352,7 @@ async function initialize(event: MessageEvent<unknown>) {
         .then((module: typeof import('./pgzero/renderer')) => {
           if (closed) return
           renderer = module.createPgzeroRenderer(document.body, {
+            ...('mission' in value && value.mission === true ? { mission: true as const } : {}),
             onAudio: pgzeroAudio,
             takeEndedVoices: (limit) => audio.takeEnded(limit),
             onTitle: (title) => {
@@ -364,6 +383,29 @@ async function initialize(event: MessageEvent<unknown>) {
     supervisor = createPythonWorkerSupervisor({
       worker: bootstrap.worker,
       snapshot,
+      ...('mission' in value && value.mission === true
+        ? {
+            mission: true as const,
+            onMissionResult(requestId, observation) {
+              const pose =
+                observation.type === 'sprite' &&
+                observation.observed.found &&
+                observation.observed.objectId !== undefined
+                  ? renderer && 'missionPose' in renderer
+                    ? renderer.missionPose(observation.observed.objectId)
+                    : null
+                  : undefined
+              send({
+                type: 'mission-result',
+                requestId,
+                result: {
+                  observation,
+                  ...(observation.type === 'sprite' ? { pose: pose ?? null } : {}),
+                },
+              })
+            },
+          }
+        : {}),
       ...(activity
         ? {
             activity,

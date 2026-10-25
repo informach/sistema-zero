@@ -9,6 +9,12 @@ import {
   MOLD_ONLY_STATEMENT_TYPES,
   START_ONLY_STATEMENT_TYPES,
 } from '#ir'
+import {
+  NO_PALETTE_TREE_DRIFT,
+  NO_TOOLBOX_DRIFT,
+  paletteTreeDrift,
+  toolboxDrift,
+} from '../../__tests__/paletteDrift'
 import { GAME_UI_FONT_IDS } from '../../gameUiFonts/catalog'
 import { gameTwoDPromptContext } from '../ai'
 import { gameTwoDPromptSummary } from '../aiSummary'
@@ -25,6 +31,7 @@ import {
 } from '../classicContracts'
 import { gameTwoDDocs } from '../docs'
 import { gameTwoDManifest } from '../manifest'
+import { GAME_TWO_D_PALETTE } from '../palette'
 import {
   GAME_TWO_D_AREAS,
   GAME_TWO_D_LIFECYCLE_GUIDANCE,
@@ -220,19 +227,11 @@ describe('g2d — a doc/IA não podem citar categoria que não existe', () => {
     }
   })
 
-  it('todo bloco visível está na toolbox, e em UM lugar só (sem balde "Mais")', () => {
-    // Bloco fora do SUBCATS cai no grupo genérico "Mais" — some do lugar certo sem
-    // erro nenhum. É a versão silenciosa do mesmo problema.
-    const conta = new Map<string, number>()
-    for (const t of tiposNaToolbox(gameTwoDToolboxCategory)) conta.set(t, (conta.get(t) ?? 0) + 1)
-    const visiveis = gameTwoDBlocks
-      .filter((b) => !(b as { hidden?: boolean }).hidden)
-      .map((b) => b.type)
-    expect({
-      foraDaToolbox: visiveis.filter((t) => !conta.has(t)),
-      emDoisLugares: [...conta.entries()].filter(([, n]) => n > 1).map(([t]) => t),
-      baldeMais: nomesDeCategoria(gameTwoDToolboxCategory).filter((n) => n === 'Mais'),
-    }).toEqual({ foraDaToolbox: [], emDoisLugares: [], baldeMais: [] })
+  it('todo bloco visível está na paleta em UM lugar só, sem fantasma e sem balde "Mais"', () => {
+    // Bloco fora da árvore some da paleta sem erro nenhum. A rede é a comum das
+    // extensões (`paletteDrift.ts`).
+    expect(paletteTreeDrift(GAME_TWO_D_PALETTE, gameTwoDBlocks)).toEqual(NO_PALETTE_TREE_DRIFT)
+    expect(toolboxDrift(gameTwoDToolboxCategory, gameTwoDBlocks)).toEqual(NO_TOOLBOX_DRIFT)
   })
 
   it('a contagem de blocos está travada (remoção acidental salta aqui)', () => {

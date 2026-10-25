@@ -1232,6 +1232,11 @@
   .mld-disclosure[open] {
     padding-bottom: 8px;
   }
+  .mld-disclosure.mld-palette-disclosure,
+  .mld-disclosure.mld-palette-disclosure[open] {
+    border: 0;
+    padding-bottom: 0;
+  }
   /* A régua do tempo: trilho fino, o andado no acento e a bolinha com o anel branco. */
   .mld-scrubber {
     width: 100%;
@@ -2644,6 +2649,12 @@
   background: var(--mld-pivot-bg, #f2eafc);
   color: var(--mld-pivot-text, #8b3fd9);
 }
+[data-molda-theme] .mld-pivot-controls .mld-component-help {
+  margin-right: 0;
+}
+[data-molda-theme] .mld-pivot-controls .mld-piece-coordinates [data-pivot-active="true"] {
+  margin-inline: 0;
+}
 [data-molda-theme] .mld-piece-coordinates [data-pivot-active="true"] legend {
   color: var(--mld-pivot-text);
 }
@@ -3138,8 +3149,8 @@
 }
 [data-molda-theme] .mld-piece-heading {
   display: flex;
-  flex-wrap: wrap;
-  align-items: center;
+  flex-direction: column;
+  align-items: stretch;
   gap: 8px;
 }
 @media (pointer: coarse) {

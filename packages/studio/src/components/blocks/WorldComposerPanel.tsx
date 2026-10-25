@@ -389,7 +389,7 @@ export function WorldComposerPanel({ workspace }: WorldComposerPanelProps): JSX.
 
       <aside className="min-h-0 overflow-auto border-l border-sz-border bg-sz-panel p-4">
         <div className="flex items-center justify-between gap-2">
-          <h2 className="m-0 font-semibold text-sm text-sz-fg">Inspector</h2>
+          <h2 className="m-0 font-semibold text-sm text-sz-fg">Detalhes</h2>
           <div className="flex gap-1">
             <button
               type="button"

@@ -1,5 +1,6 @@
 import { studioPythonRuntimePrefix } from '@sistemazero/core/studio/python-runtime-distribution'
 import { sha256 } from '../src/artifacts'
+import { runBoundedOperations } from '../src/bounded-operations'
 import { storePythonRuntimeConfiguration } from '../src/python-configuration-storage'
 import {
   type RuntimeDistributionBucket,
@@ -178,6 +179,9 @@ export function createPromotionHandler(rawPlan: unknown, now = () => Date.now())
       await storePythonRuntimeDistribution({
         bucket,
         deployment: plan.deployment,
+        // Two payloads bound memory during hashing/gzip verification. Metadata-only
+        // readback below uses four; neither phase can outlive its ownership fence.
+        concurrency: 2,
         read: async (path) => {
           active()
           const view = files.get(path)
@@ -191,7 +195,7 @@ export function createPromotionHandler(rawPlan: unknown, now = () => Date.now())
       active()
       stored = true
       stage = 'readback'
-      for (const [key, file] of expected) {
+      await runBoundedOperations([...expected], 4, async ([key, file]) => {
         const object = await bucket.get(key)
         const checksum = object?.checksums?.sha256
         if (
@@ -207,7 +211,7 @@ export function createPromotionHandler(rawPlan: unknown, now = () => Date.now())
         await object.body.cancel()
         active()
         verifiedObjects++
-      }
+      })
     } catch (error) {
       failures.push({ stage, error })
     } finally {

@@ -17,6 +17,31 @@ import type { JSExpr, JSStatement } from '#ir'
 
 type Node = Babel.Node & Record<string, never>
 
+/**
+ * Os métodos públicos do Kit Plataforma (`runtimePlatform.ts`), na ordem da API. É a FONTE
+ * ÚNICA de duas coisas: a detecção que decide se o fragmento do kit entra no runtime
+ * injetado (`game-3d/index.ts`, lote 14 do review 3D) e o substituto que o runtime sem kit
+ * põe no lugar do fragmento (`runtime.ts`). Método novo no kit entra AQUI, senão um projeto
+ * que só use ele ganharia o runtime sem kit (o teste `platformKitVariant.test.ts` cobra a
+ * lista contra o fragmento e contra a API).
+ */
+export const GAME_3D_PLATFORM_KIT_METHODS = [
+  'createPlatformScene',
+  'setStageTheme',
+  'createHero',
+  'loadStage',
+  'clearStage',
+  'stageReset',
+  'stageStep',
+  'shootFire',
+  'sideCamera',
+  'onStageEvent',
+  'stageValue',
+  'setStageNumber',
+  'heroIs',
+  'stageIs',
+] as const
+
 /** As ferramentas do parser central de que o codec precisa emprestadas. */
 export interface PlatformCodecTools {
   /** Nome de um identificador simples, ou vazio/nulo quando o nó não é um. */
@@ -38,6 +63,11 @@ function soloParamName(cb: unknown): string | null {
   return params[0].name ?? null
 }
 
+/** A repetição 1 é a forma canônica "sem repetição": o nó fica sem o campo. */
+function isOne(expr: JSExpr): boolean {
+  return expr.type === 'num' && expr.value === 1
+}
+
 function stringArg(args: unknown[], index: number): string | null {
   const arg = args[index] as { type?: string; value?: unknown } | undefined
   return arg?.type === 'StringLiteral' ? String(arg.value) : null
@@ -56,6 +86,47 @@ export function platformGameThreeDCallToIR(
   const { identifierName, toExpr, isSimpleValue, isInlineFunction, bodyOfFn } = tools
 
   switch (method) {
+    case 'cameraMode': {
+      // generator: SZGame3D.cameraMode(world, "modo", obj | null)
+      const worldVar = identifierName(args[0])
+      const mode = stringArg(args, 1)
+      const objVar = identifierName(args[2])
+      const noTarget = (args[2] as { type?: string } | undefined)?.type === 'NullLiteral'
+      if (!worldVar || mode === null || (!objVar && !noTarget)) return null
+      return { type: 'g3d:cameraMode', worldVar, mode, objVar: objVar || '' }
+    }
+    case 'cameraDistance': {
+      const worldVar = identifierName(args[0])
+      const dist = toExpr(args[1])
+      const height = toExpr(args[2])
+      if (!worldVar || !isSimpleValue(dist) || !isSimpleValue(height)) return null
+      return { type: 'g3d:cameraDistance', worldVar, dist, height }
+    }
+    // ---- 🎬 Animação do modelo (review 3D, lote 6): um nó só, discriminado por `op` ----
+    case 'playAnimation': {
+      // generator: SZGame3D.playAnimation(obj, "clipe", "repetir" | "uma-vez")
+      const objVar = identifierName(args[0])
+      const clip = stringArg(args, 1)
+      const mode = stringArg(args, 2)
+      if (!objVar || clip === null || (mode !== 'repetir' && mode !== 'uma-vez')) return null
+      return { type: 'g3d:modelAnimation', op: 'tocar', objVar, clip, mode }
+    }
+    case 'stopAnimation': {
+      const objVar = identifierName(args[0])
+      return objVar ? { type: 'g3d:modelAnimation', op: 'parar', objVar } : null
+    }
+    case 'setTexture': {
+      // generator: SZGame3D.setTexture(obj, "imagem"[, repetições]) — sem o 3º = 1 vez.
+      const objVar = identifierName(args[0])
+      const asset = stringArg(args, 1)
+      if (!objVar || asset === null) return null
+      if (args.length < 3) return { type: 'g3d:setTexture', objVar, asset }
+      const repeat = toExpr(args[2])
+      if (!isSimpleValue(repeat)) return null
+      return isOne(repeat)
+        ? { type: 'g3d:setTexture', objVar, asset }
+        : { type: 'g3d:setTexture', objVar, asset, repeat }
+    }
     case 'skyPhoto': {
       // generator: SZGame3D.skyPhoto(world, "nomeDoCeu") — o céu .hdr do Molda.
       const worldVar = identifierName(args[0])
@@ -222,6 +293,10 @@ export function platformGameThreeDExpressionToIR(
 ): JSExpr | null | undefined {
   const { identifierName } = tools
 
+  if (method === 'animationDone') {
+    const objVar = identifierName(args[0])
+    return objVar ? { type: 'g3d:animationDone', objVar } : null
+  }
   if (method === 'keyPressed') {
     const key = stringArg(args, 0)
     return key === null ? null : { type: 'g3d:keyPressed', key }
@@ -260,6 +335,7 @@ export const PLATFORM_SIMPLE_VALUE_TYPES: ReadonlySet<string> = new Set([
   'g3d:hitIs',
   'g3d:objectValue',
   'g3d:stageAsk',
+  'g3d:animationDone',
 ])
 
 export function platformGameThreeDBlockExpression(
@@ -267,6 +343,8 @@ export function platformGameThreeDBlockExpression(
   field: (block: Blockly.Block, name: string) => string,
 ): JSExpr | undefined {
   switch (block.type) {
+    case 'sz_g3d_animation_done':
+      return { type: 'g3d:animationDone', objVar: field(block, 'OBJ') }
     case 'sz_g3d_key_pressed':
       return { type: 'g3d:keyPressed', key: field(block, 'KEY') || 'Space' }
     case 'sz_g3d_hit_is':
@@ -328,13 +406,42 @@ export function platformGameThreeDBlockToIR(
       }
     case 'sz_g3d_sky_photo':
       return { type: 'g3d:skyPhoto', worldVar: f('WORLD'), asset: f('PHOTO') }
+    case 'sz_g3d_play_animation':
+      return {
+        type: 'g3d:modelAnimation',
+        op: 'tocar',
+        objVar: f('OBJ'),
+        clip: f('CLIP'),
+        mode: f('MODE') === 'uma-vez' ? 'uma-vez' : 'repetir',
+      }
+    case 'sz_g3d_stop_animation':
+      return { type: 'g3d:modelAnimation', op: 'parar', objVar: f('OBJ') }
+    case 'sz_g3d_set_texture': {
+      const repeat = number('REPEAT', 1)
+      const base = { type: 'g3d:setTexture' as const, objVar: f('OBJ'), asset: f('ASSET') }
+      return isOne(repeat) ? base : { ...base, repeat }
+    }
+    case 'sz_g3d_camera_mode':
+      return {
+        type: 'g3d:cameraMode',
+        worldVar: f('WORLD'),
+        mode: f('MODE') || 'tras',
+        objVar: f('OBJ').trim(),
+      }
+    case 'sz_g3d_camera_distance':
+      return {
+        type: 'g3d:cameraDistance',
+        worldVar: f('WORLD'),
+        dist: number('DIST', 6),
+        height: number('HEIGHT', 3),
+      }
     case 'sz_g3d_classic_platformer':
       return {
         type: 'g3d:classicPlatformer',
         objVar: f('OBJ'),
         worldVar: f('WORLD'),
-        speed: number('SPEED', 0.08),
-        jump: number('JUMP', 0.2),
+        speed: number('SPEED', 5),
+        jump: number('JUMP', 12),
       }
     case 'sz_g3d_for_each_hit':
       return {
@@ -374,7 +481,8 @@ export function platformGameThreeDBlockToIR(
         type: 'g3d:stage',
         op: 'montar',
         worldVar: f('WORLD'),
-        a: tools.expression(block, 'MAP', { type: 'str', value: '' }),
+        // Soquete vazio = a sombra da paleta (o mapa curto de exemplo).
+        a: tools.expression(block, 'MAP', { type: 'str', value: 'chao=0-40;mastro=36;castelo=38' }),
       }
     case 'sz_g3d_clear_stage':
       return { type: 'g3d:stage', op: 'limpar', worldVar: f('WORLD') }

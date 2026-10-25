@@ -32,7 +32,7 @@ test('the actual Studio GLB fixture stays byte-identical to native export and it
     readFileSync(
       resolve(
         import.meta.dir,
-        '../../../../packages/studio/src/official-extensions/game-3d-advanced/__tests__/fixtures/molda-articulated.json',
+        '../../../../packages/studio/src/official-extensions/__tests__/three3d/molda-articulated.json',
       ),
       'utf8',
     ),
@@ -63,7 +63,7 @@ test('the Studio skin fixture stays byte-identical to native export and its CPU 
       readFileSync(
         resolve(
           import.meta.dir,
-          '../../../../packages/studio/src/official-extensions/game-3d-advanced/__tests__/fixtures/molda-skinned.json',
+          '../../../../packages/studio/src/official-extensions/__tests__/three3d/molda-skinned.json',
         ),
         'utf8',
       ),
@@ -97,7 +97,7 @@ test('the Studio flipbook fixture stays byte-identical to native export, and pas
       readFileSync(
         resolve(
           import.meta.dir,
-          '../../../../packages/studio/src/official-extensions/game-3d-advanced/__tests__/fixtures/molda-flipbook.json',
+          '../../../../packages/studio/src/official-extensions/__tests__/three3d/molda-flipbook.json',
         ),
         'utf8',
       ),

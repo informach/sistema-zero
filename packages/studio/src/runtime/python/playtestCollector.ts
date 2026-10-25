@@ -1,3 +1,4 @@
+import { readStudioPythonMissionProbe } from '@sistemazero/core/studio/python-mission-observation'
 import {
   STUDIO_PYTHON_PLAYTEST_LIMITS as LIMITS,
   type StudioPythonPlaytestCapture,
@@ -43,6 +44,7 @@ export function createPythonPlaytestCollector(recipeInput: unknown, retire: () =
       errors.push(message.slice(0, LIMITS.errorChars) || 'Falha de execução Python.')
   }
   const observer: StandalonePythonPlayerObserver = {
+    ...(recipe.mission ? { mission: true } : {}),
     session(value) {
       if (session || finishing || finished) {
         fail('A prova de execução não permite reiniciar a sessão.')
@@ -99,6 +101,39 @@ export function createPythonPlaytestCollector(recipeInput: unknown, retire: () =
   }
   return {
     observer,
+    programFailure(message: string) {
+      if (!recipe.mission || finishing || finished) throw new Error('A missão não está ativa.')
+      fail(message)
+    },
+    output() {
+      if (!recipe.mission || finished || finishing)
+        throw new Error('A observação de saída não está disponível.')
+      if (omittedChars) throw new Error('A saída do programa excedeu o limite da observação.')
+      return { ...output }
+    },
+    async observe(raw: unknown) {
+      if (
+        !recipe.mission ||
+        !session?.observePythonMission ||
+        !identity ||
+        finished ||
+        finishing ||
+        submittingInput
+      )
+        throw new Error('A observação não está disponível nesta execução.')
+      const current = session
+      const expected = { ...identity }
+      const result = await session.observePythonMission(readStudioPythonMissionProbe(raw))
+      if (
+        session !== current ||
+        !identity ||
+        !sameIdentity(identity, expected) ||
+        finished ||
+        finishing
+      )
+        throw new Error('A geração mudou durante a observação.')
+      return result
+    },
     view() {
       return {
         ready: !!session,
@@ -162,7 +197,7 @@ export function createPythonPlaytestCollector(recipeInput: unknown, retire: () =
       let image: StudioRuntimeImage | undefined
       let capture: StudioPythonPlaytestCapture | undefined
       try {
-        const snapshot = await current.captureSnapshot?.()
+        const snapshot = recipe.capture === false ? undefined : await current.captureSnapshot?.()
         if (snapshot) {
           if (!sameIdentity(expectedIdentity, snapshot.identity))
             throw new Error('A captura pertence a outra sessão.')

@@ -18,6 +18,7 @@ function requireElement<Value extends Element>(selector: string, type: new () =>
 
 /** Trusted runtime consumers observe the same player; callbacks never come from a project payload. */
 export interface StandalonePythonPlayerObserver {
+  mission?: true
   session?(session: StudioRuntimeSession): void
   event?(event: StudioRuntimeEvent): void
   disposed?(identity: StudioExecutionIdentity | undefined): void
@@ -196,6 +197,7 @@ async function mount(
     output.textContent = ''
     try {
       const session = await preparePythonFrameSession({
+        ...(observer?.mission ? { mission: true } : {}),
         frame,
         frameURL,
         snapshot,

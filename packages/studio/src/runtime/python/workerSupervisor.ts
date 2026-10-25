@@ -5,6 +5,13 @@ import {
   StudioPythonActivitySchema,
   verifyStudioPythonActivityFeedback,
 } from '@sistemazero/core/studio/python-activity'
+import {
+  PYTHON_MISSION_OBSERVATION_LIMITS,
+  readStudioPythonMissionProbe,
+  type StudioPythonMissionObservation,
+  type StudioPythonMissionProbe,
+  verifyStudioPythonMissionObservation,
+} from '@sistemazero/core/studio/python-mission-observation'
 import type { StudioRuntimeInput } from '../types'
 import { summarizePythonError } from './errorSummary'
 import type { PythonRuntimePayload } from './frameProtocol'
@@ -36,6 +43,8 @@ export function createPythonWorkerSupervisor(options: {
   snapshot: PythonExecutionSnapshot
   activity?: StudioPythonActivity
   onActivityResult?(requestId: string, feedback: StudioPythonActivityFeedback): void
+  mission?: true
+  onMissionResult?(requestId: string, observation: StudioPythonMissionObservation): void
   emit(event: PythonRuntimePayload): void
   onReady(): void
   /** Releases bootstrap URLs and other frame-owned resources, never learner cleanup. */
@@ -55,6 +64,8 @@ export function createPythonWorkerSupervisor(options: {
     assertStudioPythonActivityScope(activity, options.snapshot.configuration)
     if (!options.onActivityResult) throw new Error('O canal da tarefa não está disponível.')
   }
+  if (options.mission && !options.onMissionResult)
+    throw new Error('O canal de observação da missão não está disponível.')
   let phase: Phase = 'booting'
   let operation: { kind: 'run' | 'evaluate'; id: string } | undefined
   let inputId: string | undefined
@@ -71,6 +82,14 @@ export function createPythonWorkerSupervisor(options: {
   let activityRequested = false
   let pendingActivity:
     | { id: string; idle: boolean; timer: ReturnType<typeof setTimeout> }
+    | undefined
+  let pendingMission:
+    | {
+        id: string
+        probe: StudioPythonMissionProbe
+        idle: boolean
+        timer: ReturnType<typeof setTimeout>
+      }
     | undefined
   const bootTimer = setTimeout(
     () => fail('runtime-unavailable', 'O ambiente Python demorou demais para iniciar.'),
@@ -90,6 +109,8 @@ export function createPythonWorkerSupervisor(options: {
     pendingAudio = undefined
     if (pendingActivity) clearTimeout(pendingActivity.timer)
     pendingActivity = undefined
+    if (pendingMission) clearTimeout(pendingMission.timer)
+    pendingMission = undefined
     worker.removeEventListener('message', message)
     worker.removeEventListener('error', error)
     worker.removeEventListener('messageerror', messageError)
@@ -140,6 +161,33 @@ export function createPythonWorkerSupervisor(options: {
       return
     }
     switch (value.type) {
+      case 'mission-result': {
+        const pending = pendingMission
+        if (
+          !pending ||
+          value.requestId !== pending.id ||
+          phase !== 'running' ||
+          inputId ||
+          pendingGraphics ||
+          pendingAudio
+        )
+          break
+        let observation: StudioPythonMissionObservation
+        try {
+          observation = verifyStudioPythonMissionObservation(value.observation, pending.probe)
+        } catch {
+          break
+        }
+        clearTimeout(pending.timer)
+        pendingMission = undefined
+        if (pending.idle && !state('completed')) return
+        try {
+          options.onMissionResult!(pending.id, observation)
+        } catch {
+          fail('runtime-unavailable', 'Não foi possível enviar a observação da missão.')
+        }
+        return
+      }
       case 'activity-result': {
         const pending = pendingActivity
         if (
@@ -277,7 +325,12 @@ export function createPythonWorkerSupervisor(options: {
           break
         phase = 'preparing'
         try {
-          send({ type: 'prepare', snapshot: options.snapshot, ...(activity ? { activity } : {}) })
+          send({
+            type: 'prepare',
+            snapshot: options.snapshot,
+            ...(activity ? { activity } : {}),
+            ...(options.mission ? { mission: true } : {}),
+          })
         } catch {
           fail('runtime-unavailable', 'Não foi possível preparar os arquivos do programa.')
         }
@@ -288,7 +341,14 @@ export function createPythonWorkerSupervisor(options: {
         if (state('ready')) options.onReady()
         return
       case 'input-request':
-        if (phase !== 'running' || !operation || inputId || pendingGraphics || pendingAudio) break
+        if (
+          phase !== 'running' ||
+          (!operation && !pendingMission?.idle) ||
+          inputId ||
+          pendingGraphics ||
+          pendingAudio
+        )
+          break
         inputId = value.requestId
         if (state('waiting-input'))
           options.emit({ type: 'input-request', requestId: value.requestId, prompt: '' })
@@ -314,7 +374,10 @@ export function createPythonWorkerSupervisor(options: {
             text: value.traceback ?? value.text,
           })
         } else if (value.ok) {
-          if (pendingActivity) {
+          if (pendingMission) {
+            pendingMission.idle = true
+            state('running')
+          } else if (pendingActivity) {
             // The program finished before reaching a cooperative checkpoint.
             // The worker grades on the now-idle interpreter, without reentry.
             pendingActivity.idle = true
@@ -372,9 +435,44 @@ export function createPythonWorkerSupervisor(options: {
     evaluate(requestId: string, source: string) {
       start('evaluate', requestId, source)
     },
+    observeMission(requestId: string, raw: unknown) {
+      if (
+        !options.mission ||
+        pendingMission ||
+        pendingActivity ||
+        !isPythonRequestId(requestId) ||
+        (phase !== 'running' && phase !== 'completed') ||
+        inputId ||
+        (phase === 'running' && operation?.kind !== 'run')
+      )
+        throw new Error('A missão não pode observar esta execução.')
+      const probe = readStudioPythonMissionProbe(raw)
+      const idle = phase === 'completed'
+      pendingMission = {
+        id: requestId,
+        probe,
+        idle,
+        timer: setTimeout(
+          () =>
+            fail(
+              'program-error',
+              'O programa não respondeu à observação da missão dentro do prazo.',
+            ),
+          PYTHON_MISSION_OBSERVATION_LIMITS.timeoutMs,
+        ),
+      }
+      if (idle && !state('running')) throw new Error('A execução foi interrompida.')
+      try {
+        send({ type: 'mission-observe', requestId, probe })
+      } catch (error) {
+        fail('runtime-unavailable', 'Não foi possível solicitar a observação da missão.')
+        throw error
+      }
+    },
     checkActivity(requestId: string) {
       if (
         !activity ||
+        pendingMission ||
         activityRequested ||
         !isPythonRequestId(requestId) ||
         (phase !== 'running' && phase !== 'completed') ||

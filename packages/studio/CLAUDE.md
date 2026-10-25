@@ -1413,8 +1413,10 @@ dos frames a cada reload de workspace povoado (colar código na Ponte). Regress�
   Estrutura normaliza sempre. Regressão: `__tests__/svgTitleDupRepro.test.ts`.
 - **Execução**: o gerador emite `molds` → `start` → `events` → `loops` e conversa com o
   runtime pelo `RuntimeLifecycleContract` da extensão. O boot é automático;
-  blocos antigos de “começar” não devem aparecer em projetos novos. Jogo 2D e
-  Jogo 2D Avançado declaram `managedProjectRun`: seus runtimes incorporam o
+  blocos antigos de “começar” não devem aparecer em projetos novos. Jogo 2D,
+  Jogo 2D Avançado, Jogo 3D (desde o lote 5 do review 3D, com `restartMethod: 'restart'`:
+  o “Recomeçar o jogo” das regras de jogo descarta as cenas e roda a fábrica de novo,
+  FORA do quadro) e Jogo 3D Avançado declaram `managedProjectRun`: seus runtimes incorporam o
   `ProjectRunContext`; listeners DOM inline ou nomeados recebem o `AbortSignal`
   da partida, e timeouts, intervalos e RAFs avulsos passam pelo contexto para
   serem cancelados antes de uma nova factory. Os schedulers e recursos específicos
@@ -1528,7 +1530,7 @@ legados (`AnyBlockLevel`) e a fronteira ÚNICA `resolveLearning` normaliza via `
 (legado: iniciante→ini-2d, intermediario→int-3d, avancado→av-3d — preserva os conjuntos antigos;
 lixo→ini-2d fail-closed); consumidores internos leem `config.learning.level` JÁ normalizado.
 `minLevel` das extensões: game-2d=ini-2d, game-3d=ini-3d (porta do 3D), game-2d-advanced=int-2d,
-world-3d=int-3d, game-3d-advanced=int-3d (reclassificado 26/07 — abre no Arquiteto); sem `minLevel` → `DEFAULT_EXTENSION_MIN_LEVEL` (int-3d)
+world-3d=int-3d, game-3d-advanced=av-3d (review 3D 10/2026: uma extensão 3D por degrau); sem `minLevel` → `DEFAULT_EXTENSION_MIN_LEVEL` (int-3d)
 via helper `extensionMinLevel` (fonte única — nunca `?? '…'` inline). `BLOCK_LEVEL_OPTIONS` é a
 fonte dos labels do select do admin. ⚠️ **`allowBlocks` é RESTRITIVO** (06/2026): lista
 NÃO-vazia = mostra SÓ esses blocos (+ as 🗂️ Áreas do projeto, que nunca passam pelo filtro), ignorando
@@ -1590,7 +1592,7 @@ bloco visível some (preserva 🔎 Pesquisar e os flyouts dinâmicos `custom`); 
 5. `parsers/{js,html,css}.ts` — código→IR (Ponte). Expr usável em `se`/valor precisa entrar em `isSimpleValue` (senão vira rawJS).
 6. `blockly/workspaceState.ts` — IR→bloco (`statementToBlock`/`exprToValueBlock`/`htmlNodeToBlock`; **5º arg do `block()` = inputs de VALOR**).
 7. `state/projectStore.ts` — type em `CORE_BLOCKLY_BLOCK_TYPES` (drift `blockAllowlist.test.ts`; faltar = `sanitizeImportedBlocksState` zera TODOS os blocos).
-8. **`blockly/blockLevels.ts` — DEGRAU do bloco** (curadoria por bloco; reforma 2D/3D 07/2026 = escada TOTAL de 6: `iniciante-2d` < `iniciante-3d` < `intermediario-2d` < `intermediario-3d` < `avancado-2d` < `avancado-3d`, a MESMA ordem da jornada do aluno): a categoria **Programação** tem progressão própria e exaustiva em `programmingContract.ts` (orçamento iniciante explícito; bloco novo cai no intermediário, nunca no iniciante por omissão). **Filosofia "kit primeiro, na unha por último" (26/07):** iniciante = jogos (kits) + **HTML/CSS ESSENCIAL** (cor/texto/imagem/caixa — default iniciante-2d); **SVG inteiro = intermediario-2d** (primitivo visual gentil, via `level` do catálogo); **Canvas 2D inteiro = avancado-2d** (prefixo `sz_canvas_` + os não-prefixados `sz_html_canvas`/`sz_val_image`/`sz_js_new_image`/`sz_input_*` no set `AVANCADO_2D`); **HTML/CSS PROFUNDOS = avancado-2d** (tags semânticas/forms via `level` do catálogo; layout/tipografia/animação/mecânica genérica no set); **Canvas 3D inteiro = avancado-3d** (`INTERMEDIARIO_3D` esvaziado → prefixo `sz_t3d_`). **Todo `sz_g3d_*` é iniciante-3d** (a aula filtra quais mostrar); os pisos por prefixo decidem canvas→av-2d, g3d→ini-3d, gk→int-2d, w3d→int-3d, g3k→int-3d, t3d→av-3d. ⚠️ NUNCA pôr bloco 3D nos sets `*_2D` (o split protege a promessa do eixo — travado no teste). Valores LEGADOS (`iniciante`/`intermediario`/`avancado`) seguem aceitos nas props públicas e normalizam via `normalizeBlockLevel` (`core/levels.ts`: legado→`iniciante-2d`/`intermediario-3d`/`avancado-3d`, preservando os conjuntos antigos; lixo→`iniciante-2d` fail-closed). Os testes cobram tipos reais, tiers exaustivos e ausência de duplicação entre o contrato de Programação e os sets genéricos.
+8. **`blockly/blockLevels.ts` — DEGRAU do bloco** (curadoria por bloco; reforma 2D/3D 07/2026 = escada TOTAL de 6: `iniciante-2d` < `iniciante-3d` < `intermediario-2d` < `intermediario-3d` < `avancado-2d` < `avancado-3d`, a MESMA ordem da jornada do aluno): a categoria **Programação** tem progressão própria e exaustiva em `programmingContract.ts` (orçamento iniciante explícito; bloco novo cai no intermediário, nunca no iniciante por omissão). **Filosofia "kit primeiro, na unha por último" (26/07):** iniciante = jogos (kits) + **HTML/CSS ESSENCIAL** (cor/texto/imagem/caixa — default iniciante-2d); **SVG inteiro = intermediario-2d** (primitivo visual gentil, via `level` do catálogo); **Canvas 2D inteiro = avancado-2d** (prefixo `sz_canvas_` + os não-prefixados `sz_html_canvas`/`sz_val_image`/`sz_js_new_image`/`sz_input_*` no set `AVANCADO_2D`); **HTML/CSS PROFUNDOS = avancado-2d** (tags semânticas/forms via `level` do catálogo; layout/tipografia/animação/mecânica genérica no set); **Canvas 3D inteiro = avancado-3d** (`INTERMEDIARIO_3D` esvaziado → prefixo `sz_t3d_`). **Jogo 3D: só o núcleo (`INICIANTE_3D_G3D`, lista literal no teste) é iniciante-3d**; o resto do `sz_g3d_*` é int-3d (review 3D 10/2026); os pisos por prefixo decidem canvas→av-2d, g3d→int-3d, gk→int-2d, w3d→int-3d, g3k→av-3d, t3d→av-3d. ⚠️ NUNCA pôr bloco 3D nos sets `*_2D` (o split protege a promessa do eixo — travado no teste). Valores LEGADOS (`iniciante`/`intermediario`/`avancado`) seguem aceitos nas props públicas e normalizam via `normalizeBlockLevel` (`core/levels.ts`: legado→`iniciante-2d`/`intermediario-3d`/`avancado-3d`, preservando os conjuntos antigos; lixo→`iniciante-2d` fail-closed). Os testes cobram tipos reais, tiers exaustivos e ausência de duplicação entre o contrato de Programação e os sets genéricos.
 8b. **SOMBRA nos soquetes (`blocks/valueSockets.ts`)** — todo `input_value` novo precisa nascer
    PREENCHIDO na paleta (feedback dela 24/07: "vários blocos sem sombra"): número em
    `VALUE_SOCKETS`, texto em `TEXT_SOCKETS`, cor em `COLOR_SOCKETS`, composto (variável nomeada /
@@ -1621,7 +1623,7 @@ schema, diagnóstico, Blockly e gerador consomem esses contratos puros. Ao
 acrescentar um caso nessas famílias, estenda primeiro o contrato da categoria e
 prove o caminho inválido e o round-trip nos testes.
 
-**Bloco de EXTENSÃO** (`game-2d`/`game-3d`, prefixo `g2d:`/`g3d:`) vive em `official-extensions/<id>/blocks.ts` (NÃO no CORE); schema/buildIR/generators/parsers/workspaceState valem igual, mas com 3 pontos PRÓPRIOS além dos acima: (a) `state/projectStore.ts` → `EXTENSION_BLOCKLY_BLOCK_TYPES['<id>']` (não o CORE); (b) `ir/schema.ts` → o `type` no Set `G2D_STATEMENT_TYPES`/`G3D_STATEMENT_TYPES` (testado em `official-extensions/*/__tests__`); (c) o `blocks.ts` da extensão → a entrada na subcategoria certa do array `SUBCATS` (que monta o `*ToolboxCategory`), senão o bloco cai no grupo genérico "Mais". O `manifest.ts` traz a `docs` (markdown do aluno; `description` ≤ ~500 chars) + bump de `version`. Checklist de revisão: `docs/EXTENSIONS.md`.
+**Bloco de EXTENSÃO** (`game-2d`/`game-3d`, prefixo `g2d:`/`g3d:`) vive em `official-extensions/<id>/blocks.ts` (NÃO no CORE); schema/buildIR/generators/parsers/workspaceState valem igual, mas com 3 pontos PRÓPRIOS além dos acima: (a) `state/projectStore.ts` → `EXTENSION_BLOCKLY_BLOCK_TYPES['<id>']` (não o CORE); (b) `ir/schema.ts` → o `type` no Set `G2D_STATEMENT_TYPES`/`G3D_STATEMENT_TYPES` (testado em `official-extensions/*/__tests__`); (c) o `palette.ts` da extensão → a entrada na família/seção certa da árvore pura (o `extensionPalette.ts` monta cor, ordem e `*ToolboxCategory`); não existe mais o balde "Mais": bloco fora da árvore some da paleta e o drift comum (`official-extensions/__tests__/paletteDrift.ts`) falha. O `manifest.ts` traz a `docs` (markdown do aluno; `description` ≤ ~500 chars) + bump de `version`. Checklist de revisão: `docs/EXTENSIONS.md`.
 
 **Padrões já usados** (clone-os):
 - **Seletores de NOME (escolher, não digitar)** — em vez de a criança redigitar a grafia de algo que já nomeou noutro bloco, o campo CONSUMIDOR abre um pop-up com a lista do que já foi criado (à la Scratch/MakeCode); símbolos de Programação que exigem declaração (`mutable-variable`/`group`≡lista/`class`/`function`) não oferecem texto livre e respeitam escopo, ramo e ordem (funções têm hoisting; classes não). Canvas 3D também exige recursos declarados e separa os papéis `scene3d`/`renderer3d`/`camera3d`/`light3d`/`composer3d`/`object3d`/`loader3d`/`physics-world`; `object3d` aceita objetos Three.js genéricos, enquanto `g3d-object` aceita somente objetos ligados a um mundo do Jogo 3D. A validação da IR usa os contratos de `three/canvas3dContract.ts` e `three/game3dContract.ts`; o catálogo semântico de declarações do Jogo 3D também alimenta o registro geral de variáveis, e `GAME3D_OBJECT_EXPRESSION_TYPES` promove resultados de clique/mira guardados numa variável. Os demais domínios mantêm o input de fallback. Três campos, TODOS `extends Blockly.FieldTextInput` (o VALOR continua string → IR/round-trip/serialização/allowlist IDÊNTICOS a `field_input`; só troca o EDITOR — **nunca `FieldDropdown`**, que coage nome desconhecido p/ a 1ª opção e PERDE o nome no round-trip): `field_name_picker` (`blockly/fields/FieldNamePicker.ts`, nomes puros por `kind`), `field_sprite_picker` (com miniatura/swatch), `field_asset_picker` (IMAGENS do projeto, `__szAssets`). **Regra de ouro: só CONSUMIDORES viram picker; o campo que DECLARA o nome segue `field_input`** (a criança nomeia uma vez). `FieldNamePicker` tem **mais de 50 `kind`** (a união `NameKind`; cresceu muito): além dos de programação (`variable`/`group`/`class`/`function`/`property`/`method`) e 3D (`scene3d`/`object3d`/`g3d-object`/`group3d`/`entity3d`/`mold3d`/…), os de jogo 2D — `canvas`/`spritesheet`/`tilemap`/`character`/`screen`/`gamestate`/`mold`/`battler`(fichas de inimigo de batalha)/`npc`/`flag`/`item`/`map`/`region`/`path`/`look`/`sound`/`effect`/`event`/`enemytype`/`shape`/`pkmcreature`/`pkmtype`.
@@ -1648,7 +1650,7 @@ prove o caminho inválido e o round-trip nos testes.
     `min-width:88px` p/ o código `#rrggbb` COMPLETO ficar sempre visível).
   - **Bloco NOVO que declara um nome de um `kind` existente**: adicione-o ao `*_DECL_BLOCKS` correspondente em `FieldNamePicker.ts` (ex.: `VARIABLE_DECL_BLOCKS`, `SCENE3D_DECL_BLOCKS`, `OBJECT3D_DECL_BLOCKS`), senão o picker reporta "nenhum ainda". Sprite/asset têm o seu (`SPRITE_DECL_BLOCKS` no FieldSpritePicker).
   - **`kind` NOVO**: estenda a união `NameKind` + `NAME_KINDS` + `*_DECL_BLOCKS` + um `collect*` + entrada em `KIND_UI` (ícone/placeholder/empty) + um `case` no `collectGlobals`; então troque os campos consumidores.
-  - **Nomes LOCAIS de laço** (o "i" do contar, o "item" do enxame): `LOOP_BINDERS_BY_KIND` + `collectScopedNames(block, binders)` sobem por `getSurroundParent` e só aparecem DENTRO do laço (swatch 🔁 "no laço"). Hoje `variable`, `object3d` e `g3d-object`.
+  - **Nomes LOCAIS de laço** (o "i" do contar, o objeto da vez do "para cada objeto do grupo"): `LOOP_BINDERS_BY_KIND` + `collectScopedNames(block, binders)` sobem por `getSurroundParent` e só aparecem DENTRO do laço (swatch 🔁 "no laço"). Hoje `variable`, `object3d` e `g3d-object`.
   - **Escopo e ordem de declaração**: variáveis globais só aparecem depois do bloco que as declara; parâmetros, iteradores, `catch`, `fetch`, Promise e callbacks de extensão valem somente no ramo/corpo que os recebe. `FieldNamePicker.ts` protege a autoria e `ir/schema.ts` repete o contrato para projetos importados e para a Ponte. Não adicione um nome ao conjunto implícito para esconder uma declaração ausente.
   - **OOP escopado por CLASSE** (`property`/`method`): `blockly/blocks/classIntrospection.ts` (PURO, extraído do `argsMutator.ts` que o reusa) resolve a classe em contexto pela FORMA do bloco (`resolveContextClass`: campo/tomada `OBJ`→`classOfInstance`; sem `OBJ`→`enclosingClass`) e lista SÓ os membros dela (com herança via campo `SUPER`, guarda de ciclo); sem resolver, cai na lista global. ⚠️ NÃO importe `extendsMutator` de dentro do `classIntrospection` (ciclo via FieldNamePicker) — leia `SUPER` inline.
 - **Forward-only** (atalho que não precisa voltar a si na Ponte): os blocos dedicados de CSS (fill/stroke/transform/perspective/grid/var…) e o `sz_js_set_style_text` (cssText) produzem IR GENÉRICA (`CSSRule`/`setStyle`); a Ponte reversa devolve a "Regra"/bloco genérico. Só precisam de block+buildIR+allowlist (IR reusada).
@@ -1694,9 +1696,9 @@ ganha os blocos que a usam.
   card decide por `libOrigin`/registro/`kind`, ver §"✏️ Editar de verdade"); a `personalSync` varre
   também os 3D desde 06/09.
 - **Blocos novos do Jogo 3D** (`0.29.0 → 0.30.0`): `sz_g3d_create_model_file` ("Criar o objeto ⟨X⟩
-  com o modelo ⟨M⟩ na cena ⟨W⟩ tamanho ⟨S⟩", em 🧊 Formas & modelos, `field_asset_picker`
+  com o modelo ⟨M⟩ na cena ⟨W⟩ tamanho ⟨S⟩", em 🧊 Formas & modelos (hoje 🧊 Objetos › Criar), `field_asset_picker`
   `kind:'3d' filter:'model3d'`, `SIZE` com sombra 1) e `sz_g3d_sky_photo` ("Usar o céu 360° ⟨P⟩ na
-  cena ⟨W⟩", em 💡 Luz & céu, `filter:'environment3d'`). Os dois `start-only-command`.
+  cena ⟨W⟩", em 💡 Luz & céu (hoje 🎬 Cena, céu e câmera › Céu e luz), `filter:'environment3d'`). Os dois `start-only-command`.
   - ⭐ **A IR entra pela porta do Kit Plataforma**: `official-extensions/game-3d/modelAssetsIR.ts`
     declara os nós e `platformIR.ts` os soma ao `PlatformGameThreeDStatement` + aos schemas zod, e
     o `platformCodec.ts` faz bloco→IR (`platformGameThreeDBlockToIR`) e código→IR (declaração
@@ -1720,6 +1722,27 @@ ganha os blocos que a usam.
     `disposeGroup` do descarte por mundo as PULA (senão fechar uma cena mataria os objetos da
     outra) e quem as solta é o `disposeAll`. `setBackground`/`setSky` zeram
     `scene.environment` quando trocam um céu de foto.
+  - ⭐ **Carregador compartilhado (review 3D, lote 2, 24/10/2026):** leitura de GLB/HDR, fila,
+    prazo, orçamento por modelo (`MAX_MODEL_*`, ossos incluídos), cópia com ossos próprios
+    (SkeletonUtils), encaixe (`fit` longest/contain/height × center/floor), animador, pintura
+    animada do Molda, `hdrAmbient` e `configureColorTexture` (sRGB) moram em
+    `official-extensions/three3dModelsRuntime.ts` (`createSzModels(host)`, marcador
+    `/*__SZ_THREE_MODELS_RUNTIME__*/`, `withThreeModelsRuntime`). Jogo 3D, Mundo 3D e Avançado
+    injetam o MESMO fragmento; os `runtimeModelAssets.ts` viraram adaptação fina. Os três
+    importmaps têm `three/addons/utils/SkeletonUtils.js` (a mesma URL pinada).
+  - ⭐ **Molda no Jogo 3D (review 3D, lote 6):** cada objeto com modelo ganha um animador
+    (`models.animator`) guardado NÃO-enumerável em `userData.sz.anim`/`modelRoot` (o clone do
+    Three copia o userData por JSON; um mixer circular quebraria a cópia de grupo) e atualizado
+    pelo laço da cena (`world._animated` + `stepFlipbooks`, pausado = congela). Blocos
+    `sz_g3d_play_animation` (núcleo), `stop_animation` e `animation_done` (nó único
+    `g3d:modelAnimation` com `op` + expr `g3d:animationDone`, em `modelAssetsIR.ts`/
+    `platformCodec.ts`). Pedido repetido a cada quadro CONTINUA (não rebobina); pedido novo ou
+    depois de uma pausa recomeça. Cópia de grupo = animador próprio, começando o clipe do
+    molde. Remover/podar/recomeçar descartam mixer e ossos; o recomeçar volta a pintura animada
+    ao 1º quadro. `set_texture` ganhou "repetindo N vezes" (IR `repeat?`, ausente = 1; cache
+    `url|N`). Testes: `three3dModelsRuntime.test.ts` +
+    um de integração com a fixture real em cada kit. O teste do Molda
+    (`sceneStudioCompatibility.test.ts`) lê os limites deste arquivo.
   - `index.ts` do kit: `esmImports` ganhou `three/addons/loaders/GLTFLoader.js` e
     `HDRLoader.js` (as MESMAS URLs pinadas `?external=three` do Avançado; mesma origem do three,
     nada novo na CSP). `runtimeTypecheck` conhece `__SZGAME_ASSETS_3D`; `FieldNamePicker`
@@ -1734,7 +1757,270 @@ ganha os blocos que a usam.
   `origin`), `game-3d/__tests__/modelAssets.test.ts` (gerador, contratos, Ponte com tamanho em
   variável, blocos/gavetas/importmap, runtime síncrono), mais o `blockAudit`/`docDrift`/
   `blocksPedagogy`/`templateGuard`/`runtimeTypecheck` de sempre.
-- ⚠️ Fora do lote, registrado: `export/fileMap.ts` ainda deixa os assets 3D fora do ZIP exportado.
+- ~~Fora do lote: `export/fileMap.ts` deixa os assets 3D fora do ZIP exportado.~~ Resolvido em
+  05/09/2026 (`3bca0f50d`): o export leva o manifesto 3D no `sz-assets.js` (`__SZGAME_ASSETS_3D`,
+  data URL + resolvedor de `fetch` por nome de arquivo), e é por ele que os três runtimes abrem o
+  GLB/HDR, igual ao preview. Não há `.glb`/`.hdr` soltos no ZIP de propósito: nada os pede por
+  URL relativa (o CSS `url()` que justifica o arquivo solto das imagens não existe para 3D), e o
+  PWA pré-carrega todo `public/*`, então cada visitante baixaria cada modelo duas vezes.
+  Provado fora do Estúdio (24/10/2026) por `e2e/export-3d-assets.spec.ts` (ZIP com terser/csso
+  servido numa origem própria: herói do Molda com ossos + céu HDR no Jogo 3D, Mundo 3D e
+  Avançado; asset ausente = aviso gentil e forma de reserva) e pelo teste de bytes em
+  `export/__tests__/fileMap.test.ts`.
+
+## Extensões 3D: o mapa depois do review 3D (lotes 0-15, 24/10/2026)
+
+Relatório completo: `docs/3d-extensions-review-2026-10-24.md`. As três extensões ainda não tinham
+usuário, então o review renomeou, fundiu e removeu blocos SEM migração (a regra "bloco que a
+criança já usa não muda de forma" ficou suspensa só para `sz_g3d_`/`sz_w3d_`/`sz_g3k_` nesse
+lote). Daqui em diante ela volta a valer para os três prefixos.
+
+- **Escada (uma extensão por degrau)**: Jogo 3D (`sz_g3d_`, `window.SZGame3D`, v0.31.0) =
+  `iniciante-3d` SÓ no núcleo `INICIANTE_3D_G3D` (`blockly/blockLevels.ts`, 43 blocos: a contagem visível entrou); o
+  resto é `intermediario-3d`. Mundo 3D (`sz_w3d_`, `SZWorld3D`, v4.4.0, 160 blocos visíveis) =
+  `intermediario-3d`. Jogo 3D Avançado (`sz_g3k_`, `SZGameKit3D`, v0.23.0, 147 visíveis) =
+  `avancado-3d` (`minLevel`). Paletas: 10, 11 e 11 famílias (árvore família → seção em
+  `<ext>/palette.ts`; o Jogo 3D termina em "🧰 Kits prontos"). Bloco `sz_g3d_` novo cai no
+  int-3d sozinho; só entra no núcleo editando a lista literal (e o teste de níveis).
+- **Peças compartilhadas** (`src/official-extensions/`), cada fragmento de runtime entra por
+  marcador e é injetado UMA vez (o `with…` recusa marcador repetido):
+  | Arquivo | Marcador / API | O que faz |
+  |---|---|---|
+  | `extensionPalette.ts` | `buildExtensionPalette`, `flatFamily` | árvore → toolbox, cores por família, filtro de `hidden` (Jogo 2D também usa) |
+  | `three3dModelsRuntime.ts` | `/*__SZ_THREE_MODELS_RUNTIME__*/`, `createSzModels(host)` | GLB/HDR, ossos (SkeletonUtils), `fit`, animador, pintura animada do Molda (contrato 1), `hdrAmbient`, `MAX_MODEL_*` |
+  | `game3dRules/` (`blocks`, `ir`, `codec`, `runtime`) | `/*__SZ_GAME_RULES_3D_RUNTIME__*/`, `gameRulesBlocks(prefix)` | cantos da tela, pontos, vida, telas, fim, recomeçar, contagem, "depois de", sorteio, tremer, piscar e os "Quando…" |
+  | `threeRenderBudgetRuntime.ts` | `/*__SZ_THREE_RENDER_BUDGET_RUNTIME__*/`, `createSzRenderBudget` | níveis `alta`/`leve`, resolução pelo canvas real, pixel ratio com teto, sombra, efeitos e MSAA |
+  | `threeKeys.ts` | dropdown comum de teclas (`KeyboardEvent.code`) | Mundo 3D, Avançado e o "Quando apertar a tecla" das regras |
+  | `__tests__/three3d/` | fixtures REAIS do Molda + `assetFixtures.ts` + `countingThree.ts` | usadas pelos testes dos três kits e pelo e2e |
+- **Regras de jogo**: um membro de IR por regra cobrindo os três prefixos (`'g3d:hudText' |
+  'w3d:hudText' | 'g3k:hudText'`, contra o TS2590). `GAME_RULES_PREFIX_OFF` tira o que cada
+  extensão não usa (Mundo 3D: piscar/tecla/clique/encostar; Avançado: vida, piscar, recomeçar,
+  "depois de", tecla/clique/encostar, porque tem os dele). No Mundo 3D a vida é sempre do jogador
+  (`GAME_RULES_IMPLICIT_HERO_PREFIXES`). Ciclo de vida: Jogo 3D com `managedProjectRun` +
+  `restartMethod: 'restart'` (roda a fábrica de novo); Mundo 3D com recomeçar LEVE, sem
+  `managedProjectRun`; Avançado com o modelo de estados dele.
+- **Corpo dos "Quando…" do jogo = `game-event-body`** (correção do review, 24/10/2026): vida
+  acabou, contagem acabou, encostar, a fase e o "Depois de N s" rodam UMA vez com o jogo
+  rodando. O contexto concede também `event-body` (`contextsGrantedByBodyContext`) e o áudio
+  do Jogo 3D o aceita. Era `loop-body`: o Blockly recusava a música e a torre que a IR aceitava
+  (projeto abria pela metade) e aceitava comando contínuo dentro de um "Se" que a IR recusava.
+  O "Depois de N s" mora em 🔁 mas aninha em evento/função (`GAME_RULES_NESTABLE_ROOT_TYPES`,
+  nunca em laço), e "Dar … de vida" não cabe em laço (`isGameRulesSetLife`, pelo `op`). Rede:
+  `game3dRules/__tests__/blocklyIrMatrix.test.ts` (todo comando × todo chapéu dos três
+  prefixos, direto e dentro de um "Se"). O zod do `onGame` confere evento ↔ campos, tecla da
+  lista comum e o nome de quem encostou ≠ grupo (`onGameSchema.test.ts`); soquete vazio = a
+  sombra (`socketShadowFallback.test.ts`).
+- **Unidades do Jogo 3D**: graus e "por segundo" só na BORDA da API (`runtime.ts`,
+  `runtimePlatform.ts`); física interna, IR e gerador não mudaram. `move_by`/`rotate_by` são "de
+  uma vez"; giro contínuo só no `spin`. Fusões que liberaram a união: `camera_mode` (seis câmeras
+  num modo), grupos absorveram os enxames (o kind `swarm3d` saiu), `hit_any` absorveu
+  `touches_box`, `every_frames` saiu, `sz_g3d_stop` virou `end_game`.
+- **Codecs por extensão** (as fachadas `parsers/js.ts`, `ir/schema.ts` e `buildIR.ts` estão no
+  teto do `generators/__tests__/architecture.test.ts`; bloco novo entra pelo codec, com gancho de
+  2-4 linhas): Jogo 3D `game-3d/platformIR.ts` + `platformCodec.ts` (+ `modelAssetsIR.ts`); Mundo
+  3D `world-3d/worldIR.ts` + `worldCodec.ts`; Avançado `modelIR.ts`/`modelCodec.ts` e
+  `gameplayIR.ts`/`gameplayCodec.ts`; regras `game3dRules/ir.ts` + `codec.ts`.
+- **Orçamento de render (lote 14)**: os três usam `threeRenderBudgetRuntime`; luz pontual nasce
+  SEM sombra (o dropdown "com sombra" vale para no máximo uma); Jogo 3D com zero alocação por
+  quadro e `_syncMatrices` uma vez por quadro (trava no harness com THREE contador,
+  `__tests__/three3d/countingThree.ts`); Avançado mira pela lista `pickables`; geometria/material
+  compartilhados com cópia ao pintar.
+- **Kit Plataforma por variante**: `game-3d/platformKitVariant.ts` decide pelo CÓDIGO do projeto
+  (`bootstrapVariant(context)`, nome do método do kit como palavra inteira; falso positivo só
+  custa bytes). `loadExtensionBootstrapScript(ext, context)` memoriza por (runtime, variante); o
+  preview, a capa, o export e o `renderProject` passam o contexto (`extensionBootstrapContext`).
+  Sem contexto = runtime COMPLETO.
+- ⚠️⚠️ **Armadilha do build minificado**: `compactOfficialRuntimeSource(…, { trimIndent: true })`
+  tira a indentação dos três runtimes e RECUSA texto com crase. No build minificado, o
+  `toString()` de `createProjectRunContext` (o contexto da partida) contém crase, então o Jogo 3D
+  e o Avançado injetam o contexto DEPOIS da compactação. Trava em `runtimeSource.test.ts`. Mexer
+  na ordem quebra só no build de produção, não no `bun test`.
+- **Catraca de payload** (`runtimePayloadBudget.test.ts`): cru e gzip de cada runtime (Jogo 3D com
+  e sem o kit). Os tetos só descem; subir exige a justificativa escrita ao lado do número. Medido
+  no fim do review: Jogo 3D com kit 214.754 / 59.981 gzip, sem kit 181.212 / 50.501; Mundo 3D
+  335.985 / 99.900; Avançado 205.159 / 60.589. O runtime do Mundo 3D tem teto de 360.000
+  caracteres em `world-3d/__tests__/templateGuard.test.ts` (era 390.000).
+- **Exemplos**: IR sempre gerada de `__gen_*.ts`. `bun run gen:game-3d-examples` /
+  `check:game-3d-examples` (Jogo 3D e Avançado) e `bun run gen:world-3d-examples` /
+  `check:world-3d-examples` (Mundo 3D); depois `bun run gen:server-examples`.
+  `examples/exampleProgression.test.ts` trava a ordem das vitrines e a escada entre as
+  extensões (medida pelos blocos da própria extensão: o CSS de página dos exemplos antigos do
+  Jogo 3D é avancado-2d).
+- **Molda nos três**: ossos, clipes (seletor `FieldModelClipPicker`, lido do próprio GLB por
+  `core/glbSummary.ts`), pintura animada e céu 360°. A aba Modelos 3D mostra os selos 🎬/🦴/🎞️.
+  E2E com o GLB do Molda + HDR nos três (`e2e/examples-gallery.spec.ts`).
+
+## Mundo 3D (`world-3d`): árvore e consertos (review 3D, lotes 8-9, 24/10/2026)
+
+- **Paleta** = árvore família → seção em `world-3d/palette.ts` (11 famílias, "Quando…" primeiro
+  em cada seção; o despejo "⏱️ Jogo & tela" acabou). O `manifest.docs` tem um `### <família>`
+  por família NA MESMA ORDEM e um `**<seção>**` por seção (o `docDrift` confere), mais
+  "Créditos e inspirações" — o ÚNICO lugar com marcas de fora (folio/Coastal/Vocation Vista).
+- **"Jogador" = o jogador ATIVO** (`focusState()`/`playerXZ()`: a pé, carro ou barco).
+  `sz_w3d_player_pos` (`w3d:playerPos`, `SZWorld3D.playerPos`) fundiu `car_pos`/`person_pos`.
+  Empurrar, derrubar, explodir (encostar andando), corrida, tornado e fogueira usam o jogador ativo.
+- **Cantos da tela**: o runtime injeta `game3dRules` (`withGameRules3DRuntime`) e usa SÓ o
+  gerenciador de cantos (`rules.hudText`/`rules.panel`, camada `layerZ: 7`, abaixo dos
+  cartazes). Texto da criança (ordem 10) sempre primeiro; painéis automáticos: moedas 25,
+  missão 30, corrida 35, conquista 40, minimapa 50. O `hud` aceita a lista única
+  (`top-left`…`bottom-right`) e ainda os nomes antigos (`topo-esquerda`…).
+- **Teclas**: dropdown COMUM `official-extensions/threeKeys.ts` (`KeyboardEvent.code`); o
+  `keyName` do runtime traduz `KeyE`/`Space`/`ShiftLeft`/`Digit1`. A Ponte só vira bloco se o
+  valor está na lista (`world-3d/worldCodec.ts`, o codec da extensão).
+- **Nascer durante o jogo**: moedas, ícone, missão, pôr coisa/modelo, empurrável, explosivo e
+  amigo saíram de `START_ONLY_STATEMENT_TYPES` (placement `command`), com tetos (ícones 32,
+  missões 32, explosivos vivos 64, "Pôr" 200, amigos 8, moedas 512).
+- **Limpeza**: todo listener passa por `listen()` e o `disposeAll` faz `unlistenAll()`.
+  `flatten`/`path`/`crater` depois do mundo pronto só marcam `terrainDirty`; o laço refaz o chão
+  UMA vez por quadro, com teto de 64 pedidos da criança. O clima recicla com o `mulberry` do build.
+- Testes: `world-3d/__tests__/activePlayer.test.ts` (a pé, cantos, nascer no jogo, listeners,
+  chão, clima, teclas). A mochila PERSISTE entre partidas (o "esvaziar" é do lote 10).
+
+## Mundo 3D: regras de jogo, Molda e exemplos (review 3D, lote 10, 24/10/2026)
+
+- **Regras de jogo** (`game3dRules/`): `GAME_RULES_ENABLED_PREFIXES = ['g3d', 'w3d']`. A
+  fábrica `gameRulesBlocks('w3d', { implicitHero: true, only: […] })` dá 19 blocos com a MESMA
+  cara do Jogo 3D; a vida é SEMPRE do jogador (`GAME_RULES_IMPLICIT_HERO_PREFIXES`: o nó
+  `w3d:life` não tem `objVar`, o código sai `SZWorld3D.setLife(3)`/`lifeOf()`/`onLifeOver(fn)`).
+  `GAME_RULES_PREFIX_OFF.w3d` tira piscar, tecla, clique e encostar (nem bloco, nem Ponte).
+  Fundidos: `sz_w3d_hud` → `sz_w3d_hud_text` (`hudText(canto, texto)`) e o
+  `sz_w3d_camera_shake` virou o das regras (`STRENGTH`, sombra 0,3). No runtime, a vida mora
+  num objeto `lifeToken` cujo `visible` liga/desliga o jogador ATIVO (o piscar de quem se
+  machucou).
+- **Recomeçar LEVE** (`restartMethod: 'restart'`, SEM `managedProjectRun`: o projeto NÃO roda
+  de novo, os listeners e laços continuam): jogador volta ao começo (`spawnSnap` tirado no
+  `start`), moedas e coletáveis do começo voltam (os nascidos durante a partida saem, e os
+  modelos postos durante a partida também, com ossos e animador), pontos/vida/contagem zeram
+  (`rules.reset(true)` guarda os "Quando…" e as telas) e as chamadas de regra feitas no "Ao
+  iniciar" são REFEITAS (`_rulesReplay`: vida, contagem, "depois de", texto). Terreno, cidade e
+  natureza NÃO são reconstruídos; a mochila NÃO zera (há `inventory_clear`). Fim de jogo e tela
+  de início pausam (`_paused`: jogador, laços, ganchos e `playTime` param; a câmera e o desenho
+  seguem).
+- **Blocos novos** (IR em `world-3d/worldIR.ts`, codec em `worldCodec.ts`, ganchos de 2-6
+  linhas nas fachadas): `collectible` (⭐💎🍎🔑🎁 procedurais, até 256, nascem no jogo),
+  `on_collect_item` (seletor `w3dcollect`), `remove_named` (seletor `w3d-thing`: amigo, ponto,
+  área, coletável, ícone por tipo), `inventory_clear`, e o Molda: `person_model`/`npc_model`/
+  `car_model` (UM nó `w3d:useModel` por `target`, contra o TS2590) e `model_anim` (estado
+  parado/andando/correndo/pulando → clipe, com crossfade; sem clipe, balanço procedural).
+  `place_model` ganhou tamanho em METROS (lado maior, `fit longest/floor` sobre o `heightAt`) e
+  `CLIP` (campo de texto até o seletor do lote 13; teto 24 animados). `scatter_model` avisa
+  uma vez que modelo animado fica parado; a pintura animada anda (`stepFlipbooks` no laço,
+  `resetFlipbooks` no recomeçar). Céu 360°: `hdrAmbient` pinta a luz ambiente e o sol (os
+  materiais toon não reagem ao environment). Frente do Molda = +z = a do boneco e do carro.
+- **Exemplo novo** "Caça às Estrelas" (`__gen_cacaEstrelas.ts`, entre o Parque e o Boliche).
+- **Achados do revisor (24/10/2026, `__tests__/reviewFindings.test.ts`)**: o que nasce DURANTE a
+  partida leva `live: started` (moedas, missões, coletáveis, "Pôr", "Pôr 1", caixas explosivas,
+  amigos, ícones, empurráveis) e o `restartLight` tira; o do começo volta (corrida em `idle`,
+  missões por fazer, `resetKnockables`, caixas refeitas de `explosiveHome`, empurráveis em casa
+  com a malha do tipo compactada em `resetPushables`, amigos em casa). O do Ao iniciar tirado no
+  jogo pelo `removeNamed` (amigo, ponto, área, ícone) fica anotado em `_removedStart` e o
+  `restartThings` o refaz; coletável tirado no jogo só se ESCONDE. Colisor do "Pôr" sai com
+  `colliderCells(c, true)`. O "E: falar" do amigo é `npc.talk` (sai por identidade, não por nome).
+  `carPlace` no Ao iniciar cria o `carState` (`newCarState`), que o `buildCar` reaproveita. Ganchos de strike em `strikeHooks` (fora da pista). O E que
+  troca de veículo marca `_eSpent` (o `stepBoat` roda depois do `stepPerson` e religava o "E:
+  barco"); `exitVehicle` religa o veículo deixado (o piscar do `game3dRules` só restaura o ativo).
+  "Passear" = `npcWanderR` (nome → raio). Listener de elemento que some sai por `unlisten(el)`.
+  Erro cru do JS vai ao `console.debug` (`warn(msg, err)`), que o preview não repassa ao Estúdio.
+- Testes: `world-3d/__tests__/gameRules.test.ts` (pegar → pontos, perigo → vida → fim → recomeçar
+  leve com terreno contado, tirar, esvaziar, exemplo) e `molda.test.ts` (fixture real do Molda:
+  âncora no chão, clipe tocando, teto, aviso, personagem/amigo/carro, frente, HDR, flipbook,
+  descarte de mixer/ossos no recomeçar e no `disposeAll`).
+
+## Jogo 3D Avançado: árvore, regras comuns e Molda (review 3D, lote 11, 24/10/2026)
+
+- **Paleta**: `game-3d-advanced/palette.ts` virou árvore família → seção (24 abas planas → 11
+  famílias, "Quando…" primeiro em cada seção). O `manifest.docs` tem um `### <família>` por
+  família NA MESMA ORDEM e um `**<seção>**` por seção; o `docDrift` confere e também PROÍBE no
+  texto dos blocos "entidade", "gaveta", "fábrica", "recolher", "semente", "emissor/atrator",
+  "bússola", "arrasto", "vinheta", "cápsula" e "dt" (a criança lê "objeto", "tirar do jogo",
+  "jorro de faíscas", "sorteio repetível com o código"). Nenhuma dica das três extensões 3D
+  passa de 220 caracteres (`threeDTooltips.test.ts`, pendências zeradas).
+- **Regras comuns**: `GAME_RULES_ENABLED_PREFIXES = ['g3d', 'w3d', 'g3k']`. O Avançado usa da
+  fábrica `hud_text`, `add_score`/`score`, `set_screen_text`, `end_game`, a contagem, o
+  sorteio e o `camera_shake`; os tipos antigos `g3k:hudText/endGame/cameraShake/setScreenText/
+  startTimer/stopTimer/onTimerEnd/randomBetween/randomChance/timeLeft` SAÍRAM da união (os
+  tipos de BLOCO continuam os mesmos). `GAME_RULES_PREFIX_OFF.g3k` tira vida, piscar,
+  recomeçar, "depois de" e tecla/clique/encostar: ⚠️ `hurt`/`heal` TÊM de estar lá (o global
+  é o mesmo, e a vida do Avançado é por objeto, com meio segundo de invencibilidade e derrota).
+  O codec das regras agora confere o MÉTODO de cada sufixo de bloco (`BLOCK_SUFFIX_METHOD`),
+  senão engoliria o `sz_g3k_hurt` da extensão. No runtime, o fragmento entra no topo da IIFE
+  (`rules`, `layerZ: 500`, `random: rand` = o sorteio repetível vale); o tremor é o
+  `beforeFrame`/`afterFrame` dele no `updateCamera`; entrar em "jogando" fora da pausa chama
+  `rules.reset(!projectFactory)`. **Telas e estados ficam do Avançado**: "Na tela de início"
+  escreve no MENU, "Fim de jogo: perdeu/ganhou" vai ao estado `fim`/`vitoria` (as telas do
+  fragmento não são usadas aqui: o menu, a pausa, "Jogar de novo" e "Sair para o menu" são o
+  modelo de estados). O sorteio virou INTEIRO (como o dos outros); `timeLeft` devolve segundos
+  inteiros. `setHud` → `hudText`. Teclas: o dropdown comum (`normKey` traduz `KeyW`, `Digit1`,
+  `ShiftLeft`); a pausa aceita `Escape` + a lista.
+- **Molda**: a peça "modelo importado" não estica mais o SUPORTE: o cubo de reserva recebe o
+  W×H×D e o modelo é ENCAIXADO (`models.fit(…, { mode: 'contain', box, anchor: 'center' })`).
+  `mold.partBoxes` guarda a caixa de cada peça e `unionMoldBox` recalcula a colisão quando o
+  modelo chega (a colisão é do tamanho do que se vê). Animação (IR em `modelIR.ts`, codec em
+  `modelCodec.ts`): `g3k:setStateAnim` com `loop` opcional (ausente = repetindo),
+  `g3k:animSpeed` e o chapéu `g3k:onAnimEnd` (item local; registro UM por animador do pool,
+  `anim._szEntity` aponta a vida que o usa agora, despacho confere `isEntity` e o dono do
+  recurso, `_szOff` sai no `disposeModelResource`).
+- **Payload** caiu (212_701 / 58_160 gzip) mesmo com o fragmento: os comentários em bloco do
+  runtime viraram comentários de linha.
+- Testes: `model.test.ts` (encaixe sem esticar, colisão encaixada contra parede, pé no chão),
+  `runtime.test.ts` (fim da animação, vida morta/recurso trocado, velocidade, regras comuns de
+  ponta a ponta), `blockAudit` (137 blocos), `schema.test` (112 statements), `docDrift`.
+
+## Jogo 3D Avançado: blocos novos e exemplos (review 3D, lote 12, 24/10/2026)
+
+- **Blocos novos** (11; IR em `game-3d-advanced/gameplayIR.ts`, codec em `gameplayCodec.ts`,
+  runtime em `runtimeGameplay.ts` pelo marcador `__SZ_GAME_KIT_3D_GAMEPLAY_RUNTIME__`; ganchos
+  de 2-4 linhas nas fachadas, ao lado dos do `modelCodec`). Para poupar a união `JSStatement`
+  (perto do TS2590) são 5 membros de statement (`g3k:patrol`, `g3k:bag` com `op`
+  dar/tirar/esvaziar, `g3k:saveValue`, `g3k:nextLevel`, `g3k:onLevelStart`) e 3 de expressão
+  (`g3k:bagValue` quantos/tem, `g3k:savedValue`, `g3k:levelNumber`).
+  - 🏃 Movimento › Perseguir e mirar: `patrol` "Fazer ⟨ela⟩ patrulhar de x z até x z com
+    velocidade" (`SZGameKit3D.patrol(e, ax, az, bx, bz, v)`).
+  - 🏆 Placar, vida e telas › **Mochila 🎒** (seção nova): `bag_give`, `bag_take`, `bag_count`,
+    `bag_has`, `bag_clear` (`putInBag/takeFromBag/bagCount/bagHas/clearBag`).
+  - 🌍 Mundo, telas e estados › **Fases** (`on_level_start`, `next_level`, `level`) e
+    **Guardar o progresso** (`save_value`, `saved_value` com valor reserva). O manifest ganhou
+    a permissão `storage` (o shim do preview já era baseline) e a versão 0.23.0.
+  - Seletores: o item do "Pôr na mochila" DECLARA no `item` (com `sz_w3d_inventory_give`) e o
+    nome do "Guardar" declara no `stored-value` (com `sz_gk_save_value`).
+- **Semântica (decidida aqui)**:
+  - Patrulhar é um passo POR QUADRO (como o `seekPoint`): use no "Enquanto … estiver no
+    estado" ou no "A cada quadro". Vai de A a B virado para onde anda, para 0,5 s em cada ponta
+    e volta; quem deixa de chamar (mudou para "perseguir") para. A perna zera ao nascer.
+  - ⚠️ A mochila do Avançado ZERA ao recomeçar a partida (entrar em "jogando" fora da pausa) e
+    CONTINUA entre as fases. É o contrário do Mundo 3D, onde ela fica salva no projeto e só o
+    `inventory_clear` esvazia. Aparece sozinha no canto de baixo à esquerda (painel `mochila` do
+    gerenciador de cantos comum).
+  - Guardar: `localStorage` com prefixo `szg3k-val-`; JSON com teto de 20 000 caracteres;
+    valor que não vira texto, storage ausente/bloqueado ou cota cheia só avisam UMA vez.
+    `savedValue(nome, reserva)` devolve a reserva quando não há nada.
+  - Fases: começar a partida é começar a FASE 1 (o "Quando começar uma fase" roda depois do
+    "Quando o jogo entrar no estado jogando"). "Ir para a próxima fase" é ADIADO para o começo
+    do quadro seguinte (`startPendingLevel` no `gameLoop`, fora dos laços): todos saem do jogo,
+    os `startSpawner` saem, a contagem para (e o painel dela sai), faíscas/falas/barras somem,
+    e o gancho roda com o número novo. Pontos e mochila continuam. Fora de "jogando" ele só
+    avisa. Voltar ao menu e jogar de novo voltam para a fase 1 (`resetLevels`, que também
+    esvazia a mochila). Os ganchos de fase são refeitos pela fábrica do projeto.
+- **Exemplos** (19, nesta ordem, `GAME_KIT_THREE_D_EXAMPLE_SECTIONS` em `exampleCatalog.ts`):
+  primeiros (Tiro ao Alvo → Quadra Maluca → Guardião do Portal → Salto nas Nuvens → Parkour do
+  Vulcão → O Chefão das Sombras), completos (**Arena dos Cristais** → **Herói do Molda**, os dois
+  novos) e os Profissional (Defesa da Torre primeiro). A Arena (`__gen_arenaCristais.ts`) tem
+  guarda que patrulha e persegue, vida, pontos, contagem, chave na mochila que abre a porta, fase
+  1 → 2 e recorde guardado. O Herói (`__gen_heroiMolda.ts`) usa o MESMO .glb com ossos do "Meu
+  herói do Molda" do Jogo 3D (`game-3d/exampleAssets.ts`, ~10 KB) como peça "modelo importado",
+  uma animação por estado, o pulo "uma vez" e o "Quando … terminar a animação".
+- **Blocos sem exemplo**: `__tests__/exampleCoverage.test.ts` guarda a LISTA ACEITA (27 hoje:
+  som e céu 360° pedem arquivo, tocar/parar animação na mão, ajustes finos de câmera/física/
+  faíscas); ela só pode diminuir.
+- **Payload**: +4_693 caracteres / +1_489 bytes gzip (217_394 / 59_649; teto 219_600 /
+  60_300, justificado na catraca).
+- Testes: `gameplay.test.ts` (patrulha vai/volta/vira e para, mochila com o painel e o
+  recomeçar, guardar pelo localStorage e sem storage, fases com troca adiada, limpeza, pontos que
+  continuam, menu/recomeçar na fase 1, fábrica sem gancho duplicado), `lote12Examples.test.ts`
+  (drift, round-trip e partida com three de verdade das duas: fase 2, vitória com recorde,
+  guarda que persegue e derrota; o .glb do Molda trocando a animação por estado),
+  `blockAudit` (148 blocos), `schema.test` (117 statements), `exampleProgression.test.ts`
+  (as seções do Avançado, a Arena como 1ª a usar fases/mochila/progresso).
 
 ## "Trazer da equipe" (Pensa em equipe, 14/10/2026)
 
@@ -4549,7 +4835,8 @@ Gerar com `gen:snow-descent` e conferir com `check:snow-descent`. Guia: `docs/jo
   gravação de saída em WebKit
 - `bun run e2e:smoke` / `e2e:gallery` / `e2e:security` / `e2e:a11y` / `e2e:flush` — recortes locais
   rápidos (o `e2e:flush` roda o `reload-flush.spec.ts` no Chromium e no WebKit)
-- `bun run gen:game-3d-examples` / `check:game-3d-examples` — regenera ou valida a IR 3D
+- `bun run gen:game-3d-examples` / `check:game-3d-examples` — regenera ou valida a IR dos exemplos
+  do Jogo 3D e do Jogo 3D Avançado; `gen:world-3d-examples` / `check:world-3d-examples`, a do Mundo 3D
 - `bun run gen:snow-descent` / `check:snow-descent` — regenera ou valida a IR dos três jogos
   "Descida da Neve" a partir de `examples/snowDescentSource.ts`
 - O CI roda Chromium em 3 shards e os projetos Firefox e WebKit definidos em `playwright.config.ts`.
@@ -4704,7 +4991,9 @@ Pinta: h1 display `t('projects.heroTitle')` ("Meus Jogos") + subtítulo `t('proj
   exportação corrigida. Prova byte a byte e hashes históricos no produtor confirmam
   que somente UV mudou nessas fixtures; poses, clipes e skin continuam idênticos.
   Consumidor usa os mesmos testes/runtime, sem importar implementação Molda.
-- O motor avançado consome `fixtures/molda-skinned.json` e `molda-articulated.json`
+- Os três motores 3D consomem `official-extensions/__tests__/three3d/molda-skinned.json`,
+  `molda-articulated.json` e `molda-flipbook.json` (movidas de `game-3d-advanced/__tests__/fixtures/`
+  no lote 2 do review 3D; o `sceneStudioContract.test.ts` do Molda lê o mesmo caminho)
   como dados portáteis. Não importar código Molda no runtime Studio. As fixtures
   são reproduzidas e validadas no pacote produtor; os testes Studio usam loader,
   matemática, SkeletonUtils e mixers reais, com GPU simulada. Isso não homologa

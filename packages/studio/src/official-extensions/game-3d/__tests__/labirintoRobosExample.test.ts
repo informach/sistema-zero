@@ -17,7 +17,7 @@ import { parseExampleLifecycleSource } from './exampleLifecycleSource'
 /**
  * Drift do exemplo "Labirinto dos Robôs" — o FPS estilo Doom básico (nível 1 da
  * família Labirinto): câmera em primeira pessoa com pointer lock, paredes
- * sólidas, robôs em enxame que perseguem e tiro por MIRA (aimAhead). A IR
+ * sólidas, robôs num grupo que perseguem e tiro por MIRA (aimAhead). A IR
  * embutida em examples.ts foi GERADA pelo parser real a partir do SOURCE (que
  * mora no __gen_labirintoRobos.ts, importado aqui para que fonte e teste NUNCA
  * possam divergir — duas cópias do fonte é como um drift passa despercebido).
@@ -59,29 +59,31 @@ describe('Exemplo Labirinto dos Robôs — drift contra o parser real', () => {
     const statements = behaviorStatements(labirintoRobosExample.ir)
     const types = collectTypes(statements)
     for (const t of [
-      'g3d:fpsCamera', // câmera em primeira pessoa (clique trava o ponteiro)
+      'g3d:cameraMode', // câmera em primeira pessoa (clique trava o ponteiro)
       'g3d:fpsControls', // WASD anda na direção do olhar (funciona SEM lock)
       'g3d:body', // o jogador tem corpo físico
       'g3d:setSolid', // as paredes do labirinto seguram o jogador
       'g3d:aimAhead', // ⭐ o hitscan do tiro (raio na direção do olhar)
-      'g3d:createSwarm', // os robôs vivem em enxames (um por velocidade)
-      'g3d:spawnInSwarm', // os robôs nascem em posições explícitas do labirinto
-      'g3d:forEachInSwarm', // perseguição + checagem do alvo mirado
+      'g3d:createGroup', // os robôs vivem em grupos (um por velocidade)
+      'g3d:spawnCopy', // os robôs nascem em posições explícitas do labirinto
+      'g3d:forEachInGroup', // perseguição + checagem do alvo mirado
       'g3d:moveTowards', // a perseguição (velocidade por tipo de robô)
       'g3d:collides', // robô encostou no jogador = dano
-      'g3d:removeFromSwarm', // acertou o tiro = robô some
-      'g3d:countSwarm', // vitória quando os dois enxames zeram
+      'g3d:removeFromGroup', // acertou o tiro = robô some
+      'g3d:countGroup', // vitória quando os dois grupos zeram
       'g3d:setFog', // clima de masmorra
       'g3d:setSky', // céu em degradê
       'g3d:playEffect', // tiro/dano/vitória soam
       'g3d:setRotation', // recomeçar zera o yaw do corpo (não renasce olhando p/ trás)
-      'event', // clique atira; R e o botão recomeçam
-      'eventProp', // a tecla do evento (event.key)
+      'g3d:onGame', // clique na cena atira; R recomeça pelo ciclo de vida do motor
       'funcDecl', // recomeçar() monta e reinicia a partida
       'callFunction', // chamado no início, no clique do botão e na tecla R
-      'setProperty', // HUD de vida e pontos por textContent
-      'setStyle', // overlay de dano por opacity
-      'classOp', // a tela de fim aparece/some por classe
+      'g3d:cornerText', // mira, vida e aviso de dano no HUD nativo
+      'g3d:addScore',
+      'g3d:shakeCamera',
+      'g3d:screenText',
+      'g3d:gameOver',
+      'g3d:restart',
     ]) {
       expect(types.has(t)).toBe(true)
     }
@@ -102,13 +104,16 @@ describe('Exemplo Labirinto dos Robôs — drift contra o parser real', () => {
     expect(types.has('g3d:pickAtMouse')).toBe(false)
     expect(types.has('g3d:pointerOver')).toBe(false)
     expect(types.has('g3d:aimAhead')).toBe(true)
-    expect(types.has('g3d:fpsCamera')).toBe(true)
+    expect(types.has('g3d:cameraMode')).toBe(true)
+    expect(JSON.stringify(behaviorStatements(labirintoRobosExample.ir))).toContain(
+      '"primeira-pessoa"',
+    )
   })
 
   it('⭐ é DIFERENTE do "Desvie dos blocos": FPS com mira, sem andar de fora', () => {
     // O Desvie anda livre em terceira visão (controlWithKeys) e usa o Kit
     // (spawnEnemy). Aqui NÃO: o corpo anda pelo preset de primeira pessoa e os
-    // robôs nascem em posições explícitas do labirinto via enxame.
+    // robôs nascem em posições explícitas do labirinto via grupo.
     const types = collectTypes(behaviorStatements(labirintoRobosExample.ir))
     expect(types.has('g3d:controlWithKeys')).toBe(false)
     expect(types.has('g3d:spawnEnemy')).toBe(false)

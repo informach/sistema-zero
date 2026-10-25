@@ -11,6 +11,7 @@ import { scenePalette } from '../../../scene/composite'
 import type { ModelSceneNode, MoldaSceneDocument } from '../../../scene/document'
 import { keepSceneThumb, sameSceneContent } from '../../../scene/documentContent'
 import { sceneToJson } from '../../../scene/documentJson'
+import { joinSceneMeshes } from '../../../scene/joinSceneMeshes'
 import { sceneMaterialImageBase } from '../../../scene/materialImages'
 import { transformPoint } from '../../../scene/matrix'
 import { hasScenePaintableInteriorGap } from '../../../scene/paintableInterior'
@@ -249,6 +250,26 @@ export function SceneWorkshop({
     else closeFaces()
   }
   const { document, selected, run } = workshop
+  // A ferramenta Puxar só vale com Faces ou Linhas; fixa as alças no modo de puxar desde antes do
+  // arrasto, para a prévia que ele abre não trocar o modo do palco no meio do gesto.
+  const pullTool =
+    mode === 'model' &&
+    workshop.tool === 'pull' &&
+    (workshop.components.selection?.mode === 'face' ||
+      workshop.components.selection?.mode === 'edge')
+  // Unir peças é o Ctrl+J do Blender: junta as formas escolhidas numa peça, sem costurar.
+  const joinReady =
+    selected.length >= 2 &&
+    selected.every((id) => workshop.index.scene.nodes.get(id)?.kind === 'mesh')
+  function joinPieces() {
+    if (!joinReady) return
+    booleanRequest.current++
+    setBooleanBusy(false)
+    setBooleanPreview(null)
+    const baseId = selected[0]!
+    const result = run((source) => joinSceneMeshes(source, selected))
+    if (result?.nodes.some((node) => node.id === baseId)) workshop.select(baseId, false)
+  }
   const [booleanPreview, setBooleanPreview] = useState<SceneBooleanPreview | null>(null)
   const [booleanBusy, setBooleanBusy] = useState(false)
   const booleanRequest = useRef(0)
@@ -513,21 +534,26 @@ export function SceneWorkshop({
           return
         }
         if (mode === 'model' || mode === 'animation') {
-          const command = sceneCommandForShortcut(
-            mode === 'model' ? 'model' : 'animate',
-            event,
-            can,
-          )
+          // Com Faces ou Linhas, os atalhos da malha (o E do Puxar) também valem.
+          const meshContext =
+            mode === 'model' && workshop.components.selection
+              ? (`mesh-${workshop.components.selection.mode}` as const)
+              : null
+          const command =
+            sceneCommandForShortcut(mode === 'model' ? 'model' : 'animate', event, can) ??
+            (meshContext ? sceneCommandForShortcut(meshContext, event, can) : null)
           const transform =
             command === 'tool.select'
               ? 'select'
               : command === 'tool.move'
                 ? 'move'
-                : command === 'tool.rotate'
-                  ? 'rotate'
-                  : command === 'tool.scale'
-                    ? 'scale'
-                    : null
+                : command === 'tool.pull'
+                  ? 'pull'
+                  : command === 'tool.rotate'
+                    ? 'rotate'
+                    : command === 'tool.scale'
+                      ? 'scale'
+                      : null
           if (transform) {
             event.preventDefault()
             workshop.setTool(transform)
@@ -943,7 +969,16 @@ export function SceneWorkshop({
                       ? null
                       : (workshop.components.operation.selection ?? workshop.components.selection)
                   }
-                  faceExtruding={workshop.components.preview.tool === 'extrude'}
+                  faceExtruding={
+                    workshop.components.preview.tool === 'extrude' ||
+                    (pullTool && workshop.components.selection?.mode === 'face')
+                  }
+                  directPull={
+                    pullTool ||
+                    workshop.components.preview.tool === 'extrude' ||
+                    (workshop.components.operation.kind === 'extrude' &&
+                      workshop.components.operation.owner?.selection.mode === 'edge')
+                  }
                   facePreviewOpen={
                     !!activeBoolean ||
                     !!workshop.rigDraft ||
@@ -1058,6 +1093,11 @@ export function SceneWorkshop({
                 measurementStep={workshop.measurementStep}
                 close={closeFaces}
                 onKnife={() => workshop.setTool('knife')}
+                onSeparateLine={() => {
+                  const selection = workshop.components.selection
+                  if (selection?.mode === 'edge' && selection.ids.length > 0)
+                    workshop.setTool('cut', [...selection.ids])
+                }}
                 onMove={() => workshop.setTool('move')}
                 onAlignPivot={() => {
                   const selection = workshop.components.selection
@@ -1082,6 +1122,9 @@ export function SceneWorkshop({
                   ) : mode === 'paint' ? (
                     <ScenePaintPalette
                       paint={workshop.paint}
+                      pieceName={
+                        workshop.primary?.kind === 'mesh' ? workshop.primary.name : undefined
+                      }
                       palette={document}
                       applyPalette={(next) =>
                         workshop.run((source) => setScenePalette(source, next))
@@ -1111,7 +1154,15 @@ export function SceneWorkshop({
                     />
                   ) : null
                 }
-                pieces={<SceneHierarchyPanel workshop={workshop} shapeOf={shapeOf} />}
+                pieces={
+                  <SceneHierarchyPanel
+                    workshop={workshop}
+                    shapeOf={shapeOf}
+                    joinPieces={
+                      mode === 'model' && can('model.mesh') && joinReady ? joinPieces : undefined
+                    }
+                  />
+                }
               >
                 {mode === 'animation' ? (
                   <>

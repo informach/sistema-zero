@@ -3,6 +3,7 @@ import {
   type StudioPythonActivityFeedback,
   StudioPythonActivitySchema,
 } from '@sistemazero/core/studio/python-activity'
+import type { StudioPythonMissionObservation } from '@sistemazero/core/studio/python-mission-observation'
 import { documentFixture } from '../../state/fixtures/projectDocuments'
 import type { PythonGraphicsReply, PythonWorkerCommand } from './protocol'
 import { preparePythonProExecutionSnapshot } from './snapshot'
@@ -36,6 +37,7 @@ async function session(
   ) => Promise<PythonGraphicsReply>,
   onActivityResult?: (requestId: string, feedback: StudioPythonActivityFeedback) => void,
   audio?: (request: string) => Promise<string>,
+  onMissionResult?: (requestId: string, observation: StudioPythonMissionObservation) => void,
   onSavedFile?: (path: string, bytes: Uint8Array<ArrayBuffer>) => void,
 ) {
   const project = documentFixture('python', 'pro')
@@ -54,6 +56,7 @@ async function session(
     },
     onReady: () => ready++,
     onRelease: () => releases++,
+    ...(onMissionResult ? { mission: true as const, onMissionResult } : {}),
     ...(audio ? { audio } : {}),
     ...(onSavedFile ? { onSavedFile } : {}),
     ...(graphics ? { graphics } : {}),
@@ -95,6 +98,99 @@ async function session(
     },
   }
 }
+
+test('mission observations are opt-in, correlated, single-flight and do not accept verdicts', async () => {
+  const disabled = await session()
+  disabled.boot()
+  disabled.supervisor.run()
+  expect(() =>
+    disabled.supervisor.observeMission('m1', { type: 'value', path: 'pontos' }),
+  ).toThrow()
+  const received: StudioPythonMissionObservation[] = []
+  const value = await session(undefined, undefined, undefined, undefined, (_id, result) =>
+    received.push(result),
+  )
+  value.boot()
+  value.supervisor.run()
+  value.transport.emit({ type: 'result', requestId: 'entrypoint', ok: true, text: '' })
+  value.supervisor.observeMission('m1', { type: 'value', path: 'pontos' })
+  expect(value.transport.commands.at(-1)).toEqual({
+    type: 'mission-observe',
+    requestId: 'm1',
+    probe: { type: 'value', path: 'pontos' },
+  })
+  expect(() => value.supervisor.observeMission('m2', { type: 'value', path: 'pontos' })).toThrow()
+  value.transport.emit({
+    type: 'mission-result',
+    requestId: 'm1',
+    observation: { type: 'value', observed: { found: true, value: 3 } },
+  })
+  expect(received).toEqual([{ type: 'value', observed: { found: true, value: 3 } }])
+  expect(value.supervisor.phase).toBe('completed')
+  value.supervisor.observeMission('m2', { type: 'value', path: 'pontos' })
+  value.transport.emit({
+    type: 'mission-result',
+    requestId: 'm2',
+    observation: { type: 'value', observed: { found: true, value: 3 }, passed: true },
+  })
+  expect(value.supervisor.phase).toBe('failed')
+  expect(received).toHaveLength(1)
+})
+
+test('an authorized idle mission function can request input without an entrypoint or REPL operation', async () => {
+  const received: StudioPythonMissionObservation[] = []
+  const value = await session(undefined, undefined, undefined, undefined, (_id, result) =>
+    received.push(result),
+  )
+  value.boot()
+  value.supervisor.run()
+  value.transport.emit({ type: 'result', requestId: 'entrypoint', ok: true, text: '' })
+  value.supervisor.observeMission('function-input', {
+    id: 'function',
+    type: 'functionReturns',
+    name: 'ler',
+    args: [[]],
+  })
+  value.transport.emit({ type: 'input-request', requestId: 'input-1' })
+  expect(value.supervisor.phase).toBe('waiting-input')
+  expect(() => value.supervisor.provideInput('foreign', { kind: 'line', text: '7' })).toThrow()
+  value.supervisor.provideInput('input-1', { kind: 'line', text: '7' })
+  value.transport.emit({
+    type: 'mission-result',
+    requestId: 'function-input',
+    observation: { id: 'function', type: 'functionReturns', cases: [{ ok: true, value: 7 }] },
+  })
+  expect(value.supervisor.phase).toBe('completed')
+  expect(received).toHaveLength(1)
+  value.supervisor.stop()
+  expect(value.transport.terminated).toBe(1)
+})
+
+test('a mission request finishing with the program preserves observation ownership, then retires late results', async () => {
+  let count = 0
+  const value = await session(undefined, undefined, undefined, undefined, () => count++)
+  value.boot()
+  value.supervisor.run()
+  value.supervisor.observeMission('m1', { type: 'value', path: 'pontos' })
+  value.transport.emit({ type: 'result', requestId: 'entrypoint', ok: true, text: '' })
+  expect(value.supervisor.phase).toBe('running')
+  value.transport.emit({
+    type: 'mission-result',
+    requestId: 'm1',
+    observation: { type: 'value', observed: { found: true, value: 1 } },
+  })
+  expect(value.supervisor.phase).toBe('completed')
+  expect(count).toBe(1)
+  value.supervisor.observeMission('m2', { type: 'value', path: 'pontos' })
+  value.supervisor.stop()
+  value.transport.emit({
+    type: 'mission-result',
+    requestId: 'm2',
+    observation: { type: 'value', observed: { found: true, value: 2 } },
+  })
+  expect(count).toBe(1)
+  expect(value.transport.terminated).toBe(1)
+})
 
 test('graphics is opt-in, single-flight and cannot deliver a late response after stop', async () => {
   const event = { type: 'graphics', requestId: 'graphics-1', request: '{}', images: [] }
@@ -568,13 +664,17 @@ test('revocation while idle activity grading completes suppresses its feedback',
 test('saved files count while the program runs and right after it ends, never before', async () => {
   const kept: string[] = []
   const saved = (path: string) => ({ type: 'saved-file', path, bytes: new Uint8Array([1]) })
-  const early = await session(undefined, undefined, undefined, undefined, (path) => kept.push(path))
+  const early = await session(undefined, undefined, undefined, undefined, undefined, (path) =>
+    kept.push(path),
+  )
   early.boot()
   early.transport.emit(saved('antes.txt'))
   expect(early.supervisor.phase).toBe('failed')
   expect(kept).toEqual([])
 
-  const live = await session(undefined, undefined, undefined, undefined, (path) => kept.push(path))
+  const live = await session(undefined, undefined, undefined, undefined, undefined, (path) =>
+    kept.push(path),
+  )
   live.boot()
   live.supervisor.run()
   live.transport.emit(saved('placar.txt'))

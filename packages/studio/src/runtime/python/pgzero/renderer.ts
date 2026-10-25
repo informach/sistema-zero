@@ -1,5 +1,7 @@
+import type { ExecutionMotionSample } from '@sistemazero/core/learning'
 import { STUDIO_SNAPSHOT_LIMITS } from '../../snapshotImage'
 import type { StudioRuntimeImage } from '../../types'
+import { createPythonMissionPoseTracker } from '../missionPose'
 import { createPgzeroInputQueue, readPgzeroKey } from './inputQueue'
 import { PGZERO_KEY_MODS } from './keyCodes.generated'
 import { createPgzeroFramePacer } from './pacing'
@@ -46,6 +48,7 @@ export interface PgzeroRenderer {
     attachments: { id: number; bytes: Uint8Array<ArrayBuffer> }[],
   ): Promise<string | PgzeroBinaryReply>
   capture(): Promise<StudioRuntimeImage | null>
+  missionPose(objectId: number): ExecutionMotionSample | null
   dispose(): void
 }
 
@@ -90,9 +93,12 @@ export function createPgzeroRenderer(
     /** At most `limit` sounds that ended since the previous frame (their voice ids). */
     takeEndedVoices?(limit: number): number[]
     onTitle?(title: string): void
+    /** Protected observations acknowledge the presented frame before Python resumes. */
+    mission?: true
   } = {},
 ): PgzeroRenderer {
   const images = new Map<number, Sprite>()
+  const mission = createPythonMissionPoseTracker(2048)
   const families = new Map<number, string>()
   const fontFaces: FontFace[] = []
   const strings = new Map<number, string>()
@@ -713,6 +719,7 @@ export function createPgzeroRenderer(
       at += arity
     }
     frameSequence++
+    mission.present()
   }
   /**
    * Waits for the next game frame on the display (60 per second, like Pygame Zero's
@@ -843,6 +850,9 @@ export function createPgzeroRenderer(
   }
 
   return {
+    missionPose(objectId) {
+      return disposed ? null : mission.read(objectId)
+    },
     async exchange(raw, attachments) {
       active()
       if (busy) throw new Error('Um quadro do Pygame Zero já está em andamento.')
@@ -901,6 +911,13 @@ export function createPgzeroRenderer(
         resize(header.w, header.h)
         let batch: Float64Array | undefined
         if (!header.keep) {
+          mission.clearStage()
+          const seen = new Set<number>()
+          for (const [id, x, y] of header.actors) {
+            if (seen.has(id)) throw new Error('Ator duplicado no quadro gráfico.')
+            seen.add(id)
+            mission.stage(id, x, y, true)
+          }
           const list = supplied.get(PGZERO_LIST_ATTACHMENT)
           if (!list || list.byteLength % 8 || list.byteLength > PGZERO_LIMITS.listBytes)
             throw new Error('Lista de desenho do Pygame Zero inválida.')
@@ -909,6 +926,7 @@ export function createPgzeroRenderer(
         if (header.read) {
           // screen.surface.get_at: what was drawn so far reaches the screen now, then is read.
           if (batch) paint(batch)
+          if (options.mission) mission.advance()
           const ctx = context!
           const [x, y] = header.read
           const data = ctx.getImageData(Math.floor(x * scale), Math.floor(y * scale), 1, 1).data
@@ -919,6 +937,11 @@ export function createPgzeroRenderer(
         // waiting for the display. A failed paint is reported by the next exchange.
         shown = nextFrame(batch, resized)
         shown.catch(() => {})
+        if (options.mission) {
+          await shown
+          active()
+          mission.advance()
+        }
         const ended = options.takeEndedVoices?.(PGZERO_LIMITS.endedVoices) ?? []
         return JSON.stringify({
           events: input.take(),
@@ -988,6 +1011,7 @@ export function createPgzeroRenderer(
     dispose() {
       if (disposed) return
       disposed = true
+      mission.retire()
       listeners.abort()
       if (raf !== undefined) cancelAnimationFrame(raf)
       raf = undefined

@@ -9,6 +9,7 @@ import { Button } from '../../ui/Button'
 import { Grid3x3, Layers, Plus } from '../../ui/icons'
 import { swatchClass } from '../../ui/interaction'
 import { SceneColorPicker } from './SceneColorPicker'
+import { SceneHelpButton } from './SceneHelpButton'
 import { ScenePaletteLibrary } from './ScenePaletteLibrary'
 import type { useScenePaint } from './useScenePaint'
 
@@ -37,6 +38,7 @@ const NAMES: Readonly<Record<string, string>> = {
 
 export function ScenePaintPalette({
   paint,
+  pieceName,
   palette,
   applyPalette,
   preparation,
@@ -44,6 +46,7 @@ export function ScenePaintPalette({
   interior,
 }: {
   paint: ReturnType<typeof useScenePaint>
+  pieceName?: string
   palette: MoldaPaletteFields
   applyPalette: React.ComponentProps<typeof ScenePaletteLibrary>['apply']
   preparation?: { faces: readonly string[]; apply(): void } | null
@@ -76,13 +79,42 @@ export function ScenePaintPalette({
           ? copy.instructions.rotate
           : paint.closeupTool
             ? copy.instructions.closeup
-            : copy.instructions.pencil
+            : paint.shape === 'gradient'
+              ? COPY.scene.paintGradientHint
+              : paint.shape === 'stamp'
+                ? COPY.scene.paintStampHint
+                : paint.shape
+                  ? COPY.scene.paintShapeHint
+                  : copy.instructions.pencil
   return (
     <RequiresTool family="paint.brush">
       <section
         aria-label={SCENE_PAINT_COPY.colors}
         className="mld-paint-palette shrink-0 space-y-3 py-2"
       >
+        <div className="flex items-center gap-2 px-1">
+          <p className="min-w-0 truncate text-sm font-bold">
+            {paint.data
+              ? `Pintando no modelo: ${paint.data.image.name}`
+              : pieceName
+                ? `Peça escolhida: ${pieceName}`
+                : copy.choosePiece}
+          </p>
+          <SceneHelpButton title="Como pintar no modelo">
+            <p>
+              Escolha uma peça, uma cor e desenhe diretamente nela. O Molda prepara a textura quando
+              você faz o primeiro traço.
+            </p>
+            <p>
+              Abra a Folha de pintura para desenhar detalhes na mesma textura. A pintura aparece no
+              modelo e na folha.
+            </p>
+            <p>{COPY.scene.paintHint}</p>
+            <p>{COPY.scene.paintShapeHint}</p>
+            <p>{COPY.scene.paintGradientNeedsRgba}</p>
+            {mapping && <p>{copy.simpleUvHint}</p>}
+          </SceneHelpButton>
+        </div>
         {interior && (
           <div className="space-y-2 rounded-xl border border-mld-border bg-mld-surface p-3">
             <p className="text-sm font-bold">Pintar o lado interno separadamente</p>
@@ -259,7 +291,6 @@ export function ScenePaintPalette({
             >
               <Grid3x3 aria-hidden="true" className="size-4" /> {copy.simpleUv}
             </Button>
-            <p className="text-xs text-mld-muted">{copy.simpleUvHint}</p>
           </div>
         )}
       </section>

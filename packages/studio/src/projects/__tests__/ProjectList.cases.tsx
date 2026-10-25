@@ -93,6 +93,20 @@ const cardNames = () =>
     .map((b) => b.getAttribute('aria-label') ?? '')
 
 describe('ProjectList — home "Meus Jogos" (padrão Pinta)', () => {
+  it('abre a criação sob demanda e recomeça o formulário ao cancelar e abrir novamente', async () => {
+    render(<ProjectList onOpenProject={() => {}} theme="light" />)
+    expect(screen.queryByRole('dialog')).toBeNull()
+    fireEvent.click(screen.getByRole('button', { name: '+ Novo projeto' }))
+    const dialog = await screen.findByRole('dialog', { name: t('projects.newModal.title') })
+    const name = within(dialog).getByRole('textbox') as HTMLInputElement
+    const defaultName = name.value
+    fireEvent.change(name, { target: { value: 'Rascunho cancelado' } })
+    fireEvent.click(within(dialog).getByRole('button', { name: t('projects.newModal.cancel') }))
+    expect(screen.queryByRole('dialog')).toBeNull()
+    fireEvent.click(screen.getByRole('button', { name: '+ Novo projeto' }))
+    const reopened = await screen.findByRole('dialog', { name: t('projects.newModal.title') })
+    expect((within(reopened).getByRole('textbox') as HTMLInputElement).value).toBe(defaultName)
+  })
   it('abre com o cabeçalho novo e os nomes acessíveis dos e2e intactos', async () => {
     render(<ProjectList onOpenProject={() => {}} theme="light" />)
     // Copy do cabeçalho (decisão da usuária, imagem-modelo).

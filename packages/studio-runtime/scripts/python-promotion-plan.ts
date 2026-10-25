@@ -22,8 +22,14 @@ import { createStudioRuntimeHosts } from '../../members/src/domain/studio/runtim
 import { PYTHON_PROGRAMMING_CODECS } from '../../studio/src/python/blocks/catalog'
 import { describePythonCatalog } from '../../studio/src/python/blocks/selection'
 import { PYTHON_PGZERO_CODECS } from '../../studio/src/python/extensions/pgzero/catalog'
+import { PYTHON_RAYLIB_2D_CODECS } from '../../studio/src/python/extensions/raylib2d/catalog'
+import { PYTHON_RAYLIB_3D_CODECS } from '../../studio/src/python/extensions/raylib3d/catalog'
 import { PYTHON_TURTLE_CODECS } from '../../studio/src/python/extensions/turtle/catalog'
 import { PGZERO_EXTENSION } from '../../studio/src/runtime/python/pgzero/contract'
+import {
+  RAYLIB_2D_EXTENSION,
+  RAYLIB_3D_EXTENSION,
+} from '../../studio/src/runtime/python/raylib/contract'
 import { TURTLE_EXTENSION } from '../../studio/src/runtime/python/turtle/contract'
 import { createConfiguredPythonRuntime } from '../src/python-configuration'
 import { describePythonRuntimeConfiguration } from '../src/python-configuration-storage'
@@ -157,6 +163,8 @@ export async function preparePythonPromotion(raw: unknown, baseDirectory = proce
       extensions: [
         { id: TURTLE_EXTENSION.id, versions: [TURTLE_EXTENSION.version] },
         { id: PGZERO_EXTENSION.id, versions: [PGZERO_EXTENSION.version] },
+        { id: RAYLIB_2D_EXTENSION.id, versions: [RAYLIB_2D_EXTENSION.version] },
+        { id: RAYLIB_3D_EXTENSION.id, versions: [RAYLIB_3D_EXTENSION.version] },
       ],
       sourceTargets: ['browser', 'desktop'],
       requiredBrowserFeatures: ['wasm', 'worker', 'jspi', 'trusted-types'],
@@ -213,6 +221,8 @@ export async function preparePythonPromotion(raw: unknown, baseDirectory = proce
     ...PYTHON_PROGRAMMING_CODECS,
     ...PYTHON_TURTLE_CODECS,
     ...PYTHON_PGZERO_CODECS,
+    ...PYTHON_RAYLIB_2D_CODECS,
+    ...PYTHON_RAYLIB_3D_CODECS,
   ].filter((codec) =>
     (codec.requiredRuntimeFeatures ?? []).every((feature) =>
       distribution.features.includes(feature),
@@ -248,6 +258,24 @@ export async function preparePythonPromotion(raw: unknown, baseDirectory = proce
       releases: [{ id: release.releaseId, manifestSha256: release.manifestSha256 }],
     })
   if (!existingDeployment) worker.deployments.push({ status, deployment })
+  // One authoring release per profile. Retain immutable history and other profiles;
+  // repeating a retired release must never reactivate it or retire the current one.
+  if (status === 'active') {
+    for (const candidate of members.releases)
+      if (
+        candidate.status === 'active' &&
+        candidate.runtime.profileId === runtime.profileId &&
+        candidate.runtime.manifestSha256 !== runtime.manifestSha256
+      )
+        candidate.status = 'retired'
+    for (const candidate of worker.deployments)
+      if (
+        candidate.status === 'active' &&
+        candidate.deployment.release.profileId === runtime.profileId &&
+        candidate.deployment.release.manifestSha256 !== runtime.manifestSha256
+      )
+        candidate.status = 'retired'
+  }
   worker.parentOrigins = union(worker.parentOrigins, input.target.parentOrigins)
   const hosts = structuredClone(input.baseline.hosts)
   const host = hosts.find((entry) => entry.runtime.manifestSha256 === release.manifestSha256)

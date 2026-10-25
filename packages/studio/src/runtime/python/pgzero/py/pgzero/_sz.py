@@ -23,6 +23,7 @@ from collections import OrderedDict
 from ._colors import COLORS
 
 _transport = None
+_mission_checkpoint = None
 _decoder = None
 _root = '.'
 
@@ -78,16 +79,17 @@ class PgzeroRendererError(RuntimeError):
     """The browser could not show a frame (an image it cannot open, for example)."""
 
 
-def configure(transport, decoder, root):
+def configure(transport, decoder, root, *, checkpoint=None):
     """Called once by the runtime before the learner program runs.
 
     ``transport(header, payload)`` returns ``(text, pixels)``: the browser's reply and, for a
     pixel request, the RGBA bytes (otherwise None).
     """
-    global _transport, _decoder, _root
+    global _transport, _decoder, _root, _mission_checkpoint
     _transport = transport
     _decoder = decoder
     _root = root
+    _mission_checkpoint = checkpoint
 
 
 def project_path(path):
@@ -539,6 +541,7 @@ class _Frame:
         self.styles = {}
         self.new_styles = []
         self.audio = []
+        self.actors = {}
 
     def begin(self):
         """Start the next batch, right after one was sent.
@@ -547,6 +550,7 @@ class _Frame:
         drawn since the last frame went out (in update, in event handlers, in draw), painted on
         top of what is already there.
         """
+        self.actors.clear()
         del self.ops[:]
         self.records = 0
         # Long-running games keep inventing texts (scores, timers): renew the tables between
@@ -1014,6 +1018,7 @@ def _send(width, height, title, extra=None):
         'styles': frame.new_styles,
         'audio': frame.audio,
         'watch': bool(_waiting),
+        'actors': list(frame.actors.values()) if _mission_checkpoint is not None and not keep else [],
         **(extra or {}),
     }
     reply, _ = _exchange(header, payload)
@@ -1024,4 +1029,6 @@ def _send(width, height, title, extra=None):
     frame.audio = []
     frame.begin()
     audio_ended(reply.get('ended', ()))
+    if _mission_checkpoint is not None:
+        _mission_checkpoint()
     return reply

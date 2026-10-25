@@ -4,6 +4,10 @@ import type {
   StudioPythonActivityFeedback,
 } from '@sistemazero/core/studio/python-activity'
 import type {
+  StudioPythonMissionFrameObservation,
+  StudioPythonMissionProbe,
+} from '@sistemazero/core/studio/python-mission-observation'
+import type {
   StudioExecutionIdentity,
   StudioRuntimeEvent,
   StudioRuntimeImage,
@@ -67,6 +71,7 @@ export interface PythonFrameInitialization {
   identity: StudioExecutionIdentity
   snapshot: PythonExecutionSnapshot
   activity?: StudioPythonActivity
+  mission?: true
   bootResources: 1
 }
 export type PythonFrameCommand = {
@@ -78,6 +83,7 @@ export type PythonFrameCommand = {
   | { type: 'run' | 'stop' | 'capture' | 'activity-controls' }
   | { type: 'evaluate'; requestId: string; source: string }
   | { type: 'activity-check'; requestId: string }
+  | { type: 'mission-observe'; requestId: string; probe: StudioPythonMissionProbe }
   | { type: 'input'; requestId: string; response: StudioRuntimeInput }
   | { type: 'audio-response'; requestId: string; response: string }
 )
@@ -90,6 +96,7 @@ export type PythonFrameMessage = {
   | { type: 'prepared' }
   | { type: 'event'; event: PythonRuntimePayload }
   | { type: 'activity-result'; requestId: string; feedback: StudioPythonActivityFeedback }
+  | { type: 'mission-result'; requestId: string; result: StudioPythonMissionFrameObservation }
   | { type: 'audio-request'; requestId: string; request: string }
   | { type: 'saved-file'; path: string; bytes: Uint8Array<ArrayBuffer> | null }
   | {

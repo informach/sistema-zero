@@ -5,6 +5,7 @@ import type { SceneImage } from '../../../scene/document'
 import { editSceneImageLayers } from '../../../scene/imageLayerCommands'
 import { SCENE_LIMITS } from '../../../scene/limits'
 import { Button } from '../../ui/Button'
+import { SceneHelpButton } from './SceneHelpButton'
 import { SceneImagePreview } from './SceneImagePreview'
 import { SCENE_APPEARANCE_FIELD as field, type SceneAppearanceApply } from './sceneAppearanceForm'
 export function SceneImageLayers({
@@ -182,7 +183,9 @@ export function SceneImageLayers({
       </Button>
       {image.encoding === 'indexed' && (
         <>
-          <p className="text-xs text-mld-muted">{copy.imageRgbaHint}</p>
+          <SceneHelpButton title="Como liberar as cores desta imagem">
+            <p>{copy.imageRgbaHint}</p>
+          </SceneHelpButton>
           <Button className="w-full text-sm" onClick={onConvert}>
             {copy.imageRgba}
           </Button>

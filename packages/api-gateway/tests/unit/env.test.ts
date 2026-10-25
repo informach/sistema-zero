@@ -116,6 +116,6 @@ describe('loadEnv — fail-fast de produção', () => {
   })
 
   test('MAX_REQUEST_BODY_BYTES comporta o envelope do builder do Studio', () => {
-    expect(loadEnv({}).MAX_REQUEST_BODY_BYTES).toBe(3_004_096)
+    expect(loadEnv({}).MAX_REQUEST_BODY_BYTES).toBe(4_500_000)
   })
 })

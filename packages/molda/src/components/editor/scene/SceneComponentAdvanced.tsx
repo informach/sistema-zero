@@ -38,7 +38,6 @@ export function SceneComponentAdvanced(props: SceneComponentToolsProps) {
                   onChange={(event) => softMovement.setReach(event.target.value)}
                 />
               </label>
-              <p className="mld-component-description">{copy.softMovementHint}</p>
               {!softMovement.valid && (
                 <p role="status" className="text-sm text-mld-danger">
                   {copy.softMovementInvalid}
@@ -51,7 +50,6 @@ export function SceneComponentAdvanced(props: SceneComponentToolsProps) {
               <ComponentButton disabled={!weld.points || !!weld.blockedReason} onClick={weldPoints}>
                 {copy.weldPoints}
               </ComponentButton>
-              <p className="mld-component-description">{copy.weldPointsHint}</p>
               <p className="mld-component-description">
                 {weld.blockedReason ??
                   (weld.points
@@ -66,7 +64,6 @@ export function SceneComponentAdvanced(props: SceneComponentToolsProps) {
         <>
           <SceneBevel count={selection.ids.length} onApply={props.bevel} />
           <h4 className="font-bold">{copy.pathCreateTitle}</h4>
-          <p className="mld-component-description">{copy.pathCreateHint}</p>
           <ScenePathForm
             settings={{ radius: 0.1, around: 8, endCaps: true }}
             points={props.pathPointCount}

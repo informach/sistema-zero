@@ -15,8 +15,9 @@ export async function openPainting(
     'box',
     'caixa',
   ),
+  level: 'explorer' | 'architect' | 'god' = 'god',
 ) {
-  await page.goto(`/?nivel=god${dark ? '&tema=escuro' : ''}`)
+  await page.goto(`/?nivel=${level}${dark ? '&tema=escuro' : ''}`)
   await page.locator('input[name="molda-backup"]').setInputFiles({
     name: 'pintura.molda.json',
     mimeType: 'application/json',

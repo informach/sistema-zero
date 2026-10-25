@@ -59,7 +59,7 @@ describe('Exemplo Reino Cogumelo — drift contra o parser real', () => {
     const statements = behaviorStatements(reinoCogumeloExample.ir)
     const types = collectTypes(statements)
     for (const t of [
-      'g3d:createPlatformScene', // a cena do gênero, já com céu, luz e câmera de lado
+      'g3d:createFullscreenScene', // a cena do gênero, já com céu, luz e câmera de lado
       'g3d:createHero', // o personagem, com peso e colisão
       'g3d:stage', // montar a fase e dizer em que mundo/área ela está
       'g3d:stageFrame', // o passo da fase, a câmera travada e a bola de fogo
@@ -72,8 +72,10 @@ describe('Exemplo Reino Cogumelo — drift contra o parser real', () => {
       'index', // e a escolha pelo número da fase
       'funcDecl', // abrirFase() e mostrarPlacar() concentram as regras
       'callFunction',
-      // O HUD é HTML por cima do canvas: um só nó carrega o elemento e a escrita.
-      'setProperty',
+      'g3d:cornerText',
+      'g3d:addScore',
+      'g3d:screenText',
+      'g3d:gameOver',
       'if',
     ]) {
       expect(types.has(t), t).toBe(true)

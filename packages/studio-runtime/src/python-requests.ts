@@ -10,10 +10,16 @@ import {
 } from '@sistemazero/core/studio/python-inspection'
 import { studioPythonInspectionJobId } from '@sistemazero/core/studio/python-inspection-job'
 import {
+  PYTHON_MISSION_LIMITS,
+  verifyPythonMissionRequest,
+  verifyPythonMissionValidationReport,
+} from '@sistemazero/core/studio/python-mission-execution'
+import {
   isStudioPythonWebOrigin,
   type StudioPythonPreviewReference,
   verifyStudioPythonPreviewReference,
 } from '@sistemazero/core/studio/python-preview'
+import { PYTHON_PROJECT_MISSION_FEATURE } from '@sistemazero/core/studio/python-runtime-features'
 import {
   STUDIO_PYTHON_VALIDATION_LIMITS,
   verifyStudioPythonValidationReport,
@@ -24,6 +30,7 @@ import {
   type StudioPythonInputReference,
   StudioPythonInputReferenceSchema,
   StudioPythonInspectionRequestSchema,
+  StudioPythonMissionRequestSchema,
   StudioPythonValidationRequestSchema,
 } from '@sistemazero/core/studio/python-validation-input'
 import type { PythonDistributionRegistry, RuntimeDistributionBucket } from './python-distributions'
@@ -34,13 +41,19 @@ import {
   type PythonInputBucket,
   PythonInputError,
 } from './python-inputs'
-import { type PythonInspectionSandbox, runIsolatedPythonInspection } from './python-inspection'
+import {
+  type PythonInspectionSandbox,
+  pythonInspectionFailurePhase,
+  runIsolatedPythonInspection,
+} from './python-inspection'
+import { runIsolatedPythonMissions } from './python-mission'
 import { runIsolatedPythonValidation } from './python-playtest'
 import { discardStoredPythonPreview, storePythonPreview } from './python-previews'
 
 export interface PythonInspectionJobs {
   inspect(request: unknown): Promise<{ status: number; body: unknown }>
   validate(request: unknown): Promise<{ status: number; body: unknown }>
+  check(request: unknown): Promise<{ status: number; body: unknown }>
   discardPreview(
     reference: StudioPythonInputReference,
   ): Promise<{ retired: boolean; cleanupConfirmed: boolean }>
@@ -151,13 +164,19 @@ export async function handlePythonRequest(
       '/v1/python/inputs/remove',
       '/v1/python/inspect',
       '/v1/python/validate',
+      '/v1/python/check',
     ].includes(url.pathname)
   if (!known || request.method !== 'POST' || url.search)
     return reply(
       { ok: false, code: 'INVALID_REQUEST', message: 'Rota Python não encontrada.' },
       404,
     )
-  const signal = AbortSignal.any([request.signal, AbortSignal.timeout(120_000)])
+  const signal = AbortSignal.any([
+    request.signal,
+    AbortSignal.timeout(
+      url.pathname === '/v1/python/check' ? PYTHON_MISSION_LIMITS.jobMs : 120_000,
+    ),
+  ])
   const previewConfiguration = options.preview
   const jobs = options.jobs
   let previewOwner: StudioPythonInputReference | undefined
@@ -233,9 +252,11 @@ export async function handlePythonRequest(
     } else
       raw = await readJsonBodyWithLimit(
         request,
-        url.pathname === '/v1/python/validate'
-          ? STUDIO_PYTHON_VALIDATION_LIMITS.requestBytes
-          : 2048,
+        url.pathname === '/v1/python/check'
+          ? PYTHON_MISSION_LIMITS.requestBytes
+          : url.pathname === '/v1/python/validate'
+            ? STUDIO_PYTHON_VALIDATION_LIMITS.requestBytes
+            : 2048,
         signal,
       )
     const inspection =
@@ -250,6 +271,12 @@ export async function handlePythonRequest(
         : undefined
     if (validation && !validation.success)
       throw new PythonInputError(400, 'Solicitação de validação Python inválida.')
+    const missionCheck =
+      url.pathname === '/v1/python/check'
+        ? StudioPythonMissionRequestSchema.safeParse(raw)
+        : undefined
+    if (missionCheck && !missionCheck.success)
+      throw new PythonInputError(400, 'Solicitação de missão Python inválida.')
     const previewRequest = validation?.success ? validation.data.preview : undefined
     if (previewRequest && !options.preview)
       return reply({ ok: false, code: 'PYTHON_PREVIEW_UNAVAILABLE' }, 503)
@@ -261,7 +288,7 @@ export async function handlePythonRequest(
         !options.registry.allowsParentOrigin(previewRequest.parentOrigin))
     )
       throw new PythonInputError(409, 'A origem do preview Python não está aprovada.')
-    const operation = validation ?? inspection
+    const operation = missionCheck ?? validation ?? inspection
     const parsed = StudioPythonInputReferenceSchema.safeParse(
       operation?.success ? operation.data.input : raw,
     )
@@ -286,7 +313,20 @@ export async function handlePythonRequest(
     const input = await store.resolve(reference, signal)
     check()
     const deployment = await approve(input.snapshot)
-    if (validation && !deployment.distribution.files.some((file) => file.path === 'playtest.mjs'))
+    if (
+      missionCheck?.success &&
+      !deployment.distribution.features.includes(PYTHON_PROJECT_MISSION_FEATURE)
+    )
+      throw new PythonInputError(
+        409,
+        'Escolha uma versão do ambiente Python que ofereça verificação de projetos.',
+      )
+    if (missionCheck?.success)
+      await verifyPythonMissionRequest(missionCheck.data.mission, input.snapshot)
+    if (
+      (validation || missionCheck) &&
+      !deployment.distribution.files.some((file) => file.path === 'playtest.mjs')
+    )
       throw new PythonInputError(409, 'O ambiente Python não oferece execução protegida aprovada.')
     if (file) {
       if (!request.body) throw new PythonInputError(400, 'Arquivo Python ausente.')
@@ -300,19 +340,29 @@ export async function handlePythonRequest(
     if (!operation?.success)
       throw new PythonInputError(400, 'Solicitação de operação Python inválida.')
     if (jobs) {
-      const result = await inputAwait(validation ? jobs.validate(raw) : jobs.inspect(raw), signal)
+      const result = await inputAwait(
+        missionCheck ? jobs.check(raw) : validation ? jobs.validate(raw) : jobs.inspect(raw),
+        signal,
+      )
       check()
       if (result.status !== 200) return reply(result.body, result.status)
       if (!result.body || typeof result.body !== 'object' || !('report' in result.body))
         throw new Error('Resposta do job Python sem relatório.')
-      const report = validation?.success
-        ? await verifyStudioPythonValidationReport(
+      const report = missionCheck?.success
+        ? await verifyPythonMissionValidationReport(
             result.body.report,
             input.snapshot,
-            validation.data.recipe,
-            validation.data.structure,
+            missionCheck.data.mission,
+            missionCheck.data.structure,
           )
-        : await verifyStudioPythonInspectionReport(result.body.report, input.snapshot)
+        : validation?.success
+          ? await verifyStudioPythonValidationReport(
+              result.body.report,
+              input.snapshot,
+              validation.data.recipe,
+              validation.data.structure,
+            )
+          : await verifyStudioPythonInspectionReport(result.body.report, input.snapshot)
       if (inspection?.success && inspection.data.structure && report.status === 'passed')
         await verifyStudioPythonStructureEvidence(report, input.snapshot)
       check()
@@ -381,58 +431,68 @@ export async function handlePythonRequest(
       },
     }
     let preview: StudioPythonPreviewReference | undefined
-    const report = validation?.success
-      ? await (async () => {
-          const result = await runIsolatedPythonValidation({
-            ...preparation,
-            recipe: validation.data.recipe,
-            async beforeExecution() {
-              await approve(input.snapshot)
-              await store.resolve(reference, signal)
-              check()
-            },
-          })
-          const report = await verifyStudioPythonValidationReport(
-            {
-              version: 1,
-              projectId: input.snapshot.projectId,
-              recipe: validation.data.recipe,
-              status:
-                result.inspection.status === 'passed' &&
-                result.execution?.report.status === 'passed'
-                  ? 'passed'
-                  : 'failed',
-              inspection: result.inspection,
-              ...(result.execution ? { execution: result.execution.report } : {}),
-            },
-            input.snapshot,
-            validation.data.recipe,
-            validation.data.structure,
-          )
-          check()
-          if (previewRequest && options.preview && report.status === 'passed') {
-            preview = await storePythonPreview({
-              ...options.preview,
-              registry: options.registry,
-              runtimeBucket: options.runtimeBucket,
-              preview: previewRequest,
-              snapshot: input.snapshot,
-              input: reference,
-              report,
-              captureBytes: result.execution?.captureBytes,
-              signal,
-              assertCurrent: preparation.assertCurrent,
-              readProject: input.read,
-            })
-            producedPreview = {
-              reference: preview,
-              jobId: await studioPythonInspectionJobId(reference),
-            }
+    const report = missionCheck?.success
+      ? await runIsolatedPythonMissions({
+          ...preparation,
+          mission: missionCheck.data.mission,
+          async beforeExecution() {
+            await approve(input.snapshot)
+            await store.resolve(reference, signal)
             check()
-          }
-          return report
-        })()
-      : await runIsolatedPythonInspection(preparation)
+          },
+        })
+      : validation?.success
+        ? await (async () => {
+            const result = await runIsolatedPythonValidation({
+              ...preparation,
+              recipe: validation.data.recipe,
+              async beforeExecution() {
+                await approve(input.snapshot)
+                await store.resolve(reference, signal)
+                check()
+              },
+            })
+            const report = await verifyStudioPythonValidationReport(
+              {
+                version: 1,
+                projectId: input.snapshot.projectId,
+                recipe: validation.data.recipe,
+                status:
+                  result.inspection.status === 'passed' &&
+                  result.execution?.report.status === 'passed'
+                    ? 'passed'
+                    : 'failed',
+                inspection: result.inspection,
+                ...(result.execution ? { execution: result.execution.report } : {}),
+              },
+              input.snapshot,
+              validation.data.recipe,
+              validation.data.structure,
+            )
+            check()
+            if (previewRequest && options.preview && report.status === 'passed') {
+              preview = await storePythonPreview({
+                ...options.preview,
+                registry: options.registry,
+                runtimeBucket: options.runtimeBucket,
+                preview: previewRequest,
+                snapshot: input.snapshot,
+                input: reference,
+                report,
+                captureBytes: result.execution?.captureBytes,
+                signal,
+                assertCurrent: preparation.assertCurrent,
+                readProject: input.read,
+              })
+              producedPreview = {
+                reference: preview,
+                jobId: await studioPythonInspectionJobId(reference),
+              }
+              check()
+            }
+            return report
+          })()
+        : await runIsolatedPythonInspection(preparation)
     check()
     await approve(input.snapshot)
     // The final asynchronous fence is the input's current generation/closure check.
@@ -461,6 +521,9 @@ export async function handlePythonRequest(
         ok: false,
         code: 'PYTHON_INSPECTION_FAILED',
         message: 'Não foi possível validar o projeto Python agora.',
+        ...(pythonInspectionFailurePhase(error)
+          ? { phase: pythonInspectionFailurePhase(error) }
+          : {}),
       },
       500,
     )
