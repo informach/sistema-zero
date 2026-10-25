@@ -5,6 +5,7 @@ import { pythonFilesToTree, refinePythonProjectDocument } from '../state/pythonP
 import type { ExportFileMap } from './fileMap'
 import { browserSvgRasterizer, hasPgzeroExtension, type SvgRasterizer } from './pgzeroDesktop'
 import { buildPythonSourceMetadata } from './pythonSourceMetadata'
+import { buildRaylibDesktopFiles, hasRaylibExtension } from './raylibDesktop'
 import type { SourceFilesResult } from './sourceExport'
 import { captureSourceExportCatalog } from './sourceRuntimeCatalog'
 
@@ -44,6 +45,10 @@ export async function buildPythonSourceFiles(
     })
     Object.assign(files, pgzero.files)
   }
+  const raylib = hasRaylibExtension(project)
+    ? buildRaylibDesktopFiles({ occupied: Object.keys(files), directories })
+    : null
+  if (raylib) Object.assign(files, raylib.files)
   const metadata = await buildPythonSourceMetadata({
     project,
     sourceFiles,
@@ -52,6 +57,7 @@ export async function buildPythonSourceFiles(
     occupiedFiles: Object.keys(files),
     runtimeCatalog,
     pgzero,
+    raylib,
   })
   Object.assign(files, metadata.files)
   for (const path of directories) files[`${path}/`] = new Uint8Array()

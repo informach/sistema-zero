@@ -23,6 +23,7 @@ import {
   pgzeroCodeName,
   projectUsesPgzero,
 } from '../../core/pgzeroMediaPaths'
+import { projectUsesRaylib, raylibCodePath } from '../../core/raylibMediaPaths'
 import { captureAndStoreProjectThumb } from '../../cover/thumbCapture'
 import { useProjectStore, useProjectStoreApi } from '../../state/projectStore'
 import { retryProApplication } from '../../state/proRevision'
@@ -52,6 +53,7 @@ import {
   fileTo3DAssetDataUrl,
   fileToAssetDataUrl,
   fileToAudioAssetDataUrl,
+  fileToFontAssetDataUrl,
 } from './imageProcessing'
 import { MoldaImportDialog } from './MoldaImportDialog'
 import { PintaImportDialog } from './PintaImportDialog'
@@ -59,6 +61,7 @@ import { ProAssetPaths } from './ProAssetPaths'
 import { TeamImportDialog } from './TeamImportDialog'
 import { TileConfigDialog, type TileConfigDialogProps } from './TileConfigDialog'
 import { type AssetsTabItem, AssetsTabStrip } from './tabs/common'
+import { FontsTab } from './tabs/FontsTab'
 import { ImagesTab } from './tabs/ImagesTab'
 import { Models3DTab } from './tabs/Models3DTab'
 import { SoundsTab } from './tabs/SoundsTab'
@@ -122,18 +125,26 @@ export function AssetsPanel({
   const usesPgzero = useProjectStore(
     (s) => !!s.project && isPythonProject(s.project) && projectUsesPgzero(s.project),
   )
-  // Pygame Zero opens a material by its FILE name: every card shows it.
-  const pgzeroEntrypoint = useProjectStore((s) =>
-    s.project && isPythonProject(s.project) && projectUsesPgzero(s.project)
+  // Raylib opens a material by its PATH (`images/nave.png`): fonts, and the two sound doors.
+  const usesRaylib = useProjectStore(
+    (s) => !!s.project && isPythonProject(s.project) && projectUsesRaylib(s.project),
+  )
+  // Pygame Zero opens a material by its FILE name and Raylib by its path: every card shows it.
+  const codeEntrypoint = useProjectStore((s) =>
+    s.project &&
+    isPythonProject(s.project) &&
+    (projectUsesPgzero(s.project) || projectUsesRaylib(s.project))
       ? s.project.python.entrypoint
       : undefined,
   )
   const codeNameOf = useMemo(
     () =>
-      pgzeroEntrypoint === undefined
+      codeEntrypoint === undefined
         ? undefined
-        : (asset: ProjectAsset) => pgzeroCodeName(asset, pgzeroEntrypoint),
-    [pgzeroEntrypoint],
+        : usesRaylib
+          ? (asset: ProjectAsset) => raylibCodePath(asset, codeEntrypoint)
+          : (asset: ProjectAsset) => pgzeroCodeName(asset, codeEntrypoint),
+    [codeEntrypoint, usesRaylib],
   )
   const { hasProject, assets, has3DExtension, has3DMaterials, coverAssetName } = useProjectStore(
     useShallow((s) => ({
@@ -175,6 +186,7 @@ export function AssetsPanel({
   // Which Pygame Zero door opened the sound picker (a short sound or a song).
   const audioRoleRef = useRef<PgzeroAudioRole | undefined>(undefined)
   const modelRef = useRef<HTMLInputElement>(null)
+  const fontRef = useRef<HTMLInputElement>(null)
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
   const [pendingDeletion, setPendingDeletion] = useState<PendingDeletion | null>(null)
@@ -188,8 +200,10 @@ export function AssetsPanel({
   // .glb / céu .hdr) vivem na mesma lista de assets; separamos só para exibir
   // em seções distintas (um .glb na grade de imagens viraria <img> quebrado).
   const images = assets.filter(
-    (a) => a.kind !== 'audio' && a.kind !== 'model3d' && a.kind !== 'environment3d',
+    (a) =>
+      a.kind !== 'audio' && a.kind !== 'model3d' && a.kind !== 'environment3d' && a.kind !== 'font',
   )
+  const fonts = assets.filter((a) => a.kind === 'font')
   const sounds = assets.filter((a) => a.kind === 'audio')
   const models3d = assets.filter((a) => a.kind === 'model3d' || a.kind === 'environment3d')
   // "Usar como peças" / "Usar como mapa (fatiar)" — upload vira tileset/mapa sem Pinta.
@@ -568,7 +582,9 @@ export function AssetsPanel({
           dataUrl,
           kind: 'audio',
           source: 'upload',
-          ...(usesPgzero && audioRoleRef.current ? { pgzeroAudio: audioRoleRef.current } : {}),
+          ...((usesPgzero || usesRaylib) && audioRoleRef.current
+            ? { pgzeroAudio: audioRoleRef.current }
+            : {}),
         })
         if (err) {
           setError(err)
@@ -614,6 +630,38 @@ export function AssetsPanel({
     } finally {
       setBusy(false)
       if (modelRef.current) modelRef.current.value = ''
+    }
+  }
+
+  const handleFontFiles = async (files: FileList | null) => {
+    if (!files || files.length === 0) return
+    setError(null)
+    setBusy(true)
+    const taken = new Set(assets.map((a) => a.name))
+    try {
+      for (const file of Array.from(files)) {
+        const { dataUrl, fileName } = await fileToFontAssetDataUrl(file)
+        const name = uniqueAssetName(file.name.replace(/\.[^.]+$/, ''), taken)
+        // O nome do arquivo vai junto: o store cruza a extensão com o MIME e os bytes.
+        const err = addAsset({
+          name,
+          dataUrl,
+          kind: 'font',
+          originalFileName: fileName,
+          source: 'upload',
+        })
+        if (err) {
+          setError(err)
+          break
+        }
+        for (const asset of storeApi.getState().project?.assets ?? []) taken.add(asset.name)
+        taken.add(name)
+      }
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Falha ao processar a fonte.')
+    } finally {
+      setBusy(false)
+      if (fontRef.current) fontRef.current.value = ''
     }
   }
 
@@ -717,6 +765,10 @@ export function AssetsPanel({
     { id: 'images', label: t('assets.tab.images'), icon: '🖼️' },
     { id: 'sounds', label: t('assets.tab.sounds'), icon: '🔊' },
     ...(has3DTab ? [{ id: 'models3d' as const, label: t('assets.tab.models3d'), icon: '🧊' }] : []),
+    // Só o Raylib abre fonte própria; uma fonte que sobrou (extensão trocada) segue gerenciável.
+    ...(usesRaylib || fonts.length > 0
+      ? [{ id: 'fonts' as const, label: t('assets.tab.fonts'), icon: '🔤' }]
+      : []),
   ]
   // A aba pedida pode ter deixado de existir (a criança removeu a extensão 3D e
   // apagou os modelos com a janela aberta): cai para a primeira, nunca em branco.
@@ -774,6 +826,17 @@ export function AssetsPanel({
                 className="hidden"
                 onChange={(e) => void handleAudioFiles(e.target.files)}
               />
+              {usesRaylib ? (
+                <input
+                  ref={fontRef}
+                  type="file"
+                  name="project-font-files"
+                  accept=".ttf,.otf"
+                  multiple
+                  className="hidden"
+                  onChange={(e) => void handleFontFiles(e.target.files)}
+                />
+              ) : null}
               {has3DExtension ? (
                 <input
                   ref={modelRef}
@@ -895,10 +958,22 @@ export function AssetsPanel({
                 allowUpload={allowUpload}
                 busy={busy}
                 pgzero={usesPgzero}
+                raylib={usesRaylib}
                 onUpload={(role) => {
                   audioRoleRef.current = role
                   soundRef.current?.click()
                 }}
+                onRename={handleRename}
+                onDelete={deleteFromProject}
+                codeNameOf={codeNameOf}
+              />
+            ) : null}
+            {activeTab === 'fonts' ? (
+              <FontsTab
+                fonts={fonts}
+                allowUpload={allowUpload && usesRaylib}
+                busy={busy}
+                onUpload={() => fontRef.current?.click()}
                 onRename={handleRename}
                 onDelete={deleteFromProject}
                 codeNameOf={codeNameOf}
@@ -917,6 +992,8 @@ export function AssetsPanel({
                 onDelete={deleteFromProject}
                 editTargetOf={editTargetOf}
                 onOpenInOrigin={openInOriginApp}
+                raylib={usesRaylib}
+                codeNameOf={codeNameOf}
               />
             ) : null}
           </div>

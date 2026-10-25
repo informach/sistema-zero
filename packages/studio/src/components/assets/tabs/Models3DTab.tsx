@@ -25,6 +25,8 @@ export interface Models3DTabProps extends AssetsTabCommon {
   onOpenTeam?: (() => void) | null
   editTargetOf: (asset: ProjectAsset) => EditTarget | null
   onOpenInOrigin: (asset: ProjectAsset, target: EditTarget) => void
+  /** Projeto Python com Raylib: os textos falam do Raylib 3D e do `load_model`. */
+  raylib?: boolean
 }
 
 /**
@@ -47,6 +49,8 @@ export function Models3DTab({
   onDelete,
   editTargetOf,
   onOpenInOrigin,
+  raylib = false,
+  codeNameOf,
 }: Models3DTabProps): JSX.Element {
   const t = useT()
   return (
@@ -73,7 +77,11 @@ export function Models3DTab({
               variant={onOpenMolda || onOpenTeam ? 'subtle' : 'primary'}
               size="sm"
               disabled={busy}
-              title="Modelo 3D (.glb) ou céu 360° (.hdr) para Jogo 3D, Jogo 3D Avançado, Mundo 3D e Canvas 3D"
+              title={
+                raylib
+                  ? 'Modelo 3D (.glb) para o Raylib 3D'
+                  : 'Modelo 3D (.glb) ou céu 360° (.hdr) para Jogo 3D, Jogo 3D Avançado, Mundo 3D e Canvas 3D'
+              }
               onClick={onUpload}
             >
               {busy ? 'Processando…' : '📦 Enviar modelo 3D'}
@@ -81,7 +89,13 @@ export function Models3DTab({
           ) : null}
         </div>
       ) : null}
-      {!has3DExtension ? (
+      {raylib ? (
+        <p className="text-xs text-sz-fg-mute">
+          {has3DExtension
+            ? 'Modelo .glb vai para a pasta models. Texturas do Molda entram como imagem, na pasta images. O céu 360° (.hdr) ainda não entra no Raylib.'
+            : 'Aqui a textura do Molda entra como imagem. Para usar um modelo 3D, troque para a extensão Raylib 3D, em "Extensões".'}
+        </p>
+      ) : !has3DExtension ? (
         <p className="text-xs text-sz-fg-mute">
           Para USAR um modelo 3D, instale antes uma extensão que entenda 3D: Jogo 3D, Jogo 3D
           Avançado ou Mundo 3D, em "Extensões". (O Canvas 3D já vem no Estúdio, não precisa
@@ -101,8 +115,9 @@ export function Models3DTab({
         ) : (
           <>
             <p className="mb-2 text-xs text-sz-fg-soft">
-              Use o NOME no bloco "Criar o objeto … com o modelo" (Jogo 3D) ou na peça "modelo
-              importado" do molde; se for .hdr, em "Usar o céu 360°" ou no "céu de foto".
+              {raylib
+                ? "Abra o modelo pelo caminho dele no código, como load_model('models/nave.glb')."
+                : 'Use o NOME no bloco "Criar o objeto … com o modelo" (Jogo 3D) ou na peça "modelo importado" do molde; se for .hdr, em "Usar o céu 360°" ou no "céu de foto".'}
             </p>
             <ul className="flex flex-col gap-2">
               {models3d.map((asset) => {
@@ -120,6 +135,7 @@ export function Models3DTab({
                       asset={asset}
                       what="o modelo 3D"
                       onRename={onRename}
+                      codeName={codeNameOf?.(asset)}
                       className="min-w-0 flex-1"
                     />
                     <span

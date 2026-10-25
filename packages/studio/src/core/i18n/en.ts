@@ -83,6 +83,7 @@ export const en: Record<string, string> = {
   'assets.tab.images': 'Images',
   'assets.tab.sounds': 'Sounds',
   'assets.tab.models3d': '3D models',
+  'assets.tab.fonts': 'Fonts',
   'extensions.install': 'Install',
   'extensions.remove': 'Remove',
   'extensions.installed': 'Installed',
@@ -289,6 +290,8 @@ export const en: Record<string, string> = {
   'moldaImport.add': 'Add to project',
   'moldaImport.adding': 'Bringing…',
   'moldaImport.inProject': '✓ in project',
+  'moldaImport.needs3dRaylib':
+    '3D models belong to the Raylib 3D extension, and the 360° sky does not enter Raylib yet. The texture comes in as an image.',
   'moldaImport.needs3d':
     'Install Game 3D, Advanced Game 3D or World 3D (Extensions panel) to use models and skies. The texture comes in as an image.',
   'moldaImport.kind.model': '🧊 model',

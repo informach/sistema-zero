@@ -98,6 +98,7 @@ export const ptBR: Record<string, string> = {
   'assets.tab.images': 'Imagens',
   'assets.tab.sounds': 'Sons',
   'assets.tab.models3d': 'Modelos 3D',
+  'assets.tab.fonts': 'Fontes',
   // A capa do card "Meus Jogos": uma imagem do projeto vira a capa fixa, vencendo a foto
   // automática do preview (26/09/2026).
   'assets.cover.use': '⭐ Usar como capa',
@@ -325,6 +326,8 @@ export const ptBR: Record<string, string> = {
   'moldaImport.inProject': '✓ no projeto',
   'moldaImport.needs3d':
     'Instale o Jogo 3D, o Jogo 3D Avançado ou o Mundo 3D (painel de Extensões) para usar modelos e céus. A textura entra como imagem.',
+  'moldaImport.needs3dRaylib':
+    'Modelos 3D são da extensão Raylib 3D, e o céu 360° ainda não entra no Raylib. A textura entra como imagem.',
   'moldaImport.kind.model': '🧊 modelo',
   'moldaImport.kind.texture': '🧱 textura',
   'moldaImport.kind.sky': '🌤️ céu',
