@@ -36,6 +36,7 @@ test('CI and deployment budgets preserve individual proofs and other job deadlin
     ),
   ).toEqual({
     ci: 60,
+    'studio-python-extensions': 15,
     'studio-storage-macos': 15,
     'desktop-windows': 20,
     'community-kids-e2e': 20,
@@ -44,6 +45,7 @@ test('CI and deployment budgets preserve individual proofs and other job deadlin
     'studio-e2e-webkit': 20,
     'members-image': 25,
   })
+  expect(deploy).toContain('needs: [ci, studio-python-extensions,')
   expect(
     jobs.ci!.steps.find(
       (step) => step.name === 'Verificar cancelamento Python por RPC no runtime real',
