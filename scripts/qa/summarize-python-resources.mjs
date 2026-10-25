@@ -28,6 +28,7 @@ for (const dir of await readdir(attempt, { withFileTypes: true })) {
   assert.ok(judge.results.length > 0)
   assert.ok(judge.results.every((result) => result.passed === judge.expected))
   rows.push({ name: dir.name, expected: judge.expected, ...metrics, cleanup: true })
+  console.log(JSON.stringify({ case: dir.name, ...metrics, cleanup: true }))
 }
 assert.ok(rows.length >= 30, 'Full positive and negative scenario selection is required')
 const summary = {
