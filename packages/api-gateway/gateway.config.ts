@@ -4,6 +4,7 @@ import {
   ZAPPY_SOURCE_REQUEST_MAX_BYTES,
 } from '@sistemazero/core/zappy'
 import type { GatewayConfigInput } from './src/infrastructure/config/gateway-config.schema'
+import { subscriptionRecoveryRoutes } from './src/infrastructure/config/subscription-recovery-routes'
 
 /**
  * Config declarativa do gateway. Adicionar/expor um serviço = editar este arquivo
@@ -607,6 +608,7 @@ const config: GatewayConfigInput = {
       rateLimit: { max: 30, windowMs: 60_000, by: 'principal' },
       audit: {},
     },
+    ...subscriptionRecoveryRoutes(paymentsInternalTransforms),
     // ── Minhas compras (app community — self-service do COMPRADOR) ──────────
     {
       id: 'payments-admin-recovery-policy-read',
