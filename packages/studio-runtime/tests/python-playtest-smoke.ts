@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict'
-import { copyFile, mkdir, readFile, writeFile } from 'node:fs/promises'
+import { chmod, copyFile, mkdir, readFile, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 import { studioPythonExecutionRevision } from '@sistemazero/core/studio/python-execution-content'
 import { pythonProjectStructureRecipe } from '@sistemazero/core/studio/python-mission-execution'
@@ -223,6 +223,10 @@ for (const [name, source, expected] of health ? healthCases : standardCases) {
   if (name === 'modified-file')
     await writeFile(path.join(directory, 'project/main.py'), 'print("tampered")\n')
   const containerName = `sz-python-playtest-${crypto.randomUUID().replaceAll('-', '')}`
+  // The fresh proof output directory belongs to the host runner (often UID 1001),
+  // while the production image remains UID 1000. Only this attempt's output root
+  // needs write access; do not run the learner image as root or weaken its flags.
+  if (process.platform !== 'win32') await chmod(directory, 0o777)
   const command = docker
     ? [
         'docker',
