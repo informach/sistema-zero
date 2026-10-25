@@ -23,7 +23,9 @@ export function freePythonCurriculum(
   // Remove its consumers; never fill missing companions from unearned/unapproved IDs.
   const available = new Set(candidates)
   const missing = pythonCourseBlockClosure(candidates).filter((id) => !available.has(id))
-  const complete = missing.length ? new Set(removePythonCourseBlocks(candidates, missing)) : available
+  const complete = missing.length
+    ? new Set(removePythonCourseBlocks(candidates, missing))
+    : available
   const blockIds = candidates.filter((id) => complete.has(id))
   const owners = new Set(pythonCourseExtensionsForBlocks(earned ?? []))
   return {
