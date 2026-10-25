@@ -4,6 +4,7 @@
  * `drawing.ts` inserts it with the Pinta's own `pngWithPintaData`, so the block is byte for byte
  * the one "Editar no Pinta" would write.
  */
+// Keep IDAT bytes stable across Windows and Linux when checking in generated gallery art.
 import { zlibSync } from 'fflate'
 import { type Px, rgb } from './pixel'
 
