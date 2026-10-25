@@ -42,6 +42,7 @@ describe('configuração operacional da IA do Estúdio', () => {
     ['members', 'STUDIO_AI_VAULT_KEYS'],
     ['members', 'STUDIO_AI_VAULT_ACTIVE_ID'],
     ['members', 'STUDIO_AI_CALLBACK_ORIGINS'],
+    ['members', 'STUDIO_AUTHORING_POLICY_SHA256'],
     ['community-kids', 'STUDIO_AI_RECONCILE_CRON_SECRET'],
     ['community-kids', 'FUNNEL_URL'],
   ])('preserva %s.%s nos dois ambientes', (service, key) => {
