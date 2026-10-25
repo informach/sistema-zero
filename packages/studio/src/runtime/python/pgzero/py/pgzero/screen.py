@@ -176,6 +176,50 @@ class SurfacePainter:
         _sz.text(text, x, y, hanchor, vanchor, style)
 
 
+class ScreenSurface:
+    """screen.surface: the part of a pygame Surface a Pygame Zero game uses on the screen."""
+
+    def __init__(self, screen):
+        self._screen = screen
+
+    def get_at(self, pos):
+        x, y = pos
+        return _sz.read_screen_pixel(int(x), int(y))
+
+    def get_width(self):
+        return self._screen.width
+
+    def get_height(self):
+        return self._screen.height
+
+    def get_size(self):
+        return self._screen.width, self._screen.height
+
+    def get_rect(self, **kwargs):
+        from .rect import Rect
+        rect = Rect(0, 0, self._screen.width, self._screen.height)
+        for key, value in kwargs.items():
+            setattr(rect, key, value)
+        return rect
+
+    def fill(self, color, rect=None):
+        if rect is None:
+            self._screen.fill(color)
+        else:
+            from .rect import Rect
+            area = Rect(rect)
+            _sz.rect(area.x, area.y, area.w, area.h, color, 0)
+
+    def blit(self, source, dest):
+        self._screen.blit(source, dest)
+
+    def __getattr__(self, name):
+        raise AttributeError(
+            f'No Estúdio, screen.surface tem get_at, fill, blit, get_size e get_rect '
+            f'({name} não existe aqui).'
+        )
+
+
 class Screen:
     """Interface to the screen."""
 
@@ -187,10 +231,8 @@ class Screen:
 
     @property
     def surface(self):
-        raise NotImplementedError(
-            'No Estúdio, screen.surface não está disponível. Desenhe com screen.blit e '
-            'screen.draw; para ler cores, use uma imagem: images.nome.get_at((x, y)).'
-        )
+        """The screen as pygame sees it: draw on it with pygame.draw, read it with get_at."""
+        return ScreenSurface(self)
 
     def clear(self):
         """Clear the screen to black."""

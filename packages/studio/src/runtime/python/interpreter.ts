@@ -21,6 +21,7 @@ import { loadPgzeroModuleSources } from './pgzero/moduleSources'
 import type { PythonConsoleStream, PythonExecutionSnapshot, PythonGraphicsReply } from './protocol'
 import { RAYLIB_2D_EXTENSION } from './raylib/contract'
 import { loadRaylibModuleSources } from './raylib/moduleSources'
+import { isPythonSavedFile } from './savedFiles'
 import { loadTurtleModuleSources } from './turtle/moduleSources'
 
 import { PYODIDE_VERSION, PYTHON_VERSION } from './versions'
@@ -42,6 +43,7 @@ interface ExecutionBridge {
   install_pgzero: PythonCallable
   install_raylib: PythonCallable
   install_audio: PythonCallable
+  install_saved_files: PythonCallable
   install_activity: PythonCallable
   grade_activity: PythonCallable
   destroy(): void
@@ -212,6 +214,8 @@ export async function createPythonInterpreter(options: {
     images: { id: number; bytes: Uint8Array<ArrayBuffer> }[],
   ): Promise<PythonGraphicsReply>
   audio?(request: string): Promise<string>
+  /** A file the program closed after writing it, kept with the project (savedFiles.ts). */
+  onSavedFile?(path: string, bytes: Uint8Array<ArrayBuffer>): void
 }) {
   const base = new URL('./', import.meta.url)
   const resourceScope = new AbortController()
@@ -264,6 +268,7 @@ export async function createPythonInterpreter(options: {
   const installPgzero = bridge.install_pgzero
   const installRaylib = bridge.install_raylib
   const installAudio = bridge.install_audio
+  const installSavedFiles = bridge.install_saved_files
   const installActivity = bridge.install_activity
   const gradeActivity = bridge.grade_activity
   let prepared = false
@@ -307,7 +312,33 @@ export async function createPythonInterpreter(options: {
         runtime.FS.mkdirTree(path.slice(0, path.lastIndexOf('/')))
         runtime.FS.writeFile(path, file.bytes)
       }
+      // Files saved in earlier runs. A project file or folder with the same path wins.
+      const savedSizes: Record<string, number> = {}
+      for (const file of snapshot.saved ?? []) {
+        const saved = Object.keys(savedSizes)
+        if (studioPortableFileConflict([...paths, ...saved, file.path], snapshot.directories))
+          continue
+        const path = `${PROJECT_ROOT}/${file.path}`
+        runtime.FS.mkdirTree(path.slice(0, path.lastIndexOf('/')))
+        runtime.FS.writeFile(path, file.bytes)
+        savedSizes[file.path] = file.bytes.byteLength
+      }
       prepare(PROJECT_ROOT, snapshot.configuration.python.entrypoint, options.requestLine)
+      if (options.onSavedFile) {
+        const publish = options.onSavedFile
+        installSavedFiles(
+          PROJECT_ROOT,
+          JSON.stringify(paths),
+          JSON.stringify(savedSizes),
+          (path: unknown, raw: unknown) => {
+            if (!(raw instanceof Uint8Array)) return false
+            const bytes = new Uint8Array(raw)
+            if (!isPythonSavedFile(path, bytes)) return false
+            publish(path as string, bytes)
+            return true
+          },
+        )
+      }
       if (options.audio) {
         const directory = `/studio/media/python-audio-${SZ_AUDIO_MODULE_DESCRIPTOR.version}`
         runtime.FS.mkdirTree(`${directory}/sz_audio`)
@@ -379,9 +410,12 @@ export async function createPythonInterpreter(options: {
             PGZERO_DEFAULT_FONT_ATTACHMENT,
           } = protocol
           const directory = `/studio/extensions/${PGZERO_EXTENSION.id}-${PGZERO_EXTENSION.version}`
-          runtime.FS.mkdirTree(`${directory}/pgzero`)
-          for (const [filename, bytes] of sources)
-            runtime.FS.writeFile(`${directory}/${filename}`, bytes)
+          // Two packages live here (pgzero and the part of pygame): each file gets its folder.
+          for (const [filename, bytes] of sources) {
+            const path = `${directory}/${filename}`
+            runtime.FS.mkdirTree(path.slice(0, path.lastIndexOf('/')))
+            runtime.FS.writeFile(path, bytes)
+          }
           const inProject = (path: string) =>
             path.startsWith(`${PROJECT_ROOT}/`) && !path.split('/').includes('..')
           let sentFont = false

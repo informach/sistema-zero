@@ -98,6 +98,7 @@ async function initialize(event: MessageEvent<unknown>) {
       | { type: 'event'; event: PythonRuntimePayload }
       | { type: 'activity-result'; requestId: string; feedback: StudioPythonActivityFeedback }
       | { type: 'audio-request'; requestId: string; request: string }
+      | { type: 'saved-file'; path: string; bytes: Uint8Array<ArrayBuffer> }
       | {
           type: 'ack'
           commandId: number
@@ -392,6 +393,9 @@ async function initialize(event: MessageEvent<unknown>) {
         if (!prepared || closed)
           return Promise.reject(new Error('O canal de áudio não está disponível.'))
         return queueAudio(request)
+      },
+      onSavedFile(path, bytes) {
+        send({ type: 'saved-file', path, bytes })
       },
       ...(canvas
         ? {

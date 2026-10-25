@@ -102,3 +102,16 @@ test('console refuses shape, count and aggregate quotas without traversing exces
       readPythonWorkerEvent({ type: 'console', batches: [{ ...batch, ...replacement }] }),
     ).toBeUndefined()
 })
+
+test('a saved file carries only a portable path and bounded bytes', () => {
+  const bytes = new Uint8Array([1, 2, 3])
+  expect(
+    readPythonWorkerEvent({ type: 'saved-file', path: 'placar.txt', bytes, extra: 1 }),
+  ).toEqual({ type: 'saved-file', path: 'placar.txt', bytes })
+  for (const raw of [
+    { type: 'saved-file', path: '../placar.txt', bytes },
+    { type: 'saved-file', path: 'placar.txt', bytes: [1, 2, 3] },
+    { type: 'saved-file', path: 'placar.txt', bytes: new Uint8Array(64 * 1024 + 1) },
+  ])
+    expect(readPythonWorkerEvent(raw)).toBeUndefined()
+})

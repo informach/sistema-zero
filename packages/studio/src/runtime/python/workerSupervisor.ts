@@ -41,6 +41,8 @@ export function createPythonWorkerSupervisor(options: {
   /** Releases bootstrap URLs and other frame-owned resources, never learner cleanup. */
   onRelease(): void
   audio?(request: string): Promise<string>
+  /** A file the program saved (savedFiles.ts); without it the files only live in this run. */
+  onSavedFile?(path: string, bytes: Uint8Array<ArrayBuffer>): void
   graphics?(
     request: string,
     images: { id: number; bytes: Uint8Array<ArrayBuffer> }[],
@@ -238,6 +240,15 @@ export function createPythonWorkerSupervisor(options: {
           )
         return
       }
+      case 'saved-file':
+        // The worker sends the last saves a moment later, so a finished program still counts.
+        if (phase !== 'running' && phase !== 'waiting-input' && phase !== 'completed') break
+        try {
+          options.onSavedFile?.(value.path, value.bytes)
+        } catch {
+          fail('runtime-unavailable', 'Não foi possível guardar o arquivo do programa.')
+        }
+        return
       case 'failed':
         fail('runtime-unavailable', value.message)
         return

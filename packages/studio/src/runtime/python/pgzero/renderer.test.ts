@@ -102,6 +102,23 @@ describe('Pygame Zero renderer exchange', () => {
     }
   })
 
+  test('a screen read paints what was drawn at once and answers the colour there', async () => {
+    const renderer = createPgzeroRenderer(document.createElement('div'))
+    try {
+      await renderer.exchange(header(), [list()])
+      const triangle = list(PGZERO_OP.POLY, 3, 0, 255, 0, 0, 255, 0, 0, 10, 0, 5, 8)
+      const reply = await renderer.exchange(header({ read: [5, 5] }), [triangle])
+      // The fake canvas answers 9 for every channel.
+      expect(JSON.parse(reply as string)).toEqual({ pixel: [9, 9, 9, 9] })
+      // A polygon needs 3 points: the paint fails, and the next exchange reports it.
+      await renderer.exchange(header(), [list(PGZERO_OP.POLY, 2, 0, 1, 1, 1, 255, 0, 0, 1, 1)])
+      const bad = await renderer.exchange(header({ keep: true }), [])
+      expect(JSON.parse(bad as string).error).toBeDefined()
+    } finally {
+      renderer.dispose()
+    }
+  })
+
   test('a frame the browser cannot show comes back as an error reply for Python', async () => {
     const renderer = createPgzeroRenderer(document.createElement('div'))
     try {

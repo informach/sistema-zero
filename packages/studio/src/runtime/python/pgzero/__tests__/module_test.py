@@ -150,6 +150,104 @@ class SoundLength(Case):
         self.assertAlmostEqual(self.loaders.sounds.a.get_length(), 2.0)
 
 
+class Tone(Case):
+    def test_play_sends_the_note_the_browser_builds(self):
+        from pgzero import tone
+        tone.play('A4', 0.5)
+        self.assertEqual(self.sz.frame.audio[-1], ['tone', self.sz.frame.audio[-1][1], 440.0, 11025, 1.0])
+        tone.play(220, 0.25)
+        self.assertEqual(self.sz.frame.audio[-1][2:4], [220.0, 5512])
+
+    def test_create_makes_a_sound_to_play_later_with_its_length(self):
+        from pgzero import tone
+        note = tone.create('C4', 0.02)
+        self.assertAlmostEqual(note.get_length(), (441 + 2000) / 22050)
+        self.assertEqual(self.sz.frame.audio, [])
+        note.play()
+        self.assertEqual(self.sz.frame.audio[-1][0], 'tone')
+
+    def test_bad_notes_are_explained(self):
+        from pgzero import tone
+        with self.assertRaises(tone.InvalidNote) as caught:
+            tone.play('H2', 1)
+        self.assertIn('não é uma nota', str(caught.exception))
+        with self.assertRaises(tone.InvalidNote):
+            tone.play('C4', 5)
+
+
+class PygamePart(Case):
+    def setUp(self):
+        super().setUp()
+        for name in list(sys.modules):
+            if name == 'pygame' or name.startswith('pygame.'):
+                del sys.modules[name]
+
+    def surface(self):
+        from pgzero.screen import Screen
+        self.present()  # the window size the screen reads use
+        return Screen(320, 240).surface
+
+    def test_draw_on_screen_surface_joins_the_drawing(self):
+        import pygame
+        surface = self.surface()
+        box = pygame.draw.polygon(surface, (255, 0, 0), [(10, 10), (50, 10), (30, 40)])
+        self.assertEqual(repr(box), 'Rect(10, 10, 41, 31)')  # pygame-ce 2.5.8
+        self.assertEqual(repr(pygame.draw.ellipse(surface, 'blue', (10, 10, 20, 10))), 'Rect(10, 10, 20, 10)')
+        self.assertEqual(repr(pygame.draw.circle(surface, (1, 1, 1), (50, 50), 10)), 'Rect(40, 40, 20, 20)')
+        pygame.draw.rect(surface, (1, 1, 1), (5, 5, 10, 10), -1)
+        ops = self.sz.frame.ops
+        self.assertEqual(ops[0], self.sz.OP_POLY)
+        self.assertEqual(list(ops[1:3]), [3.0, 0.0])
+        self.assertIn(float(self.sz.OP_ELLIPSE), list(ops))
+        self.assertNotIn(float(self.sz.OP_RECT), list(ops))  # a negative width draws nothing
+
+    def test_draw_only_on_the_screen(self):
+        import pygame
+        with self.assertRaises(TypeError) as caught:
+            pygame.draw.line(object(), (0, 0, 0), (0, 0), (1, 1))
+        self.assertIn('screen.surface', str(caught.exception))
+
+    def test_get_at_sends_what_was_drawn_and_answers_the_colour(self):
+        import pygame
+        surface = self.surface()
+        pygame.draw.rect(surface, (9, 8, 7), (0, 0, 10, 10))
+        self.browser.replies = [{'pixel': [9, 8, 7, 255]}]
+        color = surface.get_at((5, 5))
+        self.assertEqual(tuple(color), (9, 8, 7, 255))
+        header = self.browser.headers[-1]
+        self.assertEqual(header['read'], [5, 5])
+        self.assertTrue(len(self.browser.payloads[-1]) > 0)
+        # The drawing went with the read: the next frame does not send it again.
+        self.present()
+        self.assertTrue(self.browser.headers[-1]['keep'])
+        with self.assertRaises(IndexError):
+            surface.get_at((320, 0))
+
+    def test_vector2_behaves_like_pygame_ce(self):
+        from pygame.math import Vector2
+        a = Vector2(3, 4)
+        self.assertEqual(repr(a), 'Vector2(3, 4)')
+        self.assertEqual(repr(Vector2(1.5, 2)), 'Vector2(1.5, 2)')
+        self.assertEqual(a.length(), 5.0)
+        self.assertEqual(repr(a.normalize()), 'Vector2(0.6, 0.8)')
+        self.assertEqual(repr(a * 2), 'Vector2(6, 8)')
+        self.assertEqual(a * Vector2(1, 0), 3.0)
+        self.assertEqual(repr(a.rotate(90)), 'Vector2(-4, 3)')
+        self.assertEqual(a.distance_to((0, 0)), 5.0)
+        self.assertAlmostEqual(a.angle_to((0, 1)), 36.86989764584402)
+        self.assertEqual(repr(a + (1, 1)), 'Vector2(4, 5)')
+        self.assertEqual(str(Vector2((1, 2))), '[1, 2]')
+
+    def test_mixer_init_is_harmless_and_missing_parts_explain(self):
+        import pygame
+        pygame.mixer.quit()
+        pygame.mixer.init(44100, -16, 2, 1024)
+        self.assertIs(pygame.Rect, __import__('pgzero.rect').rect.Rect)
+        with self.assertRaises(AttributeError) as caught:
+            pygame.time
+        self.assertIn('parte do pygame', str(caught.exception))
+
+
 class PersistentScreen(Case):
     """The screen keeps what was drawn, like pygame's display surface."""
 

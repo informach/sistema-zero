@@ -9,6 +9,7 @@ import {
   StudioRuntimeUnavailableError,
 } from '../types'
 import { readPythonExecutionIdentity } from './frameProtocol'
+import { readPythonSavedFiles, withPythonSavedFile } from './savedFiles'
 import { preparePythonFrameSession } from './session'
 import { preparePythonExecutionSnapshot } from './snapshot'
 
@@ -18,10 +19,18 @@ export interface ApprovedPythonFrame {
   runtimeManifestSha256: string
 }
 
+/** The project's game storage record (state/gameStorage.ts), where saved files are kept. */
+export interface PythonSavedFileStore {
+  load(): Promise<Record<string, string>>
+  write(data: Record<string, string>): Promise<void>
+}
+
 /** Inject the host's approved artifact resolver; this module never resolves arbitrary packages. */
 export function createPythonRuntimeProvider(options: {
   id: string
   allowedOrigins: readonly string[]
+  /** Without it, the files a program saves only live during its run. */
+  savedFiles?(projectId: string): PythonSavedFileStore
   resolveFrame(
     selection: StudioRuntimeSelection,
     signal: AbortSignal,
@@ -57,6 +66,26 @@ export function createPythonRuntimeProvider(options: {
           'snapshot-mismatch',
           'O projeto mudou desde a preparação da execução.',
         )
+      // Files the program saved in earlier runs (savedFiles.ts). A storage that does not
+      // answer only means nothing was kept: the run goes on.
+      const store = options.savedFiles?.(snapshot.projectId)
+      let record: Record<string, string> = {}
+      if (store)
+        try {
+          record = await store.load()
+        } catch {
+          record = {}
+        }
+      const saved = readPythonSavedFiles(record)
+      let writes = Promise.resolve()
+      const keepSavedFile = store
+        ? (file: { path: string; bytes: Uint8Array<ArrayBuffer> }) => {
+            const next = withPythonSavedFile(record, file)
+            if (!next) return
+            record = next
+            writes = writes.then(() => store.write(next)).catch(() => undefined)
+          }
+        : undefined
       if (signal.aborted)
         throw signal.reason ?? new DOMException('Execução cancelada.', 'AbortError')
       const approved = await new Promise<ApprovedPythonFrame>((resolve, reject) => {
@@ -93,7 +122,8 @@ export function createPythonRuntimeProvider(options: {
         frame,
         frameURL: url,
         identity,
-        snapshot,
+        snapshot: saved.length ? { ...snapshot, saved } : snapshot,
+        ...(keepSavedFile ? { onSavedFile: keepSavedFile } : {}),
         signal,
         hostAudio: input.hostAudio,
         ...(activity ? { activity } : {}),

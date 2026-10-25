@@ -19,8 +19,16 @@ interface Entry {
 }
 const entries = new Map<string, Entry>()
 const configuration = await (await fetch('/configuration')).json()
+// The project's game storage, in memory for this page (the real one is state/gameStorage.ts).
+const savedRecords = new Map<string, Record<string, string>>()
 const provider = createPythonRuntimeProvider({
   id: 'python-integration-probe',
+  savedFiles: (projectId) => ({
+    load: async () => ({ ...(savedRecords.get(projectId) ?? {}) }),
+    write: async (data) => {
+      savedRecords.set(projectId, { ...data })
+    },
+  }),
   allowedOrigins: [new URL(configuration.providerFrameURL).origin],
   // Local qualification fixture, not approval of a production catalog release.
   async resolveFrame(selection) {
@@ -177,6 +185,9 @@ const api = {
     await entry.session?.dispose()
     entry.abort.abort()
     entry.frame.remove()
+  },
+  savedKeys() {
+    return [...savedRecords.values()].flatMap((record) => Object.keys(record)).sort()
   },
   read(slot: string) {
     const { events, status, error, frame } = get(slot)

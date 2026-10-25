@@ -71,6 +71,43 @@ clock.schedule_unique(marcar, 0.5)
 print('pronto', heroi.pos)
 pgzrun.go()
 `,
+  // The engine's part of pygame, tone, and files the game saves for the next run.
+  pgzeroSavesFiles: `import os
+from pathlib import Path
+import pgzrun
+import pygame
+
+WIDTH = 200
+HEIGHT = 100
+vezes = 0
+if os.path.exists('contador.txt'):
+    with open('contador.txt') as arquivo:
+        vezes = int(arquivo.read())
+antes = Path('dados/nome.txt').read_text() if vezes else '-'
+vezes = vezes + 1
+with open('contador.txt', 'w') as arquivo:
+    arquivo.write(str(vezes))
+Path('dados').mkdir(exist_ok=True)
+Path('dados/nome.txt').write_text('Ana ' + str(vezes))
+print('aberto', vezes, 'antes', antes)
+nota = tone.create('A4', 0.3)
+lido = False
+
+
+def draw():
+    global lido
+    screen.fill((0, 0, 0))
+    pygame.draw.circle(screen.surface, (255, 0, 0), (50, 50), 20)
+    pygame.draw.polygon(screen.surface, (0, 255, 0), [(120, 20), (180, 20), (150, 80)])
+    if not lido:
+        lido = True
+        cores = [tuple(screen.surface.get_at(ponto)) for ponto in [(50, 50), (150, 35), (10, 90)]]
+        print('pixels', cores)
+        nota.play()
+
+
+pgzrun.go()
+`,
 }
 
 export const PGZERO_FIXTURE_ASSETS = [

@@ -1,3 +1,4 @@
+import { isToneRequest } from '../audio/tone'
 /**
  * Wire contract between the Pygame Zero module running in the Python worker and the canvas
  * renderer in the execution frame. One exchange per game frame:
@@ -60,7 +61,13 @@ export const PGZERO_OP = Object.freeze({
   RECT: 5,
   CIRCLE: 6,
   TEXT: 7,
+  /** pygame.draw.polygon: point count, width, rgba, then the points (variable length). */
+  POLY: 8,
+  ELLIPSE: 9,
+  ARC: 10,
 })
+/** Points one polygon may have (kept with _sz.py MAX_POLY_POINTS). */
+export const PGZERO_MAX_POLY_POINTS = 4096
 /** Values that follow each opcode in the display list. */
 export const PGZERO_OP_ARITY: Readonly<Record<number, number>> = Object.freeze({
   1: 4,
@@ -70,6 +77,9 @@ export const PGZERO_OP_ARITY: Readonly<Record<number, number>> = Object.freeze({
   5: 9,
   6: 8,
   7: 6,
+  // POLY (8) has a variable length: 6 + 2 × its point count.
+  9: 9,
+  10: 11,
 })
 
 export interface PgzeroTextStyle {
@@ -101,6 +111,8 @@ export interface PgzeroTextStyle {
  */
 export type PgzeroAudioCommand =
   | readonly ['play', number, string, number, number, boolean]
+  /** A note of the tone module: voice, frequency, samples at 22050 Hz, volume. */
+  | readonly ['tone', number, number, number, number]
   | readonly ['stop', number | null | readonly number[]]
   | readonly ['volume', number | readonly number[], number]
   | readonly ['pause' | 'resume', number]
@@ -118,6 +130,8 @@ export interface PgzeroFrameHeader {
   /** Python waits for sounds to end: the host should report them. */
   watch: boolean
   decode?: number
+  /** screen.surface.get_at: paint this batch at once and answer the screen's colour here. */
+  read?: readonly [number, number]
 }
 
 const object = (value: unknown): value is Record<string, unknown> =>
@@ -214,6 +228,15 @@ function readAudio(value: unknown): PgzeroAudioCommand {
     typeof e === 'boolean'
   )
     return ['play', a, b, c, d, e]
+  if (
+    op === 'tone' &&
+    value.length === 5 &&
+    id(a, 2 ** 31) &&
+    isToneRequest(b, c) &&
+    finite(d, 1) &&
+    d >= 0
+  )
+    return ['tone', a, b as number, c as number, d]
   if (op === 'stop' && value.length === 2 && (a === null || id(a, 2 ** 31) || voices(a)))
     return ['stop', a]
   if (
@@ -243,7 +266,7 @@ export function readPgzeroFrameHeader(raw: unknown): PgzeroFrameHeader {
     invalid()
   }
   if (!object(value)) invalid()
-  const { w, h, title, keep, images, fonts, strings, styles, audio, decode, watch } = value
+  const { w, h, title, keep, images, fonts, strings, styles, audio, decode, watch, read } = value
   if (
     !id(w, PGZERO_LIMITS.maxWidth) ||
     !id(h, PGZERO_LIMITS.maxHeight) ||
@@ -261,7 +284,13 @@ export function readPgzeroFrameHeader(raw: unknown): PgzeroFrameHeader {
     styles.length > PGZERO_LIMITS.styles + 1 ||
     !Array.isArray(audio) ||
     audio.length > PGZERO_LIMITS.audioCommands ||
-    (watch !== undefined && typeof watch !== 'boolean')
+    (watch !== undefined && typeof watch !== 'boolean') ||
+    (read !== undefined &&
+      (decode !== undefined ||
+        !Array.isArray(read) ||
+        read.length !== 2 ||
+        !id(read[0], w - 1) ||
+        !id(read[1], h - 1)))
   )
     invalid()
   return {
@@ -313,6 +342,7 @@ export function readPgzeroFrameHeader(raw: unknown): PgzeroFrameHeader {
     audio: audio.map(readAudio),
     watch: watch === true,
     ...(decode === undefined ? {} : { decode: readDecode(decode, keep) }),
+    ...(read === undefined ? {} : { read: [read[0] as number, read[1] as number] as const }),
   }
 }
 

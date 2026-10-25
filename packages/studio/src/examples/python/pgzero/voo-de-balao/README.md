@@ -8,7 +8,7 @@ galeria.
 
 ## Como jogar
 
-Clique e segure para o balão subir; solte para ele descer. Desvie dos pássaros, das casas e das árvores. O recorde fica no arquivo recorde.txt.
+Clique e segure para o balão subir; solte para ele descer. Desvie dos pássaros, das casas e das árvores. O recorde fica no arquivo recorde.txt e continua lá na próxima vez que você jogar.
 
 ## Ideias para mudar
 

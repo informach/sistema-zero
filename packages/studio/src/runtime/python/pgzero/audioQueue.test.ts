@@ -121,6 +121,19 @@ describe('the frame audio queue', () => {
     expect(sent[0]!.request).toEqual({ version: 1, op: 'stop', ids: [1, 2, 3] })
   })
 
+  test('a tone note becomes a play of the note the host builds', () => {
+    const { queue, sent } = host()
+    queue.pgzero([['tone', 9, 440, 11025, 0.5]], false)
+    expect(sent[0]!.request).toEqual({
+      version: 1,
+      op: 'play',
+      id: 9,
+      tone: { hz: 440, samples: 11025 },
+      loop: false,
+      volume: 0.5,
+    })
+  })
+
   test('stop and volume are never dropped', async () => {
     const { queue, sent, settle, advance } = host()
     queue.pgzero([play(1), ['volume', 1, 0.5], ['stop', 1]], false)

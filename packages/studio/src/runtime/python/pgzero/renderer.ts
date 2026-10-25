@@ -8,6 +8,7 @@ import {
   PGZERO_FONT_ATTACHMENT_BASE,
   PGZERO_LIMITS,
   PGZERO_LIST_ATTACHMENT,
+  PGZERO_MAX_POLY_POINTS,
   PGZERO_OP,
   PGZERO_OP_ARITY,
   type PgzeroAudioCommand,
@@ -567,7 +568,13 @@ export function createPgzeroRenderer(
     let at = 0
     while (at < list.length) {
       const op = list[at++]!
-      const arity = PGZERO_OP_ARITY[op]
+      const points = op === PGZERO_OP.POLY ? list[at]! : 0
+      if (
+        op === PGZERO_OP.POLY &&
+        (!Number.isSafeInteger(points) || points < 3 || points > PGZERO_MAX_POLY_POINTS)
+      )
+        throw new Error('Lista de desenho do Pygame Zero inválida.')
+      const arity = op === PGZERO_OP.POLY ? 6 + points * 2 : PGZERO_OP_ARITY[op]
       if (arity === undefined || at + arity > list.length)
         throw new Error('Lista de desenho do Pygame Zero inválida.')
       const r = list
@@ -615,13 +622,19 @@ export function createPgzeroRenderer(
         case PGZERO_OP.RECT: {
           const [x, y, w, h] = [r[at]!, r[at + 1]!, r[at + 2]!, r[at + 3]!]
           const color = cssColor(r[at + 4]!, r[at + 5]!, r[at + 6]!)
-          if (r[at + 8] === 0) {
+          const border = r[at + 8]!
+          if (border === 0) {
+            ctx.fillStyle = color
+            ctx.fillRect(x, y, w, h)
+          } else if (border * 2 >= Math.min(w, h)) {
+            // A border as thick as half the rectangle fills it, like pygame.
             ctx.fillStyle = color
             ctx.fillRect(x, y, w, h)
           } else {
+            // pygame draws the border inside the rectangle.
             ctx.strokeStyle = color
-            ctx.lineWidth = 1
-            ctx.strokeRect(x + 0.5, y + 0.5, Math.max(0, w - 1), Math.max(0, h - 1))
+            ctx.lineWidth = border
+            ctx.strokeRect(x + border / 2, y + border / 2, w - border, h - border)
           }
           break
         }
@@ -634,9 +647,57 @@ export function createPgzeroRenderer(
             ctx.arc(r[at]! + 0.5, r[at + 1]! + 0.5, radius, 0, Math.PI * 2)
             ctx.fill()
           } else {
+            // The ring grows inwards from the radius, like pygame.
+            const ring = Math.min(r[at + 7]!, radius)
             ctx.strokeStyle = color
-            ctx.lineWidth = 1
-            ctx.arc(r[at]! + 0.5, r[at + 1]! + 0.5, Math.max(0, radius - 0.5), 0, Math.PI * 2)
+            ctx.lineWidth = ring
+            ctx.arc(r[at]! + 0.5, r[at + 1]! + 0.5, Math.max(0, radius - ring / 2), 0, Math.PI * 2)
+            ctx.stroke()
+          }
+          break
+        }
+        case PGZERO_OP.POLY: {
+          const width = r[at + 1]!
+          const color = cssColor(r[at + 2]!, r[at + 3]!, r[at + 4]!)
+          ctx.beginPath()
+          for (let point = 0; point < points; point++) {
+            const px = r[at + 6 + point * 2]! + 0.5
+            const py = r[at + 7 + point * 2]! + 0.5
+            if (point === 0) ctx.moveTo(px, py)
+            else ctx.lineTo(px, py)
+          }
+          ctx.closePath()
+          if (width === 0) {
+            ctx.fillStyle = color
+            ctx.fill()
+          } else {
+            ctx.strokeStyle = color
+            ctx.lineWidth = width
+            ctx.lineJoin = 'miter'
+            ctx.stroke()
+          }
+          break
+        }
+        case PGZERO_OP.ELLIPSE:
+        case PGZERO_OP.ARC: {
+          const [x, y, w, h] = [r[at]!, r[at + 1]!, r[at + 2]!, r[at + 3]!]
+          const arc = op === PGZERO_OP.ARC
+          const c = arc ? at + 6 : at + 4
+          const width = r[c + 4]!
+          const color = cssColor(r[c]!, r[c + 1]!, r[c + 2]!)
+          const inset = width === 0 ? 0 : Math.min(width, w / 2, h / 2) / 2
+          const rx = Math.max(0, w / 2 - inset)
+          const ry = Math.max(0, h / 2 - inset)
+          ctx.beginPath()
+          // pygame's angles turn counter-clockwise on the screen (y grows downwards).
+          if (arc) ctx.ellipse(x + w / 2, y + h / 2, rx, ry, 0, -r[at + 4]!, -r[at + 5]!, true)
+          else ctx.ellipse(x + w / 2, y + h / 2, rx, ry, 0, 0, Math.PI * 2)
+          if (width === 0 && !arc) {
+            ctx.fillStyle = color
+            ctx.fill()
+          } else {
+            ctx.strokeStyle = color
+            ctx.lineWidth = Math.max(1, Math.min(width, w / 2, h / 2))
             ctx.stroke()
           }
           break
@@ -840,6 +901,14 @@ export function createPgzeroRenderer(
           if (!list || list.byteLength % 8 || list.byteLength > PGZERO_LIMITS.listBytes)
             throw new Error('Lista de desenho do Pygame Zero inválida.')
           batch = new Float64Array(list.buffer, list.byteOffset, list.byteLength / 8)
+        }
+        if (header.read) {
+          // screen.surface.get_at: what was drawn so far reaches the screen now, then is read.
+          if (batch) paint(batch)
+          const ctx = context!
+          const [x, y] = header.read
+          const data = ctx.getImageData(Math.floor(x * scale), Math.floor(y * scale), 1, 1).data
+          return JSON.stringify({ pixel: [data[0], data[1], data[2], data[3]] })
         }
         // The display paints this batch on its next frame (about 60 per second, the game's
         // clock); the reply goes back now, so Python computes the next frame meanwhile instead of

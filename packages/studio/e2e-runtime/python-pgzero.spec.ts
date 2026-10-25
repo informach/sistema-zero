@@ -154,3 +154,32 @@ for (const key of EXAMPLES)
     await canvas.screenshot({ path: testInfo.outputPath(`${key}.png`) })
     await page.evaluate(() => globalThis.providerProbe.dispose('game'))
   })
+
+test('Pygame Zero: pygame.draw, get_at and tone, and the files a game saves come back next run', async ({
+  page,
+}) => {
+  await page.goto('/provider')
+  await page.waitForFunction(() => !!globalThis.providerProbe)
+  for (const [vezes, antes] of [
+    [1, '-'],
+    [2, 'Ana 1'],
+  ] as const) {
+    await page.evaluate(() => globalThis.providerProbe.prepare('game', 'pgzeroSavesFiles'))
+    const ready = await page.evaluate(() => globalThis.providerProbe.read('game'))
+    expect(ready.status, JSON.stringify(ready)).toBe('ready')
+    await page.evaluate(() => globalThis.providerProbe.run('game'))
+    await expect
+      .poll(() => stdout(page), { timeout: 40_000 })
+      .toContain(`aberto ${vezes} antes ${antes}`)
+    await expect
+      .poll(() => stdout(page))
+      .toContain('pixels [(255, 0, 0, 255), (0, 255, 0, 255), (0, 0, 0, 255)]')
+    await expect
+      .poll(() => page.evaluate(() => globalThis.providerProbe.savedKeys()))
+      .toEqual(['py-file:contador.txt', 'py-file:dados/nome.txt'])
+    const state = await page.evaluate(() => globalThis.providerProbe.read('game'))
+    expect(state.status, JSON.stringify(state)).toBe('running')
+    expect(await stdout(page)).not.toContain('Traceback')
+    await page.evaluate(() => globalThis.providerProbe.dispose('game'))
+  }
+})

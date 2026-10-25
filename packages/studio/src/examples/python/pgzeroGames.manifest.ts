@@ -199,7 +199,7 @@ export const PGZERO_GAMES = [
     experience: 'game',
     inspiration: 'Balloon Flight',
     howToPlay:
-      'Clique e segure para o balão subir; solte para ele descer. Desvie dos pássaros, das casas e das árvores. O recorde fica no arquivo recorde.txt.',
+      'Clique e segure para o balão subir; solte para ele descer. Desvie dos pássaros, das casas e das árvores. O recorde fica no arquivo recorde.txt e continua lá na próxima vez que você jogar.',
     ideas: [
       'Mude a velocidade dos obstáculos.',
       'Faça o balão subir mais devagar.',
@@ -787,7 +787,7 @@ export const PGZERO_GAMES = [
     inspiration: 'Boulder Dash',
     book: 'wireframe',
     howToPlay:
-      'Clique numa peça do painel e depois no mapa (arrastar pinta várias casas). Guardar escreve a caverna no arquivo caverna.txt e Carregar traz ela de volta. Espaço testa a caverna com as setas e espaço de novo volta para o editor.',
+      'Clique numa peça do painel e depois no mapa (arrastar pinta várias casas). Guardar escreve a caverna no arquivo caverna.txt e Carregar traz ela de volta, mesmo depois de fechar o jogo. Espaço testa a caverna com as setas e espaço de novo volta para o editor.',
     ideas: [
       'Invente uma peça nova, como um bloco de fogo, e diga o que ela faz em mover_minerador.',
       'Abra o caverna.txt e veja a caverna escrita com letras.',
@@ -1363,7 +1363,7 @@ export const PGZERO_GAMES = [
     inspiration: 'Tabelas de recordes dos fliperamas',
     book: 'wireframe',
     howToPlay:
-      'Espaço começa a rodada: clique em quantas estrelas puder em 15 segundos. Se você fizer mais pontos que o último do placar, digite seu nome na tela (a tecla de apagar volta uma letra) e aperte Enter. O placar é escrito no arquivo placar.txt.',
+      'Espaço começa a rodada: clique em quantas estrelas puder em 15 segundos. Se você fizer mais pontos que o último do placar, digite seu nome na tela (a tecla de apagar volta uma letra) e aperte Enter. O placar é escrito no arquivo placar.txt e continua lá na próxima vez que você jogar.',
     ideas: [
       'Mude TEMPO para a rodada durar mais.',
       'Mude TAMANHO_DO_PLACAR para guardar mais nomes.',
