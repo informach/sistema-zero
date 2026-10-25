@@ -102,7 +102,8 @@ describe('Auditoria Jogo 2D Avançado — inventário', () => {
   it('todo def é statement (previousStatement) ou reporter (output)', () => {
     expect(statementDefs.length + exprDefs.length).toBe(gameKitBlocks.length)
     // Inclui os dois blocos-lista de nome (cenário e pista), ocultos na paleta.
-    expect(gameKitBlocks.length).toBe(388)
+    // Quatro comandos visuais nativos substituem os blocos Canvas nos exemplos.
+    expect(gameKitBlocks.length).toBe(392)
     for (const def of statementDefs) expect(def.previousStatement).toBe('JSStmt')
     for (const def of exprDefs) expect(def.output).toBe('JSValue')
   })

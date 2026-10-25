@@ -24,31 +24,26 @@ export const chuvaDeMeteorosExample: ExtensionExample = beginnerGameExample({
   description:
     'Chuva de meteoros: voe com as setas para os 4 lados, desvie das pedras que caem girando e atire lasers com espaço. Cada segundo vivo vale 1 ponto e destruir meteoro dá bônus. Enter começa.',
   ir: {
-    html: [{ type: 'canvas', id: 'tela', width: 480, height: 300 }],
-    css: [
-      {
-        selector: 'body',
-        declarations: {
-          background: '#05070f',
-          display: 'flex',
-          'align-items': 'center',
-          'justify-content': 'center',
-          'min-height': '100vh',
-          margin: '0',
-        },
-      },
-      {
-        selector: 'canvas',
-        declarations: {
-          border: '3px solid #ffffff',
-          'border-radius': '18px',
-          background: '#0f0a19',
-        },
-      },
-    ],
+    html: [],
+    css: [],
     version: 2,
     behavior: {
       start: [
+        {
+          type: 'g2d:setupStage',
+          width: 480,
+          height: 300,
+          bg: '#0f0a19',
+          __id: 'exemplo-chuva-de-meteoros',
+        },
+        {
+          type: 'g2d:setStageDescription',
+          description:
+            'Chuva de meteoros: voe com as setas para os 4 lados, desvie das pedras que caem girando e atire lasers com espaço. Cada segundo vivo vale 1 ponto e destruir meteoro dá bônus. Enter começa.',
+          __id: 'exemplo-chuva-de-meteoros-descricao',
+        },
+        { type: 'g2d:stageBorder', color: '#ffffff', width: 3 },
+
         {
           type: 'g2d:fitScreen',
           percent: {

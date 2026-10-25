@@ -178,27 +178,20 @@ describe('buildCoreToolbox — estrutura e itens sempre válidos', () => {
 })
 
 describe('buildCoreToolbox — curadoria POR BLOCO por degrau', () => {
-  // Os níveis antigos normalizam para estes degraus. Jogo 2D começa no perfil
-  // Essencial e abre o catálogo completo no Inventor.
-  it('INICIANTE-2D: Jogo 2D Essencial + HTML/CSS essencial; sem catálogo completo/3D/na-unha', () => {
+  // The whole 2D extension belongs to its 2D stage; course grants curate the
+  // initial core. Visual page tools belong to the separate manual stage.
+  it('INICIANTE-2D: ferramentas de jogo e programação, sem HTML/CSS/Canvas/3D', () => {
     const { types, names } = paletteAt('iniciante-2d')
     for (const t of [
-      'sz_frame_structure',
       'sz_g2d_create_ship',
       'sz_g2d_create_sprite',
       'sz_g2d_create_sprite_track',
       'sz_g2d_on_track_encounter',
       'sz_g2d_scene_animation',
       'sz_g2d_arrows_x',
-      // HTML/CSS ESSENCIAL (26/07): montar uma telinha simples.
-      'sz_html_h1',
-      'sz_html_p',
-      'sz_html_image',
-      'sz_html_button',
-      'sz_html_ul',
-      'sz_html_li',
-      'sz_css_text_color',
-      'sz_css_background_color',
+      'sz_g2d_top_down',
+      'sz_g2d_sprite_vx',
+      'sz_g2d_apply_velocity',
       'sz_js_if_else',
       'sz_js_repeat',
       'sz_js_var_create',
@@ -225,9 +218,15 @@ describe('buildCoreToolbox — curadoria POR BLOCO por degrau', () => {
       'sz_val_object',
       'sz_math_arithmetic',
       'sz_js_function',
-      'sz_g2d_top_down',
-      'sz_g2d_sprite_vx',
-      'sz_g2d_apply_velocity',
+      'sz_frame_structure',
+      'sz_html_h1',
+      'sz_html_p',
+      'sz_html_image',
+      'sz_html_button',
+      'sz_html_ul',
+      'sz_html_li',
+      'sz_css_text_color',
+      'sz_css_background_color',
       'sz_g3d_create_scene',
       'sz_html_svg', // SVG subiu p/ intermediário (26/07)
       'sz_svg_circle',
@@ -268,14 +267,18 @@ describe('buildCoreToolbox — curadoria POR BLOCO por degrau', () => {
       'sz_val_array_index',
       'sz_val_array_last',
       'sz_val_join',
-      'sz_svg_circle', // SVG (int-2d) já entrou no degrau abaixo
-      'sz_svg_path',
     ]) {
       expect(types.has(t)).toBe(true)
     }
     // Funções é flyout DINÂMICO (custom) → conferimos pela categoria, não por bloco.
     // Classes/objetos e o Canvas cru (av-2d) ainda NÃO entram.
-    for (const t of ['sz_js_class', 'sz_val_object', 'sz_canvas_arc']) {
+    for (const t of [
+      'sz_js_class',
+      'sz_val_object',
+      'sz_canvas_arc',
+      'sz_svg_circle',
+      'sz_svg_path',
+    ]) {
       expect(types.has(t)).toBe(false)
     }
     expect(names.has('🧩 Funções')).toBe(true)
@@ -288,30 +291,31 @@ describe('buildCoreToolbox — curadoria POR BLOCO por degrau', () => {
     for (const n of ['🏛️ Classes', '📦 Objetos', 'Avançado']) expect(names.has(n)).toBe(false)
   })
 
-  it('AVANÇADO-3D (≡ avançado antigo, topo): entra tudo (classes, objetos, cru, física, engine 3D)', () => {
+  it('AVANÇADO-3D: classes, objetos, física e motor 3D; apresentação pelas extensões', () => {
     const { types, names } = paletteAt('avancado-3d')
     for (const t of [
       'sz_val_object',
-      'sz_adv_raw_js',
       'sz_g2d_apply_velocity',
       'sz_g3d_get_pos',
       'sz_g3k_setup', // Jogo 3D Avançado = av-3d (uma extensão por degrau)
       'sz_math_trig',
-      'sz_svg_path',
     ]) {
       expect(types.has(t)).toBe(true)
     }
     // Classes é flyout DINÂMICO (custom) → conferimos pela categoria.
-    for (const n of ['🏛️ Classes', '📦 Objetos', 'Avançado', 'Jogo 3D', 'Jogo 3D Avançado']) {
+    for (const n of ['🏛️ Classes', '📦 Objetos', 'Jogo 3D', 'Jogo 3D Avançado']) {
       expect(names.has(n)).toBe(true)
     }
+    for (const t of ['sz_adv_raw_js', 'sz_svg_path', 'sz_canvas_arc', 'sz_html_h1'])
+      expect(types.has(t), t).toBe(false)
+    expect(names.has('Avançado')).toBe(false)
   })
 
   // ── Degraus NOVOS da escada (sem equivalente pré-reforma) ────────────────────
   it('INICIANTE-3D: a porta do 3D — só o núcleo do g3d entra; programação real ainda não', () => {
     const { types, names } = paletteAt('iniciante-3d')
     expect(types.has('sz_g2d_create_sprite')).toBe(true) // inclui o degrau abaixo
-    expect(types.has('sz_g2d_apply_velocity')).toBe(true) // Jogo 2D completo abre aqui
+    expect(types.has('sz_g2d_apply_velocity')).toBe(true) // já pertence ao Iniciante 2D
     expect(types.has('sz_g3d_create_fullscreen_scene')).toBe(true) // núcleo do Jogo 3D
     expect(types.has('sz_g3d_create_box')).toBe(true)
     expect(names.has('Jogo 3D')).toBe(true)
@@ -342,25 +346,27 @@ describe('buildCoreToolbox — curadoria POR BLOCO por degrau', () => {
     }
   })
 
-  it('AVANÇADO-2D: classes/objetos/cru/trig + Canvas 2D "na unha" entram; Canvas 3D só na Lenda', () => {
+  it('AVANÇADO-2D: ferramentas manuais ficam no projeto sem extensão', () => {
     const { types, names } = paletteAt('avancado-2d')
     for (const t of [
       'sz_val_object',
-      'sz_adv_raw_js',
       'sz_g2d_apply_velocity',
       'sz_math_trig',
-      'sz_svg_path', // SVG (int-2d) segue visível abaixo
-      'sz_canvas_arc', // Canvas 2D cru é av-2d (entra AQUI, 26/07)
-      'sz_html_canvas',
       'sz_w3d_setup', // int-3d, abaixo do av-2d
       'sz_g3d_get_pos', // resto do Jogo 3D é int-3d, abaixo do av-2d
       'sz_g3d_body',
     ]) {
       expect(types.has(t), t).toBe(true)
     }
-    for (const n of ['🏛️ Classes', '📦 Objetos', 'Avançado', 'Canvas']) {
+    for (const n of ['🏛️ Classes', '📦 Objetos']) {
       expect(names.has(n), n).toBe(true)
     }
+    const manual = new Set(collectTypes(buildCoreToolbox([], { level: 'avancado-2d' }).contents))
+    for (const t of ['sz_adv_raw_js', 'sz_svg_path', 'sz_canvas_arc', 'sz_html_canvas']) {
+      expect(types.has(t), t).toBe(false)
+      expect(manual.has(t), t).toBe(true)
+    }
+    for (const name of ['Avançado', 'Canvas', 'HTML', 'CSS']) expect(names.has(name)).toBe(false)
     // A categoria Canvas 3D INTEIRA subiu p/ avançado-3d (26/07) — some do av-2d,
     // só reaparece na Lenda (topo).
     expect(names.has('Canvas 3D')).toBe(false)

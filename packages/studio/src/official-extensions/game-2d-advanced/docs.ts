@@ -1,4 +1,9 @@
 import { sceneDocumentation } from '../scene-2d/docs'
+import { GAME_KIT_PALETTE } from './palette'
+
+const paletteGuide = GAME_KIT_PALETTE.map(
+  (family) => `- **${family.name}**: ${family.sections.map((section) => section.name).join(' · ')}`,
+).join('\n')
 
 const sceneReference = sceneDocumentation('SZGameKit', true)
 export const gameKitDocs = `## Jogo 2D Avançado
@@ -8,6 +13,24 @@ tempo, entrada, carregamento e canvas; você cria as regras. O movimento usa
 velocidade × \`dt\`, por isso mantém o ritmo em computadores diferentes. Menu,
 pausa, carregando, fim e vitória já vêm prontos, e a UI usa a letra do bloco
 **Usar a fonte** (padrão Baloo 2), offline, sem substituir fontes escolhidas.
+
+### Onde encontrar as ferramentas
+
+A paleta tem famílias e seções. Primeiro escolha o assunto; depois, a tarefa.
+Os kits de gênero ficam reunidos na última família, **Kits prontos**.
+
+${paletteGuide}
+
+Desenho, telas, texto, som e interação usam os blocos desta extensão.
+HTML, CSS e Canvas diretamente pertencem à etapa de JavaScript sem extensão.
+
+### Unidades do movimento
+
+No Jogo 2D básico, várias ações usam pixels por quadro, em simulação fixa de
+60 passos por segundo; a pista informa por segundo nos próprios blocos.
+Aqui, velocidades são em pixels por segundo e o tempo do quadro é em segundos.
+Use esse tempo nas ações que o pedem. A troca de extensão exige adaptar as
+unidades; os valores de um jogo salvo nunca são convertidos silenciosamente.
 
 ### Começando (a receita)
 
@@ -33,7 +56,7 @@ inicia o motor; blocos antigos de início só aparecem em projetos migrados.
 
 ### Campanhas com fases pintáveis
 
-Em **⚙️ Ao iniciar**, combine **Preparar jogo suave com semente**, **Criar
+Em **⚙️ Ao iniciar**, combine **Preparar jogo suave com código do sorteio**, **Criar
 aventura** (inclui quantas gemas são obrigatórias para concluir), uma **Definir
 fase** por mapa e **Começar aventura**.
 
@@ -78,14 +101,14 @@ três batalhas DIFERENTES. Não misture.
 
 Cada gênero tem seu próprio tipo de oponente:
 
-- Ação no mapa/enxame → 🐛 **molde**.
+- Ação no mapa/grupo → 🐛 **molde**.
 - Batalha por turnos → **Adicionar inimigo** ou **Criar a ficha do inimigo**.
 - Bichinho capturável → 👾 **criatura**; personagem que conversa → 💬 **NPC**.
 - No 🃏 Kit Cartas, vida e intenção do oponente já fazem parte da batalha.
 
 ### Estados
 
-- **Começar uma nova partida**. Limpa personagens, enxames, missão, itens,
+- **Começar uma nova partida**. Limpa personagens, grupos, missão, itens,
   flags e mapas transitórios; depois entra em \`jogando\`. Os botões prontos
   jogar/Jogar de novo já usam esta operação.
 - **⚙️ Ao iniciar**. Lugar para criar/recolocar objetos e zerar variáveis da
@@ -167,18 +190,18 @@ Combine estes blocos para criar mecânicas próprias.
 Uma parte avisa e outra escuta. Ex.: ao morrer, avise \`inimigo:morreu\`; o evento
 correspondente soma pontos e toca o som sem acoplar as duas regras.
 
-### 🐛 Moldes & enxames
+### 📦 Moldes e cópias
 
 - **Criar o molde**. Define tamanho, vida, velocidade, dano e visual de um tipo.
 - **Nascer 1 do molde** / **…e chamar de**. Cria um vivo; o apelido permite usar
   nele os blocos de personagem.
 - **A cada N s, nascer numa borda** / **Parar a fábrica**. O "spawner" solta
   inimigos sem parar; pare-o entre fases ou no chefão.
-- **Para cada vivo do molde… fazer**. Repete para todos do enxame. "item" é o da
+- **Para cada vivo do molde… fazer**. Repete para todos do grupo. "item" é o da
   vez.
 - **Recolher** / **Recolher quem saiu da tela**. Reaproveita personagens sem
   acumular objetos.
-- **Desenhar todos vivos** / **quantos vivos**. Desenha e conta o enxame.
+- **Desenhar todos vivos** / **quantos vivos**. Desenha e conta o grupo.
 
 ### 🎯 Comportamentos
 
@@ -206,7 +229,7 @@ acabou?**, **está invencível?** e **a vida de**. O padrão profissional de dan
 sai no dano de verdade). E a morte: *se a vida de item acabou → faíscas +
 recolher + avisar*.
 
-### 🖥️ HUD & Missão
+### 🖥️ Placar e missão
 
 **Desenhar uma barra** de atual/máximo (vida grande, energia, progresso). Combine com "a vida de".
 
@@ -237,16 +260,29 @@ regra é sua. *"para cada vivo do molde: se a distância entre ele e a bomba <
 raio → machucar"*. Assim explosão de fogo, pulso de cura e ímã usam o MESMO
 bloco.
 
-### 🎯 O mais perto (em 🐛 Moldes & enxames)
+### 🎯 O mais perto (em 📦 Moldes e cópias)
 
-**o mais perto de x … y … no molde …** devolve o vivo do enxame mais próximo
+**o mais perto de x … y … no molde …** devolve o vivo do grupo mais próximo
 daquele ponto. É como a torre escolhe em quem atirar, e como o inimigo decide
 quem perseguir quando há vários.
+
+### Desenhar figuras e texto
+
+Em **Personagens e aparência → Desenhar figuras e texto**, use **Desenhar
+retângulo**, **Desenhar círculo**, **Desenhar triângulo** e **Escrever**.
+Os valores aceitam variáveis e contas. Cada figura escolhe sua própria cor.
+O círculo usa o centro e o raio; o triângulo usa três pontos; o texto usa a
+fonte escolhida para o jogo e y marca sua base.
+
+Dentro de uma aparência, desenhe a partir de (0,0) no tamanho-base. Em
+**Desenhar o jogo**, as figuras acompanham a câmera. Em **Desenhar por cima
+(HUD)**, permanecem na tela. Os mesmos blocos atendem a esses três contextos,
+sem preparar pincel, fonte ou caminho separadamente.
 
 ### 🎨 Aparência
 
 **Criar a aparência** desenha um personagem com formas (do cantinho 0,0 para
-dentro, no tamanho-base que você declarar) e dá um nome. Um molde pode usá-la. Aí TODO o enxame ganha esse visual vetorial, esticado para o tamanho do molde.
+dentro, no tamanho-base que você declarar) e dá um nome. Um molde pode usá-la. Aí TODO o grupo ganha esse visual vetorial, esticado para o tamanho do molde.
 Ou use **Desenhar a aparência** em qualquer lugar e tamanho (ex.: o herói).
 **Usar a folha de quadros** cola uma spritesheet (do Pinta ou baixada) no
 personagem, dizendo o tamanho de cada quadro.
@@ -292,7 +328,7 @@ retângulo branco só aparece aqui!) e a volta. Rápido sai antes mas machuca po
 pesado demora, mas trava o outro tempo bastante para você emendar. **o combo.**
 deixe 0 e 0 para o golpe inteiro machucar, como antes.
 
-### 🗺️ Mundo & profundidade
+### 🗺️ Mapas e profundidade
 
 Para o mundo ter cara de jogo de verdade (vale para QUALQUER jogo, não só RPG):
 
@@ -304,7 +340,7 @@ Para o mundo ter cara de jogo de verdade (vale para QUALQUER jogo, não só RPG)
   como copas de árvore). Assim o herói passa POR TRÁS. No "Desenhar o jogo".
 - **Desenhar … e os personagens por profundidade** (Y-sort). Desenha na ordem
   certa: quem está mais embaixo na tela aparece na FRENTE. Entram o personagem que
-  você passar, TODOS os enxames vivos e os NPCs (se o jogo tiver o Kit RPG).
+  você passar, TODOS os grupos vivos e os NPCs (se o jogo tiver o Kit RPG).
 - **Desenhar a sombra de …**. Uma sombrinha embaixo do personagem (ele gruda no
   chão em vez de flutuar). Use antes de desenhar o personagem.
 
@@ -317,7 +353,7 @@ Peças gerais para gravidade, plataforma, quique e projéteis:
 1. **Aplicar a gravidade em … (força)**. Puxa para baixo (padrão 2160 px/s²).
 2. **Mover pela velocidade** (em 🎯 Comportamentos). Anda com o que a gravidade e
    as setas escreveram.
-3. **Fazer … colidir com o mapa/enxame** (🧱 abaixo). PARA no chão.
+3. **Fazer … colidir com o mapa/grupo** (🧱 abaixo). PARA no chão.
 
 > ⭐ A ordem é *gravidade → mover → colidir*. Só o pouso marca "está no chão".
 
@@ -335,7 +371,7 @@ apagaria a velocidade de antes). Use no "A cada quadro": a força é POR SEGUNDO
 **Frear … com atrito …** tira a velocidade aos poucos: 0.9 = chão normal, 0.1 =
 gelo. Com os dois, você tem carro, hóquei, nave e patinação.
 
-### 🎯 Mirar de verdade (em 🔧 Propriedades & direção)
+### 🎯 Mirar de verdade (em 🔧 Dados e direção)
 
 **o ângulo de …** e **o ângulo de … até …** deixam você LER a direção. Antes só
 dava para escrever. Com eles a torre gira até mirar no inimigo, o inimigo só
@@ -346,7 +382,7 @@ atira se estiver de frente, e o leque de tiros vira uma conta simples.
 - **Fazer … colidir com o mapa …**. O personagem PARA nas peças sólidas do mapa
   (chão, parede, teto). Empurra pelo lado de menor sobreposição, zera a
   velocidade daquele eixo e marca "no chão" ao pousar. É a colisão de verdade.
-- **Fazer … colidir com o enxame …**. O mesmo, mas contra os vivos de um molde
+- **Fazer … colidir com o grupo …**. O mesmo, mas contra os vivos de um molde
   (plataformas, caixas, pedras). Sem precisar de mapa.
 - **Para cada … do molde … que encostar em … do molde …, fazer**. O par que se
   tocou (tiro × inimigo, herói × moeda). Pode recolher os dois lá dentro.
@@ -358,7 +394,7 @@ atira se estiver de frente, e o leque de tiros vira uma conta simples.
 - **… pode agir de novo (a cada … s)?**. O "recarregando" do tiro e do golpe:
   verdadeiro só quando o tempo passou, e já reinicia a contagem.
 
-### 🔧 Propriedades & direção
+### 🔧 Dados e direção
 
 - **a propriedade … de …** / **Mudar a propriedade … de … para …**. Leia e
   escreva x, y, velocidade x/y, velocidade, largura e altura de qualquer
@@ -371,7 +407,7 @@ atira se estiver de frente, e o leque de tiros vira uma conta simples.
 **Fazer … deslizar até x y em … s**. Leva o personagem suavemente até um ponto
 (porta que abre, plataforma que sai, câmera de cutscene). Chame UMA vez.
 
-### 🗺️ Peças por célula (em 🗺️ Mundo & profundidade)
+### 🗺 Peças por célula (em 🗺️ Mapas e profundidade)
 
 **a peça do mapa … em x y**, **Trocar a peça …** e **Quebrar a peça do mapa …
 onde … está**. Mundo destrutível (cavar, quebrar o bloco com a cabeça) e portas
@@ -392,7 +428,7 @@ O jeito de lutar sem turnos, no mapa aberto (aventura, beat-em-up. Geral):
 - **Desenhar corações: … de …**. A "vidinha" dos jogos de aventura (cheios = vida
   atual). Fica ótima no HUD; o HUD desenha até **100 corações**.
 
-### 🗨️ Fala & escolhas
+### 🗨️ Fala e escolhas
 
 A UI que o MOTOR desenha para você. Vale em qualquer jogo, não só no RPG:
 
@@ -423,7 +459,7 @@ de dano, a área segura. **está dentro da região?** pergunta se encostou.
 > encostar a quina não conta. É isso que faz o jogo parecer justo em vez de
 > nervoso. Vale para tudo: só conta a bandeirinha se você chegou mesmo nela.
 
-### 🎲 Sorte & medida
+### 🎲 Sorteios e medidas
 
 **com chance de … %** é o sorteio (0 = nunca, 100 = sempre): o encontro, o item
 raro, o crítico. **a distância entre … e …** é a conta central do stealth (raio de
@@ -433,7 +469,7 @@ cartas e tower defense (detectar O CLIQUE). Para jogos de GRADE (match-3, Cobrin
 sokoban, campo-minado), a peça que faltava é a **🧩 Grade**. Uma grade nomeada
 que você lê e escreve por (coluna, linha).
 
-**um vivo qualquer do molde …** sorteia UM dos vivos do enxame (irmão do "o mais
+**um vivo qualquer do molde …** sorteia UM dos vivos do grupo (irmão do "o mais
 perto de"): é como o jogo de nave escolhe qual invasor atira, quem ganha o
 power-up, qual inimigo vira o elite. Sem nenhum vivo, devolve nada. Teste antes
 de usar.
@@ -504,7 +540,7 @@ de cena, a corrida.
 As peças para MONTAR um Ludo, Jogo da Vida ou Banco Imobiliário. A criança liga
 a lógica, como sempre.
 
-- **rolar um dado de … lados** (em 🎲 Sorte & medida). Sorteia 1 até o número de
+- **rolar um dado de … lados** (em 🎲 Sorteios e medidas). Sorteia 1 até o número de
   lados (um dado de 6 dá 1 a 6). É o motor do turno: role e ande esse tanto.
 - **começar com … jogadores** / **o jogador da vez** / **passar a vez**. O
   rodízio de turno (um anel: depois do último volta ao 1). **Quando a vez mudar**
@@ -536,7 +572,7 @@ lado a lado na imagem). É a explosão de spritesheet num bloco só. Sem molde n
 "tocar uma vez". Perfeita para o impacto do tiro, o baú que abre, o inimigo que
 explode.
 
-### 🌫️ Sumir & transição
+### 🌫️ Sumir e transições
 
 **opacidade** (100 = normal, 0 = invisível) + **sumir até … % em … s**. O fantasma,
 o escudo, o inimigo derrotado que desaparece. **Deslizar a propriedade … até …**
@@ -566,7 +602,7 @@ personagem). Junte com o mouse e o tiro vai onde você clicar. **Fazer … andar
 ângulo … graus** é o par do "Girar para X graus": aquele vira só o DESENHO, este
 faz ANDAR. Use os dois com o mesmo ângulo = o tanque, a nave, o Asteroids.
 
-### 📦 Caixa de colisão (em 🔧 Propriedades & direção)
+### 📦 Caixa de colisão (em 🔧 Dados e direção)
 
 **Caixa de colisão de …**. A caixa que COLIDE não precisa ser o desenho todo. Num
 personagem alto, deixe só os PÉS colidirem, senão ele encosta nas paredes com a
@@ -577,7 +613,7 @@ está vivo: herói, inimigos, tiros e o que nasce de molde. É assim que se conf
 se a caixa ficou no lugar certo. Ponha em ⚙️ Ao iniciar; para tirar, apague o
 bloco.
 
-### 🗺️ Mapa por código (em 🗺️ Mundo & profundidade)
+### 🗺 Mapa por código (em 🗺️ Mapas e profundidade)
 
 **Criar o mapa vazio** faz o mapa por CÓDIGO em vez de desenhado. Masmorra
 sorteada, mundo gerado. Depois "Trocar a peça" num laço cava os corredores.
@@ -596,7 +632,7 @@ o que EXISTE em jogo de plataforma.
 
 - **Herói de plataforma**. Tudo-em-um: gravidade + andar + pular + mover, com o
   pulo gostoso embutido. Ponha no "A cada quadro" e, LOGO DEPOIS, o "colidir com
-  o mapa" (ou com o enxame). Setas ou A/D andam; espaço, W ou ↑ pulam.
+  o mapa" (ou com o grupo). Setas ou A/D andam; espaço, W ou ↑ pulam.
 
 > ⭐ **O que faz um pulo ser gostoso** (os tutoriais esquecem os dois primeiros):
 > **coyote**. Ainda dá para pular um instantinho DEPOIS de sair da beirada;
@@ -678,7 +714,7 @@ leva o time junto: nenhum bloco novo.
 
 ## 🥊 Kit Luta
 
-### 🥊 a partida
+### 🥊 A partida (em 🥊 Kit Luta)
 
 O atalho do jogo de luta. Dois lutadores, rounds, e um amigo (ou o computador)
 do outro lado. O que NÃO é só de luta vem do motor geral: gravidade, pulo (o
@@ -698,7 +734,7 @@ TEMPO. Quer diferente? "Desenhar a barra" + "a vida de". O caminho na unha.
 resto. Os avisos **luta:round**, **luta:acertou**, **luta:defendeu**, **luta:ko**
 e **luta:acabou** ligam som, tremor e a tela de fim.
 
-### 🥊 os lutadores
+### 🥊 Os lutadores (em 🥊 Kit Luta)
 
 **Lutador. Andar a d, pular w, agachar s, defender f** faz TUDO num bloco:
 gravidade, andar, pular, agachar, defender, e virar de frente para o outro. Cada
@@ -711,7 +747,7 @@ amigo. No fácil ele quase não defende; no difícil defende quase sempre, mant�
 distância, espera você errar e usa o especial na hora. Para montar o SEU jeito de o
 computador lutar, use "distância entre", "sorte de %" e "o estado de", que estão no geral.
 
-### 🥊 golpes & combo
+### 🥊 Golpes e combinações (em 🥊 Kit Luta)
 
 **Golpe "soco" de jogador1. Rápido, dano 8, alcance 45.** Você escolhe uma
 PALAVRA, e ela decide o ritmo inteiro do golpe: o **rápido** sai quase na hora
@@ -759,7 +795,7 @@ tiles) continuam valendo e se combinam com o kit.
 - **Criar o NPC**. Um morador parado numa célula (sólido), com imagem ou
   aparência. **Desenhar os NPCs** no "Desenhar o jogo".
 - **Quando conversar com o NPC… fazer**. Roda no ESPAÇO olhando para ele. Use a
-  **Mostrar a fala** (lá de cima, em 🗨️ Fala & escolhas) para ele responder.
+  **Mostrar a fala** (lá de cima, em 🗨️ Fala e escolhas) para ele responder.
 
 ### História, itens e mapas
 
@@ -780,7 +816,7 @@ tiles) continuam valendo e se combinam com o kit.
   O mapa-cenário e um mapa de peças desenhado nele precisam declarar as mesmas
   quantidades de colunas e linhas.
 
-### 🌍 Mundo aberto (em 🧙 mundo)
+### 🌍 Mundo aberto (em 🧙 Kit RPG)
 
 O RPG de mundo aberto tem DOIS jeitos (e dá para misturar):
 
@@ -797,7 +833,7 @@ O RPG de mundo aberto tem DOIS jeitos (e dá para misturar):
 **o nome do mapa de agora** completa: "se o mapa de agora = praia → tocar a
 música da praia" e o nome no HUD.
 
-### ⚔️ Batalha por turnos (em ⚔️ batalha)
+### ⚔ Batalha por turnos (em 🧙 Kit RPG)
 
 - **Meus pontos de batalha**, **Golpe especial**, **Adicionar aliado** e os
   blocos **Ensinar golpe** configuram dados persistentes. Use na preparação ou
@@ -821,7 +857,7 @@ música da praia" e o nome no HUD.
 > trocar o padrão quando a vida cair; **Pôr o CHEFÃO** destaca o oponente.
 
 
-### 🎬 Cenas & NPCs vivos (em 🎬 cenas)
+### 🎬 Cenas e amigos (em 🧙 Kit RPG)
 
 O jeito profissional de contar história:
 
@@ -837,12 +873,12 @@ O jeito profissional de contar história:
 - **Usar a folha de ANDAR** (🎞️). 4 linhas (baixo/cima/esquerda/direita): o
   motor anima na direção certa quando anda. O RPG vivo.
 
-### 💾 Salvar (em 💾 salvar)
+### 💾 Salvar (em 🧙 Kit RPG)
 
 **Salvar o jogo** / **Continuar o jogo salvo** / **tem jogo salvo?**. Guarda o
 progresso do RPG (flags, itens, mapa, posição, atributos, poções, golpe especial) e
 continua de onde parou, mesmo fechando e reabrindo. Ligue o "Continuar" só quando
-"tem jogo salvo?". (O **Menu de escolha** subiu para 🗨️ Fala & escolhas. Vale em
+"tem jogo salvo?". (O **Menu de escolha** subiu para 🗨️ Fala e escolhas. Vale em
 qualquer jogo; aqui ele combina lindo com o "Quando conversar" e as cenas.)
 
 ## 🚀 Kit Nave
@@ -850,7 +886,7 @@ qualquer jogo; aqui ele combina lindo com o "Quando conversar" e as cenas.)
 O kit traz nave, formações, invasores e bombas. Tiros, colisão, placar, dano,
 som e telas usam as peças gerais do motor.
 
-### 🚀 a nave
+### 🚀 A nave (em 🚀 Kit Nave)
 
 **Pilotar a nave** anda de lado (setas ou A/D), preso à tela. Use no "A cada
 quadro"; para atirar: *se apertou espaço e recarregou, Atirar um leque de 1*.
@@ -859,7 +895,7 @@ quadro"; para atirar: *se apertou espaço e recarregou, Atirar um leque de 1*.
 **metralhadora** = atire com recarga bem menor segurando espaço; **leque** =
 "Atirar um leque" de 5. Na hora de atirar, pergunte **o poder de tiro de …**. É o galho do "se". Solte o poder como prêmio: *"ao derrotar, com chance de 8%"*.
 
-### 🛸 a invasão
+### 🛸 A invasão (em 🚀 Kit Nave)
 
 **Invadir: onda do molde …** cria uma formação que marcha, desce na borda e
 acelera. Ela ajusta o espaço para caber. Os invasores continuam sendo vivos
@@ -876,7 +912,7 @@ infinita em dois blocos.
 **Marcar a linha de invasão** é a derrota clássica: a formação DESCEU até ali →
 aviso \`onda:invadiu\` → *"Quando o aviso chegar: Terminar o jogo"*.
 
-### 🌌 o espaço
+### 🌌 O espaço (em 🚀 Kit Nave)
 
 **Desenhar o céu de estrelas**. O espaço rolando para sempre (primeira linha do
 "Desenhar o jogo"). Para fundo com IMAGEM, o geral "Pintar o fundo rolando" faz
@@ -901,7 +937,7 @@ e avisa \`bomba:acertou\` por vítima. Máximo de 3 no ar.
 O kit traz lugares de torre, compra, ondas e moedas. Caminho, mira, tiros, vida,
 corações e explosões são peças gerais combinadas na receita abaixo.
 
-### 🏰 as torres
+### 🏰 As torres (em 🏰 Kit Defesa de Torre)
 
 **Marcar um lugar de torre em x … y …** põe um quadrado onde a criança pode
 comprar (faça no "Preparar"). Marque vários flanqueando o caminho.
@@ -919,7 +955,7 @@ destruída), deixando comprar de novo ali.
 **Desenhar o alcance de … (raio …)** pinta um círculo suave sob a torre. Bom
 para desenhar sob a torre que o mouse está tocando.
 
-### 👹 a invasão & as moedas
+### 👹 A invasão e as moedas (em 🏰 Kit Defesa de Torre)
 
 **Invadir pelo caminho …** solta inimigos espaçados. Ao chegar, avisa
 \`invasor:passou\`; ao limpar a onda, avisa \`onda:limpa\`, igual ao Kit Nave.

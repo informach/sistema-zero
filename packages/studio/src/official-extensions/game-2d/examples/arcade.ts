@@ -14,27 +14,26 @@ export const asteroidsExample: ExtensionExample = beginnerGameExample({
   description:
     'Jogo de tiro: atire nos asteroides, ganhe pontos e sobreviva. Tem telas de início, vitória e derrota. Setas/dedo movem; Espaço atira; Enter começa.',
   ir: {
-    html: [{ type: 'canvas', id: 'tela', width: 400, height: 320 }],
-    css: [
-      {
-        selector: 'body',
-        declarations: {
-          background: '#020611',
-          display: 'flex',
-          'align-items': 'center',
-          'justify-content': 'center',
-          'min-height': '100vh',
-          margin: '0',
-        },
-      },
-      {
-        selector: 'canvas',
-        declarations: { border: '2px solid #35e8ff', background: '#06101f' },
-      },
-    ],
+    html: [],
+    css: [],
     version: 2,
     behavior: {
       start: [
+        {
+          type: 'g2d:setupStage',
+          width: 400,
+          height: 320,
+          bg: '#06101f',
+          __id: 'exemplo-nave-contra-asteroides',
+        },
+        {
+          type: 'g2d:setStageDescription',
+          description:
+            'Jogo de tiro: atire nos asteroides, ganhe pontos e sobreviva. Tem telas de início, vitória e derrota. Setas/dedo movem; Espaço atira; Enter começa.',
+          __id: 'exemplo-nave-contra-asteroides-descricao',
+        },
+        { type: 'g2d:stageBorder', color: '#35e8ff', width: 2 },
+
         // --- Setup (no começo: assim o "a cada quadro" enxerga estas variáveis) ---
         { type: 'g2d:fitScreen', percent: 100 },
         {
@@ -422,31 +421,26 @@ export const dinoRunExample: ExtensionExample = beginnerGameExample({
   description:
     'Jogo de corrida: pule os obstáculos (cacto/pedra), abaixe do pássaro e pegue os ovos de bônus. Tem vidas, pontos e recorde que continua salvo. Pule com ↑/Espaço/toque; abaixe com ↓; Enter começa.',
   ir: {
-    html: [{ type: 'canvas', id: 'tela', width: 480, height: 270 }],
-    css: [
-      {
-        selector: 'body',
-        declarations: {
-          background: '#bdf4ff',
-          display: 'flex',
-          'align-items': 'center',
-          'justify-content': 'center',
-          'min-height': '100vh',
-          margin: '0',
-        },
-      },
-      {
-        selector: 'canvas',
-        declarations: {
-          border: '3px solid #ffffff',
-          'border-radius': '18px',
-          background: '#bdf4ff',
-        },
-      },
-    ],
+    html: [],
+    css: [],
     version: 2,
     behavior: {
       start: [
+        {
+          type: 'g2d:setupStage',
+          width: 480,
+          height: 270,
+          bg: '#bdf4ff',
+          __id: 'exemplo-dino-run',
+        },
+        {
+          type: 'g2d:setStageDescription',
+          description:
+            'Jogo de corrida: pule os obstáculos (cacto/pedra), abaixe do pássaro e pegue os ovos de bônus. Tem vidas, pontos e recorde que continua salvo. Pule com ↑/Espaço/toque; abaixe com ↓; Enter começa.',
+          __id: 'exemplo-dino-run-descricao',
+        },
+        { type: 'g2d:stageBorder', color: '#ffffff', width: 3 },
+
         // --- Setup (no começo: o "a cada quadro" enxerga estas variáveis) ---
         { type: 'g2d:fitScreen', percent: 100 },
         { type: 'g2d:createDino', varName: 'dino', x: 120, y: 150, size: 64, color: '#5fb45f' },
@@ -860,32 +854,26 @@ export const gorilasExample: ExtensionExample = beginnerGameExample({
   description:
     'Dois gorilas no alto dos prédios jogam bananas um no outro. Arraste a partir do gorila da vez para mirar (mais longe = mais forte) e solte para lançar; o vento e a gravidade entortam a parábola e a banana abre crateras nos prédios. Acertar o inimigo vence; errar passa a vez. 2 jogadores. Enter começa.',
   ir: {
-    html: [{ type: 'canvas', id: 'tela', width: 480, height: 270 }],
-    css: [
-      {
-        selector: 'body',
-        declarations: {
-          background: '#10162e',
-          display: 'flex',
-          'align-items': 'center',
-          'justify-content': 'center',
-          'min-height': '100vh',
-          margin: '0',
-        },
-      },
-      {
-        selector: 'canvas',
-        declarations: {
-          border: '3px solid #ffffff',
-          'border-radius': '18px',
-          background: '#10162e',
-          cursor: 'crosshair',
-        },
-      },
-    ],
+    html: [],
+    css: [],
     version: 2,
     behavior: {
       start: [
+        {
+          type: 'g2d:setupStage',
+          width: 480,
+          height: 270,
+          bg: '#10162e',
+          __id: 'exemplo-guerra-de-gorilas',
+        },
+        {
+          type: 'g2d:setStageDescription',
+          description:
+            'Dois gorilas no alto dos prédios jogam bananas um no outro. Arraste a partir do gorila da vez para mirar (mais longe = mais forte) e solte para lançar; o vento e a gravidade entortam a parábola e a banana abre crateras nos prédios. Acertar o inimigo vence; errar passa a vez. 2 jogadores. Enter começa.',
+          __id: 'exemplo-guerra-de-gorilas-descricao',
+        },
+        { type: 'g2d:stageBorder', color: '#ffffff', width: 3 },
+
         // --- Setup (no começo: o "a cada quadro" enxerga estas variáveis) ---
         { type: 'g2d:fitScreen', percent: 100 },
         { type: 'g2d:createCity', varName: 'cidade' },
@@ -1278,32 +1266,26 @@ export const gorilasVsRobotExample: ExtensionExample = beginnerGameExample({
   description:
     'Jogue contra o COMPUTADOR: você arrasta para mirar e o robô mira e joga sozinho (simula lançamentos e escolhe o melhor). Vento e gravidade entortam a banana; acertar o inimigo vence. Enter começa.',
   ir: {
-    html: [{ type: 'canvas', id: 'tela', width: 480, height: 270 }],
-    css: [
-      {
-        selector: 'body',
-        declarations: {
-          background: '#10162e',
-          display: 'flex',
-          'align-items': 'center',
-          'justify-content': 'center',
-          'min-height': '100vh',
-          margin: '0',
-        },
-      },
-      {
-        selector: 'canvas',
-        declarations: {
-          border: '3px solid #ffffff',
-          'border-radius': '18px',
-          background: '#10162e',
-          cursor: 'crosshair',
-        },
-      },
-    ],
+    html: [],
+    css: [],
     version: 2,
     behavior: {
       start: [
+        {
+          type: 'g2d:setupStage',
+          width: 480,
+          height: 270,
+          bg: '#10162e',
+          __id: 'exemplo-guerra-de-gorilas-vs-rob-',
+        },
+        {
+          type: 'g2d:setStageDescription',
+          description:
+            'Jogue contra o COMPUTADOR: você arrasta para mirar e o robô mira e joga sozinho (simula lançamentos e escolhe o melhor). Vento e gravidade entortam a banana; acertar o inimigo vence. Enter começa.',
+          __id: 'exemplo-guerra-de-gorilas-vs-rob--descricao',
+        },
+        { type: 'g2d:stageBorder', color: '#ffffff', width: 3 },
+
         { type: 'g2d:fitScreen', percent: 100 },
         { type: 'g2d:createCity', varName: 'cidade' },
         {
@@ -1680,27 +1662,26 @@ export const asteroidsClassicExample: ExtensionExample = beginnerGameExample({
   description:
     'Pilote a nave girando e impulsionando como no Asteroids clássico: ← → giram, ↑ acelera na direção apontada, Espaço atira pra frente. Desvie e atire nos asteroides que vêm das bordas. Enter começa.',
   ir: {
-    html: [{ type: 'canvas', id: 'tela', width: 400, height: 320 }],
-    css: [
-      {
-        selector: 'body',
-        declarations: {
-          background: '#020611',
-          display: 'flex',
-          'align-items': 'center',
-          'justify-content': 'center',
-          'min-height': '100vh',
-          margin: '0',
-        },
-      },
-      {
-        selector: 'canvas',
-        declarations: { border: '2px solid #35e8ff', background: '#06101f' },
-      },
-    ],
+    html: [],
+    css: [],
     version: 2,
     behavior: {
       start: [
+        {
+          type: 'g2d:setupStage',
+          width: 400,
+          height: 320,
+          bg: '#06101f',
+          __id: 'exemplo-asteroides-cl-ssico',
+        },
+        {
+          type: 'g2d:setStageDescription',
+          description:
+            'Pilote a nave girando e impulsionando como no Asteroids clássico: ← → giram, ↑ acelera na direção apontada, Espaço atira pra frente. Desvie e atire nos asteroides que vêm das bordas. Enter começa.',
+          __id: 'exemplo-asteroides-cl-ssico-descricao',
+        },
+        { type: 'g2d:stageBorder', color: '#35e8ff', width: 2 },
+
         // --- Setup (no começo: assim o "a cada quadro" enxerga estas variáveis) ---
         { type: 'g2d:fitScreen', percent: 100 },
         {
@@ -1991,28 +1972,26 @@ export const stickHeroExample: ExtensionExample = beginnerGameExample({
   description:
     'Estica o bastão segurando o mouse/dedo e atravessa as plataformas (estilo Stick Hero). A regra do mouse é um se/senão: segurado cresce o bastão, solto derruba. Enter começa e recomeça.',
   ir: {
-    html: [{ type: 'canvas', id: 'tela', width: 360, height: 480 }],
-    css: [
-      {
-        selector: 'body',
-        declarations: {
-          background: '#dff0d0',
-          display: 'flex',
-          'align-items': 'center',
-          'justify-content': 'center',
-          'min-height': '100vh',
-          margin: '0',
-          cursor: 'pointer',
-        },
-      },
-      {
-        selector: 'canvas',
-        declarations: { border: '2px solid #1b2330', 'border-radius': '12px' },
-      },
-    ],
+    html: [],
+    css: [],
     version: 2,
     behavior: {
       start: [
+        {
+          type: 'g2d:setupStage',
+          width: 360,
+          height: 480,
+          bg: '#11172a',
+          __id: 'exemplo-equilibrista',
+        },
+        {
+          type: 'g2d:setStageDescription',
+          description:
+            'Estica o bastão segurando o mouse/dedo e atravessa as plataformas (estilo Stick Hero). A regra do mouse é um se/senão: segurado cresce o bastão, solto derruba. Enter começa e recomeça.',
+          __id: 'exemplo-equilibrista-descricao',
+        },
+        { type: 'g2d:stageBorder', color: '#1b2330', width: 2 },
+
         // --- Setup: o herói (sprite) + o caminho (regras) + o placar ---
         { type: 'g2d:fitScreen', percent: 100 },
         { type: 'g2d:createStickHero', varName: 'equilibrista', w: 18, h: 36, color: '#d6455d' },
@@ -2216,28 +2195,20 @@ export const balloonExample: ExtensionExample = beginnerGameExample({
   description:
     'Suba segurando o mouse/dedo, economize combustível e desvie das árvores. A regra do mouse é um se: segurado acende o fogo. Enter começa e recomeça.',
   ir: {
-    html: [{ type: 'canvas', id: 'tela', width: 560, height: 360 }],
-    css: [
-      {
-        selector: 'body',
-        declarations: {
-          background: '#cfe8f0',
-          display: 'flex',
-          'align-items': 'center',
-          'justify-content': 'center',
-          'min-height': '100vh',
-          margin: '0',
-          cursor: 'pointer',
-        },
-      },
-      {
-        selector: 'canvas',
-        declarations: { border: '2px solid #1b2330', 'border-radius': '12px' },
-      },
-    ],
+    html: [],
+    css: [],
     version: 2,
     behavior: {
       start: [
+        { type: 'g2d:setupStage', width: 560, height: 360, bg: '#11172a', __id: 'exemplo-bal-o' },
+        {
+          type: 'g2d:setStageDescription',
+          description:
+            'Suba segurando o mouse/dedo, economize combustível e desvie das árvores. A regra do mouse é um se: segurado acende o fogo. Enter começa e recomeça.',
+          __id: 'exemplo-bal-o-descricao',
+        },
+        { type: 'g2d:stageBorder', color: '#1b2330', width: 2 },
+
         // --- Setup: o balão (sprite) + o caminho de árvores (regras) ---
         { type: 'g2d:fitScreen', percent: 100 },
         {

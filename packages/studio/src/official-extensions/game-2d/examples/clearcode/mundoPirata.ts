@@ -12,28 +12,8 @@ export const mundoPirataExample: ExtensionExample = beginnerGameExample({
   description:
     'Uma aventura de plataforma pirata: corra e pule com as setas por um mundo largo, pegue moedas, pise nos caranguejos e desvie dos buracos até a bandeira do fim. Enter começa e reinicia.',
   ir: {
-    html: [{ type: 'canvas', id: 'tela', width: 480, height: 300 }],
-    css: [
-      {
-        selector: 'body',
-        declarations: {
-          background: '#0e2a38',
-          display: 'flex',
-          'align-items': 'center',
-          'justify-content': 'center',
-          'min-height': '100vh',
-          margin: '0',
-        },
-      },
-      {
-        selector: 'canvas',
-        declarations: {
-          border: '3px solid #123a4a',
-          'border-radius': '12px',
-          background: '#8ecae6',
-        },
-      },
-    ],
+    html: [],
+    css: [],
     version: 2,
     extensions: [{ extensionId: 'game-2d' }],
     behavior: {
@@ -216,6 +196,21 @@ export const mundoPirataExample: ExtensionExample = beginnerGameExample({
         },
       ],
       start: [
+        {
+          type: 'g2d:setupStage',
+          width: 480,
+          height: 300,
+          bg: '#8ecae6',
+          __id: 'exemplo-mundo-pirata',
+        },
+        {
+          type: 'g2d:setStageDescription',
+          description:
+            'Uma aventura de plataforma pirata: corra e pule com as setas por um mundo largo, pegue moedas, pise nos caranguejos e desvie dos buracos até a bandeira do fim. Enter começa e reinicia.',
+          __id: 'exemplo-mundo-pirata-descricao',
+        },
+        { type: 'g2d:stageBorder', color: '#123a4a', width: 3 },
+
         {
           type: 'g2d:fitScreen',
           percent: {

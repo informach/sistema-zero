@@ -32,230 +32,85 @@ export const fazendaFelizProfissionalExample: ExtensionExample = withIndependent
           ctxName: 'ctx',
           body: [
             {
-              type: 'canvasFillStyle',
-              ctxVar: 'ctx',
-              color: {
-                type: 'color',
-                value: '#8a5a2b',
-              },
+              type: 'gk:drawRectangle',
+              x: { type: 'num', value: 4 },
+              y: { type: 'num', value: 0 },
+              w: { type: 'num', value: 26 },
+              h: { type: 'num', value: 6 },
+              color: { type: 'color', value: '#8a5a2b' },
             },
             {
-              type: 'canvasFillRect',
-              ctxVar: 'ctx',
-              x: {
-                type: 'num',
-                value: 4,
-              },
-              y: {
-                type: 'num',
-                value: 0,
-              },
-              w: {
-                type: 'num',
-                value: 26,
-              },
-              h: {
-                type: 'num',
-                value: 6,
-              },
+              type: 'gk:drawCircle',
+              x: { type: 'num', value: 17 },
+              y: { type: 'num', value: 12 },
+              r: { type: 'num', value: 8 },
+              color: { type: 'color', value: '#f7c8a2' },
             },
             {
-              type: 'canvasFillStyle',
-              ctxVar: 'ctx',
-              color: {
-                type: 'color',
-                value: '#f7c8a2',
-              },
-            },
-            {
-              type: 'canvasArc',
-              ctxVar: 'ctx',
-              x: {
-                type: 'num',
-                value: 17,
-              },
-              y: {
-                type: 'num',
-                value: 12,
-              },
-              r: {
-                type: 'num',
-                value: 8,
-              },
-            },
-            {
-              type: 'canvasFillStyle',
-              ctxVar: 'ctx',
-              color: {
-                type: 'color',
-                value: '#d98c40',
-              },
-            },
-            {
-              type: 'canvasFillRect',
-              ctxVar: 'ctx',
-              x: {
-                type: 'num',
-                value: 7,
-              },
-              y: {
-                type: 'num',
-                value: 20,
-              },
-              w: {
-                type: 'num',
-                value: 20,
-              },
-              h: {
-                type: 'num',
-                value: 16,
-              },
+              type: 'gk:drawRectangle',
+              x: { type: 'num', value: 7 },
+              y: { type: 'num', value: 20 },
+              w: { type: 'num', value: 20 },
+              h: { type: 'num', value: 16 },
+              color: { type: 'color', value: '#d98c40' },
             },
           ],
-          baseW: {
-            type: 'num',
-            value: 34,
-          },
-          baseH: {
-            type: 'num',
-            value: 36,
-          },
+          baseW: { type: 'num', value: 34 },
+          baseH: { type: 'num', value: 36 },
         },
       ],
       start: [
         {
           type: 'gk:setup',
-          w: {
-            type: 'num',
-            value: 960,
-          },
-          h: {
-            type: 'num',
-            value: 540,
-          },
+          w: { type: 'num', value: 960 },
+          h: { type: 'num', value: 540 },
           bg: '#2b4a1e',
           accent: '#ffd24a',
         },
         {
           type: 'gk:setScreenText',
           screen: 'menu',
-          title: {
-            type: 'str',
-            value: 'Fazenda Feliz Profissional',
-          },
+          title: { type: 'str', value: 'Fazenda Feliz Profissional' },
           text: {
             type: 'str',
             value:
               'Setas ou WASD: andar. Q: trocar a ferramenta. Espaço: usar. C: dormir. V: vender. Junte 50 moedas!',
           },
-          button: {
-            type: 'str',
-            value: 'Começar',
-          },
+          button: { type: 'str', value: 'Começar' },
         },
         {
           type: 'gk:setScreenText',
           screen: 'vitoria',
-          title: {
-            type: 'str',
-            value: 'Que fazenda!',
-          },
-          text: {
-            type: 'str',
-            value: 'Você juntou 50 moedas cuidando da terra!',
-          },
-          button: {
-            type: 'str',
-            value: 'Plantar de novo',
-          },
+          title: { type: 'str', value: 'Que fazenda!' },
+          text: { type: 'str', value: 'Você juntou 50 moedas cuidando da terra!' },
+          button: { type: 'str', value: 'Plantar de novo' },
         },
         {
           type: 'gk:createCharacter',
           varName: 'fazendeiro',
           image: '',
-          w: {
-            type: 'num',
-            value: 34,
-          },
-          h: {
-            type: 'num',
-            value: 36,
-          },
-          speed: {
-            type: 'num',
-            value: 200,
-          },
+          w: { type: 'num', value: 34 },
+          h: { type: 'num', value: 36 },
+          speed: { type: 'num', value: 200 },
           color: '#d98c40',
         },
         {
           type: 'gk:placeCharacter',
           charVar: 'fazendeiro',
-          x: {
-            type: 'num',
-            value: 700,
-          },
-          y: {
-            type: 'num',
-            value: 450,
-          },
+          x: { type: 'num', value: 700 },
+          y: { type: 'num', value: 450 },
         },
-        {
-          type: 'gk:stateLook',
-          charVar: 'fazendeiro',
-          state: 'parado',
-          look: 'fazendeiro',
-        },
-        {
-          type: 'var',
-          name: 'canteiroX',
-          value: {
-            type: 'array',
-            items: [],
-          },
-          kind: 'const',
-        },
-        {
-          type: 'var',
-          name: 'canteiroY',
-          value: {
-            type: 'array',
-            items: [],
-          },
-          kind: 'const',
-        },
-        {
-          type: 'var',
-          name: 'canteiro',
-          value: {
-            type: 'array',
-            items: [],
-          },
-          kind: 'const',
-        },
-        {
-          type: 'var',
-          name: 'molhado',
-          value: {
-            type: 'array',
-            items: [],
-          },
-          kind: 'const',
-        },
+        { type: 'gk:stateLook', charVar: 'fazendeiro', state: 'parado', look: 'fazendeiro' },
+        { type: 'var', name: 'canteiroX', value: { type: 'array', items: [] }, kind: 'const' },
+        { type: 'var', name: 'canteiroY', value: { type: 'array', items: [] }, kind: 'const' },
+        { type: 'var', name: 'canteiro', value: { type: 'array', items: [] }, kind: 'const' },
+        { type: 'var', name: 'molhado', value: { type: 'array', items: [] }, kind: 'const' },
         {
           type: 'forRange',
           varName: 'i',
-          from: {
-            type: 'num',
-            value: 0,
-          },
-          to: {
-            type: 'num',
-            value: 24,
-          },
-          step: {
-            type: 'num',
-            value: 1,
-          },
+          from: { type: 'num', value: 0 },
+          to: { type: 'num', value: 24 },
+          step: { type: 'num', value: 1 },
           body: [
             {
               type: 'arrayPush',
@@ -263,29 +118,17 @@ export const fazendaFelizProfissionalExample: ExtensionExample = withIndependent
               value: {
                 type: 'binop',
                 op: '+',
-                left: {
-                  type: 'num',
-                  value: 200,
-                },
+                left: { type: 'num', value: 200 },
                 right: {
                   type: 'binop',
                   op: '*',
                   left: {
                     type: 'binop',
                     op: '%',
-                    left: {
-                      type: 'var',
-                      name: 'i',
-                    },
-                    right: {
-                      type: 'num',
-                      value: 6,
-                    },
+                    left: { type: 'var', name: 'i' },
+                    right: { type: 'num', value: 6 },
                   },
-                  right: {
-                    type: 'num',
-                    value: 100,
-                  },
+                  right: { type: 'num', value: 100 },
                 },
               },
             },
@@ -295,10 +138,7 @@ export const fazendaFelizProfissionalExample: ExtensionExample = withIndependent
               value: {
                 type: 'binop',
                 op: '+',
-                left: {
-                  type: 'num',
-                  value: 200,
-                },
+                left: { type: 'num', value: 200 },
                 right: {
                   type: 'binop',
                   op: '*',
@@ -308,39 +148,16 @@ export const fazendaFelizProfissionalExample: ExtensionExample = withIndependent
                     arg: {
                       type: 'binop',
                       op: '/',
-                      left: {
-                        type: 'var',
-                        name: 'i',
-                      },
-                      right: {
-                        type: 'num',
-                        value: 6,
-                      },
+                      left: { type: 'var', name: 'i' },
+                      right: { type: 'num', value: 6 },
                     },
                   },
-                  right: {
-                    type: 'num',
-                    value: 100,
-                  },
+                  right: { type: 'num', value: 100 },
                 },
               },
             },
-            {
-              type: 'arrayPush',
-              arrayVar: 'canteiro',
-              value: {
-                type: 'num',
-                value: 0,
-              },
-            },
-            {
-              type: 'arrayPush',
-              arrayVar: 'molhado',
-              value: {
-                type: 'num',
-                value: 0,
-              },
-            },
+            { type: 'arrayPush', arrayVar: 'canteiro', value: { type: 'num', value: 0 } },
+            { type: 'arrayPush', arrayVar: 'molhado', value: { type: 'num', value: 0 } },
           ],
         },
         {
@@ -349,65 +166,22 @@ export const fazendaFelizProfissionalExample: ExtensionExample = withIndependent
           value: {
             type: 'array',
             items: [
-              {
-                type: 'str',
-                value: 'enxada',
-              },
-              {
-                type: 'str',
-                value: 'semente',
-              },
-              {
-                type: 'str',
-                value: 'regador',
-              },
+              { type: 'str', value: 'enxada' },
+              { type: 'str', value: 'semente' },
+              { type: 'str', value: 'regador' },
             ],
           },
           kind: 'const',
         },
-        {
-          type: 'var',
-          name: 'ferramenta',
-          value: {
-            type: 'num',
-            value: 0,
-          },
-        },
-        {
-          type: 'var',
-          name: 'moedas',
-          value: {
-            type: 'num',
-            value: 0,
-          },
-        },
-        {
-          type: 'var',
-          name: 'colheita',
-          value: {
-            type: 'num',
-            value: 0,
-          },
-        },
-        {
-          type: 'var',
-          name: 'dia',
-          value: {
-            type: 'num',
-            value: 1,
-          },
-        },
+        { type: 'var', name: 'ferramenta', value: { type: 'num', value: 0 } },
+        { type: 'var', name: 'moedas', value: { type: 'num', value: 0 } },
+        { type: 'var', name: 'colheita', value: { type: 'num', value: 0 } },
+        { type: 'var', name: 'dia', value: { type: 'num', value: 1 } },
         {
           type: 'gk:cameraFollow',
           charVar: 'fazendeiro',
-          w: {
-            type: 'num',
-            value: 1400,
-          },
-          h: {
-            type: 'num',
-            value: 900,
-          },
+          w: { type: 'num', value: 1400 },
+          h: { type: 'num', value: 900 },
         },
       ],
       events: [],
@@ -416,29 +190,16 @@ export const fazendaFelizProfissionalExample: ExtensionExample = withIndependent
           type: 'gk:onUpdate',
           dtName: 'dt',
           body: [
-            {
-              type: 'gk:moveWithKeys',
-              charVar: 'fazendeiro',
-              dtVar: 'dt',
-            },
-            {
-              type: 'gk:keepOnScreen',
-              charVar: 'fazendeiro',
-            },
+            { type: 'gk:moveWithKeys', charVar: 'fazendeiro', dtVar: 'dt' },
+            { type: 'gk:keepOnScreen', charVar: 'fazendeiro' },
             {
               type: 'var',
               name: 'cx',
               value: {
                 type: 'binop',
                 op: '+',
-                left: {
-                  type: 'gk:charX',
-                  charVar: 'fazendeiro',
-                },
-                right: {
-                  type: 'num',
-                  value: 17,
-                },
+                left: { type: 'gk:charX', charVar: 'fazendeiro' },
+                right: { type: 'num', value: 17 },
               },
               kind: 'const',
             },
@@ -448,23 +209,14 @@ export const fazendaFelizProfissionalExample: ExtensionExample = withIndependent
               value: {
                 type: 'binop',
                 op: '+',
-                left: {
-                  type: 'gk:charY',
-                  charVar: 'fazendeiro',
-                },
-                right: {
-                  type: 'num',
-                  value: 18,
-                },
+                left: { type: 'gk:charY', charVar: 'fazendeiro' },
+                right: { type: 'num', value: 18 },
               },
               kind: 'const',
             },
             {
               type: 'if',
-              cond: {
-                type: 'gk:keyPressed',
-                key: 'q',
-              },
+              cond: { type: 'gk:keyPressed', key: 'q' },
               then: [
                 {
                   type: 'assign',
@@ -475,45 +227,24 @@ export const fazendaFelizProfissionalExample: ExtensionExample = withIndependent
                     left: {
                       type: 'binop',
                       op: '+',
-                      left: {
-                        type: 'var',
-                        name: 'ferramenta',
-                      },
-                      right: {
-                        type: 'num',
-                        value: 1,
-                      },
+                      left: { type: 'var', name: 'ferramenta' },
+                      right: { type: 'num', value: 1 },
                     },
-                    right: {
-                      type: 'num',
-                      value: 3,
-                    },
+                    right: { type: 'num', value: 3 },
                   },
                 },
               ],
             },
             {
               type: 'if',
-              cond: {
-                type: 'gk:keyPressed',
-                key: ' ',
-              },
+              cond: { type: 'gk:keyPressed', key: ' ' },
               then: [
                 {
                   type: 'forRange',
                   varName: 'i',
-                  from: {
-                    type: 'num',
-                    value: 0,
-                  },
-                  to: {
-                    type: 'num',
-                    value: 24,
-                  },
-                  step: {
-                    type: 'num',
-                    value: 1,
-                  },
+                  from: { type: 'num', value: 0 },
+                  to: { type: 'num', value: 24 },
+                  step: { type: 'num', value: 1 },
                   body: [
                     {
                       type: 'if',
@@ -529,83 +260,53 @@ export const fazendaFelizProfissionalExample: ExtensionExample = withIndependent
                             left: {
                               type: 'binop',
                               op: '>=',
-                              left: {
-                                type: 'var',
-                                name: 'cx',
-                              },
+                              left: { type: 'var', name: 'cx' },
                               right: {
                                 type: 'index',
                                 arrayVar: 'canteiroX',
-                                index: {
-                                  type: 'var',
-                                  name: 'i',
-                                },
+                                index: { type: 'var', name: 'i' },
                               },
                             },
                             right: {
                               type: 'binop',
                               op: '<',
-                              left: {
-                                type: 'var',
-                                name: 'cx',
-                              },
+                              left: { type: 'var', name: 'cx' },
                               right: {
                                 type: 'binop',
                                 op: '+',
                                 left: {
                                   type: 'index',
                                   arrayVar: 'canteiroX',
-                                  index: {
-                                    type: 'var',
-                                    name: 'i',
-                                  },
+                                  index: { type: 'var', name: 'i' },
                                 },
-                                right: {
-                                  type: 'num',
-                                  value: 84,
-                                },
+                                right: { type: 'num', value: 84 },
                               },
                             },
                           },
                           right: {
                             type: 'binop',
                             op: '>=',
-                            left: {
-                              type: 'var',
-                              name: 'cy',
-                            },
+                            left: { type: 'var', name: 'cy' },
                             right: {
                               type: 'index',
                               arrayVar: 'canteiroY',
-                              index: {
-                                type: 'var',
-                                name: 'i',
-                              },
+                              index: { type: 'var', name: 'i' },
                             },
                           },
                         },
                         right: {
                           type: 'binop',
                           op: '<',
-                          left: {
-                            type: 'var',
-                            name: 'cy',
-                          },
+                          left: { type: 'var', name: 'cy' },
                           right: {
                             type: 'binop',
                             op: '+',
                             left: {
                               type: 'index',
                               arrayVar: 'canteiroY',
-                              index: {
-                                type: 'var',
-                                name: 'i',
-                              },
+                              index: { type: 'var', name: 'i' },
                             },
-                            right: {
-                              type: 'num',
-                              value: 84,
-                            },
+                            right: { type: 'num', value: 84 },
                           },
                         },
                       },
@@ -618,14 +319,8 @@ export const fazendaFelizProfissionalExample: ExtensionExample = withIndependent
                             left: {
                               type: 'binop',
                               op: '==',
-                              left: {
-                                type: 'var',
-                                name: 'ferramenta',
-                              },
-                              right: {
-                                type: 'num',
-                                value: 0,
-                              },
+                              left: { type: 'var', name: 'ferramenta' },
+                              right: { type: 'num', value: 0 },
                             },
                             right: {
                               type: 'binop',
@@ -633,37 +328,19 @@ export const fazendaFelizProfissionalExample: ExtensionExample = withIndependent
                               left: {
                                 type: 'index',
                                 arrayVar: 'canteiro',
-                                index: {
-                                  type: 'var',
-                                  name: 'i',
-                                },
+                                index: { type: 'var', name: 'i' },
                               },
-                              right: {
-                                type: 'num',
-                                value: 0,
-                              },
+                              right: { type: 'num', value: 0 },
                             },
                           },
                           then: [
                             {
                               type: 'indexSet',
-                              object: {
-                                type: 'var',
-                                name: 'canteiro',
-                              },
-                              index: {
-                                type: 'var',
-                                name: 'i',
-                              },
-                              value: {
-                                type: 'num',
-                                value: 1,
-                              },
+                              object: { type: 'var', name: 'canteiro' },
+                              index: { type: 'var', name: 'i' },
+                              value: { type: 'num', value: 1 },
                             },
-                            {
-                              type: 'gk:playEffect',
-                              fx: 'click',
-                            },
+                            { type: 'gk:playEffect', fx: 'click' },
                           ],
                         },
                         {
@@ -674,14 +351,8 @@ export const fazendaFelizProfissionalExample: ExtensionExample = withIndependent
                             left: {
                               type: 'binop',
                               op: '==',
-                              left: {
-                                type: 'var',
-                                name: 'ferramenta',
-                              },
-                              right: {
-                                type: 'num',
-                                value: 1,
-                              },
+                              left: { type: 'var', name: 'ferramenta' },
+                              right: { type: 'num', value: 1 },
                             },
                             right: {
                               type: 'binop',
@@ -689,37 +360,19 @@ export const fazendaFelizProfissionalExample: ExtensionExample = withIndependent
                               left: {
                                 type: 'index',
                                 arrayVar: 'canteiro',
-                                index: {
-                                  type: 'var',
-                                  name: 'i',
-                                },
+                                index: { type: 'var', name: 'i' },
                               },
-                              right: {
-                                type: 'num',
-                                value: 1,
-                              },
+                              right: { type: 'num', value: 1 },
                             },
                           },
                           then: [
                             {
                               type: 'indexSet',
-                              object: {
-                                type: 'var',
-                                name: 'canteiro',
-                              },
-                              index: {
-                                type: 'var',
-                                name: 'i',
-                              },
-                              value: {
-                                type: 'num',
-                                value: 2,
-                              },
+                              object: { type: 'var', name: 'canteiro' },
+                              index: { type: 'var', name: 'i' },
+                              value: { type: 'num', value: 2 },
                             },
-                            {
-                              type: 'gk:playEffect',
-                              fx: 'powerup',
-                            },
+                            { type: 'gk:playEffect', fx: 'powerup' },
                           ],
                         },
                         {
@@ -730,14 +383,8 @@ export const fazendaFelizProfissionalExample: ExtensionExample = withIndependent
                             left: {
                               type: 'binop',
                               op: '==',
-                              left: {
-                                type: 'var',
-                                name: 'ferramenta',
-                              },
-                              right: {
-                                type: 'num',
-                                value: 2,
-                              },
+                              left: { type: 'var', name: 'ferramenta' },
+                              right: { type: 'num', value: 2 },
                             },
                             right: {
                               type: 'binop',
@@ -745,37 +392,19 @@ export const fazendaFelizProfissionalExample: ExtensionExample = withIndependent
                               left: {
                                 type: 'index',
                                 arrayVar: 'canteiro',
-                                index: {
-                                  type: 'var',
-                                  name: 'i',
-                                },
+                                index: { type: 'var', name: 'i' },
                               },
-                              right: {
-                                type: 'num',
-                                value: 2,
-                              },
+                              right: { type: 'num', value: 2 },
                             },
                           },
                           then: [
                             {
                               type: 'indexSet',
-                              object: {
-                                type: 'var',
-                                name: 'molhado',
-                              },
-                              index: {
-                                type: 'var',
-                                name: 'i',
-                              },
-                              value: {
-                                type: 'num',
-                                value: 1,
-                              },
+                              object: { type: 'var', name: 'molhado' },
+                              index: { type: 'var', name: 'i' },
+                              value: { type: 'num', value: 1 },
                             },
-                            {
-                              type: 'gk:playEffect',
-                              fx: 'coin',
-                            },
+                            { type: 'gk:playEffect', fx: 'coin' },
                           ],
                         },
                       ],
@@ -786,10 +415,7 @@ export const fazendaFelizProfissionalExample: ExtensionExample = withIndependent
             },
             {
               type: 'if',
-              cond: {
-                type: 'gk:keyPressed',
-                key: 'c',
-              },
+              cond: { type: 'gk:keyPressed', key: 'c' },
               then: [
                 {
                   type: 'assign',
@@ -797,31 +423,16 @@ export const fazendaFelizProfissionalExample: ExtensionExample = withIndependent
                   value: {
                     type: 'binop',
                     op: '+',
-                    left: {
-                      type: 'var',
-                      name: 'dia',
-                    },
-                    right: {
-                      type: 'num',
-                      value: 1,
-                    },
+                    left: { type: 'var', name: 'dia' },
+                    right: { type: 'num', value: 1 },
                   },
                 },
                 {
                   type: 'forRange',
                   varName: 'i',
-                  from: {
-                    type: 'num',
-                    value: 0,
-                  },
-                  to: {
-                    type: 'num',
-                    value: 24,
-                  },
-                  step: {
-                    type: 'num',
-                    value: 1,
-                  },
+                  from: { type: 'num', value: 0 },
+                  to: { type: 'num', value: 24 },
+                  step: { type: 'num', value: 1 },
                   body: [
                     {
                       type: 'if',
@@ -834,15 +445,9 @@ export const fazendaFelizProfissionalExample: ExtensionExample = withIndependent
                           left: {
                             type: 'index',
                             arrayVar: 'canteiro',
-                            index: {
-                              type: 'var',
-                              name: 'i',
-                            },
+                            index: { type: 'var', name: 'i' },
                           },
-                          right: {
-                            type: 'num',
-                            value: 2,
-                          },
+                          right: { type: 'num', value: 2 },
                         },
                         right: {
                           type: 'binop',
@@ -850,47 +455,23 @@ export const fazendaFelizProfissionalExample: ExtensionExample = withIndependent
                           left: {
                             type: 'index',
                             arrayVar: 'molhado',
-                            index: {
-                              type: 'var',
-                              name: 'i',
-                            },
+                            index: { type: 'var', name: 'i' },
                           },
-                          right: {
-                            type: 'num',
-                            value: 1,
-                          },
+                          right: { type: 'num', value: 1 },
                         },
                       },
                       then: [
                         {
                           type: 'indexSet',
-                          object: {
-                            type: 'var',
-                            name: 'canteiro',
-                          },
-                          index: {
-                            type: 'var',
-                            name: 'i',
-                          },
-                          value: {
-                            type: 'num',
-                            value: 3,
-                          },
+                          object: { type: 'var', name: 'canteiro' },
+                          index: { type: 'var', name: 'i' },
+                          value: { type: 'num', value: 3 },
                         },
                         {
                           type: 'indexSet',
-                          object: {
-                            type: 'var',
-                            name: 'molhado',
-                          },
-                          index: {
-                            type: 'var',
-                            name: 'i',
-                          },
-                          value: {
-                            type: 'num',
-                            value: 0,
-                          },
+                          object: { type: 'var', name: 'molhado' },
+                          index: { type: 'var', name: 'i' },
+                          value: { type: 'num', value: 0 },
                         },
                       ],
                     },
@@ -901,18 +482,9 @@ export const fazendaFelizProfissionalExample: ExtensionExample = withIndependent
             {
               type: 'forRange',
               varName: 'i',
-              from: {
-                type: 'num',
-                value: 0,
-              },
-              to: {
-                type: 'num',
-                value: 24,
-              },
-              step: {
-                type: 'num',
-                value: 1,
-              },
+              from: { type: 'num', value: 0 },
+              to: { type: 'num', value: 24 },
+              step: { type: 'num', value: 1 },
               body: [
                 {
                   type: 'if',
@@ -934,115 +506,70 @@ export const fazendaFelizProfissionalExample: ExtensionExample = withIndependent
                             left: {
                               type: 'index',
                               arrayVar: 'canteiro',
-                              index: {
-                                type: 'var',
-                                name: 'i',
-                              },
+                              index: { type: 'var', name: 'i' },
                             },
-                            right: {
-                              type: 'num',
-                              value: 3,
-                            },
+                            right: { type: 'num', value: 3 },
                           },
                           right: {
                             type: 'binop',
                             op: '>=',
-                            left: {
-                              type: 'var',
-                              name: 'cx',
-                            },
+                            left: { type: 'var', name: 'cx' },
                             right: {
                               type: 'index',
                               arrayVar: 'canteiroX',
-                              index: {
-                                type: 'var',
-                                name: 'i',
-                              },
+                              index: { type: 'var', name: 'i' },
                             },
                           },
                         },
                         right: {
                           type: 'binop',
                           op: '<',
-                          left: {
-                            type: 'var',
-                            name: 'cx',
-                          },
+                          left: { type: 'var', name: 'cx' },
                           right: {
                             type: 'binop',
                             op: '+',
                             left: {
                               type: 'index',
                               arrayVar: 'canteiroX',
-                              index: {
-                                type: 'var',
-                                name: 'i',
-                              },
+                              index: { type: 'var', name: 'i' },
                             },
-                            right: {
-                              type: 'num',
-                              value: 84,
-                            },
+                            right: { type: 'num', value: 84 },
                           },
                         },
                       },
                       right: {
                         type: 'binop',
                         op: '>=',
-                        left: {
-                          type: 'var',
-                          name: 'cy',
-                        },
+                        left: { type: 'var', name: 'cy' },
                         right: {
                           type: 'index',
                           arrayVar: 'canteiroY',
-                          index: {
-                            type: 'var',
-                            name: 'i',
-                          },
+                          index: { type: 'var', name: 'i' },
                         },
                       },
                     },
                     right: {
                       type: 'binop',
                       op: '<',
-                      left: {
-                        type: 'var',
-                        name: 'cy',
-                      },
+                      left: { type: 'var', name: 'cy' },
                       right: {
                         type: 'binop',
                         op: '+',
                         left: {
                           type: 'index',
                           arrayVar: 'canteiroY',
-                          index: {
-                            type: 'var',
-                            name: 'i',
-                          },
+                          index: { type: 'var', name: 'i' },
                         },
-                        right: {
-                          type: 'num',
-                          value: 84,
-                        },
+                        right: { type: 'num', value: 84 },
                       },
                     },
                   },
                   then: [
                     {
                       type: 'indexSet',
-                      object: {
-                        type: 'var',
-                        name: 'canteiro',
-                      },
-                      index: {
-                        type: 'var',
-                        name: 'i',
-                      },
-                      value: {
-                        type: 'num',
-                        value: 0,
-                      },
+                      object: { type: 'var', name: 'canteiro' },
+                      index: { type: 'var', name: 'i' },
+                      value: { type: 'num', value: 0 },
                     },
                     {
                       type: 'assign',
@@ -1050,80 +577,47 @@ export const fazendaFelizProfissionalExample: ExtensionExample = withIndependent
                       value: {
                         type: 'binop',
                         op: '+',
-                        left: {
-                          type: 'var',
-                          name: 'colheita',
-                        },
-                        right: {
-                          type: 'num',
-                          value: 1,
-                        },
+                        left: { type: 'var', name: 'colheita' },
+                        right: { type: 'num', value: 1 },
                       },
                     },
                     {
                       type: 'gk:floatText',
-                      text: {
-                        type: 'str',
-                        value: '+1',
-                      },
+                      text: { type: 'str', value: '+1' },
                       x: {
                         type: 'binop',
                         op: '+',
                         left: {
                           type: 'index',
                           arrayVar: 'canteiroX',
-                          index: {
-                            type: 'var',
-                            name: 'i',
-                          },
+                          index: { type: 'var', name: 'i' },
                         },
-                        right: {
-                          type: 'num',
-                          value: 40,
-                        },
+                        right: { type: 'num', value: 40 },
                       },
                       y: {
                         type: 'index',
                         arrayVar: 'canteiroY',
-                        index: {
-                          type: 'var',
-                          name: 'i',
-                        },
+                        index: { type: 'var', name: 'i' },
                       },
                       color: '#ffd24a',
-                      size: {
-                        type: 'num',
-                        value: 18,
-                      },
+                      size: { type: 'num', value: 18 },
                     },
-                    {
-                      type: 'gk:playEffect',
-                      fx: 'coin',
-                    },
+                    { type: 'gk:playEffect', fx: 'coin' },
                   ],
                 },
               ],
             },
             {
               type: 'if',
-              cond: {
-                type: 'gk:keyPressed',
-                key: 'v',
-              },
+              cond: { type: 'gk:keyPressed', key: 'v' },
               then: [
                 {
                   type: 'gk:rpgMenu',
-                  title: {
-                    type: 'str',
-                    value: 'Vender a colheita no mercado?',
-                  },
+                  title: { type: 'str', value: 'Vender a colheita no mercado?' },
                   body: [
                     {
                       type: 'gk:rpgOption',
-                      label: {
-                        type: 'str',
-                        value: 'Vender tudo',
-                      },
+                      label: { type: 'str', value: 'Vender tudo' },
                       body: [
                         {
                           type: 'assign',
@@ -1131,40 +625,21 @@ export const fazendaFelizProfissionalExample: ExtensionExample = withIndependent
                           value: {
                             type: 'binop',
                             op: '+',
-                            left: {
-                              type: 'var',
-                              name: 'moedas',
-                            },
+                            left: { type: 'var', name: 'moedas' },
                             right: {
                               type: 'binop',
                               op: '*',
-                              left: {
-                                type: 'var',
-                                name: 'colheita',
-                              },
-                              right: {
-                                type: 'num',
-                                value: 5,
-                              },
+                              left: { type: 'var', name: 'colheita' },
+                              right: { type: 'num', value: 5 },
                             },
                           },
                         },
-                        {
-                          type: 'assign',
-                          name: 'colheita',
-                          value: {
-                            type: 'num',
-                            value: 0,
-                          },
-                        },
+                        { type: 'assign', name: 'colheita', value: { type: 'num', value: 0 } },
                       ],
                     },
                     {
                       type: 'gk:rpgOption',
-                      label: {
-                        type: 'str',
-                        value: 'Agora não',
-                      },
+                      label: { type: 'str', value: 'Agora não' },
                       body: [],
                     },
                   ],
@@ -1176,21 +651,10 @@ export const fazendaFelizProfissionalExample: ExtensionExample = withIndependent
               cond: {
                 type: 'binop',
                 op: '>=',
-                left: {
-                  type: 'var',
-                  name: 'moedas',
-                },
-                right: {
-                  type: 'num',
-                  value: 50,
-                },
+                left: { type: 'var', name: 'moedas' },
+                right: { type: 'num', value: 50 },
               },
-              then: [
-                {
-                  type: 'gk:setState',
-                  name: 'vitoria',
-                },
-              ],
+              then: [{ type: 'gk:setState', name: 'vitoria' }],
             },
           ],
         },
@@ -1198,191 +662,70 @@ export const fazendaFelizProfissionalExample: ExtensionExample = withIndependent
           type: 'gk:onDraw',
           ctxName: 'ctx',
           body: [
-            {
-              type: 'gk:drawBackground',
-              color: '#3a5a2a',
-              grid: true,
-            },
+            { type: 'gk:drawBackground', color: '#3a5a2a', grid: true },
             {
               type: 'forRange',
               varName: 'i',
-              from: {
-                type: 'num',
-                value: 0,
-              },
-              to: {
-                type: 'num',
-                value: 24,
-              },
-              step: {
-                type: 'num',
-                value: 1,
-              },
+              from: { type: 'num', value: 0 },
+              to: { type: 'num', value: 24 },
+              step: { type: 'num', value: 1 },
               body: [
                 {
-                  type: 'canvasFillStyle',
-                  ctxVar: 'ctx',
-                  color: {
-                    type: 'color',
-                    value: '#6b4a2b',
-                  },
-                },
-                {
-                  type: 'canvasFillRect',
-                  ctxVar: 'ctx',
-                  x: {
-                    type: 'index',
-                    arrayVar: 'canteiroX',
-                    index: {
-                      type: 'var',
-                      name: 'i',
-                    },
-                  },
-                  y: {
-                    type: 'index',
-                    arrayVar: 'canteiroY',
-                    index: {
-                      type: 'var',
-                      name: 'i',
-                    },
-                  },
-                  w: {
-                    type: 'num',
-                    value: 84,
-                  },
-                  h: {
-                    type: 'num',
-                    value: 84,
-                  },
+                  type: 'gk:drawRectangle',
+                  x: { type: 'index', arrayVar: 'canteiroX', index: { type: 'var', name: 'i' } },
+                  y: { type: 'index', arrayVar: 'canteiroY', index: { type: 'var', name: 'i' } },
+                  w: { type: 'num', value: 84 },
+                  h: { type: 'num', value: 84 },
+                  color: { type: 'color', value: '#6b4a2b' },
                 },
                 {
                   type: 'if',
                   cond: {
                     type: 'binop',
                     op: '==',
-                    left: {
-                      type: 'index',
-                      arrayVar: 'molhado',
-                      index: {
-                        type: 'var',
-                        name: 'i',
-                      },
-                    },
-                    right: {
-                      type: 'num',
-                      value: 1,
-                    },
+                    left: { type: 'index', arrayVar: 'molhado', index: { type: 'var', name: 'i' } },
+                    right: { type: 'num', value: 1 },
                   },
                   then: [
                     {
-                      type: 'canvasFillStyle',
-                      ctxVar: 'ctx',
-                      color: {
-                        type: 'color',
-                        value: '#4a3320',
+                      type: 'gk:drawRectangle',
+                      x: {
+                        type: 'binop',
+                        op: '+',
+                        left: {
+                          type: 'index',
+                          arrayVar: 'canteiroX',
+                          index: { type: 'var', name: 'i' },
+                        },
+                        right: { type: 'num', value: 6 },
                       },
+                      y: {
+                        type: 'binop',
+                        op: '+',
+                        left: {
+                          type: 'index',
+                          arrayVar: 'canteiroY',
+                          index: { type: 'var', name: 'i' },
+                        },
+                        right: { type: 'num', value: 6 },
+                      },
+                      w: { type: 'num', value: 72 },
+                      h: { type: 'num', value: 72 },
+                      color: { type: 'color', value: '#4a3320' },
                     },
                   ],
                   else: [
                     {
-                      type: 'canvasFillStyle',
-                      ctxVar: 'ctx',
-                      color: {
-                        type: 'color',
-                        value: '#7a5636',
-                      },
-                    },
-                  ],
-                },
-                {
-                  type: 'canvasFillRect',
-                  ctxVar: 'ctx',
-                  x: {
-                    type: 'binop',
-                    op: '+',
-                    left: {
-                      type: 'index',
-                      arrayVar: 'canteiroX',
-                      index: {
-                        type: 'var',
-                        name: 'i',
-                      },
-                    },
-                    right: {
-                      type: 'num',
-                      value: 6,
-                    },
-                  },
-                  y: {
-                    type: 'binop',
-                    op: '+',
-                    left: {
-                      type: 'index',
-                      arrayVar: 'canteiroY',
-                      index: {
-                        type: 'var',
-                        name: 'i',
-                      },
-                    },
-                    right: {
-                      type: 'num',
-                      value: 6,
-                    },
-                  },
-                  w: {
-                    type: 'num',
-                    value: 72,
-                  },
-                  h: {
-                    type: 'num',
-                    value: 72,
-                  },
-                },
-                {
-                  type: 'if',
-                  cond: {
-                    type: 'binop',
-                    op: '==',
-                    left: {
-                      type: 'index',
-                      arrayVar: 'canteiro',
-                      index: {
-                        type: 'var',
-                        name: 'i',
-                      },
-                    },
-                    right: {
-                      type: 'num',
-                      value: 1,
-                    },
-                  },
-                  then: [
-                    {
-                      type: 'canvasFillStyle',
-                      ctxVar: 'ctx',
-                      color: {
-                        type: 'color',
-                        value: '#5a4326',
-                      },
-                    },
-                    {
-                      type: 'canvasFillRect',
-                      ctxVar: 'ctx',
+                      type: 'gk:drawRectangle',
                       x: {
                         type: 'binop',
                         op: '+',
                         left: {
                           type: 'index',
                           arrayVar: 'canteiroX',
-                          index: {
-                            type: 'var',
-                            name: 'i',
-                          },
+                          index: { type: 'var', name: 'i' },
                         },
-                        right: {
-                          type: 'num',
-                          value: 14,
-                        },
+                        right: { type: 'num', value: 6 },
                       },
                       y: {
                         type: 'binop',
@@ -1390,68 +733,13 @@ export const fazendaFelizProfissionalExample: ExtensionExample = withIndependent
                         left: {
                           type: 'index',
                           arrayVar: 'canteiroY',
-                          index: {
-                            type: 'var',
-                            name: 'i',
-                          },
+                          index: { type: 'var', name: 'i' },
                         },
-                        right: {
-                          type: 'num',
-                          value: 28,
-                        },
+                        right: { type: 'num', value: 6 },
                       },
-                      w: {
-                        type: 'num',
-                        value: 56,
-                      },
-                      h: {
-                        type: 'num',
-                        value: 6,
-                      },
-                    },
-                    {
-                      type: 'canvasFillRect',
-                      ctxVar: 'ctx',
-                      x: {
-                        type: 'binop',
-                        op: '+',
-                        left: {
-                          type: 'index',
-                          arrayVar: 'canteiroX',
-                          index: {
-                            type: 'var',
-                            name: 'i',
-                          },
-                        },
-                        right: {
-                          type: 'num',
-                          value: 14,
-                        },
-                      },
-                      y: {
-                        type: 'binop',
-                        op: '+',
-                        left: {
-                          type: 'index',
-                          arrayVar: 'canteiroY',
-                          index: {
-                            type: 'var',
-                            name: 'i',
-                          },
-                        },
-                        right: {
-                          type: 'num',
-                          value: 48,
-                        },
-                      },
-                      w: {
-                        type: 'num',
-                        value: 56,
-                      },
-                      h: {
-                        type: 'num',
-                        value: 6,
-                      },
+                      w: { type: 'num', value: 72 },
+                      h: { type: 'num', value: 72 },
+                      color: { type: 'color', value: '#7a5636' },
                     },
                   ],
                 },
@@ -1463,43 +751,22 @@ export const fazendaFelizProfissionalExample: ExtensionExample = withIndependent
                     left: {
                       type: 'index',
                       arrayVar: 'canteiro',
-                      index: {
-                        type: 'var',
-                        name: 'i',
-                      },
+                      index: { type: 'var', name: 'i' },
                     },
-                    right: {
-                      type: 'num',
-                      value: 2,
-                    },
+                    right: { type: 'num', value: 1 },
                   },
                   then: [
                     {
-                      type: 'canvasFillStyle',
-                      ctxVar: 'ctx',
-                      color: {
-                        type: 'color',
-                        value: '#4fae3a',
-                      },
-                    },
-                    {
-                      type: 'canvasArc',
-                      ctxVar: 'ctx',
+                      type: 'gk:drawRectangle',
                       x: {
                         type: 'binop',
                         op: '+',
                         left: {
                           type: 'index',
                           arrayVar: 'canteiroX',
-                          index: {
-                            type: 'var',
-                            name: 'i',
-                          },
+                          index: { type: 'var', name: 'i' },
                         },
-                        right: {
-                          type: 'num',
-                          value: 42,
-                        },
+                        right: { type: 'num', value: 14 },
                       },
                       y: {
                         type: 'binop',
@@ -1507,20 +774,39 @@ export const fazendaFelizProfissionalExample: ExtensionExample = withIndependent
                         left: {
                           type: 'index',
                           arrayVar: 'canteiroY',
-                          index: {
-                            type: 'var',
-                            name: 'i',
-                          },
+                          index: { type: 'var', name: 'i' },
                         },
-                        right: {
-                          type: 'num',
-                          value: 50,
+                        right: { type: 'num', value: 28 },
+                      },
+                      w: { type: 'num', value: 56 },
+                      h: { type: 'num', value: 6 },
+                      color: { type: 'color', value: '#5a4326' },
+                    },
+                    {
+                      type: 'gk:drawRectangle',
+                      x: {
+                        type: 'binop',
+                        op: '+',
+                        left: {
+                          type: 'index',
+                          arrayVar: 'canteiroX',
+                          index: { type: 'var', name: 'i' },
                         },
+                        right: { type: 'num', value: 14 },
                       },
-                      r: {
-                        type: 'num',
-                        value: 14,
+                      y: {
+                        type: 'binop',
+                        op: '+',
+                        left: {
+                          type: 'index',
+                          arrayVar: 'canteiroY',
+                          index: { type: 'var', name: 'i' },
+                        },
+                        right: { type: 'num', value: 48 },
                       },
+                      w: { type: 'num', value: 56 },
+                      h: { type: 'num', value: 6 },
+                      color: { type: 'color', value: '#5a4326' },
                     },
                   ],
                 },
@@ -1532,43 +818,22 @@ export const fazendaFelizProfissionalExample: ExtensionExample = withIndependent
                     left: {
                       type: 'index',
                       arrayVar: 'canteiro',
-                      index: {
-                        type: 'var',
-                        name: 'i',
-                      },
+                      index: { type: 'var', name: 'i' },
                     },
-                    right: {
-                      type: 'num',
-                      value: 3,
-                    },
+                    right: { type: 'num', value: 2 },
                   },
                   then: [
                     {
-                      type: 'canvasFillStyle',
-                      ctxVar: 'ctx',
-                      color: {
-                        type: 'color',
-                        value: '#ffd24a',
-                      },
-                    },
-                    {
-                      type: 'canvasArc',
-                      ctxVar: 'ctx',
+                      type: 'gk:drawCircle',
                       x: {
                         type: 'binop',
                         op: '+',
                         left: {
                           type: 'index',
                           arrayVar: 'canteiroX',
-                          index: {
-                            type: 'var',
-                            name: 'i',
-                          },
+                          index: { type: 'var', name: 'i' },
                         },
-                        right: {
-                          type: 'num',
-                          value: 42,
-                        },
+                        right: { type: 'num', value: 42 },
                       },
                       y: {
                         type: 'binop',
@@ -1576,32 +841,59 @@ export const fazendaFelizProfissionalExample: ExtensionExample = withIndependent
                         left: {
                           type: 'index',
                           arrayVar: 'canteiroY',
-                          index: {
-                            type: 'var',
-                            name: 'i',
-                          },
+                          index: { type: 'var', name: 'i' },
                         },
-                        right: {
-                          type: 'num',
-                          value: 42,
+                        right: { type: 'num', value: 50 },
+                      },
+                      r: { type: 'num', value: 14 },
+                      color: { type: 'color', value: '#4fae3a' },
+                    },
+                  ],
+                },
+                {
+                  type: 'if',
+                  cond: {
+                    type: 'binop',
+                    op: '==',
+                    left: {
+                      type: 'index',
+                      arrayVar: 'canteiro',
+                      index: { type: 'var', name: 'i' },
+                    },
+                    right: { type: 'num', value: 3 },
+                  },
+                  then: [
+                    {
+                      type: 'gk:drawCircle',
+                      x: {
+                        type: 'binop',
+                        op: '+',
+                        left: {
+                          type: 'index',
+                          arrayVar: 'canteiroX',
+                          index: { type: 'var', name: 'i' },
                         },
+                        right: { type: 'num', value: 42 },
                       },
-                      r: {
-                        type: 'num',
-                        value: 20,
+                      y: {
+                        type: 'binop',
+                        op: '+',
+                        left: {
+                          type: 'index',
+                          arrayVar: 'canteiroY',
+                          index: { type: 'var', name: 'i' },
+                        },
+                        right: { type: 'num', value: 42 },
                       },
+                      r: { type: 'num', value: 20 },
+                      color: { type: 'color', value: '#ffd24a' },
                     },
                   ],
                 },
               ],
             },
-            {
-              type: 'gk:drawCharacter',
-              charVar: 'fazendeiro',
-            },
-            {
-              type: 'gk:drawEffects',
-            },
+            { type: 'gk:drawCharacter', charVar: 'fazendeiro' },
+            { type: 'gk:drawEffects' },
           ],
         },
         {
@@ -1609,118 +901,60 @@ export const fazendaFelizProfissionalExample: ExtensionExample = withIndependent
           ctxName: 'ctx',
           body: [
             {
-              type: 'canvasFillStyle',
-              ctxVar: 'ctx',
-              color: {
-                type: 'color',
-                value: '#fff8e1',
-              },
-            },
-            {
-              type: 'canvasFont',
-              ctxVar: 'ctx',
-              size: 22,
-              family: 'sans-serif',
-            },
-            {
-              type: 'canvasFillText',
-              ctxVar: 'ctx',
+              type: 'gk:drawText',
               text: {
                 type: 'binop',
                 op: '+',
-                left: {
-                  type: 'str',
-                  value: 'Ferramenta: ',
-                },
+                left: { type: 'str', value: 'Ferramenta: ' },
                 right: {
                   type: 'index',
                   arrayVar: 'ferramentas',
-                  index: {
-                    type: 'var',
-                    name: 'ferramenta',
-                  },
+                  index: { type: 'var', name: 'ferramenta' },
                 },
               },
-              x: {
-                type: 'num',
-                value: 20,
-              },
-              y: {
-                type: 'num',
-                value: 34,
-              },
+              x: { type: 'num', value: 20 },
+              y: { type: 'num', value: 34 },
+              size: { type: 'num', value: 22 },
+              color: { type: 'color', value: '#fff8e1' },
             },
             {
-              type: 'canvasFillText',
-              ctxVar: 'ctx',
+              type: 'gk:drawText',
               text: {
                 type: 'binop',
                 op: '+',
-                left: {
-                  type: 'str',
-                  value: 'Moedas: ',
-                },
-                right: {
-                  type: 'var',
-                  name: 'moedas',
-                },
+                left: { type: 'str', value: 'Moedas: ' },
+                right: { type: 'var', name: 'moedas' },
               },
-              x: {
-                type: 'num',
-                value: 20,
-              },
-              y: {
-                type: 'num',
-                value: 62,
-              },
+              x: { type: 'num', value: 20 },
+              y: { type: 'num', value: 62 },
+              size: { type: 'num', value: 22 },
+              color: { type: 'color', value: '#fff8e1' },
             },
             {
-              type: 'canvasFillText',
-              ctxVar: 'ctx',
+              type: 'gk:drawText',
               text: {
                 type: 'binop',
                 op: '+',
-                left: {
-                  type: 'str',
-                  value: 'Colheita: ',
-                },
-                right: {
-                  type: 'var',
-                  name: 'colheita',
-                },
+                left: { type: 'str', value: 'Colheita: ' },
+                right: { type: 'var', name: 'colheita' },
               },
-              x: {
-                type: 'num',
-                value: 20,
-              },
-              y: {
-                type: 'num',
-                value: 90,
-              },
+              x: { type: 'num', value: 20 },
+              y: { type: 'num', value: 90 },
+              size: { type: 'num', value: 22 },
+              color: { type: 'color', value: '#fff8e1' },
             },
             {
-              type: 'canvasFillText',
-              ctxVar: 'ctx',
+              type: 'gk:drawText',
               text: {
                 type: 'binop',
                 op: '+',
-                left: {
-                  type: 'str',
-                  value: 'Dia: ',
-                },
-                right: {
-                  type: 'var',
-                  name: 'dia',
-                },
+                left: { type: 'str', value: 'Dia: ' },
+                right: { type: 'var', name: 'dia' },
               },
-              x: {
-                type: 'num',
-                value: 820,
-              },
-              y: {
-                type: 'num',
-                value: 34,
-              },
+              x: { type: 'num', value: 820 },
+              y: { type: 'num', value: 34 },
+              size: { type: 'num', value: 22 },
+              color: { type: 'color', value: '#fff8e1' },
             },
           ],
         },

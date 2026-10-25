@@ -201,7 +201,7 @@ function injectBeforeBodyEnd(html: string, block: string): string {
 }
 
 /** True se o html já referencia o `style.css` canônico num `<link href=...>`. */
-function hasCanonicalCssLink(html: string): boolean {
+export function hasCanonicalCssLink(html: string): boolean {
   return /<link\b[^>]*\bhref=["'][^"']*\bstyle\.css["'][^>]*>/i.test(html)
 }
 

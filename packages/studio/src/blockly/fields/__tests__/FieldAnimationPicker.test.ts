@@ -131,6 +131,20 @@ function buildAnimatePair(ws: AssetWs): Blockly.Block {
   return animate
 }
 
+/** Aguarda um marcador na mesma fila pública dos eventos de montagem do Blockly. */
+function waitForBlocklyEvents(ws: Blockly.Workspace): Promise<void> {
+  const marker = new Blockly.Events.FinishedLoading(ws)
+  return new Promise((resolve) => {
+    const listener = (event: Blockly.Events.Abstract) => {
+      if (event !== marker) return
+      ws.removeChangeListener(listener)
+      resolve()
+    }
+    ws.addChangeListener(listener)
+    Blockly.Events.fire(marker)
+  })
+}
+
 describe('deriveAnimationName — a direção reversa do fillFrames', () => {
   beforeAll(() => {
     ensureBlocklyInitialized()
@@ -188,10 +202,10 @@ describe('refreshAnimationNames — restaura o nome exibido sem tempestade de ev
     plugNumber(ws, animate, 'FROM', 0, { shadow: true })
     plugNumber(ws, animate, 'TO', 3, { shadow: true })
     plugNumber(ws, animate, 'FPS', 8, { shadow: true })
-    // Drena a fila ASSÍNCRONA de eventos do setup (setFieldValue/setShadowState
-    // agendam via setTimeout) antes de instalar o listener — só o refresh fica
-    // sob vigilância. 5ms: um tick de 0ms nem sempre esvazia a fila do Blockly.
-    await Bun.sleep(5)
+    // Blockly despacha requestAnimationFrame → setTimeout. Esperar 5 ms deixava
+    // o IMAGE do setup chegar ao listener de refresh quando o quadro atrasava.
+    // O marcador só é entregue depois dos eventos já enfileirados.
+    await waitForBlocklyEvents(ws)
     // Nenhum BLOCK_CHANGE pode escapar do refresh (Events.disable no set).
     const leaked: string[] = []
     ws.addChangeListener((e) => {
@@ -199,12 +213,15 @@ describe('refreshAnimationNames — restaura o nome exibido sem tempestade de ev
     })
 
     refreshAnimationNames(ws)
-    await Bun.sleep(0)
+    await Promise.resolve() // O refresh é coalescido em queueMicrotask.
     expect(animate.getFieldValue('ANIM')).toBe('andar')
 
     refreshAnimationNames(ws)
-    await Bun.sleep(0)
+    await Promise.resolve()
     expect(animate.getFieldValue('ANIM')).toBe('andar')
+    // Se o refresh emitir um evento por engano, ele deve ser entregue antes da
+    // asserção, mesmo quando o navegador adiar o próximo quadro.
+    await waitForBlocklyEvents(ws)
     expect(leaked).toEqual([])
   })
 
@@ -217,7 +234,7 @@ describe('refreshAnimationNames — restaura o nome exibido sem tempestade de ev
     plugNumber(ws, animate, 'FPS', 8, { shadow: true })
 
     refreshAnimationNames(ws)
-    await Bun.sleep(0)
+    await Promise.resolve()
     expect(animate.getFieldValue('ANIM')).toBe(ANIM_PLACEHOLDER)
   })
 
@@ -228,7 +245,7 @@ describe('refreshAnimationNames — restaura o nome exibido sem tempestade de ev
     ws.__szAssets = () => [] // janela async: blocksState chegou antes dos assets
 
     refreshAnimationNames(ws)
-    await Bun.sleep(0)
+    await Promise.resolve()
     expect(animate.getFieldValue('ANIM')).toBe('andar')
   })
 })

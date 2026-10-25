@@ -17,28 +17,8 @@ export const escaladaDoGuerreiroExample: ExtensionExample = beginnerGameExample(
   description:
     'Suba com o guerreiro pulando de plataforma em plataforma até a bandeira dourada lá no topo. Use as setas para andar e pular. Enter começa e reinicia.',
   ir: {
-    html: [{ type: 'canvas', id: 'tela', width: 320, height: 480 }],
-    css: [
-      {
-        selector: 'body',
-        declarations: {
-          background: '#1a2712',
-          display: 'flex',
-          'align-items': 'center',
-          'justify-content': 'center',
-          'min-height': '100vh',
-          margin: '0',
-        },
-      },
-      {
-        selector: 'canvas',
-        declarations: {
-          border: '3px solid #ffffff',
-          'border-radius': '18px',
-          background: '#8fc0e8',
-        },
-      },
-    ],
+    html: [],
+    css: [],
     version: 2,
     behavior: {
       molds: [
@@ -172,6 +152,21 @@ export const escaladaDoGuerreiroExample: ExtensionExample = beginnerGameExample(
         },
       ],
       start: [
+        {
+          type: 'g2d:setupStage',
+          width: 320,
+          height: 480,
+          bg: '#8fc0e8',
+          __id: 'exemplo-escalada-do-guerreiro',
+        },
+        {
+          type: 'g2d:setStageDescription',
+          description:
+            'Suba com o guerreiro pulando de plataforma em plataforma até a bandeira dourada lá no topo. Use as setas para andar e pular. Enter começa e reinicia.',
+          __id: 'exemplo-escalada-do-guerreiro-descricao',
+        },
+        { type: 'g2d:stageBorder', color: '#ffffff', width: 3 },
+
         {
           type: 'g2d:fitScreen',
           percent: {

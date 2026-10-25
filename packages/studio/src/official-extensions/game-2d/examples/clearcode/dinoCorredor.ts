@@ -19,31 +19,26 @@ export const dinoCorredorExample: ExtensionExample = beginnerGameExample({
   description:
     'Corra com o dino e pule os cactos apertando espaço. Cada segundo de corrida vale 1 ponto e os cactos vão ficando mais rápidos. Enter ou espaço começa e reinicia.',
   ir: {
-    html: [{ type: 'canvas', id: 'tela', width: 480, height: 270 }],
-    css: [
-      {
-        selector: 'body',
-        declarations: {
-          background: '#bdf4ff',
-          display: 'flex',
-          'align-items': 'center',
-          'justify-content': 'center',
-          'min-height': '100vh',
-          margin: '0',
-        },
-      },
-      {
-        selector: 'canvas',
-        declarations: {
-          border: '3px solid #ffffff',
-          'border-radius': '18px',
-          background: '#bdf4ff',
-        },
-      },
-    ],
+    html: [],
+    css: [],
     version: 2,
     behavior: {
       start: [
+        {
+          type: 'g2d:setupStage',
+          width: 480,
+          height: 270,
+          bg: '#bdf4ff',
+          __id: 'exemplo-dino-corredor',
+        },
+        {
+          type: 'g2d:setStageDescription',
+          description:
+            'Corra com o dino e pule os cactos apertando espaço. Cada segundo de corrida vale 1 ponto e os cactos vão ficando mais rápidos. Enter ou espaço começa e reinicia.',
+          __id: 'exemplo-dino-corredor-descricao',
+        },
+        { type: 'g2d:stageBorder', color: '#ffffff', width: 3 },
+
         {
           type: 'g2d:fitScreen',
           percent: {

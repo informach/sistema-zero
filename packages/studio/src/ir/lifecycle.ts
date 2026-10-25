@@ -1,5 +1,6 @@
 import { BEHAVIOR_AREA_LABELS, type BehaviorArea } from '../core/behaviorAreas'
 import { CONTINUOUS_EXTENSION_STATEMENT_TYPES } from '../official-extensions/continuousCommandContract'
+import { GAME_KIT_DRAWING_STATEMENT_TYPES } from '../official-extensions/game-2d-advanced/drawingIR'
 import {
   GAME_RULES_NESTABLE_ROOT_TYPES,
   gameRulesProvidesUserGesture,
@@ -337,6 +338,13 @@ export const MOLD_OR_START_STATEMENT_TYPES = new Set([
 ])
 
 const EVENT_BODY_ONLY_TYPES = new Set(['w3d:npcAsk'])
+const GAME_KIT_DRAWING_TYPES: ReadonlySet<string> = new Set(GAME_KIT_DRAWING_STATEMENT_TYPES)
+const DRAWING_CONTAINERS = new Set([
+  'gk:onDraw',
+  'gk:onDrawHud',
+  'gk:defineLook',
+  'gk:rpgCreateMap',
+])
 
 type SpecializedBodyContext =
   | 'draw-world'
@@ -419,6 +427,7 @@ export function isEventStatement(statement: JSStatement): boolean {
   if (
     LOOP_ROOT_TYPES.has(statement.type) ||
     isContinuousCommandType(statement.type) ||
+    GAME_KIT_DRAWING_TYPES.has(statement.type) ||
     LEGACY_START_WRAPPER_TYPES.has(statement.type)
   ) {
     return false
@@ -479,6 +488,7 @@ export function isLifecycleRootAllowed(statement: JSStatement, area: LifecycleAr
     LEGACY_ENGINE_BOOT_TYPES.has(statement.type) ||
     isLegacyLoadEvent(statement) ||
     isContinuousCommandType(statement.type) ||
+    GAME_KIT_DRAWING_TYPES.has(statement.type) ||
     GAME3D_ACTION_CONTEXT_STATEMENT_TYPES.has(statement.type) ||
     GAME3D_RUNNING_CONTEXT_STATEMENT_TYPES.has(statement.type) ||
     EVENT_BODY_ONLY_TYPES.has(statement.type) ||
@@ -508,6 +518,7 @@ interface SemanticContext {
   directEventContainer: boolean
   loopDepth: number
   continuousBody: boolean
+  drawingBody: boolean
   eventBody: boolean
   activeEventObjectBody: boolean
   userGestureBody: boolean
@@ -539,6 +550,17 @@ function validateContextDependentNode(
   path: PropertyKey[],
   issues: LifecycleSemanticIssue[],
 ): void {
+  if (
+    GAME_KIT_DRAWING_TYPES.has(String(node.type)) &&
+    !context.drawingBody &&
+    (!context.functionBody || context.eventBody || context.constructorBody)
+  ) {
+    issue(
+      issues,
+      path,
+      'Desenhe dentro do desenho do jogo, da interface, do mapa ou de uma aparência',
+    )
+  }
   const requiredBody = CONTAINER_ONLY_STATEMENTS.get(String(node.type))
   if (requiredBody && context.directSpecializedBody !== requiredBody) {
     issue(
@@ -752,6 +774,8 @@ function childContext(
       (execution === 'structural' && SYNTACTIC_LOOP_TYPES.has(statement.type) ? 1 : 0),
     continuousBody:
       (resetsActivation ? false : context.continuousBody) || isLoopStatement(statement),
+    drawingBody:
+      (createsBoundary ? false : context.drawingBody) || DRAWING_CONTAINERS.has(statement.type),
     eventBody: context.eventBody || startsEventBody(statement),
     trackEncounterBody:
       (resetsActivation ? false : context.trackEncounterBody) ||
@@ -954,6 +978,7 @@ export function validateLifecycleSemantics(
       directEventContainer: false,
       loopDepth: 0,
       continuousBody: false,
+      drawingBody: false,
       eventBody: false,
       activeEventObjectBody: false,
       userGestureBody: false,

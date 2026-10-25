@@ -18,59 +18,47 @@ SZGameKit.setup({ width: 960, height: 540, background: "#dff6ff", accent: "#2f9e
 SZGameKit.setScreenText("menu", "Dino Corredor Profissional", "Espaço, seta para cima ou clique: pular. Salte os cactos e não bata nos pássaros!", "Correr");
 SZGameKit.setScreenText("fim", "Bateu!", "O recorde fica guardado. Tente de novo!", "Correr de novo");
 SZGameKit.defineLook("sol", function (ctx) {
-  ctx.fillStyle = "#ffd43b";
-  ctx.beginPath();
-  ctx.arc(40, 40, 32, 0, Math.PI * 2);
-  ctx.fill();
+  SZGameKit.drawCircle(40, 40, 32, "#ffd43b");
 }, 80, 80);
 SZGameKit.defineLook("nuvem", function (ctx) {
-  ctx.fillStyle = "#ffffff";
-  ctx.fillRect(10, 20, 100, 18);
-  ctx.fillRect(26, 8, 40, 20);
-  ctx.fillRect(64, 12, 32, 16);
+  SZGameKit.drawRectangle(10, 20, 100, 18, "#ffffff");
+  SZGameKit.drawRectangle(26, 8, 40, 20, "#ffffff");
+  SZGameKit.drawRectangle(64, 12, 32, 16, "#ffffff");
 }, 120, 44);
 SZGameKit.defineLook("risco", function (ctx) {
-  ctx.fillStyle = "#b08d57";
-  ctx.fillRect(0, 0, 36, 6);
-  ctx.fillRect(46, 0, 10, 6);
+  SZGameKit.drawRectangle(0, 0, 36, 6, "#b08d57");
+  SZGameKit.drawRectangle(46, 0, 10, 6, "#b08d57");
 }, 60, 6);
 SZGameKit.defineLook("dino correndo", function (ctx) {
-  ctx.fillStyle = "#495057";
-  ctx.fillRect(0, 24, 12, 8);
-  ctx.fillRect(8, 18, 32, 26);
-  ctx.fillRect(28, 0, 26, 20);
-  ctx.fillRect(36, 24, 10, 6);
-  ctx.fillRect(12, 44, 10, 20);
-  ctx.fillRect(30, 44, 10, 12);
-  ctx.fillStyle = "#ffffff";
-  ctx.fillRect(44, 4, 6, 6);
+  SZGameKit.drawRectangle(0, 24, 12, 8, "#495057");
+  SZGameKit.drawRectangle(8, 18, 32, 26, "#495057");
+  SZGameKit.drawRectangle(28, 0, 26, 20, "#495057");
+  SZGameKit.drawRectangle(36, 24, 10, 6, "#495057");
+  SZGameKit.drawRectangle(12, 44, 10, 20, "#495057");
+  SZGameKit.drawRectangle(30, 44, 10, 12, "#495057");
+  SZGameKit.drawRectangle(44, 4, 6, 6, "#ffffff");
 }, 60, 64);
 SZGameKit.defineLook("dino pulando", function (ctx) {
-  ctx.fillStyle = "#495057";
-  ctx.fillRect(0, 20, 12, 8);
-  ctx.fillRect(8, 16, 32, 26);
-  ctx.fillRect(28, 0, 26, 20);
-  ctx.fillRect(36, 22, 10, 6);
-  ctx.fillRect(14, 42, 10, 12);
-  ctx.fillRect(30, 42, 10, 12);
-  ctx.fillStyle = "#ffffff";
-  ctx.fillRect(44, 4, 6, 6);
+  SZGameKit.drawRectangle(0, 20, 12, 8, "#495057");
+  SZGameKit.drawRectangle(8, 16, 32, 26, "#495057");
+  SZGameKit.drawRectangle(28, 0, 26, 20, "#495057");
+  SZGameKit.drawRectangle(36, 22, 10, 6, "#495057");
+  SZGameKit.drawRectangle(14, 42, 10, 12, "#495057");
+  SZGameKit.drawRectangle(30, 42, 10, 12, "#495057");
+  SZGameKit.drawRectangle(44, 4, 6, 6, "#ffffff");
 }, 60, 64);
 SZGameKit.defineLook("cacto", function (ctx) {
-  ctx.fillStyle = "#2f9e44";
-  ctx.fillRect(13, 0, 8, 52);
-  ctx.fillRect(3, 10, 6, 20);
-  ctx.fillRect(3, 24, 12, 6);
-  ctx.fillRect(25, 16, 6, 18);
-  ctx.fillRect(21, 28, 10, 6);
+  SZGameKit.drawRectangle(13, 0, 8, 52, "#2f9e44");
+  SZGameKit.drawRectangle(3, 10, 6, 20, "#2f9e44");
+  SZGameKit.drawRectangle(3, 24, 12, 6, "#2f9e44");
+  SZGameKit.drawRectangle(25, 16, 6, 18, "#2f9e44");
+  SZGameKit.drawRectangle(21, 28, 10, 6, "#2f9e44");
 }, 34, 52);
 SZGameKit.defineLook("passaro", function (ctx) {
-  ctx.fillStyle = "#7048e8";
-  ctx.fillRect(10, 12, 26, 12);
-  ctx.fillRect(18, 2, 14, 12);
-  ctx.fillRect(34, 10, 10, 6);
-  ctx.fillStyle = "#ffd43b";
-  ctx.fillRect(2, 14, 8, 6);
+  SZGameKit.drawRectangle(10, 12, 26, 12, "#7048e8");
+  SZGameKit.drawRectangle(18, 2, 14, 12, "#7048e8");
+  SZGameKit.drawRectangle(34, 10, 10, 6, "#7048e8");
+  SZGameKit.drawRectangle(2, 14, 8, 6, "#ffd43b");
 }, 44, 30);
 SZGameKit.defineMold("chao", { w: 960, h: 80, health: 1, speed: 0, damage: 0, color: "#e6c98c" });
 SZGameKit.defineMold("cacto", { w: 34, h: 52, health: 1, speed: 0, damage: 0, color: "#2f9e44", look: "cacto" });
@@ -177,10 +165,8 @@ SZGameKit.onDraw(function (ctx) {
   SZGameKit.drawCharacter(dino);
 });
 SZGameKit.onDrawHud(function (ctx) {
-  ctx.fillStyle = "#343a40";
-  ctx.font = "26px sans-serif";
-  ctx.fillText("Pontos: " + pontos, 20, 40);
-  ctx.fillText("Recorde: " + recorde, 20, 72);
+  SZGameKit.drawText("Pontos: " + pontos, 20, 40, 26, "#343a40");
+  SZGameKit.drawText("Recorde: " + recorde, 20, 72, 26, "#343a40");
 });
 `.trim()
 

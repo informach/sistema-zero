@@ -32,66 +32,45 @@ SZGameKit.setScreenText("menu", "Aventura do Herói Profissional", "Setas: andar
 SZGameKit.setScreenText("vitoria", "Campo em paz!", "Você derrotou todos os monstros. O reino agradece, herói!", "Jogar de novo");
 SZGameKit.setScreenText("fim", "O herói caiu!", "Os monstros venceram desta vez. Tente de novo!", "Tentar de novo");
 SZGameKit.defineLook("heroi parado", function (ctx) {
-  ctx.fillStyle = "#74491f";
-  ctx.fillRect(12, 0, 20, 10);
-  ctx.fillStyle = "#ffd8a8";
-  ctx.fillRect(14, 10, 16, 10);
-  ctx.fillStyle = "#2f9e44";
-  ctx.fillRect(8, 20, 28, 20);
-  ctx.fillStyle = "#5c4425";
-  ctx.fillRect(14, 40, 17, 16);
+  SZGameKit.drawRectangle(12, 0, 20, 10, "#74491f");
+  SZGameKit.drawRectangle(14, 10, 16, 10, "#ffd8a8");
+  SZGameKit.drawRectangle(8, 20, 28, 20, "#2f9e44");
+  SZGameKit.drawRectangle(14, 40, 17, 16, "#5c4425");
 }, 44, 56);
 SZGameKit.defineLook("heroi andando", function (ctx) {
-  ctx.fillStyle = "#74491f";
-  ctx.fillRect(12, 0, 20, 10);
-  ctx.fillStyle = "#ffd8a8";
-  ctx.fillRect(14, 10, 16, 10);
-  ctx.fillStyle = "#2f9e44";
-  ctx.fillRect(8, 20, 28, 20);
-  ctx.fillStyle = "#5c4425";
-  ctx.fillRect(10, 40, 7, 16);
-  ctx.fillRect(28, 40, 7, 16);
+  SZGameKit.drawRectangle(12, 0, 20, 10, "#74491f");
+  SZGameKit.drawRectangle(14, 10, 16, 10, "#ffd8a8");
+  SZGameKit.drawRectangle(8, 20, 28, 20, "#2f9e44");
+  SZGameKit.drawRectangle(10, 40, 7, 16, "#5c4425");
+  SZGameKit.drawRectangle(28, 40, 7, 16, "#5c4425");
 }, 44, 56);
 SZGameKit.defineLook("heroi golpe", function (ctx) {
-  ctx.fillStyle = "#74491f";
-  ctx.fillRect(8, 0, 20, 10);
-  ctx.fillStyle = "#ffd8a8";
-  ctx.fillRect(10, 10, 16, 10);
-  ctx.fillStyle = "#2f9e44";
-  ctx.fillRect(4, 20, 28, 20);
-  ctx.fillStyle = "#5c4425";
-  ctx.fillRect(10, 40, 17, 16);
-  ctx.fillStyle = "#dee2e6";
-  ctx.fillRect(30, 24, 14, 6);
+  SZGameKit.drawRectangle(8, 0, 20, 10, "#74491f");
+  SZGameKit.drawRectangle(10, 10, 16, 10, "#ffd8a8");
+  SZGameKit.drawRectangle(4, 20, 28, 20, "#2f9e44");
+  SZGameKit.drawRectangle(10, 40, 17, 16, "#5c4425");
+  SZGameKit.drawRectangle(30, 24, 14, 6, "#dee2e6");
 }, 44, 56);
 SZGameKit.defineLook("javali", function (ctx) {
-  ctx.fillStyle = "#845ef7";
-  ctx.fillRect(6, 12, 40, 22);
-  ctx.fillRect(40, 6, 10, 16);
-  ctx.fillStyle = "#3b2a63";
-  ctx.fillRect(10, 34, 30, 6);
+  SZGameKit.drawRectangle(6, 12, 40, 22, "#845ef7");
+  SZGameKit.drawRectangle(40, 6, 10, 16, "#845ef7");
+  SZGameKit.drawRectangle(10, 34, 30, 6, "#3b2a63");
 }, 52, 40);
 SZGameKit.defineLook("lobo", function (ctx) {
-  ctx.fillStyle = "#868e96";
-  ctx.fillRect(4, 12, 30, 16);
-  ctx.fillRect(30, 4, 12, 14);
-  ctx.fillRect(0, 8, 8, 8);
-  ctx.fillStyle = "#ffd43b";
-  ctx.fillRect(34, 8, 4, 4);
+  SZGameKit.drawRectangle(4, 12, 30, 16, "#868e96");
+  SZGameKit.drawRectangle(30, 4, 12, 14, "#868e96");
+  SZGameKit.drawRectangle(0, 8, 8, 8, "#868e96");
+  SZGameKit.drawRectangle(34, 8, 4, 4, "#ffd43b");
 }, 44, 34);
 SZGameKit.defineLook("arvore", function (ctx) {
-  ctx.fillStyle = "#7f5539";
-  ctx.fillRect(26, 58, 12, 38);
-  ctx.fillStyle = "#2b8a3e";
-  ctx.fillRect(6, 6, 52, 58);
+  SZGameKit.drawRectangle(26, 58, 12, 38, "#7f5539");
+  SZGameKit.drawRectangle(6, 6, 52, 58, "#2b8a3e");
 }, 64, 96);
 SZGameKit.defineLook("mato", function (ctx) {
-  ctx.fillStyle = "#37b24c";
-  ctx.fillRect(6, 24, 12, 36);
-  ctx.fillRect(26, 10, 12, 50);
-  ctx.fillRect(46, 26, 12, 34);
-  ctx.fillStyle = "#69db7c";
-  ctx.fillRect(16, 36, 10, 24);
+  SZGameKit.drawRectangle(6, 24, 12, 36, "#37b24c");
+  SZGameKit.drawRectangle(26, 10, 12, 50, "#37b24c");
+  SZGameKit.drawRectangle(46, 26, 12, 34, "#37b24c");
+  SZGameKit.drawRectangle(16, 36, 10, 24, "#69db7c");
 }, 64, 64);
 SZGameKit.defineEffect("folhas", { count: 12, color: "#69db7c", size: 5, life: 0.5, speed: 140, gravity: 300 });
 SZGameKit.defineEffect("faisca", { count: 10, color: "#ffe066", size: 4, life: 0.35, speed: 180, gravity: 0 });
@@ -224,10 +203,8 @@ SZGameKit.onDraw(function (ctx) {
 });
 SZGameKit.onDrawHud(function (ctx) {
   SZGameKit.drawHearts(SZGameKit.healthOf(heroi) / 20, 5, 20, 20);
-  ctx.fillStyle = "#123018";
-  ctx.font = "18px sans-serif";
-  ctx.fillText("Javalis: " + SZGameKit.countActive("javali"), 20, 72);
-  ctx.fillText("Lobos: " + SZGameKit.countActive("lobo"), 20, 96);
+  SZGameKit.drawText("Javalis: " + SZGameKit.countActive("javali"), 20, 72, 18, "#123018");
+  SZGameKit.drawText("Lobos: " + SZGameKit.countActive("lobo"), 20, 96, 18, "#123018");
 });
 `.trim()
 

@@ -8,31 +8,21 @@ export const numberRainExample: ExtensionExample = beginnerGameExample({
     'Colete 10 números pares e desvie dos ímpares. Use as setas ou o dedo para mover a cesta. Enter ou toque no botão para começar e jogar de novo.',
   ir: {
     version: 2,
-    html: [
-      {
-        type: 'canvas',
-        id: 'tela',
-        width: 600,
-        height: 400,
-      },
-    ],
-    css: [
-      {
-        selector: 'body',
-        declarations: {
-          margin: '0',
-          background: '#102030',
-        },
-      },
-      {
-        selector: 'canvas',
-        declarations: {
-          background: '#102030',
-        },
-      },
-    ],
+    html: [],
+    css: [],
     behavior: {
       start: [
+        {
+          type: 'g2d:setupStage',
+          width: 600,
+          height: 400,
+          bg: '#102030',
+        },
+        {
+          type: 'g2d:setStageDescription',
+          description:
+            'Colete 10 números pares e desvie dos ímpares. Use as setas ou o dedo para mover a cesta. Enter ou toque no botão para começar e jogar de novo.',
+        },
         {
           type: 'var',
           name: 'pontos',
@@ -613,31 +603,21 @@ export const textQuizExample: ExtensionExample = beginnerGameExample({
     'Use as teclas 1, 2 ou 3 ou toque na resposta correta. Cada alternativa é um sprite criado de uma lista. Enter avança após responder e reinicia ao terminar.',
   ir: {
     version: 2,
-    html: [
-      {
-        type: 'canvas',
-        id: 'tela',
-        width: 600,
-        height: 400,
-      },
-    ],
-    css: [
-      {
-        selector: 'body',
-        declarations: {
-          margin: '0',
-          background: '#102030',
-        },
-      },
-      {
-        selector: 'canvas',
-        declarations: {
-          background: '#102030',
-        },
-      },
-    ],
+    html: [],
+    css: [],
     behavior: {
       start: [
+        {
+          type: 'g2d:setupStage',
+          width: 600,
+          height: 400,
+          bg: '#102030',
+        },
+        {
+          type: 'g2d:setStageDescription',
+          description:
+            'Use as teclas 1, 2 ou 3 ou toque na resposta correta. Cada alternativa é um sprite criado de uma lista. Enter avança após responder e reinicia ao terminar.',
+        },
         {
           type: 'var',
           name: 'pergunta',

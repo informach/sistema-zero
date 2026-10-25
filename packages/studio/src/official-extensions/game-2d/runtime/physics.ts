@@ -200,7 +200,7 @@ export const gameTwoDPhysicsRuntime = `  // ---- Física ----
    * Move o sprite pela velocidade dele. NÃO mexe na gravidade — quem puxa para
    * baixo é o "Aplicar a gravidade do mundo", à parte.
    *
-   * ⚠️ Até 08/2026 este helper somava \`world.gravity\` no fim, e o bloco se
+   * ⚠️ Até 08/2026 este helper somava world.gravity no fim, e o bloco se
    * chamava "Aplicar velocidade E gravidade". Duas coisas num bloco só: o nome
    * mentia num jogo sem gravidade (Pong) e não existia passo intermediário para
    * ENSINAR queda — a criança não via "não cai" virar "cai" por causa de um

@@ -203,7 +203,7 @@ export const gameKitBlockDefinitions06: BlockDefinition[] = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     tooltip:
-      'A formação clássica: nasce em grade e o MOTOR marcha o bloco inteiro. Bate na borda, desce e acelera. Derrotar todos avisa "onda:limpa"; alcançar a linha avisa "onda:invadiu". Não mova os invasores você mesmo: a marcha é do motor.',
+      'Cria invasores em grade. O motor move o grupo, desce nas bordas e acelera. Derrotar todos avisa onda:limpa; alcançar a linha avisa onda:invadiu. Deixe a marcha por conta do motor.',
   },
 
   {
@@ -264,7 +264,7 @@ export const gameKitBlockDefinitions06: BlockDefinition[] = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     tooltip:
-      'A bomba-prêmio: quica pela tela; quando o SEU tiro a recolher (no "Quando se tocarem": Recolher a bomba), o motor explode. Onda de choque + recolhe o molde-alvo no raio + avisa "bomba:acertou" por vítima (some os pontos lá). No máximo 3 no ar.',
+      'Cria até 3 bombas que quicam pela tela. Quando o tiro coleta uma bomba, ela explode e tira os objetos-alvo no raio. Cada acerto envia bomba:acertou; some pontos nesse evento.',
   },
 
   // ==========================================================================
@@ -329,7 +329,7 @@ export const gameKitBlockDefinitions06: BlockDefinition[] = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     tooltip:
-      'Põe no LUGAR do bloco "Lutador" daquele lutador. Trocar um pelo outro é a diferença entre jogar sozinho e jogar com um amigo. Fácil quase não defende; difícil defende quase sempre, espera você errar o golpe e usa o especial quando a barra enche.',
+      'Substitui os controles de um lutador pelo computador. No fácil, defende pouco; no difícil, defende mais, aproveita golpes errados e usa o especial quando a barra enche.',
   },
 
   {
@@ -360,7 +360,7 @@ export const gameKitBlockDefinitions06: BlockDefinition[] = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     tooltip:
-      'A palavra escolhe o RITMO do golpe: rápido sai antes mas machuca pouco; pesado demora, mas se acertar o outro fica travado tempo bastante para você emendar outro golpe. É assim que nasce o combo. "Atravessa a defesa" vence quem só fica defendendo.',
+      'Rápido sai antes e causa menos dano; pesado demora e deixa tempo para combinar outro golpe. Atravessar a defesa acerta quem está defendendo. Escolha o ritmo de cada ataque.',
   },
 
   {

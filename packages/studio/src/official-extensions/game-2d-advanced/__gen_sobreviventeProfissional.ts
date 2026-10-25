@@ -30,33 +30,16 @@ SZGameKit.setup({ width: 960, height: 540, background: "#140f24", accent: "#9cff
 SZGameKit.setScreenText("menu", "Sobrevivente Profissional", "Setas ou WASD: fugir. O mouse mira e a arma atira sozinha. Aguente 90 segundos ou derrote 30 monstrinhos!", "Começar");
 SZGameKit.setScreenText("fim", "Os monstrinhos te alcançaram!", "O recorde fica guardado. Tente de novo!", "Tentar de novo");
 SZGameKit.defineLook("heroi", function (ctx) {
-  ctx.fillStyle = "#4f8fea";
-  ctx.beginPath();
-  ctx.arc(17, 17, 15, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.fillStyle = "#dbe9ff";
-  ctx.beginPath();
-  ctx.arc(12, 12, 4, 0, Math.PI * 2);
-  ctx.fill();
+  SZGameKit.drawCircle(17, 17, 15, "#4f8fea");
+  SZGameKit.drawCircle(12, 12, 4, "#dbe9ff");
 }, 34, 34);
 SZGameKit.defineLook("monstro", function (ctx) {
-  ctx.fillStyle = "#e05a5a";
-  ctx.beginPath();
-  ctx.arc(16, 16, 15, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.fillStyle = "#2a0f14";
-  ctx.beginPath();
-  ctx.arc(11, 13, 3, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.beginPath();
-  ctx.arc(21, 13, 3, 0, Math.PI * 2);
-  ctx.fill();
+  SZGameKit.drawCircle(16, 16, 15, "#e05a5a");
+  SZGameKit.drawCircle(11, 13, 3, "#2a0f14");
+  SZGameKit.drawCircle(21, 13, 3, "#2a0f14");
 }, 32, 32);
 SZGameKit.defineLook("bala", function (ctx) {
-  ctx.fillStyle = "#9cff57";
-  ctx.beginPath();
-  ctx.arc(5, 5, 5, 0, Math.PI * 2);
-  ctx.fill();
+  SZGameKit.drawCircle(5, 5, 5, "#9cff57");
 }, 10, 10);
 SZGameKit.defineMold("monstro", { w: 32, h: 32, health: 2, speed: 62, damage: 1, color: "#e05a5a", look: "monstro" });
 SZGameKit.defineMold("bala", { w: 10, h: 10, health: 1, speed: 0, damage: 0, color: "#9cff57", look: "bala" });
@@ -144,10 +127,8 @@ SZGameKit.onDraw(function (ctx) {
   SZGameKit.drawEffects();
 });
 SZGameKit.onDrawHud(function (ctx) {
-  ctx.fillStyle = "#f3f6ff";
-  ctx.font = "22px sans-serif";
-  ctx.fillText("Pontos: " + pontos, 20, 34);
-  ctx.fillText("Nivel: " + nivel, 20, 62);
+  SZGameKit.drawText("Pontos: " + pontos, 20, 34, 22, "#f3f6ff");
+  SZGameKit.drawText("Nivel: " + nivel, 20, 62, 22, "#f3f6ff");
   SZGameKit.drawTimer(820, 34);
   SZGameKit.drawBar(exp, nivel * 4, 20, 76, 160, 12, "#ffd166");
 });

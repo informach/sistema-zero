@@ -25,196 +25,92 @@ export const pongProfissionalExample: ExtensionExample = withIndependentPeriodic
       start: [
         {
           type: 'gk:setup',
-          w: {
-            type: 'num',
-            value: 680,
-          },
-          h: {
-            type: 'num',
-            value: 420,
-          },
+          w: { type: 'num', value: 680 },
+          h: { type: 'num', value: 420 },
           bg: '#0b1020',
           accent: '#22d3ee',
         },
         {
           type: 'gk:setScreenText',
           screen: 'menu',
-          title: {
-            type: 'str',
-            value: 'Pong Profissional',
-          },
+          title: { type: 'str', value: 'Pong Profissional' },
           text: {
             type: 'str',
             value:
               'Suba e desça a raquete com as setas. Rebata com a beirada para dar ângulo, e a bola acelera a cada troca. Faça 7 pontos!',
           },
-          button: {
-            type: 'str',
-            value: 'Jogar',
-          },
+          button: { type: 'str', value: 'Jogar' },
         },
         {
           type: 'gk:setScreenText',
           screen: 'vitoria',
-          title: {
-            type: 'str',
-            value: 'Você venceu!',
-          },
+          title: { type: 'str', value: 'Você venceu!' },
           text: {
             type: 'str',
             value: 'Chegou a 7 pontos antes do computador. Que reflexos de campeão!',
           },
-          button: {
-            type: 'str',
-            value: 'Jogar de novo',
-          },
+          button: { type: 'str', value: 'Jogar de novo' },
         },
         {
           type: 'gk:setScreenText',
           screen: 'fim',
-          title: {
-            type: 'str',
-            value: 'O computador venceu',
-          },
+          title: { type: 'str', value: 'O computador venceu' },
           text: {
             type: 'str',
             value: 'Ele fez 7 pontos primeiro. Use a beirada da raquete para dar ângulos difíceis!',
           },
-          button: {
-            type: 'str',
-            value: 'Tentar de novo',
-          },
+          button: { type: 'str', value: 'Tentar de novo' },
         },
         {
           type: 'gk:createCharacter',
           varName: 'jogador',
           image: '',
-          w: {
-            type: 'num',
-            value: 14,
-          },
-          h: {
-            type: 'num',
-            value: 74,
-          },
-          speed: {
-            type: 'num',
-            value: 0,
-          },
+          w: { type: 'num', value: 14 },
+          h: { type: 'num', value: 74 },
+          speed: { type: 'num', value: 0 },
           color: '#22d3ee',
         },
         {
           type: 'gk:placeCharacter',
           charVar: 'jogador',
-          x: {
-            type: 'num',
-            value: 30,
-          },
-          y: {
-            type: 'num',
-            value: 173,
-          },
+          x: { type: 'num', value: 30 },
+          y: { type: 'num', value: 173 },
         },
         {
           type: 'gk:createCharacter',
           varName: 'computador',
           image: '',
-          w: {
-            type: 'num',
-            value: 14,
-          },
-          h: {
-            type: 'num',
-            value: 74,
-          },
-          speed: {
-            type: 'num',
-            value: 0,
-          },
+          w: { type: 'num', value: 14 },
+          h: { type: 'num', value: 74 },
+          speed: { type: 'num', value: 0 },
           color: '#f472b6',
         },
         {
           type: 'gk:placeCharacter',
           charVar: 'computador',
-          x: {
-            type: 'num',
-            value: 636,
-          },
-          y: {
-            type: 'num',
-            value: 173,
-          },
+          x: { type: 'num', value: 636 },
+          y: { type: 'num', value: 173 },
         },
         {
           type: 'gk:createCharacter',
           varName: 'bola',
           image: '',
-          w: {
-            type: 'num',
-            value: 14,
-          },
-          h: {
-            type: 'num',
-            value: 14,
-          },
-          speed: {
-            type: 'num',
-            value: 0,
-          },
+          w: { type: 'num', value: 14 },
+          h: { type: 'num', value: 14 },
+          speed: { type: 'num', value: 0 },
           color: '#fbbf24',
         },
         {
           type: 'gk:placeCharacter',
           charVar: 'bola',
-          x: {
-            type: 'num',
-            value: 333,
-          },
-          y: {
-            type: 'num',
-            value: 203,
-          },
+          x: { type: 'num', value: 333 },
+          y: { type: 'num', value: 203 },
         },
-        {
-          type: 'var',
-          name: 'bolaVx',
-          value: {
-            type: 'num',
-            value: 320,
-          },
-        },
-        {
-          type: 'var',
-          name: 'bolaVy',
-          value: {
-            type: 'num',
-            value: 170,
-          },
-        },
-        {
-          type: 'var',
-          name: 'pontos',
-          value: {
-            type: 'num',
-            value: 0,
-          },
-        },
-        {
-          type: 'var',
-          name: 'pontosComputador',
-          value: {
-            type: 'num',
-            value: 0,
-          },
-        },
-        {
-          type: 'var',
-          name: 'trocas',
-          value: {
-            type: 'num',
-            value: 0,
-          },
-        },
+        { type: 'var', name: 'bolaVx', value: { type: 'num', value: 320 } },
+        { type: 'var', name: 'bolaVy', value: { type: 'num', value: 170 } },
+        { type: 'var', name: 'pontos', value: { type: 'num', value: 0 } },
+        { type: 'var', name: 'pontosComputador', value: { type: 'num', value: 0 } },
+        { type: 'var', name: 'trocas', value: { type: 'num', value: 0 } },
       ],
       events: [],
       loops: [
@@ -224,43 +120,25 @@ export const pongProfissionalExample: ExtensionExample = withIndependentPeriodic
           body: [
             {
               type: 'if',
-              cond: {
-                type: 'gk:stateIs',
-                name: 'jogando',
-              },
+              cond: { type: 'gk:stateIs', name: 'jogando' },
               then: [
                 {
                   type: 'if',
-                  cond: {
-                    type: 'gk:keyDown',
-                    key: 'arrowup',
-                  },
+                  cond: { type: 'gk:keyDown', key: 'arrowup' },
                   then: [
                     {
                       type: 'gk:placeCharacter',
                       charVar: 'jogador',
-                      x: {
-                        type: 'num',
-                        value: 30,
-                      },
+                      x: { type: 'num', value: 30 },
                       y: {
                         type: 'binop',
                         op: '-',
-                        left: {
-                          type: 'gk:charY',
-                          charVar: 'jogador',
-                        },
+                        left: { type: 'gk:charY', charVar: 'jogador' },
                         right: {
                           type: 'binop',
                           op: '*',
-                          left: {
-                            type: 'num',
-                            value: 420,
-                          },
-                          right: {
-                            type: 'var',
-                            name: 'dt',
-                          },
+                          left: { type: 'num', value: 420 },
+                          right: { type: 'var', name: 'dt' },
                         },
                       },
                     },
@@ -268,93 +146,54 @@ export const pongProfissionalExample: ExtensionExample = withIndependentPeriodic
                 },
                 {
                   type: 'if',
-                  cond: {
-                    type: 'gk:keyDown',
-                    key: 'arrowdown',
-                  },
+                  cond: { type: 'gk:keyDown', key: 'arrowdown' },
                   then: [
                     {
                       type: 'gk:placeCharacter',
                       charVar: 'jogador',
-                      x: {
-                        type: 'num',
-                        value: 30,
-                      },
+                      x: { type: 'num', value: 30 },
                       y: {
                         type: 'binop',
                         op: '+',
-                        left: {
-                          type: 'gk:charY',
-                          charVar: 'jogador',
-                        },
+                        left: { type: 'gk:charY', charVar: 'jogador' },
                         right: {
                           type: 'binop',
                           op: '*',
-                          left: {
-                            type: 'num',
-                            value: 420,
-                          },
-                          right: {
-                            type: 'var',
-                            name: 'dt',
-                          },
+                          left: { type: 'num', value: 420 },
+                          right: { type: 'var', name: 'dt' },
                         },
                       },
                     },
                   ],
                 },
-                {
-                  type: 'gk:keepOnScreen',
-                  charVar: 'jogador',
-                },
+                { type: 'gk:keepOnScreen', charVar: 'jogador' },
                 {
                   type: 'if',
                   cond: {
                     type: 'binop',
                     op: '>',
-                    left: {
-                      type: 'gk:charY',
-                      charVar: 'bola',
-                    },
+                    left: { type: 'gk:charY', charVar: 'bola' },
                     right: {
                       type: 'binop',
                       op: '+',
-                      left: {
-                        type: 'gk:charY',
-                        charVar: 'computador',
-                      },
-                      right: {
-                        type: 'num',
-                        value: 6,
-                      },
+                      left: { type: 'gk:charY', charVar: 'computador' },
+                      right: { type: 'num', value: 6 },
                     },
                   },
                   then: [
                     {
                       type: 'gk:placeCharacter',
                       charVar: 'computador',
-                      x: {
-                        type: 'num',
-                        value: 636,
-                      },
+                      x: { type: 'num', value: 636 },
                       y: {
                         type: 'binop',
                         op: '+',
-                        left: {
-                          type: 'gk:charY',
-                          charVar: 'computador',
-                        },
+                        left: { type: 'gk:charY', charVar: 'computador' },
                         right: {
                           type: 'binop',
                           op: '*',
-                          left: {
-                            type: 'num',
-                            value: 320,
-                          },
-                          right: {
-                            type: 'var',
-                            name: 'dt',
-                          },
+                          left: { type: 'num', value: 320 },
+                          right: { type: 'var', name: 'dt' },
                         },
                       },
                     },
@@ -365,101 +204,54 @@ export const pongProfissionalExample: ExtensionExample = withIndependentPeriodic
                   cond: {
                     type: 'binop',
                     op: '<',
-                    left: {
-                      type: 'gk:charY',
-                      charVar: 'bola',
-                    },
+                    left: { type: 'gk:charY', charVar: 'bola' },
                     right: {
                       type: 'binop',
                       op: '-',
-                      left: {
-                        type: 'gk:charY',
-                        charVar: 'computador',
-                      },
-                      right: {
-                        type: 'num',
-                        value: 6,
-                      },
+                      left: { type: 'gk:charY', charVar: 'computador' },
+                      right: { type: 'num', value: 6 },
                     },
                   },
                   then: [
                     {
                       type: 'gk:placeCharacter',
                       charVar: 'computador',
-                      x: {
-                        type: 'num',
-                        value: 636,
-                      },
+                      x: { type: 'num', value: 636 },
                       y: {
                         type: 'binop',
                         op: '-',
-                        left: {
-                          type: 'gk:charY',
-                          charVar: 'computador',
-                        },
+                        left: { type: 'gk:charY', charVar: 'computador' },
                         right: {
                           type: 'binop',
                           op: '*',
-                          left: {
-                            type: 'num',
-                            value: 320,
-                          },
-                          right: {
-                            type: 'var',
-                            name: 'dt',
-                          },
+                          left: { type: 'num', value: 320 },
+                          right: { type: 'var', name: 'dt' },
                         },
                       },
                     },
                   ],
                 },
-                {
-                  type: 'gk:keepOnScreen',
-                  charVar: 'computador',
-                },
+                { type: 'gk:keepOnScreen', charVar: 'computador' },
                 {
                   type: 'gk:setVelocity',
                   charVar: 'bola',
-                  vx: {
-                    type: 'var',
-                    name: 'bolaVx',
-                  },
-                  vy: {
-                    type: 'var',
-                    name: 'bolaVy',
-                  },
+                  vx: { type: 'var', name: 'bolaVx' },
+                  vy: { type: 'var', name: 'bolaVy' },
                 },
-                {
-                  type: 'gk:moveByVelocity',
-                  charVar: 'bola',
-                  dtVar: 'dt',
-                },
+                { type: 'gk:moveByVelocity', charVar: 'bola', dtVar: 'dt' },
                 {
                   type: 'if',
                   cond: {
                     type: 'binop',
                     op: '<=',
-                    left: {
-                      type: 'gk:charY',
-                      charVar: 'bola',
-                    },
-                    right: {
-                      type: 'num',
-                      value: 0,
-                    },
+                    left: { type: 'gk:charY', charVar: 'bola' },
+                    right: { type: 'num', value: 0 },
                   },
                   then: [
                     {
                       type: 'assign',
                       name: 'bolaVy',
-                      value: {
-                        type: 'mathUnary',
-                        fn: 'abs',
-                        arg: {
-                          type: 'var',
-                          name: 'bolaVy',
-                        },
-                      },
+                      value: { type: 'mathUnary', fn: 'abs', arg: { type: 'var', name: 'bolaVy' } },
                     },
                   ],
                 },
@@ -471,19 +263,10 @@ export const pongProfissionalExample: ExtensionExample = withIndependentPeriodic
                     left: {
                       type: 'binop',
                       op: '+',
-                      left: {
-                        type: 'gk:charY',
-                        charVar: 'bola',
-                      },
-                      right: {
-                        type: 'num',
-                        value: 14,
-                      },
+                      left: { type: 'gk:charY', charVar: 'bola' },
+                      right: { type: 'num', value: 14 },
                     },
-                    right: {
-                      type: 'num',
-                      value: 420,
-                    },
+                    right: { type: 'num', value: 420 },
                   },
                   then: [
                     {
@@ -492,17 +275,11 @@ export const pongProfissionalExample: ExtensionExample = withIndependentPeriodic
                       value: {
                         type: 'binop',
                         op: '-',
-                        left: {
-                          type: 'num',
-                          value: 0,
-                        },
+                        left: { type: 'num', value: 0 },
                         right: {
                           type: 'mathUnary',
                           fn: 'abs',
-                          arg: {
-                            type: 'var',
-                            name: 'bolaVy',
-                          },
+                          arg: { type: 'var', name: 'bolaVy' },
                         },
                       },
                     },
@@ -513,22 +290,12 @@ export const pongProfissionalExample: ExtensionExample = withIndependentPeriodic
                   cond: {
                     type: 'logical',
                     op: '&&',
-                    left: {
-                      type: 'gk:charactersTouch',
-                      aVar: 'jogador',
-                      bVar: 'bola',
-                    },
+                    left: { type: 'gk:charactersTouch', aVar: 'jogador', bVar: 'bola' },
                     right: {
                       type: 'binop',
                       op: '<',
-                      left: {
-                        type: 'var',
-                        name: 'bolaVx',
-                      },
-                      right: {
-                        type: 'num',
-                        value: 0,
-                      },
+                      left: { type: 'var', name: 'bolaVx' },
+                      right: { type: 'num', value: 0 },
                     },
                   },
                   then: [
@@ -541,15 +308,9 @@ export const pongProfissionalExample: ExtensionExample = withIndependentPeriodic
                         left: {
                           type: 'mathUnary',
                           fn: 'abs',
-                          arg: {
-                            type: 'var',
-                            name: 'bolaVx',
-                          },
+                          arg: { type: 'var', name: 'bolaVx' },
                         },
-                        right: {
-                          type: 'num',
-                          value: 24,
-                        },
+                        right: { type: 'num', value: 24 },
                       },
                     },
                     {
@@ -558,10 +319,7 @@ export const pongProfissionalExample: ExtensionExample = withIndependentPeriodic
                       value: {
                         type: 'binop',
                         op: '+',
-                        left: {
-                          type: 'var',
-                          name: 'bolaVy',
-                        },
+                        left: { type: 'var', name: 'bolaVy' },
                         right: {
                           type: 'binop',
                           op: '*',
@@ -571,24 +329,12 @@ export const pongProfissionalExample: ExtensionExample = withIndependentPeriodic
                             left: {
                               type: 'binop',
                               op: '-',
-                              left: {
-                                type: 'gk:charY',
-                                charVar: 'bola',
-                              },
-                              right: {
-                                type: 'gk:charY',
-                                charVar: 'jogador',
-                              },
+                              left: { type: 'gk:charY', charVar: 'bola' },
+                              right: { type: 'gk:charY', charVar: 'jogador' },
                             },
-                            right: {
-                              type: 'num',
-                              value: 30,
-                            },
+                            right: { type: 'num', value: 30 },
                           },
-                          right: {
-                            type: 'num',
-                            value: 6,
-                          },
+                          right: { type: 'num', value: 6 },
                         },
                       },
                     },
@@ -598,20 +344,11 @@ export const pongProfissionalExample: ExtensionExample = withIndependentPeriodic
                       value: {
                         type: 'binop',
                         op: '+',
-                        left: {
-                          type: 'var',
-                          name: 'trocas',
-                        },
-                        right: {
-                          type: 'num',
-                          value: 1,
-                        },
+                        left: { type: 'var', name: 'trocas' },
+                        right: { type: 'num', value: 1 },
                       },
                     },
-                    {
-                      type: 'gk:playEffect',
-                      fx: 'coin',
-                    },
+                    { type: 'gk:playEffect', fx: 'coin' },
                   ],
                 },
                 {
@@ -619,22 +356,12 @@ export const pongProfissionalExample: ExtensionExample = withIndependentPeriodic
                   cond: {
                     type: 'logical',
                     op: '&&',
-                    left: {
-                      type: 'gk:charactersTouch',
-                      aVar: 'computador',
-                      bVar: 'bola',
-                    },
+                    left: { type: 'gk:charactersTouch', aVar: 'computador', bVar: 'bola' },
                     right: {
                       type: 'binop',
                       op: '>',
-                      left: {
-                        type: 'var',
-                        name: 'bolaVx',
-                      },
-                      right: {
-                        type: 'num',
-                        value: 0,
-                      },
+                      left: { type: 'var', name: 'bolaVx' },
+                      right: { type: 'num', value: 0 },
                     },
                   },
                   then: [
@@ -647,23 +374,14 @@ export const pongProfissionalExample: ExtensionExample = withIndependentPeriodic
                         left: {
                           type: 'binop',
                           op: '-',
-                          left: {
-                            type: 'num',
-                            value: 0,
-                          },
+                          left: { type: 'num', value: 0 },
                           right: {
                             type: 'mathUnary',
                             fn: 'abs',
-                            arg: {
-                              type: 'var',
-                              name: 'bolaVx',
-                            },
+                            arg: { type: 'var', name: 'bolaVx' },
                           },
                         },
-                        right: {
-                          type: 'num',
-                          value: 24,
-                        },
+                        right: { type: 'num', value: 24 },
                       },
                     },
                     {
@@ -672,10 +390,7 @@ export const pongProfissionalExample: ExtensionExample = withIndependentPeriodic
                       value: {
                         type: 'binop',
                         op: '+',
-                        left: {
-                          type: 'var',
-                          name: 'bolaVy',
-                        },
+                        left: { type: 'var', name: 'bolaVy' },
                         right: {
                           type: 'binop',
                           op: '*',
@@ -685,24 +400,12 @@ export const pongProfissionalExample: ExtensionExample = withIndependentPeriodic
                             left: {
                               type: 'binop',
                               op: '-',
-                              left: {
-                                type: 'gk:charY',
-                                charVar: 'bola',
-                              },
-                              right: {
-                                type: 'gk:charY',
-                                charVar: 'computador',
-                              },
+                              left: { type: 'gk:charY', charVar: 'bola' },
+                              right: { type: 'gk:charY', charVar: 'computador' },
                             },
-                            right: {
-                              type: 'num',
-                              value: 30,
-                            },
+                            right: { type: 'num', value: 30 },
                           },
-                          right: {
-                            type: 'num',
-                            value: 6,
-                          },
+                          right: { type: 'num', value: 6 },
                         },
                       },
                     },
@@ -712,20 +415,11 @@ export const pongProfissionalExample: ExtensionExample = withIndependentPeriodic
                       value: {
                         type: 'binop',
                         op: '+',
-                        left: {
-                          type: 'var',
-                          name: 'trocas',
-                        },
-                        right: {
-                          type: 'num',
-                          value: 1,
-                        },
+                        left: { type: 'var', name: 'trocas' },
+                        right: { type: 'num', value: 1 },
                       },
                     },
-                    {
-                      type: 'gk:playEffect',
-                      fx: 'coin',
-                    },
+                    { type: 'gk:playEffect', fx: 'coin' },
                   ],
                 },
                 {
@@ -733,14 +427,8 @@ export const pongProfissionalExample: ExtensionExample = withIndependentPeriodic
                   cond: {
                     type: 'binop',
                     op: '<',
-                    left: {
-                      type: 'gk:charX',
-                      charVar: 'bola',
-                    },
-                    right: {
-                      type: 'num',
-                      value: 0,
-                    },
+                    left: { type: 'gk:charX', charVar: 'bola' },
+                    right: { type: 'num', value: 0 },
                   },
                   then: [
                     {
@@ -749,67 +437,25 @@ export const pongProfissionalExample: ExtensionExample = withIndependentPeriodic
                       value: {
                         type: 'binop',
                         op: '+',
-                        left: {
-                          type: 'var',
-                          name: 'pontosComputador',
-                        },
-                        right: {
-                          type: 'num',
-                          value: 1,
-                        },
+                        left: { type: 'var', name: 'pontosComputador' },
+                        right: { type: 'num', value: 1 },
                       },
                     },
                     {
                       type: 'gk:cameraShake',
-                      intensity: {
-                        type: 'num',
-                        value: 6,
-                      },
-                      seconds: {
-                        type: 'num',
-                        value: 0.3,
-                      },
+                      intensity: { type: 'num', value: 6 },
+                      seconds: { type: 'num', value: 0.3 },
                     },
-                    {
-                      type: 'gk:playEffect',
-                      fx: 'hit',
-                    },
+                    { type: 'gk:playEffect', fx: 'hit' },
                     {
                       type: 'gk:placeCharacter',
                       charVar: 'bola',
-                      x: {
-                        type: 'num',
-                        value: 333,
-                      },
-                      y: {
-                        type: 'num',
-                        value: 203,
-                      },
+                      x: { type: 'num', value: 333 },
+                      y: { type: 'num', value: 203 },
                     },
-                    {
-                      type: 'assign',
-                      name: 'bolaVx',
-                      value: {
-                        type: 'num',
-                        value: 320,
-                      },
-                    },
-                    {
-                      type: 'assign',
-                      name: 'bolaVy',
-                      value: {
-                        type: 'num',
-                        value: 170,
-                      },
-                    },
-                    {
-                      type: 'assign',
-                      name: 'trocas',
-                      value: {
-                        type: 'num',
-                        value: 0,
-                      },
-                    },
+                    { type: 'assign', name: 'bolaVx', value: { type: 'num', value: 320 } },
+                    { type: 'assign', name: 'bolaVy', value: { type: 'num', value: 170 } },
+                    { type: 'assign', name: 'trocas', value: { type: 'num', value: 0 } },
                   ],
                 },
                 {
@@ -817,14 +463,8 @@ export const pongProfissionalExample: ExtensionExample = withIndependentPeriodic
                   cond: {
                     type: 'binop',
                     op: '>',
-                    left: {
-                      type: 'gk:charX',
-                      charVar: 'bola',
-                    },
-                    right: {
-                      type: 'num',
-                      value: 680,
-                    },
+                    left: { type: 'gk:charX', charVar: 'bola' },
+                    right: { type: 'num', value: 680 },
                   },
                   then: [
                     {
@@ -833,42 +473,21 @@ export const pongProfissionalExample: ExtensionExample = withIndependentPeriodic
                       value: {
                         type: 'binop',
                         op: '+',
-                        left: {
-                          type: 'var',
-                          name: 'pontos',
-                        },
-                        right: {
-                          type: 'num',
-                          value: 1,
-                        },
+                        left: { type: 'var', name: 'pontos' },
+                        right: { type: 'num', value: 1 },
                       },
                     },
                     {
                       type: 'gk:cameraShake',
-                      intensity: {
-                        type: 'num',
-                        value: 6,
-                      },
-                      seconds: {
-                        type: 'num',
-                        value: 0.3,
-                      },
+                      intensity: { type: 'num', value: 6 },
+                      seconds: { type: 'num', value: 0.3 },
                     },
-                    {
-                      type: 'gk:playEffect',
-                      fx: 'coin',
-                    },
+                    { type: 'gk:playEffect', fx: 'coin' },
                     {
                       type: 'gk:placeCharacter',
                       charVar: 'bola',
-                      x: {
-                        type: 'num',
-                        value: 333,
-                      },
-                      y: {
-                        type: 'num',
-                        value: 203,
-                      },
+                      x: { type: 'num', value: 333 },
+                      y: { type: 'num', value: 203 },
                     },
                     {
                       type: 'assign',
@@ -876,14 +495,8 @@ export const pongProfissionalExample: ExtensionExample = withIndependentPeriodic
                       value: {
                         type: 'binop',
                         op: '-',
-                        left: {
-                          type: 'num',
-                          value: 0,
-                        },
-                        right: {
-                          type: 'num',
-                          value: 320,
-                        },
+                        left: { type: 'num', value: 0 },
+                        right: { type: 'num', value: 320 },
                       },
                     },
                     {
@@ -892,24 +505,11 @@ export const pongProfissionalExample: ExtensionExample = withIndependentPeriodic
                       value: {
                         type: 'binop',
                         op: '-',
-                        left: {
-                          type: 'num',
-                          value: 0,
-                        },
-                        right: {
-                          type: 'num',
-                          value: 170,
-                        },
+                        left: { type: 'num', value: 0 },
+                        right: { type: 'num', value: 170 },
                       },
                     },
-                    {
-                      type: 'assign',
-                      name: 'trocas',
-                      value: {
-                        type: 'num',
-                        value: 0,
-                      },
-                    },
+                    { type: 'assign', name: 'trocas', value: { type: 'num', value: 0 } },
                   ],
                 },
                 {
@@ -917,42 +517,20 @@ export const pongProfissionalExample: ExtensionExample = withIndependentPeriodic
                   cond: {
                     type: 'binop',
                     op: '>=',
-                    left: {
-                      type: 'var',
-                      name: 'pontos',
-                    },
-                    right: {
-                      type: 'num',
-                      value: 7,
-                    },
+                    left: { type: 'var', name: 'pontos' },
+                    right: { type: 'num', value: 7 },
                   },
-                  then: [
-                    {
-                      type: 'gk:setState',
-                      name: 'vitoria',
-                    },
-                  ],
+                  then: [{ type: 'gk:setState', name: 'vitoria' }],
                 },
                 {
                   type: 'if',
                   cond: {
                     type: 'binop',
                     op: '>=',
-                    left: {
-                      type: 'var',
-                      name: 'pontosComputador',
-                    },
-                    right: {
-                      type: 'num',
-                      value: 7,
-                    },
+                    left: { type: 'var', name: 'pontosComputador' },
+                    right: { type: 'num', value: 7 },
                   },
-                  then: [
-                    {
-                      type: 'gk:setState',
-                      name: 'fim',
-                    },
-                  ],
+                  then: [{ type: 'gk:setState', name: 'fim' }],
                 },
               ],
             },
@@ -962,23 +540,10 @@ export const pongProfissionalExample: ExtensionExample = withIndependentPeriodic
           type: 'gk:onDraw',
           ctxName: 'ctx',
           body: [
-            {
-              type: 'gk:drawBackground',
-              color: '#0b1020',
-              grid: false,
-            },
-            {
-              type: 'gk:drawCharacter',
-              charVar: 'jogador',
-            },
-            {
-              type: 'gk:drawCharacter',
-              charVar: 'computador',
-            },
-            {
-              type: 'gk:drawCharacter',
-              charVar: 'bola',
-            },
+            { type: 'gk:drawBackground', color: '#0b1020', grid: false },
+            { type: 'gk:drawCharacter', charVar: 'jogador' },
+            { type: 'gk:drawCharacter', charVar: 'computador' },
+            { type: 'gk:drawCharacter', charVar: 'bola' },
           ],
         },
         {
@@ -986,112 +551,43 @@ export const pongProfissionalExample: ExtensionExample = withIndependentPeriodic
           ctxName: 'ctx',
           body: [
             {
-              type: 'canvasFillStyle',
-              ctxVar: 'ctx',
-              color: {
-                type: 'color',
-                value: '#22d3ee',
-              },
-            },
-            {
-              type: 'canvasFont',
-              ctxVar: 'ctx',
-              size: 30,
-              family: 'sans-serif',
-            },
-            {
-              type: 'canvasFillText',
-              ctxVar: 'ctx',
+              type: 'gk:drawText',
               text: {
                 type: 'binop',
                 op: '+',
-                left: {
-                  type: 'str',
-                  value: 'Você: ',
-                },
-                right: {
-                  type: 'var',
-                  name: 'pontos',
-                },
+                left: { type: 'str', value: 'Você: ' },
+                right: { type: 'var', name: 'pontos' },
               },
-              x: {
-                type: 'num',
-                value: 30,
-              },
-              y: {
-                type: 'num',
-                value: 44,
-              },
+              x: { type: 'num', value: 30 },
+              y: { type: 'num', value: 44 },
+              size: { type: 'num', value: 30 },
+              color: { type: 'color', value: '#22d3ee' },
             },
             {
-              type: 'canvasFillStyle',
-              ctxVar: 'ctx',
-              color: {
-                type: 'color',
-                value: '#f472b6',
-              },
-            },
-            {
-              type: 'canvasFillText',
-              ctxVar: 'ctx',
+              type: 'gk:drawText',
               text: {
                 type: 'binop',
                 op: '+',
-                left: {
-                  type: 'str',
-                  value: 'PC: ',
-                },
-                right: {
-                  type: 'var',
-                  name: 'pontosComputador',
-                },
+                left: { type: 'str', value: 'PC: ' },
+                right: { type: 'var', name: 'pontosComputador' },
               },
-              x: {
-                type: 'num',
-                value: 560,
-              },
-              y: {
-                type: 'num',
-                value: 44,
-              },
+              x: { type: 'num', value: 560 },
+              y: { type: 'num', value: 44 },
+              size: { type: 'num', value: 30 },
+              color: { type: 'color', value: '#f472b6' },
             },
             {
-              type: 'canvasFillStyle',
-              ctxVar: 'ctx',
-              color: {
-                type: 'color',
-                value: '#94a3b8',
-              },
-            },
-            {
-              type: 'canvasFont',
-              ctxVar: 'ctx',
-              size: 18,
-              family: 'sans-serif',
-            },
-            {
-              type: 'canvasFillText',
-              ctxVar: 'ctx',
+              type: 'gk:drawText',
               text: {
                 type: 'binop',
                 op: '+',
-                left: {
-                  type: 'str',
-                  value: 'Trocas seguidas: ',
-                },
-                right: {
-                  type: 'var',
-                  name: 'trocas',
-                },
+                left: { type: 'str', value: 'Trocas seguidas: ' },
+                right: { type: 'var', name: 'trocas' },
               },
-              x: {
-                type: 'num',
-                value: 258,
-              },
-              y: {
-                type: 'num',
-                value: 40,
-              },
+              x: { type: 'num', value: 258 },
+              y: { type: 'num', value: 40 },
+              size: { type: 'num', value: 18 },
+              color: { type: 'color', value: '#94a3b8' },
             },
           ],
         },

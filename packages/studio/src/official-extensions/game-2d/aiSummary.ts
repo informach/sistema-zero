@@ -26,20 +26,15 @@ registrar Enter para começar/reiniciar; atualizar e desenhar somente na tela
 “jogando”; mostrar instruções, vitória e derrota nas telas correspondentes.
 Jogos precisam de controles, objetivo alcançável, feedback e novo jogo.
 
-TEXTO E NÚMEROS: criar sprite com texto aceita variáveis, contas e itens de listas.
-Criar no grupo gera instâncias independentes em laços. Mudar texto e configurar
-tamanho/cor/caixa preserva a física. Guardar/ler dados do sprite separa número ou
-resposta correta da aparência. Eventos de clique/toque no sprite ou grupo
-identificam a alternativa escolhida, inclusive sprites criados depois. O Escrever
-do HUD também aceita expressões. Receitas: Chuva de números e Quiz de números.
+TEXTO E NÚMEROS: sprites de texto aceitam variáveis, contas e listas. Criar no grupo
+gera cópias independentes. Os dados do sprite separam resposta e aparência. Cliques
+identificam alternativas, inclusive criadas depois. Receitas: Chuva de números e Quiz.
 
-IMAGENS E MAPAS: use assets do projeto; nomes precisam coincidir. Tilemaps vêm do
-Pinta/upload ou de uma grade declarada pela criança, nunca de cenário inventado
-automaticamente. Sprites sem imagem continuam visíveis por cor. Mapa guarda tiles:
-prepare-o UMA vez com “encaixar na tela” ou “posicionar no mundo” e depois apenas
-desenhe com drawTileMap(ctx, mapa). Posição e tamanho pertencem ao preparo do mapa.
-Para arte sem arquivos, use tiles vetoriais ligados a Figuras. Em blocos de prêmio,
-teste o índice do contato antes de trocar a célula.
+IMAGENS E MAPAS: use assets do projeto com os nomes corretos. Mapas vêm do Pinta,
+upload ou grade da criança; não invente cenário automático. Prepare tamanho e posição
+UMA vez, depois desenhe com drawTileMap(ctx, mapa). Sprites sem imagem usam cor.
+Arte sem arquivos usa Figuras e tiles vetoriais. Confira o índice do contato antes
+de trocar um tile de prêmio.
 
 MAPA → MUNDO → FASE: Mundo é a área física (limites, mapas, figuras sólidas ou
 plataformas e câmera) e pode existir sem Fases. Fase é opcional e genérica: Mundo +
@@ -53,17 +48,14 @@ Para jogo de uma tela use só o necessário; para mapa rolável, prefira câmera
 O runtime prepara automaticamente os metadados internos do canvas e anuncia as
 telas de início, vitória e derrota sem repetir a cada quadro.
 
-GRAVIDADE EXPLÍCITA: setGravity só define o valor do mundo (padrão 0,6) e não move
-nada. Em cada quadro, use applyGravity(sprite) antes do bloco que movimenta somente
-os sprites que devem cair. Para terreno real, use platformerWithTerrain ou
-jumpWithTerrain e depois collideWorld/collideCurrentLevel. O platformer antigo usa
-a borda da tela como chão e fica restrito ao jogo de uma tela. Para grupos, use
-applyGravityToGroup(grupo) antes de updateGroup ou do atualizador de inimigos.
-Nenhum helper de movimento acrescenta gravidade escondida.
-Para plataforma clássica, o helper dedicado inclui aceleração, corrida, agachamento,
-gravidade e pulo variável e usa ações semânticas de teclado/multitoque. Ative os controles
-uma vez em Ao iniciar e registre “Quando a ação for apertada” em ⚡ Quando acontecer; a ação
-pausar não altera o estado do jogo implicitamente.
+GRAVIDADE EXPLÍCITA: setGravity define o valor (padrão 0,6), sem mover. A cada quadro,
+applyGravity vem antes do movimento dos sprites que caem. No terreno, use
+platformerWithTerrain/jumpWithTerrain e collideWorld/collideCurrentLevel. Platformer
+simples usa a borda como chão. Nos grupos, applyGravityToGroup vem antes de updateGroup
+ou do atualizador de inimigos. Os helpers comuns não acrescentam gravidade.
+Exceção: plataforma clássica inclui gravidade, aceleração e pulo variável. Ative os
+controles semânticos uma vez em Ao iniciar e registre ações em Quando acontecer.
+A ação pausar não muda o estado implicitamente.
 
 VIDAS: inicialize a vida do sprite uma vez em ⚙️ Ao iniciar. Para contato contínuo,
 use o bloco de machucar com invencibilidade; para perguntar pelo fim, prefira “as
@@ -71,7 +63,11 @@ vidas acabaram?”. “O sprite está invencível?” reflete se um novo dano se
 combine com “não” antes de efeitos de dano. O HUD automático recebe o sprite e escolhe corações ou barra.
 Sprite sem vida inicializada não é tratado como morto.
 
-REGRAS: não misture com Jogo 2D Avançado. Não use bibliotecas externas nem JS cru
-quando houver bloco equivalente. A paleta completa permanece disponível; as aulas
-escolhem explicitamente quais blocos apresentar.
+NÚCLEO INICIAL: quatro exemplos (Pegue a moeda, Herói que anda, Mini plataforma,
+Sala com paredes), Cadê Todo Mundo? e A Chave do Farol. Todo Jogo 2D pertence ao
+Iniciante 2D; as aulas apresentam as ferramentas gradualmente.
+
+REGRAS: use Programação para regras e Jogo 2D para tela, desenho e interface.
+Sem blocos HTML, CSS, SVG, Canvas ou código cru. A etapa direta usa HTML/CSS/Canvas
+sem extensões. Não misture Jogo 2D Avançado nem bibliotecas externas.
 ${sceneSummary}`)

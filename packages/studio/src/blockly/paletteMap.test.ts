@@ -42,6 +42,9 @@ const toolbox = buildCoreToolbox(
 )
 const real = new Map<string, string[]>()
 walkToolbox(toolbox.contents as Node[], [], real)
+// The map serves both stages. A game palette deliberately omits manual visual
+// tools; their paths are verified against the project without an extension.
+walkToolbox(buildCoreToolbox([], FULL_LEARNING_PROFILE).contents as Node[], [], real)
 
 describe('paletteMap × paleta real', () => {
   it('todo bloco da paleta tem o MESMO caminho no mapa', () => {
@@ -59,7 +62,7 @@ describe('paletteMap × paleta real', () => {
     expect(divergentes).toEqual([])
   })
 
-  it('a paleta e o mapa cobrem o mesmo conjunto de blocos', () => {
+  it('as paletas das etapas com extensão e manual cobrem o mesmo conjunto do mapa', () => {
     // 🧩 Funções e 🏛️ Classes são flyouts DINÂMICOS (`custom:`): não têm conteúdo
     // estático para andar, então o mapa conhece blocos que a árvore não mostra.
     const dinamicas = new Set(

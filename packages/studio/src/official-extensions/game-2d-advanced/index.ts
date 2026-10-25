@@ -18,7 +18,7 @@ export const gameKitExtension: ExtensionDefinition = {
   manifest: gameKitManifest,
   documentation: defineExtensionDocumentation(async () => (await import('./docs')).gameKitDocs),
   examples: defineExtensionExamples(
-    38,
+    48,
     async () => (await import('./exampleCatalog')).gameKitExamples,
   ),
   conflictsWith: fullscreenConflictsFor('game-2d-advanced'),

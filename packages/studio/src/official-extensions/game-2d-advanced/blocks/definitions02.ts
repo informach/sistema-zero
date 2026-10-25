@@ -50,7 +50,7 @@ export const gameKitBlockDefinitions02: BlockDefinition[] = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Toca uma faixa de quadros da folha, em loop. Pode rodar TODO quadro sem medo: repetir a mesma animação não a reinicia (guarda de transição, como os profissionais fazem). Desenhou no Pinta? O seletor lista as animações da folha.',
+      'Repete os quadros da animação. Pedir a mesma animação a cada quadro não a reinicia. O seletor também lista as animações nomeadas no Pinta.',
   },
 
   {
@@ -68,7 +68,7 @@ export const gameKitBlockDefinitions02: BlockDefinition[] = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Cola uma folha de ANDAR no personagem: 4 linhas (baixo, cima, esquerda, direita), cada uma com os quadros do passo. O motor escolhe a linha pela direção que ele olha e anima quando anda (parado = 1º quadro). É o personagem de RPG vivo, andando em qualquer direção.',
+      'Usa uma folha com quatro linhas: baixo, cima, esquerda e direita. O motor escolhe a direção, anima quando anda e mostra o primeiro quadro quando para.',
   },
 
   // ---- 🎥 Câmera ----
@@ -574,7 +574,7 @@ export const gameKitBlockDefinitions02: BlockDefinition[] = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Cria o lugar da aventura. Com bordas, largura e altura limitam o movimento (até 512 × 512 células). Sem limites, esses tamanhos não barram o herói. Desenhe aqui ou no evento “Desenhar o jogo”, usando formas, mapas do Pinta ou imagens.',
+      'Cria o lugar da aventura. Com bordas, limita o movimento a até 512 × 512 células. Sem limites, o herói pode sair. Desenhe com as figuras da extensão, mapas do Pinta ou imagens.',
   },
 
   {
@@ -672,7 +672,7 @@ export const gameKitBlockDefinitions02: BlockDefinition[] = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Define a vida, a força e a DEFESA do SEU lado nas batalhas (a defesa reduz o dano recebido). A energia começa cheia; a vida atravessa as batalhas até você curar, perder ou subir de nível. Use uma vez, no começo. É o seu nível 1.',
+      'Define vida, força e defesa do herói. A energia começa cheia; a vida atravessa as batalhas até curar, perder ou subir de nível. Use uma vez em Ao iniciar.',
   },
 
   {
@@ -691,7 +691,7 @@ export const gameKitBlockDefinitions02: BlockDefinition[] = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Abre a batalha por TURNOS com o menu pronto: Atacar (força ± 20% − defesa/2), Especial (gasta energia), Item (usa poção), Defender (dano pela metade) e Fugir (50%). A imagem é um desenho do Pinta. Escolha direto, não precisa "Carregar" antes (vazio = retângulo da cor). O mundo espera a batalha acabar. (É a batalha por TURNOS do ⚔️ Kit RPG. Para cartas use o 🃏 Kit Cartas; para bichinhos, o 👾 Kit Monstrinhos.)',
+      'Começa a batalha por turnos do Kit RPG e pausa o mundo. Atacar, Especial, Item, Defender e Fugir já vêm prontos. Escolha uma imagem do Pinta; vazia usa a cor.',
   },
 
   {
@@ -736,7 +736,7 @@ export const gameKitBlockDefinitions02: BlockDefinition[] = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Recupera a vida do herói ao MÁXIMO, FORA da batalha (a estalagem, um save, um checkpoint). Como o herói CARREGA o dano de uma luta para a outra, é assim que ele se recupera. Subir de nível também cura; perder uma batalha recomeça com a vida cheia.',
+      'Recupera toda a vida do herói fora da batalha. Serve para estalagens, pontos de retorno e descanso. Subir de nível também cura; perder recomeça com vida cheia.',
   },
 
   {
@@ -801,7 +801,7 @@ export const gameKitBlockDefinitions02: BlockDefinition[] = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Põe um aliado no SEU time de batalha (até 5 além do herói, que já entra sozinho). Na batalha em equipe você comanda cada um: escolhe o golpe e o alvo. A imagem é um desenho do Pinta. Escolha direto, não precisa "Carregar" antes (vazio = retângulo da cor). O time fica salvo entre batalhas. Use no começo, nunca num laço.',
+      'Acrescenta até 5 aliados além do herói. Você escolhe seus golpes e alvos na batalha em equipe. O time permanece entre batalhas. Escolha a imagem do Pinta. Use no começo, fora de laços.',
   },
 
   {
@@ -821,7 +821,7 @@ export const gameKitBlockDefinitions02: BlockDefinition[] = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Adiciona um dos até 5 inimigos extras da PRÓXIMA batalha (além do principal). Assim a luta vira vários contra vários. A imagem é um desenho do Pinta. Escolha direto, não precisa "Carregar" antes (vazio = retângulo da cor). Use antes de "Começar a batalha", nunca num laço.',
+      'Acrescenta um dos até 5 inimigos extras da próxima batalha, além do principal. Escolha a imagem do Pinta. Use antes de Começar a batalha, fora de laços.',
   },
 
   {
@@ -839,7 +839,7 @@ export const gameKitBlockDefinitions02: BlockDefinition[] = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Ensina um golpe NOMEADO ao herói ("Você"), a aliados ou inimigos pelo nome. Cada combatente pode ter vários golpes; o golpe gasta energia quando é usado. Os golpes do time aparecem no painel, e os inimigos escolhem apenas os que conseguem pagar. Use no começo.',
+      'Ensina um golpe ao herói, a aliados ou a inimigos pelo nome. O golpe gasta energia; o computador escolhe apenas golpes que consegue pagar. Use no começo.',
   },
 
   {
@@ -915,7 +915,7 @@ export const gameKitBlockDefinitions02: BlockDefinition[] = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Como "Adicionar inimigo", ocupa uma das 5 vagas de inimigos extras, mas aparece MAIOR, com barra de vida grande e o nome com coroa. A imagem é um desenho do Pinta. Ensine golpes a ele pelo nome. Use antes de "Começar a batalha", nunca num laço.',
+      'Ocupa uma das 5 vagas de inimigos extras. O chefão aparece maior, com barra de vida e coroa. Escolha a imagem e ensine golpes pelo nome. Use antes da batalha, fora de laços.',
   },
 
   // ---- ⚔️ Fichas reutilizáveis: crie o inimigo separado e escolha na hora ----
@@ -938,7 +938,7 @@ export const gameKitBlockDefinitions02: BlockDefinition[] = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Cria uma FICHA de inimigo reutilizável: vida, força, defesa, a imagem (um desenho do Pinta, escolha direto) e a cor. Marque "chefão" para ele entrar MAIOR, com barra grande e coroa. Faça a ficha UMA vez no começo; depois é só ESCOLHER com quem batalhar.',
+      'Define uma ficha reutilizável de inimigo com vida, força, defesa, imagem e cor. Chefão aparece maior, com barra e coroa. Crie a ficha uma vez e escolha-a ao começar a batalha.',
   },
 
   {
@@ -951,6 +951,6 @@ export const gameKitBlockDefinitions02: BlockDefinition[] = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Abre a batalha por turnos ESCOLHENDO um inimigo que você já criou com "Criar a ficha do inimigo". Ele entra com a imagem e os atributos prontos. ⚠️ Crie a ficha ANTES (senão nada acontece + um aviso). Some "Adicionar o inimigo da ficha" antes para lutar contra vários.',
+      'Começa uma batalha por turnos com a ficha escolhida. Crie a ficha antes; o jogo avisa se ela não existir. Para vários oponentes, acrescente inimigos de ficha antes da batalha.',
   },
 ]

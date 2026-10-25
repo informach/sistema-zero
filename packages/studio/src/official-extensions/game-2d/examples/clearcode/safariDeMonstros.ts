@@ -13,28 +13,8 @@ export const safariDeMonstrosExample: ExtensionExample = beginnerGameExample({
   description:
     'Explore um mundo de monstros com as setas. No mato alto aparecem monstros selvagens: chegue perto e aperte Espaço para capturar. Junte 5 no caderno e veja seu parceiro evoluir. Enter começa e reinicia.',
   ir: {
-    html: [{ type: 'canvas', id: 'tela', width: 480, height: 270 }],
-    css: [
-      {
-        selector: 'body',
-        declarations: {
-          background: '#12281c',
-          display: 'flex',
-          'align-items': 'center',
-          'justify-content': 'center',
-          'min-height': '100vh',
-          margin: '0',
-        },
-      },
-      {
-        selector: 'canvas',
-        declarations: {
-          border: '3px solid #1d3a28',
-          'border-radius': '12px',
-          background: '#3a7d44',
-        },
-      },
-    ],
+    html: [],
+    css: [],
     version: 2,
     extensions: [{ extensionId: 'game-2d' }],
     behavior: {
@@ -678,6 +658,21 @@ export const safariDeMonstrosExample: ExtensionExample = beginnerGameExample({
         },
       ],
       start: [
+        {
+          type: 'g2d:setupStage',
+          width: 480,
+          height: 270,
+          bg: '#3a7d44',
+          __id: 'exemplo-saf-ri-de-monstros',
+        },
+        {
+          type: 'g2d:setStageDescription',
+          description:
+            'Explore um mundo de monstros com as setas. No mato alto aparecem monstros selvagens: chegue perto e aperte Espaço para capturar. Junte 5 no caderno e veja seu parceiro evoluir. Enter começa e reinicia.',
+          __id: 'exemplo-saf-ri-de-monstros-descricao',
+        },
+        { type: 'g2d:stageBorder', color: '#1d3a28', width: 3 },
+
         {
           type: 'g2d:fitScreen',
           percent: {

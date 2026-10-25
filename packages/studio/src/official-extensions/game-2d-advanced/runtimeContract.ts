@@ -164,6 +164,10 @@ export interface GameKitCampaignSaveInfo {
  * mas não nesta lista usada para auditar a montagem pública do runtime.
  */
 export const GAME_KIT_ENUMERABLE_API_KEYS = [
+  'drawRectangle',
+  'drawCircle',
+  'drawTriangle',
+  'drawText',
   ...ADVANCED_SPRITE_SCENE_API_KEYS,
   'setup',
   'setupFull',
@@ -558,6 +562,18 @@ type GameKitFallbackMethod = (...args: unknown[]) => unknown
 
 /** Assinaturas fortes das operações centrais e dos valores retornados pela API. */
 export interface GameKitKnownApi extends AdvancedSpriteSceneApi {
+  drawRectangle(x: number, y: number, width: number, height: number, color: string): void
+  drawCircle(x: number, y: number, radius: number, color: string): void
+  drawTriangle(
+    x1: number,
+    y1: number,
+    x2: number,
+    y2: number,
+    x3: number,
+    y3: number,
+    color: string,
+  ): void
+  drawText(value: unknown, x: number, y: number, size: number, color: string): void
   onTrackMoldEncounter(name: string, mold: string, fn: (encountered: GameKitEntity) => void): void
   drawCounter(label: string, value: unknown, x: number, y: number): void
   setHealth(who: GameKitEntity, lives: number): void

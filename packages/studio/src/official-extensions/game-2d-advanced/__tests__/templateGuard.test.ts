@@ -66,6 +66,7 @@ function rawTemplateHazardsInside(
  */
 function fragmentosDoRuntime(): Array<{ file: string; declaration: string }> {
   const arquivos = [
+    'drawingRuntime.ts',
     ...readdirSync(join(DIR, 'runtime'))
       .filter((nome) => nome.endsWith('.ts'))
       .sort()
@@ -105,8 +106,9 @@ describe('Guarda dos template literals do gk (Jogo 2D Avançado)', () => {
     expect(
       rawTemplateHazardsInside(
         src,
-        'gameKitRuntime =',
+        'gameKitRuntimeSource =',
         new Set([
+          'gameKitDrawingRuntime',
           'advancedSceneAdapter',
           'advancedSpriteSceneAdapter',
           'sceneApiEntries',
@@ -191,7 +193,9 @@ describe('Guarda dos template literals do gk (Jogo 2D Avançado)', () => {
 
   it('docs.ts: o markdown escapa crases e interpolações', () => {
     const src = readFileSync(join(DIR, 'docs.ts'), 'utf8')
-    expect(rawTemplateHazardsInside(src, 'gameKitDocs =', new Set(['sceneReference']))).toEqual([])
+    expect(
+      rawTemplateHazardsInside(src, 'gameKitDocs =', new Set(['paletteGuide', 'sceneReference'])),
+    ).toEqual([])
   })
 
   it('os três módulos avaliam e entregam string não-vazia (a prova final)', () => {

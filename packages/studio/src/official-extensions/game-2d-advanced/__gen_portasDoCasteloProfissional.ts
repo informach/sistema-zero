@@ -35,37 +35,26 @@ SZGameKit.setup({ width: 960, height: 540, background: "#2b2136", accent: "#ffd1
 SZGameKit.setScreenText("menu", "Portas do Castelo Profissional", "Use as setas para andar e pular. Chegue na porta de cada sala para passar de fase. São 3 salas até a saída!", "Entrar");
 SZGameKit.setScreenText("vitoria", "Você escapou do castelo!", "Passou pelas 3 salas e achou a porta de saída. O rei está livre!", "Jogar de novo");
 SZGameKit.defineLook("rei", function (ctx) {
-  ctx.fillStyle = "#f2d16b";
-  ctx.fillRect(4, 0, 24, 8);
-  ctx.fillStyle = "#e8c48a";
-  ctx.fillRect(6, 8, 20, 14);
-  ctx.fillStyle = "#2b2d42";
-  ctx.fillRect(11, 13, 4, 4);
-  ctx.fillRect(18, 13, 4, 4);
-  ctx.fillStyle = "#3a6ea5";
-  ctx.fillRect(4, 22, 24, 20);
-  ctx.fillStyle = "#284b73";
-  ctx.fillRect(4, 22, 24, 6);
-  ctx.fillStyle = "#2a2f45";
-  ctx.fillRect(7, 42, 7, 12);
-  ctx.fillRect(18, 42, 7, 12);
+  SZGameKit.drawRectangle(4, 0, 24, 8, "#f2d16b");
+  SZGameKit.drawRectangle(6, 8, 20, 14, "#e8c48a");
+  SZGameKit.drawRectangle(11, 13, 4, 4, "#2b2d42");
+  SZGameKit.drawRectangle(18, 13, 4, 4, "#2b2d42");
+  SZGameKit.drawRectangle(4, 22, 24, 20, "#3a6ea5");
+  SZGameKit.drawRectangle(4, 22, 24, 6, "#284b73");
+  SZGameKit.drawRectangle(7, 42, 7, 12, "#2a2f45");
+  SZGameKit.drawRectangle(18, 42, 7, 12, "#2a2f45");
 }, 32, 54);
 SZGameKit.defineLook("pedra", function (ctx) {
-  ctx.fillStyle = "#4a4258";
-  ctx.fillRect(0, 0, 120, 40);
-  ctx.fillStyle = "#3a3446";
-  ctx.fillRect(0, 0, 120, 5);
-  ctx.fillRect(0, 20, 120, 2);
-  ctx.fillRect(40, 0, 3, 20);
-  ctx.fillRect(84, 20, 3, 20);
+  SZGameKit.drawRectangle(0, 0, 120, 40, "#4a4258");
+  SZGameKit.drawRectangle(0, 0, 120, 5, "#3a3446");
+  SZGameKit.drawRectangle(0, 20, 120, 2, "#3a3446");
+  SZGameKit.drawRectangle(40, 0, 3, 20, "#3a3446");
+  SZGameKit.drawRectangle(84, 20, 3, 20, "#3a3446");
 }, 120, 40);
 SZGameKit.defineLook("porta", function (ctx) {
-  ctx.fillStyle = "#5a3d2b";
-  ctx.fillRect(0, 0, 48, 72);
-  ctx.fillStyle = "#3a2718";
-  ctx.fillRect(6, 6, 36, 66);
-  ctx.fillStyle = "#ffd166";
-  ctx.fillRect(34, 36, 6, 6);
+  SZGameKit.drawRectangle(0, 0, 48, 72, "#5a3d2b");
+  SZGameKit.drawRectangle(6, 6, 36, 66, "#3a2718");
+  SZGameKit.drawRectangle(34, 36, 6, 6, "#ffd166");
 }, 48, 72);
 SZGameKit.setJumpFeel(0.1, 0.1, 0.3, 2200);
 SZGameKit.defineMold("chao", { w: 120, h: 40, health: 1, speed: 0, damage: 0, color: "#4a4258", look: "pedra" });
@@ -143,9 +132,7 @@ SZGameKit.onDraw(function (ctx) {
   SZGameKit.drawEffects();
 });
 SZGameKit.onDrawHud(function (ctx) {
-  ctx.fillStyle = "#ffffff";
-  ctx.font = "24px sans-serif";
-  ctx.fillText("Sala " + fase + " de 3", 20, 36);
+  SZGameKit.drawText("Sala " + fase + " de 3", 20, 36, 24, "#ffffff");
 });
 `.trim()
 

@@ -24,46 +24,31 @@ SZGameKit.setScreenText("menu", "Herói que Evolui Profissional", "Setas ou WASD
 SZGameKit.setScreenText("vitoria", "Herói lendário!", "Você chegou ao nível 6 evoluindo a cada batalha!", "Jogar de novo");
 SZGameKit.setScreenText("fim", "O herói caiu!", "Os monstros venceram. Treine para evoluir mais!", "Tentar de novo");
 SZGameKit.defineLook("heroi parado", function (ctx) {
-  ctx.fillStyle = "#2f6fbf";
-  ctx.fillRect(9, 2, 20, 12);
-  ctx.fillStyle = "#f2c6a0";
-  ctx.fillRect(12, 12, 14, 8);
-  ctx.fillStyle = "#274b7a";
-  ctx.fillRect(7, 20, 24, 20);
-  ctx.fillStyle = "#1a2f4a";
-  ctx.fillRect(11, 40, 7, 14);
-  ctx.fillRect(20, 40, 7, 14);
+  SZGameKit.drawRectangle(9, 2, 20, 12, "#2f6fbf");
+  SZGameKit.drawRectangle(12, 12, 14, 8, "#f2c6a0");
+  SZGameKit.drawRectangle(7, 20, 24, 20, "#274b7a");
+  SZGameKit.drawRectangle(11, 40, 7, 14, "#1a2f4a");
+  SZGameKit.drawRectangle(20, 40, 7, 14, "#1a2f4a");
 }, 38, 54);
 SZGameKit.defineLook("heroi andando", function (ctx) {
-  ctx.fillStyle = "#2f6fbf";
-  ctx.fillRect(9, 2, 20, 12);
-  ctx.fillStyle = "#f2c6a0";
-  ctx.fillRect(12, 12, 14, 8);
-  ctx.fillStyle = "#274b7a";
-  ctx.fillRect(7, 20, 24, 20);
-  ctx.fillStyle = "#1a2f4a";
-  ctx.fillRect(9, 40, 7, 14);
-  ctx.fillRect(22, 40, 7, 14);
+  SZGameKit.drawRectangle(9, 2, 20, 12, "#2f6fbf");
+  SZGameKit.drawRectangle(12, 12, 14, 8, "#f2c6a0");
+  SZGameKit.drawRectangle(7, 20, 24, 20, "#274b7a");
+  SZGameKit.drawRectangle(9, 40, 7, 14, "#1a2f4a");
+  SZGameKit.drawRectangle(22, 40, 7, 14, "#1a2f4a");
 }, 38, 54);
 SZGameKit.defineLook("heroi golpe", function (ctx) {
-  ctx.fillStyle = "#2f6fbf";
-  ctx.fillRect(5, 2, 20, 12);
-  ctx.fillStyle = "#f2c6a0";
-  ctx.fillRect(8, 12, 14, 8);
-  ctx.fillStyle = "#274b7a";
-  ctx.fillRect(3, 20, 24, 20);
-  ctx.fillStyle = "#e9edf2";
-  ctx.fillRect(27, 24, 11, 5);
+  SZGameKit.drawRectangle(5, 2, 20, 12, "#2f6fbf");
+  SZGameKit.drawRectangle(8, 12, 14, 8, "#f2c6a0");
+  SZGameKit.drawRectangle(3, 20, 24, 20, "#274b7a");
+  SZGameKit.drawRectangle(27, 24, 11, 5, "#e9edf2");
 }, 38, 54);
 SZGameKit.defineLook("monstro", function (ctx) {
-  ctx.fillStyle = "#8d55c9";
-  ctx.fillRect(4, 8, 32, 28);
-  ctx.fillStyle = "#f6f2ff";
-  ctx.fillRect(10, 16, 7, 7);
-  ctx.fillRect(23, 16, 7, 7);
-  ctx.fillStyle = "#20122f";
-  ctx.fillRect(12, 18, 3, 3);
-  ctx.fillRect(25, 18, 3, 3);
+  SZGameKit.drawRectangle(4, 8, 32, 28, "#8d55c9");
+  SZGameKit.drawRectangle(10, 16, 7, 7, "#f6f2ff");
+  SZGameKit.drawRectangle(23, 16, 7, 7, "#f6f2ff");
+  SZGameKit.drawRectangle(12, 18, 3, 3, "#20122f");
+  SZGameKit.drawRectangle(25, 18, 3, 3, "#20122f");
 }, 40, 40);
 SZGameKit.defineEffect("faisca", { count: 12, color: "#ffe066", size: 4, life: 0.35, speed: 190, gravity: 0 });
 SZGameKit.createEmptyTilemap("campo", 26, 16, -1, "");
@@ -163,10 +148,8 @@ SZGameKit.onDraw(function (ctx) {
 });
 SZGameKit.onDrawHud(function (ctx) {
   SZGameKit.drawHearts(SZGameKit.healthOf(heroi) / 100, 4, 20, 20);
-  ctx.fillStyle = "#f3f6ff";
-  ctx.font = "20px sans-serif";
-  ctx.fillText("Nivel: " + nivel, 20, 66);
-  ctx.fillText("EXP: " + exp, 20, 92);
+  SZGameKit.drawText("Nivel: " + nivel, 20, 66, 20, "#f3f6ff");
+  SZGameKit.drawText("EXP: " + exp, 20, 92, 20, "#f3f6ff");
   SZGameKit.drawBar(exp, nivel * 3, 20, 104, 160, 12, "#ffd166");
 });
 `.trim()

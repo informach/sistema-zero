@@ -31,6 +31,7 @@ import {
   textSpriteExpressionToBlock,
   textSpriteStatementToBlock,
 } from '../official-extensions/game-2d/textCodec'
+import { gameKitDrawingStatementToBlock } from '../official-extensions/game-2d-advanced/drawingCodec'
 import {
   gameKit3DGameplayExpressionToBlock,
   gameKit3DGameplayStatementToBlock,
@@ -3606,6 +3607,12 @@ function statementToBlockInner(stmt: JSStatement): SerializedBlocklyBlock | null
   }
 
   function gameKitStatementToBlock(): SerializedBlocklyBlock {
+    const drawing = gameKitDrawingStatementToBlock(stmt, {
+      block,
+      expression: exprToValueBlock,
+      raw: rawJSBlock,
+    })
+    if (drawing) return drawing
     switch (stmt.type) {
       // ----- game-2d-advanced (kit profissional) -----
       case 'gk:setup': {

@@ -1,4 +1,5 @@
 import { describe, expect, it, spyOn } from 'bun:test'
+import ts from 'typescript'
 import { parseJS } from '../../../parsers/js'
 import { GAME_TWO_D_ENEMY_BEHAVIOR_OPTIONS } from '../blockCatalogShared'
 import { gameTwoDRuntime } from '../runtime'
@@ -2327,23 +2328,54 @@ describe('correções do quinto full review', () => {
     //
     // ⚠️ Os nomes saem da TABELA, não de um padrão de nome: comportamento novo
     // entra aqui sozinho, batizado como for.
-    const tabela = gameTwoDRuntime.slice(
-      gameTwoDRuntime.indexOf('var ENEMY_BEHAVIORS = {'),
-      gameTwoDRuntime.indexOf('\n  };', gameTwoDRuntime.indexOf('var ENEMY_BEHAVIORS = {')),
+    // Parse the composed engine: indentation is a download optimization, not
+    // part of the contract. Nested blocks must not truncate a function body.
+    const source = ts.createSourceFile(
+      'game-runtime.js',
+      gameTwoDRuntime,
+      ts.ScriptTarget.ES2022,
+      true,
+      ts.ScriptKind.JS,
     )
-    const nomes = [...new Set([...tabela.matchAll(/(?:act|move):\s*(\w+)/g)].map((m) => m[1]))]
+    const functions = new Map<string, string>()
+    const used = new Set<string>()
+    const visit = (node: ts.Node): void => {
+      if (ts.isFunctionDeclaration(node) && node.name && node.body)
+        functions.set(node.name.text, node.body.getText(source))
+      if (
+        ts.isVariableDeclaration(node) &&
+        ts.isIdentifier(node.name) &&
+        node.name.text === 'ENEMY_BEHAVIORS' &&
+        node.initializer &&
+        ts.isObjectLiteralExpression(node.initializer)
+      ) {
+        const findHandlers = (child: ts.Node): void => {
+          if (
+            ts.isPropertyAssignment(child) &&
+            ts.isIdentifier(child.name) &&
+            ['act', 'move'].includes(child.name.text) &&
+            ts.isIdentifier(child.initializer)
+          )
+            used.add(child.initializer.text)
+          ts.forEachChild(child, findHandlers)
+        }
+        findHandlers(node.initializer)
+      }
+      ts.forEachChild(node, visit)
+    }
+    visit(source)
+    const nomes = [...used]
     expect(nomes.length, 'anti-vácuo: tabela de comportamentos não lida').toBeGreaterThan(15)
 
     const semCorpo: string[] = []
     const infratores: string[] = []
     let comContador = 0
     for (const nome of nomes) {
-      const at = gameTwoDRuntime.indexOf(`  function ${nome}(`)
-      if (at < 0) {
+      const corpo = functions.get(nome)
+      if (!corpo) {
         semCorpo.push(String(nome))
         continue
       }
-      const corpo = gameTwoDRuntime.slice(at, gameTwoDRuntime.indexOf('\n  }\n', at))
       // Contador = campo do sprite que DESCE um por quadro. Pela forma, não pelo
       // nome, senão um `_recarga` novo escaparia da rede.
       const contador = /s\.(_\w+)\s*(?:-=\s*1|--)/.exec(corpo)

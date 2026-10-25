@@ -12,7 +12,7 @@ const goldenCatalogs = {
     // causa das duas coisas. Conferido recalculando os cinco catálogos: os outros quatro
     // bateram com o golden que já estava aqui, o que prova que o cálculo é o mesmo do teste.
     // 01/10: Descida da Neve entra no topo; o hash dos exemplos anteriores é idêntico.
-    count: 36,
+    count: 45,
     // ⚠️ Mudou em 09/08: os exemplos de plataforma passaram a usar os contratos
     // explícitos de terreno, Mundo e Fase em vez dos encaixes de tela legados; Reino Zero
     // agora documenta a seleção de jogadores e preserva o sobrevivente após uma morte.
@@ -70,12 +70,14 @@ const goldenCatalogs = {
     // passou a apagar também nas telas de pausa e de fim.
     // 20/10: o conceito "inteligência artificial" do Gorilas vs Robô virou "robô
     // adversário" (a tela nomeia o recurso, sem "IA"; pedido da dona).
-    sha256: 'fd58fd4c57317f26a1ad405d4f59ff233062c4fdbf142fb1a491ea6f0ff02b3e',
+    // Review 25/10: fontes sem página, progressão editorial e nove receitas.
+    // Full review: I keeps the fixed Pinta image until Space or restart.
+    sha256: 'dd303c288819aea53b1b13ff9dfed28e74a288de1b88e69913473f1a46fe79c6',
   },
   'game-2d-advanced': {
     // 01/10: Descida da Neve entra no FIM da vitrine ("Meu primeiro jogo" continua
     // abrindo); os demais exemplos permanecem idênticos.
-    count: 38,
+    count: 48,
     // Reino Zero Pro passou a carregar a campanha validada de 32 fases.
     // 14/08: as 32 grades deixaram de ser geradas por resto de divisão e viraram
     // plantas escritas à mão (`examples/reinoZeroProLevels.ts`), com o tema
@@ -89,7 +91,8 @@ const goldenCatalogs = {
     // ⚠️ Ainda em 15/08: as fases aquáticas ganharam piscinas de quatro células,
     // alinhadas ao piso das margens, em vez de uma película no fundo do palco.
     // 02/10 revisão: neve intermediária com movimento, controles, vida, HUD e telas nativas separados.
-    sha256: 'f9f220d10a203c12d0d6df0b4634007f40e3621891c6315f66a37831d0d27841',
+    // Review 25/10: desenho nativo, progressão editorial e dez receitas.
+    sha256: 'f8404302aa7b22d4b8121d3a2e75d9a0000caac50a95d68d3647dc4787998c30',
   },
   'game-3d': {
     count: 21,
@@ -175,7 +178,11 @@ describe('catálogos lazy das extensões oficiais', () => {
     expect(entry.size).toBeLessThan(800_000)
     expect(Bun.gzipSync(new Uint8Array(await entry.arrayBuffer())).byteLength).toBeLessThan(230_000)
     const entrySource = await entry.text()
-    expect(entrySource).not.toContain('Pegue a moeda')
+    // The short pedagogical summary names the entry examples. Their content
+    // and IR must still stay in the on-demand chunks.
+    expect(entrySource).not.toContain(
+      'Encoste na moeda para fazer pontos. Use as setas para andar.',
+    )
     expect(entrySource).not.toContain('Jogo 2D interativo')
     expect(build.outputs.filter((output) => output.kind === 'chunk').length).toBeGreaterThanOrEqual(
       15,

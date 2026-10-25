@@ -3581,15 +3581,25 @@ function tryMatchGame2DCall(expr: Node, source: string, ctx: ParseCtx): JSStatem
     }
     case 'defineShape': {
       // generator: SZGame2D.defineShape("nome", function (ctx) {…})
-      if (args[0]?.type !== 'StringLiteral' || !isFn(args[1])) return null
-      const ctxParam = identifierName(args[1].params?.[0])
+      const callback = args[1]
+      if (
+        args[0]?.type !== 'StringLiteral' ||
+        !isFn(callback) ||
+        callback.params.length !== 1 ||
+        identifierName(callback.params[0]) !== 'ctx' ||
+        (callback.type === 'FunctionExpression' && callback.id !== null)
+      ) {
+        // O bloco possui um único contexto implícito, ctx. Reconhecer outro nome,
+        // parâmetro ou modificador faria o gerador mudar o binding da função.
+        return asRaw(source, expr)
+      }
       // O parâmetro é um CONTEXTO 2D — registrar em ctxVars para que os blocos de
       // Canvas dentro da figura round-trippem (senão viram rawJS).
-      if (ctxParam) ctx.ctxVars.add(ctxParam)
+      ctx.ctxVars.add('ctx')
       return {
         type: 'g2d:defineShape',
         shapeName: args[0].value as string,
-        body: bodyOfFn(args[1], source, ctx),
+        body: bodyOfFn(callback, source, ctx),
       }
     }
     case 'setShape': {

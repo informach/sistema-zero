@@ -34,70 +34,46 @@ SZGameKit.setScreenText("menu", "Vila Ninja Profissional", "Setas: andar nas 4 d
 SZGameKit.setScreenText("vitoria", "Vila em paz!", "Você derrotou todos os monstros. A vila ninja está a salvo!", "Jogar de novo");
 SZGameKit.setScreenText("fim", "O ninja caiu!", "Os monstros venceram desta vez. Tente de novo!", "Tentar de novo");
 SZGameKit.defineLook("ninja parado", function (ctx) {
-  ctx.fillStyle = "#2b3a67";
-  ctx.fillRect(10, 2, 20, 12);
-  ctx.fillStyle = "#f2c6a0";
-  ctx.fillRect(13, 12, 14, 8);
-  ctx.fillStyle = "#26314f";
-  ctx.fillRect(8, 20, 24, 20);
-  ctx.fillStyle = "#1a2238";
-  ctx.fillRect(12, 40, 7, 14);
-  ctx.fillRect(21, 40, 7, 14);
+  SZGameKit.drawRectangle(10, 2, 20, 12, "#2b3a67");
+  SZGameKit.drawRectangle(13, 12, 14, 8, "#f2c6a0");
+  SZGameKit.drawRectangle(8, 20, 24, 20, "#26314f");
+  SZGameKit.drawRectangle(12, 40, 7, 14, "#1a2238");
+  SZGameKit.drawRectangle(21, 40, 7, 14, "#1a2238");
 }, 40, 54);
 SZGameKit.defineLook("ninja andando", function (ctx) {
-  ctx.fillStyle = "#2b3a67";
-  ctx.fillRect(10, 2, 20, 12);
-  ctx.fillStyle = "#f2c6a0";
-  ctx.fillRect(13, 12, 14, 8);
-  ctx.fillStyle = "#26314f";
-  ctx.fillRect(8, 20, 24, 20);
-  ctx.fillStyle = "#1a2238";
-  ctx.fillRect(10, 40, 7, 14);
-  ctx.fillRect(23, 40, 7, 14);
+  SZGameKit.drawRectangle(10, 2, 20, 12, "#2b3a67");
+  SZGameKit.drawRectangle(13, 12, 14, 8, "#f2c6a0");
+  SZGameKit.drawRectangle(8, 20, 24, 20, "#26314f");
+  SZGameKit.drawRectangle(10, 40, 7, 14, "#1a2238");
+  SZGameKit.drawRectangle(23, 40, 7, 14, "#1a2238");
 }, 40, 54);
 SZGameKit.defineLook("ninja golpe", function (ctx) {
-  ctx.fillStyle = "#2b3a67";
-  ctx.fillRect(6, 2, 20, 12);
-  ctx.fillStyle = "#f2c6a0";
-  ctx.fillRect(9, 12, 14, 8);
-  ctx.fillStyle = "#26314f";
-  ctx.fillRect(4, 20, 24, 20);
-  ctx.fillStyle = "#d0d7de";
-  ctx.fillRect(28, 24, 12, 5);
+  SZGameKit.drawRectangle(6, 2, 20, 12, "#2b3a67");
+  SZGameKit.drawRectangle(9, 12, 14, 8, "#f2c6a0");
+  SZGameKit.drawRectangle(4, 20, 24, 20, "#26314f");
+  SZGameKit.drawRectangle(28, 24, 12, 5, "#d0d7de");
 }, 40, 54);
 SZGameKit.defineLook("bambu", function (ctx) {
-  ctx.fillStyle = "#6ab04c";
-  ctx.fillRect(6, 8, 32, 30);
-  ctx.fillStyle = "#3d7a2a";
-  ctx.fillRect(6, 8, 32, 6);
-  ctx.fillStyle = "#1b3a12";
-  ctx.fillRect(12, 20, 6, 6);
-  ctx.fillRect(26, 20, 6, 6);
+  SZGameKit.drawRectangle(6, 8, 32, 30, "#6ab04c");
+  SZGameKit.drawRectangle(6, 8, 32, 6, "#3d7a2a");
+  SZGameKit.drawRectangle(12, 20, 6, 6, "#1b3a12");
+  SZGameKit.drawRectangle(26, 20, 6, 6, "#1b3a12");
 }, 44, 40);
 SZGameKit.defineLook("dragao", function (ctx) {
-  ctx.fillStyle = "#b33939";
-  ctx.fillRect(4, 10, 36, 26);
-  ctx.fillStyle = "#e55039";
-  ctx.fillRect(36, 4, 12, 16);
-  ctx.fillStyle = "#f6e58d";
-  ctx.fillRect(10, 20, 8, 8);
-  ctx.fillRect(24, 20, 8, 8);
+  SZGameKit.drawRectangle(4, 10, 36, 26, "#b33939");
+  SZGameKit.drawRectangle(36, 4, 12, 16, "#e55039");
+  SZGameKit.drawRectangle(10, 20, 8, 8, "#f6e58d");
+  SZGameKit.drawRectangle(24, 20, 8, 8, "#f6e58d");
 }, 50, 38);
 SZGameKit.defineLook("casa", function (ctx) {
-  ctx.fillStyle = "#c9a76b";
-  ctx.fillRect(0, 26, 72, 46);
-  ctx.fillStyle = "#7d4f2a";
-  ctx.fillRect(0, 6, 72, 24);
-  ctx.fillStyle = "#3a271a";
-  ctx.fillRect(28, 44, 18, 28);
+  SZGameKit.drawRectangle(0, 26, 72, 46, "#c9a76b");
+  SZGameKit.drawRectangle(0, 6, 72, 24, "#7d4f2a");
+  SZGameKit.drawRectangle(28, 44, 18, 28, "#3a271a");
 }, 72, 72);
 SZGameKit.defineLook("arvore", function (ctx) {
-  ctx.fillStyle = "#6b4226";
-  ctx.fillRect(22, 52, 12, 32);
-  ctx.fillStyle = "#2f7d32";
-  ctx.fillRect(4, 4, 48, 52);
-  ctx.fillStyle = "#43a047";
-  ctx.fillRect(12, 12, 20, 20);
+  SZGameKit.drawRectangle(22, 52, 12, 32, "#6b4226");
+  SZGameKit.drawRectangle(4, 4, 48, 52, "#2f7d32");
+  SZGameKit.drawRectangle(12, 12, 20, 20, "#43a047");
 }, 56, 84);
 SZGameKit.defineEffect("faisca", { count: 10, color: "#ffe066", size: 4, life: 0.35, speed: 180, gravity: 0 });
 SZGameKit.defineEffect("fumaca", { count: 12, color: "#dfe6e9", size: 5, life: 0.45, speed: 130, gravity: 0 });
@@ -218,10 +194,8 @@ SZGameKit.onDraw(function (ctx) {
 });
 SZGameKit.onDrawHud(function (ctx) {
   SZGameKit.drawHearts(SZGameKit.healthOf(ninja) / 30, 3, 20, 20);
-  ctx.fillStyle = "#0f2417";
-  ctx.font = "18px sans-serif";
-  ctx.fillText("Bambus: " + SZGameKit.countActive("bambu"), 20, 72);
-  ctx.fillText("Dragões: " + SZGameKit.countActive("dragao"), 20, 96);
+  SZGameKit.drawText("Bambus: " + SZGameKit.countActive("bambu"), 20, 72, 18, "#0f2417");
+  SZGameKit.drawText("Dragões: " + SZGameKit.countActive("dragao"), 20, 96, 18, "#0f2417");
 });
 `.trim()
 
