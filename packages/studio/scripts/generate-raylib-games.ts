@@ -73,8 +73,22 @@ ${game.howToPlay}
 
 ${game.ideas.map((idea) => `- ${idea}`).join('\n')}
 ${
-  media.length
+  media.length && game.extension === '3d'
     ? `
+## Modelos, texturas e sons
+
+O raylib abre cada arquivo pelo caminho, com a extensão: \`load_model('models/nave.glb')\`
+abre \`models/nave.glb\` (a barra \`/\` funciona também no Windows). Os modelos 3D ficam em
+\`models/\`, as texturas e o céu em \`images/\` e os sons em \`sounds/\`. Para trocar um
+modelo, uma textura ou o céu, faça o seu no Molda e traga para o jogo pelo menu ⋯ → Modelos 3D
+→ "Trazer do Molda"; um desenho do Pinta entra pelo menu ⋯ → Imagens → "Trazer do Pinta".
+Depois use no código o caminho que o painel mostra em "nome no código". Cada modelo do Molda
+vem de um tamanho, e o jogo lê a caixa dele (\`get_model_bounding_box\`) para deixá-lo do
+tamanho certo. O céu 360° chega como uma imagem panorâmica, que o jogo pinta por dentro de uma
+esfera grande.
+`
+    : media.length
+      ? `
 ## Imagens, sons e fontes
 
 O raylib abre cada arquivo pelo caminho, com a extensão: \`load_texture('images/nave.png')\`
@@ -86,7 +100,7 @@ folha de quadros, igual à que o Pinta exporta: uma linha por animação, com os
 lado, e o jogo recorta um quadro de cada vez. Cada desenho fica com o tamanho que tem no Pinta,
 e \`ESCALA\`, no começo do \`main.py\`, diz quantas vezes ele aparece maior na tela.
 `
-    : ''
+      : ''
 }
 ## Jogar no computador
 
@@ -103,7 +117,13 @@ function notice(game: RaylibGame, hasFont: boolean) {
 Copyright (c) 2026 Sistema Zero. O código, os desenhos, os sons e a música deste exemplo
 são originais, distribuídos sob a licença MIT em \`LICENSE\`. Os desenhos foram escritos
 como código (\`scripts/python/raylib-art.ts\` no repositório do Sistema Zero), e os sons
-foram sintetizados a partir de partituras.
+foram sintetizados a partir de partituras.${
+    game.extension === '3d'
+      ? `
+Os modelos 3D, as texturas e o céu foram feitos no Molda, a oficina 3D do Sistema Zero
+(\`scripts/raylib/molda-models.ts\`), pelos mesmos caminhos que a criança usa.`
+      : ''
+  }
 ${
   hasFont
     ? `

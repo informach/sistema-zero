@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs'
+import { readdirSync, readFileSync } from 'node:fs'
 import { pixelArt } from './pgzero-art'
 
 /**
@@ -604,7 +604,121 @@ export const AVENTURA_ART = () => ({
   'images/espada.png': pixelArt(ESPADA, { w: '#e0e0e0', y: '#ffb300', b: '#6d4c41' }, 1),
 })
 
+// Labirinto dos Robôs: o robô (16 x 18) e o lançador de energia (16 x 16), em folhas do Pinta.
+const ROBO_CABECA = [
+  '......aa........',
+  '......kk........',
+  '..kkkkkkkkkkkk..',
+  '.kggggggggggggk.',
+  '.kgwwgggggwwggk.',
+  '.kgweggggggewgk.',
+  '.kggggggggggggk.',
+  '.kggddddddddggk.',
+  '..kkkkkkkkkkkk..',
+  '...kddddddddk...',
+  'kkkdggggggggdkkk',
+  'kgkdggyyyyggdkgk',
+  'kgkdggyyyyggdkgk',
+  'kkkdggggggggdkkk',
+  '...kddddddddk...',
+]
+const ROBO_PES = [
+  ['..kkkk....kkkk..', '..kddk....kddk..', '..kkkk....kkkk..'],
+  ['.kkkk......kkkk.', '.kddk......kddk.', '.kkkk......kkkk.'],
+]
+const troca = (linhas: readonly string[], de: string, para: string) =>
+  linhas.map((linha) => linha.split(de).join(para))
+const roboParado = (pes: number) => [...ROBO_CABECA, ...ROBO_PES[pes]!]
+// Atacando, os olhos e a luz do peito ficam vermelhos.
+const roboBravo = (pes: number) => troca(troca(roboParado(pes), 'e', 'r'), 'y', 'o')
+// Desligado, os olhos e a luz se apagam.
+const roboDesligado = () => troca(troca(troca(roboParado(0), 'e', 'd'), 'w', 'd'), 'y', 'd')
+const ROBO_CORES = {
+  k: '#2b2233',
+  g: '#90a4ae',
+  d: '#546e7a',
+  w: '#e0f7fa',
+  e: '#00e5ff',
+  a: '#ff5252',
+  y: '#ffd54f',
+  r: '#ff1744',
+  o: '#ff9100',
+}
+const LANCADOR = [
+  '......kkkk......',
+  '.....kcwwck.....',
+  '.....kcccck.....',
+  '.....kbbbbk.....',
+  '.....kbbbbk.....',
+  '....kkbbbbkk....',
+  '...kbbbbbbbbk...',
+  '...kbbyybbbbk...',
+  '...kbbbbbbbbk...',
+  '...kkkbbbbkkk...',
+  '.....kppppk.....',
+  '.....kppppk.....',
+  '....kkppppkk....',
+  '....kssppssk....',
+  '....kssssssk....',
+  '....kssssssk....',
+]
+// Disparando, a ponta acende.
+const LANCADOR_DISPARANDO = [
+  '.....ywwwwy.....',
+  '.....kwwwwk.....',
+  '.....kcwwck.....',
+  ...LANCADOR.slice(3),
+]
+const LANCADOR_CORES = {
+  k: '#2b2233',
+  c: '#00e5ff',
+  w: '#e0f7fa',
+  b: '#3d5afe',
+  y: '#ffd54f',
+  p: '#7e57c2',
+  s: '#ffcc80',
+}
+
+/**
+ * The 3D games' art, made in the Molda by scripts/raylib/molda-models.ts (models, textures and
+ * the sky): this only reads what that script wrote, so the Molda never enters the type graph.
+ */
+const moldaArt = (key: string) => () => {
+  const folder = new URL(`../raylib/models/${key}/`, import.meta.url)
+  const files: Record<string, Uint8Array> = {}
+  for (const path of readdirSync(folder, { recursive: true, encoding: 'utf8' })) {
+    const name = path.split('\\').join('/')
+    if (!name.includes('.')) continue
+    files[name] = new Uint8Array(readFileSync(new URL(name, folder)))
+  }
+  return Object.fromEntries(Object.entries(files).sort(([a], [b]) => a.localeCompare(b)))
+}
+
 export const RAYLIB_GAME_ART: Record<string, () => Record<string, Uint8Array>> = {
+  // Raylib 3D. A Primeira Cena desenha tudo com malhas geradas: nenhum arquivo.
+  'primeira-cena-3d': () => ({}),
+  'modelos-do-molda': moldaArt('modelos-do-molda'),
+  'caixas-que-se-encostam': moldaArt('caixas-que-se-encostam'),
+  'clarao-com-shader': moldaArt('clarao-com-shader'),
+  'corrida-infinita': moldaArt('corrida-infinita'),
+  'patrulha-espacial': moldaArt('patrulha-espacial'),
+  'mundo-de-blocos': moldaArt('mundo-de-blocos'),
+  // As paredes, o chão e o céu são do Molda; o robô e o lançador são folhas do Pinta.
+  'labirinto-dos-robos': () => ({
+    ...moldaArt('labirinto-dos-robos')(),
+    // Linhas: parado, andando (dois quadros), atacando (dois quadros) e desligado.
+    'images/robo.png': folhaDeQuadros(
+      [
+        [roboParado(0)],
+        [roboParado(0), roboParado(1)],
+        [roboBravo(0), roboBravo(1)],
+        [roboDesligado()],
+      ],
+      ROBO_CORES,
+    ),
+    // Linhas: pronto e disparando.
+    'images/lancador.png': folhaDeQuadros([[LANCADOR], [LANCADOR_DISPARANDO]], LANCADOR_CORES),
+  }),
   'ola-raylib': () => ({
     'images/nave.png': nave(),
     'fonts/pressstart2p.ttf': PRESS_START_2P,
