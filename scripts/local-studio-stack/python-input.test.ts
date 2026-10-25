@@ -6,6 +6,8 @@ import { tmpdir } from 'node:os'
 import { dirname, isAbsolute, join, relative } from 'node:path'
 import { canonicalJson, sha256Hex } from '../../packages/core/src/creations/content-fingerprint'
 import { createStudioRuntimeRelease } from '../../packages/core/src/studio/runtime-catalog'
+import { PGZERO_MODULE_FILES } from '../../packages/studio/src/runtime/python/pgzero/contract'
+import { RAYLIB_MODULE_FILES } from '../../packages/studio/src/runtime/python/raylib/contract'
 import { TURTLE_MODULE_FILES } from '../../packages/studio/src/runtime/python/turtle/contract'
 import { pythonDistributionFixture } from '../../packages/studio-runtime/tests/python-distribution-fixture'
 import { childEnv, ROOT } from './lib'
@@ -36,6 +38,16 @@ async function fixture() {
     'turtle-renderer.mjs',
     'turtle-protocol.mjs',
     ...TURTLE_MODULE_FILES.map((name) => `turtle/${name}`),
+    'pgzero-renderer.mjs',
+    'pgzero-protocol.mjs',
+    ...PGZERO_MODULE_FILES.map((name) => `pgzero/${name}`),
+    'raylib-renderer.mjs',
+    'raylib-protocol.mjs',
+    ...RAYLIB_MODULE_FILES.map((name) => `raylib/${name}`),
+    'LICENSE-pgzero.txt',
+    'LICENSE-freefont.txt',
+    'LICENSE-raylib.txt',
+    'LICENSE-raylib-python-cffi.txt',
   ])
     fixture.contents.set(path, new TextEncoder().encode(`synthetic:${path}`))
   const files = [...fixture.contents].map(([path, bytes]) => ({
