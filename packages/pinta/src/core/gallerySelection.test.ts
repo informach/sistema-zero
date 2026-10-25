@@ -66,3 +66,17 @@ describe('expandSelection — o pack leva as dependências junto', () => {
     expect(out.assets.map((a) => a.id)).toEqual([sprite.id])
   })
 })
+
+test('mapa com peças por camada leva TODOS os tilesets dele no pack', async () => {
+  const { addLayer } = await import('../tiles/tilemapOps')
+  const chao = createTilesetAsset({ name: 'chao', tileSize: 8 })
+  const casas = createTilesetAsset({ name: 'casas', tileSize: 8 })
+  const mapa = addLayer(
+    createTilemapAsset({ name: 'vila', tilesetId: chao.id, cols: 2, rows: 2 }),
+    'casas',
+    casas.id,
+  )
+  const result = expandSelection([mapa, casas, chao], new Set([mapa.id]))
+  expect(result.assets.map((a) => a.name)).toEqual(['casas', 'chao', 'vila'])
+  expect(new Set(result.autoIncludedTilesetIds)).toEqual(new Set([chao.id, casas.id]))
+})

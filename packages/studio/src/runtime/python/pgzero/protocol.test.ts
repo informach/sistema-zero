@@ -80,6 +80,8 @@ test('audio commands: music, loops=N, several voices at once, pause and resume',
     ['volume', [7, 8], 0.25],
     ['pause', 2],
     ['resume', 2],
+    ['pause', [3, 4]],
+    ['resume', [3, 4]],
     ['stop', null],
     ['tone', 9, 440, 11025, 1],
   ]
@@ -97,6 +99,8 @@ test('audio commands: music, loops=N, several voices at once, pause and resume',
     ['tone', 1, 440, 0, 1],
     ['tone', 1, 440, 1.5, 1],
     ['tone', 1, 440, 100],
+    ['pause', []],
+    ['resume', Array.from({ length: PGZERO_LIMITS.audioCommands + 1 }, (_, i) => i + 1)],
   ])
     expect(() => readPgzeroFrameHeader(frame({ audio: [command] }))).toThrow()
 })
@@ -105,4 +109,11 @@ test('a screen read names a point inside the window and never comes with a decod
   expect(readPgzeroFrameHeader(frame({ read: [3, 4] })).read).toEqual([3, 4])
   for (const read of [[-1, 0], [0, 10_000], [1], 'x'])
     expect(() => readPgzeroFrameHeader(frame({ read }))).toThrow()
+})
+
+test('a Pygame-ce frame may hide the system cursor; anything but a boolean is refused', () => {
+  expect(readPgzeroFrameHeader(frame()).cursor).toBeUndefined()
+  expect(readPgzeroFrameHeader(frame({ cursor: false })).cursor).toBe(false)
+  expect(readPgzeroFrameHeader(frame({ cursor: true })).cursor).toBe(true)
+  expect(() => readPgzeroFrameHeader(frame({ cursor: 'none' }))).toThrow()
 })

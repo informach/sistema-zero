@@ -372,6 +372,7 @@ export function SceneWorkshop({
       kind === 'wedge' ||
       kind === 'cylinder' ||
       kind === 'sphere' ||
+      kind === 'torus' ||
       kind === 'path'
       ? kind
       : 'mesh'

@@ -989,6 +989,131 @@ describe('Python image selection through the real modal and project store', () =
     })
   }
 
+  for (const destination of ['python-pygame', 'python-turtle'] as const) {
+    it(`${destination}: only pygame brings the whole sheet with its data (default) at scale 2`, async () => {
+      const raw = documentFixture('python', 'classic')
+      raw.assets = []
+      raw.installedExtensions = [{ id: destination, version: '1.0.0', installedAt: 1 }]
+      useProjectStore.setState({
+        project: await refinePythonProjectDocument(raw),
+        editingAccess: 'author',
+        isDirty: false,
+      })
+      // A PNG carrying the `pinta` iTXt right after IHDR, as Pinta writes it.
+      const crc = (bytes: Uint8Array) => {
+        let value = 0xffffffff
+        for (const byte of bytes) {
+          value ^= byte
+          for (let bit = 0; bit < 8; bit++) value = (value >>> 1) ^ (value & 1 ? 0xedb88320 : 0)
+        }
+        return (value ^ 0xffffffff) >>> 0
+      }
+      const body = Buffer.concat([
+        Buffer.from('pinta'),
+        Buffer.from([0, 1, 0, 0, 0]),
+        Buffer.from([0x78, 0x9c, 3, 0, 0, 0, 0, 1]),
+      ])
+      const typed = Buffer.concat([Buffer.from('iTXt'), body])
+      const chunk = Buffer.alloc(12 + body.length)
+      chunk.writeUInt32BE(body.length, 0)
+      typed.copy(chunk, 4)
+      chunk.writeUInt32BE(crc(typed), 8 + body.length)
+      const sheetBytes = Buffer.concat([
+        portableBytes.subarray(0, 33),
+        chunk,
+        portableBytes.subarray(33),
+      ])
+      const image = (recipe: PintaImageRecipe) => {
+        const png = portableImage(recipe)
+        return recipe.selection.kind === 'spritesheet'
+          ? {
+              dataUrl: `data:image/png;base64,${sheetBytes.toString('base64')}`,
+              derivation: {
+                ...png.derivation,
+                output: {
+                  ...png.derivation.output,
+                  bytes: sheetBytes.length,
+                  sha256: createHash('sha256').update(sheetBytes).digest('hex'),
+                },
+              },
+            }
+          : png
+      }
+      const previews: PintaImageRecipe[] = []
+      const adapter = pythonAdapter({
+        list: async () => [
+          {
+            ...DRAWINGS[0]!,
+            imageSelection: {
+              kind: 'frame',
+              width: 1,
+              height: 1,
+              animations: [{ id: 'andar', name: 'andar', frameCount: 2 }],
+              sheet: { width: 2, height: 1 },
+            },
+          },
+        ],
+        previewImage: async (recipe) => {
+          previews.push(structuredClone(recipe))
+          return image(recipe)
+        },
+        import: async (id, options) => {
+          if (!options?.image) throw new Error('Explicit recipe required')
+          const result = image(options.image.recipe)
+          return {
+            ok: true,
+            asset: {
+              id,
+              name: 'dragao-pintado',
+              dataUrl: result.dataUrl,
+              pintaImage: result.derivation,
+              width: 1,
+              height: 1,
+            },
+          }
+        },
+      })
+      render(
+        <StudioPintaLibraryProvider value={adapter}>
+          <PintaImportDialog onClose={() => {}} />
+        </StudioPintaLibraryProvider>,
+      )
+      await choosePythonImage()
+      if (destination === 'python-turtle') {
+        // Turtle behaves exactly as before: one frame, scale 1, no choice of what to bring.
+        expect(screen.queryByLabelText('O que trazer')).toBeNull()
+        expect(selectedValue('Tamanho')).toBe('1')
+        expect(previews.at(-1)?.selection.kind).toBe('frame')
+        return
+      }
+      expect(selectedValue('O que trazer')).toBe('spritesheet')
+      expect(selectedValue('Tamanho')).toBe('2')
+      expect(screen.queryByLabelText('Animação')).toBeNull()
+      expect(screen.getByText(/leva junto as animações/)).toBeTruthy()
+      expect(
+        within(screen.getByLabelText('O que trazer'))
+          .getAllByRole('option')
+          .map((option) => option.textContent),
+      ).toEqual(['Folha com todas as animações', 'Um quadro'])
+      // One frame stays available.
+      fireEvent.change(screen.getByLabelText('O que trazer'), { target: { value: 'frame' } })
+      await waitFor(() => expect(previews.at(-1)?.selection.kind).toBe('frame'))
+      expect(screen.getByLabelText('Animação')).toBeTruthy()
+      fireEvent.change(screen.getByLabelText('O que trazer'), { target: { value: 'spritesheet' } })
+      await waitFor(() => expect(previews.at(-1)?.selection.kind).toBe('spritesheet'))
+      await waitFor(() => expect(buttonDisabled('Adicionar imagem')).toBe(false))
+      fireEvent.click(screen.getByRole('button', { name: 'Adicionar imagem' }))
+      await waitFor(() => expect(useProjectStore.getState().project?.assets).toHaveLength(1))
+      const [asset] = useProjectStore.getState().project?.assets ?? []
+      // The pygame Python path stays assets/<name>.png.
+      expect(asset?.proPath).toBe('assets/dragao-pintado.png')
+      expect(asset?.pintaImage?.recipe).toMatchObject({
+        selection: { kind: 'spritesheet' },
+        scale: 2,
+      })
+    })
+  }
+
   it('a changed frame revokes its pending preview; the late image never replaces the current choice', async () => {
     await seedPythonProject()
     const first = Promise.withResolvers<ReturnType<typeof portableImage>>()

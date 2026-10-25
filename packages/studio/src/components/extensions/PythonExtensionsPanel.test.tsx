@@ -187,10 +187,10 @@ test('a Python project without a host runtime cannot offer an unapproved install
   expect(install.hasAttribute('disabled')).toBe(true)
   fireEvent.click(install)
   expect(stores.project.getState().project?.installedExtensions).toEqual([])
-  // Turtle, Pygame Zero and both Raylib extensions explain why they cannot be installed here.
+  // Turtle, Pygame Zero, Pygame-ce and both Raylib extensions explain why they cannot be installed here.
   expect(
     screen.getAllByText('O ambiente Python ainda não está disponível nesta página.'),
-  ).toHaveLength(4)
+  ).toHaveLength(5)
 })
 
 for (const retirement of ['unmount', 'close', 'source', 'curation'] as const) {

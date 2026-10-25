@@ -138,6 +138,20 @@ const structures: PythonBlockCodec[] = [
   ),
   structuralCodec({
     ...metadata(
+      'starred',
+      'todos os itens de',
+      'Listas e coleções',
+      3,
+      'value',
+      '*collection',
+      'Espalha os itens de uma coleção dentro de outra: (*grupo_a, *grupo_b) junta os dois.',
+    ),
+    defaultNode: () => node('Starred', { value: name('lista'), ctx: node('Load') }),
+    slots: [value('value', 'coleção')],
+    contexts: ['Load', 'Store'],
+  }),
+  structuralCodec({
+    ...metadata(
       'subscript',
       'item da coleção',
       'Listas e coleções',
@@ -286,11 +300,15 @@ const structures: PythonBlockCodec[] = [
       3,
       'handler',
       'except Error as name',
-      'Escolha o tipo de exceção que quer tratar. O apelido recebe o objeto do erro.',
+      'Escolha o tipo de exceção que quer tratar (sem tipo, trata qualquer erro). O apelido recebe o objeto do erro.',
     ),
     defaultNode: () =>
       node('ExceptHandler', { type: name('ValueError'), name: 'erro', body: [pass()] }),
-    slots: [value('type', 'tipo do erro'), word('name', 'apelido', true), body('body', 'fazer')],
+    slots: [
+      value('type', 'tipo do erro', true),
+      word('name', 'apelido', true),
+      body('body', 'fazer'),
+    ],
   }),
   structuralCodec({
     ...metadata(

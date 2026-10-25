@@ -4,15 +4,14 @@
  * arrasta; soltar carimba 1:1 (SEM repetição de padrão). Célula vazia (`-1`)
  * do recorte é buraco — não apaga o que está por baixo. Tudo puro.
  */
-import type { TilemapAsset, TilemapLayer } from '../core/project'
+import type { TilemapAsset, TilemapTileLayer } from '../core/project'
 import type { CellPos, CellRect } from './cellGeometry'
 import type { TileStamp } from './stamp'
+import { tileLayerById, withTileLayer } from './tilemapOps'
 
-function layerOf(tilemap: TilemapAsset, layerId: string): TilemapLayer | null {
-  return tilemap.layers.find((l) => l.id === layerId) ?? null
-}
+const layerOf = tileLayerById
 
-function cellsAt(layer: TilemapLayer, cols: number, rect: CellRect): Int16Array {
+function cellsAt(layer: TilemapTileLayer, cols: number, rect: CellRect): Int16Array {
   const out = new Int16Array(rect.cols * rect.rows).fill(-1)
   for (let r = 0; r < rect.rows; r += 1) {
     for (let c = 0; c < rect.cols; c += 1) {
@@ -52,21 +51,18 @@ export function copyRegion(tilemap: TilemapAsset, layerId: string, rect: CellRec
 
 /** Apaga a região (tudo vira `-1`). Devolve o MESMO asset quando nada muda. */
 export function clearRegion(tilemap: TilemapAsset, layerId: string, rect: CellRect): TilemapAsset {
-  const index = tilemap.layers.findIndex((l) => l.id === layerId)
-  const layer = tilemap.layers[index]
-  if (!layer) return tilemap
-  let cells: Int16Array | null = null
-  for (let r = 0; r < rect.rows; r += 1) {
-    for (let c = 0; c < rect.cols; c += 1) {
-      const at = (rect.row + r) * tilemap.cols + (rect.col + c)
-      if ((cells ?? layer.cells)[at] === -1) continue
-      if (!cells) cells = new Int16Array(layer.cells)
-      cells[at] = -1
+  return withTileLayer(tilemap, layerId, (layer) => {
+    let cells: Int16Array | null = null
+    for (let r = 0; r < rect.rows; r += 1) {
+      for (let c = 0; c < rect.cols; c += 1) {
+        const at = (rect.row + r) * tilemap.cols + (rect.col + c)
+        if ((cells ?? layer.cells)[at] === -1) continue
+        if (!cells) cells = new Int16Array(layer.cells)
+        cells[at] = -1
+      }
     }
-  }
-  if (!cells) return tilemap
-  const next = { ...layer, cells }
-  return { ...tilemap, layers: tilemap.layers.map((l, i) => (i === index ? next : l)) }
+    return cells ? { ...layer, cells } : layer
+  })
 }
 
 /**
@@ -95,25 +91,22 @@ export function stampRegionAt(
   at: CellPos,
   stamp: TileStamp,
 ): TilemapAsset {
-  const index = tilemap.layers.findIndex((l) => l.id === layerId)
-  const layer = tilemap.layers[index]
-  if (!layer) return tilemap
-  let cells: Int16Array | null = null
-  for (let r = 0; r < stamp.rows; r += 1) {
-    const row = at.row + r
-    if (row < 0 || row >= tilemap.rows) continue
-    for (let c = 0; c < stamp.cols; c += 1) {
-      const col = at.col + c
-      if (col < 0 || col >= tilemap.cols) continue
-      const value = stamp.tiles[r * stamp.cols + c] ?? -1
-      if (value < 0) continue
-      const idx = row * tilemap.cols + col
-      if ((cells ?? layer.cells)[idx] === value) continue
-      if (!cells) cells = new Int16Array(layer.cells)
-      cells[idx] = value
+  return withTileLayer(tilemap, layerId, (layer) => {
+    let cells: Int16Array | null = null
+    for (let r = 0; r < stamp.rows; r += 1) {
+      const row = at.row + r
+      if (row < 0 || row >= tilemap.rows) continue
+      for (let c = 0; c < stamp.cols; c += 1) {
+        const col = at.col + c
+        if (col < 0 || col >= tilemap.cols) continue
+        const value = stamp.tiles[r * stamp.cols + c] ?? -1
+        if (value < 0) continue
+        const idx = row * tilemap.cols + col
+        if ((cells ?? layer.cells)[idx] === value) continue
+        if (!cells) cells = new Int16Array(layer.cells)
+        cells[idx] = value
+      }
     }
-  }
-  if (!cells) return tilemap
-  const next = { ...layer, cells }
-  return { ...tilemap, layers: tilemap.layers.map((l, i) => (i === index ? next : l)) }
+    return cells ? { ...layer, cells } : layer
+  })
 }

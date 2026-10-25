@@ -192,8 +192,11 @@ export interface StudioCommonProps {
    * Pinta — em aba nova — já naquele desenho; o Studio só entrega o id.
    * Ausente (default) → sem botão (embed do admin, bloco de aula).
    * Estável por instância (latchado, igual à `share`).
+   * `tab`: a aba que o Studio já abriu DENTRO do clique, quando precisou preparar o desenho
+   * antes de saber o id (o desenho de um jogo de exemplo): o host só a leva ao Pinta, em vez
+   * de abrir outra (o Safari do iPad bloqueia `window.open` depois de um `await`).
    */
-  onEditDrawing?: (drawingId: string) => void
+  onEditDrawing?: (drawingId: string, tab?: Window | null) => void
   /**
    * Callback OPCIONAL "editar esta criação no Molda": quando presente, os modelos,
    * céus e texturas trazidos do Molda ganham o botão "Editar" na janela dos materiais.

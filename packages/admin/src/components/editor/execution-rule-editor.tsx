@@ -338,7 +338,10 @@ function BehaviorEditor({
   const { target, compare } = rule.expect
   const motion = target.kind === 'spritePosition'
   const actorPositions =
-    !python || environment.graphics === 'turtle' || environment.graphics === 'pgzero'
+    !python ||
+    environment.graphics === 'turtle' ||
+    environment.graphics === 'pgzero' ||
+    environment.graphics === 'pygame'
   const hasOnePress = rule.steps.length === 1 && rule.steps[0]?.action === 'press'
   const relative = (value: ExecutionCompare) => value === 'increased' || value === 'decreased'
   const comparisons = EXECUTION_COMPARES.filter((value) =>
@@ -556,7 +559,7 @@ function BehaviorEditor({
         )}
         <p className="text-xs text-muted-foreground">
           {motion
-            ? `Antes da tecla, o teste observa por ${rule.observation?.idleMs ?? 80} ms se o personagem está parado. Depois confere se a coordenada aumentou ou diminuiu, sem exigir uma velocidade exata. ${environment?.graphics === 'turtle' ? 'No Turtle, y aumenta para cima.' : python ? 'No Pygame Zero, y aumenta para baixo.' : 'No Jogo 2D, y aumenta para baixo.'}`
+            ? `Antes da tecla, o teste observa por ${rule.observation?.idleMs ?? 80} ms se o personagem está parado. Depois confere se a coordenada aumentou ou diminuiu, sem exigir uma velocidade exata. ${environment?.graphics === 'turtle' ? 'No Turtle, y aumenta para cima.' : python ? 'No Pygame, y aumenta para baixo.' : 'No Jogo 2D, y aumenta para baixo.'}`
             : '"Mudou" compara com o começo do jogo, antes dos passos. A variável é o nome que a criança usa nos blocos ou no código (e uma propriedade dela, como heroi.x).'}
         </p>
       </fieldset>

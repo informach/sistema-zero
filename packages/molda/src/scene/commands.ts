@@ -35,7 +35,7 @@ import {
 } from './matrix'
 import { meshSymmetrySource, synchronizeMeshSymmetry } from './meshSymmetry'
 import { parametricMesh, sceneGeometryMesh } from './parametricGeometry'
-import { primitiveDetail, readPrimitiveDetail } from './primitiveDetail'
+import { primitiveDetail, readPrimitiveDetail, TORUS_PROFILE } from './primitiveDetail'
 import { resizeScenePaint } from './resizePaint'
 import { duplicateSceneSkinTargets } from './skinTargets'
 import { rigidSceneTransform } from './transformTrs'
@@ -59,7 +59,7 @@ export function addScenePrimitive(
   name: string,
   nextId: SceneIdFactory = newId,
 ): MoldaSceneDocument {
-  choice(kind, ['box', 'wedge', 'cylinder', 'sphere'], 'kind')
+  choice(kind, ['box', 'wedge', 'cylinder', 'sphere', 'torus'], 'kind')
   return addSceneShape(document, kind, name, nextId)
 }
 
@@ -70,7 +70,7 @@ export function addSceneShape(
   name: string,
   nextId: SceneIdFactory = newId,
 ): MoldaSceneDocument {
-  choice(kind, ['box', 'wedge', 'cylinder', 'sphere', 'plane'], 'kind')
+  choice(kind, ['box', 'wedge', 'cylinder', 'sphere', 'torus', 'plane'], 'kind')
   const allocate = allocateId(document, nextId)
   const nodeId = allocate()
   const geometryId = allocate()
@@ -91,10 +91,16 @@ export function addSceneShape(
         materialId,
         hidden: false,
         locked: false,
-        pivot: kind === 'plane' ? [0, 0, 0] : [0, -1, 0],
+        pivot:
+          kind === 'plane'
+            ? [0, 0, 0]
+            : [0, kind === 'torus' ? -TORUS_PROFILE.initialHalfHeight : -1, 0],
         transform: {
           kind: 'trs',
-          translation: kind === 'plane' ? [0, 0, 0] : [0, 1, 0],
+          translation:
+            kind === 'plane'
+              ? [0, 0, 0]
+              : [0, kind === 'torus' ? TORUS_PROFILE.initialHalfHeight : 1, 0],
           rotation: [0, 0, 0, 1],
           scale: [1, 1, 1],
         },
@@ -119,7 +125,13 @@ export function addSceneShape(
             },
             looseEdges: [],
           }
-        : { id: geometryId, kind, from: [-1, -1, -1], to: [1, 1, 1], surfaces: {} },
+        : {
+            id: geometryId,
+            kind,
+            from: [-1, kind === 'torus' ? -TORUS_PROFILE.initialHalfHeight : -1, -1],
+            to: [1, kind === 'torus' ? TORUS_PROFILE.initialHalfHeight : 1, 1],
+            surfaces: {},
+          },
     ],
     materials: [
       ...document.materials,
@@ -233,14 +245,14 @@ export function setScenePrimitiveDetail(
   requireScene(node?.kind === 'mesh', 'node', 'Escolha uma forma curva para mudar os detalhes.')
   const geometry = selected.index.geometries.get(node.geometryId)
   requireScene(
-    geometry?.kind === 'cylinder' || geometry?.kind === 'sphere',
+    geometry?.kind === 'cylinder' || geometry?.kind === 'sphere' || geometry?.kind === 'torus',
     'geometry',
-    'Esse ajuste é para cilindros e esferas que ainda são formas.',
+    'Esse ajuste é para cilindros, bolas e torus que ainda são formas.',
   )
   const changed =
     geometry.kind === 'cylinder'
       ? { ...geometry, tessellation: readPrimitiveDetail('cylinder', detail) }
-      : { ...geometry, tessellation: readPrimitiveDetail('sphere', detail) }
+      : { ...geometry, tessellation: readPrimitiveDetail(geometry.kind, detail) }
   const before = primitiveDetail(geometry)
   const after = primitiveDetail(changed)
   if (before.around === after.around && before.down === after.down) return document

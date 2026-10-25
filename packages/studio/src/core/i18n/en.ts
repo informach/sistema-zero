@@ -261,6 +261,19 @@ export const en: Record<string, string> = {
     'This drawing comes in as a vector (SVG): it stays sharp at any size and Pygame Zero shows it at the chosen size.',
   'pintaImport.image.turtleShape':
     'This drawing comes in as a vector (SVG) and becomes a turtle shape that turns with the turtle: use the "use the Pinta drawing as a shape" block.',
+  'pintaImport.image.mode': 'What to bring',
+  'pintaImport.image.mode.spritesheet': 'Sheet with every animation',
+  'pintaImport.image.mode.frame': 'One frame',
+  'pintaImport.image.mode.tileset': 'Every tile',
+  'pintaImport.image.mode.tile': 'One tile',
+  'pintaImport.image.mode.map': 'Map with layers and objects',
+  'pintaImport.image.mode.tilemap': 'Map image',
+  'pintaImport.image.spritesheetData':
+    'The sheet carries its animations and collision box. In code, use pinta.carregar_sprite with the image name.',
+  'pintaImport.image.tilesetData':
+    'The sheet carries which tiles are solid and which are platforms. In code, use pinta.carregar_pecas with the image name.',
+  'pintaImport.image.mapData':
+    'The image carries every tile of the map, its layers and objects. In code, use pinta.carregar_mapa with the image name.',
   'pintaImport.image.preparing': 'Preparing the image…',
   'pintaImport.image.preview': 'Selected image preview',
   'pintaImport.image.add': 'Add image',

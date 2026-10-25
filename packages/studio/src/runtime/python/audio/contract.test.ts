@@ -101,6 +101,15 @@ describe('Python portable audio wire boundary', () => {
     for (const op of ['pause', 'resume'] as const) {
       expect(read(JSON.stringify({ version: 1, op, id: 2 }))).toEqual({ version: 1, op, id: 2 })
       expect(() => read(JSON.stringify({ version: 1, op, id: null }))).toThrow()
+      // Pygame-ce's mixer.pause() pauses every channel in one request.
+      expect(read(JSON.stringify({ version: 1, op, ids: [2, 3] }))).toEqual({
+        version: 1,
+        op,
+        ids: [2, 3],
+      })
+      for (const ids of [[], [0], Array.from({ length: 65 }, (_, i) => i + 1)])
+        expect(() => read(JSON.stringify({ version: 1, op, ids }))).toThrow()
+      expect(() => read(JSON.stringify({ version: 1, op, id: 2, ids: [3] }))).toThrow()
     }
   })
 })

@@ -154,7 +154,7 @@ export function PythonRuntimePreview(props: PythonRuntimePreviewProps) {
     }
   }, [view.status, view.input?.requestId])
 
-  // Turtle, Pygame Zero and the Raylib extensions draw on the execution canvas.
+  // Turtle, Pygame Zero, Pygame-ce and the Raylib extensions draw on the execution canvas.
   const hasTurtle = props.project.installedExtensions.some((extension) =>
     isPythonCanvasExtension(extension.id),
   )

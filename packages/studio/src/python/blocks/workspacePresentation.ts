@@ -3,6 +3,7 @@ import type { PythonNode } from '../language/types'
 import type { PythonBlockCodec } from './contract'
 import { type PythonVisualNode, pythonASTToVisual } from './projection'
 import type { PythonWorkspaceOrigins } from './provenance'
+import type { PythonProjectModules } from './scope'
 
 /** Splitting/merging stacks retains source order; moving pixels never reorders code. */
 export function orderPythonWorkspaceRoots(
@@ -33,8 +34,9 @@ export function updatePythonWorkspacePresentation(
   origins: PythonWorkspaceOrigins,
   codecs: readonly PythonBlockCodec[],
   officialModules?: ReadonlySet<string>,
+  projectModules?: PythonProjectModules,
 ) {
-  const canonical = pythonASTToVisual(tree, { codecs, officialModules })
+  const canonical = pythonASTToVisual(tree, { codecs, officialModules, projectModules })
   const projected = new Map<string, PythonVisualNode>()
   const queue = [...canonical.body]
   while (queue.length) {

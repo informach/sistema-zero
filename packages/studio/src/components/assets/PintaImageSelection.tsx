@@ -1,5 +1,6 @@
 import {
   assertPintaImageDimensions,
+  isPintaImageDataKind,
   type PintaImageRecipe,
   PintaImageRecipeSchema,
   pintaImageRecipeKey,
@@ -10,6 +11,7 @@ import { Button } from '#ui'
 import { assertPintaImageFits, pintaImageTargetLimits } from '../../asset-library/pintaImageTarget'
 import { isPythonProject } from '../../core/editableProject'
 import { projectUsesPgzero } from '../../core/pgzeroMediaPaths'
+import { hasPygameExtension } from '../../runtime/python/pygame/contract'
 import { hasTurtleExtension } from '../../runtime/python/turtle/contract'
 import { captureProjectStorageScope } from '../../state/projectStorageRuntime'
 import { useProjectStore, useProjectStoreApi } from '../../state/projectStore'
@@ -20,6 +22,14 @@ import type {
   StudioPintaLibraryAdapter,
 } from '../../studio/pinta-library'
 import { pintaImageOutputFor, projectPintaImageFromRecipe } from './addCreationToProject'
+import {
+  defaultPintaImageScale,
+  initialPintaImageMode,
+  type PintaImageMode,
+  pintaImageModeSelection,
+  pintaImageModeSize,
+  pintaImageModesFor,
+} from './pintaImageModes'
 
 type Preview =
   | { phase: 'loading' }
@@ -47,6 +57,18 @@ export default function PintaImageSelection({
   const store = useProjectStoreApi()
   const facts = drawing.imageSelection
   const initial = target?.pintaImage?.recipe
+  // Only pygame projects bring the whole drawing with its data; Turtle/Pygame Zero keep one image.
+  const pygame = useProjectStore(
+    (state) =>
+      !!state.project &&
+      isPythonProject(state.project) &&
+      hasPygameExtension(state.project.installedExtensions),
+  )
+  const modes = useMemo(() => pintaImageModesFor(facts, pygame), [facts, pygame])
+  const [chosenMode, setMode] = useState<PintaImageMode | undefined>(() =>
+    initialPintaImageMode(pintaImageModesFor(facts, pygame), initial),
+  )
+  const mode = chosenMode && modes.includes(chosenMode) ? chosenMode : modes[0]
   const [animationId, setAnimationId] = useState(
     initial?.selection.kind === 'frame'
       ? initial.selection.animationId
@@ -61,7 +83,7 @@ export default function PintaImageSelection({
         ? initial.selection.tileIndex
         : 0,
   )
-  const [scale, setScale] = useState(initial?.scale ?? 1)
+  const [scale, setScale] = useState(() => defaultPintaImageScale(facts, pygame, initial))
   const [preview, setPreview] = useState<Preview>({ phase: 'loading' })
   // The destination decides the format (a primitive, so the selector never re-renders by identity).
   const output = useProjectStore((state) => pintaImageOutputFor(state.project, facts, initial))
@@ -74,26 +96,23 @@ export default function PintaImageSelection({
       hasTurtleExtension(state.project.installedExtensions),
   )
   const recipe = useMemo<PintaImageRecipe | null>(() => {
-    if (!facts || facts.kind === 'unavailable') return null
-    if (facts.kind === 'frame') {
+    if (!facts || facts.kind === 'unavailable' || !mode) return null
+    if (mode === 'frame' && facts.kind === 'frame') {
       const animation = facts.animations.find((item) => item.id === animationId)
       if (!animation || position < 0 || position >= animation.frameCount) return null
     }
-    if (facts.kind === 'tile' && (position < 0 || position >= facts.tileCount)) return null
+    if (mode === 'tile' && facts.kind === 'tile' && (position < 0 || position >= facts.tileCount))
+      return null
     return PintaImageRecipeSchema.parse({
       version: 1,
       algorithm: 'pinta-image-1',
       drawingId: drawing.id,
       scale,
-      ...(output ? { output } : {}),
-      selection:
-        facts.kind === 'frame'
-          ? { kind: 'frame', animationId, frameIndex: position }
-          : facts.kind === 'tile'
-            ? { kind: 'tile', tileIndex: position }
-            : { kind: facts.kind },
+      // Sheets and maps with embedded data are always PNG.
+      ...(output && !isPintaImageDataKind(mode) ? { output } : {}),
+      selection: pintaImageModeSelection(mode, { animationId, index: position }),
     })
-  }, [facts, drawing.id, animationId, position, scale, output])
+  }, [facts, mode, drawing.id, animationId, position, scale, output])
   const recipeKey = recipe ? pintaImageRecipeKey(recipe) : null
   const revokePreview = () => {
     owner.preview?.abort()
@@ -132,11 +151,13 @@ export default function PintaImageSelection({
             return
           const replacing = target ?? projectPintaImageFromRecipe(state, recipe)
           const limits = pintaImageTargetLimits(state.project.assets ?? [], replacing?.id)
-          assertPintaImageDimensions(
-            Math.round(facts.width * recipe.scale),
-            Math.round(facts.height * recipe.scale),
-            limits,
-          )
+          const size = pintaImageModeSize(facts, recipe.selection.kind)
+          if (size)
+            assertPintaImageDimensions(
+              Math.round(size.width * recipe.scale),
+              Math.round(size.height * recipe.scale),
+              limits,
+            )
           const image = await adapter.previewImage!(recipe, limits, { signal })
           if (!valid()) return
           assertPintaImageFits(image, limits)
@@ -163,7 +184,8 @@ export default function PintaImageSelection({
   const count = facts?.kind === 'tile' ? facts.tileCount : (animation?.frameCount ?? 0)
   const selectedExists =
     recipe !== null && projectPintaImageFromRecipe(store.getState(), recipe) !== undefined
-  const scaleOptions = [...new Set([0.25, 0.5, 1, 2, initial?.scale ?? 1])].sort((a, b) => a - b)
+  const scaleOptions = [...new Set([0.25, 0.5, 1, 2, scale])].sort((a, b) => a - b)
+  const single = mode === 'frame' || mode === 'tile'
   return (
     <section aria-label={t('pintaImport.image.selection')} className="flex flex-col gap-3">
       <div className="flex items-center justify-between gap-3">
@@ -173,7 +195,28 @@ export default function PintaImageSelection({
         </Button>
       </div>
       <div className="flex flex-wrap gap-3">
-        {facts?.kind === 'frame' ? (
+        {modes.length > 1 ? (
+          <label className="flex flex-col gap-1 text-sm">
+            {t('pintaImport.image.mode')}
+            <select
+              aria-label={t('pintaImport.image.mode')}
+              disabled={busy}
+              value={mode}
+              className="min-h-11 rounded border border-sz-border bg-sz-bg px-2"
+              onChange={(event) => {
+                revokePreview()
+                setMode(event.currentTarget.value as PintaImageMode)
+              }}
+            >
+              {modes.map((item) => (
+                <option key={item} value={item}>
+                  {t(`pintaImport.image.mode.${item}`)}
+                </option>
+              ))}
+            </select>
+          </label>
+        ) : null}
+        {facts?.kind === 'frame' && mode === 'frame' ? (
           <label className="flex flex-col gap-1 text-sm">
             {t('pintaImport.image.animation')}
             <select
@@ -198,7 +241,7 @@ export default function PintaImageSelection({
             </select>
           </label>
         ) : null}
-        {facts?.kind === 'frame' || facts?.kind === 'tile' ? (
+        {single && (facts?.kind === 'frame' || facts?.kind === 'tile') ? (
           <label className="flex flex-col gap-1 text-sm">
             {t(facts.kind === 'frame' ? 'pintaImport.image.frame' : 'pintaImport.image.tile')}
             <select
@@ -245,11 +288,14 @@ export default function PintaImageSelection({
           </select>
         </label>
       </div>
-      {facts?.kind === 'frame' ? (
+      {mode === 'frame' ? (
         <p className="text-sm text-sz-fg-soft">{t('pintaImport.image.staticFrame')}</p>
       ) : null}
-      {facts?.kind === 'tilemap' ? (
+      {mode === 'tilemap' ? (
         <p className="text-sm text-sz-fg-soft">{t('pintaImport.image.fullMap')}</p>
+      ) : null}
+      {mode && isPintaImageDataKind(mode) ? (
+        <p className="text-sm text-sz-fg-soft">{t(`pintaImport.image.${mode}Data`)}</p>
       ) : null}
       {output === 'svg' ? (
         <p className="text-sm text-sz-fg-soft">

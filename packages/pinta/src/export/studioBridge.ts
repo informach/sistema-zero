@@ -8,9 +8,9 @@ import {
   type PintaAsset,
   resolveAssetPalette,
   type TilemapAsset,
-  type TilemapLayer,
 } from '../core/project'
 import type { PintaSpriteMeta, PintaTilemapMeta, PintaTilesetMeta } from '../core/types'
+import { collectMapTilesets } from '../tiles/mapTilesets'
 import { packTileset, tilesetPngDataUrl } from '../tiles/packTileset'
 import {
   packVectorTileset,
@@ -19,7 +19,7 @@ import {
 } from '../tiles/packVectorTileset'
 import { tilemapThumbnail } from '../tiles/renderTilemap'
 import { vectorTilemapPngDataUrl } from '../tiles/renderVectorTilemap'
-import { hasFrontLayer } from '../tiles/tilemapOps'
+import { hasFrontLayer, type TileLayerFilter, usesMapTileset } from '../tiles/tilemapOps'
 import { vectorToPortableSvg } from '../vector/portableSvg'
 import { vectorPngDataUrl } from '../vector/rasterize'
 import { bitmapToPngDataUrl } from './png'
@@ -90,19 +90,24 @@ export function tilesetMetaFrom(
  * Metadados de MAPA (puro, testável sem canvas): grade no formato do Estúdio +
  * sólidos/plataformas do tileset + a folha de peças já rasterizada (`sheet`).
  * `platform` OMITIDO quando vazio (retrocompat byte-idêntica).
+ *
+ * ⭐ Mapa com VÁRIAS peças: o meta continua sendo de UM tileset (o padrão do
+ * mapa, que é o que os runtimes JS sabem desenhar) — a grade e a frente levam só
+ * as camadas dessas peças (`tilemapToStudioGrid` já filtra). As camadas de outras
+ * peças e as de objetos aparecem só na miniatura e no `.pinta-tilemap.json`.
  */
 export function tilemapMetaFrom(
   tilemap: TilemapAsset,
   tileset: AnyTilesetAsset,
   sheet: { dataUrl: string; width: number; height: number },
-  include?: (layer: TilemapLayer) => boolean,
+  include?: TileLayerFilter,
 ): PintaTilemapMeta {
   const platformIdx = indicesOf(tileset.platform)
   // Grade da FRENTE só no meta COMPLETO (sem predicado) e quando há camada de
   // frente — o gk a desenha por cima do jogador na opção "frente". O meta
   // `tilemapFront` (chamado COM predicado) não repete essa grade.
   const frontGrid =
-    include === undefined && hasFrontLayer(tilemap)
+    include === undefined && hasFrontLayer(tilemap, usesMapTileset(tilemap))
       ? tilemapToStudioGrid(tilemap, (l) => l.front === true)
       : undefined
   return {
@@ -193,7 +198,9 @@ export async function buildStudioPayload(
       }
     }
     case 'tilemap': {
-      const tileset = findAsset(asset.tilesetId)
+      // A miniatura desenha TODAS as peças do mapa; o meta jogável é das padrão.
+      const tilesets = collectMapTilesets(asset, findAsset)
+      const tileset = tilesets[0]
       if (!tileset || !isTilesetKind(tileset)) return null
       // dataUrl do ASSET = miniatura do mapa achatado, CAPADA em 512px (o
       // runtime usa a grade+folha do metadado, não esta imagem) — mapas grandes
@@ -203,8 +210,8 @@ export async function buildStudioPayload(
         nativeMax > STUDIO_TILEMAP_THUMB_PX ? STUDIO_TILEMAP_THUMB_PX / nativeMax : 1
       const thumb =
         tileset.kind === 'tileset'
-          ? tilemapThumbnail(asset, tileset, STUDIO_TILEMAP_THUMB_PX)
-          : await vectorTilemapPngDataUrl(asset, tileset, thumbScale).then((url) =>
+          ? tilemapThumbnail(asset, tilesets, STUDIO_TILEMAP_THUMB_PX)
+          : await vectorTilemapPngDataUrl(asset, tilesets, thumbScale).then((url) =>
               url
                 ? {
                     dataUrl: url,
@@ -238,7 +245,7 @@ export async function buildStudioPayload(
       // camadas "da frente", que o jogo redesenha DEPOIS do jogador (as peças
       // de frente aparecem nos dois passes = oclusão por cima do herói; sem
       // filtrar o `tilemap` aqui a decoração NÃO some no caminho "Meus desenhos").
-      const front = hasFrontLayer(asset)
+      const front = hasFrontLayer(asset, usesMapTileset(asset))
       return {
         dataUrl,
         width: thumb.width,

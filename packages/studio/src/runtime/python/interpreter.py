@@ -364,7 +364,8 @@ class _StudioExecution:
 
     @staticmethod
     def _mission_sprite(value):
-        for name, class_name in [('turtle', 'RawTurtle'), ('pgzero.actor', 'Actor')]:
+        for name, class_name in [('turtle', 'RawTurtle'), ('pgzero.actor', 'Actor'),
+                                 ('pygame.sprite', 'Sprite')]:
             module = sys.modules.get(name)
             kind = getattr(module, class_name, None) if module is not None else None
             if isinstance(kind, type) and isinstance(value, kind):
@@ -421,6 +422,29 @@ class _StudioExecution:
                       checkpoint=self._checkpoint if self._mission is not None else None)
         runner.prepare_mod(self._main)
         self._after_main = lambda: runner.run_mod(self._main)
+
+    def install_pygame(self, directory, exchange, decode):
+        # The real pygame-ce (extracted into this directory with its host bridge) draws; the
+        # Pygame Zero frame transport carries the screen, input and sounds. Author modules keep
+        # precedence: a project with its own pygame.py gets no bridge at all.
+        if self._main is None or 'pygame' in sys.modules:
+            raise RuntimeError('O Pygame-ce não pode ser preparado nesta execução.')
+        sys.path.insert(1, directory)
+        from pgzero import _sz
+
+        def transport(header, payload):
+            reply = run_sync(exchange(header, to_js(payload)))
+            if isinstance(reply, str):
+                return reply, None
+            return str(reply[0]), reply[1].to_bytes()
+
+        _sz.configure(transport, None, str(Path.cwd()),
+                      checkpoint=self._checkpoint if self._mission is not None else None)
+        own = Path(sys.path[0])
+        if (own / 'pygame.py').is_file() or (own / 'pygame' / '__init__.py').is_file():
+            return
+        import _szpygame
+        _szpygame.install(mission=self._mission is not None)
 
     def install_raylib(self, directory, exchange, decode, mode):
         # pyray/raylib like `pip install raylib` on the desktop: the program draws in its own

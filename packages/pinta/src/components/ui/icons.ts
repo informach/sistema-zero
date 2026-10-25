@@ -22,6 +22,7 @@ export {
   ArrowUpToLine,
   // O "sem cor" dos quadradinhos de cor (a paleta e as duas cores da caixa), como na tela-modelo.
   Ban,
+  BoxSelect,
   BrickWall,
   BringToFront,
   Brush,
@@ -63,7 +64,9 @@ export {
   Link2,
   Lock,
   LockOpen,
+  Magnet,
   Map,
+  MapPin,
   Maximize,
   Minus,
   MousePointer2,

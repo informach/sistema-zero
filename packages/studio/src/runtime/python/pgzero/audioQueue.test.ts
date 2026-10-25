@@ -134,6 +134,21 @@ describe('the frame audio queue', () => {
     })
   })
 
+  test('pause and resume of several voices travel as one request each', async () => {
+    const { queue, sent, settle } = host()
+    queue.pgzero(
+      [
+        ['pause', [1, 2, 3]],
+        ['resume', [4, 5]],
+      ],
+      false,
+    )
+    expect(sent[0]!.request).toEqual({ version: 1, op: 'pause', ids: [1, 2, 3] })
+    sent[0]!.reply()
+    await settle()
+    expect(sent[1]!.request).toEqual({ version: 1, op: 'resume', ids: [4, 5] })
+  })
+
   test('stop and volume are never dropped', async () => {
     const { queue, sent, settle, advance } = host()
     queue.pgzero([play(1), ['volume', 1, 0.5], ['stop', 1]], false)

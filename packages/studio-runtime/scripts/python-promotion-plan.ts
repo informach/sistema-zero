@@ -22,10 +22,16 @@ import { createStudioRuntimeHosts } from '../../members/src/domain/studio/runtim
 import { PYTHON_PROGRAMMING_CODECS } from '../../studio/src/python/blocks/catalog'
 import { describePythonCatalog } from '../../studio/src/python/blocks/selection'
 import { PYTHON_PGZERO_CODECS } from '../../studio/src/python/extensions/pgzero/catalog'
+import { PYTHON_PYGAME_CODECS } from '../../studio/src/python/extensions/pygame/catalog'
 import { PYTHON_RAYLIB_2D_CODECS } from '../../studio/src/python/extensions/raylib2d/catalog'
 import { PYTHON_RAYLIB_3D_CODECS } from '../../studio/src/python/extensions/raylib3d/catalog'
 import { PYTHON_TURTLE_CODECS } from '../../studio/src/python/extensions/turtle/catalog'
 import { PGZERO_EXTENSION } from '../../studio/src/runtime/python/pgzero/contract'
+import {
+  PYGAME_CE_WHEEL,
+  PYGAME_EXTENSION,
+  PYGAME_MODULE_FILES,
+} from '../../studio/src/runtime/python/pygame/contract'
 import {
   RAYLIB_2D_EXTENSION,
   RAYLIB_3D_EXTENSION,
@@ -36,6 +42,14 @@ import { describePythonRuntimeConfiguration } from '../src/python-configuration-
 import { verifyPythonDistributionFiles } from './python-distribution-files'
 
 export { readPromotionFile } from './python-distribution-files'
+
+// The pygame-ce wheel a distribution must carry: the one the Studio pinned (contract.ts).
+let pinnedPygameWheel: { file: string; bytes: number; sha256: string } = PYGAME_CE_WHEEL
+
+/** Test fixtures carry a stand-in wheel under the same name; production checks the pinned one. */
+export function setPinnedPygameWheelForTests(wheel: { bytes: number; sha256: string } | null) {
+  pinnedPygameWheel = wheel ? { ...wheel, file: PYGAME_CE_WHEEL.file } : PYGAME_CE_WHEEL
+}
 
 const origin = z.string().refine((value) => {
   try {
@@ -153,6 +167,19 @@ export async function preparePythonPromotion(raw: unknown, baseDirectory = proce
     input.distribution.directory,
     input.distribution.sha256,
   )
+  const distributedPaths = new Set(distribution.files.map(({ path }) => path))
+  for (const path of PYGAME_MODULE_FILES)
+    if (!distributedPaths.has(`pygame/${path}`))
+      throw new Error(`Artefato Pygame-ce obrigatório ausente: pygame/${path}.`)
+  const wheel = distribution.files.find(({ path }) => path === pinnedPygameWheel.file)
+  if (!wheel) throw new Error(`Artefato Pygame-ce obrigatório ausente: ${pinnedPygameWheel.file}.`)
+  // The distribution only proves the bytes match ITS manifest; the browser runs the wheel the
+  // Studio pinned (and recorded its JavaScript snippets from), so both must be that one.
+  if (wheel.sha256 !== pinnedPygameWheel.sha256 || wheel.bytes !== pinnedPygameWheel.bytes)
+    throw new Error(
+      `A wheel Pygame-ce do artefato não é a fixada no Estúdio (${pinnedPygameWheel.file}, ` +
+        `sha256 ${pinnedPygameWheel.sha256}).`,
+    )
   const release = StudioRuntimeReleaseSchema.parse(
     await createStudioRuntimeRelease({
       manifestVersion: 1,
@@ -163,6 +190,7 @@ export async function preparePythonPromotion(raw: unknown, baseDirectory = proce
       extensions: [
         { id: TURTLE_EXTENSION.id, versions: [TURTLE_EXTENSION.version] },
         { id: PGZERO_EXTENSION.id, versions: [PGZERO_EXTENSION.version] },
+        { id: PYGAME_EXTENSION.id, versions: [PYGAME_EXTENSION.version] },
         { id: RAYLIB_2D_EXTENSION.id, versions: [RAYLIB_2D_EXTENSION.version] },
         { id: RAYLIB_3D_EXTENSION.id, versions: [RAYLIB_3D_EXTENSION.version] },
       ],
@@ -221,6 +249,7 @@ export async function preparePythonPromotion(raw: unknown, baseDirectory = proce
     ...PYTHON_PROGRAMMING_CODECS,
     ...PYTHON_TURTLE_CODECS,
     ...PYTHON_PGZERO_CODECS,
+    ...PYTHON_PYGAME_CODECS,
     ...PYTHON_RAYLIB_2D_CODECS,
     ...PYTHON_RAYLIB_3D_CODECS,
   ].filter((codec) =>

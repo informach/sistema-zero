@@ -19,12 +19,12 @@ import { COPY } from '../../core/copy'
 import { perfSpan } from '../../core/perf'
 import {
   assetStyle,
-  isTilesetKind,
   type PintaAsset,
   type PintaBitmap,
   resolveAssetPalette,
 } from '../../core/project'
 import { paintBitmapCapped } from '../../pixel/render'
+import { collectMapTilesets } from '../../tiles/mapTilesets'
 import { paintMinimap, tilemapMinimapColors } from '../../tiles/minimap'
 import { VectorFrameSvg } from '../../vector/VectorFrameSvg'
 import { Check, Copy, Pencil, Trash2 } from '../ui/icons'
@@ -167,10 +167,15 @@ function TilemapThumb({
   findAsset?: (id: string) => PintaAsset | null
 }): JSX.Element | null {
   const canvasRef = useRef<HTMLCanvasElement>(null)
-  const tileset = findAsset?.(asset.tilesetId) ?? null
+  // Todas as peças do mapa: cada célula pinta com a cor da camada que venceu nela.
+  const tilesets = useMemo(
+    () => (findAsset ? collectMapTilesets(asset, findAsset) : []),
+    [asset, findAsset],
+  )
+  const tileset = tilesets[0] ?? null
   const colors = useMemo(
-    () => (tileset && isTilesetKind(tileset) ? tilemapMinimapColors(asset, tileset) : null),
-    [asset, tileset],
+    () => (tileset ? tilemapMinimapColors(asset, tilesets) : null),
+    [asset, tileset, tilesets],
   )
 
   useEffect(() => {
@@ -179,7 +184,7 @@ function TilemapThumb({
     paintMinimap(canvas, asset.cols, asset.rows, colors)
   }, [asset, colors])
 
-  if (!tileset || !isTilesetKind(tileset)) return null
+  if (!tileset) return null
   return (
     <canvas
       ref={canvasRef}

@@ -127,7 +127,7 @@ jobs:
 
       - name: Validate Python performance and reproduction instruments
         working-directory: packages/studio
-        run: bun --no-env-file test ./scripts/python/reproduction.test.ts ./e2e-runtime/performanceAcceptance.test.ts ./e2e-runtime/gamePerformance.test.ts ./e2e-python-editor/f1AcceptanceReporter.test.ts
+        run: bun --no-env-file test ./scripts/python/reproduction.test.ts ./scripts/python/approved-eval.test.ts ./e2e-runtime/performanceAcceptance.test.ts ./e2e-runtime/gamePerformance.test.ts ./e2e-python-editor/f1AcceptanceReporter.test.ts
 
       - name: Verificar cancelamento Python por RPC no runtime real
         working-directory: packages/studio-language-service
@@ -251,6 +251,8 @@ jobs:
           bun run check:python-visual-examples
           bun run check:pgzero-games
           bun run check:raylib-games
+          bun run check:pygame-games
+          (cd ../pinta && bun scripts/pygame-gallery/generate.ts --check && bun test scripts/pygame-gallery/drawing.test.ts scripts/pygame-gallery/png.test.ts scripts/pygame-gallery/derivation.test.ts)
           bun --no-env-file test ./scripts/python/reference-game-audio.test.ts ./scripts/python/generate-visual-example-block-metadata.test.ts ./scripts/python/pgzero-art-png.test.ts
           bun run test:canvas-survival
           bun run test:grid-games

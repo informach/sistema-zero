@@ -83,6 +83,8 @@
     "check:pgzero-games": "bun --no-env-file scripts/generate-pgzero-games.ts --check",
     "gen:raylib-games": "bun --no-env-file scripts/generate-raylib-games.ts",
     "check:raylib-games": "bun --no-env-file scripts/generate-raylib-games.ts --check",
+    "gen:pygame-games": "bun --no-env-file scripts/generate-pygame-games.ts",
+    "check:pygame-games": "bun --no-env-file scripts/generate-pygame-games.ts --check",
     "gen:server-examples": "bun scripts/gen-server-examples.ts",
     "gen:snow-descent": "bun scripts/gen-snow-descent.ts",
     "check:snow-descent": "bun scripts/gen-snow-descent.ts --check",

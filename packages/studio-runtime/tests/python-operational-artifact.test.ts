@@ -1,9 +1,13 @@
-import { afterEach, expect, test } from 'bun:test'
+import { afterAll, afterEach, beforeAll, expect, test } from 'bun:test'
 import { lstat, mkdir, mkdtemp, readFile, realpath, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { dirname, join, resolve, sep } from 'node:path'
 import { canonicalJson, sha256Hex } from '@sistemazero/core/creations'
 import { PGZERO_MODULE_FILES } from '../../studio/src/runtime/python/pgzero/contract'
+import {
+  PYGAME_CE_WHEEL,
+  PYGAME_MODULE_FILES,
+} from '../../studio/src/runtime/python/pygame/contract'
 import { RAYLIB_MODULE_FILES } from '../../studio/src/runtime/python/raylib/contract'
 import { TURTLE_MODULE_FILES } from '../../studio/src/runtime/python/turtle/contract'
 import { frameFiles } from '../promotion-worker/protocol'
@@ -11,9 +15,16 @@ import {
   prepareOperationalPromotion,
   verifyOperationalArtifact,
 } from '../scripts/promote-python-runtime-worker'
-import { preparePythonPromotion } from '../scripts/python-promotion-plan'
+import {
+  preparePythonPromotion,
+  setPinnedPygameWheelForTests,
+} from '../scripts/python-promotion-plan'
 import { sha256 } from '../src/artifacts'
-import { pythonDistributionFixture } from './python-distribution-fixture'
+import { fixturePygameWheel, pythonDistributionFixture } from './python-distribution-fixture'
+
+// The fixtures write a stand-in wheel; the check against the pinned one has its own test.
+beforeAll(() => setPinnedPygameWheelForTests(fixturePygameWheel('synthetic-contract:')))
+afterAll(() => setPinnedPygameWheelForTests(null))
 
 const directories: string[] = []
 afterEach(async () => {
@@ -54,6 +65,8 @@ async function fixture() {
     'LICENSE-freefont.txt',
     'LICENSE-raylib.txt',
     'LICENSE-raylib-python-cffi.txt',
+    ...PYGAME_MODULE_FILES.map((path) => `pygame/${path}`),
+    PYGAME_CE_WHEEL.file,
   ])
     storage.contents.set(path, new TextEncoder().encode(`synthetic-contract:${path}`))
   const distribution = {

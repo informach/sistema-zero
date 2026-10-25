@@ -10,6 +10,10 @@ import { isToneRequest } from '../audio/tone'
  *            sounds that finished (`ended`), or `{ error }` when the browser could not show
  *            the frame (Python raises it, so the program stops with a traceback).
  *
+ * Pygame-ce sends its whole screen instead of a display list: one PIXELS record (width, height)
+ * and the RGBA bytes of the screen as attachment PGZERO_PIXELS_ATTACHMENT. `cursor: false` hides
+ * the system cursor over the canvas (pygame.mouse.set_visible / set_cursor with an image).
+ *
  * A header with `decode: image` is not a frame: it asks for the RGBA pixels of a vector image
  * (`images.x.get_at` on an SVG), answered at once with the pixels as a binary attachment.
  * A header with `watch: true` asks the host to report sounds that end (music.play_once,
@@ -50,6 +54,8 @@ export const PGZERO_LIMITS = Object.freeze({
 
 export const PGZERO_LIST_ATTACHMENT = 0
 export const PGZERO_FONT_ATTACHMENT_BASE = 10_000
+/** The RGBA screen of a Pygame-ce frame (width × height × 4 bytes). */
+export const PGZERO_PIXELS_ATTACHMENT = 20_000
 /** The bundled default font (FreeSansBold, as in Pygame Zero) travels with the first frame. */
 export const PGZERO_DEFAULT_FONT_ATTACHMENT = PGZERO_FONT_ATTACHMENT_BASE
 
@@ -65,6 +71,8 @@ export const PGZERO_OP = Object.freeze({
   POLY: 8,
   ELLIPSE: 9,
   ARC: 10,
+  /** Pygame-ce: the whole screen (width, height); its RGBA bytes are PGZERO_PIXELS_ATTACHMENT. */
+  PIXELS: 11,
 })
 /** Points one polygon may have (kept with _sz.py MAX_POLY_POINTS). */
 export const PGZERO_MAX_POLY_POINTS = 4096
@@ -80,6 +88,7 @@ export const PGZERO_OP_ARITY: Readonly<Record<number, number>> = Object.freeze({
   // POLY (8) has a variable length: 6 + 2 × its point count.
   9: 9,
   10: 11,
+  11: 2,
 })
 
 export interface PgzeroTextStyle {
@@ -106,8 +115,9 @@ export interface PgzeroTextStyle {
 }
 /**
  * Sound commands of one frame. A play names its voice, file, extra plays (-1: forever, as
- * Sound.play(loops=-1)), volume and whether it is the music, which has its own channel. Stop
- * and volume may name several voices at once (Sound.stop() stops all of its own).
+ * Sound.play(loops=-1)), volume and whether it is the music, which has its own channel. Stop,
+ * volume, pause and resume may name several voices at once (Sound.stop() stops all of its own;
+ * pygame's mixer.pause() pauses every channel).
  */
 export type PgzeroAudioCommand =
   | readonly ['play', number, string, number, number, boolean]
@@ -115,7 +125,7 @@ export type PgzeroAudioCommand =
   | readonly ['tone', number, number, number, number]
   | readonly ['stop', number | null | readonly number[]]
   | readonly ['volume', number | readonly number[], number]
-  | readonly ['pause' | 'resume', number]
+  | readonly ['pause' | 'resume', number | readonly number[]]
 export interface PgzeroFrameHeader {
   w: number
   h: number
@@ -133,6 +143,8 @@ export interface PgzeroFrameHeader {
   decode?: number
   /** screen.surface.get_at: paint this batch at once and answer the screen's colour here. */
   read?: readonly [number, number]
+  /** false: no system cursor over the game (Pygame-ce draws its own or none). */
+  cursor?: boolean
 }
 
 const object = (value: unknown): value is Record<string, unknown> =>
@@ -248,7 +260,8 @@ function readAudio(value: unknown): PgzeroAudioCommand {
     b >= 0
   )
     return ['volume', a, b]
-  if ((op === 'pause' || op === 'resume') && value.length === 2 && id(a, 2 ** 31)) return [op, a]
+  if ((op === 'pause' || op === 'resume') && value.length === 2 && (id(a, 2 ** 31) || voices(a)))
+    return [op, a]
   invalid()
 }
 
@@ -267,7 +280,8 @@ export function readPgzeroFrameHeader(raw: unknown): PgzeroFrameHeader {
     invalid()
   }
   if (!object(value)) invalid()
-  const { w, h, title, keep, images, fonts, strings, styles, audio, decode, watch, read } = value
+  const { w, h, title, keep, images, fonts, strings, styles, audio, decode, watch, read, cursor } =
+    value
   const actors = value.actors ?? []
   if (
     !id(w, PGZERO_LIMITS.maxWidth) ||
@@ -287,6 +301,7 @@ export function readPgzeroFrameHeader(raw: unknown): PgzeroFrameHeader {
     !Array.isArray(audio) ||
     audio.length > PGZERO_LIMITS.audioCommands ||
     (watch !== undefined && typeof watch !== 'boolean') ||
+    (cursor !== undefined && typeof cursor !== 'boolean') ||
     !Array.isArray(actors) ||
     actors.length > 2048 ||
     (read !== undefined &&
@@ -359,6 +374,7 @@ export function readPgzeroFrameHeader(raw: unknown): PgzeroFrameHeader {
     }),
     ...(decode === undefined ? {} : { decode: readDecode(decode, keep) }),
     ...(read === undefined ? {} : { read: [read[0] as number, read[1] as number] as const }),
+    ...(cursor === undefined ? {} : { cursor }),
   }
 }
 

@@ -1,4 +1,5 @@
 import { PGZERO_EXTENSION } from '../../runtime/python/pgzero/contract'
+import { PYGAME_CE_VERSION, PYGAME_EXTENSION } from '../../runtime/python/pygame/contract'
 import { RAYLIB_2D_EXTENSION, RAYLIB_3D_EXTENSION } from '../../runtime/python/raylib/contract'
 import { TURTLE_EXTENSION } from '../../runtime/python/turtle/contract'
 
@@ -18,6 +19,13 @@ export const PYTHON_EXTENSIONS = Object.freeze([
     description:
       'Faça jogos com atores, imagens, sons, teclado e mouse. É o mesmo Pygame Zero do computador.',
     help: 'Os blocos têm nomes em português. Na Ponte, você vê o Python do Pygame Zero, como heroi.draw() e screen.draw.text(...). Para jogar no computador: pip install pygame-ce e pip install --no-deps pgzero.',
+  }),
+  Object.freeze({
+    ...PYGAME_EXTENSION,
+    name: 'Pygame-ce',
+    emoji: '🕹️',
+    description: 'Crie jogos com janela, eventos, desenho, imagens e colisões do Pygame-ce.',
+    help: `Use import pygame. Desenhos do Pinta podem ser abertos com pygame.image.load("assets/nome.png"). Para jogar no computador: pip install pygame-ce==${PYGAME_CE_VERSION}.`,
   }),
   Object.freeze({
     ...RAYLIB_2D_EXTENSION,
@@ -40,6 +48,7 @@ export const PYTHON_EXTENSIONS = Object.freeze([
 export const PYTHON_CANVAS_EXTENSION_IDS: readonly string[] = [
   TURTLE_EXTENSION.id,
   PGZERO_EXTENSION.id,
+  PYGAME_EXTENSION.id,
   RAYLIB_2D_EXTENSION.id,
   RAYLIB_3D_EXTENSION.id,
 ]

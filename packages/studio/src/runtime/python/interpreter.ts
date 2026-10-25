@@ -27,6 +27,9 @@ import missionSource from './mission-observer.py'
 import { PGZERO_EXTENSION } from './pgzero/contract'
 import { loadPgzeroModuleSources } from './pgzero/moduleSources'
 import type { PythonConsoleStream, PythonExecutionSnapshot, PythonGraphicsReply } from './protocol'
+import { PYGAME_EXTENSION } from './pygame/contract'
+import { loadPygameModuleSources } from './pygame/moduleSources'
+import { createPygameScreen, installSdlWorkerGlobals, takeScreenPixels } from './pygame/sdlScreen'
 import { RAYLIB_2D_EXTENSION } from './raylib/contract'
 import { loadRaylibModuleSources } from './raylib/moduleSources'
 import { isPythonSavedFile, isPythonSavedFilePath } from './savedFiles'
@@ -49,6 +52,7 @@ interface ExecutionBridge {
   evaluate: PythonCallable
   install_turtle: PythonCallable
   install_pgzero: PythonCallable
+  install_pygame: PythonCallable
   install_raylib: PythonCallable
   install_audio: PythonCallable
   install_saved_files: PythonCallable
@@ -67,6 +71,10 @@ interface PythonAPI {
     readFile(path: string): Uint8Array
   }
   runPython(source: string): unknown
+  /** Pygame-ce only: the pinned wheel, extracted into the extension directory. */
+  unpackArchive(buffer: ArrayBuffer, format: 'wheel', options: { extractDir: string }): void
+  /** Pygame-ce only: the canvas SDL's video driver draws into (see pygame/sdlScreen.ts). */
+  canvas: { setCanvas2D(canvas: object): void }
   setStdout(writer: { write(bytes: Uint8Array): number; isatty: boolean }): void
   setStderr(writer: { write(bytes: Uint8Array): number; isatty: boolean }): void
 }
@@ -115,6 +123,30 @@ async function loadPgzeroResources(base: URL, scope: AbortController) {
   scope.signal.throwIfAborted()
   return { protocol, sources }
 }
+/** pygame-ce draws; the Pygame Zero frame transport (_sz) carries its screen and sounds. */
+async function loadPygameResources(base: URL, scope: AbortController) {
+  const [canvas, pygame] = await awaitWithSignal(
+    () =>
+      Promise.all([
+        loadPgzeroResources(base, scope),
+        loadPygameModuleSources(base, scope.signal),
+      ]).catch((error: unknown) => {
+        scope.abort(error)
+        throw error
+      }),
+    scope.signal,
+  )
+  scope.signal.throwIfAborted()
+  return {
+    ...canvas,
+    // Pygame Zero's own small pygame package stays out: the wheel brings the real pygame-ce.
+    sources: new Map([
+      ...[...canvas.sources].filter(([filename]) => !filename.startsWith('pygame/')),
+      ...pygame.sources,
+    ]),
+    wheel: pygame.wheel,
+  }
+}
 async function loadRaylibResources(base: URL, scope: AbortController) {
   const [protocol, sources]: [
     typeof import('./raylib/protocol'),
@@ -136,6 +168,7 @@ async function loadRaylibResources(base: URL, scope: AbortController) {
 type ExtensionResources =
   | { kind: 'python-turtle'; value: Awaited<ReturnType<typeof loadTurtleResources>> }
   | { kind: 'python-pgzero'; value: Awaited<ReturnType<typeof loadPgzeroResources>> }
+  | { kind: 'python-pygame'; value: Awaited<ReturnType<typeof loadPygameResources>> }
   | {
       kind: 'python-raylib-2d' | 'python-raylib-3d'
       value: Awaited<ReturnType<typeof loadRaylibResources>>
@@ -149,6 +182,10 @@ function loadCanvasResources(kind: PythonCanvasExtension, base: URL, scope: Abor
     case 'python-pgzero':
       return loadPgzeroResources(base, scope).then(
         (value): ExtensionResources => ({ kind: 'python-pgzero', value }),
+      )
+    case 'python-pygame':
+      return loadPygameResources(base, scope).then(
+        (value): ExtensionResources => ({ kind: 'python-pygame', value }),
       )
     default:
       return loadRaylibResources(base, scope).then((value): ExtensionResources => ({ kind, value }))
@@ -280,6 +317,7 @@ export async function createPythonInterpreter(options: {
   const evaluate = bridge.evaluate
   const installTurtle = bridge.install_turtle
   const installPgzero = bridge.install_pgzero
+  const installPygame = bridge.install_pygame
   const installRaylib = bridge.install_raylib
   const installAudio = bridge.install_audio
   const installSavedFiles = bridge.install_saved_files
@@ -445,7 +483,7 @@ export async function createPythonInterpreter(options: {
             }
             return options.graphics!(JSON.stringify(request), images)
           })
-        } else if (resources.kind === 'python-pgzero') {
+        } else if (resources.kind === 'python-pgzero' || resources.kind === 'python-pygame') {
           const { protocol, sources } = resources.value
           const {
             readPgzeroFrameHeader,
@@ -453,18 +491,35 @@ export async function createPythonInterpreter(options: {
             PGZERO_LIST_ATTACHMENT,
             PGZERO_FONT_ATTACHMENT_BASE,
             PGZERO_DEFAULT_FONT_ATTACHMENT,
+            PGZERO_PIXELS_ATTACHMENT,
           } = protocol
-          const directory = `/studio/extensions/${PGZERO_EXTENSION.id}-${PGZERO_EXTENSION.version}`
-          // Two packages live here (pgzero and the part of pygame): each file gets its folder.
+          const pygame = resources.kind === 'python-pygame'
+          const extension = pygame ? PYGAME_EXTENSION : PGZERO_EXTENSION
+          const directory = `/studio/extensions/${extension.id}-${extension.version}`
+          // Several packages live here (pgzero, its part of pygame or the pygame-ce bridge):
+          // each file gets its folder.
           for (const [filename, bytes] of sources) {
-            const path = `${directory}/${filename}`
-            runtime.FS.mkdirTree(path.slice(0, path.lastIndexOf('/')))
-            runtime.FS.writeFile(path, bytes)
+            const target = `${directory}/${filename}`
+            runtime.FS.mkdirTree(target.slice(0, target.lastIndexOf('/')))
+            runtime.FS.writeFile(target, bytes)
+          }
+          let screen: ReturnType<typeof createPygameScreen> | undefined
+          if (resources.kind === 'python-pygame') {
+            const { wheel } = resources.value
+            runtime.unpackArchive(
+              wheel.buffer.slice(wheel.byteOffset, wheel.byteOffset + wheel.byteLength),
+              'wheel',
+              { extractDir: directory },
+            )
+            installSdlWorkerGlobals()
+            screen = createPygameScreen()
+            runtime.canvas.setCanvas2D(screen.canvas)
           }
           const inProject = (path: string) =>
             path.startsWith(`${PROJECT_ROOT}/`) && !path.split('/').includes('..')
           let sentFont = false
-          installPgzero(
+          const installCanvas = resources.kind === 'python-pygame' ? installPygame : installPgzero
+          installCanvas(
             directory,
             (raw: unknown, payload: unknown) => {
               const header = readPgzeroFrameHeader(raw)
@@ -486,7 +541,13 @@ export async function createPythonInterpreter(options: {
                       : new Uint8Array(payload),
                 })
               }
-              if (!sentFont) {
+              // pygame-ce renders its own text: the screen arrives as pixels.
+              if (screen && !header.keep)
+                attachments.push({
+                  id: PGZERO_PIXELS_ATTACHMENT,
+                  bytes: takeScreenPixels(screen, header.w, header.h),
+                })
+              if (!sentFont && !screen) {
                 sentFont = true
                 attachments.push({
                   id: PGZERO_DEFAULT_FONT_ATTACHMENT,
@@ -670,6 +731,7 @@ export async function createPythonInterpreter(options: {
       installTurtle.destroy()
       installRaylib.destroy()
       installPgzero.destroy()
+      installPygame.destroy()
       installAudio.destroy()
       installSavedFiles.destroy()
       installActivity.destroy()

@@ -4,6 +4,7 @@ import { useShallow } from 'zustand/react/shallow'
 import { PROJECT_ASSET_LIMITS, type ProjectAsset } from '#core'
 import { Button, ConfirmDialog, Modal } from '#ui'
 import type { LibraryAsset } from '../../asset-library/catalog'
+import { exampleDrawingDocumentId, exampleDrawingRefOf } from '../../asset-library/exampleDrawings'
 import {
   getPersonalAsset,
   getPersonalAssetsNamespace,
@@ -25,6 +26,7 @@ import {
 } from '../../core/pgzeroMediaPaths'
 import { projectUsesRaylib, raylibCodePath } from '../../core/raylibMediaPaths'
 import { captureAndStoreProjectThumb } from '../../cover/thumbCapture'
+import { hasPygameExtension } from '../../runtime/python/pygame/contract'
 import { useProjectStore, useProjectStoreApi } from '../../state/projectStore'
 import { retryProApplication } from '../../state/proRevision'
 import {
@@ -48,6 +50,7 @@ import {
   evidencedOriginOf,
   personalKindOf,
 } from './creationOrigin'
+import { linkExampleDrawing } from './exampleDrawingLink'
 import { projectHas3DConsumer, projectHas3DMaterials } from './has3DConsumer'
 import {
   fileTo3DAssetDataUrl,
@@ -109,6 +112,29 @@ type PendingDeletion =
   | { scope: 'project'; id: string; name: string; operation?: ProWorkspaceOperation }
   | { scope: 'personal'; id: string; name: string }
 
+/**
+ * Uma aba em branco com "Preparando o desenho…", aberta no gesto do clique. Sem `noopener`
+ * (com ele o navegador devolve `null` e não haveria como levá-la ao Pinta depois); o
+ * `opener` é cortado logo em seguida. Bloqueada ou indisponível → `null` (o host abre como
+ * sempre).
+ */
+function openPreparingTab(): Window | null {
+  try {
+    const tab = window.open('', '_blank')
+    if (!tab) return null
+    try {
+      tab.opener = null
+      tab.document.title = 'Preparando o desenho…'
+      tab.document.body.textContent = 'Preparando o desenho no Pinta…'
+    } catch {
+      // A aba é nossa (about:blank); se o navegador não deixar escrever, ela só fica em branco.
+    }
+    return tab
+  } catch {
+    return null
+  }
+}
+
 export function AssetsPanel({
   open,
   onClose,
@@ -137,14 +163,22 @@ export function AssetsPanel({
       ? s.project.python.entrypoint
       : undefined,
   )
+  const usesPygame = useProjectStore(
+    (s) =>
+      !!s.project &&
+      isPythonProject(s.project) &&
+      hasPygameExtension(s.project.installedExtensions),
+  )
   const codeNameOf = useMemo(
     () =>
-      codeEntrypoint === undefined
-        ? undefined
-        : usesRaylib
+      codeEntrypoint !== undefined
+        ? usesRaylib
           ? (asset: ProjectAsset) => raylibCodePath(asset, codeEntrypoint)
-          : (asset: ProjectAsset) => pgzeroCodeName(asset, codeEntrypoint),
-    [codeEntrypoint, usesRaylib],
+          : (asset: ProjectAsset) => pgzeroCodeName(asset, codeEntrypoint)
+        : usesPygame
+          ? (asset: ProjectAsset) => asset.proPath
+          : undefined,
+    [codeEntrypoint, usesRaylib, usesPygame],
   )
   const { hasProject, assets, has3DExtension, has3DMaterials, coverAssetName } = useProjectStore(
     useShallow((s) => ({
@@ -399,7 +433,18 @@ export function AssetsPanel({
    */
   const editTargetOf = (asset: ProjectAsset): EditTarget | null => {
     const id = personalIdOf(asset)
-    if (!id) return null
+    if (!id) {
+      // Desenho de um jogo de exemplo: o Pinta só o recebe quando a criança pede.
+      const example = isPython ? exampleDrawingRefOf(asset) : null
+      return example && onEditDrawing && pintaLibrary?.importDrawings
+        ? {
+            id: exampleDrawingDocumentId(example),
+            origin: 'pinta',
+            open: onEditDrawing,
+            example: true,
+          }
+        : null
+    }
     const origin = creationOriginOf(asset, personalById.get(id), catalogOrigins.get(id))
     if (!origin) return null
     const open = origin === 'pinta' ? onEditDrawing : onEditCreation
@@ -414,8 +459,72 @@ export function AssetsPanel({
    */
   const openInOriginApp = (asset: ProjectAsset, target: EditTarget) => {
     setError(null)
+    if (target.example) {
+      void editExampleDrawing(asset, target)
+      return
+    }
     target.open(target.id)
     void repairPersonalRecord(asset, target)
+  }
+
+  /**
+   * Primeira edição de um desenho de jogo de exemplo: copia para a galeria do Pinta, prepara a
+   * imagem e liga o material (mesmo nome, mesmo arquivo); só então abre o Pinta no desenho
+   * novo. Daí em diante o material é um desenho do Pinta comum e o clique abre direto.
+   */
+  const preparingExamples = useRef(
+    new Map<string, { tab: Window | null; controller: AbortController }>(),
+  )
+  const [preparingExample, setPreparingExample] = useState<string | null>(null)
+  // O painel que sai no meio da preparação cancela o que está em voo e fecha a aba
+  // "Preparando o desenho…" (sem isto ela ficava órfã, em branco, para sempre).
+  useEffect(() => {
+    const preparing = preparingExamples.current
+    return () => {
+      for (const { tab, controller } of preparing.values()) {
+        controller.abort()
+        tab?.close()
+      }
+      preparing.clear()
+    }
+  }, [])
+  const editExampleDrawing = async (asset: ProjectAsset, target: EditTarget) => {
+    if (!pintaLibrary || preparingExamples.current.has(asset.id)) return
+    const controller = new AbortController()
+    // A aba nasce AQUI, ainda dentro do clique (antes de qualquer `await`): o Safari do iPad
+    // bloqueia a aberta depois. O host só a leva ao Pinta quando o desenho estiver pronto.
+    const tab = openPreparingTab()
+    preparingExamples.current.set(asset.id, { tab, controller })
+    setPreparingExample(asset.name)
+    try {
+      const result = await linkExampleDrawing(asset.id, {
+        adapter: pintaLibrary,
+        store: storeApi,
+        signal: controller.signal,
+      })
+      if (controller.signal.aborted) return
+      if (!result.ok) {
+        tab?.close()
+        setError(result.error)
+        return
+      }
+      setPersonalTick((tick) => tick + 1)
+      if (tab?.closed) {
+        // A criança fechou a aba enquanto esperava. Abrir outra agora, longe do clique, o Safari
+        // bloqueia sem avisar; o material já está ligado, então o próximo "Editar" abre direto.
+        setError('A aba do Pinta foi fechada. O desenho está pronto: toque em Editar de novo.')
+        return
+      }
+      target.open(result.drawingId, tab)
+    } catch {
+      if (controller.signal.aborted) return
+      tab?.close()
+      setError('Não deu para abrir o Pinta agora. Tente de novo.')
+    } finally {
+      if (preparingExamples.current.get(asset.id)?.controller === controller)
+        preparingExamples.current.delete(asset.id)
+      if (!controller.signal.aborted) setPreparingExample(null)
+    }
   }
 
   /**
@@ -897,6 +1006,11 @@ export function AssetsPanel({
               Tentar guardar de novo
             </Button>
           )}
+          <p aria-live="polite" className="text-xs text-sz-fg-soft">
+            {preparingExample
+              ? `Copiando o desenho "${preparingExample}" para a sua galeria do Pinta…`
+              : ''}
+          </p>
           {error && (
             <p
               role="alert"

@@ -89,6 +89,8 @@ describe('listGalleryForStudio', () => {
       width: 8,
       height: 8,
       animations: [{ id: animation.id, name: animation.name, frameCount: 2 }],
+      // The whole sheet (one row per animation) a pygame project can bring with its data.
+      sheet: { width: 16, height: 8 },
     })
     // Vector drawings (and maps over vector tiles) advertise their portable SVG path.
     expect(choices.get(tileset.id)).toEqual({
@@ -96,10 +98,17 @@ describe('listGalleryForStudio', () => {
       width: 16,
       height: 16,
       tileCount: 1,
+      sheet: { width: 16, height: 16 },
       vector: true,
       turtleShape: true,
     })
-    expect(choices.get(map.id)).toEqual({ kind: 'tilemap', width: 48, height: 32, vector: true })
+    expect(choices.get(map.id)).toEqual({
+      kind: 'tilemap',
+      width: 48,
+      height: 32,
+      sheet: { width: 16, height: 16 },
+      vector: true,
+    })
     expect(choices.get(missing.id)).toEqual({ kind: 'unavailable', reason: 'needs-tileset' })
     expect(choices.get(background.id)).toEqual({
       kind: 'background',

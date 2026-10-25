@@ -10,12 +10,22 @@ import { number, record } from './validation'
 export const PRIMITIVE_DETAIL_LIMITS = {
   around: { min: 3, max: 64 },
   down: { min: 2, max: 32 },
+  torusDown: { min: 3, max: 32 },
+} as const
+
+export const TORUS_PROFILE = {
+  ringRadius: 0.65,
+  tubeRadius: 0.35,
+  initialHalfHeight: 0.35,
 } as const
 
 export function readPrimitiveDetail(kind: 'cylinder', raw: unknown): { around: number }
-export function readPrimitiveDetail(kind: 'sphere', raw: unknown): { around: number; down: number }
-export function readPrimitiveDetail(kind: 'cylinder' | 'sphere', raw: unknown) {
-  const row = record(raw, 'tessellation', kind === 'sphere' ? ['around', 'down'] : ['around'])
+export function readPrimitiveDetail(
+  kind: 'sphere' | 'torus',
+  raw: unknown,
+): { around: number; down: number }
+export function readPrimitiveDetail(kind: SceneCurvedPrimitive['kind'], raw: unknown) {
+  const row = record(raw, 'tessellation', kind === 'cylinder' ? ['around'] : ['around', 'down'])
   const around = number(
     row.around,
     'tessellation.around',
@@ -23,13 +33,15 @@ export function readPrimitiveDetail(kind: 'cylinder' | 'sphere', raw: unknown) {
     PRIMITIVE_DETAIL_LIMITS.around.max,
     true,
   )
-  return kind === 'sphere'
+  return kind !== 'cylinder'
     ? {
         around,
         down: number(
           row.down,
           'tessellation.down',
-          PRIMITIVE_DETAIL_LIMITS.down.min,
+          kind === 'torus'
+            ? PRIMITIVE_DETAIL_LIMITS.torusDown.min
+            : PRIMITIVE_DETAIL_LIMITS.down.min,
           PRIMITIVE_DETAIL_LIMITS.down.max,
           true,
         ),
@@ -39,10 +51,13 @@ export function readPrimitiveDetail(kind: 'cylinder' | 'sphere', raw: unknown) {
 
 /** One validated value for drawing, conversion, controls and both raw/rendered resource budgets. */
 export function primitiveDetail(source: SceneCurvedPrimitive): { around: number; down: number } {
-  if (source.kind === 'sphere')
+  if (source.kind === 'sphere' || source.kind === 'torus')
     return readPrimitiveDetail(
-      'sphere',
-      source.tessellation ?? { around: SPHERE_SEGMENTS_AROUND, down: SPHERE_SEGMENTS_DOWN },
+      source.kind,
+      source.tessellation ??
+        (source.kind === 'sphere'
+          ? { around: SPHERE_SEGMENTS_AROUND, down: SPHERE_SEGMENTS_DOWN }
+          : { around: 16, down: 8 }),
     )
   return {
     ...readPrimitiveDetail('cylinder', source.tessellation ?? { around: CYLINDER_SEGMENTS }),
@@ -53,5 +68,9 @@ export function primitiveDetail(source: SceneCurvedPrimitive): { around: number;
 export function primitiveTriangleCount(source: ScenePrimitiveGeometry): number {
   if (source.kind === 'box' || source.kind === 'wedge') return triangleCountOf(source.kind)
   const { around, down } = primitiveDetail(source)
-  return source.kind === 'cylinder' ? around * 4 : around * (down - 1) * 2
+  return source.kind === 'cylinder'
+    ? around * 4
+    : source.kind === 'torus'
+      ? around * down * 2
+      : around * (down - 1) * 2
 }

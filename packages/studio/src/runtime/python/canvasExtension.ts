@@ -1,4 +1,5 @@
 import { hasPgzeroExtension } from './pgzero/contract'
+import { hasPygameExtension } from './pygame/contract'
 import { RAYLIB_2D_EXTENSION, RAYLIB_3D_EXTENSION } from './raylib/contract'
 import { hasTurtleExtension } from './turtle/contract'
 
@@ -6,11 +7,13 @@ import { hasTurtleExtension } from './turtle/contract'
 export type PythonCanvasExtension =
   | 'python-turtle'
   | 'python-pgzero'
+  | 'python-pygame'
   | 'python-raylib-2d'
   | 'python-raylib-3d'
 export const PYTHON_CANVAS_EXTENSIONS: readonly PythonCanvasExtension[] = [
   'python-turtle',
   'python-pgzero',
+  'python-pygame',
   'python-raylib-2d',
   'python-raylib-3d',
 ]
@@ -18,6 +21,7 @@ export const PYTHON_CANVAS_EXTENSIONS: readonly PythonCanvasExtension[] = [
 export const PYTHON_CANVAS_EXTENSION_NAMES: Readonly<Record<PythonCanvasExtension, string>> = {
   'python-turtle': 'Turtle',
   'python-pgzero': 'Pygame Zero',
+  'python-pygame': 'Pygame-ce',
   'python-raylib-2d': 'Raylib 2D',
   'python-raylib-3d': 'Raylib 3D',
 }
@@ -33,6 +37,7 @@ export function pythonCanvasExtension(
   const found: PythonCanvasExtension[] = []
   if (hasTurtleExtension(extensions)) found.push('python-turtle')
   if (hasPgzeroExtension(extensions)) found.push('python-pgzero')
+  if (hasPygameExtension(extensions)) found.push('python-pygame')
   if (installed(extensions, RAYLIB_2D_EXTENSION)) found.push('python-raylib-2d')
   if (installed(extensions, RAYLIB_3D_EXTENSION)) found.push('python-raylib-3d')
   if (found.length > 1)

@@ -110,7 +110,13 @@ export const SectionPythonProjectCheckDraftSchema = z.strictObject({
     .optional(),
 })
 export type SectionPythonProjectCheck = z.infer<typeof SectionPythonProjectCheckDraftSchema>
-export type PythonProjectCheckGraphics = 'none' | 'turtle' | 'pgzero' | 'raylib2d' | 'raylib3d'
+export type PythonProjectCheckGraphics =
+  | 'none'
+  | 'turtle'
+  | 'pgzero'
+  | 'pygame'
+  | 'raylib2d'
+  | 'raylib3d'
 /** Criteria follow the selected library's actual API; Raylib uses program variables/vectors. */
 export function pythonProjectCheckGraphics(
   extensions: readonly { id: string }[],
@@ -118,6 +124,7 @@ export function pythonProjectCheckGraphics(
   const kinds: Record<string, Exclude<PythonProjectCheckGraphics, 'none'>> = {
     'python-turtle': 'turtle',
     'python-pgzero': 'pgzero',
+    'python-pygame': 'pygame',
     'python-raylib-2d': 'raylib2d',
     'python-raylib-3d': 'raylib3d',
   }

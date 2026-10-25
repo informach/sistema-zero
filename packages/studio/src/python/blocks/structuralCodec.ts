@@ -3,7 +3,7 @@ import type { PythonBlockCodec, PythonBlockRole, PythonBlockShape } from './cont
 import { isNode, node, nodes } from './nodes'
 import { pythonPlaceholderNode } from './placeholders'
 import { samePythonValue } from './semantic'
-import { resizePythonShape } from './shapeControls'
+import { PYTHON_MAX_ITEMS, pythonInputsByName, resizePythonShape } from './shapeControls'
 
 export interface StructuralSlot {
   field: string
@@ -46,7 +46,7 @@ export function structuralCodec(
                 label: slot.label,
                 kind: 'count' as const,
                 minimum: slot.minimum ?? 0,
-                maximum: 32,
+                maximum: PYTHON_MAX_ITEMS,
               },
             ]
           : [],
@@ -139,7 +139,8 @@ export function structuralCodec(
             nodes: [child],
           })
         } else {
-          if (!nodes(child) || child.length > (slot.kind === 'list' ? 32 : 10000)) return
+          if (!nodes(child) || child.length > (slot.kind === 'list' ? PYTHON_MAX_ITEMS : 10000))
+            return
           if (slot.kind === 'body')
             shape.inputs.push({
               name: slot.field,
@@ -170,6 +171,7 @@ export function structuralCodec(
         if (!contexts.some((kind) => kind === context)) throw new Error('Destino Python inválido.')
         fields.ctx = node(String(context))
       }
+      const inputs = pythonInputsByName(shape)
       for (const slot of slots) {
         if (slot.optional) {
           const present = shape.extra?.[`${slot.field}:present`]
@@ -184,7 +186,7 @@ export function structuralCodec(
           if (!value) throw new Error('Preencha o texto do bloco Python.')
           fields[slot.field] = value.value
         } else if (slot.kind === 'body') {
-          const value = shape.inputs.find((item) => item.name === slot.field)
+          const value = inputs.get(slot.field)
           if (!value || value.nodes.length > 10000)
             throw new Error('Corpo do bloco Python inválido.')
           fields[slot.field] =
@@ -193,12 +195,17 @@ export function structuralCodec(
               : [node('Pass')]
         } else {
           const count = slot.kind === 'node' ? 1 : shape.extra?.[`${slot.field}:count`]
-          if (typeof count !== 'number' || !Number.isSafeInteger(count) || count < 0 || count > 32)
+          if (
+            typeof count !== 'number' ||
+            !Number.isSafeInteger(count) ||
+            count < 0 ||
+            count > PYTHON_MAX_ITEMS
+          )
             throw new Error('Quantidade de itens inválida.')
           const values: PythonNode[] = []
           for (let index = 0; index < count; index++) {
             const key = slot.kind === 'node' ? slot.field : `${slot.field}:${index}`
-            const value = shape.inputs.find((item) => item.name === key)
+            const value = inputs.get(key)
             if (value?.nodes.length !== 1) throw new Error('Preencha o valor do bloco Python.')
             values.push(value.nodes[0]!)
           }

@@ -9,7 +9,8 @@ import type {
 } from './contract'
 import { isNode, nodes } from './nodes'
 import { pythonResolverOptionsOf } from './resolverOptions'
-import { pythonBindingResolver } from './scope'
+import { type PythonProjectModules, pythonBindingResolver } from './scope'
+import { pythonShapeFitsBlock } from './shapeControls'
 
 export interface PythonVisualOrigin {
   nodeId?: string
@@ -40,14 +41,35 @@ export interface PythonBlockProjection {
   typeIgnores: PythonNode[]
 }
 
-const guardedByCodecs = new WeakMap<readonly PythonBlockCodec[], ReadonlySet<string>>()
+interface GuardedAttributes {
+  /** Replacing one of these on any official object changes an official API. */
+  anywhere: ReadonlySet<string>
+  /**
+   * Names along a module path only (pygame.image.load, pygame.draw.rect): only a store on a
+   * module replaces them, so `self.image = ...` in a sprite is ordinary object state.
+   */
+  onModules: ReadonlySet<string>
+}
+const guardedByCodecs = new WeakMap<readonly PythonBlockCodec[], GuardedAttributes>()
 /** Names that bound codecs resolve through: replacing one would change an official API. */
-function guardedAttributes(codecs: readonly PythonBlockCodec[]): ReadonlySet<string> {
-  let names = guardedByCodecs.get(codecs)
-  if (names) return names
-  const found = new Set<string>()
+function guardedAttributes(codecs: readonly PythonBlockCodec[]): GuardedAttributes {
+  const known = guardedByCodecs.get(codecs)
+  if (known) return known
+  const anywhere = new Set<string>()
+  const onModules = new Set<string>()
   for (const codec of codecs) {
     if (!codec.binding && !codec.bindingFor) continue
+    const receiverBinding = codec.bindingFor?.(codec.defaultNode())
+    // A function reached through module attributes only, never through an object.
+    const reached = codec.binding ?? receiverBinding
+    const modulePath =
+      !!reached?.module &&
+      !reached.instance &&
+      !reached.handler &&
+      !reached.builtin &&
+      !reached.moduleOrInstance &&
+      !reached.anyReceiver
+    const found = modulePath ? onModules : anywhere
     // A bare Python built-in (open, range) is not an attribute of anything the child can
     // reassign with `x.open = ...`; only `builtins.open = ...` could, and the resolver
     // treats every write to the builtins module as a replacement.
@@ -62,7 +84,6 @@ function guardedAttributes(codecs: readonly PythonBlockCodec[]): ReadonlySet<str
     // A method of a built-in type (lista.clear, arquivo.write) cannot be replaced by an
     // attribute store either: the receiver is a list or a file, never an official object.
     // (A file whose method is replaced, f.write = print, loses its proof in the resolver.)
-    const receiverBinding = codec.bindingFor?.(codec.defaultNode())
     if (receiverBinding && !receiverBinding.root && !receiverBinding.builtin) continue
     // Only callables are guarded: writing a data property (actor.x) is ordinary use.
     if (template.kind !== 'Call') continue
@@ -82,24 +103,31 @@ function guardedAttributes(codecs: readonly PythonBlockCodec[]): ReadonlySet<str
     )
       found.add(path.fields.id)
   }
-  names = found
-  guardedByCodecs.set(codecs, names)
-  return names
+  // A name guarded anywhere stays guarded anywhere.
+  for (const name of anywhere) onModules.delete(name)
+  const guarded = { anywhere, onModules }
+  guardedByCodecs.set(codecs, guarded)
+  return guarded
 }
 
 export function pythonASTToVisual(
   tree: PythonNode,
-  options: { codecs?: readonly PythonBlockCodec[]; officialModules?: ReadonlySet<string> } = {},
+  options: {
+    codecs?: readonly PythonBlockCodec[]
+    officialModules?: ReadonlySet<string>
+    /** What `from <project module> import *` binds (`pythonProjectModules`). */
+    projectModules?: PythonProjectModules
+  } = {},
 ): PythonBlockProjection {
   if (tree.kind !== 'Module' || !nodes(tree.fields.body) || !nodes(tree.fields.type_ignores))
     throw new Error('O programa Python precisa de um módulo completo.')
   const codecs = options.codecs ?? PYTHON_PROGRAMMING_CODECS
-  const resolves = pythonBindingResolver(
-    tree,
-    options.officialModules,
-    guardedAttributes(codecs),
-    pythonResolverOptionsOf(codecs),
-  )
+  const guarded = guardedAttributes(codecs)
+  const resolves = pythonBindingResolver(tree, options.officialModules, guarded.anywhere, {
+    ...pythonResolverOptionsOf(codecs),
+    projectModules: options.projectModules,
+    moduleAttributes: guarded.onModules,
+  })
   const context = { isModule: resolves.isModule, functionParams: resolves.functionParams }
   const index = pythonCodecIndex(codecs)
   let count = 0
@@ -128,7 +156,8 @@ export function pythonASTToVisual(
         if (!codec.receiverKinds.some((allowed) => allowed === kind)) continue
       }
       const shape = codec.decode(value, context)
-      if (!shape) continue
+      // A block Blockly would refuse to load (blockly.ts readState) is no block at all.
+      if (!shape || !pythonShapeFitsBlock(shape)) continue
       return {
         kind: 'block',
         codecId: codec.id,

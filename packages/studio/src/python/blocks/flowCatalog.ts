@@ -1,5 +1,5 @@
 import type { PythonNode } from '../language/types'
-import { metadata, valueSlot } from './catalogHelpers'
+import { metadata, PYTHON_IDENTIFIER, requiredInput, shapeInput, valueSlot } from './catalogHelpers'
 import type { PythonBlockCodec, PythonBlockInput, PythonBlockShape } from './contract'
 import {
   boolean,
@@ -13,18 +13,11 @@ import {
   text,
   withTargetContext,
 } from './nodes'
+import { PYTHON_MAX_ITEMS } from './shapeControls'
 import { structuralCodec } from './structuralCodec'
 
-const IDENTIFIER = /^[_\p{ID_Start}][_\p{ID_Continue}]*$/u
-const input = (shape: PythonBlockShape, key: string) =>
-  shape.inputs.find((item) => item.name === key)
-const one = (shape: PythonBlockShape, key: string) => {
-  const found = input(shape, key)
-  if (found?.nodes.length !== 1) throw new Error('Preencha todas as entradas do bloco.')
-  return found.nodes[0]!
-}
 const suite = (shape: PythonBlockShape, key: string) => {
-  const found = input(shape, key)
+  const found = shapeInput(shape, key)
   if (!found) throw new Error('O bloco perdeu um de seus corpos.')
   return found.nodes.length ? found.nodes : [pass()]
 }
@@ -98,7 +91,7 @@ const ifCodec: PythonBlockCodec = {
     for (let index = count; index >= 0; index--)
       orelse = [
         node('If', {
-          test: one(shape, `test:${index}`),
+          test: requiredInput(shape, `test:${index}`),
           body: suite(shape, `body:${index}`),
           orelse,
         }),
@@ -189,7 +182,7 @@ const repeatCodec: PythonBlockCodec = {
   encode(shape) {
     return node('For', {
       target: name('_', 'Store'),
-      iter: call(name('range'), [one(shape, 'times')]),
+      iter: call(name('range'), [requiredInput(shape, 'times')]),
       body: suite(shape, 'body'),
       orelse: [],
       type_comment: null,
@@ -269,7 +262,7 @@ function namesStatement(kind: 'Global' | 'Nonlocal'): PythonBlockCodec {
         .split(',')
         .map((item) => item.trim())
         .filter(Boolean)
-      if (!names.length || names.some((item) => !IDENTIFIER.test(item)))
+      if (!names.length || names.some((item) => !PYTHON_IDENTIFIER.test(item)))
         throw new Error('Escreva os nomes das variáveis separados por vírgula.')
       return node(kind, { names })
     },
@@ -365,12 +358,15 @@ const simpleFunctionCodec: PythonBlockCodec = {
   encode(shape) {
     const field = (key: string) => shape.fields.find((item) => item.name === key)?.value ?? ''
     const functionName = field('NAME').trim()
-    if (!IDENTIFIER.test(functionName)) throw new Error('Escolha um nome para a função.')
+    if (!PYTHON_IDENTIFIER.test(functionName)) throw new Error('Escolha um nome para a função.')
     const params = field('PARAMS')
       .split(',')
       .map((item) => item.trim())
       .filter(Boolean)
-    if (params.some((item) => !IDENTIFIER.test(item)) || new Set(params).size !== params.length)
+    if (
+      params.some((item) => !PYTHON_IDENTIFIER.test(item)) ||
+      new Set(params).size !== params.length
+    )
       throw new Error('Escreva nomes de parâmetros diferentes, separados por vírgula.')
     return node('FunctionDef', {
       name: functionName,
@@ -408,7 +404,9 @@ function namedCall(role: 'statement' | 'value'): PythonBlockCodec {
         : 'Chama uma função e usa o valor que ela devolve.',
     ),
     match: { kinds: [statement ? 'Expr' : 'Call'] },
-    controls: [{ key: 'args:count', label: 'valor', kind: 'count', minimum: 0, maximum: 32 }],
+    controls: [
+      { key: 'args:count', label: 'valor', kind: 'count', minimum: 0, maximum: PYTHON_MAX_ITEMS },
+    ],
     defaultNode: () => {
       const value = call(name('minha_funcao'), [])
       return statement ? node('Expr', { value }) : value
@@ -422,7 +420,7 @@ function namedCall(role: 'statement' | 'value'): PythonBlockCodec {
       if (
         !isLoadName(func) ||
         !nodes(args) ||
-        args.length > 32 ||
+        args.length > PYTHON_MAX_ITEMS ||
         !nodes(keywords) ||
         keywords.length
       )
@@ -443,16 +441,23 @@ function namedCall(role: 'statement' | 'value'): PythonBlockCodec {
     },
     encode(shape) {
       const functionName = shape.fields.find((item) => item.name === 'NAME')?.value.trim() ?? ''
-      if (!IDENTIFIER.test(functionName)) throw new Error('Escolha o nome da função.')
+      if (!PYTHON_IDENTIFIER.test(functionName)) throw new Error('Escolha o nome da função.')
       const count = Number(shape.extra?.['args:count'] ?? 0)
-      if (!Number.isSafeInteger(count) || count < 0 || count > 32)
+      if (!Number.isSafeInteger(count) || count < 0 || count > PYTHON_MAX_ITEMS)
         throw new Error('Quantidade de valores inválida.')
-      const args = Array.from({ length: count }, (_, index) => one(shape, `args:${index}`))
+      const args = Array.from({ length: count }, (_, index) =>
+        requiredInput(shape, `args:${index}`),
+      )
       const value = call(name(functionName), args)
       return statement ? node('Expr', { value }) : value
     },
     reshape(shape, key, value) {
-      if (key !== 'args:count' || typeof value !== 'number' || value < 0 || value > 32)
+      if (
+        key !== 'args:count' ||
+        typeof value !== 'number' ||
+        value < 0 ||
+        value > PYTHON_MAX_ITEMS
+      )
         throw new Error('Opção desconhecida do bloco Python.')
       const result = structuredClone(shape)
       const kept = result.inputs.filter((item) => Number(item.name.split(':')[1]) < value)
@@ -484,7 +489,9 @@ function methodCall(role: 'statement' | 'value'): PythonBlockCodec {
       'Chama um método do objeto (por exemplo, o draw de um ator ou o append de uma lista).',
     ),
     match: { kinds: [statement ? 'Expr' : 'Call'] },
-    controls: [{ key: 'args:count', label: 'valor', kind: 'count', minimum: 0, maximum: 32 }],
+    controls: [
+      { key: 'args:count', label: 'valor', kind: 'count', minimum: 0, maximum: PYTHON_MAX_ITEMS },
+    ],
     defaultNode: () => {
       const value = call(
         node('Attribute', { value: name('objeto'), attr: 'metodo', ctx: node('Load') }),
@@ -506,7 +513,7 @@ function methodCall(role: 'statement' | 'value'): PythonBlockCodec {
         !isNode(func.fields.ctx) ||
         func.fields.ctx.kind !== 'Load' ||
         !nodes(args) ||
-        args.length > 32 ||
+        args.length > PYTHON_MAX_ITEMS ||
         !nodes(keywords) ||
         keywords.length ||
         args.some((arg) => arg.kind === 'Starred')
@@ -528,19 +535,30 @@ function methodCall(role: 'statement' | 'value'): PythonBlockCodec {
     },
     encode(shape) {
       const method = shape.fields.find((item) => item.name === 'METHOD')?.value.trim() ?? ''
-      if (!IDENTIFIER.test(method)) throw new Error('Escolha o nome do método.')
+      if (!PYTHON_IDENTIFIER.test(method)) throw new Error('Escolha o nome do método.')
       const count = Number(shape.extra?.['args:count'] ?? 0)
-      if (!Number.isSafeInteger(count) || count < 0 || count > 32)
+      if (!Number.isSafeInteger(count) || count < 0 || count > PYTHON_MAX_ITEMS)
         throw new Error('Quantidade de valores inválida.')
-      const args = Array.from({ length: count }, (_, index) => one(shape, `args:${index}`))
+      const args = Array.from({ length: count }, (_, index) =>
+        requiredInput(shape, `args:${index}`),
+      )
       const value = call(
-        node('Attribute', { value: one(shape, 'receiver'), attr: method, ctx: node('Load') }),
+        node('Attribute', {
+          value: requiredInput(shape, 'receiver'),
+          attr: method,
+          ctx: node('Load'),
+        }),
         args,
       )
       return statement ? node('Expr', { value }) : value
     },
     reshape(shape, key, value) {
-      if (key !== 'args:count' || typeof value !== 'number' || value < 0 || value > 32)
+      if (
+        key !== 'args:count' ||
+        typeof value !== 'number' ||
+        value < 0 ||
+        value > PYTHON_MAX_ITEMS
+      )
         throw new Error('Opção desconhecida do bloco Python.')
       const result = structuredClone(shape)
       const receiver = result.inputs.filter((item) => item.name === 'receiver')
@@ -615,11 +633,12 @@ const sliceCodec: PythonBlockCodec = {
     return { fields: [], inputs, extra }
   },
   encode(shape) {
-    const part = (key: string) => (shape.extra?.[`${key}:present`] ? one(shape, key) : null)
+    const part = (key: string) =>
+      shape.extra?.[`${key}:present`] ? requiredInput(shape, key) : null
     const context = String(shape.extra?.context ?? 'Load')
     if (!['Load', 'Store', 'Del'].includes(context)) throw new Error('Destino Python inválido.')
     return node('Subscript', {
-      value: one(shape, 'value'),
+      value: requiredInput(shape, 'value'),
       slice: node('Slice', { lower: part('lower'), upper: part('upper'), step: part('step') }),
       ctx: node(context),
     })
@@ -700,12 +719,12 @@ const listComprehensionCodec: PythonBlockCodec = {
   },
   encode(shape) {
     return node('ListComp', {
-      elt: one(shape, 'elt'),
+      elt: requiredInput(shape, 'elt'),
       generators: [
         node('comprehension', {
-          target: withTargetContext(one(shape, 'target'), 'Store'),
-          iter: one(shape, 'iter'),
-          ifs: shape.extra?.['if:present'] ? [one(shape, 'if')] : [],
+          target: withTargetContext(requiredInput(shape, 'target'), 'Store'),
+          iter: requiredInput(shape, 'iter'),
+          ifs: shape.extra?.['if:present'] ? [requiredInput(shape, 'if')] : [],
           is_async: { literal: 'int', value: '0' },
         }),
       ],
@@ -749,7 +768,15 @@ const assignManyCodec: PythonBlockCodec = {
     'Guarda o mesmo valor em várias variáveis de uma vez.',
   ),
   match: { kinds: ['Assign'] },
-  controls: [{ key: 'targets:count', label: 'variável', kind: 'count', minimum: 2, maximum: 32 }],
+  controls: [
+    {
+      key: 'targets:count',
+      label: 'variável',
+      kind: 'count',
+      minimum: 2,
+      maximum: PYTHON_MAX_ITEMS,
+    },
+  ],
   defaultNode: () =>
     node('Assign', {
       targets: [name('a', 'Store'), name('b', 'Store')],
@@ -764,7 +791,7 @@ const assignManyCodec: PythonBlockCodec = {
       type_comment !== null ||
       !nodes(targets) ||
       targets.length < 2 ||
-      targets.length > 32 ||
+      targets.length > PYTHON_MAX_ITEMS ||
       !isNode(value.fields.value)
     )
       return
@@ -784,18 +811,23 @@ const assignManyCodec: PythonBlockCodec = {
   },
   encode(shape) {
     const count = Number(shape.extra?.['targets:count'] ?? 2)
-    if (!Number.isSafeInteger(count) || count < 2 || count > 32)
+    if (!Number.isSafeInteger(count) || count < 2 || count > PYTHON_MAX_ITEMS)
       throw new Error('Quantidade de variáveis inválida.')
     return node('Assign', {
       targets: Array.from({ length: count }, (_, index) =>
-        withTargetContext(one(shape, `targets:${index}`), 'Store'),
+        withTargetContext(requiredInput(shape, `targets:${index}`), 'Store'),
       ),
-      value: one(shape, 'value'),
+      value: requiredInput(shape, 'value'),
       type_comment: null,
     })
   },
   reshape(shape, key, value) {
-    if (key !== 'targets:count' || typeof value !== 'number' || value < 2 || value > 32)
+    if (
+      key !== 'targets:count' ||
+      typeof value !== 'number' ||
+      value < 2 ||
+      value > PYTHON_MAX_ITEMS
+    )
       throw new Error('Opção desconhecida do bloco Python.')
     const result = structuredClone(shape)
     const targets = result.inputs.filter((item) => item.name.startsWith('targets:'))
@@ -945,7 +977,7 @@ const formatSpecCodec: PythonBlockCodec = {
     const spec = shape.fields.find((item) => item.name === 'SPEC')?.value ?? ''
     if (!spec || /[{}]/.test(spec)) throw new Error('Escreva o formato, como .2f.')
     return node('FormattedValue', {
-      value: one(shape, 'value'),
+      value: requiredInput(shape, 'value'),
       conversion: { literal: 'int', value: '-1' },
       format_spec: node('JoinedStr', { values: [text(spec)] }),
     })
@@ -1001,16 +1033,18 @@ const withOpenCodec: PythonBlockCodec = {
       opened.kind !== 'Call' ||
       !isLoadName(opened.fields.func, 'open') ||
       !nodes(opened.fields.args) ||
-      opened.fields.args.length !== 2 ||
+      (opened.fields.args.length !== 1 && opened.fields.args.length !== 2) ||
       !nodes(opened.fields.keywords) ||
       opened.fields.keywords.length ||
       !isNode(target) ||
       target.kind !== 'Name' ||
       typeof target.fields.id !== 'string' ||
-      !IDENTIFIER.test(target.fields.id)
+      !PYTHON_IDENTIFIER.test(target.fields.id)
     )
       return
-    const mode = opened.fields.args[1]!
+    // open(arquivo) reads: the block shows the mode and gives back the same spelling.
+    const omitted = opened.fields.args.length === 1
+    const mode = omitted ? text('r') : opened.fields.args[1]!
     if (
       mode.kind !== 'Constant' ||
       mode.fields.kind !== null ||
@@ -1031,17 +1065,23 @@ const withOpenCodec: PythonBlockCodec = {
         { name: 'file', label: 'arquivo', role: 'value', nodes: [opened.fields.args[0]!] },
         statementInput('body', '', body),
       ],
+      ...(omitted ? { extra: { 'mode:omitted': true } } : {}),
     }
   },
   encode(shape) {
     const mode = shape.fields.find((item) => item.name === 'MODE')?.value ?? ''
     const target = shape.fields.find((item) => item.name === 'NAME')?.value ?? ''
     if (!FILE_MODES.some(([, option]) => option === mode)) throw new Error('Escolha como abrir.')
-    if (!IDENTIFIER.test(target)) throw new Error('Dê um nome para o arquivo aberto.')
+    if (!PYTHON_IDENTIFIER.test(target)) throw new Error('Dê um nome para o arquivo aberto.')
     return node('With', {
       items: [
         node('withitem', {
-          context_expr: call(name('open'), [one(shape, 'file'), text(mode)]),
+          context_expr: call(
+            name('open'),
+            shape.extra?.['mode:omitted'] && mode === 'r'
+              ? [requiredInput(shape, 'file')]
+              : [requiredInput(shape, 'file'), text(mode)],
+          ),
           optional_vars: name(target, 'Store'),
         }),
       ],

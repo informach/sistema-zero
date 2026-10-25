@@ -53,6 +53,12 @@ mock.module('idb-keyval', () => ({
   },
 }))
 
+// The gallery games' Pinta documents: the real chunks are large and regenerated elsewhere.
+mock.module('../../../examples/python/pygameGames.loaders.generated', () => ({
+  PYGAME_GAME_LOADERS: { 'space-shooter': async () => ({ files: {}, media: {} }) },
+  PYGAME_GAME_DRAWINGS: { 'space-shooter': async () => '{"jogo":"space-shooter"}' },
+}))
+
 const { createEmptyProject } = await import('#core')
 const { getPersonalAsset, savePersonalAsset, setPersonalAssetsNamespace } = await import(
   '../../../asset-library/personal'
@@ -143,7 +149,7 @@ const pintaLibrary: PintaLibraryAdapter = {
 }
 
 function renderPanel(
-  onEditDrawing: ((id: string) => void) | null,
+  onEditDrawing: ((id: string, tab?: Window | null) => void) | null,
   options: {
     onEditCreation?: (id: string) => void
     withPintaLibrary?: boolean
@@ -481,5 +487,293 @@ describe('AssetsPanel — "✏️ Editar" nos assets que vieram do Pinta e do Mo
     await waitFor(() => screen.getByRole('button', { name: /^✏️ Editar$/ }))
     await irParaModelos3D()
     expect(screen.queryByRole('button', { name: /Editar nave/ })).toBeNull()
+  })
+})
+
+describe('AssetsPanel — desenhos dos jogos de exemplo (Pygame-ce) vão ao Pinta só no clique', () => {
+  const PLAIN_PNG =
+    'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jH1QAAAAASUVORK5CYII='
+  /** The 1×1 PNG with the `pinta` iTXt right after IHDR, as Pinta writes a sheet. */
+  async function sheetPng() {
+    const plain = Uint8Array.from(atob(PLAIN_PNG), (char) => char.charCodeAt(0))
+    const crc = (bytes: Uint8Array) => {
+      let value = 0xffffffff
+      for (const byte of bytes) {
+        value ^= byte
+        for (let bit = 0; bit < 8; bit++) value = (value >>> 1) ^ (value & 1 ? 0xedb88320 : 0)
+      }
+      return (value ^ 0xffffffff) >>> 0
+    }
+    const body = new Uint8Array([
+      ...new TextEncoder().encode('pinta'),
+      0,
+      1,
+      0,
+      0,
+      0,
+      0x78,
+      0x9c,
+      3,
+      0,
+      0,
+      0,
+      0,
+      1,
+    ])
+    const typed = new Uint8Array([...new TextEncoder().encode('iTXt'), ...body])
+    const chunk = new Uint8Array(12 + body.length)
+    const view = new DataView(chunk.buffer)
+    view.setUint32(0, body.length)
+    chunk.set(typed, 4)
+    view.setUint32(8 + body.length, crc(typed))
+    const bytes = new Uint8Array([...plain.subarray(0, 33), ...chunk, ...plain.subarray(33)])
+    const sha256 = Array.from(
+      new Uint8Array(await crypto.subtle.digest('SHA-256', bytes)),
+      (byte) => byte.toString(16).padStart(2, '0'),
+    ).join('')
+    let binary = ''
+    for (const byte of bytes) binary += String.fromCharCode(byte)
+    return { dataUrl: `data:image/png;base64,${btoa(binary)}`, bytes: bytes.length, sha256 }
+  }
+
+  async function seedGalleryGame() {
+    const raw = documentFixture('python', 'classic')
+    raw.installedExtensions = [{ id: 'python-pygame', version: '1.0.0', installedAt: 1 }]
+    raw.assets = [
+      {
+        id: 'space-shooter-assets-nave.png',
+        name: 'nave',
+        kind: 'image',
+        source: 'library',
+        libId: 'example-pygame:space-shooter:nave',
+        dataUrl: `data:image/png;base64,${PLAIN_PNG}`,
+        proPath: 'assets/nave.png',
+        license: { name: 'Sistema Zero', attribution: 'Desenho original.' },
+      },
+    ]
+    useProjectStore.setState({
+      project: await refinePythonProjectDocument(raw),
+      editingAccess: 'author',
+      isDirty: false,
+      saveError: null,
+    })
+  }
+
+  function exampleAdapter() {
+    const imports: Array<{ json: string; ids: string[]; origin?: string }> = []
+    const recipes: unknown[] = []
+    const adapter: PintaLibraryAdapter = {
+      list: async () => [],
+      importDrawings: async (input) => {
+        imports.push(structuredClone(input))
+        return {
+          ok: true,
+          drawings: [
+            {
+              sourceId: 'space-shooter-nave',
+              id: 'pinta-nave',
+              name: 'nave',
+              imageSelection: {
+                kind: 'frame',
+                width: 1,
+                height: 1,
+                animations: [{ id: 'voar', name: 'voar', frameCount: 1 }],
+                sheet: { width: 1, height: 1 },
+              },
+            },
+          ],
+        }
+      },
+      import: async (id, options) => {
+        const recipe = options?.image?.recipe
+        if (!recipe) throw new Error('Explicit recipe required')
+        recipes.push(structuredClone(recipe))
+        const sheet = await sheetPng()
+        // The real host also saves the canonical drawing in the personal library.
+        await savePersonalAsset({ id, name: 'nave', dataUrl: sheet.dataUrl })
+        return {
+          ok: true,
+          asset: {
+            id,
+            name: 'nave',
+            dataUrl: sheet.dataUrl,
+            width: 1,
+            height: 1,
+            libRevision: 9,
+            pintaImage: {
+              recipe,
+              provenance: { sourceSha256: 'a'.repeat(64), dependencies: [] },
+              output: {
+                mime: 'image/png' as const,
+                width: 1,
+                height: 1,
+                bytes: sheet.bytes,
+                sha256: sheet.sha256,
+              },
+            },
+          },
+        }
+      },
+    }
+    return { adapter, imports, recipes }
+  }
+
+  /** The tab the panel opens inside the click (Safari blocks one opened after an await). */
+  function stubTab() {
+    const tab = {
+      closed: false,
+      opener: {} as unknown,
+      document: { title: '', body: { textContent: '' } },
+      close() {
+        tab.closed = true
+      },
+    }
+    const spy = spyOn(window, 'open').mockImplementation(() => tab as unknown as Window)
+    return { tab, spy }
+  }
+
+  it('1º clique abre a aba JÁ no clique, copia, liga o material no mesmo nome/arquivo e a leva ao Pinta; o 2º só abre', async () => {
+    await seedGalleryGame()
+    const fake = exampleAdapter()
+    const { tab, spy } = stubTab()
+    const opened: Array<[string, Window | null | undefined]> = []
+    renderPanel((id, target) => opened.push([id, target]), { pintaLibrary: fake.adapter })
+    const button = await screen.findByRole('button', { name: 'Editar nave no Pinta' })
+    fireEvent.click(button)
+    // Synchronously, inside the click: before the copy, the import or any await.
+    expect(spy).toHaveBeenCalledTimes(1)
+    expect(spy.mock.calls[0]).toEqual(['', '_blank'])
+    expect(tab.opener).toBeNull()
+    expect(tab.document.body.textContent).toContain('Preparando o desenho')
+    expect(fake.imports).toEqual([])
+    await waitFor(() => expect(opened.map(([id]) => id)).toEqual(['pinta-nave']))
+    // The host receives that same tab and only navigates it.
+    expect(opened[0]?.[1]).toBe(tab as unknown as Window)
+    expect(tab.closed).toBe(false)
+    // The origin makes Pinta reuse an existing copy of the same document (one per drawing).
+    expect(fake.imports).toEqual([
+      {
+        json: '{"jogo":"space-shooter"}',
+        ids: ['space-shooter-nave'],
+        origin: 'example-pygame:space-shooter',
+      },
+    ])
+    expect(fake.recipes).toEqual([
+      {
+        version: 1,
+        algorithm: 'pinta-image-1',
+        drawingId: 'pinta-nave',
+        selection: { kind: 'spritesheet' },
+        scale: 2,
+      },
+    ])
+    const [asset] = useProjectStore.getState().project?.assets ?? []
+    expect(asset).toMatchObject({
+      id: 'space-shooter-assets-nave.png',
+      name: 'nave',
+      proPath: 'assets/nave.png',
+      source: 'library',
+      libId: 'personal:pinta-nave',
+      libOrigin: 'pinta',
+      libRevision: 9,
+      license: { name: 'Sistema Zero', attribution: 'Desenho original.' },
+    })
+    expect(asset?.pintaImage?.recipe.selection).toEqual({ kind: 'spritesheet' })
+    // Now a normal Pinta material: a second click opens without a second copy.
+    fireEvent.click(await screen.findByRole('button', { name: 'Editar nave no Pinta' }))
+    await waitFor(() => expect(opened.map(([id]) => id)).toEqual(['pinta-nave', 'pinta-nave']))
+    await flushEffects()
+    expect(fake.imports).toHaveLength(1)
+    expect(fake.recipes).toHaveLength(1)
+    // The ordinary path: the host opens its own tab synchronously, no prepared one.
+    expect(spy).toHaveBeenCalledTimes(1)
+    expect(opened[1]?.[1]).toBeUndefined()
+    spy.mockRestore()
+  })
+
+  it('sem a capacidade de copiar do host, o desenho de exemplo fica como antes (sem botão)', async () => {
+    await seedGalleryGame()
+    const { importDrawings: _absent, ...withoutCopy } = exampleAdapter().adapter
+    renderPanel(() => {}, { pintaLibrary: withoutCopy })
+    await waitFor(() => expect(screen.getAllByAltText('nave').length).toBeGreaterThan(0))
+    expect(screen.queryByRole('button', { name: 'Editar nave no Pinta' })).toBeNull()
+  })
+
+  it('a falha da cópia aparece e não liga nem abre nada', async () => {
+    await seedGalleryGame()
+    const fake = exampleAdapter()
+    fake.adapter.importDrawings = async () => ({
+      ok: false,
+      error: 'A sua galeria do Pinta está cheia.',
+    })
+    const { tab, spy } = stubTab()
+    const opened: string[] = []
+    renderPanel((id) => opened.push(id), { pintaLibrary: fake.adapter })
+    fireEvent.click(await screen.findByRole('button', { name: 'Editar nave no Pinta' }))
+    expect(spy).toHaveBeenCalledTimes(1)
+    await screen.findByText('A sua galeria do Pinta está cheia.')
+    expect(opened).toEqual([])
+    // The prepared tab is closed: nothing left open on a failure.
+    expect(tab.closed).toBe(true)
+    spy.mockRestore()
+    expect(useProjectStore.getState().project?.assets?.[0]?.libId).toBe(
+      'example-pygame:space-shooter:nave',
+    )
+  })
+
+  it('a aba fechada pela criança durante a preparação vira recado (nada de abrir outra longe do clique)', async () => {
+    await seedGalleryGame()
+    const fake = exampleAdapter()
+    const copy = fake.adapter.importDrawings!
+    const { tab, spy } = stubTab()
+    fake.adapter.importDrawings = async (input, options) => {
+      tab.close()
+      return copy(input, options)
+    }
+    const opened: string[] = []
+    renderPanel((id) => opened.push(id), { pintaLibrary: fake.adapter })
+    fireEvent.click(await screen.findByRole('button', { name: 'Editar nave no Pinta' }))
+    await screen.findByText(
+      'A aba do Pinta foi fechada. O desenho está pronto: toque em Editar de novo.',
+    )
+    // The host is not called (it would `window.open` after an await, which Safari blocks).
+    expect(opened).toEqual([])
+    expect(spy).toHaveBeenCalledTimes(1)
+    spy.mockRestore()
+    // The material is linked, so the next click opens Pinta directly, inside the gesture.
+    expect(useProjectStore.getState().project?.assets?.[0]?.libId).toBe('personal:pinta-nave')
+    fireEvent.click(await screen.findByRole('button', { name: 'Editar nave no Pinta' }))
+    await waitFor(() => expect(opened).toEqual(['pinta-nave']))
+  })
+
+  it('o painel que sai durante a preparação fecha a aba "Preparando" e cancela o resto', async () => {
+    await seedGalleryGame()
+    const fake = exampleAdapter()
+    let release: () => void = () => {}
+    let waiting = false
+    const copy = fake.adapter.importDrawings!
+    fake.adapter.importDrawings = async (input, options) => {
+      waiting = true
+      await new Promise<void>((resolve) => {
+        release = resolve
+      })
+      return copy(input, options)
+    }
+    const { tab, spy } = stubTab()
+    const opened: string[] = []
+    const view = renderPanel((id) => opened.push(id), { pintaLibrary: fake.adapter })
+    fireEvent.click(await screen.findByRole('button', { name: 'Editar nave no Pinta' }))
+    await waitFor(() => expect(waiting).toBe(true))
+    expect(tab.closed).toBe(false)
+    view.unmount()
+    expect(tab.closed).toBe(true)
+    release()
+    await flushEffects()
+    expect(opened).toEqual([])
+    expect(fake.recipes).toEqual([])
+    expect(useProjectStore.getState().project?.assets?.[0]?.libId).toBe(
+      'example-pygame:space-shooter:nave',
+    )
+    spy.mockRestore()
   })
 })

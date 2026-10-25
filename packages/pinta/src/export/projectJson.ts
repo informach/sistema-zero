@@ -3,19 +3,37 @@
  * bitmaps em RLE+base64 (`core/bitmapCodec.ts`) e as células dos tilemaps como
  * arrays. O import devolve `{ assets, warnings }` (padrão studio: nunca lança,
  * descarta o inválido AVISANDO) e o chamador re-persiste com ids/nomes tratados.
+ *
+ * VERSÕES do envelope: a v2 (10/2026) é a v1 + mapas com camadas de OBJETOS e
+ * peças por camada (`tilemapNeedsV2`). O arquivo só sai v2 quando algum desenho
+ * dele PRECISA — todo o resto continua saindo v1, byte a byte como antes, e uma
+ * versão antiga do Pinta continua lendo. O import aceita as duas; uma versão
+ * antiga recusa a v2 com o recado de versão, em vez de perder os objetos calada.
  */
 import { decodeBitmap, type EncodedBitmap, encodeBitmap } from '../core/bitmapCodec'
-import { type PintaAsset, sanitizePintaAsset } from '../core/project'
+import { isTileLayer, type PintaAsset, sanitizePintaAsset, tilemapNeedsV2 } from '../core/project'
 
 const FORMAT = 'pinta-gallery'
-const VERSION = 1
+/** A versão que um arquivo SEM nada novo leva (e a única que versões antigas leem). */
+const BASE_VERSION = 1
+/** Mapas com objetos / peças por camada. */
+const OBJECTS_VERSION = 2
+const READABLE_VERSIONS: ReadonlySet<unknown> = new Set([BASE_VERSION, OBJECTS_VERSION])
 const UTF8 = new TextEncoder()
-const JSON_HEADER = [
-  '{',
-  `  "format": ${JSON.stringify(FORMAT)},`,
-  `  "version": ${VERSION},`,
-  '  "assets": [',
-].join('\n')
+
+/**
+ * ⚠️ As duas versões têm UM dígito: o cabeçalho mede os mesmos bytes nas duas (o
+ * medidor incremental do backup conta com isso).
+ */
+function jsonHeader(version: number): string {
+  return [
+    '{',
+    `  "format": ${JSON.stringify(FORMAT)},`,
+    `  "version": ${version},`,
+    '  "assets": [',
+  ].join('\n')
+}
+const JSON_HEADER = jsonHeader(BASE_VERSION)
 const EMPTY_JSON = `${JSON_HEADER}]\n}`
 const NON_EMPTY_PREFIX = `${JSON_HEADER}\n`
 const NON_EMPTY_SUFFIX = '\n  ]\n}'
@@ -51,7 +69,10 @@ function encodeAsset(asset: PintaAsset): EncodedAsset {
     case 'tilemap':
       return {
         ...asset,
-        layers: asset.layers.map((l) => ({ ...l, cells: Array.from(l.cells) })),
+        // Camada de objetos já é JSON puro; só as células viram array.
+        layers: asset.layers.map((l) =>
+          isTileLayer(l) ? { ...l, cells: Array.from(l.cells) } : { ...l },
+        ),
       }
     // Shapes vetoriais já são JSON puro — passam direto, sem codec.
     case 'vector-sprite':
@@ -297,7 +318,13 @@ export const MAX_BACKUP_FILE_BYTES = 32 * 1024 * 1024
 /** A galeria inteira → texto do `.pinta.json`. */
 export function galleryToPintaJson(assets: PintaAsset[]): string {
   if (assets.length === 0) return EMPTY_JSON
-  return `${NON_EMPTY_PREFIX}${assets.map(assetJsonFragment).join(ASSET_SEPARATOR)}${NON_EMPTY_SUFFIX}`
+  const prefix = assets.some(assetNeedsV2) ? `${jsonHeader(OBJECTS_VERSION)}\n` : NON_EMPTY_PREFIX
+  return `${prefix}${assets.map(assetJsonFragment).join(ASSET_SEPARATOR)}${NON_EMPTY_SUFFIX}`
+}
+
+/** O desenho usa algo que só o envelope v2 descreve (objetos, peças por camada)? */
+export function assetNeedsV2(asset: PintaAsset): boolean {
+  return asset.kind === 'tilemap' && tilemapNeedsV2(asset)
 }
 
 /** Tamanho EXATO do backup que a galeria produziria, medido em bytes UTF-8. */
@@ -327,7 +354,7 @@ export function importPintaJson(text: string): PintaImportResult {
   if (doc.format !== FORMAT || !Array.isArray(doc.assets)) {
     return { assets: [], warnings: ['O arquivo não parece um backup do Pinta.'] }
   }
-  if (doc.version !== VERSION) {
+  if (!READABLE_VERSIONS.has(doc.version)) {
     return {
       assets: [],
       warnings: ['A versão deste backup não é compatível com esta versão do Pinta.'],

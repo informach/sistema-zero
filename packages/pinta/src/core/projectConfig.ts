@@ -28,7 +28,17 @@ export const PINTA_LIMITS = {
   maxTiles: 64,
   maxTilemapCols: 128,
   maxTilemapRows: 128,
-  maxTilemapLayers: 4,
+  /** Camadas de peças E de objetos, somadas. */
+  maxTilemapLayers: 8,
+  /** Objetos por camada de objetos. */
+  maxTilemapObjects: 512,
+  maxObjectProperties: 16,
+  maxObjectPropertyKeyChars: 32,
+  maxObjectPropertyStringChars: 200,
+  /** Nome e tipo de um objeto do mapa. */
+  maxObjectNameChars: 48,
+  /** Maior coordenada/medida de objeto em pixels do mapa (128 colunas × peça de 48). */
+  maxObjectCoord: 128 * 48,
   maxPixelLayers: 4,
   maxShapes: 500,
   maxNameChars: 48,

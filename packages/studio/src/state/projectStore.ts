@@ -80,6 +80,7 @@ import {
   emptyPythonWorkspaceState,
   preservePythonWorkspaceDraft,
 } from '../python/blocks/workspaceDraft'
+import { hasPygameExtension } from '../runtime/python/pygame/contract'
 import { hasTurtleExtension } from '../runtime/python/turtle/contract'
 import { prepareEditableCloudProject } from './editableCloudProject'
 import { prepareEditableStudioProject } from './editableProjectValidation'
@@ -285,6 +286,13 @@ interface ProjectStore {
   /** Persiste a origem descoberta de um asset pessoal legado. */
   setAssetLibraryOrigin: (id: string, origin: 'pinta' | 'molda') => string | null
   /**
+   * Liga uma imagem que AINDA NÃO veio da biblioteca pessoal (o desenho de um jogo de
+   * exemplo) ao desenho copiado para o Pinta: vira `personal:<id>` com a receita do Pinta,
+   * mantendo id, NOME e arquivo (`proPath`) — o código do jogo a carrega por eles. Só para
+   * projetos Python (a receita é deles). Devolve erro legível ou `null`.
+   */
+  linkAssetToPintaImage: (id: string, link: LinkAssetToPintaImageInput) => string | null
+  /**
    * Escolhe uma IMAGEM do projeto como capa fixa do card (`null` = voltar à foto automática).
    * Só grava o nome no projeto (bumpa `updatedAt`, então sobe pela nuvem como qualquer edição);
    * quem regrava a miniatura na hora é quem chama (`captureAndStoreProjectThumb`). Devolve erro
@@ -351,6 +359,17 @@ export interface NewAssetInput {
   sprite?: unknown
   tileset?: unknown
   tilemap?: unknown
+}
+
+/** Entrada de `linkAssetToPintaImage`: o resultado do "Trazer do Pinta" de UM desenho. */
+export interface LinkAssetToPintaImageInput {
+  dataUrl: string
+  width?: number
+  height?: number
+  /** `personal:<id do desenho>` (a receita confere que é o mesmo desenho). */
+  libId: string
+  libRevision?: number
+  pintaImage: unknown
 }
 
 /**
@@ -1397,10 +1416,12 @@ export function createProjectStore(
             }
           } else {
             // Turtle opens PNG/GIF as images; a vector from the Pinta becomes a turtle shape
-            // through formas_do_pinta.registrar('assets/nome.svg'). Without Turtle, no use.
+            // through formas_do_pinta.registrar('assets/nome.svg'). Pygame-ce reads PNG/GIF only,
+            // and without Turtle a vector has no use.
             if (
               pintaImage?.output.mime === 'image/svg+xml' &&
-              !hasTurtleExtension(p.installedExtensions)
+              (!hasTurtleExtension(p.installedExtensions) ||
+                hasPygameExtension(p.installedExtensions))
             )
               return 'Este projeto abre só imagens PNG ou GIF. Traga este desenho do Pinta como PNG.'
             asset.proPath = `assets/${name}.${extension}`
@@ -1588,6 +1609,59 @@ export function createProjectStore(
         const assets = p.assets.map((asset) =>
           asset.id === id ? { ...asset, libOrigin: origin } : asset,
         )
+        set({ project: bump({ ...p, assets }), isDirty: true, saveError: null })
+        return null
+      },
+      linkAssetToPintaImage: (id, link) => {
+        const p = get().project
+        if (!p?.assets) return 'Sem imagens no projeto.'
+        if (!isPythonProject(p)) return 'A receita do Pinta pertence a um projeto Python.'
+        const target = p.assets.find((asset) => asset.id === id)
+        if (!target) return 'Imagem não encontrada.'
+        if (target.kind !== 'image') return 'Esse arquivo não é uma imagem.'
+        if (target.libId?.startsWith('personal:'))
+          return 'Esta imagem já está ligada a um desenho do Pinta.'
+        if (
+          !isValidAssetDataUrl(link.dataUrl, 'image', undefined, STUDIO_PYTHON_MATERIAL_DATA_LIMITS)
+        )
+          return 'Imagem inválida ou grande demais.'
+        // Os metadados de JavaScript (peças/mapa configurados aqui) não valem para a receita.
+        const { sprite: _sprite, tileset: _tileset, tilemap: _tilemap, ...kept } = target
+        const libRevision =
+          typeof link.libRevision === 'number' &&
+          Number.isFinite(link.libRevision) &&
+          link.libRevision > 0
+            ? Math.round(link.libRevision)
+            : undefined
+        const candidate: ProjectAsset = {
+          ...kept,
+          source: 'library',
+          libId: link.libId,
+          libOrigin: 'pinta',
+          dataUrl: link.dataUrl,
+          ...(typeof link.width === 'number' && link.width > 0 ? { width: link.width } : {}),
+          ...(typeof link.height === 'number' && link.height > 0 ? { height: link.height } : {}),
+          pintaImage: link.pintaImage as ProjectAsset['pintaImage'],
+        }
+        if (libRevision !== undefined) candidate.libRevision = libRevision
+        else delete candidate.libRevision
+        try {
+          const metadata = readPintaImageAssetMetadata(candidate)
+          if (!metadata) return 'Escolha uma imagem do desenho antes de ligá-lo ao Pinta.'
+          candidate.pintaImage = metadata
+        } catch (error) {
+          return error instanceof Error ? error.message : 'A receita do Pinta é inválida.'
+        }
+        const othersChars = p.assets.reduce(
+          (sum, asset) => (asset.id === id ? sum : sum + asset.dataUrl.length),
+          0,
+        )
+        if (
+          othersChars + link.dataUrl.length >
+          STUDIO_PYTHON_MATERIAL_DATA_LIMITS.maxAssetsTotalChars
+        )
+          return `O desenho "${target.name}" cresceu e não cabe mais neste jogo.`
+        const assets = p.assets.map((asset) => (asset.id === id ? candidate : asset))
         set({ project: bump({ ...p, assets }), isDirty: true, saveError: null })
         return null
       },

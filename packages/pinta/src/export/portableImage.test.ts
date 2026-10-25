@@ -20,6 +20,7 @@ import {
   createVectorTilesetAsset,
   type PintaAsset,
 } from '../core/project'
+import { tileLayerAt } from '../testing/fixtures'
 import { makeRect, makeText } from '../vector/shapes'
 import { assetToJson } from './assetJson'
 import {
@@ -169,7 +170,7 @@ describe('Pinta portable PNGs — actual native raster and PNG decoder', () => {
         tileset.tiles = [[rect('#ff0000')], [rect('#0000ff', 8)]]
       }
       const map = createTilemapAsset({ name: 'mapa', tilesetId: tileset.id, cols: 20, rows: 2 })
-      map.layers[0]!.cells.fill(0)
+      tileLayerAt(map).cells.fill(0)
       map.layers.push({
         id: 'front',
         name: 'Frente',
@@ -177,7 +178,7 @@ describe('Pinta portable PNGs — actual native raster and PNG decoder', () => {
         front: true,
         cells: new Int16Array(40).fill(-1),
       })
-      map.layers[1]!.cells[0] = 1
+      tileLayerAt(map, 1).cells[0] = 1
       map.layers.push({
         id: 'hidden',
         name: 'Escondida',
@@ -233,7 +234,7 @@ describe('Pinta portable PNGs — actual native raster and PNG decoder', () => {
     const tileset = createVectorTilesetAsset({ name: 'peca-larga', tileSize: 32 })
     tileset.tiles = [[rect('#0000ff', 96)]]
     const map = createTilemapAsset({ name: 'mapa', tilesetId: tileset.id, cols: 2, rows: 1 })
-    map.layers[0]!.cells[0] = 0
+    tileLayerAt(map).cells[0] = 0
     const image = await deriveLoadedPintaImage(map, recipe(map, { kind: 'tilemap' }), limits, {
       tileset,
       raster: nativeRaster().raster,
@@ -486,7 +487,7 @@ describe('Pinta portable PNGs — actual native raster and PNG decoder', () => {
     const tileset = createVectorTilesetAsset({ name: 'pecas', tileSize: 48 })
     tileset.tiles = [[rect('#ff0000', 48)]]
     const source = createTilemapAsset({ name: 'grande', tilesetId: tileset.id, cols: 128, rows: 2 })
-    source.layers[0]!.cells.fill(0)
+    tileLayerAt(source).cells.fill(0)
     const renderer = nativeRaster()
     const image = await deriveLoadedPintaImage(
       source,
@@ -587,7 +588,7 @@ describe('Pinta portable SVGs — the real vector for a Pygame Zero destination'
     const tileset = createVectorTilesetAsset({ name: 'pecas', tileSize: 48 })
     tileset.tiles = [[rect('#ff0000', 48)]]
     const source = createTilemapAsset({ name: 'mapa', tilesetId: tileset.id, cols: 4, rows: 2 })
-    source.layers[0]!.cells.fill(0)
+    tileLayerAt(source).cells.fill(0)
     const image = await deriveLoadedPintaImage(
       source,
       svgRecipe(source, { kind: 'tilemap' }, 0.5),
@@ -623,7 +624,7 @@ describe('Pinta portable SVGs — the real vector for a Pygame Zero destination'
       }),
     ).rejects.toThrow('pixels')
     const map = createTilemapAsset({ name: 'mapa', tilesetId: tileset.id, cols: 2, rows: 1 })
-    map.layers[0]!.cells.fill(0)
+    tileLayerAt(map).cells.fill(0)
     await expect(
       deriveLoadedPintaImage(map, svgRecipe(map, { kind: 'tilemap' }), limits, {
         tileset,

@@ -9,6 +9,7 @@ import {
   createVectorBackgroundAsset,
   type PintaAsset,
 } from '../core/project'
+import { tileLayerAt } from '../testing/fixtures'
 import { setCell } from '../tiles/tilemapOps'
 import {
   GalleryBackupSizeCache,
@@ -69,7 +70,7 @@ describe('galleryToPintaJson / importPintaJson', () => {
     const sprite = assets.find((a) => a.kind === 'pixel-sprite')
     expect(sprite?.kind === 'pixel-sprite' && sprite.animations[0]?.frames[0]?.[0]?.data[0]).toBe(5)
     const tilemap = assets.find((a) => a.kind === 'tilemap')
-    expect(tilemap?.kind === 'tilemap' && tilemap.layers[0]?.cells[4]).toBe(0)
+    expect(tilemap?.kind === 'tilemap' && tileLayerAt(tilemap).cells[4]).toBe(0)
   })
 
   it('asset corrompido é pulado COM aviso (os bons entram)', () => {
@@ -142,7 +143,7 @@ describe('galleryToPintaJson / importPintaJson', () => {
     if (restoredMap?.kind !== 'tilemap') throw new Error('mapa esperado')
     expect(restoredSprite.animations[0]?.frames[0]?.map((cel) => cel.data[0])).toEqual([1, 0, 3])
     expect(restoredTileset.tiles.map((tile) => tile.data[0])).toEqual([1, 0, 3])
-    expect(restoredMap.layers[0]?.cells[0]).toBe(2)
+    expect(tileLayerAt(restoredMap).cells[0]).toBe(2)
   })
 
   it('rejeita versão futura e células que exigiriam coerção silenciosa', () => {

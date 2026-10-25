@@ -7,6 +7,7 @@
 import { beforeEach, describe, expect, it } from 'bun:test'
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { COPY } from '../../core/copy'
+import { tileLayerAt } from '../../testing/fixtures'
 import { clearIdbMock } from '../../testing/idbMock'
 import { withRightColumnPrototypeStub } from '../../testing/rightColumnStub'
 
@@ -355,8 +356,7 @@ describe('peças vetoriais — tira + remap', () => {
       .create({ kind: 'tilemap', name: 'fase-v', tilesetId: tileset.id, cols: 2, rows: 2 })
     if (tilemap?.kind !== 'tilemap') throw new Error('tilemap esperado')
     // Pinta a célula 0 com a peça 0 direto no disco (via absorb+persist do seed).
-    const layer = tilemap.layers[0]
-    if (!layer) throw new Error('camada esperada')
+    const layer = tileLayerAt(tilemap)
     layer.cells.set([0, -1, -1, 0])
 
     await openAsset('pecas-v')

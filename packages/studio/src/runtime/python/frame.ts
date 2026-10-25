@@ -344,7 +344,7 @@ async function initialize(event: MessageEvent<unknown>) {
           ready()
         })
         .catch(rendererFailed)
-    else if (canvas === 'python-pgzero')
+    else if (canvas === 'python-pgzero' || canvas === 'python-pygame')
       void import(
         /* @vite-ignore */
         new URL('./pgzero-renderer.mjs', import.meta.url).href
@@ -352,6 +352,7 @@ async function initialize(event: MessageEvent<unknown>) {
         .then((module: typeof import('./pgzero/renderer')) => {
           if (closed) return
           renderer = module.createPgzeroRenderer(document.body, {
+            name: canvas === 'python-pygame' ? 'Pygame-ce' : 'Pygame Zero',
             ...('mission' in value && value.mission === true ? { mission: true as const } : {}),
             onAudio: pgzeroAudio,
             takeEndedVoices: (limit) => audio.takeEnded(limit),

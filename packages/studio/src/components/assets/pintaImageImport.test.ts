@@ -3,6 +3,7 @@ import { createHash } from 'node:crypto'
 import type { PintaImageDerivation } from '@sistemazero/core/studio/pinta-image'
 import { PGZERO_EXTENSION } from '../../runtime/python/pgzero/contract'
 import { pgzeroSvgSize } from '../../runtime/python/pgzero/svgSize'
+import { PYGAME_EXTENSION } from '../../runtime/python/pygame/contract'
 import { TURTLE_EXTENSION } from '../../runtime/python/turtle/contract'
 import { documentFixture } from '../../state/fixtures/projectDocuments'
 import { createProjectStore } from '../../state/projectStore'
@@ -179,6 +180,28 @@ for (const kind of ['classic', 'pro'] as const) {
     const before = plain.getState().project
     expect(addPintaCreationToProject(plain.getState(), importedSvg(1))).toContain('PNG')
     expect(plain.getState().project).toBe(before)
+  })
+
+  test(`${kind} Pygame-ce: Pinta drawings become PNG assets usable by pygame.image.load`, async () => {
+    const store = await pythonWith(kind, PYGAME_EXTENSION)
+    expect(
+      pintaImageOutputFor(store.getState().project, {
+        kind: 'frame',
+        width: 16,
+        height: 16,
+        animations: [],
+        vector: true,
+      }),
+    ).toBeUndefined()
+    expect(addPintaCreationToProject(store.getState(), imported(0))).toBeNull()
+    const asset = store.getState().project!.assets![0]!
+    expect(asset.proPath).toBe('assets/heroi.png')
+    expect(asset.dataUrl).toBe(dataUrl)
+    const next = imported(0)
+    next.pintaImage.provenance.sourceSha256 = 'b'.repeat(64)
+    expect(addPintaCreationToProject(store.getState(), next)).toBeNull()
+    expect(store.getState().project!.assets).toHaveLength(1)
+    expect(store.getState().project!.assets![0]?.proPath).toBe('assets/heroi.png')
   })
 }
 

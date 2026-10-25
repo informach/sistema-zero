@@ -206,13 +206,15 @@ describe('inventário da oficina: o que a criança alcança', () => {
     // Group, ungroup and multiselect move into the tree; the destination selector adds one control.
     // The requested Plano adds one visible creation button.
     expect(vazio.view.getByRole('button', { name: copy.plane })).toBeDefined()
+    expect(vazio.view.getByRole('button', { name: copy.torus })).toBeDefined()
+    // Torus adds one visible shape control in Modelar.
     // A biblioteca de paletas acrescenta um único gatilho recolhido no Modelar.
     // O Raio-X pedido acrescenta uma alternância de vista, ao lado da grade.
-    expect(controlInventory(vazio.view.container).length).toBeLessThanOrEqual(70)
+    expect(controlInventory(vazio.view.container).length).toBeLessThanOrEqual(71)
     expect(
       encaradosVazio.length,
       `encarados na abertura: ${encaradosVazio.join(' | ')}`,
-    ).toBeLessThanOrEqual(50)
+    ).toBeLessThanOrEqual(51)
     cleanup()
 
     const comPeca = mount(withPiece())
@@ -220,11 +222,11 @@ describe('inventário da oficina: o que a criança alcança', () => {
     const encaradosPeca = frontControls(comPeca.view.container)
     // 12 coordinate inputs are now available directly, with pivot and component tools.
     // Flip adds its disclosure, three axes and the in-place option, behind the disclosure.
-    expect(controlInventory(comPeca.view.container).length).toBeLessThanOrEqual(127)
+    expect(controlInventory(comPeca.view.container).length).toBeLessThanOrEqual(128)
     expect(
       encaradosPeca.length,
       `encarados com uma peça escolhida: ${encaradosPeca.join(' | ')}`,
-    ).toBeLessThanOrEqual(90)
+    ).toBeLessThanOrEqual(91)
   })
 
   /**

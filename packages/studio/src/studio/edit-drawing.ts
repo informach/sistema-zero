@@ -13,11 +13,14 @@ import { createContext, useContext } from 'react'
  * por aqui: ele é resolvido dentro do próprio Studio, em
  * `asset-library/personalSync.ts`. Mesmo padrão do {@link useStudioCloudSync}.
  */
-const StudioEditDrawingContext = createContext<((drawingId: string) => void) | null>(null)
+/** `tab`: aba aberta pelo Studio no próprio clique, para o host só navegar (ver `types.ts`). */
+export type StudioEditDrawing = (drawingId: string, tab?: Window | null) => void
+
+const StudioEditDrawingContext = createContext<StudioEditDrawing | null>(null)
 
 export const StudioEditDrawingProvider = StudioEditDrawingContext.Provider
 
 /** Callback de "editar este desenho" (`null` quando o host não passou um). */
-export function useStudioEditDrawing(): ((drawingId: string) => void) | null {
+export function useStudioEditDrawing(): StudioEditDrawing | null {
   return useContext(StudioEditDrawingContext)
 }

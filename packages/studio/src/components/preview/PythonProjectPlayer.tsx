@@ -183,7 +183,7 @@ export const PythonProjectPlayer = forwardRef<
     }
   }, [props.project, playId, publicationRevision, request, ref])
 
-  // Turtle, Pygame Zero and the Raylib extensions draw on the execution canvas.
+  // Turtle, Pygame Zero, Pygame-ce and the Raylib extensions draw on the execution canvas.
   const hasTurtle = props.project.installedExtensions.some((extension) =>
     isPythonCanvasExtension(extension.id),
   )

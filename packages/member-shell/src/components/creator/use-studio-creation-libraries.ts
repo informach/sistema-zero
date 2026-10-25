@@ -61,12 +61,38 @@ export function useStudioCreationLibraries(
           ...(d.imageSelection ? { imageSelection: d.imageSelection } : {}),
         }))
       },
-      async inspectImage(drawingId, options) {
+      async importDrawings(input, options) {
         const signal = operationSignal(options?.signal)
+        // Captured before the first await: the profile and the request cannot change midway.
+        const request = {
+          json: String(input.json),
+          ids: [...input.ids].map(String),
+          origin: typeof input.origin === 'string' ? input.origin : undefined,
+        }
         signal.throwIfAborted()
         const lib = await import('@sistemazero/pinta/studio-library')
         signal.throwIfAborted()
-        const provenance = await lib.inspectImageForStudio(drawingId, { namespace, signal })
+        const result = await lib.importDrawingsForStudio(request.json, request.ids, {
+          namespace,
+          signal,
+          ...(request.origin ? { origin: request.origin } : {}),
+        })
+        signal.throwIfAborted()
+        if (!result.ok) return { ok: false, error: result.message }
+        return { ok: true, drawings: result.drawings }
+      },
+      async inspectImage(drawingId, options) {
+        const signal = operationSignal(options?.signal)
+        // The kind decides the dependencies: a `map` fingerprints every tileset of the map.
+        const selection = options?.selection
+        signal.throwIfAborted()
+        const lib = await import('@sistemazero/pinta/studio-library')
+        signal.throwIfAborted()
+        const provenance = await lib.inspectImageForStudio(drawingId, {
+          namespace,
+          signal,
+          ...(selection ? { selection } : {}),
+        })
         signal.throwIfAborted()
         return provenance
       },

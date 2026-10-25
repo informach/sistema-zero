@@ -11,7 +11,8 @@ import {
 } from '../core/project'
 import { bitmapDominantColor } from '../export/png'
 import { isVectorGradient } from '../vector/model'
-import { flattenLayers } from './tilemapOps'
+import { drawableMapTile, type MapTilesets, resolveMapTilesets } from './mapTilesets'
+import { flattenWithTilesets } from './tilemapOps'
 
 /** Cor "dominante" de um tile vetorial: o fill visível do shape do TOPO. */
 function vectorTileColor(tile: VectorFrame): string | null {
@@ -26,20 +27,29 @@ function vectorTileColor(tile: VectorFrame): string | null {
   return null
 }
 
-/** Uma cor CSS (ou null = célula vazia) por célula, row-major. */
+function tileColorsOf(tileset: AnyTilesetAsset): Array<string | null> {
+  if (tileset.kind === 'tileset') {
+    const palette = resolveAssetPalette(tileset)
+    return tileset.tiles.map((tile) => bitmapDominantColor(tile, palette))
+  }
+  return tileset.tiles.map((tile) => vectorTileColor(tile))
+}
+
+/**
+ * Uma cor CSS (ou null = célula vazia) por célula, row-major. Com várias peças,
+ * cada célula usa a cor do tileset da camada que venceu nela.
+ */
 export function tilemapMinimapColors(
   tilemap: TilemapAsset,
-  tileset: AnyTilesetAsset,
+  tilesets: MapTilesets,
 ): Array<string | null> {
-  const flat = flattenLayers(tilemap)
-  const tileColors =
-    tileset.kind === 'tileset'
-      ? (() => {
-          const palette = resolveAssetPalette(tileset)
-          return tileset.tiles.map((tile) => bitmapDominantColor(tile, palette))
-        })()
-      : tileset.tiles.map((tile) => vectorTileColor(tile))
-  return Array.from(flat, (index) => (index >= 0 ? (tileColors[index] ?? null) : null))
+  const resolved = resolveMapTilesets(tilemap, tilesets)
+  // Camada sem peças achadas não tapa a de baixo (o mesmo que o jogo mostra).
+  const flat = flattenWithTilesets(tilemap, undefined, drawableMapTile(tilemap, resolved))
+  const colorsBySource = resolved.map((tileset) => (tileset ? tileColorsOf(tileset) : null))
+  return Array.from(flat.tiles, (index, at) =>
+    index >= 0 ? (colorsBySource[flat.sources[at] ?? 0]?.[index] ?? null) : null,
+  )
 }
 
 /** Pinta o minimapa num canvas 1:1 (guard de contexto: happy-dom → false). */

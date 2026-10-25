@@ -2,6 +2,7 @@ import { studioPortableFileConflict } from '@sistemazero/core/studio/project-env
 import type { StudioRuntimeCatalog } from '@sistemazero/core/studio/runtime-catalog'
 import { buildPythonAssetBundle } from '../core/pythonAssets'
 import { assertPythonVisualDraftSettled } from '../python/blocks/workspaceDraft'
+import { hasPygameExtension } from '../runtime/python/pygame/contract'
 import { hasTurtleExtension } from '../runtime/python/turtle/contract'
 import { TURTLE_PINTA_SHAPES_SOURCES } from '../runtime/python/turtle/formasDoPinta.generated'
 import { pythonFilesToTree, refinePythonProjectDocument } from '../state/pythonProjectValidation'
@@ -63,6 +64,13 @@ export async function buildPythonSourceFiles(
     if (!(path in files) && !studioPortableFileConflict([...Object.keys(files), path], directories))
       files[path] = TURTLE_PINTA_SHAPES_SOURCES['formas_do_pinta.py']!
   }
+  let pygameFiles: string[] = []
+  if (hasPygameExtension(project.installedExtensions)) {
+    const { buildPygameDesktopFiles } = await import('./pygameDesktop')
+    const desktop = buildPygameDesktopFiles({ occupied: Object.keys(files), directories })
+    Object.assign(files, desktop.files)
+    pygameFiles = desktop.generated
+  }
   const metadata = await buildPythonSourceMetadata({
     project,
     sourceFiles,
@@ -72,6 +80,7 @@ export async function buildPythonSourceFiles(
     runtimeCatalog,
     pgzero,
     raylib,
+    pygameFiles,
   })
   Object.assign(files, metadata.files)
   for (const path of directories) files[`${path}/`] = new Uint8Array()

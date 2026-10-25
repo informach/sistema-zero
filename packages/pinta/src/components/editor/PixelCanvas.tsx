@@ -67,6 +67,7 @@ import {
   toolPointerMove,
   toolPointerUp,
 } from '../../pixel/tools'
+import { isMapObjectTool } from '../../state/sessionStore'
 import { usePintaApp } from '../appContext'
 import { ToolButton } from '../ui/Button'
 import { Copy, FlipHorizontal2, FlipVertical2, Trash2 } from '../ui/icons'
@@ -431,9 +432,10 @@ export function PixelCanvas(): JSX.Element {
   function settings(secondary = false): ToolSettings {
     const s = session.getState()
     return {
-      // 'pan'/'select' não são do motor pixel — nunca chegam aqui (o handler
-      // trata a seleção antes), mas o fallback mantém o tipo honesto.
-      tool: s.tool === 'pan' || s.tool === 'select' ? 'pencil' : s.tool,
+      // 'pan'/'select' (e as ferramentas de objeto do mapa) não são do motor pixel —
+      // nunca chegam aqui (o handler trata a seleção antes), mas o fallback mantém o
+      // tipo honesto.
+      tool: s.tool === 'pan' || s.tool === 'select' || isMapObjectTool(s.tool) ? 'pencil' : s.tool,
       color: secondary ? s.colorSecondary : s.color,
       brushSize: s.brushSize,
       mirrorX: s.mirrorX,

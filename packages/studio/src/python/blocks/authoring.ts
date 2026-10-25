@@ -2,6 +2,7 @@ import { selectStudioRuntimeRelease } from '@sistemazero/core/studio/runtime-cat
 import type { PythonProjectDocument } from '../../core/editableProject'
 import type { StudioRuntimeEnvironment } from '../../runtime/environment'
 import { PGZERO_EXTENSION } from '../../runtime/python/pgzero/contract'
+import { PYGAME_EXTENSION } from '../../runtime/python/pygame/contract'
 import { RAYLIB_2D_EXTENSION, RAYLIB_3D_EXTENSION } from '../../runtime/python/raylib/contract'
 import { TURTLE_EXTENSION } from '../../runtime/python/turtle/contract'
 import { PYTHON_PROGRAMMING_CODECS } from './catalog'
@@ -62,6 +63,9 @@ export async function loadPythonAuthoring(
       '../extensions/pgzero/catalog'
     )
     extension = { codecs: PYTHON_PGZERO_CODECS.filter(supported), options: PGZERO_RESOLVER_OPTIONS }
+  } else if (has(PYGAME_EXTENSION)) {
+    const { PYTHON_PYGAME_CODECS } = await import('../extensions/pygame/catalog')
+    extension = { codecs: PYTHON_PYGAME_CODECS.filter(supported), options: {} }
   } else if (has(RAYLIB_2D_EXTENSION)) {
     const { PYTHON_RAYLIB_2D_CODECS, RAYLIB_RESOLVER_OPTIONS } = await import(
       '../extensions/raylib2d/catalog'

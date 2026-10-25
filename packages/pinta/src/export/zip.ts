@@ -19,6 +19,7 @@ import {
   resolveAssetPalette,
 } from '../core/project'
 import { flattenCels } from '../pixel/layers'
+import { collectMapTilesets } from '../tiles/mapTilesets'
 import { tilesetPngDataUrl } from '../tiles/packTileset'
 import { vectorTilesetPngDataUrl, vectorTilesetPortableSvg } from '../tiles/packVectorTileset'
 import { tilemapPngDataUrl } from '../tiles/renderTilemap'
@@ -150,17 +151,19 @@ export async function buildGalleryFileMap(
         break
       }
       case 'tilemap': {
-        const tileset = tilesetsById.get(asset.tilesetId)
+        // Todas as peças do mapa (a padrão primeiro): cada camada sai com as dela.
+        const mapTilesets = collectMapTilesets(asset, (id) => tilesetsById.get(id))
+        const tileset = mapTilesets[0]
         if (!tileset) break
         const png = await dataUrlBytes(
           tileset.kind === 'tileset'
-            ? tilemapPngDataUrl(asset, tileset)
-            : await vectorTilemapPngDataUrl(asset, tileset),
+            ? tilemapPngDataUrl(asset, mapTilesets)
+            : await vectorTilemapPngDataUrl(asset, mapTilesets),
         )
         if (png) files[`mapas/${asset.name}.png`] = png
         files[`mapas/${asset.name}.grade.txt`] = tilemapToStudioGrid(asset)
-        files[`mapas/${asset.name}.pinta-tilemap.json`] = tilemapExportJson(asset, tileset)
-        readme.push(`• Mapa "${asset.name}":`, tilemapRecipe(asset, tileset), '')
+        files[`mapas/${asset.name}.pinta-tilemap.json`] = tilemapExportJson(asset, mapTilesets)
+        readme.push(`• Mapa "${asset.name}":`, tilemapRecipe(asset, mapTilesets), '')
         break
       }
       case 'vector-sprite': {

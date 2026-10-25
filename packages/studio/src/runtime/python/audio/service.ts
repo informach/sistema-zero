@@ -263,8 +263,9 @@ export function createPythonAudioService(options: {
             if (audio) audio.volume = request.volume
           }
         } else if (request.op === 'pause' || request.op === 'resume') {
-          const voice = voices.get(request.id)
-          if (voice) {
+          for (const id of 'ids' in request ? request.ids : [request.id]) {
+            const voice = voices.get(id)
+            if (!voice) continue
             voice.paused = request.op === 'pause'
             if (voice.paused) voice.audio?.pause()
             else voice.audio?.play().catch(() => {})

@@ -12,6 +12,7 @@ import { createStudioRuntimeRelease } from '../../packages/core/src/studio/runti
 import { buildPythonRuntimeDistribution } from '../../packages/studio/scripts/build-python-runtime'
 import { pythonFrameContentSecurityPolicy } from '../../packages/studio/src/runtime/python/framePolicy'
 import { PGZERO_EXTENSION } from '../../packages/studio/src/runtime/python/pgzero/contract'
+import { PYGAME_EXTENSION } from '../../packages/studio/src/runtime/python/pygame/contract'
 import {
   RAYLIB_2D_EXTENSION,
   RAYLIB_3D_EXTENSION,
@@ -116,6 +117,7 @@ async function prepareRelease() {
     extensions: [
       { id: TURTLE_EXTENSION.id, versions: [TURTLE_EXTENSION.version] },
       { id: PGZERO_EXTENSION.id, versions: [PGZERO_EXTENSION.version] },
+      { id: PYGAME_EXTENSION.id, versions: [PYGAME_EXTENSION.version] },
       { id: RAYLIB_2D_EXTENSION.id, versions: [RAYLIB_2D_EXTENSION.version] },
       { id: RAYLIB_3D_EXTENSION.id, versions: [RAYLIB_3D_EXTENSION.version] },
     ],

@@ -6,10 +6,12 @@ import { SZ_AUDIO_MODULE_DESCRIPTOR } from '@sistemazero/core/studio/python-prov
 import { StudioPythonDistributionSchema } from '@sistemazero/core/studio/python-runtime-distribution'
 import { PYTHON_PROJECT_MISSION_FEATURE } from '@sistemazero/core/studio/python-runtime-features'
 import { PGZERO_MODULE_FILES } from '../src/runtime/python/pgzero/contract'
+import { PYGAME_MODULE_FILES } from '../src/runtime/python/pygame/contract'
 import { RAYLIB_MODULE_FILES } from '../src/runtime/python/raylib/contract'
 import { TURTLE_MODULE_FILES, TURTLE_RUNTIME_FEATURES } from '../src/runtime/python/turtle/contract'
 import vendor from '../src/runtime/python/vendor-manifest.json'
 import { PYODIDE_VERSION, PYTHON_VERSION } from '../src/runtime/python/versions'
+import { APPROVED_EVAL_RECIPE, applyApprovedEval, approvedEvalSha256 } from './python/approved-eval'
 import { checkPythonAudioMetadata } from './python/audio-metadata'
 import { derivePythonBootLoaders } from './python/derive-boot-loaders'
 import {
@@ -97,6 +99,13 @@ export async function buildPythonRuntimeDistribution(
     inputs: contents,
     reader: bootReader,
     temporaryRoot: outputDirectory,
+    transforms: {
+      'pyodide.asm.mjs': {
+        recipe: APPROVED_EVAL_RECIPE,
+        sha256: approvedEvalSha256(),
+        apply: (source) => applyApprovedEval(source),
+      },
+    },
   })
   for (const [name, bytes] of bootLoaders.files) contents.set(name, bytes)
   contents.set(
@@ -131,11 +140,31 @@ export async function buildPythonRuntimeDistribution(
         await readFile(resolve(root, `packages/studio/src/runtime/python/raylib/${license}`)),
       ),
     )
+  for (const filename of PYGAME_MODULE_FILES)
+    contents.set(
+      `pygame/${filename}`,
+      new Uint8Array(
+        await readFile(resolve(root, `packages/studio/src/runtime/python/pygame/py/${filename}`)),
+      ),
+    )
   for (const license of ['LICENSE-pgzero.txt', 'LICENSE-freefont.txt'])
     contents.set(
       license,
       new Uint8Array(
         await readFile(resolve(root, `packages/studio/src/runtime/python/pgzero/${license}`)),
+      ),
+    )
+  // The pygame fonts are the platform's OFL fonts; their licences ship beside them.
+  for (const [font, license] of [
+    ['bungee', 'OFL-bungee.txt'],
+    ['press-start-2p', 'OFL-pressstart2p.txt'],
+    ['nunito', 'OFL-nunito.txt'],
+    ['fredoka', 'OFL-fredoka.txt'],
+  ] as const)
+    contents.set(
+      `LICENSE-font-${font}.txt`,
+      new Uint8Array(
+        await readFile(resolve(root, `packages/studio/src/official-extensions/fonts/${license}`)),
       ),
     )
   contents.set(
@@ -177,9 +206,10 @@ export async function buildPythonRuntimeDistribution(
         'Turtle browser adaptation: licensed CPython 3.14.2 geometry/animation with a Sistema Zero Canvas backend. Recipe: packages/studio/scripts/turtle/derive.py. Tk 8.6.15 color table; see LICENSE-tk.txt. This is not the original Tkinter module.',
         'Pygame Zero browser adaptation: pgzero 1.2.1 (LGPL-3.0, see LICENSE-pgzero.txt) with a Sistema Zero canvas backend and pygame-ce 2.5.8 behaviour. File-by-file origin: packages/studio/src/runtime/python/pgzero/PROVENANCE.md. Default font freesansbold.ttf: GNU FreeFont, see LICENSE-freefont.txt. This is not pygame.',
         'Raylib browser adaptation: a Sistema Zero Python module (pyray, raylib) following raylib-python-cffi 6.0.1.0 (EPL-2.0 or GPL-2.0 with Classpath exception, see LICENSE-raylib-python-cffi.txt) and raylib 6.0 (zlib, see LICENSE-raylib.txt): names, structs, constants, default font data and drawing/maths algorithms ported from raylib, drawn by a WebGL2 renderer. Provenance: packages/studio/src/runtime/python/raylib/PROVENANCE.md. This is not the raylib C library.',
+        'pygame-ce 2.5.7 (LGPL-2.1, see LICENSE-pygame-ce.txt): the unmodified Pyodide 314.0.7 wheel pygame_ce-2.5.7-cp314-cp314-pyemscripten_2026_0_wasm32.whl, source https://github.com/pygame-community/pygame-ce/tree/2.5.7. The Sistema Zero host bridge (packages/studio/src/runtime/python/pygame/py/_szpygame) replaces only display flip, input state, clocks and the mixer, and uses the bundled pgzero frame transport; desktop exports use native pygame-ce 2.5.7.',
         `Portable audio ${SZ_AUDIO_MODULE_DESCRIPTOR.importName} ${SZ_AUDIO_MODULE_DESCRIPTOR.version} is a separate Sistema Zero module, not part of the Python standard library or Turtle API. Browser requests use the captured session media service; desktop source exports declare their own native package dependencies. Source: packages/studio/src/runtime/python/audio.`,
         `Standard library packaging recipe: ${standardLibrary.recipe}; output SHA-256: ${standardLibrary.sha256}; input source archive remains pinned in vendor-manifest.json. Sources are preserved.`,
-        'Pyodide loader modules use scoped lexical fetch injection, not a global fetch replacement. Recipe/tool/input/output hashes: boot-loader-derivation.json. Original vendor inputs remain pinned in vendor-manifest.json. Other vendor artifacts are unchanged.',
+        'Pyodide loader modules use scoped lexical fetch injection, not a global fetch replacement. pyodide.asm.mjs also compiles the pinned SDL EM_ASM strings of the pygame-ce side module (packages/studio/src/runtime/python/pygame/approved-js-snippets.json, recipe scripts/python/approved-eval.ts) so its dynamic linker needs no eval; other strings are refused. Recipe/tool/input/output hashes: boot-loader-derivation.json. Original vendor inputs remain pinned in vendor-manifest.json. Other vendor artifacts are unchanged.',
         'HTTP gzip representations are additional immutable transport artifacts, not replacements for logical files. Recipe: http-compression-recipe.json and packages/studio/scripts/python/http-representations.ts. Input/output relationships: distribution.httpRepresentations; hashes: distribution.files. Decoded content is verified before upload.',
         '',
       ].join('\n'),
