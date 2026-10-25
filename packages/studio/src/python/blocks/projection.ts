@@ -100,7 +100,7 @@ export function pythonASTToVisual(
     guardedAttributes(codecs),
     pythonResolverOptionsOf(codecs),
   )
-  const context = { isModule: resolves.isModule }
+  const context = { isModule: resolves.isModule, functionParams: resolves.functionParams }
   const index = pythonCodecIndex(codecs)
   let count = 0
   function project(value: PythonNode, role: PythonBlockRole, depth = 0): PythonVisualNode {

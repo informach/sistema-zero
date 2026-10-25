@@ -413,7 +413,7 @@ function namedCall(role: 'statement' | 'value'): PythonBlockCodec {
       const value = call(name('minha_funcao'), [])
       return statement ? node('Expr', { value }) : value
     },
-    decode(value) {
+    decode(value, context) {
       const target = statement ? value.fields.value : value
       if (statement && (value.kind !== 'Expr' || !exact(value, ['value']))) return
       if (!isNode(target) || target.kind !== 'Call' || !exact(target, ['func', 'args', 'keywords']))
@@ -428,11 +428,13 @@ function namedCall(role: 'statement' | 'value'): PythonBlockCodec {
       )
         return
       if (args.some((arg) => arg.kind === 'Starred')) return
+      // "chamar mover com distancia ⟨10⟩, angulo ⟨90⟩": the names come from the def.
+      const params = context?.functionParams?.(func as PythonNode)
       return {
         fields: [{ name: 'NAME', label: '', value: (func as PythonNode).fields.id as string }],
         inputs: args.map((arg, index) => ({
           name: `args:${index}`,
-          label: index ? ',' : 'com',
+          label: `${index ? ',' : 'com'}${params?.[index] ? ` ${params[index]}` : ''}`,
           role: 'value' as const,
           nodes: [arg],
         })),

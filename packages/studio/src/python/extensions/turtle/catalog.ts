@@ -154,7 +154,7 @@ function codecsOf(concept: TurtleConcept): PythonBlockCodec[] {
       pythonApiCallCodec({
         ...base,
         id: `${idOf(concept)}_valor`,
-        title: `${concept.title} atual`,
+        title: concept.getterTitle ?? `${concept.title} atual`,
         role: 'value',
         params: (concept.params ?? []).map((param) => ({
           ...param,

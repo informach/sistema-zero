@@ -69,6 +69,8 @@ export interface PythonBlockCodec {
   requiredRuntimeFeatures?: readonly StudioPythonRuntimeFeature[]
   /** Extension-owned first palette; does not bypass host approval or installation. */
   starter?: boolean
+  /** First-palette blocks this one stands in for when its extension is installed. */
+  replacesStarters?: readonly string[]
   /** Hidden codecs decode existing code but are not offered in the palette. */
   hidden?: boolean
   /**
@@ -111,6 +113,8 @@ export interface PythonBlockCodec {
 export interface PythonDecodeContext {
   /** True when this Name refers to the given imported module (e.g. `t` after import turtle as t). */
   isModule?(nameNode: PythonNode, module: string): boolean
+  /** Parameter names of the program's own function this Name calls, when it is defined once. */
+  functionParams?(nameNode: PythonNode): readonly string[] | undefined
 }
 
 export interface PythonBlockBinding {

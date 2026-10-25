@@ -62,6 +62,8 @@ export interface PythonBindingResolver {
   isModule(nameNode: PythonNode, module: string): boolean
   /** Built-in collection kind proven for this Name (assigned only from that kind of value). */
   receiverKind(nameNode: PythonNode): PythonReceiverKind | undefined
+  /** Parameter names of the program's own function this Name refers to (defined once). */
+  functionParams(nameNode: PythonNode): readonly string[] | undefined
 }
 
 /** Built-ins that only read a list passed to them. */
@@ -163,6 +165,8 @@ export function pythonBindingResolver(
   }[] = []
   /** Classes the program writes, to tell its own objects apart from official ones. */
   const classDefs: { scope: Scope; name: string; node: PythonNode }[] = []
+  /** Functions the program defines, for the names of what a call sends. */
+  const functionDefs: { scope: Scope; name: string; params: readonly string[] }[] = []
   /** Names read as a value of their own (an alias, an argument), not only as `nome.algo`. */
   const bareReads = new Set<string>()
   let hasDynamicBindings = false
@@ -491,6 +495,16 @@ export function pythonBindingResolver(
       if (typeof fields.name === 'string') assign(scope, fields.name, { kind: 'other' })
       if (value.kind === 'ClassDef' && typeof fields.name === 'string')
         classDefs.push({ scope, name: fields.name, node: value })
+      if (
+        (value.kind === 'FunctionDef' || value.kind === 'AsyncFunctionDef') &&
+        typeof fields.name === 'string' &&
+        isNode(fields.args)
+      ) {
+        const params = [fields.args.fields.posonlyargs, fields.args.fields.args].flatMap((list) =>
+          nodes(list) ? list.map((arg) => String(arg.fields.arg)) : [],
+        )
+        functionDefs.push({ scope, name: fields.name, params })
+      }
       // Function defaults, decorators and bases are evaluated in the enclosing scope.
       for (const [key, child] of Object.entries(fields))
         if (!['body', 'args'].includes(key)) for (const item of children(child)) visit(item, scope)
@@ -1034,6 +1048,13 @@ export function pythonBindingResolver(
   resolver.isModule = (nameNode, module) => {
     const found = bindingAt(nameNode)
     return found?.kind === 'module' && !found.member && found.module === module
+  }
+  resolver.functionParams = (nameNode) => {
+    const key = nameNode.fields.id
+    if (typeof key !== 'string') return
+    const scope = holder(scopes.get(nameNode), key)
+    if (!scope || (scope.writes.get(key) ?? 0) !== 1) return
+    return functionDefs.find((entry) => entry.scope === scope && entry.name === key)?.params
   }
   resolver.receiverKind = (nameNode) => {
     const found = bindingAt(nameNode)

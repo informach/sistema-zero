@@ -943,3 +943,20 @@ test('importing from pgzero.builtins keeps the provided names and their blocks',
   expect(renamed).toContain('sz_py_pgzero_screen_fill')
   expect(renamed).not.toContain('sz_py_pgzero_actor_draw')
 })
+
+test('calling the child’s own function shows the name of each value it sends', () => {
+  const tree = moduleNode([
+    fn('mover', [pass()], ['distancia', 'angulo']),
+    expression(call(name('mover'), [integer('10'), integer('90'), integer('1')])),
+    expression(call(name('desconhecida'), [integer('1')])),
+  ])
+  const projection = pythonASTToVisual(tree, { codecs, officialModules: new Set() })
+  expect(pythonSemanticTree(pythonVisualToAST(projection, codecs))).toEqual(
+    pythonSemanticTree(tree),
+  )
+  const labels = projection.body
+    .filter((value) => value.kind !== 'source' && value.codecId === 'sz_py_run')
+    .map((value) => (value.kind === 'source' ? [] : value.inputs.map((input) => input.label)))
+  // A value beyond the parameters, and a function the program does not define, keep the plain label.
+  expect(labels).toEqual([['com distancia', ', angulo', ','], ['com']])
+})

@@ -469,3 +469,13 @@ test('a loop over a list of turtles written right there gives each turtle block'
   expect(mixed).not.toContain('sz_py_turtle_turtle_speed')
   expect(mixed).toContain('sz_py_method')
 })
+
+test('a value read from a command says what it gives (the stamp gives a number)', () => {
+  const titles = new Map(PYTHON_TURTLE_CODECS.map((codec) => [codec.id, codec.title]))
+  const getters = [...titles].filter(([id]) => id.endsWith('_valor'))
+  expect(getters.length).toBeGreaterThan(10)
+  expect(getters.map(([, title]) => title)).not.toContain('carimbar atual')
+  expect(getters.map(([, title]) => title)).not.toContain('desenhar de uma vez atual')
+  expect(getters.map(([, title]) => title)).toContain('carimbar e dar o número do carimbo')
+  expect(getters.map(([, title]) => title)).toContain('cor da caneta atual')
+})

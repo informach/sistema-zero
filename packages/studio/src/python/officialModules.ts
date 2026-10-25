@@ -10,6 +10,7 @@ const modules = [
   'turtle',
   'pgzero',
   'pgzrun',
+  'pygame',
   'pyray',
   'raylib',
   'sz_audio',
@@ -62,7 +63,7 @@ export function pythonOfficialModules(project: PythonProjectDocument) {
         !shadowed.has(module) &&
         (module !== 'turtle' ||
           project.installedExtensions.some((extension) => extension.id === TURTLE_EXTENSION.id)) &&
-        ((module !== 'pgzero' && module !== 'pgzrun') ||
+        ((module !== 'pgzero' && module !== 'pgzrun' && module !== 'pygame') ||
           project.installedExtensions.some((extension) => extension.id === PGZERO_EXTENSION.id)) &&
         ((module !== 'pyray' && module !== 'raylib') ||
           project.installedExtensions.some((extension) =>
