@@ -17,34 +17,26 @@
   "authoringLoader": "loadPythonAuthoring",
   "extension": "python-pgzero",
   "codecOrderSha256": "9230bb48f54aec7ba76bd4b69d279ee17895c6104123e6a07dccdb6b266b8c5f",
-  "sourceSha256": "2f688691a3f735b5760ba5cff27003830719c8b6b63b84864ef72a321245ffbb",
-  "generatedSha256": "752df9e4b45a551d8661b46efbcf3bdd8e7746f249b8ded0f9ae444638abe392",
+  "sourceSha256": "97dc45b2f045644e4f4b0b08b9e030ffcff7b9bbb36e728be50c0b0ff70ed5d3",
+  "generatedSha256": "7cff1271afd912e8f7c5187b9d3ead1913e4da68aebbfb4cd2fbedcf7e8465da",
   "opaqueCount": 0,
-  "blockCount": 1106,
+  "blockCount": 927,
   "referencedBlocks": [
     {
       "id": "sz_py_and",
-      "count": 8
+      "count": 3
     },
     {
       "id": "sz_py_arithmetic",
-      "count": 77
+      "count": 73
     },
     {
       "id": "sz_py_assign",
-      "count": 112
+      "count": 68
     },
     {
       "id": "sz_py_attribute",
-      "count": 71
-    },
-    {
-      "id": "sz_py_boolean",
-      "count": 15
-    },
-    {
-      "id": "sz_py_class",
-      "count": 1
+      "count": 17
     },
     {
       "id": "sz_py_collection_remove",
@@ -52,59 +44,51 @@
     },
     {
       "id": "sz_py_compare",
-      "count": 38
+      "count": 34
     },
     {
       "id": "sz_py_def",
-      "count": 12
-    },
-    {
-      "id": "sz_py_delete",
-      "count": 2
+      "count": 8
     },
     {
       "id": "sz_py_dictionary",
       "count": 1
     },
     {
-      "id": "sz_py_expression",
-      "count": 1
-    },
-    {
       "id": "sz_py_float",
-      "count": 3
+      "count": 8
     },
     {
       "id": "sz_py_for",
-      "count": 7
+      "count": 9
     },
     {
       "id": "sz_py_global",
-      "count": 6
+      "count": 7
     },
     {
       "id": "sz_py_if",
-      "count": 39
+      "count": 20
+    },
+    {
+      "id": "sz_py_if_value",
+      "count": 7
     },
     {
       "id": "sz_py_import_one",
-      "count": 2
-    },
-    {
-      "id": "sz_py_int",
       "count": 3
     },
     {
-      "id": "sz_py_integer",
-      "count": 115
+      "id": "sz_py_int",
+      "count": 1
     },
     {
-      "id": "sz_py_len",
-      "count": 4
+      "id": "sz_py_integer",
+      "count": 139
     },
     {
       "id": "sz_py_list",
-      "count": 4
+      "count": 7
     },
     {
       "id": "sz_py_list_append",
@@ -116,6 +100,22 @@
     },
     {
       "id": "sz_py_list_clear",
+      "count": 1
+    },
+    {
+      "id": "sz_py_math_cos",
+      "count": 1
+    },
+    {
+      "id": "sz_py_math_pi",
+      "count": 1
+    },
+    {
+      "id": "sz_py_math_sin",
+      "count": 1
+    },
+    {
+      "id": "sz_py_math_sqrt",
       "count": 2
     },
     {
@@ -124,59 +124,55 @@
     },
     {
       "id": "sz_py_method",
-      "count": 4
-    },
-    {
-      "id": "sz_py_method_value",
-      "count": 2
+      "count": 1
     },
     {
       "id": "sz_py_min",
-      "count": 6
+      "count": 4
     },
     {
       "id": "sz_py_negative",
-      "count": 9
-    },
-    {
-      "id": "sz_py_not",
-      "count": 3
+      "count": 8
     },
     {
       "id": "sz_py_or",
-      "count": 6
+      "count": 5
     },
     {
       "id": "sz_py_pgzero_actor",
-      "count": 5
-    },
-    {
-      "id": "sz_py_pgzero_actor_draw",
       "count": 3
     },
     {
+      "id": "sz_py_pgzero_actor_draw",
+      "count": 1
+    },
+    {
       "id": "sz_py_pgzero_actor_property",
-      "count": 34
+      "count": 26
     },
     {
       "id": "sz_py_pgzero_colliderect",
-      "count": 5
+      "count": 2
     },
     {
       "id": "sz_py_pgzero_draw",
       "count": 1
     },
     {
-      "id": "sz_py_pgzero_draw_filled_rect",
+      "id": "sz_py_pgzero_draw_filled_circle",
       "count": 1
     },
     {
-      "id": "sz_py_pgzero_draw_line",
+      "id": "sz_py_pgzero_draw_filled_rect",
+      "count": 3
+    },
+    {
+      "id": "sz_py_pgzero_draw_rect",
       "count": 1
     },
     {
       "id": "sz_py_pgzero_draw_text",
-      "count": 7
+      "count": 8
     },
     {
       "id": "sz_py_pgzero_go",
@@ -188,11 +184,11 @@
     },
     {
       "id": "sz_py_pgzero_keyboard",
-      "count": 5
+      "count": 8
     },
     {
       "id": "sz_py_pgzero_keys",
-      "count": 1
+      "count": 4
     },
     {
       "id": "sz_py_pgzero_on_key_down",
@@ -200,7 +196,7 @@
     },
     {
       "id": "sz_py_pgzero_rect",
-      "count": 1
+      "count": 4
     },
     {
       "id": "sz_py_pgzero_screen_fill",
@@ -208,7 +204,7 @@
     },
     {
       "id": "sz_py_pgzero_sound_play",
-      "count": 6
+      "count": 3
     },
     {
       "id": "sz_py_pgzero_title",
@@ -232,73 +228,47 @@
     },
     {
       "id": "sz_py_range",
-      "count": 3
+      "count": 5
     },
     {
       "id": "sz_py_return",
-      "count": 8
-    },
-    {
-      "id": "sz_py_run",
-      "count": 13
-    },
-    {
-      "id": "sz_py_run_value",
-      "count": 1
-    },
-    {
-      "id": "sz_py_str",
       "count": 3
     },
     {
+      "id": "sz_py_run",
+      "count": 12
+    },
+    {
+      "id": "sz_py_str",
+      "count": 2
+    },
+    {
       "id": "sz_py_subscript",
-      "count": 14
+      "count": 43
     },
     {
       "id": "sz_py_text",
-      "count": 37
+      "count": 59
     },
     {
       "id": "sz_py_tuple",
-      "count": 24
+      "count": 23
     },
     {
       "id": "sz_py_variable",
-      "count": 362
-    },
-    {
-      "id": "sz_py_while",
-      "count": 1
+      "count": 269
     }
   ],
   "approvedBlockIdsSha256": "54202db5e7bad445cab6e6263ea549dc48128724392cd438eaab19555b4dc547",
   "fullWorkspaceRoundtrip": true,
-  "initialWorkspaceSha256": "d022f1aa0716b0ca3c7767e4cb97f80cc803f0349364b0edebc5ac4143cfe5c2",
-  "editedWorkspaceSha256": "280e4317929a2981b4518241fb03d58880b21e22dc5fb2158273371797405a0c",
+  "initialWorkspaceSha256": "2abf0f457e2445c3a4f8f64d7a6af9468418c5212f582a4338a25811d482b6fa",
+  "editedWorkspaceSha256": "470fa438c05b0f052e5d0869102181d7effd720bb02ecd63e0ccf8ab2d9f3a00",
   "canonicalRenderReanalysis": true,
   "runtimeCapabilitiesQualified": false,
   "browserInteractionQualified": false,
   "edits": [
     {
       "label": "width",
-      "path": {
-        "body": 2,
-        "inputs": [
-          {
-            "name": "value",
-            "index": 0
-          }
-        ]
-      },
-      "codecId": "sz_py_integer",
-      "field": "NUMBER",
-      "before": "800",
-      "after": "810",
-      "beforeSourceSha256": "9c2cf994d20f40cf6cdcdf59e462998a4923ab6b9c38c0208eb1cf12f0273e96",
-      "afterSourceSha256": "bab78150187c12a35c1439d391deefe2a0ee825dc214387f6e55fbd19f3456b9"
-    },
-    {
-      "label": "height",
       "path": {
         "body": 3,
         "inputs": [
@@ -310,13 +280,13 @@
       },
       "codecId": "sz_py_integer",
       "field": "NUMBER",
-      "before": "600",
-      "after": "610",
-      "beforeSourceSha256": "bab78150187c12a35c1439d391deefe2a0ee825dc214387f6e55fbd19f3456b9",
-      "afterSourceSha256": "db82ab2ffab3aa23ac3869abd8e4d7044a8deefd3f375aaeb9cc923ba835059b"
+      "before": "800",
+      "after": "810",
+      "beforeSourceSha256": "2ee08725b0fe0e2aa4341ffec8aa21ed4f178fe54670c741e25fa8a18fcb14da",
+      "afterSourceSha256": "2541fafd5cbbb4b75c873d9d5279c5fc0270eb23cfa6cc7ef575c09e6a55d93a"
     },
     {
-      "label": "title",
+      "label": "height",
       "path": {
         "body": 4,
         "inputs": [
@@ -326,12 +296,30 @@
           }
         ]
       },
+      "codecId": "sz_py_integer",
+      "field": "NUMBER",
+      "before": "480",
+      "after": "490",
+      "beforeSourceSha256": "2541fafd5cbbb4b75c873d9d5279c5fc0270eb23cfa6cc7ef575c09e6a55d93a",
+      "afterSourceSha256": "0ba710b28e5a2652b7d05981da311d0dfdf605cd02db02e34daf688ea655e622"
+    },
+    {
+      "label": "title",
+      "path": {
+        "body": 5,
+        "inputs": [
+          {
+            "name": "value",
+            "index": 0
+          }
+        ]
+      },
       "codecId": "sz_py_text",
       "field": "TEXT",
-      "before": "Centopeia",
-      "after": "Centopeia!",
-      "beforeSourceSha256": "db82ab2ffab3aa23ac3869abd8e4d7044a8deefd3f375aaeb9cc923ba835059b",
-      "afterSourceSha256": "752df9e4b45a551d8661b46efbcf3bdd8e7746f249b8ded0f9ae444638abe392"
+      "before": "Raquetada",
+      "after": "Raquetada!",
+      "beforeSourceSha256": "0ba710b28e5a2652b7d05981da311d0dfdf605cd02db02e34daf688ea655e622",
+      "afterSourceSha256": "7cff1271afd912e8f7c5187b9d3ead1913e4da68aebbfb4cd2fbedcf7e8465da"
     }
   ]
 }

@@ -57,9 +57,11 @@ export function projectPintaImageFromRecipe(
 
 /**
  * The output format is the DESTINATION's decision, written into the recipe: a Pygame Zero
- * project gets the real vector (SVG) of a vector drawing; pixel art, Turtle (Tk opens no SVG)
+ * project gets the real vector (SVG) of a vector drawing; a Turtle project gets it only when
+ * the drawing is solid shapes (it becomes a turtle shape through formas_do_pinta); pixel art
  * and Python without an extension get PNG. Reviewing a material keeps the format it already
- * has: its Python file (`.png`/`.svg`) is part of its identity.
+ * has: its Python file (`.png`/`.svg`) is part of its identity. If the child later adds what a
+ * turtle shape cannot draw, formas_do_pinta says so and suggests bringing it as a new drawing.
  */
 export function pintaImageOutputFor(
   project: EditableStudioProject | null | undefined,

@@ -115,11 +115,20 @@ def play(t):
     t.shot('computador-venceu')
 
     # Uma frota grande demais para sortear de primeira: o computador sorteia de novo, sem travar.
-    t.set('TAMANHOS', [5] * 14)
+    t.set('TAMANHOS', [5] * 10)
     frota = t.get('Frota')((0, 0))
     for semente in range(20):
         t.get('random').seed(semente)
         frota.sortear()
-    t.check('frota apertada: o sorteio recomeça e põe os catorze navios', len(frota.navios) == 14
-            and len({casa for navio in frota.navios for casa in navio.casas}) == 70)
+    t.check('frota apertada: o sorteio recomeça e põe os dez navios', len(frota.navios) == 10
+            and len({casa for navio in frota.navios for casa in navio.casas}) == 50)
+    # Uma frota que não cabe avisa, em vez de travar o jogo.
+    for impossivel in ([11], [5] * 11):
+        t.set('TAMANHOS', impossivel)
+        try:
+            frota.sortear()
+            avisou = False
+        except ValueError as erro:
+            avisou = 'não cabem' in str(erro)
+        t.check(f'navios que não cabem ({len(impossivel)} de {impossivel[0]}) dão um aviso', avisou)
     t.set('TAMANHOS', [5, 4, 3, 3, 2])

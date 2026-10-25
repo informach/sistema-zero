@@ -29,6 +29,9 @@ const sha256 = (bytes: Uint8Array) => createHash('sha256').update(bytes).digest(
 const constant = (game: Pick<PgzeroGame, 'stem'>) =>
   game.stem.replace(/[A-Z]/g, (letter) => `_${letter}`).toUpperCase()
 
+/** What the games write when run in their own folder (ignored by git, never generated). */
+const GAME_WRITTEN_FILES = ['recorde.txt', 'placar.txt', 'caverna.txt']
+
 /** The one font a game can bring (`font: 'pressstart2p'`): Press Start 2P, under the SIL OFL. */
 const FONTS = join(studio, 'scripts/raylib/scenes/assets/fonts')
 const FONT_FILE = 'pressstart2p.ttf'
@@ -105,7 +108,7 @@ O Pygame Zero roda no computador com o pygame-ce:
 \`\`\`
 python -m pip install pygame-ce==${PGZERO_UPSTREAM.pygameCe} numpy
 python -m pip install --no-deps pgzero==${PGZERO_UPSTREAM.pgzero}
-python main.py
+python ${game.dataFiles?.length ? '-X utf8 ' : ''}main.py
 \`\`\`
 
 O programa termina com \`pgzrun.go()\`, então \`python main.py\` já abre o jogo. Num programa
@@ -149,7 +152,8 @@ foram sintetizados a partir de partituras.
 ${
   game.font
     ? `
-A fonte \`fonts/${FONT_FILE}\` é a Press Start 2P, de CodeMan38, distribuída sob a SIL
+A fonte \`fonts/${FONT_FILE}\` é a Press Start 2P (Copyright 2012 The Press Start 2P Project
+Authors), distribuída sem modificações sob a SIL
 Open Font License 1.1 em \`LICENSE-fonte.txt\`.
 `
     : ''
@@ -282,6 +286,23 @@ for (const game of PGZERO_GAMES as readonly PgzeroGame[]) {
         else await patiently(() => rm(join(folder, kind, file)))
       }
   }
+  // The same for the files beside main.py: a license or a data file the game no longer has.
+  // The files the games write when run in their own folder (.gitignore) are left alone.
+  const expected = new Set<string>([
+    ...PGZERO_GAME_FILES,
+    ...Object.keys(texts),
+    ...(game.dataFiles ?? []),
+    ...GAME_WRITTEN_FILES,
+    'images',
+    'sounds',
+    'music',
+    'fonts',
+  ])
+  for (const entry of await patiently(() => readdir(folder, { withFileTypes: true })))
+    if (entry.isFile() && !expected.has(entry.name)) {
+      if (check) problems.push(join(folder, entry.name))
+      else await patiently(() => rm(join(folder, entry.name)))
+    }
 
   const sources: Record<string, string> = {}
   for (const name of PGZERO_GAME_FILES)

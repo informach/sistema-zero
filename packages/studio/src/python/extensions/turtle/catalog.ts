@@ -210,6 +210,8 @@ const PINTA_SHAPE_CODEC = pythonApiCallCodec({
     optional('nome', 'com o nome', () => text('nave')),
     optional('tamanho', 'com o lado maior de', () => integer('64')),
   ],
+  // It needs `import formas_do_pinta`, and the next step is wearing the shape.
+  dependencies: ['sz_py_import_one', 'sz_py_turtle_turtle_shape'],
 })
 
 export const PYTHON_TURTLE_CODECS: readonly PythonBlockCodec[] = [

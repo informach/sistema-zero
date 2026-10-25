@@ -80,7 +80,22 @@ describe('listGalleryForStudio', () => {
       opacity: 1,
       rotation: 0,
     })
-    await persistAssets([sprite, tileset, map, missing, background, placa])
+    // A see-through shape: the turtle paints only solid colors, so it stays a PNG too.
+    const vidro = createVectorBackgroundAsset({ name: 'vidro', width: 30, height: 20 })
+    vidro.shapes.push({
+      id: 'janela',
+      type: 'rect',
+      x: 2,
+      y: 2,
+      w: 10,
+      h: 10,
+      rx: 0,
+      fill: '#3366ff',
+      stroke: null,
+      opacity: 0.5,
+      rotation: 0,
+    })
+    await persistAssets([sprite, tileset, map, missing, background, placa, vidro])
     expect((await listGalleryForStudio()).every((item) => !('imageSelection' in item))).toBe(true)
     const summaries = await listGalleryForStudio({ includeImageSelection: true })
     const choices = new Map(summaries.map((item) => [item.id, item.imageSelection]))
@@ -109,6 +124,12 @@ describe('listGalleryForStudio', () => {
       turtleShape: true,
     })
     expect(choices.get(placa.id)).toEqual({
+      kind: 'background',
+      width: 30,
+      height: 20,
+      vector: true,
+    })
+    expect(choices.get(vidro.id)).toEqual({
       kind: 'background',
       width: 30,
       height: 20,

@@ -346,6 +346,18 @@ export async function createPythonInterpreter(options: {
             publish(path as string, bytes)
             return true
           },
+          // Every folder of the project (empty ones and the ones holding files).
+          JSON.stringify([
+            ...new Set([
+              ...snapshot.directories,
+              ...paths.flatMap((path) =>
+                path
+                  .split('/')
+                  .slice(0, -1)
+                  .map((_, index, parts) => parts.slice(0, index + 1).join('/')),
+              ),
+            ]),
+          ]),
         )
       }
       if (options.audio) {

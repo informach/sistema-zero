@@ -40,6 +40,9 @@ const MUTATING_DUNDERS = new Set([
   '__func__',
 ])
 
+/** Turtle classes whose constructor always makes a new turtle. */
+const FRESH_TURTLE_INSTANCES = new Set(['Turtle', 'RawTurtle', 'Pen', 'RawPen'])
+
 /** A name an installed extension provides without import (Pygame Zero's screen, Actor…). */
 export interface PythonProvidedBuiltin {
   provider: string
@@ -135,7 +138,8 @@ export function pythonBindingResolver(
   const classNodes = new WeakMap<Scope, PythonNode>()
   const methodScopes: Scope[] = []
   /** Constructor/literal assignments to a Name, to infer the class of its object. */
-  const typed: { scope: Scope; target: string; value: PythonNode }[] = []
+  /** `nome = valor`; `alone` is false in `a = b = valor`, where two names hold one object. */
+  const typed: { scope: Scope; target: string; value: PythonNode; alone: boolean }[] = []
   const augmented = new Map<Scope, Map<string, number>>()
   /** `lista.append(valor)` and the loops over a list name, for the element class of a list. */
   const appends: { scope: Scope; list: string; value: PythonNode }[] = []
@@ -291,6 +295,7 @@ export function pythonBindingResolver(
         scope: owner(scope, fields.optional_vars.fields.id),
         target: fields.optional_vars.fields.id,
         value: fields.context_expr,
+        alone: true,
       })
     if (
       value.kind === 'Name' &&
@@ -321,6 +326,7 @@ export function pythonBindingResolver(
           scope: owner(scope, target.fields.id as string),
           target: target.fields.id as string,
           value: fields.value,
+          alone: fields.targets.length === 1,
         })
     if (
       value.kind === 'AugAssign' &&
@@ -891,6 +897,18 @@ export function pythonBindingResolver(
     if (!scope || (scope.writes.get(key) ?? 0) !== 1) return false
     const found = classDefs.find((entry) => entry.scope === scope && entry.name === key)
     if (!found) return false
+    // A __new__ or a metaclass can hand back any object, the screen included.
+    const keywords = nodes(found.node.fields.keywords) ? found.node.fields.keywords : []
+    const body = nodes(found.node.fields.body) ? found.node.fields.body : []
+    if (
+      keywords.length ||
+      body.some(
+        (statement) =>
+          (statement.kind === 'FunctionDef' || statement.kind === 'AsyncFunctionDef') &&
+          statement.fields.name === '__new__',
+      )
+    )
+      return false
     const bases = nodes(found.node.fields.bases) ? found.node.fields.bases : []
     return bases.every((base) => {
       const baseRoot = rootName(base)
@@ -904,6 +922,16 @@ export function pythonBindingResolver(
    * program's own class has no official methods to replace; an official object (an Actor, a
    * turtle) counts only while nothing else can hold it (no alias, no argument).
    */
+  /**
+   * Constructors that always make a NEW object. turtle.Screen() (and getscreen, getpen…) hands
+   * back the object the module functions use: a store on it changes turtle.bgcolor() too.
+   */
+  function freshInstance(found: Binding) {
+    if (found.kind !== 'instance') return false
+    if (found.builtin) return true
+    if (found.module === 'builtins') return true
+    return found.module === 'turtle' && FRESH_TURTLE_INSTANCES.has(found.instance)
+  }
   function storesOnOwnObject(write: (typeof attributeWrites)[number]) {
     const key = write.root?.fields.id
     if (!write.direct || write.dunder || typeof key !== 'string') return false
@@ -911,12 +939,15 @@ export function pythonBindingResolver(
     const found = scope?.bindings.get(key)
     if (!scope || !found) return false
     // A loop variable holds objects that other names hold too: only a constructor's own name.
-    if (found.kind === 'instance')
+    if (found.kind === 'instance') {
+      const made = typed.filter((entry) => entry.scope === scope && entry.target === key)
       return (
+        freshInstance(found) &&
         !bareReads.has(key) &&
-        typed.filter((entry) => entry.scope === scope && entry.target === key).length ===
-          (scope.writes.get(key) ?? 0)
+        made.every((entry) => entry.alone) &&
+        made.length === (scope.writes.get(key) ?? 0)
       )
+    }
     if (found.kind !== 'other' || (scope.writes.get(key) ?? 0) !== 1) return false
     return typed.some(
       (entry) =>

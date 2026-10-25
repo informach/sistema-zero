@@ -877,10 +877,35 @@ test('a store on an official name locks only that object when the program made i
       store(attribute(name('botao'), 'text'), text('Jogar')),
       draw,
     ],
+    // `botao = outro = Actor(...)`: two names hold the same actor.
+    [
+      node('Assign', {
+        targets: [name('botao', 'Store'), name('outro', 'Store')],
+        value: call(name('Actor'), [text('botao')]),
+        type_comment: null,
+      }),
+      store(attribute(name('outro'), 'draw'), name('print')),
+      draw,
+    ],
     [
       botao,
       fn('fazer', [node('Return', { value: name('screen') })]),
       assign('tela', call(name('fazer'))),
+      store(attribute(name('tela'), 'fill'), name('print')),
+      draw,
+    ],
+    // A class of the program whose __new__ hands back the screen.
+    [
+      botao,
+      node('ClassDef', {
+        name: 'Tela',
+        bases: [],
+        keywords: [],
+        body: [fn('__new__', [node('Return', { value: name('screen') })])],
+        decorator_list: [],
+        type_params: [],
+      }),
+      assign('tela', call(name('Tela'))),
       store(attribute(name('tela'), 'fill'), name('print')),
       draw,
     ],

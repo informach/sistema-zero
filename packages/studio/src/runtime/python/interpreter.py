@@ -3,6 +3,7 @@ import io
 import json
 import os
 import sys
+import time
 import traceback
 import types
 import weakref
@@ -106,20 +107,25 @@ _WRITE_MODE_LETTERS = frozenset('wax+')
 
 
 class _SavedFiles:
-    def __init__(self, root, protected, sizes, report, original_open):
+    def __init__(self, root, protected, sizes, report, original_open, folders=()):
         self._root = os.path.realpath(root)
         self._protected = frozenset(path.lower() for path in protected)
+        # The project's folders, by their name in lower case: a game writing into `Fases/` when
+        # the project has `fases/` would make two folders that differ only by letter case.
+        self._folders = {path.lower(): path for path in folders}
         self._sizes = dict(sizes)
         self._report = report
         self._open = original_open
         self._warned = set()
         # Written files still open: sent at the end of the run (on a computer they reach the
-        # disk when the program ends) and at each flush().
+        # disk when the program ends), at each flush() and, while the game runs, every frame.
         self._open_files = weakref.WeakSet()
+        # What was last sent of each file: the same bytes are not sent again.
+        self._last = {}
+        self._last_tick = 0.0
 
-    def relative(self, file, protected_reason='ele faz parte do projeto; o que o jogo gravar '
-                                               'nele vale só enquanto ele roda.'):
-        """The project path of a file the program opened, or None when it is not kept."""
+    def _inside(self, file):
+        """The project path of a path the program used, or None when it is outside."""
         if isinstance(file, int):
             return None
         try:
@@ -129,17 +135,39 @@ class _SavedFiles:
         absolute = os.path.realpath(os.path.join(os.getcwd(), path))
         if not absolute.startswith(self._root + os.sep):
             return None
-        relative = absolute[len(self._root) + 1:].replace(os.sep, '/')
+        return absolute[len(self._root) + 1:].replace(os.sep, '/')
+
+    def _protected_path(self, relative):
+        return relative is not None and relative.lower() in self._protected
+
+    def relative(self, file, protected_reason='ele faz parte do projeto; o que o jogo gravar '
+                                               'nele vale só enquanto ele roda.'):
+        """The project path of a file the program opened, or None when it is not kept."""
+        relative = self._inside(file)
+        if relative is None:
+            return None
         # The program's own files are not saved over: the next run starts from the project.
-        if relative.lower() in self._protected:
+        if self._protected_path(relative):
             self._warn(relative, protected_reason)
             return None
+        parts = relative.split('/')
+        for end in range(1, len(parts)):
+            folder = '/'.join(parts[:end])
+            known = self._folders.get(folder.lower())
+            if known is not None and known != folder:
+                self._warn(relative, f"o projeto já tem a pasta '{known}', com outras letras "
+                                     f"maiúsculas e minúsculas.")
+                return None
         return relative
 
     def removed(self, relative):
         """A kept file the program deleted: the host forgets it too."""
         if self._report(relative, None):
             self._sizes.pop(relative, None)
+            self._last.pop(relative, None)
+
+    def _kept_under(self, folder):
+        return [path for path in list(self._sizes) if path.startswith(folder + '/')]
 
     def remover(self, original):
         """os.remove and os.unlink (pathlib's unlink goes through os.unlink)."""
@@ -156,6 +184,21 @@ class _SavedFiles:
         remove.__doc__ = original.__doc__
         return remove
 
+    def folder_remover(self, original):
+        """os.rmdir (shutil.rmtree ends with it): what was kept in the folder is forgotten."""
+        watcher = self
+
+        def rmdir(path, *args, **kwargs):
+            original(path, *args, **kwargs)
+            if kwargs.get('dir_fd') is None and not args:
+                folder = watcher._inside(path)
+                if folder is not None:
+                    for kept in watcher._kept_under(folder):
+                        watcher.removed(kept)
+
+        rmdir.__doc__ = original.__doc__
+        return rmdir
+
     def renamer(self, original):
         """os.rename and os.replace (pathlib's rename and replace go through them)."""
         watcher = self
@@ -164,9 +207,26 @@ class _SavedFiles:
             original(source, target, *args, **kwargs)
             if args or kwargs.get('src_dir_fd') is not None or kwargs.get('dst_dir_fd') is not None:
                 return
+            old = watcher._inside(source)
+            new = watcher._inside(target)
+            if watcher._protected_path(old):
+                # A file of the program: the next run starts from the project again, so its
+                # new name is not kept either (it would come back next to the original).
+                watcher._warn(old, 'ele faz parte do projeto; mudar o nome dele vale só '
+                                   'enquanto o jogo roda.')
+                return
+            if new is not None and os.path.isdir(os.path.join(watcher._root, new)):
+                # A whole folder: each file kept inside it moves to the new name.
+                if old is not None:
+                    for kept in watcher._kept_under(old):
+                        watcher.removed(kept)
+                for folder, _, files in os.walk(os.path.join(watcher._root, new)):
+                    for name in sorted(files):
+                        moved = watcher.relative(os.path.join(folder, name))
+                        if moved is not None:
+                            watcher.closed(moved)
+                return
             # The old name is forgotten and the new one is kept, as on a computer.
-            old = watcher.relative(source, 'ele faz parte do projeto; mudar o nome dele vale só '
-                                           'enquanto o jogo roda.')
             if old is not None:
                 watcher.removed(old)
             new = watcher.relative(target)
@@ -193,6 +253,15 @@ class _SavedFiles:
             except Exception:
                 pass
 
+    def tick(self):
+        """Each frame of the game: a file left open is sent too, since a game is usually
+        stopped (the Stop button) and never reaches its end."""
+        now = time.monotonic()
+        if now - self._last_tick < 0.25:
+            return
+        self._last_tick = now
+        self.flush_open()
+
     def closed(self, relative):
         absolute = os.path.join(self._root, relative)
         try:
@@ -202,6 +271,11 @@ class _SavedFiles:
         if size > _SAVED_FILE_LIMITS['file_bytes']:
             self._warn(relative, 'ele passou de 64 KB.')
             return
+        # The same name with other capital letters is the same file to a child (and on
+        # Windows): the old spelling is forgotten, as a rename.
+        for other in [path for path in self._sizes
+                      if path != relative and path.lower() == relative.lower()]:
+            self.removed(other)
         sizes = dict(self._sizes)
         sizes[relative] = size
         if len(sizes) > _SAVED_FILE_LIMITS['files']:
@@ -212,10 +286,30 @@ class _SavedFiles:
             return
         with self._open(absolute, 'rb') as handle:
             data = handle.read()
+        if self._last.get(relative) == data:
+            return
         if not self._report(relative, to_js(data)):
             self._warn(relative, 'o nome dele não pode ser usado num projeto.')
             return
         self._sizes = sizes
+        self._last[relative] = data
+
+    def install(self, builtins_module):
+        """Puts the watcher in front of open() and of the functions that delete and rename."""
+        opener = self.opener()
+        opener._sz_saved_files = True
+        builtins_module.open = opener
+        # Applies to pathlib too (Path.open goes through io.open, the same function).
+        io.open = opener
+        os.remove = self.remover(os.remove)
+        os.unlink = self.remover(os.unlink)
+        os.rmdir = self.folder_remover(os.rmdir)
+        os.rename = self.renamer(os.rename)
+        os.replace = self.renamer(os.replace)
+        # Each frame of Pygame Zero and Turtle calls tick() through this module.
+        hook = types.ModuleType('_sz_saved_files')
+        hook.tick = self.tick
+        sys.modules[hook.__name__] = hook
 
     def opener(self):
         original = self._open
@@ -397,23 +491,14 @@ class _StudioExecution:
         transport.root = str(Path.cwd())
         sys.modules[transport.__name__] = transport
 
-    def install_saved_files(self, root, protected, sizes, report):
-        # Applies to pathlib too (Path.open goes through io.open, the same function).
+    def install_saved_files(self, root, protected, sizes, report, folders='[]'):
         import builtins
         if self._main is None or getattr(builtins.open, '_sz_saved_files', False):
             raise RuntimeError('Os arquivos do jogo não podem ser preparados nesta execução.')
         watcher = _SavedFiles(root, json.loads(protected), json.loads(sizes), report,
-                              builtins.open)
+                              builtins.open, json.loads(folders))
         self._saved_files = watcher
-        opener = watcher.opener()
-        opener._sz_saved_files = True
-        builtins.open = opener
-        io.open = opener
-        # Deleting or renaming a kept file reaches the host as well (pathlib uses these).
-        os.remove = watcher.remover(os.remove)
-        os.unlink = watcher.remover(os.unlink)
-        os.rename = watcher.renamer(os.rename)
-        os.replace = watcher.renamer(os.replace)
+        watcher.install(builtins)
 
     def install_activity(self, source, definition, requested, publish, console_matches):
         if self._grader is not None or self._main is None:

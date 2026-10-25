@@ -1,12 +1,12 @@
 """Desenhos do Pinta como formas da tartaruga.
 
-Um desenho vetorial do Pinta (images/nave.svg) vira uma forma composta do turtle: ela
+Um desenho vetorial do Pinta (assets/nave.svg) vira uma forma composta do turtle: ela
 gira junto com a tartaruga e cresce com shapesize sem borrar.
 
     import turtle
     import formas_do_pinta
 
-    formas_do_pinta.registrar('images/nave.svg')   # registra a forma 'nave'
+    formas_do_pinta.registrar('assets/nave.svg')   # registra a forma 'nave'
     nave = turtle.Turtle()
     nave.shape('nave')
 
@@ -25,11 +25,21 @@ __all__ = ['forma', 'registrar']
 MAXIMO_DE_PONTOS = 600
 _SVG = '{http://www.w3.org/2000/svg}'
 _NUMERO = re.compile(r'[-+]?(?:\d+\.?\d*|\.\d+)(?:[eE][-+]?\d+)?')
-_COMANDO = re.compile(r'[MmLlHhVvCcSsQqTtZz]|[-+]?(?:\d+\.?\d*|\.\d+)(?:[eE][-+]?\d+)?')
+# Toda letra vira comando (as que o módulo não conhece são recusadas, nunca puladas).
+_COMANDO = re.compile(r'[A-Za-z]|[-+]?(?:\d+\.?\d*|\.\d+)(?:[eE][-+]?\d+)?')
+# As formas que a tartaruga já tem: um desenho com um desses nomes trocaria a de todas.
+_FORMAS_DA_TARTARUGA = {'arrow', 'turtle', 'circle', 'square', 'triangle', 'classic', 'blank'}
 
 
 class DesenhoNaoServe(ValueError):
     """O desenho tem algo que não vira forma (texto, figura, máscara)."""
+
+
+def _nao_serve(caminho, motivo):
+    return DesenhoNaoServe(
+        f"O desenho '{caminho}' {motivo}: no Pinta, tire isso do desenho, ou traga-o de novo "
+        f"como um desenho novo, que ele entra como imagem PNG para usar com screen.addshape."
+    )
 
 
 def forma(caminho, tamanho=None):
@@ -47,40 +57,43 @@ def forma(caminho, tamanho=None):
     partes = []
     for elemento in _desenhados(raiz):
         nome = elemento.tag.replace(_SVG, '')
+        # O Estúdio traz como imagem PNG o desenho que tem estas coisas.
         if (nome in ('text', 'image', 'use') or elemento.get('clip-path')
                 or elemento.get('mask')):
-            # O Estúdio traz como imagem PNG o desenho que tem estas coisas.
-            raise DesenhoNaoServe(
-                f"O desenho '{caminho}' tem texto, figura ou máscara, que não viram forma da "
-                f"tartaruga: traga do Pinta um desenho só de formas, ou use a imagem PNG dele "
-                f"com screen.addshape."
-            )
+            raise _nao_serve(caminho, 'tem texto, figura ou máscara, que não viram forma da '
+                                      'tartaruga')
+        if any(_numero(elemento.get(chave), 1.0) < 1
+               for chave in ('opacity', 'fill-opacity', 'stroke-opacity')):
+            raise _nao_serve(caminho, 'tem uma parte transparente, e a tartaruga só pinta com '
+                                      'cor cheia')
+        if elemento.get('style') or (nome == 'g' and any(
+                elemento.get(chave) for chave in ('transform', 'fill', 'stroke'))):
+            raise _nao_serve(caminho, 'usa um jeito de pintar que a tartaruga não entende')
         anel = _forma_do_elemento(nome, elemento)
         if anel is None:
             continue
         aneis, fechado = anel
         aneis = [_girar(pontos, elemento.get('transform')) for pontos in aneis]
         preenchimento = _cor(elemento.get('fill', '#000000'), degrades)
-        contorno = elemento.get('stroke')
-        espessura = float(elemento.get('stroke-width', '1') or 1)
+        contorno = _cor(elemento.get('stroke'), degrades)
+        espessura = _numero(elemento.get('stroke-width'), 1.0) or 1.0
         if preenchimento is not None and fechado:
-            borda = _cor(contorno, degrades) if contorno else preenchimento
             # Um furo (uma rosca, o "tirar a da frente" do Pinta) é costurado ao anel de fora:
             # a forma da tartaruga não tem furos, mas um polígono só com o corte tem.
             for pontos in _com_furos([anel for anel in aneis if len(anel) >= 3]):
                 if len(pontos) >= 3:
-                    partes.append((pontos, preenchimento, borda or preenchimento))
-        elif contorno and contorno != 'none':
-            # Um traço (linha, pincel) vira uma faixa da largura do traço.
-            cor = _cor(contorno, degrades)
-            if cor is not None:
-                for pontos in aneis:
-                    faixa = _engrossar(pontos + pontos[:1] if fechado else pontos, espessura)
-                    if len(faixa) >= 3:
-                        partes.append((faixa, cor, cor))
+                    partes.append((pontos, preenchimento, preenchimento))
+        if contorno is not None:
+            # O contorno (e o traço de linha e de pincel) vira uma faixa da largura dele, por
+            # cima do preenchimento.
+            for pontos in aneis:
+                faixa = _faixa_fechada(pontos, espessura) if fechado else _faixa_aberta(
+                    pontos, espessura)
+                if len(faixa) >= 3:
+                    partes.append((faixa, contorno, contorno))
     if not partes:
         raise DesenhoNaoServe(f"O desenho '{caminho}' não tem nenhuma forma para a tartaruga.")
-    partes = _caber_no_orcamento(partes, max(largura, altura))
+    partes = _caber_no_orcamento(partes, max(largura, altura), caminho)
     resultado = turtle.Shape('compound')
     for pontos, preenchimento, borda in partes:
         # No turtle, o +y da forma aponta para a frente (a direita do desenho) e o +x para
@@ -97,6 +110,11 @@ def registrar(caminho, nome=None, tamanho=None):
     """Registra a forma do desenho na tela e devolve o nome dela (o nome do arquivo)."""
     if nome is None:
         nome = os.path.splitext(os.path.basename(caminho))[0]
+    if nome in _FORMAS_DA_TARTARUGA:
+        raise DesenhoNaoServe(
+            f"O nome '{nome}' já é de uma forma da tartaruga: dê outro nome ao desenho "
+            f"(registrar(caminho, nome='...'))."
+        )
     turtle.Screen().register_shape(nome, forma(caminho, tamanho))
     return nome
 
@@ -382,19 +400,77 @@ def _costurar(contorno, furo):
     return contorno[:i + 1] + volta + contorno[i:]
 
 
-def _engrossar(pontos, espessura):
-    """Uma linha de pontos vira um polígono com a largura do traço."""
+def _sem_repetidos(pontos):
+    limpos = []
+    for ponto in pontos:
+        if not limpos or math.dist(limpos[-1], ponto) > 1e-9:
+            limpos.append(ponto)
+    return limpos
+
+
+def _normal(a, b):
+    dx, dy = b[0] - a[0], b[1] - a[1]
+    tamanho = math.hypot(dx, dy)
+    return (-dy / tamanho, dx / tamanho) if tamanho else None
+
+
+def _lados(antes, ponto, depois, meio):
+    """O ponto empurrado meio traço para cada lado, com o canto em bico (no máximo 2 vezes)."""
+    n1 = _normal(antes, ponto) if antes is not None else None
+    n2 = _normal(ponto, depois) if depois is not None else None
+    n1 = n1 or n2
+    n2 = n2 or n1
+    mx, my = n1[0] + n2[0], n1[1] + n2[1]
+    tamanho = math.hypot(mx, my)
+    if tamanho < 1e-9:
+        # O traço volta para trás: o bico ficaria infinito, então fica do lado da reta.
+        mx, my, escala = n1[0], n1[1], meio
+    else:
+        mx, my = mx / tamanho, my / tamanho
+        escala = meio / max(mx * n1[0] + my * n1[1], 0.5)
+    return ((ponto[0] + mx * escala, ponto[1] + my * escala),
+            (ponto[0] - mx * escala, ponto[1] - my * escala))
+
+
+def _circulo(centro, raio, lados=12):
+    return [(centro[0] + raio * math.cos(2 * math.pi * i / lados),
+             centro[1] + raio * math.sin(2 * math.pi * i / lados)) for i in range(lados)]
+
+
+def _faixa_aberta(pontos, espessura):
+    """Um traço aberto (linha, pincel) vira um polígono da largura dele."""
     meio = max(espessura, 1.0) / 2
+    pontos = _sem_repetidos(pontos)
+    comprimento = sum(math.dist(a, b) for a, b in zip(pontos, pontos[1:]))
+    if len(pontos) < 2 or comprimento < meio * 2:
+        # Um toque só do pincel: no Pinta ele é uma bolinha redonda.
+        centro = (sum(x for x, _ in pontos) / len(pontos), sum(y for _, y in pontos) / len(pontos))
+        return _circulo(centro, meio)
     esquerda, direita = [], []
-    for indice, (x, y) in enumerate(pontos):
-        antes = pontos[max(indice - 1, 0)]
-        depois = pontos[min(indice + 1, len(pontos) - 1)]
-        dx, dy = depois[0] - antes[0], depois[1] - antes[1]
-        tamanho = math.hypot(dx, dy) or 1.0
-        nx, ny = -dy / tamanho * meio, dx / tamanho * meio
-        esquerda.append((x + nx, y + ny))
-        direita.append((x - nx, y - ny))
+    for i, ponto in enumerate(pontos):
+        antes = pontos[i - 1] if i > 0 else None
+        depois = pontos[i + 1] if i + 1 < len(pontos) else None
+        lado_a, lado_b = _lados(antes, ponto, depois, meio)
+        esquerda.append(lado_a)
+        direita.append(lado_b)
     return esquerda + direita[::-1]
+
+
+def _faixa_fechada(pontos, espessura):
+    """O contorno de uma forma fechada vira um anel da largura dele (com a costura no começo)."""
+    pontos = _sem_repetidos(pontos)
+    if len(pontos) > 1 and math.dist(pontos[0], pontos[-1]) <= 1e-9:
+        pontos = pontos[:-1]
+    if len(pontos) < 3:
+        return _faixa_aberta(pontos, espessura)
+    meio = max(espessura, 1.0) / 2
+    fora, dentro = [], []
+    for i, ponto in enumerate(pontos):
+        lado_a, lado_b = _lados(pontos[i - 1], ponto, pontos[(i + 1) % len(pontos)], meio)
+        fora.append(lado_a)
+        dentro.append(lado_b)
+    # Dá a volta por fora, cruza para dentro, dá a volta por dentro ao contrário e volta.
+    return fora + [fora[0], dentro[0]] + dentro[1:][::-1] + [dentro[0]]
 
 
 def _simplificar(pontos, tolerancia):
@@ -419,13 +495,30 @@ def _distancia_da_reta(p, a, b):
     return abs((b[0] - a[0]) * (a[1] - p[1]) - (a[0] - p[0]) * (b[1] - a[1])) / math.dist(a, b)
 
 
-def _caber_no_orcamento(partes, lado):
+def _simplificar_anel(pontos, tolerancia):
+    """Um anel fechado: parte no ponto mais longe do primeiro e simplifica as duas metades.
+
+    Nunca sobra menos de 3 pontos: uma parte pequena continua lá, nunca some.
+    """
+    if len(pontos) <= 3:
+        return pontos
+    longe = max(range(len(pontos)), key=lambda i: math.dist(pontos[0], pontos[i]))
+    if longe == 0:
+        return pontos
+    ida = _simplificar(pontos[:longe + 1], tolerancia)
+    volta = _simplificar(pontos[longe:] + pontos[:1], tolerancia)
+    anel = ida[:-1] + volta[:-1]
+    return anel if len(anel) >= 3 else pontos
+
+
+def _caber_no_orcamento(partes, lado, caminho):
     tolerancia = lado / 400
     while sum(len(pontos) for pontos, _, _ in partes) > MAXIMO_DE_PONTOS:
-        partes = [(_simplificar(pontos, tolerancia), preenchimento, borda)
-                  for pontos, preenchimento, borda in partes]
-        partes = [parte for parte in partes if len(parte[0]) >= 3]
-        tolerancia *= 2
         if tolerancia > lado:
-            raise DesenhoNaoServe('O desenho tem detalhes demais para virar forma da tartaruga.')
+            # Nenhuma parte é apagada para caber: o desenho inteiro fica de fora, com o aviso.
+            raise _nao_serve(caminho, f'tem detalhes demais (mais de {MAXIMO_DE_PONTOS} '
+                                      f'pontos) para virar forma da tartaruga')
+        partes = [(_simplificar_anel(pontos, tolerancia), preenchimento, borda)
+                  for pontos, preenchimento, borda in partes]
+        tolerancia *= 2
     return partes

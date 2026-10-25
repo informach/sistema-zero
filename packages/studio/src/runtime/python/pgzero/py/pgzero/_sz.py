@@ -16,6 +16,7 @@ import math
 import os
 import re
 import struct
+import sys
 from array import array
 from collections import OrderedDict
 
@@ -891,7 +892,16 @@ def attachments_pending():
     return bool(_images.pending or _fonts.pending)
 
 
+def _tick_saved_files():
+    # A file the game keeps open is saved every few frames (the game is usually stopped, not
+    # ended). The interpreter installs this module when the project keeps saved files.
+    saved = sys.modules.get('_sz_saved_files')
+    if saved is not None:
+        saved.tick()
+
+
 def _exchange(header, payload):
+    _tick_saved_files()
     text, pixels = _transport(json.dumps(header, separators=(',', ':')), payload)
     reply = json.loads(text)
     if 'error' in reply:

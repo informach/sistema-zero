@@ -11,14 +11,16 @@ export const TONE_SAMPLE_RATE = 22050
 export const TONE_DECAY = 2000
 /** Longest note the Studio builds: 10 seconds (pgzero's play() allows 4; create() more). */
 export const TONE_MAX_SAMPLES = 10 * TONE_SAMPLE_RATE
-export const TONE_MIN_HZ = 1
-export const TONE_MAX_HZ = TONE_SAMPLE_RATE / 2
+// Like pgzero 1.2.1: any positive frequency up to the sample rate (above half of it the
+// note comes out as silence, as on the computer).
+export const TONE_MIN_HZ = 0
+export const TONE_MAX_HZ = TONE_SAMPLE_RATE
 
 export function isToneRequest(hz: unknown, samples: unknown): boolean {
   return (
     typeof hz === 'number' &&
     Number.isFinite(hz) &&
-    hz >= TONE_MIN_HZ &&
+    hz > TONE_MIN_HZ &&
     hz <= TONE_MAX_HZ &&
     typeof samples === 'number' &&
     Number.isSafeInteger(samples) &&

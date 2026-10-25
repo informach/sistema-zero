@@ -355,7 +355,9 @@ export function createTurtleRenderer(
       const shape = path(item.points, item.kind === 'polygon')
       if (item.kind === 'polygon' && item.fill) {
         ctx.fillStyle = item.fill
-        ctx.fill(shape)
+        // Tk fills a polygon by the even-odd rule: a star drawn with begin_fill() has a hollow
+        // middle on the computer, so it has one here too.
+        ctx.fill(shape, 'evenodd')
       }
       const stroke = item.kind === 'line' ? item.fill : item.outline
       if (stroke && (item.width ?? 1) > 0) {

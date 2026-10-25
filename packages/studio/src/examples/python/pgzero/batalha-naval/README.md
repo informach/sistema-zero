@@ -12,7 +12,7 @@ Clique na sua grade para pôr os cinco navios; espaço gira o próximo antes de 
 
 ## Ideias para mudar
 
-- Mude TAMANHOS para jogar com mais navios, ou com navios maiores (até 10 casas cada um).
+- Mude TAMANHOS para jogar com mais navios, ou com navios maiores (até 10 casas cada um, e até 50 somando todos).
 - Mude TEMPO_DO_COMPUTADOR para o computador pensar mais devagar.
 - Tire a regra das casas alternadas do Computador e veja se ele demora mais para achar os seus navios.
 

@@ -36,7 +36,7 @@ O Pygame Zero roda no computador com o pygame-ce:
 ```
 python -m pip install pygame-ce==2.5.8 numpy
 python -m pip install --no-deps pgzero==1.2.1
-python main.py
+python -X utf8 main.py
 ```
 
 O programa termina com `pgzrun.go()`, então `python main.py` já abre o jogo. Num programa

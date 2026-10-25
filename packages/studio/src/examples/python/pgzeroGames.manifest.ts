@@ -1558,7 +1558,7 @@ export const PGZERO_GAMES = [
     howToPlay:
       'Clique na sua grade para pôr os cinco navios; espaço gira o próximo antes de pôr e R tira todos para recomeçar. Depois, clique na grade do computador para atirar: cada um tem um tiro por vez. O computador procura em casas alternadas, como as pretas de um tabuleiro, e quando acerta atira nas casas em volta. Quem afundar os cinco navios do outro vence; espaço começa outra partida.',
     ideas: [
-      'Mude TAMANHOS para jogar com mais navios, ou com navios maiores (até 10 casas cada um).',
+      'Mude TAMANHOS para jogar com mais navios, ou com navios maiores (até 10 casas cada um, e até 50 somando todos).',
       'Mude TEMPO_DO_COMPUTADOR para o computador pensar mais devagar.',
       'Tire a regra das casas alternadas do Computador e veja se ele demora mais para achar os seus navios.',
     ],
@@ -1569,7 +1569,7 @@ export const PGZERO_GAMES = [
       { path: 'afundou.wav', notes: [523, 392, 262, 196], noteMilliseconds: 90 },
     ],
     music: [],
-    receipt: 'batalha-naval-r3.json.snapshot',
+    receipt: 'batalha-naval-r4.json.snapshot',
   },
   {
     key: 'atirador-espacial',
@@ -1603,7 +1603,7 @@ export const PGZERO_GAMES = [
   {
     key: 'boing',
     stem: 'boing',
-    name: 'Boing!',
+    name: 'Raquetada',
     emoji: '🏓',
     description: 'O pingue-pongue de tela: contra o computador ou contra um amigo, até dez pontos.',
     genre: 'Esporte',
@@ -1625,7 +1625,7 @@ export const PGZERO_GAMES = [
       { path: 'ponto.wav', notes: [523, 392], noteMilliseconds: 90 },
     ],
     music: [],
-    receipt: 'boing-r2.json.snapshot',
+    receipt: 'boing-r3.json.snapshot',
   },
   {
     key: 'centopeia',
@@ -1656,7 +1656,7 @@ export const PGZERO_GAMES = [
       { path: 'besouro.wav', notes: [220, 247, 220, 247], noteMilliseconds: 40 },
     ],
     music: [],
-    receipt: 'centopeia-r4.json.snapshot',
+    receipt: 'centopeia-r5.json.snapshot',
   },
 ] as const satisfies readonly PgzeroGame[]
 

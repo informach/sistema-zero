@@ -285,11 +285,15 @@ export async function listGalleryForStudio(
   return summaries
 }
 
-/** Every frame is shapes only (no text, picture or mask): it can become a turtle shape. */
+/**
+ * Every frame is solid shapes only (no text, picture, mask or see-through shape): it can
+ * become a turtle shape, which paints each part with one solid color.
+ */
 function turtleShapeFacts(frames: readonly VectorFrame[]) {
   const shapesOnly = frames.every((shapes) =>
     visibleShapes(shapes).every(
-      (shape) => shape.type !== 'text' && shape.type !== 'image' && !shape.maskId,
+      (shape) =>
+        shape.type !== 'text' && shape.type !== 'image' && !shape.maskId && shape.opacity >= 1,
     ),
   )
   return shapesOnly ? ({ turtleShape: true } as const) : {}

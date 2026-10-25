@@ -208,6 +208,7 @@ jobs:
           bun run check:pro-typescript-libs
           bun run check:python-text-sources
           bun run check:python-visual-examples
+          bun run check:pgzero-games
           bun --no-env-file test ./scripts/python/reference-game-audio.test.ts ./scripts/python/generate-visual-example-block-metadata.test.ts
           bun run test:canvas-survival
           bun run test:grid-games

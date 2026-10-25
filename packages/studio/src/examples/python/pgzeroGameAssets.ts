@@ -37,7 +37,7 @@ export function pgzeroGameAssets(
           ? {
               name: 'OFL-1.1',
               attribution:
-                'Press Start 2P, de CodeMan38 (SIL Open Font License 1.1, LICENSE-fonte.txt).',
+                'Press Start 2P, Copyright 2012 The Press Start 2P Project Authors (SIL Open Font License 1.1, LICENSE-fonte.txt).',
             }
           : {
               name: 'MIT',

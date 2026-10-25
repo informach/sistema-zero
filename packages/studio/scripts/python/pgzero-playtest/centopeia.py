@@ -150,6 +150,14 @@ def play(t):
     vidas = t.get('vidas')
     t.step(1)
     t.check('encostar no besouro custa uma vida', t.get('vidas') == vidas - 1)
+    # Um besouro redesenhado mais alto no Pinta não fica tremendo na borda.
+    t.set('espera_do_besouro', 0)
+    t.step(1)
+    besouro.vx = 0
+    besouro.vy = 3
+    besouro.bottom = zona * casa_px + 10
+    t.step(1)
+    t.check('o besouro que passou do alto da zona, descendo, continua descendo', besouro.vy == 3)
     t.set('besouro_voando', False)
 
     # Metade que vence uma onda: um atirador que fica embaixo da parte mais baixa.

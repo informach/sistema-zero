@@ -1,4 +1,4 @@
-# Boing!
+# Raquetada
 
 O pingue-pongue de tela: contra o computador ou contra um amigo, até dez pontos.
 

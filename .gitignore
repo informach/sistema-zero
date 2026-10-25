@@ -95,6 +95,7 @@ output/
 .audits/molda-usabilidade-2026-10-14/merge-index-proof/
 
 # Arquivos que os jogos Python da galeria gravam (recorde, placar) quando rodados na própria pasta.
-packages/studio/src/examples/python/pgzero/*/*.txt
-!packages/studio/src/examples/python/pgzero/atirador-espacial/inimigos.txt
-!packages/studio/src/examples/python/pgzero/*/LICENSE-fonte.txt
+# Só os nomes que os jogos gravam: um arquivo de dados novo de um jogo nunca fica de fora.
+packages/studio/src/examples/python/pgzero/*/recorde.txt
+packages/studio/src/examples/python/pgzero/*/placar.txt
+packages/studio/src/examples/python/pgzero/*/caverna.txt

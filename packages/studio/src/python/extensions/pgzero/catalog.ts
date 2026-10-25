@@ -698,9 +698,15 @@ const pygameDraw = (
       required('surface', 'em', surface, 'pos'),
       required('color', 'cor', color('green'), 'pos'),
       ...shape,
-      optional('width', 'só a borda, com espessura', n(width)),
+      // A line has no "only the border": its width is just how thick it is.
+      optional(
+        'width',
+        method === 'line' ? 'com espessura' : 'só a borda, com espessura',
+        n(width),
+      ),
     ],
-    ...(dependencies ? { dependencies } : {}),
+    // The block needs `import pygame`: a lesson that offers it offers the import too.
+    dependencies: ['sz_py_import_one', ...(dependencies ?? [])],
   })
 const PYGAME_DRAW_CODECS: readonly PythonBlockCodec[] = [
   pygameDraw(
@@ -1335,10 +1341,10 @@ export const PYTHON_PGZERO_CODECS: readonly PythonBlockCodec[] = firstGame([
     role: 'statement',
     callee: builtinCall(['tone', 'play']),
     api: "tone.play('A4', segundos)",
-    help: 'Toca uma nota musical, como num teclado: a letra da nota (C D E F G A B, ou dó ré mi fá sol lá si em inglês), um # para o sustenido e o número da oitava. A4 é o lá do meio. Dura até 4 segundos.',
+    help: 'Toca uma nota musical, como num teclado: a letra da nota (C D E F G A B, que são dó ré mi fá sol lá si em inglês), um # para o sustenido ou um b para o bemol, e o número da oitava. A4 é o lá do meio. Dura até 4 segundos.',
     params: [
       required('pitch', '', t('A4'), 'pos'),
-      required('duration', 'por segundos', n(1), 'pos'),
+      required('duration', 'durante (segundos)', n(1), 'pos'),
     ],
   }),
   api({
@@ -1352,7 +1358,7 @@ export const PYTHON_PGZERO_CODECS: readonly PythonBlockCodec[] = firstGame([
     help: 'Prepara uma nota antes, para tocar depois sem esperar: guarde numa variável e use nota.play() quando quiser. Bom para um piano, que toca a mesma nota muitas vezes.',
     params: [
       required('pitch', '', t('A4'), 'pos'),
-      required('duration', 'por segundos', n(1), 'pos'),
+      required('duration', 'durante (segundos)', n(1), 'pos'),
     ],
     dependencies: ['sz_py_assign', 'sz_py_method'],
   }),

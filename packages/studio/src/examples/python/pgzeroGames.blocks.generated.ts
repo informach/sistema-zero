@@ -2891,7 +2891,7 @@ export const PGZERO_GAME_BLOCKS = {
     ],
   },
   'batalha-naval': {
-    sourceSha256: '970b151bf0d724ca21cb373a86a7321cf0a909f68ad164b543ef29ffd6ec2c97',
+    sourceSha256: 'ab9f5f8f30969da1989a65d109e8a3b32af7d7e573da1e249f1bdfc715206369',
     blockIds: [
       'sz_py_and',
       'sz_py_arithmetic',
@@ -2914,6 +2914,7 @@ export const PGZERO_GAME_BLOCKS = {
       'sz_py_list',
       'sz_py_list_append',
       'sz_py_list_comprehension',
+      'sz_py_max',
       'sz_py_method',
       'sz_py_method_value',
       'sz_py_none',
@@ -2937,6 +2938,7 @@ export const PGZERO_GAME_BLOCKS = {
       'sz_py_pgzero_title',
       'sz_py_pgzero_update',
       'sz_py_pgzero_width',
+      'sz_py_raise',
       'sz_py_random_choice',
       'sz_py_range',
       'sz_py_return',
@@ -2944,6 +2946,7 @@ export const PGZERO_GAME_BLOCKS = {
       'sz_py_run_value',
       'sz_py_str',
       'sz_py_subscript',
+      'sz_py_sum',
       'sz_py_text',
       'sz_py_tuple',
       'sz_py_variable',
@@ -3009,7 +3012,7 @@ export const PGZERO_GAME_BLOCKS = {
     ],
   },
   boing: {
-    sourceSha256: '7c06537ee17f77642f49f2e04d0cc7d1c56540c90c2d73cc55b36c715610282d',
+    sourceSha256: '97dc45b2f045644e4f4b0b08b9e030ffcff7b9bbb36e728be50c0b0ff70ed5d3',
     blockIds: [
       'sz_py_and',
       'sz_py_arithmetic',
@@ -3073,7 +3076,7 @@ export const PGZERO_GAME_BLOCKS = {
     ],
   },
   centopeia: {
-    sourceSha256: '2f688691a3f735b5760ba5cff27003830719c8b6b63b84864ef72a321245ffbb',
+    sourceSha256: '3775198591bcd1302e8eea69e1d71b07cca4b674207175f6b11daf2f85ef0ff1',
     blockIds: [
       'sz_py_and',
       'sz_py_arithmetic',

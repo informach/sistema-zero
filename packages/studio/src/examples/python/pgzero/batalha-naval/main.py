@@ -65,6 +65,9 @@ class Frota:
     def sortear(self):
         # Os navios do computador vão para lugares sorteados. Se o próximo não couber
         # em lugar nenhum depois de muitas tentativas, sorteia a frota toda de novo.
+        if max(TAMANHOS) > LADO or sum(TAMANHOS) > LADO * LADO // 2:
+            raise ValueError('Os navios não cabem na grade: cada um pode ter até '
+                             + str(LADO) + ' casas, e todos juntos até ' + str(LADO * LADO // 2) + '.')
         self.navios = []
         tentativas = 0
         while len(self.navios) < len(TAMANHOS):
