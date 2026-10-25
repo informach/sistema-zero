@@ -125,4 +125,111 @@ export const RAYLIB_GAME_LOADERS = {
       assets: raylibGameAssets('aventura-do-heroi', AVENTURA_DO_HEROI_MEDIA),
     }
   },
+  'primeira-cena-3d': async () => {
+    const [{ PRIMEIRA_CENA3D_SOURCES }, { PRIMEIRA_CENA3D_MEDIA }, { raylibGameAssets }] =
+      await Promise.all([
+        import('./primeiraCena3d.sources.generated'),
+        import('./primeiraCena3d.media.generated'),
+        import('./raylibGameAssets'),
+      ])
+    return {
+      entrypoint: 'main.py',
+      files: PRIMEIRA_CENA3D_SOURCES,
+      assets: raylibGameAssets('primeira-cena-3d', PRIMEIRA_CENA3D_MEDIA),
+    }
+  },
+  'modelos-do-molda': async () => {
+    const [{ MODELOS_DO_MOLDA_SOURCES }, { MODELOS_DO_MOLDA_MEDIA }, { raylibGameAssets }] =
+      await Promise.all([
+        import('./modelosDoMolda.sources.generated'),
+        import('./modelosDoMolda.media.generated'),
+        import('./raylibGameAssets'),
+      ])
+    return {
+      entrypoint: 'main.py',
+      files: MODELOS_DO_MOLDA_SOURCES,
+      assets: raylibGameAssets('modelos-do-molda', MODELOS_DO_MOLDA_MEDIA),
+    }
+  },
+  'caixas-que-se-encostam': async () => {
+    const [
+      { CAIXAS_QUE_SE_ENCOSTAM_SOURCES },
+      { CAIXAS_QUE_SE_ENCOSTAM_MEDIA },
+      { raylibGameAssets },
+    ] = await Promise.all([
+      import('./caixasQueSeEncostam.sources.generated'),
+      import('./caixasQueSeEncostam.media.generated'),
+      import('./raylibGameAssets'),
+    ])
+    return {
+      entrypoint: 'main.py',
+      files: CAIXAS_QUE_SE_ENCOSTAM_SOURCES,
+      assets: raylibGameAssets('caixas-que-se-encostam', CAIXAS_QUE_SE_ENCOSTAM_MEDIA),
+    }
+  },
+  'clarao-com-shader': async () => {
+    const [{ CLARAO_COM_SHADER_SOURCES }, { CLARAO_COM_SHADER_MEDIA }, { raylibGameAssets }] =
+      await Promise.all([
+        import('./claraoComShader.sources.generated'),
+        import('./claraoComShader.media.generated'),
+        import('./raylibGameAssets'),
+      ])
+    return {
+      entrypoint: 'main.py',
+      files: CLARAO_COM_SHADER_SOURCES,
+      assets: raylibGameAssets('clarao-com-shader', CLARAO_COM_SHADER_MEDIA),
+    }
+  },
+  'corrida-infinita': async () => {
+    const [{ CORRIDA_INFINITA_SOURCES }, { CORRIDA_INFINITA_MEDIA }, { raylibGameAssets }] =
+      await Promise.all([
+        import('./corridaInfinita.sources.generated'),
+        import('./corridaInfinita.media.generated'),
+        import('./raylibGameAssets'),
+      ])
+    return {
+      entrypoint: 'main.py',
+      files: CORRIDA_INFINITA_SOURCES,
+      assets: raylibGameAssets('corrida-infinita', CORRIDA_INFINITA_MEDIA),
+    }
+  },
+  'patrulha-espacial': async () => {
+    const [{ PATRULHA_ESPACIAL_SOURCES }, { PATRULHA_ESPACIAL_MEDIA }, { raylibGameAssets }] =
+      await Promise.all([
+        import('./patrulhaEspacial.sources.generated'),
+        import('./patrulhaEspacial.media.generated'),
+        import('./raylibGameAssets'),
+      ])
+    return {
+      entrypoint: 'main.py',
+      files: PATRULHA_ESPACIAL_SOURCES,
+      assets: raylibGameAssets('patrulha-espacial', PATRULHA_ESPACIAL_MEDIA),
+    }
+  },
+  'labirinto-dos-robos': async () => {
+    const [{ LABIRINTO_DOS_ROBOS_SOURCES }, { LABIRINTO_DOS_ROBOS_MEDIA }, { raylibGameAssets }] =
+      await Promise.all([
+        import('./labirintoDosRobos.sources.generated'),
+        import('./labirintoDosRobos.media.generated'),
+        import('./raylibGameAssets'),
+      ])
+    return {
+      entrypoint: 'main.py',
+      files: LABIRINTO_DOS_ROBOS_SOURCES,
+      assets: raylibGameAssets('labirinto-dos-robos', LABIRINTO_DOS_ROBOS_MEDIA),
+    }
+  },
+  'mundo-de-blocos': async () => {
+    const [{ MUNDO_DE_BLOCOS_SOURCES }, { MUNDO_DE_BLOCOS_MEDIA }, { raylibGameAssets }] =
+      await Promise.all([
+        import('./mundoDeBlocos.sources.generated'),
+        import('./mundoDeBlocos.media.generated'),
+        import('./raylibGameAssets'),
+      ])
+    return {
+      entrypoint: 'main.py',
+      files: MUNDO_DE_BLOCOS_SOURCES,
+      assets: raylibGameAssets('mundo-de-blocos', MUNDO_DE_BLOCOS_MEDIA),
+    }
+  },
 } satisfies Record<RaylibGameKey, () => Promise<unknown>>

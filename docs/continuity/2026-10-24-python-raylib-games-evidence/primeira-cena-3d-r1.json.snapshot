@@ -1,0 +1,247 @@
+{
+  "kind": "python-visual-authoring",
+  "analyzer": {
+    "pythonVersion": "3.14.2",
+    "pyodideVersion": "314.0.7",
+    "distributionSha256": "3c23b3baae4d5a4ca74be5f874c104526a508f3b06f6f5a09312d2980628b456",
+    "analyzerSha256": "030eee7115db46c8c19831372a0948f71bbda0a8ad751235d4da889ed68bdf9b"
+  },
+  "authoringRuntime": {
+    "profileId": "python-probe",
+    "releaseId": "probe-1",
+    "manifestSha256": "f27cdb9c3d61d8006c1dc4d34e7e03450ef317b14feaf682e68f31c2e86a28f8"
+  },
+  "authoringRuntimeFeatures": [
+    "turtle-compound-shapes"
+  ],
+  "authoringLoader": "loadPythonAuthoring",
+  "extension": "python-raylib-3d",
+  "codecOrderSha256": "71040f6cf253cdd01533095e78d46df6ead440642dd826630816ef1e424be3bb",
+  "sourceSha256": "194f42c5654db978b8ba39841202a87f83584982eea37b322fee272650f5471f",
+  "generatedSha256": "616b49fcea029f7891f08966131bb3f293d3cc48fc6f29eda665943b04dc1932",
+  "opaqueCount": 0,
+  "blockCount": 183,
+  "referencedBlocks": [
+    {
+      "id": "sz_py_arithmetic",
+      "count": 8
+    },
+    {
+      "id": "sz_py_assign",
+      "count": 13
+    },
+    {
+      "id": "sz_py_float",
+      "count": 10
+    },
+    {
+      "id": "sz_py_if",
+      "count": 1
+    },
+    {
+      "id": "sz_py_import_all",
+      "count": 1
+    },
+    {
+      "id": "sz_py_int",
+      "count": 4
+    },
+    {
+      "id": "sz_py_integer",
+      "count": 45
+    },
+    {
+      "id": "sz_py_negative",
+      "count": 5
+    },
+    {
+      "id": "sz_py_rl3d_begin_drawing",
+      "count": 1
+    },
+    {
+      "id": "sz_py_rl3d_begin_mode_3d",
+      "count": 1
+    },
+    {
+      "id": "sz_py_rl3d_Camera3D",
+      "count": 1
+    },
+    {
+      "id": "sz_py_rl3d_clear_background",
+      "count": 1
+    },
+    {
+      "id": "sz_py_rl3d_close_window",
+      "count": 1
+    },
+    {
+      "id": "sz_py_rl3d_color",
+      "count": 9
+    },
+    {
+      "id": "sz_py_rl3d_draw_cube",
+      "count": 1
+    },
+    {
+      "id": "sz_py_rl3d_draw_cube_wires",
+      "count": 1
+    },
+    {
+      "id": "sz_py_rl3d_draw_grid",
+      "count": 1
+    },
+    {
+      "id": "sz_py_rl3d_draw_line_3d",
+      "count": 1
+    },
+    {
+      "id": "sz_py_rl3d_draw_model",
+      "count": 1
+    },
+    {
+      "id": "sz_py_rl3d_draw_sphere",
+      "count": 1
+    },
+    {
+      "id": "sz_py_rl3d_draw_text",
+      "count": 1
+    },
+    {
+      "id": "sz_py_rl3d_end_drawing",
+      "count": 1
+    },
+    {
+      "id": "sz_py_rl3d_end_mode_3d",
+      "count": 1
+    },
+    {
+      "id": "sz_py_rl3d_field",
+      "count": 4
+    },
+    {
+      "id": "sz_py_rl3d_gen_image_gradient_linear",
+      "count": 1
+    },
+    {
+      "id": "sz_py_rl3d_gen_mesh_cylinder",
+      "count": 1
+    },
+    {
+      "id": "sz_py_rl3d_get_frame_time",
+      "count": 1
+    },
+    {
+      "id": "sz_py_rl3d_init_window",
+      "count": 1
+    },
+    {
+      "id": "sz_py_rl3d_is_key_down",
+      "count": 4
+    },
+    {
+      "id": "sz_py_rl3d_is_key_pressed",
+      "count": 1
+    },
+    {
+      "id": "sz_py_rl3d_key",
+      "count": 5
+    },
+    {
+      "id": "sz_py_rl3d_load_model_from_mesh",
+      "count": 1
+    },
+    {
+      "id": "sz_py_rl3d_load_texture_from_image",
+      "count": 1
+    },
+    {
+      "id": "sz_py_rl3d_material_map",
+      "count": 1
+    },
+    {
+      "id": "sz_py_rl3d_projection",
+      "count": 1
+    },
+    {
+      "id": "sz_py_rl3d_set_material_texture",
+      "count": 1
+    },
+    {
+      "id": "sz_py_rl3d_set_target_fps",
+      "count": 1
+    },
+    {
+      "id": "sz_py_rl3d_Vector3",
+      "count": 9
+    },
+    {
+      "id": "sz_py_rl3d_window_loop",
+      "count": 1
+    },
+    {
+      "id": "sz_py_run_value",
+      "count": 1
+    },
+    {
+      "id": "sz_py_subscript",
+      "count": 1
+    },
+    {
+      "id": "sz_py_text",
+      "count": 2
+    },
+    {
+      "id": "sz_py_update",
+      "count": 3
+    },
+    {
+      "id": "sz_py_variable",
+      "count": 32
+    }
+  ],
+  "approvedBlockIdsSha256": "c24c4a223b4e88527f12117eae3b22f1ba6ce79071edc6fce5b4142db202515f",
+  "fullWorkspaceRoundtrip": true,
+  "initialWorkspaceSha256": "d558b56bd35185b5623bffe5ef27c57e126fa56add96274caed54beac89794bd",
+  "editedWorkspaceSha256": "d1907748af9ba08835e8a7409220f362236d7e3db395cab14b5067d6e9c237a4",
+  "canonicalRenderReanalysis": true,
+  "runtimeCapabilitiesQualified": false,
+  "browserInteractionQualified": false,
+  "edits": [
+    {
+      "label": "velocidade do giro",
+      "path": {
+        "body": 3,
+        "inputs": [
+          {
+            "name": "VALUE",
+            "index": 0
+          }
+        ]
+      },
+      "codecId": "sz_py_integer",
+      "field": "NUMBER",
+      "before": "2",
+      "after": "3",
+      "beforeSourceSha256": "e9e84373fff3da0b68cf70a06f197b581a314a53210cc850f438470c256e3380",
+      "afterSourceSha256": "96d4fe0426efc5dc07d1f016dfdb78a6410560a130c5f74047f02bfbcca50eeb"
+    },
+    {
+      "label": "velocidade da bola",
+      "path": {
+        "body": 4,
+        "inputs": [
+          {
+            "name": "VALUE",
+            "index": 0
+          }
+        ]
+      },
+      "codecId": "sz_py_integer",
+      "field": "NUMBER",
+      "before": "3",
+      "after": "4",
+      "beforeSourceSha256": "96d4fe0426efc5dc07d1f016dfdb78a6410560a130c5f74047f02bfbcca50eeb",
+      "afterSourceSha256": "616b49fcea029f7891f08966131bb3f293d3cc48fc6f29eda665943b04dc1932"
+    }
+  ]
+}

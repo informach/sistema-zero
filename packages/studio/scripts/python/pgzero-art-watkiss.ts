@@ -526,6 +526,17 @@ const jogadorDaCentopeia = () =>
     roundRect(p, 20, 28, 10, 8, 4, '#263238')
   })
 
+/** The flying beetle, 40 x 32, seen from above with its wings open. */
+const besouroVoador = () =>
+  svg('besouro', 40, 32, (p) => {
+    ellipse(p, 10, 10, 10, 7, '#b3e5fc')
+    ellipse(p, 30, 10, 10, 7, '#b3e5fc')
+    ellipse(p, 20, 19, 10, 12, '#6a1b9a')
+    ellipse(p, 20, 21, 5, 8, '#ab47bc')
+    circle(p, 16, 9, 3, '#ffeb3b')
+    circle(p, 24, 9, 3, '#ffeb3b')
+  })
+
 const tiroDaCentopeia = () =>
   svg('tiro-centopeia', 6, 18, (p) => {
     roundRect(p, 0, 0, 6, 18, 3, '#ffeb3b')
@@ -538,6 +549,7 @@ export const WATKISS_ART: Record<string, () => Record<string, Uint8Array>> = {
     'pedra.svg': pedraDoCampo(),
     'jogador.svg': jogadorDaCentopeia(),
     'tiro.svg': tiroDaCentopeia(),
+    'besouro.svg': besouroVoador(),
   }),
   boing: () => ({
     'raquete_azul.svg': raquete('raquete-azul', '#1e88e5', '#90caf9'),

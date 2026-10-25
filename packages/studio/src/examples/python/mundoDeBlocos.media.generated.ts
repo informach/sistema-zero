@@ -1,0 +1,28 @@
+// Gerado por scripts/generate-raylib-games.ts. Não edite este arquivo.
+// Materiais: src/examples/python/raylib/mundo-de-blocos
+// images/areia.png: fea86b546e95c40976bb28e13f8e2d28000cf4a0eda497d32fa85ec4a3fc1bef
+// images/folhas.png: 63b76ef7fef0bcc71986c5cf06dab88027029c0e902d3bd2a399be3017a64d7a
+// images/grama-com-terra.png: 77b77c997bbee9931c2c4fff4ad94c1f243e4784417ec7b82284ef80c5c1a216
+// images/grama.png: 143d6d84d827ba7dcc77c2577f683a4976e3aec99b56bd9a9513e516cc449ea7
+// images/lava.png: b08f26b3e90f6413986d371324c3cfa41dae55dc8764fee975253fca62adb997
+// images/madeira.png: 780832b122440969de69de36eeb2720eac72734caf958628b44d93ee48804116
+// images/terra.png: c044bfe0fc6eb292bd7875cf277e5a19e21f049f0954f6b282d115d37572755f
+// images/tijolo.png: 1dd8fcb52141808672abe7b88e7acb766678080ec779e8ad99856e7bfe0b8ed3
+export const MUNDO_DE_BLOCOS_MEDIA: Readonly<Record<string, string>> = {
+  'images/areia.png':
+    'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAh0lEQVR4nJWSwQ2AMAhFe3UgB3Q3r47hCl5rrCGBXz6FQ6NpCzxeaf3Z+n2dZuGee+fYx9dNgEHy791tXjAmkmpeckPAaKI1EYyKxMtHgmcmQYYAfbgE5Ra0KC0ssj+1UJUprn4CqZ4JBMLlHLDg5SDhczLKNAFrr+nhYCKj4So5SI1y1onsvRHOWmyGp8SxAAAAAElFTkSuQmCC',
+  'images/folhas.png':
+    'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAm0lEQVR4nJ2T0Q2AMAhEGcaJnMZh/HMtd1HbCIHjwMSPRlrheFAq27leY4nI/I617IfZutcztXVvAt6BBeO5/jMBdLYMDxkLNnKW3QdUwakE7AErhQkKInt0L14JhhIqzMq2JjKCTiw1sXMou/+WNXvwNUDVDCSCbgJ/CWD3mViaxCrbrBeutr3G7gF5/0CA+B2NEiWBoE5EkPYGs9p+PEIuBaMAAAAASUVORK5CYII=',
+  'images/grama-com-terra.png':
+    'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAmElEQVR4nGOouBP0Hx/+/40Tp5zKnMX/CRqATRMynwFdgFTDsBoAE0OmYRjdSwwT3Wz/wzADAwOcjcxHF0dRg0sChv83muKVJ2gAskEgl8Aw3ABkG3DZhs8VYBdg8yM+f2MYAHMeOeGANQxAhmHThG4J2GK8zsMSjehhhjMM0EMfpxy6yXgTDbbAJiax4AtUDAPwOhdLUgcADIwrc4dJC5wAAAAASUVORK5CYII=',
+  'images/grama.png':
+    'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAj0lEQVR4nJWTwQ2AMAhFe3UPJ3Iah/HmWs7htQaTn1DKB3ogjVh+eZ+2nc/Ro+jvRv/t191TAa9IfzebWBVzBZDTK8IipR3oArt38MCeGnFr0ZKJaN8TnQTAKcHwkJc9EwIKo/nTe5Cd7EU4xoondIw6zwz8BcCqL0v1HdAxRgi2s0GA+eEhoLul12gxZf0AhGOdHJwvTtgAAAAASUVORK5CYII=',
+  'images/lava.png':
+    'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAApUlEQVR4nI1TyxWAMAjr1TE6hAO6tFfsj5rSgB54/QABAiTJWeQ+RK5T2l1PlKrXu+rrX5EOgEoGYIHVrkgH0A+NBAbUEbJOmxOLyIIMeUvwUkcdgoy/noGiGvQQfHKANXkRvXfLwKIzTrwWzzayCF8kTg4ion4Q3Esg7IYDBcTvg4RdQQf7niV4dauRzcoEWAG8vWDASwZsiNhukFlY2+hNYrCpD9Augiy32Ew+AAAAAElFTkSuQmCC',
+  'images/madeira.png':
+    'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAYklEQVR4nLWSsQkAIBADfylLW/dyBCdWLATRz5MIFjYmHBx5ayV39MwMZiu/AL2mP4D9PwQghRDghZKCClh9SUEC7AV5BQ8QKVIKFADNRCuwgPPQ5BVowCw+r4AAp6as4AEG+L/9JJPnbFwAAAAASUVORK5CYII=',
+  'images/terra.png':
+    'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAf0lEQVR4nGMAgv8T3WxRMDYxXHIMpGj+32iKaSAuxYQwzCKsXiDJILz+Q9hCnAHE+pusMAAZBHIJDMMNQLYBl234XAF2AalpAcMAmPPICQesYQAyDGuiQbMEbDGRiQWra+AGEHI+LnkUF8BMJiUjoQQiKckXWT2GAXidiyWpAwDc/gMKA79HhwAAAABJRU5ErkJggg==',
+  'images/tijolo.png':
+    'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAL0lEQVR4nGP4r6j4Hxd+evYITjmY/CAwAERQglFcQIyN6GKDwACqhsFoOhix6QAAnWGqV5GFP1gAAAAASUVORK5CYII=',
+}

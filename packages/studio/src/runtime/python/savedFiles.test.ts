@@ -1,9 +1,11 @@
 import { expect, test } from 'bun:test'
 import {
   isPythonSavedFile,
+  isPythonSavedFileChange,
   PYTHON_SAVED_FILE_KEY_PREFIX,
   PYTHON_SAVED_FILE_LIMITS,
   readPythonSavedFiles,
+  withoutPythonSavedFile,
   withPythonSavedFile,
 } from './savedFiles'
 
@@ -65,4 +67,22 @@ test('a tampered record is read without the bad entries and within the limits', 
     'py-outra': btoa('x'),
   }
   expect(readPythonSavedFiles(record).map((file) => file.path)).toEqual(['bom.txt'])
+})
+
+test('a file the program deleted leaves the record, and the other keys stay', () => {
+  let record: Record<string, string> = { 'outra-chave': 'x' }
+  record = withPythonSavedFile(record, { path: 'recorde.txt', bytes: bytes('10') })!
+  record = withPythonSavedFile(record, { path: 'mapa.txt', bytes: bytes('#') })!
+  const without = withoutPythonSavedFile(record, 'recorde.txt')
+  expect(readPythonSavedFiles(without).map((file) => file.path)).toEqual(['mapa.txt'])
+  expect(without['outra-chave']).toBe('x')
+  // Nothing to forget: the same record, so nothing is written again.
+  expect(withoutPythonSavedFile(without, 'recorde.txt')).toBe(without)
+})
+
+test('a deletion carries only a portable path', () => {
+  expect(isPythonSavedFileChange('recorde.txt', null)).toBe(true)
+  expect(isPythonSavedFileChange('../recorde.txt', null)).toBe(false)
+  expect(isPythonSavedFileChange('recorde.txt', undefined)).toBe(false)
+  expect(isPythonSavedFileChange('recorde.txt', bytes('1'))).toBe(true)
 })

@@ -108,7 +108,15 @@ test('a saved file carries only a portable path and bounded bytes', () => {
   expect(
     readPythonWorkerEvent({ type: 'saved-file', path: 'placar.txt', bytes, extra: 1 }),
   ).toEqual({ type: 'saved-file', path: 'placar.txt', bytes })
+  // A deleted file: bytes null, and still only a portable path.
+  expect(readPythonWorkerEvent({ type: 'saved-file', path: 'placar.txt', bytes: null })).toEqual({
+    type: 'saved-file',
+    path: 'placar.txt',
+    bytes: null,
+  })
   for (const raw of [
+    { type: 'saved-file', path: '../placar.txt', bytes: null },
+    { type: 'saved-file', path: 'placar.txt' },
     { type: 'saved-file', path: '../placar.txt', bytes },
     { type: 'saved-file', path: 'placar.txt', bytes: [1, 2, 3] },
     { type: 'saved-file', path: 'placar.txt', bytes: new Uint8Array(64 * 1024 + 1) },

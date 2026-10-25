@@ -427,7 +427,7 @@ export function moldaModels(): Record<string, Uint8Array> {
       name: 'corredor',
       shape: 'cylinder',
       size: [0.45, 0.9, 0.45],
-      color: 'verde',
+      color: 'laranja',
       bones: 4,
       moves: [
         { kind: 'sway', name: 'Correr', duration: 0.4, axis: 'z', amount: 20, bone: 1 },
@@ -443,7 +443,19 @@ export function moldaModels(): Record<string, Uint8Array> {
       moves: [{ kind: 'sway', name: 'Andar', duration: 0.5, axis: 'x', amount: 15, bone: 1 }],
     }),
     'models/corrida-infinita/models/cristal.glb': template('cristal', 'cristal'),
-    'models/corrida-infinita/images/chao.png': blocks['images/grama.png']!,
+    // A pista é de terra batida: a grama salpicada brigava com o corredor.
+    'models/corrida-infinita/images/chao.png': texture(
+      'chao',
+      speckled(
+        'b',
+        [
+          ['m', 0.1],
+          ['k', 0.03],
+        ],
+        12,
+      ),
+      { b: 'bege', m: 'marrom', k: 'preto' },
+    ),
     'models/corrida-infinita/images/ceu.png': sky('ceu', 'dia'),
 
     // Patrulha Espacial.
@@ -453,8 +465,8 @@ export function moldaModels(): Record<string, Uint8Array> {
       speckled(
         'd',
         [
-          ['v', 0.1],
-          ['k', 0.2],
+          ['v', 0.08],
+          ['k', 0.06],
         ],
         6,
       ),

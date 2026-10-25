@@ -96,8 +96,11 @@ export type PythonWorkerEvent =
   | { type: 'result'; requestId: string; ok: boolean; text: string; traceback?: string }
   | { type: 'failed'; message: string }
   | { type: 'audio'; requestId: string; request: string }
-  /** A file the program saved; the host keeps it with the project (savedFiles.ts). */
-  | { type: 'saved-file'; path: string; bytes: Uint8Array<ArrayBuffer> }
+  /**
+   * A file the program saved; the host keeps it with the project (savedFiles.ts). A deleted
+   * file comes with bytes null, and the host forgets it.
+   */
+  | { type: 'saved-file'; path: string; bytes: Uint8Array<ArrayBuffer> | null }
   /** Every saved file waiting in the queue has been sent. */
   | { type: 'saved-flushed' }
   | {

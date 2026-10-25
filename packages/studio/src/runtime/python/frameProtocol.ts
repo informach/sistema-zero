@@ -98,7 +98,7 @@ export type PythonFrameMessage = {
   | { type: 'activity-result'; requestId: string; feedback: StudioPythonActivityFeedback }
   | { type: 'mission-result'; requestId: string; result: StudioPythonMissionFrameObservation }
   | { type: 'audio-request'; requestId: string; request: string }
-  | { type: 'saved-file'; path: string; bytes: Uint8Array<ArrayBuffer> }
+  | { type: 'saved-file'; path: string; bytes: Uint8Array<ArrayBuffer> | null }
   | {
       type: 'ack'
       commandId: number

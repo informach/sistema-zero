@@ -135,6 +135,8 @@ def play(t):
     t.get('ler_ondas')()
     t.check('uma linha certa do arquivo vira pedra e o fim muda a duração da onda',
             len(t.get('roteiro')) == 1 and t.get('fim_da_onda') == 5)
+    t.step(1)
+    t.shot('aviso')
     t.check('uma linha com erro vira aviso com o número dela, sem travar', t.get('aviso') == 'A linha 5 de ondas_teste.txt tem um erro.',
             t.get('aviso'))
     with open('ondas_teste.txt', 'w', encoding='utf-8') as arquivo:

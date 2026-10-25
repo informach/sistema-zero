@@ -51,7 +51,7 @@ export function createPythonWorkerSupervisor(options: {
   onRelease(): void
   audio?(request: string): Promise<string>
   /** A file the program saved (savedFiles.ts); without it the files only live in this run. */
-  onSavedFile?(path: string, bytes: Uint8Array<ArrayBuffer>): void
+  onSavedFile?(path: string, bytes: Uint8Array<ArrayBuffer> | null): void
   graphics?(
     request: string,
     images: { id: number; bytes: Uint8Array<ArrayBuffer> }[],

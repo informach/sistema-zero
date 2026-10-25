@@ -2951,7 +2951,7 @@ export const PGZERO_GAME_BLOCKS = {
     ],
   },
   'atirador-espacial': {
-    sourceSha256: '3cfd0d6668798452a631f5f606e38ea5fdff8cecdf1224029453ee581cbb2ab6',
+    sourceSha256: '842484c9675e3ba5a3a0bda416ffbce570e64482766e47808939330b22ca0713',
     blockIds: [
       'sz_py_and',
       'sz_py_arithmetic',
@@ -3073,7 +3073,7 @@ export const PGZERO_GAME_BLOCKS = {
     ],
   },
   centopeia: {
-    sourceSha256: 'c85f6c081d73af786eae36387a3b6a93e62c932adb376240dfaf402f6f5a73fb',
+    sourceSha256: '2f688691a3f735b5760ba5cff27003830719c8b6b63b84864ef72a321245ffbb',
     blockIds: [
       'sz_py_and',
       'sz_py_arithmetic',
@@ -3125,6 +3125,8 @@ export const PGZERO_GAME_BLOCKS = {
       'sz_py_pgzero_title',
       'sz_py_pgzero_update',
       'sz_py_pgzero_width',
+      'sz_py_random_choice',
+      'sz_py_random_randint',
       'sz_py_range',
       'sz_py_return',
       'sz_py_run',

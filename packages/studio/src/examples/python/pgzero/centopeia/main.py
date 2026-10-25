@@ -16,6 +16,10 @@ VELOCIDADE_DO_JOGADOR = 4
 VELOCIDADE_DO_TIRO = 14
 # Quantos pixels a centopeia anda por quadro em cada onda.
 VELOCIDADES = [2, 4, 5, 8]
+# O besouro voador: de quanto em quanto tempo ele aparece, e quanto ele vale.
+TEMPO_DO_BESOURO = 6.0
+VELOCIDADE_DO_BESOURO = 3
+PONTOS_DO_BESOURO = 50
 
 
 class Parte:
@@ -60,6 +64,10 @@ class Parte:
 jogador = Actor('jogador')
 tiro = Actor('tiro')
 atirando = False
+# O besouro cruza a zona do jogador em zigue-zague e come as pedras por onde passa.
+besouro = Actor('besouro')
+besouro_voando = False
+espera_do_besouro = TEMPO_DO_BESOURO
 # As pedras do campo, cada uma na sua casa: (coluna, linha) -> ator.
 pedras = {}
 centopeia = []
@@ -98,13 +106,15 @@ def soltar_centopeia():
 
 
 def novo_jogo():
-    global estado, pontos, vidas, onda, atirando, protegido
+    global estado, pontos, vidas, onda, atirando, protegido, besouro_voando, espera_do_besouro
     estado = 'jogando'
     pontos = 0
     vidas = VIDAS
     onda = 1
     atirando = False
     protegido = 0
+    besouro_voando = False
+    espera_do_besouro = TEMPO_DO_BESOURO
     jogador.midbottom = (WIDTH / 2, HEIGHT)
     espalhar_pedras()
     soltar_centopeia()
@@ -123,8 +133,45 @@ def mover_jogador():
     jogador.top = min(max(jogador.top, ZONA_DO_JOGADOR * CASA), HEIGHT - jogador.height)
 
 
+def soltar_besouro():
+    # Ele entra por um dos lados, numa altura sorteada da zona do jogador.
+    global besouro_voando
+    lado = random.choice([-1, 1])
+    if lado == 1:
+        besouro.right = 0
+    else:
+        besouro.left = WIDTH
+    besouro.y = random.randint(ZONA_DO_JOGADOR * CASA + 20, HEIGHT - 20)
+    besouro.vx = VELOCIDADE_DO_BESOURO * lado
+    besouro.vy = VELOCIDADE_DO_BESOURO * random.choice([-1, 1])
+    besouro_voando = True
+    sounds.besouro.play()
+
+
+def mover_besouro(dt):
+    global besouro_voando, espera_do_besouro
+    if not besouro_voando:
+        espera_do_besouro = espera_do_besouro - dt
+        if espera_do_besouro <= 0:
+            soltar_besouro()
+        return
+    besouro.x = besouro.x + besouro.vx
+    besouro.y = besouro.y + besouro.vy
+    # Zigue-zague: bate no alto da zona ou no chão e volta.
+    if besouro.top < ZONA_DO_JOGADOR * CASA or besouro.bottom > HEIGHT:
+        besouro.vy = -besouro.vy
+    # Come a pedra que estiver embaixo dele.
+    casa = (int(besouro.x // CASA), int(besouro.y // CASA))
+    if casa in pedras:
+        del pedras[casa]
+    # Saiu pelo outro lado: some, e volta depois de um tempo.
+    if besouro.right < -10 or besouro.left > WIDTH + 10:
+        besouro_voando = False
+        espera_do_besouro = TEMPO_DO_BESOURO
+
+
 def mover_tiro():
-    global atirando, pontos
+    global atirando, pontos, besouro_voando, espera_do_besouro
     if not atirando:
         if keyboard.space:
             # Um tiro por vez: o próximo só sai quando este acertar ou sumir.
@@ -135,6 +182,13 @@ def mover_tiro():
     tiro.y = tiro.y - VELOCIDADE_DO_TIRO
     if tiro.bottom < 0:
         atirando = False
+        return
+    if besouro_voando and tiro.colliderect(besouro):
+        besouro_voando = False
+        espera_do_besouro = TEMPO_DO_BESOURO
+        pontos = pontos + PONTOS_DO_BESOURO
+        atirando = False
+        sounds.acerto.play()
         return
     for numero in range(len(centopeia)):
         parte = centopeia[numero]
@@ -163,8 +217,19 @@ def mover_tiro():
             return
 
 
+def bater():
+    # Encostou na centopeia ou no besouro: perde uma vida e fica protegido um tempo.
+    global vidas, protegido, estado, espera
+    vidas = vidas - 1
+    protegido = 2.0
+    sounds.batida.play()
+    if vidas <= 0:
+        estado = 'fim'
+        espera = 1.0
+
+
 def update(dt):
-    global estado, vidas, onda, protegido, espera
+    global onda, protegido, espera
     if estado == 'fim':
         espera = espera - dt
     if estado != 'jogando':
@@ -172,16 +237,15 @@ def update(dt):
     protegido = protegido - dt
     mover_jogador()
     mover_tiro()
+    mover_besouro(dt)
+    if besouro_voando and protegido <= 0 and besouro.colliderect(jogador):
+        bater()
     for parte in centopeia:
         parte.andar()
         if protegido <= 0 and parte.ator.colliderect(jogador):
-            vidas = vidas - 1
-            protegido = 2.0
-            sounds.batida.play()
-            if vidas <= 0:
-                estado = 'fim'
-                espera = 1.0
-                return
+            bater()
+    if estado != 'jogando':
+        return
     if not centopeia:
         # Acabou a centopeia: vem outra, maior e mais rápida.
         onda = onda + 1
@@ -209,6 +273,8 @@ def draw():
         else:
             parte.ator.image = 'corpo'
         parte.ator.draw()
+    if besouro_voando:
+        besouro.draw()
     if atirando:
         tiro.draw()
     if estado == 'jogando' and (protegido <= 0 or int(protegido * 10) % 2 == 0):

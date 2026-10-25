@@ -117,7 +117,8 @@ class _SavedFiles:
         # disk when the program ends) and at each flush().
         self._open_files = weakref.WeakSet()
 
-    def relative(self, file):
+    def relative(self, file, protected_reason='ele faz parte do projeto; o que o jogo gravar '
+                                               'nele vale só enquanto ele roda.'):
         """The project path of a file the program opened, or None when it is not kept."""
         if isinstance(file, int):
             return None
@@ -131,10 +132,49 @@ class _SavedFiles:
         relative = absolute[len(self._root) + 1:].replace(os.sep, '/')
         # The program's own files are not saved over: the next run starts from the project.
         if relative.lower() in self._protected:
-            self._warn(relative, 'ele faz parte do projeto; o que o jogo gravar nele vale só '
-                                 'enquanto ele roda.')
+            self._warn(relative, protected_reason)
             return None
         return relative
+
+    def removed(self, relative):
+        """A kept file the program deleted: the host forgets it too."""
+        if self._report(relative, None):
+            self._sizes.pop(relative, None)
+
+    def remover(self, original):
+        """os.remove and os.unlink (pathlib's unlink goes through os.unlink)."""
+        watcher = self
+
+        def remove(path, *args, **kwargs):
+            original(path, *args, **kwargs)
+            if kwargs.get('dir_fd') is None and not args:
+                relative = watcher.relative(path, 'ele faz parte do projeto; apagar vale só '
+                                                  'enquanto o jogo roda.')
+                if relative is not None:
+                    watcher.removed(relative)
+
+        remove.__doc__ = original.__doc__
+        return remove
+
+    def renamer(self, original):
+        """os.rename and os.replace (pathlib's rename and replace go through them)."""
+        watcher = self
+
+        def rename(source, target, *args, **kwargs):
+            original(source, target, *args, **kwargs)
+            if args or kwargs.get('src_dir_fd') is not None or kwargs.get('dst_dir_fd') is not None:
+                return
+            # The old name is forgotten and the new one is kept, as on a computer.
+            old = watcher.relative(source, 'ele faz parte do projeto; mudar o nome dele vale só '
+                                           'enquanto o jogo roda.')
+            if old is not None:
+                watcher.removed(old)
+            new = watcher.relative(target)
+            if new is not None and os.path.isfile(os.path.join(watcher._root, new)):
+                watcher.closed(new)
+
+        rename.__doc__ = original.__doc__
+        return rename
 
     def _warn(self, relative, reason):
         if relative in self._warned:
@@ -428,6 +468,11 @@ class _StudioExecution:
         opener._sz_saved_files = True
         builtins.open = opener
         io.open = opener
+        # Deleting or renaming a kept file reaches the host as well (pathlib uses these).
+        os.remove = watcher.remover(os.remove)
+        os.unlink = watcher.remover(os.unlink)
+        os.rename = watcher.renamer(os.rename)
+        os.replace = watcher.renamer(os.replace)
 
     def install_activity(self, source, definition, requested, publish, console_matches):
         if self._grader is not None or self._main is None:

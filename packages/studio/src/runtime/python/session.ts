@@ -29,7 +29,7 @@ import {
   samePythonExecutionIdentity,
 } from './frameProtocol'
 import type { PythonExecutionSnapshot } from './protocol'
-import type { PythonSavedFile } from './savedFiles'
+import type { PythonSavedFileChange } from './savedFiles'
 import { isPythonRequestId } from './workerEvents'
 
 type Command = PythonFrameCommand extends infer Value
@@ -50,8 +50,11 @@ export function preparePythonFrameSession(options: {
   activity?: StudioPythonActivity
   mission?: true
   hostAudio?: StudioHostAudioPreference
-  /** A file the program saved; the host keeps it for the next run (savedFiles.ts). */
-  onSavedFile?(file: PythonSavedFile): void
+  /**
+   * A file the program saved; the host keeps it for the next run (savedFiles.ts). A deleted
+   * file comes with bytes null.
+   */
+  onSavedFile?(file: PythonSavedFileChange): void
 }): Promise<StudioRuntimeSession> {
   const { frame, signal } = options
   const identity = Object.freeze({ ...options.identity })

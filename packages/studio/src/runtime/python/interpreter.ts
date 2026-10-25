@@ -29,7 +29,7 @@ import { loadPgzeroModuleSources } from './pgzero/moduleSources'
 import type { PythonConsoleStream, PythonExecutionSnapshot, PythonGraphicsReply } from './protocol'
 import { RAYLIB_2D_EXTENSION } from './raylib/contract'
 import { loadRaylibModuleSources } from './raylib/moduleSources'
-import { isPythonSavedFile } from './savedFiles'
+import { isPythonSavedFile, isPythonSavedFilePath } from './savedFiles'
 import { loadTurtleModuleSources } from './turtle/moduleSources'
 
 import { PYODIDE_VERSION, PYTHON_VERSION } from './versions'
@@ -225,8 +225,11 @@ export async function createPythonInterpreter(options: {
     images: { id: number; bytes: Uint8Array<ArrayBuffer> }[],
   ): Promise<PythonGraphicsReply>
   audio?(request: string): Promise<string>
-  /** A file the program closed after writing it, kept with the project (savedFiles.ts). */
-  onSavedFile?(path: string, bytes: Uint8Array<ArrayBuffer>): void
+  /**
+   * A file the program closed after writing it, kept with the project (savedFiles.ts), or
+   * one it deleted (bytes null).
+   */
+  onSavedFile?(path: string, bytes: Uint8Array<ArrayBuffer> | null): void
 }) {
   const base = new URL('./', import.meta.url)
   const resourceScope = new AbortController()
@@ -367,6 +370,12 @@ export async function createPythonInterpreter(options: {
           JSON.stringify(paths),
           JSON.stringify(savedSizes),
           (path: unknown, raw: unknown) => {
+            // Python's None (a deleted file) arrives as undefined.
+            if (raw === undefined || raw === null) {
+              if (!isPythonSavedFilePath(path)) return false
+              publish(path, null)
+              return true
+            }
             if (!(raw instanceof Uint8Array)) return false
             const bytes = new Uint8Array(raw)
             if (!isPythonSavedFile(path, bytes)) return false
