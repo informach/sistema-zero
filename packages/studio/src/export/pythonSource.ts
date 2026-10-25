@@ -1,6 +1,7 @@
 import type { StudioRuntimeCatalog } from '@sistemazero/core/studio/runtime-catalog'
 import { buildPythonAssetBundle } from '../core/pythonAssets'
 import { assertPythonVisualDraftSettled } from '../python/blocks/workspaceDraft'
+import { hasPygameExtension } from '../runtime/python/pygame/contract'
 import { pythonFilesToTree, refinePythonProjectDocument } from '../state/pythonProjectValidation'
 import type { ExportFileMap } from './fileMap'
 import { browserSvgRasterizer, hasPgzeroExtension, type SvgRasterizer } from './pgzeroDesktop'
@@ -44,6 +45,13 @@ export async function buildPythonSourceFiles(
     })
     Object.assign(files, pgzero.files)
   }
+  let pygameFiles: string[] = []
+  if (hasPygameExtension(project.installedExtensions)) {
+    const { buildPygameDesktopFiles } = await import('./pygameDesktop')
+    const desktop = buildPygameDesktopFiles({ occupied: Object.keys(files), directories })
+    Object.assign(files, desktop.files)
+    pygameFiles = desktop.generated
+  }
   const metadata = await buildPythonSourceMetadata({
     project,
     sourceFiles,
@@ -52,6 +60,7 @@ export async function buildPythonSourceFiles(
     occupiedFiles: Object.keys(files),
     runtimeCatalog,
     pgzero,
+    pygameFiles,
   })
   Object.assign(files, metadata.files)
   for (const path of directories) files[`${path}/`] = new Uint8Array()

@@ -128,6 +128,18 @@ describe('session-owned Python audio', () => {
     expect(f.muteListeners.size).toBe(0)
   })
 
+  test('pause and resume of several voices act on each of them (pygame mixer.pause)', async () => {
+    const f = await fixture()
+    await f.play(1)
+    await f.play(2)
+    expect(await f.exchange({ version: 1, op: 'pause', ids: [1, 2, 99] })).toMatchObject({
+      ok: true,
+    })
+    expect(instances.map((voice) => voice.paused)).toEqual([true, true])
+    await f.exchange({ version: 1, op: 'resume', ids: [2] })
+    expect(instances.map((voice) => voice.paused)).toEqual([true, false])
+  })
+
   test('voice reserved before resource awaits reads latest host mute before native play', async () => {
     const f = await fixture()
     const playing = f.play(1)

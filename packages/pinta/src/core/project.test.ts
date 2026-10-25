@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'bun:test'
+import { tileLayerAt } from '../testing/fixtures'
 import type { VectorShape } from '../vector/model'
 import { getPalette } from './palette'
 import {
@@ -360,8 +361,7 @@ describe('sanitizePintaAsset (dados do disco/import — nunca lança)', () => {
     expect(out.cels[0]?.data).toHaveLength(4)
 
     const map = createTilemapAsset({ name: 'fase', tilesetId: 't1', cols: 2, rows: 2 })
-    const layer0 = map.layers[0]
-    if (!layer0) throw new Error('camada esperada')
+    const layer0 = tileLayerAt(map)
     const outMap = sanitizePintaAsset({
       ...map,
       layers: [{ ...layer0, cells: Array.from(layer0.cells) }],

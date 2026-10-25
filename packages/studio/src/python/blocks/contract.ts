@@ -18,16 +18,26 @@ export const PYTHON_CATEGORIES = [
 ] as const
 export type PythonCategory = (typeof PYTHON_CATEGORIES)[number]
 /** Owners of block codecs: the core language or one official Python extension. */
-export type PythonBlockOwner = 'programming' | 'python-turtle' | 'python-pgzero'
-export type PythonBlockRole =
-  | 'value'
-  | 'statement'
-  | 'parameter'
-  | 'parameters'
-  | 'keyword'
-  | 'handler'
-  | 'alias'
-  | 'format'
+export type PythonBlockOwner = 'programming' | 'python-turtle' | 'python-pgzero' | 'python-pygame'
+/**
+ * Socket kinds: each one is a Blockly connection check, so a piece only plugs where Python
+ * accepts that syntax (a `case` only inside `match`, a pattern only after `case`, a
+ * `for … in …` clause only inside a comprehension).
+ */
+export const PYTHON_BLOCK_ROLES = [
+  'value',
+  'statement',
+  'parameter',
+  'parameters',
+  'keyword',
+  'handler',
+  'alias',
+  'format',
+  'case',
+  'pattern',
+  'comprehension',
+] as const
+export type PythonBlockRole = (typeof PYTHON_BLOCK_ROLES)[number]
 /** Built-in receivers a method block can require: a literal, a collection or an open file. */
 export type PythonReceiverKind = 'text' | 'List' | 'Tuple' | 'Dict' | 'Set' | 'file'
 

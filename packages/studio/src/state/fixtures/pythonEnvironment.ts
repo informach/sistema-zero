@@ -5,6 +5,7 @@ import {
 import { createStudioProjectDocument } from '../../core/projectFactory'
 import type { StudioRuntimeEnvironment } from '../../runtime/environment'
 import { PGZERO_EXTENSION } from '../../runtime/python/pgzero/contract'
+import { PYGAME_EXTENSION } from '../../runtime/python/pygame/contract'
 import { TURTLE_EXTENSION } from '../../runtime/python/turtle/contract'
 import { createStudioRuntimeRegistry } from '../../runtime/registry'
 import { refinePythonProjectDocument } from '../pythonProjectValidation'
@@ -22,6 +23,7 @@ export async function pythonEnvironmentFixture(kind: 'classic' | 'pro') {
     extensions: [
       { id: TURTLE_EXTENSION.id, versions: [TURTLE_EXTENSION.version] },
       { id: PGZERO_EXTENSION.id, versions: [PGZERO_EXTENSION.version] },
+      { id: PYGAME_EXTENSION.id, versions: [PYGAME_EXTENSION.version] },
     ],
     sourceTargets: ['browser', 'desktop'],
     requiredBrowserFeatures: [],

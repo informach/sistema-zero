@@ -5,14 +5,20 @@ type ShadowState = {
   type: string
   extraState: unknown
   fields?: Record<string, string>
-  inputs?: Record<string, { shadow: ShadowState }>
+  inputs?: Record<string, PythonPaletteInput>
 }
+/**
+ * A value starts as a shadow (dropping a block on it replaces it). A piece that holds commands
+ * (a `case`, an `except`) starts as a real block: Blockly refuses any block inside a shadow,
+ * so a shadow case could never receive the commands it is for.
+ */
+export type PythonPaletteInput = { shadow: ShadowState } | { block: ShadowState }
 export type PythonPaletteBlockInfo = {
   kind: 'block'
   type: string
   extraState?: unknown
   fields?: Record<string, string>
-  inputs?: Record<string, { shadow: ShadowState }>
+  inputs?: Record<string, PythonPaletteInput>
 }
 
 const cache = new WeakMap<readonly PythonBlockCodec[], Map<string, PythonPaletteBlockInfo>>()
@@ -60,9 +66,22 @@ export function pythonShadowState(
   value: PythonNode,
   role: PythonBlockRole,
   codecs: readonly PythonBlockCodec[],
-): ShadowState | undefined {
+): PythonPaletteInput | undefined {
   const child = decoded(value, role, codecs)
-  return child && shadowOf(child.codec, child.shape, codecs, 1)
+  return child && socketOf(child.codec, child.shape, codecs, 1)
+}
+
+function socketOf(
+  owner: PythonBlockCodec,
+  shape: PythonBlockShape,
+  codecs: readonly PythonBlockCodec[],
+  depth: number,
+): PythonPaletteInput {
+  const state = shadowOf(owner, shape, codecs, depth)
+  const holdsBlocks =
+    shape.inputs.some((input) => input.role === 'statement') ||
+    Object.values(state.inputs ?? {}).some((input) => 'block' in input)
+  return holdsBlocks ? { block: state } : { shadow: state }
 }
 
 function decoded(value: PythonNode, role: PythonBlockRole, codecs: readonly PythonBlockCodec[]) {
@@ -88,12 +107,11 @@ function shadowOf(
   codecs: readonly PythonBlockCodec[],
   depth: number,
 ): ShadowState {
-  const inputs: Record<string, { shadow: ShadowState }> = {}
+  const inputs: Record<string, PythonPaletteInput> = {}
   for (const input of shape.inputs) {
     if (input.role === 'statement' || input.nodes.length !== 1 || depth > 6) continue
     const child = decoded(input.nodes[0]!, input.role, codecs)
-    if (child)
-      inputs[input.name] = { shadow: shadowOf(child.codec, child.shape, codecs, depth + 1) }
+    if (child) inputs[input.name] = socketOf(child.codec, child.shape, codecs, depth + 1)
   }
   return {
     type: owner.id,

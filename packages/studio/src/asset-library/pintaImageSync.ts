@@ -2,6 +2,7 @@ import { canonicalJson } from '@sistemazero/core/creations'
 import {
   type PintaImageDerivation,
   PintaImageDerivationSchema,
+  pintaImageDependencyRule,
   pintaImageRecipeKey,
 } from '@sistemazero/core/studio/pinta-image'
 import type { ProjectAsset } from '#core'
@@ -42,13 +43,17 @@ export function createPintaImageSync(
           'Não consegui consultar a receita do Pinta agora. A última imagem foi mantida.',
         )
       const drawingId = previous.recipe.drawingId
-      let inspection = inspected.get(drawingId)
+      const selection = previous.recipe.selection.kind
+      // The fingerprint depends on which tilesets the kind uses (a `map` reads all of them),
+      // so one sweep inspects a drawing once per dependency rule, not once per drawing.
+      const inspectionKey = `${drawingId}\u0000${pintaImageDependencyRule(selection)}`
+      let inspection = inspected.get(inspectionKey)
       if (!inspection) {
-        inspection = adapter.inspectImage(drawingId, { signal }).then((value) => {
+        inspection = adapter.inspectImage(drawingId, { signal, selection }).then((value) => {
           signal.throwIfAborted()
           return PintaImageDerivationSchema.shape.provenance.parse(value)
         })
-        inspected.set(drawingId, inspection)
+        inspected.set(inspectionKey, inspection)
       }
       const provenance = await inspection
       signal.throwIfAborted()

@@ -22,6 +22,55 @@ Os módulos Python, a paleta de Programação e a extensão Turtle são carregad
 
 Os objetivos da parte substituem a antiga atividade do bloco nas duas linguagens. `src/activity/python.ts` permanece como avaliador interno da simulação formativa do Admin; sua existência não restaura nota, atividade do bloco ou aprovação reportada pelo cliente. O estado e os gates restantes da implementação estão em `docs/superpowers/plans/2026-10-16-studio-python-execution-state.md`; testes funcionais isolados não aprovam desempenho.
 
+## Pygame-ce no Estúdio (25/10/2026)
+
+A extensão `python-pygame` roda o **pygame-ce 2.5.7 real** (a wheel do Pyodide) no mesmo worker
+protegido do Turtle e do Pygame Zero. Arquitetura e limites: `src/runtime/python/pygame/README.md`;
+estudo e decisões: [`docs/plans/2026-10-24-pygame-ce-study-and-extension.md`](../../docs/plans/2026-10-24-pygame-ce-study-and-extension.md).
+
+- **A ponte é fina:** `_szpygame` só troca o que fala com o host (flip/update viram o quadro
+  `PIXELS`, eventos, teclado e mouse, `Clock`, `set_timer`, mixer pela fila de áudio). O resto é o
+  pygame-ce de verdade, então o jogo exportado roda igual no computador (`pygame-ce==2.5.7`, o
+  mesmo da página). A exportação leva `pinta.py` e as fontes, nunca `_szpygame`.
+- ⚠️ **O SDL do pygame avalia trechos de JavaScript com `eval`**, que a CSP do worker proíbe. O
+  build troca esse `eval` por uma tabela de trechos APROVADOS (`scripts/python/approved-eval.ts` +
+  `pygame/approved-js-snippets.json`, gravada por `record-pygame-js-snippets.mjs`). Wheel nova =
+  gravar a tabela de novo; trecho fora dela lança `EvalError` com recado.
+- **Material do Pinta vira dado no PNG** (`iTXt` `pinta`): o módulo `pinta` do aluno lê sprite,
+  tileset e mapa (`carregar_sprite`, `carregar_mapa`). A galeria é desenhada por código em
+  `packages/pinta/scripts/pygame-gallery/` (32 px, importada x2) e empacotada por
+  `scripts/generate-pygame-games.ts` (`check:pygame-games` no CI). Blocos: `bun
+  scripts/python/pygame-block-coverage.ts` grava os ids de cada jogo e exige zero nó opaco.
+- ⚠️ **Os arquivos da galeria são LF.** O empacotador normaliza as quebras de linha; o script de
+  cobertura também, senão o digest dos blocos não bate com o pacote.
+- ⚠️ **Nome de módulo não é método.** `guardedAttributes` (`python/blocks/projection.ts`) separa os
+  nomes que só existem num caminho de módulo (`pygame.image.load`, `pygame.draw.rect`) dos métodos
+  de qualquer objeto: os primeiros só contam como substituição de API numa escrita sobre o
+  módulo. Antes, um `self.image = …` num Sprite desligava os blocos de pygame do arquivo inteiro
+  (o Space Shooter, de arquivo único, abria só com blocos genéricos).
+- ⭐ **Escrita em atributo: UMA regra** (`python/blocks/scope.ts`, review de 25/10/2026; valia
+  `self.fps = 12` num Sprite desligar o arquivo, porque `fps` é método do Pinta):
+  1. Escrita nos namespaces do interpretador (`builtins`, `__main__`, `sys`) desliga o arquivo.
+  2. Escrita DIRETA `self.<nome> = …` (alvo `Attribute(Name self)`, não cadeia) num método de
+     INSTÂNCIA (sem `@staticmethod`/`@classmethod`/outro decorador além de `@property`), com o
+     `self` nunca reatribuído, é estado do objeto e não desliga nada, qualquer que seja o nome.
+     Dunder continua desligando; privado `_…` também, salvo numa classe que não pode herdar
+     classe oficial (só bases da própria criança ou nenhuma).
+  3. Escrita sobre objeto PROVADO de construtor oficial (`jogador = pygame.sprite.Sprite()`,
+     inclusive o caminho com ponto) é estado do objeto: `jogador.image = …` é inofensivo; trocar um
+     método oficial (`jogador.kill = f`) tira o bloco oficial SÓ daquele receptor.
+  4. Qualquer outra escrita de nome oficial que possa atingir um módulo (raiz módulo, alias de
+     módulo, origem desconhecida, `self.x.y` quando `self.x` pode ser módulo, 1º parâmetro de
+     método estático) continua desligando o arquivo.
+  - **Método da criança não é bloco oficial:** `self.m(…)` não mostra o bloco oficial de `m`
+    quando a família da classe (ela, as classes da criança que ela herda e as que a herdam)
+    define `m` (`def`, atributo de classe ou escrita direta `self.m = …`), nem quando a classe
+    não pode ser um objeto oficial. Objeto de classe da criança (`j = Bola()`) já não tinha prova.
+    Receptor desconhecido (`self.heroi.desenhar(tela)`, parâmetro) segue mostrando o bloco: sem
+    prova contrária, a escolha é a mesma de antes. ⚠️ Atributo de dado em `self` não conta fora
+    do próprio objeto (contar faria `self.quadro = 0` apagar o bloco `folha.quadro(…)`).
+  - Testes: `extensions/pygame/catalog.test.ts`.
+
 > **Objetivos do Estúdio (18/10/2026):** a antiga atividade de auto-correção do bloco saiu ([`docs/plans/2026-10-18-objetivos-do-estudio.md`](../../docs/plans/2026-10-18-objetivos-do-estudio.md)): os antigos módulos JavaScript de `src/activity/`
 > (runner, harness, sandbox, nota), `ActivityPanel`, `checksStore`, `studio/activity.ts`, a prop
 > `activity` do `<StudioLesson>`, os tipos `LessonActivity`/`ActivityCheck` e

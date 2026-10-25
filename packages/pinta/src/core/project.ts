@@ -8,6 +8,7 @@
  * operações puras testáveis sem canvas.
  */
 
+import { PINTA_SOURCE_REF_PATTERN } from '@sistemazero/core/studio/pinta-source-ref'
 import { sanitizeMaskReferences } from '../vector/mask'
 import { sanitizeVectorShape, type VectorShape } from '../vector/model'
 import { normalizeHex } from './color'
@@ -135,6 +136,14 @@ interface PintaAssetBase {
   updatedAt: number
   /** Projeto do Pensa dono deste desenho (agrupamento da galeria). */
   projectRef?: PintaProjectRef
+  /**
+   * De qual documento de FORA este desenho é a cópia (ex.: um desenho de jogo de exemplo do
+   * Estúdio, `example-pygame:<jogo>/<documento>`). É o que deixa a cópia ser REAPROVEITADA:
+   * dois mapas do jogo sobre as mesmas peças usam UM conjunto de peças da criança. Ausente
+   * (a forma canônica de todo desenho feito aqui) = o sanitize OMITE; duplicar ou restaurar
+   * um backup cria um desenho NOVO e tira a marca (`state/importPlan.ts`).
+   */
+  sourceRef?: string
 }
 
 /**
@@ -269,7 +278,13 @@ export interface TilesetAsset extends PintaAssetBase {
   platform: boolean[]
 }
 
-export interface TilemapLayer {
+/**
+ * Camada de PEÇAS do mapa (a de sempre). O `kind` é OPCIONAL de propósito: todo
+ * mapa salvo antes das camadas de objetos não tem a chave, e o sanitize a OMITE
+ * na camada de peças — o registro antigo atravessa o round-trip byte a byte.
+ */
+export interface TilemapTileLayer {
+  kind?: 'tiles'
   id: string
   name: string
   visible: boolean
@@ -280,16 +295,159 @@ export interface TilemapLayer {
    * No Estúdio vira um 2º tilemap desenhado depois do sprite. Ausente = fundo.
    */
   front?: boolean
+  /**
+   * As PEÇAS desta camada (outro tileset do mesmo perfil, com o MESMO tamanho de
+   * peça e o mesmo estilo das peças do mapa). Ausente = as do mapa
+   * (`TilemapAsset.tilesetId`), que é como todo mapa antigo é lido. Leia sempre
+   * por `tileLayerTilesetId`.
+   */
+  tilesetId?: string
+  objects?: never
 }
+
+/** Valor de uma propriedade de objeto: texto, número ou sim/não. */
+export type TilemapObjectPropertyValue = string | number | boolean
+
+/**
+ * Um OBJETO do mapa: ponto de partida do jogador, inimigo, porta, área de
+ * colisão, lugar de item. Coordenadas em PIXELS DO MAPA (coluna × tamanho da
+ * peça), canto de cima à esquerda. `width === 0 && height === 0` = PONTO;
+ * senão é um retângulo.
+ */
+export interface TilemapObject {
+  id: string
+  name: string
+  /** O "tipo" que o jogo lê (`inimigo`, `porta`…). Texto livre, pode ser vazio. */
+  type: string
+  x: number
+  y: number
+  width: number
+  height: number
+  /** Até `maxObjectProperties` pares; chaves em `OBJECT_PROPERTY_KEY_PATTERN`. */
+  properties: Record<string, TilemapObjectPropertyValue>
+}
+
+/** Camada de OBJETOS: não tem peças, só a lista de objetos. */
+export interface TilemapObjectLayer {
+  kind: 'objects'
+  id: string
+  name: string
+  visible: boolean
+  objects: TilemapObject[]
+  // Chaves exclusivas da camada de peças: `never` deixa ler `layer.front` na união
+  // (dá `undefined` aqui) sem deixar escrever uma camada de objetos com células.
+  cells?: never
+  front?: never
+  tilesetId?: never
+}
+
+export type TilemapLayer = TilemapTileLayer | TilemapObjectLayer
 
 export interface TilemapAsset extends PintaAssetBase {
   kind: 'tilemap'
-  /** Referência a um TilesetAsset do MESMO perfil. */
+  /**
+   * As peças PADRÃO do mapa (um TilesetAsset do MESMO perfil). Camada de peças
+   * sem `tilesetId` próprio usa estas; a ponte do Estúdio leva a grade só das
+   * camadas que usam estas.
+   */
   tilesetId: string
   cols: number
   rows: number
-  /** Nasce com 1 camada ("Chão"); o modelo já suporta várias. */
+  /** Nasce com 1 camada ("Chão"); peças e objetos dividem o teto de camadas. */
   layers: TilemapLayer[]
+}
+
+export function isTileLayer(layer: TilemapLayer): layer is TilemapTileLayer {
+  return layer.kind !== 'objects'
+}
+
+export function isObjectLayer(layer: TilemapLayer): layer is TilemapObjectLayer {
+  return layer.kind === 'objects'
+}
+
+/** As camadas de PEÇAS, na ordem do mapa (fundo primeiro). */
+export function tileLayersOf(tilemap: TilemapAsset): TilemapTileLayer[] {
+  return tilemap.layers.filter(isTileLayer)
+}
+
+/** O tileset que uma camada de peças usa (o próprio ou o padrão do mapa). */
+export function tileLayerTilesetId(tilemap: TilemapAsset, layer: TilemapTileLayer): string {
+  return layer.tilesetId ?? tilemap.tilesetId
+}
+
+/** Todos os tilesets que o mapa referencia, sem repetir: o PADRÃO primeiro. */
+export function tilemapTilesetIds(tilemap: TilemapAsset): string[] {
+  const ids = [tilemap.tilesetId]
+  for (const layer of tilemap.layers) {
+    if (!isTileLayer(layer)) continue
+    const id = tileLayerTilesetId(tilemap, layer)
+    if (!ids.includes(id)) ids.push(id)
+  }
+  return ids
+}
+
+/** O mapa usa este tileset (como padrão ou em alguma camada)? */
+export function tilemapUsesTileset(tilemap: TilemapAsset, tilesetId: string): boolean {
+  return tilemapTilesetIds(tilemap).includes(tilesetId)
+}
+
+/**
+ * Um tileset pode entrar numa camada de um mapa cujas peças padrão são `base`?
+ * Mesmo ESTILO (o mapa é desenhado inteiro em canvas OU em SVG) e mesmo tamanho
+ * de peça (a grade é uma só).
+ */
+export function isCompatibleMapTileset(base: AnyTilesetAsset, candidate: AnyTilesetAsset): boolean {
+  return candidate.kind === base.kind && candidate.tileSize === base.tileSize
+}
+
+/**
+ * O mapa com TODAS as referências a tileset trocadas por `remap` (a padrão e as
+ * das camadas) — o import religa um mapa às peças que vieram junto com ids
+ * novos. Camada que cai no padrão perde a chave (forma canônica). Mesmo asset
+ * quando nada muda.
+ */
+export function remapTilemapTilesetIds(
+  tilemap: TilemapAsset,
+  remap: (id: string) => string,
+): TilemapAsset {
+  const tilesetId = remap(tilemap.tilesetId)
+  let changed = tilesetId !== tilemap.tilesetId
+  const layers = tilemap.layers.map((layer): TilemapLayer => {
+    if (!isTileLayer(layer) || layer.tilesetId === undefined) return layer
+    const next = remap(layer.tilesetId)
+    if (next === layer.tilesetId && next !== tilesetId) return layer
+    changed = true
+    const { tilesetId: _previous, ...rest } = layer
+    return next === tilesetId ? rest : { ...rest, tilesetId: next }
+  })
+  return changed ? { ...tilemap, tilesetId, layers } : tilemap
+}
+
+/** O mapa tem algo que o envelope v1 do `.pinta.json` não sabe descrever? */
+export function tilemapNeedsV2(tilemap: TilemapAsset): boolean {
+  return tilemap.layers.some((layer) => isObjectLayer(layer) || layer.tilesetId !== undefined)
+}
+
+/**
+ * Chave de propriedade de objeto: começa com letra, depois letras, números, `_`
+ * ou `-` (o que o código do jogo lê sem aspas: `vida`, `max_pulos`, `porta-2`).
+ */
+export const OBJECT_PROPERTY_KEY_PATTERN = /^[A-Za-z][A-Za-z0-9_-]*$/
+
+/**
+ * O que a criança digitou → chave válida (sem acento, espaço vira `_`), ou
+ * `null` quando não sobra nada aproveitável. A UI usa; o sanitize só VALIDA.
+ */
+export function normalizeObjectPropertyKey(input: string): string | null {
+  const key = input
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .trim()
+    .replace(/\s+/g, '_')
+    .replace(/[^A-Za-z0-9_-]/g, '')
+    .replace(/^[^A-Za-z]+/, '')
+    .slice(0, PINTA_LIMITS.maxObjectPropertyKeyChars)
+  return key && OBJECT_PROPERTY_KEY_PATTERN.test(key) ? key : null
 }
 
 export interface VectorSpriteAsset extends PintaAssetBase {
@@ -455,6 +613,14 @@ function sanitizeTimestamps(raw: Record<string, unknown>): {
 const PROJECT_REF_HEX = /^#[0-9a-f]{6}$/i
 
 /**
+ * A marca de origem válida, ou `undefined` (malformada = omitida, nunca o desenho). A regra é
+ * a mesma com que o Estúdio reconhece os nomes dos desenhos de exemplo (`@sistemazero/core`).
+ */
+export function sanitizeSourceRef(raw: unknown): string | undefined {
+  return typeof raw === 'string' && PINTA_SOURCE_REF_PATTERN.test(raw) ? raw : undefined
+}
+
+/**
  * `projectRef` válido sobrevive ao round-trip; malformado é DESCARTADO (não o
  * asset). Exportado: o `galleryStore.create` passa o intent do Pensa por aqui
  * também (portão ÚNICO — hex minúsculo, nome no teto, ≤8 cores).
@@ -560,7 +726,14 @@ function sanitizeBase(raw: Record<string, unknown>): PintaAssetBase | null {
   const name = typeof raw.name === 'string' ? normalizeAssetName(raw.name) : null
   if (!name) return null
   const projectRef = sanitizeProjectRef(raw.projectRef)
-  return { id: raw.id, name, ...sanitizeTimestamps(raw), ...(projectRef ? { projectRef } : {}) }
+  const sourceRef = sanitizeSourceRef(raw.sourceRef)
+  return {
+    id: raw.id,
+    name,
+    ...sanitizeTimestamps(raw),
+    ...(projectRef ? { projectRef } : {}),
+    ...(sourceRef ? { sourceRef } : {}),
+  }
 }
 
 /**
@@ -716,6 +889,71 @@ function sanitizeTilemapCells(raw: unknown, cellCount: number): Int16Array | nul
   return Int16Array.from(values)
 }
 
+/** Referência a um tileset: qualquer id não vazio (a mesma régua de sempre do mapa). */
+function isTilesetRef(value: unknown): value is string {
+  return typeof value === 'string' && value.length > 0
+}
+
+/** Coordenada/medida de objeto: número finito, arredondado ao pixel e dentro do teto. */
+function sanitizeObjectMeasure(value: unknown): number | null {
+  if (typeof value !== 'number' || !Number.isFinite(value)) return null
+  return clampInt(value, 0, PINTA_LIMITS.maxObjectCoord)
+}
+
+function sanitizeObjectText(value: unknown): string {
+  return typeof value === 'string' ? value.trim().slice(0, PINTA_LIMITS.maxObjectNameChars) : ''
+}
+
+/**
+ * Propriedades de um objeto: chave fora do padrão, valor de tipo desconhecido,
+ * número não finito e o que passa do teto CAEM; texto longo é cortado. Montado
+ * por `Object.fromEntries` (propriedade própria, nunca o protótipo).
+ */
+function sanitizeObjectProperties(raw: unknown): Record<string, TilemapObjectPropertyValue> {
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return {}
+  const entries: Array<[string, TilemapObjectPropertyValue]> = []
+  for (const [key, value] of Object.entries(raw as Record<string, unknown>)) {
+    if (entries.length >= PINTA_LIMITS.maxObjectProperties) break
+    if (key.length > PINTA_LIMITS.maxObjectPropertyKeyChars) continue
+    if (!OBJECT_PROPERTY_KEY_PATTERN.test(key)) continue
+    if (typeof value === 'string') {
+      entries.push([key, value.slice(0, PINTA_LIMITS.maxObjectPropertyStringChars)])
+    } else if (typeof value === 'number' && Number.isFinite(value)) {
+      entries.push([key, value])
+    } else if (typeof value === 'boolean') {
+      entries.push([key, value])
+    }
+  }
+  return Object.fromEntries(entries)
+}
+
+/** Os objetos de uma camada: objeto sem id ou com medida inválida é DESCARTADO. */
+function sanitizeTilemapObjects(raw: unknown): TilemapObject[] {
+  if (!Array.isArray(raw)) return []
+  const objects: TilemapObject[] = []
+  for (const item of raw.slice(0, PINTA_LIMITS.maxTilemapObjects)) {
+    if (!item || typeof item !== 'object') continue
+    const o = item as Record<string, unknown>
+    if (typeof o.id !== 'string' || !o.id) continue
+    const x = sanitizeObjectMeasure(o.x)
+    const y = sanitizeObjectMeasure(o.y)
+    const width = sanitizeObjectMeasure(o.width)
+    const height = sanitizeObjectMeasure(o.height)
+    if (x === null || y === null || width === null || height === null) continue
+    objects.push({
+      id: o.id,
+      name: sanitizeObjectText(o.name),
+      type: sanitizeObjectText(o.type),
+      x,
+      y,
+      width,
+      height,
+      properties: sanitizeObjectProperties(o.properties),
+    })
+  }
+  return ensureUniqueIds(objects)
+}
+
 function sanitizeVectorAnimation(raw: unknown): PintaVectorAnimation | null {
   if (!raw || typeof raw !== 'object') return null
   const a = raw as Record<string, unknown>
@@ -841,7 +1079,8 @@ export function sanitizePintaAsset(raw: unknown): PintaAsset | null {
       }
     }
     case 'tilemap': {
-      if (typeof record.tilesetId !== 'string' || !record.tilesetId) return null
+      if (!isTilesetRef(record.tilesetId)) return null
+      const mapTilesetId = record.tilesetId
       if (!isFinitePositiveInt(record.cols, PINTA_LIMITS.maxTilemapCols)) return null
       if (!isFinitePositiveInt(record.rows, PINTA_LIMITS.maxTilemapRows)) return null
       const cellCount = record.cols * record.rows
@@ -853,28 +1092,46 @@ export function sanitizePintaAsset(raw: unknown): PintaAsset | null {
             if (!layer || typeof layer !== 'object') return null
             const l = layer as Record<string, unknown>
             if (typeof l.id !== 'string' || !l.id) return null
-            // Coage array simples → Int16Array (JSON/outro realm) antes de validar.
-            const cells = sanitizeTilemapCells(l.cells, cellCount)
-            if (!cells) return null
             const name =
               typeof l.name === 'string' && l.name.trim()
                 ? l.name.trim().slice(0, 30)
                 : COPY.tiles.layerNamePrefix
+            if (l.kind === 'objects') {
+              return {
+                kind: 'objects',
+                id: l.id,
+                name,
+                visible: l.visible !== false,
+                objects: sanitizeTilemapObjects(l.objects),
+              }
+            }
+            // `kind` desconhecido (versão futura): descarta a camada, não o mapa.
+            if (l.kind !== undefined && l.kind !== 'tiles') return null
+            // Coage array simples → Int16Array (JSON/outro realm) antes de validar.
+            const cells = sanitizeTilemapCells(l.cells, cellCount)
+            if (!cells) return null
+            // Tileset da camada: só quando é OUTRO (o padrão é a ausência — forma
+            // canônica, e o mapa antigo continua byte-idêntico).
+            const tilesetId =
+              isTilesetRef(l.tilesetId) && l.tilesetId !== mapTilesetId ? l.tilesetId : undefined
             return {
               id: l.id,
               name,
               visible: l.visible !== false,
               cells,
               ...(l.front === true ? { front: true } : {}),
+              ...(tilesetId ? { tilesetId } : {}),
             }
           })
           .filter((l): l is TilemapLayer => l !== null),
       )
-      if (layers.length === 0) return null
+      // Sem NENHUMA camada de peças o mapa não tem o que desenhar (nem o editor
+      // tem onde pintar): descarta, como sempre foi com zero camadas.
+      if (!layers.some(isTileLayer)) return null
       return {
         ...base,
         kind: 'tilemap',
-        tilesetId: record.tilesetId,
+        tilesetId: mapTilesetId,
         cols: record.cols,
         rows: record.rows,
         layers,

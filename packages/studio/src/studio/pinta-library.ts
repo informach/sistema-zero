@@ -1,6 +1,7 @@
 import type {
   PintaImageDerivation,
   PintaImageRecipe,
+  PintaImageSelectionKind,
   PintaImageSelectionSummary,
   PintaImageTargetLimits,
 } from '@sistemazero/core/studio/pinta-image'
@@ -76,16 +77,47 @@ export type StudioPintaImportResult =
       code?: 'not-found' | 'too-big' | 'raster-failed'
     }
 
+/** Um desenho copiado de fora (um jogo de exemplo) para a galeria do Pinta da criança. */
+export interface StudioPintaImportedDrawing {
+  /** O id do documento no `.pinta.json` de origem. */
+  sourceId: string
+  /** O id do desenho na galeria do Pinta (vira o `libId personal:<id>`). */
+  id: string
+  name: string
+  /** A cópia já estava na galeria (de outro mapa, ou de uma edição anterior) e foi reaproveitada. */
+  reused?: boolean
+  imageSelection: PintaImageSelectionSummary
+}
+
+export type StudioPintaDrawingsImportResult =
+  | { ok: true; drawings: StudioPintaImportedDrawing[] }
+  | { ok: false; error: string }
+
 export interface StudioPintaLibraryAdapter {
+  /**
+   * Copia documentos de um `.pinta.json` (os desenhos de um jogo de exemplo) para a galeria
+   * do Pinta: ids novos, nomes únicos, um mapa leva as peças dele. Com `origin` (ex.:
+   * `example-pygame:<jogo>`), cada documento tem UMA cópia na galeria: a que já existe (de
+   * outro mapa sobre as mesmas peças, ou de uma edição anterior) é reaproveitada. Opcional:
+   * sem ela, os desenhos dos exemplos ficam sem "Editar" (como antes).
+   */
+  importDrawings?(
+    input: { json: string; ids: string[]; origin?: string },
+    options?: { signal?: AbortSignal },
+  ): Promise<StudioPintaDrawingsImportResult>
   /** Todos os desenhos do perfil, mais recente primeiro. Rejeição → erro na modal. */
   list(options?: {
     signal?: AbortSignal
     includeImageSelection?: boolean
   }): Promise<StudioPintaDrawingSummary[]>
-  /** Reads the current native source/dependency fingerprints without exporting or saving. */
+  /**
+   * Reads the current native source/dependency fingerprints without exporting or saving.
+   * `selection` is the kind being re-derived: a `map` depends on every tileset of the map, the
+   * flat `tilemap` only on its default one (absent = the historical answer).
+   */
   inspectImage?(
     drawingId: string,
-    options?: { signal?: AbortSignal },
+    options?: { signal?: AbortSignal; selection?: PintaImageSelectionKind },
   ): Promise<PintaImageDerivation['provenance']>
   /** Read-only preview; never saves into the personal library or imports into a project. */
   previewImage?(

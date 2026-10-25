@@ -9,7 +9,7 @@ import {
 const extensions = z
   .array(z.strictObject({ id: StudioCatalogIdSchema, version: StudioExactVersionSchema }))
   .max(100)
-const pythonModule = z.enum(['turtle', 'math', 'random', 'sz_audio'])
+const pythonModule = z.enum(['turtle', 'math', 'random', 'pygame', 'pinta', 'sz_audio'])
 
 /** Source context for assistance, never a runtime approval or package-install capability. */
 export const StudioTutorEnvironmentSchema = z
@@ -32,7 +32,7 @@ export const StudioTutorEnvironmentSchema = z
       entrypoint: StudioPythonEntrypointSchema,
       extensions,
       /** Local overrides narrow advice for stdlib/extensions/provided modules; never grant access. */
-      shadowedModules: z.array(pythonModule).max(4),
+      shadowedModules: z.array(pythonModule).max(pythonModule.options.length),
     }),
   ])
   .superRefine((value, context) => {

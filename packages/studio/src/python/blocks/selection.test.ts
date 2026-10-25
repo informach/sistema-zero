@@ -150,12 +150,13 @@ test('every shadow the palette shows is a declared dependency of its block', asy
       const declared = new Set(catalog.get(codec.id)?.dependencies)
       const queue = [pythonPaletteBlockState(codec, codecs)] as {
         type?: string
-        inputs?: Record<string, { shadow: unknown }>
+        inputs?: Record<string, { shadow: unknown } | { block: unknown }>
       }[]
       while (queue.length) {
         const state = queue.pop()!
         for (const input of Object.values(state.inputs ?? {})) {
-          const shadow = input.shadow as { type: string }
+          // A case or except starts as a real block (it holds commands); values as shadows.
+          const shadow = ('shadow' in input ? input.shadow : input.block) as { type: string }
           checked++
           if (shadow.type !== codec.id && !declared.has(shadow.type))
             missing.push(`${codec.id} → ${shadow.type}`)

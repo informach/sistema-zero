@@ -8,6 +8,7 @@ import {
   VISUAL_REFERENCE_GAMES,
   visualReferenceGameConstant,
 } from '../src/examples/python/visualReferenceGames.manifest'
+import { PYGAME_FONTS } from '../src/runtime/python/pygame/contract'
 
 const studio = fileURLToPath(new URL('../', import.meta.url))
 const check = process.argv.includes('--check')
@@ -23,6 +24,20 @@ const bundles = [
     paths: ['__init__.py', '_desktop.py', '_mixer.py', '_wav.py'],
     output: 'src/runtime/python/audio/nativeSources.generated.ts',
     exportName: 'PYTHON_AUDIO_NATIVE_SOURCES',
+  },
+  // A Pygame-ce desktop export copies the learner module `pinta` and the platform fonts.
+  {
+    directory: 'src/runtime/python/pygame/py',
+    paths: ['pinta.py'],
+    output: 'src/runtime/python/pygame/desktopSources.generated.ts',
+    exportName: 'PYGAME_DESKTOP_SOURCES',
+  },
+  {
+    directory: 'src/runtime/python/pygame/py',
+    paths: PYGAME_FONTS.map((font) => `fontes/${font}.ttf`),
+    output: 'src/runtime/python/pygame/desktopFonts.generated.ts',
+    exportName: 'PYGAME_DESKTOP_FONTS',
+    mime: 'font/ttf',
   },
   {
     directory: 'src/examples/python/maze-lights',

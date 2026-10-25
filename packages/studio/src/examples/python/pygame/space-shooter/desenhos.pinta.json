@@ -1,0 +1,505 @@
+{
+  "format": "pinta-gallery",
+  "version": 1,
+  "assets": [
+    {
+      "id": "space-shooter-nave",
+      "name": "nave",
+      "createdAt": 1792886400000,
+      "updatedAt": 1792886400000,
+      "kind": "pixel-sprite",
+      "frameWidth": 56,
+      "frameHeight": 38,
+      "paletteId": "custom",
+      "customPalette": {
+        "name": "nave",
+        "colors": [
+          "",
+          "#1b1426",
+          "#eef4fb",
+          "#8293ad",
+          "#c9d6e8",
+          "#2a4a8a",
+          "#4f86d9",
+          "#bfe0ff",
+          "#e8484f",
+          "#a8273a",
+          "#59647a",
+          "#7a869e",
+          "#ffd24a",
+          "#fff4c4",
+          "#ff8a3d",
+          ""
+        ]
+      },
+      "layers": [
+        {
+          "id": "space-shooter-nave-camada",
+          "name": "Camada 1",
+          "visible": true
+        }
+      ],
+      "animations": [
+        {
+          "id": "space-shooter-nave-anim-0",
+          "name": "voar",
+          "fps": 12,
+          "loop": true,
+          "frames": [
+            [
+              {
+                "width": 56,
+                "height": 38,
+                "rle": "UgADATQAAQECAgEDAQEzAAEBAgIBAwEBMwABAQICAQQBAwEBMgABAQICAQQBAwEBMQABAQEEAgICBAEDAQEvAAEBAgQCAgMEAQMBAS4AAQECBAICAwQBAwEBLQABAQMEBAUCBAEDAQEsAAEBAgQCBQIGAgUBBAEDAQEsAAEBAgQBBQIHAgYBBQEEAQMBASwAAQEBBAEFAQYCBwMGAQUBAwEBLAABAQEEAQUBBgIHAwYBBQEDAQEsAAEBAQQBBQYGAQUBAwEBKwABAQIEAQUGBgEFAQQBAwEBKQACAQIEAgUEBgIFAQQBAwIBJwABAQIDAwQCBQIGAgUDBAIDAQElAAEBAwMDBAYFAwQDAwEBIgACAQIDBgQEBQYEAgMCAR8AAQEDAwcEAgIJBAMDAQEcAAIBAwMIBAICCgQDAwIBGQABAQMDBgQMCAYEAwMBARcAAQEDAwcEDAkHBAMDAQEUAAIBAgMNBAICDwQCAwIBCwADAQMAAQEDAw4EAgIQBAMDAQEDAAMBAwABAQEJAQgBAwMBAwMPBAICEQQDAwMBAggBAwEBAgABAQEJAQgBAwEBAwMRBAICEwQDAwEBAggBAwEBAgABAQEJAggDAxIEAgIUBAMDAggBAwEBAgABAQEJAggQAwUEAgIHBBADAggBAwEBAgABAQEJAggEAwQKCQMEBAICBgQJAwQKBAMCCAEDAQECAAEBAQkCCAQDBAoGAwMBAQMBCggLAQoBAwMBBgMECgQDAggBAwEBAgABAQEJAggIAwYBAwABAQkKAQMBAQMABgEIAwIIAQMBAQIAAQEBCQIIAQMEAQIMAQEJAAEBCQoBAwEBCQABAQIMBAEBAwIIAQMBAQIAAQEDAwEBEAABAQoDAQEKAAIMBAABAQMDAQEDAAMBEgACAQYMAgESAAMBGwAGDTMABAwaAA=="
+              }
+            ],
+            [
+              {
+                "width": 56,
+                "height": 38,
+                "rle": "UgADATQAAQECAgEDAQEzAAEBAgIBAwEBMwABAQICAQQBAwEBMgABAQICAQQBAwEBMQABAQEEAgICBAEDAQEvAAEBAgQCAgMEAQMBAS4AAQECBAICAwQBAwEBLQABAQMEBAUCBAEDAQEsAAEBAgQCBQIGAgUBBAEDAQEsAAEBAgQBBQIHAgYBBQEEAQMBASwAAQEBBAEFAQYCBwMGAQUBAwEBLAABAQEEAQUBBgIHAwYBBQEDAQEsAAEBAQQBBQYGAQUBAwEBKwABAQIEAQUGBgEFAQQBAwEBKQACAQIEAgUEBgIFAQQBAwIBJwABAQIDAwQCBQIGAgUDBAIDAQElAAEBAwMDBAYFAwQDAwEBIgACAQIDBgQEBQYEAgMCAR8AAQEDAwcEAgIJBAMDAQEcAAIBAwMIBAICCgQDAwIBGQABAQMDBgQMCAYEAwMBARcAAQEDAwcEDAkHBAMDAQEUAAIBAgMNBAICDwQCAwIBCwADAQMAAQEDAw4EAgIQBAMDAQEDAAMBAwABAQEJAQgBAwMBAwMPBAICEQQDAwMBAggBAwEBAgABAQEJAQgBAwEBAwMRBAICEwQDAwEBAggBAwEBAgABAQEJAggDAxIEAgIUBAMDAggBAwEBAgABAQEJAggQAwUEAgIHBBADAggBAwEBAgABAQEJAggEAwQKCQMEBAICBgQJAwQKBAMCCAEDAQECAAEBAQkCCAQDBAoGAwMBAQMBCggLAQoBAwMBBgMECgQDAggBAwEBAgABAQEJAggIAwYBAwABAQkKAQMBAQMABgEIAwIIAQMBAQIAAQEBCQIIAQMEAQIMAQEJAAEBCQoBAwEBCQABAQIMBAEBAwIIAQMBAQIAAQEDAwEBBAACDAoAAQEKAwEBEAABAQMDAQEDAAMBEgACAQYMAgESAAMBGwAGDTIAAQwEDgEMGQA="
+              }
+            ],
+            [
+              {
+                "width": 56,
+                "height": 38,
+                "rle": "UgADATQAAQECAgEDAQEzAAEBAgIBAwEBMwABAQICAQQBAwEBMgABAQICAQQBAwEBMQABAQEEAgICBAEDAQEvAAEBAgQCAgMEAQMBAS4AAQECBAICAwQBAwEBLQABAQMEBAUCBAEDAQEsAAEBAgQCBQIGAgUBBAEDAQEsAAEBAgQBBQIHAgYBBQEEAQMBASwAAQEBBAEFAQYCBwMGAQUBAwEBLAABAQEEAQUBBgIHAwYBBQEDAQEsAAEBAQQBBQYGAQUBAwEBKwABAQIEAQUGBgEFAQQBAwEBKQACAQIEAgUEBgIFAQQBAwIBJwABAQIDAwQCBQIGAgUDBAIDAQElAAEBAwMDBAYFAwQDAwEBIgACAQIDBgQEBQYEAgMCAR8AAQEDAwcEAgIJBAMDAQEcAAIBAwMIBAICCgQDAwIBGQABAQMDBgQMCAYEAwMBARcAAQEDAwcEDAkHBAMDAQEUAAIBAgMNBAICDwQCAwIBCwADAQMAAQEDAw4EAgIQBAMDAQEDAAMBAwABAQEJAQgBAwMBAwMPBAICEQQDAwMBAggBAwEBAgABAQEJAQgBAwEBAwMRBAICEwQDAwEBAggBAwEBAgABAQEJAggDAxIEAgIUBAMDAggBAwEBAgABAQEJAggQAwUEAgIHBBADAggBAwEBAgABAQEJAggEAwQKCQMEBAICBgQJAwQKBAMCCAEDAQECAAEBAQkCCAQDBAoGAwMBAQMBCggLAQoBAwMBBgMECgQDAggBAwEBAgABAQEJAggIAwYBAwABAQkKAQMBAQMABgEIAwIIAQMBAQIAAQEBCQIIAQMEAQIMAQEJAAEBCQoBAwEBCQABAQIMBAEBAwIIAQMBAQIAAQEDAwEBEAABAQoDAQEKAAIMBAABAQMDAQEDAAMBEgACAQYMAgESAAMBGwAGDTIAAgwCDgIMGQA="
+              }
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "space-shooter-meteoro",
+      "name": "meteoro",
+      "createdAt": 1792886400000,
+      "updatedAt": 1792886400000,
+      "kind": "pixel-sprite",
+      "frameWidth": 50,
+      "frameHeight": 42,
+      "paletteId": "custom",
+      "customPalette": {
+        "name": "meteoro",
+        "colors": [
+          "",
+          "#1b1426",
+          "#a78f80",
+          "#8a6a55",
+          "#685040",
+          "#987c69",
+          "#a18877",
+          "#534033",
+          "#6c5342",
+          "#755a48",
+          "#5e483a",
+          "#af9483",
+          "#a98d7b",
+          "#594336",
+          "#94705a",
+          "#6f5444"
+        ]
+      },
+      "extraColors": [
+        "#735746",
+        "#a1816e",
+        "#7e5f4d",
+        "#654c3d",
+        "#9e9086",
+        "#5e5046",
+        "#7d6b5d",
+        "#8d7d70",
+        "#97897d",
+        "#4b4038",
+        "#625349",
+        "#6a5b4f",
+        "#55493f"
+      ],
+      "layers": [
+        {
+          "id": "space-shooter-meteoro-camada",
+          "name": "Camada 1",
+          "visible": true
+        }
+      ],
+      "animations": [
+        {
+          "id": "space-shooter-meteoro-anim-0",
+          "name": "pedras",
+          "fps": 1,
+          "loop": true,
+          "frames": [
+            [
+              {
+                "width": 50,
+                "height": 42,
+                "rle": "3gAMASMAAwEGAgEDAQQEAwEBIAACAQcCCQMBAR0AAgEIAgsDAQEZAAMBCQINAwEBFwABAQcCAQUDAgEFBQMBBAgDAQEVAAEBCwIEAwEEDAMBARMAAQEIAgEFAQIHAwEGAQcBBAIHBQMBBQIDAQERAAEBAQQJAggDAgcDCAEHBwMBCQEBDwABAQoCCAMBBwcIBQMDCQEBDQABAQoCBgMBBAIDAQcHCAMDBQkBAQwAAQECAgEEBwIKAwEHBwgBAwEEBwkBAQoAAQEJAgkDAQQDAwEEBggBBAkJAQEJAAEBAQICBAUCDwMBBwMIAgMJCQEKAQEJAAEBAwIBBQMCCAMBBQsDAQQJCQMKAQEIAAEBBgIUAwoJBQoBAQcAAQEEAgEEFAMDCQEFAgkBBAIJBgoBBQEBBwABAQMCFQMJCQgKAQEHAAEBAgIBBAIDAQYDBwsDAQUCAwkJCAoBAQgAAQEBAgEFAgMCBwMIAQcMAwkJAgoBBQYKAQEIAAEBBAMBBwUIBwMBBgEEAwcGCQEEAQkJCgEBCQABAQQDAQcFCAYDAQUCBwMIAQcFCQoKAQELAAEBAgMBBgMHAggHAwEHBwgCCQEGAwcHCgEBDAABAQEDAgcDCAEHCAMBBwEEBggBCQIHAwgBBwUKAQUBAQ0AAQEBBwUIBwMBCQEHBwgBCQEHBQgFCgEBDgABAQEHBQgBBAUDAwkHCAEKAQcFCAQKAQEQAAEBAQcDCAQDAQQBAwUJAQcDCAQKAQcDCAQKAQESAAEBCAMJCQwKAQETAAEBBwMJCQwKAQEVAAEBBAMFCQEFBAkKCgEFAQoBARcAAQEBAwEECQkECgEECAoBARkABwEDCQ0KAQEhABAB/wALAA=="
+              }
+            ],
+            [
+              {
+                "width": 50,
+                "height": 42,
+                "rle": "rAABAS8AAgEBCwMBBAAEASIAAgEGCwQBAQwDDQEBHwACAQgLAQ4BDwEOAg0DEAENAQEcAAIBBwsBEQELAw4BDwENARABEQMQAQEZAAMBCgsFDgENBRACARcAAQEBDAENBgsBEQMLBw4BDQMQAw4CARQAAQEBDQIQAREICxEOAwEQAAEBAgsDEAQLAQ8BCwMOAQ8IDgEPCA4BEgEBDgABAQsLFQ4CEgEBDQABAQsLAw4BEQUOARELDgQSAQEKAAIBCwsFDgEMAQ4DDQERCQ4GEgEBCQABAQILAREBCwERBwsGDgINBRABDQYOBxIBAQkAAQEKCwQOAQ8DDgENBxAFDggSAQEJAAEBCQsHDgERAQ0DEAERBRADDgUSAQ8DEgEBCQABAQELAREGCwgOAREBDQkQAg4GEgEPAhIBEwEBCQABAQcLCg4BDQIQAREGEAoSAhMBAQoAAQEECwIOAQwBDQkOCRAIEgQTAREBAQkAAQEDCwIOAQ0DEAcOAQ8BDQcQCBIGEwEBCQABAQILBA4BEQIQCg4FEAgSBxMBAQkAAQEBCxUOCRIHEwEBCgABARQOBBIBDwUSCBMBAQsAAQECERAOBhIBDwISChMBAQsAAQEKDgERBg4DEgEPAREEEgMTAREBEwEPBRMBAQwAAQEEDgEMBA0GDgkSAREJEwEPARMBAQ0AAQEDDgINAxABDQMOAhIBDwcSChMBDwETAQ8BAQ0AAQECDgENARECEAEPAxABDgkSBxMBDwcTAQEOAAEBAQ4BDQcQCRIQEwEBDwABAQENBxAIEg8TAgEQAAEBAQ4FEAEPARABDwYSDhMCARMAAQEBDgENAxAIEg0TAgEWAAEBAQ4JEg0TAgEZAAMBBhIMEwIBHgACAQMSChMDASIAAgEBDwYTBAEnAAcBrgA="
+              }
+            ],
+            [
+              {
+                "width": 50,
+                "height": 42,
+                "rle": "qwAOASIAAgECFAEVBRQDFgEXAhYBAR8AAgEJFAcWARcBARwAAgEJFAsWAQEYAAMBCRQBGAQZCRYBARYAAQEDFAEVCBQBFwEZAhoBFwEZCRYCARQAAQEBFAEVCRQBGQcaChYBARIAAQEGFAEXBBQBFgEZBxoLFgEBEAABAQoUARUCFgEZARcBFQUaChYCGwEBDwABAQkUBRYHGgkWAxsBAQ4AAQEFFAEVAxQFFgEYAhkDGgIWARgBGQYWBBsBAQ4AAQEBFAEXBhQGFgIZAxoBGQEWARkDGgMWBxsBAQwAAQEIFAUWARUBGQcaARYCGgEXAhYBGwEVBhsBAQsAAQEHFAEXBxYBGQcaBRYJGwEBCwABAQYUAhYBFQYWARkHGgQWCRsCHAEBCgABAQUUARYBFwkWBxoBFgEVARYJGwMcAQEKAAEBBBQLFgEXARYBGQMaAxYKGwQcAQELAAEBARQVFgkbBxwBAQoAAQEHFgEXBBYBGAMZBRYBGwEXBxsIHAEBCgABAQcWARcDFgIZAxoBGQMWCRsIHAEBCwABAQIWARgDGQUWARkFGgIWCRsJHAEBCwABAQEWAhkDGgEZBBYBGQUaChsCHAEXBhwBAQwAAQEBFgEZAhoBFQIaBRYBGQMaAhsBFwYbBRwBFwUcAQENAAEBARkFGggWARcCGwEXBRsEHAEVBhwBAQ4AAQEBFgEVAxoIFgkbCBwBFQMcAQEPAAEBChYBFQkbDBwBAREAAQEIFgkbBxwBFQYcAQESAAEBAhYBFQMWCRsNHAIBFAABAQQWAxsBFwUbDRwBARcAAQECFgEXBhsBFQEbCRwBFQIcAgEZAAIBARcHGwscAgEdAAMBAxsLHAIBIgACAQUcBwEmAAUB/wATAA=="
+              }
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "space-shooter-laser",
+      "name": "laser",
+      "createdAt": 1792886400000,
+      "updatedAt": 1792886400000,
+      "kind": "pixel-sprite",
+      "frameWidth": 8,
+      "frameHeight": 27,
+      "paletteId": "custom",
+      "customPalette": {
+        "name": "laser",
+        "colors": [
+          "",
+          "#5fd8ff",
+          "#ffffff",
+          "#2bb5e8",
+          "#8beaff",
+          "#3fd6ff",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ]
+      },
+      "layers": [
+        {
+          "id": "space-shooter-laser-camada",
+          "name": "Camada 1",
+          "visible": true
+        }
+      ],
+      "animations": [
+        {
+          "id": "space-shooter-laser-anim-0",
+          "name": "brilhar",
+          "fps": 10,
+          "loop": true,
+          "frames": [
+            [
+              {
+                "width": 8,
+                "height": 27,
+                "rle": "AgAEAQQAAQECAgEBBAABAQICAQEDAAEDAQECAgEBAQMCAAEDAQECAgEBAQMCAAEDAQECAgEBAQMCAAEDAQECAgEBAQMCAAEDAQECAgEBAQMCAAEDAQECAgEBAQMCAAEDAQECAgEBAQMCAAEDAQECAgEBAQMCAAEDAQECAgEBAQMCAAEDAQECAgEBAQMCAAEDAQECAgEBAQMCAAEDAQECAgEBAQMCAAEDAQECAgEBAQMCAAEDAQECAgEBAQMCAAEDAQECAgEBAQMCAAEDAQECAgEBAQMCAAEDAQECAgEBAQMCAAEDAQECAgEBAQMCAAEDAQECAgEBAQMCAAEDAQECAgEBAQMCAAEDAQECAgEBAQMDAAEBAgIBAQQAAQECAgEBBAAEAQIA"
+              }
+            ],
+            [
+              {
+                "width": 8,
+                "height": 27,
+                "rle": "AgAEBAQAAQQCAgEEBAABBAICAQQDAAEFAQQCAgEEAQUCAAEFAQQCAgEEAQUCAAEFAQQCAgEEAQUCAAEFAQQCAgEEAQUCAAEFAQQCAgEEAQUCAAEFAQQCAgEEAQUCAAEFAQQCAgEEAQUCAAEFAQQCAgEEAQUCAAEFAQQCAgEEAQUCAAEFAQQCAgEEAQUCAAEFAQQCAgEEAQUCAAEFAQQCAgEEAQUCAAEFAQQCAgEEAQUCAAEFAQQCAgEEAQUCAAEFAQQCAgEEAQUCAAEFAQQCAgEEAQUCAAEFAQQCAgEEAQUCAAEFAQQCAgEEAQUCAAEFAQQCAgEEAQUCAAEFAQQCAgEEAQUCAAEFAQQCAgEEAQUDAAEEAgIBBAQAAQQCAgEEBAAEBAIA"
+              }
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "space-shooter-estrela",
+      "name": "estrela",
+      "createdAt": 1792886400000,
+      "updatedAt": 1792886400000,
+      "kind": "pixel-sprite",
+      "frameWidth": 25,
+      "frameHeight": 25,
+      "paletteId": "custom",
+      "customPalette": {
+        "name": "estrela",
+        "colors": [
+          "",
+          "#ffe27a",
+          "#fff1a8",
+          "#fff8d6",
+          "#ffffff",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ]
+      },
+      "layers": [
+        {
+          "id": "space-shooter-estrela-camada",
+          "name": "Camada 1",
+          "visible": true
+        }
+      ],
+      "animations": [
+        {
+          "id": "space-shooter-estrela-anim-0",
+          "name": "piscar",
+          "fps": 4,
+          "loop": true,
+          "frames": [
+            [
+              {
+                "width": 25,
+                "height": 25,
+                "rle": "uwABARQAAQIDAAEBAwABAhMAAwEVAAIBAQMCARMAAgEDAwIBEAADAQIDAQQCAwMBEAACAQMDAgETAAIBAQMCARUAAwETAAECAwABAQMAAQIUAAEBuwA="
+              }
+            ],
+            [
+              {
+                "width": 25,
+                "height": 25,
+                "rle": "iQABARgAAQEYAAEBGAABARcAAwEVAAIBAQMCARMAAgEDAwIBDgAFAQIDAQQCAwUBDgACAQMDAgETAAIBAQMCARUAAwEXAAEBGAABARgAAQEYAAEBiQA="
+              }
+            ],
+            [
+              {
+                "width": 25,
+                "height": 25,
+                "rle": "VwABARgAAQEYAAEBGAABARgAAQEUAAECAwABAQMAAQITAAMBFQACAQEDAgETAAIBAwMCAQwABwECAwEEAgMHAQwAAgEDAwIBEwACAQEDAgEVAAMBEwABAgMAAQEDAAECFAABARgAAQEYAAEBGAABARgAAQFXAA=="
+              }
+            ],
+            [
+              {
+                "width": 25,
+                "height": 25,
+                "rle": "iQABARgAAQEYAAEBGAABARcAAwEVAAIBAQMCARMAAgEDAwIBDgAFAQIDAQQCAwUBDgACAQMDAgETAAIBAQMCARUAAwEXAAEBGAABARgAAQEYAAEBiQA="
+              }
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "space-shooter-explosao",
+      "name": "explosao",
+      "createdAt": 1792886400000,
+      "updatedAt": 1792886400000,
+      "kind": "pixel-sprite",
+      "frameWidth": 25,
+      "frameHeight": 25,
+      "paletteId": "custom",
+      "customPalette": {
+        "name": "explosao",
+        "colors": [
+          "",
+          "#ff6b2c",
+          "#ffd84d",
+          "#ffa53a",
+          "#fff6c8",
+          "#ffe9a0",
+          "#ff8a3d",
+          "#8e8091",
+          "#7a6a7e",
+          "#887a8b",
+          "#736377",
+          "#827585",
+          "#6c5d70",
+          "#7c6f80",
+          "#655669",
+          "#76697a"
+        ]
+      },
+      "extraColors": [
+        "#5e4f62",
+        "#6f6474",
+        "#56495b",
+        "#695e6e",
+        "#4f4254",
+        "#635868",
+        "#483b4d",
+        "#5e5362",
+        "#413546",
+        "#584d5c",
+        "#3a2e3f"
+      ],
+      "layers": [
+        {
+          "id": "space-shooter-explosao-camada",
+          "name": "Camada 1",
+          "visible": true
+        }
+      ],
+      "animations": [
+        {
+          "id": "space-shooter-explosao-anim-0",
+          "name": "explodir",
+          "fps": 20,
+          "loop": false,
+          "frames": [
+            [
+              {
+                "width": 25,
+                "height": 25,
+                "rle": "uwABARQAAQIcAAEBAgABAhMAAQEDAwEBFAABAwECAQQBAgEDEQABAQEAAQEBAwMEAQUCARIAAQMBAgEEAQIBAxQAAQYCAwEGAQEWAAEBAgABAhEAAQI1AAEBogA="
+              }
+            ],
+            [
+              {
+                "width": 25,
+                "height": 25,
+                "rle": "pAABARMAAQIyAAUBDwABAQMAAQECAwECAgMBAQECEQABAQEDAQIBBAECAQMBARIAAQEBAgMEAQIBARIAAQYBAwECAQQBAgEDAQESAAEBAgMBAgIDAQEDAAEBCwABAgMABQEuAAEGHAABAp8A"
+              }
+            ],
+            [
+              {
+                "width": 25,
+                "height": 25,
+                "rle": "iAABAjYAAQEOAAEBAwAFARMAAQEFAwEBEQABAQIDAwIBAwEFAQEQAAEBAQYBAgMEAQYBAwEBAQABAg4AAQEBAwECAwQBAgEDAQEMAAECAwABAQEDAQIDBAECAQMBARAAAQECAwMCAQUBAwEBEQABAQUDAQETAAUBAwABAScAAQEEAAECoQA="
+              }
+            ],
+            [
+              {
+                "width": 25,
+                "height": 25,
+                "rle": "cQABAisAAQEbAAUBEwABAQEFAwMCAQEAAQEPAAEBAwMBAgEFAgMBAQ8AAgEBAwUCAQMBBQEBCwABAgIAAQECAwECAwQBAgEFAQMBAQ4AAQEBAwICAwQBBQECAQMBAQ4AAQECAwECAwQBAgIDAQEBAAECDAACAQEDAgIBBQICAQMCAQ8AAQEBAwEGAQMBAgIDAQYBAREAAgECAwEFAgEPAAEBAwAFAQEAAQETAAECowA="
+              }
+            ],
+            [
+              {
+                "width": 25,
+                "height": 25,
+                "rle": "dAABAhEAAQEaAAEFAgEUAAYBAQYRAAIBAgMBBgIDAgENAAECAQABAQEFAgMBBQECAQUCAwIBAQABBgwAAQEBAwEFAgIBBAICAgMBAQ0AAgEBAwICAwQCAgEDAQUBAQwAAgEBAwEGAgQBBQEEAQUBAgEDAgEMAAEBAQUBAwICAwQBBgECAQMCAQ0AAQECAwICAQQBAgEFAQYBAwEBDAABAQEAAgECAwMCAgMCAQIAAQIMAAEBAQUFAwEFAQERAAcBFAADARoAAQERAAECdAA="
+              }
+            ],
+            [
+              {
+                "width": 25,
+                "height": 25,
+                "rle": "bwABBhgAAwEQAAECAwAHAQEAAQIOAAMBAQMBBQMDAwEOAAIBAgMBBgQDAgENAAIBAgMBBgQCAgMBBgEBDAABBgIDAgICBAIGAQICAwEBCwABBQEBAgMBAgUEAQICAwIBAgABAQcAAgECAwECBQQBAgEFAQMCAQkAAwEBBQEDAQIFBAECAgMCAQsAAQYCAwICAwQCAgEDAQUBAQwAAgEBAwEGAQUBBgMCAgMBBgEBDQACAQcDAgEOAAMBBAMBBgMBEAADAQEGAwEDAAECEAADARAAAQI5AAEBPQA="
+              }
+            ],
+            [
+              {
+                "width": 25,
+                "height": 25,
+                "rle": "QAABARAAAQI0AAEGBgEQAAQBAwMEAQMAAQIJAAMBBgMBBgIBAQUMAAIBAwMDAgMDAQYBAQsAAQEBBgIDBwICAwIBBwABAQIAAgECAwICAwQCAgIDAgEKAAEBAgMCAgUEAgICAwEBCgABAQIDAgIFBAICAgMBAQoAAQECAwEFAQIFBAICAgMBAQoAAgECAwICAwQCAgEFAQMCAQEAAQEIAAIBAgMHAgIDAgELAAEGAQEBBgIDAwIDAwIBCgABAgEAAwEHAwMBDQAEAQMDAQEBBgIBEAAHATQAAQIpAAEBJwA="
+              }
+            ],
+            [
+              {
+                "width": 25,
+                "height": 25,
+                "rle": "IgABAiEAAQEoAAIBAQYEARAACwENAAMBBwMDAQoABAEJAwMBCgACAQMDAQYEAgEGAgMBBQEBCQACAQIDAQYCAgEFBAIDAwIBAQABAgYAAgECAwEGAQIBBAEGAwQCAgIDAQYBAQgAAgECAwICBAQBBgICAQYBAwIBCAACAQIDAgIBBAEFAwQCAgIDAgEIAAIBAgMCAgUEAgICAwIBCAABBgEBAgMCAgUEAgICAwIBBgABAgEAAQEBBgMDAQYGAgIDAQYCAQkAAQUBAQIDAQUFAgEGAgMCAQoAAwEBAwEFBQMBBQEDBAEKAAMBBwMDAQ0ACwEOAAEBAQAHATEAAQI7AA=="
+              }
+            ],
+            [
+              {
+                "width": 25,
+                "height": 25,
+                "rle": "JQABAi4ABwEOAAEGAQACAQEFBQEBBgIBDQACAQEFAQYFAwQBAQABBgkAAwECAwEFBgMDAQkAAwEDAwEGAwIEAwMBCAACAQMDBwIDAwIBBwACAQEGAgMDAgMEAwICAwMBBgACAQMDAgIFBAICAwMCAQYAAgECAwICAgQBBgQEAgICAwEBAQUGAAEBAQUBBgEDAgIHBAICAgMCAQYAAQEBBgIDAgIBBQYEAgICAwIBAgABAgMAAQEBBQEDAQUBAwICAgQBBgIEAgIDAwIBBgADAQMFAQYBAgEGAgQDAgIDAwEHAAIBAwMBBQYCAgUBAwIBCAACAQEFBAMDAgQDAwEJAAMBCQMDAQsAAQUDAQUDBAEJAAEBAwAEAQEGBgEQAAEFBgEEAAEBQQABAg0A"
+              }
+            ],
+            [
+              {
+                "width": 25,
+                "height": 25,
+                "rle": "EAABAigAAQECAAUBEQACAQEFBgEBBQEBDQAFAQMDBAEBBQsAAwEJAwMBCQADAQEGCgMDAQMAAQEDAAMBBAMFAgQDAwEDAAECAgACAQEDAQUBAwkCAwMCAQYAAgEDAwMCAgQBBQMCAgUBAwIBBQADAQIDAwIDBAEFAQQDAgEDAQUDAQQAAQEBBQMDAgIBBgYEAgIBBgEFAQMCAQQAAgEDAwICAQUGBAICAwMCAQQAAgEBBQIDAgIGBAEFAgIDAwIBBAADAQIDAQIBBQECAgQBBQIEAwICAwMBBQACAQMDAwIDBAEGAgIDAwIBBgACAQMDAQYIAgMDAgEBAAECBAADAQIDAQUBAwUCBAMDAQMAAQEDAAMBCgMBBQMBCQADAQMDAQYFAwMBCwAFAQMDAQUDAQEFDQADAQEFBwERAAEGAgEBBgEBGwABAQ8AAQIQAA=="
+              }
+            ],
+            [
+              {
+                "width": 25,
+                "height": 25,
+                "rle": "IwAFAQYAAQIKAAgBAQUCAQ0ADQELAAQBAQUEAwEFAQMEAQcAAQIBAAMBCwMDAQcAAwEFAwMCBQMDAQUAAwEEAwMCAQUDAgEDAQUCAwMBBAADAQMDCQIDAwMBBAACAQMDAwIFBAECAQUBAgIDAQYCAQMAAwEDAwICBwQCAgMDAwECAAMBAgMDAgUEAQUBBAMCAgMDAQIAAwECAwMCBwQBAgEFAQICAwMBAgADAQIDAwIHBAMCAgMDAQIAAwEDAwICBwQCAgMDAwEDAAEGAQEDAwMCBQQDAgMDAgEEAAEBAQUBAQMDCQIDAwMBBAADAQQDBgIBBgQDAwEFAAEBAQYBAQUDAwIFAwIBAQUHAAIBAgUKAwMBCQAEAQIDAQYEAwQBCwADAQIGCAEEAAECBgABAgEACwERAAUBGAABAQoA"
+              }
+            ],
+            [
+              {
+                "width": 25,
+                "height": 25,
+                "rle": "bQAFBxMABwcBAAEIEAAGBwUICwADCAUHBwgJAAQIBQcHCAkABAgEBwEGBwgJAAUIAQcFBgUICQAGCAUGBQgJAAUIBwYDCAIHCQAFCAUGBgcJAAIHAggBBwUGAQgFBwkABwcBBgQIBAcJAAcHBQgEBwkABwcFCAMHCwAFBwYIEAABBwEABwgTAAUIbQA="
+              }
+            ],
+            [
+              {
+                "width": 25,
+                "height": 25,
+                "rle": "VQADCRUABgkSAAcJAQACCg8ABgkGCgoAAwoGCQYKCQAFCgQJCAoIAAUKBAkICggABwoDBgYKCQAGCgUGBQoJAAYKBQYBCQIKAwkJAAEJAwoBCQUGBgkJAAYJAwYHCQgACAkECgUJCAAICQQKBQkJAAYJBgoDCQoABgkGCg8AAgkBAAcKEgAGChUAAwpVAA=="
+              }
+            ],
+            [
+              {
+                "width": 25,
+                "height": 25,
+                "rle": "VQAECxQABgsSAAcLAgACDA4ABwsFDAoABAwFCwcMCAAFDAULBwwHAAcMAQABCwIABwwHAAcMBQAFDAkABgwBAAMGAgADDAoABQwCAAMGAgAFCwoAAwsCAAMGAQAGCwkABQsFAAcLBwAHCwIAAQwBAAcLBwAHCwUMBQsIAAcLBQwECwoABQsHDA4AAgsCAAcMEgAGDBQABAxVAA=="
+              }
+            ],
+            [
+              {
+                "width": 25,
+                "height": 25,
+                "rle": "VAAFDRQABQ0UAAYNAgACDg8ABQ0CAAQOCQAEDgEABQ0BAAYOBwAGDgIAAQ0DAAYOBwAGDgYABg4HAAYOBwAEDgkABQ4DAAEGEQACDgQAAwYEAAINEQABBgMABQ0JAAQNBwAGDQcABg0GAAYNBwAGDQMAAQ4CAAYNBwAGDQEABQ4BAAQNCQAEDQIABQ4PAAINAgAGDhQABQ4UAAUOVAA="
+              }
+            ],
+            [
+              {
+                "width": 25,
+                "height": 25,
+                "rle": "PAADDxUABQ8UAAUPFAAFDwMAAxAOAAUPAgAFEAgAAxAEAAEPBAAFEAcABRAIAAUQBwAFEAkABBAHAAUQCgABEAoAAxA9AAMPCgABDwoABQ8HAAQPCQAFDwcABQ8IAAUPBwAFDwQAARAEAAMPCAAFDwIABRAOAAMPAwAFEBQABRAUAAUQFQADEDwA"
+              }
+            ],
+            [
+              {
+                "width": 25,
+                "height": 25,
+                "rle": "PAADERUABREUAAURFQADEQUAAhIQAAERBQAEEgcAAxILAAQSBwAEEgoABBIHAAQSCwACEggABBIWAAESQQABERYABBEIAAIRCwAEEQcABBEKAAQRBwAEEQsAAxEHAAQRBQABEhAAAhEFAAMSFQAFEhQABRIVAAMSPAA="
+              }
+            ],
+            [
+              {
+                "width": 25,
+                "height": 25,
+                "rle": "PAADExUABBMWAAMTFwABEwYAAxQWAAQUBgADFAwABBQFAAQUDAADFAYABBQWAAMUcQADExYABBMGAAMTDAAEEwUABBMMAAMTBgAEExYAAxMGAAEUFwADFBYABBQVAAMUPAA="
+              }
+            ],
+            [
+              {
+                "width": 25,
+                "height": 25,
+                "rle": "IwACFRcAAxUWAAMVFwABFSAAAhYXAAMWBQADFg4AAxYFAAMWFgADFqUAAxUWAAMVBQADFQ4AAxUFAAMVFwACFSAAARYXAAMWFgADFhcAAhYjAA=="
+              }
+            ],
+            [
+              {
+                "width": 25,
+                "height": 25,
+                "rle": "IwACFxcAAxcXAAEXOgACGBYAAxgFAAIYEAABGAYAAhgXAAIYpwACFxcAAhcGAAEXEAACFwUAAxcWAAIXOgABGBcAAxgXAAIYIwA="
+              }
+            ],
+            [
+              {
+                "width": 25,
+                "height": 25,
+                "rle": "IwACGRgAARlTAAIaGAABGgUAARoXAAIa2wACGRcAARkFAAEZGAACGVMAARoYAAIaIwA="
+              }
+            ]
+          ]
+        }
+      ]
+    }
+  ]
+}

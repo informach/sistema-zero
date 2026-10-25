@@ -7,7 +7,7 @@
  */
 import { createStore, type StoreApi } from 'zustand/vanilla'
 import { bitmapBytes, createHistory } from '../core/history'
-import type { PintaAsset, PintaBitmap } from '../core/project'
+import { isTileLayer, type PintaAsset, type PintaBitmap } from '../core/project'
 import type { VectorShape } from '../vector/model'
 
 /**
@@ -112,7 +112,20 @@ export function assetBytes(asset: PintaAsset): number {
       bitmaps.push(...asset.tiles)
       break
     case 'tilemap':
-      return asset.layers.reduce((sum, layer) => sum + layer.cells.byteLength + 64, 128)
+      // Camada de objetos: ~96 bytes por objeto + o texto das propriedades (estimativa do
+      // orçamento de undo, como o `shapeBytes` do vetor).
+      return asset.layers.reduce(
+        (sum, layer) =>
+          sum +
+          64 +
+          (isTileLayer(layer)
+            ? layer.cells.byteLength
+            : layer.objects.reduce(
+                (s, object) => s + 96 + JSON.stringify(object.properties).length * 2,
+                0,
+              )),
+        128,
+      )
     case 'vector-background':
       return 256 + shapesBytes(asset.shapes)
     case 'vector-sprite':

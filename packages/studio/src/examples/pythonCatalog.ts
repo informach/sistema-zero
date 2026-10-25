@@ -8,6 +8,7 @@ import type { ExtensionExampleDifficulty } from '../extensions/types'
 import { PYTHON_EXTENSIONS } from '../python/extensions/catalog'
 import { mazeLightsExample } from './python/mazeLights'
 import { PGZERO_GAME_EXAMPLES } from './python/pgzeroGames'
+import { PYGAME_GAME_EXAMPLES } from './python/pygameGames'
 import { turtleRaceExample } from './python/turtleRace'
 import { VISUAL_REFERENCE_GAME_EXAMPLES } from './python/visualReferenceGames'
 
@@ -62,6 +63,7 @@ export const PYTHON_EXAMPLE_SUMMARIES: readonly PythonExampleEntry[] = Object.fr
   mazeLightsExample,
   ...VISUAL_REFERENCE_GAME_EXAMPLES,
   ...PGZERO_GAME_EXAMPLES,
+  ...PYGAME_GAME_EXAMPLES,
 ])
 
 export interface PythonExampleGroup {

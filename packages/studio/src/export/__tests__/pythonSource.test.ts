@@ -402,6 +402,9 @@ test('nested source ZIP includes installable audio without rewriting authored mo
 
 test('PNG materials record the Tk 8.6 requirement; a project without PNG does not', async () => {
   const withPng = documentFixture('python', 'classic')
+  withPng.installedExtensions = [
+    { id: 'python-turtle', version: '1.0.0', installedAt: withPng.createdAt },
+  ]
   withPng.assets = [
     {
       id: 'heroi',
@@ -424,6 +427,9 @@ test('PNG materials record the Tk 8.6 requirement; a project without PNG does no
   expect(exported.files['LEIA-ME-Sistema-Zero.txt']).toContain('tkinter.TkVersion')
 
   const withoutPng = documentFixture('python', 'classic')
+  withoutPng.installedExtensions = [
+    { id: 'python-turtle', version: '1.0.0', installedAt: withoutPng.createdAt },
+  ]
   withoutPng.assets = []
   delete (withoutPng as { coverAssetName?: string }).coverAssetName
   const plain = await buildSourceFiles(await refinePythonProjectDocument(withoutPng), {

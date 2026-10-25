@@ -34,6 +34,8 @@ OP_LINE = 4
 OP_RECT = 5
 OP_CIRCLE = 6
 OP_TEXT = 7
+# Pygame-ce: the whole screen, sent as RGBA bytes beside the list (width, height).
+OP_PIXELS = 8
 
 MAX_RECORDS = 50_000
 MAX_STRINGS = 4096
@@ -782,19 +784,29 @@ def audio_volume_many(voices, volume):
 
 def audio_pause(voice):
     """Pause a voice where it is (music.pause): it keeps its place and does not end."""
-    _toggle('pause', voice)
+    audio_pause_many([voice])
 
 
 def audio_resume(voice):
-    _toggle('resume', voice)
+    audio_resume_many([voice])
 
 
-def _toggle(kind, voice):
+def audio_pause_many(voices):
+    """Pause several voices with as few commands as possible (pygame's mixer.pause)."""
+    _toggle('pause', voices)
+
+
+def audio_resume_many(voices):
+    _toggle('resume', voices)
+
+
+def _toggle(kind, voices):
+    voices = list(dict.fromkeys(voices))
+    if not voices:
+        return
     # Only the last pause or resume of this frame matters.
-    frame.audio[:] = [command for command in frame.audio
-                      if not (command[0] in ('pause', 'resume') and command[1] == voice)]
-    _check_audio()
-    frame.audio.append([kind, voice])
+    _forget(set(voices), ('pause', 'resume'))
+    _append_batch(kind, voices)
 
 
 def audio_ended(voices):
@@ -861,8 +873,12 @@ def _within_budget(pending, sizes, budget, count):
     return taken, budget
 
 
-def present(width, height, title, keep):
-    """Send this frame (or ask the browser to keep the previous one) and return the reply."""
+def present(width, height, title, keep, *, actors=None, cursor=None):
+    """Send this frame (or ask the browser to keep the previous one) and return the reply.
+
+    Pygame-ce passes its own actors (sprites the mission may observe) and cursor
+    (False: hide the system cursor over the game).
+    """
     # One message carries at most 128 attachments and a bounded number of bytes (list and
     # default font included). A game that loads more files at once receives them over the next
     # frames; until then those images simply are not drawn.
@@ -885,8 +901,11 @@ def present(width, height, title, keep):
         'styles': frame.new_styles,
         'audio': frame.audio,
         'watch': bool(_waiting),
-        'actors': list(frame.actors.values()) if _mission_checkpoint is not None and not keep else [],
+        'actors': (list(frame.actors.values()) if actors is None else actors)
+        if _mission_checkpoint is not None and not keep else [],
     }
+    if cursor is not None:
+        header['cursor'] = bool(cursor)
     reply, _ = _exchange(header, payload)
     _images.pending = _images.pending[len(images):]
     _fonts.pending = _fonts.pending[len(fonts):]

@@ -1,4 +1,4 @@
-import { type PintaAsset, type PintaBitmap, sanitizePintaAsset } from '../core/project'
+import { isTileLayer, type PintaAsset, type PintaBitmap, sanitizePintaAsset } from '../core/project'
 
 /**
  * Representação JSON-safe usada nas bordas HTTP e no jsonb.
@@ -24,7 +24,10 @@ export function pintaAssetToWire(asset: PintaAsset): unknown {
     case 'tilemap':
       return {
         ...asset,
-        layers: asset.layers.map((layer) => ({ ...layer, cells: Array.from(layer.cells) })),
+        // Camada de objetos já é JSON puro (números, textos, sim/não).
+        layers: asset.layers.map((layer) =>
+          isTileLayer(layer) ? { ...layer, cells: Array.from(layer.cells) } : { ...layer },
+        ),
       }
     case 'vector-sprite':
     case 'vector-background':

@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto'
 import { gzipSync } from 'node:zlib'
 import {
   StudioPythonDistributionSchema,
@@ -9,12 +10,19 @@ import {
   createStudioRuntimeRelease,
   type StudioRuntimeReleaseStatus,
 } from '@sistemazero/core/studio/runtime-catalog'
+import { PYGAME_CE_WHEEL } from '../../studio/src/runtime/python/pygame/contract'
 import { sha256 } from '../src/artifacts'
 import {
   createPythonDistributionServer,
   type RuntimeDistributionBucket,
   storePythonRuntimeDistribution,
 } from '../src/python-distributions'
+
+/** The stand-in wheel the promotion fixtures write (`<prefix><name>`): its own size and sha. */
+export function fixturePygameWheel(prefix = 'fixture:') {
+  const bytes = new TextEncoder().encode(`${prefix}${PYGAME_CE_WHEEL.file}`)
+  return { bytes: bytes.byteLength, sha256: createHash('sha256').update(bytes).digest('hex') }
+}
 
 export async function pythonDistributionFixture(
   options: {

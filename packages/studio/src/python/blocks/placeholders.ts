@@ -27,5 +27,20 @@ export function pythonPlaceholderNode(role: PythonBlockRole): PythonNode {
       conversion: { literal: 'int', value: '-1' },
       format_spec: null,
     })
+  // `case _: pass` and the `_` pattern match anything, so they validate any layout.
+  if (role === 'case')
+    return node('match_case', {
+      pattern: node('MatchAs', { pattern: null, name: null }),
+      guard: null,
+      body: [pass()],
+    })
+  if (role === 'pattern') return node('MatchAs', { pattern: null, name: null })
+  if (role === 'comprehension')
+    return node('comprehension', {
+      target: name('item', 'Store'),
+      iter: name('lista'),
+      ifs: [],
+      is_async: { literal: 'int', value: '0' },
+    })
   return name('valor')
 }

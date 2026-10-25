@@ -27,6 +27,9 @@ import missionSource from './mission-observer.py'
 import { PGZERO_EXTENSION } from './pgzero/contract'
 import { loadPgzeroModuleSources } from './pgzero/moduleSources'
 import type { PythonConsoleStream, PythonExecutionSnapshot, PythonGraphicsReply } from './protocol'
+import { PYGAME_EXTENSION } from './pygame/contract'
+import { loadPygameModuleSources } from './pygame/moduleSources'
+import { createPygameScreen, installSdlWorkerGlobals, takeScreenPixels } from './pygame/sdlScreen'
 import { loadTurtleModuleSources } from './turtle/moduleSources'
 
 import { PYODIDE_VERSION, PYTHON_VERSION } from './versions'
@@ -46,6 +49,7 @@ interface ExecutionBridge {
   evaluate: PythonCallable
   install_turtle: PythonCallable
   install_pgzero: PythonCallable
+  install_pygame: PythonCallable
   install_audio: PythonCallable
   install_activity: PythonCallable
   grade_activity: PythonCallable
@@ -62,6 +66,10 @@ interface PythonAPI {
     readFile(path: string): Uint8Array
   }
   runPython(source: string): unknown
+  /** Pygame-ce only: the pinned wheel, extracted into the extension directory. */
+  unpackArchive(buffer: ArrayBuffer, format: 'wheel', options: { extractDir: string }): void
+  /** Pygame-ce only: the canvas SDL's video driver draws into (see pygame/sdlScreen.ts). */
+  canvas: { setCanvas2D(canvas: object): void }
   setStdout(writer: { write(bytes: Uint8Array): number; isatty: boolean }): void
   setStderr(writer: { write(bytes: Uint8Array): number; isatty: boolean }): void
 }
@@ -110,17 +118,42 @@ async function loadPgzeroResources(base: URL, scope: AbortController) {
   scope.signal.throwIfAborted()
   return { protocol, sources }
 }
+/** pygame-ce draws; the Pygame Zero frame transport (_sz) carries its screen and sounds. */
+async function loadPygameResources(base: URL, scope: AbortController) {
+  const [canvas, pygame] = await awaitWithSignal(
+    () =>
+      Promise.all([
+        loadPgzeroResources(base, scope),
+        loadPygameModuleSources(base, scope.signal),
+      ]).catch((error: unknown) => {
+        scope.abort(error)
+        throw error
+      }),
+    scope.signal,
+  )
+  scope.signal.throwIfAborted()
+  return {
+    ...canvas,
+    sources: new Map([...canvas.sources, ...pygame.sources]),
+    wheel: pygame.wheel,
+  }
+}
 type ExtensionResources =
   | { kind: 'python-turtle'; value: Awaited<ReturnType<typeof loadTurtleResources>> }
   | { kind: 'python-pgzero'; value: Awaited<ReturnType<typeof loadPgzeroResources>> }
+  | { kind: 'python-pygame'; value: Awaited<ReturnType<typeof loadPygameResources>> }
 function loadCanvasResources(kind: PythonCanvasExtension, base: URL, scope: AbortController) {
-  return kind === 'python-turtle'
-    ? loadTurtleResources(base, scope).then(
-        (value): ExtensionResources => ({ kind: 'python-turtle', value }),
-      )
-    : loadPgzeroResources(base, scope).then(
-        (value): ExtensionResources => ({ kind: 'python-pgzero', value }),
-      )
+  if (kind === 'python-turtle')
+    return loadTurtleResources(base, scope).then(
+      (value): ExtensionResources => ({ kind: 'python-turtle', value }),
+    )
+  if (kind === 'python-pgzero')
+    return loadPgzeroResources(base, scope).then(
+      (value): ExtensionResources => ({ kind: 'python-pgzero', value }),
+    )
+  return loadPygameResources(base, scope).then(
+    (value): ExtensionResources => ({ kind: 'python-pygame', value }),
+  )
 }
 
 /** Pixels of a project image for Pygame Zero's get_at, decoded inside the worker. */
@@ -243,6 +276,7 @@ export async function createPythonInterpreter(options: {
   const evaluate = bridge.evaluate
   const installTurtle = bridge.install_turtle
   const installPgzero = bridge.install_pgzero
+  const installPygame = bridge.install_pygame
   const installAudio = bridge.install_audio
   const installActivity = bridge.install_activity
   const gradeActivity = bridge.grade_activity
@@ -382,15 +416,33 @@ export async function createPythonInterpreter(options: {
             PGZERO_LIST_ATTACHMENT,
             PGZERO_FONT_ATTACHMENT_BASE,
             PGZERO_DEFAULT_FONT_ATTACHMENT,
+            PGZERO_PIXELS_ATTACHMENT,
           } = protocol
-          const directory = `/studio/extensions/${PGZERO_EXTENSION.id}-${PGZERO_EXTENSION.version}`
-          runtime.FS.mkdirTree(`${directory}/pgzero`)
-          for (const [filename, bytes] of sources)
-            runtime.FS.writeFile(`${directory}/${filename}`, bytes)
+          const pygame = resources.kind === 'python-pygame'
+          const extension = pygame ? PYGAME_EXTENSION : PGZERO_EXTENSION
+          const directory = `/studio/extensions/${extension.id}-${extension.version}`
+          for (const [filename, bytes] of sources) {
+            const target = `${directory}/${filename}`
+            runtime.FS.mkdirTree(target.slice(0, target.lastIndexOf('/')))
+            runtime.FS.writeFile(target, bytes)
+          }
+          let screen: ReturnType<typeof createPygameScreen> | undefined
+          if (resources.kind === 'python-pygame') {
+            const { wheel } = resources.value
+            runtime.unpackArchive(
+              wheel.buffer.slice(wheel.byteOffset, wheel.byteOffset + wheel.byteLength),
+              'wheel',
+              { extractDir: directory },
+            )
+            installSdlWorkerGlobals()
+            screen = createPygameScreen()
+            runtime.canvas.setCanvas2D(screen.canvas)
+          }
           const inProject = (path: string) =>
             path.startsWith(`${PROJECT_ROOT}/`) && !path.split('/').includes('..')
           let sentFont = false
-          installPgzero(
+          const installCanvas = resources.kind === 'python-pygame' ? installPygame : installPgzero
+          installCanvas(
             directory,
             (raw: unknown, payload: unknown) => {
               const header = readPgzeroFrameHeader(raw)
@@ -412,7 +464,13 @@ export async function createPythonInterpreter(options: {
                       : new Uint8Array(payload),
                 })
               }
-              if (!sentFont) {
+              // pygame-ce renders its own text: the screen arrives as pixels.
+              if (screen && !header.keep)
+                attachments.push({
+                  id: PGZERO_PIXELS_ATTACHMENT,
+                  bytes: takeScreenPixels(screen, header.w, header.h),
+                })
+              if (!sentFont && !screen) {
                 sentFont = true
                 attachments.push({
                   id: PGZERO_DEFAULT_FONT_ATTACHMENT,
@@ -524,6 +582,7 @@ export async function createPythonInterpreter(options: {
       evaluate.destroy()
       installTurtle.destroy()
       installPgzero.destroy()
+      installPygame.destroy()
       installAudio.destroy()
       installActivity.destroy()
       gradeActivity.destroy()

@@ -3,7 +3,7 @@ import assert from 'node:assert/strict'
 import * as filesystem from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { dirname, resolve, sep } from 'node:path'
-import { pythonDistributionFixture } from '../python-distribution-fixture'
+import { fixturePygameWheel, pythonDistributionFixture } from '../python-distribution-fixture'
 
 // A separate process prevents this filesystem fault from changing any other test's imports.
 // All file creation, plan validation and R2 storage behavior remain real/local.
@@ -28,6 +28,9 @@ mock.module('node:fs/promises', () => ({
   },
 }))
 const { uploadPythonPromotion } = await import('../../scripts/python-promotion-r2')
+const { setPinnedPygameWheelForTests } = await import('../../scripts/python-promotion-plan')
+// The plan was made from the fixtures' stand-in wheel (python-promotion.test.ts does the same).
+setPinnedPygameWheelForTests(fixturePygameWheel())
 const storage = await pythonDistributionFixture()
 let rejected = false
 let failure: unknown

@@ -5,6 +5,7 @@ import {
   pythonApiCallCodec,
   required,
 } from '../../blocks/apiCallCodec'
+import { PYTHON_IDENTIFIER } from '../../blocks/catalogHelpers'
 import type { PythonBlockCodec, PythonBlockInput, PythonBlockShape } from '../../blocks/contract'
 import { attribute, call, integer, isNode, name, node, nodes, pass, text } from '../../blocks/nodes'
 import type { PythonProvidedBuiltin, PythonResolverOptions } from '../../blocks/scope'
@@ -12,7 +13,6 @@ import type { PythonNode } from '../../language/types'
 
 const OWNER = 'python-pgzero' as const
 const PROVIDER = 'pgzero'
-const IDENTIFIER = /^[_\p{ID_Start}][_\p{ID_Continue}]*$/u
 
 /** Names Pygame Zero gives every program (pgzero.builtins), resolved without import. */
 export const PGZERO_BUILTINS: ReadonlyMap<string, PythonProvidedBuiltin> = new Map([
@@ -617,7 +617,7 @@ function resourceCall(options: {
     },
     encode(shape) {
       const resource = field(shape, 'NAME').trim()
-      if (!IDENTIFIER.test(resource))
+      if (!PYTHON_IDENTIFIER.test(resource))
         throw new Error(`Escreva o nome do arquivo em ${options.root}/ sem a extensão.`)
       return build(
         resource,

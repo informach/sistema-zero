@@ -15,9 +15,11 @@ import { mergePaletteLibraries, sanitizePaletteLibrary } from '../core/paletteLi
 import { perfSpan, perfSpanAsync } from '../core/perf'
 import {
   type AnyTilesetAsset,
+  isCompatibleMapTileset,
   isTilesetKind,
   type PintaAsset,
   sanitizePintaAsset,
+  tilemapTilesetIds,
 } from '../core/project'
 import { GalleryBackupSizeCache, MAX_BACKUP_FILE_BYTES } from '../export/projectJson'
 
@@ -487,12 +489,18 @@ export function loadAssetById(id: string): Promise<PintaAsset | null> {
   return createPintaPersistence().loadAssetById(id)
 }
 
-/** A map and its tileset must come from one readonly transaction in the captured profile. */
+/**
+ * A map and EVERY tileset it uses must come from one readonly transaction in the captured
+ * profile. `tileset` is the map's default (the flat `tilemap` image and the legacy single
+ * dependency); `tilesets` lists the default first and then the other layers' tilesets in
+ * `tilemapTilesetIds` order, keeping only the ones present and compatible (the same rule as
+ * `resolveMapTilesets`: a layer whose pieces are missing or incompatible is never drawn).
+ */
 export async function capturePintaAssetForImage(
   id: string,
   options: { namespace?: string; signal?: AbortSignal } = {},
 ): Promise<
-  | { ok: true; source: PintaAsset; tileset: AnyTilesetAsset | null }
+  | { ok: true; source: PintaAsset; tileset: AnyTilesetAsset | null; tilesets: AnyTilesetAsset[] }
   | { ok: false; reason: 'not-found' | 'source-changed' | 'needs-tileset' }
 > {
   const store = getStoreHandle(options.namespace?.trim())
@@ -501,21 +509,29 @@ export async function capturePintaAssetForImage(
   const first = safeSanitize(await get<unknown>(assetKey(id), store))
   signal?.throwIfAborted()
   if (!first || first.id !== id) return { ok: false, reason: 'not-found' }
-  if (first.kind !== 'tilemap') return { ok: true, source: first, tileset: null }
-  const values = await getMany<unknown>([assetKey(id), assetKey(first.tilesetId)], store)
+  if (first.kind !== 'tilemap') return { ok: true, source: first, tileset: null, tilesets: [] }
+  const tilesetIds = tilemapTilesetIds(first)
+  const values = await getMany<unknown>([assetKey(id), ...tilesetIds.map(assetKey)], store)
   signal?.throwIfAborted()
   const source = safeSanitize(values[0])
-  const tileset = safeSanitize(values[1])
   if (
     !source ||
     source.id !== id ||
     source.kind !== 'tilemap' ||
-    source.tilesetId !== first.tilesetId
+    tilemapTilesetIds(source).join('\u0000') !== tilesetIds.join('\u0000')
   )
     return { ok: false, reason: 'source-changed' }
+  const found = values.slice(1).map((value) => safeSanitize(value))
+  const tileset = found[0]
   if (!tileset || tileset.id !== source.tilesetId || !isTilesetKind(tileset))
     return { ok: false, reason: 'needs-tileset' }
-  return { ok: true, source, tileset }
+  const tilesets: AnyTilesetAsset[] = [tileset]
+  for (const [index, candidate] of found.entries()) {
+    if (index === 0 || !candidate || candidate.id !== tilesetIds[index]) continue
+    if (isTilesetKind(candidate) && isCompatibleMapTileset(tileset, candidate))
+      tilesets.push(candidate)
+  }
+  return { ok: true, source, tileset, tilesets }
 }
 
 /** Carrega todos os assets saneados do perfil atual, do mais novo ao mais antigo. */

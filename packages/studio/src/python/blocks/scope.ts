@@ -1,6 +1,6 @@
 import type { PythonNode, PythonValue } from '../language/types'
 import type { PythonBlockBinding, PythonReceiverKind } from './contract'
-import { isNode, nodes } from './nodes'
+import { isNode, nodes, pythonRootName as rootName } from './nodes'
 
 type Binding =
   | { kind: 'module'; module: string; member?: string }
@@ -46,10 +46,29 @@ export interface PythonProvidedBuiltin {
   /** Calling this name constructs an object of this class (Actor('alien') → Actor). */
   constructs?: string
 }
+/** What a name bound by `from module import *` holds, as the importing file's resolver sees it. */
+export type PythonExportedBinding =
+  | { kind: 'module'; module: string; member?: string }
+  | { kind: 'other' }
+/**
+ * Modules of the child's own project, by absolute import name: the names `from module import *`
+ * binds, or null when the module exists but what it exports cannot be proven.
+ */
+export type PythonProjectModules = ReadonlyMap<
+  string,
+  ReadonlyMap<string, PythonExportedBinding> | null
+>
 export interface PythonResolverOptions {
   builtins?: ReadonlyMap<string, PythonProvidedBuiltin>
   /** Public names of modules whose `from module import *` is understood. */
   starExports?: ReadonlyMap<string, readonly string[]>
+  /** Project modules win over `starExports`: a project file shadows the module of the same name. */
+  projectModules?: PythonProjectModules
+  /**
+   * Names reached only along a module path (pygame.image.load): a store replaces them only
+   * when it is made on a module, never on an object such as `self`.
+   */
+  moduleAttributes?: ReadonlySet<string>
 }
 export interface PythonBindingResolver {
   (value: PythonNode, binding: PythonBlockBinding | undefined): boolean
@@ -112,6 +131,41 @@ const CONSTRUCTOR_KINDS: Readonly<Record<string, PythonReceiverKind>> = {
 }
 
 /**
+ * A method whose first parameter is the object (`self`): no decorator, or only the property
+ * ones. `@staticmethod` has no object and `@classmethod` gets the class; any other decorator
+ * may hand the function anything.
+ */
+function instanceMethod(value: PythonNode) {
+  const decorators = nodes(value.fields.decorator_list) ? value.fields.decorator_list : []
+  return decorators.every(
+    (decorator) =>
+      (decorator.kind === 'Name' && decorator.fields.id === 'property') ||
+      (decorator.kind === 'Attribute' &&
+        ['setter', 'getter', 'deleter'].includes(String(decorator.fields.attr))),
+  )
+}
+
+/** Names a class body binds itself: its methods and class attributes. */
+function classLevelNames(value: PythonNode) {
+  const found = new Set<string>()
+  const bind = (target: PythonValue | undefined) => {
+    if (!isNode(target)) return
+    if (target.kind === 'Name' && typeof target.fields.id === 'string') found.add(target.fields.id)
+    else if (['Tuple', 'List'].includes(target.kind) && nodes(target.fields.elts))
+      for (const item of target.fields.elts) bind(item)
+    else if (target.kind === 'Starred') bind(target.fields.value)
+  }
+  for (const item of nodes(value.fields.body) ? value.fields.body : []) {
+    if (['FunctionDef', 'AsyncFunctionDef', 'ClassDef'].includes(item.kind))
+      bind({ kind: 'Name', fields: { id: item.fields.name ?? null } })
+    else if (item.kind === 'Assign' && nodes(item.fields.targets))
+      for (const target of item.fields.targets) bind(target)
+    else if (item.kind === 'AnnAssign' || item.kind === 'AugAssign') bind(item.fields.target)
+  }
+  return found
+}
+
+/**
  * Conservative lexical resolution. Ambiguous or rebound names keep the generic call block.
  * Only presentation depends on it: every codec still encodes exactly the code it decoded.
  */
@@ -123,6 +177,7 @@ export function pythonBindingResolver(
 ): PythonBindingResolver {
   const builtins = options.builtins ?? new Map()
   const starExports = options.starExports ?? new Map()
+  const projectModules: PythonProjectModules = options.projectModules ?? new Map()
   const scopes = new WeakMap<PythonNode, Scope>()
   const classNodes = new WeakMap<Scope, PythonNode>()
   const methodScopes: Scope[] = []
@@ -143,14 +198,25 @@ export function pythonBindingResolver(
   const safeReads = new WeakSet<PythonNode>()
   /** Arguments of these built-ins, still unshadowed, never change the list. */
   const builtinReads: { scope: Scope; list: string; via: string }[] = []
-  /** Attribute writes to an official name, judged once every binding is known. */
+  /** Attribute writes (stores and deletes), judged once every binding is known. */
   const attributeWrites: {
     scope: Scope
+    /** The Name at the start of the target chain (`a` in `a.b.c = …`). */
     root: PythonNode | undefined
+    /** The object written on, when it is a plain Name (`a` in `a.c = …`, not `a.b.c = …`). */
+    receiver: PythonNode | undefined
+    attr: string
     dunder: boolean
+    /** `_name` (not a dunder): private machinery of the object's class. */
+    private: boolean
     /** The attribute is an official name: replacing it is dangerous on any official object. */
     official: boolean
+    /** The attribute names a module member: replacing it is dangerous only on a module. */
+    moduleMember: boolean
   }[] = []
+  /** Classes of the program: the names each body defines (methods and class attributes). */
+  const classBodies = new Map<PythonNode, { scope: Scope; defines: Set<string> }>()
+  const moduleAttributes = options.moduleAttributes ?? new Set<string>()
   let hasDynamicBindings = false
   // Private internals (turtle.Turtle._goto, random._inst) implement the official API too.
   const replacesOfficialName = (attr: string) => attr.startsWith('_') || guardedAttributes.has(attr)
@@ -251,12 +317,6 @@ export function pythonBindingResolver(
     else if (test.kind === 'UnaryOp' && isNode(test.fields.op) && test.fields.op.kind === 'Not')
       markCondition(test.fields.operand)
   }
-  /** The Name at the start of `a.b.c` / `a[0].b`, if any. */
-  function rootName(value: PythonNode | undefined): PythonNode | undefined {
-    while (value && (value.kind === 'Attribute' || value.kind === 'Subscript'))
-      value = isNode(value.fields.value) ? value.fields.value : undefined
-    return value?.kind === 'Name' ? value : undefined
-  }
   function visit(value: PythonNode, scope: Scope) {
     scopes.set(value, scope)
     const fields = value.fields
@@ -356,13 +416,19 @@ export function pythonBindingResolver(
     if (value.kind === 'Attribute' && isNode(fields.ctx) && typeof fields.attr === 'string') {
       // Every store is kept: whether it is harmless depends on what its root turns out to be
       // (any name of the builtins or __main__ module replaces things whatever the attribute).
-      if (['Store', 'Del'].includes(fields.ctx.kind))
+      if (['Store', 'Del'].includes(fields.ctx.kind)) {
+        const dunder = fields.attr.startsWith('__') && fields.attr.endsWith('__')
         attributeWrites.push({
           scope,
-          root: rootName(isNode(fields.value) ? fields.value : undefined),
-          dunder: fields.attr.startsWith('__') && fields.attr.endsWith('__'),
+          root: rootName(fields.value),
+          receiver: isNode(fields.value) && fields.value.kind === 'Name' ? fields.value : undefined,
+          attr: fields.attr,
+          dunder,
+          private: !dunder && fields.attr.startsWith('_'),
           official: replacesOfficialName(fields.attr),
+          moduleMember: moduleAttributes.has(fields.attr),
         })
+      }
       // object.__setattr__ and __dict__ reach the same mutation without an attribute Store.
       else if (MUTATING_DUNDERS.has(fields.attr)) hasDynamicBindings = true
     }
@@ -411,11 +477,18 @@ export function pythonBindingResolver(
         fields.level.value === '0'
       for (const alias of fields.names) {
         if (alias.fields.name === '*') {
-          const exports = absolute ? starExports.get(fields.module as string) : undefined
-          if (!exports) scope.uncertain = true
-          else
-            for (const member of exports)
-              assign(scope, member, { kind: 'module', module: fields.module as string, member })
+          const module = absolute ? (fields.module as string) : undefined
+          if (module !== undefined && projectModules.has(module)) {
+            const exported = projectModules.get(module)
+            if (!exported) scope.uncertain = true
+            else for (const [member, binding] of exported) assign(scope, member, { ...binding })
+          } else {
+            const exports = module !== undefined ? starExports.get(module) : undefined
+            if (!exports) scope.uncertain = true
+            else
+              for (const member of exports)
+                assign(scope, member, { kind: 'module', module: module as string, member })
+          }
         } else if (typeof alias.fields.name === 'string')
           assign(
             scope,
@@ -458,16 +531,20 @@ export function pythonBindingResolver(
           ? fields.args.fields.args[0]
           : undefined
       if (
-        value.kind !== 'ClassDef' &&
+        (value.kind === 'FunctionDef' || value.kind === 'AsyncFunctionDef') &&
         scope.classScope &&
         classNodes.has(scope) &&
+        instanceMethod(value) &&
         typeof firstArg?.fields.arg === 'string'
       ) {
         local.selfName = firstArg.fields.arg
         local.ownerClass = classNodes.get(scope)
         methodScopes.push(local)
       }
-      if (value.kind === 'ClassDef') classNodes.set(local, value)
+      if (value.kind === 'ClassDef') {
+        classNodes.set(local, value)
+        classBodies.set(value, { scope, defines: classLevelNames(value) })
+      }
       if (isNode(fields.args)) {
         scopes.set(fields.args, local)
         for (const [key, child] of Object.entries(fields.args.fields))
@@ -619,15 +696,17 @@ export function pythonBindingResolver(
           inferred = { kind: 'instance', builtin: builtin.provider, instance: builtin.constructs }
         else if (found?.kind === 'module' && found.member)
           inferred = { kind: 'instance', module: found.module, instance: found.member }
-      } else if (
-        func.kind === 'Attribute' &&
-        isNode(func.fields.value) &&
-        func.fields.value.kind === 'Name' &&
-        typeof func.fields.attr === 'string'
-      ) {
-        const found = bindingAt(func.fields.value)
+      } else if (func.kind === 'Attribute') {
+        // module.Class() or module.sub.Class() (pygame.sprite.Sprite()): the path names it.
+        const path: string[] = []
+        let current: PythonNode | undefined = func
+        while (current?.kind === 'Attribute' && typeof current.fields.attr === 'string') {
+          path.unshift(current.fields.attr)
+          current = isNode(current.fields.value) ? current.fields.value : undefined
+        }
+        const found = current?.kind === 'Name' ? bindingAt(current) : undefined
         if (found?.kind === 'module' && !found.member)
-          inferred = { kind: 'instance', module: found.module, instance: func.fields.attr }
+          inferred = { kind: 'instance', module: found.module, instance: path.join('.') }
       }
     }
     return inferred
@@ -767,25 +846,97 @@ export function pythonBindingResolver(
       }
     }
   }
-  // Writing an official attribute through the module or one of its objects replaces official
-  // behavior everywhere. Ordinary object state such as self.velocidade cannot.
-  /** `self` of a method in a class that does not inherit from an official class. */
-  function ownObjectState(write: (typeof attributeWrites)[number]) {
-    const key = write.root?.fields.id
-    if (typeof key !== 'string' || write.dunder) return false
-    let scope: Scope | undefined = write.scope
-    while (scope && !scope.selfName) {
-      if (scope.bindings.has(key)) return false
+  /*
+   * Attribute writes: one rule for every extension (see "Pygame-ce no Estúdio" in CLAUDE.md).
+   * - A store on the interpreter's namespaces (builtins, __main__, sys) replaces built-ins.
+   * - A DIRECT store `self.<name> = …` (target `Attribute(Name self)`, not a chain) in an
+   *   instance method (no @staticmethod/@classmethod), with `self` never reassigned, is the
+   *   object's state and never gives up the file. The class then "defines" that name, so
+   *   `self.<name>(…)` on its objects no longer shows the official method block. Dunders stay
+   *   guarded, and so do private `_names` when the class may inherit an official class (they
+   *   are that class's machinery).
+   * - A store on an object PROVEN to come from an official constructor
+   *   (`jogador = pygame.sprite.Sprite()`) is that object's state: `jogador.image = …` is
+   *   harmless, and replacing an official method (`jogador.kill = f`) only drops the official
+   *   blocks on that receiver.
+   * - Any other store of an official name that may reach a module (module root, module alias,
+   *   unknown origin, `self.x.y` where `self.x` may hold a module) gives up the official blocks
+   *   of the whole file.
+   */
+  type ClassFamily = { classes: Set<PythonNode>; mayBeOfficial: boolean }
+  const classByScope = new Map<Scope, Map<string, PythonNode>>()
+  for (const [klass, body] of classBodies) {
+    let byName = classByScope.get(body.scope)
+    if (!byName) {
+      byName = new Map()
+      classByScope.set(body.scope, byName)
+    }
+    if (typeof klass.fields.name === 'string') byName.set(klass.fields.name, klass)
+  }
+  /** The class statement a base expression names, when that name is bound only to it. */
+  function childClass(base: PythonNode): PythonNode | undefined {
+    const key = base.kind === 'Name' ? base.fields.id : undefined
+    if (typeof key !== 'string') return
+    const found = holder(scopes.get(base), key)
+    if (!found || (found.writes.get(key) ?? 0) !== 1) return
+    return classByScope.get(found)?.get(key)
+  }
+  const ancestry = new Map<PythonNode, ClassFamily>()
+  /**
+   * The program's classes this class inherits (itself included), and whether another base (an
+   * official class, or one of unknown origin) may make its objects official ones.
+   */
+  function ancestorsOf(klass: PythonNode): ClassFamily {
+    const known = ancestry.get(klass)
+    if (known) return known
+    const family: ClassFamily = { classes: new Set([klass]), mayBeOfficial: false }
+    ancestry.set(klass, family)
+    const pending = [klass]
+    while (pending.length) {
+      const current = pending.pop()!
+      for (const base of nodes(current.fields.bases) ? current.fields.bases : []) {
+        const parent = childClass(base)
+        if (parent) {
+          if (!family.classes.has(parent)) {
+            family.classes.add(parent)
+            pending.push(parent)
+          }
+        } else if (!(base.kind === 'Name' && base.fields.id === 'object' && !bindingAt(base)))
+          family.mayBeOfficial = true
+      }
+      // A metaclass (or any class keyword) may build anything.
+      if (nodes(current.fields.keywords) && current.fields.keywords.length)
+        family.mayBeOfficial = true
+    }
+    return family
+  }
+  /** Public names each class's methods store directly on `self`. */
+  const selfWrites = new Map<PythonNode, Set<string>>()
+  /** `self` may be an object of the class or of a subclass: the whole family counts. */
+  function familyDefines(klass: PythonNode, member: string) {
+    for (const [other, body] of classBodies) {
+      const related =
+        other === klass ||
+        ancestorsOf(klass).classes.has(other) ||
+        ancestorsOf(other).classes.has(klass)
+      if (related && (body.defines.has(member) || selfWrites.get(other)?.has(member))) return true
+    }
+    return false
+  }
+  /**
+   * The class of `self` when this name, read at `scope`, is the never-reassigned first
+   * parameter of an instance method.
+   */
+  function selfClass(scope: Scope | undefined, key: string): PythonNode | undefined {
+    while (scope) {
+      if (scope.uncertain) return
+      if (scope.globals?.has(key)) scope = moduleScope(scope)
+      if (scope.bindings.has(key))
+        return scope.selfName === key && (scope.writes.get(key) ?? 0) === 1
+          ? scope.ownerClass
+          : undefined
       scope = scope.parent
     }
-    if (!scope || scope.selfName !== key || !scope.ownerClass) return false
-    if ((scope.writes.get(key) ?? 0) !== 1) return false
-    const bases = nodes(scope.ownerClass.fields.bases) ? scope.ownerClass.fields.bases : []
-    return bases.every((base) => {
-      const baseRoot = rootName(base)
-      const found = baseRoot ? bindingAt(baseRoot) : { kind: 'other' as const }
-      return !found || found.kind === 'other'
-    })
   }
   /** The interpreter's own namespaces: a store on them replaces a built-in or a handler. */
   function replacesNamespace(write: (typeof attributeWrites)[number]) {
@@ -810,12 +961,74 @@ export function pythonBindingResolver(
       owner?.bindings.set(String(write.root.fields.id), { kind: 'other' })
     }
   }
+  const officialObject = (found: Binding | undefined) =>
+    found?.kind === 'instance' &&
+    (found.builtin
+      ? officialModules.has(found.builtin)
+      : !!found.module && found.module !== 'builtins' && officialModules.has(found.module))
+  /** Proven official objects whose official method was replaced (`grupo.update = f`). */
+  const replacedOn = new Map<Scope, Set<string>>()
   let hasAttributeWrites = false
-  for (const write of attributeWrites)
-    if (replacesNamespace(write) || (write.official && !ownObjectState(write))) {
+  for (const write of attributeWrites) {
+    if (replacesNamespace(write)) {
       hasAttributeWrites = true
       break
     }
+    const key = write.receiver?.fields.id
+    if (typeof key === 'string' && !write.dunder) {
+      const klass = selfClass(write.scope, key)
+      if (klass && (!write.private || !ancestorsOf(klass).mayBeOfficial)) {
+        let names = selfWrites.get(klass)
+        if (!names) {
+          names = new Set()
+          selfWrites.set(klass, names)
+        }
+        names.add(write.attr)
+        continue
+      }
+      const owner = !klass && !write.private ? holder(write.scope, key) : undefined
+      if (owner && officialObject(owner.bindings.get(key))) {
+        if (guardedAttributes.has(write.attr)) {
+          let names = replacedOn.get(owner)
+          if (!names) {
+            names = new Set()
+            replacedOn.set(owner, names)
+          }
+          names.add(key)
+        }
+        continue
+      }
+    }
+    if (write.official || write.moduleMember) {
+      hasAttributeWrites = true
+      break
+    }
+  }
+  /** `receiver.method(…)`: the method name, when the receiver is this Name. */
+  function calledMethod(value: PythonNode, root: string) {
+    const target = value.kind === 'Expr' && isNode(value.fields.value) ? value.fields.value : value
+    const func = target.kind === 'Call' ? target.fields.func : undefined
+    return isNode(func) &&
+      func.kind === 'Attribute' &&
+      isNode(func.fields.value) &&
+      func.fields.value.kind === 'Name' &&
+      func.fields.value.fields.id === root &&
+      typeof func.fields.attr === 'string'
+      ? func.fields.attr
+      : undefined
+  }
+  /**
+   * An official method block on this receiver shows something else: an object whose official
+   * method was replaced, or `self` of a class whose family defines the method (or that cannot
+   * be an official object at all).
+   */
+  function ownMethod(value: PythonNode, root: string, scope: Scope | undefined) {
+    const owner = holder(scope, root)
+    if (owner && replacedOn.get(owner)?.has(root)) return true
+    const member = calledMethod(value, root)
+    const klass = member ? selfClass(scope, root) : undefined
+    return !!klass && (!ancestorsOf(klass).mayBeOfficial || familyDefines(klass, member!))
+  }
 
   const resolver = ((value: PythonNode, binding: PythonBlockBinding | undefined) => {
     if (!binding) return true
@@ -831,6 +1044,7 @@ export function pythonBindingResolver(
       )
     }
     if (!binding.root) return !binding.builtin || officialModules.has(binding.builtin)
+    if (ownMethod(value, binding.root, scope)) return false
     if (binding.anyReceiver) {
       if (binding.builtin && !officialModules.has(binding.builtin)) return false
       while (scope) {

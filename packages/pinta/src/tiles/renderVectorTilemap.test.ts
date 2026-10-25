@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'bun:test'
 import { createTilemapAsset, createVectorTilesetAsset } from '../core/project'
+import { tileLayerAt } from '../testing/fixtures'
 import type { VectorShape } from '../vector/model'
 import { vectorTilemapSvg } from './renderVectorTilemap'
 
@@ -28,8 +29,7 @@ describe('vectorTilemapSvg', () => {
       cols: 1,
       rows: 1,
     })
-    const layer = tilemap.layers[0]
-    if (!layer) throw new Error('camada esperada')
+    const layer = tileLayerAt(tilemap)
     layer.cells[0] = 0
 
     const svg = vectorTilemapSvg(tilemap, tileset)
@@ -74,8 +74,7 @@ describe('vectorTilemapSvg', () => {
       cols: 1,
       rows: 1,
     })
-    const layer = tilemap.layers[0]
-    if (!layer) throw new Error('camada esperada')
+    const layer = tileLayerAt(tilemap)
     layer.cells[0] = 0
 
     const svg = vectorTilemapSvg(tilemap, tileset)

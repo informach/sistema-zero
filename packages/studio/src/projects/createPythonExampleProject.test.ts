@@ -10,12 +10,14 @@ import {
 import { IDBFactory } from 'fake-indexeddb'
 import { unzipSync } from 'fflate'
 import { PGZERO_GAMES } from '../examples/python/pgzeroGames.manifest'
+import { PYGAME_GAMES } from '../examples/python/pygameGames.manifest'
 import { VISUAL_REFERENCE_GAMES } from '../examples/python/visualReferenceGames.manifest'
 import type { PythonExampleCreationPort, PythonExampleEntry } from '../examples/pythonCatalog'
 import { PYTHON_EXAMPLE_SUMMARIES } from '../examples/pythonCatalog'
 import { exportProjectSource } from '../export/sourceExport'
 import { PYTHON_PROGRAMMING_CODECS } from '../python/blocks/catalog'
 import { PYTHON_PGZERO_CODECS } from '../python/extensions/pgzero/catalog'
+import { PYTHON_PYGAME_CODECS } from '../python/extensions/pygame/catalog'
 import { PYTHON_TURTLE_CODECS } from '../python/extensions/turtle/catalog'
 import { TURTLE_EXTENSION } from '../runtime/python/turtle/contract'
 import { pythonEnvironmentFixture } from '../state/fixtures/pythonEnvironment'
@@ -62,6 +64,7 @@ async function fixture(
         ...PYTHON_PROGRAMMING_CODECS,
         ...PYTHON_TURTLE_CODECS,
         ...PYTHON_PGZERO_CODECS,
+        ...PYTHON_PYGAME_CODECS,
       ].map(({ id }) => id),
       authoringCuration: {
         pythonLevel: 3 as const,
@@ -457,6 +460,7 @@ test('module compatibility never substitutes the fresh host authorization', asyn
   }))
 
 const pgzeroKeys = PGZERO_GAMES.flatMap(({ key }) => [`python:${key}:blocks`, `python:${key}:code`])
+const pygameKeys = PYGAME_GAMES.flatMap(({ key }) => [`python:${key}:blocks`, `python:${key}:code`])
 const visualKeys = VISUAL_REFERENCE_GAMES.flatMap(({ key }) => [
   `python:${key}:blocks`,
   `python:${key}:code`,
@@ -468,6 +472,7 @@ test('the Python catalog keeps the original race and adds the separately license
     'python:maze-lights',
     ...visualKeys,
     ...pgzeroKeys,
+    ...pygameKeys,
   ])
 })
 
@@ -801,5 +806,33 @@ for (const key of pgzeroKeys)
         expect(files[asset.proPath!.replace(/\.svg$/, '.png')]).toBeDefined()
       expect(sizes).toHaveLength(vectors.length)
       expect(files['requisitos-pygame-zero.txt']).toBe('pygame-ce==2.5.8\nnumpy\n')
+    }, entry.kind)
+  })
+
+for (const key of pygameKeys)
+  test(`${key} creates, reopens and exports its Pygame-ce program, Pinta drawings and sounds`, async () => {
+    const entry = PYTHON_EXAMPLE_SUMMARIES.find((candidate) => candidate.key === key)
+    if (!entry) throw new Error(`Missing Pygame-ce game ${key}`)
+    await fixture(async (port) => {
+      port.environments[0]!.context.grantedExtensionIds = ['python-pygame']
+      const payload = await entry.load()
+      const saved = await createPythonExampleProject(entry, port, options())
+      expect(saved.kind).toBe(entry.kind)
+      expect(saved.installedExtensions.map(({ id }) => id)).toEqual(['python-pygame'])
+      const reopened = await loadSanitizedProjectById(saved.id)
+      if (reopened?.programmingLanguage !== 'python') throw new Error('Saved Python game required')
+      expect(reopened.assets).toEqual(payload.assets ? [...payload.assets] : undefined)
+      const { files } = await (await import('../export/pythonSource')).buildPythonSourceFiles(
+        reopened,
+        null,
+      )
+      for (const [path, content] of Object.entries(payload.files))
+        expect(files[path]).toEqual(content)
+      for (const asset of payload.assets ?? []) {
+        expect(asset.proPath).toMatch(/^assets\/[A-Za-z0-9_-]+\.(png|wav|ogg)$/)
+        expect(files[asset.proPath!]).toEqual(Buffer.from(asset.dataUrl.split(',')[1]!, 'base64'))
+      }
+      expect(files['requisitos-pygame-ce.txt']).toBe('pygame-ce==2.5.7\n')
+      expect(files['pinta.py']).toContain('def carregar_mapa(nome)')
     }, entry.kind)
   })

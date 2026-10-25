@@ -30,6 +30,8 @@ export type PythonAudioRequest =
   | { version: 1; op: 'volume'; ids: number[]; volume: number }
   /** Pygame Zero's music.pause()/unpause(): the track keeps its place and does not end. */
   | { version: 1; op: 'pause' | 'resume'; id: number }
+  /** Pygame-ce's mixer.pause()/unpause(): every channel at once. */
+  | { version: 1; op: 'pause' | 'resume'; ids: number[] }
   /** Nothing to do: only collects the sounds that ended (Pygame Zero waits for them). */
   | { version: 1; op: 'poll' }
 
@@ -82,6 +84,14 @@ export function readPythonAudioRequest(raw: unknown): PythonAudioRequest {
     return { version: 1, op: 'poll' }
   }
   if (request.op === 'pause' || request.op === 'resume') {
+    if ('ids' in request) {
+      if (
+        Object.keys(request).some((key) => !['version', 'op', 'ids'].includes(key)) ||
+        !identifiers(request.ids)
+      )
+        invalid()
+      return { version: 1, op: request.op, ids: request.ids }
+    }
     if (
       Object.keys(request).some((key) => !['version', 'op', 'id'].includes(key)) ||
       !identifier(request.id)

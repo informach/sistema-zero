@@ -16,6 +16,7 @@ import {
   type PintaBitmap,
   resolveAssetPalette,
   type TilemapAsset,
+  tilemapUsesTileset,
   type VectorFrame,
 } from '../../core/project'
 import { paintBitmap } from '../../pixel/render'
@@ -155,11 +156,13 @@ export function TileStrip({ className }: { className?: string }): JSX.Element | 
     const affectedById = new Map(
       gallery
         .getState()
-        .assets.filter((a): a is TilemapAsset => a.kind === 'tilemap' && a.tilesetId === asset.id)
+        .assets.filter(
+          (a): a is TilemapAsset => a.kind === 'tilemap' && tilemapUsesTileset(a, asset.id),
+        )
         .map((tilemap) => [tilemap.id, tilemap]),
     )
     for (const linked of editor.getState().linkedAssets ?? []) {
-      if (linked.kind === 'tilemap' && linked.tilesetId === asset.id) {
+      if (linked.kind === 'tilemap' && tilemapUsesTileset(linked, asset.id)) {
         affectedById.set(linked.id, linked)
       }
     }
@@ -167,7 +170,8 @@ export function TileStrip({ className }: { className?: string }): JSX.Element | 
     const before: PintaAsset[] = []
     const after: PintaAsset[] = []
     for (const tilemap of affected) {
-      const next = remapTilemapCells(tilemap, change)
+      // Só as camadas que usam ESTE tileset: as de outras peças não mudam de índice.
+      const next = remapTilemapCells(tilemap, change, asset.id)
       if (next === tilemap) continue
       before.push(tilemap)
       after.push({ ...next, updatedAt: Date.now() })

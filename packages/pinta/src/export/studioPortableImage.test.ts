@@ -10,6 +10,7 @@ import {
   type PintaAsset,
   sanitizePintaAsset,
 } from '../core/project'
+import { tileLayerAt } from '../testing/fixtures'
 import { clearIdbMock, idbMockDb, idbMockStats, setIdbReadGuard } from '../testing/idbMock'
 import { makeRect } from '../vector/shapes'
 import { assetToJson } from './assetJson'
@@ -113,7 +114,7 @@ describe('one captured drawing produces canonical personal bytes and a selected 
     tileset.tiles = [createBitmap(16, 16)]
     tileset.tiles[0]!.data.fill(1)
     const source = createTilemapAsset({ name: 'mapa', tilesetId: tileset.id, cols: 2, rows: 1 })
-    source.layers[0]!.cells.fill(0)
+    tileLayerAt(source).cells.fill(0)
     seed(source, tileset)
     setIdbReadGuard(() => {
       tileset.tiles[0]!.data.fill(2)

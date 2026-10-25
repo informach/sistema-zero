@@ -8,6 +8,7 @@ import {
   createVectorTilesetAsset,
   type PintaAsset,
 } from '../core/project'
+import { tileLayerAt } from '../testing/fixtures'
 import { packSpritesheet } from './spritesheet'
 import {
   buildStudioPayload,
@@ -113,8 +114,7 @@ describe('metadados da ponte (puros, sem raster)', () => {
     const tileset = createTilesetAsset({ name: 'pecas', tileSize: 16 })
     const tilemap = createTilemapAsset({ name: 'fase', tilesetId: tileset.id, cols: 2, rows: 1 })
     // camada de fundo com célula 1; camada da frente (marcada) com célula 2.
-    const bg = tilemap.layers[0]
-    if (!bg) throw new Error('camada esperada')
+    const bg = tileLayerAt(tilemap)
     bg.cells.set([1, -1])
     const frontLayer = {
       id: 'front',
@@ -142,8 +142,7 @@ describe('metadados da ponte (puros, sem raster)', () => {
   it('tilemapMetaFrom SEM camada de frente não emite frontGrid (retrocompat)', () => {
     const tileset = createTilesetAsset({ name: 'pecas', tileSize: 16 })
     const tilemap = createTilemapAsset({ name: 'fase', tilesetId: tileset.id, cols: 2, rows: 1 })
-    const layer = tilemap.layers[0]
-    if (!layer) throw new Error('camada esperada')
+    const layer = tileLayerAt(tilemap)
     layer.cells.set([0, 1])
     const sheet = { dataUrl: 'data:image/png;base64,AAAA', width: 16, height: 16 }
     expect(tilemapMetaFrom(tilemap, tileset, sheet).frontGrid).toBeUndefined()
@@ -167,8 +166,7 @@ describe('metadados da ponte (puros, sem raster)', () => {
     const tileset = createTilesetAsset({ name: 'pecas', tileSize: 16 })
     tileset.solid[1] = true
     const tilemap = createTilemapAsset({ name: 'fase', tilesetId: tileset.id, cols: 2, rows: 2 })
-    const layer = tilemap.layers[0]
-    if (!layer) throw new Error('tilemap sem camada')
+    const layer = tileLayerAt(tilemap)
     layer.cells.set([0, 1, -1, 1])
     const sheet = { dataUrl: 'data:image/png;base64,AAAA', width: 32, height: 16 }
     const meta = tilemapMetaFrom(tilemap, tileset, sheet)
@@ -186,13 +184,33 @@ describe('metadados da ponte (puros, sem raster)', () => {
     const tileset = createVectorTilesetAsset({ name: 'pecas-v', tileSize: 16 })
     tileset.solid[0] = true
     const tilemap = createTilemapAsset({ name: 'fase-v', tilesetId: tileset.id, cols: 2, rows: 1 })
-    const layer = tilemap.layers[0]
-    if (!layer) throw new Error('tilemap sem camada')
+    const layer = tileLayerAt(tilemap)
     layer.cells.set([0, -1])
     const sheet = { dataUrl: 'data:image/png;base64,BBBB', width: 16, height: 16 }
     const meta = tilemapMetaFrom(tilemap, tileset, sheet)
     expect(meta.grid).toBe('0 .')
     expect(meta.solid).toEqual([0])
     expect(meta.tileset).toBe(sheet)
+  })
+})
+
+describe('ponte com mapa de VÁRIAS peças e objetos', () => {
+  it('o meta jogável continua de UM tileset: grade e frente só das camadas das peças padrão', async () => {
+    const { addLayer, addObjectLayer, setCell, toggleLayerFront } = await import(
+      '../tiles/tilemapOps'
+    )
+    const chao = createTilesetAsset({ name: 'chao', tileSize: 16 })
+    const casas = createTilesetAsset({ name: 'casas', tileSize: 16 })
+    let map = createTilemapAsset({ name: 'vila', tilesetId: chao.id, cols: 2, rows: 1 })
+    map = setCell(map, tileLayerAt(map).id, 0, 0, 0)
+    // Camada da FRENTE com outras peças: fica fora da grade e da frente do meta.
+    map = addLayer(map, 'telhado', casas.id)
+    map = toggleLayerFront(map, tileLayerAt(map, 1).id)
+    map = setCell(map, tileLayerAt(map, 1).id, 1, 0, 0)
+    map = addObjectLayer(map, 'Objetos')
+    const sheet = { dataUrl: 'data:image/png;base64,AAAA', width: 16, height: 16 }
+    const meta = tilemapMetaFrom(map, chao, sheet)
+    expect(meta.grid).toBe('0 .')
+    expect(meta.frontGrid).toBeUndefined()
   })
 })

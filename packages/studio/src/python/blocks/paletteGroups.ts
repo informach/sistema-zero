@@ -13,6 +13,26 @@ interface PaletteGroup {
 
 /** Framework-free palette layout shared by the toolbox, Blockly colours and search. */
 export const PYTHON_PALETTE_GROUPS: Readonly<Record<PythonBlockOwner, PaletteGroup>> = {
+  'python-pygame': {
+    label: '🕹️ Pygame-ce',
+    colour: '#2563eb',
+    // In the order a game is built: window, input, art, drawing, collisions, text and sound.
+    categories: [
+      ['Janela e laço', '🖥️'],
+      ['Eventos e tempo', '⏱️'],
+      ['Teclado e mouse', '⌨️'],
+      ['Sprites, animações e mapas', '🗺️'],
+      ['Superfícies e imagens', '🖼️'],
+      ['Transformar', '🔄'],
+      ['Desenho', '🎨'],
+      ['Retângulos', '📐'],
+      ['Vetores', '➡️'],
+      ['Grupos e colisões', '🧩'],
+      ['Máscaras', '🎭'],
+      ['Texto', '🔤'],
+      ['Som e música', '🔊'],
+    ],
+  },
   // Extensions come first: in a Turtle or Pygame Zero project they are the main subject.
   'python-pgzero': {
     label: '🎮 Pygame Zero',
@@ -70,6 +90,7 @@ export const PYTHON_PALETTE_GROUPS: Readonly<Record<PythonBlockOwner, PaletteGro
   },
 }
 export const PYTHON_PALETTE_GROUP_ORDER: readonly PythonBlockOwner[] = [
+  'python-pygame',
   'python-pgzero',
   'python-turtle',
   'programming',

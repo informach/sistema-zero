@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test'
-import { createTilemapAsset, PINTA_LIMITS, sanitizePintaAsset } from '../core/project'
+import { createTilemapAsset, isTileLayer, PINTA_LIMITS, sanitizePintaAsset } from '../core/project'
 import {
   addLayer,
   cellAt,
@@ -98,7 +98,7 @@ describe('growTilemap', () => {
     let out = addLayer(tilemap, 'topo')
     out = growTilemap(out, 'right')
     expect(out.layers).toHaveLength(2)
-    for (const l of out.layers) expect(l.cells.length).toBe(2)
+    for (const l of out.layers.filter(isTileLayer)) expect(l.cells.length).toBe(2)
     expect(out.tilesetId).toBe(tilemap.tilesetId)
     expect(layerId).toBeDefined()
   })

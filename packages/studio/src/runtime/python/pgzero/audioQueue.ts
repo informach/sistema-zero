@@ -55,7 +55,9 @@ function serviceRequest(command: PgzeroAudioCommand) {
         ? { version: 1, op: 'volume', ids: command[1], volume: command[2] }
         : { version: 1, op: 'volume', id: command[1], volume: command[2] }
     default:
-      return { version: 1, op: command[0], id: command[1] }
+      return Array.isArray(command[1])
+        ? { version: 1, op: command[0], ids: command[1] }
+        : { version: 1, op: command[0], id: command[1] }
   }
 }
 

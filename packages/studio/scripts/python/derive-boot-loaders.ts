@@ -12,6 +12,13 @@ export async function derivePythonBootLoaders(options: {
   inputs: ReadonlyMap<string, Uint8Array>
   reader: Uint8Array
   temporaryRoot: string
+  /** A source rewrite applied before the injection (pyodide.asm.mjs: approved-eval.ts). */
+  transforms?: Partial<
+    Record<
+      (typeof names)[number],
+      { recipe: string; sha256: string; apply(source: string): string }
+    >
+  >
 }) {
   if (esbuild.version !== '0.28.1') throw new Error('Versão de derivação Python não aprovada.')
   const inputs = names.map((name) => {
@@ -31,7 +38,9 @@ export async function derivePythonBootLoaders(options: {
     for (const input of inputs) {
       const result = await esbuild.build({
         stdin: {
-          contents: new TextDecoder('utf-8', { fatal: true }).decode(input.bytes),
+          contents: (options.transforms?.[input.name]?.apply ?? ((text: string) => text))(
+            new TextDecoder('utf-8', { fatal: true }).decode(input.bytes),
+          ),
           sourcefile: input.name,
           loader: 'js',
           resolveDir: temporary,
@@ -61,6 +70,15 @@ export async function derivePythonBootLoaders(options: {
       },
       injectionSha256: sha256(injection),
       readerSha256: sha256(reader),
+      ...(options.transforms && Object.keys(options.transforms).length
+        ? {
+            transforms: Object.entries(options.transforms).map(([path, transform]) => ({
+              path,
+              recipe: transform!.recipe,
+              sha256: transform!.sha256,
+            })),
+          }
+        : {}),
       inputs: inputs.map((input) => ({
         path: input.name,
         bytes: input.bytes.length,

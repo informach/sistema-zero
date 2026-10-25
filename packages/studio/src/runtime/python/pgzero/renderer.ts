@@ -12,6 +12,7 @@ import {
   PGZERO_LIST_ATTACHMENT,
   PGZERO_OP,
   PGZERO_OP_ARITY,
+  PGZERO_PIXELS_ATTACHMENT,
   type PgzeroAudioCommand,
   type PgzeroTextStyle,
   readPgzeroFrameHeader,
@@ -78,6 +79,8 @@ const css = (color: readonly number[] | undefined, fallback: string, alpha = tru
 export function createPgzeroRenderer(
   container: HTMLElement,
   options: {
+    /** How the canvas introduces itself to screen readers (Pygame Zero by default). */
+    name?: string
     /** `watch`: Python waits for sounds to end, so the host should report them. */
     onAudio?(commands: readonly PgzeroAudioCommand[], watch: boolean): void
     /** At most `limit` sounds that ended since the previous frame (their voice ids). */
@@ -103,6 +106,8 @@ export function createPgzeroRenderer(
   let height = 0
   let scale = 1
   let lastList: Float64Array = new Float64Array()
+  /** The last Pygame-ce screen (PIXELS record), decoded off the paint path. */
+  let lastPixels: ImageBitmap | undefined
   let frameSequence = 0
   let raf: number | undefined
   let pendingPaint: { resolve(): void; reject(error: Error): void } | undefined
@@ -123,7 +128,10 @@ export function createPgzeroRenderer(
     canvas = document.createElement('canvas')
     canvas.tabIndex = 0
     canvas.setAttribute('role', 'img')
-    canvas.setAttribute('aria-label', 'Jogo Pygame Zero. Clique para usar o teclado.')
+    canvas.setAttribute(
+      'aria-label',
+      `Jogo ${options.name ?? 'Pygame Zero'}. Clique para usar o teclado.`,
+    )
     canvas.style.cssText =
       'display:block;max-width:100%;max-height:100%;object-fit:contain;touch-action:none;outline:none;background:#000'
     const ctx = canvas.getContext('2d', { alpha: false })
@@ -619,6 +627,10 @@ export function createPgzeroRenderer(
         case PGZERO_OP.TEXT:
           drawText(ctx, r, at)
           break
+        case PGZERO_OP.PIXELS:
+          // pygame draws in pixels: the screen keeps them sharp at any display scale.
+          if (lastPixels) ctx.drawImage(lastPixels, 0, 0, r[at]!, r[at + 1]!)
+          break
       }
       at += arity
     }
@@ -815,7 +827,27 @@ export function createPgzeroRenderer(
           if (!list || list.byteLength % 8 || list.byteLength > PGZERO_LIMITS.listBytes)
             throw new Error('Lista de desenho do Pygame Zero inválida.')
           lastList = new Float64Array(list.buffer, list.byteOffset, list.byteLength / 8)
+          const pixels = supplied.get(PGZERO_PIXELS_ATTACHMENT)
+          if (pixels) {
+            if (pixels.byteLength !== header.w * header.h * 4)
+              throw new Error('A tela do Pygame-ce não tem o tamanho da janela.')
+            const bitmap = await createImageBitmap(
+              new ImageData(
+                new Uint8ClampedArray(pixels.buffer, pixels.byteOffset, pixels.byteLength),
+                header.w,
+                header.h,
+              ),
+              { premultiplyAlpha: 'none', colorSpaceConversion: 'none' },
+            )
+            if (disposed) {
+              bitmap.close()
+              active()
+            }
+            lastPixels?.close()
+            lastPixels = bitmap
+          }
         }
+        if (header.cursor !== undefined && canvas) canvas.style.cursor = header.cursor ? '' : 'none'
         // Always wait for the display: this is the game's frame clock (about 60 per second).
         await nextFrame(!header.keep || resized || !frameSequence)
         active()
@@ -897,6 +929,8 @@ export function createPgzeroRenderer(
       pendingPaint = undefined
       for (const image of images.values()) image.close()
       images.clear()
+      lastPixels?.close()
+      lastPixels = undefined
       for (const face of fontFaces) (container.ownerDocument.fonts as FontFaceSet).delete(face)
       fontFaces.length = 0
       textCache.clear()

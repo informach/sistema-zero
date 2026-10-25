@@ -3,11 +3,12 @@ import { withMutation } from '../../blockly/blocks/mutatorEvents'
 import { readPythonNode } from '../language/readNode'
 import type { PythonNode } from '../language/types'
 import { PYTHON_PROGRAMMING_CODECS } from './catalog'
-import type {
-  PythonBlockCodec,
-  PythonBlockField,
-  PythonBlockRole,
-  PythonBlockShape,
+import {
+  PYTHON_BLOCK_ROLES,
+  type PythonBlockCodec,
+  type PythonBlockField,
+  type PythonBlockRole,
+  type PythonBlockShape,
 } from './contract'
 import { pythonShadowState } from './paletteBlocks'
 import { pythonCategoryColour } from './paletteGroups'
@@ -16,6 +17,8 @@ import type { PythonBlockProjection, PythonVisualNode, PythonVisualOrigin } from
 import { type PythonWorkspaceOrigins, withoutPythonOrigins } from './provenance'
 import { pythonDecodeContextFromExtra } from './resolverOptions'
 import { samePythonValue } from './semantic'
+import { PYTHON_MAX_ITEMS, pythonShapeFitsBlock } from './shapeControls'
+import { recordPythonSocketShadows } from './socketShadowEvent'
 
 interface Layout {
   fields: PythonBlockField[]
@@ -35,16 +38,7 @@ export interface PythonBlocklyBlock extends Blockly.Block {
 interface PythonSourceBlock extends Blockly.Block {
   pythonSource: Extract<PythonVisualNode, { kind: 'source' }>
 }
-const roles: readonly PythonBlockRole[] = [
-  'value',
-  'statement',
-  'parameter',
-  'parameters',
-  'keyword',
-  'handler',
-  'alias',
-  'format',
-]
+const roles: readonly PythonBlockRole[] = PYTHON_BLOCK_ROLES
 const check = (role: PythonBlockRole) => `Python:${role}`
 const sourceType = (role: PythonBlockRole) => `sz_py_source_${role}`
 const clone = <T>(value: T): T => structuredClone(value)
@@ -63,8 +57,8 @@ function readState(raw: unknown, codec: PythonBlockCodec): VisualState {
   if (
     !Array.isArray(layout.fields) ||
     !Array.isArray(layout.inputs) ||
-    layout.fields.length > 100 ||
-    layout.inputs.length > 200
+    // The same ceiling projection applies: a node above it stays as Python text.
+    !pythonShapeFitsBlock({ fields: layout.fields, inputs: layout.inputs })
   )
     throw new Error('Estado visual Python excede o limite.')
   const fields: PythonBlockField[] = layout.fields.map((field) => {
@@ -123,7 +117,7 @@ function readState(raw: unknown, codec: PythonBlockCodec): VisualState {
         (typeof value !== 'number' ||
           !Number.isSafeInteger(value) ||
           value < (control.minimum ?? 0) ||
-          value > (control.maximum ?? 32))) ||
+          value > (control.maximum ?? PYTHON_MAX_ITEMS))) ||
       (control.kind === 'optional' && typeof value !== 'boolean')
     )
       throw new Error('Opção visual Python inválida.')
@@ -133,20 +127,21 @@ function readState(raw: unknown, codec: PythonBlockCodec): VisualState {
     codec.encode({ fields: seed.fields, inputs, extra }),
     pythonDecodeContextFromExtra(extra),
   )
+  // Name lookups, not a scan per item: a data table has hundreds of sockets.
+  const savedFields = new Map(fields.map((field) => [field.name, field]))
+  const savedRoles = new Map(inputs.map((input) => [input.name, input.role]))
   if (
     !canonical ||
     fields.length !== canonical.fields.length ||
     inputs.length !== canonical.inputs.length ||
-    new Set(fields.map((field) => field.name)).size !== fields.length ||
-    new Set(inputs.map((input) => input.name)).size !== inputs.length ||
-    canonical.fields.some((field) => !fields.some((item) => item.name === field.name)) ||
-    canonical.inputs.some(
-      (input) => !inputs.some((item) => item.name === input.name && item.role === input.role),
-    )
+    savedFields.size !== fields.length ||
+    savedRoles.size !== inputs.length ||
+    canonical.fields.some((field) => !savedFields.has(field.name)) ||
+    canonical.inputs.some((input) => savedRoles.get(input.name) !== input.role)
   )
     throw new Error('O formato salvo não corresponde ao bloco Python.')
   for (const field of canonical.fields) {
-    const saved = fields.find((item) => item.name === field.name)!
+    const saved = savedFields.get(field.name)!
     if (field.options && !field.options.some(([, value]) => value === saved.value))
       throw new Error('Opção visual Python inválida.')
     field.value = saved.value
@@ -177,20 +172,53 @@ function readState(raw: unknown, codec: PythonBlockCodec): VisualState {
   return { version: 1, layout: layoutOf(canonical), origin }
 }
 
-function applyLayout(block: PythonBlocklyBlock, state: VisualState, codec: PythonBlockCodec) {
+/** The inputs a layout drops; it refuses one that holds a block other than `pristine`. */
+function removedInputs(
+  block: PythonBlocklyBlock,
+  state: VisualState,
+  pristine: ReadonlySet<Blockly.Block> = new Set(),
+) {
   const desired = new Set(state.layout.inputs.map((input) => input.name))
   const removed = block.inputList.filter(
     (input) => input.name !== 'HEADER' && !desired.has(input.name),
   )
   // A default shadow goes away with its input; only a block the child placed holds it.
-  if (removed.some((input) => input.connection?.targetBlock()?.isShadow() === false))
-    throw new Error('Desconecte o valor antes de remover esta entrada.')
+  for (const input of removed) {
+    const target = input.connection?.targetBlock()
+    if (target && !target.isShadow() && !pristine.has(target))
+      throw new Error('Desconecte o valor antes de remover esta entrada.')
+  }
   for (const input of state.layout.inputs) {
     const existing = block.getInput(input.name)
     if (existing && !existing.connection?.getCheck()?.includes(check(input.role)))
       throw new Error('Não é possível mudar o tipo de uma entrada conectada.')
   }
-  for (const input of removed) block.removeInput(input.name)
+  return removed
+}
+
+/** Saved form of a block, without ids or position, to compare two pieces. */
+function savedPiece(block: Blockly.Block) {
+  // `saveIds: false` still keeps the ids of shadow states.
+  return JSON.stringify(
+    Blockly.serialization.blocks.save(block, { addCoordinates: false, saveIds: false }),
+    (key, value) => (key === 'id' ? undefined : value),
+  )
+}
+
+/** The same piece freshly built from its default state, outside any workspace the child sees. */
+function savedDefault(state: Blockly.serialization.blocks.State) {
+  const scratch = new Blockly.Workspace()
+  Blockly.Events.disable()
+  try {
+    return savedPiece(Blockly.serialization.blocks.append(state, scratch))
+  } finally {
+    Blockly.Events.enable()
+    scratch.dispose()
+  }
+}
+
+function applyLayout(block: PythonBlocklyBlock, state: VisualState, codec: PythonBlockCodec) {
+  for (const input of removedInputs(block, state)) block.removeInput(input.name)
   // The title is host-owned presentation, not part of this mutation's layout.
   // Keep its current binding classification even while new inputs are incomplete.
   const title = block.getFieldValue('PYTHON_TITLE') ?? codec.title
@@ -219,7 +247,8 @@ function applyLayout(block: PythonBlocklyBlock, state: VisualState, codec: Pytho
           : block.appendValueInput(input.name)
       target.setCheck(check(input.role)).appendField(input.label)
     }
-    block.moveInputBefore(input.name, null)
+    // A socket just appended is already last: skipping the move keeps big blocks linear.
+    if (block.inputList.at(-1)?.name !== input.name) block.moveInputBefore(input.name, null)
   }
   // Short blocks read as one sentence: "andar para frente ⟨100⟩ passos".
   const values = state.layout.inputs.filter((input) => input.role !== 'statement').length
@@ -261,7 +290,7 @@ export function registerPythonBlocks(
             (typeof value !== 'number' ||
               !Number.isSafeInteger(value) ||
               value < (control.minimum ?? 0) ||
-              value > (control.maximum ?? 32))) ||
+              value > (control.maximum ?? PYTHON_MAX_ITEMS))) ||
           (control.kind === 'optional' && typeof value !== 'boolean')
         )
           throw new Error('Valor inválido para a opção do bloco.')
@@ -279,18 +308,68 @@ export function registerPythonBlocks(
           { version: 1, layout: layoutOf(next), origin: state.origin },
           codec,
         )
-        withMutation(this, () => {
-          applyLayout(this, validated, codec)
+        // A case or except that "Adicionar" created is a real block (a shadow cannot hold
+        // commands). While it is still exactly that untouched default, "Remover" takes it
+        // away with its input; anything the child changed or placed must be moved out first.
+        const previous = state.layout.extra?.[key]
+        const restored =
+          typeof previous === 'number' || typeof previous === 'boolean'
+            ? codec.reshape(next, key, previous)
+            : undefined
+        const kept = new Set(validated.layout.inputs.map((input) => input.name))
+        const pristine = new Set<Blockly.Block>()
+        for (const input of this.inputList) {
+          const target = input.connection?.targetBlock()
+          if (!target || target.isShadow() || kept.has(input.name)) continue
+          const seeded = restored?.inputs.find((item) => item.name === input.name)
+          const socket =
+            seeded?.nodes.length === 1
+              ? pythonShadowState(seeded.nodes[0]!, seeded.role, codecs)
+              : undefined
+          if (socket && 'block' in socket && savedPiece(target) === savedDefault(socket.block))
+            pristine.add(target)
+        }
+        removedInputs(this, validated, pristine)
+        // One undo step: the pieces taken away, the new shape and the pieces it seeds share
+        // one event group, in an order Blockly replays both ways. Undo runs it backwards:
+        // the seeded pieces leave before the shape drops their inputs, and the removed
+        // pieces and shadows come back after the shape restores theirs.
+        const group = Blockly.Events.getGroup()
+        if (!group) Blockly.Events.setGroup(true)
+        try {
+          for (const piece of pristine) piece.dispose(false)
+          const removedShadows: Record<string, Blockly.serialization.blocks.State | null> = {}
+          for (const input of this.inputList) {
+            const shadow = kept.has(input.name) ? null : input.connection?.getShadowState(true)
+            if (shadow) removedShadows[input.name] = shadow
+          }
+          recordPythonSocketShadows(this, removedShadows, false)
+          withMutation(this, () => applyLayout(this, validated, codec))
           // A new socket starts with its documented default, as in the palette: the block
-          // keeps running and the child changes only what she wants.
+          // keeps running and the child changes only what she wants. Created with events on,
+          // so redo brings the default back together with its socket.
+          const seededShadows: Record<string, Blockly.serialization.blocks.State | null> = {}
           for (const input of next.inputs) {
             if (input.role === 'statement' || input.nodes.length !== 1) continue
             const connection = this.getInput(input.name)?.connection
             if (!connection || connection.targetBlock()) continue
-            const shadow = pythonShadowState(input.nodes[0]!, input.role, codecs)
-            if (shadow) connection.setShadowState(shadow)
+            const socket = pythonShadowState(input.nodes[0]!, input.role, codecs)
+            if (!socket) continue
+            if ('shadow' in socket) {
+              connection.setShadowState(socket.shadow)
+              seededShadows[input.name] = socket.shadow
+            } else {
+              // A new case or except holds commands: a real block, since a shadow cannot.
+              const piece = Blockly.serialization.blocks.append(socket.block, this.workspace, {
+                recordUndo: true,
+              })
+              if (piece.outputConnection) connection.connect(piece.outputConnection)
+            }
           }
-        })
+          recordPythonSocketShadows(this, seededShadows, true)
+        } finally {
+          if (!group) Blockly.Events.setGroup(false)
+        }
         this.setWarningText(null, 'python-layout')
       },
       customContextMenu(
@@ -323,7 +402,7 @@ export function registerPythonBlocks(
               scope: { block: this, focusedNode: this },
               weight: 110,
               text: `Adicionar ${control.label}`,
-              enabled: current < (control.maximum ?? 32),
+              enabled: current < (control.maximum ?? PYTHON_MAX_ITEMS),
               callback: () => choose(current + 1),
             })
             options.push({

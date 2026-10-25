@@ -1,4 +1,16 @@
 import type { ProjectTree } from '../../core/proProject'
+import standardModules from './standardModules.json'
+
+// CPython 3.14.2 sys.stdlib_module_names plus interpreter-owned browser modules.
+// A cached, builtin or frozen module may outrank a source file; never guess its binding.
+export const PYTHON_RESERVED_MODULES: ReadonlySet<string> = new Set([
+  ...standardModules,
+  'js',
+  'pyodide',
+  'pyodide_js',
+  '_pyodide',
+  '_pyodide_core',
+])
 
 export interface PythonModuleLocation {
   path: string

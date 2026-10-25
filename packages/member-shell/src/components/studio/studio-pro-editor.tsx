@@ -51,7 +51,7 @@ interface Props {
   moldaLibrary?: StudioMoldaLibraryAdapter
   taskSession?: StudioTaskSession
   teamLibrary?: StudioTeamLibraryAdapter
-  onEditDrawing?: (id: string) => void
+  onEditDrawing?: (id: string, tab?: Window | null) => void
   onEditCreation?: (id: string) => void
   runtimeEnvironment?: StudioEditorProps['runtimeEnvironment']
   proRuntime?: StudioEditorProps['proRuntime']

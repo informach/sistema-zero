@@ -42,17 +42,47 @@ const exports: Array<
     }
   | undefined
 > = []
-const inspections: Array<{ id: string; namespace?: string; signal?: AbortSignal }> = []
+const inspections: Array<{
+  id: string
+  namespace?: string
+  signal?: AbortSignal
+  selection?: string
+}> = []
 const lists: Array<
   { namespace?: string; signal?: AbortSignal; includeImageSelection?: boolean } | undefined
 > = []
 const saves: Array<{ namespace: string; name: string }> = []
 const savedValues: Array<typeof asset> = []
 const imageRequests: unknown[] = []
+const drawingImports: Array<{ json: string; ids: string[]; namespace?: string; origin?: string }> =
+  []
 let globalNamespaceWrites = 0
 mock.module('@sistemazero/pinta/studio-library', () => ({
   setPintaStorageNamespace: () => {
     globalNamespaceWrites++
+  },
+  importDrawingsForStudio: async (
+    json: string,
+    ids: string[],
+    options?: { namespace?: string; signal?: AbortSignal; origin?: string },
+  ) => {
+    drawingImports.push({
+      json,
+      ids: [...ids],
+      namespace: options?.namespace,
+      origin: options?.origin,
+    })
+    if (ids.includes('sumiu'))
+      return { ok: false, reason: 'not-found', message: 'Este desenho não está entre os do jogo.' }
+    return {
+      ok: true,
+      drawings: ids.map((sourceId) => ({
+        sourceId,
+        id: `novo-${sourceId}`,
+        name: sourceId,
+        imageSelection: { kind: 'background', width: 4, height: 4 },
+      })),
+    }
   },
   listGalleryForStudio: async (options?: {
     namespace?: string
@@ -64,7 +94,7 @@ mock.module('@sistemazero/pinta/studio-library', () => ({
   },
   inspectImageForStudio: async (
     id: string,
-    options?: { namespace?: string; signal?: AbortSignal },
+    options?: { namespace?: string; signal?: AbortSignal; selection?: string },
   ) => {
     inspections.push({ id, ...options })
     entered.resolve()
@@ -121,7 +151,7 @@ beforeEach(() => {
   entered = Promise.withResolvers<void>()
   saving = Promise.withResolvers<void>()
   exports.length = lists.length = saves.length = inspections.length = globalNamespaceWrites = 0
-  savedValues.length = imageRequests.length = 0
+  savedValues.length = imageRequests.length = drawingImports.length = 0
 })
 afterEach(async () => {
   await act(async () => {
@@ -239,6 +269,50 @@ test('sync inspection captures the profile and never exports or saves', async ()
   expect(inspections.map(({ id, namespace }) => ({ id, namespace }))).toEqual([
     { id: 'drawing', namespace: 'profile-a' },
   ])
+  expect(exports).toEqual([])
+  expect(saves).toEqual([])
+  expect(globalNamespaceWrites).toBe(0)
+})
+
+test('sync inspection forwards the selection kind (a map depends on every tileset)', async () => {
+  const h = await harness()
+  const inspect = h.adapter().inspectImage
+  if (!inspect) throw new Error('Portable image inspection is required')
+  await inspect('drawing', { selection: 'map' })
+  await inspect('drawing')
+  expect(inspections[0]?.selection).toBe('map')
+  // Without a kind the historical call shape is kept.
+  expect(inspections[1]).not.toHaveProperty('selection')
+  expect(exports).toEqual([])
+})
+
+test('importing example drawings captures the profile and maps the Pinta result', async () => {
+  const h = await harness()
+  const importDrawings = h.adapter().importDrawings
+  if (!importDrawings) throw new Error('Example drawing import is required')
+  expect(await importDrawings({ json: '{}', ids: ['jogo-ceu'] })).toEqual({
+    ok: true,
+    drawings: [
+      {
+        sourceId: 'jogo-ceu',
+        id: 'novo-jogo-ceu',
+        name: 'jogo-ceu',
+        imageSelection: { kind: 'background', width: 4, height: 4 },
+      },
+    ],
+  })
+  await importDrawings({ json: '{}', ids: ['jogo-ceu'], origin: 'example-pygame:jogo' })
+  expect(drawingImports.at(-1)?.origin).toBe('example-pygame:jogo')
+  drawingImports.pop()
+  expect(await importDrawings({ json: '{}', ids: ['sumiu'] })).toEqual({
+    ok: false,
+    error: 'Este desenho não está entre os do jogo.',
+  })
+  expect(drawingImports.map(({ ids, namespace }) => ({ ids, namespace }))).toEqual([
+    { ids: ['jogo-ceu'], namespace: 'profile-a' },
+    { ids: ['sumiu'], namespace: 'profile-a' },
+  ])
+  // Importing drawings never exports an image nor writes the personal library by itself.
   expect(exports).toEqual([])
   expect(saves).toEqual([])
   expect(globalNamespaceWrites).toBe(0)

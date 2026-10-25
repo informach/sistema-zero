@@ -11,6 +11,7 @@ import type {
   PythonReceiverKind,
 } from './contract'
 import { attribute, call, isNode, name, node, nodes } from './nodes'
+import { PYTHON_MAX_ITEMS, pythonInputsByName } from './shapeControls'
 
 /**
  * One block per API concept, generated from a signature.
@@ -59,7 +60,7 @@ export type PythonApiCallee =
       moduleNames?: readonly string[]
     }
   /** A fixed dotted path from a global name: `print`, `screen.draw.text`, `keyboard`… */
-  | { kind: 'path'; path: readonly string[]; builtin?: string }
+  | { kind: 'path'; path: readonly string[]; builtin?: string; module?: string }
 
 export interface PythonApiSpec {
   id: string
@@ -220,7 +221,7 @@ export function pythonApiCallCodec(spec: PythonApiSpec): PythonBlockCodec {
       if (argument.kind === 'Starred') return
       const param = positional[index]
       if (param) values.set(param.name, argument)
-      else if (variadic && rest.length < 32) rest.push(argument)
+      else if (variadic && rest.length < PYTHON_MAX_ITEMS) rest.push(argument)
       else return
     }
     const keywordOrder: string[] = []
@@ -304,8 +305,9 @@ export function pythonApiCallCodec(spec: PythonApiSpec): PythonBlockCodec {
     if (!(style === 'method' || style === 'path' ? methodNames : moduleNames).includes(alias))
       throw new Error('Nome da chamada inválido.')
     const root = typeof extra.root === 'string' ? extra.root : defaultRoot()
+    const byName = pythonInputsByName(shape)
     const input = (key: string) => {
-      const found = shape.inputs.find((item) => item.name === key)
+      const found = byName.get(key)
       if (!found) return undefined
       if (found.nodes.length !== 1) throw new Error('Preencha todas as entradas do bloco.')
       return found.nodes[0]!
@@ -335,7 +337,7 @@ export function pythonApiCallCodec(spec: PythonApiSpec): PythonBlockCodec {
       } else args.push(value)
     }
     const count = variadic ? Number(extra['args:count'] ?? 0) : 0
-    if (!Number.isSafeInteger(count) || count < 0 || count > 32)
+    if (!Number.isSafeInteger(count) || count < 0 || count > PYTHON_MAX_ITEMS)
       throw new Error('Quantidade de valores inválida.')
     if (
       count &&
@@ -407,7 +409,7 @@ export function pythonApiCallCodec(spec: PythonApiSpec): PythonBlockCodec {
             label: variadic.label,
             kind: 'count' as const,
             minimum: variadic.minimum ?? 0,
-            maximum: 32,
+            maximum: PYTHON_MAX_ITEMS,
           },
         ]
       : []),
@@ -420,7 +422,9 @@ export function pythonApiCallCodec(spec: PythonApiSpec): PythonBlockCodec {
     if (callee.kind === 'path')
       return callee.builtin
         ? { root: callee.path[0]!, builtin: callee.builtin }
-        : { root: callee.path[0]! }
+        : callee.module
+          ? { root: callee.path[0]!, module: callee.module }
+          : { root: callee.path[0]! }
     const module = callee.kind === 'module' ? callee.module : callee.module
     if (isName(func))
       return module
@@ -553,7 +557,7 @@ export function pythonApiCallCodec(spec: PythonApiSpec): PythonBlockCodec {
           typeof value !== 'number' ||
           !Number.isSafeInteger(value) ||
           value < (variadic.minimum ?? 0) ||
-          value > 32
+          value > PYTHON_MAX_ITEMS
         )
           throw new Error('Quantidade de valores inválida.')
         const current = Number(result.extra['args:count'] ?? 0)

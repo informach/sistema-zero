@@ -84,6 +84,13 @@ test('Raylib 2D/3D criteria use actual program variables and vectors with real c
   expect(pythonProjectCheckGraphics([{ id: 'constructor' }])).toBe('none')
 })
 
+test('Pygame-ce is recognized as a graphical Python project', () => {
+  expect(pythonProjectCheckGraphics([{ id: 'python-pygame' }])).toBe('pygame')
+  expect(pythonProjectCheckGraphics([{ id: 'python-pygame' }, { id: 'python-pgzero' }])).toBe(
+    'none',
+  )
+})
+
 test('publication binds section objectives to the initial language and profile, while legacy JS remains valid', () => {
   const completion = { version: 1 as const, blockIds: [], projectChecks: [check] }
   const section = {

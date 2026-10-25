@@ -15,13 +15,22 @@ import { isTextEntryTarget } from '../../core/dom'
 import { safeSetPointerCapture } from '../../core/pointer'
 import {
   type AnyTilesetAsset,
+  isCompatibleMapTileset,
+  isObjectLayer,
+  isTileLayer,
   isTilesetKind,
   type PintaAsset,
   resolveAssetPalette,
   type TilemapAsset,
+  type TilemapObjectPropertyValue,
+  type TilesetAsset,
+  tileLayerTilesetId,
+  tilemapTilesetIds,
+  type VectorTilesetAsset,
 } from '../../core/project'
 import { shortcut } from '../../core/shortcuts'
 import { bitmapToRGBA, paintSelectionOverlay } from '../../pixel/render'
+import { isMapObjectTool } from '../../state/sessionStore'
 import {
   type CellPos,
   type CellRect,
@@ -30,36 +39,56 @@ import {
   rectCells,
 } from '../../tiles/cellGeometry'
 import {
+  type MapObjectPatch,
+  nextPropertyKey,
+  objectLayerById,
+  removeMapObject,
+  updateMapObject,
+  withObjectProperty,
+  withoutObjectProperty,
+} from '../../tiles/mapObjects'
+import {
   clearRegion,
   copyRegion,
   extractRegion,
   hasFilledCell,
   stampRegionAt,
 } from '../../tiles/mapSelection'
+import { collectTilesetsByIds, drawableIn } from '../../tiles/mapTilesets'
 import { packTileset } from '../../tiles/packTileset'
 import { packVectorTileset, vectorTilesetPortableSvg } from '../../tiles/packVectorTileset'
 import { blockCells, stampCells, type TileStamp } from '../../tiles/stamp'
 import {
   addLayer,
+  addObjectLayer,
   cellAt,
-  flattenCellAt,
-  flattenLayers,
+  flattenWithTilesets,
   floodFillCells,
   growTilemap,
   removeLayer,
   setCells,
+  setLayerTileset,
   toggleLayerFront,
   toggleLayerVisible,
+  topTileAt,
 } from '../../tiles/tilemapOps'
 import { isTileBlank } from '../../tiles/tilesetOps'
 import { usePintaGallery } from '../appContext'
 import { Button } from '../ui/Button'
 import { useToast } from '../ui/Toast'
 import { useEditor, useEditorStores, useSession } from './editorContext'
+import { MapObjectPanel } from './MapObjectPanel'
+import { MapObjectsOverlay } from './MapObjectsOverlay'
 import { MapStatusBar } from './MapStatusBar'
 import { stageCursor } from './stageCursor'
-import { MAP_TOOLS, type MapTool, TilemapSidebar, TilemapToolbar } from './TilemapPanels'
-import { useActionShortcuts } from './useActionShortcuts'
+import {
+  MAP_TOOLS,
+  type MapTool,
+  mapToolsFor,
+  TilemapSidebar,
+  TilemapToolbar,
+} from './TilemapPanels'
+import { isPintaModalOpen, useActionShortcuts } from './useActionShortcuts'
 import { toolShortcutMap, useToolShortcuts } from './useToolShortcuts'
 import { useWheelZoom } from './useWheelZoom'
 import { ZoomControls } from './ZoomControls'
@@ -77,6 +106,83 @@ type MapSelection =
   | { kind: 'rect'; rect: CellRect }
   | { kind: 'floating'; stamp: TileStamp; at: CellPos; remaining: TilemapAsset }
 
+/** Folha 1:1 de um tileset de PIXEL (síncrona; `null` sem canvas 2D). */
+function pixelSheetCanvas(tileset: TilesetAsset): HTMLCanvasElement | null {
+  const pack = packTileset(tileset)
+  const colors = resolveAssetPalette(tileset)
+  const sheet = document.createElement('canvas')
+  sheet.width = pack.columns * pack.tileSize
+  sheet.height = pack.rows * pack.tileSize
+  const ctx = sheet.getContext('2d')
+  if (!ctx) return null
+  for (const cell of pack.cells) {
+    ctx.putImageData(
+      new ImageData(bitmapToRGBA(cell.bitmap, colors), cell.bitmap.width, cell.bitmap.height),
+      cell.col * pack.tileSize,
+      cell.row * pack.tileSize,
+    )
+  }
+  return sheet
+}
+
+/**
+ * Folha de um tileset VETORIAL: rasteriza o SVG portátil uma vez (async). A URL
+ * temporária é revogada em `load`, `error` E no cancelamento (o devolvido), com
+ * guarda idempotente — troca rápida de peças ou desmontar não deixa Blob URL viva.
+ */
+function loadVectorSheet(
+  tileset: VectorTilesetAsset,
+  onReady: (sheet: HTMLCanvasElement) => void,
+  onError: () => void,
+): () => void {
+  if (typeof Image === 'undefined' || !document.createElement('canvas').getContext('2d')) {
+    return () => {}
+  }
+  let cancelled = false
+  const pack = packVectorTileset(tileset)
+  let url: string | null = null
+  let img: HTMLImageElement | null = null
+  let revoked = false
+  const revoke = (): void => {
+    if (revoked || !url) return
+    revoked = true
+    URL.revokeObjectURL(url)
+  }
+  void vectorTilesetPortableSvg(tileset)
+    .then((svg) => {
+      if (cancelled) return
+      url = URL.createObjectURL(new Blob([svg], { type: 'image/svg+xml' }))
+      img = new Image()
+      img.onload = () => {
+        revoke()
+        if (cancelled || !img) return
+        const sheet = document.createElement('canvas')
+        sheet.width = pack.columns * pack.tileSize
+        sheet.height = pack.rows * pack.tileSize
+        const ctx = sheet.getContext('2d')
+        if (!ctx) return
+        ctx.drawImage(img, 0, 0)
+        onReady(sheet)
+      }
+      img.onerror = () => {
+        revoke()
+        if (!cancelled) onError()
+      }
+      img.src = url
+    })
+    .catch(() => {
+      if (!cancelled) onError()
+    })
+  return () => {
+    cancelled = true
+    if (img) {
+      img.onload = null
+      img.onerror = null
+    }
+    revoke()
+  }
+}
+
 export function TilemapEditor(): JSX.Element | null {
   const { editor, session } = useEditorStores()
   const { showToast } = useToast()
@@ -86,7 +192,7 @@ export function TilemapEditor(): JSX.Element | null {
   const zoom = useSession((state) => state.zoom)
   const stamp = useSession((state) => state.stamp)
   const autoExpand = useSession((state) => state.autoExpand)
-  const tilesets = usePintaGallery((state) => state.assets)
+  const galleryAssets = usePintaGallery((state) => state.assets)
 
   // Zoom pelo teclado (Ctrl+= / Ctrl+- / Ctrl+0), como nos outros dois editores.
   useActionShortcuts([
@@ -96,17 +202,34 @@ export function TilemapEditor(): JSX.Element | null {
   ])
 
   const tilemap = asset.kind === 'tilemap' ? asset : null
-  const tileset = useMemo(
+  // As peças do mapa (a padrão primeiro, só as compatíveis). Memoizadas pela LISTA de ids:
+  // o mapa muda a cada pincelada, os tilesets que ele usa quase nunca.
+  const tilesetKey = tilemap ? tilemapTilesetIds(tilemap).join('\n') : ''
+  const mapTilesets = useMemo(() => {
+    if (!tilesetKey) return []
+    const byId = new Map(galleryAssets.map((a) => [a.id, a]))
+    return collectTilesetsByIds(tilesetKey.split('\n'), (id) => byId.get(id))
+  }, [tilesetKey, galleryAssets])
+  const tilesetById = useMemo(() => new Map(mapTilesets.map((t) => [t.id, t])), [mapTilesets])
+  // Só vence a célula a peça que um tileset ACHADO tem: a camada cujas peças sumiram (ou são
+  // de outro tamanho) não aparece e não tapa as de baixo, como no jogo (atlas `map` do pygame).
+  const drawable = useMemo(() => drawableIn(tilesetById), [tilesetById])
+  /** As peças PADRÃO do mapa: tamanho da célula, estilo e o que a ponte leva. */
+  const baseTileset = mapTilesets[0] ?? null
+  /** Tilesets que uma camada pode escolher (mesmo estilo e tamanho de peça). */
+  const layerTilesetChoices = useMemo(
     () =>
-      tilemap
-        ? (tilesets.find(
-            (a): a is AnyTilesetAsset => isTilesetKind(a) && a.id === tilemap.tilesetId,
-          ) ?? null)
-        : null,
-    [tilemap, tilesets],
+      baseTileset
+        ? galleryAssets.filter(
+            (a): a is AnyTilesetAsset => isTilesetKind(a) && isCompatibleMapTileset(baseTileset, a),
+          )
+        : [],
+    [galleryAssets, baseTileset],
   )
 
   const [activeLayerId, setActiveLayerId] = useState<string | null>(null)
+  const [selectedObjectId, setSelectedObjectId] = useState<string | null>(null)
+  const [snapObjects, setSnapObjects] = useState(true)
   const [sheetVersion, setSheetVersion] = useState(0)
   const [paintTick, setPaintTick] = useState(0)
   // Retângulo de seleção ASSENTADO (dirige os botões Copiar/Apagar pedaço).
@@ -118,7 +241,13 @@ export function TilemapEditor(): JSX.Element | null {
   const [panning, setPanning] = useState(false)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const stageRef = useRef<HTMLDivElement>(null)
-  const sheetRef = useRef<HTMLCanvasElement | null>(null)
+  // Uma folha 1:1 por tileset do mapa, guardada com o tileset que a gerou (refeita só
+  // quando ESSE tileset muda; `canvas: null` = ainda carregando ou sem canvas).
+  const sheetsRef = useRef(
+    new Map<string, { source: AnyTilesetAsset; canvas: HTMLCanvasElement | null }>(),
+  )
+  // Apagar o objeto escolhido pelo Delete (montado depois das saídas antecipadas).
+  const deleteObjectRef = useRef<() => boolean>(() => false)
   // Snapshot no início do arrasto (1 undo por gesto) + o ponteiro dono + a
   // âncora (célula inicial: alinha o padrão do carimbo e ancora as formas).
   const gestureRef = useRef<{
@@ -151,89 +280,72 @@ export function TilemapEditor(): JSX.Element | null {
   const hoverRef = useRef<(cell: CellPos | null) => void>(() => {})
 
   const layer = tilemap?.layers.find((l) => l.id === activeLayerId) ?? tilemap?.layers[0] ?? null
+  const activeTileLayer = layer && isTileLayer(layer) ? layer : null
+  const activeObjectLayer = layer && isObjectLayer(layer) ? layer : null
+  // As peças do PICKER: as da camada de peças ativa (cada camada pode ter as suas).
+  const tileset =
+    tilemap && activeTileLayer
+      ? (tilesetById.get(tileLayerTilesetId(tilemap, activeTileLayer)) ?? null)
+      : null
   const tileCount = tileset?.tiles.length ?? 0
   const pad = autoExpand ? 1 : 0
-  const cellPx = tileset ? Math.max(Math.round(tileset.tileSize * zoom), 4) : 4
+  const tileSize = baseTileset?.tileSize ?? 16
+  const cellPx = baseTileset ? Math.max(Math.round(baseTileset.tileSize * zoom), 4) : 4
 
-  // Offscreen do tileset (1:1, layout row-major) — refeito quando o tileset
-  // muda. Pixel monta síncrono; o vetor rasteriza a folha SVG uma vez (async).
+  // Offscreens dos tilesets do mapa (1:1, layout row-major) — cada um refeito quando
+  // o SEU tileset muda. Pixel monta síncrono; o vetor rasteriza a folha SVG uma vez
+  // (async). Carregamento cancelado esquece a entrada, para a próxima rodada recomeçar.
   useEffect(() => {
-    if (!tileset) return
-    sheetRef.current = null
-    if (tileset.kind === 'tileset') {
-      const pack = packTileset(tileset)
-      const colors = resolveAssetPalette(tileset)
-      const sheet = document.createElement('canvas')
-      sheet.width = pack.columns * pack.tileSize
-      sheet.height = pack.rows * pack.tileSize
-      const ctx = sheet.getContext('2d')
-      if (!ctx) return
-      for (const cell of pack.cells) {
-        ctx.putImageData(
-          new ImageData(bitmapToRGBA(cell.bitmap, colors), cell.bitmap.width, cell.bitmap.height),
-          cell.col * pack.tileSize,
-          cell.row * pack.tileSize,
-        )
+    const sheets = sheetsRef.current
+    const wanted = new Set(mapTilesets.map((t) => t.id))
+    for (const id of [...sheets.keys()]) if (!wanted.has(id)) sheets.delete(id)
+    const cleanups: Array<() => void> = []
+    let built = false
+    for (const source of mapTilesets) {
+      if (sheets.get(source.id)?.source === source) continue
+      if (source.kind === 'tileset') {
+        sheets.set(source.id, { source, canvas: pixelSheetCanvas(source) })
+        built = true
+        continue
       }
-      sheetRef.current = sheet
-      setSheetVersion((v) => v + 1)
-      return
-    }
-    if (typeof Image === 'undefined' || !document.createElement('canvas').getContext('2d')) {
-      return
-    }
-    let cancelled = false
-    const pack = packVectorTileset(tileset)
-    let url: string | null = null
-    let img: HTMLImageElement | null = null
-    let revoked = false
-    const revoke = (): void => {
-      if (revoked || !url) return
-      revoked = true
-      URL.revokeObjectURL(url)
-    }
-    void vectorTilesetPortableSvg(tileset)
-      .then((svg) => {
-        if (cancelled) return
-        url = URL.createObjectURL(new Blob([svg], { type: 'image/svg+xml' }))
-        img = new Image()
-        img.onload = () => {
-          revoke()
-          if (cancelled || !img) return
-          const sheet = document.createElement('canvas')
-          sheet.width = pack.columns * pack.tileSize
-          sheet.height = pack.rows * pack.tileSize
-          const ctx = sheet.getContext('2d')
-          if (!ctx) return
-          ctx.drawImage(img, 0, 0)
-          sheetRef.current = sheet
+      sheets.set(source.id, { source, canvas: null })
+      const stop = loadVectorSheet(
+        source,
+        (canvas) => {
+          const entry = sheets.get(source.id)
+          if (entry?.source !== source) return
+          entry.canvas = canvas
           setSheetVersion((v) => v + 1)
-        }
-        img.onerror = () => {
-          revoke()
-          if (!cancelled) showToast(COPY.tiles.sheetError)
-        }
-        img.src = url
+        },
+        () => showToast(COPY.tiles.sheetError),
+      )
+      cleanups.push(() => {
+        stop()
+        const entry = sheets.get(source.id)
+        if (entry?.source === source && !entry.canvas) sheets.delete(source.id)
       })
-      .catch(() => {
-        if (!cancelled) showToast(COPY.tiles.sheetError)
-      })
-    return () => {
-      cancelled = true
-      if (img) {
-        img.onload = null
-        img.onerror = null
-      }
-      revoke()
     }
-  }, [tileset, showToast])
+    if (built) setSheetVersion((v) => v + 1)
+    return () => {
+      for (const cleanup of cleanups) cleanup()
+    }
+  }, [mapTilesets, showToast])
 
   // O carimbo aponta índices do tileset ATUAL — se o número de peças muda
-  // (peça criada/apagada em outro fluxo), o padrão pode ficar defasado.
+  // (peça criada/apagada em outro fluxo, ou outra camada com outras peças), o
+  // padrão pode ficar defasado; e a peça escolhida tem de existir nas peças novas.
   // biome-ignore lint/correctness/useExhaustiveDependencies: só o número de peças dispara
   useEffect(() => {
-    session.getState().setStamp(null)
-  }, [tileCount])
+    const state = session.getState()
+    state.setStamp(null)
+    if (tileCount > 0 && state.frameIndex >= tileCount) state.selectFrame(0)
+  }, [tileCount, tileset?.id])
+
+  // Trocar de camada larga o objeto escolhido (ele é da camada de antes).
+  // biome-ignore lint/correctness/useExhaustiveDependencies: o gatilho é a camada ativa
+  useEffect(() => {
+    setSelectedObjectId(null)
+  }, [layer?.id])
 
   const drawCellGrid = useCallback(
     (ctx: CanvasRenderingContext2D, col: number, row: number): void => {
@@ -244,31 +356,41 @@ export function TilemapEditor(): JSX.Element | null {
     [pad, cellPx],
   )
 
-  // Índices de peça sólida / plataforma do tileset (para o overlay de colisão).
+  // Índices de peça sólida / plataforma de CADA tileset do mapa (para o overlay de colisão).
   const collisionSets = useMemo(() => {
-    const solid = new Set<number>()
-    const platform = new Set<number>()
-    if (tileset) {
-      tileset.solid.forEach((s, i) => {
+    const byTileset = new Map<string, { solid: Set<number>; platform: Set<number> }>()
+    for (const source of mapTilesets) {
+      const solid = new Set<number>()
+      const platform = new Set<number>()
+      source.solid.forEach((s, i) => {
         if (s) solid.add(i)
       })
-      tileset.platform.forEach((p, i) => {
+      source.platform.forEach((p, i) => {
         if (p) platform.add(i)
       })
+      byTileset.set(source.id, { solid, platform })
     }
-    return { solid, platform }
-  }, [tileset])
+    return byTileset
+  }, [mapTilesets])
 
   /** Overlay translúcido de colisão sobre a célula (vermelho sólido / âmbar plataforma). */
   const drawCollisionAt = useCallback(
-    (ctx: CanvasRenderingContext2D, col: number, row: number, index: number): void => {
+    (
+      ctx: CanvasRenderingContext2D,
+      col: number,
+      row: number,
+      index: number,
+      tilesetId: string,
+    ): void => {
       if (!showCollision || index < 0) return
+      const sets = collisionSets.get(tilesetId)
+      if (!sets) return
       const x = (col + pad) * cellPx
       const y = (row + pad) * cellPx
-      if (collisionSets.solid.has(index)) {
+      if (sets.solid.has(index)) {
         ctx.fillStyle = 'rgba(239,68,68,0.38)'
         ctx.fillRect(x, y, cellPx, cellPx)
-      } else if (collisionSets.platform.has(index)) {
+      } else if (sets.platform.has(index)) {
         ctx.fillStyle = 'rgba(250,204,21,0.32)'
         ctx.fillRect(x, y, cellPx, cellPx)
         // Faixa mais forte no TOPO: comunica "pisa aqui".
@@ -279,41 +401,60 @@ export function TilemapEditor(): JSX.Element | null {
     [showCollision, collisionSets, pad, cellPx],
   )
 
+  /** Desenha UMA peça (de qualquer tileset do mapa) na célula do canvas. */
+  const drawTileAt = useCallback(
+    (
+      ctx: CanvasRenderingContext2D,
+      col: number,
+      row: number,
+      index: number,
+      tilesetId: string,
+    ): void => {
+      const sheet = sheetsRef.current.get(tilesetId)?.canvas
+      if (!sheet) return
+      const ts = tileSize
+      const sheetCols = Math.max(1, Math.floor(sheet.width / ts))
+      const sx = (index % sheetCols) * ts
+      const sy = Math.floor(index / sheetCols) * ts
+      ctx.drawImage(
+        sheet,
+        sx,
+        sy,
+        ts,
+        ts,
+        (col + pad) * cellPx,
+        (row + pad) * cellPx,
+        cellPx,
+        cellPx,
+      )
+      drawCollisionAt(ctx, col, row, index, tilesetId)
+    },
+    [tileSize, pad, cellPx, drawCollisionAt],
+  )
+
   /** Redesenho COMPLETO do mapa `map` (redimensiona + células + grade + anel). */
   const repaintMap = useCallback(
     (map: TilemapAsset): void => {
       const canvas = canvasRef.current
-      const sheet = sheetRef.current
-      if (!canvas || !sheet || !tileset) return
+      // A folha das peças PADRÃO manda: sem ela ainda não há o que desenhar (as de
+      // outras camadas entram assim que chegam — o `sheetVersion` repinta).
+      if (!canvas || !baseTileset || !sheetsRef.current.get(baseTileset.id)?.canvas) return
       const ctx = canvas.getContext('2d')
       if (!ctx) return
-      const ts = tileset.tileSize
       const canvasCols = map.cols + 2 * pad
       const canvasRows = map.rows + 2 * pad
       canvas.width = canvasCols * cellPx
       canvas.height = canvasRows * cellPx
       ctx.imageSmoothingEnabled = false
       ctx.clearRect(0, 0, canvas.width, canvas.height)
-      const cols = Math.max(1, Math.floor(sheet.width / ts))
-      const flat = flattenLayers(map)
+      const flat = flattenWithTilesets(map, undefined, drawable)
       for (let row = 0; row < map.rows; row += 1) {
         for (let col = 0; col < map.cols; col += 1) {
-          const index = flat[row * map.cols + col] ?? -1
+          const at = row * map.cols + col
+          const index = flat.tiles[at] ?? -1
           if (index < 0) continue
-          const sx = (index % cols) * ts
-          const sy = Math.floor(index / cols) * ts
-          ctx.drawImage(
-            sheet,
-            sx,
-            sy,
-            ts,
-            ts,
-            (col + pad) * cellPx,
-            (row + pad) * cellPx,
-            cellPx,
-            cellPx,
-          )
-          drawCollisionAt(ctx, col, row, index)
+          const tilesetId = flat.tilesetIds[flat.sources[at] ?? 0]
+          if (tilesetId) drawTileAt(ctx, col, row, index, tilesetId)
         }
       }
       // Grade da área do mapa.
@@ -337,19 +478,16 @@ export function TilemapEditor(): JSX.Element | null {
         ctx.setLineDash([])
       }
     },
-    [tileset, pad, cellPx, drawCollisionAt],
+    [baseTileset, pad, cellPx, drawTileAt, drawable],
   )
 
   /** Repinta SÓ um conjunto de células do mapa `map` (incremental, no gesto). */
   const paintCells = useCallback(
     (map: TilemapAsset, cells: readonly CellPos[]): void => {
       const canvas = canvasRef.current
-      const sheet = sheetRef.current
-      if (!canvas || !sheet || !tileset) return
+      if (!canvas || !baseTileset || !sheetsRef.current.get(baseTileset.id)?.canvas) return
       const ctx = canvas.getContext('2d')
       if (!ctx) return
-      const ts = tileset.tileSize
-      const sheetCols = Math.max(1, Math.floor(sheet.width / ts))
       ctx.imageSmoothingEnabled = false
       for (const { col, row } of cells) {
         if (col < 0 || row < 0 || col >= map.cols || row >= map.rows) continue
@@ -357,17 +495,12 @@ export function TilemapEditor(): JSX.Element | null {
         const y = (row + pad) * cellPx
         ctx.clearRect(x, y, cellPx, cellPx)
         // Só a célula tocada (não o mapa inteiro achatado a cada pointermove).
-        const index = flattenCellAt(map, col, row)
-        if (index >= 0) {
-          const sx = (index % sheetCols) * ts
-          const sy = Math.floor(index / sheetCols) * ts
-          ctx.drawImage(sheet, sx, sy, ts, ts, x, y, cellPx, cellPx)
-          drawCollisionAt(ctx, col, row, index)
-        }
+        const top = topTileAt(map, col, row, undefined, drawable)
+        if (top) drawTileAt(ctx, col, row, top.tile, tileLayerTilesetId(map, top.layer))
         drawCellGrid(ctx, col, row)
       }
     },
-    [tileset, pad, cellPx, drawCellGrid, drawCollisionAt],
+    [baseTileset, pad, cellPx, drawCellGrid, drawTileAt, drawable],
   )
 
   const overlayRect = useCallback(
@@ -428,7 +561,14 @@ export function TilemapEditor(): JSX.Element | null {
       if (event.key !== 'Delete' && event.key !== 'Backspace') return
       if (event.ctrlKey || event.metaKey) return
       if (isTextEntryTarget(event.target)) return
-      if (!selRef.current) return
+      // Com uma janela do Pinta aberta, o desenho atrás dela fica quieto (o mesmo portão dos
+      // outros atalhos): o Delete não apaga o objeto nem o pedaço escolhido lá atrás.
+      if (isPintaModalOpen()) return
+      if (!selRef.current) {
+        // Sem pedaço de peças: o objeto escolhido (camada de objetos) sai.
+        if (deleteObjectRef.current()) event.preventDefault()
+        return
+      }
       event.preventDefault()
       deleteSelectionRef.current()
     }
@@ -451,11 +591,16 @@ export function TilemapEditor(): JSX.Element | null {
     return () => document.removeEventListener('pointerdown', onPointerDown)
   }, [])
 
-  useToolShortcuts(TOOL_SHORTCUTS, (id) => session.getState().setTool(id))
+  const toolMode = activeObjectLayer ? 'objects' : 'tiles'
+  // A letra só vale para as ferramentas da caixa da camada ativa (o "O" do ponto não
+  // pode ligar uma ferramenta de objeto numa camada de peças).
+  useToolShortcuts(TOOL_SHORTCUTS, (id) => {
+    if (mapToolsFor(toolMode).some((entry) => entry.id === id)) session.getState().setTool(id)
+  })
   useWheelZoom(stageRef, canvasRef)
 
   if (!tilemap) return null
-  if (!tileset) {
+  if (!baseTileset) {
     return (
       <div className="flex flex-1 items-center justify-center p-8 text-center text-base text-pin-muted">
         {COPY.tiles.missingTileset}
@@ -469,6 +614,11 @@ export function TilemapEditor(): JSX.Element | null {
   // As ações precisam da camada ativa — religam a cada render.
   deleteSelectionRef.current = deleteMapSelection
   stampPendingRef.current = stampPending
+  deleteObjectRef.current = () => {
+    if (!activeObjectLayer || !selectedObjectId) return false
+    removeObject(selectedObjectId)
+    return true
+  }
 
   /** Célula do MAPA sob o ponteiro (pode ser -1..cols no anel de expansão). */
   function cellFromEvent(event: PointerEvent<HTMLCanvasElement>): CellPos {
@@ -523,7 +673,8 @@ export function TilemapEditor(): JSX.Element | null {
     if (!tilemap || !g) return null
     const side: 'left' | 'right' | 'top' | 'bottom' =
       cell.col < 0 ? 'left' : cell.col >= tilemap.cols ? 'right' : cell.row < 0 ? 'top' : 'bottom'
-    const grown = growTilemap(tilemap, side)
+    // Crescer à esquerda/em cima empurra os objetos uma peça junto.
+    const grown = growTilemap(tilemap, side, tileSize)
     if (grown === tilemap) {
       if (!g.grew) showToast(COPY.tiles.autoExpandLimit)
       g.grew = true
@@ -822,6 +973,10 @@ export function TilemapEditor(): JSX.Element | null {
     hoverRef.current(null)
   }
 
+  function selectMapTool(nextTool: MapTool): void {
+    session.getState().setTool(nextTool)
+  }
+
   function selectTile(index: number): void {
     const state = session.getState()
     state.setStamp(null)
@@ -853,7 +1008,11 @@ export function TilemapEditor(): JSX.Element | null {
     const state = editor.getState()
     if (state.asset.kind !== 'tilemap') return
     const next = removeLayer(state.asset, id)
-    if (next === state.asset) return
+    if (next === state.asset) {
+      // O único "não" possível com mais de uma camada: era a última de PEÇAS.
+      if (state.asset.layers.length > 1) showToast(COPY.tiles.lastTileLayer)
+      return
+    }
     state.commit(next)
     if (id === layerId) setActiveLayerId(next.layers[0]?.id ?? null)
   }
@@ -873,6 +1032,96 @@ export function TilemapEditor(): JSX.Element | null {
     setActiveLayerId(next.layers[next.layers.length - 1]?.id ?? null)
   }
 
+  function addMapObjectLayer(): void {
+    const state = editor.getState()
+    if (state.asset.kind !== 'tilemap') return
+    const count = state.asset.layers.filter(isObjectLayer).length
+    const next = addObjectLayer(
+      state.asset,
+      count === 0
+        ? COPY.tiles.objectLayerNamePrefix
+        : `${COPY.tiles.objectLayerNamePrefix} ${count + 1}`,
+    )
+    if (next === state.asset) {
+      showToast(COPY.tiles.layerLimit)
+      return
+    }
+    state.commit(next)
+    setActiveLayerId(next.layers[next.layers.length - 1]?.id ?? null)
+  }
+
+  function setMapLayerTileset(id: string, tilesetId: string): void {
+    const state = editor.getState()
+    const chosen = layerTilesetChoices.find((choice) => choice.id === tilesetId)
+    if (state.asset.kind !== 'tilemap' || !chosen || !baseTileset) return
+    const next = setLayerTileset(state.asset, id, chosen, baseTileset)
+    if (next !== state.asset) state.commit(next)
+  }
+
+  // ---- Objetos (camada de objetos ativa) --------------------------------
+
+  /** Commita uma edição do objeto na camada de objetos ativa (nada muda = nada commita). */
+  function commitObjectEdit(
+    edit: (map: TilemapAsset, objectLayerId: string) => TilemapAsset,
+  ): void {
+    const state = editor.getState()
+    if (state.asset.kind !== 'tilemap' || !activeObjectLayer) return
+    const next = edit(state.asset, activeObjectLayer.id)
+    if (next !== state.asset) state.commit(next)
+  }
+
+  function updateObject(id: string, patch: MapObjectPatch): void {
+    commitObjectEdit((map, objectLayerId) => updateMapObject(map, objectLayerId, id, patch))
+  }
+
+  function removeObject(id: string): void {
+    commitObjectEdit((map, objectLayerId) => removeMapObject(map, objectLayerId, id))
+    if (id === selectedObjectId) setSelectedObjectId(null)
+  }
+
+  /** Propriedades do objeto como estão AGORA no editor (não no último render). */
+  function liveProperties(id: string): Record<string, TilemapObjectPropertyValue> | null {
+    const current = editor.getState().asset
+    if (current.kind !== 'tilemap' || !activeObjectLayer) return null
+    const object = objectLayerById(current, activeObjectLayer.id)?.objects.find((o) => o.id === id)
+    return object ? object.properties : null
+  }
+
+  function setObjectProperty(
+    id: string,
+    key: string,
+    value: TilemapObjectPropertyValue,
+    previousKey?: string,
+  ): void {
+    const properties = liveProperties(id)
+    if (!properties) return
+    // Mudar ou renomear uma propriedade que já saiu (o rascunho gravado ao desmontar o campo
+    // da linha apagada) não a traz de volta.
+    if (previousKey !== undefined && !Object.hasOwn(properties, previousKey)) return
+    const result = withObjectProperty(properties, key, value, previousKey)
+    if (!result.ok) {
+      showToast(
+        result.reason === 'limit'
+          ? COPY.tiles.propertyLimit
+          : result.reason === 'duplicate-key'
+            ? COPY.tiles.propertyDuplicateKey
+            : COPY.tiles.propertyInvalidKey,
+      )
+      return
+    }
+    updateObject(id, { properties: result.properties })
+  }
+
+  function removeObjectProperty(id: string, key: string): void {
+    const properties = liveProperties(id)
+    if (properties) updateObject(id, { properties: withoutObjectProperty(properties, key) })
+  }
+
+  function addObjectProperty(id: string): void {
+    const properties = liveProperties(id)
+    if (properties) setObjectProperty(id, nextPropertyKey(properties), '')
+  }
+
   return (
     // A área da tela-modelo (11/09/2026): a coluna branca das ferramentas, o palco claro, a coluna
     // branca das peças e camadas, e a faixa azul com as medidas do mapa e o zoom.
@@ -880,11 +1129,14 @@ export function TilemapEditor(): JSX.Element | null {
       <div className="flex min-h-0 flex-1 items-stretch">
         <TilemapToolbar
           tool={tool}
+          mode={toolMode}
           autoExpand={autoExpand}
           showCollision={showCollision}
-          onSelectTool={(nextTool) => session.getState().setTool(nextTool)}
+          snapObjects={snapObjects}
+          onSelectTool={selectMapTool}
           onToggleAutoExpand={() => session.getState().toggleAutoExpand()}
           onToggleCollision={() => setShowCollision((visible) => !visible)}
+          onToggleSnapObjects={() => setSnapObjects((snap) => !snap)}
         />
 
         {/* A grade do mapa (centraliza quando menor; rola quando maior — com
@@ -917,7 +1169,7 @@ export function TilemapEditor(): JSX.Element | null {
             ref={stageRef}
             className="flex min-h-0 min-w-0 flex-1 flex-col overflow-auto p-2 [align-items:safe_center] [justify-content:safe_center]"
           >
-            <div className="pin-checkerboard pin-paper">
+            <div className="pin-checkerboard pin-paper relative">
               <canvas
                 ref={canvasRef}
                 className="pin-pixelated block"
@@ -934,6 +1186,20 @@ export function TilemapEditor(): JSX.Element | null {
                 aria-label={COPY.tiles.mapGrid}
                 role="img"
               />
+              {/* Os objetos por cima da grade (desenhados sempre; tocáveis só na
+                  camada de objetos, com uma ferramenta de objeto). */}
+              <MapObjectsOverlay
+                tilemap={tilemap}
+                activeLayerId={activeObjectLayer?.id ?? null}
+                interactive={activeObjectLayer !== null && isMapObjectTool(tool)}
+                tool={isMapObjectTool(tool) ? tool : null}
+                tileSize={tileSize}
+                pad={pad}
+                scale={cellPx / tileSize}
+                snap={snapObjects}
+                selectedObjectId={selectedObjectId}
+                onSelectObject={setSelectedObjectId}
+              />
             </div>
           </div>
         </div>
@@ -941,9 +1207,27 @@ export function TilemapEditor(): JSX.Element | null {
         <TilemapSidebar
           tilemap={tilemap}
           tileset={tileset}
+          layerTilesetChoices={layerTilesetChoices}
           selectedTile={selectedTile}
           stamp={stamp}
           activeLayerId={layerId}
+          objectPanel={
+            activeObjectLayer ? (
+              <MapObjectPanel
+                layer={activeObjectLayer}
+                selectedObjectId={selectedObjectId}
+                onSelectObject={setSelectedObjectId}
+                onUpdateObject={updateObject}
+                onRemoveObject={removeObject}
+                onSetProperty={setObjectProperty}
+                onRemoveProperty={removeObjectProperty}
+                onAddProperty={addObjectProperty}
+              />
+            ) : !tileset ? (
+              // Camada de peças cujas peças sumiram da galeria: diz, em vez de um vazio.
+              <p className="p-3 text-sm text-pin-muted">{COPY.tiles.missingTileset}</p>
+            ) : null
+          }
           onSelectTile={selectTile}
           onSetStamp={selectStamp}
           onSelectLayer={setActiveLayerId}
@@ -951,6 +1235,8 @@ export function TilemapEditor(): JSX.Element | null {
           onToggleVisible={toggleMapLayerVisible}
           onRemoveLayer={removeMapLayer}
           onAddLayer={addMapLayer}
+          onAddObjectLayer={addMapObjectLayer}
+          onSetLayerTileset={setMapLayerTileset}
         />
       </div>
       <div className="pin-band flex shrink-0 items-center justify-between gap-2 px-4 py-2">

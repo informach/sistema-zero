@@ -2,20 +2,10 @@ import { copyStudioProjectJson } from '@sistemazero/core/studio/project-json'
 import * as Blockly from 'blockly/core'
 import { registerPythonBlocks } from './blockly'
 import { PYTHON_PROGRAMMING_CODECS } from './catalog'
-import type { PythonBlockCodec } from './contract'
+import { type PythonBlockCodec, PYTHON_BLOCK_ROLES as roles } from './contract'
 
 const record = (value: unknown): value is Record<string, unknown> =>
   !!value && typeof value === 'object' && !Array.isArray(value)
-const roles = [
-  'value',
-  'statement',
-  'parameter',
-  'parameters',
-  'keyword',
-  'handler',
-  'alias',
-  'format',
-]
 function fail(): never {
   throw new Error(
     'Não foi possível restaurar este rascunho de blocos Python. O código foi mantido.',

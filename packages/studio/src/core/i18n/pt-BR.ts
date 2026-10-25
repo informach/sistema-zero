@@ -289,6 +289,19 @@ export const ptBR: Record<string, string> = {
     'O mapa inteiro vira uma imagem, com todas as camadas visíveis, incluindo a camada da frente.',
   'pintaImport.image.vector':
     'Este desenho entra como vetor (SVG): fica nítido em qualquer tamanho e o Pygame Zero o mostra no tamanho escolhido.',
+  'pintaImport.image.mode': 'O que trazer',
+  'pintaImport.image.mode.spritesheet': 'Folha com todas as animações',
+  'pintaImport.image.mode.frame': 'Um quadro',
+  'pintaImport.image.mode.tileset': 'Todas as peças',
+  'pintaImport.image.mode.tile': 'Uma peça',
+  'pintaImport.image.mode.map': 'Mapa com camadas e objetos',
+  'pintaImport.image.mode.tilemap': 'Imagem do mapa',
+  'pintaImport.image.spritesheetData':
+    'A folha leva junto as animações e a caixa de colisão. No código, use pinta.carregar_sprite com o nome da imagem.',
+  'pintaImport.image.tilesetData':
+    'A folha leva junto quais peças são sólidas e quais são plataforma. No código, use pinta.carregar_pecas com o nome da imagem.',
+  'pintaImport.image.mapData':
+    'A imagem leva todas as peças do mapa, as camadas e os objetos. No código, use pinta.carregar_mapa com o nome da imagem.',
   'pintaImport.image.preparing': 'Preparando a imagem…',
   'pintaImport.image.preview': 'Prévia da imagem escolhida',
   'pintaImport.image.add': 'Adicionar imagem',

@@ -1,4 +1,4 @@
-import { afterEach, expect, test } from 'bun:test'
+import { afterAll, afterEach, beforeAll, expect, test } from 'bun:test'
 import { mkdir, mkdtemp, readFile, rm, symlink, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { dirname, join, resolve, sep } from 'node:path'
@@ -9,15 +9,25 @@ import {
   createStudioRuntimeRelease,
   StudioRuntimeReleaseSchema,
 } from '@sistemazero/core/studio/runtime-catalog'
+import { PYGAME_GAME_EXAMPLES } from '../../studio/src/examples/python/pygameGames'
+import {
+  PYGAME_CE_WHEEL,
+  PYGAME_MODULE_FILES,
+} from '../../studio/src/runtime/python/pygame/contract'
 import { runPythonPromotionCommand } from '../scripts/promote-python-runtime'
 import {
   type PythonPromotionInput,
   preparePythonPromotion,
+  setPinnedPygameWheelForTests,
   verifyPythonPromotionPlan,
 } from '../scripts/python-promotion-plan'
 import { uploadPythonPromotion } from '../scripts/python-promotion-r2'
 import { sha256 } from '../src/artifacts'
-import { pythonDistributionFixture } from './python-distribution-fixture'
+import { fixturePygameWheel, pythonDistributionFixture } from './python-distribution-fixture'
+
+// The fixtures write a stand-in wheel; the check against the pinned one has its own test.
+beforeAll(() => setPinnedPygameWheelForTests(fixturePygameWheel()))
+afterAll(() => setPinnedPygameWheelForTests(null))
 
 const directories: string[] = []
 afterEach(async () => {
@@ -53,6 +63,8 @@ async function fixture(
     'turtle/_sz_turtle_backend.py',
     'turtle/_sz_turtle_colors.py',
     'turtle/_sz_turtle_limits.py',
+    ...PYGAME_MODULE_FILES.map((path) => `pygame/${path}`),
+    PYGAME_CE_WHEEL.file,
   ])
     storage.contents.set(path, new TextEncoder().encode(`fixture:${path}`))
   const distribution = {
@@ -111,6 +123,15 @@ test('offline plan is deterministic, binds distinct hashes and registers real Py
     first.deployment.release.manifestSha256,
   )
   expect(first.configuration.members.releases[0]?.blockIds).toContain('sz_py_print')
+  expect(first.deployment.release.manifest.extensions).toContainEqual({
+    id: 'python-pygame',
+    versions: ['1.0.0'],
+  })
+  expect(first.configuration.members.releases[0]?.blockIds).toContain('sz_py_pygame_init')
+  expect(first.configuration.members.releases[0]?.blockIds).toContain('sz_py_pygame_image_load')
+  const approved = new Set(first.configuration.members.releases[0]?.blockIds)
+  for (const example of PYGAME_GAME_EXAMPLES.filter((entry) => entry.kind === 'classic'))
+    expect(example.requiredBlockIds?.every((id) => approved.has(id))).toBe(true)
   expect(first.configuration.members.releases[0]?.categoryIds).toContain('Entrada e saída')
   expect(first.configuration.members.releases[0]?.categoryIds).not.toContain('python-basics')
   expect(first.configuration.members.releases[0]?.proTemplateIds).toEqual(['python-blank'])
@@ -128,6 +149,33 @@ test('offline plan is deterministic, binds distinct hashes and registers real Py
     Object.values(first.workerBindings).every((value) => Buffer.byteLength(value) <= 5000),
   ).toBe(true)
   expect(await verifyPythonPromotionPlan(first, first.planSha256)).toEqual(first)
+})
+
+for (const missing of ['pygame/_szpygame/__init__.py', 'pygame/pinta.py', PYGAME_CE_WHEEL.file])
+  test(`promotion rejects a distribution that omits the Pygame-ce file ${missing}`, async () => {
+    const f = await fixture()
+    const distribution = {
+      ...f.distribution,
+      files: f.distribution.files.filter(({ path }) => path !== missing),
+    }
+    await writeFile(join(f.directory, 'distribution.json'), JSON.stringify(distribution))
+    f.input.distribution.sha256 = await sha256Hex(canonicalJson(distribution))
+    await expect(preparePythonPromotion(f.input)).rejects.toThrow(
+      `Artefato Pygame-ce obrigatório ausente: ${missing}`,
+    )
+  })
+
+test('promotion rejects a Pygame-ce wheel other than the one the Studio pinned', async () => {
+  const f = await fixture()
+  // Same name, bytes the distribution manifest vouches for, but not PYGAME_CE_WHEEL's sha.
+  setPinnedPygameWheelForTests(null)
+  try {
+    await expect(preparePythonPromotion(f.input)).rejects.toThrow(
+      `A wheel Pygame-ce do artefato não é a fixada no Estúdio (${PYGAME_CE_WHEEL.file}, sha256 ${PYGAME_CE_WHEEL.sha256})`,
+    )
+  } finally {
+    setPinnedPygameWheelForTests(fixturePygameWheel())
+  }
 })
 
 test('promotion selects APIs from an explicit current-format implementation feature array', async () => {

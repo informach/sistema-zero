@@ -5,8 +5,10 @@ import {
   createPixelSpriteAsset,
   createTilemapAsset,
   createTilesetAsset,
+  isTileLayer,
   type PintaAsset,
 } from '../core/project'
+import { tileLayerAt } from '../testing/fixtures'
 import {
   clearIdbMock,
   idbMockDb,
@@ -35,7 +37,7 @@ function seed(namespace: string, ...assets: PintaAsset[]) {
 function mapFixture() {
   const tileset = createTilesetAsset({ name: 'pecas', tileSize: 16 })
   const source = createTilemapAsset({ name: 'mapa', tilesetId: tileset.id, cols: 2, rows: 1 })
-  source.layers[0]!.cells[0] = 0
+  tileLayerAt(source).cells[0] = 0
   return { source, tileset }
 }
 function spriteFixture() {
@@ -352,6 +354,84 @@ describe('completed-image cache requires a fresh native capture (real PNG canvas
         ),
       ).toBeInstanceOf(Error)
       expect(idbMockStats()).toMatchObject({ get: 1, set: 0, setMany: 0 })
+    })
+  })
+})
+
+describe('a map with a tileset per layer: one transaction for every tileset', () => {
+  function layeredMap() {
+    const { source, tileset } = mapFixture()
+    const other = createTilesetAsset({ name: 'enfeites', tileSize: 16 })
+    const wrongSize = createTilesetAsset({ name: 'grandes', tileSize: 32 })
+    const layered = {
+      ...source,
+      layers: [
+        ...source.layers,
+        { ...tileLayerAt(source), id: 'deco', name: 'Enfeites', tilesetId: other.id },
+        { ...tileLayerAt(source), id: 'big', name: 'Grandes', tilesetId: wrongSize.id },
+      ],
+    }
+    return { source: layered, tileset, other, wrongSize }
+  }
+
+  test('captures the default and every compatible layer tileset in the same read', async () => {
+    const { source, tileset, other, wrongSize } = layeredMap()
+    seed('a', source, tileset, other, wrongSize)
+    const captured = await capturePintaAssetForImage(source.id, { namespace: 'a' })
+    if (!captured.ok) throw new Error('capture required')
+    expect(captured.tileset?.id).toBe(tileset.id)
+    // The incompatible one (another tile size) is never part of the map, as in Pinta.
+    expect(captured.tilesets.map((item) => item.id)).toEqual([tileset.id, other.id])
+    expect(idbMockStats()).toMatchObject({ get: 1, getMany: 1, getManyKeys: 4 })
+  })
+
+  test('a missing layer tileset is left out; a missing default still needs the tileset', async () => {
+    const { source, tileset } = layeredMap()
+    seed('a', source, tileset)
+    const captured = await capturePintaAssetForImage(source.id, { namespace: 'a' })
+    if (!captured.ok) throw new Error('capture required')
+    expect(captured.tilesets.map((item) => item.id)).toEqual([tileset.id])
+  })
+
+  test('the inspection names the kind: `map` depends on every tileset, `tilemap` on the default', async () => {
+    const { source, tileset, other } = layeredMap()
+    seed('a', source, tileset, other)
+    const flat = await inspectImageForStudio(source.id, { namespace: 'a' })
+    const asTilemap = await inspectImageForStudio(source.id, {
+      namespace: 'a',
+      selection: 'tilemap',
+    })
+    const asMap = await inspectImageForStudio(source.id, { namespace: 'a', selection: 'map' })
+    expect(flat.dependencies.map((item) => item.drawingId)).toEqual([tileset.id])
+    expect(asTilemap).toEqual(flat)
+    expect(asMap.dependencies.map((item) => item.drawingId)).toEqual([tileset.id, other.id])
+    expect(asMap.sourceSha256).toBe(flat.sourceSha256)
+    // Editing only the layer tileset changes the map's provenance, not the flat image's.
+    seed('a', { ...other, name: 'enfeites novos' })
+    expect(
+      await inspectImageForStudio(source.id, { namespace: 'a', selection: 'tilemap' }),
+    ).toEqual(flat)
+    expect(
+      (await inspectImageForStudio(source.id, { namespace: 'a', selection: 'map' }))
+        .dependencies[1],
+    ).not.toEqual(asMap.dependencies[1])
+  })
+
+  test('a layer moving to another tileset between the reads fails closed', async () => {
+    const { source, tileset, other } = layeredMap()
+    const third = createTilesetAsset({ name: 'terceiro', tileSize: 16 })
+    seed('a', source, tileset, other, third)
+    setIdbReadGuard(() => {
+      seed('a', {
+        ...source,
+        layers: source.layers.map((layer) =>
+          layer.id === 'deco' && isTileLayer(layer) ? { ...layer, tilesetId: third.id } : layer,
+        ),
+      })
+    })
+    expect(await capturePintaAssetForImage(source.id, { namespace: 'a' })).toEqual({
+      ok: false,
+      reason: 'source-changed',
     })
   })
 })

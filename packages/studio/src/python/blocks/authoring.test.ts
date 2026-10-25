@@ -148,6 +148,14 @@ test('local modules and packages suppress official labels in classic and Pro', a
     }).has('pgzero'),
   ).toBe(true)
   expect(pythonOfficialModules(installed).has('pgzero')).toBe(false)
+  const pygame = {
+    ...project,
+    installedExtensions: [{ id: 'python-pygame', version: '1.0.0', installedAt: 1 }],
+  }
+  expect(pythonOfficialModules(pygame).has('pygame')).toBe(true)
+  expect(
+    pythonOfficialModules({ ...pygame, files: { ...pygame.files, 'pygame.py': '' } }).has('pygame'),
+  ).toBe(false)
   const { project: pro } = await pythonEnvironmentFixture('pro')
   if (pro.kind !== 'pro') throw new Error('fixture')
   expect(

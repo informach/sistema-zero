@@ -182,9 +182,12 @@ export const PythonProjectPlayer = forwardRef<
     }
   }, [props.project, playId, publicationRevision, request, ref])
 
-  // Turtle and Pygame Zero both draw on the execution canvas.
+  // Installed canvas extensions expose their frames to the project player.
   const hasTurtle = props.project.installedExtensions.some(
-    (extension) => extension.id === 'python-turtle' || extension.id === 'python-pgzero',
+    (extension) =>
+      extension.id === 'python-turtle' ||
+      extension.id === 'python-pgzero' ||
+      extension.id === 'python-pygame',
   )
   const omitted = output.reduce((total, entry) => total + entry.omittedChars, 0)
   return (

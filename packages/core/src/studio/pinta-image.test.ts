@@ -1,8 +1,12 @@
 import { describe, expect, test } from 'bun:test'
 import {
   assertPintaImageDimensions,
+  isPintaImageDataKind,
+  PINTA_IMAGE_MAX_MAP_TILESETS,
   PintaImageDerivationSchema,
+  type PintaImageRecipe,
   PintaImageRecipeSchema,
+  pintaImageDependencyRule,
   pintaImageOutputMime,
   pintaImageRecipeKey,
 } from './pinta-image'
@@ -96,5 +100,61 @@ describe('Pinta derived image identity', () => {
     ])
       expect(() => assertPintaImageDimensions(width!, height!, limits)).toThrow()
     expect(() => assertPintaImageDimensions(10, 10, { ...limits, totalImagePixels: 99 })).toThrow()
+  })
+})
+
+describe('Pinta images with embedded data (spritesheet, tileset, map)', () => {
+  const data = (selection: PintaImageRecipe['selection'], dependencies: string[] = []) => ({
+    recipe: { ...recipe, selection, scale: 2 },
+    provenance: {
+      sourceSha256: 'a'.repeat(64),
+      dependencies: dependencies.map((drawingId) => ({ drawingId, sha256: 'c'.repeat(64) })),
+    },
+    output: metadata.output,
+  })
+  test('the new kinds parse, keep their own identity and never request SVG', () => {
+    for (const kind of ['spritesheet', 'tileset', 'map'] as const) {
+      const sheet = { ...recipe, selection: { kind } }
+      expect(PintaImageRecipeSchema.safeParse(sheet).success).toBe(true)
+      expect(pintaImageRecipeKey(sheet)).toBe(
+        `{"algorithm":"pinta-image-1","drawingId":"drawing","scale":1,"selection":{"kind":"${kind}"},"version":1}`,
+      )
+      expect(isPintaImageDataKind(kind)).toBe(true)
+      expect(PintaImageRecipeSchema.safeParse({ ...sheet, output: 'svg' }).success).toBe(false)
+      expect(pintaImageOutputMime(sheet)).toBe('image/png')
+      // Extra selection fields stay rejected (the union members are strict).
+      expect(
+        PintaImageRecipeSchema.safeParse({ ...recipe, selection: { kind, tileIndex: 0 } }).success,
+      ).toBe(false)
+    }
+    for (const kind of ['background', 'frame', 'tile', 'tilemap'])
+      expect(isPintaImageDataKind(kind)).toBe(false)
+    // The flat kinds still accept the SVG output of a Pygame Zero vector drawing.
+    expect(
+      PintaImageRecipeSchema.safeParse({ ...recipe, selection: { kind: 'tilemap' }, output: 'svg' })
+        .success,
+    ).toBe(true)
+  })
+  test('dependency rule per kind: none, the default tileset, or every tileset (1..8)', () => {
+    expect(pintaImageDependencyRule('frame')).toBe('none')
+    expect(pintaImageDependencyRule('spritesheet')).toBe('none')
+    expect(pintaImageDependencyRule('tileset')).toBe('none')
+    expect(pintaImageDependencyRule('tilemap')).toBe('default-tileset')
+    expect(pintaImageDependencyRule('map')).toBe('all-tilesets')
+    const ok = (value: unknown) => PintaImageDerivationSchema.safeParse(value).success
+    expect(ok(data({ kind: 'spritesheet' }))).toBe(true)
+    expect(ok(data({ kind: 'tileset' }))).toBe(true)
+    expect(ok(data({ kind: 'spritesheet' }, ['t1']))).toBe(false)
+    expect(ok(data({ kind: 'tileset' }, ['t1']))).toBe(false)
+    expect(ok(data({ kind: 'map' }))).toBe(false)
+    expect(ok(data({ kind: 'map' }, ['t1']))).toBe(true)
+    const eight = Array.from({ length: PINTA_IMAGE_MAX_MAP_TILESETS }, (_, i) => `t${i}`)
+    expect(ok(data({ kind: 'map' }, eight))).toBe(true)
+    expect(ok(data({ kind: 'map' }, [...eight, 't9']))).toBe(false)
+    expect(ok(data({ kind: 'map' }, ['t1', 't1']))).toBe(false)
+    expect(ok(data({ kind: 'map' }, ['t1', 'drawing']))).toBe(false)
+    // The flat map image keeps "exactly its captured tileset".
+    expect(ok(data({ kind: 'tilemap' }, ['t1']))).toBe(true)
+    expect(ok(data({ kind: 'tilemap' }, ['t1', 't2']))).toBe(false)
   })
 })

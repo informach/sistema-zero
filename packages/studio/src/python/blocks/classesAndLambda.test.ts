@@ -97,13 +97,15 @@ test('classes inherit from names and attributes, and super().__init__() stays vi
   expect(ids.filter((id) => id === 'sz_py_class')).toHaveLength(4)
 })
 
-test('class keywords and decorators still have no visual form', () => {
+test('class keywords still have no visual form; a decorated class has its own block', () => {
   const withKeyword = classDef('Alvo', [name('Base')])
   withKeyword.fields.keywords = [node('keyword', { arg: 'metaclass', value: name('Meta') })]
+  expect(pythonASTToVisual(moduleNode([withKeyword])).body[0]!.kind).toBe('source')
   const decorated = classDef('Alvo', [])
   decorated.fields.decorator_list = [name('dataclass')]
-  for (const value of [withKeyword, decorated])
-    expect(pythonASTToVisual(moduleNode([value])).body[0]!.kind).toBe('source')
+  const ids = roundtrip(moduleNode([decorated]))
+  expect(ids[0]).toBe('sz_py_decorated_class')
+  expect(ids).not.toContain('sz_py_class')
 })
 
 test('lambda keeps parameters, defaults and the callback body through Blockly', () => {
@@ -132,18 +134,16 @@ test('lambda keeps parameters, defaults and the callback body through Blockly', 
   expect(ids.filter((id) => id === 'sz_py_lambda')).toHaveLength(2)
 })
 
-test('lambda with *args, keyword-only or positional-only parameters keeps them as explicit source', () => {
+test('lambda with *args, keyword-only or positional-only parameters uses the full parameter block', () => {
   for (const parameters of [
     args([], [], { vararg: arg('a') }),
     args([], [], { kwonlyargs: [arg('k')], kw_defaults: [null] }),
     args([], [], { posonlyargs: [arg('a')] }),
   ]) {
-    const original = moduleNode([expression(lambda(parameters, integer('0')))])
-    const projection = pythonASTToVisual(original)
-    // Same contract as def: the parameter list is never presented as understood.
-    expect(opaque(projection.body)).toBe(1)
-    expect(codecIds(projection.body)).not.toContain('sz_py_parameters')
-    expect(pythonSemanticTree(pythonVisualToAST(projection))).toEqual(pythonSemanticTree(original))
+    const ids = roundtrip(moduleNode([expression(lambda(parameters, integer('0')))]))
+    // Same contract as def: the simple parameter block never claims what it cannot show.
+    expect(ids).toContain('sz_py_parameters_full')
+    expect(ids).not.toContain('sz_py_parameters')
   }
 })
 

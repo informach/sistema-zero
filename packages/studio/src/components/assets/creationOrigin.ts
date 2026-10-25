@@ -8,7 +8,12 @@ export type CreationOrigin = 'pinta' | 'molda'
 export interface EditTarget {
   id: string
   origin: CreationOrigin
-  open: (creationId: string) => void
+  open: (creationId: string, tab?: Window | null) => void
+  /**
+   * Desenho de um jogo de exemplo ainda não copiado para o Pinta: o clique prepara a cópia
+   * (`exampleDrawingLink.ts`) e só então abre, com o id novo. `id` é o do documento de origem.
+   */
+  example?: true
 }
 
 /**

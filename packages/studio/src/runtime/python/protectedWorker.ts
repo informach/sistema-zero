@@ -45,7 +45,7 @@ addEventListener('message', async function initialize(event) {
     if (!value || typeof value !== 'object' || Reflect.ownKeys(value).length !== 3 ||
         Reflect.ownKeys(value).some(key => !['type', 'protocol', 'canvas'].includes(key)) ||
         value.type !== 'python-boot-resource-init' || value.protocol !== 1 ||
-        (value.canvas !== undefined && value.canvas !== null && value.canvas !== 'python-turtle' && value.canvas !== 'python-pgzero') ||
+        (value.canvas !== undefined && value.canvas !== null && value.canvas !== 'python-turtle' && value.canvas !== 'python-pgzero' && value.canvas !== 'python-pygame') ||
         (${JSON.stringify(purpose)} === 'analysis' && value.canvas !== undefined) || event.ports.length !== 1)
       throw new Error('Configuração privada de boot Python inválida.');
     ${
