@@ -1,5 +1,5 @@
 import type { Vec3 } from '../core/model'
-import { PALETTE_SIZE } from '../core/palette'
+import { paletteBaseSize } from '../core/sanitize'
 import { type BrushSize, lineTexels, stampTexels, type Texel } from '../paint/skinPaint'
 import { requireEditableAppearance, sceneAppearanceUsage } from './appearanceUsage'
 import { finishSceneCommand } from './commandContext'
@@ -149,7 +149,7 @@ export function paintSceneImage(
     image,
     target.layerId,
     segment,
-    PALETTE_SIZE + (document.extraColors?.length ?? 0),
+    paletteBaseSize(document) + (document.extraColors?.length ?? 0),
   )
   return result === image
     ? document

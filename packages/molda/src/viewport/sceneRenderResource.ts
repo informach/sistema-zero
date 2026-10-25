@@ -5,6 +5,7 @@ import {
   type ColorSpace,
   Group,
   type Intersection,
+  type Material,
   Mesh,
   MeshBasicMaterial,
   MeshStandardMaterial,
@@ -727,6 +728,24 @@ export class SceneRenderResource {
         materials.some((material, i) => previous[i] !== material)
       )
         mesh.material = materials
+    }
+    // Three.js renders every visible material group into the shadow map, even when
+    // its color pass blends alpha. Suppress only those groups so opaque faces and
+    // authored cutouts in the same mesh keep casting their normal shadows.
+    let shadowState: { material: Material; depthWrite: boolean; colorWrite: boolean } | null = null
+    mesh.onBeforeShadow = (_renderer, _object, _camera, _shadowCamera, _geometry, depth, group) => {
+      // Three passes a geometry group here; its published callback type says Group.
+      const slot = (group as unknown as { materialIndex?: number } | null)?.materialIndex ?? 0
+      if (!resources[slot]?.authoredTransparency) return
+      shadowState = { material: depth, depthWrite: depth.depthWrite, colorWrite: depth.colorWrite }
+      depth.depthWrite = false
+      depth.colorWrite = false
+    }
+    mesh.onAfterShadow = () => {
+      if (!shadowState) return
+      shadowState.material.depthWrite = shadowState.depthWrite
+      shadowState.material.colorWrite = shadowState.colorWrite
+      shadowState = null
     }
     mesh.name = instance.name
     const back = this.backs.get(mesh)

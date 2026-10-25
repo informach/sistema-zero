@@ -15,8 +15,13 @@ import {
   type Vec3,
 } from '../core/model'
 import { normalizePartName } from '../core/names'
-import { firstPaintableIndex, PALETTE_SIZE } from '../core/palette'
-import { normalizeBox, normalizeRotation, resolvePaletteColors } from '../core/sanitize'
+import { firstPaintableIndex } from '../core/palette'
+import {
+  normalizeBox,
+  normalizeRotation,
+  paletteBaseSize,
+  resolvePaletteColors,
+} from '../core/sanitize'
 import { buildPartGeometry } from './geometry'
 import {
   BOX_MESH_FACES,
@@ -655,7 +660,7 @@ export function setSnap(model: MoldaModelAsset, snap: MoldaModelAsset['snap']): 
   return { ...model, snap }
 }
 
-/** Cor extra nova (índice ≥ 16). `null` = teto ou já existe (devolve o índice existente). */
+/** Cor extra nova (após a paleta base). `null` = teto ou já existe (devolve o índice existente). */
 export function addExtraColor(
   model: MoldaModelAsset,
   hex: string,
@@ -681,7 +686,7 @@ export function updateExtraColor(
   hex: string,
 ): MoldaModelAsset {
   const extras = model.extraColors ?? []
-  const at = index - PALETTE_SIZE
+  const at = index - paletteBaseSize(model)
   if (at < 0 || at >= extras.length) return model
   if (extras[at] === hex) return model
   if (resolvePaletteColors(model).includes(hex)) return model
@@ -703,13 +708,13 @@ export function setTexelsPerUnit(
 }
 
 /**
- * Apaga uma cor EXTRA (índice ≥ 16): texels dessa cor voltam ao 0 (cor base),
+ * Apaga uma cor EXTRA (após a paleta base): texels dessa cor voltam ao 0 (cor base),
  * as extras seguintes descem 1 em toda pele e em toda cor de peça; peça que
- * era dessa cor cai na primeira pintável. `null` para as 16 fixas.
+ * era dessa cor cai na primeira pintável. `null` para as cores da base.
  */
 export function removeExtraColor(model: MoldaModelAsset, index: number): MoldaModelAsset | null {
   const extras = model.extraColors ?? []
-  const first = PALETTE_SIZE
+  const first = paletteBaseSize(model)
   if (index < first || index >= first + extras.length) return null
   const nextExtras = extras.filter((_hex, i) => i !== index - first)
   const base: MoldaModelAsset = { ...model }

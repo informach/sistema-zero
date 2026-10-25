@@ -17,8 +17,8 @@ import type {
   MoldaSkin,
   MoldaTextureAsset,
 } from '../core/model'
-import { firstPaintableIndex, PALETTE_SIZE } from '../core/palette'
-import { resolvePaletteColors } from '../core/sanitize'
+import { firstPaintableIndex } from '../core/palette'
+import { paletteBaseSize, resolvePaletteColors } from '../core/sanitize'
 import { faceSkinSize, partFaces } from '../model/shapes'
 import { cloneSkin, createSkin, isSkinBlank } from '../model/skinOps'
 import { syncTwins } from '../model/twins'
@@ -164,7 +164,7 @@ export function sampleTexture(
   return bitmap.data[texturePixelIndex(bitmap, x, y, offset)] ?? 0
 }
 
-/** Cor extra nova na textura (índice ≥ 16). `null` = teto. */
+/** Cor extra nova na textura (após a paleta base). `null` = teto. */
 export function addTextureColor(
   asset: MoldaTextureAsset,
   hex: string,
@@ -184,7 +184,7 @@ export function updateTextureColor(
   hex: string,
 ): MoldaTextureAsset {
   const extras = asset.extraColors ?? []
-  const at = index - PALETTE_SIZE
+  const at = index - paletteBaseSize(asset)
   if (at < 0 || at >= extras.length) return asset
   if (extras[at] === hex) return asset
   if (textureColors(asset).includes(hex)) return asset
@@ -199,8 +199,9 @@ export function removeTextureColor(
   index: number,
 ): MoldaTextureAsset | null {
   const extras = asset.extraColors ?? []
-  if (index < PALETTE_SIZE || index >= PALETTE_SIZE + extras.length) return null
-  const nextExtras = extras.filter((_hex, i) => i !== index - PALETTE_SIZE)
+  const first = paletteBaseSize(asset)
+  if (index < first || index >= first + extras.length) return null
+  const nextExtras = extras.filter((_hex, i) => i !== index - first)
   const data = new Uint8Array(asset.bitmap.data.length)
   for (let i = 0; i < data.length; i += 1) {
     const value = asset.bitmap.data[i] ?? 0

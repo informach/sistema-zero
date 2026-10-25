@@ -1822,7 +1822,7 @@ export const COPY = {
         activeColor: 'Cor do lápis',
         removeColor: 'Apagar esta cor',
         removeColorBase:
-          'As 16 cores da paleta são fixas. Só as cores que você adicionou podem ser apagadas.',
+          'As cores da paleta são fixas. Só as cores que você adicionou podem ser apagadas.',
         removedColor: 'Cor apagada.',
         /** Textura pronta da galeria, copiada para a pintura do modelo. */
         apply: {

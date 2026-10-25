@@ -1,6 +1,6 @@
 /**
- * Paletas do Molda — cópia por VALOR das do Pinta (a criança reconhece as
- * mesmas cores nas duas ferramentas; nenhum import entre os pacotes). SEMPRE 16
+ * Paletas prontas do Molda — cópia por VALOR das do Pinta (a criança reconhece as
+ * mesmas cores nas duas ferramentas; nenhum import entre os pacotes). Têm 16
  * entradas, com o índice 0 reservado: na TEXTURA ele é o transparente (como no
  * Pinta); na PELE de uma peça ele significa "usa a cor base da peça".
  */
@@ -19,6 +19,8 @@ export interface MoldaPalette {
 
 export const RESERVED_INDEX = 0
 export const PALETTE_SIZE = 16
+/** Até 32 cores pintáveis mais o índice reservado. */
+export const MAX_CUSTOM_PALETTE_SIZE = 33
 
 const ARCADE: MoldaPalette = {
   id: 'arcade',

@@ -22,6 +22,7 @@ import type {
 } from './document'
 import { indexSceneDocument } from './documentIndex'
 import { reparentPreservingWorld } from './graph'
+import { changeSceneRestWithLocalAnimations } from './localAnimationRest'
 import { SCENE_MATERIAL_IMAGE_KEYS, sceneMaterialImageIds } from './materialImages'
 import {
   type AffineMatrix,
@@ -390,14 +391,6 @@ export function transformSceneNodes(
   editable(selected)
   if (!selected.roots.size || delta.every((value, i) => value === identityMatrix()[i]))
     return document
-  for (const clip of document.animations ?? [])
-    if (clip.space === 'local')
-      for (const track of clip.tracks)
-        requireScene(
-          !selected.covered.has(track.nodeId),
-          `animations.${clip.id}.${track.nodeId}`,
-          'Esse clipe usa a posição local original. Converta o movimento antes de mudar a organização ou o pivô.',
-        )
   const reflection = affineDeterminant(delta) < 0
   const nodes = document.nodes.map((node): ModelSceneNode => {
     if (!selected.roots.has(node.id)) return node
@@ -418,7 +411,9 @@ export function transformSceneNodes(
     }
     return { ...node, transform: reflection ? affine : rigidSceneTransform(affine) }
   })
-  return finish(resizeScenePaint(document, { ...document, nodes }))
+  return finish(
+    resizeScenePaint(document, changeSceneRestWithLocalAnimations(document, nodes, selected.roots)),
+  )
 }
 
 /** Group pivot starts at the selected geometry's world center. Different parents join at root. */
