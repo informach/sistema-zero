@@ -52,6 +52,16 @@ Recibo: `hosted-three/9ff968a1-5051-4a87-9ead-d23d2723944b/receipt.json`, com JP
 
 ## Pendências
 
+### Complemento operacional — 25/10, 02:27 UTC
+
+A distribuição `d0443c77ba985acf015b5591b63a7fe5d71ed16fa2bbc7674cf6f032a09c41d2` foi armazenada nos dois ambientes pelo promotor nativo, com 69 leituras de retorno (arquivos, marcador e catálogo) e retirada dos Workers/segredos temporários. Isso não ativou a política de criação nas aplicações nem concluiu a implantação de produção.
+
+Staging recebeu o catálogo aditivo `790f5d34c3f5f4f40b643a9ace94ef627b35963860d49f40819c1b805f262d2d`: os descritores antigos permaneceram idênticos. O serviço de execução está na versão `e2bd5588-f88f-43b3-9233-837142aa1981`, imagem `sha256:5c8f3d93eaf299139d1d8f3058047728fad101af8bd6db0871fac8c756abc84b`, com diagnóstico restrito a etapas fixas, sem registrar fonte, caminho, saída do programa ou erros arbitrários. Produção não recebeu essas alterações do executor.
+
+A prova hospedada Python `hosted-python-missions/ced2287d-7857-4bec-88e1-058d002ad74f` aprovou console e função no programa correto (46.072 ms), mas o caso seguinte voltou a retornar HTTP 500 (50.381 ms). Tentativas negativas anteriores foram preservadas. A transferência verificada conclui; a prova isolada de compilação também falhou. Portanto, a execução hospedada está **instável e não homologada**, apesar do resultado positivo isolado. Os inputs temporários foram removidos sem falhas reconhecidas pelo cliente. Essa confirmação de remoção não substitui a revisão do encerramento do processo protegido.
+
+Os testes de privacidade do diagnóstico e inspeção passaram (18 testes / 91 asserções), assim como tipos completos do runtime. A suíte completa do Estúdio passou pela execução serial canônica (`studio-full-three-r3.log`) antes do novo teste dos exemplos sem HTML/CSS. O CI de `d19c84302` falhou no teste móvel do Pensa; 44 testes do pacote passaram localmente, mas a causa da divergência ainda precisa ser esclarecida. Não considerar esse CI aprovado nem presumir deploy automático.
+
 - Concluir CI da revisão final e os deploys das aplicações em staging/produção.
 - Ativar os descritores e políticas revisados na ordem compatível; qualificar Python pelo caminho hospedado.
 - Conferir Admin/aluno, conclusão, ensaio e permissões na interface real.

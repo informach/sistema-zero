@@ -1,4 +1,4 @@
-import { expect, test } from 'bun:test'
+import { expect, spyOn, test } from 'bun:test'
 import {
   type StudioPythonExecutionMetadata,
   studioPythonExecutionRevision,
@@ -148,6 +148,48 @@ async function fixture(fixtureOptions: { playtest?: boolean; compressed?: boolea
     counts: () => ({ created, destroyed, executed }),
   }
 }
+
+test('operational failures identify the phase without logging private errors or source', async () => {
+  const f = await fixture()
+  const failure = new Error('PRIVATE-CREDENTIAL-AND-PROGRAM-MARKER')
+  f.sandbox.mkdir = async () => {
+    throw failure
+  }
+  const logged = spyOn(console, 'error').mockImplementation(() => {})
+  try {
+    await expect(runIsolatedPythonInspection(f.input)).rejects.toBe(failure)
+    expect(logged.mock.calls).toHaveLength(1)
+    expect(logged.mock.calls[0]).toEqual([
+      '[studio-python] isolated phase failed',
+      expect.objectContaining({ phase: 'mkdir-runtime', fileIndex: 0, bytes: 0 }),
+    ])
+    expect(JSON.stringify(logged.mock.calls)).not.toContain(failure.message)
+    expect(f.counts().destroyed).toBe(1)
+  } finally {
+    logged.mockRestore()
+  }
+})
+
+test('trusted process diagnostics accept only a fixed phase and never publish stderr', async () => {
+  const f = await fixture()
+  f.setExecute(async () => ({
+    success: false,
+    stdout: 'PRIVATE-PROGRAM',
+    stderr: 'PRIVATE-CREDENTIAL\nSTUDIO_PYTHON_INSPECTION_PHASE:resources\n',
+  }))
+  const logged = spyOn(console, 'error').mockImplementation(() => {})
+  try {
+    await expect(runIsolatedPythonInspection(f.input)).rejects.toThrow('inspeção Python')
+    expect(logged.mock.calls[0]).toEqual([
+      '[studio-python] inspection process failed',
+      { phase: 'resources' },
+    ])
+    expect(JSON.stringify(logged.mock.calls)).not.toContain('PRIVATE-')
+    expect(f.counts().destroyed).toBe(1)
+  } finally {
+    logged.mockRestore()
+  }
+})
 
 test('isolated inspection stages only verified bytes and fixed trusted command, binds report, owns cleanup', async () => {
   const f = await fixture()

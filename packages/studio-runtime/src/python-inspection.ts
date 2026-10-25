@@ -105,10 +105,15 @@ export async function withIsolatedPythonProject<Result>(
     void destroy().catch(() => {})
   }
   signal.addEventListener('abort', abort, { once: true })
+  const started = Date.now()
+  let phase = 'mkdir-runtime'
+  let fileIndex = 0
+  let bytes = 0
   try {
     check()
     await step(sandbox.mkdir(`${cwd}/runtime`, { recursive: true }))
     check()
+    phase = 'mkdir-project'
     await step(sandbox.mkdir(`${cwd}/project`, { recursive: true }))
     for (const [kind, files, read] of [
       [
@@ -132,6 +137,9 @@ export async function withIsolatedPythonProject<Result>(
     ] as const) {
       for (const file of files) {
         check()
+        fileIndex++
+        bytes = file.bytes
+        phase = `read-${kind}`
         let pendingBody: ReadableStream<Uint8Array> | undefined
         let transfer: ReturnType<typeof verifiedPythonFileStream> | undefined
         try {
@@ -154,11 +162,13 @@ export async function withIsolatedPythonProject<Result>(
           pendingBody = undefined
           check()
           const slash = file.path.lastIndexOf('/')
+          phase = `mkdir-${kind}-parent`
           if (slash >= 0)
             await step(
               sandbox.mkdir(`${cwd}/${kind}/${file.path.slice(0, slash)}`, { recursive: true }),
             )
           check()
+          phase = `write-${kind}`
           await step(
             Promise.all([
               sandbox.writeFile(`${cwd}/${kind}/${file.path}`, transfer.stream),
@@ -173,9 +183,20 @@ export async function withIsolatedPythonProject<Result>(
       }
     }
     check()
+    phase = 'run'
     const result = await step(task({ sandbox, cwd, snapshot, deployment, signal, step, check }))
     check()
     return result
+  } catch (error) {
+    // Deliberately exclude paths, source, command output and arbitrary error text.
+    console.error('[studio-python] isolated phase failed', {
+      phase,
+      fileIndex,
+      bytes,
+      elapsedMs: Math.max(0, Date.now() - started),
+      cancelled: signal.aborted,
+    })
+    throw error
   } finally {
     let cleanupTimer: ReturnType<typeof setTimeout> | undefined
     try {
@@ -239,7 +260,14 @@ export async function inspectPreparedPythonProject(
     }),
   )
   check()
-  if (!executed.success) throw new Error('A inspeção Python isolada não pôde ser concluída.')
+  if (!executed.success) {
+    const phase =
+      /STUDIO_PYTHON_INSPECTION_PHASE:(options|resources|launch|context|navigation|wait|result|write-report)\b/.exec(
+        executed.stderr,
+      )?.[1]
+    console.error('[studio-python] inspection process failed', { phase: phase ?? 'unknown' })
+    throw new Error('A inspeção Python isolada não pôde ser concluída.')
+  }
   const result = await step(
     sandbox.readFile(`${cwd}/python-inspection-result.json`, {
       encoding: 'utf-8',
