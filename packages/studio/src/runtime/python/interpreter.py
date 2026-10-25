@@ -5,6 +5,7 @@ import os
 import sys
 import traceback
 import types
+import weakref
 from importlib.machinery import SourceFileLoader
 from pathlib import Path
 
@@ -22,6 +23,14 @@ def _bounded_text(value, limit):
     if prefix and 0xD800 <= ord(prefix[-1]) <= 0xDBFF:
         prefix = prefix[:-1]
     return prefix + "…"
+
+
+def _bounded_ends(value, head, tail):
+    # A long traceback (deep recursion) keeps its start and its end: the end has the line of
+    # the error and its kind, as a terminal shows.
+    if len(value) <= head + tail:
+        return _bounded_text(value, 16000)
+    return _bounded_text(value[:head] + "\n…\n" + value[-tail:], 16000)
 
 
 class _ConsoleInput(io.TextIOBase):
@@ -99,11 +108,14 @@ _WRITE_MODE_LETTERS = frozenset('wax+')
 class _SavedFiles:
     def __init__(self, root, protected, sizes, report, original_open):
         self._root = os.path.realpath(root)
-        self._protected = frozenset(protected)
+        self._protected = frozenset(path.lower() for path in protected)
         self._sizes = dict(sizes)
         self._report = report
         self._open = original_open
         self._warned = set()
+        # Written files still open: sent at the end of the run (on a computer they reach the
+        # disk when the program ends) and at each flush().
+        self._open_files = weakref.WeakSet()
 
     def relative(self, file):
         """The project path of a file the program opened, or None when it is not kept."""
@@ -118,7 +130,9 @@ class _SavedFiles:
             return None
         relative = absolute[len(self._root) + 1:].replace(os.sep, '/')
         # The program's own files are not saved over: the next run starts from the project.
-        if relative in self._protected:
+        if relative.lower() in self._protected:
+            self._warn(relative, 'ele faz parte do projeto; o que o jogo gravar nele vale só '
+                                 'enquanto ele roda.')
             return None
         return relative
 
@@ -128,6 +142,16 @@ class _SavedFiles:
         self._warned.add(relative)
         print(f"Aviso: o arquivo '{relative}' não foi guardado no projeto: {reason}",
               file=sys.stderr)
+
+    def opened(self, wrapper):
+        self._open_files.add(wrapper)
+
+    def flush_open(self):
+        for wrapper in list(self._open_files):
+            try:
+                wrapper.flush()
+            except Exception:
+                pass
 
     def closed(self, relative):
         absolute = os.path.join(self._root, relative)
@@ -162,7 +186,9 @@ class _SavedFiles:
             if isinstance(mode, str) and not _WRITE_MODE_LETTERS.isdisjoint(mode):
                 relative = watcher.relative(file)
                 if relative is not None:
-                    return _SavedFile(handle, relative, watcher)
+                    wrapper = _SavedFile(handle, relative, watcher)
+                    watcher.opened(wrapper)
+                    return wrapper
             return handle
 
         open.__doc__ = original.__doc__
@@ -195,10 +221,19 @@ class _SavedFile:
         setattr(self._handle, name, value)
 
     def __iter__(self):
-        return iter(self._handle)
+        # The wrapper itself: a temporary open() in a for loop stays open until the loop ends.
+        return self
 
     def __next__(self):
         return next(self._handle)
+
+    def __repr__(self):
+        return repr(self._handle)
+
+    def flush(self):
+        self._handle.flush()
+        if not self._handle.closed:
+            self._watcher.closed(self._relative)
 
     def __enter__(self):
         self._handle.__enter__()
@@ -329,6 +364,7 @@ class _StudioExecution:
             raise RuntimeError('Os arquivos do jogo não podem ser preparados nesta execução.')
         watcher = _SavedFiles(root, json.loads(protected), json.loads(sizes), report,
                               builtins.open)
+        self._saved_files = watcher
         opener = watcher.opener()
         opener._sz_saved_files = True
         builtins.open = opener
@@ -379,6 +415,15 @@ class _StudioExecution:
         return self._finish(result)
 
     def _finish(self, result):
+        saved = getattr(self, '_saved_files', None)
+        if saved is not None:
+            saved.flush_open()
+        backend = sys.modules.get('_sz_turtle_runtime._sz_turtle_backend')
+        if backend is not None:
+            try:
+                backend.present_pending()
+            except Exception:
+                pass
         # Draining the JS ring cannot flush CPython's TextIOWrapper. Deliver
         # partial prints before success/error/REPL completion, without adding LF.
         for stream in (sys.stdout, sys.stderr):
@@ -398,7 +443,7 @@ class _StudioExecution:
         except BaseException:
             message = _bounded_text(type(error).__name__, 4000)
         try:
-            formatted = _bounded_text("".join(traceback.format_exception(error)), 16000)
+            formatted = _bounded_ends("".join(traceback.format_exception(error)), 3000, 11000)
         except BaseException:
             formatted = message
         return {"ok": False, "text": message, "traceback": formatted}

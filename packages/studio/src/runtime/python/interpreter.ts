@@ -606,6 +606,7 @@ export async function createPythonInterpreter(options: {
       installRaylib.destroy()
       installPgzero.destroy()
       installAudio.destroy()
+      installSavedFiles.destroy()
       installActivity.destroy()
       gradeActivity.destroy()
       bridge.destroy()

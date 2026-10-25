@@ -249,6 +249,19 @@ export function preparePythonFrameSession(options: {
         else waiting.reject(new Error(message.error ?? 'O comando foi recusado.'))
         return
       }
+      // Saved files keep arriving while a stop is under way (the frame sends the last ones).
+      if (message.type === 'saved-file') {
+        if (!prepared) {
+          fail('Arquivo guardado fora da execução atual.')
+          return
+        }
+        try {
+          options.onSavedFile?.({ path: message.path, bytes: message.bytes })
+        } catch {
+          // Keeping the file is best effort: the game goes on without it.
+        }
+        return
+      }
       if (!active) return
       if (message.type === 'prepared') {
         if (prepared || state !== 'ready') {
@@ -276,18 +289,6 @@ export function preparePythonFrameSession(options: {
         pendingActivity = undefined
         clearTimeout(waiting.timer)
         waiting.resolve(feedback)
-        return
-      }
-      if (message.type === 'saved-file') {
-        if (!prepared) {
-          fail('Arquivo guardado fora da execução atual.')
-          return
-        }
-        try {
-          options.onSavedFile?.({ path: message.path, bytes: message.bytes })
-        } catch {
-          // Keeping the file is best effort: the game goes on without it.
-        }
         return
       }
       if (message.type === 'audio-request') {

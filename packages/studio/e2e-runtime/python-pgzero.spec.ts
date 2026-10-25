@@ -183,3 +183,19 @@ test('Pygame Zero: pygame.draw, get_at and tone, and the files a game saves come
     await page.evaluate(() => globalThis.providerProbe.dispose('game'))
   }
 })
+
+test('what a program saved just before an error is kept', async ({ page }) => {
+  await page.goto('/provider')
+  await page.waitForFunction(() => !!globalThis.providerProbe)
+  await page.evaluate(() => globalThis.providerProbe.prepare('game', 'pgzeroSavesThenFails'))
+  await page.evaluate(() => globalThis.providerProbe.run('game').catch(() => undefined))
+  await expect
+    .poll(() => page.evaluate(() => globalThis.providerProbe.read('game').status), {
+      timeout: 40_000,
+    })
+    .toBe('failed')
+  await expect
+    .poll(() => page.evaluate(() => globalThis.providerProbe.savedKeys()))
+    .toEqual(['py-file:primeiro.txt', 'py-file:segundo.txt'])
+  await page.evaluate(() => globalThis.providerProbe.dispose('game'))
+})

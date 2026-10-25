@@ -153,6 +153,13 @@ export async function startPythonWorker(options: { canvas?: PythonCanvasExtensio
       try {
         if (!message || typeof message !== 'object' || !('type' in message))
           throw new Error('Comando Python inválido.')
+        if (message.type === 'flush-saved') {
+          clearTimeout(savedTimer)
+          savedTimer = undefined
+          sendSaved()
+          send({ type: 'saved-flushed' })
+          return
+        }
         if (message.type === 'audio-response') {
           if (
             !pendingAudio ||
@@ -263,6 +270,8 @@ export async function startPythonWorker(options: { canvas?: PythonCanvasExtensio
           phase = 'running'
           const result = await interpreter.run()
           flush()
+          // An error ends the run: what the program saved goes before the result.
+          sendSaved()
           if (hasFailed()) return
           phase = result.ok ? 'completed' : 'failed'
           send({ type: 'result', requestId: id, ...result })
@@ -284,6 +293,7 @@ export async function startPythonWorker(options: { canvas?: PythonCanvasExtensio
           phase = 'running'
           const result = await interpreter.evaluate(message.source)
           flush()
+          sendSaved()
           if (hasFailed()) return
           phase = 'completed'
           send({ type: 'result', requestId: id, ...result })

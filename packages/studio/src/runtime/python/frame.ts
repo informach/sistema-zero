@@ -189,6 +189,8 @@ async function initialize(event: MessageEvent<unknown>) {
     commandSequence = command.commandId
     try {
       if ('type' in command && command.type === 'stop') {
+        // A game is usually stopped, not ended: keep what it saved a moment ago.
+        await supervisor?.flushSaved(100)
         supervisor?.stop()
         send({ type: 'ack', commandId: command.commandId, ok: true })
         close()

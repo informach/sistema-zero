@@ -1,4 +1,5 @@
 import type { StudioRuntimeSelection } from '@sistemazero/core/studio/project-environment'
+import { studioPortableFileConflict } from '@sistemazero/core/studio/project-environment'
 import {
   assertStudioPythonActivityScope,
   StudioPythonActivitySchema,
@@ -9,7 +10,11 @@ import {
   StudioRuntimeUnavailableError,
 } from '../types'
 import { readPythonExecutionIdentity } from './frameProtocol'
-import { readPythonSavedFiles, withPythonSavedFile } from './savedFiles'
+import {
+  PYTHON_SAVED_FILE_KEY_PREFIX,
+  readPythonSavedFiles,
+  withPythonSavedFile,
+} from './savedFiles'
 import { preparePythonFrameSession } from './session'
 import { preparePythonExecutionSnapshot } from './snapshot'
 
@@ -38,6 +43,8 @@ export function createPythonRuntimeProvider(options: {
   ): Promise<ApprovedPythonFrame>
 }): StudioRuntimeProvider {
   const allowedOrigins = new Set(options.allowedOrigins.map((value) => new URL(value).origin))
+  /** Per project, the writes of a run still going to storage: the next run reads after them. */
+  const savingByProject = new Map<string, Promise<void>>()
   return {
     id: options.id,
     async prepare(input) {
@@ -68,22 +75,52 @@ export function createPythonRuntimeProvider(options: {
         )
       // Files the program saved in earlier runs (savedFiles.ts). A storage that does not
       // answer only means nothing was kept: the run goes on.
-      const store = options.savedFiles?.(snapshot.projectId)
+      const projectId = snapshot.projectId
+      const store = options.savedFiles?.(projectId)
       let record: Record<string, string> = {}
       if (store)
         try {
+          // A finished write may start the next one; wait for the whole chain (bounded).
+          for (let turn = 0; turn < 32 && savingByProject.has(projectId); turn++)
+            await savingByProject.get(projectId)
           record = await store.load()
         } catch {
           record = {}
         }
-      const saved = readPythonSavedFiles(record)
-      let writes = Promise.resolve()
+      // A project file with the same path (even only by letter case) wins and the old saved
+      // copy leaves the record: it would only take room in the limits.
+      const paths = snapshot.files.map((file) => file.path)
+      const saved = readPythonSavedFiles(record).filter((file) => {
+        if (!studioPortableFileConflict([...paths, file.path], snapshot.directories)) return true
+        delete record[PYTHON_SAVED_FILE_KEY_PREFIX + file.path]
+        return false
+      })
+      // One write at a time, always of the newest record: a game that saves every frame does
+      // not pile up copies of it.
+      let latest: Record<string, string> | undefined
+      let writing = false
+      const persist = () => {
+        if (!store || writing || !latest) return
+        const data = latest
+        latest = undefined
+        writing = true
+        const done = store
+          .write(data)
+          .catch(() => undefined)
+          .finally(() => {
+            writing = false
+            if (latest) persist()
+            else if (savingByProject.get(projectId) === done) savingByProject.delete(projectId)
+          })
+        savingByProject.set(projectId, done)
+      }
       const keepSavedFile = store
         ? (file: { path: string; bytes: Uint8Array<ArrayBuffer> }) => {
             const next = withPythonSavedFile(record, file)
             if (!next) return
             record = next
-            writes = writes.then(() => store.write(next)).catch(() => undefined)
+            latest = next
+            persist()
           }
         : undefined
       if (signal.aborted)

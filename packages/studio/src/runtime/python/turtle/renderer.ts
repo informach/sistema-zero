@@ -31,6 +31,51 @@ const KEY_NAMES: Record<string, string> = {
   Backspace: 'BackSpace',
   Delete: 'Delete',
   Tab: 'Tab',
+  // Tk names keys by keysym: onkey(f, 'plus'), onkey(f, 'Prior') as on the desktop.
+  PageUp: 'Prior',
+  PageDown: 'Next',
+  CapsLock: 'Caps_Lock',
+  '+': 'plus',
+  '-': 'minus',
+  '*': 'asterisk',
+  '/': 'slash',
+  '\\': 'backslash',
+  '=': 'equal',
+  '.': 'period',
+  ',': 'comma',
+  ';': 'semicolon',
+  ':': 'colon',
+  "'": 'apostrophe',
+  '"': 'quotedbl',
+  '!': 'exclam',
+  '?': 'question',
+  '@': 'at',
+  '#': 'numbersign',
+  $: 'dollar',
+  '%': 'percent',
+  '&': 'ampersand',
+  '^': 'asciicircum',
+  _: 'underscore',
+  '`': 'grave',
+  '~': 'asciitilde',
+  '|': 'bar',
+  '<': 'less',
+  '>': 'greater',
+  '(': 'parenleft',
+  ')': 'parenright',
+  '[': 'bracketleft',
+  ']': 'bracketright',
+  '{': 'braceleft',
+  '}': 'braceright',
+}
+/** Modifier keys are named by side, which only the key code tells. */
+const CODE_NAMES: Record<string, string> = {
+  ShiftLeft: 'Shift_L',
+  ShiftRight: 'Shift_R',
+  ControlLeft: 'Control_L',
+  ControlRight: 'Control_R',
+  AltLeft: 'Alt_L',
+  AltRight: 'Alt_R',
 }
 
 interface SceneItem extends TurtlePatch {
@@ -275,7 +320,7 @@ export function createTurtleRenderer(
           if (event.key.length > 80 || closed || disposed) return
           // Browser navigation shortcuts remain available; game keys stay in the canvas.
           if (event.ctrlKey || event.metaKey || event.altKey) return
-          const key = KEY_NAMES[event.key] ?? event.key
+          const key = CODE_NAMES[event.code] ?? KEY_NAMES[event.key] ?? event.key
           // Auto-repeat of a key whose press is still waiting adds nothing for Python.
           if (
             event.repeat &&

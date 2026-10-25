@@ -78,6 +78,7 @@ export function createPythonWorkerSupervisor(options: {
   )
 
   const terminal = () => phase === 'failed' || phase === 'stopped'
+  let savedFlushed: (() => void) | undefined
   function release() {
     if (released) return
     released = true
@@ -240,6 +241,9 @@ export function createPythonWorkerSupervisor(options: {
           )
         return
       }
+      case 'saved-flushed':
+        savedFlushed?.()
+        return
       case 'saved-file':
         // The worker sends the last saves a moment later, so a finished program still counts.
         if (phase !== 'running' && phase !== 'waiting-input' && phase !== 'completed') break
@@ -422,6 +426,24 @@ export function createPythonWorkerSupervisor(options: {
         fail('runtime-unavailable', 'Não foi possível enviar a resposta.')
         throw error
       }
+    },
+    /** Asks the worker for the saved files still in its queue, waiting at most `ms`. */
+    flushSaved(ms: number): Promise<void> {
+      if (terminal() || phase === 'booting' || phase === 'preparing') return Promise.resolve()
+      return new Promise<void>((resolve) => {
+        const done = () => {
+          clearTimeout(timer)
+          if (savedFlushed === done) savedFlushed = undefined
+          resolve()
+        }
+        const timer = setTimeout(done, ms)
+        savedFlushed = done
+        try {
+          send({ type: 'flush-saved' })
+        } catch {
+          done()
+        }
+      })
     },
     stop() {
       if (phase === 'stopped') return

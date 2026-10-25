@@ -25,6 +25,8 @@ export function readPythonWorkerEvent(raw: unknown): PythonWorkerEvent | undefin
       }
       return { type: 'audio', requestId: raw.requestId, request: raw.request as string }
     }
+    case 'saved-flushed':
+      return { type: 'saved-flushed' }
     case 'saved-file': {
       if (!isPythonSavedFile(raw.path, raw.bytes)) return
       return {

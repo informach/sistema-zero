@@ -71,6 +71,13 @@ clock.schedule_unique(marcar, 0.5)
 print('pronto', heroi.pos)
 pgzrun.go()
 `,
+  // Two saves close together, then an error: the run ends, and both still reach the host.
+  pgzeroSavesThenFails: `with open('primeiro.txt', 'w') as arquivo:
+    arquivo.write('1')
+with open('segundo.txt', 'w') as arquivo:
+    arquivo.write('2')
+print('gravou', 1 / 0)
+`,
   // The engine's part of pygame, tone, and files the game saves for the next run.
   pgzeroSavesFiles: `import os
 from pathlib import Path
