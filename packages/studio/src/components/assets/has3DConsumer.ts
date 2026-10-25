@@ -90,15 +90,15 @@ export function projectHas3DMaterials(
 
 /**
  * Whether a model, a sky, a texture or a drawing may enter the project from the Molda and the
- * Team windows. Raylib has its own rule: a texture is an image in Raylib 2D, a model needs
- * Raylib 3D, and a sky (.hdr) does not open on the desktop raylib at all.
+ * Team windows. Raylib has its own rule: a texture is an image in Raylib 2D, and a model or a
+ * sky needs Raylib 3D (the sky enters as a panorama PNG: the desktop raylib does not open .hdr).
  */
 export function creationBlockedFor3D(
   kind: 'model' | 'sky' | 'texture' | 'drawing',
   gate: { has3D: boolean; raylib: boolean },
 ): boolean {
   if (kind === 'texture' || kind === 'drawing') return false
-  if (gate.raylib) return kind === 'sky' || !gate.has3D
+  if (gate.raylib) return !gate.has3D
   return !gate.has3D
 }
 

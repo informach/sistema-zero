@@ -5,6 +5,7 @@
  * every opcode from 60 on.
  */
 import { RAYLIB_OP, RAYLIB_OP_ARITY } from './protocol'
+import { createShaderStore, DEFAULT_SHADER_ID } from './raylibShaders'
 
 export interface Raylib3DHost {
   setProjection(matrix: Float32Array): void
@@ -30,8 +31,13 @@ export interface Raylib3D {
   frameStart(): void
   /** Uploads the meshes the module registered this frame (their bytes follow in `blobs`). */
   load(models: readonly unknown[], blobs: Uint8Array): void
-  /** Releases a mesh the game unloaded (ids it does not know are ignored). */
+  /** Releases a mesh or shader the game unloaded (ids it does not know are ignored). */
   free(id: number): void
+  /**
+   * The 2D batch is about to draw: with a shader of the game active (BeginShaderMode), use it
+   * and answer true; otherwise false and the batch uses its own program.
+   */
+  batch(mvp: Float32Array, texture: number): boolean
   dispose(): void
 }
 
@@ -157,57 +163,6 @@ function mul(a: Float32Array, b: Float32Array) {
   return out
 }
 
-/** raylib's default shader (rlgl): texel × colDiffuse × vertex color, with no lighting. The
- * skinning raylib does on the CPU (UpdateModelAnimationVertexBuffers: Σ weight · bone · vertex)
- * happens here per vertex, from a texture holding one bone matrix per row. */
-const MESH_VERTEX = `#version 300 es
-in vec3 vertexPosition;
-in vec2 vertexTexCoord;
-in vec3 vertexNormal;
-in vec4 vertexColor;
-in vec4 vertexBoneIds;
-in vec4 vertexBoneWeights;
-uniform mat4 mvp;
-uniform int skinned;
-uniform highp sampler2D boneMatrices;
-out vec2 fragTexCoord;
-out vec4 fragColor;
-mat4 bone(int i) {
-  return mat4(texelFetch(boneMatrices, ivec2(0, i), 0), texelFetch(boneMatrices, ivec2(1, i), 0),
-              texelFetch(boneMatrices, ivec2(2, i), 0), texelFetch(boneMatrices, ivec2(3, i), 0));
-}
-void main() {
-  vec4 position = vec4(vertexPosition, 1.0);
-  if (skinned == 1) {
-    vec3 sum = vec3(0.0);
-    for (int i = 0; i < 4; i++) {
-      float weight = vertexBoneWeights[i];
-      if (weight != 0.0) sum += (bone(int(vertexBoneIds[i])) * position).xyz * weight;
-    }
-    position = vec4(sum, 1.0);
-  }
-  fragTexCoord = vertexTexCoord;
-  fragColor = vertexColor;
-  gl_Position = mvp * position;
-}`
-const MESH_FRAGMENT = `#version 300 es
-precision mediump float;
-in vec2 fragTexCoord;
-in vec4 fragColor;
-uniform sampler2D texture0;
-uniform vec4 colDiffuse;
-out vec4 finalColor;
-void main() {
-  finalColor = texture(texture0, fragTexCoord) * colDiffuse * fragColor;
-}`
-const ATTRIBUTES = [
-  'vertexPosition',
-  'vertexTexCoord',
-  'vertexNormal',
-  'vertexColor',
-  'vertexBoneIds',
-  'vertexBoneWeights',
-] as const
 const HAS_TEXCOORDS = 1
 const HAS_NORMALS = 2
 const HAS_COLORS = 4
@@ -244,49 +199,16 @@ export function createRaylib3D(
   let colorBlend = true
   gl.depthFunc(gl.LEQUAL)
   const meshes = new Map<number, GpuMesh>()
-  let meshProgram: WebGLProgram | null = null
-  let uniforms: Record<
-    'mvp' | 'skinned' | 'bones' | 'texture0' | 'colDiffuse',
-    WebGLUniformLocation | null
-  > | null = null
+  const shaders = createShaderStore(gl, shared.textures)
+  let batchShader = DEFAULT_SHADER_ID
   let boneTexture: WebGLTexture | null = null
-
-  function program() {
-    if (meshProgram && uniforms) return { made: meshProgram, at: uniforms }
-    const made = gl.createProgram()
-    for (const [type, source] of [
-      [gl.VERTEX_SHADER, MESH_VERTEX],
-      [gl.FRAGMENT_SHADER, MESH_FRAGMENT],
-    ] as const) {
-      const shader = gl.createShader(type)
-      if (!shader) throw new Error('O navegador não deixou criar o shader dos modelos.')
-      gl.shaderSource(shader, source)
-      gl.compileShader(shader)
-      if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS))
-        throw new Error(`O shader dos modelos não compilou: ${gl.getShaderInfoLog(shader)}`)
-      gl.attachShader(made, shader)
-      gl.deleteShader(shader)
-    }
-    ATTRIBUTES.forEach((name, index) => {
-      gl.bindAttribLocation(made, index, name)
-    })
-    gl.linkProgram(made)
-    if (!gl.getProgramParameter(made, gl.LINK_STATUS))
-      throw new Error(`O shader dos modelos não ligou: ${gl.getProgramInfoLog(made)}`)
-    const at = {
-      mvp: gl.getUniformLocation(made, 'mvp'),
-      skinned: gl.getUniformLocation(made, 'skinned'),
-      bones: gl.getUniformLocation(made, 'boneMatrices'),
-      texture0: gl.getUniformLocation(made, 'texture0'),
-      colDiffuse: gl.getUniformLocation(made, 'colDiffuse'),
-    }
-    meshProgram = made
-    uniforms = at
-    return { made, at }
-  }
 
   /** One `['mesh', id, vertexCount, indexCount, flags, size]` entry; returns the bytes it used. */
   function upload(entry: unknown, blobs: Uint8Array, offset: number) {
+    if (Array.isArray(entry) && entry[0] === 'shader' && entry.length === 6) {
+      shaders.define(entry)
+      return 0
+    }
     if (!Array.isArray(entry) || entry[0] !== 'mesh' || entry.length !== 6)
       throw new Error('Modelo do Raylib com formato inválido.')
     const [, id, count, indexCount, flags, size] = entry as unknown[]
@@ -370,6 +292,8 @@ export function createRaylib3D(
   }
 
   function free(id: number) {
+    shaders.free(id)
+    if (batchShader === id) batchShader = DEFAULT_SHADER_ID
     const mesh = meshes.get(id)
     if (!mesh) return
     gl.deleteVertexArray(mesh.vao)
@@ -459,6 +383,7 @@ export function createRaylib3D(
     }
     need(MESH_HEADER)
     const id = r[at]!
+    const shaderId = r[at + 1]!
     const color = r[at + 2]!
     const wiresMode = r[at + 4]! !== 0
     const model = new Float32Array(r.subarray(at + 5, at + MESH_HEADER))
@@ -466,8 +391,13 @@ export function createRaylib3D(
     need(1)
     const maps = r[at++]!
     need(maps * 2)
-    let albedo = DEFAULT_TEXTURE
-    for (let i = 0; i < maps; i++) if (r[at + i * 2] === 0) albedo = r[at + i * 2 + 1]!
+    // DrawMesh binds map i to texture unit i; the shaders read maps 0..2 as texture0..2.
+    const units: Array<readonly [number, number]> = [[0, DEFAULT_TEXTURE]]
+    for (let i = 0; i < maps; i++) {
+      const index = r[at + i * 2]!
+      if (index === 0) units[0] = [0, r[at + i * 2 + 1]!]
+      else if (index === 1 || index === 2) units.push([index, r[at + i * 2 + 1]!])
+    }
     at += maps * 2
     need(1)
     const bones = r[at++]!
@@ -481,36 +411,35 @@ export function createRaylib3D(
     const { projection, view, transform } = host.matrices()
     // DrawMesh: matModel = transform × rlGetMatrixTransform(), then × view × projection.
     const matModel = transform ? mul(model, transform) : model
-    const { made, at: u } = program()
-    // biome-ignore lint/correctness/useHookAtTopLevel: WebGL's useProgram, not a React hook.
-    gl.useProgram(made)
     const mvp = mul(mul(matModel, view), projection)
-    gl.uniformMatrix4fv(u.mvp, false, mvp)
-    gl.uniform4f(
-      u.colDiffuse,
-      ((color >>> 24) & 255) / 255,
-      ((color >>> 16) & 255) / 255,
-      ((color >>> 8) & 255) / 255,
-      (color & 255) / 255,
-    )
-    gl.activeTexture(gl.TEXTURE0)
-    gl.bindTexture(
-      gl.TEXTURE_2D,
-      shared.textures(albedo) ?? shared.textures(DEFAULT_TEXTURE) ?? null,
-    )
-    gl.uniform1i(u.texture0, 0)
+    const linked = shaders.program(shaders.has(shaderId) ? shaderId : DEFAULT_SHADER_ID, 'mesh')
+    shaders.use(shaderId, linked, {
+      mvp,
+      colDiffuse: [
+        ((color >>> 24) & 255) / 255,
+        ((color >>> 16) & 255) / 255,
+        ((color >>> 8) & 255) / 255,
+        (color & 255) / 255,
+      ],
+      model: matModel,
+      view,
+      projection,
+      maps: units,
+    })
     const skinned = boneData !== null && (mesh.flags & HAS_BONES) !== 0
-    gl.uniform1i(u.skinned, skinned ? 1 : 0)
-    gl.activeTexture(gl.TEXTURE1)
-    boneTexture ??= gl.createTexture()
-    gl.bindTexture(gl.TEXTURE_2D, boneTexture)
-    if (skinned) {
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
-      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA32F, 4, bones, 0, gl.RGBA, gl.FLOAT, boneData)
+    if (linked.skinning) {
+      gl.uniform1i(linked.location('szSkinned'), skinned ? 1 : 0)
+      gl.activeTexture(gl.TEXTURE3)
+      boneTexture ??= gl.createTexture()
+      gl.bindTexture(gl.TEXTURE_2D, boneTexture)
+      if (skinned) {
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA32F, 4, bones, 0, gl.RGBA, gl.FLOAT, boneData)
+      }
+      gl.uniform1i(linked.location('szBoneMatrices'), 3)
+      gl.activeTexture(gl.TEXTURE0)
     }
-    gl.uniform1i(u.bones, 1)
-    gl.activeTexture(gl.TEXTURE0)
     gl.bindVertexArray(mesh.vao)
     // What the mesh does not have takes raylib's defaults (rlSetVertexAttributeDefault).
     if (!(mesh.flags & HAS_TEXCOORDS)) gl.vertexAttrib2f(1, 0, 0)
@@ -541,6 +470,7 @@ export function createRaylib3D(
 
   function op(code: number, r: Float64Array, at: number, host: Raylib3DHost): number {
     if (code === RAYLIB_OP.MESH) return drawMesh(r, at, host)
+    if (code === RAYLIB_OP.SHADER_VALUE) return shaders.value(r, at)
     const arity = RAYLIB_OP_ARITY[code]
     if (arity === undefined || at + arity > r.length)
       throw new Error('Lista de desenho do Raylib inválida.')
@@ -698,6 +628,16 @@ export function createRaylib3D(
         }
         break
       }
+      case RAYLIB_OP.SHADER_MODE:
+        shared.flush()
+        batchShader = r[at]!
+        break
+      case RAYLIB_OP.SHADER_MATRIX:
+        shaders.matrix(r[at]!, r[at + 1]!, r.subarray(at + 2, at + 18))
+        break
+      case RAYLIB_OP.SHADER_TEXTURE:
+        shaders.texture(r[at]!, r[at + 1]!, r[at + 2]!)
+        break
       default:
         throw new Error('Lista de desenho do Raylib inválida.')
     }
@@ -712,11 +652,17 @@ export function createRaylib3D(
       for (const entry of models) offset += upload(entry, blobs, offset)
     },
     free,
+    batch(mvp, texture) {
+      if (batchShader === DEFAULT_SHADER_ID || !shaders.has(batchShader)) return false
+      const linked = shaders.program(batchShader, 'batch')
+      // rlDrawRenderBatch: colDiffuse white, the batch texture on unit 0.
+      shaders.use(batchShader, linked, { mvp, colDiffuse: [1, 1, 1, 1], maps: [[0, texture]] })
+      return true
+    },
     dispose() {
       for (const id of [...meshes.keys()]) free(id)
-      if (meshProgram) gl.deleteProgram(meshProgram)
+      shaders.dispose()
       if (boneTexture) gl.deleteTexture(boneTexture)
-      meshProgram = null
       boneTexture = null
     },
   }

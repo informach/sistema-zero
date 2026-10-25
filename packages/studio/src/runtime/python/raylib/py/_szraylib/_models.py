@@ -16,6 +16,7 @@ from . import _gltf
 from . import _raymath as rm
 from . import _rt as rt
 from . import _shapes as ps
+from ._shaders import default_shader
 from ._args import color, integer, number, struct, vec3
 from ._assets import _png_size
 from ._collide3d import ray_triangle
@@ -38,17 +39,6 @@ HAS_BONES = 16
 
 def _identity():
     return rm._make(_gltf.IDENTITY)
-
-
-def default_shader():
-    locs = [-1] * MAX_SHADER_LOCATIONS
-    locs[K.SHADER_LOC_VERTEX_POSITION] = 0
-    locs[K.SHADER_LOC_VERTEX_TEXCOORD01] = 1
-    locs[K.SHADER_LOC_VERTEX_COLOR] = 3
-    locs[K.SHADER_LOC_MATRIX_MVP] = 0
-    locs[K.SHADER_LOC_COLOR_DIFFUSE] = 1
-    locs[K.SHADER_LOC_MAP_ALBEDO] = 2
-    return Shader(DEFAULT_SHADER_ID, locs)
 
 
 def load_material_default():

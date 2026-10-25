@@ -31,6 +31,7 @@ export const RAYLIB_MODULE_FILES = [
   '_szraylib/_random.py',
   '_szraylib/_raymath.py',
   '_szraylib/_rt.py',
+  '_szraylib/_shaders.py',
   '_szraylib/_shapes.py',
   '_szraylib/_structs.py',
   '_szraylib/_text.py',

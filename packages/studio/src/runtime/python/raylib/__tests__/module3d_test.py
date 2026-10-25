@@ -184,5 +184,54 @@ class Models(unittest.TestCase):
         self.assertEqual(ops[bones_at], 2)
 
 
+FLASH = '''#version 330
+in vec2 fragTexCoord;
+in vec4 fragColor;
+uniform sampler2D texture0;
+uniform vec2 flash;
+uniform float naoUsado;
+out vec4 finalColor;
+void main() { vec4 t = texture(texture0, fragTexCoord); finalColor = mix(t, vec4(1.0), flash.x); }
+'''
+
+
+class Shaders(unittest.TestCase):
+    def test_locations_like_the_desktop_raylib(self):
+        # Medido no raylib 6.0.1.0 do computador com este mesmo fragment shader.
+        shader = P.load_shader_from_memory(P.ffi.NULL, FLASH)
+        self.assertTrue(P.is_shader_valid(shader))
+        self.assertEqual([P.get_shader_location(shader, name) for name in
+                          ('flash', 'naoUsado', 'texture0', 'mvp', 'colDiffuse')], [0, -1, 2, 1, -1])
+        self.assertEqual(list(shader.locs)[:16],
+                         [0, 1, -1, -1, -1, -1, 1, -1, -1, -1, -1, -1, -1, -1, -1, 2])
+        self.assertEqual(P.get_shader_location_attrib(shader, 'vertexColor'), -1)
+        default = P.load_material_default().shader
+        self.assertEqual(list(default.locs)[:16],
+                         [0, 1, -1, -1, -1, 3, 1, -1, -1, -1, -1, -1, 0, -1, -1, 2])
+
+    def test_none_is_refused_like_the_desktop(self):
+        with self.assertRaises(TypeError):
+            P.load_shader_from_memory(None, FLASH)
+
+    def test_value_needs_an_ffi_pointer_or_a_vector(self):
+        shader = P.load_shader_from_memory(P.ffi.NULL, FLASH)
+        ops = draw(lambda: P.set_shader_value(shader, 0, P.ffi.new('struct Vector2 *', [1, 0.5]),
+                                              P.SHADER_UNIFORM_VEC2))
+        self.assertEqual(ops, [_rt.OP_SHADER_VALUE, shader.id, 0, P.SHADER_UNIFORM_VEC2, 1, 1, 0.5])
+        for wrong in ([1.0, 0.0], 0.5):
+            with self.assertRaises(TypeError):
+                P.set_shader_value(shader, 0, wrong, P.SHADER_UNIFORM_VEC2)
+        # Um uniform que o shader não usa (-1) não vai para o navegador.
+        self.assertEqual(draw(lambda: P.set_shader_value(shader, -1, P.Vector2(1, 0),
+                                                         P.SHADER_UNIFORM_VEC2)), [])
+
+    def test_shader_source_goes_to_the_host(self):
+        shader = P.load_shader_from_memory(P.ffi.NULL, FLASH)
+        P.begin_drawing()
+        P.end_drawing()
+        sent = [entry for entry in header()['models'] if entry[1] == shader.id]
+        self.assertEqual(sent, [['shader', shader.id, None, FLASH, ['flash', 'mvp', 'texture0'], 0]])
+
+
 if __name__ == '__main__':
     unittest.main()

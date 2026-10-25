@@ -139,6 +139,28 @@ export function addPintaCreationToProject(
 }
 
 /** Criação do Molda: modelo (`.glb`), textura (imagem) ou céu (`.hdr`). */
+/**
+ * A Molda creation as a Raylib project takes it: the 360° sky (.hdr), which the desktop raylib
+ * does not open, becomes a panorama PNG in `images/` (the game draws it inside a sphere). The
+ * converter loads on demand, only when a sky goes into a Raylib project.
+ */
+export async function raylibReadyCreation(
+  asset: MoldaCreationAsset,
+  raylib: boolean,
+): Promise<MoldaCreationAsset> {
+  if (!raylib || asset.kind !== 'environment3d') return asset
+  const { skyPanoramaPng } = await import('./skyPanorama')
+  const panorama = skyPanoramaPng(asset.dataUrl)
+  return {
+    ...asset,
+    kind: 'image',
+    dataUrl: panorama.dataUrl,
+    originalFileName: `${asset.name}.png`,
+    width: panorama.width,
+    height: panorama.height,
+  }
+}
+
 export function addMoldaCreationToProject(
   state: ProjectStoreActions,
   asset: MoldaCreationAsset,

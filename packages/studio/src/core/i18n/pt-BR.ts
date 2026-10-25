@@ -329,7 +329,7 @@ export const ptBR: Record<string, string> = {
   'moldaImport.needs3d':
     'Instale o Jogo 3D, o Jogo 3D Avançado ou o Mundo 3D (painel de Extensões) para usar modelos e céus. A textura entra como imagem.',
   'moldaImport.needs3dRaylib':
-    'Modelos 3D são da extensão Raylib 3D, e o céu 360° ainda não entra no Raylib. A textura entra como imagem.',
+    'Modelos 3D e céus 360° são da extensão Raylib 3D (o céu entra como imagem panorâmica). A textura entra como imagem.',
   'moldaImport.kind.model': '🧊 modelo',
   'moldaImport.kind.texture': '🧱 textura',
   'moldaImport.kind.sky': '🌤️ céu',

@@ -293,7 +293,7 @@ export const en: Record<string, string> = {
   'moldaImport.adding': 'Bringing…',
   'moldaImport.inProject': '✓ in project',
   'moldaImport.needs3dRaylib':
-    '3D models belong to the Raylib 3D extension, and the 360° sky does not enter Raylib yet. The texture comes in as an image.',
+    '3D models and 360° skies belong to the Raylib 3D extension (the sky comes in as a panorama image). The texture comes in as an image.',
   'moldaImport.needs3d':
     'Install Game 3D, Advanced Game 3D or World 3D (Extensions panel) to use models and skies. The texture comes in as an image.',
   'moldaImport.kind.model': '🧊 model',

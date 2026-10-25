@@ -560,9 +560,13 @@ export function createRaylibRenderer(
   function flush() {
     if (!count || !gl) return
     const g = gl
-    // biome-ignore lint/correctness/useHookAtTopLevel: WebGL's useProgram, not a React hook.
-    g.useProgram(program!)
-    g.uniformMatrix4fv(mvpLocation, false, multiply(view, projection))
+    const mvp = multiply(view, projection)
+    // BeginShaderMode (Raylib 3D): the game's shader draws the batch, with its own uniforms.
+    if (!three?.batch(mvp, batchTexture)) {
+      // biome-ignore lint/correctness/useHookAtTopLevel: WebGL's useProgram, not a React hook.
+      g.useProgram(program!)
+      g.uniformMatrix4fv(mvpLocation, false, mvp)
+    }
     g.bindVertexArray(vao!)
     g.bindBuffer(g.ARRAY_BUFFER, positionBuffer!)
     g.bufferSubData(g.ARRAY_BUFFER, 0, positions, 0, count * 3)

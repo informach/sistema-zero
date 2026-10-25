@@ -101,6 +101,27 @@ export const RAYLIB_OP = Object.freeze({
   RL_STATE: 79,
   /** mesh, shader, diffuse, specular, wires, 16 × matrix, maps (count, then index/texture), bones (count, then 16 each). */
   MESH: 80,
+  /** shader id (3 = back to the default one) for the 2D batch, as Begin/EndShaderMode. */
+  SHADER_MODE: 81,
+  /** shader, location, uniform kind, count, then the values (variable length). */
+  SHADER_VALUE: 82,
+  /** shader, location, 16 × matrix. */
+  SHADER_MATRIX: 83,
+  /** shader, location, texture id. */
+  SHADER_TEXTURE: 84,
+})
+
+/** raylib's ShaderUniformDataType (SHADER_UNIFORM_*), measured on raylib 6.0.1.0. */
+export const RAYLIB_SHADER_UNIFORM = Object.freeze({
+  FLOAT: 0,
+  VEC2: 1,
+  VEC3: 2,
+  VEC4: 3,
+  INT: 4,
+  IVEC2: 5,
+  IVEC3: 6,
+  IVEC4: 7,
+  SAMPLER2D: 12,
 })
 
 /** Values after each fixed-size opcode. TEXT is variable: 4 + 3 × count. */
@@ -164,6 +185,9 @@ export const RAYLIB_OP_ARITY: Readonly<Record<number, number>> = Object.freeze({
   77: 2,
   78: 22,
   79: 2,
+  81: 1,
+  83: 18,
+  84: 3,
 })
 
 export type RaylibTexture =

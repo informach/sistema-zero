@@ -82,6 +82,11 @@ OP_QUAD_3D = 78
 OP_RL_STATE = 79
 # Malha de modelo: tamanho variável (ver _models.emit_mesh).
 OP_MESH = 80
+# Shaders (ver _shaders.py): o modo do lote, valores de uniform (tamanho variável), matriz e textura.
+OP_SHADER_MODE = 81
+OP_SHADER_VALUE = 82
+OP_SHADER_MATRIX = 83
+OP_SHADER_TEXTURE = 84
 
 MAX_RECORDS = 400_000
 MAX_TEXTURES = 2048
@@ -168,6 +173,7 @@ pending_textures = []   # [id, 'f', path] | [id, 'p', w, h, bytes] | [id, 'r', w
 pending_fonts = []      # [id, path, baseSize, emPx, ascentPx, [codepoints]]
 pending_free = []
 pending_models = []     # 3D: ['mesh', id, vertices, índices, partes, tamanho, bytes] (ver _models.py)
+#                       e ['shader', id, vs, fs, uniforms, 0, b''] (ver _shaders.py)
 audio = []
 _texture_count = 0
 _total_pixels = 0

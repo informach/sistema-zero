@@ -13,7 +13,11 @@ import {
   type StudioTeamArtSummary,
   useStudioTeamLibrary,
 } from '../../studio/team-library'
-import { addMoldaCreationToProject, addPintaCreationToProject } from './addCreationToProject'
+import {
+  addMoldaCreationToProject,
+  addPintaCreationToProject,
+  raylibReadyCreation,
+} from './addCreationToProject'
 import { creation3DNoteKey, creationBlockedFor3D, projectHas3DConsumer } from './has3DConsumer'
 
 /**
@@ -177,12 +181,16 @@ export function TeamImportDialog({ onClose, onImported }: TeamImportDialogProps)
         if (refusal.code === 'not-found') removeCard(item.id)
         return
       }
+      // Num projeto Raylib, o céu do Molda vira imagem panorâmica antes de entrar.
+      const molda =
+        imported.tool === 'molda' ? await raylibReadyCreation(imported.result.asset, raylib) : null
+      if (!current()) return
       const state = owner.storeApi.getState()
       // O MESMO caminho das janelas do Pinta e do Molda (atualiza no lugar se já está no jogo).
       const err =
         imported.tool === 'pinta'
           ? addPintaCreationToProject(state, imported.result.asset)
-          : addMoldaCreationToProject(state, imported.result.asset)
+          : addMoldaCreationToProject(state, molda ?? imported.result.asset)
       if (err) {
         setError(err)
         return

@@ -9,7 +9,7 @@ import { normalizeSearchText } from '../../core/searchText'
 import { useProjectStore, useProjectStoreApi } from '../../state/projectStore'
 import { useT } from '../../studio/i18n'
 import { type StudioMoldaCreationSummary, useStudioMoldaLibrary } from '../../studio/molda-library'
-import { addMoldaCreationToProject } from './addCreationToProject'
+import { addMoldaCreationToProject, raylibReadyCreation } from './addCreationToProject'
 import { creation3DNoteKey, creationBlockedFor3D, projectHas3DConsumer } from './has3DConsumer'
 
 /**
@@ -158,7 +158,9 @@ export function MoldaImportDialog({ onClose, onImported }: MoldaImportDialogProp
       }
       // O MESMO "adicionar ao projeto" do Pinta e da equipe (o elo `personal:<id>` + a origem
       // Molda, e a validação do store cruzando extensão × MIME × assinatura).
-      const err = addMoldaCreationToProject(owner.storeApi.getState(), result.asset)
+      const ready = await raylibReadyCreation(result.asset, raylib)
+      if (!current()) return
+      const err = addMoldaCreationToProject(owner.storeApi.getState(), ready)
       if (err) {
         setError(err)
         return
