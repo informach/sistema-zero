@@ -87,6 +87,7 @@ void main() {
 }`
 
 const VERSION = /^[ \t]*#version[ \t]+(\d+)([ \t]+\w+)?[ \t]*$/m
+const EXTENSION = /^[ \t]*#extension[^\n]*$/gm
 const INITIALIZED =
   /\buniform\s+((?:lowp|mediump|highp)\s+)?(float|int|vec[234]|ivec[234])\s+(\w+)\s*=\s*([^;]+);/g
 const SIZE: Record<string, number> = {
@@ -119,8 +120,19 @@ export function translateGlsl(source: string): { code: string; defaults: Uniform
       `O Estúdio entende shaders #version 330 (os do raylib do computador); este é #version ${version[1]}.`,
     )
   const defaults: UniformDefault[] = []
+  // In GLSL ES a #extension has to come before any other statement, the precisions included.
+  const extensions: string[] = []
   const code = source
-    .replace(VERSION, '#version 300 es\nprecision highp float;\nprecision highp int;')
+    .replace(EXTENSION, (line) => {
+      extensions.push(line.trim())
+      return ''
+    })
+    .replace(
+      VERSION,
+      ['#version 300 es', ...extensions, 'precision highp float;', 'precision highp int;'].join(
+        '\n',
+      ),
+    )
     .replace(INITIALIZED, (_all, precision: string | undefined, type: string, name, value) => {
       defaults.push({ name, type, values: literal(type, String(value).trim()) })
       return `uniform ${precision ?? ''}${type} ${name};`
@@ -472,6 +484,14 @@ export function createShaderStore(
         gl.bindTexture(gl.TEXTURE_2D, black)
       }
       gl.activeTexture(gl.TEXTURE0)
+    },
+    /**
+     * rlDrawRenderBatch ends with "Reset active texture units for next batch": the textures of
+     * SetShaderValueTexture last until the next batch draw (a state change, a camera, the end
+     * of the frame), never for the whole game.
+     */
+    endBatch() {
+      active.length = 0
     },
     dispose() {
       for (const id of [...shaders.keys()]) this.free(id)

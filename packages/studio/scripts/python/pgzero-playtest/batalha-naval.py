@@ -96,16 +96,25 @@ def play(t):
     t.check('navio que não afundou fica escondido', tuple(tela.get_at((escondida[0] + 4, escondida[1] + 15)))[:3] == t.get('AGUA'))
     # A procura em volta, direto na classe do adversário.
     Computador = t.get('Computador')
+    Navio = t.get('Navio')
     robo = Computador()
-    robo.resultado((4, 4), 'acerto')
+    robo.resultado((4, 4), 'acerto', None)
     vizinhas = [robo.escolher() for _ in range(4)]
     t.check('depois de acertar, o computador atira nas quatro casas em volta',
             sorted(vizinhas) == [(3, 4), (4, 3), (4, 5), (5, 4)])
     robo = Computador()
-    robo.resultado((0, 0), 'acerto')
+    robo.resultado((0, 0), 'acerto', None)
     t.check('no canto da grade, só as vizinhas que existem', sorted(robo.alvos) == [(0, 1), (1, 0)])
-    robo.resultado((0, 1), 'afundou')
-    t.check('afundou o navio: volta a procurar', robo.alvos == [])
+    robo.resultado((0, 1), 'afundou', Navio([(0, 0), (0, 1)]))
+    t.check('afundou o navio: volta a procurar', robo.alvos == [] and robo.acertos == [])
+    # Dois navios encostados: afundar um não faz esquecer o acerto no outro.
+    robo = Computador()
+    robo.resultado((5, 5), 'acerto', None)
+    robo.resultado((6, 5), 'acerto', None)
+    robo.resultado((5, 6), 'afundou', Navio([(5, 5), (5, 6)]))
+    t.check('afundou um navio: continua em volta do acerto no navio vizinho',
+            robo.acertos == [(6, 5)] and sorted(set(robo.alvos)) == [(5, 5), (6, 4), (6, 6), (7, 5)]
+            and robo.escolher() in [(6, 4), (6, 6), (7, 5)], f'acertos {robo.acertos}, alvos {robo.alvos}')
     procura = [robo.escolher() for _ in range(10)]
     t.check('para procurar, o computador usa casas alternadas', all((c + l) % 2 == 0 for c, l in procura))
     t.check('o computador acha os navios bem antes de atirar em tudo', len(tiros_do_computador) < 70,
@@ -115,11 +124,20 @@ def play(t):
     t.shot('computador-venceu')
 
     # Uma frota grande demais para sortear de primeira: o computador sorteia de novo, sem travar.
-    t.set('TAMANHOS', [5] * 14)
+    t.set('TAMANHOS', [5] * 10)
     frota = t.get('Frota')((0, 0))
     for semente in range(20):
         t.get('random').seed(semente)
         frota.sortear()
-    t.check('frota apertada: o sorteio recomeça e põe os catorze navios', len(frota.navios) == 14
-            and len({casa for navio in frota.navios for casa in navio.casas}) == 70)
+    t.check('frota apertada: o sorteio recomeça e põe os dez navios', len(frota.navios) == 10
+            and len({casa for navio in frota.navios for casa in navio.casas}) == 50)
+    # Uma frota que não cabe avisa, em vez de travar o jogo.
+    for impossivel in ([11], [5] * 11):
+        t.set('TAMANHOS', impossivel)
+        try:
+            frota.sortear()
+            avisou = False
+        except ValueError as erro:
+            avisou = 'não cabem' in str(erro)
+        t.check(f'navios que não cabem ({len(impossivel)} de {impossivel[0]}) dão um aviso', avisou)
     t.set('TAMANHOS', [5, 4, 3, 3, 2])

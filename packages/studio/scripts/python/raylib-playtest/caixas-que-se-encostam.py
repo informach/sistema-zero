@@ -35,3 +35,12 @@ def play(t):
     yield
     t.check(pos.z <= g['BORDA'], 'o cubo passou da borda')
     t.shot('moeda')
+
+    # De frente no eixo z: a caixa em (-2, 2) barra o cubo que desce na coluna x = -2.
+    pos.x = -2
+    pos.z = 0
+    t.hold('DOWN')
+    yield from t.wait(60)
+    t.release('DOWN')
+    yield
+    t.check(0.9 < pos.z < 1.0, f'a caixa não barrou o cubo de frente (z = {pos.z:.3f})')

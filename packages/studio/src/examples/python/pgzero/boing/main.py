@@ -4,7 +4,7 @@ import pgzrun
 
 WIDTH = 800
 HEIGHT = 480
-TITLE = 'Boing!'
+TITLE = 'Raquetada'
 PONTOS_PARA_VENCER = 10
 VELOCIDADE_INICIAL = 5
 # Quanto a bola acelera a cada raquetada, até a velocidade máxima.
@@ -185,7 +185,7 @@ def draw():
     screen.draw.text(str(pontos[0]), center=(WIDTH / 2 - 60, 18), fontsize=40, color='deepskyblue')
     screen.draw.text(str(pontos[1]), center=(WIDTH / 2 + 60, 18), fontsize=40, color='orange')
     if estado == 'menu':
-        screen.draw.text('Boing!', center=(WIDTH / 2, 150), fontsize=96, color='white', owidth=2, ocolor='deepskyblue')
+        screen.draw.text('Raquetada', center=(WIDTH / 2, 150), fontsize=96, color='white', owidth=2, ocolor='deepskyblue')
         um = '> 1 jogador <' if jogadores == 1 else '1 jogador'
         dois = '> 2 jogadores <' if jogadores == 2 else '2 jogadores'
         screen.draw.text(um, center=(WIDTH / 2, 260), fontsize=40, color='yellow' if jogadores == 1 else 'white')

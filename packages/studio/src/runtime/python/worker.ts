@@ -40,11 +40,15 @@ const SAVED_FILE_INTERVAL_MS = 250
 const pendingSaved = new Map<string, Uint8Array<ArrayBuffer> | null>()
 let savedTimer: ReturnType<typeof setTimeout> | undefined
 function sendSaved() {
-  for (const [path, bytes] of pendingSaved)
-    post(
-      { type: 'saved-file', path, bytes } satisfies PythonWorkerEvent,
-      bytes ? { transfer: [bytes.buffer] } : {},
-    )
+  // Deletions go first: each file appears once with its newest state, so freeing room before
+  // the new files arrive keeps the host's limit (16 files) from refusing what Python accepted.
+  for (const deleted of [true, false])
+    for (const [path, bytes] of pendingSaved)
+      if ((bytes === null) === deleted)
+        post(
+          { type: 'saved-file', path, bytes } satisfies PythonWorkerEvent,
+          bytes ? { transfer: [bytes.buffer] } : {},
+        )
   pendingSaved.clear()
 }
 function savedTick() {

@@ -23,6 +23,7 @@ import {
   bindPythonVisualOrigins,
   type PythonWorkspaceOrigins,
 } from '../../python/blocks/provenance'
+import { attachPythonCallLabels } from '../../python/blocks/pythonCallLabels'
 import { pythonResolverOptionsOf } from '../../python/blocks/resolverOptions'
 import { preparePythonWorkspaceRestore } from '../../python/blocks/restoreWorkspace'
 import type { PythonProjectModules } from '../../python/blocks/scope'
@@ -630,6 +631,8 @@ export function PythonBlocklyEditor(props: PythonBlocklyEditorProps) {
       flush()
     }
     workspace.addChangeListener(changed)
+    // "chamar mover com distancia ⟨10⟩": the names follow the def while the child edits.
+    const detachCallLabels = attachPythonCallLabels(workspace)
     const unregisterFlush = pending?.register(flushNow)
     // A pending gesture is applied before the child acts anywhere else (typing in the code of
     // the Ponte, a button that rewrites the file): once the source changes, the blocks can no
@@ -812,6 +815,7 @@ export function PythonBlocklyEditor(props: PythonBlocklyEditorProps) {
       document.removeEventListener('pointerdown', leave, true)
       element.removeEventListener('focusin', activate)
       workspace.removeChangeListener(changed)
+      detachCallLabels()
       parser.dispose()
       workspace.dispose()
       if (classicCapture.current === capture) classicCapture.current = null

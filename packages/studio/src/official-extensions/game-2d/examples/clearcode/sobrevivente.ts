@@ -14,28 +14,8 @@ export const sobreviventeExample: ExtensionExample = beginnerGameExample({
   description:
     'Atirador de sobrevivência: fuja dos monstrinhos com as setas enquanto sua arma atira sozinha no inimigo mais perto. Cada segundo vivo vale 1 ponto e derrotar monstrinho dá bônus. Enter começa.',
   ir: {
-    html: [{ type: 'canvas', id: 'tela', width: 480, height: 300 }],
-    css: [
-      {
-        selector: 'body',
-        declarations: {
-          background: '#0a0713',
-          display: 'flex',
-          'align-items': 'center',
-          'justify-content': 'center',
-          'min-height': '100vh',
-          margin: '0',
-        },
-      },
-      {
-        selector: 'canvas',
-        declarations: {
-          border: '3px solid #ffffff',
-          'border-radius': '18px',
-          background: '#2c2140',
-        },
-      },
-    ],
+    html: [],
+    css: [],
     version: 2,
     behavior: {
       molds: [
@@ -187,6 +167,21 @@ export const sobreviventeExample: ExtensionExample = beginnerGameExample({
         },
       ],
       start: [
+        {
+          type: 'g2d:setupStage',
+          width: 480,
+          height: 300,
+          bg: '#2c2140',
+          __id: 'exemplo-sobrevivente',
+        },
+        {
+          type: 'g2d:setStageDescription',
+          description:
+            'Atirador de sobrevivência: fuja dos monstrinhos com as setas enquanto sua arma atira sozinha no inimigo mais perto. Cada segundo vivo vale 1 ponto e derrotar monstrinho dá bônus. Enter começa.',
+          __id: 'exemplo-sobrevivente-descricao',
+        },
+        { type: 'g2d:stageBorder', color: '#ffffff', width: 3 },
+
         {
           type: 'g2d:fitScreen',
           percent: {

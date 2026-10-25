@@ -29,7 +29,8 @@ export interface ImagesTabProps extends AssetsTabCommon {
   onAddFromPersonal: (drawing: PersonalAsset) => void
   onEditDrawing: ((id: string) => void) | null
   onDeletePersonal: (drawing: PersonalAsset) => void
-  onAddFromLibrary: (lib: LibraryAsset) => void
+  /** A biblioteca de imagens prontas (SVG); `null` quando o projeto não abre SVG (Raylib). */
+  onAddFromLibrary: ((lib: LibraryAsset) => void) | null
   /** O nome da imagem escolhida como capa do card (ausente = foto automática). */
   coverAssetName: string | undefined
   /** Escolher uma imagem como capa; `null` = voltar à foto automática. */
@@ -288,34 +289,38 @@ export function ImagesTab({
         </section>
       ) : null}
 
-      <section>
-        <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-sz-fg-mute">
-          Biblioteca
-        </h3>
-        <ul className="grid grid-cols-3 gap-2 sm:grid-cols-6">
-          {ASSET_LIBRARY.map((lib) => (
-            <li key={lib.id}>
-              <button
-                type="button"
-                title={`Adicionar "${lib.name}"`}
-                className="flex w-full flex-col items-center gap-1 rounded-md border border-sz-border bg-sz-bg p-2 hover:border-sz-accent"
-                onClick={() => onAddFromLibrary(lib)}
-              >
-                <img
-                  src={lib.dataUrl}
-                  alt={lib.name}
-                  width={40}
-                  height={40}
-                  loading="lazy"
-                  className="h-10 w-10 object-contain"
-                  style={{ imageRendering: 'pixelated' }}
-                />
-                <span className="max-w-full truncate text-[10px] text-sz-fg-soft">{lib.name}</span>
-              </button>
-            </li>
-          ))}
-        </ul>
-      </section>
+      {onAddFromLibrary ? (
+        <section>
+          <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-sz-fg-mute">
+            Biblioteca
+          </h3>
+          <ul className="grid grid-cols-3 gap-2 sm:grid-cols-6">
+            {ASSET_LIBRARY.map((lib) => (
+              <li key={lib.id}>
+                <button
+                  type="button"
+                  title={`Adicionar "${lib.name}"`}
+                  className="flex w-full flex-col items-center gap-1 rounded-md border border-sz-border bg-sz-bg p-2 hover:border-sz-accent"
+                  onClick={() => onAddFromLibrary(lib)}
+                >
+                  <img
+                    src={lib.dataUrl}
+                    alt={lib.name}
+                    width={40}
+                    height={40}
+                    loading="lazy"
+                    className="h-10 w-10 object-contain"
+                    style={{ imageRendering: 'pixelated' }}
+                  />
+                  <span className="max-w-full truncate text-[10px] text-sz-fg-soft">
+                    {lib.name}
+                  </span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
     </div>
   )
 }

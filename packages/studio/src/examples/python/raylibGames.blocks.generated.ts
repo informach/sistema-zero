@@ -4,7 +4,7 @@ import type { RaylibGameKey } from './raylibGames.manifest'
 
 export const RAYLIB_GAME_BLOCKS = {
   'ola-raylib': {
-    sourceSha256: '60d9d6e494dbba81531c08462850d969b70f79d475fab49b3a97e0853ec6a095',
+    sourceSha256: '51d84233a7f56ff42ae5d9138a71dc529e864edbd8fd01685fdebca9c9214562',
     blockIds: [
       'sz_py_arithmetic',
       'sz_py_assign',
@@ -30,6 +30,7 @@ export const RAYLIB_GAME_BLOCKS = {
       'sz_py_rl2d_draw_text_ex',
       'sz_py_rl2d_draw_texture_ex',
       'sz_py_rl2d_end_drawing',
+      'sz_py_rl2d_field',
       'sz_py_rl2d_get_mouse_position',
       'sz_py_rl2d_image_color_grayscale',
       'sz_py_rl2d_image_color_invert',
@@ -209,7 +210,7 @@ export const RAYLIB_GAME_BLOCKS = {
     ],
   },
   'sprites-timer-animacao': {
-    sourceSha256: '86496c11c75731403776ad4265cb8d412f653e2cc537cf2afba34c21ff884bfa',
+    sourceSha256: '2e72c51484356fb99316ac1f0784ae172014a4abbec4ebb7f052b188886a4e11',
     blockIds: [
       'sz_py_alias',
       'sz_py_and',
@@ -278,7 +279,7 @@ export const RAYLIB_GAME_BLOCKS = {
     ],
   },
   'dino-corredor': {
-    sourceSha256: 'e1240d62d0929cb5f54e5d19af2e00f5932dc311a10c281f6d1a438d3773112a',
+    sourceSha256: '6ee8c53008b48e6f42f05ffb6e2a1aa9bf1b223c110062be5adbe61b18095755',
     blockIds: [
       'sz_py_alias',
       'sz_py_and',
@@ -352,7 +353,7 @@ export const RAYLIB_GAME_BLOCKS = {
     ],
   },
   'chuva-de-meteoros': {
-    sourceSha256: 'ca56090f962a389e82ca8ec414b9c114a7141668448d6bab7077ad171636d20a',
+    sourceSha256: '0559feb93c30ab377c697c4ab4c1655435352ea8f9d8e454d1759db465b6a6b3',
     blockIds: [
       'sz_py_alias',
       'sz_py_arithmetic',
@@ -429,7 +430,7 @@ export const RAYLIB_GAME_BLOCKS = {
     ],
   },
   'batalha-de-monstrinhos': {
-    sourceSha256: '28a73f40f36bdb062f4d52803ba5a1b96f76e7b25325decffa791d20eb3533f2',
+    sourceSha256: '176f1626a349c3c62e4814e2a083d70074a22152ea2f969c04b243dcc1f923bb',
     blockIds: [
       'sz_py_alias',
       'sz_py_and',
@@ -460,7 +461,6 @@ export const RAYLIB_GAME_BLOCKS = {
       'sz_py_list_comprehension',
       'sz_py_max',
       'sz_py_method',
-      'sz_py_method_value',
       'sz_py_min',
       'sz_py_negative',
       'sz_py_none',
@@ -508,7 +508,7 @@ export const RAYLIB_GAME_BLOCKS = {
     ],
   },
   'aventura-do-heroi': {
-    sourceSha256: '688f4257130a340660a593ec061516c87b7301b06f591b57b5803b243ff2f9dc',
+    sourceSha256: 'cd56c9b551f1ba7fe7b26207f556bb8c020a612d4c743009cbe24d5b6e78541a',
     blockIds: [
       'sz_py_alias',
       'sz_py_and',
@@ -578,6 +578,7 @@ export const RAYLIB_GAME_BLOCKS = {
       'sz_py_rl2d_load_music_stream',
       'sz_py_rl2d_load_sound',
       'sz_py_rl2d_load_texture',
+      'sz_py_rl2d_measure_text_ex',
       'sz_py_rl2d_play_music_stream',
       'sz_py_rl2d_play_sound',
       'sz_py_rl2d_set_music_volume',
@@ -694,7 +695,7 @@ export const RAYLIB_GAME_BLOCKS = {
     ],
   },
   'caixas-que-se-encostam': {
-    sourceSha256: '14da8fa6fa78aabc0bb52e751de93399e34e098312fdba4dfc712327036a8087',
+    sourceSha256: 'affed7fe53b13f94db668597ece057c5c0d82be65b5c366bc1e4ce6d4039ddaa',
     blockIds: [
       'sz_py_arithmetic',
       'sz_py_assign',
@@ -903,7 +904,7 @@ export const RAYLIB_GAME_BLOCKS = {
     ],
   },
   'patrulha-espacial': {
-    sourceSha256: 'c9c2148b17500eff0fd135c67deed1ded23bfc039b78f16ee58c92d48a82386d',
+    sourceSha256: '5fe8fd1c331e89d4d4bf9a13af1d29c8758c1a9e1074dee07a2089e59f8df41b',
     blockIds: [
       'sz_py_alias',
       'sz_py_and',
@@ -993,7 +994,7 @@ export const RAYLIB_GAME_BLOCKS = {
     ],
   },
   'labirinto-dos-robos': {
-    sourceSha256: 'c93c479c4a8904d08fc71b69c67ea80c804422889b954f6e26994ef8897ca8b6',
+    sourceSha256: '663e8cc1daf8275c6b2a1114994062371855665c9ffab7c9769f91377ca1e169',
     blockIds: [
       'sz_py_alias',
       'sz_py_and',
@@ -1106,7 +1107,7 @@ export const RAYLIB_GAME_BLOCKS = {
     ],
   },
   'mundo-de-blocos': {
-    sourceSha256: '16df121b896fba8e053fc6fa3f7b8e4dd2ef8f475c3cff2866e63d23d06b18a0',
+    sourceSha256: 'd3c9454b6c2c3c81abc8df2958fe2376f3de64589e5bd27db18a9e59187eb65b',
     blockIds: [
       'sz_py_alias',
       'sz_py_and',
@@ -1197,6 +1198,7 @@ export const RAYLIB_GAME_BLOCKS = {
       'sz_py_tuple',
       'sz_py_update',
       'sz_py_variable',
+      'sz_py_while',
     ],
   },
 } as const satisfies Record<RaylibGameKey, { sourceSha256: string; blockIds: readonly string[] }>

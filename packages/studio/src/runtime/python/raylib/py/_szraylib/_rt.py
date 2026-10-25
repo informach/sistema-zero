@@ -125,6 +125,10 @@ class _Window:
         # Relógio (segundos): o navegador manda o seu, que para enquanto a aba está escondida.
         self.base = None
         self.now = 0.0
+        # get_time() anda dentro do quadro também (um laço de espera da criança precisa sair):
+        # o relógio local conta desde a última resposta, e o que já foi devolvido nunca volta.
+        self.mark = 0.0
+        self.returned = 0.0
         self.previous = 0.0
         self.frame_time = 0.0
         self.fps_history = []
@@ -321,8 +325,15 @@ def present():
     payload = ops.tobytes()
     taken, textures, blobs, models = _attachments()
     fonts = pending_fonts[:ATTACHMENTS_PER_FRAME]
+    # Um recurso liberado só sai quando a criação dele já foi (ou vai neste quadro): se ela
+    # ficou para o próximo quadro, a liberação espera junto, senão o navegador apagaria uma
+    # imagem que ainda não existe e criaria a imagem para sempre depois.
+    waiting = ({entry[0] for entry in pending_textures[taken:]}
+               | {entry[0] for entry in pending_fonts[len(fonts):]}
+               | {entry[1] for entry in pending_models[len(models):]})
+    free = [item for item in pending_free if item not in waiting]
     keep = (payload == _previous_payload and not textures and not fonts and not models
-            and not pending_free)
+            and not free)
     header = {
         'w': w.width,
         'h': w.height,
@@ -333,7 +344,7 @@ def present():
         'textures': textures,
         'fonts': fonts,
         'models': models,
-        'free': pending_free[:],
+        'free': free,
         'audio': audio[:],
         'cursor': [w.cursor_locked, w.cursor_hidden],
         'mode': mode,
@@ -345,11 +356,16 @@ def present():
     del pending_textures[:taken]
     del pending_fonts[:len(fonts)]
     del pending_models[:len(models)]
-    pending_free.clear()
+    pending_free[:] = [item for item in pending_free if item in waiting]
     audio.clear()
     _previous_payload = payload
     _apply_reply(reply)
     return reply
+
+
+def _clock():
+    import time
+    return time.perf_counter()
 
 
 def _apply_reply(reply):
@@ -363,6 +379,7 @@ def _apply_reply(reply):
     w.frame_time = max(0.0, current - w.previous) if w.frame_counter else current
     w.previous = current
     w.now = current
+    w.mark = _clock()
     w.frame_counter += 1
     if w.frame_time > 0:
         w.fps_history.append(w.frame_time)
@@ -405,6 +422,9 @@ def _poll(events):
                     pressed_now.add(key)
                     if len(i.key_queue) < 16:
                         i.key_queue.append(key)
+                # Apertou de novo no mesmo quadro: a soltura de antes não vale mais.
+                while key in i.release_next:
+                    i.release_next.remove(key)
                 i.down[key] = 1
                 if key == window.exit_key and window.exit_key:
                     window.should_close = True
@@ -424,6 +444,8 @@ def _poll(events):
                 if kind == 'md':
                     i.buttons[button] = 1
                     pressed_buttons.add(button)
+                    while button in i.buttons_release_next:
+                        i.buttons_release_next.remove(button)
                 elif button in pressed_buttons:
                     i.buttons_release_next.append(button)
                 else:

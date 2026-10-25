@@ -7,7 +7,10 @@
  * the interpreter puts them in place, and every file the program closes after writing comes back
  * to the host at once (a game is usually stopped, not ended, so there is no "end of run").
  */
-import { isStudioPortablePath } from '@sistemazero/core/studio/project-environment'
+import {
+  isStudioPortablePath,
+  studioPortableFileConflict,
+} from '@sistemazero/core/studio/project-environment'
 
 export const PYTHON_SAVED_FILE_LIMITS = Object.freeze({
   files: 16,
@@ -114,4 +117,26 @@ export function withoutPythonSavedFile(
   if (!(key in record)) return record
   const { [key]: _deleted, ...rest } = record
   return rest
+}
+
+/**
+ * The saved files a run gets, with the ones that cannot come back taken out of the record: a
+ * project file or folder with the same path (even only by letter case) wins, and of two saved
+ * files that differ only by letter case the first one stays. A dropped copy would only take
+ * room in the limits.
+ */
+export function prunePythonSavedFiles(
+  record: Record<string, string>,
+  projectPaths: readonly string[],
+  directories: readonly string[],
+): PythonSavedFile[] {
+  const kept: string[] = []
+  return readPythonSavedFiles(record).filter((file) => {
+    if (!studioPortableFileConflict([...projectPaths, ...kept, file.path], directories)) {
+      kept.push(file.path)
+      return true
+    }
+    delete record[PYTHON_SAVED_FILE_KEY_PREFIX + file.path]
+    return false
+  })
 }

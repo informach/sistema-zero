@@ -1,4 +1,4 @@
-"""Boing!: the menu picks 1 or 2 players; the ball waits a moment at each serve; the bats stay in
+"""Raquetada (the Boing! of Code the Classics): the menu picks 1 or 2 players; the ball waits a moment at each serve; the bats stay in
 the court; a bat sends the ball back steeper the farther from its middle it hits, a bit faster
 each time (up to a top speed), with sparks; the ball bounces on the top and bottom lines and
 never passes through a bat; a ball past a bat is a point and the next serve goes to who lost it;

@@ -17,28 +17,8 @@ export const valeEnsolaradoExample: ExtensionExample = beginnerGameExample({
   description:
     'Ande e pule pelo vale para juntar as 6 gemas azuis. Desvie do gambá e da águia e cuide da sua vida. Enter começa e reinicia.',
   ir: {
-    html: [{ type: 'canvas', id: 'tela', width: 480, height: 270 }],
-    css: [
-      {
-        selector: 'body',
-        declarations: {
-          background: '#0e2a1a',
-          display: 'flex',
-          'align-items': 'center',
-          'justify-content': 'center',
-          'min-height': '100vh',
-          margin: '0',
-        },
-      },
-      {
-        selector: 'canvas',
-        declarations: {
-          border: '3px solid #ffffff',
-          'border-radius': '18px',
-          background: '#8fd0a8',
-        },
-      },
-    ],
+    html: [],
+    css: [],
     version: 2,
     behavior: {
       molds: [
@@ -538,6 +518,21 @@ export const valeEnsolaradoExample: ExtensionExample = beginnerGameExample({
         },
       ],
       start: [
+        {
+          type: 'g2d:setupStage',
+          width: 480,
+          height: 270,
+          bg: '#8fd0a8',
+          __id: 'exemplo-vale-ensolarado',
+        },
+        {
+          type: 'g2d:setStageDescription',
+          description:
+            'Ande e pule pelo vale para juntar as 6 gemas azuis. Desvie do gambá e da águia e cuide da sua vida. Enter começa e reinicia.',
+          __id: 'exemplo-vale-ensolarado-descricao',
+        },
+        { type: 'g2d:stageBorder', color: '#ffffff', width: 3 },
+
         {
           type: 'g2d:fitScreen',
           percent: {

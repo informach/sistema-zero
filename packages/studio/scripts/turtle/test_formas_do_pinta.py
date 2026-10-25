@@ -84,15 +84,17 @@ class FromPinta(unittest.TestCase):
 
     def test_every_kind_of_pinta_shape_becomes_one_part_with_its_color(self):
         parts = self.components(self.formas.forma(str(FIXTURE)))
-        self.assertEqual(len(parts), 5)
+        self.assertEqual(len(parts), 6)
         colors = [(fill, outline) for _, fill, outline in parts]
         # The gradient becomes the color between its two ends.
         self.assertEqual(colors[0], ("#6699ff", "#6699ff"))
         self.assertEqual(colors[1], ("#ff3333", "#ff3333"))
-        self.assertEqual(colors[2], ("#ffffff", "#000000"))
+        # A filled shape with an outline: the fill, then the outline as a band on top of it.
+        self.assertEqual(colors[2], ("#ffffff", "#ffffff"))
+        self.assertEqual(colors[3], ("#000000", "#000000"))
         # A brush stroke and a line become bands of their own width and color.
-        self.assertEqual(colors[3], ("#ff9900", "#ff9900"))
-        self.assertEqual(colors[4], ("#222222", "#222222"))
+        self.assertEqual(colors[4], ("#ff9900", "#ff9900"))
+        self.assertEqual(colors[5], ("#222222", "#222222"))
 
     def test_the_drawing_faces_right_which_is_where_the_turtle_walks(self):
         parts = self.components(self.formas.forma(str(FIXTURE)))
@@ -102,7 +104,7 @@ class FromPinta(unittest.TestCase):
         tip = max(nose, key=lambda point: point[1])
         self.assertEqual(tip, (0.0, 30.0))
         # Down in the drawing is +x of the shape: the antenna (top of the drawing) is -x.
-        antenna = parts[4][0]
+        antenna = parts[5][0]
         self.assertTrue(all(x < 0 for x, _ in antenna))
 
     def test_the_rotation_pinta_writes_is_applied(self):
@@ -153,6 +155,7 @@ class FromPinta(unittest.TestCase):
             with self.assertRaises(self.formas.DesenhoNaoServe) as error:
                 self.formas.forma(svg(body))
             self.assertIn("imagem PNG", str(error.exception))
+            self.assertIn("desenho novo", str(error.exception))
         with self.assertRaises(FileNotFoundError):
             self.formas.forma("images/nao-existe.svg")
 
@@ -200,6 +203,84 @@ class FromPinta(unittest.TestCase):
         self.assertEqual(len(parts), 4)
 
 
+    def test_many_small_parts_never_vanish_to_fit_the_budget(self):
+        # 140 little squares (eyes, buttons) and one big circle: every part stays.
+        squares = "".join(
+            f'<rect x="{(i % 14) * 7}" y="{(i // 14) * 7}" width="4" height="4" fill="#000000"/>'
+            for i in range(140)
+        )
+        body = '<ellipse cx="50" cy="50" rx="45" ry="45" fill="#ff0000"/>' + squares
+        parts = self.components(self.formas.forma(svg(body, 100, 100)))
+        self.assertEqual(len(parts), 141)
+        self.assertTrue(all(len(points) >= 3 for points, _, _ in parts))
+        self.assertLessEqual(sum(len(points) for points, _, _ in parts),
+                             self.formas.MAXIMO_DE_PONTOS)
+
+    def test_too_many_parts_say_so_instead_of_dropping_some(self):
+        squares = "".join(
+            f'<rect x="{(i % 16) * 6}" y="{(i // 16) * 6}" width="4" height="4" fill="#000000"/>'
+            for i in range(160)
+        )
+        with self.assertRaises(self.formas.DesenhoNaoServe) as error:
+            self.formas.forma(svg(squares, 100, 100))
+        self.assertIn("detalhes demais", str(error.exception))
+
+    def test_a_thick_outline_keeps_its_corners_and_its_width(self):
+        band = self.formas._faixa_fechada([(10, 10), (50, 10), (50, 40), (10, 40)], 10)
+
+        def inside(point):
+            x, y = point
+            dentro = False
+            for (x1, y1), (x2, y2) in zip(band, band[1:] + band[:1]):
+                if (y1 > y) != (y2 > y) and x < x1 + (y - y1) * (x2 - x1) / (y2 - y1):
+                    dentro = not dentro
+            return dentro
+
+        # The first corner (where the ring starts) and the others are full, not notched.
+        for corner in [(6, 6), (54, 6), (54, 44), (6, 44)]:
+            self.assertTrue(inside(corner), corner)
+        # The band is 10 wide: 5 out and 5 in from the line; the middle stays empty.
+        self.assertTrue(inside((7, 25)))
+        self.assertTrue(inside((14, 25)))
+        self.assertFalse(inside((16, 25)))
+        self.assertFalse(inside((30, 25)))
+        self.assertFalse(inside((4, 25)))
+
+    def test_a_single_brush_tap_becomes_a_round_dot(self):
+        dot = self.formas._faixa_aberta([(10, 10), (10.01, 10)], 6)
+        self.assertEqual(len(dot), 12)
+        for x, y in dot:
+            self.assertAlmostEqual(math.dist((x, y), (10.005, 10)), 3, places=5)
+
+    def test_a_filled_shape_with_an_outline_gets_the_outline_as_its_own_band(self):
+        parts = self.components(self.formas.forma(svg(
+            '<rect x="5" y="5" width="30" height="10" fill="#00ff00" stroke="#0000ff" '
+            'stroke-width="2px"/>')))
+        self.assertEqual([(fill, edge) for _, fill, edge in parts],
+                         [("#00ff00", "#00ff00"), ("#0000ff", "#0000ff")])
+
+    def test_what_the_module_cannot_draw_is_refused_with_a_clear_message(self):
+        for body, reason in [
+            ('<path d="M 10 10 A 5 5 0 0 1 30 10 Z" fill="#000"/>', "comando"),
+            ('<rect width="9" height="9" fill="#000" opacity="0.5"/>', "transparente"),
+            ('<g transform="translate(5 0)"><rect width="9" height="9" fill="#000"/></g>',
+             "não entende"),
+            ('<rect width="9" height="9" style="fill:red"/>', "não entende"),
+        ]:
+            with self.assertRaises(self.formas.DesenhoNaoServe, msg=body) as error:
+                self.formas.forma(svg(body))
+            self.assertIn(reason, str(error.exception))
+        # A plain group (no transform, no color) is fine: its children are drawn.
+        parts = self.components(self.formas.forma(svg(
+            '<g><rect width="9" height="9" fill="#000"/></g>')))
+        self.assertEqual(len(parts), 1)
+
+    def test_a_drawing_named_like_a_turtle_shape_is_refused(self):
+        with self.assertRaises(self.formas.DesenhoNaoServe) as error:
+            self.formas.registrar(str(FIXTURE), nome="circle")
+        self.assertIn("já é de uma forma da tartaruga", str(error.exception))
+
+
 class OnTheDesktop(unittest.TestCase):
     def test_the_same_module_builds_the_shape_with_the_desktop_turtle(self):
         try:
@@ -213,7 +294,27 @@ class OnTheDesktop(unittest.TestCase):
             formas = load("_formas_desktop", DIRECTORY / "formas_do_pinta.py")
             shape = formas.forma(str(FIXTURE))
             self.assertIsInstance(shape, desktop.Shape)
-            self.assertEqual(len(shape._data), 5)
+            self.assertEqual(len(shape._data), 6)
+            # Tk really draws it: register the shape on a screen and let a turtle wear it.
+            import tkinter
+            try:
+                root = tkinter.Tk()
+            except tkinter.TclError:
+                print("sem tela para o Tk: o desenho com o turtle do computador não rodou")
+                return
+            try:
+                root.withdraw()
+                canvas = tkinter.Canvas(root, width=200, height=200)
+                screen = desktop.TurtleScreen(canvas)
+                screen.register_shape("nave", shape)
+                nave = desktop.RawTurtle(screen)
+                nave.shape("nave")
+                nave.setheading(90)
+                screen.update()
+                polygons = [item for item in canvas.find_all() if canvas.type(item) == "polygon"]
+                self.assertGreaterEqual(len(polygons), 6)
+            finally:
+                root.destroy()
         finally:
             sys.modules.pop("turtle", None)
             if saved is not None:

@@ -32,38 +32,27 @@ SZGameKit.setup({ width: 960, height: 540, background: "#4a6fa5", accent: "#e07a
 SZGameKit.setScreenText("menu", "Escalada do Guerreiro Profissional", "Use as setas para andar e pular. Suba pelas tábuas até a bandeira no topo!", "Escalar");
 SZGameKit.setScreenText("vitoria", "Chegou ao topo!", "Você escalou a torre inteira. A maior altura fica guardada!", "Escalar de novo");
 SZGameKit.defineLook("guerreiro", function (ctx) {
-  ctx.fillStyle = "#d9a066";
-  ctx.fillRect(8, 2, 16, 14);
-  ctx.fillStyle = "#8a5a2b";
-  ctx.fillRect(8, 0, 16, 5);
-  ctx.fillStyle = "#4a76b8";
-  ctx.fillRect(6, 16, 20, 20);
-  ctx.fillStyle = "#3a3f58";
-  ctx.fillRect(8, 36, 7, 12);
-  ctx.fillRect(17, 36, 7, 12);
-  ctx.fillStyle = "#c0c8d0";
-  ctx.fillRect(26, 12, 4, 26);
+  SZGameKit.drawRectangle(8, 2, 16, 14, "#d9a066");
+  SZGameKit.drawRectangle(8, 0, 16, 5, "#8a5a2b");
+  SZGameKit.drawRectangle(6, 16, 20, 20, "#4a76b8");
+  SZGameKit.drawRectangle(8, 36, 7, 12, "#3a3f58");
+  SZGameKit.drawRectangle(17, 36, 7, 12, "#3a3f58");
+  SZGameKit.drawRectangle(26, 12, 4, 26, "#c0c8d0");
 }, 32, 48);
 SZGameKit.defineLook("tijolo", function (ctx) {
-  ctx.fillStyle = "#6b4f3a";
-  ctx.fillRect(0, 0, 120, 24);
-  ctx.fillStyle = "#5a4230";
-  ctx.fillRect(0, 0, 120, 4);
-  ctx.fillRect(0, 12, 120, 2);
-  ctx.fillRect(38, 0, 3, 12);
-  ctx.fillRect(80, 12, 3, 12);
+  SZGameKit.drawRectangle(0, 0, 120, 24, "#6b4f3a");
+  SZGameKit.drawRectangle(0, 0, 120, 4, "#5a4230");
+  SZGameKit.drawRectangle(0, 12, 120, 2, "#5a4230");
+  SZGameKit.drawRectangle(38, 0, 3, 12, "#5a4230");
+  SZGameKit.drawRectangle(80, 12, 3, 12, "#5a4230");
 }, 120, 24);
 SZGameKit.defineLook("tabua", function (ctx) {
-  ctx.fillStyle = "#a0763d";
-  ctx.fillRect(0, 0, 110, 12);
-  ctx.fillStyle = "#7a5628";
-  ctx.fillRect(0, 9, 110, 3);
+  SZGameKit.drawRectangle(0, 0, 110, 12, "#a0763d");
+  SZGameKit.drawRectangle(0, 9, 110, 3, "#7a5628");
 }, 110, 12);
 SZGameKit.defineLook("bandeira", function (ctx) {
-  ctx.fillStyle = "#8a8a8a";
-  ctx.fillRect(4, 0, 4, 60);
-  ctx.fillStyle = "#e63946";
-  ctx.fillRect(8, 4, 34, 22);
+  SZGameKit.drawRectangle(4, 0, 4, 60, "#8a8a8a");
+  SZGameKit.drawRectangle(8, 4, 34, 22, "#e63946");
 }, 46, 60);
 SZGameKit.setJumpFeel(0.1, 0.1, 0.3, 2000);
 SZGameKit.defineMold("chao", { w: 120, h: 24, health: 1, speed: 0, damage: 0, color: "#6b4f3a", look: "tijolo" });
@@ -120,10 +109,8 @@ SZGameKit.onDraw(function (ctx) {
   SZGameKit.drawEffects();
 });
 SZGameKit.onDrawHud(function (ctx) {
-  ctx.fillStyle = "#ffffff";
-  ctx.font = "24px sans-serif";
-  ctx.fillText("Altura: " + altura, 20, 36);
-  ctx.fillText("Recorde: " + recorde, 20, 68);
+  SZGameKit.drawText("Altura: " + altura, 20, 36, 24, "#ffffff");
+  SZGameKit.drawText("Recorde: " + recorde, 20, 68, 24, "#ffffff");
 });
 `.trim()
 

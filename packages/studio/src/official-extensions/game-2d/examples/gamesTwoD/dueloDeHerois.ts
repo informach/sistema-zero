@@ -19,28 +19,8 @@ export const dueloDeHeroisExample: ExtensionExample = beginnerGameExample({
   description:
     'Dois jogadores no mesmo teclado lutam 1 contra 1. Azul usa A, D, W e F; Vermelho usa as setas. Golpeie o rival e zere a vida dele antes do tempo. Enter começa e reinicia.',
   ir: {
-    html: [{ type: 'canvas', id: 'tela', width: 480, height: 300 }],
-    css: [
-      {
-        selector: 'body',
-        declarations: {
-          background: '#120c1c',
-          display: 'flex',
-          'align-items': 'center',
-          'justify-content': 'center',
-          'min-height': '100vh',
-          margin: '0',
-        },
-      },
-      {
-        selector: 'canvas',
-        declarations: {
-          border: '3px solid #ffffff',
-          'border-radius': '18px',
-          background: '#2a2140',
-        },
-      },
-    ],
+    html: [],
+    css: [],
     version: 2,
     behavior: {
       molds: [
@@ -218,6 +198,21 @@ export const dueloDeHeroisExample: ExtensionExample = beginnerGameExample({
         },
       ],
       start: [
+        {
+          type: 'g2d:setupStage',
+          width: 480,
+          height: 300,
+          bg: '#2a2140',
+          __id: 'exemplo-duelo-de-her-is',
+        },
+        {
+          type: 'g2d:setStageDescription',
+          description:
+            'Dois jogadores no mesmo teclado lutam 1 contra 1. Azul usa A, D, W e F; Vermelho usa as setas. Golpeie o rival e zere a vida dele antes do tempo. Enter começa e reinicia.',
+          __id: 'exemplo-duelo-de-her-is-descricao',
+        },
+        { type: 'g2d:stageBorder', color: '#ffffff', width: 3 },
+
         {
           type: 'g2d:fitScreen',
           percent: {

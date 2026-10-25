@@ -134,11 +134,14 @@ const MOUSE_BUTTONS: readonly (readonly [string, string])[] = [
   ['direito', 'MOUSE_BUTTON_RIGHT'],
   ['do meio', 'MOUSE_BUTTON_MIDDLE'],
 ]
-/** Fields of the raylib structs a game reads and changes (pos.x, rec.width, camera.zoom…). */
-export const RAYLIB_STRUCT_FIELDS: readonly (readonly [string, string])[] = [
+/**
+ * Fields of the raylib structs a game reads and changes (pos.x, rec.width, camera.zoom…), one
+ * list per extension. The two palettes are independent: the 2D one has no 3D field, and the 3D
+ * one has no field of the 2D camera (offset, rotation, zoom), which a 3D game never uses.
+ */
+export const RAYLIB_2D_STRUCT_FIELDS: readonly (readonly [string, string])[] = [
   ['x', 'x'],
   ['y', 'y'],
-  ['z', 'z'],
   ['largura (width)', 'width'],
   ['altura (height)', 'height'],
   ['vermelho (r)', 'r'],
@@ -149,7 +152,22 @@ export const RAYLIB_STRUCT_FIELDS: readonly (readonly [string, string])[] = [
   ['deslocamento (offset)', 'offset'],
   ['giro (rotation)', 'rotation'],
   ['zoom', 'zoom'],
+  ['textura (texture)', 'texture'],
+  ['tamanho base (baseSize)', 'baseSize'],
+  ['repetir (looping)', 'looping'],
+]
+export const RAYLIB_3D_STRUCT_FIELDS: readonly (readonly [string, string])[] = [
+  ['x', 'x'],
+  ['y', 'y'],
+  ['z', 'z'],
+  ['largura (width)', 'width'],
+  ['altura (height)', 'height'],
+  ['vermelho (r)', 'r'],
+  ['verde (g)', 'g'],
+  ['azul (b)', 'b'],
+  ['opacidade (a)', 'a'],
   ['posição (position)', 'position'],
+  ['alvo (target)', 'target'],
   ['para cima (up)', 'up'],
   ['abertura (fovy)', 'fovy'],
   ['projeção (projection)', 'projection'],
@@ -172,6 +190,46 @@ export const RAYLIB_STRUCT_FIELDS: readonly (readonly [string, string])[] = [
   ['ossos (boneCount)', 'boneCount'],
   ['quantas malhas (meshCount)', 'meshCount'],
 ]
+
+/**
+ * The shared blocks a 3D game has no use for: they draw, move or collide a 2D world. A 3D game
+ * draws in 2D only its HUD, menus and end screens (text, panels, bars, a crosshair, an icon), so
+ * those stay. The 2D world camera, the 2D world collisions, the 2D vector math and the
+ * decorative 2D shapes are left out of the 3D palette. Clicking a menu button is a point in a
+ * rectangle, so that collision stays.
+ */
+export const RAYLIB_2D_WORLD_ONLY: ReadonlySet<string> = new Set([
+  'Camera2D',
+  'begin_mode_2d',
+  'end_mode_2d',
+  'get_screen_to_world_2d',
+  'get_world_to_screen_2d',
+  'check_collision_recs',
+  'check_collision_circles',
+  'check_collision_circle_rec',
+  'check_collision_point_circle',
+  'get_collision_rec',
+  'vector2_add',
+  'vector2_subtract',
+  'vector2_scale',
+  'vector2_normalize',
+  'vector2_length',
+  'vector2_distance',
+  'vector2_lerp',
+  'vector2_rotate',
+  'draw_rectangle_pro',
+  'draw_circle_sector',
+  'draw_circle_gradient',
+  'draw_ellipse',
+  'draw_ring',
+  'draw_line_bezier',
+  'draw_triangle',
+  'draw_triangle_lines',
+  'draw_poly',
+  'draw_poly_lines',
+  'draw_pixel',
+  'draw_pixel_v',
+])
 const BLEND_MODES: readonly (readonly [string, string])[] = [
   ['transparência normal', 'BLEND_ALPHA'],
   ['somar luz', 'BLEND_ADDITIVE'],
@@ -259,6 +317,8 @@ export function raylibCodecKit(owner: RaylibOwner) {
 
 export function raylibCommonCodecs(owner: RaylibOwner): PythonBlockCodec[] {
   const { blockId, api, choice } = raylibCodecKit(owner)
+  const structFields =
+    owner === 'python-raylib-2d' ? RAYLIB_2D_STRUCT_FIELDS : RAYLIB_3D_STRUCT_FIELDS
 
   /** `while not window_should_close():` — the game loop every raylib game is built around. */
   const windowLoop: PythonBlockCodec = {
@@ -325,7 +385,7 @@ export function raylibCommonCodecs(owner: RaylibOwner): PythonBlockCodec[] {
     starter: true,
     api: 'valor.x / valor.width / camera.zoom…',
     help: 'Um campo de um vetor, retângulo, cor, câmera ou textura: x, y, width, height, zoom… Use em "guardar" para mudar, como guardar 100 em pos.x.',
-    match: { kinds: ['Attribute'], names: RAYLIB_STRUCT_FIELDS.map(([, value]) => value) },
+    match: { kinds: ['Attribute'], names: structFields.map(([, value]) => value) },
     defaultNode: () => attribute(name('pos'), 'x'),
     decode(value) {
       const { value: object, attr, ctx } = value.fields
@@ -334,20 +394,20 @@ export function raylibCommonCodecs(owner: RaylibOwner): PythonBlockCodec[] {
         !exact(value, ['value', 'attr', 'ctx']) ||
         !isNode(object) ||
         typeof attr !== 'string' ||
-        !RAYLIB_STRUCT_FIELDS.some(([, item]) => item === attr) ||
+        !structFields.some(([, item]) => item === attr) ||
         !isNode(ctx) ||
         !['Load', 'Store', 'Del'].includes(ctx.kind)
       )
         return
       return {
-        fields: [{ name: 'FIELD', label: '', value: attr, options: RAYLIB_STRUCT_FIELDS }],
+        fields: [{ name: 'FIELD', label: '', value: attr, options: structFields }],
         inputs: [{ name: 'object', label: 'de', role: 'value', nodes: [object] }],
         extra: { context: ctx.kind },
       }
     },
     encode(shape) {
       const chosen = field(shape, 'FIELD')
-      if (!RAYLIB_STRUCT_FIELDS.some(([, item]) => item === chosen))
+      if (!structFields.some(([, item]) => item === chosen))
         throw new Error('Escolha um campo da lista.')
       const context = String(shape.extra?.context ?? 'Load')
       if (!['Load', 'Store', 'Del'].includes(context)) throw new Error('Destino Python inválido.')
@@ -369,7 +429,7 @@ export function raylibCommonCodecs(owner: RaylibOwner): PythonBlockCodec[] {
   const color = (initial = 'RED') => p('color', 'cor', id(initial))
   const tint = () => p('tint', 'tom', id('WHITE'))
 
-  return [
+  const codecs: PythonBlockCodec[] = [
     // 🪟 Janela e laço
     api({
       fn: 'init_window',
@@ -940,7 +1000,7 @@ export function raylibCommonCodecs(owner: RaylibOwner): PythonBlockCodec[] {
     }),
     api({
       fn: 'draw_texture_pro',
-      title: 'desenhar a imagem completo',
+      title: 'desenhar a imagem (versão completa)',
       category: I,
       level: 3,
       role: 'statement',
@@ -1812,4 +1872,13 @@ export function raylibCommonCodecs(owner: RaylibOwner): PythonBlockCodec[] {
       initial: 'BLEND_ADDITIVE',
     }),
   ]
+  if (owner === 'python-raylib-2d') return codecs
+  const prefix = blockId('')
+  return codecs
+    .filter((codec) => !RAYLIB_2D_WORLD_ONLY.has(codec.id.slice(prefix.length)))
+    .map((codec) =>
+      // In a 3D game the point-in-rectangle test is the mouse over a menu button, and it is the
+      // only 2D collision left: it lives with the mouse instead of a category of its own.
+      codec.id === blockId('check_collision_point_rec') ? { ...codec, category: K } : codec,
+    )
 }

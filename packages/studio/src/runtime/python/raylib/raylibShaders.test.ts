@@ -40,6 +40,17 @@ describe('GLSL 330 do raylib do computador → GLSL ES 300 do navegador', () => 
     expect(() => translateGlsl('#version 100\nvoid main() {}')).toThrow('#version 100')
   })
 
+  test('o #extension vem antes da precisão, como o GLSL ES exige', () => {
+    const { code } = translateGlsl(
+      '#version 330\n#extension GL_OES_standard_derivatives : enable\nvoid main() {}',
+    )
+    const lines = code.split('\n')
+    expect(lines[0]).toBe('#version 300 es')
+    expect(lines[1]).toBe('#extension GL_OES_standard_derivatives : enable')
+    expect(lines[2]).toBe('precision highp float;')
+    expect(code.match(/#extension/g)).toHaveLength(1)
+  })
+
   test('um valor inicial que não é número é recusado', () => {
     expect(() =>
       translateGlsl('#version 330\nuniform float a = sin(1.0);\nvoid main() {}'),

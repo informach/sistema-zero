@@ -17,28 +17,8 @@ export const treinadorDeCriaturasExample: ExtensionExample = beginnerGameExample
   description:
     'Ande com as setas e entre no mato alto para achar uma criatura. Vença a batalha por turnos com as teclas 1, 2 e 3. Enter começa e reinicia.',
   ir: {
-    html: [{ type: 'canvas', id: 'tela', width: 480, height: 270 }],
-    css: [
-      {
-        selector: 'body',
-        declarations: {
-          background: '#0f1220',
-          display: 'flex',
-          'align-items': 'center',
-          'justify-content': 'center',
-          'min-height': '100vh',
-          margin: '0',
-        },
-      },
-      {
-        selector: 'canvas',
-        declarations: {
-          border: '3px solid #ffffff',
-          'border-radius': '18px',
-          background: '#3f7d4f',
-        },
-      },
-    ],
+    html: [],
+    css: [],
     version: 2,
     behavior: {
       molds: [
@@ -338,6 +318,21 @@ export const treinadorDeCriaturasExample: ExtensionExample = beginnerGameExample
         },
       ],
       start: [
+        {
+          type: 'g2d:setupStage',
+          width: 480,
+          height: 270,
+          bg: '#3f7d4f',
+          __id: 'exemplo-treinador-de-criaturas',
+        },
+        {
+          type: 'g2d:setStageDescription',
+          description:
+            'Ande com as setas e entre no mato alto para achar uma criatura. Vença a batalha por turnos com as teclas 1, 2 e 3. Enter começa e reinicia.',
+          __id: 'exemplo-treinador-de-criaturas-descricao',
+        },
+        { type: 'g2d:stageBorder', color: '#ffffff', width: 3 },
+
         {
           type: 'g2d:fitScreen',
           percent: {

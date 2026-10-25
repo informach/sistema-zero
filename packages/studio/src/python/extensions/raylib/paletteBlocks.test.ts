@@ -7,6 +7,11 @@ import { PYTHON_PALETTE_GROUPS } from '../../blocks/paletteGroups'
 import { pythonVisualToAST } from '../../blocks/projection'
 import { PYTHON_RAYLIB_2D_CODECS } from '../raylib2d/catalog'
 import { PYTHON_RAYLIB_3D_CODECS } from '../raylib3d/catalog'
+import {
+  RAYLIB_2D_STRUCT_FIELDS,
+  RAYLIB_2D_WORLD_ONLY,
+  RAYLIB_3D_STRUCT_FIELDS,
+} from './commonCatalog'
 
 /**
  * Every Raylib palette block arrives complete (all its inputs filled), loads in Blockly and,
@@ -54,7 +59,7 @@ for (const [label, own] of [
       workspace.dispose()
     }
     // Anti-vácuo: a paleta inteira passou pelo laço.
-    expect(checked).toBeGreaterThan(label === 'Raylib 3D' ? 200 : 120)
+    expect(checked).toBeGreaterThan(label === 'Raylib 3D' ? 170 : 120)
   })
 
   test(`${label}: cada categoria de bloco está no grupo da paleta`, () => {
@@ -80,4 +85,35 @@ test('a paleta 3D tem os blocos do 3D e a 2D não', () => {
   ])
     expect(three.has(`sz_py_rl3d_${key}`)).toBe(true)
   expect([...two].some((id) => id.endsWith('draw_cube') || id.endsWith('load_model'))).toBe(false)
+})
+
+/**
+ * The two palettes are independent and self-sufficient (decision of 25/10/2026): the 2D one
+ * has no 3D block or field, and the 3D one has no block or field that only serves a 2D world.
+ */
+test('a paleta 2D não tem nada do 3D e a 3D não tem o que só serve ao mundo 2D', () => {
+  const keys = (codecs: readonly { id: string }[], prefix: string) =>
+    new Set(codecs.map((codec) => codec.id.slice(prefix.length)))
+  const two = keys(PYTHON_RAYLIB_2D_CODECS, 'sz_py_rl2d_')
+  const three = keys(PYTHON_RAYLIB_3D_CODECS, 'sz_py_rl3d_')
+  // Tudo o que a paleta 2D tem e a 3D não é exatamente a lista do mundo 2D, e cada item dela
+  // existe no 2D (sem isso a lista poderia nomear um bloco que não existe e não cortar nada).
+  expect([...two].filter((key) => !three.has(key)).sort()).toEqual([...RAYLIB_2D_WORLD_ONLY].sort())
+  // Nenhum bloco só do 3D vaza para a paleta 2D.
+  const onlyThree = [...three].filter((key) => !two.has(key))
+  expect(onlyThree.length).toBeGreaterThan(70)
+  for (const key of onlyThree) expect(two.has(key)).toBe(false)
+
+  const fieldsOf = (
+    codecs: readonly { id: string; match?: { names?: readonly string[] } }[],
+    id: string,
+  ) => new Set(codecs.find((codec) => codec.id === id)?.match?.names ?? [])
+  const twoFields = fieldsOf(PYTHON_RAYLIB_2D_CODECS, 'sz_py_rl2d_field')
+  const threeFields = fieldsOf(PYTHON_RAYLIB_3D_CODECS, 'sz_py_rl3d_field')
+  expect(twoFields).toEqual(new Set(RAYLIB_2D_STRUCT_FIELDS.map(([, value]) => value)))
+  expect(threeFields).toEqual(new Set(RAYLIB_3D_STRUCT_FIELDS.map(([, value]) => value)))
+  for (const field of ['z', 'position', 'fovy', 'meshes', 'normal', 'hit'])
+    expect(twoFields.has(field), field).toBe(false)
+  for (const field of ['offset', 'rotation', 'zoom'])
+    expect(threeFields.has(field), field).toBe(false)
 })

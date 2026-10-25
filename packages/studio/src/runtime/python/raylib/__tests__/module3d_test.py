@@ -137,6 +137,24 @@ class Models(unittest.TestCase):
         P.end_drawing()
         self.assertEqual([e for e in header()['models'] if e[1] == mesh.vaoId], [])
 
+    def test_model_fields_are_pointers_like_on_the_desktop(self):
+        # No computador, modelo.materials é um ponteiro do C: índice sim, len() e for não.
+        model = P.load_model_from_mesh(P.gen_mesh_cube(1, 1, 1))
+        with self.assertRaises(TypeError):
+            len(model.materials)
+        with self.assertRaises(TypeError):
+            for _ in model.meshes:
+                pass
+        with self.assertRaises(TypeError):
+            len(model.materials[0].maps)
+        for index in range(model.materialCount):
+            self.assertGreater(model.materials[index].shader.id, 0)
+        model.materials[0].maps[P.MATERIAL_MAP_ALBEDO].color = P.RED
+        self.assertEqual(model.materials[0].maps[P.MATERIAL_MAP_ALBEDO].color.r, 230)
+        # O motor continua desenhando e medindo o modelo.
+        box = P.get_model_bounding_box(model)
+        self.assertEqual((box.min.x, box.max.x), (-0.5, 0.5))
+
     def test_draw_model_records_the_mesh_with_its_matrix(self):
         model = P.load_model_from_mesh(P.gen_mesh_cube(1, 1, 1))
         ops = draw(lambda: P.draw_model(model, P.Vector3(1, 2, 3), 2, P.RED))

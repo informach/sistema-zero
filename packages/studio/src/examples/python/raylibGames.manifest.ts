@@ -270,7 +270,7 @@ export const RAYLIB_GAMES = [
       'As setas para cima e para baixo escolhem, Enter confirma e ESC volta. Atacar mostra os golpes, Trocar chama outro da equipe, Defender diminui o próximo golpe e Fugir acaba a batalha. Água vence fogo, fogo vence planta, planta vence água e raio vence água.',
     ideas: [
       'Mude o dano dos golpes em GOLPES.',
-      'Crie um monstrinho novo em MONSTROS (e desenhe ele no Pinta).',
+      "Crie um monstrinho novo em MONSTROS, desenhe ele no Pinta e ponha o nome do arquivo em 'imagem'.",
       'Acrescente uma vantagem nova em VANTAGENS.',
     ],
     sounds: [
@@ -507,7 +507,7 @@ export const RAYLIB_GAMES = [
       'Mexa o mouse (ou as setas para os lados) para olhar, W A S D para andar e clique ou barra de espaço para soltar o raio. Encostar num robô ligado gasta energia.',
     ideas: [
       'Mude as letras do MAPA para desenhar outro labirinto, com mais robôs (R).',
-      'Redesenhe o robô no Pinta, uma linha por animação, e troque `images/robo.png`.',
+      'Redesenhe o robô no Pinta com as mesmas quatro linhas (parado, andando, atacando e desligado, até dois quadros em cada) e troque `images/robo.png`.',
       'Mude VIDA_DO_ROBO para os robôs aguentarem mais raios.',
     ],
     sounds: [
@@ -541,7 +541,7 @@ export const RAYLIB_GAMES = [
     extension: '3d',
     inspiration: 'Minecraft-AI',
     howToPlay:
-      'Mexa o mouse (ou as setas) para olhar, W A S D para andar e espaço para pular. Clique ou C coloca um bloco, clique direito ou X tira, Q e E trocam o bloco.',
+      'Mexa o mouse (ou as setas para os lados) para olhar, W A S D (ou as setas) para andar e espaço para pular. Clique ou C coloca um bloco, clique direito ou X tira, Q e E trocam o bloco.',
     ideas: [
       'Pinte uma textura nova no Molda, ponha em `images/` e acrescente o nome dela na lista NOMES.',
       'Mude TAMANHO_DO_MUNDO para um mundo maior (e mais pesado de desenhar).',

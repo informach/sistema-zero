@@ -194,13 +194,13 @@ quadros (o **tileset**). Escolha um na aba **Imagens** (ex.: \`tileset\`).
 
 - **Conjunto e mapa de tiles vetoriais** usam Figuras desenhadas no próprio projeto como
   peças sólidas, plataformas, decoração ou **atravessa e avisa**. Assim um jogo inteiro
-  pode ser canvas puro, offline e sem arquivos de imagem.
+  pode usar somente as figuras da extensão, offline e sem arquivos de imagem.
 - **Carregar fase de campanha vetorial** é a versão compacta para campanhas grandes. Ela
   guarda as grades e os metadados em uma receita JSON, mas cria somente o Mapa, o Mundo e a
   Fase escolhidos naquele momento. Também pode guardar um elenco autoral por fase e reforços
   próprios da segunda volta, usando a lista de tipos indicada no bloco. Use **valor da fase
   atual** para ler mundo, etapa, pontos de nascimento e outras propriedades numéricas da
-  receita. Isso evita que dezenas de mapas e inimigos inativos virem milhares de blocos SVG.
+  receita. Isso evita que dezenas de mapas e inimigos inativos virem milhares de blocos de desenho.
 - **atravessa e avisa** (só no mapa VETORIAL) é a peça que o herói ATRAVESSA e que mesmo assim
   aparece no **Para cada tile que … toca no lado …**, no lado **dentro**. É com ela que se faz moeda no cenário,
   lava, espinho de chão e água: peça sólida barraria o caminho, e decoração não avisaria
@@ -320,7 +320,7 @@ girada na direção apontada.
 
 O bloco **Fazer a tela preencher N% da janela** (genérico) deixa o canvas grande, nítido e responsivo: ocupa quase toda a janela e se reajusta sozinho quando ela muda de tamanho, mantendo a proporção. As coordenadas do jogo continuam as mesmas, mas o desenho passa a ser feito na resolução REAL da tela. Fica grande E nítido (sem borrar), em qualquer tamanho.
 
-Para começar rápido, o bloco **Preparar o jogo em tela cheia** (no grupo Sprites > Aparência) já faz tudo isso de uma vez. Cria a tela com o tamanho escolhido, centraliza na janela e pinta o fundo (canvas e a sobra ao redor) com a cor do jogo. Sem precisar criar o canvas no HTML. Os blocos individuais (criar a tela, preencher %) continuam disponíveis para quem quer montar na mão.
+O bloco **Preparar o jogo em tela cheia**, em Jogo e telas, faz esse preparo: cria a tela com o tamanho escolhido, centraliza e pinta o fundo com a cor do jogo. Os blocos da extensão também permitem ajustar a proporção e a borda. Criar a página com HTML e CSS pertence à etapa sem extensão.
 
 ### Monte um jogo de corrida e pulo
 
@@ -341,7 +341,7 @@ Veja o exemplo **"Nave contra Asteroides"** para um jogo de tiro e **"Dino Run"*
 
 ### Monte uma batalha de bananas
 
-A categoria **Kits prontos > Gorilas** monta um jogo de artilharia por turnos (estilo "Gorillas") para **2 jogadores** no mesmo aparelho. Cidade, física e crateras já vêm prontas: **Criar/Desenhar a cidade**, **Pôr o gorila no lado**, **Sortear/Desenhar o vento**, **Mirar arrastando** (mais longe = mais forte) + **soltou a mira?** → **Jogar a banana**, **Mover/Desenhar a banana** (gravidade + vento entortam), **a banana acertou o gorila?** (vitória) / **bateu num prédio?** (abre cratera, troca de turno), e **sons** de queda/explosão. Tem também blocos genéricos de canvas em ✏️ Traçado (retângulo ao traçado, recortar/clip, ponto dentro do traçado?) e os eventos apertar/soltar o mouse. Veja o exemplo **"Guerra de Gorilas"**.
+A categoria **Kits prontos > Gorilas** monta um jogo de artilharia por turnos (estilo "Gorillas") para **2 jogadores** no mesmo aparelho. Cidade, física e crateras já vêm prontas: **Criar/Desenhar a cidade**, **Pôr o gorila no lado**, **Sortear/Desenhar o vento**, **Mirar arrastando** (mais longe = mais forte) + **soltou a mira?** → **Jogar a banana**, **Mover/Desenhar a banana** (gravidade + vento entortam), **a banana acertou o gorila?** (vitória) / **bateu num prédio?** (abre cratera, troca de turno), e **sons** de queda/explosão. Use as Figuras da extensão para acrescentar desenhos. Veja o exemplo **"Guerra de Gorilas"**.
 
 ### Adicione um robô adversário
 
@@ -350,7 +350,7 @@ A categoria **Kits prontos > Gorilas** monta um jogo de artilharia por turnos (e
 
 ### Faça jogos parecidos sem os kits
 
-Use HTML, CSS, Programação e **🎨 SVG** para montar regras próprias. Estilos e atributos controlam painéis e desenhos; SVG oferece formas e caminhos. O exemplo **"Cidade & Moinho (na mão)"** combina bomba, vento, animação e tela cheia. Ele fica em Extensões → Exemplos clássicos.
+Na etapa direta, sem nenhuma extensão, HTML, CSS, Programação e **🎨 SVG** permitem montar página e desenhos próprios. O exemplo **"Cidade & Moinho (na mão)"** pertence a essa etapa e combina bomba, vento, animação e tela cheia. Nos jogos com extensão, use seus blocos para preparar a tela, desenhar e mostrar a interface.
 
 ### Monte um jogo de equilibrista
 
@@ -819,7 +819,7 @@ tem o seu jeito de se mexer e os seus tiros. É só a parte repetida que sai.
 
 Na categoria **Desenho e efeitos**, faça o visual do sprite com formas, sem imagem nenhuma:
 
-- **Desenhar a figura … assim**. Monte um desenho com **retângulo, círculo, oval, triângulo, linha** e dê um nome. Você desenha DENTRO do quadro do sprite: x/y começam no cantinho (0,0). Dá para usar os blocos de **Canvas** aqui dentro também (gradiente, curvas…).
+- **Desenhar a figura … assim**. Monte um desenho com **retângulo, círculo, oval, triângulo, linha** da extensão e dê um nome. Você desenha DENTRO do quadro do sprite: x/y começam no cantinho (0,0).
 - **Pintar receita de formas** guarda muitos retângulos e círculos em um único campo JSON.
   É a opção avançada para pixel art extensa: o desenho continua vetorial e editável, mas não
   transforma cada pequeno detalhe em vários blocos SVG na área de programação.

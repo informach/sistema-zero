@@ -2,6 +2,7 @@ import type * as Babel from '@babel/types'
 import type { JSExpr, JSStatement } from '#ir'
 import { sceneCallExpression, sceneCallStatement } from '../scene-2d/codec'
 import { type GameKitCampaignStage, normalizeCampaignStage } from './campaignSchema'
+import { gameKitDrawingCallToIR } from './drawingCodec'
 import { isGameKitAction, isGameKitCampaignEventField } from './runtimeContract'
 import { gameKitUiFontCallToIR } from './uiFontCodec'
 
@@ -21,7 +22,14 @@ export interface CampaignParserContext {
 }
 
 function isInlineFunction(node: Babel.Node | null | undefined): node is InlineFunction {
-  return node?.type === 'ArrowFunctionExpression' || node?.type === 'FunctionExpression'
+  // Os chapéus não guardam modificadores nem o nome local da função.
+  // Deixe esses callbacks no parser geral para conservar também autorreferências.
+  return (
+    (node?.type === 'ArrowFunctionExpression' || node?.type === 'FunctionExpression') &&
+    !node.async &&
+    !node.generator &&
+    (node.type !== 'FunctionExpression' || !node.id)
+  )
 }
 
 /** Lê somente literais JSON; chamadas, getters, spreads e chaves calculadas são recusados. */
@@ -145,6 +153,8 @@ export function gameKitCampaignCallToIR(
   if (scene) return scene
   const font = gameKitUiFontCallToIR(method, args)
   if (font) return font
+  const drawing = gameKitDrawingCallToIR(method, args, context.toExpr)
+  if (drawing !== undefined) return drawing
   switch (method) {
     case 'setHealth': {
       const charVar = context.identifierName(args[0]),

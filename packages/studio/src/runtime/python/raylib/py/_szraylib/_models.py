@@ -12,12 +12,15 @@ import struct as _bin
 from array import array
 
 from . import _constants as K
+from . import _floatvec as V
 from . import _gltf
 from . import _raymath as rm
 from . import _rt as rt
 from . import _shapes as ps
 from ._shaders import default_shader
 from ._args import color, integer, number, struct, vec3
+from ._ffi import Pointer
+from ._float32 import DEG2RAD, PI, F, cosf, sinf
 from ._assets import _png_size
 from ._collide3d import ray_triangle
 from ._structs import (BoneInfo, BoundingBox, Color, Material, MaterialMap, Matrix, Mesh, Model,
@@ -41,6 +44,13 @@ def _identity():
     return rm._make(_gltf.IDENTITY)
 
 
+def _items(pointer):
+    """A lista por trás de um ponteiro do modelo (o motor percorre; o jogo usa o contador)."""
+    if isinstance(pointer, Pointer):
+        return pointer.items
+    return pointer or []
+
+
 def load_material_default():
     material = Material()
     material.shader = default_shader()
@@ -48,7 +58,7 @@ def load_material_default():
     maps[K.MATERIAL_MAP_ALBEDO].texture = Texture(rt.DEFAULT_TEXTURE_ID, 1, 1, 1, 7)
     maps[K.MATERIAL_MAP_ALBEDO].color = Color(255, 255, 255, 255)
     maps[K.MATERIAL_MAP_METALNESS].color = Color(255, 255, 255, 255)
-    material.maps = maps
+    material.maps = Pointer('MaterialMap *', maps)
     material.params = [0.0, 0.0, 0.0, 0.0]
     return material
 
@@ -171,13 +181,14 @@ def gen_mesh_poly(sides, radius, /):
     n, r = integer(sides, f, 'sides'), number(radius, f, 'radius')
     if n < 3:
         return Mesh()
+    # GenMeshPoly em float: o passo é 360.0f/sides, e o ângulo vai somando.
     vertices = []
-    d, step = 0.0, 360.0 / n
+    r = F(r)
+    d, step = F(0.0), F(360.0) / n
     for _ in range(n):
-        a, b = math.radians(d), math.radians(d + step)
-        vertices.extend((0.0, 0.0, 0.0, math.sin(a) * r, 0.0, math.cos(a) * r,
-                         math.sin(b) * r, 0.0, math.cos(b) * r))
-        d += step
+        vertices.extend((0.0, 0.0, 0.0, sinf(DEG2RAD * d) * r, 0.0, cosf(DEG2RAD * d) * r,
+                         sinf(DEG2RAD * (d + step)) * r, 0.0, cosf(DEG2RAD * (d + step)) * r))
+        d = d + step
     count = n * 3
     return _generated(vertices, [0.0] * (count * 2), [0.0, 1.0, 0.0] * count)
 
@@ -260,16 +271,17 @@ def gen_mesh_cylinder(radius, height, slices, /):
         return Mesh()
     body = ps.cylinder(sl, 8)
     ps.scale(body, r, r, h)
-    ps.rotate(body, -math.pi / 2, (1, 0, 0))
+    # Os ângulos são os do C: -PI/2.0f e 90*DEG2RAD, em float.
+    ps.rotate(body, -PI / 2.0, (1, 0, 0))
     top = ps.disk(r, sl, (0, 0, 0), (0, 0, 1))
-    top.tcoords = [0.0] * (2 * top.npoints)
-    ps.rotate(top, -math.pi / 2, (1, 0, 0))
-    ps.rotate(top, math.radians(90), (0, 1, 0))
+    top.tcoords = [F(0.0)] * (2 * top.npoints)
+    ps.rotate(top, -PI / 2.0, (1, 0, 0))
+    ps.rotate(top, 90 * DEG2RAD, (0, 1, 0))
     ps.translate(top, 0, h, 0)
     bottom = ps.disk(r, sl, (0, 0, 0), (0, 0, -1))
-    bottom.tcoords = [0.95] * (2 * bottom.npoints)
-    ps.rotate(bottom, math.pi / 2, (1, 0, 0))
-    ps.rotate(bottom, math.radians(-90), (0, 1, 0))
+    bottom.tcoords = [F(0.95)] * (2 * bottom.npoints)
+    ps.rotate(bottom, PI / 2.0, (1, 0, 0))
+    ps.rotate(bottom, -90 * DEG2RAD, (0, 1, 0))
     ps.merge(body, top)
     ps.merge(body, bottom)
     return _from_shape(body)
@@ -282,11 +294,11 @@ def gen_mesh_cone(radius, height, slices, /):
         return Mesh()
     body = ps.cone(sl, 8)
     ps.scale(body, r, r, h)
-    ps.rotate(body, -math.pi / 2, (1, 0, 0))
-    ps.rotate(body, math.pi / 2, (0, 1, 0))
+    ps.rotate(body, -PI / 2.0, (1, 0, 0))
+    ps.rotate(body, PI / 2.0, (0, 1, 0))
     bottom = ps.disk(r, sl, (0, 0, 0), (0, 0, -1))
-    bottom.tcoords = [0.95] * (2 * bottom.npoints)
-    ps.rotate(bottom, math.pi / 2, (1, 0, 0))
+    bottom.tcoords = [F(0.95)] * (2 * bottom.npoints)
+    ps.rotate(bottom, PI / 2.0, (1, 0, 0))
     ps.merge(body, bottom)
     return _from_shape(body)
 
@@ -297,9 +309,11 @@ def gen_mesh_torus(radius, size, radSeg, sides, /):
     seg, n = integer(radSeg, f, 'radSeg'), integer(sides, f, 'sides')
     if n < 3 or seg < 3:
         return Mesh()
-    r = min(max(r, 0.1), 1.0)
+    r = F(r)
+    r = F(1.0) if r > F(1.0) else F(0.1) if r < F(0.1) else r
     shape = ps.torus(seg, n, r)
-    ps.scale(shape, s / 2, s / 2, s / 2)
+    half = F(s) / 2
+    ps.scale(shape, half, half, half)
     return _from_shape(shape)
 
 
@@ -309,7 +323,8 @@ def gen_mesh_knot(radius, size, radSeg, sides, /):
     seg, n = integer(radSeg, f, 'radSeg'), integer(sides, f, 'sides')
     if n < 3 or seg < 3:
         return Mesh()
-    r = min(max(r, 0.5), 3.0)
+    r = F(r)
+    r = F(3.0) if r > F(3.0) else F(0.5) if r < F(0.5) else r
     shape = ps.trefoil(seg, n, r)
     ps.scale(shape, s, s, s)
     return _from_shape(shape)
@@ -365,9 +380,10 @@ def _model(meshes, materials, mesh_material):
     model.transform = _identity()
     model.meshCount = len(meshes)
     model.materialCount = len(materials)
-    model.meshes = meshes
-    model.materials = materials
-    model.meshMaterial = mesh_material
+    # Ponteiros, como no C: o jogo usa índice e o contador (meshCount, materialCount).
+    model.meshes = Pointer('Mesh *', meshes)
+    model.materials = Pointer('Material *', materials)
+    model.meshMaterial = Pointer('int *', mesh_material)
     return model
 
 
@@ -457,12 +473,12 @@ def is_model_valid(model, /):
     m = struct(model, Model, 'is_model_valid', 'model')
     if not m.meshes or not m.materials or m.meshMaterial is None or m.meshCount <= 0 or m.materialCount <= 0:
         return False
-    return all(mesh.vertices is None or mesh.vaoId > 0 for mesh in m.meshes[:m.meshCount])
+    return all(mesh.vertices is None or mesh.vaoId > 0 for mesh in _items(m.meshes)[:m.meshCount])
 
 
 def unload_model(model, /):
     m = struct(model, Model, 'unload_model', 'model')
-    for mesh in (m.meshes or [])[:m.meshCount]:
+    for mesh in _items(m.meshes)[:m.meshCount]:
         unload_mesh(mesh)
 
 
@@ -470,8 +486,9 @@ def get_model_bounding_box(model, /):
     m = struct(model, Model, 'get_model_bounding_box', 'model')
     low, high = (0.0, 0.0, 0.0), (0.0, 0.0, 0.0)
     if m.meshCount > 0:
-        low, high = _mesh_bounds(m.meshes[0])
-        for mesh in m.meshes[1:m.meshCount]:
+        meshes = _items(m.meshes)
+        low, high = _mesh_bounds(meshes[0])
+        for mesh in meshes[1:m.meshCount]:
             a, b = _mesh_bounds(mesh)
             low = tuple(min(low[i], a[i]) for i in range(3))
             high = tuple(max(high[i], b[i]) for i in range(3))
@@ -502,7 +519,7 @@ def emit_mesh(mesh, material, matrix, diffuse, wires, bones=None):
     record = [rt.OP_MESH, mesh.vaoId, material.shader.id, diffuse,
               _packed(material.maps[K.MATERIAL_MAP_METALNESS].color), 1 if wires else 0]
     record.extend(matrix)
-    maps = [(i, m.texture.id) for i, m in enumerate(material.maps[:MAX_MATERIAL_MAPS])
+    maps = [(i, m.texture.id) for i, m in enumerate(_items(material.maps)[:MAX_MATERIAL_MAPS])
             if m.texture.id > 0]
     record.append(len(maps))
     for index, texture_id in maps:
@@ -573,45 +590,54 @@ def draw_model_wires_ex(model, position, rotationAxis, rotationAngle, scale, tin
 
 class _PoseRow:
     """Uma pose (keyframePoses[quadro]): cada osso vira um Transform quando o jogo o lê."""
-    __slots__ = ('_raw',)
+    __slots__ = ('_table', '_frame')
 
-    def __init__(self, raw):
-        self._raw = raw
+    def __init__(self, table, frame):
+        self._table = table
+        self._frame = frame
 
     def __len__(self):
-        return len(self._raw)
+        return self._table.bones
 
     def __getitem__(self, bone):
         if isinstance(bone, slice):
-            return [self[i] for i in range(*bone.indices(len(self._raw)))]
-        t, r, s = self._raw[bone]
+            return [self[i] for i in range(*bone.indices(self._table.bones))]
+        if bone < 0:
+            bone += self._table.bones
+        if not 0 <= bone < self._table.bones:
+            raise IndexError('keyframePoses[quadro][osso]: esse osso não existe na animação.')
+        t, r, s = self._table.pose(self._frame, bone)
         return Transform(Vector3(*t), Vector4(*r), Vector3(*s))
 
 
 class _KeyframePoses:
     """animation.keyframePoses: [quadro][osso] dá um Transform, como no raylib.
 
-    Por dentro as poses ficam como tuplas (milhares de structs por animação pesariam no
-    navegador), e o Transform só nasce na leitura. Ele é uma cópia: mudar o Transform lido não
+    Por dentro as poses ficam numa tabela de floats (milhares de structs por animação pesariam
+    no navegador), e o Transform só nasce na leitura. Ele é uma cópia: mudar o Transform lido não
     muda a animação.
     """
     __slots__ = ('_raw',)
 
-    def __init__(self, raw):
-        self._raw = raw
+    def __init__(self, table):
+        self._raw = table
 
     def __len__(self):
-        return len(self._raw)
+        return self._raw.frames
 
     def __getitem__(self, frame):
         if isinstance(frame, slice):
-            return [self[i] for i in range(*frame.indices(len(self._raw)))]
-        return _PoseRow(self._raw[frame])
+            return [self[i] for i in range(*frame.indices(self._raw.frames))]
+        if frame < 0:
+            frame += self._raw.frames
+        if not 0 <= frame < self._raw.frames:
+            raise IndexError('keyframePoses[quadro]: esse quadro não existe na animação.')
+        return _PoseRow(self._raw, frame)
 
 
 def _raw_poses(anim):
     poses = anim.keyframePoses
-    return poses._raw if isinstance(poses, _KeyframePoses) else poses
+    return poses._raw if isinstance(poses, _KeyframePoses) else None
 
 
 def load_model_animations(fileName, animCount, /):
@@ -622,12 +648,12 @@ def load_model_animations(fileName, animCount, /):
         raise ValueError(f'{f}: o Estúdio lê animações de .glb e .gltf, e o arquivo {relative!r} é '
                          f'{extension or "sem extensão"}.')
     animations = []
-    for name, bones, poses in _gltf.load_animations(absolute, f):
+    for name, bones, table in _gltf.load_animations(absolute, f):
         animation = ModelAnimation()
         animation.name = name.encode('utf-8')
         animation.boneCount = len(bones)
-        animation.keyframeCount = len(poses)
-        animation.keyframePoses = _KeyframePoses(poses)
+        animation.keyframeCount = table.frames
+        animation.keyframePoses = _KeyframePoses(table)
         animations.append(animation)
     from ._ffi import Pointer
     # No raylib do computador, None derruba o programa e um número dá TypeError: o contador
@@ -651,16 +677,17 @@ def is_model_animation_valid(model, anim, /):
     return m.skeleton.boneCount == a.boneCount
 
 
-def _pose_matrix(t, r, s):
-    scaling = (s[0], 0.0, 0.0, 0.0, 0.0, s[1], 0.0, 0.0, 0.0, 0.0, s[2], 0.0, 0.0, 0.0, 0.0, 1.0)
-    moving = (1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, t[0], t[1], t[2], 1.0)
-    return rm._mul(rm._mul(scaling, rm.quaternion_to_matrix_values(r)), moving)
+def _clamp01(value):
+    """Clamp(value, 0.0f, 1.0f) do raymath."""
+    value = F(0.0) if value < 0.0 else value
+    return F(1.0) if value > 1.0 else value
 
 
 def _frames(anim, frame):
+    frame = F(frame)
     current = int(frame)
     following = current + 1
-    blend = min(max(frame - current, 0.0), 1.0)
+    blend = _clamp01(frame - current)
     count = anim.keyframeCount
     if current >= count:
         current %= count
@@ -669,27 +696,87 @@ def _frames(anim, frame):
     return current, following, blend
 
 
-def _interpolate(a, b, blend):
-    (ta, ra, sa), (tb, rb, sb) = a, b
-    return (tuple(ta[i] + blend * (tb[i] - ta[i]) for i in range(3)), rm.slerp(ra, rb, blend),
-            tuple(sa[i] + blend * (sb[i] - sa[i]) for i in range(3)))
+def _interpolate(a, b, blend, count):
+    """Vector3Lerp, QuaternionSlerp e Vector3Lerp para todos os ossos de uma vez."""
+    blend = V.FV.full(blend, count)
+    ta, ra, sa = a
+    tb, rb, sb = b
+    return (V.vector3_lerp(ta, tb, blend), V.quaternion_slerp(ra, rb, blend, count),
+            V.vector3_lerp(sa, sb, blend))
 
 
-def _store_pose(model, bone, pose):
+def _frame_pose(table, frame, count):
+    columns = table.frame(frame)
+    vectors = [V.FV(column[:count]) for column in columns]
+    return tuple(vectors[0:3]), tuple(vectors[3:7]), tuple(vectors[7:10])
+
+
+_set = object.__setattr__
+# Resultados já calculados: uma animação em laço repete as mesmas combinações de quadro, e
+# vários modelos na mesma animação dividem a conta. A chave leva a pose de ligação (o C a lê a
+# cada chamada), então mudar a pose de ligação dá uma conta nova.
+_INVERSE_BIND = {}
+_POSES = {}
+_CACHE_LIMIT = 512
+_BINDS = {}
+
+
+def _remember(cache, key, value):
+    if len(cache) >= _CACHE_LIMIT:
+        cache.clear()
+    cache[key] = value
+    return value
+
+
+def _bind_key(model, count):
+    binds = model.skeleton.bindPose
+    values = []
+    for bone in range(count):
+        b = binds[bone]
+        t, r, s = b.translation, b.rotation, b.scale
+        values += (t.x, t.y, t.z, r.x, r.y, r.z, r.w, s.x, s.y, s.z)
+    key = tuple(values)
+    # A mesma pose de ligação vira sempre o mesmo objeto (as chaves do cache a dividem).
+    return _BINDS.get(key) or _remember(_BINDS, key, key)
+
+
+def _inverse_bind(key, count):
+    found = _INVERSE_BIND.get(key)
+    if found is not None:
+        return found
+    columns = [V.FV(array('f', key[c::10])) for c in range(10)]
+    bind = (tuple(columns[0:3]), tuple(columns[3:7]), tuple(columns[7:10]))
+    return _remember(_INVERSE_BIND, key, V.matrix_invert(V.trs_matrix(*bind, count), count))
+
+
+def _compute_poses(key, pose, count):
+    """(currentPose em 10 colunas, boneMatrices em 16 colunas): MatrixInvert(bindPose)·pose."""
     t, r, s = pose
-    current = model.currentPose[bone]
-    current.translation = t
-    current.rotation = r
-    current.scale = s
-    bind = model.skeleton.bindPose[bone]
-    bind_matrix = _pose_matrix((bind.translation.x, bind.translation.y, bind.translation.z),
-                               (bind.rotation.x, bind.rotation.y, bind.rotation.z, bind.rotation.w),
-                               (bind.scale.x, bind.scale.y, bind.scale.z))
-    matrix = rm._mul(rm._invert(bind_matrix), _pose_matrix(t, r, s))
-    target = model.boneMatrices[bone]
-    (target.m0, target.m1, target.m2, target.m3, target.m4, target.m5, target.m6, target.m7,
-     target.m8, target.m9, target.m10, target.m11, target.m12, target.m13, target.m14,
-     target.m15) = matrix
+    matrices = V.matrix_multiply(_inverse_bind(key, count), V.trs_matrix(t, r, s, count), count)
+    return [c.a for c in t + r + s], [c.a for c in matrices]
+
+
+def _store_poses(model, values, count):
+    """currentPose e boneMatrices, como o UpdateModelAnimation (os valores já são float do C)."""
+    pose, matrices = values
+    names = ('m0', 'm1', 'm2', 'm3', 'm4', 'm5', 'm6', 'm7', 'm8', 'm9', 'm10', 'm11', 'm12',
+             'm13', 'm14', 'm15')
+    for bone in range(count):
+        current = model.currentPose[bone]
+        t, r, s = current.translation, current.rotation, current.scale
+        _set(t, 'x', pose[0][bone])
+        _set(t, 'y', pose[1][bone])
+        _set(t, 'z', pose[2][bone])
+        _set(r, 'x', pose[3][bone])
+        _set(r, 'y', pose[4][bone])
+        _set(r, 'z', pose[5][bone])
+        _set(r, 'w', pose[6][bone])
+        _set(s, 'x', pose[7][bone])
+        _set(s, 'y', pose[8][bone])
+        _set(s, 'z', pose[9][bone])
+        target = model.boneMatrices[bone]
+        for name, column in zip(names, matrices):
+            _set(target, name, column[bone])
 
 
 def update_model_animation(model, anim, frame, /):
@@ -697,12 +784,21 @@ def update_model_animation(model, anim, frame, /):
     m = struct(model, Model, f, 'model')
     a = struct(anim, ModelAnimation, f, 'anim')
     value = number(frame, f, 'frame')
-    if m.boneMatrices is None or a.keyframeCount <= 0 or not m.skeleton.bones or a.keyframePoses is None:
+    table = _raw_poses(a)
+    if m.boneMatrices is None or a.keyframeCount <= 0 or not m.skeleton.bones or table is None:
         return
     current, following, blend = _frames(a, value)
-    poses = _raw_poses(a)
-    for bone in range(min(m.skeleton.boneCount, len(poses[current]))):
-        _store_pose(m, bone, _interpolate(poses[current][bone], poses[following][bone], blend))
+    count = min(m.skeleton.boneCount, table.bones)
+    if count <= 0:
+        return
+    bind = _bind_key(m, count)
+    key = (table, current, following, float(blend), count, bind)
+    values = _POSES.get(key)
+    if values is None:
+        pose = _interpolate(_frame_pose(table, current, count),
+                            _frame_pose(table, following, count), blend, count)
+        values = _remember(_POSES, key, _compute_poses(bind, pose, count))
+    _store_poses(m, values, count)
 
 
 def update_model_animation_ex(model, animA, frameA, animB, frameB, blend, /):
@@ -710,20 +806,28 @@ def update_model_animation_ex(model, animA, frameA, animB, frameB, blend, /):
     m = struct(model, Model, f, 'model')
     a = struct(animA, ModelAnimation, f, 'animA')
     b = struct(animB, ModelAnimation, f, 'animB')
-    fa, fb, mix = number(frameA, f, 'frameA'), number(frameB, f, 'frameB'), number(blend, f, 'blend')
-    if m.boneMatrices is None or not (a.keyframeCount > 0 and a.keyframePoses is not None and
-                                      b.keyframeCount > 0 and b.keyframePoses is not None and
+    fa, fb, mix = F(number(frameA, f, 'frameA')), F(number(frameB, f, 'frameB')), F(number(blend, f, 'blend'))
+    table_a, table_b = _raw_poses(a), _raw_poses(b)
+    if m.boneMatrices is None or not (a.keyframeCount > 0 and table_a is not None and
+                                      b.keyframeCount > 0 and table_b is not None and
                                       0.0 <= mix <= 1.0):
         return
     ca = int(fa) % a.keyframeCount
-    na, blend_a = ca + 1, min(max(fa - ca, 0.0), 1.0)
+    na, blend_a = ca + 1, _clamp01(fa - ca)
     na %= a.keyframeCount
     cb = int(fb) % b.keyframeCount
-    nb, blend_b = cb + 1, min(max(fb - cb, 0.0), 1.0)
+    nb, blend_b = cb + 1, _clamp01(fb - cb)
     nb %= b.keyframeCount
-    poses_a, poses_b = _raw_poses(a), _raw_poses(b)
-    for bone in range(m.skeleton.boneCount):
-        pa = _interpolate(poses_a[ca][bone], poses_a[na][bone], blend_a)
-        pb = _interpolate(poses_b[cb][bone], poses_b[nb][bone], blend_b)
-        _store_pose(m, bone, _interpolate(pa, pb, mix))
-
+    count = min(m.skeleton.boneCount, table_a.bones, table_b.bones)
+    if count <= 0:
+        return
+    bind = _bind_key(m, count)
+    key = (table_a, ca, na, float(blend_a), table_b, cb, nb, float(blend_b), float(mix), count, bind)
+    values = _POSES.get(key)
+    if values is None:
+        pa = _interpolate(_frame_pose(table_a, ca, count), _frame_pose(table_a, na, count),
+                          blend_a, count)
+        pb = _interpolate(_frame_pose(table_b, cb, count), _frame_pose(table_b, nb, count),
+                          blend_b, count)
+        values = _remember(_POSES, key, _compute_poses(bind, _interpolate(pa, pb, mix, count), count))
+    _store_poses(m, values, count)

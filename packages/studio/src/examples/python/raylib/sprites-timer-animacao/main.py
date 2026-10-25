@@ -3,7 +3,8 @@ from random import randint
 
 LARGURA = 800
 ALTURA = 450
-CHAO = 320
+# A linha da grama, na tela. O herói fica em pé nela, qualquer que seja o tamanho do desenho.
+PE = 384
 ESCALA = 4
 
 init_window(LARGURA, ALTURA, 'Sprites, Timer e Animação')
@@ -53,7 +54,7 @@ class Sprite:
 
 class Heroi(Sprite):
     def __init__(self):
-        super().__init__(Vector2(LARGURA / 2, CHAO), 320)
+        super().__init__(Vector2(LARGURA / 2, PE - ALTURA_QUADRO * ESCALA), 320)
         self.quadro = 0
         self.olhando_esquerda = False
 
@@ -127,7 +128,7 @@ while not window_should_close():
 
     begin_drawing()
     clear_background((135, 206, 235, 255))
-    draw_rectangle(0, int(CHAO + ALTURA_QUADRO * ESCALA), LARGURA, ALTURA, (96, 160, 72, 255))
+    draw_rectangle(0, PE, LARGURA, ALTURA, (96, 160, 72, 255))
     for maca in macas:
         maca.desenhar()
     heroi.desenhar()

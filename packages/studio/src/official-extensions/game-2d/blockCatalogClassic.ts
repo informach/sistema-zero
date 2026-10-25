@@ -123,7 +123,7 @@ export const gameTwoDClassicBlocks: BlockDefinition[] = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Associa um índice a uma Figura e diz o que ela faz: decoração não colide, sólido segura, plataforma só segura por cima. "Atravessa e avisa" deixa o herói passar e mesmo assim conta no "Para cada tile", que é como se faz moeda, lava e água.',
+      'Liga um número a uma Figura: decoração, sólido, plataforma ou “atravessa e avisa”. O último permite detectar moedas, lava e água nos contatos de tiles sem bloquear o jogador.',
   },
   {
     type: 'sz_g2d_create_vector_tilemap',
@@ -363,7 +363,7 @@ export const gameTwoDClassicBlocks: BlockDefinition[] = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'A bola volta pelo lado COMPRIDO da raquete: raquete em pé devolve para os lados (Pong), raquete deitada devolve para cima (Breakout). Bater na beirada manda a bola mais de lado, e é assim que se controla a jogada. A cada rebatida ela fica um tiquinho mais rápida; 0 desliga isso. O bloco já cuida de não deixar a bola grudar nem atravessar a raquete.',
+      'Rebate pelo lado comprido da raquete; a beirada muda a direção da bola. Cada rebatida pode aumentar a velocidade; 0 mantém a velocidade. Evita grudar ou atravessar a raquete.',
   },
   {
     type: 'sz_g2d_bounce_edge_pair',
@@ -385,7 +385,7 @@ export const gameTwoDClassicBlocks: BlockDefinition[] = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Quica só num par de bordas e deixa o outro par ABERTO, e é por ele que a bola sai e vira ponto. É o que o Pong precisa e o "Quicar nas bordas da tela" não faz, porque lá a bola nunca sai. O sprite nunca aparece meio quadro fora da tela.',
+      'Quica só em duas bordas; as outras ficam abertas para a bola sair e virar ponto, como no Pong. A caixa inteira do sprite fica dentro das bordas em que quica.',
   },
   {
     type: 'sz_g2d_arrows_y',

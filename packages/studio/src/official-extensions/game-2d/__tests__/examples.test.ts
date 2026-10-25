@@ -57,15 +57,18 @@ describe('game-2d — todos os exemplos da vitrine', () => {
     registerExtensionBlocks(gameTwoDBlocks)
   })
 
-  it('a vitrine tem os 36 exemplos (anti-vácuo)', () => {
-    expect(gameTwoDExamples.length).toBe(36)
-    expect(gameTwoDExtension.examples.count).toBe(36)
+  it('a vitrine tem os 45 exemplos (anti-vácuo)', () => {
+    expect(gameTwoDExamples.length).toBe(45)
+    expect(gameTwoDExtension.examples.count).toBe(45)
   })
 
   it('todos ensinam início e preparo explícitos, sem canvas escondido no HTML', () => {
     for (const example of gameTwoDExamples) {
-      expect(example.ir.html.some((node) => node.type === 'canvas')).toBe(false)
-      expect(example.ir.behavior.start[0]?.type).toBe('g2d:setupStage')
+      expect(example.ir.html).toEqual([])
+      expect(example.ir.css).toEqual([])
+      expect(['g2d:setupStage', 'g2d:setupFull']).toContain(
+        example.ir.behavior.start[0]?.type ?? '',
+      )
       expect(
         (example.ir.behavior.start[0] as { description?: string } | undefined)?.description,
       ).toBeUndefined()
@@ -73,10 +76,10 @@ describe('game-2d — todos os exemplos da vitrine', () => {
     }
   })
 
-  it('mantém a classificação prometida: 30 jogos, 5 demonstrações e 1 exploração', () => {
+  it('mantém a classificação prometida: 30 jogos, 14 demonstrações e 1 exploração', () => {
     const counts = { game: 0, demo: 0, exploration: 0 }
     for (const example of gameTwoDExamples) counts[example.experience] += 1
-    expect(counts).toEqual({ game: 30, demo: 5, exploration: 1 })
+    expect(counts).toEqual({ game: 30, demo: 14, exploration: 1 })
   })
 
   it('não ensina os blocos ambíguos de câmera e desenho mantidos só para projetos antigos', () => {

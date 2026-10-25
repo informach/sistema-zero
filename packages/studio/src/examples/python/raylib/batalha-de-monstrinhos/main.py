@@ -12,12 +12,17 @@ set_target_fps(60)
 # O ESC volta no menu, então ele não pode fechar o jogo.
 set_exit_key(KEY_NULL)
 
-# Os dados da batalha: mude os números para deixar um monstrinho mais forte.
+# Os dados da batalha: mude os números para deixar um monstrinho mais forte. A imagem é o
+# arquivo do desenho em images/ (o nome que o Pinta dá, sem acentos).
 MONSTROS = {
-    'Faísca': {'elemento': 'raio', 'vida': 90, 'golpes': ['Choque', 'Arranhão', 'Cura']},
-    'Bolha': {'elemento': 'água', 'vida': 110, 'golpes': ['Jato', 'Arranhão', 'Cura']},
-    'Brasa': {'elemento': 'fogo', 'vida': 100, 'golpes': ['Chama', 'Arranhão', 'Cura']},
-    'Folhinha': {'elemento': 'planta', 'vida': 120, 'golpes': ['Folhada', 'Arranhão', 'Cura']},
+    'Faísca': {'elemento': 'raio', 'vida': 90, 'golpes': ['Choque', 'Arranhão', 'Cura'],
+              'imagem': 'faisca.png'},
+    'Bolha': {'elemento': 'água', 'vida': 110, 'golpes': ['Jato', 'Arranhão', 'Cura'],
+             'imagem': 'bolha.png'},
+    'Brasa': {'elemento': 'fogo', 'vida': 100, 'golpes': ['Chama', 'Arranhão', 'Cura'],
+             'imagem': 'brasa.png'},
+    'Folhinha': {'elemento': 'planta', 'vida': 120, 'golpes': ['Folhada', 'Arranhão', 'Cura'],
+                 'imagem': 'folhinha.png'},
 }
 GOLPES = {
     'Choque': {'dano': 24, 'elemento': 'raio', 'cor': YELLOW, 'som': 'choque'},
@@ -32,7 +37,7 @@ VANTAGENS = [('água', 'fogo'), ('fogo', 'planta'), ('planta', 'água'), ('raio'
 
 texturas = {}
 for nome in MONSTROS:
-    texturas[nome] = load_texture(f'images/{nome.lower().replace("í", "i")}.png')
+    texturas[nome] = load_texture(f"images/{MONSTROS[nome]['imagem']}")
 sons = {}
 for nome in ['choque', 'jato', 'chama', 'folha', 'arranhao', 'cura']:
     sons[nome] = load_sound(f'sounds/{nome}.wav')
@@ -205,9 +210,9 @@ while not window_should_close():
             opcoes = jogador.golpes
         else:
             opcoes = [nome for nome in equipe if nome != jogador.nome and vidas_da_equipe[nome] > 0]
-        if is_key_pressed(KEY_DOWN):
+        if opcoes and is_key_pressed(KEY_DOWN):
             opcao = (opcao + 1) % len(opcoes)
-        if is_key_pressed(KEY_UP):
+        if opcoes and is_key_pressed(KEY_UP):
             opcao = (opcao - 1) % len(opcoes)
         if is_key_pressed(KEY_ESCAPE):
             menu = 'principal'
@@ -226,8 +231,12 @@ while not window_should_close():
                 menu = 'golpes'
                 opcao = 0
             elif escolha == 'Trocar':
-                menu = 'trocar'
-                opcao = 0
+                # Só dá para trocar se alguém da equipe ainda estiver de pé.
+                if len([nome for nome in equipe if nome != jogador.nome and vidas_da_equipe[nome] > 0]) > 0:
+                    menu = 'trocar'
+                    opcao = 0
+                else:
+                    mensagem = 'Ninguém mais da equipe pode lutar.'
             elif escolha == 'Defender':
                 jogador.defendendo = True
                 mensagem = f'{jogador.nome} se protege.'
@@ -252,10 +261,12 @@ while not window_should_close():
     draw_rectangle(0, ALTURA - 60, LARGURA, 60, (30, 30, 50, 230))
     draw_text_ex(fonte, mensagem, Vector2(16, ALTURA - 40), 16, 0, WHITE)
     if estado == 'batalha' and menu != 'esperando':
-        draw_rectangle_rounded(Rectangle(570, 270, 210, 26 + 26 * len(opcoes)), 0.2, 6, (255, 255, 255, 235))
+        # O menu cresce para cima a partir da barra de mensagem: nunca a cobre.
+        topo = ALTURA - 70 - (26 + 26 * len(opcoes))
+        draw_rectangle_rounded(Rectangle(570, topo, 210, 26 + 26 * len(opcoes)), 0.2, 6, (255, 255, 255, 235))
         for i, texto in enumerate(opcoes):
             cor = RED if i == opcao else DARKGRAY
-            draw_text_ex(fonte, ('> ' if i == opcao else '  ') + texto, Vector2(584, 284 + 26 * i), 16, 0, cor)
+            draw_text_ex(fonte, ('> ' if i == opcao else '  ') + texto, Vector2(584, topo + 14 + 26 * i), 16, 0, cor)
     if estado != 'batalha':
         draw_rectangle(120, 120, 560, 150, (0, 0, 0, 200))
         titulo = 'Você fugiu!' if estado == 'fugiu' else 'Sua equipe desmaiou!'

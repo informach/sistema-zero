@@ -16,6 +16,7 @@ import { buildIRFromWorkspace } from '../../../blockly/buildIR'
 import { ensureBlocklyInitialized } from '../../../blockly/setup'
 import { buildWorkspaceStateFromIR } from '../../../blockly/workspaceState'
 import { parseJS } from '../../../parsers/js'
+import { compactOfficialRuntimeSource } from '../../runtimeSource'
 import { isSceneNameBlock } from '../../scene-2d/catalog'
 import { gameTwoDBlocks } from '../blocks'
 import { gameTwoDRuntime } from '../runtime'
@@ -178,7 +179,9 @@ beforeAll(() => {
 
 describe('Auditoria Jogo 2D — inventário', () => {
   it('monta o objeto público a partir do mesmo inventário do contrato', () => {
-    expect(gameTwoDRuntime).toContain(buildGameTwoDRuntimeApiSource())
+    expect(gameTwoDRuntime).toContain(
+      compactOfficialRuntimeSource(buildGameTwoDRuntimeApiSource(), { trimIndent: true }),
+    )
   })
 
   it('o contrato compilável descreve exatamente a API montada pelo runtime', () => {

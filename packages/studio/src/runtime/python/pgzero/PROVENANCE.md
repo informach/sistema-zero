@@ -16,3 +16,7 @@ Base: **pgzero 1.2.1** (PyPI, `pgzero-1.2.1.tar.gz`, SHA-256
 | `freesansbold.ttf` | fonte padrão do Pygame Zero (pygame-ce), GNU FreeFont (`LICENSE-freefont.txt`) |
 
 Para conferir os idênticos: compare com o pgzero 1.2.1 instalado (`diff` contra o `site-packages/pgzero` de um ambiente com `pgzero==1.2.1`).
+
+| Arquivo fora de `py/` | Origem |
+| --- | --- |
+| `pixelShapes.ts` | porte para TypeScript das funções de desenho de `src_c/draw.c` do **pygame-ce 2.5.8** (Copyright (C) 2000-2001 Pete Shinners e colaboradores do pygame-ce), LGPL 2.1 ou posterior, aqui sob a LGPL-3.0 (`LICENSE-pgzero.txt`). Cada forma sai pixel a pixel como no pygame-ce; `__tests__/drawReference.json` são os pixels medidos no próprio pygame-ce 2.5.8 por `scripts/python/pgzero-draw-reference.py` |

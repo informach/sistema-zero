@@ -4,6 +4,7 @@ import {
   isPythonSavedFileChange,
   PYTHON_SAVED_FILE_KEY_PREFIX,
   PYTHON_SAVED_FILE_LIMITS,
+  prunePythonSavedFiles,
   readPythonSavedFiles,
   withoutPythonSavedFile,
   withPythonSavedFile,
@@ -85,4 +86,17 @@ test('a deletion carries only a portable path', () => {
   expect(isPythonSavedFileChange('../recorde.txt', null)).toBe(false)
   expect(isPythonSavedFileChange('recorde.txt', undefined)).toBe(false)
   expect(isPythonSavedFileChange('recorde.txt', bytes('1'))).toBe(true)
+})
+
+test('saved files that cannot come back leave the record: project paths and case twins', () => {
+  let record: Record<string, string> = {}
+  for (const path of ['main.PY', 'Placar.txt', 'placar.txt', 'fases/1.txt', 'Fases/2.txt'])
+    record = withPythonSavedFile(record, { path, bytes: bytes(path) })!
+  const saved = prunePythonSavedFiles(record, ['main.py', 'fases/mapa.txt'], ['fases'])
+  // main.PY collides with the program; Placar/placar and fases/Fases are twins by case.
+  expect(saved.map((file) => file.path)).toEqual(['Placar.txt', 'fases/1.txt'])
+  expect(readPythonSavedFiles(record).map((file) => file.path)).toEqual([
+    'Placar.txt',
+    'fases/1.txt',
+  ])
 })

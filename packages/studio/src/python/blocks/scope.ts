@@ -40,6 +40,9 @@ const MUTATING_DUNDERS = new Set([
   '__func__',
 ])
 
+/** Turtle classes whose constructor always makes a new turtle. */
+const FRESH_TURTLE_INSTANCES = new Set(['Turtle', 'RawTurtle', 'Pen', 'RawPen'])
+
 /** A name an installed extension provides without import (Pygame Zero's screen, Actor…). */
 export interface PythonProvidedBuiltin {
   provider: string
@@ -190,7 +193,8 @@ export function pythonBindingResolver(
   const classNodes = new WeakMap<Scope, PythonNode>()
   const methodScopes: Scope[] = []
   /** Constructor/literal assignments to a Name, to infer the class of its object. */
-  const typed: { scope: Scope; target: string; value: PythonNode }[] = []
+  /** `nome = valor`; `alone` is false in `a = b = valor`, where two names hold one object. */
+  const typed: { scope: Scope; target: string; value: PythonNode; alone: boolean }[] = []
   const augmented = new Map<Scope, Map<string, number>>()
   /** `lista.append(valor)` and the loops over a list name, for the element class of a list. */
   const appends: { scope: Scope; list: string; value: PythonNode }[] = []
@@ -347,6 +351,7 @@ export function pythonBindingResolver(
         scope: owner(scope, fields.optional_vars.fields.id),
         target: fields.optional_vars.fields.id,
         value: fields.context_expr,
+        alone: true,
       })
     if (
       value.kind === 'Name' &&
@@ -377,6 +382,7 @@ export function pythonBindingResolver(
           scope: owner(scope, target.fields.id as string),
           target: target.fields.id as string,
           value: fields.value,
+          alone: fields.targets.length === 1,
         })
     if (
       value.kind === 'AugAssign' &&
@@ -989,6 +995,16 @@ export function pythonBindingResolver(
       // A metaclass (or any class keyword) may build anything.
       if (nodes(current.fields.keywords) && current.fields.keywords.length)
         family.mayBeOfficial = true
+      // __new__ can return a shared official object instead of a fresh instance,
+      // including when inherited from another class written by the program.
+      if (
+        (nodes(current.fields.body) ? current.fields.body : []).some(
+          (statement) =>
+            (statement.kind === 'FunctionDef' || statement.kind === 'AsyncFunctionDef') &&
+            statement.fields.name === '__new__',
+        )
+      )
+        family.mayBeOfficial = true
     }
     return family
   }
@@ -1052,12 +1068,16 @@ export function pythonBindingResolver(
     if (!owner || !found) return false
     const writes = owner.writes.get(key) ?? 0
     // A loop variable holds objects that other names hold too: only a constructor's own name.
-    const soleHolder = () =>
-      !bareReads.has(key) &&
-      typed.filter((entry) => entry.scope === owner && entry.target === key).length === writes
+    const soleHolder = () => {
+      const made = typed.filter((entry) => entry.scope === owner && entry.target === key)
+      return !bareReads.has(key) && made.every((entry) => entry.alone) && made.length === writes
+    }
     if (found.kind === 'instance') {
       if (officialObject(found)) {
         if (write.private) return false
+        // Screen() is Turtle's shared screen; changing it also changes the
+        // module-level operations. It cannot use the fresh-object exception.
+        if (found.module === 'turtle' && !FRESH_TURTLE_INSTANCES.has(found.instance)) return false
         if (!guardedAttributes.has(write.attr)) return true
         if (!soleHolder()) return false
         let names = replacedOn.get(owner)

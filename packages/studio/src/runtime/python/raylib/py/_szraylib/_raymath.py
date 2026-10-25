@@ -5,12 +5,41 @@ C (``Vector2Add``). A matriz é coluna-maior, como no raylib (m0, m4, m8, m12 é
 O teste diferencial (scripts/raylib/tests) compara cada função com o raylib do computador.
 """
 import math
-import struct as _struct
 
-from ._args import number, vec2, vec3, vec4, struct
-from ._structs import Matrix, Vector2, Vector3, Vector4
+from ._args import number as _number, struct, vec2 as _vec2, vec3 as _vec3, vec4 as _vec4
+from ._float32 import (F, acosf, asinf, atan2f, cosf, exact, fabsf, floorf, fmaxf, fminf, rounded,
+                       sinf, sqrtf)
+from ._structs import STRUCTS, Matrix, Vector2, Vector3, Vector4
 
-_EPSILON = 0.000001
+# O raymath faz cada conta em float (32 bits), operação por operação. Aqui os números de entrada
+# viram F (_float32.py), que arredonda para float depois de cada operação: a mesma conta, escrita
+# na mesma ordem do C, dá o mesmo resultado bit a bit. O que sai para o jogo volta a ser float do
+# Python (o pyray do computador devolve o float do C convertido para double, sem perder nada).
+_EPSILON = F(0.000001)
+
+
+def number(value, function, param='valor'):
+    return F(_number(value, function, param))
+
+
+def vec2(value, function, param):
+    x, y = _vec2(value, function, param)
+    return F(x), F(y)
+
+
+def vec3(value, function, param):
+    x, y, z = _vec3(value, function, param)
+    return F(x), F(y), F(z)
+
+
+def vec4(value, function, param):
+    x, y, z, w = _vec4(value, function, param)
+    return F(x), F(y), F(z), F(w)
+
+
+def _f(values):
+    """Uma tupla de números como floats do C (para as funções que outros módulos chamam)."""
+    return tuple(map(F, values))
 
 
 def _matrix(value, function, param='mat'):
@@ -18,8 +47,8 @@ def _matrix(value, function, param='mat'):
 
 
 def _m(m):
-    return (m.m0, m.m1, m.m2, m.m3, m.m4, m.m5, m.m6, m.m7,
-            m.m8, m.m9, m.m10, m.m11, m.m12, m.m13, m.m14, m.m15)
+    return (F(m.m0), F(m.m1), F(m.m2), F(m.m3), F(m.m4), F(m.m5), F(m.m6), F(m.m7),
+            F(m.m8), F(m.m9), F(m.m10), F(m.m11), F(m.m12), F(m.m13), F(m.m14), F(m.m15))
 
 
 def _make(values):
@@ -48,25 +77,25 @@ def lerp(start, end, amount, /):
 def normalize(value, start, end, /):
     f = 'normalize'
     s = number(start, f, 'start')
-    return float((number(value, f, 'value') - s) / (number(end, f, 'end') - s))
+    return float(_div(number(value, f, 'value') - s, number(end, f, 'end') - s))
 
 
 def remap(value, inputStart, inputEnd, outputStart, outputEnd, /):
     f = 'remap'
     v, a, b = number(value, f, 'value'), number(inputStart, f, 'inputStart'), number(inputEnd, f, 'inputEnd')
     c, d = number(outputStart, f, 'outputStart'), number(outputEnd, f, 'outputEnd')
-    return float((v - a) / (b - a) * (d - c) + c)
+    return float(_div(v - a, b - a) * (d - c) + c)
 
 
 def wrap(value, min, max, /):
     f = 'wrap'
     v, lo, hi = number(value, f, 'value'), number(min, f, 'min'), number(max, f, 'max')
-    return float(v - (hi - lo) * math.floor((v - lo) / (hi - lo)))
+    return float(v - (hi - lo) * _floor(_div(v - lo, hi - lo)))
 
 
 def float_equals(x, y, /):
     a, b = number(x, 'float_equals', 'x'), number(y, 'float_equals', 'y')
-    return int(abs(a - b) <= _EPSILON * max(1.0, max(abs(a), abs(b))))
+    return int(fabsf(a - b) <= _EPSILON * fmaxf(1.0, fmaxf(fabsf(a), fabsf(b))))
 
 
 # Vector2 ----------------------------------------------------------------------------------------
@@ -105,36 +134,36 @@ def vector2_subtract_value(v, sub, /):
 
 def vector2_length(v, /):
     x, y = vec2(v, 'vector2_length', 'v')
-    return math.sqrt(x * x + y * y)
+    return float(sqrtf(x * x + y * y))
 
 
 def vector2_length_sqr(v, /):
     x, y = vec2(v, 'vector2_length_sqr', 'v')
-    return x * x + y * y
+    return float(x * x + y * y)
 
 
 def vector2_dot_product(v1, v2, /):
     ax, ay = vec2(v1, 'vector2_dot_product', 'v1')
     bx, by = vec2(v2, 'vector2_dot_product', 'v2')
-    return ax * bx + ay * by
+    return float(ax * bx + ay * by)
 
 
 def vector2_cross_product(v1, v2, /):
     ax, ay = vec2(v1, 'vector2_cross_product', 'v1')
     bx, by = vec2(v2, 'vector2_cross_product', 'v2')
-    return ax * by - ay * bx
+    return float(ax * by - ay * bx)
 
 
 def vector2_distance(v1, v2, /):
     ax, ay = vec2(v1, 'vector2_distance', 'v1')
     bx, by = vec2(v2, 'vector2_distance', 'v2')
-    return math.sqrt((ax - bx) ** 2 + (ay - by) ** 2)
+    return float(sqrtf((ax - bx) * (ax - bx) + (ay - by) * (ay - by)))
 
 
 def vector2_distance_sqr(v1, v2, /):
     ax, ay = vec2(v1, 'vector2_distance_sqr', 'v1')
     bx, by = vec2(v2, 'vector2_distance_sqr', 'v2')
-    return (ax - bx) ** 2 + (ay - by) ** 2
+    return float((ax - bx) * (ax - bx) + (ay - by) * (ay - by))
 
 
 def vector2_angle(v1, v2, /):
@@ -142,13 +171,13 @@ def vector2_angle(v1, v2, /):
     bx, by = vec2(v2, 'vector2_angle', 'v2')
     dot = ax * bx + ay * by
     det = ax * by - ay * bx
-    return math.atan2(det, dot)
+    return float(atan2f(det, dot))
 
 
 def vector2_line_angle(start, end, /):
     ax, ay = vec2(start, 'vector2_line_angle', 'start')
     bx, by = vec2(end, 'vector2_line_angle', 'end')
-    return -math.atan2(by - ay, bx - ax)
+    return float(-atan2f(by - ay, bx - ax))
 
 
 def vector2_scale(v, scale, /):
@@ -175,14 +204,22 @@ def vector2_divide(v1, v2, /):
 
 
 def _div(a, b):
+    """A divisão do C (IEEE): dividir por zero dá infinito com sinal, ou nan (0/0)."""
     if b == 0:
-        return math.copysign(math.inf, a) if a else math.nan
+        if a == 0 or a != a:
+            return math.nan
+        return math.copysign(math.inf, a) * math.copysign(1.0, b)
     return a / b
+
+
+def _floor(x):
+    """floorf do C: nan e infinito passam como estão (o math.floor do Python lança)."""
+    return floorf(x)
 
 
 def vector2_normalize(v, /):
     x, y = vec2(v, 'vector2_normalize', 'v')
-    length = math.sqrt(x * x + y * y)
+    length = sqrtf(x * x + y * y)
     if length > 0:
         inv = 1.0 / length
         return Vector2(x * inv, y * inv)
@@ -212,19 +249,19 @@ def vector2_reflect(v, normal, /):
 def vector2_min(v1, v2, /):
     ax, ay = vec2(v1, 'vector2_min', 'v1')
     bx, by = vec2(v2, 'vector2_min', 'v2')
-    return Vector2(min(ax, bx), min(ay, by))
+    return Vector2(fminf(ax, bx), fminf(ay, by))
 
 
 def vector2_max(v1, v2, /):
     ax, ay = vec2(v1, 'vector2_max', 'v1')
     bx, by = vec2(v2, 'vector2_max', 'v2')
-    return Vector2(max(ax, bx), max(ay, by))
+    return Vector2(fmaxf(ax, bx), fmaxf(ay, by))
 
 
 def vector2_rotate(v, angle, /):
     x, y = vec2(v, 'vector2_rotate', 'v')
     a = number(angle, 'vector2_rotate', 'angle')
-    c, s = math.cos(a), math.sin(a)
+    c, s = cosf(a), sinf(a)
     return Vector2(x * c - y * s, x * s + y * c)
 
 
@@ -236,7 +273,7 @@ def vector2_move_towards(v, target, maxDistance, /):
     value = dx * dx + dy * dy
     if value == 0 or (step >= 0 and value <= step * step):
         return Vector2(tx, ty)
-    dist = math.sqrt(value)
+    dist = sqrtf(value)
     return Vector2(x + dx / dist * step, y + dy / dist * step)
 
 
@@ -254,7 +291,7 @@ def vector2_clamp(v, min, max, /):
 
 def _clamp_axis(value, low, high):
     # fminf(max, fmaxf(min, v)): com min > max, vale o max (como no raymath).
-    return min(high, max(low, value))
+    return fminf(high, fmaxf(low, value))
 
 
 def vector2_clamp_value(v, min, max, /):
@@ -262,7 +299,7 @@ def vector2_clamp_value(v, min, max, /):
     lo, hi = number(min, 'vector2_clamp_value', 'min'), number(max, 'vector2_clamp_value', 'max')
     length = x * x + y * y
     if length > 0:
-        length = math.sqrt(length)
+        length = sqrtf(length)
         scale = 1.0
         if length < lo:
             scale = lo / length
@@ -275,8 +312,8 @@ def vector2_clamp_value(v, min, max, /):
 def vector2_equals(p, q, /):
     px, py = vec2(p, 'vector2_equals', 'p')
     qx, qy = vec2(q, 'vector2_equals', 'q')
-    return int(abs(px - qx) <= _EPSILON * max(1.0, abs(px), abs(qx)) and
-               abs(py - qy) <= _EPSILON * max(1.0, abs(py), abs(qy)))
+    return int(fabsf(px - qx) <= _EPSILON * fmaxf(1.0, fmaxf(fabsf(px), fabsf(qx))) and
+               fabsf(py - qy) <= _EPSILON * fmaxf(1.0, fmaxf(fabsf(py), fabsf(qy))))
 
 
 def vector2_refract(v, n, r, /):
@@ -286,7 +323,7 @@ def vector2_refract(v, n, r, /):
     dot = x * nx + y * ny
     d = 1.0 - ratio * ratio * (1.0 - dot * dot)
     if d >= 0.0:
-        d = math.sqrt(d)
+        d = sqrtf(d)
         return Vector2(ratio * x - (ratio * dot + d) * nx, ratio * y - (ratio * dot + d) * ny)
     return Vector2(0.0, 0.0)
 
@@ -338,6 +375,7 @@ def vector3_multiply(v1, v2, /):
 
 
 def _cross(a, b):
+    a, b = _f(a), _f(b)
     return (a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0])
 
 
@@ -360,39 +398,39 @@ def vector3_perpendicular(v, /):
 
 def vector3_length(v, /):
     a = vec3(v, 'vector3_length', 'v')
-    return math.sqrt(a[0] * a[0] + a[1] * a[1] + a[2] * a[2])
+    return float(sqrtf(a[0] * a[0] + a[1] * a[1] + a[2] * a[2]))
 
 
 def vector3_length_sqr(v, /):
     a = vec3(v, 'vector3_length_sqr', 'v')
-    return a[0] * a[0] + a[1] * a[1] + a[2] * a[2]
+    return float(a[0] * a[0] + a[1] * a[1] + a[2] * a[2])
 
 
 def vector3_dot_product(v1, v2, /):
     a = vec3(v1, 'vector3_dot_product', 'v1')
     b = vec3(v2, 'vector3_dot_product', 'v2')
-    return a[0] * b[0] + a[1] * b[1] + a[2] * b[2]
+    return float(a[0] * b[0] + a[1] * b[1] + a[2] * b[2])
 
 
 def vector3_distance(v1, v2, /):
     a = vec3(v1, 'vector3_distance', 'v1')
     b = vec3(v2, 'vector3_distance', 'v2')
-    return math.sqrt((b[0] - a[0]) ** 2 + (b[1] - a[1]) ** 2 + (b[2] - a[2]) ** 2)
+    return float(sqrtf((b[0] - a[0]) * (b[0] - a[0]) + (b[1] - a[1]) * (b[1] - a[1]) + (b[2] - a[2]) * (b[2] - a[2])))
 
 
 def vector3_distance_sqr(v1, v2, /):
     a = vec3(v1, 'vector3_distance_sqr', 'v1')
     b = vec3(v2, 'vector3_distance_sqr', 'v2')
-    return (b[0] - a[0]) ** 2 + (b[1] - a[1]) ** 2 + (b[2] - a[2]) ** 2
+    return float((b[0] - a[0]) * (b[0] - a[0]) + (b[1] - a[1]) * (b[1] - a[1]) + (b[2] - a[2]) * (b[2] - a[2]))
 
 
 def vector3_angle(v1, v2, /):
     a = vec3(v1, 'vector3_angle', 'v1')
     b = vec3(v2, 'vector3_angle', 'v2')
     c = _cross(a, b)
-    length = math.sqrt(c[0] * c[0] + c[1] * c[1] + c[2] * c[2])
+    length = sqrtf(c[0] * c[0] + c[1] * c[1] + c[2] * c[2])
     dot = a[0] * b[0] + a[1] * b[1] + a[2] * b[2]
-    return math.atan2(length, dot)
+    return float(atan2f(length, dot))
 
 
 def vector3_negate(v, /):
@@ -407,7 +445,8 @@ def vector3_divide(v1, v2, /):
 
 
 def _normalize3(a):
-    length = math.sqrt(a[0] * a[0] + a[1] * a[1] + a[2] * a[2])
+    a = _f(a)
+    length = sqrtf(a[0] * a[0] + a[1] * a[1] + a[2] * a[2])
     if length != 0.0:
         inv = 1.0 / length
         return (a[0] * inv, a[1] * inv, a[2] * inv)
@@ -415,29 +454,34 @@ def _normalize3(a):
 
 
 def _add3(a, b):
+    a, b = _f(a), _f(b)
     return (a[0] + b[0], a[1] + b[1], a[2] + b[2])
 
 
 def _sub3(a, b):
+    a, b = _f(a), _f(b)
     return (a[0] - b[0], a[1] - b[1], a[2] - b[2])
 
 
 def _length3(a):
-    return math.sqrt(a[0] * a[0] + a[1] * a[1] + a[2] * a[2])
+    a = _f(a)
+    return sqrtf(a[0] * a[0] + a[1] * a[1] + a[2] * a[2])
 
 
 def _angle3(a, b):
+    a, b = _f(a), _f(b)
     c = _cross(a, b)
-    return math.atan2(_length3(c), a[0] * b[0] + a[1] * b[1] + a[2] * b[2])
+    return atan2f(_length3(c), a[0] * b[0] + a[1] * b[1] + a[2] * b[2])
 
 
 def _rotate_axis_angle(v, axis, angle):
     """Vector3RotateByAxisAngle (fórmula de Euler-Rodrigues) sobre tuplas."""
+    v, axis, angle = _f(v), _f(axis), F(angle)
     vx, vy, vz = v
     ax, ay, az = _normalize3(axis)
     half = angle / 2.0
-    s = math.sin(half)
-    bx, by, bz, w = ax * s, ay * s, az * s, math.cos(half)
+    s = sinf(half)
+    bx, by, bz, w = ax * s, ay * s, az * s, cosf(half)
     wx, wy, wz = _cross((bx, by, bz), (vx, vy, vz))
     wwx, wwy, wwz = _cross((bx, by, bz), (wx, wy, wz))
     w2 = w * 2
@@ -451,14 +495,14 @@ def vector3_normalize(v, /):
 def vector3_project(v1, v2, /):
     a = vec3(v1, 'vector3_project', 'v1')
     b = vec3(v2, 'vector3_project', 'v2')
-    mag = (a[0] * b[0] + a[1] * b[1] + a[2] * b[2]) / (b[0] * b[0] + b[1] * b[1] + b[2] * b[2])
+    mag = _div(a[0] * b[0] + a[1] * b[1] + a[2] * b[2], b[0] * b[0] + b[1] * b[1] + b[2] * b[2])
     return Vector3(b[0] * mag, b[1] * mag, b[2] * mag)
 
 
 def vector3_reject(v1, v2, /):
     a = vec3(v1, 'vector3_reject', 'v1')
     b = vec3(v2, 'vector3_reject', 'v2')
-    mag = (a[0] * b[0] + a[1] * b[1] + a[2] * b[2]) / (b[0] * b[0] + b[1] * b[1] + b[2] * b[2])
+    mag = _div(a[0] * b[0] + a[1] * b[1] + a[2] * b[2], b[0] * b[0] + b[1] * b[1] + b[2] * b[2])
     return Vector3(a[0] - b[0] * mag, a[1] - b[1] * mag, a[2] - b[2] * mag)
 
 
@@ -494,7 +538,7 @@ def vector3_move_towards(v, target, maxDistance, /):
     value = dx * dx + dy * dy + dz * dz
     if value == 0 or (step >= 0 and value <= step * step):
         return Vector3(tx, ty, tz)
-    dist = math.sqrt(value)
+    dist = sqrtf(value)
     return Vector3(x + dx / dist * step, y + dy / dist * step, z + dz / dist * step)
 
 
@@ -515,13 +559,13 @@ def vector3_reflect(v, normal, /):
 def vector3_min(v1, v2, /):
     a = vec3(v1, 'vector3_min', 'v1')
     b = vec3(v2, 'vector3_min', 'v2')
-    return Vector3(min(a[0], b[0]), min(a[1], b[1]), min(a[2], b[2]))
+    return Vector3(fminf(a[0], b[0]), fminf(a[1], b[1]), fminf(a[2], b[2]))
 
 
 def vector3_max(v1, v2, /):
     a = vec3(v1, 'vector3_max', 'v1')
     b = vec3(v2, 'vector3_max', 'v2')
-    return Vector3(max(a[0], b[0]), max(a[1], b[1]), max(a[2], b[2]))
+    return Vector3(fmaxf(a[0], b[0]), fmaxf(a[1], b[1]), fmaxf(a[2], b[2]))
 
 
 def vector3_invert(v, /):
@@ -541,7 +585,7 @@ def vector3_clamp_value(v, min, max, /):
     lo, hi = number(min, 'vector3_clamp_value', 'min'), number(max, 'vector3_clamp_value', 'max')
     length = a[0] * a[0] + a[1] * a[1] + a[2] * a[2]
     if length > 0:
-        length = math.sqrt(length)
+        length = sqrtf(length)
         scale = 1.0
         if length < lo:
             scale = lo / length
@@ -554,7 +598,7 @@ def vector3_clamp_value(v, min, max, /):
 def vector3_equals(p, q, /):
     a = vec3(p, 'vector3_equals', 'p')
     b = vec3(q, 'vector3_equals', 'q')
-    return int(all(abs(a[i] - b[i]) <= _EPSILON * max(1.0, abs(a[i]), abs(b[i])) for i in range(3)))
+    return int(all(fabsf(a[i] - b[i]) <= _EPSILON * fmaxf(1.0, fmaxf(fabsf(a[i]), fabsf(b[i]))) for i in range(3)))
 
 
 def vector3_barycenter(p, a, b, c, /):
@@ -566,8 +610,8 @@ def vector3_barycenter(p, a, b, c, /):
     dot = lambda u, w: u[0] * w[0] + u[1] * w[1] + u[2] * w[2]  # noqa: E731
     d00, d01, d11, d20, d21 = dot(v0, v0), dot(v0, v1), dot(v1, v1), dot(v2, v0), dot(v2, v1)
     denom = d00 * d11 - d01 * d01
-    y = (d11 * d20 - d01 * d21) / denom
-    z = (d00 * d21 - d01 * d20) / denom
+    y = _div(d11 * d20 - d01 * d21, denom)
+    z = _div(d00 * d21 - d01 * d20, denom)
     return Vector3(1.0 - (z + y), y, z)
 
 
@@ -578,7 +622,26 @@ def matrix_identity():
 
 
 def _mul(left, right):
-    """MatrixMultiply(left, right) do raymath, sobre tuplas m0..m15."""
+    """MatrixMultiply(left, right) do raymath, sobre tuplas m0..m15.
+
+    Em float, como no C, mas arredondando as 16 posições de uma vez: o produto de dois floats é
+    exato em double, e cada soma (na ordem do C) é arredondada para float em bloco.
+    """
+    try:
+        l, r = rounded(left), rounded(right)
+        rows = (0, 4, 8, 12)
+        total = rounded([l[i] * r[j] for i in rows for j in range(4)])
+        for k in (1, 2, 3):
+            terms = [l[i + k] * r[4 * k + j] for i in rows for j in range(4)]
+            total = rounded(map(float.__add__, total, rounded(terms)))
+    except OverflowError:
+        return _mul_slow(left, right)
+    return exact(total)
+
+
+def _mul_slow(left, right):
+    """A mesma conta, uma operação por vez (quando algum valor passa do maior float)."""
+    left, right = _f(left), _f(right)
     l0, l1, l2, l3, l4, l5, l6, l7, l8, l9, l10, l11, l12, l13, l14, l15 = left
     r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15 = right
     return (
@@ -618,12 +681,13 @@ def matrix_scale(x, y, z, /):
 
 
 def _rotate(axis, angle):
+    axis, angle = _f(axis), F(angle)
     x, y, z = axis
     length = x * x + y * y + z * z
     if length != 1.0 and length != 0.0:
-        length = 1.0 / math.sqrt(length)
+        length = 1.0 / sqrtf(length)
         x, y, z = x * length, y * length, z * length
-    s, c = math.sin(angle), math.cos(angle)
+    s, c = sinf(angle), cosf(angle)
     t = 1.0 - c
     return (x * x * t + c, y * x * t + z * s, z * x * t - y * s, 0.0,
             x * y * t - z * s, y * y * t + c, z * y * t + x * s, 0.0,
@@ -637,27 +701,27 @@ def matrix_rotate(axis, angle, /):
 
 def matrix_rotate_x(angle, /):
     a = number(angle, 'matrix_rotate_x', 'angle')
-    c, s = math.cos(a), math.sin(a)
+    c, s = cosf(a), sinf(a)
     return _make((1.0, 0.0, 0.0, 0.0, 0.0, c, s, 0.0, 0.0, -s, c, 0.0, 0.0, 0.0, 0.0, 1.0))
 
 
 def matrix_rotate_y(angle, /):
     a = number(angle, 'matrix_rotate_y', 'angle')
-    c, s = math.cos(a), math.sin(a)
+    c, s = cosf(a), sinf(a)
     return _make((c, 0.0, -s, 0.0, 0.0, 1.0, 0.0, 0.0, s, 0.0, c, 0.0, 0.0, 0.0, 0.0, 1.0))
 
 
 def matrix_rotate_z(angle, /):
     a = number(angle, 'matrix_rotate_z', 'angle')
-    c, s = math.cos(a), math.sin(a)
+    c, s = cosf(a), sinf(a)
     return _make((c, s, 0.0, 0.0, -s, c, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0))
 
 
 def matrix_rotate_xyz(angle, /):
     ax, ay, az = vec3(angle, 'matrix_rotate_xyz', 'angle')
-    cz, sz = math.cos(-az), math.sin(-az)
-    cy, sy = math.cos(-ay), math.sin(-ay)
-    cx, sx = math.cos(-ax), math.sin(-ax)
+    cz, sz = cosf(-az), sinf(-az)
+    cy, sy = cosf(-ay), sinf(-ay)
+    cx, sx = cosf(-ax), sinf(-ax)
     m0 = cz * cy
     m1 = (cz * sy * sx) - (sz * cx)
     m2 = (cz * sy * cx) + (sz * sx)
@@ -672,9 +736,9 @@ def matrix_rotate_xyz(angle, /):
 
 def matrix_rotate_zyx(angle, /):
     ax, ay, az = vec3(angle, 'matrix_rotate_zyx', 'angle')
-    cz, sz = math.cos(az), math.sin(az)
-    cy, sy = math.cos(ay), math.sin(ay)
-    cx, sx = math.cos(ax), math.sin(ax)
+    cz, sz = cosf(az), sinf(az)
+    cy, sy = cosf(ay), sinf(ay)
+    cx, sx = cosf(ax), sinf(ax)
     m0 = cz * cy
     m4 = cz * sy * sx - cx * sz
     m8 = sz * sx + cz * cx * sy
@@ -694,6 +758,7 @@ def matrix_transpose(mat, /):
 
 
 def _invert(m):
+    m = _f(m)
     a00, a01, a02, a03 = m[0], m[1], m[2], m[3]
     a10, a11, a12, a13 = m[4], m[5], m[6], m[7]
     a20, a21, a22, a23 = m[8], m[9], m[10], m[11]
@@ -711,7 +776,7 @@ def _invert(m):
     b10 = a21 * a33 - a23 * a31
     b11 = a22 * a33 - a23 * a32
     det = b00 * b11 - b01 * b10 + b02 * b09 + b03 * b08 - b04 * b07 + b05 * b06
-    inv = 1.0 / det if det else math.inf
+    inv = 1.0 / det
     return ((a11 * b11 - a12 * b10 + a13 * b09) * inv,
             (-a01 * b11 + a02 * b10 - a03 * b09) * inv,
             (a31 * b05 - a32 * b04 + a33 * b03) * inv,
@@ -735,22 +800,19 @@ def matrix_invert(mat, /):
 
 
 def matrix_determinant(mat, /):
-    m = _m(_matrix(mat, 'matrix_determinant'))
-    a00, a01, a02, a03 = m[0], m[1], m[2], m[3]
-    a10, a11, a12, a13 = m[4], m[5], m[6], m[7]
-    a20, a21, a22, a23 = m[8], m[9], m[10], m[11]
-    a30, a31, a32, a33 = m[12], m[13], m[14], m[15]
-    return (a30 * a21 * a12 * a03 - a20 * a31 * a12 * a03 - a30 * a11 * a22 * a03 + a10 * a31 * a22 * a03 +
-            a20 * a11 * a32 * a03 - a10 * a21 * a32 * a03 - a30 * a21 * a02 * a13 + a20 * a31 * a02 * a13 +
-            a30 * a01 * a22 * a13 - a00 * a31 * a22 * a13 - a20 * a01 * a32 * a13 + a00 * a21 * a32 * a13 +
-            a30 * a11 * a02 * a23 - a10 * a31 * a02 * a23 - a30 * a01 * a12 * a23 + a00 * a31 * a12 * a23 +
-            a10 * a01 * a32 * a23 - a00 * a11 * a32 * a23 - a20 * a11 * a02 * a33 + a10 * a21 * a02 * a33 +
-            a20 * a01 * a12 * a33 - a00 * a21 * a12 * a33 - a10 * a01 * a22 * a33 + a00 * a11 * a22 * a33)
+    # Expansão de Laplace por menores 2x2, como no raymath (40 multiplicações).
+    (m0, m1, m2, m3, m4, m5, m6, m7,
+     m8, m9, m10, m11, m12, m13, m14, m15) = _m(_matrix(mat, 'matrix_determinant'))
+    return float(
+        m0 * (m5 * (m10 * m15 - m11 * m14) - m9 * (m6 * m15 - m7 * m14) + m13 * (m6 * m11 - m7 * m10))
+        - m4 * (m1 * (m10 * m15 - m11 * m14) - m9 * (m2 * m15 - m3 * m14) + m13 * (m2 * m11 - m3 * m10))
+        + m8 * (m1 * (m6 * m15 - m7 * m14) - m5 * (m2 * m15 - m3 * m14) + m13 * (m2 * m7 - m3 * m6))
+        - m12 * (m1 * (m6 * m11 - m7 * m10) - m5 * (m2 * m11 - m3 * m10) + m9 * (m2 * m7 - m3 * m6)))
 
 
 def matrix_trace(mat, /):
     m = _matrix(mat, 'matrix_trace')
-    return m.m0 + m.m5 + m.m10 + m.m15
+    return float(F(m.m0) + m.m5 + m.m10 + m.m15)
 
 
 def matrix_add(left, right, /):
@@ -771,27 +833,40 @@ def matrix_multiply_value(left, value, /):
     return _make(tuple(a[i] * s for i in range(16)))
 
 
+def _frustum_from(rl, tb, fn, left, right, bottom, top, near, far):
+    """O fim de MatrixFrustum e MatrixPerspective: as diferenças vêm de double, o resto é float."""
+    rl, tb, fn = F(rl), F(tb), F(fn)
+    near_f, far_f = F(near), F(far)
+    return (near_f * 2.0 / rl, 0.0, 0.0, 0.0,
+            0.0, near_f * 2.0 / tb, 0.0, 0.0,
+            (F(right) + F(left)) / rl, (F(top) + F(bottom)) / tb, -(far_f + near_f) / fn, -1.0,
+            0.0, 0.0, -(far_f * near_f * 2.0) / fn, 0.0)
+
+
 def frustum(left, right, bottom, top, near, far):
-    rl, tb, fn = right - left, top - bottom, far - near
-    return ((near * 2.0) / rl, 0.0, 0.0, 0.0,
-            0.0, (near * 2.0) / tb, 0.0, 0.0,
-            (right + left) / rl, (top + bottom) / tb, -(far + near) / fn, -1.0,
-            0.0, 0.0, -(far * near * 2.0) / fn, 0.0)
+    """MatrixFrustum: os parâmetros são double, como no C."""
+    left, right, bottom, top, near, far = (float(v) for v in (left, right, bottom, top, near, far))
+    return _frustum_from(right - left, top - bottom, far - near, left, right, bottom, top, near, far)
 
 
 def perspective(fovY, aspect, near, far):
+    """MatrixPerspective: o topo e a direita são contados em double (tan do C), o resto em float."""
+    fovY, aspect, near, far = float(fovY), float(aspect), float(near), float(far)
     top = near * math.tan(fovY * 0.5)
     right = top * aspect
-    return frustum(-right, right, -top, top, near, far)
+    return _frustum_from(right - -right, top - -top, far - near, -right, right, -top, top, near, far)
 
 
 def ortho(left, right, bottom, top, near, far):
-    rl, tb, fn = right - left, top - bottom, far - near
+    """MatrixOrtho: as diferenças em double, convertidas para float; as divisões em float."""
+    left, right, bottom, top, near, far = (float(v) for v in (left, right, bottom, top, near, far))
+    rl, tb, fn = F(right - left), F(top - bottom), F(far - near)
     return (2.0 / rl, 0.0, 0.0, 0.0, 0.0, 2.0 / tb, 0.0, 0.0, 0.0, 0.0, -2.0 / fn, 0.0,
-            -(left + right) / rl, -(top + bottom) / tb, -(far + near) / fn, 1.0)
+            -(F(left) + F(right)) / rl, -(F(top) + F(bottom)) / tb, -(F(far) + F(near)) / fn, 1.0)
 
 
 def look_at(eye, target, up):
+    eye, target, up = _f(eye), _f(target), _f(up)
     vz = _normalize3((eye[0] - target[0], eye[1] - target[1], eye[2] - target[2]))
     vx = _normalize3(_cross(up, vz))
     vy = _cross(vz, vx)
@@ -804,20 +879,20 @@ def look_at(eye, target, up):
 
 def matrix_frustum(left, right, bottom, top, nearPlane, farPlane, /):
     f = 'matrix_frustum'
-    return _make(frustum(number(left, f), number(right, f), number(bottom, f), number(top, f),
-                         number(nearPlane, f), number(farPlane, f)))
+    return _make(frustum(_number(left, f), _number(right, f), _number(bottom, f), _number(top, f),
+                         _number(nearPlane, f), _number(farPlane, f)))
 
 
 def matrix_perspective(fovY, aspect, nearPlane, farPlane, /):
     f = 'matrix_perspective'
-    return _make(perspective(number(fovY, f), number(aspect, f), number(nearPlane, f),
-                             number(farPlane, f)))
+    return _make(perspective(_number(fovY, f), _number(aspect, f), _number(nearPlane, f),
+                             _number(farPlane, f)))
 
 
 def matrix_ortho(left, right, bottom, top, nearPlane, farPlane, /):
     f = 'matrix_ortho'
-    return _make(ortho(number(left, f), number(right, f), number(bottom, f), number(top, f),
-                       number(nearPlane, f), number(farPlane, f)))
+    return _make(ortho(_number(left, f), _number(right, f), _number(bottom, f), _number(top, f),
+                       _number(nearPlane, f), _number(farPlane, f)))
 
 
 def matrix_look_at(eye, target, up, /):
@@ -843,11 +918,12 @@ def quaternion_subtract(q1, q2, /):
 
 def quaternion_length(q, /):
     a = vec4(q, 'quaternion_length', 'q')
-    return math.sqrt(sum(v * v for v in a))
+    return float(sqrtf(sum(v * v for v in a)))
 
 
 def _qnormalize(a):
-    length = math.sqrt(sum(v * v for v in a))
+    a = _f(a)
+    length = sqrtf(sum(v * v for v in a))
     if length == 0.0:
         length = 1.0
     inv = 1.0 / length
@@ -868,6 +944,7 @@ def quaternion_invert(q, /):
 
 
 def _qmul(a, b):
+    a, b = _f(a), _f(b)
     qax, qay, qaz, qaw = a
     qbx, qby, qbz, qbw = b
     return (qax * qbw + qaw * qbx + qay * qbz - qaz * qby,
@@ -898,18 +975,11 @@ def quaternion_nlerp(q1, q2, amount, /):
     return Vector4(*_qnormalize(tuple(a[i] + t * (b[i] - a[i]) for i in range(4))))
 
 
-_F32 = _struct.Struct('<f')
-
-
-def _f32(value):
-    return _F32.unpack(_F32.pack(value))[0]
-
-
 def slerp(a, b, t):
     # O cosseno em float, como no C: com dois quadros quase iguais ele vira 1.0f e o raylib
     # devolve o primeiro sem interpolar (em double daria 0.9999999 e uma interpolação).
-    cos_half = _f32(_f32(_f32(_f32(a[0] * b[0]) + _f32(a[1] * b[1])) + _f32(a[2] * b[2]))
-                    + _f32(a[3] * b[3]))
+    a, b, t = _f(a), _f(b), F(t)
+    cos_half = a[0] * b[0] + a[1] * b[1] + a[2] * b[2] + a[3] * b[3]
     if cos_half < 0:
         b = tuple(-v for v in b)
         cos_half = -cos_half
@@ -917,12 +987,12 @@ def slerp(a, b, t):
         return a
     if cos_half > 0.95:
         return _qnormalize(tuple(a[i] + t * (b[i] - a[i]) for i in range(4)))
-    half = math.acos(cos_half)
-    sin_half = math.sqrt(1.0 - cos_half * cos_half)
+    half = acosf(cos_half)
+    sin_half = sqrtf(1.0 - cos_half * cos_half)
     if abs(sin_half) < _EPSILON:
         return tuple(a[i] * 0.5 + b[i] * 0.5 for i in range(4))
-    ra = math.sin((1 - t) * half) / sin_half
-    rb = math.sin(t * half) / sin_half
+    ra = sinf((1 - t) * half) / sin_half
+    rb = sinf(t * half) / sin_half
     return tuple(a[i] * ra + b[i] * rb for i in range(4))
 
 
@@ -934,36 +1004,38 @@ def quaternion_slerp(q1, q2, amount, /):
 def quaternion_from_axis_angle(axis, angle, /):
     ax, ay, az = vec3(axis, 'quaternion_from_axis_angle', 'axis')
     a = number(angle, 'quaternion_from_axis_angle', 'angle')
-    length = math.sqrt(ax * ax + ay * ay + az * az)
-    if length != 0.0:
-        a *= 0.5
-        ax, ay, az = ax / length, ay / length, az / length
-        s, c = math.sin(a), math.cos(a)
-        return Vector4(*_qnormalize((ax * s, ay * s, az * s, c)))
-    return Vector4(0.0, 0.0, 0.0, 1.0)
+    length = sqrtf(ax * ax + ay * ay + az * az)
+    if length == 0.0:
+        return Vector4(0.0, 0.0, 0.0, 1.0)
+    a = a * 0.5
+    inverse = 1.0 / length
+    ax, ay, az = ax * inverse, ay * inverse, az * inverse
+    s, c = sinf(a), cosf(a)
+    return Vector4(*_qnormalize((ax * s, ay * s, az * s, c)))
 
 
 def quaternion_from_euler(pitch, yaw, roll, /):
     f = 'quaternion_from_euler'
     p, y, r = number(pitch, f, 'pitch') * 0.5, number(yaw, f, 'yaw') * 0.5, number(roll, f, 'roll') * 0.5
-    x0, x1 = math.cos(p), math.sin(p)
-    y0, y1 = math.cos(y), math.sin(y)
-    z0, z1 = math.cos(r), math.sin(r)
+    x0, x1 = cosf(p), sinf(p)
+    y0, y1 = cosf(y), sinf(y)
+    z0, z1 = cosf(r), sinf(r)
     return Vector4(x1 * y0 * z0 - x0 * y1 * z1, x0 * y1 * z0 + x1 * y0 * z1,
                    x0 * y0 * z1 - x1 * y1 * z0, x0 * y0 * z0 + x1 * y1 * z1)
 
 
 def quaternion_to_euler(q, /):
     x, y, z, w = vec4(q, 'quaternion_to_euler', 'q')
-    roll_x = math.atan2(2 * (w * x + y * z), 1 - 2 * (x * x + y * y))
+    roll_x = atan2f(2 * (w * x + y * z), 1 - 2 * (x * x + y * y))
     sin_p = 2 * (w * y - z * x)
     sin_p = 1.0 if sin_p > 1.0 else -1.0 if sin_p < -1.0 else sin_p
-    pitch_y = math.asin(sin_p)
-    yaw_z = math.atan2(2 * (w * z + x * y), 1 - 2 * (y * y + z * z))
+    pitch_y = asinf(sin_p)
+    yaw_z = atan2f(2 * (w * z + x * y), 1 - 2 * (y * y + z * z))
     return Vector3(roll_x, pitch_y, yaw_z)
 
 
 def quaternion_to_matrix_values(q):
+    q = _f(q)
     x, y, z, w = q
     a2, b2, c2 = x * x, y * y, z * z
     ac, ab, bc = x * z, x * y, y * z
@@ -990,8 +1062,8 @@ def quaternion_transform(q, mat, /):
 def quaternion_equals(p, q, /):
     a = vec4(p, 'quaternion_equals', 'p')
     b = vec4(q, 'quaternion_equals', 'q')
-    same = all(abs(a[i] - b[i]) <= _EPSILON * max(1.0, abs(a[i]), abs(b[i])) for i in range(4))
-    opposite = all(abs(a[i] + b[i]) <= _EPSILON * max(1.0, abs(a[i]), abs(b[i])) for i in range(4))
+    same = all(fabsf(a[i] - b[i]) <= _EPSILON * fmaxf(1.0, fmaxf(fabsf(a[i]), fabsf(b[i]))) for i in range(4))
+    opposite = all(fabsf(a[i] + b[i]) <= _EPSILON * fmaxf(1.0, fmaxf(fabsf(a[i]), fabsf(b[i]))) for i in range(4))
     return int(same or opposite)
 
 
@@ -1022,11 +1094,12 @@ def vector4_length(v, /):
 
 
 def vector4_normalize(v, /):
-    a = vec4(v, 'vector4_normalize', 'v')
-    length = math.sqrt(sum(c * c for c in a))
+    x, y, z, w = vec4(v, 'vector4_normalize', 'v')
+    length = sqrtf(x * x + y * y + z * z + w * w)
     if length > 0:
-        return Vector4(*(c / length for c in a))
-    return Vector4(*a)
+        inverse = 1.0 / length
+        return Vector4(x * inverse, y * inverse, z * inverse, w * inverse)
+    return Vector4(0.0, 0.0, 0.0, 0.0)
 
 
 def vector4_lerp(v1, v2, amount, /):
@@ -1035,7 +1108,7 @@ def vector4_lerp(v1, v2, amount, /):
 
 def vector4_dot_product(v1, v2, /):
     a, b = vec4(v1, 'vector4_dot_product', 'v1'), vec4(v2, 'vector4_dot_product', 'v2')
-    return sum(a[i] * b[i] for i in range(4))
+    return float(sum(a[i] * b[i] for i in range(4)))
 
 
 def _v4(value, function, param='v'):
@@ -1061,17 +1134,17 @@ quaternion_subtract_value = vector4_subtract_value
 
 
 def vector4_length_sqr(v, /):
-    return sum(c * c for c in _v4(v, 'vector4_length_sqr'))
+    return float(sum(c * c for c in _v4(v, 'vector4_length_sqr')))
 
 
 def vector4_distance(v1, v2, /):
     a, b = _v4(v1, 'vector4_distance', 'v1'), _v4(v2, 'vector4_distance', 'v2')
-    return math.sqrt(sum((a[i] - b[i]) ** 2 for i in range(4)))
+    return float(sqrtf(sum((a[i] - b[i]) * (a[i] - b[i]) for i in range(4))))
 
 
 def vector4_distance_sqr(v1, v2, /):
     a, b = _v4(v1, 'vector4_distance_sqr', 'v1'), _v4(v2, 'vector4_distance_sqr', 'v2')
-    return sum((a[i] - b[i]) ** 2 for i in range(4))
+    return float(sum((a[i] - b[i]) * (a[i] - b[i]) for i in range(4)))
 
 
 def vector4_multiply(v1, v2, /):
@@ -1097,12 +1170,12 @@ def vector4_invert(v, /):
 
 def vector4_min(v1, v2, /):
     a, b = _v4(v1, 'vector4_min', 'v1'), _v4(v2, 'vector4_min', 'v2')
-    return Vector4(*(min(a[i], b[i]) for i in range(4)))
+    return Vector4(*(fminf(a[i], b[i]) for i in range(4)))
 
 
 def vector4_max(v1, v2, /):
     a, b = _v4(v1, 'vector4_max', 'v1'), _v4(v2, 'vector4_max', 'v2')
-    return Vector4(*(max(a[i], b[i]) for i in range(4)))
+    return Vector4(*(fmaxf(a[i], b[i]) for i in range(4)))
 
 
 def vector4_move_towards(v, target, maxDistance, /):
@@ -1113,13 +1186,13 @@ def vector4_move_towards(v, target, maxDistance, /):
     value = sum(c * c for c in d)
     if value == 0 or (step >= 0 and value <= step * step):
         return Vector4(*t)
-    dist = math.sqrt(value)
+    dist = sqrtf(value)
     return Vector4(*(a[i] + d[i] / dist * step for i in range(4)))
 
 
 def vector4_equals(p, q, /):
     a, b = _v4(p, 'vector4_equals', 'p'), _v4(q, 'vector4_equals', 'q')
-    return int(all(abs(a[i] - b[i]) <= _EPSILON * max(1.0, abs(a[i]), abs(b[i])) for i in range(4)))
+    return int(all(fabsf(a[i] - b[i]) <= _EPSILON * fmaxf(1.0, fmaxf(fabsf(a[i]), fabsf(b[i]))) for i in range(4)))
 
 
 def vector3_refract(v, n, r, /):
@@ -1129,13 +1202,14 @@ def vector3_refract(v, n, r, /):
     dot = x * nx + y * ny + z * nz
     d = 1.0 - ratio * ratio * (1.0 - dot * dot)
     if d >= 0.0:
-        d = math.sqrt(d)
+        d = sqrtf(d)
         k = ratio * dot + d
         return Vector3(ratio * x - k * nx, ratio * y - k * ny, ratio * z - k * nz)
     return Vector3(0.0, 0.0, 0.0)
 
 
 def quaternion_from_matrix_values(m):
+    m = _f(m)
     four_w = m[0] + m[5] + m[10]
     four_x = m[0] - m[5] - m[10]
     four_y = m[5] - m[0] - m[10]
@@ -1145,7 +1219,7 @@ def quaternion_from_matrix_values(m):
     for index, candidate in ((1, four_x), (2, four_y), (3, four_z)):
         if candidate > biggest_value:
             biggest, biggest_value = index, candidate
-    big = math.sqrt(biggest_value + 1.0) * 0.5
+    big = sqrtf(biggest_value + 1.0) * 0.5
     mult = 0.25 / big
     if biggest == 0:
         return ((m[6] - m[9]) * mult, (m[8] - m[2]) * mult, (m[1] - m[4]) * mult, big)
@@ -1165,11 +1239,12 @@ def quaternion_from_vector3_to_vector3(start, to, /):
     b = vec3(to, 'quaternion_from_vector3_to_vector3', 'to')
     cos2 = a[0] * b[0] + a[1] * b[1] + a[2] * b[2]
     c = _cross(a, b)
-    w = math.sqrt(c[0] * c[0] + c[1] * c[1] + c[2] * c[2] + cos2 * cos2) + cos2
+    w = sqrtf(c[0] * c[0] + c[1] * c[1] + c[2] * c[2] + cos2 * cos2) + cos2
     return Vector4(*_qnormalize((c[0], c[1], c[2], w)))
 
 
 def _rotate_by_quaternion(v, q):
+    v, q = _f(v), _f(q)
     x, y, z = v
     qx, qy, qz, qw = q
     return (x * (qx * qx + qw * qw - qy * qy - qz * qz) + y * (2 * qx * qy - 2 * qw * qz) + z * (2 * qx * qz + 2 * qw * qy),
@@ -1186,15 +1261,38 @@ def matrix_compose_values(translation, rotation, scale):
             forward[0], forward[1], forward[2], 0.0, translation[0], translation[1], translation[2], 1.0)
 
 
+# A posição de cada campo num inicializador de Matrix do C ({a, b, c...}): a struct guarda
+# m0, m4, m8, m12, m1, m5... nessa ordem, então o segundo valor vai para m4, não para m1.
+_POSITIONAL = (0, 4, 8, 12, 1, 5, 9, 13, 2, 6, 10, 14, 3, 7, 11, 15)
+
+
+def _positional(values):
+    fields = [0.0] * 16
+    for position, value in zip(_POSITIONAL, values):
+        fields[position] = value
+    return fields
+
+
 def vector3_unproject(source, projection, view, /):
     f = 'vector3_unproject'
     x, y, z = vec3(source, f, 'source')
-    inv = _invert(_mul(_m(_matrix(view, f, 'view')), _m(_matrix(projection, f, 'projection'))))
-    q = (inv[0] * x + inv[4] * y + inv[8] * z + inv[12],
-         inv[1] * x + inv[5] * y + inv[9] * z + inv[13],
-         inv[2] * x + inv[6] * y + inv[10] * z + inv[14],
-         inv[3] * x + inv[7] * y + inv[11] * z + inv[15])
-    return Vector3(_div(q[0], q[3]), _div(q[1], q[3]), _div(q[2], q[3]))
+    point = unproject(x, y, z, _m(_matrix(projection, f, 'projection')), _m(_matrix(view, f, 'view')))
+    return Vector3(*point)
+
+
+def unproject(x, y, z, p, v):
+    """Vector3Unproject sobre tuplas m0..m15 (a câmera 3D também usa)."""
+    x, y, z, p, v = F(x), F(y), F(z), _f(p), _f(v)
+    # Vector3Unproject escreve a multiplicação e a inversa por posição (ver _POSITIONAL).
+    product = _positional([v[row] * p[col] + v[row + 1] * p[col + 4] + v[row + 2] * p[col + 8]
+                           + v[row + 3] * p[col + 12] for row in (0, 4, 8, 12) for col in range(4)])
+    inverse = _positional(_invert(product))
+    w = F(1.0)
+    qx = inverse[0] * x + inverse[4] * y + inverse[8] * z + inverse[12] * w
+    qy = inverse[1] * x + inverse[5] * y + inverse[9] * z + inverse[13] * w
+    qz = inverse[2] * x + inverse[6] * y + inverse[10] * z + inverse[14] * w
+    qw = inverse[3] * x + inverse[7] * y + inverse[11] * z + inverse[15] * w
+    return qx / qw, qy / qw, qz / qw
 
 
 def vector3_cubic_hermite(v1, tangent1, v2, tangent2, amount, /):
@@ -1211,3 +1309,30 @@ def matrix_compose(translation, rotation, scale, /):
     f = 'matrix_compose'
     return _make(matrix_compose_values(vec3(translation, f, 'translation'), vec4(rotation, f, 'rotation'),
                                        vec3(scale, f, 'scale')))
+
+
+def vector3_to_float_v(v, /):
+    """Vector3ToFloatV: um float3 com os três números em v."""
+    result = STRUCTS['float3']()
+    result.v = vec3(v, 'vector3_to_float_v', 'v')
+    return result
+
+
+def matrix_to_float_v(mat, /):
+    """MatrixToFloatV: um float16 com m0..m15 em v, nessa ordem."""
+    result = STRUCTS['float16']()
+    result.v = _m(_matrix(mat, 'matrix_to_float_v'))
+    return result
+
+
+def quaternion_cubic_hermite_spline(q1, outTangent1, q2, inTangent2, t, /):
+    """QuaternionCubicHermiteSpline do raymath, em float (t3 é t2*t)."""
+    f = 'quaternion_cubic_hermite_spline'
+    a, out = vec4(q1, f, 'q1'), vec4(outTangent1, f, 'outTangent1')
+    b, inner = vec4(q2, f, 'q2'), vec4(inTangent2, f, 'inTangent2')
+    t = number(t, f, 't')
+    t2 = t * t
+    t3 = t2 * t
+    h00, h10, h01, h11 = 2 * t3 - 3 * t2 + 1, t3 - 2 * t2 + t, -2 * t3 + 3 * t2, t3 - t2
+    result = tuple(a[i] * h00 + out[i] * h10 + b[i] * h01 + inner[i] * h11 for i in range(4))
+    return Vector4(*_qnormalize(result))

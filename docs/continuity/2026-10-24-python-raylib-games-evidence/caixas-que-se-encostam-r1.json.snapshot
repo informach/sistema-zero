@@ -16,11 +16,11 @@
   ],
   "authoringLoader": "loadPythonAuthoring",
   "extension": "python-raylib-3d",
-  "codecOrderSha256": "71040f6cf253cdd01533095e78d46df6ead440642dd826630816ef1e424be3bb",
-  "sourceSha256": "14da8fa6fa78aabc0bb52e751de93399e34e098312fdba4dfc712327036a8087",
-  "generatedSha256": "399a13bcdd33ee9584fb6085e5742bc1c324a242086b8182e25b59c408ba7a04",
+  "codecOrderSha256": "b97aff73b43a3e56ca7a03f3f6c220c60e42b69f1988151109b1b99f145073b3",
+  "sourceSha256": "affed7fe53b13f94db668597ece057c5c0d82be65b5c366bc1e4ce6d4039ddaa",
+  "generatedSha256": "66ce7d76214df44a963ce1a25c670dff55ae635995cf293b9b09a8854bafc888",
   "opaqueCount": 0,
-  "blockCount": 358,
+  "blockCount": 363,
   "referencedBlocks": [
     {
       "id": "sz_py_arithmetic",
@@ -32,7 +32,7 @@
     },
     {
       "id": "sz_py_compare",
-      "count": 3
+      "count": 4
     },
     {
       "id": "sz_py_def",
@@ -52,7 +52,7 @@
     },
     {
       "id": "sz_py_if",
-      "count": 3
+      "count": 4
     },
     {
       "id": "sz_py_if_value",
@@ -68,7 +68,7 @@
     },
     {
       "id": "sz_py_integer",
-      "count": 70
+      "count": 71
     },
     {
       "id": "sz_py_interpolation",
@@ -92,7 +92,7 @@
     },
     {
       "id": "sz_py_return",
-      "count": 1
+      "count": 2
     },
     {
       "id": "sz_py_rl3d_begin_drawing",
@@ -252,13 +252,13 @@
     },
     {
       "id": "sz_py_variable",
-      "count": 97
+      "count": 98
     }
   ],
-  "approvedBlockIdsSha256": "c24c4a223b4e88527f12117eae3b22f1ba6ce79071edc6fce5b4142db202515f",
+  "approvedBlockIdsSha256": "c95af172c8af1f6eb49a57d097657b696fb472c58f9be50046330c24edb754ac",
   "fullWorkspaceRoundtrip": true,
-  "initialWorkspaceSha256": "a62faabdb2e9f67f6ebfbdf0809c2729da04aa1debd84b54963c8fbb5c41beed",
-  "editedWorkspaceSha256": "18e63d542ba9b34a5521f1e4a4b802179651ae177f139a30f78644603964659e",
+  "initialWorkspaceSha256": "71b6efef41181bf95daa9ffeeffa3681db586f6e397e46a98ff1f3878ef0b556",
+  "editedWorkspaceSha256": "7cef58b57faeaa1817b83000390d6dba0275cc19b6eeb340522cddd8273071fb",
   "canonicalRenderReanalysis": true,
   "runtimeCapabilitiesQualified": false,
   "browserInteractionQualified": false,
@@ -278,8 +278,8 @@
       "field": "NUMBER",
       "before": "5",
       "after": "6",
-      "beforeSourceSha256": "b51e4effec38634a663f6edf5b7542aad15230ff35839aea5ca421527304e4fc",
-      "afterSourceSha256": "b5da359503bfc7b4f55f32420db0f684383010565c2b65708cf30540cb9400d7"
+      "beforeSourceSha256": "54cf4c6d0bf19e3fa4b8651ed8779100c377dcb14e8b8bb5f0254a464f0c25ce",
+      "afterSourceSha256": "ef4e25d41dbdc6a5e2ecef8728458c335b66a7d5bc4052ea152932d26806285e"
     },
     {
       "label": "borda",
@@ -296,8 +296,8 @@
       "field": "NUMBER",
       "before": "5",
       "after": "4",
-      "beforeSourceSha256": "b5da359503bfc7b4f55f32420db0f684383010565c2b65708cf30540cb9400d7",
-      "afterSourceSha256": "399a13bcdd33ee9584fb6085e5742bc1c324a242086b8182e25b59c408ba7a04"
+      "beforeSourceSha256": "ef4e25d41dbdc6a5e2ecef8728458c335b66a7d5bc4052ea152932d26806285e",
+      "afterSourceSha256": "66ce7d76214df44a963ce1a25c670dff55ae635995cf293b9b09a8854bafc888"
     }
   ]
 }

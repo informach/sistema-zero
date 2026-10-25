@@ -10,7 +10,7 @@ LARGURA_DA_NAVE = 1.6
 TEMPO_ENTRE_METEOROS = 0.6
 BORDA = 6
 
-# O clarão do meteoro atingido: o mesmo shader de "flash" do curso, escrito aqui mesmo.
+# O clarão do meteoro atingido: um shader escrito aqui mesmo, que mistura a cor com branco.
 CLARAO = """#version 330
 in vec2 fragTexCoord;
 in vec4 fragColor;

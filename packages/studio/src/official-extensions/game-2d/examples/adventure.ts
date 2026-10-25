@@ -35,27 +35,25 @@ export const cameraAdventureExample: ExtensionExample = beginnerGameExample({
     },
   ],
   ir: {
-    html: [{ type: 'canvas', id: 'tela', width: 480, height: 320 }],
-    css: [
-      {
-        selector: 'body',
-        declarations: {
-          background: '#0b1020',
-          display: 'flex',
-          'align-items': 'center',
-          'justify-content': 'center',
-          'min-height': '100vh',
-          margin: '0',
-        },
-      },
-      {
-        selector: 'canvas',
-        declarations: { border: '2px solid #4ade80', background: '#11172a' },
-      },
-    ],
+    html: [],
+    css: [],
     version: 2,
     behavior: {
       start: [
+        {
+          type: 'g2d:setupStage',
+          width: 480,
+          height: 320,
+          bg: '#11172a',
+          __id: 'exemplo-aventura-com-c-mera',
+        },
+        {
+          type: 'g2d:setStageDescription',
+          description: 'Colete 4 moedas. Use as setas para explorar o caminho.',
+          __id: 'exemplo-aventura-com-c-mera-descricao',
+        },
+        { type: 'g2d:stageBorder', color: '#4ade80', width: 2 },
+
         { type: 'g2d:createWorld', varName: 'areaJogo', width: 1600, height: 320 },
         {
           type: 'g2d:configureWorldCamera',
@@ -350,24 +348,8 @@ export const enemyPlatformerExample: ExtensionExample = beginnerGameExample({
   experience: 'game',
   description: 'Três tipos de inimigo (patrulha, saltador e atirador), tiro, vida e pontos.',
   ir: {
-    html: [{ type: 'canvas', id: 'tela', width: 480, height: 320 }],
-    css: [
-      {
-        selector: 'body',
-        declarations: {
-          background: '#0b1020',
-          display: 'flex',
-          'align-items': 'center',
-          'justify-content': 'center',
-          'min-height': '100vh',
-          margin: '0',
-        },
-      },
-      {
-        selector: 'canvas',
-        declarations: { border: '2px solid #4ade80', background: '#11172a' },
-      },
-    ],
+    html: [],
+    css: [],
     version: 2,
     behavior: {
       molds: [
@@ -412,6 +394,21 @@ export const enemyPlatformerExample: ExtensionExample = beginnerGameExample({
         { type: 'g2d:setEnemyTypeParam', typeVar: 'canhao', param: 'cadencia', value: 120 },
       ],
       start: [
+        {
+          type: 'g2d:setupStage',
+          width: 480,
+          height: 320,
+          bg: '#11172a',
+          __id: 'exemplo-plataforma-com-inimigos',
+        },
+        {
+          type: 'g2d:setStageDescription',
+          description:
+            'Derrote os inimigos e faça pontos. Use as setas para andar e pular; Espaço atira.',
+          __id: 'exemplo-plataforma-com-inimigos-descricao',
+        },
+        { type: 'g2d:stageBorder', color: '#4ade80', width: 2 },
+
         { type: 'g2d:setGravity', value: 0.6 },
         {
           type: 'g2d:createSprite',
@@ -741,24 +738,8 @@ export const codeDrawnExample: ExtensionExample = beginnerGameExample({
   experience: 'demo',
   description: 'Herói e moeda desenhados com formas (sem nenhuma imagem); pegue as moedas.',
   ir: {
-    html: [{ type: 'canvas', id: 'tela', width: 400, height: 300 }],
-    css: [
-      {
-        selector: 'body',
-        declarations: {
-          background: '#0b1020',
-          display: 'flex',
-          'align-items': 'center',
-          'justify-content': 'center',
-          'min-height': '100vh',
-          margin: '0',
-        },
-      },
-      {
-        selector: 'canvas',
-        declarations: { border: '2px solid #4ade80', background: '#11172a' },
-      },
-    ],
+    html: [],
+    css: [],
     version: 2,
     behavior: {
       molds: [
@@ -801,6 +782,20 @@ export const codeDrawnExample: ExtensionExample = beginnerGameExample({
         },
       ],
       start: [
+        {
+          type: 'g2d:setupStage',
+          width: 400,
+          height: 300,
+          bg: '#11172a',
+          __id: 'exemplo-jogo-desenhado-por-c-digo',
+        },
+        {
+          type: 'g2d:setStageDescription',
+          description: 'Pegue as moedas. Use as setas para andar.',
+          __id: 'exemplo-jogo-desenhado-por-c-digo-descricao',
+        },
+        { type: 'g2d:stageBorder', color: '#4ade80', width: 2 },
+
         {
           type: 'g2d:createShapeSprite',
           varName: 'heroi',

@@ -3,7 +3,8 @@ from random import randint, choice
 
 LARGURA = 800
 ALTURA = 450
-CHAO = 300
+# A linha do chão, na tela. O dino fica em pé nela, qualquer que seja o tamanho do desenho.
+PE = 364
 ESCALA = 4
 GRAVIDADE = 2400
 PULO = -820
@@ -21,7 +22,8 @@ COLUNAS_DINO = 2
 LINHAS_DINO = 2
 LARGURA_DINO = textura_dino.width / COLUNAS_DINO
 ALTURA_DINO = textura_dino.height / LINHAS_DINO
-PE = CHAO + ALTURA_DINO * ESCALA
+# A altura do dino em pé sai do desenho: um dino maior do Pinta continua com os pés no chão.
+CHAO = PE - ALTURA_DINO * ESCALA
 cactos = [load_texture(f'images/cacto{i}.png') for i in range(3)]
 # O passarinho bate as asas: uma linha só, com dois quadros.
 textura_passaro = load_texture('images/passaro.png')

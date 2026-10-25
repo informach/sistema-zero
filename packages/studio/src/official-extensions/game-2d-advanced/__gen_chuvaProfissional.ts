@@ -36,34 +36,17 @@ SZGameKit.setup({ width: 960, height: 540, background: "#0f0a19", accent: "#ffb3
 SZGameKit.setScreenText("menu", "Chuva de Meteoros Profissional", "Setas ou WASD: voar para os 4 lados. Espaço: atirar. Desvie da chuva e destrua o que puder!", "Decolar");
 SZGameKit.setScreenText("fim", "A nave explodiu!", "O recorde fica guardado. Tente de novo!", "Decolar de novo");
 SZGameKit.defineLook("nave", function (ctx) {
-  ctx.fillStyle = "#4f8fea";
-  ctx.beginPath();
-  ctx.moveTo(28, 0);
-  ctx.lineTo(52, 44);
-  ctx.lineTo(4, 44);
-  ctx.closePath();
-  ctx.fill();
-  ctx.fillStyle = "#9cd3ff";
-  ctx.fillRect(22, 22, 12, 14);
-  ctx.fillStyle = "#ffb347";
-  ctx.fillRect(24, 44, 8, 4);
+  SZGameKit.drawTriangle(28, 0, 52, 44, 4, 44, "#4f8fea");
+  SZGameKit.drawRectangle(22, 22, 12, 14, "#9cd3ff");
+  SZGameKit.drawRectangle(24, 44, 8, 4, "#ffb347");
 }, 56, 48);
 SZGameKit.defineLook("meteoro", function (ctx) {
-  ctx.fillStyle = "#8d99ae";
-  ctx.beginPath();
-  ctx.arc(32, 32, 30, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.fillStyle = "#6c757d";
-  ctx.beginPath();
-  ctx.arc(22, 24, 7, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.beginPath();
-  ctx.arc(42, 40, 9, 0, Math.PI * 2);
-  ctx.fill();
+  SZGameKit.drawCircle(32, 32, 30, "#8d99ae");
+  SZGameKit.drawCircle(22, 24, 7, "#6c757d");
+  SZGameKit.drawCircle(42, 40, 9, "#6c757d");
 }, 64, 64);
 SZGameKit.defineLook("laser", function (ctx) {
-  ctx.fillStyle = "#9cff57";
-  ctx.fillRect(0, 0, 6, 22);
+  SZGameKit.drawRectangle(0, 0, 6, 22, "#9cff57");
 }, 6, 22);
 SZGameKit.defineMold("meteoro", { w: 64, h: 64, health: 1, speed: 0, damage: 1, color: "#8d99ae", look: "meteoro" });
 SZGameKit.defineMold("laser", { w: 6, h: 22, health: 1, speed: 0, damage: 0, color: "#9cff57", look: "laser" });
@@ -141,10 +124,8 @@ SZGameKit.onDraw(function (ctx) {
   SZGameKit.drawEffects();
 });
 SZGameKit.onDrawHud(function (ctx) {
-  ctx.fillStyle = "#f3f6ff";
-  ctx.font = "26px sans-serif";
-  ctx.fillText("Pontos: " + pontos, 20, 40);
-  ctx.fillText("Recorde: " + recorde, 20, 72);
+  SZGameKit.drawText("Pontos: " + pontos, 20, 40, 26, "#f3f6ff");
+  SZGameKit.drawText("Recorde: " + recorde, 20, 72, 26, "#f3f6ff");
 });
 `.trim()
 

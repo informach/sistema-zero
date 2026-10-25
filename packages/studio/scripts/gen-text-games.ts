@@ -51,11 +51,16 @@ for (const sample of samples) {
     description: sample.description,
     ir: {
       ...ir,
-      html: [{ type: 'canvas', id: 'tela', width: 600, height: 400 }],
-      css: [
-        { selector: 'body', declarations: { margin: '0', background: '#102030' } },
-        { selector: 'canvas', declarations: { background: '#102030' } },
-      ],
+      html: [],
+      css: [],
+      behavior: {
+        ...ir.behavior,
+        start: [
+          { type: 'g2d:setupStage', width: 600, height: 400, bg: '#102030' },
+          { type: 'g2d:setStageDescription', description: sample.description },
+          ...ir.behavior.start,
+        ],
+      },
     },
   }
   output += `export const ${sample.symbol}: ExtensionExample = beginnerGameExample(${JSON.stringify(example, null, 2)})\n\n`

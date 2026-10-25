@@ -5,24 +5,26 @@ A projeção do quadro (frustum ou orto) é montada no navegador com o tamanho d
 de agora, como o BeginMode3D faz com o framebuffer atual; aqui ficam as mesmas contas para
 quem pergunta pelo mundo (get_world_to_screen, get_screen_to_world_ray).
 """
-import math
-
 from . import _constants as K
 from . import _raymath as rm
 from . import _rt as rt
-from ._args import integer, number, struct, vec2, vec3
+from ._args import integer, struct
+from ._float32 import DEG2RAD, F
+from ._raymath import number, vec2, vec3
 from ._structs import Camera3D, Ray, Vector2, Vector3
 
+# As contas da câmera são em float, operação por operação, como no C (ver _float32.py). As
+# distâncias de corte e as contas da projeção ortográfica são double no rlgl e no rcore.
 CULL_NEAR = 0.05
 CULL_FAR = 4000.0
-DEG2RAD = math.pi / 180.0
 
-# rcamera.h
-CAMERA_MOVE_SPEED = 5.4
-CAMERA_ROTATION_SPEED = 0.03
-CAMERA_PAN_SPEED = 2.0
-CAMERA_MOUSE_MOVE_SENSITIVITY = 0.003
-CAMERA_ORBITAL_SPEED = 0.5
+# rcamera.h (os #define são float: 5.4f, 0.03f...)
+CAMERA_MOVE_SPEED = F(5.4)
+CAMERA_ROTATION_SPEED = F(0.03)
+CAMERA_PAN_SPEED = F(2.0)
+CAMERA_MOUSE_MOVE_SENSITIVITY = F(0.003)
+CAMERA_ORBITAL_SPEED = F(0.5)
+_WORLD_PLANE = F(0.7071)
 
 
 def _camera(value, function):
@@ -61,7 +63,7 @@ def view_values(cam):
 def projection_values(cam, width, height):
     aspect = width / height
     if cam.projection == K.CAMERA_PERSPECTIVE:
-        return rm.perspective(cam.fovy * DEG2RAD, aspect, CULL_NEAR, CULL_FAR)
+        return rm.perspective(F(cam.fovy) * DEG2RAD, aspect, CULL_NEAR, CULL_FAR)
     if cam.projection == K.CAMERA_ORTHOGRAPHIC:
         top = cam.fovy / 2.0
         right = top * aspect
@@ -74,6 +76,8 @@ def get_camera_matrix(camera, /):
 
 
 def _transform4(m, x, y, z, w):
+    """QuaternionTransform(q, m), em float."""
+    m, x, y, z, w = rm._f(m), F(x), F(y), F(z), F(w)
     return (m[0] * x + m[4] * y + m[8] * z + m[12] * w,
             m[1] * x + m[5] * y + m[9] * z + m[13] * w,
             m[2] * x + m[6] * y + m[10] * z + m[14] * w,
@@ -81,13 +85,13 @@ def _transform4(m, x, y, z, w):
 
 
 def world_to_screen(position, cam, width, height):
+    """GetWorldToScreenEx: a visão, depois a projeção, e a divisão pelo w em float."""
     proj = projection_values(cam, width, height)
     view = view_values(cam)
     q = _transform4(view, position[0], position[1], position[2], 1.0)
     q = _transform4(proj, *q)
-    w = q[3]
-    nx, ny = q[0] / w if w else math.inf, -q[1] / w if w else math.inf
-    return (nx + 1.0) / 2.0 * width, (ny + 1.0) / 2.0 * height
+    nx, ny = q[0] / q[3], -q[1] / q[3]
+    return (nx + 1.0) / 2.0 * F(width), (ny + 1.0) / 2.0 * F(height)
 
 
 def get_world_to_screen(position, camera, /):
@@ -104,21 +108,15 @@ def get_world_to_screen_ex(position, camera, width, height, /):
     return Vector2(*world_to_screen(point, _camera(camera, f), w, h))
 
 
-def _unproject(x, y, z, inverse):
-    q = _transform4(inverse, x, y, z, 1.0)
-    w = q[3]
-    return (q[0] / w, q[1] / w, q[2] / w) if w else (math.inf, math.inf, math.inf)
-
-
 def screen_to_world_ray(position, cam, width, height):
-    x = (2.0 * position[0]) / width - 1.0
-    y = 1.0 - (2.0 * position[1]) / height
+    """GetScreenToWorldRayEx: três pontos pelo Vector3Unproject do raymath."""
+    x = (2.0 * F(position[0])) / F(width) - 1.0
+    y = 1.0 - (2.0 * F(position[1])) / F(height)
     view = view_values(cam)
     proj = projection_values(cam, width, height)
-    inverse = rm._invert(rm._mul(view, proj))
-    near = _unproject(x, y, 0.0, inverse)
-    far = _unproject(x, y, 1.0, inverse)
-    plane = _unproject(x, y, -1.0, inverse)
+    near = rm.unproject(x, y, 0.0, proj, view)
+    far = rm.unproject(x, y, 1.0, proj, view)
+    plane = rm.unproject(x, y, -1.0, proj, view)
     direction = rm._normalize3((far[0] - near[0], far[1] - near[1], far[2] - near[2]))
     if cam.projection == K.CAMERA_ORTHOGRAPHIC:
         origin = plane
@@ -164,9 +162,9 @@ def _right(cam):
 def _flatten(vector, cam):
     """Projeta no chão do mundo (o plano do vetor up), como o moveInWorldPlane."""
     x, y, z = vector
-    if abs(cam.up.z) > 0.7071:
+    if abs(cam.up.z) > _WORLD_PLANE:
         z = 0.0
-    elif abs(cam.up.x) > 0.7071:
+    elif abs(cam.up.x) > _WORLD_PLANE:
         x = 0.0
     else:
         y = 0.0
@@ -245,7 +243,7 @@ def update_camera(camera, mode, /):
     around_target = mode in (K.CAMERA_THIRD_PERSON, K.CAMERA_ORBITAL)
     lock_view = mode in (K.CAMERA_FREE, K.CAMERA_FIRST_PERSON, K.CAMERA_THIRD_PERSON,
                          K.CAMERA_ORBITAL)
-    dt = rt.window.frame_time
+    dt = F(rt.window.frame_time)
     move_speed = CAMERA_MOVE_SPEED * dt
     rotation_speed = CAMERA_ROTATION_SPEED * dt
     pan_speed = CAMERA_PAN_SPEED * dt

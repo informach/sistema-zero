@@ -156,7 +156,7 @@ export const gameKitBlockDefinitions04: BlockDefinition[] = [
   {
     type: 'sz_gk_collide_group',
     placement: 'command',
-    message0: 'Fazer %1 colidir com o enxame %2',
+    message0: 'Fazer %1 colidir com o grupo %2',
     args0: [
       { type: 'field_name_picker', name: 'WHO', text: 'heroi', kind: 'character' },
       { type: 'field_name_picker', name: 'MOLD', text: 'chao', kind: 'mold' },
@@ -409,7 +409,7 @@ export const gameKitBlockDefinitions04: BlockDefinition[] = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Tudo-em-um do plataforma: gravidade + andar com as setas (ou A/D) + pular (espaço, W ou ↑) + mover. Com o pulo GOSTOSO já embutido (coyote, buffer e pulo variável). Ponha no "A cada quadro" e, LOGO DEPOIS, o bloco de colidir com o mapa (ou com o enxame): é a ordem de verdade.',
+      'Cuida de gravidade, setas ou A/D, pulo e movimento. Permite pulo após a beirada, antes do pouso e com altura variável. Use no A cada quadro; depois, colida com o mapa ou grupo.',
   },
 
   {
@@ -427,7 +427,7 @@ export const gameKitBlockDefinitions04: BlockDefinition[] = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Os botõezinhos do "pulo gostoso". COYOTE: quanto tempo ainda dá para pular depois de sair da beirada. BUFFER: apertar antes de pousar continua valendo. SEGURAR: até quanto tempo segurar deixa o pulo mais alto. GRAVIDADE: 2160 é o normal; menos = Lua.',
+      'Ajusta a folga após sair da beirada, a antecipação antes do pouso e o tempo de segurar para pular mais alto. Tempos em segundos. Gravidade padrão: 2160; menor faz cair mais devagar.',
   },
 
   {
@@ -578,7 +578,7 @@ export const gameKitBlockDefinitions04: BlockDefinition[] = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'O pulo na cabeça do Mario: se o herói estiver CAINDO mais rápido que o inimigo, o inimigo é derrotado, o herói quica e sai o aviso "plataforma:pisou". Comparar a velocidade (e não o lado) é o segredo de funcionar em qualquer ângulo.',
+      'Se o herói cai mais rápido que o inimigo, derrota-o ao pisar, quica e envia o aviso plataforma:pisou. A comparação das velocidades também permite pisar em inimigos que se movem.',
   },
 
   {
@@ -903,7 +903,7 @@ export const gameKitBlockDefinitions04: BlockDefinition[] = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Bicho redondo (bola, bolha, moeda) fica mais justo com a caixa REDONDA: o canto vazio do quadrado deixa de encostar. Vale para encostar, para o par que se encosta, para o golpe, para pisar e para o clique; o empurrão em parede, chão e tiles continua quadrado. Raio 0 = o motor calcula pelo tamanho.',
+      'Escolha área quadrada ou redonda para contato, ataque, pisada e clique. Paredes, chão e peças continuam usando a caixa quadrada. Raio 0 calcula o tamanho automaticamente.',
   },
 
   {

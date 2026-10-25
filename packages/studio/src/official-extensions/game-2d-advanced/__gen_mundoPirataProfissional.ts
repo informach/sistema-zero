@@ -22,69 +22,44 @@ SZGameKit.setScreenText("menu", "Mundo Pirata Profissional", "Corra com as setas
 SZGameKit.setScreenText("vitoria", "Bandeira conquistada!", "Você atravessou o mundo pirata inteiro. Que capitão!", "Jogar de novo");
 SZGameKit.setScreenText("fim", "Fim da linha...", "Suas vidas acabaram. Pise nos inimigos por cima e desvie das pérolas!", "Tentar de novo");
 SZGameKit.defineLook("piratao", function (ctx) {
-  ctx.fillStyle = "#c0392b";
-  ctx.fillRect(6, 14, 18, 18);
-  ctx.fillStyle = "#f7c8a2";
-  ctx.beginPath();
-  ctx.arc(15, 9, 7, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.fillStyle = "#2c3e50";
-  ctx.fillRect(3, 3, 24, 6);
-  ctx.fillStyle = "#34495e";
-  ctx.fillRect(8, 32, 6, 12);
-  ctx.fillRect(17, 32, 6, 12);
+  SZGameKit.drawRectangle(6, 14, 18, 18, "#c0392b");
+  SZGameKit.drawCircle(15, 9, 7, "#f7c8a2");
+  SZGameKit.drawRectangle(3, 3, 24, 6, "#2c3e50");
+  SZGameKit.drawRectangle(8, 32, 6, 12, "#34495e");
+  SZGameKit.drawRectangle(17, 32, 6, 12, "#34495e");
 }, 30, 44);
 SZGameKit.defineLook("tijolo", function (ctx) {
-  ctx.fillStyle = "#8d6e63";
-  ctx.fillRect(0, 0, 80, 40);
-  ctx.fillStyle = "#6d4c41";
-  ctx.fillRect(0, 0, 80, 5);
-  ctx.fillRect(0, 20, 80, 2);
+  SZGameKit.drawRectangle(0, 0, 80, 40, "#8d6e63");
+  SZGameKit.drawRectangle(0, 0, 80, 5, "#6d4c41");
+  SZGameKit.drawRectangle(0, 20, 80, 2, "#6d4c41");
 }, 80, 40);
 SZGameKit.defineLook("tabua", function (ctx) {
-  ctx.fillStyle = "#a1887f";
-  ctx.fillRect(0, 0, 90, 16);
-  ctx.fillStyle = "#7a5628";
-  ctx.fillRect(0, 12, 90, 4);
+  SZGameKit.drawRectangle(0, 0, 90, 16, "#a1887f");
+  SZGameKit.drawRectangle(0, 12, 90, 4, "#7a5628");
 }, 90, 16);
 SZGameKit.defineLook("dente", function (ctx) {
-  ctx.fillStyle = "#8e44ad";
-  ctx.fillRect(2, 6, 24, 18);
-  ctx.fillStyle = "#ffffff";
-  ctx.fillRect(6, 0, 4, 8);
-  ctx.fillRect(14, 0, 4, 8);
+  SZGameKit.drawRectangle(2, 6, 24, 18, "#8e44ad");
+  SZGameKit.drawRectangle(6, 0, 4, 8, "#ffffff");
+  SZGameKit.drawRectangle(14, 0, 4, 8, "#ffffff");
 }, 28, 24);
 SZGameKit.defineLook("casco", function (ctx) {
-  ctx.fillStyle = "#16a085";
-  ctx.fillRect(0, 4, 28, 16);
-  ctx.fillStyle = "#0e6655";
-  ctx.fillRect(4, 8, 20, 4);
+  SZGameKit.drawRectangle(0, 4, 28, 16, "#16a085");
+  SZGameKit.drawRectangle(4, 8, 20, 4, "#0e6655");
 }, 28, 20);
 SZGameKit.defineLook("canhao", function (ctx) {
-  ctx.fillStyle = "#5d4037";
-  ctx.fillRect(0, 8, 26, 20);
-  ctx.fillStyle = "#3e2723";
-  ctx.fillRect(2, 0, 12, 12);
+  SZGameKit.drawRectangle(0, 8, 26, 20, "#5d4037");
+  SZGameKit.drawRectangle(2, 0, 12, 12, "#3e2723");
 }, 26, 28);
 SZGameKit.defineLook("perola", function (ctx) {
-  ctx.fillStyle = "#e0f7fa";
-  ctx.beginPath();
-  ctx.arc(6, 6, 6, 0, Math.PI * 2);
-  ctx.fill();
+  SZGameKit.drawCircle(6, 6, 6, "#e0f7fa");
 }, 12, 12);
 SZGameKit.defineLook("moeda", function (ctx) {
-  ctx.fillStyle = "#ffd166";
-  ctx.beginPath();
-  ctx.arc(8, 8, 7, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.fillStyle = "#f0a500";
-  ctx.fillRect(6, 4, 4, 8);
+  SZGameKit.drawCircle(8, 8, 7, "#ffd166");
+  SZGameKit.drawRectangle(6, 4, 4, 8, "#f0a500");
 }, 16, 16);
 SZGameKit.defineLook("bandeira", function (ctx) {
-  ctx.fillStyle = "#8a8a8a";
-  ctx.fillRect(4, 0, 4, 70);
-  ctx.fillStyle = "#e63946";
-  ctx.fillRect(8, 4, 36, 24);
+  SZGameKit.drawRectangle(4, 0, 4, 70, "#8a8a8a");
+  SZGameKit.drawRectangle(8, 4, 36, 24, "#e63946");
 }, 48, 70);
 SZGameKit.setJumpFeel(0.1, 0.1, 0.3, 2000);
 SZGameKit.defineMold("chao", { w: 80, h: 40, health: 1, speed: 0, damage: 0, color: "#8d6e63", look: "tijolo" });
@@ -241,10 +216,8 @@ SZGameKit.onDraw(function (ctx) {
   SZGameKit.drawEffects();
 });
 SZGameKit.onDrawHud(function (ctx) {
-  ctx.fillStyle = "#0e2a38";
-  ctx.font = "24px sans-serif";
-  ctx.fillText("Vidas: " + vidas, 20, 36);
-  ctx.fillText("Tesouro: " + pontos, 20, 68);
+  SZGameKit.drawText("Vidas: " + vidas, 20, 36, 24, "#0e2a38");
+  SZGameKit.drawText("Tesouro: " + pontos, 20, 68, 24, "#0e2a38");
 });
 `.trim()
 

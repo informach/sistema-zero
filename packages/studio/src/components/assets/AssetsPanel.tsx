@@ -650,7 +650,8 @@ export function AssetsPanel({
         const { dataUrl, width, height } = await fileToAssetDataUrl(
           file,
           undefined,
-          usesPgzero ? 'png' : 'compact',
+          // O raylib do computador não abre WebP: no Pygame Zero e no Raylib a imagem fica PNG.
+          usesPgzero || usesRaylib ? 'png' : 'compact',
           isPython ? { limits: STUDIO_PYTHON_MATERIAL_DATA_LIMITS } : undefined,
         )
         const base = file.name.replace(/\.[^.]+$/, '')
@@ -951,7 +952,7 @@ export function AssetsPanel({
                   ref={modelRef}
                   type="file"
                   name="project-3d-files"
-                  accept=".glb,.hdr"
+                  accept={usesRaylib ? '.glb' : '.glb,.hdr'}
                   multiple
                   className="hidden"
                   onChange={(e) => void handle3DFiles(e.target.files)}
@@ -1063,7 +1064,8 @@ export function AssetsPanel({
                 onDeletePersonal={(drawing) =>
                   setPendingDeletion({ scope: 'personal', id: drawing.id, name: drawing.name })
                 }
-                onAddFromLibrary={addFromLibrary}
+                // The library pictures are SVG, which the desktop raylib does not open.
+                onAddFromLibrary={usesRaylib ? null : addFromLibrary}
               />
             ) : null}
             {activeTab === 'sounds' ? (

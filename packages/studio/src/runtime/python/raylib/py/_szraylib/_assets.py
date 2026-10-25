@@ -11,6 +11,7 @@ import struct as _bin
 
 from . import _rt as rt
 from . import _random
+from ._float32 import F, c_uchar, cosf, fabsf, fmaxf, fminf, hypotf, sinf
 from ._args import color, integer, number, rect, struct, text, unpack_color, vec2
 from ._structs import Color, Image, Rectangle, RenderTexture, Texture
 
@@ -199,10 +200,21 @@ def _restore_format(image):
         data[3::4] = b'\xff' * (len(data) // 4)
 
 
+# ImageFormat para cinza: (r*0.299f + g*0.587f + b*0.114f)*255.0f, com r = (float)r/255.0f, em
+# float. Cada canal entra pela sua tabela; a soma e o *255 dependem dos três juntos.
+_GRAY_R = [F(i) / 255.0 * 0.299 for i in range(256)]
+_GRAY_G = [F(i) / 255.0 * 0.587 for i in range(256)]
+_GRAY_B = [F(i) / 255.0 * 0.114 for i in range(256)]
+
+
 def _to_gray(image):
     data = image.data
+    seen = {}
     for i in range(0, len(data), 4):
-        gray = int((data[i] / 255 * 0.299 + data[i + 1] / 255 * 0.587 + data[i + 2] / 255 * 0.114) * 255)
+        key = (data[i], data[i + 1], data[i + 2])
+        gray = seen.get(key)
+        if gray is None:
+            gray = seen[key] = c_uchar((_GRAY_R[key[0]] + _GRAY_G[key[1]] + _GRAY_B[key[2]]) * 255.0)
         data[i] = data[i + 1] = data[i + 2] = gray
         data[i + 3] = 255
 
@@ -246,73 +258,71 @@ def gen_image_color(width, height, color_, /):
     return _image(w, h, pixel * (max(w, 0) * max(h, 0)))
 
 
+def _mix(data, k, near, far, factor):
+    """Um pixel do gradiente: ``(int)(far*factor + near*(1 - factor))`` em float, como no C."""
+    rest = 1.0 - factor
+    data[k] = c_uchar(far.r * factor + near.r * rest)
+    data[k + 1] = c_uchar(far.g * factor + near.g * rest)
+    data[k + 2] = c_uchar(far.b * factor + near.b * rest)
+    data[k + 3] = c_uchar(far.a * factor + near.a * rest)
+
+
 def gen_image_gradient_linear(width, height, direction, start, end, /):
     f = 'gen_image_gradient_linear'
     w, h = integer(width, f, 'width'), integer(height, f, 'height')
     d = integer(direction, f, 'direction')
     s = unpack_color(color(start, f, 'start'))
     e = unpack_color(color(end, f, 'end'))
-    radian = (90 - d) / 180.0 * 3.14159
-    cos_d, sin_d = math.cos(radian), math.sin(radian)
+    radian = F(90 - d) / 180.0 * 3.14159
+    cos_d, sin_d = cosf(radian), sinf(radian)
     starting = 0.5 - (cos_d * w / 2) - (sin_d * h / 2)
     same_sign = (math.copysign(1, sin_d) < 0) == (math.copysign(1, cos_d) < 0)
-    maximum = abs(starting) if same_sign else abs(starting + w * cos_d)
+    maximum = fabsf(starting) if same_sign else fabsf(starting + w * cos_d)
     data = bytearray(w * h * 4)
     for i in range(w):
         for j in range(h):
-            factor = (starting + (i * cos_d + j * sin_d)) / maximum if maximum else 0.0
-            factor = max(-1.0, min(1.0, factor)) / 2.0 + 0.5
-            k = (j * w + i) * 4
-            data[k] = int(e.r * factor + s.r * (1 - factor))
-            data[k + 1] = int(e.g * factor + s.g * (1 - factor))
-            data[k + 2] = int(e.b * factor + s.b * (1 - factor))
-            data[k + 3] = int(e.a * factor + s.a * (1 - factor))
+            # Com maximum zero a divisão dá nan (ou infinito), e o pixel sai como no C.
+            factor = (starting + (cos_d * i + sin_d * j)) / maximum
+            factor = F(1.0) if factor > 1.0 else factor
+            factor = F(-1.0) if factor < -1.0 else factor
+            _mix(data, (j * w + i) * 4, s, e, factor / 2.0 + 0.5)
     return _image(w, h, data)
 
 
 def gen_image_gradient_radial(width, height, density, inner, outer, /):
     f = 'gen_image_gradient_radial'
     w, h = integer(width, f, 'width'), integer(height, f, 'height')
-    dens = number(density, f, 'density')
+    dens = F(number(density, f, 'density'))
     a = unpack_color(color(inner, f, 'inner'))
     b = unpack_color(color(outer, f, 'outer'))
-    radius = (w if w < h else h) / 2.0
-    cx, cy = w / 2.0, h / 2.0
+    radius = F(w) / 2.0 if w < h else F(h) / 2.0
+    cx, cy = F(w) / 2.0, F(h) / 2.0
     data = bytearray(w * h * 4)
-    span = radius * (1.0 - dens)
     for y in range(h):
         for x in range(w):
-            dist = math.hypot(x - cx, y - cy)
-            factor = (dist - radius * dens) / span if span else 1.0
-            factor = min(max(factor, 0.0), 1.0)
-            k = (y * w + x) * 4
-            data[k] = int(b.r * factor + a.r * (1 - factor))
-            data[k + 1] = int(b.g * factor + a.g * (1 - factor))
-            data[k + 2] = int(b.b * factor + a.b * (1 - factor))
-            data[k + 3] = int(b.a * factor + a.a * (1 - factor))
+            dist = hypotf(F(x) - cx, F(y) - cy)
+            # Dividir por zero (density 1.0) dá infinito ou nan, e o fmax/fmin do C resolve.
+            factor = (dist - radius * dens) / (radius * (1.0 - dens))
+            factor = fminf(fmaxf(factor, 0.0), 1.0)
+            _mix(data, (y * w + x) * 4, a, b, factor)
     return _image(w, h, data)
 
 
 def gen_image_gradient_square(width, height, density, inner, outer, /):
     f = 'gen_image_gradient_square'
     w, h = integer(width, f, 'width'), integer(height, f, 'height')
-    dens = number(density, f, 'density')
+    dens = F(number(density, f, 'density'))
     a = unpack_color(color(inner, f, 'inner'))
     b = unpack_color(color(outer, f, 'outer'))
-    cx, cy = w / 2.0, h / 2.0
+    cx, cy = F(w) / 2.0, F(h) / 2.0
     data = bytearray(w * h * 4)
     for y in range(h):
         for x in range(w):
-            nx = abs(x - cx) / cx if cx else 0.0
-            ny = abs(y - cy) / cy if cy else 0.0
-            dist = max(nx, ny)
-            factor = (dist - dens) / (1.0 - dens) if dens != 1 else 1.0
-            factor = min(max(factor, 0.0), 1.0)
-            k = (y * w + x) * 4
-            data[k] = int(b.r * factor + a.r * (1 - factor))
-            data[k + 1] = int(b.g * factor + a.g * (1 - factor))
-            data[k + 2] = int(b.b * factor + a.b * (1 - factor))
-            data[k + 3] = int(b.a * factor + a.a * (1 - factor))
+            nx = fabsf(F(x) - cx) / cx
+            ny = fabsf(F(y) - cy) / cy
+            factor = (fmaxf(nx, ny) - dens) / (1.0 - dens)
+            factor = fminf(fmaxf(factor, 0.0), 1.0)
+            _mix(data, (y * w + x) * 4, a, b, factor)
     return _image(w, h, data)
 
 
@@ -368,7 +378,8 @@ def image_color_tint(image, color_, /):
 def image_color_brightness(image, brightness, /):
     img = _ref(image, 'image_color_brightness')
     amount = max(-255, min(255, integer(brightness, 'image_color_brightness', 'brightness')))
-    table = bytes(max(0, min(255, i + amount)) for i in range(256))
+    # ImageColorBrightness: o que passa de 0 para baixo vira 1 (não 0), como no C.
+    table = bytes(1 if i + amount < 0 else min(255, i + amount) for i in range(256))
     data = img.data
     for channel in range(3):
         data[channel::4] = bytes(data[channel::4]).translate(table)
@@ -377,7 +388,7 @@ def image_color_brightness(image, brightness, /):
 
 def image_color_contrast(image, contrast, /):
     img = _ref(image, 'image_color_contrast')
-    amount = max(-100.0, min(100.0, number(contrast, 'image_color_contrast', 'contrast')))
+    amount = max(-100, min(100, integer(contrast, 'image_color_contrast', 'contrast')))
     factor = ((100.0 + amount) / 100.0) ** 2
     table = bytes(max(0, min(255, int((((i / 255.0) - 0.5) * factor + 0.5) * 255.0)))
                   for i in range(256))
@@ -461,6 +472,12 @@ def image_from_image(image, rec, /):
 def image_crop(image, crop, /):
     f = 'image_crop'
     img = _ref(image, f)
+    # ImageCrop: com o retângulo começando fora da imagem, o C avisa e não muda nada.
+    r = rect(crop, f, 'crop')
+    x, y = max(0.0, r[0]), max(0.0, r[1])
+    if x > img.width or y > img.height or not img.width or not img.height:
+        print('WARNING: IMAGE: Failed to crop, rectangle out of bounds')
+        return
     result = image_from_image(img, crop)
     img.data[:] = result.data
     img.width, img.height = result.width, result.height
@@ -551,7 +568,8 @@ def image_clear_background(dst, color_, /):
 def load_image_colors(image, /):
     img = struct(image, Image, 'load_image_colors', 'image')
     d = img.data
-    return [Color(d[i], d[i + 1], d[i + 2], d[i + 3]) for i in range(0, len(d), 4)]
+    from ._ffi import Pointer
+    return Pointer('Color *', [Color(d[i], d[i + 1], d[i + 2], d[i + 3]) for i in range(0, len(d), 4)])
 
 
 def unload_image_colors(colors, /):

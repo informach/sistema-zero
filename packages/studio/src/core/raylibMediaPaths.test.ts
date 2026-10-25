@@ -67,13 +67,17 @@ test('the path keeps the extension; only the exact file name is taken', () => {
     raylibMediaPath({ entrypoint, name, kind: 'image', extension, occupied })
   expect(place('nave', 'png')).toEqual({ path: 'images/nave-2.png' })
   expect(place('nave', 'gif')).toEqual({ path: 'images/nave.gif' })
-  expect(place('nave', 'png', 'src/main.py')).toEqual({ path: 'src/images/nave.png' })
-  expect(raylibCodePath({ proPath: 'src/images/nave.png' }, 'src/main.py')).toBe('images/nave.png')
+  // With the main file in src/, the folders stay at the root: the game runs from there, in the
+  // Studio and on the computer (python src/main.py).
+  expect(place('nave', 'png', 'src/main.py')).toEqual({ path: 'images/nave-2.png' })
+  expect(raylibCodePath({ proPath: 'images/nave.png' }, 'src/main.py')).toBe('images/nave.png')
+  expect(raylibCodePath({ proPath: 'src/images/nave.png' }, 'src/main.py')).toBeUndefined()
   expect(raylibCodePath({ proPath: 'assets/nave.png' }, 'main.py')).toBeUndefined()
 })
 
 describe.each(['classic', 'pro'] as const)('%s project', (kind) => {
-  const base = kind === 'pro' ? 'src/' : ''
+  // The Raylib folders are at the project root, whatever folder the main file is in.
+  const base = ''
 
   test('Raylib: uploads land in images/, sounds/, music/ and fonts/', async () => {
     const store = await pythonStore(kind, RAYLIB_2D_EXTENSION)

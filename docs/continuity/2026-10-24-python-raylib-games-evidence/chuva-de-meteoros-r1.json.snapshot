@@ -17,10 +17,10 @@
   "authoringLoader": "loadPythonAuthoring",
   "extension": "python-raylib-2d",
   "codecOrderSha256": "260d5420ed53ff196eab065c20843114564d95df4fff6d4f416fb06d8d25e26a",
-  "sourceSha256": "ca56090f962a389e82ca8ec414b9c114a7141668448d6bab7077ad171636d20a",
-  "generatedSha256": "53c5f778c2247423eccb9b0ac16da514ccb8cc0bca5653cfb95f03ae5a57ee23",
+  "sourceSha256": "0559feb93c30ab377c697c4ab4c1655435352ea8f9d8e454d1759db465b6a6b3",
+  "generatedSha256": "c567c8f7e163f06eb6c5f1d2ef0ba775cb891a7b7d9636537d0c79b85185c955",
   "opaqueCount": 0,
-  "blockCount": 794,
+  "blockCount": 809,
   "referencedBlocks": [
     {
       "id": "sz_py_alias",
@@ -32,11 +32,11 @@
     },
     {
       "id": "sz_py_assign",
-      "count": 63
+      "count": 64
     },
     {
       "id": "sz_py_attribute",
-      "count": 72
+      "count": 73
     },
     {
       "id": "sz_py_boolean",
@@ -60,7 +60,7 @@
     },
     {
       "id": "sz_py_for",
-      "count": 6
+      "count": 7
     },
     {
       "id": "sz_py_format_value",
@@ -104,7 +104,7 @@
     },
     {
       "id": "sz_py_list_comprehension",
-      "count": 4
+      "count": 5
     },
     {
       "id": "sz_py_max",
@@ -112,7 +112,7 @@
     },
     {
       "id": "sz_py_method",
-      "count": 10
+      "count": 11
     },
     {
       "id": "sz_py_method_value",
@@ -132,7 +132,7 @@
     },
     {
       "id": "sz_py_not",
-      "count": 6
+      "count": 7
     },
     {
       "id": "sz_py_random_randint",
@@ -308,13 +308,13 @@
     },
     {
       "id": "sz_py_variable",
-      "count": 256
+      "count": 265
     }
   ],
-  "approvedBlockIdsSha256": "d800f2e8f69feb7b077fd710bfaca8e2888d9494cdceea419df43fc2df941c2d",
+  "approvedBlockIdsSha256": "c95af172c8af1f6eb49a57d097657b696fb472c58f9be50046330c24edb754ac",
   "fullWorkspaceRoundtrip": true,
-  "initialWorkspaceSha256": "3ce767fa703a60c600daf8cc185862fe99c4d6c2724cbbcc6ca83b545eefbf0c",
-  "editedWorkspaceSha256": "09050f1ecf4f469f41145e75c325e2c0b510ec1703aacf1d24720c18bc6bac52",
+  "initialWorkspaceSha256": "39d203949930545ba1cec85dc92aeeb283f19a8712e84f1ee9cb41709f7769fa",
+  "editedWorkspaceSha256": "88f11ffb4e2adca5e26e512f617bb80e9ed06b1ee4009c4bd2c158967dcb9ba8",
   "canonicalRenderReanalysis": true,
   "runtimeCapabilitiesQualified": false,
   "browserInteractionQualified": false,
@@ -334,8 +334,8 @@
       "field": "NUMBER",
       "before": "360",
       "after": "380",
-      "beforeSourceSha256": "1157953277748dcc79482abdd3bcacb5a3f1919d28da83b20baefe06d4456f07",
-      "afterSourceSha256": "8b5a40f1573ab3790064dc019023dbcae6b126b2ebad99ff2c198693fa40abec"
+      "beforeSourceSha256": "bdb8c1718cb58fb05efc1ee5ee6647de7d5f76ca3b9fe8cae7d66ac485a8f226",
+      "afterSourceSha256": "61628b6acab41f01ae10d86cafc219831ec7038e60b26f6527241f5bc1b47adb"
     },
     {
       "label": "velocidade do laser",
@@ -352,8 +352,8 @@
       "field": "NUMBER",
       "before": "600",
       "after": "640",
-      "beforeSourceSha256": "8b5a40f1573ab3790064dc019023dbcae6b126b2ebad99ff2c198693fa40abec",
-      "afterSourceSha256": "53c5f778c2247423eccb9b0ac16da514ccb8cc0bca5653cfb95f03ae5a57ee23"
+      "beforeSourceSha256": "61628b6acab41f01ae10d86cafc219831ec7038e60b26f6527241f5bc1b47adb",
+      "afterSourceSha256": "c567c8f7e163f06eb6c5f1d2ef0ba775cb891a7b7d9636537d0c79b85185c955"
     }
   ]
 }

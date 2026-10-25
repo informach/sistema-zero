@@ -13,7 +13,7 @@ Mexa o mouse (ou as setas para os lados) para olhar, W A S D para andar e clique
 ## Ideias para mudar
 
 - Mude as letras do MAPA para desenhar outro labirinto, com mais robôs (R).
-- Redesenhe o robô no Pinta, uma linha por animação, e troque `images/robo.png`.
+- Redesenhe o robô no Pinta com as mesmas quatro linhas (parado, andando, atacando e desligado, até dois quadros em cada) e troque `images/robo.png`.
 - Mude VIDA_DO_ROBO para os robôs aguentarem mais raios.
 
 ## Modelos, texturas e sons

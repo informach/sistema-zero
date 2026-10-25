@@ -18,7 +18,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[3]
 OURS = '--ours' in sys.argv
-PATHS = [os.path.abspath(a) for a in sys.argv[1:] if a != '--ours']
+PATHS = [os.path.abspath(a) for a in sys.argv[1:] if a not in ('--ours', '--ucrt')]
 
 if OURS:
     sys.path.insert(0, str(ROOT / 'src/runtime/python/raylib/py'))
@@ -26,6 +26,11 @@ if OURS:
     _szraylib.configure(lambda h, p: (json.dumps({'now': 16}), None), None, '/', '3d')
 
 import pyray as P  # noqa: E402
+
+if '--ucrt' in sys.argv:
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    from ucrt import use_ucrt_libm  # noqa: E402
+    use_ucrt_libm()
 
 P.set_trace_log_level(P.LOG_NONE)
 P.set_config_flags(P.FLAG_WINDOW_HIDDEN)
@@ -64,7 +69,7 @@ def matrix(m):
 
 
 def box(b):
-    return [round(v, 4) for v in (b.min.x, b.min.y, b.min.z, b.max.x, b.max.y, b.max.z)]
+    return [b.min.x, b.min.y, b.min.z, b.max.x, b.max.y, b.max.z]
 
 
 def text(chars):
@@ -104,11 +109,9 @@ def dump_model(path):
         bone = skeleton.bones[b]
         pose = skeleton.bindPose[b]
         out[f'osso {b}'] = [text(bone.name), bone.parent,
-                            [round(v, 4) for v in (pose.translation.x, pose.translation.y,
-                                                   pose.translation.z, pose.rotation.x,
-                                                   pose.rotation.y, pose.rotation.z,
-                                                   pose.rotation.w, pose.scale.x, pose.scale.y,
-                                                   pose.scale.z)]]
+                            [pose.translation.x, pose.translation.y, pose.translation.z,
+                             pose.rotation.x, pose.rotation.y, pose.rotation.z, pose.rotation.w,
+                             pose.scale.x, pose.scale.y, pose.scale.z]]
     count = P.ffi.new('int *', 0) if hasattr(P, 'ffi') else None
     animations = P.load_model_animations(path, count)
     total = count[0]

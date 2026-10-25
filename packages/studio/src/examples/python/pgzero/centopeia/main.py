@@ -157,8 +157,8 @@ def mover_besouro(dt):
         return
     besouro.x = besouro.x + besouro.vx
     besouro.y = besouro.y + besouro.vy
-    # Zigue-zague: bate no alto da zona ou no chão e volta.
-    if besouro.top < ZONA_DO_JOGADOR * CASA or besouro.bottom > HEIGHT:
+    # Zigue-zague: bate no alto da zona ou no chão e volta (só vira quando está indo para fora).
+    if (besouro.top < ZONA_DO_JOGADOR * CASA and besouro.vy < 0) or (besouro.bottom > HEIGHT and besouro.vy > 0):
         besouro.vy = -besouro.vy
     # Come a pedra que estiver embaixo dele.
     casa = (int(besouro.x // CASA), int(besouro.y // CASA))

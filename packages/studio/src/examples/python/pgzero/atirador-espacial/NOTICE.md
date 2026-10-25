@@ -5,7 +5,8 @@ são originais, distribuídos sob a licença MIT em `LICENSE`. Os desenhos foram
 como código (`scripts/python/pgzero-art*.ts` no repositório do Sistema Zero), e os sons
 foram sintetizados a partir de partituras.
 
-A fonte `fonts/pressstart2p.ttf` é a Press Start 2P, de CodeMan38, distribuída sob a SIL
+A fonte `fonts/pressstart2p.ttf` é a Press Start 2P (Copyright 2012 The Press Start 2P Project
+Authors), distribuída sem modificações sob a SIL
 Open Font License 1.1 em `LICENSE-fonte.txt`.
 
 A mecânica do jogo se inspira no projeto "Space Shooter" do livro *Beginning Game

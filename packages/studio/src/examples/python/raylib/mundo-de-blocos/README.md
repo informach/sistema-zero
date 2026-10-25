@@ -8,7 +8,7 @@ o mesmo nas versões de Blocos e de Código da galeria.
 
 ## Como jogar
 
-Mexa o mouse (ou as setas) para olhar, W A S D para andar e espaço para pular. Clique ou C coloca um bloco, clique direito ou X tira, Q e E trocam o bloco.
+Mexa o mouse (ou as setas para os lados) para olhar, W A S D (ou as setas) para andar e espaço para pular. Clique ou C coloca um bloco, clique direito ou X tira, Q e E trocam o bloco.
 
 ## Ideias para mudar
 

@@ -37,13 +37,13 @@ export const gameKitBlockDefinitions07: BlockDefinition[] = [
   {
     type: 'sz_gk_fixed_setup',
     placement: 'start-only-command',
-    message0: 'Preparar jogo suave com semente %1',
+    message0: 'Preparar jogo suave com código do sorteio %1',
     args0: [{ type: 'input_value', name: 'SEED', check: 'JSValue' }],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Liga o relógio fixo de 60 passos por segundo. O jogo se comporta igual em telas rápidas e lentas; a semente repete a mesma sorte.',
+      'Liga o relógio fixo de 60 passos por segundo. O jogo se comporta igual em telas rápidas e lentas; o código repete o mesmo sorteio.',
   },
   {
     type: 'sz_gk_on_fixed_update',
@@ -67,7 +67,7 @@ export const gameKitBlockDefinitions07: BlockDefinition[] = [
     type: 'sz_gk_define_campaign',
     placement: 'start-declaration',
     message0:
-      'Criar aventura %1 versão %2 começando em %3 para %4 jogador(es), semente %5 e %6 gema(s) obrigatória(s)',
+      'Criar aventura %1 versão %2 começando em %3 para %4 jogador(es), código do sorteio %5 e %6 gema(s) obrigatória(s)',
     args0: [
       { type: 'field_input', name: 'ID', text: 'minha-aventura' },
       { type: 'input_value', name: 'VERSION', check: 'JSValue' },
@@ -199,7 +199,8 @@ export const gameKitBlockDefinitions07: BlockDefinition[] = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
-    tooltip: 'Reproduz a última gravação compatível usando o mesmo relógio e a mesma semente.',
+    tooltip:
+      'Reproduz a última gravação compatível usando o mesmo relógio e a mesmo código de sorteio.',
   },
   {
     type: 'sz_gk_action_down',

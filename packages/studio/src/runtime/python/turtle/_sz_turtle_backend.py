@@ -5,6 +5,7 @@ trusted frame. It is configured by the runtime, never imported by learner code.
 """
 import weakref
 import heapq
+import sys
 from collections import deque
 import json
 import math
@@ -51,7 +52,16 @@ def configure(transport, project_root, activity_checkpoint=None, *, mission=Fals
     _activity_checkpoint = activity_checkpoint
     _mission_enabled = mission
 
+def _tick_saved_files():
+    # A file the game keeps open is saved every few frames (the game is usually stopped, not
+    # ended). The interpreter installs this module when the project keeps saved files.
+    saved = sys.modules.get('_sz_saved_files')
+    if saved is not None:
+        saved.tick()
+
+
 def _exchange(operations, query=None):
+    _tick_saved_files()
     if _transport is None:
         raise RuntimeError('A extensão Turtle não foi preparada pelo ambiente')
     raw = '{"version":1,"operations":[' + ','.join(operations) + '],"query":' + _encode(query) + '}'

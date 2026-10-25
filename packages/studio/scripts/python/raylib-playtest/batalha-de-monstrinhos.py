@@ -69,6 +69,18 @@ def play(t):
     yield from t.tap('ENTER', 1)
     t.check(g['estado'] == 'batalha' and g['vitorias'] == 0, 'o Enter não recomeçou')
 
+    # Sem ninguém de pé para entrar, Trocar avisa e o menu fica no principal (antes, abria uma
+    # lista vazia e a seta derrubava o jogo).
+    salvas = dict(g['vidas_da_equipe'])
+    for nome in g['equipe']:
+        if nome != g['jogador'].nome:
+            g['vidas_da_equipe'][nome] = 0
+    yield from escolher(1)
+    t.check(g['menu'] == 'principal', 'Trocar abriu uma lista vazia')
+    yield from t.tap('DOWN', 1)
+    t.check('Ninguém' in g['mensagem'], 'Trocar sem ninguém não avisou')
+    g['vidas_da_equipe'].update(salvas)
+
     # Derrota: a equipe quase sem vida e só defendendo, até todos desmaiarem.
     for nome in g['equipe']:
         g['vidas_da_equipe'][nome] = 1

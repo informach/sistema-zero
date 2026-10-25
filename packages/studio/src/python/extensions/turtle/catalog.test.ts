@@ -502,3 +502,25 @@ test('a Pinta drawing as a turtle shape has its own block once formas_do_pinta i
   // Without the Turtle extension the module is not the official one.
   expect(used([importShapes, register], [])).not.toContain('sz_py_turtle_pinta_shape')
 })
+
+test('a store on the shared screen locks the program; one on a new turtle locks only it', () => {
+  const store = (receiver: string, attr: string) =>
+    node('Assign', {
+      targets: [withTargetContext(attribute(name(receiver), attr), 'Store')],
+      value: text('black'),
+      type_comment: null,
+    })
+  const bgcolor = expression(call(attribute(name('turtle'), 'bgcolor'), [text('red')]))
+  const used = (body: ReturnType<typeof node>[]) =>
+    types(pythonASTToVisual(moduleNode([imported(), ...body]), official).body)
+  const found = used([bgcolor]).filter((id) => id.includes('bgcolor'))
+  expect(found.length).toBe(1)
+  const officialBgcolor = found[0]!
+  // turtle.Screen() is the screen turtle.bgcolor() paints: after `tela.bgcolor = "black"`,
+  // turtle.bgcolor('red') is not the official call any more.
+  const screen = assigned('tela', call(attribute(name('turtle'), 'Screen')))
+  expect(used([screen, store('tela', 'bgcolor'), bgcolor])).not.toContain(officialBgcolor)
+  // A new turtle is only itself: the module's blocks stay.
+  const pen = assigned('t', call(attribute(name('turtle'), 'Turtle')))
+  expect(used([pen, store('t', 'cor'), bgcolor])).toContain(officialBgcolor)
+})

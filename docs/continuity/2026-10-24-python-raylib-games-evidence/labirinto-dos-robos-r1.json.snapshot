@@ -16,11 +16,11 @@
   ],
   "authoringLoader": "loadPythonAuthoring",
   "extension": "python-raylib-3d",
-  "codecOrderSha256": "71040f6cf253cdd01533095e78d46df6ead440642dd826630816ef1e424be3bb",
-  "sourceSha256": "c93c479c4a8904d08fc71b69c67ea80c804422889b954f6e26994ef8897ca8b6",
-  "generatedSha256": "ab1cadf46dc29741990001cc9994f1c4d3e4cdcbd29df1a15b207cbb09ac8637",
+  "codecOrderSha256": "b97aff73b43a3e56ca7a03f3f6c220c60e42b69f1988151109b1b99f145073b3",
+  "sourceSha256": "663e8cc1daf8275c6b2a1114994062371855665c9ffab7c9769f91377ca1e169",
+  "generatedSha256": "9dd93deb9cdcea3cd65e8cb9b1594f412489486bd089334327c6a8612ae35c02",
   "opaqueCount": 0,
-  "blockCount": 1163,
+  "blockCount": 1177,
   "referencedBlocks": [
     {
       "id": "sz_py_alias",
@@ -64,7 +64,7 @@
     },
     {
       "id": "sz_py_float",
-      "count": 27
+      "count": 28
     },
     {
       "id": "sz_py_for",
@@ -100,7 +100,7 @@
     },
     {
       "id": "sz_py_integer",
-      "count": 131
+      "count": 138
     },
     {
       "id": "sz_py_interpolation",
@@ -212,7 +212,7 @@
     },
     {
       "id": "sz_py_rl3d_color",
-      "count": 19
+      "count": 21
     },
     {
       "id": "sz_py_rl3d_disable_cursor",
@@ -240,11 +240,11 @@
     },
     {
       "id": "sz_py_rl3d_draw_rectangle",
-      "count": 4
+      "count": 5
     },
     {
       "id": "sz_py_rl3d_draw_text",
-      "count": 6
+      "count": 7
     },
     {
       "id": "sz_py_rl3d_draw_texture_pro",
@@ -264,7 +264,7 @@
     },
     {
       "id": "sz_py_rl3d_fade",
-      "count": 3
+      "count": 4
     },
     {
       "id": "sz_py_rl3d_field",
@@ -444,7 +444,7 @@
     },
     {
       "id": "sz_py_text",
-      "count": 43
+      "count": 44
     },
     {
       "id": "sz_py_update",
@@ -455,10 +455,10 @@
       "count": 369
     }
   ],
-  "approvedBlockIdsSha256": "c24c4a223b4e88527f12117eae3b22f1ba6ce79071edc6fce5b4142db202515f",
+  "approvedBlockIdsSha256": "c95af172c8af1f6eb49a57d097657b696fb472c58f9be50046330c24edb754ac",
   "fullWorkspaceRoundtrip": true,
-  "initialWorkspaceSha256": "f680a4c3575e7d81ef6488bf6daec9589358f2cbc28627c04da2a23aa51426c9",
-  "editedWorkspaceSha256": "43508b29fef064845c5cbc91480d8936b6817b4a088a0d318e88f3fdcd80ed99",
+  "initialWorkspaceSha256": "431d9bdd15085247fbc872ea30394d0b9e1b0adef85656f5202fe96d7fd21ea7",
+  "editedWorkspaceSha256": "eb84768c957ffe63fc6e677fa65f9bdca9a3381d26f8e96d1d172a35b19ce98c",
   "canonicalRenderReanalysis": true,
   "runtimeCapabilitiesQualified": false,
   "browserInteractionQualified": false,
@@ -478,8 +478,8 @@
       "field": "NUMBER",
       "before": "3",
       "after": "4",
-      "beforeSourceSha256": "93d4297cbb1ebae023564e648b126eaf5465ef4527d014b1a1649e0b44a46cd6",
-      "afterSourceSha256": "76ead06df2e539af861aff0e6ac2ba8eb322418c794b349c009a641671339b74"
+      "beforeSourceSha256": "253bc456a88363f2c8b741d257321f9f341133a032ff099942e8d00ee0b1c1f4",
+      "afterSourceSha256": "79059b6a9bfa42625a02baae7ec7e996ee3fa98dc2bbec3ff60e7bca9a966306"
     },
     {
       "label": "velocidade",
@@ -496,8 +496,8 @@
       "field": "NUMBER",
       "before": "4",
       "after": "5",
-      "beforeSourceSha256": "76ead06df2e539af861aff0e6ac2ba8eb322418c794b349c009a641671339b74",
-      "afterSourceSha256": "ab1cadf46dc29741990001cc9994f1c4d3e4cdcbd29df1a15b207cbb09ac8637"
+      "beforeSourceSha256": "79059b6a9bfa42625a02baae7ec7e996ee3fa98dc2bbec3ff60e7bca9a966306",
+      "afterSourceSha256": "9dd93deb9cdcea3cd65e8cb9b1594f412489486bd089334327c6a8612ae35c02"
     }
   ]
 }

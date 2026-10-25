@@ -44,6 +44,18 @@ As camadas do Estúdio e o papel pedagógico de cada uma:
 As três extensões 3D usam os modelos do **Molda** do mesmo jeito: modelo com ossos, animações
 escolhidas pelo nome do clipe, pintura animada e céu 360° (review 3D de 24/10/2026).
 
+**Contrato dos jogos com extensão (25/10/2026):** exemplos e jogos de aulas usam Programação
+para as regras e a própria extensão para preparar tela, desenhar, mostrar texto, placar e telas.
+Não usam blocos de HTML, CSS, Canvas 2D ou Canvas 3D, nem escondem essas operações em código cru.
+HTML, CSS e JavaScript/Canvas diretamente pertencem à etapa sem extensão. O Canvas interno ao
+motor continua sendo um detalhe de implementação, sem virar pré-requisito para a criança.
+
+**Núcleo inicial do Jogo 2D:** a curadoria de entrada está em
+`game-2d/initialCore.ts` e cobre Pegue a moeda, Herói que anda, Mini plataforma, Sala com paredes,
+Cadê Todo Mundo? e A Chave do Farol, incluindo as construções intermediárias e a personalização
+das duas aventuras. O restante do Jogo 2D também pertence ao Iniciante 2D; as aulas apresentam as
+ferramentas gradualmente por `allowBlocks`. Ferramentas 2D não dependem de um degrau 3D.
+
 **Uma camada por nível de curso, exclusiva.** O aluno sobe de nível quando troca de camada,
 não quando o jogo fica maior: Iniciante 2D = Jogo 2D · Intermediário 2D = Jogo 2D Avançado ·
 Avançado 2D = sem extensão · Iniciante 3D = núcleo do Jogo 3D · Intermediário 3D = Jogo 3D
@@ -418,6 +430,8 @@ termos; divergência é bug de conformidade.
 | Limpeza fora da tela | **"limpar/descartar quem saiu"** | `prune_offscreen`, `cull_offscreen`, `cull_far` |
 | Forma de colisão visível | **"caixa de colisão"** | `draw_hitbox` (2D), wireframe/esfera de debug (3D) |
 | Dial de dificuldade | **"área de colisão de N%"** | `sz_g2d_set_hitbox_scale` |
+| Figura preenchida do jogo | **"Desenhar retângulo / círculo / triângulo"** | `sz_gk_draw_rectangle`, `sz_gk_draw_circle`, `sz_gk_draw_triangle`; posição, dimensões e cor pertencem a cada figura |
+| Texto no desenho do jogo | **"Escrever … em x … y … tamanho … cor …"** | `sz_gk_draw_text`; `y` marca a base do texto, com a fonte do jogo |
 
 **Termos pedagógicos** — o nome que a AULA usa para o padrão, quando ele difere do rótulo do bloco.
 Estes são conteúdo tanto quanto os de cima, e divergir deles também é bug de conformidade:

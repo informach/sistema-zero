@@ -236,11 +236,13 @@ jobs:
           # macOS é a referência recomendada para Safari: playwright.dev/docs/browsers#webkit.
           STUDIO_STORAGE_BROWSER: chromium
 
-      - name: Verificar IR gerada dos exemplos 3D
+      - name: Verificar IR gerada dos exemplos e receitas de jogos
         working-directory: packages/studio
         run: |
           bun run check:game-3d-examples
           bun run check:world-3d-examples
+          bun run check:game-2d-recipes
+          bun run check:game-2d-advanced-recipes
 
       - name: Verificar fontes, regras e exports dos kits de jogos
         working-directory: packages/studio

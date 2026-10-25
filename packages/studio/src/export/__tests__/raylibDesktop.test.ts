@@ -21,7 +21,7 @@ function project(extension: { id: string; version: string }) {
       name: 'nave',
       kind: 'image',
       source: 'upload',
-      proPath: 'src/images/nave.png',
+      proPath: 'images/nave.png',
       dataUrl: PIXEL,
     },
   ] as typeof raw.assets
@@ -35,7 +35,8 @@ for (const extension of [RAYLIB_2D_EXTENSION, RAYLIB_3D_EXTENSION]) {
   test(`${extension.id}: the export takes the desktop raylib and never the browser engine`, async () => {
     const { files } = await buildPythonSourceFiles(project(extension))
     expect(text(files['requisitos-raylib.txt'])).toBe('raylib==6.0.1.0\n')
-    expect(files['src/images/nave.png']).toBeDefined()
+    // The game runs from the root (python src/main.py), so its folders are there.
+    expect(files['images/nave.png']).toBeDefined()
     const readme = text(files['LEIA-ME-Sistema-Zero.txt'])
     expect(readme).toContain('python -m pip install -r requisitos-raylib.txt')
     expect(readme).toContain('Para jogar: python src/main.py')

@@ -4,9 +4,10 @@ import { isPythonProject, type PythonProjectDocument } from '../../core/editable
 import { PYTHON_EXTENSIONS } from '../../python/extensions/catalog'
 import {
   changePythonExtension,
+  pythonExtensionCodeCheck,
   pythonExtensionInstallIssue,
+  pythonRaylibSwapRival,
 } from '../../python/extensions/operations'
-import { TURTLE_EXTENSION } from '../../runtime/python/turtle/contract'
 import { useProjectStore, useProjectStoreApi } from '../../state/projectStore'
 import { useStudioConfig } from '../../studio/config'
 import { useStudioExecution } from '../../studio/observation'
@@ -88,7 +89,7 @@ export function PythonExtensionsPanel({ open, onClose }: ExtensionsPanelProps) {
       let analysis:
         | Pick<import('../../python/language/controller').PythonAnalysisController, 'run'>
         | undefined
-      if (action === 'remove' && extension.id === TURTLE_EXTENSION.id) {
+      if (pythonExtensionCodeCheck(expected.installedExtensions, extension, action)) {
         const { createPythonAnalysisController } = await import('../../python/language/controller')
         if (owner.cancelled) throw new Error('O contexto da análise mudou. Tente novamente.')
         const controller = createPythonAnalysisController({
@@ -174,6 +175,15 @@ export function PythonExtensionsPanel({ open, onClose }: ExtensionsPanelProps) {
             const issue = installed
               ? null
               : pythonExtensionInstallIssue(project, environment, extension, allowedIds)
+            // Raylib 2D and 3D take each other's place: the button says so.
+            const replaces = installed
+              ? undefined
+              : PYTHON_EXTENSIONS.find(
+                  (item) =>
+                    item.id === pythonRaylibSwapRival(project.installedExtensions, extension)?.id,
+                )
+            const verb = installed ? 'Remover' : replaces ? 'Trocar para' : 'Instalar'
+
             return (
               <li key={extension.id} className="rounded-lg border border-sz-border p-4">
                 <div className="flex flex-wrap items-center justify-between gap-3">
@@ -183,18 +193,23 @@ export function PythonExtensionsPanel({ open, onClose }: ExtensionsPanelProps) {
                     size="sm"
                     variant={installed ? 'ghost' : 'primary'}
                     disabled={disabled || !!issue}
-                    aria-label={`${installed ? 'Remover' : 'Instalar'} ${extension.name}`}
+                    aria-label={`${verb} ${extension.name}`}
                     onClick={() =>
                       installed
                         ? setRemoval({ project, extension: installed })
                         : void change(project, extension, 'install')
                     }
                   >
-                    {installed ? 'Remover' : 'Instalar'}
+                    {replaces ? `Trocar para ${extension.name}` : verb}
                   </Button>
                 </div>
                 <p className="mt-2 text-sm text-sz-fg-soft">{extension.description}</p>
                 {extension.help && <p className="mt-2 text-sm text-sz-fg-soft">{extension.help}</p>}
+                {replaces && !issue && (
+                  <p className="mt-2 text-sm text-sz-fg-mute">
+                    Entra no lugar da {replaces.name}, e o código continua o mesmo.
+                  </p>
+                )}
                 {issue && <p className="mt-2 text-sm text-sz-fg-mute">{issue}</p>}
               </li>
             )
@@ -228,8 +243,8 @@ export function PythonExtensionsPanel({ open, onClose }: ExtensionsPanelProps) {
       >
         <p>
           Seu código continua salvo. Para executar os comandos desta extensão, você precisará
-          instalá-la novamente. Antes de remover, vamos conferir os imports Python. Se Turtle ainda
-          estiver em uso, indicaremos os arquivos e as linhas que precisam ser ajustados.
+          instalá-la novamente. Antes de remover, vamos conferir os imports Python. Se a extensão
+          ainda estiver em uso, indicaremos os arquivos e as linhas que precisam ser ajustados.
         </p>
         {error && (
           <p role="alert" className="mt-3 text-sm text-sz-error">

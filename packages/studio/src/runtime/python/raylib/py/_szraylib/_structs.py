@@ -23,6 +23,13 @@ _INF = math.inf
 STRUCTS = {}
 
 
+def int_hint(value):
+    """A dica que só faz sentido para número com vírgula (int corta, round arredonda)."""
+    if isinstance(value, float):
+        return ' Use round(...) para arredondar, ou int(...) para cortar a parte depois da vírgula.'
+    return ''
+
+
 def _number_error(struct, field, value):
     return TypeError(
         f'{struct}.{field} precisa de um número, mas recebeu {type(value).__name__} ({value!r:.40}).')
@@ -46,7 +53,7 @@ def _int_value(value, struct, field, low, high):
         else:
             raise TypeError(
                 f'{struct}.{field} precisa de um número inteiro (int), mas recebeu '
-                f'{type(value).__name__} ({value!r:.40}). Use int(...) para arredondar.')
+                f'{type(value).__name__} ({value!r:.40}).{int_hint(value)}')
     if value < low or value > high:
         if value < 0 and low == 0:
             raise OverflowError(
@@ -66,11 +73,24 @@ def _converter(struct, field, kind):
         return lambda value: _int_value(value, struct, field, 0, 255)
     if kind == 'bool':
         return lambda value: bool(_int_value(value, struct, field, -2147483648, 2147483647))
+    if kind.startswith('array:float:'):
+        return lambda value: _float_array(value, int(kind[12:]), struct, field)
     # Ponteiros e vetores do C ficam como objetos do motor: o jogo não os monta à mão.
     return lambda value: value
 
 
+def _float_array(value, size, struct, field):
+    """Um campo float[n] (float3.v, float16.v): como no cffi, a lista é copiada e o que falta
+    fica zero; passar do tamanho é erro."""
+    values = list(value)
+    if len(values) > size:
+        raise IndexError(f'{struct}.{field} tem {size} números, mas recebeu {len(values)}.')
+    return array('f', [f32(v, struct, field) for v in values] + [0.0] * (size - len(values)))
+
+
 def _zero(kind):
+    if kind.startswith('array:float:'):
+        return array('f', [0.0] * int(kind[12:]))
     if kind == 'float':
         return 0.0
     if kind in ('int', 'uint', 'uchar', 'char'):
@@ -315,7 +335,7 @@ def _channel(value, field):
             value = int(value)
         else:
             raise TypeError(f'Color.{field} precisa de um número inteiro de 0 a 255, mas recebeu '
-                            f'{type(value).__name__} ({value!r:.40}). Use int(...).')
+                            f'{type(value).__name__} ({value!r:.40}).{int_hint(value)}')
     if value < 0 or value > 255:
         raise OverflowError(f'Color.{field} vai de 0 a 255, e recebeu {value}.')
     return value

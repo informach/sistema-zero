@@ -1,8 +1,12 @@
+import { GAME_EXTENSION_VISUAL_GUIDANCE } from '../gameVisualPolicy'
 import { sceneDocumentation, basicSceneSummary as sceneSummary } from '../scene-2d/docs'
 import { withGameTwoDLifecycleGuidance } from './pedagogy'
 
 const sceneReference = sceneDocumentation('SZGame2D')
-export const gameTwoDPromptContext = withGameTwoDLifecycleGuidance(`Extensão: Jogo 2D (id: game-2d)
+export const gameTwoDPromptContext =
+  GAME_EXTENSION_VISUAL_GUIDANCE +
+  '\n\n' +
+  withGameTwoDLifecycleGuidance(`Extensão: Jogo 2D (id: game-2d)
 
 CICLO DE VIDA:
 - [[G2D_LIFECYCLE_MOLDS]]
@@ -197,7 +201,7 @@ nos blocos/código você usa o NOME do asset (string):
 
 Figuras: sprite desenhado por código (v0.23.0) — o visual do sprite feito com formas, sem imagem:
 - defineShape('nome', function (ctx) {...}): registra um desenho nomeado. O corpo desenha em
-  coords LOCAIS (0,0 = canto do sprite); pode usar os paint_* OU os blocos de Canvas (ctx é o
+  coords LOCAIS (0,0 = canto do sprite); use somente os paint_* da extensão (ctx é o
   parâmetro). Configuração: FORA do gameLoop.
 - createShapeSprite('figura', { x, y, w, h }): cria um sprite que usa a figura (anda/gira/vira/
   colide como qualquer sprite). setShape(sprite, 'figura'): troca a figura de um sprite.
@@ -462,7 +466,6 @@ ENTRADA DO MOUSE — pointerDown(): valor (booleano), verdadeiro enquanto o bot�
 
 LAYOUT DO MAPA: centerTileMap(ctx, mapa, x, y, tamanho) centraliza a geometria naquele instante; tamanho 0 calcula o encaixe. drawTileMap(ctx, mapa) apenas desenha a geometria preparada.
 
-CANVAS NA MÃO (genérico) — novos blocos de ✏️ Traçado úteis para crateras/máscaras: ctx.rect(x,y,w,h) adiciona um retângulo ao traçado; ctx.clip() recorta o desenho pelo traçado atual; ctx.isPointInPath(x,y)/ctx.isPointInStroke(x,y) são perguntas (o ponto está dentro/na linha do traçado?). Para "furar" um buraco: traçado com o retângulo da tela inteira + um arco no sentido anti-horário, depois clip. Há também os eventos "apertar o mouse/dedo"/"soltar o mouse/dedo" (pointerdown/pointerup) na programação normal, para mira por arrastar.
 ${sceneSummary}
 ${sceneReference}
 `)

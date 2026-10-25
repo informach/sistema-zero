@@ -17,10 +17,10 @@
   "authoringLoader": "loadPythonAuthoring",
   "extension": "python-raylib-2d",
   "codecOrderSha256": "260d5420ed53ff196eab065c20843114564d95df4fff6d4f416fb06d8d25e26a",
-  "sourceSha256": "688f4257130a340660a593ec061516c87b7301b06f591b57b5803b243ff2f9dc",
-  "generatedSha256": "22f1ce7c53b3bcb434ff420f738c501d4b52e0b573bee2a7bb1a155f8d96dfd5",
+  "sourceSha256": "cd56c9b551f1ba7fe7b26207f556bb8c020a612d4c743009cbe24d5b6e78541a",
+  "generatedSha256": "59ac741dac31c7fe82ba202fea040f01b7c0acc1a5f91df7b9a616c16ea12be3",
   "opaqueCount": 0,
-  "blockCount": 1494,
+  "blockCount": 1537,
   "referencedBlocks": [
     {
       "id": "sz_py_alias",
@@ -32,11 +32,11 @@
     },
     {
       "id": "sz_py_arithmetic",
-      "count": 109
+      "count": 114
     },
     {
       "id": "sz_py_assign",
-      "count": 108
+      "count": 112
     },
     {
       "id": "sz_py_attribute",
@@ -112,7 +112,7 @@
     },
     {
       "id": "sz_py_integer",
-      "count": 181
+      "count": 192
     },
     {
       "id": "sz_py_interpolation",
@@ -224,11 +224,11 @@
     },
     {
       "id": "sz_py_rl2d_draw_texture_ex",
-      "count": 3
+      "count": 2
     },
     {
       "id": "sz_py_rl2d_draw_texture_pro",
-      "count": 3
+      "count": 4
     },
     {
       "id": "sz_py_rl2d_end_drawing",
@@ -240,7 +240,7 @@
     },
     {
       "id": "sz_py_rl2d_field",
-      "count": 66
+      "count": 70
     },
     {
       "id": "sz_py_rl2d_get_frame_time",
@@ -287,6 +287,10 @@
       "count": 3
     },
     {
+      "id": "sz_py_rl2d_measure_text_ex",
+      "count": 2
+    },
+    {
       "id": "sz_py_rl2d_play_music_stream",
       "count": 1
     },
@@ -296,7 +300,7 @@
     },
     {
       "id": "sz_py_rl2d_Rectangle",
-      "count": 14
+      "count": 16
     },
     {
       "id": "sz_py_rl2d_set_music_volume",
@@ -364,7 +368,7 @@
     },
     {
       "id": "sz_py_text",
-      "count": 86
+      "count": 87
     },
     {
       "id": "sz_py_tuple",
@@ -376,13 +380,13 @@
     },
     {
       "id": "sz_py_variable",
-      "count": 467
+      "count": 481
     }
   ],
-  "approvedBlockIdsSha256": "d800f2e8f69feb7b077fd710bfaca8e2888d9494cdceea419df43fc2df941c2d",
+  "approvedBlockIdsSha256": "c95af172c8af1f6eb49a57d097657b696fb472c58f9be50046330c24edb754ac",
   "fullWorkspaceRoundtrip": true,
-  "initialWorkspaceSha256": "286ccc801ccdc8cb998dcca22f3ad4652554504dbd4a8e62d02e4e12829e6529",
-  "editedWorkspaceSha256": "98d89082136a006aa7416e426ed301a65430fc5f2bd0dacaa69b807416b81997",
+  "initialWorkspaceSha256": "7d56984d1b554c1135452ffff5a406465a8c534f21653aeb05b3df24180640fe",
+  "editedWorkspaceSha256": "1317e442317fbca108900ef89bbfa1d2d08d4072165872a661229cee8d7a6e96",
   "canonicalRenderReanalysis": true,
   "runtimeCapabilitiesQualified": false,
   "browserInteractionQualified": false,
@@ -402,8 +406,8 @@
       "field": "NUMBER",
       "before": "170",
       "after": "180",
-      "beforeSourceSha256": "e0b495eec0952038e2cea87ad4cc6273dbb67086ffce1a1edff4ba46ec88ebb0",
-      "afterSourceSha256": "0f65cf00a98f9d20e3268d2128710c0b8751a29edc547efd3d62fd94199c8936"
+      "beforeSourceSha256": "d6f98716137682a66fb766b78102e414d4937f4a7b7595f102316053d0afdf67",
+      "afterSourceSha256": "eae58c870146fca6f0c9a0420962dda9f7b6ad681ab13f98c3280c0356bf31fd"
     },
     {
       "label": "vidas",
@@ -420,8 +424,8 @@
       "field": "NUMBER",
       "before": "5",
       "after": "6",
-      "beforeSourceSha256": "0f65cf00a98f9d20e3268d2128710c0b8751a29edc547efd3d62fd94199c8936",
-      "afterSourceSha256": "22f1ce7c53b3bcb434ff420f738c501d4b52e0b573bee2a7bb1a155f8d96dfd5"
+      "beforeSourceSha256": "eae58c870146fca6f0c9a0420962dda9f7b6ad681ab13f98c3280c0356bf31fd",
+      "afterSourceSha256": "59ac741dac31c7fe82ba202fea040f01b7c0acc1a5f91df7b9a616c16ea12be3"
     }
   ]
 }

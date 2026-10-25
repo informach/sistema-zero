@@ -287,7 +287,8 @@ test('input queued during Python sleep survives a catchable image error', async 
 test('a Pinta drawing becomes a turtle shape that turns with the turtle', async ({ page }) => {
   await prepare(page, 'turtlePintaShape')
   await completed(page)
-  expect(await output(page)).toBe('forma nave 5\n')
+  // Six parts: the eye's outline is a band of its own, on top of its fill.
+  expect(await output(page)).toBe('forma nave 6\n')
   const frame = page.frames().find((value) => value.url().includes('/frame.html'))!
   const pixels = await frame.evaluate(() => {
     const context = document.querySelector('canvas')!.getContext('2d')!

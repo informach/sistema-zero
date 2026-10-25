@@ -8,28 +8,42 @@ import { createPgzeroRenderer } from './renderer'
 // character measures 10 px, and what the screen draws is recorded.
 const drawn: { canvas: unknown; x: number; y: number }[] = []
 let screenFills = 0
+/** What reaches the screen's own context, for the calls that draw shapes or read it. */
+const screenLog: [string, ...unknown[]][] = []
+const LOGGED = new Set(['rect', 'fill', 'stroke', 'arc', 'ellipse', 'lineTo', 'getImageData'])
 const context = function (this: unknown) {
   return new Proxy(
     {},
     {
       get: (_target, key) =>
-        key === 'getImageData'
-          ? (_x: number, _y: number, w: number, h: number) => ({
-              data: new Uint8ClampedArray(w * h * 4).fill(9),
-            })
-          : key === 'measureText'
-            ? (text: string) => ({
-                width: text.length * 10,
-                fontBoundingBoxAscent: 8,
-                fontBoundingBoxDescent: 2,
-              })
-            : key === 'drawImage' && this instanceof HTMLCanvasElement
-              ? (canvas: unknown, x: number, y: number) => drawn.push({ canvas, x, y })
-              : key === 'fillRect' && this instanceof HTMLCanvasElement
-                ? () => {
-                    screenFills++
+        typeof key === 'string' && LOGGED.has(key) && this instanceof HTMLCanvasElement
+          ? (...args: unknown[]) => {
+              screenLog.push([key, ...args])
+              return key === 'getImageData'
+                ? {
+                    data: new Uint8ClampedArray((args[2] as number) * (args[3] as number) * 4).fill(
+                      9,
+                    ),
                   }
-                : () => {},
+                : undefined
+            }
+          : key === 'getImageData'
+            ? (_x: number, _y: number, w: number, h: number) => ({
+                data: new Uint8ClampedArray(w * h * 4).fill(9),
+              })
+            : key === 'measureText'
+              ? (text: string) => ({
+                  width: text.length * 10,
+                  fontBoundingBoxAscent: 8,
+                  fontBoundingBoxDescent: 2,
+                })
+              : key === 'drawImage' && this instanceof HTMLCanvasElement
+                ? (canvas: unknown, x: number, y: number) => drawn.push({ canvas, x, y })
+                : key === 'fillRect' && this instanceof HTMLCanvasElement
+                  ? () => {
+                      screenFills++
+                    }
+                  : () => {},
       set: () => true,
     },
   )
@@ -131,6 +145,49 @@ describe('Pygame Zero renderer exchange', () => {
       const bad = await renderer.exchange(header({ keep: true }), [])
       expect(JSON.parse(bad as string).error).toBeDefined()
     } finally {
+      renderer.dispose()
+    }
+  })
+
+  test('pygame.draw shapes reach the screen as whole pixels, never as smoothed curves', async () => {
+    const renderer = createPgzeroRenderer(document.createElement('div'))
+    const ratio = Object.getOwnPropertyDescriptor(globalThis, 'devicePixelRatio')
+    try {
+      await renderer.exchange(header(), [list()])
+      screenLog.length = 0
+      const circle = [PGZERO_OP.CIRCLE, 20, 20, 9, 255, 0, 0, 255, 0]
+      const arc = [PGZERO_OP.ARC, 2, 2, 40, 30, 0.3, 2.5, 0, 255, 0, 255, 3]
+      const ellipse = [PGZERO_OP.ELLIPSE, 5, 5, 31, 21, 0, 0, 255, 255, 2]
+      const line = [PGZERO_OP.LINE, 1.7, 2.6, 60, 40, 9, 9, 9, 255, 3]
+      const corners = [PGZERO_OP.ROUND_RECT, 3, 3, 40, 30, 1, 1, 1, 255, 2, 6, -1, -1, -1, 12]
+      const quarters = [PGZERO_OP.CIRCLE_PART, 30, 30, 12, 2, 2, 2, 255, 0, 1, 0, 0, 1]
+      const shapes = list(...circle, ...arc, ...ellipse, ...line, ...corners, ...quarters)
+      await renderer.exchange(header({ read: [20, 20] }), [shapes])
+      const names = new Set(screenLog.map(([name]) => name))
+      expect([...names].sort()).toEqual(['fill', 'getImageData', 'rect'])
+      // One fill per shape, each made of whole pixels inside the 64x48 screen.
+      expect(screenLog.filter(([name]) => name === 'fill')).toHaveLength(6)
+      const pixels = screenLog.filter(([name]) => name === 'rect').map(([, ...box]) => box)
+      expect(pixels.length).toBeGreaterThan(50)
+      for (const [x, y, w, h] of pixels as number[][])
+        expect(
+          [x, y, w, h].every(Number.isInteger) &&
+            x! >= 0 &&
+            y! >= 0 &&
+            x! + w! <= 64 &&
+            y! + h! <= 48,
+        ).toBe(true)
+      // A screen of scale 1 reads the pixel itself.
+      expect(screenLog.at(-1)).toEqual(['getImageData', 20, 20, 1, 1])
+      // A fractional display scale gives a whole one: a game pixel never straddles two.
+      Object.defineProperty(globalThis, 'devicePixelRatio', { configurable: true, value: 1.25 })
+      await renderer.exchange(header({ w: 40 }), [list()])
+      screenLog.length = 0
+      await renderer.exchange(header({ w: 40, read: [7, 3] }), [list()])
+      expect(screenLog.at(-1)).toEqual(['getImageData', 14, 6, 1, 1])
+    } finally {
+      if (ratio) Object.defineProperty(globalThis, 'devicePixelRatio', ratio)
+      else Reflect.deleteProperty(globalThis, 'devicePixelRatio')
       renderer.dispose()
     }
   })

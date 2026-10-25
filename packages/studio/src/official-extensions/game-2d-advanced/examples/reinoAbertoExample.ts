@@ -221,11 +221,8 @@ export const reinoAbertoExample: ExtensionExample = {
           type: 'gk:onDrawHud',
           ctxName: 'ctx',
           body: [
-            { type: 'canvasFillStyle', ctxVar: 'ctx', color: { type: 'color', value: '#ffffff' } },
-            { type: 'canvasFont', ctxVar: 'ctx', size: 22, family: 'sans-serif' },
             {
-              type: 'canvasFillText',
-              ctxVar: 'ctx',
+              type: 'gk:drawText',
               text: {
                 type: 'binop',
                 op: '+',
@@ -234,6 +231,8 @@ export const reinoAbertoExample: ExtensionExample = {
               },
               x: { type: 'num', value: 20 },
               y: { type: 'num', value: 36 },
+              size: { type: 'num', value: 22 },
+              color: { type: 'color', value: '#ffffff' },
             },
           ],
         },

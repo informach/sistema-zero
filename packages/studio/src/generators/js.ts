@@ -22,6 +22,10 @@ import {
   textSpriteStatementToCode,
 } from '../official-extensions/game-2d/textCodec'
 import {
+  collectGameKitDrawingIdentifiers,
+  gameKitDrawingStatementToCode,
+} from '../official-extensions/game-2d-advanced/drawingCodec'
+import {
   collectGameKit3DGameplayExpressionIdentifiers,
   collectGameKit3DGameplayIdentifiers,
   gameKit3DGameplayStatementToCode,
@@ -2703,6 +2707,10 @@ ${pad}});`
   }
 
   function gameKitStatementToCode(): string {
+    const drawing = gameKitDrawingStatementToCode(stmt, pad, (value) =>
+      compileExpr(value, 0, identifiers, recAt(base)),
+    )
+    if (drawing !== undefined) return drawing
     switch (stmt.type) {
       // ----- game-2d-advanced (kit profissional) -----
       case 'gk:setup':
@@ -4404,6 +4412,7 @@ function collectIdentifierNames(statements: JSStatement[]): Set<string> {
 }
 
 function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): void {
+  if (collectGameKitDrawingIdentifiers(stmt, names, collectExprIdentifiers)) return
   if (isSceneStatement(stmt)) {
     for (const arg of stmt.args) collectExprIdentifiers(arg, names)
     if ('parameter' in stmt && stmt.parameter) names.add(stmt.parameter)

@@ -12,16 +12,29 @@ import types
 
 from . import _constants as K
 from . import _rt as rt
-from ._ffi import ffi
-from ._names import C_NAMES, FUNCTION_PARAMS
+from ._ffi import NULL, Pointer, ffi
+from ._names import C_NAMES, FUNCTION_KINDS, FUNCTION_PARAMS
 from ._structs import STRUCTS
 
 _MODULES_2D = ('_core', '_draw2d', '_text', '_assets', '_collide2d', '_raymath', '_audio',
                '_camera2d', '_colors')
 _MODULES_3D = ('_models', '_draw3d', '_camera3d', '_collide3d', '_shaders')
-_3D_WORDS = ('_3d', 'model', 'mesh', 'shader', 'cube', 'sphere', 'cylinder', 'capsule', 'billboard',
-             'bounding_box', 'ray_collision', 'screen_to_world_ray', 'world_to_screen', 'material',
-             'grid', 'plane', 'camera', 'cubemap', 'vr_', 'rl_', 'animation', 'skybox')
+# As funções do raygui que o pyray do computador traz (o Estúdio ainda não desenha botões dele).
+_GUI_NAMES = (
+    'gui_button', 'gui_check_box', 'gui_color_bar_alpha', 'gui_color_bar_hue', 'gui_color_panel',
+    'gui_color_panel_hsv', 'gui_color_picker', 'gui_color_picker_hsv', 'gui_combo_box',
+    'gui_disable', 'gui_disable_tooltip', 'gui_draw_icon', 'gui_dropdown_box', 'gui_dummy_rec',
+    'gui_enable', 'gui_enable_tooltip', 'gui_get_font', 'gui_get_icons', 'gui_get_state',
+    'gui_get_style', 'gui_get_text_width', 'gui_grid', 'gui_group_box', 'gui_icon_text',
+    'gui_is_locked', 'gui_label', 'gui_label_button', 'gui_line', 'gui_list_view',
+    'gui_list_view_ex', 'gui_load_icons', 'gui_load_style', 'gui_load_style_default',
+    'gui_load_style_from_memory', 'gui_lock', 'gui_message_box', 'gui_panel', 'gui_progress_bar',
+    'gui_scroll_panel', 'gui_set_alpha', 'gui_set_font', 'gui_set_icon_scale', 'gui_set_state',
+    'gui_set_style', 'gui_set_tooltip', 'gui_slider', 'gui_slider_bar', 'gui_spinner',
+    'gui_status_bar', 'gui_tab_bar', 'gui_text_box', 'gui_text_input_box', 'gui_toggle',
+    'gui_toggle_group', 'gui_toggle_slider', 'gui_unlock', 'gui_value_box', 'gui_value_box_float',
+    'gui_window_box',
+)
 _cache = {}
 
 
@@ -35,9 +48,8 @@ def _stub(name, reason):
 
 
 def _missing(name):
-    if rt.mode == '2d' and any(word in name for word in _3D_WORDS):
-        return _stub(name, f'{name} é do raylib 3D: este projeto usa a extensão Raylib 2D. Para '
-                           'jogos 3D, use a extensão Raylib 3D.')
+    # Uma função que a Raylib 3D faz já ganha o aviso dela em _functions(); aqui só chega o que
+    # nenhuma das duas extensões faz, então dizer "use a Raylib 3D" seria mentira.
     if name.startswith('gui_'):
         return _stub(name, f'{name} é do raygui, que ainda não existe no Estúdio.')
     return _stub(name, f'{name} existe no raylib do computador, mas ainda não funciona no '
@@ -73,6 +85,8 @@ def _functions():
     for name in FUNCTION_PARAMS:
         if name not in found:
             found[name] = _missing(name)
+    for name in _GUI_NAMES:
+        found.setdefault(name, _missing(name))
     # Nomes do pyray que não vêm do C (o pyray os escreve à mão).
     from ._draw2d import draw_text  # noqa: F401
     return found
@@ -102,12 +116,56 @@ def pyray_namespace():
     return _cache['pyray']
 
 
+def _c_style(name, c_name, function):
+    """A função com o nome do C, do jeito do cffi cru (o módulo ``raylib`` do computador).
+
+    Lá o texto vai em bytes (``b'Oi'``) e um parâmetro ``Image *`` ou ``Camera3D *`` quer um
+    ponteiro (``ffi.new('Camera3D *', camera)`` ou ``ffi.addressof(camera)``), não o struct.
+    Sem isso, um jogo que roda aqui quebraria no computador (e o contrário).
+    """
+    kinds = FUNCTION_KINDS.get(name)
+    if not kinds or getattr(function, '__name__', '') == 'unavailable':
+        return function
+    texts = [i for i, kind in enumerate(kinds) if kind == 'str']
+    pointers = [i for i, kind in enumerate(kinds)
+                if kind.startswith('ptr:') and kind[4:] in STRUCTS]
+    if not texts and not pointers:
+        return function
+
+    def call(*args):
+        values = list(args)
+        for i in texts:
+            if i < len(values):
+                value = values[i]
+                if isinstance(value, str):
+                    raise TypeError(f'{c_name}: no módulo raylib (com os nomes do C) o texto vai '
+                                    f"em bytes, como b'Oi'. Ou use o pyray: {name}('Oi', ...).")
+                if isinstance(value, (bytes, bytearray)):
+                    values[i] = bytes(value).decode('utf-8')
+        for i in pointers:
+            if i < len(values):
+                value = values[i]
+                if isinstance(value, Pointer) and value.items:
+                    values[i] = value.items[0]
+                elif value is not None and value is not NULL:
+                    struct_name = kinds[i][4:]
+                    raise TypeError(f'{c_name}: no módulo raylib (com os nomes do C) este '
+                                    f'parâmetro é um ponteiro: passe ffi.addressof(...) ou '
+                                    f"ffi.new('{struct_name} *', ...). Ou use o pyray: {name}(...).")
+        return function(*values)
+
+    call.__name__ = c_name
+    call.__qualname__ = c_name
+    call.__doc__ = function.__doc__
+    return call
+
+
 def raylib_rl():
     if 'rl' not in _cache:
         rl = types.SimpleNamespace()
         functions = _functions()
         for snake, c_name in C_NAMES.items():
-            setattr(rl, c_name, functions.get(snake) or _missing(snake))
+            setattr(rl, c_name, _c_style(snake, c_name, functions.get(snake) or _missing(snake)))
         for name, value in _constants().items():
             if not isinstance(value, type):
                 setattr(rl, name, value)

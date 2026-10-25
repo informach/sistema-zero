@@ -197,7 +197,7 @@ describe('🧩 Meus moldes — a área de definições', () => {
     })
 
     it('uma aula só de HTML recebe SÓ a Estrutura', () => {
-      expect(areasDaPaleta({ level: 'avancado-3d', allowBlocks: ['sz_html_text'] })).toEqual([
+      expect(areasDaPaleta({ level: 'avancado-3d', allowBlocks: ['sz_html_text'] }, [])).toEqual([
         FRAME_DE.structure,
       ])
     })
@@ -211,13 +211,13 @@ describe('🧩 Meus moldes — a área de definições', () => {
       ).toEqual([FRAME_DE.start, FRAME_DE.loops])
     })
 
-    it('as áreas saem na ORDEM em que executam, não na ordem da lista da aula', () => {
+    it('as áreas de jogo seguem a execução e não oferecem Estrutura por uma concessão HTML', () => {
       expect(
         areasDaPaleta({
           level: 'avancado-3d',
           allowBlocks: ['sz_g2d_update_each_frame', 'sz_html_text', 'sz_g2d_create_sprite'],
         }),
-      ).toEqual([FRAME_DE.structure, FRAME_DE.start, FRAME_DE.loops])
+      ).toEqual([FRAME_DE.start, FRAME_DE.loops])
     })
 
     it('⭐⭐ a área MARCADA no picker do admin aparece, mesmo sem bloco dela', () => {
@@ -312,9 +312,9 @@ describe('🧩 Meus moldes — a área de definições', () => {
         expect(noCatalogo.get(frame), frame).toBe(areaEsperada[frame])
       }
 
-      // E a paleta CHEIA oferece exatamente os mesmos frames.
-      const extras = OFFICIAL_CATALOG.map((e) => e.blockly.toolboxCategory).filter(Boolean)
-      const toolbox = buildCoreToolbox(extras as never, { level: 'avancado-3d' })
+      // A etapa manual, sem extensão de jogo, oferece as seis áreas. Jogos
+      // oferecem as áreas do motor, sem Estrutura/Aparência da página.
+      const toolbox = buildCoreToolbox([], { level: 'avancado-3d' })
       const categoria = toolbox.contents.find(
         (c) => 'name' in c && c.name === '🗂️ Áreas do projeto',
       ) as { contents: Array<{ type?: string }> }

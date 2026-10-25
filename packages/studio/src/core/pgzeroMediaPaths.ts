@@ -19,7 +19,7 @@ import type { PythonProjectDocument } from './pythonProject'
  */
 export const PGZERO_EXTENSION_ID = 'python-pgzero'
 
-export type PgzeroMediaFolder = 'images' | 'sounds' | 'music'
+export type PgzeroMediaFolder = 'images' | 'sounds' | 'music' | 'fonts'
 /** The child's choice for an audio file: a short sound effect or a background song. */
 export type PgzeroAudioRole = 'sound' | 'music'
 
@@ -28,6 +28,8 @@ const READABLE: Readonly<Record<PgzeroMediaFolder, readonly string[]>> = {
   images: ['png', 'gif', 'jpg', 'jpeg', 'bmp', 'svg'],
   sounds: ['wav', 'ogg', 'oga'],
   music: ['mp3', 'ogg', 'oga'],
+  // screen.draw.text(..., fontname='nome') opens fonts/nome.ttf (or .otf).
+  fonts: ['ttf', 'otf'],
 }
 
 /** Python keywords cannot be the attribute in `images.<name>` / `sounds.<name>`. */
@@ -86,6 +88,7 @@ const STEM_PREFIX: Readonly<Record<PgzeroMediaFolder, string>> = {
   images: 'imagem',
   sounds: 'som',
   music: 'musica',
+  fonts: 'fonte',
 }
 
 export function projectUsesPgzero(project: {
@@ -110,10 +113,14 @@ export function pgzeroMediaFolder(
       ? { folder: 'images' }
       : { error: 'O Pygame Zero abre imagens PNG, GIF, JPG, BMP ou SVG.' }
   }
+  if (kind === 'font')
+    return READABLE.fonts.includes(ext)
+      ? { folder: 'fonts' }
+      : { error: 'O Pygame Zero abre fontes TTF ou OTF.' }
   if (kind !== 'audio')
     return {
       error:
-        'Este ambiente Python aceita imagens e sons. Os recursos 3D ainda não estão disponíveis.',
+        'Este ambiente Python aceita imagens, sons e fontes. Os recursos 3D ainda não estão disponíveis.',
     }
   if (role === 'music')
     return READABLE.music.includes(ext)
@@ -216,7 +223,7 @@ export function pgzeroMediaPath(input: {
   return { error: 'Não encontrei um nome livre para este arquivo na pasta do Pygame Zero.' }
 }
 
-const FOLDERS: readonly PgzeroMediaFolder[] = ['images', 'sounds', 'music']
+const FOLDERS: readonly PgzeroMediaFolder[] = ['images', 'sounds', 'music', 'fonts']
 
 /** The folder of a path that sits in `<main dir>/<folder>/`, if any. */
 function pgzeroFolderOf(path: string, entrypoint: string): PgzeroMediaFolder | undefined {

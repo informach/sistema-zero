@@ -255,10 +255,10 @@
       "count": 96
     }
   ],
-  "approvedBlockIdsSha256": "d800f2e8f69feb7b077fd710bfaca8e2888d9494cdceea419df43fc2df941c2d",
+  "approvedBlockIdsSha256": "c95af172c8af1f6eb49a57d097657b696fb472c58f9be50046330c24edb754ac",
   "fullWorkspaceRoundtrip": true,
-  "initialWorkspaceSha256": "dac523e89c63d649c8da87e97b284da3f67625795a794dd7ae29f92baa84123e",
-  "editedWorkspaceSha256": "6e1ce89230ea279ec43d75ffe87e7b388f3898039edc282bfc27b987c620cb33",
+  "initialWorkspaceSha256": "b7b885150f611841efc24be6539f3c581f441e9b874c4c27e6048d2b4a573356",
+  "editedWorkspaceSha256": "93242e4b8d08e1f1f5e25f6569d684dae795046de4eb7a7d72bc659707b85181",
   "canonicalRenderReanalysis": true,
   "runtimeCapabilitiesQualified": false,
   "browserInteractionQualified": false,

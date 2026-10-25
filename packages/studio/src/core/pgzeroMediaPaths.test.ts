@@ -62,6 +62,10 @@ test('folders: images; wav/ogg sounds, mp3/ogg music; the child choice wins when
   expect(pgzeroMediaFolder('audio', 'mp3', 'sound')).toHaveProperty('error')
   expect(pgzeroMediaFolder('audio', 'wav', 'music')).toHaveProperty('error')
   expect(pgzeroMediaFolder('audio', 'm4a')).toHaveProperty('error')
+  // The font of a game (screen.draw.text(..., fontname=...)) lives in fonts/.
+  expect(pgzeroMediaFolder('font', 'ttf')).toEqual({ folder: 'fonts' })
+  expect(pgzeroMediaFolder('font', 'woff2')).toHaveProperty('error')
+  expect(pgzeroMediaFolder('model3d', 'glb')).toHaveProperty('error')
 })
 
 test('paths sit next to the main file; a stem in use by ANY extension or a keyword gets _2', () => {
@@ -308,4 +312,10 @@ test('every WAV MIME a browser reports maps to .wav; an SVG data URL matches exa
   expect(isSvgDataUrl('data:image/svg+xml,%3Csvg')).toBe(true)
   expect(isSvgDataUrl('data:image/svg+xmlX,%3Csvg')).toBe(false)
   expect(isSvgDataUrl('data:image/svg+xml;charset=latin1,%3Csvg')).toBe(false)
+})
+
+test('a font in fonts/ has its code name too (fontname=...)', () => {
+  expect(pgzeroCodeName({ proPath: 'fonts/pressstart2p.ttf' }, 'main.py')).toBe('pressstart2p')
+  expect(pgzeroCodeName({ proPath: 'src/fonts/letra.otf' }, 'src/main.py')).toBe('letra')
+  expect(pgzeroCodeName({ proPath: 'assets/letra.ttf' }, 'main.py')).toBeUndefined()
 })

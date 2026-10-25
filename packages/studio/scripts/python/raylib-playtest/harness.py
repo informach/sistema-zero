@@ -40,6 +40,10 @@ class Tester:
         self.buttons_released = set()
         self.game = None
         self.closing = False
+        # A tela de cada quadro é guardada no end_drawing, ANTES da troca de buffers: lida depois
+        # da troca, ela é a de um quadro velho (a foto saía atrasada). Foto e pixel leem esta,
+        # que é o quadro cujo estado o roteiro está vendo.
+        self.screen = None
 
     # -- script helpers ------------------------------------------------------------------
     def key(self, name):
@@ -89,9 +93,26 @@ class Tester:
             print('FALHOU:', self.failures[-1], flush=True)
 
     def shot(self, name):
-        image = real['load_image_from_screen']()
-        real['export_image'](image, os.path.join(shots, f'{name}.png'))
-        real['unload_image'](image)
+        """A foto do último quadro desenhado (o que o roteiro está vendo agora)."""
+        if self.screen is not None:
+            real['export_image'](self.screen, os.path.join(shots, f'{name}.png'))
+
+    def capture(self):
+        """Compatível com os roteiros antigos: a tela já é guardada a cada quadro."""
+
+    def pixel(self, x, y):
+        """A cor de um ponto do último quadro desenhado."""
+        if self.screen is None:
+            raise AssertionError('nenhum quadro desenhado ainda')
+        color = real['get_image_color'](self.screen, int(x), int(y))
+        return (color.r, color.g, color.b, color.a)
+
+    def grab(self):
+        """Chamado pelo end_drawing do jogo: guarda a tela pronta, antes da troca."""
+        real['rl_draw_render_batch_active']()
+        if self.screen is not None:
+            real['unload_image'](self.screen)
+        self.screen = real['load_image_from_screen']()
 
     def end(self):
         self.closing = True
@@ -125,6 +146,11 @@ def window_should_close():
     return False
 
 
+def end_drawing():
+    t.grab()
+    real['end_drawing']()
+
+
 def set_target_fps(fps, /):
     real['set_target_fps'](0)
 
@@ -137,6 +163,7 @@ def init_window(width, height, title, /):
 
 SCRIPTED = {
     'window_should_close': window_should_close,
+    'end_drawing': end_drawing,
     'set_target_fps': set_target_fps,
     'init_window': init_window,
     'get_frame_time': lambda: DT,

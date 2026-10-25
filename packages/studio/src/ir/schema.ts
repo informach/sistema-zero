@@ -47,6 +47,11 @@ import {
   gameKitCampaignStatementSchemas,
 } from '../official-extensions/game-2d-advanced/campaignIR'
 import {
+  GAME_KIT_DRAWING_STATEMENT_TYPES,
+  type GameKitDrawingStatement,
+  gameKitDrawingSchemas,
+} from '../official-extensions/game-2d-advanced/drawingIR'
+import {
   type GameKitUiFontStatement,
   gameKitUiFontStatementSchema,
 } from '../official-extensions/game-2d-advanced/uiFontCodec'
@@ -1620,7 +1625,7 @@ const cssSelectorText = () =>
 /**
  * Uma chave `{`/`}` em PROFUNDIDADE 0 (fora de aspas e de comentários) rompe a
  * estrutura `selector { … }` e é a vetor de injeção. DENTRO de uma string
- * (`content:"a{b}c"`) ou de um comentário (`/* { *​/`) a chave faz parte do valor
+ * (`content:"a{b}c"`) ou de um comentário (`/* { *�/`) a chave faz parte do valor
  * e é legítima. Esta máquina de estados (igual à de `generators/css.ts` e à do
  * parser) devolve `true` quando NÃO há chave solta em profundidade 0.
  */
@@ -3419,6 +3424,7 @@ export type JSStatement =
   // Moldura da tela (enxergar a área do palco) e contorno das caixas que colidem.
   | (JSStatementCommon & { type: 'gk:stageBorder'; color: string; width: number | JSExpr })
   | GameKitUiFontStatement
+  | GameKitDrawingStatement
   | (JSStatementCommon & { type: 'gk:setBackdrop' | 'gk:drawBackdrop'; image: string })
   | (JSStatementCommon & { type: 'gk:showHitboxes' })
   | (JSStatementCommon & { type: 'gk:start' })
@@ -7842,6 +7848,7 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       ...idField,
     }),
     gameKitUiFontStatementSchema(idField),
+    ...gameKitDrawingSchemas(JSExprSchema, idField),
     z.object({ type: z.literal('gk:setBackdrop'), image: irText(), ...idField }),
     z.object({ type: z.literal('gk:drawBackdrop'), image: irText(), ...idField }),
     z.object({ type: z.literal('gk:showHitboxes'), ...idField }),
@@ -11029,7 +11036,11 @@ export interface SZIRV2 {
 
 export type SZIRInput = SZIR | SZIRV2
 
-const GK_MAP_VISUAL_STATEMENTS = new Set(['gk:drawBackground', 'gk:drawTilemap'])
+const GK_MAP_VISUAL_STATEMENTS = new Set([
+  'gk:drawBackground',
+  'gk:drawTilemap',
+  ...GAME_KIT_DRAWING_STATEMENT_TYPES,
+])
 
 const G2D_REGISTERED_EVENT_TYPES = new Set([
   ...TEXT_SPRITE_EVENT_TYPES,
@@ -12060,6 +12071,7 @@ export const G3D_STATEMENT_TYPES = new Set([
 ])
 
 export const GK_STATEMENT_TYPES = new Set([
+  ...GAME_KIT_DRAWING_STATEMENT_TYPES,
   'gk:setup',
   'gk:setupFull',
   'gk:setStageDescription',

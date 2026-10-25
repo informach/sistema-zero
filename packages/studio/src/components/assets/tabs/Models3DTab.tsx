@@ -119,7 +119,7 @@ export function Models3DTab({
       {raylib ? (
         <p className="text-xs text-sz-fg-mute">
           {has3DExtension
-            ? 'Modelo .glb vai para a pasta models. Texturas do Molda entram como imagem, na pasta images. O céu 360° (.hdr) ainda não entra no Raylib.'
+            ? 'Modelo .glb vai para a pasta models. A textura e o céu 360° do Molda entram como imagem, na pasta images (o céu vira uma imagem panorâmica).'
             : 'Aqui a textura do Molda entra como imagem. Para usar um modelo 3D, troque para a extensão Raylib 3D, em "Extensões".'}
         </p>
       ) : !has3DExtension ? (
@@ -136,8 +136,11 @@ export function Models3DTab({
         </h3>
         {models3d.length === 0 ? (
           <EmptyHint>
-            Nenhum modelo 3D ainda. Monte um no Molda e traga ele aqui, ou envie um .glb do
-            computador. O céu 360° é um arquivo .hdr.
+            {raylib && !has3DExtension
+              ? 'O Raylib 2D não usa modelos 3D. A textura do Molda entra como imagem, pelo "Trazer do Molda".'
+              : raylib
+                ? 'Nenhum modelo 3D ainda. Monte um no Molda e traga ele aqui, ou envie um .glb do computador. O céu 360° do Molda entra como imagem panorâmica.'
+                : 'Nenhum modelo 3D ainda. Monte um no Molda e traga ele aqui, ou envie um .glb do computador. O céu 360° é um arquivo .hdr.'}
           </EmptyHint>
         ) : (
           <>

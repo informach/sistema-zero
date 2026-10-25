@@ -21,7 +21,8 @@ DECAY = 2000
 MAX_DURATION = 4
 # The Studio builds notes of at most 10 seconds (create() on the desktop has no limit).
 MAX_CREATE_DURATION = 10
-MAX_HZ = SAMPLE_RATE / 2
+# Like pgzero 1.2.1: up to the sample rate (above half of it the note is only silence).
+MAX_HZ = SAMPLE_RATE
 
 
 class InvalidNote(Exception):
@@ -58,8 +59,8 @@ def _convert_args(hz, duration):
     samples = int(duration * SAMPLE_RATE)
     if not samples:
         raise InvalidNote('A nota precisa durar mais que zero segundos.')
-    if not 1 <= hz <= MAX_HZ:
-        raise InvalidNote('A frequência da nota precisa ficar entre 1 e 11025 Hz.')
+    if not 0 < hz <= MAX_HZ:
+        raise InvalidNote('A frequência da nota precisa ser maior que zero e no máximo 22050 Hz.')
     if duration > MAX_CREATE_DURATION:
         raise InvalidNote('No Estúdio, uma nota dura no máximo 10 segundos.')
     return float(hz), samples

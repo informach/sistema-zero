@@ -11,22 +11,22 @@ O que muda o resultado e por isso segue o raylib:
 """
 import base64
 import json
-import math
 import os
 import struct as _bin
 from array import array
 from urllib.parse import unquote
 
+from bisect import bisect_right
+from functools import partial
+from itertools import chain, repeat
+
+from . import _floatvec as V
 from . import _raymath as rm
+from ._float32 import F, fabsf, fmaxf
 
-GLTF_FRAMERATE = 60.0
-_EPSILON = 0.000001
-_F32 = _bin.Struct('<f')
-
-
-def _f32(value):
-    """O valor como o float do C: decide em que quadro-chave o raylib cai."""
-    return _F32.unpack(_F32.pack(value))[0]
+# As contas em float, operação por operação, como no cgltf e no rmodels.c (ver _float32.py).
+GLTF_FRAMERATE = F(60.0)
+_EPSILON = F(0.000001)
 _COMPONENT = {5120: ('b', 1), 5121: ('B', 1), 5122: ('h', 2), 5123: ('H', 2), 5125: ('I', 4),
               5126: ('f', 4)}
 _SIZE = {'SCALAR': 1, 'VEC2': 2, 'VEC3': 3, 'VEC4': 4, 'MAT2': 4, 'MAT3': 9, 'MAT4': 16}
@@ -150,36 +150,48 @@ class Document:
     # Transformações dos nós ----------------------------------------------------------------------
 
     def local(self, index):
+        """cgltf_node_transform_local: a matriz do nó em float (coluna-maior, T·R·S)."""
         node = self.nodes[index]
         if 'matrix' in node:
-            return tuple(float(v) for v in node['matrix'])
-        t = node.get('translation', (0.0, 0.0, 0.0))
-        r = node.get('rotation', (0.0, 0.0, 0.0, 1.0))
-        s = node.get('scale', (1.0, 1.0, 1.0))
-        # Coluna-maior: T·R·S (escala primeiro), como o cgltf_node_transform_local.
-        rot = rm.quaternion_to_matrix_values(tuple(float(v) for v in r))
-        scale = (s[0], 0.0, 0.0, 0.0, 0.0, s[1], 0.0, 0.0, 0.0, 0.0, s[2], 0.0, 0.0, 0.0, 0.0, 1.0)
-        move = (1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, t[0], t[1], t[2], 1.0)
-        return rm._mul(rm._mul(scale, rot), move)
+            return tuple(F(v) for v in node['matrix'])
+        (tx, ty, tz), (qx, qy, qz, qw), (sx, sy, sz) = self.trs(index)
+        return ((1 - 2 * qy * qy - 2 * qz * qz) * sx, (2 * qx * qy + 2 * qz * qw) * sx,
+                (2 * qx * qz - 2 * qy * qw) * sx, F(0),
+                (2 * qx * qy - 2 * qz * qw) * sy, (1 - 2 * qx * qx - 2 * qz * qz) * sy,
+                (2 * qy * qz + 2 * qx * qw) * sy, F(0),
+                (2 * qx * qz + 2 * qy * qw) * sz, (2 * qy * qz - 2 * qx * qw) * sz,
+                (1 - 2 * qx * qx - 2 * qy * qy) * sz, F(0),
+                tx, ty, tz, F(1))
 
     def world(self, index):
+        """cgltf_node_transform_world: o nó, depois o pai, o avô..., só na parte 3x3 (a
+        translação de cada pai é somada), como o cgltf faz."""
         if index is None:
             return IDENTITY
         if index not in self._world:
-            matrix = self.local(index)
+            lm = list(self.local(index))
             parent = self.parent.get(index)
-            if parent is not None:
-                matrix = rm._mul(matrix, self.world(parent))
-            self._world[index] = matrix
+            while parent is not None:
+                pm = self.local(parent)
+                for i in range(4):
+                    l0, l1, l2 = lm[i * 4], lm[i * 4 + 1], lm[i * 4 + 2]
+                    lm[i * 4] = l0 * pm[0] + l1 * pm[4] + l2 * pm[8]
+                    lm[i * 4 + 1] = l0 * pm[1] + l1 * pm[5] + l2 * pm[9]
+                    lm[i * 4 + 2] = l0 * pm[2] + l1 * pm[6] + l2 * pm[10]
+                lm[12] += pm[12]
+                lm[13] += pm[13]
+                lm[14] += pm[14]
+                parent = self.parent.get(parent)
+            self._world[index] = tuple(lm)
         return self._world[index]
 
     def trs(self, index):
         """A translação, rotação e escala do nó, como o cgltf guarda (um nó descrito por matriz
         fica com os valores padrão, e é isso que a animação do raylib lê)."""
         node = self.nodes[index]
-        return (tuple(float(v) for v in node.get('translation', (0.0, 0.0, 0.0))),
-                tuple(float(v) for v in node.get('rotation', (0.0, 0.0, 0.0, 1.0))),
-                tuple(float(v) for v in node.get('scale', (1.0, 1.0, 1.0))))
+        return (tuple(F(v) for v in node.get('translation', (0.0, 0.0, 0.0))),
+                tuple(F(v) for v in node.get('rotation', (0.0, 0.0, 0.0, 1.0))),
+                tuple(F(v) for v in node.get('scale', (1.0, 1.0, 1.0))))
 
 
 _IDENTITY = (1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0)
@@ -193,55 +205,74 @@ def _trs_matrix(t, r, s):
 
 
 def decompose(m):
-    """MatrixDecompose do raymath: (translação, rotação, escala)."""
-    eps = 1e-9
+    """MatrixDecompose do raymath, em float: (translação, rotação, escala)."""
+    m = rm._f(m)
+    eps = F(1e-9)
     translation = (m[12], m[13], m[14])
-    columns = [[m[0], m[4], m[8]], [m[1], m[5], m[9]], [m[2], m[6], m[10]]]
+    columns = [(m[0], m[4], m[8]), (m[1], m[5], m[9]), (m[2], m[6], m[10])]
     stabilizer = eps
     for column in columns:
-        stabilizer = max(stabilizer, abs(column[0]), abs(column[1]), abs(column[2]))
-    columns = [[v / stabilizer for v in column] for column in columns]
-    dot = lambda a, b: a[0] * b[0] + a[1] * b[1] + a[2] * b[2]  # noqa: E731
-    length = lambda a: math.sqrt(dot(a, a))  # noqa: E731
-    sx = length(columns[0])
+        for value in column:
+            stabilizer = fmaxf(stabilizer, fabsf(value))
+
+    def scaled(v, k):
+        return (v[0] * k, v[1] * k, v[2] * k)
+
+    def dot(a, b):
+        return a[0] * b[0] + a[1] * b[1] + a[2] * b[2]
+
+    def sub(a, b):
+        return (a[0] - b[0], a[1] - b[1], a[2] - b[2])
+
+    columns = [scaled(column, 1.0 / stabilizer) for column in columns]
+    sx = rm._length3(columns[0])
     if sx > eps:
-        columns[0] = [v / sx for v in columns[0]]
-    shear = [dot(columns[0], columns[1]), 0.0, 0.0]
-    columns[1] = [columns[1][i] - columns[0][i] * shear[0] for i in range(3)]
-    sy = length(columns[1])
+        columns[0] = scaled(columns[0], 1.0 / sx)
+    columns[1] = sub(columns[1], scaled(columns[0], dot(columns[0], columns[1])))
+    sy = rm._length3(columns[1])
     if sy > eps:
-        columns[1] = [v / sy for v in columns[1]]
-    shear[1] = dot(columns[0], columns[2])
-    columns[2] = [columns[2][i] - columns[0][i] * shear[1] for i in range(3)]
-    shear[2] = dot(columns[1], columns[2])
-    columns[2] = [columns[2][i] - columns[1][i] * shear[2] for i in range(3)]
-    sz = length(columns[2])
+        columns[1] = scaled(columns[1], 1.0 / sy)
+    columns[2] = sub(columns[2], scaled(columns[0], dot(columns[0], columns[2])))
+    columns[2] = sub(columns[2], scaled(columns[1], dot(columns[1], columns[2])))
+    sz = rm._length3(columns[2])
     if sz > eps:
-        columns[2] = [v / sz for v in columns[2]]
-    scale = [sx, sy, sz]
+        columns[2] = scaled(columns[2], 1.0 / sz)
+    scale = (sx, sy, sz)
     if dot(columns[0], rm._cross(columns[1], columns[2])) < 0:
-        scale = [-v for v in scale]
-        columns = [[-v for v in column] for column in columns]
-    scale = tuple(v * stabilizer for v in scale)
-    rotation_matrix = (columns[0][0], columns[0][1], columns[0][2], 0.0,
-                       columns[1][0], columns[1][1], columns[1][2], 0.0,
-                       columns[2][0], columns[2][1], columns[2][2], 0.0,
-                       0.0, 0.0, 0.0, 1.0)
-    # O raymath monta essa matriz pelos campos m0, m4, m8... (a ordem do struct).
-    fields = (rotation_matrix[0], rotation_matrix[4], rotation_matrix[8], rotation_matrix[12],
-              rotation_matrix[1], rotation_matrix[5], rotation_matrix[9], rotation_matrix[13],
-              rotation_matrix[2], rotation_matrix[6], rotation_matrix[10], rotation_matrix[14],
-              rotation_matrix[3], rotation_matrix[7], rotation_matrix[11], rotation_matrix[15])
+        scale = (-sx, -sy, -sz)
+        columns = [(-c[0], -c[1], -c[2]) for c in columns]
+    scale = scaled(scale, stabilizer)
+    # A matriz de rotação do C é escrita por posição: m0, m4, m8, m12, m1, m5...
+    c0, c1, c2 = columns
+    fields = (c0[0], c1[0], c2[0], 0.0, c0[1], c1[1], c2[1], 0.0,
+              c0[2], c1[2], c2[2], 0.0, 0.0, 0.0, 0.0, 1.0)
     return translation, rm.quaternion_from_matrix_values(fields), scale
 
 
-def _transform(values, matrix):
-    m = matrix
-    for i in range(0, len(values), 3):
-        x, y, z = values[i], values[i + 1], values[i + 2]
-        values[i] = m[0] * x + m[4] * y + m[8] * z + m[12]
-        values[i + 1] = m[1] * x + m[5] * y + m[9] * z + m[13]
-        values[i + 2] = m[2] * x + m[6] * y + m[10] * z + m[14]
+def _transform(values, matrix, normalize=False):
+    """Vector3Transform em todos os vértices de uma vez (e Vector3Normalize, para as normais que
+    vêm em inteiro)."""
+    m = rm._f(matrix)
+    count = len(values) // 3
+    if not count:
+        return
+    x, y, z = V.FV(values[0::3]), V.FV(values[1::3]), V.FV(values[2::3])
+
+    def row(a, b, c, d):
+        # mat.a*x + mat.b*y + mat.c*z + mat.d, com os atalhos exatos dos 0 e 1 da matriz.
+        total = V._accumulate(None, a, x, count)
+        total = V._accumulate(total, b, y, count)
+        total = V._accumulate(total, c, z, count)
+        return V.vec(V._accumulate(total, d, 1.0, count), count)
+
+    point = [row(m[0], m[4], m[8], m[12]), row(m[1], m[5], m[9], m[13]),
+             row(m[2], m[6], m[10], m[14])]
+    if normalize:
+        length = V.sqrt(point[0] * point[0] + point[1] * point[1] + point[2] * point[2])
+        keep = [v != 0.0 for v in length.a]
+        inverse = 1.0 / length
+        point = [V.choose(keep, c * inverse, c, count) for c in point]
+    values[0::3], values[1::3], values[2::3] = point[0].a, point[1].a, point[2].a
 
 
 def _transpose(m):
@@ -315,15 +346,16 @@ def load_model(absolute, function):
                     mesh['vertexCount'] = len(vertices) // 3
                 elif name == 'NORMAL' and components == 3 and kind in (5126, 5122, 5121, 5120):
                     normals = [float(v) for v in values]
-                    _transform(normals, normal_matrix)
+                    # O raylib normaliza as normais que vêm em inteiro (short, byte).
+                    _transform(normals, normal_matrix, normalize=kind != 5126)
                     mesh['normals'] = normals
                 elif name.startswith('TEXCOORD_') and components == 2:
                     if kind == 5126:
                         coords = [float(v) for v in values]
                     elif kind == 5121:
-                        coords = [v / 255.0 for v in values]
+                        coords = [F(v) / 255.0 for v in values]
                     elif kind == 5123:
-                        coords = [v / 65535.0 for v in values]
+                        coords = [F(v) / 65535.0 for v in values]
                     else:
                         continue
                     slot = name[9:]
@@ -335,9 +367,9 @@ def load_model(absolute, function):
                     if kind == 5121:
                         convert = int
                     elif kind == 5123:
-                        convert = lambda v: _u8(int(v / 65535.0 * 255.0))  # noqa: E731
+                        convert = lambda v: _u8(int(F(v) / 65535.0 * 255.0))  # noqa: E731
                     else:
-                        convert = lambda v: _u8(int(v * 255.0))  # noqa: E731
+                        convert = lambda v: _u8(int(F(v) * 255.0))  # noqa: E731
                     colors = bytearray()
                     for i in range(0, len(values), components):
                         colors.extend(convert(values[i + c]) for c in range(components))
@@ -349,7 +381,7 @@ def load_model(absolute, function):
                     mesh['boneIds'] = bytes(_u8(v) for v in values)
                 elif name == 'WEIGHTS_0' and components == 4 and kind in (5121, 5123, 5126):
                     scale = 255.0 if kind == 5121 else 65535.0 if kind == 5123 else 1.0
-                    mesh['boneWeights'] = [v / scale for v in values]
+                    mesh['boneWeights'] = [F(v) / scale for v in values]
             if mesh['vertices'] is None:
                 continue
             if 'indices' in primitive:
@@ -374,65 +406,201 @@ def load_model(absolute, function):
 # Animações ----------------------------------------------------------------------------------
 
 def _float_equals(a, b):
-    return abs(a - b) <= _EPSILON * max(1.0, max(abs(a), abs(b)))
+    """FloatEquals do raymath, em float."""
+    return fabsf(a - b) <= _EPSILON * fmaxf(1.0, fmaxf(fabsf(a), fabsf(b)))
 
 
-def _pose_at(interpolation, times, values, components, time):
-    """GetPoseAtTimeGLTF, com o comportamento do raylib depois do último quadro-chave."""
-    tstart = tend = 0.0
-    keyframe = 0
-    for i in range(len(times) - 1):
-        tstart, tend = times[i], times[i + 1]
-        if tstart <= time < tend:
-            keyframe = i
-            break
-    if _float_equals(tend, tstart):
-        interpolation = 'STEP'
-    duration = max(_f32(tend - tstart), _EPSILON)
-    t = min(max(_f32(_f32(time - tstart) / duration), 0.0), 1.0)
+def _keyframes(times, frame_times):
+    """O laço do GetPoseAtTimeGLTF para cada tempo: (quadro-chave, início, fim). Sem um par que
+    contenha o tempo, o raylib fica no quadro-chave 0 com o último par (é o que ele faz depois do
+    fim da animação)."""
+    n = len(times)
+    last = (times[n - 2], times[n - 1]) if n >= 2 else (0.0, 0.0)
+    ordered = all(times[i] <= times[i + 1] for i in range(n - 1))
+    keys, starts, ends = [], [], []
+    for time in frame_times:
+        found = -1
+        if ordered:
+            i = bisect_right(times, time) - 1
+            if 0 <= i <= n - 2 and times[i] <= time < times[i + 1]:
+                found = i
+        else:
+            for i in range(n - 1):
+                if times[i] <= time < times[i + 1]:
+                    found = i
+                    break
+        if found < 0:
+            keys.append(0)
+            starts.append(last[0])
+            ends.append(last[1])
+        else:
+            keys.append(found)
+            starts.append(times[found])
+            ends.append(times[found + 1])
+    return keys, starts, ends
 
-    def read(index):
-        return tuple(values[index * components:index * components + components])
 
+def _sample(interpolation, components, jobs, frame_times):
+    """GetPoseAtTimeGLTF de vários canais (mesma interpolação e mesmo caminho) em todos os
+    quadros de uma vez. jobs = [(tempos, valores)]; devolve, por canal, um FV por componente."""
+    frames = len(frame_times)
+    count = frames * len(jobs)
+    keys, starts, ends, sources = [], [], [], []
+    for times, values in jobs:
+        k, a, b = _keyframes(times, frame_times)
+        keys += k
+        starts += a
+        ends += b
+        sources.append((values, len(values) // components))
+    clock = V.FV(frame_times * len(jobs))
+    tstart, tend = V.FV(starts), V.FV(ends)
+    # FloatEquals(tend, tstart): o quadro vira STEP.
+    limit = V.fmax(1.0, V.fmax(V.fabs(tend), V.fabs(tstart), count), count) * _EPSILON
+    step = [g <= lim for g, lim in zip(V.fabs(tend - tstart).a, limit.a)]
+    duration = V.fmax(tend - tstart, _EPSILON, count)
+    t = (clock - tstart) / duration
+    t = V.choose(V.less(t, 0.0, count), 0.0, t, count)
+    t = V.choose(V.greater(t, 1.0, count), 1.0, t, count)
+
+    def read(offset=0, factor=1, plus=0):
+        # O valor de índice factor*(quadro-chave + offset) + plus, canal por canal.
+        out = [[] for _ in range(components)]
+        for job, (values, total) in enumerate(sources):
+            for k in keys[job * frames:(job + 1) * frames]:
+                i = min(max(factor * (k + offset) + plus, 0), total - 1) * components
+                for c in range(components):
+                    out[c].append(values[i + c])
+        return tuple(V.FV(column) for column in out)
+
+    held = read()
     if interpolation == 'STEP':
-        return read(keyframe)
-    if interpolation == 'CUBICSPLINE':
-        v1, tangent1 = read(3 * keyframe + 1), read(3 * keyframe + 2)
-        v2, tangent2 = read(3 * (keyframe + 1) + 1), read(3 * (keyframe + 1))
-        t2, t3 = t * t, t * t * t
+        moved = held
+    elif interpolation == 'CUBICSPLINE':
+        v1, tangent1 = read(0, 3, 1), read(0, 3, 2)
+        v2, tangent2 = read(1, 3, 1), read(1, 3, 0)
         if components == 3:
-            return tuple((2 * t3 - 3 * t2 + 1) * v1[i] + (t3 - 2 * t2 + t) * tangent1[i]
-                         + (-2 * t3 + 3 * t2) * v2[i] + (t3 - t2) * tangent2[i] for i in range(3))
-        v1, v2 = rm._qnormalize(v1), rm._qnormalize(v2)
-        if sum(v1[i] * v2[i] for i in range(4)) < 0.0:
-            v2 = tuple(-v for v in v2)
-        out_tangent = (tangent1[0] * duration, tangent1[1] * duration, tangent1[2] * duration, 0.0)
-        in_tangent = (tangent2[0] * duration, tangent2[1] * duration, tangent2[2] * duration, 0.0)
-        h00, h10, h01, h11 = 2 * t3 - 3 * t2 + 1, t3 - 2 * t2 + t, -2 * t3 + 3 * t2, t3 - t2
-        return rm._qnormalize(tuple(v1[i] * h00 + out_tangent[i] * h10 + v2[i] * h01
-                                    + in_tangent[i] * h11 for i in range(4)))
-    a, b = read(keyframe), read(keyframe + 1)
-    if components == 3:
-        return tuple(a[i] + t * (b[i] - a[i]) for i in range(3))
-    return rm.slerp(a, b, t)
+            # Vector3CubicHermite
+            p2, p3 = t * t, t * t * t
+            moved = tuple((2 * p3 - 3 * p2 + 1) * v1[i] + (p3 - 2 * p2 + t) * tangent1[i]
+                          + (-2 * p3 + 3 * p2) * v2[i] + (p3 - p2) * tangent2[i] for i in range(3))
+        else:
+            v1, v2 = V._normalize4(v1, count), V._normalize4(v2, count)
+            flip = V.less(v1[0] * v2[0] + v1[1] * v2[1] + v1[2] * v2[2] + v1[3] * v2[3], 0.0, count)
+            v2 = tuple(V.choose(flip, -c, c, count) for c in v2)
+            zero = V.FV.full(0.0, count)
+            out_tangent = (tangent1[0] * duration, tangent1[1] * duration, tangent1[2] * duration,
+                           zero * duration)
+            in_tangent = (tangent2[0] * duration, tangent2[1] * duration, tangent2[2] * duration,
+                          zero * duration)
+            # QuaternionCubicHermiteSpline: t3 é t2*t.
+            t2 = t * t
+            t3 = t2 * t
+            h00, h10, h01, h11 = 2 * t3 - 3 * t2 + 1, t3 - 2 * t2 + t, -2 * t3 + 3 * t2, t3 - t2
+            moved = V._normalize4(tuple(v1[i] * h00 + out_tangent[i] * h10 + v2[i] * h01
+                                        + in_tangent[i] * h11 for i in range(4)), count)
+    else:
+        following = read(1)
+        moved = (V.vector3_lerp(held, following, t) if components == 3
+                 else V.quaternion_slerp(held, following, t, count))
+    final = tuple(V.choose(step, held[i], moved[i], count) for i in range(components))
+    return [tuple(V.FV(c.a[j * frames:(j + 1) * frames]) for c in final) for j in range(len(jobs))]
 
 
-def build_pose_from_parents(bones, transforms):
+class PoseTable:
+    """As poses de uma animação em colunas de float (translação x, y, z, rotação x, y, z, w,
+    escala x, y, z), no índice quadro*ossos + osso.
+
+    O raylib calcula todas as poses no load_model_animations; aqui cada animação é calculada na
+    primeira vez que o jogo a usa (o resultado é o mesmo). Um modelo com dezenas de animações
+    abre na hora, e o jogo só paga pelas que toca.
+    """
+    __slots__ = ('frames', 'bones', '_columns', '_build')
+
+    def __init__(self, frames, bones, build):
+        self.frames = frames
+        self.bones = bones
+        self._columns = None
+        self._build = build
+
+    @property
+    def columns(self):
+        if self._columns is None:
+            self._columns = self._build()
+            self._build = None
+        return self._columns
+
+    def pose(self, frame, bone):
+        k = frame * self.bones + bone
+        c = self.columns
+        return ((c[0][k], c[1][k], c[2][k]), (c[3][k], c[4][k], c[5][k], c[6][k]),
+                (c[7][k], c[8][k], c[9][k]))
+
+    def frame(self, frame):
+        start = frame * self.bones
+        return [column[start:start + self.bones] for column in self.columns]
+
+
+def _pose_table(per_bone, offsets, bones, frames):
+    """jointLocal·extOffset, MatrixDecompose e BuildPoseFromParentJoints, em bloco."""
+    count = len(per_bone)
+    total = count * frames
+    components = [list(t) + list(r) + list(s) for t, r, s in per_bone]
+
+    def column(index):
+        return V.FV(array('f', chain.from_iterable(V.items(components[b][index], frames)
+                                                    for b in range(count))))
+
+    t, r, s = (column(0), column(1), column(2)), tuple(column(i) for i in range(3, 7)), \
+        (column(7), column(8), column(9))
+    offset = tuple(V.FV(array('f', chain.from_iterable(repeat(offsets[b][e], frames)
+                                                        for b in range(count))))
+                   for e in range(16))
+    local = V.trs_matrix(t, r, s, total)
+    moved, rotated, scaled = V.matrix_decompose(V.matrix_multiply(local, offset, total), total)
+    flat = list(moved) + list(rotated) + list(scaled)
+
+    def piece(fv, b):
+        return V.FV(fv.a[b * frames:(b + 1) * frames])
+
+    pose = [(tuple(piece(flat[i], b) for i in range(3)), tuple(piece(flat[i], b) for i in range(3, 7)),
+             tuple(piece(flat[i], b) for i in range(7, 10))) for b in range(count)]
     for i, (_, parent) in enumerate(bones):
         if parent < 0 or parent > i:
             continue
-        t, r, s = transforms[i]
-        pt, pr, ps = transforms[parent]
-        r = rm._qmul(pr, r)
-        s = (s[0] * ps[0], s[1] * ps[1], s[2] * ps[2])
-        t = (t[0] * ps[0], t[1] * ps[1], t[2] * ps[2])
-        t = rm._rotate_by_quaternion(t, pr)
-        t = (t[0] + pt[0], t[1] + pt[1], t[2] + pt[2])
-        transforms[i] = (t, r, s)
+        bt, br, bs = pose[i]
+        pt, pr, ps = pose[parent]
+        br = V.quaternion_multiply(pr, br)
+        bs = (bs[0] * ps[0], bs[1] * ps[1], bs[2] * ps[2])
+        bt = (bt[0] * ps[0], bt[1] * ps[1], bt[2] * ps[2])
+        bt = V.vector3_rotate_by_quaternion(bt, pr)
+        bt = (bt[0] + pt[0], bt[1] + pt[1], bt[2] + pt[2])
+        pose[i] = (bt, br, bs)
+    values = [[c.a for c in list(bt) + list(br) + list(bs)] for bt, br, bs in pose]
+    return [array('f', [values[b][c][j] for j in range(frames) for b in range(count)])
+            for c in range(10)]
+
+
+def _animation_columns(doc, joints, bones, offsets, channels, interpolation, keyframes):
+    """As poses de uma animação: a amostragem de cada canal e a montagem pela hierarquia."""
+    frame_times = [F(frame) / GLTF_FRAMERATE for frame in range(keyframes)]
+    per_bone = [list(doc.trs(joint)) for joint in joints]
+    # Os canais com a mesma interpolação e o mesmo caminho são amostrados juntos.
+    groups = {}
+    for bone in range(len(joints)):
+        for slot, path in enumerate(('translation', 'rotation', 'scale')):
+            found = channels[bone].get(path)
+            if found is not None and found[1] is not None:
+                groups.setdefault((interpolation[bone], slot), []).append((bone, found))
+    for (kind, slot), members_of in groups.items():
+        sampled = _sample(kind, 4 if slot == 1 else 3, [found for _, found in members_of],
+                          frame_times)
+        for (bone, _), value in zip(members_of, sampled):
+            per_bone[bone][slot] = value
+    return _pose_table(per_bone, offsets, bones, keyframes)
 
 
 def load_animations(absolute, function):
-    """[(nome, ossos [(nome, pai)], quadros [[(t, r, s) por osso]])] do primeiro esqueleto."""
+    """[(nome, ossos [(nome, pai)], PoseTable)] do primeiro esqueleto."""
     doc = Document(absolute, function)
     gltf = doc.doc
     skins = gltf.get('skins', [])
@@ -456,7 +624,8 @@ def load_animations(absolute, function):
     result = []
     for animation in gltf.get('animations', []):
         channels = [{} for _ in joints]
-        duration = 0.0
+        interpolation = ['LINEAR'] * len(joints)
+        duration = F(0.0)
         for channel in animation.get('channels', []):
             target = channel.get('target', {})
             node = target.get('node')
@@ -466,28 +635,18 @@ def load_animations(absolute, function):
             sampler = animation['samplers'][channel['sampler']]
             path = target.get('path')
             times, _, _, _ = doc.accessor(sampler['input'])
-            values, components, _, _ = doc.accessor(sampler['output'])
+            values, components, kind, _ = doc.accessor(sampler['output'])
+            # A interpolação fica no osso: vale a do último canal dele, para os três caminhos.
+            interpolation[bone] = sampler.get('interpolation', 'LINEAR')
             if path in ('translation', 'rotation', 'scale'):
-                channels[bone][path] = (sampler.get('interpolation', 'LINEAR'), times, values)
+                # O raylib só lê saída em float; com outro tipo o valor do nó fica.
+                channels[bone][path] = (times, values if kind == 5126 else None)
             if times:
-                duration = max(duration, times[-1])
+                duration = F(times[-1]) if F(times[-1]) > duration else duration
         # Contas em float, como no C: (int)(animDuration*GLTF_FRAMERATE) + 1 e j/GLTF_FRAMERATE.
-        keyframes = int(_f32(duration * GLTF_FRAMERATE)) + 1
-        poses = []
-        for frame in range(keyframes):
-            time = _f32(frame / GLTF_FRAMERATE)
-            pose = []
-            for bone, joint in enumerate(joints):
-                t, r, s = doc.trs(joint)
-                found = channels[bone]
-                if 'translation' in found:
-                    t = _pose_at(found['translation'][0], found['translation'][1], found['translation'][2], 3, time)
-                if 'rotation' in found:
-                    r = _pose_at(found['rotation'][0], found['rotation'][1], found['rotation'][2], 4, time)
-                if 'scale' in found:
-                    s = _pose_at(found['scale'][0], found['scale'][1], found['scale'][2], 3, time)
-                pose.append(decompose(rm._mul(_trs_matrix(t, r, s), offsets[bone])))
-            build_pose_from_parents(bones, pose)
-            poses.append(pose)
-        result.append(((animation.get('name') or '')[:31], bones, poses))
+        keyframes = int(duration * GLTF_FRAMERATE) + 1
+        table = PoseTable(keyframes, len(joints),
+                          partial(_animation_columns, doc, joints, bones, offsets, channels,
+                                  interpolation, keyframes))
+        result.append(((animation.get('name') or '')[:31], bones, table))
     return result

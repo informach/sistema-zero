@@ -1,5 +1,4 @@
 import type { StudioRuntimeSelection } from '@sistemazero/core/studio/project-environment'
-import { studioPortableFileConflict } from '@sistemazero/core/studio/project-environment'
 import {
   assertStudioPythonActivityScope,
   StudioPythonActivitySchema,
@@ -11,9 +10,8 @@ import {
 } from '../types'
 import { readPythonExecutionIdentity } from './frameProtocol'
 import {
-  PYTHON_SAVED_FILE_KEY_PREFIX,
   type PythonSavedFileChange,
-  readPythonSavedFiles,
+  prunePythonSavedFiles,
   withoutPythonSavedFile,
   withPythonSavedFile,
 } from './savedFiles'
@@ -91,12 +89,11 @@ export function createPythonRuntimeProvider(options: {
         }
       // A project file with the same path (even only by letter case) wins and the old saved
       // copy leaves the record: it would only take room in the limits.
-      const paths = snapshot.files.map((file) => file.path)
-      const saved = readPythonSavedFiles(record).filter((file) => {
-        if (!studioPortableFileConflict([...paths, file.path], snapshot.directories)) return true
-        delete record[PYTHON_SAVED_FILE_KEY_PREFIX + file.path]
-        return false
-      })
+      const saved = prunePythonSavedFiles(
+        record,
+        snapshot.files.map((file) => file.path),
+        snapshot.directories,
+      )
       // One write at a time, always of the newest record: a game that saves every frame does
       // not pile up copies of it.
       let latest: Record<string, string> | undefined

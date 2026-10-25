@@ -21,6 +21,11 @@ if '--ours' in sys.argv:
 
 import pyray as P  # noqa: E402
 
+if '--ucrt' in sys.argv:
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    from ucrt import use_ucrt_libm  # noqa: E402
+    use_ucrt_libm()
+
 rng = random.Random(3)
 
 

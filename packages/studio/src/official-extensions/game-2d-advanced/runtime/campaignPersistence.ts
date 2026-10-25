@@ -63,7 +63,7 @@ export const gameKitCampaignPersistenceRuntime = `
   }
   function professionalAfterSimulationStep() {
     runFixedHooks(proSim.step);
-    if (proReplayRecording && proReplayRecording.ticks % 60 === 0) proReplayRecording.checksums.push({ tick: proReplayRecording.ticks, hash: proReplayCheckpointHash(proReplayRecording.ticks) });
+    if (proReplayRecording && proReplayRecording.ticks > 0 && proReplayRecording.ticks % 60 === 0) proReplayRecording.checksums.push({ tick: proReplayRecording.ticks, hash: proReplayCheckpointHash(proReplayRecording.ticks) });
     if (proReplayPlaying) {
       var replayCheckpointHash = proReplayCheckpointHash(proReplayPlaybackTick);
       for (var i = 0; i < proReplayPlaying.checksums.length; i++) {

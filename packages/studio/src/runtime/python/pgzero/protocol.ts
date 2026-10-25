@@ -71,8 +71,12 @@ export const PGZERO_OP = Object.freeze({
   POLY: 8,
   ELLIPSE: 9,
   ARC: 10,
+  /** pygame.draw.rect with border_radius: the RECT values, then radius and the four corners. */
+  ROUND_RECT: 11,
+  /** pygame.draw.circle with draw_top_right...: the CIRCLE values, then the four quarters. */
+  CIRCLE_PART: 12,
   /** Pygame-ce: the whole screen (width, height); its RGBA bytes are PGZERO_PIXELS_ATTACHMENT. */
-  PIXELS: 11,
+  PIXELS: 13,
 })
 /** Points one polygon may have (kept with _sz.py MAX_POLY_POINTS). */
 export const PGZERO_MAX_POLY_POINTS = 4096
@@ -88,7 +92,9 @@ export const PGZERO_OP_ARITY: Readonly<Record<number, number>> = Object.freeze({
   // POLY (8) has a variable length: 6 + 2 × its point count.
   9: 9,
   10: 11,
-  11: 2,
+  11: 14,
+  12: 12,
+  13: 2,
 })
 
 export interface PgzeroTextStyle {

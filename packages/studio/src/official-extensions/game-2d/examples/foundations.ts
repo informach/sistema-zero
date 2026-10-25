@@ -39,24 +39,26 @@ export const backdropExample: ExtensionExample = beginnerGameExample({
     },
   ],
   ir: {
-    html: [{ type: 'canvas', id: 'tela', width: 320, height: 240 }],
-    css: [
-      {
-        selector: 'body',
-        declarations: {
-          background: '#0b1020',
-          display: 'flex',
-          'align-items': 'center',
-          'justify-content': 'center',
-          'min-height': '100vh',
-          margin: '0',
-        },
-      },
-      { selector: 'canvas', declarations: { border: '2px solid #38bdf8' } },
-    ],
+    html: [],
+    css: [],
     version: 2,
     behavior: {
       start: [
+        {
+          type: 'g2d:setupStage',
+          width: 320,
+          height: 240,
+          bg: '#11172a',
+          __id: 'exemplo-cen-rio-do-meu-desenho',
+        },
+        {
+          type: 'g2d:setStageDescription',
+          description:
+            'O seu desenho vira o fundo do jogo. Use as setas para andar na frente dele.',
+          __id: 'exemplo-cen-rio-do-meu-desenho-descricao',
+        },
+        { type: 'g2d:stageBorder', color: '#38bdf8', width: 2 },
+
         { type: 'g2d:setBackdrop', image: 'cenario' },
         {
           type: 'g2d:createSprite',
@@ -112,28 +114,26 @@ export const animatedHeroExample: ExtensionExample = beginnerGameExample({
     },
   ],
   ir: {
-    html: [{ type: 'canvas', id: 'tela', width: 400, height: 300 }],
-    css: [
-      {
-        selector: 'body',
-        declarations: {
-          background: '#0b1020',
-          display: 'flex',
-          'align-items': 'center',
-          'justify-content': 'center',
-          'min-height': '100vh',
-          margin: '0',
-        },
-      },
-      {
-        selector: 'canvas',
-        declarations: { border: '2px solid #f472b6', background: '#11172a' },
-      },
-    ],
+    html: [],
+    css: [],
     version: 2,
     behavior: {
       molds: [],
       start: [
+        {
+          type: 'g2d:setupStage',
+          width: 400,
+          height: 300,
+          bg: '#11172a',
+          __id: 'exemplo-her-i-que-anda',
+        },
+        {
+          type: 'g2d:setStageDescription',
+          description: 'Sprite com imagem + animação de spritesheet, movido pelas setas.',
+          __id: 'exemplo-her-i-que-anda-descricao',
+        },
+        { type: 'g2d:stageBorder', color: '#f472b6', width: 2 },
+
         {
           type: 'g2d:loadSpritesheet',
           varName: 'andar',
@@ -195,27 +195,25 @@ export const platformerExample: ExtensionExample = beginnerGameExample({
   experience: 'demo',
   description: 'Herói que anda, pula com gravidade e fica preso na tela (setas).',
   ir: {
-    html: [{ type: 'canvas', id: 'tela', width: 320, height: 200 }],
-    css: [
-      {
-        selector: 'body',
-        declarations: {
-          background: '#0b1020',
-          display: 'flex',
-          'align-items': 'center',
-          'justify-content': 'center',
-          'min-height': '100vh',
-          margin: '0',
-        },
-      },
-      {
-        selector: 'canvas',
-        declarations: { border: '2px solid #4ade80', background: '#11172a' },
-      },
-    ],
+    html: [],
+    css: [],
     version: 2,
     behavior: {
       start: [
+        {
+          type: 'g2d:setupStage',
+          width: 320,
+          height: 200,
+          bg: '#11172a',
+          __id: 'exemplo-mini-plataforma',
+        },
+        {
+          type: 'g2d:setStageDescription',
+          description: 'Herói que anda, pula com gravidade e fica preso na tela (setas).',
+          __id: 'exemplo-mini-plataforma-descricao',
+        },
+        { type: 'g2d:stageBorder', color: '#4ade80', width: 2 },
+
         {
           type: 'g2d:createSprite',
           varName: 'heroi',
@@ -286,27 +284,25 @@ export const tilemapExample: ExtensionExample = beginnerGameExample({
     },
   ],
   ir: {
-    html: [{ type: 'canvas', id: 'tela', width: 320, height: 256 }],
-    css: [
-      {
-        selector: 'body',
-        declarations: {
-          background: '#0b1020',
-          display: 'flex',
-          'align-items': 'center',
-          'justify-content': 'center',
-          'min-height': '100vh',
-          margin: '0',
-        },
-      },
-      {
-        selector: 'canvas',
-        declarations: { border: '2px solid #f472b6', background: '#11172a' },
-      },
-    ],
+    html: [],
+    css: [],
     version: 2,
     behavior: {
       start: [
+        {
+          type: 'g2d:setupStage',
+          width: 320,
+          height: 256,
+          bg: '#11172a',
+          __id: 'exemplo-sala-com-paredes',
+        },
+        {
+          type: 'g2d:setStageDescription',
+          description: 'Mapa de tiles com paredes que o herói não atravessa (setas para andar).',
+          __id: 'exemplo-sala-com-paredes-descricao',
+        },
+        { type: 'g2d:stageBorder', color: '#f472b6', width: 2 },
+
         {
           type: 'g2d:createTileMap',
           varName: 'mapa',
@@ -366,27 +362,25 @@ export const catchCoinExample: ExtensionExample = beginnerGameExample({
   experience: 'game',
   description: 'Ande com as setas, encoste na moeda e faça 5 pontos para vencer.',
   ir: {
-    html: [{ type: 'canvas', id: 'tela', width: 320, height: 240 }],
-    css: [
-      {
-        selector: 'body',
-        declarations: {
-          background: '#0b1020',
-          display: 'flex',
-          'align-items': 'center',
-          'justify-content': 'center',
-          'min-height': '100vh',
-          margin: '0',
-        },
-      },
-      {
-        selector: 'canvas',
-        declarations: { border: '2px solid #fbbf24', background: '#11172a' },
-      },
-    ],
+    html: [],
+    css: [],
     version: 2,
     behavior: {
       start: [
+        {
+          type: 'g2d:setupStage',
+          width: 320,
+          height: 240,
+          bg: '#11172a',
+          __id: 'exemplo-pegue-a-moeda',
+        },
+        {
+          type: 'g2d:setStageDescription',
+          description: 'Encoste na moeda para fazer pontos. Use as setas para andar.',
+          __id: 'exemplo-pegue-a-moeda-descricao',
+        },
+        { type: 'g2d:stageBorder', color: '#fbbf24', width: 2 },
+
         {
           type: 'g2d:createSprite',
           varName: 'heroi',
@@ -453,7 +447,6 @@ export const catchCoinExample: ExtensionExample = beginnerGameExample({
                 { type: 'g2d:clampToScreen', spriteVar: 'heroi', ctxVar: 'ctx' },
                 {
                   type: 'var',
-                  kind: 'const',
                   name: 'pegou',
                   value: { type: 'g2d:touches', aVar: 'heroi', bVar: 'moeda' },
                 },
@@ -472,16 +465,10 @@ export const catchCoinExample: ExtensionExample = beginnerGameExample({
                       },
                     },
                     {
-                      type: 'memberSet',
-                      object: { type: 'var', name: 'moeda' },
-                      name: 'x',
-                      value: { type: 'g2d:randomBetween', min: 20, max: 282 },
-                    },
-                    {
-                      type: 'memberSet',
-                      object: { type: 'var', name: 'moeda' },
-                      name: 'y',
-                      value: { type: 'g2d:randomBetween', min: 20, max: 202 },
+                      type: 'g2d:setPosition',
+                      spriteVar: 'moeda',
+                      x: { type: 'g2d:randomBetween', min: 20, max: 282 },
+                      y: { type: 'g2d:randomBetween', min: 20, max: 202 },
                     },
                     { type: 'g2d:playFx', fx: 'coin' },
                   ],

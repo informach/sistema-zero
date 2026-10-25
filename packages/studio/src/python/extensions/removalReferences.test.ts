@@ -4,7 +4,7 @@ import { integer, moduleNode, node } from '../blocks/nodes'
 import { createPythonWorkspaceDraft, updatePythonWorkspaceDraft } from '../blocks/workspaceDraft'
 import type { PythonAnalysisSession } from '../language/session'
 import type { PythonNode } from '../language/types'
-import { inspectPythonTurtleRemoval } from './removalReferences'
+import { inspectPythonReferences, inspectPythonTurtleRemoval } from './removalReferences'
 
 function parser(tree: PythonNode | null, onParse = () => {}) {
   let runs = 0
@@ -140,4 +140,84 @@ test('invalid syntax, pending visual work and oversized source never qualify rem
     ),
   ).rejects.toThrow('limite')
   expect(idle.count()).toBe(0)
+})
+
+test('Raylib: pyray and raylib imports count, and a local pyray.py hides only pyray', async () => {
+  const { project } = await pythonEnvironmentFixture('classic')
+  if (project.kind !== 'classic') throw new Error('Fixture')
+  const source = ['from pyray import *', 'import raylib as rl', ''].join('\n')
+  const tree = moduleNode([
+    {
+      ...node('ImportFrom', {
+        module: 'pyray',
+        level: integer('0').fields.value!,
+        names: [node('alias', { name: '*', asname: null })],
+      }),
+      range: { start: 0, end: 18 },
+    },
+    {
+      ...node('Import', { names: [node('alias', { name: 'raylib', asname: 'rl' })] }),
+      range: { start: source.indexOf('import raylib'), end: source.length },
+    },
+  ])
+  const query = { modules: ['pyray', 'raylib'], label: 'Raylib 2D' }
+  const files = { 'main.py': source }
+  expect(
+    await inspectPythonReferences({ ...project, files }, parser(tree), () => {}, query),
+  ).toEqual([
+    { path: 'main.py', line: 1 },
+    { path: 'main.py', line: 2 },
+  ])
+  expect(
+    await inspectPythonReferences(
+      { ...project, files: { ...files, 'pyray.py': '' } },
+      parser(tree),
+      () => {},
+      query,
+    ).then((refs) => refs.filter(({ path }) => path === 'main.py')),
+  ).toEqual([{ path: 'main.py', line: 2 }])
+})
+
+test('Raylib 3D names count wherever they are used, and only them', async () => {
+  const { project } = await pythonEnvironmentFixture('classic')
+  if (project.kind !== 'classic') throw new Error('Fixture')
+  const source = [
+    'draw_cube(p, 1, 1, 1, RED)',
+    'rl.DrawSphere(p, 1, RED)',
+    'draw_circle(1, 2, 3, RED)',
+    '',
+  ].join('\n')
+  const at = <T extends PythonNode>(value: T, text: string) => ({
+    ...value,
+    range: { start: source.indexOf(text), end: source.indexOf(text) + text.length },
+  })
+  const call = (func: PythonNode) =>
+    node('Expr', { value: node('Call', { func, args: [], keywords: [] }) })
+  const name = (id: string) => at(node('Name', { id, ctx: node('Load') }), id)
+  const tree = moduleNode([
+    call(name('draw_cube')),
+    call(
+      at(
+        node('Attribute', {
+          value: node('Name', { id: 'rl', ctx: node('Load') }),
+          attr: 'DrawSphere',
+          ctx: node('Load'),
+        }),
+        'rl.DrawSphere',
+      ),
+    ),
+    call(name('draw_circle')),
+  ])
+  const refs = await inspectPythonReferences(
+    { ...project, files: { 'main.py': source } },
+    parser(tree),
+    () => {},
+    {
+      modules: ['pyray', 'raylib'],
+      label: 'Raylib 3D',
+      names: new Set(['draw_cube', 'DrawSphere']),
+    },
+  )
+  // The two 3D calls (lines 1 and 2), never the 2D one.
+  expect(refs.map(({ line }) => line)).toEqual([1, 2])
 })

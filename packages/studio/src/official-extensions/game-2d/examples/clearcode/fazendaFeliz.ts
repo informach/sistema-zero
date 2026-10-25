@@ -16,28 +16,8 @@ export const fazendaFelizExample: ExtensionExample = beginnerGameExample({
   description:
     'Fazendinha: ande com as setas até um canteiro e aperte espaço para plantar. Espere os brotos crescerem, colha o que estiver maduro e junte 30 moedas para vencer. Enter começa.',
   ir: {
-    html: [{ type: 'canvas', id: 'tela', width: 480, height: 320 }],
-    css: [
-      {
-        selector: 'body',
-        declarations: {
-          background: '#22331a',
-          display: 'flex',
-          'align-items': 'center',
-          'justify-content': 'center',
-          'min-height': '100vh',
-          margin: '0',
-        },
-      },
-      {
-        selector: 'canvas',
-        declarations: {
-          border: '3px solid #ffffff',
-          'border-radius': '18px',
-          background: '#4a6b3a',
-        },
-      },
-    ],
+    html: [],
+    css: [],
     version: 2,
     behavior: {
       molds: [
@@ -108,6 +88,21 @@ export const fazendaFelizExample: ExtensionExample = beginnerGameExample({
         },
       ],
       start: [
+        {
+          type: 'g2d:setupStage',
+          width: 480,
+          height: 320,
+          bg: '#4a6b3a',
+          __id: 'exemplo-fazenda-feliz',
+        },
+        {
+          type: 'g2d:setStageDescription',
+          description:
+            'Fazendinha: ande com as setas até um canteiro e aperte espaço para plantar. Espere os brotos crescerem, colha o que estiver maduro e junte 30 moedas para vencer. Enter começa.',
+          __id: 'exemplo-fazenda-feliz-descricao',
+        },
+        { type: 'g2d:stageBorder', color: '#ffffff', width: 3 },
+
         {
           type: 'g2d:fitScreen',
           percent: {

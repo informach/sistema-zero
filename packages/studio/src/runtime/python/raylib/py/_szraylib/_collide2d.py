@@ -5,6 +5,7 @@ borda NÃO colidem; ``check_collision_point_rec`` conta a borda esquerda/de cima
 """
 from ._args import integer, number, rect, vec2
 from ._structs import Rectangle, Vector2
+from ._ffi import Pointer
 
 _EPSILON = 1.1920928955078125e-07  # FLT_EPSILON
 
@@ -118,9 +119,13 @@ def check_collision_lines(startPos1, endPos1, startPos2, endPos2, collisionPoint
     t = ((cx - ax) * sy - (cy - ay) * sx) / div
     u = ((cx - ax) * ry - (cy - ay) * rx) / div
     if 0.0 <= t <= 1.0 and 0.0 <= u <= 1.0:
-        if isinstance(collisionPoint, Vector2):
-            collisionPoint.x = ax + t * rx
-            collisionPoint.y = ay + t * ry
+        # O ponto vem num Vector2 ou, como nos exemplos do raylib, em ffi.new('Vector2 *').
+        target = collisionPoint
+        if isinstance(target, Pointer) and target.items:
+            target = target.items[0]
+        if isinstance(target, Vector2):
+            target.x = ax + t * rx
+            target.y = ay + t * ry
         return True
     return False
 

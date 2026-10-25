@@ -11,25 +11,21 @@ export const pongExample: ExtensionExample = beginnerGameExample({
   description:
     'Dispute Pong contra o computador: mova a raquete azul com as setas para cima e para baixo, rebata a bola e faça 5 pontos antes dele. Enter começa e reinicia.',
   ir: {
-    html: [{ type: 'canvas', id: 'tela', width: 440, height: 300 }],
-    css: [
-      {
-        selector: 'body',
-        declarations: {
-          background: '#0b1020',
-          display: 'flex',
-          'align-items': 'center',
-          'justify-content': 'center',
-          'min-height': '100vh',
-          margin: '0',
-        },
-      },
-      { selector: 'canvas', declarations: { border: '2px solid #22d3ee', background: '#11172a' } },
-    ],
+    html: [],
+    css: [],
     version: 2,
     extensions: [{ extensionId: 'game-2d' }],
     behavior: {
       start: [
+        { type: 'g2d:setupStage', width: 440, height: 300, bg: '#11172a', __id: 'exemplo-pong' },
+        {
+          type: 'g2d:setStageDescription',
+          description:
+            'Dispute Pong contra o computador: mova a raquete azul com as setas para cima e para baixo, rebata a bola e faça 5 pontos antes dele. Enter começa e reinicia.',
+          __id: 'exemplo-pong-descricao',
+        },
+        { type: 'g2d:stageBorder', color: '#22d3ee', width: 2 },
+
         {
           type: 'g2d:createSprite',
           varName: 'jogador',

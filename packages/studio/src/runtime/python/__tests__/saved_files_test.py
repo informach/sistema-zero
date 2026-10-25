@@ -36,23 +36,19 @@ class Saved(unittest.TestCase):
         self.accept = True
         self.watcher = self.install({}, ['main.py'])
 
-    def install(self, sizes, protected):
+    def install(self, sizes, protected, folders=()):
         self.original = builtins.open
-        self.original_os = (os.remove, os.unlink, os.rename, os.replace)
-        watcher = SavedFiles(self.root, protected, sizes, self.report, self.original)
-        opener = watcher.opener()
-        builtins.open = opener
-        io.open = opener
-        os.remove = watcher.remover(os.remove)
-        os.unlink = watcher.remover(os.unlink)
-        os.rename = watcher.renamer(os.rename)
-        os.replace = watcher.renamer(os.replace)
+        self.original_os = (os.remove, os.unlink, os.rmdir, os.rename, os.replace)
+        # The same install() the interpreter uses: a patch missing there fails here.
+        watcher = SavedFiles(self.root, protected, sizes, self.report, self.original, folders)
+        watcher.install(builtins)
         return watcher
 
     def uninstall(self):
         builtins.open = self.original
         io.open = self.original
-        os.remove, os.unlink, os.rename, os.replace = self.original_os
+        os.remove, os.unlink, os.rmdir, os.rename, os.replace = self.original_os
+        sys.modules.pop('_sz_saved_files', None)
 
     def tearDown(self):
         self.uninstall()
@@ -183,6 +179,91 @@ class Saved(unittest.TestCase):
         self.accept = False
         text = self.warnings(lambda: Path('ruim.txt').write_text('1'))
         self.assertIn('não pode ser usado', text)
+        # Not counted: 16 good files still fit after the refused one.
+        self.accept = True
+        for index in range(16):
+            Path(f'f{index}.txt').write_text('1')
+        self.assertEqual(len([p for p in self.paths() if p.startswith('f')]), 16)
+
+    def test_the_interpreter_installs_every_patch(self):
+        self.uninstall()
+        execution = namespace['_StudioExecution'].__new__(namespace['_StudioExecution'])
+        execution._main = types.ModuleType('__main__')
+        self.original = builtins.open
+        self.original_os = (os.remove, os.unlink, os.rmdir, os.rename, os.replace)
+        execution.install_saved_files(self.root, json.dumps(['main.py']), '{}', self.report,
+                                      json.dumps(['fases']))
+        for function in (builtins.open, io.open, os.remove, os.unlink, os.rmdir, os.rename,
+                         os.replace):
+            self.assertIn(function.__name__, ('open', 'remove', 'rmdir', 'rename'))
+        self.assertIsNot(os.replace, self.original_os[4])
+        self.assertIsNot(os.rmdir, self.original_os[2])
+        self.assertIn('_sz_saved_files', sys.modules)
+        Path('a.txt').write_text('1')
+        os.replace('a.txt', 'b.txt')
+        self.assertEqual(self.reports, [('a.txt', b'1'), ('a.txt', None), ('b.txt', b'1')])
+
+    def test_the_same_name_with_other_capitals_replaces_the_old_one(self):
+        Path('Placar.txt').write_text('velho')
+        os.remove('Placar.txt')
+        self.reports.clear()
+        self.uninstall()
+        self.watcher = self.install({'Placar.txt': 5}, ['main.py'])
+        Path('placar.txt').write_text('novo')
+        self.assertEqual(self.reports, [('Placar.txt', None), ('placar.txt', b'novo')])
+
+    def test_deleting_a_folder_forgets_what_was_kept_inside(self):
+        import shutil
+        os.mkdir('saves')
+        Path('saves/um.txt').write_text('1')
+        Path('saves/dois.txt').write_text('2')
+        shutil.rmtree('saves')
+        self.assertIn(('saves/um.txt', None), self.reports)
+        self.assertIn(('saves/dois.txt', None), self.reports)
+
+    def test_renaming_a_folder_moves_each_kept_file(self):
+        os.mkdir('saves')
+        Path('saves/um.txt').write_text('1')
+        os.rename('saves', 'backup')
+        self.assertIn(('saves/um.txt', None), self.reports)
+        self.assertIn(('backup/um.txt', b'1'), self.reports)
+
+    def test_renaming_a_program_file_keeps_neither_name(self):
+        Path('fase.txt').write_text('mapa')
+        self.uninstall()
+        self.watcher = self.install({}, ['main.py', 'fase.txt'])
+        self.reports.clear()
+        text = self.warnings(lambda: os.rename('fase.txt', 'copia.txt'))
+        self.assertEqual(self.reports, [])
+        self.assertIn('mudar o nome dele vale só enquanto o jogo roda', text)
+
+    def test_a_folder_of_the_project_with_other_capitals_is_not_used(self):
+        self.uninstall()
+        self.watcher = self.install({}, ['main.py'], ['fases'])
+        os.mkdir('Fases')
+        text = self.warnings(lambda: Path('Fases/1.txt').write_text('1'))
+        self.assertEqual(self.reports, [])
+        self.assertIn("já tem a pasta 'fases'", text)
+
+    def test_a_file_left_open_is_sent_by_the_game_loop_every_quarter_second(self):
+        log = open('log.txt', 'a')
+        log.write('1')
+        sys.modules['_sz_saved_files'].tick()
+        self.assertEqual(self.reports, [('log.txt', b'1')])
+        log.write('2')
+        sys.modules['_sz_saved_files'].tick()
+        # Too soon: nothing new until a quarter of a second has passed.
+        self.assertEqual(len(self.reports), 1)
+        self.watcher._last_tick -= 1
+        sys.modules['_sz_saved_files'].tick()
+        self.assertEqual(self.reports[-1], ('log.txt', b'12'))
+        log.close()
+
+    def test_the_same_bytes_are_not_sent_again(self):
+        Path('recorde.txt').write_text('10')
+        Path('recorde.txt').write_text('10')
+        Path('recorde.txt').write_text('11')
+        self.assertEqual(self.paths(), ['recorde.txt', 'recorde.txt'])
 
 
 if __name__ == '__main__':
