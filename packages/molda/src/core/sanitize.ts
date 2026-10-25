@@ -49,6 +49,7 @@ import {
   firstPaintableIndex,
   getPalette,
   isPaletteId,
+  MAX_CUSTOM_PALETTE_SIZE,
   PALETTE_SIZE,
   RESERVED_INDEX,
 } from './palette'
@@ -76,7 +77,7 @@ export function sanitizeExtraColors(raw: unknown): string[] | undefined {
 }
 
 /**
- * Paleta personalizada: 16 posições com os SLOTS PRESERVADOS (`''` = vazio;
+ * Paleta personalizada: 16 a 33 posições com os SLOTS PRESERVADOS (`''` = vazio;
  * compactar deslocaria os índices pintados), `[0]` sempre reservado. `null`
  * quando não sobra cor pintável.
  */
@@ -86,7 +87,8 @@ export function sanitizeCustomPalette(raw: unknown): MoldaCustomPalette | null {
   if (!Array.isArray(r.colors)) return null
   const colors: string[] = []
   let painted = 0
-  for (let i = 0; i < PALETTE_SIZE; i += 1) {
+  const size = Math.min(Math.max(r.colors.length, PALETTE_SIZE), MAX_CUSTOM_PALETTE_SIZE)
+  for (let i = 0; i < size; i += 1) {
     if (i === RESERVED_INDEX) {
       colors.push('')
       continue
@@ -130,6 +132,13 @@ export function resolvePaletteColors(fields: MoldaPaletteFields): readonly strin
   return fields.extraColors && fields.extraColors.length > 0
     ? [...base, ...fields.extraColors]
     : base
+}
+
+/** Primeiro índice das cores extras; documentos antigos continuam começando em 16. */
+export function paletteBaseSize(fields: MoldaPaletteFields): number {
+  return fields.paletteId === 'custom' && fields.customPalette
+    ? fields.customPalette.colors.length
+    : PALETTE_SIZE
 }
 
 // ── Peles ───────────────────────────────────────────────────────────────────

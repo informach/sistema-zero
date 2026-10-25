@@ -2,17 +2,14 @@
  * "+ Nova cor" no documento novo: os mesmos campos de paleta do editor antigo (`paletteId`,
  * `customPalette` e até 48 `extraColors`) e a mesma regra.
  *
- * ⚠️ Os índices NUNCA se deslocam: a tinta indexada guarda o número da cor, e deslocar uma
- * extra repintaria toda peça que usa as seguintes. Por isso cor que já existe reaproveita o
- * índice em vez de virar extra repetida, e trocar uma extra para uma cor que já existe não
- * acontece (quem chama decide para onde apontar).
+ * Ao mudar o tamanho da paleta base, os índices das extras são remapeados na tinta e nos
+ * materiais para preservar as cores. Adicionar uma cor já existente reaproveita seu índice.
  */
-import { normalizeHex } from '../core/color'
+import { hexToRgb, normalizeHex } from '../core/color'
 import { MOLDA_LIMITS } from '../core/limits'
 import type { MoldaCustomPalette } from '../core/model'
-import type { PaletteId } from '../core/palette'
-import { PALETTE_SIZE } from '../core/palette'
-import { resolvePaletteColors } from '../core/sanitize'
+import { getPalette, type PaletteId } from '../core/palette'
+import { paletteBaseSize, resolvePaletteColors } from '../core/sanitize'
 import type { MoldaSceneDocument } from './document'
 import { requireScene } from './validation'
 
@@ -20,7 +17,7 @@ export type ScenePaletteChoice =
   | { paletteId: PaletteId; customPalette?: never }
   | { paletteId: 'custom'; customPalette: MoldaCustomPalette }
 
-/** Trocar a base da paleta mantém os índices da tinta e todas as cores extras. */
+/** Trocar a base preserva as cores extras, inclusive quando o tamanho muda. */
 export function setScenePalette(
   document: MoldaSceneDocument,
   choice: ScenePaletteChoice,
@@ -29,13 +26,77 @@ export function setScenePalette(
     document.paletteId === choice.paletteId &&
     (choice.paletteId !== 'custom' ||
       (document.customPalette?.name === choice.customPalette.name &&
+        document.customPalette.colors.length === choice.customPalette.colors.length &&
         document.customPalette.colors.every(
           (color, index) => color === choice.customPalette.colors[index],
         )))
   )
     return document
+  const oldBase =
+    document.paletteId === 'custom' && document.customPalette
+      ? document.customPalette.colors
+      : getPalette(document.paletteId).colors
+  const nextBase =
+    choice.paletteId === 'custom'
+      ? choice.customPalette.colors
+      : getPalette(choice.paletteId).colors
+  const oldSize = oldBase.length
+  const nextSize = nextBase.length
   const { customPalette: _previous, ...rest } = document
-  return { ...rest, ...choice }
+  if (oldSize === nextSize) return { ...rest, ...choice }
+  const extraEnd = oldSize + (document.extraColors?.length ?? 0)
+  const nearest = (hex: string): number => {
+    if (!hex) return 0
+    const exact = nextBase.indexOf(hex, 1)
+    if (exact > 0) return exact
+    const rgb = hexToRgb(hex)
+    let best = 0
+    let distance = Number.POSITIVE_INFINITY
+    for (let i = 1; i < nextSize; i += 1) {
+      if (!nextBase[i]) continue
+      const candidate = hexToRgb(nextBase[i]!)
+      const dr = rgb[0] - candidate[0]
+      const dg = rgb[1] - candidate[1]
+      const db = rgb[2] - candidate[2]
+      const value = 2 * dr * dr + 4 * dg * dg + 3 * db * db
+      if (value < distance) {
+        best = i
+        distance = value
+      }
+    }
+    return best
+  }
+  const removed = Array.from({ length: Math.max(0, oldSize - nextSize) }, (_, i) =>
+    nearest(oldBase[nextSize + i] ?? ''),
+  )
+  const remap = (index: number): number => {
+    if (index >= oldSize && index < extraEnd) return index + nextSize - oldSize
+    if (index >= nextSize && index < oldSize) return removed[index - nextSize] ?? 0
+    return index
+  }
+  return {
+    ...rest,
+    ...choice,
+    materials: document.materials.map((material) =>
+      material.baseColor.kind === 'palette'
+        ? {
+            ...material,
+            baseColor: { kind: 'palette' as const, index: remap(material.baseColor.index) },
+          }
+        : material,
+    ),
+    images: document.images.map((image) =>
+      image.encoding === 'indexed'
+        ? {
+            ...image,
+            layers: image.layers.map((layer) => ({
+              ...layer,
+              pixels: Uint8Array.from(layer.pixels, remap),
+            })),
+          }
+        : image,
+    ),
+  }
 }
 
 function readHex(hex: string) {
@@ -73,7 +134,7 @@ export function updateScenePaletteColor(
 ): MoldaSceneDocument {
   const color = readHex(hex)
   const extras = document.extraColors ?? []
-  const at = index - PALETTE_SIZE
+  const at = index - paletteBaseSize(document)
   if (at < 0 || at >= extras.length || extras[at] === color) return document
   if (resolvePaletteColors(document).includes(color)) return document
   const next = [...extras]
@@ -90,7 +151,7 @@ export function dropLastScenePaletteColor(
   index: number,
 ): MoldaSceneDocument {
   const extras = document.extraColors ?? []
-  if (index !== PALETTE_SIZE + extras.length - 1) return document
+  if (index !== paletteBaseSize(document) + extras.length - 1) return document
   const next: MoldaSceneDocument = { ...document, extraColors: extras.slice(0, -1) }
   if (!next.extraColors?.length) delete next.extraColors
   return next

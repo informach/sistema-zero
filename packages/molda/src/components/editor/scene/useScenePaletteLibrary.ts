@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState, useSyncExternalStore } from 'react'
 import type { MoldaCustomPalette } from '../../../core/model'
+import { PALETTE_SIZE } from '../../../core/palette'
 import { sanitizeCustomPalette } from '../../../core/sanitize'
 import { moldaPreferenceKey } from '../../../state/interfacePreferences'
 import { useOptionalMoldaApp } from '../../appContext'
@@ -96,7 +97,7 @@ export function useScenePaletteLibrary() {
   }
 }
 
-/** No host, a biblioteca do Pinta é a fonte única; o playground usa a local. */
+/** Paletas de 32 cores pertencem ao Molda; as de 16 continuam compartilhadas com o Pinta. */
 export function useAvailableScenePaletteLibrary() {
   const local = useScenePaletteLibrary()
   const shared = useOptionalMoldaApp()?.adapter.paletteLibrary
@@ -109,14 +110,18 @@ export function useAvailableScenePaletteLibrary() {
     if (shared) void shared.getState().load()
   }, [shared])
   if (!shared || !state) return local
-  const palettes: readonly SavedScenePalette[] = state.palettes
+  const ownPalettes = local.palettes.filter((palette) => palette.colors.length > PALETTE_SIZE)
+  const palettes: readonly SavedScenePalette[] = [...state.palettes, ...ownPalettes]
+  const isOwn = (id: string) => ownPalettes.some((palette) => palette.id === id)
   return {
     palettes,
     loaded: state.loaded,
-    error: false,
+    error: local.error,
     full: palettes.length >= MAX_PALETTES,
-    create: (palette: MoldaCustomPalette) => state.savePalette(palette),
-    rename: (id: string, name: string) => state.renamePalette(id, name),
-    remove: (id: string) => state.removePalette(id),
+    create: (palette: MoldaCustomPalette) =>
+      palette.colors.length > PALETTE_SIZE ? local.create(palette) : state.savePalette(palette),
+    rename: (id: string, name: string) =>
+      isOwn(id) ? local.rename(id, name) : state.renamePalette(id, name),
+    remove: (id: string) => (isOwn(id) ? local.remove(id) : state.removePalette(id)),
   }
 }

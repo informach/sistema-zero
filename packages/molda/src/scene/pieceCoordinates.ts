@@ -2,6 +2,7 @@ import type { Vec3 } from '../core/model'
 import { finishSceneCommand, requireEditableScene, sceneCommandSelection } from './commandContext'
 import type { MoldaSceneDocument } from './document'
 import { indexSceneDocument } from './documentIndex'
+import { changeSceneRestWithLocalAnimations } from './localAnimationRest'
 import {
   composeTransform,
   quaternionFromEulerXYZ,
@@ -103,12 +104,13 @@ export function setScenePieceCoordinates(
     const rotated = transformDirection(composeTransform(next), current.localPivot)
     next.translation = fixed.map((value, axis) => value - rotated[axis]!) as Vec3
   }
+  const nodes = document.nodes.map((node) =>
+    node.id === nodeId ? { ...node, transform: next } : node,
+  )
   return finishSceneCommand(
-    resizeScenePaint(document, {
-      ...document,
-      nodes: document.nodes.map((node) =>
-        node.id === nodeId ? { ...node, transform: next } : node,
-      ),
-    }),
+    resizeScenePaint(
+      document,
+      changeSceneRestWithLocalAnimations(document, nodes, new Set([nodeId])),
+    ),
   )
 }

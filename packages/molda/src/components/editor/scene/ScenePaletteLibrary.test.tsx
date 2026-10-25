@@ -6,7 +6,7 @@ import { moldaPreferenceKey } from '../../../state/interfacePreferences'
 import { getMoldaStorageNamespace, setMoldaStorageNamespace } from '../../../state/persistence'
 import { MoldaAppProvider, type MoldaPaletteLibraryPort } from '../../appContext'
 import { ScenePaletteLibrary } from './ScenePaletteLibrary'
-import { useScenePaletteLibrary } from './useScenePaletteLibrary'
+import { useAvailableScenePaletteLibrary, useScenePaletteLibrary } from './useScenePaletteLibrary'
 
 test('paletas criadas persistem no perfil e podem ser renomeadas e apagadas', () => {
   const original = getMoldaStorageNamespace()
@@ -197,5 +197,51 @@ test('Molda usa a biblioteca compartilhada pelo host e vê alterações do Pinta
   } finally {
     view.unmount()
     localStorage.removeItem(key)
+  }
+})
+
+test('paleta de 32 cores fica no Molda sem ser cortada pela biblioteca do Pinta', async () => {
+  const original = getMoldaStorageNamespace()
+  setMoldaStorageNamespace('palette-image-32-test')
+  const key = moldaPreferenceKey('scene.palettes')
+  localStorage.removeItem(key)
+  const shared = createStore<ReturnType<MoldaPaletteLibraryPort['getState']>>(() => ({
+    loaded: true,
+    palettes: [],
+    load: async () => {},
+    savePalette: async () => {
+      throw new Error('não deve salvar no Pinta')
+    },
+    renamePalette: async () => false,
+    removePalette: async () => false,
+  }))
+  const wrapper = ({ children }: { children: React.ReactNode }) => (
+    <MoldaAppProvider
+      value={{
+        adapter: { paletteLibrary: shared },
+        gallery: {} as never,
+        persistence: {} as never,
+        scene: {} as never,
+      }}
+    >
+      {children}
+    </MoldaAppProvider>
+  )
+  const hook = renderHook(useAvailableScenePaletteLibrary, { wrapper })
+  try {
+    const colors = [
+      '',
+      ...Array.from({ length: 32 }, (_, i) => `#${i.toString(16).padStart(2, '0')}aabb`),
+    ]
+    await act(async () => {
+      expect(await hook.result.current.create({ name: 'Imagem', colors })).not.toBeNull()
+    })
+    expect(hook.result.current.palettes[0]?.colors).toEqual(colors)
+    expect(shared.getState().palettes).toEqual([])
+    expect(JSON.parse(localStorage.getItem(key) ?? '[]')[0]?.colors).toEqual(colors)
+  } finally {
+    hook.unmount()
+    localStorage.removeItem(key)
+    setMoldaStorageNamespace(original)
   }
 })

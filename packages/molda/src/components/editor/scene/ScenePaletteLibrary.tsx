@@ -6,6 +6,7 @@ import { sanitizeCustomPalette } from '../../../core/sanitize'
 import type { ScenePaletteChoice } from '../../../scene/paletteCommands'
 import { Button } from '../../ui/Button'
 import { Dialog } from '../../ui/Dialog'
+import { ScenePaletteFromImageDialog } from './ScenePaletteFromImageDialog'
 import { type SavedScenePalette, useAvailableScenePaletteLibrary } from './useScenePaletteLibrary'
 
 export function ScenePaletteLibrary({
@@ -20,7 +21,7 @@ export function ScenePaletteLibrary({
   const library = useAvailableScenePaletteLibrary()
   const [expanded, setExpanded] = useState(false)
   const [saving, setSaving] = useState(false)
-  const [dialog, setDialog] = useState<'create' | 'manage' | null>(null)
+  const [dialog, setDialog] = useState<'create' | 'image' | 'manage' | null>(null)
   const [draft, setDraft] = useState<MoldaCustomPalette | null>(null)
   const [message, setMessage] = useState('')
   const activeSaved =
@@ -28,6 +29,7 @@ export function ScenePaletteLibrary({
       ? library.palettes.find(
           (entry) =>
             entry.name === palette.customPalette?.name &&
+            entry.colors.length === palette.customPalette?.colors.length &&
             entry.colors.every((color, index) => color === palette.customPalette?.colors[index]),
         )
       : null
@@ -89,6 +91,19 @@ export function ScenePaletteLibrary({
     }
     apply({ paletteId: 'custom', customPalette: clean })
     setDialog(null)
+  }
+
+  async function createFromImage(name: string, colors: string[]): Promise<boolean> {
+    const clean = sanitizeCustomPalette({ name, colors })
+    if (!clean) return false
+    try {
+      const saved = await library.create(clean)
+      if (!saved) return false
+      apply({ paletteId: 'custom', customPalette: clean })
+      return true
+    } catch {
+      return false
+    }
   }
 
   return (
@@ -156,6 +171,14 @@ export function ScenePaletteLibrary({
               >
                 + Criar paleta
               </Button>
+              <Button
+                size="compact"
+                variant="ghost"
+                disabled={busy || !library.loaded || library.full}
+                onClick={() => setDialog('image')}
+              >
+                Cores de uma imagem
+              </Button>
               {library.palettes.length > 0 && (
                 <Button size="compact" variant="ghost" onClick={() => setDialog('manage')}>
                   Gerenciar
@@ -176,6 +199,9 @@ export function ScenePaletteLibrary({
           </div>
         )}
       </details>
+      {dialog === 'image' && (
+        <ScenePaletteFromImageDialog onClose={() => setDialog(null)} onCreate={createFromImage} />
+      )}
       <Dialog open={dialog === 'create'} title="Criar paleta" onClose={() => setDialog(null)}>
         {draft && (
           <form
