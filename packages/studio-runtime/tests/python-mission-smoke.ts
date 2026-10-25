@@ -82,6 +82,8 @@ const release = await createStudioRuntimeRelease({
   extensions: [
     { id: 'python-turtle', versions: ['1.0.0'] },
     { id: 'python-pgzero', versions: ['1.0.0'] },
+    { id: 'python-raylib-2d', versions: ['1.0.0'] },
+    { id: 'python-raylib-3d', versions: ['1.0.0'] },
   ],
   sourceTargets: ['browser', 'desktop'],
   requiredBrowserFeatures: ['wasm', 'worker', 'jspi', 'trusted-types'],
@@ -111,6 +113,7 @@ const cases: {
   expected: boolean
   extension?: string
   asset?: boolean
+  extraFiles?: Record<string, string>
 }[] = [
   {
     name: 'function-input',
@@ -274,6 +277,57 @@ const cases: {
     expected: false,
     extension: 'python-turtle',
   },
+  ...(['2d', '3d'] as const).flatMap((dimension) =>
+    [3, -3, 0].map((speed) => ({
+      name: `raylib-${dimension}-${speed}`,
+      source: `from pyray import *\ninit_window(320, 240, "Missao Raylib")\nset_target_fps(60)\nposicao = Vector3(0, 0, 0)\ncamera = Camera3D(Vector3(5, 5, 5), Vector3(0, 0, 0), Vector3(0, 1, 0), 45, CAMERA_PERSPECTIVE)\nwhile not window_should_close():\n    if is_key_down(KEY_RIGHT):\n        posicao.x += ${speed} * get_frame_time()\n    begin_drawing()\n    clear_background(RAYWHITE)\n${dimension === '3d' ? '    begin_mode_3d(camera)\n    draw_cube(posicao, 1, 1, 1, RED)\n    draw_grid(10, 1)\n    end_mode_3d()\n' : '    draw_circle(160 + int(posicao.x), 120, 20, RED)\n'}    end_drawing()\nclose_window()\n`,
+      objective: {
+        id: 'right',
+        rule: {
+          type: 'behavior' as const,
+          steps: [{ action: 'press' as const, key: 'ArrowRight', holdMs: 100 }],
+          expect: {
+            target: { kind: 'value' as const, path: 'posicao.x' },
+            compare: 'increased' as const,
+          },
+        },
+      },
+      expected: speed > 0,
+      extension: `python-raylib-${dimension}`,
+    })),
+  ),
+  {
+    name: 'raylib-click',
+    source:
+      'from pyray import *\ninit_window(320, 240, "Clique")\npontos = 0\nwhile not window_should_close():\n    if is_mouse_button_pressed(MOUSE_BUTTON_LEFT):\n        pontos += 1\n    begin_drawing()\n    clear_background(RAYWHITE)\n    draw_circle(160, 120, 30, BLUE)\n    end_drawing()\nclose_window()\n',
+    objective: {
+      id: 'click',
+      rule: {
+        type: 'behavior',
+        steps: [{ action: 'click', x: 160, y: 120 }],
+        expect: { target: { kind: 'value', path: 'pontos' }, compare: 'atLeast', value: 1 },
+      },
+    },
+    expected: true,
+    extension: 'python-raylib-2d',
+  },
+  {
+    name: 'raylib-other-module',
+    source:
+      'from pyray import *\nfrom physics import dobro\ninit_window(320, 240, "Outro arquivo")\nwhile not window_should_close():\n    begin_drawing()\n    clear_background(RAYWHITE)\n    draw_circle(160, 120, 30, BLUE)\n    end_drawing()\nclose_window()\n',
+    extraFiles: { 'physics.py': 'def dobro(n):\n    return n * 2\n' },
+    objective: {
+      id: 'function',
+      rule: {
+        type: 'functionReturns',
+        module: 'physics.py',
+        name: 'dobro',
+        cases: [{ args: [3], expected: 6 }],
+      },
+    },
+    expected: true,
+    extension: 'python-raylib-2d',
+  },
   ...[-3, 3, 0].map((speed) => ({
     name: `pgzero-${speed}`,
     source: `WIDTH = 320\nHEIGHT = 240\nheroi = Actor("hero", (100, 100))\ndef update(dt):\n    if keyboard.up:\n        heroi.y += ${speed}\ndef draw():\n    screen.clear()\n    heroi.draw()\n`,
@@ -287,10 +341,15 @@ const cases: {
   })),
 ]
 const selected = process.argv.find((arg) => arg.startsWith('--case='))?.slice(7)
+const group = process.argv.find((arg) => arg.startsWith('--group='))?.slice(8)
+assert.ok(!(selected && group), 'Select one case or one group')
 assert.ok(!selected || cases.some((item) => item.name === selected), 'Unknown smoke case')
+assert.ok(!group || cases.some((item) => item.name.startsWith(`${group}-`)), 'Unknown smoke group')
 const evidence = path.join(cache, 'mission-docker', crypto.randomUUID())
 await mkdir(evidence, { recursive: true })
-for (const item of cases.filter((item) => !selected || item.name === selected)) {
+for (const item of cases.filter(
+  (item) => (!selected || item.name === selected) && (!group || item.name.startsWith(`${group}-`)),
+)) {
   const directory = path.join(evidence, item.name)
   await mkdir(path.join(directory, 'runtime'), { recursive: true })
   await mkdir(path.join(directory, 'project'), { recursive: true })
@@ -301,6 +360,16 @@ for (const item of cases.filter((item) => !selected || item.name === selected)) 
   const projectFiles = [
     { path: 'main.py', kind: 'source', sha256: await sha256(bytes), byteLength: bytes.byteLength },
   ]
+  for (const [file, source] of Object.entries(item.extraFiles ?? {})) {
+    const bytes = new TextEncoder().encode(source)
+    await writeFile(path.join(directory, 'project', file), bytes)
+    projectFiles.push({
+      path: file,
+      kind: 'source',
+      sha256: await sha256(bytes),
+      byteLength: bytes.byteLength,
+    })
+  }
   if (item.asset) {
     const png = Buffer.from(
       'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR4nGP4z8DwHwAFAAH/iZk9HQAAAABJRU5ErkJggg==',
