@@ -303,6 +303,20 @@ export const ptBR: Record<string, string> = {
   'pintaImport.image.selectionChanged':
     'A imagem recebida não corresponde à sua escolha. Confira a seleção novamente.',
 
+  'models3d.uploadTitle':
+    'Modelo 3D (.glb, com animações e ossos) ou céu 360° (.hdr) para Jogo 3D, Mundo 3D, Jogo 3D Avançado e Canvas 3D',
+  'models3d.howTo': 'Use o NOME do modelo nos blocos:',
+  'models3d.howTo.game3d':
+    'Jogo 3D: "Criar o objeto com o modelo" põe o modelo na cena, e "Tocar a animação" faz ele se mexer.',
+  'models3d.howTo.advanced':
+    'Jogo 3D Avançado: a peça "modelo importado" do molde, com uma animação para cada estado.',
+  'models3d.howTo.world3d':
+    'Mundo 3D: "Pôr o modelo" se mexe, e "Espalhar" deixa as cópias paradas. O personagem, o amigo e o carro também podem usar um modelo.',
+  'models3d.howTo.sky': 'Céu 360° (.hdr): o bloco "Usar o céu 360°".',
+  'models3d.badge.clips': '🎬 {names}',
+  'models3d.badge.clipsTitle': 'Animações deste modelo: {names}',
+  'models3d.badge.skinned': '🦴 com ossos',
+  'models3d.badge.animatedPaint': '🎞️ pintura que se mexe',
   'moldaImport.button': '🧊 Trazer do Molda',
   'moldaImport.title': 'Trazer do Molda',
   'moldaImport.subtitle':

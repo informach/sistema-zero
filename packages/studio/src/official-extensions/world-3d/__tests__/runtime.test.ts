@@ -22,7 +22,7 @@ interface Api {
   car: (o: unknown) => unknown
   carStats: (a?: unknown, b?: unknown, c?: unknown) => unknown
   carPlace: (x?: unknown, z?: unknown, d?: unknown) => unknown
-  carPos: (a?: unknown) => number
+  playerPos: (a?: unknown) => number
   carSpeed: () => number
   carBoost: (force?: unknown) => unknown
   district: (kind?: unknown, x?: unknown, z?: unknown, size?: unknown) => unknown
@@ -46,7 +46,7 @@ interface Api {
   playSound: (name?: unknown) => unknown
   playMusic: (name?: unknown) => unknown
   stopMusic: () => unknown
-  hud: (t?: unknown, corner?: unknown) => unknown
+  hudText: (corner?: unknown, t?: unknown) => unknown
   say: (t?: unknown, secs?: unknown) => unknown
   point: (name?: unknown, x?: unknown, z?: unknown) => unknown
   onPoint: (name?: unknown, fn?: unknown) => unknown
@@ -70,7 +70,7 @@ interface Api {
   stack: (n?: unknown, thing?: unknown, x?: unknown, z?: unknown) => unknown
   knockedCount: () => number
   cameraMode: (mode?: unknown) => unknown
-  cameraShake: (force?: unknown, secs?: unknown) => unknown
+  cameraShake: (strength?: unknown, secs?: unknown) => unknown
   scatter: (n?: unknown, thing?: unknown) => unknown
   scatterModel: (n?: unknown, name?: unknown, s?: unknown) => unknown
   placeThing: (thing?: unknown, x?: unknown, z?: unknown, s?: unknown) => unknown
@@ -134,13 +134,13 @@ describe('SZWorld3D — API pura (sem DOM/three)', () => {
       'inventoryHas',
       'engineSound',
       'carPlace',
-      'carPos',
+      'playerPos',
       'carSpeed',
       'loadSound',
       'playSound',
       'playMusic',
       'stopMusic',
-      'hud',
+      'hudText',
       'say',
       'point',
       'onPoint',
@@ -182,6 +182,32 @@ describe('SZWorld3D — API pura (sem DOM/three)', () => {
       'onUpdate',
       'keyDown',
       'keyPressed',
+      // Lote 10: regras de jogo (vida do jogador), coletáveis, tirar, mochila e Molda.
+      'addScore',
+      'score',
+      'setLife',
+      'hurt',
+      'heal',
+      'lifeOf',
+      'onLifeOver',
+      'setScreenText',
+      'endGame',
+      'restart',
+      'afterSeconds',
+      'startTimer',
+      'stopTimer',
+      'timeLeft',
+      'onTimerEnd',
+      'randomBetween',
+      'randomChance',
+      'collectible',
+      'onCollectItem',
+      'removeNamed',
+      'inventoryClear',
+      'personModel',
+      'npcModel',
+      'carModel',
+      'modelAnim',
     ]
     const bag = api as unknown as Record<string, unknown>
     for (const name of expected) {
@@ -241,7 +267,7 @@ describe('SZWorld3D — API pura (sem DOM/three)', () => {
     const api = boot()
     expect(() => api.carStats(30, 120, 8)).not.toThrow() // sem car() antes
     expect(() => api.carPlace(10, 10, 90)).not.toThrow() // sem car() antes
-    expect(api.carPos('x')).toBe(0) // sem carrinho: 0, não crash
+    expect(api.playerPos('x')).toBe(0) // sem ninguém: a origem, não crash
     expect(api.carSpeed()).toBe(0)
     expect(() => api.onUpdate('não é função' as unknown)).not.toThrow()
     expect(api.keyDown('espaco')).toBe(false)
@@ -291,7 +317,7 @@ describe('SZWorld3D — API pura (sem DOM/three)', () => {
     expect(() => api.playSound('buzina')).not.toThrow()
     expect(() => api.playMusic('nada')).not.toThrow()
     expect(() => api.stopMusic()).not.toThrow()
-    expect(() => api.hud('Pontos: 5', 'topo-direita')).not.toThrow()
+    expect(() => api.hudText('topo-direita', 'Pontos: 5')).not.toThrow()
     expect(() => api.say('Oi!', 2)).not.toThrow()
   })
 

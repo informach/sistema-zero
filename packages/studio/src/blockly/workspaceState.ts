@@ -31,8 +31,18 @@ import {
   textSpriteExpressionToBlock,
   textSpriteStatementToBlock,
 } from '../official-extensions/game-2d/textCodec'
+import {
+  gameKit3DGameplayExpressionToBlock,
+  gameKit3DGameplayStatementToBlock,
+} from '../official-extensions/game-3d-advanced/gameplayCodec'
+import { gameKit3DModelStatementToBlock } from '../official-extensions/game-3d-advanced/modelCodec'
+import {
+  gameRulesExpressionToBlock,
+  gameRulesStatementToBlock,
+} from '../official-extensions/game3dRules/codec'
 import { sceneToBlock } from '../official-extensions/scene-2d/codec'
 import { isSceneExpression, isSceneStatement } from '../official-extensions/scene-2d/ir'
+import { world3DNewStatementToBlock } from '../official-extensions/world-3d/worldCodec'
 import type { Canvas3DSymbolKind } from '../three/canvas3dContract'
 import {
   FRAME_APPEARANCE,
@@ -713,6 +723,13 @@ function statementToBlockInner(stmt: JSStatement): SerializedBlocklyBlock | null
     varExpr,
   })
   if (programmingBlock !== PROGRAMMING_IR_TO_BLOCK_UNHANDLED) return programmingBlock
+  const rulesBlock = gameRulesStatementToBlock(stmt, {
+    block,
+    expression: exprToValueBlock,
+    statements: statementsToBlocks,
+    raw: rawJSBlock,
+  })
+  if (rulesBlock) return rulesBlock
   if (stmt.type.startsWith('g2d:')) return gameTwoDStatementToBlock()
   if (stmt.type.startsWith('g3d:')) return gameThreeDStatementToBlock()
   if (stmt.type.startsWith('gk:')) return gameKitStatementToBlock()
@@ -2931,23 +2948,25 @@ function statementToBlockInner(stmt: JSStatement): SerializedBlocklyBlock | null
           ? rawJSBlock(stmt)
           : block('sz_g3d_control_keys', { OBJ: stmt.objVar }, {}, stmt.__id, { SPEED: speed })
       }
-      case 'g3d:cameraFollow':
+      case 'g3d:cameraMode':
         return block(
-          'sz_g3d_camera_follow',
-          { WORLD: stmt.worldVar, OBJ: stmt.objVar },
+          'sz_g3d_camera_mode',
+          { WORLD: stmt.worldVar, MODE: stmt.mode, OBJ: stmt.objVar },
           {},
           stmt.__id,
         )
-      case 'g3d:createGroup':
-        return block('sz_g3d_create_group', { NAME: stmt.varName }, {}, stmt.__id)
-      case 'g3d:everyFrames': {
-        const n = exprToValueBlock(valueToExpr(stmt.n))
-        return n === null
+      case 'g3d:cameraDistance': {
+        const dist = exprToValueBlock(valueToExpr(stmt.dist))
+        const height = exprToValueBlock(valueToExpr(stmt.height))
+        return dist === null || height === null
           ? rawJSBlock(stmt)
-          : block('sz_g3d_every_frames', {}, { BODY: statementsToBlocks(stmt.body) }, stmt.__id, {
-              N: n,
+          : block('sz_g3d_camera_distance', { WORLD: stmt.worldVar }, {}, stmt.__id, {
+              DIST: dist,
+              HEIGHT: height,
             })
       }
+      case 'g3d:createGroup':
+        return block('sz_g3d_create_group', { NAME: stmt.varName }, {}, stmt.__id)
       case 'g3d:everySeconds': {
         const secs = exprToValueBlock(valueToExpr(stmt.secs))
         return secs === null
@@ -3000,8 +3019,6 @@ function statementToBlockInner(stmt: JSStatement): SerializedBlocklyBlock | null
         )
       case 'g3d:clearGroup':
         return block('sz_g3d_clear_group', { GROUP: stmt.groupVar }, {}, stmt.__id)
-      case 'g3d:stop':
-        return block('sz_g3d_stop', { WORLD: stmt.worldVar }, {}, stmt.__id)
       case 'g3d:createCrossingScene':
         return block(
           'sz_g3d_create_crossing_scene',
@@ -3057,13 +3074,6 @@ function statementToBlockInner(stmt: JSStatement): SerializedBlocklyBlock | null
       }
       case 'g3d:moveTraffic':
         return block('sz_g3d_move_traffic', { WORLD: stmt.worldVar }, {}, stmt.__id)
-      case 'g3d:isometricCamera':
-        return block(
-          'sz_g3d_isometric_camera',
-          { WORLD: stmt.worldVar, FOLLOW: stmt.followVar },
-          {},
-          stmt.__id,
-        )
       case 'g3d:gridStep':
         return block('sz_g3d_grid_step', { OBJ: stmt.objVar }, {}, stmt.__id)
       case 'g3d:gridMove':
@@ -3089,13 +3099,6 @@ function statementToBlockInner(stmt: JSStatement): SerializedBlocklyBlock | null
           COL: col,
         })
       }
-      case 'g3d:topCamera':
-        return block(
-          'sz_g3d_top_camera',
-          { WORLD: stmt.worldVar, FOLLOW: stmt.followVar },
-          {},
-          stmt.__id,
-        )
       case 'g3d:moveInCircle': {
         const radius = exprToValueBlock(valueToExpr(stmt.radius))
         const speed = exprToValueBlock(valueToExpr(stmt.speed))
@@ -3357,28 +3360,6 @@ function statementToBlockInner(stmt: JSStatement): SerializedBlocklyBlock | null
       }
       case 'g3d:resolveCollision':
         return block('sz_g3d_resolve_collision', { A: stmt.aVar, B: stmt.bVar }, {}, stmt.__id)
-      case 'g3d:fpsCamera':
-        return block('sz_g3d_fps_camera', { WORLD: stmt.worldVar, OBJ: stmt.objVar }, {}, stmt.__id)
-      case 'g3d:orbitCamera':
-        return block(
-          'sz_g3d_orbit_camera',
-          { WORLD: stmt.worldVar, OBJ: stmt.objVar },
-          {},
-          stmt.__id,
-        )
-      case 'g3d:thirdPersonCamera': {
-        const dist = exprToValueBlock(valueToExpr(stmt.dist))
-        const height = exprToValueBlock(valueToExpr(stmt.height))
-        return dist === null || height === null
-          ? rawJSBlock(stmt)
-          : block(
-              'sz_g3d_third_person_camera',
-              { WORLD: stmt.worldVar, OBJ: stmt.objVar },
-              {},
-              stmt.__id,
-              { DIST: dist, HEIGHT: height },
-            )
-      }
       case 'g3d:cameraLookAt':
         return block(
           'sz_g3d_camera_look_at',
@@ -3475,8 +3456,23 @@ function statementToBlockInner(stmt: JSStatement): SerializedBlocklyBlock | null
       }
       case 'g3d:setMaterial':
         return block('sz_g3d_set_material', { OBJ: stmt.objVar, KIND: stmt.kind }, {}, stmt.__id)
-      case 'g3d:setTexture':
-        return block('sz_g3d_set_texture', { OBJ: stmt.objVar, ASSET: stmt.asset }, {}, stmt.__id)
+      case 'g3d:setTexture': {
+        const repeat = exprToValueBlock(valueToExpr(stmt.repeat ?? 1))
+        return repeat === null
+          ? rawJSBlock(stmt)
+          : block('sz_g3d_set_texture', { OBJ: stmt.objVar, ASSET: stmt.asset }, {}, stmt.__id, {
+              REPEAT: repeat,
+            })
+      }
+      case 'g3d:modelAnimation':
+        return stmt.op === 'parar'
+          ? block('sz_g3d_stop_animation', { OBJ: stmt.objVar }, {}, stmt.__id)
+          : block(
+              'sz_g3d_play_animation',
+              { OBJ: stmt.objVar, CLIP: stmt.clip ?? '', MODE: stmt.mode ?? 'repetir' },
+              {},
+              stmt.__id,
+            )
       case 'g3d:setVisible':
         return block('sz_g3d_set_visible', { OBJ: stmt.objVar, MODE: stmt.mode }, {}, stmt.__id)
       case 'g3d:removeObject':
@@ -3526,7 +3522,11 @@ function statementToBlockInner(stmt: JSStatement): SerializedBlocklyBlock | null
           ? rawJSBlock(stmt)
           : block(
               'sz_g3d_add_point_light',
-              { WORLD: stmt.worldVar, COLOR: stmt.color },
+              {
+                WORLD: stmt.worldVar,
+                COLOR: stmt.color,
+                SHADOW: stmt.shadow ? 'com-sombra' : 'sem-sombra',
+              },
               {},
               stmt.__id,
               { INTENSITY: intensity, X: x, Y: y, Z: z },
@@ -3551,47 +3551,26 @@ function statementToBlockInner(stmt: JSStatement): SerializedBlocklyBlock | null
         )
       case 'g3d:setShadows':
         return block('sz_g3d_set_shadows', { WORLD: stmt.worldVar, MODE: stmt.mode }, {}, stmt.__id)
-      case 'g3d:createSwarm':
-        return block(
-          'sz_g3d_create_swarm',
-          { NAME: stmt.varName, WORLD: stmt.worldVar },
-          {},
-          stmt.__id,
-        )
-      case 'g3d:spawnInSwarm': {
+      case 'g3d:spawnCopy': {
         const x = exprToValueBlock(valueToExpr(stmt.x))
         const y = exprToValueBlock(valueToExpr(stmt.y))
         const z = exprToValueBlock(valueToExpr(stmt.z))
         return x === null || y === null || z === null
           ? rawJSBlock(stmt)
           : block(
-              'sz_g3d_spawn_in_swarm',
-              { SWARM: stmt.swarmVar, ORIGINAL: stmt.originalVar },
+              'sz_g3d_spawn_copy',
+              { GROUP: stmt.groupVar, ORIGINAL: stmt.originalVar },
               {},
               stmt.__id,
               { X: x, Y: y, Z: z },
             )
       }
-      case 'g3d:forEachInSwarm':
-        return block(
-          'sz_g3d_for_each_swarm',
-          { SWARM: stmt.swarmVar, ITEM: stmt.itemName },
-          { BODY: statementsToBlocks(stmt.body) },
-          stmt.__id,
-        )
-      case 'g3d:removeFromSwarm':
-        return block(
-          'sz_g3d_remove_from_swarm',
-          { SWARM: stmt.swarmVar, ITEM: stmt.itemVar },
-          {},
-          stmt.__id,
-        )
-      case 'g3d:pruneSwarm': {
+      case 'g3d:pruneArea': {
         const min = exprToValueBlock(valueToExpr(stmt.min))
         const max = exprToValueBlock(valueToExpr(stmt.max))
         return min === null || max === null
           ? rawJSBlock(stmt)
-          : block('sz_g3d_prune_swarm', { SWARM: stmt.swarmVar, AXIS: stmt.axis }, {}, stmt.__id, {
+          : block('sz_g3d_prune_area', { GROUP: stmt.groupVar, AXIS: stmt.axis }, {}, stmt.__id, {
               MIN: min,
               MAX: max,
             })
@@ -5548,6 +5527,16 @@ function statementToBlockInner(stmt: JSStatement): SerializedBlocklyBlock | null
   }
 
   function gameKitThreeDStatementToBlock(): SerializedBlocklyBlock {
+    const codecTools = {
+      block,
+      expression: exprToValueBlock,
+      statements: statementsToBlocks,
+      raw: rawJSBlock,
+    }
+    const model =
+      gameKit3DModelStatementToBlock(stmt, codecTools) ??
+      gameKit3DGameplayStatementToBlock(stmt, codecTools)
+    if (model) return model
     switch (stmt.type) {
       // ---- Jogo 3D Avançado (game-3d-advanced) ----
       case 'g3k:setup': {
@@ -5731,16 +5720,6 @@ function statementToBlockInner(stmt: JSStatement): SerializedBlocklyBlock | null
           ? rawJSBlock(stmt)
           : block('sz_g3k_camera_distance', {}, {}, stmt.__id, { DIST: dist })
       }
-      case 'g3k:cameraShake': {
-        const strength = exprToValueBlock(valueToExpr(stmt.strength))
-        const seconds = exprToValueBlock(valueToExpr(stmt.seconds))
-        return strength === null || seconds === null
-          ? rawJSBlock(stmt)
-          : block('sz_g3k_camera_shake', {}, {}, stmt.__id, {
-              STRENGTH: strength,
-              SECONDS: seconds,
-            })
-      }
       case 'g3k:cameraLens': {
         const fov = exprToValueBlock(valueToExpr(stmt.fov))
         return fov === null
@@ -5846,27 +5825,10 @@ function statementToBlockInner(stmt: JSStatement): SerializedBlocklyBlock | null
         )
       case 'g3k:stopAnim':
         return block('sz_g3k_stop_anim', { CHAR: stmt.charVar }, {}, stmt.__id)
-      case 'g3k:setStateAnim':
-        return block(
-          'sz_g3k_state_anim',
-          { MOLD: stmt.mold, STATE: stmt.state, CLIP: stmt.clip },
-          {},
-          stmt.__id,
-        )
       case 'g3k:playMusic':
         return block('sz_g3k_play_music', { NAME: stmt.name }, {}, stmt.__id)
       case 'g3k:stopMusic':
         return block('sz_g3k_stop_music', {}, {}, stmt.__id)
-      case 'g3k:startTimer': {
-        const seconds = exprToValueBlock(valueToExpr(stmt.seconds))
-        return seconds === null
-          ? rawJSBlock(stmt)
-          : block('sz_g3k_start_timer', {}, {}, stmt.__id, { SECONDS: seconds })
-      }
-      case 'g3k:stopTimer':
-        return block('sz_g3k_stop_timer', {}, {}, stmt.__id)
-      case 'g3k:onTimerEnd':
-        return block('sz_g3k_on_timer_end', {}, { BODY: statementsToBlocks(stmt.body) }, stmt.__id)
       case 'g3k:say': {
         const textValue = exprToValueBlock(valueToExpr(stmt.text))
         const seconds = exprToValueBlock(valueToExpr(stmt.seconds))
@@ -6159,18 +6121,6 @@ function statementToBlockInner(stmt: JSStatement): SerializedBlocklyBlock | null
               RAD: radius,
             })
       }
-      case 'g3k:setScreenText': {
-        const title = exprToValueBlock(valueToExpr(stmt.title))
-        const text = exprToValueBlock(valueToExpr(stmt.text))
-        const button = exprToValueBlock(valueToExpr(stmt.button))
-        return title === null || text === null || button === null
-          ? rawJSBlock(stmt)
-          : block('sz_g3k_set_screen_text', { SCREEN: stmt.screen }, {}, stmt.__id, {
-              TITLE: title,
-              TEXT: text,
-              BTN: button,
-            })
-      }
       case 'g3k:createScreen': {
         const title = exprToValueBlock(valueToExpr(stmt.title))
         const text = exprToValueBlock(valueToExpr(stmt.text))
@@ -6197,12 +6147,6 @@ function statementToBlockInner(stmt: JSStatement): SerializedBlocklyBlock | null
         return block('sz_g3k_show_screen', { SCREEN: stmt.name }, {}, stmt.__id)
       case 'g3k:hideScreens':
         return block('sz_g3k_hide_screens', {}, {}, stmt.__id)
-      case 'g3k:hudText': {
-        const text = exprToValueBlock(valueToExpr(stmt.text))
-        return text === null
-          ? rawJSBlock(stmt)
-          : block('sz_g3k_hud_text', { SLOT: stmt.slot }, {}, stmt.__id, { TEXT: text })
-      }
       case 'g3k:setState':
         return block('sz_g3k_set_state', { STATE: stmt.name }, {}, stmt.__id)
       case 'g3k:onEnterState':
@@ -6214,8 +6158,6 @@ function statementToBlockInner(stmt: JSStatement): SerializedBlocklyBlock | null
         )
       case 'g3k:returnToMenu':
         return block('sz_g3k_return_to_menu', {}, {}, stmt.__id)
-      case 'g3k:endGame':
-        return block('sz_g3k_end_game', {}, {}, stmt.__id)
       case 'g3k:onEvent':
         return block(
           'sz_g3k_on_event',
@@ -6244,6 +6186,13 @@ function statementToBlockInner(stmt: JSStatement): SerializedBlocklyBlock | null
   }
 
   function worldThreeDStatementToBlock(): SerializedBlocklyBlock {
+    const lot10 = world3DNewStatementToBlock(stmt, {
+      block,
+      expression: exprToValueBlock,
+      statements: statementsToBlocks,
+      raw: rawJSBlock,
+    })
+    if (lot10) return lot10
     switch (stmt.type) {
       // ---- Mundo 3D (world-3d) ----
       case 'w3d:setup': {
@@ -6305,12 +6254,6 @@ function statementToBlockInner(stmt: JSStatement): SerializedBlocklyBlock | null
         return block('sz_w3d_play_music', { NAME: stmt.name }, {}, stmt.__id)
       case 'w3d:stopMusic':
         return block('sz_w3d_stop_music', {}, {}, stmt.__id)
-      case 'w3d:hud': {
-        const t = exprToValueBlock(valueToExpr(stmt.text))
-        return t === null
-          ? rawJSBlock(stmt)
-          : block('sz_w3d_hud', { CORNER: stmt.corner }, {}, stmt.__id, { TEXT: t })
-      }
       case 'w3d:say': {
         const t = exprToValueBlock(valueToExpr(stmt.text))
         const secs = exprToValueBlock(valueToExpr(stmt.secs))
@@ -6483,12 +6426,18 @@ function statementToBlockInner(stmt: JSStatement): SerializedBlocklyBlock | null
         const deg = exprToValueBlock(valueToExpr(stmt.deg))
         return x === null || z === null || s === null || deg === null
           ? rawJSBlock(stmt)
-          : block('sz_w3d_place_model', { MODEL: stmt.model }, {}, stmt.__id, {
-              X: x,
-              Z: z,
-              S: s,
-              DEG: deg,
-            })
+          : block(
+              'sz_w3d_place_model',
+              { MODEL: stmt.model, CLIP: stmt.clip ?? '' },
+              {},
+              stmt.__id,
+              {
+                X: x,
+                Z: z,
+                S: s,
+                DEG: deg,
+              },
+            )
       }
       case 'w3d:clearArea': {
         const x = exprToValueBlock(valueToExpr(stmt.x))
@@ -6914,13 +6863,6 @@ function statementToBlockInner(stmt: JSStatement): SerializedBlocklyBlock | null
         return block('sz_w3d_clouds', { AMOUNT: stmt.amount }, {}, stmt.__id)
       case 'w3d:cameraMode':
         return block('sz_w3d_camera_mode', { MODE: stmt.mode }, {}, stmt.__id)
-      case 'w3d:cameraShake': {
-        const force = exprToValueBlock(valueToExpr(stmt.force))
-        const secs = exprToValueBlock(valueToExpr(stmt.secs))
-        return force === null || secs === null
-          ? rawJSBlock(stmt)
-          : block('sz_w3d_camera_shake', {}, {}, stmt.__id, { FORCE: force, SECS: secs })
-      }
       case 'w3d:effects': {
         const strength = exprToValueBlock(valueToExpr(stmt.strength))
         return strength === null
@@ -7135,6 +7077,10 @@ function exprToValueBlockInner(expr: JSExpr): SerializedBlocklyBlock | null {
   if (isSceneExpression(expr)) return sceneToBlock(expr, exprToValueBlock) ?? null
   const textBlock = textSpriteExpressionToBlock(expr, block, exprToValueBlock)
   if (textBlock) return textBlock
+  const rulesBlock = gameRulesExpressionToBlock(expr, block, exprToValueBlock)
+  if (rulesBlock !== undefined) return rulesBlock
+  const gameplayBlock = gameKit3DGameplayExpressionToBlock(expr, block, exprToValueBlock)
+  if (gameplayBlock !== undefined) return gameplayBlock
   const classicBlock = classicGameTwoDExpressionToBlock(expr, block, exprToValueBlock)
   if (classicBlock) return classicBlock
   switch (expr.type) {
@@ -7246,6 +7192,8 @@ function exprToValueBlockInner(expr: JSExpr): SerializedBlocklyBlock | null {
       return block('sz_g3d_hit_is', { HIT: expr.hitVar, OBJ: expr.objVar })
     case 'g3d:objectValue':
       return block('sz_g3d_object_value', { KEY: expr.key, OBJ: expr.objVar })
+    case 'g3d:animationDone':
+      return block('sz_g3d_animation_done', { OBJ: expr.objVar })
     case 'g3d:stageAsk':
       if (expr.op === 'heroi') return block('sz_g3d_hero_is', { OBJ: expr.objVar, WHAT: expr.what })
       return expr.op === 'fase'
@@ -7259,12 +7207,8 @@ function exprToValueBlockInner(expr: JSExpr): SerializedBlocklyBlock | null {
       return block('sz_g3d_crosser_hit', { OBJ: expr.objVar, WORLD: expr.worldVar })
     case 'g3d:crosserRow':
       return block('sz_g3d_crosser_row', { OBJ: expr.objVar })
-    case 'g3d:touchesBox':
-      return block('sz_g3d_touches_box', { OBJ: expr.objVar, GROUP: expr.groupVar })
     case 'g3d:distanceTo':
       return block('sz_g3d_distance_to', { A: expr.aVar, B: expr.bVar })
-    case 'g3d:countSwarm':
-      return block('sz_g3d_count_swarm', { SWARM: expr.swarmVar })
     case 'g3d:countGroup':
       return block('sz_g3d_count_group', { GROUP: expr.groupVar })
     case 'g3d:isNear': {
@@ -7592,21 +7536,6 @@ function exprToValueBlockInner(expr: JSExpr): SerializedBlocklyBlock | null {
       return block('sz_g3k_velocity_of', { CHAR: expr.charVar, AXIS: expr.axis })
     case 'g3k:distanceBetween':
       return block('sz_g3k_distance_between', { A: expr.aVar, B: expr.bVar })
-    case 'g3k:randomBetween': {
-      const from = exprToValueBlock(valueToExpr(expr.from))
-      const to = exprToValueBlock(valueToExpr(expr.to))
-      return from === null || to === null
-        ? null
-        : block('sz_g3k_random_between', {}, {}, undefined, { FROM: from, TO: to })
-    }
-    case 'g3k:randomChance': {
-      const percent = exprToValueBlock(valueToExpr(expr.percent))
-      return percent === null
-        ? null
-        : block('sz_g3k_random_chance', {}, {}, undefined, { PERCENT: percent })
-    }
-    case 'g3k:timeLeft':
-      return block('sz_g3k_time_left', {})
     case 'g3k:maxHealthOf':
       return block('sz_g3k_max_health_of', { CHAR: expr.charVar })
     case 'g3k:stateOf':
@@ -7625,12 +7554,10 @@ function exprToValueBlockInner(expr: JSExpr): SerializedBlocklyBlock | null {
         ? null
         : block('sz_w3d_ground_height', {}, {}, undefined, { X: x, Z: z })
     }
-    case 'w3d:carPos':
-      return block('sz_w3d_car_pos', { AXIS: expr.axis })
     case 'w3d:carSpeed':
       return block('sz_w3d_car_speed', {})
-    case 'w3d:personPos':
-      return block('sz_w3d_person_pos', { AXIS: expr.axis })
+    case 'w3d:playerPos':
+      return block('sz_w3d_player_pos', { AXIS: expr.axis })
     case 'w3d:isDriving':
       return block('sz_w3d_is_driving', {})
     case 'w3d:coinCount':

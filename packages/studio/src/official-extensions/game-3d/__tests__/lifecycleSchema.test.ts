@@ -68,14 +68,14 @@ describe('game-3d — contrato de ciclo de vida', () => {
           size: 1,
           color: '#22d3ee',
         },
-        { type: 'g3d:createSwarm', varName: 'enxame', worldVar: 'cena' },
+        { type: 'g3d:createGroup', varName: 'enxame' },
         {
           type: 'g3d:animate',
           worldVar: 'cena',
           body: [
             {
-              type: 'g3d:spawnInSwarm',
-              swarmVar: 'enxame',
+              type: 'g3d:spawnCopy',
+              groupVar: 'enxame',
               originalVar: 'modelo',
               x: 0,
               y: 0,
@@ -124,7 +124,7 @@ describe('game-3d — contrato de ciclo de vida', () => {
     const rootStop = SZIRSchema.safeParse(
       project([
         { type: 'g3d:createScene', canvasId: 'tela', varName: 'cena' },
-        { type: 'g3d:stop', worldVar: 'cena' },
+        { type: 'g3d:gameOver', result: 'perdeu' },
       ]),
     )
     const runningStop = SZIRSchema.safeParse(
@@ -133,7 +133,7 @@ describe('game-3d — contrato de ciclo de vida', () => {
         {
           type: 'g3d:animate',
           worldVar: 'cena',
-          body: [{ type: 'g3d:stop', worldVar: 'cena' }],
+          body: [{ type: 'g3d:gameOver', result: 'perdeu' }],
         },
       ]),
     )
@@ -147,7 +147,7 @@ describe('game-3d — contrato de ciclo de vida', () => {
     const classWithStop = {
       type: 'classDecl' as const,
       name: 'Jogo',
-      ctorBody: [{ type: 'g3d:stop' as const, worldVar: 'cena' }],
+      ctorBody: [{ type: 'g3d:gameOver' as const, result: 'perdeu' as const }],
       methods: [],
     }
 

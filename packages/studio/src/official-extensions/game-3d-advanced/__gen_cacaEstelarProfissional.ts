@@ -20,7 +20,7 @@ import { collectTypes } from './exampleSourceUtils'
 export const CACA_ESTELAR_PROFISSIONAL_SOURCE = `
 SZGameKit3D.setup({ width: 1280, height: 720, world: 60, sky: "#0b1030", ground: "#111827" });
 SZGameKit3D.setEffects({ shadows: true, bloom: true, strength: 1.3, vignette: true });
-SZGameKit3D.setScreenText("menu", "Caça Estelar Profissional", "Voe com WASD ou as setas e atire com a barra de espaço ou o clique. As naves inimigas vagam, perseguem e fogem quando atingidas. Abata 10 antes que os escudos acabem!", "Decolar");
+SZGameKit3D.setScreenText("inicio", "Caça Estelar Profissional", "Voe com WASD ou as setas e atire com a barra de espaço ou o clique. As naves inimigas vagam, perseguem e fogem quando atingidas. Abata 10 antes que os escudos acabem!", "Decolar");
 SZGameKit3D.setScreenText("vitoria", "Ás dos céus!", "Você abateu as 10 naves inimigas. O espaço está seguro!", "Voar de novo");
 SZGameKit3D.setScreenText("fim", "Nave abatida...", "Os inimigos foram demais. Persiga as naves que fogem e desvie das que atacam!", "Tentar de novo");
 SZGameKit3D.defineMold("nave", { health: 5, speed: 0 }, function () {
@@ -65,7 +65,7 @@ SZGameKit3D.onEntityStateUpdate("nave", "parado", function (ela, dt) {
   SZGameKit3D.moveWithKeys(ela, 14);
   SZGameKit3D.faceVelocity(ela);
   recarga = recarga - dt;
-  if ((SZGameKit3D.keyDown("espaço") || SZGameKit3D.mousePressed()) && recarga <= 0) {
+  if ((SZGameKit3D.keyDown("Space") || SZGameKit3D.mousePressed()) && recarga <= 0) {
     recarga = 0.35;
     SZGameKit3D.spawnFrom("tiro", ela);
     SZGameKit3D.playEffect("laser");
@@ -148,8 +148,8 @@ SZGameKit3D.onUpdate(function (dt) {
     SZGameKit3D.spawn("caca", SZGameKit3D.randomBetween(-20, 20), 1, SZGameKit3D.randomBetween(-20, 20));
   }
   SZGameKit3D.cullFar("tiro", 60);
-  SZGameKit3D.setHud("top-left", "Naves: " + pontos + " de 10");
-  SZGameKit3D.setHud("top-right", "Atire com espaço ou clique");
+  SZGameKit3D.hudText("top-left", "Naves: " + pontos + " de 10");
+  SZGameKit3D.hudText("top-right", "Atire com espaço ou clique");
   if (pontos >= 10) {
     SZGameKit3D.playEffect("win");
     SZGameKit3D.setState("vitoria");

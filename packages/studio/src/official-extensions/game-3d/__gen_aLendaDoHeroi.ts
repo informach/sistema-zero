@@ -16,10 +16,14 @@ import { collectTypes, stripIds } from '../game-3d-advanced/exampleSourceUtils'
  * acabem. A FSM por-entidade completa vive no degrau Profissional (g3k). Sem kit
  * próprio, sem imagem.
  */
+// Giros (review 3D, lote 7): estes fontes nasceram (07/2026) com spin 0.4-1.6, escrito como se
+// fosse "voltas em radianos por SEGUNDO"; o spin de então era por QUADRO, e a conversão fiel do
+// lote 4 (x 60 x 180/pi) deu 1375-5500 graus/s, um borrão. Os valores viraram graus por
+// segundo legíveis: itens 180, enfeites 45-90.
 export const A_LENDA_DO_HEROI_SOURCE = `
 const cena = SZGame3D.createFullscreenScene("#0f2417");
 SZGame3D.setSky(cena, "#1e3a2a", "#2f5541");
-SZGame3D.topCamera(cena, null);
+SZGame3D.cameraMode(cena, "cima", null);
 SZGame3D.setFog(cena, "#0f2417", 42, 120);
 SZGame3D.addSunLight(cena, "#fef9c3", 1);
 const chao = SZGame3D.createBlock(cena, { width: 36, height: 1, depth: 36, color: "#14532d" });
@@ -34,15 +38,15 @@ SZGame3D.setMaterial(coroa, "glow");
 SZGame3D.setPosition(coroa, 0, 1.6, 0);
 const moldeMonstro = SZGame3D.createBox(cena, { size: 1, color: "#7c3aed" });
 SZGame3D.setVisible(moldeMonstro, "hide");
-const monstros = SZGame3D.createSwarm(cena);
+const monstros = SZGame3D.createGroup();
 let pontos = 0;
 let vida = 3;
 let heroiX = 0;
 let heroiZ = 0;
 let rodando = true;
 document.getElementById("retry")?.addEventListener("click", (event) => {
-  SZGame3D.forEachInSwarm(monstros, (item) => {
-    SZGame3D.removeFromSwarm(monstros, item);
+  SZGame3D.forEachInGroup(monstros, (item) => {
+    SZGame3D.removeFromGroup(monstros, item);
   });
   pontos = 0;
   vida = 3;
@@ -56,7 +60,7 @@ document.getElementById("retry")?.addEventListener("click", (event) => {
 });
 SZGame3D.animate(cena, () => {
   if (rodando) {
-    SZGame3D.spin(coroa, "y", 1.2);
+    SZGame3D.spin(coroa, "y", 90);
     if (SZGame3D.keyDown("ArrowLeft") || SZGame3D.keyDown("KeyA")) {
       heroiX = heroiX - 0.16;
     }
@@ -83,23 +87,23 @@ SZGame3D.animate(cena, () => {
     }
     SZGame3D.setPosition(heroi, heroiX, 0.65, heroiZ);
     SZGame3D.setPosition(coroa, heroiX, 1.6, heroiZ);
-    SZGame3D.forEachInSwarm(monstros, (item) => {
+    SZGame3D.forEachInGroup(monstros, (item) => {
       if (SZGame3D.keyDown("Space") && SZGame3D.isNear(heroi, item, 2.3)) {
-        SZGame3D.removeFromSwarm(monstros, item);
+        SZGame3D.removeFromGroup(monstros, item);
         pontos = pontos + 1;
         SZGame3D.playEffect("coin");
         document.getElementById("score").textContent = "Monstros: " + pontos + " de 10";
       } else {
         if (SZGame3D.isNear(heroi, item, 1.35)) {
-          SZGame3D.removeFromSwarm(monstros, item);
+          SZGame3D.removeFromGroup(monstros, item);
           vida = vida - 1;
           SZGame3D.playEffect("hit");
           document.getElementById("hearts").textContent = "Vida: " + vida;
         } else {
           if (SZGame3D.isNear(heroi, item, 13)) {
-            SZGame3D.moveTowards(item, SZGame3D.getPos(heroi, "x"), 0.65, SZGame3D.getPos(heroi, "z"), 0.05);
+            SZGame3D.moveTowards(item, SZGame3D.getPos(heroi, "x"), 0.65, SZGame3D.getPos(heroi, "z"), 3.08);
           } else {
-            SZGame3D.spin(item, "y", 1.6);
+            SZGame3D.spin(item, "y", 180);
           }
         }
       }
@@ -122,9 +126,9 @@ SZGame3D.animate(cena, () => {
 });
 SZGame3D.everySecondsLoop(1.6, () => {
   if (rodando) {
-    if (SZGame3D.countSwarm(monstros) < 6) {
+    if (SZGame3D.countGroup(monstros) < 6) {
       const angulo = Math.random() * 6.283;
-      SZGame3D.spawnInSwarm(monstros, moldeMonstro, Math.cos(angulo) * 13, 0.65, Math.sin(angulo) * 13);
+      SZGame3D.spawnCopy(monstros, moldeMonstro, Math.cos(angulo) * 13, 0.65, Math.sin(angulo) * 13);
     }
   }
 });

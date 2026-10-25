@@ -58,8 +58,8 @@ describe('Exemplo Corrida Infinita Profissional — drift contra o parser real',
       'g3k:cullFar', // recicla o que passou (o pool nunca lota)
       'g3k:recycle', // a moeda coletada devolve ao pool
       'g3k:setSeed', // sorteio determinístico
-      'g3k:randomBetween', // a faixa sorteada passa pelo acaso DO KIT
-      'g3k:randomChance',
+      'g3k:random', // a faixa sorteada passa pelo acaso DO KIT
+      'g3k:random',
     ]) {
       expect(types.has(t)).toBe(true)
     }
@@ -93,17 +93,17 @@ describe('Exemplo Corrida Infinita Profissional — drift contra o parser real',
     expect(types.has('g3k:defineEffect')).toBe(true)
     expect(types.has('g3k:burstOn')).toBe(true)
     expect(types.has('g3k:playEffect')).toBe(true)
-    expect(types.has('g3k:cameraShake')).toBe(true)
-    expect(types.has('g3k:endGame')).toBe(true)
+    expect(types.has('g3k:shakeCamera')).toBe(true)
+    expect(types.has('g3k:gameOver')).toBe(true)
   })
 
   it('telas e HUD: menu e fim com textos + placar/tempo nos cantos', () => {
     const statements = behaviorStatements(corridaInfinitaProfissionalExample.ir)
     const types = collectTypes(statements)
-    expect(types.has('g3k:setScreenText')).toBe(true)
-    expect(types.has('g3k:hudText')).toBe(true)
+    expect(types.has('g3k:screenText')).toBe(true)
+    expect(types.has('g3k:cornerText')).toBe(true)
     const raw = JSON.stringify(statements)
-    for (const screen of ['"menu"', '"fim"']) {
+    for (const screen of ['"inicio"', '"fim"']) {
       expect(raw).toContain(screen)
     }
   })

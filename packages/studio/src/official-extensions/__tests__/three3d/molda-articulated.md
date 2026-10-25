@@ -21,6 +21,11 @@ Ambos duram um segundo e têm poses finais distintas da posição original.
 As matrizes registradas representam cada peça no espaço do modelo, antes do
 posicionamento da entidade no jogo. Não há texturas ou esqueleto nesta fixture.
 
+As fixtures moram aqui (`official-extensions/__tests__/three3d/`) porque os três
+motores 3D as usam: o carregador compartilhado em `three3dModelsRuntime.test.ts` e
+um teste de integração em cada extensão. Os testes citados abaixo ficam em
+`game-3d-advanced/__tests__/`.
+
 `moldaArticulated.test.ts` executa o runtime do Studio com GLTFLoader,
 SkeletonUtils e AnimationMixer reais, substituindo apenas a fronteira GPU.
 Compara matrizes já atualizadas pelo render, sem forçar uma atualização que

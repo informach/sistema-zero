@@ -10,8 +10,9 @@ export { coastalProceduralExample, folioProceduralExample, vocationProceduralExa
 /**
  * Exemplos da vitrine do Mundo 3D. A IR de cada um foi GERADA pelo parser real
  * a partir do fonte em __gen_<nome>.ts (chamadas SZWorld3D.*); o drift test em
- * __tests__/examples.test.ts guarda o resultado. Se o parser mudar a forma
- * canonica, o drift avisa: re-rode o __gen e re-embuta a IR aqui. Todos
+ * __tests__/examples.test.ts guarda o resultado. Mudou um __gen ou a forma
+ * canonica do parser? `bun run gen:world-3d-examples` reescreve o `ir.behavior`
+ * aqui e em referenceExamples.ts (`check:world-3d-examples` confere). Todos
  * asset-free (natureza procedural, sem imagens).
  */
 
@@ -19,7 +20,7 @@ export const meuMundoExample: ExtensionExample = {
   name: 'Meu Mundo',
   experience: 'exploration',
   description:
-    'Um mundo 3D aberto de floresta para dirigir: morros, agua, grama ao vento e ciclo de dia e noite. Tem carrinho com turbo, um totem de boas-vindas, um ponto secreto para achar e uma area que avisa. Feito so com blocos do Mundo 3D. Abra e explore!',
+    'Um mundo 3D aberto de floresta para dirigir: morros, água, grama ao vento e ciclo de dia e noite. Tem carrinho com turbo, um totem de boas-vindas, um ponto secreto para achar e uma área que avisa. Feito só com blocos do Mundo 3D. Abra e explore!',
   ir: {
     html: [],
     css: [],
@@ -179,7 +180,7 @@ export const meuMundoExample: ExtensionExample = {
               type: 'w3d:say',
               text: {
                 type: 'str',
-                value: 'Voce achou o tesouro escondido!',
+                value: 'Você achou o tesouro escondido!',
               },
               secs: {
                 type: 'num',
@@ -187,8 +188,8 @@ export const meuMundoExample: ExtensionExample = {
               },
             },
             {
-              type: 'w3d:cameraShake',
-              force: {
+              type: 'w3d:shakeCamera',
+              strength: {
                 type: 'num',
                 value: 0.6,
               },
@@ -204,12 +205,12 @@ export const meuMundoExample: ExtensionExample = {
           name: 'laguinho',
           body: [
             {
-              type: 'w3d:hud',
+              type: 'w3d:cornerText',
+              corner: 'bottom-left',
               text: {
                 type: 'str',
-                value: 'Cuidado com a agua!',
+                value: 'Cuidado com a água!',
               },
-              corner: 'baixo-esquerda',
             },
           ],
         },
@@ -217,8 +218,8 @@ export const meuMundoExample: ExtensionExample = {
           type: 'w3d:onCrash',
           body: [
             {
-              type: 'w3d:cameraShake',
-              force: {
+              type: 'w3d:shakeCamera',
+              strength: {
                 type: 'num',
                 value: 0.5,
               },
@@ -236,7 +237,8 @@ export const meuMundoExample: ExtensionExample = {
           dtName: 'dt',
           body: [
             {
-              type: 'w3d:hud',
+              type: 'w3d:cornerText',
+              corner: 'top-right',
               text: {
                 type: 'binop',
                 op: '+',
@@ -252,7 +254,6 @@ export const meuMundoExample: ExtensionExample = {
                   },
                 },
               },
-              corner: 'topo-direita',
             },
           ],
         },
@@ -262,10 +263,10 @@ export const meuMundoExample: ExtensionExample = {
 }
 
 export const corridaExample: ExtensionExample = {
-  name: 'Corrida do Por do Sol',
+  name: 'Corrida do Pôr do Sol',
   experience: 'game',
   description:
-    'Uma corrida no deserto ao entardecer: siga a trilha pelos 5 checkpoints na ordem e feche as voltas. O cronometro e o recorde aparecem sozinhos. Bata o seu melhor tempo!',
+    'Uma corrida no deserto ao entardecer: siga a trilha pelos 5 checkpoints na ordem e feche as voltas. O cronômetro e o recorde aparecem sozinhos. Bata o seu melhor tempo!',
   ir: {
     html: [],
     css: [],
@@ -426,7 +427,7 @@ export const corridaExample: ExtensionExample = {
             type: 'num',
             value: 8,
           },
-          title: 'Corrida do Por do Sol',
+          title: 'Corrida do Pôr do Sol',
           body: 'Passe pelos checkpoints na ordem e feche a volta!',
         },
         {
@@ -575,8 +576,8 @@ export const corridaExample: ExtensionExample = {
               },
             },
             {
-              type: 'w3d:cameraShake',
-              force: {
+              type: 'w3d:shakeCamera',
+              strength: {
                 type: 'num',
                 value: 0.7,
               },
@@ -594,7 +595,8 @@ export const corridaExample: ExtensionExample = {
           dtName: 'dt',
           body: [
             {
-              type: 'w3d:hud',
+              type: 'w3d:cornerText',
+              corner: 'bottom-right',
               text: {
                 type: 'binop',
                 op: '+',
@@ -618,7 +620,6 @@ export const corridaExample: ExtensionExample = {
                   value: 's',
                 },
               },
-              corner: 'baixo-direita',
             },
           ],
         },
@@ -628,10 +629,10 @@ export const corridaExample: ExtensionExample = {
 }
 
 export const bolicheExample: ExtensionExample = {
-  name: 'Boliche na Praca',
+  name: 'Boliche na Praça',
   experience: 'game',
   description:
-    'Uma pista de boliche na praia: acelere o jipe contra os 10 pinos e derrube todos para o STRIKE! Tem tambem pilhas de latas e caixas para desabar.',
+    'Uma pista de boliche na praia: acelere o jipe contra os 10 pinos e derrube todos para o STRIKE! Tem também pilhas de latas e caixas para desabar.',
   ir: {
     html: [],
     css: [],
@@ -719,7 +720,7 @@ export const bolicheExample: ExtensionExample = {
             type: 'num',
             value: -12,
           },
-          title: 'Boliche na Praca',
+          title: 'Boliche na Praça',
           body: 'Acelere contra os pinos! Derrube todos para o strike.',
         },
         {
@@ -786,8 +787,8 @@ export const bolicheExample: ExtensionExample = {
               },
             },
             {
-              type: 'w3d:cameraShake',
-              force: {
+              type: 'w3d:shakeCamera',
+              strength: {
                 type: 'num',
                 value: 0.8,
               },
@@ -805,7 +806,8 @@ export const bolicheExample: ExtensionExample = {
           dtName: 'dt',
           body: [
             {
-              type: 'w3d:hud',
+              type: 'w3d:cornerText',
+              corner: 'top-left',
               text: {
                 type: 'binop',
                 op: '+',
@@ -825,10 +827,10 @@ export const bolicheExample: ExtensionExample = {
                   value: '/10',
                 },
               },
-              corner: 'topo-esquerda',
             },
             {
-              type: 'w3d:hud',
+              type: 'w3d:cornerText',
+              corner: 'top-right',
               text: {
                 type: 'binop',
                 op: '+',
@@ -840,7 +842,6 @@ export const bolicheExample: ExtensionExample = {
                   type: 'w3d:knockedCount',
                 },
               },
-              corner: 'topo-direita',
             },
           ],
         },
@@ -850,10 +851,10 @@ export const bolicheExample: ExtensionExample = {
 }
 
 export const invernoExample: ExtensionExample = {
-  name: 'Inverno Magico',
+  name: 'Inverno Mágico',
   experience: 'exploration',
   description:
-    'Um mundo de neve a noite, com nevando de verdade e vento. O gelo escorrega o carrinho! Pinheiros cobertos de neve e totens pelo caminho.',
+    'Um mundo de neve à noite, nevando de verdade e com vento. O gelo faz o carrinho escorregar! Pinheiros cobertos de neve e totens pelo caminho.',
   ir: {
     html: [],
     css: [],
@@ -956,7 +957,7 @@ export const invernoExample: ExtensionExample = {
             type: 'num',
             value: 12,
           },
-          title: 'Inverno Magico',
+          title: 'Inverno Mágico',
           body: 'Uma noite de neve. Dirija com cuidado, o gelo escorrega!',
         },
         {
@@ -984,12 +985,12 @@ export const invernoExample: ExtensionExample = {
           dtName: 'dt',
           body: [
             {
-              type: 'w3d:hud',
+              type: 'w3d:cornerText',
+              corner: 'bottom-left',
               text: {
                 type: 'str',
                 value: 'Noite de neve',
               },
-              corner: 'baixo-esquerda',
             },
           ],
         },
@@ -1002,7 +1003,7 @@ export const ilhaExample: ExtensionExample = {
   name: 'Ilha dos Criadores',
   experience: 'game',
   description:
-    'Um arquipelago de ferias para explorar a pe, de carrinho e de BARCO (aperte E para entrar e sair). Tem farol, ponte, palmeiras, a amiga Lia que conversa e uma missao: pegue 15 moedas e vire Cacador de Moedas, com fogos e conquista!',
+    'Um arquipélago de férias para explorar a pé, de carrinho e de BARCO (aperte E para entrar e sair). Tem farol, ponte, palmeiras, a amiga Lia que conversa e uma missão: pegue 15 moedas e vire Caçador de Moedas, com fogos e conquista!',
   ir: {
     html: [],
     css: [],
@@ -1252,7 +1253,7 @@ export const ilhaExample: ExtensionExample = {
             {
               type: 'w3d:npcSay',
               name: 'Lia',
-              text: 'Oi! Bem-vindo a ilha!',
+              text: 'Oi! Bem-vindo à ilha!',
             },
             {
               type: 'w3d:npcSay',
@@ -1262,7 +1263,7 @@ export const ilhaExample: ExtensionExample = {
             {
               type: 'w3d:npcSay',
               name: 'Lia',
-              text: 'Pegue 15 moedas e va ate la!',
+              text: 'Pegue 15 moedas e vá até lá!',
             },
           ],
         },
@@ -1302,7 +1303,7 @@ export const ilhaExample: ExtensionExample = {
               type: 'w3d:say',
               text: {
                 type: 'str',
-                value: 'Missao completa! Voce e um Cacador de Moedas!',
+                value: 'Missão completa! Você é um Caçador de Moedas!',
               },
               secs: {
                 type: 'num',
@@ -1311,7 +1312,7 @@ export const ilhaExample: ExtensionExample = {
             },
             {
               type: 'w3d:achievement',
-              name: 'Cacador de Moedas',
+              name: 'Caçador de Moedas',
             },
           ],
         },
@@ -1325,7 +1326,7 @@ export const parqueExample: ExtensionExample = {
   name: 'Parque dos Brinquedos',
   experience: 'exploration',
   description:
-    'Um parquinho de bagunca fisica: derrube as letras de PARQUE, jogue boliche com o carro de corrida, exploda caixas TNT em cadeia e aperte o botao do TORNADO! Buzine com H, deixe marcas de pneu e escreva um recado no cantinho.',
+    'Um parquinho de bagunça física: derrube as letras de PARQUE, jogue boliche com o carro de corrida, exploda caixas TNT em cadeia e aperte o botão do TORNADO! Buzine com H, deixe marcas de pneu e escreva um recado no cantinho.',
   ir: {
     html: [],
     css: [],
@@ -1582,12 +1583,12 @@ export const parqueExample: ExtensionExample = {
           mode: 'ver',
         },
         {
-          type: 'w3d:hud',
+          type: 'w3d:cornerText',
+          corner: 'bottom-left',
           text: {
             type: 'str',
             value: 'Buzine com H! E tem um segredo: cima cima baixo baixo esq dir esq dir B A',
           },
-          corner: 'baixo-esquerda',
         },
       ],
       events: [
@@ -1607,8 +1608,8 @@ export const parqueExample: ExtensionExample = {
           type: 'w3d:onExplosion',
           body: [
             {
-              type: 'w3d:cameraShake',
-              force: {
+              type: 'w3d:shakeCamera',
+              strength: {
                 type: 'num',
                 value: 0.6,
               },
@@ -1662,10 +1663,10 @@ export const parqueExample: ExtensionExample = {
 }
 
 export const vilaExample: ExtensionExample = {
-  name: 'Vila das Vocacoes',
+  name: 'Vila das Vocações',
   experience: 'exploration',
   description:
-    'Uma cidadezinha COMPLETA com transito e semaforos de verdade! Converse com a Guia (ela faz uma PERGUNTA com dois botoes), abra as portas da Padaria e da Oficina para conhecer as profissoes, pegue moedas na praca e use o minimapa para teleportar.',
+    'Uma cidadezinha COMPLETA com trânsito e semáforos de verdade! Converse com a Guia (ela faz uma PERGUNTA com dois botões), abra as portas da Padaria e da Oficina para conhecer as profissões, pegue moedas na praça e use o minimapa para teleportar.',
   ir: {
     html: [],
     css: [],
@@ -1727,7 +1728,7 @@ export const vilaExample: ExtensionExample = {
             value: 270,
           },
           title: 'Padaria',
-          body: 'Cheiro de pao quentinho! A padeira acorda cedinho para assar o pao da vila inteira.',
+          body: 'Cheiro de pão quentinho! A padeira acorda cedinho para assar o pão da vila inteira.',
           image: '',
         },
         {
@@ -1745,7 +1746,7 @@ export const vilaExample: ExtensionExample = {
             value: 90,
           },
           title: 'Oficina',
-          body: 'Aqui a mecanica conserta os carrinhos da vila. Chaves, parafusos e muita engenhoca!',
+          body: 'Aqui a mecânica conserta os carrinhos da vila. Chaves, parafusos e muita engenhoca!',
           image: '',
         },
         {
@@ -1799,12 +1800,12 @@ export const vilaExample: ExtensionExample = {
           mode: 'teleporte',
         },
         {
-          type: 'w3d:hud',
+          type: 'w3d:cornerText',
+          corner: 'bottom-left',
           text: {
             type: 'str',
             value: 'Aperte E nas portas e converse com a Guia!',
           },
-          corner: 'baixo-esquerda',
         },
       ],
       events: [
@@ -1815,25 +1816,25 @@ export const vilaExample: ExtensionExample = {
             {
               type: 'w3d:npcSay',
               name: 'Guia',
-              text: 'Bem-vindo a Vila das Vocacoes!',
+              text: 'Bem-vindo à Vila das Vocações!',
             },
             {
               type: 'w3d:npcAsk',
               name: 'Guia',
-              question: 'O que voce quer ser quando crescer?',
+              question: 'O que você quer ser quando crescer?',
               optA: 'Padeiro',
               bodyA: [
                 {
                   type: 'w3d:npcSay',
                   name: 'Guia',
-                  text: 'A padaria fica na entrada leste. Va conhecer!',
+                  text: 'A padaria fica na entrada leste. Vá conhecer!',
                 },
                 {
                   type: 'w3d:questDone',
                   name: 'conhecer',
                 },
               ],
-              optB: 'Mecanico',
+              optB: 'Mecânico',
               bodyB: [
                 {
                   type: 'w3d:npcSay',
@@ -1857,7 +1858,7 @@ export const vilaExample: ExtensionExample = {
             },
             {
               type: 'w3d:achievement',
-              name: 'Cidadao da Vila',
+              name: 'Cidadão da Vila',
             },
           ],
         },
@@ -1871,7 +1872,7 @@ export const luaExample: ExtensionExample = {
   name: 'Base da Lua',
   experience: 'game',
   description:
-    'Um mundo LUNAR de verdade: gravidade fraquinha (os pulos flutuam!), ceu estrelado, crateras, foguete e bandeira. Voe de jetpack ate a cratera grande, pegue as 12 moedas e vire Astronauta, com direito a fogos!',
+    'Um mundo LUNAR de verdade: gravidade fraquinha (os pulos flutuam!), céu estrelado, crateras, foguete e bandeira. Voe de jetpack até a cratera grande, pegue as 12 moedas e vire Astronauta, com direito a fogos!',
   ir: {
     html: [],
     css: [],
@@ -1993,7 +1994,7 @@ export const luaExample: ExtensionExample = {
             value: 6,
           },
           title: 'Base da Lua',
-          body: 'Pulos flutuantes! Segure espaco com o jetpack para voar.',
+          body: 'Pulos flutuantes! Segure espaço com o jetpack para voar.',
         },
       ],
       events: [
@@ -2045,7 +2046,7 @@ export const fazendinhaExample: ExtensionExample = {
   name: 'Fazendinha',
   experience: 'exploration',
   description:
-    'Uma fazenda viva: celeiro vermelho, moinho que GIRA com o vento, fileiras de milho, alface e abobora, cerquinha de madeira e bichinhos passeando (galinhas que bicam e vacas que pastam). A Rosa pergunta o que voce quer colher!',
+    'Uma fazenda viva: celeiro vermelho, moinho que GIRA com o vento, fileiras de milho, alface e abóbora, cerquinha de madeira e bichinhos passeando (galinhas que bicam e vacas que pastam). A Rosa pergunta o que você quer colher!',
   ir: {
     html: [],
     css: [],
@@ -2267,7 +2268,7 @@ export const fazendinhaExample: ExtensionExample = {
                 {
                   type: 'w3d:npcSay',
                   name: 'Rosa',
-                  text: 'O milharal fica atras da cerca. Nao pise nas mudas!',
+                  text: 'O milharal fica atrás da cerca. Não pise nas mudas!',
                 },
               ],
               optB: 'Alface',
@@ -2275,7 +2276,7 @@ export const fazendinhaExample: ExtensionExample = {
                 {
                   type: 'w3d:npcSay',
                   name: 'Rosa',
-                  text: 'As alfaces estao do lado do celeiro. Capriche!',
+                  text: 'As alfaces estão do lado do celeiro. Capriche!',
                 },
               ],
             },
@@ -2288,10 +2289,10 @@ export const fazendinhaExample: ExtensionExample = {
 }
 
 export const pistaMalucaExample: ExtensionExample = {
-  name: 'Corrida Maluca Profissional',
+  name: 'Pista Maluca',
   experience: 'game',
   description:
-    'O corredor de pista Corrida Maluca recriado no Mundo 3D: dirija um carro de corrida pela cidadezinha, desvie do transito autonomo e passe pelos aneis na ordem para fechar as voltas. O recorde fica salvo. So blocos do Mundo 3D, sem imagens.',
+    'Uma corrida maluca pela cidadezinha: dirija um carro de corrida, desvie do trânsito que anda sozinho e passe pelos anéis na ordem para fechar as voltas. O recorde fica salvo. Só blocos do Mundo 3D, sem imagens.',
   ir: {
     html: [],
     css: [],
@@ -2299,58 +2300,161 @@ export const pistaMalucaExample: ExtensionExample = {
     version: 2,
     behavior: {
       start: [
-        { type: 'w3d:setup', style: 'primavera', world: { type: 'num', value: 200 } },
-        { type: 'w3d:terrain', h: { type: 'num', value: 2 }, s: { type: 'num', value: 8 } },
-        { type: 'w3d:setTime', time: 'meiodia' },
-        { type: 'w3d:grass', amount: 'pouca' },
+        {
+          type: 'w3d:setup',
+          style: 'primavera',
+          world: {
+            type: 'num',
+            value: 200,
+          },
+        },
+        {
+          type: 'w3d:terrain',
+          h: {
+            type: 'num',
+            value: 2,
+          },
+          s: {
+            type: 'num',
+            value: 8,
+          },
+        },
+        {
+          type: 'w3d:setTime',
+          time: 'meiodia',
+        },
+        {
+          type: 'w3d:grass',
+          amount: 'pouca',
+        },
         {
           type: 'w3d:city',
-          x: { type: 'num', value: 0 },
-          z: { type: 'num', value: 0 },
+          x: {
+            type: 'num',
+            value: 0,
+          },
+          z: {
+            type: 'num',
+            value: 0,
+          },
           size: 'media',
           mode: 'dia',
         },
-        { type: 'w3d:traffic', n: { type: 'num', value: 8 }, sem: 'semaforos' },
-        { type: 'w3d:car', style: 'corrida', color: '#ef4444' },
-        { type: 'w3d:carBoost', force: { type: 'num', value: 2 } },
-        { type: 'w3d:engineSound', on: true },
+        {
+          type: 'w3d:traffic',
+          n: {
+            type: 'num',
+            value: 8,
+          },
+          sem: 'semaforos',
+        },
+        {
+          type: 'w3d:car',
+          style: 'corrida',
+          color: '#ef4444',
+        },
+        {
+          type: 'w3d:carBoost',
+          force: {
+            type: 'num',
+            value: 2,
+          },
+        },
+        {
+          type: 'w3d:engineSound',
+          on: true,
+        },
         {
           type: 'w3d:totemText',
-          x: { type: 'num', value: 0 },
-          z: { type: 'num', value: 14 },
-          title: 'Corrida Maluca',
-          body: 'Dirija pela cidade e passe pelos aneis na ordem, desviando do transito!',
+          x: {
+            type: 'num',
+            value: 0,
+          },
+          z: {
+            type: 'num',
+            value: 14,
+          },
+          title: 'Pista Maluca',
+          body: 'Dirija pela cidade e passe pelos anéis na ordem, desviando do trânsito!',
         },
         {
           type: 'w3d:raceCreate',
-          x: { type: 'num', value: 0 },
-          z: { type: 'num', value: 18 },
-          deg: { type: 'num', value: 90 },
-          laps: { type: 'num', value: 2 },
+          x: {
+            type: 'num',
+            value: 0,
+          },
+          z: {
+            type: 'num',
+            value: 18,
+          },
+          deg: {
+            type: 'num',
+            value: 90,
+          },
+          laps: {
+            type: 'num',
+            value: 2,
+          },
         },
         {
           type: 'w3d:raceCheckpoint',
-          x: { type: 'num', value: 28 },
-          z: { type: 'num', value: 0 },
-          deg: { type: 'num', value: 0 },
+          x: {
+            type: 'num',
+            value: 28,
+          },
+          z: {
+            type: 'num',
+            value: 0,
+          },
+          deg: {
+            type: 'num',
+            value: 0,
+          },
         },
         {
           type: 'w3d:raceCheckpoint',
-          x: { type: 'num', value: 0 },
-          z: { type: 'num', value: -28 },
-          deg: { type: 'num', value: 90 },
+          x: {
+            type: 'num',
+            value: 0,
+          },
+          z: {
+            type: 'num',
+            value: -28,
+          },
+          deg: {
+            type: 'num',
+            value: 90,
+          },
         },
         {
           type: 'w3d:raceCheckpoint',
-          x: { type: 'num', value: -28 },
-          z: { type: 'num', value: 0 },
-          deg: { type: 'num', value: 0 },
+          x: {
+            type: 'num',
+            value: -28,
+          },
+          z: {
+            type: 'num',
+            value: 0,
+          },
+          deg: {
+            type: 'num',
+            value: 0,
+          },
         },
         {
           type: 'w3d:raceCheckpoint',
-          x: { type: 'num', value: 0 },
-          z: { type: 'num', value: 18 },
-          deg: { type: 'num', value: 90 },
+          x: {
+            type: 'num',
+            value: 0,
+          },
+          z: {
+            type: 'num',
+            value: 18,
+          },
+          deg: {
+            type: 'num',
+            value: 90,
+          },
         },
       ],
       events: [
@@ -2359,8 +2463,14 @@ export const pistaMalucaExample: ExtensionExample = {
           body: [
             {
               type: 'w3d:say',
-              text: { type: 'str', value: 'Valendo! Cuidado com o transito!' },
-              secs: { type: 'num', value: 2 },
+              text: {
+                type: 'str',
+                value: 'Valendo! Cuidado com o trânsito!',
+              },
+              secs: {
+                type: 'num',
+                value: 2,
+              },
             },
           ],
         },
@@ -2375,14 +2485,31 @@ export const pistaMalucaExample: ExtensionExample = {
                 left: {
                   type: 'binop',
                   op: '+',
-                  left: { type: 'str', value: 'Chegou! Tempo: ' },
-                  right: { type: 'mathUnary', fn: 'round', arg: { type: 'w3d:raceTime' } },
+                  left: {
+                    type: 'str',
+                    value: 'Chegou! Tempo: ',
+                  },
+                  right: {
+                    type: 'mathUnary',
+                    fn: 'round',
+                    arg: {
+                      type: 'w3d:raceTime',
+                    },
+                  },
                 },
-                right: { type: 'str', value: 's' },
+                right: {
+                  type: 'str',
+                  value: 's',
+                },
               },
-              secs: { type: 'num', value: 4 },
+              secs: {
+                type: 'num',
+                value: 4,
+              },
             },
-            { type: 'w3d:confetti' },
+            {
+              type: 'w3d:confetti',
+            },
           ],
         },
       ],
@@ -2392,34 +2519,58 @@ export const pistaMalucaExample: ExtensionExample = {
           dtName: 'dt',
           body: [
             {
-              type: 'w3d:hud',
+              type: 'w3d:cornerText',
+              corner: 'bottom-right',
               text: {
                 type: 'binop',
                 op: '+',
                 left: {
                   type: 'binop',
                   op: '+',
-                  left: { type: 'str', value: 'Recorde: ' },
-                  right: { type: 'mathUnary', fn: 'round', arg: { type: 'w3d:raceBest' } },
+                  left: {
+                    type: 'str',
+                    value: 'Recorde: ',
+                  },
+                  right: {
+                    type: 'mathUnary',
+                    fn: 'round',
+                    arg: {
+                      type: 'w3d:raceBest',
+                    },
+                  },
                 },
-                right: { type: 'str', value: 's' },
+                right: {
+                  type: 'str',
+                  value: 's',
+                },
               },
-              corner: 'baixo-direita',
             },
             {
-              type: 'w3d:hud',
+              type: 'w3d:cornerText',
+              corner: 'bottom-left',
               text: {
                 type: 'binop',
                 op: '+',
                 left: {
                   type: 'binop',
                   op: '+',
-                  left: { type: 'str', value: 'Velocidade: ' },
-                  right: { type: 'mathUnary', fn: 'round', arg: { type: 'w3d:carSpeed' } },
+                  left: {
+                    type: 'str',
+                    value: 'Velocidade: ',
+                  },
+                  right: {
+                    type: 'mathUnary',
+                    fn: 'round',
+                    arg: {
+                      type: 'w3d:carSpeed',
+                    },
+                  },
                 },
-                right: { type: 'str', value: ' m/s' },
+                right: {
+                  type: 'str',
+                  value: ' m/s',
+                },
               },
-              corner: 'baixo-esquerda',
             },
           ],
         },
@@ -2428,17 +2579,376 @@ export const pistaMalucaExample: ExtensionExample = {
   },
 }
 
+/**
+ * Exemplo "Caça às Estrelas" (review 3D, lote 10): o primeiro JOGO completo do Mundo 3D, só
+ * com as regras de jogo compartilhadas (tela de início, coletáveis, pontos, cronômetro, vida,
+ * fim de jogo e o "Jogar de novo"). Fonte em `__gen_cacaEstrelas.ts`.
+ */
+export const cacaEstrelasExample: ExtensionExample = {
+  name: 'Caça às Estrelas',
+  experience: 'game',
+  description:
+    'Um jogo de verdade no mundo aberto: pegue 10 estrelas antes de o cronômetro zerar. Cada estrela vale um ponto, as frutas devolvem vida e o canteiro de cactos machuca. Tem tela de início, de vitória e de fim, e o "Jogar de novo" recomeça a caçada sem refazer o mundo.',
+  ir: {
+    html: [],
+    css: [],
+    extensions: [{ extensionId: 'world-3d' }],
+    version: 2,
+    behavior: {
+      start: [
+        {
+          type: 'w3d:setup',
+          style: 'primavera',
+          world: {
+            type: 'num',
+            value: 140,
+          },
+        },
+        {
+          type: 'w3d:terrain',
+          h: {
+            type: 'num',
+            value: 2,
+          },
+          s: {
+            type: 'num',
+            value: 7,
+          },
+        },
+        {
+          type: 'w3d:flatten',
+          x: {
+            type: 'num',
+            value: 0,
+          },
+          z: {
+            type: 'num',
+            value: 0,
+          },
+          r: {
+            type: 'num',
+            value: 18,
+          },
+        },
+        {
+          type: 'w3d:grass',
+          amount: 'media',
+        },
+        {
+          type: 'w3d:clearArea',
+          x: {
+            type: 'num',
+            value: 0,
+          },
+          z: {
+            type: 'num',
+            value: 0,
+          },
+          r: {
+            type: 'num',
+            value: 14,
+          },
+        },
+        {
+          type: 'w3d:scatter',
+          n: {
+            type: 'num',
+            value: 90,
+          },
+          thing: 'arvores',
+        },
+        {
+          type: 'w3d:scatter',
+          n: {
+            type: 'num',
+            value: 70,
+          },
+          thing: 'flores',
+        },
+        {
+          type: 'w3d:person',
+          color: '#f97316',
+          hat: 'bone',
+        },
+        {
+          type: 'w3d:screenText',
+          screen: 'inicio',
+          title: 'Caça às Estrelas',
+          text: 'Pegue 10 estrelas antes de o tempo acabar. Fuja dos cactos!',
+          button: 'Jogar',
+        },
+        {
+          type: 'w3d:screenText',
+          screen: 'fim',
+          title: 'Não foi dessa vez',
+          text: 'Os cactos ou o relógio venceram. Tente de novo!',
+          button: 'Jogar de novo',
+        },
+        {
+          type: 'w3d:screenText',
+          screen: 'vitoria',
+          title: 'Você pegou todas!',
+          text: '10 estrelas no bolso. Que caçada!',
+          button: 'Jogar de novo',
+        },
+        {
+          type: 'w3d:collectible',
+          n: {
+            type: 'num',
+            value: 12,
+          },
+          kind: 'estrela',
+          name: 'estrela',
+          x: {
+            type: 'num',
+            value: 0,
+          },
+          z: {
+            type: 'num',
+            value: 0,
+          },
+          r: {
+            type: 'num',
+            value: 45,
+          },
+        },
+        {
+          type: 'w3d:collectible',
+          n: {
+            type: 'num',
+            value: 3,
+          },
+          kind: 'fruta',
+          name: 'fruta',
+          x: {
+            type: 'num',
+            value: -25,
+          },
+          z: {
+            type: 'num',
+            value: 20,
+          },
+          r: {
+            type: 'num',
+            value: 12,
+          },
+        },
+        {
+          type: 'w3d:placeThing',
+          thing: 'cactos',
+          x: {
+            type: 'num',
+            value: 22,
+          },
+          z: {
+            type: 'num',
+            value: 18,
+          },
+          s: {
+            type: 'num',
+            value: 1.5,
+          },
+        },
+        {
+          type: 'w3d:placeThing',
+          thing: 'cactos',
+          x: {
+            type: 'num',
+            value: 26,
+          },
+          z: {
+            type: 'num',
+            value: 22,
+          },
+          s: {
+            type: 'num',
+            value: 1.2,
+          },
+        },
+        {
+          type: 'w3d:placeThing',
+          thing: 'cactos',
+          x: {
+            type: 'num',
+            value: 19,
+          },
+          z: {
+            type: 'num',
+            value: 24,
+          },
+          s: {
+            type: 'num',
+            value: 1.3,
+          },
+        },
+        {
+          type: 'w3d:zone',
+          name: 'cactos',
+          x: {
+            type: 'num',
+            value: 22,
+          },
+          z: {
+            type: 'num',
+            value: 21,
+          },
+          r: {
+            type: 'num',
+            value: 7,
+          },
+        },
+        {
+          type: 'w3d:marker',
+          icon: 'alerta',
+          x: {
+            type: 'num',
+            value: 22,
+          },
+          z: {
+            type: 'num',
+            value: 21,
+          },
+        },
+        {
+          type: 'w3d:life',
+          op: 'dar',
+          value: {
+            type: 'num',
+            value: 3,
+          },
+        },
+        {
+          type: 'w3d:timer',
+          op: 'comecar',
+          secs: {
+            type: 'num',
+            value: 90,
+          },
+        },
+        {
+          type: 'w3d:cornerText',
+          corner: 'bottom-left',
+          text: {
+            type: 'str',
+            value: 'Pegue 10 estrelas! As frutas curam.',
+          },
+        },
+      ],
+      events: [
+        {
+          type: 'w3d:onCollectItem',
+          name: 'estrela',
+          body: [
+            {
+              type: 'w3d:addScore',
+              value: {
+                type: 'num',
+                value: 1,
+              },
+            },
+            {
+              type: 'if',
+              cond: {
+                type: 'binop',
+                op: '>=',
+                left: {
+                  type: 'w3d:gameValue',
+                  what: 'pontos',
+                },
+                right: {
+                  type: 'num',
+                  value: 10,
+                },
+              },
+              then: [
+                {
+                  type: 'w3d:gameOver',
+                  result: 'ganhou',
+                },
+              ],
+            },
+          ],
+        },
+        {
+          type: 'w3d:onCollectItem',
+          name: 'fruta',
+          body: [
+            {
+              type: 'w3d:life',
+              op: 'curar',
+              value: {
+                type: 'num',
+                value: 1,
+              },
+            },
+          ],
+        },
+        {
+          type: 'w3d:onZone',
+          name: 'cactos',
+          body: [
+            {
+              type: 'w3d:life',
+              op: 'machucar',
+              value: {
+                type: 'num',
+                value: 1,
+              },
+            },
+            {
+              type: 'w3d:shakeCamera',
+              strength: {
+                type: 'num',
+                value: 0.3,
+              },
+              secs: {
+                type: 'num',
+                value: 0.3,
+              },
+            },
+          ],
+        },
+        {
+          type: 'w3d:onGame',
+          event: 'vida-acabou',
+          body: [
+            {
+              type: 'w3d:gameOver',
+              result: 'perdeu',
+            },
+          ],
+        },
+        {
+          type: 'w3d:onGame',
+          event: 'tempo-acabou',
+          body: [
+            {
+              type: 'w3d:gameOver',
+              result: 'perdeu',
+            },
+          ],
+        },
+      ],
+      loops: [],
+    },
+  },
+}
+
+// Ordem da vitrine (review 3D, 10/2026): do passeio mais simples ao mais cheio de sistemas;
+// os três mundos "de referência" (procedurais) fecham a lista. O "Caça às Estrelas" (lote 10)
+// entra logo depois do Parque: é o primeiro com regras de jogo (pontos, vida, cronômetro).
 export const world3DExamples: ExtensionExample[] = [
   meuMundoExample,
-  corridaExample,
-  pistaMalucaExample,
-  bolicheExample,
   invernoExample,
-  ilhaExample,
-  parqueExample,
-  vilaExample,
-  luaExample,
   fazendinhaExample,
+  luaExample,
+  parqueExample,
+  cacaEstrelasExample,
+  bolicheExample,
+  corridaExample,
+  ilhaExample,
+  vilaExample,
+  pistaMalucaExample,
   folioProceduralExample,
   coastalProceduralExample,
   vocationProceduralExample,

@@ -234,7 +234,7 @@ function isAsset3DKind(value: unknown): value is Asset3DKind {
 }
 
 /** Decodifica só o COMEÇO do base64 (o header basta p/ a assinatura). */
-function dataUrlHeadBytes(value: string, count: number): Uint8Array | null {
+export function dataUrlHeadBytes(value: string, count: number): Uint8Array | null {
   const comma = value.indexOf(',')
   if (comma < 0) return null
   // 4 chars de base64 = 3 bytes; pega com folga e corta depois.
@@ -257,7 +257,7 @@ function startsWithBytes(bytes: Uint8Array, sig: readonly number[]): boolean {
 }
 
 /** `glTF` + versão 2 em uint32 LE. Versão 1 é recusada (o three não abre). */
-function isGlbV2(bytes: Uint8Array): boolean {
+export function isGlbV2(bytes: Uint8Array): boolean {
   if (!startsWithBytes(bytes, [0x67, 0x6c, 0x54, 0x46])) return false
   if (bytes.length < 8) return false
   const b0 = bytes[4] ?? 0

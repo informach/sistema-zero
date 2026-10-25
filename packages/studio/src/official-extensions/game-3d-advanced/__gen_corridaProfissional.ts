@@ -20,7 +20,7 @@ import { collectTypes } from './exampleSourceUtils'
 export const CORRIDA_PROFISSIONAL_SOURCE = `
 SZGameKit3D.setup({ width: 1280, height: 720, world: 100, sky: "#0f172a", ground: "#1e293b" });
 SZGameKit3D.setEffects({ shadows: true, bloom: true, strength: 1.2, vignette: true });
-SZGameKit3D.setScreenText("menu", "Corrida Infinita Profissional", "Troque de faixa com A e D (ou as setas) e pule com espaço. Desvie das barreiras, pegue moedas e aguente firme: a corrida acelera sem parar!", "Correr");
+SZGameKit3D.setScreenText("inicio", "Corrida Infinita Profissional", "Troque de faixa com A e D (ou as setas) e pule com espaço. Desvie das barreiras, pegue moedas e aguente firme: a corrida acelera sem parar!", "Correr");
 SZGameKit3D.setScreenText("fim", "Bateu!", "A pista venceu desta vez. Desvie das barreiras e pegue mais moedas na próxima!", "Correr de novo");
 SZGameKit3D.defineMold("heroi", { health: 1, speed: 0 }, function () {
   SZGameKit3D.part({ shape: "box", color: "#fb923c", w: 0.9, h: 1.1, d: 0.9, x: 0, y: 0.55, z: 0 });
@@ -76,10 +76,10 @@ SZGameKit3D.onEnterState("jogando", function () {
   SZGameKit3D.say(heroi, "Corre!", 2);
 });
 SZGameKit3D.onEntityStateUpdate("heroi", "parado", function (ela, dt) {
-  if (SZGameKit3D.keyPressed("a") || SZGameKit3D.keyPressed("esquerda")) {
+  if (SZGameKit3D.keyPressed("KeyA") || SZGameKit3D.keyPressed("ArrowLeft")) {
     faixa = faixa - 1;
   }
-  if (SZGameKit3D.keyPressed("d") || SZGameKit3D.keyPressed("direita")) {
+  if (SZGameKit3D.keyPressed("KeyD") || SZGameKit3D.keyPressed("ArrowRight")) {
     faixa = faixa + 1;
   }
   if (faixa < -1) {
@@ -89,7 +89,7 @@ SZGameKit3D.onEntityStateUpdate("heroi", "parado", function (ela, dt) {
     faixa = 1;
   }
   SZGameKit3D.place(ela, faixa * 3, SZGameKit3D.posOf(ela, "y"), 0);
-  if (SZGameKit3D.keyPressed("espaco") && SZGameKit3D.onGround(ela)) {
+  if (SZGameKit3D.keyPressed("Space") && SZGameKit3D.onGround(ela)) {
     SZGameKit3D.jump(ela, 10);
     SZGameKit3D.playEffect("jump");
   }
@@ -104,8 +104,8 @@ SZGameKit3D.onUpdate(function (dt) {
   if (proximaBarreira <= 0) {
     proximaBarreira = 30 / velocidade;
     let lugarBarreira = 0;
-    const sorteioBarreira = SZGameKit3D.randomBetween(0, 3);
-    if (sorteioBarreira < 1) {
+    const sorteioBarreira = SZGameKit3D.randomBetween(1, 3);
+    if (sorteioBarreira < 2) {
       lugarBarreira = -3;
     }
     if (sorteioBarreira > 2) {
@@ -118,8 +118,8 @@ SZGameKit3D.onUpdate(function (dt) {
   if (proximaMoeda <= 0) {
     proximaMoeda = 20 / velocidade;
     let lugarMoeda = 0;
-    const sorteioMoeda = SZGameKit3D.randomBetween(0, 3);
-    if (sorteioMoeda < 1) {
+    const sorteioMoeda = SZGameKit3D.randomBetween(1, 3);
+    if (sorteioMoeda < 2) {
       lugarMoeda = -3;
     }
     if (sorteioMoeda > 2) {
@@ -141,8 +141,8 @@ SZGameKit3D.onUpdate(function (dt) {
   SZGameKit3D.cullFar("obstaculo", 60);
   SZGameKit3D.cullFar("moeda", 60);
   SZGameKit3D.cullFar("arvore", 60);
-  SZGameKit3D.setHud("top-left", "Moedas: " + pontos);
-  SZGameKit3D.setHud("top-right", "Tempo: " + Math.floor(tempoDeJogo) + "s");
+  SZGameKit3D.hudText("top-left", "Moedas: " + pontos);
+  SZGameKit3D.hudText("top-right", "Tempo: " + Math.floor(tempoDeJogo) + "s");
 });
 SZGameKit3D.onOverlap("moeda", function (zona, quem) {
   if (SZGameKit3D.isMold(quem, "heroi")) {
@@ -158,7 +158,7 @@ SZGameKit3D.onOverlap("obstaculo", function (zona, quem) {
     SZGameKit3D.burstOn("poeira", zona);
     SZGameKit3D.playEffect("gameover");
     SZGameKit3D.cameraShake(0.6, 0.5);
-    SZGameKit3D.endGame();
+    SZGameKit3D.endGame("perdeu");
   }
 });
 SZGameKit3D.start();

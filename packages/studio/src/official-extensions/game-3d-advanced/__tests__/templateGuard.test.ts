@@ -5,6 +5,7 @@ import { gameKit3DPromptContext } from '../ai'
 import { gameKit3DManifest } from '../manifest'
 import { gameKit3DRuntime } from '../runtime'
 import { gameKit3DCameraRuntimeSource } from '../runtimeCamera'
+import { gameKit3DGameplayRuntimeSource } from '../runtimeGameplay'
 import { gameKit3DModelAssetsRuntimeSource } from '../runtimeModelAssets'
 import { gameKit3DPhysicsRuntimeSource } from '../runtimePhysics'
 import { gameKit3DProjectRuntimeSource } from '../runtimeProject'
@@ -12,7 +13,7 @@ import { gameKit3DProjectRuntimeSource } from '../runtimeProject'
 /**
  * ⭐ A guarda que eu devia ter escrito na primeira vez.
  *
- * As fontes em `runtime.ts`, `runtimeCamera.ts`, `runtimePhysics.ts`,
+ * As fontes em `runtime.ts`, `runtimeCamera.ts`, `runtimePhysics.ts`, `runtimeGameplay.ts`,
  * `runtimeModelAssets.ts`, `runtimeProject.ts`, `ai.ts` e no `docs` do
  * `manifest.ts` são template literals compostos no build.
  * Uma crase CRUA lá dentro fecha a string no meio e o módulo inteiro deixa de
@@ -67,6 +68,9 @@ describe('Guarda dos template literals do kit 3D', () => {
 
     const project = readFileSync(join(DIR, 'runtimeProject.ts'), 'utf8')
     expect(rawBackticksInside(project, 'gameKit3DProjectRuntimeSource =')).toEqual([])
+
+    const gameplay = readFileSync(join(DIR, 'runtimeGameplay.ts'), 'utf8')
+    expect(rawBackticksInside(gameplay, 'gameKit3DGameplayRuntimeSource =')).toEqual([])
   })
 
   it('ai.ts: idem (o contexto da IA também é um literal só)', () => {
@@ -86,12 +90,17 @@ describe('Guarda dos template literals do kit 3D', () => {
     expect(gameKit3DModelAssetsRuntimeSource.length).toBeGreaterThan(1000)
     expect(gameKit3DPhysicsRuntimeSource.length).toBeGreaterThan(1000)
     expect(gameKit3DProjectRuntimeSource.length).toBeGreaterThan(1000)
+    expect(gameKit3DGameplayRuntimeSource.length).toBeGreaterThan(1000)
+    expect(gameKit3DRuntime).not.toContain('__SZ_GAME_KIT_3D_GAMEPLAY_RUNTIME__')
+    expect(gameKit3DRuntime).toContain('function startPendingLevel()')
     expect(gameKit3DPromptContext.length).toBeGreaterThan(500)
     expect(gameKit3DManifest.docs.length).toBeGreaterThan(500)
     expect(gameKit3DRuntime).not.toContain('__SZ_GAME_KIT_3D_CAMERA_RUNTIME__')
     expect(gameKit3DRuntime).not.toContain('__SZ_GAME_KIT_3D_PROJECT_RUNTIME__')
     expect(gameKit3DRuntime).not.toContain('__SZ_GAME_KIT_3D_PHYSICS_RUNTIME__')
     expect(gameKit3DRuntime).not.toContain('__SZ_DATA_URL_RUNTIME__')
+    // O carregador de modelos compartilhado entrou inteiro (marcador consumido).
+    expect(gameKit3DRuntime).not.toContain('__SZ_THREE_MODELS_RUNTIME__')
   })
 
   it('o runtime é avaliável como corpo de função (crase quebraria o parse)', () => {

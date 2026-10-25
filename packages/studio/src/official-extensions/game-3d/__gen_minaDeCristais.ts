@@ -30,9 +30,9 @@ SZGame3D.setVisible(moldePedra, "hide");
 const moldeCristal = SZGame3D.createBox(cena, { size: 1, color: "#22d3ee" });
 SZGame3D.setMaterial(moldeCristal, "glow");
 SZGame3D.setVisible(moldeCristal, "hide");
-const pedras = SZGame3D.createSwarm(cena);
-const cristais = SZGame3D.createSwarm(cena);
-SZGame3D.isometricCamera(cena, null);
+const pedras = SZGame3D.createGroup();
+const cristais = SZGame3D.createGroup();
+SZGame3D.cameraMode(cena, "isometrica", null);
 let pontos = 0;
 let tempo = 50;
 let rodando = true;
@@ -40,18 +40,18 @@ function cavarChance() {
   return Math.random() < 0.3;
 }
 function encherAMina() {
-  SZGame3D.forEachInSwarm(pedras, (item) => {
-    SZGame3D.removeFromSwarm(pedras, item);
+  SZGame3D.forEachInGroup(pedras, (item) => {
+    SZGame3D.removeFromGroup(pedras, item);
   });
-  SZGame3D.forEachInSwarm(cristais, (item) => {
-    SZGame3D.removeFromSwarm(cristais, item);
+  SZGame3D.forEachInGroup(cristais, (item) => {
+    SZGame3D.removeFromGroup(cristais, item);
   });
   for (let linha = -3; linha < 4; linha++) {
     for (let coluna = -3; coluna < 4; coluna++) {
       if (cavarChance()) {
-        SZGame3D.spawnInSwarm(cristais, moldeCristal, coluna, 0, linha);
+        SZGame3D.spawnCopy(cristais, moldeCristal, coluna, 0, linha);
       } else {
-        SZGame3D.spawnInSwarm(pedras, moldePedra, coluna, 0, linha);
+        SZGame3D.spawnCopy(pedras, moldePedra, coluna, 0, linha);
       }
     }
   }
@@ -76,9 +76,9 @@ document.addEventListener("click", (event) => {
   if (rodando) {
     const alvo = SZGame3D.pickAtMouse(cena);
     if (alvo) {
-      let antesC = SZGame3D.countSwarm(cristais);
-      SZGame3D.removeFromSwarm(cristais, alvo);
-      if (SZGame3D.countSwarm(cristais) < antesC) {
+      let antesC = SZGame3D.countGroup(cristais);
+      SZGame3D.removeFromGroup(cristais, alvo);
+      if (SZGame3D.countGroup(cristais) < antesC) {
         pontos = pontos + 1;
         SZGame3D.playEffect("coin");
         atualizarHud();
@@ -89,9 +89,9 @@ document.addEventListener("click", (event) => {
           document.getElementById("fim")?.classList.add("visivel");
         }
       } else {
-        let antesP = SZGame3D.countSwarm(pedras);
-        SZGame3D.removeFromSwarm(pedras, alvo);
-        if (SZGame3D.countSwarm(pedras) < antesP) {
+        let antesP = SZGame3D.countGroup(pedras);
+        SZGame3D.removeFromGroup(pedras, alvo);
+        if (SZGame3D.countGroup(pedras) < antesP) {
           SZGame3D.playEffect("hit");
         }
       }
@@ -102,13 +102,13 @@ SZGame3D.everySecondsLoop(1, () => {
   if (rodando) {
     tempo = tempo - 1;
     atualizarHud();
-    if (SZGame3D.countSwarm(pedras) + SZGame3D.countSwarm(cristais) < 60) {
+    if (SZGame3D.countGroup(pedras) + SZGame3D.countGroup(cristais) < 60) {
       const coluna = Math.floor(Math.random() * 9) - 4;
       const linha = Math.floor(Math.random() * 9) - 4;
       if (cavarChance()) {
-        SZGame3D.spawnInSwarm(cristais, moldeCristal, coluna, 0, linha);
+        SZGame3D.spawnCopy(cristais, moldeCristal, coluna, 0, linha);
       } else {
-        SZGame3D.spawnInSwarm(pedras, moldePedra, coluna, 0, linha);
+        SZGame3D.spawnCopy(pedras, moldePedra, coluna, 0, linha);
       }
     }
     if (tempo <= 0) {

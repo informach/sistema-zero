@@ -15,6 +15,44 @@ import { gameKit3DRuntime } from '../runtime'
 
 export const runtimeBody = gameKit3DRuntime.replace(/^import \* as THREE from 'three';\n/, '')
 
+/**
+ * O MESMO corpo com uma sonda da grade espacial (`window.__szG3kGrid()` devolve as
+ * células e a lista de fora do mundo). A grade não tem API pública — as consultas
+ * filtram os mortos —, então um vazamento nela só aparece contando as células.
+ */
+// O runtime publicado sai SEM indentação (`compactOfficialRuntimeSource`).
+const GRID_PROBE_ANCHOR = '\nvar api = {'
+if (runtimeBody.split(GRID_PROBE_ANCHOR).length !== 2) {
+  throw new Error('kitHarness: a âncora da sonda da grade mudou no runtime')
+}
+export const runtimeBodyWithGridProbe = runtimeBody.replace(
+  GRID_PROBE_ANCHOR,
+  '\nwindow.__szG3kGrid = function () { return { cells: gridCells, outside: gridOutside }; };' +
+    GRID_PROBE_ANCHOR,
+)
+
+/** Quantos handles a grade guarda (com repetição: quem ocupa várias células conta várias). */
+export function countGridHandles(): { total: number; dead: number } {
+  const probe = (globalThis.window as unknown as Record<string, unknown>).__szG3kGrid as
+    | (() => {
+        cells: Array<Array<{ _alive: boolean }> | undefined>
+        outside: Array<{ _alive: boolean }>
+      })
+    | undefined
+  if (!probe) throw new Error('countGridHandles: carregue com { body: runtimeBodyWithGridProbe }')
+  const { cells, outside } = probe()
+  let total = 0
+  let dead = 0
+  for (const list of [...cells, outside]) {
+    if (!list) continue
+    for (const e of list) {
+      total += 1
+      if (!e._alive) dead += 1
+    }
+  }
+  return { total, dead }
+}
+
 export interface FakeRenderer {
   disposeCalls: number
   forceContextLossCalls: number
@@ -118,7 +156,7 @@ export interface KitApi {
   runProject(fn: () => void): void
   state(): string
   setState(name: string): void
-  endGame(message?: string): void
+  endGame(result?: string): void
   onEnterState(name: string, fn: () => void): void
   defineMold(name: string, opts: Record<string, unknown>, fn: () => void): void
   part(opts: Record<string, unknown>): void
@@ -127,6 +165,7 @@ export interface KitApi {
   exists(e: unknown): boolean
   countAlive(mold: string): number
   nearest(mold: string, e: unknown): unknown
+  distanceBetween(a: unknown, b: unknown): number
   forEachNear(e: unknown, mold: string, radius: number, fn: (o: unknown) => void): void
   onEnterEntityState(mold: string, state: string, fn: (e: unknown) => void): void
   onExitEntityState(mold: string, state: string, fn: (e: unknown) => void): void
@@ -152,7 +191,7 @@ export interface KitApi {
   setPhysics(mold: string, type: string): void
   playAnim(e: unknown, name: string, loop?: boolean): void
   stopAnim(e: unknown): void
-  setStateAnim(mold: string, state: string, clip: string): void
+  setStateAnim(mold: string, state: string, clip: string, loop?: boolean): void
   passThrough(e: unknown, on: boolean): void
   makeTrigger(mold: string): void
   onOverlap(mold: string, fn: (zone: unknown, who: unknown) => void): void
@@ -180,7 +219,12 @@ export interface KitApi {
   setSky(top: string, bottom: string): void
   setSkyPhoto(name: string): void
   addButton(screen: string, label: string, fn: () => void): void
-  setHud(slot: string, value: unknown): void
+  hudText(corner: string, value: unknown): void
+  setScreenText(screen: string, title: string, text: string, button: string): void
+  addScore(n: number): void
+  score(): number
+  animSpeed(e: unknown, speed: number): void
+  onAnimEnd(mold: string, clip: string, fn: (e: unknown) => void): void
   playMusic(name: string): void
   playSound(name: string): void
   loadSound(name: string, asset: string): void
@@ -218,6 +262,20 @@ export interface KitApi {
   cameraOrbit(dist: number): void
   cameraTop(height: number): void
   cameraFps(e: unknown, height: number): void
+  // Lote 12 do review 3D: patrulhar, mochila, guardar o progresso e fases.
+  onUpdate(fn: (dt: number) => void): void
+  onEntityStateUpdate(mold: string, state: string, fn: (e: unknown, dt: number) => void): void
+  patrol(e: unknown, ax: number, az: number, bx: number, bz: number, speed: number): void
+  putInBag(item: string, n: number): void
+  takeFromBag(item: string, n: number): void
+  bagCount(item: string): number
+  bagHas(item: string): boolean
+  clearBag(): void
+  saveValue(name: string, value: unknown): void
+  savedValue(name: string, fallback: unknown): unknown
+  nextLevel(): void
+  level(): number
+  onLevelStart(fn: () => void): void
 }
 
 /**
@@ -226,7 +284,10 @@ export interface KitApi {
  * `start()` espera o carregamento, então um molde definido aqui já nasce pronto,
  * enquanto um definido depois do `start` não teria o que esperar.
  */
-export async function loadStartedKit(beforeStart?: (api: KitApi) => void): Promise<{
+export async function loadStartedKit(
+  beforeStart?: (api: KitApi) => void,
+  opts: { body?: string } = {},
+): Promise<{
   api: KitApi
   renderers: FakeRenderer[]
   step: (frames: number) => void
@@ -236,7 +297,7 @@ export async function loadStartedKit(beforeStart?: (api: KitApi) => void): Promi
   // O runtime do g3k já injeta o contexto de ciclo de vida gerenciado
   // (window.__SZProjectLifecycle) logo após o import, então rodar runtimeBody
   // reproduz a mesma fronteira do preview — sem injeção separada.
-  new Function('THREE', 'window', runtimeBody)(THREE, win)
+  new Function('THREE', 'window', opts.body ?? runtimeBody)(THREE, win)
   const api = win.SZGameKit3D as KitApi
   api.setup({ width: 640, height: 360, world: 100 })
   if (beforeStart) beforeStart(api)
@@ -272,13 +333,24 @@ export async function loadStartedKit(beforeStart?: (api: KitApi) => void): Promi
  * documento — os testes acumulam palcos no happy-dom; despache `pagehide` no
  * afterEach para o disposeAll recolher os antigos).
  */
-export async function loadExampleKit(exampleJs: string): Promise<{
+export async function loadExampleKit(
+  exampleJs: string,
+  opts: {
+    /**
+     * Embrulha o THREE falso antes de o runtime nascer (as travas de desempenho passam
+     * `makeCountingThree`). Sem ele, o THREE é exatamente o de sempre.
+     */
+    wrapThree?: (three: ReturnType<typeof makeFakeThree>['THREE']) => Record<string, unknown>
+  } = {},
+): Promise<{
   api: KitApi
   renderers: FakeRenderer[]
   step: (frames: number) => void
   stage: Element
 }> {
-  const { THREE, renderers } = makeFakeThree()
+  const fake = makeFakeThree()
+  const { renderers } = fake
+  const THREE = opts.wrapThree ? opts.wrapThree(fake.THREE) : fake.THREE
   const win = globalThis.window as unknown as Record<string, unknown>
   // runtimeBody já injeta window.__SZProjectLifecycle (ver loadStartedKit).
   new Function('THREE', 'window', runtimeBody)(THREE, win)

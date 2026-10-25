@@ -1,7 +1,7 @@
 import { expect, test } from 'bun:test'
 import { type Material, Mesh, type Object3D, Texture } from 'three'
 import { isValidAssetDataUrl } from '../../../core/project'
-import fixture from './fixtures/molda-flipbook.json'
+import fixture from '../../__tests__/three3d/molda-flipbook.json'
 import { loadStartedKit } from './kitHarness'
 
 type Kit = Awaited<ReturnType<typeof loadStartedKit>>
@@ -160,89 +160,5 @@ test('todas as cópias do molde compartilham a mesma folha e a mesma linha do te
   })
 })
 
-/**
- * O mesmo GLB com a versão do contrato trocada por uma futura. A troca é de UM
- * caractere dentro do chunk JSON, então o tamanho do arquivo não muda e o GLB
- * continua válido: o que muda é só o que o runtime tem permissão de entender.
- */
-function futureContractDataUrl() {
-  const bytes = Uint8Array.from(atob(fixture.dataUrl.split(',')[1] as string), (c) =>
-    c.charCodeAt(0),
-  )
-  const text = new TextDecoder('utf-8', { fatal: false }).decode(bytes)
-  const at = text.indexOf('"contract":1')
-  if (at < 0) throw new Error('contrato não encontrado no GLB')
-  const patched = bytes.slice()
-  patched[at + '"contract":'.length] = '2'.charCodeAt(0)
-  let binary = ''
-  for (const byte of patched) binary += String.fromCharCode(byte)
-  return `data:model/gltf-binary;base64,${btoa(binary)}`
-}
-
-test('contrato de uma versão futura deixa a pintura parada, sem adivinhação', async () => {
-  const win = window as unknown as Record<string, unknown>
-  const previous = win.__SZGAME_ASSETS_3D
-  win.__SZGAME_ASSETS_3D = {
-    futuro: { kind: 'model3d', dataUrl: futureContractDataUrl(), fileName: 'futuro.glb' },
-  }
-  try {
-    const kit = await loadStartedKit((api) => {
-      api.defineMold('bicho', { health: 1, speed: 0 }, () => {
-        api.part({ shape: 'modelo', model: 'futuro', w: 1, h: 1, d: 1, x: 0, y: 0, z: 0 })
-      })
-    })
-    kit.api.setState('jogando')
-    kit.api.spawn('bicho', 0, 0, 0)
-    kit.step(1)
-    const material = paintedMaterial(kit)
-    expect(material.userData.molda?.flipbook?.contract).toBe(2)
-    material.map = new Texture()
-    const start = placed(material)
-    kit.step(FRAMES_PER_STEP * 4)
-    // A sequência não andou: a pintura fica exatamente onde estava.
-    // (O recorte da folha vem do `KHR_texture_transform`, que o GLTFLoader aplica sozinho;
-    // aqui `start` é o padrão da Texture que o teste anexou, não uma medida do produto.)
-    expect(placed(material)).toEqual(start)
-    material.map?.dispose()
-  } finally {
-    window.dispatchEvent(new Event('pagehide'))
-    if (previous === undefined) delete win.__SZGAME_ASSETS_3D
-    else win.__SZGAME_ASSETS_3D = previous
-  }
-})
-
-function contractDataUrl(change: Record<string, unknown>) {
-  const bytes = Uint8Array.from(atob(fixture.dataUrl.split(',')[1]!), (char) => char.charCodeAt(0))
-  const oldLength = new DataView(bytes.buffer).getUint32(12, true)
-  const json = JSON.parse(new TextDecoder().decode(bytes.subarray(20, 20 + oldLength)))
-  for (const material of json.materials) {
-    const book = material.extras?.molda?.flipbook
-    if (book) Object.assign(book, change)
-  }
-  const encoded = new TextEncoder().encode(JSON.stringify(json))
-  const length = Math.ceil(encoded.length / 4) * 4
-  const tail = bytes.subarray(20 + oldLength)
-  const patched = new Uint8Array(20 + length + tail.length)
-  patched.set(bytes.subarray(0, 20))
-  const view = new DataView(patched.buffer)
-  view.setUint32(8, patched.length, true)
-  view.setUint32(12, length, true)
-  patched.fill(32, 20, 20 + length)
-  patched.set(encoded, 20)
-  patched.set(tail, 20 + length)
-  return `data:model/gltf-binary;base64,${btoa(Array.from(patched, (n) => String.fromCharCode(n)).join(''))}`
-}
-
-test.each([
-  { frames: Array.from({ length: 257 }, () => 1) },
-  { frames: [0.5, 1.5] },
-  { columns: 1.5 },
-  { fps: 61 },
-  { frames: ['1', '0'] },
-])('invalid or excessive flipbook metadata stays static without coercion: %j', async (change) => {
-  await inGame((kit, material) => {
-    const start = placed(material)
-    kit.step(500)
-    expect(placed(material)).toEqual(start)
-  }, contractDataUrl(change))
-})
+// Contrato futuro e metadados inválidos (parados, sem coerção) são regra do CARREGADOR
+// compartilhado: moram em `official-extensions/three3dModelsRuntime.test.ts`.

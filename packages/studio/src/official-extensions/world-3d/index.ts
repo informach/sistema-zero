@@ -20,10 +20,12 @@ validateManifest(world3DManifest)
  */
 const GLTF_LOADER_CDN = `${THREE_CDN}/examples/jsm/loaders/GLTFLoader.js?external=three`
 const HDR_LOADER_CDN = `${THREE_CDN}/examples/jsm/loaders/HDRLoader.js?external=three`
+// "Pôr o modelo" com ossos próprios por cópia (o carregador compartilhado clona por ele).
+const SKELETON_UTILS_CDN = `${THREE_CDN}/examples/jsm/utils/SkeletonUtils.js?external=three`
 
 export const worldThreeDExtension: ExtensionDefinition = {
   manifest: world3DManifest,
-  examples: defineExtensionExamples(13, async () => (await import('./examples')).world3DExamples),
+  examples: defineExtensionExamples(14, async () => (await import('./examples')).world3DExamples),
   conflictsWith: fullscreenConflictsFor('world-3d'),
   // O Mundo 3D e o Jogo 3D Avançado abrem no intermediário 3D (26/07), um degrau
   // acima da entrada do 3D: o Mundo oferece blocos "mágicos" de alto nível (1 bloco
@@ -41,6 +43,7 @@ export const worldThreeDExtension: ExtensionDefinition = {
       three: THREE_CDN,
       'three/addons/loaders/GLTFLoader.js': GLTF_LOADER_CDN,
       'three/addons/loaders/HDRLoader.js': HDR_LOADER_CDN,
+      'three/addons/utils/SkeletonUtils.js': SKELETON_UTILS_CDN,
     },
   },
   ai: {

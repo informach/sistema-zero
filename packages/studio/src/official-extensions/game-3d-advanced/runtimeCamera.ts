@@ -7,14 +7,7 @@
 export const gameKit3DCameraRuntimeSource = `
   // ---- Câmera viva (um modo por vez) ----
 
-  // Offset do tremor aplicado no quadro ANTERIOR. O updateCamera o desfaz no
-  // topo antes de reposicionar, para que a câmera "seguir" (lerp) parta da base
-  // LIMPA — senão o offset persistia ~15 quadros e o tremor virava deriva lenta.
-  var _shakeOx = 0;
-  var _shakeOy = 0;
-  var _shakeOz = 0;
-
-  /** Libera tudo que pertence à captura da câmera em primeira pessoa. */
+  // Libera tudo que pertence à captura da câmera em primeira pessoa.
   function releaseFpsInput() {
     var touchId = _fpsTouchId;
     _fpsTouchId = null;
@@ -34,7 +27,7 @@ export const gameKit3DCameraRuntimeSource = `
     }
   }
 
-  /** Única porta para trocar de modo: sair de FPS sempre devolve o cursor. */
+  // Única porta para trocar de modo: sair de FPS sempre devolve o cursor.
   function setCameraMode(next) {
     if (camMode.kind === 'fps' && next.kind !== 'fps') releaseFpsInput();
     camMode = next;
@@ -77,7 +70,7 @@ export const gameKit3DCameraRuntimeSource = `
 
   // ---- 🎥 A câmera na mão da criança (girar/afastar/tremer/lente/olhar) ----
 
-  /** Gira e inclina a órbita POR CÓDIGO (antes só o arrastar do mouse mexia). */
+  // Gira e inclina a órbita POR CÓDIGO (antes só o arrastar do mouse mexia).
   function cameraAngle(azDeg, elDeg) {
     if (!orbit) setOrbit(camMode.dist);
     if (!orbit) return;
@@ -89,28 +82,20 @@ export const gameKit3DCameraRuntimeSource = `
     if (el < 0.08) el = 0.08;
     orbit.el = el;
   }
-  /** Afasta/aproxima — vale para a órbita E para a que segue. */
+  // Afasta/aproxima — vale para a órbita E para a que segue.
   function cameraDistance(d) {
     var v = Math.max(1, num(d, 25));
     camMode.dist = v;
     if (orbit) orbit.dist = v;
   }
-  /** Tremor de impacto: força em metros, por N segundos. */
-  function cameraShake(strength, seconds) {
-    _shakeAmp = Math.max(0, num(strength, 0.5));
-    _shakeT = Math.max(0, num(seconds, 0.3));
-    _shakeMax = _shakeT || 1;
-  }
-  /** Lente: campo de visão em graus (era o literal 60). */
+  // Lente: campo de visão em graus (era o literal 60).
   function cameraLens(deg) {
     if (!camera) return;
     camera.fov = Math.max(15, Math.min(120, num(deg, 60)));
     if (camera.updateProjectionMatrix) camera.updateProjectionMatrix();
   }
-  /**
-   * Para onde a órbita/a de cima OLHAM. Antes era o (0,0,0) do mundo, cravado:
-   * num mundo grande, a criança não tinha como olhar para longe da origem.
-   */
+  // Para onde a órbita/a de cima OLHAM. Antes era o (0,0,0) do mundo, cravado:
+  // num mundo grande, a criança não tinha como olhar para longe da origem.
   function cameraLookAt(target) {
     if (isEntity(target)) { camMode.pivot = target; camMode.pivotGen = target._gen; return; }
     camMode.pivot = null;
@@ -118,20 +103,18 @@ export const gameKit3DCameraRuntimeSource = `
   function cameraLookAtPoint(x, y, z) {
     camMode.pivot = { x: num(x, 0), y: num(y, 0), z: num(z, 0) };
   }
-  /** Suavidade do seguir (era a constante 3): maior = mais colada. */
+  // Suavidade do seguir (era a constante 3): maior = mais colada.
   function cameraSmooth(lambda) {
     camSmooth = Math.max(0.1, num(lambda, 3));
   }
 
-  /**
-   * A entidade-alvo da câmera ainda é ELA MESMA? O handle morto nunca renasce;
-   * a geração também protege os subsistemas que acompanham o recurso gráfico.
-   */
+  // A entidade-alvo da câmera ainda é ELA MESMA? O handle morto nunca renasce;
+  // a geração também protege os subsistemas que acompanham o recurso gráfico.
   function sameCamEntity(e, gen) {
     return isEntity(e) && e._gen === gen;
   }
 
-  /** O ponto que a câmera olha: entidade viva (a MESMA), ponto fixo, ou a origem. */
+  // O ponto que a câmera olha: entidade viva (a MESMA), ponto fixo, ou a origem.
   function pivotInto(v) {
     var p = camMode.pivot;
     if (p && p.mesh) {
@@ -144,31 +127,12 @@ export const gameKit3DCameraRuntimeSource = `
     v.set(0, 0, 0);
   }
 
-  /**
-   * Tremor: offset DEPOIS de posicionar, para não corromper o camMode (senão o
-   * lerp do seguir perseguiria a própria tremedeira). Usa rand(), então a semente
-   * continua valendo — mesma partida, mesmo tremor.
-   *
-   * ⚠️ O return quando dt<=0 é LOAD-BEARING: o updateCamera roda em TODO estado
-   * com dt=0 fora do jogo (pausa/fim/menu). Sem esta guarda, (1) o _shakeT nunca
-   * decai → a tela de fim VIBRA para sempre, e (2) os 3 rand() por
-   * quadro queimariam o gerador semeado enquanto pausado — e o tempo de pausa é
-   * relógio de parede, então a MESMA semente daria partidas diferentes. Congelar
-   * o tremor na pausa é coerente com "a pausa congela o mundo".
-   */
+  // Tremor (o das regras comuns): offset DEPOIS de posicionar, desfeito no topo do próximo
+  // updateCamera (rules.beforeFrame), para o lerp do seguir não perseguir a tremedeira. Usa
+  // o rand(), então o sorteio repetível continua valendo. ⚠️ Com dt 0 (pausa, fim, menu) ele
+  // não anda nem sorteia: a tela de fim não vibra e o sorteio não é gasto parado.
   function applyShake(dt) {
-    if (dt <= 0 || _shakeT <= 0) return;
-    _shakeT -= dt;
-    if (_shakeT < 0) _shakeT = 0;
-    var k = _shakeAmp * (_shakeT / _shakeMax); // decai até sumir
-    // Guarda o offset (desfeito no topo do próximo updateCamera) para NÃO
-    // realimentar o lerp do "seguir" — a razão da deriva de baixa frequência.
-    _shakeOx = (rand() * 2 - 1) * k;
-    _shakeOy = (rand() * 2 - 1) * k;
-    _shakeOz = (rand() * 2 - 1) * k;
-    camera.position.x += _shakeOx;
-    camera.position.y += _shakeOy;
-    camera.position.z += _shakeOz;
+    rules.afterFrame(camera, dt);
   }
 
   // ---- Mira & clique no mundo (raycast) + câmera 1ª pessoa ----
@@ -178,7 +142,7 @@ export const gameKit3DCameraRuntimeSource = `
     _ray = new THREE.Raycaster();
     return true;
   }
-  /** Rastreia o ponteiro em coordenadas normalizadas (-1..1) sobre o canvas. */
+  // Rastreia o ponteiro em coordenadas normalizadas (-1..1) sobre o canvas.
   function ensurePointer() {
     if (_pickWired) return;
     _pickWired = true;
@@ -197,7 +161,7 @@ export const gameKit3DCameraRuntimeSource = `
       canvasEl.addEventListener('pointerdown', upd);
     }
   }
-  /** Sobe pelos pais do objeto atingido até achar a entidade viva dona dele. */
+  // Sobe pelos pais do objeto atingido até achar a entidade viva dona dele.
   function entityOfMesh(obj) {
     var o = obj;
     while (o) {
@@ -208,39 +172,55 @@ export const gameKit3DCameraRuntimeSource = `
     }
     return null;
   }
-  /** Sem o loop rodando, matrixWorld fica defasado — atualiza antes de mirar. */
+  // Sem o loop rodando, matrixWorld fica defasado — atualiza antes de mirar.
+  // No máximo UMA vez por quadro (carimbo _frameNo): dez consultas de mouse no
+  // mesmo quadro não percorrem a cena dez vezes. Depois do desenho o carimbo já
+  // vale (o render atualizou), e quem nasce ou é teleportado depois da
+  // atualização ganha a matriz na hora (freshPickMatrix).
   function syncMatrices() {
     if (camera && camera.updateMatrixWorld) camera.updateMatrixWorld();
-    if (scene && scene.updateMatrixWorld) scene.updateMatrixWorld(true);
+    if (_matrixFrame === _frameNo) return;
+    _matrixFrame = _frameNo;
+    if (scene && scene.updateMatrixWorld) scene.updateMatrixWorld();
   }
-  /** A entidade (do molde, se dado) sob o mouse — ou null. */
+  // A entidade (do molde, se dado) sob o mouse — ou null. O raio só testa a
+  // lista das entidades vivas (pickables), nunca a cena inteira: chão, enfeite,
+  // luz e partícula nunca respondiam aqui mesmo (só entidade viva conta, e o
+  // que está na frente sem ser entidade não tapava). O vivo é conferido no acerto.
   function pickAtMouse(mold) {
     if (!worldReady || !camera || !ensureRay()) return null;
     ensurePointer();
     syncMatrices();
     _ray.setFromCamera(_mouse, camera);
-    var hits = _ray.intersectObjects(scene.children, true);
+    _pickHits.length = 0;
+    _ray.intersectObjects(pickables, true, _pickHits);
     var want = text(mold, '');
-    for (var i = 0; i < hits.length; i++) {
-      var e = entityOfMesh(hits[i].object);
-      if (e && (!want || e._mold === want)) return e;
+    var found = null;
+    for (var i = 0; i < _pickHits.length; i++) {
+      var e = entityOfMesh(_pickHits[i].object);
+      if (e && (!want || e._mold === want)) { found = e; break; }
     }
-    return null;
+    _pickHits.length = 0;
+    return found;
   }
-  /** O mouse está sobre esta entidade? */
+  // O mouse está sobre esta entidade?
   function pointerOverEntity(e) {
     if (!isEntity(e) || !worldReady || !camera || !ensureRay()) return false;
     ensurePointer();
     syncMatrices();
     _ray.setFromCamera(_mouse, camera);
-    var hits = _ray.intersectObjects([e.mesh], true);
-    return hits.length > 0;
+    _pickHits.length = 0;
+    _ray.intersectObject(e.mesh, true, _pickHits);
+    var over = _pickHits.length > 0;
+    _pickHits.length = 0;
+    return over;
   }
-  /** O ponto do chão (plano y=0) sob o mouse, no eixo pedido. */
+  // O ponto do chão (plano y=0) sob o mouse, no eixo pedido. É conta com o raio
+  // da câmera (nenhum objeto da cena entra): basta a matriz da câmera.
   function groundPoint(axis) {
     if (!worldReady || !camera || !ensureRay()) return 0;
     ensurePointer();
-    syncMatrices();
+    if (camera.updateMatrixWorld) camera.updateMatrixWorld();
     _ray.setFromCamera(_mouse, camera);
     var ro = _ray.ray && _ray.ray.origin;
     var rd = _ray.ray && _ray.ray.direction;
@@ -252,10 +232,10 @@ export const gameKit3DCameraRuntimeSource = `
     if (a === 'z') return ro.z + rd.z * t;
     return ro.x + rd.x * t;
   }
-  /** Câmera em 1ª pessoa presa à entidade; olhar com o mouse (pointer-lock). */
+  // Câmera em 1ª pessoa presa à entidade; olhar com o mouse (pointer-lock).
   function cameraFps(e, height) {
     if (!isEntity(e)) {
-      warn('"Câmera em 1ª pessoa" precisa de uma entidade');
+      warn('"Câmera: 1ª pessoa nos olhos de" precisa de um objeto que está no jogo');
       return;
     }
     var h = num(height, 1.4);
@@ -327,13 +307,10 @@ export const gameKit3DCameraRuntimeSource = `
     window.addEventListener('pointerup', finishTouchLook);
     window.addEventListener('pointercancel', finishTouchLook);
   }
-  /**
-   * Anda a entidade em 1ª pessoa: WASD/setas relativos ao olhar.
-   *
-   * É a MESMA base do WASD comum — em 1ª pessoa a câmera são os olhos dela, então
-   * "para onde a câmera olha" e "para onde ela olha" são a mesma coisa. Achatar em
-   * XZ é de propósito: olhar para cima e andar não faz ninguém voar.
-   */
+  // Anda a entidade em 1ª pessoa: WASD/setas relativos ao olhar.
+  // É a MESMA base do WASD comum — em 1ª pessoa a câmera são os olhos dela, então
+  // "para onde a câmera olha" e "para onde ela olha" são a mesma coisa. Achatar em
+  // XZ é de propósito: olhar para cima e andar não faz ninguém voar.
   function moveFps(e, speed) {
     if (!isEntity(e)) return;
     moveOnCamBasis(e, num(speed, 6));
@@ -345,10 +322,7 @@ export const gameKit3DCameraRuntimeSource = `
     // lerp a partir de camera.position, então sem isto partiria da posição JÁ
     // tremida e o offset persistiria virando deriva. Nos modos .set()
     // (orbit/topo/fps) é inócuo — a posição é reescrita antes do applyShake.
-    camera.position.x -= _shakeOx;
-    camera.position.y -= _shakeOy;
-    camera.position.z -= _shakeOz;
-    _shakeOx = 0; _shakeOy = 0; _shakeOz = 0;
+    rules.beforeFrame(camera);
     if (camMode.kind === 'fps') {
       var f = camMode.target;
       if (!sameCamEntity(f, camMode.targetGen)) {

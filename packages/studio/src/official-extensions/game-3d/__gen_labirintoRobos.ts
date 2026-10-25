@@ -5,7 +5,7 @@ import { collectTypes, stripIds } from '../game-3d-advanced/exampleSourceUtils'
 /**
  * Gerador one-off da IR do exemplo "Labirinto dos Robôs" (nível 1 da família
  * Labirinto, um FPS estilo Doom básico): câmera em primeira pessoa com pointer
- * lock, labirinto de paredes SÓLIDAS (física de corpo), robôs em enxame que
+ * lock, labirinto de paredes SÓLIDAS (física de corpo), robôs num grupo que
  * perseguem o jogador e tiro por MIRA (aimAhead) no clique. ⚠️ Sob pointer lock
  * o mouse interno congela, então pickAtMouse/pointerOver são BANIDOS aqui; o
  * hitscan é aimAhead (o yaw do FPS gira o OBJETO, o aim segue a mira
@@ -26,7 +26,7 @@ SZGame3D.setPosition(chao, 0, -1, 0);
 SZGame3D.setSolid(chao);
 const jogador = SZGame3D.createBox(cena, { size: 1, color: "#38bdf8" });
 SZGame3D.setPosition(jogador, 0, 0, 6);
-SZGame3D.body(jogador, -0.02);
+SZGame3D.body(jogador, 72);
 const paredeNorte = SZGame3D.createBlock(cena, { width: 18, height: 3, depth: 1, color: "#7c3aed" });
 SZGame3D.setPosition(paredeNorte, 0, 1, -8.5);
 SZGame3D.setSolid(paredeNorte);
@@ -45,15 +45,15 @@ SZGame3D.setSolid(muroNorte);
 const muroSul = SZGame3D.createBlock(cena, { width: 12, height: 3, depth: 1, color: "#6d28d9" });
 SZGame3D.setPosition(muroSul, 2, 1, 2);
 SZGame3D.setSolid(muroSul);
-SZGame3D.fpsCamera(cena, jogador);
+SZGame3D.cameraMode(cena, "primeira-pessoa", jogador);
 const moldeLento = SZGame3D.createBox(cena, { size: 1, color: "#f43f5e" });
 SZGame3D.setMaterial(moldeLento, "glow");
 SZGame3D.setVisible(moldeLento, "hide");
 const moldeRapido = SZGame3D.createBox(cena, { size: 0.7, color: "#f59e0b" });
 SZGame3D.setMaterial(moldeRapido, "glow");
 SZGame3D.setVisible(moldeRapido, "hide");
-const robosLentos = SZGame3D.createSwarm(cena);
-const robosRapidos = SZGame3D.createSwarm(cena);
+const robosLentos = SZGame3D.createGroup();
+const robosRapidos = SZGame3D.createGroup();
 let vida = 3;
 let pontos = 0;
 let recarga = 0;
@@ -61,17 +61,17 @@ let travaTiro = 0;
 let encostou = false;
 let rodando = true;
 function recomecar() {
-  SZGame3D.forEachInSwarm(robosLentos, (item) => {
-    SZGame3D.removeFromSwarm(robosLentos, item);
+  SZGame3D.forEachInGroup(robosLentos, (item) => {
+    SZGame3D.removeFromGroup(robosLentos, item);
   });
-  SZGame3D.forEachInSwarm(robosRapidos, (item) => {
-    SZGame3D.removeFromSwarm(robosRapidos, item);
+  SZGame3D.forEachInGroup(robosRapidos, (item) => {
+    SZGame3D.removeFromGroup(robosRapidos, item);
   });
-  SZGame3D.spawnInSwarm(robosLentos, moldeLento, -5, 0, 0);
-  SZGame3D.spawnInSwarm(robosLentos, moldeLento, 5, 0, -6);
-  SZGame3D.spawnInSwarm(robosLentos, moldeLento, -5, 0, -6);
-  SZGame3D.spawnInSwarm(robosRapidos, moldeRapido, -6, 0, 6);
-  SZGame3D.spawnInSwarm(robosRapidos, moldeRapido, 5, 0, 0);
+  SZGame3D.spawnCopy(robosLentos, moldeLento, -5, 0, 0);
+  SZGame3D.spawnCopy(robosLentos, moldeLento, 5, 0, -6);
+  SZGame3D.spawnCopy(robosLentos, moldeLento, -5, 0, -6);
+  SZGame3D.spawnCopy(robosRapidos, moldeRapido, -6, 0, 6);
+  SZGame3D.spawnCopy(robosRapidos, moldeRapido, 5, 0, 0);
   SZGame3D.setPosition(jogador, 0, 0, 6);
   SZGame3D.setRotation(jogador, 0, 0, 0);
   vida = 3;
@@ -90,22 +90,22 @@ document.addEventListener("click", (event) => {
     if (travaTiro <= 0) {
       let alvo = SZGame3D.aimAhead(cena, jogador, 30);
       if (alvo) {
-        SZGame3D.forEachInSwarm(robosLentos, (item) => {
+        SZGame3D.forEachInGroup(robosLentos, (item) => {
           if (item === alvo) {
-            SZGame3D.removeFromSwarm(robosLentos, item);
+            SZGame3D.removeFromGroup(robosLentos, item);
             pontos = pontos + 1;
             SZGame3D.playEffect("explosion");
           }
         });
-        SZGame3D.forEachInSwarm(robosRapidos, (item) => {
+        SZGame3D.forEachInGroup(robosRapidos, (item) => {
           if (item === alvo) {
-            SZGame3D.removeFromSwarm(robosRapidos, item);
+            SZGame3D.removeFromGroup(robosRapidos, item);
             pontos = pontos + 2;
             SZGame3D.playEffect("explosion");
           }
         });
         document.getElementById("placar").textContent = pontos;
-        if (SZGame3D.countSwarm(robosLentos) + SZGame3D.countSwarm(robosRapidos) === 0) {
+        if (SZGame3D.countGroup(robosLentos) + SZGame3D.countGroup(robosRapidos) === 0) {
           rodando = false;
           document.getElementById("fim-titulo").textContent = "Você venceu!";
           document.getElementById("final-pontos").textContent = pontos;
@@ -129,7 +129,7 @@ document.getElementById("retry")?.addEventListener("click", (event) => {
 });
 SZGame3D.animate(cena, () => {
   if (rodando) {
-    SZGame3D.fpsControls(jogador, cena, 0.09);
+    SZGame3D.fpsControls(jogador, cena, 5.4);
     if (travaTiro > 0) {
       travaTiro = travaTiro - 1;
     }
@@ -140,14 +140,14 @@ SZGame3D.animate(cena, () => {
       }
     }
     encostou = false;
-    SZGame3D.forEachInSwarm(robosLentos, (item) => {
-      SZGame3D.moveTowards(item, SZGame3D.getPos(jogador, "x"), SZGame3D.getPos(item, "y"), SZGame3D.getPos(jogador, "z"), 0.006);
+    SZGame3D.forEachInGroup(robosLentos, (item) => {
+      SZGame3D.moveTowards(item, SZGame3D.getPos(jogador, "x"), SZGame3D.getPos(item, "y"), SZGame3D.getPos(jogador, "z"), 0.36);
       if (SZGame3D.collides(jogador, item)) {
         encostou = true;
       }
     });
-    SZGame3D.forEachInSwarm(robosRapidos, (item) => {
-      SZGame3D.moveTowards(item, SZGame3D.getPos(jogador, "x"), SZGame3D.getPos(item, "y"), SZGame3D.getPos(jogador, "z"), 0.015);
+    SZGame3D.forEachInGroup(robosRapidos, (item) => {
+      SZGame3D.moveTowards(item, SZGame3D.getPos(jogador, "x"), SZGame3D.getPos(item, "y"), SZGame3D.getPos(jogador, "z"), 0.91);
       if (SZGame3D.collides(jogador, item)) {
         encostou = true;
       }

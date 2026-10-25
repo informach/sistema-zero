@@ -16,7 +16,7 @@ SZWorld3D.scatter(60, "arvores");
 SZWorld3D.car({ style: "jipe", color: "#2b6cb0" });
 SZWorld3D.carBoost(1.5);
 SZWorld3D.engineSound("ligado");
-SZWorld3D.totemText(0, -12, "Boliche na Praca", "Acelere contra os pinos! Derrube todos para o strike.");
+SZWorld3D.totemText(0, -12, "Boliche na Praça", "Acelere contra os pinos! Derrube todos para o strike.");
 SZWorld3D.bowlingCreate(0, 25, 0);
 SZWorld3D.stack(6, "latas", 20, 10);
 SZWorld3D.stack(5, "caixas", -20, 10);
@@ -25,8 +25,8 @@ SZWorld3D.bowlingOnStrike(function () {
   SZWorld3D.cameraShake(0.8, 0.5);
 });
 SZWorld3D.onUpdate(function (dt) {
-  SZWorld3D.hud("Pinos: " + SZWorld3D.pinsDown() + "/10", "topo-esquerda");
-  SZWorld3D.hud("Derrubados: " + SZWorld3D.knockedCount(), "topo-direita");
+  SZWorld3D.hudText("top-left", "Pinos: " + SZWorld3D.pinsDown() + "/10");
+  SZWorld3D.hudText("top-right", "Derrubados: " + SZWorld3D.knockedCount());
 });
 `.trim()
 

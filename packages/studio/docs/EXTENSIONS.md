@@ -167,12 +167,15 @@ antes de o código do aluno rodar). Regras:
 - [ ] O `toolboxCategory.contents` referencia exatamente os `type` definidos em
       `blocks` — sem órfãos.
 - [ ] **Cor = identidade da categoria** (paleta arco-íris, igual ao núcleo): a
-      extensão tem 1 cor base e as SUB-categorias são TONS dela via
-      `categoryShades(base, n)` (`blockly/colorShades.ts`). Um loop
-      `COLOUR_BY_TYPE` pinta cada bloco com o tom da sua sub-categoria — NÃO
-      hardcode hex por bloco (game-3d já teve uma sub-cat presa em rosa por
-      faltar o loop). O texto do bloco é BRANCO, então os tons não podem clarear
-      demais (o `categoryShades` já é viés-escuro).
+      extensão tem 1 cor base e as famílias são TONS dela via
+      `categoryShades(base, n)` (`blockly/colorShades.ts`). A extensão declara a
+      árvore pura família → seção → tipos no `palette.ts` e o
+      `official-extensions/extensionPalette.ts` pinta cada bloco com o tom da
+      família, ordena e monta a toolbox — NÃO hardcode hex por bloco (game-3d já
+      teve uma sub-cat presa em rosa por faltar o loop). O drift comum
+      (`official-extensions/__tests__/paletteDrift.ts`) cobra cada bloco visível
+      num lugar só e nenhum tipo fantasma. O texto do bloco é BRANCO, então os
+      tons não podem clarear demais (o `categoryShades` já é viés-escuro).
 - [ ] Todo bloco executável declara `placement` junto da própria definição.
       `blockly/blockContracts.ts` expande os presets para áreas-raiz (`start`,
       `events`, `loops`), contextos aninhados, papel e fase. Não crie um
@@ -217,7 +220,7 @@ antes de o código do aluno rodar). Regras:
 - [ ] Blocos de compatibilidade com migração `unwrap-*` ou
       `remove-engine-boot` ficam `hidden: true` e ausentes de toda toolbox.
 - [ ] Campo que REFERENCIA um nome já criado noutro bloco (sprite, cena/mundo,
-      objeto 3D, grupo/enxame, folha de quadros, mapa de tiles, imagem/textura…)
+      objeto 3D, grupo, folha de quadros, mapa de tiles, imagem/textura…)
       usa um **seletor**, não `field_input`: `field_sprite_picker` (sprites, com
       miniatura), `field_asset_picker` (imagens do projeto) ou `field_name_picker`
       com o `kind` certo (`scene3d`/`object3d`/`g3d-object`/`group3d`/`spritesheet`/`tilemap`/…). `object3d` aceita objetos Three.js genéricos; `g3d-object`
@@ -230,7 +233,7 @@ antes de o código do aluno rodar). Regras:
 - [ ] Referências semânticas do Jogo 3D também estão registradas em
       `GAME3D_SEMANTIC_DECLARATION_FIELDS` e `GAME3D_SEMANTIC_REFERENCE_FIELDS`.
       O primeiro catálogo também alimenta o registro geral de variáveis. O schema
-      deve distinguir mundo, objeto genérico, objeto ligado ao jogo, grupo e enxame,
+      deve distinguir mundo, objeto genérico, objeto ligado ao jogo e grupo,
       respeitando ordem e escopo, para que um nome inválido apareça no bloco antes
       de gerar JavaScript. Expressões que devolvem objetos nomeáveis ficam em
       `GAME3D_OBJECT_EXPRESSION_TYPES`.

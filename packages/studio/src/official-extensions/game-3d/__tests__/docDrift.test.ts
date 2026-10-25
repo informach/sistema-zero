@@ -1,10 +1,16 @@
 import { describe, expect, it } from 'bun:test'
-import type { ExtensionToolboxCategory } from '#extensions'
+import {
+  NO_PALETTE_TREE_DRIFT,
+  NO_TOOLBOX_DRIFT,
+  paletteTreeDrift,
+  toolboxDrift,
+} from '../../__tests__/paletteDrift'
 import { gameThreeDPromptContext } from '../ai'
 import { gameThreeDPromptSummary } from '../aiSummary'
 import { gameThreeDBlocks, gameThreeDToolboxCategory } from '../blocks'
 import { gameThreeDExamples } from '../exampleCatalog'
 import { gameThreeDManifest } from '../manifest'
+import { GAME_THREE_D_PALETTE } from '../palette'
 import { gameThreeDRuntime } from '../runtime'
 
 /**
@@ -17,22 +23,6 @@ import { gameThreeDRuntime } from '../runtime'
  * (mesma receita do blockAudit) e falha na hora. Se um nome legítimo cair aqui,
  * conserte o TEXTO do `ai.ts`; não afrouxe o teste.
  */
-
-/** Todo `type` de bloco na toolbox, em qualquer nível (com repetição). */
-function tiposNaToolbox(cat: ExtensionToolboxCategory, acc: string[] = []): string[] {
-  for (const c of cat.contents) {
-    if (c.kind === 'category') tiposNaToolbox(c, acc)
-    else acc.push(c.type)
-  }
-  return acc
-}
-
-/** Todo nome de categoria da toolbox, em qualquer nível. */
-function nomesDeCategoria(cat: ExtensionToolboxCategory, acc: string[] = []): string[] {
-  acc.push(cat.name)
-  for (const c of cat.contents) if (c.kind === 'category') nomesDeCategoria(c, acc)
-  return acc
-}
 
 describe('game-3d — a doc/IA não pode citar o que não existe', () => {
   it('o contexto da IA só cita métodos que EXISTEM no window.SZGame3D', () => {
@@ -101,20 +91,10 @@ describe('game-3d — a doc/IA não pode citar o que não existe', () => {
     expect(gameThreeDExamples.length).toBeGreaterThanOrEqual(10)
   })
 
-  it('todo bloco está na toolbox em UM lugar só — e a categoria "Mais" não existe', () => {
-    // Bloco fora do SUBCATS cai no grupo genérico "Mais" sem erro nenhum — a versão
-    // silenciosa do chip fantasma (o bloco some do lugar certo).
-    const conta = new Map<string, number>()
-    for (const t of tiposNaToolbox(gameThreeDToolboxCategory)) conta.set(t, (conta.get(t) ?? 0) + 1)
-    const visiveis = gameThreeDBlocks
-      .filter((b) => !(b as { hidden?: boolean }).hidden)
-      .map((b) => b.type)
-    const conhecidos = new Set(gameThreeDBlocks.map((b) => b.type))
-    expect({
-      foraDaToolbox: visiveis.filter((t) => !conta.has(t)),
-      emDoisLugares: [...conta.entries()].filter(([, n]) => n > 1).map(([t]) => t),
-      fantasmasNaToolbox: [...conta.keys()].filter((t) => !conhecidos.has(t)),
-      categoriaMais: nomesDeCategoria(gameThreeDToolboxCategory).filter((n) => n === 'Mais'),
-    }).toEqual({ foraDaToolbox: [], emDoisLugares: [], fantasmasNaToolbox: [], categoriaMais: [] })
+  it('todo bloco está na paleta em UM lugar só, sem fantasma e sem categoria "Mais"', () => {
+    // Bloco fora da árvore some da paleta sem erro nenhum: a versão silenciosa do
+    // chip fantasma. A rede é a comum das extensões (`paletteDrift.ts`).
+    expect(paletteTreeDrift(GAME_THREE_D_PALETTE, gameThreeDBlocks)).toEqual(NO_PALETTE_TREE_DRIFT)
+    expect(toolboxDrift(gameThreeDToolboxCategory, gameThreeDBlocks)).toEqual(NO_TOOLBOX_DRIFT)
   })
 })

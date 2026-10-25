@@ -32,7 +32,13 @@ export interface FakeRenderer {
   forceContextLoss: () => void
 }
 
-export function makeFakeThree() {
+/**
+ * Embrulha o namespace THREE já com o WebGLRenderer falso (ex.: o THREE CONTADOR das travas
+ * de desempenho, `makeCountingThree`). Sem embrulho, o THREE é o de sempre.
+ */
+export type ThreeWrapper = (three: Record<string, unknown>) => Record<string, unknown>
+
+export function makeFakeThree(overrides: Record<string, unknown> = {}, wrapThree?: ThreeWrapper) {
   const renderers: FakeRenderer[] = []
 
   function FakeWebGLRenderer(this: unknown) {
@@ -73,10 +79,12 @@ export function makeFakeThree() {
     return r
   }
 
-  const THREE = {
+  const base = {
     ...RealTHREE,
     WebGLRenderer: FakeWebGLRenderer as unknown as new () => FakeRenderer,
+    ...overrides,
   }
+  const THREE = wrapThree ? (wrapThree(base) as typeof base) : base
   return { THREE, renderers }
 }
 
@@ -94,7 +102,7 @@ export interface WorldApi {
   carStats(speed: number, turn: number, jump: number): void
   carBoost(force: number): void
   carPlace(x: number, z: number, deg: number): void
-  carPos(axis: string): number
+  playerPos(axis: string): number
   carSpeed(): number
   horn(): void
   onHorn(fn: () => void): void
@@ -127,7 +135,7 @@ export interface WorldApi {
   bowlingCreate(x: number, z: number): void
   bowlingOnStrike(fn: () => void): void
   pinsDown(): number
-  hud(pos: string, text: string): void
+  hudText(corner: string, text: string): void
   say(text: string, secs: number): void
 }
 
@@ -143,12 +151,17 @@ export function releaseKey(key: string, code: string): void {
  * @param beforeStart roda entre o `setup()` e o `start()` — onde a criança monta
  * o mundo (o start constrói tudo e espera os assets pendentes).
  */
-export async function loadStartedWorld(beforeStart?: (api: WorldApi) => void): Promise<{
+export async function loadStartedWorld(
+  beforeStart?: (api: WorldApi) => void,
+  // Troca peças do THREE de verdade (ex.: um PlaneGeometry que conta as construções).
+  threeOverrides: Record<string, unknown> = {},
+  wrapThree?: ThreeWrapper,
+): Promise<{
   api: WorldApi
   renderers: FakeRenderer[]
   step: (frames: number) => void
 }> {
-  const { THREE, renderers } = makeFakeThree()
+  const { THREE, renderers } = makeFakeThree(threeOverrides, wrapThree)
   const win = globalThis.window as unknown as Record<string, unknown>
   new Function('THREE', 'window', runtimeBody)(THREE, win)
   const api = win.SZWorld3D as WorldApi
@@ -177,13 +190,16 @@ export async function loadStartedWorld(beforeStart?: (api: WorldApi) => void): P
  * Roda o runtime + o JS GERADO de um exemplo. O adapter de ciclo de vida chama
  * start() depois do código da criança, como acontece no preview.
  */
-export async function loadExampleWorld(exampleJs: string): Promise<{
+export async function loadExampleWorld(
+  exampleJs: string,
+  wrapThree?: ThreeWrapper,
+): Promise<{
   api: WorldApi
   renderers: FakeRenderer[]
   step: (frames: number) => void
   stage: Element
 }> {
-  const { THREE, renderers } = makeFakeThree()
+  const { THREE, renderers } = makeFakeThree({}, wrapThree)
   const win = globalThis.window as unknown as Record<string, unknown>
   new Function('THREE', 'window', runtimeBody)(THREE, win)
   const api = win.SZWorld3D as WorldApi

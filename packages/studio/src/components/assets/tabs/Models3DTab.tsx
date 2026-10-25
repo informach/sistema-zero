@@ -1,6 +1,7 @@
 import type { JSX } from 'react'
 import type { ProjectAsset } from '#core'
 import { Button } from '#ui'
+import { readGlbSummary } from '../../../core/glbSummary'
 import { useT } from '../../../studio/i18n'
 import type { EditTarget } from '../creationOrigin'
 import { EditInOriginButton } from '../EditInOriginButton'
@@ -25,6 +26,36 @@ export interface Models3DTabProps extends AssetsTabCommon {
   onOpenTeam?: (() => void) | null
   editTargetOf: (asset: ProjectAsset) => EditTarget | null
   onOpenInOrigin: (asset: ProjectAsset, target: EditTarget) => void
+}
+
+/** Quantos nomes de animação cabem no selo antes do "…". */
+const CLIPS_IN_BADGE = 3
+
+/**
+ * Selos do que o .glb traz por dentro (lidos do cabeçalho, sem three):
+ * 🎬 animações, 🦴 ossos, 🎞️ pintura que se mexe. Nada a mostrar → nada.
+ */
+function ModelBadges({ asset }: { asset: ProjectAsset }): JSX.Element | null {
+  const t = useT()
+  if (asset.kind !== 'model3d') return null
+  const summary = readGlbSummary(asset.dataUrl, asset.id)
+  if (!summary) return null
+  const { clips, skinned, animatedPaint } = summary
+  if (clips.length === 0 && !skinned && !animatedPaint) return null
+  const shown = clips.slice(0, CLIPS_IN_BADGE).join(', ')
+  const names = clips.length > CLIPS_IN_BADGE ? `${shown}…` : shown
+  const badge = 'rounded bg-sz-bg px-1.5 py-0.5 text-[10px] text-sz-fg-soft'
+  return (
+    <span className="flex flex-wrap gap-1">
+      {clips.length > 0 ? (
+        <span className={badge} title={t('models3d.badge.clipsTitle', { names: clips.join(', ') })}>
+          {t('models3d.badge.clips', { names })}
+        </span>
+      ) : null}
+      {skinned ? <span className={badge}>{t('models3d.badge.skinned')}</span> : null}
+      {animatedPaint ? <span className={badge}>{t('models3d.badge.animatedPaint')}</span> : null}
+    </span>
+  )
 }
 
 /**
@@ -73,7 +104,7 @@ export function Models3DTab({
               variant={onOpenMolda || onOpenTeam ? 'subtle' : 'primary'}
               size="sm"
               disabled={busy}
-              title="Modelo 3D (.glb) ou céu 360° (.hdr) para Jogo 3D, Jogo 3D Avançado, Mundo 3D e Canvas 3D"
+              title={t('models3d.uploadTitle')}
               onClick={onUpload}
             >
               {busy ? 'Processando…' : '📦 Enviar modelo 3D'}
@@ -100,10 +131,15 @@ export function Models3DTab({
           </EmptyHint>
         ) : (
           <>
-            <p className="mb-2 text-xs text-sz-fg-soft">
-              Use o NOME no bloco "Criar o objeto … com o modelo" (Jogo 3D) ou na peça "modelo
-              importado" do molde; se for .hdr, em "Usar o céu 360°" ou no "céu de foto".
-            </p>
+            <div className="mb-2 text-xs text-sz-fg-soft">
+              <p>{t('models3d.howTo')}</p>
+              <ul className="ml-4 list-disc">
+                <li>{t('models3d.howTo.game3d')}</li>
+                <li>{t('models3d.howTo.advanced')}</li>
+                <li>{t('models3d.howTo.world3d')}</li>
+                <li>{t('models3d.howTo.sky')}</li>
+              </ul>
+            </div>
             <ul className="flex flex-col gap-2">
               {models3d.map((asset) => {
                 const editTarget = editTargetOf(asset)
@@ -116,12 +152,15 @@ export function Models3DTab({
                     >
                       {asset.kind === 'model3d' ? '📦' : '🌅'}
                     </span>
-                    <AssetNameInput
-                      asset={asset}
-                      what="o modelo 3D"
-                      onRename={onRename}
-                      className="min-w-0 flex-1"
-                    />
+                    <span className="flex min-w-0 flex-1 flex-col gap-1">
+                      <AssetNameInput
+                        asset={asset}
+                        what="o modelo 3D"
+                        onRename={onRename}
+                        className="min-w-0"
+                      />
+                      <ModelBadges asset={asset} />
+                    </span>
                     <span
                       className="max-w-[30%] truncate text-[10px] text-sz-fg-soft"
                       title={asset.originalFileName}

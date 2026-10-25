@@ -58,7 +58,7 @@ describe('Exemplo Patrulha Espacial Profissional — drift contra o parser real'
       'g3k:cullFar', // recicla o que passou (o pool nunca lota)
       'g3k:recycle',
       'g3k:setSeed', // sorteio determinístico
-      'g3k:randomBetween',
+      'g3k:random',
       'g3k:setEntityValue', // o giro do meteoro vive numa gaveta por entidade
       'g3k:entityValue',
       'g3k:setYaw',
@@ -121,9 +121,9 @@ describe('Exemplo Patrulha Espacial Profissional — drift contra o parser real'
     for (const t of [
       'g3k:hurt', // a batida tira 1 das 3 vidas (i-frames do motor)
       'g3k:onHurt',
-      'g3k:cameraShake',
+      'g3k:shakeCamera',
       'g3k:onEntityDeath',
-      'g3k:endGame',
+      'g3k:gameOver',
       'g3k:cameraFollow', // a câmera fixa atrás/acima da nave
       'g3k:cameraSmooth',
       'g3k:defineEmitter', // a turbina jorra atrás da nave
@@ -131,14 +131,14 @@ describe('Exemplo Patrulha Espacial Profissional — drift contra o parser real'
       'g3k:setFog',
       'g3k:addLight',
       'g3k:setAmbient',
-      'g3k:setScreenText',
-      'g3k:hudText',
+      'g3k:screenText',
+      'g3k:cornerText',
       'g3k:setState', // 20 destruídos = vitória
     ]) {
       expect(types.has(t)).toBe(true)
     }
     const raw = JSON.stringify(statements)
-    for (const screen of ['"menu"', '"fim"', '"vitoria"']) {
+    for (const screen of ['"inicio"', '"fim"', '"vitoria"']) {
       expect(raw).toContain(screen)
     }
   })

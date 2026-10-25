@@ -1,39 +1,11 @@
-import { categoryShades } from '../../blockly/colorShades'
 import type { ExtensionToolboxCategory } from '../../extensions/toolboxTypes'
+import { buildExtensionPalette } from '../extensionPalette'
 import { sceneShadows } from '../scene-2d/blocks'
 import { isSceneNameBlock, sceneTypes } from '../scene-2d/catalog'
 import { gameTwoDBlocks as canonicalGameTwoDBlocks } from './blockCatalog'
 import { GAME_TWO_D_PALETTE } from './palette'
 
 const C = '#ec4899'
-
-const FAMILY_SHADES = categoryShades(C, GAME_TWO_D_PALETTE.length)
-const COLOUR_BY_TYPE = new Map<string, string>(
-  GAME_TWO_D_PALETTE.flatMap((family, index) =>
-    family.sections.flatMap((section) =>
-      section.types.map((type) => [type, FAMILY_SHADES[index] ?? C] as const),
-    ),
-  ),
-)
-// A lista de nomes vive DENTRO dos blocos de camada e de pista: sai no tom deles.
-const SCENE_COLOUR = COLOUR_BY_TYPE.get(sceneTypes('g2d', 'begin')[0] ?? '')
-const ORDER_BY_TYPE = new Map([...COLOUR_BY_TYPE.keys()].map((type, index) => [type, index]))
-export const gameTwoDBlocks = canonicalGameTwoDBlocks
-  .map((block) => ({
-    ...block,
-    colour:
-      COLOUR_BY_TYPE.get(block.type) ??
-      (isSceneNameBlock(block.type) ? SCENE_COLOUR : undefined) ??
-      block.colour,
-  }))
-  .sort(
-    (a, b) =>
-      (ORDER_BY_TYPE.get(a.type) ?? Number.MAX_SAFE_INTEGER) -
-      (ORDER_BY_TYPE.get(b.type) ?? Number.MAX_SAFE_INTEGER),
-  )
-const VISIBLE_BLOCK_TYPES = new Set(
-  gameTwoDBlocks.filter((block) => !block.hidden).map((block) => block.type),
-)
 
 // Sombras pré-preenchidas dos slots de VALOR que aparecem na paleta: o aluno pode
 // digitar o texto direto (UX igual à de antes) E ainda trocar por uma variável,
@@ -296,24 +268,17 @@ export const G2D_SOCKET_SHADOW_TYPES: Record<string, Record<string, string>> = O
   ]),
 )
 
-const toolboxBlock = (type: string) => {
-  const inputs = G2D_SOCKET_SHADOWS[type]
-  return inputs ? { kind: 'block' as const, type, inputs } : { kind: 'block' as const, type }
-}
-
-export const gameTwoDToolboxCategory: ExtensionToolboxCategory = {
-  kind: 'category',
+const GAME_TWO_D_PALETTE_VIEW = buildExtensionPalette({
   name: 'Jogo 2D',
   colour: C,
-  contents: GAME_TWO_D_PALETTE.map((family, index) => ({
-    kind: 'category',
-    name: family.name,
-    colour: FAMILY_SHADES[index] ?? C,
-    contents: family.sections.map((section) => ({
-      kind: 'category',
-      name: section.name,
-      colour: FAMILY_SHADES[index] ?? C,
-      contents: section.types.filter((type) => VISIBLE_BLOCK_TYPES.has(type)).map(toolboxBlock),
-    })),
-  })),
-}
+  tree: GAME_TWO_D_PALETTE,
+  blocks: canonicalGameTwoDBlocks,
+  shadows: G2D_SOCKET_SHADOWS,
+  // A lista de nomes vive DENTRO dos blocos de camada e de pista: sai no tom deles.
+  fallbackColour: (type, colourOf) =>
+    isSceneNameBlock(type) ? colourOf(sceneTypes('g2d', 'begin')[0] ?? '') : undefined,
+})
+
+export const gameTwoDBlocks = GAME_TWO_D_PALETTE_VIEW.blocks
+
+export const gameTwoDToolboxCategory: ExtensionToolboxCategory = GAME_TWO_D_PALETTE_VIEW.toolbox

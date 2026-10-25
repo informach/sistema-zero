@@ -24,7 +24,7 @@ import { collectTypes } from './exampleSourceUtils'
 export const ATRAVESSE_PROFISSIONAL_SOURCE = `
 SZGameKit3D.setup({ width: 1280, height: 720, world: 80, sky: "#bfe3ff", ground: "#8ecb62" });
 SZGameKit3D.setEffects({ shadows: true, bloom: false, strength: 1, vignette: true });
-SZGameKit3D.setScreenText("menu", "Atravesse a Rua Profissional", "Pule com as setas (ou WASD) e atravesse 20 faixas sem ser atropelado. Espere a faixa abrir e pule na hora certa!", "Atravessar");
+SZGameKit3D.setScreenText("inicio", "Atravesse a Rua Profissional", "Pule com as setas (ou WASD) e atravesse 20 faixas sem ser atropelado. Espere a faixa abrir e pule na hora certa!", "Atravessar");
 SZGameKit3D.setScreenText("vitoria", "Voce atravessou!", "Chegou do outro lado em seguranca depois de 20 faixas. Que reflexos!", "Jogar de novo");
 SZGameKit3D.setScreenText("fim", "Foi atropelado!", "Um carro te pegou. Olhe as duas direcoes e pule na brecha!", "Tentar de novo");
 SZGameKit3D.defineMold("heroi", { health: 1, speed: 16 }, function () {
@@ -62,30 +62,30 @@ SZGameKit3D.onEnterState("jogando", function () {
   SZGameKit3D.say(boneco, "Vai!", 1);
 });
 SZGameKit3D.onEntityStateUpdate("heroi", "parado", function (ela, dt) {
-  if (SZGameKit3D.keyPressed("w") || SZGameKit3D.keyPressed("cima")) {
+  if (SZGameKit3D.keyPressed("KeyW") || SZGameKit3D.keyPressed("ArrowUp")) {
     linha = linha + 1;
     alvoZ = linha * 2;
   }
-  if (SZGameKit3D.keyPressed("s") || SZGameKit3D.keyPressed("baixo")) {
+  if (SZGameKit3D.keyPressed("KeyS") || SZGameKit3D.keyPressed("ArrowDown")) {
     if (linha > 0) {
       linha = linha - 1;
       alvoZ = linha * 2;
     }
   }
-  if (SZGameKit3D.keyPressed("a") || SZGameKit3D.keyPressed("esquerda")) {
+  if (SZGameKit3D.keyPressed("KeyA") || SZGameKit3D.keyPressed("ArrowLeft")) {
     if (coluna > -4) {
       coluna = coluna - 1;
       alvoX = coluna * 2;
     }
   }
-  if (SZGameKit3D.keyPressed("d") || SZGameKit3D.keyPressed("direita")) {
+  if (SZGameKit3D.keyPressed("KeyD") || SZGameKit3D.keyPressed("ArrowRight")) {
     if (coluna < 4) {
       coluna = coluna + 1;
       alvoX = coluna * 2;
     }
   }
   SZGameKit3D.seekPoint(ela, alvoX, alvoZ);
-  SZGameKit3D.setHud("top-left", "Faixa: " + linha + " de 20");
+  SZGameKit3D.hudText("top-left", "Faixa: " + linha + " de 20");
 });
 SZGameKit3D.onOverlap("carro", function (zona, quem) {
   if (SZGameKit3D.isMold(quem, "heroi")) {
@@ -96,7 +96,7 @@ SZGameKit3D.onOverlap("carro", function (zona, quem) {
 SZGameKit3D.onEntityDeath("heroi", function (ela) {
   SZGameKit3D.cameraShake(0.6, 0.4);
   SZGameKit3D.playEffect("gameover");
-  SZGameKit3D.endGame();
+  SZGameKit3D.endGame("perdeu");
 });
 SZGameKit3D.onUpdate(function (dt) {
   velocidade = velocidade + dt * 0.15;
@@ -105,8 +105,8 @@ SZGameKit3D.onUpdate(function (dt) {
   }
   proximoCarro = proximoCarro - dt;
   if (proximoCarro <= 0) {
-    proximoCarro = SZGameKit3D.randomBetween(0.5, 1.2);
-    const faixa = linha + Math.floor(SZGameKit3D.randomBetween(2, 8));
+    proximoCarro = SZGameKit3D.randomBetween(5, 12) / 10;
+    const faixa = linha + SZGameKit3D.randomBetween(2, 7);
     if (SZGameKit3D.randomChance(50)) {
       const carroD = SZGameKit3D.spawn("carro", -12, 0, faixa * 2);
       SZGameKit3D.setYaw(carroD, 90);
@@ -122,7 +122,7 @@ SZGameKit3D.onUpdate(function (dt) {
       SZGameKit3D.recycle(c);
     }
   });
-  SZGameKit3D.setHud("top-right", "Chegue na faixa 20!");
+  SZGameKit3D.hudText("top-right", "Chegue na faixa 20!");
   if (linha >= 20) {
     SZGameKit3D.playEffect("win");
     SZGameKit3D.setState("vitoria");

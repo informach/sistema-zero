@@ -17,7 +17,7 @@ import { parseExampleLifecycleSource } from './exampleLifecycleSource'
 /**
  * Drift do exemplo "Defesa da Torre" — o Tower Defense de NÍVEL BÁSICO montado só
  * com genéricos do Jogo 3D (não há kit TD): uma torre no centro zapeia SOZINHA os
- * invasores (enxame) que nascem na beirada e caminham ao meio. A IR embutida em
+ * invasores (um grupo) que nascem na beirada e caminham ao meio. A IR embutida em
  * examples.ts foi GERADA pelo parser real a partir do SOURCE (que mora no
  * __gen_torresDefensoras.ts, importado aqui para que fonte e teste NUNCA divirjam).
  */
@@ -60,14 +60,14 @@ describe('Exemplo Defesa da Torre — drift contra o parser real', () => {
     const statements = behaviorStatements(defesaDaTorreBasicoExample.ir)
     const types = collectTypes(statements)
     for (const t of [
-      'g3d:createSwarm', // o enxame de invasores
-      'g3d:spawnInSwarm', // invasores nascem na beirada
+      'g3d:createGroup', // o grupo de invasores
+      'g3d:spawnCopy', // invasores nascem na beirada
       'g3d:everySeconds', // a cadência de spawn (1.1s)
       'randomFloat', // o ângulo sorteado da borda
       'g3d:moveTowards', // caminham até o centro
-      'g3d:forEachInSwarm', // varre os invasores por quadro
+      'g3d:forEachInGroup', // varre os invasores por quadro
       'g3d:isNear', // alcance da torre + colisão com o cristal
-      'g3d:removeFromSwarm', // o zap tira o invasor de cena
+      'g3d:removeFromGroup', // o zap tira o invasor de cena
       'g3d:spin', // a torre e o cristal giram
       'g3d:dt', // a recarga em tempo real do quadro
       'g3d:animate', // o laço de quadro 3D
@@ -84,8 +84,8 @@ describe('Exemplo Defesa da Torre — drift contra o parser real', () => {
     expect(raw).toContain('"rodando"')
   })
 
-  it('⭐ é montado com GENÉRICOS (enxame), não com um kit pronto', () => {
-    // O básico do TD não tem kit próprio: usa createFullscreenScene + enxame +
+  it('⭐ é montado com GENÉRICOS (grupo), não com um kit pronto', () => {
+    // O básico do TD não tem kit próprio: usa createFullscreenScene + grupo +
     // proximidade, NÃO os criadores de cena dos kits Corrida/Travessia.
     const types = collectTypes(behaviorStatements(defesaDaTorreBasicoExample.ir))
     expect(types.has('g3d:createFullscreenScene')).toBe(true)

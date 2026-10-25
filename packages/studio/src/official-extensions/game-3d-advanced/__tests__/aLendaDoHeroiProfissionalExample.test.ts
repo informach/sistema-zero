@@ -48,6 +48,12 @@ describe('Exemplo A Lenda do Herói Profissional — drift contra o parser real'
     )
   })
 
+  it('o golpe empurra o monstro, que freia aos poucos (estado empurrado)', () => {
+    const types = collectTypes(behaviorStatements(aLendaDoHeroiProfissionalExample.ir))
+    for (const t of ['g3k:setVelocity', 'g3k:setDrag', 'g3k:onExitEntityState'])
+      expect(types.has(t)).toBe(true)
+  })
+
   it('nenhum texto visível usa travessão', () => {
     expect(aLendaDoHeroiProfissionalExample.name).toBe('A Lenda do Herói Profissional')
     expect(aLendaDoHeroiProfissionalExample.name).not.toContain('—')
@@ -108,7 +114,7 @@ describe('Exemplo A Lenda do Herói Profissional — drift contra o parser real'
     const types = collectTypes(behaviorStatements(aLendaDoHeroiProfissionalExample.ir))
     for (const t of [
       'g3k:moveWithKeys',
-      'g3k:keyDown',
+      'g3k:keyPressed', // cada golpe é um aperto: segurar o espaço não vira aura
       'g3k:mousePressed',
       'g3k:cameraFollow',
       'g3k:cameraSmooth',
@@ -125,16 +131,16 @@ describe('Exemplo A Lenda do Herói Profissional — drift contra o parser real'
     const statements = behaviorStatements(aLendaDoHeroiProfissionalExample.ir)
     const types = collectTypes(statements)
     for (const t of [
-      'g3k:setScreenText',
+      'g3k:screenText',
       'g3k:setState',
       'g3k:countAlive',
-      'g3k:hudText',
+      'g3k:cornerText',
       'g3k:onUpdate',
     ]) {
       expect(types.has(t)).toBe(true)
     }
     const raw = JSON.stringify(statements)
-    for (const screen of ['"menu"', '"vitoria"', '"fim"']) {
+    for (const screen of ['"inicio"', '"vitoria"', '"fim"']) {
       expect(raw).toContain(screen)
     }
     expect(raw).toContain('"derrotados"')
@@ -142,8 +148,8 @@ describe('Exemplo A Lenda do Herói Profissional — drift contra o parser real'
 
   it('⭐ o acaso passa TODO pelo sorteio do kit (a semente não pode mentir)', () => {
     const types = collectTypes(behaviorStatements(aLendaDoHeroiProfissionalExample.ir))
-    expect(types.has('g3k:randomBetween')).toBe(true)
-    expect(types.has('g3k:randomChance')).toBe(true)
+    expect(types.has('g3k:random')).toBe(true)
+    expect(types.has('g3k:random')).toBe(true)
     expect(types.has('g3k:setSeed')).toBe(true)
     expect(types.has('randomInt')).toBe(false)
     expect(types.has('randomFloat')).toBe(false)

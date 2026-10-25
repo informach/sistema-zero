@@ -24,9 +24,9 @@ SZWorld3D.animals(3, "vacas", 14, 10, 8);
 SZWorld3D.npc("Rosa", -8, 8, "#e04f3f", "palha");
 SZWorld3D.npcTalk("Rosa", function () {
   SZWorld3D.npcAsk("Rosa", "O que vamos colher hoje?", "Milho", function () {
-    SZWorld3D.npcSay("Rosa", "O milharal fica atras da cerca. Nao pise nas mudas!");
+    SZWorld3D.npcSay("Rosa", "O milharal fica atrás da cerca. Não pise nas mudas!");
   }, "Alface", function () {
-    SZWorld3D.npcSay("Rosa", "As alfaces estao do lado do celeiro. Capriche!");
+    SZWorld3D.npcSay("Rosa", "As alfaces estão do lado do celeiro. Capriche!");
   });
 });
 SZWorld3D.setWind(3);

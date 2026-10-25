@@ -133,8 +133,10 @@ interface PlayApi {
     fn: (item: THREE.Object3D) => void,
   ): void
   hitAny(object: THREE.Object3D, group: THREE.Object3D[]): boolean
+  collides(a: THREE.Object3D, b: THREE.Object3D): boolean
+  setRotation(object: THREE.Object3D, x: number, y: number, z: number): void
   animate(world: RaceWorld, callback: (delta: number) => void): void
-  stop(world: RaceWorld): void
+  endGame(result: string): void
 }
 
 const runtimeBody = gameThreeDRuntime.replace(/^import \* as THREE from 'three';\n/, '')
@@ -292,8 +294,8 @@ describe('gameThreeDRuntime — playthrough dos kits (Three.js real)', () => {
     const { api } = loadRuntime()
     const world = api.createScene('tela')
     const enemies = api.createGroup()
-    const a = api.spawnEnemy(world, enemies, 0.1)
-    const b = api.spawnEnemy(world, enemies, 0.1)
+    const a = api.spawnEnemy(world, enemies, 6)
+    const b = api.spawnEnemy(world, enemies, 6)
     if (!a || !b) throw new Error('esperava inimigos')
     // Longe demais em qualquer eixo = fora do tronco de visão da câmera.
     a.position.set(0, 0, 1e6)
@@ -315,8 +317,8 @@ describe('gameThreeDRuntime — playthrough dos kits (Three.js real)', () => {
     api.setPosition(ground, 0, -1, 0)
     const enemies = api.createGroup()
 
-    // Solta alguns inimigos (a criança montaria isto com "A cada N quadros").
-    for (let f = 0; f < 5; f++) api.spawnEnemy(world, enemies, 0.2)
+    // Solta alguns inimigos (a criança montaria isto com "A cada N segundos").
+    for (let f = 0; f < 5; f++) api.spawnEnemy(world, enemies, 12)
     expect(enemies.length).toBe(5)
     api.updateGroup(enemies, ground) // move o grupo (velocidade + gravidade)
 
@@ -326,12 +328,35 @@ describe('gameThreeDRuntime — playthrough dos kits (Three.js real)', () => {
     enemy.position.set(0, 0, 0)
     expect(api.hitAny(player, enemies)).toBe(true)
 
-    // O "fim de jogo" (stop) para o loop de animação da cena.
-    api.animate(world, () => {})
+    // O "Fim de jogo" pausa os laços da criança; a cena continua desenhada por trás da tela.
+    let quadros = 0
+    api.animate(world, () => {
+      quadros++
+    })
     const renderer = (world as unknown as { renderer: FakeRenderer }).renderer
     expect(renderer.loop).not.toBeNull() // o loop está instalado e rodando
-    api.stop(world)
-    expect(renderer.loop).toBeNull() // stop desinstalou o loop
+    renderer.loop?.(16)
+    api.endGame('perdeu')
+    renderer.loop?.(32)
+    expect(quadros).toBe(1)
+    expect(renderer.loop).not.toBeNull()
+  })
+
+  it('"encostando em algum do grupo" mede a caixa REAL: uma barra girada 90° encosta', () => {
+    const { api } = loadRuntime()
+    const world = api.createScene('tela')
+    const player = api.createBox(world, { size: 1 })
+    api.setPosition(player, 0, 0, 2)
+    // Barra comprida no eixo X; girada 90 graus em Y, ela passa a se estender no Z.
+    const bar = api.createBlock(world, { width: 6, height: 1, depth: 0.4 })
+    api.setPosition(bar, 0, 0, 0)
+    const group = api.createGroup()
+    group.push(bar)
+    expect(api.hitAny(player, group)).toBe(false) // deitada no X, longe do jogador
+    api.setRotation(bar, 0, 90, 0)
+    // A medida declarada ignora o giro (é a do "está encostando em"), a caixa real não.
+    expect(api.collides(player, bar)).toBe(false)
+    expect(api.hitAny(player, group)).toBe(true)
   })
 })
 

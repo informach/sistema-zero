@@ -21,7 +21,7 @@ const GK_PLAY_ANIM_TYPE = 'sz_gk_play_anim'
 const GK_SET_SHEET_TYPE = 'sz_gk_set_sheet'
 
 /** Reaplica o data-sz-theme do root no DropDownDiv portalado (mesmo do FieldAssetPicker). */
-function applyThemeScope(field: Blockly.Field, content: HTMLElement): void {
+export function applyThemeScope(field: Blockly.Field, content: HTMLElement): void {
   const workspace = field.getSourceBlock()?.workspace as { getInjectionDiv?(): unknown } | undefined
   const injectionDiv = workspace?.getInjectionDiv?.()
   const scope = injectionDiv instanceof HTMLElement ? injectionDiv.closest('[data-sz-theme]') : null

@@ -9,7 +9,7 @@ import {
   type Object3D,
 } from 'three'
 import { isValidAssetDataUrl } from '../../../core/project'
-import fixture from './fixtures/molda-articulated.json'
+import fixture from '../../__tests__/three3d/molda-articulated.json'
 import { loadStartedKit } from './kitHarness'
 
 interface Entity {
@@ -50,7 +50,10 @@ function expectPose(entity: Entity, expected: typeof fixture.rest) {
   })
   expect(nodes.size).toBe(expected.length)
   // Use matrices already updated by the renderer: forcing an update here could hide a frozen transform bug.
-  const inverse = new Matrix4().copy(entity.mesh.matrixWorld).invert()
+  // Lote 11: a peça "modelo importado" ENCAIXA o .glb na caixa dela (escala + centro), então a
+  // pose nativa é medida no espaço do MODELO (o filho do suporte da peça), não do objeto.
+  const modelRoot = entity.mesh.children[0]?.children[0] ?? entity.mesh
+  const inverse = new Matrix4().copy(modelRoot.matrixWorld).invert()
   for (const pose of expected) {
     const node = nodes.get(pose.id)
     expect(node !== undefined).toBe(true)

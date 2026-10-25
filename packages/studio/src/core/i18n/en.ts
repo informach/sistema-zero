@@ -270,6 +270,20 @@ export const en: Record<string, string> = {
     'This animation, frame or tile is unavailable. Choose again.',
   'pintaImport.image.selectionChanged':
     'The received image does not match your choice. Review the selection.',
+  'models3d.uploadTitle':
+    '3D model (.glb, with animations and bones) or 360° sky (.hdr) for 3D Game, 3D World, Advanced 3D Game and Canvas 3D',
+  'models3d.howTo': 'Use the model NAME in the blocks:',
+  'models3d.howTo.game3d':
+    '3D Game: "Create the object with the model" puts the model in the scene, and "Play the animation" makes it move.',
+  'models3d.howTo.advanced':
+    'Advanced 3D Game: the "imported model" part of the mold, with one animation for each state.',
+  'models3d.howTo.world3d':
+    '3D World: "Place the model" moves, and "Scatter" keeps the copies still. The character, the friend and the car can use a model too.',
+  'models3d.howTo.sky': '360° sky (.hdr): the "Use the 360° sky" block.',
+  'models3d.badge.clips': '🎬 {names}',
+  'models3d.badge.clipsTitle': 'Animations of this model: {names}',
+  'models3d.badge.skinned': '🦴 with bones',
+  'models3d.badge.animatedPaint': '🎞️ moving paint',
   'moldaImport.button': '🧊 Bring from Molda',
   'moldaImport.title': 'Bring from Molda',
   'moldaImport.subtitle':

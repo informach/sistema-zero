@@ -16,20 +16,20 @@ import { resolveProgrammingBlockLevel } from './programmingContract'
  *   **HTML/CSS ESSENCIAL** (título/parágrafo/imagem/
  *   botão/link/lista/caixa + cor de fundo/texto, tamanho de fonte, padding/margem/
  *   borda — o mínimo pra montar uma telinha). As aulas filtram o subconjunto de
- * - **Iniciante 3D** = Jogo 2D completo + a PORTA DE ENTRADA do 3D: todos os
- *   blocos do Jogo 3D (`sz_g3d_*`). A aula ainda pode restringir por allowBlocks.
+ * - **Iniciante 3D** = Jogo 2D completo + a PORTA DE ENTRADA do 3D: o NÚCLEO do
+ *   Jogo 3D (`INICIANTE_3D_G3D`). A aula ainda pode restringir por allowBlocks.
  * - **Intermediário 2D** = programação "real" guiada (variáveis avulsas, laços,
  *   funções, getters/setters, matemática básica) + caminho feliz e kits de gênero
  *   do Jogo 2D Avançado + **SVG** (desenhar formas declarando — o primitivo gentil).
- * - **Intermediário 3D** = Mundo 3D (mundo aberto dirigível, blocos "mágicos") e
- *   o Jogo 3D Avançado (`sz_g3k_*`, reclassificado 26/07 — abre no Arquiteto).
+ * - **Intermediário 3D** = o resto do Jogo 3D (ajustes finos, física, câmeras e
+ *   kits) + o Mundo 3D (mundo aberto dirigível, blocos "mágicos").
  * - **Avançado 2D** = tudo NA UNHA em 2D: **Canvas 2D cru** (`sz_canvas_*` — desenho
  *   imperativo, traçado, transform), **HTML/CSS profundos** (tags semânticas, forms,
  *   flex/grid, animações, transforms, tipografia, media queries, código cru), classes/
  *   OOP, física manual, trigonometria, vetores, e as peças internas de motor.
- * - **Avançado 3D** = a categoria **Canvas 3D INTEIRA** (`sz_t3d_*`, three.js cru — do
- *   primitivo às receitas "mágicas"; reclassificado 26/07 — antes os facilitadores
- *   ficavam no Intermediário 3D).
+ * - **Avançado 3D** = o Jogo 3D Avançado (`sz_g3k_*`, review 3D de 10/2026: uma
+ *   extensão por degrau) + a categoria **Canvas 3D INTEIRA** (`sz_t3d_*`, three.js
+ *   cru — do primitivo às receitas "mágicas"; reclassificado 26/07).
  *
  * É CUMULATIVO na escada (cada degrau inclui os anteriores — o gate usa
  * `isLevelWithin`; note que os degraus "2D" a partir do int-2d INCLUEM o
@@ -41,8 +41,9 @@ import { resolveProgrammingBlockLevel } from './programmingContract'
  * ⚠️ Adicionou um bloco? `sz_g2d_*` novo fica no iniciante-3d até entrar
  * explicitamente em `INICIANTE_2D_G2D`. Para o core,
  * decida se entra nos conjuntos intermediário/avançado; senão os defaults por
- * prefixo decidem (canvas→av-2d, g3d→ini-3d, gk→int-2d, w3d→int-3d,
- * g3k→int-3d, t3d→av-3d, resto→ini-2d) — o teste de conformidade cobra.
+ * prefixo decidem (canvas→av-2d, g3d→int-3d fora do `INICIANTE_3D_G3D`,
+ * gk→int-2d, w3d→int-3d, g3k→av-3d, t3d→av-3d, resto→ini-2d) — o teste de
+ * conformidade cobra.
  */
 
 const INTERMEDIARIO_2D: ReadonlySet<string> = new Set<string>([
@@ -217,9 +218,7 @@ const AVANCADO_2D: ReadonlySet<string> = new Set<string>([
   'sz_gk_tween_property',
 ])
 
-// Jogo 3D é inteiramente iniciante-3d. A divulgação progressiva é feita pela
-// curadoria de cada aula (`allowBlocks`), portanto nenhum bloco `sz_g3d_*` sobe
-// de nível só por expor ajustes finos ou física.
+// O Jogo 3D tem a escada própria (`INICIANTE_3D_G3D` + prefixo), abaixo.
 const AVANCADO_3D: ReadonlySet<string> = new Set<string>()
 
 // Canvas 3D (three.js cru) é INTEIRAMENTE avançado-3d (reclassificado 26/07 —
@@ -227,10 +226,64 @@ const AVANCADO_3D: ReadonlySet<string> = new Set<string>()
 // conjunto ficou vazio de propósito (nenhum bloco 3D sobe só até o intermediário).
 const INTERMEDIARIO_3D: ReadonlySet<string> = new Set<string>()
 
-// Posição dos kits 3D dirigíveis na escada (decisão da usuária 17/07) — parâmetros
-// de 1 linha p/ ajuste fino futuro.
-const G3D_FLOOR: BlockLevel = 'iniciante-3d'
+// Posição dos kits 3D na escada: uma extensão por degrau (review 3D, 10/2026).
+// Jogo 3D = iniciante-3d só no núcleo (abaixo); o resto do `sz_g3d_*` sobe um degrau.
+const G3D_LEVEL: BlockLevel = 'intermediario-3d'
 const W3D_LEVEL: BlockLevel = 'intermediario-3d'
+const G3K_LEVEL: BlockLevel = 'avancado-3d'
+/**
+ * O NÚCLEO do Jogo 3D (`iniciante-3d`): o bastante para um jogo completo de criar,
+ * mover, encostar, multiplicar e terminar. Todo outro `sz_g3d_*` é `intermediario-3d`.
+ * ⚠️ Mexer aqui muda o degrau do bloco nas aulas curadas por nível e no Zappy/Pensa.
+ */
+const INICIANTE_3D_G3D: ReadonlySet<string> = new Set<string>([
+  'sz_g3d_create_fullscreen_scene',
+  'sz_g3d_animate',
+  'sz_g3d_sky_photo',
+  'sz_g3d_create_box',
+  'sz_g3d_create_sphere',
+  'sz_g3d_create_block',
+  'sz_g3d_create_model_file',
+  'sz_g3d_set_position',
+  'sz_g3d_set_color',
+  'sz_g3d_remove_object',
+  'sz_g3d_control_keys',
+  'sz_g3d_jump',
+  'sz_g3d_apply_gravity',
+  'sz_g3d_spin',
+  'sz_g3d_key_down',
+  'sz_g3d_collides',
+  'sz_g3d_hit_any',
+  'sz_g3d_create_group',
+  'sz_g3d_spawn_copy',
+  'sz_g3d_update_group_no_gravity',
+  'sz_g3d_prune_offscreen',
+  'sz_g3d_every_seconds',
+  'sz_g3d_play_effect',
+  // O modelo do Molda dança: tocar a animação é núcleo (parar e "terminou?" sobem um degrau).
+  'sz_g3d_play_animation',
+  'sz_g3d_camera_mode',
+  // Regras de jogo (game3dRules): placar, vida, telas, recomeçar, tempo, sorteio e os "Quando…".
+  'sz_g3d_hud_text',
+  'sz_g3d_add_score',
+  'sz_g3d_score',
+  'sz_g3d_set_life',
+  'sz_g3d_hurt',
+  'sz_g3d_on_life_over',
+  'sz_g3d_set_screen_text',
+  'sz_g3d_end_game',
+  'sz_g3d_restart',
+  'sz_g3d_after_seconds',
+  // A contagem que APARECE na tela (o Pega-Estrelas conta 30 s com ela).
+  'sz_g3d_start_timer',
+  'sz_g3d_on_timer_end',
+  'sz_g3d_time_left',
+  'sz_g3d_random_between',
+  'sz_g3d_on_key',
+  'sz_g3d_on_click_object',
+  'sz_g3d_on_touch_group',
+  'sz_g3d_camera_shake',
+])
 /**
  * Os blocos do Jogo 2D do PRIMEIRO degrau (`iniciante-2d`); o resto do `sz_g2d_*` é
  * `iniciante-3d`. É régua de NÍVEL, não de acesso: quem dá blocos à criança no Estúdio livre
@@ -305,7 +358,7 @@ export function resolveBlockLevel(type: string): BlockLevel {
   if (type.startsWith('sz_g2d_')) {
     return INICIANTE_2D_G2D.has(type) || isSceneNameBlock(type) ? 'iniciante-2d' : 'iniciante-3d'
   }
-  if (type.startsWith('sz_g3d_')) return G3D_FLOOR
+  if (type.startsWith('sz_g3d_')) return INICIANTE_3D_G3D.has(type) ? 'iniciante-3d' : G3D_LEVEL
   const programmingLevel = resolveProgrammingBlockLevel(type)
   if (programmingLevel) return programmingLevel
   // Canvas 2D "na mão": TODA a categoria (`sz_canvas_*` — desenho imperativo,
@@ -316,15 +369,13 @@ export function resolveBlockLevel(type: string): BlockLevel {
   if (AVANCADO_2D.has(type)) return 'avancado-2d'
   if (INTERMEDIARIO_3D.has(type)) return 'intermediario-3d'
   if (INTERMEDIARIO_2D.has(type)) return 'intermediario-2d'
-  // Jogo 3D é a PORTA DE ENTRADA do 3D: piso iniciante-3d por prefixo — os
-  // extensão inteira cai aqui; a aula decide o subconjunto visível.
   // Jogo 2D Avançado: o caminho feliz e os kits são intermediário-2d; as peças
   // internas de motor já foram separadas no AVANCADO_2D acima.
   if (type.startsWith('sz_gk_')) return 'intermediario-2d'
-  // Jogo 3D Avançado: TODOS intermediário-3d (reclassificado 26/07 — abre no
-  // Arquiteto de Mundos, junto do Mundo 3D; a jornada é o gate real). Espelha o
-  // `minLevel` da extensão em official-extensions/game-3d-advanced/index.ts.
-  if (type.startsWith('sz_g3k_')) return 'intermediario-3d'
+  // Jogo 3D Avançado: TODOS avançado-3d (review 3D, 10/2026 — uma extensão por
+  // degrau, acima do Mundo 3D). Espelha o `minLevel` da extensão em
+  // official-extensions/game-3d-advanced/index.ts.
+  if (type.startsWith('sz_g3k_')) return G3K_LEVEL
   // Canvas 3D (three.js cru, núcleo): a categoria INTEIRA é avançado-3d — do
   // primitivo às receitas "mágicas" (reclassificado 26/07, "na unha por último").
   if (type.startsWith('sz_t3d_')) return 'avancado-3d'
@@ -336,6 +387,7 @@ export function resolveBlockLevel(type: string): BlockLevel {
 
 /** Exportados só para o teste de conformidade (completude/sem sobreposição/sem typo). */
 export const _LEVEL_SETS = {
+  INICIANTE_3D_G3D,
   INTERMEDIARIO_2D,
   INTERMEDIARIO_3D,
   AVANCADO_2D,

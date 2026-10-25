@@ -10,17 +10,22 @@ import { collectTypes } from './exampleSourceUtils'
  *
  * O RPG de ação do SimonDev (Quick_3D_RPG) recriado no motor avançado: um herói
  * em TERCEIRA PESSOA (cameraFollow, WASD/setas por moveWithKeys) que ATACA de
- * PERTO com a espada (barra de espaço ou clique → forEachNear + hurt). Cada
+ * PERTO com a espada (barra de espaço ou clique → forEachNear + hurt). Cada golpe
+ * é um APERTO (keyPressed, com recarga de meio segundo, a mesma dos i-frames do
+ * monstro): segurar o espaço parado dá um golpe só, e os monstros vencem. Com o
+ * keyDown, a espada virava uma aura que vencia o jogo sem a criança se mexer. Cada
  * monstro tem CÉREBRO PRÓPRIO (FSM por-entidade: vagando → perseguindo) e caça o
  * herói pela vizinhança do motor (nearest("heroi")). Encostar no herói tira um
  * coração (hurt com i-frames); a morte do monstro conta ponto (onEntityDeath).
+ * O golpe EMPURRA o monstro para longe do herói (estado "empurrado": velocidade pra fora
+ * e "Frear aos poucos", que zera ao sair), e meio segundo depois ele volta a perseguir.
  * Derrote 10 antes que os corações acabem. ⭐ DISTINTO do "Labirinto dos Robôs"
  * (1ª pessoa + tiro): aqui é 3ª pessoa + espada de perto. Tudo procedural, sem .glb.
  */
 export const A_LENDA_DO_HEROI_PROFISSIONAL_SOURCE = `
 SZGameKit3D.setup({ width: 1280, height: 720, world: 55, sky: "#86efac", ground: "#14532d" });
 SZGameKit3D.setEffects({ shadows: true, bloom: true, strength: 1, vignette: true });
-SZGameKit3D.setScreenText("menu", "A Lenda do Herói Profissional", "Ande com WASD ou as setas e ataque com a barra de espaço ou o clique. Cada monstro tem cérebro próprio: vaga pela clareira e persegue você. Derrote 10 antes que seus corações acabem!", "Começar a aventura");
+SZGameKit3D.setScreenText("inicio", "A Lenda do Herói Profissional", "Ande com WASD ou as setas e ataque com a barra de espaço ou o clique. Cada monstro tem cérebro próprio: vaga pela clareira e persegue você. Derrote 10 antes que seus corações acabem!", "Começar a aventura");
 SZGameKit3D.setScreenText("vitoria", "Herói lendário!", "Você derrotou os 10 monstros da clareira. A floresta está a salvo!", "Jogar de novo");
 SZGameKit3D.setScreenText("fim", "O herói caiu...", "Os monstros foram demais. Ataque de perto e recue quando estiver sem corações!", "Tentar de novo");
 SZGameKit3D.defineMold("heroi", { health: 6, speed: 9 }, function () {
@@ -40,9 +45,11 @@ SZGameKit3D.defineEffect("golpe", { count: 14, colorFrom: "#fde68a", colorTo: "#
 SZGameKit3D.defineEffect("pofe", { count: 20, colorFrom: "#a78bfa", colorTo: "#14532d", spread: 6, sizeFrom: 0.6, sizeTo: 0, life: 0.5, gravity: 2 });
 let derrotados = 0;
 let proximoMonstro = 1.5;
+let recarga = 0;
 SZGameKit3D.onEnterState("jogando", function () {
   derrotados = 0;
   proximoMonstro = 1.5;
+  recarga = 0;
   SZGameKit3D.setSeed(9);
   SZGameKit3D.setAmbient(0.6);
   SZGameKit3D.setFog("#86efac", 45, 110);
@@ -58,11 +65,15 @@ SZGameKit3D.onEnterState("jogando", function () {
 SZGameKit3D.onEntityStateUpdate("heroi", "parado", function (ela, dt) {
   SZGameKit3D.moveWithKeys(ela, 9);
   SZGameKit3D.faceVelocity(ela);
-  if (SZGameKit3D.keyDown("espaço") || SZGameKit3D.mousePressed()) {
+  recarga = recarga - dt;
+  if ((SZGameKit3D.keyPressed("Space") || SZGameKit3D.mousePressed()) && recarga <= 0) {
+    recarga = 0.5;
     SZGameKit3D.forEachNear(ela, "monstro", 3, function (alvo) {
       SZGameKit3D.hurt(alvo, 6);
       SZGameKit3D.burstOn("golpe", alvo);
       SZGameKit3D.playEffect("hit");
+      SZGameKit3D.setVelocity(alvo, (SZGameKit3D.posOf(alvo, "x") - SZGameKit3D.posOf(ela, "x")) * 6, 0, (SZGameKit3D.posOf(alvo, "z") - SZGameKit3D.posOf(ela, "z")) * 6);
+      SZGameKit3D.setEntityState(alvo, "empurrado");
     });
   }
 });
@@ -99,6 +110,13 @@ SZGameKit3D.onEntityStateUpdate("monstro", "perseguindo", function (ela, dt) {
     }
   }
 });
+SZGameKit3D.onEnterEntityState("monstro", "empurrado", function (ela) {
+  SZGameKit3D.setDrag(ela, 5);
+});
+SZGameKit3D.onExitEntityState("monstro", "empurrado", function (ela) {
+  SZGameKit3D.setDrag(ela, 0);
+});
+SZGameKit3D.stateTimer("monstro", "empurrado", 0.5, "perseguindo");
 SZGameKit3D.onEntityDeath("monstro", function (ela) {
   SZGameKit3D.burstOn("pofe", ela);
   SZGameKit3D.playEffect("coin");
@@ -115,8 +133,8 @@ SZGameKit3D.onUpdate(function (dt) {
     proximoMonstro = 2.5;
     SZGameKit3D.spawn("monstro", SZGameKit3D.randomBetween(-18, 18), 0.6, SZGameKit3D.randomBetween(-18, 18));
   }
-  SZGameKit3D.setHud("top-left", "Monstros: " + derrotados + " de 10");
-  SZGameKit3D.setHud("top-right", "Ataque com espaço ou clique");
+  SZGameKit3D.hudText("top-left", "Monstros: " + derrotados + " de 10");
+  SZGameKit3D.hudText("top-right", "Ataque com espaço ou clique");
   if (derrotados >= 10) {
     SZGameKit3D.playEffect("win");
     SZGameKit3D.setState("vitoria");

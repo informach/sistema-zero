@@ -60,9 +60,9 @@ type ScopedBinderRegistry = Readonly<Record<string, ScopedBinder>>
  *  - `scene3d`  → cena Three.js crua criada pelos blocos Canvas 3D;
  *  - `g3d-world` → mundo completo criado pela extensão Jogo 3D;
  *  - `object3d` → objeto/malha do Jogo 3D (caixa/bola/modelo…); tem locais de laço
- *                 (o "item" do "para cada no enxame");
- *  - `group3d`  → grupo simples do Jogo 3D (`criar grupo de objetos`).
- *  - `swarm3d`  → enxame de cópias do Jogo 3D (`criar enxame`).
+ *                 (o "objeto da vez" do "para cada objeto do grupo");
+ *  - `group3d`  → grupo do Jogo 3D (`criar grupo de objetos`), que também guarda as
+ *                 cópias de um molde (o antigo "enxame" foi absorvido).
  *  - `physics-body` / `physics-resource` → IDs declarados na física leve do
  *                 Canvas 3D, filtrados pelo mundo físico escolhido.
  *  - `shadow-target3d` → objetos compatíveis com o modo "projeta/recebe" escolhido.
@@ -127,7 +127,6 @@ export type NameKind =
   | 'object3d'
   | 'g3d-object'
   | 'group3d'
-  | 'swarm3d'
   | 'physics-body'
   | 'physics-character'
   | 'physics-resource'
@@ -158,6 +157,8 @@ export type NameKind =
   | 'w3dnpc'
   | 'w3dquest'
   | 'w3dachieve'
+  | 'w3dcollect'
+  | 'w3d-thing'
   | 'scene-layer'
   | 'scene-track'
 
@@ -201,7 +202,6 @@ const DECLARED_NAME_KINDS: ReadonlySet<NameKind> = new Set([
   'object3d',
   'g3d-object',
   'group3d',
-  'swarm3d',
   'physics-body',
   'physics-character',
   'physics-resource',
@@ -219,6 +219,8 @@ const NAME_KINDS: readonly NameKind[] = [
   'w3dnpc',
   'w3dquest',
   'w3dachieve',
+  'w3dcollect',
+  'w3d-thing',
   'region',
   'pkmcreature',
   'pkmtype',
@@ -272,7 +274,6 @@ const NAME_KINDS: readonly NameKind[] = [
   'object3d',
   'g3d-object',
   'group3d',
-  'swarm3d',
   'physics-body',
   'physics-character',
   'physics-resource',
@@ -754,6 +755,7 @@ function collectFlags(workspace: Blockly.Workspace | null | undefined): string[]
 const ITEM_DECL_BLOCKS: Record<string, string[]> = {
   sz_gk_rpg_give_item: ['NAME'],
   sz_w3d_inventory_give: ['ITEM'],
+  sz_g3k_bag_give: ['ITEM'],
 }
 function collectItems(workspace: Blockly.Workspace | null | undefined): string[] {
   return collectDeclaredNames(workspace, ITEM_DECL_BLOCKS)
@@ -769,7 +771,10 @@ const BOARD_DECL_BLOCKS: NameFieldRegistry = { sz_gk_board_create: ['NAME'] }
 export function collectBoards(workspace: Blockly.Workspace | null | undefined): string[] {
   return collectDeclaredNames(workspace, BOARD_DECL_BLOCKS)
 }
-const STORED_VALUE_DECL_BLOCKS: NameFieldRegistry = { sz_gk_save_value: ['NAME'] }
+const STORED_VALUE_DECL_BLOCKS: NameFieldRegistry = {
+  sz_gk_save_value: ['NAME'],
+  sz_g3k_save_value: ['NAME'],
+}
 export function collectStoredValues(workspace: Blockly.Workspace | null | undefined): string[] {
   return collectDeclaredNames(workspace, STORED_VALUE_DECL_BLOCKS)
 }
@@ -826,6 +831,7 @@ const ENTITY3D_LOOP_BINDERS: Record<string, string[]> = {
   sz_g3k_on_entity_state_update: ['ITEM'],
   sz_g3k_on_exit_entity_state: ['ITEM'],
   sz_g3k_on_entity_death: ['ITEM'],
+  sz_g3k_on_anim_end: ['ITEM'],
   sz_g3k_on_hurt: ['ITEM'],
   // A zona e quem encostou nela são entidades LOCAIS do gancho de sobreposição.
   sz_g3k_on_overlap: ['ZONE', 'WHO'],
@@ -861,6 +867,20 @@ const W3DACHIEVE_DECL_BLOCKS: Record<string, string[]> = {
 }
 function collectW3dAchievements(workspace: Blockly.Workspace | null | undefined): string[] {
   return collectDeclaredNames(workspace, W3DACHIEVE_DECL_BLOCKS)
+}
+/** Coletáveis do Mundo 3D — fonte do seletor do "Quando o jogador pegar um …". */
+const W3DCOLLECT_DECL_BLOCKS: Record<string, string[]> = {
+  sz_w3d_collectible: ['NAME'],
+}
+/**
+ * Tudo o que tem NOME no mundo e pode sair dele ("Tirar … do mundo"): amigos, pontos, áreas,
+ * coletáveis e os ícones flutuando (o nome do ícone é o tipo dele: "alerta", "estrela"…).
+ */
+const W3D_THING_DECL_BLOCKS: Record<string, string[]> = {
+  ...W3DNPC_DECL_BLOCKS,
+  ...W3DPOINT_DECL_BLOCKS,
+  ...W3DCOLLECT_DECL_BLOCKS,
+  sz_w3d_marker: ['ICON'],
 }
 function collectMolds3d(workspace: Blockly.Workspace | null | undefined): string[] {
   return collectDeclaredNames(workspace, MOLD3D_DECL_BLOCKS)
@@ -902,6 +922,7 @@ const G3D_WORLD_DECL_BLOCKS: Record<string, string[]> = {
   sz_g3d_create_crossing_scene: ['NAME'],
   sz_g3d_create_race_scene: ['NAME'],
   sz_g3d_create_stack_scene: ['NAME'],
+  sz_g3d_create_platform_scene: ['VAR'],
 }
 /** Objetos/malhas do Jogo 3D (fonte dos seletores OBJ/A/B/FOLLOW/GROUND/MODEL/PART/ORIGINAL). */
 const OBJECT3D_DECL_BLOCKS: Record<string, string[]> = {
@@ -916,6 +937,7 @@ const OBJECT3D_DECL_BLOCKS: Record<string, string[]> = {
   sz_g3d_create_torus: ['NAME'],
   sz_g3d_create_model: ['NAME'],
   sz_g3d_create_model_file: ['NAME'],
+  sz_g3d_create_hero: ['VAR'],
 }
 const GAME3D_OBJECT_VALUE_HOLDERS: NameFieldRegistry = {
   sz_js_var_create: ['NAME'],
@@ -929,20 +951,17 @@ const GAME3D_OBJECT_DECL_BLOCKS: NameFieldRegistry = {
   ...OBJECT3D_DECL_BLOCKS,
   ...GAME3D_OBJECT_VALUE_HOLDERS,
 }
-/** O "item" do "para cada no enxame" e a "parte" do traverse são nomes LOCAIS de objeto 3D. */
+/** O objeto da vez do "para cada objeto do grupo" e a "parte" do traverse são nomes LOCAIS. */
 const OBJECT3D_LOOP_BINDERS: ScopedBinderRegistry = {
-  sz_g3d_for_each_swarm: ['ITEM'],
   sz_g3d_for_each_in_group: ['ITEM'],
   sz_g3d_prune_offscreen: ['ITEM'],
+  // O "chamando de ⟨item⟩" do "Quando … encostar em algum do grupo" (regras de jogo 3D).
+  sz_g3d_on_touch_group: ['ITEM'],
   ...CANVAS3D_OBJECT_BRANCH_BINDERS,
 }
-/** Grupos simples do kit Desvie (fonte do seletor GROUP). */
+/** Grupos do Jogo 3D (fonte do seletor GROUP; também guardam as cópias de um molde). */
 const GROUP3D_DECL_BLOCKS: Record<string, string[]> = {
   sz_g3d_create_group: ['NAME'],
-}
-/** Enxames de cópias (fonte dos seletores SWARM). */
-const SWARM3D_DECL_BLOCKS: Record<string, string[]> = {
-  sz_g3d_create_swarm: ['NAME'],
 }
 /** Métodos declarados (fallback global do seletor de método, quando não há classe em contexto). */
 const METHOD_DECL_BLOCKS: Record<string, string[]> = { sz_js_class_method: ['NAME'] }
@@ -1347,11 +1366,6 @@ const KIND_UI: Record<NameKind, KindUI> = {
     placeholder: 'nome do grupo de objetos',
     empty: 'Nenhum grupo de objetos ainda. Crie um com "Criar grupo de objetos".',
   },
-  swarm3d: {
-    icon: '👯',
-    placeholder: 'nome do enxame',
-    empty: 'Nenhum enxame ainda. Crie um com "Criar enxame".',
-  },
   'physics-body': {
     icon: '🧍',
     placeholder: 'corpo da física',
@@ -1488,6 +1502,17 @@ const KIND_UI: Record<NameKind, KindUI> = {
     icon: '🏆',
     placeholder: 'nome da conquista',
     empty: 'Nenhuma conquista ainda — dê uma com "Dar a conquista" ou digite o nome abaixo.',
+  },
+  w3dcollect: {
+    icon: '⭐',
+    placeholder: 'nome do coletável',
+    empty: 'Nenhum coletável ainda — ponha alguns com "Pôr … chamados …" ou digite o nome abaixo.',
+  },
+  'w3d-thing': {
+    icon: '🧺',
+    placeholder: 'nome do que vai sair',
+    empty:
+      'Nada com nome no mundo ainda — crie um amigo, um ponto, uma área ou coletáveis, ou digite o nome abaixo.',
   },
 }
 
@@ -2136,22 +2161,6 @@ export function collectGroups3d(
   )
 }
 
-/** Nomes dos enxames 3D declarados. */
-export function collectSwarms3d(
-  workspace: Blockly.Workspace | null | undefined,
-  useBlock?: Blockly.Block | null,
-): string[] {
-  const target = useBlock ?? workspace
-  const context = nameLookupContext(target)
-  if (!context.workspace) return []
-  return collectVariableDeclarations(
-    context.workspace,
-    SWARM3D_DECL_BLOCKS,
-    new Set(context.useBlock ? variableScopeKeys(context.useBlock) : ['global']),
-    context.useBlock,
-  )
-}
-
 /**
  * TODAS as propriedades nomeadas no programa (fallback global do seletor de
  * propriedade, quando não há classe em contexto): escritas `this.x`/`obj.x` + as
@@ -2385,8 +2394,6 @@ export class FieldNamePicker extends Blockly.FieldTextInput {
         return collectGame3DObjects(ws, block)
       case 'group3d':
         return collectGroups3d(ws, block)
-      case 'swarm3d':
-        return collectSwarms3d(ws, block)
       case 'physics-body':
         return collectCanvas3DPhysicsBodies(ws, block)
       case 'physics-character':
@@ -2455,6 +2462,10 @@ export class FieldNamePicker extends Blockly.FieldTextInput {
         return collectW3dQuests(ws)
       case 'w3dachieve':
         return collectW3dAchievements(ws)
+      case 'w3dcollect':
+        return collectDeclaredNames(ws, W3DCOLLECT_DECL_BLOCKS)
+      case 'w3d-thing':
+        return collectDeclaredNames(ws, W3D_THING_DECL_BLOCKS)
       case 'super-method': {
         const scan = workspaceScanner(ws)
         return superClassMethodNames(scan, enclosingClass(block))

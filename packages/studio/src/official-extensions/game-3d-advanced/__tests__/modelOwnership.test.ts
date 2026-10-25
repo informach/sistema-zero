@@ -8,7 +8,7 @@ import {
   SkinnedMesh,
 } from 'three'
 import * as SkeletonUtils from 'three/addons/utils/SkeletonUtils.js'
-import fixture from './fixtures/molda-skinned.json'
+import fixture from '../../__tests__/three3d/molda-skinned.json'
 import { type KitApi, makeFakeThree, runtimeBody } from './kitHarness'
 
 type Entity = { mesh: Object3D; _mixer: AnimationMixer | null }
