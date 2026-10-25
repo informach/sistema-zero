@@ -110,6 +110,11 @@ export function readPythonFrameMessage(raw: unknown): PythonFrameMessage | undef
       }
     return
   }
+  if (raw.type === 'saved-file') {
+    const parsed = readPythonWorkerEvent(raw)
+    if (parsed?.type === 'saved-file') return { ...common, ...parsed }
+    return
+  }
   if (raw.type === 'activity-result') {
     const parsed = readPythonWorkerEvent(raw)
     if (parsed?.type === 'activity-result') return { ...common, ...parsed }

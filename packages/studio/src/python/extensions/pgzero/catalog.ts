@@ -35,6 +35,7 @@ export const PGZERO_BUILTINS: ReadonlyMap<string, PythonProvidedBuiltin> = new M
 export const PGZERO_RESOLVER_OPTIONS: PythonResolverOptions = {
   builtins: PGZERO_BUILTINS,
   starExports: new Map([['pgzero.builtins', [...PGZERO_BUILTINS.keys()]]]),
+  builtinModules: new Map([['pgzero.builtins', PROVIDER]]),
 }
 
 const n = (value: number) => () => integer(String(value))
@@ -118,7 +119,8 @@ function handlerCodec(spec: HandlerSpec): PythonBlockCodec {
     role: 'statement',
     api: `def ${spec.name}(${allowed.join(', ')}):`,
     help: spec.help,
-    starter: spec.name === 'draw' || spec.name === 'update',
+    // Changing the score or the lives inside "quando atualizar" needs global.
+    ...(spec.name === 'update' ? { dependencies: ['sz_py_global'] } : {}),
     match: { kinds: ['FunctionDef'], names: [spec.name] },
     binding: { root: spec.name, handler: PROVIDER },
     controls: spec.params.map(([param, label]) => ({
@@ -313,7 +315,6 @@ function windowConstant(
     role: 'statement',
     api: `${constant} = …`,
     help,
-    starter: constant !== 'TITLE',
     match: { kinds: ['Assign'] },
     binding: { root: constant, handler: PROVIDER },
     defaultNode: () =>
@@ -451,7 +452,7 @@ function choiceAttribute(options: {
 const keyboardIndexCodec: PythonBlockCodec = {
   id: 'sz_py_pgzero_keyboard_index',
   owner: OWNER,
-  title: 'a tecla está apertada:',
+  title: 'a tecla escolhida em keys está apertada:',
   category: 'Teclado e mouse',
   level: 2,
   role: 'value',
@@ -674,7 +675,130 @@ const TEXT_PARAMS: PythonApiParam[] = [
   optional('align', 'alinhar', t('center'), 'kw'),
 ]
 
-export const PYTHON_PGZERO_CODECS: readonly PythonBlockCodec[] = [
+// 🖍️ O pedaço do pygame: desenhar na tela pelo screen.surface (precisa de `import pygame`).
+const surface = () => attribute(name('screen'), 'surface')
+const pygameDraw = (
+  method: string,
+  title: string,
+  help: string,
+  shape: PythonApiParam[],
+  width: number,
+  dependencies?: string[],
+) =>
+  api({
+    id: `sz_py_pgzero_pygame_${method}`,
+    title,
+    category: 'Desenhar',
+    level: 3,
+    role: 'statement',
+    callee: { kind: 'path', path: ['pygame', 'draw', method], module: 'pygame' },
+    api: `pygame.draw.${method}(screen.surface, cor, …)`,
+    help: `${help} É o pygame de verdade: comece o programa com "usar o módulo pygame".`,
+    params: [
+      required('surface', 'em', surface, 'pos'),
+      required('color', 'cor', color('green'), 'pos'),
+      ...shape,
+      optional('width', 'só a borda, com espessura', n(width)),
+    ],
+    ...(dependencies ? { dependencies } : {}),
+  })
+const PYGAME_DRAW_CODECS: readonly PythonBlockCodec[] = [
+  pygameDraw(
+    'polygon',
+    '🔷 desenhar polígono',
+    'Uma figura com cantos nos pontos da lista: três pontos fazem um triângulo, quatro um losango ou uma montanha.',
+    [
+      required('points', 'com os pontos', () =>
+        node('List', {
+          elts: [pair(100, 40)(), pair(160, 140)(), pair(40, 140)()],
+          ctx: node('Load'),
+        }),
+      ),
+    ],
+    2,
+  ),
+  pygameDraw(
+    'circle',
+    '🔵 desenhar círculo',
+    'Um círculo com o centro no ponto (x, y).',
+    [
+      required('center', 'com o centro em', pair(100, 100), 'pos'),
+      required('radius', 'raio', n(20), 'pos'),
+    ],
+    2,
+  ),
+  pygameDraw(
+    'ellipse',
+    '🥚 desenhar elipse',
+    'Uma elipse que enche o retângulo.',
+    [
+      required(
+        'rect',
+        'dentro do retângulo',
+        () => call(name('Rect'), [integer('40'), integer('40'), integer('120'), integer('60')]),
+        'pos',
+      ),
+    ],
+    2,
+    ['sz_py_pgzero_rect'],
+  ),
+  pygameDraw(
+    'rect',
+    '🟩 desenhar retângulo',
+    'Um retângulo, cheio ou só a borda. Com o mesmo Rect do Pygame Zero.',
+    [
+      required(
+        'rect',
+        '',
+        () => call(name('Rect'), [integer('40'), integer('40'), integer('120'), integer('60')]),
+        'pos',
+      ),
+    ],
+    2,
+    ['sz_py_pgzero_rect'],
+  ),
+  pygameDraw(
+    'line',
+    '📏 desenhar linha',
+    'Uma linha reta de um ponto até outro.',
+    [
+      required('start_pos', 'de', pair(20, 20), 'pos'),
+      required('end_pos', 'até', pair(180, 120), 'pos'),
+    ],
+    3,
+  ),
+]
+
+/**
+ * The first palette of a Pygame Zero game (level 1): with these a child makes a whole game,
+ * the "Olá, Pygame Zero" of the gallery included. The dependency graph adds the helpers.
+ */
+export const PGZERO_FIRST_GAME_BLOCK_IDS: ReadonlySet<string> = new Set([
+  'sz_py_pgzero_draw',
+  'sz_py_pgzero_update',
+  'sz_py_pgzero_on_key_down',
+  'sz_py_pgzero_on_mouse_down',
+  'sz_py_pgzero_width',
+  'sz_py_pgzero_height',
+  'sz_py_pgzero_title',
+  'sz_py_pgzero_go',
+  'sz_py_pgzero_actor',
+  'sz_py_pgzero_actor_draw',
+  'sz_py_pgzero_actor_property',
+  'sz_py_pgzero_screen_clear',
+  'sz_py_pgzero_screen_fill',
+  'sz_py_pgzero_screen_blit',
+  'sz_py_pgzero_draw_text',
+  'sz_py_pgzero_draw_filled_rect',
+  'sz_py_pgzero_draw_filled_circle',
+  'sz_py_pgzero_keyboard',
+  'sz_py_pgzero_keys',
+  'sz_py_pgzero_colliderect',
+  'sz_py_pgzero_collidepoint',
+  'sz_py_pgzero_sound_play',
+])
+
+export const PYTHON_PGZERO_CODECS: readonly PythonBlockCodec[] = firstGame([
   ...HANDLERS,
   // 🧍 Atores
   api({
@@ -683,13 +807,12 @@ export const PYTHON_PGZERO_CODECS: readonly PythonBlockCodec[] = [
     category: 'Atores',
     level: 1,
     role: 'value',
-    starter: true,
     callee: builtinCall(['Actor']),
     api: "Actor('imagem', pos, anchor=…)",
     help: 'Cria um ator: um personagem com uma imagem da pasta images/ (escreva o nome sem .png). Guarde numa variável, como heroi.',
     params: [
       required('image', '', t('alien')),
-      { ...optional('pos', 'na posição', pair(100, 100), 'pos'), initial: true },
+      { ...optional('pos', 'na posição', pair(100, 100)), initial: true },
       optional('anchor', 'âncora', () =>
         node('Tuple', { elts: [text('center'), text('bottom')], ctx: node('Load') }),
       ),
@@ -707,7 +830,6 @@ export const PYTHON_PGZERO_CODECS: readonly PythonBlockCodec[] = [
     category: 'Atores',
     level: 1,
     role: 'statement',
-    starter: true,
     callee: actorMethod(['draw'], false),
     api: 'ator.draw()',
     help: 'Desenha o ator na tela, na posição e no ângulo atuais. Use dentro de "quando desenhar a tela".',
@@ -743,7 +865,6 @@ export const PYTHON_PGZERO_CODECS: readonly PythonBlockCodec[] = [
     category: 'Desenhar',
     level: 1,
     role: 'statement',
-    starter: true,
     callee: screenCall(['clear']),
     api: 'screen.clear()',
     help: 'Pinta a tela inteira de preto. Comece "quando desenhar a tela" com ele.',
@@ -755,7 +876,6 @@ export const PYTHON_PGZERO_CODECS: readonly PythonBlockCodec[] = [
     category: 'Desenhar',
     level: 1,
     role: 'statement',
-    starter: true,
     callee: screenCall(['fill']),
     api: 'screen.fill(cor)',
     help: 'Pinta a tela inteira com uma cor: um nome em inglês ("sky blue"), "#ff8800" ou (vermelho, verde, azul).',
@@ -778,7 +898,6 @@ export const PYTHON_PGZERO_CODECS: readonly PythonBlockCodec[] = [
     category: 'Desenhar',
     level: 1,
     role: 'statement',
-    starter: true,
     callee: screenCall(['draw', 'text']),
     api: 'screen.draw.text(texto, topleft=…, fontsize=…, color=…)',
     help: 'Escreve um texto na tela. Escolha onde (canto, centro…), o tamanho e a cor; pelo "+" você acha contorno, sombra, degradê e mais.',
@@ -894,6 +1013,18 @@ export const PYTHON_PGZERO_CODECS: readonly PythonBlockCodec[] = [
       required('color', 'cor', color('white'), 'pos'),
     ],
   }),
+  ...PYGAME_DRAW_CODECS,
+  api({
+    id: 'sz_py_pgzero_screen_get_at',
+    title: 'cor do ponto da tela',
+    category: 'Desenhar',
+    level: 3,
+    role: 'value',
+    callee: screenCall(['surface', 'get_at']),
+    api: 'screen.surface.get_at((x, y))',
+    help: 'A cor (vermelho, verde, azul, opacidade) do ponto (x, y) da tela, do jeito que ela está desenhada agora. Serve para saber se um tiro acertou o chão ou se o carro saiu da pista.',
+    params: [required('pos', 'no ponto', pair(100, 100), 'pos')],
+  }),
   // ⌨️ Teclado e mouse
   choiceAttribute({
     id: 'sz_py_pgzero_keyboard',
@@ -936,7 +1067,6 @@ export const PYTHON_PGZERO_CODECS: readonly PythonBlockCodec[] = [
     category: 'Colisões',
     level: 1,
     role: 'value',
-    starter: true,
     callee: actorMethod(['colliderect']),
     api: 'ator.colliderect(outro)',
     help: 'Verdadeiro quando o retângulo do ator encosta no de outro ator (ou de um Rect).',
@@ -999,7 +1129,7 @@ export const PYTHON_PGZERO_CODECS: readonly PythonBlockCodec[] = [
     id: 'sz_py_pgzero_go',
     title: 'começar o jogo',
     category: 'Janela',
-    level: 2,
+    level: 1,
     role: 'statement',
     callee: { kind: 'module', module: 'pgzrun', names: ['go'] },
     api: 'pgzrun.go()',
@@ -1035,7 +1165,7 @@ export const PYTHON_PGZERO_CODECS: readonly PythonBlockCodec[] = [
       ],
       [
         'schedule_unique',
-        'chamar uma vez (sem repetir) depois de',
+        'chamar uma vez (recomeçando o tempo) depois de',
         'Como "chamar uma vez", mas se a função já estava agendada, o tempo recomeça.',
         2,
       ],
@@ -1116,17 +1246,21 @@ export const PYTHON_PGZERO_CODECS: readonly PythonBlockCodec[] = [
     params: [],
   }),
   // 🔊 Sons e música
-  resourceCall({
-    id: 'sz_py_pgzero_sound_play',
-    root: 'sounds',
-    method: 'play',
-    title: '🔊 tocar o som',
-    category: 'Sons e música',
-    level: 1,
-    role: 'statement',
-    help: 'Toca um som da pasta sounds/ (escreva o nome do arquivo sem .wav).',
-    initial: 'pulo',
-  }),
+  {
+    ...resourceCall({
+      id: 'sz_py_pgzero_sound_play',
+      root: 'sounds',
+      method: 'play',
+      title: '🔊 tocar o som',
+      category: 'Sons e música',
+      level: 1,
+      role: 'statement',
+      help: 'Toca um som da pasta sounds/ (escreva o nome do arquivo sem .wav).',
+      initial: 'pulo',
+    }),
+    // In a Pygame Zero game the sound is sounds.nome.play(): one "tocar o som" in the palette.
+    replacesStarters: ['sz_py_audio_play'],
+  },
   resourceCall({
     id: 'sz_py_pgzero_sound_stop',
     root: 'sounds',
@@ -1193,6 +1327,35 @@ export const PYTHON_PGZERO_CODECS: readonly PythonBlockCodec[] = [
       ),
     ],
   }),
+  api({
+    id: 'sz_py_pgzero_tone_play',
+    title: '🎹 tocar a nota',
+    category: 'Sons e música',
+    level: 2,
+    role: 'statement',
+    callee: builtinCall(['tone', 'play']),
+    api: "tone.play('A4', segundos)",
+    help: 'Toca uma nota musical, como num teclado: a letra da nota (C D E F G A B, ou dó ré mi fá sol lá si em inglês), um # para o sustenido e o número da oitava. A4 é o lá do meio. Dura até 4 segundos.',
+    params: [
+      required('pitch', '', t('A4'), 'pos'),
+      required('duration', 'por segundos', n(1), 'pos'),
+    ],
+  }),
+  api({
+    id: 'sz_py_pgzero_tone_create',
+    title: '🎹 nota pronta para tocar',
+    category: 'Sons e música',
+    level: 3,
+    role: 'value',
+    callee: builtinCall(['tone', 'create']),
+    api: "tone.create('A4', segundos)",
+    help: 'Prepara uma nota antes, para tocar depois sem esperar: guarde numa variável e use nota.play() quando quiser. Bom para um piano, que toca a mesma nota muitas vezes.',
+    params: [
+      required('pitch', '', t('A4'), 'pos'),
+      required('duration', 'por segundos', n(1), 'pos'),
+    ],
+    dependencies: ['sz_py_assign', 'sz_py_method'],
+  }),
   // 🖼️ Imagens
   resourceCall({
     id: 'sz_py_pgzero_image_get_at',
@@ -1228,4 +1391,13 @@ export const PYTHON_PGZERO_CODECS: readonly PythonBlockCodec[] = [
     help: 'Quantos pixels de altura a imagem tem.',
     initial: 'fundo',
   }),
-]
+])
+
+function firstGame(codecs: PythonBlockCodec[]): readonly PythonBlockCodec[] {
+  const ids = new Set(codecs.map((codec) => codec.id))
+  for (const id of PGZERO_FIRST_GAME_BLOCK_IDS)
+    if (!ids.has(id)) throw new Error(`Bloco do primeiro jogo desconhecido: ${id}.`)
+  return codecs.map((codec) =>
+    PGZERO_FIRST_GAME_BLOCK_IDS.has(codec.id) ? { ...codec, starter: true } : codec,
+  )
+}

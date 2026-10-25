@@ -41,7 +41,11 @@ import {
   type PythonInputBucket,
   PythonInputError,
 } from './python-inputs'
-import { type PythonInspectionSandbox, runIsolatedPythonInspection } from './python-inspection'
+import {
+  type PythonInspectionSandbox,
+  pythonInspectionFailurePhase,
+  runIsolatedPythonInspection,
+} from './python-inspection'
 import { runIsolatedPythonMissions } from './python-mission'
 import { runIsolatedPythonValidation } from './python-playtest'
 import { discardStoredPythonPreview, storePythonPreview } from './python-previews'
@@ -517,6 +521,9 @@ export async function handlePythonRequest(
         ok: false,
         code: 'PYTHON_INSPECTION_FAILED',
         message: 'Não foi possível validar o projeto Python agora.',
+        ...(pythonInspectionFailurePhase(error)
+          ? { phase: pythonInspectionFailurePhase(error) }
+          : {}),
       },
       500,
     )

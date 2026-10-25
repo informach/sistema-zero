@@ -9,6 +9,7 @@ import type { ProjectAsset } from '#core'
 import { personalIdOf } from '../../asset-library/personalSync'
 import { type EditableStudioProject, isPythonProject } from '../../core/editableProject'
 import { projectUsesPgzero } from '../../core/pgzeroMediaPaths'
+import { hasTurtleExtension } from '../../runtime/python/turtle/contract'
 import type { ProjectStoreApi } from '../../state/projectStore'
 import type { StudioMoldaImportResult } from '../../studio/molda-library'
 import type { StudioPintaImportResult } from '../../studio/pinta-library'
@@ -66,7 +67,14 @@ export function pintaImageOutputFor(
   reviewing?: Pick<PintaImageRecipe, 'output'>,
 ): PintaImageRecipe['output'] {
   if (reviewing) return reviewing.output
-  if (!project || !isPythonProject(project) || !projectUsesPgzero(project)) return undefined
+  // Pygame Zero opens SVG, and in a Turtle project the vector becomes a turtle shape
+  // (formas_do_pinta): both want the real vector.
+  if (
+    !project ||
+    !isPythonProject(project) ||
+    !(projectUsesPgzero(project) || hasTurtleExtension(project.installedExtensions))
+  )
+    return undefined
   return facts && facts.kind !== 'unavailable' && facts.vector === true ? 'svg' : undefined
 }
 

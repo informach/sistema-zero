@@ -1,0 +1,34 @@
+[
+  {
+    "label": "velocidade da nave",
+    "path": {
+      "body": 5,
+      "inputs": [
+        {
+          "name": "VALUE",
+          "index": 0
+        }
+      ]
+    },
+    "codecId": "sz_py_integer",
+    "field": "NUMBER",
+    "before": "360",
+    "after": "380"
+  },
+  {
+    "label": "velocidade do laser",
+    "path": {
+      "body": 6,
+      "inputs": [
+        {
+          "name": "VALUE",
+          "index": 0
+        }
+      ]
+    },
+    "codecId": "sz_py_integer",
+    "field": "NUMBER",
+    "before": "600",
+    "after": "640"
+  }
+]

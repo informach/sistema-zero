@@ -24,6 +24,7 @@ import type { PgzeroAudioCommand } from './pgzero/protocol'
 import type { PgzeroRenderer } from './pgzero/renderer'
 import { installPythonPlayerBridge } from './playerBridge'
 import { createProtectedPythonWorker } from './protectedWorker'
+import type { RaylibRenderer } from './raylib/renderer'
 import type { TurtleRenderer } from './turtle/renderer'
 import { readPythonWireSnapshot } from './wireSnapshot'
 import { isPythonRequestId } from './workerEvents'
@@ -66,7 +67,7 @@ async function initialize(event: MessageEvent<unknown>) {
   let closed = false
   let supervisor: ReturnType<typeof createPythonWorkerSupervisor> | undefined
   let bootstrap: ReturnType<typeof createProtectedPythonWorker> | undefined
-  let renderer: TurtleRenderer | PgzeroRenderer | undefined
+  let renderer: TurtleRenderer | PgzeroRenderer | RaylibRenderer | undefined
   let rendererReady = false
   let workerReady = false
   let prepared = false
@@ -102,6 +103,7 @@ async function initialize(event: MessageEvent<unknown>) {
       | { type: 'activity-result'; requestId: string; feedback: StudioPythonActivityFeedback }
       | { type: 'mission-result'; requestId: string; result: StudioPythonMissionFrameObservation }
       | { type: 'audio-request'; requestId: string; request: string }
+      | { type: 'saved-file'; path: string; bytes: Uint8Array<ArrayBuffer> }
       | {
           type: 'ack'
           commandId: number
@@ -192,6 +194,8 @@ async function initialize(event: MessageEvent<unknown>) {
     commandSequence = command.commandId
     try {
       if ('type' in command && command.type === 'stop') {
+        // A game is usually stopped, not ended: keep what it saved a moment ago.
+        await supervisor?.flushSaved(100)
         supervisor?.stop()
         send({ type: 'ack', commandId: command.commandId, ok: true })
         close()
@@ -348,6 +352,24 @@ async function initialize(event: MessageEvent<unknown>) {
         .then((module: typeof import('./pgzero/renderer')) => {
           if (closed) return
           renderer = module.createPgzeroRenderer(document.body, {
+            ...('mission' in value && value.mission === true ? { mission: true as const } : {}),
+            onAudio: pgzeroAudio,
+            takeEndedVoices: (limit) => audio.takeEnded(limit),
+            onTitle: (title) => {
+              if (document.title !== title) document.title = title
+            },
+          })
+          ready()
+        })
+        .catch(rendererFailed)
+    else if (canvas === 'python-raylib-2d' || canvas === 'python-raylib-3d')
+      void import(
+        /* @vite-ignore */
+        new URL('./raylib-renderer.mjs', import.meta.url).href
+      )
+        .then((module: typeof import('./raylib/renderer')) => {
+          if (closed) return
+          renderer = module.createRaylibRenderer(document.body, {
             onAudio: pgzeroAudio,
             takeEndedVoices: (limit) => audio.takeEnded(limit),
             onTitle: (title) => {
@@ -369,7 +391,9 @@ async function initialize(event: MessageEvent<unknown>) {
                 observation.type === 'sprite' &&
                 observation.observed.found &&
                 observation.observed.objectId !== undefined
-                  ? (renderer?.missionPose(observation.observed.objectId) ?? null)
+                  ? renderer && 'missionPose' in renderer
+                    ? renderer.missionPose(observation.observed.objectId)
+                    : null
                   : undefined
               send({
                 type: 'mission-result',
@@ -413,6 +437,9 @@ async function initialize(event: MessageEvent<unknown>) {
         if (!prepared || closed)
           return Promise.reject(new Error('O canal de áudio não está disponível.'))
         return queueAudio(request)
+      },
+      onSavedFile(path, bytes) {
+        send({ type: 'saved-file', path, bytes })
       },
       ...(canvas
         ? {

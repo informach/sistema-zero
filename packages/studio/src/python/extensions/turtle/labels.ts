@@ -29,6 +29,8 @@ export interface TurtleConcept {
   starter?: boolean
   /** A setter also used as a getter (pencolor()): adds a hidden value block for the getter. */
   getter?: boolean
+  /** The getter's name when "<title> atual" would say something else (stamp gives a number). */
+  getterTitle?: string
 }
 
 const n = (value: number) => () => integer(String(value))
@@ -361,6 +363,7 @@ export const TURTLE_CONCEPTS: readonly TurtleConcept[] = [
     level: 2,
     role: 'statement',
     getter: true,
+    getterTitle: 'carimbar e dar o número do carimbo',
     help: 'Deixa uma cópia da tartaruga no desenho. Guardado numa variável, o carimbo pode ser apagado depois.',
   },
   {
@@ -787,6 +790,7 @@ export const TURTLE_CONCEPTS: readonly TurtleConcept[] = [
     level: 2,
     role: 'statement',
     getter: true,
+    getterTitle: 'de quantos em quantos passos a tela é desenhada',
     help: 'Com 0, a tela só mostra o desenho quando você chama atualizar a tela: bom para jogos e animações rápidas.',
     params: [
       { ...optional('n', 'atualizar a cada', n(0)), initial: true },

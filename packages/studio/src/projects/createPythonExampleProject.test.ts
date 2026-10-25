@@ -1,4 +1,6 @@
 import { expect, test } from 'bun:test'
+import { readdirSync, readFileSync } from 'node:fs'
+import { join, relative } from 'node:path'
 import { buildPythonProvidedModuleMetadata } from '@sistemazero/core/studio/python-provided-modules-render'
 import { SZ_AUDIO_MODULE_DESCRIPTOR } from '@sistemazero/core/studio/python-provided-modules-sz-audio'
 import type { StudioPythonRuntimeFeature } from '@sistemazero/core/studio/python-runtime-features'
@@ -10,12 +12,15 @@ import {
 import { IDBFactory } from 'fake-indexeddb'
 import { unzipSync } from 'fflate'
 import { PGZERO_GAMES } from '../examples/python/pgzeroGames.manifest'
+import { RAYLIB_GAMES } from '../examples/python/raylibGames.manifest'
 import { VISUAL_REFERENCE_GAMES } from '../examples/python/visualReferenceGames.manifest'
 import type { PythonExampleCreationPort, PythonExampleEntry } from '../examples/pythonCatalog'
 import { PYTHON_EXAMPLE_SUMMARIES } from '../examples/pythonCatalog'
 import { exportProjectSource } from '../export/sourceExport'
 import { PYTHON_PROGRAMMING_CODECS } from '../python/blocks/catalog'
 import { PYTHON_PGZERO_CODECS } from '../python/extensions/pgzero/catalog'
+import { PYTHON_RAYLIB_2D_CODECS } from '../python/extensions/raylib2d/catalog'
+import { PYTHON_RAYLIB_3D_CODECS } from '../python/extensions/raylib3d/catalog'
 import { PYTHON_TURTLE_CODECS } from '../python/extensions/turtle/catalog'
 import { TURTLE_EXTENSION } from '../runtime/python/turtle/contract'
 import { pythonEnvironmentFixture } from '../state/fixtures/pythonEnvironment'
@@ -62,6 +67,8 @@ async function fixture(
         ...PYTHON_PROGRAMMING_CODECS,
         ...PYTHON_TURTLE_CODECS,
         ...PYTHON_PGZERO_CODECS,
+        ...PYTHON_RAYLIB_2D_CODECS,
+        ...PYTHON_RAYLIB_3D_CODECS,
       ].map(({ id }) => id),
       authoringCuration: {
         pythonLevel: 3 as const,
@@ -457,6 +464,7 @@ test('module compatibility never substitutes the fresh host authorization', asyn
   }))
 
 const pgzeroKeys = PGZERO_GAMES.flatMap(({ key }) => [`python:${key}:blocks`, `python:${key}:code`])
+const raylibKeys = RAYLIB_GAMES.flatMap(({ key }) => [`python:${key}:blocks`, `python:${key}:code`])
 const visualKeys = VISUAL_REFERENCE_GAMES.flatMap(({ key }) => [
   `python:${key}:blocks`,
   `python:${key}:code`,
@@ -468,6 +476,7 @@ test('the Python catalog keeps the original race and adds the separately license
     'python:maze-lights',
     ...visualKeys,
     ...pgzeroKeys,
+    ...raylibKeys,
   ])
 })
 
@@ -801,5 +810,49 @@ for (const key of pgzeroKeys)
         expect(files[asset.proPath!.replace(/\.svg$/, '.png')]).toBeDefined()
       expect(sizes).toHaveLength(vectors.length)
       expect(files['requisitos-pygame-zero.txt']).toBe('pygame-ce==2.5.8\nnumpy\n')
+    }, entry.kind)
+  })
+
+for (const key of raylibKeys)
+  test(`${key} creates and reopens its whole program and media; the desktop copy takes the real raylib`, async () => {
+    const entry = PYTHON_EXAMPLE_SUMMARIES.find((candidate) => candidate.key === key)
+    if (!entry) throw new Error(`Missing Raylib game ${key}`)
+    await fixture(async (port) => {
+      const payload = await entry.load()
+      const saved = await createPythonExampleProject(entry, port, options())
+      expect(saved.kind).toBe(entry.kind)
+      expect(saved.installedExtensions.map(({ id }) => id)).toEqual([entry.extensions[0]!.id])
+      const reopened = await loadSanitizedProjectById(saved.id)
+      if (reopened?.programmingLanguage !== 'python') throw new Error('Saved Python game required')
+      expect(reopened.assets).toEqual(payload.assets ? [...payload.assets] : undefined)
+      for (const asset of payload.assets ?? [])
+        expect(asset.proPath).toMatch(
+          /^(images\/[a-z0-9-]+\.png|sounds\/[a-z0-9-]+\.wav|music\/[a-z0-9-]+\.ogg|fonts\/[a-z0-9]+\.ttf|models\/[a-z0-9-]+\.glb)$/,
+        )
+      const { buildPythonSourceFiles } = await import('../export/pythonSource')
+      const { files } = await buildPythonSourceFiles(reopened, null)
+      for (const [path, text] of Object.entries(payload.files)) expect(files[path]).toEqual(text)
+      expect(files['requisitos-raylib.txt']).toBe('raylib==6.0.1.0\n')
+
+      // The ZIP the child downloads carries, byte for byte, the very folder the playtests run on
+      // the real raylib 6.0.1.0 (scripts/python/raylib-playtest): what plays there plays at home.
+      const exported = await exportProjectSource(reopened, {
+        runtimeCatalog: port.environments[0]!.context.catalog,
+      })
+      expect(exported.warnings).toEqual([])
+      const zip = unzipSync(new Uint8Array(await exported.blob.arrayBuffer()))
+      const folder = join(import.meta.dir, '../examples/python/raylib', key.split(':')[1]!)
+      const onDisk = readdirSync(folder, { recursive: true, withFileTypes: true }).filter((file) =>
+        file.isFile(),
+      )
+      expect(onDisk.length).toBeGreaterThan(3)
+      for (const file of onDisk) {
+        const path = relative(folder, join(file.parentPath, file.name)).replaceAll('\\', '/')
+        expect(zip[path], path).toEqual(new Uint8Array(readFileSync(join(folder, path))))
+      }
+      expect(new TextDecoder().decode(zip['requisitos-raylib.txt'])).toBe('raylib==6.0.1.0\n')
+      // The browser engine never travels: the desktop raylib is the one pip installs.
+      for (const path of Object.keys(zip)) expect(path).not.toMatch(/(^|\/)(pyray|raylib)(\.py|\/)/)
+      expect(zip['index.html']).toBeUndefined()
     }, entry.kind)
   })

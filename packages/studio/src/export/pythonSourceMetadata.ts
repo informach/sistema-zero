@@ -11,6 +11,7 @@ import type { PythonAssetBundle } from '../core/pythonAssets'
 import type { PythonProjectDocument } from '../core/pythonProject'
 import { buildPythonAudioNativeBundle } from '../runtime/python/audio/nativeExport'
 import { PGZERO_UPSTREAM } from '../runtime/python/pgzero/contract'
+import { RAYLIB_UPSTREAM } from '../runtime/python/raylib/contract'
 import type { ExportFileMap } from './fileMap'
 
 /** This describes a preserved snapshot, not a native execution or dependency certificate. */
@@ -27,6 +28,8 @@ export async function buildPythonSourceMetadata(input: {
     converted: readonly string[]
     warnings: readonly string[]
   } | null
+  /** Raylib projects: the requirements file with the desktop raylib-python-cffi. */
+  raylib?: { requirementsPath: string } | null
 }): Promise<{ files: ExportFileMap; warnings: string[] }> {
   const { project, sourceFiles, assets } = input
   const directories = [...input.directories].sort()
@@ -159,6 +162,15 @@ dependencies = []
           },
         }
       : {}),
+    ...(input.raylib
+      ? {
+          raylib: {
+            package: RAYLIB_UPSTREAM.package,
+            version: RAYLIB_UPSTREAM.version,
+            requirementsPath: input.raylib.requirementsPath,
+          },
+        }
+      : {}),
     desktopExecution: 'not-observed',
     portabilityAnalysis: 'not-performed',
     knownLimits: [
@@ -170,6 +182,11 @@ dependencies = []
             `Pygame Zero nativo usa pgzero ${PGZERO_UPSTREAM.pgzero} com pygame-ce ${PGZERO_UPSTREAM.pygameCe}; no computador, as imagens SVG são lidas pelos PNG gerados nesta exportação.`,
           ]
         : []),
+      ...(input.raylib
+        ? [
+            `Raylib nativo usa o pacote ${RAYLIB_UPSTREAM.package} ${RAYLIB_UPSTREAM.version} (raylib-python-cffi); o motor do navegador não faz parte do pacote.`,
+          ]
+        : []),
       ...(pngLimit ? [pngLimit] : []),
     ],
     generatedFiles: [
@@ -177,6 +194,7 @@ dependencies = []
       manifestPath,
       ...Object.keys(files),
       ...(input.pgzero ? [input.pgzero.requirementsPath, ...input.pgzero.converted] : []),
+      ...(input.raylib ? [input.raylib.requirementsPath] : []),
     ].sort(),
     warnings,
   }
@@ -225,6 +243,16 @@ ${
 `
     : ''
 }
+`
+    : ''
+}${
+  input.raylib
+    ? `Este é um jogo Raylib. No computador ele usa o raylib de verdade (o pacote ${RAYLIB_UPSTREAM.package} do pip).
+Com o Python do ambiente do passo 4, na pasta principal da exportação:
+   python -m pip install -r ${input.raylib.requirementsPath}
+Para jogar: python ${project.python.entrypoint}
+As imagens, sons, fontes e modelos já estão nas pastas que o jogo abre (images, sounds, music, fonts e models).
+
 `
     : ''
 }Turtle faz parte da biblioteca padrão do Python. Não instale um pacote chamado turtle pelo pip.

@@ -19,6 +19,12 @@ const bundles = [
     exportName: 'TURTLE_RACE_SOURCES',
   },
   {
+    directory: 'src/runtime/python/turtle',
+    paths: ['formas_do_pinta.py'],
+    output: 'src/runtime/python/turtle/formasDoPinta.generated.ts',
+    exportName: 'TURTLE_PINTA_SHAPES_SOURCES',
+  },
+  {
     directory: 'src/runtime/python/audio/sz_audio',
     paths: ['__init__.py', '_desktop.py', '_mixer.py', '_wav.py'],
     output: 'src/runtime/python/audio/nativeSources.generated.ts',

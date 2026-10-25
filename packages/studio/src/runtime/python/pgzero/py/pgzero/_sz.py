@@ -34,6 +34,13 @@ OP_LINE = 4
 OP_RECT = 5
 OP_CIRCLE = 6
 OP_TEXT = 7
+# pygame.draw on screen.surface: a polygon has its point count first, then the points.
+OP_POLY = 8
+OP_ELLIPSE = 9
+OP_ARC = 10
+MAX_POLY_POINTS = 4096
+# screen.surface.get_at asks the browser each time: a bounded number of reads per frame.
+MAX_READS_PER_FRAME = 512
 
 MAX_RECORDS = 50_000
 MAX_STRINGS = 4096
@@ -167,10 +174,29 @@ def _parse_color_name(text):
     raise ValueError(f'Não conheço a cor {text!r}. Use um nome em inglês ("red", "sky blue") ou "#rrggbb".')
 
 
+# Games draw with the same few colours every frame: a name or a tuple is read once.
+_rgba_cache = {}
+
+
 def rgba(value):
     """Any colour Pygame Zero accepts, as an (r, g, b, a) tuple."""
     if isinstance(value, Color):
         return value.r, value.g, value.b, value.a
+    if type(value) is str or type(value) is tuple:
+        try:
+            found = _rgba_cache.get(value)
+        except TypeError:  # a tuple holding something unhashable: read it the long way
+            return _read_rgba(value)
+        if found is None:
+            found = _read_rgba(value)
+            if len(_rgba_cache) >= 512:
+                _rgba_cache.clear()
+            _rgba_cache[value] = found
+        return found
+    return _read_rgba(value)
+
+
+def _read_rgba(value):
     if isinstance(value, str):
         return tuple(Color(value))
     try:
@@ -489,6 +515,18 @@ class _FontRegistry:
 _fonts = _FontRegistry()
 
 
+def utf16_length(text):
+    """Length as the browser counts it (an emoji is two units), so both sides agree on limits."""
+    return len(text.encode('utf-16-le', 'surrogatepass')) // 2
+
+
+def cut_utf16(text, units):
+    """The text cut to a number of UTF-16 units, never in the middle of a character."""
+    if utf16_length(text) <= units:
+        return text
+    return text.encode('utf-16-le', 'surrogatepass')[:units * 2].decode('utf-16-le', 'ignore')
+
+
 # Frame building ------------------------------------------------------------------------------
 
 class _Frame:
@@ -500,16 +538,21 @@ class _Frame:
         self.styles = {}
         self.new_styles = []
         self.audio = []
-        self.drawn = False
         self.actors = {}
 
-    def reset(self):
+    def begin(self):
+        """Start the next batch, right after one was sent.
+
+        The screen keeps what was drawn, like pygame's display surface: a batch is everything
+        drawn since the last frame went out (in update, in event handlers, in draw), painted on
+        top of what is already there.
+        """
         self.actors.clear()
         del self.ops[:]
         self.records = 0
-        self.drawn = True
-        # Long-running games keep inventing texts (scores, timers): renew the tables at the
-        # start of a frame, never in the middle of one.
+        # Long-running games keep inventing texts (scores, timers): renew the tables between
+        # batches, never in the middle of one (a text drawn in update and another in draw would
+        # point at different tables).
         if len(self.strings) > MAX_STRINGS // 2:
             self.strings.clear()
             self.new_strings.append([0, ''])
@@ -527,7 +570,7 @@ class _Frame:
         found = self.strings.get(text)
         if found is not None:
             return found
-        if len(text) > MAX_STRING_CHARS:
+        if utf16_length(text) > MAX_STRING_CHARS:
             raise PgzeroLimitError(
                 f'O texto tem {len(text)} letras; screen.draw.text escreve até 4000 de uma vez.'
             )
@@ -600,6 +643,24 @@ def circle(pos, radius, color, width):
     frame.record(OP_CIRCLE, round(x), round(y), radius, *rgba(color), width)
 
 
+def polygon(points, color, width):
+    if len(points) > MAX_POLY_POINTS:
+        raise PgzeroLimitError(f'O polígono tem {len(points)} pontos; o limite é {MAX_POLY_POINTS}.')
+    coords = []
+    for point in points:
+        x, y = _position(point)
+        coords.extend((x, y))
+    frame.record(OP_POLY, len(points), width, *rgba(color), *coords)
+
+
+def ellipse(x, y, w, h, color, width):
+    frame.record(OP_ELLIPSE, x, y, w, h, *rgba(color), width)
+
+
+def arc(x, y, w, h, start, stop, color, width):
+    frame.record(OP_ARC, x, y, w, h, float(start), float(stop), *rgba(color), width)
+
+
 TEXT_STYLE_KEYS = (
     'fontname', 'fontsize', 'bold', 'italic', 'underline', 'color', 'background', 'width',
     'widthem', 'lineheight', 'strip', 'align', 'owidth', 'ocolor', 'shadow', 'scolor', 'gcolor',
@@ -608,6 +669,13 @@ TEXT_STYLE_KEYS = (
 
 
 def text(value, x, y, hanchor, vanchor, style):
+    if not isinstance(value, str):
+        # Pygame Zero on the desktop also refuses a number here (ptext needs a str): the game
+        # would work in the Studio and break on the computer.
+        raise TypeError(
+            f'screen.draw.text escreve texto, e recebeu {type(value).__name__}. '
+            'Para escrever um número, use str(numero).'
+        )
     values = {}
     for key, item in style.items():
         if item is None:
@@ -624,7 +692,7 @@ def text(value, x, y, hanchor, vanchor, style):
             item = float(item)
         values[key] = item
     _check_style(values)
-    frame.record(OP_TEXT, frame.string(str(value)), frame.style(values), x, y, hanchor, vanchor)
+    frame.record(OP_TEXT, frame.string(value), frame.style(values), x, y, hanchor, vanchor)
 
 
 def _check_style(values):
@@ -696,6 +764,17 @@ def audio_play(path, repeat, volume, music=False):
     return _voice
 
 
+def audio_tone(hz, samples, volume):
+    """Play a note of the tone module (the browser builds it); returns its voice or None."""
+    global _voice
+    if len(_commands('play', None)) + len(_commands('tone', None)) >= MAX_PLAYS_PER_FRAME:
+        return None
+    _check_audio()
+    _voice += 1
+    frame.audio.append(['tone', _voice, float(hz), int(samples), float(volume)])
+    return _voice
+
+
 def on_audio_end(voice, callback, wait=False):
     """Call ``callback()`` once when the voice ends by itself."""
     _on_end[voice] = callback
@@ -730,7 +809,7 @@ def _append_batch(kind, voices, *rest):
 
 def audio_stop(voice=None):
     if voice is None:
-        frame.audio[:] = [command for command in frame.audio if command[0] == 'play']
+        frame.audio[:] = [command for command in frame.audio if command[0] in ('play', 'tone')]
         _on_end.clear()
         _waiting.clear()
         frame.audio.append(['stop', None])
@@ -744,7 +823,7 @@ def audio_stop_many(voices):
     for voice in voices:
         _on_end.pop(voice, None)
         _waiting.discard(voice)
-        plays = _commands('play', voice)
+        plays = _commands('play', voice) or _commands('tone', voice)
         if plays:
             # It never reached the browser: nothing to stop.
             del frame.audio[plays[0]]
@@ -768,7 +847,7 @@ def audio_volume_many(voices, volume):
     volume = float(volume)
     remaining = []
     for voice in voices:
-        plays = _commands('play', voice)
+        plays = _commands('play', voice) or _commands('tone', voice)
         if plays:
             # Not sent yet: it starts at the new volume.
             frame.audio[plays[0]][4] = volume
@@ -861,13 +940,46 @@ def _within_budget(pending, sizes, budget, count):
     return taken, budget
 
 
-def present(width, height, title, keep):
-    """Send this frame (or ask the browser to keep the previous one) and return the reply."""
+_reads = [0]
+
+
+def read_screen_pixel(x, y):
+    """The colour of the screen at (x, y), with everything drawn so far (pygame Surface.get_at).
+
+    What was drawn since the last frame goes with the question and is painted at once, so the
+    answer includes it, as on the desktop where the screen surface changes as soon as it is drawn.
+    """
+    if _transport is None:
+        raise RuntimeError('A leitura da tela não está disponível aqui.')
+    width, height, title = _last_window
+    if not (0 <= x < width and 0 <= y < height):
+        raise IndexError('pixel index out of range')
+    if _reads[0] >= MAX_READS_PER_FRAME:
+        raise PgzeroLimitError(
+            f'O jogo leu mais de {MAX_READS_PER_FRAME} pontos da tela num quadro só. '
+            'Para muitas leituras, use uma imagem: images.nome.get_at((x, y)).'
+        )
+    _reads[0] += 1
+    reply = _send(width, height, title, {'read': [int(x), int(y)]})
+    pixel = reply.get('pixel')
+    if not (isinstance(pixel, list) and len(pixel) == 4):
+        raise RuntimeError('O navegador não devolveu a cor da tela.')
+    return Color(*pixel)
+
+
+def present(width, height, title):
+    """Send what was drawn since the last frame (nothing: the screen stays) and return the reply."""
+    _reads[0] = 0
+    return _send(width, height, title)
+
+
+def _send(width, height, title, extra=None):
     # One message carries at most 128 attachments and a bounded number of bytes (list and
     # default font included). A game that loads more files at once receives them over the next
     # frames; until then those images simply are not drawn.
-    title = str(title)[:MAX_TITLE_CHARS]
+    title = cut_utf16(str(title), MAX_TITLE_CHARS)
     _last_window[:] = [width, height, title]
+    keep = not frame.ops
     payload = b'' if keep else frame.ops.tobytes()
     images, budget = _within_budget(
         _images.pending, _images.sizes, FRAME_ATTACHMENT_BYTES - len(payload),
@@ -886,6 +998,7 @@ def present(width, height, title, keep):
         'audio': frame.audio,
         'watch': bool(_waiting),
         'actors': list(frame.actors.values()) if _mission_checkpoint is not None and not keep else [],
+        **(extra or {}),
     }
     reply, _ = _exchange(header, payload)
     _images.pending = _images.pending[len(images):]
@@ -893,7 +1006,7 @@ def present(width, height, title, keep):
     frame.new_strings = []
     frame.new_styles = []
     frame.audio = []
-    frame.drawn = False
+    frame.begin()
     audio_ended(reply.get('ended', ()))
     if _mission_checkpoint is not None:
         _mission_checkpoint()

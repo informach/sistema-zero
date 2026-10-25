@@ -46,6 +46,10 @@ function serviceRequest(command: PgzeroAudioCommand) {
         ...(music ? { music: true } : {}),
       }
     }
+    case 'tone': {
+      const [, id, hz, samples, volume] = command
+      return { version: 1, op: 'play', id, tone: { hz, samples }, loop: false, volume }
+    }
     case 'stop':
       return Array.isArray(command[1])
         ? { version: 1, op: 'stop', ids: command[1] }
@@ -141,7 +145,9 @@ export function createPgzeroAudioQueue(options: {
     /** The commands of one Pygame Zero frame. Fire and forget: a sound never stops the game. */
     pgzero(commands: readonly PgzeroAudioCommand[], watch: boolean) {
       for (const command of commands) {
-        const droppable = command[0] === 'play' && command[3] === 0 && !command[5]
+        // A sound effect played once (or a tone note) may be dropped when late or crowded.
+        const droppable =
+          (command[0] === 'play' && command[3] === 0 && !command[5]) || command[0] === 'tone'
         if (droppable) {
           const effects = queue.filter((entry) => entry.droppable)
           if (effects.length >= PGZERO_AUDIO_QUEUED_PLAYS) {
@@ -151,7 +157,9 @@ export function createPgzeroAudioQueue(options: {
         }
         void enqueue({
           request: JSON.stringify(serviceRequest(command)),
-          ...(command[0] === 'play' ? { voice: command[1], droppable } : {}),
+          ...(command[0] === 'play' || command[0] === 'tone'
+            ? { voice: command[1], droppable }
+            : {}),
         }).catch(() => {})
       }
       const time = now()

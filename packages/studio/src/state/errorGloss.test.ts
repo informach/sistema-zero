@@ -66,3 +66,29 @@ describe('glossErrorMessage', () => {
     expect(glossErrorMessage('')).toBeNull()
   })
 })
+
+describe('glossErrorMessage com erros do Python', () => {
+  const casos: [string, string][] = [
+    ["TypeError: unsupported operand type(s) for +: 'int' and 'str'", 'str(numero)'],
+    ['TypeError: can only concatenate str (not "int") to str', 'str(numero)'],
+    ['IndentationError: expected an indented block after', 'recuo'],
+    ["SyntaxError: expected ':'", 'dois-pontos'],
+    ['ZeroDivisionError: division by zero', 'dividir por zero'],
+    ['IndexError: list index out of range', 'posição que não existe'],
+    ["AttributeError: 'NoneType' object has no attribute 'x'", 'None'],
+    ["AttributeError: 'Actor' object has no attribute 'posicao'", 'depois do ponto'],
+    ["ValueError: invalid literal for int() with base 10: 'oi'", 'não é um número'],
+    ['TypeError: mover() takes 1 positional argument but 2 were given', 'número de valores'],
+    ["KeyError: 'SPCAE'", 'nome de tecla'],
+    ["KeyError: 'vidas'", 'dicionário'],
+    ['SyntaxError: invalid syntax', 'parênteses'],
+  ]
+  for (const [mensagem, trecho] of casos)
+    it(`dá uma dica para "${mensagem}"`, () => {
+      expect(glossErrorMessage(mensagem)).toContain(trecho)
+    })
+
+  it('o NameError do Python continua citando o nome', () => {
+    expect(glossErrorMessage("NameError: name 'pontos' is not defined")).toContain('"pontos"')
+  })
+})

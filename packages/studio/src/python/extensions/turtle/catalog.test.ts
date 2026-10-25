@@ -441,3 +441,64 @@ test('the first Turtle palette is a short teaching set without aliases or hidden
   })
   expect(plain.entries.every((entry) => entry.owner === 'programming')).toBe(true)
 })
+
+test('a loop over a list of turtles written right there gives each turtle block', () => {
+  const novo = () => call(attribute(name('turtle'), 'Turtle'))
+  const loop = (items: string[]) =>
+    node('For', {
+      target: name('desenho', 'Store'),
+      iter: node('List', { elts: items.map((item) => name(item)), ctx: node('Load') }),
+      body: [turtleCall('desenho', 'speed', [integer('0')]), turtleCall('desenho', 'penup', [])],
+      orelse: [],
+      type_comment: null,
+    })
+  const used = (body: ReturnType<typeof node>[]) => {
+    const original = moduleNode([imported(), ...body])
+    const projection = pythonASTToVisual(original, official)
+    expect(pythonSemanticTree(pythonVisualToAST(projection, codecs))).toEqual(
+      pythonSemanticTree(original),
+    )
+    return types(projection.body)
+  }
+  const turtles = [assigned('cenario', novo()), assigned('pincel', novo())]
+  const both = used([...turtles, loop(['cenario', 'pincel'])])
+  expect(both).toContain('sz_py_turtle_turtle_speed')
+  expect(both).toContain('sz_py_turtle_turtle_penup')
+  // Something that is not a turtle in the list: speed is a common name, it stays generic.
+  const mixed = used([...turtles, assigned('placar', integer('0')), loop(['cenario', 'placar'])])
+  expect(mixed).not.toContain('sz_py_turtle_turtle_speed')
+  expect(mixed).toContain('sz_py_method')
+})
+
+test('a value read from a command says what it gives (the stamp gives a number)', () => {
+  const titles = new Map(PYTHON_TURTLE_CODECS.map((codec) => [codec.id, codec.title]))
+  const getters = [...titles].filter(([id]) => id.endsWith('_valor'))
+  expect(getters.length).toBeGreaterThan(10)
+  expect(getters.map(([, title]) => title)).not.toContain('carimbar atual')
+  expect(getters.map(([, title]) => title)).not.toContain('desenhar de uma vez atual')
+  expect(getters.map(([, title]) => title)).toContain('carimbar e dar o número do carimbo')
+  expect(getters.map(([, title]) => title)).toContain('cor da caneta atual')
+})
+
+test('a Pinta drawing as a turtle shape has its own block once formas_do_pinta is imported', () => {
+  const register = expression(
+    call(attribute(name('formas_do_pinta'), 'registrar'), [text('assets/nave.svg')]),
+  )
+  const importShapes = node('Import', {
+    names: [node('alias', { name: 'formas_do_pinta', asname: null })],
+  })
+  const used = (body: ReturnType<typeof node>[], modules: string[]) => {
+    const original = moduleNode(body)
+    const projection = pythonASTToVisual(original, { codecs, officialModules: new Set(modules) })
+    expect(pythonSemanticTree(pythonVisualToAST(projection, codecs))).toEqual(
+      pythonSemanticTree(original),
+    )
+    return types(projection.body)
+  }
+  expect(used([importShapes, register], ['turtle', 'formas_do_pinta'])).toContain(
+    'sz_py_turtle_pinta_shape',
+  )
+  expect(used([register], ['turtle', 'formas_do_pinta'])).not.toContain('sz_py_turtle_pinta_shape')
+  // Without the Turtle extension the module is not the official one.
+  expect(used([importShapes, register], [])).not.toContain('sz_py_turtle_pinta_shape')
+})

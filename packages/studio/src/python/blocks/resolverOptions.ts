@@ -72,7 +72,11 @@ export function pythonResolverOptionsOf(
   const own = attached.get(codecs)
   const starExports = new Map(STDLIB_STAR_EXPORTS)
   for (const [module, names] of own?.starExports ?? []) starExports.set(module, names)
-  return { builtins: own?.builtins ?? new Map(), starExports }
+  return {
+    builtins: own?.builtins ?? new Map(),
+    starExports,
+    builtinModules: own?.builtinModules ?? new Map(),
+  }
 }
 
 /** Saved block layouts remember whether a Name receiver was the module or an object. */

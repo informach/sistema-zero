@@ -98,6 +98,7 @@ export const ptBR: Record<string, string> = {
   'assets.tab.images': 'Imagens',
   'assets.tab.sounds': 'Sons',
   'assets.tab.models3d': 'Modelos 3D',
+  'assets.tab.fonts': 'Fontes',
   // A capa do card "Meus Jogos": uma imagem do projeto vira a capa fixa, vencendo a foto
   // automática do preview (26/09/2026).
   'assets.cover.use': '⭐ Usar como capa',
@@ -289,6 +290,8 @@ export const ptBR: Record<string, string> = {
     'O mapa inteiro vira uma imagem, com todas as camadas visíveis, incluindo a camada da frente.',
   'pintaImport.image.vector':
     'Este desenho entra como vetor (SVG): fica nítido em qualquer tamanho e o Pygame Zero o mostra no tamanho escolhido.',
+  'pintaImport.image.turtleShape':
+    'Este desenho entra como vetor (SVG) e vira uma forma da tartaruga, que gira junto com ela: use o bloco "usar o desenho do Pinta como forma".',
   'pintaImport.image.preparing': 'Preparando a imagem…',
   'pintaImport.image.preview': 'Prévia da imagem escolhida',
   'pintaImport.image.add': 'Adicionar imagem',
@@ -303,6 +306,9 @@ export const ptBR: Record<string, string> = {
   'pintaImport.image.selectionChanged':
     'A imagem recebida não corresponde à sua escolha. Confira a seleção novamente.',
 
+  'models3d.raylibUploadTitle': 'Modelo 3D (.glb) para o Raylib 3D',
+  'models3d.raylibHowTo':
+    "Abra o modelo pelo caminho dele no código, como load_model('models/nave.glb').",
   'models3d.uploadTitle':
     'Modelo 3D (.glb, com animações e ossos) ou céu 360° (.hdr) para Jogo 3D, Mundo 3D, Jogo 3D Avançado e Canvas 3D',
   'models3d.howTo': 'Use o NOME do modelo nos blocos:',
@@ -339,6 +345,8 @@ export const ptBR: Record<string, string> = {
   'moldaImport.inProject': '✓ no projeto',
   'moldaImport.needs3d':
     'Instale o Jogo 3D, o Jogo 3D Avançado ou o Mundo 3D (painel de Extensões) para usar modelos e céus. A textura entra como imagem.',
+  'moldaImport.needs3dRaylib':
+    'Modelos 3D são da extensão Raylib 3D, e o céu 360° ainda não entra no Raylib. A textura entra como imagem.',
   'moldaImport.kind.model': '🧊 modelo',
   'moldaImport.kind.texture': '🧱 textura',
   'moldaImport.kind.sky': '🌤️ céu',

@@ -8,6 +8,7 @@ import {
   pythonAudioMediaType,
   readPythonAudioRequest,
 } from './contract'
+import { toneWav } from './tone'
 import { readPythonAudioWav } from './wav'
 
 /** Ended voices kept until a reply carries them, and how many one reply carries (2 KiB). */
@@ -24,6 +25,9 @@ interface Voice {
 }
 
 /** Host-owned media. Requests never supply executable URLs, media bytes or DOM options. */
+/** Different tone notes kept ready at once (a piano has 88 keys). */
+const TONE_CACHED_NOTES = 256
+
 export function createPythonAudioService(options: {
   snapshot: Pick<PythonExecutionSnapshot, 'files'>
   signal: AbortSignal
@@ -116,6 +120,25 @@ export function createPythonAudioService(options: {
     return pending
   }
 
+  /** A note of Pygame Zero's tone module: built once here, then reused like a file. */
+  function toneResource(tone: { hz: number; samples: number }): Promise<string> {
+    const key = `tone:${tone.hz}:${tone.samples}`
+    const existing = resources.get(key)
+    if (existing) return existing
+    // Notes are small, but a game could ask for endless different ones: keep a bounded number.
+    let notes = 0
+    for (const name of resources.keys()) if (name.startsWith('tone:')) notes++
+    if (notes >= TONE_CACHED_NOTES) throw new Error('O programa criou notas diferentes demais.')
+    signal.throwIfAborted()
+    const url = URL.createObjectURL(
+      new Blob([toneWav(tone.hz, tone.samples)], { type: 'audio/wav' }),
+    )
+    urls.add(url)
+    const ready = Promise.resolve(url)
+    resources.set(key, ready)
+    return ready
+  }
+
   function admit(request: Extract<ReturnType<typeof readPythonAudioRequest>, { op: 'play' }>) {
     // The music has its own channel, as in pygame: a busy game never silences it.
     const music = request.music === true
@@ -139,7 +162,10 @@ export function createPythonAudioService(options: {
     voices.set(request.id, voice)
     const voiceSignal = AbortSignal.any([signal, voice.cancelled.signal])
     try {
-      const url = await awaitWithSignal(() => resource(request.path), voiceSignal)
+      const url = await awaitWithSignal(
+        () => (request.tone ? toneResource(request.tone) : resource(request.path!)),
+        voiceSignal,
+      )
       voiceSignal.throwIfAborted()
       const audio = new Audio()
       voice.audio = audio
@@ -166,7 +192,11 @@ export function createPythonAudioService(options: {
         report(request.id)
       }
       function failed() {
-        const error = new Error(`Não foi possível reproduzir o som ${request.path}.`)
+        const error = new Error(
+          request.tone
+            ? 'Não foi possível tocar a nota do tone.'
+            : `Não foi possível reproduzir o som ${request.path}.`,
+        )
         rejectLoad(error)
         if (started) {
           stop(request.id, voice)

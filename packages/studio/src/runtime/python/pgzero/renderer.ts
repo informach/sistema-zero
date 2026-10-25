@@ -10,6 +10,7 @@ import {
   PGZERO_FONT_ATTACHMENT_BASE,
   PGZERO_LIMITS,
   PGZERO_LIST_ATTACHMENT,
+  PGZERO_MAX_POLY_POINTS,
   PGZERO_OP,
   PGZERO_OP_ARITY,
   type PgzeroAudioCommand,
@@ -83,6 +84,8 @@ export function createPgzeroRenderer(
     /** At most `limit` sounds that ended since the previous frame (their voice ids). */
     takeEndedVoices?(limit: number): number[]
     onTitle?(title: string): void
+    /** Protected observations acknowledge the presented frame before Python resumes. */
+    mission?: true
   } = {},
 ): PgzeroRenderer {
   const images = new Map<number, Sprite>()
@@ -102,10 +105,11 @@ export function createPgzeroRenderer(
   let width = 0
   let height = 0
   let scale = 1
-  let lastList: Float64Array = new Float64Array()
   let frameSequence = 0
   let raf: number | undefined
   let pendingPaint: { resolve(): void; reject(error: Error): void } | undefined
+  /** The batch sent last, waiting for its display frame (Python computes the next one meanwhile). */
+  let shown: Promise<void> | undefined
   let disposed = false
   let busy = false
   let capturing = false
@@ -145,16 +149,29 @@ export function createPgzeroRenderer(
     canvas!.height = Math.round(h * scale)
     canvas!.style.aspectRatio = `${w} / ${h}`
     canvas!.style.width = `${w}px`
+    // A new window starts black, like pygame's set_mode; afterwards the screen keeps what was
+    // drawn on it, frame after frame.
+    ctx.setTransform(1, 0, 0, 1, 0, 0)
+    ctx.fillStyle = '#000'
+    ctx.fillRect(0, 0, canvas!.width, canvas!.height)
     return ctx
   }
 
   // Input ------------------------------------------------------------------------------------
+  // pygame has one bit per side (LSHIFT 1, RSHIFT 2...): the held modifier keys say which.
+  const heldModifiers = new Set<string>()
+  function side(held: boolean, left: string, right: string, leftBit: number) {
+    if (!held) return 0
+    const bits =
+      (heldModifiers.has(left) ? leftBit : 0) | (heldModifiers.has(right) ? leftBit * 2 : 0)
+    return bits || leftBit
+  }
   function modifiers(event: KeyboardEvent | MouseEvent) {
     let mod = 0
-    if (event.shiftKey) mod |= PGZERO_KEY_MODS.shift
-    if (event.ctrlKey) mod |= PGZERO_KEY_MODS.ctrl
-    if (event.altKey) mod |= PGZERO_KEY_MODS.alt
-    if (event.metaKey) mod |= PGZERO_KEY_MODS.meta
+    mod |= side(event.shiftKey, 'ShiftLeft', 'ShiftRight', PGZERO_KEY_MODS.shift)
+    mod |= side(event.ctrlKey, 'ControlLeft', 'ControlRight', PGZERO_KEY_MODS.ctrl)
+    mod |= side(event.altKey, 'AltLeft', 'AltRight', PGZERO_KEY_MODS.alt)
+    mod |= side(event.metaKey, 'MetaLeft', 'MetaRight', PGZERO_KEY_MODS.meta)
     if ('getModifierState' in event && event.getModifierState('CapsLock'))
       mod |= PGZERO_KEY_MODS.caps
     return mod
@@ -181,6 +198,7 @@ export function createPgzeroRenderer(
       (event) => {
         if (disposed) return
         const key = event as KeyboardEvent
+        heldModifiers.add(key.code)
         const read = readPgzeroKey(key)
         if (read.key === undefined) return
         if (read.preventDefault) key.preventDefault()
@@ -199,6 +217,7 @@ export function createPgzeroRenderer(
       (event) => {
         if (disposed) return
         const key = event as KeyboardEvent
+        heldModifiers.delete(key.code)
         input.keyUp(key.code, modifiers(key))
       },
       settings,
@@ -207,6 +226,7 @@ export function createPgzeroRenderer(
     // release happens outside the page is released too.
     const release = () => {
       if (disposed) return
+      heldModifiers.clear()
       input.releaseKeys()
       input.releaseButtons(...(lastMouse ?? [0, 0]))
     }
@@ -532,23 +552,41 @@ export function createPgzeroRenderer(
   }
 
   // Painting ---------------------------------------------------------------------------------
+  // The same colour string for the same colour: a game paints with a few colours every frame.
+  const cssColors = new Map<number, string>()
+  function cssColor(r: number, g: number, b: number) {
+    const key = (r << 16) | (g << 8) | b
+    let css = cssColors.get(key)
+    if (css === undefined) {
+      css = `rgb(${r},${g},${b})`
+      if (cssColors.size >= 1024) cssColors.clear()
+      cssColors.set(key, css)
+    }
+    return css
+  }
+
+  /** Paints a batch on top of what the screen already shows (the screen is never wiped here). */
   function paint(list: Float64Array) {
     const ctx = context
     if (!ctx || disposed) return
     ctx.setTransform(scale, 0, 0, scale, 0, 0)
     ctx.imageSmoothingEnabled = false
-    ctx.fillStyle = '#000'
-    ctx.fillRect(0, 0, width, height)
     let at = 0
     while (at < list.length) {
       const op = list[at++]!
-      const arity = PGZERO_OP_ARITY[op]
+      const points = op === PGZERO_OP.POLY ? list[at]! : 0
+      if (
+        op === PGZERO_OP.POLY &&
+        (!Number.isSafeInteger(points) || points < 3 || points > PGZERO_MAX_POLY_POINTS)
+      )
+        throw new Error('Lista de desenho do Pygame Zero inválida.')
+      const arity = op === PGZERO_OP.POLY ? 6 + points * 2 : PGZERO_OP_ARITY[op]
       if (arity === undefined || at + arity > list.length)
         throw new Error('Lista de desenho do Pygame Zero inválida.')
       const r = list
       switch (op) {
         case PGZERO_OP.FILL:
-          ctx.fillStyle = `rgb(${r[at]},${r[at + 1]},${r[at + 2]})`
+          ctx.fillStyle = cssColor(r[at]!, r[at + 1]!, r[at + 2]!)
           ctx.fillRect(0, 0, width, height)
           break
         case PGZERO_OP.BLIT: {
@@ -579,7 +617,7 @@ export function createPgzeroRenderer(
           break
         }
         case PGZERO_OP.LINE:
-          ctx.strokeStyle = `rgb(${r[at + 4]},${r[at + 5]},${r[at + 6]})`
+          ctx.strokeStyle = cssColor(r[at + 4]!, r[at + 5]!, r[at + 6]!)
           ctx.lineWidth = Math.max(1, r[at + 8]!)
           ctx.lineCap = 'square'
           ctx.beginPath()
@@ -589,29 +627,83 @@ export function createPgzeroRenderer(
           break
         case PGZERO_OP.RECT: {
           const [x, y, w, h] = [r[at]!, r[at + 1]!, r[at + 2]!, r[at + 3]!]
-          const color = `rgb(${r[at + 4]},${r[at + 5]},${r[at + 6]})`
-          if (r[at + 8] === 0) {
+          const color = cssColor(r[at + 4]!, r[at + 5]!, r[at + 6]!)
+          const border = r[at + 8]!
+          if (border === 0) {
+            ctx.fillStyle = color
+            ctx.fillRect(x, y, w, h)
+          } else if (border * 2 >= Math.min(w, h)) {
+            // A border as thick as half the rectangle fills it, like pygame.
             ctx.fillStyle = color
             ctx.fillRect(x, y, w, h)
           } else {
+            // pygame draws the border inside the rectangle.
             ctx.strokeStyle = color
-            ctx.lineWidth = 1
-            ctx.strokeRect(x + 0.5, y + 0.5, Math.max(0, w - 1), Math.max(0, h - 1))
+            ctx.lineWidth = border
+            ctx.strokeRect(x + border / 2, y + border / 2, w - border, h - border)
           }
           break
         }
         case PGZERO_OP.CIRCLE: {
           const radius = Math.max(0, r[at + 2]!)
-          const color = `rgb(${r[at + 3]},${r[at + 4]},${r[at + 5]})`
+          const color = cssColor(r[at + 3]!, r[at + 4]!, r[at + 5]!)
           ctx.beginPath()
           if (r[at + 7] === 0) {
             ctx.fillStyle = color
             ctx.arc(r[at]! + 0.5, r[at + 1]! + 0.5, radius, 0, Math.PI * 2)
             ctx.fill()
           } else {
+            // The ring grows inwards from the radius, like pygame.
+            const ring = Math.min(r[at + 7]!, radius)
             ctx.strokeStyle = color
-            ctx.lineWidth = 1
-            ctx.arc(r[at]! + 0.5, r[at + 1]! + 0.5, Math.max(0, radius - 0.5), 0, Math.PI * 2)
+            ctx.lineWidth = ring
+            ctx.arc(r[at]! + 0.5, r[at + 1]! + 0.5, Math.max(0, radius - ring / 2), 0, Math.PI * 2)
+            ctx.stroke()
+          }
+          break
+        }
+        case PGZERO_OP.POLY: {
+          const width = r[at + 1]!
+          const color = cssColor(r[at + 2]!, r[at + 3]!, r[at + 4]!)
+          ctx.beginPath()
+          for (let point = 0; point < points; point++) {
+            const px = r[at + 6 + point * 2]! + 0.5
+            const py = r[at + 7 + point * 2]! + 0.5
+            if (point === 0) ctx.moveTo(px, py)
+            else ctx.lineTo(px, py)
+          }
+          ctx.closePath()
+          if (width === 0) {
+            ctx.fillStyle = color
+            ctx.fill()
+          } else {
+            ctx.strokeStyle = color
+            ctx.lineWidth = width
+            ctx.lineJoin = 'miter'
+            ctx.stroke()
+          }
+          break
+        }
+        case PGZERO_OP.ELLIPSE:
+        case PGZERO_OP.ARC: {
+          const [x, y, w, h] = [r[at]!, r[at + 1]!, r[at + 2]!, r[at + 3]!]
+          const arc = op === PGZERO_OP.ARC
+          const c = arc ? at + 6 : at + 4
+          const width = r[c + 4]!
+          const color = cssColor(r[c]!, r[c + 1]!, r[c + 2]!)
+          const inset = width === 0 ? 0 : Math.min(width, w / 2, h / 2) / 2
+          const rx = Math.max(0, w / 2 - inset)
+          const ry = Math.max(0, h / 2 - inset)
+          ctx.beginPath()
+          // pygame's angles turn counter-clockwise on the screen (y grows downwards).
+          if (arc) ctx.ellipse(x + w / 2, y + h / 2, rx, ry, 0, -r[at + 4]!, -r[at + 5]!, true)
+          else ctx.ellipse(x + w / 2, y + h / 2, rx, ry, 0, 0, Math.PI * 2)
+          if (width === 0 && !arc) {
+            ctx.fillStyle = color
+            ctx.fill()
+          } else {
+            ctx.strokeStyle = color
+            ctx.lineWidth = Math.max(1, Math.min(width, w / 2, h / 2))
             ctx.stroke()
           }
           break
@@ -627,9 +719,10 @@ export function createPgzeroRenderer(
   }
   /**
    * Waits for the next game frame on the display (60 per second, like Pygame Zero's
-   * clock.tick(60), whatever the display's refresh rate) and paints when the frame changed.
+   * clock.tick(60), whatever the display's refresh rate) and paints the batch drawn since the
+   * last frame, if any. A new window size alone also counts as a new frame (the screen is black).
    */
-  function nextFrame(repaint: boolean) {
+  function nextFrame(batch: Float64Array | undefined, resized: boolean) {
     return new Promise<void>((resolve, reject) => {
       pendingPaint = { resolve, reject }
       const tick = (now: number) => {
@@ -640,7 +733,8 @@ export function createPgzeroRenderer(
         raf = undefined
         pendingPaint = undefined
         try {
-          if (repaint) paint(lastList)
+          if (batch) paint(batch)
+          else if (resized) frameSequence++
           resolve()
         } catch (error) {
           reject(error as Error)
@@ -777,6 +871,14 @@ export function createPgzeroRenderer(
           await decodeImage(id, bytes, filePath, w, h)
         }
         if (header.decode !== undefined) return { text: '{}', bytes: vectorPixels(header.decode) }
+        // The previous batch reaches the screen first: it still uses the current text tables and
+        // window size. Python is never more than one frame ahead of the display.
+        if (shown) {
+          const previous = shown
+          shown = undefined
+          await previous
+          active()
+        }
         for (const [id] of header.fonts) {
           const bytes = supplied.get(PGZERO_FONT_ATTACHMENT_BASE + id)
           if (!bytes) throw new Error('Faltou uma fonte do jogo.')
@@ -803,6 +905,7 @@ export function createPgzeroRenderer(
         options.onTitle?.(header.title)
         const resized = header.w !== width || header.h !== height
         resize(header.w, header.h)
+        let batch: Float64Array | undefined
         if (!header.keep) {
           mission.clearStage()
           const seen = new Set<number>()
@@ -814,12 +917,27 @@ export function createPgzeroRenderer(
           const list = supplied.get(PGZERO_LIST_ATTACHMENT)
           if (!list || list.byteLength % 8 || list.byteLength > PGZERO_LIMITS.listBytes)
             throw new Error('Lista de desenho do Pygame Zero inválida.')
-          lastList = new Float64Array(list.buffer, list.byteOffset, list.byteLength / 8)
+          batch = new Float64Array(list.buffer, list.byteOffset, list.byteLength / 8)
         }
-        // Always wait for the display: this is the game's frame clock (about 60 per second).
-        await nextFrame(!header.keep || resized || !frameSequence)
-        active()
-        mission.advance()
+        if (header.read) {
+          // screen.surface.get_at: what was drawn so far reaches the screen now, then is read.
+          if (batch) paint(batch)
+          if (options.mission) mission.advance()
+          const ctx = context!
+          const [x, y] = header.read
+          const data = ctx.getImageData(Math.floor(x * scale), Math.floor(y * scale), 1, 1).data
+          return JSON.stringify({ pixel: [data[0], data[1], data[2], data[3]] })
+        }
+        // The display paints this batch on its next frame (about 60 per second, the game's
+        // clock); the reply goes back now, so Python computes the next frame meanwhile instead of
+        // waiting for the display. A failed paint is reported by the next exchange.
+        shown = nextFrame(batch, resized)
+        shown.catch(() => {})
+        if (options.mission) {
+          await shown
+          active()
+          mission.advance()
+        }
         const ended = options.takeEndedVoices?.(PGZERO_LIMITS.endedVoices) ?? []
         return JSON.stringify({
           events: input.take(),

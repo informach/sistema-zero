@@ -48,3 +48,28 @@ test('the worker boundary rejects malformed or expanded extension references bef
     ).toThrow()
   }
 })
+
+test('saved files cross the worker boundary apart from the program and within their limits', async () => {
+  const input = await snapshot()
+  const placar = new TextEncoder().encode('Ana;30') as Uint8Array<ArrayBuffer>
+  const parsed = readPythonWireSnapshot({
+    ...input,
+    saved: [{ path: 'placar.txt', bytes: placar }],
+  })
+  expect(parsed.saved?.map((file) => [file.path, [...file.bytes]])).toEqual([
+    ['placar.txt', [...placar]],
+  ])
+  expect(parsed.revision).toBe(input.revision)
+  expect(readPythonWireSnapshot(input).saved).toBeUndefined()
+  for (const saved of [
+    'placar.txt',
+    [{ path: '../placar.txt', bytes: placar }],
+    [{ path: 'placar.txt', bytes: 'Ana;30' }],
+    Array.from({ length: 17 }, (_, index) => ({ path: `f${index}.txt`, bytes: placar })),
+    Array.from({ length: 5 }, (_, index) => ({
+      path: `f${index}.bin`,
+      bytes: new Uint8Array(64 * 1024),
+    })),
+  ])
+    expect(() => readPythonWireSnapshot({ ...input, saved })).toThrow()
+})

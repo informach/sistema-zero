@@ -9,6 +9,8 @@ import type { ProjectAsset } from '#core'
 import { Button } from '#ui'
 import { assertPintaImageFits, pintaImageTargetLimits } from '../../asset-library/pintaImageTarget'
 import { isPythonProject } from '../../core/editableProject'
+import { projectUsesPgzero } from '../../core/pgzeroMediaPaths'
+import { hasTurtleExtension } from '../../runtime/python/turtle/contract'
 import { captureProjectStorageScope } from '../../state/projectStorageRuntime'
 import { useProjectStore, useProjectStoreApi } from '../../state/projectStore'
 import { useT } from '../../studio/i18n'
@@ -63,6 +65,14 @@ export default function PintaImageSelection({
   const [preview, setPreview] = useState<Preview>({ phase: 'loading' })
   // The destination decides the format (a primitive, so the selector never re-renders by identity).
   const output = useProjectStore((state) => pintaImageOutputFor(state.project, facts, initial))
+  // In a Turtle project (not Pygame Zero) the vector becomes a turtle shape.
+  const turtleShape = useProjectStore(
+    (state) =>
+      !!state.project &&
+      isPythonProject(state.project) &&
+      !projectUsesPgzero(state.project) &&
+      hasTurtleExtension(state.project.installedExtensions),
+  )
   const recipe = useMemo<PintaImageRecipe | null>(() => {
     if (!facts || facts.kind === 'unavailable') return null
     if (facts.kind === 'frame') {
@@ -242,7 +252,9 @@ export default function PintaImageSelection({
         <p className="text-sm text-sz-fg-soft">{t('pintaImport.image.fullMap')}</p>
       ) : null}
       {output === 'svg' ? (
-        <p className="text-sm text-sz-fg-soft">{t('pintaImport.image.vector')}</p>
+        <p className="text-sm text-sz-fg-soft">
+          {t(turtleShape ? 'pintaImport.image.turtleShape' : 'pintaImport.image.vector')}
+        </p>
       ) : null}
       {preview.phase === 'loading' ? <p role="status">{t('pintaImport.image.preparing')}</p> : null}
       {preview.phase === 'error' ? (

@@ -81,6 +81,7 @@ test('audio commands: music, loops=N, several voices at once, pause and resume',
     ['pause', 2],
     ['resume', 2],
     ['stop', null],
+    ['tone', 9, 440, 11025, 1],
   ]
   expect(readPgzeroFrameHeader(frame({ audio })).audio as unknown).toEqual(audio)
   for (const command of [
@@ -92,6 +93,16 @@ test('audio commands: music, loops=N, several voices at once, pause and resume',
     ['stop', Array.from({ length: PGZERO_LIMITS.audioCommands + 1 }, (_, i) => i + 1)],
     ['volume', [1], 2],
     ['pause', null],
+    ['tone', 1, 0, 100, 1],
+    ['tone', 1, 440, 0, 1],
+    ['tone', 1, 440, 1.5, 1],
+    ['tone', 1, 440, 100],
   ])
     expect(() => readPgzeroFrameHeader(frame({ audio: [command] }))).toThrow()
+})
+
+test('a screen read names a point inside the window and never comes with a decode', () => {
+  expect(readPgzeroFrameHeader(frame({ read: [3, 4] })).read).toEqual([3, 4])
+  for (const read of [[-1, 0], [0, 10_000], [1], 'x'])
+    expect(() => readPgzeroFrameHeader(frame({ read }))).toThrow()
 })

@@ -1,5 +1,6 @@
 import { isStudioPythonAssetPath } from '@sistemazero/core/studio/project-environment'
 import { SZ_AUDIO_MODULE_DESCRIPTOR } from '@sistemazero/core/studio/python-provided-modules-sz-audio'
+import { isToneRequest } from './tone'
 
 /** Independent of Turtle and the historical JavaScript audio implementation. */
 export const PYTHON_AUDIO_LIMITS = SZ_AUDIO_MODULE_DESCRIPTOR.audio.policy
@@ -16,7 +17,10 @@ export type PythonAudioRequest =
       version: 1
       op: 'play'
       id: number
-      path: string
+      /** A sound of the project... */
+      path?: string
+      /** ...or a note of Pygame Zero's tone module, built by the host (exactly one of them). */
+      tone?: { hz: number; samples: number }
       loop: boolean
       volume: number
       /** Extra plays after the first, without a gap (pygame's loops=N). */
@@ -61,6 +65,16 @@ function invalid(): never {
 }
 
 /** Data only. Session ownership and asset membership must also be checked by the media service. */
+function toneValue(value: unknown) {
+  return (
+    !!value &&
+    typeof value === 'object' &&
+    !Array.isArray(value) &&
+    Object.keys(value).length === 2 &&
+    isToneRequest((value as { hz?: unknown }).hz, (value as { samples?: unknown }).samples)
+  )
+}
+
 export function readPythonAudioRequest(raw: unknown): PythonAudioRequest {
   if (
     typeof raw !== 'string' ||
@@ -126,12 +140,15 @@ export function readPythonAudioRequest(raw: unknown): PythonAudioRequest {
   if (
     request.op !== 'play' ||
     Object.keys(request).some(
-      (key) => !['version', 'op', 'id', 'path', 'loop', 'volume', 'repeat', 'music'].includes(key),
+      (key) =>
+        !['version', 'op', 'id', 'path', 'tone', 'loop', 'volume', 'repeat', 'music'].includes(key),
     ) ||
     !identifier(request.id) ||
-    typeof request.path !== 'string' ||
-    !isStudioPythonAssetPath(request.path) ||
-    !pythonAudioMediaType(request.path) ||
+    (request.tone === undefined
+      ? typeof request.path !== 'string' ||
+        !isStudioPythonAssetPath(request.path) ||
+        !pythonAudioMediaType(request.path)
+      : request.path !== undefined || !toneValue(request.tone) || request.music !== undefined) ||
     typeof request.loop !== 'boolean' ||
     !volumeValue(request.volume) ||
     (request.repeat !== undefined &&
@@ -147,7 +164,14 @@ export function readPythonAudioRequest(raw: unknown): PythonAudioRequest {
     version: 1,
     op: 'play',
     id: request.id,
-    path: request.path,
+    ...(request.tone === undefined
+      ? { path: request.path as string }
+      : {
+          tone: {
+            hz: (request.tone as { hz: number }).hz,
+            samples: (request.tone as { samples: number }).samples,
+          },
+        }),
     loop: request.loop,
     volume: request.volume,
     ...(request.repeat !== undefined ? { repeat: request.repeat } : {}),

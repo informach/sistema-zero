@@ -55,6 +55,15 @@ def _rect_values(args):
         arg = args[0]
         if isinstance(arg, Rect):
             return arg._x, arg._y, arg._w, arg._h
+        # An Actor (or anything keeping its rect in _rect) is read without four attribute lookups.
+        inner = getattr(arg, '_rect', None)
+        if inner is not None and not isinstance(arg, (tuple, list)):
+            if isinstance(inner, Rect):
+                return inner._x, inner._y, inner._w, inner._h
+            try:
+                return _int(inner.x), _int(inner.y), _int(inner.w), _int(inner.h)
+            except AttributeError:
+                pass
         rect = getattr(arg, 'rect', None)
         if rect is not None and not isinstance(arg, (tuple, list)):
             if callable(rect):
@@ -189,6 +198,42 @@ class Rect:
     def __ne__(self, other):
         result = self.__eq__(other)
         return result if result is NotImplemented else not result
+
+    def _compare(self, other, test):
+        try:
+            values = _rect_values((other,))
+        except TypeError:
+            return NotImplemented
+        return test(tuple(self), values)
+
+    # Rects order like their (x, y, w, h) tuples, as in pygame-ce.
+    def __lt__(self, other):
+        return self._compare(other, tuple.__lt__)
+
+    def __le__(self, other):
+        return self._compare(other, tuple.__le__)
+
+    def __gt__(self, other):
+        return self._compare(other, tuple.__gt__)
+
+    def __ge__(self, other):
+        return self._compare(other, tuple.__ge__)
+
+    def move_to(self, **kwargs):
+        """A copy placed by edges or points, e.g. rect.move_to(center=(10, 10))."""
+        result = self._copy(self._x, self._y, self._w, self._h)
+        for name, value in kwargs.items():
+            setattr(result, name, value)
+        return result
+
+    @property
+    def relcenter(self):
+        return self._w // 2, self._h // 2
+
+    @relcenter.setter
+    def relcenter(self, value):
+        x, y = _pair(value)
+        self._w, self._h = x * 2, y * 2
 
     def __repr__(self):
         return f'Rect({self._x}, {self._y}, {self._w}, {self._h})'
@@ -328,8 +373,16 @@ class Rect:
         return self._x <= x < self._x + self._w and self._y <= y < self._y + self._h
 
     def colliderect(self, *args):
-        bx, by, bw, bh = _rect_values(args)
-        if not self._w or not self._h or not bw or not bh:
+        # Games test hundreds of pairs per frame: a Rect argument skips the general parsing.
+        if len(args) == 1 and type(args[0]) is Rect:
+            other = args[0]
+            bx, by, bw, bh = other._x, other._y, other._w, other._h
+        else:
+            bx, by, bw, bh = _rect_values(args)
+        x, y, w, h = self._x, self._y, self._w, self._h
+        if w > 0 and h > 0 and bw > 0 and bh > 0:
+            return x < bx + bw and y < by + bh and x + w > bx and y + h > by
+        if not w or not h or not bw or not bh:
             return False
         return (
             min(self._x, self._x + self._w) < max(bx, bx + bw)

@@ -8,7 +8,7 @@ galeria.
 
 ## Como jogar
 
-Espaço começa a rodada: clique em quantas estrelas puder em 15 segundos. Se você fizer mais pontos que o último do placar, digite seu nome na tela (a tecla de apagar volta uma letra) e aperte Enter. O placar é escrito no arquivo placar.txt.
+Espaço começa a rodada: clique em quantas estrelas puder em 15 segundos. Se você fizer mais pontos que o último do placar, digite seu nome na tela (a tecla de apagar volta uma letra) e aperte Enter. O placar é escrito no arquivo placar.txt e continua lá na próxima vez que você jogar.
 
 ## Ideias para mudar
 

@@ -26,6 +26,8 @@ export interface Models3DTabProps extends AssetsTabCommon {
   onOpenTeam?: (() => void) | null
   editTargetOf: (asset: ProjectAsset) => EditTarget | null
   onOpenInOrigin: (asset: ProjectAsset, target: EditTarget) => void
+  /** Projeto Python com Raylib: os textos falam do Raylib 3D e do `load_model`. */
+  raylib?: boolean
 }
 
 /** Quantos nomes de animação cabem no selo antes do "…". */
@@ -78,6 +80,8 @@ export function Models3DTab({
   onDelete,
   editTargetOf,
   onOpenInOrigin,
+  raylib = false,
+  codeNameOf,
 }: Models3DTabProps): JSX.Element {
   const t = useT()
   return (
@@ -104,7 +108,7 @@ export function Models3DTab({
               variant={onOpenMolda || onOpenTeam ? 'subtle' : 'primary'}
               size="sm"
               disabled={busy}
-              title={t('models3d.uploadTitle')}
+              title={raylib ? t('models3d.raylibUploadTitle') : t('models3d.uploadTitle')}
               onClick={onUpload}
             >
               {busy ? 'Processando…' : '📦 Enviar modelo 3D'}
@@ -112,7 +116,13 @@ export function Models3DTab({
           ) : null}
         </div>
       ) : null}
-      {!has3DExtension ? (
+      {raylib ? (
+        <p className="text-xs text-sz-fg-mute">
+          {has3DExtension
+            ? 'Modelo .glb vai para a pasta models. Texturas do Molda entram como imagem, na pasta images. O céu 360° (.hdr) ainda não entra no Raylib.'
+            : 'Aqui a textura do Molda entra como imagem. Para usar um modelo 3D, troque para a extensão Raylib 3D, em "Extensões".'}
+        </p>
+      ) : !has3DExtension ? (
         <p className="text-xs text-sz-fg-mute">
           Para USAR um modelo 3D, instale antes uma extensão que entenda 3D: Jogo 3D, Jogo 3D
           Avançado ou Mundo 3D, em "Extensões". (O Canvas 3D já vem no Estúdio, não precisa
@@ -131,15 +141,19 @@ export function Models3DTab({
           </EmptyHint>
         ) : (
           <>
-            <div className="mb-2 text-xs text-sz-fg-soft">
-              <p>{t('models3d.howTo')}</p>
-              <ul className="ml-4 list-disc">
-                <li>{t('models3d.howTo.game3d')}</li>
-                <li>{t('models3d.howTo.advanced')}</li>
-                <li>{t('models3d.howTo.world3d')}</li>
-                <li>{t('models3d.howTo.sky')}</li>
-              </ul>
-            </div>
+            {raylib ? (
+              <p className="mb-2 text-xs text-sz-fg-soft">{t('models3d.raylibHowTo')}</p>
+            ) : (
+              <div className="mb-2 text-xs text-sz-fg-soft">
+                <p>{t('models3d.howTo')}</p>
+                <ul className="ml-4 list-disc">
+                  <li>{t('models3d.howTo.game3d')}</li>
+                  <li>{t('models3d.howTo.advanced')}</li>
+                  <li>{t('models3d.howTo.world3d')}</li>
+                  <li>{t('models3d.howTo.sky')}</li>
+                </ul>
+              </div>
+            )}
             <ul className="flex flex-col gap-2">
               {models3d.map((asset) => {
                 const editTarget = editTargetOf(asset)
@@ -157,6 +171,7 @@ export function Models3DTab({
                         asset={asset}
                         what="o modelo 3D"
                         onRename={onRename}
+                        codeName={codeNameOf?.(asset)}
                         className="min-w-0"
                       />
                       <ModelBadges asset={asset} />

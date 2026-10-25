@@ -70,6 +70,13 @@
     },
     {
       "owner": "Screen",
+      "name": "getcanvas",
+      "signature": "()",
+      "canonical": "getcanvas",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "Screen",
       "name": "getshapes",
       "signature": "()",
       "canonical": "getshapes",
@@ -87,6 +94,27 @@
       "name": "mainloop",
       "signature": "()",
       "canonical": "mainloop",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "Screen",
+      "name": "mode",
+      "signature": "(mode=None)",
+      "canonical": "mode",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "Screen",
+      "name": "no_animation",
+      "signature": "()",
+      "canonical": "no_animation",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "Screen",
+      "name": "numinput",
+      "signature": "(title, prompt, default=None, minval=None, maxval=None)",
+      "canonical": "numinput",
       "fixtureFamily": null
     },
     {
@@ -154,9 +182,37 @@
     },
     {
       "owner": "Screen",
+      "name": "save",
+      "signature": "(filename, *, overwrite=False)",
+      "canonical": "save",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "Screen",
+      "name": "screensize",
+      "signature": "(canvwidth=None, canvheight=None, bg=None)",
+      "canonical": "screensize",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "Screen",
       "name": "setup",
       "signature": "(width=0.5, height=0.75, startx=None, starty=None)",
       "canonical": "setup",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "Screen",
+      "name": "setworldcoordinates",
+      "signature": "(llx, lly, urx, ury)",
+      "canonical": "setworldcoordinates",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "Screen",
+      "name": "textinput",
+      "signature": "(title, prompt)",
+      "canonical": "textinput",
       "fixtureFamily": null
     },
     {
@@ -224,6 +280,13 @@
     },
     {
       "owner": "Turtle",
+      "name": "begin_poly",
+      "signature": "()",
+      "canonical": "begin_poly",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "Turtle",
       "name": "bk",
       "signature": "(distance)",
       "canonical": "back",
@@ -273,6 +336,13 @@
     },
     {
       "owner": "Turtle",
+      "name": "degrees",
+      "signature": "(fullcircle=360.0)",
+      "canonical": "degrees",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "Turtle",
       "name": "distance",
       "signature": "(x, y=None)",
       "canonical": "distance",
@@ -297,6 +367,13 @@
       "name": "end_fill",
       "signature": "()",
       "canonical": "end_fill",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "Turtle",
+      "name": "end_poly",
+      "signature": "()",
+      "canonical": "end_poly",
       "fixtureFamily": null
     },
     {
@@ -329,9 +406,37 @@
     },
     {
       "owner": "Turtle",
+      "name": "get_poly",
+      "signature": "()",
+      "canonical": "get_poly",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "Turtle",
+      "name": "get_shapepoly",
+      "signature": "()",
+      "canonical": "get_shapepoly",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "Turtle",
+      "name": "getpen",
+      "signature": "()",
+      "canonical": "getturtle",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "Turtle",
       "name": "getscreen",
       "signature": "()",
       "canonical": "getscreen",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "Turtle",
+      "name": "getturtle",
+      "signature": "()",
+      "canonical": "getturtle",
       "fixtureFamily": null
     },
     {
@@ -427,6 +532,13 @@
     },
     {
       "owner": "Turtle",
+      "name": "pen",
+      "signature": "(pen=None, **pendict)",
+      "canonical": "pen",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "Turtle",
       "name": "pencolor",
       "signature": "(*args)",
       "canonical": "pencolor",
@@ -476,9 +588,23 @@
     },
     {
       "owner": "Turtle",
+      "name": "radians",
+      "signature": "()",
+      "canonical": "radians",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "Turtle",
       "name": "reset",
       "signature": "()",
       "canonical": "reset",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "Turtle",
+      "name": "resizemode",
+      "signature": "(rmode=None)",
+      "canonical": "resizemode",
       "fixtureFamily": null
     },
     {
@@ -525,6 +651,13 @@
     },
     {
       "owner": "Turtle",
+      "name": "setundobuffer",
+      "signature": "(size)",
+      "canonical": "setundobuffer",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "Turtle",
       "name": "setx",
       "signature": "(x)",
       "canonical": "setx",
@@ -549,6 +682,20 @@
       "name": "shapesize",
       "signature": "(stretch_wid=None, stretch_len=None, outline=None)",
       "canonical": "shapesize",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "Turtle",
+      "name": "shapetransform",
+      "signature": "(t11=None, t12=None, t21=None, t22=None)",
+      "canonical": "shapetransform",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "Turtle",
+      "name": "shearfactor",
+      "signature": "(shear=None)",
+      "canonical": "shearfactor",
       "fixtureFamily": null
     },
     {
@@ -581,6 +728,27 @@
     },
     {
       "owner": "Turtle",
+      "name": "teleport",
+      "signature": "(x=None, y=None, *, fill_gap: bool = False) -> None",
+      "canonical": "teleport",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "Turtle",
+      "name": "tilt",
+      "signature": "(angle)",
+      "canonical": "tilt",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "Turtle",
+      "name": "tiltangle",
+      "signature": "(angle=None)",
+      "canonical": "tiltangle",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "Turtle",
       "name": "towards",
       "signature": "(x, y=None)",
       "canonical": "towards",
@@ -591,6 +759,20 @@
       "name": "turtlesize",
       "signature": "(stretch_wid=None, stretch_len=None, outline=None)",
       "canonical": "shapesize",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "Turtle",
+      "name": "undo",
+      "signature": "()",
+      "canonical": "undo",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "Turtle",
+      "name": "undobufferentries",
+      "signature": "()",
+      "canonical": "undobufferentries",
       "fixtureFamily": null
     },
     {
@@ -701,6 +883,14 @@
     },
     {
       "owner": "turtle",
+      "name": "getcanvas",
+      "signature": "()",
+      "canonical": "getcanvas",
+      "receiver": "Screen",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "turtle",
       "name": "getshapes",
       "signature": "()",
       "canonical": "getshapes",
@@ -720,6 +910,30 @@
       "name": "mainloop",
       "signature": "()",
       "canonical": "mainloop",
+      "receiver": "Screen",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "turtle",
+      "name": "mode",
+      "signature": "(mode=None)",
+      "canonical": "mode",
+      "receiver": "Screen",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "turtle",
+      "name": "no_animation",
+      "signature": "()",
+      "canonical": "no_animation",
+      "receiver": "Screen",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "turtle",
+      "name": "numinput",
+      "signature": "(title, prompt, default=None, minval=None, maxval=None)",
+      "canonical": "numinput",
       "receiver": "Screen",
       "fixtureFamily": null
     },
@@ -781,9 +995,41 @@
     },
     {
       "owner": "turtle",
+      "name": "screensize",
+      "signature": "(canvwidth=None, canvheight=None, bg=None)",
+      "canonical": "screensize",
+      "receiver": "Screen",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "turtle",
+      "name": "save",
+      "signature": "(filename, *, overwrite=False)",
+      "canonical": "save",
+      "receiver": "Screen",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "turtle",
       "name": "setup",
       "signature": "(width=0.5, height=0.75, startx=None, starty=None)",
       "canonical": "setup",
+      "receiver": "Screen",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "turtle",
+      "name": "setworldcoordinates",
+      "signature": "(llx, lly, urx, ury)",
+      "canonical": "setworldcoordinates",
+      "receiver": "Screen",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "turtle",
+      "name": "textinput",
+      "signature": "(title, prompt)",
+      "canonical": "textinput",
       "receiver": "Screen",
       "fixtureFamily": null
     },
@@ -861,6 +1107,14 @@
     },
     {
       "owner": "turtle",
+      "name": "begin_poly",
+      "signature": "()",
+      "canonical": "begin_poly",
+      "receiver": "Turtle",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "turtle",
       "name": "bk",
       "signature": "(distance)",
       "canonical": "back",
@@ -917,6 +1171,14 @@
     },
     {
       "owner": "turtle",
+      "name": "degrees",
+      "signature": "(fullcircle=360.0)",
+      "canonical": "degrees",
+      "receiver": "Turtle",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "turtle",
       "name": "distance",
       "signature": "(x, y=None)",
       "canonical": "distance",
@@ -944,6 +1206,14 @@
       "name": "end_fill",
       "signature": "()",
       "canonical": "end_fill",
+      "receiver": "Turtle",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "turtle",
+      "name": "end_poly",
+      "signature": "()",
+      "canonical": "end_poly",
       "receiver": "Turtle",
       "fixtureFamily": null
     },
@@ -981,9 +1251,41 @@
     },
     {
       "owner": "turtle",
+      "name": "get_poly",
+      "signature": "()",
+      "canonical": "get_poly",
+      "receiver": "Turtle",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "turtle",
+      "name": "getpen",
+      "signature": "()",
+      "canonical": "getturtle",
+      "receiver": "Turtle",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "turtle",
       "name": "getscreen",
       "signature": "()",
       "canonical": "getscreen",
+      "receiver": "Turtle",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "turtle",
+      "name": "get_shapepoly",
+      "signature": "()",
+      "canonical": "get_shapepoly",
+      "receiver": "Turtle",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "turtle",
+      "name": "getturtle",
+      "signature": "()",
+      "canonical": "getturtle",
       "receiver": "Turtle",
       "fixtureFamily": null
     },
@@ -1093,6 +1395,14 @@
     },
     {
       "owner": "turtle",
+      "name": "pen",
+      "signature": "(pen=None, **pendict)",
+      "canonical": "pen",
+      "receiver": "Turtle",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "turtle",
       "name": "pencolor",
       "signature": "(*args)",
       "canonical": "pencolor",
@@ -1149,6 +1459,14 @@
     },
     {
       "owner": "turtle",
+      "name": "radians",
+      "signature": "()",
+      "canonical": "radians",
+      "receiver": "Turtle",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "turtle",
       "name": "right",
       "signature": "(angle)",
       "canonical": "right",
@@ -1160,6 +1478,14 @@
       "name": "reset",
       "signature": "()",
       "canonical": "reset",
+      "receiver": "Turtle",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "turtle",
+      "name": "resizemode",
+      "signature": "(rmode=None)",
+      "canonical": "resizemode",
       "receiver": "Turtle",
       "fixtureFamily": null
     },
@@ -1205,6 +1531,14 @@
     },
     {
       "owner": "turtle",
+      "name": "setundobuffer",
+      "signature": "(size)",
+      "canonical": "setundobuffer",
+      "receiver": "Turtle",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "turtle",
       "name": "setx",
       "signature": "(x)",
       "canonical": "setx",
@@ -1232,6 +1566,22 @@
       "name": "shapesize",
       "signature": "(stretch_wid=None, stretch_len=None, outline=None)",
       "canonical": "shapesize",
+      "receiver": "Turtle",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "turtle",
+      "name": "shapetransform",
+      "signature": "(t11=None, t12=None, t21=None, t22=None)",
+      "canonical": "shapetransform",
+      "receiver": "Turtle",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "turtle",
+      "name": "shearfactor",
+      "signature": "(shear=None)",
+      "canonical": "shearfactor",
       "receiver": "Turtle",
       "fixtureFamily": null
     },
@@ -1269,6 +1619,30 @@
     },
     {
       "owner": "turtle",
+      "name": "teleport",
+      "signature": "(x=None, y=None, *, fill_gap: bool = False) -> None",
+      "canonical": "teleport",
+      "receiver": "Turtle",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "turtle",
+      "name": "tilt",
+      "signature": "(angle)",
+      "canonical": "tilt",
+      "receiver": "Turtle",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "turtle",
+      "name": "tiltangle",
+      "signature": "(angle=None)",
+      "canonical": "tiltangle",
+      "receiver": "Turtle",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "turtle",
       "name": "towards",
       "signature": "(x, y=None)",
       "canonical": "towards",
@@ -1280,6 +1654,22 @@
       "name": "turtlesize",
       "signature": "(stretch_wid=None, stretch_len=None, outline=None)",
       "canonical": "shapesize",
+      "receiver": "Turtle",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "turtle",
+      "name": "undo",
+      "signature": "()",
+      "canonical": "undo",
+      "receiver": "Turtle",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "turtle",
+      "name": "undobufferentries",
+      "signature": "()",
+      "canonical": "undobufferentries",
       "receiver": "Turtle",
       "fixtureFamily": null
     },

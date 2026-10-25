@@ -86,7 +86,11 @@ export function PythonEditorPreview() {
           pushLog({
             source: 'sz-preview',
             kind: 'runtimeError',
-            parts: [`${event.path}:${event.line}:${event.column}: ${event.message}`],
+            parts: [
+              event.line > 0
+                ? `Linha ${event.line} de ${event.path}: ${event.message}`
+                : `${event.path}: ${event.message}`,
+            ],
             error: { message: event.message, stack: event.traceback },
             timestamp: Date.now(),
           })

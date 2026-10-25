@@ -68,11 +68,19 @@ import {
 import type { StudioProjectFactoryContext } from '../core/projectFactory'
 import { withoutProjectPublication } from '../core/projectPublication'
 import type { ProAssistanceMeta } from '../core/proProject'
+import {
+  projectUsesRaylib,
+  projectUsesRaylib3D,
+  raylibPlacedAsset,
+  raylibRelocatedAssets,
+  raylibRenamedAsset,
+} from '../core/raylibMediaPaths'
 import type { StudioPersistenceAdapter } from '../persistence/types'
 import {
   emptyPythonWorkspaceState,
   preservePythonWorkspaceDraft,
 } from '../python/blocks/workspaceDraft'
+import { hasTurtleExtension } from '../runtime/python/turtle/contract'
 import { prepareEditableCloudProject } from './editableCloudProject'
 import { prepareEditableStudioProject } from './editableProjectValidation'
 import {
@@ -320,11 +328,11 @@ interface ProjectStatePatch {
 export interface NewAssetInput {
   name: string
   dataUrl: string
-  /** `'image'` (padrão), `'audio'` (som/música), `'model3d'` (.glb) ou
-   *  `'environment3d'` (céu .hdr). */
-  kind?: 'image' | 'audio' | 'model3d' | 'environment3d'
-  /** Nome do arquivo original — OBRIGATÓRIO nos 3D (a validação cruza a
-   *  extensão com o MIME e a assinatura binária). */
+  /** `'image'` (padrão), `'audio'` (som/música), `'model3d'` (.glb),
+   *  `'environment3d'` (céu .hdr) ou `'font'` (TTF/OTF, só no Raylib). */
+  kind?: ProjectAsset['kind']
+  /** Nome do arquivo original — OBRIGATÓRIO nos 3D e nas fontes (a validação cruza
+   *  a extensão com o MIME e a assinatura binária). */
   originalFileName?: string
   width?: number
   height?: number
@@ -337,7 +345,7 @@ export interface NewAssetInput {
   pintaImage?: unknown
   /** Attribution travels with the bytes through native/web export and publication. */
   license?: ProjectAsset['license']
-  /** Pygame Zero only: the child chose a short sound (`sounds/`) or a song (`music/`). */
+  /** Pygame Zero and Raylib: the child chose a short sound (`sounds/`) or a song (`music/`). */
   pgzeroAudio?: PgzeroAudioRole
   /** Metadados do Pinta (animações/tiles/mapa) — saneados no store antes de guardar. */
   sprite?: unknown
@@ -1098,8 +1106,16 @@ export function createProjectStore(
         if (get().editingAccess !== 'author') return 'Este projeto está em observação.'
         const { refinePythonProjectDocument } = await import('./pythonProjectValidation')
         // Pygame Zero searches images/, sounds/ and music/: materials added before it move there.
-        const relocated =
-          !projectUsesPgzero(expected) && projectUsesPgzero({ installedExtensions: extensions })
+        // Raylib opens files from images/, sounds/, music/, fonts/ (and models/ in 3D).
+        const raylibNext = projectUsesRaylib({ installedExtensions: extensions })
+        const raylibChanged =
+          raylibNext &&
+          (!projectUsesRaylib(expected) ||
+            projectUsesRaylib3D(expected) !==
+              projectUsesRaylib3D({ installedExtensions: extensions }))
+        const relocated = raylibChanged
+          ? raylibRelocatedAssets({ ...expected, installedExtensions: extensions })
+          : !projectUsesPgzero(expected) && projectUsesPgzero({ installedExtensions: extensions })
             ? pgzeroRelocatedAssets(expected)
             : undefined
         if (relocated && 'error' in relocated) return relocated.error
@@ -1262,13 +1278,20 @@ export function createProjectStore(
           ? STUDIO_PYTHON_MATERIAL_DATA_LIMITS
           : PROJECT_ASSET_LIMITS
         const kind: ProjectAsset['kind'] =
-          input.kind === 'audio' || input.kind === 'model3d' || input.kind === 'environment3d'
+          input.kind === 'audio' ||
+          input.kind === 'model3d' ||
+          input.kind === 'environment3d' ||
+          input.kind === 'font'
             ? input.kind
             : 'image'
         const isImage = kind === 'image'
         const is3D = kind === 'model3d' || kind === 'environment3d'
-        if (isPythonProject(p) && is3D)
+        // Raylib decides its 3D files itself (models in Raylib 3D, the reason otherwise);
+        // every other Python environment takes images and sounds.
+        if (isPythonProject(p) && is3D && !projectUsesRaylib(p))
           return 'Este ambiente Python aceita imagens e sons. Os recursos 3D ainda não estão disponíveis.'
+        if (kind === 'font' && !(isPythonProject(p) && projectUsesRaylib(p)))
+          return 'Fontes TTF e OTF entram nos projetos com a extensão Raylib.'
         const noun =
           kind === 'audio'
             ? 'som'
@@ -1276,14 +1299,18 @@ export function createProjectStore(
               ? 'modelo 3D'
               : kind === 'environment3d'
                 ? 'céu (.hdr)'
-                : 'imagem'
+                : kind === 'font'
+                  ? 'fonte'
+                  : 'imagem'
         const name = normalizeAssetName(input.name)
         if (!name) return 'Use um nome simples (letras, números e hífen).'
         // A UI já validou; aqui revalidamos o teto e o esquema do data: URL. Nos 3D
         // o nome do arquivo faz parte do contrato (extensão × MIME × assinatura
         // binária) — sem ele, ou com bytes que não batem, recusa na porta.
         const fileName3D =
-          is3D && typeof input.originalFileName === 'string' ? input.originalFileName : undefined
+          (is3D || kind === 'font') && typeof input.originalFileName === 'string'
+            ? input.originalFileName
+            : undefined
         if (!isValidAssetDataUrl(input.dataUrl, kind, fileName3D, dataLimits)) {
           return `${noun} inválido ou grande demais.`
         }
@@ -1342,7 +1369,13 @@ export function createProjectStore(
         if (isPythonProject(p)) {
           const mime = input.dataUrl.slice(5).split(/[;,]/, 1)[0]!.toLowerCase()
           const extension = pythonAssetFileExtension(mime, kind)
-          if (projectUsesPgzero(p)) {
+          if (projectUsesRaylib(p)) {
+            // raylib opens a file by its path: `images/nave.png` next to the main file.
+            const placed = raylibPlacedAsset(p, asset, extension, input.pgzeroAudio)
+            if ('error' in placed) return placed.error
+            asset.proPath = placed.asset.proPath
+            asset.name = placed.asset.name
+          } else if (projectUsesPgzero(p)) {
             // Pygame Zero finds media by name in the folders next to the main file.
             const placed = pgzeroMediaPath({
               entrypoint: p.python.entrypoint,
@@ -1363,9 +1396,13 @@ export function createProjectStore(
               asset.height = size.height
             }
           } else {
-            // Turtle reads PNG/GIF only: a vector recipe never belongs to it.
-            if (pintaImage?.output.mime === 'image/svg+xml')
-              return 'O Turtle abre só imagens PNG ou GIF. Traga este desenho do Pinta como PNG.'
+            // Turtle opens PNG/GIF as images; a vector from the Pinta becomes a turtle shape
+            // through formas_do_pinta.registrar('assets/nome.svg'). Without Turtle, no use.
+            if (
+              pintaImage?.output.mime === 'image/svg+xml' &&
+              !hasTurtleExtension(p.installedExtensions)
+            )
+              return 'Este projeto abre só imagens PNG ou GIF. Traga este desenho do Pinta como PNG.'
             asset.proPath = `assets/${name}.${extension}`
           }
           if (!isStudioPythonAssetPath(asset.proPath))
@@ -1565,9 +1602,11 @@ export function createProjectStore(
           return 'Já existe uma imagem com esse nome.'
         }
         if (target.name === name) return null
-        if (isPythonProject(p) && projectUsesPgzero(p)) {
-          // Pygame Zero finds the file by name: the file follows the new name.
-          const renamed = pgzeroRenamedAsset(p, target, name)
+        if (isPythonProject(p) && (projectUsesPgzero(p) || projectUsesRaylib(p))) {
+          // Pygame Zero finds the file by name and raylib by path: the file follows the name.
+          const renamed = projectUsesRaylib(p)
+            ? raylibRenamedAsset(p, target, name)
+            : pgzeroRenamedAsset(p, target, name)
           if ('error' in renamed) return renamed.error
           const cover =
             p.coverAssetName === target.name ? { coverAssetName: renamed.asset.name } : {}

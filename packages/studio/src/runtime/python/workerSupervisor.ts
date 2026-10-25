@@ -13,6 +13,7 @@ import {
   verifyStudioPythonMissionObservation,
 } from '@sistemazero/core/studio/python-mission-observation'
 import type { StudioRuntimeInput } from '../types'
+import { summarizePythonError } from './errorSummary'
 import type { PythonRuntimePayload } from './frameProtocol'
 import {
   PYTHON_GRAPHICS_REPLY_LIMITS,
@@ -49,6 +50,8 @@ export function createPythonWorkerSupervisor(options: {
   /** Releases bootstrap URLs and other frame-owned resources, never learner cleanup. */
   onRelease(): void
   audio?(request: string): Promise<string>
+  /** A file the program saved (savedFiles.ts); without it the files only live in this run. */
+  onSavedFile?(path: string, bytes: Uint8Array<ArrayBuffer>): void
   graphics?(
     request: string,
     images: { id: number; bytes: Uint8Array<ArrayBuffer> }[],
@@ -94,6 +97,7 @@ export function createPythonWorkerSupervisor(options: {
   )
 
   const terminal = () => phase === 'failed' || phase === 'stopped'
+  let savedFlushed: (() => void) | undefined
   function release() {
     if (released) return
     released = true
@@ -285,6 +289,18 @@ export function createPythonWorkerSupervisor(options: {
           )
         return
       }
+      case 'saved-flushed':
+        savedFlushed?.()
+        return
+      case 'saved-file':
+        // The worker sends the last saves a moment later, so a finished program still counts.
+        if (phase !== 'running' && phase !== 'waiting-input' && phase !== 'completed') break
+        try {
+          options.onSavedFile?.(value.path, value.bytes)
+        } catch {
+          fail('runtime-unavailable', 'Não foi possível guardar o arquivo do programa.')
+        }
+        return
       case 'failed':
         fail('runtime-unavailable', value.message)
         return
@@ -368,15 +384,18 @@ export function createPythonWorkerSupervisor(options: {
             state('running')
           } else state('completed')
         } else {
-          if (value.traceback)
+          if (value.traceback) {
+            // The line of the child's own code and the kind of error, read from the traceback.
+            const summary = summarizePythonError(value.traceback, value.text)
             options.emit({
               type: 'diagnostic',
-              path: options.snapshot.configuration.python.entrypoint,
-              line: 0,
+              path: summary.path ?? options.snapshot.configuration.python.entrypoint,
+              line: summary.line,
               column: 0,
-              message: value.text,
+              message: summary.message,
               traceback: value.traceback,
             })
+          }
           fail('program-error', value.text)
         }
         return
@@ -505,6 +524,24 @@ export function createPythonWorkerSupervisor(options: {
         fail('runtime-unavailable', 'Não foi possível enviar a resposta.')
         throw error
       }
+    },
+    /** Asks the worker for the saved files still in its queue, waiting at most `ms`. */
+    flushSaved(ms: number): Promise<void> {
+      if (terminal() || phase === 'booting' || phase === 'preparing') return Promise.resolve()
+      return new Promise<void>((resolve) => {
+        const done = () => {
+          clearTimeout(timer)
+          if (savedFlushed === done) savedFlushed = undefined
+          resolve()
+        }
+        const timer = setTimeout(done, ms)
+        savedFlushed = done
+        try {
+          send({ type: 'flush-saved' })
+        } catch {
+          done()
+        }
+      })
     },
     stop() {
       if (phase === 'stopped') return

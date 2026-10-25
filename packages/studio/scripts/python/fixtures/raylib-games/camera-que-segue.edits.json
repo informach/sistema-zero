@@ -1,0 +1,34 @@
+[
+  {
+    "label": "tamanho do mundo",
+    "path": {
+      "body": 4,
+      "inputs": [
+        {
+          "name": "VALUE",
+          "index": 0
+        }
+      ]
+    },
+    "codecId": "sz_py_integer",
+    "field": "NUMBER",
+    "before": "1200",
+    "after": "1300"
+  },
+  {
+    "label": "velocidade",
+    "path": {
+      "body": 5,
+      "inputs": [
+        {
+          "name": "VALUE",
+          "index": 0
+        }
+      ]
+    },
+    "codecId": "sz_py_integer",
+    "field": "NUMBER",
+    "before": "320",
+    "after": "340"
+  }
+]

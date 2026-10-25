@@ -12,7 +12,10 @@ export function pythonCalleeName(call: PythonNode): string | undefined {
   if (func.kind === 'Attribute' && typeof func.fields.attr === 'string') return func.fields.attr
 }
 
-/** The specific index name of a node: callee of a call or command, name of a definition. */
+/**
+ * The specific index name of a node: callee of a call or command, name of a definition,
+ * attribute name, or the name itself.
+ */
 function nodeName(value: PythonNode): string | undefined {
   if (value.kind === 'Call') return pythonCalleeName(value)
   if (value.kind === 'Expr' && isNode(value.fields.value))
@@ -23,6 +26,8 @@ function nodeName(value: PythonNode): string | undefined {
   )
     return value.fields.name
   if (value.kind === 'Attribute' && typeof value.fields.attr === 'string') return value.fields.attr
+  // A constant an extension names (RED, KEY_SPACE): only codecs that declare it are added.
+  if (value.kind === 'Name' && typeof value.fields.id === 'string') return value.fields.id
 }
 
 export interface PythonCodecIndex {

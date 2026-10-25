@@ -188,7 +188,10 @@ export async function reconcileDrawingsFromRestoredProject(
   const personalIds = nextAssets
     .filter(
       (asset): asset is ProjectAsset =>
-        !!asset && asset.kind !== 'audio' && asset.pintaImage === undefined,
+        !!asset &&
+        asset.kind !== 'audio' &&
+        asset.kind !== 'font' &&
+        asset.pintaImage === undefined,
     )
     .map((asset) => personalIdOf(asset))
     .filter((id): id is string => id !== null)
@@ -200,7 +203,8 @@ export async function reconcileDrawingsFromRestoredProject(
     const id = personalIdOf(asset)
     // A captured frame is deliberately different from the canonical spritesheet.
     // It must retain the editable drawing identity, never become a personal copy.
-    if (!id || asset.kind === 'audio' || asset.pintaImage !== undefined) continue
+    if (!id || asset.kind === 'audio' || asset.kind === 'font' || asset.pintaImage !== undefined)
+      continue
     try {
       const drawing = drawings.get(id) ?? null
       if (!drawing) continue

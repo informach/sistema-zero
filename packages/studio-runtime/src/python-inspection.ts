@@ -12,6 +12,36 @@ import {
 import { pythonFrameContentSecurityPolicy } from '@sistemazero/core/studio/python-runtime-policy'
 import { verifiedPythonFileStream } from './python-file-stream'
 
+const failurePhases = new WeakMap<object, string>()
+function recordFailurePhase(error: unknown, phase: string) {
+  if (error && typeof error === 'object' && !failurePhases.has(error))
+    failurePhases.set(error, phase)
+}
+/** Only fixed internal stages; never reads arbitrary error messages or serializes errors. */
+export function pythonInspectionFailurePhase(error: unknown): string | undefined {
+  return error && typeof error === 'object' ? failurePhases.get(error) : undefined
+}
+export function throwPythonInspectionFailure(
+  error: unknown,
+  phase:
+    | 'inspect-options'
+    | 'inspect-execute'
+    | 'inspect-report'
+    | 'mission-inspection'
+    | 'mission-options'
+    | 'mission-execute'
+    | 'mission-report'
+    | 'mission-resources'
+    | 'mission-launch'
+    | 'mission-navigation'
+    | 'mission-startup-first'
+    | 'mission-startup-next'
+    | 'mission-observe',
+): never {
+  recordFailurePhase(error, phase)
+  throw error
+}
+
 /** Minimal SDK port. A factory must create a new container owned exclusively by this job. */
 export interface PythonInspectionSandbox {
   mkdir(path: string, options: { recursive: true }): Promise<unknown>
@@ -105,6 +135,29 @@ export async function withIsolatedPythonProject<Result>(
     void destroy().catch(() => {})
   }
   signal.addEventListener('abort', abort, { once: true })
+  const cleanup = async () => {
+    let cleanupTimer: ReturnType<typeof setTimeout> | undefined
+    try {
+      // A stuck SDK cannot keep the job open indefinitely or turn a late report into proof.
+      await Promise.race([
+        destroy(),
+        new Promise<never>((_resolve, reject) => {
+          cleanupTimer = setTimeout(
+            () =>
+              reject(new Error('Não foi possível confirmar o encerramento da inspeção Python.')),
+            5000,
+          )
+        }),
+      ])
+      check()
+    } catch (error) {
+      recordFailurePhase(error, 'cleanup')
+      throw error
+    } finally {
+      clearTimeout(cleanupTimer)
+      signal.removeEventListener('abort', abort)
+    }
+  }
   const started = Date.now()
   let phase = 'mkdir-runtime'
   let fileIndex = 0
@@ -188,6 +241,7 @@ export async function withIsolatedPythonProject<Result>(
     check()
     return result
   } catch (error) {
+    recordFailurePhase(error, phase)
     // Deliberately exclude paths, source, command output and arbitrary error text.
     console.error('[studio-python] isolated phase failed', {
       phase,
@@ -198,25 +252,7 @@ export async function withIsolatedPythonProject<Result>(
     })
     throw error
   } finally {
-    let cleanupTimer: ReturnType<typeof setTimeout> | undefined
-    try {
-      // Cleanup has a small, explicit grace period even after cancellation. A stuck
-      // SDK cannot keep the job open indefinitely or turn a late report into proof.
-      await Promise.race([
-        destroy(),
-        new Promise<never>((_resolve, reject) => {
-          cleanupTimer = setTimeout(
-            () =>
-              reject(new Error('Não foi possível confirmar o encerramento da inspeção Python.')),
-            5000,
-          )
-        }),
-      ])
-      check()
-    } finally {
-      clearTimeout(cleanupTimer)
-      signal.removeEventListener('abort', abort)
-    }
+    await cleanup()
   }
 }
 
@@ -241,49 +277,73 @@ export async function inspectPreparedPythonProject(
   structureRequested: boolean,
 ) {
   const { sandbox, cwd, snapshot, step, check } = project
-  check()
-  await step(
-    sandbox.writeFile(
-      `${cwd}/python-inspection-options.json`,
-      JSON.stringify({
-        ...preparedPythonBrowserOptions(project),
-        structure: structureRequested,
+  let operation: 'inspect-options' | 'inspect-execute' | 'inspect-report' = 'inspect-options'
+  try {
+    check()
+    await step(
+      sandbox.writeFile(
+        `${cwd}/python-inspection-options.json`,
+        JSON.stringify({
+          ...preparedPythonBrowserOptions(project),
+          structure: structureRequested,
+        }),
+        { encoding: 'utf-8' },
+      ),
+    )
+    check()
+    const processFailure = (stderr: unknown) => {
+      const phase =
+        typeof stderr === 'string'
+          ? /STUDIO_PYTHON_INSPECTION_PHASE:(options|resources|launch|context|navigation|wait|result|write-report)\b/.exec(
+              stderr,
+            )?.[1]
+          : undefined
+      console.error('[studio-python] inspection process failed', { phase: phase ?? 'unknown' })
+      return phase ?? 'unknown'
+    }
+    let executed: Awaited<ReturnType<PythonInspectionSandbox['exec']>>
+    operation = 'inspect-execute'
+    try {
+      executed = await step(
+        sandbox.exec('node /opt/sz-runtime/python-inspect.mjs', {
+          cwd,
+          timeout: 115_000,
+        }),
+      )
+    } catch (error) {
+      const phase = processFailure(
+        error && typeof error === 'object' && 'stderr' in error ? error.stderr : undefined,
+      )
+      recordFailurePhase(error, `inspect-${phase}`)
+      throw error
+    }
+    check()
+    if (!executed.success) {
+      const phase = processFailure(executed.stderr)
+      const error = new Error('A inspeção Python isolada não pôde ser concluída.')
+      recordFailurePhase(error, `inspect-${phase}`)
+      throw error
+    }
+    operation = 'inspect-report'
+    const result = await step(
+      sandbox.readFile(`${cwd}/python-inspection-result.json`, {
+        encoding: 'utf-8',
       }),
-      { encoding: 'utf-8' },
-    ),
-  )
-  check()
-  const executed = await step(
-    sandbox.exec('node /opt/sz-runtime/python-inspect.mjs', {
-      cwd,
-      timeout: 115_000,
-    }),
-  )
-  check()
-  if (!executed.success) {
-    const phase =
-      /STUDIO_PYTHON_INSPECTION_PHASE:(options|resources|launch|context|navigation|wait|result|write-report)\b/.exec(
-        executed.stderr,
-      )?.[1]
-    console.error('[studio-python] inspection process failed', { phase: phase ?? 'unknown' })
-    throw new Error('A inspeção Python isolada não pôde ser concluída.')
+    )
+    check()
+    if (
+      new TextEncoder().encode(result.content).byteLength >
+      STUDIO_PYTHON_INSPECTION_LIMITS.reportBytes
+    )
+      throw new Error('O relatório de inspeção Python excede o limite.')
+    const report = await verifyStudioPythonInspectionReport(JSON.parse(result.content), snapshot)
+    if (structureRequested && report.status === 'passed')
+      await verifyStudioPythonStructureEvidence(report, snapshot)
+    check()
+    return report
+  } catch (error) {
+    throwPythonInspectionFailure(error, operation)
   }
-  const result = await step(
-    sandbox.readFile(`${cwd}/python-inspection-result.json`, {
-      encoding: 'utf-8',
-    }),
-  )
-  check()
-  if (
-    new TextEncoder().encode(result.content).byteLength >
-    STUDIO_PYTHON_INSPECTION_LIMITS.reportBytes
-  )
-    throw new Error('O relatório de inspeção Python excede o limite.')
-  const report = await verifyStudioPythonInspectionReport(JSON.parse(result.content), snapshot)
-  if (structureRequested && report.status === 'passed')
-    await verifyStudioPythonStructureEvidence(report, snapshot)
-  check()
-  return report
 }
 
 /** Explicit compilation or structural inspection owns its complete isolated lifecycle. */

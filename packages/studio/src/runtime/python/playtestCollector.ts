@@ -123,7 +123,7 @@ export function createPythonPlaytestCollector(recipeInput: unknown, retire: () =
         throw new Error('A observação não está disponível nesta execução.')
       const current = session
       const expected = { ...identity }
-      const result = await current.observePythonMission(readStudioPythonMissionProbe(raw))
+      const result = await session.observePythonMission(readStudioPythonMissionProbe(raw))
       if (
         session !== current ||
         !identity ||

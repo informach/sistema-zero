@@ -58,8 +58,11 @@ export type PythonApiCallee =
       /** Procedural names when they differ from the method names (Screen.clear ↔ clearscreen). */
       moduleNames?: readonly string[]
     }
-  /** A fixed dotted path from a global name: `print`, `screen.draw.text`, `keyboard`… */
-  | { kind: 'path'; path: readonly string[]; builtin?: string }
+  /**
+   * A fixed dotted path from a global name: `print`, `screen.draw.text`, `keyboard`… With
+   * `module`, the first name is that module, imported as is (`import pygame`).
+   */
+  | { kind: 'path'; path: readonly string[]; builtin?: string; module?: string }
 
 export interface PythonApiSpec {
   id: string
@@ -75,6 +78,7 @@ export interface PythonApiSpec {
   /** `*args`: extra positional values after the fixed positional parameters. */
   variadic?: { label: string; minimum?: number; defaults?(): PythonNode[] }
   starter?: boolean
+  replacesStarters?: readonly string[]
   hidden?: boolean
   dependencies?: readonly string[]
   requiredRuntimeFeatures?: readonly StudioPythonRuntimeFeature[]
@@ -420,7 +424,9 @@ export function pythonApiCallCodec(spec: PythonApiSpec): PythonBlockCodec {
     if (callee.kind === 'path')
       return callee.builtin
         ? { root: callee.path[0]!, builtin: callee.builtin }
-        : { root: callee.path[0]! }
+        : callee.module
+          ? { root: callee.path[0]!, module: callee.module }
+          : { root: callee.path[0]! }
     const module = callee.kind === 'module' ? callee.module : callee.module
     if (isName(func))
       return module
@@ -482,6 +488,7 @@ export function pythonApiCallCodec(spec: PythonApiSpec): PythonBlockCodec {
       ? { requiredRuntimeFeatures: spec.requiredRuntimeFeatures }
       : {}),
     ...(spec.starter ? { starter: true } : {}),
+    ...(spec.replacesStarters ? { replacesStarters: spec.replacesStarters } : {}),
     ...(spec.hidden ? { hidden: true } : {}),
     ...(callee.kind === 'method' && callee.receiver.kinds
       ? { receiverKinds: callee.receiver.kinds }

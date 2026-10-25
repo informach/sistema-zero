@@ -3,6 +3,7 @@ import { lstat, mkdir, mkdtemp, readFile, realpath, rm, writeFile } from 'node:f
 import { tmpdir } from 'node:os'
 import { dirname, join, resolve, sep } from 'node:path'
 import { canonicalJson, sha256Hex } from '@sistemazero/core/creations'
+import { TURTLE_MODULE_FILES } from '../../studio/src/runtime/python/turtle/contract'
 import { frameFiles } from '../promotion-worker/protocol'
 import {
   prepareOperationalPromotion,
@@ -40,10 +41,7 @@ async function fixture() {
     'analysis-frame.mjs',
     'turtle-renderer.mjs',
     'turtle-protocol.mjs',
-    'turtle/turtle.py',
-    'turtle/_sz_turtle_backend.py',
-    'turtle/_sz_turtle_colors.py',
-    'turtle/_sz_turtle_limits.py',
+    ...TURTLE_MODULE_FILES.map((name) => `turtle/${name}`),
   ])
     storage.contents.set(path, new TextEncoder().encode(`synthetic-contract:${path}`))
   const distribution = {

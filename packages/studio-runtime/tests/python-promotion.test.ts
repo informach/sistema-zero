@@ -13,6 +13,7 @@ import {
   prepareStudioAuthoringOptions,
   studioAuthoringChoices,
 } from '../../studio/src/core/authoringOptions'
+import { TURTLE_MODULE_FILES } from '../../studio/src/runtime/python/turtle/contract'
 import { runPythonPromotionCommand } from '../scripts/promote-python-runtime'
 import {
   type PythonPromotionInput,
@@ -53,10 +54,7 @@ async function fixture(
     'analysis-frame.mjs',
     'turtle-renderer.mjs',
     'turtle-protocol.mjs',
-    'turtle/turtle.py',
-    'turtle/_sz_turtle_backend.py',
-    'turtle/_sz_turtle_colors.py',
-    'turtle/_sz_turtle_limits.py',
+    ...TURTLE_MODULE_FILES.map((name) => `turtle/${name}`),
   ])
     storage.contents.set(path, new TextEncoder().encode(`fixture:${path}`))
   const distribution = {
@@ -154,7 +152,12 @@ test('repeating the current deployment preserves its exact approved policy and p
   const previous = await preparePythonPromotion(f.input)
   const policy = previous.configuration.members.releases[0]!
   // One block per Turtle concept since the 2026-10 palette review (aliases and spellings share it).
-  expect(policy.blockIds.filter((id) => id.startsWith('sz_py_turtle_'))).toHaveLength(84)
+  expect(
+    policy.blockIds.filter(
+      (id) => id.startsWith('sz_py_turtle_') && id !== 'sz_py_turtle_pinta_shape',
+    ),
+  ).toHaveLength(84)
+  expect(policy.blockIds.filter((id) => id === 'sz_py_turtle_pinta_shape')).toHaveLength(1)
   const baseline = structuredClone(previous.configuration)
   const next = await preparePythonPromotion({ ...f.input, baseline })
   expect(next.configuration.members.releases).toEqual(baseline.members.releases)

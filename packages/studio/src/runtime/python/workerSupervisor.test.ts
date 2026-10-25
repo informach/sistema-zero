@@ -38,6 +38,7 @@ async function session(
   onActivityResult?: (requestId: string, feedback: StudioPythonActivityFeedback) => void,
   audio?: (request: string) => Promise<string>,
   onMissionResult?: (requestId: string, observation: StudioPythonMissionObservation) => void,
+  onSavedFile?: (path: string, bytes: Uint8Array<ArrayBuffer>) => void,
 ) {
   const project = documentFixture('python', 'pro')
   project.assets = []
@@ -57,6 +58,7 @@ async function session(
     onRelease: () => releases++,
     ...(onMissionResult ? { mission: true as const, onMissionResult } : {}),
     ...(audio ? { audio } : {}),
+    ...(onSavedFile ? { onSavedFile } : {}),
     ...(graphics ? { graphics } : {}),
     ...(onActivityResult
       ? {
@@ -657,4 +659,46 @@ test('revocation while idle activity grading completes suppresses its feedback',
   value.transport.emit({ type: 'activity-result', requestId: 'check', feedback: feedback() })
   expect(value.supervisor.phase).toBe('stopped')
   expect(results).toHaveLength(0)
+})
+
+test('saved files count while the program runs and right after it ends, never before', async () => {
+  const kept: string[] = []
+  const saved = (path: string) => ({ type: 'saved-file', path, bytes: new Uint8Array([1]) })
+  const early = await session(undefined, undefined, undefined, undefined, undefined, (path) =>
+    kept.push(path),
+  )
+  early.boot()
+  early.transport.emit(saved('antes.txt'))
+  expect(early.supervisor.phase).toBe('failed')
+  expect(kept).toEqual([])
+
+  const live = await session(undefined, undefined, undefined, undefined, undefined, (path) =>
+    kept.push(path),
+  )
+  live.boot()
+  live.supervisor.run()
+  live.transport.emit(saved('placar.txt'))
+  live.transport.emit({ type: 'result', requestId: 'entrypoint', ok: true, text: '' })
+  expect(live.supervisor.phase).toBe('completed')
+  // The worker's last saves arrive a moment after the result.
+  live.transport.emit(saved('recorde.txt'))
+  expect(kept).toEqual(['placar.txt', 'recorde.txt'])
+  expect(live.supervisor.phase).toBe('completed')
+})
+
+test('before a stop, the worker is asked for the saves still in its queue, for a moment only', async () => {
+  const live = await session()
+  live.boot()
+  live.supervisor.run()
+  const answered = live.supervisor.flushSaved(1000)
+  expect(live.transport.commands.at(-1)).toEqual({ type: 'flush-saved' })
+  live.transport.emit({ type: 'saved-flushed' })
+  await answered
+  // A worker busy in Python does not answer: the stop goes on after the deadline.
+  const started = performance.now()
+  await live.supervisor.flushSaved(30)
+  expect(performance.now() - started).toBeGreaterThanOrEqual(25)
+  live.supervisor.stop()
+  await live.supervisor.flushSaved(1000)
+  expect(live.transport.commands.filter((value) => value.type === 'flush-saved')).toHaveLength(2)
 })

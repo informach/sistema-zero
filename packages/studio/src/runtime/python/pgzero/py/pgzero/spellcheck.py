@@ -140,15 +140,13 @@ def spellcheck(namespace, result=SpellCheckResult()):
 
     for found, suggestion in compare(funcs, HOOKS):
         result.warn(
-            "Warning: found function named {found}: "
-            "did you mean {suggestion}?",
+            "Aviso: achei a função {found}; você quis dizer {suggestion}?",
             found, suggestion
         )
 
     for found, suggestion in compare(consts, CONSTS):
         result.warn(
-            "Warning: found constant named {found}: "
-            "did you mean {suggestion}?",
+            "Aviso: achei a constante {found}; você quis dizer {suggestion}?",
             found, suggestion
         )
 
@@ -165,13 +163,13 @@ def spellcheck(namespace, result=SpellCheckResult()):
                 suggestions = suggest(param, valid)
                 if suggestions:
                     result.error(
-                        "%s() hook accepts no parameter {found}; "
-                        "did you mean {suggestion}?" % name,
+                        "%s() não recebe o parâmetro {found}; "
+                        "você quis dizer {suggestion}?" % name,
                         param,
                         suggestions[0]
                     )
                 else:
                     result.error(
-                        "%s() hook accepts no parameter {found}" % name,
+                        "%s() não recebe o parâmetro {found}" % name,
                         param, None
                     )

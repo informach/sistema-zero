@@ -283,3 +283,27 @@ test('input queued during Python sleep survives a catchable image error', async 
   expect(await output(page)).toBe('image-input-ready\ncaught TclError\nimage-key\ncontinued\n')
   await page.evaluate(() => globalThis.providerProbe.dispose('turtle'))
 })
+
+test('a Pinta drawing becomes a turtle shape that turns with the turtle', async ({ page }) => {
+  await prepare(page, 'turtlePintaShape')
+  await completed(page)
+  expect(await output(page)).toBe('forma nave 5\n')
+  const frame = page.frames().find((value) => value.url().includes('/frame.html'))!
+  const pixels = await frame.evaluate(() => {
+    const context = document.querySelector('canvas')!.getContext('2d')!
+    const at = (x: number, y: number) => [...context.getImageData(x, y, 1, 1).data]
+    return {
+      // Facing east: the red nose is to the right of the turtle at (-100, 0).
+      eastNose: at(145, 150),
+      // Facing north: the nose is above the turtle at (100, 0), and not to its right.
+      northNose: at(300, 105),
+      northRight: at(345, 150),
+    }
+  })
+  expect(pixels).toEqual({
+    eastNose: [255, 51, 51, 255],
+    northNose: [255, 51, 51, 255],
+    northRight: [255, 255, 255, 255],
+  })
+  await page.evaluate(() => globalThis.providerProbe.dispose('turtle'))
+})

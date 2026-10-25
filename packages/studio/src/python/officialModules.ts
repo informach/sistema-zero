@@ -1,8 +1,21 @@
 import type { PythonProjectDocument } from '../core/editableProject'
 import { PGZERO_EXTENSION } from '../runtime/python/pgzero/contract'
+import { RAYLIB_EXTENSION_IDS } from '../runtime/python/raylib/contract'
 import { TURTLE_EXTENSION } from '../runtime/python/turtle/contract'
 
-const modules = ['random', 'math', 'time', 'turtle', 'pgzero', 'pgzrun', 'sz_audio'] as const
+const modules = [
+  'random',
+  'math',
+  'time',
+  'turtle',
+  'formas_do_pinta',
+  'pgzero',
+  'pgzrun',
+  'pygame',
+  'pyray',
+  'raylib',
+  'sz_audio',
+] as const
 const shadowableModules = ['random', 'math', 'turtle', 'sz_audio'] as const
 export type PythonOfficialModule = (typeof modules)[number]
 
@@ -45,14 +58,20 @@ function shadowedAmong<T extends string>(
 /** A project module wins over the bundled module; never label that call as the official API. */
 export function pythonOfficialModules(project: PythonProjectDocument) {
   const shadowed = new Set<string>(shadowedAmong(project, modules))
+  // formas_do_pinta builds the shape with `import turtle`: the child's own turtle.py would be it.
+  if (shadowed.has('turtle')) shadowed.add('formas_do_pinta')
   return new Set(
     modules.filter(
       (module) =>
         !shadowed.has(module) &&
-        (module !== 'turtle' ||
+        ((module !== 'turtle' && module !== 'formas_do_pinta') ||
           project.installedExtensions.some((extension) => extension.id === TURTLE_EXTENSION.id)) &&
-        ((module !== 'pgzero' && module !== 'pgzrun') ||
-          project.installedExtensions.some((extension) => extension.id === PGZERO_EXTENSION.id)),
+        ((module !== 'pgzero' && module !== 'pgzrun' && module !== 'pygame') ||
+          project.installedExtensions.some((extension) => extension.id === PGZERO_EXTENSION.id)) &&
+        ((module !== 'pyray' && module !== 'raylib') ||
+          project.installedExtensions.some((extension) =>
+            (RAYLIB_EXTENSION_IDS as readonly string[]).includes(extension.id),
+          )),
     ),
   )
 }

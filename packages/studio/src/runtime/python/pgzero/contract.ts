@@ -22,6 +22,11 @@ export const PGZERO_MODULE_FILES = [
   'pgzero/screen.py',
   'pgzero/spellcheck.py',
   'pgzero/tone.py',
+  'pygame/__init__.py',
+  'pygame/draw.py',
+  'pygame/image.py',
+  'pygame/math.py',
+  'pygame/mixer.py',
   'freesansbold.ttf',
 ] as const
 export function hasPgzeroExtension(extensions: readonly { id: string; version: string }[]) {

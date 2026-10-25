@@ -18,7 +18,12 @@ export const PYTHON_CATEGORIES = [
 ] as const
 export type PythonCategory = (typeof PYTHON_CATEGORIES)[number]
 /** Owners of block codecs: the core language or one official Python extension. */
-export type PythonBlockOwner = 'programming' | 'python-turtle' | 'python-pgzero'
+export type PythonBlockOwner =
+  | 'programming'
+  | 'python-turtle'
+  | 'python-pgzero'
+  | 'python-raylib-2d'
+  | 'python-raylib-3d'
 export type PythonBlockRole =
   | 'value'
   | 'statement'
@@ -64,6 +69,8 @@ export interface PythonBlockCodec {
   requiredRuntimeFeatures?: readonly StudioPythonRuntimeFeature[]
   /** Extension-owned first palette; does not bypass host approval or installation. */
   starter?: boolean
+  /** First-palette blocks this one stands in for when its extension is installed. */
+  replacesStarters?: readonly string[]
   /** Hidden codecs decode existing code but are not offered in the palette. */
   hidden?: boolean
   /**
@@ -106,6 +113,8 @@ export interface PythonBlockCodec {
 export interface PythonDecodeContext {
   /** True when this Name refers to the given imported module (e.g. `t` after import turtle as t). */
   isModule?(nameNode: PythonNode, module: string): boolean
+  /** Parameter names of the program's own function this Name calls, when it is defined once. */
+  functionParams?(nameNode: PythonNode): readonly string[] | undefined
 }
 
 export interface PythonBlockBinding {

@@ -28,6 +28,11 @@ export interface PythonExecutionSnapshot {
     sha256: string
     bytes: Uint8Array<ArrayBuffer>
   }[]
+  /**
+   * Files the program saved in earlier runs (savedFiles.ts). Not part of the program: they never
+   * change the revision, and a project file with the same path wins.
+   */
+  saved?: { path: string; bytes: Uint8Array<ArrayBuffer> }[]
 }
 
 export type PythonConsoleStream = 'stdout' | 'stderr'
@@ -69,6 +74,8 @@ export type PythonWorkerCommand =
       bytes?: Uint8Array<ArrayBuffer>
     }
   | { type: 'audio-response'; requestId: string; response: string }
+  /** Before stopping: send the saved files still waiting in the worker's queue. */
+  | { type: 'flush-saved' }
 
 /** A graphics reply: text, or text with bytes (the pixels of a Pygame Zero vector image). */
 export type PythonGraphicsReply = string | { text: string; bytes: Uint8Array<ArrayBuffer> }
@@ -89,6 +96,10 @@ export type PythonWorkerEvent =
   | { type: 'result'; requestId: string; ok: boolean; text: string; traceback?: string }
   | { type: 'failed'; message: string }
   | { type: 'audio'; requestId: string; request: string }
+  /** A file the program saved; the host keeps it with the project (savedFiles.ts). */
+  | { type: 'saved-file'; path: string; bytes: Uint8Array<ArrayBuffer> }
+  /** Every saved file waiting in the queue has been sent. */
+  | { type: 'saved-flushed' }
   | {
       type: 'graphics'
       requestId: string

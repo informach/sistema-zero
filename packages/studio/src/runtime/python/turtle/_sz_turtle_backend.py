@@ -3,6 +3,7 @@
 Geometry remains in Python. The transport exchanges bounded JSON data with the
 trusted frame. It is configured by the runtime, never imported by learner code.
 """
+import weakref
 import heapq
 from collections import deque
 import json
@@ -18,6 +19,8 @@ _transport = None
 _project_root = None
 _activity_checkpoint = None
 _mission_enabled = False
+# The screens of this run, to show what is still queued when the program ends.
+_screens = weakref.WeakSet()
 MAX_ITEMS = LIMITS['items']
 MAX_POINTS = LIMITS['points']
 MAX_IMAGE_BYTES = LIMITS['imageBytes']
@@ -31,6 +34,13 @@ _ENCODER = json.JSONEncoder(ensure_ascii=True, allow_nan=False, separators=(',',
 
 def _encode(value):
     return _ENCODER.encode(value)
+
+def present_pending():
+    """At the end of a run: with tracer(0) and no update(), what was drawn still shows."""
+    for screen in list(_screens):
+        if not screen._closed and screen._operations:
+            screen._flush({'type': 'present'})
+
 
 def configure(transport, project_root, activity_checkpoint=None, *, mission=False):
     global _transport, _project_root, _activity_checkpoint, _mission_enabled
@@ -75,6 +85,34 @@ def color(value):
         return '#' + ''.join(f'{channel:02x}' for channel in channels)
     return COLORS[value.lower()]
 
+
+_TK_DEFAULT_FONT_SIZE = 8
+
+
+def _tk_font(font):
+    """The font as Tk reads it: ('Arial', 24), 'Arial 24 bold' and ('Arial',) all work."""
+    if isinstance(font, str):
+        family, _, rest = font.strip().partition(' ')
+        if font.strip().startswith('{') and '}' in font:
+            family, _, rest = font.strip()[1:].partition('}')
+        parts = [family, *rest.split()]
+    else:
+        parts = list(font)
+    if not parts or not str(parts[0]):
+        raise ValueError('A fonte precisa de um nome, como ("Arial", 16, "normal").')
+    family = str(parts[0])
+    size = parts[1] if len(parts) > 1 else 0
+    if isinstance(size, str):
+        try:
+            size = int(size)
+        except ValueError:
+            raise ValueError(f'O tamanho da fonte precisa ser um número inteiro, não "{size}".')
+    if isinstance(size, bool) or not isinstance(size, int):
+        raise ValueError(f'O tamanho da fonte precisa ser um número inteiro, não {size!r}.')
+    style = ' '.join(str(part) for part in parts[2:]) or 'normal'
+    return [family, size or _TK_DEFAULT_FONT_SIZE, style]
+
+
 class BrowserImage:
     def __init__(self, identifier):
         self.identifier = identifier
@@ -112,6 +150,7 @@ class TurtleScreenBase:
         self._activity_update_depth = 0
         self._just_waited = False
         self._closed = False
+        _screens.add(self)
         self._queue({'op': 'open'})
         self._viewport = self._flush({'type': 'viewport'})['value']
 
@@ -279,12 +318,12 @@ class TurtleScreenBase:
         except BaseException:
             traceback.print_exc()
 
-    def _update(self):
+    def _update(self, single_idle=False):
         if _activity_checkpoint is None:
-            return self._update_events()
+            return self._update_events(single_idle)
         self._activity_update_depth += 1
         try:
-            self._update_events()
+            self._update_events(single_idle)
         finally:
             self._activity_update_depth -= 1
         # Nested update calls may happen in a key, click or timer callback.
@@ -292,7 +331,7 @@ class TurtleScreenBase:
         if not self._closed and self._activity_update_depth == 0:
             _activity_checkpoint()
 
-    def _update_events(self):
+    def _update_events(self, single_idle=False):
         if self._closed:
             return
         # Right after mainloop's wait the frame has just presented and returned the pending
@@ -328,6 +367,10 @@ class TurtleScreenBase:
                 while self._idle_timers and self._idle_timers[0][0] <= generation and not self._closed:
                     _, callback = self._idle_timers.popleft()
                     self._dispatch(callback)
+                # In mainloop the screen is redrawn between generations, as Tk's own redraw is
+                # an idle handler too: ontimer(f, 0) that schedules itself still animates.
+                if single_idle:
+                    break
                 continue
             else:
                 break
@@ -362,7 +405,8 @@ class TurtleScreenBase:
             raise KeyError(align)
         x, y = pos
         item = self._create('text', x=x*self.xscale-1, y=-y*self.yscale,
-                            text=str(txt), align=align, font=list(font), fill=color(pencolor))
+                            text=str(txt), align=align, font=_tk_font(font),
+                            fill=color(pencolor))
         response = self._flush({'type': 'text-bounds', 'id': item})
         return item, response['value']['right'] - 1
 
@@ -424,7 +468,7 @@ class TurtleScreenBase:
 
     def mainloop(self):
         while not self._closed:
-            self._update()
+            self._update(single_idle=True)
             if self._closed:
                 break
             # Commit callback drawing, then suspend until input or the next timer.
@@ -445,6 +489,11 @@ class TurtleScreenBase:
         path = Path(filename)
         if path.is_absolute() or not path.resolve().is_relative_to(_project_root):
             raise self._graphics_error('A imagem precisa estar dentro do projeto')
+        if path.suffix.lower() == '.svg':
+            # Tk on the desktop does not open SVG either; the vector becomes a turtle shape.
+            raise self._graphics_error(
+                f"Um desenho vetorial vira forma da tartaruga: use "
+                f"formas_do_pinta.registrar('{filename}') e depois shape com o nome dele")
         with path.open('rb') as file:
             header = file.read(8)
             file.seek(0, 2)

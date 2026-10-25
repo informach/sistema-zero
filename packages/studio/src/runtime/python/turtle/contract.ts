@@ -6,6 +6,8 @@ export const TURTLE_MODULE_FILES = [
   '_sz_turtle_backend.py',
   '_sz_turtle_colors.py',
   '_sz_turtle_limits.py',
+  // Pinta drawings as compound turtle shapes; plain Python, the desktop gets the same file.
+  'formas_do_pinta.py',
 ] as const
 export function hasTurtleExtension(extensions: readonly { id: string; version: string }[]) {
   return extensions.some(

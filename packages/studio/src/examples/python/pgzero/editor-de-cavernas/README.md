@@ -8,7 +8,7 @@ galeria.
 
 ## Como jogar
 
-Clique numa peça do painel e depois no mapa (arrastar pinta várias casas). Guardar escreve a caverna no arquivo caverna.txt e Carregar traz ela de volta. Espaço testa a caverna com as setas e espaço de novo volta para o editor.
+Clique numa peça do painel e depois no mapa (arrastar pinta várias casas). Guardar escreve a caverna no arquivo caverna.txt e Carregar traz ela de volta, mesmo depois de fechar o jogo. Espaço testa a caverna com as setas e espaço de novo volta para o editor.
 
 ## Ideias para mudar
 

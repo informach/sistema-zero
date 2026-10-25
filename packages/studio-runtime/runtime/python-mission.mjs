@@ -16,10 +16,24 @@ import {
 } from './python-playtest.generated.mjs'
 
 // Trusted Node drives verified runtime bytes. No expected answer reaches this process or the learner.
+let missionPhase = 'options'
+process.on('uncaughtExceptionMonitor', () => {
+  console.error(`STUDIO_PYTHON_MISSION_PHASE:${missionPhase}`)
+})
 const root = process.cwd()
+async function phase(value) {
+  missionPhase = value
+  await fs.writeFile(
+    path.join(root, 'python-mission-phase.json'),
+    JSON.stringify({ version: 1, phase: value }),
+    { mode: 0o600 },
+  )
+}
+await phase('options')
 const input = await fs.readFile(path.join(root, 'python-mission-options.json'))
 if (input.length > 2_000_000) throw new Error('Mission options exceed the limit')
 const options = JSON.parse(input.toString('utf8'))
+await phase('resources')
 const mission = await verifyPythonMissionRequest(options.mission, options.payload.snapshot)
 const configuration = await createPythonBrowserResources(root, options)
 const { resources, parent, runtime, runtimePrefix } = configuration
@@ -42,6 +56,7 @@ const deadline = setTimeout(() => {
 const observations = [],
   executions = []
 try {
+  await phase('launch')
   browser = await chromium.launch({ headless: true, timeout: 15_000 })
   for (const [index, probe] of mission.probes.entries()) {
     const recipe = pythonMissionRecipe(probe)
@@ -105,16 +120,21 @@ try {
           clearTimeout(timer)
         }
       }
+      await phase('navigation')
       await page.goto(`${parent}/`, { timeout: 15_000 })
+      await phase(index === 0 ? 'startup-first' : 'startup-next')
       await page.waitForFunction(
         () => {
           const current = globalThis.__studioPythonPlaytest?.view()
           return current && (current.started || current.errors.length)
         },
         null,
-        { timeout: index === 0 ? 30_000 : 5000 },
+        // Every probe owns a fresh context and interpreter. No warm Python state
+        // crosses that isolation boundary, including after the first probe.
+        { timeout: 30_000 },
       )
       if (!(await view()).ready) throw new Error('The protected mission session did not prepare')
+      await phase('observe')
       // Input can be requested by main.py, a tested function or an event handler.
       // One bounded owner supplies only authored lines throughout the scenario.
       let pumping = true

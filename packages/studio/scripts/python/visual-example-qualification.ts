@@ -37,6 +37,7 @@ import type {
   PythonValue,
 } from '../../src/python/language/types'
 import { PGZERO_EXTENSION } from '../../src/runtime/python/pgzero/contract'
+import { RAYLIB_2D_EXTENSION, RAYLIB_3D_EXTENSION } from '../../src/runtime/python/raylib/contract'
 import { TURTLE_EXTENSION } from '../../src/runtime/python/turtle/contract'
 
 const digest = (value: string) => createHash('sha256').update(value).digest('hex')
@@ -71,6 +72,8 @@ const EXAMPLE_EXTENSIONS: Readonly<
 > = {
   [TURTLE_EXTENSION.id]: { extension: TURTLE_EXTENSION, modules: ['turtle'] },
   [PGZERO_EXTENSION.id]: { extension: PGZERO_EXTENSION, modules: ['pgzero', 'pgzrun'] },
+  [RAYLIB_2D_EXTENSION.id]: { extension: RAYLIB_2D_EXTENSION, modules: ['pyray', 'raylib'] },
+  [RAYLIB_3D_EXTENSION.id]: { extension: RAYLIB_3D_EXTENSION, modules: ['pyray', 'raylib'] },
 } as const
 
 export async function loadVisualExampleAuthoring(options: {

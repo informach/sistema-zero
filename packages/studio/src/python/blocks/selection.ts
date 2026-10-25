@@ -9,6 +9,7 @@ export const PYTHON_STARTER_BLOCK_IDS = Object.freeze([
   'sz_py_variable',
   'sz_py_text',
   'sz_py_integer',
+  'sz_py_negative',
   'sz_py_arithmetic',
   'sz_py_compare',
   'sz_py_and',
@@ -73,6 +74,8 @@ export interface PythonCatalogEntry {
   help: string
   dependencies: readonly string[]
   starter?: boolean
+  /** First-palette blocks this one stands in for (the extension's own way to do the same). */
+  replacesStarters?: readonly string[]
   /** Decodes existing code only; never offered in the palette. */
   hidden?: boolean
 }
@@ -144,6 +147,9 @@ export function describePythonCatalog(
       help: codec.help,
       dependencies: Object.freeze([...dependencies].sort()),
       ...(codec.starter ? { starter: true } : {}),
+      ...(codec.replacesStarters?.length
+        ? { replacesStarters: Object.freeze([...codec.replacesStarters]) }
+        : {}),
       ...(codec.hidden ? { hidden: true } : {}),
     })
   })
@@ -188,19 +194,22 @@ export function selectPythonPalette(options: {
   const allowed = (entry: PythonCatalogEntry) =>
     installed(entry) && options.approvedBlockIds.has(entry.id)
   const offered = (entry: PythonCatalogEntry) => allowed(entry) && !entry.hidden
+  /** Level 1: the starters, where an installed extension's own block stands in for a generic one. */
+  function firstPalette() {
+    const extension = catalog.filter(
+      (entry) => entry.owner !== 'programming' && entry.starter && offered(entry),
+    )
+    const replaced = new Set(extension.flatMap((entry) => entry.replacesStarters ?? []))
+    return [...PYTHON_STARTER_BLOCK_IDS, ...extension.map((entry) => entry.id)].filter((id) => {
+      const entry = registry.get(id)
+      return entry && offered(entry) && !replaced.has(id)
+    })
+  }
   // Preserve the existing lesson curation contract: an empty list means level policy.
   const requested = options.allowBlocks?.length
     ? [...new Set(options.allowBlocks)]
     : options.level === 1
-      ? [
-          ...PYTHON_STARTER_BLOCK_IDS,
-          ...catalog
-            .filter((entry) => entry.owner !== 'programming' && entry.starter)
-            .map((entry) => entry.id),
-        ].filter((id) => {
-          const entry = registry.get(id)
-          return entry && offered(entry)
-        })
+      ? firstPalette()
       : catalog
           .filter((entry) => entry.level <= options.level && offered(entry))
           .map((entry) => entry.id)

@@ -290,9 +290,12 @@ export async function createContextualRuntimeEnvironmentCore(
         programmingLanguage: 'python',
         kinds: release.manifest.kinds,
         async load() {
-          const { createPythonRuntimeProvider } = await import('./python/provider')
+          const [{ createPythonRuntimeProvider }, { createGameStorageSession }] = await Promise.all(
+            [import('./python/provider'), import('../state/gameStorage')],
+          )
           return createPythonRuntimeProvider({
             id: providerId,
+            savedFiles: createGameStorageSession,
             allowedOrigins: bootstrap.decision.frame.allowedOrigins,
             async resolveFrame(selection, signal, identity) {
               signal.throwIfAborted()

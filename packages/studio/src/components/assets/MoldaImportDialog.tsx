@@ -3,12 +3,14 @@ import { useShallow } from 'zustand/react/shallow'
 import type { ProjectAsset } from '#core'
 import { Button, Modal } from '#ui'
 import { personalIdOf } from '../../asset-library/personalSync'
+import { isPythonProject } from '../../core/editableProject'
+import { projectUsesRaylib } from '../../core/raylibMediaPaths'
 import { normalizeSearchText } from '../../core/searchText'
 import { useProjectStore, useProjectStoreApi } from '../../state/projectStore'
 import { useT } from '../../studio/i18n'
 import { type StudioMoldaCreationSummary, useStudioMoldaLibrary } from '../../studio/molda-library'
 import { addMoldaCreationToProject } from './addCreationToProject'
-import { projectHas3DConsumer } from './has3DConsumer'
+import { creation3DNoteKey, creationBlockedFor3D, projectHas3DConsumer } from './has3DConsumer'
 
 /**
  * Modal "Trazer do Molda" — o fluxo PULL das criações 3D: lista TODAS as criações da
@@ -66,13 +68,15 @@ export function MoldaImportDialog({ onClose, onImported }: MoldaImportDialogProp
   const t = useT()
   const adapter = useStudioMoldaLibrary()
   const storeApi = useProjectStoreApi()
-  const { assets, has3D, projectId } = useProjectStore(
+  const { assets, has3D, raylib, projectId } = useProjectStore(
     useShallow((s) => ({
       assets: s.project?.assets ?? EMPTY_ASSETS,
       projectId: s.project?.id,
       has3D: projectHas3DConsumer(s.project),
+      raylib: !!s.project && isPythonProject(s.project) && projectUsesRaylib(s.project),
     })),
   )
+  const gate = { has3D, raylib }
 
   const [load, setLoad] = useState<LoadState>({ phase: 'loading' })
   const [reloadKey, setReloadKey] = useState(0)
@@ -169,7 +173,7 @@ export function MoldaImportDialog({ onClose, onImported }: MoldaImportDialogProp
   }
 
   const visible = load.phase === 'ready' ? filterMoldaCreations(load.creations, query) : []
-  const someoneNeeds3D = !has3D && visible.some((c) => moldaCreationNeeds3D(c.kind))
+  const someoneNeeds3D = visible.some((c) => creationBlockedFor3D(c.kind, gate))
 
   return (
     <Modal
@@ -236,7 +240,7 @@ export function MoldaImportDialog({ onClose, onImported }: MoldaImportDialogProp
 
         {someoneNeeds3D ? (
           <p role="note" className="text-xs text-sz-fg-soft">
-            {t('moldaImport.needs3d')}
+            {t(creation3DNoteKey(gate))}
           </p>
         ) : null}
 
@@ -267,7 +271,7 @@ export function MoldaImportDialog({ onClose, onImported }: MoldaImportDialogProp
           <ul className="grid grid-cols-2 gap-2 sm:grid-cols-3">
             {visible.map((creation) => {
               const added = inProject.has(creation.id)
-              const blocked = !has3D && moldaCreationNeeds3D(creation.kind)
+              const blocked = creationBlockedFor3D(creation.kind, gate)
               return (
                 <li
                   key={creation.id}
@@ -315,7 +319,7 @@ export function MoldaImportDialog({ onClose, onImported }: MoldaImportDialogProp
                         variant="primary"
                         size="sm"
                         disabled={busyId !== null || blocked}
-                        title={blocked ? t('moldaImport.needs3d') : undefined}
+                        title={blocked ? t(creation3DNoteKey(gate)) : undefined}
                         onClick={() => void handleAdd(creation)}
                       >
                         {busyId === creation.id ? t('moldaImport.adding') : t('moldaImport.add')}

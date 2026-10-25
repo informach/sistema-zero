@@ -158,6 +158,22 @@ export async function fileTo3DAssetDataUrl(file: File): Promise<{
   return { dataUrl, kind, fileName: file.name }
 }
 
+/**
+ * Lê uma fonte `.ttf`/`.otf` com o MIME FORÇADO pela extensão (o navegador dá `font/ttf`,
+ * `application/x-font-ttf` ou nada, conforme o sistema). Os bytes são conferidos no store.
+ */
+export async function fileToFontAssetDataUrl(
+  file: File,
+): Promise<{ dataUrl: string; fileName: string }> {
+  const lower = file.name.toLowerCase()
+  const mime = lower.endsWith('.ttf') ? 'font/ttf' : lower.endsWith('.otf') ? 'font/otf' : null
+  if (!mime) throw new Error('Selecione uma fonte .ttf ou .otf.')
+  const raw = await readAsDataUrl(file)
+  const comma = raw.indexOf(',')
+  if (comma < 0) throw new Error('Falha ao ler o arquivo.')
+  return { dataUrl: `data:${mime};base64,${raw.slice(comma + 1)}`, fileName: file.name }
+}
+
 function readAsDataUrl(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader()

@@ -35,6 +35,10 @@ console.log(JSON.stringify({ initial, javascript, metadata, selected: loaded() }
     'examples/python/pgzeroGames.loaders.generated.ts',
     'examples/python/pgzeroGames.manifest.ts',
     'examples/python/pgzeroGames.ts',
+    'examples/python/raylibGames.blocks.generated.ts',
+    'examples/python/raylibGames.loaders.generated.ts',
+    'examples/python/raylibGames.manifest.ts',
+    'examples/python/raylibGames.ts',
     'examples/python/turtleRace.ts',
     'examples/python/visualReferenceGames.ts',
     'examples/python/visualReferenceGames.blocks.generated.ts',
@@ -43,6 +47,7 @@ console.log(JSON.stringify({ initial, javascript, metadata, selected: loaded() }
     'examples/pythonCatalog.ts',
     // Grouping by extension reads only the extensions' id/version contracts.
     'runtime/python/pgzero/contract.ts',
+    'runtime/python/raylib/contract.ts',
     'runtime/python/turtle/contract.ts',
   ].sort()
   expect(result.metadata).toEqual(metadata)

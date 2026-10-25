@@ -1,4 +1,5 @@
 import type { StudioRuntimeSelection } from '@sistemazero/core/studio/project-environment'
+import { studioPortableFileConflict } from '@sistemazero/core/studio/project-environment'
 import {
   assertStudioPythonActivityScope,
   StudioPythonActivitySchema,
@@ -9,6 +10,11 @@ import {
   StudioRuntimeUnavailableError,
 } from '../types'
 import { readPythonExecutionIdentity } from './frameProtocol'
+import {
+  PYTHON_SAVED_FILE_KEY_PREFIX,
+  readPythonSavedFiles,
+  withPythonSavedFile,
+} from './savedFiles'
 import { preparePythonFrameSession } from './session'
 import { preparePythonExecutionSnapshot } from './snapshot'
 
@@ -18,10 +24,18 @@ export interface ApprovedPythonFrame {
   runtimeManifestSha256: string
 }
 
+/** The project's game storage record (state/gameStorage.ts), where saved files are kept. */
+export interface PythonSavedFileStore {
+  load(): Promise<Record<string, string>>
+  write(data: Record<string, string>): Promise<void>
+}
+
 /** Inject the host's approved artifact resolver; this module never resolves arbitrary packages. */
 export function createPythonRuntimeProvider(options: {
   id: string
   allowedOrigins: readonly string[]
+  /** Without it, the files a program saves only live during its run. */
+  savedFiles?(projectId: string): PythonSavedFileStore
   resolveFrame(
     selection: StudioRuntimeSelection,
     signal: AbortSignal,
@@ -29,6 +43,8 @@ export function createPythonRuntimeProvider(options: {
   ): Promise<ApprovedPythonFrame>
 }): StudioRuntimeProvider {
   const allowedOrigins = new Set(options.allowedOrigins.map((value) => new URL(value).origin))
+  /** Per project, the writes of a run still going to storage: the next run reads after them. */
+  const savingByProject = new Map<string, Promise<void>>()
   return {
     id: options.id,
     async prepare(input) {
@@ -57,6 +73,56 @@ export function createPythonRuntimeProvider(options: {
           'snapshot-mismatch',
           'O projeto mudou desde a preparação da execução.',
         )
+      // Files the program saved in earlier runs (savedFiles.ts). A storage that does not
+      // answer only means nothing was kept: the run goes on.
+      const projectId = snapshot.projectId
+      const store = options.savedFiles?.(projectId)
+      let record: Record<string, string> = {}
+      if (store)
+        try {
+          // A finished write may start the next one; wait for the whole chain (bounded).
+          for (let turn = 0; turn < 32 && savingByProject.has(projectId); turn++)
+            await savingByProject.get(projectId)
+          record = await store.load()
+        } catch {
+          record = {}
+        }
+      // A project file with the same path (even only by letter case) wins and the old saved
+      // copy leaves the record: it would only take room in the limits.
+      const paths = snapshot.files.map((file) => file.path)
+      const saved = readPythonSavedFiles(record).filter((file) => {
+        if (!studioPortableFileConflict([...paths, file.path], snapshot.directories)) return true
+        delete record[PYTHON_SAVED_FILE_KEY_PREFIX + file.path]
+        return false
+      })
+      // One write at a time, always of the newest record: a game that saves every frame does
+      // not pile up copies of it.
+      let latest: Record<string, string> | undefined
+      let writing = false
+      const persist = () => {
+        if (!store || writing || !latest) return
+        const data = latest
+        latest = undefined
+        writing = true
+        const done = store
+          .write(data)
+          .catch(() => undefined)
+          .finally(() => {
+            writing = false
+            if (latest) persist()
+            else if (savingByProject.get(projectId) === done) savingByProject.delete(projectId)
+          })
+        savingByProject.set(projectId, done)
+      }
+      const keepSavedFile = store
+        ? (file: { path: string; bytes: Uint8Array<ArrayBuffer> }) => {
+            const next = withPythonSavedFile(record, file)
+            if (!next) return
+            record = next
+            latest = next
+            persist()
+          }
+        : undefined
       if (signal.aborted)
         throw signal.reason ?? new DOMException('Execução cancelada.', 'AbortError')
       const approved = await new Promise<ApprovedPythonFrame>((resolve, reject) => {
@@ -93,7 +159,8 @@ export function createPythonRuntimeProvider(options: {
         frame,
         frameURL: url,
         identity,
-        snapshot,
+        snapshot: saved.length ? { ...snapshot, saved } : snapshot,
+        ...(keepSavedFile ? { onSavedFile: keepSavedFile } : {}),
         signal,
         hostAudio: input.hostAudio,
         ...(activity ? { activity } : {}),

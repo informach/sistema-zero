@@ -6,6 +6,7 @@ import { SZ_AUDIO_MODULE_DESCRIPTOR } from '@sistemazero/core/studio/python-prov
 import { StudioPythonDistributionSchema } from '@sistemazero/core/studio/python-runtime-distribution'
 import { PYTHON_PROJECT_MISSION_FEATURE } from '@sistemazero/core/studio/python-runtime-features'
 import { PGZERO_MODULE_FILES } from '../src/runtime/python/pgzero/contract'
+import { RAYLIB_MODULE_FILES } from '../src/runtime/python/raylib/contract'
 import { TURTLE_MODULE_FILES, TURTLE_RUNTIME_FEATURES } from '../src/runtime/python/turtle/contract'
 import vendor from '../src/runtime/python/vendor-manifest.json'
 import { PYODIDE_VERSION, PYTHON_VERSION } from '../src/runtime/python/versions'
@@ -73,6 +74,8 @@ export async function buildPythonRuntimeDistribution(
     ['turtle/graphicsProtocol', 'turtle-protocol'],
     ['pgzero/renderer', 'pgzero-renderer'],
     ['pgzero/protocol', 'pgzero-protocol'],
+    ['raylib/renderer', 'raylib-renderer'],
+    ['raylib/protocol', 'raylib-protocol'],
     ['../../python/language/worker', 'analysis-worker'],
     ['../../python/language/frame', 'analysis-frame'],
   ]) {
@@ -112,6 +115,20 @@ export async function buildPythonRuntimeDistribution(
       `pgzero/${filename}`,
       new Uint8Array(
         await readFile(resolve(root, `packages/studio/src/runtime/python/pgzero/py/${filename}`)),
+      ),
+    )
+  for (const filename of RAYLIB_MODULE_FILES)
+    contents.set(
+      `raylib/${filename}`,
+      new Uint8Array(
+        await readFile(resolve(root, `packages/studio/src/runtime/python/raylib/py/${filename}`)),
+      ),
+    )
+  for (const license of ['LICENSE-raylib.txt', 'LICENSE-raylib-python-cffi.txt'])
+    contents.set(
+      license,
+      new Uint8Array(
+        await readFile(resolve(root, `packages/studio/src/runtime/python/raylib/${license}`)),
       ),
     )
   for (const license of ['LICENSE-pgzero.txt', 'LICENSE-freefont.txt'])
@@ -159,6 +176,7 @@ export async function buildPythonRuntimeDistribution(
         `CPython ${vendor.pythonVersion}: https://github.com/python/cpython/tree/v${vendor.pythonVersion}`,
         'Turtle browser adaptation: licensed CPython 3.14.2 geometry/animation with a Sistema Zero Canvas backend. Recipe: packages/studio/scripts/turtle/derive.py. Tk 8.6.15 color table; see LICENSE-tk.txt. This is not the original Tkinter module.',
         'Pygame Zero browser adaptation: pgzero 1.2.1 (LGPL-3.0, see LICENSE-pgzero.txt) with a Sistema Zero canvas backend and pygame-ce 2.5.8 behaviour. File-by-file origin: packages/studio/src/runtime/python/pgzero/PROVENANCE.md. Default font freesansbold.ttf: GNU FreeFont, see LICENSE-freefont.txt. This is not pygame.',
+        'Raylib browser adaptation: a Sistema Zero Python module (pyray, raylib) following raylib-python-cffi 6.0.1.0 (EPL-2.0 or GPL-2.0 with Classpath exception, see LICENSE-raylib-python-cffi.txt) and raylib 6.0 (zlib, see LICENSE-raylib.txt): names, structs, constants, default font data and drawing/maths algorithms ported from raylib, drawn by a WebGL2 renderer. Provenance: packages/studio/src/runtime/python/raylib/PROVENANCE.md. This is not the raylib C library.',
         `Portable audio ${SZ_AUDIO_MODULE_DESCRIPTOR.importName} ${SZ_AUDIO_MODULE_DESCRIPTOR.version} is a separate Sistema Zero module, not part of the Python standard library or Turtle API. Browser requests use the captured session media service; desktop source exports declare their own native package dependencies. Source: packages/studio/src/runtime/python/audio.`,
         `Standard library packaging recipe: ${standardLibrary.recipe}; output SHA-256: ${standardLibrary.sha256}; input source archive remains pinned in vendor-manifest.json. Sources are preserved.`,
         'Pyodide loader modules use scoped lexical fetch injection, not a global fetch replacement. Recipe/tool/input/output hashes: boot-loader-derivation.json. Original vendor inputs remain pinned in vendor-manifest.json. Other vendor artifacts are unchanged.',
