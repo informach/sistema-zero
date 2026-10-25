@@ -5,6 +5,23 @@ import { pythonFilesToTree } from '../../packages/studio/src/state/pythonProject
 
 const prefix = 'pygame-example-'
 
+const UPDATE_NONE = `import pygame
+pygame.init()
+tela = pygame.display.set_mode((96, 64))
+tela.fill('blue')
+pygame.display.flip()
+tela.fill('red')
+pygame.display.update(None)
+print('update-none-ready', flush=True)
+clock = pygame.time.Clock()
+while True:
+    for event in pygame.event.get():
+        if event.type == pygame.KEYDOWN and event.key == pygame.K_r:
+            pygame.display.update()
+            print('update-all-ready', flush=True)
+    clock.tick(60)
+`
+
 /**
  * Frame-rate probe for the browser engine: a 64 px tile map covering the 1280×720 screen
  * (opaque tiles, as pinta.Mapa gives them), a front layer of tiles with transparency, moving
@@ -69,6 +86,7 @@ while True:
 export function isPygameExampleFixture(name: string) {
   return (
     name === 'pygame-benchmark' ||
+    name === 'pygame-update-none' ||
     (name.startsWith(prefix) &&
       PYGAME_GAME_EXAMPLES.some(
         (entry) => entry.key === `python:${name.slice(prefix.length)}:code`,
@@ -81,10 +99,12 @@ export async function pygameExampleProject(name: string) {
   if (project.programmingLanguage !== 'python' || project.kind !== 'pro') throw new Error('fixture')
   project.id = name
   project.installedExtensions = [{ ...PYGAME_EXTENSION, installedAt: project.createdAt }]
-  if (name === 'pygame-benchmark') {
-    project.name = 'pygame-benchmark'
+  if (name === 'pygame-benchmark' || name === 'pygame-update-none') {
+    project.name = name
     project.python.entrypoint = 'main.py'
-    project.tree = pythonFilesToTree({ 'main.py': BENCHMARK })
+    project.tree = pythonFilesToTree({
+      'main.py': name === 'pygame-benchmark' ? BENCHMARK : UPDATE_NONE,
+    })
     project.assets = []
     return project
   }

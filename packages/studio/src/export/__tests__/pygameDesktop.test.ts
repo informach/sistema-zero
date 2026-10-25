@@ -51,14 +51,14 @@ test('Pygame-ce export preserves the game, Pinta PNG and WAV, with a native depe
   })
   expect(manifest.generatedFiles).toContain('requisitos-pygame-ce.txt')
   // The learner module and the platform fonts go along: pinta.fonte() opens fontes/<id>.ttf.
-  expect(text(files['pinta.py'])).toContain('def carregar_sprite(nome)')
+  expect(text(files['src/pinta.py'])).toContain('def carregar_sprite(nome)')
   for (const font of PYGAME_FONTS) {
-    const bytes = files[`fontes/${font}.ttf`] as Uint8Array
+    const bytes = files[`src/fontes/${font}.ttf`] as Uint8Array
     expect(bytes.byteLength).toBeGreaterThan(50_000)
     expect([...bytes.subarray(0, 4)]).toEqual([0, 1, 0, 0])
-    expect(manifest.generatedFiles).toContain(`fontes/${font}.ttf`)
+    expect(manifest.generatedFiles).toContain(`src/fontes/${font}.ttf`)
   }
-  expect(manifest.generatedFiles).toContain('pinta.py')
+  expect(manifest.generatedFiles).toContain('src/pinta.py')
 })
 
 test('a learner module named pinta.py is kept instead of the platform one', async () => {
@@ -66,11 +66,11 @@ test('a learner module named pinta.py is kept instead of the platform one', asyn
   if (project.programmingLanguage !== 'python' || project.kind !== 'pro')
     throw new Error('Python Pro fixture required')
   project.installedExtensions = [{ ...PYGAME_EXTENSION, installedAt: project.createdAt }]
-  project.tree['pinta.py'] = { kind: 'file', content: 'MEU = True\n' }
+  project.tree['src/pinta.py'] = { kind: 'file', content: 'MEU = True\n' }
   project.assets = []
   const { files } = await buildPythonSourceFiles(project, null)
-  expect(text(files['pinta.py'])).toBe('MEU = True\n')
-  expect(files['fontes/bungee.ttf']).toBeInstanceOf(Uint8Array)
+  expect(text(files['src/pinta.py'])).toBe('MEU = True\n')
+  expect(files['src/fontes/bungee.ttf']).toBeInstanceOf(Uint8Array)
 })
 
 test('a learner fontes/ folder still receives each platform font it does not have', () => {
@@ -91,4 +91,20 @@ test('platform files never collide with a learner file or a name in other letter
   expect(asFile.generated).toEqual([])
   const otherCase = buildPygameDesktopFiles({ occupied: [], directories: ['Fontes'] })
   expect(otherCase.generated).toEqual(['pinta.py'])
+})
+
+test('Pygame-ce exports the Pinta module and fonts beside a nested entrypoint', async () => {
+  const project = documentFixture('python', 'pro')
+  if (project.programmingLanguage !== 'python' || project.kind !== 'pro') throw new Error('Fixture')
+  project.installedExtensions = [{ ...PYGAME_EXTENSION, installedAt: project.createdAt }]
+  project.python.entrypoint = 'src/main.py'
+  project.assets = []
+  project.tree['src/main.py'] = { kind: 'file', content: 'import pygame\nimport pinta\n' }
+  const { files } = await buildPythonSourceFiles(project, null)
+  expect(text(files['src/pinta.py'])).toContain('def carregar_sprite(nome)')
+  expect(files['src/fontes/bungee.ttf']).toBeInstanceOf(Uint8Array)
+  expect(files['pinta.py']).toBeUndefined()
+  project.tree['src/pinta.py'] = { kind: 'file', content: 'MEU = True\n' }
+  const own = await buildPythonSourceFiles(project, null)
+  expect(text(own.files['src/pinta.py'])).toBe('MEU = True\n')
 })

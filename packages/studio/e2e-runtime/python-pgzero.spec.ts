@@ -1,5 +1,6 @@
 import { expect, type Page, test } from '@playwright/test'
 import type {} from '../../../experiments/studio-python-runtime/providerHost'
+import { PGZERO_GAMES } from '../src/examples/python/pgzeroGames.manifest'
 
 function stdout(page: Page) {
   return page.evaluate(() =>
@@ -60,66 +61,7 @@ test('Pygame Zero: actor, rotation, text, shapes, keyboard, mouse, clock and sou
   await page.evaluate(() => globalThis.providerProbe.dispose('game'))
 })
 
-const EXAMPLES = [
-  'ola-pgzero',
-  'acerte-a-maca',
-  'raposa-moedas',
-  'ligue-os-pontos',
-  'estrela-vermelha',
-  'quiz-relampago',
-  'voo-de-balao',
-  'desafio-da-danca',
-  'jardim-feliz',
-  'dragoes-dorminhocos',
-  'barris-na-rampa',
-  'salto-nas-plataformas',
-  'piramide-de-cubos',
-  'cipo-sobre-o-poco',
-  'mina-que-desmorona',
-  'escudos-contra-invasores',
-  'mergulho-alienigena',
-  'nave-mae',
-  'rastro-de-ajudantes',
-  'helicoptero-bombardeiro',
-  'cauda-espacial',
-  'mochila-a-jato',
-  'propulsor-no-espaco',
-  'encanamento-apressado',
-  'troca-de-joias',
-  'bichinhos-em-fila',
-  'cavando-por-gemas',
-  'editor-de-cavernas',
-  'corrida-vista-de-cima',
-  'sinuca',
-  'fliperama',
-  'minigolfe-maluco',
-  'tiro-ao-prato',
-  'rali-com-minimapa',
-  'pouso-lunar',
-  'quebra-tijolos',
-  'sapo-atravessa',
-  'patrulha-em-camadas',
-  'motos-de-luz',
-  'arena-de-dois-comandos',
-  'bombas-no-labirinto',
-  'corredor-do-kung-fu',
-  'bolinha-rolante',
-  'bolhas-que-se-dividem',
-  'masmorra-para-quatro',
-  'duelo-por-turnos',
-  'passarinho-saltitante',
-  'placar-dos-campeoes',
-  'continuar',
-  'bussola-maluca',
-  'cores-e-bolinha',
-  'piano-maluco',
-  'duelo-de-tanques',
-  'memoria-contra-o-computador',
-  'batalha-naval',
-  'atirador-espacial',
-  'boing',
-  'centopeia',
-]
+const EXAMPLES = PGZERO_GAMES.map(({ key }) => key)
 
 for (const key of EXAMPLES)
   test(`gallery example ${key} runs, draws and takes input without errors`, async ({

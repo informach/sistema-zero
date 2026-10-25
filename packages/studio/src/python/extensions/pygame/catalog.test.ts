@@ -14,6 +14,7 @@ import {
 } from '../../blocks/nodes'
 import { type PythonVisualNode, pythonASTToVisual } from '../../blocks/projection'
 import { attachPythonResolverOptions } from '../../blocks/resolverOptions'
+import { describePythonCatalog, selectPythonPalette } from '../../blocks/selection'
 import type { PythonNode } from '../../language/types'
 import { PYTHON_EXTENSIONS } from '../catalog'
 import { PYTHON_PYGAME_CODECS } from './catalog'
@@ -335,4 +336,88 @@ test('official methods keep their blocks on official receivers', () => {
 test('the pygame help names the version the runtime pins', () => {
   const pygameExtension = PYTHON_EXTENSIONS.find((item) => item.id === PYGAME_EXTENSION.id)!
   expect(pygameExtension.help).toContain(`pygame-ce==${PYGAME_CE_VERSION}`)
+})
+
+test('the first Pygame-ce palette can build a game loop, movement, collisions, score and drawing', () => {
+  const tuple = (...values: number[]) =>
+    node('Tuple', { elts: values.map((value) => integer(String(value))), ctx: node('Load') })
+  const variable = (id: string) => name(id)
+  const property = (id: string, key: string) => attribute(variable(id), key)
+  const methodCall = (id: string, method: string, args: PythonNode[] = []) =>
+    call(property(id, method), args)
+  const number = (value: number) => integer(String(value))
+  const add = (target: PythonNode, value: number) =>
+    node('AugAssign', {
+      target: withTargetContext(target, 'Store'),
+      op: node('Add'),
+      value: number(value),
+    })
+  const scoreImage = methodCall('fonte', 'render', [
+    call(name('str'), [name('pontos')]),
+    node('Constant', { value: true, kind: null }),
+    text('white'),
+  ])
+  const tree = moduleNode([
+    ...imports,
+    expression(call(pygame('init'))),
+    assign(variable('tela'), call(pygame('display', 'set_mode'), [tuple(640, 480)])),
+    assign(variable('clock'), call(pygame('time', 'Clock'))),
+    assign(
+      variable('jogador'),
+      call(pygame('Rect'), [number(20), number(20), number(40), number(40)]),
+    ),
+    assign(
+      variable('alvo'),
+      call(pygame('Rect'), [number(400), number(20), number(40), number(40)]),
+    ),
+    assign(
+      variable('fonte'),
+      call(pygame('font', 'Font'), [node('Constant', { value: null, kind: null }), number(24)]),
+    ),
+    assign(variable('pontos'), number(0)),
+    node('While', {
+      test: node('Constant', { value: true, kind: null }),
+      body: [
+        assign(variable('eventos'), call(pygame('event', 'get'))),
+        assign(variable('teclas'), call(pygame('key', 'get_pressed'))),
+        node('If', {
+          test: node('Subscript', {
+            value: name('teclas'),
+            slice: pygame('K_RIGHT'),
+            ctx: node('Load'),
+          }),
+          body: [add(property('jogador', 'x'), 5)],
+          orelse: [],
+        }),
+        node('If', {
+          test: methodCall('jogador', 'colliderect', [name('alvo')]),
+          body: [add(name('pontos'), 1), assign(property('alvo', 'x'), number(100))],
+          orelse: [],
+        }),
+        expression(methodCall('tela', 'fill', [text('black')])),
+        expression(call(pygame('draw', 'rect'), [name('tela'), text('red'), name('jogador')])),
+        expression(call(pygame('draw', 'rect'), [name('tela'), text('yellow'), name('alvo')])),
+        expression(methodCall('tela', 'blit', [scoreImage, tuple(10, 440)])),
+        expression(call(pygame('display', 'flip'))),
+        assign(variable('dt'), methodCall('clock', 'tick', [number(60)])),
+      ],
+      orelse: [],
+    }),
+  ])
+  const catalog = describePythonCatalog(codecs)
+  const first = new Set(
+    selectPythonPalette({
+      level: 1,
+      installedExtensions: new Set([PYGAME_EXTENSION.id]),
+      approvedBlockIds: new Set(catalog.map(({ id }) => id)),
+      catalog,
+    }).entries.map(({ id }) => id),
+  )
+  const used = codecsInOrder(tree)
+  expect(used).not.toContain('source')
+  expect(
+    [...new Set(used)].filter(
+      (id) => !first.has(id) && !codecs.find((codec) => codec.id === id)?.hidden,
+    ),
+  ).toEqual([])
 })

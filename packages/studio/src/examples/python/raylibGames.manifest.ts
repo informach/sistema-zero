@@ -58,7 +58,7 @@ export const RAYLIB_GAMES = [
     ],
     sounds: [],
     music: [],
-    receipt: 'ola-raylib-r1.json.snapshot',
+    receipt: 'ola-raylib-r2.json.snapshot',
   },
   {
     key: 'nave-que-desliza',
@@ -82,7 +82,7 @@ export const RAYLIB_GAMES = [
     ],
     sounds: [],
     music: [],
-    receipt: 'nave-que-desliza-r1.json.snapshot',
+    receipt: 'nave-que-desliza-r2.json.snapshot',
   },
   {
     key: 'encostou',
@@ -106,7 +106,7 @@ export const RAYLIB_GAMES = [
     ],
     sounds: [],
     music: [],
-    receipt: 'encostou-r1.json.snapshot',
+    receipt: 'encostou-r2.json.snapshot',
   },
   {
     key: 'camera-que-segue',
@@ -130,7 +130,7 @@ export const RAYLIB_GAMES = [
     ],
     sounds: [],
     music: [],
-    receipt: 'camera-que-segue-r1.json.snapshot',
+    receipt: 'camera-que-segue-r2.json.snapshot',
   },
   {
     key: 'sprites-timer-animacao',
@@ -157,7 +157,7 @@ export const RAYLIB_GAMES = [
       { path: 'perder.wav', notes: [330, 262, 196], noteMilliseconds: 110 },
     ],
     music: [],
-    receipt: 'sprites-timer-animacao-r1.json.snapshot',
+    receipt: 'sprites-timer-animacao-r2.json.snapshot',
   },
   {
     key: 'dino-corredor',
@@ -199,7 +199,7 @@ export const RAYLIB_GAMES = [
         noteMilliseconds: 180,
       },
     ],
-    receipt: 'dino-corredor-r1.json.snapshot',
+    receipt: 'dino-corredor-r2.json.snapshot',
   },
   {
     key: 'chuva-de-meteoros',
@@ -242,7 +242,7 @@ export const RAYLIB_GAMES = [
         noteMilliseconds: 200,
       },
     ],
-    receipt: 'chuva-de-meteoros-r1.json.snapshot',
+    receipt: 'chuva-de-meteoros-r2.json.snapshot',
   },
   {
     key: 'batalha-de-monstrinhos',
@@ -288,7 +288,7 @@ export const RAYLIB_GAMES = [
         noteMilliseconds: 170,
       },
     ],
-    receipt: 'batalha-de-monstrinhos-r1.json.snapshot',
+    receipt: 'batalha-de-monstrinhos-r2.json.snapshot',
   },
   {
     key: 'aventura-do-heroi',
@@ -332,7 +332,7 @@ export const RAYLIB_GAMES = [
         noteMilliseconds: 220,
       },
     ],
-    receipt: 'aventura-do-heroi-r1.json.snapshot',
+    receipt: 'aventura-do-heroi-r2.json.snapshot',
   },
   // 🧊 Raylib 3D
   {
@@ -356,7 +356,7 @@ export const RAYLIB_GAMES = [
     ],
     sounds: [],
     music: [],
-    receipt: 'primeira-cena-3d-r1.json.snapshot',
+    receipt: 'primeira-cena-3d-r2.json.snapshot',
   },
   {
     key: 'modelos-do-molda',
@@ -379,7 +379,7 @@ export const RAYLIB_GAMES = [
     ],
     sounds: [],
     music: [],
-    receipt: 'modelos-do-molda-r1.json.snapshot',
+    receipt: 'modelos-do-molda-r2.json.snapshot',
   },
   {
     key: 'caixas-que-se-encostam',
@@ -403,7 +403,7 @@ export const RAYLIB_GAMES = [
     ],
     sounds: [],
     music: [],
-    receipt: 'caixas-que-se-encostam-r1.json.snapshot',
+    receipt: 'caixas-que-se-encostam-r2.json.snapshot',
   },
   {
     key: 'clarao-com-shader',
@@ -426,7 +426,7 @@ export const RAYLIB_GAMES = [
     ],
     sounds: [],
     music: [],
-    receipt: 'clarao-com-shader-r1.json.snapshot',
+    receipt: 'clarao-com-shader-r2.json.snapshot',
   },
   {
     key: 'corrida-infinita',
@@ -452,7 +452,7 @@ export const RAYLIB_GAMES = [
       { path: 'batida.wav', notes: [220, 165, 110], noteMilliseconds: 120 },
     ],
     music: [],
-    receipt: 'corrida-infinita-r1.json.snapshot',
+    receipt: 'corrida-infinita-r2.json.snapshot',
   },
   {
     key: 'patrulha-espacial',
@@ -479,7 +479,7 @@ export const RAYLIB_GAMES = [
       { path: 'explosao.wav', notes: [196, 147, 110, 82], noteMilliseconds: 70 },
     ],
     music: [],
-    receipt: 'patrulha-espacial-r1.json.snapshot',
+    receipt: 'patrulha-espacial-r2.json.snapshot',
   },
   {
     key: 'labirinto-dos-robos',
@@ -516,7 +516,7 @@ export const RAYLIB_GAMES = [
       { path: 'desliga.wav', notes: [784, 523, 392, 262], noteMilliseconds: 80 },
     ],
     music: [],
-    receipt: 'labirinto-dos-robos-r1.json.snapshot',
+    receipt: 'labirinto-dos-robos-r2.json.snapshot',
   },
   {
     key: 'mundo-de-blocos',
@@ -549,7 +549,7 @@ export const RAYLIB_GAMES = [
     ],
     sounds: [],
     music: [],
-    receipt: 'mundo-de-blocos-r1.json.snapshot',
+    receipt: 'mundo-de-blocos-r2.json.snapshot',
   },
 ] as const satisfies readonly RaylibGame[]
 

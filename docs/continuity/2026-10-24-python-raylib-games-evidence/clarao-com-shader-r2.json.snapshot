@@ -1,0 +1,284 @@
+{
+  "kind": "python-visual-authoring",
+  "analyzer": {
+    "pythonVersion": "3.14.2",
+    "pyodideVersion": "314.0.7",
+    "distributionSha256": "f92f982520a1925d2b291e311332de654967140dbdc9902ff2036e9a52fe2391",
+    "analyzerSha256": "030eee7115db46c8c19831372a0948f71bbda0a8ad751235d4da889ed68bdf9b"
+  },
+  "authoringRuntime": {
+    "profileId": "python-probe",
+    "releaseId": "probe-1",
+    "manifestSha256": "fb95d42f28f28a54193fd64ce94b2fe2de81136236b3475ec02f665726f71ccd"
+  },
+  "authoringRuntimeFeatures": [
+    "turtle-compound-shapes",
+    "project-missions-v1"
+  ],
+  "authoringLoader": "loadPythonAuthoring",
+  "extension": "python-raylib-3d",
+  "codecOrderSha256": "b871a02dbbe158ce9b618ca5c0ac1b86497ef04f237bd07d2056ffe0691c0aed",
+  "sourceSha256": "56a3f3ed6e3b52b78b53f728b7f43a48ebd6c4e197eed767155f2943f0f793aa",
+  "generatedSha256": "6ac51be5c9a30255bb941d281bbf3d7d9b318782cda1fff8aca2a6bf807f4d68",
+  "opaqueCount": 0,
+  "blockCount": 254,
+  "referencedBlocks": [
+    {
+      "id": "sz_py_arithmetic",
+      "count": 14
+    },
+    {
+      "id": "sz_py_assign",
+      "count": 26
+    },
+    {
+      "id": "sz_py_attribute",
+      "count": 2
+    },
+    {
+      "id": "sz_py_boolean",
+      "count": 1
+    },
+    {
+      "id": "sz_py_float",
+      "count": 2
+    },
+    {
+      "id": "sz_py_for",
+      "count": 1
+    },
+    {
+      "id": "sz_py_format_value",
+      "count": 1
+    },
+    {
+      "id": "sz_py_if",
+      "count": 2
+    },
+    {
+      "id": "sz_py_import_all",
+      "count": 1
+    },
+    {
+      "id": "sz_py_integer",
+      "count": 35
+    },
+    {
+      "id": "sz_py_interpolation",
+      "count": 1
+    },
+    {
+      "id": "sz_py_list",
+      "count": 1
+    },
+    {
+      "id": "sz_py_max",
+      "count": 2
+    },
+    {
+      "id": "sz_py_negative",
+      "count": 1
+    },
+    {
+      "id": "sz_py_or",
+      "count": 1
+    },
+    {
+      "id": "sz_py_range",
+      "count": 1
+    },
+    {
+      "id": "sz_py_rl3d_begin_drawing",
+      "count": 1
+    },
+    {
+      "id": "sz_py_rl3d_begin_mode_3d",
+      "count": 1
+    },
+    {
+      "id": "sz_py_rl3d_BoundingBox",
+      "count": 1
+    },
+    {
+      "id": "sz_py_rl3d_Camera3D",
+      "count": 1
+    },
+    {
+      "id": "sz_py_rl3d_clear_background",
+      "count": 1
+    },
+    {
+      "id": "sz_py_rl3d_close_window",
+      "count": 1
+    },
+    {
+      "id": "sz_py_rl3d_color",
+      "count": 4
+    },
+    {
+      "id": "sz_py_rl3d_draw_grid",
+      "count": 1
+    },
+    {
+      "id": "sz_py_rl3d_draw_model_ex",
+      "count": 1
+    },
+    {
+      "id": "sz_py_rl3d_draw_text",
+      "count": 2
+    },
+    {
+      "id": "sz_py_rl3d_end_drawing",
+      "count": 1
+    },
+    {
+      "id": "sz_py_rl3d_end_mode_3d",
+      "count": 1
+    },
+    {
+      "id": "sz_py_rl3d_ffi_new",
+      "count": 1
+    },
+    {
+      "id": "sz_py_rl3d_field",
+      "count": 30
+    },
+    {
+      "id": "sz_py_rl3d_get_frame_time",
+      "count": 1
+    },
+    {
+      "id": "sz_py_rl3d_get_model_bounding_box",
+      "count": 1
+    },
+    {
+      "id": "sz_py_rl3d_get_mouse_position",
+      "count": 1
+    },
+    {
+      "id": "sz_py_rl3d_get_ray_collision_box",
+      "count": 1
+    },
+    {
+      "id": "sz_py_rl3d_get_screen_to_world_ray",
+      "count": 1
+    },
+    {
+      "id": "sz_py_rl3d_get_shader_location",
+      "count": 1
+    },
+    {
+      "id": "sz_py_rl3d_init_window",
+      "count": 1
+    },
+    {
+      "id": "sz_py_rl3d_is_key_pressed",
+      "count": 1
+    },
+    {
+      "id": "sz_py_rl3d_is_mouse_button_pressed",
+      "count": 1
+    },
+    {
+      "id": "sz_py_rl3d_key",
+      "count": 1
+    },
+    {
+      "id": "sz_py_rl3d_load_model",
+      "count": 1
+    },
+    {
+      "id": "sz_py_rl3d_load_shader_from_memory",
+      "count": 1
+    },
+    {
+      "id": "sz_py_rl3d_mouse_button",
+      "count": 1
+    },
+    {
+      "id": "sz_py_rl3d_projection",
+      "count": 1
+    },
+    {
+      "id": "sz_py_rl3d_set_shader_value",
+      "count": 1
+    },
+    {
+      "id": "sz_py_rl3d_set_target_fps",
+      "count": 1
+    },
+    {
+      "id": "sz_py_rl3d_uniform_type",
+      "count": 1
+    },
+    {
+      "id": "sz_py_rl3d_Vector3",
+      "count": 8
+    },
+    {
+      "id": "sz_py_rl3d_window_loop",
+      "count": 1
+    },
+    {
+      "id": "sz_py_subscript",
+      "count": 1
+    },
+    {
+      "id": "sz_py_text",
+      "count": 6
+    },
+    {
+      "id": "sz_py_update",
+      "count": 2
+    },
+    {
+      "id": "sz_py_variable",
+      "count": 80
+    }
+  ],
+  "approvedBlockIdsSha256": "dc9c0f928b1a473cd82fd35ffd54c623f73061745af8c9c0d11fc6991418860e",
+  "fullWorkspaceRoundtrip": true,
+  "initialWorkspaceSha256": "2d6825b7653ec5a1959b1522fedf1d72ef7e7521bd3b77c8201236a123daea81",
+  "editedWorkspaceSha256": "819f5bbec7071b31be30174859b0d63bb70401294a67be8fdb869ceef1136207",
+  "canonicalRenderReanalysis": true,
+  "runtimeCapabilitiesQualified": false,
+  "browserInteractionQualified": false,
+  "edits": [
+    {
+      "label": "tamanho",
+      "path": {
+        "body": 3,
+        "inputs": [
+          {
+            "name": "VALUE",
+            "index": 0
+          }
+        ]
+      },
+      "codecId": "sz_py_integer",
+      "field": "NUMBER",
+      "before": "3",
+      "after": "4",
+      "beforeSourceSha256": "561d11bc3feb6ee92b99cebd5cf5f976a4fd8d99c34a38991ad82c5d2f91ad5d",
+      "afterSourceSha256": "f9fc6376469433aac2fced50b3d24615408f071d6d03234f2467968b4a140425"
+    },
+    {
+      "label": "velocidade do giro",
+      "path": {
+        "body": 5,
+        "inputs": [
+          {
+            "name": "VALUE",
+            "index": 0
+          }
+        ]
+      },
+      "codecId": "sz_py_integer",
+      "field": "NUMBER",
+      "before": "30",
+      "after": "45",
+      "beforeSourceSha256": "f9fc6376469433aac2fced50b3d24615408f071d6d03234f2467968b4a140425",
+      "afterSourceSha256": "6ac51be5c9a30255bb941d281bbf3d7d9b318782cda1fff8aca2a6bf807f4d68"
+    }
+  ]
+}

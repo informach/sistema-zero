@@ -3,8 +3,37 @@ import type { PythonBlockCodec } from '../../blocks/contract'
 import { attribute, integer, name, node, text } from '../../blocks/nodes'
 import type { PythonNode } from '../../language/types'
 
+/** A first game must be drawable and playable before classes, groups and maps are taught. */
+const FIRST_CONCEPTS = new Set([
+  'tick',
+  'quit',
+  'fill',
+  'blit',
+  'pinta_image',
+  'pinta_frame',
+  'draw_rect',
+  'draw_circle',
+  'rect',
+  'colliderect',
+  'get_rect',
+  'font',
+  'render',
+  'sound',
+  'play',
+])
+const CONCEPT_DEPENDENCIES: Readonly<Record<string, readonly string[]>> = {
+  init: ['sz_py_forever'],
+  keys: ['sz_py_attribute'],
+  rect: ['sz_py_attribute'],
+}
+
 const value = (item: PythonNode) => () => item
-const n = (item: number) => value(integer(String(item)))
+const n = (item: number) =>
+  value(
+    item < 0
+      ? node('UnaryOp', { op: node('USub'), operand: integer(String(-item)) })
+      : integer(String(item)),
+  )
 const t = (item: string) => value(text(item))
 const constant = (item: boolean | null) => value(node('Constant', { value: item, kind: null }))
 const pair = (x: number, y: number) =>
@@ -45,7 +74,8 @@ const path = (
     api: `${parts.join('.')}(${params.map((item) => item.name).join(', ')})`,
     callee: { kind: 'path', path: parts, module: parts[0] },
     params,
-    starter: options.starter ?? false,
+    starter: options.starter ?? FIRST_CONCEPTS.has(id),
+    dependencies: CONCEPT_DEPENDENCIES[id],
   })
 /**
  * `objeto.metodo(...)` on any receiver. Only for names that belong to pygame-ce or to the pinta
@@ -68,7 +98,8 @@ const method = (
     title,
     category,
     role,
-    level,
+    level: FIRST_CONCEPTS.has(id) ? 1 : level,
+    starter: FIRST_CONCEPTS.has(id),
     help: `${receiver}.${functionName}: ${title}.`,
     api: `${receiver}.${functionName}(${params.map((item) => item.name).join(', ')})`,
     callee: {

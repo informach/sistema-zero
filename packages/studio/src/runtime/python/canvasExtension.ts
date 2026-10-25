@@ -1,30 +1,18 @@
+import {
+  PYTHON_CANVAS_EXTENSION_NAMES,
+  PYTHON_CANVAS_EXTENSIONS,
+  type PythonCanvasExtension,
+} from './canvasExtensionContract'
 import { hasPgzeroExtension } from './pgzero/contract'
 import { hasPygameExtension } from './pygame/contract'
 import { RAYLIB_2D_EXTENSION, RAYLIB_3D_EXTENSION } from './raylib/contract'
 import { hasTurtleExtension } from './turtle/contract'
 
-/** Python extensions that own the execution canvas. At most one per project. */
-export type PythonCanvasExtension =
-  | 'python-turtle'
-  | 'python-pgzero'
-  | 'python-pygame'
-  | 'python-raylib-2d'
-  | 'python-raylib-3d'
-export const PYTHON_CANVAS_EXTENSIONS: readonly PythonCanvasExtension[] = [
-  'python-turtle',
-  'python-pgzero',
-  'python-pygame',
-  'python-raylib-2d',
-  'python-raylib-3d',
-]
-/** Names the learner sees, for the "only one canvas extension" message. */
-export const PYTHON_CANVAS_EXTENSION_NAMES: Readonly<Record<PythonCanvasExtension, string>> = {
-  'python-turtle': 'Turtle',
-  'python-pgzero': 'Pygame Zero',
-  'python-pygame': 'Pygame-ce',
-  'python-raylib-2d': 'Raylib 2D',
-  'python-raylib-3d': 'Raylib 3D',
-}
+export {
+  PYTHON_CANVAS_EXTENSION_NAMES,
+  PYTHON_CANVAS_EXTENSIONS,
+  type PythonCanvasExtension,
+} from './canvasExtensionContract'
 
 const installed = (
   extensions: readonly { id: string; version: string }[],

@@ -6,10 +6,12 @@ import {
 import type { PythonProjectDocument } from '../../core/editableProject'
 import { pythonFilesToTree } from '../../state/pythonProjectLayout'
 import { isNode } from '../blocks/nodes'
+import { pythonBindingResolver } from '../blocks/scope'
 import { assertPythonVisualDraftSettled } from '../blocks/workspaceDraft'
 import type { PythonAnalysisController } from '../language/controller'
 import { pythonParentPath } from '../language/modulePaths'
 import { PYTHON_ANALYSIS_LIMITS, type PythonValue } from '../language/types'
+import { pythonApiReferenceMatcher } from './referenceMatcher'
 
 export interface PythonExtensionReference {
   path: string
@@ -40,9 +42,11 @@ export interface PythonReferenceQuery {
   /**
    * When present, only these names count, wherever they are used: as a name (``draw_cube(…)``
    * after ``from pyray import *``) or as an attribute (``pyray.draw_cube``, ``rl.DrawCube``).
-   * The imports themselves then do not count.
+   * Module-only imports do not count; explicit imports of these names do, including aliases.
    */
   names?: ReadonlySet<string>
+  /** Names injected into the entry point by the extension, without an import. */
+  provided?: { provider: string; names: readonly string[]; handlers: readonly string[] }
 }
 
 /** Only CPython AST data is inspected; learner source is never evaluated. */
@@ -52,7 +56,7 @@ export function inspectPythonTurtleRemoval(
   current: () => void,
 ): Promise<PythonExtensionReference[]> {
   return inspectPythonReferences(project, analysis, current, {
-    modules: ['turtle'],
+    modules: ['turtle', 'formas_do_pinta'],
     label: 'Turtle',
   })
 }
@@ -114,6 +118,18 @@ export async function inspectPythonReferences(
             `Não foi possível conferir ${path}: corrija a sintaxe antes de remover ${query.label}. Seus arquivos foram preservados.`,
           )
         tokenCount += document.tokens.length
+        const selective =
+          query.names && pythonApiReferenceMatcher(document.tree, modules, query.names)
+        const entrypoint = path === project.python.entrypoint
+        const provided = new Set(query.provided?.names)
+        const handlers = new Set(query.provided?.handlers)
+        const provider = query.provided?.provider
+        const implicitResolver =
+          entrypoint && provider
+            ? pythonBindingResolver(document.tree, new Set([...modules, provider]), new Set(), {
+                builtins: new Map([...provided].map((name) => [name, { provider }])),
+              })
+            : undefined
         const pending: PythonValue[] = [document.tree]
         while (pending.length) {
           const value = pending.pop()!
@@ -148,17 +164,27 @@ export async function inspectPythonReferences(
                 typeof alias.fields.name === 'string' &&
                 modules.includes(alias.fields.name.split('.')[0]!),
             )
-          const used = query.names
-            ? (value.kind === 'Name' &&
-                typeof value.fields.id === 'string' &&
-                query.names.has(value.fields.id)) ||
-              (value.kind === 'Attribute' &&
-                typeof value.fields.attr === 'string' &&
-                query.names.has(value.fields.attr))
+          const implicit =
+            implicitResolver &&
+            ((value.kind === 'Name' &&
+              typeof value.fields.id === 'string' &&
+              ((provided.has(value.fields.id) &&
+                implicitResolver(value, { root: value.fields.id, builtin: provider })) ||
+                (handlers.has(value.fields.id) &&
+                  isNode(value.fields.ctx) &&
+                  value.fields.ctx.kind === 'Store' &&
+                  implicitResolver(value, { root: value.fields.id, handler: provider })))) ||
+              (value.kind === 'FunctionDef' &&
+                typeof value.fields.name === 'string' &&
+                handlers.has(value.fields.name) &&
+                implicitResolver(value, { root: value.fields.name, handler: provider })))
+          const used = selective
+            ? selective(value)
             : imported ||
               (absoluteFrom &&
                 typeof value.fields.module === 'string' &&
-                modules.includes(value.fields.module.split('.')[0]!))
+                modules.includes(value.fields.module.split('.')[0]!)) ||
+              implicit
           if (modules.length && references.length < 20 && used) {
             const offset = value.range?.start ?? 0
             references.push({ path, line: source.slice(0, offset).split(/\r\n|\r|\n/).length })

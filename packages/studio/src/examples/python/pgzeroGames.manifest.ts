@@ -67,7 +67,7 @@ export const PGZERO_GAMES = [
     ],
     sounds: [],
     music: [],
-    receipt: 'ola-pgzero-r7.json.snapshot',
+    receipt: 'ola-pgzero-r8.json.snapshot',
   },
   {
     key: 'acerte-a-maca',
@@ -92,7 +92,7 @@ export const PGZERO_GAMES = [
       { path: 'erro.wav', notes: [330, 220], noteMilliseconds: 120 },
     ],
     music: [],
-    receipt: 'acerte-a-maca-r7.json.snapshot',
+    receipt: 'acerte-a-maca-r8.json.snapshot',
   },
   {
     key: 'raposa-moedas',
@@ -116,7 +116,7 @@ export const PGZERO_GAMES = [
       { path: 'fim.wav', notes: [523, 392, 262], noteMilliseconds: 150 },
     ],
     music: [],
-    receipt: 'raposa-moedas-r7.json.snapshot',
+    receipt: 'raposa-moedas-r8.json.snapshot',
   },
   {
     key: 'ligue-os-pontos',
@@ -142,7 +142,7 @@ export const PGZERO_GAMES = [
       { path: 'fim.wav', notes: [523, 659, 784, 1047], noteMilliseconds: 110 },
     ],
     music: [],
-    receipt: 'ligue-os-pontos-r7.json.snapshot',
+    receipt: 'ligue-os-pontos-r8.json.snapshot',
   },
   {
     key: 'estrela-vermelha',
@@ -167,7 +167,7 @@ export const PGZERO_GAMES = [
       { path: 'erro.wav', notes: [300, 200], noteMilliseconds: 120 },
     ],
     music: [],
-    receipt: 'estrela-vermelha-r7.json.snapshot',
+    receipt: 'estrela-vermelha-r8.json.snapshot',
   },
   {
     key: 'quiz-relampago',
@@ -191,7 +191,7 @@ export const PGZERO_GAMES = [
       { path: 'erro.wav', notes: [220, 165], noteMilliseconds: 140 },
     ],
     music: [],
-    receipt: 'quiz-relampago-r7.json.snapshot',
+    receipt: 'quiz-relampago-r8.json.snapshot',
   },
   {
     key: 'voo-de-balao',
@@ -214,7 +214,7 @@ export const PGZERO_GAMES = [
     ],
     sounds: [{ path: 'fim.wav', notes: [440, 330, 220], noteMilliseconds: 140 }],
     music: [],
-    receipt: 'voo-de-balao-r7.json.snapshot',
+    receipt: 'voo-de-balao-r8.json.snapshot',
   },
   {
     key: 'desafio-da-danca',
@@ -246,7 +246,7 @@ export const PGZERO_GAMES = [
         noteMilliseconds: 250,
       },
     ],
-    receipt: 'desafio-da-danca-r7.json.snapshot',
+    receipt: 'desafio-da-danca-r8.json.snapshot',
   },
   {
     key: 'jardim-feliz',
@@ -271,7 +271,7 @@ export const PGZERO_GAMES = [
       { path: 'fim.wav', notes: [392, 330, 262], noteMilliseconds: 150 },
     ],
     music: [],
-    receipt: 'jardim-feliz-r8.json.snapshot',
+    receipt: 'jardim-feliz-r9.json.snapshot',
   },
   {
     key: 'dragoes-dorminhocos',
@@ -296,7 +296,7 @@ export const PGZERO_GAMES = [
       { path: 'dano.wav', notes: [200, 150], noteMilliseconds: 120, noise: true },
     ],
     music: [],
-    receipt: 'dragoes-dorminhocos-r7.json.snapshot',
+    receipt: 'dragoes-dorminhocos-r8.json.snapshot',
   },
   {
     key: 'barris-na-rampa',
@@ -323,7 +323,7 @@ export const PGZERO_GAMES = [
       { path: 'vitoria.wav', notes: [523, 659, 784, 1047], noteMilliseconds: 120 },
     ],
     music: [],
-    receipt: 'barris-na-rampa-r6.json.snapshot',
+    receipt: 'barris-na-rampa-r7.json.snapshot',
   },
   {
     key: 'salto-nas-plataformas',
@@ -349,7 +349,7 @@ export const PGZERO_GAMES = [
       { path: 'pulo.wav', notes: [440, 660], noteMilliseconds: 50 },
     ],
     music: [],
-    receipt: 'salto-nas-plataformas-r6.json.snapshot',
+    receipt: 'salto-nas-plataformas-r7.json.snapshot',
   },
   {
     key: 'piramide-de-cubos',
@@ -378,7 +378,7 @@ export const PGZERO_GAMES = [
       { path: 'vitoria.wav', notes: [523, 659, 784, 1047], noteMilliseconds: 120 },
     ],
     music: [],
-    receipt: 'piramide-de-cubos-r6.json.snapshot',
+    receipt: 'piramide-de-cubos-r7.json.snapshot',
   },
   {
     key: 'cipo-sobre-o-poco',
@@ -406,7 +406,7 @@ export const PGZERO_GAMES = [
       { path: 'tesouro.wav', notes: [784, 988, 1175, 1568], noteMilliseconds: 90 },
     ],
     music: [],
-    receipt: 'cipo-sobre-o-poco-r6.json.snapshot',
+    receipt: 'cipo-sobre-o-poco-r7.json.snapshot',
   },
   {
     key: 'mina-que-desmorona',
@@ -436,7 +436,7 @@ export const PGZERO_GAMES = [
       { path: 'vitoria.wav', notes: [523, 659, 784, 1047], noteMilliseconds: 120 },
     ],
     music: [],
-    receipt: 'mina-que-desmorona-r6.json.snapshot',
+    receipt: 'mina-que-desmorona-r7.json.snapshot',
   },
   {
     key: 'escudos-contra-invasores',
@@ -464,7 +464,7 @@ export const PGZERO_GAMES = [
       { path: 'vitoria.wav', notes: [523, 659, 784, 1047], noteMilliseconds: 120 },
     ],
     music: [],
-    receipt: 'escudos-contra-invasores-r6.json.snapshot',
+    receipt: 'escudos-contra-invasores-r7.json.snapshot',
   },
   {
     key: 'mergulho-alienigena',
@@ -494,7 +494,7 @@ export const PGZERO_GAMES = [
       { path: 'vitoria.wav', notes: [523, 659, 784, 1047], noteMilliseconds: 120 },
     ],
     music: [],
-    receipt: 'mergulho-alienigena-r6.json.snapshot',
+    receipt: 'mergulho-alienigena-r7.json.snapshot',
   },
   {
     key: 'nave-mae',
@@ -522,7 +522,7 @@ export const PGZERO_GAMES = [
       { path: 'vitoria.wav', notes: [523, 659, 784, 1047], noteMilliseconds: 120 },
     ],
     music: [],
-    receipt: 'nave-mae-r6.json.snapshot',
+    receipt: 'nave-mae-r7.json.snapshot',
   },
   {
     key: 'rastro-de-ajudantes',
@@ -550,7 +550,7 @@ export const PGZERO_GAMES = [
       { path: 'capsula.wav', notes: [523, 659, 784], noteMilliseconds: 60 },
     ],
     music: [],
-    receipt: 'rastro-de-ajudantes-r5.json.snapshot',
+    receipt: 'rastro-de-ajudantes-r6.json.snapshot',
   },
   {
     key: 'helicoptero-bombardeiro',
@@ -577,7 +577,7 @@ export const PGZERO_GAMES = [
       { path: 'dano.wav', notes: [200, 130], noteMilliseconds: 140, noise: true },
     ],
     music: [],
-    receipt: 'helicoptero-bombardeiro-r5.json.snapshot',
+    receipt: 'helicoptero-bombardeiro-r6.json.snapshot',
   },
   {
     key: 'cauda-espacial',
@@ -607,7 +607,7 @@ export const PGZERO_GAMES = [
       { path: 'vitoria.wav', notes: [523, 659, 784, 1047], noteMilliseconds: 120 },
     ],
     music: [],
-    receipt: 'cauda-espacial-r5.json.snapshot',
+    receipt: 'cauda-espacial-r6.json.snapshot',
   },
   {
     key: 'mochila-a-jato',
@@ -638,7 +638,7 @@ export const PGZERO_GAMES = [
       { path: 'decola.wav', notes: [262, 330, 392, 523, 659, 784], noteMilliseconds: 90 },
     ],
     music: [],
-    receipt: 'mochila-a-jato-r5.json.snapshot',
+    receipt: 'mochila-a-jato-r6.json.snapshot',
   },
   {
     key: 'propulsor-no-espaco',
@@ -666,7 +666,7 @@ export const PGZERO_GAMES = [
       { path: 'batida.wav', notes: [130, 98], noteMilliseconds: 160, noise: true },
     ],
     music: [],
-    receipt: 'propulsor-no-espaco-r5.json.snapshot',
+    receipt: 'propulsor-no-espaco-r6.json.snapshot',
   },
   {
     key: 'encanamento-apressado',
@@ -694,7 +694,7 @@ export const PGZERO_GAMES = [
       { path: 'venceu.wav', notes: [523, 659, 784, 1047], noteMilliseconds: 120 },
     ],
     music: [],
-    receipt: 'encanamento-apressado-r5.json.snapshot',
+    receipt: 'encanamento-apressado-r6.json.snapshot',
   },
   {
     key: 'troca-de-joias',
@@ -721,7 +721,7 @@ export const PGZERO_GAMES = [
       { path: 'erro.wav', notes: [220, 196], noteMilliseconds: 70 },
     ],
     music: [],
-    receipt: 'troca-de-joias-r5.json.snapshot',
+    receipt: 'troca-de-joias-r6.json.snapshot',
   },
   {
     key: 'bichinhos-em-fila',
@@ -749,7 +749,7 @@ export const PGZERO_GAMES = [
       { path: 'ai.wav', notes: [330, 196], noteMilliseconds: 90 },
     ],
     music: [],
-    receipt: 'bichinhos-em-fila-r5.json.snapshot',
+    receipt: 'bichinhos-em-fila-r6.json.snapshot',
   },
   {
     key: 'cavando-por-gemas',
@@ -778,7 +778,7 @@ export const PGZERO_GAMES = [
       { path: 'vitoria.wav', notes: [784, 988, 1175, 1568], noteMilliseconds: 90 },
     ],
     music: [],
-    receipt: 'cavando-por-gemas-r4.json.snapshot',
+    receipt: 'cavando-por-gemas-r5.json.snapshot',
   },
   {
     key: 'editor-de-cavernas',
@@ -807,7 +807,7 @@ export const PGZERO_GAMES = [
       { path: 'vitoria.wav', notes: [784, 988, 1175, 1568], noteMilliseconds: 90 },
     ],
     music: [],
-    receipt: 'editor-de-cavernas-r4.json.snapshot',
+    receipt: 'editor-de-cavernas-r5.json.snapshot',
   },
   {
     key: 'corrida-vista-de-cima',
@@ -835,7 +835,7 @@ export const PGZERO_GAMES = [
       { path: 'chegada.wav', notes: [784, 988, 1175, 1568], noteMilliseconds: 90 },
     ],
     music: [],
-    receipt: 'corrida-vista-de-cima-r4.json.snapshot',
+    receipt: 'corrida-vista-de-cima-r5.json.snapshot',
   },
   {
     key: 'sinuca',
@@ -865,7 +865,7 @@ export const PGZERO_GAMES = [
       { path: 'vitoria.wav', notes: [784, 988, 1175, 1568], noteMilliseconds: 90 },
     ],
     music: [],
-    receipt: 'sinuca-r4.json.snapshot',
+    receipt: 'sinuca-r5.json.snapshot',
   },
   {
     key: 'fliperama',
@@ -894,7 +894,7 @@ export const PGZERO_GAMES = [
       { path: 'perdeu.wav', notes: [330, 262, 196], noteMilliseconds: 90 },
     ],
     music: [],
-    receipt: 'fliperama-r4.json.snapshot',
+    receipt: 'fliperama-r5.json.snapshot',
   },
   {
     key: 'minigolfe-maluco',
@@ -924,7 +924,7 @@ export const PGZERO_GAMES = [
       { path: 'vitoria.wav', notes: [784, 988, 1175, 1568], noteMilliseconds: 90 },
     ],
     music: [],
-    receipt: 'minigolfe-maluco-r4.json.snapshot',
+    receipt: 'minigolfe-maluco-r5.json.snapshot',
   },
   {
     key: 'tiro-ao-prato',
@@ -953,7 +953,7 @@ export const PGZERO_GAMES = [
       { path: 'fim.wav', notes: [784, 659, 784, 1047], noteMilliseconds: 90 },
     ],
     music: [],
-    receipt: 'tiro-ao-prato-r4.json.snapshot',
+    receipt: 'tiro-ao-prato-r5.json.snapshot',
   },
   {
     key: 'rali-com-minimapa',
@@ -981,7 +981,7 @@ export const PGZERO_GAMES = [
       { path: 'vitoria.wav', notes: [784, 988, 1175, 1568], noteMilliseconds: 90 },
     ],
     music: [],
-    receipt: 'rali-com-minimapa-r4.json.snapshot',
+    receipt: 'rali-com-minimapa-r5.json.snapshot',
   },
   {
     key: 'pouso-lunar',
@@ -1008,7 +1008,7 @@ export const PGZERO_GAMES = [
       { path: 'quebrou.wav', notes: [220, 165, 110], noteMilliseconds: 110 },
     ],
     music: [],
-    receipt: 'pouso-lunar-r3.json.snapshot',
+    receipt: 'pouso-lunar-r4.json.snapshot',
   },
   {
     key: 'quebra-tijolos',
@@ -1037,7 +1037,7 @@ export const PGZERO_GAMES = [
       { path: 'fase.wav', notes: [523, 659, 784, 1047], noteMilliseconds: 80 },
     ],
     music: [],
-    receipt: 'quebra-tijolos-r3.json.snapshot',
+    receipt: 'quebra-tijolos-r4.json.snapshot',
   },
   {
     key: 'sapo-atravessa',
@@ -1065,7 +1065,7 @@ export const PGZERO_GAMES = [
       { path: 'toca.wav', notes: [523, 659, 784], noteMilliseconds: 70 },
     ],
     music: [],
-    receipt: 'sapo-atravessa-r3.json.snapshot',
+    receipt: 'sapo-atravessa-r4.json.snapshot',
   },
   {
     key: 'patrulha-em-camadas',
@@ -1093,7 +1093,7 @@ export const PGZERO_GAMES = [
       { path: 'chegou.wav', notes: [523, 659, 784, 1047], noteMilliseconds: 90 },
     ],
     music: [],
-    receipt: 'patrulha-em-camadas-r3.json.snapshot',
+    receipt: 'patrulha-em-camadas-r4.json.snapshot',
   },
   {
     key: 'motos-de-luz',
@@ -1117,7 +1117,7 @@ export const PGZERO_GAMES = [
     ],
     sounds: [{ path: 'batida.wav', notes: [196, 147, 98], noteMilliseconds: 110 }],
     music: [],
-    receipt: 'motos-de-luz-r3.json.snapshot',
+    receipt: 'motos-de-luz-r4.json.snapshot',
   },
   {
     key: 'arena-de-dois-comandos',
@@ -1147,7 +1147,7 @@ export const PGZERO_GAMES = [
       { path: 'onda.wav', notes: [523, 659, 784, 1047], noteMilliseconds: 80 },
     ],
     music: [],
-    receipt: 'arena-de-dois-comandos-r2.json.snapshot',
+    receipt: 'arena-de-dois-comandos-r3.json.snapshot',
   },
   {
     key: 'bombas-no-labirinto',
@@ -1176,7 +1176,7 @@ export const PGZERO_GAMES = [
       { path: 'porta.wav', notes: [523, 659, 784, 1047], noteMilliseconds: 90 },
     ],
     music: [],
-    receipt: 'bombas-no-labirinto-r3.json.snapshot',
+    receipt: 'bombas-no-labirinto-r4.json.snapshot',
   },
   {
     key: 'corredor-do-kung-fu',
@@ -1211,7 +1211,7 @@ export const PGZERO_GAMES = [
       { path: 'escada.wav', notes: [392, 494, 587, 784], noteMilliseconds: 90 },
     ],
     music: [],
-    receipt: 'corredor-do-kung-fu-r3.json.snapshot',
+    receipt: 'corredor-do-kung-fu-r4.json.snapshot',
   },
   {
     key: 'bolinha-rolante',
@@ -1239,7 +1239,7 @@ export const PGZERO_GAMES = [
       { path: 'fim.wav', notes: [294, 247, 196], noteMilliseconds: 140 },
     ],
     music: [],
-    receipt: 'bolinha-rolante-r3.json.snapshot',
+    receipt: 'bolinha-rolante-r4.json.snapshot',
   },
   {
     key: 'bolhas-que-se-dividem',
@@ -1268,7 +1268,7 @@ export const PGZERO_GAMES = [
       { path: 'nivel.wav', notes: [523, 659, 784, 1047], noteMilliseconds: 90 },
     ],
     music: [],
-    receipt: 'bolhas-que-se-dividem-r3.json.snapshot',
+    receipt: 'bolhas-que-se-dividem-r4.json.snapshot',
   },
   {
     key: 'masmorra-para-quatro',
@@ -1296,7 +1296,7 @@ export const PGZERO_GAMES = [
       { path: 'saida.wav', notes: [523, 659, 784, 1047], noteMilliseconds: 90 },
     ],
     music: [],
-    receipt: 'masmorra-para-quatro-r3.json.snapshot',
+    receipt: 'masmorra-para-quatro-r4.json.snapshot',
   },
   {
     key: 'duelo-por-turnos',
@@ -1326,7 +1326,7 @@ export const PGZERO_GAMES = [
       { path: 'derrota.wav', notes: [392, 330, 262, 196], noteMilliseconds: 140 },
     ],
     music: [],
-    receipt: 'duelo-por-turnos-r3.json.snapshot',
+    receipt: 'duelo-por-turnos-r4.json.snapshot',
   },
   {
     key: 'passarinho-saltitante',
@@ -1354,7 +1354,7 @@ export const PGZERO_GAMES = [
       { path: 'batida.wav', notes: [196, 147, 110], noteMilliseconds: 80 },
     ],
     music: [],
-    receipt: 'passarinho-saltitante-r3.json.snapshot',
+    receipt: 'passarinho-saltitante-r4.json.snapshot',
   },
   {
     key: 'placar-dos-campeoes',
@@ -1382,7 +1382,7 @@ export const PGZERO_GAMES = [
       { path: 'recorde.wav', notes: [523, 659, 784, 1047], noteMilliseconds: 90 },
     ],
     music: [],
-    receipt: 'placar-dos-campeoes-r3.json.snapshot',
+    receipt: 'placar-dos-campeoes-r4.json.snapshot',
   },
   {
     key: 'continuar',
@@ -1409,7 +1409,7 @@ export const PGZERO_GAMES = [
       { path: 'fim.wav', notes: [392, 330, 262, 196], noteMilliseconds: 120 },
     ],
     music: [],
-    receipt: 'continuar-r3.json.snapshot',
+    receipt: 'continuar-r4.json.snapshot',
   },
   {
     key: 'bussola-maluca',
@@ -1436,7 +1436,7 @@ export const PGZERO_GAMES = [
       { path: 'fim.wav', notes: [392, 330, 262], noteMilliseconds: 130 },
     ],
     music: [],
-    receipt: 'bussola-maluca-r3.json.snapshot',
+    receipt: 'bussola-maluca-r4.json.snapshot',
   },
   {
     key: 'cores-e-bolinha',
@@ -1462,7 +1462,7 @@ export const PGZERO_GAMES = [
       { path: 'acerto.wav', notes: [523, 659, 784, 1047], noteMilliseconds: 80 },
     ],
     music: [],
-    receipt: 'cores-e-bolinha-r2.json.snapshot',
+    receipt: 'cores-e-bolinha-r3.json.snapshot',
   },
   {
     key: 'piano-maluco',
@@ -1486,7 +1486,7 @@ export const PGZERO_GAMES = [
     ],
     sounds: [],
     music: [],
-    receipt: 'piano-maluco-r3.json.snapshot',
+    receipt: 'piano-maluco-r4.json.snapshot',
   },
   {
     key: 'duelo-de-tanques',
@@ -1514,7 +1514,7 @@ export const PGZERO_GAMES = [
       { path: 'acerto.wav', notes: [523, 659, 784, 1047], noteMilliseconds: 90 },
     ],
     music: [],
-    receipt: 'duelo-de-tanques-r3.json.snapshot',
+    receipt: 'duelo-de-tanques-r4.json.snapshot',
   },
   {
     key: 'memoria-contra-o-computador',
@@ -1541,7 +1541,7 @@ export const PGZERO_GAMES = [
       { path: 'par.wav', notes: [523, 784, 1047], noteMilliseconds: 80 },
     ],
     music: [],
-    receipt: 'memoria-contra-o-computador-r2.json.snapshot',
+    receipt: 'memoria-contra-o-computador-r3.json.snapshot',
   },
   {
     key: 'batalha-naval',
@@ -1569,7 +1569,7 @@ export const PGZERO_GAMES = [
       { path: 'afundou.wav', notes: [523, 392, 262, 196], noteMilliseconds: 90 },
     ],
     music: [],
-    receipt: 'batalha-naval-r5.json.snapshot',
+    receipt: 'batalha-naval-r6.json.snapshot',
   },
   {
     key: 'atirador-espacial',
@@ -1598,7 +1598,7 @@ export const PGZERO_GAMES = [
       { path: 'explosao.wav', notes: [196, 147, 110], noteMilliseconds: 60 },
     ],
     music: [],
-    receipt: 'atirador-espacial-r4.json.snapshot',
+    receipt: 'atirador-espacial-r5.json.snapshot',
   },
   {
     key: 'boing',
@@ -1625,7 +1625,7 @@ export const PGZERO_GAMES = [
       { path: 'ponto.wav', notes: [523, 392], noteMilliseconds: 90 },
     ],
     music: [],
-    receipt: 'boing-r3.json.snapshot',
+    receipt: 'boing-r4.json.snapshot',
   },
   {
     key: 'centopeia',
@@ -1656,7 +1656,7 @@ export const PGZERO_GAMES = [
       { path: 'besouro.wav', notes: [220, 247, 220, 247], noteMilliseconds: 40 },
     ],
     music: [],
-    receipt: 'centopeia-r5.json.snapshot',
+    receipt: 'centopeia-r6.json.snapshot',
   },
 ] as const satisfies readonly PgzeroGame[]
 

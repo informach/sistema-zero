@@ -50,6 +50,7 @@ console.log(JSON.stringify({ initial, javascript, metadata, selected: loaded() }
     'examples/python/visualReferenceGames.manifest.ts',
     'examples/pythonCatalog.ts',
     // Grouping by extension reads only the extensions' id/version contracts.
+    'runtime/python/canvasExtensionContract.ts',
     'runtime/python/pgzero/contract.ts',
     'runtime/python/pygame/contract.ts',
     'runtime/python/raylib/contract.ts',
