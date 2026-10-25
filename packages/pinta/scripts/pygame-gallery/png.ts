@@ -4,7 +4,7 @@
  * `drawing.ts` inserts it with the Pinta's own `pngWithPintaData`, so the block is byte for byte
  * the one "Editar no Pinta" would write.
  */
-import { deflateSync } from 'node:zlib'
+import { zlibSync } from 'fflate'
 import { type Px, rgb } from './pixel'
 
 const CRC_TABLE = (() => {
@@ -120,7 +120,7 @@ function compressedRows(samples: Uint8Array, width: number, height: number, pixe
       const out = raw.subarray(y * (stride + 1) + 1, (y + 1) * (stride + 1))
       filterRow(row, above, type, pixelBytes, out)
     }
-    const compressed = deflateSync(raw, { level: 9 })
+    const compressed = zlibSync(raw, { level: 9 })
     if (!best || compressed.length < best.length) best = compressed
   }
   return best!
