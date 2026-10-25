@@ -248,6 +248,24 @@ export async function preparePythonPromotion(raw: unknown, baseDirectory = proce
       releases: [{ id: release.releaseId, manifestSha256: release.manifestSha256 }],
     })
   if (!existingDeployment) worker.deployments.push({ status, deployment })
+  // One authoring release per profile. Retain immutable history and other profiles;
+  // repeating a retired release must never reactivate it or retire the current one.
+  if (status === 'active') {
+    for (const candidate of members.releases)
+      if (
+        candidate.status === 'active' &&
+        candidate.runtime.profileId === runtime.profileId &&
+        candidate.runtime.manifestSha256 !== runtime.manifestSha256
+      )
+        candidate.status = 'retired'
+    for (const candidate of worker.deployments)
+      if (
+        candidate.status === 'active' &&
+        candidate.deployment.release.profileId === runtime.profileId &&
+        candidate.deployment.release.manifestSha256 !== runtime.manifestSha256
+      )
+        candidate.status = 'retired'
+  }
   worker.parentOrigins = union(worker.parentOrigins, input.target.parentOrigins)
   const hosts = structuredClone(input.baseline.hosts)
   const host = hosts.find((entry) => entry.runtime.manifestSha256 === release.manifestSha256)

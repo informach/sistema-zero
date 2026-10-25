@@ -9,6 +9,10 @@ import {
   createStudioRuntimeRelease,
   StudioRuntimeReleaseSchema,
 } from '@sistemazero/core/studio/runtime-catalog'
+import {
+  prepareStudioAuthoringOptions,
+  studioAuthoringChoices,
+} from '../../studio/src/core/authoringOptions'
 import { runPythonPromotionCommand } from '../scripts/promote-python-runtime'
 import {
   type PythonPromotionInput,
@@ -156,6 +160,53 @@ test('repeating the current deployment preserves its exact approved policy and p
   expect(next.configuration.members.releases).toEqual(baseline.members.releases)
   expect(next.configuration.worker.deployments).toEqual(baseline.worker.deployments)
   expect(next.deployment).toEqual(previous.deployment)
+  expect(await verifyPythonPromotionPlan(next, next.planSha256)).toEqual(next)
+})
+
+test.each([
+  'staging',
+  'production',
+] as const)('a new active release retires only superseded releases of its Python profile in %s', async (environment) => {
+  const f = await fixture(environment)
+  const first = await preparePythonPromotion(f.input)
+  const other = await preparePythonPromotion({
+    ...f.input,
+    baseline: first.configuration,
+    release: { ...f.input.release, profileId: 'another-python', releaseId: 'another-1' },
+  })
+  const untouched = canonicalJson(other.configuration)
+  const next = await preparePythonPromotion({
+    ...f.input,
+    baseline: other.configuration,
+    release: { ...f.input.release, releaseId: 'next-1' },
+  })
+  expect(next.configuration.members.releases.map(({ status }) => status)).toEqual([
+    'retired',
+    'active',
+    'active',
+  ])
+  expect(next.configuration.worker.deployments.map(({ status }) => status)).toEqual([
+    'retired',
+    'active',
+    'active',
+  ])
+  expect(next.configuration.members.catalog.releases).toContainEqual(first.deployment.release)
+  expect(next.configuration.hosts).toHaveLength(3)
+  expect(canonicalJson(other.configuration)).toBe(untouched)
+  const options = await prepareStudioAuthoringOptions({
+    legacyJavaScript: true,
+    catalog: next.configuration.members,
+  })
+  for (const kind of ['classic', 'pro'] as const) {
+    const choices = studioAuthoringChoices(options, kind)
+    expect(choices[0]?.key).toBe('javascript')
+    const targetProfile = choices.filter(
+      (choice) => choice.policy?.runtime.profileId === f.input.release.profileId,
+    )
+    expect(targetProfile.map(({ key }) => key)).toEqual([next.deployment.release.manifestSha256])
+  }
+  const old = await preparePythonPromotion({ ...f.input, baseline: next.configuration })
+  expect(old.configuration).toEqual(next.configuration)
   expect(await verifyPythonPromotionPlan(next, next.planSha256)).toEqual(next)
 })
 
