@@ -37,7 +37,7 @@ def play(t):
     t.check(g['pontos'] == pontos + 1, 'pegar a estrela não somou ponto')
 
     # A pedra quica: depois de bater na borda de baixo, ela sobe.
-    g['pedra_posicao'] = g['Vector2'](400, 450 - 64 - 1)
+    g['pedra_posicao'] = g['Vector2'](400, 450 - g['tamanho_pedra'] - 1)
     g['pedra_direcao'].y = 1
     g['posicao'] = g['Vector2'](10, 10)
     yield from t.wait(3)

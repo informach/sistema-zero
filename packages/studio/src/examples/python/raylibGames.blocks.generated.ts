@@ -4,7 +4,7 @@ import type { RaylibGameKey } from './raylibGames.manifest'
 
 export const RAYLIB_GAME_BLOCKS = {
   'ola-raylib': {
-    sourceSha256: '962cad7d6eb11fb9ac4f66cbca9c7b8f2386a46bdaff90111c2840348bcaa900',
+    sourceSha256: '60d9d6e494dbba81531c08462850d969b70f79d475fab49b3a97e0853ec6a095',
     blockIds: [
       'sz_py_arithmetic',
       'sz_py_assign',
@@ -28,8 +28,7 @@ export const RAYLIB_GAME_BLOCKS = {
       'sz_py_rl2d_draw_rectangle',
       'sz_py_rl2d_draw_text',
       'sz_py_rl2d_draw_text_ex',
-      'sz_py_rl2d_draw_texture',
-      'sz_py_rl2d_draw_texture_v',
+      'sz_py_rl2d_draw_texture_ex',
       'sz_py_rl2d_end_drawing',
       'sz_py_rl2d_get_mouse_position',
       'sz_py_rl2d_image_color_grayscale',
@@ -50,7 +49,7 @@ export const RAYLIB_GAME_BLOCKS = {
     ],
   },
   'nave-que-desliza': {
-    sourceSha256: '030d8dd8d9fcdd9e321a1aa610b5c4260d00fb968ca30e49c9fca8d8d47a9d78',
+    sourceSha256: '540c667c2f0f17ebd907134521ab53d6ffa9fcdc91ea8caca0bb09d47c944aa4',
     blockIds: [
       'sz_py_arithmetic',
       'sz_py_assign',
@@ -73,7 +72,7 @@ export const RAYLIB_GAME_BLOCKS = {
       'sz_py_rl2d_close_window',
       'sz_py_rl2d_color',
       'sz_py_rl2d_draw_text',
-      'sz_py_rl2d_draw_texture_v',
+      'sz_py_rl2d_draw_texture_ex',
       'sz_py_rl2d_end_drawing',
       'sz_py_rl2d_field',
       'sz_py_rl2d_get_frame_time',
@@ -353,7 +352,7 @@ export const RAYLIB_GAME_BLOCKS = {
     ],
   },
   'chuva-de-meteoros': {
-    sourceSha256: '31f80e1d777152961c348c66920a08b3faab64f91c8c7d5191a85f37f692ab41',
+    sourceSha256: 'ca56090f962a389e82ca8ec414b9c114a7141668448d6bab7077ad171636d20a',
     blockIds: [
       'sz_py_alias',
       'sz_py_arithmetic',
@@ -399,8 +398,6 @@ export const RAYLIB_GAME_BLOCKS = {
       'sz_py_rl2d_draw_text_ex',
       'sz_py_rl2d_draw_texture_ex',
       'sz_py_rl2d_draw_texture_pro',
-      'sz_py_rl2d_draw_texture_rec',
-      'sz_py_rl2d_draw_texture_v',
       'sz_py_rl2d_end_drawing',
       'sz_py_rl2d_field',
       'sz_py_rl2d_get_frame_time',
@@ -511,7 +508,7 @@ export const RAYLIB_GAME_BLOCKS = {
     ],
   },
   'aventura-do-heroi': {
-    sourceSha256: '6cdf29f33d9689a110bc6e41f290159faa3e5f9279cf947e872c7bb91408130a',
+    sourceSha256: '688f4257130a340660a593ec061516c87b7301b06f591b57b5803b243ff2f9dc',
     blockIds: [
       'sz_py_alias',
       'sz_py_and',
@@ -567,8 +564,6 @@ export const RAYLIB_GAME_BLOCKS = {
       'sz_py_rl2d_draw_text_ex',
       'sz_py_rl2d_draw_texture_ex',
       'sz_py_rl2d_draw_texture_pro',
-      'sz_py_rl2d_draw_texture_rec',
-      'sz_py_rl2d_draw_texture_v',
       'sz_py_rl2d_end_drawing',
       'sz_py_rl2d_end_mode_2d',
       'sz_py_rl2d_field',

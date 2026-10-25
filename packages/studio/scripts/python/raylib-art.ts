@@ -281,16 +281,16 @@ export const estrelinha = (escala = 1) =>
 
 const EXPLOSAO_CORES = { w: '#ffffff', y: '#ffeb3b', o: '#ff9800', r: '#9e3a1e' }
 
-/** Explosão em anéis (24 x 24): cada quadro tem o anel maior e mais apagado. */
+/** Explosão em anéis (18 x 18): cada quadro tem o anel maior e mais apagado. */
 function explosaoLinhas(quadro: number) {
-  const raio = 3 + quadro * 2.2
+  const raio = 2.5 + quadro * 1.6
   const linhas: string[] = []
-  for (let y = 0; y < 24; y++) {
+  for (let y = 0; y < 18; y++) {
     let linha = ''
-    for (let x = 0; x < 24; x++) {
-      const d = Math.hypot(x - 11.5, y - 11.5)
-      if (d < raio - 4 && quadro < 2) linha += 'w'
-      else if (d < raio - 2) linha += quadro < 3 ? 'y' : '.'
+    for (let x = 0; x < 18; x++) {
+      const d = Math.hypot(x - 8.5, y - 8.5)
+      if (d < raio - 3 && quadro < 2) linha += 'w'
+      else if (d < raio - 1.5) linha += quadro < 3 ? 'y' : '.'
       else if (d < raio) linha += quadro < 4 ? 'o' : 'r'
       else linha += '.'
     }
@@ -395,7 +395,7 @@ export const monstrinho = (nome: string, escala = 1) =>
   pixelArt(MONSTROS[nome]!, MONSTRO_CORES, escala)
 
 // Aventura do Herói: herói em três direções (16 x 15), gosma em dois quadros (16 x 14),
-// árvore, pedra, mato, coração, folha e espada. Tudo desenhado com 2 pixels por ponto.
+// árvore, pedra, mato, coração, folha e espada. Tudo no tamanho natural: o jogo amplia com ESCALA.
 const HEROI_AVENTURA: Record<string, readonly string[]> = {
   baixo: [
     '.....kkkkkk.....',
@@ -594,20 +594,19 @@ export const AVENTURA_ART = () => ({
   'images/heroi.png': folhaDeQuadros(
     [[HEROI_AVENTURA.baixo!], [HEROI_AVENTURA.lado!], [HEROI_AVENTURA.cima!]],
     HEROI_AVENTURA_CORES,
-    2,
   ),
-  'images/gosma.png': folhaDeQuadros([[GOSMA[0]!, GOSMA[1]!]], GOSMA_CORES, 2),
-  'images/arvore.png': pixelArt(ARVORE, { ...MATO_CORES, l: '#2e7d32', d: '#1b5e20' }, 2),
-  'images/pedra.png': pixelArt(PEDRA_AVENTURA, MATO_CORES, 2),
-  'images/mato.png': pixelArt(MATO, MATO_CORES, 2),
-  'images/coracao.png': pixelArt(CORACAO, { r: '#e53935', w: '#ffcdd2' }, 2),
-  'images/folha.png': pixelArt(FOLHA, MATO_CORES, 2),
-  'images/espada.png': pixelArt(ESPADA, { w: '#e0e0e0', y: '#ffb300', b: '#6d4c41' }, 2),
+  'images/gosma.png': folhaDeQuadros([[GOSMA[0]!, GOSMA[1]!]], GOSMA_CORES),
+  'images/arvore.png': pixelArt(ARVORE, { ...MATO_CORES, l: '#2e7d32', d: '#1b5e20' }, 1),
+  'images/pedra.png': pixelArt(PEDRA_AVENTURA, MATO_CORES, 1),
+  'images/mato.png': pixelArt(MATO, MATO_CORES, 1),
+  'images/coracao.png': pixelArt(CORACAO, { r: '#e53935', w: '#ffcdd2' }, 1),
+  'images/folha.png': pixelArt(FOLHA, MATO_CORES, 1),
+  'images/espada.png': pixelArt(ESPADA, { w: '#e0e0e0', y: '#ffb300', b: '#6d4c41' }, 1),
 })
 
 export const RAYLIB_GAME_ART: Record<string, () => Record<string, Uint8Array>> = {
   'ola-raylib': () => ({
-    'images/nave.png': nave(4),
+    'images/nave.png': nave(),
     'fonts/pressstart2p.ttf': PRESS_START_2P,
   }),
   // Encostou! e Câmera que Segue desenham tudo com formas: nenhuma imagem.
@@ -631,11 +630,11 @@ export const RAYLIB_GAME_ART: Record<string, () => Record<string, Uint8Array>> =
     'fonts/pressstart2p.ttf': PRESS_START_2P,
   }),
   'chuva-de-meteoros': () => ({
-    'images/nave.png': nave(4),
-    'images/meteoro.png': pedra(4),
-    'images/laser.png': laser(3),
-    'images/estrela.png': estrelinha(2),
-    'images/explosao.png': folhaDeQuadros([[0, 1, 2, 3, 4].map(explosaoLinhas)], EXPLOSAO_CORES, 3),
+    'images/nave.png': nave(),
+    'images/meteoro.png': pedra(),
+    'images/laser.png': laser(),
+    'images/estrela.png': estrelinha(),
+    'images/explosao.png': folhaDeQuadros([[0, 1, 2, 3, 4].map(explosaoLinhas)], EXPLOSAO_CORES),
     'fonts/pressstart2p.ttf': PRESS_START_2P,
   }),
   'batalha-de-monstrinhos': () => ({
@@ -650,8 +649,8 @@ export const RAYLIB_GAME_ART: Record<string, () => Record<string, Uint8Array>> =
     'fonts/pressstart2p.ttf': PRESS_START_2P,
   }),
   'nave-que-desliza': () => ({
-    'images/nave.png': nave(3),
-    'images/pedra.png': pedra(4),
-    'images/estrela.png': estrela(3),
+    'images/nave.png': nave(),
+    'images/pedra.png': pedra(),
+    'images/estrela.png': estrela(),
   }),
 }

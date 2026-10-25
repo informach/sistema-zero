@@ -17,10 +17,10 @@
   "authoringLoader": "loadPythonAuthoring",
   "extension": "python-raylib-2d",
   "codecOrderSha256": "260d5420ed53ff196eab065c20843114564d95df4fff6d4f416fb06d8d25e26a",
-  "sourceSha256": "31f80e1d777152961c348c66920a08b3faab64f91c8c7d5191a85f37f692ab41",
-  "generatedSha256": "56a7a4d809de1ee3fc886295b53ef028b77ebdd424469da42b1522c600780ea8",
+  "sourceSha256": "ca56090f962a389e82ca8ec414b9c114a7141668448d6bab7077ad171636d20a",
+  "generatedSha256": "53c5f778c2247423eccb9b0ac16da514ccb8cc0bca5653cfb95f03ae5a57ee23",
   "opaqueCount": 0,
-  "blockCount": 748,
+  "blockCount": 794,
   "referencedBlocks": [
     {
       "id": "sz_py_alias",
@@ -28,15 +28,15 @@
     },
     {
       "id": "sz_py_arithmetic",
-      "count": 40
+      "count": 48
     },
     {
       "id": "sz_py_assign",
-      "count": 60
+      "count": 63
     },
     {
       "id": "sz_py_attribute",
-      "count": 69
+      "count": 72
     },
     {
       "id": "sz_py_boolean",
@@ -56,7 +56,7 @@
     },
     {
       "id": "sz_py_float",
-      "count": 5
+      "count": 3
     },
     {
       "id": "sz_py_for",
@@ -88,7 +88,7 @@
     },
     {
       "id": "sz_py_integer",
-      "count": 69
+      "count": 76
     },
     {
       "id": "sz_py_interpolation",
@@ -184,19 +184,11 @@
     },
     {
       "id": "sz_py_rl2d_draw_texture_ex",
-      "count": 1
+      "count": 2
     },
     {
       "id": "sz_py_rl2d_draw_texture_pro",
-      "count": 1
-    },
-    {
-      "id": "sz_py_rl2d_draw_texture_rec",
-      "count": 1
-    },
-    {
-      "id": "sz_py_rl2d_draw_texture_v",
-      "count": 1
+      "count": 2
     },
     {
       "id": "sz_py_rl2d_end_drawing",
@@ -204,7 +196,7 @@
     },
     {
       "id": "sz_py_rl2d_field",
-      "count": 40
+      "count": 45
     },
     {
       "id": "sz_py_rl2d_get_frame_time",
@@ -260,7 +252,7 @@
     },
     {
       "id": "sz_py_rl2d_Rectangle",
-      "count": 4
+      "count": 5
     },
     {
       "id": "sz_py_rl2d_set_target_fps",
@@ -276,7 +268,7 @@
     },
     {
       "id": "sz_py_rl2d_Vector2",
-      "count": 12
+      "count": 13
     },
     {
       "id": "sz_py_rl2d_vector2_normalize",
@@ -312,17 +304,17 @@
     },
     {
       "id": "sz_py_update",
-      "count": 6
+      "count": 7
     },
     {
       "id": "sz_py_variable",
-      "count": 237
+      "count": 256
     }
   ],
   "approvedBlockIdsSha256": "d800f2e8f69feb7b077fd710bfaca8e2888d9494cdceea419df43fc2df941c2d",
   "fullWorkspaceRoundtrip": true,
-  "initialWorkspaceSha256": "d6424b3cc16e3e341c23f0a3e1f8fb4318f4bb4dc28c434e77628759ba498dad",
-  "editedWorkspaceSha256": "abe2b92cc3006ebeea083ed62388b77283028b86f2a924e3e14eaca0b5557dcf",
+  "initialWorkspaceSha256": "3ce767fa703a60c600daf8cc185862fe99c4d6c2724cbbcc6ca83b545eefbf0c",
+  "editedWorkspaceSha256": "09050f1ecf4f469f41145e75c325e2c0b510ec1703aacf1d24720c18bc6bac52",
   "canonicalRenderReanalysis": true,
   "runtimeCapabilitiesQualified": false,
   "browserInteractionQualified": false,
@@ -342,8 +334,8 @@
       "field": "NUMBER",
       "before": "360",
       "after": "380",
-      "beforeSourceSha256": "19f220bde2f15fa0f12ec2860dcfa70d3fe7aa108fbc98c250d7aecc9f4adab0",
-      "afterSourceSha256": "e5cf60655a10d42caa543b22199d6eddc35e9d32d63b30159b79f7a2bc69921f"
+      "beforeSourceSha256": "1157953277748dcc79482abdd3bcacb5a3f1919d28da83b20baefe06d4456f07",
+      "afterSourceSha256": "8b5a40f1573ab3790064dc019023dbcae6b126b2ebad99ff2c198693fa40abec"
     },
     {
       "label": "velocidade do laser",
@@ -360,8 +352,8 @@
       "field": "NUMBER",
       "before": "600",
       "after": "640",
-      "beforeSourceSha256": "e5cf60655a10d42caa543b22199d6eddc35e9d32d63b30159b79f7a2bc69921f",
-      "afterSourceSha256": "56a7a4d809de1ee3fc886295b53ef028b77ebdd424469da42b1522c600780ea8"
+      "beforeSourceSha256": "8b5a40f1573ab3790064dc019023dbcae6b126b2ebad99ff2c198693fa40abec",
+      "afterSourceSha256": "53c5f778c2247423eccb9b0ac16da514ccb8cc0bca5653cfb95f03ae5a57ee23"
     }
   ]
 }

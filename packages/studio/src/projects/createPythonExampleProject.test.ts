@@ -1,4 +1,6 @@
 import { expect, test } from 'bun:test'
+import { readdirSync, readFileSync } from 'node:fs'
+import { join, relative } from 'node:path'
 import { buildPythonProvidedModuleMetadata } from '@sistemazero/core/studio/python-provided-modules-render'
 import { SZ_AUDIO_MODULE_DESCRIPTOR } from '@sistemazero/core/studio/python-provided-modules-sz-audio'
 import type { StudioPythonRuntimeFeature } from '@sistemazero/core/studio/python-runtime-features'
@@ -831,5 +833,26 @@ for (const key of raylibKeys)
       const { files } = await buildPythonSourceFiles(reopened, null)
       for (const [path, text] of Object.entries(payload.files)) expect(files[path]).toEqual(text)
       expect(files['requisitos-raylib.txt']).toBe('raylib==6.0.1.0\n')
+
+      // The ZIP the child downloads carries, byte for byte, the very folder the playtests run on
+      // the real raylib 6.0.1.0 (scripts/python/raylib-playtest): what plays there plays at home.
+      const exported = await exportProjectSource(reopened, {
+        runtimeCatalog: port.environments[0]!.context.catalog,
+      })
+      expect(exported.warnings).toEqual([])
+      const zip = unzipSync(new Uint8Array(await exported.blob.arrayBuffer()))
+      const folder = join(import.meta.dir, '../examples/python/raylib', key.split(':')[1]!)
+      const onDisk = readdirSync(folder, { recursive: true, withFileTypes: true }).filter((file) =>
+        file.isFile(),
+      )
+      expect(onDisk.length).toBeGreaterThan(3)
+      for (const file of onDisk) {
+        const path = relative(folder, join(file.parentPath, file.name)).replaceAll('\\', '/')
+        expect(zip[path], path).toEqual(new Uint8Array(readFileSync(join(folder, path))))
+      }
+      expect(new TextDecoder().decode(zip['requisitos-raylib.txt'])).toBe('raylib==6.0.1.0\n')
+      // The browser engine never travels: the desktop raylib is the one pip installs.
+      for (const path of Object.keys(zip)) expect(path).not.toMatch(/(^|\/)(pyray|raylib)(\.py|\/)/)
+      expect(zip['index.html']).toBeUndefined()
     }, entry.kind)
   })

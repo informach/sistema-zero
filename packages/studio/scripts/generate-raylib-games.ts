@@ -83,7 +83,8 @@ abre \`images/nave.png\` (a barra \`/\` funciona também no Windows). As imagens
 faça o seu no Pinta e traga para o jogo pelo menu ⋯ → Imagens → "Trazer do Pinta"; depois
 use no código o caminho que o painel mostra em "nome no código". Um desenho animado é uma
 folha de quadros, igual à que o Pinta exporta: uma linha por animação, com os quadros lado a
-lado, e o jogo recorta um quadro de cada vez.
+lado, e o jogo recorta um quadro de cada vez. Cada desenho fica com o tamanho que tem no Pinta,
+e \`ESCALA\`, no começo do \`main.py\`, diz quantas vezes ele aparece maior na tela.
 `
     : ''
 }

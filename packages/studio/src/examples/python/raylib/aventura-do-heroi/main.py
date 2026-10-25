@@ -6,6 +6,8 @@ ALTURA = 450
 CASA = 32
 VELOCIDADE = 170
 VIDAS = 5
+# Cada ponto do desenho vira ESCALA pontos na tela: um desenho do Pinta fica grande e nítido.
+ESCALA = 2
 # ~ = água, # = árvore, R = pedra, g = mato, E = gosma, P = herói
 MAPA = [
     '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~',
@@ -62,18 +64,20 @@ class Objeto:
     def __init__(self, nome, x, y):
         self.nome = nome
         self.textura = imagens[nome]
-        self.posicao = Vector2(x + CASA / 2 - self.textura.width / 2, y + CASA - self.textura.height)
+        # O tamanho na tela é o tamanho do desenho vezes a ESCALA.
+        self.tamanho = Vector2(self.textura.width * ESCALA, self.textura.height * ESCALA)
+        self.posicao = Vector2(x + CASA / 2 - self.tamanho.x / 2, y + CASA - self.tamanho.y)
         self.cortado = False
 
     def base(self):
-        return self.posicao.y + self.textura.height
+        return self.posicao.y + self.tamanho.y
 
     def caixa(self):
-        return Rectangle(self.posicao.x + 4, self.base() - 16, self.textura.width - 8, 16)
+        return Rectangle(self.posicao.x + 4, self.base() - 16, self.tamanho.x - 8, 16)
 
     def desenhar(self):
         if not self.cortado:
-            draw_texture_v(self.textura, self.posicao, WHITE)
+            draw_texture_ex(self.textura, self.posicao, 0, ESCALA, WHITE)
 
 
 def bater_nas_paredes(caixa, deslocamento, eixo):
@@ -152,15 +156,20 @@ class Heroi:
         # A linha da folha é a da direção; para a esquerda, o mesmo desenho de lado espelhado.
         y = LINHA_DO_HEROI[self.olhando] * ALTURA_HEROI
         largura = -LARGURA_HEROI if self.olhando == 'esquerda' else LARGURA_HEROI
+        recorte = Rectangle(0, y, largura, ALTURA_HEROI)
         # O desenho fica centrado nos pés e com a base na base deles.
-        posicao = Vector2(self.pes.x + self.pes.width / 2 - LARGURA_HEROI / 2, self.base() - ALTURA_HEROI + balanco)
-        draw_texture_rec(textura_heroi, Rectangle(0, y, largura, ALTURA_HEROI), posicao, WHITE)
+        tela_x = self.pes.x + self.pes.width / 2 - LARGURA_HEROI * ESCALA / 2
+        tela_y = self.base() - ALTURA_HEROI * ESCALA + balanco
+        destino = Rectangle(tela_x, tela_y, LARGURA_HEROI * ESCALA, ALTURA_HEROI * ESCALA)
+        draw_texture_pro(textura_heroi, recorte, destino, Vector2(0, 0), 0, WHITE)
         if self.atacando > 0:
             area = self.golpe()
             giro = {'cima': 0, 'direita': 90, 'baixo': 180, 'esquerda': 270}[self.olhando]
             espada = imagens['espada']
-            destino = Rectangle(area.x + area.width / 2, area.y + area.height / 2, espada.width, espada.height)
-            meio = Vector2(espada.width / 2, espada.height / 2)
+            largura_espada = espada.width * ESCALA
+            altura_espada = espada.height * ESCALA
+            destino = Rectangle(area.x + area.width / 2, area.y + area.height / 2, largura_espada, altura_espada)
+            meio = Vector2(largura_espada / 2, altura_espada / 2)
             draw_texture_pro(espada, Rectangle(0, 0, espada.width, espada.height), destino, meio, giro, WHITE)
 
 
@@ -195,8 +204,10 @@ class Gosma:
 
     def desenhar(self):
         recorte = Rectangle(int(self.quadro) * LARGURA_GOSMA, 0, LARGURA_GOSMA, ALTURA_GOSMA)
-        posicao = Vector2(self.pes.x + self.pes.width / 2 - LARGURA_GOSMA / 2, self.base() - ALTURA_GOSMA)
-        draw_texture_rec(textura_gosma, recorte, posicao, WHITE)
+        tela_x = self.pes.x + self.pes.width / 2 - LARGURA_GOSMA * ESCALA / 2
+        tela_y = self.base() - ALTURA_GOSMA * ESCALA
+        destino = Rectangle(tela_x, tela_y, LARGURA_GOSMA * ESCALA, ALTURA_GOSMA * ESCALA)
+        draw_texture_pro(textura_gosma, recorte, destino, Vector2(0, 0), 0, WHITE)
 
 
 def soltar_folhas(x, y):
@@ -299,12 +310,13 @@ while not window_should_close():
     for coisa in sorted(objetos + gosmas + [heroi], key=lambda c: c.base()):
         coisa.desenhar()
     for folha in folhas:
-        draw_texture_v(imagens['folha'], folha[0], WHITE)
+        draw_texture_ex(imagens['folha'], folha[0], 0, ESCALA, WHITE)
     end_mode_2d()
 
     for i in range(VIDAS):
         cor = WHITE if i < heroi.vidas else (60, 60, 60, 200)
-        draw_texture_ex(imagens['coracao'], Vector2(16 + i * 34, 14), 0, 2, cor)
+        # No placar, o coração aparece com o dobro do tamanho do mundo.
+        draw_texture_ex(imagens['coracao'], Vector2(16 + i * 34, 14), 0, ESCALA * 2, cor)
     draw_text_ex(fonte, f'Gosmas: {len(gosmas)}', Vector2(LARGURA - 190, 20), 16, 0, WHITE)
     if estado != 'jogando':
         draw_rectangle(140, 150, 520, 130, (0, 0, 0, 200))

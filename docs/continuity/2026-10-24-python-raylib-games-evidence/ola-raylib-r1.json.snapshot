@@ -17,10 +17,10 @@
   "authoringLoader": "loadPythonAuthoring",
   "extension": "python-raylib-2d",
   "codecOrderSha256": "260d5420ed53ff196eab065c20843114564d95df4fff6d4f416fb06d8d25e26a",
-  "sourceSha256": "962cad7d6eb11fb9ac4f66cbca9c7b8f2386a46bdaff90111c2840348bcaa900",
-  "generatedSha256": "d50f82f023563e1eacafabee2cd9738686f9c956b48139d46e1625933aecc4c2",
+  "sourceSha256": "60d9d6e494dbba81531c08462850d969b70f79d475fab49b3a97e0853ec6a095",
+  "generatedSha256": "c5c99dd8a40cb7507177668e258f935a0a163e577d382c2b75309e5c0b8f5625",
   "opaqueCount": 0,
-  "blockCount": 161,
+  "blockCount": 172,
   "referencedBlocks": [
     {
       "id": "sz_py_arithmetic",
@@ -28,7 +28,7 @@
     },
     {
       "id": "sz_py_assign",
-      "count": 11
+      "count": 12
     },
     {
       "id": "sz_py_compare",
@@ -44,7 +44,7 @@
     },
     {
       "id": "sz_py_integer",
-      "count": 50
+      "count": 54
     },
     {
       "id": "sz_py_none",
@@ -107,12 +107,8 @@
       "count": 2
     },
     {
-      "id": "sz_py_rl2d_draw_texture",
-      "count": 2
-    },
-    {
-      "id": "sz_py_rl2d_draw_texture_v",
-      "count": 1
+      "id": "sz_py_rl2d_draw_texture_ex",
+      "count": 3
     },
     {
       "id": "sz_py_rl2d_end_drawing",
@@ -168,7 +164,7 @@
     },
     {
       "id": "sz_py_rl2d_Vector2",
-      "count": 8
+      "count": 10
     },
     {
       "id": "sz_py_rl2d_window_loop",
@@ -184,13 +180,13 @@
     },
     {
       "id": "sz_py_variable",
-      "count": 27
+      "count": 31
     }
   ],
   "approvedBlockIdsSha256": "d800f2e8f69feb7b077fd710bfaca8e2888d9494cdceea419df43fc2df941c2d",
   "fullWorkspaceRoundtrip": true,
-  "initialWorkspaceSha256": "c0e9398ab920b43f9f6075a2235302103da02a9a25ce0f82e22c6d3b195dde33",
-  "editedWorkspaceSha256": "b614dd4365408521ab0e5b5ce9d48f1867250546d027169c7f0ac7708746ba6f",
+  "initialWorkspaceSha256": "d1a49d810622ccd8dea3936d36daa6fdd3cdbfbc095e0040e0773bea199cd948",
+  "editedWorkspaceSha256": "f5ae3ab1bfd9259126d3129ca370922d7ed07ddfaf5c5211fdc2c524dc28cf7d",
   "canonicalRenderReanalysis": true,
   "runtimeCapabilitiesQualified": false,
   "browserInteractionQualified": false,
@@ -210,8 +206,8 @@
       "field": "NUMBER",
       "before": "800",
       "after": "820",
-      "beforeSourceSha256": "f1ae122f7a56a7a20f3680170a8ff7c616fb64b1b0f9e53365df48c83c189bc8",
-      "afterSourceSha256": "9a379201c6e91d2b3e9f53569694a0f46fb2edceb232cacf92e8362f60b01c32"
+      "beforeSourceSha256": "d990c1734d2614a1da28178a775b6095ac87a7909350f0552e2b453efb8550a9",
+      "afterSourceSha256": "1d9e0b5efa9f4391f087f972ba86f89aa42bfb966200da6b8cf7fae7a91c060f"
     },
     {
       "label": "altura",
@@ -228,8 +224,8 @@
       "field": "NUMBER",
       "before": "450",
       "after": "460",
-      "beforeSourceSha256": "9a379201c6e91d2b3e9f53569694a0f46fb2edceb232cacf92e8362f60b01c32",
-      "afterSourceSha256": "d50f82f023563e1eacafabee2cd9738686f9c956b48139d46e1625933aecc4c2"
+      "beforeSourceSha256": "1d9e0b5efa9f4391f087f972ba86f89aa42bfb966200da6b8cf7fae7a91c060f",
+      "afterSourceSha256": "c5c99dd8a40cb7507177668e258f935a0a163e577d382c2b75309e5c0b8f5625"
     }
   ]
 }

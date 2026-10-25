@@ -2,6 +2,8 @@ from pyray import *
 
 LARGURA = 800
 ALTURA = 450
+# Cada ponto do desenho vira ESCALA pontos na tela: um desenho do Pinta fica grande e nítido.
+ESCALA = 4
 
 init_window(LARGURA, ALTURA, 'Olá, Raylib')
 set_target_fps(60)
@@ -42,9 +44,9 @@ while not window_should_close():
     draw_rectangle(470, 380, 300, 40, DARKBLUE)
 
     # Imagens
-    draw_texture(nave, 40, 150, WHITE)
-    draw_texture_v(nave_cinza, Vector2(120, 150), WHITE)
-    draw_texture(nave_invertida, 200, 150, WHITE)
+    draw_texture_ex(nave, Vector2(40, 150), 0, ESCALA, WHITE)
+    draw_texture_ex(nave_cinza, Vector2(120, 150), 0, ESCALA, WHITE)
+    draw_texture_ex(nave_invertida, Vector2(200, 150), 0, ESCALA, WHITE)
 
     # Texto: a fonte do raylib e a fonte TTF
     draw_text('Olá, Raylib!', 40, 30, 40, WHITE)

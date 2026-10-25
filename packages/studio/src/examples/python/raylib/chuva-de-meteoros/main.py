@@ -7,6 +7,8 @@ COR_DO_FUNDO = (15, 10, 25, 255)
 VELOCIDADE_NAVE = 360
 VELOCIDADE_LASER = 600
 TEMPO_ENTRE_METEOROS = 0.5
+# Cada ponto do desenho vira ESCALA pontos na tela: um desenho do Pinta fica grande e nítido.
+ESCALA = 4
 
 init_window(LARGURA, ALTURA, 'Chuva de Meteoros')
 init_audio_device()
@@ -28,7 +30,7 @@ som_explosao = load_sound('sounds/explosao.wav')
 musica = load_music_stream('music/tema.ogg')
 play_music_stream(musica)
 
-estrelas = [(Vector2(randint(0, LARGURA), randint(0, ALTURA)), uniform(0.5, 1.6)) for i in range(30)]
+estrelas = [(Vector2(randint(0, LARGURA), randint(0, ALTURA)), uniform(1, 3)) for i in range(30)]
 
 
 class Sprite:
@@ -37,7 +39,8 @@ class Sprite:
         self.posicao = posicao
         self.velocidade = velocidade
         self.direcao = direcao
-        self.tamanho = Vector2(textura.width, textura.height)
+        # O tamanho na tela é o tamanho do desenho vezes a ESCALA.
+        self.tamanho = Vector2(textura.width * ESCALA, textura.height * ESCALA)
         self.raio = self.tamanho.y / 2
         self.descartar = False
 
@@ -53,12 +56,13 @@ class Sprite:
         self.descartar = not -200 < self.posicao.y < ALTURA + 200
 
     def desenhar(self):
-        draw_texture_v(self.textura, self.posicao, WHITE)
+        draw_texture_ex(self.textura, self.posicao, 0, ESCALA, WHITE)
 
 
 class Nave(Sprite):
     def __init__(self):
-        super().__init__(textura_nave, Vector2(LARGURA / 2 - 32, ALTURA - 100), VELOCIDADE_NAVE, Vector2(0, 0))
+        super().__init__(textura_nave, Vector2(LARGURA / 2, ALTURA - 100), VELOCIDADE_NAVE, Vector2(0, 0))
+        self.posicao.x -= self.tamanho.x / 2
 
     def atualizar(self, dt):
         self.direcao.x = int(is_key_down(KEY_RIGHT)) - int(is_key_down(KEY_LEFT))
@@ -68,7 +72,8 @@ class Nave(Sprite):
         self.posicao.x = max(0, min(self.posicao.x, LARGURA - self.tamanho.x))
         self.posicao.y = max(0, min(self.posicao.y, ALTURA - self.tamanho.y))
         if is_key_pressed(KEY_SPACE):
-            atirar(Vector2(self.posicao.x + self.tamanho.x / 2 - 6, self.posicao.y - 40))
+            meia_largura_laser = textura_laser.width * ESCALA / 2
+            atirar(Vector2(self.posicao.x + self.tamanho.x / 2 - meia_largura_laser, self.posicao.y - 40))
 
 
 class Laser(Sprite):
@@ -94,7 +99,7 @@ class Meteoro(Sprite):
         return self.posicao
 
     def desenhar(self):
-        recorte = Rectangle(0, 0, self.tamanho.x, self.tamanho.y)
+        recorte = Rectangle(0, 0, self.textura.width, self.textura.height)
         destino = Rectangle(self.posicao.x, self.posicao.y, self.tamanho.x, self.tamanho.y)
         meio = Vector2(self.tamanho.x / 2, self.tamanho.y / 2)
         draw_texture_pro(self.textura, recorte, destino, meio, self.giro, WHITE)
@@ -102,7 +107,7 @@ class Meteoro(Sprite):
 
 class Explosao:
     def __init__(self, centro):
-        self.posicao = Vector2(centro.x - LARGURA_EXPLOSAO / 2, centro.y - ALTURA_EXPLOSAO / 2)
+        self.posicao = Vector2(centro.x - LARGURA_EXPLOSAO * ESCALA / 2, centro.y - ALTURA_EXPLOSAO * ESCALA / 2)
         self.quadro = 0
         self.descartar = False
 
@@ -113,7 +118,8 @@ class Explosao:
     def desenhar(self):
         if not self.descartar:
             recorte = Rectangle(int(self.quadro) * LARGURA_EXPLOSAO, 0, LARGURA_EXPLOSAO, ALTURA_EXPLOSAO)
-            draw_texture_rec(textura_explosao, recorte, self.posicao, WHITE)
+            destino = Rectangle(self.posicao.x, self.posicao.y, LARGURA_EXPLOSAO * ESCALA, ALTURA_EXPLOSAO * ESCALA)
+            draw_texture_pro(textura_explosao, recorte, destino, Vector2(0, 0), 0, WHITE)
 
 
 def escrever_no_meio(texto, y, tamanho, cor):
