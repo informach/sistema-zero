@@ -33,6 +33,8 @@ export interface PgzeroGame {
   ideas: readonly string[]
   /** Text files the game reads with open() (hand-written next to main.py), shipped with the project. */
   dataFiles?: readonly string[]
+  /** A font the game draws its texts with: fonts/<font>.ttf, with its own license file. */
+  font?: 'pressstart2p'
   /** Sound effects, written to sounds/<path>. */
   sounds: readonly VisualReferenceSound[]
   music: readonly PgzeroMusic[]
@@ -1590,12 +1592,13 @@ export const PGZERO_GAMES = [
       'Mude TEMPO_ENTRE_TIROS para a nave atirar mais vezes.',
     ],
     dataFiles: ['inimigos.txt'],
+    font: 'pressstart2p',
     sounds: [
       { path: 'tiro.wav', notes: [988, 784], noteMilliseconds: 30 },
       { path: 'explosao.wav', notes: [196, 147, 110], noteMilliseconds: 60 },
     ],
     music: [],
-    receipt: 'atirador-espacial-r3.json.snapshot',
+    receipt: 'atirador-espacial-r4.json.snapshot',
   },
   {
     key: 'boing',
@@ -1638,10 +1641,11 @@ export const PGZERO_GAMES = [
     inspiration: 'Myriapod',
     book: 'classics',
     howToPlay:
-      'Espaço começa. As setas andam pela parte de baixo do campo e o espaço atira, um tiro de cada vez. A centopeia anda de lado e desce uma linha quando bate numa pedra ou na borda. Cada parte acertada vale 10 pontos e vira pedra, e as partes de trás seguem como outra centopeia; uma pedra aguenta três tiros. Encostar na centopeia custa uma vida; acabou a centopeia, vem outra, maior e mais rápida.',
+      'Espaço começa. As setas andam pela parte de baixo do campo e o espaço atira, um tiro de cada vez. A centopeia anda de lado e desce uma linha quando bate numa pedra ou na borda. Cada parte acertada vale 10 pontos e vira pedra, e as partes de trás seguem como outra centopeia; uma pedra aguenta três tiros. De tempos em tempos um besouro cruza a parte de baixo em zigue-zague, comendo as pedras por onde passa: acertá-lo vale 50 pontos. Encostar na centopeia ou no besouro custa uma vida; acabou a centopeia, vem outra, maior e mais rápida.',
     ideas: [
       'Mude PEDRAS_NO_COMECO para um campo mais cheio, ou mais vazio.',
       'Mude PARTES_NA_PRIMEIRA_ONDA para uma centopeia mais comprida.',
+      'Mude TEMPO_DO_BESOURO para o besouro aparecer mais vezes.',
       'Faça a cabeça valer mais pontos que o corpo: cada parte sabe se é cabeça (parte.cabeca).',
     ],
     sounds: [
@@ -1649,9 +1653,10 @@ export const PGZERO_GAMES = [
       { path: 'acerto.wav', notes: [659, 988], noteMilliseconds: 50 },
       { path: 'pedra.wav', notes: [196], noteMilliseconds: 40 },
       { path: 'batida.wav', notes: [330, 247, 165], noteMilliseconds: 80 },
+      { path: 'besouro.wav', notes: [220, 247, 220, 247], noteMilliseconds: 40 },
     ],
     music: [],
-    receipt: 'centopeia-r3.json.snapshot',
+    receipt: 'centopeia-r4.json.snapshot',
   },
 ] as const satisfies readonly PgzeroGame[]
 

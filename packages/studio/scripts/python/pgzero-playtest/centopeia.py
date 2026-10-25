@@ -19,6 +19,8 @@ def play(t):
     t.tap('SPACE')
     centopeia = t.get('centopeia')
     t.check('espaço começa com uma centopeia de oito partes', t.get('estado') == 'jogando' and len(centopeia) == 8)
+    # Nestes primeiros testes o besouro fica de fora (ele tem os testes dele mais abaixo).
+    t.set('espera_do_besouro', 10 ** 9)
 
     def em_fila():
         casas = [(parte.coluna, parte.linha) for parte in centopeia]
@@ -101,6 +103,54 @@ def play(t):
             t.get('vidas') == vidas - 1 and t.get('protegido') > 1.5)
     t.step(1)
     t.check('protegido, não perde outra', t.get('vidas') == vidas - 1)
+
+    # O besouro voador.
+    t.set('protegido', 999)
+    t.set('espera_do_besouro', t.get('TEMPO_DO_BESOURO'))
+    centopeia.clear()
+    centopeia.append(Parte(0, 1, 1, 0))
+    pedras.clear()
+    for coluna in range(20):
+        for linha in [5, zona, linhas - 1]:
+            t.get('por_pedra')((coluna, linha))
+    quadros = t.until(lambda: t.get('besouro_voando'), 60 * 10)
+    t.check('o besouro aparece depois de TEMPO_DO_BESOURO segundos', 355 <= quadros <= 365, f'{quadros} quadros')
+    besouro = t.get('besouro')
+    alturas = []
+    sentidos = set()
+    while t.get('besouro_voando'):
+        alturas.append((besouro.top, besouro.bottom))
+        sentidos.add(besouro.vy > 0)
+        t.step(1)
+    t.check('o besouro voa em zigue-zague, só na zona do jogador', sentidos == {True, False}
+            and min(topo for topo, fundo in alturas) >= zona * casa_px - 3 and max(fundo for topo, fundo in alturas) <= 600 + 3)
+    t.check('o besouro come as pedras da zona por onde passa, e só elas',
+            sum(1 for coluna in range(20) if (coluna, zona) in pedras or (coluna, linhas - 1) in pedras) < 40
+            and all((coluna, 5) in pedras for coluna in range(20)))
+    t.check('depois de sair da tela ele espera para voltar', t.get('espera_do_besouro') > 5)
+    # Acertar o besouro vale 50 pontos.
+    t.set('espera_do_besouro', 0)
+    t.step(1)
+    besouro.vx = 0
+    besouro.vy = 0
+    besouro.midbottom = (jogador.x, jogador.top - 120)
+    pontos = t.get('pontos')
+    t.step(1)
+    t.shot('besouro')
+    t.tap('SPACE')
+    t.until(lambda: not t.get('atirando'), 60)
+    t.check('acertar o besouro vale 50 pontos e ele some', t.get('pontos') == pontos + 50 and not t.get('besouro_voando'))
+    # Encostar no besouro custa uma vida.
+    t.set('protegido', 0)
+    t.set('espera_do_besouro', 0)
+    t.step(1)
+    besouro.vx = 0
+    besouro.vy = 0
+    besouro.center = jogador.center
+    vidas = t.get('vidas')
+    t.step(1)
+    t.check('encostar no besouro custa uma vida', t.get('vidas') == vidas - 1)
+    t.set('besouro_voando', False)
 
     # Metade que vence uma onda: um atirador que fica embaixo da parte mais baixa.
     t.set('vidas', 3)

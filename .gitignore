@@ -97,3 +97,4 @@ output/
 # Arquivos que os jogos Python da galeria gravam (recorde, placar) quando rodados na própria pasta.
 packages/studio/src/examples/python/pgzero/*/*.txt
 !packages/studio/src/examples/python/pgzero/atirador-espacial/inimigos.txt
+!packages/studio/src/examples/python/pgzero/*/LICENSE-fonte.txt

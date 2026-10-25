@@ -17,10 +17,10 @@
   "authoringLoader": "loadPythonAuthoring",
   "extension": "python-pgzero",
   "codecOrderSha256": "9230bb48f54aec7ba76bd4b69d279ee17895c6104123e6a07dccdb6b266b8c5f",
-  "sourceSha256": "3cfd0d6668798452a631f5f606e38ea5fdff8cecdf1224029453ee581cbb2ab6",
-  "generatedSha256": "bc5a409a53d39ae1446f10e1a73f6aba37c3dcfd4af2c7a4e33ae809e0eeaf50",
+  "sourceSha256": "842484c9675e3ba5a3a0bda416ffbce570e64482766e47808939330b22ca0713",
+  "generatedSha256": "cc78b58363beae83e17bfa86bac1a45b092a849bc5b50d6fc2b5ed2867196e48",
   "opaqueCount": 0,
-  "blockCount": 821,
+  "blockCount": 835,
   "referencedBlocks": [
     {
       "id": "sz_py_and",
@@ -32,7 +32,7 @@
     },
     {
       "id": "sz_py_assign",
-      "count": 77
+      "count": 78
     },
     {
       "id": "sz_py_attribute",
@@ -96,7 +96,7 @@
     },
     {
       "id": "sz_py_integer",
-      "count": 98
+      "count": 99
     },
     {
       "id": "sz_py_list",
@@ -216,7 +216,7 @@
     },
     {
       "id": "sz_py_text",
-      "count": 80
+      "count": 81
     },
     {
       "id": "sz_py_try",
@@ -228,7 +228,7 @@
     },
     {
       "id": "sz_py_variable",
-      "count": 247
+      "count": 258
     },
     {
       "id": "sz_py_with_open",
@@ -237,8 +237,8 @@
   ],
   "approvedBlockIdsSha256": "54202db5e7bad445cab6e6263ea549dc48128724392cd438eaab19555b4dc547",
   "fullWorkspaceRoundtrip": true,
-  "initialWorkspaceSha256": "1116732137e92699a793afd5b243cd4cb79f8c285106be0922edb75bad0591e1",
-  "editedWorkspaceSha256": "5e25e9487eff76de2bdd6d8ae0ed9e0c5e520d7d6ba0b80e58547f316164eead",
+  "initialWorkspaceSha256": "81d2f89ee1628fc7c4f872530ee1b3893051c1581a667b3be808c9e40200d73e",
+  "editedWorkspaceSha256": "20900cd58707a178a8c4545b9d689db5d7d211503b84d81250daf778114261a1",
   "canonicalRenderReanalysis": true,
   "runtimeCapabilitiesQualified": false,
   "browserInteractionQualified": false,
@@ -258,8 +258,8 @@
       "field": "NUMBER",
       "before": "800",
       "after": "810",
-      "beforeSourceSha256": "f4f079552e90fe451598b0441b1b1b00a07bcc315827946f581483c1f9fc50a2",
-      "afterSourceSha256": "bb9e382c9e9b9cd83df0885343a133bdc797e0589e972129f78b86d46208fc3b"
+      "beforeSourceSha256": "a917dd9c0536740e3cfb23a47589e871cc4b6464eee53416ad63d26a54d35714",
+      "afterSourceSha256": "54b5684ad3e21ba4b7883abd10ae92fb1bc20fa20ce73ccb7cb69a6838166135"
     },
     {
       "label": "height",
@@ -276,8 +276,8 @@
       "field": "NUMBER",
       "before": "600",
       "after": "610",
-      "beforeSourceSha256": "bb9e382c9e9b9cd83df0885343a133bdc797e0589e972129f78b86d46208fc3b",
-      "afterSourceSha256": "238d23d6f1dca1ed77902cff4821579e5b85ecdd083d5a4ef9a141b9af32e0a1"
+      "beforeSourceSha256": "54b5684ad3e21ba4b7883abd10ae92fb1bc20fa20ce73ccb7cb69a6838166135",
+      "afterSourceSha256": "ae8cdf036ac9bcb52f7173ed00a7292b1f892c5c6625e64498684e6c7c331055"
     },
     {
       "label": "title",
@@ -294,8 +294,8 @@
       "field": "TEXT",
       "before": "Atirador Espacial",
       "after": "Atirador Espacial!",
-      "beforeSourceSha256": "238d23d6f1dca1ed77902cff4821579e5b85ecdd083d5a4ef9a141b9af32e0a1",
-      "afterSourceSha256": "bc5a409a53d39ae1446f10e1a73f6aba37c3dcfd4af2c7a4e33ae809e0eeaf50"
+      "beforeSourceSha256": "ae8cdf036ac9bcb52f7173ed00a7292b1f892c5c6625e64498684e6c7c331055",
+      "afterSourceSha256": "cc78b58363beae83e17bfa86bac1a45b092a849bc5b50d6fc2b5ed2867196e48"
     }
   ]
 }

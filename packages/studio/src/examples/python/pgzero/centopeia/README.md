@@ -8,12 +8,13 @@ galeria.
 
 ## Como jogar
 
-Espaço começa. As setas andam pela parte de baixo do campo e o espaço atira, um tiro de cada vez. A centopeia anda de lado e desce uma linha quando bate numa pedra ou na borda. Cada parte acertada vale 10 pontos e vira pedra, e as partes de trás seguem como outra centopeia; uma pedra aguenta três tiros. Encostar na centopeia custa uma vida; acabou a centopeia, vem outra, maior e mais rápida.
+Espaço começa. As setas andam pela parte de baixo do campo e o espaço atira, um tiro de cada vez. A centopeia anda de lado e desce uma linha quando bate numa pedra ou na borda. Cada parte acertada vale 10 pontos e vira pedra, e as partes de trás seguem como outra centopeia; uma pedra aguenta três tiros. De tempos em tempos um besouro cruza a parte de baixo em zigue-zague, comendo as pedras por onde passa: acertá-lo vale 50 pontos. Encostar na centopeia ou no besouro custa uma vida; acabou a centopeia, vem outra, maior e mais rápida.
 
 ## Ideias para mudar
 
 - Mude PEDRAS_NO_COMECO para um campo mais cheio, ou mais vazio.
 - Mude PARTES_NA_PRIMEIRA_ONDA para uma centopeia mais comprida.
+- Mude TEMPO_DO_BESOURO para o besouro aparecer mais vezes.
 - Faça a cabeça valer mais pontos que o corpo: cada parte sabe se é cabeça (parte.cabeca).
 
 ## Imagens e sons

@@ -27,6 +27,7 @@ O Pygame Zero procura as imagens em `images/`, os sons em `sounds/` e as música
 `music/`, pelo nome do arquivo sem a extensão: `Actor('nave')` usa `images/nave`.
 Para trocar um desenho, edite-o no Pinta pelo Estúdio, ou traga outro e use no código o
 nome que o painel mostra em "nome no código".
+A letra dos textos vem de `fonts/pressstart2p.ttf`: `screen.draw.text(..., fontname='pressstart2p')`.
 
 ## Jogar no computador
 

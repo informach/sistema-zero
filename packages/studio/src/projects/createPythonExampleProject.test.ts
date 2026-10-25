@@ -794,7 +794,7 @@ for (const key of pgzeroKeys)
       expect(reopened.assets).toEqual(payload.assets ? [...payload.assets] : undefined)
       for (const asset of payload.assets ?? [])
         expect(asset.proPath).toMatch(
-          /^(images\/[a-z_0-9]+\.(svg|png)|sounds\/[a-z_]+\.wav|music\/[a-z_]+\.ogg)$/,
+          /^(images\/[a-z_0-9]+\.(svg|png)|sounds\/[a-z_]+\.wav|music\/[a-z_]+\.ogg|fonts\/[a-z0-9]+\.ttf)$/,
         )
       const { buildPythonSourceFiles } = await import('../export/pythonSource')
       const sizes: [number, number][] = []
@@ -813,6 +813,11 @@ for (const key of pgzeroKeys)
       for (const name of game.dataFiles ?? []) {
         expect(Object.keys(payload.files)).toContain(name)
         expect(files[name]).toBe((payload.files as Record<string, string>)[name])
+      }
+      // A game with its own font takes the font and its license to the computer.
+      if (game.font) {
+        expect(files[`fonts/${game.font}.ttf`]).toBeDefined()
+        expect(String(files['LICENSE-fonte.txt'])).toContain('SIL OPEN FONT LICENSE')
       }
       const vectors = (payload.assets ?? []).filter(({ proPath }) => proPath?.endsWith('.svg'))
       for (const asset of vectors)

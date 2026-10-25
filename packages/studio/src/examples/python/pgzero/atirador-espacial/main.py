@@ -16,6 +16,8 @@ ACELERACAO_POR_ONDA = 0.2
 VELOCIDADE_MINIMA_DA_PEDRA = 0.5
 VELOCIDADE_MAXIMA_DA_PEDRA = 12
 PONTOS = {'pedra_pequena': 30, 'pedra_media': 20, 'pedra_grande': 10}
+# A letra dos textos: o arquivo fonts/pressstart2p.ttf do projeto.
+FONTE = 'pressstart2p'
 
 nave = Actor('nave')
 tiros = []
@@ -217,20 +219,20 @@ def draw():
     for explosao in explosoes:
         screen.draw.filled_circle(explosao['pos'], explosao['raio'], 'orange')
         screen.draw.filled_circle(explosao['pos'], explosao['raio'] / 2, 'yellow')
-    screen.draw.text('Pontos: ' + str(pontos), topleft=(20, 15), fontsize=36, color='white')
-    screen.draw.text('Onda ' + str(onda), midtop=(400, 15), fontsize=36, color='white')
-    screen.draw.text('Vidas: ' + str(vidas), topright=(780, 15), fontsize=36, color='white')
+    screen.draw.text('Pontos: ' + str(pontos), topleft=(20, 15), fontname=FONTE, fontsize=18, color='white')
+    screen.draw.text('Onda ' + str(onda), midtop=(400, 15), fontname=FONTE, fontsize=18, color='white')
+    screen.draw.text('Vidas: ' + str(vidas), topright=(780, 15), fontname=FONTE, fontsize=18, color='white')
     if aviso != '':
-        screen.draw.text(aviso, midbottom=(400, 590), fontsize=28, color='yellow')
+        screen.draw.text(aviso, midbottom=(400, 590), width=760, fontname=FONTE, fontsize=12, color='yellow')
     if estado == 'inicio':
-        screen.draw.text('Atirador Espacial', center=(400, 250), fontsize=72, color='white', owidth=2, ocolor='purple')
-        screen.draw.text('Setas: pilotar   Espaço: atirar', center=(400, 330), fontsize=36, color='white')
-        screen.draw.text('Aperte espaço para começar', center=(400, 380), fontsize=36, color='yellow')
+        screen.draw.text('Atirador Espacial', center=(400, 240), fontname=FONTE, fontsize=40, color='white', owidth=2, ocolor='purple')
+        screen.draw.text('Setas: pilotar   Espaço: atirar', center=(400, 320), fontname=FONTE, fontsize=18, color='white')
+        screen.draw.text('Aperte espaço para começar', center=(400, 370), fontname=FONTE, fontsize=18, color='yellow')
     if estado == 'fim':
-        screen.draw.text('Fim de jogo', center=(400, 250), fontsize=72, color='white', owidth=2, ocolor='red')
-        screen.draw.text('Você chegou à onda ' + str(onda) + ' com ' + str(pontos) + ' pontos', center=(400, 320), fontsize=36, color='white')
+        screen.draw.text('Fim de jogo', center=(400, 240), fontname=FONTE, fontsize=48, color='white', owidth=2, ocolor='red')
+        screen.draw.text('Você chegou à onda ' + str(onda) + ' com ' + str(pontos) + ' pontos', center=(400, 320), fontname=FONTE, fontsize=16, color='white')
         if espera <= 0:
-            screen.draw.text('Espaço: jogar de novo', center=(400, 370), fontsize=36, color='yellow')
+            screen.draw.text('Espaço: jogar de novo', center=(400, 370), fontname=FONTE, fontsize=18, color='yellow')
 
 
 ler_ondas()

@@ -29,6 +29,10 @@ const sha256 = (bytes: Uint8Array) => createHash('sha256').update(bytes).digest(
 const constant = (game: Pick<PgzeroGame, 'stem'>) =>
   game.stem.replace(/[A-Z]/g, (letter) => `_${letter}`).toUpperCase()
 
+/** The one font a game can bring (`font: 'pressstart2p'`): Press Start 2P, under the SIL OFL. */
+const FONTS = join(studio, 'scripts/raylib/scenes/assets/fonts')
+const FONT_FILE = 'pressstart2p.ttf'
+
 const LICENSE = `MIT License
 
 Copyright (c) 2026 Sistema Zero
@@ -85,7 +89,12 @@ ${
 O Pygame Zero procura as imagens em \`images/\`, os sons em \`sounds/\` e as músicas em
 \`music/\`, pelo nome do arquivo sem a extensão: \`Actor('nave')\` usa \`images/nave\`.
 Para trocar um desenho, edite-o no Pinta pelo Estúdio, ou traga outro e use no código o
-nome que o painel mostra em "nome no código".
+nome que o painel mostra em "nome no código".${
+        game.font
+          ? `
+A letra dos textos vem de \`fonts/${FONT_FILE}\`: \`screen.draw.text(..., fontname='pressstart2p')\`.`
+          : ''
+      }
 `
     : ''
 }
@@ -137,7 +146,14 @@ Copyright (c) 2026 Sistema Zero. O código, os desenhos, os sons e a música des
 são originais, distribuídos sob a licença MIT em \`LICENSE\`. Os desenhos foram escritos
 como código (\`scripts/python/pgzero-art*.ts\` no repositório do Sistema Zero), e os sons
 foram sintetizados a partir de partituras.
-
+${
+  game.font
+    ? `
+A fonte \`fonts/${FONT_FILE}\` é a Press Start 2P, de CodeMan38, distribuída sob a SIL
+Open Font License 1.1 em \`LICENSE-fonte.txt\`.
+`
+    : ''
+}
 ${inspirationText(game)}
 
 O programa usa a API do Pygame Zero (pgzero 1.2.1, LGPL-3.0) e roda no computador com o
@@ -220,6 +236,10 @@ for (const game of PGZERO_GAMES as readonly PgzeroGame[]) {
   const media: Record<string, Uint8Array> = {}
   for (const [name, bytes] of Object.entries(PGZERO_GAME_ART[game.key]!()))
     media[`images/${name}`] = bytes
+  if (game.font)
+    media[`fonts/${FONT_FILE}`] = new Uint8Array(
+      await patiently(() => readFile(join(FONTS, FONT_FILE))),
+    )
   for (const sound of game.sounds)
     media[`sounds/${sound.path}`] = renderReferenceSound({ ...sound, game: 'pong-visual' })
   for (const track of game.music) {
@@ -241,13 +261,20 @@ for (const game of PGZERO_GAMES as readonly PgzeroGame[]) {
     'README.md': readme(game, Object.keys(media)),
     'NOTICE.md': notice(game),
     LICENSE,
+    ...(game.font
+      ? {
+          'LICENSE-fonte.txt': (
+            await patiently(() => readFile(join(FONTS, 'OFL-pressstart2p.txt'), 'utf8'))
+          ).replaceAll('\r\n', '\n'),
+        }
+      : {}),
   }
   for (const [name, text] of Object.entries(texts))
     await put(join(folder, name), encoder.encode(text))
   for (const [path, bytes] of Object.entries(media)) await put(join(folder, path), bytes)
   // A media file the example no longer makes would still show up in the materials panel
   // (and editing it would change nothing in the game): it goes away, and --check reports it.
-  for (const kind of ['images', 'sounds', 'music']) {
+  for (const kind of ['images', 'sounds', 'music', 'fonts']) {
     const files = await patiently(() => readdir(join(folder, kind))).catch(() => [] as string[])
     for (const file of files)
       if (!(`${kind}/${file}` in media)) {
@@ -262,6 +289,8 @@ for (const game of PGZERO_GAMES as readonly PgzeroGame[]) {
       name in texts
         ? texts[name]!
         : (await patiently(() => readFile(join(folder, name), 'utf8'))).replaceAll('\r\n', '\n')
+  // The license of the font travels with the project, next to the font.
+  if (game.font) sources['LICENSE-fonte.txt'] = texts['LICENSE-fonte.txt']!
   // Text files the game reads with open(), written by hand next to main.py.
   for (const name of game.dataFiles ?? [])
     sources[name] = (await patiently(() => readFile(join(folder, name), 'utf8'))).replaceAll(
@@ -275,7 +304,9 @@ for (const game of PGZERO_GAMES as readonly PgzeroGame[]) {
         ? 'image/png'
         : path.endsWith('.ogg')
           ? 'audio/ogg'
-          : 'audio/wav'
+          : path.endsWith('.ttf')
+            ? 'font/ttf'
+            : 'audio/wav'
   const dataUrls = Object.fromEntries(
     Object.entries(media).map(([path, bytes]) => [
       path,
