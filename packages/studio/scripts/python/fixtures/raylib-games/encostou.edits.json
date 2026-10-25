@@ -1,0 +1,34 @@
+[
+  {
+    "label": "tamanho da casa",
+    "path": {
+      "body": 1,
+      "inputs": [
+        {
+          "name": "VALUE",
+          "index": 0
+        }
+      ]
+    },
+    "codecId": "sz_py_integer",
+    "field": "NUMBER",
+    "before": "50",
+    "after": "48"
+  },
+  {
+    "label": "velocidade",
+    "path": {
+      "body": 2,
+      "inputs": [
+        {
+          "name": "VALUE",
+          "index": 0
+        }
+      ]
+    },
+    "codecId": "sz_py_integer",
+    "field": "NUMBER",
+    "before": "220",
+    "after": "240"
+  }
+]

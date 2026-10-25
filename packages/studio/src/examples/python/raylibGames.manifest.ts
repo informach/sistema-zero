@@ -84,6 +84,81 @@ export const RAYLIB_GAMES = [
     music: [],
     receipt: 'nave-que-desliza-r1.json.snapshot',
   },
+  {
+    key: 'encostou',
+    stem: 'encostou',
+    name: 'Encostou!',
+    emoji: '🧱',
+    description:
+      'Um labirinto de paredes que seguram a caixa: pegue todas as moedas para a saída abrir.',
+    genre: 'Labirinto',
+    concepts: ['Blocos', 'Ponte', 'Código', 'Colisão', 'Listas', 'Mapa em texto', 'Funções'],
+    difficulty: 'intermediate',
+    experience: 'game',
+    extension: '2d',
+    inspiration: 'basics 4 e 8 (colisões e resolução de colisão)',
+    howToPlay:
+      'Use as setas para andar pelo labirinto. Pegue todas as moedas; só então a saída fica verde e abre. Enter recomeça.',
+    ideas: [
+      'Desenhe um labirinto novo trocando as linhas de MAPA.',
+      'Coloque mais moedas com a letra M.',
+      'Deixe a caixa mais rápida em VELOCIDADE.',
+    ],
+    sounds: [],
+    music: [],
+    receipt: 'encostou-r1.json.snapshot',
+  },
+  {
+    key: 'camera-que-segue',
+    stem: 'cameraQueSegue',
+    name: 'Câmera que Segue',
+    emoji: '🎥',
+    description:
+      'Um mundo maior que a tela: a câmera segue a bola enquanto você caça gemas entre os planetas.',
+    genre: 'Exploração',
+    concepts: ['Blocos', 'Ponte', 'Código', 'Câmera 2D', 'Zoom', 'Sorteio', 'Listas'],
+    difficulty: 'intermediate',
+    experience: 'game',
+    extension: '2d',
+    inspiration: 'basics 5 (câmera)',
+    howToPlay:
+      'As setas movem a bola. Q e W mudam o zoom, A e S giram a câmera e R deixa a câmera reta. Pegue as 12 gemas; Enter espalha de novo.',
+    ideas: [
+      'Aumente MUNDO para o mundo ficar maior.',
+      'Troque o fundo da tela e as cores dos planetas.',
+      'Mostre o zoom na tela com `camera.zoom`.',
+    ],
+    sounds: [],
+    music: [],
+    receipt: 'camera-que-segue-r1.json.snapshot',
+  },
+  {
+    key: 'sprites-timer-animacao',
+    stem: 'spritesTimerAnimacao',
+    name: 'Sprites, Timer e Animação',
+    emoji: '🍎',
+    description:
+      'O herói anda com animação e pega as maçãs que um cronômetro solta do céu. Três maçãs no chão e acabou.',
+    genre: 'Coleta',
+    concepts: ['Blocos', 'Ponte', 'Código', 'Classes', 'Herança', 'Cronômetro', 'Animação', 'Som'],
+    difficulty: 'intermediate',
+    experience: 'game',
+    extension: '2d',
+    inspiration: 'basics 6, 7, 9 e 10 (som, classes, timer e animação)',
+    howToPlay:
+      'As setas andam para os lados. Pegue as maçãs antes que caiam no chão: cada uma que cai custa uma vida. Enter recomeça.',
+    ideas: [
+      'Mude o 0.9 do cronômetro para as maçãs caírem mais depressa.',
+      'Troque o 8 da animação para o herói mexer as pernas mais rápido.',
+      'Desenhe o seu herói no Pinta, com quatro quadros, e troque `images/heroi0.png` a `heroi3.png`.',
+    ],
+    sounds: [
+      { path: 'pegar.wav', notes: [784, 1047], noteMilliseconds: 60 },
+      { path: 'perder.wav', notes: [330, 262, 196], noteMilliseconds: 110 },
+    ],
+    music: [],
+    receipt: 'sprites-timer-animacao-r1.json.snapshot',
+  },
 ] as const satisfies readonly RaylibGame[]
 
 export type RaylibGameKey = (typeof RAYLIB_GAMES)[number]['key']
