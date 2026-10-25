@@ -12,6 +12,7 @@ import json
 import math
 import os
 import random
+import subprocess
 import sys
 
 os.environ.setdefault('SDL_VIDEODRIVER', 'dummy')
@@ -149,4 +150,9 @@ with open(OUT, 'w', encoding='utf-8', newline='\n') as file:
     json.dump({'pygame': pygame.version.ver, 'width': W, 'height': H, 'cases': cases}, file,
               ensure_ascii=False, separators=(',', ':'))
     file.write('\n')
+# The repository keeps the file as Biome formats it.
+ROOT = os.path.join(os.path.dirname(__file__), '..', '..', '..', '..')
+BIOME = os.path.join(ROOT, 'node_modules', '.bin', 'biome.exe' if os.name == 'nt' else 'biome')
+subprocess.run([BIOME, 'format', '--write', os.path.abspath(OUT)], check=True, cwd=ROOT,
+               stdout=subprocess.DEVNULL)
 print(f'{len(cases)} casos em {os.path.relpath(OUT)}', file=sys.stderr)
