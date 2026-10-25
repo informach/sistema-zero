@@ -83,25 +83,46 @@ describe('o que conta como mudança de ESTRUTURA do programa', () => {
    */
   it('o "−" do Se/senão solta a pilha do ramo emitindo SÓ um change de mutação', async () => {
     const workspace = new Blockly.Workspace()
-    const area = workspace.newBlock('sz_frame_start')
-    const ifElse = workspace.newBlock('sz_js_if_else') as Blockly.Block & {
-      addElse_(): void
-      removeLast_(): void
+    let deadline: ReturnType<typeof setTimeout> | undefined
+    try {
+      // Fixture construction must not enqueue events for the operation's listener.
+      // A fixed sleep does not acknowledge Blockly's deferred event queue.
+      Blockly.Events.disable()
+      let ifElse: Blockly.Block & { addElse_(): void; removeLast_(): void }
+      let stack: Blockly.Block
+      try {
+        const area = workspace.newBlock('sz_frame_start')
+        ifElse = workspace.newBlock('sz_js_if_else') as typeof ifElse
+        area
+          .getInput('CHILDREN')
+          ?.connection?.connect(ifElse.previousConnection as Blockly.Connection)
+        ifElse.addElse_()
+        stack = workspace.newBlock('sz_js_console_log_text')
+        ifElse.getInput('ELSE')?.connection?.connect(stack.previousConnection as Blockly.Connection)
+      } finally {
+        Blockly.Events.enable()
+      }
+      expect(findDraftStacks(workspace)).toEqual([])
+      const heard: Blockly.Events.Abstract[] = []
+      const changed = new Promise<void>((resolve) => {
+        workspace.addChangeListener((event) => {
+          heard.push(event)
+          if (event.type === BLOCKLY_EVENT_TYPES.blockChange) resolve()
+        })
+      })
+      ifElse.removeLast_()
+      await Promise.race([
+        changed,
+        new Promise<never>((_, reject) => {
+          deadline = setTimeout(() => reject(new Error('Blockly mutation was not delivered')), 1000)
+        }),
+      ])
+      expect(findDraftStacks(workspace).map((block) => block.id)).toEqual([stack.id])
+      expect(heard.map((event) => event.type)).toEqual([BLOCKLY_EVENT_TYPES.blockChange])
+      expect(heard.every((event) => isProgramStructureChange(event))).toBe(true)
+    } finally {
+      clearTimeout(deadline)
+      workspace.dispose()
     }
-    area.getInput('CHILDREN')?.connection?.connect(ifElse.previousConnection as Blockly.Connection)
-    ifElse.addElse_()
-    const stack = workspace.newBlock('sz_js_console_log_text')
-    ifElse.getInput('ELSE')?.connection?.connect(stack.previousConnection as Blockly.Connection)
-    await new Promise<void>((resolve) => setTimeout(resolve, 10))
-    expect(findDraftStacks(workspace)).toEqual([])
-
-    const heard: Blockly.Events.Abstract[] = []
-    workspace.addChangeListener((event) => heard.push(event))
-    ifElse.removeLast_()
-    await new Promise<void>((resolve) => setTimeout(resolve, 20))
-
-    expect(findDraftStacks(workspace).map((block) => block.id)).toEqual([stack.id])
-    expect(heard.map((event) => event.type)).toEqual([BLOCKLY_EVENT_TYPES.blockChange])
-    expect(heard.every((event) => isProgramStructureChange(event))).toBe(true)
   })
 })
