@@ -75,6 +75,7 @@ export type ExecutionClickTarget =
  */
 export type ExecutionTarget =
   | { kind: 'value'; path: string }
+  | { kind: 'moduleValue'; module: string; path: string }
   | { kind: 'spritePosition'; path: string; axis: 'x' | 'y' }
   | { kind: 'text' }
   | { kind: 'console' }
@@ -338,6 +339,16 @@ function isTarget(
               .split('.')
               .some((part) => ['__proto__', 'prototype', 'constructor'].includes(part))) &&
         (target.axis === 'x' || target.axis === 'y')
+      )
+    case 'moduleValue':
+      return (
+        language === 'javascript' &&
+        Object.keys(target).length === 3 &&
+        isExecutionModulePath(target.module) &&
+        isExecutionValuePath(target.path) &&
+        !target.path
+          .split('.')
+          .some((part) => ['__proto__', 'prototype', 'constructor'].includes(part))
       )
     case 'value':
       return isExecutionValuePath(target.path, language) && Object.keys(target).length === 2
@@ -781,6 +792,8 @@ function targetName(target: ExecutionTarget): string {
   switch (target.kind) {
     case 'value':
       return target.path
+    case 'moduleValue':
+      return `${target.path} (${target.module})`
     case 'spritePosition':
       return `${target.path}.${target.axis}`
     case 'text':
@@ -807,6 +820,8 @@ export function judgeExecutionObservation(
   if (!observation) return { passed: false, detail: 'O teste não relatou este objetivo.' }
   if (observation.error)
     return { passed: false, detail: `O teste não terminou: ${observation.error}` }
+  if (observation.errors?.length)
+    return { passed: false, detail: 'O jogo relatou erro durante a observação.' }
   if (rule.type === 'functionReturns') {
     if (observation.missing)
       return {

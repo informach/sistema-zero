@@ -451,5 +451,21 @@ for (const item of cases.filter((item) => !selected || item.name === selected)) 
       stdout: 'ignore',
       stderr: 'ignore',
     }).exited
+    const check = Bun.spawn(['docker', 'ps', '-aq', '--filter', `name=^/${container}$`], {
+      windowsHide: true,
+      stdout: 'pipe',
+      stderr: 'pipe',
+    })
+    const [code, remaining, error] = await Promise.all([
+      check.exited,
+      new Response(check.stdout).text(),
+      new Response(check.stderr).text(),
+    ])
+    assert.equal(code, 0, error)
+    assert.equal(remaining.trim(), '')
+    await writeFile(
+      path.join(directory, 'cleanup.json'),
+      JSON.stringify({ containerName: container, confirmed: true }),
+    )
   }
 }

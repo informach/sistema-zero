@@ -300,3 +300,66 @@ describe('o julgamento do que o executor viu', () => {
     expect(compareExecutionValue([], 'truthy', undefined)).toBe(false)
   })
 })
+
+test('exported JavaScript values have explicit safe module and property paths', () => {
+  const rule = (module: string, path: string) => ({
+    type: 'behavior',
+    steps: [],
+    expect: { target: { kind: 'moduleValue', module, path }, compare: 'increased' },
+  })
+  expect(isSectionExecutionRule(rule('src/main.ts', 'jogador.position.z'))).toBe(true)
+  expect(isSectionExecutionRule(rule('src/main.ts', 'jogador.position.z'), 'final', 'python')).toBe(
+    false,
+  )
+  for (const [module, path] of [
+    ['../main.ts', 'jogador.x'],
+    ['src/main.py', 'jogador.x'],
+    ['src/main.ts', 'jogador.__proto__.x'],
+    ['src/main.ts', 'jogador.constructor'],
+    ['src/main.ts', 'jogador.position.x()'],
+  ])
+    expect(isSectionExecutionRule(rule(module!, path!))).toBe(false)
+})
+
+test('an uncaught program exception prevents every execution objective from passing', () => {
+  const rules: SectionExecutionRule[] = [
+    {
+      type: 'behavior',
+      steps: [],
+      expect: { target: { kind: 'console' }, compare: 'contains', value: 'OK' },
+    },
+    {
+      type: 'behavior',
+      steps: [],
+      expect: {
+        target: { kind: 'moduleValue', module: 'src/main.ts', path: 'jogador.position.z' },
+        compare: 'increased',
+      },
+    },
+    {
+      type: 'functionReturns',
+      name: 'ready',
+      module: 'src/main.ts',
+      cases: [{ args: [], expected: true }],
+    },
+    { type: 'script', steps: [], code: 'return true' },
+  ]
+  for (const rule of rules) {
+    const observation = {
+      id: 'goal',
+      type: rule.type,
+      initial: { found: true, value: 0 },
+      final: {
+        found: true,
+        value: rule.type === 'behavior' && rule.expect.target.kind === 'console' ? 'OK' : 3,
+      },
+      cases: [{ ok: true, value: true }],
+      verdict: true,
+    }
+    expect(judgeExecutionObservation(rule, observation).passed).toBe(true)
+    expect(
+      judgeExecutionObservation(rule, { ...observation, errors: ['uncaught program error'] })
+        .passed,
+    ).toBe(false)
+  }
+})

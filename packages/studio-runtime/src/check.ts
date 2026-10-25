@@ -73,6 +73,13 @@ export function parseCheckRequest(value: unknown): CheckRequest {
       throw new InvalidBuildRequestError('Documento do jogo inválido.')
     if (
       objectives.some(
+        (objective) =>
+          objective.rule.type === 'behavior' && objective.rule.expect.target.kind === 'moduleValue',
+      )
+    )
+      throw new InvalidBuildRequestError('Valores exportados só valem no projeto Pro.')
+    if (
+      objectives.some(
         (objective) => objective.rule.type === 'functionReturns' && objective.rule.module,
       )
     )
@@ -107,6 +114,14 @@ export function parseCheckRequest(value: unknown): CheckRequest {
         (!rule.module || !Object.hasOwn(build.files, rule.module))
       )
         throw new InvalidBuildRequestError('A função precisa estar num arquivo do projeto.')
+      if (
+        rule.type === 'behavior' &&
+        rule.expect.target.kind === 'moduleValue' &&
+        !Object.hasOwn(build.files, rule.expect.target.module)
+      )
+        throw new InvalidBuildRequestError(
+          'O valor exportado precisa estar num arquivo do projeto.',
+        )
       if (rule.type === 'behavior' && rule.expect.target.kind === 'value')
         throw new InvalidBuildRequestError('Projeto Pro não confere variáveis diretamente.')
     }
@@ -122,7 +137,10 @@ export function proCheckModules(objectives: readonly ExecutionObjectiveRequest[]
       objectives.flatMap((objective) =>
         objective.rule.type === 'functionReturns' && objective.rule.module
           ? [objective.rule.module]
-          : [],
+          : objective.rule.type === 'behavior' &&
+              objective.rule.expect.target.kind === 'moduleValue'
+            ? [objective.rule.expect.target.module]
+            : [],
       ),
     ),
   ].sort()

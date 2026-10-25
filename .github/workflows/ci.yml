@@ -150,7 +150,13 @@ jobs:
           bun packages/studio-runtime/tests/python-mission-smoke.ts
           bun packages/studio-runtime/tests/python-playtest-smoke.ts --docker --health
 
-      - name: Preservar evidências dos objetivos Python
+      - name: Provar objetivos Jogo 3D e three.js no sandbox sem rede
+        timeout-minutes: 5
+        env:
+          STUDIO_PYTHON_TEST_CACHE: ${{ github.workspace }}/.cache/studio-python-runtime
+        run: bun packages/studio-runtime/tests/three-objectives-smoke.ts
+
+      - name: Preservar evidências dos objetivos Python e 3D
         if: always()
         uses: actions/upload-artifact@v4
         with:
@@ -163,8 +169,12 @@ jobs:
             .cache/studio-python-runtime/playtest-docker/**/cleanup.json
             .cache/studio-python-runtime/mission-docker/**/process.json
             .cache/studio-python-runtime/mission-docker/**/judge.json
+            .cache/studio-python-runtime/mission-docker/**/cleanup.json
             .cache/studio-python-runtime/mission-docker/**/python-mission-options.json
             .cache/studio-python-runtime/mission-docker/**/python-mission-result.json
+            .cache/studio-python-runtime/three-objectives/**/summary.json
+            .cache/studio-python-runtime/three-objectives/**/cleanup.json
+            .cache/studio-python-runtime/three-objectives/**/scene.jpg
 
       - name: Preparar testes de mídia das oficinas
         working-directory: packages/live-recorder

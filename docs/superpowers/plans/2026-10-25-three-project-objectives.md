@@ -14,24 +14,26 @@
 
 Arquivos: criar `packages/studio-runtime/runtime/check-javascript-modules.mjs` e `tests/check-javascript-modules.test.mjs`; alterar `runtime/check-objectives.mjs` e `Dockerfile`.
 
-- [ ] RED: resolvedor recusa versão diferente, origem diferente, caminhos fora de `build/` e `examples/jsm/`, arquivos não JavaScript e symlinks; aceita núcleo e dependência relativa GLTF de um pacote pinado.
-- [ ] Implementar `createPinnedThreeModuleResolver(packageRoot, version)`: raiz real/versão conferidas; entrada do pacote redireciona para `build/three.module.js`; leituras limitadas a 256 módulos/32 MiB, 4 MiB por arquivo, cache por job. Não mudar bytes do pacote.
-- [ ] Implementar `createImageThreeModuleResolver()`: usa a dependência exata da própria imagem. Carregar somente quando o documento clássico solicitar o Three.
-- [ ] Integrar ao roteamento privado do Chromium. Pedidos não reconhecidos continuam bloqueados. Falha de módulo confiável não pode virar resposta aprovada.
-- [ ] Gerar perfil canônico e reconstruir a imagem.
+- [x] RED: resolvedor recusa versão diferente, origem diferente, caminhos fora de `build/` e `examples/jsm/`, arquivos não JavaScript e symlinks; aceita núcleo e dependência relativa GLTF de um pacote pinado.
+- [x] Implementar `createPinnedThreeModuleResolver(packageRoot, version)`: raiz real/versão conferidas; o host aponta diretamente para `build/three.module.js`, sem redirecionamento; leituras limitadas a 256 módulos/32 MiB, 4 MiB por arquivo, cache por job. Não mudar bytes do pacote.
+- [x] Implementar `createImageThreeModuleResolver()`: usa a dependência exata da própria imagem. Carregar somente quando o documento clássico solicitar o Three.
+- [x] Integrar ao roteamento privado do Chromium. Pedidos não reconhecidos continuam bloqueados. Falha de módulo confiável não pode virar resposta aprovada.
+- [x] Gerar perfil canônico e reconstruir a imagem.
 
 ## 2. Valores exportados no Pro
 
 Arquivos: `core/src/learning/project-execution.ts`, `studio-runtime/src/check.ts`, `runtime/check-objectives.mjs`, `studio/src/blockly/projectCheckAuthoring.ts`, `admin/src/components/editor/execution-rule-editor.tsx` e testes afetados.
 
-- [ ] Acrescentar alvo `{ kind: 'moduleValue', module: 'src/main.ts', path: 'jogador.position.z' }`, validado apenas para JavaScript. Recusar travessia de módulo e caminhos de protótipo.
-- [ ] Provar que o clássico recusa esse alvo, o Pro exige arquivo existente e `proCheckModules` importa a união dos arquivos de função e de valor, sem duplicação.
-- [ ] Ler a exportação pelo namespace ES já guardado em escopo privado; aplicar o mesmo codec limitado. Não encontrado/exceção/valor inválido não aprova.
-- [ ] Oferecer o alvo no formulário Pro com arquivo e caminho explícitos. Preservar JavaScript clássico e Python.
+- [x] Acrescentar alvo `{ kind: 'moduleValue', module: 'src/main.ts', path: 'jogador.position.z' }`, validado apenas para JavaScript. Recusar travessia de módulo e caminhos de protótipo.
+- [x] Provar que o clássico recusa esse alvo, o Pro exige arquivo existente e `proCheckModules` importa a união dos arquivos de função e de valor, sem duplicação.
+- [x] Ler a exportação pelo namespace ES já guardado em escopo privado; aplicar o mesmo codec limitado. Não encontrado/exceção/valor inválido não aprova.
+- [x] Oferecer o alvo no formulário Pro com arquivo e caminho explícitos. Preservar JavaScript clássico e Python.
 
 ## 3. Prova real e publicação
 
-- [ ] Criar smoke Docker com documento clássico produzido pelo pipeline real e com Pro compilado por Vite/Three oficial. Casos: cena desenhada, tecla altera X/Y/Z corretamente, direção errada e ausência de movimento recusadas, função e saída, erro e tentativa de rede bloqueados.
-- [ ] Usar contextos separados, PNG real de cena para a prova, revisão exata e confirmação de encerramento; dados simulados não qualificam WebGL.
-- [ ] Rodar Core/Admin/serviço e perfil/tipagem afetados; revisar os resultados. Registrar explicitamente qualquer fronteira não qualificada.
+- [x] Criar smoke Docker com documento clássico produzido pelo pipeline real e com Pro compilado por Vite/Three oficial. Casos: cena desenhada, tecla altera X/Y/Z corretamente, direção errada e ausência de movimento recusadas, função e saída, erro e tentativa de rede bloqueados.
+- [x] Usar contextos separados, JPEG real de cena para a prova, revisão exata e confirmação de encerramento; dados simulados não qualificam WebGL.
+- [x] Rodar Core/Admin/serviço e perfil/tipagem afetados; revisar os resultados. Registrar explicitamente qualquer fronteira não qualificada.
 - [ ] Conciliar o remoto atual, commit/push, CI e implantação staging/produção. Python/Raylib e financeiro mantêm seus próprios aceites; não herdar homologação entre eles.
+
+Provas e limites: [relatório de 25/10](../../qa/2026-10-25-three-project-objectives.md). A confirmação explícita de valores exportados do Pro foi aplicada; 17 cenários reais renderizaram e produziram os resultados esperados.

@@ -342,7 +342,11 @@ function BehaviorEditor({
   const hasOnePress = rule.steps.length === 1 && rule.steps[0]?.action === 'press'
   const relative = (value: ExecutionCompare) => value === 'increased' || value === 'decreased'
   const comparisons = EXECUTION_COMPARES.filter((value) =>
-    motion ? relative(value) : python && target.kind === 'value' ? true : !relative(value),
+    motion
+      ? relative(value)
+      : (python && target.kind === 'value') || target.kind === 'moduleValue'
+        ? true
+        : !relative(value),
   )
   const comparisonFits = comparisons.includes(compare)
   const withTarget = (next: ExecutionTarget) => {
@@ -362,7 +366,10 @@ function BehaviorEditor({
       expect: {
         ...rule.expect,
         target: next,
-        compare: relative(compare) && !(python && next.kind === 'value') ? 'changed' : compare,
+        compare:
+          relative(compare) && !(python && next.kind === 'value') && next.kind !== 'moduleValue'
+            ? 'changed'
+            : compare,
       },
     })
   }
@@ -384,6 +391,11 @@ function BehaviorEditor({
             value={target.kind === 'game' ? `game:${target.field}` : target.kind}
             onChange={(e) => {
               const value = e.target.value
+              if (value === 'moduleValue') {
+                if (isPro && !python)
+                  withTarget({ kind: 'moduleValue', module: 'src/main.ts', path: '' })
+                return
+              }
               if (value === 'spritePosition') {
                 withTarget({ kind: 'spritePosition', path: '', axis: 'x' })
                 return
@@ -400,6 +412,11 @@ function BehaviorEditor({
             <option value="value" disabled={isPro && !python}>
               {python ? 'Uma variável do programa' : 'Uma variável do jogo'}
             </option>
+            {!python && (
+              <option value="moduleValue" disabled={!isPro}>
+                Um valor exportado por arquivo (Pro)
+              </option>
+            )}
             <option
               value="spritePosition"
               disabled={(isPro && !python) || !hasOnePress || !actorPositions}
@@ -434,6 +451,29 @@ function BehaviorEditor({
               value={target.path}
               onChange={(e) => withTarget({ kind: 'value', path: e.target.value.trim() })}
             />
+          )}
+          {target.kind === 'moduleValue' && (
+            <>
+              <Input
+                aria-label={`Arquivo do valor do objetivo ${index + 1}`}
+                placeholder="src/main.ts"
+                value={target.module}
+                maxLength={200}
+                className="w-44"
+                onChange={(e) => withTarget({ ...target, module: e.target.value.trim() })}
+              />
+              <Input
+                aria-label={`Valor exportado do objetivo ${index + 1}`}
+                placeholder="jogador.position.z"
+                value={target.path}
+                maxLength={200}
+                className="w-48"
+                onChange={(e) => withTarget({ ...target, path: e.target.value.trim() })}
+              />
+              <span className="text-xs text-muted-foreground">
+                Exporte a variável no arquivo, por exemplo: export const jogador.
+              </span>
+            </>
           )}
           {target.kind === 'spritePosition' && (
             <>

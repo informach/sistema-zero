@@ -149,4 +149,6 @@ test('resolved successful baseline retains the failed-push backlog in the actual
   } finally {
     rmSync(directory, { recursive: true, force: true })
   }
-})
+  // This integration control starts real Git/Bash processes repeatedly, including
+  // on Windows. Keep a finite outer budget instead of Bun's 5 s unit-test default.
+}, 30_000)

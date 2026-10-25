@@ -85,3 +85,9 @@ O commit `0571aade4` foi conciliado com os quatro commits concluídos dos lotes 
 O primeiro CI Linux revelou `EACCES` ao gravar `python-mission-result.json`: o diretório montado pertencia ao UID do runner, enquanto a imagem mantém UID 1000. A preparação das tentativas agora permite escrita somente no diretório de saída recém-criado. A imagem continua não privilegiada, sem rede, com rootfs somente leitura e os mesmos limites. Prova Linux em volume isolado: escrita negada antes, permitida depois pelo UID 1000, volume removido; recibo `linux-output-permissions-r1.json`. O CI original negativo foi preservado e a matriz Linux corrigida precisa passar.
 
 Foi solicitado adicionalmente verificar Jogo 3D clássico e three.js. O executor já executa kits Three, mas observação direcional e leitura de estado de objetos Pro exigem revisão específica; a qualificação dos kits não substitui essa frente.
+
+## Avanço local de 25/10
+
+O [lote 3D](2026-10-25-three-project-objectives.md) implementou a observação de valores exportados no Pro e o carregamento offline do Three oficial no clássico. Seus 17 cenários reais passaram. A matriz Python foi repetida na imagem final, com 25 objetivos e quatro casos de saúde produzindo os resultados esperados. A distribuição nova é `d0443c77ba985acf015b5591b63a7fe5d71ed16fa2bbc7674cf6f032a09c41d2`; os planos anteriores para `0dc9…` não são os planos finais e não foram ativados. O upload local antigo não concluiu.
+
+Isso avança parte dos dois itens de gráficos/limites do plano Python: tecla sem movimento, movimento espontâneo, pontuação por clique, erro, laço sem checkpoint, entrada/saída excessiva e tentativas de rede/arquivo têm provas reais. A matriz integral desses itens, cancelamento real de ponta a ponta, medidas hospedadas e fluxo Admin/aluno continuam abertos. Nenhum checkbox amplo foi encerrado apenas por estes subconjuntos. O limite geral do gateway foi corrigido para comportar o ensaio Python sem impedir seu boot.

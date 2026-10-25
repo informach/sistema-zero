@@ -119,7 +119,7 @@ export function evaluateStudioSectionObjectives(
   )
 }
 
-/** As extensões 3D clássicas importam o three.js da internet, que o executor não tem. */
+/** Perfis 3D usam o Three oficial empacotado no executor; não são sprites 2D. */
 const CLASSIC_3D_EXTENSIONS = new Set(['game-3d', 'world-3d', 'game-3d-advanced'])
 const THREE_IMPORT = /\bfrom\s*['"]three(?:\/[^'"]*)?['"]|\bimport\s*\(\s*['"]three/
 
@@ -143,11 +143,6 @@ function executionIssues(
     ([...extensions].some((id) => CLASSIC_3D_EXTENSIONS.has(id)) ||
       THREE_IMPORT.test(typeof files['script.js'] === 'string' ? files['script.js'] : ''))
   const errors: string[] = []
-  // Até a função de um jogo 3D clássico some: o arquivo inteiro para na importação do three.js.
-  if (classic3d)
-    errors.push(
-      'Jogos 3D do modo Blocos não rodam no teste (ele roda sem internet e o 3D precisa dela). Use uma ideia de programação.',
-    )
   if (rule.type === 'behavior' || rule.type === 'script') {
     if (
       (rule.steps.some((step) => step.action === 'clickTarget') ||
@@ -181,8 +176,12 @@ function executionIssues(
   }
   if (rule.type === 'behavior') {
     const target = rule.expect.target
+    if (target.kind === 'moduleValue' && !pro)
+      errors.push('Valores exportados por arquivo só valem no projeto Pro.')
     if (target.kind === 'value' && pro)
-      errors.push('No projeto Pro, confira o texto da página, o console ou o estado do kit.')
+      errors.push(
+        'No projeto Pro, confira um valor exportado, o texto da página, o console ou o estado do kit.',
+      )
     if (target.kind === 'game' && !template?.kitVersion)
       errors.push('O estado do jogo (fase, pontos, meta, vida) só existe nos kits Pro.')
     else if (target.kind === 'game' && !kitStateFields(template?.id).includes(target.field))

@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 import { fileURLToPath } from 'node:url'
+import { SECTION_PYTHON_PROJECT_TEST_BODY_BYTES } from '@sistemazero/core/learning'
 import realConfig from '../../gateway.config'
 import { loadEnv } from '../../src/infrastructure/config/env'
 import { routeConfigSchema } from '../../src/infrastructure/config/gateway-config.schema'
@@ -734,6 +735,15 @@ describe('gateway.config.ts (configuração real)', () => {
     const result = await bootRealConfig('2097152')
     expect(result.code).not.toBe(0)
     expect(result.stderr).toMatch(/members-internal-studio-builder.*MAX_REQUEST_BODY_BYTES/)
+  })
+
+  test('o teto padrão comporta a verificação Python; um teto explícito menor continua recusado', async () => {
+    expect(loadEnv({}).MAX_REQUEST_BODY_BYTES).toBe(SECTION_PYTHON_PROJECT_TEST_BODY_BYTES)
+    const result = await bootRealConfig('3004096')
+    expect(result.code).not.toBe(0)
+    expect(result.stderr).toMatch(
+      /members-admin-python-project-checks-test.*MAX_REQUEST_BODY_BYTES/,
+    )
   })
 
   test('Payments só é cadastrado com segredo próprio e recebe quatro capacidades de comunicação', async () => {
