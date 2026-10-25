@@ -177,7 +177,7 @@ export default async function EntryHelpPage() {
         <section
           id="equipe"
           aria-labelledby="ajuda-entrar-equipe"
-          className="flex scroll-mt-6 flex-wrap items-center gap-8 rounded-[1.2rem] bg-(--topo) p-8 text-(--topo-texto) md:p-10"
+          className="sz-palco flex scroll-mt-6 flex-wrap items-center gap-8 rounded-[1.2rem] p-8 md:p-10"
         >
           <div className="flex min-w-0 flex-[1_1_22rem] flex-col gap-3">
             <h2 id="ajuda-entrar-equipe" className="sz-h2 text-white">

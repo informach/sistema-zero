@@ -132,27 +132,6 @@ function StatusChip({ status }: { status: ToolStatus }) {
   return <span className={base}>Acesso em consulta</span>
 }
 
-function ToolTile({ tool, active, small }: { tool: Tool; active: boolean; small?: boolean }) {
-  const Icon = tool.icon
-  return (
-    <span
-      aria-hidden
-      style={
-        active ? { background: tool.color, color: 'var(--sz-community-on-action)' } : undefined
-      }
-      className={cn(
-        'inline-flex flex-none items-center justify-center',
-        small
-          ? 'size-[2.8rem] rounded-[0.7rem]'
-          : 'size-[3rem] rounded-[0.8rem] md:size-[3.6rem] md:rounded-[0.9rem]',
-        !active && 'bg-muted text-muted-foreground',
-      )}
-    >
-      <Icon className={small ? 'size-[1.4rem]' : 'size-[1.4rem] md:size-[1.7rem]'} />
-    </span>
-  )
-}
-
 function ToolAction({ tool, status, small }: { tool: Tool; status: ToolStatus; small?: boolean }) {
   const base = cn('mt-auto self-start', small && 'sz-btn-sm')
   if (status.kind === 'available')
@@ -174,30 +153,58 @@ function ToolAction({ tool, status, small }: { tool: Tool; status: ToolStatus; s
   )
 }
 
+/**
+ * A faixa de arte de cada ferramenta (Estúdio à noite, 25/10/2026): a cor de identidade dela num
+ * degradê, com o nome em pixel. Fechada, a faixa perde a cor e ganha o cadeado: o estado também
+ * está escrito no selo logo abaixo, a cor nunca é a única pista.
+ */
+function ToolArt({ tool, available }: { tool: Tool; available: boolean }) {
+  const Icon = tool.icon
+  return (
+    <div
+      aria-hidden
+      className={cn(
+        'relative flex h-[6.5rem] items-end justify-between p-5',
+        !available && 'saturate-[0.35]',
+      )}
+      style={{
+        background: `linear-gradient(135deg, ${tool.color}, color-mix(in oklab, ${tool.color} 55%, var(--dourado)))`,
+      }}
+    >
+      <span className="font-(family-name:--font-pixel) text-[1.6rem] text-white uppercase leading-none tracking-[0.04em] [text-shadow:2px_2px_0_rgb(0_0_0/0.35)]">
+        {tool.name}
+      </span>
+      <span className="inline-flex size-[2.6rem] items-center justify-center rounded-[0.8rem] bg-(--noite)/80 text-(--texto-claro)">
+        {available ? <Icon className="size-[1.3rem]" /> : <Lock className="size-[1.2rem]" />}
+      </span>
+    </div>
+  )
+}
+
 /** O cartão grande do quadro "Criar": duas colunas, o "por quê" quando ainda não liberou. */
 function ToolCard({ tool, status }: { tool: Tool; status: ToolStatus }) {
   const available = status.kind === 'available'
   return (
     <section
       aria-labelledby={`ferramenta-${tool.capability}`}
-      className={cn('sz-card flex flex-col gap-4 p-6 md:p-7', !available && 'bg-background')}
+      className="sz-card flex flex-col overflow-hidden"
     >
-      <div className="flex items-center gap-4">
-        <ToolTile tool={tool} active={available} />
-        <div className="flex min-w-0 flex-col gap-1.5">
+      <ToolArt tool={tool} available={available} />
+      <div className="flex flex-1 flex-col gap-3.5 p-6 md:p-7">
+        <div className="flex flex-wrap items-center gap-3">
           <h2 id={`ferramenta-${tool.capability}`} className="sz-h2">
             {tool.name}
           </h2>
           <StatusChip status={status} />
         </div>
+        <p className="text-muted-foreground">{tool.description}</p>
+        {status.kind === 'locked' ? (
+          <p className="text-[0.85rem] text-foreground">
+            <strong>Por quê:</strong> {LOCK_REASON[status.reason]}
+          </p>
+        ) : null}
+        <ToolAction tool={tool} status={status} />
       </div>
-      <p className="text-muted-foreground">{tool.description}</p>
-      {status.kind === 'locked' ? (
-        <p className="text-[0.85rem] text-foreground">
-          <strong>Por quê:</strong> {LOCK_REASON[status.reason]}
-        </p>
-      ) : null}
-      <ToolAction tool={tool} status={status} />
     </section>
   )
 }
@@ -208,32 +215,34 @@ function ToolCardCompact({ tool, status }: { tool: Tool; status: ToolStatus }) {
   return (
     <section
       aria-labelledby={`ferramenta-${tool.capability}`}
-      className={cn('sz-card-sm flex flex-col gap-3 p-5', !available && 'bg-background')}
+      className="sz-card-sm flex flex-col overflow-hidden"
     >
-      <ToolTile tool={tool} active={available} small />
-      <h2 id={`ferramenta-${tool.capability}`} className="sz-h3">
-        {tool.name}
-      </h2>
-      <StatusChip status={status} />
-      <p className="text-[0.85rem] text-muted-foreground">
-        {status.kind === 'locked' ? (
-          <>
-            <strong className="text-foreground">Por quê:</strong> {LOCK_REASON[status.reason]}
-          </>
-        ) : (
-          tool.aiNote
-        )}
-      </p>
-      {available && tool.usesAi ? (
-        <Link
-          href="/perfil#creditos"
-          prefetch={false}
-          className="sz-link inline-flex min-h-[2.4rem] items-center self-start text-[0.85rem]"
-        >
-          Quanto resta de créditos
-        </Link>
-      ) : null}
-      <ToolAction tool={tool} status={status} small />
+      <ToolArt tool={tool} available={available} />
+      <div className="flex flex-1 flex-col gap-3 p-5">
+        <h2 id={`ferramenta-${tool.capability}`} className="sz-h3">
+          {tool.name}
+        </h2>
+        <StatusChip status={status} />
+        <p className="text-[0.85rem] text-muted-foreground">
+          {status.kind === 'locked' ? (
+            <>
+              <strong className="text-foreground">Por quê:</strong> {LOCK_REASON[status.reason]}
+            </>
+          ) : (
+            tool.aiNote
+          )}
+        </p>
+        {available && tool.usesAi ? (
+          <Link
+            href="/perfil#creditos"
+            prefetch={false}
+            className="sz-link inline-flex min-h-[2.4rem] items-center self-start text-[0.85rem]"
+          >
+            Quanto resta de créditos
+          </Link>
+        ) : null}
+        <ToolAction tool={tool} status={status} small />
+      </div>
     </section>
   )
 }
@@ -275,27 +284,30 @@ export default async function CreatePage() {
             ? 'Suas ferramentas e seus projetos, guardados na sua conta. O Zappy, o tutor do Estúdio, e o Pensa usam créditos; quanto resta fica em Meu perfil.'
             : 'Suas ferramentas e seus projetos, guardados na sua conta. Abra de qualquer computador e continue de onde parou.'
         }
-      />
+      >
+        {/* As ferramentas no palco: é ali que se descobre o que dá para criar. */}
+        <div className="mt-6 flex flex-col gap-5">
+          {state.kind === 'unavailable' ? (
+            <p role="status" className="sz-soft px-5 py-4 font-bold">
+              Não foi possível atualizar o acesso às ferramentas. Tente novamente.
+            </p>
+          ) : null}
+          {aiUnlocked ? (
+            <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
+              {tools.map((tool) => (
+                <ToolCardCompact key={tool.href} tool={tool} status={toolStatus(tool, state)} />
+              ))}
+            </div>
+          ) : (
+            <div className="grid gap-5 md:grid-cols-2">
+              {tools.map((tool) => (
+                <ToolCard key={tool.href} tool={tool} status={toolStatus(tool, state)} />
+              ))}
+            </div>
+          )}
+        </div>
+      </PageBand>
       <PageBody>
-        {state.kind === 'unavailable' ? (
-          <p role="status" className="sz-soft px-5 py-4 font-bold">
-            Não foi possível atualizar o acesso às ferramentas. Tente novamente.
-          </p>
-        ) : null}
-        {aiUnlocked ? (
-          <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
-            {tools.map((tool) => (
-              <ToolCardCompact key={tool.href} tool={tool} status={toolStatus(tool, state)} />
-            ))}
-          </div>
-        ) : (
-          <div className="grid gap-5 md:grid-cols-2">
-            {tools.map((tool) => (
-              <ToolCard key={tool.href} tool={tool} status={toolStatus(tool, state)} />
-            ))}
-          </div>
-        )}
-
         <section aria-labelledby="mostrar-e-aprender" className="flex flex-col gap-5">
           <h2 id="mostrar-e-aprender" className="sz-h2">
             Para mostrar e aprender

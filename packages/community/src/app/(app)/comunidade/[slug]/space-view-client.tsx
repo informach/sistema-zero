@@ -1023,7 +1023,7 @@ export function ThreadDetail({
       className={cn(
         'sz-card flex min-w-0 scroll-mt-[8rem] flex-col gap-5 p-5 md:p-7',
         paned &&
-          'xl:sticky xl:top-[5rem] xl:max-h-[calc(100dvh-6rem)] xl:overflow-y-auto xl:overscroll-contain',
+          'xl:sticky xl:top-6 xl:max-h-[calc(100dvh-3rem)] xl:overflow-y-auto xl:overscroll-contain',
       )}
     >
       <button

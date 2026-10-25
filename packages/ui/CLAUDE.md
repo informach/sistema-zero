@@ -160,12 +160,15 @@ tema). O design espelha o projeto de referência `C:\Users\tocha\projects\comuni
 ## Componentes
 
 badge (variant `success` usa tokens `--success/*`) · **brand-logo**
-(`@sistemazero/ui/brand-logo` — `<BrandLogo fundo="escuro"|"claro" label className>`: a logo
+(`@sistemazero/ui/brand-logo` — `<BrandLogo fundo="escuro"|"claro" label className instancia?>`: a logo
 oficial em SVG EMBUTIDO. Era do community e virou compartilhada em 18/09/2026, quando os painéis
 internos e o /admin do funil trocaram o `<img>` dos SVGs de `public/` — que traziam o verde-lima
 `#C4F042` cravado, fora do alcance de qualquer tema. O ZERO e a estrelinha leem
 `var(--logo-zero-<fundo>-{de,ate})`: o community declara os quatro no `:root`, os três consoles os
-recebem do `console.css` e o funil os declara no `global.css`. ⚠️ Os caminhos do SVG são GERADOS a
+recebem do `console.css` e o funil os declara no `global.css`. ⚠️ Os ids dos degradês são fixos por
+fundo: página com DUAS logos do mesmo fundo passa `instancia` numa delas (o menu lateral e a barra do
+celular da comunidade adulta, 25/10/2026), senão o `url(#…)` aponta para a outra e o ZERO some quando
+ela está escondida. ⚠️ Os caminhos do SVG são GERADOS a
 partir dos arquivos de `public/` — não edite à mão) · button (+`buttonVariants` p/ Links) · card ·
 **confirm-dialog** (`@sistemazero/ui/confirm-dialog` — `ConfirmDialog` sobre o `Dialog`: rodapé
 Cancelar/Confirmar; substitui o `window.confirm()` nativo. Props `open/onClose/title/message/

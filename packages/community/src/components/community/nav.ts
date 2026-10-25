@@ -1,4 +1,4 @@
-import { BookOpen, CircleHelp, Home, Monitor, Radio, Users } from 'lucide-react'
+import { BookOpen, CircleHelp, Home, Radio, Sparkles, Users } from 'lucide-react'
 
 export interface NavItem {
   href: string
@@ -9,15 +9,17 @@ export interface NavItem {
 }
 
 /**
- * Navegação principal do aluno (direção de arte de 18/10/2026): seis destinos, sempre com ícone E
- * texto. Recados virou o botão com contador à direita e Progresso foi para o menu do perfil, junto
- * de avatar, espaço 3D, perfil e compras: nenhuma rota saiu, só mudou de lugar.
+ * Navegação principal do aluno (direção de arte de 18/10/2026; menu lateral desde o "Estúdio à
+ * noite", 25/10/2026): seis destinos, sempre com ícone E texto. No computador eles formam o menu
+ * lateral, com Recados logo abaixo; no celular, Início, Cursos, Criar e Comunidade viram abas e o
+ * resto mora em "Mais" (`community-nav.tsx`). Progresso fica no menu do perfil, junto de avatar,
+ * espaço 3D, perfil e compras: nenhuma rota saiu, só mudou de lugar.
  * `/cursos` (catálogo, trilha e detalhe) acende "Cursos"; a home acende "Início".
  */
 export const NAV_ITEMS: readonly NavItem[] = [
   { href: '/', label: 'Início', icon: Home },
   { href: '/cursos', label: 'Cursos', icon: BookOpen },
-  { href: '/criar', label: 'Criar', icon: Monitor },
+  { href: '/criar', label: 'Criar', icon: Sparkles },
   // As oficinas ao vivo (cursos ao vivo, 14/10/2026): só as turmas em que a pessoa tem vaga.
   { href: '/oficinas', label: 'Oficinas', icon: Radio },
   {

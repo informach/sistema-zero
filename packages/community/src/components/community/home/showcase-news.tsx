@@ -51,71 +51,74 @@ export async function ShowcaseNews({ viewerId }: { viewerId: string | null }) {
   const games = await loadShowcase(viewerId)
   if (games.length === 0) return null
   return (
-    <section aria-labelledby="novidades-mostra" className="flex flex-col gap-5">
-      <SectionHeader
-        id="novidades-mostra"
-        title="Novidades no Mural"
-        action={
-          <Link
-            href="/mural-dos-criadores-adulto"
-            prefetch={false}
-            className="sz-link inline-flex min-h-[2.4rem] items-center"
-          >
-            Ver o Mural
-          </Link>
-        }
-      />
-      <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-        {games.map((game) => {
-          const plays = game.playsCount ?? 0
-          const author = game.authorId
-            ? 'você'
-            : game.authorPublic && game.authorDisplayName
-              ? game.authorDisplayName
-              : 'Criador'
-          return (
-            <li key={game.id} className="sz-card-sm flex flex-col overflow-hidden">
-              <div className="aspect-[32/17] bg-(--topo)">
-                <CourseCover src={game.coverImageUrl} />
-              </div>
-              <div className="flex flex-1 flex-col gap-1 p-4 md:p-5">
-                <strong className="line-clamp-2">{game.title}</strong>
-                <span className="text-[0.85rem] text-muted-foreground">
-                  por {author} ·{' '}
-                  {plays === 0
-                    ? 'ainda sem jogadas'
-                    : `${plays} ${plays === 1 ? 'jogada' : 'jogadas'}`}
-                </span>
-                {game.authorJourney ? <StageLine badge={game.authorJourney} /> : null}
-                <div className="mt-auto pt-2.5">
-                  {game.playId ? (
-                    <a
-                      href={`/jogar/${encodeURIComponent(game.playId)}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      aria-label={`Jogar ${game.title} (abre em outra aba)`}
-                      className="sz-btn-outline sz-btn-sm"
-                    >
-                      <Play className="fill-current" aria-hidden />
-                      Jogar
-                    </a>
-                  ) : (
-                    // Post sem link jogável (antigo ou do fluxo da aula): o jogo mora só no Mural.
-                    <Link
-                      href="/mural-dos-criadores-adulto"
-                      prefetch={false}
-                      aria-label={`Ver ${game.title} no Mural`}
-                      className="sz-btn-outline sz-btn-sm"
-                    >
-                      Ver no Mural
-                    </Link>
-                  )}
+    // Num palco de ponta a ponta, no pé do Início: o Mural é comemoração (Estúdio à noite).
+    <section aria-labelledby="novidades-mostra" className="sz-palco">
+      <div className="sz-page flex flex-col gap-5 py-12">
+        <SectionHeader
+          id="novidades-mostra"
+          title="Jogos novos de quem cria com você"
+          action={
+            <Link
+              href="/mural-dos-criadores-adulto"
+              prefetch={false}
+              className="sz-link inline-flex min-h-[2.4rem] items-center"
+            >
+              Ver o Mural
+            </Link>
+          }
+        />
+        <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          {games.map((game) => {
+            const plays = game.playsCount ?? 0
+            const author = game.authorId
+              ? 'você'
+              : game.authorPublic && game.authorDisplayName
+                ? game.authorDisplayName
+                : 'Criador'
+            return (
+              <li key={game.id} className="sz-card-sm flex flex-col overflow-hidden">
+                <div className="aspect-[32/17] bg-(--topo)">
+                  <CourseCover src={game.coverImageUrl} />
                 </div>
-              </div>
-            </li>
-          )
-        })}
-      </ul>
+                <div className="flex flex-1 flex-col gap-1 p-4 md:p-5">
+                  <strong className="line-clamp-2">{game.title}</strong>
+                  <span className="text-[0.85rem] text-muted-foreground">
+                    por {author} ·{' '}
+                    {plays === 0
+                      ? 'ainda sem jogadas'
+                      : `${plays} ${plays === 1 ? 'jogada' : 'jogadas'}`}
+                  </span>
+                  {game.authorJourney ? <StageLine badge={game.authorJourney} /> : null}
+                  <div className="mt-auto pt-2.5">
+                    {game.playId ? (
+                      <a
+                        href={`/jogar/${encodeURIComponent(game.playId)}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label={`Jogar ${game.title} (abre em outra aba)`}
+                        className="sz-btn-outline sz-btn-sm"
+                      >
+                        <Play className="fill-current" aria-hidden />
+                        Jogar
+                      </a>
+                    ) : (
+                      // Post sem link jogável (antigo ou do fluxo da aula): o jogo mora só no Mural.
+                      <Link
+                        href="/mural-dos-criadores-adulto"
+                        prefetch={false}
+                        aria-label={`Ver ${game.title} no Mural`}
+                        className="sz-btn-outline sz-btn-sm"
+                      >
+                        Ver no Mural
+                      </Link>
+                    )}
+                  </div>
+                </div>
+              </li>
+            )
+          })}
+        </ul>
+      </div>
     </section>
   )
 }

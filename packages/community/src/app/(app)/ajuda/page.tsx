@@ -82,7 +82,7 @@ export default async function AjudaPage() {
           <>
             <section
               aria-labelledby="ajuda-como-fazer"
-              className="flex flex-col gap-6 rounded-[1.2rem] bg-(--topo) p-6 text-(--topo-texto) md:p-8"
+              className="sz-palco flex flex-col gap-6 rounded-[1.2rem] p-6 md:p-8"
             >
               <div className="flex flex-wrap items-center gap-x-6 gap-y-4">
                 <span
