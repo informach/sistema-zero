@@ -84,3 +84,17 @@ Os dois testes novos falharam antes da mudança. Depois, a seleção de autoriza
 ## Orçamento global do CI
 
 O CI completo `40129239034` (c7190ce) levou 41m14s; sua tipagem levou 803 s. Na execução `40186233031`, as novas provas Python e Three levaram 199 s e 60 s, respectivamente. A soma observada deixa o limite anterior de 45 minutos sem margem para o conjunto ampliado. O job principal recebe 60 minutos, mantendo os limites individuais de Python (8 min), Three (5 min) e cancelamento RPC (2 min), além dos orçamentos dos demais jobs e do produto. A alteração é de capacidade do pipeline, não uma aprovação de execução ou deploy.
+
+## PNG dos exemplos: geração reproduzível
+
+O CI `40191878001` aprovou os nove jobs auxiliares, os testes dos pacotes e a suíte canônica completa do Studio; falhou depois em `check:pgzero-games`. Os PNGs gerados com `node:zlib.deflateSync` divergiam entre runtimes, embora o check local anterior tivesse passado. Um probe real Node/Bun reproduziu o problema: a mesma imagem produziu 13.763/13.759 bytes e hashes diferentes. O teste de portabilidade falhou antes da mudança, com o teste de pixels passando.
+
+O gerador agora usa `fflate.zlibSync`, já declarado pelo Studio e usado nos outros geradores PNG. Não há dependência ou lock novo, implementação própria de compressão ou remoção da comparação byte a byte. Foram regenerados os exemplos Pygame Zero e Raylib que compartilham a função. A comparação dos **76 PNGs alterados** provou formato/dimensões e todos os bytes RGBA descomprimidos idênticos; o total desses arquivos caiu de 86.437 para 85.393 bytes. O teste Node/Bun e o de RGBA passaram, nove asserções; os checks dos 58 exemplos Pygame Zero e 17 Raylib também passaram. O perfil de validação do runtime permaneceu inalterado e conferido. O CI Linux da nova composição continua necessário.
+
+As provas locais independentes de exportação também passaram: Canvas Survival e os três kits grid (Canvas, Phaser e Three). Geraram ZIP, instalaram suas dependências separadamente, executaram o jogo e capturaram um quadro real, sem alterar os locks. Isso não substitui sua execução Linux no CI final.
+
+## Medição de recursos em Linux
+
+A branch isolada `qa/python-resource-measurement-20261025`, sem permissões de deploy ou segredos, acrescentou um wrapper de medição ao smoke existente. O verificador protegido, os critérios privados e o julgador original não foram alterados. A execução `40193412181` passou e preservou os recibos: **33 cenários**, pico máximo de **521.850.880 bytes por contêiner**, maior duração de **6.965 ms**, nenhum OOM e todas as remoções confirmadas. Limites efetivos: um núcleo, 1 GiB e 256 processos.
+
+A medição inclui o pequeno wrapper e cada caso abre processos/interpreter novos. Não é aceitação de sessão quente, aula ao vivo ou computador do aluno. A primeira rodada já havia passado os cenários, mas falhou ao anexar um arquivo de fase privado; o erro foi corrigido pela seleção explícita dos recibos legíveis, sem alterar permissões do verificador. A evidência completa foi baixada para `python-resource-linux-r2/` no namespace de QA. A instrumentação permanece fora da versão de aplicação em staging.

@@ -1,4 +1,4 @@
-import { deflateSync } from 'node:zlib'
+import { zlibSync } from 'fflate'
 import { FIGURAS, FUNDOS, type NomeDaFigura } from '../../src/arte/catalogo'
 import { JARDIM_ASSETS } from '../../src/arte/jardim-assets'
 import type { Pincel } from '../../src/arte/pincel'
@@ -84,7 +84,7 @@ function chunk(type: string, data: Uint8Array) {
   view.setUint32(8 + data.length, crc32(out.subarray(4, 8 + data.length)))
   return out
 }
-/** RGBA pixels → PNG (8-bit, no interlace, fixed zlib level: reproducible). */
+/** RGBA pixels → PNG; the pinned JS compressor is identical across runtimes/platforms. */
 export function png(width: number, height: number, rgba: Uint8Array) {
   const raw = new Uint8Array((width * 4 + 1) * height)
   for (let y = 0; y < height; y++)
@@ -97,7 +97,7 @@ export function png(width: number, height: number, rgba: Uint8Array) {
   const parts = [
     new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]),
     chunk('IHDR', header),
-    chunk('IDAT', new Uint8Array(deflateSync(raw, { level: 9 }))),
+    chunk('IDAT', zlibSync(raw, { level: 9 })),
     chunk('IEND', new Uint8Array()),
   ]
   const out = new Uint8Array(parts.reduce((total, part) => total + part.length, 0))
