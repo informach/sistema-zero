@@ -10,7 +10,7 @@ A aba passa a ser resolvida com a identidade do projeto antes do commit dos cont
 
 A suíte ampla encontrou seis expectativas anteriores à conversão: hash do catálogo básico, canto central do HUD e quatro orçamentos do runtime. A atualização foi restrita a esses contratos; os quatro outros catálogos mantêm seus hashes. A seleção dos três arquivos passou em **177 testes / 1.804 asserções**.
 
-Medição do texto de bootstrap cru/gzip: Jogo 3D completo **224.876 / 62.782 bytes**, sem Plataforma **190.794 / 53.051**, Mundo 3D **344.930 / 102.843**, Avançado **209.159 / 61.537**. O custo adicional do básico é cerca de 1,5 KB gzip pelos controles/cenas nativos, HUD e descarte; os tetos continuam próximos da medida e têm justificativa no teste. A tipagem completa do Studio passou após a composição `4d5c1558a`; isso não encerra a suíte completa, o CI nem a publicação.
+Medição do texto de bootstrap em caracteres/bytes gzip: Jogo 3D completo **224.876 / 62.782**, sem Plataforma **190.794 / 53.051**, Mundo 3D **344.930 / 102.843**, Avançado **209.159 / 61.537**. O custo adicional do básico é cerca de 1,5 KB gzip pelos controles/cenas nativos, HUD e descarte; os tetos continuam próximos da medida e têm justificativa no teste. A tipagem completa do Studio passou após a composição `4d5c1558a`; isso não encerra a suíte completa, o CI nem a publicação.
 
 ## Baseline financeiro somente de leitura
 

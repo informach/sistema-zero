@@ -3,6 +3,8 @@ import { lstat, mkdir, mkdtemp, readFile, realpath, rm, writeFile } from 'node:f
 import { tmpdir } from 'node:os'
 import { dirname, join, resolve, sep } from 'node:path'
 import { canonicalJson, sha256Hex } from '@sistemazero/core/creations'
+import { PGZERO_MODULE_FILES } from '../../studio/src/runtime/python/pgzero/contract'
+import { RAYLIB_MODULE_FILES } from '../../studio/src/runtime/python/raylib/contract'
 import { TURTLE_MODULE_FILES } from '../../studio/src/runtime/python/turtle/contract'
 import { frameFiles } from '../promotion-worker/protocol'
 import {
@@ -42,6 +44,16 @@ async function fixture() {
     'turtle-renderer.mjs',
     'turtle-protocol.mjs',
     ...TURTLE_MODULE_FILES.map((name) => `turtle/${name}`),
+    'pgzero-renderer.mjs',
+    'pgzero-protocol.mjs',
+    ...PGZERO_MODULE_FILES.map((name) => `pgzero/${name}`),
+    'raylib-renderer.mjs',
+    'raylib-protocol.mjs',
+    ...RAYLIB_MODULE_FILES.map((name) => `raylib/${name}`),
+    'LICENSE-pgzero.txt',
+    'LICENSE-freefont.txt',
+    'LICENSE-raylib.txt',
+    'LICENSE-raylib-python-cffi.txt',
   ])
     storage.contents.set(path, new TextEncoder().encode(`synthetic-contract:${path}`))
   const distribution = {

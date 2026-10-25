@@ -13,6 +13,8 @@ import {
   prepareStudioAuthoringOptions,
   studioAuthoringChoices,
 } from '../../studio/src/core/authoringOptions'
+import { PGZERO_MODULE_FILES } from '../../studio/src/runtime/python/pgzero/contract'
+import { RAYLIB_MODULE_FILES } from '../../studio/src/runtime/python/raylib/contract'
 import { TURTLE_MODULE_FILES } from '../../studio/src/runtime/python/turtle/contract'
 import { runPythonPromotionCommand } from '../scripts/promote-python-runtime'
 import {
@@ -55,6 +57,16 @@ async function fixture(
     'turtle-renderer.mjs',
     'turtle-protocol.mjs',
     ...TURTLE_MODULE_FILES.map((name) => `turtle/${name}`),
+    'pgzero-renderer.mjs',
+    'pgzero-protocol.mjs',
+    ...PGZERO_MODULE_FILES.map((name) => `pgzero/${name}`),
+    'raylib-renderer.mjs',
+    'raylib-protocol.mjs',
+    ...RAYLIB_MODULE_FILES.map((name) => `raylib/${name}`),
+    'LICENSE-pgzero.txt',
+    'LICENSE-freefont.txt',
+    'LICENSE-raylib.txt',
+    'LICENSE-raylib-python-cffi.txt',
   ])
     storage.contents.set(path, new TextEncoder().encode(`fixture:${path}`))
   const distribution = {
@@ -130,6 +142,44 @@ test('offline plan is deterministic, binds distinct hashes and registers real Py
     Object.values(first.workerBindings).every((value) => Buffer.byteLength(value) <= 5000),
   ).toBe(true)
   expect(await verifyPythonPromotionPlan(first, first.planSha256)).toEqual(first)
+})
+
+test('a product promotion exposes the two Raylib extensions and their own blocks', async () => {
+  const f = await fixture()
+  const plan = await preparePythonPromotion(f.input)
+  expect(plan.deployment.release.manifest.extensions.map(({ id }) => id)).toEqual([
+    'python-turtle',
+    'python-pgzero',
+    'python-raylib-2d',
+    'python-raylib-3d',
+  ])
+  const blocks = plan.configuration.members.releases[0]!.blockIds
+  expect(blocks.some((id) => id.startsWith('sz_py_rl2d_'))).toBe(true)
+  expect(blocks.some((id) => id.startsWith('sz_py_rl3d_'))).toBe(true)
+})
+
+test.each([
+  'pgzero/pgzero/__init__.py',
+  'raylib/_szraylib/_camera3d.py',
+  'raylib-renderer.mjs',
+  'pgzero/freesansbold.ttf',
+  'LICENSE-raylib.txt',
+])('a product promotion refuses a manifest without %s even when the remaining hashes match', async (missing) => {
+  const f = await fixture()
+  const distribution = {
+    ...f.distribution,
+    files: f.distribution.files.filter(({ path }) => path !== missing),
+  }
+  await writeFile(join(f.directory, 'distribution.json'), JSON.stringify(distribution))
+  await expect(
+    preparePythonPromotion({
+      ...f.input,
+      distribution: {
+        directory: f.directory,
+        sha256: await sha256Hex(canonicalJson(distribution)),
+      },
+    }),
+  ).rejects.toThrow(`Artefato de produto obrigatório ausente: ${missing}.`)
 })
 
 test('promotion selects APIs from an explicit current-format implementation feature array', async () => {
