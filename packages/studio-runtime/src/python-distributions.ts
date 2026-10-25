@@ -10,6 +10,7 @@ import {
 import { pythonFrameContentSecurityPolicy } from '@sistemazero/core/studio/python-runtime-policy'
 import type { StudioRuntimeReleaseStatus } from '@sistemazero/core/studio/runtime-catalog'
 import { sha256 } from './artifacts'
+import { runBoundedOperations } from './bounded-operations'
 import { pythonRuntimeNotModified, selectPythonRuntimeEncoding } from './python-http-negotiation'
 
 /** R2 checksums are verified on upload and returned on GET, without buffering WASM at the edge. */
@@ -71,6 +72,8 @@ export async function storePythonRuntimeDistribution(options: {
   bucket: RuntimeDistributionBucket
   deployment: unknown
   read(path: string): Promise<Uint8Array<ArrayBuffer>>
+  /** Trusted packaging only; default serial, bounded to four including all in-flight work. */
+  concurrency?: number
 }) {
   const deployment = await verifyStudioPythonDeployment(options.deployment)
   const prefix = studioPythonRuntimePrefix(deployment.release.manifestSha256)
@@ -93,24 +96,28 @@ export async function storePythonRuntimeDistribution(options: {
     if (existing.size !== bytes.byteLength || hex(existing.checksums?.sha256) !== hash)
       throw new Error('Há um artefato diferente no endereço imutável da release.')
   }
-  for (const file of deployment.distribution.files) {
-    const bytes = new Uint8Array(await options.read(file.path))
-    if (bytes.byteLength !== file.bytes || (await sha256(bytes)) !== file.sha256)
-      throw new Error(`Integridade inválida: ${file.path}.`)
-    const logicalFile = compressed.get(file.path)
-    if (logicalFile) {
-      const logical = new Uint8Array(await options.read(logicalFile.path))
-      if (
-        logical.byteLength !== logicalFile.bytes ||
-        (await sha256(logical)) !== logicalFile.sha256
-      )
-        throw new Error(`Integridade inválida: ${logicalFile.path}.`)
-      // Compare incrementally against the already verified logical bytes: no expanded output
-      // buffer, and stop as soon as the declared length/content differs.
-      await verifyGzipBytes(bytes, logical)
-    }
-    await putOnce(`${prefix}files/${file.path}`, bytes, file.sha256)
-  }
+  await runBoundedOperations(
+    deployment.distribution.files,
+    options.concurrency ?? 1,
+    async (file) => {
+      const bytes = new Uint8Array(await options.read(file.path))
+      if (bytes.byteLength !== file.bytes || (await sha256(bytes)) !== file.sha256)
+        throw new Error(`Integridade inválida: ${file.path}.`)
+      const logicalFile = compressed.get(file.path)
+      if (logicalFile) {
+        const logical = new Uint8Array(await options.read(logicalFile.path))
+        if (
+          logical.byteLength !== logicalFile.bytes ||
+          (await sha256(logical)) !== logicalFile.sha256
+        )
+          throw new Error(`Integridade inválida: ${logicalFile.path}.`)
+        // Compare incrementally against the already verified logical bytes: no expanded output
+        // buffer, and stop as soon as the declared length/content differs.
+        await verifyGzipBytes(bytes, logical)
+      }
+      await putOnce(`${prefix}files/${file.path}`, bytes, file.sha256)
+    },
+  )
   // Never delete shared immutable files on failure; retry fills a partial upload safely.
   // Only a complete, verified upload can make its marker visible.
   await putOnce(

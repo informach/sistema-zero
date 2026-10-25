@@ -18,6 +18,22 @@ A repetição ampla encontrou **350.770 bytes** de JavaScript inicial para um te
 
 A medição posterior passou: **343.177 bytes crus / 112.096 gzip / dois arquivos iniciais**, com a janela fora do grafo inicial. Nenhum teto foi aumentado. O teste completo de orçamento também aprovou rota e os três modos, 27 asserções, em 15,56 s. Duas medições anteriores atingiram o prazo local de 20 s durante a geração; uma delas preservou o relatório de tamanho. Não foram classificadas como aprovação nem usadas para aumentar o prazo. A tipagem completa após a integração `d9a1cac98` passou, antes desta separação de componente; o CI final continua obrigatório.
 
+Na execução agrupada seguinte, a geração completa atingiu 23,75 s. O teste inspeciona o build de todos os chunks dinâmicos, incluindo a galeria Python ampliada; não mede latência da aplicação. Seu prazo de ferramenta passou para 60 s, mantendo todos os tetos de bytes, gzip e arquivos, além das guardas de dependências. Os resultados negativos permanecem registrados. O helper de criação passou a aguardar o diálogo antes de testar as corridas de perfil; os 22 casos / 108 asserções passaram sem alterar o momento síncrono do clique de confirmação.
+
+## Publicação imutável do runtime
+
+A primeira tentativa nativa da distribuição final gravou os objetos e o catálogo ainda inativo, mas a releitura serial atingiu o limite de 100 s após 72 de 112 objetos. Recibo negativo `promotion-staging-operational-r4/attempt-2/operator-receipt.json`: HTTP 500, corpo encerrado e limpeza do Worker/credencial confirmada por 404. O ponteiro do catálogo ativo não foi alterado. A tentativa anterior falhou antes da rede por diretório de dry-run relativo; foi corrigido o caminho absoluto, preservando a evidência.
+
+O fluxo foi ajustado para duas gravações/verificações de conteúdo e quatro releituras nativas de metadata por vez. A distribuição aguarda todas as operações já admitidas antes do marcador; a releitura aguarda todas antes de liberar ownership, inclusive após falha. A primeira falha para novas admissões; rejections falsy são preservadas. Prazo de 100 s, checksum nativo, escrita condicional, marcador final, verificação de todos os objetos e limpeza permanecem exigidos. A aprovação desse ajuste depende da repetição nativa completa; testes de porta sintética não qualificam R2 real.
+
+Controle causal: a releitura original iniciava uma operação; o novo teste exige quatro, mantém a segunda requisição em 429 e não permite terminar com operação pendente. As seleções afetadas passaram em 25 testes / 157 asserções; a suíte completa do runtime passou em **353 testes / 3.870 asserções**, com um skip nativo explícito. Tipagem de produção/testes passou. O perfil foi regenerado e conferido; a imagem anterior não deve ser reutilizada com o novo fingerprint.
+
+## Fechamento das verificações locais
+
+Os 779 arquivos do Studio foram cobertos pelos 145 grupos do runner canônico, em lotes seriais preservando o isolamento. Os grupos anteriores a Projetos passaram na execução ampla; Projetos foi repetido após as correções (**245 testes / 5.528 asserções**, zero falhas); os grupos seguintes e os 15 grupos individuais de blocos Python passaram. O índice conferiu ausência de grupos faltantes ou extras (`studio-final-group-coverage-r1.json`). Não é uma única execução limpa nem uma soma de testes únicos; os negativos anteriores permanecem. O CI executa novamente a composição inteira.
+
+A conferência financeira de variáveis, em memória e sem exibir valores, confirmou nos dois ambientes: sandbox/produção corretos, credenciais/identificador configurados, HMAC Payments/Gateway correspondente, token Gateway/Messaging correspondente e caminhos de regularização Kids/Adultos válidos. Um primeiro leitor usou o nome errado do token de Messaging; foi corrigido pelo contrato do serviço, sem alterar variáveis. Isso não substitui a prova autenticada após o deploy nem autoriza declarar a política ativada.
+
 ## Baseline financeiro somente de leitura
 
 Consulta realizada dentro do serviço Payments correto, conferindo projeto/ambiente/serviço e usando transação read-only:
