@@ -106,14 +106,20 @@ def set_window_size(width, height, /):
 
 
 def set_window_min_size(width, height, /):
+    integer(width, 'set_window_min_size', 'width')
+    integer(height, 'set_window_min_size', 'height')
     return None
 
 
 def set_window_max_size(width, height, /):
+    integer(width, 'set_window_max_size', 'width')
+    integer(height, 'set_window_max_size', 'height')
     return None
 
 
 def set_window_position(x, y, /):
+    integer(x, 'set_window_position', 'x')
+    integer(y, 'set_window_position', 'y')
     return None
 
 
@@ -166,10 +172,12 @@ def get_render_height():
 
 
 def get_monitor_width(monitor, /):
+    integer(monitor, 'get_monitor_width', 'monitor')
     return 1920
 
 
 def get_monitor_height(monitor, /):
+    integer(monitor, 'get_monitor_height', 'monitor')
     return 1080
 
 
@@ -182,6 +190,7 @@ def get_current_monitor():
 
 
 def get_monitor_refresh_rate(monitor, /):
+    integer(monitor, 'get_monitor_refresh_rate', 'monitor')
     return 60
 
 
@@ -260,7 +269,10 @@ def get_frame_time():
 
 
 def get_time():
-    return rt.window.now
+    w = rt.window
+    elapsed = rt._clock() - w.mark if w.frame_counter else 0.0
+    w.returned = max(w.returned, w.now + max(0.0, elapsed))
+    return w.returned
 
 
 def get_fps():
@@ -272,11 +284,15 @@ def get_fps():
 
 
 def wait_time(seconds, /):
-    """No Estúdio o laço não pode parar o navegador: a espera vira quadros sem desenho."""
+    """Espera de verdade, como o raylib (em fatias curtas, para o Parar continuar valendo)."""
     import time
     value = number(seconds, 'wait_time', 'seconds')
-    if value > 0:
-        time.sleep(min(value, 0.05))
+    end = time.perf_counter() + max(0.0, value)
+    while True:
+        left = end - time.perf_counter()
+        if left <= 0:
+            break
+        time.sleep(min(left, 0.05))
 
 
 def set_random_seed(seed, /):
@@ -294,14 +310,16 @@ def load_random_sequence(count, min, max, /):
     low, high = integer(min, f, 'min'), integer(max, f, 'max')
     if low > high:
         low, high = high, low
+    from ._ffi import NULL, Pointer
+    # No C, pedir mais números distintos do que o intervalo tem devolve NULL.
     if n > high - low + 1:
-        return []
+        return NULL
     values = []
     while len(values) < n:
         value = _random.get_value(low, high)
         if value not in values:
             values.append(value)
-    return values
+    return Pointer('int *', values)
 
 
 def unload_random_sequence(sequence, /):
@@ -322,7 +340,8 @@ def is_key_down(key, /):
 
 def is_key_up(key, /):
     k = _key(key, 'is_key_up')
-    return not (k and rt.input.down[k])
+    # IsKeyUp: uma tecla fora da faixa (ou KEY_NULL) não está "solta", só falsa.
+    return bool(k) and not rt.input.down[k]
 
 
 def is_key_pressed(key, /):
@@ -371,7 +390,7 @@ def is_mouse_button_down(button, /):
 
 def is_mouse_button_up(button, /):
     b = _button(button, 'is_mouse_button_up')
-    return not (b >= 0 and rt.input.buttons[b])
+    return b >= 0 and not rt.input.buttons[b]
 
 
 def is_mouse_button_pressed(button, /):
@@ -384,16 +403,23 @@ def is_mouse_button_released(button, /):
     return bool(b >= 0 and not rt.input.buttons[b] and rt.input.previous_buttons[b])
 
 
+# set_mouse_offset e set_mouse_scale: como no raylib, a posição lida é (posição + deslocamento) ×
+# escala (é o que ajusta o mouse a uma render texture ampliada). O delta não muda.
+_mouse_offset = [0.0, 0.0]
+_mouse_scale = [1.0, 1.0]
+
+
 def get_mouse_x():
-    return int(rt.input.mouse_x)
+    return int((rt.input.mouse_x + _mouse_offset[0]) * _mouse_scale[0])
 
 
 def get_mouse_y():
-    return int(rt.input.mouse_y)
+    return int((rt.input.mouse_y + _mouse_offset[1]) * _mouse_scale[1])
 
 
 def get_mouse_position():
-    return Vector2(rt.input.mouse_x, rt.input.mouse_y)
+    return Vector2((rt.input.mouse_x + _mouse_offset[0]) * _mouse_scale[0],
+                   (rt.input.mouse_y + _mouse_offset[1]) * _mouse_scale[1])
 
 
 def get_mouse_delta():
@@ -409,11 +435,13 @@ def set_mouse_position(x, y, /):
 
 
 def set_mouse_offset(offsetX, offsetY, /):
-    return None
+    _mouse_offset[:] = [integer(offsetX, 'set_mouse_offset', 'offsetX'),
+                        integer(offsetY, 'set_mouse_offset', 'offsetY')]
 
 
 def set_mouse_scale(scaleX, scaleY, /):
-    return None
+    _mouse_scale[:] = [number(scaleX, 'set_mouse_scale', 'scaleX'),
+                       number(scaleY, 'set_mouse_scale', 'scaleY')]
 
 
 def get_mouse_wheel_move():
@@ -435,6 +463,7 @@ def get_touch_y():
 
 
 def get_touch_position(index, /):
+    integer(index, 'get_touch_position', 'index')
     return Vector2(rt.input.mouse_x, rt.input.mouse_y)
 
 
@@ -443,16 +472,23 @@ def get_touch_point_count():
 
 
 def is_gamepad_available(gamepad, /):
+    integer(gamepad, 'is_gamepad_available', 'gamepad')
     return False
 
 
 def is_gamepad_button_down(gamepad, button, /):
+    integer(gamepad, 'is_gamepad_button_down', 'gamepad')
+    integer(button, 'is_gamepad_button_down', 'button')
     return False
 
 
 def is_gamepad_button_pressed(gamepad, button, /):
+    integer(gamepad, 'is_gamepad_button_pressed', 'gamepad')
+    integer(button, 'is_gamepad_button_pressed', 'button')
     return False
 
 
 def get_gamepad_axis_movement(gamepad, axis, /):
+    integer(gamepad, 'get_gamepad_axis_movement', 'gamepad')
+    integer(axis, 'get_gamepad_axis_movement', 'axis')
     return 0.0

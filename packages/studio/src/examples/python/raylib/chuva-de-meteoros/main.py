@@ -151,6 +151,10 @@ while not window_should_close():
     update_music_stream(musica)
 
     if perdeu:
+        # A explosão da nave continua até o fim, mesmo com o jogo parado.
+        for explosao in explosoes:
+            explosao.atualizar(dt)
+        explosoes = [explosao for explosao in explosoes if not explosao.descartar]
         if is_key_pressed(KEY_ENTER):
             comecar()
     else:

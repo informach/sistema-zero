@@ -17,10 +17,10 @@
   "authoringLoader": "loadPythonAuthoring",
   "extension": "python-raylib-3d",
   "codecOrderSha256": "71040f6cf253cdd01533095e78d46df6ead440642dd826630816ef1e424be3bb",
-  "sourceSha256": "16df121b896fba8e053fc6fa3f7b8e4dd2ef8f475c3cff2866e63d23d06b18a0",
-  "generatedSha256": "84c0cdd3b56d7bba5a9ada7cc97574875345ed83b137eac0634d782d20480dac",
+  "sourceSha256": "d3c9454b6c2c3c81abc8df2958fe2376f3de64589e5bd27db18a9e59187eb65b",
+  "generatedSha256": "089257643ae2d1ec1c33932a2d3f67e5a5eba6d81a64baa72d9a700cad10eb57",
   "opaqueCount": 0,
-  "blockCount": 940,
+  "blockCount": 974,
   "referencedBlocks": [
     {
       "id": "sz_py_alias",
@@ -32,11 +32,11 @@
     },
     {
       "id": "sz_py_arithmetic",
-      "count": 66
+      "count": 67
     },
     {
       "id": "sz_py_assign",
-      "count": 62
+      "count": 63
     },
     {
       "id": "sz_py_attribute",
@@ -60,7 +60,7 @@
     },
     {
       "id": "sz_py_def",
-      "count": 9
+      "count": 10
     },
     {
       "id": "sz_py_dict_values",
@@ -88,7 +88,7 @@
     },
     {
       "id": "sz_py_if",
-      "count": 17
+      "count": 18
     },
     {
       "id": "sz_py_import_all",
@@ -104,7 +104,7 @@
     },
     {
       "id": "sz_py_integer",
-      "count": 111
+      "count": 124
     },
     {
       "id": "sz_py_interpolation",
@@ -124,7 +124,7 @@
     },
     {
       "id": "sz_py_list_index",
-      "count": 8
+      "count": 9
     },
     {
       "id": "sz_py_math_cos",
@@ -156,7 +156,7 @@
     },
     {
       "id": "sz_py_not",
-      "count": 2
+      "count": 3
     },
     {
       "id": "sz_py_or",
@@ -168,7 +168,7 @@
     },
     {
       "id": "sz_py_return",
-      "count": 5
+      "count": 6
     },
     {
       "id": "sz_py_rl3d_begin_drawing",
@@ -200,7 +200,7 @@
     },
     {
       "id": "sz_py_rl3d_color",
-      "count": 11
+      "count": 12
     },
     {
       "id": "sz_py_rl3d_disable_cursor",
@@ -224,7 +224,7 @@
     },
     {
       "id": "sz_py_rl3d_draw_rectangle",
-      "count": 1
+      "count": 2
     },
     {
       "id": "sz_py_rl3d_draw_text",
@@ -252,7 +252,7 @@
     },
     {
       "id": "sz_py_rl3d_fade",
-      "count": 1
+      "count": 2
     },
     {
       "id": "sz_py_rl3d_field",
@@ -340,7 +340,7 @@
     },
     {
       "id": "sz_py_rl3d_Vector3",
-      "count": 18
+      "count": 17
     },
     {
       "id": "sz_py_rl3d_vector3_distance",
@@ -352,11 +352,11 @@
     },
     {
       "id": "sz_py_run",
-      "count": 11
+      "count": 12
     },
     {
       "id": "sz_py_run_value",
-      "count": 18
+      "count": 22
     },
     {
       "id": "sz_py_subscript",
@@ -364,7 +364,7 @@
     },
     {
       "id": "sz_py_text",
-      "count": 23
+      "count": 24
     },
     {
       "id": "sz_py_tuple",
@@ -372,17 +372,21 @@
     },
     {
       "id": "sz_py_update",
-      "count": 6
+      "count": 7
     },
     {
       "id": "sz_py_variable",
-      "count": 295
+      "count": 299
+    },
+    {
+      "id": "sz_py_while",
+      "count": 1
     }
   ],
   "approvedBlockIdsSha256": "c24c4a223b4e88527f12117eae3b22f1ba6ce79071edc6fce5b4142db202515f",
   "fullWorkspaceRoundtrip": true,
-  "initialWorkspaceSha256": "93ad4f28f8a7d25079d9e924cb70919e99357f5556aca2d9697a43880e650c67",
-  "editedWorkspaceSha256": "8ac3f8d1b31571d341f3c0eaa66cf02599f12d306fd3b1825d564e01c8559170",
+  "initialWorkspaceSha256": "88979e263ba7c0de348ab26f8c2d3d240f264734e00a3f47356ace247091a967",
+  "editedWorkspaceSha256": "1df8e9e94b85c7bf7a4e806d76ffc18227d9fc733de16d06c225c58f466a2e5b",
   "canonicalRenderReanalysis": true,
   "runtimeCapabilitiesQualified": false,
   "browserInteractionQualified": false,
@@ -402,8 +406,8 @@
       "field": "NUMBER",
       "before": "8",
       "after": "6",
-      "beforeSourceSha256": "a949b0b02abdaf6eab2c0a59e0b1dbba718d74261dfb6d62bd745ad6954625a1",
-      "afterSourceSha256": "ca41cac7c0bc258670f0470f0b2c21fe4cb98adef68ec48de425c7eb9fa53c10"
+      "beforeSourceSha256": "a4fd398c0bb50f4fbb6f3e026c0c0d979c491bc133313168986bea5bb815dad4",
+      "afterSourceSha256": "09a617174931891c9225b14936b6e1a1845ec676ad077ca740570c42a813bd33"
     },
     {
       "label": "pulo",
@@ -420,8 +424,8 @@
       "field": "NUMBER",
       "before": "8",
       "after": "10",
-      "beforeSourceSha256": "ca41cac7c0bc258670f0470f0b2c21fe4cb98adef68ec48de425c7eb9fa53c10",
-      "afterSourceSha256": "84c0cdd3b56d7bba5a9ada7cc97574875345ed83b137eac0634d782d20480dac"
+      "beforeSourceSha256": "09a617174931891c9225b14936b6e1a1845ec676ad077ca740570c42a813bd33",
+      "afterSourceSha256": "089257643ae2d1ec1c33932a2d3f67e5a5eba6d81a64baa72d9a700cad10eb57"
     }
   ]
 }

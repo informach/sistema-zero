@@ -26,6 +26,7 @@ import { createRaylib3D, type Raylib3D } from './renderer3d'
 const DEFAULT_TEXTURE = 1
 const DEFAULT_FONT_TEXTURE = 2
 const MAX_VERTICES = 65_536
+const MAX_ATLAS_SIDE = 4096
 const DEG2RAD = Math.PI / 180
 const SMOOTH_CIRCLE_ERROR_RATE = 0.5
 const SPLINE_SEGMENT_DIVISIONS = 24
@@ -226,6 +227,9 @@ export function createRaylibRenderer(
   const textures = new Map<number, Texture>()
   const fonts = new Map<number, FontAtlas>()
   const events: RaylibInputEvent[] = []
+  // Buttons held, by pointer, and whether the next movement re-anchors after the lock.
+  const pressed = new Map<number, number>()
+  let resync = false
   let canvas: HTMLCanvasElement | undefined
   let gl: WebGL2RenderingContext | undefined
   let program: WebGLProgram | undefined
@@ -354,20 +358,30 @@ export function createRaylibRenderer(
     h: number,
     pixels: Uint8Array | ImageBitmap | null,
     renderTarget = false,
+    fontAtlas = false,
   ) {
     const g = gl!
     release(id)
+    // The game's budget is counted before anything is allocated (a texture that does not fit
+    // must not stay half made). The built-in textures and the font atlases are the runtime's,
+    // as on the Python side, which counts only what the game loads.
+    const counted = id > DEFAULT_FONT_TEXTURE && !fontAtlas ? w * h : 0
+    if (counted && currentPixels + counted > RAYLIB_LIMITS.totalPixels)
+      throw new Error('As imagens do jogo passaram do limite de tamanho.')
+    if (counted && textures.size >= RAYLIB_LIMITS.textures)
+      throw new Error('O jogo carregou imagens demais ao mesmo tempo.')
     const texture = g.createTexture()
     g.bindTexture(g.TEXTURE_2D, texture)
     if (pixels instanceof ImageBitmap)
       g.texImage2D(g.TEXTURE_2D, 0, g.RGBA, g.RGBA, g.UNSIGNED_BYTE, pixels)
     else g.texImage2D(g.TEXTURE_2D, 0, g.RGBA, w, h, 0, g.RGBA, g.UNSIGNED_BYTE, pixels)
-    // raylib: TEXTURE_FILTER_POINT and TEXTURE_WRAP_REPEAT by default.
+    // raylib (rlLoadTexture on OpenGL 3.3): TEXTURE_FILTER_POINT and TEXTURE_WRAP_REPEAT, the
+    // color texture of a render texture included.
     g.texParameteri(g.TEXTURE_2D, g.TEXTURE_MIN_FILTER, g.NEAREST)
     g.texParameteri(g.TEXTURE_2D, g.TEXTURE_MAG_FILTER, g.NEAREST)
-    g.texParameteri(g.TEXTURE_2D, g.TEXTURE_WRAP_S, renderTarget ? g.CLAMP_TO_EDGE : g.REPEAT)
-    g.texParameteri(g.TEXTURE_2D, g.TEXTURE_WRAP_T, renderTarget ? g.CLAMP_TO_EDGE : g.REPEAT)
-    const entry: Texture = { texture, width: w, height: h, pixels: w * h }
+    g.texParameteri(g.TEXTURE_2D, g.TEXTURE_WRAP_S, g.REPEAT)
+    g.texParameteri(g.TEXTURE_2D, g.TEXTURE_WRAP_T, g.REPEAT)
+    const entry: Texture = { texture, width: w, height: h, pixels: counted }
     if (renderTarget) {
       entry.framebuffer = g.createFramebuffer()
       entry.depth = g.createRenderbuffer()
@@ -381,8 +395,6 @@ export function createRaylibRenderer(
       g.bindFramebuffer(g.FRAMEBUFFER, null)
     }
     currentPixels += entry.pixels
-    if (currentPixels > RAYLIB_LIMITS.totalPixels)
-      throw new Error('As imagens do jogo passaram do limite de tamanho.')
     textures.set(id, entry)
   }
 
@@ -412,9 +424,14 @@ export function createRaylibRenderer(
   // Input --------------------------------------------------------------------------------------
   function push(event: RaylibInputEvent) {
     if (events.length >= RAYLIB_LIMITS.events) {
-      // Movements are the first to go; a key press or release is never lost.
-      const index = events.findIndex((item) => item[0] === 'mm')
-      if (index < 0) return
+      // Full (the game is busy): movements go first, then wheel steps and typed characters. A
+      // key or button going down or up is never dropped, or it would stay pressed.
+      let index = events.findIndex((item) => item[0] === 'mm')
+      if (index < 0) index = events.findIndex((item) => item[0] === 'mw' || item[0] === 'ch')
+      if (index < 0) {
+        if (event[0] === 'mm' || event[0] === 'mw' || event[0] === 'ch') return
+        index = 0
+      }
       events.splice(index, 1)
     }
     events.push(event)
@@ -495,6 +512,7 @@ export function createRaylibRenderer(
           virtualY = pos[1]!
           element.setPointerCapture?.(event.pointerId)
         }
+        pressed.set(event.pointerId, button(event.button))
         push(['md', button(event.button), pos[0]!, pos[1]!])
         event.preventDefault()
       },
@@ -504,19 +522,33 @@ export function createRaylibRenderer(
       'pointerup',
       (event) => {
         const pos = locked() ? [virtualX, virtualY] : position(event)
+        pressed.delete(event.pointerId)
         if (!pos || event.button > 2) return
         push(['mu', button(event.button), pos[0]!, pos[1]!])
       },
       settings,
     )
+    // A finger or button taken away without a pointerup lets go of its own button only.
     for (const type of ['pointercancel', 'lostpointercapture'] as const)
       element.addEventListener(
         type,
-        () => {
-          if (!locked()) push(['mu', 0, virtualX, virtualY])
+        (event) => {
+          const held = pressed.get(event.pointerId)
+          if (held === undefined || locked()) return
+          pressed.delete(event.pointerId)
+          push(['mu', held, virtualX, virtualY])
         },
         settings,
       )
+    // Leaving the lock (Esc, another window): the next movement starts from where the mouse is,
+    // with no jump from everything the locked mouse travelled.
+    doc.addEventListener(
+      'pointerlockchange',
+      () => {
+        if (!locked()) resync = true
+      },
+      settings,
+    )
     const move = (event: PointerEvent | MouseEvent) => {
       if (locked()) {
         const step = unit()
@@ -529,14 +561,21 @@ export function createRaylibRenderer(
       }
       const pos = position(event)
       if (!pos) return
-      const dx = pos[0] - virtualX
-      const dy = pos[1] - virtualY
+      const dx = resync ? 0 : pos[0] - virtualX
+      const dy = resync ? 0 : pos[1] - virtualY
+      resync = false
       virtualX = pos[0]
       virtualY = pos[1]
       push(['mm', pos[0], pos[1], dx, dy])
     }
     element.addEventListener('pointermove', move, settings)
-    doc.addEventListener('mousemove', (event) => locked() && move(event), settings)
+    // With the lock the canvas gets its pointermove and the same mousemove bubbles up: the
+    // document only counts a locked movement the canvas did not already count.
+    doc.addEventListener(
+      'mousemove',
+      (event) => locked() && event.target !== element && move(event),
+      settings,
+    )
     element.addEventListener('pointerleave', () => !locked() && push(['leave']), settings)
     element.addEventListener(
       'wheel',
@@ -583,8 +622,17 @@ export function createRaylibRenderer(
     g.bindVertexArray(null)
     count = 0
   }
+  /**
+   * Where rlgl calls rlDrawRenderBatch: draw the batch and forget the shader textures of
+   * SetShaderValueTexture (a texture or mode change inside the batch is not one of these).
+   */
+  function endBatch() {
+    flush()
+    three?.endBatch()
+  }
   function begin(mode: 0 | 1, texture = DEFAULT_TEXTURE, vertices = 6) {
-    if (mode !== batchMode || texture !== batchTexture || count + vertices > MAX_VERTICES) {
+    if (count + vertices > MAX_VERTICES) endBatch()
+    if (mode !== batchMode || texture !== batchTexture) {
       flush()
       batchMode = mode
       batchTexture = texture
@@ -1301,8 +1349,8 @@ export function createRaylibRenderer(
   // Modes ---------------------------------------------------------------------------------------
   function setBlend(mode: number) {
     const g = gl!
-    flush()
-    g.enable(g.BLEND)
+    endBatch()
+    // rlSetBlendMode never enables GL_BLEND: after rl_disable_color_blend it stays off.
     g.blendEquation(g.FUNC_ADD)
     switch (mode) {
       case 1:
@@ -1327,7 +1375,7 @@ export function createRaylibRenderer(
   }
   function setTarget(id: number) {
     const g = gl!
-    flush()
+    endBatch()
     const entry = id ? textures.get(id) : undefined
     if (entry?.framebuffer) {
       g.bindFramebuffer(g.FRAMEBUFFER, entry.framebuffer)
@@ -1360,6 +1408,7 @@ export function createRaylibRenderer(
     g.cullFace(g.BACK)
     g.frontFace(g.CCW)
     g.disable(g.SCISSOR_TEST)
+    g.enable(g.BLEND)
     setBlend(0)
     three?.frameStart()
     let at = 0
@@ -1367,8 +1416,16 @@ export function createRaylibRenderer(
     while (at < n) {
       const op = list[at++]!
       if (op === RAYLIB_OP.TEXT) {
+        const glyphs = list[at + 3]
+        if (
+          glyphs === undefined ||
+          !Number.isSafeInteger(glyphs) ||
+          glyphs < 0 ||
+          at + 4 + glyphs * 3 > n
+        )
+          throw new Error('Lista de desenho do Raylib inválida.')
         text(list, at)
-        at += 4 + list[at + 3]! * 3
+        at += 4 + glyphs * 3
         continue
       }
       if (op >= 60) {
@@ -1600,11 +1657,11 @@ export function createRaylibRenderer(
           npatch(r, at)
           break
         case RAYLIB_OP.BEGIN_2D:
-          flush()
+          endBatch()
           view = cameraMatrix2D(r[at]!, r[at + 1]!, r[at + 2]!, r[at + 3]!, r[at + 4]!, r[at + 5]!)
           break
         case RAYLIB_OP.END_2D:
-          flush()
+          endBatch()
           view = identity()
           break
         case RAYLIB_OP.BEGIN_TEXTURE:
@@ -1614,22 +1671,19 @@ export function createRaylibRenderer(
           setTarget(0)
           break
         case RAYLIB_OP.BEGIN_SCISSOR: {
-          flush()
+          endBatch()
           g.enable(g.SCISSOR_TEST)
           const x = r[at]!
           const y = r[at + 1]!
           const w = r[at + 2]!
           const h = r[at + 3]!
-          g.scissor(
-            x,
-            renderingTexture ? y : targetHeight - (y + h),
-            Math.max(0, w),
-            Math.max(0, h),
-          )
+          // BeginScissorMode: rlScissor(x, currentFbo.height - (y + height), …), the same in a
+          // render texture (its projection is the screen's, top-left origin).
+          g.scissor(x, targetHeight - (y + h), Math.max(0, w), Math.max(0, h))
           break
         }
         case RAYLIB_OP.END_SCISSOR:
-          flush()
+          endBatch()
           g.disable(g.SCISSOR_TEST)
           break
         case RAYLIB_OP.BEGIN_BLEND:
@@ -1662,7 +1716,7 @@ export function createRaylibRenderer(
       }
       at += arity
     }
-    flush()
+    endBatch()
     if (renderingTexture) setTarget(0)
     frameSequence++
   }
@@ -1757,25 +1811,50 @@ export function createRaylibRenderer(
         sum + ((bitmap?.width ?? 0) + padding * 2) * ((bitmap?.height ?? 0) + padding * 2),
       0,
     )
+    // Shelves, as the rows are filled; the side grows until every glyph fits (rows waste room,
+    // so the area alone is not enough: a tight atlas dropped the last letters silently).
+    const place = (side: number) => {
+      const spots: [number, number][] = []
+      let x = padding
+      let y = padding
+      let rowHeight = 0
+      for (const { bitmap } of boxes) {
+        if (!bitmap) {
+          spots.push([0, 0])
+          continue
+        }
+        if (x + bitmap.width + padding > side) {
+          x = padding
+          y += rowHeight + padding * 2
+          rowHeight = 0
+        }
+        if (x + bitmap.width + padding > side || y + bitmap.height + padding > side) return null
+        spots.push([x, y])
+        x += bitmap.width + padding * 2
+        rowHeight = Math.max(rowHeight, bitmap.height)
+      }
+      return spots
+    }
     let side = 64
-    while (side * side < area * 1.3 && side < 4096) side *= 2
+    while (side * side < area && side < MAX_ATLAS_SIDE) side *= 2
+    let spots = place(side)
+    while (!spots && side < MAX_ATLAS_SIDE) {
+      side *= 2
+      spots = place(side)
+    }
+    if (!spots)
+      throw new Error(
+        'A fonte ficou grande demais para o Estúdio: use um tamanho menor em load_font_ex.',
+      )
     const pixels = new Uint8Array(side * side * 4)
     for (let i = 0; i < pixels.length; i += 4) pixels[i] = pixels[i + 1] = pixels[i + 2] = 255
     const glyphs = new Map<number, Glyph>()
-    let x = padding
-    let y = padding
-    let rowHeight = 0
-    for (const { codepoint, bitmap } of boxes) {
+    boxes.forEach(({ codepoint, bitmap }, index) => {
       if (!bitmap) {
         glyphs.set(codepoint, { sx: 0, sy: 0, sw: 0, sh: 0, ox: 0, oy: 0 })
-        continue
+        return
       }
-      if (x + bitmap.width + padding > side) {
-        x = padding
-        y += rowHeight + padding * 2
-        rowHeight = 0
-      }
-      if (y + bitmap.height + padding > side) break
+      const [x, y] = spots[index]!
       for (let row = 0; row < bitmap.height; row++)
         for (let column = 0; column < bitmap.width; column++)
           pixels[((y + row) * side + x + column) * 4 + 3] =
@@ -1788,10 +1867,8 @@ export function createRaylibRenderer(
         ox: bitmap.xoff,
         oy: bitmap.yoff + baseline,
       })
-      x += bitmap.width + padding * 2
-      rowHeight = Math.max(rowHeight, bitmap.height)
-    }
-    makeTexture(id, side, side, pixels)
+    })
+    makeTexture(id, side, side, pixels, false, true)
     fonts.set(id, { base, glyphs, width: side, height: side })
   }
 
@@ -1801,10 +1878,6 @@ export function createRaylibRenderer(
     blobs: Uint8Array,
   ) {
     const g = ensureGl()
-    for (const id of header.free) {
-      release(id)
-      three?.free(id)
-    }
     let offset = 0
     for (const entry of header.textures) {
       const [id, kind] = entry
@@ -1816,7 +1889,14 @@ export function createRaylibRenderer(
       } else if (kind === 'p') {
         const [, , w, h, size] = entry
         if (offset + size > blobs.byteLength) throw new Error('Faltaram os pixels de uma imagem.')
-        makeTexture(id, w, h, blobs.subarray(offset, offset + size))
+        const pixels = blobs.subarray(offset, offset + size)
+        const existing = textures.get(id)
+        // UpdateTexture writes into the texture that exists: its filter, wrap and the render
+        // texture's framebuffer stay. Only a new texture is made new.
+        if (existing && existing.width === w && existing.height === h) {
+          g.bindTexture(g.TEXTURE_2D, existing.texture)
+          g.texSubImage2D(g.TEXTURE_2D, 0, 0, 0, w, h, g.RGBA, g.UNSIGNED_BYTE, pixels)
+        } else makeTexture(id, w, h, pixels)
         offset += size
       } else if (kind === 'e') {
         const size = entry[2]
@@ -1851,6 +1931,12 @@ export function createRaylibRenderer(
     if (header.models.length) {
       three ??= createRaylib3D(g, { flush, textures: (id) => textures.get(id)?.texture })
       three.load(header.models, blobs.subarray(offset))
+    }
+    // Last: a resource made and unloaded in the same frame is made and then released (ids are
+    // never reused), instead of released before it existed and then made for good.
+    for (const id of header.free) {
+      release(id)
+      three?.free(id)
     }
   }
 

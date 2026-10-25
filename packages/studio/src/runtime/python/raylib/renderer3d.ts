@@ -38,6 +38,8 @@ export interface Raylib3D {
    * and answer true; otherwise false and the batch uses its own program.
    */
   batch(mvp: Float32Array, texture: number): boolean
+  /** The 2D host drew its batch at a point where rlgl calls rlDrawRenderBatch. */
+  endBatch(): void
   dispose(): void
 }
 
@@ -489,6 +491,7 @@ export function createRaylib3D(
     switch (code) {
       case RAYLIB_OP.BEGIN_3D: {
         shared.flush()
+        shaders.endBatch()
         const [w, h] = host.size()
         const aspect = w / h
         const fovy = r[at + 9]!
@@ -509,6 +512,7 @@ export function createRaylib3D(
       }
       case RAYLIB_OP.END_3D:
         host.restore2D()
+        shaders.endBatch()
         gl.disable(gl.DEPTH_TEST)
         break
       case RAYLIB_OP.LINE_3D:
@@ -630,6 +634,8 @@ export function createRaylib3D(
       }
       case RAYLIB_OP.SHADER_MODE:
         shared.flush()
+        // rlSetShader only draws the batch (and resets its textures) when the shader changes.
+        if (r[at]! !== batchShader) shaders.endBatch()
         batchShader = r[at]!
         break
       case RAYLIB_OP.SHADER_MATRIX:
@@ -659,6 +665,7 @@ export function createRaylib3D(
       shaders.use(batchShader, linked, { mvp, colDiffuse: [1, 1, 1, 1], maps: [[0, texture]] })
       return true
     },
+    endBatch: () => shaders.endBatch(),
     dispose() {
       for (const id of [...meshes.keys()]) free(id)
       shaders.dispose()

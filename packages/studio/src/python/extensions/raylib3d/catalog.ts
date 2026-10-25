@@ -843,7 +843,7 @@ function raylib3DCodecs(): PythonBlockCodec[] {
       category: MOUSE,
       level: 2,
       role: 'statement',
-      help: 'Esconde e prende o mouse na janela (depois de um clique nela): o mouse passa a girar o olhar, como nos jogos em primeira pessoa. Esc solta.',
+      help: 'Esconde e prende o mouse na janela (depois de um clique nela): o mouse passa a girar o olhar, como nos jogos em primeira pessoa. No navegador, Esc solta o mouse. Lembre que Esc também fecha o jogo do raylib, a não ser que você use set_exit_key(KEY_NULL).',
     }),
     api({
       fn: 'enable_cursor',

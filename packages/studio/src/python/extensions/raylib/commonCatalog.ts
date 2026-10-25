@@ -940,7 +940,7 @@ export function raylibCommonCodecs(owner: RaylibOwner): PythonBlockCodec[] {
     }),
     api({
       fn: 'draw_texture_pro',
-      title: 'desenhar a imagem completo',
+      title: 'desenhar a imagem (versão completa)',
       category: I,
       level: 3,
       role: 'statement',

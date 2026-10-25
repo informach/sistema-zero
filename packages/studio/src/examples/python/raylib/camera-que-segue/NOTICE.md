@@ -1,9 +1,7 @@
 # Autoria e recursos
 
-Copyright (c) 2026 Sistema Zero. O código, os desenhos, os sons e a música deste exemplo
-são originais, distribuídos sob a licença MIT em `LICENSE`. Os desenhos foram escritos
-como código (`scripts/python/raylib-art.ts` no repositório do Sistema Zero), e os sons
-foram sintetizados a partir de partituras.
+Copyright (c) 2026 Sistema Zero. O código deste exemplo é original, distribuído sob a
+licença MIT em `LICENSE`.
 
 A mecânica do jogo se inspira em "basics 5 (câmera)" do curso de raylib em Python do canal
 Clear Code. Nenhum código, texto, imagem ou som do curso foi incorporado. Este é um projeto

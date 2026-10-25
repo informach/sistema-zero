@@ -1,4 +1,5 @@
 """Patrulha Espacial: sem jogar a nave é atingida; o tiro acerta e o meteoro pisca; atirando e desviando dá para resistir."""
+import pyray
 
 
 def ameacas(g):
@@ -54,3 +55,27 @@ def play(t):
     t.check(viu_clarao, 'nenhum meteoro piscou depois do tiro')
     t.check(g['destruidos'] >= 5, f'o piloto quase não acertou ({g["destruidos"]})')
     t.shot('patrulha')
+
+    # O clarão chega à tela pelo shader: dois meteoros parados, só um atingido. Na tela, o
+    # atingido fica branco e o outro mantém a cor da textura.
+    t.release('LEFT', 'RIGHT', 'SPACE')
+    g['falta'] = 999
+    a, b = g['Meteoro'](), g['Meteoro']()
+    for meteoro, x in ((a, -2), (b, 2)):
+        meteoro.posicao = pyray.Vector3(x, 0, -3)
+        meteoro.velocidade = 0
+        meteoro.raio = 1.2
+        meteoro.falta = 999
+        meteoro.bola = g['bolas'][0]
+    a.atingido = True
+    g['meteoros'][:] = [a, b]
+    g['lasers'][:] = []
+    yield
+    t.capture()
+    yield
+    cores = []
+    for meteoro in (a, b):
+        ponto = pyray.get_world_to_screen(meteoro.posicao, g['camera'])
+        cores.append(t.pixel(ponto.x, ponto.y))
+    t.check(min(cores[0][:3]) > 240, f'o meteoro atingido não ficou branco ({cores[0]})')
+    t.check(min(cores[1][:3]) < 200, f'o meteoro que não foi atingido também piscou ({cores[1]})')

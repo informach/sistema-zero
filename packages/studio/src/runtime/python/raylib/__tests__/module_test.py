@@ -194,5 +194,124 @@ class Loop(unittest.TestCase):
                             for command in header['audio']))
 
 
+class FullReview(unittest.TestCase):
+    """O que o full review de 25/10 achou funcionando aqui e quebrando no computador (ou o contrário)."""
+
+    def setUp(self):
+        FRAMES.clear()
+        EVENTS.clear()
+        _rt.window.open = False
+        P.init_window(320, 240, 'revisão')
+
+    def test_a_pointer_has_no_len_nor_for_but_an_array_does(self):
+        count = P.ffi.new('int *', 0)
+        with self.assertRaises(TypeError):
+            len(count)
+        with self.assertRaises(TypeError):
+            list(count)
+        self.assertEqual(len(P.ffi.new('int[]', [1, 2, 3])), 3)
+        sequence = P.load_random_sequence(3, 1, 9)
+        self.assertEqual(sorted(sequence[i] for i in range(3)) == sorted(set(sequence[i] for i in range(3))), True)
+        with self.assertRaises(TypeError):
+            len(sequence)
+        # Mais números distintos do que o intervalo tem: NULL, como no C.
+        self.assertIs(P.load_random_sequence(20, 1, 10), P.ffi.NULL)
+
+    def test_sound_loaded_before_the_device_never_plays(self):
+        P.close_audio_device()
+        path = os.path.join(ROOT, 'cedo.wav')
+        with open(path, 'wb') as handle:
+            handle.write(b'RIFF\x24\x00\x00\x00WAVEfmt \x10\x00\x00\x00\x01\x00\x01\x00'
+                         b'\x44\xac\x00\x00\x88\x58\x01\x00\x02\x00\x10\x00data\x04\x00\x00\x00'
+                         b'\x00\x00\x00\x00')
+        sound = P.load_sound('cedo.wav')
+        self.assertFalse(P.is_sound_valid(sound))
+        self.assertEqual(sound.frameCount, 0)
+        P.init_audio_device()
+        P.play_sound(sound)
+        frame()
+        self.assertFalse(any(command[0] == 'play' for command in FRAMES[-1][0]['audio']))
+        self.assertTrue(P.is_sound_valid(P.load_sound('cedo.wav')))
+
+    def test_ogg_length_comes_from_the_file(self):
+        P.init_audio_device()
+        rate = (44100).to_bytes(4, 'little')
+        head = b'OggS' + bytes(24) + b'\x01vorbis' + bytes(4) + b'\x02' + rate + bytes(16)
+        tail = b'OggS\x00\x04' + (88200).to_bytes(8, 'little') + bytes(16)
+        with open(os.path.join(ROOT, 'tema.ogg'), 'wb') as handle:
+            handle.write(head + bytes(100) + tail)
+        music = P.load_music_stream('tema.ogg')
+        self.assertEqual(music.frameCount, 88200)
+        self.assertAlmostEqual(P.get_music_time_length(music), 2.0)
+
+    def test_get_time_moves_inside_a_frame(self):
+        frame()
+        start = P.get_time()
+        for _ in range(10_000_000):
+            if P.get_time() - start > 0.005:
+                break
+        self.assertGreater(P.get_time() - start, 0.005)
+
+    def test_pressing_again_in_the_same_frame_keeps_the_key_down(self):
+        EVENTS.extend([[['kd', 32], ['ku', 32], ['kd', 32]], []])
+        frame()
+        frame()
+        self.assertTrue(P.is_key_down(P.KEY_SPACE))
+        self.assertFalse(P.is_key_released(P.KEY_SPACE))
+        EVENTS.append([['ku', 32]])
+        frame()
+        frame()
+
+    def test_division_by_zero_is_nan_or_inf_like_c(self):
+        # Como no C: 1/0 é infinito e 0/0 é nan, sem ZeroDivisionError.
+        self.assertEqual(P.normalize(1, 0, 0), float('inf'))
+        self.assertTrue(P.normalize(0, 0, 0) != P.normalize(0, 0, 0))
+        self.assertTrue(P.remap(0, 0, 0, 0, 10) != P.remap(0, 0, 0, 0, 10))
+        self.assertTrue(P.wrap(1, 0, 0) != P.wrap(1, 0, 0))
+        P.matrix_ortho(0, 0, 0, 0, 0, 0)
+
+    def test_collision_lines_fills_the_ffi_pointer(self):
+        point = P.ffi.new('Vector2 *')
+        self.assertTrue(P.check_collision_lines((0, 0), (2, 2), (0, 2), (2, 0), point))
+        self.assertEqual((point.x, point.y), (1.0, 1.0))
+
+    def test_mouse_offset_and_scale(self):
+        P.set_mouse_position(10, 20)
+        P.set_mouse_offset(5, 0)
+        P.set_mouse_scale(2, 1)
+        self.assertEqual((P.get_mouse_x(), P.get_mouse_y()), (30, 20))
+        P.set_mouse_offset(0, 0)
+        P.set_mouse_scale(1, 1)
+
+    def test_out_of_range_key_is_not_up(self):
+        self.assertFalse(P.is_key_up(0))
+        self.assertFalse(P.is_key_up(600))
+        self.assertFalse(P.is_mouse_button_up(9))
+
+    def test_c_names_take_bytes_and_pointers(self):
+        with self.assertRaises(TypeError):
+            R.MeasureText('abc', 10)
+        self.assertEqual(R.MeasureText(b'abc', 10), P.measure_text('abc', 10))
+        image = P.gen_image_color(2, 2, P.RED)
+        with self.assertRaises(TypeError):
+            R.ImageFlipVertical(image)
+        R.ImageFlipVertical(P.ffi.addressof(image))
+
+    def test_colors_refuse_what_c_refuses(self):
+        with self.assertRaises(OverflowError):
+            P.get_color(-1)
+        P.color_to_int((230, 41, 55, 255))
+        with self.assertRaises(TypeError):
+            P.color_to_int((230.0, 41, 55, 255))
+
+    def test_messages_for_what_the_studio_does_not_have(self):
+        with self.assertRaises(NotImplementedError) as gui:
+            P.gui_button((0, 0, 10, 10), 'ok')
+        self.assertIn('raygui', str(gui.exception))
+        with self.assertRaises(NotImplementedError) as rlgl:
+            P.rl_set_line_width(2)
+        self.assertNotIn('Raylib 3D', str(rlgl.exception))
+
+
 if __name__ == '__main__':
     unittest.main()

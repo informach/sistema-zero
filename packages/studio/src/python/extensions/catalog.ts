@@ -25,7 +25,7 @@ export const PYTHON_EXTENSIONS = Object.freeze([
     emoji: '🟦',
     description:
       'Faça jogos 2D com o raylib: janela, formas, imagens, texto, câmera, sons, teclado e mouse. É o mesmo raylib do computador.',
-    help: 'Os blocos têm nomes em português. Na Ponte, você vê o Python do raylib, como draw_texture(nave, x, y, WHITE). Para jogar no computador: pip install raylib.',
+    help: 'Os blocos têm nomes em português. Na Ponte, você vê o Python do raylib, como draw_texture(nave, x, y, WHITE). Para jogar no computador: pip install raylib==6.0.1.0.',
   }),
   Object.freeze({
     ...RAYLIB_3D_EXTENSION,
@@ -33,7 +33,7 @@ export const PYTHON_EXTENSIONS = Object.freeze([
     emoji: '🧊',
     description:
       'Faça jogos 3D com o raylib: câmera 3D, cubos, esferas, modelos, animações e colisões, mais o placar, os sons e o teclado. É o mesmo raylib do computador.',
-    help: 'Os blocos têm nomes em português. Na Ponte, você vê o Python do raylib, como draw_model(nave, posicao, 1, WHITE). Para jogar no computador: pip install raylib.',
+    help: 'Os blocos têm nomes em português. Na Ponte, você vê o Python do raylib, como draw_model(nave, posicao, 1, WHITE). Para jogar no computador: pip install raylib==6.0.1.0.',
   }),
 ])
 /** Extensions that own the game canvas: a project uses at most one of them. */

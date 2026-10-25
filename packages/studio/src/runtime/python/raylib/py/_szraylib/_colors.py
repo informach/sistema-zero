@@ -127,7 +127,12 @@ def color_to_int(color_, /):
 
 
 def get_color(hexValue, /):
-    value = integer(hexValue, 'get_color', 'hexValue') & 0xFFFFFFFF
+    value = integer(hexValue, 'get_color', 'hexValue')
+    # unsigned int no C: o pyray do computador recusa negativo (e color_to_int devolve
+    # negativo para as cores com muito vermelho, então os dois não se desfazem).
+    if value < 0 or value > 0xFFFFFFFF:
+        raise OverflowError(f'get_color: o número da cor vai de 0 a 0xFFFFFFFF (por exemplo '
+                            f'0xFF0000FF é vermelho), e recebeu {value}.')
     return unpack_color(value)
 
 

@@ -3,7 +3,7 @@
 O pyray do computador recusa, por exemplo, ``draw_circle(10.5, 20, 5, RED)``: o centro é ``int``
 no C. Recusar aqui também garante que o jogo feito no Estúdio roda igual no computador.
 """
-from ._structs import Color, Rectangle, Struct, Vector2, Vector3, Vector4, f32
+from ._structs import Color, Rectangle, Struct, Vector2, Vector3, Vector4, f32, int_hint
 
 _COLOR_CACHE = {}
 _warned_colors = set()
@@ -20,7 +20,7 @@ def integer(value, function, param=''):
         return int(value)
     raise TypeError(
         f'{_where(function, param)} precisa de um número inteiro (int), mas recebeu '
-        f'{type(value).__name__} ({value!r:.40}). Use int(...) para arredondar.')
+        f'{type(value).__name__} ({value!r:.40}).{int_hint(value)}')
 
 
 def unsigned(value, function, param=''):
@@ -136,7 +136,9 @@ def color(value, function, param='color'):
     """A cor empacotada num inteiro 0xRRGGBBAA (é assim que ela viaja na lista de desenho)."""
     if type(value) is tuple:
         packed = _COLOR_CACHE.get(value)
-        if packed is not None:
+        # (230.0, 41, 55, 255) é igual a (230, 41, 55, 255) para o dicionário, mas o C recusa
+        # o número com vírgula: só vale o atalho quando os quatro são inteiros mesmo.
+        if packed is not None and all(type(item) is int for item in value):
             return packed
     if type(value) is Color:
         return (value.r << 24) | (value.g << 16) | (value.b << 8) | value.a

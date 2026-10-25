@@ -17,18 +17,18 @@
   "authoringLoader": "loadPythonAuthoring",
   "extension": "python-raylib-2d",
   "codecOrderSha256": "260d5420ed53ff196eab065c20843114564d95df4fff6d4f416fb06d8d25e26a",
-  "sourceSha256": "60d9d6e494dbba81531c08462850d969b70f79d475fab49b3a97e0853ec6a095",
-  "generatedSha256": "c5c99dd8a40cb7507177668e258f935a0a163e577d382c2b75309e5c0b8f5625",
+  "sourceSha256": "51d84233a7f56ff42ae5d9138a71dc529e864edbd8fd01685fdebca9c9214562",
+  "generatedSha256": "d27469c83348527d570932134ea25a70c4cff7a893720f70f9df7b0d1e95ab33",
   "opaqueCount": 0,
-  "blockCount": 172,
+  "blockCount": 193,
   "referencedBlocks": [
     {
       "id": "sz_py_arithmetic",
-      "count": 1
+      "count": 9
     },
     {
       "id": "sz_py_assign",
-      "count": 12
+      "count": 13
     },
     {
       "id": "sz_py_compare",
@@ -44,7 +44,7 @@
     },
     {
       "id": "sz_py_integer",
-      "count": 54
+      "count": 57
     },
     {
       "id": "sz_py_none",
@@ -115,6 +115,10 @@
       "count": 1
     },
     {
+      "id": "sz_py_rl2d_field",
+      "count": 2
+    },
+    {
       "id": "sz_py_rl2d_get_mouse_position",
       "count": 1
     },
@@ -180,13 +184,13 @@
     },
     {
       "id": "sz_py_variable",
-      "count": 31
+      "count": 38
     }
   ],
-  "approvedBlockIdsSha256": "d800f2e8f69feb7b077fd710bfaca8e2888d9494cdceea419df43fc2df941c2d",
+  "approvedBlockIdsSha256": "c24c4a223b4e88527f12117eae3b22f1ba6ce79071edc6fce5b4142db202515f",
   "fullWorkspaceRoundtrip": true,
-  "initialWorkspaceSha256": "d1a49d810622ccd8dea3936d36daa6fdd3cdbfbc095e0040e0773bea199cd948",
-  "editedWorkspaceSha256": "f5ae3ab1bfd9259126d3129ca370922d7ed07ddfaf5c5211fdc2c524dc28cf7d",
+  "initialWorkspaceSha256": "0affe47987fdc271f060d195cc0f3cb200e8f682304d8a9bd1593942361c7f34",
+  "editedWorkspaceSha256": "e544596247dddd04b1d06505db99b5b91d4543c6a0d7d0ba1cf7d9aab7fa36f6",
   "canonicalRenderReanalysis": true,
   "runtimeCapabilitiesQualified": false,
   "browserInteractionQualified": false,
@@ -206,8 +210,8 @@
       "field": "NUMBER",
       "before": "800",
       "after": "820",
-      "beforeSourceSha256": "d990c1734d2614a1da28178a775b6095ac87a7909350f0552e2b453efb8550a9",
-      "afterSourceSha256": "1d9e0b5efa9f4391f087f972ba86f89aa42bfb966200da6b8cf7fae7a91c060f"
+      "beforeSourceSha256": "1ce5cc31533e38350101eef0e96be74cf1b61b1b041432a71d9542cd3a2c7085",
+      "afterSourceSha256": "edf6d803eee209b70878a02a55b66c276bff5e44d7ce68a10757059bc53d2c5e"
     },
     {
       "label": "altura",
@@ -224,8 +228,8 @@
       "field": "NUMBER",
       "before": "450",
       "after": "460",
-      "beforeSourceSha256": "1d9e0b5efa9f4391f087f972ba86f89aa42bfb966200da6b8cf7fae7a91c060f",
-      "afterSourceSha256": "c5c99dd8a40cb7507177668e258f935a0a163e577d382c2b75309e5c0b8f5625"
+      "beforeSourceSha256": "edf6d803eee209b70878a02a55b66c276bff5e44d7ce68a10757059bc53d2c5e",
+      "afterSourceSha256": "d27469c83348527d570932134ea25a70c4cff7a893720f70f9df7b0d1e95ab33"
     }
   ]
 }

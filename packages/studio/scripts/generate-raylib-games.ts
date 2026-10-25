@@ -1,5 +1,6 @@
 import { spawnSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
+import { existsSync, readdirSync } from 'node:fs'
 import { mkdir, mkdtemp, readdir, readFile, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
@@ -26,6 +27,7 @@ const studio = fileURLToPath(new URL('../', import.meta.url))
 const check = process.argv.includes('--check')
 const mediaOnly = process.argv.includes('--media-only')
 const root = join(studio, 'src/examples/python/raylib')
+const HERE_MODELS = join(studio, 'scripts/raylib/models')
 const scores = join(studio, 'scripts/python/fixtures/raylib-music')
 const encoder = new TextEncoder()
 const sha256 = (bytes: Uint8Array) => createHash('sha256').update(bytes).digest('hex')
@@ -111,16 +113,52 @@ python main.py
 `
 }
 
-function notice(game: RaylibGame, hasFont: boolean) {
+/** "a, b e c", como se escreve em português. */
+function listing(items: readonly string[]) {
+  return items.length < 2
+    ? items.join('')
+    : `${items.slice(0, -1).join(', ')} e ${items[items.length - 1]}`
+}
+
+/** Authorship of exactly what the game has: code-drawn pictures, sounds, music, Molda files. */
+function notice(game: RaylibGame, paths: readonly string[], molda: ReadonlySet<string>) {
+  const hasFont = paths.some((path) => path.startsWith('fonts/'))
+  const drawn = paths.some((path) => path.startsWith('images/') && !molda.has(path))
+  const sounds = game.sounds.length > 0
+  const music = game.music.length > 0
+  const own = listing([
+    'O código',
+    ...(drawn ? ['os desenhos'] : []),
+    ...(sounds ? ['os sons'] : []),
+    ...(music ? ['a música'] : []),
+  ])
+  const made = [
+    ...(drawn
+      ? [
+          'Os desenhos foram escritos como código (`scripts/python/raylib-art.ts` no repositório do Sistema Zero).',
+        ]
+      : []),
+    ...(sounds || music
+      ? [
+          `${sounds && music ? 'Os sons e a música foram sintetizados' : sounds ? 'Os sons foram sintetizados' : 'A música foi sintetizada'} a partir de partituras.`,
+        ]
+      : []),
+  ]
+  const fromMolda = [...molda]
+  const moldaKinds = listing([
+    ...(fromMolda.some((path) => path.startsWith('models/')) ? ['os modelos 3D'] : []),
+    ...(fromMolda.some((path) => path.startsWith('images/') && path !== 'images/ceu.png')
+      ? ['as texturas']
+      : []),
+    ...(molda.has('images/ceu.png') ? ['o céu'] : []),
+  ])
   return `# Autoria e recursos
 
-Copyright (c) 2026 Sistema Zero. O código, os desenhos, os sons e a música deste exemplo
-são originais, distribuídos sob a licença MIT em \`LICENSE\`. Os desenhos foram escritos
-como código (\`scripts/python/raylib-art.ts\` no repositório do Sistema Zero), e os sons
-foram sintetizados a partir de partituras.${
-    game.extension === '3d'
+Copyright (c) 2026 Sistema Zero. ${own} deste exemplo ${own.includes(' e ') || own.includes(',') ? 'são originais, distribuídos' : 'é original, distribuído'} sob a
+licença MIT em \`LICENSE\`.${made.length ? ` ${made.join(' ')}` : ''}${
+    moldaKinds
       ? `
-Os modelos 3D, as texturas e o céu foram feitos no Molda, a oficina 3D do Sistema Zero
+${moldaKinds.charAt(0).toUpperCase()}${moldaKinds.slice(1)} ${moldaKinds.includes(' e ') ? 'foram feitos' : 'foi feito'} no Molda, a oficina 3D do Sistema Zero
 (\`scripts/raylib/molda-models.ts\`), pelos mesmos caminhos que a criança usa.`
       : ''
   }
@@ -139,6 +177,17 @@ educacional independente, sem afiliação ao Clear Code nem aos autores do rayli
 O programa usa a API do raylib-python-cffi ${RAYLIB_UPSTREAM.version} (EPL-2.0) e do raylib
 (zlib), e roda no computador com \`pip install ${RAYLIB_UPSTREAM.package}==${RAYLIB_UPSTREAM.version}\`.
 `
+}
+
+/** The files of a game that came from the Molda (scripts/raylib/models/<key>/). */
+function moldaPaths(key: string): ReadonlySet<string> {
+  const folder = join(HERE_MODELS, key)
+  if (!existsSync(folder)) return new Set()
+  return new Set(
+    readdirSync(folder, { recursive: true, encoding: 'utf8' })
+      .map((path) => path.split('\\').join('/'))
+      .filter((path) => path.includes('.')),
+  )
 }
 
 async function encodeOgg(wav: Uint8Array) {
@@ -225,7 +274,7 @@ for (const game of RAYLIB_GAMES as readonly RaylibGame[]) {
   const hasFont = Object.keys(media).some((path) => path.startsWith('fonts/'))
   const texts: Record<string, string> = {
     'README.md': readme(game, Object.keys(media)),
-    'NOTICE.md': notice(game, hasFont),
+    'NOTICE.md': notice(game, Object.keys(media), moldaPaths(game.key)),
     LICENSE,
     ...(hasFont ? { 'LICENSE-fonte.txt': PRESS_START_2P_OFL } : {}),
   }

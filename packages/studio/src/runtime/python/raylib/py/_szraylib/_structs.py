@@ -23,6 +23,13 @@ _INF = math.inf
 STRUCTS = {}
 
 
+def int_hint(value):
+    """A dica que só faz sentido para número com vírgula (int corta, round arredonda)."""
+    if isinstance(value, float):
+        return ' Use round(...) para arredondar, ou int(...) para cortar a parte depois da vírgula.'
+    return ''
+
+
 def _number_error(struct, field, value):
     return TypeError(
         f'{struct}.{field} precisa de um número, mas recebeu {type(value).__name__} ({value!r:.40}).')
@@ -46,7 +53,7 @@ def _int_value(value, struct, field, low, high):
         else:
             raise TypeError(
                 f'{struct}.{field} precisa de um número inteiro (int), mas recebeu '
-                f'{type(value).__name__} ({value!r:.40}). Use int(...) para arredondar.')
+                f'{type(value).__name__} ({value!r:.40}).{int_hint(value)}')
     if value < low or value > high:
         if value < 0 and low == 0:
             raise OverflowError(
@@ -315,7 +322,7 @@ def _channel(value, field):
             value = int(value)
         else:
             raise TypeError(f'Color.{field} precisa de um número inteiro de 0 a 255, mas recebeu '
-                            f'{type(value).__name__} ({value!r:.40}). Use int(...).')
+                            f'{type(value).__name__} ({value!r:.40}).{int_hint(value)}')
     if value < 0 or value > 255:
         raise OverflowError(f'Color.{field} vai de 0 a 255, e recebeu {value}.')
     return value

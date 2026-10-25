@@ -13,7 +13,7 @@ As setas para cima e para baixo escolhem, Enter confirma e ESC volta. Atacar mos
 ## Ideias para mudar
 
 - Mude o dano dos golpes em GOLPES.
-- Crie um monstrinho novo em MONSTROS (e desenhe ele no Pinta).
+- Crie um monstrinho novo em MONSTROS, desenhe ele no Pinta e ponha o nome do arquivo em 'imagem'.
 - Acrescente uma vantagem nova em VANTAGENS.
 
 ## Imagens, sons e fontes

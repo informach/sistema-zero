@@ -2,7 +2,9 @@
 
 No computador, ``ffi`` é o do pacote cffi. Aqui ele só guarda valores numa lista que o motor
 lê: ``ffi.new('struct Vector2 *', [1, 0])`` (um valor para o shader), ``ffi.new('int *', 0)``
-(a contagem que load_model_animations preenche) e ``ffi.new('int[]', [...])`` (codepoints).
+(a contagem que load_model_animations preenche) e ``ffi.new('int[]', [...])`` (uma lista de
+números). Para os caracteres de uma fonte, o pyray do computador quer ``None`` (ou ``ffi.NULL``)
+e a quantidade, como em ``load_font_ex('fonts/x.ttf', 32, None, 250)``.
 """
 import re
 
@@ -26,28 +28,61 @@ _NUMBERS = {'int', 'float', 'double', 'unsigned int', 'unsigned char', 'char', '
 
 
 class Pointer:
-    """Um ponteiro do cffi: ``p[0]`` lê e escreve; num struct, ``p.x`` também."""
+    """Um ponteiro do cffi: ``p[0]`` lê e escreve; num struct, ``p.x`` também.
+
+    Como no cffi, só um ARRAY (``ffi.new('int[]', ...)``) tem tamanho e se percorre com
+    ``for``. Um ponteiro (``modelo.materials``, ``load_model_animations(...)``) só tem índice:
+    no computador, ``len()`` e ``for`` nele dão TypeError, então aqui também.
+    """
     __slots__ = ('ctype', 'items')
 
     def __init__(self, ctype, items):
         object.__setattr__(self, 'ctype', ctype)
         object.__setattr__(self, 'items', items)
 
+    def _array(self):
+        return '[' in self.ctype
+
+    def _index(self, index):
+        if isinstance(index, slice):
+            if index.start is None or index.stop is None or index.step is not None:
+                raise IndexError(f'{self.ctype}: no raylib a fatia precisa de começo e fim, '
+                                 'como p[0:3].')
+            return index
+        if isinstance(index, int) and not isinstance(index, bool) and index < 0:
+            raise IndexError(f'{self.ctype}: índice negativo ({index}) não existe aqui; no '
+                             'computador ele leria a memória de fora.')
+        return index
+
     def __getitem__(self, index):
+        index = self._index(index)
+        if isinstance(index, slice):
+            return Pointer(self.ctype.replace('*', '[]', 1), self.items[index])
         return self.items[index]
 
     def __setitem__(self, index, value):
-        current = self.items[index]
+        current = self.items[self._index(index)]
         if hasattr(current, '_assign'):
             current._assign(value)
         else:
             self.items[index] = value
 
+    def __bool__(self):
+        return True
+
     def __len__(self):
-        return len(self.items)
+        if self._array():
+            return len(self.items)
+        raise TypeError(f"len() não funciona num ponteiro do raylib ({self.ctype}): use o "
+                        "contador que vem junto, como modelo.materialCount, modelo.meshCount ou "
+                        "o número que load_model_animations põe na caixinha do ffi.")
 
     def __iter__(self):
-        return iter(self.items)
+        if self._array():
+            return iter(self.items)
+        raise TypeError(f"um ponteiro do raylib ({self.ctype}) não se percorre com for: use "
+                        "for i in range(modelo.materialCount) (ou o contador certo) e "
+                        "p[i] dentro do laço.")
 
     def __getattr__(self, name):
         return getattr(self.items[0], name)

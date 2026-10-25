@@ -50,3 +50,16 @@ def play(t):
     yield from t.wait(60)
     t.check(abs(g['posicao'].y - chao) < 0.05 and g['no_chao'], 'o jogador não voltou para o chão')
     t.shot('fim')
+
+    # Cavar o bloco embaixo dos pés: o jogador cai, renasce e o chão do começo volta (antes ele
+    # caía de novo pelo mesmo buraco, sem fim).
+    g['posicao'].x = 0
+    g['posicao'].z = 0
+    g['olhar'] = -1.5
+    yield from t.wait(2)
+    yield from t.tap('X', 1)
+    t.check('0,0,0' not in mundo(), 'o X não cavou o bloco embaixo dos pés')
+    for _ in range(240):
+        yield
+    t.check('0,0,0' in mundo(), 'o chão do começo não voltou')
+    t.check(g['no_chao'] and abs(g['posicao'].y - chao) < 0.05, 'o jogador não ficou de pé no começo')

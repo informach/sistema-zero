@@ -79,13 +79,15 @@ export function projectHas3DMaterials(
   project: (ThreeDConsumerProjectLike & Pick<Project, 'assets'>) | null | undefined,
   hasMoldaLibrary: boolean,
 ): boolean {
-  // Python: only Raylib reaches the Molda (its texture is an image in Raylib 2D too).
-  if (project?.programmingLanguage === 'python' && !projectUsesRaylib(project)) return false
-  if (hasMoldaLibrary) return true
-  if (projectHas3DConsumer(project)) return true
-  return (project?.assets ?? []).some(
+  const has3DFile = (project?.assets ?? []).some(
     (asset) => asset.kind === 'model3d' || asset.kind === 'environment3d',
   )
+  // Python: only Raylib reaches the Molda (its texture is an image in Raylib 2D too). Without
+  // Raylib, the tab stays only to manage a 3D file left behind (removing Raylib 3D keeps it).
+  if (project?.programmingLanguage === 'python' && !projectUsesRaylib(project)) return has3DFile
+  if (hasMoldaLibrary) return true
+  if (projectHas3DConsumer(project)) return true
+  return has3DFile
 }
 
 /**

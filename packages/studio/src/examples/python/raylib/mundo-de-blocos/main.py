@@ -89,6 +89,17 @@ def colide(x, y, z):
     return False
 
 
+def ponto_de_partida():
+    # O começo é em cima do bloco mais alto da coluna do meio. Se a criança cavou até o fundo,
+    # o chão volta: senão o jogador cairia, renasceria no buraco e cairia de novo.
+    if not solido(0, 0, 0):
+        por_bloco(0, 0, 0, NOMES.index('grama'))
+    topo = 0
+    while solido(0, topo + 1, 0):
+        topo += 1
+    return Vector3(0, topo + 0.5 + OLHOS, 0)
+
+
 def mirar():
     # O raio sai do meio da tela; o bloco mais perto que ele toca é o alvo.
     global alvo, normal
@@ -108,7 +119,7 @@ def mirar():
 def comecar():
     global posicao, angulo, olhar, velocidade_y, no_chao, escolhido, giro_da_previa
     criar_mundo()
-    posicao = Vector3(0, 0.5 + OLHOS, 0)
+    posicao = ponto_de_partida()
     angulo = 0
     olhar = -0.3
     velocidade_y = 0
@@ -154,7 +165,7 @@ while not window_should_close():
         no_chao = False
     # Caiu para fora do mundo: volta para o começo.
     if posicao.y < -10:
-        posicao = Vector3(0, 0.5 + OLHOS, 0)
+        posicao = ponto_de_partida()
         velocidade_y = 0
 
     camera.position = Vector3(posicao.x, posicao.y, posicao.z)
@@ -204,11 +215,12 @@ while not window_should_close():
 
     # A mira e a prévia do bloco escolhido (a render texture vem de cabeça para baixo).
     draw_circle(LARGURA // 2, ALTURA // 2, 4, RED)
-    draw_rectangle(10, ALTURA - 150, 130, 140, fade(BLACK, 0.4))
-    draw_texture_rec(previa.texture, Rectangle(0, 0, 120, -120), Vector2(15, ALTURA - 145), WHITE)
+    draw_rectangle(10, ALTURA - 150, 150, 140, fade(BLACK, 0.4))
+    draw_texture_rec(previa.texture, Rectangle(0, 0, 120, -120), Vector2(25, ALTURA - 145), WHITE)
     draw_text(NOMES[escolhido], 15, ALTURA - 28, 16, RAYWHITE)
+    draw_rectangle(0, 4, 650, 46, fade(RAYWHITE, 0.6))
     draw_text('Clique ou C: colocar   Clique direito ou X: tirar   Q e E: trocar o bloco', 10, 10, 16, DARKBLUE)
-    draw_text('Mouse ou setas: olhar   W A S D: andar   Espaço: pular', 10, 30, 16, DARKBLUE)
+    draw_text('Mouse (ou setas para os lados): olhar   W A S D (ou setas): andar   Espaço: pular', 10, 30, 16, DARKBLUE)
     end_drawing()
 
 enable_cursor()

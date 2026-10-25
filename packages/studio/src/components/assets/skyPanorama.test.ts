@@ -3,6 +3,7 @@ import { unzlibSync } from 'fflate'
 import { FloatType } from 'three'
 import { HDRLoader } from 'three/examples/jsm/loaders/HDRLoader.js'
 import demo from '../../../playground/moldaDemoAssets.json'
+import { raylibSkyAsImage } from '../../asset-library/personalSync'
 import { RAYLIB_3D_EXTENSION } from '../../runtime/python/raylib/contract'
 import { documentFixture } from '../../state/fixtures/projectDocuments'
 import { createProjectStore } from '../../state/projectStore'
@@ -103,6 +104,23 @@ describe('o céu do Molda num projeto Raylib', () => {
       libOrigin: 'molda',
     })
     expect(asset!.dataUrl.startsWith('data:image/png;base64,')).toBe(true)
+  })
+
+  test('o céu editado no Molda volta a entrar no jogo Raylib como panorama novo', async () => {
+    const store = await raylib(RAYLIB_3D_EXTENSION)
+    addMoldaCreationToProject(store.getState(), await raylibReadyCreation(creation, true))
+    const asset = { ...store.getState().project!.assets![0]!, libRevision: 1 }
+    const drawing = { ...creation, origin: 'molda' as const, updatedAt: 2 }
+    const image = await raylibSkyAsImage(asset, drawing)
+    expect(image).toMatchObject({ kind: 'image', width: 1024, height: 512, updatedAt: 2 })
+    expect(image!.dataUrl.startsWith('data:image/png;base64,')).toBe(true)
+    // A mesma revisão já está no jogo: nada a converter de novo.
+    expect(await raylibSkyAsImage({ ...asset, libRevision: 2 }, drawing)).toBeNull()
+    // Um desenho do Pinta e um céu fora do Raylib seguem pelo caminho de sempre.
+    const pinta = { ...drawing, kind: 'image' as const }
+    expect(await raylibSkyAsImage(asset, pinta)).toBe(pinta)
+    const hdr = { ...asset, kind: 'environment3d' as const }
+    expect(await raylibSkyAsImage(hdr, drawing)).toBe(drawing)
   })
 
   test('fora do Raylib o céu fica como .hdr (o Jogo 3D o lê assim)', async () => {

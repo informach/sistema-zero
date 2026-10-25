@@ -52,7 +52,8 @@ ceu = load_model_from_mesh(gen_mesh_sphere(60, 32, 32))
 set_material_texture(ceu.materials[0], MATERIAL_MAP_ALBEDO, load_texture_from_image(imagem_do_ceu))
 unload_image(imagem_do_ceu)
 
-# A folha do robô tem uma linha por animação: parado, andando, atacando e desligado.
+# A folha do robô tem uma linha por animação: parado, andando, atacando e desligado, com até
+# dois quadros em cada linha (por isso a largura do quadro é a metade da imagem).
 textura_robo = load_texture('images/robo.png')
 LARGURA_DO_ROBO = textura_robo.width / 2
 ALTURA_DO_ROBO = textura_robo.height / 4
@@ -269,7 +270,9 @@ while not window_should_close():
             draw_text('Sua energia acabou!', 270, 185, 30, RAYWHITE)
         draw_text('Enter: jogar de novo', 285, 235, 24, RAYWHITE)
     else:
-        draw_text('Mouse ou setas: olhar   W A S D: andar   Clique ou espaço: raio', 10, 70, 16, LIGHTGRAY)
+        draw_rectangle(0, 66, 530, 46, fade(BLACK, 0.5))
+        draw_text('Mouse (ou setas para os lados): olhar   W A S D (ou setas): andar', 10, 70, 16, RAYWHITE)
+        draw_text('Clique ou espaço: soltar o raio', 10, 90, 16, RAYWHITE)
     end_drawing()
 
 enable_cursor()

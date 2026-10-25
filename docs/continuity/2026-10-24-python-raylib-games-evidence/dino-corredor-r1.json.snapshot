@@ -17,8 +17,8 @@
   "authoringLoader": "loadPythonAuthoring",
   "extension": "python-raylib-2d",
   "codecOrderSha256": "260d5420ed53ff196eab065c20843114564d95df4fff6d4f416fb06d8d25e26a",
-  "sourceSha256": "e1240d62d0929cb5f54e5d19af2e00f5932dc311a10c281f6d1a438d3773112a",
-  "generatedSha256": "9beb5d32a5d18e0bbc4837a11733d1070ffb6bf3e5a1cbbd617308556267c8e8",
+  "sourceSha256": "6ee8c53008b48e6f42f05ffb6e2a1aa9bf1b223c110062be5adbe61b18095755",
+  "generatedSha256": "0b3ae769bc30b740f27356dac400e8a08f9adcda354a39701dd405dbb732cc4b",
   "opaqueCount": 0,
   "blockCount": 618,
   "referencedBlocks": [
@@ -299,10 +299,10 @@
       "count": 218
     }
   ],
-  "approvedBlockIdsSha256": "d800f2e8f69feb7b077fd710bfaca8e2888d9494cdceea419df43fc2df941c2d",
+  "approvedBlockIdsSha256": "c24c4a223b4e88527f12117eae3b22f1ba6ce79071edc6fce5b4142db202515f",
   "fullWorkspaceRoundtrip": true,
-  "initialWorkspaceSha256": "c0abf64dac6eff618589c581b941295d294105b2bea927c9099216bdfa43254b",
-  "editedWorkspaceSha256": "a61018e397fff845710cde1d7648c7a76f8d5062c9de61abcf8e01956e632461",
+  "initialWorkspaceSha256": "ad7eb320e79e683091c600d185cfe40ee0624cd3f2436806a7dac984390d3438",
+  "editedWorkspaceSha256": "d4861c411d8a0996ac06eadc2032398b4778103153cd666094b3cd3685458ed1",
   "canonicalRenderReanalysis": true,
   "runtimeCapabilitiesQualified": false,
   "browserInteractionQualified": false,
@@ -320,10 +320,10 @@
       },
       "codecId": "sz_py_integer",
       "field": "NUMBER",
-      "before": "300",
-      "after": "310",
-      "beforeSourceSha256": "54636aad53c8dc3364f80022009706d37fc4bcd86020d2017756307174f48594",
-      "afterSourceSha256": "64feedf5acc0a3749383451d66e2d5c7de3f996785b4f3b38fcba0d20c841730"
+      "before": "364",
+      "after": "374",
+      "beforeSourceSha256": "2432cf21dc5da4fb6870317fb91a090ccfd0d59887f0fccd2658a65197b42aef",
+      "afterSourceSha256": "19fa4a8f201ca59a584e37ef23bd94efde3a02296ab24bfe87472a2c8943eb6a"
     },
     {
       "label": "gravidade",
@@ -340,8 +340,8 @@
       "field": "NUMBER",
       "before": "2400",
       "after": "2200",
-      "beforeSourceSha256": "64feedf5acc0a3749383451d66e2d5c7de3f996785b4f3b38fcba0d20c841730",
-      "afterSourceSha256": "9beb5d32a5d18e0bbc4837a11733d1070ffb6bf3e5a1cbbd617308556267c8e8"
+      "beforeSourceSha256": "19fa4a8f201ca59a584e37ef23bd94efde3a02296ab24bfe87472a2c8943eb6a",
+      "afterSourceSha256": "0b3ae769bc30b740f27356dac400e8a08f9adcda354a39701dd405dbb732cc4b"
     }
   ]
 }

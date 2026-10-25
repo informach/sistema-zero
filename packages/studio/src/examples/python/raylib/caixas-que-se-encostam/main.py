@@ -34,6 +34,8 @@ def caixa_de(centro):
 
 def resolver(eixo, passo):
     # Andou e encostou numa caixa? Volta para a face dela, só no eixo em que andou.
+    if passo == 0:
+        return
     for centro in caixas:
         if check_collision_boxes(caixa_de(pos), caixa_de(centro)):
             if eixo == 'x':

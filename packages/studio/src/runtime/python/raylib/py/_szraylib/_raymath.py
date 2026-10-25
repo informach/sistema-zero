@@ -48,20 +48,20 @@ def lerp(start, end, amount, /):
 def normalize(value, start, end, /):
     f = 'normalize'
     s = number(start, f, 'start')
-    return float((number(value, f, 'value') - s) / (number(end, f, 'end') - s))
+    return float(_div(number(value, f, 'value') - s, number(end, f, 'end') - s))
 
 
 def remap(value, inputStart, inputEnd, outputStart, outputEnd, /):
     f = 'remap'
     v, a, b = number(value, f, 'value'), number(inputStart, f, 'inputStart'), number(inputEnd, f, 'inputEnd')
     c, d = number(outputStart, f, 'outputStart'), number(outputEnd, f, 'outputEnd')
-    return float((v - a) / (b - a) * (d - c) + c)
+    return float(_div(v - a, b - a) * (d - c) + c)
 
 
 def wrap(value, min, max, /):
     f = 'wrap'
     v, lo, hi = number(value, f, 'value'), number(min, f, 'min'), number(max, f, 'max')
-    return float(v - (hi - lo) * math.floor((v - lo) / (hi - lo)))
+    return float(v - (hi - lo) * _floor(_div(v - lo, hi - lo)))
 
 
 def float_equals(x, y, /):
@@ -175,9 +175,17 @@ def vector2_divide(v1, v2, /):
 
 
 def _div(a, b):
+    """A divisão do C (IEEE): dividir por zero dá infinito com sinal, ou nan (0/0)."""
     if b == 0:
-        return math.copysign(math.inf, a) if a else math.nan
+        if a == 0 or a != a:
+            return math.nan
+        return math.copysign(math.inf, a) * math.copysign(1.0, b)
     return a / b
+
+
+def _floor(x):
+    """floorf do C: nan e infinito passam como estão (o math.floor do Python lança)."""
+    return float(math.floor(x)) if math.isfinite(x) else x
 
 
 def vector2_normalize(v, /):
@@ -451,14 +459,14 @@ def vector3_normalize(v, /):
 def vector3_project(v1, v2, /):
     a = vec3(v1, 'vector3_project', 'v1')
     b = vec3(v2, 'vector3_project', 'v2')
-    mag = (a[0] * b[0] + a[1] * b[1] + a[2] * b[2]) / (b[0] * b[0] + b[1] * b[1] + b[2] * b[2])
+    mag = _div(a[0] * b[0] + a[1] * b[1] + a[2] * b[2], b[0] * b[0] + b[1] * b[1] + b[2] * b[2])
     return Vector3(b[0] * mag, b[1] * mag, b[2] * mag)
 
 
 def vector3_reject(v1, v2, /):
     a = vec3(v1, 'vector3_reject', 'v1')
     b = vec3(v2, 'vector3_reject', 'v2')
-    mag = (a[0] * b[0] + a[1] * b[1] + a[2] * b[2]) / (b[0] * b[0] + b[1] * b[1] + b[2] * b[2])
+    mag = _div(a[0] * b[0] + a[1] * b[1] + a[2] * b[2], b[0] * b[0] + b[1] * b[1] + b[2] * b[2])
     return Vector3(a[0] - b[0] * mag, a[1] - b[1] * mag, a[2] - b[2] * mag)
 
 
@@ -566,8 +574,8 @@ def vector3_barycenter(p, a, b, c, /):
     dot = lambda u, w: u[0] * w[0] + u[1] * w[1] + u[2] * w[2]  # noqa: E731
     d00, d01, d11, d20, d21 = dot(v0, v0), dot(v0, v1), dot(v1, v1), dot(v2, v0), dot(v2, v1)
     denom = d00 * d11 - d01 * d01
-    y = (d11 * d20 - d01 * d21) / denom
-    z = (d00 * d21 - d01 * d20) / denom
+    y = _div(d11 * d20 - d01 * d21, denom)
+    z = _div(d00 * d21 - d01 * d20, denom)
     return Vector3(1.0 - (z + y), y, z)
 
 
@@ -773,10 +781,10 @@ def matrix_multiply_value(left, value, /):
 
 def frustum(left, right, bottom, top, near, far):
     rl, tb, fn = right - left, top - bottom, far - near
-    return ((near * 2.0) / rl, 0.0, 0.0, 0.0,
-            0.0, (near * 2.0) / tb, 0.0, 0.0,
-            (right + left) / rl, (top + bottom) / tb, -(far + near) / fn, -1.0,
-            0.0, 0.0, -(far * near * 2.0) / fn, 0.0)
+    return (_div(near * 2.0, rl), 0.0, 0.0, 0.0,
+            0.0, _div(near * 2.0, tb), 0.0, 0.0,
+            _div(right + left, rl), _div(top + bottom, tb), _div(-(far + near), fn), -1.0,
+            0.0, 0.0, _div(-(far * near * 2.0), fn), 0.0)
 
 
 def perspective(fovY, aspect, near, far):
@@ -787,8 +795,8 @@ def perspective(fovY, aspect, near, far):
 
 def ortho(left, right, bottom, top, near, far):
     rl, tb, fn = right - left, top - bottom, far - near
-    return (2.0 / rl, 0.0, 0.0, 0.0, 0.0, 2.0 / tb, 0.0, 0.0, 0.0, 0.0, -2.0 / fn, 0.0,
-            -(left + right) / rl, -(top + bottom) / tb, -(far + near) / fn, 1.0)
+    return (_div(2.0, rl), 0.0, 0.0, 0.0, 0.0, _div(2.0, tb), 0.0, 0.0, 0.0, 0.0, _div(-2.0, fn),
+            0.0, _div(-(left + right), rl), _div(-(top + bottom), tb), _div(-(far + near), fn), 1.0)
 
 
 def look_at(eye, target, up):

@@ -18,6 +18,7 @@ from . import _rt as rt
 from . import _shapes as ps
 from ._shaders import default_shader
 from ._args import color, integer, number, struct, vec3
+from ._ffi import Pointer
 from ._assets import _png_size
 from ._collide3d import ray_triangle
 from ._structs import (BoneInfo, BoundingBox, Color, Material, MaterialMap, Matrix, Mesh, Model,
@@ -41,6 +42,13 @@ def _identity():
     return rm._make(_gltf.IDENTITY)
 
 
+def _items(pointer):
+    """A lista por trás de um ponteiro do modelo (o motor percorre; o jogo usa o contador)."""
+    if isinstance(pointer, Pointer):
+        return pointer.items
+    return pointer or []
+
+
 def load_material_default():
     material = Material()
     material.shader = default_shader()
@@ -48,7 +56,7 @@ def load_material_default():
     maps[K.MATERIAL_MAP_ALBEDO].texture = Texture(rt.DEFAULT_TEXTURE_ID, 1, 1, 1, 7)
     maps[K.MATERIAL_MAP_ALBEDO].color = Color(255, 255, 255, 255)
     maps[K.MATERIAL_MAP_METALNESS].color = Color(255, 255, 255, 255)
-    material.maps = maps
+    material.maps = Pointer('MaterialMap *', maps)
     material.params = [0.0, 0.0, 0.0, 0.0]
     return material
 
@@ -365,9 +373,10 @@ def _model(meshes, materials, mesh_material):
     model.transform = _identity()
     model.meshCount = len(meshes)
     model.materialCount = len(materials)
-    model.meshes = meshes
-    model.materials = materials
-    model.meshMaterial = mesh_material
+    # Ponteiros, como no C: o jogo usa índice e o contador (meshCount, materialCount).
+    model.meshes = Pointer('Mesh *', meshes)
+    model.materials = Pointer('Material *', materials)
+    model.meshMaterial = Pointer('int *', mesh_material)
     return model
 
 
@@ -457,12 +466,12 @@ def is_model_valid(model, /):
     m = struct(model, Model, 'is_model_valid', 'model')
     if not m.meshes or not m.materials or m.meshMaterial is None or m.meshCount <= 0 or m.materialCount <= 0:
         return False
-    return all(mesh.vertices is None or mesh.vaoId > 0 for mesh in m.meshes[:m.meshCount])
+    return all(mesh.vertices is None or mesh.vaoId > 0 for mesh in _items(m.meshes)[:m.meshCount])
 
 
 def unload_model(model, /):
     m = struct(model, Model, 'unload_model', 'model')
-    for mesh in (m.meshes or [])[:m.meshCount]:
+    for mesh in _items(m.meshes)[:m.meshCount]:
         unload_mesh(mesh)
 
 
@@ -470,8 +479,9 @@ def get_model_bounding_box(model, /):
     m = struct(model, Model, 'get_model_bounding_box', 'model')
     low, high = (0.0, 0.0, 0.0), (0.0, 0.0, 0.0)
     if m.meshCount > 0:
-        low, high = _mesh_bounds(m.meshes[0])
-        for mesh in m.meshes[1:m.meshCount]:
+        meshes = _items(m.meshes)
+        low, high = _mesh_bounds(meshes[0])
+        for mesh in meshes[1:m.meshCount]:
             a, b = _mesh_bounds(mesh)
             low = tuple(min(low[i], a[i]) for i in range(3))
             high = tuple(max(high[i], b[i]) for i in range(3))
@@ -502,7 +512,7 @@ def emit_mesh(mesh, material, matrix, diffuse, wires, bones=None):
     record = [rt.OP_MESH, mesh.vaoId, material.shader.id, diffuse,
               _packed(material.maps[K.MATERIAL_MAP_METALNESS].color), 1 if wires else 0]
     record.extend(matrix)
-    maps = [(i, m.texture.id) for i, m in enumerate(material.maps[:MAX_MATERIAL_MAPS])
+    maps = [(i, m.texture.id) for i, m in enumerate(_items(material.maps)[:MAX_MATERIAL_MAPS])
             if m.texture.id > 0]
     record.append(len(maps))
     for index, texture_id in maps:

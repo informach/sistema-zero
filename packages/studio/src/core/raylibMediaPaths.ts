@@ -105,8 +105,10 @@ function fileStem(name: string, folder: RaylibMediaFolder): string {
 }
 
 /**
- * `<main dir>/<folder>/<stem>.<ext>`. Only the exact file name counts as taken (raylib asks for
- * the extension too); collisions get `-2`, `-3`… like the material names.
+ * `<folder>/<stem>.<ext>` at the project root, wherever the main file is: raylib opens a path
+ * from the current folder, which is the root both in the Studio and on the computer (the
+ * LEIA-ME runs `python src/main.py` from there). Only the exact file name counts as taken
+ * (raylib asks for the extension too); collisions get `-2`, `-3`… like the material names.
  */
 export function raylibMediaPath(input: {
   entrypoint: string
@@ -119,8 +121,7 @@ export function raylibMediaPath(input: {
 }): { path: string } | { error: string } {
   const placed = raylibMediaFolder(input.kind, input.extension, input)
   if ('error' in placed) return placed
-  const base = parentOf(input.entrypoint)
-  const dir = base ? `${base}/${placed.folder}` : placed.folder
+  const dir = placed.folder
   const taken = new Set(input.occupied.files.map((path) => path.toLowerCase()))
   const stem = fileStem(input.name, placed.folder)
   const ext = input.extension.toLowerCase()
@@ -137,23 +138,21 @@ export function raylibMediaPath(input: {
   return { error: 'Não encontrei um nome livre para este arquivo na pasta do jogo.' }
 }
 
-/** The folder of a path that sits in `<main dir>/<folder>/`, if any. */
-function raylibFolderOf(path: string, entrypoint: string): RaylibMediaFolder | undefined {
-  const base = parentOf(entrypoint)
-  return FOLDERS.find((folder) => parentOf(path) === (base ? `${base}/${folder}` : folder))
+/** The Raylib folder at the project root that holds this path, if any. */
+function raylibFolderOf(path: string): RaylibMediaFolder | undefined {
+  return FOLDERS.find((folder) => parentOf(path) === folder)
 }
 
 /**
- * What the child writes in the code to open this material (`images/nave.png`): the path
- * relative to the main file. Undefined outside the Raylib folders.
+ * What the child writes in the code to open this material (`images/nave.png`): the path from
+ * the project root, where the game runs. Undefined outside the Raylib folders.
  */
 export function raylibCodePath(
   asset: Pick<ProjectAsset, 'proPath'>,
-  entrypoint: string,
+  _entrypoint?: string,
 ): string | undefined {
-  if (!asset.proPath || !raylibFolderOf(asset.proPath, entrypoint)) return
-  const base = parentOf(entrypoint)
-  return base ? asset.proPath.slice(base.length + 1) : asset.proPath
+  if (!asset.proPath || !raylibFolderOf(asset.proPath)) return
+  return asset.proPath
 }
 
 /** The Studio name that matches the file (`nave-2.png` → `nave-2`), unless another has it. */
@@ -211,9 +210,7 @@ export function raylibRenamedAsset(
   asset: ProjectAsset,
   name: string,
 ): { asset: ProjectAsset } | { error: string } {
-  const folder = asset.proPath
-    ? raylibFolderOf(asset.proPath, project.python.entrypoint)
-    : undefined
+  const folder = asset.proPath ? raylibFolderOf(asset.proPath) : undefined
   return raylibPlacedAsset(
     project,
     { ...asset, name },
@@ -235,14 +232,13 @@ function unreadableLabel(asset: ProjectAsset): string {
 export function raylibRelocatedAssets(
   project: PythonProjectDocument,
 ): { assets: ProjectAsset[]; coverAssetName?: string } | { error: string } {
-  const entrypoint = project.python.entrypoint
   const assets = [...(project.assets ?? [])]
   const unreadable: string[] = []
   let cover = project.coverAssetName
   for (const [index, asset] of assets.entries()) {
     const path = asset.proPath
     const ext = path ? extensionOf(path) : ''
-    const folder = path ? raylibFolderOf(path, entrypoint) : undefined
+    const folder = path ? raylibFolderOf(path) : undefined
     if (folder) {
       const placed = raylibMediaFolder(asset.kind, ext, {
         role: folder === 'music' ? 'music' : 'sound',

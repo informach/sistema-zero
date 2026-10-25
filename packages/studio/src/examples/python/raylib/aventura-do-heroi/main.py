@@ -313,16 +313,22 @@ while not window_should_close():
         draw_texture_ex(imagens['folha'], folha[0], 0, ESCALA, WHITE)
     end_mode_2d()
 
+    coracao = imagens['coracao']
     for i in range(VIDAS):
         cor = WHITE if i < heroi.vidas else (60, 60, 60, 200)
-        # No placar, o coração aparece com o dobro do tamanho do mundo.
-        draw_texture_ex(imagens['coracao'], Vector2(16 + i * 34, 14), 0, ESCALA * 2, cor)
+        # No placar, cada coração ocupa 28 x 28, qualquer que seja o tamanho do desenho.
+        recorte = Rectangle(0, 0, coracao.width, coracao.height)
+        draw_texture_pro(coracao, recorte, Rectangle(16 + i * 34, 14, 28, 28), Vector2(0, 0), 0, cor)
     draw_text_ex(fonte, f'Gosmas: {len(gosmas)}', Vector2(LARGURA - 190, 20), 16, 0, WHITE)
     if estado != 'jogando':
         draw_rectangle(140, 150, 520, 130, (0, 0, 0, 200))
         titulo = 'Você limpou a ilha!' if estado == 'venceu' else 'Acabaram os corações!'
-        draw_text_ex(fonte, titulo, Vector2(170, 185), 24, 0, YELLOW)
-        draw_text_ex(fonte, 'Enter: jogar de novo', Vector2(245, 235), 16, 0, WHITE)
+        # Os textos ficam no meio da caixa, pela medida de cada um.
+        largura_titulo = measure_text_ex(fonte, titulo, 24, 0).x
+        draw_text_ex(fonte, titulo, Vector2(LARGURA / 2 - largura_titulo / 2, 185), 24, 0, YELLOW)
+        largura_dica = measure_text_ex(fonte, 'Enter: jogar de novo', 16, 0).x
+        draw_text_ex(fonte, 'Enter: jogar de novo', Vector2(LARGURA / 2 - largura_dica / 2, 235), 16, 0,
+                     WHITE)
     end_drawing()
 
 unload_music_stream(musica)

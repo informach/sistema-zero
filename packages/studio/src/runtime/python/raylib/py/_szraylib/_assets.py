@@ -270,6 +270,13 @@ def gen_image_gradient_linear(width, height, direction, start, end, /):
     return _image(w, h, data)
 
 
+def _blend(distance, span):
+    """O fator do gradiente como no C: dividir por zero dá infinito (ou nan, que vira 0)."""
+    if span == 0:
+        return 1.0 if distance > 0 else 0.0
+    return min(max(distance / span, 0.0), 1.0)
+
+
 def gen_image_gradient_radial(width, height, density, inner, outer, /):
     f = 'gen_image_gradient_radial'
     w, h = integer(width, f, 'width'), integer(height, f, 'height')
@@ -283,8 +290,7 @@ def gen_image_gradient_radial(width, height, density, inner, outer, /):
     for y in range(h):
         for x in range(w):
             dist = math.hypot(x - cx, y - cy)
-            factor = (dist - radius * dens) / span if span else 1.0
-            factor = min(max(factor, 0.0), 1.0)
+            factor = _blend(dist - radius * dens, span)
             k = (y * w + x) * 4
             data[k] = int(b.r * factor + a.r * (1 - factor))
             data[k + 1] = int(b.g * factor + a.g * (1 - factor))
@@ -306,8 +312,7 @@ def gen_image_gradient_square(width, height, density, inner, outer, /):
             nx = abs(x - cx) / cx if cx else 0.0
             ny = abs(y - cy) / cy if cy else 0.0
             dist = max(nx, ny)
-            factor = (dist - dens) / (1.0 - dens) if dens != 1 else 1.0
-            factor = min(max(factor, 0.0), 1.0)
+            factor = _blend(dist - dens, 1.0 - dens)
             k = (y * w + x) * 4
             data[k] = int(b.r * factor + a.r * (1 - factor))
             data[k + 1] = int(b.g * factor + a.g * (1 - factor))
@@ -368,7 +373,8 @@ def image_color_tint(image, color_, /):
 def image_color_brightness(image, brightness, /):
     img = _ref(image, 'image_color_brightness')
     amount = max(-255, min(255, integer(brightness, 'image_color_brightness', 'brightness')))
-    table = bytes(max(0, min(255, i + amount)) for i in range(256))
+    # ImageColorBrightness: o que passa de 0 para baixo vira 1 (não 0), como no C.
+    table = bytes(1 if i + amount < 0 else min(255, i + amount) for i in range(256))
     data = img.data
     for channel in range(3):
         data[channel::4] = bytes(data[channel::4]).translate(table)
@@ -377,7 +383,7 @@ def image_color_brightness(image, brightness, /):
 
 def image_color_contrast(image, contrast, /):
     img = _ref(image, 'image_color_contrast')
-    amount = max(-100.0, min(100.0, number(contrast, 'image_color_contrast', 'contrast')))
+    amount = max(-100, min(100, integer(contrast, 'image_color_contrast', 'contrast')))
     factor = ((100.0 + amount) / 100.0) ** 2
     table = bytes(max(0, min(255, int((((i / 255.0) - 0.5) * factor + 0.5) * 255.0)))
                   for i in range(256))
@@ -461,6 +467,12 @@ def image_from_image(image, rec, /):
 def image_crop(image, crop, /):
     f = 'image_crop'
     img = _ref(image, f)
+    # ImageCrop: com o retângulo começando fora da imagem, o C avisa e não muda nada.
+    r = rect(crop, f, 'crop')
+    x, y = max(0.0, r[0]), max(0.0, r[1])
+    if x > img.width or y > img.height or not img.width or not img.height:
+        print('WARNING: IMAGE: Failed to crop, rectangle out of bounds')
+        return
     result = image_from_image(img, crop)
     img.data[:] = result.data
     img.width, img.height = result.width, result.height
@@ -551,7 +563,8 @@ def image_clear_background(dst, color_, /):
 def load_image_colors(image, /):
     img = struct(image, Image, 'load_image_colors', 'image')
     d = img.data
-    return [Color(d[i], d[i + 1], d[i + 2], d[i + 3]) for i in range(0, len(d), 4)]
+    from ._ffi import Pointer
+    return Pointer('Color *', [Color(d[i], d[i + 1], d[i + 2], d[i + 3]) for i in range(0, len(d), 4)])
 
 
 def unload_image_colors(colors, /):

@@ -43,15 +43,16 @@ while not window_should_close():
     draw_line_ex(Vector2(30, 420), Vector2(330, 330), 8, (120, 40, 40, 255))
     draw_rectangle(470, 380, 300, 40, DARKBLUE)
 
-    # Imagens
+    # Imagens: uma ao lado da outra, com o espaço medido pelo tamanho do desenho.
+    passo = nave.width * ESCALA + 16
     draw_texture_ex(nave, Vector2(40, 150), 0, ESCALA, WHITE)
-    draw_texture_ex(nave_cinza, Vector2(120, 150), 0, ESCALA, WHITE)
-    draw_texture_ex(nave_invertida, Vector2(200, 150), 0, ESCALA, WHITE)
+    draw_texture_ex(nave_cinza, Vector2(40 + passo, 150), 0, ESCALA, WHITE)
+    draw_texture_ex(nave_invertida, Vector2(40 + passo * 2, 150), 0, ESCALA, WHITE)
 
     # Texto: a fonte do raylib e a fonte TTF
     draw_text('Olá, Raylib!', 40, 30, 40, WHITE)
     draw_text_ex(fonte, 'Clique no círculo', Vector2(480, 392), 16, 0, WHITE)
-    draw_text_ex(fonte, 'Três naves', Vector2(40, 230), 16, 0, LIGHTGRAY)
+    draw_text_ex(fonte, 'Três naves', Vector2(40, 150 + nave.height * ESCALA + 32), 16, 0, LIGHTGRAY)
 
     draw_fps(LARGURA - 110, 10)
     end_drawing()
