@@ -278,9 +278,9 @@ blocos sem exemplo no Avançado, assets 3D no ZIP).
   Espacial Profissional. Por isso a escada entre extensões do `exampleProgression.test.ts` mede
   só os blocos da própria extensão. **Decidido pela dona em 25/10/2026:** os exemplos do Jogo 3D
   perdem o HTML e o CSS da página e passam a usar só blocos 3D, como o Pega-Estrelas (placar,
-  vidas, telas e textos pelas regras de jogo). O CSS de página NÃO desce de degrau: na jornada,
-  HTML e CSS só aparecem nos extras de Web (a partir do Construtor, opcionais) e na Maestria Web e
-  Apps, nunca como requisito da trilha. Ainda por fazer. O `sz_math_trig` é outra conversa.
+  vidas, telas e textos pelas regras de jogo). O CSS de página NÃO desce de degrau: na trilha da
+  jornada, HTML e CSS entram no posto 6 (JavaScript sem extensão); antes disso, só nos extras de
+  Web, que são opcionais. Ainda por fazer. O `sz_math_trig` é outra conversa.
 - **Grade dos cursos**: a orientação (`docs/orientacao-cursos-jogos.md`) passou a mapear
   Iniciante 3D = núcleo do Jogo 3D, Intermediário 3D = Jogo 3D completo + Mundo 3D e Avançado 3D =
   Jogo 3D Avançado + Canvas 3D. A grade dos 49 cursos
