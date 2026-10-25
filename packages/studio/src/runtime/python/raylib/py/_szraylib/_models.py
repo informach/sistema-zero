@@ -629,9 +629,14 @@ def load_model_animations(fileName, animCount, /):
         animation.keyframeCount = len(poses)
         animation.keyframePoses = _KeyframePoses(poses)
         animations.append(animation)
-    if animCount is not None and hasattr(animCount, '__setitem__'):
-        animCount[0] = len(animations)
     from ._ffi import Pointer
+    # No raylib do computador, None derruba o programa e um número dá TypeError: o contador
+    # precisa ser a caixinha do ffi, que o raylib preenche.
+    if not isinstance(animCount, Pointer):
+        raise TypeError(f'{f}: o contador precisa ser ffi.new("int *", 0), que o raylib '
+                        f'preenche com quantos movimentos vieram (recebeu '
+                        f'{type(animCount).__name__}).')
+    animCount[0] = len(animations)
     return Pointer('ModelAnimation *', animations)
 
 

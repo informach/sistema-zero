@@ -36,6 +36,13 @@ export const PYTHON_PALETTE_GROUPS: Readonly<Record<PythonBlockOwner, PaletteGro
     colour: '#0891b2',
     categories: [
       ['Janela e laço', '🪟'],
+      ['Câmera 3D', '🎥'],
+      ['Formas 3D', '📦'],
+      ['Modelos', '🗿'],
+      ['Animações', '🏃'],
+      ['Colisões 3D', '💥'],
+      ['Vetores 3D', '🧭'],
+      ['Mouse travado', '🖱️'],
       ['Formas', '🎨'],
       ['Imagens e texturas', '🖼️'],
       ['Texto', '🔤'],
@@ -46,6 +53,7 @@ export const PYTHON_PALETTE_GROUPS: Readonly<Record<PythonBlockOwner, PaletteGro
       ['Sons e música', '🔊'],
       ['Cores e sorteio', '🎲'],
       ['Avançado', '🧪'],
+      ['Shaders', '✨'],
     ],
   },
   'python-pgzero': {
