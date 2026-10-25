@@ -14,7 +14,7 @@ function python() {
   throw new Error('Os testes do Turtle precisam de Python 3.12 ou mais novo.')
 }
 
-for (const file of ['test_compound.py', 'test_backend_fidelity.py'])
+for (const file of ['test_compound.py', 'test_backend_fidelity.py', 'test_formas_do_pinta.py'])
   test(`the Turtle backend: ${file} (CPython)`, () => {
     const path = fileURLToPath(new URL(`../../../../scripts/turtle/${file}`, import.meta.url))
     const run = spawnSync(python(), ['-I', '-B', path], { encoding: 'utf8', timeout: 60_000 })

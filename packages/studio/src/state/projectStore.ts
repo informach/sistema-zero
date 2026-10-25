@@ -80,6 +80,7 @@ import {
   emptyPythonWorkspaceState,
   preservePythonWorkspaceDraft,
 } from '../python/blocks/workspaceDraft'
+import { hasTurtleExtension } from '../runtime/python/turtle/contract'
 import { prepareEditableCloudProject } from './editableCloudProject'
 import { prepareEditableStudioProject } from './editableProjectValidation'
 import {
@@ -1395,9 +1396,13 @@ export function createProjectStore(
               asset.height = size.height
             }
           } else {
-            // Turtle reads PNG/GIF only: a vector recipe never belongs to it.
-            if (pintaImage?.output.mime === 'image/svg+xml')
-              return 'O Turtle abre só imagens PNG ou GIF. Traga este desenho do Pinta como PNG.'
+            // Turtle opens PNG/GIF as images; a vector from the Pinta becomes a turtle shape
+            // through formas_do_pinta.registrar('assets/nome.svg'). Without Turtle, no use.
+            if (
+              pintaImage?.output.mime === 'image/svg+xml' &&
+              !hasTurtleExtension(p.installedExtensions)
+            )
+              return 'Este projeto abre só imagens PNG ou GIF. Traga este desenho do Pinta como PNG.'
             asset.proPath = `assets/${name}.${extension}`
           }
           if (!isStudioPythonAssetPath(asset.proPath))

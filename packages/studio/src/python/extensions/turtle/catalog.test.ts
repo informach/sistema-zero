@@ -479,3 +479,26 @@ test('a value read from a command says what it gives (the stamp gives a number)'
   expect(getters.map(([, title]) => title)).toContain('carimbar e dar o número do carimbo')
   expect(getters.map(([, title]) => title)).toContain('cor da caneta atual')
 })
+
+test('a Pinta drawing as a turtle shape has its own block once formas_do_pinta is imported', () => {
+  const register = expression(
+    call(attribute(name('formas_do_pinta'), 'registrar'), [text('assets/nave.svg')]),
+  )
+  const importShapes = node('Import', {
+    names: [node('alias', { name: 'formas_do_pinta', asname: null })],
+  })
+  const used = (body: ReturnType<typeof node>[], modules: string[]) => {
+    const original = moduleNode(body)
+    const projection = pythonASTToVisual(original, { codecs, officialModules: new Set(modules) })
+    expect(pythonSemanticTree(pythonVisualToAST(projection, codecs))).toEqual(
+      pythonSemanticTree(original),
+    )
+    return types(projection.body)
+  }
+  expect(used([importShapes, register], ['turtle', 'formas_do_pinta'])).toContain(
+    'sz_py_turtle_pinta_shape',
+  )
+  expect(used([register], ['turtle', 'formas_do_pinta'])).not.toContain('sz_py_turtle_pinta_shape')
+  // Without the Turtle extension the module is not the official one.
+  expect(used([importShapes, register], [])).not.toContain('sz_py_turtle_pinta_shape')
+})

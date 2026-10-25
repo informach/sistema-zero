@@ -1,6 +1,22 @@
 import { TURTLE_EXTENSION } from '../../packages/studio/src/runtime/python/turtle/contract'
 
 export const turtleFixtures: Record<string, string> = {
+  // A Pinta drawing (assets/nave.svg) as a compound shape that turns with the turtle.
+  turtlePintaShape: `import turtle
+import formas_do_pinta
+s = turtle.Screen()
+s.setup(400, 300)
+s.bgcolor('white')
+nome = formas_do_pinta.registrar('assets/nave.svg', tamanho=128)
+leste = turtle.Turtle(shape=nome)
+leste.penup()
+leste.goto(-100, 0)
+norte = turtle.Turtle(shape=nome)
+norte.penup()
+norte.goto(100, 0)
+norte.setheading(90)
+print('forma', nome, len(s._shapes[nome]._data))
+`,
   turtleCapture: `import turtle
 s = turtle.Screen()
 s.setup(1024, 768)

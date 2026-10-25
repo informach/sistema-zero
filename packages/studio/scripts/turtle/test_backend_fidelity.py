@@ -116,5 +116,57 @@ class IdleTimers(unittest.TestCase):
         self.assertTrue(all(after > before for before, after in zip(calls, calls[1:])))
 
 
+class ModuleFunctions(unittest.TestCase):
+    """What the desktop module offers at the top level is there too (turtle.screensize...)."""
+
+    def setUp(self):
+        global turtle
+        turtle = fresh_turtle()
+        requests.clear()
+
+    def tearDown(self):
+        screen = turtle.Turtle._screen
+        if screen is not None and not screen._closed:
+            screen.bye()
+
+    def test_the_desktop_names_exist_at_module_level(self):
+        for name in ['screensize', 'mode', 'textinput', 'numinput', 'no_animation', 'teleport',
+                     'tilt', 'tiltangle', 'shapetransform', 'shearfactor', 'begin_poly',
+                     'end_poly', 'get_poly', 'getturtle', 'resizemode', 'degrees', 'radians']:
+            self.assertTrue(callable(getattr(turtle, name, None)), name)
+        for name in ['Pen', 'RawTurtle', 'RawPen', 'TurtleScreen']:
+            self.assertIn(name, turtle.__all__)
+
+    def test_tilt_turns_the_shape_without_turning_the_heading(self):
+        pen = turtle.Turtle()
+        pen.screen.tracer(0)
+        pen.shape('arrow')
+        pen.tilt(90)
+        self.assertEqual(pen.heading(), 0)
+        self.assertAlmostEqual(pen.tiltangle(), 90)
+        pen.tiltangle(30)
+        self.assertAlmostEqual(pen.tiltangle(), 30)
+        pen.shapetransform(2, 0, 0, 2)
+        self.assertEqual(pen.shapetransform(), (2.0, 0.0, 0.0, 2.0))
+        pen.shearfactor(0.5)
+        self.assertAlmostEqual(pen.shearfactor(), 0.5)
+
+    def test_module_level_functions_drive_the_default_turtle(self):
+        turtle.tracer(0)
+        turtle.screensize(600, 400)
+        self.assertEqual(turtle.screensize(), (600, 400))
+        turtle.teleport(10, 20)
+        self.assertEqual(turtle.position(), (10, 20))
+        with turtle.no_animation():
+            turtle.forward(5)
+        self.assertEqual(turtle.position(), (15, 20))
+        turtle.begin_poly()
+        turtle.forward(10)
+        turtle.end_poly()
+        self.assertEqual(len(turtle.get_poly()), 2)
+        with self.assertRaises(NotImplementedError):
+            turtle.textinput('Nome', 'Qual é o seu nome?')
+
+
 if __name__ == "__main__":
     unittest.main()

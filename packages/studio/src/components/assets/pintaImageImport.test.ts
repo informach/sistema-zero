@@ -150,29 +150,28 @@ for (const kind of ['classic', 'pro'] as const) {
     expect(store.getState().project).toBe(before)
   })
 
-  test(`${kind} Turtle: vector and pixel drawings arrive as PNG; an SVG recipe never enters`, async () => {
-    for (const extension of [TURTLE_EXTENSION, undefined]) {
-      const store = await pythonWith(kind, extension)
-      // Turtle's selection never asks for SVG, even for a vector drawing.
-      expect(
-        pintaImageOutputFor(store.getState().project, {
-          kind: 'frame',
-          width: 16,
-          height: 16,
-          animations: [],
-          vector: true,
-        }),
-      ).toBeUndefined()
-      expect(addPintaCreationToProject(store.getState(), imported(0))).toBeNull()
-      expect(store.getState().project!.assets![0]?.proPath).toBe('assets/heroi.png')
-      const before = store.getState().project
-      expect(addPintaCreationToProject(store.getState(), importedSvg(1))).toContain('PNG')
-      expect(store.getState().project).toBe(before)
-    }
+  test(`${kind} Turtle: a vector drawing arrives as SVG (a turtle shape), pixel art as PNG`, async () => {
+    const vector = { kind: 'frame' as const, width: 16, height: 16, animations: [], vector: true }
+    const turtle = await pythonWith(kind, TURTLE_EXTENSION)
+    // formas_do_pinta turns the vector into a shape that turns with the turtle.
+    expect(pintaImageOutputFor(turtle.getState().project, vector)).toBe('svg')
+    expect(addPintaCreationToProject(turtle.getState(), imported(0))).toBeNull()
+    expect(addPintaCreationToProject(turtle.getState(), importedSvg(1))).toBeNull()
+    expect(turtle.getState().project!.assets!.map((asset) => asset.proPath)).toEqual([
+      'assets/heroi.png',
+      'assets/heroi-2.svg',
+    ])
+    // Without Turtle there is no use for the vector: PNG only, and an SVG recipe never enters.
+    const plain = await pythonWith(kind, undefined)
+    expect(pintaImageOutputFor(plain.getState().project, vector)).toBeUndefined()
+    expect(addPintaCreationToProject(plain.getState(), imported(0))).toBeNull()
+    const before = plain.getState().project
+    expect(addPintaCreationToProject(plain.getState(), importedSvg(1))).toContain('PNG')
+    expect(plain.getState().project).toBe(before)
   })
 }
 
-test('the destination decides the format: only Pygame Zero + a vector drawing asks for SVG', async () => {
+test('the destination decides the format: Pygame Zero or Turtle + a vector drawing asks for SVG', async () => {
   const vector = { kind: 'background', width: 8, height: 8, vector: true } as const
   const pixel = { kind: 'background', width: 8, height: 8 } as const
   const pgzero = (await pythonWith('classic', PGZERO_EXTENSION)).getState().project
@@ -185,6 +184,9 @@ test('the destination decides the format: only Pygame Zero + a vector drawing as
   expect(pintaImageOutputFor(pgzero, vector, {})).toBeUndefined()
   expect(pintaImageOutputFor(pgzero, pixel, { output: 'svg' })).toBe('svg')
   const turtle = (await pythonWith('classic', TURTLE_EXTENSION)).getState().project
-  expect(pintaImageOutputFor(turtle, vector)).toBeUndefined()
+  expect(pintaImageOutputFor(turtle, vector)).toBe('svg')
+  expect(pintaImageOutputFor(turtle, pixel)).toBeUndefined()
+  const plain = (await pythonWith('classic', undefined)).getState().project
+  expect(pintaImageOutputFor(plain, vector)).toBeUndefined()
   expect(pintaImageOutputFor(null, vector)).toBeUndefined()
 })

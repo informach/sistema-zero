@@ -481,6 +481,11 @@ class TurtleScreenBase:
         path = Path(filename)
         if path.is_absolute() or not path.resolve().is_relative_to(_project_root):
             raise self._graphics_error('A imagem precisa estar dentro do projeto')
+        if path.suffix.lower() == '.svg':
+            # Tk on the desktop does not open SVG either; the vector becomes a turtle shape.
+            raise self._graphics_error(
+                f"Um desenho vetorial vira forma da tartaruga: use "
+                f"formas_do_pinta.registrar('{filename}') e depois shape com o nome dele")
         with path.open('rb') as file:
             header = file.read(8)
             file.seek(0, 2)

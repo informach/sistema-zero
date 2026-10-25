@@ -952,9 +952,12 @@ describe('Python image selection through the real modal and project store', () =
         expect(choose).toHaveLength(2)
         fireEvent.click(choose[index]!)
         await screen.findByAltText('Prévia da imagem escolhida')
-        // Only the vector drawing in a Pygame Zero project announces the SVG.
+        // Only the vector drawing announces the SVG; in Turtle it becomes a turtle shape.
         expect(screen.queryByText(/entra como vetor \(SVG\)/) !== null).toBe(
-          destination === 'python-pgzero' && index === 0,
+          destination !== 'none' && index === 0,
+        )
+        expect(screen.queryByText(/vira uma forma da tartaruga/) !== null).toBe(
+          destination === 'python-turtle' && index === 0,
         )
         await waitFor(() => expect(buttonDisabled('Adicionar imagem')).toBe(false))
         fireEvent.click(screen.getByRole('button', { name: 'Adicionar imagem' }))
@@ -965,17 +968,17 @@ describe('Python image selection through the real modal and project store', () =
       }
       const assets = useProjectStore.getState().project?.assets ?? []
       expect(previews.map((recipe) => recipe.output)).toEqual(
-        destination === 'python-pgzero' ? ['svg', undefined] : [undefined, undefined],
+        destination === 'none' ? [undefined, undefined] : ['svg', undefined],
       )
       expect(assets.map((asset) => asset.proPath)).toEqual(
         destination === 'python-pgzero'
           ? ['images/ceu_azul.svg', 'images/dragao_pintado.png']
-          : ['assets/ceu-azul.png', 'assets/dragao-pintado.png'],
+          : destination === 'python-turtle'
+            ? ['assets/ceu-azul.svg', 'assets/dragao-pintado.png']
+            : ['assets/ceu-azul.png', 'assets/dragao-pintado.png'],
       )
       expect(assets.map((asset) => asset.pintaImage?.output.mime)).toEqual(
-        destination === 'python-pgzero'
-          ? ['image/svg+xml', 'image/png']
-          : ['image/png', 'image/png'],
+        destination === 'none' ? ['image/png', 'image/png'] : ['image/svg+xml', 'image/png'],
       )
     })
   }

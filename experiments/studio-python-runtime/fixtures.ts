@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs'
 import type {
   StudioPythonClassicDocument,
   StudioPythonProDocument,
@@ -211,6 +212,23 @@ export async function runtimeFixtureProject(
       },
     ]
     if (name === 'turtleF1') project.assets = []
+    if (name === 'turtlePintaShape')
+      project.assets.push({
+        id: 'nave',
+        name: 'nave',
+        kind: 'image',
+        source: 'upload',
+        proPath: 'assets/nave.svg',
+        dataUrl: `data:image/svg+xml;charset=utf-8,${encodeURIComponent(
+          readFileSync(
+            new URL(
+              '../../packages/studio/scripts/turtle/fixtures/pinta-nave.svg',
+              import.meta.url,
+            ),
+            'utf8',
+          ),
+        )}`,
+      })
     if (name === 'turtleInvalidImage' || name === 'turtleImageInput') {
       // Valid dimensions/signature with missing image data: reaches the native
       // decoder, whose error must return to Python instead of killing its worker.

@@ -290,6 +290,8 @@ export const ptBR: Record<string, string> = {
     'O mapa inteiro vira uma imagem, com todas as camadas visíveis, incluindo a camada da frente.',
   'pintaImport.image.vector':
     'Este desenho entra como vetor (SVG): fica nítido em qualquer tamanho e o Pygame Zero o mostra no tamanho escolhido.',
+  'pintaImport.image.turtleShape':
+    'Este desenho entra como vetor (SVG) e vira uma forma da tartaruga, que gira junto com ela: use o bloco "usar o desenho do Pinta como forma".',
   'pintaImport.image.preparing': 'Preparando a imagem…',
   'pintaImport.image.preview': 'Prévia da imagem escolhida',
   'pintaImport.image.add': 'Adicionar imagem',

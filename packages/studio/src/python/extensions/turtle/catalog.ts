@@ -1,7 +1,12 @@
 import reference from '../../../runtime/python/turtle/api-reference.json'
-import { type PythonApiCallee, pythonApiCallCodec } from '../../blocks/apiCallCodec'
+import {
+  optional,
+  type PythonApiCallee,
+  pythonApiCallCodec,
+  required,
+} from '../../blocks/apiCallCodec'
 import type { PythonBlockCodec } from '../../blocks/contract'
-import { name } from '../../blocks/nodes'
+import { integer, name, text } from '../../blocks/nodes'
 import { TURTLE_CONCEPTS, type TurtleConcept } from './labels'
 
 interface TurtleAPI {
@@ -189,7 +194,28 @@ function dependenciesOf(concept: TurtleConcept): string[] {
 }
 
 /** One block per Turtle concept: aliases, procedural and method forms share it. */
-export const PYTHON_TURTLE_CODECS: readonly PythonBlockCodec[] = TURTLE_CONCEPTS.flatMap(codecsOf)
+/** A vector drawing from the Pinta as a turtle shape (formas_do_pinta, beside turtle.py). */
+const PINTA_SHAPE_CODEC = pythonApiCallCodec({
+  id: 'sz_py_turtle_pinta_shape',
+  owner: 'python-turtle',
+  title: '🎨 usar o desenho do Pinta como forma',
+  category: 'Aparência',
+  level: 2,
+  role: 'statement',
+  help: 'Transforma um desenho vetorial do Pinta numa forma da tartaruga: ela gira junto e cresce sem borrar. Depois escolha a forma pelo nome do arquivo (de assets/nave.svg sai a forma nave). O desenho fica virado para a direita, para onde a tartaruga anda.',
+  api: "formas_do_pinta.registrar('assets/nave.svg')",
+  callee: { kind: 'module', module: 'formas_do_pinta', names: ['registrar'] },
+  params: [
+    required('caminho', '', () => text('assets/nave.svg'), 'pos'),
+    optional('nome', 'com o nome', () => text('nave')),
+    optional('tamanho', 'com o lado maior de', () => integer('64')),
+  ],
+})
+
+export const PYTHON_TURTLE_CODECS: readonly PythonBlockCodec[] = [
+  ...TURTLE_CONCEPTS.flatMap(codecsOf),
+  PINTA_SHAPE_CODEC,
+]
 
 /** Names `from turtle import *` provides (the procedural API and the classes). */
 export const TURTLE_STAR_EXPORTS: readonly string[] = [

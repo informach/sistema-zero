@@ -259,6 +259,8 @@ export const en: Record<string, string> = {
     'The whole map becomes one image, with every visible layer, including the front layer.',
   'pintaImport.image.vector':
     'This drawing comes in as a vector (SVG): it stays sharp at any size and Pygame Zero shows it at the chosen size.',
+  'pintaImport.image.turtleShape':
+    'This drawing comes in as a vector (SVG) and becomes a turtle shape that turns with the turtle: use the "use the Pinta drawing as a shape" block.',
   'pintaImport.image.preparing': 'Preparing the image…',
   'pintaImport.image.preview': 'Selected image preview',
   'pintaImport.image.add': 'Add image',

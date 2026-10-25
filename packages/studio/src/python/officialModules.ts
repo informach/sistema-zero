@@ -8,6 +8,7 @@ const modules = [
   'math',
   'time',
   'turtle',
+  'formas_do_pinta',
   'pgzero',
   'pgzrun',
   'pygame',
@@ -57,11 +58,13 @@ function shadowedAmong<T extends string>(
 /** A project module wins over the bundled module; never label that call as the official API. */
 export function pythonOfficialModules(project: PythonProjectDocument) {
   const shadowed = new Set<string>(shadowedAmong(project, modules))
+  // formas_do_pinta builds the shape with `import turtle`: the child's own turtle.py would be it.
+  if (shadowed.has('turtle')) shadowed.add('formas_do_pinta')
   return new Set(
     modules.filter(
       (module) =>
         !shadowed.has(module) &&
-        (module !== 'turtle' ||
+        ((module !== 'turtle' && module !== 'formas_do_pinta') ||
           project.installedExtensions.some((extension) => extension.id === TURTLE_EXTENSION.id)) &&
         ((module !== 'pgzero' && module !== 'pgzrun' && module !== 'pygame') ||
           project.installedExtensions.some((extension) => extension.id === PGZERO_EXTENSION.id)) &&

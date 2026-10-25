@@ -1,6 +1,9 @@
+import { studioPortableFileConflict } from '@sistemazero/core/studio/project-environment'
 import type { StudioRuntimeCatalog } from '@sistemazero/core/studio/runtime-catalog'
 import { buildPythonAssetBundle } from '../core/pythonAssets'
 import { assertPythonVisualDraftSettled } from '../python/blocks/workspaceDraft'
+import { hasTurtleExtension } from '../runtime/python/turtle/contract'
+import { TURTLE_PINTA_SHAPES_SOURCES } from '../runtime/python/turtle/formasDoPinta.generated'
 import { pythonFilesToTree, refinePythonProjectDocument } from '../state/pythonProjectValidation'
 import type { ExportFileMap } from './fileMap'
 import { browserSvgRasterizer, hasPgzeroExtension, type SvgRasterizer } from './pgzeroDesktop'
@@ -49,6 +52,17 @@ export async function buildPythonSourceFiles(
     ? buildRaylibDesktopFiles({ occupied: Object.keys(files), directories })
     : null
   if (raylib) Object.assign(files, raylib.files)
+  // A Turtle game that uses Pinta drawings as shapes takes the module along, next to the main
+  // file (where `import formas_do_pinta` looks first). The child's own file of that name wins.
+  if (
+    hasTurtleExtension(project.installedExtensions) &&
+    Object.values(sourceFiles).some((text) => /\bformas_do_pinta\b/.test(text))
+  ) {
+    const entrypoint = project.python.entrypoint
+    const path = `${entrypoint.slice(0, entrypoint.lastIndexOf('/') + 1)}formas_do_pinta.py`
+    if (!(path in files) && !studioPortableFileConflict([...Object.keys(files), path], directories))
+      files[path] = TURTLE_PINTA_SHAPES_SOURCES['formas_do_pinta.py']!
+  }
   const metadata = await buildPythonSourceMetadata({
     project,
     sourceFiles,

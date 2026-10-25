@@ -9,7 +9,7 @@ export const PYTHON_EXTENSIONS = Object.freeze([
     name: 'Turtle',
     emoji: '🐢',
     description: 'Desenhe com a tartaruga e crie animações e jogos usando Python.',
-    help: 'Os blocos têm nomes em português. Na Ponte, você vê os comandos Python, como turtle.forward(100).',
+    help: 'Os blocos têm nomes em português. Na Ponte, você vê os comandos Python, como turtle.forward(100). Um desenho vetorial do Pinta vira forma da tartaruga com "usar o desenho do Pinta como forma": ela gira junto e cresce sem borrar.',
   }),
   Object.freeze({
     ...PGZERO_EXTENSION,

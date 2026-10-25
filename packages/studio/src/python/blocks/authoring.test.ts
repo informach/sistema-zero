@@ -132,8 +132,17 @@ test('local modules and packages suppress official labels in classic and Pro', a
     'math',
     'time',
     'turtle',
+    'formas_do_pinta',
     'sz_audio',
   ])
+  // The Pinta shapes module stands on the official turtle, and a project file of its name wins.
+  expect(
+    pythonOfficialModules({
+      ...installed,
+      files: { ...installed.files, 'formas_do_pinta.py': '' },
+    }).has('formas_do_pinta'),
+  ).toBe(false)
+  expect(pythonOfficialModules(project).has('formas_do_pinta')).toBe(false)
   expect([
     ...pythonOfficialModules({
       ...installed,
