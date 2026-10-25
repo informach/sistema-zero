@@ -76,8 +76,124 @@ class Case(unittest.TestCase):
             stream.write(data)
         return path
 
-    def present(self, keep=False, title='Jogo'):
-        return self.sz.present(320, 240, title, keep)
+    def present(self, title='Jogo'):
+        return self.sz.present(320, 240, title)
+
+
+class Messages(Case):
+    def test_a_misspelled_key_is_still_a_key_error_with_a_readable_message(self):
+        from pgzero.keyboard import keyboard
+        with self.assertRaises(KeyError) as caught:
+            keyboard.spcae
+        self.assertEqual(str(caught.exception), 'A tecla keyboard.spcae não existe. Confira o nome: '
+                         'por exemplo keyboard.space, keyboard.left ou keyboard.a.')
+
+    def test_a_misspelled_hook_parameter_is_explained_in_portuguese(self):
+        from pgzero.spellcheck import InvalidParameter, spellcheck
+        def on_key_down(keey):
+            pass
+        with self.assertRaises(InvalidParameter) as caught:
+            spellcheck({'on_key_down': on_key_down})
+        self.assertIn('não recebe o parâmetro keey', str(caught.exception))
+
+
+class TextRules(Case):
+    def test_a_number_is_refused_like_on_the_desktop(self):
+        from pgzero.screen import Screen
+        with self.assertRaises(TypeError) as caught:
+            Screen(320, 240).draw.text(10, (0, 0))
+        self.assertIn('str(numero)', str(caught.exception))
+
+    def test_limits_count_like_the_browser_so_emoji_never_break_a_frame(self):
+        from pgzero.screen import Screen
+        with self.assertRaises(self.sz.PgzeroLimitError):
+            Screen(320, 240).draw.text('😀' * 2001, (0, 0))
+        self.present(title='😀' * 150)
+        title = self.browser.headers[-1]['title']
+        self.assertEqual(self.sz.utf16_length(title), self.sz.MAX_TITLE_CHARS)
+
+
+class RectLikePygameCe(Case):
+    """Values measured on pygame-ce 2.5.8 (the reference of the desktop export)."""
+
+    def test_rects_order_like_tuples_and_move_to_places_a_copy(self):
+        from pgzero import _pgrect
+        a, b = _pgrect.Rect(1, 2, 3, 4), _pgrect.Rect(1, 2, 3, 5)
+        self.assertEqual((a < b, a <= b, a > b, a >= (1, 2, 3, 4), a < (0, 0, 0, 0)),
+                         (True, True, False, True, False))
+        self.assertEqual(repr(a.move_to(center=(10, 10))), 'Rect(9, 8, 3, 4)')
+        self.assertEqual(repr(a.move_to(x=5, bottom=50)), 'Rect(5, 46, 3, 4)')
+        self.assertEqual(a.relcenter, (1, 2))
+        a.relcenter = (5, 5)
+        self.assertEqual(repr(a), 'Rect(1, 2, 10, 10)')
+        with self.assertRaises(AttributeError):
+            a.move_to(nope=1)
+        with self.assertRaises(TypeError):
+            a < 'x'
+
+    def test_colliderect_fast_path_agrees_with_the_general_one(self):
+        from pgzero import _pgrect
+        cases = [((0, 0, 10, 10), (5, 5, 10, 10)), ((0, 0, 10, 10), (10, 0, 5, 5)),
+                 ((0, 0, -10, 10), (-5, 0, 2, 2)), ((0, 0, 0, 10), (0, 0, 5, 5))]
+        for first, second in cases:
+            rect = _pgrect.Rect(*first)
+            self.assertEqual(rect.colliderect(_pgrect.Rect(*second)), rect.colliderect(second))
+
+
+class SoundLength(Case):
+    def test_an_ogg_vorbis_sound_knows_its_length(self):
+        # Identification header (rate 22050) on the first page; last page at sample 44100.
+        ident = b'\x01vorbis' + struct.pack('<IBI', 0, 1, 22050) + b'\0' * 16
+        first = b'OggS\0\x02' + struct.pack('<q', 0) + b'\0' * 13 + ident
+        last = b'OggS\0\x04' + struct.pack('<q', 44100) + b'\0' * 13
+        self.write('sounds/a.ogg', first + last)
+        self.assertAlmostEqual(self.loaders.sounds.a.get_length(), 2.0)
+
+
+class PersistentScreen(Case):
+    """The screen keeps what was drawn, like pygame's display surface."""
+
+    def screen(self):
+        from pgzero.screen import Screen
+        return Screen(320, 240)
+
+    def test_drawing_outside_draw_is_sent_and_an_empty_frame_keeps_the_screen(self):
+        screen = self.screen()
+        screen.draw.filled_rect(__import__('pgzero.rect').rect.Rect(1, 2, 3, 4), (255, 0, 0))
+        self.present()
+        self.assertFalse(self.browser.headers[-1]['keep'])
+        self.assertTrue(len(self.browser.payloads[-1]) > 0)
+        # Nothing drawn since: the browser is asked to keep the screen as it is.
+        self.present()
+        self.assertTrue(self.browser.headers[-1]['keep'])
+        self.assertEqual(self.browser.payloads[-1], b'')
+
+    def test_one_batch_carries_everything_drawn_since_the_last_frame_in_order(self):
+        screen = self.screen()
+        screen.fill((10, 20, 30))
+        screen.draw.filled_circle((5, 5), 3, (1, 2, 3))
+        screen.fill((40, 50, 60))
+        self.present()
+        values = struct.unpack(f'{len(self.browser.payloads[-1]) // 8}d', self.browser.payloads[-1])
+        # The batch opens with the first fill and closes with the last (a fill is the op and RGBA).
+        self.assertEqual(values[:4], (self.sz.OP_FILL, 10.0, 20.0, 30.0))
+        self.assertEqual(values[-5:-1], (self.sz.OP_FILL, 40.0, 50.0, 60.0))
+        self.assertIn(float(self.sz.OP_CIRCLE), values[5:-5])
+
+    def test_text_tables_are_renewed_between_batches_never_inside_one(self):
+        screen = self.screen()
+        frame = self.sz.frame
+        for number in range(self.sz.MAX_STRINGS // 2 + 1):
+            frame.strings[f'velho {number}'] = number + 1
+        screen.draw.text('no update', (0, 0))
+        screen.draw.text('no draw', (0, 20))
+        self.present()
+        first = self.browser.headers[-1]['strings']
+        self.assertNotIn([0, ''], first)
+        self.assertEqual([value for _, value in first], ['no update', 'no draw'])
+        screen.draw.text('depois', (0, 0))
+        self.present()
+        self.assertEqual(self.browser.headers[-1]['strings'][0], [0, ''])
 
 
 class Limits(Case):
@@ -415,6 +531,27 @@ def on_music_end():
     ended.append(True)
 ''', 3)
         self.assertEqual(module.ended, [True])
+
+
+    def test_a_variable_named_screen_fails_like_on_the_computer(self):
+        with self.assertRaises(TypeError) as caught:
+            self.run_game("screen = 'menu'", 1)
+        self.assertIn('tela_atual', str(caught.exception))
+
+    def test_width_must_be_a_number_like_set_mode(self):
+        with self.assertRaises(TypeError):
+            self.run_game("WIDTH = '800'", 1)
+
+    def test_a_missing_icon_fails_like_on_the_computer(self):
+        with self.assertRaises(KeyError):
+            self.run_game("ICON = 'nao_existe'", 1)
+
+    def test_drawing_in_update_reaches_the_browser(self):
+        self.run_game('''
+def update():
+    screen.draw.filled_circle((10, 10), 3, 'red')
+''', 2)
+        self.assertTrue(any(len(payload) > 0 for payload in self.browser.payloads))
 
 
 if __name__ == '__main__':

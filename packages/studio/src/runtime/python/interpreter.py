@@ -203,10 +203,15 @@ class _StudioExecution:
                 self._after_main()
             result = {"ok": True, "text": ""}
         except SystemExit as error:
-            if error.code is None or isinstance(error.code, int) and int.__eq__(error.code, 0):
-                result = {"ok": True, "text": ""}
-            else:
-                result = self._failure(error)
+            # Like CPython: sys.exit() ends the program without a traceback. A number is only
+            # the exit status; any other value is printed to stderr first.
+            if error.code is not None and not isinstance(error.code, int):
+                try:
+                    print(error.code, file=sys.stderr)
+                except BaseException as failure:
+                    result = self._failure(failure)
+                    return self._finish(result)
+            result = {"ok": True, "text": ""}
         except BaseException as error:
             result = self._failure(error)
         return self._finish(result)

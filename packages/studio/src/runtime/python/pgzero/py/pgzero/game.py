@@ -9,6 +9,7 @@ import sys
 
 import pgzero.clock
 import pgzero.keyboard
+import pgzero.loaders
 import pgzero.screen
 
 from . import _sz, constants
@@ -69,6 +70,7 @@ class PGZeroGame:
         self.width = None
         self.height = None
         self.title = None
+        self.icon = None
         self.keyboard = pgzero.keyboard.keyboard
         self.handlers = {}
 
@@ -76,19 +78,32 @@ class PGZeroGame:
         """Read WIDTH, HEIGHT and TITLE (they may change while the game runs)."""
         global screen
         mod = self.mod
+        icon = getattr(mod, 'ICON', None)
+        if icon and icon != self.icon:
+            # The browser tab keeps its own icon, but a missing file fails here as it does on
+            # the computer (pygame.display.set_icon loads it).
+            pgzero.loaders.images.load(icon)
+            self.icon = icon
         w = getattr(mod, 'WIDTH', 800)
         h = getattr(mod, 'HEIGHT', 600)
-        try:
-            w, h = int(w), int(h)
-        except (TypeError, ValueError):
-            raise TypeError('WIDTH e HEIGHT precisam ser números inteiros.') from None
+        # Like pygame.display.set_mode: numbers only (a text such as '800' fails there too).
+        if not all(isinstance(v, (int, float)) and not isinstance(v, bool) for v in (w, h)):
+            raise TypeError('WIDTH e HEIGHT precisam ser números, como WIDTH = 800.')
+        w, h = int(w), int(h)
         if not (1 <= w <= MAX_SIZE[0] and 1 <= h <= MAX_SIZE[1]):
             raise ValueError('A janela do jogo pode ter no máximo 1920 × 1080 pixels.')
         changed = False
         if w != self.width or h != self.height:
             changed = self.width is not None
-            if hasattr(mod, 'screen') and isinstance(mod.screen, pgzero.screen.Screen):
-                mod.screen._resize(w, h)
+            existing = getattr(mod, 'screen', None)
+            if isinstance(existing, pgzero.screen.Screen):
+                existing._resize(w, h)
+            elif existing is not None:
+                # On the computer this breaks too (Pygame Zero sets screen.surface on it).
+                raise TypeError(
+                    'O nome screen é a tela do Pygame Zero. Escolha outro nome para a sua '
+                    'variável, por exemplo tela_atual.'
+                )
             else:
                 mod.screen = pgzero.screen.Screen(w, h)
             self.screen = screen = mod.screen
@@ -189,12 +204,10 @@ class PGZeroGame:
         draw = self.get_draw_func()
         self.load_handlers()
         pgzclock = pgzero.clock.clock
-        frame = _sz.frame
         self.need_redraw = True
-        keep = True
         last = None
         while True:
-            reply = _sz.present(self.width, self.height, self.title, keep)
+            reply = _sz.present(self.width, self.height, self.title)
             now = float(reply.get('now', 0.0))
             dt = 0.0 if last is None else min(MAX_DT, max(0.0, (now - last) / 1000.0))
             last = now
@@ -214,11 +227,8 @@ class PGZeroGame:
                 update(dt)
 
             screen_change = self.reinit_screen()
-            keep = True
             # Files still waiting to be sent arrive with the next frame: redraw so they appear.
             backlog = _sz.attachments_pending()
             if screen_change or update or pgzclock.fired or self.need_redraw or backlog:
-                frame.reset()
                 draw()
-                keep = False
                 self.need_redraw = False

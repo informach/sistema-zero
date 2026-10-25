@@ -6,6 +6,7 @@ import {
   verifyStudioPythonActivityFeedback,
 } from '@sistemazero/core/studio/python-activity'
 import type { StudioRuntimeInput } from '../types'
+import { summarizePythonError } from './errorSummary'
 import type { PythonRuntimePayload } from './frameProtocol'
 import {
   PYTHON_GRAPHICS_REPLY_LIMITS,
@@ -305,15 +306,18 @@ export function createPythonWorkerSupervisor(options: {
             state('running')
           } else state('completed')
         } else {
-          if (value.traceback)
+          if (value.traceback) {
+            // The line of the child's own code and the kind of error, read from the traceback.
+            const summary = summarizePythonError(value.traceback, value.text)
             options.emit({
               type: 'diagnostic',
-              path: options.snapshot.configuration.python.entrypoint,
-              line: 0,
+              path: summary.path ?? options.snapshot.configuration.python.entrypoint,
+              line: summary.line,
               column: 0,
-              message: value.text,
+              message: summary.message,
               traceback: value.traceback,
             })
+          }
           fail('program-error', value.text)
         }
         return

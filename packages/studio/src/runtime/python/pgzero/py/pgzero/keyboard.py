@@ -7,6 +7,13 @@ DEPRECATED_KEY_RE = re.compile(r'[A-Z]')
 PREFIX_RE = re.compile(r'^K_(?!\d$)')
 
 
+class _MissingKey(KeyError):
+    """KeyError with a readable message (a plain KeyError shows its text between quotes)."""
+
+    def __str__(self):
+        return self.args[0]
+
+
 class Keyboard:
     """The current state of the keyboard.
 
@@ -32,8 +39,12 @@ class Keyboard:
             kname = PREFIX_RE.sub('', kname)
         try:
             key = keys[kname.upper()]
-        except AttributeError:
-            raise AttributeError('The key "%s" does not exist' % key)
+        except KeyError:
+            # Same exception as Pygame Zero 1.2.1, with a message a child can read.
+            raise _MissingKey(
+                'A tecla keyboard.%s não existe. Confira o nome: por exemplo keyboard.space, '
+                'keyboard.left ou keyboard.a.' % kname
+            ) from None
         return key.value in self._pressed
 
     def _press(self, key):

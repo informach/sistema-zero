@@ -7,6 +7,7 @@ import { createPgzeroRenderer } from './renderer'
 // is covered by the runtime E2E in Chrome; these tests cover the exchange contract. Each
 // character measures 10 px, and what the screen draws is recorded.
 const drawn: { canvas: unknown; x: number; y: number }[] = []
+let screenFills = 0
 const context = function (this: unknown) {
   return new Proxy(
     {},
@@ -24,7 +25,11 @@ const context = function (this: unknown) {
               })
             : key === 'drawImage' && this instanceof HTMLCanvasElement
               ? (canvas: unknown, x: number, y: number) => drawn.push({ canvas, x, y })
-              : () => {},
+              : key === 'fillRect' && this instanceof HTMLCanvasElement
+                ? () => {
+                    screenFills++
+                  }
+                : () => {},
       set: () => true,
     },
   )
@@ -77,6 +82,26 @@ const list = (...ops: number[]) => ({
 })
 
 describe('Pygame Zero renderer exchange', () => {
+  test('the screen keeps what was drawn: a batch paints on top, only a new size wipes it', async () => {
+    const renderer = createPgzeroRenderer(document.createElement('div'))
+    try {
+      screenFills = 0
+      await renderer.exchange(header(), [list(PGZERO_OP.FILL, 1, 2, 3, 255)])
+      // The new window starts black; the reply comes back before the display frame.
+      expect(screenFills).toBe(1)
+      await renderer.exchange(header({ keep: true }), [])
+      // The previous batch reached the screen first: the game's fill.
+      expect(screenFills).toBe(2)
+      await renderer.exchange(header(), [list(PGZERO_OP.FILL, 4, 5, 6, 255)])
+      expect(screenFills).toBe(2)
+      await renderer.exchange(header({ w: 80, keep: true }), [])
+      // Nothing wiped the screen before that batch (only its own fill), then the new size.
+      expect(screenFills).toBe(4)
+    } finally {
+      renderer.dispose()
+    }
+  })
+
   test('a frame the browser cannot show comes back as an error reply for Python', async () => {
     const renderer = createPgzeroRenderer(document.createElement('div'))
     try {
@@ -134,6 +159,28 @@ describe('Pygame Zero renderer exchange', () => {
       window.dispatchEvent(new Event('blur'))
       const released = JSON.parse((await renderer.exchange(header(), [list()])) as string)
       expect(released.events).toEqual([['ku', PGZERO_KEY_CODES.ControlLeft, 0]])
+    } finally {
+      renderer.dispose()
+      host.remove()
+    }
+  })
+
+  test('the right Shift has its own bit, like pygame (RSHIFT, not LSHIFT)', async () => {
+    const host = document.createElement('div')
+    document.body.append(host)
+    const renderer = createPgzeroRenderer(host)
+    try {
+      await renderer.exchange(header(), [list()])
+      window.dispatchEvent(
+        new KeyboardEvent('keydown', { key: 'Shift', code: 'ShiftRight', shiftKey: true }),
+      )
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'A', code: 'KeyA', shiftKey: true }))
+      const events = JSON.parse((await renderer.exchange(header(), [list()])) as string)
+        .events as unknown[][]
+      expect(events.map((event) => event[2])).toEqual([
+        PGZERO_KEY_MODS.shift * 2,
+        PGZERO_KEY_MODS.shift * 2,
+      ])
     } finally {
       renderer.dispose()
       host.remove()
@@ -216,6 +263,8 @@ describe('Pygame Zero renderer exchange', () => {
           list(PGZERO_OP.TEXT, 1, 1, anchorX, 0, hanchor, 0),
         ])
         expect(JSON.parse(reply as string).error).toBeUndefined()
+        // The batch reaches the screen on its display frame, before the next exchange.
+        await renderer.exchange(header({ keep: true }), [])
         expect(drawn).toHaveLength(1)
         const { canvas, x } = drawn[0]! as { canvas: FakeOffscreenCanvas; x: number }
         expect(canvas.width).toBeLessThanOrEqual(PGZERO_LIMITS.textWidth)
@@ -240,6 +289,8 @@ describe('Pygame Zero renderer exchange', () => {
         list(PGZERO_OP.TEXT, 1, 1, 0, 0, 0, 0),
       ])
       expect(JSON.parse(reply as string).error).toBeUndefined()
+      // The batch reaches the screen on its display frame, before the next exchange.
+      await renderer.exchange(header({ keep: true }), [])
       expect(drawn).toHaveLength(1)
     } finally {
       renderer.dispose()

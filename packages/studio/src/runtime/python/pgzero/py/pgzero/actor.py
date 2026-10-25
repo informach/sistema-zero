@@ -113,7 +113,7 @@ class Actor:
         for found, suggested in spellcheck.compare(
                 unexpected_kwargs, self.EXPECTED_INIT_KWARGS):
             raise TypeError(
-                "Unexpected keyword argument '{}' (did you mean '{}'?)".format(
+                "O Actor não conhece o nome '{}' (você quis dizer '{}'?)".format(
                     found, suggested))
 
     def _init_position(self, pos, anchor, **kwargs):

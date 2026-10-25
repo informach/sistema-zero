@@ -19,7 +19,7 @@ def round_pos(pos):
 def make_color(arg):
     if isinstance(arg, tuple):
         return arg
-    return tuple(_sz.Color(arg))
+    return _sz.rgba(arg)
 
 
 def _font(fontname):
@@ -94,12 +94,17 @@ _POSITION_ARGUMENTS = {
 }
 
 
+_TEXT_KEYS = frozenset(_sz.TEXT_STYLE_KEYS) - {'fit'}
+
+
 def _style(kwargs):
     unknown = set(kwargs) - _STYLE_ARGUMENTS
     if unknown:
         raise TypeError('screen.draw.text não conhece a opção %r.' % sorted(unknown)[0])
-    style = {key: kwargs.get(key) for key in _sz.TEXT_STYLE_KEYS if key != 'fit'}
-    style['fontname'] = _font(kwargs.get('fontname'))
+    # Only the options the game gave (the rest are defaults): this runs for every text drawn.
+    style = {key: value for key, value in kwargs.items() if value is not None and key in _TEXT_KEYS}
+    if 'fontname' in style:
+        style['fontname'] = _font(style['fontname'])
     align = style.get('align')
     if isinstance(align, str):
         try:

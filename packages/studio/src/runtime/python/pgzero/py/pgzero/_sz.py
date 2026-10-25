@@ -165,10 +165,29 @@ def _parse_color_name(text):
     raise ValueError(f'Não conheço a cor {text!r}. Use um nome em inglês ("red", "sky blue") ou "#rrggbb".')
 
 
+# Games draw with the same few colours every frame: a name or a tuple is read once.
+_rgba_cache = {}
+
+
 def rgba(value):
     """Any colour Pygame Zero accepts, as an (r, g, b, a) tuple."""
     if isinstance(value, Color):
         return value.r, value.g, value.b, value.a
+    if type(value) is str or type(value) is tuple:
+        try:
+            found = _rgba_cache.get(value)
+        except TypeError:  # a tuple holding something unhashable: read it the long way
+            return _read_rgba(value)
+        if found is None:
+            found = _read_rgba(value)
+            if len(_rgba_cache) >= 512:
+                _rgba_cache.clear()
+            _rgba_cache[value] = found
+        return found
+    return _read_rgba(value)
+
+
+def _read_rgba(value):
     if isinstance(value, str):
         return tuple(Color(value))
     try:
@@ -487,6 +506,18 @@ class _FontRegistry:
 _fonts = _FontRegistry()
 
 
+def utf16_length(text):
+    """Length as the browser counts it (an emoji is two units), so both sides agree on limits."""
+    return len(text.encode('utf-16-le', 'surrogatepass')) // 2
+
+
+def cut_utf16(text, units):
+    """The text cut to a number of UTF-16 units, never in the middle of a character."""
+    if utf16_length(text) <= units:
+        return text
+    return text.encode('utf-16-le', 'surrogatepass')[:units * 2].decode('utf-16-le', 'ignore')
+
+
 # Frame building ------------------------------------------------------------------------------
 
 class _Frame:
@@ -498,14 +529,19 @@ class _Frame:
         self.styles = {}
         self.new_styles = []
         self.audio = []
-        self.drawn = False
 
-    def reset(self):
+    def begin(self):
+        """Start the next batch, right after one was sent.
+
+        The screen keeps what was drawn, like pygame's display surface: a batch is everything
+        drawn since the last frame went out (in update, in event handlers, in draw), painted on
+        top of what is already there.
+        """
         del self.ops[:]
         self.records = 0
-        self.drawn = True
-        # Long-running games keep inventing texts (scores, timers): renew the tables at the
-        # start of a frame, never in the middle of one.
+        # Long-running games keep inventing texts (scores, timers): renew the tables between
+        # batches, never in the middle of one (a text drawn in update and another in draw would
+        # point at different tables).
         if len(self.strings) > MAX_STRINGS // 2:
             self.strings.clear()
             self.new_strings.append([0, ''])
@@ -523,7 +559,7 @@ class _Frame:
         found = self.strings.get(text)
         if found is not None:
             return found
-        if len(text) > MAX_STRING_CHARS:
+        if utf16_length(text) > MAX_STRING_CHARS:
             raise PgzeroLimitError(
                 f'O texto tem {len(text)} letras; screen.draw.text escreve até 4000 de uma vez.'
             )
@@ -604,6 +640,13 @@ TEXT_STYLE_KEYS = (
 
 
 def text(value, x, y, hanchor, vanchor, style):
+    if not isinstance(value, str):
+        # Pygame Zero on the desktop also refuses a number here (ptext needs a str): the game
+        # would work in the Studio and break on the computer.
+        raise TypeError(
+            f'screen.draw.text escreve texto, e recebeu {type(value).__name__}. '
+            'Para escrever um número, use str(numero).'
+        )
     values = {}
     for key, item in style.items():
         if item is None:
@@ -620,7 +663,7 @@ def text(value, x, y, hanchor, vanchor, style):
             item = float(item)
         values[key] = item
     _check_style(values)
-    frame.record(OP_TEXT, frame.string(str(value)), frame.style(values), x, y, hanchor, vanchor)
+    frame.record(OP_TEXT, frame.string(value), frame.style(values), x, y, hanchor, vanchor)
 
 
 def _check_style(values):
@@ -857,13 +900,14 @@ def _within_budget(pending, sizes, budget, count):
     return taken, budget
 
 
-def present(width, height, title, keep):
-    """Send this frame (or ask the browser to keep the previous one) and return the reply."""
+def present(width, height, title):
+    """Send what was drawn since the last frame (nothing: the screen stays) and return the reply."""
     # One message carries at most 128 attachments and a bounded number of bytes (list and
     # default font included). A game that loads more files at once receives them over the next
     # frames; until then those images simply are not drawn.
-    title = str(title)[:MAX_TITLE_CHARS]
+    title = cut_utf16(str(title), MAX_TITLE_CHARS)
     _last_window[:] = [width, height, title]
+    keep = not frame.ops
     payload = b'' if keep else frame.ops.tobytes()
     images, budget = _within_budget(
         _images.pending, _images.sizes, FRAME_ATTACHMENT_BYTES - len(payload),
@@ -888,6 +932,6 @@ def present(width, height, title, keep):
     frame.new_strings = []
     frame.new_styles = []
     frame.audio = []
-    frame.drawn = False
+    frame.begin()
     audio_ended(reply.get('ended', ()))
     return reply

@@ -24,7 +24,7 @@ class Rect(_pgrect.Rect):
             suggestions = suggest(key, self.VALID_ATTRIBUTES)
             msg = e.args[0]
             if suggestions:
-                msg += "; did you mean {!r}?".format(suggestions[0])
+                msg += "; você quis dizer {!r}?".format(suggestions[0])
             raise AttributeError(msg) from None
 
 Rect.__doc__ = _pgrect.Rect.__doc__

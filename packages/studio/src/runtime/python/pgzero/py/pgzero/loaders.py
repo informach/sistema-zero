@@ -140,6 +140,32 @@ def _wav_length(path):
     return None
 
 
+
+def _ogg_length(path):
+    """Seconds of an Ogg Vorbis or Opus file: the last page's position over the sample rate."""
+    try:
+        with open(path, 'rb') as stream:
+            data = stream.read()
+        if data[:4] != b'OggS':
+            return None
+        vorbis = data.find(b'\x01vorbis')
+        opus = data.find(b'OpusHead')
+        last = data.rfind(b'OggS')
+        granule = struct.unpack('<q', data[last + 6:last + 14])[0]
+        if vorbis >= 0:
+            rate = struct.unpack('<I', data[vorbis + 12:vorbis + 16])[0]
+            return granule / rate if rate else None
+        if opus >= 0:
+            pre_skip = struct.unpack('<H', data[opus + 10:opus + 12])[0]
+            return max(0, granule - pre_skip) / 48000
+    except (OSError, struct.error):
+        return None
+    return None
+
+
+def _sound_length(path):
+    return _wav_length(path) if str(path).lower().endswith('.wav') else _ogg_length(path)
+
 # Voices a sound remembers; the oldest that do not repeat forever are forgotten first.
 _MAX_VOICES = 32
 
@@ -153,7 +179,7 @@ class Sound:
         self._volume = 1.0
         # voice → True when it repeats until stop() (it never ends by itself).
         self._voices = {}
-        self._length = _wav_length(path)
+        self._length = _sound_length(path)
 
     def play(self, loops=0, maxtime=0, fade_ms=0):
         """Play the sound. loops=N plays it N more times; loops=-1 repeats it until stop()."""
