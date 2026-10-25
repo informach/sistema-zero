@@ -236,6 +236,20 @@ function swatch(
 }
 
 describe('scene workshop integration', () => {
+  test('a forma Torus pode ser criada pelo ladrilho de formas 3D', async () => {
+    const { editor, ports, view } = setup()
+    try {
+      await waitFor(() => expect(ports.length).toBeGreaterThan(0))
+      fireEvent.click(screen.getByRole('button', { name: COPY.scene.torus }))
+      const geometry = editor.getState().asset.geometries.at(-1)
+      expect(geometry?.kind).toBe('torus')
+      expect(editor.getState().asset.nodes.at(-1)?.name).toBe(COPY.scene.torus)
+      expect(editor.getState().canUndo).toBe(true)
+    } finally {
+      view.unmount()
+      editor.getState().dispose()
+    }
+  })
   test('Separar linha opens a cut preview without changing the piece until confirmation', async () => {
     const { document: asset, nodeId, seed } = makeSceneKnifeLoop()
     const { editor, ports, view, openInspector } = setup(asset)
@@ -4429,6 +4443,7 @@ describe('scene workshop integration', () => {
   test.each([
     'cylinder',
     'sphere',
+    'torus',
   ] as const)('curve detail for %s has a cost, validates a draft and restores fields on undo', async (kind) => {
     const { editor, ports, view, openInspector } = setup()
     try {
@@ -4452,22 +4467,27 @@ describe('scene workshop integration', () => {
       fireEvent.submit(apply().closest('form')!)
       expect(editor.getState().asset).toBe(before)
       fireEvent.change(around(), { target: { value: '8' } })
-      if (kind === 'sphere')
+      if (kind !== 'cylinder')
         fireEvent.change(
-          screen.getByRole('spinbutton', { name: COPY.scene.curveDetailFields.down }),
+          screen.getByRole('spinbutton', {
+            name:
+              kind === 'torus' ? COPY.scene.torusTubeSegments : COPY.scene.curveDetailFields.down,
+          }),
           { target: { value: '4' } },
         )
       else expect(screen.queryByLabelText(COPY.scene.curveDetailFields.down)).toBeNull()
       expect(
-        screen.getByText(COPY.scene.curveDetailCost(kind === 'sphere' ? 48 : 32)).textContent,
+        screen.getByText(
+          COPY.scene.curveDetailCost(kind === 'sphere' ? 48 : kind === 'torus' ? 64 : 32),
+        ).textContent,
       ).toBeTruthy()
       expect(editor.getState().asset).toBe(before)
       fireEvent.click(apply())
       const geometry = editor.getState().asset.geometries.at(-1)!
-      if (geometry.kind !== 'sphere' && geometry.kind !== 'cylinder')
+      if (geometry.kind !== 'sphere' && geometry.kind !== 'cylinder' && geometry.kind !== 'torus')
         throw new Error('Missing curve')
       expect(geometry.tessellation).toEqual(
-        kind === 'sphere' ? { around: 8, down: 4 } : { around: 8 },
+        kind === 'cylinder' ? { around: 8 } : { around: 8, down: 4 },
       )
       expect(editor.getState().asset.images).toBe(before.images)
       fireEvent.click(screen.getByRole('button', { name: COPY.editor.undo }))

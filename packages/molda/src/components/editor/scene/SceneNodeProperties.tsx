@@ -74,13 +74,22 @@ export function SceneNodeProperties({
     geometry && geometry.kind in COPY.shapes
       ? (geometry.kind as keyof typeof COPY.shapes)
       : undefined
-  const kindLabel = kind ? COPY.shapes[kind] : primary ? copy.nodeKind[primary.kind] : null
+  const kindLabel =
+    geometry?.kind === 'torus'
+      ? copy.torus
+      : kind
+        ? COPY.shapes[kind]
+        : primary
+          ? copy.nodeKind[primary.kind]
+          : null
   const kindInk =
-    kind && kind !== 'mesh'
-      ? `var(--mld-shape-${kind})`
-      : primary?.kind === 'group'
-        ? 'var(--mld-shape-cylinder)'
-        : 'var(--mld-shape-special)'
+    geometry?.kind === 'torus'
+      ? 'var(--mld-shape-torus)'
+      : kind && kind !== 'mesh'
+        ? `var(--mld-shape-${kind})`
+        : primary?.kind === 'group'
+          ? 'var(--mld-shape-cylinder)'
+          : 'var(--mld-shape-special)'
   return (
     <div className="space-y-4">
       <div className="mld-piece-heading">
@@ -134,28 +143,32 @@ export function SceneNodeProperties({
           )}
         </p>
       )}
-      {precise && primary && (geometry?.kind === 'cylinder' || geometry?.kind === 'sphere') && (
-        <section
-          aria-label={copy.curveDetail}
-          className="rounded-xl border border-mld-border bg-mld-surface p-3"
-        >
-          <div className="flex items-center justify-between gap-2">
-            <h3 className="mld-kicker">{copy.curveDetail}</h3>
-            <SceneHelpButton title="Como ajustar os lados da curva">
-              <p>{copy.curveDetailHint}</p>
-              <p>Mais lados deixam a curva mais redonda. Cada espelho desenha outra cópia.</p>
-            </SceneHelpButton>
-          </div>
-          <SceneCurveDetails
-            key={`${primary.id}-${geometry.id}-${JSON.stringify(primitiveDetail(geometry))}`}
-            className="mt-3 space-y-3"
-            geometry={geometry}
-            onApply={(detail) =>
-              run((source) => setScenePrimitiveDetail(source, primary.id, detail))
-            }
-          />
-        </section>
-      )}
+      {precise &&
+        primary &&
+        (geometry?.kind === 'cylinder' ||
+          geometry?.kind === 'sphere' ||
+          geometry?.kind === 'torus') && (
+          <section
+            aria-label={copy.curveDetail}
+            className="rounded-xl border border-mld-border bg-mld-surface p-3"
+          >
+            <div className="flex items-center justify-between gap-2">
+              <h3 className="mld-kicker">{copy.curveDetail}</h3>
+              <SceneHelpButton title="Como ajustar os lados da curva">
+                <p>{copy.curveDetailHint}</p>
+                <p>Mais lados deixam a curva mais redonda. Cada espelho desenha outra cópia.</p>
+              </SceneHelpButton>
+            </div>
+            <SceneCurveDetails
+              key={`${primary.id}-${geometry.id}-${JSON.stringify(primitiveDetail(geometry))}`}
+              className="mt-3 space-y-3"
+              geometry={geometry}
+              onApply={(detail) =>
+                run((source) => setScenePrimitiveDetail(source, primary.id, detail))
+              }
+            />
+          </section>
+        )}
       {primary && mode !== 'pivot' && (can('model.coordinates') || can('model.pivot')) && (
         <ScenePieceCoordinates workshop={workshop} />
       )}

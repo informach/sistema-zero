@@ -2,7 +2,7 @@
 import type { ShapeFaceId, Vec3 } from '../core/model'
 import { boxMesh } from '../model/mesh'
 import type { SceneMeshGeometry, ScenePrimitiveGeometry, Vec2 } from './document'
-import { primitiveDetail } from './primitiveDetail'
+import { primitiveDetail, TORUS_PROFILE } from './primitiveDetail'
 import { number } from './validation'
 
 const QUAD_UV: readonly Vec2[] = [
@@ -181,6 +181,33 @@ function sphere(out: PrimitiveBuilder, around: number, down: number) {
   }
 }
 
+function torus(out: PrimitiveBuilder, around: number, down: number) {
+  const vertex = (i: number, j: number) => `ring:${i % around}:${j % down}`
+  for (let i = 0; i < around; i++) {
+    const theta = (i / around) * Math.PI * 2
+    for (let j = 0; j < down; j++) {
+      const phi = (j / down) * Math.PI * 2
+      const radius = TORUS_PROFILE.ringRadius + TORUS_PROFILE.tubeRadius * Math.cos(phi)
+      out.unitVertex(vertex(i, j), [
+        radius * Math.sin(theta),
+        -Math.sin(phi),
+        radius * Math.cos(theta),
+      ])
+      out.face(
+        `around:${i}:${j}`,
+        'around',
+        [vertex(i, j), vertex(i, j + 1), vertex(i + 1, j + 1), vertex(i + 1, j)],
+        [
+          [i / around, j / down],
+          [i / around, (j + 1) / down],
+          [(i + 1) / around, (j + 1) / down],
+          [(i + 1) / around, j / down],
+        ],
+      )
+    }
+  }
+}
+
 /** One source for native rendering and conversion. Never reconstruct authorial data from GPU buffers. */
 export function primitiveMesh(source: ScenePrimitiveGeometry) {
   const out = new PrimitiveBuilder(source)
@@ -188,7 +215,8 @@ export function primitiveMesh(source: ScenePrimitiveGeometry) {
   else {
     const detail = primitiveDetail(source)
     if (source.kind === 'cylinder') cylinder(out, detail.around)
-    else sphere(out, detail.around, detail.down)
+    else if (source.kind === 'sphere') sphere(out, detail.around, detail.down)
+    else torus(out, detail.around, detail.down)
   }
   return { mesh: out.mesh, surfaceByFace: out.surfaceByFace }
 }

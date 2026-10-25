@@ -10,6 +10,7 @@ import {
   Cylinder,
   type LucideIcon,
   Square,
+  Torus,
   TriangleRight,
 } from '../../ui/icons'
 import { SCENE_TILE_GRID, SceneTile } from './SceneTile'
@@ -20,8 +21,12 @@ const SHAPES: ReadonlyArray<[SceneShapeKind, LucideIcon]> = [
   ['wedge', TriangleRight],
   ['cylinder', Cylinder],
   ['sphere', Circle],
+  ['torus', Torus],
   ['plane', Square],
 ]
+
+const shapeName = (kind: SceneShapeKind) =>
+  kind === 'plane' ? COPY.scene.plane : kind === 'torus' ? COPY.scene.torus : COPY.shapes[kind]
 
 /**
  * As formas (`model.pieces`) e o ponto de apoio (`model.locator`), À VISTA em ladrilhos
@@ -92,7 +97,7 @@ export function SceneCreateMenu({
             <SceneTile
               key={kind}
               icon={icon}
-              label={kind === 'plane' ? COPY.scene.plane : COPY.shapes[kind]}
+              label={shapeName(kind)}
               ink={`var(--mld-shape-${kind === 'plane' ? 'special' : kind})`}
               tint
               onClick={() =>
@@ -101,7 +106,7 @@ export function SceneCreateMenu({
                     addScenePrimitiveNear(
                       source,
                       kind,
-                      kind === 'plane' ? COPY.scene.plane : COPY.shapes[kind],
+                      shapeName(kind),
                       selected,
                       undefined,
                       explicitDestination,

@@ -1117,6 +1117,8 @@ export const COPY = {
     locatorName: 'Apoio',
     dimensions: 'Medidas da forma',
     curveDetail: 'Detalhes da curva',
+    torus: 'Torus',
+    torusTubeSegments: 'Lados do tubo',
     planeCut: 'Cortar a peça por um plano',
     bevel: 'Chanfrar quinas',
     pathCreate: 'Criar tubo pelo caminho',
@@ -1208,7 +1210,8 @@ export const COPY = {
     curveDetailHint:
       'Mais divisões deixam a curva mais redonda. Menos divisões deixam seu jogo mais leve. A pintura continua na mesma superfície.',
     curveDetailFields: { around: 'Lados da curva', down: 'Faixas da esfera' },
-    curveDetailInvalid: 'Use de 3 a 64 lados e, na esfera, de 2 a 32 faixas. Só números inteiros.',
+    curveDetailInvalid:
+      'Use de 3 a 64 lados e de 2 a 32 faixas (3 a 32 no torus). Só números inteiros.',
     curveDetailCost: (count: number) => `Esta peça terá ${count} triângulos.`,
     applyCurveDetail: 'Aplicar detalhes',
     dimensionsHint:

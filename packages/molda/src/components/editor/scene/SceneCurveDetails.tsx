@@ -19,20 +19,24 @@ export function SceneCurveDetails({ geometry, onApply, ...props }: SceneCurveDet
   const prefix = useId()
   const initial = primitiveDetail(geometry)
   const [draft, setDraft] = useState({ around: String(initial.around), down: String(initial.down) })
-  const fields = geometry.kind === 'sphere' ? (['around', 'down'] as const) : (['around'] as const)
+  const fields =
+    geometry.kind === 'cylinder' ? (['around'] as const) : (['around', 'down'] as const)
   const validField = (field: 'around' | 'down') => {
     const value = Number(draft[field])
-    const { min, max } = PRIMITIVE_DETAIL_LIMITS[field]
+    const { min, max } =
+      field === 'down' && geometry.kind === 'torus'
+        ? PRIMITIVE_DETAIL_LIMITS.torusDown
+        : PRIMITIVE_DETAIL_LIMITS[field]
     return draft[field].trim() !== '' && Number.isInteger(value) && value >= min && value <= max
   }
   const valid = fields.every(validField)
   const detail =
-    geometry.kind === 'sphere'
+    geometry.kind !== 'cylinder'
       ? { around: Number(draft.around), down: Number(draft.down) }
       : { around: Number(draft.around) }
   const count = valid
     ? primitiveTriangleCount(
-        geometry.kind === 'sphere'
+        geometry.kind !== 'cylinder'
           ? {
               ...geometry,
               tessellation: { around: Number(draft.around), down: Number(draft.down) },
@@ -54,13 +58,21 @@ export function SceneCurveDetails({ geometry, onApply, ...props }: SceneCurveDet
       </p>
       {fields.map((field) => (
         <label key={field} className="block space-y-1 text-sm font-bold text-mld-text">
-          <span>{COPY.scene.curveDetailFields[field]}</span>
+          <span>
+            {field === 'down' && geometry.kind === 'torus'
+              ? COPY.scene.torusTubeSegments
+              : COPY.scene.curveDetailFields[field]}
+          </span>
           <input
             name={field}
             type="number"
             required
             step={1}
-            min={PRIMITIVE_DETAIL_LIMITS[field].min}
+            min={
+              field === 'down' && geometry.kind === 'torus'
+                ? PRIMITIVE_DETAIL_LIMITS.torusDown.min
+                : PRIMITIVE_DETAIL_LIMITS[field].min
+            }
             max={PRIMITIVE_DETAIL_LIMITS[field].max}
             value={draft[field]}
             aria-invalid={!validField(field)}
