@@ -68,3 +68,13 @@ O CI `40186233031` aprovou os nove jobs auxiliares, mas parou no grupo de compon
 ## Modelos financeiros: leitura dos dois ambientes
 
 A leitura do Messaging encontrou os oito modelos canônicos ativos em staging, remetente padrão verificado e nenhuma mensagem antiga pendente. Em produção, nenhum dos oito corresponde à versão canônica; há dois modelos antigos ativos e uma mensagem antiga pendente. Atualizar os modelos e retirar a fila antiga depende do corte coordenado dos consumidores. Nenhum seed, aviso, cobrança ou cancelamento foi executado por essa leitura.
+
+## Abertura Python por admin e apresentação do bloqueio
+
+O relato foi confirmado pelo usuário em `https://community-kids-staging.up.railway.app/estudio`. A leitura das variáveis Members, sem imprimir credenciais, encontrou nos dois ambientes a release ativa `2026-10-22-visual-games-3`: 256 IDs aprovados, dos quais 144 pertencem ao catálogo atual, com uma dependência ausente. A exceção administrativa a cursos já existia; a recusa por catálogo incompleto reutilizava indevidamente a mensagem de conquista de curso. Os dois motivos agora são distintos. **Não foi removida a validação de dependências ou de aprovação da release.**
+
+Testes causais: a expectativa de mensagem de configuração falhou antes da mudança; depois, **26 testes / 288 asserções** passaram, incluindo admin sem conquistas em clássico e Pro, perfil próprio e recusa de suporte. A seleção do host passou em **cinco testes externos**, incluindo os subprocessos isolados de abertura e autoridade. Dentro da abertura há 15 cenários: o erro/retry preserva a mesma instância e seu buffer; em Pro, o editor retido fica oculto, inerte e em observação enquanto falta autoridade. As contagens externas e internas não são somadas.
+
+Clássico e Pro usam um aviso compartilhado com os tokens e botões do host, nome do projeto, estado de preparo/erro, tentativa e retorno à galeria. A renderização Chrome focada compilou o CSS real do Kids: quatro combinações Padrão/Rosa e 320/1280 px, sem rolagem horizontal, alvos de 44 px, ações funcionais e nenhum erro de página; preparo sem retry prematuro também passou. É uma prova de componente/tema, não um login ou fluxo remoto completo. A fixture inicial usou o valor inválido de paleta `default`; o erro de fixture e seus screenshots foram preservados, e a prova corrigida usa ausência do atributo para Padrão e `pink` para Rosa.
+
+Os planos R4 já preparados foram conferidos com a mesma função de currículo: ambos têm 619 IDs atuais e **nenhuma dependência ausente**, com as quatro extensões Python. A correção operacional ainda depende de ativar esse catálogo junto do runtime e validar a abertura real em staging. Atualizar apenas a mensagem não equivale a restaurar o ambiente.
