@@ -2,6 +2,7 @@ import type * as Blockly from 'blockly/core'
 import type { JSExpr, JSStatement } from '#ir'
 import { campaignStageOf } from '../../blockly/blocks/campaignStageMutator'
 import { sceneBlockExpression, sceneBlockStatement } from '../scene-2d/codec'
+import { gameKitDrawingBlockToIR } from './drawingCodec'
 import {
   type GameKitAction,
   type GameKitCampaignEventField,
@@ -62,6 +63,8 @@ export function campaignStatementBlockToIR(
   if (scene) return scene
   const font = gameKitUiFontBlockToIR(block, context.field)
   if (font) return font
+  const drawing = gameKitDrawingBlockToIR(block, context.expression)
+  if (drawing) return drawing
   const f = (name: string) => context.field(block, name)
   const number = (name: string, fallback: number) =>
     context.expression(block, name, { type: 'num', value: fallback })

@@ -29,7 +29,7 @@ export const gameTwoDActionBlocks: BlockDefinition[] = [
     nextStatement: 'JSStmt',
     colour,
     tooltip:
-      'Tenta executar agora e, se conseguir, inicia a recarga. Cada bloco tem sua própria recarga por sprite. A primeira tentativa executa; 60 quadros equivalem a 1 segundo de jogo. A pausa congela a contagem. Não agenda uma execução futura.',
+      'Executa agora se a recarga permitir e começa outra recarga. Cada bloco tem uma contagem por sprite; 60 quadros são 1 segundo. Pausar congela a contagem. Não agenda uma ação futura.',
   },
   {
     type: 'sz_g2d_destroy_sprite',

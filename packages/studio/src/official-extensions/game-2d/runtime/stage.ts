@@ -311,7 +311,7 @@ export const gameTwoDStageRuntime = `  // ---- Palco implícito: o runtime é DO
   /**
    * A largura e a altura da tela, para a criança usar em conta.
    *
-   * ⭐ Devolvem o tamanho LÓGICO, nunca \`canvas.width\`: com "preencher a janela" ou
+   * ⭐ Devolvem o tamanho LÓGICO, nunca canvas.width: com "preencher a janela" ou
    * numa tela de alta densidade o buffer real é 2 ou 3 vezes maior, e a criança
    * receberia um número que não bate com nada que ela vê. O manual e o contexto da
    * IA já mandavam "centralize por 'a largura da tela'" — só faltavam os blocos.

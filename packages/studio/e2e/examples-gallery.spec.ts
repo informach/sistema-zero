@@ -373,7 +373,7 @@ async function openAndExercise(page: Page, contract: ExampleQAContract): Promise
         descriptionId: expect.stringMatching(/\S/),
         tabIndex: '0',
         description: expect.stringMatching(
-          /setas|espaço|enter|arraste|segurando|mouse|dedo|toque|↑|←/i,
+          /setas|espaço|enter|arraste|segurando|mouse|dedo|toque|cliqu|teclas?|↑|←|\buse\s+[1-9](?:\s+a\s+[1-9])?\b/i,
         ),
       })
   }

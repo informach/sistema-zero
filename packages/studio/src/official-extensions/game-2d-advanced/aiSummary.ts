@@ -45,6 +45,10 @@ IMAGENS: seletores de imagem carregam o asset escolhido automaticamente. loadIma
 é opcional e serve para pré-carregar ou dar apelido. Um asset inválido mantém um
 fallback visível e gera diagnóstico.
 
+DESENHO: use somente os blocos nativos da extensão para figuras, texto e telas.
+Não gere blocos HTML, CSS ou Canvas, chamadas ctx.* ou desenho em rawJS.
+Esses recursos diretos pertencem à etapa de JavaScript sem extensão.
+
 REGRAS: não misture com a extensão Jogo 2D, pois ambas controlam o canvas. Use
 estados/telas para menu, pausa, derrota e vitória; objetivo alcançável e feedback
 visual; reinício completo. Prefira os kits prontos de RPG, plataforma, luta,

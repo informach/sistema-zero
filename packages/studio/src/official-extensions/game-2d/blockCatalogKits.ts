@@ -54,7 +54,7 @@ export const gameTwoDKitBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Pula com ↑/Espaço ou toque na metade de cima da tela; abaixa com ↓ ou segurando o dedo embaixo. Já vem com chão e poeira. Para o dino cair, encaixe o "Aplicar a gravidade do mundo" logo acima. Use dentro do "a cada quadro".',
+      'Pula com ↑, Espaço ou toque em cima; abaixa com ↓ ou dedo embaixo. Inclui chão e poeira. Use “Aplicar a gravidade do mundo” logo antes, a cada quadro.',
   },
   {
     type: 'sz_g2d_spawn_obstacle',
@@ -595,7 +595,7 @@ export const gameTwoDKitBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'O fogo empurra o balão para cima e gasta combustível (mais alto, mais gasto). Sem combustível, o fogo não acende. Monte a regra do mouse: se "o mouse ou dedo está segurado?" então acender o fogo. Use dentro do "a cada quadro".',
+      'A cada quadro, acenda quando mouse ou dedo estiver segurado. O fogo sobe e gasta combustível; quanto mais alto, maior o gasto. Sem combustível, não acende.',
   },
   {
     type: 'sz_g2d_balloon_fly',

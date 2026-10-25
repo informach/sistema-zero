@@ -3,6 +3,25 @@ export const GAME_TWO_D_BLOCK_COLOR = '#ec4899'
 export const GAME_TWO_D_EVENT_COLOR = '#f06bb0'
 
 /**
+ * Teclas comuns aos eventos e às perguntas do básico. O runtime usa letras
+ * minúsculas, ao contrário dos códigos KeyA/Digit1 do 3D; os valores salvos ficam iguais.
+ */
+export const GAME_TWO_D_KEY_OPTIONS: Array<[string, string]> = [
+  ['→ seta direita', 'ArrowRight'],
+  ['← seta esquerda', 'ArrowLeft'],
+  ['↑ seta para cima', 'ArrowUp'],
+  ['↓ seta para baixo', 'ArrowDown'],
+  ['barra de espaço', 'Space'],
+  ['Enter', 'Enter'],
+  ['Escape', 'Escape'],
+  ...Array.from('adwsfprbceghijklmnoqtuvxyz', (letter): [string, string] => [
+    `tecla ${letter.toUpperCase()}`,
+    letter,
+  ]),
+  ...Array.from({ length: 10 }, (_, digit): [string, string] => [`tecla ${digit}`, String(digit)]),
+]
+
+/**
  * Os comportamentos de inimigo, na ordem em que a criança os vê nos DOIS blocos
  * que os oferecem: "Criar tipo de inimigo" e "O tipo de inimigo … também é …".
  *

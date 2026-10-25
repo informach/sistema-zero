@@ -1567,4 +1567,184 @@ export const EXAMPLE_QA_CONTRACTS = [
       'Andar com A/W/S/D, falar com o morador no espaço, entrar no mato, batalhar com as setas e Enter, vencer ou perder.',
     interactions: ['start', 'wasd', 'space', 'arrows'],
   },
+  {
+    key: 'game-2d:Meu personagem do Pinta',
+    name: 'Meu personagem do Pinta',
+    experience: 'demo',
+    promise:
+      'Setas movem o personagem. Espaço toca uma animação uma vez; ao terminar ele volta a andar. A tecla I troca a imagem e R recomeça.',
+    scenario:
+      'Setas movem o personagem. Espaço toca uma animação uma vez; ao terminar ele volta a andar. A tecla I troca a imagem e R recomeça.',
+    interactions: ['arrows', 'space'],
+  },
+  {
+    key: 'game-2d:Placas e camadas',
+    name: 'Placas e camadas',
+    experience: 'demo',
+    promise:
+      'Clique nas placas para trazê-las à frente. As teclas 1 e 2 mudam a letra e o tamanho; 3 manda a placa para trás e 4 muda sua visibilidade.',
+    scenario:
+      'Clique nas placas para trazê-las à frente. As teclas 1 e 2 mudam a letra e o tamanho; 3 manda a placa para trás e 4 muda sua visibilidade.',
+    interactions: ['click', 'digit-1', 'choice-2'],
+  },
+  {
+    key: 'game-2d:Quatro jeitos de mover',
+    name: 'Quatro jeitos de mover',
+    experience: 'demo',
+    promise:
+      'Escolha 1 para voo com inércia, 2 para bater asas, 3 para seguir o ponteiro ou 4 para pilotar com impulso. Um companheiro acompanha você.',
+    scenario:
+      'Escolha 1 para voo com inércia, 2 para bater asas, 3 para seguir o ponteiro ou 4 para pilotar com impulso. Um companheiro acompanha você.',
+    interactions: ['digit-1', 'arrows', 'choice-2', 'space'],
+  },
+  {
+    key: 'game-2d:Caixas, círculos e plataformas',
+    name: 'Caixas, círculos e plataformas',
+    experience: 'demo',
+    promise:
+      'Ande e pule nas plataformas. A caixa de contato mostra por que o círculo amarelo é coletado. O bloco vermelho tira vida com recarga; R recomeça.',
+    scenario:
+      'Ande e pule nas plataformas. A caixa de contato mostra por que o círculo amarelo é coletado. O bloco vermelho tira vida com recarga; R recomeça.',
+    interactions: ['arrows', 'space'],
+  },
+  {
+    key: 'game-2d:Mesa de som',
+    name: 'Mesa de som',
+    experience: 'demo',
+    promise:
+      '1 toca um arquivo, 2 para o efeito, 3 repete como música e 4 para a música. As teclas 5 e 6 tocam uma nota e um tom. O arquivo está no projeto.',
+    scenario:
+      '1 toca um arquivo, 2 para o efeito, 3 repete como música e 4 para a música. As teclas 5 e 6 tocam uma nota e um tom. O arquivo está no projeto.',
+    interactions: ['digit-1', 'choice-2'],
+  },
+  {
+    key: 'game-2d:Mapa do Pinta e duas fases',
+    name: 'Mapa do Pinta e duas fases',
+    experience: 'demo',
+    promise:
+      'Setas movem e Espaço pula pelo mapa do Pinta. N troca para uma fase vetorial; R restaura a fase. A câmera acompanha e as plataformas são atravessáveis por baixo.',
+    scenario:
+      'Setas movem e Espaço pula pelo mapa do Pinta. N troca para uma fase vetorial; R restaura a fase. A câmera acompanha e as plataformas são atravessáveis por baixo.',
+    interactions: ['arrows', 'space'],
+  },
+  {
+    key: 'game-2d:Pista do meu desenho',
+    name: 'Pista do meu desenho',
+    experience: 'demo',
+    promise:
+      'Desça a pista com as setas, escolha a vista com 1, 2 ou 3 e alcance a chegada. As bandeiras se movem; o placar mostra a distância percorrida.',
+    scenario:
+      'Desça a pista com as setas, escolha a vista com 1, 2 ou 3 e alcance a chegada. As bandeiras se movem; o placar mostra a distância percorrida.',
+    interactions: ['arrows', 'digit-1', 'choice-2'],
+  },
+  {
+    key: 'game-2d:Inimigo que muda ao levar dano',
+    name: 'Inimigo que muda ao levar dano',
+    experience: 'demo',
+    promise:
+      'Desvie com as setas e atire com Espaço. Ao levar dano, o inimigo passa a perseguir o jogador. Seus raios tiram vida com invencibilidade; R recomeça.',
+    scenario:
+      'Desvie com as setas e atire com Espaço. Ao levar dano, o inimigo passa a perseguir o jogador. Seus raios tiram vida com invencibilidade; R recomeça.',
+    interactions: ['arrows', 'space'],
+  },
+  {
+    key: 'game-2d:Tela que acompanha a janela',
+    name: 'Tela que acompanha a janela',
+    experience: 'demo',
+    promise:
+      'Toque ou aperte uma tecla para começar. O personagem pula na borda da tela, que acompanha a janela. Veja o tamanho do jogo e os quadros por segundo.',
+    scenario:
+      'Toque ou aperte uma tecla para começar. O personagem pula na borda da tela, que acompanha a janela. Veja o tamanho do jogo e os quadros por segundo.',
+    interactions: ['space', 'click'],
+  },
+  {
+    key: 'game-2d-advanced:Oficina de animações e som',
+    name: 'Oficina de animações e som',
+    experience: 'demo',
+    promise: 'Experimentar um personagem com folha de animação, fundo e som de arquivo do projeto.',
+    scenario:
+      'Começar, andar com I/J/K/L, acenar no Espaço, ouvir o sino e abrir e fechar a ajuda com H e o botão Continuar.',
+    interactions: ['start', 'space', 'digit-1'],
+  },
+  {
+    key: 'game-2d-advanced:Laboratório de movimento e efeitos',
+    name: 'Laboratório de movimento e efeitos',
+    experience: 'demo',
+    promise: 'Experimentar inércia, seleção de alvos, caminhos, transparência, rastro e ondas.',
+    scenario:
+      'Mover com setas, abrir as ferramentas com H, escolher um efeito, selecionar alvos com 8 ou 9 e clicar neles.',
+    interactions: ['start', 'arrows', 'click'],
+  },
+  {
+    key: 'game-2d-advanced:Mapa do Pinta com escada e paredes',
+    name: 'Mapa do Pinta com escada e paredes',
+    experience: 'demo',
+    promise: 'Explorar um mapa de peças do Pinta com chão, parede, escada e pulo duplo.',
+    scenario: 'Andar com setas, pular com Espaço, pular novamente no ar e subir a escada do mapa.',
+    interactions: ['start', 'arrows', 'space'],
+  },
+  {
+    key: 'game-2d-advanced:Grave e repita a aventura',
+    name: 'Grave e repita a aventura',
+    experience: 'demo',
+    promise: 'Gravar, reproduzir e guardar uma aventura de duas fases com relógio fixo.',
+    scenario:
+      'Gravar com 1, andar e pular, terminar com 2, repetir com 3, guardar com 4, mudar de fase com N e continuar com 5.',
+    interactions: ['start', 'arrows', 'digit-1'],
+  },
+  {
+    key: 'game-2d-advanced:A vila que guarda sua aventura',
+    name: 'A vila que guarda sua aventura',
+    experience: 'demo',
+    promise: 'Guardar e continuar uma vila com amigos, mochila e passagem para outro mapa.',
+    scenario:
+      'Explorar com setas, pegar chave com C, guardar com 1, gastar chave com V e continuar com 2 para recuperar o estado salvo.',
+    interactions: ['start', 'arrows', 'digit-1'],
+  },
+  {
+    key: 'game-2d-advanced:Painel do lutador',
+    name: 'Painel do lutador',
+    experience: 'demo',
+    promise: 'Acompanhar os dados reais da luta e ver o soco com uma folha de animação.',
+    scenario:
+      'Andar e golpear com os controles dos dois jogadores, defender e acompanhar round, vitórias, combinações e especial.',
+    interactions: ['start', 'action-fight', 'arrows'],
+  },
+  {
+    key: 'game-2d-advanced:Troque a posição das torres',
+    name: 'Troque a posição das torres',
+    experience: 'demo',
+    promise: 'Desmontar torres durante as ondas e liberar seus lugares para uma nova defesa.',
+    scenario:
+      'Comprar uma torre num lugar marcado, segurar Shift e clicar nela para desmontar, recuperar 25 moedas e construir no lugar liberado.',
+    interactions: ['start', 'click'],
+  },
+  {
+    key: 'game-2d-advanced:Peças e cartas na mesa',
+    name: 'Peças e cartas na mesa',
+    experience: 'demo',
+    promise: 'Marcar uma grade e consultar ou trocar a carta do topo de uma pilha.',
+    scenario:
+      'Marcar casas com o mouse e ver o contador, virar a carta com Espaço e trocar a carta com Enter.',
+    interactions: ['start', 'click', 'space'],
+  },
+  {
+    key: 'game-2d-advanced:O gramado das criaturas',
+    name: 'O gramado das criaturas',
+    experience: 'demo',
+    promise: 'Encontrar criaturas em peças de grama e consultar o time e os níveis.',
+    scenario:
+      'Andar na grama com setas, entrar num encontro e consultar o time e os níveis durante a exploração.',
+    interactions: ['start', 'arrows', 'digit-1'],
+  },
+  {
+    key: 'game-2d-advanced:Uma pista de cópias em movimento',
+    name: 'Uma pista de cópias em movimento',
+    experience: 'demo',
+    promise:
+      'Percorrer uma pista com cópias que se movem lateralmente e são coletadas individualmente.',
+    scenario:
+      'Começar, mover com setas ou arrastar até os objetos e ver cada cópia coletada sair da pista e aumentar o contador.',
+    interactions: ['start', 'arrows', 'drag'],
+  },
 ] as const satisfies readonly ExampleQAContract[]

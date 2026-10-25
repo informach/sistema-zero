@@ -3,9 +3,9 @@
  * exemplos (rode de dentro de packages/studio: `bun run gen:server-examples`).
  * O servidor importa SÓ o gerado — nunca as IRs (~3.4MB).
  */
-import { writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { buildServerExamplesIndex } from '../src/examples/serverExamplesBuilder'
+import { writeGeneratedSource } from './writeGeneratedSource'
 
 const entries = buildServerExamplesIndex()
 const target = join(import.meta.dir, '..', 'src', 'examples', '__gen_serverExamplesIndex.ts')
@@ -18,7 +18,7 @@ const body = [
   `export const SERVER_EXAMPLES_INDEX: readonly ServerExampleIndexEntry[] = ${JSON.stringify(entries, null, 2)}`,
   '',
 ].join('\n')
-writeFileSync(target, body)
+writeGeneratedSource(target, body)
 const formatted = Bun.spawnSync({
   cmd: [process.execPath, 'x', 'biome', 'format', '--write', target],
   cwd: join(import.meta.dir, '..'),

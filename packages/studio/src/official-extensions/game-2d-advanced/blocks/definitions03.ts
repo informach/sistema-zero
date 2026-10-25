@@ -95,7 +95,7 @@ export const gameKitBlockDefinitions03: BlockDefinition[] = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Uma cena de história: os passos acontecem UM DE CADA VEZ (falar, esperar, o NPC andar, ir para outro mapa, começar uma batalha). O motor espera cada passo terminar antes do próximo, e o herói fica parado até a cena acabar. É o jeito profissional de contar história.',
+      'Executa passos de história em sequência: falar, esperar, mover um amigo, trocar de mapa e batalhar. Espera cada passo terminar e mantém o herói parado até a cena acabar.',
   },
 
   {
@@ -437,7 +437,7 @@ export const gameKitBlockDefinitions03: BlockDefinition[] = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Desenha um desenho seu cobrindo a tela inteira, agora, neste ponto do quadro. Use no começo do “Desenhar o jogo” para o cenário ficar atrás do resto. É o irmão de “Pôr o cenário atrás de tudo”: aquele se põe uma vez em “Ao iniciar” e o jogo repinta sozinho; este você desenha a cada quadro, escolhendo a ordem das camadas.',
+      'Desenha o cenário agora, cobrindo a tela sem deformar. Use no começo de Desenhar o jogo para ficar atrás dos objetos. Para repintura automática, use Pôr o cenário atrás de tudo.',
   },
   {
     type: 'sz_gk_draw_tilemap',
@@ -460,7 +460,7 @@ export const gameKitBlockDefinitions03: BlockDefinition[] = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Desenha o mapa. Desenhe o "chão" ANTES dos personagens; DEPOIS deles desenhe "topos" (só as peças sólidas: muros/telhados) ou "frente" (a camada da frente que você marcou no Pinta, como copas de árvore). Assim o herói passa por trás e a cena ganha profundidade. O mapa encaixa sozinho na tela.',
+      'Desenhe chão antes dos personagens e topos ou frente depois deles. Assim o herói passa atrás de muros e copas marcados no Pinta. O mapa ajusta seu desenho à tela.',
   },
 
   {
@@ -496,7 +496,7 @@ export const gameKitBlockDefinitions03: BlockDefinition[] = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Desenha o herói e todos os NPCs na ordem certa de profundidade: quem está mais embaixo na tela aparece na FRENTE de quem está mais em cima (como na vida real). Troca o "Desenhar o personagem" + "Desenhar os NPCs" por um só, já ordenado.',
+      'Desenha herói e amigos em ordem de profundidade: quem está mais embaixo aparece na frente. Substitui o desenho separado do personagem e dos amigos.',
   },
 
   {
@@ -534,7 +534,7 @@ export const gameKitBlockDefinitions03: BlockDefinition[] = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Puxa o personagem para baixo a cada quadro (2160 é o padrão dos jogos). É o PASSO 1 da receita: gravidade → mover pela velocidade → colidir. Este bloco também DESLIGA o "está no chão". Só o pouso da colisão liga de volta.',
+      'Acrescenta queda usando o tempo do quadro. Receita: gravidade → mover pela velocidade → colidir. Desliga o sinal de chão; somente o pouso o liga novamente. Gravidade padrão: 2160.',
   },
 
   {
@@ -640,7 +640,7 @@ export const gameKitBlockDefinitions03: BlockDefinition[] = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Quando a bola encosta na raquete, ela QUICA: a direção pra cima/baixo inverte e a direção de lado vem do PONTO que bateu (na beirada, sai mais de lado). É o coração do Breakout e do Pong. Combine com "quicar nas bordas" (paredes) no "A cada quadro".',
+      'Rebate a bola na raquete. A altura da batida escolhe a direção: nas pontas, sai mais inclinada. Combine com quicar nas bordas, no A cada quadro.',
   },
 
   {
@@ -670,7 +670,7 @@ export const gameKitBlockDefinitions03: BlockDefinition[] = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Cria uma GRADE de até 512 × 512 células por nome (colunas × linhas), tudo começando com o valor "vazio" (ex.: 0). É o coração dos jogos de grade: Cobrinha, Match-3, Sokoban, campo-minado, quebra-cabeças. Você varre a grade com "repita" e lê/escreve por (coluna, linha).',
+      'Cria uma grade de até 512 × 512 células, todas com o valor vazio escolhido. Leia e mude células pela coluna e linha. Use laços para percorrer tabuleiros e quebra-cabeças.',
   },
 
   {
@@ -878,7 +878,7 @@ export const gameKitBlockDefinitions03: BlockDefinition[] = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Abre a arena da batalha de cartas (vida sua e do inimigo). NÃO cria deck nem cartas. Isso é seu: monte o baralho com listas + o bloco "uma carta". ⚠️ Roda SÓ no estado "jogando" (não muda o estado); chame quando já estiver jogando, e já começa o seu 1º turno. Ponha o "Quando começar o meu turno"/"Quando for a vez do inimigo" NO TOPO (não dentro do "quando entrar em jogando"). (Batalha de CARTAS. Para turnos com espada use o ⚔️ Kit RPG; para bichinhos, o 👾 Kit Monstrinhos.)',
+      'Abre a batalha de cartas no estado jogando e começa seu turno. Monte o baralho com listas e cartas. Registre os eventos de turno em Quando acontecer, fora do evento de entrada no estado.',
   },
 
   {

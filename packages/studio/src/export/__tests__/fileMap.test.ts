@@ -213,6 +213,16 @@ describe('buildClassicFileMap', () => {
     expect(fetchedSky).toEqual(hdr)
   })
 
+  it('preserva a folha externa vazia que o HTML ainda referencia', async () => {
+    const { files } = await buildClassicFileMap(
+      classicProject({ files: { ...classicProject().files, 'style.css': '' } }),
+      identityMinifiers,
+    )
+    expect(files['public/index.html']).toContain('href="style.css"')
+    expect(files['public/style.css']).toBe('')
+    expect(files['public/sw.js']).toContain('./style.css')
+  })
+
   it('placement inline (css/js vazios): nao emite arquivos externos vazios', async () => {
     const { files } = await buildClassicFileMap(
       classicProject({

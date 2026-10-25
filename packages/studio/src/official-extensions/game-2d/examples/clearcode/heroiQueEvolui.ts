@@ -16,28 +16,8 @@ export const heroiQueEvoluiExample: ExtensionExample = beginnerGameExample({
   description:
     'Aventura de espada: corte os monstros com espaço para ganhar experiência, suba de nível para ficar mais forte e curar corações, e chegue ao nível 5. Ande com as setas. Enter começa.',
   ir: {
-    html: [{ type: 'canvas', id: 'tela', width: 480, height: 300 }],
-    css: [
-      {
-        selector: 'body',
-        declarations: {
-          background: '#0b1220',
-          display: 'flex',
-          'align-items': 'center',
-          'justify-content': 'center',
-          'min-height': '100vh',
-          margin: '0',
-        },
-      },
-      {
-        selector: 'canvas',
-        declarations: {
-          border: '3px solid #ffffff',
-          'border-radius': '18px',
-          background: '#1d2f4d',
-        },
-      },
-    ],
+    html: [],
+    css: [],
     version: 2,
     behavior: {
       molds: [
@@ -248,6 +228,21 @@ export const heroiQueEvoluiExample: ExtensionExample = beginnerGameExample({
         },
       ],
       start: [
+        {
+          type: 'g2d:setupStage',
+          width: 480,
+          height: 300,
+          bg: '#1d2f4d',
+          __id: 'exemplo-her-i-que-evolui',
+        },
+        {
+          type: 'g2d:setStageDescription',
+          description:
+            'Aventura de espada: corte os monstros com espaço para ganhar experiência, suba de nível para ficar mais forte e curar corações, e chegue ao nível 5. Ande com as setas. Enter começa.',
+          __id: 'exemplo-her-i-que-evolui-descricao',
+        },
+        { type: 'g2d:stageBorder', color: '#ffffff', width: 3 },
+
         {
           type: 'g2d:fitScreen',
           percent: {

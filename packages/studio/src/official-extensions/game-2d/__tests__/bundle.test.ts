@@ -44,7 +44,9 @@ describe('bundle inicial do Jogo 2D', () => {
             gzipBytes: Bun.gzipSync(new Uint8Array(await entry.arrayBuffer())).byteLength,
             chunks: build.outputs.filter((output) => output.kind === 'chunk').length,
             containsRuntime: source.includes('Jogo 2D interativo'),
-            containsExample: source.includes('Pegue a moeda'),
+            // Names also belong to the lightweight pedagogical summary. Probe
+            // the actual example's content rather than a legitimate title.
+            containsExample: source.includes('Encoste na moeda para fazer pontos. Use as setas para andar.'),
             containsFullDocs: source.includes('Receitas que a gente monta com o que já existe'),
           }))
         `,
@@ -106,8 +108,10 @@ describe('bundle inicial do Jogo 2D', () => {
 // sem compactar, 457.802 B / 122.147 B compactado.
 // A mesma compactação do Mundo 3D tira comentários de linha e linhas vazias.
 // O teste de equivalência abaixo conserva tokens e fronteiras de linha (ASI).
-const RUNTIME_TETO_CRU = 465_000
-const RUNTIME_TETO_GZIP = 124_500
+// Review 25/10: trim indentation only in the authored engine, preserving the
+// serialized run context. Measured: 415,166 chars / 119,134 bytes gzip.
+const RUNTIME_TETO_CRU = 420_000
+const RUNTIME_TETO_GZIP = 121_500
 
 /**
  * Os maiores fragmentos de `runtime/`, por tamanho de FONTE. Não é o tamanho do

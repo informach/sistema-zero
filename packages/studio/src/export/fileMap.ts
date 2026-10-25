@@ -20,7 +20,7 @@ import { rewriteCssAssetUrlsToAssetNames } from '../preview/cssAssets'
 import { buildInputRuntime } from '../preview/inputBridge'
 import { transpileExtra } from '../preview/transpile'
 import type { Minifiers } from './minify'
-import { buildProductionIndexHtml } from './productionHtml'
+import { buildProductionIndexHtml, hasCanonicalCssLink } from './productionHtml'
 import {
   buildPwaRevision,
   buildServiceWorker,
@@ -64,9 +64,9 @@ export async function buildClassicFileMap(
   const rawCss = project.files['style.css'] ?? ''
   const rawJs = project.files['script.js'] ?? ''
 
-  // Placement inline ⇒ style.css/script.js vêm vazios (o conteúdo já está dentro
-  // do index.html). Só emite o arquivo externo quando há conteúdo.
-  const hasExternalCss = rawCss.trim().length > 0
+  // Inline CSS needs no companion file. An existing external link still needs
+  // its target, even when an extension-only project has no authored CSS.
+  const hasExternalCss = rawCss.trim().length > 0 || hasCanonicalCssLink(rawHtml)
   let hasExternalJs = rawJs.trim().length > 0
   let jsIsModule = MODULE_RE.test(rawJs)
 

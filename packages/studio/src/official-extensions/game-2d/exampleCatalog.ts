@@ -37,6 +37,7 @@ import {
   vilaNinjaExample,
 } from './examples'
 import { snowDescentExample } from './examples/snowDescent'
+import { gameTwoDRecipes } from './recipes.generated'
 
 interface GameTwoDExampleMetadata {
   difficulty: ExtensionExampleDifficulty
@@ -56,7 +57,7 @@ function withMetadata(
   return Object.assign(example, metadata)
 }
 
-export const gameTwoDExamples = [
+const gameTwoDExamplesWithMetadata = [
   snowDescentExample,
   withMetadata(numberRainExample, {
     difficulty: 'intermediate',
@@ -110,7 +111,7 @@ export const gameTwoDExamples = [
   }),
   withMetadata(codeDrawnExample, {
     difficulty: 'intermediate',
-    concepts: ['formas', 'canvas', 'desenho'],
+    concepts: ['figuras vetoriais', 'desenho'],
     genre: 'demonstração',
   }),
   withMetadata(tilemapExample, {
@@ -246,3 +247,64 @@ export const gameTwoDExamples = [
     genre: 'exploração',
   }),
 ] as const satisfies readonly ExtensionExample[]
+
+/** A ordem da vitrine acompanha a construção: experimentar, fechar um jogo e ampliar. */
+export const GAME_TWO_D_EXAMPLE_SECTIONS = {
+  demos: [
+    backdropExample,
+    animatedHeroExample,
+    platformerExample,
+    tilemapExample,
+    codeDrawnExample,
+  ],
+  simples: [
+    catchCoinExample,
+    pongExample,
+    textQuizExample,
+    numberRainExample,
+    enemyPlatformerExample,
+    snowDescentExample,
+    dueloDeHeroisExample,
+  ],
+  maiores: [
+    cameraAdventureExample,
+    dinoCorredorExample,
+    batalhaMonstrinhosExample,
+    aventuraHeroiExample,
+    chuvaDeMeteorosExample,
+    mundoPirataExample,
+    safariDeMonstrosExample,
+    muralhaDoReinoExample,
+    escaladaDoGuerreiroExample,
+    portasDoCasteloExample,
+    reinoZeroExample,
+    valeEnsolaradoExample,
+    vilaNinjaExample,
+    treinadorDeCriaturasExample,
+    sobreviventeExample,
+    fazendaFelizExample,
+    heroiQueEvoluiExample,
+  ],
+  receitas: gameTwoDRecipes,
+  kits: [
+    asteroidsExample,
+    asteroidsClassicExample,
+    dinoRunExample,
+    gorilasExample,
+    gorilasVsRobotExample,
+    stickHeroExample,
+    balloonExample,
+  ],
+} as const
+
+export const gameTwoDExamples: readonly ExtensionExample[] = [
+  ...GAME_TWO_D_EXAMPLE_SECTIONS.demos,
+  ...GAME_TWO_D_EXAMPLE_SECTIONS.simples,
+  ...GAME_TWO_D_EXAMPLE_SECTIONS.maiores,
+  ...GAME_TWO_D_EXAMPLE_SECTIONS.kits,
+  ...GAME_TWO_D_EXAMPLE_SECTIONS.receitas,
+]
+
+if (gameTwoDExamples.length !== gameTwoDExamplesWithMetadata.length + gameTwoDRecipes.length) {
+  throw new Error('A vitrine Jogo 2D precisa conservar todos os exemplos classificados')
+}

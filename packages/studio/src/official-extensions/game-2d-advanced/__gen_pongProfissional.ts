@@ -99,14 +99,9 @@ SZGameKit.onDraw(function (ctx) {
   SZGameKit.drawCharacter(bola);
 });
 SZGameKit.onDrawHud(function (ctx) {
-  ctx.fillStyle = "#22d3ee";
-  ctx.font = "30px sans-serif";
-  ctx.fillText("Você: " + pontos, 30, 44);
-  ctx.fillStyle = "#f472b6";
-  ctx.fillText("PC: " + pontosComputador, 560, 44);
-  ctx.fillStyle = "#94a3b8";
-  ctx.font = "18px sans-serif";
-  ctx.fillText("Trocas seguidas: " + trocas, 258, 40);
+  SZGameKit.drawText("Você: " + pontos, 30, 44, 30, "#22d3ee");
+  SZGameKit.drawText("PC: " + pontosComputador, 560, 44, 30, "#f472b6");
+  SZGameKit.drawText("Trocas seguidas: " + trocas, 258, 40, 18, "#94a3b8");
 });
 `.trim()
 

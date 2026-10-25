@@ -31,36 +31,22 @@ SZGameKit.setup({ width: 960, height: 540, background: "#3a5a40", accent: "#ffd1
 SZGameKit.setScreenText("menu", "Muralha do Reino Profissional", "Clique nos lugares de terra para comprar torres. Elas miram sozinhas o invasor mais na frente. Segure as ondas!", "Defender");
 SZGameKit.setScreenText("fim", "A muralha caiu!", "O recorde fica guardado. Tente de novo!", "Defender de novo");
 SZGameKit.defineLook("orc", function (ctx) {
-  ctx.fillStyle = "#6a994e";
-  ctx.fillRect(6, 8, 28, 26);
-  ctx.fillStyle = "#386641";
-  ctx.fillRect(6, 30, 28, 6);
-  ctx.fillStyle = "#ffffff";
-  ctx.fillRect(12, 16, 6, 6);
-  ctx.fillRect(24, 16, 6, 6);
-  ctx.fillStyle = "#2b2d42";
-  ctx.fillRect(14, 18, 3, 3);
-  ctx.fillRect(26, 18, 3, 3);
+  SZGameKit.drawRectangle(6, 8, 28, 26, "#6a994e");
+  SZGameKit.drawRectangle(6, 30, 28, 6, "#386641");
+  SZGameKit.drawRectangle(12, 16, 6, 6, "#ffffff");
+  SZGameKit.drawRectangle(24, 16, 6, 6, "#ffffff");
+  SZGameKit.drawRectangle(14, 18, 3, 3, "#2b2d42");
+  SZGameKit.drawRectangle(26, 18, 3, 3, "#2b2d42");
 }, 40, 40);
 SZGameKit.defineLook("torre", function (ctx) {
-  ctx.fillStyle = "#6c757d";
-  ctx.fillRect(6, 20, 36, 24);
-  ctx.fillStyle = "#adb5bd";
-  ctx.fillRect(10, 6, 28, 18);
-  ctx.fillStyle = "#495057";
-  ctx.fillRect(16, 10, 16, 10);
-  ctx.fillStyle = "#ffd166";
-  ctx.fillRect(20, 0, 8, 10);
+  SZGameKit.drawRectangle(6, 20, 36, 24, "#6c757d");
+  SZGameKit.drawRectangle(10, 6, 28, 18, "#adb5bd");
+  SZGameKit.drawRectangle(16, 10, 16, 10, "#495057");
+  SZGameKit.drawRectangle(20, 0, 8, 10, "#ffd166");
 }, 48, 48);
 SZGameKit.defineLook("flecha", function (ctx) {
-  ctx.fillStyle = "#ffe066";
-  ctx.beginPath();
-  ctx.arc(7, 7, 6, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.fillStyle = "#f4a259";
-  ctx.beginPath();
-  ctx.arc(7, 7, 3, 0, Math.PI * 2);
-  ctx.fill();
+  SZGameKit.drawCircle(7, 7, 6, "#ffe066");
+  SZGameKit.drawCircle(7, 7, 3, "#f4a259");
 }, 14, 14);
 SZGameKit.defineMold("invasor", { w: 40, h: 40, health: 60, speed: 0, damage: 0, color: "#6a994e", look: "orc" });
 SZGameKit.defineMold("torre", { w: 48, h: 48, health: 1, speed: 0, damage: 0, color: "#6c757d", look: "torre" });
@@ -138,16 +124,15 @@ SZGameKit.onUpdate(function (dt) {
 });
 SZGameKit.onDraw(function (ctx) {
   SZGameKit.drawBackground("#3a5a40", true);
-  ctx.fillStyle = "#a68a64";
-  ctx.fillRect(-60, 336, 267, 40);
-  ctx.fillRect(187, 118, 40, 258);
-  ctx.fillRect(187, 118, 384, 40);
-  ctx.fillRect(531, 119, 40, 205);
-  ctx.fillRect(434, 285, 137, 40);
-  ctx.fillRect(434, 285, 40, 237);
-  ctx.fillRect(434, 482, 371, 40);
-  ctx.fillRect(765, 216, 40, 306);
-  ctx.fillRect(767, 216, 253, 40);
+  SZGameKit.drawRectangle(-60, 336, 267, 40, "#a68a64");
+  SZGameKit.drawRectangle(187, 118, 40, 258, "#a68a64");
+  SZGameKit.drawRectangle(187, 118, 384, 40, "#a68a64");
+  SZGameKit.drawRectangle(531, 119, 40, 205, "#a68a64");
+  SZGameKit.drawRectangle(434, 285, 137, 40, "#a68a64");
+  SZGameKit.drawRectangle(434, 285, 40, 237, "#a68a64");
+  SZGameKit.drawRectangle(434, 482, 371, 40, "#a68a64");
+  SZGameKit.drawRectangle(765, 216, 40, 306, "#a68a64");
+  SZGameKit.drawRectangle(767, 216, 253, 40, "#a68a64");
   SZGameKit.tdDrawSlots();
   SZGameKit.forEachActive("torre", function (torre) {
     SZGameKit.tdDrawRange(torre, 200);
@@ -161,9 +146,7 @@ SZGameKit.onDraw(function (ctx) {
 });
 SZGameKit.onDrawHud(function (ctx) {
   SZGameKit.drawHearts(vidas, 10, 20, 20);
-  ctx.fillStyle = "#ffd166";
-  ctx.font = "24px sans-serif";
-  ctx.fillText("Moedas: " + SZGameKit.tdCoins(), 20, 76);
+  SZGameKit.drawText("Moedas: " + SZGameKit.tdCoins(), 20, 76, 24, "#ffd166");
 });
 `.trim()
 

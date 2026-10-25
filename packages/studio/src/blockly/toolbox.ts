@@ -7,6 +7,12 @@ import {
   type LearningProfile,
   projectEditingBlockTypes,
 } from '#core'
+import {
+  isGameExtensionBlock,
+  isGameExtensionId,
+  isManualGameVisualBlock,
+  isManualGameVisualCategory,
+} from '../official-extensions/gameVisualPolicy'
 import { SERVER_BLOCK_CATALOG } from './blockCatalog'
 import { getBlockContract, inferBlockContract } from './blockContracts'
 import { resolveBlockLevel } from './blockLevels'
@@ -146,7 +152,7 @@ export interface ToolboxConfiguration {
  */
 const PROGRAMMING_LABEL_CLASSES = 'blocklyToolboxCategoryLabel sz-toolbox-programming-label'
 
-function toEntries(
+function buildEntries(
   blocks: BlockDefinition[],
   _categoryLevel: BlockLevel,
   profile: LearningProfile,
@@ -334,7 +340,30 @@ function collectOfferedAreas(contents: readonly unknown[], into: Set<AreaKey>): 
 export function buildCoreToolbox(
   extraCategories: ToolboxCategory[] = [],
   profile: LearningProfile = FULL_LEARNING_PROFILE,
+  installedExtensionIds: readonly string[] = [],
 ): ToolboxConfiguration {
+  const hasGameExtension = (category: ToolboxCategory): boolean =>
+    category.contents.some((entry) =>
+      entry.kind === 'block'
+        ? isGameExtensionBlock(entry.type)
+        : 'contents' in entry && hasGameExtension(entry),
+    )
+  // Installed runtimes still own the visuals when level curation hides their
+  // categories. Category inference also preserves callers that pass palettes directly.
+  const extensionVisuals =
+    installedExtensionIds.some(isGameExtensionId) || extraCategories.some(hasGameExtension)
+  const toEntries = (
+    blocks: BlockDefinition[],
+    level: BlockLevel,
+    learning: LearningProfile,
+    onMold?: (definition: BlockDefinition) => void,
+  ): ToolboxBlockEntry[] =>
+    buildEntries(
+      extensionVisuals ? blocks.filter((block) => !isManualGameVisualBlock(block.type)) : blocks,
+      level,
+      learning,
+      onMold,
+    )
   const contents: ToolboxConfiguration['contents'] = [
     // Busca é sempre visível; ela só encontra os blocos que estão na toolbox
     // (já filtrada), então respeita o nível automaticamente.
@@ -362,12 +391,15 @@ export function buildCoreToolbox(
       ...(profile.allowBlocks ?? []),
       ...(profile.grantedBlockIds ?? []),
       ...projectEditingBlockTypes(profile),
-    ].filter((id) =>
-      isBlockTypeAllowed(id, resolveBlockLevel(id), profile, blockCategories.get(id)),
+    ].filter(
+      (id) =>
+        (!extensionVisuals || !isManualGameVisualBlock(id)) &&
+        isBlockTypeAllowed(id, resolveBlockLevel(id), profile, blockCategories.get(id)),
     ),
   )
 
   const pushContent = (name: string, colour: string, blocks: BlockDefinition[]): void => {
+    if (extensionVisuals && isManualGameVisualCategory(name)) return
     const level = CORE_CATEGORY_LEVELS[name] ?? 'iniciante-2d'
     if (!isCategoryAllowed(name, level, profile)) return
     const entries = toEntries(blocks, level, profile, markArea)
@@ -387,6 +419,7 @@ export function buildCoreToolbox(
     blocks: BlockDefinition[],
     groups: { name: string; colour: string; types: string[] }[],
   ): void => {
+    if (extensionVisuals && isManualGameVisualCategory(name)) return
     const level = CORE_CATEGORY_LEVELS[name] ?? 'iniciante-2d'
     if (!isCategoryAllowed(name, level, profile)) return
     const byType = new Map(blocks.map((b) => [b.type, b]))
@@ -608,6 +641,7 @@ export function buildCoreToolbox(
   const projectEntries = SERVER_BLOCK_CATALOG.filter(
     (entry) =>
       tools.has(entry.type) &&
+      (!extensionVisuals || !isManualGameVisualBlock(entry.type)) &&
       isBlockTypeAllowed(entry.type, entry.level, profile) &&
       (!entry.extension || installedTypes.has(entry.type)),
   ).map((entry) => paletteEntryFor(entry.type))
@@ -630,6 +664,13 @@ export function buildCoreToolbox(
     for (const { area, frame } of AREA_FRAMES) {
       if (only.has(frame)) offeredAreas.add(area)
     }
+  }
+
+  // Existing blocks remain registered/restorable, but the extension owns the
+  // offered visual tools, including in a lesson with explicit frame grants.
+  if (extensionVisuals) {
+    offeredAreas.delete('structure')
+    offeredAreas.delete('appearance')
   }
 
   // ⚠️ Rede: uma paleta com blocos e NENHUMA área deixaria a criança sem lugar

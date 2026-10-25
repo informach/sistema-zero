@@ -1,8 +1,10 @@
 import { buildProjectRunContextRuntime } from '#extensions'
 import { gameRuntimeDomains } from '../runtimeDomains'
+import { compactOfficialRuntimeSource } from '../runtimeSource'
 import { advancedSceneAdapter } from '../scene-2d/runtime'
 import { ADVANCED_SPRITE_SCENE_API_KEYS } from '../scene-2d/spriteContract'
 import { advancedSpriteSceneAdapter } from '../scene-2d/spriteHosts'
+import { gameKitDrawingRuntime } from './drawingRuntime'
 import { gameKitAnimationRuntime } from './runtime/animation'
 import { gameKitAudioRuntime } from './runtime/audio'
 import { gameKitCampaignRuntime } from './runtime/campaign'
@@ -43,10 +45,7 @@ const sceneApiEntries = [
  * - Nunca quebrar o jogo do aluno: API pública embrulhada em try/catch com
  *   console.warn (padrão do SZGame2D).
  */
-export const gameKitRuntime =
-  buildProjectRunContextRuntime() +
-  '\n' +
-  `(function () {
+export const gameKitRuntimeSource = `(function () {
   var _szGameUIFont = (window.SZGameUIFont && window.SZGameUIFont.family) || 'sans-serif';
   // ⚠️ Defensivo de propósito: a família deixou de vir embutida no runtime e passou
   // a ser publicada por quem MONTA o documento. Se algum caminho de montagem
@@ -4441,8 +4440,13 @@ ${gameKitAudioRuntime}
 
 ${advancedSceneAdapter}
 ${advancedSpriteSceneAdapter}
+${gameKitDrawingRuntime}
   /** @type {Omit<GameKitRuntimeApi, 'runProject'>} */
   var api = {
+    drawRectangle: guard('drawRectangle', drawRectangle),
+    drawCircle: guard('drawCircle', drawCircle),
+    drawTriangle: guard('drawTriangle', drawTriangle),
+    drawText: guard('drawText', drawText),
 ${sceneApiEntries}
     setup: guard('setup', function (opts) {
       var o = (opts && typeof opts === 'object') ? opts : {};
@@ -5081,3 +5085,10 @@ ${sceneApiEntries}
   window.SZGameKit = /** @type {GameKitRuntimeApi} */ (api);
 })();
 `
+
+// The run context is serialized from a function. A minified build may put a
+// template literal in it, so only the authored engine is indentation-trimmed.
+export const gameKitRuntime =
+  buildProjectRunContextRuntime() +
+  '\n' +
+  compactOfficialRuntimeSource(gameKitRuntimeSource, { trimIndent: true })

@@ -248,7 +248,9 @@ test('a dívida de parâmetros JS sem tipo não pode crescer', () => {
   // +2 (full review 02/10): as duas varreduras novas das pistas, compartilhadas com o básico.
   // +1: o callback `move` da projeção de availableMoves no inspetor de batalha.
   // A inspeção expõe nome/custo/cura para validar as ações disponíveis do RPG.
-  expect(runtimeFunctionParameterCount(gameKitRuntime)).toBeLessThanOrEqual(1378)
+  // +21: desenho nativo, assinaturas fortes verificadas abaixo: retângulo 5,
+  // círculo 4, triângulo 7 e texto 5. Nenhum parâmetro novo de API sem contrato.
+  expect(runtimeFunctionParameterCount(gameKitRuntime)).toBeLessThanOrEqual(1399)
 })
 
 test('as assinaturas centrais mantêm nomes e ordem dos parâmetros do contrato', () => {

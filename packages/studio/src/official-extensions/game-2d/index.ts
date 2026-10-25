@@ -18,7 +18,7 @@ export const gameTwoDExtension: ExtensionDefinition = {
   manifest: gameTwoDManifest,
   documentation: defineExtensionDocumentation(async () => (await import('./docs')).gameTwoDDocs),
   examples: defineExtensionExamples(
-    36,
+    45,
     async () => (await import('./exampleCatalog')).gameTwoDExamples,
   ),
   conflictsWith: fullscreenConflictsFor('game-2d'),

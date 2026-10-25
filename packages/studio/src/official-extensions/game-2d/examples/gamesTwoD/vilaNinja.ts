@@ -17,28 +17,8 @@ export const vilaNinjaExample: ExtensionExample = beginnerGameExample({
   description:
     'Explore a vila com as setas e ataque com espaço. Derrote os 4 monstros que patrulham sem perder toda a vida. Enter começa e reinicia.',
   ir: {
-    html: [{ type: 'canvas', id: 'tela', width: 480, height: 270 }],
-    css: [
-      {
-        selector: 'body',
-        declarations: {
-          background: '#14162a',
-          display: 'flex',
-          'align-items': 'center',
-          'justify-content': 'center',
-          'min-height': '100vh',
-          margin: '0',
-        },
-      },
-      {
-        selector: 'canvas',
-        declarations: {
-          border: '3px solid #ffffff',
-          'border-radius': '18px',
-          background: '#3a5a3e',
-        },
-      },
-    ],
+    html: [],
+    css: [],
     version: 2,
     behavior: {
       molds: [
@@ -366,6 +346,21 @@ export const vilaNinjaExample: ExtensionExample = beginnerGameExample({
         },
       ],
       start: [
+        {
+          type: 'g2d:setupStage',
+          width: 480,
+          height: 270,
+          bg: '#3a5a3e',
+          __id: 'exemplo-vila-ninja',
+        },
+        {
+          type: 'g2d:setStageDescription',
+          description:
+            'Explore a vila com as setas e ataque com espaço. Derrote os 4 monstros que patrulham sem perder toda a vida. Enter começa e reinicia.',
+          __id: 'exemplo-vila-ninja-descricao',
+        },
+        { type: 'g2d:stageBorder', color: '#ffffff', width: 3 },
+
         {
           type: 'g2d:fitScreen',
           percent: {

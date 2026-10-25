@@ -19,28 +19,8 @@ export const portasDoCasteloExample: ExtensionExample = beginnerGameExample({
   description:
     'Guie o rei pelas plataformas e ache a porta de cada fase para atravessar o castelo em três salões. Use as setas para andar e pular. Enter começa e reinicia.',
   ir: {
-    html: [{ type: 'canvas', id: 'tela', width: 480, height: 300 }],
-    css: [
-      {
-        selector: 'body',
-        declarations: {
-          background: '#0d1220',
-          display: 'flex',
-          'align-items': 'center',
-          'justify-content': 'center',
-          'min-height': '100vh',
-          margin: '0',
-        },
-      },
-      {
-        selector: 'canvas',
-        declarations: {
-          border: '3px solid #ffffff',
-          'border-radius': '18px',
-          background: '#243050',
-        },
-      },
-    ],
+    html: [],
+    css: [],
     version: 2,
     behavior: {
       molds: [
@@ -157,6 +137,21 @@ export const portasDoCasteloExample: ExtensionExample = beginnerGameExample({
         },
       ],
       start: [
+        {
+          type: 'g2d:setupStage',
+          width: 480,
+          height: 300,
+          bg: '#243050',
+          __id: 'exemplo-portas-do-castelo',
+        },
+        {
+          type: 'g2d:setStageDescription',
+          description:
+            'Guie o rei pelas plataformas e ache a porta de cada fase para atravessar o castelo em três salões. Use as setas para andar e pular. Enter começa e reinicia.',
+          __id: 'exemplo-portas-do-castelo-descricao',
+        },
+        { type: 'g2d:stageBorder', color: '#ffffff', width: 3 },
+
         {
           type: 'g2d:fitScreen',
           percent: {

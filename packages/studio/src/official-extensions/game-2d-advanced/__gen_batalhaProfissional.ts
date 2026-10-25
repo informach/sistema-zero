@@ -38,109 +38,68 @@ SZGameKit.setup({ width: 960, height: 540, background: "#8fce77", accent: "#2b8a
 SZGameKit.setScreenText("menu", "Batalha de Monstrinhos Profissional", "Setas: andar. ESPAÇO perto da rival Alice: batalhar! Fogo vence planta, planta vence água e água vence fogo. Cure o time na fonte e capture o Faiscolosso no mato fundo.", "Começar");
 SZGameKit.setScreenText("vitoria", "Capturou!", "O Faiscolosso entrou para o seu time. Você é a nova lenda do quintal!", "Jogar de novo");
 SZGameKit.defineLook("treinadora", function (ctx) {
-  ctx.fillStyle = "#e8590c";
-  ctx.fillRect(10, 0, 24, 10);
-  ctx.fillStyle = "#ffd8a8";
-  ctx.fillRect(12, 10, 20, 12);
-  ctx.fillStyle = "#1971c2";
-  ctx.fillRect(8, 22, 28, 18);
-  ctx.fillStyle = "#343a40";
-  ctx.fillRect(12, 40, 20, 16);
+  SZGameKit.drawRectangle(10, 0, 24, 10, "#e8590c");
+  SZGameKit.drawRectangle(12, 10, 20, 12, "#ffd8a8");
+  SZGameKit.drawRectangle(8, 22, 28, 18, "#1971c2");
+  SZGameKit.drawRectangle(12, 40, 20, 16, "#343a40");
 }, 44, 56);
 SZGameKit.defineLook("rival", function (ctx) {
-  ctx.fillStyle = "#2f9e44";
-  ctx.fillRect(10, 0, 24, 10);
-  ctx.fillStyle = "#ffe8cc";
-  ctx.fillRect(12, 10, 20, 12);
-  ctx.fillStyle = "#e03131";
-  ctx.fillRect(8, 22, 28, 18);
-  ctx.fillStyle = "#212529";
-  ctx.fillRect(12, 40, 20, 16);
+  SZGameKit.drawRectangle(10, 0, 24, 10, "#2f9e44");
+  SZGameKit.drawRectangle(12, 10, 20, 12, "#ffe8cc");
+  SZGameKit.drawRectangle(8, 22, 28, 18, "#e03131");
+  SZGameKit.drawRectangle(12, 40, 20, 16, "#212529");
 }, 44, 56);
 SZGameKit.defineLook("fonte", function (ctx) {
-  ctx.fillStyle = "#adb5bd";
-  ctx.fillRect(5, 70, 120, 30);
-  ctx.fillStyle = "#74c0fc";
-  ctx.fillRect(15, 76, 100, 18);
-  ctx.fillStyle = "#ced4da";
-  ctx.fillRect(52, 30, 26, 44);
-  ctx.fillStyle = "#a5d8ff";
-  ctx.beginPath();
-  ctx.arc(65, 22, 14, 0, Math.PI * 2);
-  ctx.fill();
+  SZGameKit.drawRectangle(5, 70, 120, 30, "#adb5bd");
+  SZGameKit.drawRectangle(15, 76, 100, 18, "#74c0fc");
+  SZGameKit.drawRectangle(52, 30, 26, 44, "#ced4da");
+  SZGameKit.drawCircle(65, 22, 14, "#a5d8ff");
 }, 130, 110);
 SZGameKit.defineLook("grama", function (ctx) {
-  ctx.fillStyle = "#2f9e44";
-  ctx.fillRect(6, 24, 10, 32);
-  ctx.fillRect(24, 12, 10, 44);
-  ctx.fillRect(42, 26, 10, 30);
-  ctx.fillStyle = "#51cf66";
-  ctx.fillRect(15, 34, 8, 22);
+  SZGameKit.drawRectangle(6, 24, 10, 32, "#2f9e44");
+  SZGameKit.drawRectangle(24, 12, 10, 44, "#2f9e44");
+  SZGameKit.drawRectangle(42, 26, 10, 30, "#2f9e44");
+  SZGameKit.drawRectangle(15, 34, 8, 22, "#51cf66");
 }, 56, 56);
 SZGameKit.defineLook("faisco", function (ctx) {
-  ctx.fillStyle = "#ff922b";
-  ctx.fillRect(14, 26, 46, 30);
-  ctx.fillRect(18, 10, 12, 18);
-  ctx.fillStyle = "#ffd43b";
-  ctx.fillRect(54, 6, 14, 24);
-  ctx.fillStyle = "#212529";
-  ctx.fillRect(46, 34, 6, 6);
+  SZGameKit.drawRectangle(14, 26, 46, 30, "#ff922b");
+  SZGameKit.drawRectangle(18, 10, 12, 18, "#ff922b");
+  SZGameKit.drawRectangle(54, 6, 14, 24, "#ffd43b");
+  SZGameKit.drawRectangle(46, 34, 6, 6, "#212529");
 }, 80, 64);
 SZGameKit.defineLook("gotinha", function (ctx) {
-  ctx.fillStyle = "#4dabf7";
-  ctx.beginPath();
-  ctx.arc(36, 38, 24, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.fillRect(30, 4, 12, 16);
-  ctx.fillStyle = "#ffffff";
-  ctx.fillRect(26, 32, 6, 8);
+  SZGameKit.drawCircle(36, 38, 24, "#4dabf7");
+  SZGameKit.drawRectangle(30, 4, 12, 16, "#4dabf7");
+  SZGameKit.drawRectangle(26, 32, 6, 8, "#ffffff");
 }, 72, 64);
 SZGameKit.defineLook("brotinho", function (ctx) {
-  ctx.fillStyle = "#69db7c";
-  ctx.fillRect(16, 28, 40, 32);
-  ctx.fillStyle = "#2f9e44";
-  ctx.fillRect(31, 6, 10, 24);
-  ctx.fillRect(39, 10, 16, 8);
-  ctx.fillStyle = "#212529";
-  ctx.fillRect(44, 38, 6, 6);
+  SZGameKit.drawRectangle(16, 28, 40, 32, "#69db7c");
+  SZGameKit.drawRectangle(31, 6, 10, 24, "#2f9e44");
+  SZGameKit.drawRectangle(39, 10, 16, 8, "#2f9e44");
+  SZGameKit.drawRectangle(44, 38, 6, 6, "#212529");
 }, 72, 68);
 SZGameKit.defineLook("folhito", function (ctx) {
-  ctx.fillStyle = "#8ce99a";
-  ctx.fillRect(12, 20, 40, 28);
-  ctx.fillStyle = "#2b8a3e";
-  ctx.fillRect(16, 6, 8, 16);
-  ctx.fillStyle = "#212529";
-  ctx.fillRect(40, 28, 5, 5);
+  SZGameKit.drawRectangle(12, 20, 40, 28, "#8ce99a");
+  SZGameKit.drawRectangle(16, 6, 8, 16, "#2b8a3e");
+  SZGameKit.drawRectangle(40, 28, 5, 5, "#212529");
 }, 64, 56);
 SZGameKit.defineLook("pingo", function (ctx) {
-  ctx.fillStyle = "#74c0fc";
-  ctx.beginPath();
-  ctx.arc(28, 30, 20, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.fillRect(24, 2, 8, 14);
-  ctx.fillStyle = "#ffffff";
-  ctx.fillRect(22, 24, 5, 7);
+  SZGameKit.drawCircle(28, 30, 20, "#74c0fc");
+  SZGameKit.drawRectangle(24, 2, 8, 14, "#74c0fc");
+  SZGameKit.drawRectangle(22, 24, 5, 7, "#ffffff");
 }, 56, 52);
 SZGameKit.defineLook("braseiro", function (ctx) {
-  ctx.fillStyle = "#fa5252";
-  ctx.fillRect(14, 24, 44, 30);
-  ctx.fillStyle = "#ffa94d";
-  ctx.fillRect(26, 4, 10, 22);
-  ctx.fillStyle = "#ffe066";
-  ctx.fillRect(28, 0, 6, 8);
-  ctx.fillStyle = "#212529";
-  ctx.fillRect(48, 32, 6, 6);
+  SZGameKit.drawRectangle(14, 24, 44, 30, "#fa5252");
+  SZGameKit.drawRectangle(26, 4, 10, 22, "#ffa94d");
+  SZGameKit.drawRectangle(28, 0, 6, 8, "#ffe066");
+  SZGameKit.drawRectangle(48, 32, 6, 6, "#212529");
 }, 72, 60);
 SZGameKit.defineLook("faiscolosso", function (ctx) {
-  ctx.fillStyle = "#f59f00";
-  ctx.fillRect(12, 30, 72, 44);
-  ctx.fillStyle = "#ffd43b";
-  ctx.fillRect(28, 4, 16, 28);
-  ctx.fillRect(52, 10, 14, 22);
-  ctx.fillStyle = "#e8590c";
-  ctx.fillRect(12, 14, 10, 18);
-  ctx.fillStyle = "#ffffff";
-  ctx.fillRect(62, 42, 10, 8);
+  SZGameKit.drawRectangle(12, 30, 72, 44, "#f59f00");
+  SZGameKit.drawRectangle(28, 4, 16, 28, "#ffd43b");
+  SZGameKit.drawRectangle(52, 10, 14, 22, "#ffd43b");
+  SZGameKit.drawRectangle(12, 14, 10, 18, "#e8590c");
+  SZGameKit.drawRectangle(62, 42, 10, 8, "#ffffff");
 }, 96, 80);
 SZGameKit.pkmCreature("Faisco", "fogo", 34, 9, 5, 8, "", "faisco");
 SZGameKit.pkmCreature("Gotinha", "água", 36, 8, 6, 6, "", "gotinha");
@@ -231,10 +190,8 @@ SZGameKit.onDraw(function (ctx) {
 });
 SZGameKit.onDrawHud(function (ctx) {
   SZGameKit.pkmDrawTeam(16, 14);
-  ctx.fillStyle = "#14331a";
-  ctx.font = "16px sans-serif";
-  ctx.fillText("Bolas de captura: " + SZGameKit.pkmBallCount(), 20, 128);
-  ctx.fillText("Fonte: cura o time e repõe as bolas. Mato fundo: monstrinho raro!", 20, 528);
+  SZGameKit.drawText("Bolas de captura: " + SZGameKit.pkmBallCount(), 20, 128, 16, "#14331a");
+  SZGameKit.drawText("Fonte: cura o time e repõe as bolas. Mato fundo: monstrinho raro!", 20, 528, 16, "#14331a");
 });
 `.trim()
 

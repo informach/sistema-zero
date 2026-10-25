@@ -18,7 +18,7 @@ export const gameKitBlockDefinitions01: BlockDefinition[] = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'O primeiro bloco do jogo profissional: cria a tela com essa resolução (que nunca muda por dentro) e a ajusta sozinha ao tamanho da janela, mantendo a proporção. Também prepara as telas prontas (menu, pausa, carregando, fim) com as suas cores. Use uma vez, no começo.',
+      'Cria a tela com tamanho interno fixo e ajusta sua exibição à janela, mantendo a proporção. Prepara menu, pausa e fim com as cores escolhidas. Use uma vez em Ao iniciar.',
   },
 
   {
@@ -34,7 +34,7 @@ export const gameKitBlockDefinitions01: BlockDefinition[] = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Como o "Preparar o jogo", mas SEM dimensões: o canvas ocupa a tela inteira e a área do jogo ACOMPANHA o tamanho da janela (sem barras nas laterais). Aqui "a largura/altura do jogo" mudam junto com a tela. Centralize as coisas usando esses blocos, não números fixos. Combine com "entrar em tela cheia" para o jogo tomar o monitor todo. Use um OU o outro "Preparar", no começo.',
+      'A área do jogo acompanha o tamanho da janela. Use a largura e a altura do jogo para posicionar objetos. Escolha este preparo ou o de tamanho fixo, uma vez em Ao iniciar.',
   },
 
   {
@@ -117,7 +117,7 @@ export const gameKitBlockDefinitions01: BlockDefinition[] = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Põe um desenho seu como fundo do jogo, atrás de todo o resto. Ele COBRE a tela inteira sem deformar: se a proporção do desenho for diferente da tela, sobra um pouco para fora. Um desenho de 960 por 540 cabe exatinho na tela larga. O jogo repinta sozinho a cada quadro. ⚠️ O bloco “Pintar o fundo” tapa o cenário: use um ou o outro.',
+      'Põe o desenho atrás de tudo e o repinta automaticamente. Cobre a tela sem deformar; pode cortar as bordas. Pintar o fundo tapa esse cenário: escolha um dos dois.',
   },
 
   {
@@ -168,7 +168,7 @@ export const gameKitBlockDefinitions01: BlockDefinition[] = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'OPCIONAL: pré-carrega uma imagem do projeto (a tela de "carregando" espera todas) e dá um apelido a ela. Hoje não é obrigatório. Os blocos de personagem/inimigo/molde já carregam a imagem do Pinta sozinhos ao escolher. Use este bloco só se quiser um apelido diferente do nome do arquivo. Se a imagem falhar, o jogo segue com um retângulo.',
+      'Opcional: pré-carrega a imagem e dá um apelido. Os seletores já carregam as imagens do Pinta. Se o arquivo falhar, o objeto mantém um retângulo visível e o jogo mostra um aviso.',
   },
 
   // ---- 🖼️ Telas ----
@@ -214,7 +214,7 @@ export const gameKitBlockDefinitions01: BlockDefinition[] = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Cria uma tela SUA (ex.: loja, instruções), no mesmo estilo das prontas. Ela começa escondida. Use "Mostrar a tela" quando quiser. Dá para pôr botões nela. Usar o nome de uma tela pronta (ex.: vitoria) faz você ASSUMIR a tela: os botões dela saem e os textos passam a ser os seus.',
+      'Cria uma tela escondida, como loja ou instruções. Mostre-a e acrescente botões. Usar o nome de uma tela pronta substitui seus textos e botões.',
   },
 
   {
@@ -251,7 +251,7 @@ export const gameKitBlockDefinitions01: BlockDefinition[] = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Deixa uma tela (pronta ou sua) com a SUA cara: uma cor de fundo (o "quadrado colorido por baixo") e, se quiser, uma imagem do Pinta cobrindo o painel. Ótimo para telas de entrada, pausa e fim. Deixe a imagem vazia para usar só a cor.',
+      'Escolha a cor do painel e uma imagem opcional do Pinta. A imagem cobre o painel. Deixe-a vazia para usar somente a cor.',
   },
 
   {
@@ -408,7 +408,7 @@ export const gameKitBlockDefinitions01: BlockDefinition[] = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'O coração do jogo: roda o "fazer" a cada quadro, SÓ enquanto o estado é "jogando". O tempo (dt) é quanto durou o último quadro, em segundos. Multiplique a velocidade por ele para o jogo andar igual em qualquer computador.',
+      'Atualiza as regras a cada quadro, somente no estado jogando. O tempo do quadro está em segundos; multiplique a velocidade por ele para manter o ritmo.',
   },
 
   {
@@ -424,7 +424,7 @@ export const gameKitBlockDefinitions01: BlockDefinition[] = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Tudo o que aparece no jogo é desenhado aqui, a cada quadro: pinte o fundo, desenhe os personagens e o placar. Os blocos de Canvas funcionam aqui dentro, usando esse pincel. Desenha em "jogando", "pausado", "fim" e nos SEUS estados. Só NÃO no "menu" nem no "carregando" (para um menu desenhado, use um estado inventado). Com a câmera ligada, este desenho é do MUNDO (anda com a câmera).',
+      'Desenhe com os blocos desta extensão. Roda em jogando, pausado, fim e estados próprios; não em menu ou carregando. Com câmera ligada, as posições pertencem ao mundo.',
   },
 
   {
@@ -476,7 +476,7 @@ export const gameKitBlockDefinitions01: BlockDefinition[] = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Cria um personagem do jogo (herói, moeda, inimigo…). Ele nasce no centro da tela. A imagem é um desenho do Pinta. Escolha direto, não precisa "Carregar a imagem" antes; sem imagem, aparece um retângulo da cor escolhida. A velocidade é em pixels por segundo.',
+      'Cria um personagem ou objeto no centro da tela. Escolha uma imagem do Pinta; sem imagem, aparece a cor escolhida. A velocidade é em pixels por segundo.',
   },
 
   {
@@ -681,7 +681,7 @@ export const gameKitBlockDefinitions01: BlockDefinition[] = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Um MOLDE são os DADOS de um tipo de personagem (inimigo, moeda, tiro…). Defina uma vez; depois faça quantos quiser dele. É como os jogos profissionais organizam muitos personagens iguais. A imagem (pixel) ou a aparência (vetor) são opcionais; sem elas, sai um retângulo da cor. A caixa redonda deixa bola, bolha e moeda encostarem mais justo.',
+      'Define a receita de um objeto para criar muitas cópias. Imagem e aparência são opcionais. Sem elas, aparece a cor. A área redonda ajuda objetos circulares a encostarem com precisão.',
   },
 
   {
@@ -820,6 +820,7 @@ export const gameKitBlockDefinitions01: BlockDefinition[] = [
     type: 'sz_gk_define_look',
     placement: 'mold-declaration',
     bodyExecution: 'deferred-callback',
+    bodyContext: 'draw-world',
     message0: 'Criar a aparência %1 (tamanho-base %2 × %3), desenhando com o pincel %4 assim:',
     args0: [
       { type: 'field_input', name: 'NAME', text: 'inimigo' },
@@ -834,7 +835,7 @@ export const gameKitBlockDefinitions01: BlockDefinition[] = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Desenha uma aparência com formas (retângulo, círculo, linha…) e dá um nome a ela. Do cantinho (0,0) para dentro, no tamanho-base. Quem usar a aparência num tamanho diferente vê o desenho ESTICADO na proporção. Dá para usar os blocos de Canvas aqui dentro.',
+      'Dê um nome a um desenho feito com as figuras desta extensão. Desenhe a partir de (0,0) no tamanho-base. O motor ajusta a aparência ao tamanho de cada objeto.',
   },
 
   {
@@ -870,7 +871,7 @@ export const gameKitBlockDefinitions01: BlockDefinition[] = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Comportamento pronto de "caçador": faz um personagem andar em direção a outro. Use dentro do "para cada vivo" no "A cada quadro". É o mesmo cálculo que os programadores fazem à mão (ir na direção do alvo × velocidade × tempo).',
+      'Faz o objeto perseguir outro. Use no A cada quadro, dentro do Para cada vivo. A velocidade e o tempo do quadro determinam a distância percorrida.',
   },
 
   {
