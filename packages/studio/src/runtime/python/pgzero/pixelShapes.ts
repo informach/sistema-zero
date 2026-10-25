@@ -676,7 +676,10 @@ function arcPixels(
   const ys = [yStart * inner2, yStop * inner2, yStart * radius2, yStop * radius2].map(corner)
   let minx = -xMiddle < minDot ? Math.min(...xs) : -radius1
   minx = Math.max(minx, -xCenter)
-  let miny = -yMiddle < minDot ? Math.min(...ys) : -radius2
+  // At a cardinal endpoint, sin/cos may differ by one last bit across hosts.
+  // An equal endpoint needs the full bound so its outermost pixel is visited.
+  const boundEpsilon = 8 * Number.EPSILON
+  let miny = -yMiddle < minDot - boundEpsilon ? Math.min(...ys) : -radius2
   miny = Math.max(miny, -yCenter)
   let maxx = xMiddle < minDot ? Math.max(...xs) : radius1
   maxx = Math.min(maxx, t.width - xCenter - 1)
