@@ -439,6 +439,11 @@ for (const item of cases.filter(
     }),
   )
   const container = `sz-mission-${crypto.randomUUID().replaceAll('-', '')}`
+  await writeFile(
+    path.join(directory, 'measure-python-mission.cjs'),
+    await readFile(path.join(import.meta.dirname, 'fixtures/measure-python-mission.cjs')),
+    { flag: 'wx' },
+  )
   // The fresh proof output directory belongs to the host runner (often UID 1001),
   // while the production image remains UID 1000. Only this attempt's output root
   // needs write access; do not run the learner image as root or weaken its flags.
@@ -473,7 +478,7 @@ for (const item of cases.filter(
     '--entrypoint',
     'node',
     image,
-    '/opt/sz-runtime/python-mission.mjs',
+    '/workspace/mission/measure-python-mission.cjs',
   ]
   const child = Bun.spawn(command, { windowsHide: true, stdout: 'pipe', stderr: 'pipe' })
   const timer = setTimeout(() => {
