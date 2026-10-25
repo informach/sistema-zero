@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict'
-import { mkdir, readFile, writeFile } from 'node:fs/promises'
+import { chmod, mkdir, readFile, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 import {
   judgePythonProjectExecution,
@@ -370,6 +370,10 @@ for (const item of cases.filter((item) => !selected || item.name === selected)) 
     }),
   )
   const container = `sz-mission-${crypto.randomUUID().replaceAll('-', '')}`
+  // The fresh proof output directory belongs to the host runner (often UID 1001),
+  // while the production image remains UID 1000. Only this attempt's output root
+  // needs write access; do not run the learner image as root or weaken its flags.
+  if (process.platform !== 'win32') await chmod(directory, 0o777)
   const command = [
     'docker',
     'run',

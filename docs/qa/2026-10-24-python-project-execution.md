@@ -77,3 +77,11 @@ O teste de tipagem encontrou um acesso não validado a `options.recipe` no próp
 O CI executa a matriz real e os quatro cenários estruturais, preservando recibos JSON. Imagem fixada por SHA, bytes de runtime imutáveis e proprietários de execução separados. O gate não pula Raylib silenciosamente: essa qualificação será acrescentada quando o motor correspondente estiver completo.
 
 Integração Git, CI remoto, publicação e validação hospedada ainda estão pendentes. Este documento não afirma implantação nem aceite final.
+
+## Primeira integração remota
+
+O commit `0571aade4` foi conciliado com os quatro commits concluídos dos lotes de jogos no merge `698c38d9c`, enviado a staging. O gerador conferiu os 49 exemplos Pygame Zero e os testes de catálogo passaram (25 testes/921 asserções). Nenhum input de runtime/Core/Members/Admin foi alterado por esse merge.
+
+O primeiro CI Linux revelou `EACCES` ao gravar `python-mission-result.json`: o diretório montado pertencia ao UID do runner, enquanto a imagem mantém UID 1000. A preparação das tentativas agora permite escrita somente no diretório de saída recém-criado. A imagem continua não privilegiada, sem rede, com rootfs somente leitura e os mesmos limites. Prova Linux em volume isolado: escrita negada antes, permitida depois pelo UID 1000, volume removido; recibo `linux-output-permissions-r1.json`. O CI original negativo foi preservado e a matriz Linux corrigida precisa passar.
+
+Foi solicitado adicionalmente verificar Jogo 3D clássico e three.js. O executor já executa kits Three, mas observação direcional e leitura de estado de objetos Pro exigem revisão específica; a qualificação dos kits não substitui essa frente.
