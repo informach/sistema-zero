@@ -276,8 +276,11 @@ blocos sem exemplo no Avançado, assets 3D no ZIP).
   Pega-Estrelas e Meu herói do Molda) trazem o CSS da página (`sz_css_rule`, `sz_css_position`,
   `sz_css_google_font`…) e seis usam `sz_math_trig`, todos `avancado-2d`; o Avançado também usa `sz_math_trig` na Patrulha
   Espacial Profissional. Por isso a escada entre extensões do `exampleProgression.test.ts` mede
-  só os blocos da própria extensão. Decidir se esses exemplos perdem o CSS (viram só blocos 3D,
-  como o Pega-Estrelas) ou se o CSS de página desce de degrau.
+  só os blocos da própria extensão. **Decidido pela dona em 25/10/2026:** os exemplos do Jogo 3D
+  perdem o HTML e o CSS da página e passam a usar só blocos 3D, como o Pega-Estrelas (placar,
+  vidas, telas e textos pelas regras de jogo). O CSS de página NÃO desce de degrau: na jornada,
+  HTML e CSS só aparecem nos extras de Web (a partir do Construtor, opcionais) e na Maestria Web e
+  Apps, nunca como requisito da trilha. Ainda por fazer. O `sz_math_trig` é outra conversa.
 - **Grade dos cursos**: a orientação (`docs/orientacao-cursos-jogos.md`) passou a mapear
   Iniciante 3D = núcleo do Jogo 3D, Intermediário 3D = Jogo 3D completo + Mundo 3D e Avançado 3D =
   Jogo 3D Avançado + Canvas 3D. A grade dos 49 cursos
@@ -308,4 +311,5 @@ blocos sem exemplo no Avançado, assets 3D no ZIP).
 
 Próximos passos sugeridos, em ordem: QA no playground (`bun run dev`) do Pega-Estrelas de ponta a
 ponta, do personagem do Molda nos três kits com o seletor de clipes e da paleta no degrau
-iniciante-3d; depois a decisão sobre o CSS dos exemplos antigos e a revisão da grade de cursos.
+iniciante-3d; depois tirar o HTML e o CSS dos 19 exemplos antigos (decidido em 25/10) e a revisão da
+grade de cursos.
