@@ -109,6 +109,7 @@ export const GAME_RULES_BLOCK_SUFFIXES = [
   'blink',
   'on_key',
   'on_click_object',
+  'on_canvas_click',
   'on_touch_group',
 ] as const
 export type GameRulesBlockSuffix = (typeof GAME_RULES_BLOCK_SUFFIXES)[number]
@@ -362,6 +363,18 @@ export function gameRulesBlocks(prefix: GameRulesPrefix, options: GameRulesBlock
       ...body,
       ...stmt,
       tooltip: 'Roda o "fazer" quando o mouse clica ou o dedo toca no objeto.',
+    },
+
+    {
+      type: t('on_canvas_click'),
+      placement: 'event',
+      userGesture: true,
+      message0: 'Quando clicar ou tocar no jogo',
+      args0: [],
+      ...body,
+      ...stmt,
+      tooltip:
+        'Roda o "fazer" ao clicar ou tocar na cena, mesmo sem acertar um objeto. Não dispara nos botões do placar.',
     },
 
     // ---- 💥 Encostar ----

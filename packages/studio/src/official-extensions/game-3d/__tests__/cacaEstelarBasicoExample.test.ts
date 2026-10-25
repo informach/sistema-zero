@@ -77,12 +77,14 @@ describe('Exemplo Caça Estelar — drift contra o parser real', () => {
       'g3d:spin', // as inimigas longe vagam (giram)
       'g3d:getPos', // posição da nave
       'g3d:animate', // o laço de quadro 3D
-      'event', // o botão Jogar de novo
-      'setProperty', // placar e escudos no HUD
-      'classOp', // mostra a tela de fim
+      'g3d:cornerText', // HUD nativo
+      'g3d:gameOver', // tela de fim nativa
     ]) {
       expect(types.has(t)).toBe(true)
     }
+    expect(types.has('g3d:addScore')).toBe(true)
+    expect(types.has('g3d:screenText')).toBe(true)
+    expect(types.has('g3d:gameOver')).toBe(true)
     const raw = JSON.stringify(statements)
     expect(raw).toContain('"cacas"')
     expect(raw).toContain('"pontos"')

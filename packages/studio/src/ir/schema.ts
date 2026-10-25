@@ -92,6 +92,7 @@ import {
   isCanvas3DResourceCreatorExpression,
   isCanvas3DResourceCreatorStatement,
 } from '../three/canvas3dContract'
+import { FULLSCREEN_GAME3D_KITS, type FullscreenGame3DKit } from '../three/fullscreenKits'
 import {
   GAME3D_ACTION_CONTEXT_STATEMENT_TYPES,
   GAME3D_RUNNING_CONTEXT_STATEMENT_TYPES,
@@ -3078,7 +3079,12 @@ export type JSStatement =
   | (JSStatementCommon & { type: 'g2d:drawAimReadout'; ctxVar: string })
   // ---- Game 3D (extensão game-3d, Three.js via window.SZGame3D) ----
   | (JSStatementCommon & { type: 'g3d:createScene'; canvasId: string; varName: string })
-  | (JSStatementCommon & { type: 'g3d:createFullscreenScene'; varName: string; bg: string })
+  | (JSStatementCommon & {
+      type: 'g3d:createFullscreenScene'
+      varName: string
+      bg: string
+      kit?: FullscreenGame3DKit
+    })
   | (JSStatementCommon & { type: 'g3d:setBackground'; worldVar: string; color: string })
   | (JSStatementCommon & {
       type: 'g3d:setCameraPosition'
@@ -7318,6 +7324,7 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       type: z.literal('g3d:createFullscreenScene'),
       varName: irText(),
       bg: irText(),
+      kit: z.enum(FULLSCREEN_GAME3D_KITS).optional(),
       ...idField,
     }),
     z.object({

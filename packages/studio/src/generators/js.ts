@@ -2406,7 +2406,7 @@ function compileStatementCode(
       case 'g3d:createScene':
         return `${pad}const ${identifiers.get(stmt.varName)} = SZGame3D.createScene(${JSON.stringify(stmt.canvasId)});`
       case 'g3d:createFullscreenScene':
-        return `${pad}const ${identifiers.get(stmt.varName)} = SZGame3D.createFullscreenScene(${JSON.stringify(stmt.bg)});`
+        return `${pad}const ${identifiers.get(stmt.varName)} = SZGame3D.createFullscreenScene(${JSON.stringify(stmt.bg)}${stmt.kit ? `, ${JSON.stringify(stmt.kit)}` : ''});`
       case 'g3d:setBackground':
         return `${pad}SZGame3D.setBackground(${identifiers.get(stmt.worldVar)}, ${JSON.stringify(stmt.color)});`
       case 'g3d:setCameraPosition':

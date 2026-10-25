@@ -22,6 +22,11 @@ import { collectTypes, stripIds } from '../game-3d-advanced/exampleSourceUtils'
 // segundo legíveis: itens 180, enfeites 45-90.
 export const REUNIR_REBANHO_SOURCE = `
 const cena = SZGame3D.createFullscreenScene("#0f172a");
+SZGame3D.setScreenText("vitoria", "Rebanho reunido!", "Confira seus pontos no placar.", "Jogar de novo");
+SZGame3D.setScreenText("fim", "Acabou o tempo", "Confira seus pontos no placar.", "Tentar novamente");
+SZGame3D.addScore(0);
+SZGame3D.hudText("bottom-center", "Setas ou WASD: andar. Leve oito bichinhos ao curral.");
+SZGame3D.hudText("top-right", "Tempo: 45");
 SZGame3D.setSky(cena, "#1e293b", "#334155");
 SZGame3D.cameraMode(cena, "cima", null);
 SZGame3D.setFog(cena, "#0f172a", 40, 110);
@@ -42,21 +47,7 @@ const seguidores = SZGame3D.createGroup();
 let pontos = 0;
 let tempo = 45;
 let rodando = true;
-document.getElementById("retry")?.addEventListener("click", (event) => {
-  SZGame3D.forEachInGroup(errantes, (item) => {
-    SZGame3D.removeFromGroup(errantes, item);
-  });
-  SZGame3D.forEachInGroup(seguidores, (item) => {
-    SZGame3D.removeFromGroup(seguidores, item);
-  });
-  pontos = 0;
-  tempo = 45;
-  rodando = true;
-  SZGame3D.setPosition(heroi, 0, 0.65, 0);
-  document.getElementById("score").textContent = 0;
-  document.getElementById("timer").textContent = 45;
-  document.getElementById("results")?.classList.remove("visivel");
-});
+
 SZGame3D.animate(cena, () => {
   if (rodando) {
     SZGame3D.spin(curral, "y", 45);
@@ -98,14 +89,14 @@ SZGame3D.animate(cena, () => {
         SZGame3D.removeFromGroup(seguidores, item);
         pontos = pontos + 1;
         SZGame3D.playEffect("coin");
-        document.getElementById("score").textContent = pontos;
+        SZGame3D.addScore(pontos - SZGame3D.score());
       }
     });
     if (pontos >= 8) {
       rodando = false;
       SZGame3D.playEffect("coin");
-      document.getElementById("final-score").textContent = pontos;
-      document.getElementById("results")?.classList.add("visivel");
+            SZGame3D.addScore(pontos - SZGame3D.score());
+      SZGame3D.endGame("ganhou");
     }
   }
 });
@@ -120,111 +111,15 @@ SZGame3D.everySecondsLoop(1.4, () => {
 SZGame3D.everySecondsLoop(1, () => {
   if (rodando) {
     tempo = tempo - 1;
-    document.getElementById("timer").textContent = tempo;
+    SZGame3D.hudText("top-right", "Tempo: " + tempo);
     if (tempo <= 0) {
       rodando = false;
-      document.getElementById("final-score").textContent = pontos;
-      document.getElementById("results")?.classList.add("visivel");
+            SZGame3D.addScore(pontos - SZGame3D.score());
+      SZGame3D.endGame("perdeu");
     }
   }
 });
 `.trim()
-
-// HUD (placar + relógio + tela de fim) montado com blocos de HTML/CSS/DOM, ligado
-// ao jogo pelos getElementById do SOURCE. Casa os ids que o comportamento toca:
-// score / timer / results / final-score / retry.
-const HTML = [
-  { type: 'element', tag: 'div', id: 'score', text: '0' },
-  { type: 'element', tag: 'div', id: 'timer', text: '45' },
-  {
-    type: 'element',
-    tag: 'div',
-    id: 'results',
-    children: [
-      {
-        type: 'element',
-        tag: 'div',
-        id: 'results-box',
-        children: [
-          { type: 'element', tag: 'h1', text: 'Fim do pastoreio' },
-          {
-            type: 'element',
-            tag: 'p',
-            children: [
-              { type: 'text', text: 'Bichinhos reunidos: ' },
-              { type: 'element', tag: 'span', id: 'final-score' },
-            ],
-          },
-          { type: 'element', tag: 'button', id: 'retry', text: 'Jogar de novo' },
-        ],
-      },
-    ],
-  },
-]
-
-const CSS = [
-  { type: 'googleFont', family: 'Press Start 2P' },
-  {
-    selector: 'body',
-    declarations: { margin: '0', overflow: 'hidden', 'font-family': '"Press Start 2P", cursive' },
-  },
-  { selector: 'canvas', declarations: { display: 'block', width: '100vw', height: '100vh' } },
-  {
-    selector: '#score',
-    declarations: {
-      position: 'absolute',
-      top: '20px',
-      left: '20px',
-      'font-size': '1.5em',
-      color: 'white',
-    },
-  },
-  {
-    selector: '#timer',
-    declarations: {
-      position: 'absolute',
-      top: '20px',
-      right: '20px',
-      'font-size': '1.5em',
-      color: '#fbbf24',
-    },
-  },
-  {
-    selector: '#results',
-    declarations: {
-      position: 'absolute',
-      top: '0',
-      left: '0',
-      'min-width': '100%',
-      'min-height': '100%',
-      display: 'flex',
-      'align-items': 'center',
-      'justify-content': 'center',
-      visibility: 'hidden',
-    },
-  },
-  { selector: '#results.visivel', declarations: { visibility: 'visible' } },
-  {
-    selector: '#results-box',
-    declarations: {
-      display: 'flex',
-      'flex-direction': 'column',
-      'align-items': 'center',
-      'background-color': 'white',
-      padding: '20px',
-    },
-  },
-  {
-    selector: '#results-box button',
-    declarations: {
-      'background-color': '#22d3ee',
-      color: 'white',
-      padding: '16px 32px',
-      'font-family': 'inherit',
-      cursor: 'pointer',
-    },
-  },
-]
 
 if (import.meta.main) {
   const normalized = normalizeSZIR({
@@ -245,8 +140,8 @@ if (import.meta.main) {
     description:
       'Os bichinhos vagam pelo campo. Chegue perto com as setas para eles seguirem você e leve o rebanho ao curral dourado. Reúna 8 antes do tempo acabar!',
     ir: {
-      html: HTML,
-      css: CSS,
+      html: [],
+      css: [],
       extensions: [{ extensionId: 'game-3d' }],
       version: 2,
       behavior,

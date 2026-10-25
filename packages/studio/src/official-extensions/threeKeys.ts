@@ -24,6 +24,9 @@ export const THREE_KEY_OPTIONS = [
   ['Q', 'KeyQ'],
   ['R', 'KeyR'],
   ['P', 'KeyP'],
+  ['1', 'Digit1'],
+  ['2', 'Digit2'],
+  ['3', 'Digit3'],
 ] as const satisfies readonly (readonly [string, string])[]
 
 export type ThreeKeyCode = (typeof THREE_KEY_OPTIONS)[number][1]

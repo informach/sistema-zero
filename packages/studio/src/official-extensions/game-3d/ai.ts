@@ -56,7 +56,7 @@ Movimento (velocidades POR SEGUNDO):
 - fpsControls(obj, world, porSegundo): preset de 1ª pessoa (combine com cameraMode(world, "primeira-pessoa", obj)).
 
 Controles:
-- onKey("KeyW"|"Space"|"Enter"|..., () => {...}): uma vez por aperto (segurar não repete). onClickObject(obj, () => {...}): clique ou toque no objeto. Os dois em Quando acontecer.
+- onKey("KeyW"|"Space"|"Enter"|..., () => {...}): uma vez por aperto (segurar não repete). onClickObject(obj, () => {...}): clique ou toque no objeto. onCanvasClick(() => {...}): clique/toque na cena, mesmo sem acertar objeto (bom para atirar e construir). Todos em Quando acontecer; use estes blocos em vez de eventos DOM.
 Perguntas para usar em "se":
 - keyDown(code): enquanto a tecla está apertada ("KeyW","KeyA","KeyS","KeyD","Space","ArrowUp"...). keyPressed(code): só no quadro em que desceu.
 - pickAtMouse(world): o objeto sob o ponteiro (ou null) — guarde numa variável para usá-lo pelo nome.
@@ -83,7 +83,7 @@ Grupos (as cópias de um molde também moram num grupo):
 - moveAcross(grupo, porSegundo, min, max): esteira no eixo X, dando a volta.
 
 Placar, vida e telas (regras de jogo; o HUD é DOM por cima do canvas, sem precisar de HTML):
-- hudText("top-left"|"top-center"|"top-right"|"bottom-left"|"bottom-center"|"bottom-right", texto): um texto por canto; texto vazio apaga.
+- hudText("top-left"|"top-center"|"top-right"|"bottom-left"|"bottom-center"|"bottom-right"|"center", texto): um texto por lugar; texto vazio apaga. "center" pode mostrar uma mira, como "+", sem HTML.
 - addScore(n) / score(): pontos (aparecem sozinhos no canto de cima à direita).
 - setLife(obj, n) / hurt(obj, n) / heal(obj, n) / lifeOf(obj): vida. O primeiro objeto que ganha vida é o herói (corações no canto de cima à esquerda); depois de machucado pisca e fica 1 s invencível.
 - onLifeOver(obj, () => {...}): quando a vida chega a zero (uma vez).
@@ -103,10 +103,11 @@ Som:
 
 Kits prontos:
 - Desvie: spawnEnemy(world, grupo, porSegundo) solta 1 inimigo vindo de longe (6 é o normal); ponha dentro do "A cada N segundos".
-- Travessia: createCrossingScene(canvasId) + createCrosser(world, { color }) + generateRows(world, n) / addRow(world, linha, "grass"|"forest"|"car"|"truck", "right"|"left", velocidade); no animate crosserStep(player, world) + moveTraffic(world); crosserHit(player, world), crosserRow(player), crosserMove(player, dir) e crosserReset(player, world).
-- Corrida: createRaceScene(canvasId) + createRaceTrack(world) + createRaceCar(world, { color }); no animate raceStep(car, world) + runRivals(world); raceControl(car, "accelerate"|"decelerate"|"normal"), raceHit(car, world), raceLaps(car), raceReset(car, world).
-- Empilhar: createStackScene(canvasId) + createStackTower(world); stackStep(world) no animate; stackDrop(world) num clique/tecla; stackScore(world), stackGameOver(world), stackReset(world).
-- Plataforma (o exemplo Reino Cogumelo): createPlatformScene(canvasId) + createHero(world, color) + loadStage(world, mapa) em Ao iniciar; setStageTheme(world, "dia"|"noite"|"subterraneo"|"agua"|"castelo"); no animate classicPlatformer + stageStep(world, hero) + sideCamera(world, hero); keyPressed("KeyF") + shootFire(world, hero) com a flor; onStageEvent(world, nome, fn) para pegar-moeda, pegar-cogumelo, pegar-flor, pegar-estrela, ganhar-vida, quebrar-tijolo, pisar-inimigo, chutar-concha, levar-dano, tocar-a-bandeira, derrotar-o-chefe e acabar-o-tempo; stageValue(world, "pontos"|"moedas"|"vidas"|"tempo"|"mundo"|"fase"), setStageNumber(world, mundo, fase), heroIs(hero, estado), stageIs(world, estado), stageReset(world) e clearStage(world). O mapa é texto com assuntos separados por ponto e vírgula (chao=0-20, tijolo=6:4, surpresa=8:4:cogumelo, inimigo=12:goomba, checkpoint=15, tempo=300, tema=noite).
+- Cenas dos kits sem HTML/CSS: createFullscreenScene(cor, "crossing"|"race"|"stack"|"platform"). Use o bloco Criar mundo em tela cheia. HUD, teclas, clique, placar e telas de fim são do próprio motor. Para projetos JavaScript que já usam página, continuam createCrossingScene(canvasId), createRaceScene(canvasId), createStackScene(canvasId) e createPlatformScene(canvasId).
+- Travessia: createFullscreenScene(cor, "crossing") + createCrosser(world, { color }) + generateRows(world, n) / addRow(world, linha, "grass"|"forest"|"car"|"truck", "right"|"left", velocidade); no animate crosserStep(player, world) + moveTraffic(world); crosserHit(player, world), crosserRow(player), crosserMove(player, dir) e crosserReset(player, world).
+- Corrida: createFullscreenScene(cor, "race") + createRaceTrack(world) + createRaceCar(world, { color }); no animate raceStep(car, world) + runRivals(world); raceControl(car, "accelerate"|"decelerate"|"normal"), raceHit(car, world), raceLaps(car), raceReset(car, world).
+- Empilhar: createFullscreenScene(cor, "stack") + createStackTower(world); stackStep(world) no animate; stackDrop(world) num clique/tecla; stackScore(world), stackGameOver(world), stackReset(world).
+- Plataforma (o exemplo Reino Cogumelo): createFullscreenScene(cor, "platform") + createHero(world, color) + loadStage(world, mapa) em Ao iniciar; setStageTheme(world, "dia"|"noite"|"subterraneo"|"agua"|"castelo"); no animate classicPlatformer + stageStep(world, hero) + sideCamera(world, hero); keyPressed("KeyF") + shootFire(world, hero) com a flor; onStageEvent(world, nome, fn) para pegar-moeda, pegar-cogumelo, pegar-flor, pegar-estrela, ganhar-vida, quebrar-tijolo, pisar-inimigo, chutar-concha, levar-dano, tocar-a-bandeira, derrotar-o-chefe e acabar-o-tempo; stageValue(world, "pontos"|"moedas"|"vidas"|"tempo"|"mundo"|"fase"), setStageNumber(world, mundo, fase), heroIs(hero, estado), stageIs(world, estado), stageReset(world) e clearStage(world). O mapa é texto com assuntos separados por ponto e vírgula (chao=0-20, tijolo=6:4, surpresa=8:4:cogumelo, inimigo=12:goomba, checkpoint=15, tempo=300, tema=noite).
 
 Áreas:
 - O que só define uma receita (funções) pode ficar em **🧩 Meus moldes**. Crie cena e recursos em **⚙️ Ao iniciar**; use os chapéus de tecla/clique do núcleo em **⚡ Quando acontecer**;

@@ -106,6 +106,7 @@ const INICIANTE_3D_G3D_ESPERADO = [
   'sz_g3d_hurt',
   'sz_g3d_jump',
   'sz_g3d_key_down',
+  'sz_g3d_on_canvas_click',
   'sz_g3d_on_click_object',
   'sz_g3d_on_key',
   'sz_g3d_on_life_over',

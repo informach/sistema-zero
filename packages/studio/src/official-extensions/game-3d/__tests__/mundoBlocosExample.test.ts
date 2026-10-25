@@ -71,13 +71,11 @@ describe('Exemplo Mundo de Blocos — drift contra o parser real', () => {
       'g3d:getPos', // empilhar: acha a altura livre da célula ocupada
       'g3d:spin', // o cursor gira devagar (a cena fica viva)
       'g3d:playEffect', // colocar/quebrar/vitória soam
-      'event', // setas, 1/2/3, espaço e clique
-      'eventProp', // a tecla do evento (event.key)
+      'g3d:onGame', // setas, 1/2/3, espaço e clique nos eventos do motor
       'funcDecl', // colocarBloco() concentra a regra de empilhar
       'callFunction', // chamada no espaço
-      'setProperty', // HUD do tipo atual e da torre por textContent
-      'classOp', // a festa da torre de 5 aparece por classe
-      'setTimeout', // e some sozinha depois de um tempinho
+      'g3d:cornerText', // material, altura e celebração no HUD nativo
+      'g3d:afterSeconds', // o aviso acompanha o relógio e o ciclo de vida do jogo
     ]) {
       expect(types.has(t)).toBe(true)
     }

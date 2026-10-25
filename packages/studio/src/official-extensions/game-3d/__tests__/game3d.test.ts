@@ -713,11 +713,11 @@ describe('game-3d — schema e exemplo', () => {
     expect(SZIRV2Schema.safeParse(swarmExample.ir).success).toBe(true)
   })
 
-  it('os exemplos com canvas fixo cabem em telas estreitas', () => {
+  it('as demonstrações usam a cena responsiva sem depender de canvas ou CSS da página', () => {
     for (const example of [shapesExample, nightExample, swarmExample, dodgeExample]) {
-      const css = generateCSS(example.ir.css)
-      expect(css).toContain('width: min(480px, calc(100vw - 24px))')
-      expect(css).toContain('max-height: calc(100vh - 24px)')
+      expect(example.ir.html).toEqual([])
+      expect(example.ir.css).toEqual([])
+      expect(JSON.stringify(example.ir.behavior)).toContain('g3d:createFullscreenScene')
     }
   })
 })

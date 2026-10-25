@@ -50,6 +50,7 @@ import {
 } from '../official-extensions/game3dRules/codec'
 import { world3DNewBlockToIR } from '../official-extensions/world-3d/worldCodec'
 import { resolveCanvas3DAddonImports } from '../three/canvas3dAddons'
+import { isFullscreenGame3DKit } from '../three/fullscreenKits'
 import {
   FRAME_APPEARANCE,
   FRAME_EVENTS,
@@ -3921,6 +3922,20 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
             varName: f(block, 'NAME'),
           },
         }
+      case 'sz_g3d_create_fullscreen_kit': {
+        const kit = f(block, 'KIT')
+        if (!isFullscreenGame3DKit(kit)) throw new Error('Tipo de kit 3D inválido')
+        seen.add('game-3d')
+        return {
+          kind: 'js',
+          value: {
+            type: 'g3d:createFullscreenScene',
+            varName: f(block, 'NAME'),
+            bg: f(block, 'BG'),
+            kit,
+          },
+        }
+      }
       case 'sz_g3d_create_fullscreen_scene':
         seen.add('game-3d')
         return {

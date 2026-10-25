@@ -132,6 +132,7 @@ export const GAME_THREE_D_PALETTE: ExtensionPaletteTree = [
   flatFamily('🎮 Controles', [
     'sz_g3d_on_key',
     'sz_g3d_on_click_object',
+    'sz_g3d_on_canvas_click',
     'sz_g3d_key_down',
     'sz_g3d_key_pressed',
     'sz_g3d_pick_at_mouse',
@@ -229,6 +230,7 @@ export const GAME_THREE_D_PALETTE: ExtensionPaletteTree = [
   {
     name: '🧰 Kits prontos',
     sections: [
+      { name: 'Tela do jogo', types: ['sz_g3d_create_fullscreen_kit'] },
       { name: '👾 Desvie', types: ['sz_g3d_spawn_enemy'] },
       {
         name: '🐔 Travessia',

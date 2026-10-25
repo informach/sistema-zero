@@ -12,7 +12,9 @@ import { GAME_3D_PLATFORM_KIT_METHODS } from './platformCodec'
  * um falso positivo só custa bytes (recebe o runtime completo), um falso negativo quebraria o
  * jogo. A lista vem de `platformCodec.ts`, a fonte única dos métodos do kit.
  */
-const PLATFORM_KIT_USE = new RegExp(`\\b(?:${GAME_3D_PLATFORM_KIT_METHODS.join('|')})\\b`)
+const PLATFORM_KIT_USE = new RegExp(
+  `\\b(?:${[...GAME_3D_PLATFORM_KIT_METHODS, 'platform'].join('|')})\\b`,
+)
 
 /** A variante sem o Kit Plataforma; a padrão (`''`) é o runtime completo. */
 export const GAME_3D_WITHOUT_PLATFORM_VARIANT = 'sem-kit-plataforma'

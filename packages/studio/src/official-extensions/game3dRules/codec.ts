@@ -69,6 +69,7 @@ function methodOfStatement(s: GameRulesStatement): string {
   if (event === 'tempo-acabou') return 'onTimerEnd'
   if (event === 'tecla') return 'onKey'
   if (event === 'clique') return 'onClickObject'
+  if (event === 'clique-cena') return 'onCanvasClick'
   if (event === 'encostar') return 'onTouchGroup'
   return name
 }
@@ -101,6 +102,7 @@ const BLOCK_SUFFIX_METHOD: Readonly<Record<string, string>> = {
   blink: 'blink',
   on_key: 'onKey',
   on_click_object: 'onClickObject',
+  on_canvas_click: 'onCanvasClick',
   on_touch_group: 'onTouchGroup',
 }
 
@@ -214,6 +216,9 @@ export function gameRulesBlockToIR(
       break
     case 'on_click_object':
       statement = { type: rule(p, 'onGame'), event: 'clique', objVar: f('OBJ'), body: body() }
+      break
+    case 'on_canvas_click':
+      statement = { type: rule(p, 'onGame'), event: 'clique-cena', body: body() }
       break
     case 'on_touch_group':
       statement = {
@@ -347,6 +352,7 @@ export function gameRulesStatementToCode(s: GameRulesStatement, t: CodeTools): s
       if (r.event === 'tempo-acabou') return withBody('onTimerEnd', [], '', r.body)
       if (r.event === 'tecla') return withBody('onKey', [JSON.stringify(r.key ?? '')], '', r.body)
       if (r.event === 'clique') return withBody('onClickObject', [obj], '', r.body)
+      if (r.event === 'clique-cena') return withBody('onCanvasClick', [], '', r.body)
       return withBody(
         'onTouchGroup',
         [obj, t.id(r.groupVar ?? '')],
@@ -476,6 +482,7 @@ export function gameRulesStatementToBlock(
       if (r.event === 'tempo-acabou') return make('on_timer_end', {}, {}, r.body)
       if (r.event === 'tecla') return make('on_key', { KEY: r.key ?? '' }, {}, r.body)
       if (r.event === 'clique') return make('on_click_object', { OBJ: r.objVar ?? '' }, {}, r.body)
+      if (r.event === 'clique-cena') return make('on_canvas_click', {}, {}, r.body)
       return make(
         'on_touch_group',
         { OBJ: r.objVar ?? '', GROUP: r.groupVar ?? '', ITEM: r.itemName ?? 'item' },
@@ -673,6 +680,11 @@ export function gameRulesCallToIR(
           objVar,
           body,
         }
+      break
+    }
+    case 'onCanvasClick': {
+      const body = fn(0, 0)
+      if (size(1) && body) statement = { type: rule(p, 'onGame'), event: 'clique-cena', body }
       break
     }
     case 'onTimerEnd': {

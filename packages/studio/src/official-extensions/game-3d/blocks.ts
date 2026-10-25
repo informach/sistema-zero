@@ -559,6 +559,30 @@ const gameThreeDBlockDefinitions = [
       'Move todos os objetos do grupo numa faixa, dando a volta nas bordas. Velocidade negativa = sentido contrário. Use dentro de "A cada quadro".',
   },
 
+  {
+    type: 'sz_g3d_create_fullscreen_kit',
+    placement: 'start-only-command',
+    message0: 'Criar mundo %1 em tela cheia e guardar em %2, fundo %3',
+    args0: [
+      {
+        type: 'field_dropdown',
+        name: 'KIT',
+        options: [
+          ['Travessia', 'crossing'],
+          ['Corrida', 'race'],
+          ['Empilhar', 'stack'],
+          ['Plataforma', 'platform'],
+        ],
+      },
+      { type: 'field_input', name: 'NAME', text: 'mundo' },
+      { type: 'field_colour', name: 'BG', colour: '#0b1020' },
+    ],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    tooltip:
+      'Cria o mundo, a câmera do kit e uma tela responsiva do próprio jogo. Não precisa de HTML ou CSS.',
+  },
+
   // ---- Kit Travessia (atravessar a rua / Crossy Road) ----
   {
     type: 'sz_g3d_create_crossing_scene',

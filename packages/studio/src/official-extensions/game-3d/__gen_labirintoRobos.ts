@@ -11,14 +11,18 @@ import { collectTypes, stripIds } from '../game-3d-advanced/exampleSourceUtils'
  * hitscan é aimAhead (o yaw do FPS gira o OBJETO, o aim segue a mira
  * horizontal; os robôs ficam na altura do corpo). O recomeçar zera o yaw do
  * corpo (setRotation) e arma travaTiro = 30 quadros: o clique no botão
- * "Recomeçar" borbulha até o listener de tiro do document e, sem a trava,
- * disparava na mesma hora (podendo matar um robô recém-nascido). Rode com
+ * "Recomeçar" usa o ciclo de vida do motor; a trava inicial impede que o jogador
+ * dispare na mesma hora em que a partida começa. Rode com
  * `bun src/official-extensions/game-3d/__gen_labirintoRobos.ts` e cole a saída
  * em examples.ts. O drift test (`labirintoRobosExample.test.ts`) guarda o
  * resultado importando o SOURCE daqui (uma cópia só do fonte).
  */
 export const LABIRINTO_ROBOS_SOURCE = `
 const cena = SZGame3D.createFullscreenScene("#0f172a");
+SZGame3D.setScreenText("fim", "Os robôs te pegaram!", "Tente outra estratégia para vencer o labirinto.", "Jogar de novo");
+SZGame3D.setScreenText("vitoria", "Você venceu!", "O labirinto está livre dos robôs.", "Jogar de novo");
+SZGame3D.hudText("center", "+");
+SZGame3D.hudText("bottom-left", "Clique: atirar. WASD: andar. R: recomeçar.");
 SZGame3D.setSky(cena, "#1e293b", "#475569");
 SZGame3D.setFog(cena, "#0f172a", 6, 26);
 const chao = SZGame3D.createBlock(cena, { width: 18, height: 1, depth: 18, color: "#1f2937" });
@@ -78,14 +82,14 @@ function recomecar() {
   pontos = 0;
   recarga = 0;
   travaTiro = 30;
-  document.getElementById("vida").textContent = vida;
-  document.getElementById("placar").textContent = pontos;
-  document.getElementById("dano").style.opacity = "0";
-  document.getElementById("fim")?.classList.remove("visivel");
+  SZGame3D.hudText("top-left", "Vida: " + vida);
+  SZGame3D.addScore(pontos - SZGame3D.score());
+  SZGame3D.hudText("bottom-center", "");
+
   rodando = true;
 }
 recomecar();
-document.addEventListener("click", (event) => {
+SZGame3D.onCanvasClick(() => {
   if (rodando) {
     if (travaTiro <= 0) {
       let alvo = SZGame3D.aimAhead(cena, jogador, 30);
@@ -104,29 +108,19 @@ document.addEventListener("click", (event) => {
             SZGame3D.playEffect("explosion");
           }
         });
-        document.getElementById("placar").textContent = pontos;
+        SZGame3D.addScore(pontos - SZGame3D.score());
         if (SZGame3D.countGroup(robosLentos) + SZGame3D.countGroup(robosRapidos) === 0) {
           rodando = false;
-          document.getElementById("fim-titulo").textContent = "Você venceu!";
-          document.getElementById("final-pontos").textContent = pontos;
-          document.getElementById("fim")?.classList.add("visivel");
+
+          SZGame3D.addScore(pontos - SZGame3D.score());
+          SZGame3D.endGame("ganhou");
           SZGame3D.playEffect("coin");
         }
       }
     }
   }
 });
-document.addEventListener("keydown", (event) => {
-  if (event.key === "r") {
-    recomecar();
-  }
-  if (event.key === "R") {
-    recomecar();
-  }
-});
-document.getElementById("retry")?.addEventListener("click", (event) => {
-  recomecar();
-});
+SZGame3D.onKey("KeyR", () => { SZGame3D.restart(); });
 SZGame3D.animate(cena, () => {
   if (rodando) {
     SZGame3D.fpsControls(jogador, cena, 5.4);
@@ -136,7 +130,7 @@ SZGame3D.animate(cena, () => {
     if (recarga > 0) {
       recarga = recarga - 1;
       if (recarga === 30) {
-        document.getElementById("dano").style.opacity = "0";
+        SZGame3D.hudText("bottom-center", "");
       }
     }
     encostou = false;
@@ -156,14 +150,15 @@ SZGame3D.animate(cena, () => {
       if (recarga === 0) {
         vida = vida - 1;
         recarga = 90;
-        document.getElementById("vida").textContent = vida;
-        document.getElementById("dano").style.opacity = "0.5";
+        SZGame3D.hudText("top-left", "Vida: " + vida);
+        SZGame3D.hudText("bottom-center", "Você foi atingido!");
+        SZGame3D.cameraShake(0.15, 0.3);
         SZGame3D.playEffect("hit");
         if (vida === 0) {
           rodando = false;
-          document.getElementById("fim-titulo").textContent = "Os robôs te pegaram!";
-          document.getElementById("final-pontos").textContent = pontos;
-          document.getElementById("fim")?.classList.add("visivel");
+
+          SZGame3D.addScore(pontos - SZGame3D.score());
+          SZGame3D.endGame("perdeu");
         }
       }
     }

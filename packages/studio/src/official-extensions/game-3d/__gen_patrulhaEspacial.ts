@@ -13,7 +13,7 @@ import { collectTypes, stripIds } from '../game-3d-advanced/exampleSourceUtils'
  * vindo à câmera girando (spin). Laser×meteoro = collides (caixa×esfera do
  * original) remove os dois + ponto; nave×meteoro = isNear (a colisão de esferas
  * do original, no plano X-Z) = fim com tela de resultado. Placar por tempo E
- * pontos em HUD DOM. Adaptações deliberadas: SEM sombras fake (os cilindros
+ * pontos no placar do motor, tempo no HUD e fim/recomeço pela tela do Jogo 3D. Adaptações deliberadas: SEM sombras fake (os cilindros
  * achatados do original não são expressáveis barato no g3d), SEM chão (espaço
  * aberto ao invés do tablado do curso: o visual fica melhor e nada usa
  * gravidade) e velocidade por CLASSE de meteoro + crescente com o tempo (o
@@ -25,6 +25,10 @@ import { collectTypes, stripIds } from '../game-3d-advanced/exampleSourceUtils'
 export const PATRULHA_ESPACIAL_SOURCE = `
 const cena = SZGame3D.createFullscreenScene("#020617");
 SZGame3D.setSky(cena, "#020617", "#312e81");
+SZGame3D.setScreenText("fim", "Fim da patrulha", "Confira seus pontos e o tempo da viagem nos placares.", "Jogar de novo");
+SZGame3D.addScore(0);
+SZGame3D.hudText("top-center", "Tempo: 0 s");
+SZGame3D.hudText("bottom-center", "Setas ou A e D: mover. Espaço: atirar.");
 SZGame3D.setFog(cena, "#0b1030", 30, 75);
 SZGame3D.setCameraPosition(cena, 0, 4.5, 9);
 const nave = SZGame3D.createModel(cena);
@@ -63,30 +67,6 @@ let sorteio = 0;
 let lugar = 0;
 let encostou = false;
 let rodando = true;
-document.getElementById("retry")?.addEventListener("click", (event) => {
-  SZGame3D.forEachInGroup(meteoros, (meteoro) => {
-    SZGame3D.removeFromGroup(meteoros, meteoro);
-  });
-  SZGame3D.forEachInGroup(meteorosRapidos, (meteoro) => {
-    SZGame3D.removeFromGroup(meteorosRapidos, meteoro);
-  });
-  SZGame3D.forEachInGroup(tiros, (tiro) => {
-    SZGame3D.removeFromGroup(tiros, tiro);
-  });
-  naveX = 0;
-  inclinacao = 0;
-  relogio = 0;
-  velocidade = 8.4;
-  recarga = 0;
-  tempo = 0;
-  pontos = 0;
-  SZGame3D.setPosition(nave, 0, 1, 0);
-  SZGame3D.setRotation(nave, 0, 0, 0);
-  document.getElementById("tempo").textContent = 0;
-  document.getElementById("pontos").textContent = 0;
-  document.getElementById("results")?.classList.remove("visivel");
-  rodando = true;
-});
 SZGame3D.animate(cena, () => {
   if (rodando) {
     relogio = relogio + SZGame3D.dt(cena);
@@ -142,7 +122,7 @@ SZGame3D.animate(cena, () => {
             SZGame3D.removeFromGroup(tiros, tiro);
             pontos = pontos + 1;
             SZGame3D.playEffect("hit");
-            document.getElementById("pontos").textContent = pontos;
+            SZGame3D.addScore(pontos - SZGame3D.score());
             ativo = false;
           }
         }
@@ -163,7 +143,7 @@ SZGame3D.animate(cena, () => {
             SZGame3D.removeFromGroup(tiros, tiro);
             pontos = pontos + 2;
             SZGame3D.playEffect("hit");
-            document.getElementById("pontos").textContent = pontos;
+            SZGame3D.addScore(pontos - SZGame3D.score());
             ativo = false;
           }
         }
@@ -172,9 +152,9 @@ SZGame3D.animate(cena, () => {
     if (encostou) {
       rodando = false;
       SZGame3D.playEffect("explosion");
-      document.getElementById("final-tempo").textContent = tempo;
-      document.getElementById("final-pontos").textContent = pontos;
-      document.getElementById("results")?.classList.add("visivel");
+      SZGame3D.hudText("top-center", "Tempo: " + tempo + " s");
+      SZGame3D.addScore(pontos - SZGame3D.score());
+      SZGame3D.endGame("perdeu");
     }
     SZGame3D.pruneArea(tiros, "z", -60, 6);
     SZGame3D.pruneArea(meteoros, "z", -60, 12);
@@ -188,7 +168,7 @@ SZGame3D.everySecondsLoop(1, () => {
     if (velocidade > 30) {
       velocidade = 30;
     }
-    document.getElementById("tempo").textContent = tempo;
+    SZGame3D.hudText("top-center", "Tempo: " + tempo + " s");
   }
 });
 SZGame3D.everySecondsLoop(0.7, () => {

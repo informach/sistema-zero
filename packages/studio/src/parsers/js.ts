@@ -66,6 +66,7 @@ import {
   canvas3DMacroFromPlaceholder,
   prepareCanvas3DSourceForParse,
 } from '../three/canvas3dMacroCodec'
+import { isFullscreenGame3DKit } from '../three/fullscreenKits'
 import { game3dCallArityIsValid, game3dDropdownArgumentIsValid } from '../three/game3dContract'
 
 const BABEL_OPTS: ParserOptions = {
@@ -10486,6 +10487,11 @@ function tryMatchGame3DVarInit(name: string, init: Node, ctx: ParseCtx): JSState
   if (method === 'createFullscreenScene') {
     // Argumento de cor opcional: código antigo sem cor cai no padrão.
     const bg = args[0]?.type === 'StringLiteral' ? (args[0].value as string) : '#0b1020'
+    if (args.length > 2) return null
+    if (args.length === 2) {
+      if (args[1]?.type !== 'StringLiteral' || !isFullscreenGame3DKit(args[1].value)) return null
+      return { type: 'g3d:createFullscreenScene', varName: name, bg, kit: args[1].value }
+    }
     return { type: 'g3d:createFullscreenScene', varName: name, bg }
   }
   if (method === 'createBox') {

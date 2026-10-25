@@ -23,6 +23,11 @@ import {
   SHAPES_SOURCE,
   SWARM_SOURCE,
 } from '../src/official-extensions/game-3d/__gen_demoExamples'
+import {
+  CROSSING_SOURCE,
+  RACE_SOURCE,
+  STACK_SOURCE,
+} from '../src/official-extensions/game-3d/__gen_kits'
 import { LABIRINTO_ROBOS_SOURCE } from '../src/official-extensions/game-3d/__gen_labirintoRobos'
 import { MINA_DE_CRISTAIS_SOURCE } from '../src/official-extensions/game-3d/__gen_minaDeCristais'
 import { MUNDO_BLOCOS_SOURCE } from '../src/official-extensions/game-3d/__gen_mundoBlocos'
@@ -79,6 +84,9 @@ function sourceFromLegacyTest(filename: string): string {
 }
 
 const baseSources: Record<string, string> = {
+  crossingExample: CROSSING_SOURCE,
+  raceExample: RACE_SOURCE,
+  stackExample: STACK_SOURCE,
   rotatingCubeExample: ROTATING_CUBE_SOURCE,
   shapesExample: SHAPES_SOURCE,
   nightExample: NIGHT_SOURCE,

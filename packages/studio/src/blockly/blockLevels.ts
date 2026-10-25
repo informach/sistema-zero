@@ -281,6 +281,7 @@ const INICIANTE_3D_G3D: ReadonlySet<string> = new Set<string>([
   'sz_g3d_random_between',
   'sz_g3d_on_key',
   'sz_g3d_on_click_object',
+  'sz_g3d_on_canvas_click',
   'sz_g3d_on_touch_group',
   'sz_g3d_camera_shake',
 ])

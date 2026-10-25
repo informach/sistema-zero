@@ -94,7 +94,7 @@ em um evento ou em um construtor.
 
 ### 🏆 Placar, vida e telas
 
-- **Escrever no canto … da tela**: um texto por canto (↖ ↑ ↗ ↙ ↓ ↘), por cima do jogo; no **A cada quadro** ele se atualiza. Os pontos, os corações e a contagem aparecem sozinhos, empilhados nos cantos.
+- **Escrever no canto … da tela**: um texto por canto ou no centro (↖ ↑ ↗ ↙ ↓ ↘ ⊕), por cima do jogo; no **A cada quadro** ele se atualiza. Os pontos, os corações e a contagem aparecem sozinhos, empilhados nos cantos.
 - **Somar … aos pontos** e **os pontos** (aparecem no canto ↗).
 - **Dar … de vida a …**, **Machucar**, **Curar**, **a vida de …** e **Quando a vida de … acabar**. O primeiro a ganhar vida é o herói: os corações dele ficam no canto ↖. Machucado, ele pisca e fica 1 segundo sem se machucar.
 - **Na tela de início/fim/vitória: título, texto, botão** (só em **Ao iniciar**): com a tela de início, o jogo espera o botão.
@@ -114,6 +114,9 @@ em um evento ou em um construtor.
 - Só toca uma música por vez; **o volume vai de 0 a 10** e vale para todos os sons. Um som pedido antes do primeiro clique espera o clique e toca em seguida.
 
 ### 🧰 Kits prontos
+
+- **Criar mundo em tela cheia**: escolha Travessia, Corrida, Empilhar ou Plataforma. O motor cria a tela responsiva, a câmera e as luzes do kit. Não precisa de blocos HTML/CSS.
+- Os exemplos usam o HUD, o placar, os eventos de teclado/clique e as telas de fim do próprio Jogo 3D. **Jogar de novo** inicia uma partida limpa.
 
 #### Kit "Desvie"
 
@@ -137,7 +140,7 @@ em um evento ou em um construtor.
 
 ### Kit "Plataforma" (fase lateral completa)
 
-- **Criar cena de plataforma** e **Criar o herói** preparam o corredor 2,5D, as luzes, a câmera lateral, o corpo e a colisão. O canvas escolhido precisa existir no HTML.
+- **Criar cena de plataforma** e **Criar o herói** preparam o corredor 2,5D, as luzes, a câmera lateral, o corpo e a colisão. Use **Criar mundo Plataforma em tela cheia** para uma tela do motor. O construtor no canvas continua disponível para projetos que já têm uma página HTML.
 - **Montar a fase** recebe um mapa de texto. Separe assuntos por ponto e vírgula ou linha: \`chao=0-20\`, \`tijolo=6:4\`, \`surpresa=8:4:cogumelo\`, \`inimigo=12:goomba\`, \`checkpoint=15\`, \`tempo=300\` e \`tema=noite\`.
 - **Usar o cenário** troca céu, neblina e cores do chão. Um tema escrito no mapa tem prioridade.
 - Dentro de **A cada quadro**, combine **plataforma clássica**, **Atualizar a fase** e **Câmera de lado**. **Soltar bola de fogo** funciona depois de pegar a flor e deve responder a **tecla apertada agora**.

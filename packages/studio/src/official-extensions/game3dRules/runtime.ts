@@ -33,7 +33,7 @@ const GAME_RULES_3D_SOURCE = `
   // ==== Regras de jogo 3D (fragmento compartilhado, game3dRules/runtime.ts) ====
   function createSzGameRules(host) {
     host = host || {};
-    var CORNERS = { 'top-left': 1, 'top-center': 1, 'top-right': 1, 'bottom-left': 1, 'bottom-center': 1, 'bottom-right': 1 };
+    var CORNERS = { 'top-left': 1, 'top-center': 1, 'top-right': 1, 'bottom-left': 1, 'bottom-center': 1, 'bottom-right': 1, 'center': 1 };
     var OWN_PANELS = ['texto', 'vidas', 'pontos', 'tempo'];
     var SCREEN_DEFAULTS = {
       inicio: ['Meu jogo 3D', '', 'Jogar'],
@@ -46,7 +46,7 @@ const GAME_RULES_3D_SOURCE = `
     var hero = null, lifeList = [];
     var timer = { on: false, left: 0, shown: -1 };
     var afters = [], blinks = [];
-    var handlers = { life: [], timer: [], key: [], click: [], touch: [] };
+    var handlers = { life: [], timer: [], key: [], click: [], scene: [], touch: [] };
     var screens = {};
     var ended = false, waiting = false, restartPending = false;
     // A tela de início aparece UMA vez por página: "Jogar de novo" volta direto ao jogo.
@@ -82,6 +82,8 @@ const GAME_RULES_3D_SOURCE = `
         '.szr-bottom-left{bottom:0;left:0;align-items:flex-start;flex-direction:column-reverse}' +
         '.szr-bottom-center{bottom:0;left:50%;transform:translateX(-50%);align-items:center;flex-direction:column-reverse}' +
         '.szr-bottom-right{bottom:0;right:0;align-items:flex-end;text-align:right;flex-direction:column-reverse}' +
+        '.szr-center{top:50%;left:50%;transform:translate(-50%,-50%);align-items:center;text-align:center}' +
+        '.szr-center .szr-panel{padding:0;background:transparent;border-radius:0}' +
         '.szr-panel{font-size:22px;font-weight:bold;line-height:1.25;white-space:pre-wrap;padding:4px 10px;' +
           'border-radius:10px;background:rgba(2,6,23,0.45);text-shadow:0 2px 2px rgba(0,0,0,0.8)}' +
         '.szr-screen{position:absolute;left:0;top:0;right:0;bottom:0;display:flex;align-items:center;' +
@@ -343,6 +345,11 @@ const GAME_RULES_3D_SOURCE = `
       handlers.click.push({ obj: obj, fn: fn });
       if (host.wireClick) host.wireClick();
     }
+    function onCanvasClick(fn) {
+      if (typeof fn !== 'function') return;
+      handlers.scene.push(fn);
+      if (host.wireClick) host.wireClick();
+    }
     function onTouchGroup(obj, group, fn) {
       if (typeof fn !== 'function' || !obj) return;
       handlers.touch.push({ obj: obj, group: group, fn: fn, inside: [] });
@@ -360,6 +367,12 @@ const GAME_RULES_3D_SOURCE = `
       return false;
     }
     function click(hit) {
+      if (!running()) return;
+      var scene = handlers.scene.slice();
+      for (var s = 0; s < scene.length; s++) {
+        if (!running()) return;
+        call(scene[s], undefined, 'quando clicar no jogo');
+      }
       if (!running() || !hit) return;
       var list = handlers.click.slice();
       for (var i = 0; i < list.length; i++) {
@@ -518,7 +531,7 @@ const GAME_RULES_3D_SOURCE = `
       timer = { on: false, left: 0, shown: -1 };
       afters = []; blinks = [];
       if (!keep) {
-        handlers = { life: [], timer: [], key: [], click: [], touch: [] };
+        handlers = { life: [], timer: [], key: [], click: [], scene: [], touch: [] };
         screens = {};
       }
       ended = false; waiting = false; restartPending = false;
@@ -539,7 +552,7 @@ const GAME_RULES_3D_SOURCE = `
       startTimer: startTimer, stopTimer: stopTimer, timeLeft: timeLeft, onTimerEnd: onTimerEnd,
       afterSeconds: afterSeconds, randomBetween: randomBetween, randomChance: randomChance,
       blink: blink, cameraShake: cameraShake,
-      onKey: onKey, onClickObject: onClickObject, onTouchGroup: onTouchGroup,
+      onKey: onKey, onClickObject: onClickObject, onCanvasClick: onCanvasClick, onTouchGroup: onTouchGroup,
       setScreenText: setScreenText, endGame: endGame, restart: restart,
       step: step, beforeFrame: beforeFrame, afterFrame: afterFrame, key: key, click: click,
       running: running, reset: reset, dispose: dispose
@@ -581,6 +594,7 @@ export const GAME_RULES_PUBLIC_METHODS = [
   'blink',
   'onKey',
   'onClickObject',
+  'onCanvasClick',
   'onTouchGroup',
 ] as const
 

@@ -84,9 +84,10 @@ describe('Exemplo Patrulha Espacial — drift contra o parser real', () => {
       'g3d:setSky', // o espaço escuro
       'g3d:setFog',
       'g3d:setMaterial', // bico e laser brilham (glow)
-      'setProperty', // HUD DOM de tempo e pontos
-      'classOp', // a tela de fim aparece/some por classe
-      'event', // o botão de recomeçar
+      'g3d:cornerText', // tempo no HUD do próprio motor
+      'g3d:addScore', // pontos e resultado final no placar do motor
+      'g3d:screenText', // tela de fim com o botão de recomeçar do motor
+      'g3d:gameOver',
     ]) {
       expect(types.has(t)).toBe(true)
     }

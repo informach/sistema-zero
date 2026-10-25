@@ -76,13 +76,15 @@ describe('Exemplo Reunir o Rebanho — drift contra o parser real', () => {
       'g3d:spin', // os bichinhos errantes giram (vagam)
       'g3d:getPos', // posição do herói e do bichinho
       'g3d:animate', // o laço de quadro 3D
-      'event', // o botão Jogar de novo
-      'setProperty', // placar e relógio no HUD
-      'classOp', // mostra/esconde a tela de fim
+      'g3d:cornerText', // HUD nativo
+      'g3d:gameOver', // tela de fim nativa
     ]) {
       expect(types.has(t)).toBe(true)
     }
     // Dois grupos distintos e o estado do jogo vivem em variáveis.
+    expect(types.has('g3d:addScore')).toBe(true)
+    expect(types.has('g3d:screenText')).toBe(true)
+    expect(types.has('g3d:gameOver')).toBe(true)
     const raw = JSON.stringify(statements)
     expect(raw).toContain('"errantes"')
     expect(raw).toContain('"seguidores"')

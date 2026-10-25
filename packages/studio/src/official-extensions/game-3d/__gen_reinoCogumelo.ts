@@ -18,7 +18,10 @@ import { FASES_REINO_COGUMELO } from './stagesReinoCogumelo'
 const LISTA_DE_FASES = FASES_REINO_COGUMELO.map((mapa) => `  ${JSON.stringify(mapa)}`).join(',\n')
 
 export const REINO_COGUMELO_SOURCE = `
-const jogo = SZGame3D.createPlatformScene("tela");
+const jogo = SZGame3D.createFullscreenScene("#7dd3fc", "platform");
+SZGame3D.setScreenText("vitoria", "Reino salvo!", "Você venceu as 32 fases.", "Jogar de novo");
+SZGame3D.setScreenText("fim", "Fim de jogo", "Tente uma nova viagem pelo reino.", "Tentar novamente");
+SZGame3D.hudText("bottom-center", "Setas ou WASD: andar. Espaço: pular. F: lançar fogo com a flor.");
 const heroi = SZGame3D.createHero(jogo, "#e03010");
 const fases = [
 ${LISTA_DE_FASES}
@@ -26,11 +29,11 @@ ${LISTA_DE_FASES}
 let numeroDaFase = 1;
 let recorde = 0;
 function mostrarPlacar() {
-  document.getElementById("pontos").textContent = SZGame3D.stageValue(jogo, "pontos");
-  document.getElementById("moedas").textContent = SZGame3D.stageValue(jogo, "moedas");
-  document.getElementById("vidas").textContent = SZGame3D.stageValue(jogo, "vidas");
-  document.getElementById("tempo").textContent = SZGame3D.stageValue(jogo, "tempo");
-  document.getElementById("mundo").textContent = SZGame3D.stageValue(jogo, "mundo") + "-" + SZGame3D.stageValue(jogo, "fase");
+  SZGame3D.addScore(SZGame3D.stageValue(jogo, "pontos") - SZGame3D.score());
+  SZGame3D.hudText("bottom-left", "Moedas: " + SZGame3D.stageValue(jogo, "moedas"));
+  SZGame3D.hudText("top-right", "Vidas: " + SZGame3D.stageValue(jogo, "vidas"));
+  SZGame3D.hudText("bottom-right", "Tempo: " + SZGame3D.stageValue(jogo, "tempo"));
+  SZGame3D.hudText("top-left", "Mundo: " + SZGame3D.stageValue(jogo, "mundo") + "-" + SZGame3D.stageValue(jogo, "fase"));
 }
 function abrirFase() {
   const mundo = Math.ceil(numeroDaFase / 4);
@@ -54,23 +57,23 @@ SZGame3D.onStageEvent(jogo, "quebrar-tijolo", () => {
   mostrarPlacar();
 });
 SZGame3D.onStageEvent(jogo, "pegar-cogumelo", () => {
-  document.getElementById("aviso").textContent = "Cresceu!";
+  SZGame3D.hudText("top-center", "Cresceu!");
 });
 SZGame3D.onStageEvent(jogo, "pegar-flor", () => {
-  document.getElementById("aviso").textContent = "Agora joga fogo: aperte F";
+  SZGame3D.hudText("top-center", "Agora joga fogo: aperte F");
 });
 SZGame3D.onStageEvent(jogo, "pegar-estrela", () => {
-  document.getElementById("aviso").textContent = "Invencivel!";
+  SZGame3D.hudText("top-center", "Invencivel!");
 });
 SZGame3D.onStageEvent(jogo, "levar-dano", () => {
-  document.getElementById("aviso").textContent = "Cuidado!";
+  SZGame3D.hudText("top-center", "Cuidado!");
   mostrarPlacar();
 });
 SZGame3D.onStageEvent(jogo, "tocar-a-bandeira", () => {
-  document.getElementById("aviso").textContent = "Fase vencida!";
+  SZGame3D.hudText("top-center", "Fase vencida!");
 });
 SZGame3D.onStageEvent(jogo, "derrotar-o-chefe", () => {
-  document.getElementById("aviso").textContent = "O castelo caiu!";
+  SZGame3D.hudText("top-center", "O castelo caiu!");
 });
 SZGame3D.animate(jogo, () => {
   SZGame3D.classicPlatformer(heroi, jogo, 5.4, 13.2);
@@ -88,14 +91,14 @@ SZGame3D.animate(jogo, () => {
       numeroDaFase = numeroDaFase + 1;
       abrirFase();
     } else {
-      document.getElementById("aviso").textContent = "Voce salvou o Reino Cogumelo!";
+      SZGame3D.endGame("ganhou");
     }
   }
   if (SZGame3D.stageIs(jogo, "perdeu")) {
     if (SZGame3D.stageValue(jogo, "vidas") > 0) {
       SZGame3D.stageReset(jogo);
     } else {
-      document.getElementById("aviso").textContent = "Fim de jogo";
+      SZGame3D.endGame("perdeu");
     }
   }
 });

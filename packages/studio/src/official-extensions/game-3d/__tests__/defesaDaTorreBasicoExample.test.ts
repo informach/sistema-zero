@@ -71,13 +71,15 @@ describe('Exemplo Defesa da Torre — drift contra o parser real', () => {
       'g3d:spin', // a torre e o cristal giram
       'g3d:dt', // a recarga em tempo real do quadro
       'g3d:animate', // o laço de quadro 3D
-      'event', // o botão Recomeçar
-      'setProperty', // o placar no HUD
-      'classOp', // mostra/esconde a tela de fim
+      'g3d:cornerText', // HUD nativo
+      'g3d:gameOver', // tela de fim nativa
     ]) {
       expect(types.has(t)).toBe(true)
     }
     // O placar e a recarga vivem em variáveis de estado.
+    expect(types.has('g3d:addScore')).toBe(true)
+    expect(types.has('g3d:screenText')).toBe(true)
+    expect(types.has('g3d:gameOver')).toBe(true)
     const raw = JSON.stringify(statements)
     expect(raw).toContain('"pontos"')
     expect(raw).toContain('"recarga"')

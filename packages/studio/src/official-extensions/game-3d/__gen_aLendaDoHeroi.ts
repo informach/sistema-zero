@@ -22,6 +22,11 @@ import { collectTypes, stripIds } from '../game-3d-advanced/exampleSourceUtils'
 // segundo legíveis: itens 180, enfeites 45-90.
 export const A_LENDA_DO_HEROI_SOURCE = `
 const cena = SZGame3D.createFullscreenScene("#0f2417");
+SZGame3D.setScreenText("vitoria", "Herói lendário!", "Confira seus pontos no placar.", "Jogar de novo");
+SZGame3D.setScreenText("fim", "O herói caiu...", "Confira seus pontos no placar.", "Tentar novamente");
+SZGame3D.addScore(0);
+SZGame3D.hudText("bottom-center", "Setas ou WASD: andar. Espaço: atacar.");
+SZGame3D.hudText("top-left", "Vida: 3");
 SZGame3D.setSky(cena, "#1e3a2a", "#2f5541");
 SZGame3D.cameraMode(cena, "cima", null);
 SZGame3D.setFog(cena, "#0f2417", 42, 120);
@@ -44,20 +49,7 @@ let vida = 3;
 let heroiX = 0;
 let heroiZ = 0;
 let rodando = true;
-document.getElementById("retry")?.addEventListener("click", (event) => {
-  SZGame3D.forEachInGroup(monstros, (item) => {
-    SZGame3D.removeFromGroup(monstros, item);
-  });
-  pontos = 0;
-  vida = 3;
-  heroiX = 0;
-  heroiZ = 0;
-  rodando = true;
-  SZGame3D.setPosition(heroi, 0, 0.65, 0);
-  document.getElementById("score").textContent = "Monstros: 0 de 10";
-  document.getElementById("hearts").textContent = "Vida: 3";
-  document.getElementById("results")?.classList.remove("visivel");
-});
+
 SZGame3D.animate(cena, () => {
   if (rodando) {
     SZGame3D.spin(coroa, "y", 90);
@@ -92,13 +84,13 @@ SZGame3D.animate(cena, () => {
         SZGame3D.removeFromGroup(monstros, item);
         pontos = pontos + 1;
         SZGame3D.playEffect("coin");
-        document.getElementById("score").textContent = "Monstros: " + pontos + " de 10";
+        SZGame3D.addScore(pontos - SZGame3D.score());
       } else {
         if (SZGame3D.isNear(heroi, item, 1.35)) {
           SZGame3D.removeFromGroup(monstros, item);
           vida = vida - 1;
           SZGame3D.playEffect("hit");
-          document.getElementById("hearts").textContent = "Vida: " + vida;
+          SZGame3D.hudText("top-left", "Vida: " + vida);
         } else {
           if (SZGame3D.isNear(heroi, item, 13)) {
             SZGame3D.moveTowards(item, SZGame3D.getPos(heroi, "x"), 0.65, SZGame3D.getPos(heroi, "z"), 3.08);
@@ -111,16 +103,14 @@ SZGame3D.animate(cena, () => {
     if (pontos >= 10) {
       rodando = false;
       SZGame3D.playEffect("coin");
-      document.getElementById("result-title").textContent = "Herói lendário!";
-      document.getElementById("final-score").textContent = pontos;
-      document.getElementById("results")?.classList.add("visivel");
+                  SZGame3D.addScore(pontos - SZGame3D.score());
+      SZGame3D.endGame("ganhou");
     }
     if (vida <= 0) {
       rodando = false;
       SZGame3D.playEffect("explosion");
-      document.getElementById("result-title").textContent = "O herói caiu...";
-      document.getElementById("final-score").textContent = pontos;
-      document.getElementById("results")?.classList.add("visivel");
+                  SZGame3D.addScore(pontos - SZGame3D.score());
+      SZGame3D.endGame("perdeu");
     }
   }
 });
@@ -133,104 +123,6 @@ SZGame3D.everySecondsLoop(1.6, () => {
   }
 });
 `.trim()
-
-// HUD (placar de monstros + corações + tela de fim) montado com blocos de HTML/
-// CSS/DOM, ligado ao jogo pelos getElementById do SOURCE. Casa os ids que o
-// comportamento toca: score / hearts / results / result-title / final-score / retry.
-const HTML = [
-  { type: 'element', tag: 'div', id: 'score', text: 'Monstros: 0 de 10' },
-  { type: 'element', tag: 'div', id: 'hearts', text: 'Vida: 3' },
-  {
-    type: 'element',
-    tag: 'div',
-    id: 'results',
-    children: [
-      {
-        type: 'element',
-        tag: 'div',
-        id: 'results-box',
-        children: [
-          { type: 'element', tag: 'h1', id: 'result-title', text: 'Fim da aventura' },
-          {
-            type: 'element',
-            tag: 'p',
-            children: [
-              { type: 'text', text: 'Monstros derrotados: ' },
-              { type: 'element', tag: 'span', id: 'final-score' },
-            ],
-          },
-          { type: 'element', tag: 'button', id: 'retry', text: 'Jogar de novo' },
-        ],
-      },
-    ],
-  },
-]
-
-const CSS = [
-  { type: 'googleFont', family: 'Press Start 2P' },
-  {
-    selector: 'body',
-    declarations: { margin: '0', overflow: 'hidden', 'font-family': '"Press Start 2P", cursive' },
-  },
-  { selector: 'canvas', declarations: { display: 'block', width: '100vw', height: '100vh' } },
-  {
-    selector: '#score',
-    declarations: {
-      position: 'absolute',
-      top: '20px',
-      left: '20px',
-      'font-size': '1.1em',
-      color: 'white',
-    },
-  },
-  {
-    selector: '#hearts',
-    declarations: {
-      position: 'absolute',
-      top: '20px',
-      right: '20px',
-      'font-size': '1.1em',
-      color: '#f87171',
-    },
-  },
-  {
-    selector: '#results',
-    declarations: {
-      position: 'absolute',
-      top: '0',
-      left: '0',
-      'min-width': '100%',
-      'min-height': '100%',
-      display: 'flex',
-      'align-items': 'center',
-      'justify-content': 'center',
-      visibility: 'hidden',
-    },
-  },
-  { selector: '#results.visivel', declarations: { visibility: 'visible' } },
-  {
-    selector: '#results-box',
-    declarations: {
-      display: 'flex',
-      'flex-direction': 'column',
-      'align-items': 'center',
-      'background-color': 'white',
-      color: '#0f2417',
-      padding: '20px',
-      'text-align': 'center',
-    },
-  },
-  {
-    selector: '#results-box button',
-    declarations: {
-      'background-color': '#2563eb',
-      color: 'white',
-      padding: '16px 32px',
-      'font-family': 'inherit',
-      cursor: 'pointer',
-    },
-  },
-]
 
 if (import.meta.main) {
   const normalized = normalizeSZIR({
@@ -251,8 +143,8 @@ if (import.meta.main) {
     description:
       'Um herói numa clareira cheia de monstros. Ande com as setas e ataque de perto com a barra de espaço. Os monstros vagam e perseguem você. Derrote 10 antes que os 3 corações acabem!',
     ir: {
-      html: HTML,
-      css: CSS,
+      html: [],
+      css: [],
       extensions: [{ extensionId: 'game-3d' }],
       version: 2,
       behavior,

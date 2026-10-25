@@ -18,6 +18,30 @@ import {
 const rawTypes = (statements: unknown) => JSON.stringify(statements).includes('"rawJS"')
 
 describe('regras de jogo 3D — codec', () => {
+  it('clique na cena tem nó próprio do Jogo 3D, sem evento DOM ou alvo inventado', () => {
+    const ir = parseJS('SZGame3D.onCanvasClick(() => { SZGame3D.addScore(1); });')
+    expect(ir).toMatchObject([
+      { type: 'g3d:onGame', event: 'clique-cena', body: [{ type: 'g3d:addScore' }] },
+    ])
+    expect(ir.every((statement) => JSStatementSchema.safeParse(statement).success)).toBe(true)
+    expect(parseJS(compileStatements(ir, 0))).toMatchObject(ir)
+  })
+  it('a mira central é texto nativo e mantém código e IR nas três extensões', () => {
+    for (const [global, prefix] of [
+      ['SZGame3D', 'g3d'],
+      ['SZWorld3D', 'w3d'],
+      ['SZGameKit3D', 'g3k'],
+    ]) {
+      const source = `${global}.hudText("center", "+");`
+      const ir = parseJS(source)
+      expect(ir).toMatchObject([
+        { type: `${prefix}:cornerText`, corner: 'center', text: { type: 'str', value: '+' } },
+      ])
+      expect(rawTypes(ir)).toBe(false)
+      expect(ir.every((statement) => JSStatementSchema.safeParse(statement).success)).toBe(true)
+      expect(compileStatements(ir, 0).trim()).toBe(source)
+    }
+  })
   it('as três extensões 3D estão ligadas (o Avançado entrou no lote 11)', () => {
     expect(GAME_RULES_ENABLED_PREFIXES).toEqual(['g3d', 'w3d', 'g3k'])
     const mundo: JSStatement = { type: 'w3d:addScore', value: { type: 'num', value: 1 } }

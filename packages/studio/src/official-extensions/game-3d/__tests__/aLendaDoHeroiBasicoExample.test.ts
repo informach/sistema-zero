@@ -76,13 +76,15 @@ describe('Exemplo A Lenda do Herói — drift contra o parser real', () => {
       'g3d:spin', // os monstros longe vagam (giram)
       'g3d:getPos', // posição do herói
       'g3d:animate', // o laço de quadro 3D
-      'event', // o botão Jogar de novo
-      'setProperty', // placar e corações no HUD
-      'classOp', // mostra a tela de fim
+      'g3d:cornerText', // HUD nativo
+      'g3d:gameOver', // tela de fim nativa
     ]) {
       expect(types.has(t)).toBe(true)
     }
     // O estado do jogo (placar, corações, posição e partida) vive em variáveis.
+    expect(types.has('g3d:addScore')).toBe(true)
+    expect(types.has('g3d:screenText')).toBe(true)
+    expect(types.has('g3d:gameOver')).toBe(true)
     const raw = JSON.stringify(statements)
     expect(raw).toContain('"monstros"')
     expect(raw).toContain('"pontos"')

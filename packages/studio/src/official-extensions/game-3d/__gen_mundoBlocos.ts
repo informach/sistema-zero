@@ -21,6 +21,9 @@ import { collectTypes, stripIds } from '../game-3d-advanced/exampleSourceUtils'
  */
 export const MUNDO_BLOCOS_SOURCE = `
 const mundo = SZGame3D.createFullscreenScene("#0ea5e9");
+SZGame3D.hudText("top-left", "Material: grama");
+SZGame3D.hudText("top-right", "Torre: 0");
+SZGame3D.hudText("bottom-center", "Setas: mover uma célula por toque. 1, 2, 3: material. Espaço: colocar. Clique: retirar.");
 SZGame3D.setSky(mundo, "#38bdf8", "#bae6fd");
 SZGame3D.cameraMode(mundo, "isometrica", null);
 const moldeGrama = SZGame3D.createBox(mundo, { size: 1, color: "#22c55e" });
@@ -80,58 +83,38 @@ function colocarBloco() {
     SZGame3D.playEffect("jump");
     if (alturaAlvo + 1 > recorde) {
       recorde = alturaAlvo + 1;
-      document.getElementById("torre").textContent = recorde;
+      SZGame3D.hudText("top-right", "Torre: " + recorde);
       if (recorde === 5) {
         SZGame3D.playEffect("coin");
-        document.getElementById("festa")?.classList.add("visivel");
-        setTimeout(() => {
-          document.getElementById("festa")?.classList.remove("visivel");
-        }, 2500);
+        SZGame3D.hudText("top-center", "Parabéns! Sua torre chegou a cinco blocos!");
+        SZGame3D.afterSeconds(2.5, () => { SZGame3D.hudText("top-center", ""); });
       }
     }
   }
   moverCursor();
 }
 moverCursor();
-document.addEventListener("keydown", (event) => {
-  if (event.key === "ArrowLeft") {
-    if (coluna > -4) {
-      coluna = coluna - 1;
-    }
-  }
-  if (event.key === "ArrowRight") {
-    if (coluna < 4) {
-      coluna = coluna + 1;
-    }
-  }
-  if (event.key === "ArrowUp") {
-    if (linha > -4) {
-      linha = linha - 1;
-    }
-  }
-  if (event.key === "ArrowDown") {
-    if (linha < 4) {
-      linha = linha + 1;
-    }
-  }
+SZGame3D.onKey("ArrowLeft", () => {
+  if (coluna > -4) { coluna = coluna - 1; }
   moverCursor();
-  if (event.key === "1") {
-    tipo = 1;
-    document.getElementById("tipo").textContent = "grama";
-  }
-  if (event.key === "2") {
-    tipo = 2;
-    document.getElementById("tipo").textContent = "pedra";
-  }
-  if (event.key === "3") {
-    tipo = 3;
-    document.getElementById("tipo").textContent = "madeira";
-  }
-  if (event.key === " ") {
-    colocarBloco();
-  }
 });
-document.addEventListener("click", (event) => {
+SZGame3D.onKey("ArrowRight", () => {
+  if (coluna < 4) { coluna = coluna + 1; }
+  moverCursor();
+});
+SZGame3D.onKey("ArrowUp", () => {
+  if (linha > -4) { linha = linha - 1; }
+  moverCursor();
+});
+SZGame3D.onKey("ArrowDown", () => {
+  if (linha < 4) { linha = linha + 1; }
+  moverCursor();
+});
+SZGame3D.onKey("Digit1", () => { tipo = 1; SZGame3D.hudText("top-left", "Material: grama"); });
+SZGame3D.onKey("Digit2", () => { tipo = 2; SZGame3D.hudText("top-left", "Material: pedra"); });
+SZGame3D.onKey("Digit3", () => { tipo = 3; SZGame3D.hudText("top-left", "Material: madeira"); });
+SZGame3D.onKey("Space", () => { colocarBloco(); });
+SZGame3D.onCanvasClick(() => {
   let alvo = SZGame3D.pickAtMouse(mundo);
   if (alvo) {
     let antes = SZGame3D.countGroup(blocos);

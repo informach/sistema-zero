@@ -299,8 +299,7 @@ describe('roundtrip do dodgeExample (gerar → parsear)', () => {
     const types = collectTypes(ir)
     expect(types.has('rawJS')).toBe(false)
     for (const expected of [
-      'g3d:createScene',
-      'g3d:setBackground',
+      'g3d:createFullscreenScene',
       'g3d:setCameraPosition',
       'g3d:createBox',
       'g3d:createBlock',
@@ -480,7 +479,7 @@ describe('roundtrip do crossingExample (gerar → parsear)', () => {
     const types = collectTypes(ir)
     expect(types.has('rawJS')).toBe(false)
     for (const expected of [
-      'g3d:createCrossingScene',
+      'g3d:createFullscreenScene',
       'g3d:createCrosser',
       'g3d:generateRows',
       'g3d:animate',
@@ -489,7 +488,9 @@ describe('roundtrip do crossingExample (gerar → parsear)', () => {
       'g3d:crosserRow',
       'g3d:crosserHit',
       'g3d:crosserMove',
-      'g3d:crosserReset',
+      'g3d:gameOver',
+      'g3d:screenText',
+      'g3d:addScore',
     ]) {
       expect(types.has(expected)).toBe(true)
     }
@@ -568,7 +569,7 @@ describe('roundtrip do raceExample (gerar → parsear)', () => {
     const types = collectTypes(ir)
     expect(types.has('rawJS')).toBe(false)
     for (const expected of [
-      'g3d:createRaceScene',
+      'g3d:createFullscreenScene',
       'g3d:createRaceTrack',
       'g3d:createRaceCar',
       'g3d:animate',
@@ -577,7 +578,9 @@ describe('roundtrip do raceExample (gerar → parsear)', () => {
       'g3d:raceLaps',
       'g3d:raceHit',
       'g3d:raceControl',
-      'g3d:raceReset',
+      'g3d:gameOver',
+      'g3d:screenText',
+      'g3d:addScore',
     ]) {
       expect(types.has(expected)).toBe(true)
     }
@@ -637,14 +640,16 @@ describe('roundtrip do stackExample (gerar → parsear)', () => {
     const types = collectTypes(ir)
     expect(types.has('rawJS')).toBe(false)
     for (const expected of [
-      'g3d:createStackScene',
+      'g3d:createFullscreenScene',
       'g3d:createStackTower',
       'g3d:animate',
       'g3d:stackStep',
       'g3d:stackScore',
       'g3d:stackGameOver',
       'g3d:stackDrop',
-      'g3d:stackReset',
+      'g3d:gameOver',
+      'g3d:screenText',
+      'g3d:addScore',
     ]) {
       expect(types.has(expected)).toBe(true)
     }

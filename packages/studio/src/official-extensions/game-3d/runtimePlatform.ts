@@ -513,7 +513,11 @@ export const gameThreeDPlatformRuntimeSource = `
 
   // ---- API do kit ---------------------------------------------------------
   function createPlatformScene(canvasId) {
-    var world = createScene(canvasId);
+    return setupPlatformCanvas(requireCanvas(canvasId));
+  }
+  function setupPlatformCanvas(canvas) {
+    disposeWorldsUsingCanvas(canvas);
+    var world = _setupWorld(canvas, canvasDimension(canvas, 'width', 480), canvasDimension(canvas, 'height', 360));
     if (!world) return world;
     var st = stageState(world);
     applyStageTheme(world, st, 'dia');

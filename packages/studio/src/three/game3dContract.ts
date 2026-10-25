@@ -407,7 +407,7 @@ export function game3dDropdownArgumentIsValid(
 /** Assinaturas canônicas geradas pelos blocos e reconhecidas pela Ponte. */
 export const GAME3D_CALL_ARITIES: Readonly<Record<string, number | readonly number[]>> = {
   createScene: 1,
-  createFullscreenScene: [0, 1],
+  createFullscreenScene: [0, 1, 2],
   setBackground: 2,
   setCameraPosition: 4,
   createBox: 2,

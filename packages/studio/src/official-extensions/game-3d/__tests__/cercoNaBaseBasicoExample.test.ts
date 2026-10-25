@@ -77,12 +77,14 @@ describe('Exemplo Cerco na Base — drift contra o parser real', () => {
       'g3d:isNear', // o estouro carregado limpa os que estão perto
       'g3d:setSolid', // chão e paredes da arena
       'g3d:animate',
-      'event', // o botão Jogar de novo
-      'setProperty', // placar/vida/munição no HUD
+      'g3d:cornerText', // HUD nativo
     ]) {
       expect(types.has(t)).toBe(true)
     }
     // Munição, carga, vida e placar vivem em variáveis (o Labirinto não tem munição/carga).
+    expect(types.has('g3d:addScore')).toBe(true)
+    expect(types.has('g3d:screenText')).toBe(true)
+    expect(types.has('g3d:gameOver')).toBe(true)
     const raw = JSON.stringify(statements)
     expect(raw).toContain('"cacas"')
     expect(raw).toContain('"municao"')

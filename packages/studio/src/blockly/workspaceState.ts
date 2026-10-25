@@ -2824,8 +2824,8 @@ function statementToBlockInner(stmt: JSStatement): SerializedBlocklyBlock | null
         )
       case 'g3d:createFullscreenScene':
         return block(
-          'sz_g3d_create_fullscreen_scene',
-          { NAME: stmt.varName, BG: stmt.bg },
+          stmt.kit ? 'sz_g3d_create_fullscreen_kit' : 'sz_g3d_create_fullscreen_scene',
+          { NAME: stmt.varName, BG: stmt.bg, ...(stmt.kit ? { KIT: stmt.kit } : {}) },
           {},
           stmt.__id,
         )

@@ -75,13 +75,15 @@ describe('Exemplo Labirinto dos Robôs — drift contra o parser real', () => {
       'g3d:setSky', // céu em degradê
       'g3d:playEffect', // tiro/dano/vitória soam
       'g3d:setRotation', // recomeçar zera o yaw do corpo (não renasce olhando p/ trás)
-      'event', // clique atira; R e o botão recomeçam
-      'eventProp', // a tecla do evento (event.key)
+      'g3d:onGame', // clique na cena atira; R recomeça pelo ciclo de vida do motor
       'funcDecl', // recomeçar() monta e reinicia a partida
       'callFunction', // chamado no início, no clique do botão e na tecla R
-      'setProperty', // HUD de vida e pontos por textContent
-      'setStyle', // overlay de dano por opacity
-      'classOp', // a tela de fim aparece/some por classe
+      'g3d:cornerText', // mira, vida e aviso de dano no HUD nativo
+      'g3d:addScore',
+      'g3d:shakeCamera',
+      'g3d:screenText',
+      'g3d:gameOver',
+      'g3d:restart',
     ]) {
       expect(types.has(t)).toBe(true)
     }

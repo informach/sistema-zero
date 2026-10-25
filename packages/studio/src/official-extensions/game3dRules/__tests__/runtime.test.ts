@@ -38,6 +38,7 @@ interface Rules {
   cameraShake(strength: number, secs: number): void
   onKey(code: string, fn: () => void): void
   onClickObject(obj: Obj, fn: () => void): void
+  onCanvasClick(fn: () => void): void
   onTouchGroup(obj: Obj, group: Obj[], fn: (item: Obj) => void): void
   setScreenText(kind: string, title: string, text: string, button: string): void
   endGame(result: string): void
@@ -46,7 +47,7 @@ interface Rules {
   beforeFrame(cam: Cam): void
   afterFrame(cam: Cam, dt: number): void
   key(code: string): void
-  click(hit: Obj): void
+  click(hit: Obj | null): void
   running(): boolean
   reset(): void
   dispose(): void
@@ -115,6 +116,39 @@ beforeEach(() => {
 })
 
 describe('regras de jogo 3D — o fragmento compartilhado', () => {
+  it('clique no jogo independe de acertar um objeto, respeita pausa e não sobrevive ao recomeço', () => {
+    const { rules, state } = setup()
+    const object: Obj = {}
+    let sceneClicks = 0,
+      objectClicks = 0
+    rules.onCanvasClick(() => sceneClicks++)
+    rules.onClickObject(object, () => objectClicks++)
+    rules.click(null)
+    expect([sceneClicks, objectClicks]).toEqual([1, 0])
+    rules.click(object)
+    expect([sceneClicks, objectClicks]).toEqual([2, 1])
+    expect(state.clickWired).toBe(2)
+    rules.endGame('perdeu')
+    rules.click(null)
+    expect(sceneClicks).toBe(2)
+    rules.reset()
+    rules.click(object)
+    expect([sceneClicks, objectClicks]).toEqual([2, 1])
+    rules.dispose()
+  })
+  it('texto central usa a camada do jogo, atualiza sem duplicar e sai com a execução', () => {
+    const { rules } = setup()
+    rules.hudText('center', '+')
+    const center = document.querySelector('.szr-center [data-szr-panel="texto"]')
+    expect(center?.textContent).toBe('+')
+    rules.hudText('center', '×')
+    expect(document.querySelectorAll('.szr-center [data-szr-panel="texto"]')).toHaveLength(1)
+    expect(center?.textContent).toBe('×')
+    rules.hudText('center', '')
+    expect(document.querySelector('.szr-center [data-szr-panel="texto"]')).toBeNull()
+    rules.dispose()
+    expect(document.querySelector('.szr-layer')).toBeNull()
+  })
   it('é JavaScript válido, sem crase nem cifrão-chave, e entra pelo marcador uma vez só', () => {
     const source = readFileSync(join(import.meta.dir, '..', 'runtime.ts'), 'utf8')
     const start = source.indexOf('const GAME_RULES_3D_SOURCE = `')

@@ -21,6 +21,10 @@ import { collectTypes, stripIds } from '../game-3d-advanced/exampleSourceUtils'
 // segundo legíveis: itens 180, enfeites 45-90.
 export const TORRES_DEFENSORAS_SOURCE = `
 const cena = SZGame3D.createFullscreenScene("#0f172a");
+SZGame3D.setScreenText("vitoria", "Cristal protegido!", "Confira seus pontos no placar.", "Jogar de novo");
+SZGame3D.setScreenText("fim", "O cristal foi alcançado", "Confira seus pontos no placar.", "Tentar novamente");
+SZGame3D.addScore(0);
+SZGame3D.hudText("bottom-center", "A torre age sozinha. Pare 20 invasores.");
 SZGame3D.setSky(cena, "#1e293b", "#334155");
 SZGame3D.cameraMode(cena, "cima", null);
 SZGame3D.setFog(cena, "#0f172a", 34, 90);
@@ -40,16 +44,7 @@ const inimigos = SZGame3D.createGroup();
 let pontos = 0;
 let recarga = 0;
 let rodando = true;
-document.getElementById("retry")?.addEventListener("click", (event) => {
-  SZGame3D.forEachInGroup(inimigos, (item) => {
-    SZGame3D.removeFromGroup(inimigos, item);
-  });
-  pontos = 0;
-  recarga = 0;
-  rodando = true;
-  document.getElementById("score").textContent = 0;
-  document.getElementById("results")?.classList.remove("visivel");
-});
+
 SZGame3D.animate(cena, () => {
   if (rodando) {
     SZGame3D.spin(torre, "y", 90);
@@ -60,22 +55,22 @@ SZGame3D.animate(cena, () => {
       if (SZGame3D.isNear(cristal, item, 1.8)) {
         rodando = false;
         SZGame3D.playEffect("explosion");
-        document.getElementById("final-score").textContent = pontos;
-        document.getElementById("results")?.classList.add("visivel");
+                SZGame3D.addScore(pontos - SZGame3D.score());
+      SZGame3D.endGame("perdeu");
       }
       if (recarga <= 0 && SZGame3D.isNear(torre, item, 6)) {
         SZGame3D.removeFromGroup(inimigos, item);
         SZGame3D.playEffect("hit");
         pontos = pontos + 1;
         recarga = 0.35;
-        document.getElementById("score").textContent = pontos;
+        SZGame3D.addScore(pontos - SZGame3D.score());
       }
     });
     if (pontos >= 20) {
       rodando = false;
       SZGame3D.playEffect("coin");
-      document.getElementById("final-score").textContent = pontos;
-      document.getElementById("results")?.classList.add("visivel");
+            SZGame3D.addScore(pontos - SZGame3D.score());
+      SZGame3D.endGame("ganhou");
     }
   }
 });
@@ -88,91 +83,6 @@ SZGame3D.everySecondsLoop(1.1, () => {
   }
 });
 `.trim()
-
-// HUD (placar + tela de fim) montado com blocos de HTML/CSS/DOM, ligado ao jogo
-// pelos getElementById do SOURCE. É livre (não vem do parser) — só precisa casar
-// os ids que o comportamento toca: score / results / final-score / retry.
-const HTML = [
-  { type: 'element', tag: 'div', id: 'score', text: '0' },
-  {
-    type: 'element',
-    tag: 'div',
-    id: 'results',
-    children: [
-      {
-        type: 'element',
-        tag: 'div',
-        id: 'results-box',
-        children: [
-          { type: 'element', tag: 'h1', text: 'Fim da rodada' },
-          {
-            type: 'element',
-            tag: 'p',
-            children: [
-              { type: 'text', text: 'Invasores parados: ' },
-              { type: 'element', tag: 'span', id: 'final-score' },
-            ],
-          },
-          { type: 'element', tag: 'button', id: 'retry', text: 'Recomeçar' },
-        ],
-      },
-    ],
-  },
-]
-
-const CSS = [
-  { type: 'googleFont', family: 'Press Start 2P' },
-  {
-    selector: 'body',
-    declarations: { margin: '0', overflow: 'hidden', 'font-family': '"Press Start 2P", cursive' },
-  },
-  { selector: 'canvas', declarations: { display: 'block', width: '100vw', height: '100vh' } },
-  {
-    selector: '#score',
-    declarations: {
-      position: 'absolute',
-      top: '20px',
-      left: '20px',
-      'font-size': '1.5em',
-      color: 'white',
-    },
-  },
-  {
-    selector: '#results',
-    declarations: {
-      position: 'absolute',
-      top: '0',
-      left: '0',
-      'min-width': '100%',
-      'min-height': '100%',
-      display: 'flex',
-      'align-items': 'center',
-      'justify-content': 'center',
-      visibility: 'hidden',
-    },
-  },
-  { selector: '#results.visivel', declarations: { visibility: 'visible' } },
-  {
-    selector: '#results-box',
-    declarations: {
-      display: 'flex',
-      'flex-direction': 'column',
-      'align-items': 'center',
-      'background-color': 'white',
-      padding: '20px',
-    },
-  },
-  {
-    selector: '#results-box button',
-    declarations: {
-      'background-color': '#38bdf8',
-      color: 'white',
-      padding: '16px 32px',
-      'font-family': 'inherit',
-      cursor: 'pointer',
-    },
-  },
-]
 
 if (import.meta.main) {
   const normalized = normalizeSZIR({
@@ -193,8 +103,8 @@ if (import.meta.main) {
     description:
       'Uma torre no centro defende o cristal sozinha: os invasores nascem na beirada e vêm ao meio, e a torre zapeia um por vez. Pare 20 invasores para vencer!',
     ir: {
-      html: HTML,
-      css: CSS,
+      html: [],
+      css: [],
       extensions: [{ extensionId: 'game-3d' }],
       version: 2,
       behavior,

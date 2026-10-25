@@ -40,7 +40,7 @@ export const GAME_RULES_IMPLICIT_HERO_PREFIXES: readonly GameRulesPrefix[] = ['w
  */
 export const GAME_RULES_PREFIX_OFF: Readonly<Partial<Record<GameRulesPrefix, readonly string[]>>> =
   {
-    w3d: ['blink', 'onKey', 'onClickObject', 'onTouchGroup'],
+    w3d: ['blink', 'onKey', 'onClickObject', 'onCanvasClick', 'onTouchGroup'],
     // O Avançado tem vida POR ENTIDADE (o `hurt`/`heal` dele é outro: meio segundo de
     // invencibilidade e recolher na morte), recomeça ao entrar em "jogando" e tem os próprios
     // "Quando…" de tecla, clique e encostar. Daqui ele usa placar, telas, fim, contagem,
@@ -57,6 +57,7 @@ export const GAME_RULES_PREFIX_OFF: Readonly<Partial<Record<GameRulesPrefix, rea
       'blink',
       'onKey',
       'onClickObject',
+      'onCanvasClick',
       'onTouchGroup',
     ],
   }
@@ -77,7 +78,7 @@ export const GAME_RULES_EXTENSIONS: Readonly<Record<GameRulesPrefix, string>> = 
 
 type Rule<N extends string> = `${GameRulesPrefix}:${N}`
 
-/** Os seis lugares da tela (a mesma lista do gerenciador de cantos do runtime). */
+/** Lugares do HUD; o centro também permite criar uma mira sem blocos de página. */
 export const GAME_RULES_CORNERS = [
   ['↖ em cima, à esquerda', 'top-left'],
   ['↑ em cima, no meio', 'top-center'],
@@ -85,6 +86,7 @@ export const GAME_RULES_CORNERS = [
   ['↙ embaixo, à esquerda', 'bottom-left'],
   ['↓ embaixo, no meio', 'bottom-center'],
   ['↘ embaixo, à direita', 'bottom-right'],
+  ['⊕ no centro da tela', 'center'],
 ] as const satisfies readonly (readonly [string, string])[]
 
 export const GAME_RULES_SCREENS = [
@@ -103,7 +105,13 @@ export type GameRulesCorner = OptionValue<typeof GAME_RULES_CORNERS>
 export type GameRulesScreen = OptionValue<typeof GAME_RULES_SCREENS>
 export type GameRulesResult = OptionValue<typeof GAME_RULES_RESULTS>
 export type GameRulesLifeOp = 'dar' | 'machucar' | 'curar'
-export type GameRulesEvent = 'vida-acabou' | 'tempo-acabou' | 'tecla' | 'clique' | 'encostar'
+export type GameRulesEvent =
+  | 'vida-acabou'
+  | 'tempo-acabou'
+  | 'tecla'
+  | 'clique'
+  | 'clique-cena'
+  | 'encostar'
 
 /** Interfaces, não interseções: uma união de interseções aninhada estoura o TS2590. */
 interface Common {
@@ -271,7 +279,9 @@ export function gameRulesProvidesUserGesture(statement: JSStatement): boolean {
     isGameRulesStatement(statement) &&
     statement.type.endsWith(':onGame') &&
     'event' in statement &&
-    (statement.event === 'tecla' || statement.event === 'clique')
+    (statement.event === 'tecla' ||
+      statement.event === 'clique' ||
+      statement.event === 'clique-cena')
   )
 }
 
@@ -355,6 +365,15 @@ function checkOnGame(node: OnGameRule, ctx: Ctx): void {
     case 'clique':
       requireNamed(ctx, node.objVar, 'objVar', EMPTY_NAME)
       forbid(ctx, record, ['key', 'groupVar', 'itemName'], 'em "quando clicar"')
+      return
+    case 'clique-cena':
+      forbid(ctx, record, ['objVar', 'key', 'groupVar', 'itemName'], 'em "quando clicar no jogo"')
+      if (!node.type.startsWith('g3d:'))
+        ctx.addIssue({
+          code: 'custom',
+          path: ['event'],
+          message: 'Este evento pertence ao Jogo 3D.',
+        })
       return
     case 'encostar':
       requireNamed(ctx, node.objVar, 'objVar', EMPTY_NAME)
@@ -461,7 +480,14 @@ export function gameRulesStatementSchemas(
     z
       .object({
         type: ruleType('onGame'),
-        event: z.enum(['vida-acabou', 'tempo-acabou', 'tecla', 'clique', 'encostar']),
+        event: z.enum([
+          'vida-acabou',
+          'tempo-acabou',
+          'tecla',
+          'clique',
+          'clique-cena',
+          'encostar',
+        ]),
         objVar: irText().optional(),
         key: irText().optional(),
         groupVar: irText().optional(),

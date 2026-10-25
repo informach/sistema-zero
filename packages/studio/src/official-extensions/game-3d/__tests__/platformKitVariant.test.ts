@@ -387,3 +387,139 @@ describe('Kit Plataforma: preview, capa e export coerentes', () => {
     expect(await playerDocument(project)).toContain(KIT_LINE)
   })
 })
+
+describe('Cenas dos kits sem página: propriedade e descarte', () => {
+  it('Travessia, Corrida, Empilhar e Plataforma usam uma tela própria e restauram a página ao parar', () => {
+    document.body.innerHTML = '<p id="host-content">Conteúdo do host</p>'
+    document.body.style.margin = '13px'
+    document.body.style.background = 'pink'
+    document.documentElement.style.overflow = 'auto'
+    const win: Record<string, unknown> = {
+      innerWidth: 800,
+      innerHeight: 600,
+      addEventListener() {},
+      removeEventListener() {},
+    }
+    new Function('THREE', 'window', 'document', runtimeBody(gameThreeDRuntime))(
+      { ...RealTHREE, WebGLRenderer: FakeRenderer },
+      win,
+      document,
+    )
+    const api = win.SZGame3D
+    if (
+      !api ||
+      typeof api !== 'object' ||
+      !('createFullscreenScene' in api) ||
+      typeof api.createFullscreenScene !== 'function' ||
+      !('disposeAll' in api) ||
+      typeof api.disposeAll !== 'function'
+    )
+      throw new Error('API do Jogo 3D ausente')
+    for (const kit of ['crossing', 'race', 'stack', 'platform']) {
+      api.createFullscreenScene('#0b1020', kit)
+      expect(document.querySelectorAll('canvas').length).toBe(1)
+      expect(document.getElementById('host-content')?.textContent).toBe('Conteúdo do host')
+      expect(document.body.style.margin).toBe('0px')
+    }
+    api.disposeAll()
+    expect(document.querySelectorAll('canvas').length).toBe(0)
+    expect(document.getElementById('host-content')?.textContent).toBe('Conteúdo do host')
+    expect(document.body.style.margin).toBe('13px')
+    expect(document.body.style.background).toBe('pink')
+    expect(document.documentElement.style.overflow).toBe('auto')
+    const create = api.createFullscreenScene
+    expect(() => create('#0b1020', 'unknown-kit')).toThrow('tipo de kit')
+    expect(document.querySelectorAll('canvas').length).toBe(0)
+  })
+  it('falha ao criar o renderer não deixa canvas nem estilos do jogo na página', () => {
+    document.body.innerHTML = '<p>Host intacto</p>'
+    document.body.style.margin = '17px'
+    document.body.style.background = 'pink'
+    document.documentElement.style.overflow = 'auto'
+    class FailedRenderer {
+      constructor() {
+        throw new Error('WebGL indisponível')
+      }
+    }
+    const win: Record<string, unknown> = { addEventListener() {}, removeEventListener() {} }
+    new Function('THREE', 'window', 'document', runtimeBody(gameThreeDRuntime))(
+      { ...RealTHREE, WebGLRenderer: FailedRenderer },
+      win,
+      document,
+    )
+    const api = win.SZGame3D
+    if (
+      !api ||
+      typeof api !== 'object' ||
+      !('createFullscreenScene' in api) ||
+      typeof api.createFullscreenScene !== 'function'
+    )
+      throw new Error('API ausente')
+    const create = api.createFullscreenScene
+    expect(() => create('#0b1020', 'crossing')).toThrow('WebGL indisponível')
+    expect(document.querySelectorAll('canvas').length).toBe(0)
+    expect(document.body.style.margin).toBe('17px')
+    expect(document.body.style.background).toBe('pink')
+    expect(document.documentElement.style.overflow).toBe('auto')
+  })
+})
+
+it('os controles nativos dos kits conservam toque, teclado físico e limpeza sem criar uma segunda lógica de jogo', () => {
+  const listeners = new Map<string, Set<(event: object) => void>>()
+  const win: Record<string, unknown> = {
+    innerWidth: 800,
+    innerHeight: 600,
+    addEventListener(name: string, fn: (event: object) => void) {
+      const list = listeners.get(name) ?? new Set()
+      list.add(fn)
+      listeners.set(name, list)
+    },
+    removeEventListener(name: string, fn: (event: object) => void) {
+      listeners.get(name)?.delete(fn)
+    },
+  }
+  new Function('THREE', 'window', 'document', runtimeBody(gameThreeDRuntime))(
+    { ...RealTHREE, WebGLRenderer: FakeRenderer },
+    win,
+    document,
+  )
+  const api = win.SZGame3D
+  if (
+    !api ||
+    typeof api !== 'object' ||
+    !('createFullscreenScene' in api) ||
+    typeof api.createFullscreenScene !== 'function' ||
+    !('onKey' in api) ||
+    typeof api.onKey !== 'function' ||
+    !('keyDown' in api) ||
+    typeof api.keyDown !== 'function' ||
+    !('disposeAll' in api) ||
+    typeof api.disposeAll !== 'function'
+  )
+    throw new Error('API ausente')
+  api.createFullscreenScene('#0b1020', 'crossing')
+  let pressed = 0
+  api.onKey('ArrowUp', () => {
+    pressed++
+  })
+  const forward = document.querySelector('[data-sz-kit-key="ArrowUp"]')
+  if (!forward) throw new Error('O kit perdeu o controle de toque')
+  forward.dispatchEvent(new PointerEvent('pointerdown', { pointerId: 7, button: 0, bubbles: true }))
+  expect(api.keyDown('ArrowUp')).toBe(true)
+  expect(pressed).toBe(1)
+  for (const fn of listeners.get('keydown') ?? []) fn({ code: 'ArrowUp', preventDefault() {} })
+  forward.dispatchEvent(new PointerEvent('pointerup', { pointerId: 7, bubbles: true }))
+  expect(api.keyDown('ArrowUp')).toBe(true) // soltar o toque não solta o teclado físico
+  expect(pressed).toBe(1)
+  for (const fn of listeners.get('keyup') ?? []) fn({ code: 'ArrowUp' })
+  expect(api.keyDown('ArrowUp')).toBe(false)
+  forward.dispatchEvent(new PointerEvent('pointerdown', { pointerId: 8, button: 0, bubbles: true }))
+  forward.dispatchEvent(new PointerEvent('pointercancel', { pointerId: 8, bubbles: true }))
+  expect(api.keyDown('ArrowUp')).toBe(false)
+  forward.dispatchEvent(new PointerEvent('pointerdown', { pointerId: 9, button: 0, bubbles: true }))
+  api.createFullscreenScene('#0b1020', 'race')
+  expect(api.keyDown('ArrowUp')).toBe(false)
+  expect(document.querySelectorAll('[data-sz-kit-controls]').length).toBe(1)
+  api.disposeAll()
+  expect(document.querySelectorAll('[data-sz-kit-controls]').length).toBe(0)
+})

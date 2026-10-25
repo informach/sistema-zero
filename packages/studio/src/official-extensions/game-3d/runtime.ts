@@ -80,6 +80,7 @@ const gameThreeDRuntimeBase = `import * as THREE from 'three';
 
   // Estado do teclado (por event.code). Lido por keyDown(...) e controlWithKeys(...).
   var keys = {};
+  var virtualKeys = {};
   // Teclas que ACABARAM de ser apertadas. O teclado do sistema repete o keydown
   // enquanto a tecla fica presa; só a TRANSIÇÃO conta, senão "apertou agora"
   // seria verdadeiro o tempo todo. Limpo no fim de cada quadro do animate.
@@ -89,7 +90,7 @@ const gameThreeDRuntimeBase = `import * as THREE from 'three';
   function keyCode(e) { return e.code === 'ShiftRight' ? 'ShiftLeft' : e.code; }
   function onKeyDown(e) {
     var code = keyCode(e);
-    var fresh = !keys[code];
+    var fresh = !keyDown(code);
     if (fresh) justPressed[code] = true;
     keys[code] = true;
     // "Quando apertar a tecla": só na transição (segurar não repete), dentro do gesto.
@@ -103,8 +104,8 @@ const gameThreeDRuntimeBase = `import * as THREE from 'three';
     }
   }
   function onKeyUp(e) { keys[keyCode(e)] = false; }
-  function clearKeys() { keys = {}; justPressed = {}; }
-  function keyDown(code) { return !!keys[code]; }
+  function clearKeys() { keys = {}; virtualKeys = {}; justPressed = {}; }
+  function keyDown(code) { return !!keys[code] || (virtualKeys[code] || 0) > 0; }
   function keyPressed(code) { return justPressed[code] === true; }
   // Fim do quadro: limpa NO LUGAR (um objeto novo por quadro seria lixo para o coletor).
   function clearJustPressed() {
@@ -581,9 +582,91 @@ const gameThreeDRuntimeBase = `import * as THREE from 'three';
     return _setupWorld(canvas, w, h);
   }
 
+  // The kits own their touch controls. They feed the same key transitions as
+  // the physical keyboard, so the child's handlers and frame loop remain the
+  // only game logic. A released pointer cannot release a physical key.
+  function virtualKey(code, down) {
+    var fresh = !keyDown(code);
+    virtualKeys[code] = Math.max(0, (virtualKeys[code] || 0) + (down ? 1 : -1));
+    if (down && fresh) {
+      justPressed[code] = true;
+      if (rules) rules.key(code);
+    }
+  }
+  function kitControls(world, kit) {
+    if (!document.body) return;
+    var directions = [['←', 'ArrowLeft', 'Ir para a esquerda'], ['↑', 'ArrowUp', 'Ir para a frente'],
+      ['↓', 'ArrowDown', 'Ir para trás'], ['→', 'ArrowRight', 'Ir para a direita']];
+    var items = kit === 'race'
+      ? [['↑', 'ArrowUp', 'Acelerar'], ['↓', 'ArrowDown', 'Frear']]
+      : kit === 'stack' ? [['Soltar', 'Space', 'Soltar o bloco']]
+      : kit === 'platform' ? directions.concat([['Pular', 'Space', 'Pular'], ['Fogo', 'KeyF', 'Lançar fogo']])
+      : directions;
+    var pad = document.createElement('div');
+    pad.setAttribute('data-sz-kit-controls', kit);
+    pad.setAttribute('role', 'group');
+    pad.setAttribute('aria-label', 'Controles do jogo');
+    pad.style.cssText = 'position:fixed;bottom:62px;left:50%;transform:translateX(-50%);' +
+      'z-index:6;display:flex;gap:6px;max-width:100%;flex-wrap:wrap;justify-content:center;pointer-events:auto';
+    document.body.appendChild(pad);
+    items.forEach(function (item) {
+      var code = item[1];
+      var button = document.createElement('button');
+      button.type = 'button';
+      button.textContent = item[0];
+      button.setAttribute('aria-label', item[2]);
+      button.setAttribute('data-sz-kit-key', code);
+      button.style.cssText = 'min-width:44px;min-height:44px;padding:8px 12px;font:inherit;font-weight:bold;' +
+        'border:2px solid #facc15;border-radius:10px;background:#0f172a;color:#fff;touch-action:none;user-select:none';
+      pad.appendChild(button);
+      var pointers = Object.create(null), keyboardHeld = false;
+      function releasePointer(e) {
+        if (!pointers[e.pointerId]) return;
+        delete pointers[e.pointerId];
+        virtualKey(code, false);
+      }
+      function releaseAll() {
+        for (var pointer in pointers) { delete pointers[pointer]; virtualKey(code, false); }
+        if (keyboardHeld) { keyboardHeld = false; virtualKey(code, false); }
+      }
+      listen(world, button, 'pointerdown', function (e) {
+        if (e.button !== 0 || pointers[e.pointerId] || (rules && !rules.running())) return;
+        e.preventDefault();
+        e.stopPropagation();
+        pointers[e.pointerId] = true;
+        if (button.setPointerCapture) button.setPointerCapture(e.pointerId);
+        virtualKey(code, true);
+      });
+      listen(world, button, 'pointerup', releasePointer);
+      listen(world, button, 'pointercancel', releasePointer);
+      listen(world, button, 'lostpointercapture', releasePointer);
+      listen(world, button, 'keydown', function (e) {
+        if (e.code !== 'Space' && e.code !== 'Enter') return;
+        e.preventDefault(); e.stopPropagation();
+        if (keyboardHeld || (rules && !rules.running())) return;
+        keyboardHeld = true; virtualKey(code, true);
+      });
+      listen(world, button, 'keyup', function (e) {
+        if (e.code !== 'Space' && e.code !== 'Enter') return;
+        e.preventDefault(); e.stopPropagation();
+        if (keyboardHeld) { keyboardHeld = false; virtualKey(code, false); }
+      });
+      listen(world, button, 'blur', releaseAll);
+      listen(world, window, 'blur', releaseAll);
+      listen(world, document, 'visibilitychange', function () { if (document.hidden) releaseAll(); });
+      (world._disposers || (world._disposers = [])).push(releaseAll);
+    });
+    (world._disposers || (world._disposers = [])).push(function () {
+      if (pad.parentNode) pad.parentNode.removeChild(pad);
+    });
+  }
+
   // Facilitador: cria um canvas que preenche a janela inteira, já responsivo,
   // sem precisar de <canvas> no HTML. É o bloco "criar cena 3D em tela cheia".
-  function createFullscreenScene(bg) {
+  function createFullscreenScene(bg, kit) {
+    if (kit !== undefined && kit !== 'crossing' && kit !== 'race' && kit !== 'stack' && kit !== 'platform') {
+      throw new Error('SZGame3D: tipo de kit desconhecido.');
+    }
     var color = (typeof bg === 'string' && bg) ? bg : '#0b1020';
     for (var wi = worlds.length - 1; wi >= 0; wi--) {
       if (worlds[wi] && worlds[wi]._ownsCanvas) {
@@ -617,12 +700,33 @@ const gameThreeDRuntimeBase = `import * as THREE from 'three';
       if (document.body.firstChild) document.body.insertBefore(canvas, document.body.firstChild);
       else document.body.appendChild(canvas);
     }
-    var world = _setupWorld(canvas, window.innerWidth || 800, window.innerHeight || 600);
-    // Cor de fundo da CENA 3D (o que aparece atrás dos objetos), escolhida no bloco.
-    if (world.scene && THREE.Color) world.scene.background = new THREE.Color(color);
-    world._ownsCanvas = true;
-    world._styleRestore = previousStyles;
-    return world;
+    try {
+      var world;
+      if (kit === 'crossing') world = setupCrossingCanvas(canvas);
+      else if (kit === 'race') world = setupRaceCanvas(canvas);
+      else if (kit === 'stack') world = setupStackCanvas(canvas);
+      else if (kit === 'platform') world = setupPlatformCanvas(canvas);
+      else world = _setupWorld(canvas, window.innerWidth || 800, window.innerHeight || 600);
+      // Cor de fundo da CENA 3D (o que aparece atrás dos objetos), escolhida no bloco.
+      if (world.scene && THREE.Color) world.scene.background = new THREE.Color(color);
+      world._ownsCanvas = true;
+      world._styleRestore = previousStyles;
+      if (kit) kitControls(world, kit);
+      return world;
+    } catch (error) {
+      // Scene creation owns the canvas and the temporary host styles even when
+      // WebGL or a kit fails before returning a fully registered world.
+      disposeWorldsUsingCanvas(canvas);
+      if (canvas.parentNode) canvas.parentNode.removeChild(canvas);
+      if (previousStyles && document.body) {
+        document.body.style.margin = previousStyles.margin;
+        document.body.style.background = previousStyles.background;
+        if (document.documentElement && document.documentElement.style) {
+          document.documentElement.style.overflow = previousStyles.overflow;
+        }
+      }
+      throw error;
+    }
   }
 
   function beginSkyChange(world) {
@@ -3065,7 +3169,9 @@ const gameThreeDRuntimeBase = `import * as THREE from 'three';
 
   // ---- Kit Travessia exposto ----
   function createCrossingScene(canvasId) {
-    var canvas = requireCanvas(canvasId);
+    return setupCrossingCanvas(requireCanvas(canvasId));
+  }
+  function setupCrossingCanvas(canvas) {
     disposeWorldsUsingCanvas(canvas);
     var w = canvasDimension(canvas, 'width', 480);
     var h = canvasDimension(canvas, 'height', 360);
@@ -3386,7 +3492,9 @@ const gameThreeDRuntimeBase = `import * as THREE from 'three';
   }
 
   function createRaceScene(canvasId) {
-    var canvas = requireCanvas(canvasId);
+    return setupRaceCanvas(requireCanvas(canvasId));
+  }
+  function setupRaceCanvas(canvas) {
     disposeWorldsUsingCanvas(canvas);
     var w = canvasDimension(canvas, 'width', 480);
     var h = canvasDimension(canvas, 'height', 360);
@@ -3662,7 +3770,9 @@ const gameThreeDRuntimeBase = `import * as THREE from 'three';
     return layer;
   }
   function createStackScene(canvasId) {
-    var canvas = requireCanvas(canvasId);
+    return setupStackCanvas(requireCanvas(canvasId));
+  }
+  function setupStackCanvas(canvas) {
     disposeWorldsUsingCanvas(canvas);
     var w = canvasDimension(canvas, 'width', 480);
     var h = canvasDimension(canvas, 'height', 360);
@@ -3867,6 +3977,7 @@ const gameThreeDRuntimeBase = `import * as THREE from 'three';
       w._szClickWired = true;
       ensurePick(w);
       listen(w, w._canvas, 'pointerdown', function (e) {
+          if (typeof e.button === 'number' && e.button !== 0) return;
         var rect = w._canvas.getBoundingClientRect ? w._canvas.getBoundingClientRect() : null;
         if (rect && typeof e.clientX === 'number') {
           w._mouse.x = ((e.clientX - rect.left) / (rect.width || 1)) * 2 - 1;
@@ -3920,6 +4031,7 @@ const gameThreeDRuntimeBase = `import * as THREE from 'three';
     blink: rules.blink,
     onKey: rules.onKey,
     onClickObject: rules.onClickObject,
+    onCanvasClick: rules.onCanvasClick,
     onTouchGroup: rules.onTouchGroup,
     createScene: createScene,
     createFullscreenScene: createFullscreenScene,
@@ -4107,6 +4219,7 @@ function composeGameThreeDRuntime(platformSource: string): string {
  * claro em vez de um ReferenceError no carregamento. A lista é a de `platformCodec.ts`.
  */
 const PLATFORM_KIT_ABSENT_SOURCE = [
+  '  function setupPlatformCanvas() { return platformKitAbsent(); }',
   '  function platformKitAbsent() {',
   "    throw new Error('SZGame3D: o Kit Plataforma não foi carregado neste jogo.');",
   '  }',

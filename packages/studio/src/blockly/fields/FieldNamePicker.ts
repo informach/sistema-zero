@@ -919,6 +919,7 @@ function collectEntityStates(workspace: Blockly.Workspace | null | undefined): s
 const G3D_WORLD_DECL_BLOCKS: Record<string, string[]> = {
   sz_g3d_create_scene: ['NAME'],
   sz_g3d_create_fullscreen_scene: ['NAME'],
+  sz_g3d_create_fullscreen_kit: ['NAME'],
   sz_g3d_create_crossing_scene: ['NAME'],
   sz_g3d_create_race_scene: ['NAME'],
   sz_g3d_create_stack_scene: ['NAME'],

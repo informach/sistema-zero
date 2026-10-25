@@ -3,7 +3,7 @@
  * `examples.ts` (Cubo girando, Boneco de formas, Noite enevoada, Enxame que gira e
  * Desvie dos blocos). Desde o review 3D (10/2026) eles também saem DAQUI pelo
  * `bun run gen:game-3d-examples`, como os outros: o `ir.behavior` de cada um é
- * regerado destes fontes (HTML e CSS continuam no `examples.ts`).
+ * regerado destes fontes; a cena ocupa o espaço disponível sem blocos de página.
  *
  * Unidades da API nova: giro contínuo em GRAUS POR SEGUNDO (`spin`), giro fixo em
  * graus (`setRotation`), velocidades POR SEGUNDO e câmera escolhida por modo.
@@ -21,8 +21,7 @@ SZGame3D.animate(cena, () => {
 
 /** Boneco de formas: o nariz deitado (90 graus) e o boneco girando devagar. */
 export const SHAPES_SOURCE = `
-const cena = SZGame3D.createScene("tela");
-SZGame3D.setBackground(cena, "#1e293b");
+const cena = SZGame3D.createFullscreenScene("#1e293b");
 SZGame3D.setCameraPosition(cena, 3, 2.5, 6);
 const chao = SZGame3D.createPlane(cena, { width: 14, depth: 14, color: "#334155" });
 SZGame3D.setPosition(chao, 0, -0.2, 0);
@@ -48,7 +47,7 @@ SZGame3D.animate(cena, () => {
 
 /** Noite enevoada: céu, neblina, sombras e uma luz pontual sobre um cubo que gira. */
 export const NIGHT_SOURCE = `
-const cena = SZGame3D.createScene("tela");
+const cena = SZGame3D.createFullscreenScene("#05070f");
 SZGame3D.setSky(cena, "#0b1026", "#1e3a5f");
 SZGame3D.setFog(cena, "#1e3a5f", 4, 22);
 SZGame3D.setShadows(cena, "on");
@@ -65,8 +64,7 @@ SZGame3D.animate(cena, () => {
 
 /** Enxame que gira: cinco cópias de um molde escondido, num GRUPO comum. */
 export const SWARM_SOURCE = `
-const cena = SZGame3D.createScene("tela");
-SZGame3D.setBackground(cena, "#0b1020");
+const cena = SZGame3D.createFullscreenScene("#0b1020");
 const modelo = SZGame3D.createBox(cena, { size: 0.6, color: "#22d3ee" });
 SZGame3D.setVisible(modelo, "hide");
 const enxame = SZGame3D.createGroup();
@@ -90,8 +88,7 @@ SZGame3D.animate(cena, () => {
  * Andar 3 por segundo, pulo 4.8 e um inimigo a cada 0.75 s, vindo a 6 por segundo.
  */
 export const DODGE_SOURCE = `
-const cena = SZGame3D.createScene("tela");
-SZGame3D.setBackground(cena, "#0c4a6e");
+const cena = SZGame3D.createFullscreenScene("#0c4a6e");
 SZGame3D.setCameraPosition(cena, 4.6, 2.7, 8);
 SZGame3D.setScreenText("inicio", "Desvie dos blocos", "Ande com WASD ou as setas e pule com espaço. Cada bloco que encostar tira um coração.", "Jogar");
 SZGame3D.setScreenText("fim", "Os blocos te pegaram!", "Cada segundo vivo vale um ponto.", "Jogar de novo");

@@ -74,12 +74,15 @@ describe('Exemplo Mina de Cristais — drift contra o parser real', () => {
       'g3d:everySeconds', // veias novas + o relógio
       'g3d:setMaterial', // o brilho dos cristais
       'forRange', // o campo inicial de blocos
-      'event', // clique + botão Minerar de novo
-      'setProperty', // placar/tempo no HUD
+      'g3d:onGame', // eventos e reinício são do motor
+      'g3d:cornerText', // HUD nativo
     ]) {
       expect(types.has(t)).toBe(true)
     }
     // Dois grupos (pedra e cristal), placar e um RELÓGIO vivem em variáveis.
+    expect(types.has('g3d:addScore')).toBe(true)
+    expect(types.has('g3d:screenText')).toBe(true)
+    expect(types.has('g3d:gameOver')).toBe(true)
     const raw = JSON.stringify(statements)
     expect(raw).toContain('"pedras"')
     expect(raw).toContain('"cristais"')
