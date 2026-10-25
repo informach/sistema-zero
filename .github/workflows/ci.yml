@@ -217,6 +217,11 @@ jobs:
       - name: Instalar o compilador confiável para as provas fora da imagem
         run: npm ci --ignore-scripts --no-audit --no-fund --prefix packages/studio-runtime/runtime
 
+      - name: Preparar o Chromium exato do executor Pro fora da imagem
+        # Os exports usam o playwright-core fixado no runtime, que tem revisão
+        # própria de Chromium; o browser do Studio/gravador não o substitui.
+        run: node packages/studio-runtime/runtime/node_modules/playwright-core/cli.js install --with-deps chromium --only-shell
+
       # Credenciais e posse de portas do runtime são homologadas no Windows; o
       # FFmpeg empacotado do desktop também precisa de uma plataforma suportada.
       - name: Testes dos pacotes web e serviços
@@ -244,6 +249,8 @@ jobs:
           bun run check:pro-typescript-libs
           bun run check:python-text-sources
           bun run check:python-visual-examples
+          bun run check:pgzero-games
+          bun run check:raylib-games
           bun --no-env-file test ./scripts/python/reference-game-audio.test.ts ./scripts/python/generate-visual-example-block-metadata.test.ts
           bun run test:canvas-survival
           bun run test:grid-games

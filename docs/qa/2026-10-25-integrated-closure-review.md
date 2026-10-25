@@ -34,6 +34,12 @@ Os 779 arquivos do Studio foram cobertos pelos 145 grupos do runner canônico, e
 
 A conferência financeira de variáveis, em memória e sem exibir valores, confirmou nos dois ambientes: sandbox/produção corretos, credenciais/identificador configurados, HMAC Payments/Gateway correspondente, token Gateway/Messaging correspondente e caminhos de regularização Kids/Adultos válidos. Um primeiro leitor usou o nome errado do token de Messaging; foi corrigido pelo contrato do serviço, sem alterar variáveis. Isso não substitui a prova autenticada após o deploy nem autoriza declarar a política ativada.
 
+## Chromium do CI
+
+O CI `40183615055` aprovou os nove jobs auxiliares e os testes dos pacotes, mas falhou em `verify:grid-export`: o processo Node usa o `playwright-core` fixado no runtime (1.64.1), enquanto o runner só havia instalado os navegadores dos outros pacotes. O Chromium esperado (`chromium_headless_shell-1248`) não existia. O pipeline agora instala o browser pelo CLI do próprio runtime, depois de seu `npm ci` congelado e antes das provas nativas. Não se aponta para um executável de outra versão nem se desativa o sandbox.
+
+O teste de contrato falhou antes do ajuste e passou depois; seleção CI/Ubuntu: oito testes / 33 asserções. Foram restauradas/acrescentadas as guardas canônicas dos geradores Pygame Zero e Raylib no mesmo gate. Os checks locais conferiram **58 exemplos Pygame Zero e 17 Raylib** sem alteração dos arquivos gerados. O resultado Linux completo ainda depende da nova execução CI.
+
 ## Baseline financeiro somente de leitura
 
 Consulta realizada dentro do serviço Payments correto, conferindo projeto/ambiente/serviço e usando transação read-only:
