@@ -40,17 +40,17 @@ video-espaco-e-tempo-K1: Debinha substitui “Como eu deixo um espaço entre ele
 
 ### Seção 2. Prepare o grupo e o relógio
 
-**Tarefa:** Agora prepare o grupo e o relógio dos cactos! Crie o grupo cactos em Ao iniciar e um relógio de 1.4 segundo, fora do quadro. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
+**Tarefa:** Agora prepare o grupo e o relógio dos cactos! Crie o grupo cactos em Ao iniciar e um relógio de 1.4 segundo, fora do quadro. Depois, clique em Verificar projeto e, em seguida, em Próxima parte.
 
 **Blocos na página:** video-grupo-e-relogio → fala-grupo-e-relogio.
 
-**Recado na página (não gravar):** Agora prepare o grupo e o relógio dos cactos! Crie o grupo cactos em Ao iniciar e um relógio de 1.4 segundo, fora do quadro. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
+**Recado na página (não gravar):** Agora prepare o grupo e o relógio dos cactos! Crie o grupo cactos em Ao iniciar e um relógio de 1.4 segundo, fora do quadro. Depois, clique em Verificar projeto e, em seguida, em Próxima parte.
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
 video-grupo-e-relogio-K1: Debinha substitui “E como eu faço aparecer um cacto de cada vez?”. Antes: “solte no fim de Ao iniciar. No nome, escreva cactos. É esse grupo que vai guardar todos os cactos que o relógio criar.”. Depois: “Agora vem o relógio. Ele fica em Enquanto estiver rodando, mas fora de A cada quadro do jogo, porque não pode criar um”.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar projeto.
 
 - Crie o grupo cactos em Ao iniciar.
 - Prepare um relógio com intervalo positivo em Enquanto estiver rodando.
@@ -71,13 +71,13 @@ video-numero-negativo-K1: Debinha substitui “E se eu quiser que o cacto vá pa
 
 ### Seção 4. Crie os cactos no relógio
 
-**Tarefa:** Agora crie os cactos no relógio! Coloque No grupo criar obstáculo dentro do relógio, com x 560, vx -5 e tamanho 44. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
+**Tarefa:** Agora crie os cactos no relógio! Coloque No grupo criar obstáculo dentro do relógio, com x 560, vx -5 e tamanho 44. Depois, clique em Verificar projeto e, em seguida, em Próxima parte.
 
 **Blocos na página:** video-criar-cactos → fala-criar-cactos.
 
-**Recado na página (não gravar):** Agora crie os cactos no relógio! Coloque No grupo criar obstáculo dentro do relógio, com x 560, vx -5 e tamanho 44. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
+**Recado na página (não gravar):** Agora crie os cactos no relógio! Coloque No grupo criar obstáculo dentro do relógio, com x 560, vx -5 e tamanho 44. Depois, clique em Verificar projeto e, em seguida, em Próxima parte.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar projeto.
 
 - Crie obstáculos no grupo cactos, pela direita e indo para a esquerda, em um relógio.
 - Deixe a criação fora de A cada quadro.
@@ -85,17 +85,17 @@ video-numero-negativo-K1: Debinha substitui “E se eu quiser que o cacto vá pa
 
 ### Seção 5. Mova e mostre o grupo de cactos
 
-**Tarefa:** Agora faça os cactos aparecerem e andarem! Coloque Mover os sprites do grupo e Desenhar o grupo depois do desenho do Dino, a cada quadro. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
+**Tarefa:** Agora faça os cactos aparecerem e andarem! Coloque Mover os sprites do grupo e Desenhar o grupo depois do desenho do Dino, a cada quadro. Depois, clique em Verificar projeto e, em seguida, em Próxima parte.
 
 **Blocos na página:** video-mover-e-desenhar → fala-mover-e-desenhar.
 
-**Recado na página (não gravar):** Agora faça os cactos aparecerem e andarem! Coloque Mover os sprites do grupo e Desenhar o grupo depois do desenho do Dino, a cada quadro. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
+**Recado na página (não gravar):** Agora faça os cactos aparecerem e andarem! Coloque Mover os sprites do grupo e Desenhar o grupo depois do desenho do Dino, a cada quadro. Depois, clique em Verificar projeto e, em seguida, em Próxima parte.
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
-video-mover-e-desenhar-K1: Debinha substitui “O cacto passou pelo Dino. Por que a partida não terminou?”. Antes: “No grupo criar obstáculo continua no relógio, fora do quadro, com x 560 e vx -5. Depois de corrigir, teste de novo.”. Depois: “A batida ainda não foi programada. Agora pule um deles para testar o controle. Funcionou? Clique em Verificar esta”.
+video-mover-e-desenhar-K1: Debinha substitui “O cacto passou pelo Dino. Por que a partida não terminou?”. Antes: “No grupo criar obstáculo continua no relógio, fora do quadro, com x 560 e vx -5. Depois de corrigir, teste de novo.”. Depois: “A batida ainda não foi programada. Agora pule um deles para testar o controle. Funcionou? Clique em Verificar projeto.”.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar projeto.
 
 - Atualize o grupo cactos a cada quadro, antes de desenhá-lo.
 - Desenhe o grupo cactos a cada quadro.
@@ -103,13 +103,13 @@ video-mover-e-desenhar-K1: Debinha substitui “O cacto passou pelo Dino. Por qu
 
 ### Seção 6. Teste e envie seu jogo
 
-**Tarefa:** Hora de testar e enviar o seu jogo! Espere os cactos entrarem, pule um deles, clique em Verificar esta parte e depois em Enviar meu projeto. Confirme em Enviar e, quando o envio terminar, clique em Concluir aula.
+**Tarefa:** Hora de testar e enviar o seu jogo! Espere os cactos entrarem, pule um deles, clique em Verificar projeto e depois em Enviar meu projeto. Confirme em Enviar e, quando o envio terminar, clique em Concluir aula.
 
 **Blocos na página:** video-entrega → fala-entrega → projeto.
 
-**Recado na página (não gravar):** Hora de testar e enviar o seu jogo! Espere os cactos entrarem, pule um deles, clique em Verificar esta parte e depois em Enviar meu projeto. Confirme em Enviar e, quando o envio terminar, clique em Concluir aula.
+**Recado na página (não gravar):** Hora de testar e enviar o seu jogo! Espere os cactos entrarem, pule um deles, clique em Verificar projeto e depois em Enviar meu projeto. Confirme em Enviar e, quando o envio terminar, clique em Concluir aula.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte, com o envio em Enviar meu projeto confirmado em Enviar.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar projeto, com o envio em Enviar meu projeto confirmado em Enviar.
 
 - Crie o grupo cactos em Ao iniciar.
 - Crie obstáculos no grupo cactos, pela direita e indo para a esquerda, em um relógio.

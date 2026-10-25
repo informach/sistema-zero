@@ -205,7 +205,7 @@ test('falas para a criança: sem o nome interno da parte e com a publicação co
 
 test('falas para a criança: botões da aula pelo nome novo e o Mapa como convite (06/10/2026)', () => {
   const verificacao =
-    'Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente.'
+    'Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente.'
   for (const aula of aulasNave)
     for (const s of aula.sections) {
       if (!s.checks?.length) continue
@@ -256,8 +256,8 @@ test('pontes do Zappy: convidam e terminam na ação de saída (06/10/2026)', ()
       if (s.checks?.length)
         expect(s.bridge, id).toContain(
           s.final
-            ? 'clique em Verificar esta parte e envie o seu projeto.'
-            : 'clique em Verificar esta parte. Depois, clique em Próxima parte.',
+            ? 'clique em Verificar projeto e envie o seu projeto.'
+            : 'clique em Verificar projeto. Depois, clique em Próxima parte.',
         )
     }
 })

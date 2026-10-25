@@ -78,7 +78,7 @@ test('objetivos aparecem para a equipe sem inventar progresso do aluno', async (
       ),
     )
     const button = Array.from(host.querySelectorAll('button')).find(
-      (button) => button.textContent === 'Verificar esta parte',
+      (button) => button.textContent === 'Verificar projeto',
     )
     expect(button).toBeDefined()
     expect(host.textContent).toContain('Revele o personagem tocado.')
@@ -104,7 +104,7 @@ test('objetivos aparecem para a equipe sem inventar progresso do aluno', async (
     )
     expect(
       Array.from(host.querySelectorAll('button')).some(
-        (button) => button.textContent === 'Verificar esta parte',
+        (button) => button.textContent === 'Verificar projeto',
       ),
     ).toBe(false)
   } finally {

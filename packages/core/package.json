@@ -26,6 +26,7 @@
     "./staff": "./src/staff/index.ts",
     "./studio/*": "./src/studio/*.ts",
     "./time": "./src/time/index.ts",
+    "./billing": "./src/billing/index.ts",
     "./zappy": "./src/zappy/index.ts",
     "./learning": "./src/learning/index.ts",
     "./learning/scene": "./src/learning/scene/index.ts",

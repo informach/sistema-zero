@@ -14,6 +14,8 @@ export interface MessageRepository {
   create(message: Message): Promise<void>
   /** Atualização com concorrência otimista + grava novos eventos no outbox. */
   update(message: Message): Promise<void>
+  /** Retirada exige versão e status ainda QUEUED/SCHEDULED na mesma escrita. */
+  withdrawQueued(message: Message): Promise<void>
   findById(id: string): Promise<Message | null>
   /** Match de webhook de status (id atribuído pelo provedor). */
   findByProviderMessageId(providerMessageId: string): Promise<Message | null>

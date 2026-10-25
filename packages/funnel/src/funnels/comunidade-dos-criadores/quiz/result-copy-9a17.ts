@@ -308,7 +308,7 @@ export const NEED_SENTENCE: Record<string, string> = {
   sozinho:
     'Você precisa que ele [[consiga sozinho, porque você não entende disso]]. A explicação está nas aulas, com o passo ao lado do Estúdio, onde ele monta o jogo. O seu papel é combinar o horário e pedir para ver o jogo.',
   recorrer:
-    'Você quer que ele [[tenha a quem recorrer quando travar]]. Primeiro vem o que está na tela: ele volta ao trecho do vídeo, aperta Verificar esta parte nas partes que têm verificação e abre o Como fazer, que tem tutoriais por assunto. Se a dúvida continuar, o botão Preciso de ajuda manda a pergunta para a nossa equipe, e a resposta chega por escrito nos Recados.',
+    'Você quer que ele [[tenha a quem recorrer quando travar]]. Primeiro vem o que está na tela: ele volta ao trecho do vídeo, aperta Verificar projeto nas partes que têm verificação e abre o Como fazer, que tem tutoriais por assunto. Se a dúvida continuar, o botão Preciso de ajuda manda a pergunta para a nossa equipe, e a resposta chega por escrito nos Recados.',
   acompanhar:
     'Você quer [[conseguir acompanhar]]. Na sua área, cada filho tem um painel com os cursos, as atividades, as entregas e o posto da Jornada. E a conversa que mais mostra o que ele aprendeu é a mais simples: me mostra o que você mudou.',
   tempo_tela:

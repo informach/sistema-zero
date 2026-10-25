@@ -1,8 +1,10 @@
 import { z } from 'zod'
 import { StudioSha256Schema } from './project-environment'
+import { PYTHON_MISSION_LIMITS } from './python-mission-execution'
 import { STUDIO_PYTHON_PREVIEW_LIFETIME_MS } from './python-preview-input'
 import {
   StudioPythonInputReferenceSchema,
+  StudioPythonMissionOperationSchema,
   StudioPythonValidationOperationSchema,
 } from './python-validation-input'
 
@@ -46,7 +48,12 @@ export const StudioPythonInspectionJobStateSchema = z
     input: StudioPythonInputReferenceSchema,
     structure: z.boolean(),
     /** Only validation jobs carry a playtest operation; compilation and cancellation omit it. */
-    operation: StudioPythonValidationOperationSchema.optional(),
+    operation: z
+      .discriminatedUnion('mode', [
+        StudioPythonValidationOperationSchema,
+        StudioPythonMissionOperationSchema,
+      ])
+      .optional(),
     status: z.enum(['running', 'succeeded', 'failed', 'cancelled']),
     createdAt: z.number().int().nonnegative(),
     deadline: z.number().int().nonnegative(),
@@ -62,7 +69,11 @@ export const StudioPythonInspectionJobStateSchema = z
       })
     if (
       state.deadline <= state.createdAt ||
-      state.deadline > state.createdAt + STUDIO_PYTHON_JOB_DEADLINE_MS ||
+      state.deadline >
+        state.createdAt +
+          (state.operation?.mode === 'check'
+            ? PYTHON_MISSION_LIMITS.jobMs
+            : STUDIO_PYTHON_JOB_DEADLINE_MS) ||
       state.deadline > state.input.expiresAt
     )
       ctx.addIssue({ code: 'custom', message: 'Prazo do job Python inválido.' })
@@ -71,7 +82,7 @@ export const StudioPythonInspectionJobStateSchema = z
 export type StudioPythonInspectionJobState = z.infer<typeof StudioPythonInspectionJobStateSchema>
 
 export function studioPythonInspectionJobRetentionUntil(state: StudioPythonInspectionJobState) {
-  return state.operation?.preview
+  return state.operation?.mode === 'validate' && state.operation.preview
     ? Math.max(state.input.expiresAt, state.deadline + STUDIO_PYTHON_PREVIEW_LIFETIME_MS)
     : state.input.expiresAt
 }

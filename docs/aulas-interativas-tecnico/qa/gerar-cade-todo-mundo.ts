@@ -219,7 +219,7 @@ const aula1 = {
     video('video-a1-programar', 'Faça o primeiro personagem aparecer'),
     dialogue(
       'ponte-a1-programar',
-      'Agora monte a regra do toque no seu jogo! Depois, teste nos esconderijos e clique em Verificar esta parte antes de enviar o seu projeto.',
+      'Agora monte a regra do toque no seu jogo! Depois, teste nos esconderijos e clique em Verificar projeto antes de enviar o seu projeto.',
     ),
     studio(montarProjetoCadeTodoMundo()),
   ],
@@ -304,7 +304,7 @@ const aula2 = {
     video('video-a2-contagem', 'Cada descoberta conta'),
     dialogue(
       'ponte-a2-contagem',
-      'Agora faça o seu jogo contar os achados! Depois, teste os três esconderijos e clique em Verificar esta parte. Quando aparecer Objetivo cumprido!, clique em Próxima parte.',
+      'Agora faça o seu jogo contar os achados! Depois, teste os três esconderijos e clique em Verificar projeto. Quando aparecer Objetivo cumprido!, clique em Próxima parte.',
     ),
     studio(montarProjetoCadeTodoMundo(true), true),
     // Personalização antes de publicar (05/10/2026): todos os bichos e esconderijos têm a mesma

@@ -49,12 +49,14 @@ test('same environment updates installation availability and cancels an older pe
       </StudioRuntimeEnvironmentProvider>
     </StudioStoresContext.Provider>,
   )
-  const install = await screen.findByRole('button', { name: 'Instalar' })
+  const install = await screen.findByRole('button', { name: 'Instalar Turtle' })
   expect(install.hasAttribute('disabled')).toBe(false)
   fireEvent.click(install)
   await entered.promise
   await act(async () => authority.update({ ...initial, grantedExtensionIds: [] }))
-  expect(screen.getByRole('button', { name: 'Instalar' }).hasAttribute('disabled')).toBe(true)
+  expect(screen.getByRole('button', { name: 'Instalar Turtle' }).hasAttribute('disabled')).toBe(
+    true,
+  )
   await act(async () => {
     gate.resolve()
     await gate.promise
@@ -62,7 +64,9 @@ test('same environment updates installation availability and cancels an older pe
   expect(stores.project.getState().project).toBe(project)
   expect(project.installedExtensions).toEqual([])
   await act(async () => authority.update(initial))
-  expect(screen.getByRole('button', { name: 'Instalar' }).hasAttribute('disabled')).toBe(false)
+  expect(screen.getByRole('button', { name: 'Instalar Turtle' }).hasAttribute('disabled')).toBe(
+    false,
+  )
 })
 
 for (const revoked of ['environment', 'curation'] as const)
@@ -107,7 +111,7 @@ for (const revoked of ['environment', 'curation'] as const)
       )
     }
     const mounted = render(content(false))
-    fireEvent.click(await screen.findByRole('button', { name: 'Instalar' }))
+    fireEvent.click(await screen.findByRole('button', { name: 'Instalar Turtle' }))
     mounted.rerender(content(true))
     await act(async () => {
       release()
@@ -137,12 +141,12 @@ test('the language panel installs lazily, refuses unavailable removal analysis a
       </StudioRuntimeEnvironmentProvider>
     </StudioStoresContext.Provider>,
   )
-  const install = await screen.findByRole('button', { name: 'Instalar' })
+  const install = await screen.findByRole('button', { name: 'Instalar Turtle' })
   expect(screen.getByText('Turtle')).toBeTruthy()
   expect(screen.queryByText('Jogo 2D')).toBeNull()
   expect(analyses).toBe(0)
   fireEvent.click(install)
-  const remove = await screen.findByRole('button', { name: 'Remover' })
+  const remove = await screen.findByRole('button', { name: 'Remover Turtle' })
   expect(stores.project.getState().project?.installedExtensions[0]?.id).toBe('python-turtle')
   expect(analyses).toBe(0)
   fireEvent.click(remove)
@@ -179,11 +183,14 @@ test('a Python project without a host runtime cannot offer an unapproved install
       <ExtensionsPanel open onClose={() => {}} />
     </StudioStoresContext.Provider>,
   )
-  const install = await screen.findByRole('button', { name: 'Instalar' })
+  const install = await screen.findByRole('button', { name: 'Instalar Turtle' })
   expect(install.hasAttribute('disabled')).toBe(true)
   fireEvent.click(install)
   expect(stores.project.getState().project?.installedExtensions).toEqual([])
-  expect(screen.getByText('O ambiente Python ainda não está disponível nesta página.')).toBeTruthy()
+  // Both Turtle and Pygame Zero explain why they cannot be installed here.
+  expect(
+    screen.getAllByText('O ambiente Python ainda não está disponível nesta página.'),
+  ).toHaveLength(2)
 })
 
 for (const retirement of ['unmount', 'close', 'source', 'curation'] as const) {
@@ -221,7 +228,7 @@ for (const retirement of ['unmount', 'close', 'source', 'curation'] as const) {
       )
     }
     const mounted = render(content())
-    fireEvent.click(await screen.findByRole('button', { name: 'Remover' }))
+    fireEvent.click(await screen.findByRole('button', { name: 'Remover Turtle' }))
     fireEvent.click(
       within(await screen.findByRole('dialog', { name: 'Remover extensão?' })).getByRole('button', {
         name: 'Remover',

@@ -1888,3 +1888,16 @@ tem (`/api/members/courses?q=cade-todo-mundo-adulto&audience=adult`) e, se o slu
 `tests/campaign-audience.test.tsx` e a guarda de copy em `tests/ambassador-copy.test.ts`.
 
 Edição envia `expectedUpdatedAt` da versão exibida: o serviço recusa outra aba desatualizada com 409. Não reenviar automaticamente com versão nova, pois isso apagaria a proteção de conflito. Lista/detalhe ignoram respostas antigas; falha limpa resultados e oferece atualização. Regressão em `tests/campaigns-client.test.tsx`.
+
+## Fila de regularização financeira (24/10/2026)
+
+`/admin/pagamentos/regularizacao` mantém a política e mostra casos/conferências paginados.
+A fila é somente leitura; staff consulta, inclusive filtros Kids/Adultos/público desconhecido.
+Sem inferência de audiência pelo nome do produto. Consulta com erro não vira fila vazia;
+a troca de filtros aborta a consulta anterior. BFF revalida sessão/filtros/duplicação de
+parâmetros e aplica private/no-store. Ações financeiras auditadas são lote separado.
+
+A fila agora oferece a ação separada de conferir período PAID na operadora, exclusiva
+admin/superadmin (staff vê o botão desabilitado). A escrita usa versão e requestId,
+sem datas/ator escolhidos pelo cliente. Resposta perdida gera consulta, sem repetir
+POST automaticamente. Auditoria permanente e CAS pertencem ao Payments, não ao BFF.

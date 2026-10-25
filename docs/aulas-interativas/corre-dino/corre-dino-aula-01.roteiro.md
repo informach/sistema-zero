@@ -110,7 +110,7 @@
 
 **Clipe:** `video-area-e-tela`
 
-**Na tela:** Mostrar o projeto no estado de entrada. Começar pela fala de abertura, antes de qualquer bloco: fazer no jogo o teste que ela pede e, no “Tá vendo?”, manter o resultado à vista. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido! e seguir o encaminhamento narrado (Próxima parte).
+**Na tela:** Mostrar o projeto no estado de entrada. Começar pela fala de abertura, antes de qualquer bloco: fazer no jogo o teste que ela pede e, no “Tá vendo?”, manter o resultado à vista. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes. Ao terminar, clicar em Verificar projeto, mostrar Objetivo cumprido! e seguir o encaminhamento narrado (Próxima parte).
 
 **Fala para ElevenLabs:**
 
@@ -131,11 +131,11 @@
 
 [engaging, energetic, conversational voice] O Estúdio guarda seu jogo automaticamente enquanto você monta. Você vai enviar para a equipe só no fim desta aula.
 
-[engaging, energetic, conversational voice] Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Próxima parte.
+[engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Próxima parte.
 ```
 
 
-**Recado na página (não gravar):** Agora prepare a tela do seu jogo! Coloque Ao iniciar no projeto e, dentro dela, a tela de 480 por 270. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
+**Recado na página (não gravar):** Agora prepare a tela do seu jogo! Coloque Ao iniciar no projeto e, dentro dela, a tela de 480 por 270. Depois, clique em Verificar projeto e, em seguida, em Próxima parte.
 
 ## Seção 6. Mostre o limite da tela
 
@@ -145,7 +145,7 @@
 
 **Clipe:** `video-borda`
 
-**Na tela:** Mostrar o projeto no estado de entrada. Começar pela fala de abertura, antes de qualquer bloco: fazer no jogo o teste que ela pede e, no “Tá vendo?”, manter o resultado à vista. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido! e seguir o encaminhamento narrado (Próxima parte).
+**Na tela:** Mostrar o projeto no estado de entrada. Começar pela fala de abertura, antes de qualquer bloco: fazer no jogo o teste que ela pede e, no “Tá vendo?”, manter o resultado à vista. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes. Ao terminar, clicar em Verificar projeto, mostrar Objetivo cumprido! e seguir o encaminhamento narrado (Próxima parte).
 
 **Fala para ElevenLabs:**
 
@@ -162,7 +162,7 @@
 
 [engaging, energetic, conversational voice] Agora olhe a área do jogo: aparece um retângulo em volta dela! [reassuring, encouraging voice] Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: dentro de Ao iniciar, primeiro vem Preparar o jogo em tela cheia e, logo abaixo, Mostrar a borda da tela, com espessura 4. Se a borda estiver lá e mesmo assim não aparecer, escolha para ela uma cor diferente da cor do fundo. [reassuring, encouraging voice] Depois de corrigir, teste de novo.
 
-[engaging, energetic, conversational voice] Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Próxima parte.
+[engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Próxima parte.
 ```
 
 **Substituições na edição kids:**
@@ -178,7 +178,7 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 - `video-borda-K1`: entrada — Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação. Saída — Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.
 
 
-**Recado na página (não gravar):** Agora mostre onde a tela do seu jogo acaba! Coloque Mostrar a borda da tela logo abaixo da preparação, com espessura 4. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
+**Recado na página (não gravar):** Agora mostre onde a tela do seu jogo acaba! Coloque Mostrar a borda da tela logo abaixo da preparação, com espessura 4. Depois, clique em Verificar projeto e, em seguida, em Próxima parte.
 
 ## Seção 7. Escolha onde o Dino fica
 
@@ -270,7 +270,7 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 **Clipe:** `video-criar-dino`
 
-**Na tela:** Mostrar o projeto no estado de entrada. Na abertura não há teste no jogo, porque o efeito desta parte ainda não aparece: a fala só lembra a experiência e anuncia a montagem. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido! e seguir o encaminhamento narrado (Próxima parte).
+**Na tela:** Mostrar o projeto no estado de entrada. Na abertura não há teste no jogo, porque o efeito desta parte ainda não aparece: a fala só lembra a experiência e anuncia a montagem. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes. Ao terminar, clicar em Verificar projeto, mostrar Objetivo cumprido! e seguir o encaminhamento narrado (Próxima parte).
 
 **Fala para ElevenLabs:**
 
@@ -287,7 +287,7 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 [engaging, energetic, conversational voice] Vamos conferir. Ele foi criado, mas ainda falta mandar desenhar. [confident, clear, unhurried voice] Confira se ficou assim: dentro de Ao iniciar, primeiro vem a preparação da tela, depois a borda e, por último, Criar dinossauro, com x 110, y 150 e tamanho 64. A tela continua sem Dino, e está certo: ele já existe nos bastidores, mas ainda não tem uma ordem de desenho. Por isso, não duplique o bloco para tentar fazer o Dino aparecer.
 
-[engaging, energetic, conversational voice] Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Próxima parte.
+[engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Próxima parte.
 ```
 
 **Substituições na edição kids:**
@@ -303,7 +303,7 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 - `video-criar-dino-K1`: entrada — Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação. Saída — Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.
 
 
-**Recado na página (não gravar):** Agora crie o seu Dino! Coloque Criar dinossauro logo abaixo da borda, com x 110, y 150 e tamanho 64. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
+**Recado na página (não gravar):** Agora crie o seu Dino! Coloque Criar dinossauro logo abaixo da borda, com x 110, y 150 e tamanho 64. Depois, clique em Verificar projeto e, em seguida, em Próxima parte.
 
 ## Seção 10. Teste e envie seu jogo
 
@@ -313,7 +313,7 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 **Clipe:** `video-entrega`
 
-**Na tela:** Mostrar o projeto no estado de entrada. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido! e seguir o encaminhamento narrado (Enviar meu projeto, Enviar, Projeto enviado! e Concluir aula).
+**Na tela:** Mostrar o projeto no estado de entrada. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes. Ao terminar, clicar em Verificar projeto, mostrar Objetivo cumprido! e seguir o encaminhamento narrado (Enviar meu projeto, Enviar, Projeto enviado! e Concluir aula).
 
 **Fala para ElevenLabs:**
 
@@ -322,8 +322,8 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 [engaging, energetic, conversational voice] Agora confira o bloco Criar dinossauro dentro de Ao iniciar, com o nome dino, x 110, y 150 e tamanho 64. Se algum campo estiver diferente, corrija antes de enviar.
 
-[engaging, energetic, conversational voice] Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Concluir aula.
+[engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Concluir aula.
 ```
 
 
-**Recado na página (não gravar):** Hora de conferir e enviar o seu jogo! Confira a tela, a borda e o Dino, clique em Verificar esta parte e depois em Enviar meu projeto. Confirme em Enviar e, quando o envio terminar, clique em Concluir aula.
+**Recado na página (não gravar):** Hora de conferir e enviar o seu jogo! Confira a tela, a borda e o Dino, clique em Verificar projeto e depois em Enviar meu projeto. Confirme em Enviar e, quando o envio terminar, clique em Concluir aula.

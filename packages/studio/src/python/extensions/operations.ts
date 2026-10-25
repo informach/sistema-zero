@@ -5,7 +5,7 @@ import type { StudioRuntimeEnvironment } from '../../runtime/environment'
 import { TURTLE_EXTENSION } from '../../runtime/python/turtle/contract'
 import type { ProjectStoreApi } from '../../state/projectStore'
 import type { PythonAnalysisController } from '../language/controller'
-import { PYTHON_EXTENSIONS } from './catalog'
+import { PYTHON_CANVAS_EXTENSION_IDS, PYTHON_EXTENSIONS } from './catalog'
 
 export function pythonExtensionInstallIssue(
   project: PythonProjectDocument,
@@ -19,6 +19,13 @@ export function pythonExtensionInstallIssue(
     )
   )
     return 'Esta extensão Python ainda não está disponível.'
+  if (
+    PYTHON_CANVAS_EXTENSION_IDS.includes(extension.id) &&
+    project.installedExtensions.some(
+      (item) => item.id !== extension.id && PYTHON_CANVAS_EXTENSION_IDS.includes(item.id),
+    )
+  )
+    return 'Turtle e Pygame Zero usam a mesma tela: remova a outra extensão antes de instalar esta.'
   if (!environment) return 'O ambiente Python ainda não está disponível nesta página.'
   if (allowedIds && !allowedIds.includes(extension.id))
     return 'Esta ferramenta não está liberada nesta tarefa.'

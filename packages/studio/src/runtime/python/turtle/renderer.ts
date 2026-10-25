@@ -1,6 +1,8 @@
+import type { ExecutionMotionSample } from '@sistemazero/core/learning'
 import type { StudioPythonPlaytestRecipe } from '@sistemazero/core/studio/python-playtest'
 import { STUDIO_SNAPSHOT_LIMITS } from '../../snapshotImage'
 import type { StudioRuntimeImage } from '../../types'
+import { createPythonMissionPoseTracker } from '../missionPose'
 import {
   TURTLE_GRAPHICS_LIMITS as LIMITS,
   readTurtleGraphicsRequest,
@@ -52,6 +54,7 @@ export interface TurtleRenderer {
   exchange(raw: string, images: { id: number; bytes: Uint8Array<ArrayBuffer> }[]): Promise<string>
   dispose(): void
   capture(): Promise<StudioRuntimeImage | null>
+  missionPose(objectId: number): ExecutionMotionSample | null
 }
 
 /** One instance per frame generation. Never exposes learner objects or callback code to DOM APIs. */
@@ -60,6 +63,8 @@ export function createTurtleRenderer(
   options: { activityPresentation?: boolean } = {},
 ): TurtleRenderer {
   const scene = new Map<number, SceneItem>()
+  const mission = createPythonMissionPoseTracker(LIMITS.turtles)
+  const actorItems = new Map<number, number[]>()
   const images = new Map<number, ImageBitmap>()
   const inputs: TurtleInputEvent[] = []
   let listeners = new AbortController()
@@ -120,10 +125,22 @@ export function createTurtleRenderer(
     )
       inputs[inputs.length - 1] = event
     else if (inputs.length < LIMITS.inputEvents) inputs.push(event)
-    else {
-      inputs.length = 0
-      inputError = new Error('A fila de entrada Turtle excedeu o limite.')
-      listeners.abort()
+    else if (event.type === 'keypress' || event.type === 'drag') {
+      // A held key or a moving mouse while Python is busy: drop the extra repeats instead of
+      // ending the program. Presses already queued still reach the callbacks in order.
+    } else {
+      // Releases and clicks must not be lost: make room by dropping the oldest repeat.
+      const replaceable = inputs.findIndex(
+        (item) => item.type === 'keypress' || item.type === 'drag',
+      )
+      if (replaceable >= 0) {
+        inputs.splice(replaceable, 1)
+        inputs.push(event)
+      } else {
+        inputs.length = 0
+        inputError = new Error('A fila de entrada Turtle excedeu o limite.')
+        listeners.abort()
+      }
     }
     wake()
   }
@@ -263,7 +280,16 @@ export function createTurtleRenderer(
           if (event.key.length > 80 || closed || disposed) return
           // Browser navigation shortcuts remain available; game keys stay in the canvas.
           if (event.ctrlKey || event.metaKey || event.altKey) return
-          queue({ type, key: KEY_NAMES[event.key] ?? event.key })
+          const key = KEY_NAMES[event.key] ?? event.key
+          // Auto-repeat of a key whose press is still waiting adds nothing for Python.
+          if (
+            event.repeat &&
+            inputs.some((item) => item.type === type && 'key' in item && item.key === key)
+          ) {
+            if (event.key !== 'Tab') event.preventDefault()
+            return
+          }
+          queue({ type, key })
           if (event.key !== 'Tab') event.preventDefault()
         },
         settings,
@@ -386,6 +412,7 @@ export function createTurtleRenderer(
     for (const item of scene.values()) if (index++ >= retained) draw(ctx, item)
     dirty = false
     frameSequence++
+    mission.present()
     presentedWidth = width
     presentedHeight = height
     lastPaintAt = performance.now()
@@ -446,7 +473,17 @@ export function createTurtleRenderer(
       throw new Error('A tela Turtle foi fechada.')
     if (!['bind', 'title', 'focus'].includes(operation.op)) dirty = true
     switch (operation.op) {
+      case 'actor':
+        if (!actorItems.has(operation.id) && actorItems.size >= LIMITS.turtles)
+          throw new Error('Muitas tartarugas para observar.')
+        if (operation.items.some((id) => !scene.has(id)))
+          throw new Error('A tartaruga observada não possui desenho no motor gráfico.')
+        actorItems.set(operation.id, operation.items)
+        mission.stage(operation.id, operation.x, operation.y, operation.visible)
+        break
       case 'open':
+        mission.clearStage()
+        actorItems.clear()
         releaseScreen()
         activityEventLoopReady = false
         listeners = new AbortController()
@@ -489,6 +526,8 @@ export function createTurtleRenderer(
       case 'delete':
         if (operation.id === 'all') {
           scene.clear()
+          actorItems.clear()
+          mission.clearStage()
           pointCount = textChars = 0
           drag = undefined
           lastId = undefined
@@ -548,6 +587,8 @@ export function createTurtleRenderer(
       }
       case 'close':
         closed = true
+        actorItems.clear()
+        mission.clearStage()
         settleActivityReadiness(new Error('A tela Turtle foi fechada.'))
         releaseScreen()
         break
@@ -569,6 +610,10 @@ export function createTurtleRenderer(
     context = undefined
   }
   return {
+    missionPose(objectId) {
+      if (disposed || closed || !actorItems.get(objectId)?.every((id) => scene.has(id))) return null
+      return mission.read(objectId)
+    },
     get readyForActivityControls() {
       return !disposed && !closed && activityEventLoopReady && !!canvas && frameSequence > 0
     },
@@ -745,6 +790,7 @@ export function createTurtleRenderer(
         }
         active()
         if (inputError) throw inputError
+        mission.advance()
         return JSON.stringify({ events: inputs.splice(0), value })
       } catch (error) {
         active()
@@ -761,6 +807,8 @@ export function createTurtleRenderer(
       }
     },
     dispose() {
+      mission.retire()
+      actorItems.clear()
       if (disposed) return
       disposed = true
       settleActivityReadiness(new Error('A execução Turtle foi encerrada.'))

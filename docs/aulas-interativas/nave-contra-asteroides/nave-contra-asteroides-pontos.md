@@ -39,17 +39,17 @@ video-variavel-K1: Dedé substitui “Como eu mostro os pontos que já estão gu
 
 ### Seção 2. Some um ponto a cada acerto
 
-**Tarefa:** Agora faça o seu jogo contar os pontos! Crie pontos, some 1 no acerto e mostre o placar. Depois, teste, clique em Verificar esta parte e envie o seu projeto. Por último, clique em Concluir aula.
+**Tarefa:** Agora faça o seu jogo contar os pontos! Crie pontos, some 1 no acerto e mostre o placar. Depois, teste, clique em Verificar projeto e envie o seu projeto. Por último, clique em Concluir aula.
 
 **Blocos na página:** video-pontos-e-placar → fala-placar → projeto.
 
-**Recado na página (não gravar):** Agora faça o seu jogo contar os pontos! Crie pontos, some 1 no acerto e mostre o placar. Depois, teste, clique em Verificar esta parte e envie o seu projeto. Por último, clique em Concluir aula.
+**Recado na página (não gravar):** Agora faça o seu jogo contar os pontos! Crie pontos, some 1 no acerto e mostre o placar. Depois, teste, clique em Verificar projeto e envie o seu projeto. Por último, clique em Concluir aula.
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
 video-pontos-e-placar-K1: Dedé substitui “Onde eu coloco o bloco que soma?”. Antes: “contador por pontos e clique fora do campo. O valor já vem em 0: mantenha, porque cada partida começa sem pontos.”. Depois: “O ponto só pode ser somado quando um tiro acerta uma pedra. Por isso, a soma vai dentro da colisão entre tiros e”.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte, com o envio confirmado em Enviar meu projeto → Enviar.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar projeto, com o envio confirmado em Enviar meu projeto → Enviar.
 
 - Crie a variável pontos com 0 em Ao iniciar.
 - Some 1 em pontos dentro da colisão tiros × asteroides.

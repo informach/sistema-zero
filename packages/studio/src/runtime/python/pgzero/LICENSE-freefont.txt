@@ -1,0 +1,18 @@
+freesansbold.ttf — GNU FreeFont (FreeSans Bold)
+Copyright 2002 Free Software Foundation.
+
+This file is the default font of Pygame Zero, distributed with pygame-ce. It is used unmodified
+by the Sistema Zero Studio to draw screen.draw.text exactly with Pygame Zero's default font.
+
+The use of this font is granted subject to the GNU General Public License
+(https://www.gnu.org/licenses/gpl.html), with the GNU FreeFont font exception:
+
+  As a special exception, if you create a document which uses this font, and embed this font
+  or unaltered portions of this font into the document, this font does not by itself cause the
+  resulting document to be covered by the GNU General Public License. This exception does not
+  however invalidate any other reasons why the document might be covered by the GNU General
+  Public License. If you modify this font, you may extend this exception to your version of the
+  font, but you are not obligated to do so. If you do not wish to do so, delete this exception
+  statement from your version.
+
+Source: https://www.gnu.org/software/freefont/ and https://github.com/pygame-community/pygame-ce

@@ -58,6 +58,60 @@ function fixture(recipe: unknown = { version: 1, observeMs: 250 }) {
   return { collector, session, event, counts: () => ({ stopped, disposed, retired }) }
 }
 
+test('mission observations opt in, preserve identity through awaits and skip unused PNG capture', async () => {
+  const ordinary = fixture()
+  expect(() => ordinary.collector.output()).toThrow('não está disponível')
+  await expect(ordinary.collector.observe({ type: 'value', path: 'pontos' })).rejects.toThrow(
+    'não está disponível',
+  )
+  const f = fixture({ version: 1, mission: true, capture: false, observeMs: 250 })
+  let captures = 0
+  f.session.captureSnapshot = async () => {
+    captures++
+    throw new Error('Mission checks must not allocate PNG captures')
+  }
+  f.session.observePythonMission = async () => ({
+    observation: { type: 'value', observed: { found: true, value: 10 } },
+  })
+  expect(await f.collector.observe({ type: 'value', path: 'pontos' })).toMatchObject({
+    observation: { observed: { value: 10 } },
+  })
+  f.event({
+    type: 'console',
+    stream: 'stdout',
+    text: 'real-output',
+    omittedChars: 0,
+    omittedLines: 0,
+  })
+  expect(f.collector.output().stdout).toBe('real-output')
+  now = 250
+  const result = await f.collector.finish()
+  expect(result.report.status).toBe('passed')
+  expect(result.report.capture).toBeUndefined()
+  expect(captures).toBe(0)
+  expect(f.counts()).toEqual({ stopped: 1, disposed: 1, retired: 1 })
+  await expect(f.collector.observe({ type: 'value', path: 'pontos' })).rejects.toThrow(
+    'não está disponível',
+  )
+})
+
+test('a mission observation cannot settle after its session is retired, and program errors remain failed evidence', async () => {
+  const f = fixture({ version: 1, mission: true, capture: false, observeMs: 250 })
+  const gate = Promise.withResolvers<{
+    observation: { type: 'value'; observed: { found: true; value: number } }
+  }>()
+  f.session.observePythonMission = () => gate.promise
+  const pending = f.collector.observe({ type: 'value', path: 'pontos' })
+  f.collector.programFailure('O programa excedeu o prazo da observação.')
+  now = 250
+  const result = await f.collector.finish()
+  gate.resolve({ observation: { type: 'value', observed: { found: true, value: 10 } } })
+  await expect(pending).rejects.toThrow('geração mudou')
+  expect(result.report.status).toBe('failed')
+  expect(result.report.errors).toContain('O programa excedeu o prazo da observação.')
+  expect(result.report.stopped).toBe(true)
+})
+
 test('collector waits for actual stop/dispose, captures the same run, and preserves recipe input', async () => {
   const recipe = {
     version: 1,

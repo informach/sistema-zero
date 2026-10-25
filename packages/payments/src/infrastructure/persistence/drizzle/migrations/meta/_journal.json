@@ -50,6 +50,146 @@
       "when": 1787006040528,
       "tag": "0006_salty_plazm",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1792801622729,
+      "tag": "0007_subscription_operations",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1792802396118,
+      "tag": "0008_subscription_cancellation_request",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1792803384066,
+      "tag": "0009_subscription_cancellation_queue",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1792806475845,
+      "tag": "0010_subscription_recovery_cases",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1792807155011,
+      "tag": "0011_subscription_recovery_policy",
+      "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1792809676477,
+      "tag": "0012_subscription_recovery_notices",
+      "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1792810582043,
+      "tag": "0013_subscription_operation_fencing",
+      "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1792833885620,
+      "tag": "0014_subscription_cancellation_audit",
+      "breakpoints": true
+    },
+    {
+      "idx": 15,
+      "version": "7",
+      "when": 1792836450471,
+      "tag": "0015_subscription_recovery_admissions",
+      "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "7",
+      "when": 1792841171537,
+      "tag": "0016_subscription_cycle_access",
+      "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1792841681579,
+      "tag": "0017_preserve_subscription_failure",
+      "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1792842404851,
+      "tag": "0018_subscription_retry_terms",
+      "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1792844903192,
+      "tag": "0019_subscription_period_confirmation_audit",
+      "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1792854574917,
+      "tag": "0020_pink_loki",
+      "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1792858595003,
+      "tag": "0021_amused_naoko",
+      "breakpoints": true
+    },
+    {
+      "idx": 22,
+      "version": "7",
+      "when": 1792862218524,
+      "tag": "0022_tan_hitman",
+      "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "7",
+      "when": 1792864670384,
+      "tag": "0023_normal_scorpion",
+      "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1792867300579,
+      "tag": "0024_dusty_paper_doll",
+      "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "7",
+      "when": 1792867325777,
+      "tag": "0025_subscription_paid_cycle_history",
+      "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "7",
+      "when": 1792869908104,
+      "tag": "0026_curvy_namor",
+      "breakpoints": true
     }
   ]
 }

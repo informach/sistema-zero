@@ -1,7 +1,9 @@
+import type { SubscriptionCycleAccess } from '@sistemazero/core/billing'
 import { sql } from 'drizzle-orm'
 import {
   bigint,
   boolean,
+  check,
   index,
   integer,
   jsonb,
@@ -18,8 +20,21 @@ import type {
   PixQrCode,
 } from '../../../domain/payment/payment.aggregate'
 import type { PaymentStatus } from '../../../domain/payment/payment.status'
+import type { PeriodConfirmationAudit } from '../../../domain/payment/period-confirmation'
+import type { CancellationOrigin } from '../../../domain/subscription/cancellation-record'
+import type { CycleHistoryReview } from '../../../domain/subscription/cycle-history-review'
+import type { SubscriptionScheduleObservation } from '../../../domain/subscription/subscription-billing'
+import type { RecoveryAdmissionReason } from '../../../domain/subscription-recovery/recovery-admission.port'
+import type { RecoveryReason } from '../../../domain/subscription-recovery/recovery-case'
+import type {
+  RecoveryMessageReceipt,
+  RecoveryMessageRequest,
+} from '../../../domain/subscription-recovery/recovery-messaging.port'
+import type { RecoveryNoticePurpose } from '../../../domain/subscription-recovery/recovery-notice.port'
+import type { RecoveryPolicy } from '../../../domain/subscription-recovery/recovery-policy'
 import type { Address } from '../../../domain/value-objects/customer'
 import type { CardData } from '../../../domain/value-objects/payment-method'
+import type { CancellationRecordWire } from './cancellation-record.mapper'
 
 // Este package compartilha o Postgres `sistemazero` do monorepo, mas é dono do
 // schema `payments` (isolamento por `pgSchema`). Todo o DDL gerado fica em `payments.*`.
@@ -73,6 +88,26 @@ export const subscriptionStatusEnum = paymentsSchema.enum('subscription_status',
   'ACTIVE',
   'CANCELED',
   'EXPIRED',
+])
+export const subscriptionOperationKindEnum = paymentsSchema.enum('subscription_operation_kind', [
+  'CARD_UPDATE',
+  'RETRY',
+  'CANCEL',
+])
+export const subscriptionOperationStateEnum = paymentsSchema.enum('subscription_operation_state', [
+  'READY',
+  'EXECUTING',
+  'UNKNOWN',
+  'SUCCEEDED',
+  'REJECTED',
+])
+export const subscriptionRecoveryStateEnum = paymentsSchema.enum('subscription_recovery_state', [
+  'OPEN',
+  'PAYMENT_PENDING',
+  'CANCEL_PENDING',
+  'RECOVERED',
+  'CANCELED',
+  'MANUAL_REVIEW',
 ])
 export const outboxStatusEnum = paymentsSchema.enum('outbox_status', [
   'PENDING',
@@ -129,6 +164,10 @@ export const payments = paymentsSchema.table(
     description: text('description'),
     metadata: jsonb('metadata').$type<Record<string, unknown>>().notNull().default({}),
     failureReason: text('failure_reason'),
+    cycleAccess: jsonb('cycle_access').$type<SubscriptionCycleAccess>(),
+    periodConfirmation: jsonb('period_confirmation').$type<PeriodConfirmationAudit>(),
+    priorFailureReason: text('prior_failure_reason'),
+    priorFailedAt: timestamp('prior_failed_at', { withTimezone: true }),
     // Assinatura-pai quando o pagamento é um ciclo recorrente (senão null).
     subscriptionId: uuid('subscription_id'),
     // Modo assíncrono: controle do worker que cria a cobrança no provedor.
@@ -212,8 +251,15 @@ export const subscriptions = paymentsSchema.table(
     // Cursor operacional do backstop de renovação. Não pertence ao agregado:
     // reivindicar um scan não é uma mudança no contrato da assinatura.
     lastReconciledAt: timestamp('last_reconciled_at', { withTimezone: true }),
+    // Advisory provider calendar; deliberately outside aggregate saves and access authority.
+    billingSchedule: jsonb('billing_schedule').$type<SubscriptionScheduleObservation>(),
+    // Written once by the reviewed legacy repair, never by normal aggregate saves.
+    cycleHistoryReview: jsonb('cycle_history_review').$type<CycleHistoryReview>(),
     description: text('description'),
     metadata: jsonb('metadata').$type<Record<string, unknown>>().notNull().default({}),
+    cancelRequestedAt: timestamp('cancel_requested_at', { withTimezone: true }),
+    cancellationRecord: jsonb('cancellation_record').$type<CancellationRecordWire>(),
+    cancellationNextAttemptAt: timestamp('cancellation_next_attempt_at', { withTimezone: true }),
     canceledAt: timestamp('canceled_at', { withTimezone: true }),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
@@ -222,6 +268,9 @@ export const subscriptions = paymentsSchema.table(
     uniqueIndex('subscriptions_consumer_idem_uq').on(t.consumerId, t.idempotencyKey),
     index('subscriptions_provider_sub_idx').on(t.provider, t.providerSubscriptionId),
     index('subscriptions_status_idx').on(t.status),
+    index('subscriptions_cancellation_requests_idx')
+      .on(t.cancellationNextAttemptAt, t.cancelRequestedAt)
+      .where(sql`${t.cancelRequestedAt} is not null and ${t.status} in ('ACTIVE', 'PENDING')`),
     index('subscriptions_reconcile_idx')
       .on(t.lastReconciledAt.asc().nullsFirst(), t.lastChargeAt.asc().nullsFirst(), t.id.asc())
       .where(sql`status = 'ACTIVE' AND provider_subscription_id IS NOT NULL`),
@@ -349,11 +398,467 @@ export const webhookDeliveries = paymentsSchema.table(
   ],
 )
 
+/** Intenções financeiras: persiste autoridade e resultado, nunca o token do cartão. */
+export const subscriptionOperations = paymentsSchema.table(
+  'subscription_operations',
+  {
+    id: uuid('id').primaryKey(),
+    subscriptionId: uuid('subscription_id')
+      .notNull()
+      .references(() => subscriptions.id),
+    consumerId: text('consumer_id').notNull(),
+    providerSubscriptionId: text('provider_subscription_id').notNull(),
+    kind: subscriptionOperationKindEnum('kind').notNull(),
+    state: subscriptionOperationStateEnum('state').notNull(),
+    providerPaymentId: text('provider_payment_id'),
+    amountInCents: bigint('amount_in_cents', { mode: 'bigint' }),
+    retryTerms:
+      jsonb('retry_terms').$type<
+        import('../../../domain/subscription/subscription-operation').SubscriptionRetryTerms
+      >(),
+    currency: text('currency').notNull().default('BRL'),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+    expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+    startedAt: timestamp('started_at', { withTimezone: true }),
+    executionId: uuid('execution_id'),
+    executionAttempts: integer('execution_attempts').notNull().default(0),
+    completedAt: timestamp('completed_at', { withTimezone: true }),
+    result: text('result'),
+    confirmation:
+      jsonb('confirmation').$type<
+        import('../../../domain/subscription/subscription-operation').SubscriptionOperationConfirmation
+      >(),
+  },
+  (table) => [
+    uniqueIndex('subscription_operations_active_uq')
+      .on(table.subscriptionId)
+      .where(sql`${table.state} in ('READY', 'EXECUTING', 'UNKNOWN')`),
+    index('subscription_operations_subscription_idx').on(table.subscriptionId, table.createdAt),
+    index('subscription_operations_pending_idx').on(table.state, table.startedAt),
+    check(
+      'subscription_operations_amount_check',
+      sql`(
+      (${table.kind} = 'RETRY' and ${table.providerPaymentId} is not null and ${table.amountInCents} is not null and ${table.amountInCents} > 0)
+    or (${table.kind} <> 'RETRY' and ${table.providerPaymentId} is null and ${table.amountInCents} is null)
+  )`,
+    ),
+    check('subscription_operations_currency_check', sql`${table.currency} = 'BRL'`),
+    check(
+      'subscription_operations_confirmation_check',
+      sql`${table.confirmation} is null or (${table.kind} = 'RETRY' and ${table.state} = 'SUCCEEDED' and jsonb_typeof(${table.confirmation}) = 'object')`,
+    ),
+    check(
+      'subscription_operations_retry_terms_check',
+      sql`(${table.kind} = 'RETRY' and ${table.retryTerms} is not null and jsonb_typeof(${table.retryTerms}) = 'object') or (${table.kind} <> 'RETRY' and ${table.retryTerms} is null)`,
+    ),
+    check('subscription_operations_deadline_check', sql`${table.expiresAt} > ${table.createdAt}`),
+    check(
+      'subscription_operations_execution_check',
+      sql`(${table.executionAttempts} = 0 and ${table.executionId} is null) or (${table.executionAttempts} > 0 and ${table.executionId} is not null and ${table.startedAt} is not null)`,
+    ),
+  ],
+)
+
+/** Caso durável: política congelada, relógio independente e lease com fencing. */
+/** Financial identity survives inbox/outbox retention; initial capture may precede the local payment row. */
+export const subscriptionPaidCycles = paymentsSchema.table(
+  'subscription_paid_cycles',
+  {
+    subscriptionId: uuid('subscription_id')
+      .notNull()
+      .references(() => subscriptions.id, { onDelete: 'cascade' }),
+    providerPaymentId: text('provider_payment_id').notNull(),
+    recordedAt: timestamp('recorded_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.subscriptionId, table.providerPaymentId] }),
+    check(
+      'subscription_paid_cycle_charge_check',
+      sql`length(${table.providerPaymentId}) between 1 and 200`,
+    ),
+  ],
+)
+
+export const subscriptionRecoveryCases = paymentsSchema.table(
+  'subscription_recovery_cases',
+  {
+    id: uuid('id').primaryKey(),
+    version: integer('version').notNull().default(0),
+    subscriptionId: uuid('subscription_id')
+      .notNull()
+      .references(() => subscriptions.id),
+    consumerId: text('consumer_id').notNull(),
+    providerSubscriptionId: text('provider_subscription_id').notNull(),
+    paymentId: uuid('payment_id')
+      .notNull()
+      .references(() => payments.id),
+    providerPaymentId: text('provider_payment_id').notNull(),
+    audience: text('audience').$type<'kids' | 'adult'>().notNull(),
+    amountInCents: bigint('amount_in_cents', { mode: 'bigint' }).notNull(),
+    policy: jsonb('policy').$type<RecoveryPolicy>().notNull(),
+    state: subscriptionRecoveryStateEnum('state').notNull(),
+    reason: text('reason').$type<RecoveryReason>(),
+    firstFailureAt: timestamp('first_failure_at', { withTimezone: true }).notNull(),
+    openedAt: timestamp('opened_at', { withTimezone: true }).notNull(),
+    initialNoticeId: text('initial_notice_id'),
+    initialNoticeAcceptedAt: timestamp('initial_notice_accepted_at', { withTimezone: true }),
+    deadlineAt: timestamp('deadline_at', { withTimezone: true }),
+    lastReminderDay: integer('last_reminder_day').notNull().default(0),
+    lastProviderCheckAt: timestamp('last_provider_check_at', { withTimezone: true }),
+    nextActionAt: timestamp('next_action_at', { withTimezone: true }),
+    closedAt: timestamp('closed_at', { withTimezone: true }),
+    leaseId: uuid('lease_id'),
+    leaseUntil: timestamp('lease_until', { withTimezone: true }),
+  },
+  (table) => [
+    uniqueIndex('subscription_recovery_origin_uq').on(table.paymentId),
+    uniqueIndex('subscription_recovery_active_uq')
+      .on(table.subscriptionId)
+      .where(sql`${table.state} in ('OPEN', 'PAYMENT_PENDING', 'CANCEL_PENDING', 'MANUAL_REVIEW')`),
+    index('subscription_recovery_due_idx')
+      .on(table.nextActionAt)
+      .where(sql`${table.nextActionAt} is not null`),
+    index('subscription_recovery_audience_idx').on(table.audience, table.state, table.openedAt),
+    check('subscription_recovery_amount_check', sql`${table.amountInCents} > 0`),
+    check('subscription_recovery_version_check', sql`${table.version} >= 0`),
+    check('subscription_recovery_audience_check', sql`${table.audience} in ('kids', 'adult')`),
+    check('subscription_recovery_failure_check', sql`${table.firstFailureAt} <= ${table.openedAt}`),
+    check(
+      'subscription_recovery_policy_check',
+      sql`${table.policy} ? 'version' and ${table.policy} ? 'windowDays' and ${table.policy} ? 'reminderDays' and jsonb_typeof(${table.policy}->'version') = 'number' and jsonb_typeof(${table.policy}->'windowDays') = 'number' and (${table.policy}->>'version')::integer > 0 and (${table.policy}->>'windowDays')::integer between 1 and 30 and jsonb_typeof(${table.policy}->'reminderDays') = 'array'`,
+    ),
+    check(
+      'subscription_recovery_notice_check',
+      sql`(
+    (${table.initialNoticeId} is null and ${table.initialNoticeAcceptedAt} is null and ${table.deadlineAt} is null)
+    or (${table.initialNoticeId} is not null and ${table.initialNoticeAcceptedAt} is not null and ${table.deadlineAt} is not null
+      and ${table.initialNoticeAcceptedAt} >= ${table.openedAt}
+      and ${table.deadlineAt} = ${table.initialNoticeAcceptedAt} + ((${table.policy}->>'windowDays')::integer * interval '86400 seconds'))
+  )`,
+    ),
+    check(
+      'subscription_recovery_terminal_check',
+      sql`(${table.state} in ('RECOVERED', 'CANCELED')) = (${table.closedAt} is not null)`,
+    ),
+    check(
+      'subscription_recovery_due_check',
+      sql`(${table.state} in ('RECOVERED', 'CANCELED', 'MANUAL_REVIEW')) = (${table.nextActionAt} is null)`,
+    ),
+    check(
+      'subscription_recovery_closed_check',
+      sql`${table.closedAt} is null or ${table.closedAt} >= ${table.openedAt}`,
+    ),
+    check(
+      'subscription_recovery_reason_check',
+      sql`${table.reason} is null or ${table.reason} in ('PAID', 'SUBSEQUENT_CYCLE_PAID', 'EXTERNAL_CANCELLATION', 'UNPAID_AFTER_NOTICE', 'PAYMENT_UNCERTAIN', 'CONTACT_FAILED', 'PROVIDER_DIVERGENCE')`,
+    ),
+    check(
+      'subscription_recovery_cancel_notice_check',
+      sql`${table.state} <> 'CANCEL_PENDING' or ${table.initialNoticeId} is not null`,
+    ),
+    check(
+      'subscription_recovery_lease_check',
+      sql`(${table.leaseId} is null) = (${table.leaseUntil} is null)`,
+    ),
+  ],
+)
+
+/** Permanent closeout audit; no synthetic payment, period grant or provider mutation. */
+export const subscriptionRecoveryResolutions = paymentsSchema.table(
+  'subscription_recovery_resolutions',
+  {
+    caseId: uuid('case_id')
+      .primaryKey()
+      .references(() => subscriptionRecoveryCases.id),
+    actorId: text('actor_id').notNull(),
+    requestId: uuid('request_id').notNull(),
+    paymentId: uuid('payment_id')
+      .notNull()
+      .references(() => payments.id),
+    paymentVersion: integer('payment_version').notNull(),
+    subscriptionVersion: integer('subscription_version').notNull(),
+    originalPaymentVersion: integer('original_payment_version').notNull(),
+    providerPaymentId: text('provider_payment_id').notNull(),
+    originalChargeCreatedAt: timestamp('original_charge_created_at', {
+      withTimezone: true,
+    }).notNull(),
+    chargeCreatedAt: timestamp('charge_created_at', { withTimezone: true }).notNull(),
+    periodStartsAt: timestamp('period_starts_at', { withTimezone: true }).notNull(),
+    periodEndsAt: timestamp('period_ends_at', { withTimezone: true }).notNull(),
+    observedAt: timestamp('observed_at', { withTimezone: true }).notNull(),
+    resolvedAt: timestamp('resolved_at', { withTimezone: true }).notNull(),
+  },
+  (table) => [
+    uniqueIndex('recovery_resolution_request_uq').on(table.requestId),
+    check(
+      'recovery_resolution_version_check',
+      sql`${table.paymentVersion} >= 0 and ${table.subscriptionVersion} >= 0 and ${table.originalPaymentVersion} >= 0`,
+    ),
+    check('recovery_resolution_actor_check', sql`length(trim(${table.actorId})) between 1 and 200`),
+    check(
+      'recovery_resolution_dates_check',
+      sql`${table.originalChargeCreatedAt} < ${table.chargeCreatedAt} and ${table.chargeCreatedAt} <= ${table.observedAt} and ${table.periodStartsAt} <= ${table.observedAt} and ${table.periodStartsAt} < ${table.periodEndsAt} and ${table.observedAt} <= ${table.resolvedAt} and ${table.resolvedAt} <= ${table.observedAt} + interval '60 seconds'`,
+    ),
+  ],
+)
+
+/** Exact outbound envelope and receipt; no card data or raw provider response. */
+export const subscriptionRecoveryNotices = paymentsSchema.table(
+  'subscription_recovery_notices',
+  {
+    id: uuid('id').primaryKey(),
+    caseId: uuid('case_id')
+      .notNull()
+      .references(() => subscriptionRecoveryCases.id),
+    purpose: text('purpose').$type<RecoveryNoticePurpose>().notNull(),
+    day: integer('day').notNull(),
+    request: jsonb('request').$type<RecoveryMessageRequest>().notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+    attemptCount: integer('attempt_count').notNull().default(0),
+    lastAttemptAt: timestamp('last_attempt_at', { withTimezone: true }),
+    messageId: uuid('message_id'),
+    messageStatus: text('message_status').$type<RecoveryMessageReceipt['status']>(),
+    acceptedAt: timestamp('accepted_at', { withTimezone: true }),
+    deliveredAt: timestamp('delivered_at', { withTimezone: true }),
+    observedAt: timestamp('observed_at', { withTimezone: true }),
+  },
+  (t) => [
+    uniqueIndex('subscription_recovery_notices_purpose_uq').on(t.caseId, t.purpose, t.day),
+    uniqueIndex('subscription_recovery_notices_message_uq').on(t.messageId),
+    check(
+      'subscription_recovery_notices_purpose_check',
+      sql`${t.purpose} in ('INITIAL', 'REMINDER', 'RECOVERED', 'CANCELED')`,
+    ),
+    check(
+      'subscription_recovery_notices_day_check',
+      sql`(${t.purpose} = 'REMINDER' and ${t.day} between 1 and 29) or (${t.purpose} <> 'REMINDER' and ${t.day} = 0)`,
+    ),
+    check(
+      'subscription_recovery_notices_attempt_check',
+      sql`${t.attemptCount} >= 0 and ((${t.attemptCount} = 0 and ${t.lastAttemptAt} is null) or (${t.attemptCount} > 0 and ${t.lastAttemptAt} is not null and ${t.lastAttemptAt} >= ${t.createdAt}))`,
+    ),
+    check(
+      'subscription_recovery_notices_receipt_check',
+      sql`(${t.messageId} is null and ${t.messageStatus} is null and ${t.acceptedAt} is null and ${t.deliveredAt} is null and ${t.observedAt} is null) or (${t.messageId} is not null and ${t.messageStatus} is not null and ${t.acceptedAt} is not null and ${t.observedAt} is not null and ${t.acceptedAt} >= ${t.createdAt} and ${t.observedAt} >= ${t.acceptedAt} and (${t.deliveredAt} is null or ${t.deliveredAt} between ${t.acceptedAt} and ${t.observedAt}))`,
+    ),
+    check(
+      'subscription_recovery_notices_status_check',
+      sql`${t.messageStatus} is null or ${t.messageStatus} in ('QUEUED', 'SCHEDULED', 'SENDING', 'SENT', 'DELIVERED', 'READ', 'FAILED', 'SUPPRESSED')`,
+    ),
+    check(
+      'subscription_recovery_notices_delivery_check',
+      sql`${t.messageStatus} is null or ${t.messageStatus} not in ('DELIVERED', 'READ') or ${t.deliveredAt} is not null`,
+    ),
+  ],
+)
+
+/** Permanent human decision for one historical/reviewed admission, never a backdated notice. */
+export const subscriptionRecoveryAdmissionReviews = paymentsSchema.table(
+  'subscription_recovery_admission_reviews',
+  {
+    caseId: uuid('case_id')
+      .primaryKey()
+      .references(() => subscriptionRecoveryCases.id),
+    paymentId: uuid('payment_id')
+      .notNull()
+      .references(() => payments.id),
+    actorId: text('actor_id').notNull(),
+    requestId: uuid('request_id').notNull(),
+    audience: text('audience').$type<'kids' | 'adult'>().notNull(),
+    policyVersion: integer('policy_version').notNull(),
+    paymentVersion: integer('payment_version').notNull(),
+    sourceObservedAt: timestamp('source_observed_at', { withTimezone: true }).notNull(),
+    sourceChargeCreatedAt: timestamp('source_charge_created_at', { withTimezone: true }).notNull(),
+    approvedAt: timestamp('approved_at', { withTimezone: true }).notNull(),
+  },
+  (t) => [
+    uniqueIndex('subscription_recovery_admission_reviews_request_uq').on(t.requestId),
+    uniqueIndex('subscription_recovery_admission_reviews_payment_uq').on(t.paymentId),
+    check(
+      'subscription_recovery_admission_reviews_actor_check',
+      sql`length(btrim(${t.actorId})) between 1 and 200`,
+    ),
+    check(
+      'subscription_recovery_admission_reviews_audience_check',
+      sql`${t.audience} in ('kids', 'adult')`,
+    ),
+    check(
+      'subscription_recovery_admission_reviews_version_check',
+      sql`${t.policyVersion} >= 0 and ${t.paymentVersion} >= 0`,
+    ),
+    check(
+      'subscription_recovery_admission_reviews_source_check',
+      sql`${t.sourceChargeCreatedAt} <= ${t.sourceObservedAt} and ${t.sourceObservedAt} <= ${t.approvedAt} and ${t.approvedAt} - ${t.sourceObservedAt} <= interval '60 seconds'`,
+    ),
+  ],
+)
+
+/** Permanent cancellation evidence; outbox retention never removes this history. */
+export const subscriptionCancellationAudit = paymentsSchema.table(
+  'subscription_cancellation_audit',
+  {
+    id: uuid('id').primaryKey(),
+    subscriptionId: uuid('subscription_id')
+      .notNull()
+      .references(() => subscriptions.id),
+    consumerId: text('consumer_id').notNull(),
+    origin: text('origin').$type<CancellationOrigin>().notNull(),
+    actorId: text('actor_id'),
+    recoveryCaseId: uuid('recovery_case_id').references(() => subscriptionRecoveryCases.id),
+    requestedAt: timestamp('requested_at', { withTimezone: true }),
+    recordedAt: timestamp('recorded_at', { withTimezone: true }).notNull(),
+    confirmedAt: timestamp('confirmed_at', { withTimezone: true }),
+    endedStatus: text('ended_status').$type<'CANCELED' | 'EXPIRED'>(),
+    withdrawnAt: timestamp('withdrawn_at', { withTimezone: true }),
+    withdrawalReason: text('withdrawal_reason').$type<'RECOVERED' | 'OPERATOR_REVIEW'>(),
+    supersedesId: uuid('supersedes_id'),
+    supersededBy: uuid('superseded_by'),
+    supersededAt: timestamp('superseded_at', { withTimezone: true }),
+  },
+  (t) => [
+    index('subscription_cancellation_audit_history_idx').on(t.subscriptionId, t.recordedAt),
+    index('subscription_cancellation_audit_case_idx').on(t.recoveryCaseId),
+    check(
+      'subscription_cancellation_audit_origin_check',
+      sql`${t.origin} in ('CUSTOMER','ADMIN','CONSUMER','NONPAYMENT','EXTERNAL','SCHEDULE_COMPLETED')`,
+    ),
+    check(
+      'subscription_cancellation_audit_actor_check',
+      sql`(${t.origin} = 'EXTERNAL' and ${t.actorId} is null) or (${t.origin} <> 'EXTERNAL' and ${t.actorId} is not null and length(${t.actorId}) between 1 and 128)`,
+    ),
+    check(
+      'subscription_cancellation_audit_case_check',
+      sql`(${t.origin} = 'NONPAYMENT' and ${t.recoveryCaseId} is not null and ${t.actorId} = 'system:subscription-recovery') or (${t.origin} <> 'NONPAYMENT' and ${t.recoveryCaseId} is null)`,
+    ),
+    check(
+      'subscription_cancellation_audit_request_check',
+      sql`(${t.origin} in ('EXTERNAL','SCHEDULE_COMPLETED') and ${t.requestedAt} is null) or (${t.origin} not in ('EXTERNAL','SCHEDULE_COMPLETED') and ${t.requestedAt} is not null and ${t.requestedAt} <= ${t.recordedAt})`,
+    ),
+    check(
+      'subscription_cancellation_audit_confirmation_check',
+      sql`(${t.confirmedAt} is null and ${t.endedStatus} is null) or (${t.confirmedAt} is not null and ${t.endedStatus} is not null and ${t.endedStatus} in ('CANCELED','EXPIRED') and ${t.confirmedAt} >= ${t.recordedAt})`,
+    ),
+    check(
+      'subscription_cancellation_audit_observed_check',
+      sql`${t.origin} not in ('EXTERNAL','SCHEDULE_COMPLETED') or ${t.confirmedAt} is not null`,
+    ),
+    check(
+      'subscription_cancellation_audit_schedule_check',
+      sql`${t.origin} <> 'SCHEDULE_COMPLETED' or (${t.actorId} = 'system:subscription-schedule' and ${t.endedStatus} = 'EXPIRED')`,
+    ),
+    check(
+      'subscription_cancellation_audit_withdrawal_check',
+      sql`(${t.withdrawnAt} is null and ${t.withdrawalReason} is null) or (${t.withdrawnAt} is not null and ${t.withdrawalReason} is not null and ${t.origin} = 'NONPAYMENT' and ${t.confirmedAt} is null and ${t.withdrawalReason} in ('RECOVERED','OPERATOR_REVIEW') and ${t.withdrawnAt} >= ${t.recordedAt})`,
+    ),
+    check(
+      'subscription_cancellation_audit_superseded_check',
+      sql`((${t.supersededBy} is null and ${t.supersededAt} is null) or (${t.supersededBy} is not null and ${t.supersededAt} is not null and ${t.supersededBy} <> ${t.id} and ${t.supersededAt} >= ${t.recordedAt})) and (${t.supersedesId} is null or ${t.supersedesId} <> ${t.id})`,
+    ),
+  ],
+)
+
+export const subscriptionRecoveryPolicy = paymentsSchema.table(
+  'subscription_recovery_policy',
+  {
+    id: integer('id').primaryKey(),
+    version: integer('version').notNull(),
+    windowDays: integer('window_days').notNull(),
+    reminderDays: jsonb('reminder_days').$type<readonly number[]>().notNull(),
+    enabled: boolean('enabled').notNull().default(false),
+    activatedAt: timestamp('activated_at', { withTimezone: true }),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
+    updatedBy: text('updated_by').notNull(),
+  },
+  (table) => [
+    check('subscription_recovery_policy_singleton', sql`${table.id} = 1`),
+    check('subscription_recovery_policy_version', sql`${table.version} > 0`),
+    check('subscription_recovery_policy_window', sql`${table.windowDays} between 1 and 30`),
+    check(
+      'subscription_recovery_policy_reminders',
+      sql`jsonb_typeof(${table.reminderDays}) = 'array'`,
+    ),
+    check(
+      'subscription_recovery_policy_activation',
+      sql`not ${table.enabled} or ${table.activatedAt} is not null`,
+    ),
+  ],
+)
+
+export const subscriptionRecoveryPolicyAudit = paymentsSchema.table(
+  'subscription_recovery_policy_audit',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    version: integer('version').notNull(),
+    actorId: text('actor_id').notNull(),
+    snapshot: jsonb('snapshot').$type<Record<string, unknown>>().notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+  },
+  (table) => [uniqueIndex('subscription_recovery_policy_audit_version_uq').on(table.version)],
+)
+
+export const subscriptionRecoveryAdmissions = paymentsSchema.table(
+  'subscription_recovery_admissions',
+  {
+    paymentId: uuid('payment_id')
+      .primaryKey()
+      .references(() => payments.id),
+    policy: jsonb('policy').$type<RecoveryPolicy>().notNull(),
+    activatedAt: timestamp('activated_at', { withTimezone: true }).notNull(),
+    discoveredAt: timestamp('discovered_at', { withTimezone: true }).notNull(),
+    state: text('state').$type<'PENDING' | 'ADMITTED' | 'REVIEW' | 'IGNORED'>().notNull(),
+    reason: text('reason').$type<RecoveryAdmissionReason>(),
+    caseId: uuid('case_id').references(() => subscriptionRecoveryCases.id),
+    attempts: integer('attempts').notNull().default(0),
+    nextAttemptAt: timestamp('next_attempt_at', { withTimezone: true }),
+    leaseId: uuid('lease_id'),
+    leaseUntil: timestamp('lease_until', { withTimezone: true }),
+  },
+  (t) => [
+    index('subscription_recovery_admissions_due_idx')
+      .on(t.nextAttemptAt)
+      .where(sql`${t.state} = 'PENDING'`),
+    check(
+      'subscription_recovery_admissions_state_check',
+      sql`${t.state} in ('PENDING','ADMITTED','REVIEW','IGNORED')`,
+    ),
+    check(
+      'subscription_recovery_admissions_result_check',
+      sql`(${t.state} = 'PENDING' and ${t.reason} is null and ${t.caseId} is null and ${t.nextAttemptAt} is not null) or (${t.state} = 'ADMITTED' and ${t.reason} is null and ${t.caseId} is not null and ${t.nextAttemptAt} is null) or (${t.state} in ('REVIEW','IGNORED') and ${t.reason} is not null and ${t.caseId} is null and ${t.nextAttemptAt} is null)`,
+    ),
+    check(
+      'subscription_recovery_admissions_reason_check',
+      sql`${t.reason} is null or ${t.reason} in ('AUDIENCE_UNKNOWN','LEGACY_RENEWAL','SOURCE_DATE_UNKNOWN','NO_LONGER_ELIGIBLE','CASE_EXISTS','PROVIDER_DIVERGENCE','PROVIDER_UNAVAILABLE')`,
+    ),
+    check(
+      'subscription_recovery_admissions_lease_check',
+      sql`(${t.leaseId} is null) = (${t.leaseUntil} is null)`,
+    ),
+    check(
+      'subscription_recovery_admissions_attempts_check',
+      sql`${t.attempts} >= 0 and ${t.attempts} <= 5`,
+    ),
+    check(
+      'subscription_recovery_admissions_dates_check',
+      sql`${t.activatedAt} <= ${t.discoveredAt}`,
+    ),
+  ],
+)
+
 export const schema = {
   consumers,
   payments,
   subscriptions,
   subscriptionPlans,
+  subscriptionOperations,
+  subscriptionRecoveryCases,
+  subscriptionPaidCycles,
+  subscriptionRecoveryResolutions,
+  subscriptionRecoveryNotices,
+  subscriptionRecoveryPolicy,
+  subscriptionCancellationAudit,
+  subscriptionRecoveryPolicyAudit,
+  subscriptionRecoveryAdmissions,
+  subscriptionRecoveryAdmissionReviews,
   idempotencyKeys,
   outbox,
   webhookEvents,

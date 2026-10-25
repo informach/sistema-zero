@@ -153,8 +153,9 @@ export function PythonRuntimePreview(props: PythonRuntimePreviewProps) {
     }
   }, [view.status, view.input?.requestId])
 
+  // Turtle and Pygame Zero both draw on the execution canvas.
   const hasTurtle = props.project.installedExtensions.some(
-    (extension) => extension.id === 'python-turtle',
+    (extension) => extension.id === 'python-turtle' || extension.id === 'python-pgzero',
   )
   useEffect(() => {
     const capture = props.capture

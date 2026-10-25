@@ -15,6 +15,7 @@ import {
   ListSendersService,
   UpdateSenderService,
 } from './application/senders/sender-admin.service'
+import { SuppressMessageService } from './application/suppress-message/suppress-message.service'
 import {
   CreateTemplateService,
   GetTemplateService,
@@ -227,6 +228,7 @@ export function createApplication(env: Env): Application {
     metrics: () => metricsRepo.getMetrics(),
     sendMessage,
     getMessage,
+    suppressMessage: new SuppressMessageService(messages, clock),
     listMessages,
     createTemplate,
     updateTemplate,

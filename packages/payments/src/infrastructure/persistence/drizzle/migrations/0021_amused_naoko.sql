@@ -1,0 +1,1 @@
+ALTER TABLE "payments"."subscriptions" ADD COLUMN "billing_schedule" jsonb;

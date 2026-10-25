@@ -27,11 +27,11 @@ Amplia a abertura já testada. As regras de final e o reinício são construído
 
 ### Seção 1. Defina quando ganhar e perder
 
-**Tarefa:** Agora defina quando a partida termina! Crie a meta alvo, monte as perguntas de vitória e de derrota dentro de jogando e clique em Verificar esta parte. Depois, clique em Próxima parte.
+**Tarefa:** Agora defina quando a partida termina! Crie a meta alvo, monte as perguntas de vitória e de derrota dentro de jogando e clique em Verificar projeto. Depois, clique em Próxima parte.
 
 **Blocos na página:** video-finais → fala-finais.
 
-**Recado na página (não gravar):** Agora defina quando a partida termina! Crie a meta alvo, monte as perguntas de vitória e de derrota dentro de jogando e clique em Verificar esta parte. Depois, clique em Próxima parte.
+**Recado na página (não gravar):** Agora defina quando a partida termina! Crie a meta alvo, monte as perguntas de vitória e de derrota dentro de jogando e clique em Verificar projeto. Depois, clique em Próxima parte.
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
@@ -41,7 +41,7 @@ video-finais-K2: Debinha substitui “Chegou na meta, ganhou! E se acabarem as v
 
 video-finais-K3: Debinha substitui “E se as duas coisas acontecerem juntas?”. Antes: “Jogo e telas e depois Telas e partida, pegue o bloco Mudar o estado do jogo para, solte dentro do então e escolha fim.”. Depois: “Olha aqui: a ordem no fim de jogando é primeiro o desenho das vidas, depois a pergunta da vitória e por último a da”.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar projeto.
 
 - No final da partida, se pontos ≥ alvo, vá para vitoria.
 - Na partida, coloque a pergunta de vitória antes da pergunta de derrota.
@@ -50,17 +50,17 @@ video-finais-K3: Debinha substitui “E se as duas coisas acontecerem juntas?”
 
 ### Seção 2. Mostre a vitória e a derrota
 
-**Tarefa:** Agora mostre a vitória e a derrota! Crie os ramos vitoria e fim depois do ramo inicio, com os textos de cada tela, e clique em Verificar esta parte. Depois, clique em Próxima parte.
+**Tarefa:** Agora mostre a vitória e a derrota! Crie os ramos vitoria e fim depois do ramo inicio, com os textos de cada tela, e clique em Verificar projeto. Depois, clique em Próxima parte.
 
 **Blocos na página:** video-mostrar-telas → fala-telas.
 
-**Recado na página (não gravar):** Agora mostre a vitória e a derrota! Crie os ramos vitoria e fim depois do ramo inicio, com os textos de cada tela, e clique em Verificar esta parte. Depois, clique em Próxima parte.
+**Recado na página (não gravar):** Agora mostre a vitória e a derrota! Crie os ramos vitoria e fim depois do ramo inicio, com os textos de cada tela, e clique em Verificar projeto. Depois, clique em Próxima parte.
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
 video-mostrar-telas-K1: Debinha substitui “E a tela de quando eu perder?”. Antes: “subtítulo e, na dica, escreva Aperte Enter para voltar ao início. Depois, escolha um fundo escuro com letras legíveis.”. Depois: “Agora a derrota, do mesmo jeito. Clique de novo no + que fica antes de senão se. O ramo novo também chega com a”.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar projeto.
 
 - No senão se inicio, encaixe Mostrar tela com a dica de Enter.
 - No senão se vitoria, encaixe Mostrar tela com a dica de Enter.
@@ -82,17 +82,17 @@ video-reiniciar-K1: Debinha substitui “Como faz para começar outra partida co
 
 ### Seção 4. Faça Enter preparar outra partida
 
-**Tarefa:** Agora faça o Enter preparar outra partida! Acrescente ao evento Enter os ramos fim e vitoria, com Reiniciar o jogo, e clique em Verificar esta parte. Depois, clique em Próxima parte.
+**Tarefa:** Agora faça o Enter preparar outra partida! Acrescente ao evento Enter os ramos fim e vitoria, com Reiniciar o jogo, e clique em Verificar projeto. Depois, clique em Próxima parte.
 
 **Blocos na página:** video-enter → fala-enter.
 
-**Recado na página (não gravar):** Agora faça o Enter preparar outra partida! Acrescente ao evento Enter os ramos fim e vitoria, com Reiniciar o jogo, e clique em Verificar esta parte. Depois, clique em Próxima parte.
+**Recado na página (não gravar):** Agora faça o Enter preparar outra partida! Acrescente ao evento Enter os ramos fim e vitoria, com Reiniciar o jogo, e clique em Verificar projeto. Depois, clique em Próxima parte.
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
 video-enter-K1: Debinha substitui “E quando eu ganhar? Também quero jogar de novo!”. Antes: “o espaço do então do ramo fim. Na mesma categoria Telas e partida, pegue o bloco Reiniciar o jogo e solte nesse espaço.”. Depois: “Agora a vitória, do mesmo jeito. Clique de novo no + que fica antes de senão se. Arraste a pergunta x maior que 0 do”.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar projeto.
 
 - Enter: inicio vai para jogando; fim e vitoria reiniciam e voltam ao início.
 
@@ -108,13 +108,13 @@ video-enter-K1: Debinha substitui “E quando eu ganhar? Também quero jogar de 
 
 ### Seção 6. Teste o jogo completo e compartilhe
 
-**Tarefa:** Hora do teste final! Confira a derrota, a vitória e o recomeço, clique em Verificar esta parte e envie o seu projeto. Se quiser, publique o seu jogo no Mural. Depois, clique em Concluir aula.
+**Tarefa:** Hora do teste final! Confira a derrota, a vitória e o recomeço, clique em Verificar projeto e envie o seu projeto. Se quiser, publique o seu jogo no Mural. Depois, clique em Concluir aula.
 
 **Blocos na página:** video-ciclo-completo → fala-entrega → projeto.
 
-**Recado na página (não gravar):** Hora do teste final! Confira a derrota, a vitória e o recomeço, clique em Verificar esta parte e envie o seu projeto. Se quiser, publique o seu jogo no Mural. Depois, clique em Concluir aula.
+**Recado na página (não gravar):** Hora do teste final! Confira a derrota, a vitória e o recomeço, clique em Verificar projeto e envie o seu projeto. Se quiser, publique o seu jogo no Mural. Depois, clique em Concluir aula.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte, com o envio confirmado em Enviar meu projeto → Enviar.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar projeto, com o envio confirmado em Enviar meu projeto → Enviar.
 
 - Crie uma meta positiva na constante alvo, em Ao iniciar.
 - Vá para inicio em Ao iniciar.

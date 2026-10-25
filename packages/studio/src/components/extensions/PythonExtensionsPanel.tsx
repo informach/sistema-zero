@@ -183,6 +183,7 @@ export function PythonExtensionsPanel({ open, onClose }: ExtensionsPanelProps) {
                     size="sm"
                     variant={installed ? 'ghost' : 'primary'}
                     disabled={disabled || !!issue}
+                    aria-label={`${installed ? 'Remover' : 'Instalar'} ${extension.name}`}
                     onClick={() =>
                       installed
                         ? setRemoval({ project, extension: installed })

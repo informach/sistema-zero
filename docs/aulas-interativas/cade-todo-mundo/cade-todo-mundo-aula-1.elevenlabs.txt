@@ -66,7 +66,7 @@
 
 [curious] Funcionou?
 
-[confident, clear, unhurried voice] Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente.
+[confident, clear, unhurried voice] Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente.
 
 [engaging, energetic, conversational voice] Quando aparecer Objetivo cumprido!, espere aparecer Salvo. Depois, clique em Enviar meu projeto e confirme em Enviar.
 

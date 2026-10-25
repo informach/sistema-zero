@@ -54,7 +54,7 @@
 
 [engaging, energetic, conversational voice] O Estúdio guarda seu jogo automaticamente enquanto você monta. Você vai enviar para a equipe só no fim desta aula.
 
-[engaging, energetic, conversational voice] Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Próxima parte.
+[engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Próxima parte.
 
 [long pause]
 
@@ -70,7 +70,7 @@
 
 [engaging, energetic, conversational voice] Agora olhe a área do jogo: aparece um retângulo em volta dela! [reassuring, encouraging voice] Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: dentro de Ao iniciar, primeiro vem Preparar o jogo em tela cheia e, logo abaixo, Mostrar a borda da tela, com espessura 4. Se a borda estiver lá e mesmo assim não aparecer, escolha para ela uma cor diferente da cor do fundo. [reassuring, encouraging voice] Depois de corrigir, teste de novo.
 
-[engaging, energetic, conversational voice] Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Próxima parte.
+[engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Próxima parte.
 
 [long pause]
 
@@ -114,7 +114,7 @@
 
 [engaging, energetic, conversational voice] Vamos conferir. Ele foi criado, mas ainda falta mandar desenhar. [confident, clear, unhurried voice] Confira se ficou assim: dentro de Ao iniciar, primeiro vem a preparação da tela, depois a borda e, por último, Criar dinossauro, com x 110, y 150 e tamanho 64. A tela continua sem Dino, e está certo: ele já existe nos bastidores, mas ainda não tem uma ordem de desenho. Por isso, não duplique o bloco para tentar fazer o Dino aparecer.
 
-[engaging, energetic, conversational voice] Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Próxima parte.
+[engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Próxima parte.
 
 [long pause]
 
@@ -122,4 +122,4 @@
 
 [engaging, energetic, conversational voice] Agora confira o bloco Criar dinossauro dentro de Ao iniciar, com o nome dino, x 110, y 150 e tamanho 64. Se algum campo estiver diferente, corrija antes de enviar.
 
-[engaging, energetic, conversational voice] Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Concluir aula.
+[engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Concluir aula.

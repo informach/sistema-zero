@@ -26,7 +26,7 @@ const isFramePort = (value: unknown): value is FramePort =>
   'close' in value &&
   typeof value.close === 'function'
 
-async function fixture() {
+async function fixture(mission = false) {
   const { project, environment } = await pythonEnvironmentFixture('classic')
   const original = environment.catalog.releases[0]
   if (!original) throw new Error('Missing inert release')
@@ -141,6 +141,7 @@ async function fixture() {
     admitted()
   })
   const preparation = preparePythonFrameSession({
+    ...(mission ? { mission: true } : {}),
     frame,
     frameURL: new URL(`https://runtime.test/v1/runtimes/${release.manifestSha256}/frame.html`),
     identity,
@@ -232,6 +233,45 @@ async function fixture() {
     },
   }
 }
+
+test('mission reads use the authenticated generation and are rejected after disposal', async () => {
+  const value = await fixture(true)
+  value.complete()
+  value.hello()
+  await value.admitted()
+  const initialization = value.transfers[0]!.data as PythonFrameInitialization
+  const remote = value.transfers[0]!.ports[0] as MessagePort
+  expect(initialization.mission).toBe(true)
+  let sequence = 2
+  const emit = (body: Record<string, unknown>) =>
+    remote.postMessage({
+      ...body,
+      protocol: 1,
+      challenge: initialization.challenge,
+      identity: initialization.identity,
+      sequence: ++sequence,
+    })
+  remote.onmessage = (event: MessageEvent<PythonFrameCommand>) => {
+    const command = event.data
+    if (command.type === 'run') emit({ type: 'event', event: { type: 'state', state: 'running' } })
+    if (command.type === 'mission-observe')
+      emit({
+        type: 'mission-result',
+        requestId: command.requestId,
+        result: { observation: { type: 'value', observed: { found: true, value: 8 } } },
+      })
+    emit({ type: 'ack', commandId: command.commandId, ok: true })
+  }
+  remote.start()
+  const session = await value.prepared()
+  await session.run()
+  if (!session.observePythonMission) throw new Error('Missing mission read capability')
+  expect(await session.observePythonMission({ type: 'value', path: 'pontos' })).toEqual({
+    observation: { type: 'value', observed: { found: true, value: 8 } },
+  })
+  await session.dispose()
+  await expect(session.observePythonMission({ type: 'value', path: 'pontos' })).rejects.toThrow()
+})
 
 test('routes audio over the authenticated session channel and correlates its response', async () => {
   const value = await fixture()

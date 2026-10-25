@@ -116,6 +116,68 @@ function fixture(expiresIn = 900_000) {
     },
   }
 }
+test('mission admission freezes probes, separates modes, bounds time and confirms owned cleanup', async () => {
+  const f = fixture()
+  const started = gate(),
+    reply = gate()
+  handler = async (request, options) => {
+    const body = await request.json()
+    expect(new URL(request.url).pathname).toBe('/v1/python/check')
+    options.createSandbox()
+    started.resolve(body)
+    await reply.promise
+    return Response.json({
+      ok: true,
+      report: 'controlled admission only, not execution qualification',
+    })
+  }
+  const mission = {
+    version: 1,
+    identity: {
+      projectId: f.input.projectId,
+      revision: f.input.revision,
+      runtimeManifestSha256: 'd'.repeat(64),
+      objectivesSha256: 'e'.repeat(64),
+      runId: crypto.randomUUID(),
+    },
+    probes: [{ id: 'out', type: 'behavior', steps: [], target: { kind: 'console' } }],
+  }
+  const original = structuredClone(mission)
+  const pending = f.job.check({ version: 1, input: f.input, structure: false, mission })
+  mission.probes[0].steps.push({ action: 'wait', ms: 100 })
+  try {
+    const admitted = await started.promise
+    expect(admitted.mission).toEqual(original)
+    const state = f.store.read()
+    expect(state.operation).toEqual({ mode: 'check', mission: original })
+    expect(state.deadline - state.createdAt).toBe(140_000)
+    expect(
+      JSON.parse(
+        (await f.job.check({ version: 1, input: f.input, structure: false, mission })).bodyJson,
+      ).code,
+    ).toBe('JOB_SCOPE_CHANGED')
+    expect(
+      JSON.parse((await f.job.inspect({ version: 1, input: f.input, structure: false })).bodyJson)
+        .code,
+    ).toBe('JOB_SCOPE_CHANGED')
+    expect(f.creates).toBe(1)
+    reply.resolve()
+    f.destroyGate.resolve()
+    expect((await pending).status).toBe(200)
+    expect(f.destroys).toBe(1)
+    expect(f.store.read().cleanupConfirmed).toBe(true)
+    expect(
+      (await f.job.check({ version: 1, input: f.input, structure: false, mission: original }))
+        .status,
+    ).toBe(410)
+  } finally {
+    reply.resolve()
+    f.destroyGate.resolve()
+    await pending
+    f.db.close()
+  }
+})
+
 test('catalog wait cannot admit an SDK after digest/bucket withdrawal or cancellation', async () => {
   for (const change of ['digest', 'bucket', 'cancel']) {
     const f = fixture()

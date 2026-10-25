@@ -1,5 +1,31 @@
 import type { SubscriptionAggregate } from '../../domain/subscription/subscription.aggregate'
 import type { SubscriptionStatus } from '../../domain/subscription/subscription.status'
+import {
+  emptySubscriptionBilling,
+  type SubscriptionBillingView,
+} from '../../domain/subscription/subscription-billing'
+import type { SubscriptionOperation } from '../../domain/subscription/subscription-operation'
+
+/** Purchaser-facing status only: no provider IDs, financial proof, actor or execution details. */
+export interface PendingSubscriptionOperationView {
+  kind: SubscriptionOperation['kind']
+  state: 'READY' | 'EXECUTING' | 'UNKNOWN'
+}
+
+export function pendingOperationView(
+  operation: SubscriptionOperation | null,
+): PendingSubscriptionOperationView | null {
+  if (!operation || !['READY', 'EXECUTING', 'UNKNOWN'].includes(operation.state)) return null
+  return {
+    kind: operation.kind,
+    state:
+      operation.state === 'READY'
+        ? 'READY'
+        : operation.state === 'EXECUTING'
+          ? 'EXECUTING'
+          : 'UNKNOWN',
+  }
+}
 
 /** Representação de leitura de uma assinatura, exposta na API (sem dados sensíveis). */
 export interface SubscriptionView {
@@ -18,6 +44,7 @@ export interface SubscriptionView {
   description: string | null
   metadata: Record<string, unknown>
   providerSubscriptionId: string | null
+  cancelRequestedAt: string | null
   canceledAt: string | null
   createdAt: string
   /**
@@ -43,8 +70,11 @@ export interface MySubscriptionView {
   cyclesCompleted: number
   lastChargeAt: string | null
   description: string | null
+  cancelRequestedAt: string | null
   canceledAt: string | null
   createdAt: string
+  pendingOperation: PendingSubscriptionOperationView | null
+  billing: SubscriptionBillingView
 }
 
 export function toMySubscriptionView(subscription: SubscriptionAggregate): MySubscriptionView {
@@ -59,8 +89,11 @@ export function toMySubscriptionView(subscription: SubscriptionAggregate): MySub
     cyclesCompleted: subscription.cyclesCompleted,
     lastChargeAt: subscription.lastChargeAt ? subscription.lastChargeAt.toISOString() : null,
     description: subscription.description,
+    cancelRequestedAt: subscription.cancelRequestedAt?.toISOString() ?? null,
     canceledAt: subscription.canceledAt ? subscription.canceledAt.toISOString() : null,
     createdAt: subscription.createdAt.toISOString(),
+    pendingOperation: null,
+    billing: emptySubscriptionBilling(),
   }
 }
 
@@ -82,6 +115,7 @@ export function toSubscriptionView(
     description: subscription.description,
     metadata: subscription.metadata,
     providerSubscriptionId: subscription.providerSubscriptionId,
+    cancelRequestedAt: subscription.cancelRequestedAt?.toISOString() ?? null,
     canceledAt: subscription.canceledAt ? subscription.canceledAt.toISOString() : null,
     createdAt: subscription.createdAt.toISOString(),
     firstPayment: firstPayment ?? null,

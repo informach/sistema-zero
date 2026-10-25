@@ -6,11 +6,18 @@ import { lessonStudioProjectId } from '@sistemazero/core/studio/lesson-project-i
 import { studioProjectContinuityReference } from '@sistemazero/core/studio/project-continuity'
 import { verifyStudioPythonExecutionMetadata } from '@sistemazero/core/studio/python-execution-content'
 import { StudioPythonInspectionReportSchema } from '@sistemazero/core/studio/python-inspection'
+import {
+  PythonMissionValidationReportSchema,
+  pythonMissionRecipe,
+  verifyPythonMissionRequest,
+} from '@sistemazero/core/studio/python-mission-execution'
+import type { StudioPythonRuntimeClientOptions } from '@sistemazero/core/studio/python-runtime-client'
 import { createStudioRuntimeCatalog } from '@sistemazero/core/studio/runtime-catalog'
-import { PythonActivityInspectionService } from '../../src/application/studio/python-activity-inspection.service'
+import { PythonProjectCheckerService } from '../../src/application/studio/python-project-checker.service'
 import { stableJson } from '../../src/domain/shared/stable-json'
 import { createStudioRuntimeHosts } from '../../src/domain/studio/runtime-hosts'
 import { createStudioRuntimePolicy } from '../../src/domain/studio/runtime-policy'
+import { controlledPythonValidation } from '../fakes/python-execution-evidence'
 import { authoringFixture } from '../fakes/studio-authoring-policy'
 import { studioLiveRuntimeFixture } from '../fakes/studio-live-runtime'
 import { buildApp, grantLifetime, seedSampleCourse } from '../helpers'
@@ -125,6 +132,7 @@ test.each([
 async function setup(
   options: {
     loop?: boolean
+    output?: string
     audience?: 'adult' | 'kids'
     unavailable?: boolean
     afterInspect?(): void
@@ -135,8 +143,12 @@ async function setup(
   const { project, configuration } = live?.fixture ?? (await authoringFixture('python', 'pro'))
   if (project.programmingLanguage !== 'python' || project.kind !== 'pro')
     throw new Error('Missing Python fixture')
+  const source =
+    options.output === undefined
+      ? 'while False:\n    pass\n'
+      : `print(${JSON.stringify(options.output)})\n`
   project.tree = {
-    'main.py': { kind: 'file', content: 'while False:\n    pass\n' },
+    'main.py': { kind: 'file', content: source },
     'requirements.txt': { kind: 'file', content: '' },
   }
   project.python.entrypoint = 'main.py'
@@ -148,46 +160,90 @@ async function setup(
     ]),
   )
   let inspections = 0
-  const inspector = new PythonActivityInspectionService({
+  const inspect = async (input: StudioPythonRuntimeClientOptions) => {
+    inspections++
+    const snapshot = await verifyStudioPythonExecutionMetadata(input.snapshot)
+    expect(new TextDecoder().decode(await input.read('main.py', input.signal))).toBe(source)
+    const report = StudioPythonInspectionReportSchema.parse({
+      version: 1,
+      revision: snapshot.revision,
+      runtimeManifestSha256: snapshot.configuration.runtime.manifestSha256,
+      pythonVersion: '3.14.2',
+      status: 'passed',
+      files: snapshot.files
+        .filter((file) => file.path.endsWith('.py'))
+        .map((file) => ({
+          path: file.path,
+          sha256: file.sha256,
+          status: 'passed',
+          diagnostics: [],
+          structure: {
+            version: 1,
+            nodesVisited: 1,
+            usesLoop: options.loop ?? true,
+            usesConditional: false,
+            assignedNames: [],
+            definedFunctions: [],
+            callTargets: [],
+          },
+        })),
+    })
+    options.afterInspect?.()
+    return report
+  }
+  const inspector = new PythonProjectCheckerService({
     runtimeUrl: 'https://runtime.example',
     runtimeToken: 's'.repeat(32),
     policy,
-    inspect: async (input) => {
-      inspections++
+    validate: async (input) => controlledPythonValidation(input, await inspect(input)),
+    execute: async (input) => {
+      const inspection = await inspect(input)
       const snapshot = await verifyStudioPythonExecutionMetadata(input.snapshot)
-      expect(new TextDecoder().decode(await input.read('main.py', input.signal))).toBe(
-        'while False:\n    pass\n',
-      )
-      const report = StudioPythonInspectionReportSchema.parse({
+      const mission = await verifyPythonMissionRequest(input.mission, snapshot)
+      const output = options.output ?? ''
+      return PythonMissionValidationReportSchema.parse({
         version: 1,
-        revision: snapshot.revision,
-        runtimeManifestSha256: snapshot.configuration.runtime.manifestSha256,
-        pythonVersion: '3.14.2',
+        projectId: snapshot.projectId,
         status: 'passed',
-        files: snapshot.files
-          .filter((file) => file.path.endsWith('.py'))
-          .map((file) => ({
-            path: file.path,
-            sha256: file.sha256,
-            status: 'passed',
-            diagnostics: [],
-            structure: {
-              version: 1,
-              nodesVisited: 1,
-              usesLoop: options.loop ?? true,
-              usesConditional: false,
-              assignedNames: [],
-              definedFunctions: [],
-              callTargets: [],
-            },
+        inspection,
+        mission: {
+          version: 1,
+          identity: mission.identity,
+          observations: mission.probes.map((probe) => ({
+            id: probe.id,
+            type: 'behavior',
+            initial: { found: true, value: '' },
+            final: { found: true, value: output },
           })),
+        },
+        executions: mission.probes.map((probe) => ({
+          id: probe.id,
+          report: {
+            version: 1,
+            projectId: snapshot.projectId,
+            revision: snapshot.revision,
+            runtimeManifestSha256: snapshot.configuration.runtime.manifestSha256,
+            pythonVersion: '3.14.2',
+            instanceId: randomUUID(),
+            runId: randomUUID(),
+            recipe: pythonMissionRecipe(probe),
+            status: 'passed',
+            started: true,
+            stopped: true,
+            stateBeforeStop: 'completed',
+            observedDurationMs: 250,
+            stdout: output,
+            stderr: '',
+            omittedChars: 0,
+            errors: [],
+            input: { stdinRequests: 0, stdinSubmitted: 0, keysDispatched: 0, clicksDispatched: 0 },
+          },
+        })),
       })
-      options.afterInspect?.()
-      return report
     },
   })
   const env = buildApp({
-    pythonActivities: options.unavailable ? undefined : inspector,
+    pythonProjectChecker: options.unavailable ? undefined : inspector,
     sectionPythonLive: live?.workspace,
     ...(live ? { now: new Date('2026-11-07T17:00:00Z') } : {}),
   })
@@ -257,7 +313,18 @@ async function setup(
           label: 'Use uma repetição',
           programmingLanguage: 'python' as const,
           profileId: project.runtime.profileId,
-          rule: { type: 'usesLoop' as const },
+          rule:
+            options.output === undefined
+              ? { type: 'usesLoop' as const }
+              : {
+                  type: 'behavior' as const,
+                  steps: [],
+                  expect: {
+                    target: { kind: 'console' as const },
+                    compare: 'contains' as const,
+                    value: 'concluiu',
+                  },
+                },
         },
       ],
     },
@@ -316,6 +383,23 @@ async function setup(
     inspected: () => inspections,
   }
 }
+
+test.each([
+  'kids',
+  'adult',
+] as const)('Python %s progress follows executed behavior, including a coherent failed program', async (audience) => {
+  for (const output of ['concluiu', 'outro resultado']) {
+    const env = await setup({ audience, output })
+    const response = await env.verify()
+    expect(response.status).toBe(200)
+    expect(await response.json()).toMatchObject({
+      passed: output === 'concluiu',
+      results: [{ id: 'loop', passed: output === 'concluiu' }],
+    })
+    expect(env.inspected()).toBe(1)
+    expect((await env.saved())[0]?.projectPassed).toBe(output === 'concluiu')
+  }
+})
 
 test('Python section objectives use server-owned facts and persist only the authorized result', async () => {
   const env = await setup()

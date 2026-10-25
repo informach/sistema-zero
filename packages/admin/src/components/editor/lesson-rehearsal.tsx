@@ -305,11 +305,11 @@ export function LessonRehearsal({
                   throw new DOMException('O ensaio ou o rascunho mudou.', 'AbortError')
               }
               try {
-                const { inspectPythonSectionProject } = await import(
-                  '../studio/inspect-python-section-project'
+                const { checkPythonSectionProject } = await import(
+                  '../studio/check-python-section-project'
                 )
                 assertCurrent()
-                checks = await inspectPythonSectionProject({
+                checks = await checkPythonSectionProject({
                   project,
                   checks: criteria.filter(
                     (criterion) => criterion.programmingLanguage === 'python',

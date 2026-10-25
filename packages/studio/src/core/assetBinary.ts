@@ -21,6 +21,23 @@ const MIME_EXTENSIONS: Readonly<Record<string, string>> = {
   'image/x-hdr': 'hdr',
 }
 
+/**
+ * Other names browsers give WAV files. Python projects (whose sounds are opened by name) use
+ * them; the JavaScript materializer keeps its historical fallback names unchanged.
+ */
+const PYTHON_MIME_EXTENSIONS: Readonly<Record<string, string>> = {
+  'audio/flac': 'flac',
+  'audio/x-flac': 'flac',
+  'audio/wave': 'wav',
+  'audio/vnd.wave': 'wav',
+  'audio/vnd.wav': 'wav',
+}
+
+/** The file extension of a material in a Python project. */
+export function pythonAssetFileExtension(mime: string, kind?: ProjectAsset['kind']): string {
+  return PYTHON_MIME_EXTENSIONS[mime] ?? projectAssetFileExtension(mime, kind)
+}
+
 export function projectAssetFileExtension(
   mime: string,
   kind?: ProjectAsset['kind'],
@@ -29,6 +46,14 @@ export function projectAssetFileExtension(
   if (kind === 'model3d') return 'glb'
   if (kind === 'environment3d') return 'hdr'
   return MIME_EXTENSIONS[mime] ?? fallback
+}
+
+/**
+ * An SVG `data:` URL exactly as `decodeProjectAsset` reads it. A prefix test would also take
+ * `data:image/svg+xmlX,…`, whose MIME maps to no extension.
+ */
+export function isSvgDataUrl(value: string): boolean {
+  return /^data:image\/svg\+xml(?:;charset=(?:utf-8|us-ascii))?(?:;base64)?,/i.test(value)
 }
 
 export function decodeProjectAsset(dataUrl: string): {

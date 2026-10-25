@@ -22,7 +22,7 @@ de ser apresentada como "já estava preparada": a fala a liga à contagem que a 
 No mesmo dia, o vocabulário do curso (Diretrizes, seção 6): na fala, "do jeito que ficou na
 Aula 1" virou "na Fase 1", "nesta aula" virou "agora", "Na aula, ele pode aparecer só como um ícone"
 virou "Aqui, ele pode aparecer…", e os botões citados passaram a ser **Próxima parte**,
-**Verificar esta parte**, **Objetivo cumprido!**, **Enviar meu projeto** e **Concluir aula**
+**Verificar projeto**, **Objetivo cumprido!**, **Enviar meu projeto** e **Concluir aula**
 (nome do botão desde a noite de 06/10/2026, quando quem recebe passou a ser a equipe).
 No full review de 06/10/2026: a experiência diz o porquê sem círculo ("Achados vai para 1, porque eu
 encontrei um personagem e o jogo somou um"), o título dela virou **Quantos você já encontrou?** (sem o
@@ -32,7 +32,7 @@ foram desenhados do mesmo tamanho, "por isso" (e não "então": a criança está
 nessa parte) o desenho novo cabe no lugar do antigo. Na publicação, **Compartilhar** aparece como
 "uma setinha para cima", a ponte pede ajuda a um adulto se precisar e a ajuda escrita fala em "a
 área de ajuda", sem "nossa". Seções, blocos e critérios não mudaram.
-**Envio único, 11/10/2026:** a parte 3 confere a montagem com **Verificar esta parte**, sem envio.
+**Envio único, 11/10/2026:** a parte 3 confere a montagem com **Verificar projeto**, sem envio.
 O projeto é salvo automaticamente e continua no mesmo Estúdio. **Deixe o jogo com a sua cara**,
 na parte 4, passa a ser a parte de entrega: a criança testa e usa **Enviar meu projeto**, confirmado
 em **Enviar**, mesmo que mantenha as imagens ou a mensagem. O critério `submissionUpToDate`
@@ -117,7 +117,7 @@ outro toque. A montagem não lista os blocos antes do teste: a lista entra uma v
 gatilho genérico ("Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: …"),
 cobrindo encaixe, ordem, número e variável.
 
-Depois do teste, clicar em **Verificar esta parte**. Se faltar algo, corrigir os blocos e
+Depois do teste, clicar em **Verificar projeto**. Se faltar algo, corrigir os blocos e
 verificar novamente. Explicar que o jogo é salvo automaticamente enquanto a criança monta.
 Quando aparecer **Objetivo cumprido!**, seguir em **Próxima parte**. A verificação exige esse clique;
 o envio fica no fim da personalização, na parte 4. Não ensinar o layout da Pré-visualização ou o compartilhamento.

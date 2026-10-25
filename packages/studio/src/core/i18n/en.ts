@@ -256,6 +256,8 @@ export const en: Record<string, string> = {
     'This frame is a still image. Its selected position follows the frame order in Pinta.',
   'pintaImport.image.fullMap':
     'The whole map becomes one image, with every visible layer, including the front layer.',
+  'pintaImport.image.vector':
+    'This drawing comes in as a vector (SVG): it stays sharp at any size and Pygame Zero shows it at the chosen size.',
   'pintaImport.image.preparing': 'Preparing the image…',
   'pintaImport.image.preview': 'Selected image preview',
   'pintaImport.image.add': 'Add image',

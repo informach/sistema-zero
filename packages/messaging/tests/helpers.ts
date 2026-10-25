@@ -13,6 +13,7 @@ import {
   ListSendersService,
   UpdateSenderService,
 } from '../src/application/senders/sender-admin.service'
+import { SuppressMessageService } from '../src/application/suppress-message/suppress-message.service'
 import {
   CreateTemplateService,
   GetTemplateService,
@@ -93,6 +94,7 @@ export function buildApp(opts: BuildAppOptions = {}) {
       5,
     ),
     getMessage: new GetMessageService(messages),
+    suppressMessage: new SuppressMessageService(messages, clock),
     listMessages: new ListMessagesService(messages),
     createTemplate: new CreateTemplateService(templates, clock, idGen),
     updateTemplate: new UpdateTemplateService(templates, clock),

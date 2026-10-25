@@ -2,11 +2,13 @@ import { canonicalJson } from '@sistemazero/core/creations'
 import {
   PintaImageDerivationSchema,
   type PintaImageRecipe,
+  type PintaImageSelectionSummary,
   pintaImageRecipeKey,
 } from '@sistemazero/core/studio/pinta-image'
 import type { ProjectAsset } from '#core'
 import { personalIdOf } from '../../asset-library/personalSync'
-import { isPythonProject } from '../../core/editableProject'
+import { type EditableStudioProject, isPythonProject } from '../../core/editableProject'
+import { projectUsesPgzero } from '../../core/pgzeroMediaPaths'
 import type { ProjectStoreApi } from '../../state/projectStore'
 import type { StudioMoldaImportResult } from '../../studio/molda-library'
 import type { StudioPintaImportResult } from '../../studio/pinta-library'
@@ -50,6 +52,22 @@ export function projectPintaImageFromRecipe(
   return state.project?.assets?.find(
     (asset) => asset.pintaImage && pintaImageRecipeKey(asset.pintaImage.recipe) === key,
   )
+}
+
+/**
+ * The output format is the DESTINATION's decision, written into the recipe: a Pygame Zero
+ * project gets the real vector (SVG) of a vector drawing; pixel art, Turtle (Tk opens no SVG)
+ * and Python without an extension get PNG. Reviewing a material keeps the format it already
+ * has: its Python file (`.png`/`.svg`) is part of its identity.
+ */
+export function pintaImageOutputFor(
+  project: EditableStudioProject | null | undefined,
+  facts: PintaImageSelectionSummary | undefined,
+  reviewing?: Pick<PintaImageRecipe, 'output'>,
+): PintaImageRecipe['output'] {
+  if (reviewing) return reviewing.output
+  if (!project || !isPythonProject(project) || !projectUsesPgzero(project)) return undefined
+  return facts && facts.kind !== 'unavailable' && facts.vector === true ? 'svg' : undefined
 }
 
 /** Desenho do Pinta (imagem + animações/peças/mapa). */

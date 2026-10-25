@@ -1,10 +1,11 @@
-import { and, asc, count, desc, eq, inArray, lt, lte, sql } from 'drizzle-orm'
+import { and, asc, count, desc, eq, inArray, lt, lte, type SQL, sql } from 'drizzle-orm'
 import { Message, type MessageProps } from '../../../domain/message/message.aggregate'
 import { IdempotencyConflictError } from '../../../domain/message/message.errors'
 import type {
   ListMessagesQuery,
   MessageRepository,
 } from '../../../domain/ports/message-repository.port'
+import { ValidationError } from '../../../domain/shared/errors'
 import { PG_CHANNELS } from './channels'
 import { ConcurrencyConflictError } from './concurrency.error'
 import type { Database } from './db'
@@ -121,6 +122,20 @@ export class DrizzleMessageRepository implements MessageRepository {
   }
 
   async update(message: Message): Promise<void> {
+    return this.writeVersioned(message)
+  }
+
+  async withdrawQueued(message: Message): Promise<void> {
+    const owner = message.state.consumerId
+    if (!owner || message.status !== 'SUPPRESSED')
+      throw new ValidationError('Retirada de mensagem inválida')
+    return this.writeVersioned(
+      message,
+      and(inArray(messages.status, ['QUEUED', 'SCHEDULED']), eq(messages.consumerId, owner)),
+    )
+  }
+
+  private async writeVersioned(message: Message, precondition?: SQL): Promise<void> {
     const s = message.state
     await this.db.transaction(async (tx) => {
       const updated = await tx
@@ -141,7 +156,9 @@ export class DrizzleMessageRepository implements MessageRepository {
           terminalAt: s.terminalAt,
           version: message.version + 1,
         })
-        .where(and(eq(messages.id, message.id), eq(messages.version, message.version)))
+        .where(
+          and(eq(messages.id, message.id), eq(messages.version, message.version), precondition),
+        )
         .returning({ id: messages.id })
       if (updated.length === 0) throw new ConcurrencyConflictError(message.id)
       const hadEvents = await this.writeEvents(tx, message)

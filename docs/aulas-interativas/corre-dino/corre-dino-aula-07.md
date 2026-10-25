@@ -39,29 +39,29 @@ video-condicao-K1: Debinha substitui “Mas a partida nem começou. Por que já 
 
 ### Seção 2. Guarde em que momento o jogo está
 
-**Tarefa:** Agora guarde em que momento o seu jogo está! Coloque Mudar o estado do jogo para inicio no fim de Ao iniciar. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
+**Tarefa:** Agora guarde em que momento o seu jogo está! Coloque Mudar o estado do jogo para inicio no fim de Ao iniciar. Depois, clique em Verificar projeto e, em seguida, em Próxima parte.
 
 **Blocos na página:** video-estado-inicio → fala-estado-inicio.
 
-**Recado na página (não gravar):** Agora guarde em que momento o seu jogo está! Coloque Mudar o estado do jogo para inicio no fim de Ao iniciar. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
+**Recado na página (não gravar):** Agora guarde em que momento o seu jogo está! Coloque Mudar o estado do jogo para inicio no fim de Ao iniciar. Depois, clique em Verificar projeto e, em seguida, em Próxima parte.
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
 video-estado-inicio-K1: Debinha substitui “O jogo já vai esperar para começar?”. Antes: “e partida, pegue o bloco Mudar o estado do jogo para e solte no fim de Ao iniciar. Ele já chega com inicio: mantenha.”. Depois: “Ainda falta ligar as ações a esse estado. Confira se ficou assim: no fim de Ao iniciar, está Mudar o estado do jogo”.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar projeto.
 
 - No Ao iniciar, coloque Mudar o estado do jogo para inicio.
 
 ### Seção 3. Separe as ações da partida
 
-**Tarefa:** Agora separe as ações da partida! Coloque essas ações num Se o estado do jogo é jogando, com a limpeza e a floresta antes dele, e deixe o estado em inicio. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
+**Tarefa:** Agora separe as ações da partida! Coloque essas ações num Se o estado do jogo é jogando, com a limpeza e a floresta antes dele, e deixe o estado em inicio. Depois, clique em Verificar projeto e, em seguida, em Próxima parte.
 
 **Blocos na página:** video-embrulhar → fala-embrulhar.
 
-**Recado na página (não gravar):** Agora separe as ações da partida! Coloque essas ações num Se o estado do jogo é jogando, com a limpeza e a floresta antes dele, e deixe o estado em inicio. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
+**Recado na página (não gravar):** Agora separe as ações da partida! Coloque essas ações num Se o estado do jogo é jogando, com a limpeza e a floresta antes dele, e deixe o estado em inicio. Depois, clique em Verificar projeto e, em seguida, em Próxima parte.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar projeto.
 
 - Aplicar a gravidade fica no então de Se o estado do jogo é jogando, na ordem da montagem.
 - Controlar o dinossauro fica no então de Se o estado do jogo é jogando, na ordem da montagem.
@@ -75,26 +75,26 @@ video-estado-inicio-K1: Debinha substitui “O jogo já vai esperar para começa
 
 ### Seção 4. Faça o relógio esperar a partida
 
-**Tarefa:** Agora faça o relógio esperar a partida! Coloque a criação dos cactos num Se jogando, dentro do relógio, e termine com inicio em Ao iniciar. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
+**Tarefa:** Agora faça o relógio esperar a partida! Coloque a criação dos cactos num Se jogando, dentro do relógio, e termine com inicio em Ao iniciar. Depois, clique em Verificar projeto e, em seguida, em Próxima parte.
 
 **Blocos na página:** video-relogio → fala-relogio.
 
-**Recado na página (não gravar):** Agora faça o relógio esperar a partida! Coloque a criação dos cactos num Se jogando, dentro do relógio, e termine com inicio em Ao iniciar. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
+**Recado na página (não gravar):** Agora faça o relógio esperar a partida! Coloque a criação dos cactos num Se jogando, dentro do relógio, e termine com inicio em Ao iniciar. Depois, clique em Verificar projeto e, em seguida, em Próxima parte.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar projeto.
 
 - No relógio dos cactos, crie os obstáculos somente dentro de Se jogando.
 - No Ao iniciar, coloque Mudar o estado do jogo para inicio.
 
 ### Seção 5. Teste e envie seu jogo
 
-**Tarefa:** Hora de testar e enviar o seu jogo! Confira as duas perguntas de jogando, deixe o estado em inicio, clique em Verificar esta parte e depois em Enviar meu projeto. Confirme em Enviar e, quando o envio terminar, clique em Concluir aula.
+**Tarefa:** Hora de testar e enviar o seu jogo! Confira as duas perguntas de jogando, deixe o estado em inicio, clique em Verificar projeto e depois em Enviar meu projeto. Confirme em Enviar e, quando o envio terminar, clique em Concluir aula.
 
 **Blocos na página:** video-entrega → fala-entrega → projeto.
 
-**Recado na página (não gravar):** Hora de testar e enviar o seu jogo! Confira as duas perguntas de jogando, deixe o estado em inicio, clique em Verificar esta parte e depois em Enviar meu projeto. Confirme em Enviar e, quando o envio terminar, clique em Concluir aula.
+**Recado na página (não gravar):** Hora de testar e enviar o seu jogo! Confira as duas perguntas de jogando, deixe o estado em inicio, clique em Verificar projeto e depois em Enviar meu projeto. Confirme em Enviar e, quando o envio terminar, clique em Concluir aula.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte, com o envio em Enviar meu projeto confirmado em Enviar.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar projeto, com o envio em Enviar meu projeto confirmado em Enviar.
 
 - No Ao iniciar, coloque Mudar o estado do jogo para inicio.
 - Aplicar a gravidade fica no então de Se o estado do jogo é jogando, na ordem da montagem.

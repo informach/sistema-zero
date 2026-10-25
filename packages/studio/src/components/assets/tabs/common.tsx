@@ -8,6 +8,11 @@ export interface AssetsTabCommon {
   /** Renomear comita no blur (e no Enter, que faz blur). */
   onRename: (asset: ProjectAsset, value: string) => void
   onDelete: (asset: ProjectAsset) => void
+  /**
+   * Pygame Zero: the name the code uses (`Actor('nave_azul')`), the file name, which can be
+   * spelled differently from the material name. Absent in every other kind of project.
+   */
+  codeNameOf?: (asset: ProjectAsset) => string | undefined
 }
 
 export interface AssetsTabItem {
@@ -93,30 +98,46 @@ export function AssetNameInput({
   asset,
   what,
   onRename,
+  codeName,
   className,
 }: {
   asset: ProjectAsset
   /** "a imagem", "o som", "o modelo 3D" — entra no nome acessível do campo. */
   what: string
   onRename: AssetsTabCommon['onRename']
+  /** Pygame Zero: the name to write in the code, shown under the field. */
+  codeName?: string
   className?: string
 }): JSX.Element {
-  return (
+  const codeId = `asset-code-${asset.id}`
+  const input = (
     <input
+      // The store may settle on another name (`acerto-2` beside an `acerto`): show that one.
+      key={asset.name}
       name={`asset-name-${asset.id}`}
       autoComplete="off"
       defaultValue={asset.name}
       spellCheck={false}
       aria-label={`Nome d${what} ${asset.name}`}
+      aria-describedby={codeName ? codeId : undefined}
       className={cn(
         'rounded border border-sz-border bg-sz-bg px-1.5 py-0.5 font-mono text-xs text-sz-fg outline-none focus:border-sz-accent',
-        className,
+        codeName ? 'w-full' : className,
       )}
       onBlur={(e) => onRename(asset, e.target.value.trim())}
       onKeyDown={(e) => {
         if (e.key === 'Enter') (e.target as HTMLInputElement).blur()
       }}
     />
+  )
+  if (!codeName) return input
+  return (
+    <span className={cn('flex min-w-0 flex-col gap-0.5', className)}>
+      {input}
+      <span id={codeId} className="truncate text-[10px] text-sz-fg-soft" title={codeName}>
+        nome no código: <code className="font-mono text-sz-fg">{codeName}</code>
+      </span>
+    </span>
   )
 }
 

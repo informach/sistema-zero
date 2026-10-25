@@ -10,6 +10,7 @@ import {
 } from '@sistemazero/core/http'
 import type { Logger } from '@sistemazero/core/logging'
 import { EfiGatewayError } from '../../infrastructure/gateways/efi/efi.errors'
+import { ConcurrencyConflictError } from '../../infrastructure/persistence/drizzle/concurrency.error'
 
 export type { ErrorEnvelope }
 
@@ -28,6 +29,9 @@ const DOMAIN_STATUS: Record<string, number> = {
   PAYMENT_NOT_REFUNDABLE: 409,
   REFUND_NOT_SUPPORTED: 422,
   REFUND_IN_PROGRESS: 409,
+  SUBSCRIPTION_OPERATION_IN_PROGRESS: 409,
+  SUBSCRIPTION_CANCELLATION_PENDING: 409,
+  RECOVERY_CONFIGURATION_UNAVAILABLE: 409,
 }
 
 /**
@@ -55,6 +59,15 @@ export function buildErrorResponse(input: {
   if (error instanceof DomainError) {
     return { status: DOMAIN_STATUS[error.code] ?? 400, body: envelope(error.code, error.message) }
   }
+
+  if (error instanceof ConcurrencyConflictError)
+    return {
+      status: 409,
+      body: envelope(
+        'CONCURRENCY_CONFLICT',
+        'Este registro mudou. Recarregue antes de tentar novamente.',
+      ),
+    }
 
   if (error instanceof EfiGatewayError) {
     input.logger.error('gateway.error', {

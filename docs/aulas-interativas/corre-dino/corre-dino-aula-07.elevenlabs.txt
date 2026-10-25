@@ -24,7 +24,7 @@
 
 [engaging, energetic, conversational voice] Agora olhe o jogo de novo. [confident, clear, unhurried voice] Repare: o Dino e os cactos continuam correndo, e está certo, porque o bloco só guarda o nome do momento, e nenhuma regra pergunta por ele ainda. Quem vai fazer essa pergunta é o bloco Se.
 
-[engaging, energetic, conversational voice] Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Próxima parte.
+[engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Próxima parte.
 
 [long pause]
 
@@ -50,7 +50,7 @@
 
 [engaging, energetic, conversational voice] Antes de verificar, troque o estado em Ao iniciar de volta para inicio, porque é assim que o seu jogo tem que começar. O Dino e os cactos somem de novo, e só a floresta continua passando.
 
-[engaging, energetic, conversational voice] Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Próxima parte.
+[engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Próxima parte.
 
 [long pause]
 
@@ -66,7 +66,7 @@
 
 [engaging, energetic, conversational voice] Antes de verificar, troque o estado em Ao iniciar de volta para inicio, porque é assim que o seu jogo tem que começar. Só a floresta continua passando, e agora o seu jogo espera a partida, mesmo ainda sem uma tela de abertura desenhada.
 
-[engaging, energetic, conversational voice] Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Próxima parte.
+[engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Próxima parte.
 
 [long pause]
 
@@ -76,4 +76,4 @@
 
 [engaging, energetic, conversational voice] Antes de verificar, troque o estado em Ao iniciar de volta para inicio, porque é com ele que você vai enviar o jogo. [confident, clear, unhurried voice] Repare na floresta: ela continua passando no estado inicio, porque ficou fora do Se, e a tela de começo ainda não foi desenhada.
 
-[engaging, energetic, conversational voice] Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Concluir aula.
+[engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Concluir aula.

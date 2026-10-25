@@ -256,6 +256,8 @@ export function assertStudioPythonActivityScope(
 ) {
   if (activity.profileId !== configuration.runtime.profileId)
     throw new Error('O perfil da tarefa não corresponde ao projeto Python.')
+  // Turtle-specific checks and recorded input/graphics recipes are observed through Turtle's
+  // event loop; Pygame Zero projects are graded by structure and console only.
   if (
     (activity.checks.some(
       (check) => check.kind === 'behavior' && check.rule.type === 'turtleState',

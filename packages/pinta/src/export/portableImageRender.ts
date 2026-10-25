@@ -229,6 +229,49 @@ async function sceneSvg(scene: Exclude<PintaImageScene, { kind: 'pixel' }>): Pro
   )
 }
 
+/** True when the scene has a portable vector document (an SVG recipe can be honored). */
+export function pintaImageSceneIsVector(scene: PintaImageScene): boolean {
+  return (
+    scene.kind === 'vector' || (scene.kind === 'map' && scene.tileset.kind === 'vector-tileset')
+  )
+}
+
+/**
+ * The selected vector as a self-contained SVG whose ROOT says the output size: `width`/`height`
+ * are the scaled output and the `viewBox` keeps the content's own coordinates, so a Pygame Zero
+ * reader (root size, nanosvg rule) and the browser draw it at exactly width x height.
+ * Same markup as the PNG path, which rasterizes this very document.
+ */
+export async function renderPintaImageSvg(
+  scene: PintaImageScene,
+  width: number,
+  height: number,
+  limits: PintaImageTargetLimits,
+  signal?: AbortSignal,
+): Promise<string> {
+  signal?.throwIfAborted()
+  assertPintaImageDimensions(width, height, limits)
+  if (scene.kind === 'pixel' || !pintaImageSceneIsVector(scene))
+    throw new Error('Este desenho é de pixels e só pode vir como imagem PNG.')
+  validateSceneImages(scene, width * height, limits)
+  const svg = await sceneSvg(scene)
+  signal?.throwIfAborted()
+  return withRootSize(svg, width, height)
+}
+
+function withRootSize(svg: string, width: number, height: number): string {
+  const rootEnd = svg.indexOf('>')
+  if (!svg.startsWith('<svg') || rootEnd < 0) throw new Error('O desenho vetorial é inválido.')
+  const root = svg.slice(0, rootEnd)
+  if (!/\swidth="[^"]*"/.test(root) || !/\sheight="[^"]*"/.test(root) || !/\sviewBox="/.test(root))
+    throw new Error('O desenho vetorial não diz o próprio tamanho.')
+  return (
+    root
+      .replace(/(\s)width="[^"]*"/, `$1width="${width}"`)
+      .replace(/(\s)height="[^"]*"/, `$1height="${height}"`) + svg.slice(rootEnd)
+  )
+}
+
 export async function renderPintaImage(
   scene: PintaImageScene,
   width: number,

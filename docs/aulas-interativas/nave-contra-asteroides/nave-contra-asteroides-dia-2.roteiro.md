@@ -119,7 +119,7 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 **Clipe:** `video-criar-tiro`
 
-**Na tela:** Começar pela retomada, antes de qualquer bloco: clicar na área do jogo, tocar na barra de espaço e, no "Tá vendo?", mostrar que nada acontece. Abrir cada caminho com o destino à vista antes. Trocar os números de x e y por blocos de leitura, com nave selecionada. Não testar visibilidade antes do desenho. Confirmar o grupo e as duas velocidades. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido! e seguir o encaminhamento narrado.
+**Na tela:** Começar pela retomada, antes de qualquer bloco: clicar na área do jogo, tocar na barra de espaço e, no "Tá vendo?", mostrar que nada acontece. Abrir cada caminho com o destino à vista antes. Trocar os números de x e y por blocos de leitura, com nave selecionada. Não testar visibilidade antes do desenho. Confirmar o grupo e as duas velocidades. Ao terminar, clicar em Verificar projeto, mostrar Objetivo cumprido! e seguir o encaminhamento narrado.
 
 **Fala para ElevenLabs:**
 
@@ -152,7 +152,7 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 [engaging, energetic, conversational voice] O tiro ainda não aparece na tela, porque o jogo ainda não move nem desenha o grupo tiros. Isso vem na próxima parte.
 
-[engaging, energetic, conversational voice] Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Próxima parte.
+[engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Próxima parte.
 ```
 
 **Substituições na edição kids:**
@@ -168,7 +168,7 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 - `video-criar-tiro-K1`: entrada — Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação. Saída — Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.
 
 
-**Recado na página (não gravar):** Agora faça a sua nave atirar! Crie o grupo tiros, monte o disparo da barra de espaço e clique em Verificar esta parte. Depois, clique em Próxima parte.
+**Recado na página (não gravar):** Agora faça a sua nave atirar! Crie o grupo tiros, monte o disparo da barra de espaço e clique em Verificar projeto. Depois, clique em Próxima parte.
 
 ## Seção 5. Mova e desenhe os tiros
 
@@ -178,7 +178,7 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 **Clipe:** `video-tiros-voam`
 
-**Na tela:** Começar mostrando o som sem tiro: clicar na área do jogo e tocar na barra de espaço, deixando ouvir o disparo com a tela sem tiros. Testar a tecla com foco no jogo, em duas posições. Enquadrar a sequência da nave seguida pelo movimento e desenho de tiros. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido! e seguir o encaminhamento narrado.
+**Na tela:** Começar mostrando o som sem tiro: clicar na área do jogo e tocar na barra de espaço, deixando ouvir o disparo com a tela sem tiros. Testar a tecla com foco no jogo, em duas posições. Enquadrar a sequência da nave seguida pelo movimento e desenho de tiros. Ao terminar, clicar em Verificar projeto, mostrar Objetivo cumprido! e seguir o encaminhamento narrado.
 
 **Fala para ElevenLabs:**
 
@@ -195,11 +195,11 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 [reassuring, encouraging voice] Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: no fim de A cada quadro do jogo, depois de Desenhar o sprite nave, estão Mover os sprites do grupo tiros e, logo abaixo, Desenhar o grupo tiros. E, no disparo da barra de espaço, o tiro nasce no grupo tiros, com vy -9. [reassuring, encouraging voice] Depois de corrigir, teste de novo.
 
-[engaging, energetic, conversational voice] Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Próxima parte.
+[engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Próxima parte.
 ```
 
 
-**Recado na página (não gravar):** Agora faça os tiros voarem! Mova e desenhe o grupo tiros em cada quadro, atire de dois lugares e clique em Verificar esta parte. Depois, clique em Próxima parte.
+**Recado na página (não gravar):** Agora faça os tiros voarem! Mova e desenhe o grupo tiros em cada quadro, atire de dois lugares e clique em Verificar projeto. Depois, clique em Próxima parte.
 
 ## Seção 6. O tiro saiu da tela. E do grupo?
 
@@ -250,7 +250,7 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 **Clipe:** `video-faxina`
 
-**Na tela:** Começar pela retomada: atirar algumas vezes e, no "Tá vendo?", mostrar os tiros sumindo pela borda de cima, sem prometer que o grupo foi limpo. Montar o bloco com interior vazio. A ausência visual de tiros não prova limpeza: mostrar a ordem e usar o verificador. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido! e seguir o encaminhamento narrado.
+**Na tela:** Começar pela retomada: atirar algumas vezes e, no "Tá vendo?", mostrar os tiros sumindo pela borda de cima, sem prometer que o grupo foi limpo. Montar o bloco com interior vazio. A ausência visual de tiros não prova limpeza: mostrar a ordem e usar o verificador. Ao terminar, clicar em Verificar projeto, mostrar Objetivo cumprido! e seguir o encaminhamento narrado.
 
 **Fala para ElevenLabs:**
 
@@ -271,7 +271,7 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 [upbeat, encouraging voice] Agora teste: clique na área do jogo, dispare algumas vezes, mude a nave de lugar e dispare de novo. Os tiros têm que nascer na nave e subir, como antes. A limpeza não aparece na tela: quem mostra que ela está lá é a ordem dos blocos que você acabou de conferir.
 
-[engaging, energetic, conversational voice] Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Concluir aula.
+[engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Concluir aula.
 ```
 
 **Substituições na edição kids:**
@@ -287,4 +287,4 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 - `video-faxina-K1`: entrada — Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação. Saída — Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.
 
 
-**Recado na página (não gravar):** Agora limpe o grupo dos tiros! Coloque a limpeza entre mover e desenhar os tiros, teste os disparos, clique em Verificar esta parte e envie o seu projeto. Depois, clique em Concluir aula.
+**Recado na página (não gravar):** Agora limpe o grupo dos tiros! Coloque a limpeza entre mover e desenhar os tiros, teste os disparos, clique em Verificar projeto e envie o seu projeto. Depois, clique em Concluir aula.

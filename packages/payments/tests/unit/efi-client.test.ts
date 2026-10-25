@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, test } from 'bun:test'
 import { EfiClient } from '../../src/infrastructure/gateways/efi/efi.client'
 import { EfiGatewayError } from '../../src/infrastructure/gateways/efi/efi.errors'
+import { EfiPaymentGateway } from '../../src/infrastructure/gateways/efi/efi.gateway'
 import { EfiCobrancasClient } from '../../src/infrastructure/gateways/efi/efi-cobrancas.client'
 
 const realFetch = globalThis.fetch
@@ -23,7 +24,7 @@ function jsonResponse(status: number, body: unknown): Response {
 /** Instala um `fetch` fake. O router recebe (info, counts) e devolve a Response. */
 function installFetch(
   router: (
-    info: { url: string; method: string; signal?: AbortSignal },
+    info: { url: string; method: string; signal?: AbortSignal; body?: string },
     counts: { token: number; endpoint: number },
   ) => Response | Promise<Response>,
 ): Call[] {
@@ -35,7 +36,15 @@ function installFetch(
     calls.push({ url, method })
     if (url.includes('/oauth/token') || url.endsWith('/authorize')) counts.token++
     else counts.endpoint++
-    return router({ url, method, signal: init?.signal ?? undefined }, counts)
+    return router(
+      {
+        url,
+        method,
+        signal: init?.signal ?? undefined,
+        body: typeof init?.body === 'string' ? init.body : undefined,
+      },
+      counts,
+    )
   }) as typeof fetch
   return calls
 }
@@ -168,6 +177,77 @@ describe('EfiCobrancasClient (Boleto) — resiliência e idempotência', () => {
       ...overrides,
     })
   }
+
+  test('troca preventiva envia só payment_token e nunca chama retry ou altera preço/plano', async () => {
+    let sent: { method: string; body: unknown } | undefined
+    const calls = installFetch(({ url, method, body }) => {
+      if (url.endsWith('/authorize')) return jsonResponse(200, { access_token: 'tok' })
+      sent = { method, body: JSON.parse(body ?? '{}') }
+      return jsonResponse(200, { code: 200 })
+    })
+    await new EfiPaymentGateway(pixClient(), cobrancasClient()).updateSubscriptionCard(
+      '123',
+      'qa-token',
+    )
+    expect(sent).toEqual({ method: 'PUT', body: { payment_token: 'qa-token' } })
+    expect(urlCalls(calls, '/subscription/123')).toHaveLength(1)
+    expect(urlCalls(calls, '/retry')).toHaveLength(0)
+  })
+
+  test('retry preserva charge original, não recebe preço e atualiza o cartão futuro', async () => {
+    let sent: unknown
+    const calls = installFetch(({ url, body }) => {
+      if (url.endsWith('/authorize')) return jsonResponse(200, { access_token: 'tok' })
+      sent = JSON.parse(body ?? '{}')
+      return jsonResponse(200, { code: 200, data: { status: 'waiting' } })
+    })
+    await new EfiPaymentGateway(pixClient(), cobrancasClient()).retrySubscriptionCharge({
+      providerPaymentId: '456',
+      paymentToken: 'qa-token',
+      customer: {
+        name: 'Pessoa QA',
+        cpf: '52998224725',
+        email: 'qa@example.test',
+        phone: '11999998888',
+      },
+    })
+    expect(sent).toEqual({
+      payment: {
+        credit_card: {
+          customer: {
+            name: 'Pessoa QA',
+            cpf: '52998224725',
+            email: 'qa@example.test',
+            phone_number: '11999998888',
+          },
+          payment_token: 'qa-token',
+          update_card: true,
+        },
+      },
+    })
+    expect(urlCalls(calls, '/charge/456/retry').map((call) => call.method)).toEqual(['POST'])
+    expect(urlCalls(calls, 'one-step')).toHaveLength(0)
+  })
+
+  test.each([
+    'card-only',
+    'retry',
+  ] as const)('não repete ação com token após 503: %s', async (kind) => {
+    const calls = installFetch(({ url }) =>
+      url.endsWith('/authorize')
+        ? jsonResponse(200, { access_token: 'tok' })
+        : jsonResponse(503, { mensagem: 'indisponível' }),
+    )
+    const client = cobrancasClient()
+    const effect =
+      kind === 'card-only'
+        ? client.updateSubscriptionCard('123', 'qa-token')
+        : client.retrySubscriptionCharge('456', {
+            payment: { credit_card: { payment_token: 'qa-token', update_card: true } },
+          })
+    await expect(effect).rejects.toBeInstanceOf(EfiGatewayError)
+    expect(calls.filter((call) => !call.url.endsWith('/authorize'))).toHaveLength(1)
+  })
 
   test('POST /charge/one-step (idempotent:false) NÃO é re-tentado em 503 (não emite 2º boleto)', async () => {
     const calls = installFetch(({ url }) => {

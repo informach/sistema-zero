@@ -4,6 +4,7 @@ Geometry remains in Python. The transport exchanges bounded JSON data with the
 trusted frame. It is configured by the runtime, never imported by learner code.
 """
 import heapq
+from collections import deque
 import json
 import math
 import re
@@ -16,6 +17,7 @@ from ._sz_turtle_limits import LIMITS
 _transport = None
 _project_root = None
 _activity_checkpoint = None
+_mission_enabled = False
 MAX_ITEMS = LIMITS['items']
 MAX_POINTS = LIMITS['points']
 MAX_IMAGE_BYTES = LIMITS['imageBytes']
@@ -30,13 +32,14 @@ _ENCODER = json.JSONEncoder(ensure_ascii=True, allow_nan=False, separators=(',',
 def _encode(value):
     return _ENCODER.encode(value)
 
-def configure(transport, project_root, activity_checkpoint=None):
-    global _transport, _project_root, _activity_checkpoint
+def configure(transport, project_root, activity_checkpoint=None, *, mission=False):
+    global _transport, _project_root, _activity_checkpoint, _mission_enabled
     if _transport is not None:
         raise RuntimeError('Turtle backend already configured')
     _transport = transport
     _project_root = Path(project_root).resolve()
     _activity_checkpoint = activity_checkpoint
+    _mission_enabled = mission
 
 def _exchange(operations, query=None):
     if _transport is None:
@@ -83,7 +86,13 @@ class TurtleScreenBase:
     _graphics_error = ValueError
     _terminator = RuntimeError
 
+    def _observe_turtle(self, object_id, position, items, visible):
+        if _mission_enabled:
+            self._queue({'op': 'actor', 'id': object_id, 'x': position[0], 'y': position[1],
+                         'items': list(items), 'visible': bool(visible)})
+
     def __init__(self, cv):
+        self._mission_observation = _mission_enabled
         self.cv = None  # No DOM or native window is exposed to the engine.
         self.canvwidth, self.canvheight = 400, 300
         self.xscale = self.yscale = 1.0
@@ -97,9 +106,9 @@ class TurtleScreenBase:
         self._next_image = 0
         self._bindings = {}
         self._timers = []
-        self._idle_timers = []
+        self._idle_timers = deque()
         self._timer_sequence = 0
-        self._incoming = []
+        self._incoming = deque()
         self._activity_update_depth = 0
         self._just_waited = False
         self._closed = False
@@ -293,7 +302,7 @@ class TurtleScreenBase:
         else:
             self._flush({'type': 'present'})
         while self._incoming and not self._closed:
-            event = self._incoming.pop(0)
+            event = self._incoming.popleft()
             if event['type'] in ('keypress', 'keyrelease'):
                 keys = [('screen', event['type'], event['key'])]
                 # Tk chooses the most specific binding; generic is a fallback.
@@ -317,7 +326,7 @@ class TurtleScreenBase:
             elif self._idle_timers:
                 generation = self._timer_sequence
                 while self._idle_timers and self._idle_timers[0][0] <= generation and not self._closed:
-                    _, callback = self._idle_timers.pop(0)
+                    _, callback = self._idle_timers.popleft()
                     self._dispatch(callback)
                 continue
             else:

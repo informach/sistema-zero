@@ -178,6 +178,7 @@ export const CATALOG_TABS = [
 export const PAYMENTS_TABS = [
   { label: 'Vendas', href: '/admin/pagamentos/transacoes' },
   { label: 'Assinaturas', href: '/admin/pagamentos/assinaturas' },
+  { label: 'Regularização', href: '/admin/pagamentos/regularizacao' },
   { label: 'Saúde dos pagamentos', href: '/admin/pagamentos/operacoes' },
 ]
 

@@ -53,7 +53,7 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 **Clipe:** `video-grupo-e-relogio`
 
-**Na tela:** Começar pela retomada: clicar na área do jogo, esperar alguns segundos e, no "Tá vendo?", mostrar que nenhuma pedra aparece. Mostrar a diferença entre encaixar depois do bloco inteiro e dentro dele. O intervalo começa vazio. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido! e seguir o encaminhamento narrado.
+**Na tela:** Começar pela retomada: clicar na área do jogo, esperar alguns segundos e, no "Tá vendo?", mostrar que nenhuma pedra aparece. Mostrar a diferença entre encaixar depois do bloco inteiro e dentro dele. O intervalo começa vazio. Ao terminar, clicar em Verificar projeto, mostrar Objetivo cumprido! e seguir o encaminhamento narrado.
 
 **Fala para ElevenLabs:**
 
@@ -76,7 +76,7 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 [confident, clear, unhurried voice] Confira se ficou assim: no fim de Ao iniciar está Criar grupo de sprites asteroides, e, dentro de Enquanto estiver rodando, A cada 40 quadros está logo abaixo de A cada quadro do jogo, como vizinho, e não encaixado dentro dele. Por enquanto, nenhuma pedra cai, porque o relógio ainda está vazio.
 
-[engaging, energetic, conversational voice] Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Próxima parte.
+[engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Próxima parte.
 ```
 
 **Substituições na edição kids:**
@@ -92,7 +92,7 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 - `video-grupo-e-relogio-K1`: entrada — Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação. Saída — Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.
 
 
-**Recado na página (não gravar):** Agora prepare a chuva de pedras! Crie o grupo asteroides, coloque o relógio de 40 quadros ao lado de A cada quadro do jogo e clique em Verificar esta parte. Depois, clique em Próxima parte.
+**Recado na página (não gravar):** Agora prepare a chuva de pedras! Crie o grupo asteroides, coloque o relógio de 40 quadros ao lado de A cada quadro do jogo e clique em Verificar projeto. Depois, clique em Próxima parte.
 
 ## Seção 3. Sorteie onde a pedra nasce
 
@@ -141,7 +141,7 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 **Clipe:** `video-asteroide`
 
-**Na tela:** Começar pela retomada: esperar alguns segundos e, no "Tá vendo?", mostrar que ainda não cai nenhuma pedra. Mostrar a criação no intervalo e o movimento, a limpeza e o desenho no bloco de cada quadro, sempre com o destino à vista antes de abrir a paleta. Não montar colisão. Registrar que a travessia é o estado esperado desta etapa. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido! e seguir o encaminhamento narrado.
+**Na tela:** Começar pela retomada: esperar alguns segundos e, no "Tá vendo?", mostrar que ainda não cai nenhuma pedra. Mostrar a criação no intervalo e o movimento, a limpeza e o desenho no bloco de cada quadro, sempre com o destino à vista antes de abrir a paleta. Não montar colisão. Registrar que a travessia é o estado esperado desta etapa. Ao terminar, clicar em Verificar projeto, mostrar Objetivo cumprido! e seguir o encaminhamento narrado.
 
 **Fala para ElevenLabs:**
 
@@ -170,7 +170,7 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 [reassuring, encouraging voice] Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: dentro de A cada 40 quadros está No grupo asteroides criar um asteroide, com um x aleatório na tela, y -30, tamanho 40, vx 0 e vy 3. E, no fim de A cada quadro do jogo, estão Mover os sprites do grupo asteroides, Tirar do grupo asteroides quem sair da tela e Desenhar o grupo asteroides, nessa ordem. [reassuring, encouraging voice] Depois de corrigir, teste de novo.
 
-[engaging, energetic, conversational voice] Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Próxima parte.
+[engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Próxima parte.
 ```
 
 **Substituições na edição kids:**
@@ -186,7 +186,7 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 - `video-asteroide-K1`: entrada — Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação. Saída — Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.
 
 
-**Recado na página (não gravar):** Agora faça as pedras caírem! Crie o asteroide dentro do relógio, com x sorteado, monte o movimento, a limpeza e o desenho do grupo e clique em Verificar esta parte. Depois, clique em Próxima parte.
+**Recado na página (não gravar):** Agora faça as pedras caírem! Crie o asteroide dentro do relógio, com x sorteado, monte o movimento, a limpeza e o desenho do grupo e clique em Verificar projeto. Depois, clique em Próxima parte.
 
 ## Seção 5. Teste e envie a sua chuva de pedras
 
@@ -196,7 +196,7 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 **Clipe:** `video-entrega`
 
-**Na tela:** Clicar na área do jogo e dar tempo para observar algumas pedras nascendo e caindo. Depois mover a nave e atirar, mostrando o tiro atravessando as pedras. Não trocar valores nesta parte. Não confundir quadros com segundos. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido! e seguir o encaminhamento narrado.
+**Na tela:** Clicar na área do jogo e dar tempo para observar algumas pedras nascendo e caindo. Depois mover a nave e atirar, mostrando o tiro atravessando as pedras. Não trocar valores nesta parte. Não confundir quadros com segundos. Ao terminar, clicar em Verificar projeto, mostrar Objetivo cumprido! e seguir o encaminhamento narrado.
 
 **Fala para ElevenLabs:**
 
@@ -205,8 +205,8 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 [engaging, energetic, conversational voice] Depois mova a nave e atire. As setas e os tiros precisam continuar funcionando como antes, agora com as pedras caindo. Por enquanto o tiro atravessa as pedras, e isso é esperado: o acerto vem na próxima aula.
 
-[engaging, energetic, conversational voice] Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Concluir aula.
+[engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Concluir aula.
 ```
 
 
-**Recado na página (não gravar):** Hora de testar a sua chuva de pedras! Confira as pedras caindo, as setas e os tiros, clique em Verificar esta parte e envie o seu projeto. Depois, clique em Concluir aula.
+**Recado na página (não gravar):** Hora de testar a sua chuva de pedras! Confira as pedras caindo, as setas e os tiros, clique em Verificar projeto e envie o seu projeto. Depois, clique em Concluir aula.

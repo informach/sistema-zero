@@ -166,7 +166,7 @@ export const PAGINA_DESAFIO_9A17 = {
           src: 'comunidade-dos-criadores/passo-verificar.webp',
           width: 740,
           height: 340,
-          alt: 'O botão Verificar esta parte, com o que já está cumprido e o que falta',
+          alt: 'O botão Verificar projeto, com o que já está cumprido e o que falta',
         },
       },
       {
@@ -298,7 +298,7 @@ export const PAGINA_DESAFIO_9A17 = {
     {
       pergunta: 'Ele consegue fazer sozinho?',
       resposta:
-        'Quem já lê sozinho consegue. O vídeo fica do lado dos blocos, e o botão Verificar esta parte mostra o que falta.',
+        'Quem já lê sozinho consegue. O vídeo fica do lado dos blocos, e o botão Verificar projeto mostra o que falta.',
     },
     {
       pergunta: 'Meu filho tem 15 anos. Vai achar infantil?',

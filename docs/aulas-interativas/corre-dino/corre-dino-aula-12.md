@@ -39,17 +39,17 @@ video-sorteio-tira-na-hora-K1: Dedé substitui “Ué, pode sair o mesmo lugar o
 
 ### Seção 2. Sorteie onde cada cacto nasce
 
-**Tarefa:** Agora sorteie onde cada cacto nasce! Troque o x 560 do bloco que cria os cactos por um número de 500 a 560. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
+**Tarefa:** Agora sorteie onde cada cacto nasce! Troque o x 560 do bloco que cria os cactos por um número de 500 a 560. Depois, clique em Verificar projeto e, em seguida, em Próxima parte.
 
 **Blocos na página:** video-lugar-diferente → fala-lugar-diferente.
 
-**Recado na página (não gravar):** Agora sorteie onde cada cacto nasce! Troque o x 560 do bloco que cria os cactos por um número de 500 a 560. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
+**Recado na página (não gravar):** Agora sorteie onde cada cacto nasce! Troque o x 560 do bloco que cria os cactos por um número de 500 a 560. Depois, clique em Verificar projeto e, em seguida, em Próxima parte.
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
 video-lugar-diferente-K1: Dedé substitui “Quais números eu coloco no sorteio?”. Antes: “e posições, pegue o bloco um número de 1 a 6 e solte em cima do 560 do campo x, para ele tomar o lugar do número.”. Depois: “O sorteio chega com 1 e 6: troque o 1 por 500 e o 6 por 560. A tela termina em x 480, por isso todos esses lugares”.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar projeto.
 
 - Sorteie a posição de entrada dos cactos, a partir da direita da pista.
 - Preserve o relógio de 1,4 s, com o nascimento protegido pelo estado do jogo é jogando.
@@ -57,17 +57,17 @@ video-lugar-diferente-K1: Dedé substitui “Quais números eu coloco no sorteio
 
 ### Seção 3. Sorteie uma variação na velocidade
 
-**Tarefa:** Agora sorteie uma variação na velocidade! No vx do mesmo bloco, use a conta -5 menos um número de 0 a 1. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
+**Tarefa:** Agora sorteie uma variação na velocidade! No vx do mesmo bloco, use a conta -5 menos um número de 0 a 1. Depois, clique em Verificar projeto e, em seguida, em Próxima parte.
 
 **Blocos na página:** video-velocidade-propria → fala-velocidade-propria.
 
-**Recado na página (não gravar):** Agora sorteie uma variação na velocidade! No vx do mesmo bloco, use a conta -5 menos um número de 0 a 1. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
+**Recado na página (não gravar):** Agora sorteie uma variação na velocidade! No vx do mesmo bloco, use a conta -5 menos um número de 0 a 1. Depois, clique em Verificar projeto e, em seguida, em Próxima parte.
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
 video-velocidade-propria-K1: Dedé substitui “Por que a conta usa menos?”. Antes: “depois Números e posições, pegue outro bloco um número de 1 a 6 e solte em cima desse 0. Troque o 1 por 0 e o 6 por 1.”. Depois: “Assim, se sair 0, a velocidade é -5, e, se sair 1, é -6, que anda mais para a esquerda em cada quadro. Não use o sinal”.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar projeto.
 
 - Sorteie a posição de entrada dos cactos, a partir da direita da pista.
 - Use uma base negativa menos uma variação não negativa na velocidade dos cactos.
@@ -75,13 +75,13 @@ video-velocidade-propria-K1: Dedé substitui “Por que a conta usa menos?”. A
 
 ### Seção 4. Teste e envie seu jogo
 
-**Tarefa:** Hora de testar e enviar o seu jogo! Jogue duas partidas e observe os cactos, clique em Verificar esta parte e depois em Enviar meu projeto. Confirme em Enviar e, quando o envio terminar, clique em Concluir aula.
+**Tarefa:** Hora de testar e enviar o seu jogo! Jogue duas partidas e observe os cactos, clique em Verificar projeto e depois em Enviar meu projeto. Confirme em Enviar e, quando o envio terminar, clique em Concluir aula.
 
 **Blocos na página:** video-entrega → fala-entrega → projeto.
 
-**Recado na página (não gravar):** Hora de testar e enviar o seu jogo! Jogue duas partidas e observe os cactos, clique em Verificar esta parte e depois em Enviar meu projeto. Confirme em Enviar e, quando o envio terminar, clique em Concluir aula.
+**Recado na página (não gravar):** Hora de testar e enviar o seu jogo! Jogue duas partidas e observe os cactos, clique em Verificar projeto e depois em Enviar meu projeto. Confirme em Enviar e, quando o envio terminar, clique em Concluir aula.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte, com o envio em Enviar meu projeto confirmado em Enviar.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar projeto, com o envio em Enviar meu projeto confirmado em Enviar.
 
 - Sorteie a posição de entrada dos cactos, a partir da direita da pista.
 - Use uma base negativa menos uma variação não negativa na velocidade dos cactos.

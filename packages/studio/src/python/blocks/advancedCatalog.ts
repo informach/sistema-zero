@@ -18,16 +18,16 @@ const input = (shape: PythonBlockShape, key: string) => {
   return value.nodes[0]!
 }
 const comparisons = [
-  ['igual', 'Eq'],
-  ['diferente', 'NotEq'],
-  ['menor', 'Lt'],
-  ['até', 'LtE'],
-  ['maior', 'Gt'],
-  ['pelo menos', 'GtE'],
+  ['=', 'Eq'],
+  ['≠', 'NotEq'],
+  ['<', 'Lt'],
+  ['≤', 'LtE'],
+  ['>', 'Gt'],
+  ['≥', 'GtE'],
   ['está em', 'In'],
   ['não está em', 'NotIn'],
-  ['é o mesmo objeto', 'Is'],
-  ['não é o mesmo objeto', 'IsNot'],
+  ['é', 'Is'],
+  ['não é', 'IsNot'],
 ] as const
 const arithmetic = ['Add', 'Sub', 'Mult', 'Div', 'FloorDiv', 'Mod', 'Pow']
 const argumentsNode = () =>
@@ -52,6 +52,7 @@ export const PYTHON_ADVANCED_BLOCK_CODECS: readonly PythonBlockCodec[] = [
       'float',
       'Um número decimal Python. Use ponto, como 2.5; o valor segue a precisão binária oficial.',
     ),
+    compact: 'plain',
     defaultNode: () =>
       node('Constant', { value: { literal: 'float', value: '0x1.4000000000000p+1' }, kind: null }),
     decode(value) {

@@ -10,6 +10,7 @@ import {
 import type { PythonAssetBundle } from '../core/pythonAssets'
 import type { PythonProjectDocument } from '../core/pythonProject'
 import { buildPythonAudioNativeBundle } from '../runtime/python/audio/nativeExport'
+import { PGZERO_UPSTREAM } from '../runtime/python/pgzero/contract'
 import type { ExportFileMap } from './fileMap'
 
 /** This describes a preserved snapshot, not a native execution or dependency certificate. */
@@ -20,12 +21,18 @@ export async function buildPythonSourceMetadata(input: {
   assets: PythonAssetBundle['manifest']
   occupiedFiles: string[]
   runtimeCatalog: StudioRuntimeCatalog | null
+  /** Pygame Zero projects: the requirements file and the PNGs made from SVG images. */
+  pgzero?: {
+    requirementsPath: string
+    converted: readonly string[]
+    warnings: readonly string[]
+  } | null
 }): Promise<{ files: ExportFileMap; warnings: string[] }> {
   const { project, sourceFiles, assets } = input
   const directories = [...input.directories].sort()
   const occupied = [...input.occupiedFiles]
   const files: ExportFileMap = {}
-  const warnings: string[] = []
+  const warnings: string[] = [...(input.pgzero?.warnings ?? [])]
   const available = (path: string) => !studioPortableFileConflict([...occupied, path], directories)
   const allocate = (candidate: (index: number) => string) => {
     for (let index = 1; ; index++) {
@@ -142,15 +149,35 @@ dependencies = []
     assets,
     runtimeModules,
     ...(nativeAudio ? { portableAudio: nativeAudio.manifest } : {}),
+    ...(input.pgzero
+      ? {
+          pygameZero: {
+            pgzero: PGZERO_UPSTREAM.pgzero,
+            pygameCe: PGZERO_UPSTREAM.pygameCe,
+            requirementsPath: input.pgzero.requirementsPath,
+            pngFromSvg: [...input.pgzero.converted],
+          },
+        }
+      : {}),
     desktopExecution: 'not-observed',
     portabilityAnalysis: 'not-performed',
     knownLimits: [
       'O runtime e o lock identificam o navegador; não são uma instalação ou resolução de pacotes nativos.',
       'A exportação preserva a fonte, mas não analisa todos os imports, caminhos, código dinâmico ou configurações autorais.',
       'Turtle nativo usa a biblioteca padrão e exige suporte gráfico Tk instalado no computador.',
+      ...(input.pgzero
+        ? [
+            `Pygame Zero nativo usa pgzero ${PGZERO_UPSTREAM.pgzero} com pygame-ce ${PGZERO_UPSTREAM.pygameCe}; no computador, as imagens SVG são lidas pelos PNG gerados nesta exportação.`,
+          ]
+        : []),
       ...(pngLimit ? [pngLimit] : []),
     ],
-    generatedFiles: [instructionsPath, manifestPath, ...Object.keys(files)].sort(),
+    generatedFiles: [
+      instructionsPath,
+      manifestPath,
+      ...Object.keys(files),
+      ...(input.pgzero ? [input.pgzero.requirementsPath, ...input.pgzero.converted] : []),
+    ].sort(),
     warnings,
   }
   files[manifestPath] = `${JSON.stringify(manifest, null, 2)}\n`
@@ -179,6 +206,25 @@ Os comandos, limites e diferenças entre navegador e computador estão em ${nati
 play começa o som sem esperar seu fim e não mantém o processo Python aberto. Em um jogo Turtle,
 mantenha o laço normal do programa com turtle.done() ou turtle.mainloop(). Encerrar o programa encerra o áudio.
 
+`
+    : ''
+}${
+  input.pgzero
+    ? `Este é um jogo Pygame Zero. No computador ele usa o pygame-ce (o pygame atualizado) com o pgzero.
+Com o Python do ambiente do passo 4, na pasta principal da exportação:
+   python -m pip install -r ${input.pgzero.requirementsPath}
+   python -m pip install --no-deps pgzero==${PGZERO_UPSTREAM.pgzero}
+O --no-deps é importante: sem ele o pip instalaria o pygame antigo junto com o pygame-ce.
+Para jogar: python ${project.python.entrypoint}
+Isso funciona quando o programa termina com pgzrun.go(), como os exemplos da galeria.
+Sem essa linha, use: python -X utf8 -m pgzero ${project.python.entrypoint}
+(o -X utf8 mantém os acentos certos no Windows).
+${
+  input.pgzero.converted.length
+    ? `Os desenhos SVG ganharam uma cópia em PNG do mesmo tamanho (${input.pgzero.converted.join(', ')}), porque o Pygame Zero do computador não abre SVG. Se mudar um SVG, gere o PNG de novo pelo Estúdio.
+`
+    : ''
+}
 `
     : ''
 }Turtle faz parte da biblioteca padrão do Python. Não instale um pacote chamado turtle pelo pip.

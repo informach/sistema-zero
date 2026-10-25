@@ -1530,6 +1530,7 @@ export interface LessonDetailView {
 
 // ── Payments ("minhas compras" — PaymentView PÚBLICA, sem dados sensíveis) ──
 export interface PaymentView {
+  subscriptionId?: string | null
   id: string
   consumerId: string
   status: string
@@ -1569,41 +1570,21 @@ export const PAYMENT_METHOD_LABELS: Record<string, string> = {
 }
 
 // ── Assinaturas ("minhas assinaturas" — view PÚBLICA do payments) ───────────
-export interface MySubscriptionView {
-  id: string
-  status: string
-  /** Mensal = 1, anual = 12. */
-  intervalMonths: number
-  repeats: number | null
-  /** Centavos serializados como STRING (bigint) → use `formatCentsStr`. */
-  amountInCents: string
-  currency: string
-  card: { brand: string; last4: string }
-  cyclesCompleted: number
-  lastChargeAt: string | null
-  description: string | null
-  canceledAt: string | null
-  createdAt: string
-}
+export type {
+  MySubscriptionView,
+  SubscriptionCardConfigView,
+  SubscriptionCardContextView,
+  SubscriptionCardIntentView,
+  SubscriptionRetryContextView,
+  SubscriptionRetryIntentView,
+} from './subscription-card'
+export { nextChargeDate } from './subscription-card'
 
 export const SUBSCRIPTION_STATUS_LABELS: Record<string, string> = {
   PENDING: 'Pendente',
   ACTIVE: 'Ativa',
   CANCELED: 'Cancelada',
   EXPIRED: 'Encerrada',
-}
-
-/**
- * Próxima cobrança DERIVADA (a Efí não expõe a data): última cobrança (ou a
- * criação) + intervalo. `null` p/ assinatura não-ativa.
- */
-export function nextChargeDate(sub: MySubscriptionView): Date | null {
-  if (sub.status !== 'ACTIVE') return null
-  const base = new Date(sub.lastChargeAt ?? sub.createdAt)
-  if (Number.isNaN(base.getTime())) return null
-  const next = new Date(base)
-  next.setMonth(next.getMonth() + sub.intervalMonths)
-  return next
 }
 
 // ── Comunidade (fórum — @sistemazero/hub) ───────────────────────────────────

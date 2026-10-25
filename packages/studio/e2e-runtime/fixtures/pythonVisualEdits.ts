@@ -182,7 +182,7 @@ export async function provePythonVisualEdits(analysis: PythonAnalysisSession) {
   const docstringProjection = pythonASTToVisual(docstring.tree!)
   for (const item of docstringProjection.body)
     walk(item, (block) => {
-      if (block.codecId === 'sz_py_function' && block.fields[0]?.value === 'inner')
+      if (block.codecId === 'sz_py_def' && block.fields[0]?.value === 'inner')
         block.fields[0].value = 'renamed'
     })
   const docstringEdit = await preparePythonVisualTransaction({
@@ -341,14 +341,14 @@ export async function provePythonVisualEdits(analysis: PythonAnalysisSession) {
   for (const fixture of [
     {
       source: 'def f():\n    pass # primeiro\n    pass # segundo\n',
-      codec: 'sz_py_function',
+      codec: 'sz_py_def',
       field: 'body',
       order: [1, 0],
       expected: 'def f():\n    pass # segundo\n    pass # primeiro\n',
     },
     {
       source: 'def f():\n    # começo\n    x = 1 # x\n    # y\n    y = 2\n    # fim\nprint(f())\n',
-      codec: 'sz_py_function',
+      codec: 'sz_py_def',
       field: 'body',
       order: [1, 0],
       expected:
@@ -416,7 +416,7 @@ export async function provePythonVisualEdits(analysis: PythonAnalysisSession) {
   for (const fixture of [
     {
       source: 'def antigo(): # cabeçalho\n    # interno\n    pass\n',
-      codec: 'sz_py_function',
+      codec: 'sz_py_def',
       from: 'antigo',
       to: 'novo',
       expected: 'def novo(): # cabeçalho\n    # interno\n    pass\n',
@@ -430,7 +430,7 @@ export async function provePythonVisualEdits(analysis: PythonAnalysisSession) {
     },
     {
       source: 'def f(\n    antigo, # parâmetro\n):\n    pass\n',
-      codec: 'sz_py_parameter',
+      codec: 'sz_py_def',
       from: 'antigo',
       to: 'novo',
       expected: 'def f(\n    novo, # parâmetro\n):\n    pass\n',
@@ -444,7 +444,7 @@ export async function provePythonVisualEdits(analysis: PythonAnalysisSession) {
     },
     {
       source: 'def K(): # nome normalizado\n    # corpo\n    pass\n',
-      codec: 'sz_py_function',
+      codec: 'sz_py_def',
       from: 'K',
       to: 'nome',
       expected: 'def nome(): # nome normalizado\n    # corpo\n    pass\n',
@@ -487,7 +487,7 @@ export async function provePythonVisualEdits(analysis: PythonAnalysisSession) {
   for (const fixture of [
     {
       source: 'def f():\n    # começo\n    x = 1 # x\nprint(2)\n',
-      codec: 'sz_py_function',
+      codec: 'sz_py_def',
       field: 'body',
       before: true,
       expected: "def f():\n    # começo\n    print('novo')\n    x = 1 # x\nprint(2)\n",
@@ -495,7 +495,7 @@ export async function provePythonVisualEdits(analysis: PythonAnalysisSession) {
     {
       source: 'if True:\n    x = 1 # x\nelse:\n    pass\n',
       codec: 'sz_py_if',
-      field: 'body',
+      field: 'body:0',
       before: false,
       expected: "if True:\n    x = 1 # x\n    print('novo')\nelse:\n    pass\n",
     },
@@ -584,7 +584,7 @@ export async function provePythonVisualEdits(analysis: PythonAnalysisSession) {
       walk(root, (block) => {
         if (block.codecId === 'sz_py_integer' && block.fields[0]?.value === '1')
           block.fields[0].value = '10'
-        if (block.codecId !== 'sz_py_function') return
+        if (block.codecId !== 'sz_py_def') return
         if (fixture.rename) block.fields.find((field) => field.value === 'f')!.value = 'nova'
         const body = block.inputs.find((input) => input.name === 'body')!.nodes
         if (fixture.reverseBody) body.reverse()
@@ -639,7 +639,7 @@ export async function provePythonVisualEdits(analysis: PythonAnalysisSession) {
     let list = projection.body
     for (const root of projection.body)
       walk(root, (block) => {
-        if (fixture.nested && block.codecId === 'sz_py_function')
+        if (fixture.nested && block.codecId === 'sz_py_def')
           list = block.inputs.find((input) => input.name === 'body')!.nodes
         if (block.codecId === 'sz_py_integer' && block.fields[0]?.value === '1')
           block.fields[0].value = '10'
@@ -661,9 +661,10 @@ export async function provePythonVisualEdits(analysis: PythonAnalysisSession) {
   }
   const emptyBodies: string[] = []
   for (const fixture of [
-    { header: 'def f():', codec: 'sz_py_function', tail: 'print(f())\n' },
+    { header: 'def f():', codec: 'sz_py_def', tail: 'print(f())\n' },
     { header: 'class Pessoa:', codec: 'sz_py_class', tail: '' },
-    { header: 'if True:', codec: 'sz_py_if', tail: 'else:\n    print(2)\n' },
+    // The flat if/elif/else block names its first body body:0.
+    { header: 'if True:', codec: 'sz_py_if', body: 'body:0', tail: 'else:\n    print(2)\n' },
     { header: 'while False:', codec: 'sz_py_while', tail: '' },
     { header: 'for i in range(2):', codec: 'sz_py_for', tail: '' },
     { header: 'try:', codec: 'sz_py_try', tail: 'except ValueError:\n    pass\n' },
@@ -676,7 +677,8 @@ export async function provePythonVisualEdits(analysis: PythonAnalysisSession) {
     for (const root of projection.body)
       walk(root, (block) => {
         if (!changed && block.codecId === fixture.codec) {
-          block.inputs.find((input) => input.name === 'body')!.nodes = []
+          const field = 'body' in fixture ? fixture.body : 'body'
+          block.inputs.find((input) => input.name === field)!.nodes = []
           changed = true
         }
       })
@@ -753,7 +755,18 @@ export async function provePythonVisualEdits(analysis: PythonAnalysisSession) {
     for (const root of projection.body)
       walk(root, (block) => {
         if (!changed && block.codecId === fixture.codec) {
-          block.inputs.find((input) => input.name === fixture.field)!.nodes = []
+          if (fixture.codec === 'sz_py_if' && fixture.field === 'orelse') {
+            // if/elif/else is one flat block: taking the else away takes every "senão se"
+            // with it, through the block's own options.
+            block.inputs = block.inputs.filter(
+              (input) => input.name === 'test:0' || input.name === 'body:0',
+            )
+            block.extra = { ...block.extra, 'elif:count': 0, 'orelse:present': false }
+          } else if (block.extra?.[`${fixture.field}:present`] === true) {
+            // An optional branch (else of a loop, finally) is turned off, not left empty.
+            block.inputs = block.inputs.filter((input) => input.name !== fixture.field)
+            block.extra = { ...block.extra, [`${fixture.field}:present`]: false }
+          } else block.inputs.find((input) => input.name === fixture.field)!.nodes = []
           changed = true
         }
       })
@@ -774,7 +787,14 @@ export async function provePythonVisualEdits(analysis: PythonAnalysisSession) {
     for (const root of restoredProjection.body)
       walk(root, (block) => {
         if (!restored && block.codecId === fixture.codec) {
-          block.inputs.find((input) => input.name === fixture.field)!.nodes.push(command('voltou'))
+          let input = block.inputs.find((input) => input.name === fixture.field)
+          if (!input) {
+            // An empty branch is an option of the block: turning it on brings the socket back.
+            input = { name: fixture.field, label: '', role: 'statement', nodes: [] }
+            block.inputs.push(input)
+            block.extra = { ...block.extra, [`${fixture.field}:present`]: true }
+          }
+          input.nodes.push(command('voltou'))
           restored = true
         }
       })
@@ -792,7 +812,9 @@ export async function provePythonVisualEdits(analysis: PythonAnalysisSession) {
   const transferredStatements: string[] = []
   const suite = (value: PythonVisualNode, field = 'body') => {
     if (value.kind !== 'block') throw new Error('A estrutura do teste precisa de um bloco.')
-    const input = value.inputs.find((input) => input.name === field)
+    // The flat if/elif/else block names its first body body:0.
+    const name = value.codecId === 'sz_py_if' && field === 'body' ? 'body:0' : field
+    const input = value.inputs.find((input) => input.name === name)
     if (!input) throw new Error(`Entrada de comandos ausente: ${field}`)
     return input.nodes
   }
@@ -824,9 +846,29 @@ export async function provePythonVisualEdits(analysis: PythonAnalysisSession) {
       },
       {
         source: 'if True:\n    pass\nelif False: # cond\n    x=1 # nota\nprint(3)\n',
-        expected: 'if True:\n    pass\nprint(3)\nif False: # cond\n    x=1 # nota\n',
+        // The comment of the "elif" line belongs to the flat block, so it stays where it was.
+        expected: 'if True:\n    pass\n# cond\nprint(3)\nif False:\n    x=1 # nota\n',
         change(body) {
-          body.push(suite(body[0]!, 'orelse').shift()!)
+          // The "senão se" is a branch of the same flat block: moving it out makes it an
+          // "se" of its own.
+          const block = body[0]!
+          if (block.kind !== 'block') throw new Error('O se precisa ser um bloco.')
+          const branch = (name: string) => block.inputs.find((input) => input.name === name)!
+          const test = branch('test:1')
+          const moved = branch('body:1')
+          block.inputs = block.inputs.filter((input) => input !== test && input !== moved)
+          block.extra = { ...block.extra, 'elif:count': 0 }
+          body.push({
+            kind: 'block',
+            codecId: 'sz_py_if',
+            role: 'statement',
+            fields: [],
+            inputs: [
+              { ...test, name: 'test:0', label: 'se' },
+              { ...moved, name: 'body:0' },
+            ],
+            extra: { 'elif:count': 0, 'orelse:present': false },
+          })
         },
       },
       {
@@ -876,7 +918,9 @@ export async function provePythonVisualEdits(analysis: PythonAnalysisSession) {
       },
       {
         source: 'if True:\n    pass\nelse: # ramo\n    x = 1 # comando\n',
-        expected: 'if True:\n    pass\n# ramo\nx = 1 # comando\n',
+        // An emptied "senão" stays on the block until it is turned off: the code says what
+        // the blocks show.
+        expected: 'if True:\n    pass\nelse: # ramo\n    pass\nx = 1 # comando\n',
         change(body) {
           body.push(suite(body[0]!, 'orelse').shift()!)
         },
@@ -885,7 +929,8 @@ export async function provePythonVisualEdits(analysis: PythonAnalysisSession) {
         source:
           'def a():\n    pass\n    # acompanha\n    x=1 # type: ignore[tag]\ndef b():\n    pass\n',
         expected:
-          'def a():\n    pass\ndef b():\n    pass\n    # acompanha\n    x=1 # type: ignore[tag]\n',
+          // A body holding only `pass` shows empty: the filler goes once a command arrives.
+          'def a():\n    pass\ndef b():\n    # acompanha\n    x=1 # type: ignore[tag]\n',
         change(body) {
           suite(body[1]!).push(suite(body[0]!).pop()!)
         },
@@ -912,7 +957,7 @@ export async function provePythonVisualEdits(analysis: PythonAnalysisSession) {
   const simultaneousProjection = pythonASTToVisual(simultaneous.tree!)
   for (const root of simultaneousProjection.body)
     walk(root, (block) => {
-      if (block.codecId === 'sz_py_function')
+      if (block.codecId === 'sz_py_def')
         block.inputs.find((input) => input.name === 'body')!.nodes.push(command('dentro'))
     })
   simultaneousProjection.body.push(command('fora'))

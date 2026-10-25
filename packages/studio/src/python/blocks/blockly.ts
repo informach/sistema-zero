@@ -9,10 +9,13 @@ import type {
   PythonBlockRole,
   PythonBlockShape,
 } from './contract'
-import { pythonSemanticTree } from './nodes'
+import { pythonShadowState } from './paletteBlocks'
+import { pythonCategoryColour } from './paletteGroups'
 import { pythonPlaceholderNode as placeholder } from './placeholders'
 import type { PythonBlockProjection, PythonVisualNode, PythonVisualOrigin } from './projection'
 import { type PythonWorkspaceOrigins, withoutPythonOrigins } from './provenance'
+import { pythonDecodeContextFromExtra } from './resolverOptions'
+import { samePythonValue } from './semantic'
 
 interface Layout {
   fields: PythonBlockField[]
@@ -126,7 +129,10 @@ function readState(raw: unknown, codec: PythonBlockCodec): VisualState {
       throw new Error('Opção visual Python inválida.')
     seed = codec.reshape(seed, control.key, value as number | boolean)
   }
-  const canonical = codec.decode(codec.encode({ fields: seed.fields, inputs, extra }))
+  const canonical = codec.decode(
+    codec.encode({ fields: seed.fields, inputs, extra }),
+    pythonDecodeContextFromExtra(extra),
+  )
   if (
     !canonical ||
     fields.length !== canonical.fields.length ||
@@ -176,7 +182,8 @@ function applyLayout(block: PythonBlocklyBlock, state: VisualState, codec: Pytho
   const removed = block.inputList.filter(
     (input) => input.name !== 'HEADER' && !desired.has(input.name),
   )
-  if (removed.some((input) => input.connection?.targetBlock()))
+  // A default shadow goes away with its input; only a block the child placed holds it.
+  if (removed.some((input) => input.connection?.targetBlock()?.isShadow() === false))
     throw new Error('Desconecte o valor antes de remover esta entrada.')
   for (const input of state.layout.inputs) {
     const existing = block.getInput(input.name)
@@ -191,9 +198,10 @@ function applyLayout(block: PythonBlocklyBlock, state: VisualState, codec: Pytho
   block.pythonState = state
   const header = block
     .appendDummyInput('HEADER')
-    .appendField(new Blockly.FieldLabel(title), 'PYTHON_TITLE')
+    .appendField(new Blockly.FieldLabel(codec.compact ? '' : title), 'PYTHON_TITLE')
+  if (codec.compact === 'quoted') header.appendField('“')
   for (const field of state.layout.fields) {
-    header.appendField(field.label)
+    if (!codec.compact) header.appendField(field.label)
     if (field.options)
       header.appendField(
         new Blockly.FieldDropdown(field.options.map(([label, value]) => [label, value])),
@@ -202,6 +210,7 @@ function applyLayout(block: PythonBlocklyBlock, state: VisualState, codec: Pytho
     else header.appendField(new Blockly.FieldTextInput(field.value), field.name)
     block.setFieldValue(field.value, field.name)
   }
+  if (codec.compact === 'quoted') header.appendField('”')
   for (const input of state.layout.inputs) {
     if (!block.getInput(input.name)) {
       const target =
@@ -212,6 +221,9 @@ function applyLayout(block: PythonBlocklyBlock, state: VisualState, codec: Pytho
     }
     block.moveInputBefore(input.name, null)
   }
+  // Short blocks read as one sentence: "andar para frente ⟨100⟩ passos".
+  const values = state.layout.inputs.filter((input) => input.role !== 'statement').length
+  block.setInputsInline(values <= 4)
 }
 
 /** Lazy and namespaced; does not register or modify any JavaScript block or generator. */
@@ -222,7 +234,7 @@ export function registerPythonBlocks(
     if (Blockly.Blocks[codec.id]) continue
     Blockly.Blocks[codec.id] = {
       init(this: PythonBlocklyBlock) {
-        this.setColour(codec.owner === 'python-turtle' ? 140 : 210)
+        this.setColour(pythonCategoryColour(codec.owner, codec.category))
         this.setTooltip(`${codec.help}\nPython: ${codec.api}`)
         if (codec.role === 'statement') {
           this.setPreviousStatement(true, check('statement'))
@@ -267,7 +279,18 @@ export function registerPythonBlocks(
           { version: 1, layout: layoutOf(next), origin: state.origin },
           codec,
         )
-        withMutation(this, () => applyLayout(this, validated, codec))
+        withMutation(this, () => {
+          applyLayout(this, validated, codec)
+          // A new socket starts with its documented default, as in the palette: the block
+          // keeps running and the child changes only what she wants.
+          for (const input of next.inputs) {
+            if (input.role === 'statement' || input.nodes.length !== 1) continue
+            const connection = this.getInput(input.name)?.connection
+            if (!connection || connection.targetBlock()) continue
+            const shadow = pythonShadowState(input.nodes[0]!, input.role, codecs)
+            if (shadow) connection.setShadowState(shadow)
+          }
+        })
         this.setWarningText(null, 'python-layout')
       },
       customContextMenu(
@@ -329,8 +352,8 @@ export function registerPythonBlocks(
     if (Blockly.Blocks[type]) continue
     Blockly.Blocks[type] = {
       init(this: PythonSourceBlock) {
-        this.appendDummyInput('SOURCE').appendField('Código Python — editar no modo fonte')
-        this.setColour(0)
+        this.appendDummyInput('SOURCE').appendField('🐍 trecho em Python (veja no código)')
+        this.setColour('#64748b')
         this.setEditable(false)
         if (role === 'statement') {
           this.setPreviousStatement(true, check(role))
@@ -432,9 +455,7 @@ export function pythonWorkspaceToVisual(
       if (!origins) return { ...value, blockId: block.id }
       const parsed = origins.get(block.id)
       const node =
-        parsed &&
-        JSON.stringify(pythonSemanticTree(parsed)) ===
-          JSON.stringify(pythonSemanticTree(value.node))
+        parsed && samePythonValue(parsed, value.node)
           ? clone(parsed)
           : withoutPythonOrigins(value.node)
       return { ...value, blockId: block.id, node, origin: { nodeId: node.id, range: node.range } }

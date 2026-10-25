@@ -51,7 +51,7 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 **Clipe:** `video-pontos-e-placar`
 
-**Na tela:** Começar pela retomada: acertar uma pedra e, no "Tá vendo?", mostrar que nenhum placar aparece. Mostrar o contador inicial, um erro e dois acertos. O bloco de placar fica fora da colisão e depois dela. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido! e seguir o encaminhamento narrado.
+**Na tela:** Começar pela retomada: acertar uma pedra e, no "Tá vendo?", mostrar que nenhum placar aparece. Mostrar o contador inicial, um erro e dois acertos. O bloco de placar fica fora da colisão e depois dela. Ao terminar, clicar em Verificar projeto, mostrar Objetivo cumprido! e seguir o encaminhamento narrado.
 
 **Fala para ElevenLabs:**
 
@@ -82,7 +82,7 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 [reassuring, encouraging voice] Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: no fim de Ao iniciar está Criar variável pontos com valor 0. Dentro da colisão entre tiros e asteroides, depois de Tocar efeito explosão, está Somar 1 em variável pontos. E, logo depois da colisão, ainda dentro de A cada quadro do jogo, está Mostrar placar Pontos:, com o valor da variável pontos, em x 12, y 30 e tamanho 24. [reassuring, encouraging voice] Depois de corrigir, teste de novo.
 
-[engaging, energetic, conversational voice] Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Concluir aula.
+[engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Concluir aula.
 ```
 
 **Substituições na edição kids:**
@@ -98,4 +98,4 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 - `video-pontos-e-placar-K1`: entrada — Concluir Criar variável pontos com valor 0 em Ao iniciar; soltar o mouse antes da entrada. Saída — Localizar o fim da colisão, mostrar onde a soma entra e soltar Somar em variável nesse lugar. Depois, deixar à vista o encaixe logo depois da colisão, sem pegar o placar antes da próxima entrada.
 
 
-**Recado na página (não gravar):** Agora faça o seu jogo contar os pontos! Crie pontos, some 1 no acerto e mostre o placar. Depois, teste, clique em Verificar esta parte e envie o seu projeto. Por último, clique em Concluir aula.
+**Recado na página (não gravar):** Agora faça o seu jogo contar os pontos! Crie pontos, some 1 no acerto e mostre o placar. Depois, teste, clique em Verificar projeto e envie o seu projeto. Por último, clique em Concluir aula.

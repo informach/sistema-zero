@@ -70,7 +70,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Agora faça a batida terminar a partida! Coloque a colisão entre o Dino e os cactos dentro do Se jogando, mudando o estado para fim. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte."
+        "text": "Agora faça a batida terminar a partida! Coloque a colisão entre o Dino e os cactos dentro do Se jogando, mudando o estado para fim. Depois, clique em Verificar projeto e, em seguida, em Próxima parte."
       }
     },
     {
@@ -82,7 +82,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Agora mostre a tela de fim! Acrescente mais um senão se ao Se do quadro, para o estado fim, com a tela de fim dentro dele. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte."
+        "text": "Agora mostre a tela de fim! Acrescente mais um senão se ao Se do quadro, para o estado fim, com a tela de fim dentro dele. Depois, clique em Verificar projeto e, em seguida, em Próxima parte."
       }
     },
     {
@@ -94,7 +94,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Agora dê som e imagem à batida! Dentro da colisão, antes de mudar para fim, exploda o cacto, trema a tela em 8 e toque o som de derrota. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte."
+        "text": "Agora dê som e imagem à batida! Dentro da colisão, antes de mudar para fim, exploda o cacto, trema a tela em 8 e toque o som de derrota. Depois, clique em Verificar projeto e, em seguida, em Próxima parte."
       }
     },
     {
@@ -134,7 +134,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Agora prepare uma nova partida! No evento de qualquer tecla ou toque, acrescente um senão se fim com Reiniciar o jogo. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte."
+        "text": "Agora prepare uma nova partida! No evento de qualquer tecla ou toque, acrescente um senão se fim com Reiniciar o jogo. Depois, clique em Verificar projeto e, em seguida, em Próxima parte."
       }
     },
     {
@@ -223,7 +223,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Hora de testar e enviar o seu jogo! Jogue uma partida inteira, do começo ao recomeço, clique em Verificar esta parte e depois em Enviar meu projeto. Confirme em Enviar e, quando o envio terminar, clique em Concluir aula."
+        "text": "Hora de testar e enviar o seu jogo! Jogue uma partida inteira, do começo ao recomeço, clique em Verificar projeto e depois em Enviar meu projeto. Confirme em Enviar e, quando o envio terminar, clique em Concluir aula."
       }
     },
     {
@@ -962,7 +962,7 @@
       "key": "batida-acaba-partida",
       "title": "Encerre a partida na batida",
       "intent": "application",
-      "objective": "Agora faça a batida terminar a partida! Coloque a colisão entre o Dino e os cactos dentro do Se jogando, mudando o estado para fim. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.",
+      "objective": "Agora faça a batida terminar a partida! Coloque a colisão entre o Dino e os cactos dentro do Se jogando, mudando o estado para fim. Depois, clique em Verificar projeto e, em seguida, em Próxima parte.",
       "blockKeys": ["video-batida-acaba-partida", "fala-batida-acaba-partida"],
       "workspaceKey": "projeto",
       "externalTool": null,
@@ -1013,7 +1013,7 @@
       "key": "mapa-do-jogo",
       "title": "Mostre a tela de fim",
       "intent": "application",
-      "objective": "Agora mostre a tela de fim! Acrescente mais um senão se ao Se do quadro, para o estado fim, com a tela de fim dentro dele. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.",
+      "objective": "Agora mostre a tela de fim! Acrescente mais um senão se ao Se do quadro, para o estado fim, com a tela de fim dentro dele. Depois, clique em Verificar projeto e, em seguida, em Próxima parte.",
       "blockKeys": ["video-mapa-do-jogo", "fala-mapa-do-jogo"],
       "workspaceKey": "projeto",
       "externalTool": null,
@@ -1050,7 +1050,7 @@
       "key": "batida-sentida",
       "title": "Dê som e imagem à batida",
       "intent": "application",
-      "objective": "Agora dê som e imagem à batida! Dentro da colisão, antes de mudar para fim, exploda o cacto, trema a tela em 8 e toque o som de derrota. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.",
+      "objective": "Agora dê som e imagem à batida! Dentro da colisão, antes de mudar para fim, exploda o cacto, trema a tela em 8 e toque o som de derrota. Depois, clique em Verificar projeto e, em seguida, em Próxima parte.",
       "blockKeys": ["video-batida-sentida", "fala-batida-sentida"],
       "workspaceKey": "projeto",
       "externalTool": null,
@@ -1127,7 +1127,7 @@
       "key": "caminho-de-volta",
       "title": "Prepare uma nova partida",
       "intent": "application",
-      "objective": "Agora prepare uma nova partida! No evento de qualquer tecla ou toque, acrescente um senão se fim com Reiniciar o jogo. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.",
+      "objective": "Agora prepare uma nova partida! No evento de qualquer tecla ou toque, acrescente um senão se fim com Reiniciar o jogo. Depois, clique em Verificar projeto e, em seguida, em Próxima parte.",
       "blockKeys": ["video-caminho-de-volta", "fala-caminho-de-volta"],
       "workspaceKey": "projeto",
       "externalTool": null,
@@ -1203,7 +1203,7 @@
       "key": "entrega",
       "title": "Teste e envie seu jogo",
       "intent": "delivery",
-      "objective": "Hora de testar e enviar o seu jogo! Jogue uma partida inteira, do começo ao recomeço, clique em Verificar esta parte e depois em Enviar meu projeto. Confirme em Enviar e, quando o envio terminar, clique em Concluir aula.",
+      "objective": "Hora de testar e enviar o seu jogo! Jogue uma partida inteira, do começo ao recomeço, clique em Verificar projeto e depois em Enviar meu projeto. Confirme em Enviar e, quando o envio terminar, clique em Concluir aula.",
       "blockKeys": ["video-entrega", "fala-entrega", "projeto"],
       "workspaceKey": "projeto",
       "externalTool": null,

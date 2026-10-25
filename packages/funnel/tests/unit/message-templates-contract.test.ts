@@ -55,16 +55,16 @@ const used = new Set(
 )
 
 describe('templates do Messaging usados pelo Funil', () => {
-  test('a varredura encontra os envios do pós-compra e do dunning', () => {
+  test('a varredura encontra os envios do pós-compra, sem outro dono de regularização', () => {
     for (const key of [
       'welcome',
       'new-access',
       'kids-welcome',
       'kids-new-access',
       'challenge-access-approved',
-      'subscription-charge-failed',
     ])
       expect(used).toContain(key)
+    expect(used).not.toContain('subscription-charge-failed')
   })
 
   test('toda chave usada existe no seed, em e-mail E WhatsApp (o Funil envia nos dois)', () => {

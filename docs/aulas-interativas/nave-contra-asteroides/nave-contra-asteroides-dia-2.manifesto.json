@@ -196,7 +196,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Agora faça a sua nave atirar! Crie o grupo tiros, monte o disparo da barra de espaço e clique em Verificar esta parte. Depois, clique em Próxima parte."
+        "text": "Agora faça a sua nave atirar! Crie o grupo tiros, monte o disparo da barra de espaço e clique em Verificar projeto. Depois, clique em Próxima parte."
       }
     },
     {
@@ -208,7 +208,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Agora faça os tiros voarem! Mova e desenhe o grupo tiros em cada quadro, atire de dois lugares e clique em Verificar esta parte. Depois, clique em Próxima parte."
+        "text": "Agora faça os tiros voarem! Mova e desenhe o grupo tiros em cada quadro, atire de dois lugares e clique em Verificar projeto. Depois, clique em Próxima parte."
       }
     },
     {
@@ -262,7 +262,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Agora limpe o grupo dos tiros! Coloque a limpeza entre mover e desenhar os tiros, teste os disparos, clique em Verificar esta parte e envie o seu projeto. Depois, clique em Concluir aula."
+        "text": "Agora limpe o grupo dos tiros! Coloque a limpeza entre mover e desenhar os tiros, teste os disparos, clique em Verificar projeto e envie o seu projeto. Depois, clique em Concluir aula."
       }
     },
     {
@@ -632,7 +632,7 @@
       "key": "criar-tiro",
       "title": "Monte o disparo da barra de espaço",
       "intent": "application",
-      "objective": "Agora faça a sua nave atirar! Crie o grupo tiros, monte o disparo da barra de espaço e clique em Verificar esta parte. Depois, clique em Próxima parte.",
+      "objective": "Agora faça a sua nave atirar! Crie o grupo tiros, monte o disparo da barra de espaço e clique em Verificar projeto. Depois, clique em Próxima parte.",
       "blockKeys": ["video-criar-tiro", "fala-criar-tiro"],
       "workspaceKey": "projeto",
       "externalTool": null,
@@ -799,7 +799,7 @@
       "key": "tiros-voam",
       "title": "Mova e desenhe os tiros",
       "intent": "application",
-      "objective": "Agora faça os tiros voarem! Mova e desenhe o grupo tiros em cada quadro, atire de dois lugares e clique em Verificar esta parte. Depois, clique em Próxima parte.",
+      "objective": "Agora faça os tiros voarem! Mova e desenhe o grupo tiros em cada quadro, atire de dois lugares e clique em Verificar projeto. Depois, clique em Próxima parte.",
       "blockKeys": ["video-tiros-voam", "fala-tiros-voam"],
       "workspaceKey": "projeto",
       "externalTool": null,
@@ -855,7 +855,7 @@
       "key": "faxina",
       "title": "Retire os tiros que saíram",
       "intent": "delivery",
-      "objective": "Agora limpe o grupo dos tiros! Coloque a limpeza entre mover e desenhar os tiros, teste os disparos, clique em Verificar esta parte e envie o seu projeto. Depois, clique em Concluir aula.",
+      "objective": "Agora limpe o grupo dos tiros! Coloque a limpeza entre mover e desenhar os tiros, teste os disparos, clique em Verificar projeto e envie o seu projeto. Depois, clique em Concluir aula.",
       "blockKeys": ["video-faxina", "fala-faxina", "projeto"],
       "workspaceKey": "projeto",
       "externalTool": null,

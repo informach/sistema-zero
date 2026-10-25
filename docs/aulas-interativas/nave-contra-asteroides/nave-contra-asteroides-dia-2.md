@@ -65,17 +65,17 @@ video-direcao-do-tiro-K1: Debinha substitui “E se eu tirar o sinal de menos?�
 
 ### Seção 4. Monte o disparo da barra de espaço
 
-**Tarefa:** Agora faça a sua nave atirar! Crie o grupo tiros, monte o disparo da barra de espaço e clique em Verificar esta parte. Depois, clique em Próxima parte.
+**Tarefa:** Agora faça a sua nave atirar! Crie o grupo tiros, monte o disparo da barra de espaço e clique em Verificar projeto. Depois, clique em Próxima parte.
 
 **Blocos na página:** video-criar-tiro → fala-criar-tiro.
 
-**Recado na página (não gravar):** Agora faça a sua nave atirar! Crie o grupo tiros, monte o disparo da barra de espaço e clique em Verificar esta parte. Depois, clique em Próxima parte.
+**Recado na página (não gravar):** Agora faça a sua nave atirar! Crie o grupo tiros, monte o disparo da barra de espaço e clique em Verificar projeto. Depois, clique em Próxima parte.
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
 video-criar-tiro-K1: Debinha substitui “E a altura de onde sai o tiro?”. Antes: “e tamanho, pegue o bloco o centro x do sprite e solte em cima desse número. Ele toma o lugar do número. Escolha nave.”. Depois: “Faça o mesmo com o y: deixe à vista o número do campo y do tiro. Na mesma categoria Posição e tamanho, pegue o bloco a”.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar projeto.
 
 - Crie o grupo tiros em Ao iniciar.
 - Em Quando acontecer, coloque Quando apertar a tecla: barra de espaço.
@@ -86,13 +86,13 @@ video-criar-tiro-K1: Debinha substitui “E a altura de onde sai o tiro?”. Ant
 
 ### Seção 5. Mova e desenhe os tiros
 
-**Tarefa:** Agora faça os tiros voarem! Mova e desenhe o grupo tiros em cada quadro, atire de dois lugares e clique em Verificar esta parte. Depois, clique em Próxima parte.
+**Tarefa:** Agora faça os tiros voarem! Mova e desenhe o grupo tiros em cada quadro, atire de dois lugares e clique em Verificar projeto. Depois, clique em Próxima parte.
 
 **Blocos na página:** video-tiros-voam → fala-tiros-voam.
 
-**Recado na página (não gravar):** Agora faça os tiros voarem! Mova e desenhe o grupo tiros em cada quadro, atire de dois lugares e clique em Verificar esta parte. Depois, clique em Próxima parte.
+**Recado na página (não gravar):** Agora faça os tiros voarem! Mova e desenhe o grupo tiros em cada quadro, atire de dois lugares e clique em Verificar projeto. Depois, clique em Próxima parte.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar projeto.
 
 - Mova o grupo tiros a cada quadro.
 - Desenhe o grupo tiros a cada quadro.
@@ -113,17 +113,17 @@ video-tiro-fora-da-tela-K1: Debinha substitui “Como eu tiro os que já foram e
 
 ### Seção 7. Retire os tiros que saíram
 
-**Tarefa:** Agora limpe o grupo dos tiros! Coloque a limpeza entre mover e desenhar os tiros, teste os disparos, clique em Verificar esta parte e envie o seu projeto. Depois, clique em Concluir aula.
+**Tarefa:** Agora limpe o grupo dos tiros! Coloque a limpeza entre mover e desenhar os tiros, teste os disparos, clique em Verificar projeto e envie o seu projeto. Depois, clique em Concluir aula.
 
 **Blocos na página:** video-faxina → fala-faxina → projeto.
 
-**Recado na página (não gravar):** Agora limpe o grupo dos tiros! Coloque a limpeza entre mover e desenhar os tiros, teste os disparos, clique em Verificar esta parte e envie o seu projeto. Depois, clique em Concluir aula.
+**Recado na página (não gravar):** Agora limpe o grupo dos tiros! Coloque a limpeza entre mover e desenhar os tiros, teste os disparos, clique em Verificar projeto e envie o seu projeto. Depois, clique em Concluir aula.
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
 video-faxina-K1: Debinha substitui “Qual grupo eu escolho aqui?”. Antes: “sair da tela. Arraste e solte entre Mover os sprites do grupo e Desenhar o grupo dos tiros, quando aparecer o encaixe.”. Depois: “No grupo, escolha tiros. O bloco também tem o campo chamado, que já vem com sprite: não mexa nele e deixe vazio o”.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte, com o envio confirmado em Enviar meu projeto → Enviar.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar projeto, com o envio confirmado em Enviar meu projeto → Enviar.
 
 - Crie uma única nave em Ao iniciar, com posição dentro da tela e tamanho positivo.
 - Crie o grupo tiros em Ao iniciar.

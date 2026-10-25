@@ -32,7 +32,7 @@
 
 [confident, clear, unhurried voice] Confira se ficou assim: no fim de Ao iniciar está Criar grupo de sprites asteroides, e, dentro de Enquanto estiver rodando, A cada 40 quadros está logo abaixo de A cada quadro do jogo, como vizinho, e não encaixado dentro dele. Por enquanto, nenhuma pedra cai, porque o relógio ainda está vazio.
 
-[engaging, energetic, conversational voice] Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Próxima parte.
+[engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Próxima parte.
 
 [long pause]
 
@@ -72,7 +72,7 @@
 
 [reassuring, encouraging voice] Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: dentro de A cada 40 quadros está No grupo asteroides criar um asteroide, com um x aleatório na tela, y -30, tamanho 40, vx 0 e vy 3. E, no fim de A cada quadro do jogo, estão Mover os sprites do grupo asteroides, Tirar do grupo asteroides quem sair da tela e Desenhar o grupo asteroides, nessa ordem. [reassuring, encouraging voice] Depois de corrigir, teste de novo.
 
-[engaging, energetic, conversational voice] Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Próxima parte.
+[engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Próxima parte.
 
 [long pause]
 
@@ -80,4 +80,4 @@
 
 [engaging, energetic, conversational voice] Depois mova a nave e atire. As setas e os tiros precisam continuar funcionando como antes, agora com as pedras caindo. Por enquanto o tiro atravessa as pedras, e isso é esperado: o acerto vem na próxima aula.
 
-[engaging, energetic, conversational voice] Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Concluir aula.
+[engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Concluir aula.

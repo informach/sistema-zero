@@ -532,3 +532,25 @@ Migrations geradas/commitadas via `db:generate` — `0002` = UNIQUE parcial do t
 busca `q` do admin (4 em payments, 3 em subscriptions — as expressões dos índices
 DEVEM casar com o `buildWhere`) + `created_at` (payments/subscriptions) +
 `paid_at` parcial. Detalhes no `README.md`.
+
+## Período de cobrança e histórico da recusa (24/10/2026)
+
+Migrations aditivas 0016/0017 guardam `cycle_access`, `prior_failure_reason` e
+`prior_failed_at`. Ao confirmar ciclo recusado, o dinheiro fica PAID e a recusa anterior
+é preservada. A origem confirmada da cobrança + intervalo comprado definem o período;
+sem prova, acesso fica REVIEW_REQUIRED. `confirmSubscriptionPeriod` emite somente
+`payment.subscription_period_confirmed`, nunca outro `payment.paid`/recibo fiscal.
+Pagamento + outbox são atômicos; eventos só são retirados do agregado após commit.
+Deploy Members/Funnel antes do Payments para que o consumidor respeite esse contrato.
+
+A fila administrativa `/payments/admin/subscription-recovery/review` reúne CASE,
+ADMISSION, OPERATION e PERIOD, com paginação/busca limitadas e SQL parametrizado.
+Dinheiro PAID não oculta UNKNOWN ou período pendente; audiência não validada continua
+unknown. É leitura da equipe, sem enviar aviso, cobrar, cancelar ou conceder acesso.
+
+A confirmação administrativa de período exige consulta nova na Efí e versão do
+pagamento. O corpo HTTP não aceita datas/ator: somente expectedVersion/requestId;
+ator vem da sessão administrativa própria, nunca staff/impersonação/perfil infantil.
+A migration0019 guarda period_confirmation permanentemente no pagamento, na mesma
+transação do ciclo/outbox; retenção de outbox não apaga a autoria. Só emite evento de
+confirmação de período, sem segundo payment.paid. Não usar essa operação para débito.

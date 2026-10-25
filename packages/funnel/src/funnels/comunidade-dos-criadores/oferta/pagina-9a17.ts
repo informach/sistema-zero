@@ -175,10 +175,10 @@ export const PAGINA_9A17 = {
           file: 'passo-verificar.webp',
           width: 740,
           height: 340,
-          alt: 'O botão Verificar esta parte, com o que já está cumprido e o que falta',
+          alt: 'O botão Verificar projeto, com o que já está cumprido e o que falta',
         },
         title: '3 · Então confere cada parte',
-        text: 'O botão "Verificar esta parte" mostra o que já está certo antes de ele seguir.',
+        text: 'O botão "Verificar projeto" mostra o que já está certo antes de ele seguir.',
       },
       {
         imagem: {

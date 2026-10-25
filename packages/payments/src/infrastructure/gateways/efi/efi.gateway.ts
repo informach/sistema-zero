@@ -17,6 +17,7 @@ import type {
   ProviderSubscriptionCharge,
   RefundPixInput,
   RefundResult,
+  RetrySubscriptionChargeInput,
 } from '../../../domain/ports/payment-gateway.port'
 import type { Money } from '../../../domain/value-objects/money'
 import type { EfiClient } from './efi.client'
@@ -363,6 +364,52 @@ export class EfiPaymentGateway implements PaymentGateway {
     const client = this.requireCobrancas()
     try {
       await client.cancelSubscription(providerSubscriptionId)
+    } catch (error) {
+      throw toEfiGatewayError(error)
+    }
+  }
+
+  async updateSubscriptionCard(
+    providerSubscriptionId: string,
+    paymentToken: string,
+  ): Promise<void> {
+    try {
+      await this.requireCobrancas().updateSubscriptionCard(providerSubscriptionId, paymentToken)
+    } catch (error) {
+      throw toEfiGatewayError(error)
+    }
+  }
+
+  async retrySubscriptionCharge(input: RetrySubscriptionChargeInput): Promise<void> {
+    const customer: Record<string, unknown> = {
+      name: input.customer.name,
+      cpf: input.customer.cpf,
+      email: input.customer.email,
+      phone_number: input.customer.phone,
+    }
+    if (input.customer.birth) customer.birth = input.customer.birth
+    const card: Record<string, unknown> = {
+      customer,
+      payment_token: input.paymentToken,
+      update_card: true,
+    }
+    if (input.billingAddress) {
+      const { street, number, neighborhood, zipcode, city, state, complement } =
+        input.billingAddress
+      card.billing_address = {
+        street,
+        number,
+        neighborhood,
+        zipcode,
+        city,
+        state,
+        ...(complement ? { complement } : {}),
+      }
+    }
+    try {
+      await this.requireCobrancas().retrySubscriptionCharge(input.providerPaymentId, {
+        payment: { credit_card: card },
+      })
     } catch (error) {
       throw toEfiGatewayError(error)
     }

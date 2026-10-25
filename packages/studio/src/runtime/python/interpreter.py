@@ -9,7 +9,7 @@ from importlib.machinery import SourceFileLoader
 from pathlib import Path
 
 from pyodide.code import eval_code_async
-from pyodide.ffi import run_sync
+from pyodide.ffi import run_sync, to_js
 
 
 def _bounded_text(value, limit):
@@ -67,11 +67,28 @@ class _ConsoleInput(io.TextIOBase):
         return "".join(parts)
 
 
+class _NoPygameFinder:
+    """pygame itself does not run in the browser; say what to use instead."""
+
+    def find_spec(self, name, path=None, target=None):
+        if name == 'pygame' or name.startswith('pygame.'):
+            raise ModuleNotFoundError(
+                "No Estúdio, o Pygame Zero já está pronto sem 'import pygame': use screen, "
+                "Actor, Rect, images e sounds direto. Para ler a cor de um ponto de uma imagem, "
+                "use images.nome.get_at((x, y)).",
+                name=name,
+            )
+        return None
+
+
 class _StudioExecution:
     def __init__(self):
         self._main = None
         self._entrypoint = None
         self._grader = None
+        self._after_main = None
+        self._mission = None
+        self._root = None
 
     def prepare(self, root, entrypoint, request_line):
         if self._main is not None:
@@ -89,6 +106,60 @@ class _StudioExecution:
         os.chdir(root)
         self._main = main
         self._entrypoint = absolute
+        self._root = str(Path(root).resolve())
+
+    def _checkpoint(self):
+        if self._grader is not None:
+            self._grader.checkpoint()
+        if self._mission is not None:
+            self._mission.checkpoint()
+
+    def install_mission(self, source, requested, publish):
+        if self._main is None or self._mission is not None:
+            raise RuntimeError('O observador não pode ser preparado nesta execução.')
+        namespace = {'__name__': '_sz_mission_runtime'}
+        exec(compile(source, '<observador de missão>', 'exec', dont_inherit=True), namespace)
+        self._mission = namespace['_StudioMissionObserver'](
+            self._main.__dict__, self._mission_module, run_sync,
+            requested, publish, self._mission_sprite)
+
+    def _mission_module(self, path):
+        from importlib import import_module
+        if (not isinstance(path, str) or not path.endswith('.py') or
+                '\\' in path or path.startswith('/') or
+                any(part in ('', '.', '..') for part in path.split('/'))):
+            raise ValueError('O módulo precisa pertencer ao projeto Python.')
+        expected = (Path(self._root) / path).resolve()
+        if not expected.is_relative_to(self._root) or not expected.is_file():
+            raise ValueError('O módulo não existe no projeto Python.')
+        if str(expected) == self._entrypoint:
+            return self._main.__dict__
+        original = list(sys.path)
+        try:
+            sys.path.insert(0, self._root)
+            name = path[:-3].replace('/', '.')
+            if name.endswith('.__init__'):
+                name = name[:-9]
+            module = import_module(name)
+            if Path(module.__file__).resolve() != expected:
+                raise ValueError('O módulo resolvido não pertence a este arquivo do projeto.')
+            return module.__dict__
+        finally:
+            sys.path[:] = original
+
+    @staticmethod
+    def _mission_sprite(value):
+        for name, class_name in [('turtle', 'RawTurtle'), ('pgzero.actor', 'Actor')]:
+            module = sys.modules.get(name)
+            kind = getattr(module, class_name, None) if module is not None else None
+            if isinstance(kind, type) and isinstance(value, kind):
+                return id(value)
+        return None
+
+    def observe_mission(self):
+        if self._mission is None:
+            raise RuntimeError('Esta execução não possui observador de missão.')
+        self._mission.checkpoint()
 
     def install_turtle(self, directory, graphics):
         # The adapted stdlib turtle follows author paths and precedes the
@@ -105,7 +176,36 @@ class _StudioExecution:
         sys.modules[spec.name] = backend
         spec.loader.exec_module(backend)
         backend.configure(graphics, str(Path.cwd()),
-                          self._grader.checkpoint if self._grader is not None else None)
+                          self._checkpoint if self._grader is not None or self._mission is not None else None,
+                          mission=self._mission is not None)
+
+    def install_pgzero(self, directory, exchange, decode):
+        # Pygame Zero runs like `pgzrun main.py`: the program's top level runs first with the
+        # built-in names already present, then the game loop starts. `import pgzrun` and
+        # `pgzrun.go()` stay valid (runner mode). Author modules keep precedence.
+        if self._main is None or 'pgzero' in sys.modules:
+            raise RuntimeError('O Pygame Zero não pode ser preparado nesta execução.')
+        sys.path.insert(1, directory)
+        sys.meta_path.insert(0, _NoPygameFinder())
+        sys._pgzrun = True
+        from pgzero import _sz, runner
+
+        def transport(header, payload):
+            # A Uint8Array copy crosses the boundary: no PyProxy for the browser to keep or free.
+            # The reply is the text, or [text, pixels] when the browser sends bytes back.
+            reply = run_sync(exchange(header, to_js(payload)))
+            if isinstance(reply, str):
+                return reply, None
+            return str(reply[0]), reply[1].to_bytes()
+
+        def decoder(path):
+            # One copy into Python memory (to_bytes), not two.
+            return run_sync(decode(path)).to_bytes()
+
+        _sz.configure(transport, decoder, str(Path.cwd()),
+                      checkpoint=self._checkpoint if self._mission is not None else None)
+        runner.prepare_mod(self._main)
+        self._after_main = lambda: runner.run_mod(self._main)
 
     def install_audio(self, directory, exchange):
         # Author modules keep precedence. This adds media, not an unofficial turtle method.
@@ -134,6 +234,8 @@ class _StudioExecution:
         try:
             source = Path(self._entrypoint).read_bytes()
             exec(compile(source, self._entrypoint, "exec", dont_inherit=True), self._main.__dict__)
+            if self._after_main is not None:
+                self._after_main()
             result = {"ok": True, "text": ""}
         except SystemExit as error:
             if error.code is None or isinstance(error.code, int) and int.__eq__(error.code, 0):

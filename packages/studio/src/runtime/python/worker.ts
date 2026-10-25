@@ -1,9 +1,15 @@
 import './configureProtectedSchemas'
 
 import { StudioPythonActivitySchema } from '@sistemazero/core/studio/python-activity'
+import { isPythonCanvasExtension, type PythonCanvasExtension } from './canvasExtension'
 import { createPythonConsoleBuffer } from './consoleBuffer'
 import { createPythonInterpreter, PYODIDE_VERSION, PYTHON_VERSION } from './interpreter'
-import { PYTHON_CONSOLE_LIMITS, type PythonWorkerEvent } from './protocol'
+import {
+  PYTHON_CONSOLE_LIMITS,
+  PYTHON_GRAPHICS_REPLY_LIMITS,
+  type PythonGraphicsReply,
+  type PythonWorkerEvent,
+} from './protocol'
 import { readPythonWireSnapshot } from './wireSnapshot'
 
 const post = globalThis.postMessage.bind(globalThis)
@@ -15,12 +21,13 @@ let phase: 'booting' | 'booted' | 'preparing' | 'prepared' | 'running' | 'comple
 let pendingInput: { id: string; resolve(value: string): void } | undefined
 let inputSequence = 0
 let graphicsSequence = 0
-let pendingGraphics: { id: string; resolve(value: string): void } | undefined
+let pendingGraphics: { id: string; resolve(value: PythonGraphicsReply): void } | undefined
 let audioSequence = 0
 let pendingAudio: { id: string; resolve(value: string): void } | undefined
 let activityRequest: string | undefined
 let activityFinished = false
 let hasActivity = false
+let missionRequest: string | undefined
 const requestId = (value: unknown): value is string =>
   typeof value === 'string' && /^[A-Za-z0-9_-]{1,80}$/.test(value)
 // Another message can invalidate the execution while Python is suspended.
@@ -49,19 +56,21 @@ function failure(error: unknown) {
 let bootStarted = false
 
 /** Module evaluation is inert; the private bootstrap configures its reader before starting once. */
-export async function startPythonWorker(options: { turtle?: boolean }) {
+export async function startPythonWorker(options: { canvas?: PythonCanvasExtension | null }) {
   if (bootStarted) throw new Error('O worker Python já foi iniciado.')
   bootStarted = true
   if (
     !options ||
     typeof options !== 'object' ||
-    Reflect.ownKeys(options).some((key) => key !== 'turtle') ||
-    (options.turtle !== undefined && typeof options.turtle !== 'boolean')
+    Reflect.ownKeys(options).some((key) => key !== 'canvas') ||
+    (options.canvas !== undefined &&
+      options.canvas !== null &&
+      !isPythonCanvasExtension(options.canvas))
   )
     throw new Error('Configuração inicial do worker Python inválida.')
   try {
     const interpreter = await createPythonInterpreter({
-      startupTurtle: options.turtle,
+      startupCanvas: options.canvas,
       onBootLine(stream, text) {
         output.append(stream, `${text}\n`)
         scheduleOutput()
@@ -83,7 +92,7 @@ export async function startPythonWorker(options: { turtle?: boolean }) {
       },
       graphics(request, images) {
         if (phase !== 'running' || pendingGraphics || pendingAudio || pendingInput)
-          return Promise.reject(new Error('Atualização Turtle fora de ordem.'))
+          return Promise.reject(new Error('Atualização gráfica fora de ordem.'))
         return new Promise((resolve) => {
           const id = `graphics-${++graphicsSequence}`
           pendingGraphics = { id, resolve }
@@ -108,6 +117,13 @@ export async function startPythonWorker(options: { turtle?: boolean }) {
         activityFinished = true
         flush()
         send({ type: 'activity-result', requestId: activityRequest, feedback })
+      },
+      onMissionResult(observation) {
+        if (!missionRequest || hasFailed()) throw new Error('Observação de missão fora de ordem.')
+        const requestId = missionRequest
+        missionRequest = undefined
+        flush()
+        send({ type: 'mission-result', requestId, observation })
       },
     })
     addEventListener('message', async (event: MessageEvent<unknown>) => {
@@ -138,12 +154,24 @@ export async function startPythonWorker(options: { turtle?: boolean }) {
             message.requestId !== pendingGraphics.id ||
             !('response' in message) ||
             typeof message.response !== 'string' ||
-            message.response.length > 128_000
+            message.response.length > PYTHON_GRAPHICS_REPLY_LIMITS.textChars
           )
-            throw new Error('Resposta Turtle fora de ordem.')
+            throw new Error('Resposta gráfica fora de ordem.')
+          const bytes = 'bytes' in message ? message.bytes : undefined
+          if (
+            bytes !== undefined &&
+            (!(bytes instanceof Uint8Array) ||
+              !(bytes.buffer instanceof ArrayBuffer) ||
+              bytes.byteLength > PYTHON_GRAPHICS_REPLY_LIMITS.bytes)
+          )
+            throw new Error('Resposta gráfica fora de ordem.')
           const pending = pendingGraphics
           pendingGraphics = undefined
-          pending.resolve(message.response)
+          pending.resolve(
+            bytes === undefined
+              ? message.response
+              : { text: message.response, bytes: bytes as Uint8Array<ArrayBuffer> },
+          )
           return
         }
         if (message.type === 'input') {
@@ -182,7 +210,13 @@ export async function startPythonWorker(options: { turtle?: boolean }) {
               ? StudioPythonActivitySchema.parse(message.activity)
               : undefined
           hasActivity = activity !== undefined
-          await interpreter.prepare(readPythonWireSnapshot(message.snapshot), activity)
+          if ('mission' in message && message.mission !== undefined && message.mission !== true)
+            throw new Error('Modo de observação Python inválido.')
+          await interpreter.prepare(
+            readPythonWireSnapshot(message.snapshot),
+            activity,
+            'mission' in message && message.mission === true,
+          )
           if (hasFailed()) return
           phase = 'prepared'
           send({ type: 'prepared' })
@@ -191,6 +225,24 @@ export async function startPythonWorker(options: { turtle?: boolean }) {
         if (!('requestId' in message) || !requestId(message.requestId))
           throw new Error('Comando sem identificação válida.')
         const id = message.requestId
+        if (message.type === 'mission-observe') {
+          if (
+            missionRequest ||
+            !('probe' in message) ||
+            !['running', 'completed'].includes(phase) ||
+            pendingInput ||
+            (activityRequest && !activityFinished)
+          )
+            throw new Error('A missão não pode ser observada agora.')
+          interpreter.requestMission(message.probe)
+          missionRequest = id
+          if (phase === 'completed') {
+            phase = 'running'
+            await interpreter.flushMission()
+            if (!hasFailed()) phase = 'completed'
+          }
+          return
+        }
         if (message.type === 'activity-check') {
           if (
             !hasActivity ||
@@ -217,6 +269,12 @@ export async function startPythonWorker(options: { turtle?: boolean }) {
           if (hasFailed()) return
           phase = result.ok ? 'completed' : 'failed'
           send({ type: 'result', requestId: id, ...result })
+          if (result.ok && interpreter.hasPendingMission) {
+            phase = 'running'
+            await interpreter.flushMission()
+            if (hasFailed()) return
+            phase = 'completed'
+          }
           if (result.ok && activityRequest && !activityFinished) {
             phase = 'running'
             await interpreter.checkActivity()

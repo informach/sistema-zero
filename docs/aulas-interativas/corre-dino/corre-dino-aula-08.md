@@ -25,13 +25,13 @@ A condição da aula anterior é reaplicada ao ramo inicio. A experiência de co
 
 ### Seção 1. Desenhe a tela de início
 
-**Tarefa:** Agora desenhe a tela de início do seu jogo! Acrescente um senão se inicio ao Se do quadro, com o título e o convite para começar. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
+**Tarefa:** Agora desenhe a tela de início do seu jogo! Acrescente um senão se inicio ao Se do quadro, com o título e o convite para começar. Depois, clique em Verificar projeto e, em seguida, em Próxima parte.
 
 **Blocos na página:** video-menu → fala-menu.
 
-**Recado na página (não gravar):** Agora desenhe a tela de início do seu jogo! Acrescente um senão se inicio ao Se do quadro, com o título e o convite para começar. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
+**Recado na página (não gravar):** Agora desenhe a tela de início do seu jogo! Acrescente um senão se inicio ao Se do quadro, com o título e o convite para começar. Depois, clique em Verificar projeto e, em seguida, em Próxima parte.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar projeto.
 
 - No senão se o estado do jogo é inicio, mostre a tela de início com a dica dos dois jeitos.
 
@@ -51,17 +51,17 @@ video-convite-K1: Dedé substitui “E quem quiser começar pelo toque?”. Ante
 
 ### Seção 3. Ligue a entrada ao início da partida
 
-**Tarefa:** Agora faça a partida começar! Crie o evento de qualquer tecla ou toque, com um Se inicio que muda o estado para jogando. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
+**Tarefa:** Agora faça a partida começar! Crie o evento de qualquer tecla ou toque, com um Se inicio que muda o estado para jogando. Depois, clique em Verificar projeto e, em seguida, em Próxima parte.
 
 **Blocos na página:** video-entrada-ampla → fala-entrada-ampla.
 
-**Recado na página (não gravar):** Agora faça a partida começar! Crie o evento de qualquer tecla ou toque, com um Se inicio que muda o estado para jogando. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
+**Recado na página (não gravar):** Agora faça a partida começar! Crie o evento de qualquer tecla ou toque, com um Se inicio que muda o estado para jogando. Depois, clique em Verificar projeto e, em seguida, em Próxima parte.
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
 video-entrada-ampla-K1: Dedé substitui “E a tecla do pulo, vai começar a partida de novo?”. Antes: “e depois Teclado, ações e toque, pegue o bloco Quando apertar qualquer tecla ou tocar na tela e solte nesse espaço.”. Depois: “Só que esse evento também acontece no meio da partida, a cada pulo. Por isso, ele precisa perguntar o estado antes de”.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar projeto.
 
 - Qualquer tecla ou toque começa a partida somente quando o estado do jogo é inicio.
 - Use a entrada de qualquer tecla ou toque, sem um evento separado só para Enter.
@@ -69,13 +69,13 @@ video-entrada-ampla-K1: Dedé substitui “E a tecla do pulo, vai começar a par
 
 ### Seção 4. Teste e envie seu jogo
 
-**Tarefa:** Hora de testar e enviar o seu jogo! Comece a partida por tecla e por toque, desde a abertura, clique em Verificar esta parte e depois em Enviar meu projeto. Confirme em Enviar e, quando o envio terminar, clique em Concluir aula.
+**Tarefa:** Hora de testar e enviar o seu jogo! Comece a partida por tecla e por toque, desde a abertura, clique em Verificar projeto e depois em Enviar meu projeto. Confirme em Enviar e, quando o envio terminar, clique em Concluir aula.
 
 **Blocos na página:** video-entrega → fala-entrega → projeto.
 
-**Recado na página (não gravar):** Hora de testar e enviar o seu jogo! Comece a partida por tecla e por toque, desde a abertura, clique em Verificar esta parte e depois em Enviar meu projeto. Confirme em Enviar e, quando o envio terminar, clique em Concluir aula.
+**Recado na página (não gravar):** Hora de testar e enviar o seu jogo! Comece a partida por tecla e por toque, desde a abertura, clique em Verificar projeto e depois em Enviar meu projeto. Confirme em Enviar e, quando o envio terminar, clique em Concluir aula.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte, com o envio em Enviar meu projeto confirmado em Enviar.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar projeto, com o envio em Enviar meu projeto confirmado em Enviar.
 
 - No Ao iniciar, o jogo continua abrindo com Mudar o estado do jogo para inicio.
 - No senão se o estado do jogo é inicio, mostre a tela de início com a dica dos dois jeitos.

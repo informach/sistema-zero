@@ -1,0 +1,2 @@
+ALTER TABLE "payments"."subscription_operations" ADD COLUMN "retry_terms" jsonb;--> statement-breakpoint
+ALTER TABLE "payments"."subscription_operations" ADD CONSTRAINT "subscription_operations_retry_terms_check" CHECK (("payments"."subscription_operations"."kind" = 'RETRY' and "payments"."subscription_operations"."retry_terms" is not null and jsonb_typeof("payments"."subscription_operations"."retry_terms") = 'object') or ("payments"."subscription_operations"."kind" <> 'RETRY' and "payments"."subscription_operations"."retry_terms" is null));

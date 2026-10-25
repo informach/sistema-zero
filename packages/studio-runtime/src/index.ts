@@ -20,9 +20,11 @@ import {
   type StudioProBuilderEvidence,
 } from '@sistemazero/core/studio'
 import { studioPythonInspectionJobId } from '@sistemazero/core/studio/python-inspection-job'
+import { PYTHON_MISSION_LIMITS } from '@sistemazero/core/studio/python-mission-execution'
 import { STUDIO_PYTHON_VALIDATION_LIMITS } from '@sistemazero/core/studio/python-validation'
 import {
   StudioPythonInspectionRequestSchema,
+  StudioPythonMissionRequestSchema,
   StudioPythonValidationRequestSchema,
 } from '@sistemazero/core/studio/python-validation-input'
 import validationProfile from '../runtime/validation-profile.json' with { type: 'json' }
@@ -88,6 +90,7 @@ export interface PythonInspectionJobNamespace {
   getByName(name: string): {
     inspect(raw: unknown): Promise<PythonInspectionJobResponse>
     validate(raw: unknown): Promise<PythonInspectionJobResponse>
+    check(raw: unknown): Promise<PythonInspectionJobResponse>
     previewAvailable(raw: unknown): Promise<boolean>
     discardPreview(raw: unknown): Promise<{ retired: boolean; cleanupConfirmed: boolean }>
     cancel(raw: unknown): Promise<{ retired: boolean; cleanupConfirmed: boolean }>
@@ -320,18 +323,29 @@ export function createStudioRuntimeHandler(
             assertCurrent,
           })
           assertCurrent()
-          const invokeJob = async (raw: unknown, mode: 'inspect' | 'validate') => {
+          const invokeJob = async (raw: unknown, mode: 'inspect' | 'validate' | 'check') => {
             const input =
-              mode === 'validate'
-                ? StudioPythonValidationRequestSchema.parse(raw).input
-                : StudioPythonInspectionRequestSchema.parse(raw).input
+              mode === 'check'
+                ? StudioPythonMissionRequestSchema.parse(raw).input
+                : mode === 'validate'
+                  ? StudioPythonValidationRequestSchema.parse(raw).input
+                  : StudioPythonInspectionRequestSchema.parse(raw).input
             const jobId = await studioPythonInspectionJobId(input)
             assertCurrent()
             const stub = jobs.getByName(jobId)
-            const result = mode === 'validate' ? await stub.validate(raw) : await stub.inspect(raw)
+            const result =
+              mode === 'check'
+                ? await stub.check(raw)
+                : mode === 'validate'
+                  ? await stub.validate(raw)
+                  : await stub.inspect(raw)
             assertCurrent()
             const maximum =
-              mode === 'validate' ? STUDIO_PYTHON_VALIDATION_LIMITS.responseBytes : 2 * 1024 * 1024
+              mode === 'check'
+                ? PYTHON_MISSION_LIMITS.responseBytes
+                : mode === 'validate'
+                  ? STUDIO_PYTHON_VALIDATION_LIMITS.responseBytes
+                  : 2 * 1024 * 1024
             if (new TextEncoder().encode(result.bodyJson).byteLength > maximum)
               throw new Error('O relatório do job Python excede o limite.')
             const body: unknown = JSON.parse(result.bodyJson)
@@ -359,6 +373,9 @@ export function createStudioRuntimeHandler(
               return (await binding.limit({ key: `python-${operation}-${owner}` })).success
             },
             jobs: {
+              async check(raw) {
+                return invokeJob(raw, 'check')
+              },
               async inspect(raw) {
                 return invokeJob(raw, 'inspect')
               },

@@ -81,7 +81,7 @@ describe('Objetivos da parte', () => {
     globalThis.fetch = request as unknown as typeof fetch
     montar({ save: () => saved })
     await act(async () => {
-      fireEvent.click(screen.getByRole('button', { name: 'Verificar esta parte' }))
+      fireEvent.click(screen.getByRole('button', { name: 'Verificar projeto' }))
     })
     expect(request).toHaveBeenCalledTimes(0)
     await act(async () => finishSave())
@@ -112,7 +112,7 @@ describe('Objetivos da parte', () => {
     ) as unknown as typeof fetch
     montar({})
     await act(async () => {
-      fireEvent.click(screen.getByRole('button', { name: 'Verificar esta parte' }))
+      fireEvent.click(screen.getByRole('button', { name: 'Verificar projeto' }))
     })
     expect(estado('Use um laço')).toBe('failed')
     expect(estado('Crie a função pular')).toBe('passed')
@@ -134,7 +134,7 @@ describe('Objetivos da parte', () => {
     ) as unknown as typeof fetch
     montar({})
     await act(async () => {
-      fireEvent.click(screen.getByRole('button', { name: 'Verificar esta parte' }))
+      fireEvent.click(screen.getByRole('button', { name: 'Verificar projeto' }))
     })
     expect(screen.getByRole('status').textContent).toContain('desafio extra')
     expect(screen.queryByText(/^\+\d+ XP$/)).toBeNull()
@@ -146,7 +146,7 @@ describe('Objetivos da parte', () => {
     ) as unknown as typeof fetch
     montar({ objectives: [OBJECTIVES[1]] as unknown as typeof OBJECTIVES })
     await act(async () => {
-      fireEvent.click(screen.getByRole('button', { name: 'Verificar esta parte' }))
+      fireEvent.click(screen.getByRole('button', { name: 'Verificar projeto' }))
     })
     const status = screen.getByRole('status').textContent ?? ''
     expect(status).toContain('desafio extra')
@@ -178,7 +178,7 @@ describe('Objetivos da parte', () => {
     ) as unknown as typeof fetch
     montar({ subscribe, updatedAt: 1000 })
     await act(async () => {
-      fireEvent.click(screen.getByRole('button', { name: 'Verificar esta parte' }))
+      fireEvent.click(screen.getByRole('button', { name: 'Verificar projeto' }))
     })
     // O autosave do MESMO projeto (chega depois do clique) não é mudança.
     act(() => ouvinte?.({ updatedAt: 1000 }))
@@ -208,7 +208,7 @@ describe('Objetivos da parte', () => {
     ) as unknown as typeof fetch
     montar({ subscribe, updatedAt: 1000 })
     await act(async () => {
-      fireEvent.click(screen.getByRole('button', { name: 'Verificar esta parte' }))
+      fireEvent.click(screen.getByRole('button', { name: 'Verificar projeto' }))
     })
     // A criança mexe no projeto enquanto o servidor confere a versão de 1000.
     act(() => ouvinte?.({ updatedAt: 2000 }))

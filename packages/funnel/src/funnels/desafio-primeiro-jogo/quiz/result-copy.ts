@@ -126,7 +126,7 @@ export const CHANGE_917: Record<DesafioProfile, string> = {
   D: 'Cada bloco é uma decisão que ele vê funcionar, e ele entende por que o jogo faz o que faz.',
 }
 export const HELP_917 =
-  'Quando trava, o vídeo está do lado dos blocos, e o botão Verificar esta parte mostra o que já está certo e o que falta.'
+  'Quando trava, o vídeo está do lado dos blocos, e o botão Verificar projeto mostra o que já está certo e o que falta.'
 /** A cena desejada volta no fim do "o que muda" (quando ela não abriu a carta). */
 export const WISH_917: Record<DesafioProfile, string> = {
   A: `A cena que você quer ver, ${m(DESEJO_917.A)}, é onde isso termina: um jogo pronto, feito por ele.`,
@@ -160,8 +160,8 @@ export const RELATO_917: Record<DesafioProfile, { id: 'AV02' | 'AV04'; intro: st
 }
 
 export const NEED_917: Record<string, string> = {
-  sozinho: `Você quer que ${m('ele consiga fazer sozinho')}. Quem já lê sozinho consegue: o vídeo fica do lado dos blocos, e o botão Verificar esta parte mostra o que falta.`,
-  ajuda: `Você quer ${m('ter ajuda quando ele travar')}. Em cada parte da aula, o botão Verificar esta parte mostra o que falta, e o vídeo fica do lado dos blocos.`,
+  sozinho: `Você quer que ${m('ele consiga fazer sozinho')}. Quem já lê sozinho consegue: o vídeo fica do lado dos blocos, e o botão Verificar projeto mostra o que falta.`,
+  ajuda: `Você quer ${m('ter ajuda quando ele travar')}. Em cada parte da aula, o botão Verificar projeto mostra o que falta, e o vídeo fica do lado dos blocos.`,
   acompanhar: `Você quer ${m('conseguir acompanhar de longe')}. Na Área dos pais, você vê o que ele fez na semana.`,
   tempo_tela: `Você quer que ${m('caiba no tempo de tela que vocês combinaram')}. O projeto fica guardado na conta dele: ele para quando o tempo acaba e continua no outro dia, do mesmo ponto.`,
   orcamento: ORCAMENTO,

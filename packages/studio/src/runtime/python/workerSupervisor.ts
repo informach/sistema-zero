@@ -5,9 +5,21 @@ import {
   StudioPythonActivitySchema,
   verifyStudioPythonActivityFeedback,
 } from '@sistemazero/core/studio/python-activity'
+import {
+  PYTHON_MISSION_OBSERVATION_LIMITS,
+  readStudioPythonMissionProbe,
+  type StudioPythonMissionObservation,
+  type StudioPythonMissionProbe,
+  verifyStudioPythonMissionObservation,
+} from '@sistemazero/core/studio/python-mission-observation'
 import type { StudioRuntimeInput } from '../types'
 import type { PythonRuntimePayload } from './frameProtocol'
-import type { PythonExecutionSnapshot, PythonWorkerCommand } from './protocol'
+import {
+  PYTHON_GRAPHICS_REPLY_LIMITS,
+  type PythonExecutionSnapshot,
+  type PythonGraphicsReply,
+  type PythonWorkerCommand,
+} from './protocol'
 import vendor from './vendor-manifest.json'
 import { isPythonRequestId, readPythonWorkerEvent } from './workerEvents'
 
@@ -21,12 +33,17 @@ type Phase =
   | 'failed'
   | 'stopped'
 
+/** Hard ceiling for graphics messages per second (frames and pixel requests). */
+const GRAPHICS_MESSAGES_PER_SECOND = 2000
+
 /** Trusted frame boundary. Worker FFI can forge every event, including result and booted. */
 export function createPythonWorkerSupervisor(options: {
   worker: Worker
   snapshot: PythonExecutionSnapshot
   activity?: StudioPythonActivity
   onActivityResult?(requestId: string, feedback: StudioPythonActivityFeedback): void
+  mission?: true
+  onMissionResult?(requestId: string, observation: StudioPythonMissionObservation): void
   emit(event: PythonRuntimePayload): void
   onReady(): void
   /** Releases bootstrap URLs and other frame-owned resources, never learner cleanup. */
@@ -35,7 +52,7 @@ export function createPythonWorkerSupervisor(options: {
   graphics?(
     request: string,
     images: { id: number; bytes: Uint8Array<ArrayBuffer> }[],
-  ): Promise<string>
+  ): Promise<PythonGraphicsReply>
 }) {
   const { worker } = options
   const activity =
@@ -44,11 +61,16 @@ export function createPythonWorkerSupervisor(options: {
     assertStudioPythonActivityScope(activity, options.snapshot.configuration)
     if (!options.onActivityResult) throw new Error('O canal da tarefa não está disponível.')
   }
+  if (options.mission && !options.onMissionResult)
+    throw new Error('O canal de observação da missão não está disponível.')
   let phase: Phase = 'booting'
   let operation: { kind: 'run' | 'evaluate'; id: string } | undefined
   let inputId: string | undefined
   let windowStart = performance.now()
   let messages = 0
+  // A game exchanges one graphics message per frame (60 per second) plus pixel requests: they
+  // have their own budget, so a fast game never trips the limit meant for other messages.
+  let graphicsMessages = 0
   let consoleChars = 0
   let consoleChunks = 0
   let released = false
@@ -57,6 +79,14 @@ export function createPythonWorkerSupervisor(options: {
   let activityRequested = false
   let pendingActivity:
     | { id: string; idle: boolean; timer: ReturnType<typeof setTimeout> }
+    | undefined
+  let pendingMission:
+    | {
+        id: string
+        probe: StudioPythonMissionProbe
+        idle: boolean
+        timer: ReturnType<typeof setTimeout>
+      }
     | undefined
   const bootTimer = setTimeout(
     () => fail('runtime-unavailable', 'O ambiente Python demorou demais para iniciar.'),
@@ -75,6 +105,8 @@ export function createPythonWorkerSupervisor(options: {
     pendingAudio = undefined
     if (pendingActivity) clearTimeout(pendingActivity.timer)
     pendingActivity = undefined
+    if (pendingMission) clearTimeout(pendingMission.timer)
+    pendingMission = undefined
     worker.removeEventListener('message', message)
     worker.removeEventListener('error', error)
     worker.removeEventListener('messageerror', messageError)
@@ -87,8 +119,8 @@ export function createPythonWorkerSupervisor(options: {
     release()
     if (phase === 'failed') options.emit({ type: 'failed', code, message })
   }
-  function send(command: PythonWorkerCommand) {
-    worker.postMessage(command)
+  function send(command: PythonWorkerCommand, transfer: Transferable[] = []) {
+    worker.postMessage(command, { transfer })
   }
   function state(next: 'ready' | 'running' | 'waiting-input' | 'completed') {
     phase = next
@@ -109,9 +141,13 @@ export function createPythonWorkerSupervisor(options: {
     const now = performance.now()
     if (now - windowStart >= 1000) {
       windowStart = now
-      messages = consoleChars = consoleChunks = 0
+      messages = graphicsMessages = consoleChars = consoleChunks = 0
     }
-    if (++messages > 256) {
+    const graphics =
+      !!event.data &&
+      typeof event.data === 'object' &&
+      (event.data as { type?: unknown }).type === 'graphics'
+    if (graphics ? ++graphicsMessages > GRAPHICS_MESSAGES_PER_SECOND : ++messages > 256) {
       fail('quota-exceeded', 'O programa excedeu o limite de mensagens.')
       return
     }
@@ -121,6 +157,33 @@ export function createPythonWorkerSupervisor(options: {
       return
     }
     switch (value.type) {
+      case 'mission-result': {
+        const pending = pendingMission
+        if (
+          !pending ||
+          value.requestId !== pending.id ||
+          phase !== 'running' ||
+          inputId ||
+          pendingGraphics ||
+          pendingAudio
+        )
+          break
+        let observation: StudioPythonMissionObservation
+        try {
+          observation = verifyStudioPythonMissionObservation(value.observation, pending.probe)
+        } catch {
+          break
+        }
+        clearTimeout(pending.timer)
+        pendingMission = undefined
+        if (pending.idle && !state('completed')) return
+        try {
+          options.onMissionResult!(pending.id, observation)
+        } catch {
+          fail('runtime-unavailable', 'Não foi possível enviar a observação da missão.')
+        }
+        return
+      }
       case 'activity-result': {
         const pending = pendingActivity
         if (
@@ -157,12 +220,38 @@ export function createPythonWorkerSupervisor(options: {
             if (terminal()) return undefined
             return options.graphics!(value.request, value.images)
           })
-          .then((response) => {
+          .then((reply) => {
             if (terminal() || pendingGraphics !== value.requestId) return
-            if (typeof response !== 'string' || response.length > 128_000)
+            const text = typeof reply === 'string' ? reply : reply?.text
+            const bytes = typeof reply === 'string' ? undefined : reply?.bytes
+            if (
+              typeof text !== 'string' ||
+              text.length > PYTHON_GRAPHICS_REPLY_LIMITS.textChars ||
+              (bytes !== undefined &&
+                (!(bytes instanceof Uint8Array) ||
+                  !(bytes.buffer instanceof ArrayBuffer) ||
+                  bytes.byteLength > PYTHON_GRAPHICS_REPLY_LIMITS.bytes))
+            )
               throw new Error('Resposta gráfica inválida.')
             pendingGraphics = undefined
-            send({ type: 'graphics-response', requestId: value.requestId, response })
+            if (bytes === undefined)
+              send({ type: 'graphics-response', requestId: value.requestId, response: text })
+            else {
+              // A whole buffer is transferred; a view on a bigger one is copied first.
+              const own =
+                bytes.byteOffset === 0 && bytes.byteLength === bytes.buffer.byteLength
+                  ? bytes
+                  : bytes.slice()
+              send(
+                {
+                  type: 'graphics-response',
+                  requestId: value.requestId,
+                  response: text,
+                  bytes: own,
+                },
+                [own.buffer],
+              )
+            }
           })
           .catch((error) =>
             fail(
@@ -220,7 +309,12 @@ export function createPythonWorkerSupervisor(options: {
           break
         phase = 'preparing'
         try {
-          send({ type: 'prepare', snapshot: options.snapshot, ...(activity ? { activity } : {}) })
+          send({
+            type: 'prepare',
+            snapshot: options.snapshot,
+            ...(activity ? { activity } : {}),
+            ...(options.mission ? { mission: true } : {}),
+          })
         } catch {
           fail('runtime-unavailable', 'Não foi possível preparar os arquivos do programa.')
         }
@@ -231,7 +325,14 @@ export function createPythonWorkerSupervisor(options: {
         if (state('ready')) options.onReady()
         return
       case 'input-request':
-        if (phase !== 'running' || !operation || inputId || pendingGraphics || pendingAudio) break
+        if (
+          phase !== 'running' ||
+          (!operation && !pendingMission?.idle) ||
+          inputId ||
+          pendingGraphics ||
+          pendingAudio
+        )
+          break
         inputId = value.requestId
         if (state('waiting-input'))
           options.emit({ type: 'input-request', requestId: value.requestId, prompt: '' })
@@ -257,7 +358,10 @@ export function createPythonWorkerSupervisor(options: {
             text: value.traceback ?? value.text,
           })
         } else if (value.ok) {
-          if (pendingActivity) {
+          if (pendingMission) {
+            pendingMission.idle = true
+            state('running')
+          } else if (pendingActivity) {
             // The program finished before reaching a cooperative checkpoint.
             // The worker grades on the now-idle interpreter, without reentry.
             pendingActivity.idle = true
@@ -312,9 +416,44 @@ export function createPythonWorkerSupervisor(options: {
     evaluate(requestId: string, source: string) {
       start('evaluate', requestId, source)
     },
+    observeMission(requestId: string, raw: unknown) {
+      if (
+        !options.mission ||
+        pendingMission ||
+        pendingActivity ||
+        !isPythonRequestId(requestId) ||
+        (phase !== 'running' && phase !== 'completed') ||
+        inputId ||
+        (phase === 'running' && operation?.kind !== 'run')
+      )
+        throw new Error('A missão não pode observar esta execução.')
+      const probe = readStudioPythonMissionProbe(raw)
+      const idle = phase === 'completed'
+      pendingMission = {
+        id: requestId,
+        probe,
+        idle,
+        timer: setTimeout(
+          () =>
+            fail(
+              'program-error',
+              'O programa não respondeu à observação da missão dentro do prazo.',
+            ),
+          PYTHON_MISSION_OBSERVATION_LIMITS.timeoutMs,
+        ),
+      }
+      if (idle && !state('running')) throw new Error('A execução foi interrompida.')
+      try {
+        send({ type: 'mission-observe', requestId, probe })
+      } catch (error) {
+        fail('runtime-unavailable', 'Não foi possível solicitar a observação da missão.')
+        throw error
+      }
+    },
     checkActivity(requestId: string) {
       if (
         !activity ||
+        pendingMission ||
         activityRequested ||
         !isPythonRequestId(requestId) ||
         (phase !== 'running' && phase !== 'completed') ||

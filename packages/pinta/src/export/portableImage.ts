@@ -7,6 +7,7 @@ import {
   PintaImageRecipeSchema,
   type PintaImageTargetLimits,
   PintaImageTargetLimitsSchema,
+  pintaImageOutputMime,
   pintaImageRecipeKey,
 } from '@sistemazero/core/studio/pinta-image'
 import {
@@ -21,7 +22,9 @@ import { assetToJson } from './assetJson'
 import {
   type PintaImageRaster,
   type PintaImageScene,
+  pintaImageSceneIsVector,
   renderPintaImage,
+  renderPintaImageSvg,
 } from './portableImageRender'
 
 export interface PintaPortableImage {
@@ -176,6 +179,13 @@ async function prepare(
     AnyTilesetAsset | null,
   ]
   const selected = select(source, tileset, recipe)
+  // The destination asked for the real vector: never fall back to PNG in silence.
+  if (recipe.output === 'svg' && !pintaImageSceneIsVector(selected.scene))
+    throw new Error(
+      selected.scene.kind === 'map'
+        ? 'Este mapa usa peças de pixels e só pode vir como imagem PNG.'
+        : 'Este desenho é de pixels e só pode vir como imagem PNG.',
+    )
   const width = Math.round(selected.width * recipe.scale),
     height = Math.round(selected.height * recipe.scale)
   assertPintaImageDimensions(width, height, limits)
@@ -196,29 +206,53 @@ async function finish(
   signal?: AbortSignal,
   raster?: PintaImageRaster,
 ): Promise<PintaPortableImage> {
-  const bytes = await renderPintaImage(
-    prepared.scene,
-    prepared.width,
-    prepared.height,
-    prepared.limits,
-    signal,
-    raster,
-  )
+  const mime = pintaImageOutputMime(prepared.recipe)
+  let bytes: Uint8Array<ArrayBuffer>
+  let dataUrl: string
+  if (mime === 'image/svg+xml') {
+    const svg = await renderPintaImageSvg(
+      prepared.scene,
+      prepared.width,
+      prepared.height,
+      prepared.limits,
+      signal,
+    )
+    bytes = new TextEncoder().encode(svg)
+    // UTF-8 percent-encoding: the same form as the JS bridge, decoded to these exact bytes.
+    dataUrl = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`
+    if (
+      bytes.byteLength > prepared.limits.imageBytes ||
+      dataUrl.length > prepared.limits.dataUrlChars
+    )
+      throw new Error(
+        'O desenho vetorial ficou grande demais para o projeto. Escolha um quadro mais simples ou remova algumas formas.',
+      )
+  } else {
+    bytes = await renderPintaImage(
+      prepared.scene,
+      prepared.width,
+      prepared.height,
+      prepared.limits,
+      signal,
+      raster,
+    )
+    signal?.throwIfAborted()
+    const parts: string[] = []
+    for (let offset = 0; offset < bytes.length; offset += 4096)
+      parts.push(String.fromCharCode(...bytes.subarray(offset, offset + 4096)))
+    dataUrl = `data:image/png;base64,${btoa(parts.join(''))}`
+    if (dataUrl.length > prepared.limits.dataUrlChars)
+      throw new Error('A imagem ultrapassa o limite de tamanho do projeto.')
+  }
   signal?.throwIfAborted()
   const digest = new Uint8Array(await crypto.subtle.digest('SHA-256', bytes))
   signal?.throwIfAborted()
   const sha256 = Array.from(digest, (byte) => byte.toString(16).padStart(2, '0')).join('')
-  const parts: string[] = []
-  for (let offset = 0; offset < bytes.length; offset += 4096)
-    parts.push(String.fromCharCode(...bytes.subarray(offset, offset + 4096)))
-  const dataUrl = `data:image/png;base64,${btoa(parts.join(''))}`
-  if (dataUrl.length > prepared.limits.dataUrlChars)
-    throw new Error('A imagem ultrapassa o limite de tamanho do projeto.')
   const derivation = PintaImageDerivationSchema.parse({
     recipe: prepared.recipe,
     provenance: prepared.provenance,
     output: {
-      mime: 'image/png',
+      mime,
       width: prepared.width,
       height: prepared.height,
       bytes: bytes.byteLength,

@@ -36,25 +36,25 @@ Guardar, mostrar e mudar o número têm montagens próprias, sempre depois das e
 
 ### Seção 2. Prepare os pontos em zero
 
-**Tarefa:** Agora prepare os pontos do seu jogo! Crie a variável pontos com valor 0 no fim de Ao iniciar. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
+**Tarefa:** Agora prepare os pontos do seu jogo! Crie a variável pontos com valor 0 no fim de Ao iniciar. Depois, clique em Verificar projeto e, em seguida, em Próxima parte.
 
 **Blocos na página:** video-caixinha-dos-pontos → fala-caixinha-dos-pontos.
 
-**Recado na página (não gravar):** Agora prepare os pontos do seu jogo! Crie a variável pontos com valor 0 no fim de Ao iniciar. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
+**Recado na página (não gravar):** Agora prepare os pontos do seu jogo! Crie a variável pontos com valor 0 no fim de Ao iniciar. Depois, clique em Verificar projeto e, em seguida, em Próxima parte.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar projeto.
 
 - No Ao iniciar, crie a variável pontos com valor 0.
 
 ### Seção 3. Mostre o número guardado
 
-**Tarefa:** Agora mostre os pontos na tela! Coloque Mostrar placar no fim do Se jogando, lendo a variável pontos. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
+**Tarefa:** Agora mostre os pontos na tela! Coloque Mostrar placar no fim do Se jogando, lendo a variável pontos. Depois, clique em Verificar projeto e, em seguida, em Próxima parte.
 
 **Blocos na página:** video-numero-na-tela → fala-numero-na-tela.
 
-**Recado na página (não gravar):** Agora mostre os pontos na tela! Coloque Mostrar placar no fim do Se jogando, lendo a variável pontos. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
+**Recado na página (não gravar):** Agora mostre os pontos na tela! Coloque Mostrar placar no fim do Se jogando, lendo a variável pontos. Depois, clique em Verificar projeto e, em seguida, em Próxima parte.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar projeto.
 
 - Dentro do Se o estado do jogo é jogando, mostre o placar lendo a variável pontos. A cor é sua.
 
@@ -74,28 +74,28 @@ video-quando-o-placar-cresce-K1: Debinha substitui “Como faz para contar só d
 
 ### Seção 5. Some um ponto por segundo de partida
 
-**Tarefa:** Agora some um ponto por segundo de partida! Crie um relógio só para os pontos, com um Se jogando e, dentro dele, Somar em variável pontos. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
+**Tarefa:** Agora some um ponto por segundo de partida! Crie um relógio só para os pontos, com um Se jogando e, dentro dele, Somar em variável pontos. Depois, clique em Verificar projeto e, em seguida, em Próxima parte.
 
 **Blocos na página:** video-relogio-dos-pontos → fala-relogio-dos-pontos.
 
-**Recado na página (não gravar):** Agora some um ponto por segundo de partida! Crie um relógio só para os pontos, com um Se jogando e, dentro dele, Somar em variável pontos. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
+**Recado na página (não gravar):** Agora some um ponto por segundo de partida! Crie um relógio só para os pontos, com um Se jogando e, dentro dele, Somar em variável pontos. Depois, clique em Verificar projeto e, em seguida, em Próxima parte.
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
 video-relogio-dos-pontos-K1: Debinha substitui “Mas só vale somar durante a partida, né?”. Antes: “Tempo e depois Quadros e intervalos, pegue o bloco A cada 2 segundos, solte nesse espaço e troque o intervalo para 1.”. Depois: “Isso. Vamos colocar essa pergunta no relógio. Agora deixe à vista o espaço vazio dentro do novo relógio. Abra”.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar projeto.
 
 - Num relógio próprio, some 1 em pontos somente quando o estado do jogo é jogando. O intervalo é seu: o vídeo usa 1 segundo, e vale de 0,5 a 3.
 - Use um único Somar em variável pontos no projeto inteiro.
 
 ### Seção 6. Mostre os pontos na tela de fim
 
-**Tarefa:** Agora mostre os pontos na tela de fim! Troque o subtítulo da tela de fim por um juntar texto com texto, valor de pontos e texto. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
+**Tarefa:** Agora mostre os pontos na tela de fim! Troque o subtítulo da tela de fim por um juntar texto com texto, valor de pontos e texto. Depois, clique em Verificar projeto e, em seguida, em Próxima parte.
 
 **Blocos na página:** video-frase-da-tela-de-fim → fala-frase-da-tela-de-fim.
 
-**Recado na página (não gravar):** Agora mostre os pontos na tela de fim! Troque o subtítulo da tela de fim por um juntar texto com texto, valor de pontos e texto. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
+**Recado na página (não gravar):** Agora mostre os pontos na tela de fim! Troque o subtítulo da tela de fim por um juntar texto com texto, valor de pontos e texto. Depois, clique em Verificar projeto e, em seguida, em Próxima parte.
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
@@ -103,7 +103,7 @@ video-frase-da-tela-de-fim-K1: Debinha substitui “Esse número vai mudar a cad
 
 video-frase-da-tela-de-fim-K2: Debinha substitui “E o número dos pontos vai no meio?”. Antes: “de texto que mostra Olá e solte em cima do primeiro número. Apague Olá e escreva Você fez, com um espaço depois de fez.”. Depois: “Vai, sim. Agora deixe à vista a entrada do meio. Em Programação e Valores, pegue o bloco valor da variável, solte em”.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar projeto.
 
 - No subtítulo da tela de fim, junte texto, o valor de pontos e texto, nessa ordem.
 
@@ -119,13 +119,13 @@ video-frase-da-tela-de-fim-K2: Debinha substitui “E o número dos pontos vai n
 
 ### Seção 8. Teste e envie seu jogo
 
-**Tarefa:** Hora de testar e enviar o seu jogo! Confira o placar na partida e na tela de fim, clique em Verificar esta parte e depois em Enviar meu projeto. Confirme em Enviar e, quando o envio terminar, clique em Concluir aula.
+**Tarefa:** Hora de testar e enviar o seu jogo! Confira o placar na partida e na tela de fim, clique em Verificar projeto e depois em Enviar meu projeto. Confirme em Enviar e, quando o envio terminar, clique em Concluir aula.
 
 **Blocos na página:** video-entrega → fala-entrega → projeto.
 
-**Recado na página (não gravar):** Hora de testar e enviar o seu jogo! Confira o placar na partida e na tela de fim, clique em Verificar esta parte e depois em Enviar meu projeto. Confirme em Enviar e, quando o envio terminar, clique em Concluir aula.
+**Recado na página (não gravar):** Hora de testar e enviar o seu jogo! Confira o placar na partida e na tela de fim, clique em Verificar projeto e depois em Enviar meu projeto. Confirme em Enviar e, quando o envio terminar, clique em Concluir aula.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte, com o envio em Enviar meu projeto confirmado em Enviar.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar projeto, com o envio em Enviar meu projeto confirmado em Enviar.
 
 - No Ao iniciar, crie a variável pontos com valor 0.
 - Dentro do Se o estado do jogo é jogando, mostre o placar lendo a variável pontos. A cor é sua.

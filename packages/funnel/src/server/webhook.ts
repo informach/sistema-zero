@@ -1,3 +1,8 @@
+import {
+  type BillingPeriod,
+  readSubscriptionCycleAccess,
+  type SubscriptionCycleAccess,
+} from '@sistemazero/core/billing'
 import type { FunnelRepo, Lead } from '../db/repo'
 import { json, jsonError } from '../lib/http'
 import { safeEqual } from '../lib/safe-equal'
@@ -15,16 +20,19 @@ export interface WebhookDeps {
   /** Registra o uso do cupom (best-effort) na confirmação. Opcional (no-op em testes). */
   redeemCoupon?: (couponCode: string | null, paymentId: string) => Promise<void>
   /** Concede o acesso na área de membros (após o registro do comprador). Opcional. */
-  grantMembers?: (lead: Lead) => Promise<void>
+  grantMembers?: (lead: Lead, billingPeriod?: BillingPeriod) => Promise<void>
   /** Boas-vindas (e-mail + WhatsApp) + link de definir senha (best-effort; NUNCA lança). Opcional. */
   sendWelcome?: (lead: Lead) => Promise<void>
   /**
    * Estende a matrícula por um CICLO de renovação de assinatura (lead JÁ pago;
    * sem markPaid/welcome). Falha → GrantRetryError → 502 (o gateway re-entrega).
    */
-  extendMembersForCycle?: (lead: Lead, paymentId: string, paidAtIso?: string) => Promise<void>
-  /** Aviso de FALHA de cobrança de ciclo (dunning) — best-effort, NUNCA lança. */
-  sendChargeFailed?: (lead: Lead, failedPaymentId: string) => Promise<void>
+  extendMembersForCycle?: (
+    lead: Lead,
+    paymentId: string,
+    paidAtIso?: string,
+    billingPeriod?: BillingPeriod,
+  ) => Promise<void>
   log?: (msg: string, meta?: Record<string, unknown>) => void
 }
 
@@ -42,7 +50,12 @@ export async function handlePaymentWebhook(request: Request, deps: WebhookDeps):
   const raw = await request.text()
   let payload: {
     event?: string
-    data?: { paymentId?: string; subscriptionId?: string | null; paidAt?: string }
+    data?: {
+      paymentId?: string
+      subscriptionId?: string | null
+      paidAt?: string
+      cycleAccess?: unknown
+    }
   }
   try {
     payload = JSON.parse(raw) as typeof payload
@@ -64,19 +77,22 @@ export async function handlePaymentWebhook(request: Request, deps: WebhookDeps):
     return json({ ok: true, deduped: true })
   }
 
-  // FALHA de cobrança de CICLO de assinatura (dunning): avisa o assinante p/
-  // atualizar o pagamento na carência. Best-effort — o acesso expira sozinho no
-  // fim do ciclo + carência se nada for feito (ninguém estende a matrícula).
+  // Payments owns renewal recovery and its notice clock. Acknowledge failure
+  // deliveries without another sender or changes to the already paid access.
   if (eventName === 'payment.failed' && subscriptionId) {
-    const lead = await deps.repo.findLeadBySubscription(subscriptionId)
-    if (lead && deps.sendChargeFailed && typeof paymentId === 'string' && paymentId) {
-      await deps.sendChargeFailed(lead, paymentId)
-    }
     if (deliveryId) await deps.repo.markWebhookProcessed(deliveryId, paymentId)
     return json({ ok: true })
   }
 
-  if (eventName === 'payment.paid') {
+  if (eventName === 'payment.paid' || eventName === 'payment.subscription_period_confirmed') {
+    let access: SubscriptionCycleAccess | null
+    try {
+      access = readSubscriptionCycleAccess(payload.data?.cycleAccess)
+    } catch {
+      return jsonError('Período da renovação inválido.', 400, 'INVALID_CYCLE_PERIOD')
+    }
+    if (eventName === 'payment.subscription_period_confirmed' && access?.kind !== 'VERIFIED_PERIOD')
+      return jsonError('Conferência da renovação ausente.', 400, 'INVALID_CYCLE_PERIOD')
     if (typeof paymentId !== 'string' || !paymentId) {
       return jsonError('paymentId ausente.', 400, 'BAD_REQUEST')
     }
@@ -114,9 +130,16 @@ export async function handlePaymentWebhook(request: Request, deps: WebhookDeps):
       lead.paidAt &&
       lead.paymentId !== paymentId
     ) {
+      if (access?.kind === 'REVIEW_REQUIRED') {
+        deps.log?.('webhook.cycle_access_review', { leadId: lead.id, paymentId })
+        if (deliveryId) await deps.repo.markWebhookProcessed(deliveryId, paymentId)
+        return json({ ok: true, renewal: true, accessReviewRequired: true })
+      }
       if (deps.extendMembersForCycle) {
         try {
-          await deps.extendMembersForCycle(lead, paymentId, payload.data?.paidAt)
+          if (access?.kind === 'VERIFIED_PERIOD')
+            await deps.extendMembersForCycle(lead, paymentId, payload.data?.paidAt, access.period)
+          else await deps.extendMembersForCycle(lead, paymentId, payload.data?.paidAt)
         } catch (err) {
           if (err instanceof GrantRetryError) {
             return jsonError('Extensão do ciclo pendente; reentregar.', 502, 'GRANT_RETRY')
@@ -128,6 +151,16 @@ export async function handlePaymentWebhook(request: Request, deps: WebhookDeps):
       if (deliveryId) await deps.repo.markWebhookProcessed(deliveryId, paymentId)
       return json({ ok: true, renewal: true })
     }
+    if (access?.kind === 'REVIEW_REQUIRED') {
+      deps.log?.('webhook.cycle_access_review', { leadId: lead.id, paymentId })
+      if (deliveryId) await deps.repo.markWebhookProcessed(deliveryId, paymentId)
+      return json({ ok: true, accessReviewRequired: true })
+    }
+    if (
+      eventName === 'payment.subscription_period_confirmed' &&
+      (!subscriptionId || lead.subscriptionId !== subscriptionId)
+    )
+      return jsonError('Conferência não corresponde a uma renovação.', 409, 'NOT_A_RENEWAL')
 
     // Cobrança ANTIGA paga (o lead já aponta p/ uma mais nova, ainda não paga):
     // re-aponta o ponteiro p/ a cobrança que DE FATO foi paga antes de marcar —
@@ -187,7 +220,9 @@ export async function handlePaymentWebhook(request: Request, deps: WebhookDeps):
       if (registered?.buyerUserId) {
         if (deps.grantMembers) {
           try {
-            await deps.grantMembers(registered)
+            if (access?.kind === 'VERIFIED_PERIOD')
+              await deps.grantMembers(registered, access.period)
+            else await deps.grantMembers(registered)
           } catch (err) {
             if (err instanceof GrantRetryError) {
               return jsonError('Concessão de acesso pendente; reentregar.', 502, 'GRANT_RETRY')

@@ -15,6 +15,7 @@
     "db:deploy": "bun run db:migrate && bun run templates:seed",
     "db:push": "drizzle-kit push",
     "templates:seed": "bun run scripts/seed-templates.ts",
+    "templates:seed:recovery": "bun run scripts/seed-subscription-recovery.ts",
     "evolution:create-instance": "bun run scripts/create-instance.ts",
     "webhooks:register": "bun run scripts/register-webhooks.ts",
     "send:test": "bun run scripts/send-test.ts",

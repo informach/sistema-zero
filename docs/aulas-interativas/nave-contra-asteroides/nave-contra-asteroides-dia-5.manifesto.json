@@ -83,7 +83,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Agora defina quando a partida termina! Crie a meta alvo, monte as perguntas de vitória e de derrota dentro de jogando e clique em Verificar esta parte. Depois, clique em Próxima parte."
+        "text": "Agora defina quando a partida termina! Crie a meta alvo, monte as perguntas de vitória e de derrota dentro de jogando e clique em Verificar projeto. Depois, clique em Próxima parte."
       }
     },
     {
@@ -95,7 +95,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Agora mostre a vitória e a derrota! Crie os ramos vitoria e fim depois do ramo inicio, com os textos de cada tela, e clique em Verificar esta parte. Depois, clique em Próxima parte."
+        "text": "Agora mostre a vitória e a derrota! Crie os ramos vitoria e fim depois do ramo inicio, com os textos de cada tela, e clique em Verificar projeto. Depois, clique em Próxima parte."
       }
     },
     {
@@ -158,7 +158,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Agora faça o Enter preparar outra partida! Acrescente ao evento Enter os ramos fim e vitoria, com Reiniciar o jogo, e clique em Verificar esta parte. Depois, clique em Próxima parte."
+        "text": "Agora faça o Enter preparar outra partida! Acrescente ao evento Enter os ramos fim e vitoria, com Reiniciar o jogo, e clique em Verificar projeto. Depois, clique em Próxima parte."
       }
     },
     {
@@ -247,7 +247,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Hora do teste final! Confira a derrota, a vitória e o recomeço, clique em Verificar esta parte e envie o seu projeto. Se quiser, publique o seu jogo no Mural. Depois, clique em Concluir aula."
+        "text": "Hora do teste final! Confira a derrota, a vitória e o recomeço, clique em Verificar projeto e envie o seu projeto. Se quiser, publique o seu jogo no Mural. Depois, clique em Concluir aula."
       }
     },
     {
@@ -1604,7 +1604,7 @@
       "key": "finais",
       "title": "Defina quando ganhar e perder",
       "intent": "application",
-      "objective": "Agora defina quando a partida termina! Crie a meta alvo, monte as perguntas de vitória e de derrota dentro de jogando e clique em Verificar esta parte. Depois, clique em Próxima parte.",
+      "objective": "Agora defina quando a partida termina! Crie a meta alvo, monte as perguntas de vitória e de derrota dentro de jogando e clique em Verificar projeto. Depois, clique em Próxima parte.",
       "blockKeys": ["video-finais", "fala-finais"],
       "workspaceKey": "projeto",
       "externalTool": null,
@@ -1793,7 +1793,7 @@
       "key": "telas",
       "title": "Mostre a vitória e a derrota",
       "intent": "application",
-      "objective": "Agora mostre a vitória e a derrota! Crie os ramos vitoria e fim depois do ramo inicio, com os textos de cada tela, e clique em Verificar esta parte. Depois, clique em Próxima parte.",
+      "objective": "Agora mostre a vitória e a derrota! Crie os ramos vitoria e fim depois do ramo inicio, com os textos de cada tela, e clique em Verificar projeto. Depois, clique em Próxima parte.",
       "blockKeys": ["video-mostrar-telas", "fala-telas"],
       "workspaceKey": "projeto",
       "externalTool": null,
@@ -1934,7 +1934,7 @@
       "key": "enter",
       "title": "Faça Enter preparar outra partida",
       "intent": "application",
-      "objective": "Agora faça o Enter preparar outra partida! Acrescente ao evento Enter os ramos fim e vitoria, com Reiniciar o jogo, e clique em Verificar esta parte. Depois, clique em Próxima parte.",
+      "objective": "Agora faça o Enter preparar outra partida! Acrescente ao evento Enter os ramos fim e vitoria, com Reiniciar o jogo, e clique em Verificar projeto. Depois, clique em Próxima parte.",
       "blockKeys": ["video-enter", "fala-enter"],
       "workspaceKey": "projeto",
       "externalTool": null,
@@ -2013,7 +2013,7 @@
       "key": "entrega",
       "title": "Teste o jogo completo e compartilhe",
       "intent": "delivery",
-      "objective": "Hora do teste final! Confira a derrota, a vitória e o recomeço, clique em Verificar esta parte e envie o seu projeto. Se quiser, publique o seu jogo no Mural. Depois, clique em Concluir aula.",
+      "objective": "Hora do teste final! Confira a derrota, a vitória e o recomeço, clique em Verificar projeto e envie o seu projeto. Se quiser, publique o seu jogo no Mural. Depois, clique em Concluir aula.",
       "blockKeys": ["video-ciclo-completo", "fala-entrega", "projeto"],
       "workspaceKey": "projeto",
       "externalTool": null,

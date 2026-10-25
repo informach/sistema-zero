@@ -9,9 +9,41 @@ import {
   parseNotification,
   parseNotificationEntries,
   parseOneStepResponse,
+  parseSubscriptionDetail,
 } from '../../src/infrastructure/gateways/efi/efi-cobrancas.mapper'
 
 describe('efi-cobrancas.mapper', () => {
+  test('snapshot único traz estado, ciclos e data civil de próxima execução', () => {
+    const snapshot = parseSubscriptionDetail(
+      {
+        data: {
+          subscription_id: 42,
+          status: 'active',
+          next_execution: '2026-11-16',
+          history: [{ charge_id: 45, status: 'unpaid', created_at: '2026-10-16 09:00:00' }],
+        },
+      },
+      '42',
+    )
+    expect(snapshot.providerSubscriptionId).toBe('42')
+    expect(snapshot.status).toBe('ACTIVE')
+    expect(snapshot.nextExecution).toBe('2026-11-16')
+    expect(snapshot.charges[0]).toEqual({
+      chargeId: '45',
+      status: 'FAILED',
+      createdAt: new Date('2026-10-16T12:00:00Z'),
+    })
+  })
+
+  test.each([
+    '2026-02-30',
+    'valor-desconhecido',
+  ])('não inventa próxima execução para data inválida: %s', (next_execution) => {
+    expect(
+      parseSubscriptionDetail({ data: { status: 'canceled', next_execution } }, '42').nextExecution,
+    ).toBeUndefined()
+  })
+
   test('mapCobrancasStatus traduz os status da Efí', () => {
     expect(mapCobrancasStatus('paid')).toBe('PAID')
     expect(mapCobrancasStatus('settled')).toBe('PAID')

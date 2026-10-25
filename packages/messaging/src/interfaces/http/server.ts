@@ -16,6 +16,7 @@ import type {
   ListSendersService,
   UpdateSenderService,
 } from '../../application/senders/sender-admin.service'
+import type { SuppressMessageService } from '../../application/suppress-message/suppress-message.service'
 import type {
   CreateTemplateService,
   GetTemplateService,
@@ -43,6 +44,7 @@ export interface HttpDeps {
   metrics: () => Promise<MetricsSnapshot>
   sendMessage: SendMessageService
   getMessage: GetMessageService
+  suppressMessage: SuppressMessageService
   listMessages: ListMessagesService
   createTemplate: CreateTemplateService
   updateTemplate: UpdateTemplateService
@@ -160,6 +162,7 @@ export function createServer(deps: HttpDeps) {
       sendRoutes({
         sendMessage: deps.sendMessage,
         getMessage: deps.getMessage,
+        suppressMessage: deps.suppressMessage,
         internalToken: deps.env.MESSAGING_INTERNAL_TOKEN,
       }),
     )

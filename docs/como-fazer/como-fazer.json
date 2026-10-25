@@ -843,8 +843,8 @@
           {
             "id": "preparar",
             "title": "Confira seu projeto",
-            "body": "Na aula, termine o seu jogo no Estúdio ou o seu desenho no Pinta e teste antes de enviar. Se embaixo do Estúdio aparecer **Objetivos desta parte**, clique em **Verificar esta parte** para conferir o que a parte pede. Veja [como verificar os objetivos](/como-fazer/plataforma-verificar-objetivos).",
-            "imageAlt": "Estúdio da aula com o quadro Objetivos desta parte embaixo do projeto e o botão Verificar esta parte destacado."
+            "body": "Na aula, termine o seu jogo no Estúdio ou o seu desenho no Pinta e teste antes de enviar. Se embaixo do Estúdio aparecer **Objetivos do projeto**, clique em **Verificar projeto** para conferir o que a parte pede. Veja [como verificar os objetivos](/como-fazer/plataforma-verificar-objetivos).",
+            "imageAlt": "Estúdio da aula com o quadro Objetivos do projeto embaixo do projeto e o botão Verificar projeto destacado."
           },
           {
             "id": "abrir",
@@ -1504,7 +1504,7 @@
         "keywords": [
           "objetivos",
           "verificar",
-          "verificar esta parte",
+          "verificar projeto",
           "conferir",
           "checar",
           "objetivo cumprido",
@@ -1523,31 +1523,31 @@
           {
             "id": "encontrar",
             "title": "Encontre os objetivos",
-            "body": "Abra a parte da aula que tem o Estúdio. Embaixo do seu projeto fica o quadro **Objetivos desta parte**, com o que o seu jogo precisa fazer.",
-            "imageAlt": "Estúdio da aula com o quadro Objetivos desta parte embaixo do projeto, mostrando a lista de objetivos e o botão Verificar esta parte."
+            "body": "Abra a parte da aula que tem o Estúdio. Embaixo do seu projeto fica o quadro **Objetivos do projeto**, com o que o seu jogo precisa fazer.",
+            "imageAlt": "Estúdio da aula com o quadro Objetivos do projeto embaixo do projeto, mostrando a lista de objetivos e o botão Verificar projeto."
           },
           {
             "id": "verificar",
             "title": "Verifique o seu projeto",
-            "body": "Faça o que a lista pede, teste o jogo e clique em **Verificar esta parte**. Quando o objetivo precisa rodar o jogo, o botão mostra **Testando o seu jogo… isso leva alguns segundos.** Espere sem sair da parte.",
-            "imageAlt": "Quadro Objetivos desta parte com o botão Verificar esta parte destacado."
+            "body": "Faça o que a lista pede, teste o jogo e clique em **Verificar projeto**. Quando o objetivo precisa rodar o jogo, o botão mostra **Testando o seu jogo… isso leva alguns segundos.** Espere sem sair da parte.",
+            "imageAlt": "Quadro Objetivos do projeto com o botão Verificar projeto destacado."
           },
           {
             "id": "cumprido",
             "title": "Veja o resultado",
             "body": "Cada objetivo cumprido ganha um sinal de certo. Quando todos estão prontos, aparece **Objetivo cumprido!**, ou **Objetivos cumpridos!** se ainda sobrar um desafio extra, e na primeira vez você ganha XP. Se não faltar mais nada na parte, a faixa de baixo diz **Tudo pronto nesta parte. Pode seguir!**",
-            "imageAlt": "Quadro Objetivos desta parte com todos os objetivos marcados de verde e o aviso Objetivo cumprido! destacado."
+            "imageAlt": "Quadro Objetivos do projeto com todos os objetivos marcados de verde e o aviso Objetivo cumprido! destacado."
           },
           {
             "id": "falta",
             "title": "Descubra o que falta",
             "body": "Se aparecer **Ainda falta um objetivo. Veja a lista e tente de novo.**, procure o objetivo sem o sinal de certo. Leia a **Dica** embaixo dele, quando houver, mude o projeto e verifique de novo.",
-            "imageAlt": "Quadro Objetivos desta parte com um objetivo ainda sem o sinal de certo e o aviso Ainda falta um objetivo destacado."
+            "imageAlt": "Quadro Objetivos do projeto com um objetivo ainda sem o sinal de certo e o aviso Ainda falta um objetivo destacado."
           },
           {
             "id": "mudou",
             "title": "Verifique de novo depois de mudar",
-            "body": "Mexeu no projeto depois de verificar? Aparece **Você mexeu no projeto depois de verificar. Verifique de novo!** Clique outra vez em **Verificar esta parte**."
+            "body": "Mexeu no projeto depois de verificar? Aparece **Você mexeu no projeto depois de verificar. Verifique de novo!** Clique outra vez em **Verificar projeto**."
           },
           {
             "id": "extra",
@@ -1557,7 +1557,7 @@
           {
             "id": "erro",
             "title": "Se não der para verificar",
-            "body": "Se aparecer **Não deu para verificar agora. Seu projeto continua aqui. Tente de novo.**, espere um pouco e clique de novo em **Verificar esta parte**. Se continuar, [peça ajuda à equipe](/como-fazer/plataforma-pedir-ajuda)."
+            "body": "Se aparecer **Não deu para verificar agora. Seu projeto continua aqui. Tente de novo.**, espere um pouco e clique de novo em **Verificar projeto**. Se continuar, [peça ajuda à equipe](/como-fazer/plataforma-pedir-ajuda)."
           },
           {
             "id": "enviar",

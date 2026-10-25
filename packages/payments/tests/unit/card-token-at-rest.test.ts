@@ -13,6 +13,10 @@ describe('card.token nunca vai para o banco (PCI hardening)', () => {
   const SNAPSHOT = {
     id: '11111111-1111-1111-1111-111111111111',
     version: 0,
+    cycleAccess: null,
+    periodConfirmation: null,
+    priorFailureReason: null,
+    priorFailedAt: null,
     consumerId: 'sys-a',
     amountInCents: 3700n,
     currency: 'BRL' as const,

@@ -1,12 +1,18 @@
 import { PYTHON_PROGRAMMING_CODECS } from './blocks/catalog'
 import { describePythonCatalog } from './blocks/selection'
+import { PYTHON_PGZERO_CODECS } from './extensions/pgzero/catalog'
 import { PYTHON_TURTLE_CODECS } from './extensions/turtle/catalog'
 
 /** Course metadata only. Release approval and each learner's grants remain separate gates. */
-export const PYTHON_COURSE_BLOCKS = Object.freeze(
-  describePythonCatalog([...PYTHON_TURTLE_CODECS, ...PYTHON_PROGRAMMING_CODECS]),
-)
-const blocks = new Map(PYTHON_COURSE_BLOCKS.map((entry) => [entry.id, entry]))
+const CATALOG = describePythonCatalog([
+  ...PYTHON_TURTLE_CODECS,
+  ...PYTHON_PGZERO_CODECS,
+  ...PYTHON_PROGRAMMING_CODECS,
+])
+/** What an author can pick: hidden codecs are the other shape of a visible block. */
+export const PYTHON_COURSE_BLOCKS = Object.freeze(CATALOG.filter((entry) => !entry.hidden))
+// Approvals and saved lists may name a hidden codec (a release approves every codec it decodes).
+const blocks = new Map(CATALOG.map((entry) => [entry.id, entry]))
 
 export function isPythonCourseBlock(id: string): boolean {
   return blocks.has(id)

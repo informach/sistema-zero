@@ -21,7 +21,9 @@ import { createStudioAuthoringPolicy } from '../../members/src/domain/studio/aut
 import { createStudioRuntimeHosts } from '../../members/src/domain/studio/runtime-hosts'
 import { PYTHON_PROGRAMMING_CODECS } from '../../studio/src/python/blocks/catalog'
 import { describePythonCatalog } from '../../studio/src/python/blocks/selection'
+import { PYTHON_PGZERO_CODECS } from '../../studio/src/python/extensions/pgzero/catalog'
 import { PYTHON_TURTLE_CODECS } from '../../studio/src/python/extensions/turtle/catalog'
+import { PGZERO_EXTENSION } from '../../studio/src/runtime/python/pgzero/contract'
 import { TURTLE_EXTENSION } from '../../studio/src/runtime/python/turtle/contract'
 import { createConfiguredPythonRuntime } from '../src/python-configuration'
 import { describePythonRuntimeConfiguration } from '../src/python-configuration-storage'
@@ -152,7 +154,10 @@ export async function preparePythonPromotion(raw: unknown, baseDirectory = proce
       programmingLanguage: 'python',
       kinds: ['classic', 'pro'],
       modes: ['blocks', 'bridge', 'code'],
-      extensions: [{ id: TURTLE_EXTENSION.id, versions: [TURTLE_EXTENSION.version] }],
+      extensions: [
+        { id: TURTLE_EXTENSION.id, versions: [TURTLE_EXTENSION.version] },
+        { id: PGZERO_EXTENSION.id, versions: [PGZERO_EXTENSION.version] },
+      ],
       sourceTargets: ['browser', 'desktop'],
       requiredBrowserFeatures: ['wasm', 'worker', 'jspi', 'trusted-types'],
       artifacts: distribution.files.map(({ path, sha256 }) => ({ path, sha256 })),
@@ -204,7 +209,11 @@ export async function preparePythonPromotion(raw: unknown, baseDirectory = proce
   )
   const status = existingPolicy?.status ?? existingDeployment?.status ?? 'active'
   // Approval follows these immutable bytes, not every codec in the current editor.
-  const codecs = [...PYTHON_PROGRAMMING_CODECS, ...PYTHON_TURTLE_CODECS].filter((codec) =>
+  const codecs = [
+    ...PYTHON_PROGRAMMING_CODECS,
+    ...PYTHON_TURTLE_CODECS,
+    ...PYTHON_PGZERO_CODECS,
+  ].filter((codec) =>
     (codec.requiredRuntimeFeatures ?? []).every((feature) =>
       distribution.features.includes(feature),
     ),

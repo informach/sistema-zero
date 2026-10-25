@@ -1,0 +1,1 @@
+ALTER TABLE "payments"."subscriptions" ADD COLUMN "cycle_history_review" jsonb;

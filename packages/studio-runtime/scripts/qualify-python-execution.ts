@@ -138,6 +138,12 @@ export async function pinPythonExecutionPlan(raw: unknown, options: PythonExecut
     'Turtle 1.0.0 is required.',
   )
   assert(
+    deployment.release.manifest.extensions.some(
+      (item) => item.id === 'python-pgzero' && item.versions.includes('1.0.0'),
+    ),
+    'Pygame Zero 1.0.0 is required.',
+  )
+  assert(
     ['inspect.mjs', 'playtest.mjs'].every((path) =>
       deployment.distribution.files.some((file) => file.path === path),
     ),
