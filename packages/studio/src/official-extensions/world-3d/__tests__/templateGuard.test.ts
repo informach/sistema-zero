@@ -83,9 +83,11 @@ describe('Guarda dos template literals do Mundo 3D', () => {
     // O payload publicado é compactado de forma conservadora (só linhas vazias
     // e comentários completos), enquanto este arquivo permanece legível. O teto
     // inclui cerca de 44 KB da Baloo 2 Latin incorporada para execução offline.
-    expect(world3DRuntime.length).toBeLessThan(390_000)
+    expect(world3DRuntime.length).toBeLessThan(360_000)
     expect(world3DPromptContext.length).toBeGreaterThan(500)
     expect(world3DManifest.docs.length).toBeGreaterThan(500)
+    // O carregador de modelos compartilhado entrou inteiro (marcador consumido).
+    expect(world3DRuntime).not.toContain('__SZ_THREE_MODELS_RUNTIME__')
   })
 
   it('o runtime é avaliável como corpo de função (crase quebraria o parse)', () => {

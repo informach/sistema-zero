@@ -11,15 +11,19 @@ import { collectTypes, stripIds } from '../game-3d-advanced/exampleSourceUtils'
  * Fidelidade em ESPÍRITO ao Entity Management: gerenciar MUITAS entidades
  * autônomas com ESTADO POR-ENTIDADE. Os bichinhos nascem espalhados e VAGAM
  * (giram parados); ao chegar perto do herói (setas/WASD) um bichinho muda de
- * estado e passa a SEGUIR (vai do enxame "errantes" para "seguidores" e faz
+ * estado e passa a SEGUIR (vai do grupo "errantes" para "seguidores" e faz
  * moveTowards no herói). Leve o rebanho até o curral dourado para entregá-los;
  * reúna 8 antes do tempo acabar. A FSM/pool completa por entidade vive no degrau
  * Profissional (g3k). 100% procedural, sem kit próprio.
  */
+// Giros (review 3D, lote 7): estes fontes nasceram (07/2026) com spin 0.4-1.6, escrito como se
+// fosse "voltas em radianos por SEGUNDO"; o spin de então era por QUADRO, e a conversão fiel do
+// lote 4 (x 60 x 180/pi) deu 1375-5500 graus/s, um borrão. Os valores viraram graus por
+// segundo legíveis: itens 180, enfeites 45-90.
 export const REUNIR_REBANHO_SOURCE = `
 const cena = SZGame3D.createFullscreenScene("#0f172a");
 SZGame3D.setSky(cena, "#1e293b", "#334155");
-SZGame3D.topCamera(cena, null);
+SZGame3D.cameraMode(cena, "cima", null);
 SZGame3D.setFog(cena, "#0f172a", 40, 110);
 SZGame3D.addSunLight(cena, "#e2e8f0", 1);
 const chao = SZGame3D.createBlock(cena, { width: 34, height: 1, depth: 34, color: "#14532d" });
@@ -33,17 +37,17 @@ const moldeErrante = SZGame3D.createBox(cena, { size: 1, color: "#f472b6" });
 SZGame3D.setVisible(moldeErrante, "hide");
 const moldeSeguidor = SZGame3D.createBox(cena, { size: 1, color: "#22d3ee" });
 SZGame3D.setVisible(moldeSeguidor, "hide");
-const errantes = SZGame3D.createSwarm(cena);
-const seguidores = SZGame3D.createSwarm(cena);
+const errantes = SZGame3D.createGroup();
+const seguidores = SZGame3D.createGroup();
 let pontos = 0;
 let tempo = 45;
 let rodando = true;
 document.getElementById("retry")?.addEventListener("click", (event) => {
-  SZGame3D.forEachInSwarm(errantes, (item) => {
-    SZGame3D.removeFromSwarm(errantes, item);
+  SZGame3D.forEachInGroup(errantes, (item) => {
+    SZGame3D.removeFromGroup(errantes, item);
   });
-  SZGame3D.forEachInSwarm(seguidores, (item) => {
-    SZGame3D.removeFromSwarm(seguidores, item);
+  SZGame3D.forEachInGroup(seguidores, (item) => {
+    SZGame3D.removeFromGroup(seguidores, item);
   });
   pontos = 0;
   tempo = 45;
@@ -55,18 +59,18 @@ document.getElementById("retry")?.addEventListener("click", (event) => {
 });
 SZGame3D.animate(cena, () => {
   if (rodando) {
-    SZGame3D.spin(curral, "y", 0.4);
+    SZGame3D.spin(curral, "y", 45);
     if (SZGame3D.keyDown("ArrowLeft") || SZGame3D.keyDown("KeyA")) {
-      SZGame3D.moveBy(heroi, -0.16, 0, 0);
+      SZGame3D.moveBy(heroi, -9.6 * SZGame3D.dt(cena), 0, 0);
     }
     if (SZGame3D.keyDown("ArrowRight") || SZGame3D.keyDown("KeyD")) {
-      SZGame3D.moveBy(heroi, 0.16, 0, 0);
+      SZGame3D.moveBy(heroi, 9.6 * SZGame3D.dt(cena), 0, 0);
     }
     if (SZGame3D.keyDown("ArrowUp") || SZGame3D.keyDown("KeyW")) {
-      SZGame3D.moveBy(heroi, 0, 0, -0.16);
+      SZGame3D.moveBy(heroi, 0, 0, -9.6 * SZGame3D.dt(cena));
     }
     if (SZGame3D.keyDown("ArrowDown") || SZGame3D.keyDown("KeyS")) {
-      SZGame3D.moveBy(heroi, 0, 0, 0.16);
+      SZGame3D.moveBy(heroi, 0, 0, 9.6 * SZGame3D.dt(cena));
     }
     if (SZGame3D.getPos(heroi, "x") < -13) {
       SZGame3D.setPosition(heroi, -13, 0.65, SZGame3D.getPos(heroi, "z"));
@@ -80,18 +84,18 @@ SZGame3D.animate(cena, () => {
     if (SZGame3D.getPos(heroi, "z") > 13) {
       SZGame3D.setPosition(heroi, SZGame3D.getPos(heroi, "x"), 0.65, 13);
     }
-    SZGame3D.forEachInSwarm(errantes, (item) => {
-      SZGame3D.spin(item, "y", 1.5);
+    SZGame3D.forEachInGroup(errantes, (item) => {
+      SZGame3D.spin(item, "y", 180);
       if (SZGame3D.isNear(heroi, item, 1.7)) {
-        SZGame3D.spawnInSwarm(seguidores, moldeSeguidor, SZGame3D.getPos(item, "x"), 0.65, SZGame3D.getPos(item, "z"));
-        SZGame3D.removeFromSwarm(errantes, item);
+        SZGame3D.spawnCopy(seguidores, moldeSeguidor, SZGame3D.getPos(item, "x"), 0.65, SZGame3D.getPos(item, "z"));
+        SZGame3D.removeFromGroup(errantes, item);
         SZGame3D.playEffect("coin");
       }
     });
-    SZGame3D.forEachInSwarm(seguidores, (item) => {
-      SZGame3D.moveTowards(item, SZGame3D.getPos(heroi, "x"), 0.65, SZGame3D.getPos(heroi, "z"), 0.08);
+    SZGame3D.forEachInGroup(seguidores, (item) => {
+      SZGame3D.moveTowards(item, SZGame3D.getPos(heroi, "x"), 0.65, SZGame3D.getPos(heroi, "z"), 5);
       if (SZGame3D.isNear(curral, item, 3)) {
-        SZGame3D.removeFromSwarm(seguidores, item);
+        SZGame3D.removeFromGroup(seguidores, item);
         pontos = pontos + 1;
         SZGame3D.playEffect("coin");
         document.getElementById("score").textContent = pontos;
@@ -107,9 +111,9 @@ SZGame3D.animate(cena, () => {
 });
 SZGame3D.everySecondsLoop(1.4, () => {
   if (rodando) {
-    if (SZGame3D.countSwarm(errantes) < 6) {
+    if (SZGame3D.countGroup(errantes) < 6) {
       const angulo = Math.random() * 6.283;
-      SZGame3D.spawnInSwarm(errantes, moldeErrante, Math.cos(angulo) * 10, 0.65, Math.sin(angulo) * 10);
+      SZGame3D.spawnCopy(errantes, moldeErrante, Math.cos(angulo) * 10, 0.65, Math.sin(angulo) * 10);
     }
   }
 });

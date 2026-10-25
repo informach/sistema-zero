@@ -11,8 +11,8 @@ import { collectTypes, stripIds } from '../game-3d-advanced/exampleSourceUtils'
  * inquebrável), chão e muralha gerados com forRange do núcleo, colocar bloco só
  * com ESPAÇO (Enter saiu: era atalho redundante e confundia o gesto de "start"
  * do QA), quebrar com pickAtMouse + clique e objetivo leve de torre de 5
- * blocos. Som/recorde só quando a colocação ACONTECEU (spawnInSwarm devolve
- * null no teto do enxame) e a festa da torre de 5 toca UMA vez (dentro do ramo
+ * blocos. Som/recorde só quando a colocação ACONTECEU (spawnCopy devolve
+ * null no teto de cópias) e a festa da torre de 5 toca UMA vez (dentro do ramo
  * que atualiza o recorde). Aqui NÃO há FPS: o mouse funciona livre, então
  * pickAtMouse é permitido (diferente do Labirinto dos Robôs). Rode com
  * `bun src/official-extensions/game-3d/__gen_mundoBlocos.ts` e cole a saída em
@@ -22,23 +22,23 @@ import { collectTypes, stripIds } from '../game-3d-advanced/exampleSourceUtils'
 export const MUNDO_BLOCOS_SOURCE = `
 const mundo = SZGame3D.createFullscreenScene("#0ea5e9");
 SZGame3D.setSky(mundo, "#38bdf8", "#bae6fd");
-SZGame3D.isometricCamera(mundo, null);
+SZGame3D.cameraMode(mundo, "isometrica", null);
 const moldeGrama = SZGame3D.createBox(mundo, { size: 1, color: "#22c55e" });
 SZGame3D.setVisible(moldeGrama, "hide");
 const moldePedra = SZGame3D.createBox(mundo, { size: 1, color: "#94a3b8" });
 SZGame3D.setVisible(moldePedra, "hide");
 const moldeMadeira = SZGame3D.createBox(mundo, { size: 1, color: "#b45309" });
 SZGame3D.setVisible(moldeMadeira, "hide");
-const chao = SZGame3D.createSwarm(mundo);
-const blocos = SZGame3D.createSwarm(mundo);
+const chao = SZGame3D.createGroup();
+const blocos = SZGame3D.createGroup();
 for (let linhaChao = -4; linhaChao < 5; linhaChao++) {
   for (let colunaChao = -4; colunaChao < 5; colunaChao++) {
-    SZGame3D.spawnInSwarm(chao, moldeGrama, colunaChao, -1, linhaChao);
+    SZGame3D.spawnCopy(chao, moldeGrama, colunaChao, -1, linhaChao);
   }
 }
 for (let passo = -4; passo < 5; passo++) {
-  SZGame3D.spawnInSwarm(blocos, moldePedra, passo, 0, -4);
-  SZGame3D.spawnInSwarm(blocos, moldePedra, passo, 1, -4);
+  SZGame3D.spawnCopy(blocos, moldePedra, passo, 0, -4);
+  SZGame3D.spawnCopy(blocos, moldePedra, passo, 1, -4);
 }
 const cursor = SZGame3D.createBox(mundo, { size: 1.05, color: "#fde047" });
 SZGame3D.setOpacity(cursor, 0.45);
@@ -49,7 +49,7 @@ let recorde = 0;
 let alturaAlvo = 0;
 function medirAltura() {
   alturaAlvo = 0;
-  SZGame3D.forEachInSwarm(blocos, (item) => {
+  SZGame3D.forEachInGroup(blocos, (item) => {
     if (SZGame3D.getPos(item, "x") === coluna) {
       if (SZGame3D.getPos(item, "z") === linha) {
         if (SZGame3D.getPos(item, "y") >= alturaAlvo) {
@@ -66,17 +66,17 @@ function moverCursor() {
 }
 function colocarBloco() {
   medirAltura();
-  let antes = SZGame3D.countSwarm(blocos);
+  let antes = SZGame3D.countGroup(blocos);
   if (tipo === 1) {
-    SZGame3D.spawnInSwarm(blocos, moldeGrama, coluna, alturaAlvo, linha);
+    SZGame3D.spawnCopy(blocos, moldeGrama, coluna, alturaAlvo, linha);
   }
   if (tipo === 2) {
-    SZGame3D.spawnInSwarm(blocos, moldePedra, coluna, alturaAlvo, linha);
+    SZGame3D.spawnCopy(blocos, moldePedra, coluna, alturaAlvo, linha);
   }
   if (tipo === 3) {
-    SZGame3D.spawnInSwarm(blocos, moldeMadeira, coluna, alturaAlvo, linha);
+    SZGame3D.spawnCopy(blocos, moldeMadeira, coluna, alturaAlvo, linha);
   }
-  if (SZGame3D.countSwarm(blocos) > antes) {
+  if (SZGame3D.countGroup(blocos) > antes) {
     SZGame3D.playEffect("jump");
     if (alturaAlvo + 1 > recorde) {
       recorde = alturaAlvo + 1;
@@ -134,16 +134,16 @@ document.addEventListener("keydown", (event) => {
 document.addEventListener("click", (event) => {
   let alvo = SZGame3D.pickAtMouse(mundo);
   if (alvo) {
-    let antes = SZGame3D.countSwarm(blocos);
-    SZGame3D.removeFromSwarm(blocos, alvo);
-    if (SZGame3D.countSwarm(blocos) < antes) {
+    let antes = SZGame3D.countGroup(blocos);
+    SZGame3D.removeFromGroup(blocos, alvo);
+    if (SZGame3D.countGroup(blocos) < antes) {
       SZGame3D.playEffect("hit");
       moverCursor();
     }
   }
 });
 SZGame3D.animate(mundo, () => {
-  SZGame3D.spin(cursor, "y", 0.02);
+  SZGame3D.spin(cursor, "y", 69);
 });
 `.trim()
 

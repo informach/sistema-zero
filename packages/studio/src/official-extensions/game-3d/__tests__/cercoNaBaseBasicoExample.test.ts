@@ -16,7 +16,7 @@ import { parseExampleLifecycleSource } from './exampleLifecycleSource'
 
 /**
  * Drift do exemplo "Cerco na Base" — o FPS do SimonDev de NÍVEL BÁSICO montado só
- * com genéricos do Jogo 3D: câmera em primeira pessoa (fpsCamera + fpsControls)
+ * com genéricos do Jogo 3D: câmera em primeira pessoa (câmera em 1ª pessoa + fpsControls)
  * numa ARENA aberta, aliens que nascem em ONDAS (everySeconds) e avançam
  * (moveTowards), tiro por MIRA (aimAhead) com CARGA (segurar o espaço) e MUNIÇÃO
  * limitada que recarrega. A IR embutida em examples.ts foi GERADA pelo parser real
@@ -63,14 +63,14 @@ describe('Exemplo Cerco na Base — drift contra o parser real', () => {
     const statements = behaviorStatements(cercoNaBaseBasicoExample.ir)
     const types = collectTypes(statements)
     for (const t of [
-      'g3d:fpsCamera', // câmera em primeira pessoa
+      'g3d:cameraMode', // câmera em primeira pessoa
       'g3d:fpsControls', // andar/olhar em 1ª pessoa
       'g3d:aimAhead', // tiro por mira (hitscan)
       'g3d:everySeconds', // os aliens vêm em ONDAS
-      'g3d:createSwarm', // o enxame de aliens
-      'g3d:spawnInSwarm',
-      'g3d:forEachInSwarm',
-      'g3d:removeFromSwarm',
+      'g3d:createGroup', // o grupo de aliens
+      'g3d:spawnCopy',
+      'g3d:forEachInGroup',
+      'g3d:removeFromGroup',
       'g3d:moveTowards', // os aliens avançam
       'g3d:collides', // o alien encosta e machuca
       'g3d:keyDown', // segurar o espaço carrega o tiro
@@ -91,7 +91,7 @@ describe('Exemplo Cerco na Base — drift contra o parser real', () => {
     expect(raw).toContain('"pontos"')
   })
 
-  it('⭐ é montado com GENÉRICOS (um enxame + FPS), não com um kit pronto', () => {
+  it('⭐ é montado com GENÉRICOS (um grupo + FPS), não com um kit pronto', () => {
     const types = collectTypes(behaviorStatements(cercoNaBaseBasicoExample.ir))
     expect(types.has('g3d:createFullscreenScene')).toBe(true)
     expect(types.has('g3d:createRaceScene')).toBe(false)

@@ -123,7 +123,7 @@ describe('Exemplo Mundo de Blocos Profissional — drift contra o parser real', 
   it('geração procedural com semente: muralha + árvores compostas (tronco + copa)', () => {
     const statements = behaviorStatements(mundoDeBlocosProfissionalExample.ir)
     const types = collectTypes(statements)
-    for (const t of ['g3k:setSeed', 'g3k:randomBetween', 'g3k:defineMold', 'g3k:part']) {
+    for (const t of ['g3k:setSeed', 'g3k:random', 'g3k:defineMold', 'g3k:part']) {
       expect(types.has(t)).toBe(true)
     }
     const raw = JSON.stringify(statements)
@@ -139,14 +139,14 @@ describe('Exemplo Mundo de Blocos Profissional — drift contra o parser real', 
       'g3k:posOf',
       'g3k:onGround',
       'g3k:setState',
-      'g3k:setScreenText',
-      'g3k:hudText',
+      'g3k:screenText',
+      'g3k:cornerText',
     ]) {
       expect(types.has(t)).toBe(true)
     }
     const raw = JSON.stringify(statements)
     expect(raw).toContain('2.2')
-    for (const screen of ['"menu"', '"vitoria"']) {
+    for (const screen of ['"inicio"', '"vitoria"']) {
       expect(raw).toContain(screen)
     }
   })

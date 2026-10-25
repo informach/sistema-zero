@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'bun:test'
-import { LoopOnce } from 'three'
-import { makeAnimatedGlb, makeHdrDataUrl } from './assetFixtures'
+import { Box3, type Object3D, Vector3 } from 'three'
+import { makeAnimatedGlb, makeHdrDataUrl } from '../../__tests__/three3d/assetFixtures'
 import { type KitApi, loadStartedKit, makeFakeThree, runtimeBody } from './kitHarness'
 
 /**
@@ -217,35 +217,8 @@ function hasNode(entity: unknown, name: string): boolean {
 }
 
 describe('SZGameKit3D — modelos .glb', () => {
-  it('rejeita modelo acima do teto de malhas antes de colocá-lo no cache', async () => {
-    seedModels({ cidade: makeTriangleGlb(1, 49) })
-    const warnings: string[] = []
-    const originalWarn = console.warn
-    console.warn = (...args: unknown[]) => warnings.push(args.map(String).join(' '))
-    try {
-      const { api } = await loadStartedKit((runtime) => {
-        runtime.defineMold('cidade', { health: 1, speed: 0 }, () => {
-          runtime.part({
-            shape: 'modelo',
-            model: 'cidade',
-            w: 1,
-            h: 1,
-            d: 1,
-            x: 0,
-            y: 0,
-            z: 0,
-          })
-        })
-      })
-      api.setState('jogando')
-      const entity = api.spawn('cidade', 0, 0, 0)
-      expect(hasNode(entity, 'Mesh-0')).toBe(false)
-      expect(warnings.some((warning) => warning.includes('49 malhas'))).toBe(true)
-    } finally {
-      console.warn = originalWarn
-    }
-  })
-
+  // Teto por modelo (48/49 malhas, ossos) e a semântica do animador (uma vez de novo,
+  // repetir → uma vez) são do carregador compartilhado: `three3dModelsRuntime.test.ts`.
   it('limita cópias vivas de modelo pelo orçamento agregado de triângulos', async () => {
     seedModels({ denso: makeTriangleGlb(100_000) })
     const { api } = await loadStartedKit((runtime) => {
@@ -619,52 +592,6 @@ describe('SZGameKit3D — modelos .glb', () => {
     expect(Math.abs(y1 - y0)).toBeGreaterThan(0.1)
   })
 
-  it('animação de uma vez pode tocar novamente depois de terminar', async () => {
-    seedModels({ heroi: makeAnimatedGlb('Armature', ['atacar']) })
-    const { api, step } = await loadStartedKit((a) => {
-      a.defineMold('heroi', { health: 1, speed: 0 }, () => {
-        a.part({ shape: 'modelo', model: 'heroi', w: 1, h: 1, d: 1, x: 0, y: 0, z: 0 })
-      })
-    })
-    api.setState('jogando')
-    const e = api.spawn('heroi', 0, 0, 0) as {
-      _action?: { time: number; isRunning(): boolean }
-    }
-    api.playAnim(e, 'atacar', false)
-    step(40)
-    expect(e._action?.isRunning()).toBe(false)
-    expect(e._action?.time).toBeCloseTo(1)
-
-    api.playAnim(e, 'atacar', false)
-
-    expect(e._action?.isRunning()).toBe(true)
-    expect(e._action?.time).toBe(0)
-  })
-
-  it('trocar o mesmo clipe de repetição para uma vez reconfigura a ação', async () => {
-    seedModels({ heroi: makeAnimatedGlb('Armature', ['atacar']) })
-    const { api, step } = await loadStartedKit((a) => {
-      a.defineMold('heroi', { health: 1, speed: 0 }, () => {
-        a.part({ shape: 'modelo', model: 'heroi', w: 1, h: 1, d: 1, x: 0, y: 0, z: 0 })
-      })
-    })
-    api.setState('jogando')
-    const e = api.spawn('heroi', 0, 0, 0) as {
-      _action?: { loop: number; time: number; isRunning(): boolean }
-    }
-    api.playAnim(e, 'atacar', true)
-    step(5)
-    const action = e._action
-    expect(action?.time).toBeGreaterThan(0)
-
-    api.playAnim(e, 'atacar', false)
-
-    expect(e._action).toBe(action)
-    expect(action?.loop).toBe(LoopOnce)
-    expect(action?.time).toBe(0)
-    expect(action?.isRunning()).toBe(true)
-  })
-
   it('⭐ a animação segue o ESTADO da entidade, sozinha', async () => {
     seedModels({ heroi: makeAnimatedGlb('Armature', ['parado', 'correr']) })
     const { api } = await loadStartedKit((a) => {
@@ -783,5 +710,111 @@ describe('SZGameKit3D — ambientes .hdr', () => {
     expect(scene?.environment).toBeNull()
     expect(scene?.background).not.toBe(night)
     expect(nightDisposals).toBe(1)
+  })
+})
+
+/** GLB de UMA malha que ocupa a caixa w × h × d (um triângulo de canto a canto). */
+function makeBoxGlb(nodeName: string, w: number, h: number, d: number): string {
+  const positions = new Float32Array([-w / 2, 0, -d / 2, w / 2, h, d / 2, w / 2, 0, -d / 2])
+  const gltf = {
+    asset: { version: '2.0' },
+    scene: 0,
+    scenes: [{ nodes: [0] }],
+    nodes: [{ name: nodeName, mesh: 0 }],
+    meshes: [{ primitives: [{ attributes: { POSITION: 0 } }] }],
+    buffers: [{ byteLength: positions.byteLength }],
+    bufferViews: [{ buffer: 0, byteOffset: 0, byteLength: positions.byteLength, target: 34962 }],
+    accessors: [
+      {
+        bufferView: 0,
+        componentType: 5126,
+        count: 3,
+        type: 'VEC3',
+        min: [-w / 2, 0, -d / 2],
+        max: [w / 2, h, d / 2],
+      },
+    ],
+  }
+  const json = new TextEncoder().encode(JSON.stringify(gltf))
+  const jsonPad = (4 - (json.length % 4)) % 4
+  const jsonLength = json.length + jsonPad
+  const bin = new Uint8Array(positions.buffer)
+  const total = 12 + 8 + jsonLength + 8 + bin.length
+  const buffer = new ArrayBuffer(total)
+  const view = new DataView(buffer)
+  const bytes = new Uint8Array(buffer)
+  view.setUint32(0, 0x46546c67, true)
+  view.setUint32(4, 2, true)
+  view.setUint32(8, total, true)
+  view.setUint32(12, jsonLength, true)
+  view.setUint32(16, 0x4e4f534a, true)
+  bytes.set(json, 20)
+  for (let index = 0; index < jsonPad; index++) bytes[20 + json.length + index] = 0x20
+  const binAt = 20 + jsonLength
+  view.setUint32(binAt, bin.length, true)
+  view.setUint32(binAt + 4, 0x004e4942, true)
+  bytes.set(bin, binAt + 8)
+  let binary = ''
+  for (const byte of bytes) binary += String.fromCharCode(byte)
+  return `data:model/gltf-binary;base64,${btoa(binary)}`
+}
+
+describe('SZGameKit3D — peça "modelo importado" encaixada (review 3D, lote 11)', () => {
+  type Ent = { mesh: Object3D }
+  const visibleBox = (e: unknown) => {
+    const model = (e as Ent).mesh.children[0]?.children[0]
+    if (!model) throw new Error('o modelo não entrou na peça')
+    return new Box3().setFromObject(model)
+  }
+
+  it('⭐ um boneco de 6,5 m cabe INTEIRO na caixa da peça, sem esticar, e pousa no chão', async () => {
+    seedModels({ gigante: makeBoxGlb('Gigante', 1.6, 6.5, 0.6) })
+    const { api, step } = await loadStartedKit((a) => {
+      a.defineMold('heroi', { health: 1, speed: 0 }, () => {
+        a.part({ shape: 'modelo', model: 'gigante', w: 1, h: 1, d: 1, x: 0, y: 0.5, z: 0 })
+      })
+    })
+    api.setState('jogando')
+    const e = api.spawn('heroi', 0, 0, 0)
+    step(1)
+    // O suporte da peça NÃO é esticado (antes ele recebia W×H×D cru e o boneco virava 6,5 m).
+    expect((e as Ent).mesh.children[0]?.scale.toArray()).toEqual([1, 1, 1])
+    const box = visibleBox(e)
+    const size = box.getSize(new Vector3())
+    expect(size.y).toBeLessThanOrEqual(1 + 1e-6)
+    expect(size.y).toBeCloseTo(1, 5)
+    // Sem esticar: a proporção do modelo é a mesma do arquivo (1,6 : 6,5 : 0,6).
+    expect(size.x / size.y).toBeCloseTo(1.6 / 6.5, 5)
+    expect(size.z / size.y).toBeCloseTo(0.6 / 6.5, 5)
+    // Com a sombra y 0.5 e altura 1, o pé fica no chão.
+    expect(box.min.y).toBeCloseTo(0, 5)
+  })
+
+  it('⭐ a colisão fica do tamanho do que se vê: a parede segura o corpo ENCAIXADO', async () => {
+    seedModels({ gigante: makeBoxGlb('Gigante', 1.6, 6.5, 0.6) })
+    const { api, step } = await loadStartedKit((a) => {
+      a.defineMold('heroi', { health: 1, speed: 0 }, () => {
+        a.part({ shape: 'modelo', model: 'gigante', w: 1, h: 1, d: 1, x: 0, y: 0.5, z: 0 })
+      })
+      a.defineMold('parede', { health: 1, speed: 0 }, () => {
+        a.part({ shape: 'box', w: 0.2, h: 3, d: 6, x: 0, y: 1.5, z: 0 })
+      })
+      a.makeSolid('parede')
+    })
+    api.setState('jogando')
+    api.spawn('parede', 2, 0, 0)
+    const heroi = api.spawn('heroi', 0, 0, 0)
+    api.fall(heroi, 20)
+    for (let i = 0; i < 90; i++) {
+      api.setVelocity(heroi, 2, api.velocityOf(heroi, 'y'), 0)
+      step(1)
+    }
+    // Meia largura encaixada = 1,6 / 6,5 / 2 ≈ 0,123 (a caixa de reserva tinha 0,5).
+    const halfWidth = 1.6 / 6.5 / 2
+    expect(api.posOf(heroi, 'x')).toBeCloseTo(2 - 0.1 - halfWidth, 1)
+    expect(api.posOf(heroi, 'x')).toBeGreaterThan(2 - 0.1 - 0.5 + 0.2)
+    // E pousou no chão (a base da caixa encaixada é o y 0).
+    expect(api.posOf(heroi, 'y')).toBeCloseTo(0, 2)
+    expect(api.onGround(heroi)).toBe(true)
   })
 })

@@ -65,8 +65,10 @@ interface API {
   applyGravity(o: Obj3D, g: Obj3D): void
   jump(o: Obj3D, f: number): void
   controlWithKeys(o: Obj3D, s: number): void
-  cameraFollow(w: World, o: Obj3D): void
+  cameraMode(w: World, mode: string, o: Obj3D | null): void
+  cameraDistance(w: World, dist: number, height: number): void
   keyDown(code: string): boolean
+  onKey(code: string, fn: () => void): void
   collides(a: Obj3D, b: Obj3D): boolean
   hitAny(o: Obj3D, g: Group): boolean
   spawnEnemy(w: World, g: Group, speed: number): Obj3D | null
@@ -75,14 +77,12 @@ interface API {
   countGroup(g: Group): number
   removeFromGroup(g: Group, o: Obj3D): void
   clearGroup(g: Group): void
-  everyFrames(key: string, n: number): boolean
   everySeconds(key: string, secs: number): boolean
-  stop(w: World): void
+  endGame(result: string): void
   gridPosition(o: Obj3D, row: number, col: number): void
   gridMove(o: Obj3D, dir: string): void
   gridStep(o: Obj3D): void
   moveAcross(g: Group, speed: number, min: number, max: number): void
-  touchesBox(o: Obj3D, g: Group): boolean
   moveInCircle(o: Obj3D, radius: number, speed: number): void
   distanceTo(a: Obj3D, b: Obj3D): number
   isNear(a: Obj3D, b: Obj3D, dist: number): boolean
@@ -120,7 +120,6 @@ interface API {
   dispose(w: World): void
   setBackground(w: World, color: string): void
   setFOV(w: World, deg: number): void
-  isometricCamera(w: World, follow?: unknown): void
   crosserHit(o: Obj3D, w: World): boolean
 }
 
@@ -236,7 +235,7 @@ function loadRuntime(): {
         this.disposed = true
       }
     },
-    // AABB simples a partir da posição do objeto (suficiente p/ touchesBox em
+    // AABB simples a partir da posição do objeto (suficiente p/ o hitAny por caixa em
     // objetos de topo; os modelos compostos são validados no browser).
     Box3: class {
       min = { x: 0, y: 0, z: 0 }
@@ -426,11 +425,11 @@ describe('gameThreeDRuntime — gravidade e pulo', () => {
     const p = api.createBox(world, { size: 1 })
     const s = p.userData.sz
     s.grounded = false
-    api.jump(p, 0.08)
+    api.jump(p, 4.8)
     expect(s.vy).toBe(0)
     s.grounded = true
-    api.jump(p, 0.08)
-    expect(s.vy).toBe(0.08)
+    api.jump(p, 4.8) // 4.8 por segundo = os antigos 0.08 por quadro de 60 Hz
+    expect(s.vy).toBeCloseTo(0.08, 10)
     expect(s.grounded).toBe(false)
   })
 })
@@ -440,16 +439,17 @@ describe('gameThreeDRuntime — controle por teclado', () => {
     const { api, fire } = loadRuntime()
     const world = api.createScene('tela')
     const p = api.createBox(world, { size: 1 })
-    api.controlWithKeys(p, 0.05)
+    // 3 por segundo = 0.05 por quadro de 60 Hz (o valor interno da física).
+    api.controlWithKeys(p, 3)
     expect(p.userData.sz.vx).toBe(0)
     expect(p.userData.sz.vz).toBe(0)
     fire('keydown', { code: 'KeyD' })
-    api.controlWithKeys(p, 0.05)
-    expect(p.userData.sz.vx).toBe(0.05)
+    api.controlWithKeys(p, 3)
+    expect(p.userData.sz.vx).toBeCloseTo(0.05, 10)
     fire('keyup', { code: 'KeyD' })
     fire('keydown', { code: 'KeyW' })
-    api.controlWithKeys(p, 0.05)
-    expect(p.userData.sz.vz).toBe(-0.05)
+    api.controlWithKeys(p, 3)
+    expect(p.userData.sz.vz).toBeCloseTo(-0.05, 10)
     expect(p.userData.sz.vx).toBe(0)
   })
 })
@@ -459,21 +459,19 @@ describe('gameThreeDRuntime — 📦 Grupos + ⏱️ Tempo + Kit Desvie', () => 
     const { api } = loadRuntime()
     const world = api.createScene('tela')
     const inimigos = api.createGroup()
-    const enemy = api.spawnEnemy(world, inimigos, 0.1)
+    const enemy = api.spawnEnemy(world, inimigos, 6)
     expect(api.countGroup(inimigos)).toBe(1)
     if (!enemy) throw new Error('esperava um inimigo gerado')
-    expect(enemy.userData.sz.vz).toBe(0.1)
+    expect(enemy.userData.sz.vz).toBeCloseTo(0.1, 10) // 6 por segundo
     // sem zAccel: a velocidade NÃO cresce sozinha (nada de avalanche).
     expect(enemy.userData.sz.zAccel).toBeUndefined()
   })
 
-  it('everyFrames dispara a cada N chamadas (chaves independentes); everySeconds é boolean', () => {
+  it('everySeconds é boolean e o "a cada N quadros" saiu (o tempo é sempre em segundos)', () => {
     const { api } = loadRuntime()
-    let count = 0
-    for (let i = 0; i < 15; i++) if (api.everyFrames('k', 5)) count++
-    expect(count).toBe(3) // 5ª, 10ª e 15ª chamadas
-    expect(api.everyFrames('outra', 1)).toBe(true) // contador próprio
     expect(typeof api.everySeconds('t', 1)).toBe('boolean')
+    expect((api as unknown as Record<string, unknown>).everyFrames).toBeUndefined()
+    expect((api as unknown as Record<string, unknown>).everyFramesLoop).toBeUndefined()
   })
 
   it('updateGroup move o grupo; removeFromGroup/clearGroup somem com os objetos', () => {
@@ -482,8 +480,8 @@ describe('gameThreeDRuntime — 📦 Grupos + ⏱️ Tempo + Kit Desvie', () => 
     const ground = api.createBlock(world, { width: 10, height: 1, depth: 10 })
     api.setPosition(ground, 0, -2, 0)
     const inimigos = api.createGroup()
-    const a = api.spawnEnemy(world, inimigos, 0.1)
-    api.spawnEnemy(world, inimigos, 0.1)
+    const a = api.spawnEnemy(world, inimigos, 6)
+    api.spawnEnemy(world, inimigos, 6)
     if (!a) throw new Error('esperava inimigos')
     const zBefore = a.position.z
     api.updateGroup(inimigos, ground)
@@ -514,29 +512,67 @@ describe('gameThreeDRuntime — 📦 Grupos + ⏱️ Tempo + Kit Desvie', () => 
 })
 
 describe('gameThreeDRuntime — câmera e fim de jogo', () => {
-  it('cameraFollow mantém o deslocamento (offset) capturado', () => {
+  it('o modo "segue de longe" mantém o deslocamento (offset) capturado ao ligar', () => {
     const { api } = loadRuntime()
     const world = api.createScene('tela')
     const p = api.createBox(world, { size: 1 })
     api.setCameraPosition(world, 4, 3, 8)
     api.setPosition(p, 0, 0, 0)
-    api.cameraFollow(world, p) // captura offset (4,3,8)
+    api.cameraMode(world, 'longe', p) // captura offset (4,3,8)
     api.setPosition(p, 2, 0, 0)
-    api.cameraFollow(world, p)
+    // Repetir o MESMO modo não recaptura: só recompõe a posição pelo offset.
+    api.cameraMode(world, 'longe', p)
     expect(world.camera.position.x).toBe(6)
     expect(world.camera.position.y).toBe(3)
     expect(world.camera.position.z).toBe(8)
   })
 
-  it('stop para o loop de animação (setAnimationLoop(null))', () => {
+  it('o modo "segue de longe" é recomposto a cada quadro pelo laço (vale escolher só uma vez)', () => {
     const { api } = loadRuntime()
     const world = api.createScene('tela')
-    api.stop(world)
-    expect(world.renderer._loop).toBeNull()
+    const p = api.createBox(world, { size: 1 })
+    api.setCameraPosition(world, 4, 3, 8)
+    api.setPosition(p, 0, 0, 0)
+    api.cameraMode(world, 'longe', p)
+    api.animate(world, () => {})
+    api.setPosition(p, 5, 1, -2)
+    const loop = world.renderer._loop as (time: number) => void
+    loop(16)
+    expect(world.camera.position.x).toBe(9)
+    expect(world.camera.position.y).toBe(4)
+    expect(world.camera.position.z).toBe(6)
+  })
+
+  it('"Distância da câmera" define atrás/altura da câmera que segue de longe', () => {
+    const { api } = loadRuntime()
+    const world = api.createScene('tela')
+    const p = api.createBox(world, { size: 1 })
+    api.setPosition(p, 1, 0, 0)
+    api.cameraMode(world, 'longe', p)
+    api.cameraDistance(world, 10, 4)
+    api.cameraMode(world, 'longe', p)
+    expect(world.camera.position.x).toBe(1)
+    expect(world.camera.position.y).toBe(4)
+    expect(world.camera.position.z).toBe(10)
+  })
+
+  it('o fim de jogo pausa os laços da criança, mas a cena segue desenhada', () => {
+    const { api } = loadRuntime()
+    const world = api.createScene('tela')
+    let quadros = 0
+    api.animate(world, () => {
+      quadros++
+    })
+    const loop = world.renderer._loop as (time: number) => void
+    loop(16)
+    api.endGame('perdeu')
+    loop(32)
+    expect(quadros).toBe(1)
+    expect(world.renderer._loop).not.toBeNull()
   })
 })
 
-describe('gameThreeDRuntime — grade genérica (gridMove/gridStep/moveAcross/touchesBox)', () => {
+describe('gameThreeDRuntime — grade genérica (gridMove/gridStep/moveAcross/hitAny por caixa)', () => {
   it('gridMove + gridStep avançam o objeto uma casa na grade', () => {
     const { api } = loadRuntime()
     const world = api.createScene('tela')
@@ -556,14 +592,15 @@ describe('gameThreeDRuntime — grade genérica (gridMove/gridStep/moveAcross/to
     const c = api.createBox(world, { size: 1 })
     api.setPosition(c, 2.5, 0, 0)
     carros.push(c)
-    api.moveAcross(carros, 1, -2, 2) // 2.5 -> 3.5 (> 2) -> volta para -2
+    // 60 por segundo = 1 por quadro de 60 Hz.
+    api.moveAcross(carros, 60, -2, 2) // 2.5 -> 3.5 (> 2) -> volta para -2
     expect(c.position.x).toBe(-2)
     api.setPosition(c, -2.5, 0, 0)
-    api.moveAcross(carros, -1, -2, 2) // -2.5 -> -3.5 (< -2) -> volta para 2
+    api.moveAcross(carros, -60, -2, 2) // -2.5 -> -3.5 (< -2) -> volta para 2
     expect(c.position.x).toBe(2)
   })
 
-  it('touchesBox detecta colisão por caixa contra um grupo', () => {
+  it('hitAny detecta colisão pela caixa real (Box3) contra um grupo', () => {
     const { api } = loadRuntime()
     const world = api.createScene('tela')
     const p = api.createBox(world, { size: 1 })
@@ -574,9 +611,10 @@ describe('gameThreeDRuntime — grade genérica (gridMove/gridStep/moveAcross/to
     api.setPosition(a, 5, 0, 0)
     api.setPosition(b, 0.3, 0, 0)
     grupo.push(a, b)
-    expect(api.touchesBox(p, grupo)).toBe(true)
+    expect(api.hitAny(p, grupo)).toBe(true)
     api.setPosition(b, 5, 0, 0)
-    expect(api.touchesBox(p, grupo)).toBe(false)
+    expect(api.hitAny(p, grupo)).toBe(false)
+    expect((api as unknown as Record<string, unknown>).touchesBox).toBeUndefined()
   })
 })
 
@@ -586,11 +624,12 @@ describe('gameThreeDRuntime — movimento circular e distância (genéricos do K
     const world = api.createScene('tela')
     const p = api.createBox(world, { size: 1 })
     api.setPosition(p, 0, 3, 0)
-    api.moveInCircle(p, 5, 0.3)
+    // 1031 graus por segundo ≈ os antigos 0.3 radiano por quadro.
+    api.moveInCircle(p, 5, 1031)
     const x1 = p.position.x
     const z1 = p.position.z
     const r1 = Math.hypot(x1, z1)
-    api.moveInCircle(p, 5, 0.3)
+    api.moveInCircle(p, 5, 1031)
     const r2 = Math.hypot(p.position.x, p.position.z)
     expect(r1).toBeGreaterThan(4.5) // ~5
     expect(Math.abs(r2 - r1)).toBeLessThan(0.01) // raio constante ao girar
@@ -618,7 +657,7 @@ describe('gameThreeDRuntime — tempo consistente entre dispositivos', () => {
     const player = api.createBox(world, { size: 1 })
     fire('keydown', { code: 'KeyD' })
     api.animate(world, () => {
-      api.controlWithKeys(player, 0.05)
+      api.controlWithKeys(player, 3)
       api.applyGravity(player, null as unknown as Obj3D)
     })
     const loop = world.renderer._loop as (time: number) => void
@@ -650,11 +689,12 @@ describe('gameThreeDRuntime — genéricos de movimento (cair, deslizar, girar)'
     const world = api.createScene('tela')
     const p = api.createBox(world, { size: 1 })
     api.setPosition(p, 0, 0, 0)
-    for (let i = 0; i < 200; i++) api.slideBetween(p, 'x', -3, 3, 0.5)
+    // 30 por segundo = 0.5 por quadro de 60 Hz.
+    for (let i = 0; i < 200; i++) api.slideBetween(p, 'x', -3, 3, 30)
     expect(p.position.x).toBeGreaterThanOrEqual(-3)
     expect(p.position.x).toBeLessThanOrEqual(3)
     api.setPosition(p, 3, 0, 0)
-    api.slideBetween(p, 'x', -3, 3, 0.5) // no teto, inverte e desce
+    api.slideBetween(p, 'x', -3, 3, 30) // no teto, inverte e desce
     expect(p.position.x).toBeLessThan(3)
   })
 
@@ -663,9 +703,10 @@ describe('gameThreeDRuntime — genéricos de movimento (cair, deslizar, girar)'
     const world = api.createScene('tela')
     const p = api.createBox(world, { size: 1 })
     const r0 = p.rotation.y
-    api.spin(p, 'y', 0.1)
-    api.spin(p, 'y', 0.1)
-    expect(p.rotation.y).toBeCloseTo(r0 + 0.2)
+    // Graus por SEGUNDO: 120 °/s num quadro de 60 Hz = 2 graus por chamada.
+    api.spin(p, 'y', 120)
+    api.spin(p, 'y', 120)
+    expect(p.rotation.y).toBeCloseTo(r0 + (4 * Math.PI) / 180, 10)
   })
 })
 
@@ -737,13 +778,13 @@ describe('gameThreeDRuntime — ler vetores, mover/girar relativo, suavizar e dt
     expect(api.getPos(p, 'x')).toBe(1)
     expect(api.getPos(p, 'y')).toBe(2)
     expect(api.getPos(p, 'z')).toBe(3)
-    p.rotation.set(0.1, 0.2, 0.3)
-    expect(api.getRot(p, 'y')).toBeCloseTo(0.2)
+    p.rotation.set(0.1, Math.PI / 2, 0.3)
+    expect(api.getRot(p, 'y')).toBeCloseTo(90, 10) // lido em GRAUS
     api.setScale(p, 2)
     expect(api.getScale(p)).toBe(2)
   })
 
-  it('moveBy soma à posição; rotateBy soma ao giro', () => {
+  it('moveBy soma à posição de uma vez; rotateBy gira de uma vez, em graus', () => {
     const { api } = loadRuntime()
     const world = api.createScene('tela')
     const p = api.createBox(world, { size: 1 })
@@ -752,19 +793,26 @@ describe('gameThreeDRuntime — ler vetores, mover/girar relativo, suavizar e dt
     expect(p.position.x).toBe(2)
     expect(p.position.y).toBe(1)
     expect(p.position.z).toBe(0)
-    api.rotateBy(p, 'y', 0.5)
-    api.rotateBy(p, 'y', 0.5)
-    expect(p.rotation.y).toBeCloseTo(1)
+    api.rotateBy(p, 'y', 45)
+    api.rotateBy(p, 'y', 45)
+    expect(p.rotation.y).toBeCloseTo(Math.PI / 2, 10)
+    // De uma vez: o passo NÃO depende do tempo do quadro.
+    api.setPosition(p, 0, 0, 0)
+    ;(world as unknown as { _dt: number })._dt = 0.1
+    api.moveBy(p, 1, 0, 0)
+    expect(p.position.x).toBe(1)
   })
 
-  it('moveTowards aproxima o objeto do alvo aos poucos (lerp)', () => {
+  it('moveTowards aproxima o objeto do alvo aos poucos (rapidez k: fração 1 - e^(-k·dt))', () => {
     const { api } = loadRuntime()
     const world = api.createScene('tela')
     const p = api.createBox(world, { size: 1 })
     api.setPosition(p, 0, 0, 0)
-    api.moveTowards(p, 10, 0, 0, 0.5)
+    // Rapidez 60·ln 2 ≈ 41.59 anda METADE do que falta num quadro de 60 Hz (a antiga força 0.5).
+    const metade = 60 * Math.log(2)
+    api.moveTowards(p, 10, 0, 0, metade)
     expect(p.position.x).toBeCloseTo(5)
-    api.moveTowards(p, 10, 0, 0, 0.5)
+    api.moveTowards(p, 10, 0, 0, metade)
     expect(p.position.x).toBeCloseTo(7.5)
   })
 
@@ -790,7 +838,7 @@ describe('gameThreeDRuntime — ler vetores, mover/girar relativo, suavizar e dt
     const b = api.createBox(world, { size: 1 })
     api.setPosition(a, 0, 0, 0)
     api.setPosition(b, 5, 0, 0) // direto no +x
-    expect(api.angleTo(a, b)).toBeCloseTo(Math.PI / 2) // atan2(5, 0) = PI/2
+    expect(api.angleTo(a, b)).toBeCloseTo(90) // atan2(5, 0) = 90 graus
     api.setPosition(b, 0, 0, 5) // direto no +z
     expect(api.angleTo(a, b)).toBeCloseTo(0) // atan2(0, 5) = 0
   })
@@ -805,7 +853,8 @@ describe('gameThreeDRuntime — física avançada (corpo, sólidos, presets)', (
     api.setSolid(chao)
     const p = api.createBox(world, { size: 1 }) // meia-altura 0.5
     api.setPosition(p, 0, 5, 0)
-    api.body(p, -0.05)
+    api.body(p, 180) // gravidade positiva, por segundo² (= -0.05 por quadro)
+    expect(p.userData.sz.gravity).toBeCloseTo(-0.05, 10)
     let grounded = false
     for (let i = 0; i < 600; i++) {
       api.stepBody(p, world)
@@ -824,7 +873,7 @@ describe('gameThreeDRuntime — física avançada (corpo, sólidos, presets)', (
     const p = api.createBox(world, { size: 1 })
     api.setPosition(p, 0, 0, 0)
     fire('keydown', { code: 'ArrowRight' })
-    api.platformerControls(p, world, 0.1, 0.2)
+    api.platformerControls(p, world, 6, 12)
     expect(p.position.x).toBeGreaterThan(0)
   })
 
@@ -913,7 +962,7 @@ describe('gameThreeDRuntime — full review R1 (correções de runtime)', () => 
     const world = api.createScene('tela')
     const target = api.createModel(world) as Obj3D // Group ligado ao mundo (tem .add)
     api.setPosition(target, 5, 0, 3)
-    api.isometricCamera(world, target)
+    api.cameraMode(world, 'isometrica', target)
     const cam = world.camera as unknown as { parent: unknown; position: Vec3 }
     // A câmera não pode ser FILHA do alvo (senão herda a rotação e gira a vista).
     expect(cam.parent).not.toBe(target)
@@ -927,12 +976,79 @@ describe('gameThreeDRuntime — full review R1 (correções de runtime)', () => 
     const { api } = loadRuntime()
     const world = api.createScene('tela')
     const target = api.createModel(world) as Obj3D
-    api.isometricCamera(world, target)
+    api.cameraMode(world, 'isometrica', target)
     const cam = world.camera as unknown as { zoom: number }
     expect(cam.zoom).toBe(1)
     api.setFOV(world, 30) // luneta: aproxima 2x
     expect(cam.zoom).toBeCloseTo(2, 5)
     api.setFOV(world, 120) // afasta
     expect(cam.zoom).toBeCloseTo(0.5, 5)
+  })
+})
+
+describe('gameThreeDRuntime — as duas gravidades padrão (o que a dica do pulo promete)', () => {
+  function peak(step: () => void, y: () => number, vy: () => number): number {
+    const start = y()
+    let top = start
+    for (let i = 0; i < 600; i++) {
+      step()
+      top = Math.max(top, y())
+      if (vy() < 0 && y() < top) break
+    }
+    return top - start
+  }
+
+  it('"Mover com gravidade" (7): força 5 sobe uns 1,7; "corpo físico" 36: a mesma altura pede força 11', () => {
+    const { api } = loadRuntime()
+    const world = api.createScene('tela')
+    const leve = api.createBox(world, { size: 1 })
+    leve.userData.sz.grounded = true
+    api.jump(leve, 5)
+    const alturaLeve = peak(
+      () => api.applyGravity(leve, null as unknown as typeof leve),
+      () => leve.position.y,
+      () => leve.userData.sz.vy,
+    )
+    expect(alturaLeve).toBeGreaterThan(1.6)
+    expect(alturaLeve).toBeLessThan(1.85)
+    expect(leve.userData.sz.gravity * 3600).toBeCloseTo(-7.2, 6)
+
+    const pesado = api.createBox(world, { size: 1 })
+    api.body(pesado, 36)
+    pesado.userData.sz.grounded = true
+    api.jump(pesado, 5)
+    const curto = peak(
+      () => api.stepBody(pesado, world),
+      () => pesado.position.y,
+      () => pesado.userData.sz.vy,
+    )
+    expect(curto).toBeLessThan(0.45)
+    api.setPosition(pesado, 0, 0, 0)
+    pesado.userData.sz.vy = 0
+    pesado.userData.sz.grounded = true
+    api.jump(pesado, 11)
+    const alto = peak(
+      () => api.stepBody(pesado, world),
+      () => pesado.position.y,
+      () => pesado.userData.sz.vy,
+    )
+    expect(alto).toBeGreaterThan(1.55)
+    expect(alto).toBeLessThan(1.85)
+  })
+})
+
+describe('gameThreeDRuntime — os dois shifts', () => {
+  it('o shift da direita vale o "shift" do dropdown (ShiftLeft) no "tecla apertada" e no "Quando…"', () => {
+    const { api, fire } = loadRuntime()
+    api.createScene('tela')
+    let vezes = 0
+    api.onKey('ShiftLeft', () => vezes++)
+    fire('keydown', { code: 'ShiftRight' })
+    expect(api.keyDown('ShiftLeft')).toBe(true)
+    expect(vezes).toBe(1)
+    fire('keyup', { code: 'ShiftRight' })
+    expect(api.keyDown('ShiftLeft')).toBe(false)
+    fire('keydown', { code: 'ShiftLeft' })
+    expect(vezes).toBe(2)
   })
 })

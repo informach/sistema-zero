@@ -62,17 +62,17 @@ describe('Exemplo A Lenda do Herói — drift contra o parser real', () => {
     const statements = behaviorStatements(aLendaDoHeroiBasicoExample.ir)
     const types = collectTypes(statements)
     for (const t of [
-      'g3d:createSwarm', // o enxame de monstros
-      'g3d:spawnInSwarm', // monstros nascem na borda
-      'g3d:countSwarm', // teto do enxame
+      'g3d:createGroup', // o grupo de monstros
+      'g3d:spawnCopy', // monstros nascem na borda
+      'g3d:countGroup', // teto do grupo
       'g3d:everySeconds', // cadência de spawn
       'randomFloat', // o ângulo sorteado da posição de nascimento
       'g3d:keyDown', // setas/WASD + a espada (barra de espaço)
       'g3d:setPosition', // o herói anda no campo (com clamp na tela)
       'g3d:isNear', // alcance da espada + contato do monstro + raio de perseguição
       'g3d:moveTowards', // os monstros perseguem o herói
-      'g3d:forEachInSwarm', // varre os monstros por quadro
-      'g3d:removeFromSwarm', // derrotado pela espada ou some ao encostar
+      'g3d:forEachInGroup', // varre os monstros por quadro
+      'g3d:removeFromGroup', // derrotado pela espada ou some ao encostar
       'g3d:spin', // os monstros longe vagam (giram)
       'g3d:getPos', // posição do herói
       'g3d:animate', // o laço de quadro 3D
@@ -90,7 +90,7 @@ describe('Exemplo A Lenda do Herói — drift contra o parser real', () => {
     expect(raw).toContain('"rodando"')
   })
 
-  it('⭐ é montado com GENÉRICOS (um enxame), não com um kit pronto', () => {
+  it('⭐ é montado com GENÉRICOS (um grupo), não com um kit pronto', () => {
     const types = collectTypes(behaviorStatements(aLendaDoHeroiBasicoExample.ir))
     expect(types.has('g3d:createFullscreenScene')).toBe(true)
     expect(types.has('g3d:createRaceScene')).toBe(false)

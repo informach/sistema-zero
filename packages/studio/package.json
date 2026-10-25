@@ -89,6 +89,8 @@
     "check:reino-zero-ultra": "bun scripts/gen-reino-zero-ultra.ts --check",
     "gen:game-3d-examples": "bun scripts/gen-game-3d-examples.ts",
     "check:game-3d-examples": "bun scripts/gen-game-3d-examples.ts --check",
+    "gen:world-3d-examples": "bun scripts/gen-world-3d-examples.ts",
+    "check:world-3d-examples": "bun scripts/gen-world-3d-examples.ts --check",
     "e2e": "playwright test",
     "e2e:smoke": "playwright test e2e/smoke.spec.ts --project=chromium",
     "e2e:gallery": "playwright test e2e/examples-gallery.spec.ts --project=chromium",

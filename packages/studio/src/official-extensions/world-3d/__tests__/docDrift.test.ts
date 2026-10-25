@@ -1,8 +1,15 @@
 import { describe, expect, it } from 'bun:test'
 import type { ExtensionToolboxCategory } from '#extensions'
+import {
+  NO_PALETTE_TREE_DRIFT,
+  NO_TOOLBOX_DRIFT,
+  paletteTreeDrift,
+  toolboxDrift,
+} from '../../__tests__/paletteDrift'
 import { world3DPromptContext } from '../ai'
-import { world3DToolboxCategory } from '../blocks'
+import { world3DBlocks, world3DToolboxCategory } from '../blocks'
 import { world3DManifest } from '../manifest'
+import { WORLD_THREE_D_PALETTE } from '../palette'
 import { world3DRuntime } from '../runtime'
 
 /**
@@ -45,6 +52,47 @@ describe('Mundo 3D — doc × blocos (docDrift)', () => {
       return emoji && !docs.includes(emoji)
     })
     expect(missing).toEqual([])
+  })
+
+  it('o manual tem uma seção por família, na MESMA ordem da árvore, e cada seção de verdade', () => {
+    const docs = world3DManifest.docs
+    const at = WORLD_THREE_D_PALETTE.map((family) => docs.indexOf(`### ${family.name}\n`))
+    expect(at.filter((index) => index < 0)).toEqual([])
+    expect([...at].sort((a, b) => a - b)).toEqual(at)
+    for (const family of WORLD_THREE_D_PALETTE) {
+      if (family.sections.length < 2) continue
+      for (const section of family.sections) expect(docs).toContain(`**${section.name}**`)
+    }
+    // O despejo antigo "⏱️ Jogo & tela" não volta.
+    expect(docs).not.toContain('Jogo & tela')
+  })
+
+  it('marcas e estúdios de fora só aparecem em "Créditos e inspirações", nunca nos blocos', () => {
+    const brands = /folio|bruno simon|coastal|vocation vista|profissiona|animal crossing/i
+    const docs = world3DManifest.docs
+    const credits = docs.indexOf('### Créditos e inspirações')
+    expect(credits).toBeGreaterThan(0)
+    expect(docs.slice(0, credits)).not.toMatch(brands)
+    expect(world3DManifest.description ?? '').not.toMatch(/rapier|wasm|instanciad/i)
+    const texts = world3DBlocks.map((block) => `${block.message0 ?? ''} ${block.tooltip ?? ''}`)
+    expect(texts.filter((text) => brands.test(text))).toEqual([])
+  })
+
+  it('o som é carregado em ⚙️ Ao iniciar (não em 🧩 Meus moldes) no manual e na IA', () => {
+    // A área é citada (o contrato das áreas exige), mas para dizer que o mundo NÃO a usa.
+    expect(world3DManifest.docs).toContain('**🧩 Meus moldes** não é usada pelo Mundo 3D')
+    expect(world3DManifest.docs).not.toContain('Meus moldes** ficam as receitas')
+    expect(world3DPromptContext).toContain(
+      'loadSound é preparação de\npartida e vai em ⚙️ Ao iniciar',
+    )
+    expect(world3DPromptContext).not.toContain('só receitas: carregar som')
+  })
+
+  it('todo bloco está na paleta em UM lugar só, sem fantasma e sem categoria "Mais"', () => {
+    // Bloco fora da árvore some da paleta sem erro nenhum. A rede é a comum das
+    // extensões (`paletteDrift.ts`); o `sz_w3d_start` oculto pode seguir citado.
+    expect(paletteTreeDrift(WORLD_THREE_D_PALETTE, world3DBlocks)).toEqual(NO_PALETTE_TREE_DRIFT)
+    expect(toolboxDrift(world3DToolboxCategory, world3DBlocks)).toEqual(NO_TOOLBOX_DRIFT)
   })
 
   it('cada método do runtime é citado no contexto da IA (ai.ts)', () => {

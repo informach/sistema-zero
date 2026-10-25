@@ -14,7 +14,7 @@ describe('game-3d — ergonomia dos blocos para iniciantes', () => {
 
   it('todo soquete numérico chega preenchido com uma sombra editável', () => {
     const missing = gameThreeDBlocks.flatMap((block) =>
-      (block.args0 ?? [])
+      ((block.args0 ?? []) as { type?: string; name: string }[])
         .filter(
           (arg) => arg.type === 'input_value' && !G3D_SOCKET_SHADOW_TYPES[block.type]?.[arg.name],
         )
@@ -64,15 +64,17 @@ describe('game-3d — ergonomia dos blocos para iniciantes', () => {
     }
   })
 
-  it('só permite parar o jogo em um contexto que pode estar rodando', () => {
-    const definition = gameThreeDBlocks.find((block) => block.type === 'sz_g3d_stop')
-    if (!definition) throw new Error('bloco sz_g3d_stop não encontrado')
-    const placement = inferBlockContract(definition).placement
+  it('só permite o fim de jogo e o recomeçar num contexto que pode estar rodando', () => {
+    for (const type of ['sz_g3d_end_game', 'sz_g3d_restart']) {
+      const definition = gameThreeDBlocks.find((block) => block.type === type)
+      if (!definition) throw new Error(`bloco ${type} não encontrado`)
+      const placement = inferBlockContract(definition).placement
 
-    expect(placement?.root).toEqual([])
-    expect(placement?.nested).toContain('loop-body')
-    expect(placement?.nested).toContain('event-body')
-    expect(placement?.nested).toContain('function-body')
+      expect(placement?.root).toEqual([])
+      expect(placement?.nested).toContain('loop-body')
+      expect(placement?.nested).toContain('event-body')
+      expect(placement?.nested).toContain('function-body')
+    }
   })
 
   it('só permite soltar a torre em resposta a uma ação', () => {
@@ -92,8 +94,8 @@ describe('game-3d — ergonomia dos blocos para iniciantes', () => {
 
   it('declara a cor uma única vez pela subcategoria de cada bloco', () => {
     const source = readFileSync(join(import.meta.dir, '..', 'blocks.ts'), 'utf8')
-    const definitionsStart = source.indexOf('export const gameThreeDBlocks')
-    const subcategoriesStart = source.indexOf('const SUBCAT_DEFINITIONS')
+    const definitionsStart = source.indexOf('const gameThreeDBlockDefinitions')
+    const subcategoriesStart = source.indexOf('const STACKED_INPUT_TYPES')
     const definitionsSource = source.slice(definitionsStart, subcategoriesStart)
 
     expect(definitionsStart).toBeGreaterThanOrEqual(0)
@@ -103,5 +105,28 @@ describe('game-3d — ergonomia dos blocos para iniciantes', () => {
     expect(
       (gameThreeDBlocks as BlockDefinition[]).every((block) => typeof block.colour === 'string'),
     ).toBe(true)
+  })
+})
+
+describe('textos que prometiam outra coisa (review 3D, item 25)', () => {
+  it('a opacidade diz o que o número faz (1 = inteiro, 0 = some)', () => {
+    const block = gameThreeDBlocks.find((b) => b.type === 'sz_g3d_set_opacity')
+    expect(block?.message0).not.toMatch(/transpar/i)
+    expect(block?.message0).toContain('0 = some, 1 = inteiro')
+  })
+
+  it('as teclas sem ação própria têm rótulo neutro (R não recomeça, P não pausa)', async () => {
+    const { THREE_KEY_OPTIONS } = await import('../../threeKeys')
+    const label = (code: string) => THREE_KEY_OPTIONS.find(([, value]) => value === code)?.[0]
+    expect(label('KeyR')).toBe('R')
+    expect(label('KeyP')).toBe('P')
+    expect(label('KeyF')).toBe('F')
+    expect(label('ShiftLeft')).toBe('shift')
+  })
+
+  it('a faixa do Kit Travessia nomeia a régua da velocidade', () => {
+    const block = gameThreeDBlocks.find((b) => b.type === 'sz_g3d_add_row')
+    expect(block?.message0).toContain('(150 = normal)')
+    expect(block?.tooltip).toContain('pontos por segundo')
   })
 })

@@ -11,7 +11,12 @@ import {
   type ProjectAsset,
   soundManifest,
 } from '#core'
-import { loadExtensionBootstrapScripts, uniqueExtensionIds } from '#extensions'
+import {
+  extensionBootstrapContext,
+  extensionBootstrapVariantsKey,
+  loadExtensionBootstrapScripts,
+  uniqueExtensionIds,
+} from '#extensions'
 import {
   isPreviewMessage,
   isPreviewSnapshotMessage,
@@ -310,27 +315,48 @@ export function PreviewIframe(): JSX.Element {
     [debouncedIds],
   )
 
+  // O código do aluno decide a VARIANTE de cada runtime (o Jogo 3D sem o Kit Plataforma, por
+  // exemplo). O mesmo contexto da capa e do export; os runtimes só recarregam quando a variante
+  // muda (`runtimeKey`), não a cada tecla. O efeito lê o contexto pelo ref: ele muda a cada
+  // edição, e a variante que ele produz já está na chave.
+  const bootstrapContext = useMemo(
+    () =>
+      extensionBootstrapContext({
+        html: debouncedHtml,
+        js: debouncedJs,
+        extraFiles: debouncedExtraFiles,
+      }),
+    [debouncedHtml, debouncedJs, debouncedExtraFiles],
+  )
+  const bootstrapContextRef = useRef(bootstrapContext)
+  bootstrapContextRef.current = bootstrapContext
+  const runtimeKey = useMemo(
+    () =>
+      `${debouncedIds}|${extensionBootstrapVariantsKey(extensionContext.extensions, bootstrapContext)}`,
+    [debouncedIds, extensionContext, bootstrapContext],
+  )
+
   useEffect(() => {
     void runtimeAttempt
     const { extensions } = extensionContext
     if (extensions.length === 0) {
-      setExtensionRuntimeState({ key: debouncedIds, status: 'ready', scripts: [] })
+      setExtensionRuntimeState({ key: runtimeKey, status: 'ready', scripts: [] })
       return
     }
     let active = true
-    setExtensionRuntimeState({ key: debouncedIds, status: 'loading', scripts: [] })
-    void loadExtensionBootstrapScripts(extensions).then(
+    setExtensionRuntimeState({ key: runtimeKey, status: 'loading', scripts: [] })
+    void loadExtensionBootstrapScripts(extensions, bootstrapContextRef.current).then(
       (scripts) => {
-        if (active) setExtensionRuntimeState({ key: debouncedIds, status: 'ready', scripts })
+        if (active) setExtensionRuntimeState({ key: runtimeKey, status: 'ready', scripts })
       },
       () => {
-        if (active) setExtensionRuntimeState({ key: debouncedIds, status: 'error', scripts: [] })
+        if (active) setExtensionRuntimeState({ key: runtimeKey, status: 'error', scripts: [] })
       },
     )
     return () => {
       active = false
     }
-  }, [debouncedIds, runtimeAttempt, extensionContext])
+  }, [runtimeKey, runtimeAttempt, extensionContext])
 
   // ⚠️ A escolha sai do JS JÁ DEBOUNCED, não da IR: varrer a árvore do Reino Zero
   // (32 grades) a cada tecla seria caro, e o script gerado é a mesma verdade — o
@@ -358,9 +384,9 @@ export function PreviewIframe(): JSX.Element {
   const gameUiFontReady = gameUiFontState.key === `${debouncedIds}|${gameUiFontId}`
 
   const extensionRuntimesReady =
-    extensionRuntimeState.key === debouncedIds && extensionRuntimeState.status === 'ready'
+    extensionRuntimeState.key === runtimeKey && extensionRuntimeState.status === 'ready'
   const extensionRuntimesLoading =
-    extensionRuntimeState.key === debouncedIds && extensionRuntimeState.status === 'loading'
+    extensionRuntimeState.key === runtimeKey && extensionRuntimeState.status === 'loading'
   const extensionScripts = extensionRuntimesReady ? extensionRuntimeState.scripts : []
 
   const { extensionImports, installedPermissions } = extensionContext
@@ -803,7 +829,7 @@ export function PreviewIframe(): JSX.Element {
           </div>
         </div>
       )}
-      {extensionRuntimeState.key === debouncedIds && extensionRuntimeState.status === 'error' && (
+      {extensionRuntimeState.key === runtimeKey && extensionRuntimeState.status === 'error' && (
         <div
           role="alert"
           className="absolute inset-0 flex items-center justify-center bg-sz-panel/95 p-6 text-center"

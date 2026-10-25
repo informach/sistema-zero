@@ -27,18 +27,18 @@ SZWorld3D.engineSound("ligado");
 SZWorld3D.totemText(0, 14, "Meu Mundo", "Dirija com WASD, turbo no Shift. Ache o ponto secreto!");
 SZWorld3D.point("segredo", 35, -35);
 SZWorld3D.onPoint("segredo", function () {
-  SZWorld3D.say("Voce achou o tesouro escondido!", 3);
+  SZWorld3D.say("Você achou o tesouro escondido!", 3);
   SZWorld3D.cameraShake(0.6, 0.4);
 });
 SZWorld3D.zone("laguinho", -40, 30, 12);
 SZWorld3D.onZone("laguinho", function () {
-  SZWorld3D.hud("Cuidado com a agua!", "baixo-esquerda");
+  SZWorld3D.hudText("bottom-left", "Cuidado com a água!");
 });
 SZWorld3D.onCrash(function () {
   SZWorld3D.cameraShake(0.5, 0.3);
 });
 SZWorld3D.onUpdate(function (dt) {
-  SZWorld3D.hud("Velocidade: " + Math.round(SZWorld3D.carSpeed()), "topo-direita");
+  SZWorld3D.hudText("top-right", "Velocidade: " + Math.round(SZWorld3D.carSpeed()));
 });
 `.trim()
 

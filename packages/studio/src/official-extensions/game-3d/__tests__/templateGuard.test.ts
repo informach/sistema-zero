@@ -77,6 +77,8 @@ describe('Guarda dos template literals do Jogo 3D', () => {
     expect(gameThreeDRuntime.length).toBeGreaterThan(1000)
     expect(gameThreeDPromptContext.length).toBeGreaterThan(500)
     expect((gameThreeDManifest.docs ?? '').length).toBeGreaterThan(500)
+    // O carregador de modelos compartilhado entrou inteiro (marcador consumido).
+    expect(gameThreeDRuntime).not.toContain('__SZ_THREE_MODELS_RUNTIME__')
   })
 
   it('o runtime (sem a linha de import) avalia como corpo de função', () => {

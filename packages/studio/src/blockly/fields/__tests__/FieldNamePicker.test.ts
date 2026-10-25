@@ -48,7 +48,6 @@ import {
   collectSpritesheets,
   collectStoredValues,
   collectSVGReferences,
-  collectSwarms3d,
   collectTilemaps,
   collectVariables,
   FieldNamePicker,
@@ -1234,12 +1233,12 @@ describe('FieldNamePicker', () => {
       ws.newBlock('sz_g3d_create_box').setFieldValue('caixa', 'NAME')
       ws.newBlock('sz_g3d_create_model').setFieldValue('nave', 'NAME')
       ws.newBlock('sz_g3d_create_group').setFieldValue('inimigos', 'NAME')
-      ws.newBlock('sz_g3d_create_swarm').setFieldValue('estrelas', 'NAME')
+      ws.newBlock('sz_g3d_create_platform_scene').setFieldValue('jogo', 'VAR')
+      ws.newBlock('sz_g3d_create_hero').setFieldValue('heroi', 'VAR')
 
       expect(collectScenes3d(ws)).toEqual([])
-      expect(collectObjects3d(ws)).toEqual(['caixa', 'nave'])
+      expect(collectObjects3d(ws)).toEqual(['caixa', 'nave', 'heroi'])
       expect(collectGroups3d(ws)).toEqual(['inimigos'])
-      expect(collectSwarms3d(ws)).toEqual(['estrelas'])
 
       const coreWs = new Blockly.Workspace()
       coreWs.newBlock('sz_t3d_scene_create').setFieldValue('cena', 'SCENE')
@@ -1252,6 +1251,11 @@ describe('FieldNamePicker', () => {
         FieldNamePicker,
       )
       expect(kindOf(ws.newBlock('sz_g3d_create_box'), 'WORLD')).toBe('g3d-world')
+      // O Kit Plataforma segue a mesma regra dos outros kits: canvas escolhido, nome declarado.
+      const plataforma = ws.newBlock('sz_g3d_create_platform_scene')
+      expect(kindOf(plataforma, 'CANVAS')).toBe('canvas')
+      expect(plataforma.getField('VAR')).not.toBeInstanceOf(FieldNamePicker)
+      expect(ws.newBlock('sz_g3d_create_hero').getField('VAR')).not.toBeInstanceOf(FieldNamePicker)
     })
 
     it('usa capacidades específicas nos comandos Canvas 3D especializados', () => {
@@ -1265,16 +1269,16 @@ describe('FieldNamePicker', () => {
       expect(kindOf(ws.newBlock('sz_t3d_set_color'), 'OBJ')).toBe('color-target3d')
     })
 
-    it('separa seletores de grupo simples e enxame', () => {
+    it('as cópias de um molde moram num grupo comum (o seletor é o de grupo)', () => {
       const ws = new Blockly.Workspace()
       expect(kindOf(ws.newBlock('sz_g3d_set_position'), 'OBJ')).toBe('object3d')
-      expect(kindOf(ws.newBlock('sz_g3d_fps_camera'), 'OBJ')).toBe('g3d-object')
+      expect(kindOf(ws.newBlock('sz_g3d_camera_mode'), 'OBJ')).toBe('g3d-object')
       expect(kindOf(ws.newBlock('sz_g3d_spawn_enemy'), 'GROUP')).toBe('group3d')
-      expect(kindOf(ws.newBlock('sz_g3d_spawn_in_swarm'), 'SWARM')).toBe('swarm3d')
-      expect(kindOf(ws.newBlock('sz_g3d_count_swarm'), 'SWARM')).toBe('swarm3d')
-      expect(kindOf(ws.newBlock('sz_g3d_for_each_swarm'), 'SWARM')).toBe('swarm3d')
-      expect(kindOf(ws.newBlock('sz_g3d_remove_from_swarm'), 'SWARM')).toBe('swarm3d')
-      expect(kindOf(ws.newBlock('sz_g3d_prune_swarm'), 'SWARM')).toBe('swarm3d')
+      expect(kindOf(ws.newBlock('sz_g3d_spawn_copy'), 'GROUP')).toBe('group3d')
+      expect(kindOf(ws.newBlock('sz_g3d_count_group'), 'GROUP')).toBe('group3d')
+      expect(kindOf(ws.newBlock('sz_g3d_for_each_in_group'), 'GROUP')).toBe('group3d')
+      expect(kindOf(ws.newBlock('sz_g3d_remove_from_group'), 'GROUP')).toBe('group3d')
+      expect(kindOf(ws.newBlock('sz_g3d_prune_area'), 'GROUP')).toBe('group3d')
       // A textura vira o MESMO seletor de imagem já usado (field_asset_picker), não um FieldNamePicker.
       const tex = ws.newBlock('sz_g3d_set_texture')
       expect(tex.getField('ASSET')).not.toBeInstanceOf(FieldNamePicker)
@@ -1284,13 +1288,11 @@ describe('FieldNamePicker', () => {
     it('usa o seletor restrito em todo campo que depende do mundo do jogo', () => {
       const ws = new Blockly.Workspace()
       const fields: Readonly<Record<string, readonly string[]>> = {
-        sz_g3d_camera_follow: ['OBJ'],
+        sz_g3d_camera_mode: ['OBJ'],
         sz_g3d_update_group: ['GROUND'],
-        sz_g3d_isometric_camera: ['FOLLOW'],
         sz_g3d_crosser_step: ['OBJ'],
         sz_g3d_crosser_reset: ['OBJ'],
         sz_g3d_crosser_hit: ['OBJ'],
-        sz_g3d_top_camera: ['FOLLOW'],
         sz_g3d_race_step: ['OBJ'],
         sz_g3d_race_reset: ['OBJ'],
         sz_g3d_race_hit: ['OBJ'],
@@ -1301,13 +1303,9 @@ describe('FieldNamePicker', () => {
         sz_g3d_step_body: ['OBJ'],
         sz_g3d_platformer_controls: ['OBJ'],
         sz_g3d_fps_controls: ['OBJ'],
-        sz_g3d_fps_camera: ['OBJ'],
-        sz_g3d_orbit_camera: ['OBJ'],
-        sz_g3d_third_person_camera: ['OBJ'],
         sz_g3d_camera_look_at: ['OBJ'],
         sz_g3d_add_to_model: ['PART', 'MODEL'],
-        sz_g3d_spawn_in_swarm: ['ORIGINAL'],
-        sz_g3d_remove_from_swarm: ['ITEM'],
+        sz_g3d_spawn_copy: ['ORIGINAL'],
       }
 
       for (const [type, names] of Object.entries(fields)) {
@@ -1336,7 +1334,7 @@ describe('FieldNamePicker', () => {
       aimed.setFieldValue('alvo', 'NAME')
       const aim = ws.newBlock('sz_g3d_aim_ahead')
       aimed.getInput('VALUE')?.connection?.connect(aim.outputConnection as Blockly.Connection)
-      const use = ws.newBlock('sz_g3d_fps_camera')
+      const use = ws.newBlock('sz_g3d_camera_mode')
 
       frame
         .getInput('CHILDREN')
@@ -1347,37 +1345,30 @@ describe('FieldNamePicker', () => {
       expect(collectGame3DObjects(ws, use)).toEqual(['selecionado', 'alvo'])
     })
 
-    it('o "item" do para-cada do enxame declara; tirar-do-enxame consome objeto do jogo', () => {
+    it('o objeto da vez do para-cada do grupo declara; tirar-do-grupo consome objeto 3D', () => {
       const ws = new Blockly.Workspace()
-      expect(ws.newBlock('sz_g3d_for_each_swarm').getField('ITEM')).not.toBeInstanceOf(
+      expect(ws.newBlock('sz_g3d_for_each_in_group').getField('ITEM')).not.toBeInstanceOf(
         FieldNamePicker,
       )
-      expect(kindOf(ws.newBlock('sz_g3d_remove_from_swarm'), 'ITEM')).toBe('g3d-object')
+      expect(kindOf(ws.newBlock('sz_g3d_remove_from_group'), 'OBJ')).toBe('object3d')
     })
 
-    it('só oferece grupos e enxames declarados antes do bloco que os usa', () => {
+    it('só oferece grupos declarados antes do bloco que os usa', () => {
       const ws = new Blockly.Workspace()
       const frame = ws.newBlock('sz_frame_start')
       const groupBefore = ws.newBlock('sz_g3d_create_group')
       groupBefore.setFieldValue('inimigosProntos', 'NAME')
-      const swarmBefore = ws.newBlock('sz_g3d_create_swarm')
-      swarmBefore.setFieldValue('estrelasProntas', 'NAME')
-      const use = ws.newBlock('sz_g3d_prune_swarm')
+      const use = ws.newBlock('sz_g3d_prune_area')
       const groupAfter = ws.newBlock('sz_g3d_create_group')
       groupAfter.setFieldValue('inimigosFuturos', 'NAME')
-      const swarmAfter = ws.newBlock('sz_g3d_create_swarm')
-      swarmAfter.setFieldValue('estrelasFuturas', 'NAME')
 
       frame
         .getInput('CHILDREN')
         ?.connection?.connect(groupBefore.previousConnection as Blockly.Connection)
-      groupBefore.nextConnection?.connect(swarmBefore.previousConnection as Blockly.Connection)
-      swarmBefore.nextConnection?.connect(use.previousConnection as Blockly.Connection)
+      groupBefore.nextConnection?.connect(use.previousConnection as Blockly.Connection)
       use.nextConnection?.connect(groupAfter.previousConnection as Blockly.Connection)
-      groupAfter.nextConnection?.connect(swarmAfter.previousConnection as Blockly.Connection)
 
       expect(collectGroups3d(ws, use)).toEqual(['inimigosProntos'])
-      expect(collectSwarms3d(ws, use)).toEqual(['estrelasProntas'])
     })
   })
 

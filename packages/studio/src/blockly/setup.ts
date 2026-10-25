@@ -26,6 +26,7 @@ import { registerFieldCampaignStage } from './fields/FieldCampaignStage'
 import { registerFieldClassPicker } from './fields/FieldClassPicker'
 import { registerFieldColourSZ } from './fields/FieldColourSZ'
 import { registerFieldJsonData } from './fields/FieldJsonData'
+import { registerFieldModelClipPicker } from './fields/FieldModelClipPicker'
 import { registerFieldNamePicker } from './fields/FieldNamePicker'
 import { registerFieldSolidTilesPicker } from './fields/FieldSolidTilesPicker'
 import { registerFieldSoundPicker } from './fields/FieldSoundPicker'
@@ -290,6 +291,8 @@ export function ensureBlocklyInitialized(): void {
   // visual) dos blocos de Jogo 2D — mesma exigência de ordem (registrados antes da
   // definição dos blocos da extensão, que veem esses tipos de campo).
   registerFieldAnimationPicker()
+  // Nome da animação de um modelo 3D do Molda (clipes lidos do próprio .glb).
+  registerFieldModelClipPicker()
   registerFieldCampaignStage()
   registerFieldJsonData()
   registerFieldSolidTilesPicker()

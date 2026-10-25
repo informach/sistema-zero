@@ -27,7 +27,7 @@ import { collectTypes } from './exampleSourceUtils'
 export const LABIRINTO_PROFISSIONAL_SOURCE = `
 SZGameKit3D.setup({ width: 1280, height: 720, world: 44, sky: "#0b1120", ground: "#1e293b" });
 SZGameKit3D.setEffects({ shadows: true, bloom: true, strength: 1.2, vignette: true });
-SZGameKit3D.setScreenText("menu", "Labirinto dos Robôs", "Clique para travar a mira. Ande com WASD, olhe com o mouse e atire com o clique. Robôs patrulham os corredores: desligue os 5!", "Entrar");
+SZGameKit3D.setScreenText("inicio", "Labirinto dos Robôs", "Clique para travar a mira. Ande com WASD, olhe com o mouse e atire com o clique. Robôs patrulham os corredores: desligue os 5!", "Entrar");
 SZGameKit3D.setScreenText("vitoria", "Labirinto limpo!", "Todos os robôs foram desligados. Que pontaria!", "Jogar de novo");
 SZGameKit3D.setScreenText("fim", "Os robôs venceram...", "Sua energia acabou. Atire de longe e recue pelos corredores!", "Tentar de novo");
 SZGameKit3D.defineMold("heroi", { health: 60, speed: 0 }, function () {
@@ -103,7 +103,7 @@ SZGameKit3D.onEntityStateUpdate("heroi", "parado", function (ela, dt) {
     SZGameKit3D.playEffect("laser");
     proximoTiro = 0.5;
   }
-  SZGameKit3D.setHud("top-left", "Vida: " + SZGameKit3D.healthOf(ela));
+  SZGameKit3D.hudText("top-left", "Vida: " + SZGameKit3D.healthOf(ela));
 });
 SZGameKit3D.onEntityStateUpdate("tiro", "parado", function (ela, dt) {
   SZGameKit3D.moveForward(ela, 26);
@@ -220,12 +220,12 @@ SZGameKit3D.onEntityDeath("tanque", function (ela) {
 SZGameKit3D.onEntityDeath("heroi", function (ela) {
   SZGameKit3D.burstOn("explosao", ela);
   SZGameKit3D.playEffect("gameover");
-  SZGameKit3D.endGame();
+  SZGameKit3D.endGame("perdeu");
 });
 SZGameKit3D.onUpdate(function (dt) {
   SZGameKit3D.cullFar("tiro", 34);
   restantes = SZGameKit3D.countAlive("vigia") + SZGameKit3D.countAlive("tanque");
-  SZGameKit3D.setHud("top-right", "Robôs: " + restantes);
+  SZGameKit3D.hudText("top-right", "Robôs: " + restantes);
   if (restantes < 1) {
     SZGameKit3D.playEffect("win");
     SZGameKit3D.setState("vitoria");

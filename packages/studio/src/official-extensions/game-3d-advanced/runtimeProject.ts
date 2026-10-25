@@ -13,7 +13,11 @@ export const gameKit3DProjectRuntimeSource = `  // ---- Ciclo de vida do projeto
     mouseJust = false;
     if (n !== 'jogando') releaseFpsInput();
     applyStateScreens(n);
-    if (n === 'jogando' && prev !== 'jogando' && prev !== 'pausado') {
+    var newRun = n === 'jogando' && prev !== 'jogando' && prev !== 'pausado';
+    // Voltar ao menu também volta para a fase 1 (o "o número da fase" lido lá diz 1).
+    if (n === 'menu') resetLevels();
+    if (newRun) {
+      resetLevels();
       playTime = 0;
       entityLimitWarned = false;
       for (var pk in pools) releaseAll(pools[pk]);
@@ -21,10 +25,11 @@ export const gameKit3DProjectRuntimeSource = `  // ---- Ciclo de vida do projeto
       resetParticles();
       clearSays();
       clearBars();
-      _timer.on = false;
-      _timer.left = 0;
-      _shakeT = 0;
-      resetModelFlipbooks();
+      // Placar, contagem, texto nos cantos e tremor (as regras comuns) voltam do zero. Sem a
+      // fábrica do projeto (código antigo), os "Quando a contagem acabar" ficam registrados.
+      if (camera) rules.beforeFrame(camera);
+      rules.reset(!projectFactory);
+      models.resetFlipbooks();
       if (projectFactory) {
         resetProjectRuntime();
         executeProjectFactory();
@@ -36,6 +41,8 @@ export const gameKit3DProjectRuntimeSource = `  // ---- Ciclo de vida do projeto
         try { hooks[i](); } catch (e) { warn('erro no "quando o jogo entrar no estado ' + n + '": ' + e); }
       }
     }
+    // Começar a partida é começar a fase 1 (depois do "Quando o jogo entrar no estado jogando").
+    if (newRun) runLevelStart();
   }
 
   function setState(name) {
@@ -51,7 +58,7 @@ export const gameKit3DProjectRuntimeSource = `  // ---- Ciclo de vida do projeto
         var requested = stateQueue.shift();
         if (!requested || requested === state) continue;
         if (transitions >= MAX_GAME_STATE_TRANSITIONS) {
-          warnOnce('game-state-cycle', 'as mudanças de estado do jogo entraram em ciclo — revise os ganchos de entrada');
+          warnOnce('game-state-cycle', 'as mudanças de estado do jogo entraram em ciclo — revise os "Quando o jogo entrar no estado"');
           stateQueue.length = 0;
           break;
         }
@@ -75,17 +82,12 @@ export const gameKit3DProjectRuntimeSource = `  // ---- Ciclo de vida do projeto
     deathHooks = Object.create(null);
     hurtHooks = Object.create(null);
     overlapHooks = Object.create(null);
-    timerHooks.length = 0;
+    animEndHooks = Object.create(null);
+    levelStartHooks.length = 0;
     stateTimers.length = 0;
     spawners.length = 0;
     clearDecor();
-    for (var li = 0; li < extraLights.length; li++) {
-      var light = extraLights[li];
-      if (scene && light) scene.remove(light);
-      if (light && light.dispose) {
-        try { light.dispose(); } catch (e) { warnOnce('dispose-light', 'não consegui liberar uma luz antiga: ' + e); }
-      }
-    }
+    for (var li = 0; li < extraLights.length; li++) removePointLight(extraLights[li]);
     extraLights.length = 0;
     for (var fk in effects) disposeEffect(effects[fk]);
     disposeModelPools();

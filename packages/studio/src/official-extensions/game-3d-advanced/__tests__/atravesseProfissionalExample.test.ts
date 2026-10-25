@@ -67,11 +67,11 @@ describe('Exemplo Atravesse a Rua Profissional — drift contra o parser real', 
       'g3k:isMold', // o atropelamento filtra o visitante por heroi
       'g3k:hurt',
       'g3k:onEntityDeath',
-      'g3k:endGame',
+      'g3k:gameOver',
       'g3k:setState', // faixa 20 = vitória
       'g3k:setSeed', // sorteio determinístico
-      'g3k:randomBetween',
-      'g3k:randomChance',
+      'g3k:random',
+      'g3k:random',
     ]) {
       expect(types.has(t)).toBe(true)
     }

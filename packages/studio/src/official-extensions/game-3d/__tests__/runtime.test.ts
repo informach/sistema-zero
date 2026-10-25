@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'bun:test'
 import { GAME_3D_LIFECYCLE } from '#extensions'
+import { installResizeObserverStub } from '../../__tests__/three3d/resizeObserverStub'
 import { gameThreeDRuntime } from '../runtime'
 
 // O runtime é um SCRIPT MODULE (começa com `import * as THREE from 'three'`).
@@ -197,7 +198,9 @@ describe('gameThreeDRuntime — higiene de GPU', () => {
 
   it('registra um listener de pagehide (com fallback beforeunload)', () => {
     const { listenerCount } = loadRuntime()
-    expect(listenerCount('pagehide')).toBe(1)
+    // Dois: o do motor (descarta os mundos) e o do contexto da partida (`managedProjectRun`,
+    // `extensions/projectRunContext.ts`), que encerra listeners e timers do código gerado.
+    expect(listenerCount('pagehide')).toBe(2)
     expect(listenerCount('beforeunload')).toBe(1)
   })
 
@@ -274,16 +277,42 @@ describe('gameThreeDRuntime — higiene de GPU', () => {
     expect(b.renderer.forceContextLossCalls).toBe(0)
   })
 
-  it('acompanha o tamanho visual responsivo do canvas', () => {
-    const canvas = { width: 480, height: 360, clientWidth: 640, clientHeight: 360 }
-    const { api, fireEvent } = loadRuntime(() => canvas)
-    const world = api.createScene('tela')
-    expect(world.renderer.setSizeArgs.at(-1)).toEqual([640, 360, false])
+  it('acompanha o tamanho visual responsivo do canvas por UM caminho só (o ResizeObserver)', () => {
+    const ro = installResizeObserverStub()
+    try {
+      const canvas = { width: 480, height: 360, clientWidth: 640, clientHeight: 360 }
+      const { api, listenerCount } = loadRuntime(() => canvas)
+      const world = api.createScene('tela')
+      expect(world.renderer.setSizeArgs.at(-1)).toEqual([640, 360, false])
+      // O observador do canvas é o caminho; o resize da janela não é registrado junto.
+      expect(ro.observed).toEqual([canvas])
+      expect(listenerCount('resize')).toBe(0)
 
-    canvas.clientWidth = 960
-    canvas.clientHeight = 540
-    fireEvent('resize')
-    expect(world.renderer.setSizeArgs.at(-1)).toEqual([960, 540, false])
+      canvas.clientWidth = 960
+      canvas.clientHeight = 540
+      ro.fire()
+      expect(world.renderer.setSizeArgs.at(-1)).toEqual([960, 540, false])
+      api.dispose(world)
+      expect(ro.disconnects).toBe(1)
+    } finally {
+      ro.restore()
+    }
+  })
+
+  it('sem ResizeObserver, o resize da janela é o caminho de reserva', () => {
+    const ro = installResizeObserverStub({ absent: true })
+    try {
+      const canvas = { width: 480, height: 360, clientWidth: 640, clientHeight: 360 }
+      const { api, fireEvent, listenerCount } = loadRuntime(() => canvas)
+      const world = api.createScene('tela')
+      expect(listenerCount('resize')).toBe(1)
+      canvas.clientWidth = 960
+      canvas.clientHeight = 540
+      fireEvent('resize')
+      expect(world.renderer.setSizeArgs.at(-1)).toEqual([960, 540, false])
+    } finally {
+      ro.restore()
+    }
   })
 
   it('canvas inexistente produz um erro didático em vez de uma cena invisível', () => {
@@ -332,11 +361,22 @@ describe('gameThreeDRuntime — teto de objetos (anti-vazamento de GPU)', () => 
   it('descarta a geometria órfã criada acima do teto (não vaza GPU)', () => {
     const { api, geometries } = loadRuntime()
     const world = api.createScene('tela')
-    for (let i = 0; i < 300; i++) api.createBox(world)
+    // Tamanhos diferentes: cada caixa tem a SUA geometria (as iguais são compartilhadas).
+    for (let i = 0; i < 300; i++) api.createBox(world, { size: 1 + i / 1000 })
     const beforeOverflow = geometries.length
-    api.createBox(world) // acima do teto → geometria criada, mas logo descartada
+    api.createBox(world, { size: 9 }) // acima do teto → geometria criada, mas logo descartada
     const orphan = geometries[beforeOverflow]
     expect(orphan?.disposed).toBe(true)
+  })
+
+  it('caixas iguais compartilham UMA geometria; acima do teto ela segue viva para as outras', () => {
+    const { api, geometries } = loadRuntime()
+    const world = api.createScene('tela')
+    for (let i = 0; i < 300; i++) api.createBox(world, { size: 1 })
+    expect(geometries).toHaveLength(1)
+    expect(api.createBox(world, { size: 1 })).toBeNull()
+    expect(geometries).toHaveLength(1)
+    expect(geometries[0]?.disposed).toBe(false)
   })
 
   it('avisa no console UMA vez ao estourar o teto, em português', () => {

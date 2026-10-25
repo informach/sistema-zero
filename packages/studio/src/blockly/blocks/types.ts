@@ -32,6 +32,14 @@ export type StatementContext =
   | 'cutscene-steps'
   | 'trainer-team'
   | 'g3k-mold-parts'
+  /**
+   * Corpo de um "Quando…" de jogo que o MOTOR dispara de dentro do laço que já está rodando
+   * (a vida acabou, a contagem zerou, encostou no grupo, a moeda da fase): o jogo está rodando,
+   * então o som pode começar, mas o corpo roda UMA vez por acontecimento. Não é `loop-body`:
+   * criar recurso ("tocar a música") e ação pontual cabem, comando contínuo não. O espelho na
+   * IR é o `eventBody` de `ir/lifecycle.ts`, que sempre tratou esses corpos como evento.
+   */
+  | 'game-event-body'
 
 export interface BlockPlacement {
   root: readonly BehaviorArea[]

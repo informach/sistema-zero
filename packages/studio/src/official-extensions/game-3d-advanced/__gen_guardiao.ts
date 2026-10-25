@@ -13,7 +13,7 @@ import { collectTypes, stripIds } from './exampleSourceUtils'
 export const GUARDIAO_SOURCE = `
 SZGameKit3D.setup({ width: 1280, height: 720, world: 60, sky: "#082f49", ground: "#134e4a" });
 SZGameKit3D.setEffects({ shadows: true, bloom: true, strength: 1.2, vignette: true });
-SZGameKit3D.setScreenText("menu", "Guardião do Portal", "Segure os invasores por 30 segundos! Fale com eles, tremam as pedras. E o acaso é sempre o mesmo, por causa da semente.", "Guardar");
+SZGameKit3D.setScreenText("inicio", "Guardião do Portal", "Segure os invasores por 30 segundos! Fale com eles, tremam as pedras. E o sorteio é repetível: toda partida começa igual.", "Guardar");
 SZGameKit3D.setScreenText("vitoria", "O portal resistiu!", "Você segurou até o fim.", "Guardar de novo");
 SZGameKit3D.setScreenText("fim", "O portal caiu...", "Os invasores passaram.", "Tentar de novo");
 SZGameKit3D.defineMold("portal", { health: 100, speed: 0 }, function () {
@@ -52,11 +52,13 @@ SZGameKit3D.onEnterState("jogando", function () {
   SZGameKit3D.startSpawner("invasor", 1.5, "edge");
 });
 SZGameKit3D.onTimerEnd(function () {
+  SZGameKit3D.stopSpawner("invasor");
+  SZGameKit3D.recycleAll("invasor");
   SZGameKit3D.setState("vitoria");
 });
 SZGameKit3D.onUpdate(function (dt) {
-  SZGameKit3D.setHud("top-left", "Faltam: " + Math.ceil(SZGameKit3D.timeLeft()) + "s");
-  SZGameKit3D.setHud("top-right", "Parados: " + segurou);
+  SZGameKit3D.hudText("top-left", "Faltam: " + Math.ceil(SZGameKit3D.timeLeft()) + "s");
+  SZGameKit3D.hudText("top-right", "Parados: " + segurou);
 });
 SZGameKit3D.onEntityStateUpdate("guardiao", "parado", function (ela, dt) {
   SZGameKit3D.platformerKeys(ela, 8, 10);
@@ -88,7 +90,7 @@ SZGameKit3D.onEntityStateUpdate("invasor", "parado", function (ela, dt) {
 SZGameKit3D.onEntityDeath("portal", function (ela) {
   SZGameKit3D.burstOn("poeira", ela);
   SZGameKit3D.playEffect("gameover");
-  SZGameKit3D.endGame();
+  SZGameKit3D.endGame("perdeu");
 });
 SZGameKit3D.start();
 `.trim()

@@ -34,7 +34,7 @@ function jogo(mapa = FASE_DE_BRINQUEDO) {
 
 /** Um quadro do jogo, com o herói andando para a direita se `andar` for true. */
 function quadro(api: Any, world: Any, heroi: Any, andar = false) {
-  if (andar) call(api, 'classicPlatformer', heroi, world, 0.09, 0.22)
+  if (andar) call(api, 'classicPlatformer', heroi, world, 5.4, 13.2)
   else call(api, 'stepBody', heroi, world)
   call(api, 'stageStep', world, heroi)
   call(api, 'sideCamera', world, heroi)
@@ -83,15 +83,20 @@ describe('Kit Plataforma — montar a fase a partir do texto', () => {
     const { api, world } = jogo('chao=0-10')
     const floor = ((world._stage as Any).meshes as Any[])[0]
     if (!floor) throw new Error('A fase deveria criar o piso antes de trocar o tema')
-    const material = floor.material as { color: { value: unknown } }
+    // O material da peça vem do cache da fase (lote 14): o tema TROCA o material da peça
+    // pelo da cor nova, sem recolorir o compartilhado. Lê o material vigente a cada troca.
+    const colorOf = () => (floor.material as { color: { value: unknown } }).color.value
+    const before = floor.material
 
     call(api, 'setStageTheme', world, 'castelo')
-    expect(material.color.value).toBe('#6b6b6b')
+    expect(colorOf()).toBe('#6b6b6b')
     expect(world.scene.fog).not.toBeNull()
 
     call(api, 'setStageTheme', world, 'dia')
-    expect(material.color.value).toBe('#c86400')
+    expect(colorOf()).toBe('#c86400')
     expect(world.scene.fog).toBeNull()
+    // Volta ao MESMO material do cache (nada novo na GPU a cada troca de tema).
+    expect(floor.material).toBe(before)
   })
 })
 
@@ -100,7 +105,7 @@ describe('Kit Plataforma — as regras do gênero', () => {
     const { api, world, heroi } = jogo()
     // Cai bem em cima do goomba da coluna 12.
     call(api, 'setPosition', heroi, 12, 4, 0)
-    call(api, 'setVelocity', heroi, 0, -0.2, 0)
+    call(api, 'setVelocity', heroi, 0, -12, 0)
     let quicou = false
     for (let f = 0; f < 60; f++) {
       quadro(api, world, heroi)
@@ -121,7 +126,7 @@ describe('Kit Plataforma — as regras do gênero', () => {
     const { api, world, heroi } = jogo()
     // O bloco de surpresa está na coluna 6, altura 4.
     call(api, 'setPosition', heroi, 6, 2.2, 0)
-    call(api, 'setVelocity', heroi, 0, 0.28, 0)
+    call(api, 'setVelocity', heroi, 0, 16.8, 0)
     for (let f = 0; f < 30; f++) quadro(api, world, heroi)
     // 50 por bater no bloco + 200 pela moeda de dentro.
     expect(call(api, 'stageValue', world, 'pontos')).toBeGreaterThanOrEqual(250)
@@ -134,7 +139,7 @@ describe('Kit Plataforma — as regras do gênero', () => {
 
     const cabecada = (x: number) => {
       call(api, 'setPosition', heroi, x, 2.2, 0)
-      call(api, 'setVelocity', heroi, 0, 0.28, 0)
+      call(api, 'setVelocity', heroi, 0, 16.8, 0)
       for (let f = 0; f < 30; f++) quadro(api, world, heroi)
     }
     cabecada(6)
@@ -192,7 +197,7 @@ describe('Kit Plataforma — os ganchos que o exemplo usa', () => {
   it('avisa quando pisa no inimigo', () => {
     const avisos = avisouEm('pisar-inimigo', ({ api, world, heroi }) => {
       call(api, 'setPosition', heroi, 12, 4, 0)
-      call(api, 'setVelocity', heroi, 0, -0.2, 0)
+      call(api, 'setVelocity', heroi, 0, -12, 0)
       for (let f = 0; f < 60; f++) quadro(api, world, heroi)
     })
     expect(avisos).toContain('pisar-inimigo')
@@ -278,7 +283,7 @@ describe('Kit Plataforma — as mecânicas do original', () => {
     const mapa = ['chao=0-40', 'inimigo=20:koopa,14:goomba,11:goomba'].join('\n')
     const { api, world, heroi } = jogo(mapa)
     call(api, 'setPosition', heroi, 20, 4, 0)
-    call(api, 'setVelocity', heroi, 0, -0.2, 0)
+    call(api, 'setVelocity', heroi, 0, -12, 0)
     for (let f = 0; f < 40; f++) quadro(api, world, heroi)
     const aposPisar = call(api, 'stageValue', world, 'pontos')
 
@@ -308,7 +313,7 @@ describe('Kit Plataforma — as mecânicas do original', () => {
     const { api, world, heroi } = jogo(mapa)
     const antes = call(api, 'stageValue', world, 'vidas')
     call(api, 'setPosition', heroi, 8, 2.2, 0)
-    call(api, 'setVelocity', heroi, 0, 0.3, 0)
+    call(api, 'setVelocity', heroi, 0, 18, 0)
     for (let f = 0; f < 30; f++) quadro(api, world, heroi)
     expect(call(api, 'stageValue', world, 'vidas')).toBe(antes + 1)
     // E agora ele é sólido: dá para pousar em cima.
@@ -343,12 +348,12 @@ describe('Kit Plataforma — as mecânicas do original', () => {
     expect(call(api, 'shootFire', world, heroi)).toBe(false)
 
     call(api, 'setPosition', heroi, 4, 2.2, 0)
-    call(api, 'setVelocity', heroi, 0, 0.3, 0)
+    call(api, 'setVelocity', heroi, 0, 18, 0)
     for (let f = 0; f < 30; f++) quadro(api, world, heroi)
     expect(call(api, 'heroIs', heroi, 'de fogo')).toBe(true)
 
     call(api, 'setPosition', heroi, 8, 1, 0)
-    call(api, 'setVelocity', heroi, 0.1, 0, 0)
+    call(api, 'setVelocity', heroi, 6, 0, 0)
     const pontosAntes = call(api, 'stageValue', world, 'pontos')
     expect(call(api, 'shootFire', world, heroi)).toBe(true)
     for (let f = 0; f < 120; f++) quadro(api, world, heroi)
@@ -359,7 +364,7 @@ describe('Kit Plataforma — as mecânicas do original', () => {
     const mapa = ['chao=0-20', 'surpresa=4:4:cogumelo'].join('\n')
     const { api, world, heroi } = jogo(mapa)
     call(api, 'setPosition', heroi, 4, 2.2, 0)
-    call(api, 'setVelocity', heroi, 0, 0.3, 0)
+    call(api, 'setVelocity', heroi, 0, 18, 0)
     for (let f = 0; f < 30; f++) quadro(api, world, heroi)
     expect(call(api, 'heroIs', heroi, 'grande')).toBe(true)
 
@@ -375,7 +380,7 @@ describe('Kit Plataforma — as mecânicas do original', () => {
   it('passo, câmera e disparo rejeitam heróis de outra cena', () => {
     const primeira = jogo(['chao=0-20', 'surpresa=4:4:flor'].join('\n'))
     call(primeira.api, 'setPosition', primeira.heroi, 4, 2.2, 0)
-    call(primeira.api, 'setVelocity', primeira.heroi, 0, 0.3, 0)
+    call(primeira.api, 'setVelocity', primeira.heroi, 0, 18, 0)
     for (let f = 0; f < 30; f++) quadro(primeira.api, primeira.world, primeira.heroi)
     expect(call(primeira.api, 'heroIs', primeira.heroi, 'de fogo')).toBe(true)
 
@@ -397,7 +402,7 @@ describe('Kit Plataforma — as mecânicas do original', () => {
   it('a estrela mata no toque; a piscada depois do dano só protege', () => {
     const comEstrela = jogo(['chao=0-40', 'surpresa=4:4:estrela', 'inimigo=9:goomba'].join('\n'))
     call(comEstrela.api, 'setPosition', comEstrela.heroi, 4, 2.2, 0)
-    call(comEstrela.api, 'setVelocity', comEstrela.heroi, 0, 0.3, 0)
+    call(comEstrela.api, 'setVelocity', comEstrela.heroi, 0, 18, 0)
     for (let f = 0; f < 30; f++) quadro(comEstrela.api, comEstrela.world, comEstrela.heroi)
     expect(call(comEstrela.api, 'heroIs', comEstrela.heroi, 'invencivel')).toBe(true)
     call(comEstrela.api, 'setPosition', comEstrela.heroi, 9, 0.75, 0)
@@ -409,7 +414,7 @@ describe('Kit Plataforma — as mecânicas do original', () => {
     // mas o inimigo continua lá.
     const comDano = jogo(['chao=0-40', 'surpresa=4:4:cogumelo', 'inimigo=9:goomba'].join('\n'))
     call(comDano.api, 'setPosition', comDano.heroi, 4, 2.2, 0)
-    call(comDano.api, 'setVelocity', comDano.heroi, 0, 0.3, 0)
+    call(comDano.api, 'setVelocity', comDano.heroi, 0, 18, 0)
     for (let f = 0; f < 30; f++) quadro(comDano.api, comDano.world, comDano.heroi)
     // O goomba ANDA para a esquerda: a bancada vai até onde ele está agora.
     for (let f = 0; f < 90; f++) {
@@ -443,5 +448,25 @@ describe('Kit Plataforma — a câmera lateral', () => {
     quadro(api, world, heroi)
     const depoisDeVoltar = (world.camera as { position: V3Like }).position.x
     expect(depoisDeVoltar).toBeCloseTo(avancou, 5)
+  })
+})
+
+describe('Kit Plataforma — o herói grande tem a colisão da escala, não o dobro', () => {
+  it('em pé no chão, o grande fica 1,6 × a meia altura acima do chão (não 1,6²)', () => {
+    const mapa = ['chao=0-20', 'surpresa=4:4:cogumelo'].join('\n')
+    const { api, world, heroi } = jogo(mapa)
+    for (let f = 0; f < 60; f++) quadro(api, world, heroi)
+    const pequeno = pos(heroi).y
+    call(api, 'setPosition', heroi, 4, 2.2, 0)
+    call(api, 'setVelocity', heroi, 0, 18, 0)
+    for (let f = 0; f < 30; f++) quadro(api, world, heroi)
+    expect(call(api, 'heroIs', heroi, 'grande')).toBe(true)
+    call(api, 'setPosition', heroi, 10, 3, 0)
+    for (let f = 0; f < 120; f++) quadro(api, world, heroi)
+    const grande = pos(heroi).y
+    // Pés no mesmo chão: o centro sobe o que a meia altura cresceu (0,75 → 1,2).
+    expect(grande - pequeno).toBeCloseTo(0.75 * 1.6 - 0.75, 2)
+    expect(heroi.scale.y).toBe(1.6)
+    expect((heroi.userData as { sz: { hh: number } }).sz.hh).toBe(0.75)
   })
 })

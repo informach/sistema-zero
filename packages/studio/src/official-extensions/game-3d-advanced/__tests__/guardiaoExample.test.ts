@@ -46,15 +46,17 @@ describe('Exemplo Guardião do Portal — drift contra o parser real', () => {
   it('exercita o que a v0.5.0 abriu', () => {
     const types = collectTypes(behaviorStatements(guardiaoDoPortalExample.ir))
     for (const t of [
-      'g3k:startTimer', // o relogio da crianca — nao existia bloco de tempo
-      'g3k:onTimerEnd', // a condicao de vitoria por tempo
-      'g3k:timeLeft', // ...e o HUD lendo ele
+      'g3k:timer', // o relogio da crianca — nao existia bloco de tempo
+      'g3k:onGame', // a condicao de vitoria por tempo
+      'g3k:gameValue', // ...e o HUD lendo ele
       'g3k:say', // o balao ancorado na entidade (o jogo conta historia)
-      'g3k:randomBetween', // o sorteio DO KIT
-      'g3k:randomChance', // ...idem
+      'g3k:random', // o sorteio DO KIT
+      'g3k:random', // ...idem
       'g3k:setSeed', // ...que so vale por causa deste
       'g3k:setPhysics',
-      'g3k:cameraShake',
+      'g3k:shakeCamera',
+      'g3k:stopSpawner', // o fim da contagem para de nascer invasores...
+      'g3k:recycleAll', // ...e limpa a arena
     ]) {
       expect(types.has(t)).toBe(true)
     }

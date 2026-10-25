@@ -83,6 +83,52 @@ const INICIANTE_2D_G2D_ESPERADO = [
   'sz_g2d_update_each_frame',
   'sz_g2d_update_group',
 ]
+/** O núcleo do Jogo 3D no `iniciante-3d`, em ordem alfabética (review 3D, 10/2026). */
+const INICIANTE_3D_G3D_ESPERADO = [
+  'sz_g3d_add_score',
+  'sz_g3d_after_seconds',
+  'sz_g3d_animate',
+  'sz_g3d_apply_gravity',
+  'sz_g3d_camera_mode',
+  'sz_g3d_camera_shake',
+  'sz_g3d_collides',
+  'sz_g3d_control_keys',
+  'sz_g3d_create_block',
+  'sz_g3d_create_box',
+  'sz_g3d_create_fullscreen_scene',
+  'sz_g3d_create_group',
+  'sz_g3d_create_model_file',
+  'sz_g3d_create_sphere',
+  'sz_g3d_end_game',
+  'sz_g3d_every_seconds',
+  'sz_g3d_hit_any',
+  'sz_g3d_hud_text',
+  'sz_g3d_hurt',
+  'sz_g3d_jump',
+  'sz_g3d_key_down',
+  'sz_g3d_on_click_object',
+  'sz_g3d_on_key',
+  'sz_g3d_on_life_over',
+  'sz_g3d_on_timer_end',
+  'sz_g3d_on_touch_group',
+  'sz_g3d_play_animation',
+  'sz_g3d_play_effect',
+  'sz_g3d_prune_offscreen',
+  'sz_g3d_random_between',
+  'sz_g3d_remove_object',
+  'sz_g3d_restart',
+  'sz_g3d_score',
+  'sz_g3d_set_color',
+  'sz_g3d_set_life',
+  'sz_g3d_set_position',
+  'sz_g3d_set_screen_text',
+  'sz_g3d_sky_photo',
+  'sz_g3d_spawn_copy',
+  'sz_g3d_spin',
+  'sz_g3d_start_timer',
+  'sz_g3d_time_left',
+  'sz_g3d_update_group_no_gravity',
+]
 const ALL_SETS = [
   ['INTERMEDIARIO_2D', _LEVEL_SETS.INTERMEDIARIO_2D],
   ['AVANCADO_2D', _LEVEL_SETS.AVANCADO_2D],
@@ -157,10 +203,18 @@ describe('resolveBlockLevel — amostras representativas', () => {
     }
   })
 
-  it('todos os blocos do Jogo 3D são iniciante-3d e podem ser filtrados pela aula', () => {
+  it('o Jogo 3D tem o núcleo exato no iniciante-3d e o resto no intermediario-3d', () => {
+    // Lista LITERAL pelo mesmo motivo do Jogo 2D: trocar um bloco por outro mantém o
+    // número e muda o degrau dos dois (review 3D, 10/2026).
     const game3dTypes = [...KNOWN].filter((type) => type.startsWith('sz_g3d_'))
     expect(game3dTypes.length).toBeGreaterThan(100)
-    for (const type of game3dTypes) expect(resolveBlockLevel(type)).toBe('iniciante-3d')
+    const core = game3dTypes.filter((type) => resolveBlockLevel(type) === 'iniciante-3d').sort()
+    expect(core).toEqual(INICIANTE_3D_G3D_ESPERADO)
+    expect([..._LEVEL_SETS.INICIANTE_3D_G3D].sort()).toEqual(INICIANTE_3D_G3D_ESPERADO)
+    for (const type of game3dTypes.filter((type) => !core.includes(type))) {
+      expect(resolveBlockLevel(type), type).toBe('intermediario-3d')
+    }
+    expect(resolveBlockLevel('sz_g3d_qualquer')).toBe('intermediario-3d')
   })
 
   it('o primeiro degrau do Jogo 2D tem os mesmos 71 blocos de quando vinha do Kit essencial', () => {
@@ -268,8 +322,11 @@ describe('resolveBlockLevel — amostras representativas', () => {
     }
   })
 
-  it('Jogo 3D Avançado (g3k) = intermediario-3d (reclassificado 26/07 — abre no Arquiteto)', () => {
-    expect(resolveBlockLevel('sz_g3k_fsm_state')).toBe('intermediario-3d')
+  it('Jogo 3D Avançado (g3k) = avancado-3d (prefixo inteiro; uma extensão por degrau)', () => {
+    expect(resolveBlockLevel('sz_g3k_fsm_state')).toBe('avancado-3d')
+    const g3kTypes = [...KNOWN].filter((type) => type.startsWith('sz_g3k_'))
+    expect(g3kTypes.length).toBeGreaterThan(100)
+    for (const type of g3kTypes) expect(resolveBlockLevel(type), type).toBe('avancado-3d')
   })
 
   it('Canvas 3D cru (three.js técnico, sz_t3d_) = avancado-3d', () => {

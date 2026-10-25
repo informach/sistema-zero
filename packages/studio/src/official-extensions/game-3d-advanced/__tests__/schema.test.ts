@@ -14,8 +14,8 @@ import {
  */
 
 describe('G3K_STATEMENT_TYPES', () => {
-  it('tem os 103 statements do kit, todos com o prefixo g3k:', () => {
-    expect(G3K_STATEMENT_TYPES.size).toBe(106)
+  it('tem os 117 statements do kit (regras comuns, animação do modelo e o lote 12: patrulha, mochila, progresso e fases), todos com o prefixo g3k:', () => {
+    expect(G3K_STATEMENT_TYPES.size).toBe(117)
     for (const type of G3K_STATEMENT_TYPES) {
       expect(type.startsWith('g3k:')).toBe(true)
     }

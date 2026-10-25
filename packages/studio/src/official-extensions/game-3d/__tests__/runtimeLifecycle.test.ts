@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'bun:test'
 import * as RealThree from 'three'
+import { installResizeObserverStub } from '../../__tests__/three3d/resizeObserverStub'
 import { gameThreeDRuntime } from '../runtime'
 
 const runtimeBody = gameThreeDRuntime.replace(/^import \* as THREE from 'three';\n/, '')
@@ -102,42 +103,30 @@ interface RuntimeApi {
   createModel(world: RuntimeWorld): RealThree.Group
   addToModel(model: RealThree.Group, part: RealThree.Object3D): void
   animate(world: RuntimeWorld, callback: (delta: number) => void): void
-  stop(world: RuntimeWorld): void
+  endGame(result: string): void
   remove(world: RuntimeWorld, object: RealThree.Object3D): void
   setSolid(object: RealThree.Object3D): void
   setPosition(object: RealThree.Object3D, x: number, y: number, z: number): void
   setVelocity(object: RealThree.Object3D, x: number, y: number, z: number): void
   stepBody(object: RealThree.Object3D, world: RuntimeWorld): void
   fall(object: RealThree.Object3D): void
-  isometricCamera(world: RuntimeWorld, follow: RealThree.Object3D | null): void
-  topCamera(world: RuntimeWorld, follow: RealThree.Object3D | null): void
-  orbitCamera(world: RuntimeWorld, follow: RealThree.Object3D | null): void
-  thirdPersonCamera(
-    world: RuntimeWorld,
-    follow: RealThree.Object3D,
-    distance: number,
-    height: number,
-  ): void
-  createSwarm(world: RuntimeWorld): { items: RealThree.Object3D[]; world: RuntimeWorld }
-  spawnInSwarm(
-    swarm: { items: RealThree.Object3D[]; world: RuntimeWorld },
+  cameraMode(world: RuntimeWorld, mode: string, follow: RealThree.Object3D | null): void
+  cameraDistance(world: RuntimeWorld, distance: number, height: number): void
+  createGroup(): RealThree.Object3D[]
+  spawnCopy(
+    group: RealThree.Object3D[],
     original: RealThree.Object3D,
     x: number,
     y: number,
     z: number,
   ): RealThree.Object3D | null
-  removeFromSwarm(
-    swarm: { items: RealThree.Object3D[]; world: RuntimeWorld },
-    item: RealThree.Object3D,
-  ): void
+  removeFromGroup(group: RealThree.Object3D[], item: RealThree.Object3D): void
   setColor(object: RealThree.Object3D, color: string): void
   setVisible(object: RealThree.Object3D, mode: string): void
   pickAtMouse(world: RuntimeWorld): RealThree.Object3D | null
   pointerOver(world: RuntimeWorld, object: RealThree.Object3D): boolean
   playNote(frequency: number, milliseconds: number): void
   disposeAll(): void
-  fpsCamera(world: RuntimeWorld, object: RealThree.Object3D): void
-  cameraFollow(world: RuntimeWorld, object: RealThree.Object3D): void
   setFOV(world: RuntimeWorld, degrees: number): void
   aimAhead(
     world: RuntimeWorld,
@@ -351,12 +340,19 @@ describe('gameThreeDRuntime - ciclo de vida real com Three.js', () => {
   })
 
   it('reutiliza câmeras ortográficas e recalcula a projeção no resize', () => {
+    // O reajuste chega pelo observador do canvas (um caminho só): sem ele, o resize da janela.
+    const ro = installResizeObserverStub({ absent: true })
     const { api, canvas, fire } = loadRuntime()
-    const world = api.createScene('tela')
+    let world: ReturnType<typeof api.createScene>
+    try {
+      world = api.createScene('tela')
+    } finally {
+      ro.restore()
+    }
 
-    api.isometricCamera(world, null)
+    api.cameraMode(world, 'isometrica', null)
     const first = world.camera as RealThree.OrthographicCamera
-    api.isometricCamera(world, null)
+    api.cameraMode(world, 'isometrica', null)
     expect(world.camera).toBe(first)
     expect(world.scene.children.filter((child) => child instanceof RealThree.Camera)).toHaveLength(
       1,
@@ -369,9 +365,9 @@ describe('gameThreeDRuntime - ciclo de vida real com Three.js', () => {
     fire('resize')
     expect(first.right - first.left).toBeGreaterThan(beforeWidth)
 
-    api.topCamera(world, null)
+    api.cameraMode(world, 'cima', null)
     const top = world.camera
-    api.topCamera(world, null)
+    api.cameraMode(world, 'cima', null)
     expect(world.camera).toBe(top)
     expect(first.parent).toBeNull()
     expect(world.scene.children.filter((child) => child instanceof RealThree.Camera)).toHaveLength(
@@ -379,17 +375,17 @@ describe('gameThreeDRuntime - ciclo de vida real com Three.js', () => {
     )
   })
 
-  it('clona os materiais de cada peça quando o original do enxame é um modelo', () => {
+  it('clona os materiais de cada peça quando o molde copiado é um modelo', () => {
     const { api } = loadRuntime()
     const world = api.createScene('tela')
     const model = api.createModel(world)
     const part = api.createBox(world, { color: '#ffffff' })
     api.addToModel(model, part)
-    const swarm = api.createSwarm(world)
-    const first = api.spawnInSwarm(swarm, model, -1, 0, 0)
-    const second = api.spawnInSwarm(swarm, model, 1, 0, 0)
+    const grupo = api.createGroup()
+    const first = api.spawnCopy(grupo, model, -1, 0, 0)
+    const second = api.spawnCopy(grupo, model, 1, 0, 0)
 
-    if (!first || !second) throw new Error('Era esperado criar os dois itens do enxame')
+    if (!first || !second) throw new Error('Era esperado criar as duas cópias no grupo')
 
     api.setColor(first, '#ff0000')
 
@@ -415,7 +411,7 @@ describe('gameThreeDRuntime - ciclo de vida real com Three.js', () => {
     expect(runtime.audioDisconnectCalls()).toBeGreaterThanOrEqual(64)
   })
 
-  it('mantém a geometria do molde enquanto houver cópias no enxame', () => {
+  it('mantém a geometria do molde enquanto houver cópias no grupo', () => {
     const { api } = loadRuntime()
     const world = api.createScene('tela')
     const original = api.createBox(world)
@@ -424,26 +420,28 @@ describe('gameThreeDRuntime - ciclo de vida real com Three.js', () => {
     geometry.dispose = () => {
       disposeCalls += 1
     }
-    const swarm = api.createSwarm(world)
-    const first = api.spawnInSwarm(swarm, original, -1, 0, 0)
-    const second = api.spawnInSwarm(swarm, original, 1, 0, 0)
-    if (!first || !second) throw new Error('esperava duas cópias no enxame')
+    const grupo = api.createGroup()
+    const first = api.spawnCopy(grupo, original, -1, 0, 0)
+    const second = api.spawnCopy(grupo, original, 1, 0, 0)
+    if (!first || !second) throw new Error('esperava duas cópias no grupo')
 
     api.remove(world, original)
     expect(disposeCalls).toBe(0)
-    api.removeFromSwarm(swarm, first)
+    api.removeFromGroup(grupo, first)
     expect(disposeCalls).toBe(0)
-    api.removeFromSwarm(swarm, second)
+    expect(grupo).toEqual([second])
+    api.removeFromGroup(grupo, second)
     expect(disposeCalls).toBe(1)
+    expect(grupo).toHaveLength(0)
   })
 
-  it('inclui as cópias visíveis do enxame na seleção pelo ponteiro', () => {
+  it('inclui as cópias visíveis do grupo na seleção pelo ponteiro', () => {
     const { api } = loadRuntime()
     const world = api.createScene('tela')
     const original = api.createBox(world)
-    const swarm = api.createSwarm(world)
-    const copy = api.spawnInSwarm(swarm, original, 0, 0, 0)
-    if (!copy) throw new Error('Era esperado criar uma cópia no enxame')
+    const grupo = api.createGroup()
+    const copy = api.spawnCopy(grupo, original, 0, 0, 0)
+    if (!copy) throw new Error('Era esperado criar uma cópia no grupo')
     api.setVisible(original, 'hide')
 
     expect(api.pickAtMouse(world)).toBe(copy)
@@ -467,8 +465,8 @@ describe('gameThreeDRuntime - ciclo de vida real com Three.js', () => {
     const secondWorld = runtime.api.createScene('segundo')
     const firstPlayer = runtime.api.createBox(firstWorld)
     const secondPlayer = runtime.api.createBox(secondWorld)
-    runtime.api.fpsCamera(firstWorld, firstPlayer)
-    runtime.api.fpsCamera(secondWorld, secondPlayer)
+    runtime.api.cameraMode(firstWorld, 'primeira-pessoa', firstPlayer)
+    runtime.api.cameraMode(secondWorld, 'primeira-pessoa', secondPlayer)
     runtime.setPointerLock(runtime.canvas('primeiro'))
 
     runtime.fire('mousemove', { movementX: 20, movementY: 0 })
@@ -490,21 +488,23 @@ describe('gameThreeDRuntime - ciclo de vida real com Three.js', () => {
     expect(world.renderer.renderCalls).toBe(1)
   })
 
-  it('parar interrompe os callbacks restantes e não desenha o quadro encerrado', () => {
+  it('o fim de jogo interrompe os callbacks restantes e pausa os próximos quadros', () => {
     const { api } = loadRuntime()
     const world = api.createScene('tela')
     const chamadas: string[] = []
 
     api.animate(world, () => {
       chamadas.push('primeiro')
-      api.stop(world)
+      api.endGame('perdeu')
     })
     api.animate(world, () => chamadas.push('segundo'))
     world.renderer.loop?.(16)
+    world.renderer.loop?.(32)
 
     expect(chamadas).toEqual(['primeiro'])
-    expect(world.renderer.renderCalls).toBe(0)
-    expect(world.renderer.loop).toBeNull()
+    // A cena segue desenhada por trás da tela de fim (o loop não é desinstalado).
+    expect(world.renderer.renderCalls).toBe(2)
+    expect(world.renderer.loop).not.toBeNull()
   })
 
   it('remove o listener de teclado do personagem substituído', () => {
@@ -560,7 +560,7 @@ describe('gameThreeDRuntime - ciclo de vida real com Three.js', () => {
     expect(object.parent).toBeNull()
   })
 
-  it('não mistura modelos, peças e enxames de cenas diferentes', () => {
+  it('não mistura modelos, peças e cópias de cenas diferentes', () => {
     const { api } = loadRuntime()
     const firstWorld = api.createScene('primeiro')
     const secondWorld = api.createScene('segundo')
@@ -572,9 +572,11 @@ describe('gameThreeDRuntime - ciclo de vida real com Three.js', () => {
     expect(part.parent).toBe(firstWorld.scene)
     expect(firstWorld._objects).toContain(part)
 
-    const swarm = api.createSwarm(secondWorld)
-    expect(api.spawnInSwarm(swarm, part, 0, 0, 0)).toBeNull()
-    expect(swarm.items).toHaveLength(0)
+    // O grupo fica na cena da primeira cópia; um molde de outra cena é recusado.
+    const grupo = api.createGroup()
+    expect(api.spawnCopy(grupo, model, 0, 0, 0)).not.toBeNull()
+    expect(api.spawnCopy(grupo, part, 0, 0, 0)).toBeNull()
+    expect(grupo).toHaveLength(1)
   })
 
   it('não atualiza física nem kits com um objeto pertencente a outra cena', () => {
@@ -614,8 +616,9 @@ describe('gameThreeDRuntime - ciclo de vida real com Three.js', () => {
     const world = api.createScene('tela')
     const player = api.createBox(world)
 
-    api.thirdPersonCamera(world, player, 6, 3)
-    api.orbitCamera(world, player)
+    api.cameraDistance(world, 6, 3)
+    api.cameraMode(world, 'tras', player)
+    api.cameraMode(world, 'em-volta', player)
     const orbitPosition = world.camera.position.clone()
     api.animate(world, () => undefined)
     world.renderer.loop?.(16)
@@ -627,11 +630,11 @@ describe('gameThreeDRuntime - ciclo de vida real com Three.js', () => {
     const { api } = loadRuntime()
     const world = api.createScene('tela')
     const player = api.createBox(world)
-    api.fpsCamera(world, player)
+    api.cameraMode(world, 'primeira-pessoa', player)
     player.rotation.y = 0.8
     world.camera.rotation.x = 0.4
 
-    api.fpsCamera(world, player)
+    api.cameraMode(world, 'primeira-pessoa', player)
 
     expect(player.rotation.y).toBe(0.8)
     expect(world.camera.rotation.x).toBe(0.4)
@@ -642,13 +645,13 @@ describe('gameThreeDRuntime - ciclo de vida real com Three.js', () => {
     const world = api.createScene('tela')
     const player = api.createBox(world)
     api.setPosition(player, 2, 0, 0)
-    api.fpsCamera(world, player)
+    api.cameraMode(world, 'primeira-pessoa', player)
 
-    api.cameraFollow(world, player)
+    api.cameraMode(world, 'longe', player)
     const before = new RealThree.Vector3()
     world.camera.getWorldPosition(before)
     api.setPosition(player, 3, 0, 0)
-    api.cameraFollow(world, player)
+    api.cameraMode(world, 'longe', player)
     const after = new RealThree.Vector3()
     world.camera.getWorldPosition(after)
 
@@ -660,15 +663,45 @@ describe('gameThreeDRuntime - ciclo de vida real com Three.js', () => {
     const { api } = loadRuntime()
     const world = api.createScene('tela')
     const player = api.createBox(world)
-    api.isometricCamera(world, null)
+    api.cameraMode(world, 'isometrica', null)
     expect(world.camera).toBeInstanceOf(RealThree.OrthographicCamera)
 
-    api.fpsCamera(world, player)
+    api.cameraMode(world, 'primeira-pessoa', player)
     api.setFOV(world, 75)
 
     expect(world.camera).toBeInstanceOf(RealThree.PerspectiveCamera)
     expect((world.camera as RealThree.PerspectiveCamera).fov).toBe(75)
     expect(world.camera.parent).toBe(player)
+  })
+
+  it('o mesmo bloco volta à perspectiva ao trocar a vista de cima por "segue de trás"', () => {
+    const { api } = loadRuntime()
+    const world = api.createScene('tela')
+    const player = api.createBox(world)
+    api.setPosition(player, 1, 0, 2)
+    api.cameraMode(world, 'cima', player)
+    expect(world.camera).toBeInstanceOf(RealThree.OrthographicCamera)
+
+    api.cameraDistance(world, 8, 4)
+    api.cameraMode(world, 'tras', player)
+
+    expect(world.camera).toBeInstanceOf(RealThree.PerspectiveCamera)
+    expect(world.camera.parent).toBe(world.scene)
+    // Atrás (+Z de quem olha -Z) a 8 e 4 acima do objeto.
+    expect(world.camera.position.x).toBeCloseTo(1, 6)
+    expect(world.camera.position.y).toBeCloseTo(4, 6)
+    expect(world.camera.position.z).toBeCloseTo(10, 6)
+  })
+
+  it('o modo sem objeto só vale para as vistas que olham o centro', () => {
+    const { api } = loadRuntime()
+    const world = api.createScene('tela')
+    const before = world.camera
+    api.cameraMode(world, 'tras', null)
+    // Sem alvo, "segue de trás" não tem quem seguir: a câmera fica como estava.
+    expect(world.camera).toBe(before)
+    api.cameraMode(world, 'em-volta', null)
+    expect(world.camera.position.length()).toBeCloseTo(12, 4)
   })
 
   it('inclui os personagens da Travessia e da Corrida na seleção pelo ponteiro', () => {

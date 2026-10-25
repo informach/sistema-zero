@@ -59,13 +59,13 @@ describe('Exemplo Mundo de Blocos — drift contra o parser real', () => {
     const statements = behaviorStatements(mundoBlocosExample.ir)
     const types = collectTypes(statements)
     for (const t of [
-      'g3d:isometricCamera', // a câmera isométrica (mouse livre, sem lock)
+      'g3d:cameraMode', // a câmera isométrica (mouse livre, sem lock)
       'g3d:gridPosition', // o cursor anda pela GRADE (linha/coluna por setas)
       'forRange', // ⭐ geração inicial do núcleo (chão + muralha baixa)
-      'g3d:spawnInSwarm', // colocar bloco = cópia do molde do tipo escolhido
+      'g3d:spawnCopy', // colocar bloco = cópia do molde do tipo escolhido
       'g3d:pickAtMouse', // ⭐ quebrar bloco = objeto sob o mouse + clique
-      'g3d:removeFromSwarm', // o bloco apontado some do enxame
-      'g3d:countSwarm', // só toca o som de quebra se algo saiu de verdade
+      'g3d:removeFromGroup', // o bloco apontado some do grupo
+      'g3d:countGroup', // só toca o som de quebra se algo saiu de verdade
       'g3d:setOpacity', // o cursor é translúcido
       'g3d:setPosition', // o cursor fica no TOPO da coluna (não rouba o clique do térreo)
       'g3d:getPos', // empilhar: acha a altura livre da célula ocupada
@@ -95,7 +95,9 @@ describe('Exemplo Mundo de Blocos — drift contra o parser real', () => {
     // Este é o par do Labirinto dos Robôs: aqui NÃO há câmera de primeira
     // pessoa nem pointer lock, então pickAtMouse funciona e é o caminho certo.
     const types = collectTypes(behaviorStatements(mundoBlocosExample.ir))
-    expect(types.has('g3d:fpsCamera')).toBe(false)
+    expect(JSON.stringify(behaviorStatements(mundoBlocosExample.ir))).not.toContain(
+      '"primeira-pessoa"',
+    )
     expect(types.has('g3d:fpsControls')).toBe(false)
     expect(types.has('g3d:aimAhead')).toBe(false)
     expect(types.has('g3d:pickAtMouse')).toBe(true)

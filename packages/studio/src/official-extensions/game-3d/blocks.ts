@@ -1,7 +1,9 @@
 import type { BlockDefinition } from '../../blockly/blocks/types'
-import { categoryShades } from '../../blockly/colorShades'
 import type { ExtensionToolboxCategory } from '../../extensions/toolboxTypes'
 import { GAME3D_DROPDOWN_OPTIONS } from '../../three/game3dContract'
+import { buildExtensionPalette } from '../extensionPalette'
+import { gameRulesBlocks } from '../game3dRules/blocks'
+import { GAME_THREE_D_PALETTE } from './palette'
 
 // Jogo 3D = UMA cor da categoria: AMARELO/dourado. A categoria inteira fica em
 // TONS de amarelo, variando por área/kit.
@@ -12,6 +14,8 @@ const AUDIO_ACTION_PLACEMENT = {
   nested: [
     'user-gesture-body',
     'loop-body',
+    // Os "Quando…" que o motor dispara com o jogo rodando (vida, contagem, fase).
+    'game-event-body',
     'function-body',
     'async-function-body',
     'derived-method-body',
@@ -19,7 +23,7 @@ const AUDIO_ACTION_PLACEMENT = {
   role: 'command',
 } as const
 
-export const gameThreeDBlocks = [
+const gameThreeDBlockDefinitions = [
   {
     type: 'sz_g3d_create_scene',
     placement: 'start-only-command',
@@ -76,9 +80,9 @@ export const gameThreeDBlocks = [
   {
     type: 'sz_g3d_create_box',
     placement: 'start-only-command',
-    message0: 'Criar cubo %1 na cena %2 tamanho %3 cor %4',
+    message0: 'Criar o cubo %1 na cena %2 tamanho %3 cor %4',
     args0: [
-      { type: 'field_input', name: 'NAME', text: 'caixa' },
+      { type: 'field_input', name: 'NAME', text: 'cubo' },
       { type: 'field_name_picker', name: 'WORLD', text: 'cena', kind: 'g3d-world' },
       { type: 'input_value', name: 'SIZE', check: 'JSValue' },
       { type: 'field_colour', name: 'COLOR', colour: '#22d3ee' },
@@ -106,7 +110,7 @@ export const gameThreeDBlocks = [
   {
     type: 'sz_g3d_create_block',
     placement: 'start-only-command',
-    message0: 'Criar caixa %1 na cena %2 largura %3 altura %4 profundidade %5 cor %6',
+    message0: 'Criar a caixa %1 na cena %2 de largura %3 altura %4 profundidade %5 cor %6',
     args0: [
       { type: 'field_input', name: 'NAME', text: 'chao' },
       { type: 'field_name_picker', name: 'WORLD', text: 'cena', kind: 'g3d-world' },
@@ -119,7 +123,7 @@ export const gameThreeDBlocks = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     tooltip:
-      'Cria uma caixa retangular (ótima para o chão). Depois use "Posição do objeto" para colocá-la no lugar.',
+      'Uma caixa de medidas livres, boa para chão e paredes. Depois use "Posição do objeto" para colocá-la no lugar.',
   },
   {
     type: 'sz_g3d_set_position',
@@ -139,7 +143,7 @@ export const gameThreeDBlocks = [
   {
     type: 'sz_g3d_set_rotation',
     placement: 'command',
-    message0: 'Rotação do objeto %1 em x %2 y %3 z %4 (radianos)',
+    message0: 'Giro do objeto %1 em x %2 y %3 z %4 (graus)',
     args0: [
       { type: 'field_name_picker', name: 'OBJ', text: 'caixa', kind: 'object3d' },
       { type: 'input_value', name: 'X', check: 'JSValue' },
@@ -149,7 +153,7 @@ export const gameThreeDBlocks = [
     inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
-    tooltip: 'Gira o objeto. Anime dentro de "A cada quadro 3D" usando uma variável que aumenta.',
+    tooltip: 'Deixa o objeto virado nesses ângulos, em graus (90 = um quarto de volta).',
   },
   {
     type: 'sz_g3d_set_scale',
@@ -167,7 +171,7 @@ export const gameThreeDBlocks = [
   {
     type: 'sz_g3d_animate',
     placement: 'loop-update',
-    message0: 'A cada quadro 3D da cena %1',
+    message0: 'A cada quadro da cena %1',
     args0: [{ type: 'field_name_picker', name: 'WORLD', text: 'cena', kind: 'g3d-world' }],
     message1: 'fazer %1',
     args1: [{ type: 'input_statement', name: 'BODY' }],
@@ -181,7 +185,7 @@ export const gameThreeDBlocks = [
   {
     type: 'sz_g3d_control_keys',
     placement: 'loop-command',
-    message0: 'Mover %1 com o teclado (WASD/setas), velocidade %2',
+    message0: 'Mover %1 com o teclado (WASD/setas), %2 por segundo',
     args0: [
       { type: 'field_name_picker', name: 'OBJ', text: 'jogador', kind: 'object3d' },
       { type: 'input_value', name: 'SPEED', check: 'JSValue' },
@@ -190,12 +194,12 @@ export const gameThreeDBlocks = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     tooltip:
-      'Anda no plano (frente/trás/lados) com W A S D ou as setas. Use dentro de "A cada quadro 3D".',
+      'Anda no plano (frente/trás/lados) com W A S D ou as setas. Use dentro de "A cada quadro".',
   },
   {
     type: 'sz_g3d_set_velocity',
     placement: 'command',
-    message0: 'Definir velocidade do objeto %1 em x %2 y %3 z %4',
+    message0: 'Velocidade do objeto %1 em x %2 y %3 z %4 (por segundo)',
     args0: [
       { type: 'field_name_picker', name: 'OBJ', text: 'jogador', kind: 'object3d' },
       { type: 'input_value', name: 'X', check: 'JSValue' },
@@ -205,7 +209,7 @@ export const gameThreeDBlocks = [
     inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
-    tooltip: 'Define o quanto o objeto anda por quadro em cada eixo.',
+    tooltip: 'Quanto o objeto anda a cada segundo em cada eixo.',
   },
   {
     type: 'sz_g3d_jump',
@@ -219,7 +223,7 @@ export const gameThreeDBlocks = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     tooltip:
-      'Dá um impulso para cima, só funciona se o objeto estiver no chão. Combine com "se a tecla espaço está apertada".',
+      'Impulso para cima, só no chão. A altura depende da gravidade: com o "Mover com gravidade" (7, leve), força 5 sobe uns 1,7; com "Dar corpo físico" (36), a mesma altura pede força 11.',
   },
   {
     type: 'sz_g3d_apply_gravity',
@@ -232,20 +236,38 @@ export const gameThreeDBlocks = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     tooltip:
-      'Puxa o objeto para baixo e o faz parar/quicar no chão, andando pela velocidade. Use dentro de "A cada quadro 3D".',
+      'Puxa o objeto para baixo e o faz parar/quicar no chão, andando pela velocidade. Use dentro de "A cada quadro".',
   },
   {
-    type: 'sz_g3d_camera_follow',
-    placement: 'loop-command',
-    message0: 'A câmera da cena %1 segue o objeto %2',
+    // Funde as seis câmeras antigas (seguir, 3ª pessoa, de cima, isométrica, 1ª
+    // pessoa, orbital): é um MODO, recomposto a cada quadro pelo runtime.
+    type: 'sz_g3d_camera_mode',
+    placement: 'command',
+    message0: 'Câmera da cena %1: %2 %3',
     args0: [
       { type: 'field_name_picker', name: 'WORLD', text: 'cena', kind: 'g3d-world' },
+      { type: 'field_dropdown', name: 'MODE', options: GAME3D_DROPDOWN_OPTIONS.cameraMode },
       { type: 'field_name_picker', name: 'OBJ', text: 'jogador', kind: 'g3d-object' },
     ],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     tooltip:
-      'A câmera acompanha o objeto mantendo o mesmo enquadramento. Use dentro de "A cada quadro 3D".',
+      'Escolhe como a câmera mostra o jogo. Os modos que seguem acompanham o objeto; de cima, isométrica e em volta podem ficar sem objeto e olham o centro.',
+  },
+  {
+    type: 'sz_g3d_camera_distance',
+    placement: 'command',
+    message0: 'Distância da câmera da cena %1: %2 atrás, %3 de altura',
+    args0: [
+      { type: 'field_name_picker', name: 'WORLD', text: 'cena', kind: 'g3d-world' },
+      { type: 'input_value', name: 'DIST', check: 'JSValue' },
+      { type: 'input_value', name: 'HEIGHT', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    tooltip:
+      'Quão longe e quão alto fica a câmera que segue o objeto (de trás ou de longe). Na câmera que gira em volta, muda a distância.',
   },
 
   // ---- Perguntas (booleanos) — caem dentro de um "se" ----
@@ -311,7 +333,7 @@ export const gameThreeDBlocks = [
       { type: 'field_name_picker', name: 'OBJ', text: 'item', kind: 'g3d-object' },
     ],
     output: 'JSValue',
-    tooltip: 'Lê o que foi guardado na gaveta desse objeto. Vale 0 se nunca guardaram nada.',
+    tooltip: 'Lê o número que esse objeto guardou com esse nome. Vale 0 se ele nunca guardou nada.',
   },
   {
     type: 'sz_g3d_key_down',
@@ -325,7 +347,7 @@ export const gameThreeDBlocks = [
     ],
     output: 'JSValue',
     tooltip:
-      'Verdadeiro enquanto a tecla está sendo segurada. Use dentro de um "se", no "A cada quadro 3D".',
+      'Verdadeiro enquanto a tecla está sendo segurada. Use dentro de um "se", no "A cada quadro".',
   },
   {
     type: 'sz_g3d_collides',
@@ -339,13 +361,14 @@ export const gameThreeDBlocks = [
   },
   {
     type: 'sz_g3d_hit_any',
-    message0: 'o objeto %1 encostou em algum de %2 ?',
+    message0: '%1 está encostando em algum do grupo %2?',
     args0: [
       { type: 'field_name_picker', name: 'OBJ', text: 'jogador', kind: 'object3d' },
       { type: 'field_name_picker', name: 'GROUP', text: 'inimigos', kind: 'group3d' },
     ],
     output: 'JSValue',
-    tooltip: 'Verdadeiro se o objeto encostou em qualquer um do grupo (ótimo para o fim de jogo).',
+    tooltip:
+      'Verdadeiro enquanto o objeto encosta em qualquer um do grupo. Mede a caixa real de cada um, então vale para modelos e peças giradas.',
   },
 
   // ---- 📦 Grupos (genéricos) + ⏱️ Tempo + Kit "Desvie" (soltar 1 inimigo) ----
@@ -358,7 +381,8 @@ export const gameThreeDBlocks = [
     args0: [{ type: 'field_input', name: 'NAME', text: 'inimigos' }],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
-    tooltip: 'Cria uma lista vazia para guardar vários objetos (ex.: os inimigos).',
+    tooltip:
+      'Cria um grupo vazio para guardar vários objetos (os inimigos, as moedas, as cópias de um molde).',
   },
   {
     type: 'sz_g3d_update_group',
@@ -372,17 +396,17 @@ export const gameThreeDBlocks = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     tooltip:
-      'Move cada objeto do grupo pela velocidade e o faz cair/parar no chão. Use dentro de "A cada quadro 3D".',
+      'Move cada objeto do grupo pela velocidade e o faz cair/parar no chão. Use dentro de "A cada quadro".',
   },
   {
     type: 'sz_g3d_update_group_no_gravity',
     placement: 'command',
-    message0: 'Mover o grupo %1 sem gravidade',
+    message0: 'Mover o grupo %1',
     args0: [{ type: 'field_name_picker', name: 'GROUP', text: 'inimigos', kind: 'group3d' }],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     tooltip:
-      'Move cada objeto do grupo pela velocidade, sem cair (para coisas que voam). Use dentro de "A cada quadro 3D".',
+      'Move cada objeto do grupo pela velocidade, sem cair (para coisas que voam). Use dentro de "A cada quadro".',
   },
   {
     type: 'sz_g3d_prune_offscreen',
@@ -400,7 +424,7 @@ export const gameThreeDBlocks = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     tooltip:
-      'Some com os objetos que saíram da tela e roda o "fazer" para cada um que saiu (ex.: contar quem escapou). Use dentro de "A cada quadro 3D".',
+      'Some com os objetos que saíram da tela e roda o "fazer" para cada um que saiu (ex.: contar quem escapou). Use dentro de "A cada quadro".',
   },
   {
     type: 'sz_g3d_for_each_in_group',
@@ -449,19 +473,6 @@ export const gameThreeDBlocks = [
       'Tira todos os objetos do grupo de uma vez e some com eles da cena (ex.: ao recomeçar).',
   },
   {
-    type: 'sz_g3d_every_frames',
-    placement: 'loop-update',
-    message0: 'A cada %1 quadros',
-    args0: [{ type: 'input_value', name: 'N', check: 'JSValue' }],
-    message1: 'fazer %1',
-    args1: [{ type: 'input_statement', name: 'BODY' }],
-    inputsInline: true,
-    previousStatement: 'JSStmt',
-    nextStatement: 'JSStmt',
-    tooltip:
-      'Roda o "fazer" de tempos em tempos, a cada N quadros. Ótimo para soltar 1 inimigo sem encher a tela. Use dentro de "A cada quadro 3D".',
-  },
-  {
     type: 'sz_g3d_every_seconds',
     placement: 'loop-update',
     message0: 'A cada %1 segundos',
@@ -471,12 +482,13 @@ export const gameThreeDBlocks = [
     inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
-    tooltip: 'Roda o "fazer" a cada N segundos. Use dentro de "A cada quadro 3D".',
+    tooltip:
+      'Roda o "fazer" de tempos em tempos, a cada N segundos, enquanto o jogo roda. Ótimo para soltar um inimigo sem encher a tela.',
   },
   {
     type: 'sz_g3d_spawn_enemy',
     placement: 'command',
-    message0: 'Na cena %1, soltar 1 inimigo no grupo %2, velocidade %3',
+    message0: 'Na cena %1, soltar 1 inimigo no grupo %2, %3 por segundo',
     args0: [
       { type: 'field_name_picker', name: 'WORLD', text: 'cena', kind: 'g3d-world' },
       { type: 'field_name_picker', name: 'GROUP', text: 'inimigos', kind: 'group3d' },
@@ -486,34 +498,10 @@ export const gameThreeDBlocks = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     tooltip:
-      'Cria 1 inimigo (cubo vermelho) que vem de longe na velocidade escolhida. Use dentro de "A cada N quadros" para soltar de tempos em tempos.',
-  },
-  {
-    type: 'sz_g3d_stop',
-    placement: 'runtime-command',
-    message0: 'Fim de jogo: parar a cena %1',
-    args0: [{ type: 'field_name_picker', name: 'WORLD', text: 'cena', kind: 'g3d-world' }],
-    previousStatement: 'JSStmt',
-    nextStatement: 'JSStmt',
-    tooltip: 'Para o laço de animação (fim de jogo). Use dentro de um "se" de colisão.',
+      'Cria 1 inimigo (cubo vermelho) que vem de longe na velocidade escolhida. Use dentro de "A cada N segundos" para soltar de tempos em tempos.',
   },
 
-  // ---- GENÉRICOS de grade/isométrico (fora do kit, p/ outros jogos) ----
-  {
-    type: 'sz_g3d_isometric_camera',
-    placement: 'start-only-command',
-    message0: 'Câmera isométrica na cena %1 seguindo o objeto %2',
-    args0: [
-      { type: 'field_name_picker', name: 'WORLD', text: 'cena', kind: 'g3d-world' },
-      // R4/B2: default em BRANCO (= não segue), casando com a "Câmera aérea"
-      // (top_camera) e com o próprio tooltip ("deixe em branco para não seguir").
-      { type: 'field_name_picker', name: 'FOLLOW', text: '', kind: 'g3d-object' },
-    ],
-    previousStatement: 'JSStmt',
-    nextStatement: 'JSStmt',
-    tooltip:
-      'Troca a câmera por uma isométrica (vista de cima em ângulo). Deixe o objeto em branco para não seguir ninguém.',
-  },
+  // ---- GENÉRICOS de grade (fora do kit, p/ outros jogos) ----
   {
     type: 'sz_g3d_grid_position',
     placement: 'command',
@@ -536,7 +524,7 @@ export const gameThreeDBlocks = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     tooltip:
-      'Anda uma casa por vez (com um pulinho) ao apertar as setas. Use dentro de "A cada quadro 3D".',
+      'Anda uma casa por vez (com um pulinho) ao apertar as setas. Use dentro de "A cada quadro".',
   },
   {
     type: 'sz_g3d_grid_move',
@@ -557,7 +545,7 @@ export const gameThreeDBlocks = [
   {
     type: 'sz_g3d_move_across',
     placement: 'loop-command',
-    message0: 'Mover os objetos do grupo %1 (velocidade %2, dando a volta de x %3 até %4)',
+    message0: 'Mover os objetos do grupo %1 (%2 por segundo, dando a volta de x %3 até %4)',
     args0: [
       { type: 'field_name_picker', name: 'GROUP', text: 'carros', kind: 'group3d' },
       { type: 'input_value', name: 'SPEED', check: 'JSValue' },
@@ -568,18 +556,7 @@ export const gameThreeDBlocks = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     tooltip:
-      'Move todos os objetos do grupo numa faixa, dando a volta nas bordas. Velocidade negativa = sentido contrário. Use dentro de "A cada quadro 3D".',
-  },
-  {
-    type: 'sz_g3d_touches_box',
-    message0: 'o objeto %1 está encostando em algum de %2 ?',
-    args0: [
-      { type: 'field_name_picker', name: 'OBJ', text: 'jogador', kind: 'object3d' },
-      { type: 'field_name_picker', name: 'GROUP', text: 'carros', kind: 'group3d' },
-    ],
-    output: 'JSValue',
-    tooltip:
-      'Verdadeiro enquanto o objeto está encostando em algum do grupo (caixa real, funciona com modelos como carros). Use num "se".',
+      'Move todos os objetos do grupo numa faixa, dando a volta nas bordas. Velocidade negativa = sentido contrário. Use dentro de "A cada quadro".',
   },
 
   // ---- Kit Travessia (atravessar a rua / Crossy Road) ----
@@ -637,7 +614,7 @@ export const gameThreeDBlocks = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     tooltip:
-      'Move o personagem com as setas (em grade), gera mais ruas, segue com a câmera e conta a pontuação. Use dentro de "A cada quadro 3D".',
+      'Move o personagem com as setas (em grade), gera mais ruas, segue com a câmera e conta a pontuação. Use dentro de "A cada quadro".',
   },
   {
     type: 'sz_g3d_crosser_reset',
@@ -654,7 +631,9 @@ export const gameThreeDBlocks = [
   {
     type: 'sz_g3d_add_row',
     placement: 'start-only-command',
-    message0: 'No mundo %1, na linha %2, criar faixa de %3 indo para %4 velocidade %5',
+    // A velocidade é a antiga (pontos por segundo, 42 pontos = 1 quadrado): o texto diz a régua.
+    message0:
+      'No mundo %1, na linha %2, criar faixa de %3 indo para %4 velocidade %5 (150 = normal)',
     args0: [
       { type: 'field_name_picker', name: 'WORLD', text: 'mundo', kind: 'g3d-world' },
       { type: 'input_value', name: 'ROW', check: 'JSValue' },
@@ -674,7 +653,7 @@ export const gameThreeDBlocks = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     tooltip:
-      'Cria uma linha do mapa: grama, floresta com árvores, ou uma pista com carros/caminhões andando.',
+      'Cria uma linha do mapa: grama, floresta com árvores, ou uma pista com carros/caminhões andando. A velocidade é em pontos por segundo (42 pontos = 1 quadrado): 150 anda uns 3,5 quadrados por segundo, 300 o dobro.',
   },
   {
     type: 'sz_g3d_generate_rows',
@@ -697,7 +676,7 @@ export const gameThreeDBlocks = [
     args0: [{ type: 'field_name_picker', name: 'WORLD', text: 'mundo', kind: 'g3d-world' }],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
-    tooltip: 'Faz os carros e caminhões andarem e darem a volta. Use dentro de "A cada quadro 3D".',
+    tooltip: 'Faz os carros e caminhões andarem e darem a volta. Use dentro de "A cada quadro".',
   },
   {
     type: 'sz_g3d_crosser_hit',
@@ -719,24 +698,11 @@ export const gameThreeDBlocks = [
       'Quantas linhas o personagem avançou (a pontuação). Use num "se" ou para mostrar o placar.',
   },
 
-  // ---- GENÉRICOS: câmera aérea + movimento circular + distância ----
-  {
-    type: 'sz_g3d_top_camera',
-    placement: 'start-only-command',
-    message0: 'Câmera aérea (de cima) na cena %1 seguindo o objeto %2',
-    args0: [
-      { type: 'field_name_picker', name: 'WORLD', text: 'cena', kind: 'g3d-world' },
-      { type: 'field_name_picker', name: 'FOLLOW', text: '', kind: 'g3d-object' },
-    ],
-    previousStatement: 'JSStmt',
-    nextStatement: 'JSStmt',
-    tooltip:
-      'Vê a cena de cima (vista aérea). Deixe o objeto em branco para a câmera ficar parada mostrando tudo.',
-  },
+  // ---- GENÉRICOS: movimento circular + distância ----
   {
     type: 'sz_g3d_move_in_circle',
     placement: 'loop-command',
-    message0: 'Mover %1 em círculo: raio %2 velocidade %3',
+    message0: 'Mover %1 em círculo: raio %2, %3 graus por segundo',
     args0: [
       { type: 'field_name_picker', name: 'OBJ', text: 'carro', kind: 'object3d' },
       { type: 'input_value', name: 'RADIUS', check: 'JSValue' },
@@ -746,7 +712,7 @@ export const gameThreeDBlocks = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     tooltip:
-      'Faz o objeto girar numa circunferência (centro no meio da cena), virado para a direção do movimento. Use dentro de "A cada quadro 3D".',
+      'Faz o objeto girar numa circunferência (centro no meio da cena), virado para a direção do movimento. Use dentro de "A cada quadro".',
   },
   {
     type: 'sz_g3d_distance_to',
@@ -818,7 +784,7 @@ export const gameThreeDBlocks = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     tooltip:
-      'Dá voltas na pista: ↑ acelera, ↓ freia. Conta as voltas. Use dentro de "A cada quadro 3D".',
+      'Dá voltas na pista: ↑ acelera, ↓ freia. Conta as voltas. Use dentro de "A cada quadro".',
   },
   {
     type: 'sz_g3d_race_control',
@@ -843,7 +809,7 @@ export const gameThreeDBlocks = [
     args0: [{ type: 'field_name_picker', name: 'WORLD', text: 'mundo', kind: 'g3d-world' }],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
-    tooltip: 'Cria e move carros/caminhões rivais pela pista. Use dentro de "A cada quadro 3D".',
+    tooltip: 'Cria e move carros/caminhões rivais pela pista. Use dentro de "A cada quadro".',
   },
   {
     type: 'sz_g3d_race_reset',
@@ -886,12 +852,12 @@ export const gameThreeDBlocks = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     tooltip:
-      'Solta o objeto em queda livre, girando, até sumir da tela (gravidade). Use dentro de "A cada quadro 3D".',
+      'Solta o objeto em queda livre, girando, até sumir da tela (gravidade). Use dentro de "A cada quadro".',
   },
   {
     type: 'sz_g3d_slide_between',
     placement: 'loop-command',
-    message0: 'Mover %1 no eixo %2 de %3 até %4 e voltar (velocidade %5)',
+    message0: 'Mover %1 no eixo %2 de %3 até %4 e voltar (%5 por segundo)',
     args0: [
       { type: 'field_name_picker', name: 'OBJ', text: 'plataforma', kind: 'object3d' },
       {
@@ -907,12 +873,12 @@ export const gameThreeDBlocks = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     tooltip:
-      'Faz o objeto ir e voltar entre dois limites num eixo (ótimo para plataformas). Use dentro de "A cada quadro 3D".',
+      'Faz o objeto ir e voltar entre dois limites num eixo (ótimo para plataformas). Use dentro de "A cada quadro".',
   },
   {
     type: 'sz_g3d_spin',
     placement: 'loop-command',
-    message0: 'Girar %1 no eixo %2 velocidade %3',
+    message0: 'Girar %1 sem parar no eixo %2, %3 graus por segundo',
     args0: [
       { type: 'field_name_picker', name: 'OBJ', text: 'objeto', kind: 'object3d' },
       {
@@ -926,7 +892,7 @@ export const gameThreeDBlocks = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     tooltip:
-      'Gira o objeto continuamente num eixo (moedas, hélices, planetas). Use dentro de "A cada quadro 3D".',
+      'Gira o objeto continuamente num eixo (moedas, hélices, planetas). Use dentro de "A cada quadro".',
   },
 
   // ---- Kit Empilhar (torre de blocos) ----
@@ -970,7 +936,7 @@ export const gameThreeDBlocks = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     tooltip:
-      'Desliza o bloco do topo, sobe a câmera e faz as sobras caírem. Use dentro de "A cada quadro 3D".',
+      'Desliza o bloco do topo, sobe a câmera e faz as sobras caírem. Use dentro de "A cada quadro".',
   },
   {
     type: 'sz_g3d_stack_reset',
@@ -1013,7 +979,7 @@ export const gameThreeDBlocks = [
   },
   {
     type: 'sz_g3d_get_rot',
-    message0: 'rotação %1 do objeto %2 (radianos)',
+    message0: 'giro %1 do objeto %2 (graus)',
     args0: [
       {
         type: 'field_dropdown',
@@ -1023,7 +989,7 @@ export const gameThreeDBlocks = [
       { type: 'field_name_picker', name: 'OBJ', text: 'jogador', kind: 'object3d' },
     ],
     output: 'JSValue',
-    tooltip: 'Lê o giro do objeto num eixo (em radianos).',
+    tooltip: 'Lê o giro do objeto num eixo, em graus.',
   },
   {
     type: 'sz_g3d_get_scale',
@@ -1034,7 +1000,7 @@ export const gameThreeDBlocks = [
   },
   {
     type: 'sz_g3d_get_vel',
-    message0: 'velocidade %1 do objeto %2',
+    message0: 'velocidade %1 do objeto %2 (por segundo)',
     args0: [
       {
         type: 'field_dropdown',
@@ -1045,11 +1011,11 @@ export const gameThreeDBlocks = [
     ],
     output: 'JSValue',
     tooltip:
-      'Lê a velocidade do objeto num eixo (a mesma que "Definir velocidade" grava). Use numa conta ou num "se".',
+      'Lê quanto o objeto anda por segundo num eixo (a mesma que "Velocidade do objeto" grava). Use numa conta ou num "se".',
   },
   {
     type: 'sz_g3d_get_speed',
-    message0: 'velocidade total do objeto %1',
+    message0: 'velocidade total do objeto %1 (por segundo)',
     args0: [{ type: 'field_name_picker', name: 'OBJ', text: 'jogador', kind: 'object3d' }],
     output: 'JSValue',
     tooltip: 'O quão rápido o objeto se move, juntando os três eixos. É sempre 0 ou positivo.',
@@ -1063,18 +1029,18 @@ export const gameThreeDBlocks = [
   },
   {
     type: 'sz_g3d_dt',
-    message0: 'tempo desde o último quadro (cena %1)',
+    message0: 'o tempo deste quadro (em segundos) na cena %1',
     args0: [{ type: 'field_name_picker', name: 'WORLD', text: 'cena', kind: 'g3d-world' }],
     output: 'JSValue',
     tooltip:
-      'Segundos desde o quadro anterior. Multiplique a velocidade por ele para o jogo correr igual em qualquer computador.',
+      'Quantos segundos passaram desde o quadro anterior. Multiplique uma velocidade por segundo por ele para andar o pedaço certo neste quadro.',
   },
 
-  // ---- GENÉRICOS: mover/girar relativo + suavizar (lerp) ----
+  // ---- GENÉRICOS: mover/girar DE UMA VEZ + aproximar ----
   {
     type: 'sz_g3d_move_by',
-    placement: 'loop-command',
-    message0: 'mover %1 em x %2 y %3 z %4 (relativo)',
+    placement: 'command',
+    message0: 'Mover %1 de uma vez: x %2 y %3 z %4',
     args0: [
       { type: 'field_name_picker', name: 'OBJ', text: 'jogador', kind: 'object3d' },
       { type: 'input_value', name: 'X', check: 'JSValue' },
@@ -1085,12 +1051,12 @@ export const gameThreeDBlocks = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     tooltip:
-      'Soma à posição atual (move em relação a onde já está). Use dentro de "A cada quadro 3D".',
+      'Dá um passo: soma esses números à posição de agora, uma vez só. Para andar sem parar, use a velocidade.',
   },
   {
     type: 'sz_g3d_rotate_by',
-    placement: 'loop-command',
-    message0: 'girar %1 no eixo %2 em %3 (relativo)',
+    placement: 'command',
+    message0: 'Girar %1 %3 graus no eixo %2',
     args0: [
       { type: 'field_name_picker', name: 'OBJ', text: 'jogador', kind: 'object3d' },
       {
@@ -1103,12 +1069,13 @@ export const gameThreeDBlocks = [
     inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
-    tooltip: 'Soma ao giro atual num eixo (radianos). Use dentro de "A cada quadro 3D".',
+    tooltip:
+      'Gira o objeto de uma vez, a partir de onde ele está (90 = um quarto de volta). Para girar sem parar, use "Girar … sem parar".',
   },
   {
     type: 'sz_g3d_move_towards',
     placement: 'loop-command',
-    message0: 'suavizar %1 até x %2 y %3 z %4 (força %5)',
+    message0: 'Aproximar %1 de x %2 y %3 z %4 (rapidez %5)',
     args0: [
       { type: 'field_name_picker', name: 'OBJ', text: 'jogador', kind: 'object3d' },
       { type: 'input_value', name: 'X', check: 'JSValue' },
@@ -1120,7 +1087,7 @@ export const gameThreeDBlocks = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     tooltip:
-      'Aproxima o objeto do ponto aos poucos (força 0 a 1; 0.1 = bem suave). Ótimo para câmera/perseguição.',
+      'Leva o objeto até o ponto aos poucos, freando ao chegar. Rapidez 5 é suave; números maiores chegam mais rápido. Ótimo para perseguir.',
   },
 
   // ---- GENÉRICOS: olhar / apontar / andar para frente ----
@@ -1154,7 +1121,7 @@ export const gameThreeDBlocks = [
   {
     type: 'sz_g3d_move_forward',
     placement: 'loop-command',
-    message0: 'andar %1 para frente %2 (na direção que olha)',
+    message0: 'Andar com %1 para a frente, %2 por segundo',
     args0: [
       { type: 'field_name_picker', name: 'OBJ', text: 'jogador', kind: 'object3d' },
       { type: 'input_value', name: 'DIST', check: 'JSValue' },
@@ -1163,7 +1130,7 @@ export const gameThreeDBlocks = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     tooltip:
-      'Move o objeto para frente, na direção para onde ele está virado. Com a câmera em primeira pessoa nesse objeto, anda para onde o jogador olha (no plano do chão). Use dentro de "A cada quadro 3D".',
+      'Anda para onde o objeto está virado. Com a câmera em 1ª pessoa nele, anda para onde o jogador olha. Use dentro de "A cada quadro".',
   },
   {
     type: 'sz_g3d_face_velocity',
@@ -1176,13 +1143,13 @@ export const gameThreeDBlocks = [
   },
   {
     type: 'sz_g3d_angle_to',
-    message0: 'ângulo de %1 para %2 (no chão)',
+    message0: 'ângulo de %1 para %2 no chão (graus)',
     args0: [
       { type: 'field_name_picker', name: 'A', text: 'jogador', kind: 'object3d' },
       { type: 'field_name_picker', name: 'B', text: 'alvo', kind: 'object3d' },
     ],
     output: 'JSValue',
-    tooltip: 'O ângulo (em radianos) de A para B no plano do chão. Use para mirar/girar.',
+    tooltip: 'O ângulo, em graus, de A para B no plano do chão. Use para mirar ou girar.',
   },
 
   // ---- GENÉRICOS: mira & clique (raycast) ----
@@ -1243,7 +1210,7 @@ export const gameThreeDBlocks = [
   {
     type: 'sz_g3d_body',
     placement: 'start-only-command',
-    message0: 'dar corpo físico a %1 (gravidade %2)',
+    message0: 'Dar corpo físico a %1 com gravidade %2',
     args0: [
       { type: 'field_name_picker', name: 'OBJ', text: 'jogador', kind: 'object3d' },
       { type: 'input_value', name: 'GRAVITY', check: 'JSValue' },
@@ -1251,7 +1218,8 @@ export const gameThreeDBlocks = [
     inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
-    tooltip: 'Liga a física no objeto (a gravidade puxa para baixo; use número negativo).',
+    tooltip:
+      'Liga a física no objeto. A gravidade puxa para baixo: 36 é o normal, menos é mais leve, 0 flutua. (Sem corpo físico, o "Mover com gravidade" usa 7, bem mais leve: o mesmo pulo sobe mais.)',
   },
   {
     type: 'sz_g3d_step_body',
@@ -1264,7 +1232,7 @@ export const gameThreeDBlocks = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     tooltip:
-      'Aplica a gravidade e empurra para fora dos objetos sólidos. Use dentro de "A cada quadro 3D".',
+      'Aplica a gravidade e empurra para fora dos objetos sólidos. Use dentro de "A cada quadro".',
   },
   {
     type: 'sz_g3d_set_solid',
@@ -1278,7 +1246,7 @@ export const gameThreeDBlocks = [
   {
     type: 'sz_g3d_platformer_controls',
     placement: 'loop-command',
-    message0: 'controle de plataforma para %1 no mundo %2 (velocidade %3, pulo %4)',
+    message0: 'Controle de plataforma para %1 no mundo %2 (%3 por segundo, pulo %4)',
     args0: [
       { type: 'field_name_picker', name: 'OBJ', text: 'jogador', kind: 'g3d-object' },
       { type: 'field_name_picker', name: 'WORLD', text: 'cena', kind: 'g3d-world' },
@@ -1289,7 +1257,7 @@ export const gameThreeDBlocks = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     tooltip:
-      'Anda com WASD/setas + pula no espaço, com gravidade e colisão. Use dentro de "A cada quadro 3D".',
+      'Anda com WASD/setas + pula no espaço, com gravidade e colisão. Use dentro de "A cada quadro".',
   },
   // ---- 🍄 Kit Plataforma: correr e pular de lado ----
   {
@@ -1297,8 +1265,9 @@ export const gameThreeDBlocks = [
     placement: 'start-only-command',
     message0: 'Criar cena de plataforma 3D no canvas %1 e guardar em %2',
     args0: [
-      { type: 'field_input', name: 'CANVAS', text: 'tela' },
-      { type: 'field_name_picker', name: 'VAR', text: 'jogo', kind: 'g3d-world' },
+      // Mesma regra dos outros kits: o canvas é ESCOLHIDO (seletor); o nome é DECLARADO.
+      { type: 'field_name_picker', name: 'CANVAS', text: 'tela', kind: 'canvas' },
+      { type: 'field_input', name: 'VAR', text: 'jogo' },
     ],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
@@ -1309,7 +1278,7 @@ export const gameThreeDBlocks = [
     placement: 'start-only-command',
     message0: 'Criar o herói %1 na cena %2 com a cor %3',
     args0: [
-      { type: 'field_name_picker', name: 'VAR', text: 'heroi', kind: 'object3d' },
+      { type: 'field_input', name: 'VAR', text: 'heroi' },
       { type: 'field_name_picker', name: 'WORLD', text: 'jogo', kind: 'g3d-world' },
       { type: 'field_colour', name: 'COLOR', colour: '#e03010' },
     ],
@@ -1376,7 +1345,7 @@ export const gameThreeDBlocks = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     tooltip:
-      'Um quadro do jogo: move os inimigos, confere as batidas, os itens, o relógio e vai montando a fase à frente. Use dentro de "A cada quadro 3D".',
+      'Um quadro do jogo: move os inimigos, confere as batidas, os itens, o relógio e vai montando a fase à frente. Use dentro de "A cada quadro".',
   },
   {
     type: 'sz_g3d_side_camera',
@@ -1422,24 +1391,24 @@ export const gameThreeDBlocks = [
   },
   {
     type: 'sz_g3d_on_stage_event',
-    placement: 'start-only-command',
-    bodyExecution: 'deferred-callback',
-    // ⚠️ O bloco é REGISTRADO em "Ao iniciar" (por isso `start-only-command`),
-    // mas o corpo dele roda depois, e sem declarar contexto o corpo não
-    // concedia contexto NENHUM: o Blockly recusava qualquer bloco que exija
-    // estar dentro de alguma coisa, e o sintoma não era recusa de encaixe na
-    // tela — era o projeto salvo falhar ao RESTAURAR ("could not connect its
+    // É um "Quando…": mora em ⚡ Quando acontecer (lote 5 do review 3D; era registrado em
+    // "Ao iniciar" antes de a regra de eventos do `ir/lifecycle.ts` incluir o `g3d:`).
+    placement: 'event',
+    // ⚠️ O corpo roda depois, e sem declarar contexto o corpo não concedia contexto
+    // NENHUM: o Blockly recusava qualquer bloco que exija estar dentro de alguma coisa,
+    // e o sintoma era o projeto salvo falhar ao RESTAURAR ("could not connect its
     // previous connection"), que é como o exemplo Reino Cogumelo quebrou.
     //
-    // É `loop-body`, e não `event-body`, porque o acontecimento é despachado de
-    // DENTRO do laço que já está rodando: `sz_g3d_stage_step` é `loop-command`
-    // e a cadeia é stage_step → stepStageCoins → takeCoin → fireStage. Isso
-    // casa com a regra de áudio da extensão ("só dentro de uma interação ou de
-    // um loop já ativo", em `blocksPedagogy.test.ts`) sem afrouxá-la: tocar o
-    // som da moeda no acontecimento da moeda passa a encaixar, e começar áudio
-    // fora de um laço ativo continua proibido. `syntactic-loop-body` NÃO é
-    // concedido, então `parar`/`continuar` seguem recusados aqui.
-    bodyContext: 'loop-body',
+    // É `game-event-body` porque o acontecimento é despachado de DENTRO do laço
+    // que já está rodando (`sz_g3d_stage_step` é `loop-command` e a cadeia é
+    // stage_step → stepStageCoins → takeCoin → fireStage), mas UMA vez por
+    // acontecimento. O áudio (`AUDIO_ACTION_PLACEMENT`) aceita esse contexto, então
+    // o som da moeda encaixa e começar áudio fora do jogo rodando segue proibido.
+    // ⚠️ Era `loop-body`, e aí o Blockly recusava a música e a torre (que proíbem
+    // laço) enquanto a IR aceitava (projeto abria pela metade), e aceitava comando
+    // contínuo dentro de um "Se" que a IR recusava. A matriz
+    // `game3dRules/__tests__/blocklyIrMatrix.test.ts` trava os dois lados.
+    bodyContext: 'game-event-body',
     message0: 'Quando na fase %1 acontecer %2',
     args0: [
       { type: 'field_name_picker', name: 'WORLD', text: 'jogo', kind: 'g3d-world' },
@@ -1456,7 +1425,7 @@ export const gameThreeDBlocks = [
   {
     type: 'sz_g3d_classic_platformer',
     placement: 'loop-command',
-    message0: 'controle de plataforma clássica para %1 no mundo %2 (velocidade %3, pulo %4)',
+    message0: 'Plataforma clássica para %1 no mundo %2 (%3 por segundo, pulo %4)',
     args0: [
       { type: 'field_name_picker', name: 'OBJ', text: 'jogador', kind: 'g3d-object' },
       { type: 'field_name_picker', name: 'WORLD', text: 'cena', kind: 'g3d-world' },
@@ -1467,7 +1436,7 @@ export const gameThreeDBlocks = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     tooltip:
-      'Anda só para os lados, mas com peso: acelera, derrapa ao virar, corre no dobro segurando Shift e pula mais alto quanto mais tempo você segura o botão. Use dentro de "A cada quadro 3D".',
+      'Anda só para os lados, mas com peso: acelera, derrapa ao virar, corre no dobro segurando Shift e pula mais alto quanto mais tempo você segura o botão. Use dentro de "A cada quadro".',
   },
   {
     type: 'sz_g3d_carry_riders',
@@ -1520,12 +1489,12 @@ export const gameThreeDBlocks = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     tooltip:
-      'Cada objeto tem uma gaveta própria: guarde nela a direção que ele anda, quanto tempo falta, quantas vidas tem.',
+      'Guarda um número no objeto, com um nome: a direção que ele anda, quanto tempo falta, quantas vidas tem. Leia com "… do objeto".',
   },
   {
     type: 'sz_g3d_fps_controls',
     placement: 'loop-command',
-    message0: 'controle de primeira pessoa para %1 no mundo %2 (velocidade %3)',
+    message0: 'Controle de 1ª pessoa para %1 no mundo %2 (%3 por segundo)',
     args0: [
       { type: 'field_name_picker', name: 'OBJ', text: 'jogador', kind: 'g3d-object' },
       { type: 'field_name_picker', name: 'WORLD', text: 'cena', kind: 'g3d-world' },
@@ -1535,7 +1504,7 @@ export const gameThreeDBlocks = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     tooltip:
-      'Anda com WASD na direção que o jogador olha (combine com a câmera de primeira pessoa). Use dentro de "A cada quadro 3D".',
+      'Anda com WASD na direção que o jogador olha (combine com a câmera de primeira pessoa). Use dentro de "A cada quadro".',
   },
   {
     type: 'sz_g3d_resolve_collision',
@@ -1550,52 +1519,11 @@ export const gameThreeDBlocks = [
     tooltip: 'Se A está dentro de B, empurra A para fora (colisão manual entre dois objetos).',
   },
 
-  // ---- GENÉRICOS: câmeras vivas (1ª pessoa, orbital, 3ª pessoa, FOV) ----
-  {
-    type: 'sz_g3d_fps_camera',
-    placement: 'command',
-    message0: 'câmera em primeira pessoa na cena %1 presa a %2',
-    args0: [
-      { type: 'field_name_picker', name: 'WORLD', text: 'cena', kind: 'g3d-world' },
-      { type: 'field_name_picker', name: 'OBJ', text: 'jogador', kind: 'g3d-object' },
-    ],
-    previousStatement: 'JSStmt',
-    nextStatement: 'JSStmt',
-    tooltip:
-      'Põe a câmera nos olhos do objeto e olha com o mouse (clique para travar o ponteiro). Combine com o controle de primeira pessoa.',
-  },
-  {
-    type: 'sz_g3d_orbit_camera',
-    placement: 'command',
-    message0: 'câmera orbital na cena %1 olhando para %2',
-    args0: [
-      { type: 'field_name_picker', name: 'WORLD', text: 'cena', kind: 'g3d-world' },
-      { type: 'field_name_picker', name: 'OBJ', text: 'jogador', kind: 'g3d-object' },
-    ],
-    previousStatement: 'JSStmt',
-    nextStatement: 'JSStmt',
-    tooltip: 'Gira a câmera ao redor de um objeto arrastando o mouse (e a roda dá zoom).',
-  },
-  {
-    type: 'sz_g3d_third_person_camera',
-    placement: 'command',
-    message0: 'câmera em terceira pessoa na cena %1 atrás de %2 (distância %3, altura %4)',
-    args0: [
-      { type: 'field_name_picker', name: 'WORLD', text: 'cena', kind: 'g3d-world' },
-      { type: 'field_name_picker', name: 'OBJ', text: 'jogador', kind: 'g3d-object' },
-      { type: 'input_value', name: 'DIST', check: 'JSValue' },
-      { type: 'input_value', name: 'HEIGHT', check: 'JSValue' },
-    ],
-    inputsInline: true,
-    previousStatement: 'JSStmt',
-    nextStatement: 'JSStmt',
-    tooltip:
-      'A câmera segue atrás e acima do objeto (estilo aventura). Use no início ou a cada quadro.',
-  },
+  // ---- GENÉRICOS: câmera — olhar e lente ----
   {
     type: 'sz_g3d_camera_look_at',
     placement: 'command',
-    message0: 'a câmera da cena %1 olha para %2',
+    message0: 'Câmera da cena %1: olhar para %2',
     args0: [
       { type: 'field_name_picker', name: 'WORLD', text: 'cena', kind: 'g3d-world' },
       { type: 'field_name_picker', name: 'OBJ', text: 'jogador', kind: 'g3d-object' },
@@ -1607,7 +1535,7 @@ export const gameThreeDBlocks = [
   {
     type: 'sz_g3d_set_fov',
     placement: 'command',
-    message0: 'campo de visão da câmera da cena %1 = %2 graus',
+    message0: 'Lente da câmera da cena %1: %2 graus',
     args0: [
       { type: 'field_name_picker', name: 'WORLD', text: 'cena', kind: 'g3d-world' },
       { type: 'input_value', name: 'DEG', check: 'JSValue' },
@@ -1711,7 +1639,40 @@ export const gameThreeDBlocks = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     tooltip:
-      'Põe na cena um modelo 3D de verdade (arquivo .glb que você trouxe do Molda ou enviou em "Modelos 3D"). Ele nasce como um cubo e ganha a forma do arquivo assim que carrega; o tamanho é o lado maior, em blocos. Mover, girar, colidir e pintar funcionam nele.',
+      'Põe na cena um modelo 3D do Molda (ou enviado em "Modelos 3D"). Nasce como um cubo e ganha a forma assim que carrega; o tamanho é o lado maior, em blocos.',
+  },
+  // ---- 🎬 Animação do modelo (review 3D, lote 6): os clipes que a criança fez no Molda ----
+  {
+    type: 'sz_g3d_play_animation',
+    placement: 'command',
+    message0: 'Tocar a animação %1 em %2 %3',
+    args0: [
+      { type: 'field_model_clip_picker', name: 'CLIP', text: 'Andar' },
+      { type: 'field_name_picker', name: 'OBJ', text: 'heroi', kind: 'g3d-object' },
+      { type: 'field_dropdown', name: 'MODE', options: GAME3D_DROPDOWN_OPTIONS.animationMode },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    tooltip:
+      'Toca uma animação feita no Molda (escolha o nome na lista). No "A cada quadro" ela continua sem recomeçar; trocar de nome troca de animação suavemente.',
+  },
+  {
+    type: 'sz_g3d_stop_animation',
+    placement: 'command',
+    message0: 'Parar a animação de %1',
+    args0: [{ type: 'field_name_picker', name: 'OBJ', text: 'heroi', kind: 'g3d-object' }],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    tooltip: 'Para a animação do modelo, que fica na pose em que estava.',
+  },
+  {
+    type: 'sz_g3d_animation_done',
+    message0: '%1 terminou a animação?',
+    args0: [{ type: 'field_name_picker', name: 'OBJ', text: 'heroi', kind: 'g3d-object' }],
+    output: 'JSValue',
+    tooltip:
+      'Verdadeiro quando uma animação tocada "uma vez" chegou ao fim. Use num "se" para emendar outra.',
   },
   {
     type: 'sz_g3d_add_to_model',
@@ -1768,7 +1729,8 @@ export const gameThreeDBlocks = [
   {
     type: 'sz_g3d_set_opacity',
     placement: 'command',
-    message0: 'Transparência de %1 = %2 (0 a 1)',
+    // Era "Transparência … (0 a 1)" com 1 = opaco: o nome dizia o contrário do número.
+    message0: 'Quanto %1 aparece: %2 (0 = some, 1 = inteiro)',
     args0: [
       { type: 'field_name_picker', name: 'OBJ', text: 'objeto', kind: 'object3d' },
       { type: 'input_value', name: 'OPACITY', check: 'JSValue' },
@@ -1776,7 +1738,7 @@ export const gameThreeDBlocks = [
     inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
-    tooltip: 'Deixa o objeto transparente (1 = opaco, 0 = invisível).',
+    tooltip: 'Opacidade do objeto: 1 aparece inteiro, 0,5 fica meio transparente, 0 some.',
   },
   {
     type: 'sz_g3d_set_material',
@@ -1797,14 +1759,17 @@ export const gameThreeDBlocks = [
   {
     type: 'sz_g3d_set_texture',
     placement: 'start-only-command',
-    message0: 'Vestir %1 com a imagem %2',
+    message0: 'Vestir %1 com a imagem %2 repetindo %3 vezes',
     args0: [
       { type: 'field_name_picker', name: 'OBJ', text: 'objeto', kind: 'object3d' },
       { type: 'field_asset_picker', name: 'ASSET', text: 'textura' },
+      { type: 'input_value', name: 'REPEAT', check: 'JSValue' },
     ],
+    inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
-    tooltip: 'Põe uma imagem (asset adicionado ao projeto) na superfície do objeto.',
+    tooltip:
+      'Põe uma imagem do projeto na superfície do objeto. Repetir mais vezes deixa o desenho menor e lado a lado (bom para chão de grama ou parede de tijolo).',
   },
   {
     type: 'sz_g3d_paint_pattern',
@@ -1866,7 +1831,7 @@ export const gameThreeDBlocks = [
   {
     type: 'sz_g3d_add_point_light',
     placement: 'start-only-command',
-    message0: 'Adicionar luz pontual na cena %1 (cor %2, força %3) em x %4 y %5 z %6',
+    message0: 'Adicionar luz pontual na cena %1 (cor %2, força %3) em x %4 y %5 z %6 %7',
     args0: [
       { type: 'field_name_picker', name: 'WORLD', text: 'cena', kind: 'g3d-world' },
       { type: 'field_colour', name: 'COLOR', colour: '#ffd27f' },
@@ -1874,11 +1839,13 @@ export const gameThreeDBlocks = [
       { type: 'input_value', name: 'X', check: 'JSValue' },
       { type: 'input_value', name: 'Y', check: 'JSValue' },
       { type: 'input_value', name: 'Z', check: 'JSValue' },
+      { type: 'field_dropdown', name: 'SHADOW', options: GAME3D_DROPDOWN_OPTIONS.pointShadow },
     ],
     inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
-    tooltip: 'Uma lâmpada/tocha que brilha de um ponto para todos os lados.',
+    tooltip:
+      'Uma lâmpada/tocha que brilha de um ponto para todos os lados. Sem sombra é mais leve; "com sombra" vale para UMA luz pontual por cena.',
   },
   {
     type: 'sz_g3d_set_fog',
@@ -1944,26 +1911,14 @@ export const gameThreeDBlocks = [
     tooltip: 'Liga ou desliga as sombras da cena (desligar deixa o jogo mais leve).',
   },
 
-  // ---- GENÉRICOS: enxames & som (Fase 8) ----
+  // ---- GENÉRICOS: cópias de um molde num grupo + som (Fase 8) ----
   {
-    type: 'sz_g3d_create_swarm',
-    placement: 'start-only-command',
-    message0: 'Criar enxame %1 na cena %2',
-    args0: [
-      { type: 'field_input', name: 'NAME', text: 'enxame' },
-      { type: 'field_name_picker', name: 'WORLD', text: 'cena', kind: 'g3d-world' },
-    ],
-    previousStatement: 'JSStmt',
-    nextStatement: 'JSStmt',
-    tooltip: 'Cria um enxame vazio para guardar muitas cópias de um objeto.',
-  },
-  {
-    type: 'sz_g3d_spawn_in_swarm',
+    type: 'sz_g3d_spawn_copy',
     placement: 'command',
-    message0: 'Soltar cópia de %1 no enxame %2 em x %3 y %4 z %5',
+    message0: 'Criar uma cópia de %1 no grupo %2 em x %3 y %4 z %5',
     args0: [
-      { type: 'field_name_picker', name: 'ORIGINAL', text: 'modelo', kind: 'g3d-object' },
-      { type: 'field_name_picker', name: 'SWARM', text: 'enxame', kind: 'swarm3d' },
+      { type: 'field_name_picker', name: 'ORIGINAL', text: 'molde', kind: 'g3d-object' },
+      { type: 'field_name_picker', name: 'GROUP', text: 'inimigos', kind: 'group3d' },
       { type: 'input_value', name: 'X', check: 'JSValue' },
       { type: 'input_value', name: 'Y', check: 'JSValue' },
       { type: 'input_value', name: 'Z', check: 'JSValue' },
@@ -1971,49 +1926,15 @@ export const gameThreeDBlocks = [
     inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
-    tooltip: 'Cria uma cópia de um objeto e a coloca no enxame, na posição dada.',
+    tooltip:
+      'Copia o objeto (o molde) e põe a cópia no grupo, nessa posição. Esconda o molde para ele servir só de modelo.',
   },
   {
-    type: 'sz_g3d_count_swarm',
-    message0: 'quantidade de cópias no enxame %1',
-    args0: [{ type: 'field_name_picker', name: 'SWARM', text: 'enxame', kind: 'swarm3d' }],
-    output: 'JSValue',
-    tooltip: 'Mostra quantas cópias existem agora no enxame.',
-  },
-  {
-    type: 'sz_g3d_for_each_swarm',
+    type: 'sz_g3d_prune_area',
     placement: 'command',
-    bodyExecution: 'sync-callback',
-    message0: 'Para cada %1 do enxame %2',
+    message0: 'No grupo %1, tirar quem saiu de %2 a %3 no eixo %4',
     args0: [
-      { type: 'field_input', name: 'ITEM', text: 'item' },
-      { type: 'field_name_picker', name: 'SWARM', text: 'enxame', kind: 'swarm3d' },
-    ],
-    message1: 'fazer %1',
-    args1: [{ type: 'input_statement', name: 'BODY' }],
-    inputsInline: true,
-    previousStatement: 'JSStmt',
-    nextStatement: 'JSStmt',
-    tooltip: 'Repete os blocos de dentro para cada objeto do enxame (o objeto da vez é "item").',
-  },
-  {
-    type: 'sz_g3d_remove_from_swarm',
-    placement: 'command',
-    message0: 'Tirar %1 do enxame %2',
-    args0: [
-      { type: 'field_name_picker', name: 'ITEM', text: 'item', kind: 'g3d-object' },
-      { type: 'field_name_picker', name: 'SWARM', text: 'enxame', kind: 'swarm3d' },
-    ],
-    previousStatement: 'JSStmt',
-    nextStatement: 'JSStmt',
-    tooltip: 'Remove uma cópia do enxame e da cena (ótimo dentro do "para cada").',
-  },
-  {
-    type: 'sz_g3d_prune_swarm',
-    placement: 'command',
-    message0: 'No enxame %1, tirar o que saiu de %2 a %3 no eixo %4',
-    args0: [
-      { type: 'field_name_picker', name: 'SWARM', text: 'enxame', kind: 'swarm3d' },
+      { type: 'field_name_picker', name: 'GROUP', text: 'inimigos', kind: 'group3d' },
       { type: 'input_value', name: 'MIN', check: 'JSValue' },
       { type: 'input_value', name: 'MAX', check: 'JSValue' },
       {
@@ -2025,7 +1946,8 @@ export const gameThreeDBlocks = [
     inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
-    tooltip: 'Limpa do enxame as cópias que passaram dos limites (saíram da tela), higiene.',
+    tooltip:
+      'Tira do grupo (e da cena) quem passou desses limites no eixo. Deixa o jogo leve quando as coisas saem da área.',
   },
   {
     type: 'sz_g3d_play_note',
@@ -2043,7 +1965,7 @@ export const gameThreeDBlocks = [
   {
     type: 'sz_g3d_play_effect',
     placement: AUDIO_ACTION_PLACEMENT,
-    message0: 'Tocar efeito %1',
+    message0: 'Tocar o som pronto %1',
     args0: [
       {
         type: 'field_dropdown',
@@ -2125,283 +2047,15 @@ export const gameThreeDBlocks = [
 ] satisfies BlockDefinition[]
 
 /**
- * Subcategorias da paleta (mesmo padrão do Jogo 2D): agrupa os blocos por tema
- * para a criança achar mais fácil. `leftover` garante que nenhum bloco novo
- * desapareça da paleta se esquecer de ser mapeado aqui.
+ * As regras de jogo (placar, vida, telas, contagem, sorteio, tremer, piscar, tecla, clique e
+ * encostar) vêm da fábrica COMPARTILHADA pelas três extensões 3D (`game3dRules/blocks.ts`).
  */
-const SUBCAT_DEFINITIONS: { name: string; types: string[] }[] = [
-  {
-    name: '🧱 Cena & objetos',
-    types: [
-      'sz_g3d_create_scene',
-      'sz_g3d_create_fullscreen_scene',
-      'sz_g3d_set_background',
-      'sz_g3d_set_camera',
-      'sz_g3d_create_box',
-      'sz_g3d_create_sphere',
-      'sz_g3d_create_block',
-      'sz_g3d_set_position',
-      'sz_g3d_set_rotation',
-      'sz_g3d_set_scale',
-      'sz_g3d_animate',
-    ],
-  },
-  {
-    name: '🎮 Física & controles',
-    types: [
-      'sz_g3d_control_keys',
-      'sz_g3d_set_velocity',
-      'sz_g3d_jump',
-      'sz_g3d_apply_gravity',
-      'sz_g3d_camera_follow',
-      'sz_g3d_move_in_circle',
-      'sz_g3d_fall',
-      'sz_g3d_slide_between',
-      'sz_g3d_spin',
-    ],
-  },
-  {
-    name: '🎥 Câmera & grade 3D',
-    types: [
-      'sz_g3d_isometric_camera',
-      'sz_g3d_grid_position',
-      'sz_g3d_grid_step',
-      'sz_g3d_grid_move',
-      'sz_g3d_move_across',
-      'sz_g3d_top_camera',
-    ],
-  },
-  {
-    name: '❓ Perguntas',
-    types: [
-      'sz_g3d_key_down',
-      'sz_g3d_key_pressed',
-      'sz_g3d_collides',
-      'sz_g3d_hit_any',
-      'sz_g3d_hit_is',
-      'sz_g3d_touches_box',
-      'sz_g3d_distance_to',
-      'sz_g3d_is_near',
-      'sz_g3d_object_value',
-    ],
-  },
-  {
-    name: '📐 Posição & direção',
-    types: [
-      'sz_g3d_get_pos',
-      'sz_g3d_get_rot',
-      'sz_g3d_get_scale',
-      'sz_g3d_get_vel',
-      'sz_g3d_get_speed',
-      'sz_g3d_is_moving',
-      'sz_g3d_dt',
-      'sz_g3d_move_by',
-      'sz_g3d_rotate_by',
-      'sz_g3d_move_towards',
-    ],
-  },
-  {
-    name: '🧭 Olhar & apontar',
-    types: [
-      'sz_g3d_look_at_object',
-      'sz_g3d_look_at_point',
-      'sz_g3d_move_forward',
-      'sz_g3d_face_velocity',
-      'sz_g3d_angle_to',
-    ],
-  },
-  {
-    name: '🎯 Mira & clique',
-    types: [
-      'sz_g3d_pick_at_mouse',
-      'sz_g3d_pointer_over',
-      'sz_g3d_aim_ahead',
-      'sz_g3d_on_ground',
-      'sz_g3d_ground_height',
-    ],
-  },
-  {
-    name: '🏃 Corpo & colisões',
-    types: [
-      'sz_g3d_body',
-      'sz_g3d_step_body',
-      'sz_g3d_set_solid',
-      'sz_g3d_platformer_controls',
-      'sz_g3d_classic_platformer',
-      'sz_g3d_fps_controls',
-      'sz_g3d_resolve_collision',
-      'sz_g3d_for_each_hit',
-      'sz_g3d_carry_riders',
-      'sz_g3d_pass_under',
-      'sz_g3d_set_object_value',
-    ],
-  },
-  {
-    name: '🎥 Câmera viva',
-    types: [
-      'sz_g3d_fps_camera',
-      'sz_g3d_orbit_camera',
-      'sz_g3d_third_person_camera',
-      'sz_g3d_camera_look_at',
-      'sz_g3d_set_fov',
-    ],
-  },
-  {
-    name: '🧊 Formas & modelos',
-    types: [
-      'sz_g3d_create_cylinder',
-      'sz_g3d_create_cone',
-      'sz_g3d_create_plane',
-      'sz_g3d_create_torus',
-      'sz_g3d_create_model',
-      'sz_g3d_create_model_file',
-      'sz_g3d_add_to_model',
-      'sz_g3d_set_visible',
-      'sz_g3d_remove_object',
-    ],
-  },
-  {
-    name: '🎨 Aparência',
-    types: [
-      'sz_g3d_set_color',
-      'sz_g3d_set_opacity',
-      'sz_g3d_set_material',
-      'sz_g3d_set_texture',
-      'sz_g3d_paint_pattern',
-      'sz_g3d_no_shadow',
-    ],
-  },
-  {
-    name: '💡 Luz & céu',
-    types: [
-      'sz_g3d_add_ambient_light',
-      'sz_g3d_add_sun_light',
-      'sz_g3d_add_point_light',
-      'sz_g3d_set_fog',
-      'sz_g3d_set_sky',
-      'sz_g3d_sky_photo',
-      'sz_g3d_set_shadows',
-    ],
-  },
-  {
-    name: '👯 Enxames',
-    types: [
-      'sz_g3d_create_swarm',
-      'sz_g3d_spawn_in_swarm',
-      'sz_g3d_count_swarm',
-      'sz_g3d_for_each_swarm',
-      'sz_g3d_remove_from_swarm',
-      'sz_g3d_prune_swarm',
-    ],
-  },
-  {
-    // Som ganhou casa própria: eram 2 blocos pendurados em "Enxames", agora são
-    // 8 e o tema não tem nada a ver com o vizinho.
-    name: '🔊 Som',
-    types: [
-      'sz_g3d_load_sound',
-      'sz_g3d_play_sound',
-      'sz_g3d_stop_sound',
-      'sz_g3d_play_music',
-      'sz_g3d_stop_music',
-      'sz_g3d_set_volume',
-      'sz_g3d_play_note',
-      'sz_g3d_play_effect',
-    ],
-  },
-  {
-    name: '⏱️ Tempo e repetição',
-    types: ['sz_g3d_every_frames', 'sz_g3d_every_seconds'],
-  },
-  {
-    name: '📦 Grupos',
-    types: [
-      'sz_g3d_create_group',
-      'sz_g3d_update_group',
-      'sz_g3d_update_group_no_gravity',
-      'sz_g3d_prune_offscreen',
-      'sz_g3d_for_each_in_group',
-      'sz_g3d_count_group',
-      'sz_g3d_remove_from_group',
-      'sz_g3d_clear_group',
-    ],
-  },
-  {
-    name: '👾 Kit Desvie',
-    types: ['sz_g3d_spawn_enemy', 'sz_g3d_stop'],
-  },
-  {
-    name: '🐔 Kit Travessia',
-    types: [
-      'sz_g3d_create_crossing_scene',
-      'sz_g3d_create_crosser',
-      'sz_g3d_crosser_move',
-      'sz_g3d_crosser_step',
-      'sz_g3d_crosser_reset',
-      'sz_g3d_add_row',
-      'sz_g3d_generate_rows',
-      'sz_g3d_move_traffic',
-      'sz_g3d_crosser_hit',
-      'sz_g3d_crosser_row',
-    ],
-  },
-  {
-    name: '🏎️ Kit Corrida',
-    types: [
-      'sz_g3d_create_race_scene',
-      'sz_g3d_create_race_track',
-      'sz_g3d_create_race_car',
-      'sz_g3d_race_step',
-      'sz_g3d_race_control',
-      'sz_g3d_run_rivals',
-      'sz_g3d_race_reset',
-      'sz_g3d_race_hit',
-      'sz_g3d_race_laps',
-    ],
-  },
-  {
-    name: '🍄 Kit Plataforma',
-    types: [
-      'sz_g3d_create_platform_scene',
-      'sz_g3d_create_hero',
-      'sz_g3d_stage_theme',
-      'sz_g3d_load_stage',
-      'sz_g3d_stage_step',
-      'sz_g3d_side_camera',
-      'sz_g3d_shoot_fire',
-      'sz_g3d_on_stage_event',
-      'sz_g3d_stage_number',
-      'sz_g3d_stage_reset',
-      'sz_g3d_clear_stage',
-      'sz_g3d_stage_value',
-      'sz_g3d_stage_is',
-      'sz_g3d_hero_is',
-    ],
-  },
-  {
-    name: '📦 Kit Empilhar',
-    types: [
-      'sz_g3d_create_stack_scene',
-      'sz_g3d_create_stack_tower',
-      'sz_g3d_stack_drop',
-      'sz_g3d_stack_step',
-      'sz_g3d_stack_reset',
-      'sz_g3d_stack_score',
-      'sz_g3d_stack_game_over',
-    ],
-  },
-]
+const GAME_THREE_D_RULES = gameRulesBlocks('g3d', {
+  objectPicker: 'g3d-object',
+  groupPicker: 'group3d',
+  keys: GAME3D_DROPDOWN_OPTIONS.key,
+})
 
-// Cada subcategoria recebe um tom derivado da cor base. Esta é a única fonte de
-// cor dos blocos e das categorias da paleta.
-const SUBCAT_SHADES = categoryShades(C, SUBCAT_DEFINITIONS.length)
-const SUBCATS = SUBCAT_DEFINITIONS.map((subcategory, index) => ({
-  ...subcategory,
-  colour: SUBCAT_SHADES[index] ?? C,
-}))
-const COLOUR_BY_TYPE = new Map<string, string>(
-  SUBCATS.flatMap((sc) => sc.types.map((t) => [t, sc.colour] as const)),
-)
 const STACKED_INPUT_TYPES = new Set([
   'sz_g3d_create_block',
   'sz_g3d_add_row',
@@ -2412,16 +2066,12 @@ const STACKED_INPUT_TYPES = new Set([
   'sz_g3d_create_plane',
   'sz_g3d_create_torus',
   'sz_g3d_add_point_light',
-  'sz_g3d_spawn_in_swarm',
+  'sz_g3d_spawn_copy',
 ])
-for (const b of gameThreeDBlocks as BlockDefinition[]) {
-  const colour = COLOUR_BY_TYPE.get(b.type)
-  if (colour) b.colour = colour
+const gameThreeDAllBlockDefinitions = [...gameThreeDBlockDefinitions, ...GAME_THREE_D_RULES.blocks]
+for (const b of gameThreeDAllBlockDefinitions as BlockDefinition[]) {
   if (STACKED_INPUT_TYPES.has(b.type)) (b as { inputsInline?: boolean }).inputsInline = false
 }
-
-const CATEGORIZED = new Set(SUBCATS.flatMap((sc) => sc.types))
-const leftover = gameThreeDBlocks.map((b) => b.type).filter((t) => !CATEGORIZED.has(t))
 
 const numShadow = (value: number) => ({ shadow: { type: 'sz_val_number', fields: { NUM: value } } })
 const txtShadow = (text: string) => ({ shadow: { type: 'sz_val_text', fields: { TEXT: text } } })
@@ -2435,6 +2085,7 @@ const G3D_SOCKET_SHADOWS: Record<string, Record<string, unknown>> = {
   sz_g3d_set_camera: { X: numShadow(4), Y: numShadow(3), Z: numShadow(6) },
   sz_g3d_create_box: { SIZE: numShadow(1) },
   sz_g3d_create_model_file: { SIZE: numShadow(1) },
+  sz_g3d_set_texture: { REPEAT: numShadow(1) },
   sz_g3d_create_sphere: { RADIUS: numShadow(0.5) },
   sz_g3d_create_block: { W: numShadow(10), H: numShadow(0.5), D: numShadow(50) },
   sz_g3d_set_position: { X: numShadow(0), Y: numShadow(0), Z: numShadow(0) },
@@ -2444,33 +2095,34 @@ const G3D_SOCKET_SHADOWS: Record<string, Record<string, unknown>> = {
   sz_g3d_create_cone: { RADIUS: numShadow(0.5), HEIGHT: numShadow(1) },
   sz_g3d_create_plane: { W: numShadow(10), D: numShadow(10) },
   sz_g3d_create_torus: { RADIUS: numShadow(0.5), TUBE: numShadow(0.2) },
-  sz_g3d_control_keys: { SPEED: numShadow(0.05) },
+  sz_g3d_control_keys: { SPEED: numShadow(3) },
   sz_g3d_set_velocity: { X: numShadow(0), Y: numShadow(0), Z: numShadow(0) },
-  sz_g3d_jump: { FORCE: numShadow(0.08) },
+  sz_g3d_jump: { FORCE: numShadow(5) },
   sz_g3d_grid_position: { ROW: numShadow(0), COL: numShadow(0) },
-  sz_g3d_move_in_circle: { RADIUS: numShadow(7), SPEED: numShadow(0.02) },
-  sz_g3d_slide_between: { MIN: numShadow(-5), MAX: numShadow(5), SPEED: numShadow(0.05) },
-  sz_g3d_spin: { SPEED: numShadow(0.03) },
+  sz_g3d_move_in_circle: { RADIUS: numShadow(7), SPEED: numShadow(60) },
+  sz_g3d_slide_between: { MIN: numShadow(-5), MAX: numShadow(5), SPEED: numShadow(3) },
+  sz_g3d_spin: { SPEED: numShadow(120) },
   sz_g3d_move_towards: {
     X: numShadow(0),
     Y: numShadow(0),
     Z: numShadow(0),
-    FACTOR: numShadow(0.1),
+    FACTOR: numShadow(5),
   },
-  sz_g3d_move_by: { X: numShadow(0), Y: numShadow(0), Z: numShadow(0) },
-  sz_g3d_rotate_by: { AMOUNT: numShadow(0.01) },
+  sz_g3d_move_by: { X: numShadow(1), Y: numShadow(0), Z: numShadow(0) },
+  sz_g3d_rotate_by: { AMOUNT: numShadow(90) },
   sz_g3d_look_at_point: { X: numShadow(0), Y: numShadow(0), Z: numShadow(0) },
-  sz_g3d_move_forward: { DIST: numShadow(0.05) },
-  sz_g3d_body: { GRAVITY: numShadow(-0.01) },
-  sz_g3d_platformer_controls: { SPEED: numShadow(0.08), JUMP: numShadow(0.18) },
-  sz_g3d_classic_platformer: { SPEED: numShadow(0.08), JUMP: numShadow(0.2) },
+  sz_g3d_move_forward: { DIST: numShadow(3) },
+  // 36 = a gravidade antiga de -0.01 por quadro: o pulo de plataforma (11) sobe o mesmo.
+  sz_g3d_body: { GRAVITY: numShadow(36) },
+  sz_g3d_platformer_controls: { SPEED: numShadow(5), JUMP: numShadow(11) },
+  sz_g3d_classic_platformer: { SPEED: numShadow(5), JUMP: numShadow(12) },
   sz_g3d_set_object_value: { VALUE: numShadow(1) },
   sz_g3d_stage_number: { WORLDN: numShadow(1), STAGEN: numShadow(1) },
   // O mapa é SOQUETE, não campo: assim o programa guarda as 32 fases numa lista
   // e escolhe pelo número da fase, em vez de empilhar 32 blocos iguais.
   sz_g3d_load_stage: { MAP: txtShadow('chao=0-40;mastro=36;castelo=38') },
-  sz_g3d_fps_controls: { SPEED: numShadow(0.08) },
-  sz_g3d_third_person_camera: { DIST: numShadow(6), HEIGHT: numShadow(3) },
+  sz_g3d_fps_controls: { SPEED: numShadow(5) },
+  sz_g3d_camera_distance: { DIST: numShadow(6), HEIGHT: numShadow(3) },
   sz_g3d_set_fov: { DEG: numShadow(60) },
   sz_g3d_set_opacity: { OPACITY: numShadow(1) },
   sz_g3d_add_ambient_light: { INTENSITY: numShadow(0.6) },
@@ -2482,18 +2134,18 @@ const G3D_SOCKET_SHADOWS: Record<string, Record<string, unknown>> = {
     Z: numShadow(0),
   },
   sz_g3d_set_fog: { NEAR: numShadow(1), FAR: numShadow(30) },
-  sz_g3d_spawn_enemy: { SPEED: numShadow(0.1) },
-  sz_g3d_every_frames: { N: numShadow(45) },
+  sz_g3d_spawn_enemy: { SPEED: numShadow(6) },
   sz_g3d_every_seconds: { SECS: numShadow(2) },
   sz_g3d_add_row: { ROW: numShadow(1), SPEED: numShadow(150) },
   sz_g3d_generate_rows: { COUNT: numShadow(20) },
-  sz_g3d_move_across: { SPEED: numShadow(0.1), MIN: numShadow(-10), MAX: numShadow(10) },
-  sz_g3d_spawn_in_swarm: { X: numShadow(0), Y: numShadow(0), Z: numShadow(0) },
-  sz_g3d_prune_swarm: { MIN: numShadow(-20), MAX: numShadow(20) },
+  sz_g3d_move_across: { SPEED: numShadow(6), MIN: numShadow(-10), MAX: numShadow(10) },
+  sz_g3d_spawn_copy: { X: numShadow(0), Y: numShadow(0), Z: numShadow(0) },
+  sz_g3d_prune_area: { MIN: numShadow(-20), MAX: numShadow(20) },
   sz_g3d_play_note: { FREQ: numShadow(440), MS: numShadow(200) },
   sz_g3d_set_volume: { LEVEL: numShadow(8) },
   sz_g3d_is_near: { DIST: numShadow(2) },
   sz_g3d_aim_ahead: { DIST: numShadow(100) },
+  ...GAME_THREE_D_RULES.shadows,
 }
 
 /** (só p/ teste de drift) espelho do G2D_SOCKET_SHADOW_TYPES — ver o comentário lá. */
@@ -2509,31 +2161,16 @@ export const G3D_SOCKET_SHADOW_TYPES: Record<string, Record<string, string>> = O
   ]),
 )
 
-const toolboxBlock = (type: string) => {
-  const inputs = G3D_SOCKET_SHADOWS[type]
-  return inputs ? { kind: 'block' as const, type, inputs } : { kind: 'block' as const, type }
-}
-
-export const gameThreeDToolboxCategory: ExtensionToolboxCategory = {
-  kind: 'category',
+// Cor, ordem e toolbox saem da árvore pura em `palette.ts` (ver `extensionPalette.ts`).
+const GAME_THREE_D_PALETTE_VIEW = buildExtensionPalette({
   name: 'Jogo 3D',
   colour: C,
-  contents: [
-    ...SUBCATS.map((sc) => ({
-      kind: 'category' as const,
-      name: sc.name,
-      colour: sc.colour,
-      contents: sc.types.map(toolboxBlock),
-    })),
-    ...(leftover.length
-      ? [
-          {
-            kind: 'category' as const,
-            name: 'Mais',
-            colour: C,
-            contents: leftover.map(toolboxBlock),
-          },
-        ]
-      : []),
-  ],
-}
+  tree: GAME_THREE_D_PALETTE,
+  blocks: gameThreeDAllBlockDefinitions,
+  shadows: G3D_SOCKET_SHADOWS,
+  order: 'source',
+})
+
+export const gameThreeDBlocks = GAME_THREE_D_PALETTE_VIEW.blocks
+
+export const gameThreeDToolboxCategory: ExtensionToolboxCategory = GAME_THREE_D_PALETTE_VIEW.toolbox

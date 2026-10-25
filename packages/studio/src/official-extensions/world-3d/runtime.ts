@@ -1,6 +1,8 @@
-import { dataUrlToBufferRuntimeSource } from '../assetRuntime'
+import { withGameRules3DRuntime } from '../game3dRules/runtime'
 import { compactOfficialRuntimeSource } from '../runtimeSource'
+import { withThreeModelsRuntime } from '../three3dModelsRuntime'
 import { withThreePostProcessingRuntime } from '../threePostProcessingRuntime'
+import { withThreeRenderBudgetRuntime } from '../threeRenderBudgetRuntime'
 
 /**
  * Runtime do "Mundo 3D" — injetado no <head> do iframe quando a extensão
@@ -27,7 +29,7 @@ import { withThreePostProcessingRuntime } from '../threePostProcessingRuntime'
  *   initWorld() (os testes avaliam com stub sem document e THREE vazio).
  * - Nunca quebrar o mundo do aluno: API pública embrulhada em try/catch com
  *   console.warn; avisos de gancho saem UMA vez (60×/s afogaria o console).
- * - Higiene de GPU: pixelRatio 1 (resolução interna fixa), terreno rebuild
+ * - Higiene de GPU: resolução pelo canvas real (orçamento compartilhado; a régua config.w/h fica fixa), terreno rebuild
  *   descarta o antigo, dispose + forceContextLoss no fechamento.
  */
 const world3DRuntimeSource = `import * as THREE from 'three';
@@ -83,6 +85,18 @@ const world3DRuntimeSource = `import * as THREE from 'three';
   var keys = {};
   var justPressed = {};
   var pending = [];             // promessas de carregamento (sons/modelos, futuro)
+  // Todo listener do mundo passa pelo listen(): o disposeAll solta TODOS (antes eram 25
+  // addEventListener e nenhum remove; remontar no mesmo documento empilhava teclados).
+  var _listeners = [];
+  // Terreno mexido DURANTE o jogo (aplainar/trilha/cratera): marca e reconstrói UMA vez
+  // por quadro, e a criança tem no máximo TERRAIN_MODS_MAX desses pedidos.
+  var terrainDirty = false;
+  var userTerrainMods = 0;
+  var TERRAIN_MODS_MAX = 64;
+  // Tetos das coisas que podem nascer no MEIO do jogo (um evento repetido não afoga a cena).
+  var EXPLOSIVES_MAX = 64;
+  var MARKERS_MAX = 32;
+  var QUESTS_MAX = 32;
   var updateHooks = [];
   var stageEl = null;
   var frameEl = null;
@@ -123,8 +137,7 @@ const world3DRuntimeSource = `import * as THREE from 'three';
   var sounds = Object.create(null);
   var music = null;
   var musicName = null;
-  // HUD por canto (DOM) + balão de fala que segue o carro.
-  var hudEls = Object.create(null);
+  // Balão de fala que segue o jogador (o HUD por canto mora no fragmento de regras).
   var sayEl = null;
   var sayUntil = 0;
   var lastSafe = { x: 0, z: 0, yaw: 0 };   // último ponto seco (para respawn)
@@ -146,7 +159,10 @@ const world3DRuntimeSource = `import * as THREE from 'three';
   var raceHooks = { start: [], checkpoint: [], finish: [] };
   // 🎳 Boliche/derrubar: objetos TOMBÁVEIS (pinos/caixas) — física arcade sem solver.
   var knockables = [];         // { mesh, x, z, r, h, vx, vz, vy, y, tilt, down, home:{x,z} }
-  var bowling = null;          // { x, z, pins:[], strikeHooks:[] }
+  var bowling = null;          // { x, z, pins:[] }
+  // "Quando derrubar todos os pinos": FORA da pista, porque o gancho costuma vir no Ao iniciar,
+  // antes de a pista nascer (o start a constrói), e reconstruir a pista não pode esquecê-lo.
+  var strikeHooks = [];
   // Carrinho: config (dos blocos) + estado físico + peças visuais.
   var carCfg = null;            // { style, color, speed, turn, jump }
   var carState = null;          // { x, y, z, yaw, speed, vy, airborne, steerVis, pitch, pitchV, roll, rollV }
@@ -170,8 +186,8 @@ const world3DRuntimeSource = `import * as THREE from 'three';
   var natureGroup = null;       // raiz de tudo que foi espalhado/posto
   var scatterBudget = 12000;    // teto TOTAL de instâncias espalhadas (higiene de GPU)
   var scatterCount = 0;
-  var MAX_MODEL_SCATTER_MESHES = 48;
-  var MAX_MODEL_TRIANGLES = 500000;
+  // Orçamento por modelo (malhas/triângulos/ossos…) é do carregador compartilhado
+  // (MAX_MODEL_*); aqui só o agregado das cópias espalhadas.
   var MODEL_SCATTER_TRIANGLE_BUDGET = 2000000;
   var placedCount = 0;
   var MAX_PLACED = 200;         // "Pôr 1" é para cantinhos especiais, não para florestas
@@ -239,7 +255,8 @@ const world3DRuntimeSource = `import * as THREE from 'three';
   var lettersCount = 0;
   var LETTERS_MAX = 24;
   var _letterTexCache = null;   // caractere -> CanvasTexture (cache)
-  var explosives = [];          // { mesh, x, z, fuse, done }
+  var explosives = [];          // { mesh, x, z, fuse, done, live }
+  var explosiveHome = [];       // as caixas do COMEÇO da partida (o recomeçar refaz as que explodiram)
   var explosionHooks = [];
   var boomSpheres = [];         // { mesh, t } — esfera emissiva que incha e some
   // ---- R14 "natureza acesa": cachoeira, postes, vaga-lumes, fogueira, espuma ----
@@ -250,7 +267,7 @@ const world3DRuntimeSource = `import * as THREE from 'three';
   // as lanes daqui sem guardar polilinha.
   var cityCfg = null;           // { x, z, r, size, mode }
   var cityGraph = null;         // { cx, cz, ringR, plazaR, roadW, entries:[{ang,x,z}], crossings:[{ang,x,z}] }
-  var cityGroup = null;         // raiz de TUDO da cidade (rebuild ao vivo troca inteira)
+  var cityGroup = null;         // raiz de TUDO da cidade (uma por mundo)
   var stringLights = [];        // { bulbsMat } — varais (opacidade segue a noite)
   // 🚦 Trânsito: carrinhos autônomos no ANEL (1 InstancedMesh p/ todos) +
   // semáforos sincronizados nos 4 cruzamentos. Tudo em dt (bullet-time junto).
@@ -281,6 +298,9 @@ const world3DRuntimeSource = `import * as THREE from 'three';
   var boatState = null;         // { x, z, yaw, speed, roll }
   var boatGroup = null;
   var activeVehicle = 'car';    // 'car' | 'boat' — qual veículo o E encosta
+  // O E que acabou de subir/descer de um veículo já foi USADO neste quadro: sem isto, descer do
+  // barco religava o "E: barco" (stepBoat roda depois do stepPerson) e o mesmo aperto subia de novo.
+  var _eSpent = false;
   var _boatInteract = null;
   var bridges = [];             // { x1,z1,x2,z2,w,y1,y2 } — entram no heightAtDrive
   var lighthouses = [];         // { beam1, beam2, x, z }
@@ -291,9 +311,12 @@ const world3DRuntimeSource = `import * as THREE from 'three';
   var npcs = [];                // { name, group, parts, x, z, yaw, home, target, waitT, phase, vis, emote }
   var NPC_MAX = 8;
   var npcTalkHooks = Object.create(null);  // name -> [fn]
+  // "Passear": nome -> raio, lido quando o amigo nasce (no Ao iniciar OU no meio do jogo).
+  var npcWanderR = Object.create(null);
   // Fila de conversa por amigo (E avança). Itens-OBJETO desde a R24:
   // { kind:'say', text } | { kind:'ask', q, a, fa, b, fb } (pergunta c/ 2 escolhas).
   var npcSayQueues = Object.create(null);
+  var _removedStart = [];       // do Ao iniciar, tirado no jogo: { k, a | o } (o recomeçar devolve)
   var npcChoice = null;         // pergunta ABERTA: { name, fa, fb, el } — E engolido; 1/2 ou clique
   // 🚪 Portas interativas: E abre um overlay LOCAL (título + texto + imagem do projeto).
   var doors = [];
@@ -312,6 +335,8 @@ const world3DRuntimeSource = `import * as THREE from 'three';
   var coinsIM = null;           // InstancedMesh das moedas (1 draw)
   var coinStates = null;        // [{x, z, y, taken}]
   var COINS_MAX = 512;
+  // Raio (ao quadrado) em volta da câmera em que as moedas giram: 70 m.
+  var COIN_SPIN_R2 = 4900;
   var coinsTaken = 0;
   var collectHooks = [];
   var coinHudEl = null;         // badge automático "🪙 N"
@@ -353,13 +378,7 @@ const world3DRuntimeSource = `import * as THREE from 'three';
   var ASSETS = (typeof window !== 'undefined' && window.__SZGAME_ASSETS && typeof window.__SZGAME_ASSETS === 'object')
     ? window.__SZGAME_ASSETS
     : {};
-  var _gltfMod = null;
-  var _modelCache = null;       // nome -> { scene } já parseado
-  var _modelPending = null;     // nome -> fila de callbacks (parse em voo)
-  var _hdrMod = null;
-  var _hdrWaiters = [];
-  var _hdrCache = null;         // nome -> DataTexture base
-  var _hdrPending = null;       // nome -> fila de callbacks
+  var placedModelRoots = [];    // cópias de "Pôr o modelo" (cada uma com os seus ossos)
   var _environmentTexture = null;
   var _pendingEnvironmentTexture = null;
   var _skyPhotoRequest = 0;
@@ -384,22 +403,78 @@ const world3DRuntimeSource = `import * as THREE from 'three';
   var grassMat = null;
   var heightTex = null;         // DataTexture 8-bit da altura (a grama lê no vertex)
   var wind = 1;                 // força do vento (o bloco de vento chega na R4)
-  // Qualidade: 'alta' | 'turbo' (auto: mede o FPS nos primeiros segundos).
-  var quality = { tier: 'alta', auto: true, decided: false, probeT: 0, fpsAcc: 0, fpsN: 0 };
+  // Qualidade: o orçamento de desenho COMPARTILHADO ('alta' | 'leve' = o modo turbo; no
+  // automático mede o FPS nos primeiros segundos). Resolução pelo tamanho real do canvas.
+  var renderBudget = null;
+  /*__SZ_THREE_RENDER_BUDGET_RUNTIME__*/
+  renderBudget = createSzRenderBudget({
+    getRenderer: function () { return renderer; },
+    getCanvas: function () { return canvasEl; },
+    getScene: function () { return scene; },
+    logical: function () { return { w: config.w, h: config.h }; },
+    onTier: function (tier) { onQualityTier(tier); }
+  });
   // Mundo v4: inventário pequeno, persistente e independente de assets.
   var inventoryData = Object.create(null);
   var inventoryLoaded = false;
+  // ---- Lote 10: regras de jogo (recomeçar LEVE), coletáveis e Molda ----
+  // Fim de jogo e tela de início PAUSAM o jogador e os laços; a cena continua desenhando.
+  var _paused = false;
+  var spawnSnap = null;          // onde o jogador estava ao começar (o recomeçar volta aqui)
+  // Chamadas das regras feitas no "Ao iniciar" (vida, contagem, "depois de", texto): o
+  // recomeçar leve NÃO roda o projeto de novo, então refaz só estas.
+  var _rulesReplay = [];
+  var collectibles = [];         // { name, kind, x, z, y, mesh, taken, live, phase }
+  var COLLECTIBLES_MAX = 256;
+  var collectItemHooks = Object.create(null);
+  var _collectKinds = null;      // tipo -> { mat, parts } (geometria e material compartilhados)
+  var _takenNow = [];
+  // Modelos do Molda no personagem, nos amigos e no carro: { name, size, hit }.
+  var modelCfg = { person: null, car: null, npc: Object.create(null) };
+  var animMap = { personagem: Object.create(null), amigo: Object.create(null) };
+  var animatedModels = [];       // "Pôr o modelo … tocando": { root, anim } (teto ANIMATED_MAX)
+  var ANIMATED_MAX = 24;
+  var liveModels = [];           // modelos postos durante a partida (o recomeçar tira)
+  var personModel = null;        // { holder, root, anim } no personagem a pé
+  var carModel = null;           // { holder, root, anim } na carroceria
+  var _hdrLight = null;          // cores do céu 360° (hdrAmbient) para os materiais toon
 
-  function warn(msg) {
-    try { console.warn('SZWorld3D: ' + msg); } catch (e) {}
+  function listen(target, type, fn, opts) {
+    if (!target || !target.addEventListener) return;
+    target.addEventListener(type, fn, opts);
+    _listeners.push({ t: target, type: type, fn: fn, opts: opts });
+  }
+  // Solta os listeners de UM alvo (botões e telas que somem no meio da partida): sem isto a
+  // lista crescia a cada pergunta respondida e a cada mapa grande aberto.
+  function unlisten(target) {
+    for (var i = _listeners.length - 1; i >= 0; i--) {
+      var l = _listeners[i];
+      if (l.t !== target) continue;
+      try { target.removeEventListener(l.type, l.fn, l.opts); } catch (e) {}
+      _listeners.splice(i, 1);
+    }
+  }
+  function unlistenAll() {
+    var list = _listeners;
+    _listeners = [];
+    for (var i = 0; i < list.length; i++) {
+      try { list[i].t.removeEventListener(list[i].type, list[i].fn, list[i].opts); } catch (e) {}
+    }
   }
 
-  /** Aviso UMA vez por chave (coisa chamada a cada quadro entupiria o console). */
+  // A frase em português vai ao console do Estúdio (console.warn); o erro cru do JavaScript, em
+  // inglês, fica só no console do navegador (console.debug, que o Estúdio não repassa à criança).
+  function warn(msg, err) {
+    try { console.warn('SZWorld3D: ' + msg); } catch (e) {}
+    if (err !== undefined) { try { console.debug('SZWorld3D: ' + msg, err); } catch (e) {} }
+  }
+
+  // Aviso UMA vez por chave (coisa chamada a cada quadro entupiria o console).
   var _warned = {};
-  function warnOnce(key, msg) {
+  function warnOnce(key, msg, err) {
     if (_warned[key]) return;
     _warned[key] = true;
-    warn(msg);
+    warn(msg, err);
   }
 
   function num(v, fallback) {
@@ -422,7 +497,7 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     return t * t * (3 - 2 * t);
   }
 
-  /** Amortecimento independente de FPS (lerp exponencial). */
+  // Amortecimento independente de FPS (lerp exponencial).
   function damp(k, dt) {
     return 1 - Math.exp(-k * dt);
   }
@@ -461,7 +536,7 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     return a + (b - a) * u + (c - a) * v + (a - b - c + d) * u * v;
   }
 
-  /** Altura só do RUÍDO (+ centro aplainado), antes dos modificadores. */
+  // Altura só do RUÍDO (+ centro aplainado), antes dos modificadores.
   function baseHeightAt(x, z) {
     var scale = 1 / Math.max(4, terrainCfg.smooth * 8);
     var h = 0;
@@ -499,7 +574,9 @@ const world3DRuntimeSource = `import * as THREE from 'three';
   // um segmento; o aplainar é um disco.
   var terrainMods = [];
 
-  /** Distância do ponto (px,pz) ao segmento (ax,az)-(bx,bz) + parâmetro t [0,1]. */
+  // Distância do ponto (px,pz) ao segmento (ax,az)-(bx,bz) + parâmetro t [0,1].
+  // Devolve SEMPRE o mesmo objeto (o chão é amostrado milhares de vezes): leia na hora.
+  var _segOut = { dist: 0, t: 0 };
   function segDist(px, pz, ax, az, bx, bz) {
     var dx = bx - ax;
     var dz = bz - az;
@@ -510,10 +587,12 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     var cz = az + dz * t;
     var ex = px - cx;
     var ez = pz - cz;
-    return { dist: Math.sqrt(ex * ex + ez * ez), t: t };
+    _segOut.dist = Math.sqrt(ex * ex + ez * ez);
+    _segOut.t = t;
+    return _segOut;
   }
 
-  /** Altura contínua usada para AMOSTRAR a malha do terreno. */
+  // Altura contínua usada para AMOSTRAR a malha do terreno.
   function analyticHeightAt(x, z) {
     var h = baseHeightAt(x, z);
     for (var i = 0; i < terrainMods.length; i++) {
@@ -548,11 +627,9 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     return h;
   }
 
-  /**
-   * Interpola exatamente os mesmos dois triângulos que PlaneGeometry cria em
-   * cada célula. Depois do build, física, natureza e o bloco de altura leem a
-   * grade VISUAL — não uma função mais detalhada escondida sob a malha.
-   */
+  // Interpola exatamente os mesmos dois triângulos que PlaneGeometry cria em
+  // cada célula. Depois do build, física, natureza e o bloco de altura leem a
+  // grade VISUAL — não uma função mais detalhada escondida sob a malha.
   function sampledTerrainHeight(x, z) {
     var f = terrainField;
     if (!f) return analyticHeightAt(x, z);
@@ -575,12 +652,10 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     return sampledTerrainHeight(num(x, 0), num(z, 0));
   }
 
-  /**
-   * A altura DE DIRIGIR/ANDAR (R16): heightAt + o DECK das pontes. O heightAt
-   * segue PURO (água/scatter/grama/espuma leem o terreno de verdade); a ponte
-   * só conta quando o jogador está à altura dela (yRef > deck − 0.8) — assim o
-   * barco passa POR BAIXO e o carro sobe POR CIMA pela rampa.
-   */
+  // A altura DE DIRIGIR/ANDAR (R16): heightAt + o DECK das pontes. O heightAt
+  // segue PURO (água/scatter/grama/espuma leem o terreno de verdade); a ponte
+  // só conta quando o jogador está à altura dela (yRef > deck − 0.8) — assim o
+  // barco passa POR BAIXO e o carro sobe POR CIMA pela rampa.
   function heightAtDrive(x, z, yRef) {
     var h = heightAt(x, z);
     for (var i = 0; i < bridges.length; i++) {
@@ -595,7 +670,7 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     return h;
   }
 
-  /** Componentes da normal do chão por diferenças finitas (para o molejo). */
+  // Componentes da normal do chão por diferenças finitas (para o molejo).
   var _normScratch = { x: 0, y: 1, z: 0 };
   function groundNormalAt(x, z) {
     var e = 0.6;
@@ -613,7 +688,7 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     return _normScratch;
   }
 
-  /** RNG semeado (mulberry32): a natureza espalhada cai SEMPRE nos mesmos lugares. */
+  // RNG semeado (mulberry32): a natureza espalhada cai SEMPRE nos mesmos lugares.
   function mulberry(seed) {
     var s = seed | 0;
     return function () {
@@ -635,21 +710,29 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     return i >= COLL_GRID_DIM ? COLL_GRID_DIM - 1 : i;
   }
 
-  function colliderAdd(x, z, r) {
-    var c = { x: x, z: z, r: r, _stamp: 0 };
-    var x0 = collIndex(x - r);
-    var z0 = collIndex(z - r);
-    var x1 = collIndex(x + r);
-    var z1 = collIndex(z + r);
+  // Põe (ou, com drop, tira) um colisor de todas as células que o círculo cobre.
+  function colliderCells(c, drop) {
+    var x0 = collIndex(c.x - c.r);
+    var z0 = collIndex(c.z - c.r);
+    var x1 = collIndex(c.x + c.r);
+    var z1 = collIndex(c.z + c.r);
     for (var gx = x0; gx <= x1; gx++) {
       for (var gz = z0; gz <= z1; gz++) {
         var k = gx + ',' + gz;
-        (collCells[k] || (collCells[k] = [])).push(c);
+        if (!drop) { (collCells[k] || (collCells[k] = [])).push(c); continue; }
+        var cell = collCells[k];
+        var at = cell ? cell.indexOf(c) : -1;
+        if (at >= 0) cell.splice(at, 1);
       }
     }
   }
+  function colliderAdd(x, z, r) {
+    var c = { x: x, z: z, r: r, _stamp: 0 };
+    colliderCells(c, false);
+    return c;
+  }
 
-  /** Colisores num raio (broad-phase; dedup por carimbo, buffer reusado). */
+  // Colisores num raio (broad-phase; dedup por carimbo, buffer reusado).
   function collidersNear(x, z, radius) {
     collStamp++;
     collResults.length = 0;
@@ -675,11 +758,9 @@ const world3DRuntimeSource = `import * as THREE from 'three';
 
   // ---- 🌿 Natureza (espécies procedurais low-poly + instancing) ----
 
-  /**
-   * Cada espécie é uma lista de PEÇAS sobre geometrias unitárias compartilhadas
-   * (1 InstancedMesh por peça → uma floresta de 300 árvores custa 3 draw calls).
-   * color '' = a cor de pedra do ESTILO do mundo. collR 0 = passa por cima.
-   */
+  // Cada espécie é uma lista de PEÇAS sobre geometrias unitárias compartilhadas
+  // (1 InstancedMesh por peça → uma floresta de 300 árvores custa 3 draw calls).
+  // color '' = a cor de pedra do ESTILO do mundo. collR 0 = passa por cima.
   var SPECIES = {
     arvores: {
       collR: 0.55, smin: 0.8, smax: 1.5,
@@ -749,11 +830,11 @@ const world3DRuntimeSource = `import * as THREE from 'three';
 
   function speciesMat(color) {
     if (!speciesMats) speciesMats = {};
-    if (!speciesMats[color]) speciesMats[color] = toonMaterial({ color: color });
+    if (!speciesMats[color]) speciesMats[color] = toon(color);
     return speciesMats[color];
   }
 
-  /** Matrizes locais das peças da espécie (compostas uma vez, cacheadas nela). */
+  // Matrizes locais das peças da espécie (compostas uma vez, cacheadas nela).
   function speciesLocals(spec) {
     if (spec._locals) return spec._locals;
     spec._locals = [];
@@ -804,7 +885,7 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     mesh.setMatrixAt(i, _mat4);
   }
 
-  /** Sorteia os lugares de uma receita (fora das áreas limpas), semeado. */
+  // Sorteia os lugares de uma receita (fora das áreas limpas), semeado.
   function samplePlacements(rec, want, smin, smax) {
     var rng = mulberry(4242 + rec.seed * 101);
     var lim = config.world / 2 - 3;
@@ -822,6 +903,41 @@ const world3DRuntimeSource = `import * as THREE from 'three';
       });
     }
     return placements;
+  }
+
+  // PEDAÇOS (espalhado e cidade): cada pedaço é um InstancedMesh/malha com a SUA
+  // boundingSphere, e o frustum culling recorta o que está fora da câmera (uma peça do
+  // mundo inteiro tinha a esfera do mundo e nunca saía da tela). A grade divide o quadrado
+  // (centro cx,cz, lado side) em floor(side / cell) faixas iguais, no mínimo 1: o espalhado
+  // usa o mundo com cell 80 (80 a 160 m; mundo de até 159 m fica num pedaço só, porque ali a
+  // câmera vê quase tudo e pedaços só somariam draw calls). Mesmas peças, na mesma ordem
+  // dentro de cada pedaço; chave numérica (sem string por peça).
+  function chunkGrid(cx, cz, side, cell) {
+    var n = Math.max(1, Math.floor(side / cell));
+    return { n: n, x0: cx - side / 2, z0: cz - side / 2, size: side / n };
+  }
+  function chunkIndex(g, x, z) {
+    return clamp(Math.floor((x - g.x0) / g.size), 0, g.n - 1) + g.n * clamp(Math.floor((z - g.z0) / g.size), 0, g.n - 1);
+  }
+  function chunkItems(g, items) {
+    var cells = [];
+    var list = [];
+    for (var i = 0; i < items.length; i++) {
+      var k = chunkIndex(g, items[i].x, items[i].z);
+      if (!cells[k]) list.push(cells[k] = []);
+      cells[k].push(items[i]);
+    }
+    return list;
+  }
+  function scatterChunks(placements) {
+    return chunkItems(chunkGrid(0, 0, config.world, 80), placements);
+  }
+  function finishScatterChunk(mesh, group, noShadow) {
+    if (!noShadow) mesh.castShadow = true;
+    if (mesh.instanceMatrix) mesh.instanceMatrix.needsUpdate = true;
+    if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
+    if (mesh.computeBoundingSphere) mesh.computeBoundingSphere();
+    group.add(mesh);
   }
 
   function takeScatterRoom(want, costPerPlacement) {
@@ -851,16 +967,19 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     ensureDummies();
     var locals = speciesLocals(spec);
     var group = ensureNatureGroup();
+    var chunks = scatterChunks(placements);
     for (var p = 0; p < spec.parts.length; p++) {
       var part = spec.parts[p];
-      var mesh = new THREE.InstancedMesh(UNIT_GEOS[part.g], speciesMat(part.color || styleOf().rock), placements.length);
-      mesh.castShadow = true;
-      for (var i = 0; i < placements.length; i++) {
-        var pl = placements[i];
-        composeInstance(mesh, i, pl.x, heightAt(pl.x, pl.z), pl.z, pl.yaw, pl.s, locals[p]);
+      var mat = speciesMat(part.color || styleOf().rock);
+      for (var ci = 0; ci < chunks.length; ci++) {
+        var chunk = chunks[ci];
+        var mesh = new THREE.InstancedMesh(UNIT_GEOS[part.g], mat, chunk.length);
+        for (var i = 0; i < chunk.length; i++) {
+          var pl = chunk[i];
+          composeInstance(mesh, i, pl.x, heightAt(pl.x, pl.z), pl.z, pl.yaw, pl.s, locals[p]);
+        }
+        finishScatterChunk(mesh, group);
       }
-      if (mesh.instanceMatrix) mesh.instanceMatrix.needsUpdate = true;
-      group.add(mesh);
     }
     if (spec.collR > 0) {
       for (var c = 0; c < placements.length; c++) {
@@ -894,22 +1013,47 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     var z = clamp(num(rec.z, 0), -lim, lim);
     g.position.set(x, heightAt(x, z), z);
     ensureNatureGroup().add(g);
-    if (spec.collR > 0) colliderAdd(x, z, spec.collR * s);
+    var coll = spec.collR > 0 ? colliderAdd(x, z, spec.collR * s) : null;
+    // Posto DURANTE a partida: sai no recomeçar leve, como o "Pôr o modelo".
+    if (rec.live) liveModels.push({ rec: rec, holder: g, root: null, anim: null, coll: coll });
   }
 
-  // ---- Modelos .glb do projeto (parse de ArrayBuffer — a rede é morta) ----
+  // ---- Modelos .glb e céu .hdr do projeto (carregador compartilhado) ----
+  // Leitura (parse de ArrayBuffer — a rede é morta), fila, orçamento, ossos e HDR moram
+  // em three3dModelsRuntime.ts; aqui fica só o que é do MUNDO (céu, espalhar, pôr).
 
-  /*__SZ_DATA_URL_RUNTIME__*/
+  /*__SZ_THREE_MODELS_RUNTIME__*/
+
+  var models = createSzModels({
+    THREE: THREE,
+    warn: warn,
+    warnOnce: warnOnce,
+    assets: MODELS3D,
+    isDisposed: function () { return disposed; },
+    // O start() ESPERA modelos e céus: o passeio só começa com tudo remendado.
+    trackPending: function (promise) { pending.push(promise); },
+    waitForHdr: true,
+    getRenderer: function () { return renderer; },
+    getScene: function () { return scene; },
+    getCamera: function () { return camera; }
+  });
 
   function disposeTexture(texture, warningKey) {
     if (!texture || !texture.dispose) return;
     try { texture.dispose(); }
-    catch (e) { warnOnce(warningKey, 'não consegui liberar uma textura antiga: ' + e); }
+    catch (e) { warnOnce(warningKey, 'não consegui liberar uma textura antiga', e); }
   }
 
   function clearEnvironmentTexture() {
     var old = _environmentTexture;
     _environmentTexture = null;
+    if (_hdrLight) {
+      _hdrLight = null;
+      try {
+        if (ambientLight) ambientLight.color.set('#ffffff');
+        if (sunLight) sunLight.color.set('#ffffff');
+      } catch (e) {}
+    }
     if (scene) {
       if (scene.background === old) scene.background = null;
       if (scene.environment === old) scene.environment = null;
@@ -938,87 +1082,8 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     scene.background = texture;
     scene.environment = texture;
     _environmentTexture = texture;
-  }
-
-  function cloneHdrTexture(base) {
-    if (!base) return null;
-    var texture = base.clone ? base.clone() : null;
-    if (!texture && base.image) texture = new THREE.DataTexture(base.image.data, base.image.width, base.image.height);
-    if (!texture) return null;
-    if (THREE.EquirectangularReflectionMapping != null) texture.mapping = THREE.EquirectangularReflectionMapping;
-    texture.needsUpdate = true;
-    return texture;
-  }
-
-  function withHdrLoader(callback) {
-    if (_hdrMod) { callback(_hdrMod); return; }
-    _hdrWaiters.push(callback);
-    if (_hdrWaiters.length > 1) return;
-    var finish = function (mod) {
-      if (mod) _hdrMod = mod;
-      var waiters = _hdrWaiters.slice();
-      _hdrWaiters.length = 0;
-      for (var i = 0; i < waiters.length; i++) waiters[i](mod);
-    };
-    try {
-      import('three/addons/loaders/HDRLoader.js').then(finish, function (e) {
-        if (!disposed) warn('não consegui carregar o leitor de céu: ' + e);
-        finish(null);
-      });
-    } catch (e) {
-      if (!disposed) warn('não consegui carregar o leitor de céu: ' + e);
-      finish(null);
-    }
-  }
-
-  function loadHdrTexture(name, entry, callback) {
-    if (disposed) { callback(null); return; }
-    if (!_hdrCache) _hdrCache = Object.create(null);
-    if (_hdrCache[name]) { callback(cloneHdrTexture(_hdrCache[name])); return; }
-    if (!_hdrPending) _hdrPending = Object.create(null);
-    if (_hdrPending[name]) { _hdrPending[name].push(callback); return; }
-    _hdrPending[name] = [callback];
-    var release = null;
-    pending.push(new Promise(function (resolve) { release = resolve; }));
-    var settled = false;
-    var flush = function (base) {
-      if (settled) return;
-      settled = true;
-      var queue = _hdrPending && _hdrPending[name] ? _hdrPending[name] : [];
-      if (_hdrPending) delete _hdrPending[name];
-      for (var i = 0; i < queue.length; i++) queue[i](base && !disposed ? cloneHdrTexture(base) : null);
-      if (release) release();
-    };
-    var buf = dataUrlToBuffer(entry.dataUrl);
-    if (!buf) { warn('não consegui ler os dados do céu "' + name + '"'); flush(null); return; }
-    withHdrLoader(function (mod) {
-      if (!mod || disposed) { flush(null); return; }
-      try {
-        var parsed = new mod.HDRLoader().parse(buf);
-        if (!parsed || !parsed.data) { flush(null); return; }
-        var base = new THREE.DataTexture(parsed.data, parsed.width, parsed.height);
-        if (parsed.type != null) base.type = parsed.type;
-        if (THREE.LinearSRGBColorSpace != null) base.colorSpace = THREE.LinearSRGBColorSpace;
-        if (THREE.LinearFilter != null) {
-          base.minFilter = THREE.LinearFilter;
-          base.magFilter = THREE.LinearFilter;
-        }
-        base.generateMipmaps = false;
-        base.flipY = true;
-        if (THREE.EquirectangularReflectionMapping != null) base.mapping = THREE.EquirectangularReflectionMapping;
-        base.needsUpdate = true;
-        if (disposed || !_hdrCache) {
-          disposeTexture(base, 'dispose-late-hdr');
-          flush(null);
-          return;
-        }
-        _hdrCache[name] = base;
-        flush(base);
-      } catch (e) {
-        warn('não consegui abrir o céu "' + name + '": ' + e);
-        flush(null);
-      }
-    });
+    _hdrLight = models.hdrAmbient(texture);
+    applyHdrLights();
   }
 
   function setSkyPhoto(name) {
@@ -1029,7 +1094,7 @@ const world3DRuntimeSource = `import * as THREE from 'three';
       return;
     }
     var request = ++_skyPhotoRequest;
-    loadHdrTexture(key, entry, function (texture) {
+    models.loadHdr(key, function (texture) {
       if (!texture) return;
       if (disposed || request !== _skyPhotoRequest) {
         disposeTexture(texture, 'dispose-stale-hdr');
@@ -1039,16 +1104,7 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     });
   }
 
-  /** Aquece o modelo (compileAsync best-effort — nunca derruba o carregamento). */
-  function warmModel(root) {
-    if (!root || !renderer || !scene || !camera) return;
-    try {
-      if (renderer.compileAsync) renderer.compileAsync(root, camera, scene);
-      else if (renderer.compile) renderer.compile(scene, camera);
-    } catch (e) {}
-  }
-
-  /** Libera uma árvore procedural ou um asset que terminou de carregar tarde. */
+  // Libera uma árvore procedural ou um asset que terminou de carregar tarde.
   function disposeObjectTree(root, disposeTextures) {
     if (!root || !root.traverse) return;
     var geometries = new Set();
@@ -1075,15 +1131,12 @@ const world3DRuntimeSource = `import * as THREE from 'three';
       geometries.forEach(function (geometry) { if (geometry.dispose) geometry.dispose(); });
       materials.forEach(function (material) { if (material.dispose) material.dispose(); });
     } catch (e) {
-      warnOnce('dispose-object-tree', 'não consegui liberar uma árvore 3D por completo: ' + e);
+      warnOnce('dispose-object-tree', 'não consegui liberar uma árvore 3D por completo', e);
     }
   }
 
-  /**
-   * Carrega e parseia um .glb do projeto (cacheado; carga em voo enfileira o
-   * callback). O start() ESPERA a promessa em pending — o passeio só começa com
-   * os modelos remendados. NUNCA rejeita: modelo quebrado avisa e segue.
-   */
+  // Carrega um .glb do projeto pelo carregador compartilhado (cacheado; carga em voo
+  // enfileira o callback; NUNCA rejeita: modelo quebrado avisa e segue).
   function loadModel(name, onReady) {
     if (disposed) return null;
     var k = text(name, '');
@@ -1091,77 +1144,7 @@ const world3DRuntimeSource = `import * as THREE from 'three';
       warn('escreva o NOME do modelo (o nome dele em "Modelos 3D", no menu de três pontinhos)');
       return null;
     }
-    if (!_modelCache) _modelCache = {};
-    if (_modelCache[k]) return _modelCache[k];
-    if (!_modelPending) _modelPending = {};
-    if (_modelPending[k]) {
-      if (typeof onReady === 'function') _modelPending[k].push(onReady);
-      return null;
-    }
-    var entry = MODELS3D[k];
-    if (!entry || entry.kind !== 'model3d') {
-      warn('o modelo "' + k + '" não está no projeto. Envie o .glb em "Modelos 3D"');
-      return null;
-    }
-    var buf = dataUrlToBuffer(entry.dataUrl);
-    if (!buf) return null;
-    _modelPending[k] = typeof onReady === 'function' ? [onReady] : [];
-    var release = null;
-    pending.push(new Promise(function (resolve) { release = resolve; }));
-    var settled = false;
-    var flush = function (hit) {
-      if (settled) return;
-      settled = true;
-      var queue = _modelPending && _modelPending[k] ? _modelPending[k] : [];
-      if (_modelPending) delete _modelPending[k];
-      if (hit && !disposed) {
-        for (var i = 0; i < queue.length; i++) {
-          try { queue[i](hit); } catch (e) { warnOnce('model-ready-' + k, 'erro ao montar o modelo "' + k + '": ' + e); }
-        }
-      }
-      if (release) release();
-    };
-    var finish = function (mod) {
-      if (disposed) { flush(null); return; }
-      _gltfMod = mod;
-      try {
-        new mod.GLTFLoader().parse(buf, '', function (gltf) {
-          if (gltf && gltf.scene) {
-            if (disposed || !_modelCache) {
-              disposeObjectTree(gltf.scene, true);
-              flush(null);
-              return;
-            }
-            _modelCache[k] = { scene: gltf.scene };
-            warmModel(gltf.scene);
-            flush(_modelCache[k]);
-          } else {
-            warn('o modelo "' + k + '" veio vazio');
-            flush(null);
-          }
-        }, function (err) {
-          warn('não consegui abrir o modelo "' + k + '": ' + err);
-          flush(null);
-        });
-      } catch (e) {
-        warn('não consegui abrir o modelo "' + k + '": ' + e);
-        flush(null);
-      }
-    };
-    if (_gltfMod) {
-      finish(_gltfMod);
-      return null;
-    }
-    try {
-      import('three/addons/loaders/GLTFLoader.js').then(finish, function (e) {
-        warn('não consegui carregar o leitor de modelos: ' + e);
-        flush(null);
-      });
-    } catch (e) {
-      warn('não consegui carregar o leitor de modelos: ' + e);
-      flush(null);
-    }
-    return null;
+    return models.load(k, onReady);
   }
 
   function modelMeshList(root) {
@@ -1175,28 +1158,11 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     return list;
   }
 
-  function modelTriangleCount(meshes) {
-    var triangles = 0;
-    for (var i = 0; i < meshes.length; i++) {
-      var geometry = meshes[i].geometry;
-      if (!geometry) continue;
-      if (geometry.index && geometry.index.count != null) triangles += Math.floor(geometry.index.count / 3);
-      else if (geometry.attributes && geometry.attributes.position) triangles += Math.floor(geometry.attributes.position.count / 3);
-    }
-    return triangles;
-  }
-
-  /** Raio de colisão do modelo no plano XZ (metade da diagonal da caixa). */
-  function modelRadius(root) {
-    try {
-      if (!THREE.Box3) return 0;
-      var box = new THREE.Box3().setFromObject(root);
-      var dx = box.max.x - box.min.x;
-      var dz = box.max.z - box.min.z;
-      return Math.sqrt(dx * dx + dz * dz) * 0.35;
-    } catch (e) {
-      return 0;
-    }
+  // Raio de colisão do modelo no plano XZ (metade da diagonal da caixa medida no parse).
+  function modelRadius(hit) {
+    var b = hit && hit.bounds;
+    if (!b) return 0;
+    return Math.sqrt(b.size.x * b.size.x + b.size.z * b.size.z) * 0.35;
   }
 
   function buildScatterModel(rec) {
@@ -1206,15 +1172,8 @@ const world3DRuntimeSource = `import * as THREE from 'three';
       warn('o modelo "' + rec.name + '" não tem malhas — nada para espalhar');
       return;
     }
-    if (meshes.length > MAX_MODEL_SCATTER_MESHES) {
-      warn('o modelo "' + rec.name + '" tem ' + meshes.length + ' malhas — o máximo para espalhar é ' + MAX_MODEL_SCATTER_MESHES + '; una as peças no editor 3D');
-      return;
-    }
-    var triangles = modelTriangleCount(meshes);
-    if (triangles > MAX_MODEL_TRIANGLES) {
-      warn('o modelo "' + rec.name + '" tem triângulos demais para este mundo (' + triangles + ' > ' + MAX_MODEL_TRIANGLES + ')');
-      return;
-    }
+    // Malhas/triângulos acima do teto por modelo já foram recusados na carga.
+    var triangles = rec.model.metrics ? rec.model.metrics.triangles : 0;
     var requested = Math.floor(clamp(num(rec.n, 0), 1, 500));
     var triangleRoom = triangles > 0 ? Math.max(1, Math.floor(MODEL_SCATTER_TRIANGLE_BUDGET / triangles)) : requested;
     var want = takeScatterRoom(Math.min(requested, triangleRoom), meshes.length);
@@ -1228,23 +1187,29 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     scatterCount += placements.length * meshes.length;
     ensureDummies();
     var group = ensureNatureGroup();
+    // Instanciado e PARADO: um modelo com ossos/animação aparece na pose de descanso.
+    if ((rec.model.clips && rec.model.clips.length) || rec.model.skinned) {
+      warnOnce('scatter-anim-' + rec.name, 'Espalhar deixa o modelo "' + rec.name + '" parado; para mexer, use Pôr');
+    }
+    var chunks = scatterChunks(placements);
     for (var m = 0; m < meshes.length; m++) {
       var src = meshes[m];
-      var inst = new THREE.InstancedMesh(src.geometry, src.material, placements.length);
-      inst.castShadow = true;
-      for (var i = 0; i < placements.length; i++) {
-        var pl = placements[i];
-        _dummy.position.set(pl.x, heightAt(pl.x, pl.z), pl.z);
-        _dummy.rotation.set(0, pl.yaw, 0);
-        _dummy.scale.set(pl.s, pl.s, pl.s);
-        _dummy.updateMatrix();
-        _mat4.multiplyMatrices(_dummy.matrix, src.matrixWorld);
-        inst.setMatrixAt(i, _mat4);
+      for (var ci = 0; ci < chunks.length; ci++) {
+        var chunk = chunks[ci];
+        var inst = new THREE.InstancedMesh(src.geometry, src.material, chunk.length);
+        for (var i = 0; i < chunk.length; i++) {
+          var pl = chunk[i];
+          _dummy.position.set(pl.x, heightAt(pl.x, pl.z), pl.z);
+          _dummy.rotation.set(0, pl.yaw, 0);
+          _dummy.scale.set(pl.s, pl.s, pl.s);
+          _dummy.updateMatrix();
+          _mat4.multiplyMatrices(_dummy.matrix, src.matrixWorld);
+          inst.setMatrixAt(i, _mat4);
+        }
+        finishScatterChunk(inst, group);
       }
-      if (inst.instanceMatrix) inst.instanceMatrix.needsUpdate = true;
-      group.add(inst);
     }
-    var r = modelRadius(rec.model.scene);
+    var r = modelRadius(rec.model);
     if (r > 0.35) {
       for (var c = 0; c < placements.length; c++) {
         colliderAdd(placements[c].x, placements[c].z, r * placements[c].s);
@@ -1258,29 +1223,62 @@ const world3DRuntimeSource = `import * as THREE from 'three';
       warnOnce('placed-max', 'muitos "Pôr" — o teto é ' + MAX_PLACED);
       return;
     }
-    var meshes = modelMeshList(rec.model.scene);
-    var triangles = modelTriangleCount(meshes);
-    if (triangles > MAX_MODEL_TRIANGLES) {
-      warn('o modelo "' + rec.name + '" tem triângulos demais para este mundo (' + triangles + ' > ' + MAX_MODEL_TRIANGLES + ')');
+    var root;
+    // Clone com ossos PRÓPRIOS (SkeletonUtils): um modelo do Molda com ossos não fica
+    // preso ao esqueleto do original.
+    try { root = models.instantiate(rec.model, { shadows: 'cast' }); } catch (e) {
+      warnOnce('place-model-clone-' + rec.name, 'não consegui pôr o modelo "' + rec.name + '"', e);
       return;
     }
+    if (!root) return;
     placedCount++;
-    var root = rec.model.scene.clone();
-    try {
-      root.traverse(function (o) {
-        if (o.isMesh) o.castShadow = true;
-      });
-    } catch (e) {}
-    var s = clamp(num(rec.s, 1), 0.05, 20);
-    root.scale.set(s, s, s);
+    placedModelRoots.push(root);
+    // Tamanho = o LADO MAIOR, em metros; o pé fica no chão do ponto (heightAt).
+    var holder = new THREE.Group();
+    holder.add(root);
+    var fitted = models.fit(root, rec.model, { mode: 'longest', anchor: 'floor', size: clamp(num(rec.s, 3), 0.05, 200) });
     var lim = config.world / 2 - 1;
     var x = clamp(num(rec.x, 0), -lim, lim);
     var z = clamp(num(rec.z, 0), -lim, lim);
-    root.position.set(x, heightAt(x, z), z);
-    root.rotation.y = num(rec.deg, 0) * Math.PI / 180;
-    ensureNatureGroup().add(root);
-    var r = modelRadius(rec.model.scene);
-    if (r > 0.35) colliderAdd(x, z, r * s);
+    holder.position.set(x, heightAt(x, z), z);
+    holder.rotation.y = num(rec.deg, 0) * Math.PI / 180;
+    ensureNatureGroup().add(holder);
+    var r = Math.max(fitted.hw, fitted.hd) * 0.8;
+    var placed = { rec: rec, holder: holder, root: root, anim: null, coll: r > 0.35 ? colliderAdd(x, z, r) : null };
+    // Posto DURANTE a partida: o recomeçar leve o tira (com ossos e animador).
+    if (rec.live) liveModels.push(placed);
+    var clip = text(rec.clip, '');
+    if (!clip) return;
+    if (animatedModels.length >= ANIMATED_MAX) {
+      warnOnce('animated-max', 'muitos modelos se mexendo (teto ' + ANIMATED_MAX + '); este fica parado');
+      return;
+    }
+    var anim = models.animator(root, rec.model, { owner: 'o modelo "' + rec.name + '"' });
+    if (!anim) {
+      warnOnce('place-no-clips-' + rec.name, 'o modelo "' + rec.name + '" não tem animações; ele fica parado');
+      return;
+    }
+    if (!anim.play(clip)) { anim.dispose(); return; }
+    placed.anim = anim;
+    animatedModels.push(placed);
+  }
+  function dropLiveModels() {
+    for (var i = 0; i < liveModels.length; i++) {
+      var m = liveModels[i];
+      if (m.holder.parent) m.holder.parent.remove(m.holder);
+      // O colisor sai junto (senão fica uma parede invisível onde o modelo estava).
+      if (m.coll) colliderCells(m.coll, true);
+      // Espécie posta: geometria e material são compartilhados, só o grupo sai.
+      if (m.root) models.disposeClone(m.root, m.anim, new Set());
+      var a = animatedModels.indexOf(m);
+      if (a >= 0) animatedModels.splice(a, 1);
+      var p = placedModelRoots.indexOf(m.root);
+      if (p >= 0) placedModelRoots.splice(p, 1);
+      var n = natureRecipes.indexOf(m.rec);
+      if (n >= 0) natureRecipes.splice(n, 1);
+      placedCount = Math.max(0, placedCount - 1);
+    }
+    liveModels.length = 0;
   }
 
   function buildRecipe(rec) {
@@ -1308,7 +1306,7 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     _crashCd = 0.4;
     for (var i = 0; i < crashHooks.length; i++) {
       try { crashHooks[i](); } catch (e) {
-        warnOnce('hook-crash-' + i, 'erro no "Quando o carrinho bater forte": ' + e);
+        warnOnce('hook-crash-' + i, 'erro no "Quando o carrinho bater forte"', e);
       }
     }
   }
@@ -1321,7 +1319,7 @@ const world3DRuntimeSource = `import * as THREE from 'three';
   /*__SZ_THREE_POST_PROCESSING_RUNTIME__*/
 
   function renderFrame() {
-    var wantFx = (config.bloom || config.vignette) && quality.tier !== 'turbo';
+    var wantFx = (config.bloom || config.vignette) && renderBudget.postFx();
     if (wantFx && !composerFailed) {
       if (!composer) initComposer();
       if (composer) {
@@ -1409,11 +1407,9 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     '}'
   ].join(' ');
 
-  /**
-   * Textura 8-bit da altura do chão (a MESMA heightAt) — 8 bits chegam: com
-   * morros de 4 m o degrau é ~4 cm, invisível numa lâmina de 1 m. Reconstruída
-   * quando o terreno muda (o bloco de morros).
-   */
+  // Textura 8-bit da altura do chão (a MESMA heightAt) — 8 bits chegam: com
+  // morros de 4 m o degrau é ~4 cm, invisível numa lâmina de 1 m. Reconstruída
+  // quando o terreno muda (o bloco de morros).
   function buildGrassHeightTex() {
     var HG = 128;
     var data = new Uint8Array(HG * HG);
@@ -1440,7 +1436,7 @@ const world3DRuntimeSource = `import * as THREE from 'three';
         if (v > 1) v = 1;
         data[hi] = Math.round(v * 255);
     }
-    if (heightTex && heightTex.dispose) { try { heightTex.dispose(); } catch (e) {} }
+    tryDispose(heightTex);
     heightTex = new THREE.DataTexture(data, HG, HG, THREE.RedFormat);
     if (THREE.LinearFilter) {
       heightTex.minFilter = THREE.LinearFilter;
@@ -1469,7 +1465,7 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     var st = styleOf();
     var n = Math.round((GRASS_COUNTS[grassCfg.amount] || GRASS_COUNTS.media) * (st.grassK != null ? st.grassK : 1));
     var radius = 55;
-    if (quality.tier === 'turbo') {
+    if (renderBudget.isLight()) {
       n = Math.round(n / 3);
       radius = 35;
     }
@@ -1530,11 +1526,9 @@ const world3DRuntimeSource = `import * as THREE from 'three';
 
   // ---- 🌦️ Céu & clima (ciclo dia/noite por keyframes + partículas) ----
 
-  /**
-   * Keyframes da atmosfera por HORA (0..24, circular): cada um tinge o céu do
-   * ESTILO (mix) e manda no sol/ambiente/névoa/estrelas. Interpolação por
-   * segmento — a mesma ideia dos presets de DayCycles do folio.
-   */
+  // Keyframes da atmosfera por HORA (0..24, circular): cada um tinge o céu do
+  // ESTILO (mix) e manda no sol/ambiente/névoa/estrelas. Interpolação por
+  // segmento — a mesma ideia dos presets de DayCycles do folio.
   var DAY_KEYS = [
     { t: 0,  top: '#0b1230', bot: '#1a2342', mix: 0.92, sun: '#8fa8ff', sunI: 0.12, amb: 0.22, stars: 1 },
     { t: 6,  top: '#f4b46a', bot: '#ffe4b8', mix: 0.55, sun: '#ffd9a8', sunI: 0.75, amb: 0.5,  stars: 0 },
@@ -1554,7 +1548,7 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     }
   }
 
-  /** Interpola os keyframes na hora t e devolve o preset misturado (objeto reusado). */
+  // Interpola os keyframes na hora t e devolve o preset misturado (objeto reusado).
   var _atmo = { top: '', bot: '', sunI: 1, amb: 0.6, stars: 0, sun: '#ffffff', fog: '' };
   function atmosphereAt(t) {
     var st = styleOf();
@@ -1602,7 +1596,7 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     return _atmo;
   }
 
-  /** Redesenha o degradê do céu NA MESMA textura (barato: canvas 2×256). */
+  // Redesenha o degradê do céu NA MESMA textura (barato: canvas 2×256).
   function drawSky(top, bot) {
     if (!scene) return;
     if (_environmentTexture || _pendingEnvironmentTexture) return;
@@ -1622,7 +1616,7 @@ const world3DRuntimeSource = `import * as THREE from 'three';
       if (skyTex && skyTex.image === _skyCanvas) {
         skyTex.needsUpdate = true;
       } else {
-        if (skyTex && skyTex.dispose) { try { skyTex.dispose(); } catch (e) {} }
+        tryDispose(skyTex);
         skyTex = new THREE.CanvasTexture(_skyCanvas);
         scene.background = skyTex;
       }
@@ -1659,7 +1653,7 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     } catch (e) {}
   }
 
-  /** Aplica a atmosfera da hora atual (céu/sol/ambiente/névoa/estrelas). */
+  // Aplica a atmosfera da hora atual (céu/sol/ambiente/névoa/estrelas).
   function applyAtmosphere() {
     if (!worldReady) return;
     var a = atmosphereAt(timeOfDay);
@@ -1670,7 +1664,8 @@ const world3DRuntimeSource = `import * as THREE from 'three';
       if (scene.fog && scene.fog.color) { try { scene.fog.color.set(a.fog); } catch (e) {} }
       if (sunLight) {
         sunLight.intensity = a.sunI;
-        try { sunLight.color.set(a.sun); } catch (e) {}
+        // Com céu 360°, a cor do sol vem do céu (applyHdrLights).
+        if (!_hdrLight) { try { sunLight.color.set(a.sun); } catch (e) {} }
       }
       if (ambientLight) ambientLight.intensity = a.amb;
     }
@@ -1692,7 +1687,7 @@ const world3DRuntimeSource = `import * as THREE from 'three';
       var hooks = dayNightHooks[phase] || [];
       for (var i = 0; i < hooks.length; i++) {
         try { hooks[i](); } catch (e) {
-          warnOnce('hook-day-' + phase + '-' + i, 'erro no "Quando virar ' + phase + '": ' + e);
+          warnOnce('hook-day-' + phase + '-' + i, 'erro no "Quando virar ' + phase + '"', e);
         }
       }
     }
@@ -1753,7 +1748,7 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     if (!scene || weatherKind === 'limpo') return;
     var spec = WEATHER_KINDS[weatherKind];
     if (!spec) return;
-    var n = quality.tier === 'turbo' ? Math.round(spec.n / 3) : spec.n;
+    var n = renderBudget.isLight() ? Math.round(spec.n / 3) : spec.n;
     var rng = mulberry(555);
     var posArr = new Float32Array(n * 3);
     var vel = new Float32Array(n * 2); // fase de deriva + velocidade própria
@@ -1782,7 +1777,7 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     var mesh = new THREE.Points(geo, mat);
     mesh.frustumCulled = false;
     scene.add(mesh);
-    weatherPts = { mesh: mesh, mat: mat, geo: geo, pos: posArr, vel: vel, n: n, spec: spec };
+    weatherPts = { mesh: mesh, mat: mat, geo: geo, pos: posArr, vel: vel, n: n, spec: spec, rng: rng };
   }
 
   function stepWeather(dt) {
@@ -1801,9 +1796,9 @@ const world3DRuntimeSource = `import * as THREE from 'three';
       // Recicla: caiu no chão OU saiu do cilindro → volta pelo topo, perto do carro.
       var gy = 0;
       if (p.pos[ix + 1] < (gy = heightAt(p.pos[ix], p.pos[ix + 2]))) {
-        p.pos[ix] = cx + (Math.random() * 2 - 1) * WEATHER_R;
-        p.pos[ix + 1] = gy + WEATHER_H * (0.7 + Math.random() * 0.3);
-        p.pos[ix + 2] = cz + (Math.random() * 2 - 1) * WEATHER_R;
+        p.pos[ix] = cx + (p.rng() * 2 - 1) * WEATHER_R;
+        p.pos[ix + 1] = gy + WEATHER_H * (0.7 + p.rng() * 0.3);
+        p.pos[ix + 2] = cz + (p.rng() * 2 - 1) * WEATHER_R;
       } else {
         if (p.pos[ix] < cx - WEATHER_R) p.pos[ix] += WEATHER_R * 2;
         else if (p.pos[ix] > cx + WEATHER_R) p.pos[ix] -= WEATHER_R * 2;
@@ -1814,28 +1809,18 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     if (p.geo.attributes.position) p.geo.attributes.position.needsUpdate = true;
   }
 
-  function applyQualityTier(tier) {
-    quality.tier = tier === 'turbo' ? 'turbo' : 'alta';
-    if (renderer) renderer.setPixelRatio(quality.tier === 'turbo' ? 0.75 : 1);
-    if (sunLight && sunLight.shadow) {
-      try {
-        var shadowSize = quality.tier === 'turbo' ? 1024 : 2048;
-        if (sunLight.shadow.mapSize && sunLight.shadow.mapSize.set) sunLight.shadow.mapSize.set(shadowSize, shadowSize);
-        if (sunLight.shadow.map) {
-          sunLight.shadow.map.dispose();
-          sunLight.shadow.map = null;
-        }
-      } catch (e) { warnOnce('quality-shadow', 'não consegui reajustar a sombra: ' + e); }
+  // O orçamento trocou de nível (sonda de FPS ou bloco "Qualidade"); a resolução ele já refez.
+  // Modo turbo (leve): menos grama/clima, sombra menor e sem composer.
+  function onQualityTier(tier) {
+    if (tier === 'leve') {
+      warn('modo turbo ligado: este computador pediu um mundo mais leve (menos grama, sombra menor, sem efeitos de cinema)');
+      if (composer) disposeComposer();
+    }
+    if (sunLight) {
+      try { renderBudget.applyShadow(sunLight); } catch (e) { warnOnce('quality-shadow', 'não consegui reajustar a sombra', e); }
     }
     if (grassMesh) buildGrass();
     if (weatherPts) buildWeather();
-  }
-
-  /** Modo turbo: menos grama/clima, sombra e resolução menores, sem composer. */
-  function applyTurbo() {
-    if (quality.tier === 'turbo') return;
-    warn('modo turbo ligado: este computador pediu um mundo mais leve (menos grama, sombra menor, sem efeitos de cinema)');
-    applyQualityTier('turbo');
   }
 
   // ---- 💧 Água (plano ondulado; o carro afunda/respinga/respawna) ----
@@ -1874,7 +1859,7 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     '}'
   ].join(' ');
 
-  /** Altura do chão em 64×64 (faixa -10..30 m) — a ESPUMA da costa lê daqui. */
+  // Altura do chão em 64×64 (faixa -10..30 m) — a ESPUMA da costa lê daqui.
   function buildWaterFoamTex() {
     if (!waterMat) return;
     var N = 64;
@@ -1954,7 +1939,14 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     if (ambienceKind === 'mar' && !_ambNoise) startSeaNoise();
   }
 
-  /** Liga o oscilador do motor (grave, com lowpass) — o pitch segue a velocidade. */
+  // Liga o oscilador do motor (grave, com lowpass) — o pitch segue a velocidade.
+  function newCarState() {
+    return {
+      x: 0, y: 0, z: 0, yaw: 0, speed: 0, vy: 0, airborne: false,
+      steerVis: 0, pitch: 0, pitchV: 0, roll: 0, rollV: 0, spin: 0
+    };
+  }
+
   function startEngine() {
     var ac = ensureAudioCtx();
     if (!ac || engineOsc) return;
@@ -2002,30 +1994,221 @@ const world3DRuntimeSource = `import * as THREE from 'three';
 
   // ---- 🖥️ HUD + 💬 balão de fala (DOM sobre o canvas) ----
 
-  var HUD_SLOTS = { 'topo-esquerda': 1, 'topo-direita': 1, 'baixo-esquerda': 1, 'baixo-direita': 1 };
-  var HUD_POS = {
-    'topo-esquerda': 'top:12px;left:12px', 'topo-direita': 'top:12px;right:12px',
-    'baixo-esquerda': 'bottom:12px;left:12px', 'baixo-direita': 'bottom:12px;right:12px'
+  // Os cantos da tela moram no fragmento COMPARTILHADO das regras de jogo 3D
+  // (game3dRules/runtime.ts): uma pilha por canto, onde o texto da criança (ordem 10) é
+  // sempre o primeiro e os painéis automáticos (moedas, missão, conquista, corrida,
+  // minimapa) entram DEPOIS dele. Antes cada painel era absoluto e cobria o texto.
+  /*__SZ_GAME_RULES_3D_RUNTIME__*/
+  var rules = createSzGameRules({
+    canvas: function () { ensureShell(); return canvasEl; },
+    // Abaixo dos cartazes/mapa grande/pódio do mundo (8 a 11), acima do jogo.
+    layerZ: 7,
+    // Fim de jogo e tela de início: o jogador e os laços param; a cena continua desenhada.
+    pause: function () {
+      _paused = true;
+      if (carState) carState.speed = 0;
+      if (boatState) boatState.speed = 0;
+    },
+    resume: function () { _paused = false; },
+    restart: restartLight,
+    warn: function (key, msg) { warnOnce('regras-' + key, msg); }
+  });
+  // A vida é SEMPRE do jogador (a pé, de carro ou de barco): um objeto só guarda a vida, e o
+  // "piscar" de quem se machucou acende/apaga o jogador ATIVO.
+  var lifeToken = {};
+  try {
+    Object.defineProperty(lifeToken, 'visible', {
+      get: function () { var g = activePlayerGroup(); return g ? g.visible !== false : true; },
+      set: function (v) { var g = activePlayerGroup(); if (g) g.visible = !!v; }
+    });
+  } catch (e) {}
+  function activePlayerGroup() {
+    if (personCfg && !driving) return personGroup;
+    if (driving && activeVehicle === 'boat') return boatGroup;
+    return carGroup;
+  }
+  // Regras pedidas no "Ao iniciar" ficam gravadas para o recomeçar leve refazer.
+  function replayable(name, fn) {
+    return guard(name, function () {
+      if (!started) _rulesReplay.push({ fn: fn, args: Array.prototype.slice.call(arguments) });
+      return fn.apply(null, arguments);
+    });
+  }
+  function lifeValue(a, b) { return b === undefined ? a : b; }
+
+  // ---- Recomeçar LEVE: o mundo fica, a partida volta ----
+  // O jogador volta ao começo; moedas e coletáveis voltam; pontos, vida, contagem e o estado
+  // das regras zeram (o "Ao iniciar" das regras é refeito). Terreno, cidade e natureza NÃO são
+  // reconstruídos, e a mochila NÃO zera (ela é guardada entre partidas de propósito).
+  function restoreBody(dst, src) {
+    if (!dst || !src) return;
+    dst.x = src.x; dst.y = src.y; dst.z = src.z; dst.yaw = src.yaw;
+    dst.speed = 0; dst.vy = 0; dst.airborne = false;
+    if ('pitch' in dst) { dst.pitch = 0; dst.pitchV = 0; dst.roll = 0; dst.rollV = 0; }
+  }
+  function snapBody(src) { return src ? { x: src.x, y: src.y, z: src.z, yaw: src.yaw } : null; }
+  function takeSpawnSnap() {
+    spawnSnap = {
+      car: snapBody(carState), person: snapBody(personState), boat: snapBody(boatState),
+      driving: driving, vehicle: activeVehicle
+    };
+  }
+  function restartLight() {
+    rules.reset(true);
+    if (spawnSnap) {
+      restoreBody(carState, spawnSnap.car);
+      restoreBody(personState, spawnSnap.person);
+      restoreBody(boatState, spawnSnap.boat);
+      driving = spawnSnap.driving;
+      activeVehicle = spawnSnap.vehicle;
+      if (personGroup) personGroup.visible = !driving;
+    }
+    camSnap = true;
+    timeScale = 1;
+    // Moedas do começo voltam; as nascidas durante a partida saem (a lista é compactada no lugar e
+    // todas as poses são reescritas, porque os índices da malha mudam).
+    if (coinStates) {
+      var keep = 0;
+      for (var c = 0; c < coinStates.length; c++) {
+        var cs = coinStates[c];
+        if (cs.live) continue;
+        cs.taken = false;
+        cs.shown = 0;
+        coinStates[keep++] = cs;
+      }
+      coinStates.length = keep;
+      if (coinsIM) coinsIM.count = keep;
+    }
+    coinsTaken = 0;
+    if (coinHudEl) coinHudEl.textContent = '🪙 0';
+    // Coletáveis do começo voltam; os que nasceram durante a partida saem.
+    for (var k = collectibles.length - 1; k >= 0; k--) {
+      var it = collectibles[k];
+      if (it.live) { dropCollectible(k); continue; }
+      it.taken = false;
+      if (it.mesh) it.mesh.visible = true;
+    }
+    dropLiveModels();
+    models.resetFlipbooks();
+    // Corrida de volta à largada, missões por fazer (as nascidas no jogo saem), pinos em pé e as
+    // caixas explosivas do começo no lugar (as nascidas durante o jogo saem).
+    if (race) {
+      race.state = 'idle';
+      race.armed = false;
+      race.time = 0;
+      race.lap = 1;
+      race.next = 0;
+      pulseRings();
+      rules.dropPanel('top-left', 'corrida');
+    }
+    for (var q = quests.length - 1; q >= 0; q--) {
+      if (quests[q].live) quests.splice(q, 1);
+      else quests[q].done = false;
+    }
+    if (questHudEl) refreshQuestHud();
+    resetKnockables();
+    for (var xi = explosives.length - 1; xi >= 0; xi--) {
+      var ex = explosives[xi];
+      ex.fuse = -1;
+      if (!ex.live) continue;
+      ex.done = true;
+      if (ex.mesh.parent) ex.mesh.parent.remove(ex.mesh);
+      disposeObjectTree(ex.mesh, true);
+      explosives.splice(xi, 1);
+    }
+    for (var hi = 0; hi < explosiveHome.length; hi++) {
+      var home = explosiveHome[hi];
+      if (!home.done) continue;
+      var again = addExplosive(home.x, home.z);
+      if (again) { again.live = false; explosiveHome[hi] = again; }
+    }
+    closeNpcChoice();
+    restartThings();
+    _paused = false;
+    var list = _rulesReplay.slice();
+    for (var r = 0; r < list.length; r++) {
+      try { list[r].fn.apply(null, list[r].args); } catch (e) { warnOnce('replay-' + r, 'erro ao recomeçar', e); }
+    }
+  }
+  // Amigos, ícones, empurráveis, pontos e áreas: o que nasceu no jogo sai, o do Ao iniciar volta
+  // para casa, e o do Ao iniciar tirado no jogo ("Tirar … do mundo") volta a existir.
+  function restartThings() {
+    for (var a = npcs.length - 1; a >= 0; a--) {
+      var n = npcs[a];
+      if (n.live) { removeNpcAt(a); continue; }
+      n.x = n.home.x;
+      n.z = n.home.z;
+      n.going = false;
+      n.emote = null;
+      n.group.position.set(n.x, heightAtDrive(n.x, n.z, null), n.z);
+    }
+    if (npcBubble) npcBubble.el.style.display = 'none';
+    for (var m = markers.length - 1; m >= 0; m--) if (markers[m].live) dropMarker(m);
+    resetPushables();
+    var back = _removedStart;
+    _removedStart = [];
+    for (var i = 0; i < back.length; i++) {
+      var r = back[i];
+      var made = null;
+      if (r.k === 'npc') made = addNpc(r.a[0], r.a[1], r.a[2], r.a[3], r.a[4]);
+      else if (r.k === 'point') addPoint(r.a[0], r.a[1], r.a[2]);
+      else if (r.k === 'zone') zones.push(r.o);
+      else if (r.k === 'marker') made = addMarker(r.a[0], r.a[1], r.a[2]);
+      if (made) made.live = false;
+    }
+    // Ninguém começa "dentro" de uma área: entrar de novo dispara de novo, como no começo.
+    for (var z = 0; z < zones.length; z++) zones[z].inside = false;
+  }
+  // Empurráveis: os nascidos no jogo saem (a malha de cada tipo é compactada) e os do começo
+  // voltam para casa, parados e na pose em que nasceram.
+  function resetPushables() {
+    var keep = 0;
+    for (var i = 0; i < pushables.length; i++) {
+      var p = pushables[i];
+      if (p.live) {
+        if (p.mesh) {
+          if (p.mesh.parent) p.mesh.parent.remove(p.mesh);
+          disposeObjectTree(p.mesh, false);
+        }
+        continue;
+      }
+      p.x = p.home.x;
+      p.z = p.home.z;
+      p.yaw = p.home.yaw;
+      p.vx = p.vz = p.vy = 0;
+      p.spin = 0;
+      p.sink = 0;
+      p.y = heightAt(p.x, p.z) + (p.im ? p.im.spec.sy : p.scale) / 2;
+      pushables[keep++] = p;
+    }
+    pushables.length = keep;
+    if (pushIM) for (var t in pushIM) pushIM[t].mesh.count = 0;
+    for (var j = 0; j < pushables.length; j++) {
+      var q = pushables[j];
+      if (q.im) {
+        q.idx = q.im.mesh.count++;
+        writePushable(q);
+      } else {
+        q.mesh.position.set(q.x, q.y, q.z);
+        q.mesh.rotation.set(0, q.yaw, 0);
+      }
+    }
+  }
+  // Os nomes antigos dos cantos (antes da lista única) continuam valendo.
+  var HUD_OLD_CORNERS = {
+    'topo-esquerda': 'top-left', 'topo-direita': 'top-right',
+    'baixo-esquerda': 'bottom-left', 'baixo-direita': 'bottom-right'
   };
+  var HUD_PANEL_ORDER = { moedas: 25, missao: 30, corrida: 35, conquista: 40, minimapa: 50 };
   function setHud(slot, value) {
     if (!ensureShell()) return;
-    var key = text(slot, 'topo-esquerda');
-    if (!HUD_SLOTS[key]) key = 'topo-esquerda';
-    var content = text(value, '');
-    var el = hudEls[key];
-    if (!content) {
-      if (el && el.parentNode) el.parentNode.removeChild(el);
-      delete hudEls[key];
-      return;
-    }
-    if (!el) {
-      el = document.createElement('div');
-      el.className = 'szw3d-hud';
-      el.setAttribute('style', 'position:absolute;' + HUD_POS[key] + ';color:#fff;font:700 20px var(--sz-game-ui-font);text-shadow:0 2px 6px rgba(0,0,0,.6);pointer-events:none;z-index:6');
-      frameEl.appendChild(el);
-      hudEls[key] = el;
-    }
-    el.textContent = content;
+    var key = text(slot, 'top-left');
+    rules.hudText(HUD_OLD_CORNERS[key] || key, text(value, ''));
+  }
+  // Painel automático num canto (o mesmo para sempre: chamar de novo devolve o mesmo).
+  function hudPanel(corner, key) {
+    if (!ensureShell()) return null;
+    return rules.panel(corner, key, HUD_PANEL_ORDER[key] || 60);
   }
 
   function showSay(msgTxt, secs) {
@@ -2040,10 +2223,29 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     sayUntil = playTime + Math.max(0.5, num(secs, 2));
   }
 
+  // DOM por quadro (balões, aviso do E, seta-guia, HUD da corrida): só escreve quando o
+  // valor MUDA. Escrever o mesmo texto/estilo invalida o estilo da página a cada quadro.
+  function domText(el, v) {
+    if (el && el.textContent !== v) el.textContent = v;
+  }
+  function domStyle(el, k, v) {
+    if (el && el.style[k] !== v) el.style[k] = v;
+  }
+  // Posição de tela em décimos de pixel: a mesma string quando nada andou.
+  function cssPx(v) {
+    return Math.round(v * 10) / 10 + 'px';
+  }
+  // A caixa do canvas, medida UMA vez por quadro (ler depois de escrever estilo força
+  // layout); o gameLoop a esquece no começo de cada quadro.
+  var _rectBox = null;
+  function canvasRect() {
+    return _rectBox || (_rectBox = canvasEl.getBoundingClientRect());
+  }
+
   function stepSay() {
     if (!sayEl) return;
     if (playTime > sayUntil) {
-      sayEl.style.display = 'none';
+      domStyle(sayEl, 'display', 'none');
       return;
     }
     if (!camera || !renderer || !_proj) return;
@@ -2052,12 +2254,10 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     var _sayP = playerXZ();
     _proj.set(_sayP.x, _sayP.y + 2.2, _sayP.z);
     _proj.project(camera);
-    var rect = canvasEl.getBoundingClientRect();
-    var sx = (_proj.x * 0.5 + 0.5) * rect.width;
-    var sy = (-_proj.y * 0.5 + 0.5) * rect.height;
-    sayEl.style.left = sx + 'px';
-    sayEl.style.top = sy + 'px';
-    sayEl.style.display = _proj.z < 1 ? 'block' : 'none';
+    var rect = canvasRect();
+    domStyle(sayEl, 'left', cssPx((_proj.x * 0.5 + 0.5) * rect.width));
+    domStyle(sayEl, 'top', cssPx((-_proj.y * 0.5 + 0.5) * rect.height));
+    domStyle(sayEl, 'display', _proj.z < 1 ? 'block' : 'none');
   }
   var _proj = null;
 
@@ -2071,7 +2271,7 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     return _decorGroup;
   }
 
-  /** CanvasTexture de um cartaz (título + linhas de texto), fundo claro. */
+  // CanvasTexture de um cartaz (título + linhas de texto), fundo claro.
   function makeSignTexture(title, body) {
     try {
       var cv = document.createElement('canvas');
@@ -2117,14 +2317,14 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     // Poste.
     var post = new THREE.Mesh(
       new THREE.CylinderGeometry(0.12, 0.12, 2.4, 6),
-      toonMaterial({ color: '#6b4226' })
+      toon('#6b4226')
     );
     post.position.set(x, gy + 1.2, z);
     post.castShadow = true;
     group.add(post);
     // Placa (dois lados com a mesma textura).
     var tex = makeSignTexture(title, body);
-    var mat = tex ? new THREE.MeshBasicMaterial({ map: tex }) : toonMaterial({ color: '#fdf6e3' });
+    var mat = tex ? new THREE.MeshBasicMaterial({ map: tex }) : toon('#fdf6e3');
     var sign = new THREE.Mesh(new THREE.BoxGeometry(1.8, 1.8, 0.12), mat);
     sign.position.set(x, gy + 3.1, z);
     sign.castShadow = true;
@@ -2139,14 +2339,14 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     var height = width * 0.7;
     var post = new THREE.Mesh(
       new THREE.CylinderGeometry(0.14, 0.14, gy > -100 ? 2 : 2, 6),
-      toonMaterial({ color: '#5a4632' })
+      toon('#5a4632')
     );
     post.position.set(x, gy + 1, z);
     post.castShadow = true;
     group.add(post);
     var frame = new THREE.Mesh(
       new THREE.BoxGeometry(width + 0.3, height + 0.3, 0.16),
-      toonMaterial({ color: '#3a2f1b' })
+      toon('#3a2f1b')
     );
     frame.position.set(x, gy + 2 + height / 2, z);
     frame.castShadow = true;
@@ -2154,14 +2354,14 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     var tex = imageTexture(imageName);
     var mat = tex
       ? new THREE.MeshBasicMaterial({ map: tex })
-      : toonMaterial({ color: '#8892a0' });
+      : toon('#8892a0');
     var pic = new THREE.Mesh(new THREE.PlaneGeometry(width, height), mat);
     pic.position.set(x, gy + 2 + height / 2, z + 0.1);
     group.add(pic);
     return { x: x, z: z, image: imageName };
   }
 
-  /** Textura de imagem do projeto (data:URL), via <img>. Rede morta ⇒ img.src. */
+  // Textura de imagem do projeto (data:URL), via <img>. Rede morta ⇒ img.src.
   var _imgTexCache = null;
   function imageTexture(name) {
     var key = text(name, '');
@@ -2196,7 +2396,7 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     // Pilar-marcador brilhante (bloom pega nele).
     var group = ensureDecorGroup();
     var gy = heightAt(p.x, p.z);
-    var mat = toonMaterial({ color: '#22d3ee' });
+    var mat = toon('#22d3ee');
     if (mat.emissive) { try { mat.emissive.set('#0891b2'); } catch (e) {} }
     var pole = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.28, 1.6, 7), mat);
     pole.position.set(p.x, gy + 0.8, z);
@@ -2212,7 +2412,7 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     var hooks = pointHooks[name] || [];
     for (var i = 0; i < hooks.length; i++) {
       try { hooks[i](); } catch (e) {
-        warnOnce('hook-point-' + name + '-' + i, 'erro no "Quando apertar E no ponto ' + name + '": ' + e);
+        warnOnce('hook-point-' + name + '-' + i, 'erro no "Quando apertar E no ponto ' + name + '"', e);
       }
     }
   }
@@ -2221,12 +2421,12 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     var hooks = zoneHooks[name] || [];
     for (var i = 0; i < hooks.length; i++) {
       try { hooks[i](); } catch (e) {
-        warnOnce('hook-zone-' + name + '-' + i, 'erro no "Quando entrar na área ' + name + '": ' + e);
+        warnOnce('hook-zone-' + name + '-' + i, 'erro no "Quando o jogador entrar na área ' + name + '"', e);
       }
     }
   }
 
-  /** A cada quadro: badge "E" no ponto mais perto, gatilho de E e de zona. */
+  // A cada quadro: badge "E" no ponto mais perto, gatilho de E e de zona.
   function stepInteractions() {
     if (!worldReady) return;
     // Overlay da porta aberto: o E fecha (e NÃO re-dispara a porta no mesmo aperto).
@@ -2278,9 +2478,9 @@ const world3DRuntimeSource = `import * as THREE from 'three';
       }
     }
     updatePrompt(best, bestLabel);
-    if (best && isJust('e')) {
+    if (best && isJust('e') && !_eSpent) {
       if (bestFire) {
-        try { bestFire(); } catch (e) { warnOnce('interact-fire', 'erro no interagir: ' + e); }
+        try { bestFire(); } catch (e) { warnOnce('interact-fire', 'erro no interagir', e); }
       } else {
         firePoint(best.name);
       }
@@ -2298,7 +2498,7 @@ const world3DRuntimeSource = `import * as THREE from 'three';
 
   function updatePrompt(p, label) {
     if (!p) {
-      if (promptEl) promptEl.style.display = 'none';
+      domStyle(promptEl, 'display', 'none');
       return;
     }
     if (!ensureShell()) return;
@@ -2308,18 +2508,18 @@ const world3DRuntimeSource = `import * as THREE from 'three';
       promptEl.textContent = 'E';
       frameEl.appendChild(promptEl);
     }
-    promptEl.textContent = label || 'E';
+    domText(promptEl, label || 'E');
     if (!camera || !renderer || !_proj) return;
     _proj.set(p.x, typeof p.promptY === 'number' ? p.promptY : heightAt(p.x, p.z) + 2.4, p.z);
     _proj.project(camera);
-    if (_proj.z >= 1) { promptEl.style.display = 'none'; return; }
-    var rect = canvasEl.getBoundingClientRect();
-    promptEl.style.left = (_proj.x * 0.5 + 0.5) * rect.width + 'px';
-    promptEl.style.top = (-_proj.y * 0.5 + 0.5) * rect.height + 'px';
-    promptEl.style.display = 'block';
+    if (_proj.z >= 1) { domStyle(promptEl, 'display', 'none'); return; }
+    var rect = canvasRect();
+    domStyle(promptEl, 'left', cssPx((_proj.x * 0.5 + 0.5) * rect.width));
+    domStyle(promptEl, 'top', cssPx((-_proj.y * 0.5 + 0.5) * rect.height));
+    domStyle(promptEl, 'display', 'block');
   }
 
-  /** Reserva o terreno da praça (SÓ dados — seguro antes do start). */
+  // Reserva o terreno da praça (SÓ dados — seguro antes do start).
   function reserveGallery(x, z) {
     terrainMods.push({ kind: 'flatten', x: num(x, 0), z: num(z, 0), r: 14, y: baseHeightAt(num(x, 0), num(z, 0)) });
     exclusions.push({ x: num(x, 0), z: num(z, 0), r: 16 });
@@ -2364,7 +2564,7 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     if (!galleryEl) {
       galleryEl = document.createElement('div');
       galleryEl.setAttribute('style', 'position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;background:rgba(6,10,16,.82);z-index:9;cursor:pointer');
-      galleryEl.addEventListener('click', function () { galleryEl.style.display = 'none'; });
+      listen(galleryEl, 'click', function () { galleryEl.style.display = 'none'; });
       frameEl.appendChild(galleryEl);
     }
     var url = ASSETS[text(imageName, '')];
@@ -2408,11 +2608,11 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     } catch (e) {}
   }
 
-  /** Portal-arco na largada + faixa (só visual). */
+  // Portal-arco na largada + faixa (só visual).
   function buildRacePortal(x, z, yaw) {
     if (!scene) return null;
     var group = new THREE.Group();
-    var mat = toonMaterial({ color: '#f59e0b' });
+    var mat = toon('#f59e0b');
     var gy = heightAt(x, z);
     var left = new THREE.Mesh(new THREE.CylinderGeometry(0.35, 0.35, 5, 8), mat);
     left.position.set(-4, 2.5, 0);
@@ -2430,11 +2630,11 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     return group;
   }
 
-  /** Anel de checkpoint (torus em pé) que pulsa quando é o PRÓXIMO. */
+  // Anel de checkpoint (torus em pé) que pulsa quando é o PRÓXIMO.
   function buildCheckpointRing(x, z, yaw) {
     if (!scene) return null;
     var gy = heightAt(x, z);
-    var mat = toonMaterial({ color: '#22d3ee' });
+    var mat = toon('#22d3ee');
     if (mat.emissive) { try { mat.emissive.set('#0e7490'); } catch (e) {} }
     var geo = THREE.TorusGeometry ? new THREE.TorusGeometry(3, 0.35, 8, 20) : new THREE.CylinderGeometry(3, 3, 0.4, 16);
     var ring = new THREE.Mesh(geo, mat);
@@ -2448,7 +2648,7 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     var hooks = raceHooks[kind] || [];
     for (var i = 0; i < hooks.length; i++) {
       try { hooks[i](); } catch (e) {
-        warnOnce('hook-race-' + kind + '-' + i, 'erro no gancho da corrida "' + kind + '": ' + e);
+        warnOnce('hook-race-' + kind + '-' + i, 'erro no gancho da corrida "' + kind + '"', e);
       }
     }
   }
@@ -2463,7 +2663,7 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     if (worldReady) race.portal = buildRacePortal(race.x, race.z, race.yaw);
   }
 
-  /** Constrói o visual da corrida (portal + anéis) no start, se ainda faltarem. */
+  // Constrói o visual da corrida (portal + anéis) no start, se ainda faltarem.
   function buildRace() {
     if (!race || !scene) return;
     if (!race.portal) race.portal = buildRacePortal(race.x, race.z, race.yaw);
@@ -2487,9 +2687,11 @@ const world3DRuntimeSource = `import * as THREE from 'three';
   }
 
   function stepRace(dt) {
-    if (!race || !carState) return;
-    var cx = carState.x;
-    var cz = carState.z;
+    // Lote 9 do review 3D: a corrida vale para o JOGADOR ATIVO (a pé também), não só o carro.
+    var me = focusState();
+    if (!race || !me) return;
+    var cx = me.x;
+    var cz = me.z;
     // Largada: cruzar perto do portal ARMA e inicia (idle→correndo).
     var ddx = cx - race.x;
     var ddz = cz - race.z;
@@ -2541,7 +2743,8 @@ const world3DRuntimeSource = `import * as THREE from 'three';
         if (r.mesh) r.mesh.scale.setScalar(r === glow ? 1 + Math.sin(playTime * 4) * 0.08 : 1);
       }
       // HUD automático.
-      setHud('topo-esquerda', 'Tempo ' + race.time.toFixed(1) + 's  \\u00b7  ponto ' + Math.min(race.next + 1, race.checkpoints.length) + '/' + race.checkpoints.length + '  \\u00b7  volta ' + race.lap + '/' + race.laps);
+      var raceEl = hudPanel('top-left', 'corrida');
+      domText(raceEl, 'Tempo ' + race.time.toFixed(1) + 's  \\u00b7  ponto ' + Math.min(race.next + 1, race.checkpoints.length) + '/' + race.checkpoints.length + '  \\u00b7  volta ' + race.lap + '/' + race.laps);
     }
   }
 
@@ -2557,24 +2760,24 @@ const world3DRuntimeSource = `import * as THREE from 'three';
 
   // ---- 🎳 Kit Boliche / derrubar (knockdown arcade, sem solver de física) ----
 
-  /** Cria um corpo tombável (pino/caixa/lata) na cena, guardando o "home". */
+  // Cria um corpo tombável (pino/caixa/lata) na cena, guardando o "home".
   function makeKnockable(x, z, kind, s) {
     if (!scene) return null;
     var gy = heightAt(x, z);
     var mesh, r, h;
     if (kind === 'caixa') {
       var sz = 0.8 * s;
-      mesh = new THREE.Mesh(new THREE.BoxGeometry(sz, sz, sz), toonMaterial({ color: '#b7791f' }));
+      mesh = new THREE.Mesh(new THREE.BoxGeometry(sz, sz, sz), toon('#b7791f'));
       r = sz * 0.6; h = sz;
       mesh.position.set(x, gy + sz / 2, z);
     } else if (kind === 'lata') {
       r = 0.28 * s; h = 0.7 * s;
-      mesh = new THREE.Mesh(new THREE.CylinderGeometry(r, r, h, 10), toonMaterial({ color: '#a0aec0' }));
+      mesh = new THREE.Mesh(new THREE.CylinderGeometry(r, r, h, 10), toon('#a0aec0'));
       mesh.position.set(x, gy + h / 2, z);
     } else {
       // pino (boliche): cilindro branco afunilado.
       r = 0.22 * s; h = 0.9 * s;
-      mesh = new THREE.Mesh(new THREE.CylinderGeometry(r * 0.6, r, h, 10), toonMaterial({ color: '#fefefe' }));
+      mesh = new THREE.Mesh(new THREE.CylinderGeometry(r * 0.6, r, h, 10), toon('#fefefe'));
       mesh.position.set(x, gy + h / 2, z);
     }
     mesh.castShadow = true;
@@ -2599,18 +2802,27 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     k.tiltAxis = Math.atan2(dz, dx);
   }
 
+  // Quem encosta nas coisas: o JOGADOR ATIVO e o "raio" dele (o carrinho é mais largo).
+  function playerSpeed(me) {
+    return me ? Math.abs(num(me.speed, 0)) : 0;
+  }
+  function playerReach(me) {
+    return me === carState ? 1.2 : 0.6;
+  }
+
   function stepKnockables(dt) {
     if (!knockables.length) return;
-    var cx = carState ? carState.x : 0;
-    var cz = carState ? carState.z : 0;
-    var cspd = carState ? Math.abs(carState.speed) : 0;
+    var me = focusState();
+    var cx = me ? me.x : 0;
+    var cz = me ? me.z : 0;
+    var cspd = playerSpeed(me);
     for (var i = 0; i < knockables.length; i++) {
       var k = knockables[i];
-      // Carro encosta? impulso proporcional à velocidade.
-      if (!k.down && carState) {
+      // O jogador encosta (a pé ou dirigindo)? Impulso proporcional à velocidade.
+      if (!k.down && me) {
         var ddx = k.x - cx;
         var ddz = k.z - cz;
-        var rr = k.r + 1.2;
+        var rr = k.r + playerReach(me);
         if (ddx * ddx + ddz * ddz < rr * rr && cspd > 2) {
           knockableHit(k, cx, cz, cspd);
         }
@@ -2669,9 +2881,9 @@ const world3DRuntimeSource = `import * as THREE from 'three';
       if (!bowling.pins[i].down) { allDown = false; break; }
     }
     if (allDown && bowling.pins.length > 0) {
-      for (var h = 0; h < bowling.strikeHooks.length; h++) {
-        try { bowling.strikeHooks[h](); } catch (e) {
-          warnOnce('hook-strike-' + h, 'erro no "Quando derrubar todos os pinos": ' + e);
+      for (var h = 0; h < strikeHooks.length; h++) {
+        try { strikeHooks[h](); } catch (e) {
+          warnOnce('hook-strike-' + h, 'erro no "Quando derrubar todos os pinos"', e);
         }
       }
     }
@@ -2699,10 +2911,10 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     }
   }
 
-  /** Pista de boliche: 10 pinos em triângulo na frente da posição dada. */
+  // Pista de boliche: 10 pinos em triângulo na frente da posição dada.
   function buildBowling(x, z, yaw) {
     if (!scene) return;
-    bowling = { x: num(x, 0), z: num(z, 0), pins: [], strikeHooks: [] };
+    bowling = { x: num(x, 0), z: num(z, 0), pins: [] };
     var a = num(yaw, 0) * Math.PI / 180;
     var fx = Math.sin(a);
     var fz = Math.cos(a);
@@ -2722,7 +2934,13 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     }
   }
 
-  /** Constrói TODAS as receitas de decoração em ordem (chamado no initWorld). */
+  // Constrói TODAS as receitas de decoração em ordem (chamado no initWorld).
+  // Antes do mundo pronto, a receita espera na fila do buildDecor (true = guardou).
+  function later(rec) {
+    if (worldReady) return false;
+    decorRecipes.push(rec);
+    return true;
+  }
   function buildDecor() {
     for (var i = 0; i < decorRecipes.length; i++) {
       var r = decorRecipes[i];
@@ -2765,21 +2983,21 @@ const world3DRuntimeSource = `import * as THREE from 'three';
       else if (r.kind === 'animals') buildAnimals(r);
       else if (r.kind === 'flag') buildFlag(r);
       else if (r.kind === 'rocket') buildRocket(r);
+      else if (r.kind === 'collectible') addCollectibles(r, false);
     }
     // 2ª passada: o "passear" precisa do amigo já criado, e o trânsito precisa
     // da cidade já construída (ordem livre dos blocos).
     for (var j = 0; j < decorRecipes.length; j++) {
       var r2 = decorRecipes[j];
-      if (r2.kind === 'npcWander') {
-        var npc2 = findNpc(r2.name);
-        if (npc2) npc2.home.r = clamp(num(r2.r, 10), 0, 60);
-      } else if (r2.kind === 'traffic') {
+      if (r2.kind === 'traffic') {
         buildTraffic();
+      } else if (r2.kind === 'removeNamed') {
+        removeNamed(r2.name);
       }
     }
   }
 
-  /** Espalha N empurráveis variados num raio (determinístico pela posição). */
+  // Espalha N empurráveis variados num raio (determinístico pela posição).
   function buildPushScatter(n, x, z, r) {
     var kinds = ['tijolo', 'banco', 'cerca', 'lanterna', 'cone'];
     var count = clamp(num(n, 8), 1, 60);
@@ -2791,7 +3009,7 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     }
   }
 
-  /** Empilha N caixas/latas numa coluna que o carro derruba. */
+  // Empilha N caixas/latas numa coluna que o carro derruba.
   function buildStack(n, thing, x, z) {
     if (!scene) return;
     var kind = thing === 'latas' ? 'lata' : 'caixa';
@@ -2816,8 +3034,12 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     'espaco': ' ', 'espaço': ' ', 'space': ' ', 'seta cima': 'arrowup', 'seta baixo': 'arrowdown',
     'seta esquerda': 'arrowleft', 'seta direita': 'arrowright'
   };
+  // O dropdown COMUM das extensões 3D manda o KeyboardEvent.code (KeyE, Space, ShiftLeft,
+  // ArrowUp, Digit1); o mapa de teclas guarda o e.key em minúsculas.
   function keyName(k) {
     var s = text(k, '').toLowerCase();
+    if (/^key[a-z]$/.test(s) || /^digit[0-9]$/.test(s)) return s.charAt(s.length - 1);
+    if (s === 'shiftleft' || s === 'shiftright') return 'shift';
     return KEY_ALIASES[s] || s;
   }
   function isDown(k) {
@@ -2828,7 +3050,7 @@ const world3DRuntimeSource = `import * as THREE from 'three';
   }
 
   function bindInput() {
-    window.addEventListener('keydown', function (e) {
+    listen(window, 'keydown', function (e) {
       var k = String(e.key).toLowerCase();
       var firstDown = !keys[k] && !e.repeat;
       keys[k] = true;
@@ -2851,18 +3073,18 @@ const world3DRuntimeSource = `import * as THREE from 'three';
         try { e.preventDefault(); } catch (err) {}
       }
     });
-    window.addEventListener('pointerdown', function () {
+    listen(window, 'pointerdown', function () {
       resumeAudio();
     });
-    window.addEventListener('keyup', function (e) {
+    listen(window, 'keyup', function (e) {
       keys[String(e.key).toLowerCase()] = false;
     });
-    window.addEventListener('contextmenu', function () { keys = {}; });
-    window.addEventListener('blur', function () { keys = {}; });
+    listen(window, 'contextmenu', function () { keys = {}; });
+    listen(window, 'blur', function () { keys = {}; });
     ensureJoystick();
   }
 
-  /** Joystick virtual (só em toque): direção + paridade das ações do teclado. */
+  // Joystick virtual (só em toque): direção + paridade das ações do teclado.
   function ensureJoystick() {
     try {
       var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
@@ -2890,8 +3112,8 @@ const world3DRuntimeSource = `import * as THREE from 'three';
       nub.style.left = '35px';
       nub.style.top = '35px';
     }
-    stick.addEventListener('pointerdown', function (e) { active = true; hideSplash(); resumeAudio(); try { stick.setPointerCapture(e.pointerId); } catch (err) {} });
-    stick.addEventListener('pointermove', function (e) {
+    listen(stick, 'pointerdown', function (e) { active = true; hideSplash(); resumeAudio(); try { stick.setPointerCapture(e.pointerId); } catch (err) {} });
+    listen(stick, 'pointermove', function (e) {
       if (!active) return;
       var rect = stick.getBoundingClientRect();
       var dx = (e.clientX - rect.left - 60) / 45;
@@ -2900,9 +3122,9 @@ const world3DRuntimeSource = `import * as THREE from 'three';
       if (len > 1) { dx /= len; dy /= len; }
       setDir(dx, dy);
     });
-    stick.addEventListener('pointerup', function () { active = false; clearDir(); });
-    stick.addEventListener('pointercancel', function () { active = false; clearDir(); });
-    stick.addEventListener('lostpointercapture', function () { active = false; clearDir(); });
+    listen(stick, 'pointerup', function () { active = false; clearDir(); });
+    listen(stick, 'pointercancel', function () { active = false; clearDir(); });
+    listen(stick, 'lostpointercapture', function () { active = false; clearDir(); });
 
     function touchKeyButton(parent, label, key, aria, background) {
       var button = document.createElement('button');
@@ -2912,16 +3134,16 @@ const world3DRuntimeSource = `import * as THREE from 'three';
       button.title = aria;
       button.setAttribute('style', 'width:54px;height:54px;border-radius:50%;border:0;background:' + background + ';color:#fff;font-weight:800;font-size:18px;z-index:8;touch-action:none;user-select:none');
       var release = function () { keys[key] = false; };
-      button.addEventListener('pointerdown', function (e) {
+      listen(button, 'pointerdown', function (e) {
         try { e.preventDefault(); button.setPointerCapture(e.pointerId); } catch (err) {}
         hideSplash();
         resumeAudio();
         if (!keys[key]) justPressed[key] = true;
         keys[key] = true;
       });
-      button.addEventListener('pointerup', release);
-      button.addEventListener('pointercancel', release);
-      button.addEventListener('lostpointercapture', release);
+      listen(button, 'pointerup', release);
+      listen(button, 'pointercancel', release);
+      listen(button, 'lostpointercapture', release);
       parent.appendChild(button);
     }
 
@@ -2984,7 +3206,7 @@ const world3DRuntimeSource = `import * as THREE from 'three';
       p.textContent = 'WASD ou setas dirigem · espaço pula';
       var btn = document.createElement('button');
       btn.textContent = 'Começar o passeio';
-      btn.addEventListener('click', function () { hideSplash(); });
+      listen(btn, 'click', function () { hideSplash(); });
       splashEl.appendChild(h1);
       splashEl.appendChild(p);
       splashEl.appendChild(btn);
@@ -2993,7 +3215,7 @@ const world3DRuntimeSource = `import * as THREE from 'three';
       shellReady = true;
       return true;
     } catch (e) {
-      warn('não consegui montar a tela do mundo: ' + e);
+      warn('não consegui montar a tela do mundo', e);
       return false;
     }
   }
@@ -3002,7 +3224,7 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     if (splashEl) splashEl.classList.add('szw3d-hidden');
   }
 
-  /** Canvas responsivo: resolução interna fixa + letterbox por CSS. */
+  // Canvas responsivo: régua fixa (config.w/h) + letterbox por CSS; a resolução do desenho é do orçamento.
   function resizeCanvas() {
     if (!shellReady || !canvasEl) return;
     var ratio = config.w / config.h;
@@ -3031,13 +3253,10 @@ const world3DRuntimeSource = `import * as THREE from 'three';
       var st = styleOf();
 
       renderer = new THREE.WebGLRenderer({ antialias: true, canvas: canvasEl });
-      // Resolução interna FIXA (as contas do aluno nunca mudam com a janela).
-      renderer.setPixelRatio(quality.tier === 'turbo' ? 0.75 : 1);
-      renderer.setSize(config.w, config.h, false);
-      if (renderer.shadowMap) {
-        renderer.shadowMap.enabled = true;
-        if (THREE.PCFSoftShadowMap) renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-      }
+      // A régua (config.w/h) não muda com a janela; o orçamento põe o pixel ratio que leva
+      // a régua ao tamanho REAL do canvas na tela (nítido em tela grande, leve no celular).
+      renderBudget.resize();
+      if (renderer.shadowMap) renderer.shadowMap.enabled = true;
       if (THREE.ACESFilmicToneMapping) renderer.toneMapping = THREE.ACESFilmicToneMapping;
 
       scene = new THREE.Scene();
@@ -3070,18 +3289,17 @@ const world3DRuntimeSource = `import * as THREE from 'three';
         sun.shadow.camera.right = half;
         sun.shadow.camera.top = half;
         sun.shadow.camera.bottom = -half;
-        if (sun.shadow.mapSize && sun.shadow.mapSize.set) {
-          var initialShadowSize = quality.tier === 'turbo' ? 1024 : 2048;
-          sun.shadow.mapSize.set(initialShadowSize, initialShadowSize);
-        }
         // Anti-acne: sem o bias, superfícies rasantes ficam listradas.
         sun.shadow.normalBias = 0.05;
       }
+      // Mapa (2048/1024) e filtro (PCFSoft/PCF) pelo nível.
+      renderBudget.applyShadow(sun);
       scene.add(sun);
       if (sun.target) {
         sunTarget = sun.target;
         scene.add(sunTarget);
       }
+      applyHdrLights();
 
       _proj = new THREE.Vector3();
       buildTerrain();
@@ -3124,12 +3342,12 @@ const world3DRuntimeSource = `import * as THREE from 'three';
       if (seasonName) applySeason();
       return true;
     } catch (e) {
-      warn('não consegui montar o mundo 3D: ' + e);
+      warn('não consegui montar o mundo 3D', e);
       return false;
     }
   }
 
-  /** Céu = degradê vertical do estilo (canvas 2D → textura de fundo). */
+  // Céu = degradê vertical do estilo (canvas 2D → textura de fundo).
   function applySky() {
     if (!scene) return;
     var st = styleOf();
@@ -3147,7 +3365,7 @@ const world3DRuntimeSource = `import * as THREE from 'three';
       grad.addColorStop(1, st.skyBot);
       g.fillStyle = grad;
       g.fillRect(0, 0, 2, 256);
-      if (skyTex && skyTex.dispose) { try { skyTex.dispose(); } catch (e) {} }
+      tryDispose(skyTex);
       skyTex = new THREE.CanvasTexture(cv);
       scene.background = skyTex;
     } catch (e) {
@@ -3155,7 +3373,7 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     }
   }
 
-  /** 3 degraus de luz = o look toon/chapado (compartilhado pelos materiais). */
+  // 3 degraus de luz = o look toon/chapado (compartilhado pelos materiais).
   function ensureGradientMap() {
     if (gradientTex) return gradientTex;
     try {
@@ -3173,6 +3391,14 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     return gradientTex;
   }
 
+  // Material toon de uma cor só (o caso de quase todo o mundo).
+  function toon(color) {
+    return toonMaterial({ color: color });
+  }
+  // Libera sem reclamar (texturas/geometrias que podem já ter sido liberadas).
+  function tryDispose(o) {
+    if (o && o.dispose) { try { o.dispose(); } catch (e) {} }
+  }
   function toonMaterial(opts) {
     var grad = ensureGradientMap();
     if (THREE.MeshToonMaterial && grad) {
@@ -3185,13 +3411,37 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     return new THREE.MeshStandardMaterial(opts);
   }
 
-  /**
-   * O terreno: um PlaneGeometry deformado pela MESMA heightAt() que todo mundo
-   * consulta, colorido por VÉRTICE (baixo→alto + encosta vira pedra) e com o
-   * material toon. Rebuild descarta o antigo (higiene de GPU).
-   */
+  // O terreno: um PlaneGeometry deformado pela MESMA heightAt() que todo mundo
+  // consulta, colorido por VÉRTICE (baixo→alto + encosta vira pedra) e com o
+  // material toon. Rebuild descarta o antigo (higiene de GPU).
+  // Pedido de mexer no chão (aplainar, trilha, cratera). Teto: um "A cada quadro" com
+  // "Aplainar" dentro empilharia milhares de pedidos (e reconstruções) por minuto.
+  // O teto conta só os pedidos feitos DURANTE o jogo (o Ao iniciar monta o chão uma vez só).
+  function pushTerrainMod(mod) {
+    if (worldReady) {
+      if (userTerrainMods >= TERRAIN_MODS_MAX) {
+        warnOnce('terrain-mods-max', 'o chão já foi mexido ' + TERRAIN_MODS_MAX + ' vezes durante o jogo (o teto) — mexa no chão no Ao iniciar, que não tem esse teto');
+        return false;
+      }
+      userTerrainMods++;
+    }
+    terrainMods.push(mod);
+    // Depois do mundo pronto: só MARCA; o laço reconstrói uma vez no fim do quadro.
+    if (worldReady) terrainDirty = true;
+    return true;
+  }
+
+  function rebuildDirtyTerrain() {
+    if (!terrainDirty || !scene) return;
+    terrainDirty = false;
+    buildTerrain();
+    if (grassMat) buildGrassHeightTex();
+    if (waterMat) buildWaterFoamTex();
+  }
+
   function buildTerrain() {
     if (!scene) return;
+    terrainDirty = false;
     if (terrainMesh) {
       try {
         scene.remove(terrainMesh);
@@ -3203,7 +3453,7 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     var st = styleOf();
     var spacing = Math.max(0.75, Math.min(2, terrainCfg.smooth * 0.25));
     var detail = 0.75 + Math.sqrt(Math.max(0, terrainCfg.hills) / 10);
-    var maxSeg = quality.tier === 'turbo' ? 160 : 320;
+    var maxSeg = renderBudget.isLight() ? 160 : 320;
     var SEG = Math.max(64, Math.min(maxSeg, Math.ceil((config.world / spacing) * detail)));
     var geo = new THREE.PlaneGeometry(config.world, config.world, SEG, SEG);
     geo.rotateX(-Math.PI / 2);
@@ -3273,6 +3523,7 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     }
   }
 
+  var _partyColor = null;
   function spawnParty(x, y, z, vx, vy, vz, ttl, g, flut, colorHex) {
     if (!partyState) return;
     var i = partyIdx;
@@ -3282,24 +3533,32 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     p.vx = vx; p.vy = vy; p.vz = vz;
     p.age = 0; p.ttl = ttl; p.g = g; p.flut = flut;
     var col = partyGeo.getAttribute('color');
-    var c = new THREE.Color(colorHex);
+    var c = _partyColor || (_partyColor = new THREE.Color());
+    c.set(colorHex);
     col.setXYZ(i, c.r, c.g, c.b);
     col.needsUpdate = true;
   }
 
+  // Onde está o jogador ATIVO. Devolve SEMPRE o mesmo objeto (zero alocação por quadro):
+  // quem chama lê x/y/z na hora ou copia para variáveis locais; ninguém guarda a referência.
+  var _pxz = { x: 0, y: 0, z: 0 };
   function playerXZ() {
-    if (personCfg && !driving && personState) {
-      return { x: personState.x, y: personState.y, z: personState.z };
+    var s = personCfg && !driving && personState ? personState
+      : driving && activeVehicle === 'boat' && boatState ? boatState
+      : carState || boatState;
+    if (s) {
+      _pxz.x = s.x;
+      _pxz.y = s.y;
+      _pxz.z = s.z;
+    } else {
+      _pxz.x = 0;
+      _pxz.y = heightAt(0, 0);
+      _pxz.z = 0;
     }
-    if (driving && activeVehicle === 'boat' && boatState) {
-      return { x: boatState.x, y: boatState.y, z: boatState.z };
-    }
-    if (carState) return { x: carState.x, y: carState.y, z: carState.z };
-    if (boatState) return { x: boatState.x, y: boatState.y, z: boatState.z };
-    return { x: 0, y: heightAt(0, 0), z: 0 };
+    return _pxz;
   }
 
-  /** O "jogador ativo" que a câmera segue: a pé, no barco OU no carrinho. */
+  // O "jogador ativo" que a câmera segue: a pé, no barco OU no carrinho.
   function focusState() {
     if (personCfg && !driving && personState) return personState;
     if (driving && activeVehicle === 'boat' && boatState) return boatState;
@@ -3442,21 +3701,25 @@ const world3DRuntimeSource = `import * as THREE from 'three';
       t.z += (ddz / d) * 7 * dt;
     }
     t.group.position.set(t.x, heightAt(t.x, t.z), t.z);
-    // Sucção: perto puxa; MUITO perto arremessa o carrinho pro alto (uma vez).
+    // Sucção: perto puxa o JOGADOR ATIVO; MUITO perto arremessa pro alto (uma vez).
     t.flingCd -= dt;
-    if (carState) {
-      var cdx = t.x - carState.x;
-      var cdz = t.z - carState.z;
+    var tp = focusState();
+    if (tp) {
+      var cdx = t.x - tp.x;
+      var cdz = t.z - tp.z;
       var cd = Math.sqrt(cdx * cdx + cdz * cdz);
       if (cd < 9 && cd > 0.01) {
-        carState.x += (cdx / cd) * 8 * dt;
-        carState.z += (cdz / cd) * 8 * dt;
+        tp.x += (cdx / cd) * 8 * dt;
+        tp.z += (cdz / cd) * 8 * dt;
       }
       if (cd < 3 && t.flingCd <= 0) {
         t.flingCd = 1.5;
-        carState.vy = 15;
-        carState.airborne = true;
-        carState.pitchV += 2.5;
+        // O barco só balança (não voa); a pé e de carrinho, pro alto!
+        if (tp !== boatState) {
+          tp.vy = 15;
+          tp.airborne = true;
+        }
+        if (tp === carState) carState.pitchV += 2.5;
         _shakeT = Math.max(_shakeT, 0.5);
         _shakeAmp = Math.max(_shakeAmp, 0.35);
       }
@@ -3566,8 +3829,8 @@ const world3DRuntimeSource = `import * as THREE from 'three';
 
   function stepClouds(dt) {
     if (!cloudsPts) return;
-    var cx = carState ? carState.x : 0;
-    var cz = carState ? carState.z : 0;
+    // As nuvens seguem o JOGADOR ATIVO (a pé ou de barco também), não o carro parado.
+    var cx = playerXZ().x;
     var lim = config.world * 0.95;
     for (var i = 0; i < cloudsPts.n; i++) {
       var ix = i * 3;
@@ -3675,10 +3938,11 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     shimSet(key, '1');
     if (frameEl) {
       if (!achToastEl) {
-        achToastEl = document.createElement('div');
-        achToastEl.setAttribute('style', 'position:absolute;top:52px;right:12px;padding:8px 14px;border-radius:12px;background:#fbbf24;color:#3b2900;font:800 15px var(--sz-game-ui-font);z-index:9;pointer-events:none;box-shadow:0 4px 14px rgba(0,0,0,.35);display:none;');
-        frameEl.appendChild(achToastEl);
+        achToastEl = hudPanel('top-right', 'conquista');
+        if (achToastEl) achToastEl.setAttribute('style', 'background:#fbbf24;color:#3b2900;font-size:16px;text-shadow:none;box-shadow:0 4px 14px rgba(0,0,0,.35);display:none');
       }
+    }
+    if (achToastEl) {
       achToastEl.textContent = '🏆 Conquista: ' + nm;
       achToastEl.style.display = 'block';
       _achToastUntil = playTime + 3;
@@ -3689,7 +3953,7 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     var hooks = achievementHooks[nm] || [];
     for (var i = 0; i < hooks.length; i++) {
       try { hooks[i](); } catch (e) {
-        warnOnce('hook-ach-' + nm, 'erro no "Quando ganhar a conquista": ' + e);
+        warnOnce('hook-ach-' + nm, 'erro no "Quando ganhar a conquista"', e);
       }
     }
   }
@@ -3704,11 +3968,14 @@ const world3DRuntimeSource = `import * as THREE from 'three';
   // Minimapa: canvas pequeno sempre + mapa GRANDE no M (dots; clique teleporta).
   function ensureMinimap() {
     if (minimapEl || !frameEl) return;
+    var holder = hudPanel('bottom-right', 'minimapa');
+    if (!holder) return;
+    holder.setAttribute('style', 'padding:0;background:none;line-height:0');
     minimapEl = document.createElement('canvas');
     minimapEl.width = 140;
     minimapEl.height = 140;
-    minimapEl.setAttribute('style', 'position:absolute;bottom:12px;right:12px;width:140px;height:140px;border-radius:10px;z-index:7;pointer-events:none;opacity:.92;');
-    frameEl.appendChild(minimapEl);
+    minimapEl.setAttribute('style', 'width:140px;height:140px;border-radius:10px;pointer-events:none;opacity:.92;');
+    holder.appendChild(minimapEl);
   }
 
   function drawMapDots(g, size) {
@@ -3784,17 +4051,19 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     if (minimapMode === 'off') return;
     ensureMinimap();
     if (!minimapEl) return;
+    // Tecla M: abre/fecha o mapa GRANDE. Lida a TODO quadro: depois do respiro do desenho abaixo,
+    // só valia o aperto que caísse no quadro do redesenho (1 em cada ~5).
+    if (isJust('m')) toggleBigMap();
     _mapT -= dt;
     if (_mapT > 0) return;
     _mapT = 0.15;
     var g = minimapEl.getContext('2d');
     if (g) drawMapDots(g, 140);
-    // Tecla M: abre/fecha o mapa GRANDE.
-    if (isJust('m')) toggleBigMap();
   }
 
   function toggleBigMap() {
     if (bigMapEl) {
+      if (bigMapEl.firstChild) unlisten(bigMapEl.firstChild);
       try { frameEl.removeChild(bigMapEl); } catch (e) {}
       bigMapEl = null;
       return;
@@ -3815,21 +4084,22 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     var g = cv.getContext('2d');
     if (g) drawMapDots(g, 420);
     if (minimapMode === 'teleporte') {
-      cv.addEventListener('pointerdown', function (ev) {
+      listen(cv, 'pointerdown', function (ev) {
         var rect = cv.getBoundingClientRect();
         var half = config.world / 2;
         var wx = ((ev.clientX - rect.left) / rect.width) * config.world - half;
         var wz = ((ev.clientY - rect.top) / rect.height) * config.world - half;
-        if (personCfg && !driving && personState) {
-          personState.x = wx;
-          personState.z = wz;
-          personState.y = heightAtDrive(wx, wz, null);
-        } else if (carState) {
-          carState.x = wx;
-          carState.z = wz;
-          carState.y = heightAtDrive(wx, wz, null);
-          carState.speed = 0;
+        // Leva o JOGADOR ATIVO (a pé, de carro ou de barco). O barco só vai para a água.
+        var me = focusState();
+        if (!me) return;
+        if (me === boatState && !(waterCfg && heightAt(wx, wz) < waterCfg.y - 0.35)) {
+          hint.textContent = 'O barco só vai para a água · M fecha';
+          return;
         }
+        me.x = wx;
+        me.z = wz;
+        if (me !== boatState) me.y = heightAtDrive(wx, wz, null);
+        me.speed = 0;
         camSnap = true;
         toggleBigMap();
       });
@@ -3979,7 +4249,7 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     whisperInput = { el: el, input: input };
     keys = {};
     setTimeout(function () { try { input.focus(); } catch (e) {} }, 30);
-    input.addEventListener('keydown', function (ev) {
+    listen(input, 'keydown', function (ev) {
       ev.stopPropagation();
       if (ev.key === 'Enter') {
         var msg = String(input.value || '').trim();
@@ -4030,13 +4300,285 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     }
   }
 
+
+  // ---- 🏆 Lote 10: coletáveis (procedurais, sem arquivo) ----
+  var COLLECT_COLORS = { estrela: '#facc15', cristal: '#38bdf8', fruta: '#ef4444', chave: '#f59e0b', presente: '#a855f7' };
+  function collectKind(kind) {
+    if (!_collectKinds) _collectKinds = Object.create(null);
+    var k = COLLECT_COLORS[kind] ? kind : 'estrela';
+    if (_collectKinds[k]) return _collectKinds[k];
+    var mat = toon(COLLECT_COLORS[k]);
+    if (mat.emissive) { try { mat.emissive.set(COLLECT_COLORS[k]); mat.emissiveIntensity = 0.35; } catch (e) {} }
+    var white = toon('#f8fafc');
+    var green = toon('#22c55e');
+    var parts = [];
+    var add = function (geo, m, x, y, z) { parts.push({ geo: geo, mat: m, x: x, y: y, z: z }); };
+    if (k === 'estrela' && THREE.Shape && THREE.ExtrudeGeometry) {
+      var sh = new THREE.Shape();
+      for (var i = 0; i < 10; i++) {
+        var a = (i / 10) * Math.PI * 2 + Math.PI / 2;
+        var r = i % 2 ? 0.22 : 0.5;
+        if (i === 0) sh.moveTo(Math.cos(a) * r, Math.sin(a) * r);
+        else sh.lineTo(Math.cos(a) * r, Math.sin(a) * r);
+      }
+      var star = new THREE.ExtrudeGeometry(sh, { depth: 0.16, bevelEnabled: false });
+      star.translate(0, 0, -0.08);
+      add(star, mat, 0, 0, 0);
+    } else if (k === 'cristal') {
+      var oc = new THREE.OctahedronGeometry(0.42);
+      oc.scale(0.7, 1.3, 0.7);
+      add(oc, mat, 0, 0, 0);
+    } else if (k === 'fruta') {
+      add(new THREE.SphereGeometry(0.36, 12, 10), mat, 0, 0, 0);
+      add(new THREE.BoxGeometry(0.06, 0.2, 0.06), green, 0, 0.42, 0);
+    } else if (k === 'chave') {
+      add(new THREE.TorusGeometry(0.2, 0.07, 8, 16), mat, 0, 0.28, 0);
+      add(new THREE.BoxGeometry(0.1, 0.55, 0.08), mat, 0, -0.15, 0);
+      add(new THREE.BoxGeometry(0.18, 0.08, 0.08), mat, 0.12, -0.36, 0);
+    } else {
+      add(new THREE.BoxGeometry(0.6, 0.5, 0.6), mat, 0, 0, 0);
+      add(new THREE.BoxGeometry(0.64, 0.54, 0.12), white, 0, 0, 0);
+      add(new THREE.BoxGeometry(0.12, 0.54, 0.64), white, 0, 0, 0);
+    }
+    _collectKinds[k] = { parts: parts };
+    return _collectKinds[k];
+  }
+  function makeCollectibleMesh(kind) {
+    var spec = collectKind(kind);
+    var g = new THREE.Group();
+    for (var i = 0; i < spec.parts.length; i++) {
+      var pt = spec.parts[i];
+      var m = new THREE.Mesh(pt.geo, pt.mat);
+      m.position.set(pt.x, pt.y, pt.z);
+      m.castShadow = true;
+      g.add(m);
+    }
+    return g;
+  }
+  function addCollectibles(rec, live) {
+    if (!scene) return;
+    var count = clamp(Math.floor(num(rec.n, 5)), 1, 64);
+    var cx = num(rec.x, 0);
+    var cz = num(rec.z, 0);
+    var R = clamp(num(rec.r, 20), 0, 200);
+    var lim = config.world / 2 - 2;
+    var rng = mulberry(4242 + collectibles.length * 7 + count);
+    for (var i = 0; i < count; i++) {
+      if (collectibles.length >= COLLECTIBLES_MAX) {
+        warnOnce('collectibles-max', 'muitos coletáveis (teto ' + COLLECTIBLES_MAX + ')');
+        return;
+      }
+      var ang = (i / count) * Math.PI * 2 + rng() * 0.6;
+      var rad = count === 1 ? 0 : (0.3 + rng() * 0.7) * R;
+      var x = clamp(cx + Math.cos(ang) * rad, -lim, lim);
+      var z = clamp(cz + Math.sin(ang) * rad, -lim, lim);
+      var gy = heightAtDrive(x, z, null);
+      if (waterCfg && gy < waterCfg.y) gy = waterCfg.y;
+      var mesh = makeCollectibleMesh(rec.item);
+      mesh.position.set(x, gy + 1.1, z);
+      ensureDecorGroup().add(mesh);
+      collectibles.push({ name: text(rec.name, 'estrela'), kind: rec.item, x: x, z: z, y: gy + 1.1, mesh: mesh, taken: false, live: !!live, phase: rng() * 6 });
+    }
+  }
+  // A geometria e o material são do TIPO (compartilhados): tirar um só solta a cópia.
+  function dropCollectible(index) {
+    var it = collectibles[index];
+    if (it && it.mesh && it.mesh.parent) it.mesh.parent.remove(it.mesh);
+    collectibles.splice(index, 1);
+  }
+  function stepCollectibles() {
+    if (!collectibles.length) return;
+    var p = playerXZ();
+    _takenNow.length = 0;
+    for (var i = 0; i < collectibles.length; i++) {
+      var c = collectibles[i];
+      if (c.taken) continue;
+      c.mesh.position.y = c.y + Math.sin(playTime * 2.2 + c.phase) * 0.15;
+      c.mesh.rotation.y = playTime * 2 + c.phase;
+      var dx = p.x - c.x;
+      var dz = p.z - c.z;
+      var dy = p.y + 1 - c.y;
+      if (dx * dx + dz * dz + dy * dy < 2.6) {
+        c.taken = true;
+        c.mesh.visible = false;
+        _takenNow.push(c.name);
+      }
+    }
+    for (var t = 0; t < _takenNow.length; t++) {
+      beep(1175, 0.06);
+      beep(1568, 0.09);
+      var hooks = collectItemHooks[_takenNow[t]] || [];
+      for (var h = 0; h < hooks.length; h++) {
+        try { hooks[h](); } catch (e) {
+          warnOnce('hook-item-' + _takenNow[t], 'erro no "Quando o jogador pegar um ' + _takenNow[t] + '"', e);
+        }
+      }
+    }
+  }
+
+  // "Tirar … do mundo": amigo, ponto, área, coletáveis ou os ícones de um tipo.
+  function removeNamed(name) {
+    var nm = text(name, '');
+    if (!nm) return;
+    var found = 0;
+    // O que é do Ao iniciar e sai DURANTE a partida fica anotado em _removedStart: o recomeçar
+    // leve o traz de volta (o que nasceu no jogo, live, só sai).
+    for (var a = npcs.length - 1; a >= 0; a--) {
+      var na = npcs[a];
+      if (na.name !== nm) continue;
+      if (started && !na.live) _removedStart.push({ k: 'npc', a: [na.name, na.home.x, na.home.z, na.color, na.hat] });
+      removeNpcAt(a);
+      found++;
+    }
+    for (var b = points.length - 1; b >= 0; b--) {
+      var pb = points[b];
+      if (pb.name !== nm) continue;
+      if (started) _removedStart.push({ k: 'point', a: [pb.name, pb.x, pb.z] });
+      var pm = pb.marker;
+      if (pm && pm.parent) pm.parent.remove(pm);
+      disposeObjectTree(pm, false);
+      points.splice(b, 1);
+      found++;
+    }
+    for (var c = zones.length - 1; c >= 0; c--) {
+      if (zones[c].name !== nm) continue;
+      if (started) _removedStart.push({ k: 'zone', o: zones[c] });
+      zones.splice(c, 1);
+      found++;
+    }
+    for (var d = collectibles.length - 1; d >= 0; d--) {
+      var cd = collectibles[d];
+      if (cd.name !== nm) continue;
+      // O do começo, tirado DURANTE a partida, só se esconde: o recomeçar o traz de volta.
+      if (started && !cd.live) {
+        cd.taken = true;
+        if (cd.mesh) cd.mesh.visible = false;
+      } else dropCollectible(d);
+      found++;
+    }
+    for (var e = markers.length - 1; e >= 0; e--) {
+      var me = markers[e];
+      if (me.icon !== nm) continue;
+      if (started && !me.live) _removedStart.push({ k: 'marker', a: [me.icon, me.x, me.z] });
+      dropMarker(e);
+      found++;
+    }
+    if (!found) warnOnce('remove-named-' + nm, 'não achei nada chamado "' + nm + '" no mundo');
+  }
+  function dropMarker(index) {
+    var sp = markers[index].sprite;
+    if (sp && sp.parent) sp.parent.remove(sp);
+    disposeObjectTree(sp, true);
+    markers.splice(index, 1);
+  }
+  function removeNpcAt(index) {
+    var n = npcs[index];
+    if (!n) return;
+    disposeNpcBody(n);
+    npcs.splice(index, 1);
+    var at = extraInteract.indexOf(n.talk);
+    if (at >= 0) extraInteract.splice(at, 1);
+    if (npcBubble && npcBubble.name === n.name) npcBubble.el.style.display = 'none';
+    // A pergunta dele fica sem dono: fecha (senão os botões 1/2 boiavam sem responder).
+    if (npcChoice && npcChoice.name === n.name) closeNpcChoice();
+  }
+
+  // ---- 🧊 Lote 10: Molda no personagem, nos amigos, no carro e no "Pôr" ----
+  // O modelo vai dentro de um "suporte" (holder): o fit põe o pé no chão (âncora floor) e o
+  // tamanho em metros; o suporte é quem anda, gira e balança. Frente do Molda = +z, a mesma
+  // do boneco montado e do carrinho.
+  function modelBody(hit, mode, size) {
+    var root = null;
+    try { root = models.instantiate(hit, { shadows: 'cast' }); } catch (e) {
+      warnOnce('model-body-' + hit.name, 'não consegui usar o modelo "' + hit.name + '"', e);
+      return null;
+    }
+    if (!root) return null;
+    var holder = new THREE.Group();
+    holder.add(root);
+    var fitted = mode === 'height'
+      ? models.fit(root, hit, { mode: 'height', anchor: 'floor', height: size })
+      : models.fit(root, hit, { mode: 'longest', anchor: 'floor', size: size });
+    var anim = hit.clips && hit.clips.length ? models.animator(root, hit, { owner: 'o modelo "' + hit.name + '"' }) : null;
+    return { holder: holder, root: root, anim: anim, fitted: fitted };
+  }
+  function disposeModelBody(m, seen) {
+    if (!m) return;
+    if (m.root && m.root.parent) m.root.parent.remove(m.root);
+    models.disposeClone(m.root, m.anim, seen || new Set());
+  }
+  // Estado do corpo → clipe do "No … quando estiver …"; sem clipe, o balanço procedural.
+  // Constantes do laço: o mapa vazio e as opções do play (o play só lê).
+  var NO_ANIM_MAP = {};
+  var ANIM_FADE = { fade: 0.25 };
+  function stepModelAnim(m, map, state, dt, phase, vis) {
+    if (!m) return;
+    var clip = map[state] || (state === 'correndo' ? map.andando : '') || '';
+    if (m.anim && clip && m.anim.play(clip, ANIM_FADE)) {
+      m.anim.update(dt);
+      m.holder.position.y = 0;
+      m.holder.rotation.z = 0;
+      return;
+    }
+    if (m.anim && m.anim.current()) m.anim.stop();
+    m.holder.position.y = Math.abs(Math.sin(phase * 4)) * Math.min(0.08, vis * 0.025);
+    m.holder.rotation.z = Math.sin(phase * 4) * Math.min(0.08, vis * 0.02);
+  }
+  function stepAnimatedModels(dt) {
+    for (var i = 0; i < animatedModels.length; i++) animatedModels[i].anim.update(dt);
+    models.stepFlipbooks(dt);
+  }
+  function loadBodyModel(cfg, onReady) {
+    var hit = loadModel(cfg.name, function (m) {
+      cfg.hit = m;
+      if (m && worldReady && !disposed) onReady();
+    });
+    if (hit) cfg.hit = hit;
+  }
+  // Corpo de um amigo: o modelo do Molda (se pedido e já lido) ou o boneco montado.
+  function npcBody(name, color, hat) {
+    var cfg = modelCfg.npc[name];
+    var built = cfg && cfg.hit ? modelBody(cfg.hit, 'height', cfg.size) : null;
+    if (built) {
+      var group = new THREE.Group();
+      group.add(built.holder);
+      return { group: group, parts: null, model: built };
+    }
+    var rig = makeRig(color, hat);
+    return { group: rig.group, parts: rig.parts, model: null };
+  }
+  function disposeNpcBody(n) {
+    if (n.group && n.group.parent) n.group.parent.remove(n.group);
+    disposeModelBody(n.model);
+    disposeObjectTree(n.group, true);
+    n.model = null;
+  }
+  function rebuildNpcBody(n) {
+    disposeNpcBody(n);
+    var body = npcBody(n.name, n.color, n.hat);
+    n.group = body.group;
+    n.parts = body.parts;
+    n.model = body.model;
+    n.group.position.set(n.x, heightAtDrive(n.x, n.z, null), n.z);
+    if (scene) scene.add(n.group);
+  }
+  // Céu 360°: os materiais toon/lambert não refletem o environment, então as LUZES pegam as
+  // cores do céu (média de cima no ambiente, o ponto mais forte no sol).
+  function applyHdrLights() {
+    if (!_hdrLight) return;
+    try {
+      if (ambientLight) ambientLight.color.setRGB(_hdrLight.sky.r, _hdrLight.sky.g, _hdrLight.sky.b);
+      if (sunLight) sunLight.color.setRGB(_hdrLight.sun.r, _hdrLight.sun.g, _hdrLight.sun.b);
+    } catch (e) {}
+  }
+
   // ---- R18: moedas colecionáveis, missões, marcadores e seta-guia ----
 
   function ensureCoins() {
     if (coinsIM || !scene) return;
     var geo = new THREE.CylinderGeometry(0.42, 0.42, 0.1, 12);
     geo.rotateX(Math.PI / 2);
-    coinsIM = new THREE.InstancedMesh(geo, toonMaterial({ color: '#fbbf24' }), COINS_MAX);
+    coinsIM = new THREE.InstancedMesh(geo, toon('#fbbf24'), COINS_MAX);
     coinsIM.count = 0;
     coinsIM.frustumCulled = false;
     scene.add(coinsIM);
@@ -4050,7 +4592,7 @@ const world3DRuntimeSource = `import * as THREE from 'three';
       return;
     }
     var cy = heightAtDrive(num(x, 0), num(z, 0), null) + 1;
-    coinStates.push({ x: num(x, 0), z: num(z, 0), y: cy, taken: false });
+    coinStates.push({ x: num(x, 0), z: num(z, 0), y: cy, taken: false, live: started });
     coinsIM.count = coinStates.length;
   }
 
@@ -4085,26 +4627,33 @@ const world3DRuntimeSource = `import * as THREE from 'three';
 
   function ensureCoinHud() {
     if (coinHudEl || !frameEl) return;
-    coinHudEl = document.createElement('div');
-    coinHudEl.setAttribute('style', 'position:absolute;top:10px;right:12px;padding:5px 12px;border-radius:12px;background:rgba(15,23,42,.72);color:#fde68a;font:800 16px var(--sz-game-ui-font);z-index:7;pointer-events:none;');
-    frameEl.appendChild(coinHudEl);
-    coinHudEl.textContent = '🪙 0';
+    coinHudEl = hudPanel('top-right', 'moedas');
+    if (!coinHudEl) return;
+    coinHudEl.style.color = '#fde68a';
+    coinHudEl.style.fontSize = '18px';
+    coinHudEl.textContent = '🪙 ' + coinsTaken;
   }
 
   function stepCoins(dt) {
     if (!coinsIM || !coinStates || !coinStates.length) return;
     if (!_dummy) _dummy = new THREE.Object3D();
+    // Cópia local: um gancho da criança pode mexer no jogador no meio do laço.
     var p = playerXZ();
+    var ppx = p.x;
+    var ppy = p.y;
+    var ppz = p.z;
     var spin = playTime * 2.4;
+    // Só GIRAM as moedas no raio da câmera; as distantes ficam paradas na última pose
+    // (shown 1 = visível, 2 = escondida) e só são reescritas quando mudam de estado.
+    var camX = camera ? camera.position.x : ppx;
+    var camZ = camera ? camera.position.z : ppz;
+    var dirty = false;
     for (var i = 0; i < coinStates.length; i++) {
       var c = coinStates[i];
-      if (c.taken) {
-        _dummy.position.set(0, -9999, 0);
-        _dummy.rotation.set(0, 0, 0);
-      } else {
-        var dx = p.x - c.x;
-        var dz = p.z - c.z;
-        var dy = p.y + 1 - c.y;
+      if (!c.taken) {
+        var dx = ppx - c.x;
+        var dz = ppz - c.z;
+        var dy = ppy + 1 - c.y;
         if (dx * dx + dz * dz + dy * dy < 2.6) {
           c.taken = true;
           coinsTaken++;
@@ -4114,26 +4663,35 @@ const world3DRuntimeSource = `import * as THREE from 'three';
           beep(1760, 0.09);
           for (var hi = 0; hi < collectHooks.length; hi++) {
             try { collectHooks[hi](); } catch (e) {
-              warnOnce('hook-coin-' + hi, 'erro no "Quando pegar uma moeda": ' + e);
+              warnOnce('hook-coin-' + hi, 'erro no "Quando pegar uma moeda"', e);
             }
           }
-          _dummy.position.set(0, -9999, 0);
-        } else {
-          _dummy.position.set(c.x, c.y + Math.sin(spin + i) * 0.12, c.z);
-          _dummy.rotation.set(0, spin + i * 0.7, 0);
         }
+      }
+      if (c.taken) {
+        if (c.shown === 2) continue;
+        c.shown = 2;
+        _dummy.position.set(0, -9999, 0);
+        _dummy.rotation.set(0, 0, 0);
+      } else {
+        var cdx = camX - c.x;
+        var cdz = camZ - c.z;
+        if (c.shown === 1 && cdx * cdx + cdz * cdz > COIN_SPIN_R2) continue;
+        c.shown = 1;
+        _dummy.position.set(c.x, c.y + Math.sin(spin + i) * 0.12, c.z);
+        _dummy.rotation.set(0, spin + i * 0.7, 0);
       }
       _dummy.updateMatrix();
       coinsIM.setMatrixAt(i, _dummy.matrix);
+      dirty = true;
     }
-    coinsIM.instanceMatrix.needsUpdate = true;
+    if (dirty) coinsIM.instanceMatrix.needsUpdate = true;
   }
 
   function ensureQuestHud() {
     if (questHudEl || !frameEl) return;
-    questHudEl = document.createElement('div');
-    questHudEl.setAttribute('style', 'position:absolute;top:10px;left:12px;max-width:300px;padding:6px 12px;border-radius:12px;background:rgba(15,23,42,.72);color:#e2e8f0;font:700 14px var(--sz-game-ui-font);z-index:7;pointer-events:none;display:none;');
-    frameEl.appendChild(questHudEl);
+    questHudEl = hudPanel('top-left', 'missao');
+    if (questHudEl) questHudEl.setAttribute('style', 'max-width:300px;color:#e2e8f0;font-size:15px;display:none');
   }
 
   function refreshQuestHud() {
@@ -4174,7 +4732,7 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     var hooks = questDoneHooks[q.name] || [];
     for (var i = 0; i < hooks.length; i++) {
       try { hooks[i](); } catch (e) {
-        warnOnce('hook-quest-' + q.name, 'erro no "Quando completar a missão": ' + e);
+        warnOnce('hook-quest-' + q.name, 'erro no "Quando completar a missão"', e);
       }
     }
   }
@@ -4183,6 +4741,10 @@ const world3DRuntimeSource = `import * as THREE from 'three';
 
   function addMarker(icon, x, z) {
     if (!scene) return;
+    if (markers.length >= MARKERS_MAX) {
+      warnOnce('markers-max', 'muitos ícones flutuando (teto ' + MARKERS_MAX + ')');
+      return;
+    }
     var emoji = MARKER_ICONS[icon];
     if (!emoji) return;
     var cv = document.createElement('canvas');
@@ -4200,7 +4762,9 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     var sp = new THREE.Sprite(mat);
     sp.scale.set(2.2, 2.2, 1);
     scene.add(sp);
-    markers.push({ sprite: sp, x: num(x, 0), z: num(z, 0) });
+    var mk = { sprite: sp, x: num(x, 0), z: num(z, 0), icon: icon, live: started };
+    markers.push(mk);
+    return mk;
   }
 
   function stepMarkers() {
@@ -4220,7 +4784,7 @@ const world3DRuntimeSource = `import * as THREE from 'three';
 
   function stepGuide() {
     if (!guideTarget) {
-      if (guideEl) guideEl.style.display = 'none';
+      domStyle(guideEl, 'display', 'none');
       return;
     }
     ensureGuide();
@@ -4230,8 +4794,8 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     // Ângulo relativo ao rumo da CÂMERA (a seta aponta na tela).
     var camYaw = Math.atan2(camera.position.x - p.x, camera.position.z - p.z) + Math.PI;
     var rel = ((ang - camYaw + Math.PI * 3) % (Math.PI * 2)) - Math.PI;
-    guideEl.style.transform = 'translateX(-50%) rotate(' + Math.round((rel * 180) / Math.PI) + 'deg)';
-    guideEl.style.display = 'block';
+    domStyle(guideEl, 'transform', 'translateX(-50%) rotate(' + Math.round((rel * 180) / Math.PI) + 'deg)');
+    domStyle(guideEl, 'display', 'block');
     // Chegou perto: a seta comemora e some.
     var ddx = guideTarget.x - p.x;
     var ddz = guideTarget.z - p.z;
@@ -4250,22 +4814,25 @@ const world3DRuntimeSource = `import * as THREE from 'three';
       return;
     }
     var nm = text(name, 'amigo');
-    var rig = makeRig(color, hat);
+    var rig = npcBody(nm, color, hat);
     var npc = {
-      name: nm, group: rig.group, parts: rig.parts,
+      name: nm, group: rig.group, parts: rig.parts, model: rig.model, color: color, hat: hat,
       x: num(x, 0), z: num(z, 0), yaw: Math.random() * Math.PI * 2,
-      home: { x: num(x, 0), z: num(z, 0), r: 0 },
-      target: null, waitT: 1 + Math.random() * 2,
-      phase: 0, vis: 0, emote: null
+      home: { x: num(x, 0), z: num(z, 0), r: npcWanderR[nm] || 0 },
+      target: { x: 0, z: 0 }, going: false, waitT: 1 + Math.random() * 2,
+      phase: 0, vis: 0, emote: null, live: started
     };
     rig.group.position.set(npc.x, heightAtDrive(npc.x, npc.z, null), npc.z);
     scene.add(rig.group);
     npcs.push(npc);
-    // Interagível "E: falar" (prio 1 — abaixo do entrar-no-veículo).
-    extraInteract.push({
+    // Interagível "E: falar" (prio 1 — abaixo do entrar-no-veículo). Guardado no amigo: tirar um
+    // amigo não pode levar junto o "E: falar" de outro com o mesmo nome.
+    npc.talk = {
       x: npc.x, z: npc.z, r: 2.6, label: 'E: falar', prio: 1, npcName: nm,
       fire: function () { npcInteract(nm); }
-    });
+    };
+    extraInteract.push(npc.talk);
+    return npc;
   }
 
   function findNpc(name) {
@@ -4292,7 +4859,7 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     npcBubble.el.textContent = '';
   }
 
-  /** Avança a fila do amigo: fala vira balão, pergunta vira balão + botões. */
+  // Avança a fila do amigo: fala vira balão, pergunta vira balão + botões.
   function npcQueueNext(name) {
     var q = npcSayQueues[name] || [];
     if (!q.length) return false;
@@ -4302,7 +4869,7 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     return true;
   }
 
-  /** Pergunta com 2 escolhas: balão (typewriter) + botões 1/2 clicáveis. */
+  // Pergunta com 2 escolhas: balão (typewriter) + botões 1/2 clicáveis.
   function npcShowAsk(name, item) {
     npcShowSay(name, item.q);
     if (!frameEl) return;
@@ -4315,14 +4882,14 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     npcChoice.name = name;
     npcChoice.fa = item.fa;
     npcChoice.fb = item.fb;
-    npcChoice.el.innerHTML = '';
+    dropChoiceButtons();
     var labels = ['1· ' + item.a, '2· ' + item.b];
     for (var i = 0; i < 2; i++) {
       (function (idx) {
         var b = document.createElement('button');
         b.textContent = labels[idx];
         b.setAttribute('style', 'padding:6px 12px;border-radius:12px;border:0;background:#22d3ee;color:#04252b;font:800 13px var(--sz-game-ui-font);cursor:pointer;box-shadow:0 3px 10px rgba(0,0,0,.35)');
-        b.addEventListener('pointerdown', function (ev) {
+        listen(b, 'pointerdown', function (ev) {
           if (ev && ev.preventDefault) ev.preventDefault();
           npcChoosePick(idx);
         });
@@ -4332,15 +4899,27 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     npcChoice.el.style.display = 'flex';
   }
 
+  // Tira os botões da pergunta (com os listeners deles).
+  function dropChoiceButtons() {
+    var kids = npcChoice.el.children;
+    for (var i = 0; i < kids.length; i++) unlisten(kids[i]);
+    npcChoice.el.innerHTML = '';
+  }
+  // Fecha a pergunta aberta: some da tela e as teclas 1/2 voltam a ser só teclas.
+  function closeNpcChoice() {
+    if (!npcChoice) return;
+    dropChoiceButtons();
+    if (npcChoice.el.parentNode) npcChoice.el.parentNode.removeChild(npcChoice.el);
+    npcChoice = null;
+  }
   function npcChoosePick(idx) {
     if (!npcChoice) return;
     var name = npcChoice.name;
     var fn = idx === 0 ? npcChoice.fa : npcChoice.fb;
-    npcChoice.el.style.display = 'none';
-    npcChoice = null;
+    closeNpcChoice();
     if (typeof fn === 'function') {
       try { fn(); } catch (e) {
-        warnOnce('npc-ask-' + name, 'erro na resposta de ' + name + ': ' + e);
+        warnOnce('npc-ask-' + name, 'erro na resposta de ' + name, e);
       }
     }
     // A resposta normalmente ENFILEIRA falas novas: mostra a próxima; se não
@@ -4350,7 +4929,7 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     }
   }
 
-  /** E no amigo: avança a fila; vazia → roda os ganchos (que enfileiram). */
+  // E no amigo: avança a fila; vazia → roda os ganchos (que enfileiram).
   function npcInteract(name) {
     if (npcChoice) return; // pergunta aberta: responda com 1/2 (ou clique)
     var q = npcSayQueues[name] || [];
@@ -4366,7 +4945,7 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     var hooks = npcTalkHooks[name] || [];
     for (var i = 0; i < hooks.length; i++) {
       try { hooks[i](); } catch (e) {
-        warnOnce('hook-npc-' + name, 'erro no "Quando conversar com ' + name + '": ' + e);
+        warnOnce('hook-npc-' + name, 'erro no "Quando conversar com ' + name + '"', e);
       }
     }
     // Se o gancho já ABRIU o balão (npcSay mostra a 1ª fala na hora), NÃO
@@ -4396,19 +4975,22 @@ const world3DRuntimeSource = `import * as THREE from 'three';
         // Perto do jogador: para e OLHA para ele (educação de NPC).
         n.yaw = Math.atan2(pdx, pdz);
       } else if (n.home.r > 0.5) {
-        if (!n.target) {
+        // O alvo do passeio é o MESMO objeto do amigo, reescrito (sem objeto novo a cada troca).
+        if (!n.going) {
           n.waitT -= dt;
           if (n.waitT <= 0) {
             var a = Math.random() * Math.PI * 2;
             var r = Math.sqrt(Math.random()) * n.home.r;
-            n.target = { x: n.home.x + Math.cos(a) * r, z: n.home.z + Math.sin(a) * r };
+            n.target.x = n.home.x + Math.cos(a) * r;
+            n.target.z = n.home.z + Math.sin(a) * r;
+            n.going = true;
           }
         } else {
           var tdx = n.target.x - n.x;
           var tdz = n.target.z - n.z;
           var td = Math.sqrt(tdx * tdx + tdz * tdz);
           if (td < 0.5) {
-            n.target = null;
+            n.going = false;
             n.waitT = 1 + Math.random() * 2.5;
           } else {
             n.yaw = Math.atan2(tdx, tdz);
@@ -4440,10 +5022,14 @@ const world3DRuntimeSource = `import * as THREE from 'three';
       n.yaw += spin;
       n.group.position.set(n.x, heightAtDrive(n.x, n.z, null) + jumpY, n.z);
       n.group.rotation.y = n.yaw;
-      n.parts.legL.rotation.x = swing;
-      n.parts.legR.rotation.x = -swing;
-      n.parts.armL.rotation.x = armL;
-      n.parts.armR.rotation.x = swing * 0.8;
+      if (n.parts) {
+        n.parts.legL.rotation.x = swing;
+        n.parts.legR.rotation.x = -swing;
+        n.parts.armL.rotation.x = armL;
+        n.parts.armR.rotation.x = swing * 0.8;
+      } else if (n.model) {
+        stepModelAnim(n.model, animMap.amigo[n.name] || NO_ANIM_MAP, jumpY > 0.02 ? 'pulando' : n.vis > 0.3 ? 'andando' : 'parado', dt, n.phase, n.vis);
+      }
     }
     // Interagíveis dos NPCs acompanham (registrados com npcName).
     for (var xi = 0; xi < extraInteract.length; xi++) {
@@ -4463,13 +5049,13 @@ const world3DRuntimeSource = `import * as THREE from 'three';
         _proj.set(owner.x, heightAtDrive(owner.x, owner.z, null) + 2.1, owner.z);
         _proj.project(camera);
         if (_proj.z < 1) {
-          var rect = canvasEl.getBoundingClientRect();
-          npcBubble.el.style.left = (_proj.x * 0.5 + 0.5) * rect.width + 'px';
-          npcBubble.el.style.top = (-_proj.y * 0.5 + 0.5) * rect.height + 'px';
+          var rect = canvasRect();
+          domStyle(npcBubble.el, 'left', cssPx((_proj.x * 0.5 + 0.5) * rect.width));
+          domStyle(npcBubble.el, 'top', cssPx((-_proj.y * 0.5 + 0.5) * rect.height));
           // Os botões da pergunta seguem logo ABAIXO do balão.
           if (npcChoice && npcChoice.el.style.display !== 'none') {
-            npcChoice.el.style.left = npcBubble.el.style.left;
-            npcChoice.el.style.top = ((-_proj.y * 0.5 + 0.5) * rect.height + 10) + 'px';
+            domStyle(npcChoice.el, 'left', npcBubble.el.style.left);
+            domStyle(npcChoice.el, 'top', cssPx((-_proj.y * 0.5 + 0.5) * rect.height + 10));
           }
         }
       }
@@ -4497,7 +5083,7 @@ const world3DRuntimeSource = `import * as THREE from 'three';
   function buildBoat() {
     if (!scene || !boatCfg) return;
     if (boatGroup) {
-      try { scene.remove(boatGroup); } catch (e) { warnOnce('remove-boat', 'não consegui remover o barco antigo: ' + e); }
+      try { scene.remove(boatGroup); } catch (e) { warnOnce('remove-boat', 'não consegui remover o barco antigo', e); }
       disposeObjectTree(boatGroup, true);
       boatGroup = null;
     }
@@ -4512,7 +5098,7 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     bow.rotation.y = Math.PI / 4;
     bow.position.set(0, 0.35, 2.8);
     boatGroup.add(bow);
-    var cab = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.7, 1.2), toonMaterial({ color: '#94a3b8' }));
+    var cab = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.7, 1.2), toon('#94a3b8'));
     cab.position.set(0, 1.05, -0.8);
     boatGroup.add(cab);
     if (!boatState) {
@@ -4597,7 +5183,7 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     var len = Math.sqrt(dx * dx + dz * dz) || 1;
     var n = Math.max(6, Math.round(len / 0.9));
     var plankGeo = new THREE.BoxGeometry(b.w, 0.12, 0.7);
-    var im = new THREE.InstancedMesh(plankGeo, toonMaterial({ color: '#9a7b4f' }), n);
+    var im = new THREE.InstancedMesh(plankGeo, toon('#9a7b4f'), n);
     im.castShadow = true;
     im.frustumCulled = false;
     if (!_dummy) _dummy = new THREE.Object3D();
@@ -4625,7 +5211,7 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     for (var i = 0; i < 4; i++) {
       var seg = new THREE.Mesh(
         new THREE.CylinderGeometry(0.9 - i * 0.12, 1.05 - i * 0.12, 2.2, 10),
-        toonMaterial({ color: i % 2 ? '#f8fafc' : '#ef4444' })
+        toon(i % 2 ? '#f8fafc' : '#ef4444')
       );
       seg.position.y = 1.1 + i * 2.2;
       seg.castShadow = true;
@@ -4718,13 +5304,13 @@ const world3DRuntimeSource = `import * as THREE from 'three';
 
   var HAT_COLORS = { bone: '#ef4444', palha: '#eab308', coroa: '#facc15', capacete: '#3b82f6' };
 
-  /** Rig humano procedural COMPARTILHADO (personagem E amigos): 4 pivôs + chapéu. */
+  // Rig humano procedural COMPARTILHADO (personagem E amigos): 4 pivôs + chapéu.
   function makeRig(color, hat) {
     var group = new THREE.Group();
     var parts = {};
-    var pele = toonMaterial({ color: '#f5c99b' });
+    var pele = toon('#f5c99b');
     var roupa = toonMaterial({ color: text(color, '#3b82f6') });
-    var calca = toonMaterial({ color: '#1f2937' });
+    var calca = toon('#1f2937');
     var body = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.55, 0.3), roupa);
     body.position.y = 0.95;
     body.castShadow = true;
@@ -4737,7 +5323,7 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     parts.head = head;
     var h2 = text(hat, 'nenhum');
     if (h2 !== 'nenhum' && HAT_COLORS[h2]) {
-      var hm = toonMaterial({ color: HAT_COLORS[h2] });
+      var hm = toon(HAT_COLORS[h2]);
       var hatMesh = h2 === 'palha'
         ? new THREE.Mesh(new THREE.CylinderGeometry(0.34, 0.34, 0.06, 10), hm)
         : h2 === 'coroa'
@@ -4766,11 +5352,21 @@ const world3DRuntimeSource = `import * as THREE from 'three';
   function buildPerson() {
     if (!scene || !personCfg) return;
     disposePerson();
-    var rig = makeRig(personCfg.color, personCfg.hat);
-    personGroup = rig.group;
-    personParts = rig.parts;
+    var pm = modelCfg.person;
+    var built = pm && pm.hit ? modelBody(pm.hit, 'height', pm.size) : null;
+    if (built) {
+      // O modelo do Molda no lugar do boneco: a colisão e a física (personState) não mudam.
+      personGroup = new THREE.Group();
+      personGroup.add(built.holder);
+      personParts = null;
+      personModel = built;
+    } else {
+      var rig = makeRig(personCfg.color, personCfg.hat);
+      personGroup = rig.group;
+      personParts = rig.parts;
+    }
     if (text(personCfg.acc, 'nenhum') === 'jetpack') {
-      var jp = new THREE.Mesh(new THREE.BoxGeometry(0.34, 0.44, 0.16), toonMaterial({ color: '#64748b' }));
+      var jp = new THREE.Mesh(new THREE.BoxGeometry(0.34, 0.44, 0.16), toon('#64748b'));
       jp.position.set(0, 1.0, -0.24);
       personGroup.add(jp);
     }
@@ -4788,7 +5384,10 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     if (!personGroup) return;
     try {
       scene.remove(personGroup);
-    } catch (e) { warnOnce('remove-person', 'não consegui remover o personagem antigo: ' + e); }
+    } catch (e) { warnOnce('remove-person', 'não consegui remover o personagem antigo', e); }
+    // O modelo do Molda é do cache: solta só a cópia (ossos e animador), nunca a geometria.
+    disposeModelBody(personModel);
+    personModel = null;
     disposeObjectTree(personGroup, true);
     personGroup = null;
     personParts = null;
@@ -4798,7 +5397,7 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     var hooks = vehicleHooks[kind] || [];
     for (var i = 0; i < hooks.length; i++) {
       try { hooks[i](); } catch (e) {
-        warnOnce('hook-veh-' + kind + '-' + i, 'erro no "Quando ' + kind + ' do veículo": ' + e);
+        warnOnce('hook-veh-' + kind + '-' + i, 'erro no "Quando ' + kind + ' do veículo"', e);
       }
     }
   }
@@ -4810,6 +5409,7 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     if (k === 'boat' && !boatState) return;
     activeVehicle = k;
     driving = true;
+    _eSpent = true;
     if (personGroup) personGroup.visible = false;
     camSnap = true;
     fireVehicleHooks('entrar');
@@ -4820,6 +5420,11 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     var src = activeVehicle === 'boat' && boatState ? boatState : carState;
     if (!src) return;
     driving = false;
+    _eSpent = true;
+    // O veículo deixado fica à vista: se ele piscava (machucado), o piscar passa para o
+    // personagem e o fim dele só restaura quem está ativo; sem isto o carro sumia para sempre.
+    var left = src === boatState ? boatGroup : carGroup;
+    if (left) left.visible = true;
     if (!personState) {
       personState = { x: 0, y: 0, z: 0, yaw: 0, vy: 0, airborne: false, vis: 0, phase: 0, speed: 0 };
     }
@@ -4957,6 +5562,12 @@ const world3DRuntimeSource = `import * as THREE from 'three';
       if (personEmote.t <= 0) personEmote = null;
     }
     s.yaw += emoteSpin;
+    if (personGroup && !personParts) {
+      personGroup.position.set(s.x, s.y, s.z);
+      personGroup.rotation.y = s.yaw;
+      var moving = Math.abs(spd) > 0.2;
+      stepModelAnim(personModel, animMap.personagem, s.airborne ? 'pulando' : !moving ? 'parado' : running ? 'correndo' : 'andando', dt, s.phase, s.vis);
+    }
     if (personGroup && personParts) {
       personGroup.position.set(s.x, s.y, s.z);
       personGroup.rotation.y = s.yaw;
@@ -5043,7 +5654,7 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     var lz = num(z, 0);
     var gy = heightAt(lx, lz);
     var g = new THREE.Group();
-    var pole = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.12, 3.4, 8), toonMaterial({ color: '#1f2937' }));
+    var pole = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.12, 3.4, 8), toon('#1f2937'));
     pole.position.y = 1.7;
     pole.castShadow = true;
     g.add(pole);
@@ -5056,11 +5667,28 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     lamps.push({ x: lx, z: lz, globeMat: globeMat });
   }
 
+  // Ordem dos postes pela distância ao jogador: refeita só quando ele anda mais de 4 m
+  // desde a última ordenação, a cada 0,5 s, ou quando nasce um poste (sem alocar).
+  var _lampOrder = [];
+  var _lampSortX = 0;
+  var _lampSortZ = 0;
+  var _lampSortT = -1;
+  var _lampNight = null;
+  var _lampColored = 0;
+  function lampByDistance(a, b) {
+    var da = (a.x - _lampSortX) * (a.x - _lampSortX) + (a.z - _lampSortZ) * (a.z - _lampSortZ);
+    var db = (b.x - _lampSortX) * (b.x - _lampSortX) + (b.z - _lampSortZ) * (b.z - _lampSortZ);
+    return da - db;
+  }
   function stepLamps() {
     if (!lamps.length) return;
     var night = nightAmount > 0.2;
-    for (var i = 0; i < lamps.length; i++) {
-      lamps[i].globeMat.color.set(night ? '#ffe9a3' : '#6b7280');
+    if (night !== _lampNight || _lampColored !== lamps.length) {
+      _lampNight = night;
+      _lampColored = lamps.length;
+      for (var i = 0; i < lamps.length; i++) {
+        lamps[i].globeMat.color.set(night ? '#ffe9a3' : '#6b7280');
+      }
     }
     // Orçamento de LUZ REAL: só os 4 postes mais perto do jogador iluminam de
     // verdade (PointLight é cara); o resto fica só com o globo aceso.
@@ -5075,17 +5703,25 @@ const world3DRuntimeSource = `import * as THREE from 'three';
         scene.add(pl);
         lampLights.push(pl);
       }
+      _lampSortT = -1;
     }
     var p = playerXZ();
-    var order = lamps.slice().sort(function (a, b) {
-      var da = (a.x - p.x) * (a.x - p.x) + (a.z - p.z) * (a.z - p.z);
-      var db = (b.x - p.x) * (b.x - p.x) + (b.z - p.z) * (b.z - p.z);
-      return da - db;
-    });
+    var mx = p.x - _lampSortX;
+    var mz = p.z - _lampSortZ;
+    var resort = _lampSortT < 0 || _lampOrder.length !== lamps.length ||
+      mx * mx + mz * mz > 16 || Math.abs(playTime - _lampSortT) >= 0.5;
+    if (resort) {
+      _lampSortX = p.x;
+      _lampSortZ = p.z;
+      _lampSortT = playTime;
+      _lampOrder.length = lamps.length;
+      for (var o = 0; o < lamps.length; o++) _lampOrder[o] = lamps[o];
+      _lampOrder.sort(lampByDistance);
+    }
     for (var k = 0; k < lampLights.length; k++) {
-      var lamp = order[k];
+      var lamp = _lampOrder[k];
       if (lamp) {
-        lampLights[k].position.set(lamp.x, heightAt(lamp.x, lamp.z) + 3.6, lamp.z);
+        if (resort) lampLights[k].position.set(lamp.x, heightAt(lamp.x, lamp.z) + 3.6, lamp.z);
         lampLights[k].intensity = 1.4 * nightAmount;
       } else {
         lampLights[k].intensity = 0;
@@ -5095,8 +5731,8 @@ const world3DRuntimeSource = `import * as THREE from 'three';
 
   // ---- 🏙️ Cidade: praça + anel viário + 4 ruas radiais + casas instanciadas ----
   // Estilo Vocation Vista: cidadezinha circular. TODO o pesado é instanciado
-  // (1 InstancedMesh por peça de arquétipo) e a malha viária é UMA geometria
-  // mesclada com cor por vértice — a cidade inteira custa ~13 draw calls.
+  // (casas e cercas: 1 InstancedMesh por FORMA, cor por instância) e a malha viária
+  // é uma geometria mesclada com cor por vértice, tudo pela grade de pedaços do espalhado.
 
   var CITY_SIZES = { pequena: 28, media: 38, grande: 48 };
   var CITY_WALL_COLORS = ['#f9c0c0', '#fcd9a8', '#fde68a', '#bbf7d0', '#bfdbfe', '#ddd6fe', '#f5d0fe', '#fecdd3'];
@@ -5157,7 +5793,7 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     }
   }
 
-  /** Yaw que leva o eixo X local do quad deitado à direção mundial (dx,dz). */
+  // Yaw que leva o eixo X local do quad deitado à direção mundial (dx,dz).
   function yawForDir(dx, dz) {
     return Math.atan2(-dz, dx);
   }
@@ -5169,7 +5805,7 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     };
   }
 
-  /** Reserva do terreno + grafo (SÓ dados — padrão reserveGallery). */
+  // Reserva do terreno + grafo (SÓ dados — padrão reserveGallery).
   function reserveCity() {
     var c = cityCfg;
     var y0 = baseHeightAt(c.x, c.z);
@@ -5191,22 +5827,32 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     }
   }
 
-  function cityColorPush(colArr, c) {
-    colArr.push(c.r, c.g, c.b);
+  // A cidade usa a MESMA regra do espalhado (faixas de 80 m) sobre o quadrado que ela
+  // reserva (lado 2(r+6): 68, 88 e 108 m), então as três ficam num pedaço só por forma.
+  // Medido (performance.test.ts): 2x2 de 40 m somava draw calls em toda vista; as peças
+  // são caixas baratas e o que custa é a chamada, não a instância.
+  function cityChunkGrid() {
+    return chunkGrid(cityCfg.x, cityCfg.z, (cityCfg.r + 6) * 2, 80);
   }
 
-  /** Malha viária inteira (asfalto/calçada/praça) = UMA geometria, cor por vértice. */
+  // Malha viária (asfalto/calçada/praça) = UMA geometria por pedaço, cor por vértice; cada
+  // triângulo vai para o pedaço do seu centro.
   function buildCityRoads(cy) {
     var G = cityGraph;
-    var pos = [];
-    var col = [];
+    var grid = cityChunkGrid();
+    var parts = [];
     var asphalt = new THREE.Color('#3f4854');
     var walk = new THREE.Color('#a8adb8');
     var plaza = new THREE.Color('#d9c9a3');
+    function tri(ax, az, bx, bz, cx2, cz2, y, c) {
+      var k = chunkIndex(grid, (ax + bx + cx2) / 3, (az + bz + cz2) / 3);
+      var b = parts[k] || (parts[k] = { pos: [], col: [] });
+      b.pos.push(ax, y, az, bx, y, bz, cx2, y, cz2);
+      for (var t = 0; t < 3; t++) b.col.push(c.r, c.g, c.b);
+    }
     function quad(ax, az, bx, bz, cx2, cz2, dx2, dz2, y, c) {
-      // dois triângulos (a,b,c) (a,c,d)
-      pos.push(ax, y, az, bx, y, bz, cx2, y, cz2, ax, y, az, cx2, y, cz2, dx2, y, dz2);
-      for (var t = 0; t < 6; t++) cityColorPush(col, c);
+      tri(ax, az, bx, bz, cx2, cz2, y, c);
+      tri(ax, az, cx2, cz2, dx2, dz2, y, c);
     }
     function annulusBand(r0, r1, y, c) {
       var SEG = 48;
@@ -5241,12 +5887,12 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     for (var p = 0; p < SEGP; p++) {
       var b0 = (p / SEGP) * Math.PI * 2;
       var b1 = ((p + 1) / SEGP) * Math.PI * 2;
-      pos.push(
-        G.cx, cy + 0.03, G.cz,
-        G.cx + Math.cos(b0) * G.plazaR, cy + 0.03, G.cz + Math.sin(b0) * G.plazaR,
-        G.cx + Math.cos(b1) * G.plazaR, cy + 0.03, G.cz + Math.sin(b1) * G.plazaR
+      tri(
+        G.cx, G.cz,
+        G.cx + Math.cos(b0) * G.plazaR, G.cz + Math.sin(b0) * G.plazaR,
+        G.cx + Math.cos(b1) * G.plazaR, G.cz + Math.sin(b1) * G.plazaR,
+        cy + 0.03, plaza
       );
-      for (var t2 = 0; t2 < 3; t2++) cityColorPush(col, plaza);
     }
     // Anel: calçada interna, asfalto, calçada externa.
     annulusBand(G.ringR - G.roadW / 2 - 1.4, G.ringR - G.roadW / 2, cy + 0.035, walk);
@@ -5259,16 +5905,21 @@ const world3DRuntimeSource = `import * as THREE from 'three';
       radialBand(ang2, -(G.roadW / 2 + 0.7), 1.4, cy + 0.034, walk);
       radialBand(ang2, G.roadW / 2 + 0.7, 1.4, cy + 0.034, walk);
     }
-    var geo = new THREE.BufferGeometry();
-    geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
-    geo.setAttribute('color', new THREE.Float32BufferAttribute(col, 3));
-    geo.computeVertexNormals();
-    var mesh = new THREE.Mesh(geo, toonMaterial({ color: '#ffffff', vertexColors: true }));
-    mesh.receiveShadow = true;
-    cityGroup.add(mesh);
+    var mat = toonMaterial({ color: '#ffffff', vertexColors: true });
+    for (var k = 0; k < parts.length; k++) {
+      if (!parts[k]) continue;
+      var geo = new THREE.BufferGeometry();
+      geo.setAttribute('position', new THREE.Float32BufferAttribute(parts[k].pos, 3));
+      geo.setAttribute('color', new THREE.Float32BufferAttribute(parts[k].col, 3));
+      geo.computeVertexNormals();
+      geo.computeBoundingSphere();
+      var mesh = new THREE.Mesh(geo, mat);
+      mesh.receiveShadow = true;
+      cityGroup.add(mesh);
+    }
   }
 
-  /** Um quad deitado por instância (tracejado + faixas de pedestre). */
+  // Um quad deitado por instância (tracejado + faixas de pedestre).
   function setFlatInstance(mesh, i, x, y, z, yaw, sx, sz) {
     _dummy.position.set(x, y, z);
     _dummy.rotation.set(0, yaw, 0);
@@ -5307,15 +5958,19 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     }
     var quadGeo = new THREE.PlaneGeometry(1, 1);
     quadGeo.rotateX(-Math.PI / 2);
-    var mesh = new THREE.InstancedMesh(quadGeo, new THREE.MeshBasicMaterial({ color: '#e5e7eb' }), items.length);
-    for (var k = 0; k < items.length; k++) {
-      setFlatInstance(mesh, k, items[k].x, cy + 0.06, items[k].z, items[k].yaw, items[k].sx, items[k].sz);
+    var mat = new THREE.MeshBasicMaterial({ color: '#e5e7eb' });
+    var chunks = chunkItems(cityChunkGrid(), items);
+    for (var c = 0; c < chunks.length; c++) {
+      var list = chunks[c];
+      var mesh = new THREE.InstancedMesh(quadGeo, mat, list.length);
+      for (var k = 0; k < list.length; k++) {
+        setFlatInstance(mesh, k, list[k].x, cy + 0.06, list[k].z, list[k].yaw, list[k].sx, list[k].sz);
+      }
+      finishScatterChunk(mesh, cityGroup, true);
     }
-    mesh.instanceMatrix.needsUpdate = true;
-    cityGroup.add(mesh);
   }
 
-  /** Lotes das casas: na orla EXTERNA do anel, de frente pra praça. */
+  // Lotes das casas: na orla EXTERNA do anel, de frente pra praça.
   function cityLots() {
     var G = cityGraph;
     var n = cityCfg.size === 'pequena' ? 10 : cityCfg.size === 'grande' ? 18 : 14;
@@ -5339,65 +5994,51 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     return lots;
   }
 
+  // Matriz local da peça do arquétipo (composta uma vez, cacheada na peça).
   function cityLocalOf(p) {
-    var m = new THREE.Matrix4();
-    m.compose(
-      new THREE.Vector3(p.x || 0, p.y || 0, p.z || 0),
-      new THREE.Quaternion(),
-      new THREE.Vector3(p.sx || 1, p.sy || 1, p.sz || 1)
-    );
-    return m;
+    if (!p._m) {
+      p._m = new THREE.Matrix4().compose(
+        new THREE.Vector3(p.x || 0, p.y || 0, p.z || 0),
+        new THREE.Quaternion(),
+        new THREE.Vector3(p.sx || 1, p.sy || 1, p.sz || 1)
+      );
+    }
+    return p._m;
   }
 
-  function buildCityBuildings(lots, cy) {
-    if (!lots.length) return;
+  // Casas e cercas-vivas viram PEÇAS { g, x, z, color, m } (matriz pronta) e saem juntas em
+  // flushCityPieces: um InstancedMesh por FORMA (caixa, telhado) em cada pedaço, material
+  // toon branco e a cor de cada peça por instância (a mesma conta do toon da cor). Eram
+  // ~22 InstancedMesh (5 por arquétipo + a cerca), todos com a esfera da cidade inteira.
+  function cityPiece(list, g, x, z, color, m) {
+    list.push({ g: g, x: x, z: z, color: color, m: m.clone() });
+  }
+
+  function buildCityBuildings(lots, pieces) {
     ensureCityGeos();
     ensureDummies();
     var archOrder = ['casinha', 'loja', 'sobrado', 'casinha', 'predinho', 'loja'];
-    var byArch = {};
     for (var i = 0; i < lots.length; i++) {
-      var an = archOrder[i % archOrder.length];
-      if (!byArch[an]) byArch[an] = [];
-      byArch[an].push(lots[i]);
-      colliderAdd(lots[i].x, lots[i].z, CITY_ARCH[an].coll);
-      lots[i].arch = an;
-    }
-    for (var name in byArch) {
-      var spec = CITY_ARCH[name];
-      var group = byArch[name];
-      // Parede: material BRANCO + cor pastel por instância (setColorAt).
-      var wallLocal = cityLocalOf(spec.wall);
-      var wallMesh = new THREE.InstancedMesh(UNIT_GEOS[spec.wall.g], toonMaterial({ color: '#ffffff' }), group.length);
-      wallMesh.castShadow = true;
-      for (var w = 0; w < group.length; w++) {
-        var lot = group[w];
-        composeInstance(wallMesh, w, lot.x, heightAt(lot.x, lot.z), lot.z, lot.yaw, 1, wallLocal);
-        wallMesh.setColorAt(w, new THREE.Color(lot.color));
-      }
-      wallMesh.instanceMatrix.needsUpdate = true;
-      if (wallMesh.instanceColor) wallMesh.instanceColor.needsUpdate = true;
-      cityGroup.add(wallMesh);
-      // Peças de cor fixa (telhado/porta/janelas/toldo): 1 IM por peça.
-      for (var pi = 0; pi < spec.parts.length; pi++) {
-        var part = spec.parts[pi];
-        var local = cityLocalOf(part);
-        var pm = new THREE.InstancedMesh(UNIT_GEOS[part.g], speciesMat(part.color), group.length);
-        pm.castShadow = true;
-        for (var j = 0; j < group.length; j++) {
-          composeInstance(pm, j, group[j].x, heightAt(group[j].x, group[j].z), group[j].z, group[j].yaw, 1, local);
-        }
-        pm.instanceMatrix.needsUpdate = true;
-        cityGroup.add(pm);
+      var lot = lots[i];
+      var spec = CITY_ARCH[lot.arch = archOrder[i % archOrder.length]];
+      colliderAdd(lot.x, lot.z, spec.coll);
+      _dummy.position.set(lot.x, heightAt(lot.x, lot.z), lot.z);
+      _dummy.rotation.set(0, lot.yaw, 0);
+      _dummy.scale.set(1, 1, 1);
+      _dummy.updateMatrix();
+      // O prédio inteiro fica no pedaço do LOTE (nada de meia casa em cada pedaço).
+      for (var p = -1; p < spec.parts.length; p++) {
+        var part = p < 0 ? spec.wall : spec.parts[p];
+        cityPiece(pieces, part.g, lot.x, lot.z, p < 0 ? lot.color : part.color, _mat4.multiplyMatrices(_dummy.matrix, cityLocalOf(part)));
       }
     }
   }
 
-  /** Cercas-vivas ao redor da praça (com vãos nas 4 entradas). */
-  function buildCityHedges(cy) {
+  // Cercas-vivas ao redor da praça (com vãos nas 4 entradas).
+  function buildCityHedges(cy, pieces) {
     var G = cityGraph;
     ensureCityGeos();
     ensureDummies();
-    var items = [];
     var hr = G.plazaR + 1.6;
     var SEG = Math.floor((Math.PI * 2 * hr) / 1.9);
     for (var i = 0; i < SEG; i++) {
@@ -5408,52 +6049,70 @@ const world3DRuntimeSource = `import * as THREE from 'three';
         if (da < 0.42) skip = true;
       }
       if (skip) continue;
-      items.push({ x: G.cx + Math.cos(a) * hr, z: G.cz + Math.sin(a) * hr, yaw: yawForDir(-Math.sin(a), Math.cos(a)) });
-    }
-    if (!items.length) return;
-    var mesh = new THREE.InstancedMesh(UNIT_GEOS.box, speciesMat('#2f7a3a'), items.length);
-    mesh.castShadow = true;
-    for (var k = 0; k < items.length; k++) {
-      _dummy.position.set(items[k].x, cy + 0.45, items[k].z);
-      _dummy.rotation.set(0, items[k].yaw, 0);
+      var x = G.cx + Math.cos(a) * hr;
+      var z = G.cz + Math.sin(a) * hr;
+      _dummy.position.set(x, cy + 0.45, z);
+      _dummy.rotation.set(0, yawForDir(-Math.sin(a), Math.cos(a)), 0);
       _dummy.scale.set(1.7, 0.9, 0.7);
       _dummy.updateMatrix();
-      mesh.setMatrixAt(k, _dummy.matrix);
+      cityPiece(pieces, 'box', x, z, '#2f7a3a', _dummy.matrix);
     }
-    mesh.instanceMatrix.needsUpdate = true;
-    cityGroup.add(mesh);
   }
 
-  /** Coreto central da praça (base + 4 postes + telhado). */
+  function flushCityPieces(pieces) {
+    var mat = toon('#ffffff');
+    var tint = new THREE.Color();
+    var chunks = chunkItems(cityChunkGrid(), pieces);
+    for (var c = 0; c < chunks.length; c++) {
+      var byGeo = Object.create(null);
+      var order = [];
+      for (var i = 0; i < chunks[c].length; i++) {
+        var pc = chunks[c][i];
+        if (!byGeo[pc.g]) order.push(byGeo[pc.g] = []);
+        byGeo[pc.g].push(pc);
+      }
+      for (var o = 0; o < order.length; o++) {
+        var list = order[o];
+        var im = new THREE.InstancedMesh(UNIT_GEOS[list[0].g], mat, list.length);
+        for (var j = 0; j < list.length; j++) {
+          im.setMatrixAt(j, list[j].m);
+          im.setColorAt(j, tint.set(list[j].color));
+        }
+        finishScatterChunk(im, cityGroup);
+      }
+    }
+  }
+
+  // Coreto central da praça (base + 4 postes + telhado).
   function buildCityCoreto(cy) {
     var G = cityGraph;
-    var base = new THREE.Mesh(new THREE.CylinderGeometry(G.plazaR * 0.34, G.plazaR * 0.38, 0.5, 12), toonMaterial({ color: '#c9a06a' }));
+    var base = new THREE.Mesh(new THREE.CylinderGeometry(G.plazaR * 0.34, G.plazaR * 0.38, 0.5, 12), toon('#c9a06a'));
     base.position.set(G.cx, cy + 0.25, G.cz);
     base.castShadow = true;
     cityGroup.add(base);
     var postGeo = new THREE.CylinderGeometry(0.09, 0.09, 2.6, 6);
-    var postMat = toonMaterial({ color: '#7a5a38' });
+    var postMat = toon('#7a5a38');
     for (var i = 0; i < 4; i++) {
       var a = (i / 4) * Math.PI * 2 + Math.PI / 4;
       var post = new THREE.Mesh(postGeo, postMat);
       post.position.set(G.cx + Math.cos(a) * G.plazaR * 0.26, cy + 1.7, G.cz + Math.sin(a) * G.plazaR * 0.26);
       cityGroup.add(post);
     }
-    var roof = new THREE.Mesh(new THREE.ConeGeometry(G.plazaR * 0.4, 1.4, 8), toonMaterial({ color: '#b8543f' }));
+    var roof = new THREE.Mesh(new THREE.ConeGeometry(G.plazaR * 0.4, 1.4, 8), toon('#b8543f'));
     roof.position.set(G.cx, cy + 3.6, G.cz);
     roof.castShadow = true;
     cityGroup.add(roof);
     colliderAdd(G.cx, G.cz, G.plazaR * 0.4);
   }
 
-  /** Varal de luzinhas entre 2 postes (catenária + bolbos que acendem à noite). */
+  // Varal de luzinhas entre 2 postes (catenária + bolbos que acendem à noite).
   function buildStringSpan(x1, z1, x2, z2) {
     if (!scene) return;
     var parent = cityGroup || scene;
     var y1 = heightAt(x1, z1);
     var y2 = heightAt(x2, z2);
     var poleGeo = new THREE.CylinderGeometry(0.07, 0.09, 3.1, 6);
-    var poleMat = toonMaterial({ color: '#334155' });
+    var poleMat = toon('#334155');
     var p1 = new THREE.Mesh(poleGeo, poleMat);
     p1.position.set(x1, y1 + 1.55, z1);
     parent.add(p1);
@@ -5488,8 +6147,11 @@ const world3DRuntimeSource = `import * as THREE from 'three';
       map: ensureSpriteTex(), color: '#ffe9a3', size: 0.55,
       transparent: true, opacity: 0.25, depthWrite: false, sizeAttenuation: true
     });
+    // Esfera da própria catenária, com folga do tamanho do bolbo: o varal sai do desenho
+    // quando está fora da câmera (era frustumCulled = false, 4 draw calls sempre).
+    bulbGeo.computeBoundingSphere();
+    bulbGeo.boundingSphere.radius += 0.6;
     var pts = new THREE.Points(bulbGeo, bulbMat);
-    pts.frustumCulled = false;
     parent.add(pts);
     stringLights.push({ bulbsMat: bulbMat });
   }
@@ -5500,7 +6162,7 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     for (var i = 0; i < stringLights.length; i++) stringLights[i].bulbsMat.opacity = o;
   }
 
-  /** Laguinho decorativo (a depressão foi reservada; aqui só o espelho d'água). */
+  // Laguinho decorativo (a depressão foi reservada; aqui só o espelho d'água).
   function buildCityLake(cy) {
     var lag = cityLakePos();
     var geo = new THREE.CircleGeometry(5.2, 20);
@@ -5510,7 +6172,7 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     cityGroup.add(mesh);
   }
 
-  /** Letreiros neon (quads emissivos sobre a frente das lojas/predinhos). */
+  // Letreiros neon (quads emissivos sobre a frente das lojas/predinhos).
   function buildCityNeon(lots, cy) {
     ensureDummies();
     var alvo = [];
@@ -5518,23 +6180,28 @@ const world3DRuntimeSource = `import * as THREE from 'three';
       if (lots[i].arch === 'loja' || lots[i].arch === 'predinho') alvo.push(lots[i]);
     }
     if (!alvo.length) return;
+    for (var n = 0; n < alvo.length; n++) alvo[n].neon = CITY_NEON_COLORS[n % CITY_NEON_COLORS.length];
     var geo = new THREE.PlaneGeometry(1, 1);
-    var mesh = new THREE.InstancedMesh(geo, new THREE.MeshBasicMaterial({ color: '#ffffff' }), alvo.length);
-    for (var k = 0; k < alvo.length; k++) {
-      var lot = alvo[k];
-      var off = lot.arch === 'predinho' ? 1.95 : 1.75;
-      var fx = lot.x + Math.sin(lot.yaw) * off;
-      var fz = lot.z + Math.cos(lot.yaw) * off;
-      _dummy.position.set(fx, heightAt(lot.x, lot.z) + (lot.arch === 'predinho' ? 5.4 : 2.95), fz);
-      _dummy.rotation.set(0, lot.yaw, 0);
-      _dummy.scale.set(2.3, 0.62, 1);
-      _dummy.updateMatrix();
-      mesh.setMatrixAt(k, _dummy.matrix);
-      mesh.setColorAt(k, new THREE.Color(CITY_NEON_COLORS[k % CITY_NEON_COLORS.length]));
+    var mat = new THREE.MeshBasicMaterial({ color: '#ffffff' });
+    var tint = new THREE.Color();
+    var chunks = chunkItems(cityChunkGrid(), alvo);
+    for (var c = 0; c < chunks.length; c++) {
+      var list = chunks[c];
+      var mesh = new THREE.InstancedMesh(geo, mat, list.length);
+      for (var k = 0; k < list.length; k++) {
+        var lot = list[k];
+        var off = lot.arch === 'predinho' ? 1.95 : 1.75;
+        var fx = lot.x + Math.sin(lot.yaw) * off;
+        var fz = lot.z + Math.cos(lot.yaw) * off;
+        _dummy.position.set(fx, heightAt(lot.x, lot.z) + (lot.arch === 'predinho' ? 5.4 : 2.95), fz);
+        _dummy.rotation.set(0, lot.yaw, 0);
+        _dummy.scale.set(2.3, 0.62, 1);
+        _dummy.updateMatrix();
+        mesh.setMatrixAt(k, _dummy.matrix);
+        mesh.setColorAt(k, tint.set(lot.neon));
+      }
+      finishScatterChunk(mesh, cityGroup, true);
     }
-    mesh.instanceMatrix.needsUpdate = true;
-    if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
-    cityGroup.add(mesh);
   }
 
   // ---- 🚪 Porta interativa: E abre um overlay LOCAL (o "conteúdo do prédio") ----
@@ -5549,7 +6216,7 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     if (!doorOverlayEl) {
       doorOverlayEl = document.createElement('div');
       doorOverlayEl.setAttribute('style', 'position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(6,10,16,.82);z-index:9;cursor:pointer');
-      doorOverlayEl.addEventListener('click', function () { closeDoorOverlay(); });
+      listen(doorOverlayEl, 'click', function () { closeDoorOverlay(); });
       frameEl.appendChild(doorOverlayEl);
     }
     doorOverlayEl.innerHTML = '';
@@ -5591,7 +6258,7 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     var yaw = (num(rec.deg, 0) * Math.PI) / 180;
     var gy = heightAtDrive(x, z, null);
     var g = new THREE.Group();
-    var jambMat = toonMaterial({ color: '#7a5a38' });
+    var jambMat = toon('#7a5a38');
     var jambGeo = new THREE.BoxGeometry(0.18, 2.3, 0.22);
     var j1 = new THREE.Mesh(jambGeo, jambMat);
     j1.position.set(-0.62, 1.15, 0);
@@ -5602,7 +6269,7 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     var lintel = new THREE.Mesh(new THREE.BoxGeometry(1.42, 0.2, 0.22), jambMat);
     lintel.position.set(0, 2.35, 0);
     g.add(lintel);
-    var slab = new THREE.Mesh(new THREE.BoxGeometry(1.06, 2.2, 0.1), toonMaterial({ color: '#b8543f' }));
+    var slab = new THREE.Mesh(new THREE.BoxGeometry(1.06, 2.2, 0.1), toon('#b8543f'));
     slab.position.set(0, 1.1, 0);
     slab.castShadow = true;
     g.add(slab);
@@ -5680,21 +6347,21 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     var gy = heightAt(x, z);
     ensureCityGeos();
     var g = new THREE.Group();
-    var body = new THREE.Mesh(UNIT_GEOS.box, toonMaterial({ color: '#b4432f' }));
+    var body = new THREE.Mesh(UNIT_GEOS.box, toon('#b4432f'));
     body.scale.set(6, 3.4, 4.6);
     body.position.y = 1.7;
     body.castShadow = true;
     g.add(body);
-    var roof = new THREE.Mesh(UNIT_GEOS.pyr, toonMaterial({ color: '#7a4a30' }));
+    var roof = new THREE.Mesh(UNIT_GEOS.pyr, toon('#7a4a30'));
     roof.scale.set(7, 2, 5.4);
     roof.position.y = 4.4;
     roof.castShadow = true;
     g.add(roof);
-    var doorMesh = new THREE.Mesh(UNIT_GEOS.box, toonMaterial({ color: '#f5efe0' }));
+    var doorMesh = new THREE.Mesh(UNIT_GEOS.box, toon('#f5efe0'));
     doorMesh.scale.set(1.8, 2.2, 0.12);
     doorMesh.position.set(0, 1.1, 2.32);
     g.add(doorMesh);
-    var trim = new THREE.Mesh(UNIT_GEOS.box, toonMaterial({ color: '#f5efe0' }));
+    var trim = new THREE.Mesh(UNIT_GEOS.box, toon('#f5efe0'));
     trim.scale.set(6.2, 0.3, 4.8);
     trim.position.y = 3.35;
     g.add(trim);
@@ -5710,15 +6377,15 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     var z = num(rec.z, 0);
     var gy = heightAt(x, z);
     var g = new THREE.Group();
-    var tower = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 1.1, 7, 8), toonMaterial({ color: '#e8e0cc' }));
+    var tower = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 1.1, 7, 8), toon('#e8e0cc'));
     tower.position.y = 3.5;
     tower.castShadow = true;
     g.add(tower);
-    var cap = new THREE.Mesh(new THREE.ConeGeometry(0.9, 1, 8), toonMaterial({ color: '#b4432f' }));
+    var cap = new THREE.Mesh(new THREE.ConeGeometry(0.9, 1, 8), toon('#b4432f'));
     cap.position.y = 7.4;
     g.add(cap);
     var blades = new THREE.Group();
-    var bladeMat = toonMaterial({ color: '#f5efe0' });
+    var bladeMat = toon('#f5efe0');
     ensureCityGeos();
     for (var i = 0; i < 4; i++) {
       var b = new THREE.Mesh(UNIT_GEOS.box, bladeMat);
@@ -5828,11 +6495,19 @@ const world3DRuntimeSource = `import * as THREE from 'three';
         z: num(rec.z, 0) + (rng() * 2 - 1) * num(rec.r, 8),
         yaw: rng() * Math.PI * 2,
         home: { x: num(rec.x, 0), z: num(rec.z, 0), r: clamp(num(rec.r, 8), 2, 40) },
-        target: null,
+        target: { x: 0, z: 0 },
+        going: false,
         waitT: rng() * 2,
         phase: rng() * 6
       });
     }
+    // O rebanho anda: a esfera cobre a área inteira do passeio (nascem num quadrado de lado
+    // 2r em volta de casa e andam até alvos no raio de casa), não as posições do 1º quadro.
+    var hx = num(rec.x, 0);
+    var hz = num(rec.z, 0);
+    var reach = Math.max(Math.abs(num(rec.r, 8)), herd.list[0].home.r) * 1.42 + 4;
+    body.boundingSphere = new THREE.Sphere(new THREE.Vector3(hx, heightAt(hx, hz), hz), reach);
+    head.boundingSphere = body.boundingSphere.clone();
     herds.push(herd);
   }
 
@@ -5845,12 +6520,13 @@ const world3DRuntimeSource = `import * as THREE from 'three';
         var an = herd.list[i];
         an.phase += dt * 4;
         var spd = 0;
-        if (an.target) {
+        // Alvo reaproveitado (o mesmo objeto do bicho, reescrito a cada troca).
+        if (an.going) {
           var dx = an.target.x - an.x;
           var dz = an.target.z - an.z;
           var d = Math.sqrt(dx * dx + dz * dz);
           if (d < 0.4) {
-            an.target = null;
+            an.going = false;
             an.waitT = 1 + Math.random() * 3;
           } else {
             an.yaw = Math.atan2(dx, dz);
@@ -5863,7 +6539,9 @@ const world3DRuntimeSource = `import * as THREE from 'three';
           if (an.waitT <= 0) {
             var ang = Math.random() * Math.PI * 2;
             var rad = Math.sqrt(Math.random()) * an.home.r;
-            an.target = { x: an.home.x + Math.cos(ang) * rad, z: an.home.z + Math.sin(ang) * rad };
+            an.target.x = an.home.x + Math.cos(ang) * rad;
+            an.target.z = an.home.z + Math.sin(ang) * rad;
+            an.going = true;
           }
         }
         var gy = heightAt(an.x, an.z);
@@ -5901,7 +6579,7 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     var z = num(rec.z, 0);
     var gy = heightAt(x, z);
     var g = new THREE.Group();
-    var mast = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.06, 2.6, 6), toonMaterial({ color: '#d8dde6' }));
+    var mast = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.06, 2.6, 6), toon('#d8dde6'));
     mast.position.y = 1.3;
     g.add(mast);
     var cloth = new THREE.Mesh(new THREE.PlaneGeometry(1.1, 0.65), new THREE.MeshBasicMaterial({ color: rec.color || '#ef4444', side: THREE.DoubleSide }));
@@ -5922,12 +6600,12 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     var z = num(rec.z, 0);
     var gy = heightAt(x, z);
     var g = new THREE.Group();
-    var bodyMat = toonMaterial({ color: '#e8e8f0' });
+    var bodyMat = toon('#e8e8f0');
     var body = new THREE.Mesh(new THREE.CylinderGeometry(0.9, 0.9, 4.2, 12), bodyMat);
     body.position.y = 3.1;
     body.castShadow = true;
     g.add(body);
-    var nose = new THREE.Mesh(new THREE.ConeGeometry(0.9, 1.6, 12), toonMaterial({ color: '#e04f3f' }));
+    var nose = new THREE.Mesh(new THREE.ConeGeometry(0.9, 1.6, 12), toon('#e04f3f'));
     nose.position.y = 6;
     g.add(nose);
     var winMat = new THREE.MeshBasicMaterial({ color: '#9cc3e8' });
@@ -5935,7 +6613,7 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     win.position.set(0, 3.8, 0.82);
     g.add(win);
     ensureCityGeos();
-    var finMat = toonMaterial({ color: '#e04f3f' });
+    var finMat = toon('#e04f3f');
     for (var i = 0; i < 4; i++) {
       var a = (i / 4) * Math.PI * 2;
       var fin = new THREE.Mesh(UNIT_GEOS.box, finMat);
@@ -5985,10 +6663,16 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     }
     trafficMesh = new THREE.InstancedMesh(
       UNIT_GEOS.box,
-      toonMaterial({ color: '#ffffff' }),
+      toon('#ffffff'),
       n * TRAFFIC_PARTS.length
     );
     trafficMesh.castShadow = true;
+    // Os carros andam pelo anel: a esfera é a do anel inteiro, fixa (a calculada sozinha
+    // seria a das posições do 1º quadro e ficaria velha quando eles andassem).
+    trafficMesh.boundingSphere = new THREE.Sphere(
+      new THREE.Vector3(cityGraph.cx, heightAt(cityGraph.cx, cityGraph.cz), cityGraph.cz),
+      cityGraph.ringR + 4
+    );
     for (var c = 0; c < n; c++) {
       var tint = new THREE.Color(TRAFFIC_COLORS[c % TRAFFIC_COLORS.length]);
       for (var p = 0; p < TRAFFIC_PARTS.length; p++) {
@@ -6001,12 +6685,12 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     stepTrafficVisual();
   }
 
-  /** Semáforos SINCRONIZADOS nos 4 cruzamentos: anda (8s) → amarelo (1,5s) → para (5s). */
+  // Semáforos SINCRONIZADOS nos 4 cruzamentos: anda (8s) → amarelo (1,5s) → para (5s).
   function buildSemaphores() {
     var G = cityGraph;
     ensureDummies();
     var postGeo = new THREE.CylinderGeometry(0.07, 0.09, 3.2, 6);
-    var postMat = toonMaterial({ color: '#374151' });
+    var postMat = toon('#374151');
     var bulbs = new THREE.InstancedMesh(new THREE.BoxGeometry(0.3, 0.3, 0.18), new THREE.MeshBasicMaterial({ color: '#ffffff' }), G.crossings.length * 3);
     for (var i = 0; i < G.crossings.length; i++) {
       var cr = G.crossings[i];
@@ -6027,16 +6711,17 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     }
     bulbs.instanceMatrix.needsUpdate = true;
     (cityGroup || scene).add(bulbs);
-    semState = { t: 0, phase: 'anda', bulbMesh: bulbs };
+    semState = { t: 0, phase: 'anda', bulbMesh: bulbs, cols: [new THREE.Color(), new THREE.Color(), new THREE.Color()] };
     paintSemaphores();
   }
 
   function paintSemaphores() {
     if (!semState || !semState.bulbMesh) return;
     var on = semState.phase;
-    var red = new THREE.Color(on === 'para' ? '#ef4444' : '#3f1d1d');
-    var amber = new THREE.Color(on === 'amarelo' ? '#fbbf24' : '#3f351d');
-    var green = new THREE.Color(on === 'anda' ? '#22c55e' : '#1d3f28');
+    // As 3 cores vivem no semáforo: a troca de fase (no laço) não cria THREE.Color.
+    var red = semState.cols[0].set(on === 'para' ? '#ef4444' : '#3f1d1d');
+    var amber = semState.cols[1].set(on === 'amarelo' ? '#fbbf24' : '#3f351d');
+    var green = semState.cols[2].set(on === 'anda' ? '#22c55e' : '#1d3f28');
     var count = semState.bulbMesh.count / 3;
     for (var i = 0; i < count; i++) {
       semState.bulbMesh.setColorAt(i * 3 + 0, red);
@@ -6046,7 +6731,7 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     if (semState.bulbMesh.instanceColor) semState.bulbMesh.instanceColor.needsUpdate = true;
   }
 
-  /** Distância ANGULAR à frente (respeitando o sentido da lane). */
+  // Distância ANGULAR à frente (respeitando o sentido da lane).
   function trafficGapAhead(fromA, toA, dir) {
     var d = (toA - fromA) * dir;
     d = d % (Math.PI * 2);
@@ -6147,9 +6832,7 @@ const world3DRuntimeSource = `import * as THREE from 'three';
 
   function buildCity() {
     if (!scene || !cityCfg || !cityGraph) return;
-    if (cityGroup) {
-      try { scene.remove(cityGroup); } catch (e) {}
-    }
+    // Roda no máximo 1x por mundo: o city() recusa a 2ª cidade e o disposeAll zera tudo.
     cityGroup = new THREE.Group();
     scene.add(cityGroup);
     var G = cityGraph;
@@ -6157,8 +6840,10 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     buildCityRoads(cy);
     buildCityMarkings(cy);
     var lots = cityLots();
-    buildCityBuildings(lots, cy);
-    buildCityHedges(cy);
+    var pieces = [];
+    buildCityBuildings(lots, pieces);
+    buildCityHedges(cy, pieces);
+    flushCityPieces(pieces);
     buildCityCoreto(cy);
     // Postes nos 4 cruzamentos do anel (entram no orçamento normal de luz).
     for (var i = 0; i < G.crossings.length; i++) {
@@ -6289,7 +6974,7 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     var cx = num(rec.x, 0);
     var cz = num(rec.z, 0);
     var size = clamp(num(rec.size, 48), 20, 120);
-    var count = quality.tier === 'turbo' ? 9 : 16;
+    var count = renderBudget.isLight() ? 9 : 16;
     var side = Math.round(Math.sqrt(count));
     var gap = size / side;
     var buildings = [];
@@ -6308,7 +6993,7 @@ const world3DRuntimeSource = `import * as THREE from 'three';
         colliderAdd(x, z, Math.max(w, d) * 0.48);
       }
     }
-    var walls = new THREE.InstancedMesh(UNIT_GEOS.box, toonMaterial({ color: '#ffffff' }), buildings.length);
+    var walls = new THREE.InstancedMesh(UNIT_GEOS.box, toon('#ffffff'), buildings.length);
     var roofs = new THREE.InstancedMesh(UNIT_GEOS.box, speciesMat(kind === 'industrial' ? '#334155' : '#7c4a3b'), buildings.length);
     var windows = new THREE.InstancedMesh(UNIT_GEOS.box, speciesMat('#bde3ff'), buildings.length);
     walls.castShadow = true;
@@ -6354,7 +7039,7 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     var style = text(rec.style, 'coloridas');
     var palette = HOUSE_PALETTES[style] || HOUSE_PALETTES.coloridas;
     var yaw = Math.atan2(dx, dz) + Math.PI * 0.5;
-    var walls = new THREE.InstancedMesh(UNIT_GEOS.box, toonMaterial({ color: '#ffffff' }), count);
+    var walls = new THREE.InstancedMesh(UNIT_GEOS.box, toon('#ffffff'), count);
     var roofs = new THREE.InstancedMesh(UNIT_GEOS.pyr, speciesMat(style === 'modernas' ? '#334155' : '#8b4a3b'), count);
     var doors = new THREE.InstancedMesh(UNIT_GEOS.box, speciesMat('#5b3a29'), count);
     var windows = new THREE.InstancedMesh(UNIT_GEOS.box, speciesMat('#bde3ff'), count * 2);
@@ -6410,16 +7095,7 @@ const world3DRuntimeSource = `import * as THREE from 'three';
   function applyQualitySelection(mode) {
     var selected = text(mode, 'automatica');
     if (selected !== 'automatica' && selected !== 'alta' && selected !== 'desempenho') selected = 'automatica';
-    quality.auto = selected === 'automatica';
-    quality.decided = selected !== 'automatica';
-    quality.probeT = 0;
-    quality.fpsAcc = 0;
-    quality.fpsN = 0;
-    if (selected === 'desempenho') {
-      applyTurbo();
-      return;
-    }
-    applyQualityTier('alta');
+    renderBudget.setMode(selected === 'desempenho' ? 'leve' : selected);
   }
 
   function inventoryStorageKey() {
@@ -6531,7 +7207,7 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     var cz = num(z, 0);
     var gy = heightAt(cx, cz);
     var g = new THREE.Group();
-    var logMat = toonMaterial({ color: '#7c4a2d' });
+    var logMat = toon('#7c4a2d');
     var log1 = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.12, 1.4, 6), logMat);
     log1.rotation.z = Math.PI / 2;
     log1.rotation.y = 0.6;
@@ -6579,11 +7255,16 @@ const world3DRuntimeSource = `import * as THREE from 'three';
         );
       }
       pos.needsUpdate = true;
-      // Tocar na fogueira grava o CHECKPOINT do resgate da água.
-      if (carState) {
-        var dx = carState.x - cf.x;
-        var dz = carState.z - cf.z;
-        if (dx * dx + dz * dz < 25) _campRespawn = { x: cf.x, z: cf.z };
+      // Tocar na fogueira (a pé ou dirigindo) grava o CHECKPOINT do resgate da água.
+      var me = focusState();
+      if (me) {
+        var dx = me.x - cf.x;
+        var dz = me.z - cf.z;
+        if (dx * dx + dz * dz < 25) {
+          if (!_campRespawn) _campRespawn = { x: 0, z: 0 };
+          _campRespawn.x = cf.x;
+          _campRespawn.z = cf.z;
+        }
       }
     }
   }
@@ -6604,7 +7285,7 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     var spec = PUSH_TYPES[type];
     var geos = ensureUnitGeos();
     var geo = spec.g === 'cyl' ? geos.cyl : spec.g === 'cone' ? geos.cone : new THREE.BoxGeometry(1, 1, 1);
-    var im = new THREE.InstancedMesh(geo, toonMaterial({ color: spec.color }), 80);
+    var im = new THREE.InstancedMesh(geo, toon(spec.color), 80);
     im.count = 0;
     im.castShadow = true;
     im.frustumCulled = false;
@@ -6630,8 +7311,9 @@ const world3DRuntimeSource = `import * as THREE from 'three';
       type: type, im: slot, idx: idx,
       x: num(x, 0), z: num(z, 0), y: 0, vx: 0, vz: 0, vy: 0,
       spin: 0, yaw: Math.random() * Math.PI * 2,
-      home: { x: num(x, 0), z: num(z, 0) }, sink: 0
+      home: { x: num(x, 0), z: num(z, 0), yaw: 0 }, sink: 0, live: started
     };
+    p.home.yaw = p.yaw;
     p.y = heightAt(p.x, p.z) + slot.spec.sy / 2;
     pushables.push(p);
     writePushable(p);
@@ -6648,7 +7330,7 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     p.im.mesh.instanceMatrix.needsUpdate = true;
   }
 
-  /** Letras físicas: caixas com a LETRA pintada (CanvasTexture cacheada por char). */
+  // Letras físicas: caixas com a LETRA pintada (CanvasTexture cacheada por char).
   function letterTexture(ch) {
     if (!_letterTexCache) _letterTexCache = {};
     if (_letterTexCache[ch]) return _letterTexCache[ch];
@@ -6692,7 +7374,7 @@ const world3DRuntimeSource = `import * as THREE from 'three';
       var lx = bx + (i - (w.length - 1) / 2) * size;
       var p = {
         type: 'letra', mesh: box, x: lx, z: bz, y: 0, vx: 0, vz: 0, vy: 0,
-        spin: 0, yaw: 0, home: { x: lx, z: bz }, sink: 0, scale: size * 0.9
+        spin: 0, yaw: 0, home: { x: lx, z: bz, yaw: 0 }, sink: 0, scale: size * 0.9, live: started
       };
       p.y = heightAt(lx, bz) + size * 0.45;
       box.scale.setScalar(size * 0.9 / 0.9);
@@ -6711,7 +7393,9 @@ const world3DRuntimeSource = `import * as THREE from 'three';
 
   function stepPushables(dt) {
     if (!pushables.length) return;
-    var s = carState;
+    var s = focusState();
+    var sReach = playerReach(s);
+    var sSpeed = playerSpeed(s);
     for (var i = 0; i < pushables.length; i++) {
       var p = pushables[i];
       var spec = p.im ? p.im.spec : { sy: p.scale || 0.9, r: (p.scale || 0.9) * 0.55 };
@@ -6727,17 +7411,17 @@ const world3DRuntimeSource = `import * as THREE from 'three';
           continue;
         }
       }
-      // Encostão do carrinho: impulso proporcional à velocidade.
+      // Encostão do jogador (a pé ou dirigindo): impulso proporcional à velocidade.
       if (s) {
         var dx = p.x - s.x;
         var dz = p.z - s.z;
-        var rr = spec.r + 1.2;
+        var rr = spec.r + sReach;
         var d2 = dx * dx + dz * dz;
-        if (d2 < rr * rr && Math.abs(s.speed) > 0.8) {
+        if (d2 < rr * rr && sSpeed > 0.8) {
           var d = Math.sqrt(d2) || 0.01;
-          pushImpulse(p, dx / d, dz / d, Math.min(10, Math.abs(s.speed) * 0.55));
-          s.speed *= 0.92;
-          if (Math.abs(s.speed) > 6) beep(160, 0.05);
+          pushImpulse(p, dx / d, dz / d, Math.min(10, sSpeed * 0.55));
+          if (s === carState) s.speed *= 0.92;
+          if (sSpeed > 6) beep(160, 0.05);
         }
       }
       var moving = Math.abs(p.vx) + Math.abs(p.vz) + Math.abs(p.vy) > 0.02;
@@ -6769,26 +7453,36 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     }
   }
 
-  /** Caixa explosiva: detona no encostão forte; explosão em CADEIA com atraso. */
+  // Caixa explosiva: detona no encostão forte; explosão em CADEIA com atraso.
   function addExplosive(x, z) {
     if (!scene) return;
-    var mat = toonMaterial({ color: '#dc2626' });
+    // Teto das caixas VIVAS (as que já explodiram saem da lista no próximo quadro).
+    var live = 0;
+    for (var li = 0; li < explosives.length; li++) if (!explosives[li].done) live++;
+    if (live >= EXPLOSIVES_MAX) {
+      warnOnce('explosives-max', 'muitas caixas explosivas (teto ' + EXPLOSIVES_MAX + ')');
+      return;
+    }
+    var mat = toon('#dc2626');
     var box = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.9, 0.9), mat);
     var bx = num(x, 0);
     var bz = num(z, 0);
     box.position.set(bx, heightAt(bx, bz) + 0.45, bz);
     box.castShadow = true;
     scene.add(box);
-    var tampa = new THREE.Mesh(new THREE.BoxGeometry(0.94, 0.16, 0.94), toonMaterial({ color: '#7f1d1d' }));
+    var tampa = new THREE.Mesh(new THREE.BoxGeometry(0.94, 0.16, 0.94), toon('#7f1d1d'));
     tampa.position.y = 0.4;
     box.add(tampa);
-    explosives.push({ mesh: box, x: bx, z: bz, fuse: -1, done: false });
+    var ex = { mesh: box, x: bx, z: bz, fuse: -1, done: false, live: started };
+    explosives.push(ex);
+    if (!started) explosiveHome.push(ex);
+    return ex;
   }
 
   function detonate(ex) {
     if (ex.done) return;
     ex.done = true;
-    try { scene.remove(ex.mesh); } catch (e) { warnOnce('remove-explosive', 'não consegui remover a caixa explosiva: ' + e); }
+    try { scene.remove(ex.mesh); } catch (e) { warnOnce('remove-explosive', 'não consegui remover a caixa explosiva', e); }
     disposeObjectTree(ex.mesh, true);
     // Bola de fogo que incha e some + faíscas do pool de festa.
     var bm = new THREE.MeshBasicMaterial({ color: '#fbbf24', transparent: true, opacity: 0.9 });
@@ -6834,7 +7528,20 @@ const world3DRuntimeSource = `import * as THREE from 'three';
         carState.pitchV += 2;
         _shakeT = Math.max(_shakeT, 0.5);
         _shakeAmp = Math.max(_shakeAmp, 0.4);
-        // Bullet-time do folio: explosão que te pega liga a câmera lenta.
+        // Bullet-time: explosão que te pega liga a câmera lenta.
+        timeScale = 0.3;
+      }
+    }
+    // A pé, a explosão também te joga pro alto.
+    if (personState && personCfg && !driving) {
+      var pdx = personState.x - ex.x;
+      var pdz = personState.z - ex.z;
+      var pd = Math.sqrt(pdx * pdx + pdz * pdz);
+      if (pd < R) {
+        personState.vy = Math.max(personState.vy, (1 - pd / R) * 9);
+        personState.airborne = true;
+        _shakeT = Math.max(_shakeT, 0.5);
+        _shakeAmp = Math.max(_shakeAmp, 0.4);
         timeScale = 0.3;
       }
     }
@@ -6848,12 +7555,16 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     }
     for (var hi = 0; hi < explosionHooks.length; hi++) {
       try { explosionHooks[hi](); } catch (e2) {
-        warnOnce('hook-boom-' + hi, 'erro no "Quando algo explodir": ' + e2);
+        warnOnce('hook-boom-' + hi, 'erro no "Quando algo explodir"', e2);
       }
     }
   }
 
   function stepExplosives(dt) {
+    // As que já explodiram saem do registro (caixas nascem e explodem a jogo inteiro).
+    var alive = 0;
+    for (var a = 0; a < explosives.length; a++) if (!explosives[a].done) explosives[alive++] = explosives[a];
+    explosives.length = alive;
     for (var i = 0; i < explosives.length; i++) {
       var ex = explosives[i];
       if (ex.done) continue;
@@ -6862,10 +7573,13 @@ const world3DRuntimeSource = `import * as THREE from 'three';
         if (ex.fuse <= 0) detonate(ex);
         continue;
       }
-      if (carState) {
-        var dx = ex.x - carState.x;
-        var dz = ex.z - carState.z;
-        if (dx * dx + dz * dz < 2.6 && Math.abs(carState.speed) > 3) detonate(ex);
+      // Encostar andando/correndo a pé ou dirigindo detona (parado não).
+      var me = focusState();
+      if (me) {
+        var dx = ex.x - me.x;
+        var dz = ex.z - me.z;
+        var touch = me === carState ? 2.6 : 1.5;
+        if (dx * dx + dz * dz < touch && playerSpeed(me) > 3) detonate(ex);
       }
     }
     for (var b = boomSpheres.length - 1; b >= 0; b--) {
@@ -6888,7 +7602,7 @@ const world3DRuntimeSource = `import * as THREE from 'three';
 
   // ---- R11: buzina / luzes / marcas de pneu / lua / vinheta de turbo ----
 
-  /** Bip curto de UI (konami, celebrações) — oscilador descartável. */
+  // Bip curto de UI (konami, celebrações) — oscilador descartável.
   function beep(freq, dur) {
     var ac = ensureAudioCtx();
     if (!ac) return;
@@ -6930,7 +7644,7 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     hornSquashV -= 3.2;
     for (var i = 0; i < hornHooks.length; i++) {
       try { hornHooks[i](); } catch (e2) {
-        warnOnce('hook-horn-' + i, 'erro no "Quando buzinar": ' + e2);
+        warnOnce('hook-horn-' + i, 'erro no "Quando buzinar"', e2);
       }
     }
   }
@@ -6960,7 +7674,7 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     _hornHeld = held;
   }
 
-  /** Anel de quads das marcas de pneu (1 draw call; alpha por vértice com fade). */
+  // Anel de quads das marcas de pneu (1 draw call; alpha por vértice com fade).
   function ensureTireMesh() {
     if (tireMesh || !scene) return;
     tireGeo = new THREE.BufferGeometry();
@@ -7003,7 +7717,7 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     scene.add(tireMesh);
   }
 
-  /** Grava um quadzinho de marca no anel (sob uma roda traseira). */
+  // Grava um quadzinho de marca no anel (sob uma roda traseira).
   function stampTire(wx, wz, yaw) {
     var i = tireIdx;
     tireIdx = (tireIdx + 1) % TIRE_N;
@@ -7058,7 +7772,7 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     alp.needsUpdate = true;
   }
 
-  /** Luzes do carrinho: estados AUTOMÁTICOS (freio/ré/piscas/faróis à noite). */
+  // Luzes do carrinho: estados AUTOMÁTICOS (freio/ré/piscas/faróis à noite).
   function stepCarLights(dt) {
     if (!lightsOn || !carLightParts || !carState) return;
     var s = carState;
@@ -7086,7 +7800,7 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     }
   }
 
-  /** Lua: um disco que aparece junto das estrelas e olha para a câmera. */
+  // Lua: um disco que aparece junto das estrelas e olha para a câmera.
   function stepMoon() {
     if (!scene) return;
     if (!moonMesh && nightAmount > 0.01) {
@@ -7097,13 +7811,12 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     }
     if (!moonMesh) return;
     moonMat.opacity = nightAmount * 0.9;
-    var cx = carState ? carState.x : 0;
-    var cz = carState ? carState.z : 0;
-    moonMesh.position.set(cx - 90, 85, cz - 130);
+    var mp = playerXZ();
+    moonMesh.position.set(mp.x - 90, 85, mp.z - 130);
     if (camera) moonMesh.lookAt(camera.position);
   }
 
-  /** Vinheta de velocidade do turbo (DOM — zero draw calls 3D). */
+  // Vinheta de velocidade do turbo (DOM — zero draw calls 3D).
   function stepSpeedLines() {
     if (!frameEl) return;
     var show = false;
@@ -7116,10 +7829,10 @@ const world3DRuntimeSource = `import * as THREE from 'three';
       speedLinesEl.setAttribute('style', 'position:absolute;inset:0;pointer-events:none;z-index:5;background:radial-gradient(ellipse at center, rgba(255,255,255,0) 55%, rgba(255,255,255,0.16) 100%);');
       frameEl.appendChild(speedLinesEl);
     }
-    if (speedLinesEl) speedLinesEl.style.display = show ? 'block' : 'none';
+    domStyle(speedLinesEl, 'display', show ? 'block' : 'none');
   }
 
-  /** Antena cosmética: chicoteia contra o molejo (a alma do carrinho do folio). */
+  // Antena cosmética: chicoteia contra o molejo (a alma do carrinho do folio).
   function stepAntenna() {
     if (!antennaGroup || !carState) return;
     antennaGroup.rotation.x = clamp(-carState.pitch * 1.6, -0.7, 0.7);
@@ -7141,11 +7854,13 @@ const world3DRuntimeSource = `import * as THREE from 'three';
 
   function disposeCar() {
     if (!carGroup) return;
+    disposeModelBody(carModel);
+    carModel = null;
     try {
       if (scene) scene.remove(carGroup);
       carGroup.traverse(function (o) {
-        if (o.geometry && o.geometry.dispose) { try { o.geometry.dispose(); } catch (e) {} }
-        if (o.material && o.material.dispose) { try { o.material.dispose(); } catch (e) {} }
+        tryDispose(o.geometry);
+        tryDispose(o.material);
       });
     } catch (e) {}
     carGroup = null;
@@ -7169,10 +7884,10 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     if (paintStyle === 'chamas') { bodyColor = '#ea580c'; stripeColor = '#facc15'; }
     else if (paintStyle === 'listras') { stripeColor = '#ffffff'; }
     else if (paintStyle === 'estrelas') { bodyColor = '#1e2a5a'; stripeColor = '#ffffff'; }
-    carBodyMat = toonMaterial({ color: bodyColor });
+    carBodyMat = toon(bodyColor);
     var bodyMat = carBodyMat;
-    var darkMat = toonMaterial({ color: '#1f2937' });
-    var glassMat = toonMaterial({ color: '#bfdbfe' });
+    var darkMat = toon('#1f2937');
+    var glassMat = toon('#bfdbfe');
 
     if (rocketMode) {
       // Konami: FOGUETE sobre rodas — corpo cilíndrico + nariz + 3 aletas.
@@ -7181,18 +7896,22 @@ const world3DRuntimeSource = `import * as THREE from 'three';
       rocketBody.position.y = cs.clear + cs.h * 0.9;
       rocketBody.castShadow = true;
       carBody.add(rocketBody);
-      var nose = new THREE.Mesh(new THREE.ConeGeometry(cs.w * 0.34, cs.l * 0.3, 12), toonMaterial({ color: '#ef4444' }));
+      var nose = new THREE.Mesh(new THREE.ConeGeometry(cs.w * 0.34, cs.l * 0.3, 12), toon('#ef4444'));
       nose.rotation.x = Math.PI / 2;
       nose.position.set(0, cs.clear + cs.h * 0.9, cs.l * 0.51);
       nose.castShadow = true;
       carBody.add(nose);
       for (var fi = 0; fi < 3; fi++) {
-        var fin = new THREE.Mesh(new THREE.BoxGeometry(0.06, cs.h * 0.9, cs.l * 0.22), toonMaterial({ color: '#ef4444' }));
+        var fin = new THREE.Mesh(new THREE.BoxGeometry(0.06, cs.h * 0.9, cs.l * 0.22), toon('#ef4444'));
         var fa = (fi / 3) * Math.PI * 2;
         fin.position.set(Math.cos(fa) * cs.w * 0.4, cs.clear + cs.h * 0.9 + Math.sin(fa) * cs.w * 0.4, -cs.l * 0.3);
         fin.rotation.z = fa;
         carBody.add(fin);
       }
+    } else if (modelCfg.car && modelCfg.car.hit && (carModel = modelBody(modelCfg.car.hit, 'longest', modelCfg.car.size))) {
+      // Carroceria do Molda sobre o vão livre; as rodas abaixo continuam as procedurais.
+      carModel.holder.position.y = cs.clear;
+      carBody.add(carModel.holder);
     } else {
       // Carroceria (senta sobre o vão livre; as peças são autoradas do chão p/ cima).
       var body = new THREE.Mesh(new THREE.BoxGeometry(cs.w, cs.h, cs.l), bodyMat);
@@ -7208,7 +7927,7 @@ const world3DRuntimeSource = `import * as THREE from 'three';
 
       if (stripeColor) {
         // Listra de corrida no capô/teto (fina, ao longo do carro).
-        var stripe = new THREE.Mesh(new THREE.BoxGeometry(cs.w * 0.28, 0.03, cs.l * 0.98), toonMaterial({ color: stripeColor }));
+        var stripe = new THREE.Mesh(new THREE.BoxGeometry(cs.w * 0.28, 0.03, cs.l * 0.98), toon(stripeColor));
         stripe.position.y = cs.clear + cs.h + 0.02;
         carBody.add(stripe);
       }
@@ -7242,7 +7961,7 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     var mast = new THREE.Mesh(new THREE.CylinderGeometry(0.015, 0.02, 0.7, 6), darkMat);
     mast.position.y = 0.35;
     antennaGroup.add(mast);
-    var tip = new THREE.Mesh(new THREE.SphereGeometry(0.05, 8, 8), toonMaterial({ color: '#ef4444' }));
+    var tip = new THREE.Mesh(new THREE.SphereGeometry(0.05, 8, 8), toon('#ef4444'));
     tip.position.y = 0.72;
     antennaGroup.add(tip);
     antennaGroup.position.set(-cs.w * 0.32, cs.clear + cs.h, -cs.l * 0.42);
@@ -7275,10 +7994,7 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     }
 
     if (!carState) {
-      carState = {
-        x: 0, y: 0, z: 0, yaw: 0, speed: 0, vy: 0, airborne: false,
-        steerVis: 0, pitch: 0, pitchV: 0, roll: 0, rollV: 0, spin: 0
-      };
+      carState = newCarState();
       carState.y = heightAt(0, 0);
     }
     camSnap = true;
@@ -7532,7 +8248,7 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     }
   }
 
-  /** O sol acompanha o carro: frustum de sombra pequeno + mundo grande. */
+  // O sol acompanha o carro: frustum de sombra pequeno + mundo grande.
   function updateSun() {
     // Segue o JOGADOR ATIVO (a pé/barco/carro), não só o carrinho — senão a
     // sombra some quando a criança sai do carro ou navega de barco.
@@ -7555,22 +8271,12 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     // Clamp (1/30): aba em segundo plano não teleporta o mundo.
     if (dt > 1 / 30) dt = 1 / 30;
     currentDt = dt;
-    playTime += dt;
+    _rectBox = null;
+    if (!_paused) playTime += dt;
 
-    // Sonda de qualidade: mede o FPS entre 1.5 s e 4 s de passeio; abaixo de
-    // 45 liga o modo turbo (uma vez, sem ping-pong).
-    if (quality.auto && !quality.decided) {
-      quality.probeT += dt;
-      if (quality.probeT > 1.5) {
-        quality.fpsAcc += dt;
-        quality.fpsN++;
-      }
-      if (quality.probeT > 4) {
-        quality.decided = true;
-        var fps = quality.fpsN / Math.max(0.001, quality.fpsAcc);
-        if (fps < 45) applyTurbo();
-      }
-    }
+    // Sonda de qualidade (orçamento compartilhado): mede o FPS entre 1.5 s e 4 s de passeio;
+    // abaixo de 45 liga o modo turbo (uma vez, sem ping-pong).
+    renderBudget.sample(dt);
 
     // Bullet-time: escala o dt DEPOIS da sonda (a sonda mede o quadro REAL —
     // escalar antes mentiria o FPS e o turbo nunca ligaria). Volta em ~1,2 s.
@@ -7581,6 +8287,7 @@ const world3DRuntimeSource = `import * as THREE from 'three';
       timeScale = Math.min(1, timeScale + rawDt / 1.2);
     }
 
+    if (!_paused) {
     stepCar(dt);
     stepPerson(dt);
     stepCarExtras(dt);
@@ -7614,14 +8321,22 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     updateEngine();
     for (var i = 0; i < updateHooks.length; i++) {
       try { updateHooks[i](dt); } catch (e) {
-        warnOnce('hook-update-' + i, 'erro no "A cada quadro": ' + e);
+        warnOnce('hook-update-' + i, 'erro no "A cada quadro"', e);
       }
     }
+    }
+    rules.beforeFrame(camera);
     updateCamera(dt);
+    rules.afterFrame(camera, _paused ? 0 : dt);
     updateSun();
-    stepInteractions();
-    stepRace(dt);
-    stepKnockables(dt);
+    if (!_paused) {
+      rules.step(dt);
+      stepInteractions();
+      stepRace(dt);
+      stepKnockables(dt);
+      stepCollectibles();
+      stepAnimatedModels(dt);
+    }
     stepSay();
     if (waterMat) waterMat.uniforms.uTime.value = playTime;
     if (grassMat) {
@@ -7636,7 +8351,11 @@ const world3DRuntimeSource = `import * as THREE from 'three';
       if (grassMat.uniforms.uNight) grassMat.uniforms.uNight.value = nightAmount;
     }
 
-    justPressed = {};
+    // Zera o "acabou de apertar" no MESMO objeto (sem um objeto novo por quadro).
+    for (var jk in justPressed) justPressed[jk] = false;
+    _eSpent = false;
+    // Chão mexido neste quadro (eventos/laços): UMA reconstrução, antes de desenhar.
+    rebuildDirtyTerrain();
     if (renderer && scene && camera) renderFrame();
   }
 
@@ -7649,15 +8368,19 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     }
     if (!ensureShell()) {
       try {
-        document.addEventListener('DOMContentLoaded', function () { start(); });
+        listen(document, 'DOMContentLoaded', function () { start(); });
       } catch (e) {}
       return;
     }
     if (!initWorld()) return;
     started = true;
+    takeSpawnSnap();
     bindInput();
     resizeCanvas();
-    window.addEventListener('resize', function () { resizeCanvas(); });
+    listen(window, 'resize', function () { resizeCanvas(); });
+    // O letterbox muda o CSS do canvas; o orçamento refaz a resolução por um caminho só.
+    renderBudget.resize();
+    renderBudget.observe();
     Promise.all(pending.slice()).then(function () {
       if (disposed || !renderer) return;
       _lastT = 0;
@@ -7670,6 +8393,7 @@ const world3DRuntimeSource = `import * as THREE from 'three';
   function disposeAll() {
     if (disposed) return;
     disposed = true;
+    try { renderBudget.dispose(); } catch (e) {}
     try {
       if (renderer) {
         renderer.setAnimationLoop(null);
@@ -7683,7 +8407,7 @@ const world3DRuntimeSource = `import * as THREE from 'three';
           // InstancedMesh.dispose() libera os buffers de instância (o dispose de
           // geometria/material abaixo não os alcança).
           if (o.isInstancedMesh && o.dispose) { try { o.dispose(); } catch (e) {} }
-          if (o.geometry && o.geometry.dispose) { try { o.geometry.dispose(); } catch (e) {} }
+          tryDispose(o.geometry);
           if (o.material) {
             var m = o.material;
             if (m.length) { for (var i = 0; i < m.length; i++) { if (m[i] && m[i].dispose) { try { m[i].dispose(); } catch (e) {} } } }
@@ -7696,24 +8420,28 @@ const world3DRuntimeSource = `import * as THREE from 'three';
           if (UNIT_GEOS[gk] && UNIT_GEOS[gk].dispose) { try { UNIT_GEOS[gk].dispose(); } catch (e) {} }
         }
       }
-      if (skyTex && skyTex.dispose) { try { skyTex.dispose(); } catch (e) {} }
-      if (gradientTex && gradientTex.dispose) { try { gradientTex.dispose(); } catch (e) {} }
-      if (heightTex && heightTex.dispose) { try { heightTex.dispose(); } catch (e) {} }
-      if (spriteTex && spriteTex.dispose) { try { spriteTex.dispose(); } catch (e) {} }
-      if (waterMat && waterMat.dispose) { try { waterMat.dispose(); } catch (e) {} }
+      tryDispose(skyTex);
+      tryDispose(gradientTex);
+      tryDispose(heightTex);
+      tryDispose(spriteTex);
+      tryDispose(waterMat);
       clearEnvironmentTexture();
       clearPendingEnvironmentTexture();
-      if (_hdrCache) {
-        for (var hdrName in _hdrCache) disposeTexture(_hdrCache[hdrName], 'dispose-hdr-cache');
-        _hdrCache = null;
-      }
       _skyPhotoRequest++;
-      if (_modelCache) {
-        for (var modelName in _modelCache) {
-          var cachedModel = _modelCache[modelName];
-          if (cachedModel && cachedModel.scene) disposeObjectTree(cachedModel.scene, true);
-        }
-      }
+      // Ossos das cópias "Pôr" (a cena acima já soltou geometria/material) e o cache
+      // inteiro do carregador (modelos fora da cena, céus 360°, esperas em voo).
+      var seenSkeletons = new Set();
+      for (var am = 0; am < animatedModels.length; am++) models.disposeClone(animatedModels[am].root, animatedModels[am].anim, seenSkeletons);
+      animatedModels.length = 0;
+      liveModels.length = 0;
+      disposeModelBody(personModel, seenSkeletons);
+      disposeModelBody(carModel, seenSkeletons);
+      for (var nm2 = 0; nm2 < npcs.length; nm2++) disposeModelBody(npcs[nm2].model, seenSkeletons);
+      personModel = null;
+      carModel = null;
+      for (var pr = 0; pr < placedModelRoots.length; pr++) models.disposeClone(placedModelRoots[pr], null, seenSkeletons);
+      placedModelRoots.length = 0;
+      models.disposeAll();
       // O motor e a música vivem no WebAudio/Audio (fora da cena) — o teardown
       // do renderer não os alcança; parar aqui evita som na janela do bfcache.
       try { if (engineOsc) engineOsc.stop(); } catch (e) {}
@@ -7723,6 +8451,9 @@ const world3DRuntimeSource = `import * as THREE from 'three';
       try { if (_audioCtx && _audioCtx.close) _audioCtx.close(); } catch (e) {}
       disposeWeather();
       disposeComposer();
+      // Os cantos da tela (fragmento de regras) e TODOS os listeners do mundo.
+      rules.dispose();
+      unlistenAll();
       if (stageEl && stageEl.parentNode) { try { stageEl.parentNode.removeChild(stageEl); } catch (e) {} }
       if (styleEl && styleEl.parentNode) { try { styleEl.parentNode.removeChild(styleEl); } catch (e) {} }
     } catch (e) {}
@@ -7740,9 +8471,6 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     UNIT_GEOS = null;
     speciesMats = null;
     collCells = Object.create(null);
-    _modelCache = null;
-    _modelPending = null;
-    _hdrPending = null;
     grassMesh = null;
     grassMat = null;
     heightTex = null;
@@ -7766,6 +8494,7 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     race = null;
     knockables = [];
     bowling = null;
+    strikeHooks = [];
     hornOsc1 = null;
     hornOsc2 = null;
     hornGain = null;
@@ -7793,11 +8522,16 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     lettersCount = 0;
     _letterTexCache = null;
     explosives = [];
+    explosiveHome = [];
     explosionHooks = [];
     boomSpheres = [];
     waterfalls = [];
     lamps = [];
     lampLights = null;
+    _lampOrder.length = 0;
+    _lampNight = null;
+    _lampColored = 0;
+    _lampSortT = -1;
     cityCfg = null;
     cityGraph = null;
     cityGroup = null;
@@ -7807,6 +8541,7 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     trafficMesh = null;
     semState = null;
     npcChoice = null;
+    _removedStart = [];
     doors = [];
     doorOverlayEl = null;
     doorOverlayOpen = false;
@@ -7836,12 +8571,18 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     ambienceKind = 'desligado';
     npcs = [];
     npcTalkHooks = Object.create(null);
+    npcWanderR = Object.create(null);
     npcSayQueues = Object.create(null);
     npcBubble = null;
     coinsIM = null;
     coinStates = null;
     coinsTaken = 0;
     collectHooks = [];
+    collectibles = [];
+    collectItemHooks = Object.create(null);
+    _collectKinds = null;
+    _rulesReplay = [];
+    _paused = false;
     coinHudEl = null;
     quests = [];
     questDoneHooks = Object.create(null);
@@ -7860,8 +8601,8 @@ const world3DRuntimeSource = `import * as THREE from 'three';
   }
 
   if (typeof window !== 'undefined' && window.addEventListener) {
-    window.addEventListener('pagehide', disposeAll);
-    window.addEventListener('beforeunload', disposeAll);
+    listen(window, 'pagehide', disposeAll);
+    listen(window, 'beforeunload', disposeAll);
   }
 
   // ---- API pública (1 método por bloco) ----
@@ -7871,7 +8612,7 @@ const world3DRuntimeSource = `import * as THREE from 'three';
       try {
         return fn.apply(null, arguments);
       } catch (e) {
-        warn('erro em "' + name + '": ' + e);
+        warn('o bloco "' + name + '" deu erro e foi pulado', e);
         return undefined;
       }
     };
@@ -7882,7 +8623,7 @@ const world3DRuntimeSource = `import * as THREE from 'three';
       warn('o projeto precisa de uma função de início');
       return;
     }
-    try { fn(); } catch (e) { warn('erro em "Ao iniciar": ' + e); }
+    try { fn(); } catch (e) { warn('erro em "Ao iniciar"', e); }
   }
 
   var api = {
@@ -7949,28 +8690,18 @@ const world3DRuntimeSource = `import * as THREE from 'three';
       var cx = num(x, 0);
       var cz = num(z, 0);
       // Alvo = a altura do RUÍDO no centro (sem outros mods → sem recursão).
-      terrainMods.push({ kind: 'flatten', x: cx, z: cz, r: clamp(num(r, 15), 1, 200), y: baseHeightAt(cx, cz) });
-      if (worldReady) {
-        buildTerrain();
-        if (grassMat) buildGrassHeightTex();
-      if (waterMat) buildWaterFoamTex();
-      }
+      pushTerrainMod({ kind: 'flatten', x: cx, z: cz, r: clamp(num(r, 15), 1, 200), y: baseHeightAt(cx, cz) });
     }),
     path: guard('path', function (x1, z1, x2, z2, w) {
       var ax = num(x1, 0);
       var az = num(z1, 0);
       var bx = num(x2, 0);
       var bz = num(z2, 0);
-      terrainMods.push({
+      pushTerrainMod({
         kind: 'path', x1: ax, z1: az, x2: bx, z2: bz,
         w: clamp(num(w, 5), 1, 40),
         y1: baseHeightAt(ax, az), y2: baseHeightAt(bx, bz)
       });
-      if (worldReady) {
-        buildTerrain();
-        if (grassMat) buildGrassHeightTex();
-      if (waterMat) buildWaterFoamTex();
-      }
     }),
     water: guard('water', function (y, color) {
       waterCfg = { y: num(y, 0), color: text(color, '#2b6cb0') };
@@ -8006,10 +8737,13 @@ const world3DRuntimeSource = `import * as THREE from 'three';
       carCfg.jump = clamp(num(jump, carCfg.jump), 0, 30);
     }),
     carPlace: guard('carPlace', function (x, z, deg) {
-      if (!carState) {
+      if (!carCfg) {
         warn('leve o carrinho DEPOIS de "Criar o carrinho dirigível"');
         return;
       }
+      // No Ao iniciar o carro ainda não foi montado (o start o monta): o estado nasce aqui, e o
+      // buildCar o reaproveita no lugar pedido (era ignorado em silêncio).
+      if (!carState) carState = newCarState();
       var lim = config.world / 2 - 2;
       carState.x = clamp(num(x, 0), -lim, lim);
       carState.z = clamp(num(z, 0), -lim, lim);
@@ -8019,13 +8753,6 @@ const world3DRuntimeSource = `import * as THREE from 'three';
       carState.vy = 0;
       carState.airborne = false;
       camSnap = true;
-    }),
-    carPos: guard('carPos', function (axis) {
-      if (!carState) return 0;
-      var a = text(axis, 'x');
-      if (a === 'y') return carState.y;
-      if (a === 'z') return carState.z;
-      return carState.x;
     }),
     carSpeed: guard('carSpeed', function () {
       return carState ? Math.abs(carState.speed) : 0;
@@ -8105,17 +8832,27 @@ const world3DRuntimeSource = `import * as THREE from 'three';
         warn('não conheço "' + t + '" — tem: arvores, pinheiros, pedras, flores, cogumelos, cactos, palmeiras');
         return;
       }
+      // No meio do jogo, o teto do "Pôr" vale ANTES de guardar a receita.
+      if (worldReady && placedCount >= MAX_PLACED) {
+        warnOnce('placed-max', 'muitos "Pôr 1" — o teto é ' + MAX_PLACED + ' (para florestas, use o Espalhar)');
+        return;
+      }
       var rec = {
-        kind: 'placeSpecies', thing: t, x: num(x, 0), z: num(z, 0), s: num(s, 1),
+        kind: 'placeSpecies', thing: t, x: num(x, 0), z: num(z, 0), s: num(s, 1), live: started,
         seed: natureRecipes.length, built: false
       };
       natureRecipes.push(rec);
       if (worldReady) buildRecipe(rec);
     }),
-    placeModel: guard('placeModel', function (name, x, z, s, deg) {
+    placeModel: guard('placeModel', function (name, x, z, s, deg, clip) {
+      if (worldReady && placedCount >= MAX_PLACED) {
+        warnOnce('placed-max', 'muitos "Pôr" — o teto é ' + MAX_PLACED);
+        return;
+      }
       var rec = {
         kind: 'placeModel', name: text(name, ''), x: num(x, 0), z: num(z, 0),
-        s: num(s, 1), deg: num(deg, 0), seed: natureRecipes.length, model: null, built: false
+        s: num(s, 3), deg: num(deg, 0), clip: text(clip, ''), live: started,
+        seed: natureRecipes.length, model: null, built: false
       };
       natureRecipes.push(rec);
       var hit = loadModel(rec.name, function (m) {
@@ -8210,39 +8947,24 @@ const world3DRuntimeSource = `import * as THREE from 'three';
       podiumOn = true;
     }),
     whisperCorner: guard('whisperCorner', function (x, z) {
-      if (!worldReady) {
-        decorRecipes.push({ kind: 'whisperCorner', x: num(x, 0), z: num(z, 0) });
-        return;
-      }
+      if (later({ kind: 'whisperCorner', x: num(x, 0), z: num(z, 0) })) return;
       buildWhisperCorner(x, z);
     }),
     flameNote: guard('flameNote', function (x, z, textStr) {
-      if (!worldReady) {
-        decorRecipes.push({ kind: 'flameNote', x: num(x, 0), z: num(z, 0), text: text(textStr, '...') });
-        return;
-      }
+      if (later({ kind: 'flameNote', x: num(x, 0), z: num(z, 0), text: text(textStr, '...') })) return;
       addFlame(x, z, textStr, false);
     }),
     // ⭐ R18 moedas & missões
     coinsScatter: guard('coinsScatter', function (n) {
-      if (!worldReady) {
-        decorRecipes.push({ kind: 'coinsScatter', n: num(n, 20) });
-        return;
-      }
+      if (later({ kind: 'coinsScatter', n: num(n, 20) })) return;
       coinsScatterBuild(n);
     }),
     coinsRing: guard('coinsRing', function (n, x, z, r) {
-      if (!worldReady) {
-        decorRecipes.push({ kind: 'coinsRing', n: num(n, 8), x: num(x, 0), z: num(z, 0), r: num(r, 6) });
-        return;
-      }
+      if (later({ kind: 'coinsRing', n: num(n, 8), x: num(x, 0), z: num(z, 0), r: num(r, 6) })) return;
       coinsRingBuild(n, x, z, r);
     }),
     coinsLine: guard('coinsLine', function (n, x1, z1, x2, z2) {
-      if (!worldReady) {
-        decorRecipes.push({ kind: 'coinsLine', n: num(n, 10), x1: num(x1, 0), z1: num(z1, 0), x2: num(x2, 0), z2: num(z2, 30) });
-        return;
-      }
+      if (later({ kind: 'coinsLine', n: num(n, 10), x1: num(x1, 0), z1: num(z1, 0), x2: num(x2, 0), z2: num(z2, 30) })) return;
       coinsLineBuild(n, x1, z1, x2, z2);
     }),
     onCollect: guard('onCollect', function (fn) {
@@ -8258,7 +8980,11 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     quest: guard('quest', function (name, desc) {
       var qn = text(name, 'missao');
       if (findQuest(qn)) return;
-      quests.push({ name: qn, desc: text(desc, qn), done: false });
+      if (quests.length >= QUESTS_MAX) {
+        warnOnce('quests-max', 'muitas missões (teto ' + QUESTS_MAX + ')');
+        return;
+      }
+      quests.push({ name: qn, desc: text(desc, qn), done: false, live: started });
       if (worldReady) refreshQuestHud();
       else decorRecipes.push({ kind: 'questHud' });
     }),
@@ -8281,10 +9007,7 @@ const world3DRuntimeSource = `import * as THREE from 'three';
         warn('não conheço o ícone "' + ic + '" — tem: alerta, estrela, alvo, moeda, nenhum');
         return;
       }
-      if (!worldReady) {
-        decorRecipes.push({ kind: 'marker', icon: ic, x: num(x, 0), z: num(z, 0) });
-        return;
-      }
+      if (later({ kind: 'marker', icon: ic, x: num(x, 0), z: num(z, 0) })) return;
       addMarker(ic, x, z);
     }),
     guideArrow: guard('guideArrow', function (x, z, on) {
@@ -8295,21 +9018,16 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     npc: guard('npc', function (name, x, z, color, hat) {
       var h6 = text(hat, 'nenhum');
       if (h6 !== 'nenhum' && !HAT_COLORS[h6]) h6 = 'nenhum';
-      if (!worldReady) {
-        decorRecipes.push({ kind: 'npc', name: text(name, 'amigo'), x: num(x, 0), z: num(z, 0), color: text(color, '#f97316'), hat: h6 });
-        return;
-      }
+      if (later({ kind: 'npc', name: text(name, 'amigo'), x: num(x, 0), z: num(z, 0), color: text(color, '#f97316'), hat: h6 })) return;
       addNpc(name, x, z, color, h6);
     }),
     npcWander: guard('npcWander', function (name, r) {
       var nm = text(name, 'amigo');
+      var rr = clamp(num(r, 10), 0, 60);
+      // Vale para quem já existe e para quem nascer depois com esse nome.
+      npcWanderR[nm] = rr;
       var npc = findNpc(nm);
-      if (npc) {
-        npc.home.r = clamp(num(r, 10), 0, 60);
-        return;
-      }
-      // Antes do start: guarda como receita (roda depois do addNpc).
-      decorRecipes.push({ kind: 'npcWander', name: nm, r: num(r, 10) });
+      if (npc) npc.home.r = rr;
     }),
     npcTalk: guard('npcTalk', function (name, fn) {
       if (typeof fn !== 'function') {
@@ -8384,17 +9102,11 @@ const world3DRuntimeSource = `import * as THREE from 'three';
       if (worldReady) buildBoat();
     }),
     bridge: guard('bridge', function (x1, z1, x2, z2, w) {
-      if (!worldReady) {
-        decorRecipes.push({ kind: 'bridge', x1: num(x1, 0), z1: num(z1, 0), x2: num(x2, 20), z2: num(z2, 20), w: num(w, 4) });
-        return;
-      }
+      if (later({ kind: 'bridge', x1: num(x1, 0), z1: num(z1, 0), x2: num(x2, 20), z2: num(z2, 20), w: num(w, 4) })) return;
       buildBridge(x1, z1, x2, z2, w);
     }),
     lighthouse: guard('lighthouse', function (x, z) {
-      if (!worldReady) {
-        decorRecipes.push({ kind: 'lighthouse', x: num(x, 0), z: num(z, 0) });
-        return;
-      }
+      if (later({ kind: 'lighthouse', x: num(x, 0), z: num(z, 0) })) return;
       buildLighthouse(x, z);
     }),
     ambience: guard('ambience', function (kind) {
@@ -8491,9 +9203,9 @@ const world3DRuntimeSource = `import * as THREE from 'three';
       }
       vehicleHooks[w3].push(fn);
     }),
-    personPos: guard('personPos', function (axis) {
-      var src = personCfg && !driving && personState ? personState : carState;
-      if (!src) return 0;
+    // Onde está QUEM a criança controla agora: a pé, no carrinho ou no barco.
+    playerPos: guard('playerPos', function (axis) {
+      var src = playerXZ();
       var a4 = text(axis, 'x');
       return a4 === 'y' ? src.y : a4 === 'z' ? src.z : src.x;
     }),
@@ -8502,17 +9214,11 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     }),
     // 🌿 R14 natureza acesa
     waterfall: guard('waterfall', function (x, z, h, deg) {
-      if (!worldReady) {
-        decorRecipes.push({ kind: 'waterfall', x: num(x, 0), z: num(z, 0), h: num(h, 8), deg: num(deg, 0) });
-        return;
-      }
+      if (later({ kind: 'waterfall', x: num(x, 0), z: num(z, 0), h: num(h, 8), deg: num(deg, 0) })) return;
       buildWaterfall(x, z, h, deg);
     }),
     lamp: guard('lamp', function (x, z) {
-      if (!worldReady) {
-        decorRecipes.push({ kind: 'lamp', x: num(x, 0), z: num(z, 0) });
-        return;
-      }
+      if (later({ kind: 'lamp', x: num(x, 0), z: num(z, 0) })) return;
       addLamp(x, z);
     }),
     // 🏙️ Cidade & trânsito
@@ -8533,10 +9239,7 @@ const world3DRuntimeSource = `import * as THREE from 'three';
       }
       cityCfg = { x: num(x, 0), z: num(z, 0), r: CITY_SIZES[sz], size: sz, mode: md };
       reserveCity();
-      if (!worldReady) {
-        decorRecipes.push({ kind: 'city' });
-        return;
-      }
+      if (later({ kind: 'city' })) return;
       // Ao vivo: o terreno re-aplaina agora e a cidade nasce na hora.
       buildTerrain();
       if (grassMat) buildGrassHeightTex();
@@ -8555,10 +9258,7 @@ const world3DRuntimeSource = `import * as THREE from 'three';
       terrainMods.push({ kind: 'flatten', x: cx, z: cz, r: districtSize * 0.72, y: baseHeightAt(cx, cz) });
       exclusions.push({ x: cx, z: cz, r: districtSize * 0.72 });
       var recipe = { kind: 'district', districtKind: districtKind, x: cx, z: cz, size: districtSize };
-      if (!worldReady) {
-        decorRecipes.push(recipe);
-        return;
-      }
+      if (later(recipe)) return;
       buildTerrain();
       if (grassMat) buildGrassHeightTex();
       if (waterMat) buildWaterFoamTex();
@@ -8573,10 +9273,7 @@ const world3DRuntimeSource = `import * as THREE from 'three';
         size: clamp(num(size, 80), 20, 240), width: clamp(num(width, 6), 2, 18)
       };
       reserveRoadGrid(rec);
-      if (!worldReady) {
-        decorRecipes.push(rec);
-        return;
-      }
+      if (later(rec)) return;
       buildTerrain();
       if (grassMat) buildGrassHeightTex();
       if (waterMat) buildWaterFoamTex();
@@ -8590,10 +9287,7 @@ const world3DRuntimeSource = `import * as THREE from 'three';
         x1: num(x1, -30), z1: num(z1, 15), x2: num(x2, 30), z2: num(z2, 15),
         style: houseStyle
       };
-      if (!worldReady) {
-        decorRecipes.push(rec);
-        return;
-      }
+      if (later(rec)) return;
       buildHouseRow(rec);
     }),
     quality: guard('quality', function (mode) {
@@ -8619,34 +9313,22 @@ const world3DRuntimeSource = `import * as THREE from 'three';
         k = 'milho';
       }
       var rec = { kind: 'crops', n: num(n, 4), kindName: k, x: num(x, 0), z: num(z, 20) };
-      if (!worldReady) {
-        decorRecipes.push(rec);
-        return;
-      }
+      if (later(rec)) return;
       buildCrops(rec);
     }),
     barn: guard('barn', function (x, z, deg) {
       var rec = { kind: 'barn', x: num(x, 0), z: num(z, 0), deg: num(deg, 0) };
-      if (!worldReady) {
-        decorRecipes.push(rec);
-        return;
-      }
+      if (later(rec)) return;
       buildBarn(rec);
     }),
     windmill: guard('windmill', function (x, z) {
       var rec = { kind: 'windmill', x: num(x, 0), z: num(z, 0) };
-      if (!worldReady) {
-        decorRecipes.push(rec);
-        return;
-      }
+      if (later(rec)) return;
       buildWindmill(rec);
     }),
     fence: guard('fence', function (x1, z1, x2, z2) {
       var rec = { kind: 'fence', x1: num(x1, -8), z1: num(z1, 0), x2: num(x2, 8), z2: num(z2, 0) };
-      if (!worldReady) {
-        decorRecipes.push(rec);
-        return;
-      }
+      if (later(rec)) return;
       buildFence(rec);
     }),
     animals: guard('animals', function (n, kindName, x, z, r) {
@@ -8656,39 +9338,25 @@ const world3DRuntimeSource = `import * as THREE from 'three';
         k = 'galinhas';
       }
       var rec = { kind: 'animals', n: num(n, 4), kindName: k, x: num(x, 0), z: num(z, 0), r: num(r, 8) };
-      if (!worldReady) {
-        decorRecipes.push(rec);
-        return;
-      }
+      if (later(rec)) return;
       buildAnimals(rec);
     }),
     crater: guard('crater', function (x, z, r) {
       var cr = clamp(num(r, 6), 2, 30);
-      terrainMods.push({
+      pushTerrainMod({
         kind: 'crater',
         x: num(x, 10), z: num(z, 10), r: cr,
         depth: 1 + cr * 0.16, rim: 0.4 + cr * 0.06
       });
-      if (worldReady) {
-        buildTerrain();
-        if (grassMat) buildGrassHeightTex();
-        if (waterMat) buildWaterFoamTex();
-      }
     }),
     flag: guard('flag', function (x, z, color) {
       var rec = { kind: 'flag', x: num(x, 0), z: num(z, 0), color: text(color, '#ef4444') };
-      if (!worldReady) {
-        decorRecipes.push(rec);
-        return;
-      }
+      if (later(rec)) return;
       buildFlag(rec);
     }),
     rocket: guard('rocket', function (x, z) {
       var rec = { kind: 'rocket', x: num(x, 0), z: num(z, 0) };
-      if (!worldReady) {
-        decorRecipes.push(rec);
-        return;
-      }
+      if (later(rec)) return;
       buildRocket(rec);
     }),
     door: guard('door', function (x, z, deg, title, body, image) {
@@ -8697,10 +9365,7 @@ const world3DRuntimeSource = `import * as THREE from 'three';
         x: num(x, 0), z: num(z, 8), deg: num(deg, 0),
         title: text(title, ''), body: text(body, ''), image: text(image, '')
       };
-      if (!worldReady) {
-        decorRecipes.push(rec);
-        return;
-      }
+      if (later(rec)) return;
       buildDoor(rec);
     }),
     traffic: guard('traffic', function (n, mode) {
@@ -8714,10 +9379,7 @@ const world3DRuntimeSource = `import * as THREE from 'three';
         md = 'semaforos';
       }
       trafficCfg = { n: Math.round(clamp(num(n, 6), 1, 12)), sem: md === 'semaforos' };
-      if (!worldReady) {
-        decorRecipes.push({ kind: 'traffic' });
-        return;
-      }
+      if (later({ kind: 'traffic' })) return;
       buildTraffic();
     }),
     stringLights: guard('stringLights', function (x1, z1, x2, z2) {
@@ -8736,17 +9398,11 @@ const world3DRuntimeSource = `import * as THREE from 'three';
         warn('não conheço "' + fa + '" — tem: pouca, media, muita');
         return;
       }
-      if (!worldReady) {
-        decorRecipes.push({ kind: 'fireflies', amount: fa });
-        return;
-      }
+      if (later({ kind: 'fireflies', amount: fa })) return;
       buildFireflies(fa);
     }),
     campfire: guard('campfire', function (x, z) {
-      if (!worldReady) {
-        decorRecipes.push({ kind: 'campfire', x: num(x, 0), z: num(z, 0) });
-        return;
-      }
+      if (later({ kind: 'campfire', x: num(x, 0), z: num(z, 0) })) return;
       addCampfire(x, z);
     }),
     // 🎳 R13 bagunça física
@@ -8756,31 +9412,19 @@ const world3DRuntimeSource = `import * as THREE from 'three';
         warn('não conheço "' + t2 + '" — tem: tijolo, banco, cerca, lanterna, cone');
         return;
       }
-      if (!worldReady) {
-        decorRecipes.push({ kind: 'pushPlace', thing: t2, x: num(x, 0), z: num(z, 0) });
-        return;
-      }
+      if (later({ kind: 'pushPlace', thing: t2, x: num(x, 0), z: num(z, 0) })) return;
       addPushable(t2, x, z);
     }),
     pushScatter: guard('pushScatter', function (n, x, z, r) {
-      if (!worldReady) {
-        decorRecipes.push({ kind: 'pushScatter', n: num(n, 8), x: num(x, 0), z: num(z, 0), r: num(r, 10) });
-        return;
-      }
+      if (later({ kind: 'pushScatter', n: num(n, 8), x: num(x, 0), z: num(z, 0), r: num(r, 10) })) return;
       buildPushScatter(num(n, 8), num(x, 0), num(z, 0), num(r, 10));
     }),
     letters: guard('letters', function (word, x, z, s) {
-      if (!worldReady) {
-        decorRecipes.push({ kind: 'letters', word: text(word, 'OI'), x: num(x, 0), z: num(z, 0), s: num(s, 1) });
-        return;
-      }
+      if (later({ kind: 'letters', word: text(word, 'OI'), x: num(x, 0), z: num(z, 0), s: num(s, 1) })) return;
       addLetters(word, x, z, s);
     }),
     explosive: guard('explosive', function (x, z) {
-      if (!worldReady) {
-        decorRecipes.push({ kind: 'explosive', x: num(x, 0), z: num(z, 0) });
-        return;
-      }
+      if (later({ kind: 'explosive', x: num(x, 0), z: num(z, 0) })) return;
       addExplosive(x, z);
     }),
     onExplosion: guard('onExplosion', function (fn) {
@@ -8889,10 +9533,90 @@ const world3DRuntimeSource = `import * as THREE from 'three';
       musicName = null;
     }),
 
-    // ⏱️ Jogo & tela
-    hud: guard('hud', function (txt, corner) {
-      setHud(corner, txt);
+    // 🏆 Na tela
+
+    // 🏆 Lote 10: coletáveis, tirar do mundo e mochila
+    collectible: guard('collectible', function (n, kind, name, x, z, r) {
+      var item = COLLECT_COLORS[text(kind, '')] ? text(kind, '') : 'estrela';
+      var rec = { kind: 'collectible', item: item, n: num(n, 5), name: text(name, 'estrela'), x: num(x, 0), z: num(z, 0), r: num(r, 20) };
+      if (later(rec)) return;
+      addCollectibles(rec, started);
     }),
+    onCollectItem: guard('onCollectItem', function (name, fn) {
+      if (typeof fn !== 'function') {
+        warn('"Quando o jogador pegar um …" precisa de blocos de fazer dentro');
+        return;
+      }
+      var key = text(name, 'estrela');
+      (collectItemHooks[key] || (collectItemHooks[key] = [])).push(fn);
+    }),
+    removeNamed: guard('removeNamed', function (name) {
+      if (later({ kind: 'removeNamed', name: text(name, '') })) return;
+      removeNamed(name);
+    }),
+    inventoryClear: guard('inventoryClear', function () {
+      inventoryLoad();
+      inventoryData = Object.create(null);
+      inventorySave();
+    }),
+    // 🧊 Lote 10: Molda no personagem, nos amigos e no carro
+    personModel: guard('personModel', function (name, height) {
+      var cfg = { name: text(name, ''), size: clamp(num(height, 1.7), 0.2, 20), hit: null };
+      modelCfg.person = cfg;
+      loadBodyModel(cfg, function () { if (modelCfg.person === cfg && personCfg) buildPerson(); });
+    }),
+    npcModel: guard('npcModel', function (name, npcName, height) {
+      var who = text(npcName, 'amigo');
+      var cfg = { name: text(name, ''), size: clamp(num(height, 1.7), 0.2, 20), hit: null };
+      modelCfg.npc[who] = cfg;
+      loadBodyModel(cfg, function () {
+        var npc = findNpc(who);
+        if (npc && modelCfg.npc[who] === cfg) rebuildNpcBody(npc);
+      });
+    }),
+    carModel: guard('carModel', function (name, length) {
+      var cfg = { name: text(name, ''), size: clamp(num(length, 4), 0.5, 30), hit: null };
+      modelCfg.car = cfg;
+      loadBodyModel(cfg, function () { if (modelCfg.car === cfg && carCfg) buildCar(); });
+    }),
+    modelAnim: guard('modelAnim', function (who, name, state, clip) {
+      var st = text(state, 'parado');
+      if (st !== 'parado' && st !== 'andando' && st !== 'correndo' && st !== 'pulando') {
+        warn('não conheço o momento "' + st + '" — tem: parado, andando, correndo, pulando');
+        return;
+      }
+      if (text(who, 'personagem') === 'amigo') {
+        var nm = text(name, 'amigo');
+        (animMap.amigo[nm] || (animMap.amigo[nm] = Object.create(null)))[st] = text(clip, '');
+      } else {
+        animMap.personagem[st] = text(clip, '');
+      }
+    }),
+
+    // 🏆 Regras de jogo (fragmento compartilhado game3dRules): a vida é do jogador.
+    hudText: replayable('hudText', function (corner, value) { setHud(corner, value); }),
+    addScore: replayable('addScore', function (n) { rules.addScore(n); }),
+    score: guard('score', function () { return rules.score(); }),
+    setLife: replayable('setLife', function (a, b) { rules.setLife(lifeToken, lifeValue(a, b)); }),
+    hurt: replayable('hurt', function (a, b) { rules.hurt(lifeToken, lifeValue(a, b)); }),
+    heal: replayable('heal', function (a, b) { rules.heal(lifeToken, lifeValue(a, b)); }),
+    lifeOf: guard('lifeOf', function () { return rules.lifeOf(lifeToken); }),
+    onLifeOver: guard('onLifeOver', function (a, b) {
+      rules.onLifeOver(lifeToken, typeof a === 'function' ? a : b);
+    }),
+    setScreenText: guard('setScreenText', function (kind, title, body, button) {
+      rules.setScreenText(kind, title, body, button);
+    }),
+    endGame: guard('endGame', function (result) { rules.endGame(result); }),
+    restart: guard('restart', function () { rules.restart(); }),
+    afterSeconds: replayable('afterSeconds', function (secs, fn) { rules.afterSeconds(secs, fn); }),
+    startTimer: replayable('startTimer', function (secs) { rules.startTimer(secs); }),
+    stopTimer: replayable('stopTimer', function () { rules.stopTimer(); }),
+    timeLeft: guard('timeLeft', function () { return rules.timeLeft(); }),
+    onTimerEnd: guard('onTimerEnd', function (fn) { rules.onTimerEnd(fn); }),
+    randomBetween: guard('randomBetween', function (a, b) { return rules.randomBetween(a, b); }),
+    randomChance: guard('randomChance', function (p) { return rules.randomChance(p); }),
+    cameraShake: guard('cameraShake', function (strength, secs) { rules.cameraShake(strength, secs); }),
     say: guard('say', function (txt, secs) {
       showSay(txt, secs);
     }),
@@ -8916,7 +9640,7 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     }),
     onZone: guard('onZone', function (name, fn) {
       if (typeof fn !== 'function') {
-        warn('"Quando o carrinho entrar na área" precisa de blocos de fazer dentro');
+        warn('"Quando o jogador entrar na área" precisa de blocos de fazer dentro');
         return;
       }
       var key = text(name, '');
@@ -8980,8 +9704,7 @@ const world3DRuntimeSource = `import * as THREE from 'three';
         warn('"Quando derrubar todos os pinos" precisa de blocos de fazer dentro');
         return;
       }
-      if (!bowling) bowling = { x: 0, z: 0, pins: [], strikeHooks: [] };
-      bowling.strikeHooks.push(fn);
+      strikeHooks.push(fn);
     }),
     pinsDown: guard('pinsDown', function () {
       if (!bowling) return 0;
@@ -9006,10 +9729,6 @@ const world3DRuntimeSource = `import * as THREE from 'three';
       }
       camMode = m;
       camSnap = true;
-    }),
-    cameraShake: guard('cameraShake', function (force, secs) {
-      _shakeAmp = clamp(num(force, 0.5), 0, 5);
-      _shakeT = Math.max(_shakeT, clamp(num(secs, 0.3), 0.05, 5));
     }),
 
     onUpdate: guard('onUpdate', function (fn) {
@@ -9042,7 +9761,11 @@ const world3DRuntimeSource = `import * as THREE from 'three';
 `
 
 export const world3DRuntime = compactOfficialRuntimeSource(
-  withThreePostProcessingRuntime(
-    world3DRuntimeSource.replace('  /*__SZ_DATA_URL_RUNTIME__*/', dataUrlToBufferRuntimeSource),
+  withThreeRenderBudgetRuntime(
+    withThreePostProcessingRuntime(
+      withThreeModelsRuntime(withGameRules3DRuntime(world3DRuntimeSource)),
+    ),
   ),
+  // Sem crase no runtime composto: a indentação sai do payload sem mudar texto nenhum.
+  { trimIndent: true },
 )

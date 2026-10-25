@@ -1,4 +1,10 @@
 import { TEXT_SPRITE_EVENT_TYPES } from '../official-extensions/game-2d/textIR'
+import { G3K_GAMEPLAY_DEFERRED_TYPES } from '../official-extensions/game-3d-advanced/gameplayIR'
+import {
+  G3K_MODEL_DEFERRED_TYPES,
+  gameKit3DModelItemName,
+} from '../official-extensions/game-3d-advanced/modelIR'
+import { GAME_RULES_DEFERRED_TYPES, gameRulesItemName } from '../official-extensions/game3dRules/ir'
 import type { JSStatement } from './schema'
 
 export type ProgrammingBodyTiming = 'immediate' | 'deferred' | 'invocable'
@@ -96,6 +102,8 @@ const CALLBACK_BODY_EXECUTION: ReadonlyMap<string, CallbackBodyExecution> = new 
 
     // Jogo 3D: o Kit Plataforma REGISTRA o aviso; o corpo roda depois.
     'g3d:onStage',
+    // Regras de jogo 3D: os "Quando…" e o "Depois de N s" registram; o corpo roda depois.
+    ...GAME_RULES_DEFERRED_TYPES,
 
     // Jogo 2D: eventos e raízes contínuas registram; varreduras chamam agora.
     'g2d:onStart',
@@ -149,10 +157,10 @@ const CALLBACK_BODY_EXECUTION: ReadonlyMap<string, CallbackBodyExecution> = new 
 
     // Jogo 3D e Jogo 3D avançado.
     'g3d:animate',
-    'g3d:everyFrames',
     'g3d:everySeconds',
     'g3k:onUpdate',
-    'g3k:onTimerEnd',
+    ...G3K_MODEL_DEFERRED_TYPES,
+    ...G3K_GAMEPLAY_DEFERRED_TYPES,
     'g3k:onOverlap',
     'g3k:onEnterEntityState',
     'g3k:onEntityStateUpdate',
@@ -174,6 +182,7 @@ const CALLBACK_BODY_EXECUTION: ReadonlyMap<string, CallbackBodyExecution> = new 
     'w3d:onHorn',
     'w3d:onAchievement',
     'w3d:onCollect',
+    'w3d:onCollectItem',
     'w3d:onQuestDone',
     'w3d:npcTalk',
     'w3d:onVehicle',
@@ -193,7 +202,6 @@ const CALLBACK_BODY_EXECUTION: ReadonlyMap<string, CallbackBodyExecution> = new 
     'g2d:onSpriteGroupOverlap',
     'g2d:onEnemyShotHit',
     'g2d:onEnemyBeamHit',
-    'g3d:forEachInSwarm',
     'g3d:forEachInGroup',
     'g3d:forEachHit',
     'g3d:pruneOffscreen',
@@ -272,6 +280,11 @@ function localVariablesForChild(
   path: readonly (string | number)[],
 ): string[] {
   const first = path[0]
+  // O "chamando de ⟨item⟩" do "Quando … encostar em algum do grupo".
+  const ruleItem = gameRulesItemName(statement)
+  if (ruleItem) return first === 'body' ? [ruleItem] : []
+  const animItem = gameKit3DModelItemName(statement)
+  if (animItem) return first === 'body' ? [animItem] : []
   switch (statement.type) {
     case 'gk:sceneEvent':
     case 'gk:sceneEach':
@@ -341,7 +354,6 @@ function localVariablesForChild(
     case 'g2d:onEnemyShotHit':
     case 'g2d:onEnemyBeamHit':
       return first === 'body' ? [statement.itemName] : []
-    case 'g3d:forEachInSwarm':
     case 'g3d:forEachInGroup':
     case 'g3d:forEachHit':
     case 'g3d:pruneOffscreen':

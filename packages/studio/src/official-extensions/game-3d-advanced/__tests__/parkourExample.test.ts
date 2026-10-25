@@ -23,10 +23,11 @@ import { collectTypes, stripIds } from './testUtils'
  */
 
 const SOURCE = `
-SZGameKit3D.setup({ width: 1280, height: 720, world: 60, sky: "#0b1026", ground: "#1e293b" });
+SZGameKit3D.setup({ width: 1280, height: 720, world: 60, sky: "#0b1026", ground: "#9a3412" });
 SZGameKit3D.setEffects({ shadows: true, bloom: true, strength: 1.1, vignette: true });
-SZGameKit3D.setScreenText("menu", "Parkour do Vulcão", "Suba a rampa, pegue carona no elevador e junte as 3 gemas. O trampolim te joga longe!", "Escalar");
+SZGameKit3D.setScreenText("inicio", "Parkour do Vulcão", "Suba a rampa, pegue carona no elevador e junte as 3 gemas. O trampolim te joga longe! O chão é lava: não pise nele.", "Escalar");
 SZGameKit3D.setScreenText("vitoria", "Você pegou todas!", "Que parkour!", "Escalar de novo");
+SZGameKit3D.setScreenText("fim", "Caiu na lava!", "Pule de pedra em pedra sem pisar no chão.", "Tentar de novo");
 SZGameKit3D.defineMold("heroi", { health: 1, speed: 0 }, function () {
   SZGameKit3D.part({ shape: "box", color: "#38bdf8", w: 0.9, h: 1.1, d: 0.9, x: 0, y: 0.55, z: 0 });
   SZGameKit3D.part({ shape: "sphere", color: "#e0f2fe", w: 0.7, h: 0.7, d: 0.7, x: 0, y: 1.3, z: 0 });
@@ -97,13 +98,13 @@ SZGameKit3D.onOverlap("gema", function (zona, quem) {
 });
 SZGameKit3D.onEntityStateUpdate("heroi", "parado", function (ela, dt) {
   SZGameKit3D.platformerKeys(ela, 8, 11);
-  if (SZGameKit3D.posOf(ela, "y") < -12) {
-    SZGameKit3D.setState("menu");
+  if (SZGameKit3D.onGround(ela) && SZGameKit3D.posOf(ela, "y") < 0.2) {
+    SZGameKit3D.endGame("perdeu");
   }
 });
 SZGameKit3D.onUpdate(function (dt) {
-  SZGameKit3D.setHud("top-left", "Gemas: " + gemas + "/3");
-  SZGameKit3D.setHud("top-right", "WASD anda, espaço pula");
+  SZGameKit3D.hudText("top-left", "Gemas: " + gemas + "/3");
+  SZGameKit3D.hudText("top-right", "WASD anda, espaço pula");
 });
 SZGameKit3D.start();
 `.trim()

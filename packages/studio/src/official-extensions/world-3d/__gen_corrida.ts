@@ -20,7 +20,7 @@ SZWorld3D.scatter(60, "pedras");
 SZWorld3D.car({ style: "corrida", color: "#f59e0b" });
 SZWorld3D.carBoost(2);
 SZWorld3D.engineSound("ligado");
-SZWorld3D.totemText(0, 8, "Corrida do Por do Sol", "Passe pelos checkpoints na ordem e feche a volta!");
+SZWorld3D.totemText(0, 8, "Corrida do Pôr do Sol", "Passe pelos checkpoints na ordem e feche a volta!");
 SZWorld3D.raceCreate(0, 0, 0, 2);
 SZWorld3D.raceCheckpoint(60, 40, 0);
 SZWorld3D.raceCheckpoint(40, 0, 90);
@@ -35,7 +35,7 @@ SZWorld3D.raceOnFinish(function () {
   SZWorld3D.cameraShake(0.7, 0.5);
 });
 SZWorld3D.onUpdate(function (dt) {
-  SZWorld3D.hud("Recorde: " + Math.round(SZWorld3D.raceBest()) + "s", "baixo-direita");
+  SZWorld3D.hudText("bottom-right", "Recorde: " + Math.round(SZWorld3D.raceBest()) + "s");
 });
 `.trim()
 

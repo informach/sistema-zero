@@ -9,7 +9,7 @@ import { collectTypes, stripIds } from '../game-3d-advanced/exampleSourceUtils'
  * examples.ts. O drift test guarda o resultado importando o SOURCE daqui.
  *
  * O FPS do SimonDev (Quick_FPS1) no degrau mais simples, 100% genéricos: câmera
- * em PRIMEIRA PESSOA (fpsCamera + fpsControls) numa ARENA aberta. Os aliens
+ * em PRIMEIRA PESSOA (câmera em 1ª pessoa + fpsControls) numa ARENA aberta. Os aliens
  * nascem na borda em ONDAS e avançam (moveTowards). Você mira com o mouse e
  * atira no que estiver na mira (aimAhead) segurando o espaço para CARREGAR: com
  * carga cheia o tiro vira um estouro que limpa os aliens por perto. A MUNIÇÃO é
@@ -26,7 +26,7 @@ SZGame3D.setPosition(chao, 0, -1, 0);
 SZGame3D.setSolid(chao);
 const jogador = SZGame3D.createBox(cena, { size: 1, color: "#22d3ee" });
 SZGame3D.setPosition(jogador, 0, 0, 0);
-SZGame3D.body(jogador, -0.02);
+SZGame3D.body(jogador, 72);
 const muroNorte = SZGame3D.createBlock(cena, { width: 34, height: 3, depth: 1, color: "#6d28d9" });
 SZGame3D.setPosition(muroNorte, 0, 1, -16.5);
 SZGame3D.setSolid(muroNorte);
@@ -39,11 +39,11 @@ SZGame3D.setSolid(muroOeste);
 const muroLeste = SZGame3D.createBlock(cena, { width: 1, height: 3, depth: 34, color: "#6d28d9" });
 SZGame3D.setPosition(muroLeste, 16.5, 1, 0);
 SZGame3D.setSolid(muroLeste);
-SZGame3D.fpsCamera(cena, jogador);
+SZGame3D.cameraMode(cena, "primeira-pessoa", jogador);
 const moldeAlien = SZGame3D.createBox(cena, { size: 1, color: "#4ade80" });
 SZGame3D.setMaterial(moldeAlien, "glow");
 SZGame3D.setVisible(moldeAlien, "hide");
-const cacas = SZGame3D.createSwarm(cena);
+const cacas = SZGame3D.createGroup();
 let vida = 3;
 let pontos = 0;
 let municao = 6;
@@ -52,12 +52,12 @@ let recargaMunicao = 70;
 let recargaDano = 0;
 let rodando = true;
 function recomecar() {
-  SZGame3D.forEachInSwarm(cacas, (item) => {
-    SZGame3D.removeFromSwarm(cacas, item);
+  SZGame3D.forEachInGroup(cacas, (item) => {
+    SZGame3D.removeFromGroup(cacas, item);
   });
-  SZGame3D.spawnInSwarm(cacas, moldeAlien, -8, 0, -8);
-  SZGame3D.spawnInSwarm(cacas, moldeAlien, 9, 0, -7);
-  SZGame3D.spawnInSwarm(cacas, moldeAlien, -6, 0, 9);
+  SZGame3D.spawnCopy(cacas, moldeAlien, -8, 0, -8);
+  SZGame3D.spawnCopy(cacas, moldeAlien, 9, 0, -7);
+  SZGame3D.spawnCopy(cacas, moldeAlien, -6, 0, 9);
   SZGame3D.setPosition(jogador, 0, 0, 0);
   SZGame3D.setRotation(jogador, 0, 0, 0);
   vida = 3;
@@ -78,7 +78,7 @@ document.getElementById("retry")?.addEventListener("click", (event) => {
 });
 SZGame3D.animate(cena, () => {
   if (rodando) {
-    SZGame3D.fpsControls(jogador, cena, 0.08);
+    SZGame3D.fpsControls(jogador, cena, 4.8);
     if (recargaDano > 0) {
       recargaDano = recargaDano - 1;
     }
@@ -100,17 +100,17 @@ SZGame3D.animate(cena, () => {
       if (carga > 0 && municao >= 1) {
         const alvo = SZGame3D.aimAhead(cena, jogador, 45);
         if (alvo) {
-          SZGame3D.forEachInSwarm(cacas, (item) => {
+          SZGame3D.forEachInGroup(cacas, (item) => {
             if (item === alvo) {
-              SZGame3D.removeFromSwarm(cacas, item);
+              SZGame3D.removeFromGroup(cacas, item);
               pontos = pontos + 1;
             }
           });
         }
         if (carga >= 0.7) {
-          SZGame3D.forEachInSwarm(cacas, (item) => {
+          SZGame3D.forEachInGroup(cacas, (item) => {
             if (SZGame3D.isNear(jogador, item, 4)) {
-              SZGame3D.removeFromSwarm(cacas, item);
+              SZGame3D.removeFromGroup(cacas, item);
               pontos = pontos + 1;
             }
           });
@@ -131,8 +131,8 @@ SZGame3D.animate(cena, () => {
         carga = 0;
       }
     }
-    SZGame3D.forEachInSwarm(cacas, (item) => {
-      SZGame3D.moveTowards(item, SZGame3D.getPos(jogador, "x"), SZGame3D.getPos(item, "y"), SZGame3D.getPos(jogador, "z"), 0.018);
+    SZGame3D.forEachInGroup(cacas, (item) => {
+      SZGame3D.moveTowards(item, SZGame3D.getPos(jogador, "x"), SZGame3D.getPos(item, "y"), SZGame3D.getPos(jogador, "z"), 1.09);
       if (SZGame3D.collides(jogador, item)) {
         if (recargaDano === 0) {
           vida = vida - 1;
@@ -152,9 +152,9 @@ SZGame3D.animate(cena, () => {
 });
 SZGame3D.everySecondsLoop(1.6, () => {
   if (rodando) {
-    if (SZGame3D.countSwarm(cacas) < 6) {
+    if (SZGame3D.countGroup(cacas) < 6) {
       const angulo = Math.random() * 6.283;
-      SZGame3D.spawnInSwarm(cacas, moldeAlien, Math.cos(angulo) * 13, 0, Math.sin(angulo) * 13);
+      SZGame3D.spawnCopy(cacas, moldeAlien, Math.cos(angulo) * 13, 0, Math.sin(angulo) * 13);
     }
   }
 });

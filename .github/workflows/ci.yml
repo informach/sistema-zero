@@ -223,7 +223,9 @@ jobs:
 
       - name: Verificar IR gerada dos exemplos 3D
         working-directory: packages/studio
-        run: bun run check:game-3d-examples
+        run: |
+          bun run check:game-3d-examples
+          bun run check:world-3d-examples
 
       - name: Verificar fontes, regras e exports dos kits de jogos
         working-directory: packages/studio

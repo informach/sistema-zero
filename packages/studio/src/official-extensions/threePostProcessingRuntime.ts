@@ -6,7 +6,12 @@
  * mantém essas strings literais e auditáveis, enquanto esta composição garante que
  * shaders, render targets, passes e descarte evoluam juntos entre as extensões 3D.
  * O host fornece `THREE`, `config`, `composer`, `composerFailed`, `renderer`,
- * `scene`, `camera` e `warn`; o trecho injetado possui todo o restante do composer.
+ * `scene`, `camera`, `warn` e `renderBudget` (o orçamento de `threeRenderBudgetRuntime.ts`,
+ * ou `null`); o trecho injetado possui todo o restante do composer.
+ *
+ * Os alvos seguem o tamanho REAL do desenho (`renderer.getDrawingBufferSize`, conferido a cada
+ * quadro sem alocar; `config.w/h` só quando o renderer não informa) e o alvo da cena ganha MSAA
+ * (`samples`) quando o orçamento libera (nível alta em WebGL2).
  */
 export const THREE_POST_PROCESSING_MARKER = '/*__SZ_THREE_POST_PROCESSING_RUNTIME__*/'
 
@@ -171,6 +176,39 @@ const THREE_POST_PROCESSING_SOURCE = `
     });
   }
 
+  // Tamanho do desenho: o buffer real do renderer (resolução pelo canvas na tela), reaproveitado.
+  var composerSize = { x: 1, y: 1 };
+  var composerSizeVec = null;
+  function readComposerSize() {
+    var w = config.w;
+    var h = config.h;
+    if (renderer && renderer.getDrawingBufferSize && THREE.Vector2) {
+      if (!composerSizeVec) composerSizeVec = new THREE.Vector2();
+      renderer.getDrawingBufferSize(composerSizeVec);
+      if (composerSizeVec.x > 0 && composerSizeVec.y > 0) {
+        w = composerSizeVec.x;
+        h = composerSizeVec.y;
+      }
+    }
+    composerSize.x = Math.max(1, Math.round(w));
+    composerSize.y = Math.max(1, Math.round(h));
+    return composerSize;
+  }
+
+  function resizeComposer(c, w, h) {
+    c.w = w;
+    c.h = h;
+    c.rtScene.setSize(w, h);
+    c.rtGrade.setSize(w, h);
+    for (var i = 1; i <= BLOOM_LEVELS; i++) {
+      var div = Math.pow(2, i);
+      var lw = Math.max(1, Math.round(w / div));
+      var lh = Math.max(1, Math.round(h / div));
+      c.down[i].setSize(lw, lh);
+      c.up[i].setSize(lw, lh);
+    }
+  }
+
   function quadMaterial(fsh, uniforms) {
     return new THREE.ShaderMaterial({
       uniforms: uniforms,
@@ -190,21 +228,27 @@ const THREE_POST_PROCESSING_SOURCE = `
       var quadMesh = new THREE.Mesh(quadGeo, null);
       quadScene.add(quadMesh);
 
-      // Alvo da cena com DEPTH (o mundo 3D precisa dele); os da cascata não.
-      var rtScene = new THREE.WebGLRenderTarget(config.w, config.h, {
+      var size = readComposerSize();
+      var cw = size.x;
+      var ch = size.y;
+      // Alvo da cena com DEPTH (o mundo 3D precisa dele); os da cascata não. MSAA só aqui.
+      var sceneOpts = {
         type: THREE.HalfFloatType,
         magFilter: THREE.LinearFilter,
         minFilter: THREE.LinearFilter,
         depthBuffer: true,
         stencilBuffer: false
-      });
-      var rtGrade = makeTarget(config.w, config.h);
+      };
+      var samples = renderBudget && renderBudget.msaa ? renderBudget.msaa() : 0;
+      if (samples > 0) sceneOpts.samples = samples;
+      var rtScene = new THREE.WebGLRenderTarget(cw, ch, sceneOpts);
+      var rtGrade = makeTarget(cw, ch);
       var down = [null];
       var up = [null];
       for (var i = 1; i <= BLOOM_LEVELS; i++) {
         var scaleDiv = Math.pow(2, i);
-        down.push(makeTarget(config.w / scaleDiv, config.h / scaleDiv));
-        up.push(makeTarget(config.w / scaleDiv, config.h / scaleDiv));
+        down.push(makeTarget(cw / scaleDiv, ch / scaleDiv));
+        up.push(makeTarget(cw / scaleDiv, ch / scaleDiv));
       }
 
       var matCopy = quadMaterial(COPY_FSH, { tDiffuse: { value: null } });
@@ -235,6 +279,9 @@ const THREE_POST_PROCESSING_SOURCE = `
         quadCam: quadCam,
         quadGeo: quadGeo,
         quadMesh: quadMesh,
+        w: cw,
+        h: ch,
+        samples: samples,
         rtScene: rtScene,
         rtGrade: rtGrade,
         down: down,
@@ -260,6 +307,8 @@ const THREE_POST_PROCESSING_SOURCE = `
 
   function renderWithComposer() {
     var c = composer;
+    var size = readComposerSize();
+    if (size.x !== c.w || size.y !== c.h) resizeComposer(c, size.x, size.y);
     // Cena em LINEAR (o ACES roda no passe final).
     if (THREE.NoToneMapping != null) renderer.toneMapping = THREE.NoToneMapping;
     renderer.setRenderTarget(c.rtScene);
@@ -324,5 +373,5 @@ export function withThreePostProcessingRuntime(source: string): string {
   if (source.indexOf(THREE_POST_PROCESSING_MARKER, firstMarker + 1) !== -1) {
     throw new Error('Runtime 3D com marcador de pós-processamento duplicado')
   }
-  return source.replace(THREE_POST_PROCESSING_MARKER, THREE_POST_PROCESSING_SOURCE)
+  return source.replace(THREE_POST_PROCESSING_MARKER, () => THREE_POST_PROCESSING_SOURCE)
 }

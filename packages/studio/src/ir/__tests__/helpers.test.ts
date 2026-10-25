@@ -113,3 +113,45 @@ describe('countAdvancedJS', () => {
     expect(countAdvancedJS(stmts)).toBe(5)
   })
 })
+
+describe('countAdvancedJS — os corpos do 3D (onGame, afterSeconds, forEachHit, onStage)', () => {
+  const raw = (): JSStatement => ({ type: 'rawJS', code: 'x();', advanced: true })
+  const cases: [string, JSStatement][] = []
+  for (const prefix of ['g3d', 'w3d', 'g3k'] as const) {
+    cases.push([
+      `${prefix}:onGame`,
+      { type: `${prefix}:onGame`, event: 'tempo-acabou', body: [raw()] } as unknown as JSStatement,
+    ])
+    cases.push([
+      `${prefix}:afterSeconds`,
+      {
+        type: `${prefix}:afterSeconds`,
+        secs: { type: 'num', value: 1 },
+        body: [raw()],
+      } as unknown as JSStatement,
+    ])
+  }
+  cases.push([
+    'g3d:forEachHit',
+    {
+      type: 'g3d:forEachHit',
+      objVar: 'heroi',
+      side: 'pes',
+      body: [raw()],
+    } as unknown as JSStatement,
+  ])
+  cases.push([
+    'g3d:onStage',
+    {
+      type: 'g3d:onStage',
+      worldVar: 'jogo',
+      event: 'pegar-moeda',
+      body: [raw()],
+    } as unknown as JSStatement,
+  ])
+  for (const [name, statement] of cases) {
+    it(`conta o rawJS de dentro de ${name}`, () => {
+      expect(countAdvancedJS([statement])).toBe(1)
+    })
+  }
+})

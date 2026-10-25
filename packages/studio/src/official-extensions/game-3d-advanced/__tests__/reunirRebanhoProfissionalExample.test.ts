@@ -46,6 +46,12 @@ describe('Exemplo Reunir o Rebanho Profissional — drift contra o parser real',
     )
   })
 
+  it('clicar num bichinho mostra o estado dele (mouse sobre + o estado de)', () => {
+    const types = collectTypes(behaviorStatements(reunirRebanhoProfissionalExample.ir))
+    for (const t of ['g3k:mousePressed', 'g3k:pointerOver', 'g3k:stateOf'])
+      expect(types.has(t)).toBe(true)
+  })
+
   it('nenhum texto visível usa travessão', () => {
     expect(reunirRebanhoProfissionalExample.name).toBe('Reunir o Rebanho Profissional')
     expect(reunirRebanhoProfissionalExample.name).not.toContain('—')
@@ -121,16 +127,16 @@ describe('Exemplo Reunir o Rebanho Profissional — drift contra o parser real',
     const statements = behaviorStatements(reunirRebanhoProfissionalExample.ir)
     const types = collectTypes(statements)
     for (const t of [
-      'g3k:setScreenText',
+      'g3k:screenText',
       'g3k:setState',
       'g3k:countAlive',
-      'g3k:hudText',
+      'g3k:cornerText',
       'g3k:onUpdate',
     ]) {
       expect(types.has(t)).toBe(true)
     }
     const raw = JSON.stringify(statements)
-    for (const screen of ['"menu"', '"vitoria"', '"fim"']) {
+    for (const screen of ['"inicio"', '"vitoria"', '"fim"']) {
       expect(raw).toContain(screen)
     }
     expect(raw).toContain('"pontos"')
@@ -139,7 +145,7 @@ describe('Exemplo Reunir o Rebanho Profissional — drift contra o parser real',
 
   it('⭐ o acaso passa TODO pelo sorteio do kit (a semente não pode mentir)', () => {
     const types = collectTypes(behaviorStatements(reunirRebanhoProfissionalExample.ir))
-    expect(types.has('g3k:randomBetween')).toBe(true)
+    expect(types.has('g3k:random')).toBe(true)
     expect(types.has('g3k:setSeed')).toBe(true)
     expect(types.has('randomInt')).toBe(false)
     expect(types.has('randomFloat')).toBe(false)

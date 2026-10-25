@@ -33,7 +33,6 @@ export const GAME_KIT_3D_PERSISTENT_COMMANDS = [
   { blockType: 'sz_g3k_set_ambient', statementType: 'g3k:setAmbient' },
   { blockType: 'sz_g3k_set_fog', statementType: 'g3k:setFog' },
   { blockType: 'sz_g3k_start_spawner', statementType: 'g3k:startSpawner' },
-  { blockType: 'sz_g3k_start_timer', statementType: 'g3k:startTimer' },
 ] as const
 
 export const GAME_2D_PERSISTENT_COMMANDS = [

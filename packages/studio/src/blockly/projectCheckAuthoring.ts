@@ -28,7 +28,7 @@ import { isBlockTypeAllowed, MAX_BLOCK_LEVEL, normalizeBlockLevel } from '../cor
 import { isHTMLBlockChildAllowed } from '../html/catalog'
 import { sceneNamesAsText } from '../official-extensions/scene-2d/catalog'
 import { SERVER_BLOCK_CATALOG, type ServerBlockCatalogEntry } from './blockCatalog'
-import { effectiveBodyExecution } from './blockContracts'
+import { contextsGrantedByBodyContext, effectiveBodyExecution } from './blockContracts'
 import type { StatementContext } from './blocks/types'
 import { codeIdeasPass, projectCodeIdeas } from './codeIdeas'
 
@@ -291,7 +291,7 @@ export function projectCheckInputs(block: ServerBlockCatalogEntry) {
 function bodyContexts(block: ServerBlockCatalogEntry): Set<StatementContext> {
   const contexts = new Set<StatementContext>(['statement'])
   const { contract } = block
-  if (contract.bodyContext) contexts.add(contract.bodyContext)
+  for (const granted of contextsGrantedByBodyContext(contract.bodyContext)) contexts.add(granted)
   if (contract.placement?.role === 'event') contexts.add('event-body')
   if (contract.userGesture) contexts.add('user-gesture-body')
   if (contract.placement?.role === 'loop') contexts.add('loop-body')

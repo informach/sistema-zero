@@ -44,9 +44,10 @@ export function inspectSceneStudioCompatibility({ stats, byteLength }: SceneGlbC
     empty,
     exceeded,
     costs,
-    // Pintura animada É movimento, e é movimento que só o Jogo 3D Avançado toca. Contar
-    // só os clipes dizia "esta cópia não contém movimentos" para uma cópia cuja tinta anda,
-    // dois parágrafos depois de o destino ter dito o contrário.
+    // Pintura animada É movimento, e os três jogos 3D do Estúdio (Jogo 3D, Mundo 3D e
+    // Jogo 3D Avançado) a tocam pelo carregador comum de modelos. Contar só os clipes dizia
+    // "esta cópia não contém movimentos" para uma cópia cuja tinta anda, dois parágrafos
+    // depois de o destino ter dito o contrário.
     animated: stats.clips > 0 || stats.animatedPaints > 0,
     skinned: stats.bones > 0,
   }

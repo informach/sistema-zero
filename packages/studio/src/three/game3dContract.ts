@@ -1,6 +1,13 @@
+import {
+  GAME_RULES_CORNERS,
+  GAME_RULES_RESULTS,
+  GAME_RULES_SCREENS,
+} from '../official-extensions/game3dRules/ir'
+import { THREE_KEY_OPTIONS } from '../official-extensions/threeKeys'
+
 type DropdownOption = readonly [label: string, value: string]
 
-export type Game3DSymbolKind = 'world' | 'object' | 'group' | 'swarm'
+export type Game3DSymbolKind = 'world' | 'object' | 'group'
 export type Game3DObjectScope = 'any-three-object' | 'game-world-object'
 
 export interface Game3DReferenceField {
@@ -32,7 +39,6 @@ export const GAME3D_SEMANTIC_DECLARATION_FIELDS: Readonly<Record<string, Game3DR
   'g3d:createModel': { field: 'varName', kind: 'object' },
   'g3d:createModelFile': { field: 'varName', kind: 'object' },
   'g3d:createGroup': { field: 'varName', kind: 'group' },
-  'g3d:createSwarm': { field: 'varName', kind: 'swarm' },
 }
 
 const world = (field = 'worldVar'): Game3DReferenceField => ({ field, kind: 'world' })
@@ -43,7 +49,6 @@ const gameObject = (field = 'objVar'): Game3DReferenceField => ({
   objectScope: 'game-world-object',
 })
 const group = (field = 'groupVar'): Game3DReferenceField => ({ field, kind: 'group' })
-const swarm = (field = 'swarmVar'): Game3DReferenceField => ({ field, kind: 'swarm' })
 
 /** Expressões que devolvem um objeto pertencente a um mundo do Jogo 3D. */
 export const GAME3D_OBJECT_EXPRESSION_TYPES: ReadonlySet<string> = new Set([
@@ -68,7 +73,9 @@ export const GAME3D_SEMANTIC_REFERENCE_FIELDS: Readonly<
   'g3d:applyGravity': [object(), object('groundVar')],
   'g3d:controlWithKeys': [object()],
   'g3d:setScale': [object()],
-  'g3d:cameraFollow': [world(), gameObject()],
+  // O objeto pode ficar em branco nos modos que não seguem ninguém (vazio não é conferido).
+  'g3d:cameraMode': [world(), gameObject()],
+  'g3d:cameraDistance': [world()],
   'g3d:spawnEnemy': [world(), group()],
   'g3d:updateGroup': [group(), gameObject('groundVar')],
   'g3d:updateGroupNoGravity': [group()],
@@ -76,7 +83,6 @@ export const GAME3D_SEMANTIC_REFERENCE_FIELDS: Readonly<
   'g3d:forEachInGroup': [group()],
   'g3d:removeFromGroup': [group(), object('objVar')],
   'g3d:clearGroup': [group()],
-  'g3d:stop': [world()],
   'g3d:createCrosser': [world()],
   'g3d:crosserMove': [object()],
   'g3d:crosserStep': [gameObject(), world()],
@@ -85,12 +91,9 @@ export const GAME3D_SEMANTIC_REFERENCE_FIELDS: Readonly<
   'g3d:addRow': [world()],
   'g3d:generateRows': [world()],
   'g3d:moveTraffic': [world()],
-  'g3d:isometricCamera': [world(), gameObject('followVar')],
   'g3d:gridStep': [object()],
   'g3d:gridMove': [object()],
   'g3d:moveAcross': [group()],
-  'g3d:touchesBox': [object(), group()],
-  'g3d:topCamera': [world(), gameObject('followVar')],
   'g3d:moveInCircle': [object()],
   'g3d:createRaceTrack': [world()],
   'g3d:createRaceCar': [world()],
@@ -133,9 +136,16 @@ export const GAME3D_SEMANTIC_REFERENCE_FIELDS: Readonly<
     { field: 'worldVar', kind: 'world', optional: true },
     { field: 'objVar', kind: 'object', optional: true },
   ],
-  'g3d:fpsCamera': [world(), gameObject()],
-  'g3d:orbitCamera': [world(), gameObject()],
-  'g3d:thirdPersonCamera': [world(), gameObject()],
+  // Regras de jogo (game3dRules): vida, piscar e os "Quando…" falam de objetos do jogo.
+  'g3d:life': [gameObject()],
+  'g3d:blink': [object()],
+  'g3d:onGame': [
+    { field: 'objVar', kind: 'object', objectScope: 'game-world-object', optional: true },
+    { field: 'groupVar', kind: 'group', optional: true },
+  ],
+  'g3d:gameValue': [
+    { field: 'objVar', kind: 'object', objectScope: 'game-world-object', optional: true },
+  ],
   'g3d:cameraLookAt': [world(), gameObject()],
   'g3d:setFOV': [world()],
   'g3d:createCylinder': [world()],
@@ -149,6 +159,8 @@ export const GAME3D_SEMANTIC_REFERENCE_FIELDS: Readonly<
   'g3d:setOpacity': [object()],
   'g3d:setMaterial': [object()],
   'g3d:setTexture': [object()],
+  'g3d:modelAnimation': [gameObject()],
+  'g3d:animationDone': [gameObject()],
   'g3d:setVisible': [object()],
   'g3d:removeObject': [world(), object()],
   'g3d:addToModel': [gameObject('modelVar'), gameObject('partVar')],
@@ -158,13 +170,9 @@ export const GAME3D_SEMANTIC_REFERENCE_FIELDS: Readonly<
   'g3d:setFog': [world()],
   'g3d:setSky': [world()],
   'g3d:setShadows': [world()],
-  'g3d:createSwarm': [world()],
-  'g3d:spawnInSwarm': [swarm(), gameObject('originalVar')],
-  'g3d:countSwarm': [swarm()],
+  'g3d:spawnCopy': [group(), gameObject('originalVar')],
   'g3d:countGroup': [group()],
-  'g3d:forEachInSwarm': [swarm()],
-  'g3d:removeFromSwarm': [swarm(), gameObject('itemVar')],
-  'g3d:pruneSwarm': [swarm()],
+  'g3d:pruneArea': [group()],
   'g3d:collides': [object('aVar'), object('bVar')],
   'g3d:hitAny': [object(), group()],
   'g3d:crosserHit': [gameObject(), world()],
@@ -196,19 +204,12 @@ export const GAME3D_SEMANTIC_REFERENCE_FIELDS: Readonly<
  * perder o que a criança escreveu.
  */
 export const GAME3D_DROPDOWN_OPTIONS = {
-  key: [
-    ['W (frente)', 'KeyW'],
-    ['S (trás)', 'KeyS'],
-    ['A (esquerda)', 'KeyA'],
-    ['D (direita)', 'KeyD'],
-    ['espaço (pular)', 'Space'],
-    ['F (soltar fogo)', 'KeyF'],
-    ['shift (correr)', 'ShiftLeft'],
-    ['↑ seta para cima', 'ArrowUp'],
-    ['↓ seta para baixo', 'ArrowDown'],
-    ['← seta esquerda', 'ArrowLeft'],
-    ['→ seta direita', 'ArrowRight'],
-  ],
+  // As teclas são COMUNS às extensões 3D (`official-extensions/threeKeys.ts`).
+  key: THREE_KEY_OPTIONS,
+  // As regras de jogo (game3dRules): os cantos da tela, as telas e o resultado do fim.
+  corner: GAME_RULES_CORNERS,
+  screen: GAME_RULES_SCREENS,
+  gameResult: GAME_RULES_RESULTS,
   gridDirection: [
     ['frente', 'forward'],
     ['trás', 'backward'],
@@ -240,6 +241,20 @@ export const GAME3D_DROPDOWN_OPTIONS = {
     ['↔ X', 'x'],
     ['↗ Z', 'z'],
   ],
+  // "Tocar a animação … em … ⟨repetindo/uma vez⟩" (modelo do Molda).
+  animationMode: [
+    ['repetindo', 'repetir'],
+    ['uma vez', 'uma-vez'],
+  ],
+  // Os seis jeitos de a câmera mostrar o jogo, num bloco só ("Câmera da cena: …").
+  cameraMode: [
+    ['segue de trás', 'tras'],
+    ['segue de longe', 'longe'],
+    ['vê de cima', 'cima'],
+    ['isométrica', 'isometrica'],
+    ['1ª pessoa', 'primeira-pessoa'],
+    ['gira em volta', 'em-volta'],
+  ],
   propertyAxis: [
     ['x', 'x'],
     ['y', 'y'],
@@ -255,6 +270,11 @@ export const GAME3D_DROPDOWN_OPTIONS = {
     ['vidro', 'glass'],
     ['brilhante', 'glow'],
     ['só linhas', 'wireframe'],
+  ],
+  // Luz pontual: sem sombra é o padrão (a sombra dela redesenha a cena 6 vezes).
+  pointShadow: [
+    ['sem sombra', 'sem-sombra'],
+    ['com sombra', 'com-sombra'],
   ],
   shadows: [
     ['Ligar', 'on'],
@@ -355,6 +375,8 @@ const GAME3D_DROPDOWN_ARGUMENTS: Readonly<
   raceControl: { 1: 'raceMode' },
   slideBetween: { 1: 'axis' },
   spin: { 1: 'rotationAxis' },
+  cameraMode: { 1: 'cameraMode' },
+  playAnimation: { 2: 'animationMode' },
   getPos: { 1: 'propertyAxis' },
   getRot: { 1: 'propertyAxis' },
   getVel: { 1: 'propertyAxis' },
@@ -362,8 +384,13 @@ const GAME3D_DROPDOWN_ARGUMENTS: Readonly<
   setVisible: { 1: 'visibility' },
   setMaterial: { 1: 'material' },
   setShadows: { 1: 'shadows' },
-  pruneSwarm: { 1: 'axis' },
+  addPointLight: { 6: 'pointShadow' },
+  pruneArea: { 1: 'axis' },
   playEffect: { 0: 'effect' },
+  onKey: { 0: 'key' },
+  hudText: { 0: 'corner' },
+  setScreenText: { 0: 'screen' },
+  endGame: { 0: 'gameResult' },
 }
 
 export function game3dDropdownArgumentIsValid(
@@ -393,7 +420,8 @@ export const GAME3D_CALL_ARITIES: Readonly<Record<string, number | readonly numb
   applyGravity: 2,
   jump: 2,
   controlWithKeys: 2,
-  cameraFollow: 2,
+  cameraMode: 3,
+  cameraDistance: 3,
   keyDown: 1,
   collides: 2,
   hitAny: 2,
@@ -406,17 +434,37 @@ export const GAME3D_CALL_ARITIES: Readonly<Record<string, number | readonly numb
   countGroup: 1,
   removeFromGroup: 2,
   clearGroup: 1,
-  everyFrames: 2,
-  everySeconds: 2,
-  everyFramesLoop: 2,
+  // `everySeconds(chave, s)` (o relógio cru do runtime) não tem bloco, parser nem gerador: fora
+  // da tabela, a Ponte o guarda como código avançado em vez de cair num caso que não existe.
   everySecondsLoop: 2,
-  stop: 1,
-  isometricCamera: 2,
+  // Regras de jogo (game3dRules/codec.ts lê e escreve estas formas).
+  hudText: 2,
+  addScore: 1,
+  score: 0,
+  setLife: 2,
+  hurt: 2,
+  heal: 2,
+  lifeOf: 1,
+  onLifeOver: 2,
+  setScreenText: 4,
+  endGame: 1,
+  restart: 0,
+  afterSeconds: 2,
+  startTimer: 1,
+  timeLeft: 0,
+  stopTimer: 0,
+  onTimerEnd: 1,
+  randomBetween: 2,
+  randomChance: 1,
+  cameraShake: 2,
+  blink: 2,
+  onKey: 2,
+  onClickObject: 2,
+  onTouchGroup: 3,
   gridPosition: 3,
   gridStep: 1,
   gridMove: 2,
   moveAcross: 4,
-  touchesBox: 2,
   createCrossingScene: 1,
   createCrosser: 2,
   crosserMove: 2,
@@ -427,7 +475,6 @@ export const GAME3D_CALL_ARITIES: Readonly<Record<string, number | readonly numb
   moveTraffic: 1,
   crosserHit: 2,
   crosserRow: 1,
-  topCamera: 2,
   moveInCircle: 3,
   distanceTo: 2,
   isNear: 3,
@@ -500,9 +547,6 @@ export const GAME3D_CALL_ARITIES: Readonly<Record<string, number | readonly numb
   heroIs: 2,
   fpsControls: 3,
   resolveCollision: 2,
-  fpsCamera: 2,
-  orbitCamera: 2,
-  thirdPersonCamera: 4,
   cameraLookAt: 2,
   setFOV: 2,
   createCylinder: 2,
@@ -516,21 +560,22 @@ export const GAME3D_CALL_ARITIES: Readonly<Record<string, number | readonly numb
   setColor: 2,
   setOpacity: 2,
   setMaterial: 2,
-  setTexture: 2,
+  // O 3º (repetições) só aparece quando não é 1.
+  setTexture: [2, 3],
+  playAnimation: 3,
+  stopAnimation: 1,
+  animationDone: 1,
   setVisible: 2,
   remove: 2,
   addAmbientLight: 3,
   addSunLight: 3,
-  addPointLight: 6,
+  // O 7º ("com-sombra") só aparece quando a luz pontual projeta sombra.
+  addPointLight: [6, 7],
   setFog: 4,
   setSky: 3,
   setShadows: 2,
-  createSwarm: 1,
-  spawnInSwarm: 5,
-  countSwarm: 1,
-  forEachInSwarm: 2,
-  removeFromSwarm: 2,
-  pruneSwarm: 4,
+  spawnCopy: 5,
+  pruneArea: 4,
   playNote: 2,
   playEffect: 1,
   loadSound: 2,
@@ -559,7 +604,6 @@ export const GAME3D_START_ONLY_STATEMENT_TYPES: ReadonlySet<string> = new Set([
   'g3d:createSphere',
   'g3d:createBlock',
   'g3d:createGroup',
-  'g3d:isometricCamera',
   'g3d:createCrossingScene',
   'g3d:createCrosser',
   'g3d:addRow',
@@ -567,7 +611,6 @@ export const GAME3D_START_ONLY_STATEMENT_TYPES: ReadonlySet<string> = new Set([
   'g3d:createRaceScene',
   'g3d:createRaceTrack',
   'g3d:createRaceCar',
-  'g3d:topCamera',
   'g3d:createStackScene',
   'g3d:createStackTower',
   'g3d:body',
@@ -579,7 +622,6 @@ export const GAME3D_START_ONLY_STATEMENT_TYPES: ReadonlySet<string> = new Set([
   // como os outros quatro kits de gênero.
   'g3d:createPlatformScene',
   'g3d:createHero',
-  'g3d:onStage',
   'g3d:createCylinder',
   'g3d:createCone',
   'g3d:createPlane',
@@ -600,14 +642,21 @@ export const GAME3D_START_ONLY_STATEMENT_TYPES: ReadonlySet<string> = new Set([
   'g3d:setFog',
   'g3d:setSky',
   'g3d:setShadows',
-  'g3d:createSwarm',
   // Carregar o som prepara o arquivo, não toca nada — logo não precisa de gesto
   // do usuário e é o único bloco de áudio que pertence ao "Ao iniciar".
   'g3d:loadSound',
+  // A tela de início/fim/vitória é escrita UMA vez: a de início segura o jogo até o botão.
+  'g3d:screenText',
 ])
 
 /** Comandos sem efeito antes de um loop, evento ou função entrar em execução. */
-export const GAME3D_RUNNING_CONTEXT_STATEMENT_TYPES: ReadonlySet<string> = new Set(['g3d:stop'])
+export const GAME3D_RUNNING_CONTEXT_STATEMENT_TYPES: ReadonlySet<string> = new Set([
+  'g3d:gameOver',
+  'g3d:restart',
+  // As mesmas regras de jogo no Mundo 3D (game3dRules).
+  'w3d:gameOver',
+  'w3d:restart',
+])
 
 /** Comandos pontuais que precisam nascer de um evento, função ou método. */
 export const GAME3D_ACTION_CONTEXT_STATEMENT_TYPES: ReadonlySet<string> = new Set(['g3d:stackDrop'])

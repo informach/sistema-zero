@@ -33,17 +33,36 @@ function findMesh(
   return hit
 }
 
+/**
+ * O InstancedMesh do trânsito da cidade MÉDIA em (0, 0): `count` instâncias e a 1ª (a carroceria
+ * do carro 0, peça sem deslocamento) numa das duas faixas do anel (raio 23,56 ± 1,25). Só a
+ * contagem não basta: as casas e as cercas da cidade também são InstancedMesh, agrupadas por forma.
+ */
+function trafficMeshOf(
+  scene: RealTHREE.Scene | null,
+  count: number,
+): RealTHREE.InstancedMesh | null {
+  return findMesh(scene, (o) => {
+    const im = o as RealTHREE.InstancedMesh
+    if (!im.isInstancedMesh || im.count !== count) return false
+    const m = new (Object.getPrototypeOf(im.matrixWorld).constructor)() as RealTHREE.Matrix4
+    im.getMatrixAt(0, m)
+    const d = Math.hypot(m.elements[12] ?? 0, m.elements[14] ?? 0)
+    return Math.abs(Math.abs(d - 23.56) - 1.25) < 0.05
+  }) as RealTHREE.InstancedMesh | null
+}
+
 describe('Mundo 3D — playthrough (o mundo joga na bancada)', () => {
   it('dirige com W: a posição anda e a velocidade sobe', async () => {
     const { api, step } = await loadStartedWorld((a) => {
       a.car('passeio', '#ef4444')
     })
-    const z0 = api.carPos('z')
+    const z0 = api.playerPos('z')
     pressKey('w', 'KeyW')
     step(60)
     releaseKey('w', 'KeyW')
     expect(api.carSpeed()).toBeGreaterThan(1)
-    expect(Math.abs(api.carPos('z') - z0)).toBeGreaterThan(2)
+    expect(Math.abs(api.playerPos('z') - z0)).toBeGreaterThan(2)
   })
 
   it('buzina (H): dispara o "Quando buzinar" a cada apertada, não segurando', async () => {
@@ -183,10 +202,10 @@ describe('Mundo 3D — playthrough (o mundo joga na bancada)', () => {
     // de sucção é 9 m, então a puxada começa NO PRIMEIRO quadro (sem depender do
     // passeio aleatório por waypoints, que tornava o teste flaky).
     api.carPlace(20, 10, 0)
-    const x0 = api.carPos('x')
-    const z0 = api.carPos('z')
+    const x0 = api.playerPos('x')
+    const z0 = api.playerPos('z')
     step(60) // ~2 s sob sucção
-    const moved = Math.abs(api.carPos('x') - x0) + Math.abs(api.carPos('z') - z0)
+    const moved = Math.abs(api.playerPos('x') - x0) + Math.abs(api.playerPos('z') - z0)
     expect(moved).toBeGreaterThan(0.5)
   })
 
@@ -297,7 +316,7 @@ describe('Mundo 3D — playthrough (o mundo joga na bancada)', () => {
       const w = a as unknown as {
         person(c: string, h: string): void
         onVehicle(w: string, fn: () => void): void
-        personPos(a: string): number
+        playerPos(a: string): number
         isDriving(): boolean
         personPlace(x: number, z: number, d: number): void
       }
@@ -310,23 +329,23 @@ describe('Mundo 3D — playthrough (o mundo joga na bancada)', () => {
       })
     })
     const w2 = api as unknown as {
-      personPos(a: string): number
+      playerPos(a: string): number
       isDriving(): boolean
       personPlace(x: number, z: number, d: number): void
     }
     // Começa A PÉ ao lado do carrinho.
     expect(w2.isDriving()).toBe(false)
-    const x0 = w2.personPos('x')
-    const z0 = w2.personPos('z')
+    const x0 = w2.playerPos('x')
+    const z0 = w2.playerPos('z')
     pressKey('w', 'KeyW')
     step(45)
     releaseKey('w', 'KeyW')
-    const andou = Math.abs(w2.personPos('x') - x0) + Math.abs(w2.personPos('z') - z0)
+    const andou = Math.abs(w2.playerPos('x') - x0) + Math.abs(w2.playerPos('z') - z0)
     expect(andou).toBeGreaterThan(1)
     // E o CARRINHO ficou parado enquanto isso (teclado é do personagem).
     expect(api.carSpeed()).toBeLessThan(0.5)
     // Volta pra perto do carrinho e ENTRA com E.
-    w2.personPlace(api.carPos('x') + 1.5, api.carPos('z'), 0)
+    w2.personPlace(1.5, 0, 0) // o carrinho estacionado nasce na origem
     step(2)
     pressKey('e', 'KeyE')
     step(2)
@@ -334,11 +353,11 @@ describe('Mundo 3D — playthrough (o mundo joga na bancada)', () => {
     expect(w2.isDriving()).toBe(true)
     expect(entrou).toBe(1)
     // Dirigindo de verdade: W agora move o CARRO.
-    const cz0 = api.carPos('z')
+    const cz0 = api.playerPos('z')
     pressKey('w', 'KeyW')
     step(45)
     releaseKey('w', 'KeyW')
-    expect(Math.abs(api.carPos('z') - cz0)).toBeGreaterThan(1)
+    expect(Math.abs(api.playerPos('z') - cz0)).toBeGreaterThan(1)
     // E desce (longe de pontos).
     step(2)
     pressKey('e', 'KeyE')
@@ -489,11 +508,11 @@ describe('Mundo 3D — playthrough (o mundo joga na bancada)', () => {
 
   it('playthrough do exemplo "Meu Mundo": roda, dirige e não quebra', async () => {
     const { api, step } = await loadExampleWorld(MEU_MUNDO_SOURCE)
-    const z0 = api.carPos('z')
+    const z0 = api.playerPos('z')
     pressKey('w', 'KeyW')
     step(90)
     releaseKey('w', 'KeyW')
-    expect(Math.abs(api.carPos('z') - z0)).toBeGreaterThan(1)
+    expect(Math.abs(api.playerPos('z') - z0)).toBeGreaterThan(1)
   })
 
   it('R21: A PÉ e LONGE do carro, E fala com a amiga (não teleporta pro carrinho)', async () => {
@@ -547,16 +566,16 @@ describe('Mundo 3D — playthrough (o mundo joga na bancada)', () => {
         w.setup({ style, world: 160 })
         w.person('#3b82f6', 'capacete')
       })
-      const w2 = api as unknown as { personPos(a: string): number }
+      const w2 = api as unknown as { playerPos(a: string): number }
       step(3)
-      const y0 = w2.personPos('y')
+      const y0 = w2.playerPos('y')
       pressKey(' ', 'Space')
       step(2)
       releaseKey(' ', 'Space')
       let maxDy = 0
       for (let i = 0; i < 140; i++) {
         step(1)
-        const dy = w2.personPos('y') - y0
+        const dy = w2.playerPos('y') - y0
         if (dy > maxDy) maxDy = dy
       }
       window.dispatchEvent(new Event('pagehide'))
@@ -582,13 +601,17 @@ describe('Mundo 3D — playthrough (o mundo joga na bancada)', () => {
     expect(Math.abs(api.groundHeight(23.6, 0) - c)).toBeLessThan(0.25)
     expect(Math.abs(api.groundHeight(0, -23.6) - c)).toBeLessThan(0.25)
     expect(Math.abs(api.groundHeight(-16, 16) - c)).toBeLessThan(0.25)
-    // Casas/ruas/cercas instanciadas: a cena ganha VÁRIOS InstancedMesh.
+    // Casas/ruas/cercas instanciadas: as peças moram em InstancedMesh. Desde o lote 15 a cidade
+    // junta as peças por FORMA (caixa, telhado) com a cor por instância, então o que conta são as
+    // INSTÂNCIAS: na média, 12 casas x 5 peças (6 delas com telhado piramidal), 23 cercas-vivas e
+    // 56 faixas/tracejados.
     const scene = renderers[0]?.scene ?? null
-    let ims = 0
+    const counts: number[] = []
     scene?.traverse((o) => {
-      if ((o as RealTHREE.InstancedMesh).isInstancedMesh) ims++
+      const im = o as RealTHREE.InstancedMesh
+      if (im.isInstancedMesh) counts.push(im.count)
     })
-    expect(ims).toBeGreaterThan(8)
+    expect(counts.sort((a, b) => a - b)).toEqual([6, 56, 12 * 5 - 6 + 23])
   })
 
   it('R22: o varal de luzinhas ACENDE quando escurece', async () => {
@@ -661,11 +684,7 @@ describe('Mundo 3D — playthrough (o mundo joga na bancada)', () => {
     step(5)
     const scene = renderers[0]?.scene ?? null
     // O IM do trânsito: 4 carros × 4 peças = 16 instâncias.
-    let tm: RealTHREE.InstancedMesh | null = null
-    scene?.traverse((o) => {
-      const im = o as RealTHREE.InstancedMesh
-      if (!tm && im.isInstancedMesh && im.count === 16) tm = im
-    })
+    const tm = trafficMeshOf(scene, 16)
     expect(tm).not.toBeNull()
     const posOf = () => {
       const m = new (Object.getPrototypeOf(
@@ -705,11 +724,7 @@ describe('Mundo 3D — playthrough (o mundo joga na bancada)', () => {
     api.carPlace(24.81, 0, 0)
     step(5)
     const scene = renderers[0]?.scene ?? null
-    let tm: RealTHREE.InstancedMesh | null = null
-    scene?.traverse((o) => {
-      const im = o as RealTHREE.InstancedMesh
-      if (!tm && im.isInstancedMesh && im.count === 24) tm = im
-    })
+    const tm = trafficMeshOf(scene, 24)
     expect(tm).not.toBeNull()
     // Deixa o trânsito fluir bastante: alguém chega perto e SEGURA.
     step(1200)
@@ -718,8 +733,8 @@ describe('Mundo 3D — playthrough (o mundo joga na bancada)', () => {
     let nearest = Infinity
     for (let i = 0; i < 6; i++) {
       mesh.getMatrixAt(i * 4, m)
-      const dx = m.elements[12] - api.carPos('x')
-      const dz = m.elements[14] - api.carPos('z')
+      const dx = m.elements[12] - api.playerPos('x')
+      const dz = m.elements[14] - api.playerPos('z')
       const d = Math.sqrt(dx * dx + dz * dz)
       if (d < nearest) nearest = d
     }
@@ -927,7 +942,7 @@ describe('Mundo 3D — playthrough (o mundo joga na bancada)', () => {
     pressKey('w', 'KeyW')
     step(90)
     releaseKey('w', 'KeyW')
-    expect(api.carPos('z')).toBeLessThan(13.2)
+    expect(api.playerPos('z')).toBeLessThan(13.2)
   })
 
   // ---- Full review 2026-07-23: sistemas que ficaram presos ao carrinho ----
@@ -956,13 +971,13 @@ describe('Mundo 3D — playthrough (o mundo joga na bancada)', () => {
     const { api, renderers, step } = await loadStartedWorld((a) => {
       ;(a as unknown as { person(c: string, h: string): void }).person('#3b82f6', 'nenhum')
     })
-    const w2 = api as unknown as { personPos(a: string): number }
+    const w2 = api as unknown as { playerPos(a: string): number }
     pressKey('w', 'KeyW')
     step(100)
     releaseKey('w', 'KeyW')
     step(2)
-    const px = w2.personPos('x')
-    const pz = w2.personPos('z')
+    const px = w2.playerPos('x')
+    const pz = w2.playerPos('z')
     expect(Math.hypot(px, pz)).toBeGreaterThan(6)
     api.weather('neve')
     step(3)
@@ -992,7 +1007,7 @@ describe('Mundo 3D — playthrough (o mundo joga na bancada)', () => {
     const { api, renderers, step } = await loadStartedWorld((a) => {
       ;(a as unknown as { person(c: string, h: string): void }).person('#3b82f6', 'nenhum')
     })
-    const w2 = api as unknown as { personPos(a: string): number }
+    const w2 = api as unknown as { playerPos(a: string): number }
     const sun = findMesh(
       renderers[0]?.scene ?? null,
       (o) =>
@@ -1006,7 +1021,7 @@ describe('Mundo 3D — playthrough (o mundo joga na bancada)', () => {
     step(100)
     releaseKey('w', 'KeyW')
     step(2)
-    expect(Math.hypot(w2.personPos('x'), w2.personPos('z'))).toBeGreaterThan(6)
+    expect(Math.hypot(w2.playerPos('x'), w2.playerPos('z'))).toBeGreaterThan(6)
     // Com o bug (updateSun usa carState ausente), o sol fica parado; com o fix,
     // segue o jogador (posição = jogador + offset fixo).
     const moved = Math.hypot((sun?.position.x ?? 0) - sunX0, (sun?.position.z ?? 0) - sunZ0)
@@ -1033,7 +1048,7 @@ describe('Mundo 3D — playthrough (o mundo joga na bancada)', () => {
       personPlace(x: number, z: number, d: number): void
     }
     // Entra no carrinho (E vence pela prioridade 2 do "E: entrar").
-    w2.personPlace(api.carPos('x') + 1.5, api.carPos('z'), 0)
+    w2.personPlace(1.5, 0, 0) // o carrinho estacionado nasce na origem
     step(2)
     pressKey('e', 'KeyE')
     step(2)

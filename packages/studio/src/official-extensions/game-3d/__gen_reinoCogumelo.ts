@@ -73,7 +73,7 @@ SZGame3D.onStageEvent(jogo, "derrotar-o-chefe", () => {
   document.getElementById("aviso").textContent = "O castelo caiu!";
 });
 SZGame3D.animate(jogo, () => {
-  SZGame3D.classicPlatformer(heroi, jogo, 0.09, 0.22);
+  SZGame3D.classicPlatformer(heroi, jogo, 5.4, 13.2);
   SZGame3D.stageStep(jogo, heroi);
   SZGame3D.sideCamera(jogo, heroi);
   if (SZGame3D.keyPressed("KeyF")) {
