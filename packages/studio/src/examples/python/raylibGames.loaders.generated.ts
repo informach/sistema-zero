@@ -96,4 +96,33 @@ export const RAYLIB_GAME_LOADERS = {
       assets: raylibGameAssets('chuva-de-meteoros', CHUVA_DE_METEOROS_MEDIA),
     }
   },
+  'batalha-de-monstrinhos': async () => {
+    const [
+      { BATALHA_DE_MONSTRINHOS_SOURCES },
+      { BATALHA_DE_MONSTRINHOS_MEDIA },
+      { raylibGameAssets },
+    ] = await Promise.all([
+      import('./batalhaDeMonstrinhos.sources.generated'),
+      import('./batalhaDeMonstrinhos.media.generated'),
+      import('./raylibGameAssets'),
+    ])
+    return {
+      entrypoint: 'main.py',
+      files: BATALHA_DE_MONSTRINHOS_SOURCES,
+      assets: raylibGameAssets('batalha-de-monstrinhos', BATALHA_DE_MONSTRINHOS_MEDIA),
+    }
+  },
+  'aventura-do-heroi': async () => {
+    const [{ AVENTURA_DO_HEROI_SOURCES }, { AVENTURA_DO_HEROI_MEDIA }, { raylibGameAssets }] =
+      await Promise.all([
+        import('./aventuraDoHeroi.sources.generated'),
+        import('./aventuraDoHeroi.media.generated'),
+        import('./raylibGameAssets'),
+      ])
+    return {
+      entrypoint: 'main.py',
+      files: AVENTURA_DO_HEROI_SOURCES,
+      assets: raylibGameAssets('aventura-do-heroi', AVENTURA_DO_HEROI_MEDIA),
+    }
+  },
 } satisfies Record<RaylibGameKey, () => Promise<unknown>>

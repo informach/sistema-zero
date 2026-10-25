@@ -1,0 +1,34 @@
+[
+  {
+    "label": "velocidade",
+    "path": {
+      "body": 5,
+      "inputs": [
+        {
+          "name": "VALUE",
+          "index": 0
+        }
+      ]
+    },
+    "codecId": "sz_py_integer",
+    "field": "NUMBER",
+    "before": "170",
+    "after": "180"
+  },
+  {
+    "label": "vidas",
+    "path": {
+      "body": 6,
+      "inputs": [
+        {
+          "name": "VALUE",
+          "index": 0
+        }
+      ]
+    },
+    "codecId": "sz_py_integer",
+    "field": "NUMBER",
+    "before": "5",
+    "after": "6"
+  }
+]

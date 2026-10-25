@@ -243,6 +243,95 @@ export const RAYLIB_GAMES = [
     ],
     receipt: 'chuva-de-meteoros-r1.json.snapshot',
   },
+  {
+    key: 'batalha-de-monstrinhos',
+    stem: 'batalhaDeMonstrinhos',
+    name: 'Batalha de Monstrinhos',
+    emoji: '⚔️',
+    description:
+      'Uma batalha por turnos: escolha golpes, troque de monstrinho e use a vantagem dos elementos.',
+    genre: 'Batalha por turnos',
+    concepts: [
+      'Blocos',
+      'Ponte',
+      'Código',
+      'Dicionários',
+      'Funções',
+      'Cronômetro',
+      'Menus',
+      'Música',
+    ],
+    difficulty: 'advanced',
+    experience: 'game',
+    extension: '2d',
+    inspiration: 'Pokemon-style Battle',
+    howToPlay:
+      'As setas para cima e para baixo escolhem, Enter confirma e ESC volta. Atacar mostra os golpes, Trocar chama outro da equipe, Defender diminui o próximo golpe e Fugir acaba a batalha. Água vence fogo, fogo vence planta, planta vence água e raio vence água.',
+    ideas: [
+      'Mude o dano dos golpes em GOLPES.',
+      'Crie um monstrinho novo em MONSTROS (e desenhe ele no Pinta).',
+      'Acrescente uma vantagem nova em VANTAGENS.',
+    ],
+    sounds: [
+      { path: 'choque.wav', notes: [1319, 988, 1319, 988], noteMilliseconds: 40 },
+      { path: 'jato.wav', notes: [523, 659, 784], noteMilliseconds: 50 },
+      { path: 'chama.wav', notes: [196, 262, 330], noteMilliseconds: 60 },
+      { path: 'folha.wav', notes: [880, 784, 698], noteMilliseconds: 50 },
+      { path: 'arranhao.wav', notes: [1568, 1047], noteMilliseconds: 30 },
+      { path: 'cura.wav', notes: [523, 659, 784, 1047], noteMilliseconds: 70 },
+    ],
+    music: [
+      {
+        path: 'batalha.ogg',
+        notes: [330, 392, 440, 392, 330, 294, 330, 247, 330, 392, 494, 440, 392, 330, 294, 330],
+        noteMilliseconds: 170,
+      },
+    ],
+    receipt: 'batalha-de-monstrinhos-r1.json.snapshot',
+  },
+  {
+    key: 'aventura-do-heroi',
+    stem: 'aventuraDoHeroi',
+    name: 'Aventura do Herói',
+    emoji: '🗡️',
+    description:
+      'Explore a ilha com a espada: corte o mato, derrote as gosmas e não deixe os corações acabarem.',
+    genre: 'Aventura',
+    concepts: [
+      'Blocos',
+      'Ponte',
+      'Código',
+      'Câmera 2D',
+      'Mapa em texto',
+      'Classes',
+      'Ordem de desenho',
+      'Música',
+    ],
+    difficulty: 'advanced',
+    experience: 'game',
+    extension: '2d',
+    inspiration: 'Zelda-style Adventure',
+    howToPlay:
+      'As setas andam e o espaço balança a espada para onde o herói está olhando. As gosmas perseguem quem chega perto; cada encostão tira um coração. Derrote todas para limpar a ilha; Enter recomeça.',
+    ideas: [
+      'Desenhe uma ilha nova trocando as letras de MAPA.',
+      'Dê mais corações ao herói em VIDAS.',
+      'Faça as gosmas mais rápidas mudando o 70 em `Gosma.atualizar`.',
+    ],
+    sounds: [
+      { path: 'espada.wav', notes: [1175, 880], noteMilliseconds: 40 },
+      { path: 'acerto.wav', notes: [392, 262], noteMilliseconds: 60 },
+      { path: 'dano.wav', notes: [294, 220, 175], noteMilliseconds: 90 },
+    ],
+    music: [
+      {
+        path: 'aventura.ogg',
+        notes: [262, 330, 392, 523, 494, 392, 330, 294, 262, 330, 392, 440, 392, 330, 294, 262],
+        noteMilliseconds: 220,
+      },
+    ],
+    receipt: 'aventura-do-heroi-r1.json.snapshot',
+  },
 ] as const satisfies readonly RaylibGame[]
 
 export type RaylibGameKey = (typeof RAYLIB_GAMES)[number]['key']
