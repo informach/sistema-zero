@@ -9,7 +9,8 @@ COPY runtime/package.json ./package.json
 COPY runtime/package-lock.json ./package-lock.json
 RUN npm ci --ignore-scripts --no-audit --no-fund \
   && node node_modules/playwright-core/cli.js install --with-deps chromium --only-shell \
-  && npm cache clean --force
+  && npm cache clean --force \
+  && chmod -R a-w /opt/sz-runtime
 
 COPY runtime/pack-artifact.mjs ./
 COPY runtime/check-project.mjs ./
@@ -25,7 +26,7 @@ COPY runtime/portable-path.generated.mjs ./
 
 RUN mkdir -p /workspace/builds \
   && chown -R node:node /workspace \
-  && chmod -R a-w /opt/sz-runtime
+  && chmod a-w /opt/sz-runtime/*.mjs /opt/sz-runtime/*.json
 
 USER node
 WORKDIR /workspace
