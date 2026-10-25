@@ -78,6 +78,21 @@ with open('segundo.txt', 'w') as arquivo:
     arquivo.write('2')
 print('gravou', 1 / 0)
 `,
+  // Deleting and renaming what the game saved reaches the next run too.
+  pgzeroDeletesFiles: `import os
+from pathlib import Path
+
+rodada = int(Path('rodada.txt').read_text()) if os.path.exists('rodada.txt') else 0
+rodada = rodada + 1
+Path('rodada.txt').write_text(str(rodada))
+print('rodada', rodada, 'antes', sorted(nome for nome in os.listdir('.') if nome.endswith('.txt')))
+if rodada == 1:
+    Path('apagar.txt').write_text('x')
+    Path('velho.txt').write_text('y')
+if rodada == 2:
+    os.remove('apagar.txt')
+    Path('velho.txt').rename('novo.txt')
+`,
   // The engine's part of pygame, tone, and files the game saves for the next run.
   pgzeroSavesFiles: `import os
 from pathlib import Path

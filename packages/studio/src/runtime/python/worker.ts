@@ -35,13 +35,15 @@ const hasFailed = () => phase === 'failed'
 // A game may save every frame: the first save goes at once and the next ones wait, one per
 // file, for the next turn of this interval. The host keeps them (savedFiles.ts).
 const SAVED_FILE_INTERVAL_MS = 250
-const pendingSaved = new Map<string, Uint8Array<ArrayBuffer>>()
+// The newest state of each file: its bytes, or null when the program deleted it.
+const pendingSaved = new Map<string, Uint8Array<ArrayBuffer> | null>()
 let savedTimer: ReturnType<typeof setTimeout> | undefined
 function sendSaved() {
   for (const [path, bytes] of pendingSaved)
-    post({ type: 'saved-file', path, bytes } satisfies PythonWorkerEvent, {
-      transfer: [bytes.buffer],
-    })
+    post(
+      { type: 'saved-file', path, bytes } satisfies PythonWorkerEvent,
+      bytes ? { transfer: [bytes.buffer] } : {},
+    )
   pendingSaved.clear()
 }
 function savedTick() {
@@ -50,7 +52,7 @@ function savedTick() {
   sendSaved()
   savedTimer = setTimeout(savedTick, SAVED_FILE_INTERVAL_MS)
 }
-function queueSaved(path: string, bytes: Uint8Array<ArrayBuffer>) {
+function queueSaved(path: string, bytes: Uint8Array<ArrayBuffer> | null) {
   pendingSaved.set(path, bytes)
   if (savedTimer !== undefined) return
   sendSaved()

@@ -1,7 +1,7 @@
 import { StudioPythonActivityFeedbackSchema } from '@sistemazero/core/studio/python-activity'
 import { readPythonAudioRequest } from './audio/contract'
 import { PYTHON_CONSOLE_LIMITS, type PythonConsoleBatch, type PythonWorkerEvent } from './protocol'
-import { isPythonSavedFile } from './savedFiles'
+import { isPythonSavedFileChange } from './savedFiles'
 
 const record = (value: unknown): value is Record<string, unknown> =>
   value !== null && typeof value === 'object' && !Array.isArray(value)
@@ -28,11 +28,11 @@ export function readPythonWorkerEvent(raw: unknown): PythonWorkerEvent | undefin
     case 'saved-flushed':
       return { type: 'saved-flushed' }
     case 'saved-file': {
-      if (!isPythonSavedFile(raw.path, raw.bytes)) return
+      if (!isPythonSavedFileChange(raw.path, raw.bytes)) return
       return {
         type: 'saved-file',
         path: raw.path as string,
-        bytes: raw.bytes as Uint8Array<ArrayBuffer>,
+        bytes: raw.bytes as Uint8Array<ArrayBuffer> | null,
       }
     }
     case 'activity-result': {

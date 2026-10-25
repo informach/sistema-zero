@@ -24,6 +24,12 @@ export interface PythonSavedFile {
   bytes: Uint8Array<ArrayBuffer>
 }
 
+/** What the program did to a kept file: wrote it (its bytes) or deleted it (null). */
+export interface PythonSavedFileChange {
+  path: string
+  bytes: Uint8Array<ArrayBuffer> | null
+}
+
 export function isPythonSavedFilePath(path: unknown): path is string {
   return (
     typeof path === 'string' &&
@@ -31,6 +37,11 @@ export function isPythonSavedFilePath(path: unknown): path is string {
     path.length <= PYTHON_SAVED_FILE_LIMITS.pathChars &&
     isStudioPortablePath(path)
   )
+}
+
+/** A change the program may send: a saved file, or a deleted one (bytes null). */
+export function isPythonSavedFileChange(path: unknown, bytes: unknown): boolean {
+  return bytes === null ? isPythonSavedFilePath(path) : isPythonSavedFile(path, bytes)
 }
 
 export function isPythonSavedFile(path: unknown, bytes: unknown): boolean {
@@ -92,4 +103,15 @@ export function withPythonSavedFile(
   if (others.length + 1 > PYTHON_SAVED_FILE_LIMITS.files) return undefined
   if (total > PYTHON_SAVED_FILE_LIMITS.totalBytes) return undefined
   return { ...record, [key]: toBase64(file.bytes) }
+}
+
+/** The record without this file: the program deleted it (or renamed it to another name). */
+export function withoutPythonSavedFile(
+  record: Record<string, string>,
+  path: string,
+): Record<string, string> {
+  const key = PYTHON_SAVED_FILE_KEY_PREFIX + path
+  if (!(key in record)) return record
+  const { [key]: _deleted, ...rest } = record
+  return rest
 }

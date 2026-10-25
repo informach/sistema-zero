@@ -12,7 +12,9 @@ import {
 import { readPythonExecutionIdentity } from './frameProtocol'
 import {
   PYTHON_SAVED_FILE_KEY_PREFIX,
+  type PythonSavedFileChange,
   readPythonSavedFiles,
+  withoutPythonSavedFile,
   withPythonSavedFile,
 } from './savedFiles'
 import { preparePythonFrameSession } from './session'
@@ -115,9 +117,12 @@ export function createPythonRuntimeProvider(options: {
         savingByProject.set(projectId, done)
       }
       const keepSavedFile = store
-        ? (file: { path: string; bytes: Uint8Array<ArrayBuffer> }) => {
-            const next = withPythonSavedFile(record, file)
-            if (!next) return
+        ? (file: PythonSavedFileChange) => {
+            // A deleted file leaves the record; a written one goes in, within the limits.
+            const next = file.bytes
+              ? withPythonSavedFile(record, { path: file.path, bytes: file.bytes })
+              : withoutPythonSavedFile(record, file.path)
+            if (!next || next === record) return
             record = next
             latest = next
             persist()

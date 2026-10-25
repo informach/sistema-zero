@@ -193,6 +193,41 @@ test('Pygame Zero: pygame.draw, get_at and tone, and the files a game saves come
   }
 })
 
+test('what a program deletes or renames stays deleted or renamed in the next runs', async ({
+  page,
+}) => {
+  await page.goto('/provider')
+  await page.waitForFunction(() => !!globalThis.providerProbe)
+  for (const [rodada, antes, guardados] of [
+    [
+      1,
+      "['requirements.txt', 'rodada.txt']",
+      ['py-file:apagar.txt', 'py-file:rodada.txt', 'py-file:velho.txt'],
+    ],
+    [
+      2,
+      "['apagar.txt', 'requirements.txt', 'rodada.txt', 'velho.txt']",
+      ['py-file:novo.txt', 'py-file:rodada.txt'],
+    ],
+    [
+      3,
+      "['novo.txt', 'requirements.txt', 'rodada.txt']",
+      ['py-file:novo.txt', 'py-file:rodada.txt'],
+    ],
+  ] as const) {
+    await page.evaluate(() => globalThis.providerProbe.prepare('game', 'pgzeroDeletesFiles'))
+    await page.evaluate(() => globalThis.providerProbe.run('game').catch(() => undefined))
+    await expect
+      .poll(() => stdout(page), { timeout: 40_000 })
+      .toContain(`rodada ${rodada} antes ${antes}`)
+    await expect
+      .poll(() => page.evaluate(() => globalThis.providerProbe.savedKeys()))
+      .toEqual([...guardados])
+    expect(await stdout(page)).not.toContain('Traceback')
+    await page.evaluate(() => globalThis.providerProbe.dispose('game'))
+  }
+})
+
 test('what a program saved just before an error is kept', async ({ page }) => {
   await page.goto('/provider')
   await page.waitForFunction(() => !!globalThis.providerProbe)
