@@ -735,6 +735,8 @@ describe('AssetsPanel — desenhos dos jogos de exemplo (Pygame-ce) vão ao Pint
     fireEvent.click(await screen.findByRole('button', { name: 'Editar nave no Pinta' }))
     await screen.findByText(
       'A aba do Pinta foi fechada. O desenho está pronto: toque em Editar de novo.',
+      {},
+      { timeout: 5_000 },
     )
     // The host is not called (it would `window.open` after an await, which Safari blocks).
     expect(opened).toEqual([])

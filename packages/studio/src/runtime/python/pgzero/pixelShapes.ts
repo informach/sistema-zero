@@ -656,7 +656,10 @@ function arcPixels(
   const middle = 0.5 * (start + stop)
   const distance = middle - start
   const xMiddle = Math.cos(middle)
-  const yMiddle = -Math.sin(middle)
+  // The 0→π/2 quarter has a 45° midpoint. libm can round sin(π/4) one
+  // bit below cos(π/4), dropping its top endpoint on Linux. They are the
+  // same geometric component here, so reuse one rounded value.
+  const yMiddle = start === 0 && stop === Math.PI / 2 ? -xMiddle : -Math.sin(middle)
   const inner1 = radius1 - width
   const inner2 = radius2 - width
   const inv1 = 1 / (radius1 * radius1)
