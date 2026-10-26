@@ -15,7 +15,11 @@ import { ilhaChecks } from './ilha-do-farol-criterios'
 import { montarProjetoIlha } from './ilha-do-farol-projeto'
 
 const root = resolve(import.meta.dirname, '../../..'),
-  dir = resolve(root, '.cache/ilha-do-farol/native'),
+  dir = resolve(
+    root,
+    '.cache/ilha-do-farol',
+    process.argv.includes('--docker') ? 'docker' : 'host',
+  ),
   runtime = resolve(root, 'packages/studio-runtime/runtime'),
   studio = resolve(root, 'packages/studio')
 mkdirSync(dir, { recursive: true })
