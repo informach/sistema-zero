@@ -555,6 +555,10 @@ jobs:
         working-directory: packages/community-kids
         run: bun run e2e:lesson-layout
 
+      - name: Texturas por peça do Molda no navegador
+        working-directory: packages/molda
+        run: bunx playwright test e2e/paint-texture-creation.spec.ts --project=chromium
+
       - name: Publicar diagnóstico Playwright
         if: failure()
         uses: actions/upload-artifact@v4
@@ -565,6 +569,7 @@ jobs:
             packages/community-kids/.cache/scene-results
             packages/community-kids/.cache/lesson-layout-results
             packages/pensa/.cache/playwright-results
+            packages/molda/.cache/playwright-results
           retention-days: 7
 
   studio-e2e-chromium:
