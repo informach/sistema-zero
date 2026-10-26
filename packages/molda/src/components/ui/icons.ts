@@ -24,6 +24,7 @@ export {
   CloudOff,
   CloudSun,
   CloudUpload,
+  Cone,
   Copy,
   Crosshair,
   Cylinder,

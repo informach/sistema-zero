@@ -20,7 +20,9 @@ export function SceneCurveDetails({ geometry, onApply, ...props }: SceneCurveDet
   const initial = primitiveDetail(geometry)
   const [draft, setDraft] = useState({ around: String(initial.around), down: String(initial.down) })
   const fields =
-    geometry.kind === 'cylinder' ? (['around'] as const) : (['around', 'down'] as const)
+    geometry.kind === 'cylinder' || geometry.kind === 'cone'
+      ? (['around'] as const)
+      : (['around', 'down'] as const)
   const validField = (field: 'around' | 'down') => {
     const value = Number(draft[field])
     const { min, max } =
@@ -31,12 +33,12 @@ export function SceneCurveDetails({ geometry, onApply, ...props }: SceneCurveDet
   }
   const valid = fields.every(validField)
   const detail =
-    geometry.kind !== 'cylinder'
+    geometry.kind !== 'cylinder' && geometry.kind !== 'cone'
       ? { around: Number(draft.around), down: Number(draft.down) }
       : { around: Number(draft.around) }
   const count = valid
     ? primitiveTriangleCount(
-        geometry.kind !== 'cylinder'
+        geometry.kind !== 'cylinder' && geometry.kind !== 'cone'
           ? {
               ...geometry,
               tessellation: { around: Number(draft.around), down: Number(draft.down) },

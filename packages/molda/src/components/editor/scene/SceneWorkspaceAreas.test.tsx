@@ -169,7 +169,7 @@ test('curves use exact imported times, preview without saving, cancel and confir
   }
 })
 
-test('the unified sheet keeps the viewport and primitive intact, restores zoom and hides numeric UV controls', async () => {
+test('the unified sheet keeps the viewport and primitive intact, frames the UV map and restores paint zoom', async () => {
   const f = setup()
   try {
     fireEvent.click(screen.getByRole('button', { name: 'Escolher corpo' }))
@@ -183,9 +183,14 @@ test('the unified sheet keeps the viewport and primitive intact, restores zoom a
     const zoom = within(sheet).getByLabelText('Zoom da folha', { exact: true }).textContent
     fireEvent.click(within(sheet).getByRole('button', { name: 'Ajustar mapa' }))
     await within(sheet).findByRole('button', { name: COPY.scene.uvCanvasControl })
-    expect(within(sheet).getByLabelText('Zoom da folha', { exact: true }).textContent).toBe(zoom)
+    expect(within(sheet).getByRole('button', { name: 'Organizar mapa' })).toBeTruthy()
+    expect(within(sheet).getByRole('button', { name: 'Ver mapa' })).toBeTruthy()
+    expect(within(sheet).getByRole('button', { name: 'Folha inteira' })).toBeTruthy()
+    fireEvent.click(within(sheet).getByRole('button', { name: 'Folha inteira' }))
+    fireEvent.click(within(sheet).getByRole('button', { name: 'Ver mapa' }))
     expect(within(sheet).queryByRole('spinbutton')).toBeNull()
     fireEvent.click(within(sheet).getByRole('button', { name: 'Pintar na folha' }))
+    expect(within(sheet).getByLabelText('Zoom da folha', { exact: true }).textContent).toBe(zoom)
     fireEvent.click(within(sheet).getByRole('button', { name: 'Fechar folha de pintura' }))
     expect(screen.queryByRole('region', { name: 'Área Folha de pintura' })).toBeNull()
     expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Folha de pintura' }))

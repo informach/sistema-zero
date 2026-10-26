@@ -6,6 +6,7 @@ import { useMoldaToolAccess } from '../../toolAccess'
 import {
   Box,
   Circle,
+  Cone,
   Crosshair,
   Cylinder,
   type LucideIcon,
@@ -20,13 +21,20 @@ const SHAPES: ReadonlyArray<[SceneShapeKind, LucideIcon]> = [
   ['box', Box],
   ['wedge', TriangleRight],
   ['cylinder', Cylinder],
+  ['cone', Cone],
   ['sphere', Circle],
   ['torus', Torus],
   ['plane', Square],
 ]
 
 const shapeName = (kind: SceneShapeKind) =>
-  kind === 'plane' ? COPY.scene.plane : kind === 'torus' ? COPY.scene.torus : COPY.shapes[kind]
+  kind === 'plane'
+    ? COPY.scene.plane
+    : kind === 'torus'
+      ? COPY.scene.torus
+      : kind === 'cone'
+        ? COPY.scene.cone
+        : COPY.shapes[kind]
 
 /**
  * As formas (`model.pieces`) e o ponto de apoio (`model.locator`), À VISTA em ladrilhos

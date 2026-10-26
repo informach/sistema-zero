@@ -34,7 +34,7 @@ const counter = (prefix = 'id') => {
 }
 const empty = () => migrateLegacyModel(makeModel({ parts: [] })).document
 
-function withShape(kind: 'box' | 'wedge' | 'cylinder' | 'sphere' | 'torus') {
+function withShape(kind: 'box' | 'wedge' | 'cylinder' | 'cone' | 'sphere' | 'torus') {
   const nextId = counter()
   const document = addScenePrimitive(empty(), kind, 'peça', nextId)
   return { document, node: meshNode(document, document.nodes.at(-1)!.id), nextId }
@@ -233,6 +233,15 @@ function expectUnchangedLook(document: MoldaSceneDocument, materialId: string, i
 }
 
 describe('formas: um bloco por superfície, no tamanho da pele do editor antigo', () => {
+  test('cone separa a lateral da base na folha de pintura', () => {
+    const f = withShape('cone')
+    const result = ready(ensureScenePaintSurface(f.document, { nodeId: f.node.id }, f.nextId))
+    const image = result.document.images.find((entry) => entry.id === result.target.imageId)!
+    expect(image.width).toBeGreaterThan(0)
+    expect(image.height).toBeGreaterThan(0)
+    expectDisjoint(faceRects(result.document, f.node.id, image.id, ['side', 'bottom']))
+  })
+
   test('formas grandes usam a resolução nativa sem reduzir a grade ao limite do editor antigo', () => {
     const f = withShape('box')
     const scaled = (scale: number): MoldaSceneDocument => ({

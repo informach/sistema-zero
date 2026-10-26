@@ -5,8 +5,9 @@ import { type AffineMatrix, identityMatrix, transformDirection } from './matrix'
 import { prepareMeshCoplanarSelection } from './meshCoplanarSelection'
 import { meshFaceFrame } from './meshFaceFrame'
 import { indexMeshEdges } from './meshTopology'
-import { mapMeshUv, meshUvFaces } from './meshUv'
+import { indexMeshUv, mapMeshUv, meshUvBounds, meshUvFaces } from './meshUv'
 import { createUvTriangleIndex } from './meshUvOverlap'
+import { unfoldMeshUv } from './meshUvUnfold'
 import { requireScene } from './validation'
 
 /** Pixel-sized charts, with shared coordinates on each connected planar side. No fit-to-sheet scaling. */
@@ -130,7 +131,75 @@ export function pixelMeshUv(
     const point = chart.points.get(mesh.faces[id]!.corners[corner]!.vertexId)!
     return [(slot.x + point[0] - chart.min[0]) / side, (slot.y + point[1] - chart.min[1]) / side]
   })
-  return { mesh: mapped, width: side, height: side, charts: charts.map((chart) => chart.faces) }
+  const result = {
+    mesh: mapped,
+    width: side,
+    height: side,
+    charts: charts.map((chart) => chart.faces),
+  }
+  // Curved triangulated pieces otherwise become one thin chart per facet. Try the bounded
+  // connected unfolding and keep it only if it uses fewer islands at the same pixel density.
+  if (
+    selected.length > 8 &&
+    selected.length <= 64 &&
+    charts.length > 8 &&
+    selected.every((id) => metric.faces[id]!.corners.length === 3)
+  ) {
+    try {
+      const opened = unfoldPixelMeshUv(mesh, metric, selected, density)
+      if (opened && opened.charts.length < charts.length && opened.width <= side) return opened
+    } catch {
+      // A difficult non-planar piece still has the valid per-plane layout above.
+    }
+  }
+  return result
+}
+
+function unfoldPixelMeshUv(
+  mesh: SceneMeshGeometry,
+  metric: SceneMeshGeometry,
+  selected: readonly string[],
+  density: number,
+) {
+  const opened = unfoldMeshUv(metric, selected, 0.01)
+  const groups = indexMeshUv(opened)
+    .islands.map((group) => group.filter((id) => selected.includes(id)))
+    .filter((group) => group.length)
+  const first = metric.faces[selected[0]!]!
+  const a = first.corners[0]!,
+    b = first.corners[1]!
+  const p = metric.vertices[a.vertexId]!,
+    q = metric.vertices[b.vertexId]!
+  const physical = Math.hypot(...sub(q, p))
+  const uvA = opened.faces[selected[0]!]!.corners[0]!.uv,
+    uvB = opened.faces[selected[0]!]!.corners[1]!.uv
+  const projected = Math.hypot(uvB[0] - uvA[0], uvB[1] - uvA[1])
+  if (!physical || !projected) return null
+  const factor = (physical * density) / projected
+  const boxes = groups.map((faces) => {
+    const { min, max } = meshUvBounds(opened, faces)
+    return {
+      faces,
+      min,
+      width: pixelExtent((max[0] - min[0]) * factor),
+      height: pixelExtent((max[1] - min[1]) * factor),
+    }
+  })
+  const layout = packSceneShelves(boxes)
+  if (!layout) return null
+  const side = Math.max(layout.width, layout.height)
+  const byFace = new Map(groups.flatMap((group, i) => group.map((id) => [id, i] as const)))
+  const mapped = mapMeshUv(mesh, selected, (_uv, id, corner): Vec2 => {
+    const i = byFace.get(id)!,
+      box = boxes[i]!,
+      slot = layout.slots[i]!,
+      point = opened.faces[id]!.corners[corner]!.uv
+    return [
+      (slot.x + (point[0] - box.min[0]) * factor) / side,
+      (slot.y + (point[1] - box.min[1]) * factor) / side,
+    ]
+  })
+  return { mesh: mapped, width: side, height: side, charts: groups }
 }
 
 /** Only absorb floating-point error at integer boundaries; fractional coverage rounds up. */

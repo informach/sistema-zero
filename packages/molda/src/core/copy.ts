@@ -1118,6 +1118,7 @@ export const COPY = {
     dimensions: 'Medidas da forma',
     curveDetail: 'Detalhes da curva',
     torus: 'Torus',
+    cone: 'Cone',
     torusTubeSegments: 'Lados do tubo',
     planeCut: 'Cortar a peça por um plano',
     bevel: 'Chanfrar quinas',
