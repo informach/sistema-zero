@@ -2,7 +2,7 @@
 
 Contrato implementado em 25/10/2026 para Kids e adultos. A política publicada continua sendo a autoridade; este documento não afirma que houve deploy ou ativação em produção.
 
-A proposta editorial aprovada está em [currículo completo](design/jornada-criador-curriculo-2026-10-25.json). Os comandos, os vínculos dos cursos e os cuidados de ativação estão em [seed e publicação](jornada-criador-seed.md).
+A proposta editorial aprovada está em [currículo completo](../packages/members/src/infrastructure/config/creator-journey-curriculum.json). Os comandos, os vínculos dos cursos e os cuidados de ativação estão em [seed e publicação](jornada-criador-seed.md).
 
 ## Como o aluno avança
 

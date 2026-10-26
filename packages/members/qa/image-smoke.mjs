@@ -44,6 +44,21 @@ for (const [name, command] of Object.entries(manifest.scripts)) {
   if (path && name !== 'test:pensa-db')
     assert.ok(statSync(`/app/packages/members/${path}`).isFile())
 }
+// The operational curriculum belongs to the package, not the excluded docs tree.
+// The offline seed must resolve it in the actual read-only image without a database.
+const seed = Bun.spawn(
+  ['bun', '--no-env-file', 'scripts/seed-creator-journey.ts', 'plan', '--offline'],
+  { cwd: '/app/packages/members', stdout: 'pipe', stderr: 'pipe' },
+)
+const [seedCode, seedOutput, seedErrors] = await Promise.all([
+  seed.exited,
+  new Response(seed.stdout).text(),
+  new Response(seed.stderr).text(),
+])
+assert.equal(seedCode, 0, seedErrors)
+const seedPlan = JSON.parse(seedOutput)
+assert.equal(seedPlan.offline, true)
+assert.ok(seedPlan.totals.courses > 0)
 const migrationRoot = '/app/packages/members/src/infrastructure/persistence/drizzle/migrations'
 const journalBytes = readFileSync(`${migrationRoot}/meta/_journal.json`)
 const journal = JSON.parse(journalBytes.toString('utf8'))

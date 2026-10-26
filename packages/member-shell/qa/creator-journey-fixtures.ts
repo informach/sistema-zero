@@ -3,11 +3,11 @@ import {
   projectCreatorJourney,
   resolveCreatorJourneyCourseLock,
 } from '@sistemazero/core/journey'
-import spec from '../../../docs/design/jornada-criador-curriculo-2026-10-25.json'
 import {
   buildCreatorJourneySeed,
   type CreatorEditorialSpec,
 } from '../../members/src/application/creator-journey/creator-journey-seed'
+import spec from '../../members/src/infrastructure/config/creator-journey-curriculum.json'
 import type { CatalogCourseView } from '../src/lib/types'
 
 /** Isolated preview data: editorial seed, no gateway, secrets, learner records or database. */

@@ -17,7 +17,7 @@ import { openKidsJourneyTestDatabase } from './kids-journey-database'
 const target = process.env.CREATOR_JOURNEY_TEST_DATABASE_URL
 const spec = JSON.parse(
   readFileSync(
-    new URL('../../../../docs/design/jornada-criador-curriculo-2026-10-25.json', import.meta.url),
+    new URL('../../src/infrastructure/config/creator-journey-curriculum.json', import.meta.url),
     'utf8',
   ),
 ) as CreatorEditorialSpec

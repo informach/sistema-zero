@@ -1,6 +1,6 @@
 # Cadastro da Jornada do Criador revisada
 
-O manifesto editorial está em `docs/design/jornada-criador-curriculo-2026-10-25.json`.
+O manifesto editorial está em `packages/members/src/infrastructure/config/creator-journey-curriculum.json`.
 O seed cria o planejamento no Admin e vincula as políticas aos UUIDs dos cursos. Não publica
 aulas nem transforma exemplos de jogos em cursos gravados. A publicação do currículo e a
 publicação de cada curso são operações diferentes.

@@ -5,7 +5,7 @@
 **Goal:** Implement the approved curriculum across core, Members, Admin, Kids and adult communities, including mastery review and a repeatable catalog seed.
 **Architecture:** Shared pure curriculum inside the existing versioned policies. Members owns progress and entitlement decisions. Immutable mastery reviews and durable awards. Interfaces render server projections.
 **Tech Stack:** TypeScript, Zod, Bun, Drizzle/PostgreSQL, Elysia, Next.js/React, shared member-shell.
-**Spec:** `docs/plans/2026-10-25-jornada-criador-design.md` and `docs/design/jornada-criador-curriculo-2026-10-25.json`.
+**Spec:** `docs/plans/2026-10-25-jornada-criador-design.md` and `packages/members/src/infrastructure/config/creator-journey-curriculum.json`.
 
 ## Global Constraints
 

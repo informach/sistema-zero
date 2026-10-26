@@ -119,3 +119,26 @@ Conciliação com staging `8f34d7bdd` em `1421cac20`, incluindo Jornada/Maestria
 
 Pendentes neste registro: CI remoto, aplicação nos ambientes,
 backfill financeiro, contrato final e conferência visual autenticada.
+
+## Revisão da composição para release
+
+Escopo esclarecido pela usuária: outras frentes entram somente por commits já em staging;
+arquivos ainda editados em outros worktrees ficam fora. Incluem-se as correções desta sessão.
+A revisão dos commits Jornada/Maestrias e Cadê encontrou três bloqueios de integração:
+
+- A imagem Members não incluía o operador da nova Jornada. O JSON editorial canônico foi
+  movido, byte a byte, de docs para a configuração do pacote; o script agora entra na imagem.
+  `image-smoke.mjs` exige o plano offline real em container sem rede e somente leitura.
+- O contrato gerado de playtest Python não acompanhava o Core integrado. Regenerado pelo
+  comando canônico, com checagem Linux/Bun 1.3.11 positiva. O perfil é parte da release do runtime.
+- O teste visual do quiz usava o Cadê esperando a interface clássica, mas o curso passou a
+  usar previsão. Agora o Farol real cobre os três tamanhos/densidades do quiz clássico e o
+  Cadê real cobre sua previsão. Quatro cenários de navegador passaram, incluindo pixels do
+  mascote inteiro/centralizado. A primeira tentativa local sem o WASM gerado falhou; executar
+  `scripts/sync-rive-wasm.ts`, já previsto no CI, resolveu o preparo local sem mudar produto.
+
+A seleção fresca Members (seed/acesso, revisão Maestria, runtime e quiz) passou 44 testes e
+261 asserções. As provas anteriores do Admin e dos backends comerciais permanecem descritas
+acima. Revisão conferiu snapshot autorizado de Maestria, identidade de equipe no servidor,
+retenção de direitos e separação entre seed offline e publicação efetiva. Conteúdo editorial
+não foi importado nos ambientes. Isso ainda não declara CI ou deploy aprovados.

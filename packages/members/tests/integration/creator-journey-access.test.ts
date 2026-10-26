@@ -16,7 +16,7 @@ import {
 
 const spec = JSON.parse(
   readFileSync(
-    new URL('../../../../docs/design/jornada-criador-curriculo-2026-10-25.json', import.meta.url),
+    new URL('../../src/infrastructure/config/creator-journey-curriculum.json', import.meta.url),
     'utf8',
   ),
 ) as CreatorEditorialSpec

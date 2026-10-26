@@ -27,7 +27,7 @@ Manter políticas versionadas Kids e adulta como autoridades. Incorporar contrat
 
 Kids conserva sua identidade. Adulto usa o Estúdio à noite atual: palco escuro para descoberta, bancada clara para trabalho, CTA amarelo, Bricolage/Atkinson, contraste e navegação já corrigidos no remoto. Componentes comuns apresentam dados sem duplicar regras.
 
-O catálogo editorial completo está em `docs/design/jornada-criador-curriculo-2026-10-25.json`, exportado da proposta aprovada. Ele descreve conteúdo planejado; não declara que gravações e cursos novos já existem.
+O catálogo editorial completo está em `packages/members/src/infrastructure/config/creator-journey-curriculum.json`, exportado da proposta aprovada. Ele descreve conteúdo planejado; não declara que gravações e cursos novos já existem.
 
 ## Critérios de entrega
 
