@@ -1,12 +1,20 @@
 'use client'
 
-import { Mail } from 'lucide-react'
+import { Check, CircleHelp, type LucideIcon, Mail, Sparkles } from 'lucide-react'
 import Link from 'next/link'
 import { useState } from 'react'
 import { apiGet } from '@/lib/api'
 import { cn } from '@/lib/cn'
 import { plainPreview } from '@/lib/plain-preview'
 import type { TeacherThreadContext, TeacherThreadSummaryView } from '@/lib/types'
+
+/** O ícone e o tom de cada tipo de conversa, ao lado do rótulo escrito (a cor nunca é a única pista). */
+const CONTEXT_ICON: Record<TeacherThreadContext, { icon: LucideIcon; tile: string }> = {
+  lesson_section: { icon: CircleHelp, tile: 'bg-(--acao-tint) text-(--acao-texto)' },
+  studio_submission: { icon: Check, tile: 'bg-(--sucesso-tint) text-(--pen-ok-texto)' },
+  mural_publication: { icon: Sparkles, tile: 'bg-(--aviso-tint) text-(--aviso-texto)' },
+  general: { icon: Mail, tile: 'bg-muted text-foreground' },
+}
 
 export const CONTEXT_LABEL: Record<TeacherThreadContext, string> = {
   lesson_section: 'Dúvida na aula',
@@ -101,6 +109,8 @@ export function RecadosList({
           {threads.map((thread) => {
             const selected = thread.id === selectedId
             const unread = thread.unread && !selected
+            const context = CONTEXT_ICON[thread.contextType] ?? CONTEXT_ICON.general
+            const ContextIcon = context.icon
             return (
               <li key={thread.id}>
                 <Link
@@ -108,30 +118,42 @@ export function RecadosList({
                   prefetch={false}
                   aria-current={selected ? 'true' : undefined}
                   className={cn(
-                    'sz-card-sm flex flex-col gap-1.5 p-4 text-foreground no-underline transition-colors hover:bg-background',
-                    selected && 'shadow-[0_0_0_3px_var(--primary)]',
+                    'sz-card-sm flex items-start gap-3.5 p-4 text-foreground no-underline transition-colors hover:bg-background',
+                    selected &&
+                      'bg-(--aviso-tint) shadow-[inset_4px_0_0_var(--cta)] hover:bg-(--aviso-tint)',
                   )}
                 >
-                  <span className="flex flex-wrap items-center gap-2">
-                    <span className="font-bold text-(--acao-texto) text-[0.85rem]">
-                      {CONTEXT_LABEL[thread.contextType]}
-                    </span>
-                    {unread ? <span className="sz-chip sz-chip-novo">Novo</span> : null}
-                    <time
-                      dateTime={thread.lastMessageAt}
-                      className="ml-auto text-[0.85rem] text-muted-foreground"
-                    >
-                      {threadDay(thread.lastMessageAt)}
-                    </time>
+                  <span
+                    aria-hidden
+                    className={cn(
+                      'mt-0.5 inline-flex size-10 flex-none items-center justify-center rounded-xl',
+                      context.tile,
+                    )}
+                  >
+                    <ContextIcon className="size-5" />
                   </span>
-                  <strong className="truncate">{thread.title ?? 'Conversa com a equipe'}</strong>
-                  {thread.lastMessagePreview ? (
-                    <span className="truncate text-[0.85rem] text-muted-foreground">
-                      {thread.lastMessageRole === 'student'
-                        ? `Você: ${thread.lastMessagePreview}`
-                        : `${thread.lastMessageRole === 'teacher' ? 'Equipe: ' : ''}${plainPreview(thread.lastMessagePreview)}`}
+                  <span className="flex min-w-0 flex-1 flex-col gap-1.5">
+                    <span className="flex flex-wrap items-center gap-2">
+                      <span className="font-bold text-(--acao-texto) text-[0.85rem]">
+                        {CONTEXT_LABEL[thread.contextType]}
+                      </span>
+                      {unread ? <span className="sz-chip sz-chip-novo">Novo</span> : null}
+                      <time
+                        dateTime={thread.lastMessageAt}
+                        className="ml-auto text-[0.85rem] text-muted-foreground"
+                      >
+                        {threadDay(thread.lastMessageAt)}
+                      </time>
                     </span>
-                  ) : null}
+                    <strong className="truncate">{thread.title ?? 'Conversa com a equipe'}</strong>
+                    {thread.lastMessagePreview ? (
+                      <span className="truncate text-[0.85rem] text-muted-foreground">
+                        {thread.lastMessageRole === 'student'
+                          ? `Você: ${thread.lastMessagePreview}`
+                          : `${thread.lastMessageRole === 'teacher' ? 'Equipe: ' : ''}${plainPreview(thread.lastMessagePreview)}`}
+                      </span>
+                    ) : null}
+                  </span>
                 </Link>
               </li>
             )

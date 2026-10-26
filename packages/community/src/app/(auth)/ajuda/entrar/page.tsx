@@ -1,8 +1,8 @@
-import { BrandLogo } from '@sistemazero/ui/brand-logo'
 import { Mail } from 'lucide-react'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import type { ReactNode } from 'react'
+import { PublicTopBar } from '@/components/community/public-top-bar'
 import { getSession } from '@/server/session'
 
 export const dynamic = 'force-dynamic'
@@ -33,24 +33,11 @@ export default async function EntryHelpPage() {
   const user = await getSession()
   return (
     <div className="min-h-screen bg-background">
-      <header className="border-border border-b bg-card">
-        <div className="sz-page flex min-h-20 flex-wrap items-center justify-between gap-x-4 gap-y-3 py-3">
-          <Link
-            href={user ? '/' : '/login'}
-            aria-label="Comunidade Sistema Zero"
-            className="rounded-md focus-visible:outline-3 focus-visible:outline-ring focus-visible:outline-offset-2"
-          >
-            <BrandLogo
-              fundo="claro"
-              label="Comunidade Sistema Zero"
-              className="block h-auto w-32 sm:w-40"
-            />
-          </Link>
-          <Link href={user ? '/' : '/login'} className="sz-btn shrink-0">
-            {user ? 'Ir para o início' : 'Entrar'}
-          </Link>
-        </div>
-      </header>
+      <PublicTopBar href={user ? '/' : '/login'}>
+        <Link href={user ? '/' : '/login'} className="sz-btn shrink-0">
+          {user ? 'Ir para o início' : 'Entrar'}
+        </Link>
+      </PublicTopBar>
 
       <section className="sz-band">
         <div className="sz-page flex flex-col gap-3 pt-10 pb-9">
@@ -142,7 +129,7 @@ export default async function EntryHelpPage() {
           </Answer>
           <Answer title="Dá para entrar sem digitar a senha?">
             <p>
-              Dá. Em Entrar, toque em <strong>Com código por e-mail</strong> e use o código de 6
+              Dá. Em Entrar, toque em <strong>Com código no e-mail</strong> e use o código de 6
               números. Isso vale depois que a senha foi criada uma vez.
             </p>
           </Answer>
