@@ -88,3 +88,10 @@ agora respeita a largura disponível, quebra o texto e cresce em altura. Uma reg
 adicional com texto de 20 px reproduziu o vazamento localmente antes da correção.
 Após o ajuste, os seis cenários de caminhada passaram (incluindo o texto ampliado e
 o clique no botão); Biome e `git diff --check` passaram. Confirmação Linux continua no CI.
+
+O CI `40361018823` confirmou o ajuste responsivo, mas apontou dois erros de tipo na
+fixture de abertura recebida na conciliação: registros brutos do armazenamento eram
+passados diretamente ao editor e à persistência. A fixture agora usa a preparação
+canônica existente para obter o documento editável, preservando sua revisão local,
+sem cast nem supressão. Os dez casos isolados/70 asserções passaram após o ajuste,
+inclusive troca pelo envio e recusa de conflito real entre abas, em JavaScript e Python.

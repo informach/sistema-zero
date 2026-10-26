@@ -199,8 +199,9 @@ for (const language of ['javascript', 'python'] as const)
     const { scope, adapter } = local()
     await persistProject(draft, {}, scope)
     // O host da aula abre o rascunho do disco (com a linhagem da cabeça gravada).
-    const opened = await loadProjectShellById(draft.id, scope)
-    if (!opened) throw new Error('draft missing')
+    const openedRecord = await loadProjectShellById(draft.id, scope)
+    if (!openedRecord) throw new Error('draft missing')
+    const opened = await realPrepare(openedRecord, {})
     const errors: string[] = []
     const handle = createRef<StudioHandle>()
     setAutosaveDelayForTests(10)
@@ -227,8 +228,9 @@ for (const language of ['javascript', 'python'] as const)
       expect(errors).toEqual([])
       // A checagem de conflito continua ligada: depois de uma escrita de outra aba, uma nova
       // troca herda a base que este editor conhecia e falha em vez de sobrescrever.
-      const other = await loadProjectShellById(draft.id, scope)
-      if (!other) throw new Error('saved project missing')
+      const otherRecord = await loadProjectShellById(draft.id, scope)
+      if (!otherRecord) throw new Error('saved project missing')
+      const other = await realPrepare(otherRecord, {})
       await persistProject({ ...other, name: 'Outra aba' }, {}, scope)
       act(() => handle.current?.replaceProject({ ...submitted, name: 'Segunda troca' }))
       await act(async () => calls.at(-1)?.gate.resolve())
