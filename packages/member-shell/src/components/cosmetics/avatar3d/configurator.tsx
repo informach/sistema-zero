@@ -430,9 +430,11 @@ export function AvatarConfigurator({
             disabled={!state || !!busy}
             aria-label="Surpreenda-me"
             title="Surpreenda-me"
-            className="grid size-11 place-items-center rounded-full bg-card/90 text-foreground shadow-md backdrop-blur transition-transform active:scale-90 disabled:opacity-50"
+            className="inline-flex size-11 items-center justify-center gap-2 rounded-full bg-card/90 font-bold text-foreground text-sm shadow-md backdrop-blur transition-transform active:scale-90 disabled:opacity-50 md:w-auto md:px-4"
           >
             <Shuffle className="size-5" />
+            {/* Com espaço, o nome escrito (a proposta do painel ao lado); no celular, só o ícone. */}
+            <span className="hidden md:inline">Surpreenda-me</span>
           </button>
           {/* Botão de cima: SALVAR em Personalizar, TIRAR FOTO na Cabine de fotos. */}
           <button

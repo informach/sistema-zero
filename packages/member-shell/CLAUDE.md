@@ -13,14 +13,18 @@ as mensagens e a pele adulta ficaram como estavam.
 - **Avatar:** o 3D à esquerda com a altura toda e o painel à direita (modo no alto, as 14 categorias
   em três grupos, cores, peças e a compra pendente colada nelas). Só a grade de peças rola. No
   celular segue tela cheia com o painel embaixo; os grupos viram três botões e só as categorias do
-  grupo aparecem. Os grupos moram em `KIDS_AVATAR_CATEGORY_GROUPS` (`configurator-shared.ts`) e
+  grupo aparecem. "Surpreenda-me" ganha o nome escrito a partir do `md`. Os grupos moram em `KIDS_AVATAR_CATEGORY_GROUPS` (`configurator-shared.ts`) e
   toda categoria entra em um só (teste). ⚠️ A raiz `fixed inset-0 … md:static …` continua nos dois
   ramos: o `community-kids/tests/quarto-foco.test.tsx` conta as duas ocorrências.
 - **Quarto:** moedas e "Salvar quarto" acima de tudo; o quarto e as peças à esquerda e o painel
   "Itens do quarto" (as 10 abas em grade de 5 e a bandeja) à direita, com a altura da coluna do
-  quarto e piso de 30rem; só a bandeja rola. O quarto tem teto de largura pela altura da janela
-  (`(100dvh - 14rem) × 1,5`) para caber inteiro. No celular a coluna vira `contents` e o quarto
-  gruda abaixo da barra do topo (`top-16`, `md:top-3`) enquanto a criança desce até os itens.
+  quarto e piso de 24rem; só a bandeja rola. A coluna do quarto vai até
+  `max(24rem, (100dvh - 26rem) × 1,5)`: os 26rem são o cabeçalho da página (as duas `KidsBand`,
+  a seta, o título e o subtítulo, medidos) mais a barra das moedas, então o quarto inteiro cabe na
+  tela em 1440×900, 1366×768 e 1024×768; o piso de 24rem segura o celular deitado. O bloco tem a
+  largura do que está dentro (`w-fit`), e por isso o Salvar acompanha a borda do painel e as peças
+  alinham com o quarto. No celular a coluna vira `contents` e o quarto gruda abaixo da barra do
+  topo (`top-16`, `md:top-3`) enquanto a criança desce até os itens.
 - ⚠️ As bandejas (`room-builder-trays.tsx`) medem o contêiner `@container/bandeja`, nunca `sm:`:
   num painel de 420px ao lado do quarto, `sm:grid-cols-6` daria seis colunas espremidas.
 - Testes: `tests/kids-cosmetics-layout.test.tsx` e, no Kids, `tests/room-builder-view.test.tsx`.
