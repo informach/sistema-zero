@@ -162,3 +162,16 @@ Jornada (formatação/imports, incluindo o JSON movido). Correção restrita, se
 semânticas; os valores do currículo foram comparados por JSON e permaneceram idênticos.
 `biome ci` completo passou em 11.954 arquivos; seleção Gateway/seed passou 25 testes e
 160 asserções. Os seis kits JavaScript/Three também passaram no container final sem rede.
+
+O CI seguinte encontrou a reação ao toque fechada sem motivo acessível. A bancada agora
+explica o primeiro toque por texto visível ligado por `aria-describedby`; continua no Tab
+e só libera a ligação depois da descoberta. Reprodução negativa preservada; suíte Kids
+completa: 1.618 testes, 9.213 asserções, zero falhas. Os testes de apresentação antigos foram
+conciliados com a sequência guiada já commitada (primeiro toque, ligação, outro esconderijo).
+
+A suíte compartilhada revelou contaminação pelo registro global de happy-dom no novo teste
+de Maestrias: Request/Headers mudavam e outros testes HTTP perdiam seus headers. A reprodução
+isolada do BFF passava e, junto do teste DOM, falhava. O teste DOM passou a rodar em processo
+próprio, com origem válida, seguindo os demais testes de componentes do pacote. Todas as
+asserções de envio/revisão foram preservadas. Suíte member-shell completa posterior: 1.860
+testes externos, 11.702 asserções, zero falhas; o wrapper executa os quatro cenários DOM reais.

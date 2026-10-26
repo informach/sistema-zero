@@ -28,9 +28,8 @@ describe('palco O toque faz o jogo responder', () => {
   })
 
   const start = { scene: 'touch-response' } as const
-  test('"Ligar a reação ao toque" é a AÇÃO PRINCIPAL da bancada: botão cheio, no tom de gesto', () => {
-    // Console v2 (30/09/2026): o gesto do momento sai na largura toda (`sz-scene-acao-principal`,
-    // `tom="gesto"` = variante cheia com `px-6`). Ligado, ele volta ao tom "ligado" (contorno).
+  test('depois do primeiro toque, ligar a reação é o gesto principal; ligada, vira ferramenta', () => {
+    // A sequência começa comparando o toque SEM reação; só depois destaca a ligação.
     const botaoDe = (markup: string, texto: string) => {
       const fim = markup.indexOf(texto)
       expect(fim).toBeGreaterThan(-1)
@@ -40,7 +39,7 @@ describe('palco O toque faz o jogo responder', () => {
     const desligado = renderToStaticMarkup(
       <LessonSceneControls
         scene="touch-response"
-        state={openScene(start)}
+        state={stepScene(start, openScene(start), { type: 'start', input: 'tap' })}
         dispatch={() => {}}
         goals={[]}
         onRunning={() => {}}
@@ -67,7 +66,7 @@ describe('palco O toque faz o jogo responder', () => {
     )
     const chave = botaoDe(ligado, 'Desligar a reação ao toque')
     expect(chave).toContain('sz-scene-acao-principal')
-    expect(chave).toContain('border-primary')
+    expect(chave).toContain('data-tom="ferramenta"')
     expect(chave).not.toContain('px-6')
   })
 
@@ -82,7 +81,7 @@ describe('palco O toque faz o jogo responder', () => {
     )
   })
 
-  test('depois do toque, o coelho aparece e o controle mostra como repetir', () => {
+  test('depois do toque com reação, o coelho aparece e o controle propõe outro esconderijo', () => {
     const start = { scene: 'touch-response' } as const
     const state = stepScene(
       start,
@@ -106,6 +105,6 @@ describe('palco O toque faz o jogo responder', () => {
           onRunning={() => {}}
         />,
       ),
-    ).toContain('Testar de novo com a reação ligada')
+    ).toContain('Testar com outro esconderijo')
   })
 })

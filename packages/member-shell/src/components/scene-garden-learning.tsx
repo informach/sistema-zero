@@ -16,6 +16,7 @@ import {
   Plus,
   RotateCcw,
 } from 'lucide-react'
+import { useId } from 'react'
 import { SceneButton } from './exploration-stage'
 /** Teaching colors explain a role, within the application's fonts, surfaces and controls. */
 export function TouchRule({ enabled, chosen }: { enabled: boolean; chosen: string | null }) {
@@ -176,7 +177,9 @@ export function GardenLearningControls({
   state: SceneState
   dispatch: (action: SceneAction) => void
 }) {
+  const touchReasonId = useId()
   const step = gardenStep(scene, state)
+  const touchLocked = !state.match.touch && !state.evidence.discoveries.includes('no-response')
   if (scene === 'touch-response')
     return (
       <div className="space-y-3">
@@ -185,7 +188,8 @@ export function GardenLearningControls({
             tom={step?.primary === 'connect' ? 'gesto' : 'ferramenta'}
             className="sz-scene-acao-principal"
             aria-pressed={state.match.touch}
-            fechado={!state.match.touch && !state.evidence.discoveries.includes('no-response')}
+            fechado={touchLocked}
+            aria-describedby={touchLocked ? touchReasonId : undefined}
             onClick={() =>
               dispatch({ type: 'connect', port: 'touch', enabled: !state.match.touch })
             }
@@ -202,6 +206,11 @@ export function GardenLearningControls({
             </SceneButton>
           )}
         </div>
+        {touchLocked && (
+          <p id={touchReasonId} className="sz-garden-caption">
+            Primeiro, toque no arbusto com a reação desligada.
+          </p>
+        )}
         <TouchRule
           enabled={state.match.touch}
           chosen={

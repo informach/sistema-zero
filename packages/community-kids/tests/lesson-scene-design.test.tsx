@@ -1590,6 +1590,34 @@ describe('⚠️⚠️ a peça que muda de caixa: TOCAR seleciona', () => {
 })
 
 describe('⚠️⚠️ toda porta da cena tem controle na BANCADA', () => {
+  test('a reação ao toque explica o primeiro teste e abre depois de tocar no arbusto', () => {
+    const start = { scene: 'touch-response' } as const
+    const initial = openScene(start)
+    const actions: SceneAction[] = []
+    const controls = (state: SceneState) => (
+      <LessonSceneControls
+        scene={start.scene}
+        state={state}
+        dispatch={(action) => actions.push(action)}
+        goals={sceneGoals(start.scene, state)}
+        onRunning={() => {}}
+      />
+    )
+    const { rerender } = render(controls(initial))
+    const button = screen.getByRole('button', { name: 'Ligar a reação ao toque' })
+    expect(button.getAttribute('aria-disabled')).toBe('true')
+    expect((button as HTMLButtonElement).disabled).toBe(false)
+    const reason = document.getElementById(button.getAttribute('aria-describedby') ?? '')
+    expect(reason?.textContent).toBe('Primeiro, toque no arbusto com a reação desligada.')
+    fireEvent.click(button)
+    expect(actions).toEqual([])
+    rerender(controls(stepScene(start, initial, { type: 'start', input: 'tap' })))
+    expect(button.getAttribute('aria-disabled')).toBeNull()
+    expect(button.getAttribute('aria-describedby')).toBeNull()
+    fireEvent.click(button)
+    expect(actions).toEqual([{ type: 'connect', port: 'touch', enabled: true }])
+  })
+
   /**
    * Relatório g5 (lote 1 do Raio-X, 16/09/2026): `group-loop`, `camera`, `aim` e `diagonal`
    * declaravam uma porta no motor e a instrução mandava ligá-la, mas nenhuma bancada desenhava o

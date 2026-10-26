@@ -3,7 +3,7 @@ import { GlobalRegistrator } from '@happy-dom/global-registrator'
 import { AppRouterContext } from 'next/dist/shared/lib/app-router-context.shared-runtime'
 import type { CreatorMasterySubmission } from '../src/lib/mastery'
 
-if (typeof document === 'undefined') GlobalRegistrator.register()
+GlobalRegistrator.register({ url: 'https://kids.test/' })
 ;(globalThis as Record<string, unknown>).IS_REACT_ACT_ENVIRONMENT = true
 const { act } = await import('react')
 const { createRoot } = await import('react-dom/client')
