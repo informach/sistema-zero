@@ -149,3 +149,10 @@ SHA-256 e validação integral pelo Core confirmaram staging `f69814b9…` (trê
 release ativa) e produção `2c53c74c…` (uma retirada e uma ativa). O arquivo agora preserva esses
 catálogos no próximo deploy. Nenhuma release foi reativada, revogada ou acrescentada nesta
 correção; os demais valores de configuração coincidem com o serviço ativo.
+
+A revisão do workflow encontrou cinco grupos SQL da Jornada/Maestrias sem suas variáveis
+específicas: o runner podia pular esses testes. Foram configurados bancos locais descartáveis
+independentes, criados pelo harness com as migrations reais. A execução fresca dos cinco
+arquivos passou: 18 testes, 83 asserções, zero skips/falhas, em 37,22 s. Inclui preservação do
+curso existente pelo seed, blocos de cursos arquivados, retenção após captura da coorte e
+concorrência de submissão/revisão/exclusão. O CI passa a exigir essa execução também.

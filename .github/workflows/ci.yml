@@ -354,6 +354,11 @@ jobs:
           ZAPPY_QA_DATABASE_URL: postgres://postgres:postgres@localhost:55432/studio_test_zappy_135
           KIDS_JOURNEY_TEST_DATABASE_URL: postgres://postgres:postgres@127.0.0.1:55432/kids_journey_ci
           KIDS_JOURNEY_PURGE_TEST_DATABASE_URL: postgres://postgres:postgres@127.0.0.1:55432/kids_journey_purge_ci
+          CREATOR_JOURNEY_TEST_DATABASE_URL: postgres://postgres:postgres@127.0.0.1:55432/kids_journey_creator_ci
+          CREATOR_REWARDS_TEST_DATABASE_URL: postgres://postgres:postgres@127.0.0.1:55432/kids_journey_creator_rewards_ci
+          MASTERY_TEST_DATABASE_URL: postgres://postgres:postgres@127.0.0.1:55432/kids_journey_mastery_ci
+          MASTERY_CONCURRENCY_TEST_DATABASE_URL: postgres://postgres:postgres@127.0.0.1:55432/kids_journey_mastery_concurrency_ci
+          MASTERY_RETENTION_TEST_DATABASE_URL: postgres://postgres:postgres@127.0.0.1:55432/kids_journey_mastery_retention_ci
 
       - name: Pensa integrado com API e PostgreSQL reais
         working-directory: packages/pensa
