@@ -12,8 +12,14 @@
  * **Assets reais (Quaternius CC0, via pack do WawaSensei):** 1 esqueleto compartilhado
  * (`Armature.glb`) + 1 GLB skinned por peça. Material `Color_*` = tintável (recebe a cor
  * da peça); `Skin_*` = pele compartilhada (a cor de `head` rege a pele). Categorias
- * SEM paleta (`eyes`/`nose`/`hat`/`accessory`) têm cor embutida por variante (ou seguem a
- * pele). Os ids casam 1:1 com `public/avatar3d/parts/<id>.glb` no kids.
+ * SEM paleta (`eyes`/`nose`/`faceDecor`/`hat`) têm cor embutida por variante (ou seguem a
+ * pele). Os ids casam 1:1 com `public/avatar3d/parts/<id>.glb` no kids e na comunidade adulta
+ * (os dois apps servem os MESMOS arquivos; peça nova entra nas duas pastas).
+ *
+ * **Peças próprias (26/10/2026):** a partir de `hair-12`, `head-05`, `eyes-13`, `eyebrow-11`,
+ * `nose-05`, `face-09`, `glasses-05`, `top-04`, `bottom-04`, `outfit-06`, `shoes-04`, `acc-09` e
+ * toda a aba Enfeite, as peças foram modeladas no Blender sobre o mesmo esqueleto e no mesmo
+ * estilo do pacote (proposta do Canvas "Provador do avatar"). Mesma regra de materiais.
  */
 
 /** Categorias trocáveis do personagem (uma peça equipada por categoria). */
@@ -26,12 +32,13 @@ export const AVATAR_CATEGORIES = [
   'faceDecor', // pintura de rosto / máscara (removível; decalque no rosto, cor embutida)
   'facialHair', // barba/bigode (removível, tintável)
   'glasses', // óculos (removível, armação tintável)
-  'hat', // chapéu (removível; esconde o cabelo)
+  'hat', // chapéu (removível; esconde o cabelo e o enfeite)
+  'hairAccessory', // enfeite de cabelo: laço, tiara… (removível, tintável; aparece COM o cabelo)
   'top', // roupa de cima
   'bottom', // roupa de baixo
   'outfit', // vestido/roupa única (removível; esconde top+bottom)
   'shoes', // calçado
-  'accessory', // acessório (brinco/laço — removível)
+  'accessory', // acessório (brinco, colar, cachecol… removível; os novos pegam a cor da paleta)
 ] as const
 
 export type AvatarCategory = (typeof AVATAR_CATEGORIES)[number]
@@ -81,12 +88,16 @@ export const AVATAR3D_PARTS: readonly Avatar3dPart[] = [
   free('head-02', 'head'),
   free('head-03', 'head'),
   free('head-04', 'head'),
+  // Rosto delicado (26/10/2026): o rosto 1 com sorriso pequeno e com sorriso fechado.
+  free('head-05', 'head'),
+  free('head-06', 'head'),
 
   // Cabelo — careca + 1 de MENINO (hair-01) e 1 de MENINA (hair-08, estilo longo, trazido pra
   // 2ª posição) GRÁTIS — justiça de gênero: menina nova não fica sem cabelo grátis. Resto pago.
   free('hair-none', 'hair'),
   free('hair-01', 'hair'),
   free('hair-08', 'hair'), // menina (longo) — liberado e trazido pra frente
+  free('hair-12', 'hair'), // longo solto (26/10/2026): o cabelo comprido novo também é grátis
   paid('hair-02', 'hair', 50),
   paid('hair-03', 'hair', 60),
   paid('hair-04', 'hair', 60),
@@ -96,6 +107,12 @@ export const AVATAR3D_PARTS: readonly Avatar3dPart[] = [
   paid('hair-09', 'hair', 100),
   paid('hair-10', 'hair', 110),
   paid('hair-11', 'hair', 120),
+  paid('hair-13', 'hair', 80), // rabo de cavalo alto
+  paid('hair-14', 'hair', 90), // duas tranças
+  paid('hair-15', 'hair', 100), // crespo volumoso
+  paid('hair-16', 'hair', 70), // cachos curtos
+  paid('hair-17', 'hair', 70), // coque alto
+  paid('hair-18', 'hair', 90), // maria-chiquinha
 
   // Olhos — todos grátis (expressão; cor embutida).
   free('eyes-01', 'eyes'),
@@ -110,6 +127,8 @@ export const AVATAR3D_PARTS: readonly Avatar3dPart[] = [
   free('eyes-10', 'eyes'),
   free('eyes-11', 'eyes'),
   free('eyes-12', 'eyes'),
+  free('eyes-13', 'eyes'), // com cílios
+  free('eyes-14', 'eyes'), // com cílios e brilho
 
   // Sobrancelhas — grátis (tintável).
   free('eyebrow-01', 'eyebrows'),
@@ -122,12 +141,14 @@ export const AVATAR3D_PARTS: readonly Avatar3dPart[] = [
   free('eyebrow-08', 'eyebrows'),
   free('eyebrow-09', 'eyebrows'),
   free('eyebrow-10', 'eyebrows'),
+  free('eyebrow-11', 'eyebrows'), // fina e arqueada
 
   // Nariz — grátis (segue a pele).
   free('nose-01', 'nose'),
   free('nose-02', 'nose'),
   free('nose-03', 'nose'),
   free('nose-04', 'nose'),
+  free('nose-05', 'nose'), // pequeno
 
   // Pintura de rosto / máscara — nenhuma + 1 grátis + pagas (decalque no rosto; cor embutida).
   free('face-none', 'faceDecor'),
@@ -139,6 +160,8 @@ export const AVATAR3D_PARTS: readonly Avatar3dPart[] = [
   paid('face-06', 'faceDecor', 60),
   paid('face-07', 'faceDecor', 70),
   paid('face-08', 'faceDecor', 60), // máscara
+  paid('face-09', 'faceDecor', 45), // sardas
+  free('face-10', 'faceDecor'), // bochecha rosada: faz parte do rosto delicado, grátis
 
   // Barba — nenhuma + 1 grátis + pagas (tintável).
   free('beard-none', 'facialHair'),
@@ -156,6 +179,8 @@ export const AVATAR3D_PARTS: readonly Avatar3dPart[] = [
   paid('glasses-02', 'glasses', 70),
   paid('glasses-03', 'glasses', 90),
   paid('glasses-04', 'glasses', 120),
+  paid('glasses-05', 'glasses', 70), // redondos
+  paid('glasses-06', 'glasses', 90), // gatinho
 
   // Chapéu — nenhum grátis + pagos (cor embutida; esconde o cabelo).
   free('hat-none', 'hat'),
@@ -167,15 +192,28 @@ export const AVATAR3D_PARTS: readonly Avatar3dPart[] = [
   paid('hat-06', 'hat', 150),
   paid('hat-07', 'hat', 150),
 
+  // Enfeite de cabelo (26/10/2026): nenhum grátis + pagos (tintável). Chapéu esconde.
+  free('enfeite-none', 'hairAccessory'),
+  paid('enfeite-01', 'hairAccessory', 50), // laço
+  paid('enfeite-02', 'hairAccessory', 60), // tiara
+  paid('enfeite-03', 'hairAccessory', 80), // coroa de flores
+  paid('enfeite-04', 'hairAccessory', 50), // presilhas de estrela
+  paid('enfeite-05', 'hairAccessory', 90), // orelhinhas de gato
+
   // Roupa de cima — 1 grátis + 2 pagas (tintável).
   free('top-01', 'top'),
   paid('top-02', 'top', 70),
   paid('top-03', 'top', 90),
+  paid('top-04', 'top', 60), // manga longa
+  paid('top-05', 'top', 100), // moletom com capuz
+  paid('top-06', 'top', 70), // listrada
 
   // Roupa de baixo — 1 grátis + 2 pagas (tintável).
   free('bottom-01', 'bottom'),
   paid('bottom-02', 'bottom', 60),
   paid('bottom-03', 'bottom', 80),
+  paid('bottom-04', 'bottom', 60), // calça comprida
+  paid('bottom-05', 'bottom', 80), // saia longa
 
   // Vestido / roupa única — nenhum + vestido GRÁTIS (tintável) + looks pagos. Esconde top+bottom.
   free('outfit-none', 'outfit'),
@@ -184,11 +222,14 @@ export const AVATAR3D_PARTS: readonly Avatar3dPart[] = [
   paid('outfit-03', 'outfit', 100),
   paid('outfit-04', 'outfit', 110),
   paid('outfit-05', 'outfit', 120),
+  paid('outfit-06', 'outfit', 100), // vestido longo (tintável)
 
   // Calçado — 1 grátis + pagos (tintável).
   free('shoes-01', 'shoes'),
   paid('shoes-02', 'shoes', 70),
   paid('shoes-03', 'shoes', 90),
+  paid('shoes-04', 'shoes', 90), // bota
+  paid('shoes-05', 'shoes', 60), // sapatilha
 
   // Acessório — nenhum grátis + pagos (cor embutida).
   free('acc-none', 'accessory'),
@@ -200,6 +241,8 @@ export const AVATAR3D_PARTS: readonly Avatar3dPart[] = [
   paid('acc-06', 'accessory', 100),
   paid('acc-07', 'accessory', 60),
   paid('acc-08', 'accessory', 70),
+  paid('acc-09', 'accessory', 80), // colar de coração (o pingente pega a cor)
+  paid('acc-10', 'accessory', 90), // cachecol
 ]
 
 export const AVATAR3D_PARTS_BY_ID: ReadonlyMap<string, Avatar3dPart> = new Map(
@@ -209,7 +252,9 @@ export const AVATAR3D_PARTS_BY_ID: ReadonlyMap<string, Avatar3dPart> = new Map(
 /**
  * Paletas CURADAS por categoria (hex MINÚSCULO). Pintar é GRÁTIS. Só categorias com
  * material `Color_*` (ou pele) têm paleta: cabeça (pele), cabelo/sobrancelha/barba (cabelo),
- * óculos/top/bottom/shoes (roupa). `eyes`/`nose`/`hat`/`accessory` não aceitam cor.
+ * óculos/top/bottom/shoes/enfeite/acessório (roupa). `eyes`/`nose`/`hat`/`faceDecor` não
+ * aceitam cor. No acessório só as peças novas (`acc-09`, `acc-10`) têm material `Color_`; os
+ * brincos e as gravatas mantêm a cor embutida e ignoram a escolhida.
  */
 const SKIN_PALETTE = ['#f2d3b1', '#ecad80', '#cf9b6e', '#9e5622', '#763900', '#5a2e0a'] as const
 const HAIR_PALETTE = [
@@ -254,6 +299,8 @@ export const AVATAR_CATEGORY_PALETTES: Partial<Record<AvatarCategory, readonly s
   bottom: GARMENT_PALETTE,
   outfit: GARMENT_PALETTE, // o vestido (outfit-01) é tintável; os looks (02–05) têm cor embutida
   shoes: GARMENT_PALETTE,
+  hairAccessory: GARMENT_PALETTE,
+  accessory: GARMENT_PALETTE,
 }
 
 /** Sets (lookup O(1), já minúsculo) p/ validar cor no domínio. */
@@ -272,6 +319,7 @@ export const AVATAR_REMOVABLE_NONE: Partial<Record<AvatarCategory, string>> = {
   facialHair: 'beard-none',
   glasses: 'glasses-none',
   hat: 'hat-none',
+  hairAccessory: 'enfeite-none',
   outfit: 'outfit-none',
   accessory: 'acc-none',
 }
@@ -283,7 +331,7 @@ export const AVATAR_REMOVABLE_NONE: Partial<Record<AvatarCategory, string>> = {
  * oculta; tirar o chapéu restaura o cabelo escolhido). Single source of truth.
  */
 export const AVATAR_HIDE_GROUPS: Partial<Record<AvatarCategory, AvatarCategory[]>> = {
-  hat: ['hair'],
+  hat: ['hair', 'hairAccessory'], // o enfeite fica no cabelo: some junto com ele
   outfit: ['top', 'bottom'], // vestido/roupa única cobre as duas peças
 }
 
@@ -302,9 +350,10 @@ export const DEFAULT_AVATAR_SLOTS: Readonly<Record<AvatarCategory, AvatarSlot>> 
   facialHair: { asset: 'beard-none', color: '#6a4e35' },
   glasses: { asset: 'glasses-none', color: '#3498db' },
   hat: { asset: 'hat-none' },
+  hairAccessory: { asset: 'enfeite-none', color: '#e84393' },
   top: { asset: 'top-01', color: '#3498db' },
   bottom: { asset: 'bottom-01', color: '#34495e' },
   outfit: { asset: 'outfit-none', color: '#e84393' }, // sem vestido por padrão (usa top+bottom)
   shoes: { asset: 'shoes-01', color: '#2c3e50' },
-  accessory: { asset: 'acc-none' },
+  accessory: { asset: 'acc-none', color: '#e74c3c' },
 }

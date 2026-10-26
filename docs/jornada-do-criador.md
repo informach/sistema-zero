@@ -8,6 +8,8 @@ A proposta editorial aprovada está em [currículo completo](../packages/members
 
 Cada posto ensina um tipo de jogo em duas dimensões. Primeiro vem a base 2D, depois a base 3D. Ao concluir o par, missão, Poderes e extras abrem juntos. O aluno escolhe a ordem dessas três frentes.
 
+Nas telas (Kids, comunidade adulta e Admin) as duas bases se chamam **Cursos da trilha** ("Curso da trilha 2D", "Curso da trilha 3D"; decisão de 26/10/2026). "Base" e "par" ficam só por dentro: ids, contratos e este documento técnico.
+
 | Posto | Jogo-base | Missão em outro contexto | Poderes distintos para avançar |
 |---|---|---|---|
 | Faísca | Chave e porta: Farol / Ilha 3D | Jardim Secreto | 1 |
@@ -31,10 +33,10 @@ O seed resolve slug, público e modalidade para manter o UUID real de cada curso
 
 | Curso | Destino no novo currículo |
 |---|---|
-| A Chave do Farol (`desafio-primeiro-jogo`, com variante adulta) | Base 2D do Faísca |
+| A Chave do Farol (`desafio-primeiro-jogo`, com variante adulta) | Curso da trilha 2D do Faísca |
 | Cadê Todo Mundo? | Extra do Faísca |
-| Nave Contra Asteroides | Base 2D do Construtor |
-| Corre, Dino! | Base 2D do Inventor |
+| Nave Contra Asteroides | Curso da trilha 2D do Construtor |
+| Corre, Dino! | Curso da trilha 2D do Inventor |
 | O Jogo do Meu Jeito | Extra do Construtor |
 
 Farol e Cadê comprados separadamente abrem durante a validade da concessão específica, mesmo sem assinatura e sem completar o par. A matrícula originada de assinatura não cria essa exceção. Um presente explicitamente concedido também mantém a promessa e o prazo originais. A exceção abre somente o produto concedido.

@@ -1,9 +1,12 @@
-import { CourseCurriculumContext } from '@sistemazero/member-shell/components/course-curriculum-context'
-import { kidsJourneyAccess } from '@sistemazero/member-shell/lib/kids-journey-access'
+import {
+  isKidsStaffPreview,
+  kidsJourneyAccess,
+} from '@sistemazero/member-shell/lib/kids-journey-access'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { KidsBackButton } from '@/components/kids/back-button'
 import { CourseTrail } from '@/components/kids/course-trail'
+import { KidsCourseJourneyContext } from '@/components/kids/creator-journey/course-context'
 import { KidsBand } from '@/components/kids/kids-band'
 import {
   journeyLockLevel,
@@ -49,11 +52,8 @@ export default async function CoursePage({
       ? await shell.hub.myShowcaseDeliveryReadonly(course.id).catch(() => null)
       : null
   const deliveryState = delivery?.status === 200 ? delivery.body?.state : null
-  const back = resolveCourseBack(
-    de,
-    course,
-    kidsJourneyAccess(gamification?.status === 200 ? gamification.body : null),
-  )
+  const journey = kidsJourneyAccess(gamification?.status === 200 ? gamification.body : null)
+  const back = resolveCourseBack(de, course, journey)
   return (
     <>
       <KidsBand tone="creme" innerClassName="pt-6 pb-2 md:pt-8 md:pb-2">
@@ -68,10 +68,10 @@ export default async function CoursePage({
       {course.curriculum || course.accessReason ? (
         <KidsBand tone="creme" innerClassName="py-3 md:py-4">
           <div className="mx-auto max-w-[40rem]">
-            <CourseCurriculumContext
+            <KidsCourseJourneyContext
               placement={course.curriculum}
               accessReason={course.accessReason}
-              skin="kids"
+              view={journey && !isKidsStaffPreview(journey) ? (journey.curriculum ?? null) : null}
             />
           </div>
         </KidsBand>

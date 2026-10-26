@@ -1,4 +1,8 @@
-import { CreatorJourneyMap } from '@sistemazero/member-shell/components/creator-journey'
+import type { KidsJourneyView } from '@sistemazero/core/journey'
+import {
+  creatorJourneyHint,
+  creatorStageTodo,
+} from '@sistemazero/member-shell/lib/creator-journey-presentation'
 import {
   isKidsStaffPreview,
   kidsJourneyAccess,
@@ -8,7 +12,12 @@ import Link from 'next/link'
 import { cn } from '@/lib/cn'
 import { levelsBeyondHorizon } from '@/lib/journey-horizon'
 import { canonicalJourneyProgress, canonicalVisibleJourneyLevels } from '@/lib/journey-presentation'
-import { journeyEarnedRewardInfo, journeyRewardInfo } from '@/lib/journey-rewards'
+import {
+  capabilityPhrase,
+  curriculumTrailCapabilities,
+  journeyEarnedRewardInfo,
+  journeyRewardInfo,
+} from '@/lib/journey-rewards'
 import { LEVEL_INFO } from '@/lib/level-info'
 import { TROPHY_BADGE_SLUGS } from '@/lib/room-catalog'
 import type { GamificationMeView, StudentLevelSlug } from '@/lib/types'
@@ -113,21 +122,18 @@ export function JourneyTimeline({
   }
   if (access.curriculum)
     return (
-      <div className="space-y-8">
-        <CreatorJourneyMap view={access.curriculum} skin="kids" />
-        <section>
-          <h2 className="sz-display mb-4 text-xl">Suas conquistas</h2>
-          <ul className="grid gap-4 md:grid-cols-2">
-            {gamification.badges
-              .filter(
-                (badge): badge is { slug: string; unlockedAt: string } => badge.unlockedAt !== null,
-              )
-              .map((badge) => (
-                <FeatCard key={badge.slug} slug={badge.slug} unlockedAt={badge.unlockedAt} />
-              ))}
-          </ul>
-        </section>
-      </div>
+      <section aria-labelledby="minha-jornada">
+        <KidsSectionHeader
+          id="minha-jornada"
+          title="Minha jornada"
+          subtitle="Seus cursos e conquistas formam a sua jornada de criação."
+        />
+        <div className="kids-carta p-4 md:p-6">
+          <CurriculumLadder view={access} />
+          <ShowcaseLine stats={showcaseStats} />
+        </div>
+        <Feats badges={gamification.badges} />
+      </section>
     )
   const currentSlug = access.earned.level
   const visible = canonicalVisibleJourneyLevels(access)
@@ -136,12 +142,6 @@ export function JourneyTimeline({
   const progress = canonicalJourneyProgress(access)
   const hint = progress.hint
   const retained = journeyEarnedRewardInfo(access)
-
-  const unlocked = gamification.badges
-    .filter((b): b is { slug: string; unlockedAt: string } => b.unlockedAt !== null)
-    .sort((a, b) => (a.unlockedAt < b.unlockedAt ? 1 : -1))
-  const universal = unlocked.filter((b) => !isProductBadge(b.slug))
-  const product = unlocked.filter((b) => isProductBadge(b.slug))
 
   return (
     <section aria-labelledby="minha-jornada">
@@ -254,22 +254,39 @@ export function JourneyTimeline({
           ) : null}
         </ol>
 
-        {showcaseStats && showcaseStats.published > 0 ? (
-          <p className="mt-3 flex items-center gap-3 rounded-[1rem] bg-(--band-menta) px-4 py-3 font-bold text-[0.8125rem]">
-            <Gamepad2 className="size-5 shrink-0" aria-hidden />
-            <span>
-              {showcaseStats.published === 1
-                ? 'Você tem 1 jogo no Mural'
-                : `Você tem ${showcaseStats.published} jogos no Mural`}
-              {showcaseStats.plays === 1
-                ? ', jogado 1 vez!'
-                : `, jogados ${showcaseStats.plays} vezes!`}
-            </span>
-          </p>
-        ) : null}
+        <ShowcaseLine stats={showcaseStats} />
       </div>
 
-      {/* Feitos conquistados: universais primeiro, bônus dos apps criativos depois. */}
+      <Feats badges={gamification.badges} />
+    </section>
+  )
+}
+
+/** Os jogos no Mural, a linha menta embaixo da escada. */
+function ShowcaseLine({ stats }: { stats: { published: number; plays: number } | null }) {
+  if (!stats || stats.published <= 0) return null
+  return (
+    <p className="mt-3 flex items-center gap-3 rounded-[1rem] bg-(--band-menta) px-4 py-3 font-bold text-[0.8125rem]">
+      <Gamepad2 className="size-5 shrink-0" aria-hidden />
+      <span>
+        {stats.published === 1
+          ? 'Você tem 1 jogo no Mural'
+          : `Você tem ${stats.published} jogos no Mural`}
+        {stats.plays === 1 ? ', jogado 1 vez!' : `, jogados ${stats.plays} vezes!`}
+      </span>
+    </p>
+  )
+}
+
+/** Feitos conquistados: universais primeiro, bônus dos apps criativos depois. */
+function Feats({ badges }: { badges: GamificationMeView['badges'] }) {
+  const unlocked = badges
+    .filter((b): b is { slug: string; unlockedAt: string } => b.unlockedAt !== null)
+    .sort((a, b) => (a.unlockedAt < b.unlockedAt ? 1 : -1))
+  const universal = unlocked.filter((b) => !isProductBadge(b.slug))
+  const product = unlocked.filter((b) => isProductBadge(b.slug))
+  return (
+    <>
       {universal.length > 0 ? (
         <div className="mt-8">
           <h3 className="font-extrabold text-muted-foreground text-xs uppercase tracking-[0.12em]">
@@ -294,6 +311,121 @@ export function JourneyTimeline({
           </ul>
         </div>
       ) : null}
-    </section>
+    </>
+  )
+}
+
+/**
+ * A escada da Jornada do Criador no currículo: as sete trilhas e a Lenda, no mesmo desenho
+ * de linhas-cartão de sempre. Cada linha diz o jogo da trilha e as ferramentas que ela libera.
+ */
+function CurriculumLadder({ view }: { view: KidsJourneyView }) {
+  const curriculum = view.curriculum!
+  const tools = curriculumTrailCapabilities(view)
+  const rows = [
+    ...curriculum.stages.map((stage) => ({
+      slug: stage.level as StudentLevelSlug,
+      label: stage.title,
+      genre: stage.genre ?? null,
+      // "Liberado" só para o que a criança já ganhou; o resto da trilha é o que ela "libera".
+      // As ferramentas chegam durante a trilha (depois do 2D, do 3D, do par ou de um curso).
+      earnedTools: capabilityPhrase(
+        (tools[stage.level as StudentLevelSlug] ?? []).filter((capability) =>
+          view.earned.capabilities.includes(capability),
+        ),
+      ),
+      tools: capabilityPhrase(
+        (tools[stage.level as StudentLevelSlug] ?? []).filter(
+          (capability) => !view.earned.capabilities.includes(capability),
+        ),
+      ),
+      done: stage.completed,
+      stage,
+    })),
+    {
+      slug: 'god' as const,
+      label: 'Lenda',
+      genre: 'As Maestrias',
+      earnedTools: null,
+      tools: null,
+      done: false,
+      stage: null,
+    },
+  ]
+  const currentIndex = rows.findIndex((row) => row.slug === curriculum.level)
+  return (
+    <ol className="flex flex-col gap-3">
+      {rows.map((row, index) => {
+        const info = LEVEL_INFO[row.slug]
+        const Icon = info.icon
+        const current = index === currentIndex
+        const done = !current && (row.done || index < currentIndex)
+        const next = index === currentIndex + 1
+        const todo = current && row.stage ? creatorStageTodo(row.stage, 'kids') : null
+        const nextLabel = rows[index + 1]?.label
+        return (
+          <li
+            key={row.slug}
+            className={cn(
+              'flex items-start gap-4 rounded-[1.25rem] p-4 md:p-5',
+              current
+                ? 'bg-[color-mix(in_oklab,var(--primary)_7%,var(--card))] ring-2 ring-primary ring-inset'
+                : 'bg-background',
+            )}
+          >
+            <span
+              aria-hidden="true"
+              className={cn(
+                'grid size-12 shrink-0 place-items-center rounded-[0.875rem] md:size-14',
+                current && 'kids-marca',
+              )}
+              style={current ? undefined : { backgroundColor: info.colorVar, color: 'var(--card)' }}
+            >
+              {done ? <Check className="size-6" /> : <Icon className="size-6" />}
+            </span>
+            <div className="min-w-0 flex-1">
+              <p className="flex flex-wrap items-center gap-x-2.5 gap-y-1">
+                <span className="sz-display text-lg md:text-xl">{row.label}</span>
+                {current ? (
+                  <span className={cn(ETIQUETA, 'kids-marca')}>Você está aqui</span>
+                ) : null}
+                {next ? (
+                  <span className={cn(ETIQUETA, 'bg-muted text-muted-foreground')}>
+                    Próximo nível
+                  </span>
+                ) : null}
+              </p>
+              {current ? (
+                <p className="mt-1 font-medium text-[0.8125rem] text-muted-foreground leading-snug">
+                  {curriculum.paused || !row.stage
+                    ? creatorJourneyHint(curriculum)
+                    : todo
+                      ? `Para virar ${nextLabel}: ${todo}.`
+                      : creatorJourneyHint(curriculum)}
+                </p>
+              ) : null}
+              {row.genre ? (
+                <p className="mt-1 text-[0.8125rem] leading-snug">
+                  <span className="font-bold">{row.stage ? 'Jogos: ' : 'Depois: '}</span>
+                  <span className="text-muted-foreground">{row.genre}</span>
+                </p>
+              ) : null}
+              {row.earnedTools ? (
+                <p className="mt-0.5 text-[0.8125rem] leading-snug">
+                  <span className="font-bold">Liberado: </span>
+                  <span className="text-muted-foreground">{row.earnedTools}</span>
+                </p>
+              ) : null}
+              {row.tools ? (
+                <p className="mt-0.5 text-[0.8125rem] leading-snug">
+                  <span className="font-bold">Libera: </span>
+                  <span className="text-muted-foreground">{row.tools}</span>
+                </p>
+              ) : null}
+            </div>
+          </li>
+        )
+      })}
+    </ol>
   )
 }

@@ -1,10 +1,10 @@
 import type { CreativeToolId } from '@sistemazero/core/journey'
-import { CreatorJourneySummary } from '@sistemazero/member-shell/components/creator-journey'
 import { LiveCreationList } from '@sistemazero/member-shell/components/live/live-creation-list'
 import { ArrowRight, LockKeyhole, Palette, Wrench } from 'lucide-react'
 import Link from 'next/link'
 import { Suspense } from 'react'
 import { ContinueHero } from '@/components/kids/continue-hero'
+import { StudioModes } from '@/components/kids/creator-journey/studio-modes'
 import { CreatorWorks } from '@/components/kids/creator-works'
 import { KidsBand } from '@/components/kids/kids-band'
 import { KidsClosingCard } from '@/components/kids/kids-closing-card'
@@ -63,15 +63,6 @@ export default async function CriarPage() {
           )}
         </div>
         <LiveCreationList membershipHref={comunidadeContinuarUrl('criar-oficinas-ao-vivo')} />
-        {journey.journey && 'curriculum' in journey.journey && journey.journey.curriculum ? (
-          <div className="mt-6">
-            <CreatorJourneySummary
-              view={journey.journey.curriculum}
-              skin="kids"
-              courses={journey.courses ?? []}
-            />
-          </div>
-        ) : null}
       </KidsBand>
 
       {earned.length ? (
@@ -124,6 +115,12 @@ export default async function CriarPage() {
               })}
             </div>
           </section>
+        </KidsBand>
+      ) : null}
+
+      {journey.journey && 'curriculum' in journey.journey && journey.journey.curriculum ? (
+        <KidsBand tone="ceu">
+          <StudioModes view={journey.journey} />
         </KidsBand>
       ) : null}
 

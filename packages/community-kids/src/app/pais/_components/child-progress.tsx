@@ -4,7 +4,7 @@ import type { LearningTopicSummary } from '@sistemazero/core/learning'
 import {
   creatorCurrentStage,
   creatorJourneyHint,
-  creatorStageSummary,
+  creatorStageChecklist,
 } from '@sistemazero/member-shell/lib/creator-journey-presentation'
 import { Skeleton } from '@sistemazero/ui/skeleton'
 import {
@@ -23,6 +23,7 @@ import {
   Trophy,
 } from 'lucide-react'
 import { useState } from 'react'
+import { ChecklistPills, checklistItems } from '@/components/kids/creator-journey/parts'
 import { GameCardDialog } from '@/components/kids/game-card-dialog'
 import { levelInfo } from '@/lib/level-info'
 import type { ChildDashboardView, ChildWeekGameView } from '@/lib/types'
@@ -184,16 +185,11 @@ function JourneyCard({ child }: { child: ChildDashboardView }) {
           </>
         ) : null}
       </div>
-      {next ? (
+      {career.curriculum ? (
+        <CurriculumProgress view={career.curriculum} />
+      ) : next ? (
         <p className="text-muted-foreground text-sm">
-          {career.curriculum
-            ? creatorJourneyHint(career.curriculum)
-            : 'A evolução considera os cursos obrigatórios concluídos e os projetos publicados no Mural.'}
-        </p>
-      ) : null}
-      {career.curriculum && creatorCurrentStage(career.curriculum) ? (
-        <p className="text-sm font-semibold">
-          {creatorStageSummary(creatorCurrentStage(career.curriculum)!)}
+          A evolução considera os cursos obrigatórios concluídos e os projetos publicados no Mural.
         </p>
       ) : null}
       {!career.curriculum && career.pendingPublications.length ? (
@@ -210,6 +206,35 @@ function JourneyCard({ child }: { child: ChildDashboardView }) {
         </div>
       ) : null}
     </section>
+  )
+}
+
+/**
+ * No currículo, o que conta para a próxima conquista nas pílulas da tela da criança (cursos da
+ * trilha, missão e Poderes). A família lê os mesmos números que a criança.
+ */
+function CurriculumProgress({
+  view,
+}: {
+  view: NonNullable<NonNullable<ChildDashboardView['career']>['curriculum']>
+}) {
+  const stage = creatorCurrentStage(view)
+  if (!stage) return <p className="text-muted-foreground text-sm">{creatorJourneyHint(view)}</p>
+  const list = creatorStageChecklist(stage)
+  return (
+    <div className="flex flex-col gap-2.5">
+      <p className="font-bold text-sm">
+        {list.complete
+          ? 'Tudo o que conta para a próxima conquista já está feito.'
+          : 'O que conta para a próxima conquista:'}
+      </p>
+      <ChecklistPills items={checklistItems(list, null)} />
+      <p className="text-muted-foreground text-sm">
+        {view.paused
+          ? creatorJourneyHint(view)
+          : 'Cada passo é um curso concluído. Extras e publicar no Mural são opcionais.'}
+      </p>
+    </div>
   )
 }
 

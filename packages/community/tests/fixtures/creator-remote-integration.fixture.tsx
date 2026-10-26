@@ -14,6 +14,9 @@ mock.module('@/server/members', () => ({
 mock.module('@/server/shell', () => ({
   shell: { members: { getGamificationReadonly: async () => ({ status: 200, body: { journey } }) } },
 }))
+// Quem está vendo: a régua da trava pergunta se a pessoa é da equipe.
+let session: { role: string } | null = { role: 'customer' }
+mock.module('@/server/session', () => ({ getSession: async () => session }))
 mock.module('next/navigation', () => ({
   useSearchParams: () => new URLSearchParams(),
   usePathname: () => '/cursos',
@@ -29,14 +32,32 @@ const { default: StagePage } = await import('../../src/app/(app)/cursos/etapa/[i
 const { default: CatalogPage } = await import('../../src/app/(app)/cursos/page')
 beforeEach(() => {
   journey = current()
+  session = { role: 'customer' }
+})
+
+test('a stage not reached yet is locked by its address; the team still opens it', async () => {
+  const locked = renderToStaticMarkup(
+    await StagePage({ params: Promise.resolve({ id: 'hacker' }) }),
+  )
+  expect(locked).toContain('Esta etapa ainda está bloqueada')
+  // A trilha da etapa trancada não aparece (o próximo passo embaixo é o da etapa atual).
+  expect(locked).not.toContain('aria-labelledby="cursos"')
+  session = { role: 'admin' }
+  const open = renderToStaticMarkup(await StagePage({ params: Promise.resolve({ id: 'hacker' }) }))
+  expect(open).toContain('Cursos da trilha')
+  expect(open).not.toContain('Esta etapa ainda está bloqueada')
+  const catalog = renderToStaticMarkup(await CatalogPage())
+  expect(catalog).toContain('/cursos/etapa/hacker')
+  expect(catalog).toContain('href="/maestrias"')
 })
 
 test('the post uses both base courses and mission/power requirements, without the old Mural gate', async () => {
   const html = renderToStaticMarkup(await StagePage({ params: Promise.resolve({ id: 'noob' }) }))
-  expect(html).toContain('Base 2D')
-  expect(html).toContain('Base 3D')
+  expect(html).toContain('Cursos da trilha')
   expect(html).toContain('Missão')
-  expect(html).toContain('Poder')
+  expect(html).toContain('Poderes')
+  expect(html).toContain('Nesta etapa você ganha')
+  expect(html).toContain('Publicar no Mural é opcional')
   expect(html).not.toContain('Concluir e publicar o jogo no Mural')
   expect(html).toContain('sz-band')
 })
@@ -66,8 +87,10 @@ test('historical stages retain the new remote unlock tiles, including both prese
 
 test('catalog uses the curriculum map while retaining remote copy for historical journeys', async () => {
   const html = renderToStaticMarkup(await CatalogPage())
-  expect(html).toContain('Crie um jogo em 2D e 3D')
-  expect(html).toContain('/maestrias')
+  expect(html).toContain('Sete etapas até a Lenda')
+  expect(html).toContain('aria-label="Etapas da jornada"')
+  // A Lenda só leva às Maestrias quando alcançada (a trava das etapas, 26/10/2026).
+  expect(html).not.toContain('href="/maestrias"')
   expect(html).toContain('/cursos/etapa/noob')
   journey = null
   const legacy = renderToStaticMarkup(await CatalogPage())

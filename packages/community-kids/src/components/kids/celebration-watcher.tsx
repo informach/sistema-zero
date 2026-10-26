@@ -18,7 +18,7 @@ import {
   toolsSnapshot,
 } from '@/lib/tools-gain'
 import type { StudentLevelSlug } from '@/lib/types'
-import { LevelUpCelebration } from './level-up-celebration'
+import { LevelUpCelebration, type LevelUpTrail } from './level-up-celebration'
 import { useChildOverlayState } from './platform-renovation-notice'
 import { ToolsCelebration } from './tools-celebration'
 
@@ -211,6 +211,7 @@ export function CelebrationWatcher({
         level={levelUp}
         tools={toolsGain}
         molda={moldaGain}
+        trail={levelUpTrail(journey, levelUp)}
         onClose={() => {
           setLevelUp(null)
           setMoldaGain(null)
@@ -221,4 +222,33 @@ export function CelebrationWatcher({
   }
   if (toolsGain) return <ToolsCelebration gain={toolsGain} onClose={() => setToolsGain(null)} />
   return null
+}
+
+/** No currículo, o que a trilha recém-aberta tem; fora dele, nada (a festa de sempre). */
+function levelUpTrail(
+  journey: KidsJourneyView | null,
+  level: StudentLevelSlug,
+): LevelUpTrail | null {
+  const stages = journey?.curriculum?.stages
+  if (!stages?.length) return null
+  if (level === 'god')
+    return {
+      title: 'Lenda',
+      previous: stages.at(-1)?.title ?? null,
+      courses: [],
+      mission: null,
+      powers: 0,
+      legend: true,
+    }
+  const index = stages.findIndex((stage) => stage.level === level)
+  const stage = stages[index]
+  if (!stage) return null
+  return {
+    title: stage.title,
+    previous: stages[index - 1]?.title ?? null,
+    courses: [stage.base2d.title, stage.base3d.title].filter((title): title is string => !!title),
+    mission: stage.mission.title ?? null,
+    powers: stage.powers.length,
+    legend: false,
+  }
 }

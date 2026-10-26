@@ -9,7 +9,9 @@ import {
 import {
   AVATAR_CATEGORIES,
   AVATAR_CATEGORY_PALETTES,
+  AVATAR_HIDE_GROUPS,
   AVATAR_PALETTE_SETS,
+  AVATAR_REMOVABLE_NONE,
   AVATAR3D_PARTS,
   AVATAR3D_PARTS_BY_ID,
   type AvatarSlot,
@@ -153,5 +155,75 @@ describe('avatar3d — assertEquippableConfig (escrita estrita)', () => {
     expect(() =>
       assertEquippableConfig(cfg({ hair: { asset: 'hair-01', color: '#2c1b18' } }), new Set()),
     ).not.toThrow()
+  })
+})
+
+/**
+ * Peças próprias de 26/10/2026 (proposta "Provador do avatar"): a aba Enfeite, a paleta do
+ * acessório e o rosto delicado grátis.
+ */
+describe('avatar3d: aba Enfeite e peças novas', () => {
+  const cfg = (slots: Record<string, AvatarSlot>): AvatarConfig => ({
+    version: 2,
+    style: 'char-v1',
+    slots: slots as AvatarConfig['slots'],
+  })
+
+  test('Enfeite: removível, tintável e escondido junto com o cabelo pelo chapéu', () => {
+    expect(AVATAR_REMOVABLE_NONE.hairAccessory).toBe('enfeite-none')
+    expect(AVATAR_CATEGORY_PALETTES.hairAccessory?.length).toBeGreaterThan(0)
+    expect(AVATAR_HIDE_GROUPS.hat).toEqual(['hair', 'hairAccessory'])
+    expect(DEFAULT_AVATAR_SLOTS.hairAccessory.asset).toBe('enfeite-none')
+  })
+
+  test('enfeite pago precisa estar no inventário; a cor vem da paleta das roupas', () => {
+    const laco = { asset: 'enfeite-01', color: '#9b59b6' }
+    expect(() => assertEquippableConfig(cfg({ hairAccessory: laco }), new Set())).toThrow(
+      AvatarPartNotOwnedError,
+    )
+    expect(() =>
+      assertEquippableConfig(cfg({ hairAccessory: laco }), new Set(['enfeite-01'])),
+    ).not.toThrow()
+    expect(() =>
+      assertEquippableConfig(
+        cfg({ hairAccessory: { asset: 'enfeite-01', color: '#123456' } }),
+        new Set(['enfeite-01']),
+      ),
+    ).toThrow(AvatarInvalidError)
+  })
+
+  test('acessório aceita cor da paleta; config antiga sem cor ganha a cor padrão', () => {
+    expect(() =>
+      assertEquippableConfig(
+        cfg({ accessory: { asset: 'acc-09', color: '#3498db' } }),
+        new Set(['acc-09']),
+      ),
+    ).not.toThrow()
+    const antigo = canonicalizeAvatarConfig({
+      version: 2,
+      style: 'char-v1',
+      slots: { accessory: { asset: 'acc-01' } },
+    } as unknown as AvatarConfig)
+    expect(antigo.slots.accessory).toEqual({
+      asset: 'acc-01',
+      color: DEFAULT_AVATAR_SLOTS.accessory.color as string,
+    })
+    // Config gravada antes da aba Enfeite: a categoria nova entra com o "nenhum".
+    expect(antigo.slots.hairAccessory?.asset).toBe('enfeite-none')
+  })
+
+  test('rosto delicado é grátis: sorrisos, olhos, sobrancelha, nariz e bochecha', () => {
+    for (const id of [
+      'head-05',
+      'head-06',
+      'eyes-13',
+      'eyes-14',
+      'eyebrow-11',
+      'nose-05',
+      'face-10',
+    ]) {
+      expect(AVATAR3D_PARTS_BY_ID.get(id)?.tier, id).toBe('free')
+    }
+    expect(AVATAR3D_PARTS_BY_ID.get('hair-12')?.tier).toBe('free')
   })
 })
