@@ -42,7 +42,9 @@ export function StreakWidget({
     // Top bar do celular: o fogo fica SEMPRE; o XP e as moedas só aparecem quando
     // cabem (medido: a 375px os três números + sino + avatar não cabem ao lado do
     // logo). Os dois continuam no Início e no Meu espaço, e o nome falado do grupo
-    // diz os três em qualquer largura.
+    // diz os três em qualquer largura. ⚠️ Depois que o atalho "?" do Como fazer entrou
+    // na barra, o XP a 390px empurrava o avatar 16px para fora e a página rolava de
+    // lado (medido em 26/10/2026 com 1320 XP): os cortes subiram para 430 e 480.
     return (
       <span
         role="group"
@@ -53,12 +55,12 @@ export function StreakWidget({
           <Flame className={cn('size-4', flameClass)} aria-hidden />
           {streak.current}
         </span>
-        <span className="hidden items-center gap-1 font-bold min-[390px]:inline-flex">
+        <span className="hidden items-center gap-1 font-bold min-[430px]:inline-flex">
           <Sparkles className="size-4 text-(--sz-kids-amarelo)" aria-hidden />
           {xp}
         </span>
         {coins !== undefined ? (
-          <span className="hidden items-center gap-1 font-bold min-[440px]:inline-flex">
+          <span className="hidden items-center gap-1 font-bold min-[480px]:inline-flex">
             <ZappyCoin className="size-4" />
             {coinsDisplay}
           </span>

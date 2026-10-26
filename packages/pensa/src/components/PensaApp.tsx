@@ -564,7 +564,7 @@ function PensaWorkspace({
               kind={operation.kind === 'help' ? 'help' : 'planning'}
               quote={lastUserText}
               busy={busy}
-              onRetry={retryOperation}
+              onRetry={operation.retryable === false ? null : retryOperation}
               onEdit={() => {
                 setKind('planning')
                 setText(lastUserText ?? '')

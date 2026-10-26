@@ -42,6 +42,38 @@ describe('Pensa funcional', () => {
     fireEvent.click(screen.getByRole('button', { name: /^Tentar de novo$/ }))
     await waitFor(() => expect(sent).toMatchObject({ retry: true }))
   })
+  // Incidente de 26/10/2026: a rodada já tinha gastado as duas tentativas e o "Tentar de novo"
+  // seguia na tela, recusado na hora a cada clique.
+  test('a falha sem tentativas restantes não oferece o botão que nunca funciona', async () => {
+    const view = projectFixture()
+    view.operation = {
+      id: '10000000-0000-4000-8000-000000000088',
+      projectId: PROJECT_ID,
+      draftId: null,
+      kind: 'planning',
+      step: 'understanding',
+      status: 'failed',
+      calls: 5,
+      error: 'Esta parte atingiu o limite de tentativas. Sua ideia está guardada.',
+      retryable: false,
+      createdAt: view.project.createdAt,
+      updatedAt: view.project.updatedAt,
+    }
+    const adapter = host(
+      async <T,>(path: string) => (path.startsWith('/projects?') ? [] : view) as T,
+    )
+    render(<PensaApp adapter={adapter} initialProjectId={PROJECT_ID} />)
+    expect(
+      await screen.findByRole('heading', { name: 'Deu um tropeço. A sua ideia está guardada.' }),
+    ).toBeTruthy()
+    expect(screen.queryByRole('button', { name: /^Tentar de novo$/ })).toBeNull()
+    expect(
+      screen.getByText(
+        'Essa parte já usou as tentativas que tinha. Me conte de outro jeito e eu continuo.',
+      ),
+    ).toBeTruthy()
+    expect(screen.getByLabelText('Mensagem para o Zappy')).toBeTruthy()
+  })
   test('o plano inteiro pode ser consultado antes de liberar a execução das próximas missões', async () => {
     const adapter = host(
       async <T,>(path: string) => (path.startsWith('/projects?') ? [] : projectFixture()) as T,

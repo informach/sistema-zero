@@ -174,7 +174,7 @@ export function ChatPanel({
                   : 'other'
             }
             busy={busy}
-            onRetry={onRetryOperation}
+            onRetry={operation?.retryable === false ? null : onRetryOperation}
           />
         </div>
       ) : null}

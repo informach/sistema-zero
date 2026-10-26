@@ -131,7 +131,7 @@ export function CatalogCourseCard({
           {course.journeyRole === 'extra'
             ? 'Curso extra'
             : course.careerSlot === 1
-              ? 'Primeira da trilha'
+              ? 'Primeiro da trilha'
               : typeof course.careerSlot === 'number'
                 ? 'Curso da jornada'
                 : 'Curso bônus'}
@@ -173,7 +173,7 @@ export function CatalogCourseCard({
       </span>
     ) : foundationFirst ? (
       <span className="sz-btn-gradient-block">
-        <span className="font-normal text-[11px]">Comece por esta:</span>
+        <span className="font-normal text-[11px]">Comece por este:</span>
         <span className="flex items-center gap-1.5">
           <span className="line-clamp-1 flex-1 font-semibold text-sm">
             {foundationTitle ?? 'O primeiro curso'}

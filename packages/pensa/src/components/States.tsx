@@ -39,7 +39,12 @@ export function IdeasExhausted({ actions }: { actions?: ReactNode }) {
   )
 }
 
-/** "Deu um tropeço. A sua ideia está guardada.": a operação falhou e nada se perdeu. */
+/**
+ * "Deu um tropeço. A sua ideia está guardada.": a operação falhou e nada se perdeu.
+ * Sem `onRetry` a parte já gastou as tentativas (o servidor diz por `retryable: false`):
+ * oferecer "Tentar de novo" ali prendia a criança num botão que nunca funciona, e a saída
+ * passa a ser contar de outro jeito.
+ */
 export function OperationFailed({
   kind,
   quote,
@@ -50,7 +55,7 @@ export function OperationFailed({
   kind: 'planning' | 'help' | 'other'
   quote?: string | null
   busy: boolean
-  onRetry(): void
+  onRetry?: (() => void) | null
   onEdit?: () => void
 }) {
   const { copy, readOnly } = usePensaUi()
@@ -65,28 +70,32 @@ export function OperationFailed({
             : 'Deu um tropeço. A sua ideia está guardada.'}
       </h2>
       {/* Voltar a uma versão não parte de um texto: a frase do texto guardado não cabe. */}
-      {kind === 'other' ? null : <p>{copy.failedSaved}</p>}
+      {kind === 'other' ? null : <p>{onRetry ? copy.failedSaved : copy.failedNoRetry}</p>}
       {quote ? <blockquote className="pz-quote">“{quote}”</blockquote> : null}
-      <div className="pz-row">
-        <button
-          type="button"
-          className="pz-btn pz-btn--action"
-          disabled={busy || readOnly}
-          onClick={onRetry}
-        >
-          Tentar de novo
-        </button>
-        {onEdit ? (
-          <button
-            type="button"
-            className="pz-btn pz-btn--card"
-            disabled={busy || readOnly}
-            onClick={onEdit}
-          >
-            Mudar o texto
-          </button>
-        ) : null}
-      </div>
+      {onRetry || onEdit ? (
+        <div className="pz-row">
+          {onRetry ? (
+            <button
+              type="button"
+              className="pz-btn pz-btn--action"
+              disabled={busy || readOnly}
+              onClick={onRetry}
+            >
+              Tentar de novo
+            </button>
+          ) : null}
+          {onEdit ? (
+            <button
+              type="button"
+              className={`pz-btn ${onRetry ? 'pz-btn--card' : 'pz-btn--action'}`}
+              disabled={busy || readOnly}
+              onClick={onEdit}
+            >
+              Mudar o texto
+            </button>
+          ) : null}
+        </div>
+      ) : null}
     </section>
   )
 }
