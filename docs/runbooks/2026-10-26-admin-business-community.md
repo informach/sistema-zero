@@ -46,6 +46,8 @@ Leitura por SSH no Catalog, transação PostgreSQL `read only`, sem copiar crede
 3. Implantar Catalog e Payments antes do Admin. Referrals e Members também precisam estar na
    nova versão antes de verificar os respectivos painéis. As rotas antigas sem `audience`
    preservam a consulta geral para consumidores existentes; o Admin sempre envia o filtro.
+   CI de staging e operador de produção aguardam os ACKs e a retirada das versões antigas de
+   Catalog/Payments/Referrals antes dos apps. Falha impede a próxima fase; não repete POSTs.
 4. Depois de retirar os writers antigos, repetir a auditoria Catalog de linhas sem comunidade.
    Aplicar eventual classificação revisada antes da etapa de contrato. **O NOT NULL do Catalog
    é uma segunda migração gerada, a publicar somente após esse primeiro rollout**, para não
@@ -101,5 +103,19 @@ versão que também escreva audiência explícita.
   as transições já testadas. Nenhuma alteração nas cotas.
 - CI ganhou bancos descartáveis dedicados para as provas Catalog/Payments; não usa banco real.
 
-Pendentes neste registro: conciliação com staging atual, CI, aplicação nos ambientes,
+## Verificação da composição integrada
+
+Conciliação com staging `8f34d7bdd` em `1421cac20`, incluindo Jornada/Maestrias e Cadê:
+
+- Tipagem completa do Admin e Members passou.
+- Suíte completa do Admin, no diretório canônico do pacote: 935 testes, 3.920 asserções,
+  zero falhas. Dois fixtures de formulário agora devolvem a política da jornada na nova
+  consulta, mantendo as asserções de modalidade e concessão de blocos.
+- Operadores de implantação: 65 testes, 186 asserções. Incluem execução do trecho Bash real
+  de staging com sucesso, falha de retirada e falha de POST. Nenhum desses testes acessa Railway.
+- A primeira chamada da suíte Admin pela raiz teve sete negativos: quatro fixtures filhas
+  usam cwd do pacote e três cenários tinham resposta de política desatualizada. O log original
+  foi preservado; a execução canônica após corrigir os fixtures é a evidência de aprovação.
+
+Pendentes neste registro: CI remoto, aplicação nos ambientes,
 backfill financeiro, contrato final e conferência visual autenticada.

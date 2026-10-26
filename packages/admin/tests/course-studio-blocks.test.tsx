@@ -352,6 +352,7 @@ test.each([
   const requests: Record<string, unknown>[] = []
   globalThis.fetch = Object.assign(
     async (_url: RequestInfo | URL, init?: RequestInit) => {
+      if (String(_url).startsWith('/api/members/journey/')) return Response.json({ policy: {} })
       if (init?.method === 'PATCH') {
         requests.push(JSON.parse(String(init.body)))
         return Response.json({})

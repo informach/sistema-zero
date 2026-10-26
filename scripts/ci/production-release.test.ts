@@ -224,6 +224,54 @@ function wave(
 }
 
 describe('one production owner and canonical V1 barrier', () => {
+  test('commercial backends retire before Admin even when selected after it', async () => {
+    const fixture = wave()
+    const result = await runProductionRelease(
+      { sha, services: 'admin,payments,catalog,referrals', plan },
+      fixture.ports,
+    )
+    expect(result.deployments).toHaveLength(4)
+    for (const service of ['catalog', 'payments', 'referrals']) {
+      expect(fixture.order.indexOf(`REMOVED-old-${service}`)).toBeLessThan(
+        fixture.order.indexOf('POST-admin'),
+      )
+      expect(fixture.order.filter((event) => event === `POST-${service}`)).toHaveLength(1)
+    }
+  })
+  test('commercial retirement failure drains all acknowledged backends and prevents Admin', async () => {
+    const fixture = wave()
+    const retire = fixture.ports.backend.waitRetired
+    fixture.ports.backend.waitRetired = async (service) => {
+      await retire(service)
+      if (service === 'catalog') throw new Error('old catalog still active')
+    }
+    await expect(
+      runProductionRelease(
+        { sha, services: 'admin,catalog,payments,referrals', plan },
+        fixture.ports,
+      ),
+    ).rejects.toThrow('old catalog still active')
+    expect(fixture.order).not.toContain('POST-admin')
+    expect(fixture.order).toContain('REMOVED-old-payments')
+    expect(fixture.order).toContain('REMOVED-old-referrals')
+  })
+  test('a failed commercial POST still drains prior ACKs without starting Admin', async () => {
+    const fixture = wave()
+    const dispatch = fixture.ports.backend.deploy
+    fixture.ports.backend.deploy = async (service) => {
+      if (service === 'payments') throw new Error('commercial POST unknown')
+      return dispatch(service)
+    }
+    await expect(
+      runProductionRelease(
+        { sha, services: 'admin,catalog,payments,referrals', plan },
+        fixture.ports,
+      ),
+    ).rejects.toThrow('commercial POST unknown')
+    expect(fixture.order).toContain('REMOVED-old-catalog')
+    expect(fixture.order).not.toContain('POST-admin')
+    expect(fixture.order).not.toContain('POST-referrals')
+  })
   test('application builds longer than twenty minutes retain a bounded sixty-minute budget', async () => {
     const fixture = wave()
     let clock = 0

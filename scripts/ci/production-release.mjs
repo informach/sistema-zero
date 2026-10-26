@@ -205,22 +205,34 @@ export async function runProductionRelease(input, ports) {
   // Keep the whole-wave deadline authoritative even after a long backend barrier.
   const appDeadline = Math.min(deadline, ports.now() + PRODUCTION_APPLICATION_TIMEOUT_MS)
   const deployments = []
-  let dispatchFailure
-  try {
-    for (const name of apps) {
-      if (ports.now() >= appDeadline) throw new Error('Onda de apps excedeu o prazo')
-      deployments.push({ name, id: await ports.backend.deploy(name, appDeadline) })
+  const commercialBackends = new Set(['catalog', 'payments', 'referrals'])
+  const phases = [
+    apps.filter((name) => commercialBackends.has(name)),
+    apps.filter((name) => !commercialBackends.has(name)),
+  ]
+  // The Admin must not send community filters to a previous backend version.
+  // Retire old commercial readers/writers before starting dependent applications.
+  for (const phase of phases) {
+    const acknowledged = []
+    let dispatchFailure
+    try {
+      for (const name of phase) {
+        if (ports.now() >= appDeadline) throw new Error('Onda de apps excedeu o prazo')
+        const deployment = { name, id: await ports.backend.deploy(name, appDeadline) }
+        deployments.push(deployment)
+        acknowledged.push(deployment)
+      }
+    } catch (error) {
+      dispatchFailure = error
     }
-  } catch (error) {
-    dispatchFailure = error
+    // Wait for every ACK we own even if another owned operation fails. No cancel/retry.
+    const results = await Promise.allSettled(
+      acknowledged.map(({ name, id }) => ports.backend.waitRetired(name, id, appDeadline)),
+    )
+    if (dispatchFailure) throw dispatchFailure
+    const failure = results.find((result) => result.status === 'rejected')
+    if (failure) throw failure.reason
   }
-  // Wait for every ACK we own even if another owned operation fails. No cancel/retry.
-  const results = await Promise.allSettled(
-    deployments.map(({ name, id }) => ports.backend.waitRetired(name, id, appDeadline)),
-  )
-  if (dispatchFailure) throw dispatchFailure
-  const failure = results.find((result) => result.status === 'rejected')
-  if (failure) throw failure.reason
   await bounded(() => ports.checkSource())
   await bounded(() => ports.backend.requireNativeDisabled(Object.keys(ports.ids), deadline))
   return {

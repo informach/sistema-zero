@@ -1,5 +1,18 @@
 # CLAUDE.md — @sistemazero/admin
 
+## Negócio por comunidade (26/10/2026)
+
+A lente Kids/Adultos filtra catálogo, campanhas, vendas/assinaturas e resultados de
+embaixadores; o progresso do Pensa também segue a lente. As contas e o cadastro do
+embaixador são únicos, assim como custos/cotas de IA, fiscal, atendimento e auditoria.
+Não transformar preferência de navegação em identidade ou permissão de acesso.
+
+`CommunityPage` reinicia a página ao trocar a lente. `useCommunityRequests` envia a
+comunidade explicitamente, cancela as requisições anteriores e recusa respostas tardias.
+Os serviços filtram antes da contagem/paginação e conferem o escopo dos detalhes por ID.
+Vendas históricas sem origem comprovada têm consulta própria, nunca classificação por
+nome/e-mail. Ver `docs/runbooks/2026-10-26-admin-business-community.md` para migrações e rollout.
+
 ## Autoria da nova jornada (25/10/2026)
 
 `policy.curriculum` seleciona o currículo novo nas jornadas Kids e adulta. Regras históricas de
