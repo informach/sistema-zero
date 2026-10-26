@@ -539,24 +539,26 @@ describe('marcos do curso nas listagens', () => {
     expect(bySlug.get('base-2d')?.milestones).toEqual({ completed: true, showcased: true })
   })
 
-  test('vitrine adulta não usa os marcos de qualificação da jornada Kids', async () => {
+  test.each([
+    'kids',
+    'adult',
+  ] as const)('vitrine adulta só mostra marcos adultos: origem %s', async (audience) => {
     const { app, courses, entitlements, gamification } = buildApp()
     const adulto = seedSampleCourse(courses, 'curso-adulto', 'published', 'adult')
     grantAllKidsCourses(entitlements, { userId: ACCOUNT })
-    // Mesmo com marcos gravados na vitrine adulta, a view sai zerada de propósito.
+    const events = [
+      { sourceType: 'course_complete', sourceId: adulto.courseId, amount: 0 },
+      { sourceType: 'course_showcased', sourceId: adulto.courseId, amount: 0 },
+    ] as const
     await gamification.award({
       userId: ACCOUNT,
       accountId: ACCOUNT,
-      audience: 'adult',
-      events: [
-        { sourceType: 'course_complete', sourceId: adulto.courseId, amount: 0 },
-        { sourceType: 'course_showcased', sourceId: adulto.courseId, amount: 0 },
-      ],
+      audience,
+      events: [...events],
       today: '2026-06-02',
       now: NOW,
       privileged: false,
     })
-
     const response = await app.handle(
       new Request('http://localhost/members/catalog?audience=adult', {
         headers: { 'x-auth-user-id': ACCOUNT },
@@ -565,8 +567,8 @@ describe('marcos do curso nas listagens', () => {
     const body = (await response.json()) as { courses: Record<string, any>[] }
     const bySlug = new Map(body.courses.map((course) => [course.courseSlug, course]))
     expect(bySlug.get('curso-adulto')?.milestones).toEqual({
-      completed: false,
-      showcased: false,
+      completed: audience === 'adult',
+      showcased: audience === 'adult',
     })
     expect(gamification.journeyCourseStateReads).toBe(0)
     expect(gamification.qualifyingJourneySlotReads).toBe(0)

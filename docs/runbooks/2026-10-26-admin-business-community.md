@@ -175,3 +175,11 @@ isolada do BFF passava e, junto do teste DOM, falhava. O teste DOM passou a roda
 próprio, com origem válida, seguindo os demais testes de componentes do pacote. Todas as
 asserções de envio/revisão foram preservadas. Suíte member-shell completa posterior: 1.860
 testes externos, 11.702 asserções, zero falhas; o wrapper executa os quatro cenários DOM reais.
+
+Members completo encontrou três expectativas antigas que contrariavam a Jornada integrada:
+blocos/revisão curricular ainda dependiam de Mural nos testes e a vitrine adulta esperava
+ocultar seus próprios marcos. Os testes agora comprovam concessão na conclusão, ausência de
+concessão apenas por publicar e isolamento dos marcos Kids/adulto, conforme o plano da Jornada.
+Nenhuma regra produtiva foi alterada nesse ajuste. Resultado local: 1.963 positivos, 14.636
+asserções, zero falhas; 532 casos condicionais de banco/ambiente foram pulados. As provas SQL
+específicas executadas e as exigidas no CI estão discriminadas acima, sem contar skips como aprovação.
