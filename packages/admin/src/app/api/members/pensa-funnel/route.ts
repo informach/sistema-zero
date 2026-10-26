@@ -11,5 +11,7 @@ export async function GET(request: Request) {
       { status: 400 },
     )
   }
-  return forwardUpstream(await getPensaFunnel(days))
+  return forwardUpstream(
+    await getPensaFunnel(days, new URL(request.url).searchParams.get('audience') ?? undefined),
+  )
 }

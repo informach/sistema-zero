@@ -1,11 +1,13 @@
 import { afterAll, beforeAll, beforeEach, test as bunTest, describe, expect } from 'bun:test'
 import { randomUUID } from 'node:crypto'
 import {
+  creatorJourneyCourseIds,
   initialKidsJourneyPolicy,
   type KidsJourneyPolicy,
   pauseKidsJourneyPolicy,
   resolveKidsJourneyCourseLock,
 } from '@sistemazero/core/journey'
+import { creatorCurriculumFixture } from '../../../core/tests/fixtures/creator-curriculum'
 import {
   KidsJourneyCatalogBusyError,
   KidsJourneyUnavailableError,
@@ -18,6 +20,7 @@ import type { DbConnection } from '../../src/infrastructure/persistence/drizzle/
 import { DrizzleGamificationRepository } from '../../src/infrastructure/persistence/drizzle/gamification.repository'
 import { DrizzleKidsJourneyRepository } from '../../src/infrastructure/persistence/drizzle/kids-journey.repository'
 import {
+  courses,
   kidsJourneyPolicy,
   kidsJourneyPreparations,
   kidsJourneyRevisions,
@@ -134,6 +137,7 @@ describe.skipIf(!target)('Kids journey repository / real migrations', () => {
       await tx`delete from members.kids_journey_revisions`
       await tx`delete from members.kids_journey_preparations` // owners cascade
       await tx`delete from members.kids_journey_earned`
+      await tx`delete from members.creator_journey_course_grants`
       await tx`delete from members.xp_events`
       await tx`delete from members.gamification_profiles`
       await tx`delete from members.studio_block_grants`
@@ -573,6 +577,41 @@ describe.skipIf(!target)('Kids journey repository / real migrations', () => {
     expect((await publish(result.preparation))!.version).toBe(2)
   })
 
+  test('outgoing legacy Kids capture freezes already-open extras by UUID before new pair gates', async () => {
+    const subject = owner()
+    const curriculum = creatorCurriculumFixture()
+    const extraId = curriculum.stages[0]!.extras[0]!.courseId
+    await conn.db.insert(courses).values(
+      creatorJourneyCourseIds(curriculum)
+        .filter((id) => id !== extraId)
+        .map((id) => ({
+          id,
+          slug: `planned-${id}`,
+          title: 'Curso planejado',
+          status: 'draft' as const,
+          audience: 'kids' as const,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        })),
+    )
+    await conn.sql`insert into members.courses(id,slug,title,audience,status,level,track,career_slot,journey_role,created_at,updated_at)
+      values (${extraId},'legacy-extra-capture','Extra conhecido','kids','published','iniciante','2d',null,'extra',now(),now())`
+    await profile(subject)
+    const source = await repo.readSnapshot([subject])
+    expect(
+      source.profiles.get(subject.userId)?.earned.courseAccess.creatorCourseIds ?? [],
+    ).not.toContain(extraId)
+    const ready = await baseline(await prepare(1, { ...initialKidsJourneyPolicy(), curriculum }))
+    expect(ready.status).toBe('ready')
+    const frozen = await repo.readSnapshot([subject])
+    expect(frozen.profiles.get(subject.userId)?.earned.courseAccess.creatorCourseIds).toContain(
+      extraId,
+    )
+    const [receipt] =
+      await conn.sql`select policy_version from members.creator_journey_course_grants where user_id=${subject.userId} and course_id=${extraId} and audience='kids'`
+    expect(receipt?.policy_version).toBe(1)
+  })
+
   test('unowned historical milestones stop bootstrap capture instead of silently skipping a veteran', async () => {
     await conn.sql`truncate members.kids_journey_policy, members.kids_journey_preparations, members.kids_journey_revisions cascade`
     await milestone(owner(), randomUUID(), 'course_complete')
@@ -991,8 +1030,11 @@ describe.skipIf(!target)('Kids journey repository / real migrations', () => {
       ),
     }
     expect((await publish(await baseline(await prepare(1, liberal))))!.version).toBe(2)
-    // No GET/reconciliation by this profile under V2; this read is deliberately read-only.
-    expect((await repo.readSnapshot([subject])).profiles.get(subject.userId)!.earned).toEqual(old)
+    // No GET under V2. Publication has only frozen the old extra's UUID; rank/tier rights stay V1.
+    expect((await repo.readSnapshot([subject])).profiles.get(subject.userId)!.earned).toEqual({
+      ...old,
+      courseAccess: { ...old.courseAccess, creatorCourseIds: [extraId] },
+    })
     const restrictive: KidsJourneyPolicy = {
       ...liberal,
       tierAccess: liberal.tierAccess.map((rule) =>
@@ -1010,7 +1052,11 @@ describe.skipIf(!target)('Kids journey repository / real migrations', () => {
     const frozen = (await repo.readSnapshot([subject])).profiles.get(subject.userId)!.earned
     expect(frozen.level).toBe('noob')
     expect(frozen.capabilities).toEqual([])
-    for (const tiers of Object.values(frozen.courseAccess)) expect(tiers).toContain('iniciante-2d')
+    for (const kind of ['entry', 'expanded', 'reward'] as const)
+      expect(frozen.courseAccess[kind]).toContain('iniciante-2d')
+    expect([...(frozen.courseAccess.creatorCourseIds ?? [])].sort()).toEqual(
+      [extraId, foundationId].sort(),
+    )
     expect((await publish(ready))!.version).toBe(3)
     const snapshot = await repo.readSnapshot([subject])
     const base = snapshot.catalog.find((course) => course.id === foundationId)!

@@ -68,6 +68,9 @@ function acoesConhecidas(): Map<SceneId, SceneAction[]> {
     { type: 'export-file' },
     { type: 'publish' },
     { type: 'skin', theme: 'sea' },
+    { type: 'touch-hiding-place', id: 0 },
+    { type: 'touch-hiding-place', id: 1 },
+    { type: 'other-hiding-place' },
   ]
   for (const scene of SCENE_IDS) {
     for (const acao of acoesDosControles) somar(scene, acao)
@@ -102,6 +105,21 @@ function acoesConhecidas(): Map<SceneId, SceneAction[]> {
 
 describe('toda ação de cena conhecida atravessa a borda do members', () => {
   const porCena = acoesConhecidas()
+
+  test.each([-1, 2, 0.5, '1', null])('recusa esconderijo fora do contrato: %j', async (id) => {
+    const bloco = blocoCom('touch-response', [
+      { type: 'touch-hiding-place', id } as unknown as SceneAction,
+    ])
+    expect(validador.Check(bloco)).toBe(false)
+    const response = await app.handle(
+      new Request('http://members.test/', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ content: bloco }),
+      }),
+    )
+    expect(response.status).toBe(422)
+  })
 
   test('⚠️ a varredura não passa vazia: todas as cenas e dezenas de tipos de ação', () => {
     const tipos = new Set([...porCena.values()].flat().map((a) => a.type))

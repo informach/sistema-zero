@@ -1242,6 +1242,12 @@ const SCENE_MODEL_DEFINITIONS: Record<SceneId, Omit<SceneModel, 'predictionPrevi
         label: 'O toque revelou o personagem',
         pedido: 'Ligue a reação ao toque e toque no esconderijo de novo.',
       },
+      {
+        id: 'second-target',
+        soNoCaso: true,
+        label: 'Outro esconderijo recebeu o toque e foi escolhido',
+        pedido: 'Clique em Testar com outro esconderijo e toque nas pedras.',
+      },
     ],
     hints: [
       'Toque no esconderijo e observe se a figura muda.',
@@ -1273,6 +1279,12 @@ const SCENE_MODEL_DEFINITIONS: Record<SceneId, Omit<SceneModel, 'predictionPrevi
         id: 'no-find',
         label: 'Procurar sem achar não somou',
         pedido: 'Toque fora dos esconderijos depois de encontrar alguém.',
+      },
+      {
+        id: 'repeat',
+        soNoCaso: true,
+        label: 'Repetir o toque não executou outra soma',
+        pedido: 'Toque de novo onde um personagem apareceu.',
       },
       {
         id: 'back-to-zero',

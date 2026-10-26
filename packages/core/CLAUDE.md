@@ -1,10 +1,72 @@
 # CLAUDE.md — @sistemazero/core
 
-## Jornada Kids canônica (implementação isolada, 19/10/2026)
+## Jornada do Criador: currículo compartilhado (25/10/2026)
+
+`journey/creator-curriculum.ts` contém o contrato puro usado pelas duas audiências. O campo
+opcional `curriculum` fica DENTRO das políticas Kids/adulta já versionadas. Sua presença escolhe
+a nova autoridade; `steps`/`tierAccess` Kids e `stages` adultos históricos deixam de decidir a
+progressão. Sem `curriculum`, a projeção histórica continua funcionando. Não criar uma segunda
+política, nem interpretar níveis/dimensões dos tiers antigos como os postos novos.
+
+São sete postos (`noob` até `champion`) e Lenda (`god`). Cada posto vincula UUIDs de base 2D,
+base 3D e missão; a missão reúne a transferência em ambas as dimensões no mesmo curso. A
+conclusão do curso deve exigir os objetivos de aplicação configurados nas aulas: o core recebe
+esse marco durável, não tenta inspecionar projetos. A ordem é 2D → 3D → missão/Poderes/extras.
+Promoção exige o par, a missão e um Poder distinto em Faísca ou dois nos demais postos. Variantes
+2D/3D ou cursos equivalentes de um Poder contam uma vez por `mechanicId`. Extras nunca são
+requisitos de promoção. Publicação no Mural não substitui nem condiciona conclusão.
+
+`projectCreatorJourney` é a projeção comum; `resolveCreatorJourneyCourseLock` aplica seu acesso.
+As views Kids/adulta expõem essa projeção em `.curriculum`; os arrays antigos são compatibilidade,
+não representam o quorum de Poderes. `creatorJourneyCoursePlacements` identifica todos os usos
+de um curso, inclusive crédito de Maestria. As interfaces não devem reconstruir gates por conta.
+
+Ferramentas têm grants após `base2d`, `base3d`, `pair` ou um `courseId` do próprio posto.
+Cada Maestria também pode liberar `grants` ao concluir seu núcleo em um nível elegível. Faixas
+avançadas do Molda devem vir do curso/núcleo que as ensina. Dependências reais são conferidas
+antes de novas concessões. Posto herdado não inventa capacidades novas; licença, paleta por
+curso, linguagem e autorização do runtime continuam contratos separados.
+
+`retainedCourseIds` e `creatorJourneyOpenCourseIds` transportam direitos pedagógicos por UUID.
+Members congela esses direitos no ledger `creator_journey_course_grants` sob a mesma versão da
+política; Kids usa `earned.courseAccess.creatorCourseIds` como ponte. Alterar o par de um posto
+não fecha missões, Poderes ou extras já abertos. Pisos de posto e capacidades congeladas também
+são preservados. Pausa impede novas promoções/ferramentas/conquistas, mas mantém o posto atual
+aberto e permite expandir 2D → 3D → pós-par com conclusão real, sob o posto congelado.
+
+As seis Maestrias são `python2d`, `python3d`, `javascript2d`, `javascript3d`, `arte2d` e
+`modelagem3d`. Cada uma tem I → II → III, núcleo, duas de três oficinas distintas e todos os
+critérios da rubrica aprovados na MESMA entrega imutável. Não combinar critérios de projetos
+diferentes. `evaluateCreatorMasteries` recebe aprovações e conquistas verificadas pelo Members;
+`reviewedAt`/“já conferi” de uma aula não é aprovação de Maestria. Núcleo/oficinas podem receber
+créditos explícitos e auditados. `projectCourseId` é guia opcional; a entrega usa evidência existente
+e não exige um curso adicional. Blocos, Ponte e Pro são formas de criação, não áreas distintas.
+`masteryAdmissions` recebe somente recibos de submissões já verificadas pelo servidor: uma
+entrega preserva a admissão daquele nível após edição do par ou da entrada da área, sem concluir
+o nível nem abrir o seguinte. O Members conserva também a definição enviada. O hub passa
+`retainedCourseIds` ao avaliador para mostrar os cursos adquiridos; acesso isolado a um curso não
+prova admissão a uma área. Pausa permite estudo/reenvio/revisão e continua segurando novos selos.
+`CreatorMasteryJourneyFacts` agrupa definições enviadas, admissões, aprovações e conquistas;
+`withCreatorMasteryDefinitions` aplica o contrato preservado somente aos níveis já iniciados.
+Jornada, gates de cursos/ferramentas e hub usam os mesmos fatos. Crédito de núcleo aprovado pode
+conceder sua ferramenta antes do selo, sem inventar oficinas concluídas. Capturas de direitos
+também precisam desses fatos completos; ler apenas conquistas perde créditos e níveis iniciados.
+
+Uma conquista conserva a rubrica com a qual foi aprovada. `CreatorMasteryAward.capabilities`
+guarda as ferramentas da definição avaliada; a projeção preserva esse recibo mesmo se o núcleo
+foi creditado. Nunca inferir novas capacidades retroativamente da definição atual de um nível
+antigo. `mastery-records.ts` define os transportes do envio, avaliação e créditos humanos.
+
+Testes focados: `creator-curriculum.test.ts`, `creator-journey-adapters.test.ts`, contratos
+históricos Kids/adulto e `journey-state.test.ts`. Captura/migração e concorrência são verificadas
+pelos testes PostgreSQL de Members. O catálogo em rascunho aparece indisponível, sem conclusão
+fictícia; referência inexistente ou audiência/modalidade incorreta impede publicar a política.
+
+## Jornada Kids histórica sem curriculum (19/10/2026)
 
 Requisitos, capacidades e tierAccess normais vêm da política persistida e do earned; não usar
-CREATOR_JOURNEY_LEVELS como autorizador Kids. A tabela fixa ainda serve ao relatório Adult.
-Nomes/ordem/limites de 49 posições são metadata estrutural, não requisitos dinâmicos. Seed é artefato de
+CREATOR_JOURNEY_LEVELS como autorizador Kids. A tabela fixa não autoriza o currículo novo.
+Nomes/ordem/limites de 49 posições pertencem à política histórica sem `curriculum`, não à nova formação. Seed é artefato de
 provisionamento, sem fallback leitor. Posto/capacidades e 21 direitos por etapa são monotônicos;
 expanded implica entry, reward não. Pausa retém a regra e congela novos postos/ferramentas.
 
@@ -12,7 +74,7 @@ O resolvedor Kids antigo e a tabela rank→faixa Molda sem consumidor produtivo 
 para fixtures de teste, conservando a prova de paridade. MoldaToolBand continua vocabulário
 estrutural; KIDS_MOLDA_BAND_CAPABILITIES traduz capacidade em faixa. Currículo, matrícula,
 paletas e JS/Python mantêm seus contratos. Não remover helpers Adult ou migrar documentos de
-projeto sob o pretexto de limpar a jornada. Gates/rollout integrados continuam pendentes.
+projeto sob o pretexto de limpar a jornada.
 
 > **⚠️ Antes de QUALQUER mudança, consulte a doc ATUALIZADA via MCP do Context7**
 > (`resolve-library-id` → `query-docs`) para toda lib/API que encostar aqui — não confie só na
@@ -30,12 +92,12 @@ Guia operacional deste package. Leia antes de editar.
 > palpite, pistas e pergunta final continuam anexados à experimentação. Menções a
 > demonstração ou pergunta curta nas notas históricas abaixo não descrevem mais o contrato.
 
-## Jornada Kids configurável — núcleo canônico (18/10/2026)
+## Jornada Kids configurável — política histórica sem curriculum (18/10/2026)
 
 `journey/kids-policy.ts`, `kids-projection.ts` e `kids-validation.ts` definem uma única
 política Kids versionada: `active`/`paused`, sete avanços e sete regras de acesso às etapas.
-O seed persistido reproduz os oito postos/49 posições; não existe modo/fallback legado no
-leitor normal. O oráculo anterior fica nos testes de paridade. Adult continua independente.
+O seed histórico reproduz os oito postos/49 posições; não existe fallback para constantes no
+leitor normal. O oráculo anterior fica nos testes de paridade. As políticas por audiência são independentes.
 Posto, capacidade global, licença, paleta curricular e linguagem/runtime são conceitos separados.
 
 Pausa retém requisitos e regras de base, congela posto/app capabilities e admite expansão
@@ -50,8 +112,8 @@ Estúdio, sem dependência técnica da Ponte. `KidsJourneyCourseFact.graduationO
 `course.level === 'lenda'`: formatura não pode ser requisito para chegar ao topo, mas mantém
 acesso por matrícula sem novo gate. Curso normal fora da escada também pode ter `tier: null`.
 
-Focados atuais: canonical/policy/parity/pause/journey/journey-state, 60 testes/2772 asserções.
-Novos consumidores Members estão em migração isolada; isso não qualifica a integração completa.
+Os testes canonical/policy/parity/pause/journey/journey-state preservam esse comportamento
+para políticas publicadas que ainda não contêm `curriculum`.
 
 ## Créditos do Zappy e do Pensa: o recurso tem nome (20/10/2026)
 
@@ -204,7 +266,7 @@ por conveniência, mas prefira o subpath. Os subpaths são declarados no campo `
 | `/time` | calendário civil compartilhado, sem converter data de negócio em instante UTC | `sao-paulo` |
 | `/learning/scene` | as **45** cenas de aula: ações, catálogo, motor, avaliação, **elenco** (`cast`: nomes E figura, `actorFigure`), **cenário** (`cenario`: qual JOGO a cena retrata — o fundo, o chão e o elenco de fábrica), **caso e missão** (`setup`) e o que a cena diz de si (`readout`). ⚠️ Cena nova: checklist em "Cenas de aula" abaixo (o TS reprova o que faltar, o palco do member-shell incluído) | `actions` · `state` · `engine` · `nucleo` · `atelie` · `pistas` · `pilha` · `catalog` · `evaluate` · `readout` · `cast` · `cenario` · `questions` · `session` · `index` |
 | `/creations` | contratos puros de identidade/armazenamento compartilhados por apps e serviços | `object-deletion` · `pinta-palette-library` · `storage-keys` |
-| `/journey` | **Jornada do Criador**: identidades estruturais dos oito postos/sete etapas/49 posições, contrato Kids canônico e projeção da política publicada (`resolveKidsJourneyCourseLock`), capacidades e estado curricular do curso. O resolvedor Kids antigo existe só em fixture de teste. Campos de curso `careerSlot`/`careerLock` e coluna `career_slot` continuam sendo contratos curriculares legítimos (ver `docs/jornada-do-criador.md`) | `catalog` · `kids-policy` · `kids-projection` · `kids-validation` · `kids-tools` · `kids-seed` · `adult-policy` · `state` · `index` |
+| `/journey` | **Jornada do Criador**: currículo compartilhado de sete postos com pares 2D/3D, Poderes por quorum e seis Maestrias; projeções Kids/adulto das políticas persistidas, direitos adquiridos, critérios e recibos imutáveis. As 49 posições e tiers antigos continuam apenas para políticas históricas sem `curriculum` (ver `docs/jornada-do-criador.md`). | `creator-curriculum` · `mastery-records` · `catalog` · `kids-policy` · `kids-projection` · `kids-validation` · `kids-tools` · `kids-seed` · `adult-policy` · `state` · `index` |
 
 ## Cenas de aula (`src/learning/scene/`)
 

@@ -1,0 +1,409 @@
+/* Guided learning aids. All colors derive from the existing application palette. */
+.sz-garden-rule,
+.sz-garden-value-group,
+.sz-garden-quiz {
+  --sz-garden-event: var(--kids-cyan, var(--color-primary));
+  --sz-garden-chosen: var(--kids-lime, var(--color-primary));
+  --sz-garden-reaction: var(--kids-verde, var(--success-foreground, var(--color-primary)));
+  --sz-garden-memory: var(--kids-rosa, var(--color-primary));
+}
+.sz-garden-eyebrow {
+  font-size: 0.6875rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  line-height: 1.5;
+}
+.sz-garden-caption {
+  font-size: 0.8125rem;
+  line-height: 1.55;
+  color: var(--color-muted-foreground);
+}
+.sz-garden-rule {
+  display: grid;
+  gap: 0.625rem;
+}
+.sz-garden-rule > .sz-garden-eyebrow {
+  color: var(--color-muted-foreground);
+}
+.sz-garden-node {
+  --node-color: var(--sz-garden-event);
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  border: 1px solid color-mix(in oklab, var(--node-color) 32%, var(--color-card));
+  border-left: 4px solid var(--node-color);
+  border-radius: 1rem;
+  background: color-mix(in oklab, var(--node-color) 9%, var(--color-card));
+}
+.sz-garden-node > svg {
+  flex: none;
+  color: var(--node-color);
+}
+.sz-garden-node span,
+.sz-garden-mini-rule span {
+  display: block;
+  font-size: 0.6875rem;
+  color: var(--color-muted-foreground);
+}
+.sz-garden-node strong,
+.sz-garden-mini-rule strong {
+  display: block;
+  font-size: 0.9375rem;
+  line-height: 1.45;
+}
+.sz-garden-node[data-tone="reaction"] {
+  --node-color: var(--sz-garden-reaction);
+}
+.sz-garden-node[data-tone="off"] {
+  --node-color: var(--color-muted-foreground);
+  border-style: dashed;
+}
+.sz-garden-wire {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  color: var(--color-muted-foreground);
+}
+.sz-garden-wire-line {
+  height: 0.625rem;
+  border-left: 2px dashed currentColor;
+}
+.sz-garden-wire[data-connected="true"] {
+  color: var(--sz-garden-reaction);
+}
+.sz-garden-wire[data-connected="true"] .sz-garden-wire-line {
+  border-left-style: solid;
+}
+.sz-garden-chosen {
+  display: block;
+  width: 100%;
+  border-radius: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid color-mix(in oklab, var(--sz-garden-chosen) 30%, var(--color-card));
+  background: color-mix(in oklab, var(--sz-garden-chosen) 10%, var(--color-card));
+  color: var(--color-foreground);
+  font-size: 0.875rem;
+  text-align: center;
+}
+.sz-garden-chosen span {
+  color: var(--color-foreground);
+  font-weight: 800;
+}
+.sz-garden-link-status {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8125rem;
+  color: var(--color-muted-foreground);
+}
+.sz-garden-rule[data-enabled="true"] .sz-garden-link-status {
+  color: var(--sz-garden-reaction);
+}
+.sz-garden-value-group {
+  display: grid;
+  gap: 0.625rem;
+}
+.sz-garden-value {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.125rem;
+  padding: 0.875rem;
+  border: 2px solid color-mix(in oklab, var(--sz-garden-memory) 32%, var(--color-card));
+  border-radius: 1rem;
+  background: color-mix(in oklab, var(--sz-garden-memory) 7%, var(--color-card));
+}
+.sz-garden-value > .sz-garden-eyebrow,
+.sz-garden-variable-name {
+  color: var(--sz-garden-memory);
+}
+.sz-garden-variable-name {
+  font-size: 1.125rem;
+}
+.sz-garden-number {
+  font-size: 3.75rem;
+  font-weight: 800;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-foreground);
+}
+.sz-garden-value[data-changed="true"] {
+  animation: sz-garden-pulse 0.55s ease-out;
+}
+@keyframes sz-garden-pulse {
+  0% {
+    box-shadow: 0 0 0 0 color-mix(in oklab, var(--sz-garden-memory) 35%, transparent);
+  }
+  60% {
+    box-shadow: 0 0 0 7px transparent;
+  }
+  100% {
+    box-shadow: none;
+  }
+}
+.sz-garden-update {
+  align-self: stretch;
+  margin-top: 0.625rem;
+  padding: 0.625rem;
+  border-radius: 0.75rem;
+  background: var(--color-card);
+  text-align: center;
+}
+.sz-garden-update > .sz-garden-eyebrow {
+  color: var(--color-muted-foreground);
+  margin-bottom: 0.375rem;
+}
+.sz-garden-equation {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+.sz-garden-equation > span {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 2.25rem;
+}
+.sz-garden-equation small {
+  font-size: 0.625rem;
+  color: var(--color-muted-foreground);
+}
+.sz-garden-equation b {
+  display: flex;
+  align-items: center;
+  font-size: 1.5rem;
+  line-height: 1.4;
+}
+.sz-garden-equation .sz-garden-operation {
+  padding: 0 0.375rem;
+  border-radius: 0.5rem;
+  background: color-mix(in oklab, var(--sz-garden-reaction) 12%, var(--color-card));
+  color: var(--sz-garden-reaction);
+}
+.sz-garden-update-label {
+  font-size: 0.875rem;
+}
+.sz-garden-readout {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  font-size: 0.8125rem;
+  font-weight: 800;
+  color: var(--sz-garden-memory);
+}
+.sz-garden-readout svg {
+  transform: rotate(-35deg);
+}
+.sz-garden-mini-rule {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  border-radius: 0.75rem;
+  padding: 0.625rem;
+  background: color-mix(in oklab, var(--sz-garden-reaction) 9%, var(--color-card));
+}
+.sz-garden-mini-rule > svg {
+  color: var(--sz-garden-reaction);
+  flex: none;
+}
+.sz-garden-recap {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.875rem;
+  border-radius: 1rem;
+  border: 1px solid
+    color-mix(
+      in oklab,
+      var(--kids-verde, var(--success-foreground, var(--color-primary))) 25%,
+      var(--color-card)
+    );
+  background: color-mix(
+    in oklab,
+    var(--kids-verde, var(--success-foreground, var(--color-primary))) 9%,
+    var(--color-card)
+  );
+}
+.sz-garden-recap > svg {
+  flex: none;
+  color: var(--kids-verde, var(--success-foreground, var(--color-primary)));
+}
+.sz-garden-recap strong {
+  font-family: var(--font-baloo);
+  font-size: 1.125rem;
+  color: var(--kids-verde, var(--success-foreground, var(--color-primary)));
+}
+.sz-garden-recap p {
+  font-size: 0.875rem;
+  line-height: 1.6;
+  margin-top: 0.25rem;
+}
+.sz-garden-quiz {
+  display: grid;
+  gap: 1rem;
+  min-width: 0;
+}
+.sz-garden-quiz-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1rem;
+}
+.sz-garden-quiz-world {
+  min-width: 0;
+  align-self: start;
+  display: grid;
+  gap: 0.625rem;
+  padding: 0.875rem;
+  border: 1px solid var(--color-border);
+  border-radius: 1rem;
+  background: var(--color-card);
+}
+.sz-garden-quiz-world [data-quiz-scene] {
+  max-width: none;
+  margin: 0;
+}
+.sz-garden-state-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: var(--sz-garden-event);
+}
+.sz-garden-state-label[data-result="true"] {
+  color: var(--sz-garden-reaction);
+}
+.sz-garden-quiz-answer {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 1rem;
+  min-width: 0;
+}
+.sz-garden-quiz-answer > [data-tom] {
+  align-self: flex-start;
+  white-space: normal;
+  height: auto;
+  max-width: 100%;
+}
+.sz-garden-choice {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.sz-garden-choice[data-answer="correct"] {
+  border-color: var(--sz-garden-reaction);
+  background: color-mix(in oklab, var(--sz-garden-reaction) 9%, var(--color-card));
+  color: var(--color-foreground);
+}
+.sz-garden-choice[data-answer="wrong"] {
+  border-color: var(--color-destructive);
+  background: color-mix(in oklab, var(--color-destructive) 6%, var(--color-card));
+  color: var(--color-foreground);
+}
+.sz-garden-choice[aria-disabled="true"] {
+  cursor: default;
+}
+.sz-garden-answer-label {
+  display: block;
+  font-size: 0.6875rem;
+  margin-top: 0.375rem;
+  color: var(--color-muted-foreground);
+  font-weight: 700;
+}
+.sz-garden-quiz-feedback {
+  padding: 0.875rem;
+  border-left: 4px solid var(--sz-garden-chosen);
+  border-radius: 0.75rem;
+  background: color-mix(in oklab, var(--sz-garden-chosen) 9%, var(--color-card));
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+.sz-garden-quiz-feedback[data-correct="true"] {
+  border-left-color: var(--sz-garden-reaction);
+  background: color-mix(in oklab, var(--sz-garden-reaction) 9%, var(--color-card));
+}
+.sz-garden-quiz-feedback p {
+  margin-top: 0.375rem;
+}
+.sz-garden-sequence {
+  display: grid;
+  gap: 0.5rem;
+  list-style: none;
+}
+.sz-garden-sequence li {
+  display: flex;
+  gap: 0.625rem;
+  padding: 0.625rem;
+  border-radius: 0.75rem;
+  background: var(--color-background);
+  font-size: 0.8125rem;
+}
+.sz-garden-sequence li > span {
+  display: grid;
+  place-items: center;
+  align-self: flex-start;
+  flex: none;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 50%;
+  background: var(--sz-garden-event);
+  color: var(--color-primary-foreground);
+  font-weight: 800;
+}
+.sz-garden-sequence strong {
+  display: block;
+}
+.sz-garden-quiz-finish {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  text-align: center;
+}
+.sz-garden-finish-mark {
+  display: grid;
+  place-items: center;
+  width: 4rem;
+  height: 4rem;
+  border-radius: 50%;
+  background: color-mix(
+    in oklab,
+    var(--kids-verde, var(--success-foreground, var(--color-primary))) 12%,
+    var(--color-card)
+  );
+  color: var(--kids-verde, var(--success-foreground, var(--color-primary)));
+}
+.sz-garden-remember {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 1rem;
+  border-radius: 1rem;
+  background: var(--color-card);
+  text-align: left;
+}
+.sz-garden-remember > span {
+  font-family: var(--font-baloo);
+  font-size: 1.5rem;
+  color: var(--color-primary);
+}
+.sz-garden-quiz-finish [data-tom] {
+  max-width: 100%;
+  white-space: normal;
+  height: auto;
+}
+@media (min-width: 800px) {
+  .sz-garden-quiz-layout {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sz-garden-value[data-changed="true"] {
+    animation: none;
+  }
+}

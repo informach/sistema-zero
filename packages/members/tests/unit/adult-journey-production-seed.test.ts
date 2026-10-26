@@ -39,6 +39,8 @@ function fixture(count = 7) {
     {
       findCourseById: async (id) =>
         (courses.find((c) => c.id === id) as Course | undefined) ?? null,
+      findCoursesByIds: async (ids) =>
+        courses.filter((course) => ids.includes(course.id)) as Course[],
     },
     () => new Date(),
   )

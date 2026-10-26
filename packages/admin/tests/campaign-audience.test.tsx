@@ -10,6 +10,8 @@ const { ADULT_COURSE_UNPUBLISHED_MESSAGE, AUDIENCE_LOCKED_MESSAGE, ConvitesClien
 
 /** Público do presente nas campanhas (20/10/2026): coluna, editor, trava e prévia. */
 
+const { PlatformProvider } = await import('../src/components/admin/platform-provider')
+const { setPlatform } = await import('../src/components/admin/platform-store')
 const originalFetch = globalThis.fetch
 afterEach(() => {
   globalThis.fetch = originalFetch
@@ -41,6 +43,9 @@ async function mount(
   save: (call: Call) => Response,
   courses?: (call: Call) => Response,
 ) {
+  const audience =
+    (items[0] as { audience?: string } | undefined)?.audience === 'kids' ? 'kids' : 'adult'
+  setPlatform(audience)
   const calls: Call[] = []
   globalThis.fetch = (async (url: string | URL | Request, init?: RequestInit) => {
     const call = {
@@ -59,13 +64,17 @@ async function mount(
   const container = document.createElement('div')
   document.body.append(container)
   const root = createRoot(container)
-  await act(async () => root.render(<ConvitesClient currentRole="admin" />))
+  await act(async () =>
+    root.render(
+      <PlatformProvider initialPlatform={audience}>
+        <ConvitesClient currentRole="admin" />
+      </PlatformProvider>,
+    ),
+  )
   return { container, calls, root }
 }
 const button = (label: string) =>
   [...document.querySelectorAll('button')].find((b) => b.textContent === label)!
-const radio = (value: string) =>
-  document.querySelector<HTMLInputElement>(`input[name="campaign-audience"][value="${value}"]`)!
 const submit = () =>
   act(async () =>
     document
@@ -87,19 +96,15 @@ test('a lista mostra o público, e campanha antiga sem o campo é Kids', async (
   await act(async () => root.unmount())
 })
 
-test('nova campanha nasce Kids e salva o público escolhido', async () => {
+test('nova campanha nasce na comunidade selecionada e envia o público explícito', async () => {
   const { calls, root } = await mount([], () => Response.json({ campaign: campaign() }))
   await act(async () => button('Nova campanha').click())
   expect(document.body.textContent).toContain('Público do presente')
-  expect(document.body.textContent).toContain(
-    'Família com criança de 9 a 14 anos. Cadê Todo Mundo e Mural Kids.',
-  )
-  expect(radio('kids').checked).toBe(true)
-  await act(async () => radio('adult').click())
-  expect(radio('adult').checked).toBe(true)
+  expect(document.querySelector('[role="dialog"]')?.textContent).toContain('Adulto')
+  expect(document.querySelector('input[name="campaign-audience"]')).toBeNull()
   await submit()
   const post = calls.find((call) => call.method === 'POST')!
-  expect(post.url).toBe('/api/admin/referrals/campaigns')
+  expect(post.url).toBe('/api/admin/referrals/campaigns?audience=adult')
   expect((post.body as { audience: string }).audience).toBe('adult')
   await act(async () => root.unmount())
 })
@@ -111,9 +116,8 @@ test('fora do rascunho o público trava, e o 409 vira um recado claro', async ()
       Response.json({ error: { code: 'CAMPAIGN_AUDIENCE_LOCKED', message: 'x' } }, { status: 409 }),
   )
   await act(async () => button('Editar').click())
-  expect(radio('kids').disabled).toBe(true)
-  expect(radio('adult').disabled).toBe(true)
-  expect(document.body.textContent).toContain('para trocar, duplique a campanha')
+  expect(document.querySelector('input[name="campaign-audience"]')).toBeNull()
+  expect(document.body.textContent).toContain('troque a comunidade antes de abrir o formulário')
   await submit()
   const patch = calls.find((call) => call.method === 'PATCH')!
   // O público vai sempre explícito, para o PATCH nunca trocar por omissão.
@@ -124,11 +128,11 @@ test('fora do rascunho o público trava, e o 409 vira um recado claro', async ()
   await act(async () => root.unmount())
 })
 
-test('rascunho deixa trocar o público', async () => {
+test('rascunho também permanece no público da lente', async () => {
   const { root } = await mount([campaign()], () => Response.json({ campaign: campaign() }))
   await act(async () => button('Editar').click())
-  expect(radio('adult').checked).toBe(true)
-  expect(radio('kids').disabled).toBe(false)
+  expect(document.querySelector('[role="dialog"]')?.textContent).toContain('Adulto')
+  expect(document.querySelector('input[name="campaign-audience"]')).toBeNull()
   await act(async () => root.unmount())
 })
 

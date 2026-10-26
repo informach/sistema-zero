@@ -8,12 +8,14 @@ import { Sku } from '../../src/domain/value-objects/sku'
 import { Slug } from '../../src/domain/value-objects/slug'
 
 function makeProduct(overrides?: {
+  audience?: 'kids' | 'adult'
   kind?: ProductKind
   status?: ProductStatus
   fulfillment?: FulfillmentSpec | null
   components?: { componentProductId: string; sortOrder: number; isPrimary: boolean }[]
 }) {
   return ProductAggregate.create({
+    audience: overrides?.audience ?? 'kids',
     id: 'prod-1',
     sku: Sku.create('no-comando-da-ia'),
     slug: Slug.create('no-comando-da-ia'),
@@ -119,10 +121,15 @@ describe('ProductAggregate', () => {
 
   it('chave-mestra (all_courses) ativa não leva courseRef', () => {
     expect(() =>
-      makeProduct({ status: 'active', fulfillment: { accessType: 'all_courses' } }),
+      makeProduct({
+        audience: 'adult',
+        status: 'active',
+        fulfillment: { accessType: 'all_courses' },
+      }),
     ).not.toThrow()
     expect(() =>
       makeProduct({
+        audience: 'adult',
         status: 'active',
         fulfillment: { accessType: 'all_courses', courseRef: 'curso-ia' },
       }),

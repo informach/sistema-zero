@@ -162,6 +162,8 @@ export const payments = paymentsSchema.table(
     boletoRequest: jsonb('boleto_request').$type<BoletoRequest>(),
     customer: jsonb('customer').$type<CustomerJson>(),
     description: text('description'),
+    // Reporting only: never grants access or admits automatic recovery. Null means unclassified.
+    reportingAudience: text('reporting_audience').$type<'kids' | 'adult'>(),
     metadata: jsonb('metadata').$type<Record<string, unknown>>().notNull().default({}),
     failureReason: text('failure_reason'),
     cycleAccess: jsonb('cycle_access').$type<SubscriptionCycleAccess>(),
@@ -179,6 +181,8 @@ export const payments = paymentsSchema.table(
     expiresAt: timestamp('expires_at', { withTimezone: true }),
   },
   (t) => [
+    index('payments_reporting_audience_created_idx').on(t.reportingAudience, t.createdAt),
+    check('payments_reporting_audience_check', sql`${t.reportingAudience} in ('kids', 'adult')`),
     uniqueIndex('payments_consumer_idem_uq').on(t.consumerId, t.idempotencyKey),
     index('payments_status_idx').on(t.status),
     // ÚNICO (parcial): o txid é determinístico (derivado do paymentId) e
@@ -256,6 +260,8 @@ export const subscriptions = paymentsSchema.table(
     // Written once by the reviewed legacy repair, never by normal aggregate saves.
     cycleHistoryReview: jsonb('cycle_history_review').$type<CycleHistoryReview>(),
     description: text('description'),
+    // Reporting only: never grants access or admits automatic recovery. Null means unclassified.
+    reportingAudience: text('reporting_audience').$type<'kids' | 'adult'>(),
     metadata: jsonb('metadata').$type<Record<string, unknown>>().notNull().default({}),
     cancelRequestedAt: timestamp('cancel_requested_at', { withTimezone: true }),
     cancellationRecord: jsonb('cancellation_record').$type<CancellationRecordWire>(),
@@ -265,6 +271,11 @@ export const subscriptions = paymentsSchema.table(
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
   },
   (t) => [
+    index('subscriptions_reporting_audience_created_idx').on(t.reportingAudience, t.createdAt),
+    check(
+      'subscriptions_reporting_audience_check',
+      sql`${t.reportingAudience} in ('kids', 'adult')`,
+    ),
     uniqueIndex('subscriptions_consumer_idem_uq').on(t.consumerId, t.idempotencyKey),
     index('subscriptions_provider_sub_idx').on(t.provider, t.providerSubscriptionId),
     index('subscriptions_status_idx').on(t.status),

@@ -7,6 +7,8 @@ const { act } = await import('react')
 const { createRoot } = await import('react-dom/client')
 const { ConvitesClient } = await import('../src/app/admin/embaixadores/convites-client')
 
+const { PlatformProvider } = await import('../src/components/admin/platform-provider')
+
 test('busca mais recente vence mesmo quando a resposta antiga chega por último', async () => {
   const originalFetch = globalThis.fetch
   const requests: { url: string; resolve: (value: Response) => void }[] = []
@@ -32,7 +34,13 @@ test('busca mais recente vence mesmo quando a resposta antiga chega por último'
       total: 1,
     })
   try {
-    await act(async () => root.render(<ConvitesClient currentRole="admin" />))
+    await act(async () =>
+      root.render(
+        <PlatformProvider initialPlatform="kids">
+          <ConvitesClient currentRole="admin" />
+        </PlatformProvider>,
+      ),
+    )
     expect(requests).toHaveLength(1)
     const input = container.querySelector('input')!
     await act(async () => {

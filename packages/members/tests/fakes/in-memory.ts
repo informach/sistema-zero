@@ -2945,28 +2945,18 @@ export class InMemoryGamificationRepository implements GamificationRepository {
     audience: CourseAudience,
   ): Promise<{ courseId: string; blocks: string[] }[]> {
     const mine = this.events.filter((e) => e.userId === userId && e.audience === audience)
-    const showcased = new Set(
-      mine.filter((e) => e.sourceType === 'course_showcased').map((e) => e.sourceId),
-    )
     const out: { courseId: string; blocks: string[] }[] = []
     for (const ce of mine.filter(
       (e) => e.sourceType === 'course_complete' || e.sourceType === 'live_course_complete',
     )) {
       const course = this.sources?.courses.courses.find((c) => c.id === ce.sourceId)
       if (
-        course?.status !== 'published' ||
+        !course ||
+        !isCourseAccessible(course.status) ||
         course.audience !== audience ||
         (course.modality === 'recorded'
           ? ce.sourceType !== 'course_complete'
           : ce.sourceType !== 'live_course_complete')
-      )
-        continue
-      const bonusKids = audience === 'kids' && course.careerSlot === null
-      if (
-        course.modality === 'recorded' &&
-        audience === 'kids' &&
-        !bonusKids &&
-        !showcased.has(ce.sourceId)
       )
         continue
       const raw = (course.metadata as Record<string, unknown> | null | undefined)
@@ -2984,11 +2974,6 @@ export class InMemoryGamificationRepository implements GamificationRepository {
     const mine = this.events.filter(
       (event) => event.userId === userId && event.audience === audience,
     )
-    const showcased = new Map(
-      mine
-        .filter((event) => event.sourceType === 'course_showcased')
-        .map((event) => [event.sourceId, event]),
-    )
     return studioUnlockRevision(
       mine
         .filter(
@@ -2996,12 +2981,12 @@ export class InMemoryGamificationRepository implements GamificationRepository {
             event.sourceType === 'course_complete' || event.sourceType === 'live_course_complete',
         )
         .flatMap((completed) => {
-          const showcase = showcased.get(completed.sourceId)
           const foundCourse = this.sources?.courses.courses.find(
             (item) => item.id === completed.sourceId,
           )
           const course =
-            foundCourse?.status === 'published' &&
+            foundCourse &&
+            isCourseAccessible(foundCourse.status) &&
             foundCourse.audience === audience &&
             (foundCourse.modality === 'recorded'
               ? completed.sourceType === 'course_complete'
@@ -3009,17 +2994,11 @@ export class InMemoryGamificationRepository implements GamificationRepository {
               ? foundCourse
               : undefined
           if (!course) return []
-          const bonusKids = audience === 'kids' && course.careerSlot === null
-          if (course.modality === 'recorded' && audience === 'kids' && !bonusKids && !showcase)
-            return []
           return [
             {
               courseId: completed.sourceId,
               completedAt: completed.createdAt,
-              showcasedAt:
-                audience === 'adult' || course.modality === 'live' || bonusKids
-                  ? null
-                  : (showcase?.createdAt ?? null),
+              showcasedAt: null,
               courseUpdatedAt: course?.updatedAt ?? null,
             },
           ]

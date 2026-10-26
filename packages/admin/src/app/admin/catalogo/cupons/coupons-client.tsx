@@ -22,16 +22,21 @@ import { useCallback, useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { AdminHeader } from '@/components/admin/admin-header'
 import { CatalogTabs } from '@/components/admin/catalog-tabs'
+import { communityPage, useCommunityRequests } from '@/components/admin/community-page'
+import { LoadError } from '@/components/admin/empty-state'
 import { StatusBadge, statusLabel } from '@/components/admin/status-badge'
 import { TableSkeletonRows } from '@/components/admin/table-skeleton'
 import { type OfferOption, OffersMultiSelect } from '@/components/catalog/offers-multi-select'
-import { type ApiError, apiGet, apiSend } from '@/lib/api'
+import type { ApiError } from '@/lib/api'
+import { isCanceledCommunityRequest } from '@/lib/community-query'
 import {
   dateInputToSaoPauloEndOfDayIso,
   dateInputToSaoPauloStartOfDayIso,
   isoToSaoPauloDateInput,
 } from '@/lib/dates'
 import { formatCents, reaisToCents } from '@/lib/format'
+import { loadAllPages } from '@/lib/load-all-pages'
+import type { Platform } from '@/lib/platform'
 import type { CouponView, OfferListItem, Paginated } from '@/lib/types'
 
 const LIMIT = 20
@@ -68,13 +73,17 @@ function optInt(v: string): number | null {
   return Number.isFinite(n) && n > 0 ? n : null
 }
 
-export function CouponsClient() {
+export const CouponsClient = communityPage(CouponsForCommunity)
+
+function CouponsForCommunity({ audience }: { audience: Platform }) {
+  const { get: apiGet, send: apiSend } = useCommunityRequests(audience)
   const [items, setItems] = useState<CouponView[]>([])
   const [total, setTotal] = useState(0)
   const [offset, setOffset] = useState(0)
   const [q, setQ] = useState('')
   const [status, setStatus] = useState('')
   const [loading, setLoading] = useState(true)
+  const [loadError, setLoadError] = useState(false)
 
   const [open, setOpen] = useState(false)
   const [editing, setEditing] = useState<CouponView | null>(null)
@@ -89,15 +98,18 @@ export function CouponsClient() {
     if (offerOptions !== null || offersLoading) return
     setOffersLoading(true)
     try {
-      const page = await apiGet<Paginated<OfferListItem>>('/api/catalog/offers?limit=100')
+      const page = await loadAllPages((offset, limit) =>
+        apiGet<Paginated<OfferListItem>>(`/api/catalog/offers?offset=${offset}&limit=${limit}`),
+      )
       setOfferOptions(
-        page.items.map((o) => ({
+        page.map((o) => ({
           id: o.id,
           label: o.productName ? `${o.name} (${o.productName})` : o.name,
         })),
       )
-    } catch {
-      setOfferOptions([])
+    } catch (err) {
+      if (isCanceledCommunityRequest(err)) return
+      setOfferOptions(null)
       toast.error('As ofertas não carregaram. Feche e abra de novo.')
     } finally {
       setOffersLoading(false)
@@ -113,12 +125,17 @@ export function CouponsClient() {
       const page = await apiGet<Paginated<CouponView>>(`/api/catalog/coupons?${params}`)
       setItems(page.items)
       setTotal(page.total)
+      setLoadError(false)
     } catch (err) {
+      if (isCanceledCommunityRequest(err)) return
+      setLoadError(true)
+      setItems([])
+      setTotal(0)
       toast.error((err as ApiError).message ?? 'Os cupons não carregaram. Tente de novo.')
     } finally {
       setLoading(false)
     }
-  }, [offset, q, status])
+  }, [offset, q, status, apiGet])
 
   useEffect(() => {
     const t = setTimeout(load, 250)
@@ -185,6 +202,7 @@ export function CouponsClient() {
           return
         }
         const base = {
+          audience,
           code: form.code.trim(),
           type: form.type,
           appliesToAll: form.appliesToAll,
@@ -216,6 +234,7 @@ export function CouponsClient() {
       setOpen(false)
       await load()
     } catch (err) {
+      if (isCanceledCommunityRequest(err)) return
       toast.error((err as ApiError).message ?? 'Não deu para salvar. Tente de novo.')
     } finally {
       setSaving(false)
@@ -290,6 +309,12 @@ export function CouponsClient() {
           <TableBody>
             {loading ? (
               <TableSkeletonRows columns={6} />
+            ) : loadError ? (
+              <TableRow>
+                <TableCell colSpan={8}>
+                  <LoadError what="a lista desta comunidade" onRetry={() => void load()} />
+                </TableCell>
+              </TableRow>
             ) : items.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={6} className="py-10 text-center text-muted-foreground">

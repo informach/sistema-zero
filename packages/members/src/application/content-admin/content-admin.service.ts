@@ -33,6 +33,10 @@ import {
   PintaChainTypeMismatchError,
 } from '../../domain/course/course.errors'
 import {
+  assertCreatorPlannedLessonsKept,
+  creatorSeedRequiredLessonIds,
+} from '../../domain/course/creator-seed-metadata'
+import {
   isCompletionGatingBlock,
   type LessonBlockContent,
   MAX_PINTA_ASSET_CHARS,
@@ -95,6 +99,7 @@ export class CourseAdminService {
   constructor(
     private readonly content: ContentAdminRepository,
     private readonly courses: CourseRepository,
+    private readonly creatorCurriculumEnabled: () => Promise<boolean> = async () => false,
   ) {}
 
   async list(
@@ -206,6 +211,22 @@ export class CourseAdminService {
     if (fields.status === 'published' && (await this.content.countPublishedLessons(id)) === 0) {
       throw new NoPublishedLessonError()
     }
+    if (fields.status === 'published') {
+      const required = creatorSeedRequiredLessonIds(existing.metadata)
+      if (required) {
+        const lessons = (await this.courses.findOutline(id)).flatMap((module) => module.lessons)
+        const missing = required.flatMap((lessonId, index) => {
+          const lesson = lessons.find((lesson) => lesson.id === lessonId)
+          return lesson?.isPublished
+            ? []
+            : [lesson?.title ?? `Aula planejada ${index + 1} (removida)`]
+        })
+        if (missing.length)
+          throw new InvalidContentCommandError(
+            `Publique todas as aulas planejadas antes de liberar este curso. Faltam: ${missing.join('; ')}.`,
+          )
+      }
+    }
     // `salesPageUrl` vive em `metadata` (jsonb): atualiza SÓ essa chave,
     // preservando as demais; objeto que ficou vazio volta a `null`.
     // `audience` AUSENTE preserva a atual (≠ do salesPageUrl, que limpa): um
@@ -270,7 +291,7 @@ export class CourseAdminService {
       existing.status === 'published' &&
       existing.audience === 'kids' &&
       existing.careerSlot !== null
-    if (becomesTrapped && !wasTrapped) {
+    if (becomesTrapped && !wasTrapped && !(await this.creatorCurriculumEnabled())) {
       const withShowcase = await this.content.listCourseIdsWithShowcaseBlock([id])
       if (withShowcase.length === 0) throw new NoShowcaseBlockError()
     }
@@ -432,6 +453,8 @@ export class ModuleAdminService {
     // Guard simétrico ao de publicar o curso: excluir o módulo que contém as
     // ÚLTIMAS aulas publicadas de um curso `published` o deixaria à venda vazio.
     const course = await this.courses.findCourseById(mod.courseId)
+    if (course)
+      assertCreatorPlannedLessonsKept(course.metadata, await this.content.listLessonIds(id))
     if (course?.status === 'published') {
       const remaining = await this.content.countPublishedLessons(mod.courseId, {
         excludeModuleId: id,
@@ -486,6 +509,8 @@ export class LessonAdminService {
   async remove(id: string): Promise<{ ok: true }> {
     const existing = await this.content.findLessonById(id)
     if (!existing) throw new LessonNotFoundError()
+    const course = await this.courses.findCourseById(existing.courseId)
+    if (course) assertCreatorPlannedLessonsKept(course.metadata, [id])
     if (existing.isPublished) {
       await this.assertNotLastPublished(existing.courseId, id)
     }
@@ -497,6 +522,10 @@ export class LessonAdminService {
   private async assertNotLastPublished(courseId: string, lessonId: string): Promise<void> {
     const course = await this.courses.findCourseById(courseId)
     if (course?.status !== 'published') return
+    if (creatorSeedRequiredLessonIds(course.metadata)?.includes(lessonId))
+      throw new InvalidContentCommandError(
+        'Esta aula faz parte do planejamento obrigatório. Despublique o curso antes de despublicar suas aulas planejadas.',
+      )
     const remaining = await this.content.countPublishedLessons(courseId, {
       excludeLessonId: lessonId,
     })

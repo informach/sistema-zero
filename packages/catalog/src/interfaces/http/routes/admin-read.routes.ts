@@ -1,5 +1,6 @@
 import { envelope } from '@sistemazero/core/http'
 import { Elysia } from 'elysia'
+import { z } from 'zod'
 import type { GetProductService } from '../../../application/get-product/get-product.service'
 import type { ListCouponsService } from '../../../application/list-coupons/list-coupons.service'
 import type { ListOffersService } from '../../../application/list-offers/list-offers.service'
@@ -40,6 +41,7 @@ export function adminReadRoutes(deps: AdminReadRoutesDeps) {
         async ({ query, headers }) => {
           requireAdmin(headers, deps.requireAdminEnabled)
           return deps.listProducts.execute({
+            audience: query.audience,
             q: query.q,
             status: query.status,
             limit: clampLimit(query.limit),
@@ -51,20 +53,25 @@ export function adminReadRoutes(deps: AdminReadRoutesDeps) {
       // GET-one por id (página de edição do painel: deep-link/refresh). A view
       // completa traz `fulfillment` + `components` — ok aqui (rota admin gated).
       // Non-UUID → 404 direto (não existe; evita erro da coluna uuid virar 500).
-      .get('/products/:id', async ({ params, headers, set }) => {
-        requireAdmin(headers, deps.requireAdminEnabled)
-        const product = UUID_RE.test(params.id) ? await deps.getProduct.getById(params.id) : null
-        if (!product) {
-          set.status = 404
-          return envelope('PRODUCT_NOT_FOUND', 'Produto não encontrado')
-        }
-        return product
-      })
+      .get(
+        '/products/:id',
+        async ({ params, query, headers, set }) => {
+          requireAdmin(headers, deps.requireAdminEnabled)
+          const product = UUID_RE.test(params.id) ? await deps.getProduct.getById(params.id) : null
+          if (!product || (query.audience && product.audience !== query.audience)) {
+            set.status = 404
+            return envelope('PRODUCT_NOT_FOUND', 'Produto não encontrado')
+          }
+          return product
+        },
+        { query: z.object({ audience: z.enum(['kids', 'adult']).optional() }) },
+      )
       .get(
         '/offers',
         async ({ query, headers }) => {
           requireAdmin(headers, deps.requireAdminEnabled)
           return deps.listOffers.execute({
+            audience: query.audience,
             q: query.q,
             status: query.status,
             productId: query.productId,
@@ -79,6 +86,7 @@ export function adminReadRoutes(deps: AdminReadRoutesDeps) {
         async ({ query, headers }) => {
           requireAdmin(headers, deps.requireAdminEnabled)
           return deps.listCoupons.execute({
+            audience: query.audience,
             q: query.q,
             status: query.status,
             limit: clampLimit(query.limit),

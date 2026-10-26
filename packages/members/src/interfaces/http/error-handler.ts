@@ -156,6 +156,7 @@ export function buildErrorResponse(input: {
     careerLock?: {
       reason: 'future-tier' | 'foundation-first' | 'tier-reward'
       requiredLevel?: string
+      curriculum?: import('@sistemazero/core/journey').CreatorCoursePlacement
     }
   }
 } {
@@ -169,6 +170,7 @@ export function buildErrorResponse(input: {
         careerLock: {
           reason: error.reason,
           ...(error.requiredLevel ? { requiredLevel: error.requiredLevel } : {}),
+          ...(error.curriculum ? { curriculum: error.curriculum } : {}),
         },
       },
     }

@@ -20,10 +20,13 @@ import { Copy, Eye, Gift, Mail, Plus, Search } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { copyToClipboard } from '@/app/admin/notas-fiscais/copy-to-clipboard'
+import { communityPage, useCommunityRequests } from '@/components/admin/community-page'
 import { TableSkeletonRows } from '@/components/admin/table-skeleton'
 import { useConfirm } from '@/components/admin/use-confirm'
-import { type ApiError, apiGet, apiSend } from '@/lib/api'
+import type { ApiError } from '@/lib/api'
+import { isCanceledCommunityRequest } from '@/lib/community-query'
 import { formatCents, formatCentsStr, formatDate } from '@/lib/format'
+import type { Platform } from '@/lib/platform'
 import type {
   AmbassadorDetailView,
   AmbassadorListItemView,
@@ -41,7 +44,16 @@ const WRITE_ROLES = new Set(['superadmin', 'admin'])
  * distribuem acessos ao curso por indicação. Criar = nome + e-mail → o referrals gera o
  * código + a página (capability-URL) e envia o magic-link por e-mail.
  */
-export function EmbaixadoresClient({ currentRole }: { currentRole: string }) {
+export const EmbaixadoresClient = communityPage<{ currentRole: string }>(EmbaixadoresForCommunity)
+
+function EmbaixadoresForCommunity({
+  currentRole,
+  audience,
+}: {
+  currentRole: string
+  audience: Platform
+}) {
+  const { get: apiGet, send: apiSend } = useCommunityRequests(audience)
   const canWrite = WRITE_ROLES.has(currentRole)
   const { confirm, confirmDialog } = useConfirm()
 
@@ -67,11 +79,12 @@ export function EmbaixadoresClient({ currentRole }: { currentRole: string }) {
       setItems(data.items)
       setTotal(data.total)
     } catch (err) {
+      if (isCanceledCommunityRequest(err)) return
       toast.error((err as ApiError).message)
     } finally {
       setLoading(false)
     }
-  }, [offset, search])
+  }, [apiGet, offset, search])
 
   useEffect(() => {
     void load()
@@ -83,6 +96,7 @@ export function EmbaixadoresClient({ currentRole }: { currentRole: string }) {
       setDetail(data)
       setDetailOpen(true)
     } catch (err) {
+      if (isCanceledCommunityRequest(err)) return
       toast.error((err as ApiError).message)
     }
   }
@@ -97,6 +111,7 @@ export function EmbaixadoresClient({ currentRole }: { currentRole: string }) {
       else toast.warning('O e-mail não saiu agora. Copie o link nos detalhes e mande por fora.')
       void load()
     } catch (err) {
+      if (isCanceledCommunityRequest(err)) return
       toast.error((err as ApiError).message)
     }
   }
@@ -106,8 +121,8 @@ export function EmbaixadoresClient({ currentRole }: { currentRole: string }) {
     confirm({
       title: disabling ? 'Desativar embaixador?' : 'Reativar embaixador?',
       message: disabling
-        ? `A página e o link de bolsa de ${row.name} param de funcionar. As bolsas já resgatadas continuam valendo.`
-        : `A página e o link de bolsa de ${row.name} voltam a funcionar.`,
+        ? `A página e o link de bolsa de ${row.name} param de funcionar. A alteração vale para Kids e Adultos. As bolsas já resgatadas continuam valendo.`
+        : `A página e o link de bolsa de ${row.name} voltam a funcionar nas duas comunidades.`,
       confirmText: disabling ? 'Desativar' : 'Reativar',
       confirmVariant: disabling ? 'destructive' : 'default',
       onConfirm: async () => {
@@ -118,6 +133,7 @@ export function EmbaixadoresClient({ currentRole }: { currentRole: string }) {
           toast.success(disabling ? 'Embaixador desativado.' : 'Embaixador reativado.')
           void load()
         } catch (err) {
+          if (isCanceledCommunityRequest(err)) return
           toast.error((err as ApiError).message)
         }
       },
@@ -130,8 +146,11 @@ export function EmbaixadoresClient({ currentRole }: { currentRole: string }) {
         <div>
           <h2 className="font-display text-xl font-bold">Embaixadores</h2>
           <p className="mt-1 max-w-2xl text-[15px] text-muted-foreground">
-            Quem indica o curso Cadê Todo Mundo sem custo para a família convidada, com ou sem conta
-            na plataforma.
+            {audience === 'kids'
+              ? 'Quem indica o curso Cadê Todo Mundo sem custo para a família convidada.'
+              : 'Quem indica o curso Cadê Todo Mundo na versão adulta sem custo para a pessoa convidada.'}{' '}
+            Os convites e resultados seguem a comunidade escolhida; a conta do embaixador é
+            compartilhada.
           </p>
         </div>
         {canWrite ? (
@@ -263,10 +282,11 @@ export function EmbaixadoresClient({ currentRole }: { currentRole: string }) {
       {/* A listagem de bônus carrega chave Pix + e-mail do bolsista: o gateway
           restringe a admin+ (`referrals-admin-conversions-read`). Esconder aqui
           evita oferecer ao staff uma seção que responderia 403. */}
-      {canWrite ? <BonusSection canWrite={canWrite} /> : null}
+      {canWrite ? <BonusSection audience={audience} canWrite={canWrite} /> : null}
 
       {createOpen && (
         <CreateAmbassadorDialog
+          audience={audience}
           onClose={() => setCreateOpen(false)}
           onCreated={(view, emailSent) => {
             setCreateOpen(false)
@@ -352,7 +372,8 @@ function ConversionStatusBadge({ c }: { c: ConversionAdminView }) {
  * Criadores. Passada a garantia de 7 dias o bônus fica "Aguardando Pix": você
  * paga por fora (Pix manual, sem saldo no produto) e marca como pago aqui.
  */
-function BonusSection({ canWrite }: { canWrite: boolean }) {
+function BonusSection({ canWrite, audience }: { canWrite: boolean; audience: Platform }) {
+  const { get: apiGet, send: apiSend } = useCommunityRequests(audience)
   const { confirm, confirmDialog } = useConfirm()
   const [items, setItems] = useState<ConversionAdminView[]>([])
   const [total, setTotal] = useState(0)
@@ -381,13 +402,14 @@ function BonusSection({ canWrite }: { canWrite: boolean }) {
       setTotal(data.total)
       setFailed(false)
     } catch (err) {
+      if (isCanceledCommunityRequest(err)) return
       if (seq !== loadSeq.current) return
       setFailed(true)
       toast.error((err as ApiError).message)
     } finally {
       if (seq === loadSeq.current) setLoading(false)
     }
-  }, [offset, status])
+  }, [apiGet, offset, status])
 
   useEffect(() => {
     void load()
@@ -404,6 +426,7 @@ function BonusSection({ canWrite }: { canWrite: boolean }) {
           toast.success('Bônus marcado como pago.')
           void load()
         } catch (err) {
+          if (isCanceledCommunityRequest(err)) return
           const apiErr = err as ApiError
           toast.error(
             apiErr.code === 'CONVERSION_NOT_ELIGIBLE'
@@ -429,6 +452,7 @@ function BonusSection({ canWrite }: { canWrite: boolean }) {
           toast.success('Garantia antecipada. O bônus libera no próximo ciclo do serviço.')
           void load()
         } catch (err) {
+          if (isCanceledCommunityRequest(err)) return
           const apiErr = err as ApiError
           toast.error(
             apiErr.code === 'CONVERSION_NOT_PENDING'
@@ -607,12 +631,15 @@ function BonusSection({ canWrite }: { canWrite: boolean }) {
 }
 
 function CreateAmbassadorDialog({
+  audience,
   onClose,
   onCreated,
 }: {
   onClose: () => void
   onCreated: (view: AmbassadorView, emailSent: boolean) => void
+  audience: Platform
 }) {
+  const { send: apiSend } = useCommunityRequests(audience)
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [saving, setSaving] = useState(false)
@@ -628,6 +655,7 @@ function CreateAmbassadorDialog({
       )
       onCreated(res.ambassador, res.emailSent)
     } catch (err) {
+      if (isCanceledCommunityRequest(err)) return
       const apiErr = err as ApiError
       toast.error(
         apiErr.code === 'AMBASSADOR_EMAIL_EXISTS'
@@ -649,7 +677,7 @@ function CreateAmbassadorDialog({
       >
         <p className="text-sm text-muted-foreground">
           A pessoa não precisa ter conta: ela recebe por e-mail o link da própria página, com o
-          código de bolsa para compartilhar.
+          código de bolsa para compartilhar. O cadastro é único para Kids e Adultos.
         </p>
         <Field label="Nome">
           <Input

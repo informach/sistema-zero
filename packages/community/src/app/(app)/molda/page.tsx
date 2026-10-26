@@ -1,4 +1,5 @@
 import { MoldaClient } from '@sistemazero/member-shell/components/creator/molda-client'
+import { adultMoldaToolAccess } from '@sistemazero/member-shell/lib/adult-molda-tool-access'
 import { ToolNotice } from '@/components/community/tool-notice'
 import { toolLock } from '@/lib/tool-lock'
 import { getCreativeToolsState } from '@/server/creative-tools'
@@ -21,6 +22,7 @@ export default async function MoldaPage() {
       audience="adult"
       viewerId={state.session.id}
       studioAvailable={state.studioAvailable}
+      toolAccess={adultMoldaToolAccess(state.journey)}
     />
   )
 }

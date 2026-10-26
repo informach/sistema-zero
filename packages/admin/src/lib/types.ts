@@ -412,6 +412,7 @@ export function courseTierLabel(level: string, track?: string): string {
 }
 
 export interface CourseView {
+  creatorPlanning?: { requiredLessonCount: number | null }
   id: string
   slug: string
   title: string
@@ -584,6 +585,7 @@ export interface AudioBlock {
 }
 export interface QuizQuestion {
   id: string
+  predictionScene?: 'garden-touch' | 'garden-count' | 'garden-repeat'
   prompt: string
   choices: { id: string; label: string }[]
   correctChoiceIds: string[]
@@ -1014,6 +1016,7 @@ export interface ProductComponentView {
 }
 
 export interface ProductView {
+  audience: 'kids' | 'adult'
   id: string
   version: number
   sku: string
@@ -1068,6 +1071,7 @@ export interface OfferListItem {
 }
 
 export interface CouponView {
+  audience: 'kids' | 'adult'
   id: string
   version: number
   code: string

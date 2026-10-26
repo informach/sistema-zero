@@ -1,0 +1,212 @@
+# Admin: separação comercial por comunidade
+
+Estado: código em revisão/integração. Não é um recibo de implantação.
+
+## Alcance
+
+| Área | Regra |
+| --- | --- |
+| Catálogo | Produtos/cupons com audiência imutável; ofertas herdam produto. Combos, bônus e aplicação de cupom recusam outra comunidade. |
+| Campanhas | Lista, contagem, busca, formulário e detalhe seguem Kids/Adultos. |
+| Embaixadores | Cadastro e página pessoal compartilhados; códigos, convites, resgates e conversões exibidos por comunidade. Desativar a pessoa continua valendo para ambas, com aviso explícito. |
+| Visão geral | Catálogo e vendas da comunidade; cartão de contas explicitamente compartilhado. |
+| Vendas/assinaturas | Filtro no SQL antes de total/paginação; detalhes por ID obedecem ao mesmo escopo. Histórico sem origem tem consulta própria. |
+| Zappy/Pensa | Progresso de projetos do Pensa separado. Uso/custos/qualidade/cotas gerais claramente identificados. |
+| Contas, fiscal, atendimento, auditoria, infraestrutura | Compartilhados. Sem alterar identidade, permissão ou quota. |
+
+O seletor é uma preferência de interface. RBAC e comprovação de origem continuam no servidor.
+A troca de comunidade desmonta formulários/diálogos/seleções e aborta as consultas da página
+anterior; respostas tardias, inclusive de mutações, não voltam a atualizar a tela retirada.
+Cancelar o fetch não promete desfazer uma gravação já aceita pelo servidor.
+
+## Auditoria real de 26/10/2026
+
+Leitura por SSH no Catalog, transação PostgreSQL `read only`, sem copiar credenciais:
+
+- Staging: 19 produtos, zero cupons, 2 pagamentos e zero assinaturas.
+- Produção: 19 produtos, zero cupons, 15 pagamentos e 2 assinaturas.
+- Todas essas compras e assinaturas guardam `offerId`; nenhuma tem ainda o marcador novo
+  `funnel-registry-v1`. A classificação histórica precisa do vínculo canônico com o catálogo.
+- O grafo de componentes e bônus lido nos dois ambientes separa Kids e Adultos corretamente.
+- Staging guarda o produto arquivado `desafio-do-primeiro-jogo`, ausente da lista inicial.
+  A descrição integral é idêntica à do produto Kids `desafio-primeiro-jogo`, dirigida
+  expressamente à criança e à família; sua oferta também está arquivada. O `courseRef`
+  antigo não resolve mais. A revisão explícita desse registro o classifica como Kids;
+  não há classificador por prefixo ou nome. A migração contempla 20 SKUs possíveis.
+- O produto arquivado `no-comando-da-ia` permanece Adultos. Não há exclusão de histórico.
+
+## Migrações e ordem de liberação
+
+1. Conferir novamente os produtos/cupons e referências antes de cada ambiente. A migração
+   Catalog `0008` expande o schema; `0009` classifica somente SKUs revisados e cupons com
+   origem explícita/escopo inequívoco. Produto/cupom desconhecido ou grafo cruzado interrompe
+   o lote. Não forçar uma classificação para fazer o deploy passar.
+2. Payments `0027` acrescenta a projeção anulável `reporting_audience`, sem alterar snapshots
+   de compra, valor, datas, metadata financeira, versão ou estado da regularização.
+3. Implantar Catalog e Payments antes do Admin. Referrals e Members também precisam estar na
+   nova versão antes de verificar os respectivos painéis. As rotas antigas sem `audience`
+   preservam a consulta geral para consumidores existentes; o Admin sempre envia o filtro.
+   CI de staging e operador de produção aguardam os ACKs e a retirada das versões antigas de
+   Catalog/Payments/Referrals antes dos apps. Falha impede a próxima fase; não repete POSTs.
+4. Depois de retirar os writers antigos, repetir a auditoria Catalog de linhas sem comunidade.
+   Aplicar eventual classificação revisada antes da etapa de contrato. **O NOT NULL do Catalog
+   é uma segunda migração gerada, a publicar somente após esse primeiro rollout**, para não
+   quebrar uma réplica anterior que ainda crie registros sem o campo. Ainda não executado.
+5. Com Catalog e Payments novos, executar o operador abaixo em cada ambiente, revisar o plano
+   e só então aplicar o digest correspondente. Nenhuma operação envia e-mail ou cobra cartão.
+6. Validar Admin autenticado: Kids → Adultos → Kids em catálogo/campanhas/vendas; totais, filtro
+   de produtos, formulário aberto, ID de outra comunidade e visão sem classificação. Conferir
+   que Contas segue geral e que o progresso do Pensa acompanha a lente, sem duplicar cotas.
+7. Produção recebe a fonte que passou no CI e na conferência de staging. Nova consulta confirma
+   migrações, projeções e revisões em execução; não basta o status de build do Railway.
+
+## Classificação financeira revisada
+
+No serviço Payments, com a conexão do próprio ambiente:
+
+```sh
+bun scripts/backfill-business-audience.ts
+bun scripts/backfill-business-audience.ts --apply --expected-sha256=<digest-revisado>
+```
+
+O modo padrão só lê. A aplicação usa transação serializável, relê o plano e recusa divergência
+ou conflito entre catálogo, assinatura e metadata de origem comprovada. Só preenche projeções
+nulas. O plano mostra IDs opacos e referências comerciais, sem e-mail/cartão/senha. Guardar o
+resultado e digest da execução. Um segundo dry-run deve mostrar zero mudanças aplicáveis.
+Registros realmente sem prova permanecem sem classificação, acessíveis na consulta própria.
+
+Novos checkouts recebem audiência do registro canônico de funis. Renovações de assinaturas
+históricas herdam sua projeção revisada; evidência divergente mantém a cobrança sem classificação
+no relatório, sem interromper ou autorizar operações financeiras. Saves normais dos agregados
+preservam a projeção conferida e nunca convertem isso em permissão de acesso/regularização.
+
+Rollback de aplicação mantém colunas/projeções; não apagar histórico para voltar a versão.
+Antes do contrato NOT NULL, retirar todos os writers antigos. Depois dele, rollback só para
+versão que também escreva audiência explícita.
+
+## Evidência local antes da conciliação
+
+- Catalog: 158 testes passaram, 3 testes do adaptador de seed sem banco dedicado foram pulados.
+  Inclui PostgreSQL real: paginação, rollback por produto desconhecido e backfill idempotente.
+- Referrals: 147 testes/651 asserções passaram, incluindo banco real e fluxos públicos de
+  embaixadores Kids/adulto. A identidade compartilhada conserva o código público existente.
+- Payments: 421 testes de aplicação/HTTP/domínio passaram. 3 testes específicos de PostgreSQL,
+  71 asserções, passaram: recebido/estornado/MRR/cancelamento por público, detalhe por ID,
+  aplicação histórica revisada, renovação e conflitos sem alterar autoridade financeira.
+- Admin: execução completa inicial teve 919 positivos e 2 negativos de texto. A descrição
+  específica do curso foi preservada em cada público, corrigindo os dois negativos; seleção
+  afetada posterior passou (13 testes). Nova verificação integrada ainda necessária.
+- Teste DOM real de catálogo/financeiro usa o PlatformProvider real, prova resposta atrasada,
+  fechamento de diálogo e mudança explícita para histórico sem comunidade. Não substitui
+  a inspeção visual do Admin implantado.
+- Pensa: teste de persistência comprova que projeto Kids não entra no funil adulto, preservando
+  as transições já testadas. Nenhuma alteração nas cotas.
+- CI ganhou bancos descartáveis dedicados para as provas Catalog/Payments; não usa banco real.
+
+## Verificação da composição integrada
+
+Conciliação com staging `8f34d7bdd` em `1421cac20`, incluindo Jornada/Maestrias e Cadê:
+
+- Tipagem completa do Admin e Members passou.
+- Suíte completa do Admin, no diretório canônico do pacote: 935 testes, 3.920 asserções,
+  zero falhas. Dois fixtures de formulário agora devolvem a política da jornada na nova
+  consulta, mantendo as asserções de modalidade e concessão de blocos.
+- Operadores de implantação: 65 testes, 186 asserções. Incluem execução do trecho Bash real
+  de staging com sucesso, falha de retirada e falha de POST. Nenhum desses testes acessa Railway.
+- A primeira chamada da suíte Admin pela raiz teve sete negativos: quatro fixtures filhas
+  usam cwd do pacote e três cenários tinham resposta de política desatualizada. O log original
+  foi preservado; a execução canônica após corrigir os fixtures é a evidência de aprovação.
+
+Pendentes neste registro: CI remoto, aplicação nos ambientes,
+backfill financeiro, contrato final e conferência visual autenticada.
+
+## Revisão da composição para release
+
+Escopo esclarecido pela usuária: outras frentes entram somente por commits já em staging;
+arquivos ainda editados em outros worktrees ficam fora. Incluem-se as correções desta sessão.
+A revisão dos commits Jornada/Maestrias e Cadê encontrou três bloqueios de integração:
+
+- A imagem Members não incluía o operador da nova Jornada. O JSON editorial canônico foi
+  movido, byte a byte, de docs para a configuração do pacote; o script agora entra na imagem.
+  `image-smoke.mjs` exige o plano offline real em container sem rede e somente leitura.
+- O contrato gerado de playtest Python não acompanhava o Core integrado. Regenerado pelo
+  comando canônico, com checagem Linux/Bun 1.3.11 positiva. O perfil é parte da release do runtime.
+- O teste visual do quiz usava o Cadê esperando a interface clássica, mas o curso passou a
+  usar previsão. Agora o Farol real cobre os três tamanhos/densidades do quiz clássico e o
+  Cadê real cobre sua previsão. Quatro cenários de navegador passaram, incluindo pixels do
+  mascote inteiro/centralizado. A primeira tentativa local sem o WASM gerado falhou; executar
+  `scripts/sync-rive-wasm.ts`, já previsto no CI, resolveu o preparo local sem mudar produto.
+
+A seleção fresca Members (seed/acesso, revisão Maestria, runtime e quiz) passou 44 testes e
+261 asserções. As provas anteriores do Admin e dos backends comerciais permanecem descritas
+acima. Revisão conferiu snapshot autorizado de Maestria, identidade de equipe no servidor,
+retenção de direitos e separação entre seed offline e publicação efetiva. Conteúdo editorial
+não foi importado nos ambientes. Isso ainda não declara CI ou deploy aprovados.
+
+Conferência remota do runtime: o arquivo Wrangler versionado tinha referências de catálogo
+anteriores às ativas. Leitura das versões ativas (ordenadas por data), download dos objetos R2,
+SHA-256 e validação integral pelo Core confirmaram staging `f69814b9…` (três retiradas e uma
+release ativa) e produção `2c53c74c…` (uma retirada e uma ativa). O arquivo agora preserva esses
+catálogos no próximo deploy. Nenhuma release foi reativada, revogada ou acrescentada nesta
+correção; os demais valores de configuração coincidem com o serviço ativo.
+
+A revisão do workflow encontrou cinco grupos SQL da Jornada/Maestrias sem suas variáveis
+específicas: o runner podia pular esses testes. Foram configurados bancos locais descartáveis
+independentes, criados pelo harness com as migrations reais. A execução fresca dos cinco
+arquivos passou: 18 testes, 83 asserções, zero skips/falhas, em 37,22 s. Inclui preservação do
+curso existente pelo seed, blocos de cursos arquivados, retenção após captura da coorte e
+concorrência de submissão/revisão/exclusão. O CI passa a exigir essa execução também.
+
+O CI seguinte alcançou o lint e encontrou 12 diagnósticos em dez arquivos da composição
+Jornada (formatação/imports, incluindo o JSON movido). Correção restrita, sem alterações
+semânticas; os valores do currículo foram comparados por JSON e permaneceram idênticos.
+`biome ci` completo passou em 11.954 arquivos; seleção Gateway/seed passou 25 testes e
+160 asserções. Os seis kits JavaScript/Three também passaram no container final sem rede.
+
+O CI seguinte encontrou a reação ao toque fechada sem motivo acessível. A bancada agora
+explica o primeiro toque por texto visível ligado por `aria-describedby`; continua no Tab
+e só libera a ligação depois da descoberta. Reprodução negativa preservada; suíte Kids
+completa: 1.618 testes, 9.213 asserções, zero falhas. Os testes de apresentação antigos foram
+conciliados com a sequência guiada já commitada (primeiro toque, ligação, outro esconderijo).
+
+A suíte compartilhada revelou contaminação pelo registro global de happy-dom no novo teste
+de Maestrias: Request/Headers mudavam e outros testes HTTP perdiam seus headers. A reprodução
+isolada do BFF passava e, junto do teste DOM, falhava. O teste DOM passou a rodar em processo
+próprio, com origem válida, seguindo os demais testes de componentes do pacote. Todas as
+asserções de envio/revisão foram preservadas. Suíte member-shell completa posterior: 1.860
+testes externos, 11.702 asserções, zero falhas; o wrapper executa os quatro cenários DOM reais.
+
+Members completo encontrou três expectativas antigas que contrariavam a Jornada integrada:
+blocos/revisão curricular ainda dependiam de Mural nos testes e a vitrine adulta esperava
+ocultar seus próprios marcos. Os testes agora comprovam concessão na conclusão, ausência de
+concessão apenas por publicar e isolamento dos marcos Kids/adulto, conforme o plano da Jornada.
+Nenhuma regra produtiva foi alterada nesse ajuste. Resultado local: 1.963 positivos, 14.636
+asserções, zero falhas; 532 casos condicionais de banco/ambiente foram pulados. As provas SQL
+específicas executadas e as exigidas no CI estão discriminadas acima, sem contar skips como aprovação.
+
+Core completo identificou duas rotas de teste Cadê que ainda não executavam as descobertas
+adicionais já exigidas pelos manifestos commitados: outro esconderijo e toque repetido. O
+percurso foi completado por ações reais do motor, sem marcar metas artificialmente nem mudar
+manifestos/falas. Core completo passou 1.607 testes/82.059 asserções; a suíte de desenho das
+cenas Kids que compartilha o percurso passou 138 testes/502 asserções.
+
+A rota completa expôs uma lacuna real no DTO Members: `other-hiding-place` e
+`touch-hiding-place` existiam no motor, mas não na autoria HTTP tipada. Incluídas as duas
+ações com IDs estritos 0/1, prova de ida/volta sem poda e cinco negativos para IDs inválidos.
+Suíte Members posterior: 1.968 positivos/14.664 asserções, 532 condicionais pulados, zero
+falhas; tipagem completa Members passou. O teste de integração que revelou o defeito
+permanece ativo.
+
+O CI com PostgreSQL real encontrou quatro falhas no fixture antigo da jornada adulta:
+a publicação passou a capturar a política anterior, mas o banco parcial não tinha todas as
+tabelas consultadas. O teste agora usa banco isolado com o histórico real de migrations,
+explicitamente exigido no CI. Nenhuma trava ou regra de captura foi removida. Os seis casos
+passaram com 33 asserções, incluindo concorrência, versão obsoleta e seed idempotente;
+tipagem Members e lint do arquivo passaram.
+
+A bateria local `tests/db` executou 364 positivos e encontrou dois erros de configuração
+local (`127.0.0.1` onde o harness exige `localhost`) e uma ausência de ferramenta (`pg_dump`).
+Os dois arquivos foram executados com o endereço correto: 18 positivos/90 asserções. O teste
+de manutenção do Pensa com `pg_dump` passou no CI Linux da composição anterior `d800572fa`,
+sem diferença nesses fontes. Os 49 condicionais restantes continuam cobertos pelas etapas
+específicas do CI, não são contados como aprovação local. O novo CI integrado ainda é exigido.

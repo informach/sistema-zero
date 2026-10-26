@@ -18,6 +18,12 @@ test.skipIf(!process.env.PENSA_TEST_DATABASE_URL)(
         constructionCompleted: 0,
         projectCompleted: 0,
       })
+      expect(
+        (await reader.funnel(new Date('2026-10-15'), new Date('2026-10-17'), 'kids')).projects,
+      ).toBe(1)
+      expect(
+        (await reader.funnel(new Date('2026-10-15'), new Date('2026-10-17'), 'adult')).projects,
+      ).toBe(0)
       await f.complete(f.setupId, ref, true)
       expect(await count()).toMatchObject({
         setupCompleted: 1,

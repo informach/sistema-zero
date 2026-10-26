@@ -1,8 +1,10 @@
 import type { CouponAggregate } from '../../domain/coupon/coupon.aggregate'
+import type { CatalogAudience } from '../../domain/shared/audience'
 
 /** View completa do cupom (resposta admin). */
 export interface CouponView {
   id: string
+  audience: CatalogAudience
   version: number
   code: string
   type: string
@@ -25,6 +27,7 @@ export interface CouponView {
 export function toCouponView(coupon: CouponAggregate): CouponView {
   return {
     id: coupon.id,
+    audience: coupon.audience,
     version: coupon.version,
     code: coupon.code,
     type: coupon.type,

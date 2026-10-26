@@ -11,6 +11,7 @@ import {
   evaluateExperimentation,
   falaDaInstrucao,
   falasDaCena,
+  gardenStep,
   oncePreset,
   onceRunFinished,
   openScene,
@@ -91,6 +92,7 @@ import { SceneDescobertas } from './scene-descobertas'
 import { SomDaBancada } from './scene-dino-controls'
 import { sceneDisplaySamples } from './scene-display-samples'
 import { botoesDoMundo, SceneReadoutBand } from './scene-frame'
+import { LearningRecap } from './scene-garden-learning'
 import { LessonSceneControls } from './scene-lesson-controls'
 import { LugarReservado } from './scene-lugar-reservado'
 import {
@@ -393,7 +395,8 @@ export function SceneActivityView({
     [activity],
   )
 
-  const instruction = content.instructions
+  const guided = gardenStep(m, visto)
+  const instruction = guided?.text ?? content.instructions
   /**
    * Cada etapa recebe seu próprio balão e sua própria fila de voz. O app Kids acrescenta o
    * mascote; fora dele o mesmo diálogo continua legível e falável sem duplicar a semântica.
@@ -1088,7 +1091,7 @@ export function SceneActivityView({
     m !== 'lighthouse-position' ? (
       <SceneButton
         tom="ferramenta"
-        className="min-w-11"
+        className="min-w-11 max-w-full whitespace-normal"
         disabled={bloqueado}
         onClick={() => {
           setRunning(false)
@@ -1180,10 +1183,10 @@ export function SceneActivityView({
    * A fala fica dentro do console da experimentação.
    */
   const blocoDaInstrucao = (
-    <div ref={dialogoDaDescobertaRef} tabIndex={-1} className="outline-none">
+    <div key={guided?.id} ref={dialogoDaDescobertaRef} tabIndex={-1} className="outline-none">
       {renderDialogue(instruction, {
         texts: [falaDaInstrucao(instruction)],
-        audioUrl: activity.instructionAudioUrl,
+        audioUrl: guided ? undefined : activity.instructionAudioUrl,
         fallbackToBrowser: true,
       })}
     </div>
@@ -1466,6 +1469,10 @@ export function SceneActivityView({
                       </div>
                     )}
                     {pranchaDaCena}
+                    {guided?.id.endsWith('complete') &&
+                      (m === 'touch-response' || m === 'found-counter') && (
+                        <LearningRecap kind={m} />
+                      )}
                     {/* ⭐⭐ O que ela já descobriu, com as ações da descoberta embaixo. A resposta do
                         Conferir mora aqui, ao lado do botão que a pediu (era um parágrafo solto
                         embaixo do console). */}

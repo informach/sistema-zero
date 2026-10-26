@@ -689,6 +689,7 @@ describe('gateway.config.ts (configuração real)', () => {
     const child = Bun.spawn(
       [
         process.execPath,
+        '--no-env-file',
         '-e',
         `import { loadEnv } from './src/infrastructure/config/env';
          import { loadGatewayConfig } from './src/infrastructure/config/load-gateway-config';

@@ -4,6 +4,7 @@ import type { FulfillmentSpec } from '../../domain/product/fulfillment'
 import { ProductAggregate, type ProductComponent } from '../../domain/product/product.aggregate'
 import type { ProductKind } from '../../domain/product/product.kind'
 import type { ProductStatus } from '../../domain/product/product.status'
+import type { CatalogAudience } from '../../domain/shared/audience'
 import { ValidationError } from '../../domain/shared/errors'
 import { Sku } from '../../domain/value-objects/sku'
 import { Slug } from '../../domain/value-objects/slug'
@@ -16,6 +17,7 @@ export interface ComponentInput {
 }
 
 export interface CreateProductCommand {
+  audience: CatalogAudience
   sku: string
   slug: string
   name: string
@@ -39,10 +41,11 @@ export class CreateProductService {
     const sku = Sku.create(command.sku)
     const slug = Slug.create(command.slug)
     const components = normalizeComponents(command.components)
-    await assertComponentsExist(this.products, components)
+    await assertComponentsExist(this.products, components, command.audience)
 
     const product = ProductAggregate.create({
       id: crypto.randomUUID(),
+      audience: command.audience,
       sku,
       slug,
       name: command.name,
@@ -72,6 +75,7 @@ export function normalizeComponents(inputs: ComponentInput[] | undefined): Produ
 export async function assertComponentsExist(
   products: ProductRepository,
   components: ProductComponent[],
+  audience: CatalogAudience,
 ): Promise<void> {
   if (components.length === 0) return
   const ids = components.map((c) => c.componentProductId)
@@ -81,6 +85,8 @@ export async function assertComponentsExist(
   if (missing.length > 0) {
     throw new ValidationError(`Produtos componentes inexistentes: ${missing.join(', ')}`)
   }
+  if (found.some((node) => node.audience !== audience))
+    throw new ValidationError('Os componentes do combo devem pertencer à mesma comunidade.')
 }
 
 // Espelha o MAX_CLOSURE_ROUNDS/maxDepth do resolvedor: um grafo mais fundo que

@@ -27,17 +27,6 @@
       "tags": ["[curious]"]
     },
     {
-      "id": "video-a2-variavel-K1",
-      "clipe": "video-a2-variavel",
-      "personagem": "Dedé",
-      "ocorrencia": 1,
-      "ancoraAntes": "vai para 1, porque eu encontrei um personagem e o jogo somou um. Se eu toco em outro, ele soma de novo, e agora é 2.",
-      "ancoraDepois": "Vamos ver. Olha aqui: eu toco num espaço vazio. Tá vendo? O número não muda. Isso acontece porque a regra que soma está",
-      "falaPrincipal": "E se eu tocar num espaço vazio do jardim?",
-      "falaPersonagem": "E se eu tocar num espaço vazio do jardim?",
-      "tags": ["[curious]"]
-    },
-    {
       "id": "video-a2-contagem-K1",
       "clipe": "video-a2-contagem",
       "personagem": "Dedé",

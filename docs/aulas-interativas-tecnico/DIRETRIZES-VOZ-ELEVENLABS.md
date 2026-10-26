@@ -143,3 +143,11 @@ interface IntervencaoKids {
 7. Escutar as duas montagens, conferir a pronúncia dos blocos e os intervalos de corte. Texto validado não equivale a áudio aprovado.
 
 Para produção real, registrar voz escolhida, modelo exato disponível, configurações, revisão do roteiro e nomes dos arquivos gerados. Não inventar um identificador de API para v4, nem gerar ou cobrar áudios durante o planejamento.
+
+## Falas do Zappy por etapa da experiência
+
+Direção de 25/10/2026: o vídeo conceitual prepara a investigação e o Zappy acompanha os testes na atividade. Seguir DESCOBERTA-GUIADA.md. Produzir cada fala a partir do registro compartilhado de etapas, sem copiar manualmente uma versão que possa divergir do player. No Cadê, o registro de consulta é zappy-etapas.json; a fonte é scene/garden.ts e o extrator falasDaCena inclui os textos no lote de voz.
+
+A entrada de uma etapa atualiza o texto e a fila do controle Ouvir; não inicia gravação automaticamente. A mudança interrompe uma fala anterior incompatível e respeita o foco de mídia. Usar a chave do texto e do perfil de pronúncia efetivos. Quando o texto muda, não associar o MP3 antigo apenas porque ocupava o mesmo balão.
+
+Registrar separadamente textos por etapa, MP3 produzido, escuta e implantação. A revisão local do roteiro ou do manifesto não comprova essas etapas de produção.

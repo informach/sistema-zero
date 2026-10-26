@@ -4,6 +4,7 @@ import {
 } from '@sistemazero/member-shell/lib/kids-journey-access'
 import { Sparkles } from 'lucide-react'
 import { CatalogCourseCard } from '@/components/kids/catalog-course-card'
+import { KidsCreatorCatalog } from '@/components/kids/creator-curriculum-page'
 import { JourneyMap } from '@/components/kids/journey-map'
 import { KidsBand } from '@/components/kids/kids-band'
 import { KidsSectionHeader } from '@/components/kids/kids-section-header'
@@ -54,6 +55,14 @@ export default async function CatalogPage() {
           daqui a pouco.
         </p>
       </KidsBand>
+    )
+  if (!isKidsStaffPreview(journey) && journey.curriculum)
+    return (
+      <KidsCreatorCatalog
+        view={journey.curriculum}
+        courses={courses}
+        mine={mineRes?.status === 200 ? (mineRes.body?.courses ?? []) : []}
+      />
     )
   const completionByLevel = tierCompletionByLevel(courses, journey)
   // ⚠️ POSSE não basta: o Estúdio LIVRE só abre no Construtor (`freeStudio`) e com algum

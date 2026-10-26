@@ -261,7 +261,7 @@ export function adminRoutes(deps: AdminRoutesDeps) {
         async ({ query, headers }) => {
           requireAdmin(headers, deps.requireAdminEnabled)
           if (!deps.pensaFunnel) throw new ContentNotFoundError('Funil do Pensa indisponível.')
-          return deps.pensaFunnel.execute(query.days)
+          return deps.pensaFunnel.execute(query.days, query.audience)
         },
         { query: PensaFunnelQuery },
       )

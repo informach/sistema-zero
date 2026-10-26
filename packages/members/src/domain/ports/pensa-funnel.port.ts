@@ -12,5 +12,5 @@ export interface PensaFunnelCounts {
   adaptationsAccepted: number
 }
 export interface PensaFunnelReader {
-  funnel(since: Date, until: Date): Promise<PensaFunnelCounts>
+  funnel(since: Date, until: Date, audience?: 'kids' | 'adult'): Promise<PensaFunnelCounts>
 }

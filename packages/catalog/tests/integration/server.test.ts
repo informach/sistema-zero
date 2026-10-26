@@ -47,8 +47,8 @@ function build(opts: { env?: typeof env; readinessOk?: boolean } = {}) {
   const listCoupons = new ListCouponsService(coupons)
   const quoteOffer = new QuoteOfferService(offers, coupons, products, resolver)
   const redeemCoupon = new RedeemCouponService(coupons, logger)
-  const createCoupon = new CreateCouponService(coupons, offers, logger)
-  const updateCoupon = new UpdateCouponService(coupons, offers, logger)
+  const createCoupon = new CreateCouponService(coupons, offers, products, logger)
+  const updateCoupon = new UpdateCouponService(coupons, offers, products, logger)
   const app = createServer({
     env: activeEnv,
     logger,
@@ -104,6 +104,7 @@ describe('catalog HTTP', () => {
       const built = build()
       app = built.app
       await built.createProduct.execute({
+        audience: 'kids',
         sku: 'no-comando-da-ia',
         slug: 'no-comando-da-ia',
         name: 'No Comando da IA',
@@ -112,6 +113,7 @@ describe('catalog HTTP', () => {
         fulfillment: { accessType: 'course', courseRef: 'no-comando-da-ia' },
       })
       const product = await built.createProduct.execute({
+        audience: 'kids',
         sku: 'x',
         slug: 'x',
         name: 'X',
@@ -169,7 +171,13 @@ describe('catalog HTTP', () => {
   })
 
   describe('escrita admin (RBAC defesa em profundidade)', () => {
-    const productBody = { sku: 'p1', slug: 'p1', name: 'P1', kind: 'ebook' }
+    const productBody = {
+      audience: 'kids',
+      sku: 'p1',
+      slug: 'p1',
+      name: 'P1',
+      kind: 'ebook',
+    }
 
     it('sem header de role → 401', async () => {
       const { app } = build()
@@ -216,6 +224,7 @@ describe('catalog HTTP', () => {
     it('mantém o novo Desafio em rascunho com o contrato completo de 30 dias', async () => {
       const built = build()
       const product = await built.createProduct.execute({
+        audience: 'kids',
         sku: 'desafio-primeiro-jogo',
         slug: 'desafio-primeiro-jogo',
         name: 'Desafio do Primeiro Jogo',
@@ -259,6 +268,7 @@ describe('catalog HTTP', () => {
     it('cria prazo fixo e editar só o preço preserva a política', async () => {
       const built = build()
       const product = await built.createProduct.execute({
+        audience: 'kids',
         sku: 'fixed-p',
         slug: 'fixed-p',
         name: 'Fixed',
@@ -314,6 +324,7 @@ describe('catalog HTTP', () => {
     it('recusa ativar prazo fixo sem duração', async () => {
       const built = build()
       const product = await built.createProduct.execute({
+        audience: 'kids',
         sku: 'fixed-invalid-p',
         slug: 'fixed-invalid-p',
         name: 'Fixed invalid',
@@ -342,6 +353,7 @@ describe('catalog HTTP', () => {
     it('POST /catalog/offers ativo com produto principal em draft → 400', async () => {
       const built = build()
       const product = await built.createProduct.execute({
+        audience: 'kids',
         sku: 'draft-main',
         slug: 'draft-main',
         name: 'Draft main',
@@ -369,6 +381,7 @@ describe('catalog HTTP', () => {
     it('POST /catalog/offers ativo com item sem fulfillment → 400', async () => {
       const built = build()
       const main = await built.createProduct.execute({
+        audience: 'kids',
         sku: 'main-ok',
         slug: 'main-ok',
         name: 'Main OK',
@@ -377,6 +390,7 @@ describe('catalog HTTP', () => {
         fulfillment: { accessType: 'course', courseRef: 'main-ok' },
       })
       const bonus = await built.createProduct.execute({
+        audience: 'kids',
         sku: 'bonus-draft',
         slug: 'bonus-draft',
         name: 'Bonus Draft',
@@ -405,6 +419,7 @@ describe('catalog HTTP', () => {
     it('PATCH /catalog/offers/:id para active revalida a entrega', async () => {
       const built = build()
       const product = await built.createProduct.execute({
+        audience: 'kids',
         sku: 'draft-activation',
         slug: 'draft-activation',
         name: 'Draft Activation',
@@ -432,6 +447,7 @@ describe('catalog HTTP', () => {
     it('POST /catalog/offers com priceCents zero → 400', async () => {
       const built = build()
       const product = await built.createProduct.execute({
+        audience: 'kids',
         sku: 'zero-price-p',
         slug: 'zero-price-p',
         name: 'Zero price product',
@@ -463,6 +479,7 @@ describe('catalog HTTP', () => {
       const built = build()
       app = built.app
       const product = await built.createProduct.execute({
+        audience: 'kids',
         sku: 'ncia',
         slug: 'ncia',
         name: 'NCIA',
@@ -482,7 +499,13 @@ describe('catalog HTTP', () => {
       await app.handle(
         req('POST', '/catalog/coupons', {
           headers: ADMIN,
-          body: { code: 'PROMO10', type: 'percent', percentOff: 10, appliesToAll: true },
+          body: {
+            audience: 'kids',
+            code: 'PROMO10',
+            type: 'percent',
+            percentOff: 10,
+            appliesToAll: true,
+          },
         }),
       )
     })
@@ -534,6 +557,7 @@ describe('catalog HTTP', () => {
     it('quote com cupom em oferta com allowsCoupon=false retorna 422', async () => {
       const built = build()
       const product2 = await built.createProduct.execute({
+        audience: 'kids',
         sku: 'ncia-b',
         slug: 'ncia-b',
         name: 'NCIA B',
@@ -554,6 +578,7 @@ describe('catalog HTTP', () => {
         req('POST', '/catalog/coupons', {
           headers: ADMIN,
           body: {
+            audience: 'kids',
             code: 'BLOCK',
             type: 'fixed',
             amountOffCents: 500,
@@ -581,7 +606,13 @@ describe('catalog HTTP', () => {
     it('criar cupom sem role admin → 401', async () => {
       const res = await app.handle(
         req('POST', '/catalog/coupons', {
-          body: { code: 'X', type: 'percent', percentOff: 5, appliesToAll: true },
+          body: {
+            audience: 'kids',
+            code: 'X',
+            type: 'percent',
+            percentOff: 5,
+            appliesToAll: true,
+          },
         }),
       )
       expect(res.status).toBe(401)
@@ -591,7 +622,13 @@ describe('catalog HTTP', () => {
       await app.handle(
         req('POST', '/catalog/coupons', {
           headers: ADMIN,
-          body: { code: 'ZERA', type: 'percent', percentOff: 100, appliesToAll: true },
+          body: {
+            audience: 'kids',
+            code: 'ZERA',
+            type: 'percent',
+            percentOff: 100,
+            appliesToAll: true,
+          },
         }),
       )
       const res = await app.handle(
@@ -608,6 +645,7 @@ describe('catalog HTTP', () => {
         req('POST', '/catalog/coupons', {
           headers: ADMIN,
           body: {
+            audience: 'kids',
             code: 'ONCE',
             type: 'fixed',
             amountOffCents: 500,
@@ -630,6 +668,7 @@ describe('catalog HTTP', () => {
         req('POST', '/catalog/coupons', {
           headers: ADMIN,
           body: {
+            audience: 'kids',
             code: 'ONCE',
             type: 'fixed',
             amountOffCents: 500,
@@ -667,6 +706,7 @@ describe('catalog HTTP', () => {
         req('POST', '/catalog/coupons', {
           headers: ADMIN,
           body: {
+            audience: 'kids',
             code: 'BLOCKED',
             type: 'fixed',
             amountOffCents: 500,
@@ -702,6 +742,7 @@ describe('catalog HTTP', () => {
   describe('leitura admin (listagens paginadas)', () => {
     async function seed(built: ReturnType<typeof build>) {
       const p1 = await built.createProduct.execute({
+        audience: 'kids',
         sku: 'curso-ia',
         slug: 'curso-ia',
         name: 'Curso de IA',
@@ -710,6 +751,7 @@ describe('catalog HTTP', () => {
         fulfillment: { accessType: 'course', courseRef: 'curso-ia' },
       })
       const p2 = await built.createProduct.execute({
+        audience: 'kids',
         sku: 'ebook-ia',
         slug: 'ebook-ia',
         name: 'Ebook de IA',
@@ -729,7 +771,13 @@ describe('catalog HTTP', () => {
       await built.app.handle(
         req('POST', '/catalog/coupons', {
           headers: ADMIN,
-          body: { code: 'BLACK', type: 'percent', percentOff: 50, appliesToAll: true },
+          body: {
+            audience: 'kids',
+            code: 'BLACK',
+            type: 'percent',
+            percentOff: 50,
+            appliesToAll: true,
+          },
         }),
       )
       return { p1, p2 }
@@ -861,12 +909,14 @@ describe('catalog HTTP', () => {
     it('PATCH que fecharia A→B→A → 400 (a oferta resolveria para zero entregáveis)', async () => {
       const built = build()
       const leaf = await built.createProduct.execute({
+        audience: 'kids',
         sku: 'folha',
         slug: 'folha',
         name: 'Folha',
         kind: 'ebook',
       })
       const a = await built.createProduct.execute({
+        audience: 'kids',
         sku: 'combo-a',
         slug: 'combo-a',
         name: 'Combo A',
@@ -874,6 +924,7 @@ describe('catalog HTTP', () => {
         components: [{ componentProductId: leaf.id, isPrimary: true }],
       })
       const b = await built.createProduct.execute({
+        audience: 'kids',
         sku: 'combo-b',
         slug: 'combo-b',
         name: 'Combo B',
@@ -913,6 +964,7 @@ describe('catalog HTTP', () => {
     it('GET público atualiza no write e quote segue autoritativa (sem cache)', async () => {
       const built = build({ env: cacheEnv })
       const product = await built.createProduct.execute({
+        audience: 'kids',
         sku: 'cache-p',
         slug: 'cache-p',
         name: 'Produto cacheado',
@@ -956,6 +1008,7 @@ describe('catalog HTTP', () => {
     it('no env de teste (sem TTL explícito) o cache fica desligado', async () => {
       const built = build()
       const product = await built.createProduct.execute({
+        audience: 'kids',
         sku: 'no-cache-p',
         slug: 'no-cache-p',
         name: 'Sem cache',
@@ -984,6 +1037,7 @@ describe('catalog HTTP', () => {
     it('quote de oferta pausada → 409 OFFER_NOT_AVAILABLE (não gera preço a cobrar)', async () => {
       const built = build()
       const product = await built.createProduct.execute({
+        audience: 'adult',
         sku: 'paused-p',
         slug: 'paused-p',
         name: 'P',
@@ -1012,6 +1066,7 @@ describe('catalog HTTP', () => {
     it('quote revalida produto principal alterado após ativação', async () => {
       const built = build()
       const product = await built.createProduct.execute({
+        audience: 'kids',
         sku: 'quote-main-p',
         slug: 'quote-main-p',
         name: 'Produto principal',
@@ -1048,6 +1103,7 @@ describe('catalog HTTP', () => {
     it('quote revalida produtos inclusos alterados após ativação', async () => {
       const built = build()
       const main = await built.createProduct.execute({
+        audience: 'kids',
         sku: 'quote-items-main',
         slug: 'quote-items-main',
         name: 'Principal',
@@ -1056,6 +1112,7 @@ describe('catalog HTTP', () => {
         fulfillment: { accessType: 'course', courseRef: 'quote-items-main' },
       })
       const bonus = await built.createProduct.execute({
+        audience: 'kids',
         sku: 'quote-items-bonus',
         slug: 'quote-items-bonus',
         name: 'Bonus',
@@ -1102,6 +1159,7 @@ describe('catalog HTTP', () => {
     }) {
       const built = build()
       const main = await built.createProduct.execute({
+        audience: 'kids',
         sku: 'kids-main',
         slug: 'kids-main',
         name: 'Plano Kids',
@@ -1118,6 +1176,7 @@ describe('catalog HTTP', () => {
       let bonusId: string | undefined
       if (opts.withBonus) {
         const bonus = await built.createProduct.execute({
+          audience: 'kids',
           sku: 'kids-bonus',
           slug: 'kids-bonus',
           name: 'Bônus',
@@ -1214,6 +1273,7 @@ describe('catalog HTTP', () => {
   describe('leitura pública sanitizada', () => {
     async function seedPublic(built: ReturnType<typeof build>) {
       const product = await built.createProduct.execute({
+        audience: 'kids',
         sku: 'pub',
         slug: 'pub',
         name: 'Público',
@@ -1223,6 +1283,7 @@ describe('catalog HTTP', () => {
         metadata: { interno: true },
       })
       await built.createProduct.execute({
+        audience: 'kids',
         sku: 'rascunho',
         slug: 'rascunho',
         name: 'Rascunho',
@@ -1333,6 +1394,7 @@ describe('catalog HTTP', () => {
 
     async function seedOffer(built: ReturnType<typeof build>) {
       const product = await built.createProduct.execute({
+        audience: 'kids',
         sku: 'tok',
         slug: 'tok',
         name: 'Tok',
@@ -1376,6 +1438,7 @@ describe('catalog HTTP', () => {
     it('redeem sem token → 401 (não queima contador); com token → 200', async () => {
       const built = buildWithToken()
       await built.createCoupon.execute({
+        audience: 'kids',
         code: 'TOK5',
         type: 'fixed',
         amountOffCents: 500,
@@ -1398,7 +1461,13 @@ describe('catalog HTTP', () => {
 
     it('escrita/leitura admin sem token → 401 mesmo com role admin; com token → passa', async () => {
       const built = buildWithToken()
-      const body = { sku: 'p-tok', slug: 'p-tok', name: 'P', kind: 'ebook' }
+      const body = {
+        audience: 'kids',
+        sku: 'p-tok',
+        slug: 'p-tok',
+        name: 'P',
+        kind: 'ebook',
+      }
       const denied = await built.app.handle(
         req('POST', '/catalog/products', { body, headers: ADMIN }),
       )

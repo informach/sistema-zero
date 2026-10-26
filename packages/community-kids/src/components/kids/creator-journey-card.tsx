@@ -1,3 +1,4 @@
+import { CreatorJourneySummary } from '@sistemazero/member-shell/components/creator-journey'
 import {
   isKidsStaffPreview,
   kidsJourneyAccess,
@@ -7,7 +8,7 @@ import Link from 'next/link'
 import { cn } from '@/lib/cn'
 import { canonicalJourneyProgress } from '@/lib/journey-presentation'
 import { journeyEarnedRewardInfo } from '@/lib/journey-rewards'
-import type { GamificationMeView } from '@/lib/types'
+import type { GamificationMeView, MyCourseView } from '@/lib/types'
 import { AvatarWithAura } from './avatar-with-aura'
 import { LevelBadge } from './level-badge'
 
@@ -39,8 +40,10 @@ export function CreatorJourneyCard({
   avatarPhotoUrl = null,
   name = null,
   showcaseStats = null,
+  courses = [],
 }: {
   gamification: GamificationMeView | null
+  courses?: MyCourseView[]
   avatarPhotoUrl?: string | null
   /** Nome da criança: a inicial vira o avatar enquanto não há foto. */
   name?: string | null
@@ -75,6 +78,8 @@ export function CreatorJourneyCard({
     )
   }
 
+  if (journey.curriculum)
+    return <CreatorJourneySummary view={journey.curriculum} skin="kids" courses={courses} />
   const { streak, xp, ranking } = gamification
   const reward = journeyEarnedRewardInfo(journey)
   const hint = canonicalJourneyProgress(journey).hint

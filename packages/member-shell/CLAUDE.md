@@ -1,5 +1,41 @@
 # CLAUDE.md — @sistemazero/member-shell
 
+## Currículo compartilhado e Maestrias (25/10/2026)
+
+As políticas Kids/adulta podem conter `curriculum`; quando presente ele seleciona a nova
+autoridade única do core/Members. Notas históricas abaixo sobre publicação para concluir posição
+e trilhas de um curso-base só continuam válidas para políticas sem esse campo.
+
+- `components/creator-journey.tsx` apresenta mapa, resumo, posto e Maestrias; recebe view canônica
+  e fatos do catálogo. `lib/creator-journey-presentation.ts` só produz texto e destinos.
+  Nenhum componente concede acesso, concede poderes ou recalcula o posto.
+- Dois cursos-base abrem missão/poderes/extras. Uma identidade de poder conta uma vez mesmo com
+  versões equivalentes. Curso concluído libera seus blocos; Mural é opcional na nova jornada.
+- Views de curso têm `curriculum?: CreatorCoursePlacement`, `careerLock` e `accessReason`.
+  `course-curriculum-context` explica vínculo e exceção comercial com o mesmo progresso.
+  O recado de 423 lê `careerLock.curriculum`: núcleo/oficina/projeto levam à área e ao nível da
+  Maestria; não inventam uma base de posto como requisito nem retornam ao catálogo genérico.
+- `adult-molda-tool-access` traduz as capacidades canônicas `molda`, `molda-intermediate` e
+  `molda-professional` nas faixas do editor e do contexto do Pensa, por participante. Uma política
+  adulta histórica sem currículo conserva o acesso integral que `molda` concedia.
+- `lib/mastery.ts` reexporta transportes do core; clients leem `/members/journey/masteries`
+  e `/evidence`. `routes/masteries.ts` fixa audiência no shell, valida área/nível/body limitado,
+  rejeita suporte somente leitura e encaminha apenas evidenceId/mensagem ao Members.
+  `components/mastery-submission.tsx` apresenta seleção, espera, devolutiva e reenvio.
+  Usa `level.available` do servidor para o envio, exclui a evidência da entrega atual e só
+  anuncia avaliação pendente quando o POST responde `pending`. Resposta idempotente já revisada
+  exige escolher outra versão; mudar apenas a mensagem não abre nova revisão.
+- Maestria pede núcleo ou crédito validado, duas oficinas e projeto aprovado em todos os critérios.
+  `nucleusCourses` e `workshops[].courses` são fatos individuais; crédito agregado nunca significa
+  que cada curso foi concluído. Cada nível conserva a rubrica da versão enviada.
+- `qa/creator-journey-serve.ts` é servidor exclusivo de QA em loopback: componentes e CSS reais,
+  currículo editorial e alunos fictícios, nenhuma leitura de serviços. Execute no pacote.
+  Cenários: fresh/one/pair/mission/power/direct/expired/planned/paused/retained/legend/mastery; telas
+  map/post/areas/mastery, peles adult/kids. A API da prévia rejeita escrita explicitamente.
+  `/admin-review` monta o formulário real de revisão e um Pinta fictício.
+  `?evidence=gallery` monta cópias locais no formato portátil e exercita troca/download sem R2.
+  O helper opcional `qa/cache-creator-preview-fonts.ts` guarda fontes públicas em cache ignorado para QA sem rede.
+
 ## Jornada Kids canônica (implementação isolada, 19/10/2026)
 
 O caminho Kids traduz a view canônica pelo adapter kidsStudioTier/kids-journey-access; não

@@ -21,6 +21,7 @@ const campaignBody = t.Object({
   /** Ausente = `kids` na criação; na edição e na duplicata mantém o público gravado. */
   audience: t.Optional(t.Union([t.Literal('kids'), t.Literal('adult')])),
 })
+const audienceQuery = t.Optional(t.Union([t.Literal('kids'), t.Literal('adult')]))
 const idParams = t.Object({ id: t.String({ format: 'uuid' }) })
 const campaignUpdateBody = t.Object({
   ...campaignBody.properties,
@@ -44,9 +45,15 @@ export function campaignsRoutes(deps: {
     .get(
       '',
       ({ query }) =>
-        deps.campaigns.list({ q: query.q, limit: query.limit ?? 25, offset: query.offset ?? 0 }),
+        deps.campaigns.list({
+          audience: query.audience,
+          q: query.q,
+          limit: query.limit ?? 25,
+          offset: query.offset ?? 0,
+        }),
       {
         query: t.Object({
+          audience: audienceQuery,
           q: t.Optional(t.String({ maxLength: 120 })),
           limit: t.Optional(t.Numeric({ minimum: 1, maximum: 100 })),
           offset: t.Optional(t.Numeric({ minimum: 0 })),
@@ -68,15 +75,15 @@ export function campaignsRoutes(deps: {
     )
     .get(
       '/:id',
-      async ({ params, set }) => {
-        const detail = await deps.campaigns.detail(params.id)
+      async ({ params, query, set }) => {
+        const detail = await deps.campaigns.detail(params.id, query.audience)
         if (!detail) {
           set.status = 404
           return envelope('CAMPAIGN_NOT_FOUND', 'Campanha não encontrada.')
         }
         return detail
       },
-      { params: idParams },
+      { params: idParams, query: t.Object({ audience: audienceQuery }) },
     )
     .patch(
       '/:id',

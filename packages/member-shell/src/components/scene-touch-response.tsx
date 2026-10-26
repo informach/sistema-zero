@@ -3,6 +3,7 @@
 import type { SceneAction, SceneState } from '@sistemazero/core/learning/scene'
 import { jardimSpriteRect, jardimSvgUrl } from '@sistemazero/studio/arte'
 import { SCENE_VIEW, SceneCanvas, Texto } from './scene-canvas'
+import { TwoHidingPlaces } from './scene-two-hiding-places'
 
 const coelho = jardimSpriteRect('coelho', 280, 238)
 const arbusto = jardimSpriteRect('arbusto', 280, 251)
@@ -15,6 +16,7 @@ export function TouchResponseStage({
   state: SceneState
   dispatch?: (action: SceneAction) => void
 }) {
+  if (state.match.gardenRound === 2) return <TwoHidingPlaces state={state} dispatch={dispatch} />
   const encontrou = state.match.screen === 'playing'
   return (
     <SceneCanvas

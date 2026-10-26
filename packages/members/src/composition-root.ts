@@ -84,6 +84,7 @@ import { LiveWorkspaceService } from './application/live/live-workspace.service'
 import { LiveTeacherNotesService } from './application/live-course/teacher-notes.service'
 import { ManageEntitlementService } from './application/manage-entitlement/manage-entitlement.service'
 import { MarkLessonCompleteService } from './application/mark-lesson-complete/mark-lesson-complete.service'
+import { MasteryService } from './application/mastery/mastery.service'
 import { ParentReportPrefsService } from './application/parent-report/report-prefs.service'
 import { SendParentReportsService } from './application/parent-report/send-parent-reports.service'
 import { GetPensaFunnelService } from './application/pensa/pensa-funnel.service'
@@ -106,6 +107,7 @@ import { AuthorizeFreeRuntimeService } from './application/studio/authorize-free
 import { AuthorizeLessonRuntimeService } from './application/studio/authorize-lesson-runtime.service'
 import { AuthorizeLivePublicationRuntimeService } from './application/studio/authorize-live-publication-runtime.service'
 import { AuthorizeLiveRuntimeService } from './application/studio/authorize-live-runtime.service'
+import { AuthorizeMasteryReviewRuntimeService } from './application/studio/authorize-mastery-review-runtime.service'
 import { AuthorizePublicRuntimeService } from './application/studio/authorize-public-runtime.service'
 import { AuthorizePythonAnalysisService } from './application/studio/authorize-python-analysis.service'
 import { FreeStudioAccessService } from './application/studio/free-studio-access.service'
@@ -128,6 +130,7 @@ import {
 import { ZappyHistoryService } from './application/zappy/zappy-history.service'
 import { ZappyKnowledgeService } from './application/zappy/zappy-knowledge.service'
 import type { LiveRewardsPort } from './domain/ports/live-rewards.port'
+import type { MasteryOwner } from './domain/ports/mastery-repository.port'
 import { createStudioRuntimeHosts } from './domain/studio/runtime-hosts'
 import { createStudioRuntimePolicy } from './domain/studio/runtime-policy'
 import type { Env } from './infrastructure/config/env'
@@ -176,6 +179,8 @@ import { DrizzleLiveCourseRepository } from './infrastructure/persistence/drizzl
 import { DrizzleLiveLessonAccessRepository } from './infrastructure/persistence/drizzle/live-lesson-access.repository'
 import { DrizzleLiveMaterialsRepository } from './infrastructure/persistence/drizzle/live-materials.repository'
 import { DrizzleLiveWorkspaceRepository } from './infrastructure/persistence/drizzle/live-workspace.repository'
+import { DrizzleMasteryRepository } from './infrastructure/persistence/drizzle/mastery.repository'
+import { readMasteryJourneyFacts } from './infrastructure/persistence/drizzle/mastery-journey-facts'
 import { DrizzleParentReportRepository } from './infrastructure/persistence/drizzle/parent-report.repository'
 import { DrizzlePensaCheckpointsRepository } from './infrastructure/persistence/drizzle/pensa-checkpoints.repository'
 import { DrizzlePensaFunnelRepository } from './infrastructure/persistence/drizzle/pensa-funnel.repository'
@@ -322,23 +327,38 @@ export async function createApplication(env: Env): Promise<Application> {
   // Curso AO VIVO (14/10/2026): a aula abre pela vaga na turma (grants das oficinas).
   const liveLessonAccess = new DrizzleLiveLessonAccessRepository(db)
   const kidsJourneyRepo = new DrizzleKidsJourneyRepository(db)
+  const masteryRepository = new DrizzleMasteryRepository(db)
+  const masteryFactsReader = async (owner: MasteryOwner) =>
+    (await readMasteryJourneyFacts(db, [owner])).get(owner.userId)!
   const kidsJourneyConfiguration = new KidsJourneyConfigurationService(kidsJourneyRepo)
-  const kidsJourneyQuery = new KidsJourneyQueryService(kidsJourneyRepo)
+  const kidsJourneyQuery = new KidsJourneyQueryService(kidsJourneyRepo, masteryFactsReader)
   const kidsJourneyProfiles = new KidsJourneyProfilesService(kidsJourneyRepo, kidsJourneyQuery)
+  const adultJourney = new AdultJourneyService(
+    new DrizzleAdultJourneyRepository(db),
+    courses,
+    clock,
+    masteryFactsReader,
+  )
+  const masteries = new MasteryService(
+    masteryRepository,
+    (owner, extraCourseIds) =>
+      owner.audience === 'kids'
+        ? kidsJourneyQuery.masteryContext(owner)
+        : adultJourney.masteryContext(owner.userId, extraCourseIds),
+    entitlements,
+    clock,
+    randomUUID,
+  )
   const checkAccess = new CheckAccessService(
     courses,
     entitlements,
     kidsJourneyQuery,
     clock,
     liveLessonAccess,
+    adultJourney,
   )
   // S2S: resolução de acesso em lote (consumido pela comunidade @sistemazero/hub).
   const accessCheck = new AccessCheckService(entitlements, clock)
-  const adultJourney = new AdultJourneyService(
-    new DrizzleAdultJourneyRepository(db),
-    courses,
-    clock,
-  )
   const kidsProfileAdmission = new KidsProfileAdmissionService(kidsJourneyRepo)
   const studioUnlockRepo = new DrizzleStudioUnlockRepository(db)
   const getStudioUnlocks = new GetStudioUnlocksService(gamificationRepo, studioUnlockRepo, logger)
@@ -599,6 +619,7 @@ export async function createApplication(env: Env): Promise<Application> {
     gamificationRepo,
     clock,
     kidsJourneyQuery,
+    adultJourney,
   )
   const listCatalog = new ListCatalogService(
     courses,
@@ -606,6 +627,7 @@ export async function createApplication(env: Env): Promise<Application> {
     gamificationRepo,
     clock,
     kidsJourneyQuery,
+    adultJourney,
   )
   const getMyCourse = new GetMyCourseService(
     checkAccess,
@@ -1054,7 +1076,9 @@ export async function createApplication(env: Env): Promise<Application> {
   const revoke = new RevokeEntitlementService({ entitlements, clock, logger })
 
   // Autoria de conteúdo (painel)
-  const courseAdmin = new CourseAdminService(content, courses)
+  const courseAdmin = new CourseAdminService(content, courses, async () =>
+    Boolean((await kidsJourneyConfiguration.policy()).policy.curriculum),
+  )
   const moduleAdmin = new ModuleAdminService(content, courses)
   const lessonAdmin = new LessonAdminService(content, courses, learning)
 
@@ -1269,6 +1293,19 @@ export async function createApplication(env: Env): Promise<Application> {
       profiles: adultProfile,
       internalToken: env.INTERNAL_API_TOKEN,
       requireAdminEnabled: env.REQUIRE_ADMIN,
+    },
+    masteries: {
+      service: masteries,
+      runtime: new AuthorizeMasteryReviewRuntimeService(
+        masteryRepository,
+        studioRuntimePolicy,
+        Date.now,
+        new StudioGallerySourceService({
+          storageBaseURL: env.STUDIO_GALLERY_STORAGE_BASE_URL,
+          allowLoopbackHttp: env.NODE_ENV !== 'production',
+        }),
+      ),
+      internalToken: env.INTERNAL_API_TOKEN,
     },
     creations: {
       adult: {

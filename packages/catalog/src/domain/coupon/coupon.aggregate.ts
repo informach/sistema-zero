@@ -1,4 +1,5 @@
 import { AggregateRoot } from '../shared/aggregate-root'
+import { type CatalogAudience, catalogAudience } from '../shared/audience'
 import { ValidationError } from '../shared/errors'
 import type { CouponCode } from '../value-objects/coupon-code'
 import type { Currency } from '../value-objects/money'
@@ -10,6 +11,7 @@ import type { CouponType } from './coupon.type'
 /** Estado serializável do cupom (ida/volta ao banco). */
 export interface CouponSnapshot {
   id: string
+  audience: CatalogAudience
   version: number
   code: string
   type: CouponType
@@ -32,6 +34,7 @@ export interface CouponSnapshot {
 
 export interface CreateCouponInput {
   id: string
+  audience: CatalogAudience
   code: CouponCode
   type: CouponType
   percentOff?: number | null
@@ -61,6 +64,7 @@ export interface UpdateCouponDetails {
 
 interface CouponProps {
   version: number
+  audience: CatalogAudience
   code: string
   type: CouponType
   percentOff: number | null
@@ -103,6 +107,7 @@ export class CouponAggregate extends AggregateRoot<string> {
 
     const coupon = new CouponAggregate(input.id, {
       version: 0,
+      audience: catalogAudience(input.audience),
       code: input.code.value,
       type: input.type,
       percentOff,
@@ -125,6 +130,7 @@ export class CouponAggregate extends AggregateRoot<string> {
   }
 
   static restore(snapshot: CouponSnapshot): CouponAggregate {
+    catalogAudience(snapshot.audience)
     const { id, ...rest } = snapshot
     return new CouponAggregate(id, { ...rest, offerIds: [...rest.offerIds] })
   }
@@ -195,6 +201,9 @@ export class CouponAggregate extends AggregateRoot<string> {
   }
   get code(): string {
     return this.props.code
+  }
+  get audience(): CatalogAudience {
+    return this.props.audience
   }
   get type(): CouponType {
     return this.props.type

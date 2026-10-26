@@ -5,6 +5,7 @@ import { listSubscriptions } from '@/server/payments'
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url)
   const { status, body } = await listSubscriptions({
+    audience: searchParams.get('audience') ?? undefined,
     q: searchParams.get('q') ?? undefined,
     status: searchParams.get('status') ?? undefined,
     consumerId: searchParams.get('consumerId') ?? undefined,

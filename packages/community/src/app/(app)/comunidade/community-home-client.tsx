@@ -95,7 +95,6 @@ export function CommunityHomeClient() {
       {state.forums.map((forum) => (
         <ForumCard key={forum.space.id} forum={forum} />
       ))}
-      {state.showcase ? <ShowcaseSpaceCard space={state.showcase} /> : null}
     </div>
   )
 }
@@ -168,65 +167,6 @@ function ForumCard({ forum: { space, channels } }: { forum: ForumSpace }) {
           ))}
         </ul>
       ) : null}
-    </section>
-  )
-}
-
-/** Ilustração decorativa do Mural: três capas de jogo lado a lado, nas cores fixas da marca. */
-function ShowcaseArt() {
-  return (
-    <svg
-      viewBox="0 0 340 240"
-      preserveAspectRatio="xMidYMid slice"
-      aria-hidden
-      className="block h-full w-full fill-(--topo)"
-    >
-      <rect width="340" height="240" />
-      <rect x="24" y="40" width="130" height="80" rx="10" className="fill-(--topo-borda)" />
-      <rect x="186" y="40" width="130" height="80" rx="10" className="fill-(--topo-borda)" />
-      <rect
-        x="105"
-        y="136"
-        width="130"
-        height="80"
-        rx="10"
-        className="fill-(--topo-borda) stroke-(--sz-community-blue-light)"
-        strokeWidth="2"
-      />
-      <circle cx="70" cy="74" r="12" className="fill-(--sz-community-blue-light)" />
-      <circle cx="260" cy="74" r="12" className="fill-(--sz-community-pink)" />
-      <path d="M170 160 L182 190 L170 184 L158 190 Z" className="fill-(--sz-community-yellow)" />
-    </svg>
-  )
-}
-
-function ShowcaseSpaceCard({ space }: { space: HubSpaceView }) {
-  return (
-    // O Mural é comemoração: a carta de palco no meio da bancada (Estúdio à noite).
-    <section
-      aria-labelledby={`espaco-${space.id}`}
-      className="sz-palco flex flex-col overflow-hidden rounded-[1.2rem] md:flex-row"
-    >
-      <div className="h-[11rem] flex-none md:h-auto md:w-[17rem]">
-        <ShowcaseArt />
-      </div>
-      <div className="flex flex-1 flex-col gap-3 p-6 md:p-7">
-        <h2 id={`espaco-${space.id}`} className="sz-h2">
-          {space.name}
-        </h2>
-        <p className="text-muted-foreground">
-          {space.description ||
-            'Jogos prontos da comunidade, para jogar no navegador e fazer a sua versão.'}
-        </p>
-        <div className="mt-auto flex flex-wrap gap-3 pt-1">
-          <Link href="/mural-dos-criadores-adulto" prefetch={false} className="sz-btn-white">
-            Ver o Mural
-          </Link>
-          <Link href="/desafios" prefetch={false} className="sz-btn-outline">
-            Desafio do mês
-          </Link>
-        </div>
-      </div>
     </section>
   )
 }

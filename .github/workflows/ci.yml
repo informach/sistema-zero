@@ -353,7 +353,13 @@ jobs:
           STUDIO_TEST_DATABASE_URL: postgres://postgres:postgres@localhost:55432/studio_test_ci
           ZAPPY_QA_DATABASE_URL: postgres://postgres:postgres@localhost:55432/studio_test_zappy_135
           KIDS_JOURNEY_TEST_DATABASE_URL: postgres://postgres:postgres@127.0.0.1:55432/kids_journey_ci
+          ADULT_JOURNEY_TEST_DATABASE_URL: postgres://postgres:postgres@127.0.0.1:55432/kids_journey_adult_repository_ci
           KIDS_JOURNEY_PURGE_TEST_DATABASE_URL: postgres://postgres:postgres@127.0.0.1:55432/kids_journey_purge_ci
+          CREATOR_JOURNEY_TEST_DATABASE_URL: postgres://postgres:postgres@127.0.0.1:55432/kids_journey_creator_ci
+          CREATOR_REWARDS_TEST_DATABASE_URL: postgres://postgres:postgres@127.0.0.1:55432/kids_journey_creator_rewards_ci
+          MASTERY_TEST_DATABASE_URL: postgres://postgres:postgres@127.0.0.1:55432/kids_journey_mastery_ci
+          MASTERY_CONCURRENCY_TEST_DATABASE_URL: postgres://postgres:postgres@127.0.0.1:55432/kids_journey_mastery_concurrency_ci
+          MASTERY_RETENTION_TEST_DATABASE_URL: postgres://postgres:postgres@127.0.0.1:55432/kids_journey_mastery_retention_ci
 
       - name: Pensa integrado com API e PostgreSQL reais
         working-directory: packages/pensa
@@ -367,6 +373,16 @@ jobs:
         run: cd packages/referrals && bun test tests/db
         env:
           TEST_DATABASE_URL: postgres://postgres:postgres@localhost:55432/sistemazero
+
+      - name: Separação comercial Kids e Adultos (Postgres isolado)
+        run: |
+          PGPASSWORD=postgres psql -h localhost -p 55432 -U postgres -d postgres -v ON_ERROR_STOP=1 -c "CREATE DATABASE catalog_audience_test"
+          PGPASSWORD=postgres psql -h localhost -p 55432 -U postgres -d postgres -v ON_ERROR_STOP=1 -c "CREATE DATABASE payments_audience_test"
+          bun test --cwd packages/catalog tests/application/catalog-audience.db.test.ts
+          bun test --cwd packages/payments tests/db/business-audience.test.ts
+        env:
+          CATALOG_AUDIENCE_TEST_DATABASE_URL: postgres://postgres:postgres@localhost:55432/catalog_audience_test
+          BUSINESS_AUDIENCE_TEST_DATABASE_URL: postgres://postgres:postgres@localhost:55432/payments_audience_test
 
       - name: Criar banco descartável do Helpdesk
         run: PGPASSWORD=postgres psql -h localhost -p 55432 -U postgres -d postgres -v ON_ERROR_STOP=1 -c "CREATE DATABASE helpdesk_test"
@@ -880,7 +896,7 @@ jobs:
               '{query:"mutation($s:String!,$e:String!,$c:String){serviceInstanceDeployV2(serviceId:$s,environmentId:$e,commitSha:$c)}",variables:{s:$sid,e:$eid,c:$sha}}')
             RESP=$(gql "$BODY")
             ID=$(echo "$RESP" | jq -r '.data.serviceInstanceDeployV2 // empty')
-            if [ -z "$ID" ]; then echo "::error::deploy de $s falhou ao disparar: $(echo "$RESP" | jq -c '.errors // .')"; exit 1; fi
+            if [ -z "$ID" ]; then echo "::error::deploy de $s falhou ao disparar: $(echo "$RESP" | jq -c '.errors // .')"; return 1; fi
             DEP[$s]="$ID"
             echo "  $s → deployment $ID"
           }
@@ -905,6 +921,21 @@ jobs:
           elif [ -n "${WANT[community-kids]:-}" ] || [ -n "${WANT[community]:-}" ] || [ -n "${WANT[admin]:-}" ]; then
             node scripts/ci/kids-journey-rollout.mjs verify "$GITHUB_SHA"
           fi
+          # Retirar os backends comerciais antigos antes de enviar filtros por
+          # comunidade a partir do Admin novo. Nenhum POST repetido pelo monitor.
+          COMMERCIAL=()
+          COMMERCIAL_DISPATCH_FAILED=0
+          for s in catalog payments referrals; do
+            if [ -n "${WANT[$s]:-}" ]; then
+              if ! disparar "$s"; then COMMERCIAL_DISPATCH_FAILED=1; break; fi
+              COMMERCIAL+=("$s")
+            fi
+          done
+          if [ "${#COMMERCIAL[@]}" -gt 0 ]; then
+            esperar "${COMMERCIAL[@]}"
+            for s in "${COMMERCIAL[@]}"; do unset 'WANT['"$s"']' 'DEP['"$s"']'; done
+          fi
+          if [ "$COMMERCIAL_DISPATCH_FAILED" -ne 0 ]; then exit 1; fi
           for s in "${!WANT[@]}"; do disparar "$s"; done
           if [ "${#DEP[@]}" -eq 0 ]; then echo "onda canônica concluída; nenhum outro serviço solicitado"; exit 0; fi
 

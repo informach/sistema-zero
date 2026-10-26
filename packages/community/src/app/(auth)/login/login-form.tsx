@@ -184,10 +184,7 @@ export function LoginForm({ notice }: { notice?: ReactNode }) {
 
   return (
     <div className="flex flex-col gap-6">
-      <AuthHeading
-        title="Entrar"
-        lead="Acesse seus cursos, seus projetos e os recados da equipe."
-      />
+      <AuthHeading title="Entrar" lead="Use o e-mail da sua compra." />
 
       {notice}
 
@@ -204,7 +201,7 @@ export function LoginForm({ notice }: { notice?: ReactNode }) {
           Com senha
         </ModeButton>
         <ModeButton pressed={mode === 'otp'} disabled={loading} onClick={() => switchMode('otp')}>
-          Com código por e-mail
+          Com código no e-mail
         </ModeButton>
       </div>
 
@@ -230,7 +227,16 @@ export function LoginForm({ notice }: { notice?: ReactNode }) {
               className={inputClass(Boolean(errors.email))}
             />
           </Field>
-          <Field id="password" label="Senha" error={errors.password}>
+          <Field
+            id="password"
+            label="Senha"
+            error={errors.password}
+            action={
+              <Link href="/esqueci-senha" className="sz-link inline-flex min-h-11 items-center">
+                Esqueci minha senha
+              </Link>
+            }
+          >
             <PasswordField
               id="password"
               value={password}
@@ -244,12 +250,6 @@ export function LoginForm({ notice }: { notice?: ReactNode }) {
           </Field>
           {serverError ? <AuthAlert tone="error">{serverError}</AuthAlert> : null}
           <SubmitButton loading={loading}>Entrar</SubmitButton>
-          <Link
-            href="/esqueci-senha"
-            className="sz-link inline-flex min-h-12 items-center self-center"
-          >
-            Esqueci minha senha
-          </Link>
         </form>
       ) : (
         <form
@@ -317,7 +317,7 @@ export function LoginForm({ notice }: { notice?: ReactNode }) {
       )}
 
       <AuthAlert tone="info" live={false}>
-        <strong>Primeiro acesso?</strong> Depois da compra, enviamos por e-mail e WhatsApp um link
+        <strong>Primeiro acesso.</strong> Depois da compra, enviamos por e-mail e WhatsApp um link
         para você criar a sua senha. Abra o link e escolha a senha antes de entrar aqui.
       </AuthAlert>
 
@@ -348,7 +348,7 @@ function ModeButton({
       className={cn(
         'min-h-14 rounded-[0.6rem] px-2 font-bold leading-tight focus-visible:outline-3 focus-visible:outline-ring focus-visible:outline-offset-2',
         pressed
-          ? 'bg-card text-foreground shadow-[0_1px_3px_rgba(15,26,51,0.18)]'
+          ? 'bg-card text-foreground shadow-[0_2px_0_var(--degrau-claro)]'
           : 'bg-transparent text-muted-foreground hover:text-foreground',
       )}
     >

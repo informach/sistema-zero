@@ -57,6 +57,20 @@
       "when": 1789586160256,
       "tag": "0007_enforce_offer_access_policy",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1792783020555,
+      "tag": "0008_catalog_audience_expand",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1792783062113,
+      "tag": "0009_catalog_audience_backfill",
+      "breakpoints": true
     }
   ]
 }

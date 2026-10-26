@@ -1,0 +1,2 @@
+ALTER TABLE "members"."adult_journey_grants" DROP CONSTRAINT "adult_journey_capability_check";--> statement-breakpoint
+ALTER TABLE "members"."adult_journey_grants" ADD CONSTRAINT "adult_journey_capability_check" CHECK ("members"."adult_journey_grants"."capability" in ('studio', 'pinta', 'molda', 'bridge', 'pro', 'ai', 'pensa', 'molda-intermediate', 'molda-professional'));

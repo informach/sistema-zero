@@ -17,6 +17,7 @@ import type { CourseLevelSlug, CourseTrack } from '@/lib/types'
 
 /** O que a volta precisa saber do curso — subconjunto de `CourseDetailView`. */
 export interface CourseBackInput {
+  curriculum?: import('@sistemazero/core/journey').CreatorCoursePlacement
   level?: CourseLevelSlug
   track?: CourseTrack
   careerSlot?: number | null
@@ -34,6 +35,8 @@ export function trilhaHrefForCourse(
   course: CourseBackInput,
   journey: JourneyCoursePolicy | null,
 ): string | null {
+  if (course.curriculum?.level) return `/cursos/trilha/${course.curriculum.level}`
+  if (course.curriculum?.masteryId) return `/maestrias/${course.curriculum.masteryId}`
   if (!journey) return null
   if (course.level === 'lenda') return '/cursos/trilha/god'
   const tier = courseTierOf(course.level, course.track)
@@ -48,6 +51,8 @@ export function resolveCourseBack(
   journey: JourneyCoursePolicy | null,
 ): CourseBackTarget {
   if (from === 'inicio') return { href: '/', label: 'Voltar ao início' }
+  if (course.curriculum?.masteryId)
+    return { href: `/maestrias/${course.curriculum.masteryId}`, label: 'Voltar à maestria' }
   const trilha = trilhaHrefForCourse(course, journey)
   return trilha ? { href: trilha, label: 'Voltar à trilha' } : MAPA
 }

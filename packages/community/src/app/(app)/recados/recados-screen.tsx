@@ -18,11 +18,13 @@ export async function RecadosScreen({
 }) {
   const result = await listTeacherThreadsReadonly()
   const ok = result.status === 200
+  const unread = ok ? (result.body?.threads ?? []).filter((thread) => thread.unread).length : 0
   return (
     <>
       <PageBand
+        kicker={unread > 0 ? `${unread} ${unread === 1 ? 'novo' : 'novos'}` : undefined}
         title="Recados"
-        lead="Conversas privadas com a equipe professora: suas dúvidas nas aulas, as respostas às suas entregas e os avisos."
+        lead="Suas conversas com a equipe: as dúvidas das aulas, as respostas às suas entregas e os avisos. Só você e a equipe veem."
       />
       <PageBody className="pt-8">
         <div className="grid grid-cols-[minmax(0,1fr)] items-start gap-6 lg:grid-cols-[23rem_minmax(0,1fr)]">

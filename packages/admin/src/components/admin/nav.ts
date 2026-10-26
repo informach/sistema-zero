@@ -1,4 +1,5 @@
 import {
+  Award,
   BookOpen,
   CalendarDays,
   Contact,
@@ -82,6 +83,7 @@ export const NAV_GROUPS: NavGroup[] = [
         icon: Inbox,
         badgeKey: 'entregas',
       },
+      { label: 'Maestrias', href: '/admin/professor/maestrias', icon: Award },
       {
         label: 'Recados',
         href: '/admin/professor/recados',
@@ -268,11 +270,15 @@ export function homeForRole(role: string): string {
 /**
  * Rotas ESCOPADAS pelo seletor global de plataforma (Kids × Adultos): telas de
  * ensino/comunidade filtram pela plataforma ativa. `/admin/membros` cobre
- * alunos, ficha, criança, análises e cursos (autoria); Negócio inteiro,
- * servidores da comunidade e auditoria são GLOBAIS (a legenda do switcher
- * avisa). Mesma régua de prefixo por segmento do `prefixMatches`.
+ * alunos, ficha, criança, análises e cursos (autoria). Catálogo, campanhas
+ * e vendas também seguem a lente. Infraestrutura compartilhada e auditoria
+ * conservam a indicação explícita de visão compartilhada. Mesma régua de prefixo por segmento do `prefixMatches`.
  */
 const PLATFORM_SCOPED_PREFIXES = [
+  '/admin/catalogo',
+  '/admin/embaixadores',
+  '/admin/pagamentos/transacoes',
+  '/admin/pagamentos/assinaturas',
   '/admin/professor',
   '/admin/comunidade/moderacao',
   '/admin/membros',
@@ -291,6 +297,7 @@ const PLATFORM_SCOPED_PREFIXES = [
 const BOTH_COMMUNITIES_PREFIXES = ['/admin/professor/ao-vivo'] as const
 
 export function pathIsPlatformScoped(pathname: string): boolean {
+  if (pathname === '/admin') return true
   // O editor aponta para um curso FIXO: trocar o seletor não troca a entidade.
   // A tela mostra a audiência canônica do próprio curso.
   if (pathname.startsWith('/admin/membros/cursos/')) return false

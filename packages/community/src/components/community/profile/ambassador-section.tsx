@@ -89,9 +89,11 @@ export function AmbassadorSection({ initial }: { initial: AmbassadorEnrollmentVi
     <section
       id="embaixador"
       aria-labelledby="perfil-embaixador"
-      className="sz-card flex scroll-mt-28 flex-col gap-5 p-6 md:p-8"
+      // O presente é comemoração: o bloco de palco no meio da bancada (Estúdio à noite).
+      className="sz-palco flex scroll-mt-28 flex-col gap-5 rounded-[1.2rem] p-6 md:p-8"
     >
       <div className="flex flex-col gap-1.5">
+        {ambassador && !paused ? <span className="sz-kicker text-(--cta)">Embaixador</span> : null}
         <h2 id="perfil-embaixador" className="sz-h3">
           {ambassador && !paused ? 'Você é embaixador(a) do Sistema Zero' : 'Embaixador'}
         </h2>

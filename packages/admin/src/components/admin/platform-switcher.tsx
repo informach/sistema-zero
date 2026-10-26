@@ -15,13 +15,14 @@ const ACTIVE_CLASS: Record<Platform, string> = {
 
 /**
  * A lente das comunidades, no topo do menu (Kids × Adultos). Nas rotas ESCOPADAS
- * (`pathIsPlatformScoped`) as telas filtram pela comunidade escolhida; nas demais (Negócio,
+ * (`pathIsPlatformScoped`) as telas filtram pela comunidade escolhida; nas áreas compartilhadas (Infraestrutura,
  * Clube e Comunidade, Auditoria) a lente se apaga e uma legenda avisa que a tela é das duas.
  */
 export function PlatformSwitcher() {
   const pathname = usePathname()
   const platform = usePlatform()
   const scoped = pathIsPlatformScoped(pathname)
+  const mixed = pathname === '/admin/ia'
 
   return (
     <div className="shrink-0 px-4 pt-1 pb-2">
@@ -33,7 +34,7 @@ export function PlatformSwitcher() {
         aria-label="Comunidade"
         className={cn(
           'grid grid-cols-2 gap-1 rounded-full bg-menu-2 p-1',
-          scoped ? null : 'opacity-60',
+          scoped || mixed ? null : 'opacity-60',
         )}
       >
         {PLATFORMS.map((option) => {
@@ -56,7 +57,9 @@ export function PlatformSwitcher() {
       </div>
       {scoped ? null : (
         <p className="mt-2 px-1 text-[13px] leading-snug text-menu-icon">
-          Esta área mostra as duas comunidades.
+          {mixed
+            ? 'O progresso do Pensa segue a comunidade. Uso, custos e cotas são compartilhados.'
+            : 'Esta área mostra as duas comunidades.'}
         </p>
       )}
     </div>

@@ -51,27 +51,32 @@ export default async function AjudaPage() {
   return (
     <>
       <PageBand
-        title="Ajuda"
+        kicker="Ajuda"
+        title="Em que a gente pode ajudar"
         lead="Procure um passo a passo no Como fazer ou fale com a equipe da Sistema Zero."
       >
         <Form
           action="/como-fazer"
           prefetch={false}
           role="search"
-          className="mt-2 flex max-w-[43rem] flex-wrap gap-3"
+          // A busca é a folha clara no meio do palco, como no Canvas: o campo e o botão numa peça só.
+          className="mt-2 flex max-w-[46rem] flex-wrap items-center gap-2 rounded-[1.1rem] bg-white p-2 pl-4 text-(--noite) shadow-[0_5px_0_var(--texto-claro-2)] focus-within:outline focus-within:outline-3 focus-within:outline-(--ring) focus-within:outline-offset-3"
         >
-          <label className="flex min-h-[3.2rem] min-w-0 flex-[1_1_18rem] items-center gap-3 rounded-[0.6rem] border-2 border-input bg-card px-4 focus-within:outline focus-within:outline-3 focus-within:outline-(--ring) focus-within:outline-offset-2">
-            <Search className="size-6 flex-none text-muted-foreground" aria-hidden />
+          <label className="flex min-h-[3.2rem] min-w-0 flex-[1_1_16rem] items-center gap-3">
+            <Search
+              className="size-6 flex-none text-[color-mix(in_oklab,var(--noite)_65%,white)]"
+              aria-hidden
+            />
             <span className="sr-only">Buscar um passo a passo</span>
             <input
               type="search"
               name="q"
               maxLength={120}
               placeholder="O que você quer fazer? Ex.: trocar a senha"
-              className="min-h-[3rem] w-full min-w-0 border-0 bg-transparent text-[1.05rem] text-foreground outline-none placeholder:text-muted-foreground"
+              className="min-h-[3rem] w-full min-w-0 border-0 bg-transparent text-(--noite) text-[1.05rem] outline-none placeholder:text-[color-mix(in_oklab,var(--noite)_62%,white)]"
             />
           </label>
-          <button type="submit" className="sz-btn min-h-[3.2rem] flex-none">
+          <button type="submit" className="sz-btn min-h-[3.2rem] flex-[1_0_auto] sm:flex-none">
             Buscar no Como fazer
           </button>
         </Form>

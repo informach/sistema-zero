@@ -6,6 +6,7 @@ export async function GET(req: Request) {
   const { searchParams } = new URL(req.url)
   return forwardUpstream(
     await listCampaigns({
+      audience: searchParams.get('audience') ?? undefined,
       q: searchParams.get('q') ?? undefined,
       limit: parseLimit(searchParams.get('limit')),
       offset: parseOffset(searchParams.get('offset')),

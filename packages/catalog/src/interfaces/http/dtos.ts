@@ -91,9 +91,11 @@ const NAME = t.String({ minLength: 1, maxLength: 200 })
 const LIST_Q = t.Optional(t.String({ minLength: 1, maxLength: 120 }))
 const LIST_LIMIT = t.Optional(t.Numeric({ minimum: 1, maximum: 100 }))
 const LIST_OFFSET = t.Optional(t.Numeric({ minimum: 0, maximum: 1_000_000 }))
+const AUDIENCE = t.Union([t.Literal('kids'), t.Literal('adult')])
 
 /** Query de `GET /catalog/admin/products`. */
 export const ListProductsQuery = t.Object({
+  audience: t.Optional(AUDIENCE),
   q: LIST_Q,
   status: t.Optional(productStatusSchema),
   limit: LIST_LIMIT,
@@ -102,6 +104,7 @@ export const ListProductsQuery = t.Object({
 
 /** Query de `GET /catalog/admin/offers`. */
 export const ListOffersQuery = t.Object({
+  audience: t.Optional(AUDIENCE),
   q: LIST_Q,
   status: t.Optional(offerStatusSchema),
   productId: t.Optional(UUID),
@@ -111,6 +114,7 @@ export const ListOffersQuery = t.Object({
 
 /** Query de `GET /catalog/admin/coupons`. */
 export const ListCouponsQuery = t.Object({
+  audience: t.Optional(AUDIENCE),
   q: LIST_Q,
   status: t.Optional(couponStatusSchema),
   limit: LIST_LIMIT,
@@ -119,6 +123,7 @@ export const ListCouponsQuery = t.Object({
 
 /** Corpo de `POST /catalog/products`. */
 export const CreateProductBody = t.Object({
+  audience: AUDIENCE,
   sku: SKU,
   slug: SLUG,
   name: NAME,
@@ -182,6 +187,7 @@ export const QuoteOfferBody = t.Object({
 
 /** Corpo de `POST /catalog/coupons`. */
 export const CreateCouponBody = t.Object({
+  audience: AUDIENCE,
   code: t.String({ minLength: 1, maxLength: 60 }),
   type: couponTypeSchema,
   percentOff: t.Optional(t.Integer({ minimum: 1, maximum: 100 })),

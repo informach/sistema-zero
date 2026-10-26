@@ -9,7 +9,7 @@ export default function PainelPage() {
     <div className="space-y-8">
       <AdminHeader
         title="Visão geral"
-        description="Como as vendas estão indo. Os cartões de contas, produtos, ofertas e cupons abrem a lista que resumem."
+        description="Vendas e catálogo da comunidade selecionada. A gestão de contas é compartilhada entre Kids e Adultos."
       />
       <DashboardCards />
       <SalesPanel />

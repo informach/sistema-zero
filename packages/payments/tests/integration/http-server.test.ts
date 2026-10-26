@@ -109,6 +109,7 @@ function buildApp(opts: BuildOpts = {}) {
 
   // Stubs de leitura admin (estas integrações não exercem dados de listagem).
   const paymentsAdminRead: PaymentAdminReadRepository = {
+    findById: (id) => repo.findById(id),
     list: async () => ({ items: [], total: 0 }),
     stats: async () => ({
       totalCount: 0,
@@ -147,6 +148,7 @@ function buildApp(opts: BuildOpts = {}) {
     }),
   }
   const subscriptionsAdminRead: SubscriptionAdminReadRepository = {
+    findById: (id) => subscriptionRepo.findById(id),
     list: async () => ({ items: [], total: 0 }),
     stats: async () => ({
       active: { total: 0, monthly: 0, annual: 0, other: 0 },

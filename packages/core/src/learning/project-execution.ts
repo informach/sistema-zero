@@ -77,7 +77,7 @@ export type ExecutionTarget =
   | { kind: 'value'; path: string }
   | { kind: 'moduleValue'; module: string; path: string }
   | { kind: 'spritePosition'; path: string; axis: 'x' | 'y' }
-  | { kind: 'text' }
+  | { kind: 'text'; selector?: string }
   | { kind: 'console' }
   | { kind: 'game'; field: ExecutionGameField }
 
@@ -134,6 +134,8 @@ export type SectionExecutionRule =
       type: 'behavior'
       steps: ExecutionStep[]
       expect: ExecutionExpectation
+      /** Observations after exact steps, graded together with the final result. */
+      checkpoints?: { afterStep: number; expect: ExecutionExpectation }[]
       observation?: { type: 'idleBeforeAction'; idleMs: number }
     }
   | {
@@ -353,6 +355,14 @@ function isTarget(
     case 'value':
       return isExecutionValuePath(target.path, language) && Object.keys(target).length === 2
     case 'text':
+      return (
+        Object.keys(target).every((key) => key === 'kind' || key === 'selector') &&
+        (target.selector === undefined ||
+          (language === 'javascript' &&
+            typeof target.selector === 'string' &&
+            target.selector.trim().length > 0 &&
+            target.selector.length <= 200))
+      )
     case 'console':
       return Object.keys(target).length === 1
     case 'game':
@@ -411,10 +421,28 @@ export function isSectionExecutionRule(
     case 'behavior':
       return (
         Object.keys(rule).every((key) =>
-          ['type', 'steps', 'expect', 'observation'].includes(key),
+          ['type', 'steps', 'expect', 'observation', 'checkpoints'].includes(key),
         ) &&
         areSteps(rule.steps) &&
         isExpectation(rule.expect, context, language) &&
+        (rule.checkpoints === undefined ||
+          (language === 'javascript' &&
+            Array.isArray(rule.checkpoints) &&
+            rule.checkpoints.length > 0 &&
+            rule.checkpoints.length <= 8 &&
+            rule.observation === undefined &&
+            rule.checkpoints.every(
+              (point) =>
+                record(point) &&
+                Object.keys(point).every((key) => key === 'afterStep' || key === 'expect') &&
+                typeof point.afterStep === 'number' &&
+                Number.isInteger(point.afterStep) &&
+                point.afterStep >= 0 &&
+                point.afterStep <= (rule.steps as unknown[]).length &&
+                isExpectation(point.expect, context, language) &&
+                point.expect.target.kind !== 'spritePosition' &&
+                !['increased', 'decreased'].includes(point.expect.compare),
+            ))) &&
         (rule.observation === undefined
           ? rule.expect.target.kind !== 'spritePosition'
           : record(rule.observation) &&
@@ -644,6 +672,7 @@ export interface ExecutionObservation {
   type: SectionExecutionRule['type']
   initial?: ExecutionObservedValue
   final?: ExecutionObservedValue
+  checkpoints?: { initial?: ExecutionObservedValue; final?: ExecutionObservedValue }[]
   motion?: {
     baselineInitial: ExecutionMotionSample
     baselineFinal: ExecutionMotionSample
@@ -857,6 +886,22 @@ export function judgeExecutionObservation(
         observation.returned === 'false'
           ? 'A regra em JavaScript devolveu false.'
           : `A regra em JavaScript precisa devolver true ou false; devolveu ${observation.returned ?? 'nada'}.`,
+    }
+  }
+  if (rule.checkpoints) {
+    if (observation.checkpoints?.length !== rule.checkpoints.length)
+      return { passed: false, detail: 'O teste não relatou todos os pontos intermediários.' }
+    for (const [index, point] of rule.checkpoints.entries()) {
+      const seen = observation.checkpoints[index]
+      const checked = judgeExecutionObservation(
+        { type: 'behavior', steps: [], expect: point.expect },
+        { id: observation.id, type: 'behavior', ...seen },
+      )
+      if (!checked.passed)
+        return {
+          passed: false,
+          detail: `Após o passo ${point.afterStep}: ${checked.detail ?? 'resultado incorreto'}`,
+        }
     }
   }
   if (

@@ -11,7 +11,8 @@ import {
   TableRow,
 } from '@sistemazero/ui/table'
 import { useEffect, useState } from 'react'
-import { type ApiError, apiGet } from '@/lib/api'
+import { communityPage, useCommunityRequests } from '@/components/admin/community-page'
+import type { ApiError } from '@/lib/api'
 import {
   isPensaFunnelPeriod,
   PENSA_FUNNEL_PERIODS,
@@ -19,6 +20,7 @@ import {
   type PensaFunnelView,
   pensaFunnelStages,
 } from '@/lib/pensa-funnel'
+import type { Platform } from '@/lib/platform'
 
 const number = (value: number) => value.toLocaleString('pt-BR')
 const share = (value: number | null) => (value === null ? '—' : `${value}%`)
@@ -26,7 +28,10 @@ const share = (value: number | null) => (value === null ? '—' : `${value}%`)
 /**
  * Conta os projetos desde a definição até a conferência final, uma vez por equipe.
  */
-export function PensaFunnelCard() {
+export const PensaFunnelCard = communityPage(PensaFunnelForCommunity)
+
+function PensaFunnelForCommunity({ audience }: { audience: Platform }) {
+  const { get: apiGet } = useCommunityRequests(audience)
   const [days, setDays] = useState<PensaFunnelPeriod>(30)
   const [view, setView] = useState<PensaFunnelView | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -50,7 +55,7 @@ export function PensaFunnelCard() {
     return () => {
       alive = false
     }
-  }, [days])
+  }, [apiGet, days])
 
   const stages = view ? pensaFunnelStages(view) : []
 
@@ -58,7 +63,9 @@ export function PensaFunnelCard() {
     <Card>
       <CardHeader className="flex-row items-center justify-between gap-4">
         <div>
-          <CardTitle>Pensa: onde as crianças param</CardTitle>
+          <CardTitle>
+            Pensa: progresso dos projetos · {audience === 'kids' ? 'Kids' : 'Adultos'}
+          </CardTitle>
           <p className="mt-1 text-muted-foreground text-sm">
             Projetos criados nos últimos {days} dias. Cada projeto é contado uma vez, incluindo
             equipes.

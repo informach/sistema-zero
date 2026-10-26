@@ -12,6 +12,7 @@ import type { ProductRepository } from '../../domain/ports/product-repository.po
 import type { ProductAggregate } from '../../domain/product/product.aggregate'
 import { ProductNotFoundError } from '../../domain/product/product.errors'
 import type { ResolvedEntitlement } from '../../domain/services/resolve-entitlements'
+import type { CatalogAudience } from '../../domain/shared/audience'
 import { ValidationError } from '../../domain/shared/errors'
 import type { Currency } from '../../domain/value-objects/money'
 import { Sku } from '../../domain/value-objects/sku'
@@ -67,7 +68,7 @@ export class CreateOfferService {
     if (!product) throw new ProductNotFoundError('Produto principal da oferta não encontrado')
 
     const items = normalizeItems(command.items)
-    await assertItemsExist(this.products, items)
+    await assertItemsExist(this.products, items, product.audience)
 
     const offer = OfferAggregate.create({
       id: crypto.randomUUID(),
@@ -112,6 +113,7 @@ export function normalizeItems(inputs: OfferItemInput[] | undefined): OfferItem[
 export async function assertItemsExist(
   products: ProductRepository,
   items: OfferItem[],
+  audience: CatalogAudience,
 ): Promise<void> {
   if (items.length === 0) return
   const ids = items.map((i) => i.productId)
@@ -121,6 +123,8 @@ export async function assertItemsExist(
   if (missing.length > 0) {
     throw new ValidationError(`Produtos de oferta inexistentes: ${missing.join(', ')}`)
   }
+  if (found.some((node) => node.audience !== audience))
+    throw new ValidationError('Os bônus da oferta devem pertencer à mesma comunidade do produto.')
 }
 
 export async function assertActiveOfferDeliverable(

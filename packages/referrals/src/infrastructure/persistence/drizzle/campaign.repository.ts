@@ -1,4 +1,9 @@
-import type { CampaignAuditView, CampaignInput, CampaignView } from '@sistemazero/core/referrals'
+import type {
+  CampaignAuditView,
+  CampaignInput,
+  CampaignView,
+  GiftAudience,
+} from '@sistemazero/core/referrals'
 import { and, count, desc, eq, ilike, or, sql } from 'drizzle-orm'
 import {
   CampaignAudienceLockedError,
@@ -131,15 +136,16 @@ export class DrizzleCampaignRepository implements CampaignRepository {
     return row ? record(row.campaign, row.code) : null
   }
 
-  async list(opts: { q?: string; limit: number; offset: number }) {
+  async list(opts: { q?: string; audience?: GiftAudience; limit: number; offset: number }) {
     const pattern = opts.q?.trim() ? `%${escapeLike(opts.q.trim())}%` : null
-    const filter = pattern
+    const search = pattern
       ? or(
           ilike(campaigns.name, pattern),
           ilike(campaigns.publicTitle, pattern),
           ilike(codes.code, pattern),
         )
       : undefined
+    const filter = and(search, opts.audience ? eq(campaigns.audience, opts.audience) : undefined)
     const [rows, totals] = await Promise.all([
       this.db
         .select({ campaign: campaigns, code: codes.code })

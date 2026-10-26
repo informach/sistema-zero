@@ -1,3 +1,4 @@
+import { CourseCurriculumContext } from '@sistemazero/member-shell/components/course-curriculum-context'
 import { Check } from 'lucide-react'
 import Link from 'next/link'
 import { cn } from '@/lib/cn'
@@ -25,6 +26,12 @@ export function CourseCard({ course }: { course: MyCourseView }) {
       </div>
       <div className="flex flex-1 flex-col gap-2.5 p-4 md:p-5">
         <strong className="sz-h4">{course.title}</strong>
+        <CourseCurriculumContext
+          placement={course.curriculum}
+          accessReason={course.accessReason}
+          skin="adult"
+          compact
+        />
         <div className="flex flex-wrap items-center justify-between gap-2 text-[0.85rem] text-muted-foreground">
           <span>
             {progress.completedLessons} de {progress.totalLessons} aulas

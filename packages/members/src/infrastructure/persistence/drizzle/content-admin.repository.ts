@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto'
 import { ValidationError } from '@sistemazero/core/errors'
+import { KidsJourneyPolicySchema } from '@sistemazero/core/journey'
 import {
   isPdfAttachment,
   lessonStudioProjectExampleIssues,
@@ -23,6 +24,11 @@ import {
   JourneySlotConflictError,
   NoShowcaseBlockError,
 } from '../../../domain/course/course.errors'
+import {
+  assertCreatorPlannedLessonsKept,
+  CreatorSeedMetadataSchema,
+  creatorSeedRequiredLessonIds,
+} from '../../../domain/course/creator-seed-metadata'
 import type { LessonBlockContent, LessonBlockKind } from '../../../domain/course/lesson-block'
 import { quizGateFingerprint } from '../../../domain/course/quiz'
 import {
@@ -45,6 +51,7 @@ import { lessonContentAvailable } from './lesson-availability'
 import { lockLessonStructure, syncLessonStructure } from './lesson-structure'
 import {
   courses,
+  kidsJourneyPolicy,
   lessonAttachments,
   lessonBlocks,
   lessonCompletions,
@@ -226,6 +233,16 @@ export { quizGateFingerprint }
 type DatabaseTransaction = Parameters<Parameters<Database['transaction']>[0]>[0]
 type DatabaseExecutor = Database | DatabaseTransaction
 
+async function hasCreatorCurriculum(tx: DatabaseExecutor): Promise<boolean> {
+  const [row] = await tx
+    .select({ phase: kidsJourneyPolicy.phase, policy: kidsJourneyPolicy.policy })
+    .from(kidsJourneyPolicy)
+    .where(eq(kidsJourneyPolicy.id, 'kids'))
+  if (row?.phase !== 'published') return false
+  const policy = KidsJourneyPolicySchema.safeParse(row.policy)
+  return policy.success && Boolean(policy.data.curriculum)
+}
+
 export class DrizzleContentAdminRepository implements ContentAdminRepository {
   constructor(
     private readonly db: DatabaseExecutor,
@@ -237,14 +254,38 @@ export class DrizzleContentAdminRepository implements ContentAdminRepository {
   private async preserveShowcase(
     tx: DatabaseExecutor,
     courseId: string,
-    exclude: { blockId?: string; lessonId?: string; moduleId?: string },
+    exclude: { blockId?: string; lessonId?: string; moduleId?: string; deleting?: boolean },
   ): Promise<void> {
     const [course] = await tx
-      .select({ status: courses.status, audience: courses.audience, slot: courses.careerSlot })
+      .select({
+        status: courses.status,
+        audience: courses.audience,
+        slot: courses.careerSlot,
+        metadata: courses.metadata,
+      })
       .from(courses)
       .where(eq(courses.id, courseId))
       .for('update')
-    if (course?.status !== 'published' || course.audience !== 'kids' || course.slot === null) return
+    if (!course) return
+    const required = creatorSeedRequiredLessonIds(course.metadata)
+    if (required && (exclude.lessonId || exclude.moduleId)) {
+      const removedIds = exclude.lessonId
+        ? [exclude.lessonId]
+        : (
+            await tx
+              .select({ id: lessons.id })
+              .from(lessons)
+              .where(eq(lessons.moduleId, exclude.moduleId!))
+          ).map((lesson) => lesson.id)
+      if (exclude.deleting) assertCreatorPlannedLessonsKept(course.metadata, removedIds)
+      if (course.status === 'published' && removedIds.some((id) => required.includes(id)))
+        throw new InvalidContentCommandError(
+          'Esta aula faz parte do planejamento obrigatório. Despublique o curso antes de despublicar suas aulas planejadas.',
+        )
+    }
+    if (course.status !== 'published') return
+    if (course.audience !== 'kids' || course.slot === null) return
+    if (await hasCreatorCurriculum(tx)) return
     const candidates = await tx
       .select({ blockId: lessonBlocks.id, lessonId: lessons.id, moduleId: lessons.moduleId })
       .from(lessonBlocks)
@@ -455,6 +496,21 @@ export class DrizzleContentAdminRepository implements ContentAdminRepository {
       const blockIdMap = new Map(srcBlocks.map((block) => [block.id, randomUUID()]))
       const moduleIdMap = new Map(srcModules.map((m) => [m.id, randomUUID()]))
       const lessonIdMap = new Map(srcLessons.map((l) => [l.id, randomUUID()]))
+      if (Object.hasOwn(metadata, 'creatorSeed')) {
+        const planning = CreatorSeedMetadataSchema.parse(metadata.creatorSeed)
+        metadata.creatorSeed = {
+          ...planning,
+          requiredLessonIds: planning.requiredLessonIds.map((id) => {
+            const mapped = lessonIdMap.get(id)
+            if (!mapped)
+              throw new InvalidContentCommandError(
+                'Uma aula planejada foi removida da origem. Revise o planejamento antes de clonar.',
+              )
+            return mapped
+          }),
+        }
+        await tx.update(courses).set({ metadata }).where(eq(courses.id, row.id))
+      }
       const structures =
         lessonIds.length > 0
           ? await tx
@@ -631,6 +687,25 @@ export class DrizzleContentAdminRepository implements ContentAdminRepository {
             .limit(1)
           if (cohort) throw new CourseModalityLockedError()
         }
+        if (course.status === 'published') {
+          const required = creatorSeedRequiredLessonIds(course.metadata)
+          if (required) {
+            const rows = await tx
+              .select({ id: lessons.id, title: lessons.title, published: lessons.isPublished })
+              .from(lessons)
+              .where(eq(lessons.courseId, course.id))
+            const missing = required.flatMap((id, index) => {
+              const lesson = rows.find((row) => row.id === id)
+              return lesson?.published
+                ? []
+                : [lesson?.title ?? `Aula planejada ${index + 1} (removida)`]
+            })
+            if (missing.length)
+              throw new InvalidContentCommandError(
+                `Publique todas as aulas planejadas antes de liberar este curso. Faltam: ${missing.join('; ')}.`,
+              )
+          }
+        }
         const updated = await tx
           .update(courses)
           .set({
@@ -661,7 +736,8 @@ export class DrizzleContentAdminRepository implements ContentAdminRepository {
           course.careerSlot !== null &&
           (previous?.status !== 'published' ||
             previous.audience !== 'kids' ||
-            previous.slot === null)
+            previous.slot === null) &&
+          !(await hasCreatorCurriculum(tx))
         ) {
           const repository = new DrizzleContentAdminRepository(tx, this.studioPolicy)
           if (!(await repository.listCourseIdsWithShowcaseBlock([course.id])).length)
@@ -763,7 +839,7 @@ export class DrizzleContentAdminRepository implements ContentAdminRepository {
         .select({ courseId: modules.courseId })
         .from(modules)
         .where(eq(modules.id, id))
-      if (mod) await this.preserveShowcase(tx, mod.courseId, { moduleId: id })
+      if (mod) await this.preserveShowcase(tx, mod.courseId, { moduleId: id, deleting: true })
       const lessonRows = await tx
         .select({ id: lessons.id })
         .from(lessons)
@@ -898,7 +974,8 @@ export class DrizzleContentAdminRepository implements ContentAdminRepository {
         .select({ courseId: lessons.courseId })
         .from(lessons)
         .where(eq(lessons.id, id))
-      if (existing) await this.preserveShowcase(tx, existing.courseId, { lessonId: id })
+      if (existing)
+        await this.preserveShowcase(tx, existing.courseId, { lessonId: id, deleting: true })
       if (existing) await preserveStudioChainsForLessons(tx, existing.courseId, [id])
       await tx.delete(lessonCompletions).where(eq(lessonCompletions.lessonId, id))
       const deleted = await tx

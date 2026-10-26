@@ -52,6 +52,8 @@ export class UpdateOfferService {
   async execute(command: UpdateOfferCommand): Promise<OfferView> {
     const offer = await this.offers.findById(command.id)
     if (!offer) throw new OfferNotFoundError()
+    const product = await this.products.findById(offer.productId)
+    if (!product) throw new ProductNotFoundError('Produto principal da oferta não encontrado')
 
     const touchesDetails =
       command.name !== undefined ||
@@ -91,14 +93,12 @@ export class UpdateOfferService {
 
     if (command.items !== undefined) {
       const items = normalizeItems(command.items)
-      await assertItemsExist(this.products, items)
+      await assertItemsExist(this.products, items, product.audience)
       offer.setItems(items)
     }
 
     if (command.status !== undefined) offer.setStatus(command.status)
 
-    const product = await this.products.findById(offer.productId)
-    if (!product) throw new ProductNotFoundError('Produto principal da oferta não encontrado')
     const resolved = await assertActiveOfferDeliverable(offer, product, this.resolver)
 
     await this.offers.update(offer)

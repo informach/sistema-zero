@@ -1,4 +1,4 @@
-import { describe, expect, mock, test } from 'bun:test'
+import { afterEach, beforeEach, describe, expect, mock, test } from 'bun:test'
 import { GlobalRegistrator } from '@happy-dom/global-registrator'
 
 // Guarda obrigatória: outro arquivo de teste pode ter registrado o happy-dom
@@ -26,8 +26,66 @@ mock.module('next/navigation', () => ({
 const { act } = await import('react')
 const { createRoot } = await import('react-dom/client')
 const { CourseFormDialog } = await import('../src/app/admin/membros/cursos/course-form-dialog')
+const originalFetch = globalThis.fetch
+beforeEach(() => {
+  globalThis.fetch = (async (url) =>
+    new Response(JSON.stringify(String(url).includes('/journey/') ? { policy: {} } : {}), {
+      status: 200,
+      headers: { 'content-type': 'application/json' },
+    })) as typeof fetch
+})
+afterEach(() => {
+  globalThis.fetch = originalFetch
+})
 
 describe('cadastro de curso', () => {
+  test('falha da política não vira legado; só libera o salvamento depois de tentar novamente', async () => {
+    let failPolicy = true
+    globalThis.fetch = (async (url) => {
+      if (String(url).includes('/journey/')) {
+        return Response.json(failPolicy ? { error: { message: 'Indisponível' } } : { policy: {} }, {
+          status: failPolicy ? 503 : 200,
+        })
+      }
+      return Response.json({})
+    }) as typeof fetch
+    const container = document.createElement('div')
+    document.body.append(container)
+    const root = createRoot(container)
+    try {
+      await act(async () =>
+        root.render(
+          <CourseFormDialog
+            open
+            editing={null}
+            prefill={{ audience: 'kids' }}
+            journeyCourses={[]}
+            onClose={() => {}}
+            onSaved={() => {}}
+          />,
+        ),
+      )
+      const save = [...document.querySelectorAll('button')].find(
+        (button) => button.textContent?.trim() === 'Salvar',
+      )!
+      expect(save.disabled).toBe(true)
+      expect(document.querySelector('#journey-slot')).toBeNull()
+      expect(document.body.textContent).toContain(
+        'Não foi possível consultar a política da jornada',
+      )
+      failPolicy = false
+      const retry = [...document.querySelectorAll('button')].find(
+        (button) => button.textContent?.trim() === 'Tentar novamente',
+      )!
+      await act(async () => retry.click())
+      expect(save.disabled).toBe(false)
+      expect(document.querySelector('#journey-slot')).not.toBeNull()
+    } finally {
+      await act(async () => root.unmount())
+      container.remove()
+    }
+  })
+
   test.each([
     ['kids', 'kids'],
     ['adult', 'adult'],
@@ -67,7 +125,10 @@ describe('cadastro de curso', () => {
     const fetchOriginal = globalThis.fetch
     globalThis.fetch = (async (_url: string, init?: RequestInit) => {
       if (init?.method === 'PATCH') enviados.push(JSON.parse(String(init.body)))
-      return new Response('{}', { status: 200, headers: { 'content-type': 'application/json' } })
+      return new Response(
+        JSON.stringify(String(_url).includes('/journey/') ? { policy: {} } : {}),
+        { status: 200, headers: { 'content-type': 'application/json' } },
+      )
     }) as unknown as typeof fetch
     const caixa = () => document.querySelector('#cvideobeforeactivity') as HTMLInputElement
     try {

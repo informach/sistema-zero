@@ -1,0 +1,391 @@
+/* Prototype-only teaching aids. All colors derive from the existing application palette. */
+.teaching-rule,
+.teaching-value-group,
+.teaching-quiz {
+  --teaching-event: var(--kids-cyan);
+  --teaching-chosen: var(--kids-lime);
+  --teaching-reaction: var(--kids-verde);
+  --teaching-memory: var(--kids-rosa);
+}
+.teaching-eyebrow {
+  font-size: 0.6875rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  line-height: 1.5;
+}
+.teaching-caption {
+  font-size: 0.8125rem;
+  line-height: 1.55;
+  color: var(--color-muted-foreground);
+}
+.teaching-rule {
+  display: grid;
+  gap: 0.625rem;
+}
+.teaching-rule > .teaching-eyebrow {
+  color: var(--color-muted-foreground);
+}
+.teaching-node {
+  --node-color: var(--teaching-event);
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  border: 1px solid color-mix(in oklab, var(--node-color) 32%, var(--color-card));
+  border-left: 4px solid var(--node-color);
+  border-radius: 1rem;
+  background: color-mix(in oklab, var(--node-color) 9%, var(--color-card));
+}
+.teaching-node > svg {
+  flex: none;
+  color: var(--node-color);
+}
+.teaching-node span,
+.teaching-mini-rule span {
+  display: block;
+  font-size: 0.6875rem;
+  color: var(--color-muted-foreground);
+}
+.teaching-node strong,
+.teaching-mini-rule strong {
+  display: block;
+  font-size: 0.9375rem;
+  line-height: 1.45;
+}
+.teaching-node[data-tone="reaction"] {
+  --node-color: var(--teaching-reaction);
+}
+.teaching-node[data-tone="off"] {
+  --node-color: var(--color-muted-foreground);
+  border-style: dashed;
+}
+.teaching-wire {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  color: var(--color-muted-foreground);
+}
+.teaching-wire-line {
+  height: 0.625rem;
+  border-left: 2px dashed currentColor;
+}
+.teaching-wire[data-connected="true"] {
+  color: var(--teaching-reaction);
+}
+.teaching-wire[data-connected="true"] .teaching-wire-line {
+  border-left-style: solid;
+}
+.teaching-chosen {
+  display: block;
+  width: 100%;
+  border-radius: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid color-mix(in oklab, var(--teaching-chosen) 30%, var(--color-card));
+  background: color-mix(in oklab, var(--teaching-chosen) 10%, var(--color-card));
+  color: var(--color-foreground);
+  font-size: 0.875rem;
+  text-align: center;
+}
+.teaching-chosen span {
+  color: var(--teaching-chosen);
+  font-weight: 800;
+}
+.teaching-link-status {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8125rem;
+  color: var(--color-muted-foreground);
+}
+.teaching-rule[data-enabled="true"] .teaching-link-status {
+  color: var(--teaching-reaction);
+}
+.teaching-value-group {
+  display: grid;
+  gap: 0.625rem;
+}
+.teaching-value {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.125rem;
+  padding: 0.875rem;
+  border: 2px solid color-mix(in oklab, var(--teaching-memory) 32%, var(--color-card));
+  border-radius: 1rem;
+  background: color-mix(in oklab, var(--teaching-memory) 7%, var(--color-card));
+}
+.teaching-value > .teaching-eyebrow,
+.teaching-variable-name {
+  color: var(--teaching-memory);
+}
+.teaching-variable-name {
+  font-size: 1.125rem;
+}
+.teaching-number {
+  font-size: 3.75rem;
+  font-weight: 800;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-foreground);
+}
+.teaching-value[data-changed="true"] {
+  animation: teaching-pulse 0.55s ease-out;
+}
+@keyframes teaching-pulse {
+  0% {
+    box-shadow: 0 0 0 0 color-mix(in oklab, var(--teaching-memory) 35%, transparent);
+  }
+  60% {
+    box-shadow: 0 0 0 7px transparent;
+  }
+  100% {
+    box-shadow: none;
+  }
+}
+.teaching-update {
+  align-self: stretch;
+  margin-top: 0.625rem;
+  padding: 0.625rem;
+  border-radius: 0.75rem;
+  background: var(--color-card);
+  text-align: center;
+}
+.teaching-update > .teaching-eyebrow {
+  color: var(--color-muted-foreground);
+  margin-bottom: 0.375rem;
+}
+.teaching-equation {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+.teaching-equation > span {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 2.25rem;
+}
+.teaching-equation small {
+  font-size: 0.625rem;
+  color: var(--color-muted-foreground);
+}
+.teaching-equation b {
+  display: flex;
+  align-items: center;
+  font-size: 1.5rem;
+  line-height: 1.4;
+}
+.teaching-equation .teaching-operation {
+  padding: 0 0.375rem;
+  border-radius: 0.5rem;
+  background: color-mix(in oklab, var(--teaching-reaction) 12%, var(--color-card));
+  color: var(--teaching-reaction);
+}
+.teaching-update-label {
+  font-size: 0.875rem;
+}
+.teaching-readout {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  font-size: 0.8125rem;
+  font-weight: 800;
+  color: var(--teaching-memory);
+}
+.teaching-readout svg {
+  transform: rotate(-35deg);
+}
+.teaching-mini-rule {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  border-radius: 0.75rem;
+  padding: 0.625rem;
+  background: color-mix(in oklab, var(--teaching-reaction) 9%, var(--color-card));
+}
+.teaching-mini-rule > svg {
+  color: var(--teaching-reaction);
+  flex: none;
+}
+.teaching-recap {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.875rem;
+  border-radius: 1rem;
+  border: 1px solid color-mix(in oklab, var(--kids-verde) 25%, var(--color-card));
+  background: color-mix(in oklab, var(--kids-verde) 9%, var(--color-card));
+}
+.teaching-recap > svg {
+  flex: none;
+  color: var(--kids-verde);
+}
+.teaching-recap strong {
+  font-family: var(--font-baloo);
+  font-size: 1.125rem;
+  color: var(--kids-verde);
+}
+.teaching-recap p {
+  font-size: 0.875rem;
+  line-height: 1.6;
+  margin-top: 0.25rem;
+}
+.teaching-quiz {
+  display: grid;
+  gap: 1rem;
+  min-width: 0;
+}
+.teaching-quiz-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1rem;
+}
+.teaching-quiz-world {
+  min-width: 0;
+  align-self: start;
+  display: grid;
+  gap: 0.625rem;
+  padding: 0.875rem;
+  border: 1px solid var(--color-border);
+  border-radius: 1rem;
+  background: var(--color-card);
+}
+.teaching-quiz-world [data-quiz-scene] {
+  max-width: none;
+  margin: 0;
+}
+.teaching-state-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: var(--teaching-event);
+}
+.teaching-state-label[data-result="true"] {
+  color: var(--teaching-reaction);
+}
+.teaching-quiz-answer {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 1rem;
+  min-width: 0;
+}
+.teaching-quiz-answer > [data-tom] {
+  align-self: flex-start;
+  white-space: normal;
+  height: auto;
+  max-width: 100%;
+}
+.teaching-choice {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.teaching-choice[data-answer="correct"] {
+  border-color: var(--teaching-reaction);
+  background: color-mix(in oklab, var(--teaching-reaction) 9%, var(--color-card));
+  color: var(--color-foreground);
+}
+.teaching-choice[data-answer="wrong"] {
+  border-color: var(--color-destructive);
+  background: color-mix(in oklab, var(--color-destructive) 6%, var(--color-card));
+  color: var(--color-foreground);
+}
+.teaching-choice[aria-disabled="true"] {
+  cursor: default;
+}
+.teaching-answer-label {
+  display: block;
+  font-size: 0.6875rem;
+  margin-top: 0.375rem;
+  color: var(--color-muted-foreground);
+  font-weight: 700;
+}
+.teaching-quiz-feedback {
+  padding: 0.875rem;
+  border-left: 4px solid var(--teaching-chosen);
+  border-radius: 0.75rem;
+  background: color-mix(in oklab, var(--teaching-chosen) 9%, var(--color-card));
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+.teaching-quiz-feedback[data-correct="true"] {
+  border-left-color: var(--teaching-reaction);
+  background: color-mix(in oklab, var(--teaching-reaction) 9%, var(--color-card));
+}
+.teaching-quiz-feedback p {
+  margin-top: 0.375rem;
+}
+.teaching-sequence {
+  display: grid;
+  gap: 0.5rem;
+  list-style: none;
+}
+.teaching-sequence li {
+  display: flex;
+  gap: 0.625rem;
+  padding: 0.625rem;
+  border-radius: 0.75rem;
+  background: var(--color-background);
+  font-size: 0.8125rem;
+}
+.teaching-sequence li > span {
+  display: grid;
+  place-items: center;
+  align-self: flex-start;
+  flex: none;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 50%;
+  background: var(--teaching-event);
+  color: var(--color-primary-foreground);
+  font-weight: 800;
+}
+.teaching-sequence strong {
+  display: block;
+}
+.teaching-quiz-finish {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  text-align: center;
+}
+.teaching-finish-mark {
+  display: grid;
+  place-items: center;
+  width: 4rem;
+  height: 4rem;
+  border-radius: 50%;
+  background: color-mix(in oklab, var(--kids-verde) 12%, var(--color-card));
+  color: var(--kids-verde);
+}
+.teaching-remember {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 1rem;
+  border-radius: 1rem;
+  background: var(--color-card);
+  text-align: left;
+}
+.teaching-remember > span {
+  font-family: var(--font-baloo);
+  font-size: 1.5rem;
+  color: var(--color-primary);
+}
+.teaching-quiz-finish [data-tom] {
+  max-width: 100%;
+  white-space: normal;
+  height: auto;
+}
+@media (min-width: 800px) {
+  .teaching-quiz-layout {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+}

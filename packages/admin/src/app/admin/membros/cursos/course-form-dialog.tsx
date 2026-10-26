@@ -14,6 +14,11 @@ import { useRouter } from 'next/navigation'
 import { useCallback, useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { AdultCourseAccessContract } from '@/components/admin/adult-course-access-contract'
+import {
+  CourseCurriculumPlacement,
+  CurriculumLoadNotice,
+  useCreatorCurriculum,
+} from '@/components/admin/course-curriculum-placement'
 import { statusLabel } from '@/components/admin/status-badge'
 import { useConfirm } from '@/components/admin/use-confirm'
 import { ImageUploader } from '@/components/media/image-uploader'
@@ -214,13 +219,15 @@ export function CourseFormDialog({
   }, [open, journeyCourses, refreshOccupancy])
 
   const isKids = form.audience === 'kids'
+  const curriculumState = useCreatorCurriculum(form.audience, open)
+  const curriculumActive = Boolean(curriculumState.curriculum)
   // Curso ao vivo não entra na Jornada: sem posição e sem trava sequencial de aula.
   const isLive = form.modality === 'live'
   const studioUnlockRule = isLive
     ? 'A conclusão da oficina concede estes blocos, sem exigir publicação no Mural. O uso no Estúdio Completo depende do acesso ao produto.'
     : !isKids
       ? 'O aluno adulto recebe estes blocos ao concluir o curso. A criação livre também verifica a etapa e a licença da ferramenta.'
-      : form.journeyRole === 'positioned'
+      : form.journeyRole === 'positioned' && !curriculumActive
         ? 'Curso da jornada: a criança recebe as ferramentas quando conclui o curso e publica no Mural.'
         : 'A criança recebe as ferramentas quando conclui todas as aulas.'
   const maxSlot = slotsForTier(form.level, form.track)
@@ -255,7 +262,12 @@ export function CourseFormDialog({
       // Pré-aviso amigável do 409 NO_SHOWCASE_BLOCK (só quando dá pra saber: o campo
       // `hasShowcaseBlock` vem na listagem — aberto pelo editor ele é undefined e o
       // server cobre com o 409).
-      if (!isLive && form.careerSlot === '1' && editing?.hasShowcaseBlock === false) {
+      if (
+        !isLive &&
+        !curriculumActive &&
+        form.careerSlot === '1' &&
+        editing?.hasShowcaseBlock === false
+      ) {
         warnings.push(
           'O curso de entrada ainda não tem aula publicada com um Estúdio que deixa publicar no Mural dos Criadores. A publicação vai ser recusada.',
         )
@@ -290,6 +302,10 @@ export function CourseFormDialog({
   }
 
   async function save() {
+    if (!isLive && curriculumState.status !== 'ready') {
+      toast.error('Carregue a política da jornada antes de salvar este curso.')
+      return
+    }
     const rewardIssue = pythonCourseUnlockIssue(form.studioUnlockBlocks)
     if (rewardIssue) {
       toast.error(rewardIssue)
@@ -305,6 +321,7 @@ export function CourseFormDialog({
     }
     if (
       !isLive &&
+      !curriculumActive &&
       form.audience === 'kids' &&
       form.journeyRole === 'positioned' &&
       !form.careerSlot
@@ -421,7 +438,10 @@ export function CourseFormDialog({
           <Button variant="outline" onClick={onClose} disabled={saving}>
             Cancelar
           </Button>
-          <Button onClick={save} disabled={saving}>
+          <Button
+            onClick={save}
+            disabled={saving || (!isLive && curriculumState.status !== 'ready')}
+          >
             {saving ? <Spinner /> : null}
             Salvar
           </Button>
@@ -471,6 +491,13 @@ export function CourseFormDialog({
                 </option>
               ))}
             </Select>
+            {editing?.creatorPlanning ? (
+              <p className="mt-2 text-sm text-muted-foreground">
+                {editing.creatorPlanning.requiredLessonCount === null
+                  ? 'Revise o planejamento deste curso antes de publicar.'
+                  : `Publique as ${editing.creatorPlanning.requiredLessonCount} aulas planejadas antes de liberar este curso. Nas missões, isso inclui as aplicações 2D e 3D.`}
+              </p>
+            ) : null}
           </Field>
         </div>
         <Field
@@ -560,10 +587,22 @@ export function CourseFormDialog({
             ))}
             {/* Lenda = categoria FORA da jornada (não é degrau; não entra em
                 COURSE_TIER_OPTIONS): cursos bônus que aparecem só na trilha da Lenda. */}
-            <option value="lenda:2d">Lenda (curso bônus da formatura)</option>
+            <option value="lenda:2d">
+              {curriculumActive
+                ? 'Lenda (classificação histórica)'
+                : 'Lenda (curso bônus da formatura)'}
+            </option>
           </Select>
         </Field>
-        {isLive ? null : form.level === 'lenda' ? (
+        {isLive ? null : curriculumState.curriculum ? (
+          <CourseCurriculumPlacement
+            curriculum={curriculumState.curriculum}
+            courseId={editing?.id}
+            audience={form.audience}
+          />
+        ) : !curriculumState.loaded ? (
+          <CurriculumLoadNotice state={curriculumState} />
+        ) : form.level === 'lenda' ? (
           <p className="rounded-lg bg-muted/50 px-3 py-2 text-muted-foreground text-xs">
             Curso bônus da <strong>Lenda</strong> (formatura): fica fora da Jornada, sem posição,
             não conta pontos e não tranca nada. Aparece só na Trilha Lenda, para quem já chegou ao

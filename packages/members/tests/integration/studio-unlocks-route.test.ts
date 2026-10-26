@@ -80,11 +80,19 @@ describe('Members HTTP — GET /members/studio/unlocks', () => {
     expect(body.blocks.sort()).toEqual(['sz_g2d_create_ship', 'sz_g2d_on_key'])
   })
 
-  test('só concluir (sem publicar no Mural) não entrega nada', async () => {
+  test('concluir entrega os blocos curriculares mesmo sem publicar no Mural', async () => {
     const { app, courses, gamification } = buildApp()
     seedSampleCourse(courses, 'base-2d', 'published', 'kids', false, 'iniciante', '2d', 1)
     const course = withUnlocks(courses, 'base-2d', ['sz_g2d_create_ship'])
     await markCourse(gamification, course.id, { showcased: false })
+    expect((await readJson(await getUnlocks(app))).blocks).toEqual(['sz_g2d_create_ship'])
+  })
+
+  test('publicar no Mural sem concluir não entrega os blocos curriculares', async () => {
+    const { app, courses, gamification } = buildApp()
+    seedSampleCourse(courses, 'base-2d', 'published', 'kids', false, 'iniciante', '2d', 1)
+    const course = withUnlocks(courses, 'base-2d', ['sz_g2d_create_ship'])
+    await markCourse(gamification, course.id, { completed: false })
     expect((await readJson(await getUnlocks(app))).blocks).toEqual([])
   })
 

@@ -1225,7 +1225,7 @@ describe('Nível do aluno — webhook /showcase + derivação', () => {
     expect(me.level.slug).toBe('coder')
   })
 
-  test('kids expõe revisão curta que muda ao qualificar ou editar curso da jornada', async () => {
+  test('kids atualiza a revisão dos blocos ao concluir ou editar curso, sem depender do Mural', async () => {
     const { app, courses, entitlements } = buildApp()
     // Curso de ENTRADA: é o único que uma Faísca kids consegue abrir (o Iniciante 2D é
     // degrau futuro para ela desde 14/08, e a trava responderia 423 no complete).
@@ -1256,7 +1256,7 @@ describe('Nível do aluno — webhook /showcase + derivação', () => {
 
     await completeCourse(app, course.lessonIds)
     const completed = await readJson(await kidsMe())
-    expect(completed.studioUnlockRevision).toBe(initial.studioUnlockRevision)
+    expect(completed.studioUnlockRevision).not.toBe(initial.studioUnlockRevision)
 
     await postShowcase(app, {
       userId: USER,
@@ -1266,7 +1266,7 @@ describe('Nível do aluno — webhook /showcase + derivação', () => {
     })
     const qualified = await readJson(await kidsMe())
     expect(qualified.studioUnlockRevision).toHaveLength(64)
-    expect(qualified.studioUnlockRevision).not.toBe(initial.studioUnlockRevision)
+    expect(qualified.studioUnlockRevision).toBe(completed.studioUnlockRevision)
 
     row.updatedAt = new Date(row.updatedAt.getTime() + 1_000)
     const edited = await readJson(await kidsMe())

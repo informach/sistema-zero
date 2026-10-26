@@ -1,6 +1,10 @@
 'use client'
 
-import { gradeLearningQuiz, isManifestQuiz } from '@sistemazero/core/learning'
+import {
+  gradeLearningQuiz,
+  isManifestQuiz,
+  validatePredictionQuiz,
+} from '@sistemazero/core/learning'
 import {
   falaDaExplicacaoDoQuiz,
   falaDaQuestaoDoQuiz,
@@ -17,6 +21,7 @@ import { renderMarkdown } from '../lib/markdown'
 import type { QuizAttemptResultView, QuizBlock, QuizStateView } from '../lib/types'
 import { useLessonPlayer } from './lesson-player-context'
 import { useLessonPreview } from './lesson-preview-context'
+import { PredictionQuiz } from './prediction-quiz'
 import { ZappyOuvirButton } from './zappy-ouvir-button'
 
 interface Props {
@@ -32,7 +37,18 @@ interface Props {
  * quizzes selecionados como critério de seção permitem corrigir imediatamente.
  * A conclusão respeita o critério publicado; aqui apenas refletimos esse estado.
  */
-export function QuizBlockView({ blockId, content, quizState }: Props) {
+export function QuizBlockView(props: Props) {
+  const predictionError = validatePredictionQuiz(props.content.questions)
+  if (predictionError)
+    return <p role="alert">Esta revisão precisa de um ajuste na autoria: {predictionError}</p>
+  return props.content.questions.length > 0 &&
+    props.content.questions.every((q) => q.predictionScene) ? (
+    <PredictionQuiz key={`${props.blockId}:${JSON.stringify(props.content)}`} {...props} />
+  ) : (
+    <ClassicQuizBlockView {...props} />
+  )
+}
+function ClassicQuizBlockView({ blockId, content, quizState }: Props) {
   const player = useLessonPlayer()
   return (
     <QuizSession

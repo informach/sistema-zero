@@ -16,6 +16,7 @@ import { listOffers } from './catalog'
 import { type GatewayResponse, gatewayFetch } from './gateway'
 
 export interface ListPaymentsParams {
+  audience?: string
   q?: string
   status?: string
   method?: string
@@ -27,6 +28,7 @@ export interface ListPaymentsParams {
 }
 
 export interface ListSubscriptionsParams {
+  audience?: string
   q?: string
   status?: string
   consumerId?: string
@@ -36,6 +38,7 @@ export interface ListSubscriptionsParams {
 
 function paymentsQuery(p: ListPaymentsParams): Record<string, string | number | undefined> {
   return {
+    audience: p.audience,
     q: p.q,
     status: p.status,
     method: p.method,
@@ -54,8 +57,8 @@ export function listPayments(
   return gatewayFetch('/payments/admin/payments', { query: paymentsQuery(p) })
 }
 
-export function getPayment(id: string): Promise<GatewayResponse<PaymentView>> {
-  return gatewayFetch(`/payments/admin/payments/${encodeURIComponent(id)}`)
+export function getPayment(id: string, audience?: string): Promise<GatewayResponse<PaymentView>> {
+  return gatewayFetch(`/payments/admin/payments/${encodeURIComponent(id)}`, { query: { audience } })
 }
 
 export function refundPayment(id: string): Promise<GatewayResponse<PaymentView>> {
@@ -123,8 +126,11 @@ export async function listPaymentsWithGuarantee(
 }
 
 /** Detalhe da transação com a garantia anexada. */
-export async function getPaymentWithGuarantee(id: string): Promise<GatewayResponse<PaymentRow>> {
-  const res = await getPayment(id)
+export async function getPaymentWithGuarantee(
+  id: string,
+  audience?: string,
+): Promise<GatewayResponse<PaymentRow>> {
+  const res = await getPayment(id, audience)
   if (res.status !== 200 || !res.body) return res as unknown as GatewayResponse<PaymentRow>
   const offerId = offerIdOf(res.body)
   const guarantees = offerId ? await loadGuaranteeMap() : new Map<string, number | null>()
@@ -142,12 +148,24 @@ export function listSubscriptions(
   p: ListSubscriptionsParams,
 ): Promise<GatewayResponse<Paginated<SubscriptionView>>> {
   return gatewayFetch('/payments/admin/subscriptions', {
-    query: { q: p.q, status: p.status, consumerId: p.consumerId, limit: p.limit, offset: p.offset },
+    query: {
+      audience: p.audience,
+      q: p.q,
+      status: p.status,
+      consumerId: p.consumerId,
+      limit: p.limit,
+      offset: p.offset,
+    },
   })
 }
 
-export function getSubscription(id: string): Promise<GatewayResponse<SubscriptionView>> {
-  return gatewayFetch(`/payments/admin/subscriptions/${encodeURIComponent(id)}`)
+export function getSubscription(
+  id: string,
+  audience?: string,
+): Promise<GatewayResponse<SubscriptionView>> {
+  return gatewayFetch(`/payments/admin/subscriptions/${encodeURIComponent(id)}`, {
+    query: { audience },
+  })
 }
 
 export function cancelSubscription(id: string): Promise<GatewayResponse<SubscriptionView>> {
@@ -158,10 +176,13 @@ export function cancelSubscription(id: string): Promise<GatewayResponse<Subscrip
 
 // ── Stats / Operações ──
 export function getPaymentsStats(p: {
+  audience?: string
   from?: string
   to?: string
 }): Promise<GatewayResponse<PaymentStats>> {
-  return gatewayFetch('/payments/admin/stats', { query: { from: p.from, to: p.to } })
+  return gatewayFetch('/payments/admin/stats', {
+    query: { audience: p.audience, from: p.from, to: p.to },
+  })
 }
 
 export function getPaymentsOps(): Promise<GatewayResponse<PaymentOps>> {
@@ -170,11 +191,12 @@ export function getPaymentsOps(): Promise<GatewayResponse<PaymentOps>> {
 
 /** Recorrência (ativas por intervalo + MRR + churn na janela) — cards do painel. */
 export function getSubscriptionStats(p: {
+  audience?: string
   from?: string
   to?: string
 }): Promise<GatewayResponse<SubscriptionStatsView>> {
   return gatewayFetch('/payments/admin/stats/subscriptions', {
-    query: { from: p.from, to: p.to },
+    query: { audience: p.audience, from: p.from, to: p.to },
   })
 }
 
@@ -198,6 +220,7 @@ function parseDate(value: string | undefined): Date | undefined {
  * A janela é SANEADA (`clampWindow`) — query é input mesmo vindo de admin.
  */
 export async function getDailyPaymentsStats(p: {
+  audience?: string
   from?: string
   to?: string
   productId?: string
@@ -215,7 +238,12 @@ export async function getDailyPaymentsStats(p: {
     // loop infinito se o upstream devolver páginas cheias p/ sempre).
     const ids: string[] = []
     for (let offset = 0; offset < OFFERS_MAX; offset += OFFERS_PAGE) {
-      const offers = await listOffers({ productId: p.productId, limit: OFFERS_PAGE, offset })
+      const offers = await listOffers({
+        audience: p.audience,
+        productId: p.productId,
+        limit: OFFERS_PAGE,
+        offset,
+      })
       if (offers.status !== 200) {
         // Falha do catálogo → código ESTÁVEL do domínio de stats (não o status/
         // code cru do catálogo, que daria um toast confuso); `forwardUpstream`
@@ -239,6 +267,7 @@ export async function getDailyPaymentsStats(p: {
 
   const res = await gatewayFetch<{ days: DailyPaymentBucket[] }>('/payments/admin/stats/daily', {
     query: {
+      audience: p.audience,
       from: from.toISOString(),
       to: to.toISOString(),
       // `undefined` = sem filtro (o gatewayFetch descarta valores vazios).

@@ -81,6 +81,8 @@ function capture(responder?: (method: string, url: string) => Response | null) {
     sent.push({ method, url, body: typeof init?.body === 'string' ? JSON.parse(init.body) : null })
     const custom = responder?.(method, url)
     if (custom) return custom
+    if (method === 'GET' && url.startsWith('/api/members/journey/'))
+      return Response.json({ policy: {} })
     if (method === 'GET') return Response.json({ items: [], total: 0, limit: 100, offset: 0 })
     return Response.json({ id: 'novo', title: 'Curso novo', slug: 'curso-novo' })
   }) as typeof fetch

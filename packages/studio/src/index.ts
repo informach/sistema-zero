@@ -54,6 +54,7 @@ export {
   PRO_TEMPLATES,
   type ProTemplate,
 } from './components/code/pro-templates'
+export { PythonRuntimePreview } from './components/preview/PythonRuntimePreview'
 export {
   type StudioPlayerOriginAdapter,
   type StudioPlayerOriginRequest,

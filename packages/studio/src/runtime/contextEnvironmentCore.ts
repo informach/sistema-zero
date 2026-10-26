@@ -59,7 +59,7 @@ export type ContextualPythonAnalysis = {
 /** Per-editor authority. Its signal belongs to the host's actor/lesson/baseline lifecycle. */
 export async function createContextualRuntimeEnvironmentCore(
   options: ContextualRuntimeEnvironmentOptions,
-  /** Required so a new editor host cannot lose analysis by omission; only public play passes null. */
+  /** Editor language services are separate from a snapshot-only review parser. */
   analysis: ContextualPythonAnalysis | null,
 ): Promise<StudioRuntimeEnvironment> {
   if (options.project.programmingLanguage !== 'python')
@@ -68,6 +68,8 @@ export async function createContextualRuntimeEnvironmentCore(
   const initialSubject = studioRuntimeSubject(options.project)
   const scope = { userId: options.scope.userId, context: { ...options.scope.context } }
   const publicPlay = scope.context.kind === 'public'
+  const immutableReview = scope.context.kind === 'mastery-review'
+  const executionOnly = publicPlay || immutableReview
   if (publicPlay !== (scope.userId === null)) throw new Error('Identidade do contexto inválida.')
   const authority = new AbortController()
   const scopeSignal = AbortSignal.any([options.signal, authority.signal])
@@ -105,13 +107,17 @@ export async function createContextualRuntimeEnvironmentCore(
     const joined = AbortSignal.any([scopeSignal, signal])
     joined.throwIfAborted()
     const subject = studioRuntimeSubject(project)
-    if (publicPlay && operation !== 'execute')
-      throw new Error('Esta página permite somente jogar a revisão publicada.')
+    if (executionOnly && operation !== 'execute' && !(immutableReview && operation === 'analyze'))
+      throw new Error(
+        publicPlay
+          ? 'Esta página permite somente jogar a revisão publicada.'
+          : 'Este contexto permite somente executar ou inspecionar a versão preservada.',
+      )
     if (project.id !== initialSubject.id || studioProjectContinuityIssue(subject, initialSubject))
       throw new Error('O projeto mudou de ambiente. Reabra o Estúdio para continuar.')
     const subjectSha256 = await sha256Hex(canonicalJson(subject))
     joined.throwIfAborted()
-    if (publicPlay && initialPublicExecution) {
+    if (executionOnly && operation === 'execute' && initialPublicExecution) {
       const initial = initialPublicExecution
       initialPublicExecution = undefined // One initial start; every restart asks the BFF again.
       if (
@@ -189,17 +195,17 @@ export async function createContextualRuntimeEnvironmentCore(
     }
   }
 
-  const initialRevision = publicPlay
+  const initialRevision = executionOnly
     ? (await (await import('./python/snapshot')).preparePythonExecutionSnapshot(options.project))
         .revision
     : await sha256Hex(canonicalJson(initialSubject))
   const bootstrap = await authorize(
     options.project,
-    publicPlay ? 'execute' : 'analyze',
+    executionOnly ? 'execute' : 'analyze',
     initialRevision,
     options.signal,
   )
-  if (publicPlay) initialPublicExecution = bootstrap
+  if (executionOnly) initialPublicExecution = bootstrap
   const catalog = await createStudioRuntimeCatalog(bootstrap.decision.catalog)
   scopeSignal.throwIfAborted()
   const release = catalog.releases[0]
@@ -226,14 +232,18 @@ export async function createContextualRuntimeEnvironmentCore(
   const analysisContext =
     options.language?.context ??
     (() => {
-      if (scope.context.kind === 'public' || scope.context.kind === 'live')
+      if (
+        scope.context.kind === 'public' ||
+        scope.context.kind === 'mastery-review' ||
+        scope.context.kind === 'live'
+      )
         throw new Error('O contexto da análise Python não está disponível.')
       return scope.context
     })
   const environment: StudioRuntimeEnvironment = {
     signal: scopeSignal,
     authority: currentAuthority.authority,
-    ...(analysis && !publicPlay && (scope.context.kind !== 'live' || options.language)
+    ...(analysis && !executionOnly && (scope.context.kind !== 'live' || options.language)
       ? {
           createPythonLanguage: (project: () => StudioProjectDocument | null) =>
             analysis.createContextualPythonLanguageProvider({
@@ -262,7 +272,7 @@ export async function createContextualRuntimeEnvironmentCore(
         }
       : {}),
     catalog,
-    ...(!publicPlay
+    ...(!executionOnly
       ? {
           async resolvePythonWebExport({ project, revision, signal }) {
             const receipt = await authorize(project, 'execute', revision, signal)
@@ -351,8 +361,13 @@ export async function createContextualRuntimeEnvironmentCore(
       await authorize(project, operation, revision, signal)
     },
     async resolvePythonAnalysis(project, signal) {
-      if (publicPlay) throw new Error('A análise do código não está disponível na página de jogar.')
-      const revision = await sha256Hex(canonicalJson(studioRuntimeSubject(project)))
+      if (publicPlay) throw new Error('A análise do código não está disponível neste contexto.')
+      // The review parser receives only the retained source and materials. A subject hash
+      // identifies the environment, not its source; use the full snapshot for this context.
+      const revision = immutableReview
+        ? (await (await import('./python/snapshot')).preparePythonExecutionSnapshot(project))
+            .revision
+        : await sha256Hex(canonicalJson(studioRuntimeSubject(project)))
       const current = base
       if (
         !scopeSignal.aborted &&
@@ -361,7 +376,9 @@ export async function createContextualRuntimeEnvironmentCore(
         current &&
         current.deadline > clock() &&
         current.decision.operation === 'analyze' &&
-        current.decision.subjectSha256 === revision &&
+        (immutableReview
+          ? current.decision.revision === revision
+          : current.decision.subjectSha256 === revision) &&
         current.decision.projectId === project.id
       )
         return analysisFrame(current.decision.frame)

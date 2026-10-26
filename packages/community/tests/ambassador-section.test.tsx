@@ -53,7 +53,8 @@ describe('seção Embaixador', () => {
   test('sem cadastro: os dois presentes, o valor do serviço, os termos e o botão', () => {
     const out = html({ enrolled: false, bonus: { amountCents: 4500 } })
     expect(out).toContain('id="embaixador"')
-    expect(out).toContain('sz-card')
+    // A identidade da comunidade (o palco do Estúdio à noite), nunca a cara arcade do funil.
+    expect(out).toContain('sz-palco')
     expect(out).toContain('a um adulto que quer criar o próprio jogo')
     expect(out).toContain('família com criança de 9 a 14 anos')
     expect(out).toMatch(/agradecimento de R\$\s45,00 por/)

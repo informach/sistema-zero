@@ -13,6 +13,7 @@ export type CatalogSeedOffer = Omit<CreateOfferCommand, 'productId' | 'items'> &
 
 export const CATALOG_SEED_PRODUCTS: readonly CatalogSeedProduct[] = [
   {
+    audience: 'kids',
     sku: 'estudio-completo',
     slug: 'estudio-completo',
     name: 'Estúdio Completo',
@@ -30,6 +31,7 @@ export const CATALOG_SEED_PRODUCTS: readonly CatalogSeedProduct[] = [
     },
   },
   {
+    audience: 'kids',
     sku: 'pensa',
     slug: 'pensa',
     name: 'Pensa',
@@ -47,6 +49,7 @@ export const CATALOG_SEED_PRODUCTS: readonly CatalogSeedProduct[] = [
     },
   },
   {
+    audience: 'kids',
     sku: 'pinta',
     slug: 'pinta',
     name: 'Pinta',
@@ -64,6 +67,7 @@ export const CATALOG_SEED_PRODUCTS: readonly CatalogSeedProduct[] = [
     },
   },
   {
+    audience: 'kids',
     sku: 'molda',
     slug: 'molda',
     name: 'Molda',
@@ -81,6 +85,7 @@ export const CATALOG_SEED_PRODUCTS: readonly CatalogSeedProduct[] = [
     },
   },
   {
+    audience: 'kids',
     sku: 'clube-dos-criadores',
     slug: 'clube-dos-criadores',
     name: 'Clube dos Criadores',
@@ -98,6 +103,7 @@ export const CATALOG_SEED_PRODUCTS: readonly CatalogSeedProduct[] = [
     },
   },
   {
+    audience: 'kids',
     sku: 'mural-dos-criadores',
     slug: 'mural-dos-criadores',
     name: 'Mural dos Criadores',
@@ -115,6 +121,7 @@ export const CATALOG_SEED_PRODUCTS: readonly CatalogSeedProduct[] = [
     },
   },
   {
+    audience: 'kids',
     sku: 'desafio-primeiro-jogo',
     slug: 'desafio-primeiro-jogo',
     name: 'Desafio do Primeiro Jogo',
@@ -132,6 +139,7 @@ export const CATALOG_SEED_PRODUCTS: readonly CatalogSeedProduct[] = [
     },
   },
   {
+    audience: 'kids',
     sku: 'todos-os-cursos-kids',
     slug: 'todos-os-cursos-kids',
     name: 'Todos os cursos kids',
@@ -148,6 +156,7 @@ export const CATALOG_SEED_PRODUCTS: readonly CatalogSeedProduct[] = [
     },
   },
   {
+    audience: 'kids',
     sku: 'comunidade-dos-criadores',
     slug: 'comunidade-dos-criadores',
     name: 'Comunidade dos Criadores',
@@ -189,6 +198,7 @@ export const CATALOG_SEED_PRODUCTS: readonly CatalogSeedProduct[] = [
     ],
   },
   {
+    audience: 'adult',
     sku: 'todos-os-cursos-adultos',
     slug: 'todos-os-cursos-adultos',
     name: 'Todos os cursos adultos',
@@ -205,6 +215,7 @@ export const CATALOG_SEED_PRODUCTS: readonly CatalogSeedProduct[] = [
     },
   },
   {
+    audience: 'adult',
     sku: 'adult-estudio-completo',
     slug: 'adult-estudio-completo',
     name: 'Estúdio Completo (adultos)',
@@ -222,6 +233,7 @@ export const CATALOG_SEED_PRODUCTS: readonly CatalogSeedProduct[] = [
     },
   },
   {
+    audience: 'adult',
     sku: 'adult-pinta',
     slug: 'adult-pinta',
     name: 'Pinta (adultos)',
@@ -238,6 +250,7 @@ export const CATALOG_SEED_PRODUCTS: readonly CatalogSeedProduct[] = [
     },
   },
   {
+    audience: 'adult',
     sku: 'adult-molda',
     slug: 'adult-molda',
     name: 'Molda (adultos)',
@@ -254,6 +267,7 @@ export const CATALOG_SEED_PRODUCTS: readonly CatalogSeedProduct[] = [
     },
   },
   {
+    audience: 'adult',
     sku: 'adult-pensa',
     slug: 'adult-pensa',
     name: 'Pensa (adultos)',
@@ -271,6 +285,7 @@ export const CATALOG_SEED_PRODUCTS: readonly CatalogSeedProduct[] = [
     },
   },
   {
+    audience: 'adult',
     sku: 'adult-clube-dos-criadores',
     slug: 'adult-clube-dos-criadores',
     name: 'Clube dos Criadores (adultos)',
@@ -287,6 +302,7 @@ export const CATALOG_SEED_PRODUCTS: readonly CatalogSeedProduct[] = [
     },
   },
   {
+    audience: 'adult',
     sku: 'adult-mural-dos-criadores',
     slug: 'adult-mural-dos-criadores',
     name: 'Mural dos Criadores (adultos)',
@@ -303,6 +319,7 @@ export const CATALOG_SEED_PRODUCTS: readonly CatalogSeedProduct[] = [
     },
   },
   {
+    audience: 'adult',
     sku: 'comunidade-dos-criadores-adulto',
     slug: 'comunidade-dos-criadores-adulto',
     name: 'Comunidade dos Criadores (adultos)',
@@ -344,6 +361,7 @@ export const CATALOG_SEED_PRODUCTS: readonly CatalogSeedProduct[] = [
     ],
   },
   {
+    audience: 'adult',
     sku: 'desafio-primeiro-jogo-adulto',
     slug: 'desafio-primeiro-jogo-adulto',
     name: 'Desafio do Primeiro Jogo (adultos)',

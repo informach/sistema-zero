@@ -4,10 +4,11 @@ import type { Database } from './db'
 
 export class DrizzlePensaFunnelRepository implements PensaFunnelReader {
   constructor(readonly db: Database) {}
-  async funnel(since: Date, until: Date): Promise<PensaFunnelCounts> {
+  async funnel(since: Date, until: Date, audience?: 'kids' | 'adult'): Promise<PensaFunnelCounts> {
     const rows = await this.db.execute(sql`
       with projects as (
         select id from members.pensa_projects where created_at >= ${since.toISOString()}::timestamptz and created_at <= ${until.toISOString()}::timestamptz
+          ${audience ? sql`and audience = ${audience}` : sql``}
       ), milestones as (
         select e.project_key, bool_or(e.kind = 'plan_accepted') as accepted, bool_or(e.kind = 'draft_ready') as ready,
           bool_or(e.kind = 'first_feature') as feature,

@@ -9,6 +9,7 @@ import type { CouponStatus } from '../../../domain/coupon/coupon.status'
 import type { CouponType } from '../../../domain/coupon/coupon.type'
 import type { CouponRepository } from '../../../domain/ports/coupon-repository.port'
 import type { ListQuery, Page } from '../../../domain/ports/list'
+import { catalogAudience } from '../../../domain/shared/audience'
 import { ConcurrencyConflictError } from '../../../domain/shared/concurrency.error'
 import type { Currency } from '../../../domain/value-objects/money'
 import type { Database } from './db'
@@ -186,6 +187,7 @@ export class DrizzleCouponRepository implements CouponRepository {
 
 function buildFilter(query: ListQuery): SQL | undefined {
   const conditions: SQL[] = []
+  if (query.audience) conditions.push(eq(coupons.audience, query.audience))
   if (query.status) conditions.push(eq(coupons.status, query.status as CouponRow['status']))
   if (query.q) {
     // Busca LITERAL: escapa os curingas do LIKE (ver pg-errors.escapeLike).
@@ -199,6 +201,7 @@ function buildFilter(query: ListQuery): SQL | undefined {
 function toRow(s: CouponSnapshot) {
   return {
     id: s.id,
+    audience: s.audience,
     version: s.version,
     code: s.code,
     type: s.type,
@@ -232,6 +235,7 @@ async function insertScope(
 function toSnapshot(row: CouponRow, scope: CouponOfferRow[]): CouponSnapshot {
   return {
     id: row.id,
+    audience: catalogAudience(row.audience),
     version: row.version,
     code: row.code,
     type: row.type as CouponType,

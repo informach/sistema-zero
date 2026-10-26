@@ -42,6 +42,7 @@ COPY packages/members/scripts/bootstrap-kids-journey.ts \
      packages/members/scripts/pensa-maintenance.ts \
      packages/members/scripts/pensa-cutover-migrations.ts \
      packages/members/scripts/seed-adult-journey.ts \
+     packages/members/scripts/seed-creator-journey.ts \
      packages/members/scripts/seed-adult-journey-production.ts \
      packages/members/scripts/adult-journey-production-seed.ts \
      packages/members/scripts/finalize-first-steps-rollout.ts \

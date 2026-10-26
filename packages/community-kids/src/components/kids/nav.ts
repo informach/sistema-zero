@@ -128,7 +128,10 @@ export const HELP_NAV: NavItem = {
  * lista de rotas envelheceria em silêncio assim que um filho novo entrasse.
  */
 export function navMatch(item: NavItem): string[] {
-  return (item.children ?? []).map((child) => child.href).filter((href) => href !== item.href)
+  return [
+    ...(item.children ?? []).map((child) => child.href).filter((href) => href !== item.href),
+    ...(item.href === '/cursos' ? ['/maestrias'] : []),
+  ]
 }
 
 /**

@@ -8,6 +8,7 @@ import {
 } from '../../../domain/product/product.aggregate'
 import { DuplicateProductError } from '../../../domain/product/product.errors'
 import type { EntitlementNode } from '../../../domain/services/resolve-entitlements'
+import { catalogAudience } from '../../../domain/shared/audience'
 import { ConcurrencyConflictError } from '../../../domain/shared/concurrency.error'
 import type { Currency } from '../../../domain/value-objects/money'
 import type { Database } from './db'
@@ -87,6 +88,7 @@ export class DrizzleProductRepository implements ProductRepository {
     const byProduct = groupComponents(componentRows)
     return rows.map((row) => ({
       productId: row.id,
+      audience: catalogAudience(row.audience),
       sku: row.sku,
       name: row.name,
       kind: row.kind,
@@ -156,6 +158,7 @@ export class DrizzleProductRepository implements ProductRepository {
 
 function buildFilter(query: ListQuery): SQL | undefined {
   const conditions: SQL[] = []
+  if (query.audience) conditions.push(eq(products.audience, query.audience))
   if (query.status) conditions.push(eq(products.status, query.status as ProductRow['status']))
   if (query.q) {
     // Busca LITERAL: escapa os curingas do LIKE (ver pg-errors.escapeLike).
@@ -173,6 +176,7 @@ function buildFilter(query: ListQuery): SQL | undefined {
 function toRow(s: ProductSnapshot) {
   return {
     id: s.id,
+    audience: s.audience,
     version: s.version,
     sku: s.sku,
     slug: s.slug,
@@ -219,6 +223,7 @@ function groupComponents(rows: ComponentRow[]): Map<string, ComponentRow[]> {
 function toSnapshot(row: ProductRow, componentRows: ComponentRow[]): ProductSnapshot {
   return {
     id: row.id,
+    audience: catalogAudience(row.audience),
     version: row.version,
     sku: row.sku,
     slug: row.slug,

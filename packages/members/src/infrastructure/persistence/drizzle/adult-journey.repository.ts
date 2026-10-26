@@ -3,9 +3,14 @@ import type {
   AdultCreatorCapability,
   AdultJourneyPolicy,
 } from '@sistemazero/core/journey'
-import { AdultJourneyPolicySchema } from '@sistemazero/core/journey'
+import { AdultJourneyPolicySchema, EMPTY_ADULT_JOURNEY_POLICY } from '@sistemazero/core/journey'
 import { and, eq, inArray, sql } from 'drizzle-orm'
 import type { AdultJourneyRepository } from '../../../domain/ports/adult-journey-repository.port'
+import {
+  captureAdultJourneyBeforeChange,
+  lockAdultJourneyCaptureSources,
+} from './adult-journey-capture'
+import { listCreatorCourseGrants, saveCreatorCourseGrants } from './creator-journey-course-grants'
 import type { Database } from './db'
 import {
   accountDeletionFences,
@@ -45,27 +50,54 @@ export class DrizzleAdultJourneyRepository implements AdultJourneyRepository {
     return row ? { version: row.version, policy: AdultJourneyPolicySchema.parse(row.policy) } : null
   }
   async savePolicy(policy: AdultJourneyPolicy, expectedVersion: number, now: Date) {
-    const rows =
-      expectedVersion === 0
-        ? await this.db
-            .insert(adultJourneyPolicy)
-            .values({ id: 'adult', version: 1, policy, updatedAt: now })
-            .onConflictDoNothing()
-            .returning()
-        : await this.db
-            .update(adultJourneyPolicy)
-            .set({ version: expectedVersion + 1, policy, updatedAt: now })
-            .where(
-              and(
-                eq(adultJourneyPolicy.id, 'adult'),
-                eq(adultJourneyPolicy.version, expectedVersion),
-              ),
-            )
-            .returning()
-    const row = rows[0]
-    return row ? { version: row.version, policy: row.policy } : null
+    const candidate = AdultJourneyPolicySchema.parse(policy)
+    return this.db.transaction(async (tx) => {
+      if (expectedVersion === 0) {
+        await tx.execute(
+          sql`select pg_advisory_xact_lock(hashtextextended('members-adult-journey-seed', 0))`,
+        )
+        if (candidate.curriculum) await lockAdultJourneyCaptureSources(tx)
+        const [row] = await tx
+          .insert(adultJourneyPolicy)
+          .values({ id: 'adult', version: 1, policy: candidate, updatedAt: now })
+          .onConflictDoNothing()
+          .returning()
+        // Before the first configured curriculum, adult catalog access had no pedagogical gate.
+        // Capture that admission baseline in the same V1 transaction; a losing initializer writes nothing.
+        if (row && candidate.curriculum)
+          await captureAdultJourneyBeforeChange(
+            tx,
+            { policy: EMPTY_ADULT_JOURNEY_POLICY, version: 1 },
+            now,
+          )
+        return row ? { version: row.version, policy: row.policy } : null
+      }
+      // Source facts cannot change while the outgoing policy is captured. No account lock is
+      // acquired after these table fences; freezeGranted keeps its established account→policy order.
+      await lockAdultJourneyCaptureSources(tx)
+      const [source] = await tx
+        .select()
+        .from(adultJourneyPolicy)
+        .where(eq(adultJourneyPolicy.id, 'adult'))
+        .for('update')
+      if (source?.version !== expectedVersion) return null
+      await captureAdultJourneyBeforeChange(
+        tx,
+        { version: source.version, policy: AdultJourneyPolicySchema.parse(source.policy) },
+        now,
+      )
+      const [row] = await tx
+        .update(adultJourneyPolicy)
+        .set({ version: expectedVersion + 1, policy: candidate, updatedAt: now })
+        .where(
+          and(eq(adultJourneyPolicy.id, 'adult'), eq(adultJourneyPolicy.version, expectedVersion)),
+        )
+        .returning()
+      return row ? { version: row.version, policy: row.policy } : null
+    })
   }
   async insertPolicyIfAbsent(policy: AdultJourneyPolicy, now: Date) {
+    if (policy.curriculum) return this.savePolicy(policy, 0, now)
     return this.db.transaction(async (tx) => {
       // Várias instâncias subindo juntas: uma de cada vez confere e grava; a unique do `id` é a
       // segunda trava (ON CONFLICT DO NOTHING), caso alguém grave por outro caminho no meio.
@@ -113,6 +145,13 @@ export class DrizzleAdultJourneyRepository implements AdultJourneyRepository {
         .where(eq(adultJourneyGrants.userId, userId))
     ).map((row) => row.capability)
   }
+  async listCourseGrants(userId: string): Promise<string[]> {
+    return (
+      (
+        await listCreatorCourseGrants(this.db, [{ userId, accountId: userId, audience: 'adult' }])
+      ).get(userId) ?? []
+    )
+  }
   async getReached(userId: string): Promise<number | null> {
     return (await this.listReachedForUsers([userId])).get(userId) ?? null
   }
@@ -130,6 +169,7 @@ export class DrizzleAdultJourneyRepository implements AdultJourneyRepository {
     capabilities: readonly AdultCreatorCapability[],
     now: Date,
     reachedPosition: number | null = null,
+    courseIds: readonly string[] = [],
   ) {
     return this.db.transaction(async (tx) => {
       await tx.execute(
@@ -146,6 +186,12 @@ export class DrizzleAdultJourneyRepository implements AdultJourneyRepository {
         .from(accountDeletionFences)
         .where(eq(accountDeletionFences.accountId, userId))
       if (fence) return false
+      await saveCreatorCourseGrants(
+        tx,
+        { userId, accountId: userId, audience: 'adult' },
+        version,
+        courseIds,
+      )
       if (capabilities.length)
         await tx
           .insert(adultJourneyGrants)

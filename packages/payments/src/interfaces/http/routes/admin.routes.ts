@@ -181,6 +181,7 @@ export function adminRoutes(deps: AdminRoutesDeps) {
         async ({ query, headers }) => {
           requireAdmin(headers, deps.requireAdminEnabled, deps.internalToken)
           return deps.listPayments.execute({
+            audience: query.audience,
             q: query.q,
             status: query.status,
             method: query.method,
@@ -195,17 +196,21 @@ export function adminRoutes(deps: AdminRoutesDeps) {
       )
       .get(
         '/payments/:id',
-        async ({ params, headers }) => {
+        async ({ params, headers, query }) => {
           requireAdmin(headers, deps.requireAdminEnabled, deps.internalToken)
-          return deps.getPayment.execute(params.id)
+          return deps.getPayment.execute(params.id, query.audience)
         },
-        { params: AdminIdParam },
+        {
+          params: AdminIdParam,
+          query: z.object({ audience: z.enum(['kids', 'adult', 'unassigned']).optional() }),
+        },
       )
       .get(
         '/subscriptions',
         async ({ query, headers }) => {
           requireAdmin(headers, deps.requireAdminEnabled, deps.internalToken)
           return deps.listSubscriptions.execute({
+            audience: query.audience,
             q: query.q,
             status: query.status,
             consumerId: query.consumerId,
@@ -217,17 +222,24 @@ export function adminRoutes(deps: AdminRoutesDeps) {
       )
       .get(
         '/subscriptions/:id',
-        async ({ params, headers }) => {
+        async ({ params, headers, query }) => {
           requireAdmin(headers, deps.requireAdminEnabled, deps.internalToken)
-          return deps.getSubscription.execute(params.id)
+          return deps.getSubscription.execute(params.id, query.audience)
         },
-        { params: AdminIdParam },
+        {
+          params: AdminIdParam,
+          query: z.object({ audience: z.enum(['kids', 'adult', 'unassigned']).optional() }),
+        },
       )
       .get(
         '/stats',
         async ({ query, headers }) => {
           requireAdmin(headers, deps.requireAdminEnabled, deps.internalToken)
-          return deps.getStats.execute({ from: parseDate(query.from), to: parseDate(query.to) })
+          return deps.getStats.execute({
+            audience: query.audience,
+            from: parseDate(query.from),
+            to: parseDate(query.to),
+          })
         },
         { query: PaymentsStatsQuery },
       )
@@ -243,6 +255,7 @@ export function adminRoutes(deps: AdminRoutesDeps) {
             .map((id) => id.trim())
             .filter(Boolean)
           return deps.getDailyStats.execute({
+            audience: query.audience,
             from,
             to,
             ...(offerIds?.length ? { offerIds } : {}),
@@ -256,6 +269,7 @@ export function adminRoutes(deps: AdminRoutesDeps) {
         async ({ query, headers }) => {
           requireAdmin(headers, deps.requireAdminEnabled, deps.internalToken)
           return deps.getSubscriptionStats.execute({
+            audience: query.audience,
             from: parseDate(query.from),
             to: parseDate(query.to),
           })

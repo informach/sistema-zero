@@ -27,8 +27,7 @@ export interface CourseFields {
   /** Página de vendas (funil) — persiste em `metadata.salesPageUrl` (jsonb). */
   salesPageUrl: string | null
   /**
-   * Blocos que este curso LIBERA no Estúdio livre ao satisfazer o critério atual
-   * (bônus Kids: conclusão; demais: conclusão + Mural). Persiste em
+   * Blocos que este curso LIBERA no Estúdio livre após conclusão, sem exigir Mural. Persiste em
    * `metadata.studioUnlockBlocks` (jsonb, sem migração).
    * ⚠️ AUSENTE (`undefined`) **PRESERVA** a lista atual (régua do `audience`/`level`,
    * não a do `salesPageUrl`): um PATCH de build antigo do admin não pode apagar o

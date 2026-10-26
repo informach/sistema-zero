@@ -1,6 +1,11 @@
 'use client'
 
 import type { LearningTopicSummary } from '@sistemazero/core/learning'
+import {
+  creatorCurrentStage,
+  creatorJourneyHint,
+  creatorStageSummary,
+} from '@sistemazero/member-shell/lib/creator-journey-presentation'
 import { Skeleton } from '@sistemazero/ui/skeleton'
 import {
   BookOpenCheck,
@@ -181,10 +186,17 @@ function JourneyCard({ child }: { child: ChildDashboardView }) {
       </div>
       {next ? (
         <p className="text-muted-foreground text-sm">
-          A evolução considera os cursos obrigatórios concluídos e os projetos publicados no Mural.
+          {career.curriculum
+            ? creatorJourneyHint(career.curriculum)
+            : 'A evolução considera os cursos obrigatórios concluídos e os projetos publicados no Mural.'}
         </p>
       ) : null}
-      {career.pendingPublications.length ? (
+      {career.curriculum && creatorCurrentStage(career.curriculum) ? (
+        <p className="text-sm font-semibold">
+          {creatorStageSummary(creatorCurrentStage(career.curriculum)!)}
+        </p>
+      ) : null}
+      {!career.curriculum && career.pendingPublications.length ? (
         <div className="rounded-2xl bg-(--band-amarelo) p-4 text-sm">
           <p className="font-extrabold">Concluiu as aulas e falta publicar o projeto:</p>
           <ul className="mt-1 list-disc pl-5">

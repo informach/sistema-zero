@@ -4,6 +4,7 @@ import { OfferNotAvailableError, OfferNotFoundError } from '../../domain/offer/o
 import type { CouponRepository } from '../../domain/ports/coupon-repository.port'
 import type { OfferRepository } from '../../domain/ports/offer-repository.port'
 import type { ProductRepository } from '../../domain/ports/product-repository.port'
+import type { CatalogAudience } from '../../domain/shared/audience'
 import { ValidationError } from '../../domain/shared/errors'
 import { assertActiveOfferDeliverable } from '../create-offer/create-offer.service'
 import { toOfferAccessPolicyView } from '../mappers/offer-view'
@@ -34,7 +35,7 @@ export class QuoteOfferService {
     // Disponibilidade é AUTORITATIVA aqui: a cotação é o gate de cobrança do funil,
     // então oferta pausada/draft/arquivada (ou fora da janela) não gera preço a cobrar.
     if (!offer.isAvailable()) throw new OfferNotAvailableError()
-    await this.assertDeliverable(offer)
+    const audience = await this.assertDeliverable(offer)
 
     const priceCents = offer.priceCents
     if (priceCents <= 0) throw new OfferNotAvailableError('Oferta sem preço cobrável')
@@ -57,6 +58,8 @@ export class QuoteOfferService {
 
     const coupon = await this.coupons.findByCode(code)
     if (!coupon) throw new CouponNotFoundError()
+    if (coupon.audience !== audience)
+      throw new CouponNotApplicableError('Cupom não se aplica à comunidade desta oferta')
     if (offer.content?.allowsCoupon !== true) {
       throw new CouponNotApplicableError('Cupom desabilitado para esta oferta')
     }
@@ -83,7 +86,7 @@ export class QuoteOfferService {
     }
   }
 
-  private async assertDeliverable(offer: OfferAggregate): Promise<void> {
+  private async assertDeliverable(offer: OfferAggregate): Promise<CatalogAudience> {
     const product = await this.products.findById(offer.productId)
     if (!product) throw new OfferNotAvailableError('Oferta sem produto principal válido')
     try {
@@ -94,5 +97,6 @@ export class QuoteOfferService {
       }
       throw error
     }
+    return product.audience
   }
 }

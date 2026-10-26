@@ -124,6 +124,7 @@ export interface QuizChoice {
 
 export interface QuizQuestion {
   id: string
+  predictionScene?: 'garden-touch' | 'garden-count' | 'garden-repeat'
   prompt: string
   choices: QuizChoice[]
   correctChoiceIds: string[]

@@ -5,7 +5,7 @@ import type {
   RankingEntryView,
   RankingLeaderboardView,
 } from '@sistemazero/member-shell/lib/types'
-import { Medal } from 'lucide-react'
+import { ArrowDown, ArrowUp, Medal } from 'lucide-react'
 import Link from 'next/link'
 import { useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
@@ -103,12 +103,14 @@ export function RankingClient({
         back={{ href: '/progresso', label: 'Seu progresso' }}
         title="Ranking e liga"
         lead="O ranking soma todo o seu XP. A liga recomeça toda semana e junta pessoas num ritmo parecido com o seu."
-      />
-      <PageBody>
-        <div className="grid items-start gap-7 lg:grid-cols-2">
-          <RankingSection initial={initial} />
+      >
+        {/* A liga da semana é a disputa viva: mora no palco (Estúdio à noite). */}
+        <div className="mt-6">
           <LeagueSection league={league} />
         </div>
+      </PageBand>
+      <PageBody>
+        <RankingSection initial={initial} />
       </PageBody>
     </>
   )
@@ -246,7 +248,7 @@ function RankingRow({ entry, detached = false }: { entry: RankingEntryView; deta
       <tr
         className={cn(
           entry.isMe
-            ? '[&>td:first-child]:rounded-l-[0.6rem] [&>td:last-child]:rounded-r-[0.6rem] [&>td]:bg-(--acao-tint)'
+            ? '[&>td:first-child]:rounded-l-[0.6rem] [&>td:first-child]:shadow-[inset_4px_0_0_var(--cta)] [&>td:last-child]:rounded-r-[0.6rem] [&>td]:bg-(--aviso-tint)'
             : 'border-border border-t',
         )}
       >
@@ -265,7 +267,7 @@ function RankingRow({ entry, detached = false }: { entry: RankingEntryView; deta
 function LeagueSection({ league }: { league: LeagueMeView | null }) {
   const total = league?.entries.length ?? 0
   return (
-    <section aria-labelledby="liga-semanal" className="sz-card flex flex-col gap-4 p-6 md:p-8">
+    <section aria-labelledby="liga-semanal" className="flex flex-col gap-4">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <h2 id="liga-semanal" className="sz-h2">
           Sua liga semanal
@@ -282,30 +284,62 @@ function LeagueSection({ league }: { league: LeagueMeView | null }) {
           <p className="text-muted-foreground">
             Posição {league.myPosition} nesta semana. {leagueChangeSentence(league)}
           </p>
-          <ol className="flex flex-col gap-2">
+          <ol className="sz-card m-0 flex list-none flex-col overflow-hidden p-0">
             {league.entries.map((entry, index) => {
               const up = entry.position <= league.promotionCount
               const down = !up && entry.position > total - league.relegationCount
+              const lastUp =
+                up && entry.position === league.promotionCount && total > entry.position
+              const firstDown =
+                down && entry.position === total - league.relegationCount + 1 && index > 0
               return (
-                <li
-                  key={entry.profileId ?? `anonymous-${index}`}
-                  className={cn(
-                    'flex flex-wrap items-center gap-x-3.5 gap-y-1 rounded-[0.8rem] px-4 py-3',
-                    entry.isMe ? 'bg-(--acao-tint)' : 'bg-background',
-                  )}
-                >
-                  <span className="w-[1.8rem] font-bold">{entry.position}</span>
-                  <Participant entry={entry} className="min-w-0 flex-1 basis-[6rem] break-words" />
-                  <span
+                <li key={entry.profileId ?? `anonymous-${index}`} className="flex flex-col">
+                  {firstDown ? (
+                    <span className="border-(--rosa) border-t-2 border-dashed px-4 pt-1 text-center font-bold text-(--rosa) text-[0.85rem]">
+                      Daqui para baixo voltam para a liga anterior
+                    </span>
+                  ) : null}
+                  <div
                     className={cn(
-                      'text-[0.9rem]',
-                      entry.isMe ? 'font-bold' : 'text-muted-foreground',
+                      'flex flex-wrap items-center gap-x-3.5 gap-y-1 px-4 py-3',
+                      index > 0 && !firstDown && 'border-border border-t',
+                      entry.isMe && 'bg-(--aviso-tint) shadow-[inset_4px_0_0_var(--cta)]',
                     )}
                   >
-                    {numberPt.format(entry.weeklyXp)} XP na semana
-                  </span>
-                  {up ? <span className="sz-chip sz-chip-ok">Sobe</span> : null}
-                  {down ? <span className="sz-chip sz-chip-aviso">Volta de liga</span> : null}
+                    <span className="w-[1.8rem] font-(family-name:--font-pixel)">
+                      {entry.position}
+                    </span>
+                    <Participant
+                      entry={entry}
+                      className="min-w-0 flex-1 basis-[6rem] break-words"
+                    />
+                    {up ? (
+                      <span className="sz-chip sz-chip-ok">
+                        <ArrowUp aria-hidden />
+                        Sobe
+                      </span>
+                    ) : null}
+                    {down ? (
+                      <span className="sz-chip sz-chip-aviso">
+                        <ArrowDown aria-hidden />
+                        Volta de liga
+                      </span>
+                    ) : null}
+                    <span
+                      className={cn(
+                        'font-(family-name:--font-pixel) text-[0.95rem]',
+                        entry.isMe ? 'text-white' : 'text-(--texto-claro-2)',
+                      )}
+                    >
+                      {numberPt.format(entry.weeklyXp)} XP
+                      <span className="sr-only"> na semana</span>
+                    </span>
+                  </div>
+                  {lastUp ? (
+                    <span className="border-(--menta) border-b-2 border-dashed px-4 pb-1 text-center font-bold text-(--menta) text-[0.85rem]">
+                      Até aqui sobem para a próxima liga
+                    </span>
+                  ) : null}
                 </li>
               )
             })}

@@ -5,6 +5,7 @@ import { listPaymentsWithGuarantee } from '@/server/payments'
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url)
   const { status, body } = await listPaymentsWithGuarantee({
+    audience: searchParams.get('audience') ?? undefined,
     q: searchParams.get('q') ?? undefined,
     status: searchParams.get('status') ?? undefined,
     method: searchParams.get('method') ?? undefined,

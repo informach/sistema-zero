@@ -58,7 +58,7 @@ export class UpdateProductService {
       const components = normalizeComponents(command.components)
       // Não permitir auto-referência já é validado no agregado; valida existência
       // e ciclo INDIRETO (A→B→…→A — resolveria para zero entregáveis na venda).
-      await assertComponentsExist(this.products, components)
+      await assertComponentsExist(this.products, components, product.audience)
       await assertNoComponentCycle(this.products, command.id, components)
       product.setComponents(components)
     }

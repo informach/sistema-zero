@@ -1,5 +1,10 @@
 import { JOURNEY_LEVEL_SLUGS, type JourneyCourseLock, type JourneyLevelSlug } from './catalog'
 import {
+  creatorJourneyOpenCourseIds,
+  projectCreatorJourney,
+  resolveCreatorJourneyCourseLock,
+} from './creator-curriculum'
+import {
   KIDS_CREATOR_CAPABILITIES,
   type KidsCreatorCapability,
   type KidsJourneyComparisonInput,
@@ -22,6 +27,67 @@ import {
 
 export function projectKidsJourney(input: KidsJourneyProjectionInput): KidsJourneyView {
   const policy = KidsJourneyPolicySchema.parse(input.policy)
+  if (policy.curriculum) {
+    const curriculum = projectCreatorJourney({
+      curriculum: policy.curriculum,
+      audience: 'kids',
+      catalog: input.catalog,
+      completedCourseIds: input.milestones.filter((m) => m.completed).map((m) => m.courseId),
+      earnedLevel: input.earned.level,
+      earnedCapabilities: input.earned.capabilities,
+      retainedCourseIds: input.earned.courseAccess.creatorCourseIds,
+      paused: policy.mode === 'paused',
+      masteryApprovals: input.masteryApprovals,
+      masteryAwards: input.masteryAwards,
+      masteryAdmissions: input.masteryAdmissions,
+      masteryDefinitions: input.masteryDefinitions,
+    })
+    const advances = curriculum.stages.map((stage, index) => ({
+      level: JOURNEY_LEVEL_SLUGS[index + 1] as Exclude<JourneyLevelSlug, 'noob'>,
+      earned: stage.completed,
+      available: stage.available,
+      requirements: [stage.base2d, stage.base3d, stage.mission].map((entry) => ({
+        requirement: {
+          kind: 'course' as const,
+          courseId: entry.courseId,
+          milestone: 'complete' as const,
+        },
+        state:
+          entry.state === 'completed'
+            ? ('satisfied' as const)
+            : entry.state === 'unavailable'
+              ? ('unavailable' as const)
+              : ('pending' as const),
+        resolvedCourseId: entry.state === 'unavailable' ? null : entry.courseId,
+      })),
+      capabilities: [
+        ...new Set(policy.curriculum!.stages[index]!.grants.flatMap((grant) => grant.capabilities)),
+      ],
+    }))
+    return {
+      audience: 'kids',
+      policyVersion: input.policyVersion,
+      mode: policy.mode,
+      tierAccess: policy.tierAccess,
+      earned: {
+        level: curriculum.level,
+        capabilities: curriculum.capabilities,
+        courseAccess: {
+          ...input.earned.courseAccess,
+          creatorCourseIds: creatorJourneyOpenCourseIds(policy.curriculum, curriculum),
+        },
+      },
+      nextLevel: curriculum.nextLevel,
+      missing:
+        advances
+          .find((advance) => advance.level === curriculum.nextLevel)
+          ?.requirements.filter((r) => r.state !== 'satisfied')
+          .map((r) => r.requirement) ?? [],
+      advances,
+      readiness: analyzeKidsJourneyReadiness(input),
+      curriculum,
+    }
+  }
   const paused = policy.mode === 'paused'
   const steps = policy.steps
   const floor = JOURNEY_LEVEL_SLUGS.indexOf(input.earned.level)
@@ -105,6 +171,28 @@ export function resolveKidsJourneyCourseLocks(
   if (input.catalog === null) throw new Error('O catálogo da jornada está indisponível.')
   const policy = KidsJourneyPolicySchema.parse(input.policy)
   const view = projectKidsJourney({ ...input, policy })
+  if (policy.curriculum && view.curriculum) {
+    return new Map(
+      input.courses.map((course) => {
+        // Rights already frozen under the old policy remain valid for their original catalog slot.
+        const historical =
+          course.tier &&
+          ((course.slot !== null && input.earned.courseAccess.expanded.includes(course.tier)) ||
+            (course.slot === 1 && input.earned.courseAccess.entry.includes(course.tier)) ||
+            (course.slot === null && input.earned.courseAccess.reward.includes(course.tier)))
+        return [
+          course.id,
+          historical
+            ? { locked: false }
+            : resolveCreatorJourneyCourseLock({
+                curriculum: policy.curriculum!,
+                view: view.curriculum!,
+                courseId: course.id,
+              }),
+        ]
+      }),
+    )
+  }
   const foundations = new Map<string, { available: boolean; satisfied: boolean }>()
   return new Map(
     input.courses.map((course): [string, JourneyCourseLock] => {
@@ -152,9 +240,38 @@ export function resolveKidsJourneyCourseLock(
   return resolveKidsJourneyCourseLocks({ ...input, courses: [input.course] }).get(input.course.id)!
 }
 
+/** Snapshot the outgoing catalog's actual course rights before a policy change, never licenses. */
+export function kidsJourneyOpenCourseIds(input: KidsJourneyProjectionInput): string[] {
+  const retained = input.earned.courseAccess.creatorCourseIds ?? []
+  if (input.catalog === null) return [...retained]
+  const courses = input.catalog.filter(
+    (course) =>
+      course.audience === 'kids' && course.modality === 'recorded' && course.status !== 'draft',
+  )
+  const locks = resolveKidsJourneyCourseLocks({ ...input, catalog: input.catalog, courses })
+  return [
+    ...new Set([
+      ...retained,
+      ...courses.filter((course) => !locks.get(course.id)!.locked).map((course) => course.id),
+    ]),
+  ]
+}
+
 /** A read-only preview carries the current policy's virtual baseline into the proposed one. */
 export function compareKidsJourney(input: KidsJourneyComparisonInput): KidsJourneyImpact {
-  const before = projectKidsJourney(input)
+  let before = projectKidsJourney(input)
+  if (!input.policy.curriculum && input.proposedPolicy.curriculum) {
+    before = {
+      ...before,
+      earned: {
+        ...before.earned,
+        courseAccess: {
+          ...before.earned.courseAccess,
+          creatorCourseIds: kidsJourneyOpenCourseIds(input),
+        },
+      },
+    }
+  }
   const after = projectKidsJourney({
     ...input,
     policy: input.proposedPolicy,
@@ -218,5 +335,12 @@ export function compareKidsJourney(input: KidsJourneyComparisonInput): KidsJourn
         : []
     }),
     preservedCourseAccess: before.earned.courseAccess,
+    ...(input.policy.curriculum || input.proposedPolicy.curriculum
+      ? {
+          curriculumChanged:
+            JSON.stringify(input.policy.curriculum) !==
+            JSON.stringify(input.proposedPolicy.curriculum),
+        }
+      : {}),
   }
 }

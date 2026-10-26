@@ -39,6 +39,7 @@ import { type LiveCourseRoutesDeps, liveCourseRoutes } from './routes/live-cours
 import { liveMaterialsRoutes } from './routes/live-materials.routes'
 import { livePublicationRoutes } from './routes/live-publication.routes'
 import { liveWorkspaceRoutes } from './routes/live-workspaces.routes'
+import { masteryRoutes } from './routes/mastery.routes'
 import { type MembersRoutesDeps, membersRoutes } from './routes/members.routes'
 import { type PensaRoutesDeps, pensaRoutes } from './routes/pensa.routes'
 import { studioAiAccountRoutes } from './routes/studio-ai-account.routes'
@@ -52,6 +53,7 @@ export interface HttpDeps {
   kidsJourney?: Parameters<typeof kidsJourneyRoutes>[0]
   kidsProfileAdmission?: Parameters<typeof kidsProfileAdmissionRoutes>[0]
   adultJourney?: Parameters<typeof adultJourneyRoutes>[0]
+  masteries?: Parameters<typeof masteryRoutes>[0]
   adultProfiles?: Parameters<typeof adultProfileRoutes>[0]
   liveMaterials?: LiveMaterialsService
   livePublication?: LivePublicationService
@@ -252,6 +254,7 @@ export function createServer(deps: HttpDeps) {
     .use(creationsRoutes(deps.creations))
     .use(deps.adultProfiles ? adultProfileRoutes(deps.adultProfiles) : new Elysia())
     .use(deps.adultJourney ? adultJourneyRoutes(deps.adultJourney) : new Elysia())
+    .use(deps.masteries ? masteryRoutes(deps.masteries) : new Elysia())
     .use(deps.kidsJourney ? kidsJourneyRoutes(deps.kidsJourney) : new Elysia())
     .use(
       creationCleanupRoutes({

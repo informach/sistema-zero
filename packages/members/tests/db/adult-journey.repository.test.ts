@@ -2,13 +2,10 @@ import { afterAll, beforeAll, describe, expect, test } from 'bun:test'
 import { randomUUID } from 'node:crypto'
 import { EMPTY_ADULT_JOURNEY_POLICY } from '@sistemazero/core/journey'
 import { DrizzleAdultJourneyRepository } from '../../src/infrastructure/persistence/drizzle/adult-journey.repository'
-import {
-  createDbConnection,
-  type DbConnection,
-} from '../../src/infrastructure/persistence/drizzle/db'
-import { prepareTestDatabase } from './test-database'
+import type { DbConnection } from '../../src/infrastructure/persistence/drizzle/db'
+import { openKidsJourneyTestDatabase } from './kids-journey-database'
 
-const url = await prepareTestDatabase()
+const url = process.env.ADULT_JOURNEY_TEST_DATABASE_URL
 describe.skipIf(!url)('jornada adulta (Postgres real)', () => {
   let conn: DbConnection
   let repository: DrizzleAdultJourneyRepository
@@ -16,25 +13,17 @@ describe.skipIf(!url)('jornada adulta (Postgres real)', () => {
   const otherId = randomUUID()
   const now = new Date('2026-10-18T12:00:00Z')
   beforeAll(async () => {
-    conn = createDbConnection(url as string)
+    // Publication captures all outgoing journey sources atomically. Use their real
+    // migration contracts in an isolated disposable database, not sparse tables.
+    conn = await openKidsJourneyTestDatabase(url!)
     repository = new DrizzleAdultJourneyRepository(conn.db)
-    await conn.sql`delete from members.adult_journey_policy`
-    await conn.sql.unsafe(`create table if not exists members.account_deletion_fences (
-      account_id uuid primary key, created_at timestamptz not null
-    )`)
-    await conn.sql.unsafe(`create table if not exists members.xp_events (
-      id uuid primary key, user_id uuid not null, audience text not null,
-      source_type text not null, source_id uuid not null, amount integer not null,
-      created_at timestamptz not null
-    )`)
-  })
+    const [row] = await conn.sql`select count(*)::int as count from members.adult_journey_policy`
+    if (row?.count)
+      throw new Error('Adult journey repository tests require an empty disposable database')
+  }, 120_000)
   afterAll(async () => {
-    await conn.sql`delete from members.adult_journey_grants where user_id = ${userId}`
-    await conn.sql`delete from members.adult_journey_reached where user_id in (${userId}, ${otherId})`
-    await conn.sql`delete from members.xp_events where user_id in (${userId}, ${otherId})`
-    await conn.sql`delete from members.account_deletion_fences where account_id = ${userId}`
-    await conn.sql`delete from members.adult_journey_policy`
-    await conn.sql.end()
+    // Keep the disposable database available for inspecting concurrent publication.
+    await conn?.close()
   })
   test('dois editores na mesma versão não sobrescrevem a configuração um do outro', async () => {
     const first = await Promise.all([

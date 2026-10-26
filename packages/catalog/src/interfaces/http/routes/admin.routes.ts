@@ -146,6 +146,7 @@ export function adminRoutes(deps: AdminRoutesDeps) {
       async ({ body, headers, set }) => {
         requireAdmin(headers, deps.requireAdminEnabled)
         const view = await deps.createCoupon.execute({
+          audience: body.audience,
           code: body.code,
           type: body.type,
           percentOff: body.percentOff,

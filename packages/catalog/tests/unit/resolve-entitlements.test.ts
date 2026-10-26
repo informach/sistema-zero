@@ -7,6 +7,7 @@ import {
 // Helpers para montar o grafo de nós.
 function leaf(id: string): EntitlementNode {
   return {
+    audience: 'kids',
     productId: id,
     sku: id,
     name: id,
@@ -21,6 +22,7 @@ function bundle(
   components: { productId: string; sortOrder: number; isPrimary: boolean }[],
 ): EntitlementNode {
   return {
+    audience: 'kids',
     productId: id,
     sku: id,
     name: id,

@@ -81,7 +81,21 @@ test('Cadê keeps revealing as a legitimate prerequisite while counting remains 
     registry.examples[binding.entryExampleId!],
     workspace.initialProject,
   )
-  expect(before.find((row) => row.checkId === 'revelar-ao-toque')?.passed).toBe(true)
+  expect(checks.every((check) => check.rule.type === 'behavior')).toBe(true)
+  // Execution evidence cannot be inferred from a Blockly snapshot. The native browser suite
+  // verifies that this entry reveals correctly and the completed example also counts.
+  expect(before.find((row) => row.checkId === 'revelar-ao-toque')?.passed).toBe(false)
+  const entry = registry.examples[binding.entryExampleId!]!.ir as SZIRV2
+  const touch = entry.behavior.events.find((event) => event.type === 'g2d:onGroupClick')
+  expect(
+    touch?.type === 'g2d:onGroupClick' &&
+      touch.body.some(
+        (statement) =>
+          statement.type === 'g2d:setOpacity' &&
+          statement.spriteVar === 'escolhido' &&
+          statement.percent === 0,
+      ),
+  ).toBe(true)
   expect(before.find((row) => row.checkId === 'somar-achado')?.passed).toBe(false)
 })
 

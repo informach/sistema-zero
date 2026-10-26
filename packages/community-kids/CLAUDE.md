@@ -1,5 +1,30 @@
 # CLAUDE.md — @sistemazero/community-kids
 
+## Currículo comum da Jornada do Criador (25/10/2026)
+
+Se `KidsJourneyView.curriculum` existir, os postos e Maestrias seguem essa projeção do Members.
+Notas históricas abaixo sobre 49 posições, curso de entrada único, extra por matrícula e Mural
+obrigatório aplicam-se somente a políticas sem `curriculum`. Não calcular novos acessos no cliente.
+
+- `/cursos` e `/cursos/trilha/[level]` usam `creator-curriculum-page.tsx` e os componentes comuns
+  do member-shell, preservando KidsBand, Baloo/Nunito, medalhões e as cores fixas dos postos.
+- Ordem: base 2D, base 3D; o par abre missão, poderes e extras. Avançar pede as duas bases,
+  missão em 2D/3D e 1 poder aplicado na Faísca, 2 nos demais. Extras e Mural são opcionais.
+  Cada curso completo libera seus blocos. `course-badge`, retorno do curso, home, perfil,
+  Criar, celebração da aula e acompanhamento dos pais respeitam esse contrato.
+- `/maestrias` apresenta seis áreas de jogos; `/maestrias/[areaId]` mostra três níveis em
+  acordeões, requisitos, critérios e envio de versão salva. A equipe avalia `evidenceId`; a UI
+  nunca manda código arbitrário como prova e nunca concede selo por vídeos ou conversão de editor.
+- Compras específicas ativas de Farol/Cadê, presentes e acessos preservados vêm como
+  `accessReason`. Uma abertura comercial não concede posto nem conclui outro curso.
+- Curso em preparação tem título e estado honesto, sem CTA de aula. Falha de leitura não vira
+  Faísca ou progresso vazio. Preview de equipe não simula aluno.
+  Cursos de Maestria bloqueados usam o vínculo do DTO para indicar o nível e abrir sua área;
+  catálogo, curso e aula não substituem esse requisito por um curso-base de posto.
+- QA: `member-shell/tests/creator-journey-ui.test.tsx`, regressões `journey-canonical-*` e
+  `community/playwright.creator-journey.config.ts`. A prévia local comum usa componentes/CSS reais
+  e dados do seed em memória, sem serviços ou dados de alunos.
+
 > **Linguagem vigente (21/10/2026; módulo em 23/10/2026):** a criança lê a mesma linguagem da
 > comunidade adulta, curso → módulo → aula → parte, e quem recebe e responde é a equipe. A regra
 > está em §"Curso, módulo, aula e parte nas duas comunidades" e nas Diretrizes Pedagógicas, seção 6.

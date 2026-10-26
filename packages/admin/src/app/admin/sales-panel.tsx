@@ -8,8 +8,11 @@ import { Select } from '@sistemazero/ui/select'
 import { Spinner } from '@sistemazero/ui/spinner'
 import { ChartLine, ChevronDown, ChevronUp } from 'lucide-react'
 import { useEffect, useState } from 'react'
-import { apiGet } from '@/lib/api'
+import { communityPage, useCommunityRequests } from '@/components/admin/community-page'
+import { LoadError } from '@/components/admin/empty-state'
 import { formatCentsStr } from '@/lib/format'
+import { loadAllPages } from '@/lib/load-all-pages'
+import type { Platform } from '@/lib/platform'
 import type { DailyPaymentStats, Paginated, ProductView, SubscriptionStatsView } from '@/lib/types'
 import { SalesChart } from './sales-chart'
 
@@ -49,8 +52,13 @@ function MetricCard({ title, value, tooltip }: { title: string; value: string; t
 }
 
 /** Seção "Vendas" (estilo Hotmart): filtros + cards + gráfico diário. */
-export function SalesPanel() {
+export const SalesPanel = communityPage(SalesPanelCommunity)
+
+function SalesPanelCommunity({ audience }: { audience: Platform }) {
+  const { get: apiGet } = useCommunityRequests(audience)
   const [products, setProducts] = useState<ProductView[]>([])
+  const [productsError, setProductsError] = useState(false)
+  const [productsAttempt, setProductsAttempt] = useState(0)
   const [productId, setProductId] = useState('')
   const [period, setPeriod] = useState('30')
   const [data, setData] = useState<DailyPaymentStats | null>(null)
@@ -62,20 +70,27 @@ export function SalesPanel() {
   const [error, setError] = useState(false)
   const [chartOpen, setChartOpen] = useState(true)
 
-  // Produtos do dropdown (1x, no mount).
+  // Todas as páginas do catálogo da comunidade; retry explícito se falhar.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: productsAttempt aciona o retry.
   useEffect(() => {
     let alive = true
-    apiGet<Paginated<ProductView>>('/api/catalog/products?limit=100')
-      .then((page) => {
-        if (alive) setProducts(page.items)
+    setProductsError(false)
+    loadAllPages<ProductView>((offset, limit) =>
+      apiGet<Paginated<ProductView>>(`/api/catalog/products?limit=${limit}&offset=${offset}`),
+    )
+      .then((items) => {
+        if (alive) setProducts(items)
       })
       .catch(() => {
-        // Dropdown fica só com "Todos os produtos" — o painel segue útil.
+        if (alive) {
+          setProducts([])
+          setProductsError(true)
+        }
       })
     return () => {
       alive = false
     }
-  }, [])
+  }, [apiGet, productsAttempt])
 
   // Série diária: refaz ao trocar produto/período.
   useEffect(() => {
@@ -99,7 +114,7 @@ export function SalesPanel() {
     return () => {
       alive = false
     }
-  }, [productId, period])
+  }, [apiGet, productId, period])
 
   // Recorrência: MRR/ativas são "agora"; novas/canceladas usam a MESMA janela
   // do período (não filtra por produto: assinatura é do catálogo todo).
@@ -125,7 +140,7 @@ export function SalesPanel() {
     return () => {
       alive = false
     }
-  }, [period, subsAttempt])
+  }, [apiGet, period, subsAttempt])
 
   return (
     <section className="space-y-4">
@@ -162,6 +177,9 @@ export function SalesPanel() {
         </Select>
       </div>
 
+      {productsError ? (
+        <LoadError what="o filtro de produtos" onRetry={() => setProductsAttempt((n) => n + 1)} />
+      ) : null}
       {error ? (
         <Card>
           <CardContent className="py-8 text-center text-sm text-muted-foreground">

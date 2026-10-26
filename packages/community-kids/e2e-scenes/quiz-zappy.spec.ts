@@ -74,7 +74,7 @@ for (const [width, escala] of [
     page.on('pageerror', (error) => errors.push(error.message))
     await page.goto('/quiz-zappy')
     await page.getByRole('button', { name: 'Começar!' }).click()
-    await expect(page.getByText('Pergunta 1 de 3')).toBeVisible()
+    await expect(page.getByText('Pergunta 1 de 4')).toBeVisible()
     // 0 = o Zappy da fala da parte; 1 = o Zappy da pergunta.
     await expect(page.locator('main canvas')).toHaveCount(2)
     const fala = await desenhoDoZappy(page, 0)
@@ -90,3 +90,18 @@ for (const [width, escala] of [
     await context.close()
   })
 }
+
+test('o Cadê abre sua previsão real sem depender da introdução do quiz clássico', async ({
+  page,
+}) => {
+  const errors: string[] = []
+  page.on('pageerror', (error) => errors.push(error.message))
+  await page.goto('/quiz-zappy?flow=prediction')
+  await expect(page.getByText('Vou tocar nas pedras. O que a regra deve fazer?')).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Começar!' })).toHaveCount(0)
+  const reveal = page.getByRole('button', { name: 'Ver o que acontece', exact: true })
+  await expect(reveal).toBeDisabled()
+  await page.getByRole('radio').first().click()
+  await expect(reveal).toBeEnabled()
+  expect(errors).toEqual([])
+})

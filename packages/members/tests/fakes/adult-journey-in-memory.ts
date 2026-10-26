@@ -14,6 +14,7 @@ export class InMemoryAdultJourneyRepository implements AdultJourneyRepository {
   record: AdultJourneyPolicyRecord | null = null
   readonly grants = new Map<string, Set<AdultCreatorCapability>>()
   readonly reached = new Map<string, number>()
+  readonly courseGrants = new Map<string, Set<string>>()
   constructor(private readonly gamification: Pick<InMemoryGamificationRepository, 'events'>) {}
   async getPolicy() {
     return this.record ? structuredClone(this.record) : null
@@ -54,6 +55,9 @@ export class InMemoryAdultJourneyRepository implements AdultJourneyRepository {
   async getReached(userId: string) {
     return this.reached.get(userId) ?? null
   }
+  async listCourseGrants(userId: string) {
+    return [...(this.courseGrants.get(userId) ?? [])]
+  }
   async listReachedForUsers(userIds: readonly string[]) {
     return new Map(
       userIds.flatMap((userId) => {
@@ -68,11 +72,13 @@ export class InMemoryAdultJourneyRepository implements AdultJourneyRepository {
     capabilities: readonly AdultCreatorCapability[],
     _now?: Date,
     reachedPosition: number | null = null,
+    courseIds: readonly string[] = [],
   ) {
     if (this.record?.version !== version) return false
     const owned = this.grants.get(userId) ?? new Set<AdultCreatorCapability>()
     for (const capability of capabilities) owned.add(capability)
     this.grants.set(userId, owned)
+    this.courseGrants.set(userId, new Set([...(this.courseGrants.get(userId) ?? []), ...courseIds]))
     if (reachedPosition !== null)
       this.reached.set(userId, Math.max(this.reached.get(userId) ?? 1, reachedPosition))
     return true

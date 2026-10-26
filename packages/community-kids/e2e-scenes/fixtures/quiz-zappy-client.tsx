@@ -7,23 +7,25 @@ import {
 import { KIDS_LESSON_COPY } from '@sistemazero/member-shell/lib/lesson-copy-kids'
 import type { LessonDetailView } from '@sistemazero/member-shell/lib/types'
 import { createRoot } from 'react-dom/client'
-import manifesto from '../../../../docs/aulas-interativas/cade-todo-mundo/cade-todo-mundo-certificado.manifesto.json'
+import cade from '../../../../docs/aulas-interativas/cade-todo-mundo/cade-todo-mundo-certificado.manifesto.json'
+import farol from '../../../../docs/aulas-interativas/desafio-primeiro-jogo/desafio-certificado.manifesto.json'
 import { KidsLessonBlocks } from '../../src/components/kids/kids-lesson-blocks'
 
 /**
  * A parte do quiz como a página de fase a monta (07/10/2026): uma fala do Zappy, um vídeo e o
  * quiz, pelo MESMO `KidsLessonBlocks` da página real. A pergunta do quiz é uma fala do Zappy, e o
- * Zappy dela tem de aparecer inteiro, como o da fala de cima. O quiz é o da fase do certificado
- * do Cadê, sem gabarito.
+ * Zappy dela tem de aparecer inteiro, como o da fala de cima. O Farol preserva o quiz clássico;
+ * o Cadê usa a nova previsão. Os dois documentos reais entram sem gabarito.
  */
 type QuestaoComGabarito = Record<string, unknown> & {
   correctChoiceIds?: unknown
   explanation?: unknown
 }
+const manifesto = new URLSearchParams(location.search).get('flow') === 'prediction' ? cade : farol
 const conteudo = manifesto.blocks.find((block) => block.key === 'quiz-revisao-final')?.content as
   | { kind: string; questions: QuestaoComGabarito[] }
   | undefined
-if (conteudo?.kind !== 'quiz') throw new Error('Quiz ausente do manifesto do certificado do Cadê')
+if (conteudo?.kind !== 'quiz') throw new Error('Quiz ausente do manifesto do certificado')
 const quiz = {
   ...conteudo,
   questions: conteudo.questions.map(({ correctChoiceIds: _c, explanation: _e, ...q }) => q),
@@ -32,7 +34,7 @@ const quiz = {
 const lesson = {
   id: 'aula-quiz',
   slug: 'aula-quiz',
-  courseSlug: 'cade-todo-mundo',
+  courseSlug: manifesto.courseSlug,
   moduleId: 'm',
   title: 'Seu certificado',
   completed: false,
@@ -45,7 +47,7 @@ const lesson = {
       kind: 'dialogue',
       sortOrder: 0,
       blockRevision: 'r1',
-      content: { kind: 'dialogue', text: 'Agora vamos relembrar essas regras com três perguntas.' },
+      content: { kind: 'dialogue', text: 'Agora vamos conferir as regras do seu jogo.' },
     },
     {
       id: 'video',

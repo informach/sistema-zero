@@ -18,6 +18,63 @@ const { jobs } = Bun.YAML.parse(workflow) as {
 const deploy = workflow.slice(workflow.indexOf('\n  deploy-staging:'))
 const resolver = resolve('scripts/ci/staging-deploy-baseline.mjs')
 
+test.each([
+  'success',
+  'retirement-failure',
+  'dispatch-failure',
+])('staging commercial barrier executes the workflow shell: %s', (scenario) => {
+  const start = deploy.indexOf('          COMMERCIAL=()')
+  const end = deploy.indexOf(`          for s in "\${!WANT[@]}"; do disparar`, start)
+  expect(start).toBeGreaterThan(0)
+  expect(end).toBeGreaterThan(start)
+  const barrier = deploy.slice(start, end)
+  const shell = process.platform === 'win32' ? 'C:/Program Files/Git/bin/bash.exe' : 'bash'
+  const child = spawnSync(
+    shell,
+    [
+      '--noprofile',
+      '--norc',
+      '-c',
+      `
+set -euo pipefail
+declare -A WANT=([admin]=1 [catalog]=1 [payments]=1 [referrals]=1)
+declare -A DEP=()
+disparar() {
+  echo "POST-$1"
+  if [ "$CASE" = dispatch-failure ] && [ "$1" = payments ]; then return 1; fi
+  DEP[$1]="$1-id"
+}
+esperar() {
+  for service in "$@"; do echo "REMOVED-$service"; done
+  if [ "$CASE" = retirement-failure ]; then return 1; fi
+}
+${barrier}
+for service in "\${!WANT[@]}"; do disparar "$service"; done
+`,
+    ],
+    {
+      encoding: 'utf8',
+      windowsHide: true,
+      timeout: 10_000,
+      env: { ...process.env, CASE: scenario },
+    },
+  )
+  expect(child.error).toBeUndefined()
+  const events = child.stdout.trim().split(/\r?\n/)
+  expect(events).toContain('REMOVED-catalog')
+  if (scenario === 'success') {
+    expect(child.status, child.stderr).toBe(0)
+    for (const service of ['catalog', 'payments', 'referrals']) {
+      expect(events.indexOf(`REMOVED-${service}`)).toBeLessThan(events.indexOf('POST-admin'))
+      expect(events.filter((event) => event === `POST-${service}`)).toHaveLength(1)
+    }
+  } else {
+    expect(child.status).toBe(1)
+    expect(events).not.toContain('POST-admin')
+    if (scenario === 'dispatch-failure') expect(events).not.toContain('POST-referrals')
+  }
+})
+
 test('CI and deployment budgets preserve individual proofs and other job deadlines', () => {
   expect(STAGING_DEPLOYMENT_TIMEOUT_MS).toBe(60 * 60 * 1000)
   expect(STAGING_ROLLOUT_TIMEOUT_MS).toBe(140 * 60 * 1000)

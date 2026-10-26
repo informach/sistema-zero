@@ -1,4 +1,5 @@
 import { and, count, desc, eq, gte, ilike, isNotNull, lte, or, type SQL, sql } from 'drizzle-orm'
+import type { BusinessAudienceFilter } from '../../../domain/business-audience'
 import type {
   AdminSubscriptionListFilters,
   SubscriptionAdminReadRepository,
@@ -6,6 +7,7 @@ import type {
   SubscriptionStatsWindow,
 } from '../../../domain/ports/subscription-admin-read.port'
 import { SubscriptionAggregate } from '../../../domain/subscription/subscription.aggregate'
+import { businessAudienceWhere } from './business-audience'
 import type { Database } from './db'
 import { subscriptions } from './schema'
 import { rowToSnapshot } from './subscription.repository'
@@ -14,10 +16,29 @@ import { rowToSnapshot } from './subscription.repository'
 export class DrizzleSubscriptionAdminReadRepository implements SubscriptionAdminReadRepository {
   constructor(private readonly db: Database) {}
 
+  async findById(
+    id: string,
+    audience?: BusinessAudienceFilter,
+  ): Promise<SubscriptionAggregate | null> {
+    const [row] = await this.db
+      .select()
+      .from(subscriptions)
+      .where(
+        and(
+          eq(subscriptions.id, id),
+          businessAudienceWhere(subscriptions.reportingAudience, audience),
+        ),
+      )
+      .limit(1)
+    return row ? SubscriptionAggregate.restore(rowToSnapshot(row)) : null
+  }
+
   async list(
     filters: AdminSubscriptionListFilters,
   ): Promise<{ items: SubscriptionAggregate[]; total: number }> {
     const conds: SQL[] = []
+    const audience = businessAudienceWhere(subscriptions.reportingAudience, filters.audience)
+    if (audience) conds.push(audience)
     if (filters.status) conds.push(eq(subscriptions.status, filters.status))
     if (filters.consumerId) conds.push(eq(subscriptions.consumerId, filters.consumerId))
     if (filters.q) {
@@ -50,6 +71,7 @@ export class DrizzleSubscriptionAdminReadRepository implements SubscriptionAdmin
   async stats(window: SubscriptionStatsWindow): Promise<SubscriptionStats> {
     // Ativas por periodicidade + MRR numa varredura só. A divisão é NUMERIC
     // (bigint/int truncaria os centavos da anual) e arredonda no fim.
+    const audience = businessAudienceWhere(subscriptions.reportingAudience, window.audience)
     const [activeRows, [newRow], [canceledRow]] = await Promise.all([
       this.db
         .select({
@@ -58,19 +80,24 @@ export class DrizzleSubscriptionAdminReadRepository implements SubscriptionAdmin
           mrr: sql<string>`coalesce(round(sum(${subscriptions.amountInCents}::numeric / ${subscriptions.intervalMonths})), 0)::text`,
         })
         .from(subscriptions)
-        .where(eq(subscriptions.status, 'ACTIVE'))
+        .where(and(eq(subscriptions.status, 'ACTIVE'), audience))
         .groupBy(subscriptions.intervalMonths),
       this.db
         .select({ v: count() })
         .from(subscriptions)
         .where(
-          and(gte(subscriptions.createdAt, window.from), lte(subscriptions.createdAt, window.to)),
+          and(
+            gte(subscriptions.createdAt, window.from),
+            lte(subscriptions.createdAt, window.to),
+            audience,
+          ),
         ),
       this.db
         .select({ v: count() })
         .from(subscriptions)
         .where(
           and(
+            audience,
             isNotNull(subscriptions.canceledAt),
             gte(subscriptions.canceledAt, window.from),
             lte(subscriptions.canceledAt, window.to),

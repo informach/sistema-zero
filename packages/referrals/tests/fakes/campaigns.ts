@@ -1,5 +1,10 @@
 import { randomUUID } from 'node:crypto'
-import type { CampaignAuditView, CampaignInput, CampaignView } from '@sistemazero/core/referrals'
+import type {
+  CampaignAuditView,
+  CampaignInput,
+  CampaignView,
+  GiftAudience,
+} from '@sistemazero/core/referrals'
 import {
   CampaignAudienceLockedError,
   CampaignConflictError,
@@ -84,9 +89,11 @@ export class InMemoryCampaignRepository implements CampaignRepository {
   async findById(id: string) {
     return this.items.find((item) => item.id === id) ?? null
   }
-  async list(opts: { q?: string; limit: number; offset: number }) {
+  async list(opts: { q?: string; audience?: GiftAudience; limit: number; offset: number }) {
     const items = this.items.filter(
-      (item) => !opts.q || `${item.name} ${item.publicTitle} ${item.code}`.includes(opts.q),
+      (item) =>
+        (!opts.audience || item.audience === opts.audience) &&
+        (!opts.q || `${item.name} ${item.publicTitle} ${item.code}`.includes(opts.q)),
     )
     return { items: items.slice(opts.offset, opts.offset + opts.limit), total: items.length }
   }

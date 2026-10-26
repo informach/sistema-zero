@@ -26,7 +26,7 @@ export const COMMUNITY_NAMES: Record<Platform, string> = {
   adult: 'Comunidade Sistema Zero',
 }
 
-/** O selo das telas que mostram as duas comunidades (Negócio, Clube e Comunidade, Auditoria). */
+/** O selo das telas que mostram as duas comunidades (Infraestrutura, Clube e Comunidade, Auditoria). */
 export const BOTH_COMMUNITIES_LABEL = 'Kids e Adultos juntos'
 
 function isPlatform(value: unknown): value is Platform {

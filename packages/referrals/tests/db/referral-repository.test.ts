@@ -184,6 +184,66 @@ describe.skipIf(!testDatabaseUrl)('DrizzleReferralRepository — Postgres real',
     }
   }, 20_000)
 
+  test('embaixador compartilhado conserva links públicos e separa resultados por comunidade', async () => {
+    const { ambassador, code: kidsCode } = await seedCode()
+    const adult = await repo.ensureAmbassadorCode({
+      ambassadorId: ambassador.id,
+      audience: 'adult',
+      code: 'cida-adult',
+    })
+    if (adult?.kind !== 'ok') throw new Error('adult code missing')
+    for (const [audience, code] of [
+      ['kids', kidsCode],
+      ['adult', adult.code],
+    ] as const) {
+      const { redemption } = await repo.insertRedemption({
+        codeId: code.id,
+        audience,
+        email: `${audience}@example.com`,
+        name: 'QA',
+        phone: null,
+      })
+      await repo.markRedemptionGranted(redemption.id, new Date())
+    }
+    for (const audience of ['kids', 'adult'] as const) {
+      const page = await repo.listAmbassadors({ audience, limit: 1, offset: 0 })
+      expect(page.total).toBe(1)
+      expect(page.items[0]?.id).toBe(ambassador.id)
+      expect(page.items[0]?.redemptionsCompleted).toBe(1)
+      expect(page.items[0]?.code).toBe(audience === 'kids' ? kidsCode.code : adult.code.code)
+      expect((await repo.listAmbassadors({ audience, limit: 1, offset: 1 })).items).toHaveLength(0)
+    }
+    expect((await repo.findAmbassadorByToken(ambassador.pageToken))?.code).toBe(kidsCode.code)
+  })
+
+  test('campanhas: comunidade filtra antes de contar, buscar e paginar', async () => {
+    const campaigns = new DrizzleCampaignRepository(connection.db)
+    const base: CampaignInput = {
+      name: 'Evento comum',
+      publicTitle: 'Presente',
+      description: '',
+      context: 'event',
+      code: 'unused',
+      startsAt: '2026-01-01T00:00:00Z',
+      endsAt: '2099-01-01T00:00:00Z',
+      status: 'draft',
+      channel: 'teste',
+    }
+    await campaigns.create({ ...base, code: 'kids-local', audience: 'kids' }, 'QA')
+    await campaigns.create({ ...base, code: 'adult-local-a', audience: 'adult' }, 'QA')
+    await campaigns.create({ ...base, code: 'adult-local-b', audience: 'adult' }, 'QA')
+    const kids = await campaigns.list({ audience: 'kids', limit: 1, offset: 0, q: 'Evento' })
+    expect(kids.total).toBe(1)
+    expect(kids.items.map((item) => item.code)).toEqual(['kids-local'])
+    const adult = await campaigns.list({ audience: 'adult', limit: 1, offset: 1, q: 'Evento' })
+    expect(adult.total).toBe(2)
+    expect(adult.items).toHaveLength(1)
+    expect(adult.items[0]?.audience).toBe('adult')
+    expect(
+      (await campaigns.list({ audience: 'kids', limit: 25, offset: 0, q: 'adult-local' })).total,
+    ).toBe(0)
+  })
+
   test('campanha: snapshot vem da política travada; fim barra novos claims e preserva retomadas', async () => {
     const campaigns = new DrizzleCampaignRepository(connection.db)
     const input: CampaignInput = {

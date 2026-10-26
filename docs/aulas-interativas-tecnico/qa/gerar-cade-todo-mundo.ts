@@ -1,10 +1,7 @@
 /** Gera apenas os três manifestos derivados deste curso. Não altera catálogo nem outros cursos. */
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
-import type {
-  ProjectBlockPattern,
-  SectionStructureRule,
-} from '../../../packages/core/src/learning/section-progression'
+import { gardenSpeechSteps } from '../../../packages/core/src/learning/scene/garden'
 import { JARDIM_PARES, jardimSpriteRect } from '../../../packages/studio/src/arte/jardim-assets'
 import {
   montarProjetoCadeTodoMundo,
@@ -16,14 +13,70 @@ import { extrairPartesElevenLabs, sincronizarRecadosNaPagina } from './roteiro-e
 
 const DIR = resolve(import.meta.dir, '../../aulas-interativas/cade-todo-mundo')
 const CURSO = 'cade-todo-mundo'
-/** A reação precisa pertencer ao evento do grupo ensinado, com seu membro escolhido. */
-const noToqueDosEsconderijos = (body: ProjectBlockPattern): SectionStructureRule => ({
-  type: 'usesBlock',
-  blockType: 'sz_g2d_on_group_click',
-  area: 'events',
-  fields: { GROUP: 'esconderijos', ITEM: 'escolhido' },
-  inputBlocks: { BODY: body },
+/** Alvos seguem os sprites do projeto, inclusive após personalização. */
+const tocar = (n: number) => ({
+  action: 'clickTarget' as const,
+  target: { kind: 'sprite' as const, path: `esconderijo${n}`, groupPath: 'esconderijos' },
 })
+const valor = (path: string, value: number, compare = 'equals') => ({
+  target: { kind: 'value', path },
+  compare,
+  value,
+})
+const revelaEscolhido = {
+  id: 'revelar-ao-toque',
+  label: 'O toque revela só o personagem daquele esconderijo.',
+  hint: 'No teste das pedras, só as pedras devem ficar invisíveis. Confira qual esconderijo a reação altera.',
+  rule: {
+    type: 'behavior',
+    steps: [tocar(2)],
+    expect: valor('esconderijo2.opacity', 0),
+    checkpoints: [
+      { afterStep: 1, expect: valor('esconderijo1.opacity', 0, 'notEquals') },
+      { afterStep: 1, expect: valor('esconderijo3.opacity', 0, 'notEquals') },
+    ],
+  },
+}
+const outrosEsconderijos = {
+  id: 'outros-esconderijos',
+  label: 'Outros esconderijos também respondem aos próprios toques.',
+  hint: 'Teste outros esconderijos: cada um precisa revelar o próprio personagem.',
+  rule: {
+    type: 'behavior',
+    steps: [tocar(1), tocar(3)],
+    expect: valor('esconderijo3.opacity', 0),
+    checkpoints: [
+      { afterStep: 1, expect: valor('esconderijo1.opacity', 0) },
+      { afterStep: 2, expect: valor('esconderijo2.opacity', 0, 'notEquals') },
+    ],
+  },
+}
+const textoFinal = { kind: 'text', selector: '#sz-game-hud-status [data-sz-hud-kind="label"]' }
+const mensagemTres = {
+  id: 'mensagem-tres-achados',
+  label: 'A mensagem aparece depois dos três achados.',
+  hint: 'Com dois achados, a mensagem ainda não deve aparecer. Ela aparece quando os três foram encontrados.',
+  rule: {
+    type: 'behavior',
+    steps: [
+      { action: 'wait', ms: 600 },
+      tocar(1),
+      { action: 'wait', ms: 600 },
+      tocar(2),
+      { action: 'wait', ms: 600 },
+      tocar(3),
+      { action: 'wait', ms: 600 },
+    ],
+    expect: { target: textoFinal, compare: 'notEquals', value: '' },
+    checkpoints: [
+      { afterStep: 1, expect: { target: textoFinal, compare: 'equals', value: '' } },
+      { afterStep: 3, expect: { target: textoFinal, compare: 'equals', value: '' } },
+      { afterStep: 5, expect: { target: textoFinal, compare: 'equals', value: '' } },
+      { afterStep: 7, expect: valor('achados', 3) },
+    ],
+  },
+}
+
 const EXEMPLOS = {
   inicio: 'ca000001-0000-4000-8000-000000000001',
   revelar: 'ca000002-0000-4000-8000-000000000002',
@@ -201,7 +254,7 @@ const aula1 = {
     video('video-a1-toque', 'Um toque pode chamar uma ação'),
     dialogue(
       'ponte-a1-toque',
-      'Sua vez! Faça os dois testes no mesmo arbusto e repare no que muda. Quando terminar, clique em Próxima parte.',
+      'Sua vez! Investigue a ligação entre o toque e a reação no jardim. O Zappy acompanha cada etapa da experiência.',
     ),
     {
       key: 'experiencia-toque',
@@ -210,10 +263,14 @@ const aula1 = {
         required: true,
         semPerguntaFinal: true,
         title: 'O toque faz o jogo responder',
-        instructions:
-          'Toque no arbusto. Depois clique em Ligar a reação ao toque e toque no arbusto de novo. Compare as duas vezes.',
+        instructions: 'Primeiro, toque no arbusto. Observe o jardim com a reação desligada.',
         hints: [],
-        activity: { type: 'experimentation', scene: 'touch-response', cenario: 'jardim' },
+        activity: {
+          type: 'experimentation',
+          scene: 'touch-response',
+          cenario: 'jardim',
+          setup: { goals: ['no-response', 'responds', 'second-target'] },
+        },
       },
     },
     video('video-a1-programar', 'Faça o primeiro personagem aparecer'),
@@ -256,17 +313,7 @@ const aula1 = {
       ['video-a1-programar', 'ponte-a1-programar', 'projeto'],
       ['video-a1-programar', 'projeto'],
       'projeto',
-      [
-        {
-          id: 'revelar-ao-toque',
-          label: 'Revele o personagem tocado deixando o esconderijo escolhido invisível.',
-          rule: noToqueDosEsconderijos({
-            blockType: 'sz_g2d_set_opacity',
-            fields: { SPRITE: 'escolhido' },
-            inputs: { PERCENT: 0 },
-          }),
-        },
-      ],
+      [revelaEscolhido, outrosEsconderijos],
     ),
   ],
 }
@@ -286,7 +333,7 @@ const aula2 = {
     video('video-a2-variavel', 'Um número que acompanha a busca'),
     dialogue(
       'ponte-a2-variavel',
-      'Sua vez! Procure no jardim e fique de olho no número Achados. Quando terminar, clique em Próxima parte.',
+      'Sua vez! Acompanhe o valor guardado durante a busca. O Zappy acompanha cada etapa da experiência.',
     ),
     {
       key: 'experiencia-achados',
@@ -295,10 +342,14 @@ const aula2 = {
         required: true,
         semPerguntaFinal: true,
         title: 'Quantos você já encontrou?',
-        instructions:
-          'Toque em um esconderijo e olhe Achados. Toque em outro. Depois toque num espaço vazio do jardim. Por último, clique em Recomeçar a busca.',
+        instructions: 'Encontre um personagem. Olhe o valor guardado em achados e o placar.',
         hints: [],
-        activity: { type: 'experimentation', scene: 'found-counter', cenario: 'jardim' },
+        activity: {
+          type: 'experimentation',
+          scene: 'found-counter',
+          cenario: 'jardim',
+          setup: { goals: ['first-find', 'second-find', 'no-find', 'repeat', 'back-to-zero'] },
+        },
       },
     },
     video('video-a2-contagem', 'Cada descoberta conta'),
@@ -316,10 +367,10 @@ const aula2 = {
       'ponte-a2-personalizar',
       'A surpresa chegou! Escolha os personagens e prepare os esconderijos da sua brincadeira: troque a imagem clicando no nome dela, no fim de cada bloco Criar sprite. Se quiser, escreva também a sua mensagem do final. Depois encontre todo mundo de novo, clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Próxima parte.',
     ),
-    video('video-a2-fecho', 'Publique seu jogo'),
+    video('video-a2-fecho', 'Seu jogo está pronto'),
     dialogue(
       'ponte-a2-publicar',
-      'Hora de mostrar o seu jogo! Publique no Mural, copie o link de jogar e mande para a sua família e os seus amigos. Se precisar, peça ajuda a um adulto. Depois clique em Fechar e em Concluir aula.',
+      'Seu jogo está pronto! Se quiser, publique no Mural, copie o link de jogar e compartilhe com a sua família e os seus amigos. Se precisar, peça ajuda a um adulto. Você pode concluir a aula e continuar a jornada sem publicar.',
     ),
     {
       key: 'ajuda-a2-publicar',
@@ -356,24 +407,40 @@ const aula2 = {
       ['video-a2-contagem'],
       'projeto',
       [
-        // A verificação conserva a regra da Aula 1: sem ela, contaria o mesmo personagem.
-        {
-          id: 'revelar-ao-toque',
-          label: 'Revele o personagem tocado deixando o esconderijo escolhido invisível.',
-          rule: noToqueDosEsconderijos({
-            blockType: 'sz_g2d_set_opacity',
-            fields: { SPRITE: 'escolhido' },
-            inputs: { PERCENT: 0 },
-          }),
-        },
+        revelaEscolhido,
         {
           id: 'somar-achado',
-          label: 'Some 1 em achados dentro do evento de clicar ou tocar no esconderijo.',
-          rule: noToqueDosEsconderijos({
-            blockType: 'sz_js_var_increment',
-            fields: { NAME: 'achados', DELTA: 1 },
-          }),
+          label: 'Cada novo personagem acrescenta 1 a Achados.',
+          hint: 'Encontre personagens diferentes: Achados deve passar por 1, 2 e 3. Somar 1 é diferente de colocar 1.',
+          rule: {
+            type: 'behavior',
+            steps: [tocar(1), tocar(2), tocar(3)],
+            expect: valor('achados', 3),
+            checkpoints: [
+              { afterStep: 1, expect: valor('achados', 1) },
+              { afterStep: 2, expect: valor('achados', 2) },
+            ],
+          },
         },
+        {
+          id: 'nao-recontar',
+          label: 'Toques no vazio ou no mesmo lugar mantêm a contagem.',
+          hint: 'Depois de achar alguém, teste o mesmo lugar e o vazio. Nenhum desses toques deve executar outra soma.',
+          rule: {
+            type: 'behavior',
+            steps: [
+              tocar(1),
+              { action: 'clickTarget', target: { kind: 'lastPoint' } },
+              { action: 'clickTarget', target: { kind: 'outsideGroup', path: 'esconderijos' } },
+            ],
+            expect: valor('achados', 1),
+            checkpoints: [
+              { afterStep: 1, expect: valor('achados', 1) },
+              { afterStep: 2, expect: valor('achados', 1) },
+            ],
+          },
+        },
+        mensagemTres,
       ],
     ),
     comEnvioEmDia(
@@ -392,9 +459,9 @@ const aula2 = {
     ),
     section(
       'conclusao',
-      'Publique seu jogo',
+      'Seu jogo está pronto',
       'closing',
-      'Publicar o jogo com o resumo pronto e a capa gerada; fechar a confirmação e concluir a aula.',
+      'Concluir a aula com o projeto enviado; compartilhar no Mural é uma escolha.',
       ['video-a2-fecho', 'ponte-a2-publicar', 'ajuda-a2-publicar'],
       ['video-a2-fecho'],
       'projeto',
@@ -472,3 +539,18 @@ const formatted = Bun.spawnSync({
 if (formatted.exitCode !== 0) {
   throw new Error(`Biome não conseguiu formatar os manifestos: ${formatted.stderr.toString()}`)
 }
+
+await gravarArquivo(
+  resolve(DIR, 'zappy-etapas.json'),
+  JSON.stringify(
+    {
+      version: 1,
+      experiences: {
+        'experiencia-toque': gardenSpeechSteps('touch-response'),
+        'experiencia-achados': gardenSpeechSteps('found-counter'),
+      },
+    },
+    null,
+    2,
+  ) + '\n',
+)

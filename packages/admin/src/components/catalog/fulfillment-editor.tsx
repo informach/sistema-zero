@@ -3,7 +3,7 @@
 import { Input } from '@sistemazero/ui/input'
 import { Field } from '@sistemazero/ui/label'
 import { Select } from '@sistemazero/ui/select'
-import { COMMUNITY_NAMES } from '@/lib/platform'
+import { COMMUNITY_NAMES, type Platform } from '@/lib/platform'
 import type { AccessType, FulfillmentSpec, ReleaseMode } from '@/lib/types'
 
 const ACCESS_TYPES: { value: AccessType; label: string }[] = [
@@ -48,11 +48,13 @@ export function courseOptionLabel(course: CourseOption): string {
  * Não renderize para combos (kind=bundle) — combo entrega via componentes.
  */
 export function FulfillmentEditor({
+  audience,
   value,
   onChange,
   courses,
   coursesLoading = false,
 }: {
+  audience?: Platform
   value: FulfillmentSpec | null
   onChange: (next: FulfillmentSpec | null) => void
   courses: CourseOption[]
@@ -99,7 +101,11 @@ export function FulfillmentEditor({
           value={spec.accessType}
           onChange={(e) => setAccessType(e.target.value as AccessType)}
         >
-          {ACCESS_TYPES.map((t) => (
+          {ACCESS_TYPES.filter(
+            (option) =>
+              !audience ||
+              option.value !== (audience === 'kids' ? 'all_courses' : 'all_kids_courses'),
+          ).map((t) => (
             <option key={t.value} value={t.value}>
               {t.label}
             </option>

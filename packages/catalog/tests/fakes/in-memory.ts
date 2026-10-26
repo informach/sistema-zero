@@ -58,6 +58,7 @@ export class InMemoryProductRepository implements ProductRepository {
       if (!set.has(s.id)) continue
       nodes.push({
         productId: s.id,
+        audience: s.audience,
         sku: s.sku,
         name: s.name,
         kind: s.kind,

@@ -127,6 +127,7 @@ describe('explicit, non-destructive Catalog seed', () => {
     const ports = fixture()
     await ports.products.create(
       ProductAggregate.create({
+        audience: 'kids',
         id: crypto.randomUUID(),
         sku: Sku.create('admin-custom'),
         slug: Slug.create('estudio-completo'),

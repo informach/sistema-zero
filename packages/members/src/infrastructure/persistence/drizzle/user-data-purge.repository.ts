@@ -20,6 +20,7 @@ import {
   courseRatings,
   creationCleanupJobs,
   creations,
+  creatorJourneyCourseGrants,
   entitlements,
   galleryCopyAttempts,
   gamificationProfiles,
@@ -33,6 +34,7 @@ import {
   lessonNavigation,
   lessonProgress,
   lessonSectionProgress,
+  masterySubmissions,
   missionClaims,
   parentReportPrefs,
   parentReportsSent,
@@ -152,6 +154,12 @@ export class DrizzleUserDataPurgeRepository implements UserDataPurgeRepository {
         (await readPayers()).some((p) => !lockedAccounts.includes(p.accountId))
       )
         throw new Error('Pensa account scope changed during purge; retry the transaction')
+      // Capture locks this table before awards/XP. Fence first, before any delete:
+      // otherwise capture can wait on our award deletion while we wait on its fence lock.
+      await tx
+        .insert(accountDeletionFences)
+        .values({ accountId, createdAt: cleanup.createdAt })
+        .onConflictDoNothing()
       if (projectIds.length)
         await tx
           .select({ id: pensaProjects.id })
@@ -226,12 +234,17 @@ export class DrizzleUserDataPurgeRepository implements UserDataPurgeRepository {
       await tx
         .delete(lessonEvidence)
         .where(or(eq(lessonEvidence.accountId, accountId), inArray(lessonEvidence.userId, userIds)))
+      // Reviews and awards cascade from the immutable submission; the account lock also fences new writes.
+      await tx
+        .delete(masterySubmissions)
+        .where(
+          or(
+            eq(masterySubmissions.accountId, accountId),
+            inArray(masterySubmissions.userId, userIds),
+          ),
+        )
       // Cerca novas reservas e agenda a limpeza final antes de apagar o índice.
       // Tudo commita junto: nunca perdemos as chaves sem deixar um job durável.
-      await tx
-        .insert(accountDeletionFences)
-        .values({ accountId, createdAt: cleanup.createdAt })
-        .onConflictDoNothing()
       await tx
         .insert(creationCleanupJobs)
         .values({
@@ -336,6 +349,14 @@ export class DrizzleUserDataPurgeRepository implements UserDataPurgeRepository {
       await tx.delete(xpEvents).where(inArray(xpEvents.userId, userIds))
       await tx.delete(adultProfiles).where(inArray(adultProfiles.userId, userIds))
       await tx.delete(adultJourneyGrants).where(inArray(adultJourneyGrants.userId, userIds))
+      await tx
+        .delete(creatorJourneyCourseGrants)
+        .where(
+          or(
+            inArray(creatorJourneyCourseGrants.userId, userIds),
+            eq(creatorJourneyCourseGrants.accountId, accountId),
+          ),
+        )
       await tx.delete(adultJourneyReached).where(inArray(adultJourneyReached.userId, userIds))
       await tx
         .delete(kidsJourneyPreparationOwners)

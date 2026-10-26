@@ -14,32 +14,47 @@ export function trackLead(summary: Pick<TrackSummary<unknown>, 'levels'>): strin
 }
 
 /**
- * O cartão de uma trilha em Cursos (direção de arte de 18/10/2026): o selo Trilha com a contagem,
- * o nome do eixo, o texto de apoio, um selo por nível com os concluídos e o caminho desenhado.
- * O cartão inteiro leva à página da trilha. Mora no palco de Cursos (Estúdio à noite): a carta escura
- * com o botão de contorno, porque o amarelo da tela é o "Continuar" do catálogo.
+ * O cartão de uma trilha em Cursos (Estúdio à noite, 25/10/2026): o caminho desenhado no alto, com o
+ * selo Trilha, depois o nome do eixo com a contagem, o texto de apoio, um selo por nível com os
+ * concluídos e o botão. O cartão inteiro leva à página da trilha. As trilhas ficam lado a lado no
+ * palco de Cursos; a trilha em que a pessoa está (`primary`) leva o botão amarelo.
  */
-export function TrackCard({ summary }: { summary: TrackSummary<unknown> }) {
+export function TrackCard({
+  summary,
+  primary = false,
+}: {
+  summary: TrackSummary<unknown>
+  primary?: boolean
+}) {
   const total = summary.courses.length
+  const label = trackLabel(summary.track)
   return (
     <Link
       href={`/cursos/trilha/${summary.track}`}
       prefetch={false}
-      className="sz-card group flex flex-col overflow-hidden text-foreground no-underline transition-colors hover:border-foreground/40 md:flex-row"
+      className="sz-card group flex flex-col overflow-hidden text-foreground no-underline transition-colors hover:border-foreground/40"
     >
-      <div className="flex min-w-0 flex-1 flex-col gap-4 p-5 md:p-8">
-        <div className="flex flex-wrap items-center gap-3">
-          <span className="sz-chip sz-chip-escuro">
-            <MapIcon aria-hidden />
-            Trilha
-          </span>
+      <div className="relative h-[10rem] bg-(--topo)">
+        <TrackPath
+          stops={summary.levels.map((level) => ({
+            label: levelLabel(level.level),
+            state: level.state,
+          }))}
+        />
+        <span className="sz-chip sz-chip-escuro absolute bottom-3 left-4">
+          <MapIcon aria-hidden />
+          Trilha
+        </span>
+      </div>
+      <div className="flex min-w-0 flex-1 flex-col gap-4 p-5 md:p-7">
+        <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+          <h3 className="sz-h2 text-[1.55rem] md:text-[1.7rem]">{label}</h3>
           <span className="sz-kicker">
             {total} {total === 1 ? 'curso' : 'cursos'}
           </span>
         </div>
-        <h3 className="sz-h2 text-[1.55rem] md:text-[1.7rem]">{trackLabel(summary.track)}</h3>
         <p className="text-muted-foreground">{trackLead(summary)}</p>
-        <ul aria-label="Níveis da trilha" className="mt-1 flex flex-wrap gap-3">
+        <ul aria-label="Níveis da trilha" className="flex flex-wrap gap-2.5">
           {summary.levels.map((level) => (
             <li
               key={level.level}
@@ -54,18 +69,15 @@ export function TrackCard({ summary }: { summary: TrackSummary<unknown> }) {
             </li>
           ))}
         </ul>
-        <span className="sz-btn-outline mt-2 self-start group-hover:bg-(--carta-2)">
-          Ver a trilha
+        <span
+          className={cn(
+            'mt-auto self-start',
+            primary ? 'sz-btn' : 'sz-btn-outline group-hover:bg-(--carta-2)',
+          )}
+        >
+          Ver a trilha {summary.track.toUpperCase()}
           <ArrowRight aria-hidden />
         </span>
-      </div>
-      <div className="relative hidden min-h-[15rem] bg-(--topo) md:block md:flex-[0_0_46%]">
-        <TrackPath
-          stops={summary.levels.map((level) => ({
-            label: levelLabel(level.level),
-            state: level.state,
-          }))}
-        />
       </div>
     </Link>
   )

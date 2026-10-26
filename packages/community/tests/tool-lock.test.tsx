@@ -1,6 +1,11 @@
 import { describe, expect, test } from 'bun:test'
-import type { AdultCreatorCapability, AdultJourneyView } from '@sistemazero/core/journey'
+import {
+  type AdultCreatorCapability,
+  type AdultJourneyView,
+  projectAdultJourney,
+} from '@sistemazero/core/journey'
 import { renderToStaticMarkup } from 'react-dom/server'
+import { creatorCurriculumFixture } from '../../core/tests/fixtures/creator-curriculum'
 import { ToolNotice } from '../src/components/community/tool-notice'
 import {
   type CreativeToolKey,
@@ -144,6 +149,43 @@ describe('toolLock (o que o ToolNotice recebe)', () => {
 })
 
 describe('ToolNotice por motivo', () => {
+  test('currículo libera durante os cursos do próprio posto, sem prometer a etapa seguinte', () => {
+    const curriculum = creatorCurriculumFixture()
+    const view = projectAdultJourney({ schemaVersion: 1, stages: [], curriculum }, 1, [])
+    const first = curriculum.stages[0]!
+    expect(toolStageTitle('pinta', view)).toBe(first.title)
+    const html = notice('pinta', state({ journey: view }))
+    expect(html).toContain(`cursos do posto ${first.title}`)
+    expect(html).not.toContain('quando você chega à etapa')
+    expect(html).toContain('href="/cursos/etapa/noob"')
+    const noPlan = notice('pinta', state({ journey: view, access: {} }))
+    expect(noPlan).toContain('Ver como continuar')
+    expect(noPlan).not.toContain('quando você chega à etapa')
+  })
+
+  test('Pensa no currículo usa o posto que ensina IA e não a condição legada de curso avançado', () => {
+    const original = creatorCurriculumFixture()
+    const curriculum = {
+      ...original,
+      stages: original.stages.map((stage, index) =>
+        index === 1
+          ? {
+              ...stage,
+              grants: [
+                { after: 'pair' as const, capabilities: ['bridge', 'ai', 'pensa'] as const },
+              ],
+            }
+          : stage,
+      ),
+    }
+    const view = projectAdultJourney({ schemaVersion: 1, stages: [], curriculum }, 1, [])
+    const access = state({ journey: view })
+    expect(toolLockReason('pensa', access)).toBe('journey')
+    const html = notice('pensa', access)
+    expect(html).not.toContain('curso avançado')
+    expect(html).toContain('cursos do posto')
+  })
+
   test('plano com a ferramenta já conquistada: volta a abrir com a assinatura', () => {
     const html = notice('estudio', state({ access: {} }))
     expect(html).toContain(
