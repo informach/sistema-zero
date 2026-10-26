@@ -407,7 +407,7 @@ export function SceneActivityView({
    * Cada etapa recebe seu próprio balão e sua própria fila de voz. Quando a parte adulta já
    * apresenta um diálogo, a instrução preserva texto e áudio sem repetir o personagem.
    */
-  const renderDialogue = (text: string, speech: DialogueSpeech) => {
+  const renderDialogue = (text: string, speech: DialogueSpeech, semMascote = false) => {
     /**
      * A fala só recebe MP3 se continua sendo exatamente a fala estática gerada na autoria. Uma
      * legenda de parte, pista ou convite montado durante a cena pode mudar com o estado e nunca
@@ -424,7 +424,7 @@ export function SceneActivityView({
       <DialogueBlockView
         content={{ kind: 'dialogue', text }}
         speech={fala}
-        mascot={secao?.temDialogo ? undefined : player?.dialogueMascot?.('speaking')}
+        mascot={secao?.temDialogo || semMascote ? undefined : player?.dialogueMascot?.('speaking')}
       />
     )
   }
@@ -1349,7 +1349,10 @@ export function SceneActivityView({
             </ConsoleVisual>
             <ConsoleActions>
               <ConsoleFala>
-                <PalpitePergunta prediction={palpite} renderDialogue={renderDialogue} />
+                <PalpitePergunta
+                  prediction={palpite}
+                  renderDialogue={(text, speech) => renderDialogue(text, speech, true)}
+                />
               </ConsoleFala>
               <div>
                 <PalpiteOpcoes

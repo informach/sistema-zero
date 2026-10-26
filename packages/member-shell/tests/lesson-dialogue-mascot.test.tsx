@@ -97,4 +97,45 @@ describe('personagem do diálogo da aula', () => {
       expect(html.match(/data-mascot/g)?.length ?? 0).toBe(temDialogo ? 0 : 1)
     }
   })
+
+  test('o contexto e a pergunta do palpite compartilham um personagem', () => {
+    const activity = { type: 'experimentation', scene: 'axis-z' } as const
+    const content = publicInteractiveBlock({
+      kind: 'interactive',
+      required: true,
+      title: 'Descoberta',
+      instructions: 'Experimente.',
+      hints: [],
+      activity,
+      prediction: {
+        context: { label: 'Olhe a cena', explanation: 'Observe a cena.' },
+        prompt: 'O que acontece?',
+        choices: [
+          { id: 'a', label: 'Uma opção' },
+          { id: 'b', label: 'Outra opção' },
+        ],
+      },
+    })
+    const html = renderToStaticMarkup(
+      <LessonPlayerProvider
+        value={{
+          lessonId: 'lesson',
+          courseSlug: 'course',
+          viewerId: null,
+          viewerWatermark: null,
+          initialPositionSeconds: null,
+          dialogueMascot: () => <span data-mascot aria-hidden="true" />,
+        }}
+      >
+        <SceneActivityView
+          block={{ id: 'experiencia', kind: 'interactive', sortOrder: 0, content }}
+          content={content}
+          activity={activity}
+        />
+      </LessonPlayerProvider>,
+    )
+    expect(html).toContain('Observe a cena.')
+    expect(html).toContain('O que acontece?')
+    expect(html.match(/data-mascot/g)).toHaveLength(1)
+  })
 })
