@@ -181,9 +181,44 @@ function allocate(aliases: Record<string, string>, keys: readonly string[]) {
   for (const key of keys) if (!aliases[key]) aliases[key] = randomUUID()
 }
 
+/** O modelo enxerga só as primeiras criações do inventário, cada uma pela sua chave. */
+const MODEL_INVENTORY_LIMIT = 80
+function inventoryKey(index: number): string {
+  return `inventory${index + 1}`
+}
+
+/**
+ * A chave do inventário de uma criação JÁ escolhida, a mesma de `resources.inventory`.
+ *
+ * A resposta do modelo devolve a arte existente por `existingInventoryKey`, e a validação
+ * recusa `source: 'existing'` sem uma chave que exista. Até 26/10/2026 a definição anterior
+ * chegava ao modelo com `existing: {creationId, tool}`, sem a chave: depois que a criança
+ * escolhia um desenho seu, toda rodada seguinte da conversa precisava ADIVINHAR qual
+ * `inventoryN` era aquele (o nome do elemento, "Cesta", não é o nome do desenho,
+ * "cesto-plastico"), e a resposta fiel ao que recebeu era recusada duas vezes seguidas.
+ * A identidade da criação é ferramenta + perfil + id; a revisão salva pode ter andado, e a
+ * resolução adota a do inventário atual, que é o que `ensureResources` confere depois.
+ */
+function inventoryKeyOf(
+  inventory: PensaContext['inventory'],
+  creation: PensaGameDefinition['assetSlots'][number]['existing'],
+): string | null {
+  if (!creation) return null
+  const index = inventory
+    .slice(0, MODEL_INVENTORY_LIMIT)
+    .findIndex(
+      (item) =>
+        item.creation.tool === creation.tool &&
+        item.creation.profileId === creation.profileId &&
+        item.creation.creationId === creation.creationId,
+    )
+  return index < 0 ? null : inventoryKey(index)
+}
+
 function definitionForModel(
   definition: PensaGameDefinition | null,
   aliases: Record<string, string>,
+  inventory: PensaContext['inventory'],
 ) {
   if (!definition) return null
   return {
@@ -192,12 +227,10 @@ function definitionForModel(
       key: aliasOf(aliases, id),
       ...item,
     })),
-    assetSlots: definition.assetSlots.map(({ id, ...item }) => ({
+    assetSlots: definition.assetSlots.map(({ id, existing, ...item }) => ({
       key: aliasOf(aliases, id),
       ...item,
-      existing: item.existing
-        ? { creationId: item.existing.creationId, tool: item.existing.tool }
-        : null,
+      existingInventoryKey: inventoryKeyOf(inventory, existing),
     })),
     adaptations: definition.adaptations.map(({ id, acceptedAt, acceptedByProfileId, ...item }) => ({
       key: aliasOf(aliases, id),
@@ -289,8 +322,8 @@ function contextForModel(context: PensaContext, focus: string) {
       .slice(0, 3)
       .map((item) => ({ id: item.id, excerpt: item.text.slice(0, 1000) })),
     inventory: context.inventory
-      .slice(0, 80)
-      .map((item, index) => ({ key: `inventory${index + 1}`, name: item.name, kind: item.kind })),
+      .slice(0, MODEL_INVENTORY_LIMIT)
+      .map((item, index) => ({ key: inventoryKey(index), name: item.name, kind: item.kind })),
   }
 }
 
@@ -796,7 +829,7 @@ export async function producePensaStep(
       'pensa_definition',
       'Consolide a definição completa. Preserve todos os requisitos anteriores ou liste explicitamente a retirada pedida. Perguntas pendentes devem ser relevantes. Uma mudança central de formato/regra por limitação precisa de escolha antes de planejar. Detalhes cosméticos podem ficar abertos. Não invente origens de criação nem aceite de adaptação.',
       {
-        previous: definitionForModel(previous, aliases),
+        previous: definitionForModel(previous, aliases, context.inventory),
         message: work.input.message,
         conversation: context.view.messages
           .slice(-8)
@@ -852,7 +885,7 @@ export async function producePensaStep(
       'pensa_outline',
       'Organize TODO o escopo em etapas e missões funcionais. Inclua exatamente um teste final scope=project depois de todas as entregas. Em blocos, comece a programação pela preparação de um runtime único da dimensão escolhida. As missões do Estúdio dependem dessa preparação, que inclui todas as extensões auxiliares necessárias no jogo. Arte independente pode ocorrer em paralelo. Em código não instale extensão. Reutilize chaves das missões existentes quando representam o mesmo conceito. Toda arte escolhida entra no jogo por integração dependente. Use apenas IDs oficiais recebidos. Para funcionalidades e integração por blocos, indique as capacidades de blocos que comprovam internamente a viabilidade, sem escrever montagem para a criança.',
       {
-        definition: definitionForModel(state.definition, state.aliases),
+        definition: definitionForModel(state.definition, state.aliases, context.inventory),
         previousPlan: planForModel(context.view.revision?.plan ?? null, state.aliases),
         resources: contextForModel(context, state.definition.summary),
       },
@@ -910,7 +943,7 @@ export async function producePensaStep(
     const data =
       unit.kind === 'audit'
         ? {
-            definition: definitionForModel(state.definition, state.aliases),
+            definition: definitionForModel(state.definition, state.aliases, context.inventory),
             outline: state.outline,
             reports: state.reviewed,
           }
@@ -1103,9 +1136,15 @@ export async function workPensa({
       leaseId = null
     }
   } catch (cause) {
+    // O motivo vai junto: só o nome do erro não dizia QUAL regra a saída do modelo quebrou
+    // (o tropeço da 2ª pergunta em 26/10/2026 ficou sem diagnóstico por isso).
     console.error('[pensa] trabalho interrompido', {
       operationId,
       name: cause instanceof Error ? cause.name : typeof cause,
+      ...(cause instanceof PensaOutputInvalid ? { reason: cause.reason } : {}),
+      ...(cause instanceof PensaUnavailable
+        ? { code: cause.code, status: cause.status, message: cause.message }
+        : {}),
     })
     if (operationId && leaseId) {
       try {

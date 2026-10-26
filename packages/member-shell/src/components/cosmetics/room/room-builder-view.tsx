@@ -66,186 +66,216 @@ export function RoomBuilderView(props: RoomBuilderViewProps) {
   const pendingBuy = resolvePendingBuy(data, confirmBuyId)
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="relative">
-        {data ? (
-          <RoomCanvas
-            state={draft}
-            mode="edit"
-            avatarPhotoUrl={avatarPhotoUrl}
-            selectedIndex={selected}
-            onSelect={selection.onSelectPiece}
-            onMove={scene.onMoveItem}
-            onPaintWall={scene.onPaintWall}
-            paintColor={paintColor}
-          />
-        ) : loadState === 'error' ? (
-          <div className="grid aspect-[3/2] w-full place-items-center rounded-2xl border-2 border-border bg-muted p-6 text-center">
-            <div className="flex max-w-sm flex-col items-center gap-3">
-              <KidsMascot expression="thinking" className="size-20" />
-              <p className="font-semibold">Não consegui carregar seu quarto.</p>
-              <button
-                type="button"
-                onClick={scene.onRetry}
-                className="inline-flex min-h-11 items-center gap-2 rounded-full bg-primary px-4 font-bold text-primary-foreground"
-              >
-                <RefreshCw className="size-4" /> Tentar de novo
-              </button>
-            </div>
-          </div>
-        ) : (
-          <div className="grid aspect-[3/2] w-full place-items-center rounded-2xl border-2 border-border bg-muted">
-            <KidsMascot expression="thinking" className="size-20" />
-          </div>
-        )}
-        {selected !== null ? (
-          <SelectedItemActions
-            item={draft.placedItems[selected]}
-            surfacesAvailable={surfaces.length > 0}
-            stackPicker={stackPicker}
-            onBringDown={selection.onBringDown}
-            onToggleStackPicker={selection.onToggleStackPicker}
-            onRotate={selection.onRotateSelected}
-            onRemove={selection.onRemoveSelected}
-          />
-        ) : null}
-      </div>
-
-      {selected !== null && stackPicker ? (
-        <div
-          role="group"
-          aria-label="Colocar em cima de qual superfície?"
-          className="flex flex-wrap items-center gap-2 rounded-2xl bg-(--kids-lime-tint) px-4 py-2.5"
-        >
-          <p className="font-semibold text-sm">Colocar em cima de:</p>
-          {surfaces.map((option) => {
-            const info = ROOM_ITEM_INFO[option.itemId]
-            return (
-              <button
-                key={option.itemId}
-                type="button"
-                onClick={() => selection.onPlaceOnSurface(option.itemId)}
-                className="inline-flex min-h-11 items-center gap-1 rounded-full border-2 border-border bg-card px-3 font-semibold text-xs"
-              >
-                <span aria-hidden="true">{info?.emoji ?? '📦'}</span>
-                {info?.labelPt ?? option.itemId}
-                <span className="text-muted-foreground">
-                  ({option.free} {option.free === 1 ? 'vaga' : 'vagas'})
-                </span>
-              </button>
-            )
-          })}
+    // Proposta "painel ao lado" (26/10/2026): com a área do editor a partir de 45rem (720px), o
+    // quarto e as peças ficam à esquerda e as abas com os itens à direita, com a mesma altura:
+    // escolher um item e ver o quarto mudar acontecem na mesma tela, e só os itens rolam. Abaixo
+    // disso, tudo empilha como antes. A régua mede o CONTÊINER (o menu do Kids pode ser recolhido).
+    <div className="@container/quarto">
+      {/* Ao lado, o bloco tem a largura do que está dentro (`w-fit`): a coluna do quarto vai até
+          o teto dela e a barra de cima (moedas e Salvar) acompanha a borda do painel. */}
+      <div className="flex flex-col gap-4 @min-[45rem]/quarto:w-fit @min-[45rem]/quarto:max-w-full">
+        <div className="flex items-center justify-between">
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-(--kids-lime-tint) px-3 py-1 [font-family:var(--font-display)] font-bold text-sm">
+            <ZappyCoin className="size-4" /> {coinsUnlimited ? '∞' : balance}
+          </span>
           <button
             type="button"
-            onClick={selection.onCloseStackPicker}
-            className="inline-flex min-h-11 items-center rounded-full px-3 font-semibold text-muted-foreground text-xs"
+            onClick={wallet.onSave}
+            disabled={saving || loadState !== 'ready'}
+            className={cn(
+              'sz-btn-gradient h-11 px-6 text-base',
+              (saving || loadState !== 'ready') && 'opacity-60',
+            )}
           >
-            Cancelar
+            {saving ? 'Salvando…' : 'Salvar quarto'}
           </button>
         </div>
-      ) : null}
 
-      {draft.placedItems.length > 0 ? (
-        <div
-          role="group"
-          aria-label="Peças no quarto. Escolha uma e mova com as setas do teclado (R gira, Delete tira)"
-          className="flex flex-wrap gap-1.5"
-        >
-          {draft.placedItems.map((item, index) => {
-            const info = ROOM_ITEM_INFO[item.itemId]
-            const parentInfo = item.on ? ROOM_ITEM_INFO[item.on] : null
-            return (
-              <button
-                // biome-ignore lint/suspicious/noArrayIndexKey: a ordem dos itens É a identidade.
-                key={index}
-                type="button"
-                onClick={() => selection.onSelectPiece(selected === index ? null : index)}
-                aria-pressed={selected === index}
-                className={cn(
-                  'inline-flex min-h-11 items-center gap-1 rounded-full border-2 px-3 py-1.5 font-semibold text-xs',
-                  selected === index ? 'border-primary bg-primary/10' : 'border-border',
-                )}
-              >
-                <span aria-hidden="true">{info?.emoji ?? '📦'}</span>
-                {info?.labelPt ?? item.itemId}
-                {parentInfo ? (
-                  <span className="text-muted-foreground">· na {parentInfo.labelPt}</span>
-                ) : null}
-              </button>
-            )
-          })}
-        </div>
-      ) : null}
-
-      <div className="flex items-center justify-between">
-        <span className="inline-flex items-center gap-1.5 rounded-full bg-(--kids-lime-tint) px-3 py-1 [font-family:var(--font-display)] font-bold text-sm">
-          <ZappyCoin className="size-4" /> {coinsUnlimited ? '∞' : balance}
-        </span>
-        <button
-          type="button"
-          onClick={wallet.onSave}
-          disabled={saving || loadState !== 'ready'}
-          className={cn(
-            'sz-btn-gradient h-11 px-6 text-base',
-            (saving || loadState !== 'ready') && 'opacity-60',
-          )}
-        >
-          {saving ? 'Salvando…' : 'Salvar quarto'}
-        </button>
-      </div>
-
-      <div className="-mx-1 flex gap-1.5 overflow-x-auto px-1 pb-1">
-        {TABS.map((item) => {
-          const Icon = item.icon
-          const active = tab === item.id
-          return (
-            <button
-              key={item.id}
-              type="button"
-              onClick={() => catalog.onSelectTab(item.id)}
-              aria-pressed={active}
-              className={cn(
-                'flex min-w-16 shrink-0 flex-col items-center gap-1 rounded-2xl border-2 px-3 py-2 font-semibold text-xs transition-colors',
-                active ? 'border-primary bg-primary/10' : 'border-border',
+        <div className="flex flex-col gap-4 @min-[45rem]/quarto:grid @min-[45rem]/quarto:grid-cols-[minmax(0,max(24rem,calc((100dvh-26rem)*1.5)))_21.25rem] @min-[62.5rem]/quarto:grid-cols-[minmax(0,max(24rem,calc((100dvh-26rem)*1.5)))_26.25rem]">
+          {/* Empilhado (celular), esta coluna some da árvore de caixas (`contents`): o quarto vira
+            filho do bloco inteiro e pode grudar no alto enquanto a criança desce até os itens. */}
+          <div className="contents @min-[45rem]/quarto:flex @min-[45rem]/quarto:min-w-0 @min-[45rem]/quarto:flex-col @min-[45rem]/quarto:gap-4">
+            {/* O quarto: no celular gruda abaixo da barra do topo (h-14; a partir do `md` não há
+              barra), para a criança ver onde o item foi parar sem subir a tela. Ao lado do painel,
+              quem limita a largura é a coluna da grade (abaixo). */}
+            <div className="sticky top-16 z-20 w-full rounded-2xl shadow-md md:top-3 @min-[45rem]/quarto:relative @min-[45rem]/quarto:top-auto @min-[45rem]/quarto:shadow-none">
+              {data ? (
+                <RoomCanvas
+                  state={draft}
+                  mode="edit"
+                  avatarPhotoUrl={avatarPhotoUrl}
+                  selectedIndex={selected}
+                  onSelect={selection.onSelectPiece}
+                  onMove={scene.onMoveItem}
+                  onPaintWall={scene.onPaintWall}
+                  paintColor={paintColor}
+                />
+              ) : loadState === 'error' ? (
+                <div className="grid aspect-[3/2] w-full place-items-center rounded-2xl border-2 border-border bg-muted p-6 text-center">
+                  <div className="flex max-w-sm flex-col items-center gap-3">
+                    <KidsMascot expression="thinking" className="size-20" />
+                    <p className="font-semibold">Não consegui carregar seu quarto.</p>
+                    <button
+                      type="button"
+                      onClick={scene.onRetry}
+                      className="inline-flex min-h-11 items-center gap-2 rounded-full bg-primary px-4 font-bold text-primary-foreground"
+                    >
+                      <RefreshCw className="size-4" /> Tentar de novo
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="grid aspect-[3/2] w-full place-items-center rounded-2xl border-2 border-border bg-muted">
+                  <KidsMascot expression="thinking" className="size-20" />
+                </div>
               )}
-            >
-              <Icon className="size-5" />
-              {item.label}
-            </button>
-          )
-        })}
-      </div>
+              {selected !== null ? (
+                <SelectedItemActions
+                  item={draft.placedItems[selected]}
+                  surfacesAvailable={surfaces.length > 0}
+                  stackPicker={stackPicker}
+                  onBringDown={selection.onBringDown}
+                  onToggleStackPicker={selection.onToggleStackPicker}
+                  onRotate={selection.onRotateSelected}
+                  onRemove={selection.onRemoveSelected}
+                />
+              ) : null}
+            </div>
 
-      {pendingBuy ? (
-        <div
-          role="status"
-          className="flex flex-wrap items-center justify-between gap-2 rounded-2xl bg-(--kids-lime-tint) px-4 py-2.5"
-        >
-          <p className="font-semibold text-sm">
-            Gostou? <span className="text-muted-foreground">({pendingBuy.label})</span>
-          </p>
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={catalog.onCancelBuy}
-              disabled={Boolean(busy)}
-              className="sz-btn-gradient sz-btn-contorno h-11 px-4 text-sm"
+            {selected !== null && stackPicker ? (
+              <div
+                role="group"
+                aria-label="Colocar em cima de qual superfície?"
+                className="flex flex-wrap items-center gap-2 rounded-2xl bg-(--kids-lime-tint) px-4 py-2.5"
+              >
+                <p className="font-semibold text-sm">Colocar em cima de:</p>
+                {surfaces.map((option) => {
+                  const info = ROOM_ITEM_INFO[option.itemId]
+                  return (
+                    <button
+                      key={option.itemId}
+                      type="button"
+                      onClick={() => selection.onPlaceOnSurface(option.itemId)}
+                      className="inline-flex min-h-11 items-center gap-1 rounded-full border-2 border-border bg-card px-3 font-semibold text-xs"
+                    >
+                      <span aria-hidden="true">{info?.emoji ?? '📦'}</span>
+                      {info?.labelPt ?? option.itemId}
+                      <span className="text-muted-foreground">
+                        ({option.free} {option.free === 1 ? 'vaga' : 'vagas'})
+                      </span>
+                    </button>
+                  )
+                })}
+                <button
+                  type="button"
+                  onClick={selection.onCloseStackPicker}
+                  className="inline-flex min-h-11 items-center rounded-full px-3 font-semibold text-muted-foreground text-xs"
+                >
+                  Cancelar
+                </button>
+              </div>
+            ) : null}
+
+            {draft.placedItems.length > 0 ? (
+              <div
+                role="group"
+                aria-label="Peças no quarto. Escolha uma e mova com as setas do teclado (R gira, Delete tira)"
+                className="flex flex-wrap gap-1.5"
+              >
+                {draft.placedItems.map((item, index) => {
+                  const info = ROOM_ITEM_INFO[item.itemId]
+                  const parentInfo = item.on ? ROOM_ITEM_INFO[item.on] : null
+                  return (
+                    <button
+                      // biome-ignore lint/suspicious/noArrayIndexKey: a ordem dos itens É a identidade.
+                      key={index}
+                      type="button"
+                      onClick={() => selection.onSelectPiece(selected === index ? null : index)}
+                      aria-pressed={selected === index}
+                      className={cn(
+                        'inline-flex min-h-11 items-center gap-1 rounded-full border-2 px-3 py-1.5 font-semibold text-xs',
+                        selected === index ? 'border-primary bg-primary/10' : 'border-border',
+                      )}
+                    >
+                      <span aria-hidden="true">{info?.emoji ?? '📦'}</span>
+                      {info?.labelPt ?? item.itemId}
+                      {parentInfo ? (
+                        <span className="text-muted-foreground">· na {parentInfo.labelPt}</span>
+                      ) : null}
+                    </button>
+                  )
+                })}
+              </div>
+            ) : null}
+          </div>
+
+          {/* Painel dos itens: embaixo no celular; ao lado, a altura da coluna do quarto (com um
+            piso), e só a bandeja rola. */}
+          <div className="relative @min-[45rem]/quarto:min-h-[24rem]">
+            <section
+              aria-label="Itens do quarto"
+              className="flex flex-col gap-3 @min-[45rem]/quarto:absolute @min-[45rem]/quarto:inset-0 @min-[45rem]/quarto:rounded-3xl @min-[45rem]/quarto:border-2 @min-[45rem]/quarto:border-border @min-[45rem]/quarto:bg-card @min-[45rem]/quarto:p-4"
             >
-              Deixar para depois
-            </button>
-            <button
-              type="button"
-              onClick={() => catalog.onBuy(pendingBuy.id)}
-              disabled={Boolean(busy)}
-              className="inline-flex h-11 items-center gap-1.5 rounded-full bg-primary px-4 font-bold text-primary-foreground text-sm"
-            >
-              <ZappyCoin className="size-4" /> Comprar por {pendingBuy.price}
-            </button>
+              <div className="grid grid-cols-5 gap-1.5">
+                {TABS.map((item) => {
+                  const Icon = item.icon
+                  const active = tab === item.id
+                  return (
+                    <button
+                      key={item.id}
+                      type="button"
+                      onClick={() => catalog.onSelectTab(item.id)}
+                      aria-pressed={active}
+                      className={cn(
+                        'flex min-h-14 min-w-0 flex-col items-center justify-center gap-1 rounded-2xl border-2 px-1 py-2 font-semibold text-xs transition-colors',
+                        active ? 'border-primary bg-primary/10' : 'border-border',
+                      )}
+                    >
+                      <Icon className="size-5" />
+                      <span className="max-w-full truncate">{item.label}</span>
+                    </button>
+                  )
+                })}
+              </div>
+
+              {pendingBuy ? (
+                <div
+                  role="status"
+                  className="flex flex-wrap items-center justify-between gap-2 rounded-2xl bg-(--kids-lime-tint) px-4 py-2.5"
+                >
+                  <p className="font-semibold text-sm">
+                    Gostou? <span className="text-muted-foreground">({pendingBuy.label})</span>
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={catalog.onCancelBuy}
+                      disabled={Boolean(busy)}
+                      className="sz-btn-gradient sz-btn-contorno h-11 px-4 text-sm"
+                    >
+                      Deixar para depois
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => catalog.onBuy(pendingBuy.id)}
+                      disabled={Boolean(busy)}
+                      className="inline-flex h-11 items-center gap-1.5 rounded-full bg-primary px-4 font-bold text-primary-foreground text-sm"
+                    >
+                      <ZappyCoin className="size-4" /> Comprar por {pendingBuy.price}
+                    </button>
+                  </div>
+                </div>
+              ) : null}
+
+              {data ? (
+                <div className="@container/bandeja @min-[45rem]/quarto:min-h-0 @min-[45rem]/quarto:flex-1 @min-[45rem]/quarto:overflow-y-auto @min-[45rem]/quarto:p-1 scrollbar-subtle">
+                  <RoomBuilderTray data={data} draft={draft} catalog={catalog} />
+                </div>
+              ) : null}
+            </section>
           </div>
         </div>
-      ) : null}
-
-      {data ? <RoomBuilderTray data={data} draft={draft} catalog={catalog} /> : null}
+      </div>
     </div>
   )
 }

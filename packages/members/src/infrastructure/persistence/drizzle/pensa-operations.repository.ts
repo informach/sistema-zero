@@ -2,6 +2,13 @@ import { randomUUID } from 'node:crypto'
 import * as P from '@sistemazero/core/pensa'
 import { and, eq, inArray, sql } from 'drizzle-orm'
 import { localDateSaoPaulo } from '../../../domain/gamification/gamification'
+import {
+  pensaBudgetRefusal,
+  pensaManifestCoherent,
+  pensaOperationBudget,
+  pensaOperationRetryable,
+  pensaOperationUnit,
+} from '../../../domain/pensa/operation-budget'
 import { PensaProjectError, pensaError } from '../../../domain/pensa/project.errors'
 import type { DrizzlePensaProjectCommands } from './pensa-project.commands'
 import {
@@ -16,14 +23,6 @@ import {
   reservePensaUsage,
 } from './pensa-reservations'
 import { accountDeletionFences, pensaOperations, pensaProviderUsage } from './schema'
-
-const emptyBudget: P.PensaOperationBudget = {
-  dialogueCalls: 0,
-  roundCalls: 0,
-  planningCalls: 0,
-  helpCalls: 0,
-  unitAttempts: {},
-}
 
 export class DrizzlePensaOperationsRepository {
   constructor(
@@ -64,29 +63,14 @@ export class DrizzlePensaOperationsRepository {
   }
 
   unit(operation: typeof pensaOperations.$inferSelect) {
-    if (operation.step === 'understanding')
-      return `understanding:${String(operation.input.messageRequestId ?? operation.id)}`
-    if (operation.step === 'answer') return `answer:${operation.id}`
-    if (operation.step === 'outline') return 'outline'
-    const key = operation.output.unitKey
-    const manifest = P.PensaWorkManifestSchema.safeParse(operation.output.manifest)
-    if (
-      !manifest.success ||
-      typeof key !== 'string' ||
-      !manifest.data.units.some((u) => u.id === key)
-    )
-      pensaError('OPERATION_FAILED', 'O trabalho desta parte precisa ser reorganizado.')
-    return key
+    const unit = pensaOperationUnit(operation)
+    if (!unit) pensaError('OPERATION_FAILED', 'O trabalho desta parte precisa ser reorganizado.')
+    return unit
   }
 
   manifest(value: unknown): P.PensaWorkManifest {
     const manifest = P.PensaWorkManifestSchema.parse(value)
-    if (
-      new Set(manifest.units.map((u) => u.id)).size !== manifest.units.length ||
-      manifest.maxCalls < manifest.units.length ||
-      manifest.maxCalls > manifest.units.length * P.PENSA_LIMITS.attemptsPerUnit ||
-      !manifest.units.some((u) => u.id === 'outline')
-    )
+    if (!pensaManifestCoherent(manifest))
       pensaError('OPERATION_FAILED', 'O orçamento precisa cobrir as partes únicas do plano.')
     return manifest
   }
@@ -118,32 +102,20 @@ export class DrizzlePensaOperationsRepository {
             'RESOURCES_CHANGED',
             'O projeto mudou. Retome a organização pela versão atual.',
           )
-        const budget = P.PensaOperationBudgetSchema.parse(operation.input.budget ?? emptyBudget)
+        const budget = pensaOperationBudget(operation)
+        if (!budget) pensaError('OPERATION_FAILED', 'O orçamento desta parte não pôde ser lido.')
         const unitId = this.unit(operation)
         const key = `${String(operation.input.messageRequestId ?? operation.id)}:${unitId}`
         const dialogue = operation.step === 'understanding'
         const help = operation.kind === 'help'
         const manifest = operation.output.manifest ? this.manifest(operation.output.manifest) : null
-        const candidateKey = String(operation.input.messageRequestId ?? operation.id)
-        const usedInManifest =
-          manifest?.units.reduce(
-            (n, unit) => n + (budget.unitAttempts[`${candidateKey}:${unit.id}`] ?? 0),
-            0,
-          ) ?? 0
-        if (!dialogue && !help && manifest && usedInManifest >= manifest.maxCalls)
+        const refusal = pensaBudgetRefusal(operation, unitId, budget, manifest)
+        if (refusal === 'plan')
           pensaError(
             'QUOTA_EXCEEDED',
             'O plano atingiu o orçamento combinado. O rascunho está guardado.',
           )
-        if (
-          (budget.unitAttempts[key] ?? 0) >= P.PENSA_LIMITS.attemptsPerUnit ||
-          (help
-            ? budget.helpCalls >= P.PENSA_LIMITS.helpCalls
-            : dialogue
-              ? budget.dialogueCalls >= P.PENSA_LIMITS.dialogueCalls ||
-                budget.roundCalls >= P.PENSA_LIMITS.dialogueCallsPerRound
-              : budget.planningCalls >= P.PENSA_LIMITS.planningCalls)
-        )
+        if (refusal === 'unit')
           pensaError(
             'QUOTA_EXCEEDED',
             'Esta parte atingiu o limite de tentativas. Sua ideia está guardada.',
@@ -536,6 +508,12 @@ export class DrizzlePensaOperationsRepository {
         if (operation.status === 'queued' || operation.status === 'running') return
         if (operation.status !== 'failed')
           pensaError('REVISION_CONFLICT', 'Este pedido mudou. Confira a proposta atual.')
+        // Recolocar na fila uma parte sem tentativas só faria a reivindicação recusar de novo.
+        if (!pensaOperationRetryable(operation))
+          pensaError(
+            'QUOTA_EXCEEDED',
+            'Esta parte já usou as tentativas que tinha. Sua ideia está guardada; conte de outro jeito para continuar.',
+          )
         await tx
           .update(pensaOperations)
           .set({ status: 'queued', error: null, leaseId: null, leaseUntil: null, updatedAt: now })

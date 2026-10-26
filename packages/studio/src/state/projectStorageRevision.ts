@@ -122,6 +122,28 @@ export function forkLocalRevision<T extends ProjectIdentity>(project: T): T {
   }
   return installed
 }
+/**
+ * O host trocou o documento ABERTO por outro conteúdo com o mesmo id (`handle.replaceProject`,
+ * o "Trazer o que eu enviei" da aula). O snapshot que chega da rede não tem linhagem, e sem
+ * ela a próxima gravação nasceria com `base: null` diante de uma cabeça já gravada: o CAS a
+ * lia como escrita de outra aba (`ProjectWriteConflict`). A troca é uma edição DESTE editor,
+ * então herda a base durável dele; a cópia recebe outro escritor ao hidratar. Uma escrita de
+ * outra aba depois dessa base continua sendo conflito. A recuperação pendente NÃO é herdada:
+ * a edição preservada segue na própria partição, e o conteúdo novo não a apaga.
+ */
+export function inheritLocalRevision<T extends ProjectIdentity>(
+  live: ProjectIdentity | null,
+  replacement: T,
+): T {
+  const stamp = live && readLocalRevision(live)
+  if (!stamp || live.id !== replacement.id || readLocalRevision(replacement)) return replacement
+  const durable = stamp.lineage.durableToken
+  return installLocalRevision(
+    { ...replacement },
+    stamp.lineage.scope,
+    durable ? { version: 1, token: durable, writer: '', base: null, sequence: 0 } : undefined,
+  )
+}
 export function localHead(stamp: LocalRevision): LocalHead {
   return {
     version: 1,

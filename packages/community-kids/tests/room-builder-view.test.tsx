@@ -1,5 +1,5 @@
 import { describe, expect, mock, test } from 'bun:test'
-import { fireEvent, render, screen } from '@testing-library/react'
+import { fireEvent, render, screen, within } from '@testing-library/react'
 import type { ComponentProps } from 'react'
 import { RoomBuilderView } from '../src/components/kids/room/room-builder-view'
 
@@ -138,5 +138,16 @@ describe('RoomBuilderView — contrato do boundary de apresentação', () => {
     expect(onRemoveSelected).toHaveBeenCalledTimes(1)
     expect(onBuy).toHaveBeenCalledWith('cama')
     expect(onSave).toHaveBeenCalledTimes(1)
+  })
+
+  test('painel ao lado: as abas moram no painel dos itens e o Salvar fica acima do quarto', () => {
+    render(<RoomBuilderView {...viewProps()} />)
+    const painel = screen.getByRole('region', { name: 'Itens do quarto' })
+    expect(within(painel).getByRole('button', { name: 'Móveis' })).toBeDefined()
+    expect(within(painel).getByRole('button', { name: 'Tema' })).toBeDefined()
+    const salvar = screen.getByRole('button', { name: 'Salvar quarto' })
+    expect(painel.contains(salvar)).toBe(false)
+    // O Salvar vem ANTES do quarto e do painel na ordem do documento (sobe para a barra de cima).
+    expect(salvar.compareDocumentPosition(painel) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
   })
 })

@@ -1,5 +1,34 @@
 # CLAUDE.md — @sistemazero/member-shell
 
+## Avatar e quarto do Kids com o painel ao lado (26/10/2026)
+
+Pedido dela, a partir do Canvas "Kids · avatar e quarto com painel ao lado": as telas do Kids
+seguem o princípio da comunidade adulta, com os controles à direita do 3D e sem rolar a página.
+Só as telas do Kids mudaram (`configurator.tsx` no ramo Kids e `room-builder-view.tsx`); a lógica,
+as mensagens e a pele adulta ficaram como estavam.
+
+- **A régua é uma container query** (`@container/avatar`, `@container/quarto`, lado a lado a partir
+  de 45rem, painel de 21,25rem e de 25rem/26,25rem a partir de 62,5rem): o menu do Kids aparece a
+  partir do `md` e pode ser recolhido, então a largura da janela não diz quanto espaço o editor tem.
+- **Avatar:** o 3D à esquerda com a altura toda e o painel à direita (modo no alto, as 14 categorias
+  em três grupos, cores, peças e a compra pendente colada nelas). Só a grade de peças rola. No
+  celular segue tela cheia com o painel embaixo; os grupos viram três botões e só as categorias do
+  grupo aparecem. "Surpreenda-me" ganha o nome escrito a partir do `md`. Os grupos moram em `KIDS_AVATAR_CATEGORY_GROUPS` (`configurator-shared.ts`) e
+  toda categoria entra em um só (teste). ⚠️ A raiz `fixed inset-0 … md:static …` continua nos dois
+  ramos: o `community-kids/tests/quarto-foco.test.tsx` conta as duas ocorrências.
+- **Quarto:** moedas e "Salvar quarto" acima de tudo; o quarto e as peças à esquerda e o painel
+  "Itens do quarto" (as 10 abas em grade de 5 e a bandeja) à direita, com a altura da coluna do
+  quarto e piso de 24rem; só a bandeja rola. A coluna do quarto vai até
+  `max(24rem, (100dvh - 26rem) × 1,5)`: os 26rem são o cabeçalho da página (as duas `KidsBand`,
+  a seta, o título e o subtítulo, medidos) mais a barra das moedas, então o quarto inteiro cabe na
+  tela em 1440×900, 1366×768 e 1024×768; o piso de 24rem segura o celular deitado. O bloco tem a
+  largura do que está dentro (`w-fit`), e por isso o Salvar acompanha a borda do painel e as peças
+  alinham com o quarto. No celular a coluna vira `contents` e o quarto gruda abaixo da barra do
+  topo (`top-16`, `md:top-3`) enquanto a criança desce até os itens.
+- ⚠️ As bandejas (`room-builder-trays.tsx`) medem o contêiner `@container/bandeja`, nunca `sm:`:
+  num painel de 420px ao lado do quarto, `sm:grid-cols-6` daria seis colunas espremidas.
+- Testes: `tests/kids-cosmetics-layout.test.tsx` e, no Kids, `tests/room-builder-view.test.tsx`.
+
 ## Currículo compartilhado e Maestrias (25/10/2026)
 
 As políticas Kids/adulta podem conter `curriculum`; quando presente ele seleciona a nova

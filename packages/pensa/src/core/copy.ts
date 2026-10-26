@@ -19,6 +19,8 @@ export interface PensaCopy {
   readOnlyHint: string
   suggestion: string
   failedSaved: string
+  /** A falha que já gastou as tentativas desta parte: a saída é contar de outro jeito. */
+  failedNoRetry: string
   /** O balão da conversa ainda vazia. */
   chatEmpty: string
   /** O balão que avisa da mudança pronta para conferir. */
@@ -37,6 +39,8 @@ const KIDS: PensaCopy = {
   readOnlyHint: 'Só a criança mexe no jogo',
   suggestion: 'Sugestão do Zappy',
   failedSaved: 'Eu não consegui terminar. O que você escreveu continua aqui.',
+  failedNoRetry:
+    'Essa parte já usou as tentativas que tinha. Me conte de outro jeito e eu continuo.',
   chatEmpty: 'Pode me perguntar sobre uma missão ou pedir para mudar uma parte do jogo.',
   changePrepared: 'Preparei a mudança para você conferir.',
   restoreBody:
@@ -55,6 +59,8 @@ const ADULT: PensaCopy = {
   readOnlyHint: 'Só a pessoa dona da conta mexe no jogo',
   suggestion: 'Sugestão do Zappy',
   failedSaved: 'O Zappy não conseguiu terminar. O que você escreveu continua aqui.',
+  failedNoRetry:
+    'O Zappy já usou as tentativas desta parte. Escreva de outro jeito para continuar.',
   chatEmpty: 'Pergunte ao Zappy sobre uma missão ou peça para mudar uma parte do jogo.',
   changePrepared: 'O Zappy preparou a mudança para você conferir.',
   restoreBody:

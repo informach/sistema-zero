@@ -71,7 +71,7 @@ export function CourseCard({ course }: CourseCardProps) {
           {course.journeyRole === 'extra'
             ? 'Curso extra'
             : course.careerSlot === 1
-              ? 'Primeira da trilha'
+              ? 'Primeiro da trilha'
               : typeof course.careerSlot === 'number'
                 ? 'Curso da jornada'
                 : 'Curso bônus'}

@@ -200,6 +200,21 @@ describe('CourseTrail', () => {
     expect(container.querySelector('[data-trail-obstacle] .kids-balloon')).not.toBeNull()
   })
 
+  // O balão "Continuar" fica acima do nó e cobria a legenda da aula de cima (26/10/2026).
+  test('a linha da aula atual reserva espaço para o balão', () => {
+    const feita = { ...lesson('a'), completed: true }
+    const { container } = render(
+      <CourseTrail course={course([moduleOf('m1', [feita, lesson('b')])])} />,
+    )
+    const balao = container.querySelector<HTMLElement>('.kids-balloon')
+    const atual = balao?.closest<HTMLElement>('[data-trail-obstacle]')
+    const linhaAtual = atual?.closest('li')
+    const linhaFeita = container.querySelector('[data-trail-obstacle]')?.closest('li')
+    expect(atual?.style.top).toBe('var(--trail-balloon-room)')
+    expect(linhaAtual?.style.height).toBe('var(--trail-row-current)')
+    expect(linhaFeita?.style.height).toBe('var(--trail-row)')
+  })
+
   test('módulos vazios e módulos sem animação no Admin não recebem arte', () => {
     const desafio = course([
       { ...moduleOf('vazio', []), riveUrl: riv('nave') },

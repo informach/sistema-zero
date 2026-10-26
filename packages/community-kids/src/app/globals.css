@@ -668,6 +668,10 @@ button[data-slot="button"]:is(.bg-background, .bg-secondary, .text-destructive):
   --trail-step: 4.25rem; /* deslocamento horizontal por coluna do serpenteado */
   --trail-row: 7.5rem; /* altura da linha (nó + legenda + respiro) */
   --trail-node: 4.5rem; /* diâmetro do nó */
+  /* Espaço a mais acima da aula atual: o balão "Continuar" fica 2,5rem acima do nó e,
+     sem isto, cobria a legenda da aula de cima (26/10/2026). */
+  --trail-balloon-room: 2.25rem;
+  --trail-row-current: calc(var(--trail-row) + var(--trail-balloon-room));
 }
 @media (max-width: 640px) {
   :root {

@@ -20,7 +20,14 @@ import { KidsBackButton, KidsMascot, ZappyCoin } from '../presentation'
 import { AVATAR_MESSAGES, type CosmeticsSkin } from '../skin'
 import { AvatarScene, type CaptureFn } from './avatar-scene'
 import type { AdultAvatarConfiguratorProps } from './configurator-adult'
-import { type LoadState, type Mode, POSES, type Slots } from './configurator-shared'
+import {
+  KIDS_AVATAR_CATEGORY_GROUPS,
+  kidsAvatarGroupOf,
+  type LoadState,
+  type Mode,
+  POSES,
+  type Slots,
+} from './configurator-shared'
 import { AvatarThumb } from './thumb-canvas'
 
 /** Uma peça na grade — com MINIATURA renderizada (igual WawaSensei). "Nenhum" mostra "✕". */
@@ -385,12 +392,33 @@ export function AvatarConfigurator({
     )
   }
 
+  // O grupo do celular segue a categoria escolhida: um estado só (tocar num grupo escolhe a
+  // primeira categoria dele), então o painel largo e o estreito nunca discordam.
+  const activeGroup = kidsAvatarGroupOf(category)
+  const categoryChip = (c: AvatarCategory) => (
+    <button
+      key={c}
+      type="button"
+      onClick={() => setCategory(c)}
+      aria-pressed={c === category}
+      className={cn(
+        'min-h-10 shrink-0 rounded-full px-3 font-semibold text-sm transition-colors',
+        c === category ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground',
+      )}
+    >
+      {AVATAR_CATEGORY_LABELS[c]}
+    </button>
+  )
+
   return (
     <div className="fixed inset-0 z-50 flex flex-col bg-background md:static md:z-auto md:h-full md:min-h-0 md:flex-1">
       {/* Barra superior */}
       <div className="relative z-10 flex items-center justify-between gap-2 p-4">
         <div className="flex items-center gap-2">
           <KidsBackButton onClick={exitAvatar} label={exitLabel} variant="overlay" />
+          <h1 className="sr-only [font-family:var(--font-display)] font-extrabold text-2xl leading-none md:not-sr-only md:px-1">
+            Meu avatar
+          </h1>
           <span className="inline-flex items-center gap-1.5 rounded-full bg-(--kids-lime-tint) px-3 py-1.5 [font-family:var(--font-display)] font-bold text-sm shadow-md">
             <ZappyCoin className="size-4" /> {coinsUnlimited ? '∞' : balance}
           </span>
@@ -402,9 +430,11 @@ export function AvatarConfigurator({
             disabled={!state || !!busy}
             aria-label="Surpreenda-me"
             title="Surpreenda-me"
-            className="grid size-11 place-items-center rounded-full bg-card/90 text-foreground shadow-md backdrop-blur transition-transform active:scale-90 disabled:opacity-50"
+            className="inline-flex size-11 items-center justify-center gap-2 rounded-full bg-card/90 font-bold text-foreground text-sm shadow-md backdrop-blur transition-transform active:scale-90 disabled:opacity-50 md:w-auto md:px-4"
           >
             <Shuffle className="size-5" />
+            {/* Com espaço, o nome escrito (a proposta do painel ao lado); no celular, só o ícone. */}
+            <span className="hidden md:inline">Surpreenda-me</span>
           </button>
           {/* Botão de cima: SALVAR em Personalizar, TIRAR FOTO na Cabine de fotos. */}
           <button
@@ -439,179 +469,243 @@ export function AvatarConfigurator({
         </div>
       </div>
 
-      {/* Cena 3D — ocupa a faixa ENTRE a barra e o painel: centraliza o avatar na área visível
-          (descontando a configuração de baixo), igual em refresh OU navegação, nos dois modos. */}
-      <div
-        className="relative min-h-0 flex-1"
-        role="img"
-        aria-label="Pré-visualização 3D do seu avatar"
-      >
-        {state ? (
-          <AvatarScene slots={slots} onReady={onReady} dark={dark} mode={mode} pose={activePose} />
-        ) : (
-          <div className="flex h-full items-center justify-center">
-            <KidsMascot expression="thinking" className="size-24 animate-pulse" />
+      {/* Corpo (proposta "painel ao lado", 26/10/2026). Com a área do editor a partir de 45rem
+          (720px), o 3D fica à esquerda e o painel à direita, os dois com a altura toda: trocar
+          uma peça mostra o resultado sem rolar, e só a grade de peças rola. Abaixo disso, o 3D
+          em cima e o painel embaixo, como sempre. A régua mede o CONTÊINER, e não a janela,
+          porque o menu do Kids aparece a partir do `md` e pode ser recolhido. */}
+      <div className="@container/avatar flex min-h-0 flex-1 flex-col">
+        <div className="flex min-h-0 flex-1 flex-col @min-[45rem]/avatar:flex-row @min-[45rem]/avatar:gap-4 @min-[45rem]/avatar:px-4 @min-[45rem]/avatar:pb-4">
+          {/* Cena 3D — no celular, a faixa ENTRE a barra e o painel (centraliza o avatar na
+              área visível); no painel ao lado, a altura toda da coluna da esquerda. */}
+          <div
+            className="relative min-h-0 flex-1 @min-[45rem]/avatar:overflow-hidden @min-[45rem]/avatar:rounded-3xl @min-[45rem]/avatar:border-2 @min-[45rem]/avatar:border-border"
+            role="img"
+            aria-label="Pré-visualização 3D do seu avatar"
+          >
+            {state ? (
+              <AvatarScene
+                slots={slots}
+                onReady={onReady}
+                dark={dark}
+                mode={mode}
+                pose={activePose}
+              />
+            ) : (
+              <div className="flex h-full items-center justify-center">
+                <KidsMascot expression="thinking" className="size-24 animate-pulse" />
+              </div>
+            )}
           </div>
-        )}
-      </div>
 
-      {/* Painel inferior */}
-      <div className="relative z-10 flex flex-col gap-3 rounded-t-3xl bg-card/95 p-4 shadow-2xl backdrop-blur">
-        {mode === 'customize' ? (
-          <>
-            {/* Barra de confirmação da compra (a peça já está vestida de prévia). */}
-            {pendingBuy ? (
-              <div
-                role="status"
-                className="flex flex-wrap items-center justify-between gap-2 rounded-2xl bg-(--kids-lime-tint) px-4 py-2.5"
+          {/* Painel: embaixo no celular, ao lado no computador. */}
+          <section
+            aria-label="Escolhas do avatar"
+            className="relative z-10 flex flex-col gap-3 rounded-t-3xl bg-card/95 p-4 shadow-2xl backdrop-blur @min-[45rem]/avatar:w-[21.25rem] @min-[45rem]/avatar:min-h-0 @min-[45rem]/avatar:shrink-0 @min-[45rem]/avatar:rounded-3xl @min-[45rem]/avatar:border-2 @min-[45rem]/avatar:border-border @min-[45rem]/avatar:bg-card @min-[45rem]/avatar:shadow-none @min-[62.5rem]/avatar:w-[25rem]"
+          >
+            {/* Alternador de modo (Personalizar / Cabine de fotos): no pé do painel no celular,
+                perto do polegar; no alto do painel ao lado. */}
+            <div className="order-last grid grid-cols-2 gap-2 @min-[45rem]/avatar:order-first">
+              <button
+                type="button"
+                onClick={() => setMode('customize')}
+                aria-pressed={mode === 'customize'}
+                className={cn(
+                  'rounded-2xl py-3 font-bold text-sm transition-colors',
+                  mode === 'customize'
+                    ? 'bg-primary text-primary-foreground'
+                    : 'bg-muted text-muted-foreground',
+                )}
               >
-                <p className="font-semibold text-sm">
-                  Gostou? Está vestido de prévia!{' '}
-                  <span className="text-muted-foreground">
-                    ({AVATAR_PART_INFO[pendingBuy.part.id]?.labelPt ?? pendingBuy.part.id})
-                  </span>
+                🎨 Personalizar
+              </button>
+              <button
+                type="button"
+                onClick={() => setMode('photo')}
+                aria-pressed={mode === 'photo'}
+                className={cn(
+                  'rounded-2xl py-3 font-bold text-sm transition-colors',
+                  mode === 'photo'
+                    ? 'bg-primary text-primary-foreground'
+                    : 'bg-muted text-muted-foreground',
+                )}
+              >
+                📸 Cabine de fotos
+              </button>
+            </div>
+
+            {mode === 'customize' ? (
+              <>
+                {/* Categorias em três grupos. Ao lado do 3D, todas à vista; no celular, o grupo
+                    em cima e as categorias dele embaixo (as 14 numa fila escondiam metade). */}
+                <div className="hidden flex-col gap-2 @min-[45rem]/avatar:flex">
+                  {KIDS_AVATAR_CATEGORY_GROUPS.map((group) => (
+                    <div
+                      key={group.id}
+                      role="group"
+                      aria-label={group.label}
+                      className="flex items-start gap-2"
+                    >
+                      <span
+                        aria-hidden="true"
+                        className="w-16 shrink-0 pt-2.5 font-bold text-muted-foreground text-xs"
+                      >
+                        {group.label}
+                      </span>
+                      <div className="flex flex-wrap gap-1.5">
+                        {group.categories.map(categoryChip)}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div className="flex flex-col gap-2 @min-[45rem]/avatar:hidden">
+                  <div
+                    role="group"
+                    aria-label="Partes do avatar"
+                    className="grid grid-cols-3 gap-1.5"
+                  >
+                    {KIDS_AVATAR_CATEGORY_GROUPS.map((group) => (
+                      <button
+                        key={group.id}
+                        type="button"
+                        onClick={() => {
+                          if (group.id !== activeGroup.id)
+                            setCategory(group.categories[0] ?? 'head')
+                        }}
+                        aria-pressed={group.id === activeGroup.id}
+                        className={cn(
+                          'min-h-10 rounded-full border-2 px-3 font-bold text-sm transition-colors',
+                          group.id === activeGroup.id
+                            ? 'border-primary bg-primary/10 text-foreground'
+                            : 'border-border text-muted-foreground',
+                        )}
+                      >
+                        {group.label}
+                      </button>
+                    ))}
+                  </div>
+                  <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-subtle">
+                    {activeGroup.categories.map(categoryChip)}
+                  </div>
+                </div>
+
+                {/* Cores */}
+                {palette && palette.length > 0 ? (
+                  <div className="flex flex-col gap-1.5">
+                    <p className="hidden font-bold text-muted-foreground text-xs @min-[45rem]/avatar:block">
+                      Cores
+                    </p>
+                    <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-subtle @min-[45rem]/avatar:flex-wrap @min-[45rem]/avatar:overflow-visible">
+                      {palette.map((color, i) => {
+                        const isCurrent = currentColor === color
+                        return (
+                          <button
+                            key={color}
+                            type="button"
+                            onClick={() => selectColor(color)}
+                            aria-label={`Cor ${i + 1}`}
+                            aria-pressed={isCurrent}
+                            className={cn(
+                              'grid size-11 shrink-0 place-items-center rounded-full border-2 transition-transform active:scale-90',
+                              isCurrent
+                                ? 'border-foreground ring-2 ring-foreground/30'
+                                : 'border-transparent',
+                            )}
+                            style={{ backgroundColor: color }}
+                          >
+                            {/* Cue NÃO-cor do selecionado (daltônicos): check branco com sombra p/ contraste. */}
+                            {isCurrent ? (
+                              <Check
+                                className="size-4 text-white drop-shadow-[0_1px_1px_rgba(0,0,0,0.6)]"
+                                strokeWidth={3}
+                              />
+                            ) : null}
+                          </button>
+                        )
+                      })}
+                    </div>
+                  </div>
+                ) : null}
+
+                {/* Grade de itens com miniatura: no celular com teto de altura; ao lado do 3D,
+                    o resto do painel, e é a única parte que rola. */}
+                <p className="hidden font-bold text-muted-foreground text-xs @min-[45rem]/avatar:block">
+                  {AVATAR_CATEGORY_LABELS[category]}
                 </p>
-                <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={cancelPendingBuy}
-                    disabled={!!busy}
-                    className="sz-btn-gradient sz-btn-contorno h-11 px-4 text-sm"
+                <div className="grid max-h-[26vh] grid-cols-[repeat(auto-fill,minmax(4.5rem,1fr))] content-start gap-2 overflow-y-auto scrollbar-subtle @min-[45rem]/avatar:max-h-none @min-[45rem]/avatar:min-h-0 @min-[45rem]/avatar:flex-1 @min-[45rem]/avatar:p-1">
+                  {items.map((part) => (
+                    <ItemTile
+                      key={part.id}
+                      part={part}
+                      selected={slots[part.category]?.asset === part.id}
+                      disabled={!!busy}
+                      confirming={pendingBuy?.part.id === part.id}
+                      onSelect={() => selectPart(part)}
+                    />
+                  ))}
+                </div>
+
+                {/* Barra de confirmação da compra (a peça já está vestida de prévia), colada nas
+                    peças. */}
+                {pendingBuy ? (
+                  <div
+                    role="status"
+                    className="flex flex-wrap items-center justify-between gap-2 rounded-2xl bg-(--kids-lime-tint) px-4 py-2.5"
                   >
-                    Deixar para depois
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => selectPart(pendingBuy.part)}
-                    disabled={!!busy}
-                    className="inline-flex h-11 items-center gap-1.5 rounded-full bg-primary px-4 font-bold text-primary-foreground text-sm"
-                  >
-                    <ZappyCoin className="size-4" /> Comprar por {pendingBuy.part.price}
-                  </button>
+                    <p className="font-semibold text-sm">
+                      Gostou? Está vestido de prévia!{' '}
+                      <span className="text-muted-foreground">
+                        ({AVATAR_PART_INFO[pendingBuy.part.id]?.labelPt ?? pendingBuy.part.id})
+                      </span>
+                    </p>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={cancelPendingBuy}
+                        disabled={!!busy}
+                        className="sz-btn-gradient sz-btn-contorno h-11 px-4 text-sm"
+                      >
+                        Deixar para depois
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => selectPart(pendingBuy.part)}
+                        disabled={!!busy}
+                        className="inline-flex h-11 items-center gap-1.5 rounded-full bg-primary px-4 font-bold text-primary-foreground text-sm"
+                      >
+                        <ZappyCoin className="size-4" /> Comprar por {pendingBuy.part.price}
+                      </button>
+                    </div>
+                  </div>
+                ) : null}
+              </>
+            ) : (
+              /* Cabine de fotos: poses (posicione a câmera arrastando o personagem e tire a foto) */
+              <div className="flex flex-col gap-2">
+                <p className="text-center font-semibold text-muted-foreground text-xs @min-[45rem]/avatar:text-left @min-[45rem]/avatar:text-sm">
+                  Escolha a pose e clique em <strong>Tirar foto</strong> lá em cima 📸
+                </p>
+                <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-subtle @min-[45rem]/avatar:flex-wrap @min-[45rem]/avatar:overflow-visible">
+                  {POSES.map((p) => (
+                    <button
+                      key={p.id}
+                      type="button"
+                      onClick={() => setPose(p.id)}
+                      aria-pressed={pose === p.id}
+                      className={cn(
+                        'shrink-0 rounded-full px-4 py-2 font-semibold text-sm transition-colors',
+                        pose === p.id
+                          ? 'bg-primary text-primary-foreground'
+                          : 'bg-muted text-muted-foreground',
+                      )}
+                    >
+                      {p.label}
+                    </button>
+                  ))}
                 </div>
               </div>
-            ) : null}
-
-            {/* Cores (acima dos itens, como no WawaSensei) */}
-            {palette && palette.length > 0 ? (
-              <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-subtle">
-                {palette.map((color, i) => {
-                  const isCurrent = currentColor === color
-                  return (
-                    <button
-                      key={color}
-                      type="button"
-                      onClick={() => selectColor(color)}
-                      aria-label={`Cor ${i + 1}`}
-                      aria-pressed={isCurrent}
-                      className={cn(
-                        'grid size-11 shrink-0 place-items-center rounded-full border-2 transition-transform active:scale-90',
-                        isCurrent
-                          ? 'border-foreground ring-2 ring-foreground/30'
-                          : 'border-transparent',
-                      )}
-                      style={{ backgroundColor: color }}
-                    >
-                      {/* Cue NÃO-cor do selecionado (daltônicos): check branco com sombra p/ contraste. */}
-                      {isCurrent ? (
-                        <Check
-                          className="size-4 text-white drop-shadow-[0_1px_1px_rgba(0,0,0,0.6)]"
-                          strokeWidth={3}
-                        />
-                      ) : null}
-                    </button>
-                  )
-                })}
-              </div>
-            ) : null}
-
-            {/* Abas de categoria */}
-            <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-subtle">
-              {AVATAR_CATEGORIES.map((c) => (
-                <button
-                  key={c}
-                  type="button"
-                  onClick={() => setCategory(c)}
-                  aria-pressed={c === category}
-                  className={cn(
-                    'shrink-0 rounded-full px-3 py-2 font-semibold text-sm transition-colors',
-                    c === category
-                      ? 'bg-primary text-primary-foreground'
-                      : 'bg-muted text-muted-foreground',
-                  )}
-                >
-                  {AVATAR_CATEGORY_LABELS[c]}
-                </button>
-              ))}
-            </div>
-
-            {/* Grade de itens com miniatura */}
-            <div className="grid max-h-[26vh] grid-cols-[repeat(auto-fill,minmax(4.5rem,1fr))] gap-2 overflow-y-auto scrollbar-subtle">
-              {items.map((part) => (
-                <ItemTile
-                  key={part.id}
-                  part={part}
-                  selected={slots[part.category]?.asset === part.id}
-                  disabled={!!busy}
-                  confirming={pendingBuy?.part.id === part.id}
-                  onSelect={() => selectPart(part)}
-                />
-              ))}
-            </div>
-          </>
-        ) : (
-          /* Cabine de fotos: poses (posicione a câmera arrastando o personagem e tire a foto) */
-          <div className="flex flex-col gap-2">
-            <p className="text-center font-semibold text-muted-foreground text-xs">
-              Escolha a pose e clique em <strong>Tirar foto</strong> lá em cima 📸
-            </p>
-            <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-subtle">
-              {POSES.map((p) => (
-                <button
-                  key={p.id}
-                  type="button"
-                  onClick={() => setPose(p.id)}
-                  aria-pressed={pose === p.id}
-                  className={cn(
-                    'shrink-0 rounded-full px-4 py-2 font-semibold text-sm transition-colors',
-                    pose === p.id
-                      ? 'bg-primary text-primary-foreground'
-                      : 'bg-muted text-muted-foreground',
-                  )}
-                >
-                  {p.label}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Alternador de modo (Personalizar / Cabine de fotos) */}
-        <div className="grid grid-cols-2 gap-2">
-          <button
-            type="button"
-            onClick={() => setMode('customize')}
-            className={cn(
-              'rounded-2xl py-3 font-bold text-sm transition-colors',
-              mode === 'customize'
-                ? 'bg-primary text-primary-foreground'
-                : 'bg-muted text-muted-foreground',
             )}
-          >
-            🎨 Personalizar
-          </button>
-          <button
-            type="button"
-            onClick={() => setMode('photo')}
-            className={cn(
-              'rounded-2xl py-3 font-bold text-sm transition-colors',
-              mode === 'photo'
-                ? 'bg-primary text-primary-foreground'
-                : 'bg-muted text-muted-foreground',
-            )}
-          >
-            📸 Cabine de fotos
-          </button>
+          </section>
         </div>
       </div>
     </div>

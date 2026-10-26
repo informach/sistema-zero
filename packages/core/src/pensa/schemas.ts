@@ -331,6 +331,11 @@ export const PensaOperationViewSchema = z.strictObject({
   status: z.enum(['queued', 'running', 'waiting', 'succeeded', 'failed', 'cancelled']),
   calls: revision,
   error: text(1_000).nullable(),
+  /**
+   * Só numa falha: `false` quando a parte já gastou as tentativas e "Tentar de novo" seria
+   * recusado (a saída é um pedido novo da criança). Ausente = servidor anterior, tenta.
+   */
+  retryable: z.boolean().optional(),
   createdAt: date,
   updatedAt: date,
 })
