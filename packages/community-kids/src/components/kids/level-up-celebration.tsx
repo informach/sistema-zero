@@ -1,6 +1,7 @@
 'use client'
 
 import { useModalA11y } from '@sistemazero/ui/use-modal-a11y'
+import Link from 'next/link'
 import type { CSSProperties } from 'react'
 import { cn } from '@/lib/cn'
 import { levelInfo } from '@/lib/level-info'
@@ -24,9 +25,15 @@ export function LevelUpCelebration({
   level,
   tools = null,
   molda = null,
+  trail = null,
   onClose,
 }: {
   level: StudentLevelSlug
+  /**
+   * No currículo da Jornada do Criador: o que a trilha nova abriu (os cursos da trilha, a
+   * missão e quantos Poderes), para a festa dizer o que tem de novo e levar até lá.
+   */
+  trail?: LevelUpTrail | null
   /** Ferramenta ganha no MESMO momento; `null` = só subiu de nível. */
   tools?: ToolsGain | null
   /**
@@ -87,8 +94,48 @@ export function LevelUpCelebration({
           Agora você é {info.label}!
         </h2>
         <p className="mt-2 text-muted-foreground text-sm">
-          Você conquistou mais um posto na sua jornada de criação!
+          {trail?.previous
+            ? `Você terminou os cursos, a missão e os Poderes da Trilha ${trail.previous}.`
+            : 'Você conquistou mais um posto na sua jornada de criação!'}
         </p>
+
+        {trail ? (
+          <div className="mt-4 flex items-start gap-3 rounded-2xl bg-(--band-creme) px-4 py-3 text-left">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={`/jornada/${level}.webp`}
+              alt=""
+              width={48}
+              height={48}
+              className="size-12 shrink-0 rounded-full border-[3px] bg-card object-cover"
+              style={{ borderColor: info.colorVar }}
+            />
+            <div className="min-w-0">
+              <p className="font-extrabold text-sm">
+                {trail.legend ? 'As Maestrias estão abertas' : `A Trilha ${trail.title} abriu`}
+              </p>
+              <ul className="mt-1.5 space-y-1 font-medium text-muted-foreground text-sm">
+                {trail.legend ? (
+                  <li>🏆 Escolha no que quer ficar craque, em qualquer ordem</li>
+                ) : (
+                  <>
+                    {trail.courses.length ? (
+                      <li>
+                        🎮{' '}
+                        {trail.courses.length === 1
+                          ? '1 curso novo'
+                          : `${trail.courses.length} cursos novos`}
+                        : {trail.courses.join(' e ')}
+                      </li>
+                    ) : null}
+                    {trail.mission ? <li>🎯 A missão {trail.mission}</li> : null}
+                    {trail.powers ? <li>⚡ {trail.powers} Poderes para escolher</li> : null}
+                  </>
+                )}
+              </ul>
+            </div>
+          </div>
+        ) : null}
 
         {tools ? (
           <p className="mt-4 rounded-2xl bg-primary/10 px-4 py-3 font-bold text-primary text-sm">
@@ -106,14 +153,46 @@ export function LevelUpCelebration({
           </p>
         ) : null}
 
-        <button
-          type="button"
-          onClick={onClose}
-          className="sz-btn-gradient mt-7 inline-flex h-12 w-full items-center justify-center text-base"
-        >
-          Continuar
-        </button>
+        {trail ? (
+          <>
+            <Link
+              href={trail.legend ? '/maestrias' : `/cursos/trilha/${level}`}
+              prefetch={false}
+              onClick={onClose}
+              className="sz-btn-gradient mt-7 inline-flex h-12 w-full items-center justify-center text-base"
+            >
+              {trail.legend ? 'Ver as Maestrias' : `Ver a Trilha ${trail.title}`}
+            </Link>
+            <button
+              type="button"
+              onClick={onClose}
+              className="mt-3 inline-flex min-h-11 items-center font-bold text-primary text-sm"
+            >
+              Continuar depois
+            </button>
+          </>
+        ) : (
+          <button
+            type="button"
+            onClick={onClose}
+            className="sz-btn-gradient mt-7 inline-flex h-12 w-full items-center justify-center text-base"
+          >
+            Continuar
+          </button>
+        )}
       </div>
     </div>
   )
+}
+
+/** O que a trilha nova abriu, para a festa de subir de nível no currículo. */
+export interface LevelUpTrail {
+  title: string
+  /** A trilha que a criança acabou de terminar. */
+  previous: string | null
+  courses: string[]
+  mission: string | null
+  powers: number
+  /** Subiu para a Lenda: o que abre são as Maestrias. */
+  legend: boolean
 }

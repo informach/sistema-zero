@@ -18,11 +18,10 @@ for (const skin of ['adult', 'kids'])
         )
         expect(overflow).toBe(false)
         if (screen === 'post') {
-          await expect(
-            page.getByRole('heading', { name: 'O que conta para avançar' }),
-          ).toBeVisible()
-          await page.locator('summary').first().click()
-          await expect(page.locator('details').first()).toHaveAttribute('open', '')
+          // A trilha (Kids) e a etapa (adulto): os cursos da trilha, a missão e os Poderes.
+          for (const name of ['Cursos da trilha', 'Missão', 'Poderes'])
+            await expect(page.getByRole('heading', { name, exact: true })).toBeVisible()
+          await expect(page.locator('section[aria-labelledby="poderes"] li').first()).toBeVisible()
         }
         if (screen === 'mastery') {
           await expect(page.getByText('Ajustes pedidos pela equipe')).toBeVisible()
@@ -52,24 +51,46 @@ for (const skin of ['adult', 'kids'])
       })
     }
 
-test('planned courses keep their name without an action to unavailable content', async ({
-  page,
-}) => {
-  await page.goto('/?skin=adult&screen=post&state=planned')
-  await expect(page.getByText('Curso em preparação').first()).toBeVisible()
-  await expect(page.getByRole('link', { name: 'Abrir curso' })).toHaveCount(0)
-})
+for (const skin of ['adult', 'kids'])
+  test(`${skin}: planned courses keep their name without an action to unavailable content`, async ({
+    page,
+  }) => {
+    await page.goto(`/?skin=${skin}&screen=post&state=planned`)
+    await expect(page.getByText('Curso em preparação').first()).toBeVisible()
+    await expect(page.locator('section[aria-labelledby="cursos"] a[href^="/cursos/"]')).toHaveCount(
+      0,
+    )
+  })
 
-test('direct purchase opens only its course while the pair is incomplete', async ({ page }) => {
-  await page.goto('/?skin=kids&screen=post&state=direct')
-  const extras = page.locator('section[aria-labelledby="extras-posto"]')
-  await expect(extras.getByRole('link', { name: 'Abrir curso' }).first()).toBeVisible()
-  await expect(
-    page
-      .locator('section[aria-labelledby="missao-posto"]')
-      .getByRole('link', { name: 'Abrir curso' }),
-  ).toHaveCount(0)
-})
+for (const skin of ['adult', 'kids'])
+  test(`${skin}: direct purchase opens only its course while the trail is incomplete`, async ({
+    page,
+  }) => {
+    await page.goto(`/?skin=${skin}&screen=post&state=direct`)
+    await expect(
+      page.locator('section[aria-labelledby="extras"] a[href^="/cursos/"]').first(),
+    ).toBeVisible()
+    await expect(page.locator('section[aria-labelledby="missao"] a[href^="/cursos/"]')).toHaveCount(
+      0,
+    )
+  })
+
+for (const width of [390, 1440]) {
+  test(`admin journey grid at ${width}px shows every post without overflow`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 1000 })
+    await page.goto('/admin-grid')
+    await expect(page.getByRole('heading', { name: 'Jornada do Criador' })).toBeVisible()
+    await expect(page.getByText(/de 7 postos prontos/)).toBeVisible()
+    await expect(page.getByRole('link', { name: 'Editar posto' })).toHaveCount(7)
+    expect(
+      await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 1),
+    ).toBe(false)
+    await page.screenshot({
+      path: `.cache/creator-journey-admin-grid-${width}.png`,
+      fullPage: true,
+    })
+  })
+}
 
 for (const width of [390, 1440]) {
   test(`admin mastery review at ${width}px preserves rubric and feedback controls`, async ({

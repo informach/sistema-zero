@@ -37,7 +37,7 @@ for (const role of ['mastery-nucleus', 'mastery-workshop', 'mastery-project'] as
       <CatalogCourseCard course={course} progress={null} locked={lockedCourseLink(null)} />,
     )
     expect(html).toContain('href="/maestrias/python2d"')
-    expect(html).toContain('Ver requisitos da maestria')
+    expect(html).toContain('Ver requisitos da Maestria')
     expect(html).not.toContain('bases do posto')
   })
 }

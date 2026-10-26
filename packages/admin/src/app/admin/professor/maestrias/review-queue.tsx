@@ -4,8 +4,9 @@ import type {
   CreatorMasteryReviewQueue,
   MasteryReviewInput,
 } from '@sistemazero/core/journey'
-import { Button } from '@sistemazero/ui/button'
+import { Button, buttonVariants } from '@sistemazero/ui/button'
 import { Card } from '@sistemazero/ui/card'
+import { Select } from '@sistemazero/ui/select'
 import Link from 'next/link'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { AdminHeader } from '@/components/admin/admin-header'
@@ -23,6 +24,12 @@ type Queue = Omit<CreatorMasteryReviewQueue, 'submissions'> & {
 type ReviewDetail = CreatorMasteryReviewDetail & {
   childName?: string | null
   accountName?: string | null
+}
+/** O tom da situação: aguardando no amarelo da sala, aprovada no verde, ajustes no neutro. */
+const STATUS_TONE: Record<string, string> = {
+  pending: 'bg-warning-tint text-warning',
+  approved: 'bg-success/15 text-success-foreground',
+  'changes-requested': 'bg-muted text-foreground',
 }
 const labels = {
   pending: 'Aguardando revisão',
@@ -92,7 +99,7 @@ export function MasteryReviewQueue({ reviewerId }: { reviewerId: string }) {
     }
   }
   return (
-    <div className="space-y-6 p-4 md:p-8">
+    <div className="space-y-6">
       <AdminHeader
         title="Revisar Maestrias"
         description="Confira o projeto, registre o que foi demonstrado e indique o próximo passo."
@@ -103,15 +110,23 @@ export function MasteryReviewQueue({ reviewerId }: { reviewerId: string }) {
                 ? '/admin/professor/jornada-kids'
                 : '/admin/professor/jornada-adulta'
             }
+            className={buttonVariants({ variant: 'outline' })}
           >
             Voltar à jornada
           </Link>
         }
       />
       {error && (
-        <p role="alert" className="rounded-xl border border-destructive p-4">
-          {error}{' '}
-          <button type="button" className="underline" onClick={() => void load()}>
+        <p
+          role="alert"
+          className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-2xl bg-destructive/10 px-4 py-3 text-[15px] text-destructive"
+        >
+          {error}
+          <button
+            type="button"
+            className="min-h-10 font-semibold underline"
+            onClick={() => void load()}
+          >
             Tentar novamente
           </button>
         </p>
@@ -130,23 +145,31 @@ export function MasteryReviewQueue({ reviewerId }: { reviewerId: string }) {
         />
       ) : (
         <>
-          <label className="flex flex-wrap items-center gap-3">
-            Mostrar{' '}
-            <select
+          <label className="flex flex-wrap items-center gap-3 font-medium text-sm">
+            Mostrar
+            <Select
               value={status}
               onChange={(e) => {
                 setStatus(e.target.value)
                 setOffset(0)
               }}
-              className="rounded-lg border bg-card p-3"
+              className="sm:w-56"
             >
               <option value="pending">Aguardando revisão</option>
               <option value="reviewed">Revisadas</option>
               <option value="all">Todas</option>
-            </select>
+            </Select>
           </label>
-          {loading && <p role="status">Abrindo a entrega…</p>}
-          {!queue && !error && <p role="status">Carregando as entregas…</p>}
+          {loading && (
+            <p role="status" className="text-sm text-muted-foreground">
+              Abrindo a entrega…
+            </p>
+          )}
+          {!queue && !error && (
+            <p role="status" className="text-sm text-muted-foreground">
+              Carregando as entregas…
+            </p>
+          )}
           {queue?.submissions.length === 0 && (
             <EmptyState
               title="Nenhuma entrega nesta fila"
@@ -156,8 +179,13 @@ export function MasteryReviewQueue({ reviewerId }: { reviewerId: string }) {
           <div className="grid gap-4 lg:grid-cols-2">
             {queue?.submissions.map((s) => (
               <Card key={s.id} className="space-y-3 p-5">
-                <p className="text-sm font-semibold text-muted-foreground">
-                  {labels[s.status]} · Nível {s.level}
+                <p className="flex flex-wrap items-center gap-2 text-sm">
+                  <span
+                    className={`inline-flex h-6 items-center rounded-full px-2.5 font-semibold text-xs ${STATUS_TONE[s.status]}`}
+                  >
+                    {labels[s.status]}
+                  </span>
+                  <span className="font-semibold text-muted-foreground">Nível {s.level}</span>
                 </p>
                 <h2 className="font-display text-xl font-bold">{s.areaTitle}</h2>
                 <p>

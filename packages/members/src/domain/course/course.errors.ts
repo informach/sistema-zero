@@ -43,8 +43,8 @@ export class CourseJourneyLockedError extends DomainError {
     super(
       curriculum && reason === 'foundation-first'
         ? curriculum.role === 'base3d'
-          ? 'Conclua o curso-base 2D para abrir a base 3D.'
-          : 'Conclua os dois cursos-base do posto para liberar esta atividade.'
+          ? 'Conclua o curso 2D da trilha para começar a versão 3D.'
+          : 'Conclua os cursos 2D e 3D da trilha para abrir a missão, os Poderes e os extras.'
         : JOURNEY_LOCK_MESSAGES[reason],
     )
   }

@@ -102,3 +102,44 @@ export function journeyRewardInfo(
       : 'Mais um passo na sua jornada de criação.',
   }
 }
+
+/** As ferramentas de uma trilha ditas numa frase curta, para o cartão "Próximo nível". */
+const CAPABILITY_PHRASE: Record<KidsCreatorCapability, string> = {
+  studio: 'o Estúdio livre',
+  pinta: 'o Pinta para desenhar',
+  bridge: 'a Ponte entre blocos e código',
+  pro: 'o modo Pro',
+  ai: 'a ajuda do Zappy',
+  pensa: 'o Pensa para planejar',
+  molda: 'o Molda para criar modelos 3D',
+  'molda-intermediate': 'ferramentas novas no Molda',
+  'molda-professional': 'as ferramentas avançadas do Molda',
+}
+
+/**
+ * "o Molda para criar modelos 3D e o Pensa para planejar": as ferramentas que a trilha libera,
+ * na ordem do catálogo. `null` quando a trilha não libera ferramenta.
+ */
+export function capabilityPhrase(capabilities: readonly KidsCreatorCapability[]): string | null {
+  const ordered = KIDS_CREATOR_CAPABILITIES.filter((capability) =>
+    capabilities.includes(capability),
+  ).map((capability) => CAPABILITY_PHRASE[capability])
+  if (!ordered.length) return null
+  return ordered.length === 1
+    ? ordered[0]!
+    : `${ordered.slice(0, -1).join(', ')} e ${ordered.at(-1)}`
+}
+
+/**
+ * As ferramentas que cada trilha do currículo libera, pelo slug do posto. No currículo o
+ * `advances[i]` carrega as ferramentas concedidas DURANTE a trilha `i` (depois do 2D, do 3D,
+ * do par ou de um curso dela), e não as do posto de chegada.
+ */
+export function curriculumTrailCapabilities(
+  view: KidsJourneyView,
+): Partial<Record<StudentLevelSlug, readonly KidsCreatorCapability[]>> {
+  const stages = view.curriculum?.stages ?? []
+  return Object.fromEntries(
+    stages.map((stage, index) => [stage.level, view.advances[index]?.capabilities ?? []]),
+  )
+}

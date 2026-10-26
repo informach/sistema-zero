@@ -33,6 +33,7 @@ import {
   CurriculumLoadNotice,
   useCreatorCurriculum,
 } from '@/components/admin/course-curriculum-placement'
+import { CreatorJourneyGrid } from '@/components/admin/creator-journey-grid'
 import { EmptyState } from '@/components/admin/empty-state'
 import { usePlatform } from '@/components/admin/platform-provider'
 import { ReadOnlyNotice } from '@/components/admin/read-only-notice'
@@ -128,15 +129,10 @@ export function CoursesClient({ currentRole }: { currentRole: string }) {
   }, [offset, q, status, modality, platform, loadAuthority])
 
   const loadJourney = useCallback(async () => {
-    // O painel da Jornada só existe no modo Kids — no Adultos nem busca (a
-    // varredura pagina TODOS os cursos kids; os call-sites pós-save chamam
-    // sempre e viram no-op aqui). Voltar para Kids re-dispara pelo effect.
-    if (platform !== 'kids') {
-      journeyAuthority.invalidate()
-      setJourneyItems([])
-      setJourneyLoading(false)
-      return
-    }
+    // A grade da Jornada precisa de TODOS os cursos gravados da plataforma (a varredura pagina a
+    // lista inteira). No Kids ela também alimenta o painel histórico das posições; no Adultos só
+    // existe com o currículo novo, mas buscar sempre mantém os dois caminhos iguais (a lista
+    // adulta é pequena) e os call-sites pós-save continuam chamando sem condição.
     setJourneyLoading(true)
     await runLatestForeground(
       journeyAuthority,
@@ -145,7 +141,7 @@ export function CoursesClient({ currentRole }: { currentRole: string }) {
         // servidor e é repetido aqui (members antigo ignora o parâmetro).
         loadAllPages((pageOffset, limit) =>
           apiGet<Paginated<CourseView>>(
-            `/api/members/courses?audience=kids&modality=recorded&limit=${limit}&offset=${pageOffset}`,
+            `/api/members/courses?audience=${platform}&modality=recorded&limit=${limit}&offset=${pageOffset}`,
           ),
         ),
       {
@@ -244,20 +240,14 @@ export function CoursesClient({ currentRole }: { currentRole: string }) {
       {curriculumState.status !== 'ready' ? (
         <CurriculumLoadNotice state={curriculumState} />
       ) : curriculumState.curriculum ? (
-        <section className="space-y-3 rounded-xl border bg-card p-5">
-          <h2 className="font-semibold">Currículo da Jornada do Criador</h2>
-          <p className="text-sm text-muted-foreground">
-            {curriculumState.curriculum.stages.length} postos com duas bases, missão e poderes.{' '}
-            {curriculumState.curriculum.masteries.length} áreas de maestria. Os vínculos de cursos e
-            as regras são publicados no editor da jornada.
-          </p>
-          <Link
-            href={`/admin/professor/jornada-${platform === 'adult' ? 'adulta' : 'kids'}`}
-            className="inline-flex min-h-10 items-center font-medium text-primary underline"
-          >
-            Abrir postos, poderes e maestrias
-          </Link>
-        </section>
+        <CreatorJourneyGrid
+          curriculum={curriculumState.curriculum}
+          courses={journeyItems}
+          loading={journeyLoading}
+          audience={platform}
+          canWrite={canWrite}
+          onEditCourse={openEdit}
+        />
       ) : curriculumState.loaded && platform === 'kids' ? (
         <JourneyReadiness
           courses={journeyItems}

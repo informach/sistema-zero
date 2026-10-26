@@ -131,7 +131,7 @@ function UpToDate({ studioOwned }: { studioOwned: boolean }) {
 }
 
 /** A fita: trilha completa apagada + trecho percorrido no degradê das cores dos níveis. */
-function JourneyRibbon({
+export function JourneyRibbon({
   geo,
   levels,
 }: {
@@ -202,7 +202,15 @@ const MAX_PROGRESS_DOTS = 12
  * Bolinhas do degrau: uma por curso que EXISTE, cheia (na cor do nível) quando já foi
  * concluído; as que faltam ficam no cinza do texto de apoio, como nas telas-modelo.
  */
-function ProgressDots({ done, total, color }: { done: number; total: number; color: string }) {
+export function ProgressDots({
+  done,
+  total,
+  color,
+}: {
+  done: number
+  total: number
+  color: string
+}) {
   if (total > MAX_PROGRESS_DOTS) return null
   return (
     <span className="flex items-center gap-1" aria-hidden>

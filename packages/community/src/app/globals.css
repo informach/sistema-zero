@@ -426,6 +426,67 @@ main:has(.sz-aula-adulto) {
     0 0 0 1px var(--border),
     0 18px 40px rgba(28, 48, 90, 0.24);
 }
+/* OBJETIVOS DO PROJETO (26/10/2026). O cartão do member-shell embaixo do Estúdio da parte
+   (`SectionProjectCheck`) só trazia a estrutura: aqui ele veste a bancada clara, com cada objetivo
+   numa linha de 44 px, o feito no verde de sucesso e o extra no amarelo de aviso. O estado nunca é
+   só cor: o ícone e a palavra seguem no componente. Fora de camada, como o resto da aula. */
+.sz-aula-adulto .sz-lesson-objectives {
+  border: 1px solid var(--border);
+  border-radius: 1.25rem;
+  background: var(--card);
+  box-shadow: 0 4px 0 var(--degrau-claro);
+  padding: 0.75rem 1rem;
+}
+.sz-aula-adulto .sz-lesson-objectives-title {
+  font-family: var(--font-display), system-ui, sans-serif;
+  font-size: 1.0625rem;
+  font-weight: 700;
+  color: var(--foreground);
+}
+.sz-aula-adulto .sz-lesson-objective {
+  min-height: 2.75rem;
+  padding: 0.55rem 0.8rem;
+  border: 1px solid transparent;
+  border-radius: 0.875rem;
+  background: var(--acao-tint);
+  font-size: 0.95rem;
+  color: var(--foreground);
+}
+.sz-aula-adulto .sz-lesson-objective[data-extra] {
+  background: var(--aviso-tint);
+}
+.sz-aula-adulto .sz-lesson-objective[data-state="passed"] {
+  background: var(--sucesso-tint);
+}
+.sz-aula-adulto .sz-lesson-objective[data-state="passed"] .sz-lesson-objective-icon {
+  color: var(--pen-ok-texto);
+}
+.sz-aula-adulto .sz-lesson-objective[data-state="failed"] .sz-lesson-objective-icon {
+  color: var(--pen-acao);
+}
+/* Mexeu no projeto depois de verificar: o resultado é de antes da mudança. */
+.sz-aula-adulto .sz-lesson-objective[data-stale] {
+  border-style: dashed;
+  border-color: var(--border);
+}
+.sz-aula-adulto .sz-lesson-objectives-extras-title {
+  font-weight: 700;
+  color: var(--foreground);
+}
+.sz-aula-adulto .sz-lesson-objectives-xp {
+  padding: 0.2rem 0.7rem;
+  border-radius: 9999px;
+  background: var(--aviso-tint);
+  color: var(--aviso-texto);
+  font-weight: 700;
+}
+.sz-aula-adulto .sz-lesson-objectives-feedback {
+  font-weight: 700;
+  color: var(--foreground);
+}
+.sz-aula-adulto .sz-lesson-objectives-feedback[data-tone="ok"] {
+  color: var(--pen-ok-texto);
+}
 /* MATERIAIS COMPLEMENTARES. O bloco também ganha cartão, como o texto e a cena — ele é uma
    lista, e sem moldura ela se mistura ao parágrafo de cima. O desenho é o mesmo componente do
    kids (`MaterialsBlockView`, sem cor por dentro); aqui ele sai sóbrio. */
