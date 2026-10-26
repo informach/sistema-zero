@@ -67,13 +67,13 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 [engaging, energetic, conversational voice] No seu jogo, o toque é a ação. A reação que a gente quer é um esconderijo ficar invisível, para aparecer quem está atrás dele. Essa reação precisa estar ligada ao toque para acontecer.
 
-[upbeat, encouraging voice] Agora é a sua vez de investigar essa ligação no jardim. Observe o que acontece antes e depois de ligar a reação. O Zappy vai acompanhar cada etapa da experiência. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora é a sua vez de investigar essa ligação no jardim. Compare o que acontece com a reação ligada e desligada. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 ```
 
 
-**Falas dentro da experiência:** fonte compartilhada `packages/core/src/learning/scene/garden.ts`, exportada em `zappy-etapas.json`. Uma fala por estado; texto, botão principal e voz devem corresponder à mesma etapa. Os controles e os retornos são apresentados durante a interação, sem reproduzir uma sequência de cliques no vídeo.
+**Falas dentro da experiência:** fonte compartilhada `packages/core/src/learning/scene/discovery-guidance.ts`, exportada em `zappy-etapas.json`. Uma fala por estado; texto, botão principal e voz devem corresponder à mesma etapa. Os controles e os retornos são apresentados durante a interação, sem reproduzir uma sequência de cliques no vídeo.
 
-**Recado na página (não gravar):** Sua vez! Investigue a ligação entre o toque e a reação no jardim. O Zappy acompanha cada etapa da experiência.
+**Recado na página (não gravar):** Sua vez! Investigue a ligação entre o toque e a reação no jardim. Você escolhe a ordem dos testes, e o Zappy sugere o que observar.
 
 ## Parte 4. Faça alguém aparecer
 

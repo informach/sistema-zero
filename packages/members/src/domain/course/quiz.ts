@@ -90,7 +90,14 @@ export interface MemberQuizContent {
   kind: 'quiz'
   questions: {
     id: string
-    predictionScene?: 'garden-touch' | 'garden-count' | 'garden-repeat'
+    predictionScene?:
+      | 'garden-touch'
+      | 'garden-count'
+      | 'garden-repeat'
+      | 'lighthouse-order'
+      | 'lighthouse-memory'
+      | 'lighthouse-door'
+      | 'lighthouse-retest'
     prompt: string
     choices: QuizChoice[]
     /** Só a pronúncia da PERGUNTA: a da explicação contaria o gabarito. */

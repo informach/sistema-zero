@@ -23,10 +23,10 @@
       "clipe": "video-d3-condicao",
       "personagem": "Debinha",
       "ocorrencia": 1,
-      "ancoraAntes": "escolhe o senão: fica fechada e avisa que falta a chave. É como a porta da sua casa: ela só abre se você tiver a chave.",
-      "ancoraDepois": "Vamos ver. Agora eu clico em Levar a chave e em Testar a porta de novo. Olha só: agora temChave está verdadeiro, a",
-      "falaPrincipal": "E se eu trouxer a chave agora?",
-      "falaPersonagem": "E se eu trouxer a chave agora?",
+      "ancoraAntes": ". É como a porta da sua casa: para abrir, você precisa da chave. No jogo, a pergunta é: temChave é verdadeiro? Ou seja, o personagem está com a chave?",
+      "ancoraDepois": "A regra tem dois caminhos. O então diz o que fazer quando a resposta é sim. O senão diz o que fazer quando a resposta é não. A pergunta é a mesma, mas",
+      "falaPrincipal": "E se a resposta for não?",
+      "falaPersonagem": "E se a resposta for não?",
       "tags": ["[curious]"]
     },
     {
@@ -67,8 +67,8 @@
       "clipe": "video-d3-posicao",
       "personagem": "Debinha",
       "ocorrencia": 1,
-      "ancoraAntes": "ela estava. O x escolhe o lugar na horizontal: um número menor leva para a esquerda, e um maior leva para a direita.",
-      "ancoraDepois": "A gente muda o y. Agora eu deixo o x em 160 e mudo só Posição vertical y: ele está em 53, e eu escrevo 250 do mesmo",
+      "ancoraAntes": "a gente usa dois números: x e y. O x escolhe o lugar na horizontal, para os lados. Um número menor leva para a esquerda; um maior leva para a direita.",
+      "ancoraDepois": "A gente muda o y, que escolhe o lugar na vertical. Na tela do jogo, a contagem começa em zero lá em cima e cresce para baixo. Por isso, um y maior lev",
       "falaPrincipal": "E para subir ou descer?",
       "falaPersonagem": "E para subir ou descer?",
       "tags": ["[curious]"]

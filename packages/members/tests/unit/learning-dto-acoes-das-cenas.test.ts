@@ -170,3 +170,23 @@ describe('toda ação de cena conhecida atravessa a borda do members', () => {
     ).toBe(false)
   })
 })
+
+test('free exploration configuration survives the typed authoring route', async () => {
+  const block = blocoCom('lighthouse-walk', [{ type: 'movement-command', enabled: false }])
+  if (block.activity.type !== 'experimentation') throw Error('Invalid test activity')
+  block.activity.setup = {
+    ...block.activity.setup,
+    freeExploration: true,
+    goals: ['no-movement-command', 'stopped-after-release'],
+  }
+  expect(isInteractiveBlock(block)).toBe(true)
+  const response = await app.handle(
+    new Request('http://localhost/', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ content: block }),
+    }),
+  )
+  expect(response.status).toBe(200)
+  expect(await response.json()).toEqual({ content: block })
+})

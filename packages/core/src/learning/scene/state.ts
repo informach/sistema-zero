@@ -116,6 +116,11 @@ export interface SceneLighthousePosition {
  * de `SCENE_FRAME_RATE`), e quem para o "Rodar" é `sceneClockShouldStop`. O motor é puro.
  */
 export interface SceneLighthouseWalk {
+  /** Campos opcionais para ler retratos anteriores à exploração livre. */
+  movement?: boolean
+  order?: 'correct' | 'reverse'
+  testedOrders?: ('correct' | 'reverse')[]
+  orderResult?: boolean
   /** Quantos quadros passaram desde o começo (ou desde o Recomeçar). */
   frame: number
   /** O x do canto esquerdo do personagem, na tela de 480 do Farol. */
@@ -2032,7 +2037,11 @@ export function cloneScene(state: SceneState): SceneState {
     },
     lighthouse: { ...state.lighthouse },
     collection: { ...state.collection },
-    walk: { ...state.walk, trail: [...state.walk.trail] },
+    walk: {
+      ...state.walk,
+      trail: [...state.walk.trail],
+      ...(state.walk.testedOrders ? { testedOrders: [...state.walk.testedOrders] } : {}),
+    },
     keyPosition: {
       ...state.keyPosition,
       before: state.keyPosition.before ? { ...state.keyPosition.before } : null,
@@ -2238,6 +2247,14 @@ function isSceneLighthouseWalk(value: unknown): value is SceneLighthouseWalk {
     inteiro(run, frame as number) &&
     typeof arrow === 'boolean' &&
     typeof keepInside === 'boolean' &&
+    (value.movement === undefined || typeof value.movement === 'boolean') &&
+    (value.order === undefined || value.order === 'correct' || value.order === 'reverse') &&
+    (value.orderResult === undefined || typeof value.orderResult === 'boolean') &&
+    (value.testedOrders === undefined ||
+      (Array.isArray(value.testedOrders) &&
+        value.testedOrders.length <= 2 &&
+        new Set(value.testedOrders).size === value.testedOrders.length &&
+        value.testedOrders.every((v) => v === 'correct' || v === 'reverse'))) &&
     LIGHTHOUSE_WALK_SPEEDS.some((v) => v === speed) &&
     Array.isArray(trail) &&
     trail.length >= 1 &&

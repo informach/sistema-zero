@@ -153,6 +153,8 @@ export function stepExperiment(
   command: ExperimentCommand,
 ): { session: ExperimentSession; events: SceneEvent[] } {
   if (!isExperimentCommand(command, start)) throw new Error('Comando de experimentação inválido.')
+  if (start.setup?.freeExploration && command.type === 'reset')
+    return { session: initialExperiment(start), events: [] }
   const before = previous.state
   const next: ExperimentSession = {
     state: before,
@@ -171,8 +173,13 @@ export function stepExperiment(
     const anterior = next.past.pop()
     if (anterior) {
       next.state = cloneScene(anterior)
-      // Desfazer volta o MUNDO, nunca o que a criança já aprendeu.
-      next.state.evidence = { ...before.evidence, actions: before.evidence.actions + 1 }
+      // Na exploração livre, desfazer restaura também as comparações do retrato.
+      // Nas cenas legadas, conserva as descobertas já realizadas.
+      next.state.evidence = {
+        ...(start.setup?.freeExploration ? anterior.evidence : before.evidence),
+        actions: before.evidence.actions + 1,
+        hints: before.evidence.hints,
+      }
       // ⚠️⚠️ Desfazer também é GESTO, e nas cenas de quadro longo ele recomeça o quadro como os
       // outros (`stepScene`). O retrato guarda a sobra de ANTES do gesto desfeito: voltar com ela
       // fechava o quadro logo depois, e "no início o placar ficou parado" contava o segundo em que a
@@ -183,7 +190,10 @@ export function stepExperiment(
     // Deixar o tempo correr e pedir dica não são passos de desfazer: a criança espera que
     // "voltar" desfaça o que ELA montou.
     if (command.type !== 'advance' && command.type !== 'hint')
-      next.past = [...next.past, withoutEvidence(before)].slice(-SESSION_LIMITS.past)
+      next.past = [
+        ...next.past,
+        start.setup?.freeExploration ? cloneScene(before) : withoutEvidence(before),
+      ].slice(-SESSION_LIMITS.past)
     next.state = stepScene(start, before, command)
     if (command.type === 'advance') next.state.evidence.actions = before.evidence.actions
   }

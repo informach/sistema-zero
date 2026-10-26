@@ -1,5 +1,6 @@
 import type { SceneId } from './actions'
 import { isSceneAudioUrl } from './audio-url'
+import { discoverySpeechSteps } from './discovery-guidance'
 import { gardenSpeechSteps } from './garden'
 
 /**
@@ -232,6 +233,7 @@ export function falaDaInstrucao(instruction: string): string {
 }
 
 export const SCENE_SPEECH_SLOTS = [
+  ...discoverySpeechSteps().map((step) => `discovery:${step.id}` as const),
   'instruction',
   'prediction-context',
   'prediction-question',
@@ -282,14 +284,24 @@ export function falasDaCena(bloco: {
     prompt: string
     choices: readonly { label: string }[]
   }
-  activity?: { type: string; scene?: SceneId; zappySpeech?: SceneSpeechOverrides }
+  activity?: {
+    type: string
+    scene?: SceneId
+    zappySpeech?: SceneSpeechOverrides
+    setup?: { freeExploration?: boolean }
+  }
 }): readonly ZappySpeech[] {
   const falas: readonly [SceneSpeechSlot, string][] = [
     ['instruction', falaDaInstrucao(bloco.instructions ?? '')],
-    ...gardenSpeechSteps(bloco.activity?.scene).map((step): [SceneSpeechSlot, string] => [
-      `garden:${step.id}`,
-      step.text,
-    ]),
+    ...(bloco.activity?.setup?.freeExploration
+      ? discoverySpeechSteps(bloco.activity.scene).map((step): [SceneSpeechSlot, string] => [
+          `discovery:${step.id}`,
+          step.text,
+        ])
+      : gardenSpeechSteps(bloco.activity?.scene).map((step): [SceneSpeechSlot, string] => [
+          `garden:${step.id}`,
+          step.text,
+        ])),
     [
       'prediction-context',
       bloco.prediction ? falaDoContextoDoPalpite('Seu palpite', bloco.prediction.context) : '',

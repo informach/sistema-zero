@@ -145,3 +145,28 @@ describe('⚠️⚠️ o servidor abre a cena no CASO do professor, como o playe
     expect((await tentar(respostas)).passed).toBe(false)
   })
 })
+
+test.each([
+  'complete',
+  'undo',
+  'reset',
+] as const)('Farol free exploration: the server replays %s with the same evidence as the player', async (ending) => {
+  const content = blocoDoManifesto('desafio-dia-1.manifesto.json', 'experiencia-quadro')
+  const { gravar, tentar } = preparar(content)
+  const commands: unknown[] = [
+    { type: 'hold-arrow', held: true },
+    { type: 'walk-frames', count: 10 },
+    { type: 'movement-command', enabled: true },
+    { type: 'walk-frames', count: 10 },
+    { type: 'hold-arrow', held: false },
+    { type: 'walk-frames', count: 1 },
+  ]
+  if (ending !== 'complete') commands.push({ type: ending })
+  const answers = await gravar(commands)
+  const session = readExperimentSession('lighthouse-walk', answers.sceneCheckpoint)
+  expect(session).not.toBeNull()
+  expect((await tentar(answers)).passed).toBe(ending === 'complete')
+  if (ending === 'reset') expect(session?.state.evidence.discoveries).toEqual([])
+  if (ending === 'undo')
+    expect(session?.state.evidence.discoveries).not.toContain('stopped-after-release')
+})

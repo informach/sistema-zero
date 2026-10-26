@@ -261,6 +261,10 @@ export async function createClickTargetHandle(cdp, factory, arg) {
     return {
       resolve: async (path) => resolveParts(partsOf(path)),
       call: async (method, value) => (await invoke(method, [{ value }], true))?.value,
+      bounds: async (path) => {
+        const actor = await resolveParts(partsOf(path))
+        return (await invoke('bounds', [{ objectId: actor.objectId }], true))?.value
+      },
       position: async (target) => {
         const actor = await resolveParts(partsOf(target.path))
         return (await invoke('position', [{ objectId: actor.objectId }], true))?.value
@@ -345,6 +349,25 @@ export function createClickTargetReaderInPage({ scope, maxGroupItems }) {
       return entry.found ? entry.value : undefined
     },
     paths,
+    bounds(actor) {
+      const stage = inspection.stage()
+      if (!stage || number(stage.cameraX) !== 0 || number(stage.cameraY) !== 0)
+        throw Error('O teste precisa de um palco estável sem câmera.')
+      if (positionActor && positionActor !== actor) throw Error('O sprite mudou durante o teste.')
+      positionActor = actor
+      const bounds = inspection.contactBounds?.(actor),
+        clock = inspection.lifecycle()
+      if (!bounds) throw Error('A área de contato não pôde ser observada.')
+      return {
+        ...bounds,
+        width: number(stage.width),
+        height: number(stage.height),
+        frame: number(clock.frame),
+        generation: number(clock.generation),
+        errors: number(clock.errors),
+        paused: clock.paused,
+      }
+    },
     position(actor) {
       const stage = inspection.stage()
       if (!stage || number(stage.cameraX) !== 0 || number(stage.cameraY) !== 0)

@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'bun:test'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
-import type { LearningManifest } from '../../../packages/core/src/learning'
+import { isExecutionRule, type LearningManifest } from '../../../packages/core/src/learning'
 import { FAROL_LAYOUT } from '../../../packages/studio/src/arte/farol-assets'
 import { evaluateStudioSectionProject } from '../../../packages/studio/src/blockly/projectCheckAuthoring'
 import { buildWorkspaceStateFromIR } from '../../../packages/studio/src/blockly/workspaceState'
@@ -24,11 +24,14 @@ function evaluate(day: DiaDoFarol, ir: SZIRV2, sectionKey?: string) {
     sectionKey ?? (day === 'dia-3' ? 'decisao' : day === 'dia-2' ? 'programar-chave' : 'borda')
   const section = manifest.sections.find((item) => item.key === key)
   if (!section?.completion?.projectChecks?.length) throw new Error('Critérios ausentes')
-  return evaluateStudioSectionProject(section.completion.projectChecks, {
-    ...montarProjetoFarol('concluido'),
-    ir,
-    blocksState: buildWorkspaceStateFromIR(ir),
-  })
+  return evaluateStudioSectionProject(
+    section.completion.projectChecks.filter((check) => !isExecutionRule(check.rule)),
+    {
+      ...montarProjetoFarol('concluido'),
+      ir,
+      blocksState: buildWorkspaceStateFromIR(ir),
+    },
+  )
 }
 
 const finalIR = () => structuredClone(montarProjetoFarol('concluido').ir) as SZIRV2

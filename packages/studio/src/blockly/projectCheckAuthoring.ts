@@ -145,7 +145,9 @@ function executionIssues(
   const errors: string[] = []
   if (rule.type === 'behavior' || rule.type === 'script') {
     if (
-      (rule.steps.some((step) => step.action === 'clickTarget') ||
+      (rule.steps.some(
+        (step) => step.action === 'clickTarget' || step.action === 'approachSprite',
+      ) ||
         (rule.type === 'behavior' && rule.expect.target.kind === 'spritePosition')) &&
       ((project.kind !== undefined && project.kind !== 'classic') ||
         classic3d ||
@@ -156,7 +158,7 @@ function executionIssues(
       errors.push(
         rule.type === 'behavior' && rule.expect.target.kind === 'spritePosition'
           ? 'Movimento de sprite só vale no Jogo 2D clássico JavaScript.'
-          : 'Cliques em alvos só valem no Jogo 2D clássico JavaScript.',
+          : 'Interações com sprites só valem no Jogo 2D clássico JavaScript.',
       )
     const outside = rule.steps.some(
       (step) =>

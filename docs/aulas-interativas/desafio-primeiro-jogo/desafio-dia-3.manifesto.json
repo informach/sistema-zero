@@ -6,7 +6,7 @@
   "blocks": [
     {
       "key": "video-d3-condicao",
-      "plannedVideo": "Título: Quando a porta pode abrir?\n\nMaster integral da professora. Roteiro: desafio-dia-3.roteiro.md. Substituições kids: [{\"id\":\"video-d3-condicao-K1\",\"clipe\":\"video-d3-condicao\",\"personagem\":\"Debinha\",\"ocorrencia\":1,\"ancoraAntes\":\"escolhe o senão: fica fechada e avisa que falta a chave. É como a porta da sua casa: ela só abre se você tiver a chave.\",\"ancoraDepois\":\"Vamos ver. Agora eu clico em Levar a chave e em Testar a porta de novo. Olha só: agora temChave está verdadeiro, a\",\"falaPrincipal\":\"E se eu trouxer a chave agora?\",\"falaPersonagem\":\"E se eu trouxer a chave agora?\",\"tags\":[\"[curious]\"]}]"
+      "plannedVideo": "Título: Quando a porta pode abrir?\n\nMaster integral da professora. Roteiro: desafio-dia-3.roteiro.md. Substituições kids: [{\"id\":\"video-d3-condicao-K1\",\"clipe\":\"video-d3-condicao\",\"personagem\":\"Debinha\",\"ocorrencia\":1,\"ancoraAntes\":\". É como a porta da sua casa: para abrir, você precisa da chave. No jogo, a pergunta é: temChave é verdadeiro? Ou seja, o personagem está com a chave?\",\"ancoraDepois\":\"A regra tem dois caminhos. O então diz o que fazer quando a resposta é sim. O senão diz o que fazer quando a resposta é não. A pergunta é a mesma, mas\",\"falaPrincipal\":\"E se a resposta for não?\",\"falaPersonagem\":\"E se a resposta for não?\",\"tags\":[\"[curious]\"]}]"
     },
     {
       "key": "ponte-d3-condicao",
@@ -23,11 +23,14 @@
         "required": true,
         "title": "A porta precisa da chave",
         "semPerguntaFinal": true,
-        "instructions": "Sem levar a chave, clique em Testar a porta. Depois clique em Levar a chave e em Testar a porta de novo. Compare temChave e a resposta escolhida nas duas vezes.",
+        "instructions": "Prepare o personagem com ou sem a chave e teste a porta. Compare a resposta nas duas situações; você pode repetir quantas vezes quiser.",
         "hints": [],
         "activity": {
           "type": "experimentation",
           "scene": "lighthouse-key",
+          "setup": {
+            "freeExploration": true
+          },
           "cenario": "farol"
         }
       }
@@ -82,7 +85,7 @@
     },
     {
       "key": "video-d3-posicao",
-      "plannedVideo": "Título: Como escolher um lugar para a chave\n\nMaster integral da professora. Roteiro: desafio-dia-3.roteiro.md. Substituições kids: [{\"id\":\"video-d3-posicao-K1\",\"clipe\":\"video-d3-posicao\",\"personagem\":\"Debinha\",\"ocorrencia\":1,\"ancoraAntes\":\"ela estava. O x escolhe o lugar na horizontal: um número menor leva para a esquerda, e um maior leva para a direita.\",\"ancoraDepois\":\"A gente muda o y. Agora eu deixo o x em 160 e mudo só Posição vertical y: ele está em 53, e eu escrevo 250 do mesmo\",\"falaPrincipal\":\"E para subir ou descer?\",\"falaPersonagem\":\"E para subir ou descer?\",\"tags\":[\"[curious]\"]}]"
+      "plannedVideo": "Título: Como escolher um lugar para a chave\n\nMaster integral da professora. Roteiro: desafio-dia-3.roteiro.md. Substituições kids: [{\"id\":\"video-d3-posicao-K1\",\"clipe\":\"video-d3-posicao\",\"personagem\":\"Debinha\",\"ocorrencia\":1,\"ancoraAntes\":\"a gente usa dois números: x e y. O x escolhe o lugar na horizontal, para os lados. Um número menor leva para a esquerda; um maior leva para a direita.\",\"ancoraDepois\":\"A gente muda o y, que escolhe o lugar na vertical. Na tela do jogo, a contagem começa em zero lá em cima e cresce para baixo. Por isso, um y maior lev\",\"falaPrincipal\":\"E para subir ou descer?\",\"falaPersonagem\":\"E para subir ou descer?\",\"tags\":[\"[curious]\"]}]"
     },
     {
       "key": "ponte-d3-posicao",
@@ -99,14 +102,15 @@
         "required": true,
         "title": "Como escolher um lugar para a chave",
         "semPerguntaFinal": true,
-        "instructions": "Clique no número de Posição horizontal x, apague o 211, escreva 160 e clique fora do campo. Observe para onde a chave foi. Depois, sem mexer no x, faça o mesmo em Posição vertical y: troque 53 por 250 e clique fora do campo. Compare as duas mudanças. Se quiser repetir, clique em Recomeçar.",
+        "instructions": "Explore os dois eixos em qualquer ordem. Mude um número por vez e observe para onde a chave vai. Se quiser um desafio, mostre um alvo e leve a chave até ele.",
         "hints": [],
         "activity": {
           "type": "experimentation",
           "scene": "lighthouse-position",
           "cenario": "farol",
           "setup": {
-            "goals": ["mover-horizontal", "mover-vertical"]
+            "freeExploration": true,
+            "goals": ["x-minus", "x-plus", "y-minus", "y-plus"]
           }
         }
       }
@@ -6296,6 +6300,97 @@
         "blockIds": ["video-d3-sem-chave"],
         "projectChecks": [
           {
+            "id": "porta-sem-chave-em-execucao",
+            "label": "Sem chave, mantenha o farol apagado e mostre um aviso.",
+            "hint": "Teste uma partida nova indo direto ao farol. Deixe um caminho em que seja possível chegar lá sem recolher a chave.",
+            "rule": {
+              "type": "behavior",
+              "steps": [
+                {
+                  "action": "approachSprite",
+                  "actorPath": "personagem",
+                  "targetPath": "farol",
+                  "timeoutMs": 7500,
+                  "avoidPaths": ["chave"]
+                }
+              ],
+              "checkpoints": [
+                {
+                  "afterStep": 1,
+                  "expect": {
+                    "target": {
+                      "kind": "value",
+                      "path": "temChave"
+                    },
+                    "compare": "equals",
+                    "value": false
+                  }
+                },
+                {
+                  "afterStep": 1,
+                  "expect": {
+                    "target": {
+                      "kind": "value",
+                      "path": "aviso"
+                    },
+                    "compare": "changed"
+                  }
+                }
+              ],
+              "expect": {
+                "target": {
+                  "kind": "value",
+                  "path": "ganhou"
+                },
+                "compare": "equals",
+                "value": false
+              }
+            }
+          },
+          {
+            "id": "memoria-em-execucao",
+            "label": "Guarde a coleta e continue com a chave ao se afastar.",
+            "hint": "Guarde verdadeiro no encontro com a chave. A informação deve continuar guardada enquanto a partida segue.",
+            "rule": {
+              "type": "behavior",
+              "steps": [
+                {
+                  "action": "approachSprite",
+                  "actorPath": "personagem",
+                  "targetPath": "chave",
+                  "timeoutMs": 7500
+                },
+                {
+                  "action": "approachSprite",
+                  "actorPath": "personagem",
+                  "targetPath": "farol",
+                  "timeoutMs": 7500
+                }
+              ],
+              "checkpoints": [
+                {
+                  "afterStep": 1,
+                  "expect": {
+                    "target": {
+                      "kind": "value",
+                      "path": "temChave"
+                    },
+                    "compare": "equals",
+                    "value": true
+                  }
+                }
+              ],
+              "expect": {
+                "target": {
+                  "kind": "value",
+                  "path": "temChave"
+                },
+                "compare": "equals",
+                "value": true
+              }
+            }
+          },
+          {
             "id": "direcional",
             "label": "Em Ao iniciar, use Ativar controles clássicos com só as quatro direções.",
             "rule": {
@@ -6586,6 +6681,140 @@
         "version": 1,
         "blockIds": ["video-d3-decisao"],
         "projectChecks": [
+          {
+            "id": "porta-com-chave-em-execucao",
+            "label": "Com a chave, acenda o farol e chame o barco.",
+            "hint": "Teste recolher a chave antes de ir ao farol. O então deve registrar a vitória, acender o farol e mudar o aviso.",
+            "rule": {
+              "type": "behavior",
+              "steps": [
+                {
+                  "action": "approachSprite",
+                  "actorPath": "personagem",
+                  "targetPath": "chave",
+                  "timeoutMs": 7500
+                },
+                {
+                  "action": "approachSprite",
+                  "actorPath": "personagem",
+                  "targetPath": "farol",
+                  "timeoutMs": 7500
+                }
+              ],
+              "checkpoints": [
+                {
+                  "afterStep": 1,
+                  "expect": {
+                    "target": {
+                      "kind": "value",
+                      "path": "temChave"
+                    },
+                    "compare": "equals",
+                    "value": true
+                  }
+                }
+              ],
+              "expect": {
+                "target": {
+                  "kind": "value",
+                  "path": "ganhou"
+                },
+                "compare": "equals",
+                "value": true
+              }
+            }
+          },
+          {
+            "id": "porta-sem-chave-em-execucao",
+            "label": "Sem chave, mantenha o farol apagado e mostre um aviso.",
+            "hint": "Teste uma partida nova indo direto ao farol. Deixe um caminho em que seja possível chegar lá sem recolher a chave.",
+            "rule": {
+              "type": "behavior",
+              "steps": [
+                {
+                  "action": "approachSprite",
+                  "actorPath": "personagem",
+                  "targetPath": "farol",
+                  "timeoutMs": 7500,
+                  "avoidPaths": ["chave"]
+                }
+              ],
+              "checkpoints": [
+                {
+                  "afterStep": 1,
+                  "expect": {
+                    "target": {
+                      "kind": "value",
+                      "path": "temChave"
+                    },
+                    "compare": "equals",
+                    "value": false
+                  }
+                },
+                {
+                  "afterStep": 1,
+                  "expect": {
+                    "target": {
+                      "kind": "value",
+                      "path": "aviso"
+                    },
+                    "compare": "changed"
+                  }
+                }
+              ],
+              "expect": {
+                "target": {
+                  "kind": "value",
+                  "path": "ganhou"
+                },
+                "compare": "equals",
+                "value": false
+              }
+            }
+          },
+          {
+            "id": "memoria-em-execucao",
+            "label": "Guarde a coleta e continue com a chave ao se afastar.",
+            "hint": "Guarde verdadeiro no encontro com a chave. A informação deve continuar guardada enquanto a partida segue.",
+            "rule": {
+              "type": "behavior",
+              "steps": [
+                {
+                  "action": "approachSprite",
+                  "actorPath": "personagem",
+                  "targetPath": "chave",
+                  "timeoutMs": 7500
+                },
+                {
+                  "action": "approachSprite",
+                  "actorPath": "personagem",
+                  "targetPath": "farol",
+                  "timeoutMs": 7500
+                }
+              ],
+              "checkpoints": [
+                {
+                  "afterStep": 1,
+                  "expect": {
+                    "target": {
+                      "kind": "value",
+                      "path": "temChave"
+                    },
+                    "compare": "equals",
+                    "value": true
+                  }
+                }
+              ],
+              "expect": {
+                "target": {
+                  "kind": "value",
+                  "path": "temChave"
+                },
+                "compare": "equals",
+                "value": true
+              }
+            }
+          },
           {
             "id": "direcional",
             "label": "Em Ao iniciar, use Ativar controles clássicos com só as quatro direções.",

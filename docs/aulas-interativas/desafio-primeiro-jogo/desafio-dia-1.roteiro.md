@@ -58,35 +58,35 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 **Clipe:** `video-d1-quadro`
 
-**Na tela:** mostrar a experiência `lighthouse-walk` com a seta desligada. No "repare neste x aqui", apontar o **x** na faixa dos números da experiência. Fazer cada gesto no ritmo da fala: Avançar 1 quadro sem a seta (o quadro vai de 0 para 1 e o x fica igual; no "Tá vendo?", apontar o **quadro** e depois o **x**), ligar a seta e avançar alguns quadros (o x sobe 3 de cada vez; no "como mostra o +3", apontar o **+3** embaixo do personagem). Não clicar em Rodar antes da pergunta. No "Olha a regra do movimento", apontar a regra com o bloco que move o personagem dentro de A cada quadro do jogo.
+**Na tela:** Mostrar a analogia com quadros de um desenho animado e pequenas mudanças entre imagens. Depois apontar separadamente a regra, o teclado de teste e os quadros. Não apresentar x/y nem percorrer todos os testes. A experiência começa com a regra sem o bloco de mover e mantém a origem visível.
 
 **Fala para ElevenLabs:**
 
 ```text
-[engaging, energetic, conversational voice] Vamos ver o movimento bem de perto. Nesta experiência, você vai perceber o que muda em cada quadro do jogo.
+[engaging, energetic, conversational voice] Você já viu como um desenho animado parece se mexer? São várias imagens passando, uma depois da outra. Cada imagem muda um pouquinho. No jogo, cada uma dessas imagens é um quadro.
 
-[engaging, energetic, conversational voice] Já reparou como um desenho animado se mexe? Você vê muitas imagens, uma depois da outra, passando bem rápido. O jogo funciona do mesmo jeito: mostra muitas imagens por segundo, e cada imagem é um quadro. E repare neste x aqui: ele mostra onde o personagem está. Quanto maior o x, mais para a direita ele fica.
+[engaging, energetic, conversational voice] O movimento do personagem também acontece aos poucos. O comando de mover fica dentro de A cada quadro do jogo. A cada repetição, ele confere as teclas e move o personagem na direção pedida.
 
-[interested, animated voice] Olha aqui: com Segurar a seta para a direita desligado, eu clico em Avançar 1 quadro. Tá vendo? O quadro passou de 0 para 1, mas o x não muda, porque, sem a seta, o personagem fica parado.
+[engaging, energetic, conversational voice] Uma coisa é colocar esse comando na regra. Outra coisa é usar a tecla durante o jogo. A tecla sozinha não diz quem deve se mover: é o bloco que dá essa instrução.
 
-[engaging, energetic, conversational voice] Agora eu ligo Segurar a seta para a direita e clico em Avançar 1 quadro algumas vezes. [confident, clear, unhurried voice] Repare: a cada quadro, o x aumenta 3, como mostra o +3 embaixo do personagem. É assim que ele anda: um passo em cada quadro. E sabe por quê? Olha a regra do movimento: o bloco que move o personagem fica dentro de A cada quadro do jogo. Por isso, ele acontece de novo em todo quadro.
+[curious] E se eu soltar a tecla?
 
-[curious] E se eu clicar em Rodar?
+[engaging, energetic, conversational voice] O bloco continua na regra. O que muda é a tecla que ele encontra no próximo quadro. Assim, a gente pode comparar o programa, as teclas e os passos do personagem.
 
-[engaging, energetic, conversational voice] Vamos ver. Quando eu clico em Rodar, os quadros passam bem rápido, e o personagem parece andar sozinho, como num desenho animado. Ele anda até sair da tela, e, para ver tudo de novo, eu clico em Recomeçar.
-
-[upbeat, encouraging voice] Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte.
+[engaging, energetic, conversational voice] Agora experimente essas três coisas na atividade. Você pode avançar quantos quadros quiser, mudar a regra e repetir. Observe o início, o lugar anterior e o lugar atual. Quando terminar, clique em Próxima parte.
 ```
 
 **Substituições na edição kids:**
 
 | ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
 | --- | --- | --- | --- | --- | --- | --- |
-| video-d1-quadro-K1 | Debinha | 1 | o bloco que move o personagem fica dentro de A cada quadro do jogo. Por isso, ele acontece de novo em todo quadro. | E se eu clicar em Rodar? | Vamos ver. Quando eu clico em Rodar, os quadros passam bem rápido, e o personagem parece andar sozinho, como num | [curious] |
+| video-d1-quadro-K1 | Debinha | 1 | colocar esse comando na regra. Outra coisa é usar a tecla durante o jogo. A tecla sozinha não diz quem deve se mover: é o bloco que dá essa instrução. | E se eu soltar a tecla? | O bloco continua na regra. O que muda é a tecla que ele encontra no próximo quadro. Assim, a gente pode comparar o programa, as teclas e os passos do  | [curious] |
 
 No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
 
-**Recado na página (não gravar):** Sua vez! Teste sem a seta e com a seta e repare no que acontece com o x. Quando terminar, clique em Próxima parte.
+**Falas dentro da experiência:** `packages/core/src/learning/scene/discovery-guidance.ts`, exportadas em `zappy-etapas.json`. A orientação sugere comparações pelo estado observado; os controles permanecem livres.
+
+**Recado na página (não gravar):** Sua vez! Compare a regra de movimento, a tecla e a passagem dos quadros. Quando terminar, clique em Próxima parte.
 
 ## Parte 4. Faça o personagem andar
 
@@ -99,7 +99,7 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 ```text
 [engaging, energetic, conversational voice] Aqui no seu jogo, procure as setas na tela ou, no computador, clique no jogo e use as setas do teclado. Tá vendo? Não tem seta nenhuma, e o personagem não sai do lugar, porque faltam as setas e o movimento.
 
-[engaging, energetic, conversational voice] Lembra da experiência da parte anterior? Com a seta segurada, ele andava a cada quadro. Agora a gente vai pôr as setas e o movimento no seu jogo!
+[engaging, energetic, conversational voice] Lembra da experiência da parte anterior? O comando de mover consultava a tecla em cada quadro. Com os dois juntos, o personagem andava. Agora a gente vai pôr as setas e o movimento no seu jogo!
 
 [engaging, energetic, conversational voice] Para fazer isso, a gente precisa dizer ao jogo o que ele deve fazer. É para isso que servem os comandos, que aqui aparecem como blocos. [interested, animated voice] Olha aqui: neste menu, chamado paleta de comandos, você escolhe os blocos que vai encaixar para montar as regras do seu jogo.
 
@@ -136,31 +136,31 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 **Clipe:** `video-d1-limite`
 
-**Na tela:** mostrar a mesma experiência com **Manter dentro da tela** desligado. No "nesta faixa de fora da tela", apontar a faixa à direita da borda, com o rótulo **fora da tela**. Ligar a seta e Rodar até o personagem sair pela borda; no "Tá vendo?", deixar ver a saída, com o personagem clarinho na faixa de fora. Não recomeçar nem ligar o limite antes da pergunta da Debinha.
+**Na tela:** Usar uma janela ilustrada para explicar a borda. Mostrar o personagem junto à borda e os blocos de mover e limitar, sem executar as duas ordens completas. A experiência oferece comparação ampliada da borda e teclado de teste; não antecipar coordenadas.
 
 **Fala para ElevenLabs:**
 
 ```text
-[engaging, energetic, conversational voice] Vamos usar a mesma experiência para ver o que acontece na borda da tela.
+[engaging, energetic, conversational voice] Quando você olha por uma janela, só vê o que está dentro dela. A tela do jogo funciona assim: o que passa da borda pode sair de vista.
 
-[engaging, energetic, conversational voice] Quando você olha por uma janela, só consegue ver o que está dentro dela, né? A tela do jogo funciona assim: o que passa da borda some de vista. Aqui na experiência, o que sai ainda aparece, clarinho, nesta faixa de fora da tela.
+[engaging, energetic, conversational voice] Para o personagem continuar aparecendo, o jogo precisa conferir se ele ainda cabe na tela. O bloco de limite faz essa conferência e pode trazer o personagem de volta para dentro.
 
-[interested, animated voice] Olha aqui: com Manter dentro da tela desligado, eu ligo Segurar a seta para a direita e clico em Rodar. Tá vendo? O personagem chega na borda e continua andando até sair da tela, porque nada segura ele dentro da janela.
+[curious] E a ordem dos blocos faz diferença?
 
-[curious] Como eu faço ele parar na borda?
+[engaging, energetic, conversational voice] Faz. Uma regra pode conferir o limite antes do movimento ou depois dele. Na experiência, você vai comparar o resultado dessas duas ordens junto à borda.
 
-[engaging, energetic, conversational voice] Agora eu clico em Recomeçar, ligo Manter dentro da tela e clico em Rodar de novo. [interested, animated voice] Olha só: dessa vez ele para na borda e fica inteiro na tela! É que Manter dentro da tela funciona como uma parede invisível na borda da janela. E repare na regra do movimento: Manter o sprite personagem dentro da tela fica logo abaixo do bloco que move, para conferir a borda logo depois que o personagem anda.
-
-[upbeat, encouraging voice] Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte.
+[engaging, energetic, conversational voice] Você também pode adicionar e retirar o bloco de limite durante o teste. Observe o que acontece na borda e repita quantas vezes quiser. Quando terminar, clique em Próxima parte.
 ```
 
 **Substituições na edição kids:**
 
 | ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
 | --- | --- | --- | --- | --- | --- | --- |
-| video-d1-limite-K1 | Debinha | 1 | Tá vendo? O personagem chega na borda e continua andando até sair da tela, porque nada segura ele dentro da janela. | Como eu faço ele parar na borda? | Agora eu clico em Recomeçar, ligo Manter dentro da tela e clico em Rodar de novo. Olha só: dessa vez ele para na borda | [curious] |
+| video-d1-limite-K1 | Debinha | 1 | aparecendo, o jogo precisa conferir se ele ainda cabe na tela. O bloco de limite faz essa conferência e pode trazer o personagem de volta para dentro. | E a ordem dos blocos faz diferença? | Faz. Uma regra pode conferir o limite antes do movimento ou depois dele. Na experiência, você vai comparar o resultado dessas duas ordens junto à bord | [curious] |
 
 No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
+
+**Falas dentro da experiência:** `packages/core/src/learning/scene/discovery-guidance.ts`, exportadas em `zappy-etapas.json`. A orientação sugere comparações pelo estado observado; os controles permanecem livres.
 
 **Recado na página (não gravar):** Sua vez! Teste sem o limite e com ele e repare no que acontece na borda. Quando terminar, clique em Próxima parte.
 

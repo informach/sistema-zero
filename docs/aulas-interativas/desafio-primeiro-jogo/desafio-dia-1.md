@@ -1,6 +1,11 @@
 # A Chave do Farol · Dia 1 · O personagem ganha movimento
 
-**Conferência da equipe, 19/10/2026 (não gravar):** exemplos privados por parte, conforme o manifesto e sua fonte geradora. andar: entrada sem movimento e solução que anda sem borda. borda: entrada que já anda e solução com limite. O projeto inicial e a continuidade permanecem; a entrada para ensaio não substitui o baseline da verificação. Cores, imagens, textos e magnitude de velocidade do exemplo não são respostas únicas. A direção precisa continuar coerente e zero não demonstra movimento. Os objetivos atuais deste piloto conferem estrutura; os testes jogados do roteiro continuam necessários e não foram certificados automaticamente como comportamento. Esta revisão conserva as falas e as âncoras de edição já registradas. Não informa nova gravação, publicação ou ensaio com crianças.
+## Atualização aplicada em 26/10/2026
+
+A versão vigente segue [exploração orientada por objetivos](../../aulas-interativas-tecnico/DESCOBERTA-GUIADA.md): vídeos conceituais explicam e convidam; a experiência oferece controles livres e orientação pelo estado; o Estúdio conserva a instrução completa de montagem. Edição da regra, entrada de quem joga e execução são gestos distintos. As notas datadas anteriores abaixo registram o histórico. O roteiro e o manifesto atualizados são a referência de produção; os clipes ainda precisam de gravação/edição/importação.
+
+
+**Conferência da equipe, 19/10/2026 (não gravar):** exemplos privados por parte, conforme o manifesto e sua fonte geradora. andar: entrada sem movimento e solução que anda sem borda. borda: entrada que já anda e solução com limite. O projeto inicial e a continuidade permanecem; a entrada para ensaio não substitui o baseline da verificação. Cores, imagens, textos e magnitude de velocidade do exemplo não são respostas únicas. A direção precisa continuar coerente e zero não demonstra movimento. Os objetivos atuais combinam estrutura e observação em execução. Movimento, memória após afastamento e os dois caminhos da porta são testados no jogo por entradas reais, preservando as escolhas de arte e posição; os testes jogados do roteiro continuam parte da construção. Esta revisão conserva as falas e as âncoras de edição já registradas. Não informa nova gravação, publicação ou ensaio com crianças.
 
 
 ## Resumo
@@ -88,11 +93,13 @@ Anexar somente `docs/aulas-interativas/desafio-primeiro-jogo/passo-a-passo-do-pr
 ### Seção 3. Como o personagem anda
 
 - **Intenção:** exploração (`exploration`).
-- **Por que existe:** mostrar que o jogo repete a cada quadro e que, com a seta segurada, o personagem anda um pouco em cada repetição.
-- **Conclui quando:** vídeo e os dois testes da experiência.
-- **Blocos:** `video-d1-quadro`, `ponte-d1-quadro` e `experiencia-quadro` (cena `lighthouse-walk`, metas `still-without-arrow` e `moves-each-frame`).
+- **Conclui quando:** vídeo e 4 descobertas observadas, sem ordem obrigatória.
+- **Blocos:** `video-d1-quadro`, `ponte-d1-quadro`, `experiencia-quadro`.
+- **Metas da experiência:** `no-movement-command`, `still-without-arrow`, `moves-each-frame`, `stopped-after-release`.
 
-**Ponte do Zappy na página (não gravar):** Sua vez! Teste sem a seta e com a seta e repare no que acontece com o x. Quando terminar, clique em Próxima parte.
+Separar três gestos: editar a regra com Adicionar/Retirar bloco de mover; apertar ou soltar a tecla no teclado de teste; avançar 1 ou 10 quadros ou passar os quadros automaticamente. O bloco consulta a tecla; apertar a tecla não adiciona o comando. Quatro descobertas, em qualquer ordem. Manter início, lugar anterior, agora e próximo quadro visíveis, com percurso desde a origem. Não apresentar x/y nesta experiência. Todos os controles continuam disponíveis depois da conclusão.
+
+**Convite da experiência:** Compare o comando de mover na regra, a tecla do teclado de teste e a passagem dos quadros. Você escolhe a ordem e pode repetir quantas vezes quiser.
 
 ### Seção 4. Faça o personagem andar
 
@@ -115,11 +122,13 @@ Com o destino à vista antes de cada bloco: controles com só as quatro direçõ
 ### Seção 5. Até onde ele pode ir?
 
 - **Intenção:** exploração (`exploration`).
-- **Por que existe:** ver o personagem sair da tela sem limite e ficar inteiro com o limite ligado, antes de montar o bloco.
-- **Conclui quando:** vídeo e os dois testes da experiência.
-- **Blocos:** `video-d1-limite`, `ponte-d1-limite` e `experiencia-limite` (metas `left-the-screen` e `stayed-inside`).
+- **Conclui quando:** vídeo e 3 descobertas observadas, sem ordem obrigatória.
+- **Blocos:** `video-d1-limite`, `ponte-d1-limite`, `experiencia-limite`.
+- **Metas da experiência:** `left-the-screen`, `stayed-inside`, `compared-command-order`.
 
-**Ponte do Zappy na página (não gravar):** Sua vez! Teste sem o limite e com ele e repare no que acontece na borda. Quando terminar, clique em Próxima parte.
+Comparar com e sem o bloco de limite em qualquer ordem, chegando à borda com vários quadros. O limite pode ser acrescentado enquanto o personagem está fora. Comparar também mover → limitar e limitar → mover no teste junto à borda. As três descobertas registram testes reais. Não mostrar coordenadas. Voltar ao início prepara outra tentativa sem apagar descobertas ou a regra.
+
+**Convite da experiência:** Compare o que acontece na borda com e sem o bloco de limite. Teste também as duas ordens dos blocos. Você pode repetir e mudar a regra durante o teste.
 
 ### Seção 6. Mantenha o personagem na tela
 

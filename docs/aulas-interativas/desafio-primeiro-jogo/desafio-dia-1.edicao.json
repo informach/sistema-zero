@@ -32,10 +32,10 @@
       "clipe": "video-d1-quadro",
       "personagem": "Debinha",
       "ocorrencia": 1,
-      "ancoraAntes": "o bloco que move o personagem fica dentro de A cada quadro do jogo. Por isso, ele acontece de novo em todo quadro.",
-      "ancoraDepois": "Vamos ver. Quando eu clico em Rodar, os quadros passam bem rápido, e o personagem parece andar sozinho, como num",
-      "falaPrincipal": "E se eu clicar em Rodar?",
-      "falaPersonagem": "E se eu clicar em Rodar?",
+      "ancoraAntes": "colocar esse comando na regra. Outra coisa é usar a tecla durante o jogo. A tecla sozinha não diz quem deve se mover: é o bloco que dá essa instrução.",
+      "ancoraDepois": "O bloco continua na regra. O que muda é a tecla que ele encontra no próximo quadro. Assim, a gente pode comparar o programa, as teclas e os passos do",
+      "falaPrincipal": "E se eu soltar a tecla?",
+      "falaPersonagem": "E se eu soltar a tecla?",
       "tags": ["[curious]"]
     },
     {
@@ -43,10 +43,10 @@
       "clipe": "video-d1-limite",
       "personagem": "Debinha",
       "ocorrencia": 1,
-      "ancoraAntes": "Tá vendo? O personagem chega na borda e continua andando até sair da tela, porque nada segura ele dentro da janela.",
-      "ancoraDepois": "Agora eu clico em Recomeçar, ligo Manter dentro da tela e clico em Rodar de novo. Olha só: dessa vez ele para na borda",
-      "falaPrincipal": "Como eu faço ele parar na borda?",
-      "falaPersonagem": "Como eu faço ele parar na borda?",
+      "ancoraAntes": "aparecendo, o jogo precisa conferir se ele ainda cabe na tela. O bloco de limite faz essa conferência e pode trazer o personagem de volta para dentro.",
+      "ancoraDepois": "Faz. Uma regra pode conferir o limite antes do movimento ou depois dele. Na experiência, você vai comparar o resultado dessas duas ordens junto à bord",
+      "falaPrincipal": "E a ordem dos blocos faz diferença?",
+      "falaPersonagem": "E a ordem dos blocos faz diferença?",
       "tags": ["[curious]"]
     },
     {

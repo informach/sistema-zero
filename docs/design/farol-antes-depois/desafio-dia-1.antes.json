@@ -1,0 +1,380 @@
+{
+  "version": 5,
+  "courseSlug": "desafio-primeiro-jogo",
+  "lessonSlug": "dia-1",
+  "title": "O personagem ganha movimento",
+  "retireBlockKeys": [
+    "video-d1-chegada",
+    "video-d1-movimento",
+    "video-d1-tanto",
+    "ponte-d1-tanto",
+    "experiencia-velocidade",
+    "video-d1-velocidade",
+    "ponte-d1-velocidade",
+    "ajuda-como-fazer-intro",
+    "ajuda-d1"
+  ],
+  "blocks": [
+    {
+      "key": "experiencia-quadro",
+      "content": {
+        "kind": "interactive",
+        "required": true,
+        "title": "Como o personagem anda",
+        "semPerguntaFinal": true,
+        "instructions": "Deixe Segurar a seta para a direita desligado e clique em Avançar 1 quadro. Olhe o x. Depois ligue Segurar a seta para a direita e clique em Avançar 1 quadro algumas vezes. Por último, clique em Rodar.",
+        "hints": [],
+        "activity": {
+          "type": "experimentation",
+          "scene": "lighthouse-walk",
+          "cenario": "farol",
+          "setup": {
+            "goals": [
+              "still-without-arrow",
+              "moves-each-frame"
+            ],
+            "goalCopy": {
+              "still-without-arrow": {
+                "label": "Sem a seta, o personagem ficou parado"
+              },
+              "moves-each-frame": {
+                "label": "Com a seta, o personagem andou a cada quadro"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "key": "experiencia-limite",
+      "content": {
+        "kind": "interactive",
+        "required": true,
+        "title": "Até onde ele pode ir?",
+        "semPerguntaFinal": true,
+        "instructions": "Deixe Manter dentro da tela desligado, ligue Segurar a seta para a direita e clique em Rodar. Veja o que acontece na borda. Depois clique em Recomeçar, ligue Manter dentro da tela e clique em Rodar de novo.",
+        "hints": [],
+        "activity": {
+          "type": "experimentation",
+          "scene": "lighthouse-walk",
+          "cenario": "farol",
+          "setup": {
+            "goals": [
+              "left-the-screen",
+              "stayed-inside"
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "sections": [
+    {
+      "key": "apresentacao",
+      "title": "A Chave do Farol",
+      "intent": "presentation",
+      "objective": "Experimentar o curso pronta antes de construir suas regras, sem exigir vitória.",
+      "blockKeys": [
+        "video-intro-farol",
+        "ponte-intro-farol",
+        "jogo-pronto"
+      ],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": [
+          "video-intro-farol",
+          "jogo-pronto"
+        ]
+      }
+    },
+    {
+      "key": "caderno",
+      "title": "Seu passo a passo do projeto",
+      "intent": "material",
+      "objective": "Conhecer o caderno opcional que acompanha o conteúdo das aulas e a ajuda disponível.",
+      "blockKeys": [
+        "video-intro-caderno",
+        "ponte-intro-caderno",
+        "materiais-farol"
+      ],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": [
+          "video-intro-caderno"
+        ]
+      }
+    },
+    {
+      "key": "quadro",
+      "title": "Como o personagem anda",
+      "intent": "exploration",
+      "objective": "Ver que o jogo repete a cada quadro e que, com a seta, o personagem anda um pouco em cada repetição.",
+      "blockKeys": [
+        "video-d1-quadro",
+        "ponte-d1-quadro",
+        "experiencia-quadro"
+      ],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": [
+          "video-d1-quadro",
+          "experiencia-quadro"
+        ]
+      }
+    },
+    {
+      "key": "andar",
+      "title": "Faça o personagem andar",
+      "intent": "application",
+      "objective": "Ativar as quatro setas e mover o personagem dentro de A cada quadro do jogo.",
+      "blockKeys": [
+        "video-d1-andar",
+        "ponte-d1-andar"
+      ],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": [
+          "video-d1-andar"
+        ],
+        "projectChecks": [
+          {
+            "id": "direcional",
+            "label": "Em Ao iniciar, use Ativar controles clássicos com só as quatro direções.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_enable_classic_controls",
+              "area": "start",
+              "fields": {
+                "MODE": "directions"
+              }
+            }
+          },
+          {
+            "id": "andar",
+            "label": "Dentro de A cada quadro do jogo, mova o personagem.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_update_each_frame",
+              "area": "loops",
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_g2d_top_down",
+                  "fields": {
+                    "SPRITE": "personagem"
+                  }
+                }
+              }
+            }
+          },
+          {
+            "id": "andar-cima",
+            "label": "Com a seta para cima, o personagem sobe.",
+            "rule": {
+              "type": "behavior",
+              "observation": {
+                "type": "idleBeforeAction",
+                "idleMs": 80
+              },
+              "steps": [
+                {
+                  "action": "press",
+                  "key": "ArrowUp",
+                  "holdMs": 80
+                }
+              ],
+              "expect": {
+                "target": {
+                  "kind": "spritePosition",
+                  "path": "personagem",
+                  "axis": "y"
+                },
+                "compare": "decreased"
+              }
+            }
+          },
+          {
+            "id": "andar-baixo",
+            "label": "Com a seta para baixo, o personagem desce.",
+            "rule": {
+              "type": "behavior",
+              "observation": {
+                "type": "idleBeforeAction",
+                "idleMs": 80
+              },
+              "steps": [
+                {
+                  "action": "press",
+                  "key": "ArrowDown",
+                  "holdMs": 80
+                }
+              ],
+              "expect": {
+                "target": {
+                  "kind": "spritePosition",
+                  "path": "personagem",
+                  "axis": "y"
+                },
+                "compare": "increased"
+              }
+            }
+          },
+          {
+            "id": "andar-esquerda",
+            "label": "Com a seta para a esquerda, o personagem vai para a esquerda.",
+            "rule": {
+              "type": "behavior",
+              "observation": {
+                "type": "idleBeforeAction",
+                "idleMs": 80
+              },
+              "steps": [
+                {
+                  "action": "press",
+                  "key": "ArrowLeft",
+                  "holdMs": 80
+                }
+              ],
+              "expect": {
+                "target": {
+                  "kind": "spritePosition",
+                  "path": "personagem",
+                  "axis": "x"
+                },
+                "compare": "decreased"
+              }
+            }
+          },
+          {
+            "id": "andar-direita",
+            "label": "Com a seta para a direita, o personagem vai para a direita.",
+            "rule": {
+              "type": "behavior",
+              "observation": {
+                "type": "idleBeforeAction",
+                "idleMs": 80
+              },
+              "steps": [
+                {
+                  "action": "press",
+                  "key": "ArrowRight",
+                  "holdMs": 80
+                }
+              ],
+              "expect": {
+                "target": {
+                  "kind": "spritePosition",
+                  "path": "personagem",
+                  "axis": "x"
+                },
+                "compare": "increased"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "limite",
+      "title": "Até onde ele pode ir?",
+      "intent": "exploration",
+      "objective": "Ver o personagem sair da tela sem limite e ficar inteiro com o limite ligado.",
+      "blockKeys": [
+        "video-d1-limite",
+        "ponte-d1-limite",
+        "experiencia-limite"
+      ],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": [
+          "video-d1-limite",
+          "experiencia-limite"
+        ]
+      }
+    },
+    {
+      "key": "borda",
+      "title": "Mantenha o personagem na tela",
+      "intent": "delivery",
+      "objective": "Manter o personagem dentro da tela, depois do movimento, e enviar a atividade.",
+      "blockKeys": [
+        "video-d1-borda",
+        "ponte-d1-borda",
+        "projeto"
+      ],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": [
+          "video-d1-borda",
+          "projeto"
+        ],
+        "projectChecks": [
+          {
+            "id": "direcional",
+            "label": "Em Ao iniciar, use Ativar controles clássicos com só as quatro direções.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_enable_classic_controls",
+              "area": "start",
+              "fields": {
+                "MODE": "directions"
+              }
+            }
+          },
+          {
+            "id": "andar",
+            "label": "Dentro de A cada quadro do jogo, o bloco que move o personagem vem antes de Manter o sprite dentro da tela.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_update_each_frame",
+              "area": "loops",
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_g2d_top_down",
+                  "fields": {
+                    "SPRITE": "personagem"
+                  },
+                  "beforeBlock": "sz_g2d_clamp_to_screen"
+                }
+              }
+            }
+          },
+          {
+            "id": "borda",
+            "label": "Dentro de A cada quadro do jogo, mantenha o personagem dentro da tela.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_update_each_frame",
+              "area": "loops",
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_g2d_clamp_to_screen",
+                  "fields": {
+                    "SPRITE": "personagem"
+                  }
+                }
+              }
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

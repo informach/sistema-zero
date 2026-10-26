@@ -16,6 +16,7 @@ import { SceneButton } from './exploration-stage'
 import { useLessonPlayer } from './lesson-player-context'
 import { useLessonPreview } from './lesson-preview-context'
 import { GardenQuizScene } from './quiz-garden-scene'
+import { LighthouseQuizScene } from './quiz-lighthouse-scene'
 import { ZappyOuvirButton } from './zappy-ouvir-button'
 /** Same radio-card recipe as KidsQuiz; the approved prediction flow needs immediate feedback. */
 export function PredictionQuiz(props: {
@@ -48,6 +49,7 @@ function PredictionQuizSession({
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
   const checked = feedback !== null
+  const [scenePlaying, setScenePlaying] = useState(false)
   async function requestGrade(body: Record<string, string[]>, questionId?: string) {
     if (rehearsal) {
       const authored = { ...content, passingScore: content.passingScore || 100 }
@@ -298,11 +300,26 @@ function PredictionQuizSession({
             data-result={checked}
           >
             {checked ? <CheckCircle2 size={16} aria-hidden /> : <Hand size={16} aria-hidden />}
-            {checked ? 'Resultado da experiência' : 'Antes do toque'}
+            {checked ? 'Resultado da experiência' : 'Antes do teste'}
           </span>
-          <GardenQuizScene scene={question.predictionScene!} result={checked} />
+          {question.predictionScene?.startsWith('lighthouse-') ? (
+            <LighthouseQuizScene
+              key={question.id}
+              scene={question.predictionScene}
+              result={checked}
+              choice={selected}
+              onAnimating={setScenePlaying}
+            />
+          ) : (
+            <GardenQuizScene
+              scene={question.predictionScene as 'garden-touch' | 'garden-count' | 'garden-repeat'}
+              result={checked}
+            />
+          )}
           <p className="sz-garden-caption">
-            {checked ? 'Observe o resultado antes de continuar.' : captions[sceneIndex]}
+            {checked
+              ? 'Observe o resultado antes de continuar.'
+              : (captions[sceneIndex] ?? 'Observe a situação antes de escolher a resposta.')}
           </p>
           {checked && sceneIndex === 1 && (
             <ol className="sz-garden-sequence">
@@ -430,7 +447,11 @@ function PredictionQuizSession({
                 )}
               </div>
               <div className="flex flex-wrap gap-2">
-                <SceneButton tom="gesto" disabled={busy} onClick={() => void advance()}>
+                <SceneButton
+                  tom="gesto"
+                  disabled={busy || scenePlaying}
+                  onClick={() => void advance()}
+                >
                   {correct
                     ? index === questions.length - 1
                       ? 'Concluir revisão'
@@ -440,7 +461,7 @@ function PredictionQuizSession({
                 </SceneButton>
                 {correct && (
                   <SceneButton
-                    disabled={busy}
+                    disabled={busy || scenePlaying}
                     onClick={() => {
                       setFeedback(null)
                       setSelected(null)

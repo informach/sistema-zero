@@ -1,5 +1,10 @@
 # A Chave do Farol · Certificado · Comemore sua criação
 
+## Atualização aplicada em 26/10/2026
+
+A versão vigente segue [exploração orientada por objetivos](../../aulas-interativas-tecnico/DESCOBERTA-GUIADA.md): vídeos conceituais explicam e convidam; a experiência oferece controles livres e orientação pelo estado; o Estúdio conserva a instrução completa de montagem. Edição da regra, entrada de quem joga e execução são gestos distintos. As notas datadas anteriores abaixo registram o histórico. O roteiro e o manifesto atualizados são a referência de produção; os clipes ainda precisam de gravação/edição/importação.
+
+
 ## Resumo
 
 - Estado de entrada: o jogo já tem movimento, coleta e decisão; a personalização de visuais, avisos e posição da chave e a publicação foram ensinadas.
@@ -40,15 +45,15 @@ A gravação precisa usar uma conta sem emissão anterior para mostrar **Baixar 
 
 ## Proposta final
 
-### Seção 1. As regras do seu curso
+### Seção 1. As regras do seu jogo
 
 - **Intenção:** revisão de conceito (`explanation`).
 - **Por que existe:** retomar as regras construídas e explicar as dúvidas antes da celebração.
-- **Conclui quando:** todas as respostas corretas, com explicação após envio e novas tentativas imediatas.
+- **Conclui quando:** todas as respostas corretas, com previsão, cena após Ver o que acontece, explicação por pergunta e novas tentativas imediatas.
 - **Blocos, nesta ordem:** `fala-revisao-final` (Zappy), `quiz-revisao-final` (quiz). Sem vídeo, ferramenta ou texto adicional.
 - **Conteúdo:** [perguntas, alternativas e explicações](../../aulas-interativas-tecnico/proposta-quizzes-cursos-curtos-2026-10-03.md).
 
-**Zappy na página (não gravar):** Você fez o personagem andar, pegar a chave e acender o farol. Agora vamos relembrar essas regras com quatro perguntas. Se errar alguma, leia o porquê, clique em Tentar de novo! e responda outra vez.
+**Zappy na página (não gravar):** Você fez o personagem andar, pegar a chave e acender o farol. Escolha uma resposta em cada pergunta e clique em Ver o que acontece. Compare com a cena e a explicação. Você pode tentar de novo.
 
 ### Seção 2. Comemore sua criação
 

@@ -1,0 +1,119 @@
+{
+  "version": 1,
+  "experiences": {
+    "experiencia-quadro": [
+      {
+        "id": "walk-empty",
+        "text": "A regra está vazia. Você pode apertar a tecla no teclado de teste e avançar um quadro, ou começar adicionando o bloco."
+      },
+      {
+        "id": "walk-no-command",
+        "text": "A tecla está apertada, mas falta o comando de mover. Avance um quadro para testar. Depois adicione o bloco e compare."
+      },
+      {
+        "id": "walk-no-key",
+        "text": "O bloco está na regra, mas a tecla está solta. Avance um quadro para comparar. Apertar a tecla não muda os blocos."
+      },
+      {
+        "id": "walk-both",
+        "text": "Bloco na regra e tecla apertada. Avance um ou vários quadros e observe os passos. Você pode retirar o bloco ou soltar a tecla para comparar."
+      },
+      {
+        "id": "walk-complete",
+        "text": "Você comparou o comando, a tecla e a passagem dos quadros. Continue experimentando: todas as opções permanecem livres."
+      }
+    ],
+    "experiencia-limite": [
+      {
+        "id": "edge-start",
+        "text": "O bloco de mover já está na regra. Aperte a tecla no teclado de teste e avance os quadros. Observe a borda."
+      },
+      {
+        "id": "edge-limited-first",
+        "text": "O bloco de limite já está na regra. Você pode retirá-lo e comparar o que acontece na borda."
+      },
+      {
+        "id": "edge-out",
+        "text": "Ele saiu da tela. Adicione o bloco de limite e avance outro quadro. O que muda?"
+      },
+      {
+        "id": "edge-hold",
+        "text": "Avance mais quadros junto à borda. Veja como o bloco de limite mantém o personagem dentro da tela."
+      },
+      {
+        "id": "edge-order",
+        "text": "Você comparou com e sem o bloco de limite. Abra o teste das duas ordens para ver por que a ordem importa."
+      },
+      {
+        "id": "edge-complete",
+        "text": "Você comparou as duas regras e as duas ordens. Pode repetir os testes e continuar explorando."
+      }
+    ],
+    "experiencia-memoria": [
+      {
+        "id": "memory-edited",
+        "text": "Você mudou a regra para o próximo encontro. A coleta que já aconteceu continua como estava. Recomece a partida para testar a mudança."
+      },
+      {
+        "id": "memory-first-saved",
+        "text": "Pode começar guardando a coleta. Depois experimente outra partida sem a ação de guardar e compare."
+      },
+      {
+        "id": "memory-first",
+        "text": "Encoste na chave e compare o que some com o que fica guardado. Você pode mudar a regra e repetir em outra partida."
+      },
+      {
+        "id": "memory-compare",
+        "text": "Você viu a chave sumir sem guardar. Experimente adicionar a ação de guardar e encostar numa chave de uma nova partida."
+      },
+      {
+        "id": "memory-away",
+        "text": "Você comparou os dois modos. Depois de uma coleta guardada, afaste o personagem e observe se a memória muda."
+      },
+      {
+        "id": "memory-restart",
+        "text": "Afastar não apagou a memória. Quando quiser, recomece uma partida depois de guardar a coleta."
+      },
+      {
+        "id": "memory-complete",
+        "text": "Você comparou os quatro casos. Continue adicionando ou retirando a ação de guardar, recolhendo a chave e recomeçando."
+      }
+    ],
+    "experiencia-porta": [
+      {
+        "id": "door-with",
+        "text": "Neste teste, o personagem está com a chave. Teste a porta quando quiser. Também pode mudar a situação antes de testar."
+      },
+      {
+        "id": "door-without",
+        "text": "Neste teste, o personagem está sem a chave. Teste a porta quando quiser. Também pode mudar a situação antes de testar."
+      },
+      {
+        "id": "door-compare-without",
+        "text": "A porta abriu com a chave. Tire a chave do personagem e teste outra vez para comparar."
+      },
+      {
+        "id": "door-compare-with",
+        "text": "Sem chave, a porta avisou. Experimente dar a chave ao personagem e testar novamente. Você também pode repetir este caso."
+      },
+      {
+        "id": "door-complete",
+        "text": "Você testou com e sem chave. Pode mudar de situação e testar a porta quantas vezes quiser."
+      }
+    ],
+    "experiencia-posicao": [
+      {
+        "id": "position-start",
+        "text": "O x muda o lugar para os lados. Experimente ir e voltar. O y também está livre: você escolhe o que explorar primeiro."
+      },
+      {
+        "id": "position-height",
+        "text": "Você comparou os lados. Agora experimente aumentar e diminuir o y, observando a altura. Pode continuar mexendo no x também."
+      },
+      {
+        "id": "position-complete",
+        "text": "Você explorou as quatro direções. Continue escolhendo lugares. Se quiser um desafio, mostre um alvo e leve a chave até ele."
+      }
+    ]
+  }
+}
