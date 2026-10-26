@@ -183,3 +183,9 @@ concessão apenas por publicar e isolamento dos marcos Kids/adulto, conforme o p
 Nenhuma regra produtiva foi alterada nesse ajuste. Resultado local: 1.963 positivos, 14.636
 asserções, zero falhas; 532 casos condicionais de banco/ambiente foram pulados. As provas SQL
 específicas executadas e as exigidas no CI estão discriminadas acima, sem contar skips como aprovação.
+
+Core completo identificou duas rotas de teste Cadê que ainda não executavam as descobertas
+adicionais já exigidas pelos manifestos commitados: outro esconderijo e toque repetido. O
+percurso foi completado por ações reais do motor, sem marcar metas artificialmente nem mudar
+manifestos/falas. Core completo passou 1.607 testes/82.059 asserções; a suíte de desenho das
+cenas Kids que compartilha o percurso passou 138 testes/502 asserções.

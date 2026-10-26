@@ -241,11 +241,14 @@ export const scenePaths: Record<SceneId, SceneAction[]> = {
     { type: 'start', input: 'tap' },
     { type: 'connect', port: 'touch', enabled: true },
     { type: 'start', input: 'tap' },
+    { type: 'other-hiding-place' },
+    { type: 'touch-hiding-place', id: 1 },
   ],
   'found-counter': [
     { type: 'find-character', id: 0 },
     { type: 'find-character', id: 1 },
     { type: 'look-around' },
+    { type: 'find-character', id: 0 },
     { type: 'restart-search' },
   ],
   'collect-and-remember': [
