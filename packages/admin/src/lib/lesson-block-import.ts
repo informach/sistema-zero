@@ -36,6 +36,10 @@ const QuizQuestionImportSchema = z
         'lighthouse-memory',
         'lighthouse-door',
         'lighthouse-retest',
+        'island-view',
+        'island-position',
+        'island-height',
+        'island-retest',
       ])
       .optional(),
     prompt: nonBlankMarkdown(5_000, 'Informe o enunciado.'),

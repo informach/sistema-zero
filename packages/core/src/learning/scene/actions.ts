@@ -1,3 +1,4 @@
+import { isIslandAction, type IslandAction } from './island-3d'
 import type { OnceArea, OnceCardId, ScenePreset } from './presets'
 import type { SceneCopyColor } from './state'
 
@@ -16,6 +17,7 @@ import type { SceneCopyColor } from './state'
  *  para O Jogo do Meu Jeito, que não tinha UMA cena nativa. As onze últimas são o NÚCLEO do
  *  Iniciante 2D (15/09/2026): os degraus da escada que faltavam para os outros sete cursos. */
 export const SCENE_IDS = [
+  'island-3d',
   'coordinates',
   'screen-reader',
   'stage-size',
@@ -139,6 +141,7 @@ export const SCENE_PORTS = [
 export type ScenePort = (typeof SCENE_PORTS)[number]
 
 export type SceneAction =
+  | IslandAction
   | { type: 'place-in-area'; card: OnceCardId; area: OnceArea | 'outside' }
   | { type: 'trigger' }
   | { type: 'key-state'; hasKey: boolean }
@@ -343,6 +346,7 @@ export const MESH_SKIN_LABELS: Record<MeshLevel, string> = {
 
 /** Quais portas cada cena oferece. Cena sem porta não tem bancada de fios. */
 const PORTS: Record<SceneId, readonly ScenePort[]> = {
+  'island-3d': [],
   'once-vs-always': [],
   'fixed-vs-read': [],
   'collision-pair': [],
@@ -695,6 +699,8 @@ const ANIMATIONS: readonly SceneId[] = ['frames', 'onion-skin']
  */
 export function isSceneAction(value: unknown, scene: SceneId): value is SceneAction {
   if (!isRecord(value)) return false
+  if (typeof value.type === 'string' && value.type.startsWith('island-'))
+    return scene === 'island-3d' && isIslandAction(value)
   const L = SCENE_LIMITS
   switch (value.type) {
     case 'place-in-area':

@@ -233,6 +233,10 @@ export function QuizBuilder({
                     <option value="lighthouse-memory">Farol: memória da coleta</option>
                     <option value="lighthouse-door">Farol: resposta da porta</option>
                     <option value="lighthouse-retest">Farol: nova partida</option>
+                    <option value="island-view">Ilha: ponto de vista</option>
+                    <option value="island-position">Ilha: posição</option>
+                    <option value="island-height">Ilha: altura</option>
+                    <option value="island-retest">Ilha: novo teste</option>
                   </Select>
                 </Field>
                 <div className="flex items-start justify-between gap-2">

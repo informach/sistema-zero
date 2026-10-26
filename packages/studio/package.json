@@ -34,6 +34,7 @@
     "./local-persistence": "./src/persistence/local.ts",
     "./project-list": "./src/projects/ProjectList.tsx",
     "./arte": "./src/arte/index.ts",
+    "./ilha-farol-scene": "./src/arte/ilha-farol-scene.generated.ts",
     "./controls": "./src/controls/projectControls.ts",
     "./server-project-checks": "./src/blockly/projectCheckAuthoring.ts",
     "./server-check": "./src/check/serverCheck.ts",

@@ -170,6 +170,10 @@ test.each([
   'lighthouse-memory',
   'lighthouse-door',
   'lighthouse-retest',
+  'island-view',
+  'island-position',
+  'island-height',
+  'island-retest',
 ] as const)('%s preserves the scene without exposing the answer', (predictionScene) => {
   const authored: QuizBlock = {
     kind: 'quiz',

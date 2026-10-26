@@ -67,7 +67,8 @@ const behavior = z.strictObject({
         (step) =>
           isExecutionStep(step) &&
           step.action !== 'clickTarget' &&
-          step.action !== 'approachSprite',
+          step.action !== 'approachSprite' &&
+          step.action !== 'approachObject3d',
       ),
     )
     .max(EXECUTION_LIMITS.maxSteps),

@@ -1,3 +1,4 @@
+import { stepIsland, type IslandAction } from './island-3d'
 import {
   isSceneAction,
   LIGHTHOUSE_POSITION,
@@ -418,6 +419,8 @@ export function stepScene(
    */
   if (action.type !== 'hint' && action.type !== 'advance') s.caption = ''
   const scene = start.scene
+  if (scene === 'island-3d' && action.type.startsWith('island-'))
+    return stepIsland(s, action as IslandAction)
 
   switch (action.type) {
     case 'key-position': {

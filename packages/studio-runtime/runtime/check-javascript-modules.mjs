@@ -21,6 +21,11 @@ export async function createPinnedThreeModuleResolver(packageRoot, version) {
       (url.search && url.search !== '?external=three')
     )
       return
+    if (url.pathname === `/three@${version}`)
+      return {
+        bytes: Buffer.from(`export * from '${prefix}build/three.module.js';`),
+        type: 'text/javascript',
+      }
     if (!url.pathname.startsWith(prefix)) return
     const file = url.pathname.slice(prefix.length)
     if (

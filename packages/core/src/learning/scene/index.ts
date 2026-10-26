@@ -34,6 +34,7 @@ import {
 } from './voz'
 
 export * from './actions'
+export * from './island-3d'
 // O ateliê do lote 5 do Raio-X: as réguas do fogo, do espelho, da lupa e da folha.
 export * from './atelie'
 export * from './audio-url'
@@ -171,6 +172,7 @@ export function isSceneSetup(value: unknown, scene: SceneId): value is SceneSetu
     freeExploration !== undefined &&
     (typeof freeExploration !== 'boolean' ||
       ![
+        'island-3d',
         'touch-response',
         'found-counter',
         'lighthouse-walk',
@@ -221,6 +223,21 @@ export function isSceneSetup(value: unknown, scene: SceneId): value is SceneSetu
       freeExploration !== undefined
     )
   const disponiveis = sceneGoalIds(scene)
+  // Os três experimentos compartilham a cena, mas têm controles e metas diferentes.
+  if (
+    scene === 'island-3d' &&
+    Array.isArray(alvo) &&
+    new Set(
+      alvo.map((g) =>
+        typeof g === 'string' && g.startsWith('axis-')
+          ? 'position'
+          : typeof g === 'string' && g.startsWith('contact-')
+            ? 'contact'
+            : 'view',
+      ),
+    ).size > 1
+  )
+    return false
   const possiveis =
     scene === 'once-vs-always'
       ? ONCE_GOALS_BY_PRESET[oncePreset(preset as SceneSetup['preset']).id]

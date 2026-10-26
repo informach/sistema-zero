@@ -44,6 +44,7 @@ import {
 import { FixedVsReadStage } from './scene-fixed-vs-read'
 import { FoundCounterStage } from './scene-found-counter'
 import { InvincibilityStage } from './scene-invincibility'
+import { IslandWorld } from './scene-island-world'
 import { LighthouseKeyStage } from './scene-lighthouse-key'
 import { LighthousePositionStage } from './scene-lighthouse-position'
 import { LighthouseWalkStage } from './scene-lighthouse-walk'
@@ -388,6 +389,7 @@ function ExplorationStageContent({ activity, state, dispatch, preview }: Explora
   if (m === 'random')
     return <RandomStage state={state} cast={cast} preset={activity.setup?.preset} />
   if (m === 'acceleration') return <AccelerationStage state={state} cast={cast} />
+  if (m === 'island-3d') return <IslandWorld state={state.island3d!} />
   return semPalco(m)
 }
 

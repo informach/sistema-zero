@@ -6,6 +6,7 @@ Uma fonte editorial para as comunidades adulta e infantojuvenil. Cada pasta reú
 | --- | --- | --- | --- |
 | Cadê Todo Mundo? | 3 | [Abrir](cade-todo-mundo/README.md) | [PDF](cade-todo-mundo/passo-a-passo-do-projeto.pdf) |
 | A Chave do Farol | 4 | [Abrir](desafio-primeiro-jogo/README.md) | [PDF](desafio-primeiro-jogo/passo-a-passo-do-projeto.pdf) |
+| A Ilha do Farol | 3 | [Abrir](a-ilha-do-farol/README.md) | [PDF](a-ilha-do-farol/passo-a-passo.pdf) |
 | Nave Contra Asteroides | 9 | [Abrir](nave-contra-asteroides/README.md) | [PDF](nave-contra-asteroides/passo-a-passo-do-projeto.pdf) |
 | Corre, Dino! | 13 | [Abrir](corre-dino/README.md) | [PDF](corre-dino/passo-a-passo-do-projeto.pdf) |
 | O Jogo do Meu Jeito | 8 | [Abrir](o-jogo-do-meu-jeito/README.md) | [PDF](o-jogo-do-meu-jeito/passo-a-passo-do-projeto.pdf) |

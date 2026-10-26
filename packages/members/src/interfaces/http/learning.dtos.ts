@@ -700,7 +700,17 @@ function sectionRuleSchema(context: ExecutionStepValidationContext) {
             ),
             t.Object(
               {
-                action: t.Literal('approachSprite'),
+                action: t.Union([t.Literal('approachSprite'), t.Literal('approachObject3d')]),
+                walkable: t.Optional(
+                  t.Array(
+                    t.Object({
+                      minX: t.Number(),
+                      maxX: t.Number(),
+                      minZ: t.Number(),
+                      maxZ: t.Number(),
+                    }),
+                  ),
+                ),
                 actorPath: t.String(),
                 targetPath: t.String(),
                 timeoutMs: t.Number(),

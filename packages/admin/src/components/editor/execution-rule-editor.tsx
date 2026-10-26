@@ -125,13 +125,22 @@ export function StepsEditor({
               if (
                 (!graphics && action !== 'wait') ||
                 (python &&
-                  ['sprite', 'outsideGroup', 'lastPoint', 'approachSprite'].includes(action))
+                  [
+                    'sprite',
+                    'outsideGroup',
+                    'lastPoint',
+                    'approachSprite',
+                    'approachObject3d',
+                  ].includes(action))
               )
                 return
               if (singlePress && action !== 'press' && action !== 'hold') return
-              if (action === 'approachSprite') {
+              if (action === 'approachSprite' || action === 'approachObject3d') {
                 patch(at, {
-                  action: 'approachSprite',
+                  action,
+                  ...(action === 'approachObject3d'
+                    ? { walkable: [{ minX: -10, maxX: 10, minZ: -10, maxZ: 10 }] }
+                    : {}),
                   actorPath: '',
                   targetPath: '',
                   timeoutMs: 4500,
@@ -183,9 +192,14 @@ export function StepsEditor({
               Clicar na tela
             </option>
             {!python && (
-              <option value="approachSprite" disabled={singlePress}>
-                Levar um personagem até outro com as teclas
-              </option>
+              <>
+                <option value="approachObject3d" disabled={singlePress}>
+                  Levar um objeto 3D até outro no chão
+                </option>
+                <option value="approachSprite" disabled={singlePress}>
+                  Levar um personagem até outro com as teclas
+                </option>
+              </>
             )}
             {!python && (
               <option value="sprite" disabled={singlePress}>
@@ -203,7 +217,62 @@ export function StepsEditor({
               </option>
             )}
           </Select>
-          {step.action === 'approachSprite' && (
+          {step.action === 'approachObject3d' && (
+            <fieldset className="space-y-3 rounded-md border p-3">
+              <legend>Retângulos do chão (x/z)</legend>
+              {step.walkable?.map((r, i) => (
+                <div key={i} className="grid grid-cols-2 gap-2">
+                  {(['minX', 'maxX', 'minZ', 'maxZ'] as const).map((k) => (
+                    <Input
+                      key={k}
+                      type="number"
+                      min={-100}
+                      max={100}
+                      step="any"
+                      aria-label={`${k} do retângulo ${i + 1}`}
+                      value={r[k]}
+                      onChange={(e) =>
+                        patch(at, {
+                          ...step,
+                          walkable: step.walkable!.map((v, j) =>
+                            j === i ? { ...v, [k]: Number(e.target.value) } : v,
+                          ),
+                        })
+                      }
+                    />
+                  ))}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    type="button"
+                    onClick={() =>
+                      patch(at, { ...step, walkable: step.walkable!.filter((_, j) => j !== i) })
+                    }
+                  >
+                    Retirar retângulo
+                  </Button>
+                </div>
+              ))}
+              <Button
+                variant="outline"
+                size="sm"
+                type="button"
+                disabled={(step.walkable?.length ?? 0) >= 8}
+                onClick={() =>
+                  patch(at, {
+                    ...step,
+                    walkable: [
+                      ...(step.walkable ?? []),
+                      { minX: -10, maxX: 10, minZ: -10, maxZ: 10 },
+                    ],
+                  })
+                }
+              >
+                Adicionar retângulo
+              </Button>
+            </fieldset>
+          )}
+          {(step.action === 'approachSprite' || step.action === 'approachObject3d') && (
             <>
               <Input
                 aria-label={`Personagem que anda no passo ${at + 1}`}

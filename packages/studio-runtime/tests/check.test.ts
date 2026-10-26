@@ -401,6 +401,31 @@ describe('o pedido de teste', () => {
     expect(() => parseCheckRequest({ ...classicBody, objectives: [{ ...dobro }] })).toThrow('Pro')
   })
 
+  test('navegação 3D é recusada no Pro antes de reservar o executor', () => {
+    const objective = {
+      id: 'alvo-3d',
+      rule: {
+        type: 'behavior',
+        steps: [
+          {
+            action: 'approachObject3d',
+            actorPath: 'personagem',
+            targetPath: 'chave',
+            timeoutMs: 7000,
+            walkable: [{ minX: -10, maxX: 10, minZ: -10, maxZ: 10 }],
+          },
+        ],
+        expect: { target: { kind: 'text' }, compare: 'contains', value: 'Chave recolhida' },
+      },
+    }
+    expect(parseCheckRequest({ ...classicBody, objectives: [objective] }).objectives).toHaveLength(
+      1,
+    )
+    expect(() => parseCheckRequest({ ...proBody, objectives: [objective] })).toThrow(
+      'Jogo 3D clássico JavaScript',
+    )
+  })
+
   test('a regra em JavaScript vale no clássico e no Pro e só passa com true', async () => {
     const regra = {
       id: 'regra',

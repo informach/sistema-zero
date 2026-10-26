@@ -61,7 +61,8 @@ export type ExecutionStep =
   | { action: 'click'; x: number; y: number }
   | { action: 'clickTarget'; target: ExecutionClickTarget }
   | {
-      action: 'approachSprite'
+      action: 'approachSprite' | 'approachObject3d'
+      walkable?: { minX: number; maxX: number; minZ: number; maxZ: number }[]
       actorPath: string
       targetPath: string
       avoidPaths?: string[]
@@ -267,6 +268,7 @@ export function isExecutionStep(
             n <= EXECUTION_LIMITS.maxCoordinate,
         )
       )
+    case 'approachObject3d':
     case 'approachSprite': {
       const path = (v: unknown) =>
         context === 'draft'
@@ -275,8 +277,32 @@ export function isExecutionStep(
             !v.split('.').some((p) => ['constructor', 'prototype', '__proto__'].includes(p))
       return (
         Object.keys(step).every((k) =>
-          ['action', 'actorPath', 'targetPath', 'avoidPaths', 'timeoutMs'].includes(k),
+          [
+            'action',
+            'actorPath',
+            'targetPath',
+            'avoidPaths',
+            'timeoutMs',
+            ...(step.action === 'approachObject3d' ? ['walkable'] : []),
+          ].includes(k),
         ) &&
+        (step.action !== 'approachObject3d' ||
+          (Array.isArray(step.walkable) &&
+            step.walkable.length > 0 &&
+            step.walkable.length <= 8 &&
+            step.walkable.every(
+              (r: unknown) =>
+                record(r) &&
+                Object.keys(r).length === 4 &&
+                ['minX', 'maxX', 'minZ', 'maxZ'].every(
+                  (k) =>
+                    typeof r[k] === 'number' &&
+                    Number.isFinite(r[k]) &&
+                    Math.abs(r[k] as number) <= 100,
+                ) &&
+                Number(r.minX) < Number(r.maxX) &&
+                Number(r.minZ) < Number(r.maxZ),
+            ))) &&
         path(step.actorPath) &&
         path(step.targetPath) &&
         step.actorPath !== step.targetPath &&
@@ -330,7 +356,7 @@ export function executionRuleBudgetMs(rule: SectionExecutionRule): number {
           ? step.ms
           : step.action === 'press'
             ? (step.holdMs ?? 80)
-            : step.action === 'approachSprite'
+            : step.action === 'approachSprite' || step.action === 'approachObject3d'
               ? step.timeoutMs
               : 0),
       0,
@@ -362,7 +388,7 @@ function areSteps(steps: unknown): steps is ExecutionStep[] {
         ? step.ms
         : step.action === 'press'
           ? (step.holdMs ?? 0)
-          : step.action === 'approachSprite'
+          : step.action === 'approachSprite' || step.action === 'approachObject3d'
             ? step.timeoutMs
             : 0),
     0,

@@ -1,0 +1,55 @@
+[engaging, energetic, conversational voice] No jogo 2D, o farol perguntava se você tinha a chave. Vamos montar essa mesma decisão na ilha 3D. Primeiro execute o jogo e vá ao farol sem recolher a chave. Ainda falta a resposta dele.
+
+[confident, clear, unhurried voice] Volte aos blocos. Em Quando acontecer, deixe à vista um espaço depois do encontro com chaves, fora do fazer dele. Abra Jogo 3D, Encostar, Encostar. Pegue outro encontro com alguém de um grupo e encaixe nesse espaço. Escolha personagem e o grupo portas. Deixe item como está.
+
+[confident, clear, unhurried voice] Deixe à vista o fazer desse novo encontro. Abra Programação, Lógica e Se e pegue Se. Encaixe dentro do fazer. O Se chega com a pergunta x maior que zero. Arraste essa comparação pelo sinal de maior até a lixeira para deixar o lugar da pergunta vazio. Em Programação, Valores, pegue valor da variável e encaixe nesse lugar. Troque x por temChave. Depois clique em mais senão, no próprio bloco Se, para abrir o segundo caminho.
+
+[engaging, energetic, conversational voice] Verdadeiro escolhe o então; falso escolhe o senão. Agora vamos construir a resposta para quem está sem chave.
+
+[confident, clear, unhurried voice] Deixe à vista o senão. Em Programação, Variáveis, pegue Alterar variável variável para e encaixe dentro dele. Escolha aviso. Em Programação, Valores, pegue Texto e encaixe no valor. Escreva: Falta a chave. Procure na ilha antes de voltar. Deixe o então vazio nesta parte.
+
+[upbeat, encouraging voice] Execute uma partida nova e vá direto ao farol, sem passar pela chave. O farol deve continuar apagado e o aviso deve pedir a chave.
+
+[reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos, confira os nomes e os encaixes que acabamos de montar e teste de novo.
+
+[confident, clear, unhurried voice] Depois clique em Verificar projeto. Se algum objetivo faltar, leia a indicação, ajuste e verifique novamente. Quando aparecer Objetivo cumprido! e depois Salvo, clique em Próxima parte.
+
+[long pause]
+
+[engaging, energetic, conversational voice] O farol já responde quando falta a chave. Agora vamos ensinar a resposta para quem trouxe a chave.
+
+[confident, clear, unhurried voice] Nos blocos, encontre o encontro com portas e deixe à vista o então do Se temChave. Abra Jogo 3D, Objetos, Aparência. Pegue o bloco de mostrar ou esconder e encaixe dentro do então. Escolha Esconder e o objeto farol. No mesmo caminho da paleta, pegue outro bloco de visibilidade e encaixe depois dele. Neste, escolha Mostrar e o objeto farolAceso.
+
+[interested, animated voice] São as duas versões do farol: a apagada sai, e a acesa aparece no mesmo lugar.
+
+[confident, clear, unhurried voice] Ainda dentro do então, deixe à vista o lugar depois de Mostrar farolAceso. Em Programação, Variáveis, pegue Alterar variável variável para. Encaixe ali e escolha ganhou. Em Programação, Lógica e Se, pegue verdadeiro ou falso, coloque no valor e escolha verdadeiro. A regra do barco usa essa informação para se aproximar.
+
+[confident, clear, unhurried voice] Depois dessa linha, encaixe mais um Alterar variável variável para. Escolha aviso e encaixe um Texto de Programação, Valores. Escreva: Você acendeu o farol! O barco pode chegar.
+
+[upbeat, encouraging voice] Execute uma partida nova. Primeiro visite o farol sem chave: ele continua apagado. Depois pegue a chave e volte ao farol. Olha só: a luz acende, o aviso muda e o barco se aproxima. Pressione R para conferir o começo de outra partida.
+
+[reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos, confira os nomes e os encaixes que acabamos de montar e teste de novo.
+
+[confident, clear, unhurried voice] Depois clique em Verificar projeto. Se algum objetivo faltar, leia a indicação, ajuste e verifique novamente. Quando aparecer Objetivo cumprido! e depois Salvo, clique em Próxima parte.
+
+[long pause]
+
+[upbeat, encouraging voice] Agora escolha outro lugar para a chave. Nos blocos, abra Ao iniciar e encontre Posição do objeto chave. Mude x e z para escolher o lugar no chão. Você também pode ajustar y, mas o personagem precisa conseguir encostar na chave.
+
+[thoughtful] Ver a chave não basta. Ela pode estar alta demais ou do outro lado da água.
+
+[engaging, energetic, conversational voice] Por isso, execute o jogo e vá até o lugar que escolheu. Confira se a coleta acontece e se dá para voltar ao farol. Se não conseguir, volte à posição da chave, ajuste um valor por vez e teste novamente. Se quiser, escreva seus próprios avisos nas linhas que mudam aviso, conservando a mensagem de começo, coleta, falta da chave e vitória.
+
+[upbeat, encouraging voice] Faça também uma partida sem pegar a chave: o farol deve ficar apagado e pedir que você procure. Depois recolha a chave e acenda o farol. Pressione R e confira se tudo volta ao começo.
+
+[confident, clear, unhurried voice] Clique em Verificar projeto. Se algum objetivo faltar, leia a indicação, ajuste e teste novamente. Quando aparecer Objetivo cumprido! e depois Salvo, clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Próxima parte.
+
+[long pause]
+
+[pleased, lively voice] Você transformou a ideia da Chave do Farol em um jogo 3D! Programou o movimento, escolheu um lugar alcançável para a chave e fez o farol responder à coleta. Também aprendeu a mudar o ponto de vista para investigar o que a imagem não mostra de primeira.
+
+[upbeat, encouraging voice] Seu jogo está pronto! Se quiser publicar no Mural, clique em Compartilhar no Estúdio. O título já vem preenchido. Escreva um resumo, clique em Gerar capa e confira a imagem. Depois clique em Publicar e espere aparecer Seu jogo está no Mural!
+
+[pleased, lively voice] Olha só: seu jogo ganhou um lugar para outras pessoas jogarem! Clique em Copiar link de jogar para mostrar à família e aos amigos. Se precisar, peça ajuda a um adulto.
+
+[confident, clear, unhurried voice] Clique em Fechar para voltar. Você também pode continuar sem publicar. Para terminar, clique em Concluir aula.

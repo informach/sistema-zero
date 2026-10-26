@@ -93,6 +93,7 @@ import { SceneDescobertas } from './scene-descobertas'
 import { SomDaBancada } from './scene-dino-controls'
 import { Door, Memory, Position, Walk } from './scene-discovery-controls'
 import { DiscoveryContext } from './scene-discovery-frame'
+import { IslandDiscovery } from './scene-island-discovery'
 import { ProposedGarden } from './scene-discovery-garden'
 import { sceneDisplaySamples } from './scene-display-samples'
 import { botoesDoMundo, SceneReadoutBand } from './scene-frame'
@@ -1398,7 +1399,9 @@ export function SceneActivityView({
                       ),
                     }}
                   >
-                    {m === 'touch-response' || m === 'found-counter' ? (
+                    {m === 'island-3d' ? (
+                      <IslandDiscovery />
+                    ) : m === 'touch-response' || m === 'found-counter' ? (
                       <ProposedGarden part={m === 'touch-response' ? 'touch' : 'count'} />
                     ) : m === 'lighthouse-walk' ? (
                       <Walk boundary={activity.setup?.goals?.includes('left-the-screen')} />
