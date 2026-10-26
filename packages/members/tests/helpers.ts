@@ -892,7 +892,9 @@ export function buildApp(
       internalToken: opts.internalToken,
       studioAuthoringPolicy: opts.studioAuthoringPolicy,
       // O fake InMemoryCourseRepository implementa CourseRepository E ContentAdminRepository.
-      courses: new CourseAdminService(courses, courses, async () => Boolean(kidsJourneySnapshots.policy.curriculum)),
+      courses: new CourseAdminService(courses, courses, async () =>
+        Boolean(kidsJourneySnapshots.policy.curriculum),
+      ),
       modules: new ModuleAdminService(courses, courses),
       lessons: new LessonAdminService(courses, courses, learning),
       studioSubmissions: new StudioSubmissionsAdminService(studioSubmissions, clock),

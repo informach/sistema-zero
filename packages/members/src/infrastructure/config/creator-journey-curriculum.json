@@ -1222,10 +1222,7 @@
             "Testar orientação e desempenho; preparar execução reproduzível."
           ],
           "workshops": [
-            [
-              "Mundo por dados",
-              "Construir duas áreas usando uma descrição de dados editável."
-            ],
+            ["Mundo por dados", "Construir duas áreas usando uma descrição de dados editável."],
             [
               "Estado persistente",
               "Guardar e restaurar o estado essencial com validação e recuperação."
@@ -1270,10 +1267,7 @@
               "Pulo que responde",
               "Ajustar tolerância de salto e testar um salto cedo, no limite e tarde."
             ],
-            [
-              "Duas fases ligadas",
-              "Criar transição, ponto de entrada e reinício consistentes."
-            ],
+            ["Duas fases ligadas", "Criar transição, ponto de entrada e reinício consistentes."],
             [
               "Interface que informa",
               "Mostrar objetivo, vidas e fim sem depender apenas da cor; ajustar a interface em duas larguras."
@@ -1374,10 +1368,7 @@
             "Construir a interface de missão do jogo com HTML/CSS quando usar a versão de núcleo."
           ],
           "workshops": [
-            [
-              "Percurso com checkpoints",
-              "Validar a ordem e indicar claramente o próximo ponto."
-            ],
+            ["Percurso com checkpoints", "Validar a ordem e indicar claramente o próximo ponto."],
             [
               "Gravidade diferente",
               "Comparar peso/pulo e construir um desafio que continue possível."
@@ -1406,10 +1397,7 @@
             "Investigar câmera e colisão quando vários agentes se aproximam."
           ],
           "workshops": [
-            [
-              "Agentes com estados",
-              "Alternar entre vagar, seguir e chegar a uma área segura."
-            ],
+            ["Agentes com estados", "Alternar entre vagar, seguir e chegar a uma área segura."],
             [
               "Interação com objetivo",
               "Dar uma tarefa a um personagem e sinalizar seu progresso na interface do jogo."
@@ -1482,10 +1470,7 @@
             "Comparar protótipo e arte: reconhecer o personagem e conferir tamanho/origem."
           ],
           "workshops": [
-            [
-              "Nave animada",
-              "Criar uma sequência curta de propulsão e ajustar sua cadência."
-            ],
+            ["Nave animada", "Criar uma sequência curta de propulsão e ajustar sua cadência."],
             [
               "Asteroides legíveis",
               "Desenhar dois obstáculos distinguíveis do jogador e do fundo."

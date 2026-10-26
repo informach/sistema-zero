@@ -8,7 +8,6 @@ import { lockPensaAccount, releasePensaReservation } from './pensa-reservations'
 import {
   accountDeletionFences,
   adultJourneyGrants,
-  creatorJourneyCourseGrants,
   adultJourneyReached,
   adultProfiles,
   adultStudioBuilderProjectDeletions,
@@ -21,6 +20,7 @@ import {
   courseRatings,
   creationCleanupJobs,
   creations,
+  creatorJourneyCourseGrants,
   entitlements,
   galleryCopyAttempts,
   gamificationProfiles,
@@ -31,10 +31,10 @@ import {
   lessonBlockProgress,
   lessonCompletions,
   lessonEvidence,
-  masterySubmissions,
   lessonNavigation,
   lessonProgress,
   lessonSectionProgress,
+  masterySubmissions,
   missionClaims,
   parentReportPrefs,
   parentReportsSent,
@@ -235,9 +235,14 @@ export class DrizzleUserDataPurgeRepository implements UserDataPurgeRepository {
         .delete(lessonEvidence)
         .where(or(eq(lessonEvidence.accountId, accountId), inArray(lessonEvidence.userId, userIds)))
       // Reviews and awards cascade from the immutable submission; the account lock also fences new writes.
-      await tx.delete(masterySubmissions).where(
-        or(eq(masterySubmissions.accountId, accountId), inArray(masterySubmissions.userId, userIds)),
-      )
+      await tx
+        .delete(masterySubmissions)
+        .where(
+          or(
+            eq(masterySubmissions.accountId, accountId),
+            inArray(masterySubmissions.userId, userIds),
+          ),
+        )
       // Cerca novas reservas e agenda a limpeza final antes de apagar o índice.
       // Tudo commita junto: nunca perdemos as chaves sem deixar um job durável.
       await tx
@@ -344,10 +349,14 @@ export class DrizzleUserDataPurgeRepository implements UserDataPurgeRepository {
       await tx.delete(xpEvents).where(inArray(xpEvents.userId, userIds))
       await tx.delete(adultProfiles).where(inArray(adultProfiles.userId, userIds))
       await tx.delete(adultJourneyGrants).where(inArray(adultJourneyGrants.userId, userIds))
-      await tx.delete(creatorJourneyCourseGrants).where(or(
-        inArray(creatorJourneyCourseGrants.userId, userIds),
-        eq(creatorJourneyCourseGrants.accountId, accountId),
-      ))
+      await tx
+        .delete(creatorJourneyCourseGrants)
+        .where(
+          or(
+            inArray(creatorJourneyCourseGrants.userId, userIds),
+            eq(creatorJourneyCourseGrants.accountId, accountId),
+          ),
+        )
       await tx.delete(adultJourneyReached).where(inArray(adultJourneyReached.userId, userIds))
       await tx
         .delete(kidsJourneyPreparationOwners)

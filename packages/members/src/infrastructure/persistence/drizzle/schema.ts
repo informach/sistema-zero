@@ -4,14 +4,14 @@ import type { HelpTutorialDocument } from '@sistemazero/core/help'
 import type {
   AdultCreatorCapability,
   AdultJourneyPolicy,
+  CreatorCapability,
   CreatorMasteryId,
   CreatorMasteryLevel,
-  CreatorCapability,
-  MasteryReviewInput,
   JourneyCourseTier,
   JourneyLevelSlug,
   KidsCreatorCapability,
   KidsJourneyPolicy,
+  MasteryReviewInput,
 } from '@sistemazero/core/journey'
 import type {
   LearningAnswers,
@@ -1497,58 +1497,83 @@ export const lessonEvidence = members.table(
 )
 
 /** Frozen pedagogical submissions. Later lesson edits or re-submissions cannot replace evidence. */
-export const masterySubmissions = members.table('mastery_submissions', {
-  id: uuid('id').primaryKey(),
-  userId: uuid('user_id').notNull(),
-  accountId: uuid('account_id').notNull(),
-  audience: text('audience').$type<'kids' | 'adult'>().notNull(),
-  masteryId: text('mastery_id').$type<CreatorMasteryId>().notNull(),
-  level: integer('level').$type<1 | 2 | 3>().notNull(),
-  areaTitle: text('area_title').notNull(),
-  policyVersion: integer('policy_version').notNull(),
-  rubricVersion: integer('rubric_version').notNull(),
-  definition: jsonb('definition').$type<CreatorMasteryLevel>().notNull(),
-  evidenceId: uuid('evidence_id').notNull(),
-  evidenceTitle: text('evidence_title').notNull(),
-  evidenceLessonId: uuid('evidence_lesson_id').notNull(),
-  evidenceKind: text('evidence_kind').notNull(),
-  evidenceRevision: text('evidence_revision').notNull(),
-  evidencePayload: jsonb('evidence_payload').$type<unknown>().notNull(),
-  evidenceCreatedAt: timestamp('evidence_created_at', { withTimezone: true }).notNull(),
-  message: text('message'),
-  submittedAt: timestamp('submitted_at', { withTimezone: true }).notNull(),
-}, t => [
-  uniqueIndex('mastery_submission_evidence_uq').on(t.userId, t.audience, t.masteryId, t.level, t.evidenceId, t.rubricVersion),
-  index('mastery_submission_owner_idx').on(t.userId, t.accountId, t.audience),
-  index('mastery_submission_queue_idx').on(t.audience, t.submittedAt),
-  check('mastery_submission_level_check', sql`${t.level} between 1 and 3`),
-  check('mastery_submission_audience_check', sql`${t.audience} in ('kids', 'adult')`),
-])
+export const masterySubmissions = members.table(
+  'mastery_submissions',
+  {
+    id: uuid('id').primaryKey(),
+    userId: uuid('user_id').notNull(),
+    accountId: uuid('account_id').notNull(),
+    audience: text('audience').$type<'kids' | 'adult'>().notNull(),
+    masteryId: text('mastery_id').$type<CreatorMasteryId>().notNull(),
+    level: integer('level').$type<1 | 2 | 3>().notNull(),
+    areaTitle: text('area_title').notNull(),
+    policyVersion: integer('policy_version').notNull(),
+    rubricVersion: integer('rubric_version').notNull(),
+    definition: jsonb('definition').$type<CreatorMasteryLevel>().notNull(),
+    evidenceId: uuid('evidence_id').notNull(),
+    evidenceTitle: text('evidence_title').notNull(),
+    evidenceLessonId: uuid('evidence_lesson_id').notNull(),
+    evidenceKind: text('evidence_kind').notNull(),
+    evidenceRevision: text('evidence_revision').notNull(),
+    evidencePayload: jsonb('evidence_payload').$type<unknown>().notNull(),
+    evidenceCreatedAt: timestamp('evidence_created_at', { withTimezone: true }).notNull(),
+    message: text('message'),
+    submittedAt: timestamp('submitted_at', { withTimezone: true }).notNull(),
+  },
+  (t) => [
+    uniqueIndex('mastery_submission_evidence_uq').on(
+      t.userId,
+      t.audience,
+      t.masteryId,
+      t.level,
+      t.evidenceId,
+      t.rubricVersion,
+    ),
+    index('mastery_submission_owner_idx').on(t.userId, t.accountId, t.audience),
+    index('mastery_submission_queue_idx').on(t.audience, t.submittedAt),
+    check('mastery_submission_level_check', sql`${t.level} between 1 and 3`),
+    check('mastery_submission_audience_check', sql`${t.audience} in ('kids', 'adult')`),
+  ],
+)
 
-export const masteryReviews = members.table('mastery_reviews', {
-  id: uuid('id').primaryKey(),
-  submissionId: uuid('submission_id').notNull().references(() => masterySubmissions.id, { onDelete: 'cascade' }),
-  reviewerId: uuid('reviewer_id').notNull(),
-  criteria: jsonb('criteria').$type<MasteryReviewInput['criteria']>().notNull(),
-  credits: jsonb('credits').$type<MasteryReviewInput['credits']>().notNull(),
-  feedback: text('feedback').notNull(),
-  reviewedAt: timestamp('reviewed_at', { withTimezone: true }).notNull(),
-}, t => [uniqueIndex('mastery_review_submission_uq').on(t.submissionId)])
+export const masteryReviews = members.table(
+  'mastery_reviews',
+  {
+    id: uuid('id').primaryKey(),
+    submissionId: uuid('submission_id')
+      .notNull()
+      .references(() => masterySubmissions.id, { onDelete: 'cascade' }),
+    reviewerId: uuid('reviewer_id').notNull(),
+    criteria: jsonb('criteria').$type<MasteryReviewInput['criteria']>().notNull(),
+    credits: jsonb('credits').$type<MasteryReviewInput['credits']>().notNull(),
+    feedback: text('feedback').notNull(),
+    reviewedAt: timestamp('reviewed_at', { withTimezone: true }).notNull(),
+  },
+  (t) => [uniqueIndex('mastery_review_submission_uq').on(t.submissionId)],
+)
 
-export const masteryAwards = members.table('mastery_awards', {
-  userId: uuid('user_id').notNull(),
-  accountId: uuid('account_id').notNull(),
-  audience: text('audience').$type<'kids' | 'adult'>().notNull(),
-  masteryId: text('mastery_id').$type<CreatorMasteryId>().notNull(),
-  level: integer('level').$type<1 | 2 | 3>().notNull(),
-  submissionId: uuid('submission_id').notNull().references(() => masterySubmissions.id, { onDelete: 'cascade' }),
-  reviewId: uuid('review_id').notNull().references(() => masteryReviews.id, { onDelete: 'cascade' }),
-  capabilities: jsonb('capabilities').$type<readonly CreatorCapability[]>().notNull().default([]),
-  awardedAt: timestamp('awarded_at', { withTimezone: true }).notNull(),
-}, t => [
-  primaryKey({ columns: [t.userId, t.audience, t.masteryId, t.level] }),
-  check('mastery_award_level_check', sql`${t.level} between 1 and 3`),
-])
+export const masteryAwards = members.table(
+  'mastery_awards',
+  {
+    userId: uuid('user_id').notNull(),
+    accountId: uuid('account_id').notNull(),
+    audience: text('audience').$type<'kids' | 'adult'>().notNull(),
+    masteryId: text('mastery_id').$type<CreatorMasteryId>().notNull(),
+    level: integer('level').$type<1 | 2 | 3>().notNull(),
+    submissionId: uuid('submission_id')
+      .notNull()
+      .references(() => masterySubmissions.id, { onDelete: 'cascade' }),
+    reviewId: uuid('review_id')
+      .notNull()
+      .references(() => masteryReviews.id, { onDelete: 'cascade' }),
+    capabilities: jsonb('capabilities').$type<readonly CreatorCapability[]>().notNull().default([]),
+    awardedAt: timestamp('awarded_at', { withTimezone: true }).notNull(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.userId, t.audience, t.masteryId, t.level] }),
+    check('mastery_award_level_check', sql`${t.level} between 1 and 3`),
+  ],
+)
 
 /** Base para rebase exato dos rascunhos existentes na migração dos critérios. */
 export const lessonCriteriaMigrationSnapshots = members.table(
@@ -3045,12 +3070,15 @@ export const creatorJourneyCourseGrants = members.table(
     policyVersion: integer('policy_version').notNull(),
     grantedAt: timestamp('granted_at', { withTimezone: true }).notNull(),
   },
-  t => [
+  (t) => [
     primaryKey({ columns: [t.userId, t.audience, t.courseId] }),
     index('creator_journey_course_grants_account_idx').on(t.accountId),
     check('creator_journey_course_grants_audience_check', sql`${t.audience} in ('kids', 'adult')`),
     check('creator_journey_course_grants_version_check', sql`${t.policyVersion} >= 1`),
-    check('creator_journey_course_grants_adult_owner_check', sql`${t.audience} <> 'adult' or ${t.userId} = ${t.accountId}`),
+    check(
+      'creator_journey_course_grants_adult_owner_check',
+      sql`${t.audience} <> 'adult' or ${t.userId} = ${t.accountId}`,
+    ),
   ],
 )
 

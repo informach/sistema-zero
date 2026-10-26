@@ -156,3 +156,9 @@ independentes, criados pelo harness com as migrations reais. A execução fresca
 arquivos passou: 18 testes, 83 asserções, zero skips/falhas, em 37,22 s. Inclui preservação do
 curso existente pelo seed, blocos de cursos arquivados, retenção após captura da coorte e
 concorrência de submissão/revisão/exclusão. O CI passa a exigir essa execução também.
+
+O CI seguinte alcançou o lint e encontrou 12 diagnósticos em dez arquivos da composição
+Jornada (formatação/imports, incluindo o JSON movido). Correção restrita, sem alterações
+semânticas; os valores do currículo foram comparados por JSON e permaneceram idênticos.
+`biome ci` completo passou em 11.954 arquivos; seleção Gateway/seed passou 25 testes e
+160 asserções. Os seis kits JavaScript/Three também passaram no container final sem rede.

@@ -2071,18 +2071,16 @@ const config: GatewayConfigInput = {
     ...[
       '/members/admin/journey/masteries/submissions',
       '/members/admin/journey/masteries/submissions/:id',
-    ].map(
-      (pathPattern, index): GatewayConfigInput['routes'][number] => ({
-        id: `members-masteries-admin-read-${index}`,
-        methods: ['GET'],
-        pathPattern,
-        service: 'members',
-        auth: { required: true, mode: 'any', strategies: ['jwt'] },
-        authorize: { roles: ['superadmin', 'admin', 'staff'], statuses: ['active'] },
-        transforms: membersInternalTransforms,
-        rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
-      }),
-    ),
+    ].map((pathPattern, index): GatewayConfigInput['routes'][number] => ({
+      id: `members-masteries-admin-read-${index}`,
+      methods: ['GET'],
+      pathPattern,
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { roles: ['superadmin', 'admin', 'staff'], statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
+    })),
     {
       id: 'members-masteries-review',
       methods: ['POST'],

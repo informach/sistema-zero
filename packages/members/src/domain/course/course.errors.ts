@@ -40,9 +40,13 @@ export class CourseJourneyLockedError extends DomainError {
     readonly requiredLevel?: string,
     readonly curriculum?: import('@sistemazero/core/journey').CreatorCoursePlacement,
   ) {
-    super(curriculum && reason === 'foundation-first'
-      ? curriculum.role === 'base3d' ? 'Conclua o curso-base 2D para abrir a base 3D.' : 'Conclua os dois cursos-base do posto para liberar esta atividade.'
-      : JOURNEY_LOCK_MESSAGES[reason])
+    super(
+      curriculum && reason === 'foundation-first'
+        ? curriculum.role === 'base3d'
+          ? 'Conclua o curso-base 2D para abrir a base 3D.'
+          : 'Conclua os dois cursos-base do posto para liberar esta atividade.'
+        : JOURNEY_LOCK_MESSAGES[reason],
+    )
   }
 }
 
