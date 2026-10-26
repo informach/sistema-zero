@@ -1,5 +1,13 @@
 # CLAUDE.md — @sistemazero/community-kids
 
+## Meu avatar e Meu quarto com o painel ao lado (26/10/2026)
+
+As duas telas trocaram o painel de baixo pelo painel ao lado do 3D quando a área do editor tem
+45rem ou mais (proposta do Canvas "Kids · avatar e quarto com painel ao lado"). O desenho e as
+regras moram no member-shell (seção de mesmo nome lá). Aqui nada mudou na página: o avatar segue
+app embarcado (menu recolhido, `MainContainer` com a altura da janela) e o quarto segue nas duas
+`KidsBand` com `kids-band-foco`. No celular o quarto gruda abaixo da barra do topo (h-14).
+
 ## Currículo comum da Jornada do Criador (25/10/2026)
 
 Se `KidsJourneyView.curriculum` existir, os postos e Maestrias seguem essa projeção do Members.
