@@ -25,3 +25,11 @@ Os arquivos de observação e seus hashes estão em `.cache/ilha-do-farol/review
 ## Falta para disponibilizar
 
 Conciliar os commits com o staging atualizado, executar o CI da composição, construir e homologar a imagem integrada no serviço hospedado e implantar staging e produção. A gravação e revisão das mídias, as artes finais, a importação dos manifestos no curso reservado e a publicação das aulas permanecem etapas próprias.
+
+## Correção após CI da composição integrada
+
+A suíte do CI revelou que a borda de autoria do Members não aceitava ações de configuração da Ilha 3D. O contrato passou a aceitar as sete ações conhecidas, com limites e recusas de entradas inválidas; uma rota tipada foi testada para preservar os campos. O caminho da criança usa a validação e reprodução do motor no servidor: três testes por HTTP cobrem as experiências reais de ponto de vista, posição e contato, até a conferência aprovada.
+
+A suíte geral também presumia que todos os palcos fossem SVG e que todas as experiências compartilhassem um cenário 2D. A Ilha tem palco próprio WebGL; os testes agora verificam seu contêiner e controles, os caminhos próprios de descoberta e as amostras visuais sem atribuir um cenário 2D indevido. As 40 aulas permanecem verificadas, sem alteração de roteiro ou manifesto.
+
+Verificação local: núcleo 1.625 testes aprovados; member-shell 1.878 aprovados; Members 2.001 aprovados e 532 ignorados por dependerem de infraestrutura; três percursos da Ilha aprovados por HTTP em repositórios de teste. Esta evidência não substitui homologação no navegador ou no banco e nos serviços hospedados.

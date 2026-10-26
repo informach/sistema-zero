@@ -399,6 +399,28 @@ const SceneActionSchema = t.Union([
     pitch: t.Integer({ minimum: L.pitch.min, maximum: L.pitch.max }),
   }),
   t.Object({ type: t.Literal('recenter') }),
+  t.Object({
+    type: t.Literal('island-view'),
+    view: t.Union([t.Literal('front'), t.Literal('side'), t.Literal('top')]),
+  }),
+  t.Object({
+    type: t.Literal('island-axis'),
+    axis: t.Union([t.Literal('x'), t.Literal('y'), t.Literal('z')]),
+    // O domínio também valida a faixa específica do eixo y na publicação.
+    value: t.Number({ minimum: -4, maximum: 4 }),
+  }),
+  t.Object({
+    type: t.Literal('island-hero'),
+    axis: t.Union([t.Literal('x'), t.Literal('z')]),
+    value: t.Number({ minimum: -4, maximum: 4 }),
+  }),
+  t.Object({
+    type: t.Literal('island-answer'),
+    answer: t.Union([t.Literal('camera'), t.Literal('key')]),
+  }),
+  t.Object({ type: t.Literal('island-test') }),
+  t.Object({ type: t.Literal('island-restart') }),
+  t.Object({ type: t.Literal('island-bounds'), visible: t.Boolean() }),
   // Lote 5 do Raio-X (G6): "Ver os pontos" em três degraus (`mesh`) e onde o estado das torres mora
   // (`entity-state`). Os degraus vêm do core, como as letras do mapa.
   t.Object({

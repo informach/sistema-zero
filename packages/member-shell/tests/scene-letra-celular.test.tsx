@@ -282,11 +282,12 @@ describe('⭐⭐ a letra dos desenhos das 45 cenas, a 390 e a 600px', () => {
       // Anti-vácuo: as cenas foram MEDIDAS. A `mesh` não escreve nada no desenho, e no celular a
       // `diagonal` também não (os nomes dos fantasmas moram na legenda embaixo dele). A
       // `lighthouse-position` (onde fica a chave do Farol, 06/10/2026) é só o mapa: a posição
-      // escolhida aparece nos controles ao lado, não dentro do desenho.
+      // escolhida aparece nos controles ao lado, não dentro do desenho. A `island-3d` usa canvas
+      // WebGL sem texto SVG; seus rótulos e controles são HTML fora do desenho.
       const esperadas =
         largura === JANELAS[390]
-          ? ['diagonal', 'lighthouse-position', 'mesh']
-          : ['lighthouse-position', 'mesh']
+          ? ['diagonal', 'island-3d', 'lighthouse-position', 'mesh']
+          : ['island-3d', 'lighthouse-position', 'mesh']
       expect([...semTexto].sort()).toEqual(esperadas)
       expect(Object.keys(menorPorCena)).toHaveLength(SCENE_IDS.length - esperadas.length)
       expect(medidos).toBeGreaterThan(2000)
