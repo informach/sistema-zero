@@ -1,22 +1,23 @@
-# Imagem do serviço @sistemazero/catalog (catálogo comercial + entitlements).
-# IMPORTANTE: o contexto de build é a RAIZ do monorepo (não esta pasta), pois o
-# Bun precisa do workspace inteiro para instalar as dependências (inclui @sistemazero/core).
-FROM oven/bun:1
+# O contexto continua sendo a raiz do monorepo para resolver o lockfile do workspace.
+FROM oven/bun:1 AS dependencies
+WORKDIR /app
+COPY package.json bun.lock ./
+COPY patches ./patches
+COPY packages/core/package.json ./packages/core/package.json
+COPY packages/catalog/package.json ./packages/catalog/package.json
+# Inclui as dependências de desenvolvimento do serviço: drizzle-kit executa as migrações.
+RUN bun install --frozen-lockfile --filter @sistemazero/catalog --filter @sistemazero/core
+COPY packages/core ./packages/core
+COPY packages/catalog ./packages/catalog
 
+FROM oven/bun:1 AS runtime
 WORKDIR /app
 ENV NODE_ENV=production
-
-# Copia o workspace (o .dockerignore exclui node_modules/.git/.env etc.).
-COPY . .
-
-# Instala exatamente o que está no lockfile (inclui devDeps: drizzle-kit é
-# necessário para rodar as migrations no pre-deploy).
-RUN bun install --frozen-lockfile
-
-# Documental: o app escuta em env.PORT (o Railway injeta $PORT em runtime).
+# Preserve o workspace e os links do Bun, levando só o serviço e o núcleo que ele usa.
+COPY --from=dependencies /app/package.json /app/bun.lock ./
+COPY --from=dependencies /app/node_modules ./node_modules
+COPY --from=dependencies /app/packages/core ./packages/core
+COPY --from=dependencies /app/packages/catalog ./packages/catalog
 EXPOSE 3003
-
-# Roda como usuário sem privilégios (a imagem oven/bun já provê o usuário `bun`).
 USER bun
-
 CMD ["bun", "run", "--filter", "@sistemazero/catalog", "start"]
