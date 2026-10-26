@@ -9,10 +9,10 @@ import type { AvatarReturnPath } from '../../../lib/avatar-return'
 import {
   AVATAR_CATEGORIES,
   AVATAR_CATEGORY_LABELS,
-  AVATAR_CATEGORY_PALETTES,
   AVATAR_PART_INFO,
   type AvatarCategory,
   type AvatarSlot,
+  paletteForPart,
 } from '../../../lib/avatar3d-catalog'
 import { cn } from '../../../lib/cn'
 import type { AvatarPartView, AvatarStateView } from '../../../lib/types'
@@ -242,7 +242,7 @@ export function AvatarConfigurator({
         const owned = (partsByCategory.get(cat) ?? []).filter((p) => p.owned)
         const pick = owned[Math.floor(Math.random() * owned.length)]
         if (!pick) continue
-        const palette = AVATAR_CATEGORY_PALETTES[cat]
+        const palette = paletteForPart(cat, pick.id)
         const color = palette?.length
           ? palette[Math.floor(Math.random() * palette.length)]
           : prev[cat]?.color
@@ -329,7 +329,8 @@ export function AvatarConfigurator({
     }
   }
 
-  const palette = AVATAR_CATEGORY_PALETTES[category]
+  // Peça de cor embutida (brinco de metal, fantasia) não mostra a fileira de cores.
+  const palette = paletteForPart(category, slots[category]?.asset)
   const currentColor = slots[category]?.color
   const items = partsByCategory.get(category) ?? []
   const activePose = mode === 'photo' ? pose : 'Idle'

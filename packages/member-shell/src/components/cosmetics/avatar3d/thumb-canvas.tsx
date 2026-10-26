@@ -22,6 +22,7 @@ const HEAD_SITTING = new Set<string>([
   'facialHair',
   'glasses',
   'hat',
+  'hairAccessory',
   'accessory',
 ])
 
