@@ -1,16 +1,16 @@
+import { KeyRound, NotebookPen, Pause, Play, RotateCcw, StepForward } from 'lucide-react'
 import { useEffect, useReducer, useState } from 'react'
-import { Frame, Note, SceneButton, Stage } from './shared'
 import { items, source } from './data'
+import { type Action, begin, explore, type Kind } from './exploration-model'
+import { Frame, Note, SceneButton, Stage } from './shared'
 import {
-  WalkPicture,
-  MovementRule,
-  EdgeComparison,
-  OrderRule,
-  MemoryRule,
   DoorRule,
+  EdgeComparison,
+  MemoryRule,
+  MovementRule,
+  OrderRule,
+  WalkPicture,
 } from './visuals'
-import { begin, explore, type Kind, type Action } from './exploration-model'
-import { KeyRound, NotebookPen, RotateCcw, Play, Pause, StepForward } from 'lucide-react'
 
 function useExploration(kind: Kind) {
   const [model, dispatch] = useReducer(
@@ -143,7 +143,7 @@ export function Walk({
         boundary={boundary}
         limited={w.keepInside}
       />
-      <div className="farol-controls free-controls rule-editor" aria-label="Editar a regra">
+      <section className="farol-controls free-controls rule-editor" aria-label="Editar a regra">
         {!boundary && (
           <SceneButton
             tom={!m.command ? 'gesto' : 'ferramenta'}
@@ -160,8 +160,8 @@ export function Walk({
             {w.keepInside ? 'Retirar bloco de limite' : 'Adicionar bloco de limite'}
           </SceneButton>
         )}
-      </div>
-      <div className="test-keyboard" aria-label="Teclado de teste">
+      </section>
+      <section className="test-keyboard" aria-label="Teclado de teste">
         <strong>Teclado de teste</strong>
         <p>Este botão faz o papel da tecla →. Clique para apertar; clique de novo para soltar.</p>
         <SceneButton
@@ -174,7 +174,7 @@ export function Walk({
         <span className="test-key-state">
           {w.arrow ? '→ apertada neste teste' : 'Nenhuma tecla apertada'}
         </span>
-      </div>
+      </section>
       <div className="frame-controls-label">
         Passagem dos quadros{' '}
         <small>O teste espera você avançar. No jogo rodando, os quadros passam sozinhos.</small>
@@ -267,7 +267,7 @@ export function Memory() {
     'Afaste-se depois de guardar e observe o valor.',
     'Comece outra partida depois de guardar.',
   ]
-  let text =
+  const text =
     !c.keyPresent && m.last === 'remember-collection'
       ? 'Você mudou a regra para o próximo encontro. A coleta que já aconteceu continua como estava. Recomece a partida para testar a mudança.'
       : !completed[0] && c.remember

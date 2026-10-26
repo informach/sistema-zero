@@ -1,1 +1,1 @@
-export { Frame, Note, Talk, Mascot, SceneButton } from '../farol-antes-depois/shared'
+export { Frame, Mascot, Note, SceneButton, Talk } from '../farol-antes-depois/shared'

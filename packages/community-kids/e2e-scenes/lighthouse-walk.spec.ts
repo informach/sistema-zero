@@ -59,10 +59,14 @@ for (const largura of [320, 360, 390]) {
     await page.setViewportSize({ width: largura, height: 844 })
     for (const bloco of ['experiencia-quadro', 'experiencia-limite']) {
       await abrir(page, bloco)
+      if (bloco === 'experiencia-limite') {
+        await page.getByText('Experimentar a ordem dos comandos', { exact: true }).click()
+        await expect(page.getByRole('button', { name: 'Avançar nessa ordem' })).toBeVisible()
+      }
       const medida = await page.evaluate(() => {
         const caixa = document.querySelector('.sz-scene-console')?.getBoundingClientRect()
         const controles = [...document.querySelectorAll('.sz-scene-prancha button')]
-          .filter((b) => b.getClientRects().length > 0)
+          .filter((b) => b.checkVisibility())
           .map((b) => {
             const r = b.getBoundingClientRect()
             return { nome: b.textContent?.trim() ?? '', esquerda: r.left, direita: r.right }

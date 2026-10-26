@@ -1,6 +1,6 @@
-import { useState } from 'react'
 import { openScene, stepScene } from '@sistemazero/core/learning/scene'
 import { Check, FlaskConical, RotateCcw } from 'lucide-react'
+import { useState } from 'react'
 import { currentObjectives } from './data'
 import { Note, SceneButton, Stage, Talk } from './shared'
 export function Objectives({ after }: { after: boolean }) {

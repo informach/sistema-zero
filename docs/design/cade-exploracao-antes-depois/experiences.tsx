@@ -1,13 +1,13 @@
-import { useReducer } from 'react'
 import { SceneCenarioProvider } from '@sistemazero/member-shell/components/scene-cenario-context'
-import { TwoHidingPlaces } from '@sistemazero/member-shell/components/scene-two-hiding-places'
 import { FoundCounterStage } from '@sistemazero/member-shell/components/scene-found-counter'
 import { CounterValue } from '@sistemazero/member-shell/components/scene-garden-learning'
+import { TwoHidingPlaces } from '@sistemazero/member-shell/components/scene-two-hiding-places'
 import { RotateCcw } from 'lucide-react'
+import { useReducer } from 'react'
+import { items, type Part, source } from './data'
+import { type HistoryAction, historyStep, type Model, start } from './model'
 import { Frame, Note, SceneButton } from './shared'
 import { TouchRule } from './touch-rule'
-import { start, historyStep, type Model, type HistoryAction } from './model'
-import { items, source, type Part } from './data'
 export function ProposedGarden({ part }: { part: Part }) {
   const [history, dispatch] = useReducer(
     (m: Model[], a: HistoryAction) => historyStep(part, m, a),

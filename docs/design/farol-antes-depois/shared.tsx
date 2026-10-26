@@ -1,22 +1,23 @@
-import { type ReactNode, useId } from 'react'
 import { DialogueBlockView } from '@sistemazero/member-shell/components/dialogue-block'
-import { SceneWorkspace } from '@sistemazero/member-shell/components/scene-workspace'
+import { SceneButton } from '@sistemazero/member-shell/components/exploration-stage'
+import { SceneCenarioProvider } from '@sistemazero/member-shell/components/scene-cenario-context'
+import { CollectionMemoryStage } from '@sistemazero/member-shell/components/scene-collect-and-remember'
 import {
-  SceneConsole,
-  ConsoleVisual,
-  ConsoleMundo,
   ConsoleActions,
   ConsoleFala,
+  ConsoleMundo,
   ConsolePrancha,
+  ConsoleVisual,
+  SceneConsole,
 } from '@sistemazero/member-shell/components/scene-console'
 import { SceneReadoutBand } from '@sistemazero/member-shell/components/scene-frame'
-import { SceneCenarioProvider } from '@sistemazero/member-shell/components/scene-cenario-context'
-import { SceneButton } from '@sistemazero/member-shell/components/exploration-stage'
-import { LighthouseWalkStage } from '@sistemazero/member-shell/components/scene-lighthouse-walk'
-import { CollectionMemoryStage } from '@sistemazero/member-shell/components/scene-collect-and-remember'
 import { LighthouseKeyStage } from '@sistemazero/member-shell/components/scene-lighthouse-key'
 import { LighthousePositionStage } from '@sistemazero/member-shell/components/scene-lighthouse-position'
+import { LighthouseWalkStage } from '@sistemazero/member-shell/components/scene-lighthouse-walk'
+import { SceneWorkspace } from '@sistemazero/member-shell/components/scene-workspace'
 import { Check, FlaskConical, RotateCcw } from 'lucide-react'
+import { type ReactNode, useId } from 'react'
+
 export { SceneButton }
 export function Mascot() {
   return <img src="__ZAPPY_SPEAKING__" width="72" height="72" alt="" className="farol-mascot" />

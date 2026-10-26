@@ -29,10 +29,7 @@
           "scene": "lighthouse-walk",
           "cenario": "farol",
           "setup": {
-            "goals": [
-              "still-without-arrow",
-              "moves-each-frame"
-            ],
+            "goals": ["still-without-arrow", "moves-each-frame"],
             "goalCopy": {
               "still-without-arrow": {
                 "label": "Sem a seta, o personagem ficou parado"
@@ -59,10 +56,7 @@
           "scene": "lighthouse-walk",
           "cenario": "farol",
           "setup": {
-            "goals": [
-              "left-the-screen",
-              "stayed-inside"
-            ]
+            "goals": ["left-the-screen", "stayed-inside"]
           }
         }
       }
@@ -74,20 +68,13 @@
       "title": "A Chave do Farol",
       "intent": "presentation",
       "objective": "Experimentar o curso pronta antes de construir suas regras, sem exigir vitória.",
-      "blockKeys": [
-        "video-intro-farol",
-        "ponte-intro-farol",
-        "jogo-pronto"
-      ],
+      "blockKeys": ["video-intro-farol", "ponte-intro-farol", "jogo-pronto"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-intro-farol",
-          "jogo-pronto"
-        ]
+        "blockIds": ["video-intro-farol", "jogo-pronto"]
       }
     },
     {
@@ -95,19 +82,13 @@
       "title": "Seu passo a passo do projeto",
       "intent": "material",
       "objective": "Conhecer o caderno opcional que acompanha o conteúdo das aulas e a ajuda disponível.",
-      "blockKeys": [
-        "video-intro-caderno",
-        "ponte-intro-caderno",
-        "materiais-farol"
-      ],
+      "blockKeys": ["video-intro-caderno", "ponte-intro-caderno", "materiais-farol"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-intro-caderno"
-        ]
+        "blockIds": ["video-intro-caderno"]
       }
     },
     {
@@ -115,20 +96,13 @@
       "title": "Como o personagem anda",
       "intent": "exploration",
       "objective": "Ver que o jogo repete a cada quadro e que, com a seta, o personagem anda um pouco em cada repetição.",
-      "blockKeys": [
-        "video-d1-quadro",
-        "ponte-d1-quadro",
-        "experiencia-quadro"
-      ],
+      "blockKeys": ["video-d1-quadro", "ponte-d1-quadro", "experiencia-quadro"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-d1-quadro",
-          "experiencia-quadro"
-        ]
+        "blockIds": ["video-d1-quadro", "experiencia-quadro"]
       }
     },
     {
@@ -136,18 +110,13 @@
       "title": "Faça o personagem andar",
       "intent": "application",
       "objective": "Ativar as quatro setas e mover o personagem dentro de A cada quadro do jogo.",
-      "blockKeys": [
-        "video-d1-andar",
-        "ponte-d1-andar"
-      ],
+      "blockKeys": ["video-d1-andar", "ponte-d1-andar"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-d1-andar"
-        ],
+        "blockIds": ["video-d1-andar"],
         "projectChecks": [
           {
             "id": "direcional",
@@ -290,20 +259,13 @@
       "title": "Até onde ele pode ir?",
       "intent": "exploration",
       "objective": "Ver o personagem sair da tela sem limite e ficar inteiro com o limite ligado.",
-      "blockKeys": [
-        "video-d1-limite",
-        "ponte-d1-limite",
-        "experiencia-limite"
-      ],
+      "blockKeys": ["video-d1-limite", "ponte-d1-limite", "experiencia-limite"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-d1-limite",
-          "experiencia-limite"
-        ]
+        "blockIds": ["video-d1-limite", "experiencia-limite"]
       }
     },
     {
@@ -311,20 +273,13 @@
       "title": "Mantenha o personagem na tela",
       "intent": "delivery",
       "objective": "Manter o personagem dentro da tela, depois do movimento, e enviar a atividade.",
-      "blockKeys": [
-        "video-d1-borda",
-        "ponte-d1-borda",
-        "projeto"
-      ],
+      "blockKeys": ["video-d1-borda", "ponte-d1-borda", "projeto"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-d1-borda",
-          "projeto"
-        ],
+        "blockIds": ["video-d1-borda", "projeto"],
         "projectChecks": [
           {
             "id": "direcional",

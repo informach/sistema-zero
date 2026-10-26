@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react'
 import { openScene, stepScene } from '@sistemazero/core/learning/scene'
-import { Check, RotateCcw, Play, ArrowRight } from 'lucide-react'
+import { ArrowRight, Check, Play, RotateCcw } from 'lucide-react'
+import { useEffect, useState } from 'react'
 import { quizSource } from './data'
 import { Note, SceneButton, Stage, Talk } from './shared'
 import { EdgeComparison } from './visuals'

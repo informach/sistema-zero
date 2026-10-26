@@ -1,5 +1,6 @@
 import { expect, test } from 'bun:test'
-import { begin, explore, type Kind, type Action } from './exploration-model'
+import { type Action, begin, explore, type Kind } from './exploration-model'
+
 function trial(kind: Kind) {
   let value = begin(kind)
   return {

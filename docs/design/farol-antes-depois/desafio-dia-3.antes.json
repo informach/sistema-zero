@@ -34,10 +34,7 @@
           "scene": "lighthouse-position",
           "cenario": "farol",
           "setup": {
-            "goals": [
-              "mover-horizontal",
-              "mover-vertical"
-            ]
+            "goals": ["mover-horizontal", "mover-vertical"]
           }
         }
       }
@@ -49,20 +46,13 @@
       "title": "O que a porta precisa?",
       "intent": "exploration",
       "objective": "Experimentar a mesma porta sem e com chave antes de programar a condição.",
-      "blockKeys": [
-        "video-d3-condicao",
-        "ponte-d3-condicao",
-        "experiencia-porta"
-      ],
+      "blockKeys": ["video-d3-condicao", "ponte-d3-condicao", "experiencia-porta"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-d3-condicao",
-          "experiencia-porta"
-        ]
+        "blockIds": ["video-d3-condicao", "experiencia-porta"]
       }
     },
     {
@@ -70,18 +60,13 @@
       "title": "Avise quando faltar a chave",
       "intent": "application",
       "objective": "Programar o encontro com o farol e a resposta sem chave, mantendo então vazio por enquanto.",
-      "blockKeys": [
-        "video-d3-sem-chave",
-        "ponte-d3-sem-chave"
-      ],
+      "blockKeys": ["video-d3-sem-chave", "ponte-d3-sem-chave"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-d3-sem-chave"
-        ],
+        "blockIds": ["video-d3-sem-chave"],
         "projectChecks": [
           {
             "id": "direcional",
@@ -366,18 +351,13 @@
       "title": "Acenda o farol com a chave",
       "intent": "application",
       "objective": "Completar então, testar os dois caminhos e o reinício e verificar as regras antes de personalizar.",
-      "blockKeys": [
-        "video-d3-decisao",
-        "ponte-d3-decisao"
-      ],
+      "blockKeys": ["video-d3-decisao", "ponte-d3-decisao"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-d3-decisao"
-        ],
+        "blockIds": ["video-d3-decisao"],
         "projectChecks": [
           {
             "id": "direcional",
@@ -864,18 +844,13 @@
       "title": "Deixe o jogo com a sua cara",
       "intent": "application",
       "objective": "Escolher personagem, barco, chave, o par do farol e cenário com imagens do mesmo tipo e testar.",
-      "blockKeys": [
-        "video-d3-personalizar",
-        "ponte-d3-personalizar"
-      ],
+      "blockKeys": ["video-d3-personalizar", "ponte-d3-personalizar"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-d3-personalizar"
-        ],
+        "blockIds": ["video-d3-personalizar"],
         "projectChecks": [
           {
             "id": "acender",
@@ -932,18 +907,13 @@
       "title": "Escreva seus avisos",
       "intent": "closing",
       "objective": "Escrever os quatro avisos do jogo com as próprias palavras e testar.",
-      "blockKeys": [
-        "video-d3-farol-mensagens",
-        "ponte-d3-farol-mensagens"
-      ],
+      "blockKeys": ["video-d3-farol-mensagens", "ponte-d3-farol-mensagens"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-d3-farol-mensagens"
-        ]
+        "blockIds": ["video-d3-farol-mensagens"]
       }
     },
     {
@@ -951,20 +921,13 @@
       "title": "Como escolher um lugar para a chave",
       "intent": "exploration",
       "objective": "Experimentar a posição horizontal e vertical antes de escolher onde a chave fica no jogo.",
-      "blockKeys": [
-        "video-d3-posicao",
-        "ponte-d3-posicao",
-        "experiencia-posicao"
-      ],
+      "blockKeys": ["video-d3-posicao", "ponte-d3-posicao", "experiencia-posicao"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-d3-posicao",
-          "experiencia-posicao"
-        ]
+        "blockIds": ["video-d3-posicao", "experiencia-posicao"]
       }
     },
     {
@@ -972,20 +935,13 @@
       "title": "Escolha onde fica a chave",
       "intent": "delivery",
       "objective": "Escolher uma posição visível e alcançável para a chave, testar o percurso completo e enviar o jogo.",
-      "blockKeys": [
-        "video-d3-posicionar-chave",
-        "ponte-d3-posicionar-chave",
-        "projeto"
-      ],
+      "blockKeys": ["video-d3-posicionar-chave", "ponte-d3-posicionar-chave", "projeto"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-d3-posicionar-chave",
-          "projeto"
-        ],
+        "blockIds": ["video-d3-posicionar-chave", "projeto"],
         "submissionUpToDate": true
       }
     },
@@ -994,19 +950,13 @@
       "title": "Seu jogo está pronto",
       "intent": "closing",
       "objective": "Concluir a aula com o projeto enviado; compartilhar no Mural é uma escolha.",
-      "blockKeys": [
-        "video-d3-fecho",
-        "ponte-d3-publicar",
-        "ajuda-publicar"
-      ],
+      "blockKeys": ["video-d3-fecho", "ponte-d3-publicar", "ajuda-publicar"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-d3-fecho"
-        ]
+        "blockIds": ["video-d3-fecho"]
       }
     }
   ]

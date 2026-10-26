@@ -1,5 +1,6 @@
-import { openScene, stepScene, type SceneAction } from '../../../packages/core/src/learning/scene'
+import { openScene, type SceneAction, stepScene } from '../../../packages/core/src/learning/scene'
 import type { Part } from './data'
+
 const scene = (part: Part) => (part === 'touch' ? 'touch-response' : 'found-counter')
 export function start(part: Part) {
   const state = openScene({ scene: scene(part) })

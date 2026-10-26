@@ -1,4 +1,4 @@
-import { Hand, Eye, ArrowDown, Link2, Link2Off } from 'lucide-react'
+import { ArrowDown, Eye, Hand, Link2, Link2Off } from 'lucide-react'
 export function TouchRule({ enabled, chosen }: { enabled: boolean; chosen: string | null }) {
   return (
     <div className="sz-garden-rule" data-garden="rule" data-enabled={enabled}>

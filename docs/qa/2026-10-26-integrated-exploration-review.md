@@ -68,3 +68,16 @@ Biblioteca adulta: 64 tutoriais em oito coleções válidos, com avisos editoria
 de imagens e menções comerciais preservados. Nenhum tutorial foi importado no Admin por
 esta operação. Perfil do executor continuou exato após essa conciliação; nenhum arquivo
 do runtime ou Core Studio mudou entre a imagem qualificada e a composição nova.
+
+## Correções apontadas pelo primeiro CI integrado
+
+O CI `40356514386` encontrou lint nos protótipos de documentação (imports, semântica de
+regiões/grupos, tipo dos botões), formatação das capturas JSON históricas e uma interpolação
+legada. Corrigidos sem afrouxar regras nem retirar arquivos do lint. As seis capturas JSON
+mantêm conteúdo semântico; os modelos dos protótipos passaram em nove testes/62 asserções.
+
+A prova de responsividade media um botão dentro de `details` fechado: no Chromium Linux,
+retângulo de layout não prova visibilidade. O teste agora exige visibilidade real e abre o
+comparador para medir também seus controles. Cinco cenários, incluindo 320/360/390 px,
+passaram localmente com o comparador aberto; a confirmação Linux pertence ao próximo CI.
+Não se reduziu a tolerância nem se excluiu esse controle da prova quando visível.

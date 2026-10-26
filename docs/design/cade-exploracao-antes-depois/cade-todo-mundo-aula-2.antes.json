@@ -2,9 +2,7 @@
   "version": 5,
   "courseSlug": "cade-todo-mundo",
   "lessonSlug": "aula-2",
-  "retireBlockKeys": [
-    "caderno"
-  ],
+  "retireBlockKeys": ["caderno"],
   "title": "Complete a busca",
   "blocks": [
     {
@@ -21,13 +19,7 @@
           "scene": "found-counter",
           "cenario": "jardim",
           "setup": {
-            "goals": [
-              "first-find",
-              "second-find",
-              "no-find",
-              "repeat",
-              "back-to-zero"
-            ]
+            "goals": ["first-find", "second-find", "no-find", "repeat", "back-to-zero"]
           }
         }
       }
@@ -39,18 +31,13 @@
       "title": "Volte ao seu jardim",
       "intent": "presentation",
       "objective": "Ver que o jogo já revela os personagens, mas ainda não conta os achados.",
-      "blockKeys": [
-        "video-a2-retomada",
-        "ponte-a2-retomada"
-      ],
+      "blockKeys": ["video-a2-retomada", "ponte-a2-retomada"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-a2-retomada"
-        ]
+        "blockIds": ["video-a2-retomada"]
       }
     },
     {
@@ -58,20 +45,13 @@
       "title": "Um número que acompanha a busca",
       "intent": "exploration",
       "objective": "Observar quando o valor atual de Achados muda e quando continua igual durante uma busca.",
-      "blockKeys": [
-        "video-a2-variavel",
-        "ponte-a2-variavel",
-        "experiencia-achados"
-      ],
+      "blockKeys": ["video-a2-variavel", "ponte-a2-variavel", "experiencia-achados"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-a2-variavel",
-          "experiencia-achados"
-        ]
+        "blockIds": ["video-a2-variavel", "experiencia-achados"]
       }
     },
     {
@@ -79,18 +59,13 @@
       "title": "Cada personagem vale um achado",
       "intent": "application",
       "objective": "Somar um no contador no mesmo evento do toque e testar até a mensagem de vitória.",
-      "blockKeys": [
-        "video-a2-contagem",
-        "ponte-a2-contagem"
-      ],
+      "blockKeys": ["video-a2-contagem", "ponte-a2-contagem"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-a2-contagem"
-        ],
+        "blockIds": ["video-a2-contagem"],
         "projectChecks": [
           {
             "id": "revelar-ao-toque",
@@ -383,20 +358,13 @@
       "title": "Deixe o jogo com a sua cara",
       "intent": "delivery",
       "objective": "Escolher os bichos, esconderijos e a mensagem do final, testar e enviar o jogo completo.",
-      "blockKeys": [
-        "video-a2-personalizar",
-        "ponte-a2-personalizar",
-        "projeto"
-      ],
+      "blockKeys": ["video-a2-personalizar", "ponte-a2-personalizar", "projeto"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-a2-personalizar",
-          "projeto"
-        ],
+        "blockIds": ["video-a2-personalizar", "projeto"],
         "submissionUpToDate": true
       }
     },
@@ -405,19 +373,13 @@
       "title": "Seu jogo está pronto",
       "intent": "closing",
       "objective": "Concluir a aula com o projeto enviado; compartilhar no Mural é uma escolha.",
-      "blockKeys": [
-        "video-a2-fecho",
-        "ponte-a2-publicar",
-        "ajuda-a2-publicar"
-      ],
+      "blockKeys": ["video-a2-fecho", "ponte-a2-publicar", "ajuda-a2-publicar"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-a2-fecho"
-        ]
+        "blockIds": ["video-a2-fecho"]
       }
     }
   ]

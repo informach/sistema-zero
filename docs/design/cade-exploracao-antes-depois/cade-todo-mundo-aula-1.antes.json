@@ -18,11 +18,7 @@
           "scene": "touch-response",
           "cenario": "jardim",
           "setup": {
-            "goals": [
-              "no-response",
-              "responds",
-              "second-target"
-            ]
+            "goals": ["no-response", "responds", "second-target"]
           }
         }
       }
@@ -34,20 +30,13 @@
       "title": "Bem-vindo ao jardim",
       "intent": "presentation",
       "objective": "Jogar a versão pronta e encontrar os três personagens antes de construir o próprio jogo.",
-      "blockKeys": [
-        "video-a1-abertura",
-        "ponte-a1-jogo",
-        "jogo-pronto"
-      ],
+      "blockKeys": ["video-a1-abertura", "ponte-a1-jogo", "jogo-pronto"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-a1-abertura",
-          "jogo-pronto"
-        ]
+        "blockIds": ["video-a1-abertura", "jogo-pronto"]
       }
     },
     {
@@ -55,19 +44,13 @@
       "title": "Seu passo a passo do projeto",
       "intent": "material",
       "objective": "Conhecer o caderno e saber onde consultá-lo durante a construção do jogo.",
-      "blockKeys": [
-        "video-a1-caderno",
-        "ponte-a1-caderno",
-        "caderno"
-      ],
+      "blockKeys": ["video-a1-caderno", "ponte-a1-caderno", "caderno"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-a1-caderno"
-        ]
+        "blockIds": ["video-a1-caderno"]
       }
     },
     {
@@ -75,20 +58,13 @@
       "title": "O que um toque faz?",
       "intent": "exploration",
       "objective": "Comparar o mesmo toque antes e depois de ligar uma ação, sem palpite obrigatório.",
-      "blockKeys": [
-        "video-a1-toque",
-        "ponte-a1-toque",
-        "experiencia-toque"
-      ],
+      "blockKeys": ["video-a1-toque", "ponte-a1-toque", "experiencia-toque"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-a1-toque",
-          "experiencia-toque"
-        ]
+        "blockIds": ["video-a1-toque", "experiencia-toque"]
       }
     },
     {
@@ -96,20 +72,13 @@
       "title": "Faça alguém aparecer",
       "intent": "delivery",
       "objective": "Encaixar a reação no evento preparado e tocar num esconderijo do próprio jogo.",
-      "blockKeys": [
-        "video-a1-programar",
-        "ponte-a1-programar",
-        "projeto"
-      ],
+      "blockKeys": ["video-a1-programar", "ponte-a1-programar", "projeto"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-a1-programar",
-          "projeto"
-        ],
+        "blockIds": ["video-a1-programar", "projeto"],
         "projectChecks": [
           {
             "id": "revelar-ao-toque",

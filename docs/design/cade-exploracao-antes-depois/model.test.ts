@@ -1,5 +1,6 @@
 import { expect, test } from 'bun:test'
-import { start, reduce, historyStep } from './model'
+import { historyStep, reduce, start } from './model'
+
 test('reaction can be enabled before any tap; either hiding place can be first', () => {
   let m = start('touch')
   m = reduce('touch', m, { type: 'connect', port: 'touch', enabled: true })

@@ -1,12 +1,12 @@
-import { useState } from 'react'
-import { createRoot } from 'react-dom/client'
-import { Compass, ArrowRight, Lightbulb, RotateCcw } from 'lucide-react'
 import { evaluateLearning, publicInteractiveBlock } from '@sistemazero/core/learning'
 import { LessonCopyProvider } from '@sistemazero/member-shell/components/lesson-copy-context'
 import { LessonPreviewProvider } from '@sistemazero/member-shell/components/lesson-preview-context'
 import { SceneActivityView } from '@sistemazero/member-shell/components/scene-activity'
 import { KIDS_LESSON_COPY } from '@sistemazero/member-shell/lib/lesson-copy-kids'
-import { items, source, type Part } from './data'
+import { ArrowRight, Compass, Lightbulb, RotateCcw } from 'lucide-react'
+import { useState } from 'react'
+import { createRoot } from 'react-dom/client'
+import { items, type Part, source } from './data'
 import { ProposedGarden } from './experiences'
 import { SceneButton } from './shared'
 
@@ -77,6 +77,7 @@ function App() {
               <nav aria-label="Partes do protótipo">
                 {items.map((i, n) => (
                   <button
+                    type="button"
                     key={i.id}
                     aria-current={i.id === part ? 'page' : undefined}
                     onClick={() => {
@@ -103,14 +104,18 @@ function App() {
             </aside>
             <div className="farol-main">
               <div className="farol-comparison-bar">
-                <div className="farol-tabs" role="group" aria-label="Versão">
-                  <button aria-pressed={!after} onClick={() => setAfter(false)}>
+                <fieldset
+                  className="farol-tabs"
+                  aria-label="Versão"
+                  style={{ margin: 0, minWidth: 0 }}
+                >
+                  <button type="button" aria-pressed={!after} onClick={() => setAfter(false)}>
                     Antes <small>Como está hoje</small>
                   </button>
-                  <button aria-pressed={after} onClick={() => setAfter(true)}>
+                  <button type="button" aria-pressed={after} onClick={() => setAfter(true)}>
                     Proposta <small>Exploração livre</small>
                   </button>
-                </div>
+                </fieldset>
                 <SceneButton
                   onClick={() => setReset((v) => v + 1)}
                   aria-label="Reiniciar as duas versões"

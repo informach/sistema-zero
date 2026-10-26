@@ -1,7 +1,7 @@
+import cert from './desafio-certificado.antes.json'
 import d1 from './desafio-dia-1.antes.json'
 import d2 from './desafio-dia-2.antes.json'
 import d3 from './desafio-dia-3.antes.json'
-import cert from './desafio-certificado.antes.json'
 export const lessons = [d1, d2, d3]
 export const items = [
   {

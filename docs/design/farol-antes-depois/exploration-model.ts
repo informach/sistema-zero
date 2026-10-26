@@ -1,8 +1,8 @@
 import {
   openScene,
-  stepScene,
-  type SceneState,
   type SceneAction,
+  type SceneState,
+  stepScene,
 } from '../../../packages/core/src/learning/scene'
 
 export type Kind = 'quadro' | 'limite' | 'memoria' | 'porta' | 'posicao'

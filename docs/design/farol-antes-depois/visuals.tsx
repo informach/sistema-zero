@@ -1,15 +1,15 @@
-import { useId } from 'react'
+import { SceneCanvas } from '@sistemazero/member-shell/components/scene-canvas'
+import { farolSvgUrl } from '@sistemazero/studio/arte'
 import {
   ArrowDown,
   Footprints,
+  Hand,
   KeyRound,
   MessageCircle,
   NotebookPen,
-  Hand,
   Pause,
 } from 'lucide-react'
-import { SceneCanvas } from '@sistemazero/member-shell/components/scene-canvas'
-import { farolSvgUrl } from '@sistemazero/studio/arte'
+import { useId } from 'react'
 
 /** Coordinates belong to the renderer, not to this lesson's vocabulary. */
 export function WalkPicture({ state, command = true }: { state: any; command?: boolean }) {
@@ -190,7 +190,7 @@ export function WalkPicture({ state, command = true }: { state: any; command?: b
           />
         </svg>
       </div>
-      <div className="walk-film" aria-label="Compare o início, o quadro anterior e o atual">
+      <section className="walk-film" aria-label="Compare o início, o quadro anterior e o atual">
         {snapshots.map((s, i) => (
           <div className="walk-film-frame" key={s.label} data-current={i === 2}>
             <span>
@@ -210,7 +210,7 @@ export function WalkPicture({ state, command = true }: { state: any; command?: b
             </svg>
           </div>
         ))}
-      </div>
+      </section>
     </div>
   )
 }

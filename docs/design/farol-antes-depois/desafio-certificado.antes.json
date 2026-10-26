@@ -3,12 +3,7 @@
   "courseSlug": "desafio-primeiro-jogo",
   "lessonSlug": "certificado",
   "title": "Seu certificado",
-  "retireBlockKeys": [
-    "video-pitch",
-    "fala-pitch",
-    "video-pitch-farol",
-    "link-comunidade"
-  ],
+  "retireBlockKeys": ["video-pitch", "fala-pitch", "video-pitch-farol", "link-comunidade"],
   "blocks": [
     {
       "key": "quiz-revisao-final",
@@ -33,9 +28,7 @@
                 "label": "Conferir o limite da tela uma vez só, quando o jogo começa."
               }
             ],
-            "correctChoiceIds": [
-              "b"
-            ],
+            "correctChoiceIds": ["b"],
             "explanation": "Dentro de A cada quadro do jogo, primeiro o personagem anda e, logo depois, Manter o sprite personagem dentro da tela segura ele na borda. Se o limite viesse antes, o personagem andaria depois da conferência, e um pedacinho dele passaria da borda. E, conferido só no começo, o limite não seguraria nada depois. Por isso ele fica dentro de A cada quadro do jogo."
           },
           {
@@ -55,9 +48,7 @@
                 "label": "Se o bloco Destruir o sprite tira a chave do chão."
               }
             ],
-            "correctChoiceIds": [
-              "b"
-            ],
+            "correctChoiceIds": ["b"],
             "explanation": "Destruir o sprite já funcionou: a chave sumiu do chão. Alterar aviso também: a mensagem mudou. Essas duas ações não guardam a coleta em temChave. Dentro do encontro com a chave, o bloco que altera temChave precisa guardar verdadeiro. É essa informação que o farol consulta depois."
           },
           {
@@ -77,9 +68,7 @@
                 "label": "Manter o farol apagado e avisar que falta a chave."
               }
             ],
-            "correctChoiceIds": [
-              "c"
-            ],
+            "correctChoiceIds": ["c"],
             "explanation": "A porta confere temChave. Se você não pegou a chave, temChave ainda é falso, e o jogo segue o senão: avisa que falta a chave. Antes de você montar o senão, era isso que acontecia: nada. O então, que acende o farol e chama o barco, só acontece quando temChave é verdadeiro."
           },
           {
@@ -99,9 +88,7 @@
                 "label": "Recolher a chave e repetir exatamente o caminho que já funcionou."
               }
             ],
-            "correctChoiceIds": [
-              "b"
-            ],
+            "correctChoiceIds": ["b"],
             "explanation": "A porta tem duas respostas, a do então e a do senão. Você já conferiu o caminho com a chave. Na mesma partida, temChave continua verdadeiro, por isso o farol escolheria o então de novo. Só numa partida nova temChave volta a ser falso: clique em Atualizar e vá direto até a porta do farol. A luz deve continuar apagada, e o aviso deve dizer que falta a chave. Testar só o caminho que dá certo pode esconder uma regra montada no lugar errado."
           }
         ]
@@ -114,18 +101,13 @@
       "title": "As regras do seu curso",
       "intent": "explanation",
       "objective": "Conferir as regras do próprio jogo e corrigir dúvidas antes do certificado.",
-      "blockKeys": [
-        "fala-revisao-final",
-        "quiz-revisao-final"
-      ],
+      "blockKeys": ["fala-revisao-final", "quiz-revisao-final"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "quiz-revisao-final"
-        ]
+        "blockIds": ["quiz-revisao-final"]
       }
     },
     {
@@ -133,20 +115,13 @@
       "title": "Comemore sua criação",
       "intent": "delivery",
       "objective": "Emitir e guardar o certificado do curso concluída.",
-      "blockKeys": [
-        "video-certificado-farol",
-        "fala-certificado",
-        "certificado"
-      ],
+      "blockKeys": ["video-certificado-farol", "fala-certificado", "certificado"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-certificado-farol",
-          "certificado"
-        ]
+        "blockIds": ["video-certificado-farol", "certificado"]
       }
     }
   ]

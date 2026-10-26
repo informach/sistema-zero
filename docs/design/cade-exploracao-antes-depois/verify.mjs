@@ -1,6 +1,7 @@
 import { createRequire } from 'node:module'
 import { resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
+
 const { chromium, expect } = createRequire(
   resolve(import.meta.dirname, '../../../packages/studio/package.json'),
 )('@playwright/test')

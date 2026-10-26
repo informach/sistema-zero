@@ -1,9 +1,12 @@
 import { createRequire } from 'node:module'
 import { resolve } from 'node:path'
+
 const { chromium, expect } = createRequire(
   resolve(import.meta.dirname, '../../../packages/studio/package.json'),
 )('@playwright/test')
+
 import { pathToFileURL } from 'node:url'
+
 const b = await chromium.launch({ channel: 'chrome', headless: true })
 const p = await b.newPage({ viewport: { width: 1440, height: 1100 } })
 const errors = [],

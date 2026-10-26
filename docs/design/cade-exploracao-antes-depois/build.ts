@@ -1,5 +1,6 @@
 import { readFile } from 'node:fs/promises'
 import { buildPrototype } from '../farol-antes-depois/build'
+
 await buildPrototype({
   directory: import.meta.dirname,
   title: 'Cadê Todo Mundo · Exploração antes e depois',

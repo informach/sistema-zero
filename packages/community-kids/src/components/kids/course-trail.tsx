@@ -102,7 +102,9 @@ export function CourseTrail({ course }: { course: CourseDetailView }) {
                       // A linha da aula atual ganha espaço para o balão, que fica acima do nó.
                       style={{
                         height:
-                          node.state === 'current' ? 'var(--trail-row-current)' : 'var(--trail-row)',
+                          node.state === 'current'
+                            ? 'var(--trail-row-current)'
+                            : 'var(--trail-row)',
                       }}
                     >
                       {(() => {
