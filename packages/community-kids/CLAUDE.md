@@ -1,5 +1,20 @@
 # CLAUDE.md — @sistemazero/community-kids
 
+## Peças novas do avatar (26/10/2026)
+
+32 peças modeladas no Blender (Canvas "Provador do avatar"), com a aba nova Enfeite; o contrato do
+catálogo está no CLAUDE.md do member-shell e a lista em `docs/gamificacao.md` §6.
+
+- **Os arquivos ficam em DUAS pastas** (`public/avatar3d` daqui e da comunidade adulta).
+  `tests/avatar3d-catalog.test.ts` confere que toda peça tem GLB e miniatura nas duas e que as
+  cópias são iguais, que as juntas de cada GLB seguem a ordem do `Armature.glb` (o Blender exporta
+  em outra ordem e a peça ficaria parada no ar nas poses) e que `AVATAR_FIXED_COLOR_PARTS` bate
+  com os materiais de verdade.
+- **`scripts/avatar-blender/`**: os scripts que geram as peças (`bpy` 5.2.3 do PyPI, sem tela) e
+  o `reordenar.py` das juntas. README com o passo a passo.
+- **`gen:avatar-thumbs` usa o three.js da própria instalação** (servido em `/vendor/three/`,
+  com import map), não mais o esm.sh: funciona sem internet e desenha com a versão do app.
+
 ## Meu avatar e Meu quarto com o painel ao lado (26/10/2026)
 
 As duas telas trocaram o painel de baixo pelo painel ao lado do 3D quando a área do editor tem
