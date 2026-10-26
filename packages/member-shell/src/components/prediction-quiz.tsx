@@ -1,5 +1,4 @@
 'use client'
-import { IslandQuizScene } from './quiz-island-scene'
 import { gradeLearningQuiz, isManifestQuiz } from '@sistemazero/core/learning'
 import { falaDaExplicacaoDoQuiz, falaDaQuestaoDoQuiz } from '@sistemazero/core/learning/scene'
 import { ArrowRight, Check, CheckCircle2, Hand, Play, RotateCcw, Sparkles, X } from 'lucide-react'
@@ -17,6 +16,7 @@ import { SceneButton } from './exploration-stage'
 import { useLessonPlayer } from './lesson-player-context'
 import { useLessonPreview } from './lesson-preview-context'
 import { GardenQuizScene } from './quiz-garden-scene'
+import { IslandQuizScene } from './quiz-island-scene'
 import { LighthouseQuizScene } from './quiz-lighthouse-scene'
 import { ZappyOuvirButton } from './zappy-ouvir-button'
 /** Same radio-card recipe as KidsQuiz; the approved prediction flow needs immediate feedback. */

@@ -1,4 +1,3 @@
-import { stepIsland, type IslandAction } from './island-3d'
 import {
   isSceneAction,
   LIGHTHOUSE_POSITION,
@@ -24,6 +23,7 @@ import {
   TAMANHO_PARECIDO,
 } from './atelie'
 import { decimal, numero, quantos } from './cast'
+import { type IslandAction, stepIsland } from './island-3d'
 import {
   AIM_ORIGIN,
   AIM_SHOT,

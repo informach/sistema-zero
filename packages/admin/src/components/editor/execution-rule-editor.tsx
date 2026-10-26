@@ -221,6 +221,7 @@ export function StepsEditor({
             <fieldset className="space-y-3 rounded-md border p-3">
               <legend>Retângulos do chão (x/z)</legend>
               {step.walkable?.map((r, i) => (
+                // biome-ignore lint/suspicious/noArrayIndexKey: retângulos não têm ID e os campos são controlados pela regra
                 <div key={i} className="grid grid-cols-2 gap-2">
                   {(['minX', 'maxX', 'minZ', 'maxZ'] as const).map((k) => (
                     <Input

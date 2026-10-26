@@ -1,13 +1,14 @@
 /** Mesmo template, tipografia e componentes do Cadê; desenhos usam as definições do Estúdio. */
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
-import { ilhaAulas } from '../../qa/ilha-do-farol-conteudo'
 import { FRAME_BLOCKS } from '../../../../packages/studio/src/blockly/blocks/frames'
 import { JS_BLOCKS } from '../../../../packages/studio/src/blockly/blocks/js'
 import { VALUE_BLOCKS } from '../../../../packages/studio/src/blockly/blocks/values'
 import { gameThreeDBlocks } from '../../../../packages/studio/src/official-extensions/game-3d/blocks'
 import { FONTE as baloo } from '../../../../packages/studio/src/official-extensions/gameUiFonts/baloo2'
 import { FONTE as nunito } from '../../../../packages/studio/src/official-extensions/gameUiFonts/nunito'
+import { ilhaAulas } from '../../qa/ilha-do-farol-conteudo'
+
 const root = resolve(import.meta.dirname, '../../../..')
 const out = resolve(root, 'tmp/pdfs/ilha-farol')
 mkdirSync(out, { recursive: true })

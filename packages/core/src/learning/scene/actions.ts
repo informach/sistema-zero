@@ -1,4 +1,4 @@
-import { isIslandAction, type IslandAction } from './island-3d'
+import { type IslandAction, isIslandAction } from './island-3d'
 import type { OnceArea, OnceCardId, ScenePreset } from './presets'
 import type { SceneCopyColor } from './state'
 

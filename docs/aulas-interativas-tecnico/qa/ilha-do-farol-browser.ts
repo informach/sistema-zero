@@ -1,18 +1,19 @@
 /** Real Chromium execution of the course rules, without network or learner-state mutation. */
-import { readFileSync, readdirSync, mkdirSync, writeFileSync } from 'node:fs'
-import { resolve, dirname } from 'node:path'
+import { mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { dirname, resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
-import { montarProjetoIlha } from './ilha-do-farol-projeto'
-import { ilhaChecks } from './ilha-do-farol-criterios'
-import { gameThreeDRuntimeWithoutPlatform } from '../../../packages/studio/src/official-extensions/game-3d/runtime'
-import { gameThreeDExtension } from '../../../packages/studio/src/official-extensions/game-3d'
-import { asset3DManifest } from '../../../packages/studio/src/core/projectAssets'
-import { buildPreviewDoc } from '../../../packages/studio/src/preview/bootstrap'
-import { instrumentCheckScript } from '../../../packages/studio/src/check/instrumentCheckScript'
 import {
-  judgeExecutionObservation,
   isExecutionRule,
+  judgeExecutionObservation,
 } from '../../../packages/core/src/learning/project-execution'
+import { instrumentCheckScript } from '../../../packages/studio/src/check/instrumentCheckScript'
+import { asset3DManifest } from '../../../packages/studio/src/core/projectAssets'
+import { gameThreeDExtension } from '../../../packages/studio/src/official-extensions/game-3d'
+import { gameThreeDRuntimeWithoutPlatform } from '../../../packages/studio/src/official-extensions/game-3d/runtime'
+import { buildPreviewDoc } from '../../../packages/studio/src/preview/bootstrap'
+import { ilhaChecks } from './ilha-do-farol-criterios'
+import { montarProjetoIlha } from './ilha-do-farol-projeto'
+
 const root = resolve(import.meta.dirname, '../../..'),
   dir = resolve(root, '.cache/ilha-do-farol/native'),
   runtime = resolve(root, 'packages/studio-runtime/runtime'),
@@ -24,7 +25,7 @@ const driver = Bun.resolveSync(
 )
 const version = JSON.parse(readFileSync(resolve(runtime, 'package.json'), 'utf8')).dependencies
   .three
-const threeRoot = resolve(root, `node_modules/.bun/three@${version}/node_modules/three`)
+const threeRoot = resolve(runtime, 'node_modules/three')
 for (const f of readdirSync(runtime))
   if (f.endsWith('.mjs')) {
     let s = readFileSync(resolve(runtime, f), 'utf8')

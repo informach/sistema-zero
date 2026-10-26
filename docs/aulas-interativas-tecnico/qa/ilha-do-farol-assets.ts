@@ -1,13 +1,14 @@
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
+import { Logger, NodeIO } from '@gltf-transform/core'
+import { ALL_EXTENSIONS } from '@gltf-transform/extensions'
+import { dedup, prune, quantize, weld } from '@gltf-transform/functions'
 import { encodeSceneGlb } from '../../../packages/molda/src/export/sceneGlb'
 import { buildSceneGeometry } from '../../../packages/molda/src/scene/geometry'
 import { indexSceneNodes } from '../../../packages/molda/src/scene/graph'
 import { readSceneDocument } from '../../../packages/molda/src/scene/readDocument'
 import type { ProjectAsset } from '../../../packages/studio/src/core/project'
-import { NodeIO, Logger } from '@gltf-transform/core'
-import { ALL_EXTENSIONS } from '@gltf-transform/extensions'
-import { weld, dedup, quantize, prune } from '@gltf-transform/functions'
+
 const io = new NodeIO()
   .registerExtensions(ALL_EXTENSIONS)
   .setLogger(new Logger(Logger.Verbosity.SILENT))

@@ -1,18 +1,19 @@
-import { describe, test, expect } from 'bun:test'
+import { describe, expect, test } from 'bun:test'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { isLearningManifest } from '../../../packages/core/src/learning'
-import { readManifestStudioProjectExamples } from '../../../packages/core/src/learning/studio-project-examples'
 import {
-  isSectionExecutionRule,
   isExecutionRule,
+  isSectionExecutionRule,
 } from '../../../packages/core/src/learning/project-execution'
+import { readManifestStudioProjectExamples } from '../../../packages/core/src/learning/studio-project-examples'
 import { evaluateStudioSectionProject } from '../../../packages/studio/src/blockly/projectCheckAuthoring'
-import { sanitizeProjectAssets } from '../../../packages/studio/src/core/projectAssets'
-import { ILHA_PARTES, montarProjetoIlha } from './ilha-do-farol-projeto'
-import { ilhaChecks } from './ilha-do-farol-criterios'
 import { isBlockTypeAllowed } from '../../../packages/studio/src/core/levels'
+import { sanitizeProjectAssets } from '../../../packages/studio/src/core/projectAssets'
 import { SZIRInputSchema } from '../../../packages/studio/src/ir/schema'
+import { ilhaChecks } from './ilha-do-farol-criterios'
+import { ILHA_PARTES, montarProjetoIlha } from './ilha-do-farol-projeto'
+
 const dir = resolve(import.meta.dirname, '../../aulas-interativas/a-ilha-do-farol')
 describe('A Ilha do Farol', () => {
   test('três aulas válidas, sem certificado, com exemplos portáteis dentro do orçamento', () => {

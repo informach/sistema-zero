@@ -1,3 +1,8 @@
+import type {
+  ProjectBlockPattern,
+  SectionProjectCheck,
+  SectionStructureRule,
+} from '../../../packages/core/src/learning/section-progression'
 import {
   ilhaCollect,
   ilhaCollectWithMessage,
@@ -5,12 +10,8 @@ import {
   ilhaMissing,
   ilhaWin,
 } from './ilha-do-farol-observacao'
-import type {
-  SectionProjectCheck,
-  SectionStructureRule,
-  ProjectBlockPattern,
-} from '../../../packages/core/src/learning/section-progression'
 import type { IlhaParte } from './ilha-do-farol-projeto'
+
 const check = (id: string, label: string, rule: SectionStructureRule): SectionProjectCheck => ({
   id,
   label,

@@ -1,10 +1,11 @@
 import { readFileSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
+import { Logger, NodeIO } from '@gltf-transform/core'
+import { ALL_EXTENSIONS } from '@gltf-transform/extensions'
+import { dedup, prune, quantize, weld } from '@gltf-transform/functions'
 import { encodeSceneGlb } from '../../../packages/molda/src/export/sceneGlb'
 import { readSceneDocument } from '../../../packages/molda/src/scene/readDocument'
-import { NodeIO, Logger } from '@gltf-transform/core'
-import { ALL_EXTENSIONS } from '@gltf-transform/extensions'
-import { weld, dedup, quantize, prune } from '@gltf-transform/functions'
+
 const source = resolve(
   import.meta.dirname,
   '../../design/ilha-do-farol-molda/projetos/cena-completa.molda.json',

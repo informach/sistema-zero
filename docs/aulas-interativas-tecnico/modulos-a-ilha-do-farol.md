@@ -29,6 +29,7 @@ O PDF reutiliza o CSS, Nunito, Baloo 2, cartões e desenhos de encaixe do Cadê 
 ## Verificar
 
 ```powershell
+npm ci --ignore-scripts --no-audit --no-fund --prefix packages/studio-runtime/runtime
 bun docs/aulas-interativas-tecnico/qa/validar-manifestos.ts
 python docs/aulas-interativas-tecnico/validar-roteiros.py
 bun docs/aulas-interativas-tecnico/qa/gerar-falas-elevenlabs.ts --check

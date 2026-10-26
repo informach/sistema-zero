@@ -1,6 +1,6 @@
-import { islandGuidance, ISLAND_SPEECH } from './island-3d'
 import type { SceneId } from './actions'
 import type { SceneActivity } from './index'
+import { ISLAND_SPEECH, islandGuidance } from './island-3d'
 import type { SceneState } from './state'
 
 /** Shared authored speech: player and recording inventory always use the same text. */

@@ -34,7 +34,6 @@ import {
 } from './voz'
 
 export * from './actions'
-export * from './island-3d'
 // O ateliê do lote 5 do Raio-X: as réguas do fogo, do espelho, da lupa e da folha.
 export * from './atelie'
 export * from './audio-url'
@@ -45,6 +44,7 @@ export * from './cenario'
 export * from './engine'
 export * from './evaluate'
 export * from './garden'
+export * from './island-3d'
 // O núcleo do Iniciante 2D do lote 5 do Raio-X: as réguas da tecla, do laço, da ficha, da câmera,
 // do encosto, da recarga, da mira, da diagonal e do mapa escrito.
 export * from './nucleo'

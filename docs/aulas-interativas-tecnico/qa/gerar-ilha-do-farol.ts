@@ -1,14 +1,15 @@
 /** Local source generation only; importing and publishing are separate production operations. */
 import { mkdirSync } from 'node:fs'
-import { gravarArquivo } from './gravar-arquivo'
 import { resolve } from 'node:path'
+import { ISLAND_SPEECH } from '../../../packages/core/src/learning/scene/island-3d'
+import { derivadosDeVoz } from './gerar-falas-elevenlabs'
+import { gravarArquivo } from './gravar-arquivo'
 import { ilhaAulas } from './ilha-do-farol-conteudo'
 import { ilhaChecks } from './ilha-do-farol-criterios'
-import { ILHA_CURSO, ILHA_PARTES, montarProjetoIlha, type IlhaParte } from './ilha-do-farol-projeto'
+import { ILHA_CURSO, ILHA_PARTES, type IlhaParte, montarProjetoIlha } from './ilha-do-farol-projeto'
 import { ilhaQuiz } from './ilha-do-farol-quiz'
-import { ISLAND_SPEECH } from '../../../packages/core/src/learning/scene/island-3d'
 import { extrairPartesElevenLabs, sincronizarRecadosNaPagina } from './roteiro-elevenlabs'
-import { derivadosDeVoz } from './gerar-falas-elevenlabs'
+
 const dir = resolve(import.meta.dirname, '../../aulas-interativas/a-ilha-do-farol')
 mkdirSync(dir, { recursive: true })
 const write = (name: string, v: string | object) =>

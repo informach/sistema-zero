@@ -1,6 +1,6 @@
 import type {
-  ExecutionStep,
   ExecutionExpectation,
+  ExecutionStep,
 } from '../../../packages/core/src/learning/project-execution'
 import type { SectionProjectCheck } from '../../../packages/core/src/learning/section-progression'
 export const ILHA_CAMINHOS = [

@@ -2,9 +2,9 @@ import { buildWorkspaceStateFromIR } from '../../../packages/studio/src/blockly/
 import { createEmptyProject, type Project } from '../../../packages/studio/src/core/project'
 import { generateProjectFiles } from '../../../packages/studio/src/generators/project'
 import { normalizeSZIR } from '../../../packages/studio/src/ir'
+import { gameThreeDManifest } from '../../../packages/studio/src/official-extensions/game-3d/manifest'
 import { parseJS } from '../../../packages/studio/src/parsers/js'
 import { ILHA_ASSETS, ILHA_MODELS } from './ilha-do-farol-assets'
-import { gameThreeDManifest } from '../../../packages/studio/src/official-extensions/game-3d/manifest'
 
 export const ILHA_CURSO = 'jornada-faisca-base-3d'
 export const ILHA_PARTES = [

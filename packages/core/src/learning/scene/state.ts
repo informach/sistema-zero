@@ -1,4 +1,3 @@
-import { initialIsland, isIslandState, type IslandState } from './island-3d'
 import {
   isRecord,
   LIGHTHOUSE_POSITION,
@@ -12,6 +11,7 @@ import {
   SHEET_CROP_WIDTHS,
 } from './actions'
 import { GESTOS_NO_PAPEL, MARCA_DO_PAPEL, MARCAS_NO_PAPEL, type MirrorAxis } from './atelie'
+import { type IslandState, initialIsland, isIslandState } from './island-3d'
 import {
   AIM_ORIGIN,
   CONTACT_HEARTS,
