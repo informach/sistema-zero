@@ -1,5 +1,6 @@
 import type { FulfillmentSpec } from '../../domain/product/fulfillment'
 import type { ProductAggregate } from '../../domain/product/product.aggregate'
+import type { CatalogAudience } from '../../domain/shared/audience'
 
 export interface ProductComponentView {
   productId: string
@@ -10,6 +11,7 @@ export interface ProductComponentView {
 /** Resumo do produto — embutido na view da oferta. */
 export interface ProductSummaryView {
   id: string
+  audience: CatalogAudience
   sku: string
   slug: string
   name: string
@@ -45,6 +47,7 @@ export interface PublicProductView extends ProductSummaryView {
 export function toProductSummary(product: ProductAggregate): ProductSummaryView {
   return {
     id: product.id,
+    audience: product.audience,
     sku: product.sku,
     slug: product.slug,
     name: product.name,

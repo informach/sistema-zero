@@ -114,6 +114,7 @@ export const AiUsageStatsQuery = t.Object({
 
 /** `?days=` do funil do Pensa (ausente → 30). */
 export const PensaFunnelQuery = t.Object({
+  audience: t.Optional(t.Union([t.Literal('kids'), t.Literal('adult')])),
   days: t.Optional(t.Numeric({ minimum: 1, maximum: 365 })),
 })
 

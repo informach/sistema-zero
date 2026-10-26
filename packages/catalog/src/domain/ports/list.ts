@@ -3,6 +3,7 @@
  * filtros opcionais validados na borda (DTO) contra o enum do recurso.
  */
 export interface ListQuery {
+  readonly audience?: import('../shared/audience').CatalogAudience
   /** Busca textual case-insensitive (nome/slug/sku/código). */
   readonly q?: string
   /** Filtro por status (string crua; cada repo casa com o enum do seu recurso). */

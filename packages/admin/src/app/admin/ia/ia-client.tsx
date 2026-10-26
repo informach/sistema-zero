@@ -159,7 +159,7 @@ export function AiUsageClient() {
     <div className="space-y-6">
       <AdminHeader
         title="Zappy e Pensa"
-        description="Quanto o Zappy e o Pensa foram usados, quanto custaram e onde as respostas não ajudaram. As famílias veem esse uso como créditos."
+        description="Uso, custos e qualidade gerais do Zappy e do Pensa. Créditos são compartilhados por conta; o progresso dos projetos do Pensa segue a comunidade selecionada."
         action={
           <div className="flex items-center gap-2">
             <input

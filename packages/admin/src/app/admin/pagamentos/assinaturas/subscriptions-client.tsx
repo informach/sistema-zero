@@ -19,12 +19,15 @@ import { Ban, Copy, Search } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { AdminHeader } from '@/components/admin/admin-header'
+import { communityPage, useCommunityRequests } from '@/components/admin/community-page'
 import { PaymentsTabs } from '@/components/admin/payments-tabs'
 import { ReadOnlyNotice } from '@/components/admin/read-only-notice'
 import { StatusBadge, statusLabel } from '@/components/admin/status-badge'
 import { TableSkeletonRows } from '@/components/admin/table-skeleton'
-import { type ApiError, apiGet, apiSend } from '@/lib/api'
+import type { ApiError } from '@/lib/api'
+import { isCanceledCommunityRequest } from '@/lib/community-query'
 import { formatCentsStr, formatDate } from '@/lib/format'
+import type { Platform } from '@/lib/platform'
 import { type Paginated, SUBSCRIPTION_STATUSES, type SubscriptionView } from '@/lib/types'
 import { copyToClipboard } from '../../notas-fiscais/copy-to-clipboard'
 
@@ -40,7 +43,44 @@ function intervalLabel(months: number): string {
   return `A cada ${months} meses`
 }
 
-export function SubscriptionsClient({ currentRole }: { currentRole: string }) {
+export const SubscriptionsClient = communityPage<{ currentRole: string }>(SubscriptionsCommunity)
+
+function SubscriptionsCommunity({
+  currentRole,
+  audience,
+}: {
+  currentRole: string
+  audience: Platform
+}) {
+  const [unassigned, setUnassigned] = useState(false)
+  const scope = unassigned ? 'unassigned' : audience
+  return (
+    <div className="space-y-4">
+      <label className="flex items-start gap-2 rounded-lg border border-border p-3 text-sm text-muted-foreground">
+        <input
+          type="checkbox"
+          checked={unassigned}
+          onChange={(event) => setUnassigned(event.target.checked)}
+          className="mt-1"
+        />
+        <span>
+          Consultar registros sem comunidade identificada. Eles ficam fora dos totais de Kids e
+          Adultos até a conferência da origem da compra.
+        </span>
+      </label>
+      <SubscriptionsContent key={scope} currentRole={currentRole} audience={scope} />
+    </div>
+  )
+}
+
+function SubscriptionsContent({
+  currentRole,
+  audience,
+}: {
+  currentRole: string
+  audience: Platform | 'unassigned'
+}) {
+  const { get: apiGet, send: apiSend } = useCommunityRequests(audience)
   const canWrite = currentRole === 'superadmin' || currentRole === 'admin'
   const [items, setItems] = useState<SubscriptionView[]>([])
   const [total, setTotal] = useState(0)
@@ -65,11 +105,12 @@ export function SubscriptionsClient({ currentRole }: { currentRole: string }) {
       setItems(page.items)
       setTotal(page.total)
     } catch (err) {
+      if (isCanceledCommunityRequest(err)) return
       toast.error((err as ApiError).message ?? 'As assinaturas não carregaram. Tente de novo.')
     } finally {
       setLoading(false)
     }
-  }, [offset, q, status])
+  }, [apiGet, offset, q, status])
 
   useEffect(() => {
     const t = setTimeout(load, 250)
@@ -89,6 +130,7 @@ export function SubscriptionsClient({ currentRole }: { currentRole: string }) {
       setConfirmingCancel(false)
       await load()
     } catch (err) {
+      if (isCanceledCommunityRequest(err)) return
       toast.error((err as ApiError).message ?? 'A assinatura não foi cancelada. Tente de novo.')
     } finally {
       setCanceling(false)
@@ -99,6 +141,7 @@ export function SubscriptionsClient({ currentRole }: { currentRole: string }) {
     <div className="space-y-6">
       <AdminHeader
         title="Vendas"
+        community={audience === 'unassigned' ? 'Comunidade ainda não identificada' : true}
         description="As assinaturas recorrentes no cartão: quanto pagam e se estão em dia."
       />
       <PaymentsTabs />

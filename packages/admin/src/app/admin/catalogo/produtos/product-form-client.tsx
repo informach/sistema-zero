@@ -14,10 +14,14 @@ import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { AdminHeader } from '@/components/admin/admin-header'
+import { communityPage, useCommunityRequests } from '@/components/admin/community-page'
 import { statusLabel } from '@/components/admin/status-badge'
 import { type ComponentDraft, ComponentsEditor } from '@/components/catalog/components-editor'
 import { type CourseOption, FulfillmentEditor } from '@/components/catalog/fulfillment-editor'
-import { type ApiError, apiGet, apiSend } from '@/lib/api'
+import type { ApiError } from '@/lib/api'
+import { isCanceledCommunityRequest } from '@/lib/community-query'
+import { loadAllPages } from '@/lib/load-all-pages'
+import type { Platform } from '@/lib/platform'
 import { skuify, slugify } from '@/lib/slug'
 import type { CourseView, FulfillmentSpec, Paginated, ProductView } from '@/lib/types'
 
@@ -89,7 +93,18 @@ function sanitizeFulfillment(spec: FulfillmentSpec | null): FulfillmentSpec | nu
 }
 
 /** Formulário de produto (página dedicada): dados base + combo + entrega/acesso. */
-export function ProductFormClient({ productId }: { productId: string | null }) {
+export const ProductFormClient = communityPage<{ productId: string | null }>(
+  ProductFormForCommunity,
+)
+
+function ProductFormForCommunity({
+  productId,
+  audience,
+}: {
+  productId: string | null
+  audience: Platform
+}) {
+  const { get: apiGet, send: apiSend } = useCommunityRequests(audience)
   const router = useRouter()
   const isEdit = productId !== null
 
@@ -99,6 +114,7 @@ export function ProductFormClient({ productId }: { productId: string | null }) {
   const [loading, setLoading] = useState(isEdit)
   const [saving, setSaving] = useState(false)
   const [notFound, setNotFound] = useState(false)
+  const [loadError, setLoadError] = useState(false)
   // Auto-geração de SKU/slug a partir do nome (só na criação); edição manual
   // do campo (dirty) desliga a regeneração daquele campo.
   const [skuDirty, setSkuDirty] = useState(false)
@@ -111,26 +127,32 @@ export function ProductFormClient({ productId }: { productId: string | null }) {
 
   useEffect(() => {
     let alive = true
-    apiGet<Paginated<ProductView>>('/api/catalog/products?limit=100')
+    loadAllPages((offset, limit) =>
+      apiGet<Paginated<ProductView>>(`/api/catalog/products?offset=${offset}&limit=${limit}`),
+    )
       .then((page) => {
-        if (alive) setProducts(page.items)
+        if (alive) setProducts(page)
       })
-      .catch(() => {})
-    apiGet<Paginated<CourseView>>('/api/members/courses?limit=100')
+      .catch((err) => {
+        if (alive && !isCanceledCommunityRequest(err)) setLoadError(true)
+      })
+    loadAllPages((offset, limit) =>
+      apiGet<Paginated<CourseView>>(`/api/members/courses?offset=${offset}&limit=${limit}`),
+    )
       .then((page) => {
         if (alive)
-          setCourses(
-            page.items.map((c) => ({ slug: c.slug, title: c.title, audience: c.audience })),
-          )
+          setCourses(page.map((c) => ({ slug: c.slug, title: c.title, audience: c.audience })))
       })
-      .catch(() => {})
+      .catch((err) => {
+        if (alive && !isCanceledCommunityRequest(err)) setLoadError(true)
+      })
       .finally(() => {
         if (alive) setCoursesLoading(false)
       })
     return () => {
       alive = false
     }
-  }, [])
+  }, [apiGet])
 
   useEffect(() => {
     if (!productId) return
@@ -159,7 +181,10 @@ export function ProductFormClient({ productId }: { productId: string | null }) {
       .catch((err) => {
         if (!alive) return
         if ((err as ApiError).status === 404) setNotFound(true)
-        else toast.error((err as ApiError).message ?? 'O produto não carregou. Tente de novo.')
+        else {
+          setLoadError(true)
+          toast.error((err as ApiError).message ?? 'O produto não carregou. Tente de novo.')
+        }
       })
       .finally(() => {
         if (alive) setLoading(false)
@@ -167,7 +192,7 @@ export function ProductFormClient({ productId }: { productId: string | null }) {
     return () => {
       alive = false
     }
-  }, [productId])
+  }, [productId, apiGet])
 
   const isBundle = form.kind === 'bundle'
 
@@ -228,6 +253,7 @@ export function ProductFormClient({ productId }: { productId: string | null }) {
         toast.success('Produto atualizado.')
       } else {
         await apiSend('/api/catalog/products', 'POST', {
+          audience,
           sku: form.sku,
           slug: form.slug,
           name: form.name,
@@ -242,6 +268,7 @@ export function ProductFormClient({ productId }: { productId: string | null }) {
       }
       router.push('/admin/catalogo/produtos')
     } catch (err) {
+      if (isCanceledCommunityRequest(err)) return
       toast.error((err as ApiError).message ?? 'Não deu para salvar. Tente de novo.')
       setSaving(false)
     }
@@ -255,12 +282,19 @@ export function ProductFormClient({ productId }: { productId: string | null }) {
     )
   }
 
+  if (loadError)
+    return (
+      <div role="alert" className="rounded-xl border border-border bg-card p-6">
+        Não conseguimos carregar os dados do produto. Recarregue a página para tentar novamente.
+      </div>
+    )
+
   if (notFound) {
     return (
       <div className="space-y-6">
         <AdminHeader
-          title="Este produto não existe"
-          description="Ele pode ter sido apagado, ou o link está errado."
+          title="Produto indisponível nesta comunidade"
+          description="Confira a comunidade selecionada ou volte à lista de produtos."
         />
         <Link href="/admin/catalogo/produtos" className={buttonVariants({ variant: 'outline' })}>
           <ArrowLeft className="size-4" aria-hidden /> Voltar aos produtos
@@ -436,6 +470,7 @@ export function ProductFormClient({ productId }: { productId: string | null }) {
           </CardHeader>
           <CardContent>
             <FulfillmentEditor
+              audience={audience}
               value={fulfillment}
               onChange={setFulfillment}
               courses={courses}

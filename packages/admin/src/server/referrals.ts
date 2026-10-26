@@ -13,11 +13,16 @@ export function listCampaigns(
   p: ListAmbassadorsParams,
 ): Promise<GatewayResponse<{ items: CampaignView[]; total: number }>> {
   return gatewayFetch('/referrals/admin/campaigns', {
-    query: { q: p.q, limit: p.limit, offset: p.offset },
+    query: { audience: p.audience, q: p.q, limit: p.limit, offset: p.offset },
   })
 }
-export function getCampaign(id: string): Promise<GatewayResponse<CampaignDetailView>> {
-  return gatewayFetch(`/referrals/admin/campaigns/${encodeURIComponent(id)}`)
+export function getCampaign(
+  id: string,
+  audience?: string,
+): Promise<GatewayResponse<CampaignDetailView>> {
+  return gatewayFetch(`/referrals/admin/campaigns/${encodeURIComponent(id)}`, {
+    query: { audience },
+  })
 }
 export function saveCampaign(
   body: unknown,
@@ -32,6 +37,7 @@ export function saveCampaign(
 }
 
 export interface ListAmbassadorsParams {
+  audience?: string
   q?: string
   limit?: number
   offset?: number
@@ -42,7 +48,7 @@ export function listAmbassadors(
   p: ListAmbassadorsParams,
 ): Promise<GatewayResponse<{ items: AmbassadorListItemView[]; total: number }>> {
   return gatewayFetch('/referrals/admin/ambassadors', {
-    query: { q: p.q, limit: p.limit, offset: p.offset },
+    query: { audience: p.audience, q: p.q, limit: p.limit, offset: p.offset },
   })
 }
 
@@ -59,8 +65,13 @@ export function createAmbassador(
 }
 
 /** Detalhe + resgates do código: `GET /referrals/admin/ambassadors/:id`. */
-export function getAmbassador(id: string): Promise<GatewayResponse<AmbassadorDetailView>> {
-  return gatewayFetch(`/referrals/admin/ambassadors/${encodeURIComponent(id)}`)
+export function getAmbassador(
+  id: string,
+  audience?: string,
+): Promise<GatewayResponse<AmbassadorDetailView>> {
+  return gatewayFetch(`/referrals/admin/ambassadors/${encodeURIComponent(id)}`, {
+    query: { audience },
+  })
 }
 
 /** Reenvia o e-mail do magic-link (não rotaciona o token). */
@@ -82,6 +93,7 @@ export function patchAmbassador(
 }
 
 export interface ListConversionsParams {
+  audience?: string
   status?: ConversionStatus
   limit?: number
   offset?: number
@@ -92,7 +104,7 @@ export function listConversions(
   p: ListConversionsParams,
 ): Promise<GatewayResponse<{ items: ConversionAdminView[]; total: number }>> {
   return gatewayFetch('/referrals/admin/conversions', {
-    query: { status: p.status, limit: p.limit, offset: p.offset },
+    query: { audience: p.audience, status: p.status, limit: p.limit, offset: p.offset },
   })
 }
 

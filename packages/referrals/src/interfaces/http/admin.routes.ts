@@ -13,6 +13,7 @@ import { assertInternalCaller, decodeIdentityHeader, requireAdmin } from './auth
 
 // String (não RegExp.source): o `pattern` do TypeBox compila SEM flags — um /i
 // perdido rejeitaria uuid maiúsculo com 422.
+const audienceQuery = t.Optional(t.Union([t.Literal('kids'), t.Literal('adult')]))
 const UUID_PATTERN = '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$'
 
 export interface AdminRoutesDeps {
@@ -93,7 +94,10 @@ export function adminRoutes(deps: AdminRoutesDeps) {
         '/ambassadors',
         async ({ body, headers, set }) => {
           guard(headers, true)
-          const result = await deps.ambassadors.create({ name: body.name, email: body.email })
+          const result = await deps.ambassadors.create({
+            name: body.name,
+            email: body.email,
+          })
           if (result.kind !== 'created') {
             // `account_exists` é inalcançável sem accountUserId (a UNIQUE
             // parcial ignora NULL) — tratado junto por exaustão do union.
@@ -115,6 +119,7 @@ export function adminRoutes(deps: AdminRoutesDeps) {
         async ({ query, headers }) => {
           guard(headers)
           const { items, total } = await deps.ambassadors.list({
+            audience: query.audience,
             q: query.q,
             limit: Math.min(query.limit ?? 25, 100),
             offset: query.offset ?? 0,
@@ -130,6 +135,7 @@ export function adminRoutes(deps: AdminRoutesDeps) {
         },
         {
           query: t.Object({
+            audience: audienceQuery,
             q: t.Optional(t.String({ maxLength: 200 })),
             limit: t.Optional(t.Numeric({ minimum: 1, maximum: 100 })),
             offset: t.Optional(t.Numeric({ minimum: 0 })),
@@ -138,9 +144,9 @@ export function adminRoutes(deps: AdminRoutesDeps) {
       )
       .get(
         '/ambassadors/:id',
-        async ({ params, headers, set }) => {
+        async ({ params, query, headers, set }) => {
           guard(headers)
-          const detail = await deps.ambassadors.detail(params.id)
+          const detail = await deps.ambassadors.detail(params.id, query.audience)
           if (!detail) {
             set.status = 404
             return envelope('AMBASSADOR_NOT_FOUND', 'Embaixador não encontrado')
@@ -152,7 +158,10 @@ export function adminRoutes(deps: AdminRoutesDeps) {
             ),
           }
         },
-        { params: t.Object({ id: t.String({ pattern: UUID_PATTERN }) }) },
+        {
+          params: t.Object({ id: t.String({ pattern: UUID_PATTERN }) }),
+          query: t.Object({ audience: audienceQuery }),
+        },
       )
       // ── Bônus (conversões bolsista → assinatura; Pix MANUAL controlado aqui) ──
       .get(
@@ -160,6 +169,7 @@ export function adminRoutes(deps: AdminRoutesDeps) {
         async ({ query, headers }) => {
           guard(headers)
           const { items, total } = await deps.repo.listConversions({
+            audience: query.audience,
             status: query.status,
             limit: Math.min(query.limit ?? 25, 100),
             offset: query.offset ?? 0,
@@ -168,6 +178,7 @@ export function adminRoutes(deps: AdminRoutesDeps) {
         },
         {
           query: t.Object({
+            audience: audienceQuery,
             status: t.Optional(t.Union(CONVERSION_STATUSES.map((s) => t.Literal(s)))),
             limit: t.Optional(t.Numeric({ minimum: 1, maximum: 100 })),
             offset: t.Optional(t.Numeric({ minimum: 0 })),

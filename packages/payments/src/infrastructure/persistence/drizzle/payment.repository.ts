@@ -4,11 +4,12 @@ import type {
   ClaimedCharge,
   PaymentRepository,
 } from '../../../domain/ports/payment-repository.port'
+import { verifiedBillingAudience } from '../../../domain/subscription-recovery/billing-audience'
 import type { Currency } from '../../../domain/value-objects/money'
 import { PG_CHANNELS } from './channels'
 import { ConcurrencyConflictError } from './concurrency.error'
 import type { Database } from './db'
-import { outbox, payments, toDomainPaymentStatus } from './schema'
+import { outbox, payments, subscriptions, toDomainPaymentStatus } from './schema'
 
 type PaymentRow = typeof payments.$inferSelect
 
@@ -29,6 +30,26 @@ export class DrizzlePaymentRepository implements PaymentRepository {
 
     await this.db.transaction(async (tx) => {
       if (payment.isNew) {
+        // Renovações de assinaturas históricas herdam a classificação já conferida.
+        // É só uma projeção de relatórios: não escreve metadata nem autoriza cobrança/acesso.
+        if (snap.subscriptionId) {
+          const [parent] = await tx
+            .select({ audience: subscriptions.reportingAudience })
+            .from(subscriptions)
+            .where(
+              and(
+                eq(subscriptions.id, snap.subscriptionId),
+                eq(subscriptions.consumerId, snap.consumerId),
+              ),
+            )
+            .limit(1)
+          if (parent?.audience) {
+            values.reportingAudience =
+              values.reportingAudience && values.reportingAudience !== parent.audience
+                ? null
+                : parent.audience
+          }
+        }
         // Primeiro INSERT (version 0). A unique (consumer_id, idempotency_key)
         // protege contra duplicação por mesma chave.
         await tx.insert(payments).values(values)
@@ -200,6 +221,7 @@ export function snapshotToRow(snap: PaymentSnapshot): typeof payments.$inferInse
     customer: snap.customer,
     description: snap.description,
     metadata: snap.metadata,
+    reportingAudience: verifiedBillingAudience(snap.metadata),
     failureReason: snap.failureReason,
     cycleAccess: snap.cycleAccess,
     periodConfirmation: snap.periodConfirmation,

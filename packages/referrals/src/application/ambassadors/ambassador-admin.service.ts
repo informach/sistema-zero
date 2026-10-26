@@ -1,5 +1,5 @@
 import type { Logger } from '@sistemazero/core/logging'
-import type { AmbassadorShareUrls } from '@sistemazero/core/referrals'
+import type { AmbassadorShareUrls, GiftAudience } from '@sistemazero/core/referrals'
 import { generateAmbassadorCode, generatePageToken, normalizeEmail } from '../../domain/codes'
 import { ambassadorPageUrl, scholarshipShareUrl } from '../../domain/links'
 import { splitName } from '../../domain/names'
@@ -230,6 +230,7 @@ export class AmbassadorAdminService {
   }
 
   async list(opts: {
+    audience?: GiftAudience
     q?: string
     limit: number
     offset: number
@@ -237,7 +238,10 @@ export class AmbassadorAdminService {
     return this.repo.listAmbassadors(opts)
   }
 
-  async detail(id: string): Promise<{
+  async detail(
+    id: string,
+    audience?: GiftAudience,
+  ): Promise<{
     ambassador: AmbassadorView
     redemptions: RedemptionRecord[]
     /** Etapa: resgate → assinou a Comunidade (conversão) — chave = redemptionId. */
@@ -247,7 +251,9 @@ export class AmbassadorAdminService {
     if (!ambassador) return null
     const conversionByRedemption = new Map<string, ConversionRecord>()
     // Resgates de todos os códigos do embaixador (Kids e adulto), do mais recente ao mais antigo.
-    const codes = await this.repo.listCodesByAmbassador(ambassador.id)
+    const codes = (await this.repo.listCodesByAmbassador(ambassador.id)).filter(
+      (code) => !audience || code.audience === audience,
+    )
     const perCode = await Promise.all(
       codes.map((code) =>
         Promise.all([
@@ -262,7 +268,14 @@ export class AmbassadorAdminService {
       .slice(0, 200)
     for (const [, convs] of perCode)
       for (const c of convs) conversionByRedemption.set(c.redemptionId, c)
-    return { ambassador: this.toView(ambassador), redemptions, conversionByRedemption }
+    return {
+      ambassador: this.toView({
+        ...ambassador,
+        code: audience ? (codes[0]?.code ?? null) : ambassador.code,
+      }),
+      redemptions,
+      conversionByRedemption,
+    }
   }
 
   async patch(

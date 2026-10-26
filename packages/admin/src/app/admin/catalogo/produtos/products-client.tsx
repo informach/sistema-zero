@@ -19,9 +19,13 @@ import { useCallback, useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { AdminHeader } from '@/components/admin/admin-header'
 import { CatalogTabs } from '@/components/admin/catalog-tabs'
+import { communityPage, useCommunityRequests } from '@/components/admin/community-page'
+import { LoadError } from '@/components/admin/empty-state'
 import { StatusBadge, statusLabel } from '@/components/admin/status-badge'
 import { TableSkeletonRows } from '@/components/admin/table-skeleton'
-import { type ApiError, apiGet } from '@/lib/api'
+import type { ApiError } from '@/lib/api'
+import { isCanceledCommunityRequest } from '@/lib/community-query'
+import type { Platform } from '@/lib/platform'
 import type { Paginated, ProductView } from '@/lib/types'
 
 const LIMIT = 20
@@ -38,13 +42,17 @@ const KIND_LABELS: Record<string, string> = {
   other: 'Outro',
 }
 
-export function ProductsClient() {
+export const ProductsClient = communityPage(ProductsForCommunity)
+
+function ProductsForCommunity({ audience }: { audience: Platform }) {
+  const { get: apiGet } = useCommunityRequests(audience)
   const [items, setItems] = useState<ProductView[]>([])
   const [total, setTotal] = useState(0)
   const [offset, setOffset] = useState(0)
   const [q, setQ] = useState('')
   const [status, setStatus] = useState('')
   const [loading, setLoading] = useState(true)
+  const [loadError, setLoadError] = useState(false)
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -55,12 +63,17 @@ export function ProductsClient() {
       const page = await apiGet<Paginated<ProductView>>(`/api/catalog/products?${params}`)
       setItems(page.items)
       setTotal(page.total)
+      setLoadError(false)
     } catch (err) {
+      if (isCanceledCommunityRequest(err)) return
+      setLoadError(true)
+      setItems([])
+      setTotal(0)
       toast.error((err as ApiError).message ?? 'Os produtos não carregaram. Tente de novo.')
     } finally {
       setLoading(false)
     }
-  }, [offset, q, status])
+  }, [offset, q, status, apiGet])
 
   // Debounce da busca + recarga ao mudar filtros/página.
   useEffect(() => {
@@ -130,6 +143,12 @@ export function ProductsClient() {
           <TableBody>
             {loading ? (
               <TableSkeletonRows columns={5} />
+            ) : loadError ? (
+              <TableRow>
+                <TableCell colSpan={8}>
+                  <LoadError what="a lista desta comunidade" onRetry={() => void load()} />
+                </TableCell>
+              </TableRow>
             ) : items.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={5} className="py-10 text-center text-muted-foreground">

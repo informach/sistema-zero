@@ -12,6 +12,7 @@ function product(
   components?: { componentProductId: string; sortOrder: number; isPrimary: boolean }[],
 ) {
   return ProductAggregate.create({
+    audience: 'kids',
     id,
     sku: Sku.create(id),
     slug: Slug.create(id),

@@ -22,6 +22,14 @@ bloqueadas. Migrações preservam dados e compras; os recortes chegam aos servi�
 - JavaScript/Python e a implantação concluída de `f1f68b728` permanecem preservados.
 - Cota global por conta não é duplicada ao acrescentar audiência à medição.
 
+## Estado do lote comercial em 26/10/2026
+
+Os lotes 1/2 pertencem à entrega anterior. Este lote retoma apenas 3–6, com a decisão
+posterior de manter identidades e operações gerais compartilhadas. Não reabre pedagogia/jornada.
+Código preparado no worktree `sistema-zero-business-scope`; revisão e conciliação da base em curso.
+Consulta de produção/staging somente leitura concluída. Nenhuma migração deste lote aplicada no ar.
+Ordem de implantação e evidências: `docs/runbooks/2026-10-26-admin-business-community.md`.
+
 ## Lote 1 — Etapas adultas planejadas e bloqueadas
 
 Files: `packages/core/src/journey/adult-policy.ts` e `.test.ts`;
@@ -72,8 +80,8 @@ Files: agregados/ports/views de `packages/catalog/src/domain`, `application` e
 ## Lote 4 — Lente nas telas de Negócio e Campanhas
 
 Files: `packages/admin/src/components/admin/nav.ts`, `lib/platform.ts`, telas/BFF de catálogo,
-embaixadores/convites, visão geral, usuários, pagamentos e notas fiscais; adapters de serviços.
-Serviços: Referrals, Payments/Auth conforme os campos canônicos da respectiva entidade.
+embaixadores/convites, visão geral e pagamentos; adapters de serviços. Usuários e notas fiscais permanecem compartilhados.
+Serviços: Referrals e Payments conforme os campos canônicos da respectiva entidade; sem alteração no Auth.
 
 - [ ] Mapear cada lista, total, seleção e operação; distinguir entidade compartilhada de dado de audiência.
 - [ ] Fazer as consultas e totais obedecerem à audiência no serviço, com busca e paginação corretas.
@@ -87,9 +95,9 @@ Files: Admin `app/admin/ia`, `lib/ai-usage-panels.ts`, `lib/pensa-funnel.ts`, BF
 Members `application/{ai-usage,zappy,pensa}`, respectivas ports/repositórios/schema/migrations.
 
 - [ ] Mapear origem disponível em uso/custos, conhecimento, falhas e funil do Pensa.
-- [ ] Persistir origem autoritativa onde faltar; separar agregações sem duplicar limites por conta.
+- [x] Separar o funil dos projetos do Pensa pela audiência já persistida; manter custos, cotas e operação geral compartilhados conforme a decisão posterior.
 - [ ] Preservar histórico sem comunidade comprovável, com indicação clara e sem atribuição fictícia.
-- [ ] Vincular lente aos painéis e ações, inclusive geração/backfill; testar isolamento e revisão.
+- [x] Vincular lente ao progresso do Pensa e rotular explicitamente os demais painéis como gerais; não mudar geração/backfill nem limites de IA.
 
 ## Lote 6 — Revisão integrada e liberação
 

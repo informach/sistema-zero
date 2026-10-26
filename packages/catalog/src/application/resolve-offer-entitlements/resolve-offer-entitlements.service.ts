@@ -22,6 +22,11 @@ export class ResolveOfferEntitlementsService {
       offer.productId,
       ...offer.items.map((item) => item.productId),
     ])
+    const audience = closure.get(offer.productId)?.audience
+    if (audience && [...closure.values()].some((node) => node.audience !== audience))
+      throw new ValidationError(
+        'Os produtos entregues pela oferta devem pertencer à mesma comunidade.',
+      )
     return resolveEntitlements({
       offerProductId: offer.productId,
       offerItemProductIds: offer.items.map((item) => item.productId),

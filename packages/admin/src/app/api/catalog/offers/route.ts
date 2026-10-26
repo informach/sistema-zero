@@ -5,6 +5,7 @@ import { forwardUpstream } from '@/server/forward'
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url)
   const { status, body } = await listOffers({
+    audience: searchParams.get('audience') ?? undefined,
     q: searchParams.get('q') ?? undefined,
     status: searchParams.get('status') ?? undefined,
     productId: searchParams.get('productId') ?? undefined,

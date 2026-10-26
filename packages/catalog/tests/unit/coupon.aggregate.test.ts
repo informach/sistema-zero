@@ -12,6 +12,7 @@ function percentCoupon(
   overrides?: Partial<Parameters<typeof CouponAggregate.create>[0]>,
 ) {
   return CouponAggregate.create({
+    audience: 'kids',
     id: 'coupon-1',
     code: CouponCode.create('PROMO'),
     type: 'percent',
@@ -35,6 +36,7 @@ describe('CouponAggregate', () => {
 
   it('fixo: desconto = min(amountOff, preço)', () => {
     const coupon = CouponAggregate.create({
+      audience: 'kids',
       id: 'c',
       code: CouponCode.create('MENOS10'),
       type: 'fixed',

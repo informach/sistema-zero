@@ -124,7 +124,11 @@ const ADMIN_OFFSET = t.Optional(t.Numeric({ minimum: 0, maximum: 1_000_000 }))
 const ADMIN_DATE = t.Optional(t.String({ minLength: 1, maxLength: 40 }))
 
 /** Query de `GET /payments/admin/payments`. */
+const BUSINESS_AUDIENCE = t.Optional(
+  t.Union([t.Literal('kids'), t.Literal('adult'), t.Literal('unassigned')]),
+)
 export const ListPaymentsQuery = t.Object({
+  audience: BUSINESS_AUDIENCE,
   q: ADMIN_Q,
   status: t.Optional(PAYMENT_STATUS),
   method: t.Optional(PAYMENT_METHOD),
@@ -137,6 +141,7 @@ export const ListPaymentsQuery = t.Object({
 
 /** Query de `GET /payments/admin/subscriptions`. */
 export const ListSubscriptionsQuery = t.Object({
+  audience: BUSINESS_AUDIENCE,
   q: ADMIN_Q,
   status: t.Optional(SUBSCRIPTION_STATUS),
   consumerId: ADMIN_CONSUMER,
@@ -146,12 +151,14 @@ export const ListSubscriptionsQuery = t.Object({
 
 /** Query de `GET /payments/admin/stats`. */
 export const PaymentsStatsQuery = t.Object({
+  audience: BUSINESS_AUDIENCE,
   from: ADMIN_DATE,
   to: ADMIN_DATE,
 })
 
 /** Query de `GET /payments/admin/stats/daily` (série diária do painel de vendas). */
 export const PaymentsDailyStatsQuery = t.Object({
+  audience: BUSINESS_AUDIENCE,
   from: ADMIN_DATE,
   to: ADMIN_DATE,
   /** UUIDs de ofertas separados por vírgula (filtro por produto, resolvido no BFF). */

@@ -1,6 +1,7 @@
 import type { FulfillmentSpec } from '../product/fulfillment'
 import type { ProductKind } from '../product/product.kind'
 import type { ProductStatus } from '../product/product.status'
+import type { CatalogAudience } from '../shared/audience'
 import { ValidationError } from '../shared/errors'
 
 /**
@@ -10,6 +11,7 @@ import { ValidationError } from '../shared/errors'
  */
 export interface EntitlementNode {
   productId: string
+  audience: CatalogAudience
   sku: string
   name: string
   kind: ProductKind

@@ -211,24 +211,31 @@ export class DrizzleReferralRepository implements ReferralRepository {
   }
 
   async listAmbassadors(opts: {
+    audience?: GiftAudience
     q?: string
     limit: number
     offset: number
   }): Promise<{ items: AmbassadorListItem[]; total: number }> {
     const q = opts.q?.trim()
-    const where = q
+    const search = q
       ? or(
           ilike(ambassadors.name, `%${escapeLike(q)}%`),
           ilike(ambassadors.email, `%${escapeLike(q)}%`),
         )
       : undefined
 
+    // A identidade do embaixador é compartilhada; apenas códigos e resultados seguem a lente.
+    const where = search
+    const codeOf = and(
+      eq(codes.ambassadorId, ambassadors.id),
+      eq(codes.audience, opts.audience ?? 'kids'),
+    )
     // Página + total independem entre si; contagens dependem só da página.
     const [rows, [{ value: total } = { value: 0 }]] = await Promise.all([
       this.db
         .select({ ambassador: ambassadors, code: codes })
         .from(ambassadors)
-        .leftJoin(codes, kidsCodeOf())
+        .leftJoin(codes, codeOf)
         .where(where)
         .orderBy(desc(ambassadors.createdAt))
         .limit(opts.limit)
@@ -249,6 +256,7 @@ export class DrizzleReferralRepository implements ReferralRepository {
               and(
                 inArray(codes.ambassadorId, ambassadorIds),
                 eq(scholarshipRedemptions.status, 'completed'),
+                opts.audience ? eq(codes.audience, opts.audience) : undefined,
               ),
             )
             .groupBy(codes.ambassadorId)
@@ -257,7 +265,14 @@ export class DrizzleReferralRepository implements ReferralRepository {
         ? this.db
             .select({ ambassadorId: invites.ambassadorId, value: count() })
             .from(invites)
-            .where(and(inArray(invites.ambassadorId, ambassadorIds), eq(invites.status, 'sent')))
+            .innerJoin(codes, eq(codes.id, invites.codeId))
+            .where(
+              and(
+                inArray(invites.ambassadorId, ambassadorIds),
+                eq(invites.status, 'sent'),
+                opts.audience ? eq(codes.audience, opts.audience) : undefined,
+              ),
+            )
             .groupBy(invites.ambassadorId)
         : Promise.resolve([]),
     ])
@@ -967,12 +982,14 @@ export class DrizzleReferralRepository implements ReferralRepository {
   }
 
   async listConversions(opts: {
+    audience?: GiftAudience
     status?: ConversionStatus
     limit: number
     offset: number
   }): Promise<{ items: ConversionListItem[]; total: number }> {
     const where = and(
       sql`${codes.ownerKind} <> 'campaign'`,
+      opts.audience ? eq(codes.audience, opts.audience) : undefined,
       opts.status ? eq(conversions.status, opts.status) : undefined,
     )
     const [rows, [{ value: total } = { value: 0 }]] = await Promise.all([

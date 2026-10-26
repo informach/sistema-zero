@@ -5,6 +5,7 @@ import { createAmbassador, listAmbassadors } from '@/server/referrals'
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url)
   const { status, body } = await listAmbassadors({
+    audience: searchParams.get('audience') ?? undefined,
     q: searchParams.get('q') ?? undefined,
     limit: parseLimit(searchParams.get('limit')),
     offset: parseOffset(searchParams.get('offset')),

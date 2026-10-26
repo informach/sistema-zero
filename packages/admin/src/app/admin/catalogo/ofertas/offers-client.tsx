@@ -22,12 +22,17 @@ import { useCallback, useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { AdminHeader } from '@/components/admin/admin-header'
 import { CatalogTabs } from '@/components/admin/catalog-tabs'
+import { communityPage, useCommunityRequests } from '@/components/admin/community-page'
+import { LoadError } from '@/components/admin/empty-state'
 import { StatusBadge, statusLabel } from '@/components/admin/status-badge'
 import { TableSkeletonRows } from '@/components/admin/table-skeleton'
 import { useConfirm } from '@/components/admin/use-confirm'
 import { type OfferItemDraft, OfferItemsEditor } from '@/components/catalog/offer-items-editor'
-import { type ApiError, apiGet, apiSend } from '@/lib/api'
+import type { ApiError } from '@/lib/api'
+import { isCanceledCommunityRequest } from '@/lib/community-query'
 import { formatCents, reaisToCents } from '@/lib/format'
+import { loadAllPages } from '@/lib/load-all-pages'
+import type { Platform } from '@/lib/platform'
 import { offerCodeSuggestion, offerSlugSuggestion } from '@/lib/slug'
 import type {
   AccessDurationUnit,
@@ -231,13 +236,17 @@ function FormSection({ title, children }: { title: string; children: React.React
   )
 }
 
-export function OffersClient() {
+export const OffersClient = communityPage(OffersForCommunity)
+
+function OffersForCommunity({ audience }: { audience: Platform }) {
+  const { get: apiGet, send: apiSend } = useCommunityRequests(audience)
   const [items, setItems] = useState<OfferListItem[]>([])
   const [total, setTotal] = useState(0)
   const [offset, setOffset] = useState(0)
   const [q, setQ] = useState('')
   const [status, setStatus] = useState('')
   const [loading, setLoading] = useState(true)
+  const [loadError, setLoadError] = useState(false)
   const [products, setProducts] = useState<ProductView[]>([])
 
   const [open, setOpen] = useState(false)
@@ -276,12 +285,17 @@ export function OffersClient() {
       const page = await apiGet<Paginated<OfferListItem>>(`/api/catalog/offers?${params}`)
       setItems(page.items)
       setTotal(page.total)
+      setLoadError(false)
     } catch (err) {
+      if (isCanceledCommunityRequest(err)) return
+      setLoadError(true)
+      setItems([])
+      setTotal(0)
       toast.error((err as ApiError).message ?? 'As ofertas não carregaram. Tente de novo.')
     } finally {
       setLoading(false)
     }
-  }, [offset, q, status])
+  }, [offset, q, status, apiGet])
 
   useEffect(() => {
     const t = setTimeout(load, 250)
@@ -290,10 +304,17 @@ export function OffersClient() {
 
   // Lista de produtos p/ o select da criação de oferta.
   useEffect(() => {
-    apiGet<Paginated<ProductView>>('/api/catalog/products?limit=100')
-      .then((page) => setProducts(page.items))
-      .catch(() => setProducts([]))
-  }, [])
+    loadAllPages((offset, limit) =>
+      apiGet<Paginated<ProductView>>(`/api/catalog/products?offset=${offset}&limit=${limit}`),
+    )
+      .then(setProducts)
+      .catch((err) => {
+        if (!isCanceledCommunityRequest(err))
+          toast.error(
+            'Os produtos desta comunidade não carregaram. Recarregue a página antes de criar uma oferta.',
+          )
+      })
+  }, [apiGet])
 
   function openCreate() {
     setEditing(null)
@@ -483,6 +504,7 @@ export function OffersClient() {
       setOpen(false)
       await load()
     } catch (err) {
+      if (isCanceledCommunityRequest(err)) return
       toast.error((err as ApiError).message ?? 'Não deu para salvar. Tente de novo.')
     } finally {
       setSaving(false)
@@ -563,6 +585,12 @@ export function OffersClient() {
           <TableBody>
             {loading ? (
               <TableSkeletonRows columns={6} />
+            ) : loadError ? (
+              <TableRow>
+                <TableCell colSpan={8}>
+                  <LoadError what="a lista desta comunidade" onRetry={() => void load()} />
+                </TableCell>
+              </TableRow>
             ) : items.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={6} className="py-10 text-center text-muted-foreground">

@@ -18,6 +18,7 @@ import type { FulfillmentSpec } from '../../../domain/product/fulfillment'
 // Este package compartilha o MESMO Postgres do payments/auth/funnel, mas é dono do
 // schema `catalog` (isolamento por `pgSchema`). Todo o DDL gerado fica em `catalog.*`.
 export const catalog = pgSchema('catalog')
+export const catalogAudienceEnum = catalog.enum('catalog_audience', ['kids', 'adult'])
 
 export const productKindEnum = catalog.enum('product_kind', [
   'ebook',
@@ -47,6 +48,8 @@ export const products = catalog.table(
   'products',
   {
     id: uuid('id').primaryKey(),
+    // Expand phase: backfill precedes the final NOT NULL migration.
+    audience: catalogAudienceEnum('audience'),
     version: integer('version').notNull().default(0),
     sku: text('sku').notNull(),
     slug: text('slug').notNull(),
@@ -63,7 +66,11 @@ export const products = catalog.table(
     createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
   },
-  (t) => [uniqueIndex('products_sku_uq').on(t.sku), uniqueIndex('products_slug_uq').on(t.slug)],
+  (t) => [
+    uniqueIndex('products_sku_uq').on(t.sku),
+    uniqueIndex('products_slug_uq').on(t.slug),
+    index('products_audience_created_idx').on(t.audience, t.createdAt),
+  ],
 )
 
 /**
@@ -179,6 +186,7 @@ export const coupons = catalog.table(
   'coupons',
   {
     id: uuid('id').primaryKey(),
+    audience: catalogAudienceEnum('audience'),
     version: integer('version').notNull().default(0),
     code: text('code').notNull(),
     type: couponTypeEnum('type').notNull(),
@@ -197,7 +205,10 @@ export const coupons = catalog.table(
     createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
   },
-  (t) => [uniqueIndex('coupons_code_uq').on(t.code)],
+  (t) => [
+    uniqueIndex('coupons_code_uq').on(t.code),
+    index('coupons_audience_created_idx').on(t.audience, t.createdAt),
+  ],
 )
 
 /** Escopo do cupom: ofertas específicas (quando não `applies_to_all`). */

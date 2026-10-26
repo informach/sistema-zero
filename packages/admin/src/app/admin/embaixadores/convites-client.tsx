@@ -26,9 +26,11 @@ import { useCallback, useEffect, useId, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { copyToClipboard } from '@/app/admin/notas-fiscais/copy-to-clipboard'
 import { AdminHeader } from '@/components/admin/admin-header'
-import { apiGet, apiSend } from '@/lib/api'
+import { communityPage, useCommunityRequests } from '@/components/admin/community-page'
 import { campaignIsoDate, campaignLocalDate } from '@/lib/campaign-dates'
 import { cn } from '@/lib/cn'
+import { isCanceledCommunityRequest } from '@/lib/community-query'
+import type { Platform } from '@/lib/platform'
 import { EmbaixadoresClient } from './embaixadores-client'
 
 const PAGE_SIZE = 25
@@ -47,20 +49,6 @@ const labels: Record<CampaignState, string> = {
  * Público do presente (20/10/2026). O texto de cada cartão é o do Canvas "Presente Kids e adulto":
  * define a página, o curso, o Mural e os e-mails de quem se cadastra pelo link.
  */
-const AUDIENCES: readonly { value: GiftAudience; label: string; hint: string }[] = [
-  {
-    value: 'kids',
-    label: 'Kids',
-    hint: 'Família com criança de 9 a 14 anos. Cadê Todo Mundo e Mural Kids.',
-  },
-  {
-    value: 'adult',
-    label: 'Adulto',
-    hint: '18 anos ou mais. Cadê Todo Mundo na versão adulta e Mural adulto.',
-  },
-]
-const AUDIENCE_HELP =
-  'Define a página, o curso, o Mural e os e-mails de quem se cadastrar pelo link. Depois que a campanha sai do rascunho, o público não muda: para trocar, duplique a campanha.'
 export const AUDIENCE_LOCKED_MESSAGE =
   'O público só muda enquanto a campanha está em rascunho. Para trocar, duplique a campanha como nova edição.'
 /**
@@ -134,7 +122,7 @@ type Editing = {
   duplicate?: boolean
   expectedUpdatedAt?: string
 }
-const empty = (): CampaignInput => ({
+const empty = (audience: Platform): CampaignInput => ({
   name: '',
   publicTitle: '',
   description: '',
@@ -142,7 +130,7 @@ const empty = (): CampaignInput => ({
   code: '',
   channel: '',
   status: 'draft',
-  audience: 'kids',
+  audience,
   startsAt: new Date().toISOString(),
   endsAt: new Date(Date.now() + 7 * 86_400_000).toISOString(),
 })
@@ -152,7 +140,15 @@ const TABS = [
   { value: 'people', label: 'Embaixadores' },
 ] as const
 
-export function ConvitesClient({ currentRole }: { currentRole: string }) {
+export const ConvitesClient = communityPage<{ currentRole: string }>(ConvitesForCommunity)
+
+function ConvitesForCommunity({
+  currentRole,
+  audience,
+}: {
+  currentRole: string
+  audience: Platform
+}) {
   const [tab, setTab] = useState<'campaigns' | 'people'>('campaigns')
   const id = useId()
   return (
@@ -201,7 +197,7 @@ export function ConvitesClient({ currentRole }: { currentRole: string }) {
       </div>
       <div role="tabpanel" id={`${id}-panel`} aria-labelledby={`${id}-tab-${tab}`}>
         {tab === 'campaigns' ? (
-          <Campaigns canWrite={['admin', 'superadmin'].includes(currentRole)} />
+          <Campaigns audience={audience} canWrite={['admin', 'superadmin'].includes(currentRole)} />
         ) : (
           <EmbaixadoresClient currentRole={currentRole} />
         )}
@@ -210,7 +206,8 @@ export function ConvitesClient({ currentRole }: { currentRole: string }) {
   )
 }
 
-function Campaigns({ canWrite }: { canWrite: boolean }) {
+function Campaigns({ canWrite, audience }: { canWrite: boolean; audience: Platform }) {
+  const { get: apiGet } = useCommunityRequests(audience)
   const [items, setItems] = useState<CampaignView[]>([])
   const [total, setTotal] = useState(0)
   const [offset, setOffset] = useState(0)
@@ -234,6 +231,7 @@ function Campaigns({ canWrite }: { canWrite: boolean }) {
       setItems(result.items)
       setTotal(result.total)
     } catch (err) {
+      if (isCanceledCommunityRequest(err)) return
       if (sequence === loadSequence.current) {
         setItems([])
         setTotal(0)
@@ -242,7 +240,7 @@ function Campaigns({ canWrite }: { canWrite: boolean }) {
     } finally {
       if (sequence === loadSequence.current) setLoading(false)
     }
-  }, [search, offset])
+  }, [apiGet, search, offset])
   useEffect(() => {
     void load()
     return () => {
@@ -256,6 +254,7 @@ function Campaigns({ canWrite }: { canWrite: boolean }) {
       const result = await apiGet<CampaignDetailView>(`/api/admin/referrals/campaigns/${id}`)
       if (sequence === detailSequence.current) setDetail(result)
     } catch (err) {
+      if (isCanceledCommunityRequest(err)) return
       if (sequence === detailSequence.current) toast.error(message(err))
     }
   }
@@ -270,7 +269,9 @@ function Campaigns({ canWrite }: { canWrite: boolean }) {
             Mural, contados do cadastro.
           </p>
         </div>
-        {canWrite && <Button onClick={() => setEditing({ value: empty() })}>Nova campanha</Button>}
+        {canWrite && (
+          <Button onClick={() => setEditing({ value: empty(audience) })}>Nova campanha</Button>
+        )}
       </div>
       <form
         className="flex gap-2"
@@ -390,6 +391,7 @@ function Campaigns({ canWrite }: { canWrite: boolean }) {
       </p>
       {editing && (
         <CampaignEditor
+          audience={audience}
           editing={editing}
           onClose={() => setEditing(null)}
           onSaved={(value) => {
@@ -444,8 +446,8 @@ function Campaigns({ canWrite }: { canWrite: boolean }) {
                           name: `${detail.campaign.name} · nova edição`.slice(0, 120),
                           code: '',
                           status: 'draft',
-                          startsAt: empty().startsAt,
-                          endsAt: empty().endsAt,
+                          startsAt: empty(audience).startsAt,
+                          endsAt: empty(audience).endsAt,
                         },
                       })
                       setDetail(null)
@@ -634,22 +636,18 @@ export function previewUrl(campaign: CampaignView) {
 }
 
 function CampaignEditor({
+  audience,
   editing,
   onClose,
   onSaved,
 }: {
+  audience: Platform
   editing: Editing
   onClose: () => void
   onSaved: (value: CampaignView) => void
 }) {
   const [value, setValue] = useState(editing.value)
-  // O público trava fora do rascunho (o referrals responde 409 `CAMPAIGN_AUDIENCE_LOCKED`). Vale o
-  // estado GRAVADO da campanha, não o do formulário: publicar e trocar o público no mesmo envio
-  // também é recusado.
-  const audienceLocked = Boolean(
-    editing.id && !editing.duplicate && editing.value.status !== 'draft',
-  )
-  const audience = audienceOf(value)
+  const { send: apiSend } = useCommunityRequests(audience)
   const adultCourse = useAdultGiftCourse(audience === 'adult')
   const [start, setStart] = useState(campaignLocalDate(value.startsAt))
   const [end, setEnd] = useState(campaignLocalDate(value.endsAt))
@@ -688,6 +686,7 @@ function CampaignEditor({
       toast.success('Campanha salva.')
       onSaved(result.campaign)
     } catch (err) {
+      if (isCanceledCommunityRequest(err)) return
       setError(message(err))
     } finally {
       setSaving(false)
@@ -718,29 +717,15 @@ function CampaignEditor({
         <fieldset disabled={saving} className="min-w-0 space-y-4">
           <fieldset className="min-w-0 space-y-2" aria-describedby="campaign-audience-help">
             <legend className="mb-1 text-sm font-semibold">Público do presente</legend>
-            <div className="grid gap-2 sm:grid-cols-2">
-              {AUDIENCES.map((option) => (
-                <label
-                  key={option.value}
-                  className="flex min-h-11 cursor-pointer flex-col gap-1 rounded-lg border p-3 text-sm has-[:checked]:border-primary has-[:checked]:ring-2 has-[:checked]:ring-primary/30 has-[:disabled]:cursor-not-allowed has-[:disabled]:opacity-70 has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-ring"
-                >
-                  <span className="flex items-center gap-2 font-semibold">
-                    <input
-                      type="radio"
-                      name="campaign-audience"
-                      value={option.value}
-                      checked={audience === option.value}
-                      disabled={audienceLocked}
-                      onChange={() => change('audience', option.value)}
-                    />
-                    {option.label}
-                  </span>
-                  <span className="text-muted-foreground">{option.hint}</span>
-                </label>
-              ))}
-            </div>
+            <AudienceBadge audience={audience} />
+            <p className="text-sm text-muted-foreground">
+              {audience === 'kids'
+                ? 'Família com criança de 9 a 14 anos. Cadê Todo Mundo e Mural Kids.'
+                : '18 anos ou mais. Cadê Todo Mundo na versão adulta e Mural adulto.'}
+            </p>
             <p id="campaign-audience-help" className="text-sm text-muted-foreground">
-              {AUDIENCE_HELP}
+              Esta campanha pertence à comunidade selecionada no Admin. Para criar para outro
+              público, troque a comunidade antes de abrir o formulário.
             </p>
             {adultCourse === 'unpublished' ? (
               <p role="status" className="rounded-md bg-warning-tint p-3 text-sm text-warning">

@@ -38,8 +38,11 @@ export function getAiUsageStats(
 }
 
 /** Onde as crianças param no Pensa (primeira versão dos jogos dos últimos `days` dias). */
-export function getPensaFunnel(days: number): Promise<GatewayResponse<PensaFunnelView>> {
-  return gatewayFetch('/members/admin/pensa/funnel', { query: { days } })
+export function getPensaFunnel(
+  days: number,
+  audience?: string,
+): Promise<GatewayResponse<PensaFunnelView>> {
+  return gatewayFetch('/members/admin/pensa/funnel', { query: { days, audience } })
 }
 
 interface AiUsageStatsRaw {

@@ -1,4 +1,9 @@
-import type { CampaignAuditView, CampaignInput, CampaignView } from '@sistemazero/core/referrals'
+import type {
+  CampaignAuditView,
+  CampaignInput,
+  CampaignView,
+  GiftAudience,
+} from '@sistemazero/core/referrals'
 import type { CampaignRecord } from '../campaign'
 
 export interface CampaignRepository {
@@ -16,6 +21,7 @@ export interface CampaignRepository {
   findById(id: string): Promise<CampaignRecord | null>
   list(opts: {
     q?: string
+    audience?: GiftAudience
     limit: number
     offset: number
   }): Promise<{ items: CampaignRecord[]; total: number }>

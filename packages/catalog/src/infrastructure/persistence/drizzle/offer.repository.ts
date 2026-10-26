@@ -1,4 +1,4 @@
-import { and, count, desc, eq, ilike, inArray, or, type SQL } from 'drizzle-orm'
+import { and, count, desc, eq, ilike, inArray, or, type SQL, sql } from 'drizzle-orm'
 import {
   type AccessDurationUnit,
   type AccessMode,
@@ -18,7 +18,7 @@ import { ConcurrencyConflictError } from '../../../domain/shared/concurrency.err
 import type { Currency } from '../../../domain/value-objects/money'
 import type { Database } from './db'
 import { escapeLike, isUniqueViolation } from './pg-errors'
-import { offerItems, offers } from './schema'
+import { offerItems, offers, products } from './schema'
 
 type OfferRow = typeof offers.$inferSelect
 type ItemRow = typeof offerItems.$inferSelect
@@ -158,6 +158,10 @@ export class DrizzleOfferRepository implements OfferRepository {
 
 function buildFilter(query: ListQuery & { productId?: string }): SQL | undefined {
   const conditions: SQL[] = []
+  if (query.audience)
+    conditions.push(
+      sql`exists (select 1 from ${products} where ${products.id} = ${offers.productId} and ${products.audience} = ${query.audience})`,
+    )
   if (query.status) conditions.push(eq(offers.status, query.status as OfferRow['status']))
   if (query.productId) conditions.push(eq(offers.productId, query.productId))
   if (query.q) {

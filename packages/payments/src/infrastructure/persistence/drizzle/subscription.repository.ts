@@ -9,6 +9,7 @@ import {
   SubscriptionCancellationRecordedEvent,
   SubscriptionChargePaidEvent,
 } from '../../../domain/subscription/subscription.events'
+import { verifiedBillingAudience } from '../../../domain/subscription-recovery/billing-audience'
 import type { Currency } from '../../../domain/value-objects/money'
 import { writeCancellationAudit } from './cancellation-audit.writer'
 import { cancellationRecordFromWire, cancellationRecordToWire } from './cancellation-record.mapper'
@@ -285,6 +286,7 @@ function snapshotToRow(snap: SubscriptionSnapshot): typeof subscriptions.$inferI
     lastChargeAt: snap.lastChargeAt,
     description: snap.description,
     metadata: snap.metadata,
+    reportingAudience: verifiedBillingAudience(snap.metadata),
     cancelRequestedAt: snap.cancelRequestedAt,
     cancellationRecord: cancellationRecordToWire(snap.cancellationRecord),
     canceledAt: snap.canceledAt,

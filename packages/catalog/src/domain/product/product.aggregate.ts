@@ -1,4 +1,5 @@
 import { AggregateRoot } from '../shared/aggregate-root'
+import { type CatalogAudience, catalogAudience } from '../shared/audience'
 import { ValidationError } from '../shared/errors'
 import type { Currency } from '../value-objects/money'
 import type { Sku } from '../value-objects/sku'
@@ -22,6 +23,7 @@ export interface ProductComponent {
 /** Estado serializável do produto (ida/volta ao banco). */
 export interface ProductSnapshot {
   id: string
+  audience: CatalogAudience
   version: number
   sku: string
   slug: string
@@ -40,6 +42,7 @@ export interface ProductSnapshot {
 
 export interface CreateProductInput {
   id: string
+  audience: CatalogAudience
   sku: Sku
   slug: Slug
   name: string
@@ -66,6 +69,7 @@ export interface UpdateProductDetails {
 
 interface ProductProps {
   version: number
+  audience: CatalogAudience
   sku: string
   slug: string
   name: string
@@ -103,6 +107,7 @@ export class ProductAggregate extends AggregateRoot<string> {
 
     const product = new ProductAggregate(input.id, {
       version: 0,
+      audience: catalogAudience(input.audience),
       sku: input.sku.value,
       slug: input.slug.value,
       name,
@@ -123,6 +128,7 @@ export class ProductAggregate extends AggregateRoot<string> {
   }
 
   static restore(snapshot: ProductSnapshot): ProductAggregate {
+    catalogAudience(snapshot.audience)
     const { id, ...rest } = snapshot
     return new ProductAggregate(id, { ...rest })
   }
@@ -171,6 +177,14 @@ export class ProductAggregate extends AggregateRoot<string> {
    */
   assertCoherent(): void {
     const { kind, fulfillment, components, status } = this.props
+    if (
+      (fulfillment?.accessType === 'all_courses' && this.audience !== 'adult') ||
+      (fulfillment?.accessType === 'all_kids_courses' && this.audience !== 'kids')
+    ) {
+      throw new ValidationError(
+        'A entrega de todos os cursos deve pertencer à comunidade do produto.',
+      )
+    }
     if (kind === 'bundle') {
       if (fulfillment !== null) {
         throw new ValidationError('Combo não tem entrega própria — a entrega vem dos componentes')
@@ -219,6 +233,9 @@ export class ProductAggregate extends AggregateRoot<string> {
   }
   get name(): string {
     return this.props.name
+  }
+  get audience(): CatalogAudience {
+    return this.props.audience
   }
   get kind(): ProductKind {
     return this.props.kind

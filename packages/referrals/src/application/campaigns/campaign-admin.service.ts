@@ -88,7 +88,7 @@ export class CampaignAdminService {
     }
   }
 
-  async list(opts: { q?: string; limit: number; offset: number }) {
+  async list(opts: { q?: string; audience?: GiftAudience; limit: number; offset: number }) {
     const result = await this.repo.list(opts)
     return {
       items: await Promise.all(result.items.map((campaign) => this.view(campaign))),
@@ -141,9 +141,9 @@ export class CampaignAdminService {
     return updated ? this.view(updated) : null
   }
 
-  async detail(id: string): Promise<CampaignDetailView | null> {
+  async detail(id: string, audience?: GiftAudience): Promise<CampaignDetailView | null> {
     const campaign = await this.repo.findById(id)
-    if (!campaign) return null
+    if (!campaign || (audience && campaign.audience !== audience)) return null
     const code = await this.referrals.findCodeByCode(campaign.code)
     const [view, history, redemptions] = await Promise.all([
       this.view(campaign),

@@ -1,5 +1,6 @@
+import type { BusinessAudienceFilter } from '../../domain/business-audience'
 import { PaymentNotFoundError } from '../../domain/payment/payment.errors'
-import type { PaymentRepository } from '../../domain/ports/payment-repository.port'
+import type { PaymentAdminReadRepository } from '../../domain/ports/payment-admin-read.port'
 import { type AdminPaymentView, toAdminPaymentView } from '../mappers/admin-payment-view'
 
 /**
@@ -7,10 +8,10 @@ import { type AdminPaymentView, toAdminPaymentView } from '../mappers/admin-paym
  * todos os consumidores), ao contrário do `GetPaymentService` (escopado).
  */
 export class GetAdminPaymentService {
-  constructor(private readonly payments: PaymentRepository) {}
+  constructor(private readonly payments: Pick<PaymentAdminReadRepository, 'findById'>) {}
 
-  async execute(id: string): Promise<AdminPaymentView> {
-    const payment = await this.payments.findById(id)
+  async execute(id: string, audience?: BusinessAudienceFilter): Promise<AdminPaymentView> {
+    const payment = await this.payments.findById(id, audience)
     if (!payment) throw new PaymentNotFoundError(id)
     return toAdminPaymentView(payment)
   }

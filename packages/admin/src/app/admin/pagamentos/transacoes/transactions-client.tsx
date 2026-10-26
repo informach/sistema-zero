@@ -30,13 +30,16 @@ import Link from 'next/link'
 import { useCallback, useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { AdminHeader } from '@/components/admin/admin-header'
+import { communityPage, useCommunityRequests } from '@/components/admin/community-page'
 import { OverviewCard } from '@/components/admin/overview-card'
 import { PaymentsTabs } from '@/components/admin/payments-tabs'
 import { ReadOnlyNotice } from '@/components/admin/read-only-notice'
 import { StatusBadge, statusLabel } from '@/components/admin/status-badge'
 import { TableSkeletonRows } from '@/components/admin/table-skeleton'
-import { type ApiError, apiGet, apiSend } from '@/lib/api'
+import type { ApiError } from '@/lib/api'
+import { isCanceledCommunityRequest } from '@/lib/community-query'
 import { formatCentsStr, formatDate } from '@/lib/format'
+import type { Platform } from '@/lib/platform'
 import {
   type InvoiceList,
   PAYMENT_METHOD_LABELS,
@@ -100,7 +103,44 @@ function GuaranteeBadge({ payment: p }: { payment: PaymentRow }) {
   )
 }
 
-export function TransactionsClient({ currentRole }: { currentRole: string }) {
+export const TransactionsClient = communityPage<{ currentRole: string }>(TransactionsCommunity)
+
+function TransactionsCommunity({
+  currentRole,
+  audience,
+}: {
+  currentRole: string
+  audience: Platform
+}) {
+  const [unassigned, setUnassigned] = useState(false)
+  const scope = unassigned ? 'unassigned' : audience
+  return (
+    <div className="space-y-4">
+      <label className="flex items-start gap-2 rounded-lg border border-border p-3 text-sm text-muted-foreground">
+        <input
+          type="checkbox"
+          checked={unassigned}
+          onChange={(event) => setUnassigned(event.target.checked)}
+          className="mt-1"
+        />
+        <span>
+          Consultar registros sem comunidade identificada. Eles ficam fora dos totais de Kids e
+          Adultos até a conferência da origem da compra.
+        </span>
+      </label>
+      <TransactionsContent key={scope} currentRole={currentRole} audience={scope} />
+    </div>
+  )
+}
+
+function TransactionsContent({
+  currentRole,
+  audience,
+}: {
+  currentRole: string
+  audience: Platform | 'unassigned'
+}) {
+  const { get: apiGet, send: apiSend } = useCommunityRequests(audience)
   const canWrite = currentRole === 'superadmin' || currentRole === 'admin'
   const [items, setItems] = useState<PaymentRow[]>([])
   const [total, setTotal] = useState(0)
@@ -151,7 +191,7 @@ export function TransactionsClient({ currentRole }: { currentRole: string }) {
     return () => {
       alive = false
     }
-  }, [selectedId])
+  }, [apiGet, selectedId])
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -166,11 +206,12 @@ export function TransactionsClient({ currentRole }: { currentRole: string }) {
       setItems(page.items)
       setTotal(page.total)
     } catch (err) {
+      if (isCanceledCommunityRequest(err)) return
       toast.error((err as ApiError).message ?? 'As vendas não carregaram. Tente de novo.')
     } finally {
       setLoading(false)
     }
-  }, [offset, q, status, method, from, to])
+  }, [apiGet, offset, q, status, method, from, to])
 
   const loadStats = useCallback(async () => {
     try {
@@ -181,7 +222,7 @@ export function TransactionsClient({ currentRole }: { currentRole: string }) {
     } catch {
       setStats(null)
     }
-  }, [from, to])
+  }, [apiGet, from, to])
 
   useEffect(() => {
     const t = setTimeout(load, 250)
@@ -211,6 +252,7 @@ export function TransactionsClient({ currentRole }: { currentRole: string }) {
       setConfirmingRefund(false)
       await Promise.all([load(), loadStats()])
     } catch (err) {
+      if (isCanceledCommunityRequest(err)) return
       toast.error((err as ApiError).message ?? 'O estorno não saiu. Tente de novo.')
     } finally {
       setRefunding(false)
@@ -221,6 +263,7 @@ export function TransactionsClient({ currentRole }: { currentRole: string }) {
     <div className="space-y-6">
       <AdminHeader
         title="Vendas"
+        community={audience === 'unassigned' ? 'Comunidade ainda não identificada' : true}
         description={
           canWrite
             ? 'Pix, boleto e cartão. Clique numa venda para ver os detalhes, estornar ou abrir a nota.'

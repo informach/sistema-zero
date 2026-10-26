@@ -1,3 +1,4 @@
+import type { BusinessAudienceFilter } from '../business-audience'
 import type { PaymentAggregate } from '../payment/payment.aggregate'
 import type { PaymentStatus } from '../payment/payment.status'
 import type { PaymentMethodType } from '../value-objects/payment-method'
@@ -10,6 +11,7 @@ import type { PaymentMethodType } from '../value-objects/payment-method'
  */
 
 export interface AdminPaymentListFilters {
+  audience?: BusinessAudienceFilter
   status?: PaymentStatus
   method?: PaymentMethodType
   consumerId?: string
@@ -23,6 +25,7 @@ export interface AdminPaymentListFilters {
 }
 
 export interface PaymentStatsRange {
+  audience?: BusinessAudienceFilter
   from?: Date
   to?: Date
 }
@@ -54,6 +57,7 @@ export interface PaymentStats {
 
 /** Janela da série diária (obrigatória — o chamador define defaults). */
 export interface PaymentDailyRange {
+  audience?: BusinessAudienceFilter
   from: Date
   to: Date
   /** Restringe às vendas destas ofertas (`metadata->>'offerId'`, vindo do funil). */
@@ -106,6 +110,7 @@ export interface PaymentOpsSnapshot {
 }
 
 export interface PaymentAdminReadRepository {
+  findById(id: string, audience?: BusinessAudienceFilter): Promise<PaymentAggregate | null>
   list(filters: AdminPaymentListFilters): Promise<{ items: PaymentAggregate[]; total: number }>
   stats(range: PaymentStatsRange): Promise<PaymentStats>
   statsDaily(range: PaymentDailyRange): Promise<PaymentDailyStats>

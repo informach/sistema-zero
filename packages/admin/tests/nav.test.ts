@@ -129,7 +129,7 @@ describe('nav — grupos e helpers de seção', () => {
     expect(activeHref('/admin/professor/recados')).toBe('/admin/professor/recados')
   })
 
-  test('pathIsPlatformScoped: telas de ensino são escopadas; Gestão/servidores/auditoria são globais', () => {
+  test('pathIsPlatformScoped: ensino e negócio seguem a lente; infraestrutura e auditoria são compartilhadas', () => {
     // Escopadas pelo seletor Kids × Adultos.
     expect(pathIsPlatformScoped('/admin/professor')).toBe(true)
     expect(pathIsPlatformScoped('/admin/professor/entregas')).toBe(true)
@@ -153,11 +153,13 @@ describe('nav — grupos e helpers de seção', () => {
     // Como fazer segue a lente: cada comunidade tem a sua biblioteca (`audience=`).
     expect(pathIsPlatformScoped('/admin/como-fazer')).toBe(true)
     expect(pathIsPlatformScoped('/admin/como-fazer/t-1')).toBe(true)
-    // Globais (a legenda da lente avisa).
-    expect(pathIsPlatformScoped('/admin')).toBe(false)
+    // Negócio segue a lente; infraestrutura e auditoria preservam escopo compartilhado.
+    expect(pathIsPlatformScoped('/admin')).toBe(true)
     expect(pathIsPlatformScoped('/admin/usuarios')).toBe(false)
-    expect(pathIsPlatformScoped('/admin/pagamentos/transacoes')).toBe(false)
-    expect(pathIsPlatformScoped('/admin/catalogo/produtos')).toBe(false)
+    expect(pathIsPlatformScoped('/admin/pagamentos/transacoes')).toBe(true)
+    expect(pathIsPlatformScoped('/admin/catalogo/produtos')).toBe(true)
+    expect(pathIsPlatformScoped('/admin/embaixadores')).toBe(true)
+    expect(pathIsPlatformScoped('/admin/pagamentos/assinaturas')).toBe(true)
     expect(pathIsPlatformScoped('/admin/comunidade/servidores')).toBe(false)
     expect(pathIsPlatformScoped('/admin/auditoria')).toBe(false)
     // Prefixo por SEGMENTO (não string crua).

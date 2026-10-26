@@ -11,11 +11,24 @@ Decisões da responsável em 23/10/2026:
 - Retirar o curso No Comando da IA. Conferir vínculos comerciais e históricos antes de excluir;
   não apagar compras, pagamentos ou conquistas para remover um curso.
 
+## Ajuste de escopo confirmado em 26/10/2026
+
+A responsável autorizou manter juntas as áreas em que a separação não faz sentido.
+O cadastro de contas, permissões, bloqueios, credenciais e a identidade dos embaixadores
+permanecem compartilhados. A área Alunos continua responsável pela visão pedagógica por público.
+
+Catálogo, campanhas institucionais, resultados dos convites, vendas, assinaturas e progresso
+dos projetos do Pensa seguem a comunidade escolhida. Produtos e cupons têm comunidade imutável;
+ofertas, bônus e combos seguem o produto canônico. Custos/cotas de IA e qualidade operacional
+do Zappy permanecem gerais, assim como atendimento, notas fiscais, infraestrutura e auditoria.
+Os rótulos devem explicar esse alcance, especialmente nas telas com cartões de ambos os tipos.
+Não criar uma projeção de identidade no Auth nem duplicar cotas para obter a separação visual.
+
 ## Constatações
 
 Base aprovada e implantada: `f1f68b72896726c625c6f0f5c1618b4e307c277f`.
 O Admin marca Negócio como global. Produtos/cupons não têm comunidade própria; ofertas herdam o
-produto principal e precisam manter coerentes bônus, combos e ofertas irmãs. Produção tem 19
+produto principal e precisam manter coerentes bônus e combos. Produção tem 19
 produtos, 12 ofertas e zero cupons. A classificação dos produtos existentes será explícita e
 conferida pelas referências de entrega e pelas definições de seed, sem adivinhar pelo título.
 

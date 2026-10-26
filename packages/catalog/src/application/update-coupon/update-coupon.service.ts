@@ -3,6 +3,7 @@ import { CouponNotFoundError } from '../../domain/coupon/coupon.errors'
 import type { CouponStatus } from '../../domain/coupon/coupon.status'
 import type { CouponRepository } from '../../domain/ports/coupon-repository.port'
 import type { OfferRepository } from '../../domain/ports/offer-repository.port'
+import type { ProductRepository } from '../../domain/ports/product-repository.port'
 import { assertOffersExist } from '../create-coupon/create-coupon.service'
 import { type CouponView, toCouponView } from '../mappers/coupon-view'
 
@@ -27,6 +28,7 @@ export class UpdateCouponService {
   constructor(
     private readonly coupons: CouponRepository,
     private readonly offers: OfferRepository,
+    private readonly products: ProductRepository,
     private readonly logger: Logger,
   ) {}
 
@@ -55,7 +57,7 @@ export class UpdateCouponService {
     }
 
     if (command.offerIds !== undefined) {
-      await assertOffersExist(this.offers, command.offerIds)
+      await assertOffersExist(this.offers, this.products, command.offerIds, coupon.audience)
       coupon.setOfferIds(command.offerIds)
     }
 

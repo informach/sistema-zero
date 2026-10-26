@@ -15,6 +15,7 @@ export async function GET(req: Request) {
   const { searchParams } = new URL(req.url)
   const rawStatus = searchParams.get('status')
   const { status, body } = await listConversions({
+    audience: searchParams.get('audience') ?? undefined,
     status:
       rawStatus && STATUSES.has(rawStatus as ConversionStatus)
         ? (rawStatus as ConversionStatus)

@@ -12,6 +12,7 @@ import {
   type SQL,
   sql,
 } from 'drizzle-orm'
+import type { BusinessAudienceFilter } from '../../../domain/business-audience'
 import { PaymentAggregate } from '../../../domain/payment/payment.aggregate'
 import type {
   AdminPaymentListFilters,
@@ -25,6 +26,7 @@ import type {
   PaymentStatsRange,
   PaymentStatusBucket,
 } from '../../../domain/ports/payment-admin-read.port'
+import { businessAudienceWhere } from './business-audience'
 import type { Database } from './db'
 import { rowToSnapshot } from './payment.repository'
 import { outbox, payments, toDomainPaymentStatus, webhookDeliveries } from './schema'
@@ -40,6 +42,15 @@ const REPORT_TZ = 'America/Sao_Paulo'
  */
 export class DrizzlePaymentAdminReadRepository implements PaymentAdminReadRepository {
   constructor(private readonly db: Database) {}
+
+  async findById(id: string, audience?: BusinessAudienceFilter): Promise<PaymentAggregate | null> {
+    const [row] = await this.db
+      .select()
+      .from(payments)
+      .where(and(eq(payments.id, id), businessAudienceWhere(payments.reportingAudience, audience)))
+      .limit(1)
+    return row ? PaymentAggregate.restore(rowToSnapshot(row)) : null
+  }
 
   async list(
     filters: AdminPaymentListFilters,
@@ -63,6 +74,8 @@ export class DrizzlePaymentAdminReadRepository implements PaymentAdminReadReposi
 
   async stats(range: PaymentStatsRange): Promise<PaymentStats> {
     const conds: SQL[] = []
+    const audience = businessAudienceWhere(payments.reportingAudience, range.audience)
+    if (audience) conds.push(audience)
     if (range.from) conds.push(gte(payments.createdAt, range.from))
     if (range.to) conds.push(lte(payments.createdAt, range.to))
     const where = conds.length ? and(...conds) : undefined
@@ -119,6 +132,7 @@ export class DrizzlePaymentAdminReadRepository implements PaymentAdminReadReposi
    * já que REFUNDED é estado terminal). Líquido = recebido − estornado.
    */
   async statsDaily(range: PaymentDailyRange): Promise<PaymentDailyStats> {
+    const audience = businessAudienceWhere(payments.reportingAudience, range.audience)
     const offerFilter = range.offerIds?.length
       ? inArray(sql`(${payments.metadata} ->> 'offerId')`, range.offerIds)
       : undefined
@@ -138,7 +152,12 @@ export class DrizzlePaymentAdminReadRepository implements PaymentAdminReadReposi
         .select({ day: createdDay, c: count() })
         .from(payments)
         .where(
-          and(gte(payments.createdAt, range.from), lte(payments.createdAt, range.to), offerFilter),
+          and(
+            gte(payments.createdAt, range.from),
+            lte(payments.createdAt, range.to),
+            offerFilter,
+            audience,
+          ),
         )
         .groupBy(createdDay),
       this.db
@@ -150,6 +169,7 @@ export class DrizzlePaymentAdminReadRepository implements PaymentAdminReadReposi
             gte(payments.paidAt, range.from),
             lte(payments.paidAt, range.to),
             offerFilter,
+            audience,
           ),
         )
         .groupBy(paidDay),
@@ -164,6 +184,7 @@ export class DrizzlePaymentAdminReadRepository implements PaymentAdminReadReposi
             sql`${refundInstant} >= ${range.from.toISOString()}::timestamptz`,
             sql`${refundInstant} <= ${range.to.toISOString()}::timestamptz`,
             offerFilter,
+            audience,
           ),
         )
         .groupBy(refundDay),
@@ -255,6 +276,8 @@ export class DrizzlePaymentAdminReadRepository implements PaymentAdminReadReposi
 
   private buildWhere(filters: AdminPaymentListFilters): SQL | undefined {
     const conds: SQL[] = []
+    const audience = businessAudienceWhere(payments.reportingAudience, filters.audience)
+    if (audience) conds.push(audience)
     if (filters.status) conds.push(eq(payments.status, filters.status))
     if (filters.method) conds.push(eq(payments.method, filters.method))
     if (filters.consumerId) conds.push(eq(payments.consumerId, filters.consumerId))

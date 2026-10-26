@@ -191,6 +191,7 @@ export interface ReferralRepository {
   /** SÓ os status visíveis ao embaixador (filtro no SQL, ANTES do limit). */
   listAmbassadorVisibleConversions(ambassadorId: string, limit: number): Promise<ConversionRecord[]>
   listAmbassadors(opts: {
+    audience?: GiftAudience
     q?: string
     limit: number
     offset: number
@@ -326,6 +327,7 @@ export interface ReferralRepository {
   listConversionsToNotify(limit: number): Promise<ConversionToNotify[]>
   markConversionNotified(id: string, when: Date): Promise<void>
   listConversions(opts: {
+    audience?: GiftAudience
     status?: ConversionStatus
     limit: number
     offset: number

@@ -89,6 +89,7 @@ export class InMemoryReferralRepository implements ReferralRepository {
   }
 
   async listAmbassadors(opts: {
+    audience?: GiftAudience
     q?: string
     limit: number
     offset: number
@@ -102,16 +103,32 @@ export class InMemoryReferralRepository implements ReferralRepository {
       .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
       .slice(opts.offset, opts.offset + opts.limit)
       .map((a) => {
-        const code = this.kidsCodeOf(a.id)
+        const code = this.codes.find(
+          (c) => c.ambassadorId === a.id && c.audience === (opts.audience ?? 'kids'),
+        )
         return {
           id: a.id,
           name: a.name,
           email: a.email,
           code: code?.code ?? '',
           status: a.status,
-          redemptionsCompleted: this.completedForAmbassador(a.id),
-          invitesSent: this.invites.filter((i) => i.ambassadorId === a.id && i.status === 'sent')
-            .length,
+          redemptionsCompleted: this.redemptions.filter(
+            (r) =>
+              r.status === 'completed' &&
+              this.codes.some(
+                (c) =>
+                  c.id === r.codeId &&
+                  c.ambassadorId === a.id &&
+                  (!opts.audience || c.audience === opts.audience),
+              ),
+          ).length,
+          invitesSent: this.invites.filter(
+            (i) =>
+              i.ambassadorId === a.id &&
+              i.status === 'sent' &&
+              (!opts.audience ||
+                this.codes.some((c) => c.id === i.codeId && c.audience === opts.audience)),
+          ).length,
           linkEmailSentAt: a.linkEmailSentAt,
           createdAt: a.createdAt,
         }
@@ -595,6 +612,7 @@ export class InMemoryReferralRepository implements ReferralRepository {
   }
 
   async listConversions(opts: {
+    audience?: GiftAudience
     status?: ConversionStatus
     limit: number
     offset: number
@@ -602,6 +620,8 @@ export class InMemoryReferralRepository implements ReferralRepository {
     const filtered = this.conversions.filter(
       (c) =>
         this.codes.find((code) => code.id === c.codeId)?.ownerKind !== 'campaign' &&
+        (!opts.audience ||
+          this.codes.find((code) => code.id === c.codeId)?.audience === opts.audience) &&
         (!opts.status || c.status === opts.status),
     )
     const items = filtered

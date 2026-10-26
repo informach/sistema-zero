@@ -1,8 +1,10 @@
+import type { BusinessAudienceFilter } from '../business-audience'
 import type { SubscriptionAggregate } from '../subscription/subscription.aggregate'
 import type { SubscriptionStatus } from '../subscription/subscription.status'
 
 /** Port (driven) de LEITURA admin de assinaturas (separado da escrita). */
 export interface AdminSubscriptionListFilters {
+  audience?: BusinessAudienceFilter
   status?: SubscriptionStatus
   consumerId?: string
   /** Busca livre: id, providerSubscriptionId ou e-mail do cliente (ILIKE). */
@@ -13,6 +15,7 @@ export interface AdminSubscriptionListFilters {
 
 /** Janela das contagens de fluxo (novas/canceladas). MRR/ativas são o AGORA. */
 export interface SubscriptionStatsWindow {
+  audience?: BusinessAudienceFilter
   from: Date
   to: Date
 }
@@ -33,6 +36,7 @@ export interface SubscriptionStats {
 }
 
 export interface SubscriptionAdminReadRepository {
+  findById(id: string, audience?: BusinessAudienceFilter): Promise<SubscriptionAggregate | null>
   list(
     filters: AdminSubscriptionListFilters,
   ): Promise<{ items: SubscriptionAggregate[]; total: number }>

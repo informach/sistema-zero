@@ -64,8 +64,8 @@ export function createApplication(env: Env): Application {
   const updateProduct = new UpdateProductService(products, logger)
   const createOffer = new CreateOfferService(offers, products, resolver, logger)
   const updateOffer = new UpdateOfferService(offers, products, resolver, logger)
-  const createCoupon = new CreateCouponService(coupons, offers, logger)
-  const updateCoupon = new UpdateCouponService(coupons, offers, logger)
+  const createCoupon = new CreateCouponService(coupons, offers, products, logger)
+  const updateCoupon = new UpdateCouponService(coupons, offers, products, logger)
 
   // Readiness (`/readyz`, healthcheck do Railway): a réplica só é promovida
   // quando o banco responde — sem isto o redeploy promove uma réplica que ainda

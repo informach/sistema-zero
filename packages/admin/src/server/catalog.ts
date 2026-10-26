@@ -3,6 +3,7 @@ import type { CouponView, OfferListItem, Paginated, ProductView } from '@/lib/ty
 import { type GatewayResponse, gatewayFetch } from './gateway'
 
 export interface ListParams {
+  audience?: string
   q?: string
   status?: string
   limit?: number
@@ -11,15 +12,22 @@ export interface ListParams {
 }
 
 function listQuery(p: ListParams): Record<string, string | number | undefined> {
-  return { q: p.q, status: p.status, limit: p.limit, offset: p.offset, productId: p.productId }
+  return {
+    audience: p.audience,
+    q: p.q,
+    status: p.status,
+    limit: p.limit,
+    offset: p.offset,
+    productId: p.productId,
+  }
 }
 
 // ── Produtos ──
 export function listProducts(p: ListParams): Promise<GatewayResponse<Paginated<ProductView>>> {
   return gatewayFetch('/catalog/admin/products', { query: listQuery(p) })
 }
-export function getProduct(id: string): Promise<GatewayResponse<ProductView>> {
-  return gatewayFetch(`/catalog/admin/products/${encodeURIComponent(id)}`)
+export function getProduct(id: string, audience?: string): Promise<GatewayResponse<ProductView>> {
+  return gatewayFetch(`/catalog/admin/products/${encodeURIComponent(id)}`, { query: { audience } })
 }
 export function createProduct(body: unknown): Promise<GatewayResponse<ProductView>> {
   return gatewayFetch('/catalog/products', { method: 'POST', body })

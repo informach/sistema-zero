@@ -1014,6 +1014,7 @@ export interface ProductComponentView {
 }
 
 export interface ProductView {
+  audience: 'kids' | 'adult'
   id: string
   version: number
   sku: string
@@ -1068,6 +1069,7 @@ export interface OfferListItem {
 }
 
 export interface CouponView {
+  audience: 'kids' | 'adult'
   id: string
   version: number
   code: string

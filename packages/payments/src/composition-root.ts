@@ -390,9 +390,9 @@ export function createApplication(env: Env): Application {
 
   // Casos de uso de leitura admin (painel @sistemazero/admin)
   const listPayments = new ListPaymentsService(paymentsAdminRead)
-  const getAdminPayment = new GetAdminPaymentService(payments)
+  const getAdminPayment = new GetAdminPaymentService(paymentsAdminRead)
   const listSubscriptions = new ListSubscriptionsService(subscriptionsAdminRead)
-  const getAdminSubscription = new GetAdminSubscriptionService(subscriptions)
+  const getAdminSubscription = new GetAdminSubscriptionService(subscriptionsAdminRead)
   const getPaymentsStats = new GetPaymentsStatsService(paymentsAdminRead)
   const getDailyPaymentsStats = new GetDailyPaymentsStatsService(paymentsAdminRead)
   const getSubscriptionStats = new GetSubscriptionStatsService(subscriptionsAdminRead)
