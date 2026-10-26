@@ -7,7 +7,7 @@ import {
   creatorAdminGalleryFixture,
   creatorAdminPythonFixture,
 } from './creator-admin-fixture'
-import { creatorSceneFixture } from './creator-journey-fixtures'
+import { creatorGridFixture, creatorSceneFixture } from './creator-journey-fixtures'
 
 const root = resolve(import.meta.dir, '../../..')
 const tailwindPath = Bun.resolveSync(
@@ -25,7 +25,14 @@ for (const [skin, name] of [
   const path = resolve(root, `packages/${name}/src/app/globals.css`)
   styles.set(
     skin,
-    (await postcss([tailwind()]).process(await Bun.file(path).text(), { from: path })).css,
+    // A base é o app: o Tailwind varre os componentes dele (as telas da jornada moram lá),
+    // além dos `@source` que o globals.css já declara.
+    (
+      await postcss([tailwind({ base: resolve(root, `packages/${name}`) })]).process(
+        await Bun.file(path).text(),
+        { from: path },
+      )
+    ).css,
   )
 }
 const bundle = await Bun.build({
@@ -100,6 +107,20 @@ Bun.serve({
           headers: { 'Content-Type': 'text/css' },
         },
       )
+    if (/^\/zappy\/[a-z-]+\.webp$/.test(url.pathname)) {
+      const file = Bun.file(resolve(root, `packages/community-kids/public${url.pathname}`))
+      return (await file.exists()) ? new Response(file) : new Response('', { status: 404 })
+    }
+    if (/^\/preview-covers\/jogo-[a-z]+\.webp$/.test(url.pathname)) {
+      const file = Bun.file(
+        resolve(
+          root,
+          'packages/funnel/public/img/comunidade-dos-criadores',
+          url.pathname.split('/').at(-1)!,
+        ),
+      )
+      return (await file.exists()) ? new Response(file) : new Response('', { status: 404 })
+    }
     if (/^\/jornada\/[a-z-]+\.webp$/.test(url.pathname)) {
       const file = Bun.file(resolve(root, `packages/community-kids/public${url.pathname}`))
       return (await file.exists()) ? new Response(file) : new Response('', { status: 404 })
@@ -114,6 +135,11 @@ Bun.serve({
           },
         },
         { status: 409 },
+      )
+    if (url.pathname === '/admin-grid')
+      return new Response(
+        `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Jornada em Cursos · prévia local</title><link rel="stylesheet" href="/admin.css"><link rel="stylesheet" href="/preview-fonts.css"><style>:root{--font-atkinson:"Atkinson Hyperlegible Next",sans-serif;--font-bricolage:"Bricolage Grotesque",sans-serif;--font-geist-mono:monospace}body{margin:0}</style></head><body class="bg-background text-foreground"><div id="root"></div><script>window.creatorGridFixture=${JSON.stringify(creatorGridFixture(url.searchParams.get('skin') === 'adult' ? 'adult' : 'kids')).replace(/</g, '\\u003c')}</script><script type="module" src="/admin-preview.js"></script></body></html>`,
+        { headers: { 'Content-Type': 'text/html; charset=utf-8' } },
       )
     if (url.pathname === '/admin-review')
       return new Response(

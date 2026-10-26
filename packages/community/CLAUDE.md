@@ -143,6 +143,41 @@ adulto e virou um dos swatches. O antigo par Padrão⇄Pink não existe mais.
   nas oito páginas, nos dois temas.
 - ⚠️ O admin (`globals.css` próprio), o `@sistemazero/ui` e o member-shell NÃO mudaram.
 
+## A Jornada do Criador no Estúdio à noite (26/10/2026)
+
+As telas do currículo voltaram ao visual da casa (o desenho aprovado da etapa, agora com o palco
+escuro). Peças em `components/community/journey/`: `creator.tsx` (as telas), `stepper.tsx`
+(`JourneyStepper` e `StageMedal`, que saíram do `progress-client`) e `unlock.tsx` (`UNLOCK_TILES`,
+que saiu da página da etapa). Nomes: **Cursos da trilha**, Missão, Poderes, Extras.
+
+- **`/cursos/etapa/[id]`** = `AdultCreatorTrail`: faixa `sz-band` com a borda da cor da etapa,
+  "Etapa N de 8 · gênero", o cartão "Para concluir a etapa" (cursos da trilha, missão e
+  `minimumPowers` Poderes, nunca "3"), "Nesta etapa você ganha" com as capacidades REAIS da etapa
+  (`normalizeJourney(journey).stages[].capabilities`, chave = `level`; capacidade sem cartão é
+  ignorada) e a próxima etapa ou a Lenda; a fita; os cursos da trilha em linhas; a missão (chips
+  2D, 3D, "Sem nota"); os Poderes em grade (6 e "Ver todos"); os extras; "Publicar no Mural é
+  opcional". `god`/`lenda` vão para `/maestrias`; posto desconhecido é 404.
+- **`/cursos`**: no palco, `AdultCreatorStepper` (a régua com a Lenda levando às Maestrias) e
+  `AdultCreatorNextStep`. **`/progresso`**: o mesmo no bloco `sz-palco`. **Início e Criar**:
+  `AdultCreatorNextStep` (as páginas leem o catálogo também, para o curso que ainda não está em
+  Meus cursos).
+- **`/maestrias`**: `AdultMasteryHub` (um `sz-card` por área, `sz-num` por nível, o botão do que
+  fazer ou o cadeado com a trilha que abre a área). **`/maestrias/[areaId]`**:
+  `AdultMasteryHowItWorks` + `AdultMasteryArea` (níveis em `<details>`, o atual aberto).
+- **Aula 423**: os dois recados (trava sequencial e Jornada) são `sz-card` com o `sz-btn`, sem as
+  classes do Kids. Os objetivos do projeto (`sz-lesson-objectives*`) ganharam regras sob
+  `.sz-aula-adulto` no `globals.css`.
+- ⚠️ Frase em `sz-chip` (o motivo do cadeado) leva `h-auto whitespace-normal`: o chip não quebra
+  linha e "Abre depois dos cursos da trilha Explorador(a) de Mundos" passava da tela a 390 px. A
+  régua das etapas tem `relative` e `contain: inline-size` (rola por dentro sem empurrar a página).
+- **Poder com 2D e 3D**: cada versão ganha o seu botão ("2D: Abrir de novo", "3D: Começar"; o
+  cadeado diz o motivo por versão). As versões contam uma vez para a etapa, mas a pessoa pode
+  fazer as duas. "Abrir de novo" só na versão que ela concluiu.
+- **Etapa conquistada sem concluir tudo** (posto herdado, `earned` sem a lista completa): o
+  cartão vira "O que você fez aqui", sem a barra, e a frase de cima é a do resumo
+  (`creatorStageSummary`), nunca "Faça os cursos…" para quem já passou da etapa.
+- Testes: `tests/creator-journey-screens.test.tsx`; o e2e roda com a prévia (ver abaixo).
+
 ## Jornada do Criador com currículo (25/10/2026)
 
 Quando `AdultJourneyView.curriculum` existe, ele é a única autoridade dos postos e das
@@ -155,9 +190,9 @@ aplicam-se apenas a políticas históricas sem `curriculum`. Não reconstruir pr
 - `/maestrias` e `/maestrias/[areaId]` leem os seis caminhos do Members. Cada nível tem núcleo
   ou crédito validado, 2 oficinas distintas e projeto aprovado. Níveis em acordeões; o atual
   abre por padrão. Projetos são enviados por `evidenceId` de uma versão imutável já salva.
-- `@sistemazero/member-shell/components/creator-journey` compartilha apenas apresentação.
-  O adulto mantém PageBand/PageBody, palco escuro, bancada clara, fontes e mínimos de leitura
-  do Estúdio à noite. Não trocar os tokens do app por estilos do protótipo.
+- As telas são deste app (seção de 26/10/2026 acima); do member-shell vem só a régua
+  (`lib/creator-journey-presentation`). O adulto mantém PageBand/PageBody, palco escuro, bancada
+  clara, fontes e mínimos de leitura do Estúdio à noite.
 - Catálogo, curso e aula usam `careerLock` do servidor. `curriculum` no curso informa vínculo;
   `accessReason` explica compra direta, presente e acesso preservado. Acesso avulso não muda posto.
   Recados de bloqueio das Maestrias apontam ao nível e à área definidos no DTO, inclusive no

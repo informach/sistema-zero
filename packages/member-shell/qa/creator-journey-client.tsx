@@ -1,12 +1,28 @@
+import type { CreatorMasteryView } from '@sistemazero/core/journey'
 import { AppRouterContext } from 'next/dist/shared/lib/app-router-context.shared-runtime'
+import type { ReactNode } from 'react'
 import { createRoot } from 'react-dom/client'
 import {
-  CreatorJourneyMap,
-  CreatorJourneySummary,
-  CreatorMasteryArea,
-  CreatorMasteryHub,
-  CreatorPost,
-} from '../src/components/creator-journey'
+  AdultCreatorNextStep,
+  AdultCreatorStepper,
+  AdultCreatorTrail,
+  AdultMasteryArea,
+  AdultMasteryHowItWorks,
+  AdultMasteryHub,
+  MasteryTile,
+  type StageCapabilities,
+} from '../../community/src/components/community/journey/creator'
+import { PageBand, PageBody } from '../../community/src/components/community/page'
+import {
+  KidsCreatorCatalog,
+  KidsCreatorPost,
+} from '../../community-kids/src/components/kids/creator-curriculum-page'
+import {
+  KidsMasteryArea,
+  KidsMasteryHub,
+  MasteryHowItWorks,
+} from '../../community-kids/src/components/kids/creator-journey/mastery'
+import { KidsBand } from '../../community-kids/src/components/kids/kids-band'
 import { MasterySubmission } from '../src/components/mastery-submission'
 import type { creatorSceneFixture } from './creator-journey-fixtures'
 
@@ -15,11 +31,18 @@ declare global {
     creatorFixture: ReturnType<typeof creatorSceneFixture>
   }
 }
-const { view, catalog, audience, state } = window.creatorFixture
+const { view, catalog, mine, curriculum, audience, state } = window.creatorFixture
 const query = new URLSearchParams(location.search)
 const screen = query.get('screen') ?? 'map'
 const post = view.stages[Number(query.get('post') ?? 0)] ?? view.stages[0]!
 const area = view.masteries.find((item) => item.id === query.get('area')) ?? view.masteries[0]!
+/** As ferramentas de cada trilha, como a página lê do `advances[i].capabilities`. */
+const capabilities = Object.fromEntries(
+  curriculum.stages.map((stage) => [
+    stage.level,
+    [...new Set(stage.grants.flatMap((grant) => grant.capabilities))],
+  ]),
+)
 const router = {
   bfcacheId: 'creator-journey-preview',
   back() {},
@@ -30,131 +53,190 @@ const router = {
   replace() {},
   prefetch() {},
 }
-const body =
-  screen === 'post' ? (
-    <CreatorPost stage={post} catalog={catalog} skin={audience} />
-  ) : screen === 'mastery' ? (
-    <CreatorMasteryArea
-      area={area}
-      catalog={catalog}
+
+function submissionFor(level: CreatorMasteryView['levels'][number]) {
+  return (
+    <MasterySubmission
+      areaId={area.id}
+      level={level.level}
+      hasAccess={true}
+      available={level.available}
       skin={audience}
-      submission={(level) => (
-        <MasterySubmission
-          areaId={area.id}
-          level={level.level}
-          hasAccess={true}
-          available={level.available}
-          skin={audience}
-          evidence={[
-            {
-              id: '10000000-0000-4000-8000-000000000001',
-              title: 'Meu jogo · versão de teste',
-              lessonId: 'fixture',
-              createdAt: '2026-10-25T14:30:00.000Z',
-              kind: 'studio',
-            },
-          ]}
-          current={
-            state === 'mastery' && level.level === 1
-              ? {
-                  id: 'fixture-submission',
-                  masteryId: area.id,
-                  level: 1,
-                  policyVersion: 1,
-                  rubricVersion: 1,
-                  evidenceId: 'fixture-evidence',
-                  evidenceTitle: 'Meu jogo · primeira versão',
-                  submittedAt: '2026-10-24T14:30:00.000Z',
-                  message: null,
-                  status: 'changes-requested',
-                  feedback:
-                    'A regra já funciona. Teste o que acontece quando dois objetos chegam ao alvo ao mesmo tempo e explique a escolha que você fez.',
-                  criteria: [],
-                  credits: [],
-                  reviewedAt: '2026-10-25T10:00:00.000Z',
-                }
-              : null
-          }
-        />
-      )}
+      evidence={[
+        {
+          id: '10000000-0000-4000-8000-000000000001',
+          title: 'Meu jogo · versão de teste',
+          lessonId: 'fixture',
+          createdAt: '2026-10-25T14:30:00.000Z',
+          kind: 'studio',
+        },
+      ]}
+      current={
+        state === 'mastery' && level.level === 1
+          ? {
+              id: 'fixture-submission',
+              masteryId: area.id,
+              level: 1,
+              policyVersion: 1,
+              rubricVersion: 1,
+              evidenceId: 'fixture-evidence',
+              evidenceTitle: 'Meu jogo · primeira versão',
+              submittedAt: '2026-10-24T14:30:00.000Z',
+              message: null,
+              status: 'changes-requested',
+              feedback:
+                'A regra já funciona. Teste o que acontece quando dois objetos chegam ao alvo ao mesmo tempo e explique a escolha que você fez.',
+              criteria: [],
+              credits: [],
+              reviewedAt: '2026-10-25T10:00:00.000Z',
+            }
+          : null
+      }
     />
-  ) : screen === 'areas' ? (
-    <CreatorMasteryHub areas={view.masteries} skin={audience} />
-  ) : (
-    <CreatorJourneyMap view={view} skin={audience} />
   )
-const title =
-  screen === 'post'
-    ? post.title
-    : screen === 'mastery'
-      ? area.title
-      : screen === 'areas'
-        ? 'Escolha a sua maestria'
-        : 'Jornada do Criador'
+}
+
+/** As telas do Kids, montadas com os mesmos componentes das páginas do app. */
+function kidsScreen(): ReactNode {
+  // A entrada da página (com a trava do posto não alcançado), como em `/cursos/trilha/<nível>`.
+  if (screen === 'post')
+    return (
+      <KidsCreatorPost
+        view={view}
+        level={post.level}
+        courses={catalog}
+        mine={mine}
+        capabilities={capabilities}
+      />
+    )
+  if (screen === 'areas')
+    return (
+      <KidsBand tone="creme">
+        <h1 className="sz-display mb-8 text-[clamp(2rem,3.6vw,3rem)]">Maestrias</h1>
+        <KidsMasteryHub areas={view.masteries} view={view} />
+      </KidsBand>
+    )
+  if (screen === 'mastery')
+    return (
+      <>
+        <KidsBand tone="creme">
+          <h1 className="sz-display mb-6 text-[clamp(2rem,3.6vw,3rem)]">{area.title}</h1>
+          <MasteryHowItWorks area={area} />
+        </KidsBand>
+        <KidsBand tone="lilas">
+          <KidsMasteryArea
+            area={area}
+            catalog={catalog}
+            mine={mine}
+            view={view}
+            submission={submissionFor}
+          />
+        </KidsBand>
+      </>
+    )
+  return <KidsCreatorCatalog view={view} courses={catalog} mine={mine} />
+}
+
+/** As telas adultas, montadas com os mesmos componentes das páginas da comunidade. */
+function adultScreen(): ReactNode {
+  if (screen === 'post')
+    return (
+      <AdultCreatorTrail
+        view={view}
+        level={post.level}
+        catalog={catalog}
+        mine={mine}
+        capabilities={capabilities as StageCapabilities}
+      />
+    )
+  if (screen === 'areas')
+    return (
+      <>
+        <PageBand
+          kicker="Sua criação vai mais longe"
+          title="Maestrias para os seus jogos"
+          lead="Escolha uma linguagem, uma dimensão ou as ferramentas de arte dos seus jogos."
+          back={{ href: '#', label: 'Voltar à jornada' }}
+        />
+        <PageBody>
+          <AdultMasteryHub areas={view.masteries} view={view} />
+        </PageBody>
+      </>
+    )
+  if (screen === 'mastery')
+    return (
+      <>
+        <PageBand
+          kicker="Maestria"
+          title={
+            <span className="flex items-center gap-4">
+              <MasteryTile id={area.id} big />
+              {area.title}
+            </span>
+          }
+          back={{ href: '#', label: 'Todas as áreas' }}
+        />
+        <PageBody className="gap-10">
+          <AdultMasteryHowItWorks area={area} />
+          <AdultMasteryArea
+            area={area}
+            catalog={catalog}
+            mine={mine}
+            view={view}
+            submission={submissionFor}
+          />
+        </PageBody>
+      </>
+    )
+  return (
+    <PageBand
+      kicker="Catálogo da comunidade"
+      title="Cursos"
+      lead="Sete etapas até a Lenda. Em cada uma, os cursos da trilha em 2D e 3D, uma missão para criar um jogo seu e os Poderes para ampliá-lo."
+    >
+      <section className="mt-6 flex flex-col gap-5">
+        <h2 className="sz-h3">Jornada do Criador</h2>
+        <AdultCreatorStepper view={view} />
+        <AdultCreatorNextStep view={view} catalog={catalog} mine={mine} />
+      </section>
+    </PageBand>
+  )
+}
 createRoot(document.getElementById('root')!).render(
   <AppRouterContext.Provider value={router}>
-    <main>
-      <aside
-        style={{
-          padding: '.75rem 1.25rem',
-          background: '#fff9df',
-          color: '#252740',
-          fontSize: '17px',
-          borderBottom: '1px solid #bca957',
-        }}
+    <aside
+      style={{
+        padding: '.75rem 1.25rem',
+        background: '#fff9df',
+        color: '#252740',
+        fontSize: '17px',
+        borderBottom: '1px solid #bca957',
+      }}
+    >
+      <strong>Prévia local · dados fictícios.</strong>{' '}
+      <nav
+        aria-label="Cenários da prévia"
+        style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', marginTop: '.5rem' }}
       >
-        <strong>Prévia local · dados fictícios.</strong>{' '}
-        <nav
-          aria-label="Cenários da prévia"
-          style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', marginTop: '.5rem' }}
-        >
-          {['map', 'post', 'areas', 'mastery'].map((value) => (
-            <a key={value} href={`/?skin=${audience}&screen=${value}&state=${state}`}>
-              {value === 'map'
-                ? 'Mapa'
-                : value === 'post'
-                  ? 'Posto'
-                  : value === 'areas'
-                    ? 'Áreas'
-                    : 'Maestria'}
-            </a>
-          ))}
-        </nav>
-      </aside>
-      {audience === 'adult' ? (
-        <>
-          <section className="sz-band">
-            <div className="sz-page space-y-5 py-10">
-              <p className="sz-kicker">Aprender · aplicar · criar</p>
-              <h1 className="sz-h1">{title}</h1>
-              <p className="sz-lead">Do primeiro jogo às suas próprias escolhas de criação.</p>
-              {screen === 'map' ? (
-                <CreatorJourneySummary view={view} skin="adult" catalog={catalog} />
-              ) : null}
-              {screen === 'map' ? body : null}
-            </div>
-          </section>
-          {screen !== 'map' ? <div className="sz-page py-10">{body}</div> : null}
-        </>
-      ) : (
-        <>
-          <section className="bg-(--chao)">
-            <div className="mx-auto max-w-[73.25rem] space-y-5 px-5 py-10 md:px-10 lg:px-16">
-              <p className="font-bold text-primary">Aprender · aplicar · criar</p>
-              <h1 className="sz-display text-3xl md:text-4xl">{title}</h1>
-              <p className="text-muted-foreground">
-                Do primeiro jogo às suas próprias escolhas de criação.
-              </p>
-              {screen === 'map' ? (
-                <CreatorJourneySummary view={view} skin="kids" catalog={catalog} />
-              ) : null}
-            </div>
-          </section>
-          <section className="bg-(--chao-alt)">
-            <div className="mx-auto max-w-[73.25rem] px-5 py-10 md:px-10 lg:px-16">{body}</div>
-          </section>
-        </>
-      )}
-    </main>
+        {['map', 'post', 'areas', 'mastery'].map((value) => (
+          <a key={value} href={`/?skin=${audience}&screen=${value}&state=${state}`}>
+            {value === 'map'
+              ? 'Mapa'
+              : value === 'post'
+                ? 'Posto'
+                : value === 'areas'
+                  ? 'Áreas'
+                  : 'Maestria'}
+          </a>
+        ))}
+      </nav>
+    </aside>
+    {audience === 'adult' ? (
+      <div className="sz-app">
+        <main>{adultScreen()}</main>
+      </div>
+    ) : (
+      <main className="flex min-w-0 flex-1 flex-col bg-(--chao)">{kidsScreen()}</main>
+    )}
   </AppRouterContext.Provider>,
 )

@@ -8,14 +8,45 @@ regras moram no member-shell (seção de mesmo nome lá). Aqui nada mudou na pá
 app embarcado (menu recolhido, `MainContainer` com a altura da janela) e o quarto segue nas duas
 `KidsBand` com `kids-band-foco`. No celular o quarto gruda abaixo da barra do topo (h-14).
 
+## As telas da Jornada do Criador no visual Kids (26/10/2026)
+
+Pedido dela: o currículo novo tinha trocado as telas aprovadas por componentes genéricos. Elas
+voltaram, nas peças da casa, em `components/kids/creator-journey/` (`parts`, `trail`, `map`,
+`mastery`, `course-context`, `studio-modes`). Nome único: **Cursos da trilha** (2D e 3D).
+
+- **`/cursos`** (`KidsCreatorCatalog`): cabeçalho centrado, o mapa em fita
+  (`CreatorJourneyMapKids`, com `JourneyRibbon`/`ProgressDots` do `journey-map.tsx`, agora
+  exportados), "Sua trilha agora" (missão, Poderes e os cursos da trilha), o convite para uma
+  Maestria que já abriu e "Todos os cursos e seus acessos".
+- ⚠️ **A trava do mapa voltou (pedido dela, 26/10/2026):** posto não alcançado fica em preto e
+  branco, com o cadeado, e NÃO é link; `/cursos/trilha/<nível>` dele mostra "Esta parte do mapa
+  ainda está bloqueada" (`KidsCreatorPost`). A régua é `creatorStageOpen` do member-shell: o
+  posto atual, os concluídos ou conquistados e o posto em que o servidor já abriu um curso (compra
+  avulsa, presente, acesso preservado). A Lenda segue a mesma régua e, alcançada, leva às
+  Maestrias. A equipe não passa por aqui: a prévia dela (`isKidsStaffPreview`) segue com tudo
+  aberto.
+- **`/cursos/trilha/[level]`** (`KidsCreatorTrail`): medalhão, a faixa "Para virar X", cursos da
+  trilha, missão, Poderes (6 e "Ver todos"), extras e o cartão do próximo nível com as ferramentas
+  reais (`curriculumTrailCapabilities` em `lib/journey-rewards.ts`, de `advances[i].capabilities`).
+  Trilha ainda não alcançada: o recado "Esta parte do mapa ainda está bloqueada" (ver a trava
+  abaixo); a que abriu só por um curso avulso mostra o desenho com "A trilha inteira abre quando
+  você chegar a X".
+- **Maestrias**: `KidsMasteryHub` ("Escolha no que quer ficar craque") e `KidsMasteryArea`.
+- **Início, perfil, pais, curso, Criar e celebração**: `creator-journey-card` com as pílulas,
+  `journey-timeline` (escada de postos), `child-progress` (pílulas), `KidsCourseJourneyContext`
+  ("Como funciona a missão" com os quadros verdadeiros), `StudioModes` em Criar e a celebração de
+  nível com "A Trilha X abriu".
+- Testes: `tests/creator-journey-screens.test.tsx` (componentes reais) e os guardas de texto.
+
 ## Currículo comum da Jornada do Criador (25/10/2026)
 
 Se `KidsJourneyView.curriculum` existir, os postos e Maestrias seguem essa projeção do Members.
 Notas históricas abaixo sobre 49 posições, curso de entrada único, extra por matrícula e Mural
 obrigatório aplicam-se somente a políticas sem `curriculum`. Não calcular novos acessos no cliente.
 
-- `/cursos` e `/cursos/trilha/[level]` usam `creator-curriculum-page.tsx` e os componentes comuns
-  do member-shell, preservando KidsBand, Baloo/Nunito, medalhões e as cores fixas dos postos.
+- `/cursos` e `/cursos/trilha/[level]` usam `creator-curriculum-page.tsx` e as peças de
+  `components/kids/creator-journey/` (seção de 26/10/2026 acima), com KidsBand, Baloo/Nunito,
+  medalhões e as cores fixas dos postos.
 - Ordem: base 2D, base 3D; o par abre missão, poderes e extras. Avançar pede as duas bases,
   missão em 2D/3D e 1 poder aplicado na Faísca, 2 nos demais. Extras e Mural são opcionais.
   Cada curso completo libera seus blocos. `course-badge`, retorno do curso, home, perfil,
@@ -29,7 +60,8 @@ obrigatório aplicam-se somente a políticas sem `curriculum`. Não calcular nov
   Faísca ou progresso vazio. Preview de equipe não simula aluno.
   Cursos de Maestria bloqueados usam o vínculo do DTO para indicar o nível e abrir sua área;
   catálogo, curso e aula não substituem esse requisito por um curso-base de posto.
-- QA: `member-shell/tests/creator-journey-ui.test.tsx`, regressões `journey-canonical-*` e
+- QA: `tests/creator-journey-screens.test.tsx`, `member-shell/tests/creator-journey-ui.test.tsx`,
+  regressões `journey-canonical-*` e
   `community/playwright.creator-journey.config.ts`. A prévia local comum usa componentes/CSS reais
   e dados do seed em memória, sem serviços ou dados de alunos.
 

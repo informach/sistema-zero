@@ -13,6 +13,37 @@ Os serviços filtram antes da contagem/paginação e conferem o escopo dos detal
 Vendas históricas sem origem comprovada têm consulta própria, nunca classificação por
 nome/e-mail. Ver `docs/runbooks/2026-10-26-admin-business-community.md` para migrações e rollout.
 
+## A Jornada do Criador na sala da equipe (26/10/2026)
+
+- **Cursos** (lentes Kids e Adultos, com currículo): `components/admin/creator-journey-grid.tsx`
+  sobre a régua pura `lib/creator-journey-grid.ts` (`creatorJourneyGrid`, testada em
+  `tests/creator-journey-grid.test.ts`). Um cartão por posto com "N de 7 postos prontos": Cursos da
+  trilha (2D, 3D), Missão, Poderes ("N exigidos · M publicados"; uma versão publicada conta pelo
+  Poder) e Extras ("não contam para subir"), cada um com Publicado, Falta publicar, Arquivado ou
+  Vínculo indisponível, e os avisos ("Só 1 Poder publicado e 2 exigidos: ninguém consegue subir
+  deste posto.", "Falta publicar o curso 3D da trilha e a missão: ninguém consegue subir deste
+  posto."). Pronto = os três cursos fixos publicados e Poderes publicados ≥ exigidos. Falha ao
+  carregar os cursos mostra `LoadError` com "Tentar de novo" (nunca a grade vazia como se nada
+  estivesse vinculado), e as linhas de curso usam o mesmo nome de papel do editor
+  (`creatorRoleLabel`).
+  Clicar num curso abre a edição dele; "Adicionar Poder", "Adicionar extra", "Editar posto" e um
+  vínculo sem curso levam ao editor com `?posto=<level>` (`creatorJourneyEditorHref`). **Nada aqui
+  grava** (decisão dela: mostrar e levar ao editor). A lista de cursos agora carrega nas DUAS
+  lentes (`?audience=<lente>&modality=recorded`).
+- **Editor** (`creator-curriculum-editor.tsx`): a regra em quatro passos, os postos e as Maestrias
+  em grade, o cartão do posto em seções ("Sobre o posto", "Cursos da trilha (2D e 3D)", "Missão",
+  "Poderes · N exigidos", "Extras · não contam para subir", "Ferramentas conquistadas neste
+  posto"), a situação do curso embaixo de cada seletor (`CourseSelect`: rótulo próprio e a
+  situação ligada por `aria-describedby`; arquivado diz que some para quem ainda não tem o curso)
+  e as ferramentas pelo NOME
+  (`KIDS_TOOL_LABELS`, nunca o id cru). `?posto=` é lido depois de montar.
+- **Editar dados do curso**: "Lugar na Jornada do Criador" em chips (posto e papel) com o que cada
+  papel quer dizer. **Jornada adulta**: título "Jornada do Criador" e `LoadError` na falha de carga.
+  **Revisar Maestrias**: sem o espaçamento dobrado, "Voltar à jornada" como botão, `Select` do ui.
+- ⚠️ Teste com DOM: registre o happy-dom ANTES de importar o `react-dom` (import dinâmico depois do
+  `GlobalRegistrator.register()`). Com o import estático, o React nasce sem DOM e nenhum `onChange`
+  dispara: era por isso que o teste de edição do editor falhava desde 25/10.
+
 ## Autoria da nova jornada (25/10/2026)
 
 `policy.curriculum` seleciona o currículo novo nas jornadas Kids e adulta. Regras históricas de

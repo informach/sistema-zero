@@ -1,5 +1,4 @@
 import { nextJourneyCourse } from '@sistemazero/core/journey'
-import { CreatorJourneySummary } from '@sistemazero/member-shell/components/creator-journey'
 import { BookOpen, Play } from 'lucide-react'
 import Link from 'next/link'
 import { Suspense } from 'react'
@@ -8,12 +7,14 @@ import { ContinueCard, CurrentModuleCard } from '@/components/community/home/con
 import { RecadosCard } from '@/components/community/home/recados-card'
 import { RhythmCard } from '@/components/community/home/rhythm-card'
 import { ShowcaseNews } from '@/components/community/home/showcase-news'
+import { AdultCreatorNextStep } from '@/components/community/journey/creator'
 import { PageBody, SectionHeader } from '@/components/community/page'
 import { greetingFor } from '@/lib/course-levels'
 import { nextLessonOf } from '@/lib/course-outline'
 import {
   getMyCourse,
   getTeacherThreadsUnreadReadonly,
+  listCatalog,
   listMyCourses,
   listTeacherThreadsReadonly,
 } from '@/server/members'
@@ -28,12 +29,14 @@ export const dynamic = 'force-dynamic'
  * palco no pé, as novidades do Mural. Cada parte some sozinha quando o dado não existe.
  */
 export default async function HomePage() {
-  const [user, courses, threads, unread, gamification] = await Promise.all([
+  const [user, courses, threads, unread, gamification, catalog] = await Promise.all([
     getSession(),
     listMyCourses(),
     listTeacherThreadsReadonly().catch(() => null),
     getTeacherThreadsUnreadReadonly().catch(() => null),
     shell.members.getGamificationReadonly({ withRanking: true }).catch(() => null),
+    // O catálogo dá ao próximo passo da jornada o curso que ainda não está em Meus cursos.
+    listCatalog().catch(() => null),
   ])
   if (courses.status !== 200)
     throw new Error('Não foi possível consultar seus cursos. Tente novamente.')
@@ -110,7 +113,11 @@ export default async function HomePage() {
       {/* A BANCADA: o módulo da próxima aula, os recados e os cursos. */}
       <PageBody>
         {curriculum ? (
-          <CreatorJourneySummary view={curriculum} skin="adult" courses={myCourses} />
+          <AdultCreatorNextStep
+            view={curriculum}
+            catalog={catalog?.status === 200 ? (catalog.body?.courses ?? []) : []}
+            mine={myCourses}
+          />
         ) : null}
         {next && course ? (
           <div className="flex flex-col items-start gap-7 lg:flex-row">

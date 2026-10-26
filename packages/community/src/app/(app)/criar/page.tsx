@@ -1,4 +1,3 @@
-import { CreatorJourneySummary } from '@sistemazero/member-shell/components/creator-journey'
 import {
   BookOpen,
   Box,
@@ -14,10 +13,12 @@ import {
 } from 'lucide-react'
 import Link from 'next/link'
 import { challengeMonthName } from '@/components/community/community/challenge-month'
+import { AdultCreatorNextStep } from '@/components/community/journey/creator'
 import { PageBand, PageBody } from '@/components/community/page'
 import { cn } from '@/lib/cn'
 import { type CreativeToolKey, type ToolLockReason, toolLockReason } from '@/lib/tool-lock'
 import { getCreativeToolsState } from '@/server/creative-tools'
+import { listCatalog, listMyCourses } from '@/server/members'
 import { shell } from '@/server/shell'
 
 export const dynamic = 'force-dynamic'
@@ -249,9 +250,12 @@ function ToolCardCompact({ tool, status }: { tool: Tool; status: ToolStatus }) {
 }
 
 export default async function CreatePage() {
-  const [state, challengeResult] = await Promise.all([
+  const [state, challengeResult, catalog, mine] = await Promise.all([
     getCreativeToolsState(),
     shell.members.getChallengeReadonly().catch(() => null),
+    // O próximo passo da jornada (só no currículo) mostra o curso a fazer agora.
+    listCatalog().catch(() => null),
+    listMyCourses().catch(() => null),
   ])
   const challenge =
     challengeResult?.status === 200 && challengeResult.body?.audience === 'adult'
@@ -310,7 +314,11 @@ export default async function CreatePage() {
       </PageBand>
       <PageBody>
         {state.kind === 'ready' && state.journey.curriculum ? (
-          <CreatorJourneySummary view={state.journey.curriculum} skin="adult" />
+          <AdultCreatorNextStep
+            view={state.journey.curriculum}
+            catalog={catalog?.status === 200 ? (catalog.body?.courses ?? []) : []}
+            mine={mine?.status === 200 ? (mine.body?.courses ?? []) : []}
+          />
         ) : null}
         <section aria-labelledby="mostrar-e-aprender" className="flex flex-col gap-5">
           <h2 id="mostrar-e-aprender" className="sz-h2">

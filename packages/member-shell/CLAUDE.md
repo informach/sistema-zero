@@ -29,15 +29,44 @@ as mensagens e a pele adulta ficaram como estavam.
   num painel de 420px ao lado do quarto, `sm:grid-cols-6` daria seis colunas espremidas.
 - Testes: `tests/kids-cosmetics-layout.test.tsx` e, no Kids, `tests/room-builder-view.test.tsx`.
 
+## As telas da Jornada do Criador voltam ao visual de cada app (26/10/2026)
+
+Pedido dela: o currículo novo tinha trocado as telas aprovadas por componentes genéricos daqui
+(`components/creator-journey.tsx`, que só trocavam `kids-carta` por `sz-card`). O arquivo SAIU:
+cada app desenha as próprias telas (Kids em `community-kids/src/components/kids/creator-journey/`,
+adulto em `community/src/components/community/journey/creator.tsx`, Admin em
+`admin/src/components/admin/creator-journey-grid.tsx`). Aqui ficou só a régua que as três leem.
+
+- **`lib/creator-journey-presentation.ts`** (puro): `creatorStageChecklist` (cursos da trilha,
+  missão, Poderes, com `required` = `minimumPowers`), `creatorStageMissing`/`creatorStageTodo`,
+  `creatorEntryCard(entry, catalog, mine)` (título, capa, faixa 2D/3D, aulas feitas, estado
+  `done|progress|start|locked|no-access|planned|unknown` e os dois links), `creatorEntryAction`,
+  `creatorEntryNote` (o motivo do cadeado, `role: 'base3d' | 'after-pair'` ou `futureStage`),
+  `creatorNextStep` (o que já começou antes do que não começou, depois a ordem da trilha; só o que
+  abre de verdade) e as réguas das Maestrias (`creatorMasteryProgress`, `creatorMasteryEntryNote`,
+  `creatorMasteryLevelStatus`, `creatorMasteryApprovalLabel`, `creatorMasteryLevelTitle`).
+- **Nomes unificados (decisão dela):** os cursos 2D e 3D de cada posto são **Cursos da trilha** no
+  Kids, no adulto e no Admin (`CURRICULUM_ROLE_LABELS`: "Curso da trilha 2D/3D", "Missão da trilha",
+  "Poder", "Extra"). "Base" e "par" ficam só por dentro (ids, `pairCompleted`).
+- **`course-curriculum-context.tsx`**: o papel do curso vira chip da pele (amarelo no Kids,
+  `sz-chip sz-chip-acao` no adulto) com "Trilha X" ao lado.
+- **Prévia** (`qa/creator-journey-serve.ts`): renderiza os componentes DOS APPS (o Tailwind varre a
+  pasta de cada app, `base`), com `/zappy/*` e as capas dos jogos; `/admin-grid` (e
+  `?screen=editor`) mostra a grade e o editor do Admin. Fixture novo: `state=coder` e
+  `creatorGridFixture`.
+- Testes: `tests/creator-journey-ui.test.tsx` (só a régua); as telas têm testes nos apps
+  (`creator-journey-screens.test.tsx` no Kids e no adulto) e o e2e
+  `community/e2e-journey/creator-journey.spec.ts` cobre as duas peles e a grade do Admin.
+
 ## Currículo compartilhado e Maestrias (25/10/2026)
 
 As políticas Kids/adulta podem conter `curriculum`; quando presente ele seleciona a nova
 autoridade única do core/Members. Notas históricas abaixo sobre publicação para concluir posição
 e trilhas de um curso-base só continuam válidas para políticas sem esse campo.
 
-- `components/creator-journey.tsx` apresenta mapa, resumo, posto e Maestrias; recebe view canônica
-  e fatos do catálogo. `lib/creator-journey-presentation.ts` só produz texto e destinos.
-  Nenhum componente concede acesso, concede poderes ou recalcula o posto.
+- As telas moram nos apps (seção de 26/10/2026 acima); `lib/creator-journey-presentation.ts` só
+  produz texto, estados e destinos. Nenhuma tela concede acesso, concede Poderes ou recalcula o
+  posto.
 - Dois cursos-base abrem missão/poderes/extras. Uma identidade de poder conta uma vez mesmo com
   versões equivalentes. Curso concluído libera seus blocos; Mural é opcional na nova jornada.
 - Views de curso têm `curriculum?: CreatorCoursePlacement`, `careerLock` e `accessReason`.

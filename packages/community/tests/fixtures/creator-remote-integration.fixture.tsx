@@ -33,10 +33,11 @@ beforeEach(() => {
 
 test('the post uses both base courses and mission/power requirements, without the old Mural gate', async () => {
   const html = renderToStaticMarkup(await StagePage({ params: Promise.resolve({ id: 'noob' }) }))
-  expect(html).toContain('Base 2D')
-  expect(html).toContain('Base 3D')
+  expect(html).toContain('Cursos da trilha')
   expect(html).toContain('Missão')
-  expect(html).toContain('Poder')
+  expect(html).toContain('Poderes')
+  expect(html).toContain('Nesta etapa você ganha')
+  expect(html).toContain('Publicar no Mural é opcional')
   expect(html).not.toContain('Concluir e publicar o jogo no Mural')
   expect(html).toContain('sz-band')
 })
@@ -66,7 +67,8 @@ test('historical stages retain the new remote unlock tiles, including both prese
 
 test('catalog uses the curriculum map while retaining remote copy for historical journeys', async () => {
   const html = renderToStaticMarkup(await CatalogPage())
-  expect(html).toContain('Crie um jogo em 2D e 3D')
+  expect(html).toContain('Sete etapas até a Lenda')
+  expect(html).toContain('aria-label="Etapas da jornada"')
   expect(html).toContain('/maestrias')
   expect(html).toContain('/cursos/etapa/noob')
   journey = null

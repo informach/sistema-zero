@@ -1,10 +1,8 @@
-import {
-  CreatorJourneyMap,
-  CreatorJourneySummary,
-} from '@sistemazero/member-shell/components/creator-journey'
 import { BookOpen } from 'lucide-react'
+import Link from 'next/link'
 import { CourseCatalogClient } from '@/components/community/course-catalog-client'
 import { TrackCard } from '@/components/community/courses/track-card'
+import { AdultCreatorNextStep, AdultCreatorStepper } from '@/components/community/journey/creator'
 import { PageBand, PageBody } from '@/components/community/page'
 import { summarizeTrack, TRACKS } from '@/lib/course-levels'
 import type { CourseProgress } from '@/lib/types'
@@ -28,11 +26,9 @@ export default async function CatalogPage() {
   const curriculum =
     gamification?.status === 200 ? gamification.body?.journey?.curriculum : undefined
   const courses = catalog.status === 200 ? (catalog.body?.courses ?? []) : []
+  const myCourses = mine?.status === 200 ? (mine.body?.courses ?? []) : []
   const progressBySlug: Record<string, CourseProgress> = Object.fromEntries(
-    (mine?.status === 200 ? (mine.body?.courses ?? []) : []).map((course) => [
-      course.courseSlug,
-      course.progress,
-    ]),
+    myCourses.map((course) => [course.courseSlug, course.progress]),
   )
   const withProgress = courses.map((course) => ({
     ...course,
@@ -54,21 +50,28 @@ export default async function CatalogPage() {
         title="Cursos"
         lead={
           curriculum
-            ? 'Crie um jogo em 2D e 3D, transfira a lógica para uma missão e amplie sua criação com poderes.'
+            ? 'Sete etapas até a Lenda. Em cada uma, os cursos da trilha em 2D e 3D, uma missão para criar um jogo seu e os Poderes para ampliá-lo.'
             : 'Cada curso termina com um jogo seu, pronto para jogar e mostrar. Comece por uma trilha e avance um nível de cada vez.'
         }
       >
         {/* As trilhas no palco: é por elas que se descobre o caminho (Estúdio à noite). */}
         {curriculum ? (
-          <div className="mt-6 space-y-8">
-            <CreatorJourneySummary
-              view={curriculum}
-              skin="adult"
-              catalog={courses}
-              courses={mine?.status === 200 ? mine.body.courses : []}
-            />
-            <CreatorJourneyMap view={curriculum} skin="adult" />
-          </div>
+          <section aria-labelledby="jornada-do-criador" className="mt-6 flex flex-col gap-5">
+            <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+              <h2 id="jornada-do-criador" className="sz-h3">
+                Jornada do Criador
+              </h2>
+              <Link
+                href="/progresso"
+                prefetch={false}
+                className="sz-link inline-flex min-h-11 items-center"
+              >
+                Ver seu progresso
+              </Link>
+            </div>
+            <AdultCreatorStepper view={curriculum} />
+            <AdultCreatorNextStep view={curriculum} catalog={courses} mine={myCourses} />
+          </section>
         ) : tracks.length > 0 ? (
           <section aria-labelledby="trilhas" className="mt-6 flex flex-col gap-5">
             <h2 id="trilhas" className="sz-h3">

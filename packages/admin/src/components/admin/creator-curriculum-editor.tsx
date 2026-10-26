@@ -5,7 +5,8 @@ import { Button } from '@sistemazero/ui/button'
 import { Card } from '@sistemazero/ui/card'
 import { Input } from '@sistemazero/ui/input'
 import Link from 'next/link'
-import { useState } from 'react'
+import { type ReactNode, useEffect, useId, useRef, useState } from 'react'
+import { cn } from '@/lib/cn'
 import { KIDS_TOOL_LABELS } from '@/lib/kids-journey-editor'
 import type { CourseView } from '@/lib/types'
 
@@ -25,6 +26,21 @@ export function CreatorCurriculumEditor({
   onChange: (value: CreatorJourneyCurriculum) => void
 }) {
   const [selected, setSelected] = useState<string>(value.stages[0]?.level ?? 'noob')
+  const cardRef = useRef<HTMLDivElement>(null)
+  // A grade de Cursos leva direto a um posto ou Maestria (`?posto=<nível ou área>`). Lido depois
+  // de montar: o servidor não conhece o endereço do navegador e a hidratação ficaria diferente.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: só a chegada pelo link escolhe o posto; editar a política não pode trocar a seleção
+  useEffect(() => {
+    const target = new URLSearchParams(window.location.search).get('posto')
+    if (
+      target &&
+      (value.stages.some((item) => item.level === target) ||
+        value.masteries.some((item) => item.id === target))
+    ) {
+      setSelected(target)
+      requestAnimationFrame(() => cardRef.current?.scrollIntoView?.({ block: 'start' }))
+    }
+  }, [])
   const stage = value.stages.find((item) => item.level === selected)
   const area = value.masteries.find((item) => item.id === selected)
   const availableCourses = courses.filter((course) => course.modality !== 'live')
@@ -47,27 +63,13 @@ export function CreatorCurriculumEditor({
     })
   }
   const selector = (label: string, courseId: string, change: (id: string) => void) => (
-    <label className="grid min-w-0 gap-1.5 text-sm">
-      <span className="font-medium">{label}</span>
-      <select
-        className="min-h-11 w-full rounded-lg border bg-background px-3 py-2"
-        value={courseId}
-        disabled={disabled}
-        onChange={(event) => change(event.target.value)}
-      >
-        {!availableCourses.some((course) => course.id === courseId) ? (
-          <option value={courseId}>
-            {courseId ? `Vínculo indisponível (${courseId})` : 'Escolha um curso'}
-          </option>
-        ) : null}
-        {availableCourses.map((course) => (
-          <option key={course.id} value={course.id}>
-            {course.title}
-            {course.status === 'published' ? '' : ' · em preparação'}
-          </option>
-        ))}
-      </select>
-    </label>
+    <CourseSelect
+      label={label}
+      courseId={courseId}
+      courses={availableCourses}
+      disabled={disabled}
+      onChange={change}
+    />
   )
   const courseList = (label: string, ids: readonly string[], change: (ids: string[]) => void) => (
     <fieldset className="space-y-2">
@@ -105,21 +107,36 @@ export function CreatorCurriculumEditor({
   )
   return (
     <section aria-label="Currículo da Jornada do Criador" className="space-y-6">
-      <Card className="space-y-2 p-5">
-        <h2 className="text-lg font-semibold">Uma regra para toda a jornada</h2>
-        <p className="text-sm">
-          Cada posto tem duas bases. O par abre a missão, os poderes e os extras. Para avançar: duas
-          bases, missão concluída e o mínimo de poderes distintos aplicados. Extras são opcionais.
-        </p>
+      <Card className="space-y-4 p-5 md:p-6">
+        <div className="space-y-1">
+          <h2 className="font-display font-semibold text-lg">Uma regra para toda a jornada</h2>
+          <p className="text-sm">
+            Cada posto tem dois cursos da trilha, um 2D e um 3D. Os dois juntos abrem a missão, os
+            Poderes e os extras. Para subir: os cursos da trilha, a missão concluída e o mínimo de
+            Poderes distintos. Extras são opcionais.
+          </p>
+        </div>
+        <ol className="m-0 grid list-none gap-2 p-0 sm:grid-cols-2 lg:grid-cols-4">
+          {RULE_STEPS.map((step, index) => (
+            <li key={step.title} className="flex items-start gap-2.5 rounded-lg bg-muted/50 p-3">
+              <span
+                aria-hidden="true"
+                className="grid size-6 shrink-0 place-items-center rounded-full bg-primary/10 font-bold text-primary text-xs"
+              >
+                {index + 1}
+              </span>
+              <span className="min-w-0 text-sm">
+                <strong className="block">{step.title}</strong>
+                <span className="text-muted-foreground text-xs">{step.text}</span>
+              </span>
+            </li>
+          ))}
+        </ol>
         <p className="text-sm text-muted-foreground">
-          Cada curso concluído libera seus blocos. Compra específica ativa de Farol ou Cadê Todo
+          Cada curso concluído libera os blocos dele. Compra específica ativa de Farol ou Cadê Todo
           Mundo? mantém o acesso próprio. Cursos em preparação aparecem aqui, mas não prometem uma
-          aula disponível para o aluno.
-        </p>
-        <p className="text-sm text-muted-foreground">
-          Os vínculos usam a identidade do curso. Renomear um curso não muda o progresso. Esta
-          edição segue a preparação e publicação da política; posições históricas não substituem
-          estes vínculos.
+          aula disponível para o aluno. Os vínculos usam a identidade do curso: renomear um curso
+          não muda o progresso, e posições históricas não substituem estes vínculos.
         </p>
         <Link
           href="/admin/professor/maestrias"
@@ -128,105 +145,144 @@ export function CreatorCurriculumEditor({
           Revisar entregas de Maestrias
         </Link>
       </Card>
-      <nav aria-label="Editar posto ou maestria" className="flex flex-wrap gap-2">
-        {value.stages.map((item) => (
-          <button
-            key={item.level}
-            type="button"
-            aria-pressed={selected === item.level}
-            onClick={() => setSelected(item.level)}
-            className="min-h-11 rounded-lg border px-3 py-2 text-sm font-medium aria-pressed:border-primary aria-pressed:bg-primary/10"
-          >
-            {item.title}
-          </button>
-        ))}
-        {value.masteries.map((item) => (
-          <button
-            key={item.id}
-            type="button"
-            aria-pressed={selected === item.id}
-            onClick={() => setSelected(item.id)}
-            className="min-h-11 rounded-lg border px-3 py-2 text-sm font-medium aria-pressed:border-primary aria-pressed:bg-primary/10"
-          >
-            {item.title}
-          </button>
-        ))}
-      </nav>
-      {stage ? (
-        <Card className="space-y-6 p-5">
-          <h3 className="text-xl font-semibold">{stage.title}</h3>
-          <label className="grid gap-1.5 text-sm font-medium">
-            Nome do posto
-            <Input
-              value={stage.title}
-              maxLength={160}
-              disabled={disabled}
-              onChange={(event) => updateStage({ title: event.target.value })}
-            />
-          </label>
-          <label className="grid gap-1.5 text-sm font-medium">
-            Tipo de jogo
-            <Input
-              value={stage.genre ?? ''}
-              maxLength={160}
-              disabled={disabled}
-              onChange={(event) => updateStage({ genre: event.target.value || undefined })}
-            />
-          </label>
-          <label className="grid gap-1.5 text-sm font-medium">
-            O que o aluno vai criar
-            <textarea
-              value={stage.goal ?? ''}
-              maxLength={500}
-              disabled={disabled}
-              className="min-h-20 rounded-lg border bg-background p-3 font-normal"
-              onChange={(event) => updateStage({ goal: event.target.value || undefined })}
-            />
-          </label>
-          <div className="grid gap-4 md:grid-cols-2">
-            {selector('Base 2D · primeiro passo do posto', stage.base2dCourseId, (base2dCourseId) =>
-              updateStage({ base2dCourseId }),
-            )}
-            {selector('Base 3D · completa o par', stage.base3dCourseId, (base3dCourseId) =>
-              updateStage({ base3dCourseId }),
-            )}
+      <nav aria-label="Editar posto ou maestria" className="space-y-4">
+        <div className="space-y-2">
+          <h2 className="font-mono font-semibold text-[11px] text-muted-foreground uppercase tracking-wider">
+            Postos
+          </h2>
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
+            {value.stages.map((item, index) => (
+              <button
+                key={item.level}
+                type="button"
+                aria-pressed={selected === item.level}
+                onClick={() => setSelected(item.level)}
+                className={PICKER}
+              >
+                <span
+                  aria-hidden="true"
+                  className="grid size-6 shrink-0 place-items-center rounded-full bg-muted font-bold text-xs"
+                >
+                  {index + 1}
+                </span>
+                <span className="min-w-0 break-words leading-tight">{item.title}</span>
+              </button>
+            ))}
           </div>
-          {selector(
-            'Missão · transferência em 2D e 3D no mesmo curso',
-            stage.missionCourseId,
-            (missionCourseId) => updateStage({ missionCourseId }),
-          )}
-          <p className="text-sm text-muted-foreground">
-            A missão aplica as lógicas das bases em outro contexto. Não deve exigir poderes ou
-            extras para ser resolvida.
-          </p>
-          <label className="grid gap-1.5 text-sm">
-            <span className="font-medium">Poderes distintos necessários para avançar</span>
-            <select
-              value={stage.minimumPowers}
-              disabled={disabled}
-              onChange={(event) =>
-                updateStage({ minimumPowers: event.target.value === '1' ? 1 : 2 })
-              }
-              className="min-h-11 rounded-lg border bg-background px-3 py-2"
-            >
-              <option value="1" disabled={stage.level !== 'noob'}>
-                1 poder aplicado
-              </option>
-              <option value="2" disabled={stage.level === 'noob'}>
-                2 poderes aplicados
-              </option>
-            </select>
-          </label>
-          <section className="space-y-4">
-            <h4 className="font-semibold">Poderes oferecidos</h4>
-            <p className="text-sm text-muted-foreground">
-              Um poder é uma mecânica distinta. Cursos equivalentes em 2D e 3D contam uma vez;
-              concluir qualquer versão aplica esse poder.
-            </p>
+        </div>
+        <div className="space-y-2">
+          <h2 className="font-mono font-semibold text-[11px] text-muted-foreground uppercase tracking-wider">
+            Maestrias
+          </h2>
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
+            {value.masteries.map((item) => (
+              <button
+                key={item.id}
+                type="button"
+                aria-pressed={selected === item.id}
+                onClick={() => setSelected(item.id)}
+                className={PICKER}
+              >
+                {item.title}
+              </button>
+            ))}
+          </div>
+        </div>
+      </nav>
+      <div ref={cardRef} className="scroll-mt-6" />
+      {stage ? (
+        <Card className="space-y-5 p-5 md:p-6">
+          <header className="space-y-0.5">
+            <span className="font-mono text-[11px] text-muted-foreground uppercase tracking-wider">
+              Posto {value.stages.findIndex((item) => item.level === stage.level) + 1} de{' '}
+              {value.stages.length}
+            </span>
+            <h3 className="font-display font-semibold text-xl">{stage.title}</h3>
+          </header>
+          <EditorSection title="Sobre o posto">
+            <div className="grid gap-4 md:grid-cols-2">
+              <label className="grid gap-1.5 text-sm font-medium">
+                Nome do posto
+                <Input
+                  value={stage.title}
+                  maxLength={160}
+                  disabled={disabled}
+                  onChange={(event) => updateStage({ title: event.target.value })}
+                />
+              </label>
+              <label className="grid gap-1.5 text-sm font-medium">
+                Tipo de jogo
+                <Input
+                  value={stage.genre ?? ''}
+                  maxLength={160}
+                  disabled={disabled}
+                  onChange={(event) => updateStage({ genre: event.target.value || undefined })}
+                />
+              </label>
+            </div>
+            <label className="grid gap-1.5 text-sm font-medium">
+              O que o aluno vai criar
+              <textarea
+                value={stage.goal ?? ''}
+                maxLength={500}
+                disabled={disabled}
+                className="min-h-20 rounded-lg border bg-background p-3 font-normal"
+                onChange={(event) => updateStage({ goal: event.target.value || undefined })}
+              />
+            </label>
+          </EditorSection>
+          <EditorSection
+            title="Cursos da trilha (2D e 3D)"
+            hint="Primeiro o 2D, depois o 3D. Os dois juntos abrem a missão, os Poderes e os extras."
+          >
+            <div className="grid gap-4 md:grid-cols-2">
+              {selector(
+                'Curso da trilha 2D · primeiro passo do posto',
+                stage.base2dCourseId,
+                (base2dCourseId) => updateStage({ base2dCourseId }),
+              )}
+              {selector(
+                'Curso da trilha 3D · completa a trilha',
+                stage.base3dCourseId,
+                (base3dCourseId) => updateStage({ base3dCourseId }),
+              )}
+            </div>
+          </EditorSection>
+          <EditorSection
+            title="Missão"
+            hint="A missão aplica as lógicas dos cursos da trilha em outro contexto. Não deve exigir Poderes ou extras para ser resolvida."
+          >
+            {selector(
+              'Curso da missão · 2D e 3D no mesmo curso',
+              stage.missionCourseId,
+              (missionCourseId) => updateStage({ missionCourseId }),
+            )}
+          </EditorSection>
+          <EditorSection
+            title={`Poderes · ${stage.minimumPowers} ${stage.minimumPowers === 1 ? 'exigido' : 'exigidos'}`}
+            hint="Um Poder é uma mecânica distinta. Cursos equivalentes em 2D e 3D contam uma vez: concluir qualquer versão aplica esse Poder."
+          >
+            <label className="grid max-w-sm gap-1.5 text-sm">
+              <span className="font-medium">Poderes distintos necessários para subir</span>
+              <select
+                value={stage.minimumPowers}
+                disabled={disabled}
+                onChange={(event) =>
+                  updateStage({ minimumPowers: event.target.value === '1' ? 1 : 2 })
+                }
+                className="min-h-11 rounded-lg border bg-background px-3 py-2"
+              >
+                <option value="1" disabled={stage.level !== 'noob'}>
+                  1 Poder aplicado
+                </option>
+                <option value="2" disabled={stage.level === 'noob'}>
+                  2 Poderes aplicados
+                </option>
+              </select>
+            </label>
             {stage.powers.map((power, index) => (
               // biome-ignore lint/suspicious/noArrayIndexKey: the mechanic identifier is editable; keyed by row to preserve input focus
-              <fieldset key={index} className="space-y-3 rounded-xl border p-4">
+              <fieldset key={index} className="space-y-3 rounded-xl border bg-card p-4">
                 <legend className="px-1 font-medium">Poder {index + 1}</legend>
                 <label className="grid gap-1 text-sm">
                   Identidade da mecânica
@@ -271,7 +327,7 @@ export function CreatorCurriculumEditor({
                     updateStage({ powers: stage.powers.filter((_, at) => at !== index) })
                   }
                 >
-                  Remover poder
+                  Remover Poder
                 </Button>
               </fieldset>
             ))}
@@ -285,21 +341,26 @@ export function CreatorCurriculumEditor({
                     ...stage.powers,
                     {
                       mechanicId: `poder-${stage.powers.length + 1}`,
-                      title: 'Novo poder',
+                      title: 'Novo Poder',
                       courseIds: [],
                     },
                   ],
                 })
               }
             >
-              Adicionar poder
+              Adicionar Poder
             </Button>
-          </section>
-          <section className="space-y-4">
-            <h4 className="font-semibold">Extras · nunca obrigatórios para promoção</h4>
+          </EditorSection>
+          <EditorSection
+            title="Extras · não contam para subir"
+            hint="Para ir além. Nunca são obrigatórios para subir de posto."
+          >
             {stage.extras.map((extra, index) => (
-              // biome-ignore lint/suspicious/noArrayIndexKey: course assignment is editable within this row
-              <div key={`${index}-${extra.courseId}`} className="space-y-3 rounded-xl border p-4">
+              <div
+                // biome-ignore lint/suspicious/noArrayIndexKey: course assignment is editable within this row
+                key={`${index}-${extra.courseId}`}
+                className="space-y-3 rounded-xl border bg-card p-4"
+              >
                 {selector('Curso extra', extra.courseId, (courseId) =>
                   updateStage({
                     extras: stage.extras.map((item, at) =>
@@ -347,18 +408,24 @@ export function CreatorCurriculumEditor({
             >
               Adicionar extra
             </Button>
-          </section>
-          <section className="space-y-3">
-            <h4 className="font-semibold">Ferramentas conquistadas</h4>
+          </EditorSection>
+          <EditorSection
+            title="Ferramentas conquistadas neste posto"
+            hint="Cada marco libera as ferramentas escolhidas durante a trilha. A licença da ferramenta continua sendo conferida no uso."
+          >
             {stage.grants.map((grant, index) => (
               <div
                 // biome-ignore lint/suspicious/noArrayIndexKey: grants have no independent identity and their milestone is editable
                 key={`${grant.after}-${index}`}
-                className="grid gap-2 rounded-lg border p-3 text-sm"
+                className="grid gap-3 rounded-xl border bg-card p-4 text-sm"
               >
-                <span>
-                  {grant.capabilities.map((capability) => KIDS_TOOL_LABELS[capability]).join(', ')}
-                </span>
+                <strong>
+                  {grant.capabilities.length
+                    ? grant.capabilities
+                        .map((capability) => KIDS_TOOL_LABELS[capability])
+                        .join(', ')
+                    : 'Nenhuma ferramenta marcada'}
+                </strong>
                 <select
                   aria-label="Quando a ferramenta é conquistada"
                   value={grant.after}
@@ -383,9 +450,9 @@ export function CreatorCurriculumEditor({
                     })
                   }
                 >
-                  <option value="base2d">Depois da base 2D</option>
-                  <option value="base3d">Depois da base 3D</option>
-                  <option value="pair">Depois das duas bases</option>
+                  <option value="base2d">Depois do curso 2D da trilha</option>
+                  <option value="base3d">Depois do curso 3D da trilha</option>
+                  <option value="pair">Depois dos dois cursos da trilha</option>
                   <option value="course">Depois de um curso específico</option>
                 </select>
                 {grant.after === 'course'
@@ -397,10 +464,10 @@ export function CreatorCurriculumEditor({
                       }),
                     )
                   : null}
-                <fieldset className="flex flex-wrap gap-3">
+                <fieldset className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
                   <legend className="mb-2 font-medium">Ferramentas deste marco</legend>
                   {CREATOR_CAPABILITIES.map((capability) => (
-                    <label key={capability} className="flex items-center gap-2">
+                    <label key={capability} className="flex min-h-9 items-center gap-2">
                       <input
                         type="checkbox"
                         checked={grant.capabilities.includes(capability)}
@@ -420,7 +487,7 @@ export function CreatorCurriculumEditor({
                           })
                         }
                       />
-                      {capability}
+                      {KIDS_TOOL_LABELS[capability]}
                     </label>
                   ))}
                 </fieldset>
@@ -438,7 +505,7 @@ export function CreatorCurriculumEditor({
             ))}
             {!stage.grants.length ? (
               <p className="text-sm text-muted-foreground">
-                Este posto acrescenta os blocos dos cursos; não tem outra ferramenta configurada.
+                Este posto acrescenta os blocos dos cursos e não tem outra ferramenta configurada.
               </p>
             ) : null}
             <Button
@@ -453,12 +520,17 @@ export function CreatorCurriculumEditor({
             >
               Adicionar marco de ferramenta
             </Button>
-          </section>
+          </EditorSection>
         </Card>
       ) : null}
       {area ? (
-        <Card className="space-y-6 p-5">
-          <h3 className="text-xl font-semibold">{area.title}</h3>
+        <Card className="space-y-5 p-5 md:p-6">
+          <header className="space-y-0.5">
+            <span className="font-mono text-[11px] text-muted-foreground uppercase tracking-wider">
+              Maestria · três níveis
+            </span>
+            <h3 className="font-display font-semibold text-xl">{area.title}</h3>
+          </header>
           <label className="grid gap-1.5 text-sm font-medium">
             Nome da área
             <Input
@@ -469,7 +541,7 @@ export function CreatorCurriculumEditor({
             />
           </label>
           <label className="grid gap-2 text-sm">
-            Entrada na área depois do par de bases de
+            A área abre depois dos cursos da trilha de
             <select
               value={area.opensAfterPair}
               disabled={disabled}
@@ -498,7 +570,7 @@ export function CreatorCurriculumEditor({
                 ),
               })
             return (
-              <fieldset key={level.level} className="space-y-4 rounded-xl border p-4">
+              <fieldset key={level.level} className="space-y-4 rounded-xl border bg-muted/20 p-4">
                 <legend className="px-1 font-semibold">
                   Nível {level.level} · {level.title}
                 </legend>
@@ -690,5 +762,102 @@ export function CreatorCurriculumEditor({
         </Card>
       ) : null}
     </section>
+  )
+}
+
+/** Os quatro passos de um posto, na ordem em que a criança ou o adulto os encontra. */
+const RULE_STEPS = [
+  { title: 'Curso da trilha 2D', text: 'O primeiro passo do posto.' },
+  { title: 'Curso da trilha 3D', text: 'Abre depois do 2D e completa a trilha.' },
+  { title: 'Missão', text: 'Um jogo novo em 2D e 3D, sem passo a passo.' },
+  { title: 'Poderes', text: '1 na Faísca e 2 nos outros postos para subir.' },
+] as const
+
+const PICKER = cn(
+  'flex min-h-11 min-w-0 items-center gap-2 rounded-lg border bg-card px-3 py-2 text-left text-sm font-medium transition-colors',
+  'hover:border-primary aria-pressed:border-primary aria-pressed:bg-primary/10 aria-pressed:text-primary',
+)
+
+function EditorSection({
+  title,
+  hint,
+  children,
+}: {
+  title: string
+  hint?: string
+  children: ReactNode
+}) {
+  return (
+    <section className="space-y-3 rounded-xl border bg-muted/30 p-4">
+      <div className="space-y-0.5">
+        <h4 className="font-semibold">{title}</h4>
+        {hint ? <p className="text-sm text-muted-foreground">{hint}</p> : null}
+      </div>
+      {children}
+    </section>
+  )
+}
+
+/**
+ * O seletor de um vínculo: o curso escolhido e, embaixo (fora do rótulo, ligado por
+ * `aria-describedby`), a situação dele escrita, nunca só a cor.
+ */
+function CourseSelect({
+  label,
+  courseId,
+  courses,
+  disabled,
+  onChange,
+}: {
+  label: string
+  courseId: string
+  courses: readonly CourseView[]
+  disabled: boolean
+  onChange: (id: string) => void
+}) {
+  const id = useId()
+  const course = courses.find((item) => item.id === courseId)
+  const [text, tone] = !courseId
+    ? ['Nenhum curso escolhido ainda.', 'text-muted-foreground']
+    : !course
+      ? ['O curso deste vínculo não está na lista. Escolha outro.', 'text-destructive']
+      : course.status === 'published'
+        ? ['Publicado', 'text-success-foreground']
+        : course.status === 'archived'
+          ? ['Arquivado: não aparece para quem ainda não tem o curso', 'text-warning']
+          : ['Em preparação: ainda não aparece para o aluno', 'text-warning']
+  return (
+    <div className="grid min-w-0 gap-1.5 text-sm">
+      <label htmlFor={`${id}-curso`} className="font-medium">
+        {label}
+      </label>
+      <select
+        id={`${id}-curso`}
+        aria-describedby={`${id}-situacao`}
+        className="min-h-11 w-full rounded-lg border bg-background px-3 py-2"
+        value={courseId}
+        disabled={disabled}
+        onChange={(event) => onChange(event.target.value)}
+      >
+        {!course ? (
+          <option value={courseId}>
+            {courseId ? `Vínculo indisponível (${courseId})` : 'Escolha um curso'}
+          </option>
+        ) : null}
+        {courses.map((item) => (
+          <option key={item.id} value={item.id}>
+            {item.title}
+            {item.status === 'published'
+              ? ''
+              : item.status === 'archived'
+                ? ' · arquivado'
+                : ' · em preparação'}
+          </option>
+        ))}
+      </select>
+      <span id={`${id}-situacao`} className={cn('text-xs', tone)}>
+        {text}
+      </span>
+    </div>
   )
 }

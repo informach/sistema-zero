@@ -1,27 +1,12 @@
-import type { AdultCreatorCapability } from '@sistemazero/core/journey'
-import { CreatorPost } from '@sistemazero/member-shell/components/creator-journey'
-import { creatorStageSummary } from '@sistemazero/member-shell/lib/creator-journey-presentation'
-import {
-  ArrowLeftRight,
-  ArrowRight,
-  Box,
-  Check,
-  CheckCircle2,
-  Code2,
-  Lightbulb,
-  Lock,
-  type LucideIcon,
-  MessageCircle,
-  Palette,
-  Puzzle,
-  Trophy,
-} from 'lucide-react'
+import { ArrowRight, Check, CheckCircle2, Lock, Trophy } from 'lucide-react'
 import Link from 'next/link'
 import { notFound, redirect } from 'next/navigation'
 import type { CSSProperties } from 'react'
 import { CourseCover, ProgressBar } from '@/components/community/courses/course-cover'
+import { AdultCreatorTrail } from '@/components/community/journey/creator'
 import { JourneyRibbon } from '@/components/community/journey/stage'
-import { BackLink, PageBand, PageBody } from '@/components/community/page'
+import { UNLOCK_TILES, UnlockTile } from '@/components/community/journey/unlock'
+import { BackLink, PageBody } from '@/components/community/page'
 import { cn } from '@/lib/cn'
 import { type LockedCourseLink, lockedCourseLink } from '@/lib/continuity'
 import { isCourseDone } from '@/lib/course-levels'
@@ -37,67 +22,6 @@ import { listCatalog, listMyCourses } from '@/server/members'
 import { shell } from '@/server/shell'
 
 export const dynamic = 'force-dynamic'
-
-/** Os cartões de "Ao concluir, libera": o nome, para que serve e o ícone na cor do palco. */
-const UNLOCK_TILES: Record<
-  AdultCreatorCapability,
-  { name: string; text: string; icon: LucideIcon; tone: string }
-> = {
-  studio: {
-    name: 'O Estúdio livre',
-    text: 'Crie jogos seus, fora das aulas.',
-    icon: Puzzle,
-    tone: 'text-(--cta)',
-  },
-  pinta: {
-    name: 'O Pinta',
-    text: 'Desenhe os personagens do seu jogo.',
-    icon: Palette,
-    tone: 'text-(--rosa)',
-  },
-  molda: {
-    name: 'O Molda',
-    text: 'A oficina 3D, para modelar objetos.',
-    icon: Box,
-    tone: 'text-(--laranja)',
-  },
-  'molda-intermediate': {
-    name: 'Molda intermediário',
-    text: 'Amplie os modelos e animações dos seus jogos.',
-    icon: Box,
-    tone: 'text-(--laranja)',
-  },
-  'molda-professional': {
-    name: 'Molda profissional',
-    text: 'Use as ferramentas avançadas de modelagem para jogos.',
-    icon: Box,
-    tone: 'text-(--laranja)',
-  },
-  bridge: {
-    name: 'A Ponte',
-    text: 'Veja os blocos virarem código.',
-    icon: ArrowLeftRight,
-    tone: 'text-(--menta)',
-  },
-  pro: {
-    name: 'O Estúdio Pro',
-    text: 'Crie o jogo escrevendo código.',
-    icon: Code2,
-    tone: 'text-(--dourado)',
-  },
-  ai: {
-    name: 'O Zappy',
-    text: 'O tutor que ajuda você no Estúdio.',
-    icon: MessageCircle,
-    tone: 'text-(--menta)',
-  },
-  pensa: {
-    name: 'O Pensa',
-    text: 'Planeja o jogo com você, em missões.',
-    icon: Lightbulb,
-    tone: 'text-(--cta)',
-  },
-}
 
 type CourseState = 'pronto' | 'publicar' | 'andamento' | 'novo' | 'sem-acesso'
 
@@ -139,24 +63,22 @@ export default async function StagePage({ params }: { params: Promise<{ id: stri
   const curriculum = gamification.body?.journey?.curriculum
   if (curriculum) {
     if (id === 'god' || id === 'lenda') redirect('/maestrias')
-    const post = curriculum.stages.find((item) => item.level === id)
-    if (!post) notFound()
+    if (!curriculum.stages.some((item) => item.level === id)) notFound()
+    // As ferramentas de cada etapa: a jornada adulta do currículo usa o `level` como id da etapa.
+    const capabilities = Object.fromEntries(
+      (normalizeJourney(gamification.body?.journey)?.stages ?? []).map((stage) => [
+        stage.id,
+        stage.capabilities,
+      ]),
+    )
     return (
-      <>
-        <PageBand
-          kicker={curriculum.level === post.level ? 'Seu posto atual' : 'Jornada do Criador'}
-          title={post.title}
-          lead={creatorStageSummary(post)}
-          back={{ href: '/cursos', label: 'Voltar ao mapa' }}
-        />
-        <PageBody>
-          <CreatorPost
-            stage={post}
-            catalog={catalog?.status === 200 ? (catalog.body?.courses ?? []) : []}
-            skin="adult"
-          />
-        </PageBody>
-      </>
+      <AdultCreatorTrail
+        view={curriculum}
+        level={id}
+        catalog={catalog?.status === 200 ? (catalog.body?.courses ?? []) : []}
+        mine={mine?.status === 200 ? (mine.body?.courses ?? []) : []}
+        capabilities={capabilities}
+      />
     )
   }
   const journey = normalizeJourney(gamification.body?.journey)
@@ -421,35 +343,5 @@ function StageCourseRow({
         )}
       </div>
     </article>
-  )
-}
-
-function UnlockTile({
-  icon: Icon,
-  tone,
-  name,
-  text,
-}: {
-  icon: LucideIcon
-  tone: string
-  name: string
-  text: string
-}) {
-  return (
-    <li className="sz-card-sm flex items-start gap-3.5 p-4">
-      <span
-        aria-hidden="true"
-        className={cn(
-          'inline-flex size-11 flex-none items-center justify-center rounded-xl bg-(--carta-2)',
-          tone,
-        )}
-      >
-        <Icon className="size-6" />
-      </span>
-      <span className="flex min-w-0 flex-col">
-        <strong>{name}</strong>
-        <span className="text-[0.85rem] text-muted-foreground">{text}</span>
-      </span>
-    </li>
   )
 }
