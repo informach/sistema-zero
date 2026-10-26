@@ -1,9 +1,11 @@
+import { CourseCurriculumContext } from '@sistemazero/member-shell/components/course-curriculum-context'
+import { creatorCourseLockFromBody } from '@sistemazero/member-shell/lib/creator-journey-presentation'
 import { Check, ChevronRight, Clock, FileText, Lock, Play } from 'lucide-react'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { CourseRatingFlow } from '@/components/community/course-rating-flow'
 import { CourseCover, ProgressBar } from '@/components/community/courses/course-cover'
-import { BackLink } from '@/components/community/page'
+import { BackLink, PageBand, PageBody } from '@/components/community/page'
 import { cn } from '@/lib/cn'
 import { courseKicker, trackLabel, trackOf } from '@/lib/course-levels'
 import {
@@ -35,6 +37,23 @@ export default async function CoursePage({ params }: { params: Promise<{ slug: s
     getAvatarReadonly().catch(() => null),
   ])
   if (result.status === 404 || result.status === 403) notFound()
+  if (result.status === 423) {
+    const lock = creatorCourseLockFromBody(result.body, 'adult')
+    return (
+      <>
+        <PageBand
+          title={lock.title}
+          lead={lock.message}
+          back={{ href: lock.href, label: 'Voltar ao meu caminho' }}
+        />
+        <PageBody>
+          <Link href={lock.href} className="sz-btn self-start">
+            {lock.cta}
+          </Link>
+        </PageBody>
+      </>
+    )
+  }
   if (result.status !== 200 || !result.body) throw new Error('Falha ao carregar o curso')
   const course = result.body
 
@@ -55,7 +74,16 @@ export default async function CoursePage({ params }: { params: Promise<{ slug: s
     <>
       <section className="sz-band">
         <div className="sz-page flex flex-col gap-5 pt-7 pb-9 md:pb-12">
-          <BackLink href={`/cursos/trilha/${track}`} label={`Trilha ${trackLabel(track)}`} />
+          <BackLink
+            href={
+              course.curriculum?.level
+                ? `/cursos/etapa/${course.curriculum.level}`
+                : course.curriculum?.masteryId
+                  ? `/maestrias/${course.curriculum.masteryId}`
+                  : `/cursos/trilha/${track}`
+            }
+            label={course.curriculum ? 'Voltar ao meu caminho' : `Trilha ${trackLabel(track)}`}
+          />
           <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:gap-10">
             <div className="sz-card-sm sz-mira relative aspect-video w-full overflow-hidden bg-(--topo) shadow-[0_24px_48px_rgb(0_0_0/0.45)] lg:w-[30rem] lg:flex-none">
               <CourseCover src={course.coverImageUrl} />
@@ -65,6 +93,11 @@ export default async function CoursePage({ params }: { params: Promise<{ slug: s
                 {courseKicker(course)} · {lessonCountLabel(progress.totalLessons)}
               </span>
               <h1 className="sz-h1">{course.title}</h1>
+              <CourseCurriculumContext
+                placement={course.curriculum}
+                accessReason={course.accessReason}
+                skin="adult"
+              />
               {course.subtitle ? <p className="sz-lead">{course.subtitle}</p> : null}
               {course.description ? (
                 <p className="text-muted-foreground">{course.description}</p>

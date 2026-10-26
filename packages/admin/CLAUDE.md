@@ -1,12 +1,51 @@
 # CLAUDE.md — @sistemazero/admin
 
+## Autoria da nova jornada (25/10/2026)
+
+`policy.curriculum` seleciona o currículo novo nas jornadas Kids e adulta. Regras históricas de
+49 posições, extra por matrícula, Lenda como bônus e base slot1 com Mural só valem na ausência
+desse campo. O formulário do curso consulta a política e não cria uma segunda fonte de vínculos.
+
+- `components/admin/creator-curriculum-editor.tsx` edita postos, bases por UUID, missão,
+  identidades de poderes e versões equivalentes, mínimo, extras, marcos de ferramentas e seis
+  Maestrias com núcleo/oficinas/rubrica. Cursos rascunho aparecem como em preparação; referências
+  ausentes permanecem visíveis, nunca são removidas silenciosamente.
+- Kids usa o protocolo existente de preparação/preview/publicação; adulto conserva gravação
+  versionada. O editor histórico fica disponível apenas quando não há currículo novo.
+- `course-curriculum-placement.tsx` mostra o vínculo vigente na edição de curso; mudanças de
+  papel são feitas no editor da jornada, preservando UUID/progresso. Nível e dimensão do curso
+  são classificações, não permissões. Curso completo concede blocos sem precisar do Mural.
+  A consulta distingue loading/error/ready, oferece nova tentativa e bloqueia salvar curso gravado
+  até conhecer a política. Falha não significa currículo legado. `creatorPlanning` informa a
+  prontidão editorial dos novos cursos: publicar todas as aulas planejadas, incluindo 2D e 3D
+  nas missões; não é requisito adicional de conclusão do aluno.
+- `/admin/professor/maestrias` é a revisão humana das versões imutáveis; o link está na seção
+  Turma e no editor do currículo. A revisão registra todos os critérios, devolutiva e equivalências justificadas.
+  Um selo depende também dos demais requisitos avaliados pelo servidor.
+  Trocar comunidade/filtro cancela leituras pendentes; uma resposta antiga não reabre a entrega.
+  `StudioEmbed.masteryReviewScope` executa o snapshot Python pelo endpoint de revisão próprio;
+  nunca usa autorização de autoria para avaliar um projeto enviado.
+  Entrega de galeria usa o visualizador existente e tickets de `/api/members/journey/masteries/submissions/[id]/gallery/[itemId]`.
+  `masteryGalleryItem` só aceita chaves do proprietário, pedido, geração, item/revisão e partes
+  preservados nessa entrega; não consulta a última versão da galeria. Pinta usa seu formato portátil;
+  Estúdio materializa também os assets do Molda e valida JS/Python clássico/Pro.
+  A revisão Python permite análise dos blocos vinculada ao digest do snapshot. Não altera o modo
+  salvo nem concede autoria/LSP/REPL. `StudioReviewSource` mantém todos os arquivos legíveis e
+  navegáveis fora do shell observer inerte. Experimentos locais não alteram a evidência enviada.
+- Testes novos: `creator-curriculum-editor.test.tsx`; testes de formulário agora simulam a
+  leitura da política para distinguir curso histórico, currículo novo e consulta indisponível.
+  O harness comum `member-shell/qa/creator-journey-serve.ts` expõe `/admin-review` com formulário
+  e CSS reais, rubrica editorial e desenho fictício local, sem gravações.
+  `?evidence=gallery` exercita seleção e download das cópias locais. `mastery-evidence.test.tsx`
+  cobre o viewer, corridas de leitura e a assinatura restrita no BFF.
+
 ## A sala da equipe: o admin redesenhado (23/10/2026)
 
 Proposta aprovada pela dona (canvas "Sistema Zero, novo admin"): reorganização de fluxo, layout e
 copy das funções que já existiam. Rotas, BFF e permissões não mudaram.
 
 - **Menu em três áreas** (`components/admin/nav.ts`, ids `turma | conteudo | negocio`), nomeadas
-  pelo que a pessoa faz: **Turma** (Hoje, Encontros, Projetos, Recados, Moderação, Alunos),
+  pelo que a pessoa faz: **Turma** (Hoje, Encontros, Projetos, Maestrias, Recados, Moderação, Alunos),
   **Conteúdo** (Cursos, Oficinas, Jornada, Desafio do mês, Como fazer, Clube e Comunidade) e
   **Negócio** (Visão geral, Contas, Vendas, Notas fiscais, Catálogo, Campanhas, Zappy e Pensa,
   Atendimento, Auditoria). Ranking e Análises são abas de Alunos (`ALUNOS_TABS`,

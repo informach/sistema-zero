@@ -26,6 +26,7 @@
     "./contextual-runtime": "./src/runtime/contextEnvironment.ts",
     "./runtime-authority": "./src/studio/runtime-environment.tsx",
     "./public-runtime": "./src/runtime/publicEnvironment.ts",
+    "./mastery-review-runtime": "./src/runtime/masteryReviewEnvironment.ts",
     "./project-factory": "./src/core/projectFactory.ts",
     "./authoring-options": "./src/core/authoringOptions.ts",
     "./free-project-options": "./src/core/freeProjectOptions.ts",

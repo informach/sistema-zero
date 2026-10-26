@@ -1,3 +1,4 @@
+import { CreatorJourneySummary } from '@sistemazero/member-shell/components/creator-journey'
 import {
   BookOpen,
   Box,
@@ -308,6 +309,9 @@ export default async function CreatePage() {
         </div>
       </PageBand>
       <PageBody>
+        {state.kind === 'ready' && state.journey.curriculum ? (
+          <CreatorJourneySummary view={state.journey.curriculum} skin="adult" />
+        ) : null}
         <section aria-labelledby="mostrar-e-aprender" className="flex flex-col gap-5">
           <h2 id="mostrar-e-aprender" className="sz-h2">
             Para mostrar e aprender

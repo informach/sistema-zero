@@ -94,8 +94,14 @@ describe.skipIf(!testDatabaseUrl)('ferramentas de bônus Kids (SQL real)', () =>
     ])
   })
 
-  test('despublicar o curso remove a fonte ao vivo e preserva apenas grants congelados', async () => {
+  test('arquivar mantém o curso acessível e seus blocos; rascunho remove a fonte ao vivo', async () => {
     await conn.sql`update members.courses set status = 'archived' where id = ${bonusCourseId}`
+
+    expect(await repo.listStudioUnlocksByCourse(userId, 'kids')).toEqual([
+      { courseId: bonusCourseId, blocks: ['sz_bonus'] },
+    ])
+    expect(await repo.getStudioUnlockRevision(userId, 'kids')).not.toBe(studioUnlockRevision([]))
+    await conn.sql`update members.courses set status = 'draft' where id = ${bonusCourseId}`
 
     expect(await repo.listStudioUnlocksByCourse(userId, 'kids')).toEqual([])
     expect(await repo.getStudioUnlockRevision(userId, 'kids')).toBe(studioUnlockRevision([]))

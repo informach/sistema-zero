@@ -28,10 +28,16 @@ export function journeyLockLevel(body: unknown): StudentLevelSlug | undefined {
 export function KidsLockedCourse({
   reason,
   requiredLevel,
+  body,
 }: {
   reason?: JourneyLockReason
   requiredLevel?: StudentLevelSlug
+  body?: unknown
 }) {
+  const hasCurriculum = Boolean(
+    (body as { careerLock?: { curriculum?: unknown } } | null)?.careerLock?.curriculum,
+  )
+  const lock = hasCurriculum ? creatorCourseLockFromBody(body, 'kids') : null
   const foundationFirst = reason === 'foundation-first'
   const tierReward = reason === 'tier-reward'
   const post =
@@ -44,31 +50,37 @@ export function KidsLockedCourse({
       chip="Continue sua jornada"
       chipIcon={tierReward ? Gift : Lock}
       title={
-        tierReward
-          ? 'Este curso é um prêmio!'
-          : foundationFirst
-            ? 'Tem um curso antes deste'
-            : 'Este curso abre mais pra frente'
+        lock
+          ? lock.title
+          : tierReward
+            ? 'Este curso é um prêmio!'
+            : foundationFirst
+              ? 'Tem um curso antes deste'
+              : 'Este curso abre mais pra frente'
       }
       actions={
-        <Link href="/cursos" className="sz-btn-gradient">
-          <BookOpen className="size-4" aria-hidden /> Ver meus cursos
+        <Link href={lock?.href ?? '/cursos'} className="sz-btn-gradient">
+          <BookOpen className="size-4" aria-hidden /> {lock?.cta ?? 'Ver meus cursos'}
         </Link>
       }
     >
       <p>
         {/* ⚠️ Sem "curso-base" nem "etapa": são termos de quem monta o curso. A criança
             precisa saber o que fazer, não como a gente organiza o catálogo. */}
-        {tierReward
-          ? post
-            ? `Este curso abre no posto ${post}. Veja os próximos cursos na sua jornada.`
-            : 'O posto necessário está indisponível no momento. Veja sua jornada e tente novamente.'
-          : foundationFirst
-            ? 'Tem um curso que vem antes deste. Na lista de cursos, veja qual é e o que falta para continuar.'
-            : post
+        {lock
+          ? lock.message
+          : tierReward
+            ? post
               ? `Este curso abre no posto ${post}. Veja os próximos cursos na sua jornada.`
-              : 'Este curso abre mais adiante. Veja os próximos passos na sua jornada.'}
+              : 'O posto necessário está indisponível no momento. Veja sua jornada e tente novamente.'
+            : foundationFirst
+              ? 'Tem um curso que vem antes deste. Na lista de cursos, veja qual é e o que falta para continuar.'
+              : post
+                ? `Este curso abre no posto ${post}. Veja os próximos cursos na sua jornada.`
+                : 'Este curso abre mais adiante. Veja os próximos passos na sua jornada.'}
       </p>
     </KidsRecado>
   )
 }
+
+import { creatorCourseLockFromBody } from '@sistemazero/member-shell/lib/creator-journey-presentation'

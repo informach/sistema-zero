@@ -23,6 +23,10 @@ import {
   type StudioAuthoringRuntimeScope,
   useStudioAuthoringRuntime,
 } from './use-studio-authoring-runtime'
+import {
+  type StudioMasteryReviewScope,
+  useStudioMasteryReviewRuntime,
+} from './use-studio-mastery-review-runtime'
 
 type StudioComponent = typeof import('@sistemazero/studio')['StudioLesson']
 type StudioModule = typeof import('@sistemazero/studio')
@@ -36,6 +40,7 @@ const legacyOptions: PreparedStudioAuthoringOptions = {
 interface Props {
   editingAccess?: import('@sistemazero/studio').StudioLessonProps['editingAccess']
   runtimeScope?: StudioAuthoringRuntimeScope
+  masteryReviewScope?: StudioMasteryReviewScope
   lessonConfig?: Pick<
     import('@sistemazero/studio').StudioLessonProps,
     | 'level'
@@ -85,6 +90,7 @@ interface Props {
 export function StudioEmbed({
   editingAccess,
   runtimeScope,
+  masteryReviewScope,
   initialProject,
   defaultName = 'Projeto da aula',
   handleRef,
@@ -108,7 +114,12 @@ export function StudioEmbed({
   // Editor imports update the controls without feeding source edits back into hydration.
   const [observed, setObserved] = useState<EditableStudioProject | null>(null)
   const activeProject = observed ?? seed
-  const runtime = useStudioAuthoringRuntime(activeProject, runtimeScope)
+  const authoringRuntime = useStudioAuthoringRuntime(
+    activeProject,
+    masteryReviewScope ? undefined : runtimeScope,
+  )
+  const reviewRuntime = useStudioMasteryReviewRuntime(seed, masteryReviewScope)
+  const runtime = masteryReviewScope ? reviewRuntime : authoringRuntime
   const [templateId, setTemplateId] = useState(initialProject?.proMeta?.templateId ?? 'vanilla-js')
   const [pending, setPending] = useState<Replacement | null>(null)
   const [replacementError, setReplacementError] = useState<string | null>(null)
@@ -393,29 +404,58 @@ export function StudioEmbed({
         </div>
       ) : null}
       <div className="min-h-0 flex-1">
-        <StudioLesson
-          {...lessonConfig}
-          pythonLevel={lessonConfig?.pythonLevel ?? (professionalAuthoring ? 3 : undefined)}
-          ref={handleRef}
-          initialProject={seed}
-          runtimeEnvironment={runtime.environment}
-          editingAccess={editingAccess}
-          persistence="none"
-          onChange={(project) => {
-            setObserved(project)
-            onChange?.(project)
-          }}
-          features={{
-            ...features,
-            ...(seedKind === 'pro' ? { professional: true, terminal: false } : {}),
-          }}
-          // Sempre presente para a troca blocos→Pro usar o compilador remoto,
-          // sem depender de WebContainer/COOP/COEP na página do admin. O StudioCore
-          // acompanha as mudanças do adapter; ele fica inerte em projetos de blocos.
-          proRuntime={proRuntime}
-          blockUnloadWhenDirty={false}
-        />
+        {masteryReviewScope && seed.programmingLanguage === 'python' && studioModule ? (
+          <studioModule.PythonRuntimePreview
+            project={seed}
+            environment={runtime.environment ?? null}
+            canExecute
+          />
+        ) : (
+          <StudioLesson
+            {...lessonConfig}
+            pythonLevel={lessonConfig?.pythonLevel ?? (professionalAuthoring ? 3 : undefined)}
+            ref={handleRef}
+            initialProject={seed}
+            runtimeEnvironment={runtime.environment}
+            editingAccess={editingAccess}
+            persistence="none"
+            onChange={(project) => {
+              setObserved(project)
+              onChange?.(project)
+            }}
+            features={{
+              ...features,
+              ...(seedKind === 'pro' ? { professional: true, terminal: false } : {}),
+            }}
+            // Sempre presente para a troca blocos→Pro usar o compilador remoto,
+            // sem depender de WebContainer/COOP/COEP na página do admin. O StudioCore
+            // acompanha as mudanças do adapter; ele fica inerte em projetos de blocos.
+            proRuntime={proRuntime}
+            blockUnloadWhenDirty={false}
+          />
+        )}
       </div>
+      {masteryReviewScope && seed.programmingLanguage === 'python' && seed.kind !== 'pro' ? (
+        <details className="border-t border-border p-3">
+          <summary className="cursor-pointer text-sm">Visualização original em blocos</summary>
+          <div className="h-[30rem] pt-3">
+            <StudioLesson
+              initialProject={seed}
+              runtimeEnvironment={runtime.environment}
+              editingAccess="observer"
+              persistence="none"
+              features={{
+                ai: false,
+                terminal: false,
+                export: false,
+                download: false,
+                extensions: false,
+              }}
+              blockUnloadWhenDirty={false}
+            />
+          </div>
+        </details>
+      ) : null}
       <ConfirmDialog
         open={pending !== null}
         onClose={() => {

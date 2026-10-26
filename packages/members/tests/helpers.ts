@@ -270,6 +270,7 @@ export function buildApp(
     kidsJourneyQuery,
     clock,
     liveLessonAccess,
+    adultJourney,
   )
   const awardGamification = new AwardGamificationService(gamification, clock, silentLogger)
   const accessCheck = new AccessCheckService(entitlements, clock)
@@ -488,6 +489,7 @@ export function buildApp(
       gamification,
       clock,
       kidsJourneyQuery,
+      adultJourney,
     ),
     kidsJourneyQuery,
     liveLessonAccess,
@@ -529,6 +531,7 @@ export function buildApp(
         gamification,
         clock,
         kidsJourneyQuery,
+        adultJourney,
       ),
       listCatalog: new ListCatalogService(
         courses,
@@ -536,6 +539,7 @@ export function buildApp(
         gamification,
         clock,
         kidsJourneyQuery,
+        adultJourney,
       ),
       accessCheck: new AccessCheckService(entitlements, clock),
       getMyCourse: new GetMyCourseService(
@@ -888,7 +892,7 @@ export function buildApp(
       internalToken: opts.internalToken,
       studioAuthoringPolicy: opts.studioAuthoringPolicy,
       // O fake InMemoryCourseRepository implementa CourseRepository E ContentAdminRepository.
-      courses: new CourseAdminService(courses, courses),
+      courses: new CourseAdminService(courses, courses, async () => Boolean(kidsJourneySnapshots.policy.curriculum)),
       modules: new ModuleAdminService(courses, courses),
       lessons: new LessonAdminService(courses, courses, learning),
       studioSubmissions: new StudioSubmissionsAdminService(studioSubmissions, clock),

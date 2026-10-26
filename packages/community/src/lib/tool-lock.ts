@@ -26,7 +26,7 @@ export const CREATIVE_TOOLS: Record<CreativeToolKey, CreativeToolInfo> = {
 
 /**
  * Por que a ferramenta está fechada: `plan` sem a licença na conta, `journey` quando a jornada ainda
- * não liberou e `advanced` quando o Pensa pede a IA da jornada (curso avançado).
+ * não liberou e `advanced` quando o Pensa pede a IA da jornada histórica (curso avançado).
  */
 export type ToolLockReason = 'plan' | 'journey' | 'advanced'
 
@@ -46,7 +46,8 @@ export function toolLockReason(
 ): ToolLockReason | null {
   if (state.access[CREATIVE_TOOLS[tool].ref] !== true) return 'plan'
   const capabilities = state.journey.capabilities
-  if (tool === 'pensa' && !capabilities.includes('ai')) return 'advanced'
+  if (tool === 'pensa' && !capabilities.includes('ai'))
+    return state.journey.curriculum ? 'journey' : 'advanced'
   if (tool === 'pensa' && !capabilities.includes('pensa')) return 'journey'
   if (tool === 'pinta' || tool === 'molda') return capabilities.includes(tool) ? null : 'journey'
   if (tool === 'estudio' || tool === 'estudio-pro') {
@@ -62,6 +63,8 @@ export function toolLockReason(
  * ainda por concluir que a libere, `null`: a tela não promete uma etapa que não existe. Isso inclui
  * a etapa abaixo do piso da jornada (`reachedPosition`), que aparece concluída sem ter entregado a
  * capacidade: a tela usa a frase genérica, sem nome de etapa e sem "mais adiante".
+ * Com currículo, informa o próprio posto que ensina a capacidade: sua base/par/curso pode
+ * liberá-la antes da promoção, inclusive num posto preservado pelo piso.
  */
 export function toolStageTitle(tool: CreativeToolKey, journey: AdultJourneyView): string | null {
   const view = normalizeJourney(journey)
@@ -73,12 +76,16 @@ export function toolStageTitle(tool: CreativeToolKey, journey: AdultJourneyView)
   let required = -1
   for (const capability of missing) {
     const index = view.stages.findIndex(
-      (stage) => !stage.completed && stage.capabilities.includes(capability),
+      (stage) =>
+        (Boolean(view.curriculum) || !stage.completed) && stage.capabilities.includes(capability),
     )
     if (index === -1) return null
     required = Math.max(required, index)
   }
-  return view.stages[required + 1]?.title ?? 'Lenda'
+  // Curriculum tools are taught during a post's bases/pair/course, before its promotion.
+  return view.curriculum
+    ? view.stages[required]!.title
+    : (view.stages[required + 1]?.title ?? 'Lenda')
 }
 
 /** A página da etapa atual (os cursos que faltam), ou Seu progresso quando não há etapa aberta. */
@@ -98,22 +105,27 @@ export interface ToolLock {
   reason: ToolLockReason
   /**
    * Em `plan` e `journey`: o nome da etapa em que a ferramenta abre, quando a jornada o sabe. Etapa
-   * concluída pelo piso sem entregar a capacidade não vira nome (a frase fica genérica).
+   * histórica concluída pelo piso sem entregar a capacidade não vira nome. Com currículo,
+   * informa o posto dos cursos que ensinam a ferramenta, sem prometer liberação pela promoção.
    */
   stageTitle: string | null
   /** Em `journey` e `advanced`: para onde o botão leva (a etapa atual ou Seu progresso). */
   stageHref: string | null
   /** Só em `plan`: a pessoa já conquistou a ferramenta na jornada e volta a abri-la ao assinar. */
   earned: boolean
+  /** Curriculum grants happen during the post, rather than on arrival at its successor. */
+  curriculum?: boolean
 }
 
 /** O motivo do cadeado, pronto para o `ToolNotice` (dados simples, atravessam para o cliente). */
 export function toolLock(tool: CreativeToolKey, state: ToolAccessState): ToolLock | null {
   const reason = toolLockReason(tool, state)
   if (!reason) return null
+  const context = state.journey.curriculum ? { curriculum: true } : {}
   if (reason === 'plan') {
     const earned = toolEarned(tool, state.journey)
     return {
+      ...context,
       reason,
       stageTitle: earned ? null : toolStageTitle(tool, state.journey),
       stageHref: null,
@@ -121,6 +133,7 @@ export function toolLock(tool: CreativeToolKey, state: ToolAccessState): ToolLoc
     }
   }
   return {
+    ...context,
     reason,
     stageTitle: reason === 'journey' ? toolStageTitle(tool, state.journey) : null,
     stageHref: currentStageHref(state.journey),

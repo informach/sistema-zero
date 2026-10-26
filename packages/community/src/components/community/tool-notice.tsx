@@ -16,11 +16,15 @@ function lockedCopy(name: string, lock: ToolLock | null | undefined) {
     const community = `O ${name} faz parte da Comunidade dos Criadores.`
     if (lock.earned)
       return `${community} Com a assinatura, ele volta a abrir na sua conta, com o que você já fez.`
+    if (lock.curriculum)
+      return `${community} A liberação acontece durante os cursos ${lock.stageTitle ? `do posto ${lock.stageTitle}` : 'da sua jornada'}, conforme os requisitos de cada ferramenta.`
     return lock.stageTitle
       ? `${community} Na Comunidade, ele abre quando você chega à etapa ${lock.stageTitle} da jornada.`
       : `${community} Na Comunidade, ele abre conforme você avança nas etapas da jornada.`
   }
   if (lock?.reason === 'journey') {
+    if (lock.curriculum)
+      return `O ${name} é liberado durante os cursos ${lock.stageTitle ? `do posto ${lock.stageTitle}` : 'da sua jornada'}. Veja na jornada os requisitos que faltam.`
     const path = hasCurrentStage(lock) ? ' O caminho começa pelos cursos da etapa atual.' : ''
     return lock.stageTitle
       ? `O ${name} abre quando você chega à etapa ${lock.stageTitle}.${path}`

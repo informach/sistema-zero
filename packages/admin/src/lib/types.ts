@@ -412,6 +412,7 @@ export function courseTierLabel(level: string, track?: string): string {
 }
 
 export interface CourseView {
+  creatorPlanning?: { requiredLessonCount: number | null }
   id: string
   slug: string
   title: string

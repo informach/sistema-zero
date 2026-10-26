@@ -6,12 +6,17 @@ import {
 } from '../../domain/course/course.errors'
 import { EntitlementAggregate } from '../../domain/entitlement/entitlement.aggregate'
 import { AccessDeniedError } from '../../domain/entitlement/entitlement.errors'
+import { independentCourseAccessReason } from '../../domain/entitlement/independent-course-access'
 import type { CourseRepository } from '../../domain/ports/course-repository.port'
 import type { EntitlementRepository } from '../../domain/ports/entitlement-repository.port'
 import type { LiveLessonAccessPort } from '../../domain/ports/live-lesson-access.port'
+import type { AdultJourneyService } from '../adult-journey/adult-journey.service'
 import type { KidsJourneyQueryService } from '../kids-journey/kids-journey-query.service'
+import type { CourseAccessReason, CourseCurriculumView } from '../mappers/views'
 
 export interface CourseAccess {
+  curriculum?: CourseCurriculumView
+  accessReason?: CourseAccessReason
   course: Course
   entitlement: EntitlementAggregate
   /**
@@ -51,9 +56,10 @@ export class CheckAccessService {
   constructor(
     private readonly courses: CourseRepository,
     private readonly entitlements: EntitlementRepository,
-    private readonly kidsJourney: Pick<KidsJourneyQueryService, 'courseLocks'>,
+    private readonly kidsJourney: Pick<KidsJourneyQueryService, 'courseState'>,
     private readonly clock: () => Date,
     private readonly live: LiveLessonAccessPort,
+    private readonly adultJourney?: Pick<AdultJourneyService, 'courseState'>,
   ) {}
 
   async requireBySlug(
@@ -96,7 +102,11 @@ export class CheckAccessService {
     // (ou inexistente) → 404 (não vaza a existência de curso não publicado).
     if (!course || !isCourseAccessible(course.status)) throw new CourseNotFoundError()
     if (privileged) {
-      return { course, entitlement: EntitlementAggregate.virtualAllCourses(userId, this.clock()) }
+      return {
+        course,
+        entitlement: EntitlementAggregate.virtualAllCourses(userId, this.clock()),
+        accessReason: 'staff',
+      }
     }
     // Chave-mestra da AUDIÊNCIA do curso: `all_courses` cobre só `adult`,
     // `all_kids_courses` só `kids`. A do outro tipo não entra no OR.
@@ -107,18 +117,30 @@ export class CheckAccessService {
       { masterType: course.audience === 'adult' ? 'all_courses' : 'all_kids_courses' },
     )
     if (!entitlement) throw new AccessDeniedError()
-    // One canonical policy/earned snapshot, separate from enrollment and live session grants.
-    // The pure resolver preserves graduation/extra behavior without inventing a rank gate.
-    if (course.audience === 'kids') {
-      const locks = await this.kidsJourney.courseLocks(
-        { userId: learnerId ?? userId, accountId: userId },
-        [course.id],
+    const directAccess = independentCourseAccessReason(
+      course.slug,
+      await this.entitlements.listActiveByUser(userId, this.clock()),
+      this.clock(),
+    )
+    const state =
+      course.audience === 'kids'
+        ? await this.kidsJourney.courseState({ userId: learnerId ?? userId, accountId: userId }, [
+            course.id,
+          ])
+        : await this.adultJourney?.courseState(userId, [course.id])
+    const lock = state?.locks.get(course.id)
+    if (!directAccess && lock?.locked && lock.reason)
+      throw new CourseJourneyLockedError(
+        lock.reason,
+        lock.requiredLevel,
+        state?.courseContexts.get(course.id),
       )
-      const lock = locks.get(course.id)!
-      if (lock.locked && lock.reason)
-        throw new CourseJourneyLockedError(lock.reason, lock.requiredLevel)
+    return {
+      course,
+      entitlement,
+      curriculum: state?.courseContexts.get(course.id),
+      accessReason: directAccess ?? 'journey',
     }
-    return { course, entitlement }
   }
 
   /**

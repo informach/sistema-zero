@@ -143,6 +143,37 @@ adulto e virou um dos swatches. O antigo par Padrão⇄Pink não existe mais.
   nas oito páginas, nos dois temas.
 - ⚠️ O admin (`globals.css` próprio), o `@sistemazero/ui` e o member-shell NÃO mudaram.
 
+## Jornada do Criador com currículo (25/10/2026)
+
+Quando `AdultJourneyView.curriculum` existe, ele é a única autoridade dos postos e das
+Maestrias. As descrições anteriores de etapas, trilhas por dificuldade e publicação obrigatória
+aplicam-se apenas a políticas históricas sem `curriculum`. Não reconstruir progressão no cliente.
+
+- `/cursos` mostra mapa, próximo passo e catálogo; `/cursos/etapa/[id]` recebe o `level` estável
+  do posto e apresenta bases 2D→3D, missão, poderes e extras. O par abre as escolhas; promoção
+  pede missão completa e 1 poder na Faísca, 2 nos demais. Publicação e extras são opcionais.
+- `/maestrias` e `/maestrias/[areaId]` leem os seis caminhos do Members. Cada nível tem núcleo
+  ou crédito validado, 2 oficinas distintas e projeto aprovado. Níveis em acordeões; o atual
+  abre por padrão. Projetos são enviados por `evidenceId` de uma versão imutável já salva.
+- `@sistemazero/member-shell/components/creator-journey` compartilha apenas apresentação.
+  O adulto mantém PageBand/PageBody, palco escuro, bancada clara, fontes e mínimos de leitura
+  do Estúdio à noite. Não trocar os tokens do app por estilos do protótipo.
+- Catálogo, curso e aula usam `careerLock` do servidor. `curriculum` no curso informa vínculo;
+  `accessReason` explica compra direta, presente e acesso preservado. Acesso avulso não muda posto.
+  Recados de bloqueio das Maestrias apontam ao nível e à área definidos no DTO, inclusive no
+  acesso direto a uma aula. O Molda recebe faixas de ferramentas derivadas das três capacidades
+  canônicas; políticas adultas históricas sem currículo mantêm Molda integral.
+- Integração do Canvas de 26/10: manter o visual remoto de catálogo, criação e progresso e
+  o ramo de currículo antes da projeção histórica. `toolStageTitle` informa o próprio posto
+  que ensina a ferramenta quando há currículo; `ToolNotice` explica a liberação durante seus
+  cursos, sem prometer a etapa seguinte. Pensa usa o par/cursos configurados, e a condição de
+  curso avançado continua somente na política histórica. Os cartões de liberação contemplam
+  também as duas faixas avançadas do Molda.
+- `playwright.creator-journey.config.ts` valida componentes reais nas duas peles em 390/768/1440.
+  A prévia isolada é `bun ../member-shell/qa/creator-journey-serve.ts` (127.0.0.1:4394), sem banco
+  nem gateway. `qa/cache-creator-preview-fonts.ts` baixa somente fontes públicas para cache local
+  opcional; os testes de produção usam as fontes do layout Next.
+
 ## Direção de arte adulta (18/10/2026)
 
 O público são **adultos iniciantes** que querem criar jogos e projetos digitais (a definição do

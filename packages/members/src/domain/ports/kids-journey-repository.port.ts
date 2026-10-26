@@ -1,4 +1,5 @@
 import type {
+  CreatorMasteryJourneyFacts,
   KidsCourseMilestone,
   KidsJourneyCourseFact,
   KidsJourneyEarned,
@@ -32,6 +33,7 @@ export interface KidsJourneyEarnedRecord extends KidsJourneyOwner {
 }
 
 export interface KidsJourneyProfileSnapshot extends KidsJourneyOwner {
+  masteryFacts?: CreatorMasteryJourneyFacts
   /** Members earned row exists; this is not Auth admission/session authorization. */
   registered: boolean
   milestones: readonly KidsCourseMilestone[]

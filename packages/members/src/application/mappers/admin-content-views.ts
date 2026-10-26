@@ -8,6 +8,7 @@ import type {
   Module,
   ModuleWithLessons,
 } from '../../domain/course/course'
+import { CreatorSeedMetadataSchema } from '../../domain/course/creator-seed-metadata'
 import { resolveSalesPageUrl, resolveStudioUnlockBlocks } from './views'
 
 /** Views ADMIN de AUTORIA (CRUD de conteúdo). Datas → ISO. */
@@ -52,6 +53,7 @@ export interface CourseView {
    * bloco de Estúdio de vitrine (`showcase.enabled`)? Ausente = não verificado.
    */
   hasShowcaseBlock?: boolean
+  creatorPlanning?: { requiredLessonCount: number | null }
   createdAt: string
   updatedAt: string
 }
@@ -62,6 +64,8 @@ function resolveClonedFrom(c: Course): string | null {
 }
 
 export function toCourseView(c: Course, hasShowcaseBlock?: boolean): CourseView {
+  const planning = c.metadata?.creatorSeed
+  const parsedPlanning = CreatorSeedMetadataSchema.safeParse(planning)
   return {
     id: c.id,
     version: c.version,
@@ -83,6 +87,15 @@ export function toCourseView(c: Course, hasShowcaseBlock?: boolean): CourseView 
     studioUnlockBlocks: resolveStudioUnlockBlocks(c),
     clonedFrom: resolveClonedFrom(c),
     ...(hasShowcaseBlock === undefined ? {} : { hasShowcaseBlock }),
+    ...(planning === undefined
+      ? {}
+      : {
+          creatorPlanning: {
+            requiredLessonCount: parsedPlanning.success
+              ? parsedPlanning.data.requiredLessonIds.length
+              : null,
+          },
+        }),
     createdAt: c.createdAt.toISOString(),
     updatedAt: c.updatedAt.toISOString(),
   }

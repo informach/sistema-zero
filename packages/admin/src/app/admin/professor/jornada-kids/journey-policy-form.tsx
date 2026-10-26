@@ -15,6 +15,7 @@ import { Button } from '@sistemazero/ui/button'
 import { Card } from '@sistemazero/ui/card'
 import { Select } from '@sistemazero/ui/select'
 import { type ReactNode, useId, useState } from 'react'
+import { CreatorCurriculumEditor } from '@/components/admin/creator-curriculum-editor'
 import { KIDS_POST_LABELS, KIDS_TIER_LABELS, KIDS_TOOL_LABELS } from '@/lib/kids-journey-editor'
 import type { CourseView } from '@/lib/types'
 
@@ -78,6 +79,30 @@ export function KidsJourneyPolicyForm({
       ),
     })
   }
+  if (value.curriculum)
+    return (
+      <div className="space-y-6">
+        <label className="grid gap-2 text-sm font-medium">
+          Andamento da jornada
+          <Select
+            value={value.mode}
+            disabled={disabled}
+            onChange={(event) =>
+              onChange({ ...value, mode: event.target.value === 'paused' ? 'paused' : 'active' })
+            }
+          >
+            <option value="active">Progressão ativa</option>
+            <option value="paused">Progressão pausada</option>
+          </Select>
+        </label>
+        <CreatorCurriculumEditor
+          value={value.curriculum}
+          courses={courses}
+          disabled={disabled}
+          onChange={(curriculum) => onChange({ ...value, curriculum })}
+        />
+      </div>
+    )
   return (
     <div className="space-y-6">
       <Card className="space-y-3 p-5">

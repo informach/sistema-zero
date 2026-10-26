@@ -23,6 +23,7 @@ describe('nav — grupos e helpers de seção', () => {
       'Hoje',
       'Encontros',
       'Projetos',
+      'Maestrias',
       'Recados',
       'Moderação',
       'Alunos',
@@ -82,6 +83,7 @@ describe('nav — grupos e helpers de seção', () => {
 
   test('sectionForPath: cursos é conteudo, a ficha do aluno é turma, a visão geral é negocio', () => {
     expect(sectionForPath('/admin/professor/entregas')).toBe('turma')
+    expect(sectionForPath('/admin/professor/maestrias')).toBe('turma')
     expect(sectionForPath('/admin/professor/recados')).toBe('turma')
     expect(sectionForPath('/admin/membros/u-123')).toBe('turma')
     expect(sectionForPath('/admin/membros/analises')).toBe('turma')

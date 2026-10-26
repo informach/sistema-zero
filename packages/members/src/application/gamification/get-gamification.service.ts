@@ -12,7 +12,7 @@ import {
 import type { AdultJourneyService } from '../adult-journey/adult-journey.service'
 import type { KidsJourneyProfilesService } from '../kids-journey/kids-journey-profiles.service'
 import type { KidsJourneyQueryService } from '../kids-journey/kids-journey-query.service'
-import { kidsStudentLevel } from '../kids-journey/kids-student-level'
+import { creatorStudentLevel, kidsStudentLevel } from '../kids-journey/kids-student-level'
 import type { GamificationMeView } from '../mappers/views'
 
 /**
@@ -140,7 +140,13 @@ export class GetGamificationService {
         slug,
         unlockedAt: unlockedBySlug.get(slug)?.toISOString() ?? null,
       })),
-      level: kids ? kidsStudentLevel(kids) : qualifying ? computeStudentLevel(qualifying) : null,
+      level: kids
+        ? kidsStudentLevel(kids)
+        : journey?.curriculum
+          ? creatorStudentLevel(journey.curriculum)
+          : qualifying
+            ? computeStudentLevel(qualifying)
+            : null,
       ...(kids ? { kidsJourney: kids } : {}),
       ...(preview ? { kidsPreview: preview } : {}),
       ...(journey ? { journey } : {}),

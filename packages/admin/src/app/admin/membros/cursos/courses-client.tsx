@@ -1,5 +1,5 @@
 'use client'
-
+import { creatorJourneyCoursePlacements } from '@sistemazero/core/journey'
 import { Button, buttonVariants } from '@sistemazero/ui/button'
 import { Card } from '@sistemazero/ui/card'
 import { Dialog } from '@sistemazero/ui/dialog'
@@ -29,6 +29,10 @@ import Link from 'next/link'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { AdminHeader } from '@/components/admin/admin-header'
+import {
+  CurriculumLoadNotice,
+  useCreatorCurriculum,
+} from '@/components/admin/course-curriculum-placement'
 import { EmptyState } from '@/components/admin/empty-state'
 import { usePlatform } from '@/components/admin/platform-provider'
 import { ReadOnlyNotice } from '@/components/admin/read-only-notice'
@@ -64,6 +68,7 @@ export function CoursesClient({ currentRole }: { currentRole: string }) {
   const canWrite = currentRole === 'superadmin' || currentRole === 'admin'
   // Seletor global: a listagem mostra só os cursos da plataforma ativa.
   const platform = usePlatform()
+  const curriculumState = useCreatorCurriculum(platform)
 
   const [items, setItems] = useState<CourseView[]>([])
   const [total, setTotal] = useState(0)
@@ -236,8 +241,24 @@ export function CoursesClient({ currentRole }: { currentRole: string }) {
       />
       {canWrite ? null : <ReadOnlyNotice />}
 
-      {/* Jornada do Criador é conceito KIDS — no modo Adultos o painel some. */}
-      {platform === 'kids' ? (
+      {curriculumState.status !== 'ready' ? (
+        <CurriculumLoadNotice state={curriculumState} />
+      ) : curriculumState.curriculum ? (
+        <section className="space-y-3 rounded-xl border bg-card p-5">
+          <h2 className="font-semibold">Currículo da Jornada do Criador</h2>
+          <p className="text-sm text-muted-foreground">
+            {curriculumState.curriculum.stages.length} postos com duas bases, missão e poderes.{' '}
+            {curriculumState.curriculum.masteries.length} áreas de maestria. Os vínculos de cursos e
+            as regras são publicados no editor da jornada.
+          </p>
+          <Link
+            href={`/admin/professor/jornada-${platform === 'adult' ? 'adulta' : 'kids'}`}
+            className="inline-flex min-h-10 items-center font-medium text-primary underline"
+          >
+            Abrir postos, poderes e maestrias
+          </Link>
+        </section>
+      ) : curriculumState.loaded && platform === 'kids' ? (
         <JourneyReadiness
           courses={journeyItems}
           loading={journeyLoading}
@@ -365,6 +386,29 @@ export function CoursesClient({ currentRole }: { currentRole: string }) {
                         </Link>
                         .
                       </div>
+                    ) : curriculumState.curriculum ? (
+                      <div className="mt-1 text-xs text-muted-foreground">
+                        {creatorJourneyCoursePlacements(curriculumState.curriculum, c.id)
+                          .map((placement) => {
+                            const role = {
+                              base2d: 'Base 2D',
+                              base3d: 'Base 3D',
+                              mission: 'Missão',
+                              power: 'Poder',
+                              extra: 'Extra',
+                              'mastery-nucleus': 'Núcleo',
+                              'mastery-workshop': 'Oficina',
+                              'mastery-project': 'Projeto',
+                            }[placement.role]
+                            return `${role} · ${placement.level ? curriculumState.curriculum!.stages.find((stage) => stage.level === placement.level)?.title : `${curriculumState.curriculum!.masteries.find((area) => area.id === placement.masteryId)?.title} · nível ${placement.masteryLevel}`}`
+                          })
+                          .join(' / ') ||
+                          'Ainda sem vínculo no currículo. Configure no editor da jornada.'}
+                      </div>
+                    ) : curriculumState.status !== 'ready' ? (
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        Vínculo da jornada aguardando consulta da política.
+                      </p>
                     ) : c.audience === 'kids' ? (
                       <div className="mt-1 flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
                         {c.level === 'lenda' ? (

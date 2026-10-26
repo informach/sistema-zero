@@ -1,11 +1,13 @@
 import type { CourseAudience, ModuleWithLessons } from '../../domain/course/course'
 import { EntitlementAggregate } from '../../domain/entitlement/entitlement.aggregate'
+import { independentCourseAccessReason } from '../../domain/entitlement/independent-course-access'
 import type { CourseRepository } from '../../domain/ports/course-repository.port'
 import type { EntitlementRepository } from '../../domain/ports/entitlement-repository.port'
 import type { GamificationRepository } from '../../domain/ports/gamification-repository.port'
 import type { ProgressRepository } from '../../domain/ports/progress-repository.port'
 import type { VideoPositionRepository } from '../../domain/ports/video-position-repository.port'
 import { computeProgress, resolveContinueLesson } from '../../domain/progress/progress'
+import type { AdultJourneyService } from '../adult-journey/adult-journey.service'
 import { journeyLockViews } from '../journey-course-locking/journey-course-locking'
 import type { KidsJourneyQueryService } from '../kids-journey/kids-journey-query.service'
 import { lockedLessonSetForCourse } from '../lesson-locking/lesson-locking'
@@ -29,6 +31,7 @@ export class ListMyCoursesService {
     private readonly gamification: GamificationRepository,
     private readonly clock: () => Date,
     private readonly kidsJourney: Pick<KidsJourneyQueryService, 'courseState'>,
+    private readonly adultJourney?: Pick<AdultJourneyService, 'courseState'>,
   ) {}
 
   async execute(
@@ -83,7 +86,12 @@ export class ListMyCoursesService {
             { userId, accountId: accountId ?? userId },
             courses.map((course) => course.id),
           )
-        : null
+        : audience === 'adult' && !privileged
+          ? await this.adultJourney?.courseState(
+              userId,
+              courses.map((course) => course.id),
+            )
+          : null
     // Team bypass retains its actual ledger badges, without the previous qualification engine.
     const milestones =
       journeyState?.milestones ??
@@ -152,16 +160,19 @@ export class ListMyCoursesService {
           )
         }
       }
-      views.push(
-        toMyCourseView(
+      const directAccess = independentCourseAccessReason(course.slug, active, this.clock())
+      views.push({
+        ...toMyCourseView(
           course,
           entitlement,
           progress,
           continueLessonId,
-          journeyLocks.get(course.id),
+          directAccess ? { locked: false } : journeyLocks.get(course.id),
           milestones.get(course.id),
         ),
-      )
+        curriculum: journeyState?.courseContexts.get(course.id),
+        accessReason: privileged ? 'staff' : (directAccess ?? 'journey'),
+      })
     }
     return views
   }

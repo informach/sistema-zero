@@ -7,6 +7,7 @@ import {
   type KidsJourneyView,
   projectKidsJourney,
   resolveKidsJourneyCourseLocks,
+  withCreatorMasteryDefinitions,
 } from '@sistemazero/core/journey'
 import {
   KidsJourneyInitializingError,
@@ -17,6 +18,11 @@ import type {
   KidsJourneyPolicyRecord,
   KidsJourneyRepository,
 } from '../../domain/ports/kids-journey-repository.port'
+import { creatorCourseContexts } from '../creator-journey/course-context'
+import {
+  type MasteryJourneyFactsReader,
+  noMasteryJourneyFacts,
+} from '../creator-journey/mastery-journey-facts'
 
 function assertPublished(policy: KidsJourneyPolicyRecord): void {
   if (policy.phase === 'initializing' && policy.version === 0)
@@ -35,7 +41,10 @@ export interface KidsJourneyProfileState {
  * new learner separately, but a missing row must never look like a child lost their earned rank.
  */
 export class KidsJourneyQueryService {
-  constructor(private readonly journey: Pick<KidsJourneyRepository, 'readSnapshot'>) {}
+  constructor(
+    private readonly journey: Pick<KidsJourneyRepository, 'readSnapshot'>,
+    private readonly readMasteryFacts: MasteryJourneyFactsReader = noMasteryJourneyFacts,
+  ) {}
 
   /** Explicit read-only team inspection. No child/rank/progress/earned simulation or persistence. */
   async staffPreview(): Promise<KidsJourneyStaffPreview> {
@@ -102,6 +111,10 @@ export class KidsJourneyQueryService {
           catalog: snapshot.catalog,
           milestones: profile.milestones,
           earned: profile.earned,
+          ...(profile.masteryFacts ??
+            (snapshot.policy.policy.curriculum
+              ? await this.readMasteryFacts({ ...owner, audience: 'kids' })
+              : await noMasteryJourneyFacts({ ...owner, audience: 'kids' }))),
         }),
         milestones: profile.milestones.map((milestone) => ({ ...milestone })),
       })
@@ -111,6 +124,44 @@ export class KidsJourneyQueryService {
 
   async courseLocks(inputOwner: KidsJourneyOwner, inputCourseIds: readonly string[]) {
     return (await this.courseState(inputOwner, inputCourseIds)).locks
+  }
+
+  async masteryContext(inputOwner: KidsJourneyOwner) {
+    const owner = {
+      userId: IdentityUuidSchema.parse(inputOwner.userId),
+      accountId: IdentityUuidSchema.parse(inputOwner.accountId),
+    }
+    const snapshot = await this.journey.readSnapshot([owner])
+    assertPublished(snapshot.policy)
+    const profile = snapshot.profiles.get(owner.userId)
+    if (!profile?.registered || profile.accountId !== owner.accountId)
+      throw new KidsJourneyUnavailableError()
+    const masteryFacts =
+      profile.masteryFacts ??
+      (snapshot.policy.policy.curriculum
+        ? await this.readMasteryFacts({ ...owner, audience: 'kids' })
+        : await noMasteryJourneyFacts({ ...owner, audience: 'kids' }))
+    const view = projectKidsJourney({
+      policy: snapshot.policy.policy,
+      policyVersion: snapshot.policy.version,
+      catalog: snapshot.catalog,
+      milestones: profile.milestones,
+      earned: profile.earned,
+      ...masteryFacts,
+    })
+    return {
+      policyVersion: snapshot.policy.version,
+      paused: snapshot.policy.policy.mode === 'paused',
+      curriculum: snapshot.policy.policy.curriculum
+        ? withCreatorMasteryDefinitions(
+            snapshot.policy.policy.curriculum,
+            masteryFacts.masteryDefinitions,
+          )
+        : null,
+      catalog: snapshot.catalog,
+      view: view.curriculum ?? null,
+      milestones: profile.milestones,
+    }
   }
 
   async courseState(inputOwner: KidsJourneyOwner, inputCourseIds: readonly string[]) {
@@ -134,13 +185,27 @@ export class KidsJourneyQueryService {
       if (!course) throw new KidsJourneyUnavailableError()
       return course
     })
+    const masteryFacts =
+      profile.masteryFacts ??
+      (snapshot.policy.policy.curriculum
+        ? await this.readMasteryFacts({ ...owner, audience: 'kids' })
+        : await noMasteryJourneyFacts({ ...owner, audience: 'kids' }))
+    const curriculum = snapshot.policy.policy.curriculum
+      ? withCreatorMasteryDefinitions(
+          snapshot.policy.policy.curriculum,
+          masteryFacts.masteryDefinitions,
+        )
+      : undefined
     return {
+      curriculum,
+      courseContexts: creatorCourseContexts(curriculum),
       locks: resolveKidsJourneyCourseLocks({
         policy: snapshot.policy.policy,
         policyVersion: snapshot.policy.version,
         catalog: snapshot.catalog,
         milestones: profile.milestones,
         earned: profile.earned,
+        ...masteryFacts,
         courses,
       }),
       milestones: new Map(

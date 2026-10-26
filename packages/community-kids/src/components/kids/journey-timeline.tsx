@@ -1,3 +1,4 @@
+import { CreatorJourneyMap } from '@sistemazero/member-shell/components/creator-journey'
 import {
   isKidsStaffPreview,
   kidsJourneyAccess,
@@ -110,6 +111,24 @@ export function JourneyTimeline({
       </section>
     )
   }
+  if (access.curriculum)
+    return (
+      <div className="space-y-8">
+        <CreatorJourneyMap view={access.curriculum} skin="kids" />
+        <section>
+          <h2 className="sz-display mb-4 text-xl">Suas conquistas</h2>
+          <ul className="grid gap-4 md:grid-cols-2">
+            {gamification.badges
+              .filter(
+                (badge): badge is { slug: string; unlockedAt: string } => badge.unlockedAt !== null,
+              )
+              .map((badge) => (
+                <FeatCard key={badge.slug} slug={badge.slug} unlockedAt={badge.unlockedAt} />
+              ))}
+          </ul>
+        </section>
+      </div>
+    )
   const currentSlug = access.earned.level
   const visible = canonicalVisibleJourneyLevels(access)
   const beyond = levelsBeyondHorizon(visible)

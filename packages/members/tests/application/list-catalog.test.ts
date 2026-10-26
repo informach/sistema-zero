@@ -134,7 +134,9 @@ describe('ListCatalogService (catálogo "Todos os cursos")', () => {
       careerSlot: null,
       journeyRole: 'reward',
       careerLock: { locked: false },
-      // Vitrine adulta não tem Mural: os marcos vêm zerados sem nem consultar o ledger.
+      curriculum: undefined,
+      accessReason: 'journey',
+      // This isolated fixture omits the adult journey reader; it has no ledger facts.
       milestones: { completed: false, showcased: false },
       hasAccess: true,
       salesPageUrl: null,

@@ -7,6 +7,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { KidsBackButton } from '@/components/kids/back-button'
 import { CatalogCourseCard } from '@/components/kids/catalog-course-card'
+import { KidsCreatorPost } from '@/components/kids/creator-curriculum-page'
 import { KidsBand } from '@/components/kids/kids-band'
 import { KidsMascot } from '@/components/kids/mascot'
 import { cn } from '@/lib/cn'
@@ -110,6 +111,8 @@ export default async function TrilhaPage({ params }: { params: Promise<{ level: 
         </p>
       </KidsBand>
     )
+  if (!isKidsStaffPreview(journey) && journey.curriculum)
+    return <KidsCreatorPost view={journey.curriculum} level={levelSlug} courses={all} />
   // ⚠️ Posse + `freeStudio` + algum bloco conquistado: sem os três o atalho cairia na tela
   // de Estúdio trancado (clique morto).
   const studioOwned = canOpenFreeStudio(

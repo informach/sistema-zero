@@ -1,4 +1,6 @@
 import type { AdultCreatorCapability } from '@sistemazero/core/journey'
+import { CreatorPost } from '@sistemazero/member-shell/components/creator-journey'
+import { creatorStageSummary } from '@sistemazero/member-shell/lib/creator-journey-presentation'
 import {
   ArrowLeftRight,
   ArrowRight,
@@ -15,11 +17,11 @@ import {
   Trophy,
 } from 'lucide-react'
 import Link from 'next/link'
-import { notFound } from 'next/navigation'
+import { notFound, redirect } from 'next/navigation'
 import type { CSSProperties } from 'react'
 import { CourseCover, ProgressBar } from '@/components/community/courses/course-cover'
 import { JourneyRibbon } from '@/components/community/journey/stage'
-import { BackLink, PageBody } from '@/components/community/page'
+import { BackLink, PageBand, PageBody } from '@/components/community/page'
 import { cn } from '@/lib/cn'
 import { type LockedCourseLink, lockedCourseLink } from '@/lib/continuity'
 import { isCourseDone } from '@/lib/course-levels'
@@ -56,6 +58,18 @@ const UNLOCK_TILES: Record<
   molda: {
     name: 'O Molda',
     text: 'A oficina 3D, para modelar objetos.',
+    icon: Box,
+    tone: 'text-(--laranja)',
+  },
+  'molda-intermediate': {
+    name: 'Molda intermediário',
+    text: 'Amplie os modelos e animações dos seus jogos.',
+    icon: Box,
+    tone: 'text-(--laranja)',
+  },
+  'molda-professional': {
+    name: 'Molda profissional',
+    text: 'Use as ferramentas avançadas de modelagem para jogos.',
     icon: Box,
     tone: 'text-(--laranja)',
   },
@@ -122,6 +136,29 @@ export default async function StagePage({ params }: { params: Promise<{ id: stri
         </div>
       </PageBody>
     )
+  const curriculum = gamification.body?.journey?.curriculum
+  if (curriculum) {
+    if (id === 'god' || id === 'lenda') redirect('/maestrias')
+    const post = curriculum.stages.find((item) => item.level === id)
+    if (!post) notFound()
+    return (
+      <>
+        <PageBand
+          kicker={curriculum.level === post.level ? 'Seu posto atual' : 'Jornada do Criador'}
+          title={post.title}
+          lead={creatorStageSummary(post)}
+          back={{ href: '/cursos', label: 'Voltar ao mapa' }}
+        />
+        <PageBody>
+          <CreatorPost
+            stage={post}
+            catalog={catalog?.status === 200 ? (catalog.body?.courses ?? []) : []}
+            skin="adult"
+          />
+        </PageBody>
+      </>
+    )
+  }
   const journey = normalizeJourney(gamification.body?.journey)
   const index = journey?.configured ? journey.stages.findIndex((stage) => stage.id === id) : -1
   const stage = journey && index >= 0 ? journey.stages[index] : undefined

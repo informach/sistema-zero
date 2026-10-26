@@ -23,7 +23,7 @@ export function AdultCourseAccessContract({
         <dd>
           {live
             ? 'Uma vaga na turma, que dá entrada nos encontros.'
-            : 'A matrícula no curso gravado, pela compra no catálogo.'}
+            : 'A licença do curso e os requisitos publicados na jornada. Farol e Cadê Todo Mundo? adquiridos à parte têm o acesso específico preservado enquanto estiver ativo.'}
         </dd>
         <dt>Endereço</dt>
         <dd>

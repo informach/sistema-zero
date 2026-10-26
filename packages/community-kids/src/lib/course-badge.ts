@@ -28,6 +28,7 @@ import type { CourseMilestonesView } from '@/lib/types'
 export type CourseBadge = 'pronta' | 'publicar'
 
 export interface CourseBadgeInput {
+  curriculum?: import('@sistemazero/core/journey').CreatorCoursePlacement
   /** Posição na trilha; `null`/ausente = bônus ou extra. */
   careerSlot?: number | null
   milestones?: CourseMilestonesView
@@ -40,6 +41,7 @@ function isSlotCourse(course: CourseBadgeInput): boolean {
 
 /** O curso conta como PRONTA? É a régua mista, num curso só. */
 export function courseIsDone(course: CourseBadgeInput): boolean {
+  if (course.curriculum) return course.milestones?.completed === true
   return journeyCourseQualified(course)
 }
 
@@ -47,7 +49,7 @@ export function courseIsDone(course: CourseBadgeInput): boolean {
 export function courseBadge(course: CourseBadgeInput): CourseBadge | null {
   if (courseIsDone(course)) return 'pronta'
   // Só quem tem posição na trilha deve o Mural — e só depois de concluir.
-  if (isSlotCourse(course) && course.milestones?.completed) return 'publicar'
+  if (!course.curriculum && isSlotCourse(course) && course.milestones?.completed) return 'publicar'
   return null
 }
 

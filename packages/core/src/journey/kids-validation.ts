@@ -5,6 +5,7 @@ import {
   type JourneyLevelSlug,
   journeyLevelAtLeast,
 } from './catalog'
+import { creatorJourneyCourseIds } from './creator-curriculum'
 import {
   type KidsCourseMilestone,
   type KidsJourneyCourseAccess,
@@ -162,6 +163,7 @@ export function projectKidsCourseAccess(
     entry: JOURNEY_COURSE_TIERS.filter((tier) => entry.has(tier)),
     expanded: JOURNEY_COURSE_TIERS.filter((tier) => expanded.has(tier)),
     reward: JOURNEY_COURSE_TIERS.filter((tier) => reward.has(tier)),
+    ...(earned.creatorCourseIds ? { creatorCourseIds: earned.creatorCourseIds } : {}),
   }
 }
 
@@ -284,6 +286,58 @@ export function analyzeKidsJourneyReadiness(
       ],
     }
   const catalog = input.catalog
+  if (policy.curriculum) {
+    const issues: KidsJourneyIssue[] = []
+    const byId = new Map(catalog.map((course) => [course.id, course]))
+    for (const courseId of creatorJourneyCourseIds(policy.curriculum)) {
+      const course = byId.get(courseId)
+      if (!course) {
+        issues.push({
+          code: 'course-missing',
+          level: null,
+          requirementIndex: null,
+          severity: 'error',
+          message: `O curso ${courseId} vinculado ao currículo não existe.`,
+        })
+      } else if (course.audience !== 'kids' || course.modality !== 'recorded') {
+        issues.push({
+          code: 'course-ineligible',
+          level: null,
+          requirementIndex: null,
+          severity: 'error',
+          message: 'A jornada Kids aceita somente cursos Kids gravados.',
+        })
+      } else if (course.status !== 'published') {
+        issues.push({
+          code: 'course-unpublished',
+          level: null,
+          requirementIndex: null,
+          severity: 'warning',
+          message: `O curso ${courseId} ainda não está publicado; permanece indisponível para novos alunos.`,
+        })
+      }
+    }
+    const published = (courseId: string) => {
+      const course = byId.get(courseId)
+      return (
+        course?.audience === 'kids' &&
+        course.modality === 'recorded' &&
+        course.status === 'published'
+      )
+    }
+    let horizon: JourneyLevelSlug = 'noob'
+    for (const [index, stage] of policy.curriculum.stages.entries()) {
+      if (
+        !published(stage.base2dCourseId) ||
+        !published(stage.base3dCourseId) ||
+        !published(stage.missionCourseId) ||
+        stage.powers.filter((power) => power.courseIds.some(published)).length < stage.minimumPowers
+      )
+        break
+      horizon = JOURNEY_LEVEL_SLUGS[index + 1]!
+    }
+    return { status: issues.length ? 'incomplete' : 'ready', horizon, issues }
+  }
   const issues: KidsJourneyIssue[] = []
   let horizon: JourneyLevelSlug = 'noob'
   let previousReady = true

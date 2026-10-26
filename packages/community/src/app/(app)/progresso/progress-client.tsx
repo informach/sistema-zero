@@ -1,6 +1,10 @@
 'use client'
 
 import type { AdultCreatorCapability, AdultJourneyView } from '@sistemazero/core/journey'
+import {
+  CreatorJourneyMap,
+  CreatorJourneySummary,
+} from '@sistemazero/member-shell/components/creator-journey'
 import { apiSend } from '@sistemazero/member-shell/lib/api'
 import type { GamificationMeView, MissionsMeView } from '@sistemazero/member-shell/lib/types'
 import { Input } from '@sistemazero/ui/input'
@@ -41,6 +45,8 @@ const CAPABILITY_LABELS: Record<AdultCreatorCapability, string> = {
   studio: 'Estúdio',
   pinta: 'Pinta',
   molda: 'Molda',
+  'molda-intermediate': 'Molda intermediário',
+  'molda-professional': 'Molda profissional',
   bridge: 'Ponte',
   pro: 'Pro',
   ai: 'Zappy',
@@ -52,6 +58,8 @@ const CAPABILITY_PHRASES: Record<AdultCreatorCapability, string> = {
   studio: 'o Estúdio livre',
   pinta: 'o Pinta',
   molda: 'o Molda, a oficina 3D',
+  'molda-intermediate': 'as ferramentas intermediárias do Molda',
+  'molda-professional': 'as ferramentas profissionais do Molda',
   bridge: 'a Ponte entre blocos e código',
   pro: 'o Estúdio Pro, com código',
   ai: 'o tutor Zappy no Estúdio',
@@ -230,6 +238,13 @@ function JourneySection({
   journey: AdultJourneyView
   titles: Record<string, string>
 }) {
+  if (received.curriculum)
+    return (
+      <section className="sz-palco space-y-6 rounded-[1.2rem] p-6 md:p-8">
+        <CreatorJourneySummary view={received.curriculum} skin="adult" />
+        <CreatorJourneyMap view={received.curriculum} skin="adult" />
+      </section>
+    )
   const journey = normalizeJourney(received)
   const unlocked = journey.capabilities.map((capability) => CAPABILITY_LABELS[capability])
   const stage = stageBadgeOf(journey)

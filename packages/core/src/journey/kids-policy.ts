@@ -9,6 +9,14 @@ import {
   journeyLevelAtLeast,
   journeySlotsForTier,
 } from './catalog'
+import {
+  CreatorJourneyCurriculumSchema,
+  type CreatorJourneyView,
+  type CreatorMasteryAdmission,
+  type CreatorMasteryApproval,
+  type CreatorMasteryAward,
+  type CreatorMasteryDefinition,
+} from './creator-curriculum'
 
 /** Pedagogical rights only: no license, palette, language or runtime is granted here. */
 export const KIDS_CREATOR_CAPABILITIES = [
@@ -130,6 +138,7 @@ export const KidsJourneyPolicySchema = z
     mode: z.enum(['active', 'paused']),
     steps: z.array(StepSchema).length(KIDS_JOURNEY_ADVANCES.length).readonly(),
     tierAccess: KidsJourneyTierAccessSchema,
+    curriculum: CreatorJourneyCurriculumSchema.optional(),
   })
   .superRefine((policy, context) => {
     const earned = new Set<KidsCreatorCapability>()
@@ -190,6 +199,8 @@ export interface KidsJourneyCourseAccess {
   entry: readonly JourneyCourseTier[]
   expanded: readonly JourneyCourseTier[]
   reward: readonly JourneyCourseTier[]
+  /** UUID rights persisted in the shared course-grant ledger. */
+  creatorCourseIds?: readonly string[]
 }
 const CourseAccessTiersSchema = z
   .array(z.enum(JOURNEY_COURSE_TIERS))
@@ -201,6 +212,12 @@ export const KidsJourneyCourseAccessSchema = z
     entry: CourseAccessTiersSchema,
     expanded: CourseAccessTiersSchema,
     reward: CourseAccessTiersSchema,
+    creatorCourseIds: z
+      .array(IdentityUuidSchema)
+      .max(10000)
+      .refine((ids) => new Set(ids).size === ids.length, 'Curso repetido na concessão.')
+      .readonly()
+      .optional(),
   })
   .superRefine((access, context) => {
     if (access.expanded.some((tier) => !access.entry.includes(tier)))
@@ -227,6 +244,7 @@ export const KidsJourneyEarnedSchema = z
   .readonly()
 export interface KidsJourneyCourseFact {
   id: string
+  title?: string
   /** Derived from course.level === 'lenda'; tier:null alone loses this identity. */
   graduationOnly: boolean
   audience: 'kids' | 'adult'
@@ -245,6 +263,10 @@ export interface KidsJourneyProjectionInput extends KidsJourneyReadinessInput {
   policyVersion: number
   milestones: readonly KidsCourseMilestone[]
   earned: KidsJourneyEarned
+  masteryApprovals?: readonly CreatorMasteryApproval[]
+  masteryAwards?: readonly CreatorMasteryAward[]
+  masteryAdmissions?: readonly CreatorMasteryAdmission[]
+  masteryDefinitions?: readonly CreatorMasteryDefinition[]
 }
 export interface KidsJourneyComparisonInput extends KidsJourneyProjectionInput {
   proposedPolicy: KidsJourneyPolicy
@@ -300,6 +322,8 @@ export interface KidsJourneyView {
   missing: readonly KidsRequirement[]
   advances: readonly KidsJourneyAdvanceView[]
   readiness: KidsJourneyReadiness
+  /** When present, this is the authoritative curriculum; legacy arrays are compatibility views. */
+  curriculum?: CreatorJourneyView
 }
 /** Explicit team inspection; no student rank, earned rights or progress is simulated. */
 export interface KidsJourneyStaffPreview {
@@ -328,6 +352,7 @@ export interface KidsJourneyImpact {
   preservedCapabilities: readonly KidsCreatorCapability[]
   tierAccessChanges: readonly { before: KidsTierAccess; after: KidsTierAccess }[]
   preservedCourseAccess: KidsJourneyCourseAccess
+  curriculumChanged?: boolean
 }
 
 /** Both milestones must belong to one course record; slots cannot merge evidence across IDs. */

@@ -32,7 +32,7 @@ export default async function LessonPage({
   ])
   if (courseRes.status === 404 || courseRes.status === 403) notFound()
   if (courseRes.status === 423)
-    return <KidsLockedCourse reason={journeyLockReason(courseRes.body)} />
+    return <KidsLockedCourse body={courseRes.body} reason={journeyLockReason(courseRes.body)} />
   if (courseRes.status !== 200 || !courseRes.body) throw new Error('Falha ao carregar o curso')
   const course = courseRes.body
 

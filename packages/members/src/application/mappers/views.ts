@@ -464,6 +464,8 @@ export interface AvatarStateView {
 }
 
 export interface MyCourseView {
+  curriculum?: CourseCurriculumView
+  accessReason?: CourseAccessReason
   /** Stable curriculum identity for explicit policy requirements; labels/slugs may change. */
   courseId: string
   courseSlug: string
@@ -521,6 +523,8 @@ export function toMyCourseView(
  * com a flag de acesso do aluno. Sem progresso (isso é da home/detalhe).
  */
 export interface CatalogCourseView {
+  curriculum?: CourseCurriculumView
+  accessReason?: CourseAccessReason
   /** Stable curriculum identity for explicit policy requirements; labels/slugs may change. */
   courseId: string
   courseSlug: string
@@ -598,6 +602,17 @@ export interface JourneyCourseLockView {
   /** Curso-base (posição 1) que explica e resolve a trava, quando publicado. */
   foundationCourseSlug?: string
 }
+
+export type CourseAccessReason =
+  | 'journey'
+  | 'direct-purchase'
+  | 'gift'
+  | 'manual-grant'
+  | 'retained'
+  | 'staff'
+
+/** Identity comes from the published curriculum, never from mutable course titles/tags. */
+export type CourseCurriculumView = import('@sistemazero/core/journey').CreatorCoursePlacement
 
 /** URL da página de vendas (funil) — `metadata.salesPageUrl` string não-vazia, senão `null`. */
 export function resolveSalesPageUrl(course: Course): string | null {
@@ -686,6 +701,9 @@ export interface ModuleOutlineView {
 }
 
 export interface CourseDetailView {
+  curriculum?: CourseCurriculumView
+  accessReason?: CourseAccessReason
+  careerLock?: JourneyCourseLockView
   id: string
   milestones?: CourseMilestonesView
   showcaseLessonId?: string | null

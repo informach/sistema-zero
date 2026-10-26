@@ -1,0 +1,1682 @@
+{
+  "version": "2026-10-25",
+  "stages": [
+    {
+      "id": "faisca",
+      "name": "Faísca",
+      "n": 1,
+      "genre": "Aventura de chave e porta",
+      "language": "Blocos",
+      "environment": "Jogo 2D + Jogo 3D",
+      "phase": "Entender as regras",
+      "color": "amber",
+      "promise": "Eu faço o jogo lembrar e decidir.",
+      "entry": "Começa aqui quem entra na assinatura. Quem já concluiu o Farol avulso recebe o crédito desse mesmo curso. Cadê Todo Mundo? permanece extra; a compra avulsa ativa dá acesso direto a ele.",
+      "rationale": "O primeiro posto reúne uma única ideia causal: aconteceu algo, uma informação foi guardada e uma decisão usa essa informação. O 3D muda a representação espacial; a câmera e a arte chegam preparadas.",
+      "concepts": [
+        "Evento → ação",
+        "Uma informação verdadeira ou falsa",
+        "Se / senão",
+        "Posição no plano e no chão 3D",
+        "Testar com e sem o objeto"
+      ],
+      "math": "Posição, direção e comparação. Na ilha, x/z formam o chão e y indica altura. Não exigir rotação de câmera, trigonometria ou modelagem.",
+      "courses": [
+        {
+          "title": "A Chave do Farol",
+          "dimension": "2D",
+          "environment": "Blocos · Jogo 2D",
+          "origin": "Curso existente: 3 aulas de construção + encerramento/certificado.",
+          "status": "Reaproveitar e revisar critérios",
+          "lessons": [
+            "O personagem ganha movimento — relacionar entrada e ação, andar e respeitar a área do jogo.",
+            "A chave muda o curso — recolher o objeto e guardar que ele foi encontrado.",
+            "A luz do farol — usar Se/senão, testar os dois casos e personalizar o projeto.",
+            "Meu primeiro jogo concluído — revisão causal curta, entrega atualizada e certificado; compartilhar é uma escolha."
+          ]
+        },
+        {
+          "title": "A Ilha 3D do Farol",
+          "dimension": "3D",
+          "environment": "Blocos · núcleo do Jogo 3D",
+          "origin": "Adaptar Pega-Estrelas e as regras de coleta do Farol. O curso ainda precisa ser produzido.",
+          "status": "Novo curso sobre base existente",
+          "lessons": [
+            "A mesma ilha, com profundidade — jogar, comparar os eixos e mover o personagem com câmera fixa.",
+            "A chave no mundo 3D — programar coleta e memória; prever o que acontecerá antes de testar.",
+            "Acenda o farol — completar a decisão com menos instruções, testar os dois casos e reiniciar."
+          ]
+        }
+      ],
+      "mission": {
+        "title": "O Jardim Secreto",
+        "lessons": 2,
+        "brief": "O jardim tem uma flor fechada. O aluno recolhe um regador e faz a flor crescer somente quando estiver com ele. Repete a lógica em um jardim 3D.",
+        "same": "Chave → regador; farol → flor. A informação guardada e a condição continuam iguais. O contexto muda e o pedido deixa de indicar os blocos.",
+        "prepared": "Jardins, personagens, câmera fixa, controles e aparência das duas flores. As regras de coleta, memória e decisão ficam para o aluno.",
+        "two": [
+          "Guardar que pegou o regador e impedir que ele seja recolhido novamente.",
+          "Na flor: sem regador, mostrar um aviso; com regador, fazer crescer."
+        ],
+        "three": [
+          "Reconstruir a mesma relação causal no chão x/z.",
+          "Verificar os dois casos e o retorno ao estado inicial ao reiniciar."
+        ],
+        "checks": [
+          "Sem regador, a flor continua fechada.",
+          "Pegar o regador muda a informação e o objeto deixa de estar disponível.",
+          "Com regador, a flor cresce; só encostar antes não basta.",
+          "Recomeçar permite testar novamente o caso sem regador, em 2D e 3D."
+        ],
+        "variant": "Mudar o lugar do regador e reconhecer qual informação continua decidindo a ação. A posição escolhida não pode ser a resposta do avaliador.",
+        "not_new": "Sem contagem de água, inventário de vários itens, prazo ou inimigo. Esses seriam Poderes."
+      },
+      "required": 1,
+      "powers": [
+        {
+          "title": "Moedas no caminho",
+          "addition": "Contador numérico e objetivo por quantidade.",
+          "prerequisite": "Coleta e condição do par.",
+          "application": "Acrescentar moedas ao caminho do Farol e exigir uma quantidade para uma recompensa opcional.",
+          "check": "Cada moeda conta uma vez; coletar menos que a meta não libera a recompensa.",
+          "lessons": 1
+        },
+        {
+          "title": "Duas peças para abrir",
+          "addition": "Combinar duas informações com E.",
+          "prerequisite": "Variável booleana e Se/senão.",
+          "application": "Criar uma segunda porta que exige chave e emblema.",
+          "check": "Nenhum item ou apenas um mantém a porta fechada; os dois abrem.",
+          "lessons": 1
+        },
+        {
+          "title": "A porta fica aberta por um tempo",
+          "addition": "Relógio e estado temporário.",
+          "prerequisite": "Evento e decisão.",
+          "application": "Acionar uma ponte que fecha depois de alguns segundos.",
+          "check": "Abre no acionamento, fecha após o intervalo e pode ser acionada outra vez.",
+          "lessons": 1
+        },
+        {
+          "title": "A sequência dos símbolos",
+          "addition": "Estado que registra uma ordem.",
+          "prerequisite": "Evento, comparação e memória.",
+          "application": "Abrir um baú ao tocar três símbolos na ordem correta.",
+          "check": "A ordem correta abre; uma ordem diferente reinicia a tentativa.",
+          "lessons": 1
+        }
+      ],
+      "extras": [
+        {
+          "title": "Cadê Todo Mundo?",
+          "purpose": "Outro jogo de evento e contagem; prática adicional curta. Pela assinatura, abre só depois do par. Compra avulsa ativa dispensa essa trava.",
+          "origin": "Curso existente · 3 aulas"
+        },
+        {
+          "title": "Meu primeiro desenho no Pinta",
+          "purpose": "Criar uma imagem e usá-la no próprio Farol. É uma exploração de ferramenta, não um Poder de lógica.",
+          "origin": "Novo extra curto sobre Pinta"
+        }
+      ],
+      "unlocks": [
+        "Farol concluído: seus blocos passam ao Estúdio, conforme a regra definida pelo produto.",
+        "Ilha 3D concluída: seus blocos 3D também entram no repertório.",
+        "Par concluído: missão, quatro Poderes e extras do Faísca ficam disponíveis."
+      ],
+      "evidence": "Dois contextos funcionam e o aluno consegue reconhecer a informação que decide o resultado. Um Poder é aprendido e aplicado em uma versão de um dos jogos-base.",
+      "motivation": "Primeiro efeito já na primeira aula; jogo próprio após o Farol; surpresa espacial no 3D; depois, escolha real entre quatro melhorias.",
+      "recovery": "Se a decisão não foi compreendida, voltar à experiência com e sem chave dentro do Farol. O Cadê bloqueado não pode virar pré-requisito escondido para concluir o posto."
+    },
+    {
+      "id": "construtor",
+      "name": "Construtor(a)",
+      "n": 2,
+      "genre": "Tiro espacial",
+      "language": "Blocos",
+      "environment": "Jogo 2D + Jogo 3D",
+      "phase": "Construir uma partida",
+      "color": "amber",
+      "promise": "Eu junto várias regras em uma partida que começa, termina e recomeça.",
+      "entry": "Faísca concluído. Conhece evento, condição, estado simples e os eixos do chão 3D. Não pressupor nenhum Poder específico do Faísca.",
+      "rationale": "A nave é uma boa base para grupos, criação de objetos e colisões. As conquistas intermediárias precisam ser jogáveis: mover, atirar, acertar e fechar uma partida.",
+      "concepts": [
+        "Grupos de objetos",
+        "Relógio de criação",
+        "Colisão e retirada",
+        "Pontos e vidas",
+        "Início / jogando / fim",
+        "Reinício completo"
+      ],
+      "math": "Somar e subtrair, posições, intervalos e sinais de velocidade. A trajetória inicial é reta; ângulos ficam nos Poderes que os ensinarem.",
+      "courses": [
+        {
+          "title": "Nave Contra Asteroides",
+          "dimension": "2D",
+          "environment": "Blocos · Jogo 2D",
+          "origin": "Curso existente com 9 aulas. Conservar a precisão e inserir pequenas decisões entre módulos.",
+          "status": "Revisão do curso existente",
+          "lessons": [
+            "Faça a nave aparecer — preparar e executar o primeiro estado jogável.",
+            "Mova a nave — entrada, velocidade e limite de movimento.",
+            "Faça a nave atirar — criar tiros e retirar os que saem da tela.",
+            "Faça os asteroides cair — relógio, grupo e movimento.",
+            "Faça o tiro acertar — colisão entre grupos e retirada dos objetos.",
+            "Conte os acertos — pontuação e previsão do resultado de uma colisão.",
+            "Dê vidas à nave — dano e condição de fim.",
+            "Comece a partida — estados, entrada e regra que só roda durante o jogo.",
+            "Termine e recomece — vitória, derrota, reset e uma decisão de dificuldade testada."
+          ]
+        },
+        {
+          "title": "Patrulha Espacial",
+          "dimension": "3D",
+          "environment": "Blocos · Jogo 3D",
+          "origin": "Patrulha Espacial existe como exemplo; separar o núcleo das melhorias avançadas.",
+          "status": "Novo curso · 5 aulas propostas",
+          "lessons": [
+            "Da tela ao espaço — reconhecer nave, eixos e câmera preparada.",
+            "Tiros e meteoros — reconstruir grupos e relógio com ajuda menor.",
+            "Acertos no espaço — colisão e retirada; observar tamanho e profundidade.",
+            "Pontos e vidas — transportar os estados da partida e explicar uma condição.",
+            "Uma patrulha completa — testar vitória, derrota e reinício; ajustar uma regra conhecida."
+          ]
+        }
+      ],
+      "mission": {
+        "title": "A Estação de Reciclagem",
+        "lessons": 2,
+        "brief": "Uma esteira recebe peças recicláveis e objetos que não podem chegar ao depósito. O jogador move um coletor, recebe pontos pelas peças certas e perde vidas pelas outras. Em 3D, o galpão recebe a mesma partida.",
+        "same": "Tiros/asteroides viram coletor/peças. Relógio, grupos, colisão, pontos, vidas e estados são reaplicados. Não exigir classificador automático, arrastar com o mouse ou geração aleatória nova.",
+        "prepared": "Coletor, dois tipos visuais de peça, cenário e posições de entrada fixas. O enunciado informa a regra de cada tipo.",
+        "two": [
+          "Criar objetos pelo relógio e movimentá-los; a partida só roda no estado jogando.",
+          "Programar acerto, erro, pontuação, vidas, vitória, derrota e reinício."
+        ],
+        "three": [
+          "Reconstruir a partida no galpão com os controles espaciais já ensinados.",
+          "Testar os mesmos casos sem copiar a montagem do curso."
+        ],
+        "checks": [
+          "O relógio cria objetos no intervalo pedido apenas durante a partida.",
+          "Coletar uma peça correta aumenta uma vez o placar; ela deixa de colidir.",
+          "Um erro tira uma vida uma vez; vida zero termina a partida.",
+          "Meta de pontos termina com vitória; reiniciar limpa placar, vidas e objetos antigos."
+        ],
+        "variant": "A equipe muda a meta de pontos no pedido e o aluno identifica qual condição precisa acompanhar essa mudança.",
+        "not_new": "Sem escudo, combo, inventário ou reciclagem por receita. Nenhum Poder escolhido entra nos critérios desta missão."
+      },
+      "required": 2,
+      "powers": [
+        {
+          "title": "Escudo temporário",
+          "addition": "Invulnerabilidade com duração e retorno ao estado normal.",
+          "prerequisite": "Vidas, colisão e relógio do par.",
+          "application": "Acrescentar um item de escudo à nave ou à patrulha.",
+          "check": "A colisão não tira vida durante o escudo; volta a tirar depois.",
+          "lessons": 1
+        },
+        {
+          "title": "Tiro triplo",
+          "addition": "Disparo de vários projéteis com trajetórias diferentes.",
+          "prerequisite": "Criação de tiros e grupos.",
+          "application": "Trocar temporariamente o tiro simples por três tiros.",
+          "check": "Os três partem da nave e seguem direções distintas; voltam a ser removidos.",
+          "lessons": 1
+        },
+        {
+          "title": "Inimigo que atira",
+          "addition": "Um ator inimigo produz seus próprios projéteis.",
+          "prerequisite": "Grupos, relógio, colisão e vidas.",
+          "application": "Adicionar uma nave inimiga com disparos em intervalos.",
+          "check": "O inimigo dispara; seus tiros podem causar dano e são limpos ao reiniciar.",
+          "lessons": 2
+        },
+        {
+          "title": "Chefão com resistência",
+          "addition": "Vida de um inimigo e uma fase de combate.",
+          "prerequisite": "Contadores, estados e colisões.",
+          "application": "Criar um chefão que exige mais de um acerto.",
+          "check": "Um tiro não derrota o chefão; a quantidade necessária derrota uma única vez.",
+          "lessons": 2
+        },
+        {
+          "title": "Troca de arma",
+          "addition": "Estado de equipamento que muda o comportamento do disparo.",
+          "prerequisite": "Memória, condição e tiros.",
+          "application": "Recolher uma arma e alternar entre dois comportamentos.",
+          "check": "Trocar a arma muda o tiro; o estado inicial volta em uma nova partida.",
+          "lessons": 2
+        }
+      ],
+      "extras": [
+        {
+          "title": "O Jogo do Meu Jeito",
+          "purpose": "Arte, pixel art e animação no Pinta para usar na nave. Evidência para Arte 2D para Jogos, sem substituir missão ou Poder.",
+          "origin": "Curso existente · 8 aulas"
+        },
+        {
+          "title": "A Tartaruga",
+          "purpose": "Primeiro contato opcional com Python: ler, prever, alterar e criar desenhos. Sua linguagem é ensinada do início.",
+          "origin": "Exemplos Turtle Race, Starry e Spinner"
+        },
+        {
+          "title": "Minha primeira peça 3D",
+          "purpose": "Conhecer Molda, salvar um modelo e importá-lo em uma cena preparada.",
+          "origin": "Molda + Meu Herói do Molda"
+        }
+      ],
+      "unlocks": [
+        "Cada curso-base concluído acrescenta seus blocos ao Estúdio.",
+        "Par concluído: missão, Poderes e extras do Construtor abrem juntos.",
+        "Poder concluído e aplicado: novos blocos e nova mecânica no repertório; usar 2D ou 3D é escolha do aluno."
+      ],
+      "evidence": "Uma partida íntegra em dois contextos novos, dois Poderes diferentes aplicados e uma explicação curta de estado ou colisão.",
+      "motivation": "Antes de terminar o posto, a nave já passa por versões jogáveis. Depois do par, a pessoa escolhe como quer fortalecê-la e pode voltar para testar outros Poderes.",
+      "recovery": "Tratar separadamente falhas de colisão, contagem e estado. A ajuda abre a parte relevante da Nave, preservando o jogo da missão."
+    },
+    {
+      "id": "inventor",
+      "name": "Inventor(a)",
+      "n": 3,
+      "genre": "Corrida infinita",
+      "language": "Blocos",
+      "environment": "Jogo 2D + Jogo 3D",
+      "phase": "Dominar movimento e desafio",
+      "color": "green",
+      "promise": "Eu controlo o movimento e construo um desafio que pode ser aprendido.",
+      "entry": "Partida completa, grupos, relógio, colisão, estados e reset do Construtor. Pulo e gravidade ainda serão ensinados; nenhum Poder anterior é pré-requisito.",
+      "rationale": "O gênero traz uma novidade concreta: movimento com gravidade e ritmo. Reaprender telas, pontos e limpeza do zero faria o aluno repetir muito da Nave.",
+      "concepts": [
+        "Velocidade e gravidade",
+        "Pulo e contato com o chão",
+        "Área de colisão",
+        "Sorteio com limites",
+        "Ritmo e dificuldade crescente",
+        "Teste de jogabilidade"
+      ],
+      "math": "Positivo/negativo, variação de velocidade, intervalos mínimos e máximos. O jogo fornece uma experiência visual antes de introduzir as contas.",
+      "courses": [
+        {
+          "title": "Corre, Dino! — evolução do corredor",
+          "dimension": "2D",
+          "environment": "Blocos · Jogo 2D",
+          "origin": "O curso atual tem 13 aulas. Propor uma nova versão de 6 aulas apoiada no Construtor; a redução exige reautoria, novos projetos iniciais e revisão de critérios.",
+          "status": "Reautoria planejada · não pronta",
+          "lessons": [
+            "Reencontre uma partida conhecida — ler estados, placar e reinício preparados; consertar uma pequena ligação.",
+            "Cair e pular — gravidade, impulso e condição de estar no chão.",
+            "Obstáculos em movimento — reaplicar grupo, relógio e limpeza sem remontar todo o curso da Nave.",
+            "Uma colisão justa — observar e ajustar a área de contato.",
+            "Uma corrida que varia — sortear dentro de limites e aumentar dificuldade até um teto.",
+            "Teste a corrida — comparar duas configurações, receber um teste e melhorar a jogabilidade."
+          ]
+        },
+        {
+          "title": "Corrida Infinita 3D",
+          "dimension": "3D",
+          "environment": "Blocos · Jogo 3D",
+          "origin": "Exemplo Corrida Infinita. Câmera e corredor chegam preparados; animação avançada fica em extra.",
+          "status": "Novo curso · 5 aulas propostas",
+          "lessons": [
+            "O mundo vem até você — reconhecer profundidade e pistas.",
+            "Trocar de pista e pular — separar posição lateral, altura e avanço.",
+            "Barreiras e colisões — reaplicar o teste de contato com caixas adequadas.",
+            "Variação sem impossibilidade — controlar espaçamento, velocidade e limites.",
+            "Duas corridas, uma lógica — prever efeitos, testar e equilibrar a versão 3D."
+          ]
+        }
+      ],
+      "mission": {
+        "title": "O Entregador da Tempestade",
+        "lessons": 2,
+        "brief": "Um entregador atravessa uma ponte com obstáculos. O aluno programa pulo, variação de obstáculos e aumento limitado de dificuldade. Na versão 3D, atravessa passarelas com as pistas já ensinadas.",
+        "same": "Dino → entregador; cactos → barreiras. Gravidade, pulo, contato, sorteio limitado e ritmo permanecem. Não há mira, goleiro ou bola com trajetória nova.",
+        "prepared": "Personagem, cenário, câmera, estados e placar já conhecidos. O aluno recebe uma partida de base para concentrar a tarefa nas novas competências do posto.",
+        "two": [
+          "Fazer o entregador pular e voltar ao chão, sem pulo no ar.",
+          "Variar a entrada dos obstáculos e aumentar a velocidade respeitando um limite."
+        ],
+        "three": [
+          "Reconstruir pulo, pistas e barreiras no corredor 3D.",
+          "Conservar a condição de reinício e provar que a dificuldade não cresce indefinidamente."
+        ],
+        "checks": [
+          "O impulso funciona no chão e não cria saltos infinitos no ar.",
+          "O personagem volta a tocar o chão; a colisão identifica a barreira.",
+          "Os valores sorteados ficam no intervalo informado e aparecem em mais de uma configuração controlada.",
+          "A dificuldade cresce até o teto; uma nova partida restaura o início."
+        ],
+        "variant": "Alterar a distância entre obstáculos e explicar, com um teste, se a passagem continua possível.",
+        "not_new": "Sem física de bola, força de chute, vento ou solução de trajetórias."
+      },
+      "required": 2,
+      "powers": [
+        {
+          "title": "Pulo duplo",
+          "addition": "Contagem de saltos e reposição ao tocar o chão.",
+          "prerequisite": "Pulo e condição de chão.",
+          "application": "Dar um segundo salto ao Dino ou ao corredor.",
+          "check": "Dois saltos são possíveis; o terceiro falha; tocar o chão recupera os dois.",
+          "lessons": 1
+        },
+        {
+          "title": "Abaixe para passar",
+          "addition": "Estado do personagem que muda a área de colisão.",
+          "prerequisite": "Entrada, hitbox e estado.",
+          "application": "Acrescentar obstáculos baixos e a ação de abaixar.",
+          "check": "Abaixar permite passar; em pé há colisão; soltar o comando restaura a forma.",
+          "lessons": 1
+        },
+        {
+          "title": "Moedas que atraem",
+          "addition": "Detecção por distância e deslocamento até o jogador.",
+          "prerequisite": "Movimento e posição em 2D/3D.",
+          "application": "Adicionar um ímã temporário ao corredor.",
+          "check": "Só moedas no alcance são atraídas; cada uma pontua uma vez.",
+          "lessons": 2
+        },
+        {
+          "title": "Meu melhor resultado",
+          "addition": "Persistência de um recorde entre partidas.",
+          "prerequisite": "Placar e reinício.",
+          "application": "Guardar a melhor distância e mostrá-la na tela final.",
+          "check": "Um resultado menor não substitui o maior; abrir novamente conserva o recorde.",
+          "lessons": 2
+        },
+        {
+          "title": "Obstáculos em sequência",
+          "addition": "Uma lista curta de padrões de obstáculo.",
+          "prerequisite": "Relógio e sorteio limitado.",
+          "application": "Alternar entre padrões reconhecíveis, em vez de sortear cada obstáculo isoladamente.",
+          "check": "O padrão respeita a ordem definida e a troca não gera um trecho impossível.",
+          "lessons": 2
+        }
+      ],
+      "extras": [
+        {
+          "title": "Reino Cogumelo",
+          "purpose": "Outro gênero com pulo: aprender plataforma com percurso e chegada.",
+          "origin": "Exemplo Jogo 3D"
+        },
+        {
+          "title": "Meu Herói do Molda",
+          "purpose": "Preparar modelo e animação para um corredor.",
+          "origin": "Meu Herói do Molda · Jogo 3D"
+        },
+        {
+          "title": "Meu primeiro jogo inventado",
+          "purpose": "Planejar com Pensa, combinar regras conhecidas e fazer um projeto pequeno.",
+          "origin": "Novo guia de autoria · não substitui a missão"
+        }
+      ],
+      "unlocks": [
+        "Blocos do Dino e da Corrida 3D entram ao concluir cada curso.",
+        "O par abre missão, Poderes e extras.",
+        "Molda e Pensa são usados nos extras conforme o direito da ferramenta; o tutorial acompanha o primeiro uso."
+      ],
+      "evidence": "Movimento e dificuldade funcionam em 2D/3D. O aluno aplica dois Poderes e registra uma melhoria feita depois de testar.",
+      "motivation": "O aluno já altera a sensação do jogo. Testar duas versões e escolher uma produz autoria antes de começar a linguagem textual.",
+      "recovery": "Se o pulo falha, isolar impulso, queda e contato em uma cena curta. Se a partida é impossível, testar espaçamento e velocidade separadamente."
+    },
+    {
+      "id": "explorador",
+      "name": "Explorador(a) de Mundos",
+      "n": 4,
+      "genre": "Mira e alvos",
+      "language": "Python",
+      "environment": "Pygame Zero + Raylib 3D",
+      "phase": "Ler e alterar código",
+      "color": "blue",
+      "promise": "Eu reconheço no Python as regras que já sei construir.",
+      "entry": "Blocos, condições, estados, tempo e posições consolidados. A Tartaruga opcional ajuda a familiarização, mas não é pressuposta.",
+      "rationale": "O gênero tem poucos objetos e uma ação principal: clicar. A mudança para Python é ensinada em etapas; o primeiro 3D textual usa um projeto com câmera, recursos e renderização preparados. O aluno não estreia shaders junto com a linguagem.",
+      "concepts": [
+        "Ler e prever código",
+        "Nome, valor e indentação",
+        "Funções de evento e estado",
+        "Clique dentro / fora",
+        "Sorteio e tempo",
+        "Ler uma mensagem de erro"
+      ],
+      "math": "Coordenadas, limites e comparação. O clique 3D usa uma operação de seleção explicada pela aula; a matemática do raio e shaders não entram no objetivo do iniciante.",
+      "courses": [
+        {
+          "title": "Acerte o Alvo",
+          "dimension": "2D",
+          "environment": "Python · Pygame Zero",
+          "origin": "Acerte a Maçã como núcleo; Tiro ao Prato fica para expansão.",
+          "status": "Novo curso · 7 aulas propostas",
+          "lessons": [
+            "Uma regra conhecida em Python — prever e rodar uma condição simples na Ponte.",
+            "O alvo aparece — ator, posição, desenho e nomes; editar valores sem copiar um programa longo.",
+            "Um clique produz uma resposta — função de evento, parâmetro e acerto/erro.",
+            "Guardar pontos — atribuição, estado e escopo necessário às funções do jogo.",
+            "Outro lugar, outra tentativa — sorteio em uma área válida.",
+            "Uma partida com tempo — início, contagem, fim e reinício.",
+            "Escreva e conserte — completar um pequeno trecho em texto e localizar um erro já estudado."
+          ]
+        },
+        {
+          "title": "Galeria de Alvos 3D",
+          "dimension": "3D",
+          "environment": "Python · Raylib 3D",
+          "origin": "Adaptar Primeira Cena 3D e a seleção de Clarão com Shader, retirando o shader dos objetivos. O jogo-base completo é novo.",
+          "status": "Novo jogo e novo curso",
+          "lessons": [
+            "O mesmo Python em outra cena — ler o ciclo de renderização preparado e reconhecer o que muda do Pygame Zero.",
+            "Criar e posicionar um alvo — x/y/z e a câmera fixa.",
+            "Escolher com o mouse — usar e testar a seleção fornecida, distinguindo clique no alvo e no vazio.",
+            "Pontos, sorteio e relógio — transportar a lógica do jogo 2D.",
+            "Resolver em texto — completar uma regra, corrigir um erro e testar a partida."
+          ]
+        }
+      ],
+      "mission": {
+        "title": "Resgate dos Vagalumes",
+        "lessons": 2,
+        "brief": "Um vagalume aparece em posições variadas. O aluno soma pontos ao clicar nele, trata o clique fora, controla o tempo e reinicia. Depois aplica a mesma regra em um bosque 3D.",
+        "same": "Alvo → vagalume; galeria → bosque. Clique, detecção, estado, sorteio, pontuação e tempo são os mesmos. O cenário preparado não acrescenta iluminação programável.",
+        "prepared": "Imagens/modelos, câmera, renderização e a função de seleção 3D exatamente no contrato ensinado. A lógica da partida fica ausente.",
+        "two": [
+          "Construir as regras de clique, pontos e nova posição em Python.",
+          "Acrescentar fim por tempo, reinício e corrigir um erro de condição."
+        ],
+        "three": [
+          "Aplicar os mesmos critérios no bosque usando a seleção 3D ensinada no curso.",
+          "Mudar um pequeno trecho do programa em texto, com testes antes e depois."
+        ],
+        "checks": [
+          "Clique no alvo aumenta o placar; clique no vazio não recebe o mesmo resultado.",
+          "Novo alvo permanece na região válida.",
+          "Ao acabar o tempo, cliques não continuam aumentando pontos.",
+          "Reiniciar restaura o estado e permite outra partida, nas duas dimensões."
+        ],
+        "variant": "Mudar o tempo inicial e corrigir uma comparação de acerto já ensinada, sem exigir uma biblioteca nova.",
+        "not_new": "Sem listas de dezenas de alvos, shaders, classes ou animação por curva. A missão não depende do Poder de alvo em movimento."
+      },
+      "required": 2,
+      "powers": [
+        {
+          "title": "Alvos em movimento",
+          "addition": "Movimento contínuo entre limites enquanto o alvo pode ser clicado.",
+          "prerequisite": "Posição, clique e ciclo do jogo.",
+          "application": "Fazer os alvos cruzarem a galeria.",
+          "check": "O alvo se move e pode ser acertado durante o movimento; não sai da região jogável.",
+          "lessons": 1
+        },
+        {
+          "title": "Combo de acertos",
+          "addition": "Uma sequência que aumenta a recompensa e é interrompida pelo erro.",
+          "prerequisite": "Pontos, estado e acerto/erro.",
+          "application": "Premiar acertos consecutivos no jogo-base.",
+          "check": "Acertos seguidos elevam o combo; errar reinicia a sequência.",
+          "lessons": 1
+        },
+        {
+          "title": "Escolha a cor certa",
+          "addition": "Uma propriedade do alvo passa a decidir se o clique é válido.",
+          "prerequisite": "Condição e representação de estado.",
+          "application": "Mostrar uma cor-alvo e penalizar cliques na outra cor.",
+          "check": "O mesmo clique tem resultado diferente conforme a regra de cor atual.",
+          "lessons": 2
+        },
+        {
+          "title": "Alvos com valores diferentes",
+          "addition": "Dados de tipo associados a pontuação.",
+          "prerequisite": "Funções, atributos e pontos.",
+          "application": "Criar alvos comuns e raros, com valores e aparições diferentes.",
+          "check": "O valor do tipo certo é somado uma única vez.",
+          "lessons": 2
+        },
+        {
+          "title": "O alvo encolhe",
+          "addition": "Dificuldade altera a área de acerto ao longo da partida.",
+          "prerequisite": "Tempo e detecção de clique.",
+          "application": "Reduzir os alvos até um tamanho mínimo.",
+          "check": "A área visível e a área clicável continuam coerentes; há um limite mínimo.",
+          "lessons": 2
+        }
+      ],
+      "extras": [
+        {
+          "title": "Python Arcade com Tartaruga",
+          "purpose": "Aplicar Python em outro ambiente visual; a introdução da biblioteca faz parte do extra.",
+          "origin": "Pong, Flappy, Pega-Ovos e Canhão"
+        },
+        {
+          "title": "Ilha dos Criadores",
+          "purpose": "Continuar criando em blocos com Mundo 3D, veículos e clima.",
+          "origin": "Mundo 3D · exemplo existente"
+        },
+        {
+          "title": "O menu do meu jogo",
+          "purpose": "Criar menu e placar em HTML/CSS para um jogo JavaScript preparado, com eventos em blocos e Ponte. O extra ensina sua base, sem exigir JavaScript prévio.",
+          "origin": "Novo extra: HTML/CSS a serviço de um jogo"
+        }
+      ],
+      "unlocks": [
+        "Cada curso concluído concede seus blocos Python.",
+        "A Ponte e o texto entram gradualmente nas aulas; sua disponibilidade livre deve ser configurada de forma explícita por linguagem.",
+        "O par abre missão, Poderes e extras. Os Poderes podem usar blocos de Python, Ponte ou texto; a missão comprova os pequenos trechos de código previstos."
+      ],
+      "evidence": "O aluno lê, muda e escreve pequenos trechos com intenção, além de produzir o comportamento correto em 2D/3D. Usar ajuda não é uma punição.",
+      "motivation": "A primeira experiência de código mostra algo reconhecível. A biblioteca de blocos e os jogos antigos continuam disponíveis e podem continuar sendo a principal criação livre.",
+      "recovery": "Diagnosticar separadamente erro de sintaxe, compreensão da regra e uso da API. Uma falha do executor aparece como problema da plataforma e não consome tentativas."
+    },
+    {
+      "id": "mestre",
+      "name": "Mestre dos Jogos",
+      "n": 5,
+      "genre": "Plataforma com fases",
+      "language": "Python",
+      "environment": "Pygame Zero + Raylib 3D",
+      "phase": "Organizar regras e dados",
+      "color": "blue",
+      "promise": "Eu organizo um jogo em funções, dados e fases.",
+      "entry": "Python básico do Explorador e a experiência de pulo/gravidade do Inventor. Listas, funções com retorno e mapa de fases serão ensinados aqui; não depender de um Poder opcional.",
+      "rationale": "A plataforma retoma a física conhecida e acrescenta estrutura de programa. A missão continua sendo uma plataforma, evitando o salto não ensinado para empurrar caixas em uma grade.",
+      "concepts": [
+        "Funções e parâmetros",
+        "Listas e repetição",
+        "Fase como dados",
+        "Colisão por eixo",
+        "Condições de vitória",
+        "Depuração com casos pequenos"
+      ],
+      "math": "Eixos, velocidade, gravidade e coordenada de célula. Explicar a passagem de linha/coluna para posição; rampas e trigonometria ficam fora do núcleo.",
+      "courses": [
+        {
+          "title": "Mina das Portas",
+          "dimension": "2D",
+          "environment": "Python · Pygame Zero",
+          "origin": "Recortar Salto nas Plataformas e Mina que Desmorona. Chão que cai vira Poder; a fase básica conserva pulo, mapa, coleta e saída.",
+          "status": "Adaptação de exemplos · novo curso",
+          "lessons": [
+            "Uma plataforma conhecida, em Python — reconhecer movimento, gravidade e estados.",
+            "Funções que recebem informações — reduzir repetição sem esconder a regra.",
+            "Uma lista de plataformas — criar, percorrer e testar elementos.",
+            "O mapa é dado — construir uma fase pequena a partir de linhas e colunas.",
+            "Resolver a colisão — separar movimento e correção em cada eixo.",
+            "Pulo, chão e teto — testar três casos diferentes.",
+            "A chave e a saída — reaplicar coleta e condição em um mapa.",
+            "A próxima fase — carregar outros dados e restaurar o estado necessário.",
+            "Conserte a mina — localizar um erro com um caso pequeno e explicar a correção."
+          ]
+        },
+        {
+          "title": "Ilhas Suspensas",
+          "dimension": "3D",
+          "environment": "Python · Raylib 3D",
+          "origin": "Caixas que se Encostam + Corrida Infinita. Jogo de plataforma com fases ainda precisa ser montado.",
+          "status": "Novo jogo e novo curso",
+          "lessons": [
+            "A fase ganha profundidade — reutilizar dados e reconhecer os eixos.",
+            "Movimento entre sólidos — aprender a colisão por eixo em 3D dentro do curso-base.",
+            "Gravidade e apoio — pousar, cair e impedir atravessamento.",
+            "Peças descritas por dados — construir outra ilha a partir de uma lista.",
+            "Coleta, portal e próxima ilha — transportar as condições de fase.",
+            "Testes da travessia — conferir bordas, reinício e troca de fase."
+          ]
+        }
+      ],
+      "mission": {
+        "title": "Entrega pelos Telhados",
+        "lessons": 3,
+        "brief": "Um entregador precisa recolher uma encomenda e chegar à saída de duas pequenas fases sobre telhados. Em 3D, faz a mesma travessia entre plataformas de uma cidade.",
+        "same": "Mina/ilhas → telhados. Mantêm-se pulo, gravidade, sólidos, dados de fase, coleta e saída. O aluno usa funções para organizar as regras.",
+        "prepared": "Arte, câmera, dados de duas fases válidas e contratos das funções. Não fornecer a lógica que está sendo avaliada.",
+        "two": [
+          "Ler o mapa e construir plataformas sem programar cada uma separadamente.",
+          "Programar colisão, coleta e condição de saída; testar uma fase com e outra sem a encomenda."
+        ],
+        "three": [
+          "Construir a mesma travessia com sólidos no espaço.",
+          "Carregar a segunda fase e preservar apenas o progresso que o enunciado pede."
+        ],
+        "checks": [
+          "O personagem pousa no chão e é impedido por uma parede.",
+          "Uma fase nova vem de dados diferentes, sem duplicar a partida inteira.",
+          "Sem encomenda, a saída não conclui; com ela, avança.",
+          "Ao trocar de fase, objetos da anterior são retirados; reinício restaura o estado correto."
+        ],
+        "variant": "Adicionar uma plataforma pelos dados e corrigir um erro de colisão em um eixo.",
+        "not_new": "Sem empurrar caixas, herança de classes, escadas ou chão móvel obrigatório."
+      },
+      "required": 2,
+      "powers": [
+        {
+          "title": "Checkpoint",
+          "addition": "Um ponto de retorno atualizado durante a fase.",
+          "prerequisite": "Posição, estado e reinício.",
+          "application": "Adicionar um marco intermediário ao jogo de plataforma.",
+          "check": "Antes de ativar, retorna ao início; depois, retorna ao marco correto.",
+          "lessons": 2
+        },
+        {
+          "title": "Plataforma móvel",
+          "addition": "Movimento de uma base e transporte do personagem apoiado.",
+          "prerequisite": "Colisão por eixo e contato com o chão.",
+          "application": "Criar uma plataforma que leva o jogador entre duas áreas.",
+          "check": "A base se move, carrega quem está apoiado e não arrasta quem está no ar.",
+          "lessons": 2
+        },
+        {
+          "title": "Chão que desmorona",
+          "addition": "Estado e atraso entre pisar e perder o apoio.",
+          "prerequisite": "Contato e relógio.",
+          "application": "Criar pisos frágeis na mina ou nas ilhas.",
+          "check": "O piso só começa a ceder após contato; uma nova partida restaura os pisos.",
+          "lessons": 2
+        },
+        {
+          "title": "Inimigo que patrulha",
+          "addition": "Mudança de direção por borda ou obstáculo.",
+          "prerequisite": "Posição, condição e colisão.",
+          "application": "Criar um guardião que patrulha uma plataforma.",
+          "check": "Ele muda de direção nos pontos definidos e não sai indefinidamente do percurso.",
+          "lessons": 3
+        },
+        {
+          "title": "Escadas e rampas",
+          "addition": "Movimento condicionado ao tipo de terreno.",
+          "prerequisite": "Mapa, gravidade e colisão.",
+          "application": "Adicionar uma zona de escada ou rampa ao mapa.",
+          "check": "A regra especial só atua no terreno correspondente; fora dele a física normal permanece.",
+          "lessons": 3
+        }
+      ],
+      "extras": [
+        {
+          "title": "Aventura do Herói",
+          "purpose": "Explorar estados de inimigos em outro gênero, com kits em blocos.",
+          "origin": "Jogo 2D Avançado"
+        },
+        {
+          "title": "Labirinto dos Robôs em Python",
+          "purpose": "Conhecer primeira pessoa; a câmera e os controles novos são ensinados no próprio extra.",
+          "origin": "Raylib 3D"
+        },
+        {
+          "title": "Desenhe uma fase no Pinta",
+          "purpose": "Construir mapa e peças visuais para a plataforma.",
+          "origin": "Pinta + mapas em camadas"
+        }
+      ],
+      "unlocks": [
+        "Blocos e bibliotecas continuam entrando pela conclusão de cada curso.",
+        "O par abre missão, Poderes e extras do Mestre.",
+        "As funções de Molda mais avançadas entram quando um curso de ferramenta as ensina, sem serem pré-requisito escondido da plataforma."
+      ],
+      "evidence": "O aluno altera dados e funções para construir duas fases em dois ambientes e consegue isolar uma falha. Aplica dois Poderes diferentes ao seu jogo.",
+      "motivation": "Criar uma nova fase sem remontar tudo torna visível o ganho de autonomia. O aluno pode montar uma sequência própria de fases e pedir que alguém jogue.",
+      "recovery": "Usar um mapa de uma única plataforma para testar a física; só depois voltar à fase completa. Ajuda direcionada evita recomeçar um curso inteiro."
+    },
+    {
+      "id": "arquiteto",
+      "name": "Arquiteto(a) de Mundos",
+      "n": 6,
+      "genre": "Defesa de torre",
+      "language": "JavaScript",
+      "environment": "Canvas 2D + three.js",
+      "phase": "Transferir entre linguagens",
+      "color": "coral",
+      "promise": "Eu transporto meu raciocínio para outra linguagem e organizo sistemas que interagem.",
+      "entry": "Funções, listas, dados, estados e testes em Python. Não exigir HTML/CSS de um extra; o essencial da página e do Canvas entra no curso-base.",
+      "rationale": "Mantém a formação em Python e JavaScript pretendida na pré-proposta. A troca de sintaxe ganha uma ponte explícita e o primeiro jogo usa caminho fixo, funções e objetos simples. Herança, motor próprio e otimização não são exigências iniciais.",
+      "concepts": [
+        "O que muda entre Python e JavaScript",
+        "Objetos e funções",
+        "Desenhar e atualizar",
+        "Ondas e caminhos definidos",
+        "Alcance e seleção de alvo",
+        "Manter regras ao acrescentar uma nova"
+      ],
+      "math": "Distância e alcance com representação visual; caminho descrito por pontos. Sem pathfinding, trigonometria ou cálculo de balística como requisito universal.",
+      "courses": [
+        {
+          "title": "Guardiões do Cristal",
+          "dimension": "2D",
+          "environment": "JavaScript · Canvas 2D",
+          "origin": "Muralha do Reino e Defesa do Reino são referências; criar uma versão pedagógica menor em Canvas.",
+          "status": "Novo curso · referência a adaptar",
+          "lessons": [
+            "A mesma condição em duas linguagens — comparar e alterar um trecho conhecido.",
+            "Funções, listas e objetos — relacionar as representações e ler mensagens de erro.",
+            "Onde o jogo aparece — HTML/CSS mínimos, Canvas e ciclo de atualização.",
+            "Um inimigo segue um caminho — percorrer pontos preparados.",
+            "Ondas de inimigos — dados de grupos e intervalo de criação.",
+            "Uma torre escolhe um alvo — alcance e seleção simples.",
+            "O disparo resolve uma interação — dano, retirada e contagem.",
+            "Vencer, perder e reiniciar — integrar estados e limpar a partida.",
+            "Acrescentar sem quebrar — modificar uma regra e repetir casos conhecidos."
+          ]
+        },
+        {
+          "title": "Guardiões do Cristal 3D",
+          "dimension": "3D",
+          "environment": "JavaScript · three.js",
+          "origin": "Defesa da Torre (na mão) como referência; câmera e iluminação simples, sem shaders novos.",
+          "status": "Novo curso sobre exemplo existente",
+          "lessons": [
+            "A cena e o jogo — separar visualização 3D e regras da partida.",
+            "O caminho no chão — levar os dados para x/z.",
+            "Invasores e ondas — reaplicar criação e retirada de objetos.",
+            "Alcance e alvo no espaço — medir, selecionar e reagir.",
+            "Vitória e reinício — reaplicar os mesmos estados.",
+            "Uma mudança, dois testes — alterar uma regra e verificar o que deveria continuar igual."
+          ]
+        }
+      ],
+      "mission": {
+        "title": "Resgate na Estação",
+        "lessons": 3,
+        "brief": "Drones passam por um trajeto e estações enviam cargas de energia aos que estão no alcance. O jogador precisa atender uma meta de drones antes que muitos passem sem atendimento.",
+        "same": "Inimigos → drones; torres → estações; dano → carga recebida. Caminho, ondas, alcance, seleção e conclusão por quantidade continuam iguais.",
+        "prepared": "Cenário, trajeto e efeitos visuais. O enunciado define carga necessária, meta e tolerância de falhas. Não há física real de eletricidade.",
+        "two": [
+          "Construir ondas e percurso no Canvas usando os dados fornecidos.",
+          "Programar alcance, escolha de alvo, interação e condições de fim."
+        ],
+        "three": [
+          "Levar a mesma organização para a estação 3D.",
+          "Acrescentar um tipo simples de drone por dados e verificar os tipos anteriores."
+        ],
+        "checks": [
+          "Drones surgem em ondas e seguem o trajeto definido.",
+          "Uma estação só atende alvos dentro do alcance.",
+          "Carga suficiente conclui o atendimento uma vez; drones não atendidos contam como falha.",
+          "Adicionar um tipo pelos dados não desliga os anteriores; a partida reinicia corretamente."
+        ],
+        "variant": "Alterar o alcance de uma estação e conferir os casos dentro e fora do novo limite.",
+        "not_new": "Sem herança de Peixe, comportamento de perseguição ou inteligência artificial não ensinada."
+      },
+      "required": 2,
+      "powers": [
+        {
+          "title": "Melhorar e vender torres",
+          "addition": "Economia de compra, melhoria e devolução de recursos.",
+          "prerequisite": "Objetos, contadores e estado.",
+          "application": "Adicionar níveis de torre ao jogo-base.",
+          "check": "Sem recurso suficiente não compra; melhorar muda a propriedade; vender devolve só o valor definido.",
+          "lessons": 2
+        },
+        {
+          "title": "Dano em área",
+          "addition": "Uma interação afeta vários alvos dentro de uma região.",
+          "prerequisite": "Lista de inimigos e distância.",
+          "application": "Criar uma torre de explosão.",
+          "check": "Alvos dentro da área recebem efeito uma vez; os de fora não recebem.",
+          "lessons": 2
+        },
+        {
+          "title": "Escolher a prioridade",
+          "addition": "Uma estratégia decide qual alvo será atendido.",
+          "prerequisite": "Alcance, listas e seleção simples.",
+          "application": "Alternar entre primeiro no caminho e mais próximo.",
+          "check": "Com os mesmos inimigos, trocar a estratégia muda o alvo esperado.",
+          "lessons": 2
+        },
+        {
+          "title": "Efeito de lentidão",
+          "addition": "Aplicar um efeito temporário e restaurar a propriedade original.",
+          "prerequisite": "Estado, velocidade e tempo.",
+          "application": "Criar uma torre que desacelera invasores.",
+          "check": "A velocidade muda por um intervalo; múltiplos efeitos seguem a regra explicitada.",
+          "lessons": 3
+        },
+        {
+          "title": "Tipos e vantagens",
+          "addition": "Uma tabela combina tipo de torre e tipo de inimigo.",
+          "prerequisite": "Dados de tipo e funções.",
+          "application": "Criar inimigos resistentes a um ataque e vulneráveis a outro.",
+          "check": "A mesma torre produz efeitos diferentes conforme a tabela, sem casos contraditórios.",
+          "lessons": 3
+        }
+      ],
+      "extras": [
+        {
+          "title": "Painel e inventário do meu jogo",
+          "purpose": "Construir uma interface HTML/CSS ligada ao estado do jogo: itens, botões, dados e continuidade.",
+          "origin": "Novo extra de interface para jogos JavaScript"
+        },
+        {
+          "title": "Passeio 3D",
+          "purpose": "Explorar direção e câmera em terceira pessoa.",
+          "origin": "Passeio 3D (na mão)"
+        },
+        {
+          "title": "Do Pygame Zero ao pygame-ce",
+          "purpose": "Entender o ciclo explícito do jogo e a biblioteca de base.",
+          "origin": "Pygame-ce · exemplo existente; curso novo"
+        }
+      ],
+      "unlocks": [
+        "Conclusão de cada base concede o repertório correspondente em Canvas ou three.js.",
+        "Missão, Poderes e extras abrem juntos após o par.",
+        "O modo texto ensinado em JavaScript fica disponível no Estúdio; blocos continuam utilizáveis nos projetos livres."
+      ],
+      "evidence": "Transferência de raciocínio para JavaScript demonstrada nas duas dimensões. O aluno aplica dois Poderes e repete testes ao alterar um sistema.",
+      "motivation": "Reconhecer o mesmo raciocínio em outra linguagem mostra portabilidade real. Os Poderes permitem estratégias diferentes com a mesma torre-base.",
+      "recovery": "Separar sintaxe, desenho, atualização e lógica. O aluno pode comparar um trecho Python/JavaScript conhecido sem refazer todo o posto anterior."
+    },
+    {
+      "id": "genio",
+      "name": "Gênio da Criação",
+      "n": 7,
+      "genre": "Construção e gestão de um mundo",
+      "language": "JavaScript · Pro",
+      "environment": "Canvas 2D + three.js em arquivos",
+      "phase": "Criar, testar e manter",
+      "color": "coral",
+      "promise": "Eu organizo um mundo que o jogador muda e consigo entregar uma versão melhor dele.",
+      "entry": "Sistemas com objetos/dados, recursos, eventos, testes e JavaScript em 2D/3D. Organização em arquivos e persistência robusta são ensinadas neste posto.",
+      "rationale": "Fazenda 2D e voxel 3D da pré-proposta tinham lógicas centrais diferentes. Aqui ambos são construtores sobre uma grade: colocar/remover peças, consumir recursos, produzir ao longo do tempo e salvar. O visual muda; o modelo do mundo é comparável.",
+      "concepts": [
+        "Grade e ocupação",
+        "Custo e produção",
+        "Modelo separado da apresentação",
+        "Arquivos e módulos",
+        "Salvar / carregar / restaurar",
+        "Versões e retorno de jogadores"
+      ],
+      "math": "Linha/coluna, custo, saldo, intervalo e taxa simples. Sem terreno procedural, física de dominó, rede elétrica real ou otimização de motor obrigatória.",
+      "courses": [
+        {
+          "title": "Ilha que Floresce",
+          "dimension": "2D",
+          "environment": "JavaScript · Canvas 2D · Pro",
+          "origin": "Fazenda Feliz como referência. Escopo: poucas construções em grade, recursos e produção.",
+          "status": "Adaptação e novo curso",
+          "lessons": [
+            "O jogo em arquivos — abrir o Pro e separar regras, dados e apresentação.",
+            "A ilha é uma grade — relacionar posição e célula.",
+            "Colocar e retirar — verificar ocupação e regras de construção.",
+            "Recursos que têm custo — validar saldo antes de executar uma ação.",
+            "Produzir ao longo do tempo — controlar estados e intervalos.",
+            "Salvar e carregar — registrar dados suficientes e reconstruir o mundo.",
+            "Testes que protegem a ilha — tentar uma ação inválida e repetir uma válida.",
+            "Versão 2 — receber um teste, corrigir e registrar o que mudou."
+          ]
+        },
+        {
+          "title": "Ilha que Floresce 3D",
+          "dimension": "3D",
+          "environment": "JavaScript · three.js · Pro",
+          "origin": "Adaptar a grade de Mundo de Blocos para a mesma gestão do jogo 2D. A simulação completa é nova.",
+          "status": "Novo jogo derivado · novo curso",
+          "lessons": [
+            "O mesmo mundo, outro desenho — separar dados da cena 3D.",
+            "Escolher uma célula — selecionar no chão x/z com o método de clique ensinado.",
+            "Construir no espaço — reaplicar ocupação, custo e retirada.",
+            "A ilha produz — transportar os estados de produção.",
+            "Guardar um mundo 3D — salvar dados e reconstruir sem gravar a cena inteira.",
+            "Uma atualização segura — repetir os testes e publicar uma versão revisada."
+          ]
+        }
+      ],
+      "mission": {
+        "title": "A Base da Lua",
+        "lessons": 3,
+        "brief": "O aluno monta uma pequena base lunar com módulos sobre uma grade. Cada módulo custa recursos e alguns produzem recursos com o tempo. O estado pode ser salvo e reconstruído em 2D e 3D.",
+        "same": "Construções da ilha → módulos lunares; colheita → produção de recursos. Grade, custo, produção, persistência e organização permanecem.",
+        "prepared": "Arte, câmera, tipos de módulo e contratos de dados. O aluno implementa regras e ligação entre modelo e visualização.",
+        "two": [
+          "Impedir ocupação dupla e gasto sem saldo; atualizar a grade.",
+          "Executar produção e salvar/carregar o estado por dados."
+        ],
+        "three": [
+          "Reaplicar as mesmas regras na base espacial 3D.",
+          "Organizar arquivos e demonstrar que uma mudança não quebra os casos anteriores."
+        ],
+        "checks": [
+          "A mesma célula não aceita duas construções; saldo insuficiente não permite construir.",
+          "Retirar uma peça respeita a regra de devolução definida.",
+          "Salvar e abrir novamente conserva construções, saldo e estados pedidos.",
+          "Uma partida nova começa limpa; uma versão alterada conserva os testes essenciais."
+        ],
+        "variant": "Adicionar um novo módulo por dados e mostrar quais arquivos mudaram e quais testes continuaram passando.",
+        "not_new": "Sem queda de dominós, propagação física ou gênero inédito obrigatório."
+      },
+      "required": 2,
+      "powers": [
+        {
+          "title": "Produção em cadeia",
+          "addition": "Um recurso vira entrada de outra produção.",
+          "prerequisite": "Tipos, custo e produção do par.",
+          "application": "Ligar duas construções por uma receita de transformação.",
+          "check": "Sem insumo a produção para; ao receber insumo transforma a quantidade correta.",
+          "lessons": 2
+        },
+        {
+          "title": "Dia e noite mudam o mundo",
+          "addition": "Um ciclo altera regras de funcionamento.",
+          "prerequisite": "Relógio e estados.",
+          "application": "Fazer certas construções produzirem apenas em uma parte do ciclo.",
+          "check": "A regra muda na transição e volta corretamente no ciclo seguinte.",
+          "lessons": 2
+        },
+        {
+          "title": "Uma tarefa para o morador",
+          "addition": "Um agente segue uma rotina simples com estados.",
+          "prerequisite": "Funções, posição e estado.",
+          "application": "Adicionar um morador que vai até uma construção e executa uma tarefa.",
+          "check": "O agente muda de estado, chega ao destino e não executa a tarefa repetidamente sem condição.",
+          "lessons": 3
+        },
+        {
+          "title": "Desfazer a última construção",
+          "addition": "Histórico e reversão de uma ação.",
+          "prerequisite": "Grade, custo e dados.",
+          "application": "Oferecer um botão que desfaz a última ação válida.",
+          "check": "A reversão restaura célula e recursos; uma ação inválida não entra no histórico.",
+          "lessons": 3
+        },
+        {
+          "title": "Uma missão dentro do meu jogo",
+          "addition": "Objetivos encadeados monitoram o estado do mundo.",
+          "prerequisite": "Condições, recursos e eventos.",
+          "application": "Criar um personagem que pede construir, produzir e entregar em etapas.",
+          "check": "Cada etapa só conclui com sua condição; recompensas não são duplicadas.",
+          "lessons": 3
+        }
+      ],
+      "extras": [
+        {
+          "title": "Mundo de Blocos livre",
+          "purpose": "Explorar construção voxel, primeira pessoa e terreno.",
+          "origin": "Mundo de Blocos · expansão do gênero"
+        },
+        {
+          "title": "Uma criação com identidade visual",
+          "purpose": "Integrar personagens, cenários, modelos e interface feitos nas ferramentas.",
+          "origin": "Pinta + Molda"
+        },
+        {
+          "title": "Meu motor pequeno",
+          "purpose": "Extrair um conjunto de regras reutilizável e utilizá-lo em dois projetos.",
+          "origin": "Aprofundamento de JavaScript 2D/3D · não é requisito para concluir a jornada"
+        }
+      ],
+      "unlocks": [
+        "Pro é apresentado e autorizado no início do curso que o ensina; não é uma recompensa que chega só depois de terminar o trabalho.",
+        "Cada conclusão concede os blocos correspondentes; o par abre as três frentes do posto.",
+        "As competências avançadas não retiram blocos, kits ou projetos anteriores."
+      ],
+      "evidence": "Os dois mundos obedecem às regras, a missão transfere esse raciocínio e dois Poderes ampliam um jogo-base. Isso permite chegar à Lenda. O Projeto Autoral abaixo é um aprofundamento opcional, que pode produzir evidência para Maestrias.",
+      "motivation": "A pessoa passa de construir um exemplo a manter um projeto próprio. O portfólio mostra versões e escolhas concretas.",
+      "recovery": "Diminuir a grade e o número de tipos para isolar ocupação, custo ou persistência. Um erro em salvar dados não deve apagar a última versão válida.",
+      "capstone": {
+        "title": "Projeto Autoral — Festival dos Criadores",
+        "min": 6,
+        "max": 8,
+        "brief": "Um jogo pequeno de autoria do aluno, em 2D ou 3D, Python ou JavaScript. Pode usar um gênero conhecido e combinar mecânicas já aprendidas. O desafio é decidir, integrar, testar e revisar.",
+        "steps": [
+          "Definir público, objetivo e três funcionalidades que cabem no projeto.",
+          "Planejar com Pensa e separar o essencial das ideias futuras.",
+          "Criar um protótipo jogável com recursos permitidos e autoria reconhecida.",
+          "Integrar pelo menos um Poder já adquirido; não há nova contagem de Poderes.",
+          "Testar com outra pessoa ou com a equipe usando um roteiro curto.",
+          "Entregar versão 2, comparar com a primeira e explicar duas decisões."
+        ],
+        "rubric": [
+          "A partida pode ser iniciada, jogada e encerrada sem quebra impeditiva.",
+          "As escolhas do aluno aparecem nas regras ou na combinação de mecânicas.",
+          "Há evidência de teste e de uma revisão motivada por ele.",
+          "O aluno demonstra uma parte que programou e modifica uma pequena regra com entendimento."
+        ],
+        "review": "Uma revisão humana por projeto final, com retorno acionável e nova tentativa. O acesso aos conteúdos e às criações continua durante a revisão. Não prometer prazo antes de dimensionar a equipe.",
+        "python": "Quem escolher Python recebe o laboratório específico de módulos/imports e exportação antes da entrega. Essa variante precisa de autoria e homologação próprias; o curso Pro de JavaScript sozinho não a cobre."
+      }
+    }
+  ],
+  "masteries": [
+    {
+      "id": "python2d",
+      "name": "Jogos em Python 2D",
+      "symbol": "Py / 2D",
+      "when": "Após o par do Explorador",
+      "focus": "Criar jogos 2D em Python; aprofundar tempo, dados, estados e organização conforme o projeto pede.",
+      "tools": "Blocos → Ponte → Pro, conforme escolha do aluno e suporte do ambiente. Raylib 2D e pygame-ce.",
+      "source": "packages/studio/src/examples/python/raylibGames.manifest.ts · pygameGames.manifest.ts",
+      "boundary": "O selo reconhece construção e compreensão de jogos em Python 2D. A modalidade usada acompanha a evidência; converter o projeto não certifica fluência em escrita manual.",
+      "levels": [
+        {
+          "title": "I · Movimento, tempo e colisão",
+          "anchor": "Núcleo proposto: Dino Corredor em Raylib 2D. Referências reais: Olá, Raylib; Dino Corredor; Encostou!; Sprites, Timer e Animação.",
+          "steps": [
+            "Comparar o loop, as entradas e os estados com o Pygame Zero já conhecido.",
+            "Construir velocidade e tempo decorrido em blocos, vendo o Python gerado.",
+            "Separar aparência e área de contato; investigar um acerto que parece injusto.",
+            "Organizar funções pequenas para atualizar, desenhar e recomeçar."
+          ],
+          "workshops": [
+            [
+              "Salto ajustável",
+              "Modificar impulso e gravidade; comparar duas trajetórias e justificar a escolha."
+            ],
+            [
+              "Colisão justa",
+              "Ajustar a caixa de contato e testar aproximação, contato e afastamento."
+            ],
+            [
+              "Animação por tempo",
+              "Trocar quadros pelo tempo acumulado, sem acelerar a animação quando há mais quadros por segundo."
+            ]
+          ],
+          "project": "Uma versão do Dino com duas melhorias escolhidas, reinício limpo e uma mudança explicada pelo aluno.",
+          "checks": [
+            "O movimento e a animação conservam comportamento dentro da faixa de taxas testada.",
+            "Contato provoca o efeito uma vez; passar perto não provoca.",
+            "Reiniciar limpa obstáculos, placar e estado.",
+            "O aluno prevê e altera um parâmetro e confere a consequência."
+          ],
+          "credit": "O Dino da jornada traz raciocínio e projeto de referência. Não equivale automaticamente a Raylib. Quem já fez uma variante Raylib pode apresentar a mesma evidência sem refazer o núcleo."
+        },
+        {
+          "title": "II · Sistemas que trabalham juntos",
+          "anchor": "Núcleo proposto: Space Shooter em pygame-ce. Aprofundamento com trechos de Platformer e Vampire Survivor. Os três jogos estão no manifesto local.",
+          "steps": [
+            "Ensinar a ponte Raylib/Pygame Zero → pygame-ce: eventos, superfícies, relógio e grupos.",
+            "Representar entidades por dados e separar suas responsabilidades; classes só quando ajudam a resolver o problema.",
+            "Coordenar menu, partida, pausa e fim sem duplicar a atualização.",
+            "Medir quantidade de entidades e localizar um custo antes de otimizar."
+          ],
+          "workshops": [
+            [
+              "Inimigos por dados",
+              "Criar três comportamentos a partir de dados, sem copiar o jogo inteiro."
+            ],
+            [
+              "Reutilizar projéteis",
+              "Investigar criação e descarte; implementar um conjunto reutilizável e medir o efeito no mesmo cenário."
+            ],
+            [
+              "Recorde recuperável",
+              "Salvar e carregar recorde com tratamento de ausência ou formato inválido do arquivo."
+            ]
+          ],
+          "project": "Space Shooter ampliado com duas oficinas, diagnóstico de um defeito e registro de como foi corrigido.",
+          "checks": [
+            "Dois sistemas escolhidos funcionam juntos em uma partida completa.",
+            "Pausa e reinício não deixam atualização ou objetos duplicados.",
+            "O teste inclui um caso normal e um caso de limite por sistema.",
+            "A alteração estrutural é explicada em blocos, código ou esquema vinculado ao programa."
+          ],
+          "credit": "Poder de recorde anterior pode comprovar o comportamento, mas a integração e o tratamento de arquivo em pygame-ce precisam ser demonstrados. Não exigir jogar ou reconstruir todos os jogos do catálogo."
+        },
+        {
+          "title": "III · Um jogo mantido por você",
+          "anchor": "Projeto autoral 2D em Raylib ou pygame-ce. Referências para escolher escopo: PyDew Valley, Pirate Maker, Python Monsters e Super Pirate World; não copiar jogos inteiros como requisito.",
+          "steps": [
+            "Escolher uma pergunta de jogo, um público e até três sistemas essenciais.",
+            "Fazer um protótipo e planejar o que precisa mudar para a primeira versão completa.",
+            "Organizar código, dados e assets em responsabilidades identificáveis, na modalidade escolhida.",
+            "Testar, revisar e preparar instruções reproduzíveis de execução; ensinar o fluxo de exportação antes de exigi-lo."
+          ],
+          "workshops": [
+            [
+              "Progressão por dados",
+              "Criar e ajustar um pequeno conjunto de fases, itens ou adversários por configuração."
+            ],
+            [
+              "Testes de regras",
+              "Isolar duas regras importantes e mostrar casos que passam e falham."
+            ],
+            [
+              "Perfil de desempenho",
+              "Medir uma situação carregada, corrigir um custo e repetir a comparação."
+            ]
+          ],
+          "project": "Um jogo próprio pequeno, duas melhorias escolhidas, versão 1 e versão 2, teste com jogador e pacote executável ou fonte com execução reproduzível no ambiente homologado.",
+          "checks": [
+            "A partida tem objetivo, resposta às ações e encerramento ou continuidade compreensível.",
+            "Duas decisões de autoria são observáveis e justificadas.",
+            "Há revisão motivada por teste; não basta apenas mudar cores.",
+            "Outra pessoa consegue executar usando a instrução entregue; exportação depende de suporte qualificado."
+          ],
+          "credit": "O Projeto Autoral opcional do Gênio/Lenda pode ser a entrega. Creditam-se competências comprovadas dos níveis anteriores; não exigir um gênero inédito nem fazer todos os exemplos."
+        }
+      ]
+    },
+    {
+      "id": "python3d",
+      "name": "Jogos em Python 3D",
+      "symbol": "Py / 3D",
+      "when": "Após o par do Explorador",
+      "focus": "Controlar espaço, câmera, interação e sistemas de um jogo 3D com Python.",
+      "tools": "Blocos, Ponte e Pro em Python com Raylib 3D. Ensino novo sempre começa com blocos e código lado a lado.",
+      "source": "packages/studio/src/examples/python/raylibGames.manifest.ts",
+      "boundary": "Ter Python 2D ajuda com a linguagem, mas não comprova câmera, seleção ou colisão espacial. Só as competências comuns recebem crédito cruzado.",
+      "levels": [
+        {
+          "title": "I · Um espaço que responde",
+          "anchor": "Núcleo proposto: uma sala jogável usando Primeira Cena 3D, Caixas que se Encostam e Modelos do Molda.",
+          "steps": [
+            "Distinguir posição, direção, escala e eixos no mundo e na câmera.",
+            "Comparar a regra em blocos com as chamadas Python correspondentes.",
+            "Construir uma interação por aproximação e um contato com volume simples.",
+            "Trocar uma forma por um modelo preparado sem perder tamanho, origem e colisão."
+          ],
+          "workshops": [
+            [
+              "Câmera que acompanha",
+              "Calcular a posição desejada da câmera e conferir se o objetivo continua visível."
+            ],
+            [
+              "Interagir por distância",
+              "Abrir um objeto apenas dentro do alcance e sinalizar quando a ação está disponível."
+            ],
+            [
+              "Modelo no lugar certo",
+              "Integrar um modelo do Molda e preservar o volume funcional da interação."
+            ]
+          ],
+          "project": "Uma sala 3D com objetivo de coleta e saída, com duas oficinas aplicadas.",
+          "checks": [
+            "Os controles correspondem ao referencial ensinado.",
+            "A interação respeita distância e estado.",
+            "O jogador encontra o objetivo e consegue completar a sala.",
+            "O aluno modifica uma posição ou um limite e prevê o resultado."
+          ],
+          "credit": "Ilha 3D e Galeria de Alvos da jornada oferecem evidência parcial. A câmera e o ambiente Python deste nível precisam ser conferidos; não reensinar uma condição já comprovada."
+        },
+        {
+          "title": "II · Agentes, ondas e orientação",
+          "anchor": "Núcleo proposto: Patrulha Espacial e trechos de Labirinto dos Robôs, ambos no catálogo Raylib 3D.",
+          "steps": [
+            "Representar um agente com estados: esperar, mover e agir.",
+            "Ensinar direção, distância e passo por tempo com representação visual e blocos.",
+            "Separar regras de agente e regras de partida; organizar dados de ondas.",
+            "Depurar câmera, contato e estado de forma isolada antes de juntar o sistema."
+          ],
+          "workshops": [
+            [
+              "Robô com estados",
+              "Um robô muda de patrulha para perseguição e retorna ao perder o alvo."
+            ],
+            [
+              "Ondas por dados",
+              "Descrever duas ondas e interromper a geração quando a partida acaba."
+            ],
+            [
+              "Orientação espacial",
+              "Criar referências de direção e ajustar câmera/obstáculos após observar um teste."
+            ]
+          ],
+          "project": "Uma arena ou percurso com dois sistemas escolhidos e uma conclusão verificável.",
+          "checks": [
+            "Agentes transitam entre estados com condições explícitas.",
+            "O sistema para e reinicia sem duplicação.",
+            "A navegação foi testada e melhorada a partir de uma dificuldade observada.",
+            "O aluno explica qual informação decide a mudança de comportamento."
+          ],
+          "credit": "Rebanho ou defesa em JavaScript pode comprovar raciocínio de estados. A implementação Python e o comportamento espacial ainda precisam ser entregues."
+        },
+        {
+          "title": "III · Um mundo autoral pequeno",
+          "anchor": "Projeto próprio em Raylib 3D. Referências: Mundo de Blocos, Labirinto dos Robôs e Modelos do Molda.",
+          "steps": [
+            "Definir duas áreas pequenas e um objetivo central, evitando um mundo aberto sem escopo.",
+            "Planejar dados, modelos e responsabilidades; prototipar com formas simples.",
+            "Ensinar cada conceito adicional com blocos/código antes de aplicá-lo.",
+            "Testar orientação e desempenho; preparar execução reproduzível."
+          ],
+          "workshops": [
+            [
+              "Mundo por dados",
+              "Construir duas áreas usando uma descrição de dados editável."
+            ],
+            [
+              "Estado persistente",
+              "Guardar e restaurar o estado essencial com validação e recuperação."
+            ],
+            [
+              "Cena mais leve",
+              "Medir o cenário, reduzir um custo e conferir que o objetivo e as interações foram preservados."
+            ]
+          ],
+          "project": "Um jogo 3D próprio de duas áreas, duas oficinas, teste de navegação e uma versão revisada.",
+          "checks": [
+            "O objetivo pode ser encontrado e completado.",
+            "Câmera, contatos e transições funcionam nos casos previstos.",
+            "A versão revisada responde a uma observação real de uso.",
+            "Outra pessoa consegue executar o projeto pelo caminho documentado."
+          ],
+          "credit": "Projeto Autoral 3D em Python pode atender este nível. Python 2D III transfere organização e testes, mas não substitui a evidência espacial."
+        }
+      ]
+    },
+    {
+      "id": "javascript2d",
+      "name": "Jogos em JavaScript 2D",
+      "symbol": "JS / 2D",
+      "when": "Após o par do Construtor",
+      "focus": "Criar e aprofundar jogos 2D; usar os kits, o núcleo Canvas e o código conforme a necessidade.",
+      "tools": "Blocos, Ponte e Pro. Jogo 2D/Avançado e Canvas; HTML/CSS/DOM entram para construir o próprio jogo.",
+      "source": "packages/studio/src/examples/qaContracts.ts · __gen_coreExampleCatalog.ts",
+      "boundary": "Não existe uma Maestria de blocos separada. O nível descreve uma competência do jogo. Um kit pode sustentar o projeto, mas não substituir a demonstração do conceito que a aula quer ensinar.",
+      "levels": [
+        {
+          "title": "I · Movimento, fases e decisões",
+          "anchor": "Núcleo proposto: Mundo Pirata Profissional. Contraste curto com Pong (na mão) para revelar entrada, atualização e desenho.",
+          "steps": [
+            "Apresentar o kit e as regras do jogo sem exigir conhecimento anterior da extensão avançada.",
+            "Comparar uma regra em blocos com seu JavaScript; separar evento, estado e atualização.",
+            "Ensinar pulo, contato e passagem de fase com exemplos visuais.",
+            "Criar menu e placar do jogo com HTML/CSS preparados e pequenas alterações explicadas."
+          ],
+          "workshops": [
+            [
+              "Pulo que responde",
+              "Ajustar tolerância de salto e testar um salto cedo, no limite e tarde."
+            ],
+            [
+              "Duas fases ligadas",
+              "Criar transição, ponto de entrada e reinício consistentes."
+            ],
+            [
+              "Interface que informa",
+              "Mostrar objetivo, vidas e fim sem depender apenas da cor; ajustar a interface em duas larguras."
+            ]
+          ],
+          "project": "Uma fase autoral curta e uma segunda área, com duas oficinas aplicadas e teste de clareza.",
+          "checks": [
+            "Controles e objetivo ficam compreensíveis sem explicação contínua do autor.",
+            "Transições e reinício preservam apenas o estado pretendido.",
+            "A alteração de um parâmetro é prevista e verificada.",
+            "O código mostrado corresponde à regra montada; o aluno identifica a informação que muda."
+          ],
+          "credit": "Cursos em blocos e Poderes da jornada fornecem parte da evidência. O extra Mundo Pirata e atividades de interface podem receber crédito específico, sem aprovação automática do nível."
+        },
+        {
+          "title": "II · Sistemas que se combinam",
+          "anchor": "Núcleo proposto: Treinador de Criaturas Profissional. Contrastes com Treinador de Criaturas (na mão), Muralha do Reino (na mão) e A vila que guarda sua aventura.",
+          "steps": [
+            "Ensinar listas/objetos ou fichas como representação de criaturas, itens e estados.",
+            "Construir regras de turno e transições em blocos; ler o código correspondente.",
+            "Separar dados, regras e apresentação sem impor herança ou um motor próprio.",
+            "Apresentar armazenamento e interface HTML do jogo onde forem usados."
+          ],
+          "workshops": [
+            [
+              "Batalha por turnos",
+              "Controlar ação disponível, resposta do oponente e fim do turno sem dupla execução."
+            ],
+            [
+              "Inventário e escolhas",
+              "Guardar itens, consumir um deles e atualizar a interface pela mesma fonte de dados."
+            ],
+            [
+              "Salvar e continuar",
+              "Restaurar dados válidos, tratar ausência de save e oferecer um novo jogo consistente."
+            ]
+          ],
+          "project": "Um trecho jogável de aventura com dois sistemas escolhidos e testes de um caso normal e um caso limite.",
+          "checks": [
+            "Os sistemas se comunicam por dados identificáveis.",
+            "A interface reflete o estado real da partida.",
+            "Não há ação duplicada ao reiniciar ou trocar de tela.",
+            "O aluno altera uma regra e explica como ela afeta outra parte do jogo."
+          ],
+          "credit": "Arquiteto/Gênio podem comprovar dados, estados e persistência. O aluno entrega apenas as diferenças ainda não demonstradas no projeto escolhido."
+        },
+        {
+          "title": "III · Um jogo autoral, testado e mantido",
+          "anchor": "Projeto próprio 2D. Referências opcionais: Sobrevivente Profissional, Reino Zero Pro, Cidade & Moinho (na mão) e os próprios jogos do aluno.",
+          "steps": [
+            "Escolher escopo pequeno e combinar duas regras com intenção.",
+            "Usar blocos para explorar conceitos novos; comparar código antes de levar a mudança ao projeto.",
+            "Organizar responsabilidades em blocos/funções/arquivos conforme a modalidade.",
+            "Preparar uma versão jogável, coletar retorno e corrigir o que prejudica o jogo."
+          ],
+          "workshops": [
+            [
+              "Equilíbrio com evidência",
+              "Comparar duas configurações e escolher com base no teste de uma situação definida."
+            ],
+            [
+              "Módulo reutilizável",
+              "Extrair uma responsabilidade e reutilizá-la em duas cenas sem acoplar seus estados."
+            ],
+            [
+              "Confiabilidade",
+              "Criar testes de duas regras e registrar um defeito encontrado e corrigido."
+            ]
+          ],
+          "project": "Um jogo 2D autoral com duas oficinas, duas versões e instruções de como jogar e testar.",
+          "checks": [
+            "A partida completa pode ser jogada sem bloqueio impeditivo.",
+            "Há duas decisões próprias sobre regras, ritmo ou interação.",
+            "Uma revisão responde ao teste de outra pessoa ou da equipe.",
+            "O aluno consegue modificar uma regra e demonstrar o efeito, na modalidade escolhida."
+          ],
+          "credit": "O Projeto Autoral opcional pode cumprir a entrega. Não exigir um gênero novo, publicação pública ou reconstruir uma biblioteca inteira."
+        }
+      ]
+    },
+    {
+      "id": "javascript3d",
+      "name": "Jogos em JavaScript 3D",
+      "symbol": "JS / 3D",
+      "when": "Após o par do Inventor",
+      "focus": "Criar mundos jogáveis, agentes e interações 3D, aprofundando a relação entre câmera, espaço e regras.",
+      "tools": "Blocos, Ponte e Pro. Mundo 3D, Jogo 3D Avançado e Three.js no núcleo, com introdução ao ambiente escolhido.",
+      "source": "packages/studio/src/examples/qaContracts.ts · official-extensions/world-3d/examples.ts",
+      "boundary": "É uma área independente de JavaScript 2D. Não exige concluir sua irmã; o próprio núcleo ensina a linguagem e o ambiente necessários no nível de apoio adequado.",
+      "levels": [
+        {
+          "title": "I · Um mundo que dá vontade de explorar",
+          "anchor": "Núcleo proposto: Ilha dos Criadores. Contraste de câmera e cena com Passeio 3D (na mão).",
+          "steps": [
+            "Ensinar o uso do kit Mundo 3D e do chão x/z, câmera e obstáculos.",
+            "Ligar ação a uma condição no espaço; mostrar blocos e JavaScript correspondente.",
+            "Planejar referências visuais e um objetivo alcançável.",
+            "Construir a interface de missão do jogo com HTML/CSS quando usar a versão de núcleo."
+          ],
+          "workshops": [
+            [
+              "Percurso com checkpoints",
+              "Validar a ordem e indicar claramente o próximo ponto."
+            ],
+            [
+              "Gravidade diferente",
+              "Comparar peso/pulo e construir um desafio que continue possível."
+            ],
+            [
+              "Dia, noite e visibilidade",
+              "Alterar luz e ambiente mantendo caminho e objetos importantes legíveis."
+            ]
+          ],
+          "project": "Uma ilha pequena com percurso e objetivo, duas oficinas e teste de orientação.",
+          "checks": [
+            "O objetivo tem começo, progresso e conclusão.",
+            "O jogador encontra a próxima ação sem ajuda constante.",
+            "Câmera e controles funcionam na situação escolhida.",
+            "O aluno prevê o efeito de uma alteração espacial e a testa."
+          ],
+          "credit": "Ilha 3D do Farol e Runner 3D transferem regras. O kit Mundo 3D e a evidência de orientação precisam ser conferidos, sem refazer conceitos já comprovados."
+        },
+        {
+          "title": "II · Personagens e sistemas vivos",
+          "anchor": "Núcleo proposto: Reunir o Rebanho Profissional; comparação com Reunir o Rebanho (na mão). Referência adicional: A Lenda do Herói Profissional.",
+          "steps": [
+            "Representar esperar, vagar e seguir com condições explícitas.",
+            "Ensinar vetores/direções por experimentação, blocos e código; não só chamar um comportamento opaco.",
+            "Separar a atualização dos agentes e a missão do jogador.",
+            "Investigar câmera e colisão quando vários agentes se aproximam."
+          ],
+          "workshops": [
+            [
+              "Agentes com estados",
+              "Alternar entre vagar, seguir e chegar a uma área segura."
+            ],
+            [
+              "Interação com objetivo",
+              "Dar uma tarefa a um personagem e sinalizar seu progresso na interface do jogo."
+            ],
+            [
+              "Câmera adequada",
+              "Comparar duas configurações e resolver uma perda de visibilidade observada no teste."
+            ]
+          ],
+          "project": "Uma missão própria de resgate ou reunião com duas oficinas, estados verificáveis e término.",
+          "checks": [
+            "Os agentes mudam de estado pela regra, sem depender de intervenção do autor.",
+            "A contagem da missão reconhece cada agente uma vez.",
+            "Reinício limpa estado dos agentes e objetivo.",
+            "O aluno explica e altera uma condição de transição."
+          ],
+          "credit": "Poderes de agentes ou câmera podem atender uma oficina se a aplicação e o comportamento corresponderem. Fazer apenas o tutorial de uma ferramenta não comprova o sistema."
+        },
+        {
+          "title": "III · Um mundo autoral, com propósito",
+          "anchor": "Projeto próprio em Jogo 3D Avançado, Mundo 3D ou Three.js. Referências: A Lenda do Herói (na mão), Reunir o Rebanho e mundos feitos pelo aluno.",
+          "steps": [
+            "Definir duas áreas pequenas com uma missão central e uma escolha do jogador.",
+            "Prototipar com formas e planejar estado, cenas e integração de assets.",
+            "Ensinar cada conceito novo primeiro com blocos e leitura do JavaScript correspondente.",
+            "Testar orientação, resposta das regras e custo de execução; revisar."
+          ],
+          "workshops": [
+            [
+              "Missão em duas áreas",
+              "Transportar o estado necessário entre áreas sem duplicar objetos ou conclusão."
+            ],
+            [
+              "Mundo persistente",
+              "Restaurar progresso essencial e permitir reinício sem perder dados indevidamente."
+            ],
+            [
+              "Cena estável",
+              "Medir a cena no dispositivo de referência e corrigir um custo observado."
+            ]
+          ],
+          "project": "Um jogo 3D autoral de escopo pequeno, duas oficinas, teste com jogador e versão revisada.",
+          "checks": [
+            "O percurso e a missão são completáveis.",
+            "Câmera, espaço e regras trabalham juntos sem bloquear a intenção.",
+            "Uma decisão de design mudou a partir de teste documentado.",
+            "O aluno localiza e modifica a regra de um comportamento importante."
+          ],
+          "credit": "Gênio 3D e Projeto Autoral podem contribuir. Um projeto pronto copiado da galeria não recebe selo sem autoria, compreensão e revisão demonstradas."
+        }
+      ]
+    },
+    {
+      "id": "arte2d",
+      "name": "Arte 2D para Jogos",
+      "symbol": "Pinta / 2D",
+      "when": "Após o par do Construtor",
+      "focus": "Desenhar personagens, animações, cenários e interfaces que funcionam em um jogo real.",
+      "tools": "Pinta + jogo de protótipo pronto no Estúdio. Código de integração preparado e explicado no necessário.",
+      "source": "packages/studio/src/examples/qaContracts.ts: Meu personagem do Pinta; Mapa do Pinta e duas fases; Oficina de animações e som. Curso existente: O Jogo do Meu Jeito.",
+      "boundary": "O resultado avaliado é arte aplicada ao jogo. Não exige aprender outro sistema de programação para substituir um asset, nem fazer todo som e imagem do zero.",
+      "levels": [
+        {
+          "title": "I · Meu desenho entra no jogo",
+          "anchor": "Núcleo proposto: Nave de Formas — adaptar Nave contra Asteroides para usar formas desenhadas por código e pontos de troca de assets preparados.",
+          "steps": [
+            "Jogar o protótipo pronto: nave, asteroides e fundo são formas simples.",
+            "Planejar silhueta, tamanho e paleta da nave no Pinta.",
+            "Desenhar e integrar o primeiro sprite pelo nome de asset preparado.",
+            "Comparar protótipo e arte: reconhecer o personagem e conferir tamanho/origem."
+          ],
+          "workshops": [
+            [
+              "Nave animada",
+              "Criar uma sequência curta de propulsão e ajustar sua cadência."
+            ],
+            [
+              "Asteroides legíveis",
+              "Desenhar dois obstáculos distinguíveis do jogador e do fundo."
+            ],
+            [
+              "Fundo que ajuda",
+              "Criar camadas visuais sem esconder tiros, obstáculos ou áreas de ação."
+            ]
+          ],
+          "project": "O mesmo jogo funcionando com personagem próprio e duas oficinas visuais integradas; guardar imagem do antes e do depois.",
+          "checks": [
+            "O sprite aparece no tamanho e na origem esperados.",
+            "A arte torna jogador e obstáculos distinguíveis em movimento.",
+            "A animação não apresenta salto de posição involuntário.",
+            "Os controles, contatos e a partida continuam funcionando."
+          ],
+          "credit": "O Jogo do Meu Jeito pode comprovar desenho, troca e integração. Conferir a aplicação e pedir apenas o que faltar, sem exigir refazer oito aulas."
+        },
+        {
+          "title": "II · Um cenário e uma interface coerentes",
+          "anchor": "Núcleo proposto: plataforma de formas pronta; referência técnica Mapa do Pinta e duas fases e Oficina de animações e som.",
+          "steps": [
+            "Receber personagem funcional e mapa de formas com regras prontas.",
+            "Criar peças de cenário que se encaixam e distinguem área sólida, decoração e perigo.",
+            "Ensinar folha de quadros, ponto de origem e leitura de estados.",
+            "Integrar arte com colisores preparados; desenhar HUD e telas do próprio jogo."
+          ],
+          "workshops": [
+            [
+              "Mapa em camadas",
+              "Construir piso, fundo e primeiro plano preservando legibilidade e colisão."
+            ],
+            [
+              "Animação de estados",
+              "Desenhar parar, andar e agir, com origem consistente e transições visíveis."
+            ],
+            [
+              "Interface do jogo",
+              "Criar ícones, placar e estados de vitória/derrota que possam ser compreendidos sem depender só da cor."
+            ]
+          ],
+          "project": "Uma fase com identidade visual consistente, duas oficinas integradas e comparação com o protótipo.",
+          "checks": [
+            "O jogador distingue cenário decorativo e área de interação.",
+            "Sprites e tiles preservam escala e encaixe.",
+            "As duas oficinas funcionam durante a partida, inclusive transições.",
+            "Um teste de leitura visual levou a pelo menos um ajuste."
+          ],
+          "credit": "Mapas e personagens criados nos extras contam por critério. Um desenho bonito sem integração não conclui este nível."
+        },
+        {
+          "title": "III · Direção de arte de um jogo",
+          "anchor": "Projeto: transformar um jogo próprio ou um protótipo funcional fornecido pela equipe. Referências e modelos vêm de jogos do Estúdio e projetos anteriores.",
+          "steps": [
+            "Definir três princípios visuais e um conjunto pequeno de assets necessários.",
+            "Produzir arte por prioridade, mantendo o jogo utilizável a cada troca.",
+            "Documentar paleta, escala, origem, animações e créditos de recursos externos.",
+            "Testar leitura em jogo, revisar e entregar o conjunto organizado."
+          ],
+          "workshops": [
+            [
+              "Personagens consistentes",
+              "Criar uma família de três papéis visuais identificáveis: jogador, aliado e obstáculo/inimigo."
+            ],
+            [
+              "Ambientes coerentes",
+              "Construir duas áreas distinguíveis com a mesma identidade visual."
+            ],
+            [
+              "Interface e acessibilidade visual",
+              "Revisar HUD, contraste, estados e pistas que não dependem somente da cor."
+            ]
+          ],
+          "project": "Um jogo com identidade visual aplicada, duas oficinas, um guia curto de assets e uma versão revisada após teste.",
+          "checks": [
+            "O estilo é consistente sem prejudicar o entendimento das regras.",
+            "Os assets selecionados funcionam em movimento e em duas larguras de apresentação previstas.",
+            "Há créditos e organização suficiente para outra pessoa integrar uma nova peça.",
+            "A revisão resolve um problema observado na leitura visual."
+          ],
+          "credit": "Pode ser o mesmo jogo entregue em uma Maestria de programação, mas esta aprovação examina arte e integração. Não exigir outro jogo só para aumentar quantidade."
+        }
+      ]
+    },
+    {
+      "id": "arte3d",
+      "name": "Modelagem e Animação 3D para Jogos",
+      "symbol": "Molda / 3D",
+      "when": "Após o par do Inventor",
+      "focus": "Modelar, animar e integrar personagens e cenários em jogos 3D.",
+      "tools": "Molda + jogo 3D funcional com modelos de formas. Estúdio recebe os modelos por um contrato de integração preparado.",
+      "source": "packages/studio/src/examples/qaContracts.ts: Meu herói do Molda; Herói do Molda. Raylib: Modelos do Molda.",
+      "boundary": "Modelagem serve a um jogo. Não é um curso geral de escultura ou renderização. O projeto-base inclui controles, câmera e regras para que a arte seja o foco.",
+      "levels": [
+        {
+          "title": "I · Um personagem no meu mundo",
+          "anchor": "Núcleo proposto: Jardim de Formas — jogo pronto de coleta em 3D, adaptado de Meu herói do Molda, com personagem e objetos geométricos.",
+          "steps": [
+            "Jogar e observar o espaço ocupado pelo personagem de protótipo.",
+            "Modelar uma silhueta simples usando proporção, eixo e escala coerentes.",
+            "Preparar nome, origem e orientação do asset.",
+            "Trocar o modelo no projeto preparado e testar movimento e colisão."
+          ],
+          "workshops": [
+            [
+              "Acessório modular",
+              "Criar um acessório que acompanhe o personagem, com encaixe e escala consistentes."
+            ],
+            [
+              "Objetos de coleta",
+              "Modelar uma pequena família de objetos distinguíveis, usando escala consistente."
+            ],
+            [
+              "Materiais legíveis",
+              "Aplicar materiais/cores que funcionem sob a iluminação e o fundo do jogo."
+            ]
+          ],
+          "project": "O jogo de coleta com personagem modelado pelo aluno e duas oficinas aplicadas.",
+          "checks": [
+            "O modelo tem escala, origem e direção compatíveis com o controlador.",
+            "O jogador reconhece personagem e objetos importantes.",
+            "A troca visual preserva a colisão e o alcance do jogo-base.",
+            "O aluno identifica e corrige um problema de integração."
+          ],
+          "credit": "Meu Herói do Molda pode comprovar modelagem e integração. Não repetir o curso se a evidência atender aos critérios."
+        },
+        {
+          "title": "II · Movimento que combina com a ação",
+          "anchor": "Núcleo proposto: personagem animado em cenário pronto. Referências: Herói do Molda, Meu herói do Molda e Modelos do Molda.",
+          "steps": [
+            "Ensinar hierarquia/ossos e pivôs com uma figura pequena.",
+            "Criar poses e conferir o movimento na escala do jogo.",
+            "Preparar clipes com nomes acordados e pontos de troca já programados.",
+            "Integrar parar/andar/agir e verificar transições durante a partida."
+          ],
+          "workshops": [
+            [
+              "Andar e parar",
+              "Criar e integrar dois ciclos que não desloquem indevidamente a origem do personagem."
+            ],
+            [
+              "Ação com intenção",
+              "Animar uma ação do jogo e alinhar antecipação, contato visual e retorno."
+            ],
+            [
+              "Objetos animados",
+              "Dar movimento a dois elementos do cenário sem bloquear navegação ou leitura."
+            ]
+          ],
+          "project": "Um personagem com pelo menos dois estados visuais funcionais, duas oficinas e uma revisão após observar a partida.",
+          "checks": [
+            "Os clipes correspondem aos estados reais do jogo.",
+            "Transições e repetição não geram saltos de origem ou escala.",
+            "A animação comunica ação com clareza no enquadramento usado.",
+            "O modelo e os clipes preservam o orçamento medido para a cena."
+          ],
+          "credit": "Animações feitas em extras podem contar. Uma animação reproduzida só no editor precisa ainda ser integrada e verificada no jogo."
+        },
+        {
+          "title": "III · Um conjunto 3D para um jogo",
+          "anchor": "Projeto: substituir um mundo de formas por um conjunto pequeno de modelos próprios; pode ser um jogo autoral ou o protótipo fornecido.",
+          "steps": [
+            "Definir identidade, escala e orçamento de cena com um teste inicial.",
+            "Planejar peças modulares e personagens que o jogo realmente usa.",
+            "Produzir, integrar e medir o conjunto em pequenas versões.",
+            "Testar navegação e leitura, revisar e entregar os arquivos com instruções."
+          ],
+          "workshops": [
+            [
+              "Cenário modular",
+              "Criar um conjunto de peças que forma duas áreas sem frestas impeditivas."
+            ],
+            [
+              "Família de personagens",
+              "Manter proporções, materiais e animações coerentes em personagens de papéis diferentes."
+            ],
+            [
+              "Cena mais leve",
+              "Comparar uma versão de assets mais leve sem perder a identidade e a leitura do jogo."
+            ]
+          ],
+          "project": "Um conjunto de arte 3D aplicado a duas áreas de jogo, duas oficinas, guia de integração e versão revisada.",
+          "checks": [
+            "Personagens e cenário mantêm escala e identidade consistentes.",
+            "A arte orienta o jogador e preserva caminho, câmera e colisão.",
+            "O cenário foi medido no dispositivo de referência; os limites são definidos pelo piloto, não por um número arbitrário.",
+            "Outra pessoa consegue usar uma peça seguindo o guia de integração."
+          ],
+          "credit": "Pode compartilhar o projeto com JavaScript 3D ou Python 3D. A avaliação de modelagem continua independente da avaliação das regras do jogo."
+        }
+      ]
+    }
+  ]
+}

@@ -2,6 +2,7 @@ import { createHash } from 'node:crypto'
 import { isContentFingerprint } from '@sistemazero/core/creations'
 import { createGalleryDeliveryRoutes } from './gallery-delivery'
 import { createLearningRoutes } from './learning'
+import { createMasteryRoutes } from './masteries'
 import { createProfilePreferencesRoutes } from './profile-preferences'
 import { createStudioFreeRuntimeRoutes } from './studio-free-runtime'
 import { createStudioLessonRuntimeRoutes } from './studio-lesson-runtime'
@@ -1921,6 +1922,7 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
     attachmentDownload,
     ebookDownload,
     courseRating,
+    masteries: createMasteryRoutes(session, gateway),
     lessonComplete,
     gamificationMe,
     gamificationRanking,

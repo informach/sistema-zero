@@ -1,7 +1,9 @@
 import type { CourseAudience } from '../../domain/course/course'
+import { independentCourseAccessReason } from '../../domain/entitlement/independent-course-access'
 import type { CourseRepository } from '../../domain/ports/course-repository.port'
 import type { EntitlementRepository } from '../../domain/ports/entitlement-repository.port'
 import type { GamificationRepository } from '../../domain/ports/gamification-repository.port'
+import type { AdultJourneyService } from '../adult-journey/adult-journey.service'
 import { journeyLockViews } from '../journey-course-locking/journey-course-locking'
 import type { KidsJourneyQueryService } from '../kids-journey/kids-journey-query.service'
 import { type CatalogCourseView, toCatalogCourseView } from '../mappers/views'
@@ -19,6 +21,7 @@ export class ListCatalogService {
     private readonly gamification: GamificationRepository,
     private readonly clock: () => Date,
     private readonly kidsJourney: Pick<KidsJourneyQueryService, 'courseState'>,
+    private readonly adultJourney?: Pick<AdultJourneyService, 'courseState'>,
   ) {}
 
   async execute(
@@ -42,7 +45,12 @@ export class ListCatalogService {
             { userId, accountId: accountId ?? userId },
             published.map((course) => course.id),
           )
-        : null
+        : audience === 'adult' && !privileged
+          ? await this.adultJourney?.courseState(
+              userId,
+              published.map((course) => course.id),
+            )
+          : null
     const milestones = journeyState?.milestones ?? staffMilestones ?? new Map()
 
     // Chave-mestra POR AUDIÊNCIA destrava a vitrine inteira (atuais e futuros):
@@ -56,13 +64,19 @@ export class ListCatalogService {
     }
 
     const journeyLocks = journeyLockViews(published, journeyState?.locks ?? null)
-    return published.map((course) =>
-      toCatalogCourseView(
-        course,
-        hasMaster || owned.has(course.slug),
-        journeyLocks.get(course.id),
-        milestones.get(course.id),
-      ),
-    )
+    return published.map((course) => {
+      const directAccess = independentCourseAccessReason(course.slug, active, this.clock())
+      const lock = directAccess ? { locked: false } : journeyLocks.get(course.id)
+      return {
+        ...toCatalogCourseView(
+          course,
+          hasMaster || owned.has(course.slug),
+          lock,
+          milestones.get(course.id),
+        ),
+        curriculum: journeyState?.courseContexts.get(course.id),
+        accessReason: privileged ? ('staff' as const) : (directAccess ?? ('journey' as const)),
+      }
+    })
   }
 }

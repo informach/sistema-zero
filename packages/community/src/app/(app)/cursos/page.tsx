@@ -1,3 +1,7 @@
+import {
+  CreatorJourneyMap,
+  CreatorJourneySummary,
+} from '@sistemazero/member-shell/components/creator-journey'
 import { BookOpen } from 'lucide-react'
 import { CourseCatalogClient } from '@/components/community/course-catalog-client'
 import { TrackCard } from '@/components/community/courses/track-card'
@@ -5,6 +9,7 @@ import { PageBand, PageBody } from '@/components/community/page'
 import { summarizeTrack, TRACKS } from '@/lib/course-levels'
 import type { CourseProgress } from '@/lib/types'
 import { listCatalog, listMyCourses } from '@/server/members'
+import { shell } from '@/server/shell'
 
 export const dynamic = 'force-dynamic'
 
@@ -15,7 +20,13 @@ export const dynamic = 'force-dynamic'
  * da Comunidade, `lockedCourseLink`).
  */
 export default async function CatalogPage() {
-  const [catalog, mine] = await Promise.all([listCatalog(), listMyCourses().catch(() => null)])
+  const [catalog, mine, gamification] = await Promise.all([
+    listCatalog(),
+    listMyCourses().catch(() => null),
+    shell.members.getGamificationReadonly({ withRanking: true }).catch(() => null),
+  ])
+  const curriculum =
+    gamification?.status === 200 ? gamification.body?.journey?.curriculum : undefined
   const courses = catalog.status === 200 ? (catalog.body?.courses ?? []) : []
   const progressBySlug: Record<string, CourseProgress> = Object.fromEntries(
     (mine?.status === 200 ? (mine.body?.courses ?? []) : []).map((course) => [
@@ -41,10 +52,24 @@ export default async function CatalogPage() {
       <PageBand
         kicker="Catálogo da comunidade"
         title="Cursos"
-        lead="Cada curso termina com um jogo seu, pronto para jogar e mostrar. Comece por uma trilha e avance um nível de cada vez."
+        lead={
+          curriculum
+            ? 'Crie um jogo em 2D e 3D, transfira a lógica para uma missão e amplie sua criação com poderes.'
+            : 'Cada curso termina com um jogo seu, pronto para jogar e mostrar. Comece por uma trilha e avance um nível de cada vez.'
+        }
       >
         {/* As trilhas no palco: é por elas que se descobre o caminho (Estúdio à noite). */}
-        {tracks.length > 0 ? (
+        {curriculum ? (
+          <div className="mt-6 space-y-8">
+            <CreatorJourneySummary
+              view={curriculum}
+              skin="adult"
+              catalog={courses}
+              courses={mine?.status === 200 ? mine.body.courses : []}
+            />
+            <CreatorJourneyMap view={curriculum} skin="adult" />
+          </div>
+        ) : tracks.length > 0 ? (
           <section aria-labelledby="trilhas" className="mt-6 flex flex-col gap-5">
             <h2 id="trilhas" className="sz-h3">
               Trilhas

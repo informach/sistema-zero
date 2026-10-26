@@ -1,5 +1,16 @@
 # @sistemazero/studio
 
+## Revisão imutável de Maestria (25/10/2026)
+
+`mastery-review-runtime` cria um ambiente Python de execução vinculado ao UUID da entrega e à
+conta própria ativa da equipe. O navegador envia essa identidade e a operação (`execute`/`analyze`);
+Members deriva runtime, subject e digest integral do snapshot persistido. Para galeria, o BFF
+assina somente as chaves dessa cópia e Members materializa o projeto e seus assets com limites e
+hashes. `contextEnvironmentCore` verifica identidade, contexto, digest e validade. A análise usa
+apenas o parser da representação em blocos, sem conceder edição, LSP, assistência, exportação ou REPL. `PythonRuntimePreview` é
+exportado para esse host: no Admin, executar a entrega e inspecionar seu código em `observer`
+são superfícies separadas. Não usar `authoring` com um rascunho inventado para revisar entregas.
+
 ## O recurso tem nome, sem "IA" solta (20/10/2026)
 
 Pedido da dona, o mesmo dos dois apps (vocabulário completo nos CLAUDE.md de `community` e

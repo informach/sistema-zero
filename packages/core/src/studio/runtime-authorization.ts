@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { GalleryStudioSourceSchema } from '../learning/gallery-studio-source'
 import { StudioProjectCurationSchema } from './project-capabilities'
 import { StudioProjectIdSchema } from './project-document'
 import { StudioRuntimeSelectionSchema, StudioSha256Schema } from './project-environment'
@@ -125,6 +126,42 @@ export const StudioFreeRuntimeDecisionSchema = StudioLessonRuntimeDecisionSchema
 })
 export type StudioFreeRuntimeDecision = z.infer<typeof StudioFreeRuntimeDecisionSchema>
 
+/** Staff review reads an immutable submission; callers cannot substitute source or runtime. */
+export const StudioMasteryReviewRuntimeContextSchema = z.strictObject({
+  kind: z.literal('mastery-review'),
+  submissionId: z.uuid(),
+})
+export type StudioMasteryReviewRuntimeContext = z.infer<
+  typeof StudioMasteryReviewRuntimeContextSchema
+>
+export const StudioMasteryReviewRuntimeRequestSchema = z.strictObject({
+  context: StudioMasteryReviewRuntimeContextSchema,
+  operation: z.enum(['execute', 'analyze']).optional(),
+})
+export type StudioMasteryReviewRuntimeRequest = z.infer<
+  typeof StudioMasteryReviewRuntimeRequestSchema
+>
+/** The BFF resolves these locations from the authorized immutable submission, never browser URLs. */
+export const StudioMasteryReviewRuntimeSourceRequestSchema =
+  StudioMasteryReviewRuntimeRequestSchema.extend({
+    gallerySource: GalleryStudioSourceSchema.optional(),
+  })
+export type StudioMasteryReviewRuntimeSourceRequest = z.infer<
+  typeof StudioMasteryReviewRuntimeSourceRequestSchema
+>
+export const StudioMasteryReviewRuntimeDecisionSchema = StudioLessonRuntimeDecisionSchema.extend({
+  context: StudioMasteryReviewRuntimeContextSchema,
+  operation: z.enum(['execute', 'analyze']),
+  capabilities: z.array(z.enum(['execute', 'pause'])).max(2),
+  blockIds: z.array(z.never()).length(0),
+}).refine(
+  (value) => value.operation !== 'analyze' || value.capabilities.length === 0,
+  'A análise de revisão não concede edição nem execução.',
+)
+export type StudioMasteryReviewRuntimeDecision = z.infer<
+  typeof StudioMasteryReviewRuntimeDecisionSchema
+>
+
 /** Internal BFF attestation after Hub visibility and immutable revision resolution.
  * Browser callers never supply this subject or snapshot digest to Members directly.
  */
@@ -190,6 +227,7 @@ export type StudioPublicationRuntimeDecision =
 export const StudioRuntimeDecisionSchema = z.union([
   StudioContextualRuntimeDecisionSchema,
   StudioPublicRuntimeDecisionSchema,
+  StudioMasteryReviewRuntimeDecisionSchema,
 ])
 export type StudioRuntimeDecision = z.infer<typeof StudioRuntimeDecisionSchema>
 export type StudioRuntimeCandidate = Omit<StudioLessonRuntimeRequest, 'baselineId'>
