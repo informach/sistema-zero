@@ -15,7 +15,7 @@ import {
 import { Button } from '@sistemazero/ui/button'
 import { Input } from '@sistemazero/ui/input'
 import { Select } from '@sistemazero/ui/select'
-import { useState } from 'react'
+import { useEffect, useId, useRef, useState } from 'react'
 import {
   COMPARE_LABELS,
   formatArgs,
@@ -31,6 +31,62 @@ type FunctionReturns = Extract<SectionExecutionRule, { type: 'functionReturns' }
 export type PythonExecutionEditorEnvironment = {
   language: 'python'
   graphics: import('@sistemazero/core/learning').PythonProjectCheckGraphics
+}
+
+/** Preserve an incomplete signed decimal while typing, without saving it as zero. */
+function floorCoordinate(text: string): number | null {
+  if (!/^-?(?:\d+(?:[.,]\d*)?|[.,]\d+)$/.test(text)) return null
+  const value = Number(text.replace(',', '.'))
+  return Number.isFinite(value) && value >= -100 && value <= 100 ? value : null
+}
+
+function FloorCoordinateInput({
+  label,
+  value,
+  onValueChange,
+}: {
+  label: string
+  value: number
+  onValueChange(value: number): void
+}) {
+  const [draft, setDraft] = useState(String(value))
+  const [reverted, setReverted] = useState(false)
+  const messageId = useId()
+  const focused = useRef(false)
+  useEffect(() => {
+    if (!focused.current) setDraft(String(value))
+  }, [value])
+  return (
+    <div>
+      <Input
+        type="text"
+        inputMode="decimal"
+        aria-label={label}
+        aria-describedby={reverted ? messageId : undefined}
+        value={draft}
+        onFocus={() => {
+          focused.current = true
+          setReverted(false)
+        }}
+        onBlur={() => {
+          focused.current = false
+          setReverted(floorCoordinate(draft) === null)
+          setDraft(String(value))
+        }}
+        onChange={(event) => {
+          const text = event.target.value
+          setDraft(text)
+          const next = floorCoordinate(text)
+          if (next !== null) onValueChange(next)
+        }}
+      />
+      {reverted && (
+        <p id={messageId} role="status" className="text-xs text-muted-foreground">
+          Valor inválido. O valor anterior foi mantido; use um número entre -100 e 100.
+        </p>
+      )}
+    </div>
+  )
 }
 
 /**
@@ -224,19 +280,15 @@ export function StepsEditor({
                 // biome-ignore lint/suspicious/noArrayIndexKey: retângulos não têm ID e os campos são controlados pela regra
                 <div key={i} className="grid grid-cols-2 gap-2">
                   {(['minX', 'maxX', 'minZ', 'maxZ'] as const).map((k) => (
-                    <Input
+                    <FloorCoordinateInput
                       key={k}
-                      type="number"
-                      min={-100}
-                      max={100}
-                      step="any"
-                      aria-label={`${k} do retângulo ${i + 1}`}
+                      label={`${k} do retângulo ${i + 1}`}
                       value={r[k]}
-                      onChange={(e) =>
+                      onValueChange={(next) =>
                         patch(at, {
                           ...step,
                           walkable: step.walkable!.map((v, j) =>
-                            j === i ? { ...v, [k]: Number(e.target.value) } : v,
+                            j === i ? { ...v, [k]: next } : v,
                           ),
                         })
                       }
