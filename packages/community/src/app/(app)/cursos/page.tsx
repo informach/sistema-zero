@@ -1,12 +1,18 @@
+import { isPrivilegedRole } from '@sistemazero/member-shell/lib/studio-tier'
 import { BookOpen } from 'lucide-react'
 import Link from 'next/link'
 import { CourseCatalogClient } from '@/components/community/course-catalog-client'
 import { TrackCard } from '@/components/community/courses/track-card'
-import { AdultCreatorNextStep, AdultCreatorStepper } from '@/components/community/journey/creator'
+import {
+  AdultCreatorNextStep,
+  AdultCreatorStepper,
+  AdultMasteriesOpen,
+} from '@/components/community/journey/creator'
 import { PageBand, PageBody } from '@/components/community/page'
 import { summarizeTrack, TRACKS } from '@/lib/course-levels'
 import type { CourseProgress } from '@/lib/types'
 import { listCatalog, listMyCourses } from '@/server/members'
+import { getSession } from '@/server/session'
 import { shell } from '@/server/shell'
 
 export const dynamic = 'force-dynamic'
@@ -18,11 +24,14 @@ export const dynamic = 'force-dynamic'
  * da Comunidade, `lockedCourseLink`).
  */
 export default async function CatalogPage() {
-  const [catalog, mine, gamification] = await Promise.all([
+  const [catalog, mine, gamification, session] = await Promise.all([
     listCatalog(),
     listMyCourses().catch(() => null),
     shell.members.getGamificationReadonly({ withRanking: true }).catch(() => null),
+    getSession(),
   ])
+  // A equipe abre todas as etapas da régua; numa sessão de suporte o papel é o da pessoa.
+  const staff = isPrivilegedRole(session?.role)
   const curriculum =
     gamification?.status === 200 ? gamification.body?.journey?.curriculum : undefined
   const courses = catalog.status === 200 ? (catalog.body?.courses ?? []) : []
@@ -69,8 +78,9 @@ export default async function CatalogPage() {
                 Ver seu progresso
               </Link>
             </div>
-            <AdultCreatorStepper view={curriculum} />
+            <AdultCreatorStepper view={curriculum} staff={staff} />
             <AdultCreatorNextStep view={curriculum} catalog={courses} mine={myCourses} />
+            <AdultMasteriesOpen view={curriculum} />
           </section>
         ) : tracks.length > 0 ? (
           <section aria-labelledby="trilhas" className="mt-6 flex flex-col gap-5">

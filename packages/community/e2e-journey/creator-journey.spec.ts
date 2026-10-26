@@ -26,7 +26,17 @@ for (const skin of ['adult', 'kids'])
         if (screen === 'mastery') {
           await expect(page.getByText('Ajustes pedidos pela equipe')).toBeVisible()
           await expect(page.getByRole('combobox').first()).toBeEnabled()
-          await expect(page.locator('details[open]')).toHaveCount(1)
+          // Cada nível é um título de verdade com o botão de abrir dentro; o nível atual nasce aberto.
+          await expect(page.locator('[data-sz-disclosure][data-open]')).toHaveCount(1)
+          await expect(page.locator('h2 > button[aria-expanded="true"]')).toHaveCount(1)
+          // Índice fixo: um localizador por atributo passaria a apontar para outro botão depois do clique.
+          const toggles = page.locator('h2 > button[aria-expanded]')
+          const states = await toggles.evaluateAll((buttons) =>
+            buttons.map((button) => button.getAttribute('aria-expanded')),
+          )
+          const closed = toggles.nth(states.indexOf('false'))
+          await closed.click()
+          await expect(closed).toHaveAttribute('aria-expanded', 'true')
           const overlappingCourses = await page.locator('article').evaluateAll((courses) =>
             courses.some((course) => {
               const parent = course.parentElement
@@ -73,6 +83,33 @@ for (const skin of ['adult', 'kids'])
     await expect(page.locator('section[aria-labelledby="missao"] a[href^="/cursos/"]')).toHaveCount(
       0,
     )
+  })
+
+for (const width of [390, 1440])
+  test(`adult stage not reached yet is locked in the stepper and by its address at ${width}px`, async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width, height: 1000 })
+    await page.goto('/?skin=adult&screen=post&state=pair&post=2')
+    await expect(
+      page.getByRole('heading', { level: 1, name: 'Esta etapa ainda está bloqueada' }),
+    ).toBeVisible()
+    // A trilha da etapa trancada não aparece; embaixo fica o caminho a partir da etapa atual.
+    await expect(page.locator('section[aria-labelledby="cursos"]')).toHaveCount(0)
+    await expect(page.getByRole('heading', { level: 2, name: 'O caminho até lá' })).toBeVisible()
+    const overflow = await page.evaluate(
+      () => document.documentElement.scrollWidth > window.innerWidth + 1,
+    )
+    expect(overflow).toBe(false)
+    await page.screenshot({
+      path: `.cache/creator-journey-adult-locked-${width}.png`,
+      fullPage: true,
+    })
+    await page.goto('/?skin=adult&screen=map&state=pair')
+    const stepper = page.getByRole('list', { name: 'Etapas da jornada' })
+    await expect(stepper.locator('a[href^="/cursos/etapa/"]')).toHaveCount(1)
+    await expect(stepper.getByText('Ainda bloqueada').first()).toBeAttached()
+    await expect(stepper.locator('a[href="/maestrias"]')).toHaveCount(0)
   })
 
 for (const width of [390, 1440]) {

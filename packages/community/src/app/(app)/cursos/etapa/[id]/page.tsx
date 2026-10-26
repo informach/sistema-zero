@@ -1,9 +1,10 @@
+import { isPrivilegedRole } from '@sistemazero/member-shell/lib/studio-tier'
 import { ArrowRight, Check, CheckCircle2, Lock, Trophy } from 'lucide-react'
 import Link from 'next/link'
 import { notFound, redirect } from 'next/navigation'
 import type { CSSProperties } from 'react'
 import { CourseCover, ProgressBar } from '@/components/community/courses/course-cover'
-import { AdultCreatorTrail } from '@/components/community/journey/creator'
+import { AdultCreatorPost } from '@/components/community/journey/creator'
 import { JourneyRibbon } from '@/components/community/journey/stage'
 import { UNLOCK_TILES, UnlockTile } from '@/components/community/journey/unlock'
 import { BackLink, PageBody } from '@/components/community/page'
@@ -19,6 +20,7 @@ import {
 } from '@/lib/journey-stage'
 import type { CatalogCourseView, CourseProgress } from '@/lib/types'
 import { listCatalog, listMyCourses } from '@/server/members'
+import { getSession } from '@/server/session'
 import { shell } from '@/server/shell'
 
 export const dynamic = 'force-dynamic'
@@ -41,10 +43,11 @@ const STATE: Record<CourseState, { text: string; chip: string }> = {
  */
 export default async function StagePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
-  const [gamification, catalog, mine] = await Promise.all([
+  const [gamification, catalog, mine, session] = await Promise.all([
     shell.members.getGamificationReadonly({ withRanking: true }).catch(() => null),
     listCatalog().catch(() => null),
     listMyCourses().catch(() => null),
+    getSession(),
   ])
   // Gamificação fora do ar: um recado na página, não um "não encontrada" (a etapa existe).
   if (gamification?.status !== 200)
@@ -71,13 +74,16 @@ export default async function StagePage({ params }: { params: Promise<{ id: stri
         stage.capabilities,
       ]),
     )
+    // A etapa que a pessoa ainda não alcançou mostra o aviso de bloqueio, também pelo endereço;
+    // a equipe vê todas (numa sessão de suporte o papel é o da pessoa, então a trava vale).
     return (
-      <AdultCreatorTrail
+      <AdultCreatorPost
         view={curriculum}
         level={id}
         catalog={catalog?.status === 200 ? (catalog.body?.courses ?? []) : []}
         mine={mine?.status === 200 ? (mine.body?.courses ?? []) : []}
         capabilities={capabilities}
+        staff={isPrivilegedRole(session?.role)}
       />
     )
   }

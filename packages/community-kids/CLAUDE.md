@@ -31,7 +31,9 @@ voltaram, nas peças da casa, em `components/kids/creator-journey/` (`parts`, `t
   Trilha ainda não alcançada: o recado "Esta parte do mapa ainda está bloqueada" (ver a trava
   abaixo); a que abriu só por um curso avulso mostra o desenho com "A trilha inteira abre quando
   você chegar a X".
-- **Maestrias**: `KidsMasteryHub` ("Escolha no que quer ficar craque") e `KidsMasteryArea`.
+- **Maestrias**: `KidsMasteryHub` ("Escolha no que quer ficar craque") e `KidsMasteryArea`. Cada
+  nível é um `HeadingDisclosure` do `@sistemazero/ui` (o `<h2>` com o botão de abrir dentro): no
+  `<summary>` o título sumia da lista de títulos do leitor de tela. O nível atual nasce aberto.
 - **Início, perfil, pais, curso, Criar e celebração**: `creator-journey-card` com as pílulas,
   `journey-timeline` (escada de postos), `child-progress` (pílulas), `KidsCourseJourneyContext`
   ("Como funciona a missão" com os quadros verdadeiros), `StudioModes` em Criar e a celebração de
