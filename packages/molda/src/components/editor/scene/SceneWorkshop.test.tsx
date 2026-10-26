@@ -3383,22 +3383,16 @@ describe('scene workshop integration', () => {
       ).toBe('true')
       fireEvent.click(screen.getByRole('button', { name: COPY.editor.undo }))
       expect(editor.getState().canUndo).toBe(false)
+      expect(screen.queryByRole('button', { name: COPY.scene.paintShapeTools.gradient })).toBeNull()
+      fireEvent.click(screen.getByRole('button', { name: COPY.scene.paintGradientConvertAction }))
+      await waitFor(() => expect(screen.queryByText(COPY.scene.imageTaskBusy) === null).toBe(true))
+      const converted = editor.getState().asset
+      expect(converted.images[0]!.encoding).toBe('rgba')
       const shapes = screen.getByText(COPY.scene.paintShapes).closest('details')!
       act(() => {
         shapes.open = true
         fireEvent(shapes, new Event('toggle'))
       })
-      expect(
-        (
-          screen.getByRole('button', {
-            name: COPY.scene.paintShapeTools.gradient,
-          }) as HTMLButtonElement
-        ).disabled,
-      ).toBe(true)
-      fireEvent.click(screen.getByRole('button', { name: COPY.scene.imageRgba }))
-      await waitFor(() => expect(screen.queryByText(COPY.scene.imageTaskBusy) === null).toBe(true))
-      const converted = editor.getState().asset
-      expect(converted.images[0]!.encoding).toBe('rgba')
       fireEvent.click(screen.getByRole('button', { name: COPY.scene.paintShapeTools.select }))
       key('Enter')
       key('ArrowRight')

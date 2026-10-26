@@ -51,6 +51,50 @@ export function ScenePaintEditor({ workshop }: { workshop: ReturnType<typeof use
           />
         </RequiresTool>
       )}
+      {data && (
+        <RequiresTool family="paint.shapes">
+          <section
+            className="space-y-2 rounded-xl border border-mld-border bg-mld-surface p-3"
+            aria-label={copy.paintShapeTools.gradient}
+          >
+            {data.image.encoding === 'rgba' ? (
+              <>
+                <Button
+                  className="w-full text-sm"
+                  aria-pressed={shape === 'gradient'}
+                  disabled={drawing || busy}
+                  onClick={() => paint.setShape('gradient')}
+                >
+                  {copy.paintShapeTools.gradient}
+                </Button>
+                {shape === 'gradient' && (
+                  <SceneGradientColorControls
+                    start={rgba}
+                    end={paint.endColor}
+                    onStartChange={paint.setColor}
+                    onEndChange={paint.setEndColor}
+                    transparentBase={transparentBase}
+                    colorImage={data.imageKind === 'color'}
+                    onMakeBaseTransparent={paint.makeBaseTransparent}
+                  />
+                )}
+              </>
+            ) : (
+              <>
+                <h3 className="text-sm font-bold">{copy.paintShapeTools.gradient}</h3>
+                <p className="text-xs text-mld-muted">{copy.paintGradientConvertHint}</p>
+                <Button
+                  className="w-full text-sm"
+                  disabled={drawing || busy}
+                  onClick={paint.convert}
+                >
+                  {copy.paintGradientConvertAction}
+                </Button>
+              </>
+            )}
+          </section>
+        </RequiresTool>
+      )}
       <details className="mld-disclosure" open={!paint.surfaceMode}>
         <summary>{SCENE_PAINT_COPY.more}</summary>
         <div className="space-y-3 pt-2">
@@ -81,31 +125,20 @@ export function ScenePaintEditor({ workshop }: { workshop: ReturnType<typeof use
                       {copy.paintShapes}
                     </summary>
                     <div className="grid grid-cols-3 gap-1.5 pb-2">
-                      {(
-                        ['line', 'rectangle', 'ellipse', 'select', 'gradient', 'stamp'] as const
-                      ).map((tool) => (
-                        <Button
-                          key={tool}
-                          className="px-1.5 text-xs"
-                          aria-pressed={shape === tool}
-                          disabled={
-                            (tool === 'gradient' || tool === 'stamp') &&
-                            data.image.encoding === 'indexed'
-                          }
-                          onClick={() => paint.setShape(tool)}
-                        >
-                          {copy.paintShapeTools[tool]}
-                        </Button>
-                      ))}
+                      {(['line', 'rectangle', 'ellipse', 'select', 'stamp'] as const).map(
+                        (tool) => (
+                          <Button
+                            key={tool}
+                            className="px-1.5 text-xs"
+                            aria-pressed={shape === tool}
+                            disabled={tool === 'stamp' && data.image.encoding === 'indexed'}
+                            onClick={() => paint.setShape(tool)}
+                          >
+                            {copy.paintShapeTools[tool]}
+                          </Button>
+                        ),
+                      )}
                     </div>
-                    {data.image.encoding === 'indexed' && (
-                      <div className="space-y-2 pb-2">
-                        <p className="text-xs text-mld-muted">{copy.paintGradientConvertHint}</p>
-                        <Button className="w-full text-sm" onClick={paint.convert}>
-                          {copy.imageRgba}
-                        </Button>
-                      </div>
-                    )}
                     {(shape === 'rectangle' || shape === 'ellipse') && (
                       <label className="flex min-h-11 items-center gap-2 text-sm">
                         <input
@@ -127,17 +160,7 @@ export function ScenePaintEditor({ workshop }: { workshop: ReturnType<typeof use
                       {copy.paintClearSelection}
                     </Button>
                   )}
-                  {shape === 'gradient' && data.image.encoding === 'rgba' ? (
-                    <SceneGradientColorControls
-                      start={rgba}
-                      end={paint.endColor}
-                      onStartChange={paint.setColor}
-                      onEndChange={paint.setEndColor}
-                      transparentBase={transparentBase}
-                      colorImage={data.imageKind === 'color'}
-                      onMakeBaseTransparent={paint.makeBaseTransparent}
-                    />
-                  ) : shape !== 'stamp' && data.image.encoding === 'rgba' ? (
+                  {shape !== 'stamp' && shape !== 'gradient' && data.image.encoding === 'rgba' ? (
                     <SceneRgbaColorInput
                       value={rgba}
                       onChange={paint.setColor}
