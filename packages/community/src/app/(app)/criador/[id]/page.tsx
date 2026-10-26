@@ -258,7 +258,7 @@ function ProfileBand({
   children: React.ReactNode
 }) {
   return (
-    <section className="bg-(--topo) text-(--topo-texto)">
+    <section className="sz-palco bg-(--topo)">
       <div className="sz-page flex flex-col gap-6 pt-8 pb-10">
         <Link
           href={back.href}

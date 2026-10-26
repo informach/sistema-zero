@@ -1,73 +1,16 @@
 import type { ExtensionExample } from '#extensions'
-import { cssDeclarationsRecord } from '#ir'
 
-function accessibleGameDescription(example: ExtensionExample): string {
-  const descriptions: Record<string, string> = {
-    'Pegue a moeda': 'Encoste na moeda para fazer pontos. Use as setas para andar.',
-    'Aventura com câmera': 'Colete 4 moedas. Use as setas para explorar o caminho.',
-    'Plataforma com inimigos':
-      'Derrote os inimigos e faça pontos. Use as setas para andar e pular; Espaço atira.',
-    'Jogo desenhado por código': 'Pegue as moedas. Use as setas para andar.',
-    'Cenário do meu desenho':
-      'O seu desenho vira o fundo do jogo. Use as setas para andar na frente dele.',
-  }
-  const tailoredDescription = descriptions[example.name]
-  if (tailoredDescription) return tailoredDescription
-  return example.description ?? `Jogo 2D: ${example.name}`
-}
-
-/**
- * Todos os cartões ensinam o mesmo caminho que a criança usa nas aulas: um
- * “Ao iniciar” prepara o palco implícito; eventos e loops ficam nas áreas próprias.
- * O canvas deixa de ser uma peça escondida no HTML do exemplo.
- */
+/** Valida a fonte autoral: o preparo do palco é um bloco explícito do próprio exemplo. */
 export function beginnerGameExample(example: ExtensionExample): ExtensionExample {
-  const canvas = example.ir.html.find(
-    (node): node is Extract<(typeof example.ir.html)[number], { type: 'canvas' }> =>
-      node.type === 'canvas',
-  )
-  if (!canvas || typeof canvas.width !== 'number' || typeof canvas.height !== 'number') {
-    throw new Error(`O exemplo “${example.name}” precisa declarar o tamanho do palco`)
+  if (example.ir.html.length || example.ir.css.length) {
+    throw new Error(
+      `Exemplo Jogo 2D deve usar somente os blocos visuais da extensão: ${example.name}`,
+    )
   }
-  const canvasRule = example.ir.css.find(
-    (entry) => 'selector' in entry && entry.selector === 'canvas',
-  )
-  const background =
-    canvasRule && 'declarations' in canvasRule
-      ? (cssDeclarationsRecord(canvasRule.declarations).background ?? '#11172a')
-      : '#11172a'
-  const startId = `exemplo-${example.name.toLocaleLowerCase('pt-BR').replace(/[^a-z0-9]+/g, '-')}`
-  return {
-    ...example,
-    ir: {
-      ...example.ir,
-      html: example.ir.html.filter((node) => node !== canvas),
-      version: 2,
-      behavior: {
-        // ⚠️ Repassar 🧩 Meus moldes é obrigatório: este wrapper RECONSTRÓI o
-        // behavior campo a campo, então esquecer a chave apagaria em silêncio
-        // as figuras e os tipos de inimigo de todos os exemplos iniciantes.
-        molds: example.ir.behavior.molds ?? [],
-        start: [
-          {
-            type: 'g2d:setupStage',
-            width: canvas.width,
-            height: canvas.height,
-            bg: background,
-            __id: startId,
-          },
-          {
-            type: 'g2d:setStageDescription',
-            description: accessibleGameDescription(example),
-            __id: `${startId}-descricao`,
-          },
-          ...example.ir.behavior.start,
-        ],
-        events: example.ir.behavior.events,
-        loops: example.ir.behavior.loops,
-      },
-    },
+  if (example.ir.behavior.start[0]?.type !== 'g2d:setupStage') {
+    throw new Error(`Exemplo sem o bloco de preparar o jogo: ${example.name}`)
   }
+  return example
 }
 
 export const EXAMPLE_HERO_IMAGE =

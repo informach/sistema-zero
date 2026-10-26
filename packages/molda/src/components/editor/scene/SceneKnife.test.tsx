@@ -260,7 +260,7 @@ test('loop cut previews on hover, applies multiple positioned cuts once and rest
   }
 })
 
-test('the toolbar knife exposes Loop cut directly, keeps mode changes as drafts and discards interrupted cuts', async () => {
+test('a ferramenta Cortar mostra Corte em faixa e descarta cortes interrompidos', async () => {
   const f = fixture(),
     probe = sceneViewportProbe()
   const view = render(<SceneWorkshop editor={f.editor} viewportFactory={probe.factory} />)
@@ -269,7 +269,15 @@ test('the toolbar knife exposes Loop cut directly, keeps mode changes as drafts 
     fireEvent.click(screen.getByRole('button', { name: COPY.scene.select('corpo') }))
     fireEvent.click(screen.getByRole('button', { name: 'Cortar' }))
     const panel = within(screen.getByRole('region', { name: 'Cortar' }))
-    fireEvent.click(panel.getByRole('button', { name: 'Loop cut' }))
+    fireEvent.click(panel.getByRole('button', { name: 'Corte em faixa' }))
+    expect(panel.queryByText(/Passe o cursor por uma linha/)).toBeNull()
+    const helpButton = panel.getByRole('button', { name: 'Como usar Corte em faixa' })
+    fireEvent.click(helpButton)
+    expect(screen.getByRole('dialog', { name: 'Como usar Corte em faixa' })).toBeDefined()
+    fireEvent.keyDown(screen.getByRole('dialog'), { key: 'Escape' })
+    expect(screen.queryByRole('dialog')).toBeNull()
+    expect(document.activeElement).toBe(helpButton)
+    expect(panel.getByRole('button', { name: 'Aplicar corte' })).toBeDefined()
     expect(
       screen.getByText(
         'Clique em uma linha para escolher a faixa. Enter aplica; Esc cancela. Arraste para olhar.',

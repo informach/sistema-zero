@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'bun:test'
 import type { Project } from '#core'
 import { createProProject } from '../../components/code/pro-templates'
+import { makeHdrDataUrl } from '../../official-extensions/__tests__/three3d/assetFixtures'
+import { HEROI_DO_MOLDA_GLB } from '../../official-extensions/game-3d/exampleAssets'
 import { buildClassicFileMap, buildProFileMap } from '../fileMap'
 import { identityMinifiers } from '../minify'
 
@@ -142,6 +144,83 @@ describe('buildClassicFileMap', () => {
     expect(runtime).toContain('nave.glb')
     expect(runtime).toContain(skyDataUrl)
     expect(runtime).toContain('fim-de-tarde.hdr')
+  })
+
+  it('o sz-assets.js do ZIP entrega os BYTES do GLB do Molda e do HDR pelo nome que o runtime pede', async () => {
+    const skyDataUrl = makeHdrDataUrl(255, 8, 8)
+    const { files } = await buildClassicFileMap(
+      classicProject({
+        installedExtensions: [{ id: 'game-3d', version: '0.1.0', installedAt: 0 }],
+        assets: [
+          {
+            id: 'asset-heroi',
+            name: 'heroi-do-molda',
+            kind: 'model3d',
+            dataUrl: HEROI_DO_MOLDA_GLB,
+            originalFileName: 'heroi-do-molda.glb',
+            source: 'upload',
+          },
+          {
+            id: 'asset-ceu',
+            name: 'ceu-hdr',
+            kind: 'environment3d',
+            dataUrl: skyDataUrl,
+            originalFileName: 'ceu.hdr',
+            source: 'upload',
+          },
+        ],
+      }),
+      identityMinifiers,
+    )
+
+    // O index.html publicado carrega o manifesto ANTES do runtime da extensão, que lê
+    // `window.__SZGAME_ASSETS_3D` na primeira linha.
+    const index = String(files['public/index.html'])
+    expect(index.indexOf('src="sz-assets.js"')).toBeGreaterThan(-1)
+    expect(index.indexOf('src="sz-assets.js"')).toBeLessThan(index.indexOf('sz-ext/game-3d.js'))
+    // O PWA guarda o manifesto: a segunda abertura do jogo não perde o herói.
+    expect(String(files['public/sw.js'])).toContain('sz-assets.js')
+
+    // Roda o arquivo publicado numa janela de mentira, como o navegador faria.
+    const host: Record<string, unknown> = {}
+    new Function('window', String(files['public/sz-assets.js']))(host)
+    const manifest = host.__SZGAME_ASSETS_3D as Record<
+      string,
+      { kind: string; dataUrl: string; fileName: string }
+    >
+    // As chaves são os NOMES dos assets: é por eles que `createSzModels` procura
+    // (`assets[nome]`) e que o bloco "criar o objeto com o modelo" chama.
+    expect(Object.keys(manifest).sort()).toEqual(['ceu-hdr', 'heroi-do-molda'])
+    expect(manifest['heroi-do-molda']!.kind).toBe('model3d')
+    expect(manifest['ceu-hdr']!.kind).toBe('environment3d')
+    const decode = (dataUrl: string) =>
+      Uint8Array.from(atob(dataUrl.slice(dataUrl.indexOf(',') + 1)), (char) => char.charCodeAt(0))
+    const glb = decode(manifest['heroi-do-molda']!.dataUrl)
+    expect(glb).toEqual(decode(HEROI_DO_MOLDA_GLB))
+    // Cabeçalho GLB versão 2 (`glTF` + uint32 LE 2): é o que o GLTFLoader abre.
+    expect(new TextDecoder().decode(glb.slice(0, 4))).toBe('glTF')
+    expect(new DataView(glb.buffer).getUint32(4, true)).toBe(2)
+    const hdr = decode(manifest['ceu-hdr']!.dataUrl)
+    expect(hdr).toEqual(decode(skyDataUrl))
+    expect(new TextDecoder().decode(hdr.slice(0, 10))).toBe('#?RADIANCE')
+
+    // Código three.js de verdade (`new GLTFLoader().load('heroi-do-molda.glb')`) passa
+    // pelo fetch: o resolvedor do mesmo arquivo devolve os bytes embutidos, sem rede.
+    const fetchAsset = host.fetch as (url: string) => Promise<Response>
+    const fetched = new Uint8Array(await (await fetchAsset('heroi-do-molda.glb')).arrayBuffer())
+    expect(fetched).toEqual(glb)
+    const fetchedSky = new Uint8Array(await (await fetchAsset('./ceu.hdr')).arrayBuffer())
+    expect(fetchedSky).toEqual(hdr)
+  })
+
+  it('preserva a folha externa vazia que o HTML ainda referencia', async () => {
+    const { files } = await buildClassicFileMap(
+      classicProject({ files: { ...classicProject().files, 'style.css': '' } }),
+      identityMinifiers,
+    )
+    expect(files['public/index.html']).toContain('href="style.css"')
+    expect(files['public/style.css']).toBe('')
+    expect(files['public/sw.js']).toContain('./style.css')
   })
 
   it('placement inline (css/js vazios): nao emite arquivos externos vazios', async () => {

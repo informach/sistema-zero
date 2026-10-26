@@ -4,8 +4,9 @@ import Link from 'next/link'
 import type { ReactNode } from 'react'
 
 /**
- * A tela inteira de recado (direção de arte de 18/10/2026): a barra escura só com a logo (serve a
- * quem está ou não logado) e o recado no meio, com os caminhos para seguir. Usada pela página não
+ * A tela inteira de recado (direção de arte de 18/10/2026; no palco desde o "Estúdio à noite",
+ * 25/10/2026): a barra escura só com a logo (serve a quem está ou não logado) e o recado no meio,
+ * com os caminhos para seguir. Usada pela página não
  * encontrada e pela página de erro.
  */
 export function StatusScreen({
@@ -24,8 +25,9 @@ export function StatusScreen({
   children: ReactNode
 }) {
   return (
-    <div className="flex min-h-dvh flex-col bg-background">
-      <header className="bg-(--topo)">
+    // O recado inteiro no palco (Estúdio à noite): a barra com a logo e o número grande em pixel.
+    <div className="sz-palco flex min-h-dvh flex-col">
+      <header className="border-(--linha-escura) border-b bg-(--topo)">
         <div className="sz-page flex min-h-20 items-center">
           <Link
             href="/"
@@ -48,7 +50,7 @@ export function StatusScreen({
           {big ? (
             <span
               aria-hidden="true"
-              className="font-extrabold text-[5.5rem] text-(--acao-texto) leading-none [font-family:var(--font-display)]"
+              className="text-(--cta) text-[6.5rem] leading-none [font-family:var(--font-pixel)] [text-shadow:0.3rem_0.3rem_0_var(--cta-degrau)]"
             >
               {big}
             </span>

@@ -2,6 +2,9 @@ import { afterEach, describe, expect, it } from 'bun:test'
 import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import type { JSX } from 'react'
 import { createEmptyProject } from '#core'
+import { makeAnimatedGlb } from '../../official-extensions/__tests__/three3d/assetFixtures'
+import flipbookFixture from '../../official-extensions/__tests__/three3d/molda-flipbook.json'
+import skinnedFixture from '../../official-extensions/__tests__/three3d/molda-skinned.json'
 import { documentFixture } from '../../state/fixtures/projectDocuments'
 import { useProjectStore } from '../../state/projectStore'
 import { refinePythonProjectDocument } from '../../state/pythonProjectValidation'
@@ -277,6 +280,44 @@ describe('Materiais do jogo — a aba "Modelos 3D"', () => {
     expect(useProjectStore.getState().project?.assets?.[0]?.name).toBe('nave-mae')
   })
 
+  it('mostra os selos lidos do .glb e o que cada extensão faz com o modelo', () => {
+    seedProject({ with3DExtension: true })
+    const add = (name: string, dataUrl: string) =>
+      useProjectStore.getState().addAsset({
+        name,
+        dataUrl,
+        kind: 'model3d',
+        originalFileName: `${name}.glb`,
+        source: 'library',
+      })
+    add('boneco', skinnedFixture.dataUrl)
+    add('bandeira', flipbookFixture.dataUrl)
+    add('robo', makeAnimatedGlb('robo', ['Andar', 'Correr', 'Pular', 'Dancar']))
+    add('caixa', GLB_OK)
+    abrir3D()
+
+    expect(screen.getByText('🎬 Acenar, Esticar')).not.toBeNull()
+    expect(screen.getByText('🦴 com ossos')).not.toBeNull()
+    expect(screen.getByText('🎞️ pintura que se mexe')).not.toBeNull()
+    // Até 3 nomes; o resto vira "…", com a lista inteira na dica.
+    const many = screen.getByText('🎬 Andar, Correr, Pular…')
+    expect(many.getAttribute('title')).toBe('Animações deste modelo: Andar, Correr, Pular, Dancar')
+    // Só um modelo tem ossos e só um tem pintura que se mexe; o GLB sem JSON não ganha selo.
+    expect(screen.getAllByText('🦴 com ossos')).toHaveLength(1)
+    expect(screen.getAllByText(/^🎬 /)).toHaveLength(2)
+
+    expect(screen.getByText(/"Tocar a animação" faz ele se mexer/)).not.toBeNull()
+    expect(
+      screen.getByText(/peça "modelo importado" do molde, com uma animação para cada estado/),
+    ).not.toBeNull()
+    expect(
+      screen.getByText(/"Pôr o modelo" se mexe, e "Espalhar" deixa as cópias paradas/),
+    ).not.toBeNull()
+    expect(
+      screen.getByText('📦 Enviar modelo 3D').closest('button')?.getAttribute('title'),
+    ).toContain('com animações e ossos')
+  })
+
   it('com a extensão e sem arquivo nenhum, a aba existe e ensina o caminho', () => {
     seedProject({ with3DExtension: true })
     abrir3D()
@@ -539,5 +580,100 @@ describe('Materiais do jogo — a capa que não dá miniatura', () => {
       await Promise.resolve()
     })
     expect(useProjectStore.getState().project?.coverAssetName).toBe('heroi')
+  })
+})
+
+describe('Materiais do jogo — Pygame Zero lê sounds/ e music/', () => {
+  async function seedPgzero(extension?: string) {
+    const raw = documentFixture('python', 'classic')
+    raw.assets = []
+    if (extension) raw.installedExtensions = [{ id: extension, version: '1.0.0', installedAt: 1 }]
+    useProjectStore.setState({
+      project: await refinePythonProjectDocument(raw),
+      isDirty: false,
+      saveError: null,
+    })
+  }
+  function abrir(tab: 'Sons') {
+    render(<AssetsPanel open onClose={() => {}} />)
+    fireEvent.click(screen.getByRole('tab', { name: tab }))
+  }
+  async function enviar(porta: string, file: File) {
+    fireEvent.click(screen.getByRole('button', { name: porta }))
+    const input = document.querySelector('input[name="project-audio-files"]')
+    if (!(input instanceof HTMLInputElement)) throw new Error('Audio input required')
+    fireEvent.change(input, { target: { files: [file] } })
+  }
+
+  it('duas portas: o som curto vai para sounds/ e a música para music/', async () => {
+    await seedPgzero('python-pgzero')
+    abrir('Sons')
+    expect(screen.queryByText('🔊 Enviar som')).toBeNull()
+    await enviar('🔊 Enviar som curto', new File(['RIFF'], 'Pulo Alto.wav', { type: 'audio/wav' }))
+    await waitFor(() => expect(useProjectStore.getState().project?.assets).toHaveLength(1))
+    await enviar('🎵 Enviar música', new File(['ID3'], 'Tema.ogg', { type: 'audio/ogg' }))
+    await waitFor(() => expect(useProjectStore.getState().project?.assets).toHaveLength(2))
+    expect(useProjectStore.getState().project?.assets?.map((asset) => asset.proPath)).toEqual([
+      'sounds/pulo_alto.wav',
+      'music/tema.ogg',
+    ])
+    // A song in the short-sound door is explained, not stored where Pygame Zero cannot find it.
+    await enviar('🔊 Enviar som curto', new File(['ID3'], 'fundo.mp3', { type: 'audio/mpeg' }))
+    expect(await screen.findByText(/precisa ser um arquivo WAV ou OGG/)).not.toBeNull()
+    expect(useProjectStore.getState().project?.assets).toHaveLength(2)
+  })
+
+  it('um lote reserva o nome que o projeto guardou, não o do arquivo', async () => {
+    await seedPgzero('python-pgzero')
+    abrir('Sons')
+    fireEvent.click(screen.getByRole('button', { name: '🔊 Enviar som curto' }))
+    const input = document.querySelector('input[name="project-audio-files"]')
+    if (!(input instanceof HTMLInputElement)) throw new Error('Audio input required')
+    // `class` is a Python keyword: the file becomes sounds/class_2.wav and the material
+    // `class-2`, which is exactly the name the second file asks for.
+    fireEvent.change(input, {
+      target: {
+        files: [
+          new File(['RIFF'], 'class.wav', { type: 'audio/wav' }),
+          new File(['RIFF'], 'class-2.wav', { type: 'audio/wav' }),
+        ],
+      },
+    })
+    await waitFor(() => expect(useProjectStore.getState().project?.assets).toHaveLength(2))
+    const names = useProjectStore.getState().project?.assets?.map((asset) => asset.name) ?? []
+    expect(new Set(names).size).toBe(2)
+    expect(screen.queryByRole('alert')).toBeNull()
+  })
+
+  it('cada material mostra o nome que o código usa, e renomear leva o arquivo junto', async () => {
+    await seedPgzero('python-pgzero')
+    abrir('Sons')
+    await enviar('🔊 Enviar som curto', new File(['RIFF'], 'Pulo Alto.wav', { type: 'audio/wav' }))
+    const campo = await screen.findByRole('textbox', { name: 'Nome do som pulo-alto' })
+    expect(campo.getAttribute('aria-describedby')).not.toBeNull()
+    const nomeNoCodigo = document.getElementById(campo.getAttribute('aria-describedby')!)
+    expect(nomeNoCodigo?.textContent).toBe('nome no código: pulo_alto')
+    fireEvent.blur(campo, { target: { value: 'grito' } })
+    await waitFor(() =>
+      expect(useProjectStore.getState().project?.assets?.[0]?.proPath).toBe('sounds/grito.wav'),
+    )
+    expect(screen.getByText('grito', { selector: 'code' })).not.toBeNull()
+  })
+
+  it('Turtle mantém uma porta só e o caminho assets/', async () => {
+    await seedPgzero('python-turtle')
+    abrir('Sons')
+    expect(screen.queryByText('🎵 Enviar música')).toBeNull()
+    fireEvent.click(screen.getByText('🔊 Enviar som'))
+    const input = document.querySelector('input[name="project-audio-files"]')
+    if (!(input instanceof HTMLInputElement)) throw new Error('Audio input required')
+    fireEvent.change(input, {
+      target: { files: [new File(['ID3'], 'tema.mp3', { type: 'audio/mpeg' })] },
+    })
+    await waitFor(() =>
+      expect(useProjectStore.getState().project?.assets?.[0]?.proPath).toBe('assets/tema.mp3'),
+    )
+    // Turtle opens files by their path: no Pygame Zero code name.
+    expect(screen.queryByText(/nome no código/)).toBeNull()
   })
 })

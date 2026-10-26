@@ -869,7 +869,6 @@ describe('contrato central de posicionamento', () => {
         { blockType: 'sz_gk_start_spawner', statementType: 'gk:startSpawner' },
         { blockType: 'sz_gk_wait', statementType: 'gk:waitThen' },
         { blockType: 'sz_g3k_start_spawner', statementType: 'g3k:startSpawner' },
-        { blockType: 'sz_g3k_start_timer', statementType: 'g3k:startTimer' },
         { blockType: 'sz_w3d_ambience', statementType: 'w3d:ambience' },
         { blockType: 'sz_w3d_play_music', statementType: 'w3d:playMusic' },
       ]),

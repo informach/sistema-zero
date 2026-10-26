@@ -9,6 +9,12 @@ import {
   verifyStudioPythonInspectionReport,
   verifyStudioPythonStructureEvidence,
 } from './python-inspection'
+import {
+  PYTHON_MISSION_LIMITS,
+  PythonMissionValidationReportSchema,
+  verifyPythonMissionRequest,
+  verifyPythonMissionValidationReport,
+} from './python-mission-execution'
 import { StudioPythonPlaytestRecipeSchema } from './python-playtest'
 import {
   StudioPythonPreviewReferenceSchema,
@@ -44,6 +50,7 @@ const validated = z.strictObject({
   report: StudioPythonValidationReportSchema,
   preview: StudioPythonPreviewReferenceSchema.optional(),
 })
+const checked = z.strictObject({ ok: z.literal(true), report: PythonMissionValidationReportSchema })
 const failure = z.object({
   code: z.string().max(80).optional(),
   message: z.string().max(2000).optional(),
@@ -84,6 +91,7 @@ async function runPythonRevision(
   options: StudioPythonRuntimeClientOptions,
   recipeInput?: unknown,
   previewInput?: unknown,
+  missionInput?: unknown,
 ) {
   const recipe =
     recipeInput === undefined ? undefined : StudioPythonPlaytestRecipeSchema.parse(recipeInput)
@@ -108,6 +116,12 @@ async function runPythonRevision(
     cleanupFailed,
   } = options
   const snapshot = await verifyStudioPythonExecutionMetadata(options.snapshot)
+  const mission =
+    missionInput === undefined
+      ? undefined
+      : await verifyPythonMissionRequest(missionInput, snapshot)
+  if (mission && (recipe || previewRequest))
+    throw new Error('A missão exige uma operação Python exclusiva.')
   const input = StudioPythonInputOpenSchema.parse({
     version: 1,
     snapshot,
@@ -229,6 +243,7 @@ async function runPythonRevision(
   let report:
     | z.infer<typeof StudioPythonInspectionReportSchema>
     | z.infer<typeof StudioPythonValidationReportSchema>
+    | z.infer<typeof PythonMissionValidationReportSchema>
     | undefined
   let preview: z.infer<typeof StudioPythonPreviewReferenceSchema> | undefined
   try {
@@ -275,21 +290,34 @@ async function runPythonRevision(
         sent.add(file.sha256)
       }
       const raw = await send(
-        recipe ? 'validate' : 'inspect',
+        mission ? 'check' : recipe ? 'validate' : 'inspect',
         JSON.stringify(
-          recipe
-            ? {
-                version: 1,
-                input: reference,
-                structure: structureRequested,
-                recipe,
-                ...(previewRequest ? { preview: previewRequest } : {}),
-              }
-            : { version: 1, input: reference, structure: structureRequested },
+          mission
+            ? { version: 1, input: reference, structure: structureRequested, mission }
+            : recipe
+              ? {
+                  version: 1,
+                  input: reference,
+                  structure: structureRequested,
+                  recipe,
+                  ...(previewRequest ? { preview: previewRequest } : {}),
+                }
+              : { version: 1, input: reference, structure: structureRequested },
         ),
-        recipe ? STUDIO_PYTHON_VALIDATION_LIMITS.responseBytes : 2 * 1024 * 1024,
+        mission
+          ? PYTHON_MISSION_LIMITS.responseBytes
+          : recipe
+            ? STUDIO_PYTHON_VALIDATION_LIMITS.responseBytes
+            : 2 * 1024 * 1024,
       )
-      if (recipe) {
+      if (mission) {
+        report = await verifyPythonMissionValidationReport(
+          checked.parse(raw).report,
+          snapshot,
+          mission,
+          structureRequested,
+        )
+      } else if (recipe) {
         const result = validated.parse(raw)
         report = await verifyStudioPythonValidationReport(
           result.report,
@@ -351,6 +379,15 @@ async function runPythonRevision(
 /** Compilation uses the current request envelope and an independent final authorization fence. */
 export async function inspectStudioPythonRevision(options: StudioPythonRuntimeClientOptions) {
   return StudioPythonInspectionReportSchema.parse((await runPythonRevision(options)).report)
+}
+
+/** Mission evidence uses the same authenticated binary transport and final authorization fences. */
+export async function checkStudioPythonRevision(
+  options: StudioPythonRuntimeClientOptions & { mission: unknown },
+) {
+  return PythonMissionValidationReportSchema.parse(
+    (await runPythonRevision(options, undefined, undefined, options.mission)).report,
+  )
 }
 
 /** Complete validation uses the same binary transport, cancellation and contextual authorization. */

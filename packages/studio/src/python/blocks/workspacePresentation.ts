@@ -3,6 +3,7 @@ import type { PythonNode } from '../language/types'
 import type { PythonBlockCodec } from './contract'
 import { type PythonVisualNode, pythonASTToVisual } from './projection'
 import type { PythonWorkspaceOrigins } from './provenance'
+import type { PythonProjectModules } from './scope'
 
 /** Splitting/merging stacks retains source order; moving pixels never reorders code. */
 export function orderPythonWorkspaceRoots(
@@ -33,8 +34,9 @@ export function updatePythonWorkspacePresentation(
   origins: PythonWorkspaceOrigins,
   codecs: readonly PythonBlockCodec[],
   officialModules?: ReadonlySet<string>,
+  projectModules?: PythonProjectModules,
 ) {
-  const canonical = pythonASTToVisual(tree, { codecs, officialModules })
+  const canonical = pythonASTToVisual(tree, { codecs, officialModules, projectModules })
   const projected = new Map<string, PythonVisualNode>()
   const queue = [...canonical.body]
   while (queue.length) {
@@ -53,9 +55,18 @@ export function updatePythonWorkspacePresentation(
       const qualified = current?.kind === 'block' && current.codecId === codec.id
       // The codec still emits the original call. Only its instructional claim
       // changes when the built-in/module/receiver is no longer proven.
+      // A call becomes a generic "chamada Python"; anything else (a handler, a with, a window
+      // constant) keeps its shape but says the claim must be checked in the code.
+      const call = !codec.match?.kinds?.some((kind) => kind !== 'Call' && kind !== 'Expr')
       block
         .getField('PYTHON_TITLE')
-        ?.setValue(qualified ? codec.title : 'chamada Python (ver código)')
+        ?.setValue(
+          qualified
+            ? codec.title
+            : call
+              ? 'chamada Python (ver código)'
+              : `${codec.title} (confira no código)`,
+        )
       block.setTooltip(
         qualified
           ? `${codec.help}\nPython: ${codec.api}`

@@ -1,6 +1,13 @@
 import { BEHAVIOR_AREA_LABELS, type BehaviorArea } from '../core/behaviorAreas'
 import { CONTINUOUS_EXTENSION_STATEMENT_TYPES } from '../official-extensions/continuousCommandContract'
+import { GAME_KIT_DRAWING_STATEMENT_TYPES } from '../official-extensions/game-2d-advanced/drawingIR'
+import {
+  GAME_RULES_NESTABLE_ROOT_TYPES,
+  gameRulesProvidesUserGesture,
+  isGameRulesSetLife,
+} from '../official-extensions/game3dRules/ir'
 import { sceneMethod } from '../official-extensions/scene-2d/catalog'
+import { W3D_NEW_START_ONLY_TYPES } from '../official-extensions/world-3d/worldIR'
 import { CANVAS3D_CONTINUOUS_STATEMENT_TYPES } from '../three/canvas3dContract'
 import {
   GAME3D_ACTION_CONTEXT_STATEMENT_TYPES,
@@ -34,7 +41,6 @@ const LOOP_ROOT_TYPES = new Set([
   'animationLoop',
   'g2d:updateEachFrame',
   'g3d:animate',
-  'g3d:everyFrames',
   'g3d:everySeconds',
   'gk:onUpdate',
   'gk:onFixedUpdate',
@@ -170,7 +176,7 @@ export const START_ONLY_STATEMENT_TYPES = new Set([
   'g3k:setBounce',
   'g3k:setFriction',
   'g3k:setSkyPhoto',
-  'g3k:setScreenText',
+  'g3k:screenText',
   'g3k:createScreen',
   'g3k:addButton',
   'g3k:loadSound',
@@ -188,8 +194,6 @@ export const START_ONLY_STATEMENT_TYPES = new Set([
   'w3d:grass',
   'w3d:scatter',
   'w3d:scatterModel',
-  'w3d:placeThing',
-  'w3d:placeModel',
   'w3d:clearArea',
   'w3d:horn',
   'w3d:carLights',
@@ -198,12 +202,6 @@ export const START_ONLY_STATEMENT_TYPES = new Set([
   'w3d:racePodium',
   'w3d:whisperCorner',
   'w3d:flameNote',
-  'w3d:coinsScatter',
-  'w3d:coinsRing',
-  'w3d:coinsLine',
-  'w3d:quest',
-  'w3d:marker',
-  'w3d:npc',
   'w3d:npcWander',
   'w3d:islands',
   'w3d:boat',
@@ -216,10 +214,8 @@ export const START_ONLY_STATEMENT_TYPES = new Set([
   'w3d:lamp',
   'w3d:fireflies',
   'w3d:campfire',
-  'w3d:pushPlace',
   'w3d:pushScatter',
   'w3d:letters',
-  'w3d:explosive',
   'w3d:point',
   'w3d:zone',
   'w3d:totemText',
@@ -248,6 +244,10 @@ export const START_ONLY_STATEMENT_TYPES = new Set([
   'w3d:roadGrid',
   'w3d:houseRow',
   'w3d:quality',
+  // Regras de jogo do Mundo 3D: a tela de início segura o mundo até o botão (uma vez).
+  'w3d:screenText',
+  // Molda no Mundo 3D: o modelo do personagem/amigo/carro e o clipe de cada estado.
+  ...W3D_NEW_START_ONLY_TYPES,
 ])
 
 /**
@@ -338,6 +338,13 @@ export const MOLD_OR_START_STATEMENT_TYPES = new Set([
 ])
 
 const EVENT_BODY_ONLY_TYPES = new Set(['w3d:npcAsk'])
+const GAME_KIT_DRAWING_TYPES: ReadonlySet<string> = new Set(GAME_KIT_DRAWING_STATEMENT_TYPES)
+const DRAWING_CONTAINERS = new Set([
+  'gk:onDraw',
+  'gk:onDrawHud',
+  'gk:defineLook',
+  'gk:rpgCreateMap',
+])
 
 type SpecializedBodyContext =
   | 'draw-world'
@@ -420,6 +427,7 @@ export function isEventStatement(statement: JSStatement): boolean {
   if (
     LOOP_ROOT_TYPES.has(statement.type) ||
     isContinuousCommandType(statement.type) ||
+    GAME_KIT_DRAWING_TYPES.has(statement.type) ||
     LEGACY_START_WRAPPER_TYPES.has(statement.type)
   ) {
     return false
@@ -427,7 +435,7 @@ export function isEventStatement(statement: JSStatement): boolean {
   return (
     CORE_EVENT_TYPES.has(statement.type) ||
     statement.type === 'w3d:npcTalk' ||
-    /^(?:g2d|gk|g3k|w3d):on[A-Z]/.test(statement.type) ||
+    /^(?:g2d|gk|g3d|g3k|w3d):on[A-Z]/.test(statement.type) ||
     /^gk:(?:rpg|cards|td)On[A-Z]/.test(statement.type) ||
     /^w3d:(?:race|bowling)On[A-Z]/.test(statement.type)
   )
@@ -438,13 +446,32 @@ export function isLoopRootStatement(statement: JSStatement): boolean {
 }
 
 /**
+ * Raiz de 🔁 que também cabe num corpo de evento ou de função (o "Depois de N s" das regras 3D).
+ * Não é laço: o corpo roda UMA vez, com o jogo rodando, e é tratado como corpo de evento.
+ */
+const NESTABLE_LOOP_AREA_TYPES: ReadonlySet<string> = new Set(GAME_RULES_NESTABLE_ROOT_TYPES)
+
+export function isNestableLoopAreaStatement(statement: JSStatement): boolean {
+  return NESTABLE_LOOP_AREA_TYPES.has(statement.type)
+}
+
+/** O corpo roda uma vez por acontecimento: os "Quando…" e o "Depois de N s". */
+export function startsEventBody(statement: JSStatement): boolean {
+  return isEventStatement(statement) || isNestableLoopAreaStatement(statement)
+}
+
+/**
  * Fonte única para classificar um statement nas quatro áreas de comportamento.
  * Devolve a área CANÔNICA: para quem cabe em mais de uma (a função), é a que a
  * migração de estado salvo respeita, e por isso é `start`.
  */
 export function lifecycleAreaForStatement(statement: JSStatement): LifecycleArea {
   if (MOLD_ONLY_STATEMENT_TYPES.has(statement.type)) return 'molds'
-  if (LOOP_ROOT_TYPES.has(statement.type) || isContinuousCommandType(statement.type)) {
+  if (
+    LOOP_ROOT_TYPES.has(statement.type) ||
+    isContinuousCommandType(statement.type) ||
+    isNestableLoopAreaStatement(statement)
+  ) {
     return 'loops'
   }
   if (isEventStatement(statement)) return 'events'
@@ -461,6 +488,7 @@ export function isLifecycleRootAllowed(statement: JSStatement, area: LifecycleAr
     LEGACY_ENGINE_BOOT_TYPES.has(statement.type) ||
     isLegacyLoadEvent(statement) ||
     isContinuousCommandType(statement.type) ||
+    GAME_KIT_DRAWING_TYPES.has(statement.type) ||
     GAME3D_ACTION_CONTEXT_STATEMENT_TYPES.has(statement.type) ||
     GAME3D_RUNNING_CONTEXT_STATEMENT_TYPES.has(statement.type) ||
     EVENT_BODY_ONLY_TYPES.has(statement.type) ||
@@ -490,6 +518,7 @@ interface SemanticContext {
   directEventContainer: boolean
   loopDepth: number
   continuousBody: boolean
+  drawingBody: boolean
   eventBody: boolean
   activeEventObjectBody: boolean
   userGestureBody: boolean
@@ -521,6 +550,17 @@ function validateContextDependentNode(
   path: PropertyKey[],
   issues: LifecycleSemanticIssue[],
 ): void {
+  if (
+    GAME_KIT_DRAWING_TYPES.has(String(node.type)) &&
+    !context.drawingBody &&
+    (!context.functionBody || context.eventBody || context.constructorBody)
+  ) {
+    issue(
+      issues,
+      path,
+      'Desenhe dentro do desenho do jogo, da interface, do mapa ou de uma aparência',
+    )
+  }
   const requiredBody = CONTAINER_ONLY_STATEMENTS.get(String(node.type))
   if (requiredBody && context.directSpecializedBody !== requiredBody) {
     issue(
@@ -559,6 +599,14 @@ function validateContextDependentNode(
       (!context.eventBody && (!context.functionBody || context.constructorBody)))
   ) {
     issue(issues, path, 'Este comando precisa responder a um evento ou ser chamado por uma função')
+  }
+
+  if (context.continuousBody && isGameRulesSetLife(node)) {
+    issue(
+      issues,
+      path,
+      'Mova “Dar … de vida” para fora do laço: a vida voltaria ao começo a cada quadro',
+    )
   }
 
   switch (node.type) {
@@ -646,6 +694,7 @@ function providesUserGesture(statement: JSStatement): boolean {
     return USER_GESTURE_EVENTS.has(statement.event)
   }
   if (statement.type === 'g2d:onKey') return true
+  if (gameRulesProvidesUserGesture(statement)) return true
   if (statement.type === 'g2d:onActionPressed') return true
   // "Quando apertar qualquer tecla ou tocar na tela" roda DENTRO do listener de
   // tecla/ponteiro, então o corpo está mesmo num gesto do navegador (é o que
@@ -725,7 +774,9 @@ function childContext(
       (execution === 'structural' && SYNTACTIC_LOOP_TYPES.has(statement.type) ? 1 : 0),
     continuousBody:
       (resetsActivation ? false : context.continuousBody) || isLoopStatement(statement),
-    eventBody: context.eventBody || isEventStatement(statement),
+    drawingBody:
+      (createsBoundary ? false : context.drawingBody) || DRAWING_CONTAINERS.has(statement.type),
+    eventBody: context.eventBody || startsEventBody(statement),
     trackEncounterBody:
       (resetsActivation ? false : context.trackEncounterBody) ||
       ((statement.type === 'g2d:sceneEvent' || statement.type === 'gk:sceneEvent') &&
@@ -833,6 +884,33 @@ function visitStatement(
   if (scene?.method === 'collectTrackItem' && !context.trackEncounterBody) {
     issue(issues, path, 'Recolher o sprite encontrado deve ficar dentro de um encontro na pista')
   }
+  if (context.nested && isNestableLoopAreaStatement(statement)) {
+    // Espelho do `AFTER_SECONDS_PLACEMENT`: cabe num corpo de evento ou de função, nunca num
+    // laço (do motor ou sintático), onde agendaria um aviso por volta.
+    if (context.continuousBody || context.loopDepth > 0) {
+      issue(
+        issues,
+        path,
+        `Mova “${statement.type}” para fora do laço: ele agendaria um aviso a cada volta`,
+      )
+    } else if (!context.eventBody && !context.functionBody) {
+      issue(
+        issues,
+        path,
+        `“${statement.type}” fica em ${BEHAVIOR_AREA_LABELS.loops}, num evento ou numa função`,
+      )
+    }
+  }
+  if (context.nested && LEGACY_ENGINE_BOOT_TYPES.has(statement.type)) {
+    // O "Começar" antigo (`remove-engine-boot`) é `start-only-command` no Blockly: aninhado num
+    // corpo, a IR passava e o projeto abria sem ele ("could not connect its previous
+    // connection"). Na raiz ele já é recusado por `isLifecycleRootAllowed`.
+    issue(
+      issues,
+      path,
+      `“${statement.type}” só pode ser usado diretamente em ${BEHAVIOR_AREA_LABELS.start}`,
+    )
+  }
   if (context.nested && isStartOnlyStatement(statement)) {
     // A área correta depende do tipo: molde vai para 🧩 Meus moldes, preparação
     // de partida continua em ⚙️ Ao iniciar. Nomear a área errada aqui mandaria a
@@ -900,6 +978,7 @@ export function validateLifecycleSemantics(
       directEventContainer: false,
       loopDepth: 0,
       continuousBody: false,
+      drawingBody: false,
       eventBody: false,
       activeEventObjectBody: false,
       userGestureBody: false,

@@ -1,0 +1,297 @@
+{
+  "kind": "python-visual-authoring",
+  "analyzer": {
+    "pythonVersion": "3.14.2",
+    "pyodideVersion": "314.0.7",
+    "distributionSha256": "4e65f749c8bf551076cf28a89f1e974c6999d9d1b0e020544540074870dfd092",
+    "analyzerSha256": "030eee7115db46c8c19831372a0948f71bbda0a8ad751235d4da889ed68bdf9b"
+  },
+  "authoringRuntime": {
+    "profileId": "python-probe",
+    "releaseId": "probe-1",
+    "manifestSha256": "cd9309955d9f8d4b11a0bd2f26837ac728bd786344d1ab6bee1316175ccf13a3"
+  },
+  "authoringRuntimeFeatures": [
+    "turtle-compound-shapes"
+  ],
+  "authoringLoader": "loadPythonAuthoring",
+  "extension": "python-pgzero",
+  "codecOrderSha256": "9230bb48f54aec7ba76bd4b69d279ee17895c6104123e6a07dccdb6b266b8c5f",
+  "sourceSha256": "986b095bb86c34c9e7ad448c9d216584ea6d93c968b95e726a7177e97c11b900",
+  "generatedSha256": "4b6008557d4b2069e58ec6aa929f51f0d55058fa70aa518d04420a5f9938eb09",
+  "opaqueCount": 0,
+  "blockCount": 612,
+  "referencedBlocks": [
+    {
+      "id": "sz_py_and",
+      "count": 2
+    },
+    {
+      "id": "sz_py_arithmetic",
+      "count": 30
+    },
+    {
+      "id": "sz_py_assign",
+      "count": 60
+    },
+    {
+      "id": "sz_py_boolean",
+      "count": 5
+    },
+    {
+      "id": "sz_py_compare",
+      "count": 17
+    },
+    {
+      "id": "sz_py_def",
+      "count": 9
+    },
+    {
+      "id": "sz_py_dictionary",
+      "count": 1
+    },
+    {
+      "id": "sz_py_except",
+      "count": 2
+    },
+    {
+      "id": "sz_py_file_read",
+      "count": 1
+    },
+    {
+      "id": "sz_py_file_write",
+      "count": 1
+    },
+    {
+      "id": "sz_py_float",
+      "count": 1
+    },
+    {
+      "id": "sz_py_for",
+      "count": 4
+    },
+    {
+      "id": "sz_py_global",
+      "count": 8
+    },
+    {
+      "id": "sz_py_if",
+      "count": 20
+    },
+    {
+      "id": "sz_py_import_one",
+      "count": 2
+    },
+    {
+      "id": "sz_py_int",
+      "count": 2
+    },
+    {
+      "id": "sz_py_integer",
+      "count": 98
+    },
+    {
+      "id": "sz_py_list",
+      "count": 4
+    },
+    {
+      "id": "sz_py_list_append",
+      "count": 2
+    },
+    {
+      "id": "sz_py_list_clear",
+      "count": 1
+    },
+    {
+      "id": "sz_py_max",
+      "count": 4
+    },
+    {
+      "id": "sz_py_min",
+      "count": 2
+    },
+    {
+      "id": "sz_py_not",
+      "count": 2
+    },
+    {
+      "id": "sz_py_pgzero_actor",
+      "count": 4
+    },
+    {
+      "id": "sz_py_pgzero_actor_draw",
+      "count": 4
+    },
+    {
+      "id": "sz_py_pgzero_actor_property",
+      "count": 21
+    },
+    {
+      "id": "sz_py_pgzero_colliderect",
+      "count": 2
+    },
+    {
+      "id": "sz_py_pgzero_draw",
+      "count": 1
+    },
+    {
+      "id": "sz_py_pgzero_draw_text",
+      "count": 9
+    },
+    {
+      "id": "sz_py_pgzero_go",
+      "count": 1
+    },
+    {
+      "id": "sz_py_pgzero_height",
+      "count": 1
+    },
+    {
+      "id": "sz_py_pgzero_keyboard",
+      "count": 4
+    },
+    {
+      "id": "sz_py_pgzero_keys",
+      "count": 1
+    },
+    {
+      "id": "sz_py_pgzero_on_key_down",
+      "count": 1
+    },
+    {
+      "id": "sz_py_pgzero_screen_blit",
+      "count": 1
+    },
+    {
+      "id": "sz_py_pgzero_sound_play",
+      "count": 2
+    },
+    {
+      "id": "sz_py_pgzero_title",
+      "count": 1
+    },
+    {
+      "id": "sz_py_pgzero_update",
+      "count": 1
+    },
+    {
+      "id": "sz_py_pgzero_width",
+      "count": 1
+    },
+    {
+      "id": "sz_py_print",
+      "count": 1
+    },
+    {
+      "id": "sz_py_random_choice",
+      "count": 1
+    },
+    {
+      "id": "sz_py_return",
+      "count": 8
+    },
+    {
+      "id": "sz_py_run",
+      "count": 11
+    },
+    {
+      "id": "sz_py_run_value",
+      "count": 2
+    },
+    {
+      "id": "sz_py_slice",
+      "count": 1
+    },
+    {
+      "id": "sz_py_str",
+      "count": 7
+    },
+    {
+      "id": "sz_py_subscript",
+      "count": 1
+    },
+    {
+      "id": "sz_py_text",
+      "count": 63
+    },
+    {
+      "id": "sz_py_try",
+      "count": 2
+    },
+    {
+      "id": "sz_py_tuple",
+      "count": 24
+    },
+    {
+      "id": "sz_py_variable",
+      "count": 156
+    },
+    {
+      "id": "sz_py_with_open",
+      "count": 2
+    }
+  ],
+  "approvedBlockIdsSha256": "54202db5e7bad445cab6e6263ea549dc48128724392cd438eaab19555b4dc547",
+  "fullWorkspaceRoundtrip": true,
+  "initialWorkspaceSha256": "c98628b37213bc1b4afb8d7980323c9ed89de939b0c94064faea1cde736b9420",
+  "editedWorkspaceSha256": "ad9c3cb1dc81a27f2b38685df5ae5c40dce9b90d3fc7fd4e7f66d870d51e2879",
+  "canonicalRenderReanalysis": true,
+  "runtimeCapabilitiesQualified": false,
+  "browserInteractionQualified": false,
+  "edits": [
+    {
+      "label": "width",
+      "path": {
+        "body": 2,
+        "inputs": [
+          {
+            "name": "value",
+            "index": 0
+          }
+        ]
+      },
+      "codecId": "sz_py_integer",
+      "field": "NUMBER",
+      "before": "800",
+      "after": "810",
+      "beforeSourceSha256": "01996e50900d702f0ecc7d7aaa5360bfd820d6f769034b552b169dbd4b28001e",
+      "afterSourceSha256": "9f591621681d6160a1f16ccc7f153955d351f4397d362f8b43cda489564a570f"
+    },
+    {
+      "label": "height",
+      "path": {
+        "body": 3,
+        "inputs": [
+          {
+            "name": "value",
+            "index": 0
+          }
+        ]
+      },
+      "codecId": "sz_py_integer",
+      "field": "NUMBER",
+      "before": "600",
+      "after": "610",
+      "beforeSourceSha256": "9f591621681d6160a1f16ccc7f153955d351f4397d362f8b43cda489564a570f",
+      "afterSourceSha256": "e0dd45f77db9cf707eda118da953ae5ca09a90a0303ece7d568dafeb1fd91467"
+    },
+    {
+      "label": "title",
+      "path": {
+        "body": 4,
+        "inputs": [
+          {
+            "name": "value",
+            "index": 0
+          }
+        ]
+      },
+      "codecId": "sz_py_text",
+      "field": "TEXT",
+      "before": "Bússola Maluca",
+      "after": "Bússola Maluca!",
+      "beforeSourceSha256": "e0dd45f77db9cf707eda118da953ae5ca09a90a0303ece7d568dafeb1fd91467",
+      "afterSourceSha256": "4b6008557d4b2069e58ec6aa929f51f0d55058fa70aa518d04420a5f9938eb09"
+    }
+  ]
+}

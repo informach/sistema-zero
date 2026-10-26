@@ -1,6 +1,11 @@
 import { buildProjectRunContextRuntime } from '#extensions'
+import { withGameRules3DRuntime } from '../game3dRules/runtime'
+import { compactOfficialRuntimeSource } from '../runtimeSource'
+import { withThreeModelsRuntime } from '../three3dModelsRuntime'
 import { withThreePostProcessingRuntime } from '../threePostProcessingRuntime'
+import { withThreeRenderBudgetRuntime } from '../threeRenderBudgetRuntime'
 import { gameKit3DCameraRuntimeSource } from './runtimeCamera'
+import { gameKit3DGameplayRuntimeSource } from './runtimeGameplay'
 import { gameKit3DModelAssetsRuntimeSource } from './runtimeModelAssets'
 import { gameKit3DPhysicsRuntimeSource } from './runtimePhysics'
 import { gameKit3DProjectRuntimeSource } from './runtimeProject'
@@ -13,7 +18,7 @@ import { gameKit3DProjectRuntimeSource } from './runtimeProject'
  *
  * Expõe `window.SZGameKit3D`: a base de um jogo 3D PROFISSIONAL (curso do
  * SimonDev) achatada num facade. O motor cuida do que nunca muda — renderer com
- * sombras e tone mapping, canvas com resolução interna fixa + letterbox,
+ * sombras e tone mapping, canvas com régua fixa + letterbox (resolução pelo orçamento),
  * telas de UI injetadas por JS, laço com delta-time clampado, entidades com
  * pool por molde, máquina de estados POR ENTIDADE (o coração didático do
  * curso: parado → mirar → atirar → recarregar), busca de vizinhos por grade
@@ -30,12 +35,12 @@ import { gameKit3DProjectRuntimeSource } from './runtimeProject'
  *   initWorld() (os testes avaliam com stub sem document e THREE vazio).
  * - Nunca quebrar o jogo do aluno: API pública embrulhada em try/catch com
  *   console.warn; avisos de gancho saem UMA vez (60×/s afogaria o console).
- * - Higiene de GPU: pixelRatio 1 (resolução interna fixa), teto de entidades,
+ * - Higiene de GPU: resolução e pixel ratio pelo orçamento compartilhado (a régua
+ *   config.w/h continua fixa para as contas do aluno), teto de entidades,
  *   clone de molde compartilha geometria/material, dispose + forceContextLoss
  *   no fechamento (o navegador limita ~16 contextos WebGL).
  */
 const gameKit3DRuntimeBeforeModelSource = `import * as THREE from 'three';
-${buildProjectRunContextRuntime()}
 (function () {
   // ---- Config (do bloco "Preparar o jogo 3D") ----
   var config = {
@@ -66,11 +71,7 @@ ${buildProjectRunContextRuntime()}
   var MAX_EXTRA_LIGHTS = 8; // luz pontual multiplica o custo de cada material
   var MAX_ATTRACTORS_PER_EFFECT = 16;
   var MAX_RENDER_PIXELS = 1920 * 1080;
-  var MAX_MODEL_MESHES = 48;
-  var MAX_MODEL_TRIANGLES = 500000;
-  var MAX_MODEL_BONES = 256;
-  var MAX_MODEL_MATERIALS = 64;
-  var MAX_MODEL_DRAW_CALLS = 96;
+  // O teto POR MODELO (MAX_MODEL_*) é do carregador compartilhado; aqui, o do quadro.
   var MAX_ACTIVE_MODEL_TRIANGLES = 2000000;
   var MAX_ACTIVE_MODEL_MESHES = 512;
   var MAX_ACTIVE_MODEL_BONES = 1024;
@@ -100,7 +101,6 @@ ${buildProjectRunContextRuntime()}
   var runningProjectFactory = false;
   var screens = Object.create(null);     // nome -> { el, title, text, mainBtn }
   var projectButtons = [];               // botões extras criados pela fábrica do aluno
-  var hudEls = Object.create(null);      // canto -> div
   var sounds = Object.create(null);      // nome -> HTMLAudioElement
   var soundSources = Object.create(null); // nome -> data URL usada pelo Audio
   var soundLoadCleanups = Object.create(null); // nome -> encerra timer/listeners pendentes
@@ -112,6 +112,7 @@ ${buildProjectRunContextRuntime()}
   var stateTimers = [];                  // { mold, state, sec, next }
   var deathHooks = Object.create(null);  // mold -> [fn]
   var hurtHooks = Object.create(null);   // mold -> [fn] (roda a cada dano levado)
+  var animEndHooks = Object.create(null); // mold -> clipe -> [fn(quem terminou)]
   var overlapHooks = Object.create(null); // mold da ZONA -> [fn(zona, quem)]
   var effects = Object.create(null);     // nome -> receita + Points + buffers (faíscas)
   var effectCount = 0;
@@ -120,6 +121,23 @@ ${buildProjectRunContextRuntime()}
   var jets = [];
   var composer = null;                   // mini-composer próprio (bloom + vinheta + ACES)
   var composerFailed = false;            // WebGL/targets falharam -> render direto p/ sempre
+  // Orçamento de desenho COMPARTILHADO: resolução pelo canvas real, sombra, efeitos e MSAA
+  // por nível ('alta' | 'leve', este medido pela sonda de FPS). config.w/h seguem a régua.
+  var renderBudget = null;
+  /*__SZ_THREE_RENDER_BUDGET_RUNTIME__*/
+  renderBudget = createSzRenderBudget({
+    getRenderer: function () { return renderer; },
+    getCanvas: function () { return canvasEl; },
+    getScene: function () { return scene; },
+    logical: function () { return { w: config.w, h: config.h }; },
+    onTier: function (tier) {
+      if (tier === 'leve') {
+        warn('modo leve ligado: este computador pediu um jogo mais leve (sombra menor, sem efeitos de cinema)');
+        if (composer) disposeComposer();
+      }
+      if (sunLight) try { renderBudget.applyShadow(sunLight); } catch (e) {}
+    }
+  });
   var spriteTex = null;                  // círculo suave compartilhado (CanvasTexture)
   var stageEl = null;
   var canvasEl = null;
@@ -136,7 +154,8 @@ ${buildProjectRunContextRuntime()}
   var camera = null;
   var groundMesh = null;
   var ambientLight = null;                // luz do ambiente (setAmbient muda a força)
-  var extraLights = [];                   // luzes pontuais adicionadas (addLight)
+  var sunLight = null;                    // o sol (o orçamento ajusta o mapa de sombra)
+  var extraLights = [];                 // luzes pontuais adicionadas (addLight)
   var pendingLights = [];                 // luzes declaradas antes de o mundo nascer
   var decor = [];
   var currentDt = 0;
@@ -149,9 +168,6 @@ ${buildProjectRunContextRuntime()}
   var camMode = { kind: 'orbit', target: null, dist: 25, height: 4, pivot: null, pivotGen: 0, targetGen: 0 };
   var orbit = null;
   var camSmooth = 3;   // suavidade do seguir (era literal); maior = mais colada
-  var _shakeT = 0;     // segundos restantes de tremor
-  var _shakeAmp = 0;   // força do tremor, em metros
-  var _shakeMax = 1;   // duração pedida (para o tremor decair até zero)                      // { az, el, dist, dragging, px, py }
   // Vetores/quaternions temporários (alocados no initWorld — nunca no top-level).
   var _tv1 = null;
   var _tv2 = null;
@@ -163,17 +179,37 @@ ${buildProjectRunContextRuntime()}
   var _camR = null;
 
   // Grade espacial (plano XZ): a resposta do curso ao "getNearbyEntities O(n)".
-  // Células esparsas por chave 'x,z'; cada entidade guarda a faixa de células
-  // que ocupa e só re-insere quando os índices mudam.
+  // Células por índice NUMÉRICO (gx * GRID_DIM + gz, de 0 a GRID_DIM² - 1, sem
+  // chave de texto montada a cada consulta); cada entidade guarda a faixa de
+  // células que ocupa e só re-insere quando os índices mudam.
   var GRID_DIM = 16;
-  var gridCells = Object.create(null);
+  var gridCells = [];
+  // Balde de quem passa da borda do mundo: a parte de dentro fica nas células e
+  // a entidade entra também aqui. A consulta que passa da borda olha o balde, e
+  // as células da beirada não acumulam o tiro que voou para longe.
+  var gridOutside = [];
   // Dedup da consulta por CARIMBO (sem alloc + sem indexOf O(k²)); buffer de
   // resultado reusado (o chamador consome antes da próxima consulta). Scratch
   // de faixa evita alocar um array por entidade/quadro na sincronização.
+  // Faixa = [gx0, gz0, gx1, gz1, fora (0/1)].
   var gridStamp = 0;
   var gridResults = [];
-  var _rangeScratch = [0, 0, 0, 0];
-  var _rangeQScratch = [0, 0, 0, 0];
+  var _rangeScratch = [0, 0, 0, 0, 0];
+  var _rangeQScratch = [0, 0, 0, 0, 0];
+  // "Para cada vizinho" reentrante sem alocar: um buffer por NÍVEL de chamada
+  // (o gancho de um vizinho pode chamar forEachNear de novo).
+  var _nearBufs = [];
+  var _nearDepth = 0;
+  // Raycast do mouse: só as entidades VIVAS (o mesh raiz de cada uma), mantidas
+  // no nascer/recolher. O chão é um plano matemático, fora desta lista.
+  var pickables = [];
+  var _pickOwners = [];
+  var _pickHits = [];
+  // Matrizes do mouse: no máximo UMA atualização da cena por quadro (carimbo).
+  // Depois do desenho o próprio renderer já atualizou, e o carimbo vale até o
+  // próximo quadro.
+  var _frameNo = 0;
+  var _matrixFrame = -1;
 
   var SOUNDS = (typeof window !== 'undefined' && window.__SZGAME_SOUNDS && typeof window.__SZGAME_SOUNDS === 'object')
     ? window.__SZGAME_SOUNDS
@@ -200,10 +236,8 @@ ${buildProjectRunContextRuntime()}
     try { console.warn('SZGameKit3D: ' + msg); } catch (e) {}
   }
 
-  /**
-   * Aviso UMA vez por chave. Coisa chamada a cada quadro (tocar animação, por
-   * exemplo) com um nome errado entupiria o console a 60/s e esconderia o resto.
-   */
+  // Aviso UMA vez por chave. Coisa chamada a cada quadro (tocar animação, por
+  // exemplo) com um nome errado entupiria o console a 60/s e esconderia o resto.
   var _warned = {};
   function warnOnce(key, msg) {
     if (_warned[key]) return;
@@ -211,16 +245,14 @@ ${buildProjectRunContextRuntime()}
     warn(msg);
   }
 
-  /**
-   * Acaso do motor. Sem semente = Math.random (cada partida diferente, o padrão).
-   * COM semente = gerador próprio determinístico: a mesma semente dá exatamente a
-   * mesma partida — enfeites no mesmo lugar, inimigos nascendo igual, faíscas
-   * iguais. É o Mersenne semeado do curso (o ponto didático é a reprodutibilidade,
-   * não o algoritmo — mulberry32 dá o mesmo em 5 linhas, e vendorizar o Mersenne
-   * inteiro nesta string não se paga).
-   * ⚠️ TODO acaso do motor passa por aqui — trocar por Math.random em qualquer
-   * lugar fura o determinismo em silêncio.
-   */
+  // Acaso do motor. Sem semente = Math.random (cada partida diferente, o padrão).
+  // COM semente = gerador próprio determinístico: a mesma semente dá exatamente a
+  // mesma partida — enfeites no mesmo lugar, inimigos nascendo igual, faíscas
+  // iguais. É o Mersenne semeado do curso (o ponto didático é a reprodutibilidade,
+  // não o algoritmo — mulberry32 dá o mesmo em 5 linhas, e vendorizar o Mersenne
+  // inteiro nesta string não se paga).
+  // ⚠️ TODO acaso do motor passa por aqui — trocar por Math.random em qualquer
+  // lugar fura o determinismo em silêncio.
   var _rngState = 0;
   var _rngOn = false;
   function rand() {
@@ -238,6 +270,20 @@ ${buildProjectRunContextRuntime()}
     _rngState = Math.floor(s) | 0;
   }
 
+  // ---- 🏆 Placar, texto nos cantos, contagem, sorteio e tremor (regras COMUNS) ----
+  // O fragmento compartilhado das regras de jogo 3D (game3dRules/runtime.ts), o mesmo do
+  // Jogo 3D e do Mundo 3D. O sorteio passa pelo rand() acima, então o código do sorteio
+  // repetível (setSeed) continua valendo. As telas, o fim de jogo e o recomeçar NÃO vêm de
+  // lá: são os ESTADOS do jogo daqui (menu, jogando, pausado, fim, vitoria).
+  /*__SZ_GAME_RULES_3D_RUNTIME__*/
+  var rules = createSzGameRules({
+    canvas: function () { return canvasEl; },
+    // Acima do jogo e do balão de fala, abaixo das telas (1000).
+    layerZ: 500,
+    random: function () { return rand(); },
+    warn: function (key, msg) { warnOnce('regras-' + key, msg); }
+  });
+
   function num(v, fallback) {
     if (v == null || v === '') return fallback;
     var n = Number(v);
@@ -249,7 +295,7 @@ ${buildProjectRunContextRuntime()}
     return String(v);
   }
 
-  /** '#rgb'/'#rrggbb' -> {r,g,b} (0-255) ou null. */
+  // '#rgb'/'#rrggbb' -> {r,g,b} (0-255) ou null.
   function hexToRgb(hex) {
     var h = String(hex == null ? '' : hex).replace('#', '');
     if (h.length === 3) {
@@ -277,7 +323,7 @@ ${buildProjectRunContextRuntime()}
     return 'rgba(' + c.r + ', ' + c.g + ', ' + c.b + ', ' + alpha + ')';
   }
 
-  /** Mistura a cor com branco (0..1) — usada no horizonte do céu. */
+  // Mistura a cor com branco (0..1) — usada no horizonte do céu.
   function lighten(hex, amount) {
     var c = hexToRgb(hex);
     if (!c) return '#93c5fd';
@@ -287,7 +333,7 @@ ${buildProjectRunContextRuntime()}
     return 'rgb(' + r + ', ' + g + ', ' + b + ')';
   }
 
-  /** Normaliza nome de tecla p/ o mapa (lowercase; apelidos comuns em PT). */
+  // Normaliza nome de tecla p/ o mapa (lowercase; apelidos comuns em PT).
   function normKey(k) {
     var s = String(k == null ? '' : k).toLowerCase();
     if (s === 'espaco' || s === 'espaço' || s === 'space' || s === 'barra de espaco' || s === 'barra de espaço') return ' ';
@@ -296,6 +342,10 @@ ${buildProjectRunContextRuntime()}
     if (s === 'seta esquerda' || s === 'esquerda') return 'arrowleft';
     if (s === 'seta para cima' || s === 'cima') return 'arrowup';
     if (s === 'seta para baixo' || s === 'baixo') return 'arrowdown';
+    // Os códigos do dropdown COMUM das extensões 3D (KeyW, Digit1, ShiftLeft…), já em minúsculas.
+    if (s.length === 4 && s.indexOf('key') === 0) return s.charAt(3);
+    if (s.length === 6 && s.indexOf('digit') === 0) return s.charAt(5);
+    if (s === 'shiftleft' || s === 'shiftright') return 'shift';
     return s;
   }
 
@@ -310,14 +360,6 @@ ${buildProjectRunContextRuntime()}
         'font-family: var(--sz-game-ui-font); color: #eee; }' +
       '#szg3k-frame { position: relative; }' +
       '#szg3k-canvas { display: block; border: 4px solid #1f2337; background: ' + config.sky + '; }' +
-      '.szg3k-hud { position: absolute; padding: 10px 14px; font-size: 20px; font-weight: bold; ' +
-        'color: #fff; text-shadow: 0 0 12px ' + glowStrong + ', 0 2px 2px rgba(0,0,0,0.8); ' +
-        'pointer-events: none; z-index: 500; white-space: pre; }' +
-      '.szg3k-hud-top-left { top: 0; left: 0; }' +
-      '.szg3k-hud-top-center { top: 0; left: 50%; transform: translateX(-50%); }' +
-      '.szg3k-hud-top-right { top: 0; right: 0; text-align: right; }' +
-      '.szg3k-hud-bottom-left { bottom: 0; left: 0; }' +
-      '.szg3k-hud-bottom-right { bottom: 0; right: 0; text-align: right; }' +
       // Balão de fala: ancorado no MUNDO (o say projeta a posição da entidade a
       // cada quadro). translate(-50%,-100%) põe a ponta do balão na cabeça dela.
       '.szg3k-say { position: absolute; max-width: 40%; padding: 8px 12px; border-radius: 14px; ' +
@@ -387,11 +429,9 @@ ${buildProjectRunContextRuntime()}
     return btn;
   }
 
-  /**
-   * Monta a casca do jogo (palco + moldura + canvas + telas prontas) — LAZY.
-   * O canvas fica dentro de uma MOLDURA relative: o HUD e os painéis são
-   * posicionados sobre a área do jogo (não sobre a janela inteira).
-   */
+  // Monta a casca do jogo (palco + moldura + canvas + telas prontas) — LAZY.
+  // O canvas fica dentro de uma MOLDURA relative: o HUD e os painéis são
+  // posicionados sobre a área do jogo (não sobre a janela inteira).
   function ensureShell() {
     if (shellReady) return true;
     try {
@@ -540,27 +580,13 @@ ${buildProjectRunContextRuntime()}
     }
   }
 
-  /** HUD por canto (DOM sobre o canvas): texto vazio APAGA o canto. */
-  var HUD_SLOTS = { 'top-left': 1, 'top-center': 1, 'top-right': 1, 'bottom-left': 1, 'bottom-right': 1 };
-  function setHud(slot, value) {
+  // Texto num canto da tela: o gerenciador de cantos é o das regras comuns (pilha por canto,
+  // texto vazio apaga). Aqui só se soma o anúncio para leitor de tela.
+  function hudText(corner, value) {
     if (!ensureShell()) return;
-    var key = text(slot, 'top-left');
-    if (!HUD_SLOTS[key]) key = 'top-left';
+    var key = text(corner, 'top-left');
     var content = text(value, '');
-    var el = hudEls[key];
-    if (!content) {
-      if (el && el.parentNode) el.parentNode.removeChild(el);
-      delete hudEls[key];
-      updateAccessibleHud(key, '');
-      return;
-    }
-    if (!el) {
-      el = document.createElement('div');
-      el.className = 'szg3k-hud szg3k-hud-' + key;
-      hudLayer.appendChild(el);
-      hudEls[key] = el;
-    }
-    el.textContent = content;
+    rules.hudText(key, content);
     updateAccessibleHud(key, content);
   }
 
@@ -571,7 +597,7 @@ ${buildProjectRunContextRuntime()}
     releaseRetiredMoldMaterials(mold, disposedMaterials);
   }
 
-  /** A recipe owns primitive/reserve materials, including reserves replaced after loading. */
+  // A recipe owns primitive/reserve materials, including reserves replaced after loading.
   function releaseRetiredMoldMaterials(mold, disposedMaterials) {
     if (!mold.retired || mold.resourceCount !== 0) return;
     var seen = disposedMaterials || new Set();
@@ -630,7 +656,7 @@ ${buildProjectRunContextRuntime()}
     ensurePointer();
   }
 
-  // ---- Canvas responsivo (resolução interna fixa + letterbox por CSS) ----
+  // ---- Canvas responsivo (régua fixa + letterbox por CSS; a resolução é do orçamento) ----
 
   function resizeCanvas() {
     if (!shellReady || !canvasEl) return;
@@ -652,7 +678,7 @@ ${buildProjectRunContextRuntime()}
     canvasEl.style.height = h + 'px';
   }
 
-  /** Mantém a proporção e respeita simultaneamente pixels totais e lado da GPU. */
+  // Mantém a proporção e respeita simultaneamente pixels totais e lado da GPU.
   function fitRenderSize(width, height, maxSide) {
     var w = Math.max(1, num(width, 1280));
     var h = Math.max(1, num(height, 720));
@@ -679,13 +705,10 @@ ${buildProjectRunContextRuntime()}
       var fitted = fitRenderSize(config.w, config.h, maxTexture);
       config.w = fitted.w;
       config.h = fitted.h;
-      // Resolução interna FIXA (as contas do aluno nunca mudam com a janela).
-      renderer.setPixelRatio(1);
-      renderer.setSize(config.w, config.h, false);
-      if (renderer.shadowMap) {
-        renderer.shadowMap.enabled = config.shadows !== false;
-        if (THREE.PCFSoftShadowMap) renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-      }
+      // A régua (config.w/h) não muda com a janela: as contas do aluno são as mesmas. O
+      // orçamento põe o pixel ratio que leva a régua ao tamanho REAL do canvas na tela.
+      renderBudget.resize();
+      if (renderer.shadowMap) renderer.shadowMap.enabled = config.shadows !== false;
       if (THREE.ACESFilmicToneMapping) renderer.toneMapping = THREE.ACESFilmicToneMapping;
 
       scene = new THREE.Scene();
@@ -714,12 +737,14 @@ ${buildProjectRunContextRuntime()}
         sun.shadow.camera.right = half;
         sun.shadow.camera.top = half;
         sun.shadow.camera.bottom = -half;
-        if (sun.shadow.mapSize && sun.shadow.mapSize.set) sun.shadow.mapSize.set(1024, 1024);
         // Anti-acne do curso. Aqui importa AINDA MAIS que lá: o nosso ortho cobre
-        // o mundo inteiro com um mapa menor (texel de sombra maior) — sem o bias,
-        // superfícies rasantes ficam listradas.
+        // o mundo inteiro (texel de sombra maior) — sem o bias, superfícies rasantes
+        // ficam listradas.
         sun.shadow.normalBias = 0.05;
       }
+      // Mapa (2048/1024) e filtro (PCFSoft/PCF) pelo nível do orçamento.
+      sunLight = sun;
+      renderBudget.applyShadow(sun);
       scene.add(sun);
 
       var groundGeo = new THREE.PlaneGeometry(config.world, config.world);
@@ -744,7 +769,7 @@ ${buildProjectRunContextRuntime()}
     }
   }
 
-  /** Céu = degradê da cor escolhida para um horizonte mais claro (canvas 2D). */
+  // Céu = degradê da cor escolhida para um horizonte mais claro (canvas 2D).
   function applySky() {
     if (!scene) return;
     clearEnvironmentTexture();
@@ -780,8 +805,16 @@ ${buildProjectRunContextRuntime()}
     if (!THREE.PointLight) return;
     var p = new THREE.PointLight(opts.color, opts.intensity, 0);
     p.position.set(opts.x, opts.y, opts.z);
+    // A fase em que a luz acendeu (a troca de fase apaga as da fase que acabou).
+    p.userData.szLevelEpoch = levelEpoch;
     scene.add(p);
     extraLights.push(p);
+  }
+  function removePointLight(light) {
+    if (scene && light) scene.remove(light);
+    if (light && light.dispose) {
+      try { light.dispose(); } catch (e) { warnOnce('dispose-light', 'não consegui liberar uma luz antiga: ' + e); }
+    }
   }
   function addLight(color, x, y, z, intensity) {
     if (extraLights.length + pendingLights.length >= MAX_EXTRA_LIGHTS) {
@@ -832,7 +865,7 @@ ${buildProjectRunContextRuntime()}
     decor.length = 0;
   }
 
-  /** Enfeites procedurais (pedras cinzas + cristais na cor de destaque). */
+  // Enfeites procedurais (pedras cinzas + cristais na cor de destaque).
   function scatterDecor(count) {
     if (!worldReady && !initWorldLater('Espalhar enfeites')) return;
     var n = Math.max(0, Math.min(MAX_DECOR, Math.floor(num(count, 16))));
@@ -882,38 +915,48 @@ ${buildProjectRunContextRuntime()}
     }
   }
 
-  /** Blocos de mundo usados antes do start: avisa (o mundo nasce no start). */
+  // Blocos de mundo usados antes do start: avisa (o mundo nasce no start).
   function initWorldLater(label) {
-    warn('"' + label + '" só funciona durante a partida — deixe-o num gancho (ex.: quando entrar no estado jogando)');
+    warn('"' + label + '" só funciona durante a partida — deixe-o num "Quando…" (ex.: Quando o jogo entrar no estado jogando)');
     return false;
   }
 
   // ---- Grade espacial (plano XZ, células esparsas) ----
 
+  // Índice da célula num eixo: -1 antes da borda do mundo, GRID_DIM depois dela
+  // (NaN conta como fora). A borda exata (+metade) ainda é a última célula.
   function gridIndex(v) {
     var half = config.world / 2;
     var t = (v + half) / (config.world || 1);
-    if (t < 0) t = 0;
-    if (t > 1) t = 1;
+    if (!(t >= 0)) return -1;
+    if (t > 1) return GRID_DIM;
     var i = Math.floor(t * GRID_DIM);
     return i >= GRID_DIM ? GRID_DIM - 1 : i;
   }
 
+  // Faixa de células (cortada na borda) + a marca de "passa da borda".
+  // Quem fica todo fora sai com a faixa vazia (início maior que o fim).
   function gridRangeInto(out, x, z, half) {
-    out[0] = gridIndex(x - half);
-    out[1] = gridIndex(z - half);
-    out[2] = gridIndex(x + half);
-    out[3] = gridIndex(z + half);
+    var a0 = gridIndex(x - half);
+    var b0 = gridIndex(z - half);
+    var a1 = gridIndex(x + half);
+    var b1 = gridIndex(z + half);
+    out[4] = (a0 < 0 || b0 < 0 || a1 >= GRID_DIM || b1 >= GRID_DIM) ? 1 : 0;
+    out[0] = a0 < 0 ? 0 : a0;
+    out[1] = b0 < 0 ? 0 : b0;
+    out[2] = a1 >= GRID_DIM ? GRID_DIM - 1 : a1;
+    out[3] = b1 >= GRID_DIM ? GRID_DIM - 1 : b1;
     return out;
   }
 
   function gridInsert(e, range) {
     for (var gx = range[0]; gx <= range[2]; gx++) {
       for (var gz = range[1]; gz <= range[3]; gz++) {
-        var k = gx + ',' + gz;
+        var k = gx * GRID_DIM + gz;
         (gridCells[k] || (gridCells[k] = [])).push(e);
       }
     }
+    if (range[4]) gridOutside.push(e);
     e._gi = range;
   }
 
@@ -922,43 +965,52 @@ ${buildProjectRunContextRuntime()}
     if (!r) return;
     for (var gx = r[0]; gx <= r[2]; gx++) {
       for (var gz = r[1]; gz <= r[3]; gz++) {
-        var cell = gridCells[gx + ',' + gz];
+        var cell = gridCells[gx * GRID_DIM + gz];
         if (!cell) continue;
         var idx = cell.indexOf(e);
         if (idx !== -1) cell.splice(idx, 1);
       }
     }
+    if (r[4]) {
+      var oi = gridOutside.indexOf(e);
+      if (oi !== -1) gridOutside.splice(oi, 1);
+    }
     e._gi = null;
   }
 
-  /** Recalcula a faixa de células; só re-insere (e ALOCA) se os índices mudaram. */
+  // Recalcula a faixa de células; só re-insere se os índices mudaram. A faixa
+  // mora num array da PRÓPRIA entidade (_gr), reescrito no lugar: andar de
+  // célula não aloca.
   function gridSync(e) {
+    // A grade só guarda VIVOS: o recycle já tirou o morto, e devolvê-lo à grade
+    // vazaria uma célula por ciclo (as consultas filtram, mas a lista só cresce).
+    if (!e._alive) return;
     var m = molds[e._mold];
     var half = m ? Math.max(0.5, m.radius) : 0.5;
     var p = e.mesh.position;
     var r = gridRangeInto(_rangeScratch, p.x, p.z, half);
     var old = e._gi;
-    if (old && old[0] === r[0] && old[1] === r[1] && old[2] === r[2] && old[3] === r[3]) return;
+    if (old && old[0] === r[0] && old[1] === r[1] && old[2] === r[2] && old[3] === r[3] && old[4] === r[4]) return;
     gridRemove(e);
-    // Copia o scratch num array estável guardado na entidade (só quando muda).
-    gridInsert(e, [r[0], r[1], r[2], r[3]]);
+    var keep = e._gr || (e._gr = [0, 0, 0, 0, 0]);
+    keep[0] = r[0]; keep[1] = r[1]; keep[2] = r[2]; keep[3] = r[3]; keep[4] = r[4];
+    gridInsert(e, keep);
   }
 
-  /**
-   * Vizinhos brutos num raio (broad-phase) — o chamador refina por distância.
-   * Dedup por carimbo (_stamp); devolve o BUFFER reusado gridResults (o
-   * chamador consome antes da próxima consulta; nested = snapshot em array local).
-   */
+  // Vizinhos brutos num raio (broad-phase) — o chamador refina por distância.
+  // Dedup por carimbo (_stamp); devolve o BUFFER reusado gridResults (o
+  // chamador consome antes da próxima consulta; nested = snapshot em buffer próprio).
   function gridQuery(x, z, radius) {
     gridStamp++;
     gridResults.length = 0;
     var r = gridRangeInto(_rangeQScratch, x, z, radius);
+    var c;
     for (var gx = r[0]; gx <= r[2]; gx++) {
       for (var gz = r[1]; gz <= r[3]; gz++) {
-        var cell = gridCells[gx + ',' + gz];
+        var cell = gridCells[gx * GRID_DIM + gz];
         if (!cell) continue;
         for (var i = 0; i < cell.length; i++) {
-          var c = cell[i];
+          c = cell[i];
           if (c._stamp !== gridStamp) {
             c._stamp = gridStamp;
             gridResults.push(c);
@@ -966,17 +1018,57 @@ ${buildProjectRunContextRuntime()}
         }
       }
     }
+    // A consulta passa da borda: quem está fora do mundo também pode estar perto.
+    if (r[4]) {
+      for (var oi = 0; oi < gridOutside.length; oi++) {
+        c = gridOutside[oi];
+        if (c._stamp !== gridStamp) {
+          c._stamp = gridStamp;
+          gridResults.push(c);
+        }
+      }
+    }
     return gridResults;
+  }
+
+  // ---- Lista do raycast do mouse (as entidades vivas) ----
+
+  function pickAdd(e) {
+    if (e._pi >= 0 || !e.mesh) return;
+    e._pi = pickables.length;
+    pickables.push(e.mesh);
+    _pickOwners.push(e);
+  }
+
+  // Tira em O(1): o último ocupa o lugar de quem saiu (a ordem não importa, o
+  // raycast ordena os acertos pela distância).
+  function pickRemove(e) {
+    var i = e._pi;
+    if (!(i >= 0)) return;
+    e._pi = -1;
+    if (_pickOwners[i] !== e) return;
+    var last = pickables.length - 1;
+    if (i !== last) {
+      pickables[i] = pickables[last];
+      _pickOwners[i] = _pickOwners[last];
+      _pickOwners[i]._pi = i;
+    }
+    pickables.pop();
+    _pickOwners.pop();
+  }
+
+  // Quem nasce ou é teleportado DEPOIS da atualização do quadro ganha a matriz
+  // na hora (só o mesh dele): o mouse acerta onde ele está, não onde estava.
+  function freshPickMatrix(e) {
+    if (_matrixFrame === _frameNo && e && e.mesh && e.mesh.updateMatrixWorld) e.mesh.updateMatrixWorld(true);
   }
 
   // ---- Moldes (aparência por composição de peças) + pool + spawner ----
 
-  /**
-   * Cunha unitária (rampa) — 6 vértices, 8 triângulos. Caixa de -0.5..0.5 em X e
-   * Z; em Y vai de 0 (base) até a reta que sobe de z=-0.5 (altura 0) a z=+0.5
-   * (altura 1). Feita na mão porque o three não tem primitiva de cunha (e addons
-   * de geometria não valem o download). computeVertexNormals dá a sombra certa.
-   */
+  // Cunha unitária (rampa) — 6 vértices, 8 triângulos. Caixa de -0.5..0.5 em X e
+  // Z; em Y vai de 0 (base) até a reta que sobe de z=-0.5 (altura 0) a z=+0.5
+  // (altura 1). Feita na mão porque o three não tem primitiva de cunha (e addons
+  // de geometria não valem o download). computeVertexNormals dá a sombra certa.
   function wedgeGeo() {
     var g = new THREE.BufferGeometry();
     // 0..3 = base (y=0); 4..5 = aresta alta (y=1, z=+0.5)
@@ -1024,7 +1116,7 @@ ${buildProjectRunContextRuntime()}
 `
 
 const gameKit3DRuntimeAfterModelSource = `
-  /** Textura de imagem do projeto (data:URL) → cache global + pixel-nítida. */
+  // Textura de imagem do projeto (data:URL) → cache global + pixel-nítida.
   function moldTexture(asset) {
     var a = text(asset, '');
     if (!a || !THREE.TextureLoader) return null;
@@ -1086,6 +1178,9 @@ const gameKit3DRuntimeAfterModelSource = `
       // DERIVADOS da caixa (finishMoldBox) — mantidos porque a grade e o resto do
       // motor já os lêem. hw/hd = meia-extensão; top = altura.
       hw: 0, hd: 0, top: 0,
+      // A caixa de CADA peça (centro + meia-extensão), para recalcular a união quando um
+      // modelo importado chega e a caixa dele vira a medida encaixada (o que se vê).
+      partBoxes: [],
       solid: false,
       trigger: false,
       // Barra de vida flutuante sobre cada entidade viva deste molde (showHealthBar).
@@ -1111,7 +1206,7 @@ const gameKit3DRuntimeAfterModelSource = `
       modelBones: 0,
       modelMaterials: 0,
       modelDrawCalls: 0,
-      stateAnims: null
+      stateAnims: null           // estado -> { clip, loop }
     };
     if (!previousMold) moldCount++;
     molds[k] = mold;
@@ -1135,13 +1230,11 @@ const gameKit3DRuntimeAfterModelSource = `
     }
   }
 
-  /**
-   * Meia-extensão da geometria UNITÁRIA de cada forma, em coords LOCAIS da peça
-   * (antes do scale). Só o plano é girado no part() (deita em XZ), então leva um
-   * flag: o giro de -90 em X mapeia (x,y,z) -> (x, z, -y), ou seja o 'h' vira
-   * PROFUNDIDADE e o 'd' não participa. Era exatamente o que a conta antiga
-   * errava (usava eixo e parâmetro trocados).
-   */
+  // Meia-extensão da geometria UNITÁRIA de cada forma, em coords LOCAIS da peça
+  // (antes do scale). Só o plano é girado no part() (deita em XZ), então leva um
+  // flag: o giro de -90 em X mapeia (x,y,z) -> (x, z, -y), ou seja o 'h' vira
+  // PROFUNDIDADE e o 'd' não participa. Era exatamente o que a conta antiga
+  // errava (usava eixo e parâmetro trocados).
   var UNIT_HALF = {
     box:      { x: 0.5, y: 0.5, z: 0.5,  rot: 0 },
     sphere:   { x: 0.5, y: 0.5, z: 0.5,  rot: 0 },
@@ -1155,12 +1248,10 @@ const gameKit3DRuntimeAfterModelSource = `
     rock:     { x: 0.5, y: 0.5, z: 0.5,  rot: 0 },
     crystal:  { x: 0.5, y: 0.5, z: 0.5,  rot: 0 }
   };
-  /**
-   * Espessura MÍNIMA de qualquer eixo do colisor. É load-bearing: sem ela, o
-   * plano (que tem espessura ZERO de verdade) vira um colisor sem volume e a
-   * criança atravessa o próprio piso — a correção honesta da caixa CRIARIA essa
-   * regressão. 10 cm é fino de ver e grosso de colidir.
-   */
+  // Espessura MÍNIMA de qualquer eixo do colisor. É load-bearing: sem ela, o
+  // plano (que tem espessura ZERO de verdade) vira um colisor sem volume e a
+  // criança atravessa o próprio piso — a correção honesta da caixa CRIARIA essa
+  // regressão. 10 cm é fino de ver e grosso de colidir.
   var MIN_THICK = 0.1;
   var _ext = { x: 0, y: 0, z: 0 };
 
@@ -1178,7 +1269,23 @@ const gameKit3DRuntimeAfterModelSource = `
     return out;
   }
 
-  /** Deriva da caixa local o que o resto do motor já lê (grade, alcance, topo). */
+  // A caixa local do colisor = UNIÃO das caixas das peças (min/max de verdade).
+  function unionMoldBox(mold) {
+    var c = mold.col;
+    var boxes = mold.partBoxes;
+    for (var i = 0; i < boxes.length; i++) {
+      var b = boxes[i];
+      if (i === 0 || b.x - b.ex < c.minX) c.minX = b.x - b.ex;
+      if (i === 0 || b.x + b.ex > c.maxX) c.maxX = b.x + b.ex;
+      if (i === 0 || b.y - b.ey < c.minY) c.minY = b.y - b.ey;
+      if (i === 0 || b.y + b.ey > c.maxY) c.maxY = b.y + b.ey;
+      if (i === 0 || b.z - b.ez < c.minZ) c.minZ = b.z - b.ez;
+      if (i === 0 || b.z + b.ez > c.maxZ) c.maxZ = b.z + b.ez;
+    }
+    finishMoldBox(mold);
+  }
+
+  // Deriva da caixa local o que o resto do motor já lê (grade, alcance, topo).
   function finishMoldBox(mold) {
     var c = mold.col;
     // Espessura mínima: cresce simetricamente em volta do centro do eixo magro.
@@ -1245,6 +1352,11 @@ const gameKit3DRuntimeAfterModelSource = `
       var tex = o.texture ? moldTexture(o.texture) : null;
       if (tex) mat.map = tex;
       var mesh;
+      // A caixa DESTA peça entra na união do molde antes de o modelo chegar (o modelo pode
+      // chegar na mesma hora, se já estiver no cache).
+      partExtents(shape, w, h, d, _ext);
+      var partBox = { x: x, y: y, z: z, ex: _ext.x, ey: _ext.y, ez: _ext.z };
+      mold.partBoxes.push(partBox);
       if (shape === 'modelo') {
         // Peça = MODELO do projeto. O GLB chega assíncrono (import do addon +
         // parse), então a peça nasce com um cubo de reserva e o modelo entra no
@@ -1252,6 +1364,8 @@ const gameKit3DRuntimeAfterModelSource = `
         // definidos ANTES dele, então o caso comum nunca aparece quebrado; um
         // molde definido DEPOIS do start troca o cubo só nos spawns FUTUROS (quem
         // nasceu durante o parse fica com o reserva).
+        // ⭐ O SUPORTE não é esticado: quem recebe o W×H×D é só o cubo de reserva. O modelo
+        // é ENCAIXADO na caixa (cabe inteiro, sem esticar) e a colisão vira a medida dele.
         mesh = new THREE.Group();
         var holder = mesh;
         // O molde ANOTA de qual modelo ele é feito: o spawn precisa saber para
@@ -1270,9 +1384,14 @@ const gameKit3DRuntimeAfterModelSource = `
           if (modelInstalled || disposed || molds[mold.name] !== mold) return;
           try {
             var imported = cloneModel(hit.scene);
+            var fitted = models.fit(imported, hit, { mode: 'contain', box: { w: w, h: h, d: d }, anchor: 'center' });
             while (holder.children.length) holder.remove(holder.children[0]);
             holder.add(imported);
             modelInstalled = true;
+            partBox.ex = fitted.hw;
+            partBox.ey = fitted.hh;
+            partBox.ez = fitted.hd;
+            unionMoldBox(mold);
             if (mold.model === modelName) mold.modelClips = hit.clips;
             mold.modelTriangles += hit.metrics.triangles;
             mold.modelMeshes += hit.metrics.meshes;
@@ -1287,13 +1406,17 @@ const gameKit3DRuntimeAfterModelSource = `
         };
         var ready = loadModel(o.model, installModel);
         if (ready) installModel(ready);
-        if (!modelInstalled) holder.add(new THREE.Mesh(unitGeo('box'), mat));
+        if (!modelInstalled) {
+          var reserve = new THREE.Mesh(unitGeo('box'), mat);
+          reserve.scale.set(w, h, d);
+          holder.add(reserve);
+        }
       } else {
         mesh = new THREE.Mesh(unitGeo(shape), mat);
+        mesh.scale.set(w, h, d);
       }
       // Plano nasce deitado no chão (deita a folha em XZ) — piso/parede útil.
       if (shape === 'plane') mesh.rotation.x = -Math.PI / 2;
-      mesh.scale.set(w, h, d);
       mesh.position.set(x, y, z);
       mesh.castShadow = true;
       mesh.receiveShadow = true;
@@ -1304,29 +1427,15 @@ const gameKit3DRuntimeAfterModelSource = `
       // Caixa LOCAL do colisor: UNIÃO das caixas de cada peça (min/max de verdade,
       // não meia-largura simétrica). Uma peça só em x=5 não faz mais o molde
       // colidir do lado oposto, e peça abaixo de y=0 passa a contar.
-      partExtents(shape, w, h, d, _ext);
-      var c = mold.col;
-      if (mold.parts === 1) {
-        c.minX = x - _ext.x; c.maxX = x + _ext.x;
-        c.minY = y - _ext.y; c.maxY = y + _ext.y;
-        c.minZ = z - _ext.z; c.maxZ = z + _ext.z;
-      } else {
-        if (x - _ext.x < c.minX) c.minX = x - _ext.x;
-        if (x + _ext.x > c.maxX) c.maxX = x + _ext.x;
-        if (y - _ext.y < c.minY) c.minY = y - _ext.y;
-        if (y + _ext.y > c.maxY) c.maxY = y + _ext.y;
-        if (z - _ext.z < c.minZ) c.minZ = z - _ext.z;
-        if (z + _ext.z > c.maxZ) c.maxZ = z + _ext.z;
-      }
       // A peça de RAMPA manda no formato do colisor (cunha em vez de caixa).
-      if (shape === 'rampa') c.kind = 3;
-      finishMoldBox(mold);
+      if (shape === 'rampa') mold.col.kind = 3;
+      unionMoldBox(mold);
     } catch (e) {
       warn('não consegui criar a peça: ' + e);
     }
   }
 
-  /** Entidade nova com TODAS as propriedades (identidade pública de uma única vida). */
+  // Entidade nova com TODAS as propriedades (identidade pública de uma única vida).
   function blankEntity() {
     return {
       mesh: null,
@@ -1367,12 +1476,17 @@ const gameKit3DRuntimeAfterModelSource = `
       // A "gaveta" de dados da criança (cronômetro/alvo/contador por entidade).
       // Zerada a cada nascimento — nunca vaza da vida que usou o recurso antes.
       data: null,
+      // Ronda do "Patrulhar entre": qual ponta é o alvo agora e a pausa que falta
+      // nela. Declarados aqui pelo mesmo motivo do _anim abaixo (forma final).
+      _patrolLeg: 0,
+      _patrolWait: 0,
       _alive: false,
       _mold: '',
       _iFrames: 0,
       // Animação do modelo: mixer/clipes/ação são POR ENTIDADE (o mesh é dela).
       // Declarados aqui só para o objeto nascer com a forma final — trocar a forma
       // depois faz o motor de JS re-otimizar o objeto quente.
+      _anim: null,
       _mixer: null,
       _clips: null,
       _action: null,
@@ -1385,15 +1499,20 @@ const gameKit3DRuntimeAfterModelSource = `
       // Geração: incrementa a cada nascimento do recurso gráfico reutilizado.
       _gen: 0,
       _gi: null,
+      // Array da faixa de células desta vida (reescrito no lugar pelo gridSync).
+      _gr: null,
+      // Lugar na lista do raycast do mouse (-1 = fora dela).
+      _pi: -1,
       // Carimbo da última consulta de grade que já viu esta entidade (dedup O(1)).
       _stamp: 0
     };
   }
 
-  /** O pool guarda recursos caros; o objeto-entidade público nunca é ressuscitado. */
+  // O pool guarda recursos caros; o objeto-entidade público nunca é ressuscitado.
   function pooledResources(e) {
     return {
       mesh: e.mesh,
+      anim: e._anim,
       mixer: e._mixer,
       clips: e._clips,
       gen: e._gen,
@@ -1410,7 +1529,7 @@ const gameKit3DRuntimeAfterModelSource = `
     activeModelCost.drawCalls = 0;
   }
 
-  /** Orçamento é do FRAME inteiro, não de cada molde isolado. */
+  // Orçamento é do FRAME inteiro, não de cada molde isolado.
   function activeModelBudgetProblem(m) {
     if (activeModelCost.triangles + m.modelTriangles > MAX_ACTIVE_MODEL_TRIANGLES) return 'triângulos';
     if (activeModelCost.meshes + m.modelMeshes > MAX_ACTIVE_MODEL_MESHES) return 'malhas';
@@ -1460,13 +1579,13 @@ const gameKit3DRuntimeAfterModelSource = `
     }
     var budgetProblem = activeModelBudgetProblem(m);
     if (budgetProblem) {
-      warnOnce('model-live-budget:' + budgetProblem, 'os modelos 3D vivos chegaram ao orçamento global de ' + budgetProblem + ' — recolha uma entidade antes de criar outra');
+      warnOnce('model-live-budget:' + budgetProblem, 'os modelos 3D no jogo chegaram ao limite de ' + budgetProblem + ' — tire algum do jogo antes de fazer nascer outro');
       return null;
     }
     if (totalAlive >= MAX_ENTITIES) {
       if (!entityLimitWarned) {
         entityLimitWarned = true;
-        warn('o mundo lotou (' + MAX_ENTITIES + ' entidades) — recolha as que saírem do jogo');
+        warn('o mundo lotou (' + MAX_ENTITIES + ' objetos) — tire do jogo os que não servem mais');
       }
       return null;
     }
@@ -1479,6 +1598,7 @@ const gameKit3DRuntimeAfterModelSource = `
     var e = blankEntity();
     if (resource) {
       e.mesh = resource.mesh;
+      e._anim = resource.anim;
       e._mixer = resource.mixer;
       e._clips = resource.clips;
       e._gen = resource.gen;
@@ -1539,6 +1659,8 @@ const gameKit3DRuntimeAfterModelSource = `
     // Gaveta de dados NOVA a cada nascimento — nunca herda o lixo da vida anterior
     // do pool (era o vazamento de campo custom entre vidas).
     e.data = {};
+    e._patrolLeg = 0;
+    e._patrolWait = 0;
     e._alive = true;
     e._mold = k;
     e._iFrames = 0;
@@ -1546,12 +1668,20 @@ const gameKit3DRuntimeAfterModelSource = `
     // já tem o seu — não remonta, só rebobina.
     if (!e._mixer) attachMixer(e, m);
     else e._action = null;
+    // O animador do pool passa a responder por ESTA vida (o "terminou a animação" confere) e
+    // volta à velocidade normal: a vida anterior pode ter pedido câmera lenta.
+    if (e._anim) {
+      e._anim._szEntity = e;
+      e._anim.setSpeed(1);
+    }
     e._gen = (e._gen || 0) + 1;
     e._gi = null;
     pool.active.push(e);
     totalAlive += 1;
     claimActiveModelCost(e, m);
     gridSync(e);
+    pickAdd(e);
+    freshPickMatrix(e);
     // Toda entidade NASCE no estado 'parado' (a FSM do curso): os ganchos de
     // entrar rodam já no nascimento.
     e.state = '';
@@ -1568,11 +1698,9 @@ const gameKit3DRuntimeAfterModelSource = `
     return e;
   }
 
-  /**
-   * Anel de tiros: faz nascer N entidades do molde ao redor da fonte, cada uma
-   * voando para FORA (o ataque de chefão / bullet-hell na unha). Reusa o spawn
-   * (respeita o teto global do pool). O molde do tiro decide o desenho.
-   */
+  // Anel de tiros: faz nascer N entidades do molde ao redor da fonte, cada uma
+  // voando para FORA (o ataque de chefão / bullet-hell na unha). Reusa o spawn
+  // (respeita o teto global do pool). O molde do tiro decide o desenho.
   function spawnRing(mold, count, from, speed) {
     if (!isEntity(from)) return;
     var n = Math.floor(num(count, 8));
@@ -1596,12 +1724,10 @@ const gameKit3DRuntimeAfterModelSource = `
     return !!(e && typeof e === 'object' && e.mesh && e._alive === true);
   }
 
-  /**
-   * "Quem é você?" — o filtro de identidade das zonas e dos vizinhos. É o
-   * isValidTarget do curso em forma de pergunta: o "quem" do gancho de zona
-   * pode ser QUALQUER corpo que entrou (herói, bola, tiro), e sem perguntar o
-   * molde a moeda conta ponto para o tiro perdido que passou por ela.
-   */
+  // "Quem é você?" — o filtro de identidade das zonas e dos vizinhos. É o
+  // isValidTarget do curso em forma de pergunta: o "quem" do gancho de zona
+  // pode ser QUALQUER corpo que entrou (herói, bola, tiro), e sem perguntar o
+  // molde a moeda conta ponto para o tiro perdido que passou por ela.
   function isMold(e, mold) {
     return isEntity(e) && e._mold === text(mold, '');
   }
@@ -1627,6 +1753,7 @@ const gameKit3DRuntimeAfterModelSource = `
     // raycast do pick — um enxame morto pesava por nada. O spawn re-adiciona.
     if (e.mesh && scene) scene.remove(e.mesh);
     gridRemove(e);
+    pickRemove(e);
     totalAlive = Math.max(0, totalAlive - 1);
     var pool = pools[e._mold];
     if (!pool) return;
@@ -1663,6 +1790,7 @@ const gameKit3DRuntimeAfterModelSource = `
       e._iFrames = 0;
       if (e.mesh && scene) scene.remove(e.mesh);
       gridRemove(e);
+      pickRemove(e);
       returnModelResource(pool, e, disposedResources);
     }
     pool.active.length = 0;
@@ -1688,7 +1816,7 @@ const gameKit3DRuntimeAfterModelSource = `
         // Avisa UMA vez por CALLBACK (flag persistente na fn) — senão 60×/s afoga.
         if (!fn.__szg3kWarned) {
           fn.__szg3kWarned = true;
-          warn('erro no "para cada vivo": ' + err);
+          warn('erro no "Para cada … que está no jogo": ' + err);
         }
       }
     }
@@ -1756,18 +1884,14 @@ const gameKit3DRuntimeAfterModelSource = `
   /*__SZ_GAME_KIT_3D_PHYSICS_RUNTIME__*/
   // ---- Comportamentos (a matemática do curso pronta em blocos) ----
 
-  /**
-   * A base do WASD: para onde a CÂMERA olha, achatado no plano do chão.
-   *
-   * ⭐ É o que faz "W entra na tela" valer em TODOS os modos de câmera, que é
-   * como todo jogo 3D de verdade funciona (Mario 64, Zelda). Antes o WASD andava
-   * por eixo FIXO do mundo (W = -Z sempre): certo por acidente na câmera de cima,
-   * torto 40° na de órbita e EXATAMENTE ao contrário na que segue — porque a
-   * câmera que segue fica ATRÁS do alvo, olhando para +Z.
-   *
-   * Lê a orientação REAL da câmera (não o modo), então já nasce certo para
-   * qualquer câmera futura, e o amortecimento do seguir suaviza a base de graça.
-   */
+  // A base do WASD: para onde a CÂMERA olha, achatado no plano do chão.
+  // ⭐ É o que faz "W entra na tela" valer em TODOS os modos de câmera, que é
+  // como todo jogo 3D de verdade funciona (Mario 64, Zelda). Antes o WASD andava
+  // por eixo FIXO do mundo (W = -Z sempre): certo por acidente na câmera de cima,
+  // torto 40° na de órbita e EXATAMENTE ao contrário na que segue — porque a
+  // câmera que segue fica ATRÁS do alvo, olhando para +Z.
+  // Lê a orientação REAL da câmera (não o modo), então já nasce certo para
+  // qualquer câmera futura, e o amortecimento do seguir suaviza a base de graça.
   function camBasisXZ() {
     _camF.set(0, 0, -1);
     if (camera) {
@@ -1781,7 +1905,7 @@ const gameKit3DRuntimeAfterModelSource = `
     _camR.set(-_camF.z, 0, _camF.x);
   }
 
-  /** Anda no chão pela base da câmera (o miolo do WASD e do 1ª pessoa). */
+  // Anda no chão pela base da câmera (o miolo do WASD e do 1ª pessoa).
   function moveOnCamBasis(e, sp) {
     var mf = 0;
     var mr = 0;
@@ -1826,7 +1950,7 @@ const gameKit3DRuntimeAfterModelSource = `
       e.grounded = false;
     }
   }
-  /** Recalcula os gates globais (custo zero p/ jogo que não usa sólido/zona). */
+  // Recalcula os gates globais (custo zero p/ jogo que não usa sólido/zona).
   function refreshSolidGates() {
     anySolid = false; anyTrigger = false; anyCarrier = false;
     _minSolidThin = 1e9;
@@ -1853,7 +1977,7 @@ const gameKit3DRuntimeAfterModelSource = `
     m.trigger = false;
     refreshSolidGates();
   }
-  /** Zona: detecta quem entra, mas NÃO empurra (moeda, porta, armadilha). */
+  // Zona: detecta quem entra, mas NÃO empurra (moeda, porta, armadilha).
   function makeTrigger(mold) {
     var m = molds[text(mold, '')];
     if (!m) return;
@@ -1861,7 +1985,7 @@ const gameKit3DRuntimeAfterModelSource = `
     m.solid = false;
     refreshSolidGates();
   }
-  /** Fantasma POR ENTIDADE: atravessa tudo que é sólido. */
+  // Fantasma POR ENTIDADE: atravessa tudo que é sólido.
   function passThrough(e, on) {
     if (!isEntity(e)) return;
     e.body = on === false ? 0 : 1;
@@ -1874,11 +1998,9 @@ const gameKit3DRuntimeAfterModelSource = `
     var m = molds[text(mold, '')];
     if (m) m.friction = Math.max(0, Math.min(1, num(amount, 0)));
   }
-  /**
-   * Tipos de física prontos: um bloco só e o molde se comporta como a COISA que
-   * ele é. É o atalho por cima dos ajustes finos (colisor/quique/atrito/cair),
-   * que continuam valendo para quem quiser afinar.
-   */
+  // Tipos de física prontos: um bloco só e o molde se comporta como a COISA que
+  // ele é. É o atalho por cima dos ajustes finos (colisor/quique/atrito/cair),
+  // que continuam valendo para quem quiser afinar.
   var PHYS_TYPES = {
     bola:       { col: 1, bounce: 0.7,  friction: 0.4,  g: 20 },
     caixa:      { col: 0, bounce: 0.1,  friction: 0.7,  g: 20 },
@@ -1897,7 +2019,7 @@ const gameKit3DRuntimeAfterModelSource = `
     m.gravity = t.g;
     refreshSolidGates();
   }
-  /** Formato invisível que colide: caixa (padrão) · bola · cápsula. */
+  // Formato invisível que colide: caixa (padrão) · bola · cápsula.
   function setCollider(mold, shape) {
     var m = molds[text(mold, '')];
     if (!m) return;
@@ -1911,7 +2033,7 @@ const gameKit3DRuntimeAfterModelSource = `
     if (!overlapHooks[k]) overlapHooks[k] = [];
     overlapHooks[k].push(fn);
   }
-  /** Plataforma pronta: WASD/setas no plano (preserva a queda) + pulo com espaço. */
+  // Plataforma pronta: WASD/setas no plano (preserva a queda) + pulo com espaço.
   function platformerKeys(e, speed, jumpForce) {
     if (!isEntity(e)) return;
     if (!e.gravity) e.gravity = -20;
@@ -1935,12 +2057,10 @@ const gameKit3DRuntimeAfterModelSource = `
     who.vz = (dz / len) * sp;
   }
 
-  /**
-   * Irmão do seek para um PONTO do mundo: anda rumo a x/z na velocidade do
-   * molde, SÓ no plano — o Y continua da gravidade (um patrulheiro com física
-   * de personagem segue pisando no chão). Perto o bastante do destino, para de
-   * empurrar (senão a entidade vibra em cima do ponto para sempre).
-   */
+  // Irmão do seek para um PONTO do mundo: anda rumo a x/z na velocidade do
+  // molde, SÓ no plano — o Y continua da gravidade (um patrulheiro com física
+  // de personagem segue pisando no chão). Perto o bastante do destino, para de
+  // empurrar (senão a entidade vibra em cima do ponto para sempre).
   function seekPoint(who, x, z) {
     if (!isEntity(who)) return;
     var dx = num(x, 0) - who.mesh.position.x;
@@ -1952,7 +2072,9 @@ const gameKit3DRuntimeAfterModelSource = `
     who.vz = (dz / len) * sp;
   }
 
-  /** Mira suave da torre do curso: slerp com t = 1 - exp(-suavidade · dt). */
+  /*__SZ_GAME_KIT_3D_GAMEPLAY_RUNTIME__*/
+
+  // Mira suave da torre do curso: slerp com t = 1 - exp(-suavidade · dt).
   function aimAt(who, target, smooth) {
     if (!isEntity(who) || !isEntity(target) || !_tv1) return;
     _tv1.copy(target.mesh.position).sub(who.mesh.position);
@@ -1967,7 +2089,7 @@ const gameKit3DRuntimeAfterModelSource = `
     touchStatic(who);
   }
 
-  /** "Já mirou?" da torre: frente · direção-do-alvo > 0.999. */
+  // "Já mirou?" da torre: frente · direção-do-alvo > 0.999.
   function isAimingAt(who, target) {
     if (!isEntity(who) || !isEntity(target) || !_tv1) return false;
     _tv1.copy(target.mesh.position).sub(who.mesh.position);
@@ -1981,14 +2103,12 @@ const gameKit3DRuntimeAfterModelSource = `
     return _tv1.dot(_tv2) > 0.999;
   }
 
-  /**
-   * Recompõe a matriz AGORA se ela está congelada (entidade estática). Todo
-   * setter que escreve a transform de uma entidade que pode estar parada
-   * (place/setYaw/lookAt/aimAt) chama isto — senão o congelamento do stepEntity
-   * engoliria o movimento em silêncio (a coisa mudava de posição por dentro e não
-   * na tela). updateMatrix marca matrixWorldNeedsUpdate, então o render seguinte
-   * recompõe o matrixWorld mesmo com o auto-update desligado.
-   */
+  // Recompõe a matriz AGORA se ela está congelada (entidade estática). Todo
+  // setter que escreve a transform de uma entidade que pode estar parada
+  // (place/setYaw/lookAt/aimAt) chama isto — senão o congelamento do stepEntity
+  // engoliria o movimento em silêncio (a coisa mudava de posição por dentro e não
+  // na tela). updateMatrix marca matrixWorldNeedsUpdate, então o render seguinte
+  // recompõe o matrixWorld mesmo com o auto-update desligado.
   function touchStatic(e) {
     if (e && e.mesh && e.mesh.matrixAutoUpdate === false) e.mesh.updateMatrix();
   }
@@ -2033,7 +2153,10 @@ const gameKit3DRuntimeAfterModelSource = `
     var pool = pools[k];
     if (!pool) return;
     var raw = gridQuery(e.mesh.position.x, e.mesh.position.z, r);
-    var hits = [];
+    // Os acertos vão para o buffer DESTE nível: o gancho pode chamar forEachNear
+    // de novo (o nível de baixo usa outro buffer) e a lista externa não muda.
+    var hits = _nearBufs[_nearDepth] || (_nearBufs[_nearDepth] = []);
+    hits.length = 0;
     for (var i = 0; i < raw.length; i++) {
       var other = raw[i];
       if (other === e || !other._alive || other._mold !== k) continue;
@@ -2042,23 +2165,30 @@ const gameKit3DRuntimeAfterModelSource = `
       var dz = other.mesh.position.z - e.mesh.position.z;
       if (dx * dx + dy * dy + dz * dz <= r2) hits.push(other);
     }
+    _nearDepth++;
     pool._sweeping++;
-    for (var hI = 0; hI < hits.length; hI++) {
-      if (!hits[hI]._alive) continue;
-      try {
-        fn(hits[hI]);
-      } catch (err) {
-        if (!fn.__szg3kWarned) {
-          fn.__szg3kWarned = true;
-          warn('erro no "para cada vizinho": ' + err);
+    try {
+      for (var hI = 0; hI < hits.length; hI++) {
+        if (!hits[hI]._alive) continue;
+        try {
+          fn(hits[hI]);
+        } catch (err) {
+          if (!fn.__szg3kWarned) {
+            fn.__szg3kWarned = true;
+            warn('erro no "Para cada … do molde … a até … de": ' + err);
+          }
         }
       }
+    } finally {
+      _nearDepth--;
+      // Solta as referências (o buffer fica para a próxima consulta deste nível).
+      hits.length = 0;
+      pool._sweeping--;
+      if (pool._sweeping === 0) compact(pool);
     }
-    pool._sweeping--;
-    if (pool._sweeping === 0) compact(pool);
   }
 
-  /** O mais próximo desse molde. Menor distância dentro do buffer da grade. */
+  // O mais próximo desse molde. Menor distância dentro do buffer da grade.
   function nearestOfList(list, e, k) {
     var best = null;
     var bestD = Infinity;
@@ -2074,11 +2204,9 @@ const gameKit3DRuntimeAfterModelSource = `
     return best;
   }
 
-  /**
-   * Mais próximo do molde — USA A GRADE (a razão de ela existir). Raio dobrando:
-   * acha rápido quando o alvo está por perto (o caso comum torre→inimigo); só cai
-   * na varredura do pool inteiro quando não há ninguém por perto (raro).
-   */
+  // Mais próximo do molde — USA A GRADE (a razão de ela existir). Raio dobrando:
+  // acha rápido quando o alvo está por perto (o caso comum torre→inimigo); só cai
+  // na varredura do pool inteiro quando não há ninguém por perto (raro).
   function nearest(mold, e) {
     if (!isEntity(e)) return null;
     var k = text(mold, '');
@@ -2230,13 +2358,11 @@ const gameKit3DRuntimeAfterModelSource = `
     '}'
   ].join(' ');
 
-  /**
-   * Curvas de vida PRONTAS. Cada uma é um par de rampas com N chaves em
-   * [posição 0..1, valor]: shape = tamanho, fade = opacidade, tint =
-   * multiplicador de cor. É o Interpolant do curso, com as chaves escolhidas
-   * para os casos que a criança pede pelo NOME (ela não vai autorar curva).
-   * O valor 0.5 é o neutro (o shader multiplica por 2).
-   */
+  // Curvas de vida PRONTAS. Cada uma é um par de rampas com N chaves em
+  // [posição 0..1, valor]: shape = tamanho, fade = opacidade, tint =
+  // multiplicador de cor. É o Interpolant do curso, com as chaves escolhidas
+  // para os casos que a criança pede pelo NOME (ela não vai autorar curva).
+  // O valor 0.5 é o neutro (o shader multiplica por 2).
   // A rampa "add" é o additiveOverLife do curso: quanto do grão é LUZ PURA
   // (soma, glow) em cada ponto da vida — o resto cobre como fumaça (alpha). Só
   // vale com o brilho LIGADO; constante 1 = o comportamento binário de antes.
@@ -2254,13 +2380,13 @@ const gameKit3DRuntimeAfterModelSource = `
   var CURVE_W = 32;
   var _curveCache = null;
 
-  /** A curva pelo nome, com fallback (o mesmo saneamento do bakeCurve). */
+  // A curva pelo nome, com fallback (o mesmo saneamento do bakeCurve).
   function curveOf(name) {
     var k = text(name, 'linear');
     return CURVES[k] || CURVES.linear;
   }
 
-  /** Lê a rampa de chaves na posição t (0..1), interpolando linearmente. */
+  // Lê a rampa de chaves na posição t (0..1), interpolando linearmente.
   function sampleKeys(keys, t) {
     var prev = keys[0];
     for (var i = 1; i < keys.length; i++) {
@@ -2275,11 +2401,9 @@ const gameKit3DRuntimeAfterModelSource = `
     return prev[1];
   }
 
-  /**
-   * Assa a curva numa DataTexture 32×2 (o toTexture() do curso): a interpolação
-   * sai da CPU e vira uma amostra de textura no shader — N chaves pelo preço de
-   * uma. Linha 0 = cor (tint nos 3 canais), linha 1 = tamanho (R) e opacidade (G).
-   */
+  // Assa a curva numa DataTexture 32×2 (o toTexture() do curso): a interpolação
+  // sai da CPU e vira uma amostra de textura no shader — N chaves pelo preço de
+  // uma. Linha 0 = cor (tint nos 3 canais), linha 1 = tamanho (R) e opacidade (G).
   function bakeCurve(name) {
     var k = text(name, 'linear');
     if (!CURVES[k]) k = 'linear';
@@ -2318,7 +2442,7 @@ const gameKit3DRuntimeAfterModelSource = `
     }
   }
 
-  /** Círculo suave gerado em canvas 2D (nenhum PNG no kit). */
+  // Círculo suave gerado em canvas 2D (nenhum PNG no kit).
   function ensureSpriteTex() {
     if (spriteTex) return spriteTex;
     try {
@@ -2340,11 +2464,9 @@ const gameKit3DRuntimeAfterModelSource = `
     }
   }
 
-  /**
-   * Constrói o efeito (Points + buffers + material) a partir de uma config já
-   * resolvida. É o coração comum de "efeito de explosão" (burst) e "emissor
-   * contínuo": mudam só os números (taxa, cone, giro, brilho, variâncias).
-   */
+  // Constrói o efeito (Points + buffers + material) a partir de uma config já
+  // resolvida. É o coração comum de "efeito de explosão" (burst) e "emissor
+  // contínuo": mudam só os números (taxa, cone, giro, brilho, variâncias).
   function buildEffect(cfg) {
     var geometry = new THREE.BufferGeometry();
     var positions = new Float32Array(MAX_PARTICLES_PER_EFFECT * 3);
@@ -2369,7 +2491,7 @@ const gameKit3DRuntimeAfterModelSource = `
         colorTo: { value: new THREE.Vector3(ct.r, ct.g, ct.b) },
         sizeFrom: { value: Math.max(0.01, cfg.sizeFrom) },
         sizeTo: { value: Math.max(0, cfg.sizeTo) },
-        scaleFactor: { value: config.h * 0.42 },
+        scaleFactor: { value: config.h * 0.42 * renderBudget.pixelRatio },
         spinSpeed: { value: cfg.spin },
         time: { value: 0 },
         additive: { value: cfg.glow ? 1 : 0 },
@@ -2470,15 +2592,13 @@ const gameKit3DRuntimeAfterModelSource = `
     }
   }
 
-  /**
-   * Emissor CONTÍNUO (fogo/fumaça/rastro/magia): jorra grãos por segundo num
-   * cone, com giro do sprite e brilho opcional. Reusa todo o motor de partículas
-   * — só liga a emissão contínua (emissionRate) e o cone/giro. As variâncias
-   * (vida/velocidade/volume) são derivadas para o efeito parecer vivo.
-   */
+  // Emissor CONTÍNUO (fogo/fumaça/rastro/magia): jorra grãos por segundo num
+  // cone, com giro do sprite e brilho opcional. Reusa todo o motor de partículas
+  // — só liga a emissão contínua (emissionRate) e o cone/giro. As variâncias
+  // (vida/velocidade/volume) são derivadas para o efeito parecer vivo.
   function defineEmitter(name, opts) {
     var k = text(name, '');
-    if (!k) { warn('"Criar o emissor 3D" precisa de um nome'); return; }
+    if (!k) { warn('"Criar o jorro de faíscas" precisa de um nome'); return; }
     var o = (opts && typeof opts === 'object') ? opts : {};
     var previousEffect = effects[k];
     if (!previousEffect && effectCount >= MAX_EFFECTS) {
@@ -2516,7 +2636,7 @@ const gameKit3DRuntimeAfterModelSource = `
       // em silêncio. Retunar um emissor aceso agora o mantém aceso.
       repointJets(previousEffect, effects[k]);
     } catch (e) {
-      warn('não consegui criar o emissor "' + k + '": ' + e);
+      warn('não consegui criar o jorro "' + k + '": ' + e);
     }
   }
 
@@ -2528,7 +2648,7 @@ const gameKit3DRuntimeAfterModelSource = `
     } catch (e) {}
   }
 
-  /** Re-aponta os jorros CONTÍNUOS de um efeito redefinido para a nova receita. */
+  // Re-aponta os jorros CONTÍNUOS de um efeito redefinido para a nova receita.
   function repointJets(oldFx, newFx) {
     if (!oldFx || oldFx === newFx) return;
     for (var i = 0; i < jets.length; i++) {
@@ -2536,7 +2656,7 @@ const gameKit3DRuntimeAfterModelSource = `
     }
   }
 
-  /** No start: pendura na cena os efeitos definidos antes do mundo existir. */
+  // No start: pendura na cena os efeitos definidos antes do mundo existir.
   function attachEffects() {
     for (var k in effects) {
       var fx = effects[k];
@@ -2544,11 +2664,9 @@ const gameKit3DRuntimeAfterModelSource = `
     }
   }
 
-  /**
-   * Nasce UM grão no efeito, num cone em torno de +Y (fx.cone = meia-abertura;
-   * π = esfera cheia do burst), com variâncias de vida/velocidade e volume de
-   * nascimento. É o emitParticle do curso — compartilhado por burst e emissor.
-   */
+  // Nasce UM grão no efeito, num cone em torno de +Y (fx.cone = meia-abertura;
+  // π = esfera cheia do burst), com variâncias de vida/velocidade e volume de
+  // nascimento. É o emitParticle do curso — compartilhado por burst e emissor.
   function emitOne(fx, ox, oy, oz) {
     if (fx.particles.length >= MAX_PARTICLES_PER_EFFECT) return;
     var p = fx.free.pop() || { x: 0, y: 0, z: 0, vx: 0, vy: 0, vz: 0, life: 0, maxLife: 1, id: 0 };
@@ -2590,7 +2708,7 @@ const gameKit3DRuntimeAfterModelSource = `
     burstAt(name, e.mesh.position.x, e.mesh.position.y + 0.5, e.mesh.position.z);
   }
 
-  /** Quantos jorros da MESMA receita podem viver juntos (teto de custo). */
+  // Quantos jorros da MESMA receita podem viver juntos (teto de custo).
   var MAX_JETS_PER_EFFECT = 8;
 
   function addJet(fx, name, jet) {
@@ -2609,17 +2727,15 @@ const gameKit3DRuntimeAfterModelSource = `
     jets.push(jet);
   }
 
-  /**
-   * Liga um jorro CONTÍNUO do efeito num ponto fixo do mundo. Vários jorros da
-   * MESMA receita convivem (duas tochas na parede!); religar no MESMO ponto não
-   * duplica, então pode chamar de um gancho que repete. Para um jorro que ANDA,
-   * prenda-o numa entidade ("Ligar o jorro em cima de …").
-   */
+  // Liga um jorro CONTÍNUO do efeito num ponto fixo do mundo. Vários jorros da
+  // MESMA receita convivem (duas tochas na parede!); religar no MESMO ponto não
+  // duplica, então pode chamar de um gancho que repete. Para um jorro que ANDA,
+  // prenda-o numa entidade ("Ligar o jorro em cima de …").
   function startEmitter(effect, x, y, z) {
     var k = text(effect, '');
     var fx = effects[k];
     if (!fx) {
-      warn('o efeito "' + k + '" não existe — crie com "Criar o emissor 3D"');
+      warn('o jorro "' + k + '" não existe — crie com "Criar o jorro de faíscas"');
       return;
     }
     var bx = num(x, 0);
@@ -2629,15 +2745,15 @@ const gameKit3DRuntimeAfterModelSource = `
       var j = jets[i];
       if (j.active && j.fx === fx && !j.entity && j.x === bx && j.y === by && j.z === bz) return;
     }
-    addJet(fx, k, { fx: fx, entity: null, gen: 0, x: bx, y: by, z: bz, t: 0, active: true });
+    addJet(fx, k, { fx: fx, entity: null, gen: 0, x: bx, y: by, z: bz, t: 0, active: true, epoch: levelEpoch });
   }
 
-  /** Liga um jorro CONTÍNUO seguindo uma entidade (um por entidade — rastro em N naves). */
+  // Liga um jorro CONTÍNUO seguindo uma entidade (um por entidade — rastro em N naves).
   function emitterOn(effect, e) {
     var k = text(effect, '');
     var fx = effects[k];
     if (!fx) {
-      warn('o efeito "' + k + '" não existe — crie com "Criar o emissor 3D"');
+      warn('o jorro "' + k + '" não existe — crie com "Criar o jorro de faíscas"');
       return;
     }
     if (!isEntity(e)) return;
@@ -2645,10 +2761,10 @@ const gameKit3DRuntimeAfterModelSource = `
       var j = jets[i];
       if (j.active && j.fx === fx && j.entity === e && j.gen === e._gen) return;
     }
-    addJet(fx, k, { fx: fx, entity: e, gen: e._gen, x: 0, y: 0, z: 0, t: 0, active: true });
+    addJet(fx, k, { fx: fx, entity: e, gen: e._gen, x: 0, y: 0, z: 0, t: 0, active: true, epoch: levelEpoch });
   }
 
-  /** Desliga TODOS os jorros dessa receita (os de ponto e os presos em entidade). */
+  // Desliga TODOS os jorros dessa receita (os de ponto e os presos em entidade).
   function stopEmitter(effect) {
     var fx = effects[text(effect, '')];
     if (!fx) return;
@@ -2657,12 +2773,12 @@ const gameKit3DRuntimeAfterModelSource = `
     }
   }
 
-  /** Puxa as faíscas do efeito para um ponto (inverso do quadrado, como o curso). */
+  // Puxa as faíscas do efeito para um ponto (inverso do quadrado, como o curso).
   function addAttractor(effect, x, y, z, intensity, radius) {
     var fx = effects[text(effect, '')];
     if (!fx) return;
     if (fx.attractors.length >= MAX_ATTRACTORS_PER_EFFECT) {
-      warnOnce('attractor-limit:' + text(effect, ''), 'o efeito "' + text(effect, '') + '" já tem ' + MAX_ATTRACTORS_PER_EFFECT + ' atratores — mova ou reutilize os existentes');
+      warnOnce('attractor-limit:' + text(effect, ''), 'as faíscas de "' + text(effect, '') + '" já são puxadas para ' + MAX_ATTRACTORS_PER_EFFECT + ' pontos — reutilize um dos que já existem');
       return;
     }
     fx.attractors.push({
@@ -2672,7 +2788,7 @@ const gameKit3DRuntimeAfterModelSource = `
     });
   }
 
-  /** A cada quadro: cada jorro ativo solta grãos conforme a sua taxa. */
+  // A cada quadro: cada jorro ativo solta grãos conforme a sua taxa.
   function stepEmitters(dt) {
     for (var i = jets.length - 1; i >= 0; i--) {
       var em = jets[i];
@@ -2704,13 +2820,15 @@ const gameKit3DRuntimeAfterModelSource = `
     }
   }
 
-  /** Integra e reescreve os buffers (sem alocação por quadro; swap-pop O(1)). */
+  // Integra e reescreve os buffers (sem alocação por quadro; swap-pop O(1)).
   function stepParticles(dt) {
     for (var k in effects) {
       var fx = effects[k];
       var list = fx.particles;
       if (fx.material && fx.material.uniforms && fx.material.uniforms.time) {
         fx.material.uniforms.time.value = playTime;
+        // gl_PointSize é em pixels do BUFFER: acompanha o pixel ratio do orçamento.
+        fx.material.uniforms.scaleFactor.value = config.h * 0.42 * renderBudget.pixelRatio;
       }
       if (list.length === 0) {
         if (fx.geometry.drawRange && fx.geometry.drawRange.count !== 0) {
@@ -2784,12 +2902,15 @@ const gameKit3DRuntimeAfterModelSource = `
 
   function sortByDepth(a, b) { return b._sf - a._sf; }
 
+  // Apaga as faíscas no ar e os jorros ligados, mas NÃO os ímãs: o "Puxar as faíscas" é da
+  // RECEITA (Ao iniciar, uma vez) e a troca de fase não roda o Ao iniciar de novo. Zerar os
+  // ímãs aqui fazia o redemoinho virar jorro reto da fase 2 em diante. A partida nova refaz
+  // as receitas inteiras (o Ao iniciar roda outra vez), então ali eles também não sobram.
   function resetParticles() {
     jets.length = 0;
     for (var k in effects) {
       var fx = effects[k];
       while (fx.particles.length > 0) fx.free.push(fx.particles.pop());
-      fx.attractors.length = 0;
       try { fx.geometry.setDrawRange(0, 0); } catch (e) {}
     }
   }
@@ -2808,7 +2929,8 @@ const gameKit3DRuntimeAfterModelSource = `
   /*__SZ_THREE_POST_PROCESSING_RUNTIME__*/
 
   function renderFrame() {
-    if ((config.bloom || config.vignette) && !composerFailed) {
+    // Bloom/vinheta só no nível alta (o leve desenha direto).
+    if ((config.bloom || config.vignette) && renderBudget.postFx() && !composerFailed) {
       if (!composer) initComposer();
       if (composer) {
         renderWithComposer();
@@ -2840,6 +2962,8 @@ const gameKit3DRuntimeAfterModelSource = `
 
   var _lastT = 0;
   function gameLoop(t) {
+    // Quadro novo: as matrizes do mouse valem de novo só depois de uma atualização.
+    _frameNo++;
     var nowT = typeof t === 'number' ? t : 0;
     var dt = _lastT ? (nowT - _lastT) / 1000 : 0;
     _lastT = nowT;
@@ -2848,7 +2972,11 @@ const gameKit3DRuntimeAfterModelSource = `
     // colisão por distância não atravessa ninguém.
     if (dt > 1 / 30) dt = 1 / 30;
     currentDt = dt;
+    // Sonda de FPS do orçamento (entre 1,5 s e 4 s; abaixo de 45 passa ao nível leve).
+    renderBudget.sample(dt);
     if (state === 'jogando') {
+      // "Ir para a próxima fase" pedido no quadro anterior: troca aqui, fora dos laços.
+      if (levelPending) startPendingLevel();
       // stepSystems também dentro de try/catch (como o renderFrame): um erro
       // fora dos ganchos guardados não pode escapar do gameLoop e congelar o rAF.
       try {
@@ -2874,17 +3002,20 @@ const gameKit3DRuntimeAfterModelSource = `
     stepBars();
     try {
       renderFrame();
+      // O render atualizou a cena: um clique ENTRE quadros mira o que está na tela.
+      _matrixFrame = _frameNo;
     } catch (e) {
       warn('erro ao desenhar o mundo: ' + e);
       renderer.setAnimationLoop(null);
     }
-    justPressed = {};
+    // Zera no lugar (sem um objeto novo por quadro); quem lê pergunta por true.
+    for (var jk in justPressed) justPressed[jk] = false;
     mouseJust = false;
   }
 
   function stepSystems(dt) {
     playTime += dt;
-    stepTimer(dt);
+    rules.step(dt);
     for (var i = 0; i < spawners.length; i++) {
       var sp = spawners[i];
       sp.timer += dt;
@@ -2908,10 +3039,10 @@ const gameKit3DRuntimeAfterModelSource = `
     stepEmitters(dt);
     stepParticles(dt);
     // A pintura que se mexe congela junto: ela é do mundo, não da interface.
-    stepModelFlipbooks(dt);
+    models.stepFlipbooks(dt);
   }
 
-    /** phase: 0 = tudo · 1 = sólidos (plataformas potenciais) · 2 = o resto. */
+    // phase: 0 = tudo · 1 = sólidos (plataformas potenciais) · 2 = o resto.
   function stepPools(dt, phase) {
     for (var pk in pools) {
       if (phase) {
@@ -2935,12 +3066,10 @@ const gameKit3DRuntimeAfterModelSource = `
 
   // ---- 💬 Caixa de fala (o balão ancorado na entidade) ----
 
-  /**
-   * Fala presa a uma entidade. É a primeira coisa do kit que mistura DOM com o
-   * mundo 3D: o balão é um div e a entidade é um ponto no espaço, então a posição
-   * dela é PROJETADA na tela a cada quadro (senão o balão não acompanha a câmera).
-   * Sem isso, um RPG/aventura 3D não conta história — só dava HUD nos cantos.
-   */
+  // Fala presa a uma entidade. É a primeira coisa do kit que mistura DOM com o
+  // mundo 3D: o balão é um div e a entidade é um ponto no espaço, então a posição
+  // dela é PROJETADA na tela a cada quadro (senão o balão não acompanha a câmera).
+  // Sem isso, um RPG/aventura 3D não conta história — só dava HUD nos cantos.
   var says = [];
   function say(e, textValue, seconds) {
     if (!isEntity(e) || !ensureShell()) return;
@@ -2968,7 +3097,7 @@ const gameKit3DRuntimeAfterModelSource = `
     }
     says.length = 0;
   }
-  /** Projeta a cabeça da entidade na tela e move o balão para lá. */
+  // Projeta a cabeça da entidade na tela e move o balão para lá.
   function stepSays(dt) {
     if (!says.length || !camera || !canvasEl) return;
     var m = null;
@@ -2994,12 +3123,10 @@ const gameKit3DRuntimeAfterModelSource = `
 
   // ---- ❤️ Barra de vida flutuante (por MOLDE, projetada como o balão) ----
 
-  /**
-   * Uma barrinha por entidade viva dos moldes marcados. Mesma técnica do say
-   * (DOM projetado por quadro), mas SEM relógio: a barra vive enquanto a
-   * entidade vive. A lista se cura sozinha — recurso reciclado (gen), molde
-   * desmarcado ou morte tiram a barra no quadro seguinte.
-   */
+  // Uma barrinha por entidade viva dos moldes marcados. Mesma técnica do say
+  // (DOM projetado por quadro), mas SEM relógio: a barra vive enquanto a
+  // entidade vive. A lista se cura sozinha — recurso reciclado (gen), molde
+  // desmarcado ou morte tiram a barra no quadro seguinte.
   var bars = [];
   function showHealthBar(mold, on) {
     var m = molds[text(mold, '')];
@@ -3068,47 +3195,9 @@ const gameKit3DRuntimeAfterModelSource = `
     }
   }
 
-  // ---- 🎲 Sorteio (semeado) + ⏱️ Cronômetro ----
-
-  /**
-   * ⭐ O sorteio DO KIT — passa pelo rand(), então a semente vale de verdade.
-   * O kit não tinha sorteio nenhum: a criança usava o bloco do NÚCLEO, que emite
-   * Math.random() puro e IGNORA a semente. Ou seja, o "mesma semente = mesma
-   * partida" que o setSeed promete só era verdade para o acaso interno (enfeites,
-   * partículas, fábricas). Com estes dois a promessa fecha.
-   */
-  function randomBetween(a, b) {
-    var lo = num(a, 0);
-    var hi = num(b, 1);
-    if (lo > hi) { var t = lo; lo = hi; hi = t; }
-    return lo + rand() * (hi - lo);
-  }
-  function randomChance(percent) {
-    return rand() * 100 < num(percent, 50);
-  }
-
-  // Cronômetro da criança (corrida contra o tempo, bomba, tempo de fase). O de
-  // dentro do motor (stateTimer/fábrica) é outro — este é dela.
-  var _timer = { left: 0, on: false };
-  var timerHooks = [];
-  function startTimer(seconds) {
-    _timer.left = Math.max(0, num(seconds, 30));
-    _timer.on = _timer.left > 0;
-  }
-  function timeLeft() { return _timer.left; }
-  function stopTimer() { _timer.on = false; }
-  function onTimerEnd(fn) {
-    if (typeof fn === 'function') timerHooks.push(fn);
-  }
-  /** Só corre em 'jogando' (o stepSystems), então a pausa CONGELA — como o resto. */
-  function stepTimer(dt) {
-    if (!_timer.on) return;
-    _timer.left -= dt;
-    if (_timer.left > 0) return;
-    _timer.left = 0;
-    _timer.on = false;
-    runHooks(timerHooks, 0, 'quando o tempo acabar');
-  }
+  // O sorteio e o cronômetro da criança moram nas regras comuns (o "rules" lá em cima): o
+  // sorteio passa pelo rand() (o código do sorteio repetível vale) e a contagem só anda no
+  // stepSystems, então a pausa CONGELA o relógio, como o resto do mundo.
 
   // ---- 📢 Event bus ----
 
@@ -3195,12 +3284,10 @@ const gameKit3DRuntimeAfterModelSource = `
     try { a.currentTime = 0; var pr = a.play(); if (pr && pr.catch) pr.catch(function () {}); } catch (e) {}
   }
 
-  /**
-   * 🎵 Música de fundo. O motor não tinha UM .loop sequer — só efeito de
-   * tiro-e-esquece —, então música de fundo era literalmente impossível. Toca UMA
-   * de cada vez (pedir outra troca), que é o que a criança espera de "a música do
-   * jogo".
-   */
+  // 🎵 Música de fundo. O motor não tinha UM .loop sequer — só efeito de
+  // tiro-e-esquece —, então música de fundo era literalmente impossível. Toca UMA
+  // de cada vez (pedir outra troca), que é o que a criança espera de "a música do
+  // jogo".
   var _music = null;
   var _musicName = '';
   function playMusic(name) {
@@ -3240,7 +3327,7 @@ const gameKit3DRuntimeAfterModelSource = `
     return _audioCtx;
   }
 
-  /** Acorda o áudio no primeiro GESTO (Safari/iPad exigem resume no gesto). */
+  // Acorda o áudio no primeiro GESTO (Safari/iPad exigem resume no gesto).
   function resumeAudio() {
     try {
       if (_audioCtx && _audioCtx.state === 'suspended') _audioCtx.resume();
@@ -3356,6 +3443,9 @@ const gameKit3DRuntimeAfterModelSource = `
     bindInput();
     resizeCanvas();
     window.addEventListener('resize', function () { resizeCanvas(); });
+    // O letterbox muda o CSS do canvas; o orçamento refaz a resolução por um caminho só.
+    renderBudget.resize();
+    renderBudget.observe();
     setState('carregando');
     var generation = lifecycleGeneration;
     Promise.all(pending.slice()).then(function () {
@@ -3380,13 +3470,15 @@ const gameKit3DRuntimeAfterModelSource = `
     if (disposed) return;
     disposed = true;
     lifecycleGeneration++;
-    cancelPendingModelLoads();
+    models.cancelAll();
+    try { renderBudget.dispose(); } catch (e) {}
     try {
       // Efeitos, música e AudioContext ficam fora da cena — o teardown do renderer
       // não os alcança. Sem isto poderiam continuar ativos na janela do bfcache.
       releaseFpsInput();
       disposeAudio();
       resetAccessibleHud();
+      rules.dispose();
       if (renderer) {
         renderer.setAnimationLoop(null);
         try { renderer.dispose(); } catch (e) {}
@@ -3424,12 +3516,9 @@ const gameKit3DRuntimeAfterModelSource = `
         scene.background = null;
       }
       clearPendingEnvironmentTexture();
-      if (_hdrCache) {
-        for (var hk in _hdrCache) disposeTexture(_hdrCache[hk], 'dispose-hdr-cache');
-        _hdrCache = null;
-      }
       disposeModelPools(disposedModelResources);
-      disposeCachedModels(disposedModelResources);
+      // Cache de GLB/HDR do carregador compartilhado (fora da cena), deduplicado com ela.
+      models.disposeAll(disposedModelResources);
       _skyPhotoRequest++;
       // Templates de molde vivem FORA da cena — descarta os materiais próprios
       // (as geometrias-unidade são compartilhadas e saem junto).
@@ -3475,7 +3564,12 @@ const gameKit3DRuntimeAfterModelSource = `
     camera = null;
     _ray = null;
     jets.length = 0;
-    gridCells = Object.create(null);
+    gridCells = [];
+    gridOutside = [];
+    pickables.length = 0;
+    _pickOwners.length = 0;
+    _pickHits.length = 0;
+    _matrixFrame = -1;
     bars.length = 0;
   }
 
@@ -3500,7 +3594,7 @@ const gameKit3DRuntimeAfterModelSource = `
     setup: guard('setup', function (opts) {
       var o = (opts && typeof opts === 'object') ? opts : {};
       if (started) {
-        if (!runningProjectFactory) warn('"Preparar o jogo 3D" depois de começar não muda o mundo — deixe-o no comecinho');
+        if (!runningProjectFactory) warn('"Criar o mundo 3D" depois de começar não muda o mundo — deixe-o no comecinho');
         return;
       }
       var fitted = fitRenderSize(
@@ -3561,7 +3655,7 @@ const gameKit3DRuntimeAfterModelSource = `
     // 🎥 Câmera
     cameraFollow: guard('cameraFollow', function (e, dist, height) {
       if (!isEntity(e)) {
-        warn('"Câmera: seguir" precisa de uma entidade');
+        warn('"Câmera: seguir" precisa de um objeto que está no jogo');
         return;
       }
       setCameraMode({ kind: 'follow', target: e, targetGen: e._gen, dist: Math.max(1, num(dist, 8)), height: num(height, 4), pivot: camMode.pivot, pivotGen: camMode.pivotGen });
@@ -3569,7 +3663,7 @@ const gameKit3DRuntimeAfterModelSource = `
     cameraOrbit: guard('cameraOrbit', function (dist) { setOrbit(dist); }),
     cameraAngle: guard('cameraAngle', cameraAngle),
     cameraDistance: guard('cameraDistance', cameraDistance),
-    cameraShake: guard('cameraShake', cameraShake),
+    cameraShake: guard('cameraShake', function (strength, secs) { rules.cameraShake(strength, secs); }),
     cameraLens: guard('cameraLens', cameraLens),
     cameraLookAt: guard('cameraLookAt', cameraLookAt),
     cameraLookAtPoint: guard('cameraLookAtPoint', cameraLookAtPoint),
@@ -3583,6 +3677,7 @@ const gameKit3DRuntimeAfterModelSource = `
       e.mesh.position.set(num(x, 0), num(y, 0), num(z, 0));
       touchStatic(e);
       gridSync(e);
+      freshPickMatrix(e);
     }),
     setYaw: guard('setYaw', function (e, deg) {
       if (!isEntity(e)) return;
@@ -3608,19 +3703,27 @@ const gameKit3DRuntimeAfterModelSource = `
     makeSolid: guard('makeSolid', makeSolid),
     platformerKeys: guard('platformerKeys', platformerKeys),
     setSeed: guard('setSeed', setSeed),
-    randomBetween: guard('randomBetween', randomBetween),
-    randomChance: guard('randomChance', randomChance),
+    randomBetween: guard('randomBetween', function (a, b) { return rules.randomBetween(a, b); }),
+    randomChance: guard('randomChance', function (p) { return rules.randomChance(p); }),
     playMusic: guard('playMusic', playMusic),
     stopMusic: guard('stopMusic', stopMusic),
-    startTimer: guard('startTimer', startTimer),
-    timeLeft: guard('timeLeft', timeLeft),
-    stopTimer: guard('stopTimer', stopTimer),
-    onTimerEnd: guard('onTimerEnd', onTimerEnd),
+    startTimer: guard('startTimer', function (secs) { rules.startTimer(secs); }),
+    timeLeft: guard('timeLeft', function () { return rules.timeLeft(); }),
+    stopTimer: guard('stopTimer', function () { rules.stopTimer(); }),
+    onTimerEnd: guard('onTimerEnd', function (fn) { rules.onTimerEnd(fn); }),
     say: guard('say', say),
     hideSay: guard('hideSay', hideSay),
     playAnim: guard('playAnim', function (e, name, loop) { playAnim(e, name, loop !== false); }),
     stopAnim: guard('stopAnim', stopAnim),
     setStateAnim: guard('setStateAnim', setStateAnim),
+    animSpeed: guard('animSpeed', animSpeed),
+    onAnimEnd: guard('onAnimEnd', function (mold, clip, fn) {
+      var k = text(mold, '');
+      if (!k || typeof fn !== 'function') return;
+      var perMold = animEndHooks[k] || (animEndHooks[k] = Object.create(null));
+      var c = text(clip, '');
+      (perMold[c] || (perMold[c] = [])).push(fn);
+    }),
     setPhysics: guard('setPhysics', setPhysics),
     setCollider: guard('setCollider', setCollider),
     passThrough: guard('passThrough', passThrough),
@@ -3701,6 +3804,7 @@ const gameKit3DRuntimeAfterModelSource = `
     // 🎯 Comportamentos
     seek: guard('seek', seek),
     seekPoint: guard('seekPoint', seekPoint),
+    patrol: guard('patrol', patrol),
     aimAt: guard('aimAt', aimAt),
     faceVelocity: guard('faceVelocity', faceVelocity),
     isAimingAt: guard('isAimingAt', isAimingAt),
@@ -3724,12 +3828,15 @@ const gameKit3DRuntimeAfterModelSource = `
       if (!k || typeof fn !== 'function') return;
       (hurtHooks[k] || (hurtHooks[k] = [])).push(fn);
     }),
-    // 🖼️ Telas & HUD
+    // 🖼️ Telas & HUD. "Na tela de início/fim/vitória" (o bloco das regras comuns) escreve nas
+    // telas PRONTAS daqui: a de início é o menu. Os nomes antigos continuam valendo.
     setScreenText: guard('setScreenText', function (screen, title, textBody, button) {
       if (!ensureShell()) return;
-      var entry = screens[text(screen, '')];
+      var screenName = text(screen, '');
+      if (screenName === 'inicio') screenName = 'menu';
+      var entry = screens[screenName];
       if (!entry) {
-        warn('tela pronta desconhecida: "' + text(screen, '') + '" (use menu, pausa, carregando, fim ou vitoria)');
+        warn('tela pronta desconhecida: "' + text(screen, '') + '" (use inicio, fim ou vitoria)');
         return;
       }
       var t = text(title, '');
@@ -3769,7 +3876,24 @@ const gameKit3DRuntimeAfterModelSource = `
     }),
     showScreen: guard('showScreen', showScreen),
     hideScreens: guard('hideScreens', hideScreens),
-    setHud: guard('setHud', setHud),
+    hudText: guard('hudText', hudText),
+    addScore: guard('addScore', function (n) { rules.addScore(n); }),
+    score: guard('score', function () { return rules.score(); }),
+    // 🎒 Mochila
+    putInBag: guard('putInBag', putInBag),
+    takeFromBag: guard('takeFromBag', takeFromBag),
+    bagCount: guard('bagCount', bagCount),
+    bagHas: guard('bagHas', function (item) { return bagCount(item) > 0; }),
+    clearBag: guard('clearBag', clearBag),
+    // 💾 Guardar o progresso
+    saveValue: guard('saveValue', saveValue),
+    savedValue: guard('savedValue', savedValue),
+    // 🚩 Fases
+    nextLevel: guard('nextLevel', nextLevel),
+    level: guard('level', function () { return level; }),
+    onLevelStart: guard('onLevelStart', function (fn) {
+      if (typeof fn === 'function') levelStartHooks.push(fn);
+    }),
     // 🚦 Estados do jogo
     setState: guard('setState', setState),
     onEnterState: guard('onEnterState', function (name, fn) {
@@ -3780,7 +3904,9 @@ const gameKit3DRuntimeAfterModelSource = `
     stateIs: guard('stateIs', function (name) { return state === text(name, ''); }),
     state: guard('state', function () { return state; }),
     returnToMenu: guard('returnToMenu', function () { setState('menu'); }),
-    endGame: guard('endGame', function () { setState('fim'); }),
+    // "Fim de jogo: você perdeu / você ganhou" leva ao estado fim ou vitoria (as telas
+    // prontas, com "Jogar de novo" e "Sair para o menu").
+    endGame: guard('endGame', function (result) { setState(text(result, '') === 'ganhou' ? 'vitoria' : 'fim'); }),
     // 💥 Faíscas 3D
     defineEffect: guard('defineEffect', defineEffect),
     burstAt: guard('burstAt', burstAt),
@@ -3811,13 +3937,25 @@ const gameKit3DRuntimeAfterModelSource = `
 })();
 `
 
-const gameKit3DRuntimeSource = (
+const gameKit3DRuntimeSource = withGameRules3DRuntime(
   gameKit3DRuntimeBeforeModelSource +
-  gameKit3DModelAssetsRuntimeSource +
-  gameKit3DRuntimeAfterModelSource
+    gameKit3DModelAssetsRuntimeSource +
+    gameKit3DRuntimeAfterModelSource,
 )
-  .replace('  /*__SZ_GAME_KIT_3D_PHYSICS_RUNTIME__*/', gameKit3DPhysicsRuntimeSource)
-  .replace('  /*__SZ_GAME_KIT_3D_CAMERA_RUNTIME__*/', gameKit3DCameraRuntimeSource)
-  .replace('  /*__SZ_GAME_KIT_3D_PROJECT_RUNTIME__*/', gameKit3DProjectRuntimeSource)
+  .replace('  /*__SZ_GAME_KIT_3D_PHYSICS_RUNTIME__*/', () => gameKit3DPhysicsRuntimeSource)
+  .replace('  /*__SZ_GAME_KIT_3D_CAMERA_RUNTIME__*/', () => gameKit3DCameraRuntimeSource)
+  .replace('  /*__SZ_GAME_KIT_3D_GAMEPLAY_RUNTIME__*/', () => gameKit3DGameplayRuntimeSource)
+  .replace('  /*__SZ_GAME_KIT_3D_PROJECT_RUNTIME__*/', () => gameKit3DProjectRuntimeSource)
 
-export const gameKit3DRuntime = withThreePostProcessingRuntime(gameKit3DRuntimeSource)
+// Sem crase no runtime composto: a indentação sai do payload sem mudar texto nenhum. O
+// contexto da partida entra DEPOIS da compactação: ele é o `toString()` de uma função do
+// pacote, e no build minificado o esbuild escreve template literals ali.
+export const gameKit3DRuntime = compactOfficialRuntimeSource(
+  withThreeRenderBudgetRuntime(
+    withThreePostProcessingRuntime(withThreeModelsRuntime(gameKit3DRuntimeSource)),
+  ),
+  { trimIndent: true },
+).replace(
+  "import * as THREE from 'three';\n",
+  (line) => `${line}${compactOfficialRuntimeSource(buildProjectRunContextRuntime())}\n`,
+)

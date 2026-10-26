@@ -8,6 +8,8 @@ import {
   StudioSha256Schema,
 } from '@sistemazero/core/studio/project-environment'
 import { StudioPythonDistributionSchema } from '@sistemazero/core/studio/python-runtime-distribution'
+import { PGZERO_MODULE_FILES } from '../../studio/src/runtime/python/pgzero/contract'
+import { RAYLIB_MODULE_FILES } from '../../studio/src/runtime/python/raylib/contract'
 import { TURTLE_MODULE_FILES } from '../../studio/src/runtime/python/turtle/contract'
 
 const digest = (bytes: Uint8Array) => createHash('sha256').update(bytes).digest('hex')
@@ -84,6 +86,16 @@ export async function verifyPythonDistributionFiles(directory: string, expectedS
     'turtle-renderer.mjs',
     'turtle-protocol.mjs',
     ...TURTLE_MODULE_FILES.map((name) => `turtle/${name}`),
+    'pgzero-renderer.mjs',
+    'pgzero-protocol.mjs',
+    ...PGZERO_MODULE_FILES.map((name) => `pgzero/${name}`),
+    'raylib-renderer.mjs',
+    'raylib-protocol.mjs',
+    ...RAYLIB_MODULE_FILES.map((name) => `raylib/${name}`),
+    'LICENSE-pgzero.txt',
+    'LICENSE-freefont.txt',
+    'LICENSE-raylib.txt',
+    'LICENSE-raylib-python-cffi.txt',
   ])
     if (!contents.has(path)) throw new Error(`Artefato de produto obrigatório ausente: ${path}.`)
   return distribution

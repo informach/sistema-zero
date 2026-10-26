@@ -1,4 +1,5 @@
 import { behaviorStatements, normalizeSZIR } from './behavior'
+import { programmingChildBodyEntries } from './programmingExecution'
 import type { CSSEntry, HTMLNode, JSExpr, JSStatement, SZIR, SZIRInput } from './schema'
 
 export const EMPTY_IR: SZIR = { html: [], css: [], js: [], extensions: [] }
@@ -82,98 +83,14 @@ export function countAdvancedCSS(entries: CSSEntry[]): number {
 }
 
 /**
- * Lista TODOS os corpos (sub-listas de statements) de um statement. A versão
- * antiga de {@link countAdvancedJS} só descia em `if/repeat/event/animationLoop/
- * g2d:updateEachFrame`, então um trecho `rawJS` aninhado dentro de `while`,
- * `funcDecl`, `forEach`, `tryCatch`, `classDecl` etc. NÃO era contado — o aviso
- * "N trechos viraram Código avançado" subnotificava e furava a garantia de que
- * "código é sagrado". Este walk é EXAUSTIVO sobre todas as variantes que
- * carregam corpo (espelha o walk de statements do `generators/js.ts`); variantes
- * sem corpo devolvem `[]`. Ao evoluir o schema com um novo statement-bloco,
- * adicione o(s) corpo(s) dele aqui.
+ * Lista TODOS os corpos (sub-listas de statements) de um statement pela MESMA travessia do
+ * ciclo de vida (`programmingChildBodyEntries`, que lê as chaves de corpo de qualquer nó). A
+ * lista escrita à mão que morava aqui esquecia os corpos novos (o `onGame` e o `onStage` do
+ * Jogo 3D, o "Depois de N s", o "para cada batida"), e o `rawJS` de dentro deles sumia do
+ * aviso "N trechos viraram Código avançado".
  */
 function childStatementBodies(stmt: JSStatement): JSStatement[][] {
-  switch (stmt.type) {
-    case 'if':
-      return [stmt.then, stmt.else ?? []]
-    case 'repeat':
-    case 'while':
-    case 'doWhile':
-    case 'forOf':
-    case 'forRange':
-    case 'event':
-    case 'animationLoop':
-    case 'g2d:onStart':
-    case 'g2d:updateEachFrame':
-    case 'g2d:onPointer':
-    case 'g2d:onKey':
-    case 'g2d:sceneEvent':
-    case 'gk:sceneEvent':
-    case 'gk:sceneEach':
-    case 'g2d:onActionPressed':
-    case 'g2d:onOverlap':
-    case 'g2d:forEachInGroup':
-    case 'g2d:forEachTileContact':
-    case 'g2d:pruneOffscreen':
-    case 'g2d:onGroupOverlap':
-    case 'g2d:onSpriteGroupOverlap':
-    case 'g2d:onEnemyDefeated':
-    case 'g2d:onEnemyHurt':
-    case 'g2d:onEnemyBeamHit':
-    case 'g2d:onEnemyShotHit':
-    case 'g2d:defineShape':
-    case 'g2d:everyFrames':
-    case 'g2d:everySeconds':
-    case 'g2d:afterSeconds':
-    case 'g3d:animate':
-    case 'g3d:everyFrames':
-    case 'g3d:everySeconds':
-    case 'g3d:forEachInGroup':
-    case 'g3d:pruneOffscreen':
-    case 'gk:addButton':
-    case 'gk:onEnterState':
-    case 'gk:onUpdate':
-    case 'gk:onFixedUpdate':
-    case 'gk:onCampaignEvent':
-    case 'gk:onDraw':
-    case 'gk:onEvent':
-    case 'gk:onDrawHud':
-    case 'gk:onGameClick':
-    case 'gk:rpgOnTalk':
-    case 'gk:rpgCreateMap':
-    case 'gk:rpgOnEnterMap':
-    case 'gk:rpgOnBattleEnd':
-    case 'gk:rpgCutscene':
-    case 'gk:rpgOnStep':
-    case 'gk:rpgMenu':
-    case 'gk:rpgOption':
-    case 'gk:forEachActive':
-    case 'gk:defineLook':
-    case 'g3k:defineMold':
-    case 'g3k:forEachAlive':
-    case 'g3k:onUpdate':
-    case 'g3k:onEnterEntityState':
-    case 'g3k:onEntityStateUpdate':
-    case 'g3k:onExitEntityState':
-    case 'g3k:forEachNear':
-    case 'g3k:onEntityDeath':
-    case 'g3k:addButton':
-    case 'g3k:onEnterState':
-    case 'g3k:onEvent':
-    case 'funcDecl':
-    case 'forEach':
-    case 'setTimeout':
-    case 'setInterval':
-      return [stmt.body]
-    case 'tryCatch':
-      return [stmt.body, stmt.handler, stmt.finalizer ?? []]
-    case 'fetchJson':
-      return [stmt.body, stmt.catchBody ?? []]
-    case 'classDecl':
-      return [stmt.ctorBody, ...stmt.methods.map((m) => m.body)]
-    default:
-      return []
-  }
+  return programmingChildBodyEntries(stmt).map((entry) => entry.body)
 }
 
 export function countAdvancedJS(statements: JSStatement[]): number {

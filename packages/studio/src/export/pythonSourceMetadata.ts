@@ -10,6 +10,9 @@ import {
 import type { PythonAssetBundle } from '../core/pythonAssets'
 import type { PythonProjectDocument } from '../core/pythonProject'
 import { buildPythonAudioNativeBundle } from '../runtime/python/audio/nativeExport'
+import { PGZERO_UPSTREAM } from '../runtime/python/pgzero/contract'
+import { PYGAME_CE_VERSION, PYGAME_EXTENSION } from '../runtime/python/pygame/contract'
+import { RAYLIB_UPSTREAM } from '../runtime/python/raylib/contract'
 import type { ExportFileMap } from './fileMap'
 
 /** This describes a preserved snapshot, not a native execution or dependency certificate. */
@@ -20,12 +23,27 @@ export async function buildPythonSourceMetadata(input: {
   assets: PythonAssetBundle['manifest']
   occupiedFiles: string[]
   runtimeCatalog: StudioRuntimeCatalog | null
+  /** Pygame Zero projects: the requirements file and the PNGs made from SVG images. */
+  pgzero?: {
+    requirementsPath: string
+    converted: readonly string[]
+    warnings: readonly string[]
+  } | null
+  /** Raylib projects: the requirements file with the desktop raylib-python-cffi. */
+  raylib?: { requirementsPath: string } | null
+  /** Pygame-ce projects: the learner module pinta.py and the fonts copied beside the game. */
+  pygameFiles?: readonly string[]
 }): Promise<{ files: ExportFileMap; warnings: string[] }> {
   const { project, sourceFiles, assets } = input
+  const pygame = project.installedExtensions.some(
+    (extension) =>
+      extension.id === PYGAME_EXTENSION.id && extension.version === PYGAME_EXTENSION.version,
+  )
+  const turtle = project.installedExtensions.some((extension) => extension.id === 'python-turtle')
   const directories = [...input.directories].sort()
   const occupied = [...input.occupiedFiles]
   const files: ExportFileMap = {}
-  const warnings: string[] = []
+  const warnings: string[] = [...(input.pgzero?.warnings ?? [])]
   const available = (path: string) => !studioPortableFileConflict([...occupied, path], directories)
   const allocate = (candidate: (index: number) => string) => {
     for (let index = 1; ; index++) {
@@ -41,6 +59,10 @@ export async function buildPythonSourceMetadata(input: {
   const manifestPath = allocate(
     (index) => `.sistemazero${index === 1 ? '' : `-${index}`}/export-manifest.json`,
   )
+  const pygameRequirementsPath = pygame
+    ? allocate((index) => `requisitos-pygame-ce${index === 1 ? '' : `-${index}`}.txt`)
+    : null
+  if (pygameRequirementsPath) files[pygameRequirementsPath] = `pygame-ce==${PYGAME_CE_VERSION}\n`
   let release: StudioRuntimeRelease | null = null
   try {
     if (input.runtimeCatalog) {
@@ -108,15 +130,16 @@ export async function buildPythonSourceMetadata(input: {
 name = "sistema-zero-project"
 version = "0.0.0"
 requires-python = ">=${version},<${major}.${minor! + 1}"
-dependencies = []
+dependencies = ${pygame ? `["pygame-ce==${PYGAME_CE_VERSION}"]` : '[]'}
 `
     occupied.push('pyproject.toml')
   }
   // Tk anterior a 8.6 só abre GIF em PhotoImage/register_shape; os PNG do projeto
   // continuam os bytes originais, então o requisito precisa constar no pacote.
-  const pngLimit = assets.assets.some((asset) => asset.mime === 'image/png')
-    ? 'Imagens PNG usadas como forma ou fundo do Turtle exigem Tk 8.6 ou mais recente no computador; versões anteriores do Tk só abrem GIF.'
-    : null
+  const pngLimit =
+    turtle && assets.assets.some((asset) => asset.mime === 'image/png')
+      ? 'Imagens PNG usadas como forma ou fundo do Turtle exigem Tk 8.6 ou mais recente no computador; versões anteriores do Tk só abrem GIF.'
+      : null
   const sourceEntries = []
   for (const path of Object.keys(sourceFiles).sort()) {
     const content = sourceFiles[path]!
@@ -142,15 +165,64 @@ dependencies = []
     assets,
     runtimeModules,
     ...(nativeAudio ? { portableAudio: nativeAudio.manifest } : {}),
+    ...(input.pgzero
+      ? {
+          pygameZero: {
+            pgzero: PGZERO_UPSTREAM.pgzero,
+            pygameCe: PGZERO_UPSTREAM.pygameCe,
+            requirementsPath: input.pgzero.requirementsPath,
+            pngFromSvg: [...input.pgzero.converted],
+          },
+        }
+      : {}),
+    ...(input.raylib
+      ? {
+          raylib: {
+            package: RAYLIB_UPSTREAM.package,
+            version: RAYLIB_UPSTREAM.version,
+            requirementsPath: input.raylib.requirementsPath,
+          },
+        }
+      : {}),
+    ...(pygame
+      ? { pygameCe: { version: PYGAME_CE_VERSION, requirementsPath: pygameRequirementsPath } }
+      : {}),
     desktopExecution: 'not-observed',
     portabilityAnalysis: 'not-performed',
     knownLimits: [
       'O runtime e o lock identificam o navegador; não são uma instalação ou resolução de pacotes nativos.',
       'A exportação preserva a fonte, mas não analisa todos os imports, caminhos, código dinâmico ou configurações autorais.',
-      'Turtle nativo usa a biblioteca padrão e exige suporte gráfico Tk instalado no computador.',
+      ...(turtle
+        ? [
+            'Turtle nativo usa a biblioteca padrão e exige suporte gráfico Tk instalado no computador.',
+          ]
+        : []),
+      ...(input.pgzero
+        ? [
+            `Pygame Zero nativo usa pgzero ${PGZERO_UPSTREAM.pgzero} com pygame-ce ${PGZERO_UPSTREAM.pygameCe}; no computador, as imagens SVG são lidas pelos PNG gerados nesta exportação.`,
+          ]
+        : []),
+      ...(input.raylib
+        ? [
+            `Raylib nativo usa o pacote ${RAYLIB_UPSTREAM.package} ${RAYLIB_UPSTREAM.version} (raylib-python-cffi); o motor do navegador não faz parte do pacote.`,
+          ]
+        : []),
+      ...(pygame
+        ? [
+            `Pygame-ce nativo usa pygame-ce ${PYGAME_CE_VERSION}, a mesma versão que roda no navegador. O módulo pinta.py e as fontes em fontes/ acompanham o projeto.`,
+          ]
+        : []),
       ...(pngLimit ? [pngLimit] : []),
     ],
-    generatedFiles: [instructionsPath, manifestPath, ...Object.keys(files)].sort(),
+    generatedFiles: [
+      instructionsPath,
+      manifestPath,
+      ...Object.keys(files),
+      ...(input.pgzero ? [input.pgzero.requirementsPath, ...input.pgzero.converted] : []),
+      ...(input.raylib ? [input.raylib.requirementsPath] : []),
+      ...(pygameRequirementsPath ? [pygameRequirementsPath] : []),
+      ...(input.pygameFiles ?? []),
+    ].sort(),
     warnings,
   }
   files[manifestPath] = `${JSON.stringify(manifest, null, 2)}\n`
@@ -161,8 +233,12 @@ dependencies = []
 3. Crie um ambiente: python -m venv .venv
 4. No Windows, use .venv\\Scripts\\python.exe nos comandos seguintes.
    No macOS ou Linux, use .venv/bin/python.
-5. Se o projeto usa pacotes externos, confira as dependências nativas e os requisitos preservados antes de instalar:
-   python -m pip install -r ${requirementsPath ?? 'requirements.txt'}
+5. ${
+    requirementsPath
+      ? `Se o projeto usa pacotes externos, confira as dependências nativas e os requisitos preservados antes de instalar:
+   python -m pip install -r ${requirementsPath}`
+      : 'Confira as dependências nativas indicadas adiante, quando houver.'
+  }
 6. Execute: python ${project.python.entrypoint}
 
 Nos passos 5 e 6, substitua python pelo caminho do ambiente do passo 4.
@@ -181,11 +257,55 @@ mantenha o laço normal do programa com turtle.done() ou turtle.mainloop(). Ence
 
 `
     : ''
-}Turtle faz parte da biblioteca padrão do Python. Não instale um pacote chamado turtle pelo pip.
+}${
+  pygameRequirementsPath
+    ? `Este é um jogo Pygame-ce. Instale a versão usada pelo projeto:
+   python -m pip install -r ${pygameRequirementsPath}
+Para jogar, rode dentro desta pasta: python ${project.python.entrypoint}
+Os desenhos do Pinta estão em assets/ e são lidos pelo módulo pinta.py, que acompanha o projeto
+junto com as fontes em fontes/.
+
+`
+    : ''
+}${
+  input.pgzero
+    ? `Este é um jogo Pygame Zero. No computador ele usa o pygame-ce (o pygame atualizado) com o pgzero.
+Com o Python do ambiente do passo 4, na pasta principal da exportação:
+   python -m pip install -r ${input.pgzero.requirementsPath}
+   python -m pip install --no-deps pgzero==${PGZERO_UPSTREAM.pgzero}
+O --no-deps é importante: sem ele o pip instalaria o pygame antigo junto com o pygame-ce.
+Para jogar: python ${project.python.entrypoint}
+Isso funciona quando o programa termina com pgzrun.go(), como os exemplos da galeria.
+Sem essa linha, use: python -X utf8 -m pgzero ${project.python.entrypoint}
+(o -X utf8 mantém os acentos certos no Windows).
+${
+  input.pgzero.converted.length
+    ? `Os desenhos SVG ganharam uma cópia em PNG do mesmo tamanho (${input.pgzero.converted.join(', ')}), porque o Pygame Zero do computador não abre SVG. Se mudar um SVG, gere o PNG de novo pelo Estúdio.
+`
+    : ''
+}
+`
+    : ''
+}${
+  input.raylib
+    ? `Este é um jogo Raylib. No computador ele usa o raylib de verdade (o pacote ${RAYLIB_UPSTREAM.package} do pip).
+Com o Python do ambiente do passo 4, na pasta principal da exportação:
+   python -m pip install -r ${input.raylib.requirementsPath}
+Para jogar: python ${project.python.entrypoint}
+As imagens, sons, fontes e modelos já estão nas pastas que o jogo abre (images, sounds, music, fonts e models).
+
+`
+    : ''
+}${
+  turtle
+    ? `Turtle faz parte da biblioteca padrão do Python. Não instale um pacote chamado turtle pelo pip.
 
 Para projetos Turtle, teste o suporte gráfico com: python -m tkinter
 Esse comando precisa abrir uma janela. Algumas instalações de Python no Linux exigem instalar o suporte a Tk separadamente.
 ${pngLimit ? `${pngLimit}\nPara conferir a versão do Tk: python -c "import tkinter; print(tkinter.TkVersion)"\n` : ''}
+`
+    : ''
+}
 Seus arquivos e materiais foram preservados. O programa usa Python nativo no computador.
 O adaptador gráfico do navegador não faz parte deste pacote.
 ${

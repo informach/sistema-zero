@@ -1,8 +1,9 @@
 import type { PythonNode, PythonValue } from '../language/types'
 import type { PythonBlockCodec, PythonBlockRole, PythonBlockShape } from './contract'
-import { isNode, node, nodes, pythonSemanticTree } from './nodes'
+import { isNode, node, nodes } from './nodes'
 import { pythonPlaceholderNode } from './placeholders'
-import { resizePythonShape } from './shapeControls'
+import { samePythonValue } from './semantic'
+import { PYTHON_MAX_ITEMS, pythonInputsByName, resizePythonShape } from './shapeControls'
 
 export interface StructuralSlot {
   field: string
@@ -24,6 +25,12 @@ export function structuralCodec(
 ): PythonBlockCodec {
   const { slots, accepts, contexts, ...metadata } = options
   const handled = new Set(slots.map((slot) => slot.field))
+  // Decoding only reads the template; encoding builds from a fresh default node.
+  let template: PythonNode | undefined
+  const templateFields = () => {
+    template ??= metadata.defaultNode()
+    return template
+  }
   return {
     ...metadata,
     help: slots.some((slot) => slot.empty === 'pass')
@@ -39,7 +46,7 @@ export function structuralCodec(
                 label: slot.label,
                 kind: 'count' as const,
                 minimum: slot.minimum ?? 0,
-                maximum: 32,
+                maximum: PYTHON_MAX_ITEMS,
               },
             ]
           : [],
@@ -81,6 +88,8 @@ export function structuralCodec(
       if (value) {
         if (slot.kind === 'text')
           result.fields.push({ name: slot.field, label: slot.label, value: 'valor' })
+        else if (slot.kind === 'body')
+          result.inputs.push({ name: slot.field, label: slot.label, role: 'statement', nodes: [] })
         else
           result.inputs.push({
             name: slot.field,
@@ -92,7 +101,7 @@ export function structuralCodec(
       return result
     },
     decode(value) {
-      const template = metadata.defaultNode()
+      const template = templateFields()
       if (
         value.kind !== template.kind ||
         (accepts && !accepts(value)) ||
@@ -106,20 +115,17 @@ export function structuralCodec(
           if (!isNode(context) || !contexts.some((kind) => kind === context.kind)) return
           continue
         }
-        if (
-          !handled.has(key) &&
-          JSON.stringify(pythonSemanticTree(value.fields[key]!)) !==
-            JSON.stringify(pythonSemanticTree(expected))
-        )
-          return
+        if (!handled.has(key) && !samePythonValue(value.fields[key], expected)) return
       }
       const shape: PythonBlockShape = { fields: [], inputs: [], extra: {} }
       if (contexts && isNode(value.fields.ctx)) shape.extra!.context = value.fields.ctx.kind
       for (const slot of slots) {
         const child = value.fields[slot.field]
         if (slot.optional) {
-          shape.extra![`${slot.field}:present`] = child !== null
-          if (child === null) continue
+          // An optional suite (else/finally) is absent when empty; other slots when None.
+          const present = slot.kind === 'body' ? nodes(child) && child.length > 0 : child !== null
+          shape.extra![`${slot.field}:present`] = present
+          if (!present) continue
         }
         if (slot.kind === 'text') {
           if (typeof child !== 'string') return
@@ -133,7 +139,8 @@ export function structuralCodec(
             nodes: [child],
           })
         } else {
-          if (!nodes(child) || child.length > (slot.kind === 'list' ? 32 : 10000)) return
+          if (!nodes(child) || child.length > (slot.kind === 'list' ? PYTHON_MAX_ITEMS : 10000))
+            return
           if (slot.kind === 'body')
             shape.inputs.push({
               name: slot.field,
@@ -164,12 +171,13 @@ export function structuralCodec(
         if (!contexts.some((kind) => kind === context)) throw new Error('Destino Python inválido.')
         fields.ctx = node(String(context))
       }
+      const inputs = pythonInputsByName(shape)
       for (const slot of slots) {
         if (slot.optional) {
           const present = shape.extra?.[`${slot.field}:present`]
           if (typeof present !== 'boolean') throw new Error('Opção do bloco Python inválida.')
           if (!present) {
-            fields[slot.field] = null
+            fields[slot.field] = slot.kind === 'body' ? [] : null
             continue
           }
         }
@@ -178,19 +186,26 @@ export function structuralCodec(
           if (!value) throw new Error('Preencha o texto do bloco Python.')
           fields[slot.field] = value.value
         } else if (slot.kind === 'body') {
-          const value = shape.inputs.find((item) => item.name === slot.field)
+          const value = inputs.get(slot.field)
           if (!value || value.nodes.length > 10000)
             throw new Error('Corpo do bloco Python inválido.')
           fields[slot.field] =
-            value.nodes.length || slot.empty !== 'pass' ? value.nodes : [node('Pass')]
+            value.nodes.length || (slot.empty !== 'pass' && !slot.optional)
+              ? value.nodes
+              : [node('Pass')]
         } else {
           const count = slot.kind === 'node' ? 1 : shape.extra?.[`${slot.field}:count`]
-          if (typeof count !== 'number' || !Number.isSafeInteger(count) || count < 0 || count > 32)
+          if (
+            typeof count !== 'number' ||
+            !Number.isSafeInteger(count) ||
+            count < 0 ||
+            count > PYTHON_MAX_ITEMS
+          )
             throw new Error('Quantidade de itens inválida.')
           const values: PythonNode[] = []
           for (let index = 0; index < count; index++) {
             const key = slot.kind === 'node' ? slot.field : `${slot.field}:${index}`
-            const value = shape.inputs.find((item) => item.name === key)
+            const value = inputs.get(key)
             if (value?.nodes.length !== 1) throw new Error('Preencha o valor do bloco Python.')
             values.push(value.nodes[0]!)
           }

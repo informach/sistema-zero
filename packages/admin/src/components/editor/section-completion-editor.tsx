@@ -426,6 +426,7 @@ export function SectionCompletionEditor({
       {python && !mismatched && (
         <PythonSectionObjectives
           checks={pythonChecks}
+          project={initialProject}
           onChange={(projectChecks) => onChange({ ...value, projectChecks })}
         />
       )}
@@ -813,12 +814,12 @@ export function SectionCompletionEditor({
                     throw new Error(
                       'Salve o rascunho e confirme o ambiente Python antes de simular.',
                     )
-                  setSimulationMessage('Conferindo o código Python…')
-                  const { inspectPythonSectionProject } = await import(
-                    '../studio/inspect-python-section-project'
+                  setSimulationMessage('Verificando o projeto Python…')
+                  const { checkPythonSectionProject } = await import(
+                    '../studio/check-python-section-project'
                   )
                   assertCurrent()
-                  const results = await inspectPythonSectionProject({
+                  const results = await checkPythonSectionProject({
                     project: source,
                     referenceProject: initialProject,
                     checks: pythonChecks,

@@ -17,7 +17,7 @@ export const gameKit3DPhysicsRuntimeSource = `
     return perMold[s] || (perMold[s] = { enter: [], step: [], exit: [] });
   }
 
-  /** Executa UMA transição; setEntityState serializa as transições aninhadas. */
+  // Executa UMA transição; setEntityState serializa as transições aninhadas.
   function transitionEntityState(e, next) {
     var perMold = fsmHooks[e._mold];
     var oldBucket = perMold && e.state ? perMold[e.state] : null;
@@ -33,8 +33,8 @@ export const gameKit3DPhysicsRuntimeSource = `
     // autoAnimate do Jogo 2D faz lá.
     var mold = molds[e._mold];
     if (mold && mold.stateAnims && e._mixer) {
-      var clipName = mold.stateAnims[next];
-      if (clipName) playAnim(e, clipName, true);
+      var stateAnim = mold.stateAnims[next];
+      if (stateAnim && stateAnim.clip) playAnim(e, stateAnim.clip, stateAnim.loop);
     }
     // Um gancho pode reiniciar o projeto e substituir os buckets; consulte a
     // tabela viva depois da saída em vez de usar a referência antiga.
@@ -60,7 +60,7 @@ export const gameKit3DPhysicsRuntimeSource = `
         if (!requested || requested === e.state) continue;
         if (transitions >= MAX_ENTITY_STATE_TRANSITIONS) {
           warnOnce('fsm-cycle:' + e._mold,
-            'as mudanças de estado do molde "' + e._mold + '" entraram em ciclo — revise os ganchos de entrar/sair');
+            'as mudanças de estado do molde "' + e._mold + '" entraram em ciclo — revise os "Quando … entrar no estado" e "Quando … sair do estado" dele');
           queue.length = 0;
           break;
         }
@@ -73,12 +73,12 @@ export const gameKit3DPhysicsRuntimeSource = `
     }
   }
 
-  /** "No molde X, no estado Y, tocar a animação Z." */
-  function setStateAnim(mold, state, clip) {
+  // "No molde X, no estado Y, tocar a animação Z (repetindo / uma vez)."
+  function setStateAnim(mold, state, clip, loop) {
     var m = molds[text(mold, '')];
     if (!m) return;
     if (!m.stateAnims) m.stateAnims = {};
-    m.stateAnims[text(state, '')] = text(clip, '');
+    m.stateAnims[text(state, '')] = { clip: text(clip, ''), loop: loop !== false };
   }
 
   function runEntityHooks(list, e, label) {
@@ -96,7 +96,7 @@ export const gameKit3DPhysicsRuntimeSource = `
     }
   }
 
-  /** Ganchos da ZONA: fn(zona, quemEncostou). Warn-1x igual aos outros. */
+  // Ganchos da ZONA: fn(zona, quemEncostou). Warn-1x igual aos outros.
   function runOverlapHooks(zone, who) {
     var list = overlapHooks[zone._mold];
     if (!list) return;
@@ -153,7 +153,7 @@ export const gameKit3DPhysicsRuntimeSource = `
   var _cand = [];            // candidatos do broadphase (buffer PRÓPRIO — ver nota)
   var _candN = 0;
 
-  /** Caixa MUNDO da entidade a partir da caixa local do molde. */
+  // Caixa MUNDO da entidade a partir da caixa local do molde.
   function entBox(e, out) {
     var m = molds[e._mold];
     var p = e.mesh.position;
@@ -169,13 +169,11 @@ export const gameKit3DPhysicsRuntimeSource = `
     out.minZ = p.z + c.minZ; out.maxZ = p.z + c.maxZ;
   }
 
-  /**
-   * Caixa MUNDO de um sólido, no frame LOCAL dele (desfaz o yaw). Yaw preserva o
-   * eixo Y do mundo, então uma bola/cápsula vertical continua vertical no frame
-   * girado — cápsula-vs-caixa-girada vira cápsula-vs-AABB, sem matemática nova.
-   * (A engine não consegue produzir pitch/roll: setYaw/faceVelocity escrevem
-   * (0,y,0), lookAt força o Y do alvo e aimAt achata em Y.)
-   */
+  // Caixa MUNDO de um sólido, no frame LOCAL dele (desfaz o yaw). Yaw preserva o
+  // eixo Y do mundo, então uma bola/cápsula vertical continua vertical no frame
+  // girado — cápsula-vs-caixa-girada vira cápsula-vs-AABB, sem matemática nova.
+  // (A engine não consegue produzir pitch/roll: setYaw/faceVelocity escrevem
+  // (0,y,0), lookAt força o Y do alvo e aimAt achata em Y.)
   function localOf(s, px, pz, out) {
     var yaw = s.mesh.rotation.y;
     var dx = px - s.mesh.position.x;
@@ -188,7 +186,7 @@ export const gameKit3DPhysicsRuntimeSource = `
   }
   var _loc = { x: 0, z: 0 };
 
-  /** Altura da rampa no ponto local (lx,lz) — a MESMA reta da malha (wedgeGeo). */
+  // Altura da rampa no ponto local (lx,lz) — a MESMA reta da malha (wedgeGeo).
   function rampHeight(c, lx, lz) {
     var t = c.rampAxis === 0
       ? (lx - c.minX) / (c.maxX - c.minX || 1)
@@ -198,7 +196,7 @@ export const gameKit3DPhysicsRuntimeSource = `
     return c.rampY0 + (c.rampY1 - c.rampY0) * t;
   }
 
-  /** Marca o contato: a normal decide o grounded (e quem me carrega). */
+  // Marca o contato: a normal decide o grounded (e quem me carrega).
   function contact(e, nx, ny, nz, solidEnt) {
     if (ny >= MIN_GROUND_Y) {
       e.grounded = true;
@@ -227,7 +225,7 @@ export const gameKit3DPhysicsRuntimeSource = `
     }
   }
 
-  /** Pisa no chão-base (y=0): os pés do molde são a origem. */
+  // Pisa no chão-base (y=0): os pés do molde são a origem.
   function resolveGround(e) {
     var p = e.mesh.position;
     var m = molds[e._mold];
@@ -238,7 +236,7 @@ export const gameKit3DPhysicsRuntimeSource = `
     }
   }
 
-  /** Resolve a entidade contra UM sólido. Devolve true se houve contato. */
+  // Resolve a entidade contra UM sólido. Devolve true se houve contato.
   function resolveOne(e, s) {
     var p = e.mesh.position;
     var sm = molds[s._mold];
@@ -375,15 +373,13 @@ export const gameKit3DPhysicsRuntimeSource = `
     return true;
   }
 
-  /**
-   * Empurra para fora de TODOS os sólidos candidatos (sequencial). Os candidatos
-   * incluem as ZONAS (o broadphase é um só para colisão e gatilho) — e zona
-   * AVISA, não empurra: sem o filtro de solid, qualquer mundo com UM sólido
-   * ligava o empurrão também nas zonas — a gema/moeda virava parede em que se
-   * pisa, e o gatilho (que confere a sobreposição DEPOIS do empurrão) nunca
-   * disparava. O teste antigo de zona não via porque o mundo dele não tinha
-   * sólido nenhum, e o resolveSolids só roda sob anySolid.
-   */
+  // Empurra para fora de TODOS os sólidos candidatos (sequencial). Os candidatos
+  // incluem as ZONAS (o broadphase é um só para colisão e gatilho) — e zona
+  // AVISA, não empurra: sem o filtro de solid, qualquer mundo com UM sólido
+  // ligava o empurrão também nas zonas — a gema/moeda virava parede em que se
+  // pisa, e o gatilho (que confere a sobreposição DEPOIS do empurrão) nunca
+  // disparava. O teste antigo de zona não via porque o mundo dele não tinha
+  // sólido nenhum, e o resolveSolids só roda sob anySolid.
   function resolveSolids(e) {
     for (var i = 0; i < _candN; i++) {
       var s = _cand[i];
@@ -394,11 +390,9 @@ export const gameKit3DPhysicsRuntimeSource = `
     }
   }
 
-  /**
-   * Tempo de impacto de uma AABB móvel contra um sólido, pelo método dos slabs.
-   * O cálculo acontece no frame LOCAL do sólido: paredes giradas continuam
-   * estreitas em vez de virarem a AABB mundial inflada do próprio yaw.
-   */
+  // Tempo de impacto de uma AABB móvel contra um sólido, pelo método dos slabs.
+  // O cálculo acontece no frame LOCAL do sólido: paredes giradas continuam
+  // estreitas em vez de virarem a AABB mundial inflada do próprio yaw.
   function sweepOne(e, s, dx, dy, dz, out) {
     var sm = molds[s._mold];
     if (!sm || !sm.solid) return false;
@@ -476,7 +470,7 @@ export const gameKit3DPhysicsRuntimeSource = `
     return true;
   }
 
-  /** Primeiro sólido atingido pelo deslocamento deste pedaço de quadro. */
+  // Primeiro sólido atingido pelo deslocamento deste pedaço de quadro.
   function sweepSolids(e, dx, dy, dz, out) {
     out.t = 1; out.nx = 0; out.ny = 0; out.nz = 0; out.solid = null;
     var found = false;
@@ -496,11 +490,9 @@ export const gameKit3DPhysicsRuntimeSource = `
     return found;
   }
 
-  /**
-   * Integra um substep consumindo o tempo restante depois de cada impacto. Três
-   * contatos bastam para remover os três graus de liberdade de uma AABB; se ela
-   * ficar presa num canto, o tempo restante é descartado em vez de atravessar.
-   */
+  // Integra um substep consumindo o tempo restante depois de cada impacto. Três
+  // contatos bastam para remover os três graus de liberdade de uma AABB; se ela
+  // ficar presa num canto, o tempo restante é descartado em vez de atravessar.
   function moveContinuous(e, seconds) {
     var p = e.mesh.position;
     var left = seconds;
@@ -519,12 +511,10 @@ export const gameKit3DPhysicsRuntimeSource = `
     }
   }
 
-  /**
-   * Broadphase UMA vez por quadro: copia os candidatos para um buffer PRÓPRIO.
-   * A cópia é obrigatória, não otimização: o gridQuery devolve o buffer
-   * COMPARTILHADO ("o chamador consome antes da próxima consulta"), e um gancho
-   * da criança dentro da resolução (forEachNear/nearest) o sobrescreveria.
-   */
+  // Broadphase UMA vez por quadro: copia os candidatos para um buffer PRÓPRIO.
+  // A cópia é obrigatória, não otimização: o gridQuery devolve o buffer
+  // COMPARTILHADO ("o chamador consome antes da próxima consulta"), e um gancho
+  // da criança dentro da resolução (forEachNear/nearest) o sobrescreveria.
   function fillCandidates(e, dx, dz) {
     _candN = 0;
     var m = molds[e._mold];
@@ -544,7 +534,7 @@ export const gameKit3DPhysicsRuntimeSource = `
     }
   }
 
-  /** Quantos substeps para não atravessar o sólido mais fino do mundo. */
+  // Quantos substeps para não atravessar o sólido mais fino do mundo.
   function substepsFor(e, dx, dy, dz) {
     var m = molds[e._mold];
     var c = m ? m.col : null;
@@ -560,7 +550,7 @@ export const gameKit3DPhysicsRuntimeSource = `
     return k > MAX_SUBSTEPS ? MAX_SUBSTEPS : k;
   }
 
-  /** Grude no chão ao descer rampa/degrau (senão a descida vira trampolim). */
+  // Grude no chão ao descer rampa/degrau (senão a descida vira trampolim).
   function snapDown(e) {
     var p = e.mesh.position;
     var y0 = p.y;
@@ -582,7 +572,7 @@ export const gameKit3DPhysicsRuntimeSource = `
            a.maxZ > b.minZ && a.minZ < b.maxZ;
   }
 
-  /** Broadphase de uma zona: traz qualquer entidade, não só sólidos/zonas. */
+  // Broadphase de uma zona: traz qualquer entidade, não só sólidos/zonas.
   function fillTriggerVisitors(z) {
     _candN = 0;
     var m = molds[z._mold];
@@ -600,20 +590,24 @@ export const gameKit3DPhysicsRuntimeSource = `
     }
   }
 
-  /** Uma zona acompanha TODOS os visitantes, cada um junto da geração do pool. */
+  // Saída de um visitante (o _boxA já é a caixa da zona). Função de módulo, e não
+  // uma função nova por zona a cada quadro: o Map.forEach entrega o próprio mapa.
+  function forgetZoneVisitor(gen, e, inside) {
+    if (!e || !e._alive || e._gen !== gen) {
+      inside.delete(e);
+      return;
+    }
+    entBox(e, _boxB);
+    if (!boxesOverlap(_boxA, _boxB)) inside.delete(e);
+  }
+
+  // Uma zona acompanha TODOS os visitantes, cada um junto da geração do pool.
   function stepTriggerZone(z) {
     var inside = z._inside || (z._inside = new Map());
     entBox(z, _boxA);
     // Primeiro reconhece SAÍDAS, inclusive visitante reciclado ou teleportado
     // para longe. Assim uma reentrada da mesma vida volta a disparar uma vez.
-    inside.forEach(function (gen, e) {
-      if (!e || !e._alive || e._gen !== gen) {
-        inside.delete(e);
-        return;
-      }
-      entBox(e, _boxB);
-      if (!boxesOverlap(_boxA, _boxB)) inside.delete(e);
-    });
+    inside.forEach(forgetZoneVisitor);
     if (!z._alive) return;
     fillTriggerVisitors(z);
     entBox(z, _boxA);
@@ -629,7 +623,7 @@ export const gameKit3DPhysicsRuntimeSource = `
     }
   }
 
-  /** Passada própria DEPOIS da física: zonas móveis e visitantes parados valem. */
+  // Passada própria DEPOIS da física: zonas móveis e visitantes parados valem.
   function stepTriggers() {
     if (!anyTrigger) return;
     for (var pk in pools) {
@@ -658,6 +652,10 @@ export const gameKit3DPhysicsRuntimeSource = `
     // boneco parado no lugar ainda respira.
     if (e._mixer) {
       try { e._mixer.update(dt); } catch (err) {}
+      // O "finished" do mixer roda o "Quando terminar a animação" AQUI DENTRO; se o
+      // gancho tirou a entidade do jogo, seguir integraria um handle morto e o
+      // gridSync do fim o devolveria à grade (um morto a mais por ciclo, para sempre).
+      if (!e._alive) return;
     }
     e.stateTime += dt;
     for (var t = 0; t < stateTimers.length; t++) {

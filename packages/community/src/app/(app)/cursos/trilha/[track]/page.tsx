@@ -165,12 +165,12 @@ export default async function TrackPage({ params }: { params: Promise<{ track: s
           )
         })}
 
-        <section className="sz-card flex flex-col items-start gap-5 border-(--topo) bg-(--topo) p-6 text-white md:flex-row md:items-center md:gap-6 md:p-8">
+        <section className="sz-palco flex flex-col items-start gap-5 rounded-[1.2rem] p-6 md:flex-row md:items-center md:gap-6 md:p-8">
           <span className="inline-flex size-[3.2rem] shrink-0 items-center justify-center rounded-[0.8rem] bg-(--topo-borda) text-(--sz-community-yellow)">
             <Trophy className="size-7" aria-hidden />
           </span>
           <div className="flex min-w-0 flex-1 flex-col gap-1.5">
-            <h2 className="sz-h3 text-white">Terminou um curso? Mostre o seu jogo</h2>
+            <h2 className="sz-h3 text-white">Cada curso termina com um jogo para mostrar</h2>
             <p className="text-(--topo-texto)">
               Publique no Mural dos Criadores e veja quantas vezes ele foi jogado.
             </p>

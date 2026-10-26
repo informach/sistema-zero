@@ -38,11 +38,26 @@ export function ReferenceImageGuide({
 }): JSX.Element {
   const reference = useReferenceImage()
   const [open, setOpen] = useState(false)
-  const [boundView, setBoundView] = useState(view)
-  const [placement, setPlacement] = useState(DEFAULT_PLACEMENT)
+  const [selectedView, setSelectedView] = useState(view)
+  const [placements, setPlacements] = useState<
+    Partial<Record<CameraView, typeof DEFAULT_PLACEMENT>>
+  >({})
   const fileInput = useRef<HTMLInputElement>(null)
   const button = useRef<HTMLButtonElement>(null)
   const copy = COPY.editor.model.reference
+  const selectedImage = reference.images[selectedView]
+  const placement = placements[selectedView] ?? DEFAULT_PLACEMENT
+  const shownImage = reference.images[view]
+  const shownPlacement = placements[view] ?? DEFAULT_PLACEMENT
+  const setPlacement = (update: (current: typeof DEFAULT_PLACEMENT) => typeof DEFAULT_PLACEMENT) =>
+    setPlacements((current) => ({
+      ...current,
+      [selectedView]: update(current[selectedView] ?? DEFAULT_PLACEMENT),
+    }))
+  const showDialog = () => {
+    setSelectedView(view)
+    setOpen(true)
+  }
   const close = () => {
     reference.cancel()
     setOpen(false)
@@ -50,18 +65,18 @@ export function ReferenceImageGuide({
   return (
     <div className="mld-stage-surface relative min-h-0 flex-1 overflow-hidden bg-[radial-gradient(circle_at_50%_30%,color-mix(in_oklab,var(--color-mld-surface)_70%,var(--color-mld-bg)),var(--color-mld-bg))]">
       {children}
-      {available && reference.image && placement.visible && boundView === view && !disabled && (
+      {available && shownImage && shownPlacement.visible && !disabled && (
         <img
           aria-hidden="true"
           alt=""
           draggable={false}
-          src={reference.image.url}
+          src={shownImage.url}
           className="pointer-events-none absolute inset-0 size-full select-none object-contain"
           style={{
-            opacity: placement.opacity / 100,
-            transform: `translate(${placement.x}%, ${placement.y}%) scale(${placement.flipped ? -placement.scale / 100 : placement.scale / 100}, ${placement.scale / 100})`,
+            opacity: shownPlacement.opacity / 100,
+            transform: `translate(${shownPlacement.x}%, ${shownPlacement.y}%) scale(${shownPlacement.flipped ? -shownPlacement.scale / 100 : shownPlacement.scale / 100}, ${shownPlacement.scale / 100})`,
           }}
-          onError={reference.remove}
+          onError={() => reference.remove(view)}
         />
       )}
       {available &&
@@ -70,7 +85,7 @@ export function ReferenceImageGuide({
             ref={button}
             type="button"
             disabled={disabled}
-            onClick={() => setOpen(true)}
+            onClick={showDialog}
             aria-haspopup="dialog"
             aria-label={copy.title}
             title={copy.title}
@@ -83,7 +98,7 @@ export function ReferenceImageGuide({
             ref={button}
             variant="outline"
             disabled={disabled}
-            onClick={() => setOpen(true)}
+            onClick={showDialog}
             className={`absolute ${triggerPlacement} z-10 min-h-11 bg-mld-surface/95 px-3 text-sm`}
             aria-haspopup="dialog"
           >
@@ -95,6 +110,25 @@ export function ReferenceImageGuide({
         <div className="flex flex-col gap-3">
           <p className="text-sm text-mld-text-soft">{copy.hint}</p>
           <p className="text-xs text-mld-muted">{copy.formats}</p>
+          <label className="flex flex-col gap-1 text-sm text-mld-text">
+            {copy.view}
+            <select
+              name="molda-reference-view"
+              value={selectedView}
+              onChange={(event) => {
+                const next = CAMERA_VIEWS.find((candidate) => candidate === event.target.value)
+                if (next) setSelectedView(next)
+              }}
+              className="min-h-11 rounded-xl border-2 border-mld-border bg-mld-bg px-3 text-mld-text"
+            >
+              {CAMERA_VIEWS.map((candidate) => (
+                <option key={candidate} value={candidate}>
+                  {COPY.editor.model.views[candidate]}
+                  {reference.images[candidate] ? ` · ${copy.withImage}` : ''}
+                </option>
+              ))}
+            </select>
+          </label>
           <input
             ref={fileInput}
             type="file"
@@ -107,47 +141,29 @@ export function ReferenceImageGuide({
               const file = event.currentTarget.files?.[0]
               event.currentTarget.value = ''
               if (!file) return
-              void reference.choose(file).then((accepted) => {
+              const targetView = selectedView
+              void reference.choose(targetView, file).then((accepted) => {
                 if (!accepted) return
-                setBoundView(view)
-                setPlacement(DEFAULT_PLACEMENT)
+                setPlacements((current) => ({ ...current, [targetView]: DEFAULT_PLACEMENT }))
               })
             }}
           />
           <Button variant="primary" onClick={() => fileInput.current?.click()}>
-            {reference.image ? copy.replace : copy.choose}
+            {selectedImage ? copy.replace : copy.choose}
           </Button>
-          {reference.loading && (
+          {reference.loadingView === selectedView && (
             <p role="status" className="text-sm text-mld-text">
               {copy.loading}
             </p>
           )}
-          {reference.error && (
+          {reference.error?.view === selectedView && (
             <p role="alert" className="text-sm text-mld-danger">
-              {copy.failures[reference.error]}
+              {copy.failures[reference.error.reason]}
             </p>
           )}
-          {reference.image && (
+          {selectedImage && (
             <>
-              <p className="break-words text-sm font-bold text-mld-text">{reference.image.name}</p>
-              <label className="flex flex-col gap-1 text-sm text-mld-text">
-                {copy.view}
-                <select
-                  name="molda-reference-view"
-                  value={boundView}
-                  onChange={(event) => {
-                    const next = CAMERA_VIEWS.find((candidate) => candidate === event.target.value)
-                    if (next) setBoundView(next)
-                  }}
-                  className="min-h-11 rounded-xl border-2 border-mld-border bg-mld-bg px-3 text-mld-text"
-                >
-                  {CAMERA_VIEWS.map((candidate) => (
-                    <option key={candidate} value={candidate}>
-                      {COPY.editor.model.views[candidate]}
-                    </option>
-                  ))}
-                </select>
-              </label>
+              <p className="break-words text-sm font-bold text-mld-text">{selectedImage.name}</p>
               {(['opacity', 'scale', 'x', 'y'] as const).map((key) => (
                 <label key={key} className="flex flex-col text-sm text-mld-text">
                   <span>
@@ -188,10 +204,15 @@ export function ReferenceImageGuide({
                 >
                   {copy.flip}
                 </Button>
-                <Button variant="ghost" onClick={() => setPlacement(DEFAULT_PLACEMENT)}>
+                <Button
+                  variant="ghost"
+                  onClick={() =>
+                    setPlacements((current) => ({ ...current, [selectedView]: DEFAULT_PLACEMENT }))
+                  }
+                >
                   {copy.reset}
                 </Button>
-                <Button variant="ghost" onClick={reference.remove}>
+                <Button variant="ghost" onClick={() => reference.remove(selectedView)}>
                   {copy.remove}
                 </Button>
               </div>

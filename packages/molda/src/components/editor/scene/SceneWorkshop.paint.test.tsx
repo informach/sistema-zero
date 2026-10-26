@@ -193,6 +193,40 @@ function mount(asset: MoldaSceneDocument, wrap: (node: ReactNode) => ReactNode =
   return { editor, view, stage, tap, drag }
 }
 
+test('nível intermediário cria uma textura e continua pintando no modelo', async () => {
+  const { document, door } = twoBoxes()
+  const { editor, stage, tap, view } = mount(document, (node) => (
+    <MoldaToolAccessProvider access={{ allow: moldaToolFamilyIds(['basic', 'intermediate']) }}>
+      {node}
+    </MoldaToolAccessProvider>
+  ))
+  try {
+    await waitFor(() => expect(stage.callbacks).not.toBeNull())
+    tap(door)
+    fireEvent.click(screen.getByRole('button', { name: SCENE_PAINT_COPY.tab }))
+    const summary = await screen.findByText(COPY.scene.appearanceTitle, { selector: 'summary' })
+    const details = summary.closest('details')!
+    act(() => {
+      details.open = true
+      fireEvent(details, new Event('toggle'))
+    })
+    fireEvent.click(await screen.findByRole('button', { name: COPY.scene.imageCreate }))
+    const dialog = screen.getByRole('dialog', { name: COPY.scene.imageCreate })
+    fireEvent.click(within(dialog).getByRole('button', { name: COPY.scene.imageCreateApply }))
+    await waitFor(() =>
+      expect(stage.target?.imageId).toBe(editor.getState().asset.images.at(-1)?.id),
+    )
+    expect(screen.queryByRole('dialog', { name: COPY.scene.imageCreate })).toBeNull()
+    expect(
+      editor.getState().asset.materials.find((entry) => entry.id === stage.target?.materialId)
+        ?.colorImageId,
+    ).toBe(stage.target?.imageId)
+  } finally {
+    view.unmount()
+    editor.getState().dispose()
+  }
+})
+
 test('Modelar mostra a prévia booleana e confirma em um único desfazer', async () => {
   const { document, door, wall } = twoBoxes()
   const offset = identityMatrix()

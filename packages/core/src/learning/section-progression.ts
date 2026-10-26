@@ -141,7 +141,14 @@ export function projectObjectiveView(check: SectionProjectCheck): ProjectObjecti
     label: check.label,
     ...(check.hint ? { hint: check.hint } : {}),
     ...(check.optional ? { optional: true as const } : {}),
-    kind: check.programmingLanguage === 'python' ? 'idea' : projectObjectiveKind(check.rule),
+    kind:
+      check.programmingLanguage === 'python'
+        ? check.rule.type === 'behavior'
+          ? 'game'
+          : check.rule.type === 'functionReturns'
+            ? 'function'
+            : 'idea'
+        : projectObjectiveKind(check.rule),
   }
 }
 

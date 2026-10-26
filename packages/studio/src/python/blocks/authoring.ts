@@ -1,16 +1,39 @@
 import { selectStudioRuntimeRelease } from '@sistemazero/core/studio/runtime-catalog'
 import type { PythonProjectDocument } from '../../core/editableProject'
 import type { StudioRuntimeEnvironment } from '../../runtime/environment'
+import { PGZERO_EXTENSION } from '../../runtime/python/pgzero/contract'
+import { PYGAME_EXTENSION } from '../../runtime/python/pygame/contract'
+import { RAYLIB_2D_EXTENSION, RAYLIB_3D_EXTENSION } from '../../runtime/python/raylib/contract'
 import { TURTLE_EXTENSION } from '../../runtime/python/turtle/contract'
 import { PYTHON_PROGRAMMING_CODECS } from './catalog'
 import type { PythonBlockCodec } from './contract'
+import { attachPythonResolverOptions } from './resolverOptions'
+import type { PythonResolverOptions } from './scope'
 import { describePythonCatalog, selectPythonPalette } from './selection'
 
 export { pythonOfficialModules } from '../officialModules'
 export { type PythonCatalogEntry, selectPythonPalette } from './selection'
 
 const programmingCatalog = describePythonCatalog(PYTHON_PROGRAMMING_CODECS)
-const turtleCatalogs = new Map<string, ReturnType<typeof describePythonCatalog>>()
+const extensionCatalogs = new Map<
+  string,
+  { codecs: readonly PythonBlockCodec[]; catalog: ReturnType<typeof describePythonCatalog> }
+>()
+
+/**
+ * The codec order of the editor for one extension and the runtime features of a release: the
+ * extension's supported calls first, then the programming codecs. A qualification receipt
+ * records this order, and its reader recomputes it from the current catalog.
+ */
+export function orderPythonAuthoringCodecs(
+  extensionCodecs: readonly PythonBlockCodec[] | undefined,
+  features: readonly string[],
+): readonly PythonBlockCodec[] {
+  if (!extensionCodecs) return PYTHON_PROGRAMMING_CODECS
+  const supported = (codec: PythonBlockCodec) =>
+    (codec.requiredRuntimeFeatures ?? []).every((feature) => features.includes(feature))
+  return [...extensionCodecs.filter(supported), ...PYTHON_PROGRAMMING_CODECS]
+}
 
 /** Resolve only local editor code; executable distributions have a separate runtime boundary. */
 export async function loadPythonAuthoring(
@@ -35,22 +58,46 @@ export async function loadPythonAuthoring(
       (known) => known.id === extension.id && known.versions.includes(extension.version),
     ),
   )
-  const turtle = installed.some(
-    (extension) =>
-      extension.id === TURTLE_EXTENSION.id && extension.version === TURTLE_EXTENSION.version,
-  )
+  const has = (extension: { id: string; version: string }) =>
+    installed.some((item) => item.id === extension.id && item.version === extension.version)
   let codecs: readonly PythonBlockCodec[] = PYTHON_PROGRAMMING_CODECS
   let catalog = programmingCatalog
-  if (turtle) {
-    const { PYTHON_TURTLE_CODECS } = await import('../extensions/turtle/catalog')
-    const available = PYTHON_TURTLE_CODECS.filter((codec) =>
-      (codec.requiredRuntimeFeatures ?? []).every((feature) => python.features.includes(feature)),
+  let extension: { codecs: readonly PythonBlockCodec[]; options: PythonResolverOptions } | undefined
+  if (has(TURTLE_EXTENSION)) {
+    const { PYTHON_TURTLE_CODECS, TURTLE_STAR_EXPORTS } = await import(
+      '../extensions/turtle/catalog'
     )
+    extension = {
+      codecs: PYTHON_TURTLE_CODECS,
+      options: { starExports: new Map([['turtle', TURTLE_STAR_EXPORTS]]) },
+    }
+  } else if (has(PGZERO_EXTENSION)) {
+    const { PYTHON_PGZERO_CODECS, PGZERO_RESOLVER_OPTIONS } = await import(
+      '../extensions/pgzero/catalog'
+    )
+    extension = { codecs: PYTHON_PGZERO_CODECS, options: PGZERO_RESOLVER_OPTIONS }
+  } else if (has(PYGAME_EXTENSION)) {
+    const { PYTHON_PYGAME_CODECS } = await import('../extensions/pygame/catalog')
+    extension = { codecs: PYTHON_PYGAME_CODECS, options: {} }
+  } else if (has(RAYLIB_2D_EXTENSION)) {
+    const { PYTHON_RAYLIB_2D_CODECS, RAYLIB_RESOLVER_OPTIONS } = await import(
+      '../extensions/raylib2d/catalog'
+    )
+    extension = { codecs: PYTHON_RAYLIB_2D_CODECS, options: RAYLIB_RESOLVER_OPTIONS }
+  } else if (has(RAYLIB_3D_EXTENSION)) {
+    const { PYTHON_RAYLIB_3D_CODECS, RAYLIB_RESOLVER_OPTIONS } = await import(
+      '../extensions/raylib3d/catalog'
+    )
+    extension = { codecs: PYTHON_RAYLIB_3D_CODECS, options: RAYLIB_RESOLVER_OPTIONS }
+  }
+  if (extension) {
     // Specific official calls must precede the generic call/attribute codecs.
-    codecs = [...available, ...PYTHON_PROGRAMMING_CODECS]
-    const key = available.map((codec) => codec.id).join('|')
-    catalog = turtleCatalogs.get(key) ?? describePythonCatalog(codecs)
-    turtleCatalogs.set(key, catalog)
+    const ordered = orderPythonAuthoringCodecs(extension.codecs, python.features)
+    const key = ordered.map((codec) => codec.id).join('|')
+    const cached = extensionCatalogs.get(key)
+    codecs = cached?.codecs ?? attachPythonResolverOptions(ordered, extension.options)
+    catalog = cached?.catalog ?? describePythonCatalog(codecs)
+    extensionCatalogs.set(key, { codecs, catalog })
   }
   return {
     codecs,

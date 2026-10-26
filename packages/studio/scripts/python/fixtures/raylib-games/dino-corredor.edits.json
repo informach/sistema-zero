@@ -1,0 +1,34 @@
+[
+  {
+    "label": "chão",
+    "path": {
+      "body": 4,
+      "inputs": [
+        {
+          "name": "VALUE",
+          "index": 0
+        }
+      ]
+    },
+    "codecId": "sz_py_integer",
+    "field": "NUMBER",
+    "before": "300",
+    "after": "310"
+  },
+  {
+    "label": "gravidade",
+    "path": {
+      "body": 6,
+      "inputs": [
+        {
+          "name": "VALUE",
+          "index": 0
+        }
+      ]
+    },
+    "codecId": "sz_py_integer",
+    "field": "NUMBER",
+    "before": "2400",
+    "after": "2200"
+  }
+]

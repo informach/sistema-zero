@@ -782,20 +782,39 @@ export const EXAMPLE_QA_CONTRACTS = [
     interactions: ['click'],
   },
   {
+    key: 'game-3d:Pega-Estrelas',
+    name: 'Pega-Estrelas',
+    experience: 'game',
+    promise: 'O primeiro jogo completo só com o núcleo: pegar estrelas de um grupo em 30 s.',
+    scenario:
+      'Clicar em Jogar, andar e pular até as estrelas, somar pontos, ver a tela final com os pontos e jogar de novo.',
+    interactions: ['click', 'wasd', 'arrows', 'space'],
+  },
+  {
     key: 'game-3d:Desvie dos blocos',
     name: 'Desvie dos blocos',
     experience: 'game',
-    promise: 'Correr e pular de blocos que aceleram.',
-    scenario: 'Mover, pular, sobreviver e colidir para encerrar a partida.',
-    interactions: ['wasd', 'space'],
+    promise: 'Correr e pular dos blocos com três corações, pontos por tempo e fim de jogo.',
+    scenario:
+      'Clicar em Jogar, mover, pular, perder corações ao encostar, ver o fim e jogar de novo.',
+    interactions: ['click', 'wasd', 'space'],
   },
   {
     key: 'game-3d:Corrida Infinita 3D',
     name: 'Corrida Infinita 3D',
     experience: 'game',
     promise: 'Trocar de pista, pular e sobreviver a caixas que aceleram.',
-    scenario: 'Trocar de pista, pular caixa, marcar tempo, bater e recomeçar.',
+    scenario: 'Trocar de pista, pular caixa, marcar pontos por tempo, bater e jogar de novo.',
     interactions: ['arrows', 'space'],
+  },
+  {
+    key: 'game-3d:Meu herói do Molda',
+    name: 'Meu herói do Molda',
+    experience: 'game',
+    promise: 'Um personagem do Molda com ossos anda pela cena e troca de animação ao parar.',
+    scenario:
+      'Andar com as setas ou WASD (animação de andar), parar (animação parado) e pular com som.',
+    interactions: ['wasd', 'arrows', 'space'],
   },
   {
     key: 'game-3d:Patrulha Espacial',
@@ -950,6 +969,35 @@ export const EXAMPLE_QA_CONTRACTS = [
     interactions: ['click'],
   },
   {
+    key: 'game-3d-advanced:Arena dos Cristais',
+    name: 'Arena dos Cristais',
+    experience: 'game',
+    promise:
+      'Pegar cristais, guardar a chave na mochila e sair pela porta em duas fases, fugindo dos guardas que patrulham.',
+    scenario:
+      'Andar com WASD, pegar os cristais e a chave, abrir a porta, vencer a fase 2, ver o recorde guardado e voltar ao menu.',
+    interactions: ['wasd', 'arrows'],
+  },
+  {
+    key: 'game-3d-advanced:Herói do Molda',
+    name: 'Herói do Molda',
+    experience: 'game',
+    promise: 'Um personagem do Molda troca de animação conforme anda, para e pula.',
+    scenario:
+      'Andar com WASD, pular com espaço, ver as animações trocarem, congelar no floco de gelo e pegar as cinco estrelas.',
+    interactions: ['wasd', 'space'],
+  },
+  {
+    key: 'game-3d-advanced:Noite das Fogueiras',
+    name: 'Noite das Fogueiras',
+    experience: 'game',
+    promise:
+      'Juntar gravetos na mochila, acender quatro fogueiras sob um céu de foto com música e fugir dos fantasmas que roubam a lenha.',
+    scenario:
+      'Andar com WASD, pegar gravetos, acender as fogueiras (jorro de fogo e som), perder a lenha para um fantasma, abrir o portal e vencer ou ver o dia nascer.',
+    interactions: ['wasd', 'arrows'],
+  },
+  {
     key: 'game-3d-advanced:Corrida Infinita Profissional',
     name: 'Corrida Infinita Profissional',
     experience: 'game',
@@ -983,8 +1031,8 @@ export const EXAMPLE_QA_CONTRACTS = [
     experience: 'game',
     promise: 'Plantar blocos sólidos na grade com o clique e subir até o topo da muralha.',
     scenario:
-      'Andar, plantar bloco, subir nele, trocar o tipo com 1/2/3, reciclar com X e vencer no topo.',
-    interactions: ['click', 'wasd', 'space', 'digit-1'],
+      'Andar, plantar bloco, subir nele, trocar o tipo com E/Q/F, reciclar com Enter e vencer no topo.',
+    interactions: ['click', 'wasd', 'space', 'interact-e'],
   },
   {
     key: 'game-3d-advanced:Atravesse a Rua Profissional',
@@ -1004,36 +1052,60 @@ export const EXAMPLE_QA_CONTRACTS = [
     interactions: ['wasd', 'horn-h'],
   },
   {
-    key: 'world-3d:Corrida do Por do Sol',
-    name: 'Corrida do Por do Sol',
-    experience: 'game',
-    promise: 'Completar checkpoints ordenados com cronômetro e recorde.',
-    scenario: 'Passar pelos cinco checkpoints, fechar volta e registrar recorde.',
+    key: 'world-3d:Inverno Mágico',
+    name: 'Inverno Mágico',
+    experience: 'exploration',
+    promise: 'Explorar neve, vento, gelo escorregadio e totens.',
+    scenario: 'Dirigir pelo gelo, observar derrapagem, neve e todos os totens.',
     interactions: ['wasd'],
   },
   {
-    key: 'world-3d:Corrida Maluca Profissional',
-    name: 'Corrida Maluca Profissional',
+    key: 'world-3d:Fazendinha',
+    name: 'Fazendinha',
+    experience: 'exploration',
+    promise: 'Explorar uma fazenda viva e responder à Rosa.',
+    scenario: 'Visitar plantações e animais, observar moinho e escolher uma colheita.',
+    interactions: ['wasd', 'interact-e', 'choice-2'],
+  },
+  {
+    key: 'world-3d:Base da Lua',
+    name: 'Base da Lua',
     experience: 'game',
-    promise: 'Dirigir pela cidadezinha desviando do transito e fechar as voltas nos aneis.',
+    promise: 'Usar baixa gravidade e jetpack para coletar doze moedas.',
+    scenario: 'Pular/voar, visitar a cratera, coletar tudo, conquistar e reiniciar.',
+    interactions: ['wasd', 'space'],
+  },
+  {
+    key: 'world-3d:Parque dos Brinquedos',
+    name: 'Parque dos Brinquedos',
+    experience: 'exploration',
+    promise: 'Oferecer boliche, TNT, tornado, buzina e objetos físicos.',
+    scenario: 'Exercitar letras, pinos, TNT em cadeia, botão, buzina e recado.',
+    interactions: ['wasd', 'click', 'horn-h'],
+  },
+  {
+    key: 'world-3d:Caça às Estrelas',
+    name: 'Caça às Estrelas',
+    experience: 'game',
+    promise: 'Pegar 10 estrelas antes do cronômetro zerar, com vida, frutas que curam e cactos.',
     scenario:
-      'Acelerar pela cidade, evitar os carros do transito, passar pelos aneis na ordem e registrar o recorde.',
-    interactions: ['wasd'],
+      'Apertar Jogar, correr pelas estrelas, curar nas frutas, machucar nos cactos, vencer ou perder e jogar de novo.',
+    interactions: ['wasd', 'click'],
   },
   {
-    key: 'world-3d:Boliche na Praca',
-    name: 'Boliche na Praca',
+    key: 'world-3d:Boliche na Praça',
+    name: 'Boliche na Praça',
     experience: 'game',
     promise: 'Derrubar dez pinos e pilhas com o jipe.',
     scenario: 'Acelerar, atingir os pinos, obter strike e reiniciar.',
     interactions: ['wasd'],
   },
   {
-    key: 'world-3d:Inverno Magico',
-    name: 'Inverno Magico',
-    experience: 'exploration',
-    promise: 'Explorar neve, vento, gelo escorregadio e totens.',
-    scenario: 'Dirigir pelo gelo, observar derrapagem, neve e todos os totens.',
+    key: 'world-3d:Corrida do Pôr do Sol',
+    name: 'Corrida do Pôr do Sol',
+    experience: 'game',
+    promise: 'Completar checkpoints ordenados com cronômetro e recorde.',
+    scenario: 'Passar pelos cinco checkpoints, fechar volta e registrar recorde.',
     interactions: ['wasd'],
   },
   {
@@ -1045,56 +1117,42 @@ export const EXAMPLE_QA_CONTRACTS = [
     interactions: ['wasd', 'interact-e'],
   },
   {
-    key: 'world-3d:Parque dos Brinquedos',
-    name: 'Parque dos Brinquedos',
-    experience: 'exploration',
-    promise: 'Oferecer boliche, TNT, tornado, buzina e objetos físicos.',
-    scenario: 'Exercitar letras, pinos, TNT em cadeia, botão, buzina e recado.',
-    interactions: ['wasd', 'click', 'horn-h'],
-  },
-  {
-    key: 'world-3d:Vila das Vocacoes',
-    name: 'Vila das Vocacoes',
+    key: 'world-3d:Vila das Vocações',
+    name: 'Vila das Vocações',
     experience: 'exploration',
     promise: 'Explorar cidade com trânsito, portas, diálogo e minimapa.',
     scenario: 'Falar com Guia, escolher opção, abrir dois locais, coletar e teleportar.',
     interactions: ['wasd', 'interact-e', 'choice-2', 'click'],
   },
   {
-    key: 'world-3d:Base da Lua',
-    name: 'Base da Lua',
+    key: 'world-3d:Pista Maluca',
+    name: 'Pista Maluca',
     experience: 'game',
-    promise: 'Usar baixa gravidade e jetpack para coletar doze moedas.',
-    scenario: 'Pular/voar, visitar a cratera, coletar tudo, conquistar e reiniciar.',
-    interactions: ['wasd', 'space'],
+    promise: 'Dirigir pela cidadezinha desviando do trânsito e fechar as voltas nos anéis.',
+    scenario:
+      'Acelerar pela cidade, evitar os carros do transito, passar pelos aneis na ordem e registrar o recorde.',
+    interactions: ['wasd'],
   },
   {
-    key: 'world-3d:Fazendinha',
-    name: 'Fazendinha',
+    key: 'world-3d:Passeio das Letras',
+    name: 'Passeio das Letras',
     experience: 'exploration',
-    promise: 'Explorar uma fazenda viva e responder à Rosa.',
-    scenario: 'Visitar plantações e animais, observar moinho e escolher uma colheita.',
-    interactions: ['wasd', 'interact-e', 'choice-2'],
-  },
-  {
-    key: 'world-3d:Folio Procedural',
-    name: 'Folio Procedural',
-    experience: 'exploration',
-    promise: 'Recriar uma experiência de portfólio 3D com formas, física e distrito procedural.',
+    promise:
+      'Passear a pé e de jipe entre letras empurráveis, objetos físicos e um bairro criativo.',
     scenario: 'Explorar a pé e de jipe, empurrar objetos e atravessar o distrito criativo.',
     interactions: ['wasd', 'space', 'interact-e'],
   },
   {
-    key: 'world-3d:Coastal World Procedural',
-    name: 'Coastal World Procedural',
+    key: 'world-3d:Costa das Ilhas',
+    name: 'Costa das Ilhas',
     experience: 'exploration',
     promise: 'Explorar um arquipélago costeiro completo criado apenas com primitivas.',
     scenario: 'Alternar personagem, barco e jetpack, cruzar pontes e chegar ao farol.',
     interactions: ['wasd', 'space', 'interact-e'],
   },
   {
-    key: 'world-3d:Vocation Vista Procedural',
-    name: 'Vocation Vista Procedural',
+    key: 'world-3d:Cidade das Carreiras',
+    name: 'Cidade das Carreiras',
     experience: 'exploration',
     promise: 'Explorar uma cidade educativa procedural com bairros, casas e inventário.',
     scenario: 'Visitar os três distritos, conversar, abrir locais e concluir a missão.',
@@ -1508,5 +1566,185 @@ export const EXAMPLE_QA_CONTRACTS = [
     scenario:
       'Andar com A/W/S/D, falar com o morador no espaço, entrar no mato, batalhar com as setas e Enter, vencer ou perder.',
     interactions: ['start', 'wasd', 'space', 'arrows'],
+  },
+  {
+    key: 'game-2d:Meu personagem do Pinta',
+    name: 'Meu personagem do Pinta',
+    experience: 'demo',
+    promise:
+      'Setas movem o personagem. Espaço toca uma animação uma vez; ao terminar ele volta a andar. A tecla I troca a imagem e R recomeça.',
+    scenario:
+      'Setas movem o personagem. Espaço toca uma animação uma vez; ao terminar ele volta a andar. A tecla I troca a imagem e R recomeça.',
+    interactions: ['arrows', 'space'],
+  },
+  {
+    key: 'game-2d:Placas e camadas',
+    name: 'Placas e camadas',
+    experience: 'demo',
+    promise:
+      'Clique nas placas para trazê-las à frente. As teclas 1 e 2 mudam a letra e o tamanho; 3 manda a placa para trás e 4 muda sua visibilidade.',
+    scenario:
+      'Clique nas placas para trazê-las à frente. As teclas 1 e 2 mudam a letra e o tamanho; 3 manda a placa para trás e 4 muda sua visibilidade.',
+    interactions: ['click', 'digit-1', 'choice-2'],
+  },
+  {
+    key: 'game-2d:Quatro jeitos de mover',
+    name: 'Quatro jeitos de mover',
+    experience: 'demo',
+    promise:
+      'Escolha 1 para voo com inércia, 2 para bater asas, 3 para seguir o ponteiro ou 4 para pilotar com impulso. Um companheiro acompanha você.',
+    scenario:
+      'Escolha 1 para voo com inércia, 2 para bater asas, 3 para seguir o ponteiro ou 4 para pilotar com impulso. Um companheiro acompanha você.',
+    interactions: ['digit-1', 'arrows', 'choice-2', 'space'],
+  },
+  {
+    key: 'game-2d:Caixas, círculos e plataformas',
+    name: 'Caixas, círculos e plataformas',
+    experience: 'demo',
+    promise:
+      'Ande e pule nas plataformas. A caixa de contato mostra por que o círculo amarelo é coletado. O bloco vermelho tira vida com recarga; R recomeça.',
+    scenario:
+      'Ande e pule nas plataformas. A caixa de contato mostra por que o círculo amarelo é coletado. O bloco vermelho tira vida com recarga; R recomeça.',
+    interactions: ['arrows', 'space'],
+  },
+  {
+    key: 'game-2d:Mesa de som',
+    name: 'Mesa de som',
+    experience: 'demo',
+    promise:
+      '1 toca um arquivo, 2 para o efeito, 3 repete como música e 4 para a música. As teclas 5 e 6 tocam uma nota e um tom. O arquivo está no projeto.',
+    scenario:
+      '1 toca um arquivo, 2 para o efeito, 3 repete como música e 4 para a música. As teclas 5 e 6 tocam uma nota e um tom. O arquivo está no projeto.',
+    interactions: ['digit-1', 'choice-2'],
+  },
+  {
+    key: 'game-2d:Mapa do Pinta e duas fases',
+    name: 'Mapa do Pinta e duas fases',
+    experience: 'demo',
+    promise:
+      'Setas movem e Espaço pula pelo mapa do Pinta. N troca para uma fase vetorial; R restaura a fase. A câmera acompanha e as plataformas são atravessáveis por baixo.',
+    scenario:
+      'Setas movem e Espaço pula pelo mapa do Pinta. N troca para uma fase vetorial; R restaura a fase. A câmera acompanha e as plataformas são atravessáveis por baixo.',
+    interactions: ['arrows', 'space'],
+  },
+  {
+    key: 'game-2d:Pista do meu desenho',
+    name: 'Pista do meu desenho',
+    experience: 'demo',
+    promise:
+      'Desça a pista com as setas, escolha a vista com 1, 2 ou 3 e alcance a chegada. As bandeiras se movem; o placar mostra a distância percorrida.',
+    scenario:
+      'Desça a pista com as setas, escolha a vista com 1, 2 ou 3 e alcance a chegada. As bandeiras se movem; o placar mostra a distância percorrida.',
+    interactions: ['arrows', 'digit-1', 'choice-2'],
+  },
+  {
+    key: 'game-2d:Inimigo que muda ao levar dano',
+    name: 'Inimigo que muda ao levar dano',
+    experience: 'demo',
+    promise:
+      'Desvie com as setas e atire com Espaço. Ao levar dano, o inimigo passa a perseguir o jogador. Seus raios tiram vida com invencibilidade; R recomeça.',
+    scenario:
+      'Desvie com as setas e atire com Espaço. Ao levar dano, o inimigo passa a perseguir o jogador. Seus raios tiram vida com invencibilidade; R recomeça.',
+    interactions: ['arrows', 'space'],
+  },
+  {
+    key: 'game-2d:Tela que acompanha a janela',
+    name: 'Tela que acompanha a janela',
+    experience: 'demo',
+    promise:
+      'Toque ou aperte uma tecla para começar. O personagem pula na borda da tela, que acompanha a janela. Veja o tamanho do jogo e os quadros por segundo.',
+    scenario:
+      'Toque ou aperte uma tecla para começar. O personagem pula na borda da tela, que acompanha a janela. Veja o tamanho do jogo e os quadros por segundo.',
+    interactions: ['space', 'click'],
+  },
+  {
+    key: 'game-2d-advanced:Oficina de animações e som',
+    name: 'Oficina de animações e som',
+    experience: 'demo',
+    promise: 'Experimentar um personagem com folha de animação, fundo e som de arquivo do projeto.',
+    scenario:
+      'Começar, andar com I/J/K/L, acenar no Espaço, ouvir o sino e abrir e fechar a ajuda com H e o botão Continuar.',
+    interactions: ['start', 'space', 'digit-1'],
+  },
+  {
+    key: 'game-2d-advanced:Laboratório de movimento e efeitos',
+    name: 'Laboratório de movimento e efeitos',
+    experience: 'demo',
+    promise: 'Experimentar inércia, seleção de alvos, caminhos, transparência, rastro e ondas.',
+    scenario:
+      'Mover com setas, abrir as ferramentas com H, escolher um efeito, selecionar alvos com 8 ou 9 e clicar neles.',
+    interactions: ['start', 'arrows', 'click'],
+  },
+  {
+    key: 'game-2d-advanced:Mapa do Pinta com escada e paredes',
+    name: 'Mapa do Pinta com escada e paredes',
+    experience: 'demo',
+    promise: 'Explorar um mapa de peças do Pinta com chão, parede, escada e pulo duplo.',
+    scenario: 'Andar com setas, pular com Espaço, pular novamente no ar e subir a escada do mapa.',
+    interactions: ['start', 'arrows', 'space'],
+  },
+  {
+    key: 'game-2d-advanced:Grave e repita a aventura',
+    name: 'Grave e repita a aventura',
+    experience: 'demo',
+    promise: 'Gravar, reproduzir e guardar uma aventura de duas fases com relógio fixo.',
+    scenario:
+      'Gravar com 1, andar e pular, terminar com 2, repetir com 3, guardar com 4, mudar de fase com N e continuar com 5.',
+    interactions: ['start', 'arrows', 'digit-1'],
+  },
+  {
+    key: 'game-2d-advanced:A vila que guarda sua aventura',
+    name: 'A vila que guarda sua aventura',
+    experience: 'demo',
+    promise: 'Guardar e continuar uma vila com amigos, mochila e passagem para outro mapa.',
+    scenario:
+      'Explorar com setas, pegar chave com C, guardar com 1, gastar chave com V e continuar com 2 para recuperar o estado salvo.',
+    interactions: ['start', 'arrows', 'digit-1'],
+  },
+  {
+    key: 'game-2d-advanced:Painel do lutador',
+    name: 'Painel do lutador',
+    experience: 'demo',
+    promise: 'Acompanhar os dados reais da luta e ver o soco com uma folha de animação.',
+    scenario:
+      'Andar e golpear com os controles dos dois jogadores, defender e acompanhar round, vitórias, combinações e especial.',
+    interactions: ['start', 'action-fight', 'arrows'],
+  },
+  {
+    key: 'game-2d-advanced:Troque a posição das torres',
+    name: 'Troque a posição das torres',
+    experience: 'demo',
+    promise: 'Desmontar torres durante as ondas e liberar seus lugares para uma nova defesa.',
+    scenario:
+      'Comprar uma torre num lugar marcado, segurar Shift e clicar nela para desmontar, recuperar 25 moedas e construir no lugar liberado.',
+    interactions: ['start', 'click'],
+  },
+  {
+    key: 'game-2d-advanced:Peças e cartas na mesa',
+    name: 'Peças e cartas na mesa',
+    experience: 'demo',
+    promise: 'Marcar uma grade e consultar ou trocar a carta do topo de uma pilha.',
+    scenario:
+      'Marcar casas com o mouse e ver o contador, virar a carta com Espaço e trocar a carta com Enter.',
+    interactions: ['start', 'click', 'space'],
+  },
+  {
+    key: 'game-2d-advanced:O gramado das criaturas',
+    name: 'O gramado das criaturas',
+    experience: 'demo',
+    promise: 'Encontrar criaturas em peças de grama e consultar o time e os níveis.',
+    scenario:
+      'Andar na grama com setas, entrar num encontro e consultar o time e os níveis durante a exploração.',
+    interactions: ['start', 'arrows', 'digit-1'],
+  },
+  {
+    key: 'game-2d-advanced:Uma pista de cópias em movimento',
+    name: 'Uma pista de cópias em movimento',
+    experience: 'demo',
+    promise:
+      'Percorrer uma pista com cópias que se movem lateralmente e são coletadas individualmente.',
+    scenario:
+      'Começar, mover com setas ou arrastar até os objetos e ver cada cópia coletada sair da pista e aumentar o contador.',
+    interactions: ['start', 'arrows', 'drag'],
   },
 ] as const satisfies readonly ExampleQAContract[]

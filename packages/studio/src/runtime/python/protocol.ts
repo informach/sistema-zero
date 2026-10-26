@@ -6,6 +6,10 @@ import type {
   StudioPythonActivity,
   StudioPythonActivityFeedback,
 } from '@sistemazero/core/studio/python-activity'
+import type {
+  StudioPythonMissionObservation,
+  StudioPythonMissionProbe,
+} from '@sistemazero/core/studio/python-mission-observation'
 
 /** Temporary execution filesystem. It never represents a persistence command. */
 export interface PythonExecutionSnapshot {
@@ -24,6 +28,11 @@ export interface PythonExecutionSnapshot {
     sha256: string
     bytes: Uint8Array<ArrayBuffer>
   }[]
+  /**
+   * Files the program saved in earlier runs (savedFiles.ts). Not part of the program: they never
+   * change the revision, and a project file with the same path wins.
+   */
+  saved?: { path: string; bytes: Uint8Array<ArrayBuffer> }[]
 }
 
 export type PythonConsoleStream = 'stdout' | 'stderr'
@@ -46,16 +55,39 @@ export const PYTHON_CONSOLE_LIMITS = Object.freeze({
 })
 
 export type PythonWorkerCommand =
-  | { type: 'prepare'; snapshot: PythonExecutionSnapshot; activity?: StudioPythonActivity }
+  | {
+      type: 'prepare'
+      snapshot: PythonExecutionSnapshot
+      activity?: StudioPythonActivity
+      mission?: true
+    }
+  | { type: 'mission-observe'; requestId: string; probe: StudioPythonMissionProbe }
   | { type: 'activity-check'; requestId: string }
   | { type: 'run'; requestId: string }
   | { type: 'evaluate'; requestId: string; source: string }
   | { type: 'input'; requestId: string; response: { kind: 'line'; text: string } | { kind: 'eof' } }
-  | { type: 'graphics-response'; requestId: string; response: string }
+  | {
+      type: 'graphics-response'
+      requestId: string
+      response: string
+      /** Pixels of a Pygame Zero vector image (`images.x.get_at` on an SVG), transferred. */
+      bytes?: Uint8Array<ArrayBuffer>
+    }
   | { type: 'audio-response'; requestId: string; response: string }
+  /** Before stopping: send the saved files still waiting in the worker's queue. */
+  | { type: 'flush-saved' }
+
+/** A graphics reply: text, or text with bytes (the pixels of a Pygame Zero vector image). */
+export type PythonGraphicsReply = string | { text: string; bytes: Uint8Array<ArrayBuffer> }
+export const PYTHON_GRAPHICS_REPLY_LIMITS = Object.freeze({
+  textChars: 128_000,
+  /** A 4096 × 4096 RGBA image. */
+  bytes: 64 * 1024 * 1024,
+})
 
 /** Worker output is always untrusted at the supervisor boundary, including these events. */
 export type PythonWorkerEvent =
+  | { type: 'mission-result'; requestId: string; observation: StudioPythonMissionObservation }
   | { type: 'booted'; pythonVersion: string; pyodideVersion: string }
   | { type: 'prepared' }
   | { type: 'activity-result'; requestId: string; feedback: StudioPythonActivityFeedback }
@@ -64,6 +96,13 @@ export type PythonWorkerEvent =
   | { type: 'result'; requestId: string; ok: boolean; text: string; traceback?: string }
   | { type: 'failed'; message: string }
   | { type: 'audio'; requestId: string; request: string }
+  /**
+   * A file the program saved; the host keeps it with the project (savedFiles.ts). A deleted
+   * file comes with bytes null, and the host forgets it.
+   */
+  | { type: 'saved-file'; path: string; bytes: Uint8Array<ArrayBuffer> | null }
+  /** Every saved file waiting in the queue has been sent. */
+  | { type: 'saved-flushed' }
   | {
       type: 'graphics'
       requestId: string

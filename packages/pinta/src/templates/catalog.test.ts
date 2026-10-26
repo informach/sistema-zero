@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test'
-import { sanitizePintaAsset } from '../core/project'
+import { isTileLayer, sanitizePintaAsset } from '../core/project'
 import { findTemplate, PINTA_TEMPLATES } from './catalog'
 
 describe('catálogo de modelos prontos', () => {
@@ -40,7 +40,7 @@ describe('catálogo de modelos prontos', () => {
     // o tilemap referencia ESTE tileset (id casado no build)
     expect(tilemap.tilesetId).toBe(tileset.id)
     const maxIndex = tileset.tiles.length - 1
-    for (const layer of tilemap.layers) {
+    for (const layer of tilemap.layers.filter(isTileLayer)) {
       for (const cell of layer.cells) {
         expect(cell).toBeLessThanOrEqual(maxIndex)
       }

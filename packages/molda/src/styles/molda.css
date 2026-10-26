@@ -1232,6 +1232,11 @@
   .mld-disclosure[open] {
     padding-bottom: 8px;
   }
+  .mld-disclosure.mld-palette-disclosure,
+  .mld-disclosure.mld-palette-disclosure[open] {
+    border: 0;
+    padding-bottom: 0;
+  }
   /* A régua do tempo: trilho fino, o andado no acento e a bolinha com o anel branco. */
   .mld-scrubber {
     width: 100%;
@@ -2008,6 +2013,7 @@
   --mld-shape-wedge: var(--sz-kids-rosa-funda, oklch(0.6 0.19 356));
   --mld-shape-cylinder: var(--sz-kids-laranja-texto, oklch(0.6 0.15 55));
   --mld-shape-sphere: var(--sz-kids-verde-profundo, oklch(0.55 0.15 152));
+  --mld-shape-torus: var(--sz-kids-roxo, oklch(0.58 0.16 295));
   --mld-shape-special: var(--sz-kids-roxo, #8b5cf6);
   --mld-shape-group: var(--sz-kids-tinta-suave, #5c6b85);
   /* Os fundos cheios da lista de peças: os mesmos nos dois temas, com o ícone branco. */
@@ -2015,6 +2021,7 @@
   --mld-fill-wedge: var(--sz-kids-rosa-funda, oklch(0.6 0.19 356));
   --mld-fill-cylinder: var(--sz-kids-laranja-texto, oklch(0.6 0.15 55));
   --mld-fill-sphere: var(--sz-kids-verde-profundo, oklch(0.55 0.15 152));
+  --mld-fill-torus: var(--sz-kids-roxo, oklch(0.58 0.16 295));
   --mld-fill-special: var(--sz-kids-roxo, #8b5cf6);
   --mld-fill-group: var(--sz-kids-tinta-suave, #5c6b85);
   --mld-stage-shadow: 0 10px 28px -14px color-mix(in oklab, var(--color-mld-text) 45%, transparent);
@@ -2061,6 +2068,7 @@
   --mld-shape-wedge: var(--sz-kids-rosa-viva, oklch(0.75 0.16 356));
   --mld-shape-cylinder: var(--sz-kids-laranja-viva, oklch(0.8 0.15 70));
   --mld-shape-sphere: var(--sz-kids-verde-vivo, oklch(0.78 0.15 152));
+  --mld-shape-torus: oklch(0.76 0.14 295);
   --mld-shape-special: oklch(0.76 0.14 295);
   --mld-shape-group: var(--sz-kids-navy-tinta-suave, oklch(0.72 0.015 250));
   --mld-stage-shadow: 0 10px 28px -14px oklch(0 0 0 / 0.7);
@@ -2644,6 +2652,12 @@
   background: var(--mld-pivot-bg, #f2eafc);
   color: var(--mld-pivot-text, #8b3fd9);
 }
+[data-molda-theme] .mld-pivot-controls .mld-component-help {
+  margin-right: 0;
+}
+[data-molda-theme] .mld-pivot-controls .mld-piece-coordinates [data-pivot-active="true"] {
+  margin-inline: 0;
+}
 [data-molda-theme] .mld-piece-coordinates [data-pivot-active="true"] legend {
   color: var(--mld-pivot-text);
 }
@@ -3138,8 +3152,8 @@
 }
 [data-molda-theme] .mld-piece-heading {
   display: flex;
-  flex-wrap: wrap;
-  align-items: center;
+  flex-direction: column;
+  align-items: stretch;
   gap: 8px;
 }
 @media (pointer: coarse) {

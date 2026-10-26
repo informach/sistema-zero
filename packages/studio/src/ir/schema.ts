@@ -47,6 +47,11 @@ import {
   gameKitCampaignStatementSchemas,
 } from '../official-extensions/game-2d-advanced/campaignIR'
 import {
+  GAME_KIT_DRAWING_STATEMENT_TYPES,
+  type GameKitDrawingStatement,
+  gameKitDrawingSchemas,
+} from '../official-extensions/game-2d-advanced/drawingIR'
+import {
   type GameKitUiFontStatement,
   gameKitUiFontStatementSchema,
 } from '../official-extensions/game-2d-advanced/uiFontCodec'
@@ -56,6 +61,25 @@ import {
   platformGameThreeDExpressionSchemas,
   platformGameThreeDStatementSchemas,
 } from '../official-extensions/game-3d/platformIR'
+import {
+  G3K_GAMEPLAY_STATEMENT_TYPES,
+  type GameKit3DGameplayExpression,
+  type GameKit3DGameplayStatement,
+  gameKit3DGameplayExpressionSchemas,
+  gameKit3DGameplayStatementSchemas,
+} from '../official-extensions/game-3d-advanced/gameplayIR'
+import {
+  G3K_MODEL_STATEMENT_TYPES,
+  type GameKit3DModelStatement,
+  gameKit3DModelStatementSchemas,
+} from '../official-extensions/game-3d-advanced/modelIR'
+import {
+  type GameRulesExpression,
+  type GameRulesStatement,
+  gameRulesExpressionSchemas,
+  gameRulesStatementSchemas,
+  gameRulesStatementTypesFor,
+} from '../official-extensions/game3dRules/ir'
 import { PERSISTENT_EXTENSION_STATEMENT_TYPES } from '../official-extensions/persistentResourceContract'
 import {
   type SceneExpression,
@@ -63,11 +87,17 @@ import {
   sceneExpressionSchemas,
   sceneStatementSchemas,
 } from '../official-extensions/scene-2d/ir'
+import {
+  W3D_NEW_STATEMENT_TYPES,
+  type World3DNewStatement,
+  world3DNewStatementSchemas,
+} from '../official-extensions/world-3d/worldIR'
 import { CANVAS3D_AUTO_ADDON_MODULE, isCanvas3DAddonImportCanonical } from '../three/canvas3dAddons'
 import {
   isCanvas3DResourceCreatorExpression,
   isCanvas3DResourceCreatorStatement,
 } from '../three/canvas3dContract'
+import { FULLSCREEN_GAME3D_KITS, type FullscreenGame3DKit } from '../three/fullscreenKits'
 import {
   GAME3D_ACTION_CONTEXT_STATEMENT_TYPES,
   GAME3D_RUNNING_CONTEXT_STATEMENT_TYPES,
@@ -75,13 +105,13 @@ import {
 } from '../three/game3dContract'
 import { runtimeProvidedCanvasContexts } from './canvasContexts'
 import {
-  isEventStatement,
   isLegacyLoadEvent,
   isLifecycleRootAllowed,
   isLoopStatement,
   isStartOnlyStatement,
   LEGACY_START_WRAPPER_TYPES,
   type LifecycleArea,
+  startsEventBody,
   validateLifecycleSemantics,
 } from './lifecycle'
 import { cssCommentRejectionReason, cssSelectorRejectionReason } from './outputSafety'
@@ -307,14 +337,16 @@ export type JSExpr =
   | (JSExprCommon & { type: 'g3d:collides'; aVar: string; bVar: string })
   | (JSExprCommon & { type: 'g3d:hitAny'; objVar: string; groupVar: string })
   | PlatformGameThreeDExpr
+  // Regras de jogo 3D (pontos, tempo, vida, sorteio): um membro por regra nos 3 prefixos.
+  | GameRulesExpression
+  // Jogo 3D Avançado, lote 12 (mochila, progresso guardado, fase): `game-3d-advanced/gameplayIR.ts`.
+  | GameKit3DGameplayExpression
   // Game 3D — Kit Travessia: bateu num veículo? e a linha (pontuação) atual.
   | (JSExprCommon & { type: 'g3d:crosserHit'; objVar: string; worldVar: string })
   | (JSExprCommon & { type: 'g3d:crosserRow'; objVar: string })
   // Game 3D — genérico: objeto encosta em algum de um grupo (caixa real Box3).
-  | (JSExprCommon & { type: 'g3d:touchesBox'; objVar: string; groupVar: string })
   // Game 3D — Corrida/genérico: distância, proximidade, bateu num rival?, voltas.
   | (JSExprCommon & { type: 'g3d:distanceTo'; aVar: string; bVar: string })
-  | (JSExprCommon & { type: 'g3d:countSwarm'; swarmVar: string })
   | (JSExprCommon & { type: 'g3d:countGroup'; groupVar: string })
   | (JSExprCommon & { type: 'g3d:isNear'; aVar: string; bVar: string; dist: number | JSExpr })
   | (JSExprCommon & { type: 'g3d:raceHit'; objVar: string; worldVar: string })
@@ -504,9 +536,6 @@ export type JSExpr =
   | (JSExprCommon & { type: 'g3k:onGround'; charVar: string })
   | (JSExprCommon & { type: 'g3k:velocityOf'; charVar: string; axis: 'x' | 'y' | 'z' })
   | (JSExprCommon & { type: 'g3k:distanceBetween'; aVar: string; bVar: string })
-  | (JSExprCommon & { type: 'g3k:randomBetween'; from: number | JSExpr; to: number | JSExpr })
-  | (JSExprCommon & { type: 'g3k:randomChance'; percent: number | JSExpr })
-  | (JSExprCommon & { type: 'g3k:timeLeft' })
   | (JSExprCommon & { type: 'g3k:maxHealthOf'; charVar: string })
   | (JSExprCommon & { type: 'g3k:stateOf'; charVar: string })
   // Mira/clique no mundo: mouse sobre a entidade (bool) e ponto do chão (núm).
@@ -515,9 +544,8 @@ export type JSExpr =
   // Mundo 3D (extensão world-3d) — valores: mundo/terreno, carrinho e teclas.
   | (JSExprCommon & { type: 'w3d:worldSize' })
   | (JSExprCommon & { type: 'w3d:groundHeight'; x: number | JSExpr; z: number | JSExpr })
-  | (JSExprCommon & { type: 'w3d:carPos'; axis: 'x' | 'y' | 'z' })
   | (JSExprCommon & { type: 'w3d:carSpeed' })
-  | (JSExprCommon & { type: 'w3d:personPos'; axis: 'x' | 'y' | 'z' })
+  | (JSExprCommon & { type: 'w3d:playerPos'; axis: 'x' | 'y' | 'z' })
   | (JSExprCommon & { type: 'w3d:isDriving' })
   | (JSExprCommon & { type: 'w3d:coinCount' })
   | (JSExprCommon & { type: 'w3d:hasAchievement'; name: string })
@@ -824,6 +852,8 @@ export const JSExprSchema: z.ZodType<JSExpr> = z.lazy(() =>
     z.object({ type: z.literal('g2d:bananaHitCity'), cityVar: irText(), ...idField }),
     z.object({ type: z.literal('g3d:keyDown'), key: irText(), ...idField }),
     ...platformGameThreeDExpressionSchemas(irText, idField),
+    ...gameRulesExpressionSchemas(JSExprSchema, irText, idField),
+    ...gameKit3DGameplayExpressionSchemas(JSExprSchema, irText, idField),
     z.object({ type: z.literal('g3d:collides'), aVar: irText(), bVar: irText(), ...idField }),
     z.object({ type: z.literal('g3d:hitAny'), objVar: irText(), groupVar: irText(), ...idField }),
     z.object({
@@ -833,14 +863,7 @@ export const JSExprSchema: z.ZodType<JSExpr> = z.lazy(() =>
       ...idField,
     }),
     z.object({ type: z.literal('g3d:crosserRow'), objVar: irText(), ...idField }),
-    z.object({
-      type: z.literal('g3d:touchesBox'),
-      objVar: irText(),
-      groupVar: irText(),
-      ...idField,
-    }),
     z.object({ type: z.literal('g3d:distanceTo'), aVar: irText(), bVar: irText(), ...idField }),
-    z.object({ type: z.literal('g3d:countSwarm'), swarmVar: irText(), ...idField }),
     z.object({ type: z.literal('g3d:countGroup'), groupVar: irText(), ...idField }),
     z.object({
       type: z.literal('g3d:isNear'),
@@ -1075,9 +1098,8 @@ export const JSExprSchema: z.ZodType<JSExpr> = z.lazy(() =>
       z: z.union([JSExprSchema, z.number()]),
       ...idField,
     }),
-    z.object({ type: z.literal('w3d:carPos'), axis: z.enum(['x', 'y', 'z']), ...idField }),
     z.object({ type: z.literal('w3d:carSpeed'), ...idField }),
-    z.object({ type: z.literal('w3d:personPos'), axis: z.enum(['x', 'y', 'z']), ...idField }),
+    z.object({ type: z.literal('w3d:playerPos'), axis: z.enum(['x', 'y', 'z']), ...idField }),
     z.object({ type: z.literal('w3d:isDriving'), ...idField }),
     z.object({ type: z.literal('w3d:coinCount'), ...idField }),
     z.object({ type: z.literal('w3d:hasAchievement'), name: irText(), ...idField }),
@@ -1124,18 +1146,6 @@ export const JSExprSchema: z.ZodType<JSExpr> = z.lazy(() =>
       axis: z.enum(['x', 'y', 'z']),
       ...idField,
     }),
-    z.object({
-      type: z.literal('g3k:randomBetween'),
-      from: z.union([JSExprSchema, z.number()]),
-      to: z.union([JSExprSchema, z.number()]),
-      ...idField,
-    }),
-    z.object({
-      type: z.literal('g3k:randomChance'),
-      percent: z.union([JSExprSchema, z.number()]),
-      ...idField,
-    }),
-    z.object({ type: z.literal('g3k:timeLeft'), ...idField }),
     z.object({
       type: z.literal('g3k:distanceBetween'),
       aVar: irText(),
@@ -1615,7 +1625,7 @@ const cssSelectorText = () =>
 /**
  * Uma chave `{`/`}` em PROFUNDIDADE 0 (fora de aspas e de comentários) rompe a
  * estrutura `selector { … }` e é a vetor de injeção. DENTRO de uma string
- * (`content:"a{b}c"`) ou de um comentário (`/* { *​/`) a chave faz parte do valor
+ * (`content:"a{b}c"`) ou de um comentário (`/* { *�/`) a chave faz parte do valor
  * e é legítima. Esta máquina de estados (igual à de `generators/css.ts` e à do
  * parser) devolve `true` quando NÃO há chave solta em profundidade 0.
  */
@@ -3074,7 +3084,12 @@ export type JSStatement =
   | (JSStatementCommon & { type: 'g2d:drawAimReadout'; ctxVar: string })
   // ---- Game 3D (extensão game-3d, Three.js via window.SZGame3D) ----
   | (JSStatementCommon & { type: 'g3d:createScene'; canvasId: string; varName: string })
-  | (JSStatementCommon & { type: 'g3d:createFullscreenScene'; varName: string; bg: string })
+  | (JSStatementCommon & {
+      type: 'g3d:createFullscreenScene'
+      varName: string
+      bg: string
+      kit?: FullscreenGame3DKit
+    })
   | (JSStatementCommon & { type: 'g3d:setBackground'; worldVar: string; color: string })
   | (JSStatementCommon & {
       type: 'g3d:setCameraPosition'
@@ -3134,10 +3149,7 @@ export type JSStatement =
   | (JSStatementCommon & { type: 'g3d:applyGravity'; objVar: string; groundVar: string })
   | (JSStatementCommon & { type: 'g3d:controlWithKeys'; objVar: string; speed: number | JSExpr })
   | (JSStatementCommon & { type: 'g3d:setScale'; objVar: string; factor: JSExpr })
-  // Game 3D — câmera segue um objeto (mantém o enquadramento atual).
-  | (JSStatementCommon & { type: 'g3d:cameraFollow'; worldVar: string; objVar: string })
-  // Game 3D — ⏱️ Tempo e repetição (genéricos): rodam DENTRO do "A cada quadro 3D".
-  | (JSStatementCommon & { type: 'g3d:everyFrames'; n: number | JSExpr; body: JSStatement[] })
+  // Game 3D — ⏱️ "A cada N segundos": raiz própria em 🔁 (a câmera virou `g3d:cameraMode`).
   | (JSStatementCommon & { type: 'g3d:everySeconds'; secs: number | JSExpr; body: JSStatement[] })
   // Game 3D — 📦 Grupos (genéricos): mexer com uma LISTA de objetos.
   | (JSStatementCommon & { type: 'g3d:createGroup'; varName: string })
@@ -3158,14 +3170,13 @@ export type JSStatement =
     })
   | (JSStatementCommon & { type: 'g3d:removeFromGroup'; groupVar: string; objVar: string })
   | (JSStatementCommon & { type: 'g3d:clearGroup'; groupVar: string })
-  // Game 3D — Kit "Desvie": soltar 1 inimigo + fim de jogo (parar a cena).
+  // Game 3D — Kit "Desvie": soltar 1 inimigo (o fim de jogo virou a regra `g3d:gameOver`).
   | (JSStatementCommon & {
       type: 'g3d:spawnEnemy'
       worldVar: string
       groupVar: string
       speed: number | JSExpr
     })
-  | (JSStatementCommon & { type: 'g3d:stop'; worldVar: string })
   // ---- Game 3D — Kit Travessia (atravessar a rua, mundo em grade z-up) ----
   | (JSStatementCommon & { type: 'g3d:createCrossingScene'; canvasId: string; varName: string })
   | (JSStatementCommon & {
@@ -3192,7 +3203,6 @@ export type JSStatement =
   | (JSStatementCommon & { type: 'g3d:generateRows'; worldVar: string; count: number | JSExpr })
   | (JSStatementCommon & { type: 'g3d:moveTraffic'; worldVar: string })
   // ---- Game 3D — primitivas GENÉRICAS de grade/isométrico (fora do kit, p/ outros jogos) ----
-  | (JSStatementCommon & { type: 'g3d:isometricCamera'; worldVar: string; followVar: string })
   | (JSStatementCommon & { type: 'g3d:gridStep'; objVar: string })
   | (JSStatementCommon & { type: 'g3d:gridMove'; objVar: string; direction: string })
   | (JSStatementCommon & {
@@ -3202,8 +3212,7 @@ export type JSStatement =
       min: number | JSExpr
       max: number | JSExpr
     })
-  // ---- Game 3D — câmera aérea + movimento circular (genéricos) e Kit Corrida ----
-  | (JSStatementCommon & { type: 'g3d:topCamera'; worldVar: string; followVar: string })
+  // ---- Game 3D — movimento circular (genérico) e Kit Corrida ----
   | (JSStatementCommon & {
       type: 'g3d:moveInCircle'
       objVar: string
@@ -3282,19 +3291,15 @@ export type JSStatement =
   // Os membros vivem em `official-extensions/game-3d/platformIR.ts`, ao lado do
   // zod e do codec do lote: é o que mantém esta fachada sob o teto de linhas.
   | PlatformGameThreeDStatement
-  // ---- Game 3D — câmeras vivas (1ª pessoa, orbital, 3ª pessoa, olhar, FOV) ----
-  | (JSStatementCommon & {
-      type: 'g3d:fpsCamera' | 'g3d:orbitCamera'
-      worldVar: string
-      objVar: string
-    })
-  | (JSStatementCommon & {
-      type: 'g3d:thirdPersonCamera'
-      worldVar: string
-      objVar: string
-      dist: number | JSExpr
-      height: number | JSExpr
-    })
+  // ---- Regras de jogo 3D (placar, vida, telas, tempo…): `official-extensions/game3dRules/ir.ts` ----
+  | GameRulesStatement
+  // ---- Mundo 3D, lote 10 (coletáveis, tirar, mochila, Molda): `world-3d/worldIR.ts` ----
+  | World3DNewStatement
+  // ---- Jogo 3D Avançado, animação do modelo (lote 11): `game-3d-advanced/modelIR.ts` ----
+  | GameKit3DModelStatement
+  // ---- Jogo 3D Avançado, lote 12 (patrulha, mochila, progresso, fases): `gameplayIR.ts` ----
+  | GameKit3DGameplayStatement
+  // ---- Game 3D — câmera: olhar e FOV (o MODO mora em platformIR.ts) ----
   | (JSStatementCommon & { type: 'g3d:cameraLookAt'; worldVar: string; objVar: string })
   | (JSStatementCommon & { type: 'g3d:setFOV'; worldVar: string; deg: number | JSExpr })
   // ---- Game 3D — formas, materiais, texturas, modelo (Fase 6) ----
@@ -3334,7 +3339,13 @@ export type JSStatement =
   | (JSStatementCommon & { type: 'g3d:setColor'; objVar: string; color: string })
   | (JSStatementCommon & { type: 'g3d:setOpacity'; objVar: string; opacity: number | JSExpr })
   | (JSStatementCommon & { type: 'g3d:setMaterial'; objVar: string; kind: string })
-  | (JSStatementCommon & { type: 'g3d:setTexture'; objVar: string; asset: string })
+  | (JSStatementCommon & {
+      type: 'g3d:setTexture'
+      objVar: string
+      asset: string
+      /** Quantas vezes a imagem se repete em cada lado; ausente = 1. */
+      repeat?: number | JSExpr
+    })
   | (JSStatementCommon & { type: 'g3d:setVisible'; objVar: string; mode: string })
   | (JSStatementCommon & { type: 'g3d:removeObject'; worldVar: string; objVar: string })
   | (JSStatementCommon & { type: 'g3d:addToModel'; modelVar: string; partVar: string })
@@ -3359,6 +3370,8 @@ export type JSStatement =
       x: number | JSExpr
       y: number | JSExpr
       z: number | JSExpr
+      /** Só presente quando a luz projeta sombra (uma por cena; o padrão é sem). */
+      shadow?: true
     })
   | (JSStatementCommon & {
       type: 'g3d:setFog'
@@ -3369,26 +3382,18 @@ export type JSStatement =
     })
   | (JSStatementCommon & { type: 'g3d:setSky'; worldVar: string; top: string; bottom: string })
   | (JSStatementCommon & { type: 'g3d:setShadows'; worldVar: string; mode: string })
-  // ---- Game 3D — enxames & som (Fase 8) ----
-  | (JSStatementCommon & { type: 'g3d:createSwarm'; varName: string; worldVar: string })
+  // ---- Game 3D — cópias de um molde num GRUPO & som (Fase 8) ----
   | (JSStatementCommon & {
-      type: 'g3d:spawnInSwarm'
-      swarmVar: string
+      type: 'g3d:spawnCopy'
+      groupVar: string
       originalVar: string
       x: number | JSExpr
       y: number | JSExpr
       z: number | JSExpr
     })
   | (JSStatementCommon & {
-      type: 'g3d:forEachInSwarm'
-      swarmVar: string
-      itemName: string
-      body: JSStatement[]
-    })
-  | (JSStatementCommon & { type: 'g3d:removeFromSwarm'; swarmVar: string; itemVar: string })
-  | (JSStatementCommon & {
-      type: 'g3d:pruneSwarm'
-      swarmVar: string
+      type: 'g3d:pruneArea'
+      groupVar: string
       axis: string
       min: number | JSExpr
       max: number | JSExpr
@@ -3419,6 +3424,7 @@ export type JSStatement =
   // Moldura da tela (enxergar a área do palco) e contorno das caixas que colidem.
   | (JSStatementCommon & { type: 'gk:stageBorder'; color: string; width: number | JSExpr })
   | GameKitUiFontStatement
+  | GameKitDrawingStatement
   | (JSStatementCommon & { type: 'gk:setBackdrop' | 'gk:drawBackdrop'; image: string })
   | (JSStatementCommon & { type: 'gk:showHitboxes' })
   | (JSStatementCommon & { type: 'gk:start' })
@@ -4512,11 +4518,6 @@ export type JSStatement =
   | (JSStatementCommon & { type: 'g3k:cameraTop'; height: number | JSExpr })
   | (JSStatementCommon & { type: 'g3k:cameraAngle'; az: number | JSExpr; el: number | JSExpr })
   | (JSStatementCommon & { type: 'g3k:cameraDistance'; dist: number | JSExpr })
-  | (JSStatementCommon & {
-      type: 'g3k:cameraShake'
-      strength: number | JSExpr
-      seconds: number | JSExpr
-    })
   | (JSStatementCommon & { type: 'g3k:cameraLens'; fov: number | JSExpr })
   | (JSStatementCommon & { type: 'g3k:cameraLookAt'; charVar: string })
   | (JSStatementCommon & {
@@ -4565,12 +4566,8 @@ export type JSStatement =
   | (JSStatementCommon & { type: 'g3k:setPhysics'; mold: string; kind: string })
   | (JSStatementCommon & { type: 'g3k:playAnim'; charVar: string; clip: string; loop: boolean })
   | (JSStatementCommon & { type: 'g3k:stopAnim'; charVar: string })
-  | (JSStatementCommon & { type: 'g3k:setStateAnim'; mold: string; state: string; clip: string })
   | (JSStatementCommon & { type: 'g3k:playMusic'; name: string })
   | (JSStatementCommon & { type: 'g3k:stopMusic' })
-  | (JSStatementCommon & { type: 'g3k:startTimer'; seconds: number | JSExpr })
-  | (JSStatementCommon & { type: 'g3k:stopTimer' })
-  | (JSStatementCommon & { type: 'g3k:onTimerEnd'; body: JSStatement[] })
   | (JSStatementCommon & {
       type: 'g3k:say'
       charVar: string
@@ -4759,13 +4756,6 @@ export type JSStatement =
   | (JSStatementCommon & { type: 'g3k:burstOn'; effect: string; charVar: string })
   // 🖼️ Telas & HUD (DOM injetado por JS, padrão gk).
   | (JSStatementCommon & {
-      type: 'g3k:setScreenText'
-      screen: string
-      title: ScreenText
-      text: ScreenText
-      button: ScreenText
-    })
-  | (JSStatementCommon & {
       type: 'g3k:createScreen'
       name: string
       title: ScreenText
@@ -4779,13 +4769,10 @@ export type JSStatement =
     })
   | (JSStatementCommon & { type: 'g3k:showScreen'; name: string })
   | (JSStatementCommon & { type: 'g3k:hideScreens' })
-  // `slot`: top-left | top-center | top-right | bottom-left | bottom-right.
-  | (JSStatementCommon & { type: 'g3k:hudText'; slot: string; text: ScreenText })
   // 🚦 Estados do jogo (entrar em 'jogando' fora da pausa RECOMEÇA a arena).
   | (JSStatementCommon & { type: 'g3k:setState'; name: string })
   | (JSStatementCommon & { type: 'g3k:onEnterState'; name: string; body: JSStatement[] })
   | (JSStatementCommon & { type: 'g3k:returnToMenu' })
-  | (JSStatementCommon & { type: 'g3k:endGame' })
   // 📢 Avisos (event bus).
   | (JSStatementCommon & { type: 'g3k:onEvent'; event: string; body: JSStatement[] })
   | (JSStatementCommon & { type: 'g3k:emit'; event: string })
@@ -4821,7 +4808,6 @@ export type JSStatement =
   | (JSStatementCommon & { type: 'w3d:loadSound'; name: string; asset: string })
   | (JSStatementCommon & { type: 'w3d:playSound' | 'w3d:playMusic'; name: string })
   | (JSStatementCommon & { type: 'w3d:stopMusic' })
-  | (JSStatementCommon & { type: 'w3d:hud'; text: number | JSExpr; corner: string })
   | (JSStatementCommon & { type: 'w3d:say'; text: number | JSExpr; secs: number | JSExpr })
   | (JSStatementCommon & {
       type: 'w3d:point'
@@ -4926,6 +4912,8 @@ export type JSStatement =
       z: number | JSExpr
       s: number | JSExpr
       deg: number | JSExpr
+      /** Animação que o modelo toca (ausente/vazio = parado). */
+      clip?: string
     })
   | (JSStatementCommon & {
       type: 'w3d:clearArea'
@@ -5178,11 +5166,6 @@ export type JSStatement =
       text: string
     })
   | (JSStatementCommon & { type: 'w3d:cameraMode'; mode: string })
-  | (JSStatementCommon & {
-      type: 'w3d:cameraShake'
-      force: number | JSExpr
-      secs: number | JSExpr
-    })
   | (JSStatementCommon & { type: 'w3d:effects'; on: boolean; strength: number | JSExpr })
   | (JSStatementCommon & { type: 'w3d:dayNight'; minutes: number | JSExpr })
   | (JSStatementCommon & { type: 'w3d:setTime'; time: string })
@@ -7347,6 +7330,7 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       type: z.literal('g3d:createFullscreenScene'),
       varName: irText(),
       bg: irText(),
+      kit: z.enum(FULLSCREEN_GAME3D_KITS).optional(),
       ...idField,
     }),
     z.object({
@@ -7439,18 +7423,6 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       ...idField,
     }),
     z.object({
-      type: z.literal('g3d:cameraFollow'),
-      worldVar: irText(),
-      objVar: irText(),
-      ...idField,
-    }),
-    z.object({
-      type: z.literal('g3d:everyFrames'),
-      n: z.union([JSExprSchema, z.number()]),
-      body: z.array(JSStatementSchema),
-      ...idField,
-    }),
-    z.object({
       type: z.literal('g3d:everySeconds'),
       secs: z.union([JSExprSchema, z.number()]),
       body: z.array(JSStatementSchema),
@@ -7493,7 +7465,6 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       speed: z.union([JSExprSchema, z.number()]),
       ...idField,
     }),
-    z.object({ type: z.literal('g3d:stop'), worldVar: irText(), ...idField }),
     z.object({
       type: z.literal('g3d:createCrossingScene'),
       canvasId: irText(),
@@ -7548,12 +7519,6 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       ...idField,
     }),
     z.object({ type: z.literal('g3d:moveTraffic'), worldVar: irText(), ...idField }),
-    z.object({
-      type: z.literal('g3d:isometricCamera'),
-      worldVar: irText(),
-      followVar: irText(),
-      ...idField,
-    }),
     z.object({ type: z.literal('g3d:gridStep'), objVar: irText(), ...idField }),
     z.object({
       type: z.literal('g3d:gridMove'),
@@ -7567,12 +7532,6 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       speed: z.union([JSExprSchema, z.number()]),
       min: z.union([JSExprSchema, z.number()]),
       max: z.union([JSExprSchema, z.number()]),
-      ...idField,
-    }),
-    z.object({
-      type: z.literal('g3d:topCamera'),
-      worldVar: irText(),
-      followVar: irText(),
       ...idField,
     }),
     z.object({
@@ -7702,26 +7661,10 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       ...idField,
     }),
     ...platformGameThreeDStatementSchemas(JSExprSchema, JSStatementSchema, irText, idField),
-    z.object({
-      type: z.literal('g3d:fpsCamera'),
-      worldVar: irText(),
-      objVar: irText(),
-      ...idField,
-    }),
-    z.object({
-      type: z.literal('g3d:orbitCamera'),
-      worldVar: irText(),
-      objVar: irText(),
-      ...idField,
-    }),
-    z.object({
-      type: z.literal('g3d:thirdPersonCamera'),
-      worldVar: irText(),
-      objVar: irText(),
-      dist: z.union([JSExprSchema, z.number()]),
-      height: z.union([JSExprSchema, z.number()]),
-      ...idField,
-    }),
+    ...gameRulesStatementSchemas(JSExprSchema, JSStatementSchema, irText, idField),
+    ...world3DNewStatementSchemas(JSExprSchema, JSStatementSchema, irText, idField),
+    ...gameKit3DModelStatementSchemas(JSExprSchema, JSStatementSchema, irText, idField),
+    ...gameKit3DGameplayStatementSchemas(JSExprSchema, JSStatementSchema, irText, idField),
     z.object({
       type: z.literal('g3d:cameraLookAt'),
       worldVar: irText(),
@@ -7784,7 +7727,13 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       ...idField,
     }),
     z.object({ type: z.literal('g3d:setMaterial'), objVar: irText(), kind: irText(), ...idField }),
-    z.object({ type: z.literal('g3d:setTexture'), objVar: irText(), asset: irText(), ...idField }),
+    z.object({
+      type: z.literal('g3d:setTexture'),
+      objVar: irText(),
+      asset: irText(),
+      repeat: z.union([JSExprSchema, z.number()]).optional(),
+      ...idField,
+    }),
     z.object({ type: z.literal('g3d:setVisible'), objVar: irText(), mode: irText(), ...idField }),
     z.object({
       type: z.literal('g3d:removeObject'),
@@ -7820,6 +7769,7 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       x: z.union([JSExprSchema, z.number()]),
       y: z.union([JSExprSchema, z.number()]),
       z: z.union([JSExprSchema, z.number()]),
+      shadow: z.literal(true).optional(),
       ...idField,
     }),
     z.object({
@@ -7839,14 +7789,8 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
     }),
     z.object({ type: z.literal('g3d:setShadows'), worldVar: irText(), mode: irText(), ...idField }),
     z.object({
-      type: z.literal('g3d:createSwarm'),
-      varName: irText(),
-      worldVar: irText(),
-      ...idField,
-    }),
-    z.object({
-      type: z.literal('g3d:spawnInSwarm'),
-      swarmVar: irText(),
+      type: z.literal('g3d:spawnCopy'),
+      groupVar: irText(),
       originalVar: irText(),
       x: z.union([JSExprSchema, z.number()]),
       y: z.union([JSExprSchema, z.number()]),
@@ -7854,21 +7798,8 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       ...idField,
     }),
     z.object({
-      type: z.literal('g3d:forEachInSwarm'),
-      swarmVar: irText(),
-      itemName: irText(),
-      body: z.array(JSStatementSchema),
-      ...idField,
-    }),
-    z.object({
-      type: z.literal('g3d:removeFromSwarm'),
-      swarmVar: irText(),
-      itemVar: irText(),
-      ...idField,
-    }),
-    z.object({
-      type: z.literal('g3d:pruneSwarm'),
-      swarmVar: irText(),
+      type: z.literal('g3d:pruneArea'),
+      groupVar: irText(),
       axis: irText(),
       min: z.union([JSExprSchema, z.number()]),
       max: z.union([JSExprSchema, z.number()]),
@@ -7917,6 +7848,7 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       ...idField,
     }),
     gameKitUiFontStatementSchema(idField),
+    ...gameKitDrawingSchemas(JSExprSchema, idField),
     z.object({ type: z.literal('gk:setBackdrop'), image: irText(), ...idField }),
     z.object({ type: z.literal('gk:drawBackdrop'), image: irText(), ...idField }),
     z.object({ type: z.literal('gk:showHitboxes'), ...idField }),
@@ -9458,12 +9390,6 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       ...idField,
     }),
     z.object({
-      type: z.literal('g3k:cameraShake'),
-      strength: z.union([JSExprSchema, z.number()]),
-      seconds: z.union([JSExprSchema, z.number()]),
-      ...idField,
-    }),
-    z.object({
       type: z.literal('g3k:cameraLens'),
       fov: z.union([JSExprSchema, z.number()]),
       ...idField,
@@ -9558,22 +9484,8 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       ...idField,
     }),
     z.object({ type: z.literal('g3k:stopAnim'), charVar: irText(), ...idField }),
-    z.object({
-      type: z.literal('g3k:setStateAnim'),
-      mold: irText(),
-      state: irText(),
-      clip: irText(),
-      ...idField,
-    }),
     z.object({ type: z.literal('g3k:playMusic'), name: irText(), ...idField }),
     z.object({ type: z.literal('g3k:stopMusic'), ...idField }),
-    z.object({
-      type: z.literal('g3k:startTimer'),
-      seconds: z.union([JSExprSchema, z.number()]),
-      ...idField,
-    }),
-    z.object({ type: z.literal('g3k:stopTimer'), ...idField }),
-    z.object({ type: z.literal('g3k:onTimerEnd'), body: z.array(JSStatementSchema), ...idField }),
     z.object({
       type: z.literal('g3k:say'),
       charVar: irText(),
@@ -9824,14 +9736,6 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       ...idField,
     }),
     z.object({
-      type: z.literal('g3k:setScreenText'),
-      screen: irText(),
-      title: z.union([JSExprSchema, irText()]),
-      text: z.union([JSExprSchema, irText()]),
-      button: z.union([JSExprSchema, irText()]),
-      ...idField,
-    }),
-    z.object({
       type: z.literal('g3k:createScreen'),
       name: irText(),
       title: z.union([JSExprSchema, irText()]),
@@ -9847,12 +9751,6 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
     }),
     z.object({ type: z.literal('g3k:showScreen'), name: irText(), ...idField }),
     z.object({ type: z.literal('g3k:hideScreens'), ...idField }),
-    z.object({
-      type: z.literal('g3k:hudText'),
-      slot: irText(),
-      text: z.union([JSExprSchema, irText()]),
-      ...idField,
-    }),
     z.object({ type: z.literal('g3k:setState'), name: irText(), ...idField }),
     z.object({
       type: z.literal('g3k:onEnterState'),
@@ -9861,7 +9759,6 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       ...idField,
     }),
     z.object({ type: z.literal('g3k:returnToMenu'), ...idField }),
-    z.object({ type: z.literal('g3k:endGame'), ...idField }),
     z.object({
       type: z.literal('g3k:onEvent'),
       event: irText(),
@@ -9925,12 +9822,6 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
     z.object({ type: z.literal('w3d:playSound'), name: irText(), ...idField }),
     z.object({ type: z.literal('w3d:playMusic'), name: irText(), ...idField }),
     z.object({ type: z.literal('w3d:stopMusic'), ...idField }),
-    z.object({
-      type: z.literal('w3d:hud'),
-      text: z.union([JSExprSchema, z.number()]),
-      corner: irText(),
-      ...idField,
-    }),
     z.object({
       type: z.literal('w3d:say'),
       text: z.union([JSExprSchema, z.number()]),
@@ -10079,6 +9970,7 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       z: z.union([JSExprSchema, z.number()]),
       s: z.union([JSExprSchema, z.number()]),
       deg: z.union([JSExprSchema, z.number()]),
+      clip: irText().optional(),
       ...idField,
     }),
     z.object({
@@ -10431,12 +10323,6 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       ...idField,
     }),
     z.object({ type: z.literal('w3d:cameraMode'), mode: irText(), ...idField }),
-    z.object({
-      type: z.literal('w3d:cameraShake'),
-      force: z.union([JSExprSchema, z.number()]),
-      secs: z.union([JSExprSchema, z.number()]),
-      ...idField,
-    }),
     z.object({
       type: z.literal('w3d:effects'),
       on: z.boolean(),
@@ -11150,7 +11036,11 @@ export interface SZIRV2 {
 
 export type SZIRInput = SZIR | SZIRV2
 
-const GK_MAP_VISUAL_STATEMENTS = new Set(['gk:drawBackground', 'gk:drawTilemap'])
+const GK_MAP_VISUAL_STATEMENTS = new Set([
+  'gk:drawBackground',
+  'gk:drawTilemap',
+  ...GAME_KIT_DRAWING_STATEMENT_TYPES,
+])
 
 const G2D_REGISTERED_EVENT_TYPES = new Set([
   ...TEXT_SPRITE_EVENT_TYPES,
@@ -11428,7 +11318,7 @@ function validateLegacyLifecycle(
       const childIsConstructor = statement.type === 'classDecl' && child.path[0] === 'ctorBody'
       const childIsMethod = statement.type === 'classDecl' && child.path[0] === 'methods'
       const startsFunction = statement.type === 'funcDecl' || childIsConstructor || childIsMethod
-      const startsEvent = isEventStatement(statement)
+      const startsEvent = startsEventBody(statement)
       const startsActionBoundary = startsFunction || startsEvent
       const childInsideRunningContext =
         childInsideLoop ||
@@ -12083,8 +11973,6 @@ export const G3D_STATEMENT_TYPES = new Set([
   'g3d:applyGravity',
   'g3d:controlWithKeys',
   'g3d:setScale',
-  'g3d:cameraFollow',
-  'g3d:everyFrames',
   'g3d:everySeconds',
   'g3d:createGroup',
   'g3d:updateGroup',
@@ -12094,7 +11982,6 @@ export const G3D_STATEMENT_TYPES = new Set([
   'g3d:removeFromGroup',
   'g3d:clearGroup',
   'g3d:spawnEnemy',
-  'g3d:stop',
   'g3d:createCrossingScene',
   'g3d:createCrosser',
   'g3d:crosserMove',
@@ -12104,11 +11991,9 @@ export const G3D_STATEMENT_TYPES = new Set([
   'g3d:addRow',
   'g3d:generateRows',
   'g3d:moveTraffic',
-  'g3d:isometricCamera',
   'g3d:gridStep',
   'g3d:gridMove',
   'g3d:moveAcross',
-  'g3d:topCamera',
   'g3d:moveInCircle',
   'g3d:createRaceScene',
   'g3d:createRaceTrack',
@@ -12147,9 +12032,8 @@ export const G3D_STATEMENT_TYPES = new Set([
   'g3d:stage',
   'g3d:stageFrame',
   'g3d:onStage',
-  'g3d:fpsCamera',
-  'g3d:orbitCamera',
-  'g3d:thirdPersonCamera',
+  'g3d:cameraMode',
+  'g3d:cameraDistance',
   'g3d:cameraLookAt',
   'g3d:setFOV',
   'g3d:createCylinder',
@@ -12159,6 +12043,7 @@ export const G3D_STATEMENT_TYPES = new Set([
   'g3d:createModel',
   'g3d:createModelFile',
   'g3d:skyPhoto',
+  'g3d:modelAnimation',
   'g3d:setColor',
   'g3d:setOpacity',
   'g3d:setMaterial',
@@ -12172,11 +12057,8 @@ export const G3D_STATEMENT_TYPES = new Set([
   'g3d:setFog',
   'g3d:setSky',
   'g3d:setShadows',
-  'g3d:createSwarm',
-  'g3d:spawnInSwarm',
-  'g3d:forEachInSwarm',
-  'g3d:removeFromSwarm',
-  'g3d:pruneSwarm',
+  'g3d:spawnCopy',
+  'g3d:pruneArea',
   'g3d:playNote',
   'g3d:playEffect',
   'g3d:loadSound',
@@ -12185,9 +12067,11 @@ export const G3D_STATEMENT_TYPES = new Set([
   'g3d:playMusic',
   'g3d:stopMusic',
   'g3d:setVolume',
+  ...gameRulesStatementTypesFor('g3d'),
 ])
 
 export const GK_STATEMENT_TYPES = new Set([
+  ...GAME_KIT_DRAWING_STATEMENT_TYPES,
   'gk:setup',
   'gk:setupFull',
   'gk:setStageDescription',
@@ -12477,7 +12361,6 @@ export const G3K_STATEMENT_TYPES = new Set([
   'g3k:cameraTop',
   'g3k:cameraAngle',
   'g3k:cameraDistance',
-  'g3k:cameraShake',
   'g3k:cameraLens',
   'g3k:cameraLookAt',
   'g3k:cameraLookAtPoint',
@@ -12497,12 +12380,8 @@ export const G3K_STATEMENT_TYPES = new Set([
   'g3k:setPhysics',
   'g3k:playAnim',
   'g3k:stopAnim',
-  'g3k:setStateAnim',
   'g3k:playMusic',
   'g3k:stopMusic',
-  'g3k:startTimer',
-  'g3k:stopTimer',
-  'g3k:onTimerEnd',
   'g3k:say',
   'g3k:hideSay',
   'g3k:passThrough',
@@ -12544,22 +12423,22 @@ export const G3K_STATEMENT_TYPES = new Set([
   'g3k:defineEffect',
   'g3k:burstAt',
   'g3k:burstOn',
-  'g3k:setScreenText',
   'g3k:createScreen',
   'g3k:addButton',
   'g3k:showScreen',
   'g3k:hideScreens',
-  'g3k:hudText',
   'g3k:setState',
   'g3k:onEnterState',
   'g3k:returnToMenu',
-  'g3k:endGame',
   'g3k:onEvent',
   'g3k:emit',
   'g3k:loadSound',
   'g3k:playSound',
   'g3k:playEffect',
   'g3k:playTone',
+  ...gameRulesStatementTypesFor('g3k'),
+  ...G3K_MODEL_STATEMENT_TYPES,
+  ...G3K_GAMEPLAY_STATEMENT_TYPES,
 ])
 
 /** Statements do Mundo 3D (extensão world-3d) — espelho do Set da g3k. */
@@ -12580,7 +12459,6 @@ export const W3D_STATEMENT_TYPES = new Set([
   'w3d:playSound',
   'w3d:playMusic',
   'w3d:stopMusic',
-  'w3d:hud',
   'w3d:say',
   'w3d:point',
   'w3d:onPoint',
@@ -12600,7 +12478,6 @@ export const W3D_STATEMENT_TYPES = new Set([
   'w3d:bowlingOnStrike',
   'w3d:stack',
   'w3d:cameraMode',
-  'w3d:cameraShake',
   'w3d:grass',
   'w3d:scatter',
   'w3d:scatterModel',
@@ -12684,6 +12561,8 @@ export const W3D_STATEMENT_TYPES = new Set([
   'w3d:wind',
   'w3d:onDayNight',
   'w3d:onUpdate',
+  ...W3D_NEW_STATEMENT_TYPES,
+  ...gameRulesStatementTypesFor('w3d'),
 ])
 
 export function statementIsExtension(stmt: JSStatement, extensionId: string): boolean {

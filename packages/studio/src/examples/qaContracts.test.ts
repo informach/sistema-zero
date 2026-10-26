@@ -73,7 +73,7 @@ beforeAll(() => {
   }
 })
 
-describe('contrato transversal dos 158 exemplos da KitGallery', () => {
+describe('contrato transversal dos 183 exemplos da KitGallery', () => {
   it('catálogo e contratos têm exatamente as mesmas chaves', () => {
     const catalogKeys = catalogEntries()
       .map((entry) => entry.key)
@@ -81,16 +81,21 @@ describe('contrato transversal dos 158 exemplos da KitGallery', () => {
     const contractKeys = EXAMPLE_QA_CONTRACTS.map((contract) => contract.key).sort()
 
     expect(catalogKeys).toEqual(contractKeys)
-    expect(catalogKeys).toHaveLength(158)
-    expect(new Set(catalogKeys).size).toBe(158)
+    expect(catalogKeys).toHaveLength(183)
+    expect(new Set(catalogKeys).size).toBe(183)
   })
 
-  it('mantém a classificação acordada: 136 jogos, 10 demos e 12 explorações', () => {
+  it('mantém a classificação acordada: 142 jogos, 29 demos e 12 explorações', () => {
     // 131 até 13/09/2026: "Chuva de números" e "Quiz de números" entraram como JOGOS.
+    // 136 até 24/10/2026: "Pega-Estrelas" e "Meu herói do Molda" (Jogo 3D, review 3D lote 7).
+    // 138 até 24/10/2026: "Caça às Estrelas" (Mundo 3D, review 3D lote 10).
+    // 139 até 24/10/2026: "Arena dos Cristais" e "Herói do Molda" (Jogo 3D Avançado, lote 12).
+    // 141 até 24/10/2026: "Noite das Fogueiras" (Jogo 3D Avançado, cobertura total dos blocos).
 
     const counts = { game: 0, demo: 0, exploration: 0 }
     for (const contract of EXAMPLE_QA_CONTRACTS) counts[contract.experience] += 1
-    expect(counts).toEqual({ game: 136, demo: 10, exploration: 12 })
+    // Review 2D: nove receitas básicas e dez avançadas são demonstrações.
+    expect(counts).toEqual({ game: 142, demo: 29, exploration: 12 })
   })
 
   const contractsByKey = new Map<string, ExampleQAContract>(

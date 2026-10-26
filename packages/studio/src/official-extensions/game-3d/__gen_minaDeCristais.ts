@@ -21,6 +21,10 @@ import { collectTypes, stripIds } from '../game-3d-advanced/exampleSourceUtils'
  */
 export const MINA_DE_CRISTAIS_SOURCE = `
 const cena = SZGame3D.createFullscreenScene("#0f0a1e");
+SZGame3D.setScreenText("vitoria", "Filão lendário!", "Confira seus pontos no placar.", "Jogar de novo");
+SZGame3D.setScreenText("fim", "A mina fechou...", "Confira seus pontos no placar.", "Tentar novamente");
+SZGame3D.addScore(0);
+SZGame3D.hudText("bottom-center", "Clique nos blocos para cavar. Colete dez cristais.");
 SZGame3D.setSky(cena, "#241a33", "#4c1d95");
 SZGame3D.setFog(cena, "#0f0a1e", 10, 46);
 const chao = SZGame3D.createBlock(cena, { width: 20, height: 1, depth: 20, color: "#1a1226" });
@@ -30,9 +34,9 @@ SZGame3D.setVisible(moldePedra, "hide");
 const moldeCristal = SZGame3D.createBox(cena, { size: 1, color: "#22d3ee" });
 SZGame3D.setMaterial(moldeCristal, "glow");
 SZGame3D.setVisible(moldeCristal, "hide");
-const pedras = SZGame3D.createSwarm(cena);
-const cristais = SZGame3D.createSwarm(cena);
-SZGame3D.isometricCamera(cena, null);
+const pedras = SZGame3D.createGroup();
+const cristais = SZGame3D.createGroup();
+SZGame3D.cameraMode(cena, "isometrica", null);
 let pontos = 0;
 let tempo = 50;
 let rodando = true;
@@ -40,58 +44,55 @@ function cavarChance() {
   return Math.random() < 0.3;
 }
 function encherAMina() {
-  SZGame3D.forEachInSwarm(pedras, (item) => {
-    SZGame3D.removeFromSwarm(pedras, item);
+  SZGame3D.forEachInGroup(pedras, (item) => {
+    SZGame3D.removeFromGroup(pedras, item);
   });
-  SZGame3D.forEachInSwarm(cristais, (item) => {
-    SZGame3D.removeFromSwarm(cristais, item);
+  SZGame3D.forEachInGroup(cristais, (item) => {
+    SZGame3D.removeFromGroup(cristais, item);
   });
   for (let linha = -3; linha < 4; linha++) {
     for (let coluna = -3; coluna < 4; coluna++) {
       if (cavarChance()) {
-        SZGame3D.spawnInSwarm(cristais, moldeCristal, coluna, 0, linha);
+        SZGame3D.spawnCopy(cristais, moldeCristal, coluna, 0, linha);
       } else {
-        SZGame3D.spawnInSwarm(pedras, moldePedra, coluna, 0, linha);
+        SZGame3D.spawnCopy(pedras, moldePedra, coluna, 0, linha);
       }
     }
   }
 }
 function atualizarHud() {
-  document.getElementById("placar").textContent = pontos;
-  document.getElementById("tempo").textContent = tempo;
+  SZGame3D.addScore(pontos - SZGame3D.score());
+  SZGame3D.hudText("top-right", "Tempo: " + tempo);
 }
 function recomecar() {
   encherAMina();
   pontos = 0;
   tempo = 50;
   atualizarHud();
-  document.getElementById("fim")?.classList.remove("visivel");
+
   rodando = true;
 }
 recomecar();
-document.getElementById("retry")?.addEventListener("click", (event) => {
-  recomecar();
-});
-document.addEventListener("click", (event) => {
+
+SZGame3D.onCanvasClick(() => {
   if (rodando) {
     const alvo = SZGame3D.pickAtMouse(cena);
     if (alvo) {
-      let antesC = SZGame3D.countSwarm(cristais);
-      SZGame3D.removeFromSwarm(cristais, alvo);
-      if (SZGame3D.countSwarm(cristais) < antesC) {
+      let antesC = SZGame3D.countGroup(cristais);
+      SZGame3D.removeFromGroup(cristais, alvo);
+      if (SZGame3D.countGroup(cristais) < antesC) {
         pontos = pontos + 1;
         SZGame3D.playEffect("coin");
         atualizarHud();
         if (pontos >= 10) {
           rodando = false;
-          document.getElementById("fim-titulo").textContent = "Filão lendário!";
-          document.getElementById("final-pontos").textContent = pontos;
-          document.getElementById("fim")?.classList.add("visivel");
+                              SZGame3D.addScore(pontos - SZGame3D.score());
+      SZGame3D.endGame("ganhou");
         }
       } else {
-        let antesP = SZGame3D.countSwarm(pedras);
-        SZGame3D.removeFromSwarm(pedras, alvo);
-        if (SZGame3D.countSwarm(pedras) < antesP) {
+        let antesP = SZGame3D.countGroup(pedras);
+        SZGame3D.removeFromGroup(pedras, alvo);
+        if (SZGame3D.countGroup(pedras) < antesP) {
           SZGame3D.playEffect("hit");
         }
       }
@@ -102,134 +103,23 @@ SZGame3D.everySecondsLoop(1, () => {
   if (rodando) {
     tempo = tempo - 1;
     atualizarHud();
-    if (SZGame3D.countSwarm(pedras) + SZGame3D.countSwarm(cristais) < 60) {
+    if (SZGame3D.countGroup(pedras) + SZGame3D.countGroup(cristais) < 60) {
       const coluna = Math.floor(Math.random() * 9) - 4;
       const linha = Math.floor(Math.random() * 9) - 4;
       if (cavarChance()) {
-        SZGame3D.spawnInSwarm(cristais, moldeCristal, coluna, 0, linha);
+        SZGame3D.spawnCopy(cristais, moldeCristal, coluna, 0, linha);
       } else {
-        SZGame3D.spawnInSwarm(pedras, moldePedra, coluna, 0, linha);
+        SZGame3D.spawnCopy(pedras, moldePedra, coluna, 0, linha);
       }
     }
     if (tempo <= 0) {
       rodando = false;
-      document.getElementById("fim-titulo").textContent = "A mina fechou...";
-      document.getElementById("final-pontos").textContent = pontos;
-      document.getElementById("fim")?.classList.add("visivel");
+                  SZGame3D.addScore(pontos - SZGame3D.score());
+      SZGame3D.endGame("perdeu");
     }
   }
 });
 `.trim()
-
-// HUD (placar + tempo + tela de fim) montado com blocos de HTML/CSS/DOM, ligado
-// ao jogo pelos getElementById do SOURCE. Casa os ids que o comportamento toca:
-// placar / tempo / fim / fim-titulo / final-pontos / retry.
-const HTML = [
-  {
-    type: 'element',
-    tag: 'div',
-    id: 'status',
-    children: [
-      { type: 'text', text: 'Cristais: ' },
-      { type: 'element', tag: 'span', id: 'placar', text: '0' },
-      { type: 'text', text: ' de 10    Tempo: ' },
-      { type: 'element', tag: 'span', id: 'tempo', text: '50' },
-      { type: 'text', text: 's' },
-    ],
-  },
-  { type: 'element', tag: 'div', id: 'dica', text: 'Clique nos blocos para cavar!' },
-  {
-    type: 'element',
-    tag: 'div',
-    id: 'fim',
-    children: [
-      {
-        type: 'element',
-        tag: 'div',
-        id: 'fim-caixa',
-        children: [
-          { type: 'element', tag: 'h1', id: 'fim-titulo', text: 'Fim da mina' },
-          {
-            type: 'element',
-            tag: 'p',
-            children: [
-              { type: 'text', text: 'Cristais coletados: ' },
-              { type: 'element', tag: 'span', id: 'final-pontos' },
-            ],
-          },
-          { type: 'element', tag: 'button', id: 'retry', text: 'Minerar de novo' },
-        ],
-      },
-    ],
-  },
-]
-
-const CSS = [
-  { type: 'googleFont', family: 'Press Start 2P' },
-  {
-    selector: 'body',
-    declarations: { margin: '0', overflow: 'hidden', 'font-family': '"Press Start 2P", cursive' },
-  },
-  { selector: 'canvas', declarations: { display: 'block', width: '100vw', height: '100vh' } },
-  {
-    selector: '#status',
-    declarations: {
-      position: 'absolute',
-      top: '20px',
-      left: '20px',
-      'font-size': '0.9em',
-      color: 'white',
-    },
-  },
-  {
-    selector: '#dica',
-    declarations: {
-      position: 'absolute',
-      bottom: '20px',
-      left: '50%',
-      transform: 'translateX(-50%)',
-      color: '#67e8f9',
-      'font-size': '0.7em',
-    },
-  },
-  {
-    selector: '#fim',
-    declarations: {
-      position: 'absolute',
-      top: '0',
-      left: '0',
-      'min-width': '100%',
-      'min-height': '100%',
-      display: 'flex',
-      'align-items': 'center',
-      'justify-content': 'center',
-      visibility: 'hidden',
-    },
-  },
-  { selector: '#fim.visivel', declarations: { visibility: 'visible' } },
-  {
-    selector: '#fim-caixa',
-    declarations: {
-      display: 'flex',
-      'flex-direction': 'column',
-      'align-items': 'center',
-      'background-color': 'white',
-      color: '#0f0a1e',
-      padding: '20px',
-      'text-align': 'center',
-    },
-  },
-  {
-    selector: '#fim-caixa button',
-    declarations: {
-      'background-color': '#22d3ee',
-      color: 'white',
-      padding: '16px 32px',
-      'font-family': 'inherit',
-      cursor: 'pointer',
-    },
-  },
-]
 
 if (import.meta.main) {
   const normalized = normalizeSZIR({
@@ -250,8 +140,8 @@ if (import.meta.main) {
     description:
       'Uma mina isométrica de cristais. Clique nos blocos para cavar: a pedra é entulho, mas os cristais brilhantes valem ponto. Veias novas surgem sozinhas. Colete 10 cristais antes que o tempo acabe!',
     ir: {
-      html: HTML,
-      css: CSS,
+      html: [],
+      css: [],
       extensions: [{ extensionId: 'game-3d' }],
       version: 2,
       behavior,

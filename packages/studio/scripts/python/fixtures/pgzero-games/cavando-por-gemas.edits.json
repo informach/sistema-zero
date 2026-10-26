@@ -1,0 +1,50 @@
+[
+  {
+    "label": "width",
+    "path": {
+      "body": 1,
+      "inputs": [
+        {
+          "name": "value",
+          "index": 0
+        }
+      ]
+    },
+    "codecId": "sz_py_integer",
+    "field": "NUMBER",
+    "before": "800",
+    "after": "810"
+  },
+  {
+    "label": "height",
+    "path": {
+      "body": 2,
+      "inputs": [
+        {
+          "name": "value",
+          "index": 0
+        }
+      ]
+    },
+    "codecId": "sz_py_integer",
+    "field": "NUMBER",
+    "before": "600",
+    "after": "610"
+  },
+  {
+    "label": "title",
+    "path": {
+      "body": 3,
+      "inputs": [
+        {
+          "name": "value",
+          "index": 0
+        }
+      ]
+    },
+    "codecId": "sz_py_text",
+    "field": "TEXT",
+    "before": "Cavando por Gemas",
+    "after": "Cavando por Gemas!"
+  }
+]

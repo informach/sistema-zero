@@ -19,6 +19,9 @@ import {
 import { runConfig, validateProductionRolloutPlan } from './railway-config.mjs'
 
 const shaPattern = /^[a-f0-9]{40}$/
+// Match the canonical per-deployment build/retirement budget. The outer wave
+// remains bounded below the workflow's 180 minutes.
+export const PRODUCTION_APPLICATION_TIMEOUT_MS = 60 * 60 * 1000
 export const productionCiJobs = Object.freeze([
   'ci',
   'desktop-windows',
@@ -198,7 +201,9 @@ export async function runProductionRelease(input, ports) {
     throw new Error('Barreira canônica de produção ausente')
   ports.log({ stage: 'BACKEND_BARRIER_PASSED', publishedVersion: barrier.version })
   const apps = services.filter((name) => !['members', 'auth'].includes(name))
-  const appDeadline = Math.min(deadline, ports.now() + 20 * 60 * 1000)
+  // Queue, build, healthcheck and retirement share this budget, as in staging.
+  // Keep the whole-wave deadline authoritative even after a long backend barrier.
+  const appDeadline = Math.min(deadline, ports.now() + PRODUCTION_APPLICATION_TIMEOUT_MS)
   const deployments = []
   let dispatchFailure
   try {

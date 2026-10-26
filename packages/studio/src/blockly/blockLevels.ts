@@ -1,48 +1,15 @@
 import type { BlockLevel } from '../core/levels'
 import { HTML_ADVANCED_BLOCK_TYPES, HTML_INTERMEDIATE_BLOCK_TYPES } from '../html/catalog'
-import { isSceneNameBlock, sceneTypes } from '../official-extensions/scene-2d/catalog'
+import { GAME_TWO_D_INITIAL_CORE } from '../official-extensions/game-2d/initialCore'
 import { resolveProgrammingBlockLevel } from './programmingContract'
 
 /**
- * Nível de dificuldade POR BLOCO (curadoria da paleta do Estúdio) — a fonte da
- * verdade da progressão. Reforma 2D/3D (07/2026): a escada virou 6 degraus
- * (dificuldade × eixo, na ordem ini-2d < ini-3d < int-2d < int-3d < av-2d <
- * av-3d — a MESMA da jornada do aluno). **Filosofia "kit primeiro, na unha por
- * último" (decisão da usuária 26/07):** iniciante/intermediário criam com os KITS
- * (extensões facilitadoras) + um mínimo de web; o AVANÇADO faz tudo na unha, sem
- * kit (Canvas/HTML/CSS crus).
- * - **Iniciante 2D** = os blocos do Jogo 2D de `INICIANTE_2D_G2D` + o orçamento iniciante de
- *   Programação (`programmingContract.ts`) +
- *   **HTML/CSS ESSENCIAL** (título/parágrafo/imagem/
- *   botão/link/lista/caixa + cor de fundo/texto, tamanho de fonte, padding/margem/
- *   borda — o mínimo pra montar uma telinha). As aulas filtram o subconjunto de
- * - **Iniciante 3D** = Jogo 2D completo + a PORTA DE ENTRADA do 3D: todos os
- *   blocos do Jogo 3D (`sz_g3d_*`). A aula ainda pode restringir por allowBlocks.
- * - **Intermediário 2D** = programação "real" guiada (variáveis avulsas, laços,
- *   funções, getters/setters, matemática básica) + caminho feliz e kits de gênero
- *   do Jogo 2D Avançado + **SVG** (desenhar formas declarando — o primitivo gentil).
- * - **Intermediário 3D** = Mundo 3D (mundo aberto dirigível, blocos "mágicos") e
- *   o Jogo 3D Avançado (`sz_g3k_*`, reclassificado 26/07 — abre no Arquiteto).
- * - **Avançado 2D** = tudo NA UNHA em 2D: **Canvas 2D cru** (`sz_canvas_*` — desenho
- *   imperativo, traçado, transform), **HTML/CSS profundos** (tags semânticas, forms,
- *   flex/grid, animações, transforms, tipografia, media queries, código cru), classes/
- *   OOP, física manual, trigonometria, vetores, e as peças internas de motor.
- * - **Avançado 3D** = a categoria **Canvas 3D INTEIRA** (`sz_t3d_*`, three.js cru — do
- *   primitivo às receitas "mágicas"; reclassificado 26/07 — antes os facilitadores
- *   ficavam no Intermediário 3D).
- *
- * É CUMULATIVO na escada (cada degrau inclui os anteriores — o gate usa
- * `isLevelWithin`; note que os degraus "2D" a partir do int-2d INCLUEM o
- * iniciante-3d abaixo deles: a escada é UMA SÓ, não duas trilhas). Só listamos
- * as EXCEÇÕES ao default iniciante-2d; a completude (todo bloco conhecido está
- * no tier certo) é travada por `blockLevels.test.ts`.
- *
- * ⚠️ Os frames (🗂️ Áreas do projeto) NÃO entram aqui — são sempre visíveis.
- * ⚠️ Adicionou um bloco? `sz_g2d_*` novo fica no iniciante-3d até entrar
- * explicitamente em `INICIANTE_2D_G2D`. Para o core,
- * decida se entra nos conjuntos intermediário/avançado; senão os defaults por
- * prefixo decidem (canvas→av-2d, g3d→ini-3d, gk→int-2d, w3d→int-3d,
- * g3k→int-3d, t3d→av-3d, resto→ini-2d) — o teste de conformidade cobra.
+ * Progressão dos blocos JavaScript. Jogo 2D pertence ao Iniciante 2D;
+ * GAME_TWO_D_INITIAL_CORE é o percurso editorial de entrada (quatro exemplos,
+ * Cadê Todo Mundo? e A Chave do Farol), e as aulas curam a oferta por allowBlocks.
+ * Jogo 3D mantém núcleo iniciante/restante intermediário; Mundo 3D é intermediário
+ * e Jogo 3D Avançado é avançado. Ferramentas de página e Canvas são a etapa direta.
+ * Trocar o nível altera a oferta, nunca o registro de blocos nem os projetos salvos.
  */
 
 const INTERMEDIARIO_2D: ReadonlySet<string> = new Set<string>([
@@ -217,9 +184,7 @@ const AVANCADO_2D: ReadonlySet<string> = new Set<string>([
   'sz_gk_tween_property',
 ])
 
-// Jogo 3D é inteiramente iniciante-3d. A divulgação progressiva é feita pela
-// curadoria de cada aula (`allowBlocks`), portanto nenhum bloco `sz_g3d_*` sobe
-// de nível só por expor ajustes finos ou física.
+// O Jogo 3D tem a escada própria (`INICIANTE_3D_G3D` + prefixo), abaixo.
 const AVANCADO_3D: ReadonlySet<string> = new Set<string>()
 
 // Canvas 3D (three.js cru) é INTEIRAMENTE avançado-3d (reclassificado 26/07 —
@@ -227,75 +192,65 @@ const AVANCADO_3D: ReadonlySet<string> = new Set<string>()
 // conjunto ficou vazio de propósito (nenhum bloco 3D sobe só até o intermediário).
 const INTERMEDIARIO_3D: ReadonlySet<string> = new Set<string>()
 
-// Posição dos kits 3D dirigíveis na escada (decisão da usuária 17/07) — parâmetros
-// de 1 linha p/ ajuste fino futuro.
-const G3D_FLOOR: BlockLevel = 'iniciante-3d'
+// Posição dos kits 3D na escada: uma extensão por degrau (review 3D, 10/2026).
+// Jogo 3D = iniciante-3d só no núcleo (abaixo); o resto do `sz_g3d_*` sobe um degrau.
+const G3D_LEVEL: BlockLevel = 'intermediario-3d'
 const W3D_LEVEL: BlockLevel = 'intermediario-3d'
+const G3K_LEVEL: BlockLevel = 'avancado-3d'
 /**
- * Os blocos do Jogo 2D do PRIMEIRO degrau (`iniciante-2d`); o resto do `sz_g2d_*` é
- * `iniciante-3d`. É régua de NÍVEL, não de acesso: quem dá blocos à criança no Estúdio livre
- * são os cursos concluídos. Até 02/10/2026 este conjunto vinha do "Kit essencial", que saiu.
- * ⚠️ Mexer aqui muda o degrau do bloco nas aulas curadas por nível e no Zappy/Pensa da equipe.
+ * O NÚCLEO do Jogo 3D (`iniciante-3d`): o bastante para um jogo completo de criar,
+ * mover, encostar, multiplicar e terminar. Todo outro `sz_g3d_*` é `intermediario-3d`.
+ * ⚠️ Mexer aqui muda o degrau do bloco nas aulas curadas por nível e no Zappy/Pensa.
  */
-const INICIANTE_2D_G2D: ReadonlySet<string> = new Set<string>([
-  'sz_g2d_setup_stage',
-  'sz_g2d_set_stage_description',
-  'sz_g2d_create_sprite',
-  'sz_g2d_create_image_sprite',
-  'sz_g2d_put_track_sprite',
-  'sz_g2d_create_text_sprite',
-  'sz_g2d_spawn_text_in_group',
-  'sz_g2d_set_sprite_text',
-  'sz_g2d_sprite_text',
-  'sz_g2d_set_text_style',
-  'sz_g2d_scale_text_size',
-  'sz_g2d_set_text_box',
-  'sz_g2d_set_text_image',
-  'sz_g2d_set_size',
-  'sz_g2d_scale_sprite',
-  'sz_g2d_set_sprite_data',
-  'sz_g2d_sprite_data',
-  'sz_g2d_on_sprite_click',
-  'sz_g2d_on_group_click',
-  'sz_g2d_clear',
-  'sz_g2d_shake',
-  'sz_g2d_create_ship',
-  'sz_g2d_starfield',
-  'sz_g2d_spawn_asteroid',
-  'sz_g2d_spawn_asteroid_edge',
-  'sz_g2d_shoot_from',
-  'sz_g2d_explode',
-  'sz_g2d_play_fx',
-  'sz_g2d_arrows_x',
-  'sz_g2d_clamp_to_screen',
-  'sz_g2d_draw_sprite',
-  'sz_g2d_create_group',
-  'sz_g2d_spawn_bullet',
-  'sz_g2d_update_group',
-  'sz_g2d_draw_group',
-  'sz_g2d_prune_offscreen',
-  'sz_g2d_remove_from_group',
-  'sz_g2d_on_key',
-  'sz_g2d_on_group_overlap',
-  'sz_g2d_on_sprite_group_overlap',
-  'sz_g2d_update_each_frame',
-  'sz_g2d_every_frames',
-  'sz_g2d_random_x',
-  'sz_g2d_center_x',
-  'sz_g2d_sprite_y',
-  'sz_g2d_set_health',
-  'sz_g2d_damage_sprite',
-  'sz_g2d_health_depleted',
-  'sz_g2d_draw_sprite_health',
-  'sz_g2d_draw_score',
-  'sz_g2d_set_scene',
-  'sz_g2d_scene_is',
-  'sz_g2d_show_screen',
-  'sz_g2d_restart',
-  ...sceneTypes('g2d', 'begin'),
-  ...sceneTypes('g2d', 'animation'),
+const INICIANTE_3D_G3D: ReadonlySet<string> = new Set<string>([
+  'sz_g3d_create_fullscreen_scene',
+  'sz_g3d_animate',
+  'sz_g3d_sky_photo',
+  'sz_g3d_create_box',
+  'sz_g3d_create_sphere',
+  'sz_g3d_create_block',
+  'sz_g3d_create_model_file',
+  'sz_g3d_set_position',
+  'sz_g3d_set_color',
+  'sz_g3d_remove_object',
+  'sz_g3d_control_keys',
+  'sz_g3d_jump',
+  'sz_g3d_apply_gravity',
+  'sz_g3d_spin',
+  'sz_g3d_key_down',
+  'sz_g3d_collides',
+  'sz_g3d_hit_any',
+  'sz_g3d_create_group',
+  'sz_g3d_spawn_copy',
+  'sz_g3d_update_group_no_gravity',
+  'sz_g3d_prune_offscreen',
+  'sz_g3d_every_seconds',
+  'sz_g3d_play_effect',
+  // O modelo do Molda dança: tocar a animação é núcleo (parar e "terminou?" sobem um degrau).
+  'sz_g3d_play_animation',
+  'sz_g3d_camera_mode',
+  // Regras de jogo (game3dRules): placar, vida, telas, recomeçar, tempo, sorteio e os "Quando…".
+  'sz_g3d_hud_text',
+  'sz_g3d_add_score',
+  'sz_g3d_score',
+  'sz_g3d_set_life',
+  'sz_g3d_hurt',
+  'sz_g3d_on_life_over',
+  'sz_g3d_set_screen_text',
+  'sz_g3d_end_game',
+  'sz_g3d_restart',
+  'sz_g3d_after_seconds',
+  // A contagem que APARECE na tela (o Pega-Estrelas conta 30 s com ela).
+  'sz_g3d_start_timer',
+  'sz_g3d_on_timer_end',
+  'sz_g3d_time_left',
+  'sz_g3d_random_between',
+  'sz_g3d_on_key',
+  'sz_g3d_on_click_object',
+  'sz_g3d_on_canvas_click',
+  'sz_g3d_on_touch_group',
+  'sz_g3d_camera_shake',
 ])
-
 /**
  * Degrau de um bloco pelo `type`. Regras invariantes por prefixo vêm primeiro,
  * seguidas dos sets de exceções e dos demais defaults; todo o resto
@@ -303,9 +258,9 @@ const INICIANTE_2D_G2D: ReadonlySet<string> = new Set<string>([
  */
 export function resolveBlockLevel(type: string): BlockLevel {
   if (type.startsWith('sz_g2d_')) {
-    return INICIANTE_2D_G2D.has(type) || isSceneNameBlock(type) ? 'iniciante-2d' : 'iniciante-3d'
+    return 'iniciante-2d'
   }
-  if (type.startsWith('sz_g3d_')) return G3D_FLOOR
+  if (type.startsWith('sz_g3d_')) return INICIANTE_3D_G3D.has(type) ? 'iniciante-3d' : G3D_LEVEL
   const programmingLevel = resolveProgrammingBlockLevel(type)
   if (programmingLevel) return programmingLevel
   // Canvas 2D "na mão": TODA a categoria (`sz_canvas_*` — desenho imperativo,
@@ -316,15 +271,13 @@ export function resolveBlockLevel(type: string): BlockLevel {
   if (AVANCADO_2D.has(type)) return 'avancado-2d'
   if (INTERMEDIARIO_3D.has(type)) return 'intermediario-3d'
   if (INTERMEDIARIO_2D.has(type)) return 'intermediario-2d'
-  // Jogo 3D é a PORTA DE ENTRADA do 3D: piso iniciante-3d por prefixo — os
-  // extensão inteira cai aqui; a aula decide o subconjunto visível.
   // Jogo 2D Avançado: o caminho feliz e os kits são intermediário-2d; as peças
   // internas de motor já foram separadas no AVANCADO_2D acima.
   if (type.startsWith('sz_gk_')) return 'intermediario-2d'
-  // Jogo 3D Avançado: TODOS intermediário-3d (reclassificado 26/07 — abre no
-  // Arquiteto de Mundos, junto do Mundo 3D; a jornada é o gate real). Espelha o
-  // `minLevel` da extensão em official-extensions/game-3d-advanced/index.ts.
-  if (type.startsWith('sz_g3k_')) return 'intermediario-3d'
+  // Jogo 3D Avançado: TODOS avançado-3d (review 3D, 10/2026 — uma extensão por
+  // degrau, acima do Mundo 3D). Espelha o `minLevel` da extensão em
+  // official-extensions/game-3d-advanced/index.ts.
+  if (type.startsWith('sz_g3k_')) return G3K_LEVEL
   // Canvas 3D (three.js cru, núcleo): a categoria INTEIRA é avançado-3d — do
   // primitivo às receitas "mágicas" (reclassificado 26/07, "na unha por último").
   if (type.startsWith('sz_t3d_')) return 'avancado-3d'
@@ -336,6 +289,8 @@ export function resolveBlockLevel(type: string): BlockLevel {
 
 /** Exportados só para o teste de conformidade (completude/sem sobreposição/sem typo). */
 export const _LEVEL_SETS = {
+  INICIANTE_3D_G3D,
+  INICIANTE_2D_G2D: GAME_TWO_D_INITIAL_CORE,
   INTERMEDIARIO_2D,
   INTERMEDIARIO_3D,
   AVANCADO_2D,

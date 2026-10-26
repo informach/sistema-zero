@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it } from 'bun:test'
 import * as THREE from 'three'
+import skinFixture from '../../__tests__/three3d/molda-skinned.json'
 import {
   loadStartedWorld,
   makeFakeThree,
@@ -279,7 +280,10 @@ describe('Mundo 3D — robustez do runtime', () => {
   })
 
   it('encerra com segurança enquanto um GLB ainda está sendo interpretado', async () => {
+    // Os dois addons que o carregador compartilhado pede juntos já em memória: o parse
+    // começa antes do teardown, que é o caso que este teste quer.
     await import('three/addons/loaders/GLTFLoader.js')
+    await import('three/addons/utils/SkeletonUtils.js')
     ;(window as unknown as Record<string, unknown>).__SZGAME_ASSETS_3D = {
       arvore: {
         kind: 'model3d',
@@ -313,6 +317,38 @@ describe('Mundo 3D — robustez do runtime', () => {
       expect(modelGeometryDisposals).toBeGreaterThan(0)
     } finally {
       THREE.BufferGeometry.prototype.dispose = originalDispose
+    }
+  })
+
+  it('Pôr modelo com ossos não compartilha esqueleto (fixture real do Molda)', async () => {
+    ;(window as unknown as Record<string, unknown>).__SZGAME_ASSETS_3D = {
+      boneco: { kind: 'model3d', fileName: 'boneco.glb', dataUrl: skinFixture.dataUrl },
+    }
+    const { renderers } = await loadStartedWorld((world: WorldApi) => {
+      const api = world as WorldApi & {
+        placeModel(name: string, x: number, z: number, s: number, deg: number): void
+      }
+      api.placeModel('boneco', 4, 4, 1, 0)
+      api.placeModel('boneco', -4, 4, 1, 90)
+    })
+    const scene = renderers[0]?.scene
+    if (!scene) throw new Error('cena não capturada')
+    const skinned: THREE.SkinnedMesh[] = []
+    scene.traverse((object) => {
+      if (object instanceof THREE.SkinnedMesh) skinned.push(object)
+    })
+    // Duas cópias postas × três peças com pesos: cada uma com o seu esqueleto.
+    expect(skinned).toHaveLength(6)
+    expect(new Set(skinned.map((mesh) => mesh.skeleton)).size).toBe(6)
+    // A geometria é do cache (a fixture usa uma só para as três peças), nunca copiada.
+    expect(new Set(skinned.map((mesh) => mesh.geometry)).size).toBe(1)
+    const placedRoot = (object: THREE.Object3D) => {
+      let node = object
+      while (node.parent?.parent && node.parent.parent !== scene) node = node.parent
+      return node
+    }
+    for (const mesh of skinned) {
+      for (const bone of mesh.skeleton.bones) expect(placedRoot(bone)).toBe(placedRoot(mesh))
     }
   })
 })

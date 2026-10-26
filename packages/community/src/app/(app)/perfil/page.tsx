@@ -114,7 +114,8 @@ export default async function ProfilePage() {
                 Cor da plataforma
               </h2>
               <p className="text-[0.9rem] text-muted-foreground">
-                A cor dos botões, links e destaques. Vale em qualquer computador em que você entrar.
+                A cor dos links, selos e destaques. O botão principal continua amarelo, para você
+                achar sempre. Vale em qualquer computador em que você entrar.
               </p>
             </div>
             <PalettePicker

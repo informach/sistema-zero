@@ -11,12 +11,22 @@ import {
 import { commitPythonWorkspaceGesture } from '../../python/blocks/commitWorkspace'
 import type { PythonBlockCodec } from '../../python/blocks/contract'
 import { nodes } from '../../python/blocks/nodes'
+import { pythonPaletteBlockState } from '../../python/blocks/paletteBlocks'
+import {
+  PYTHON_PALETTE_GROUPS,
+  pythonCategoryColour,
+  pythonCategoryLabel,
+} from '../../python/blocks/paletteGroups'
 import { type PythonBlockProjection, pythonASTToVisual } from '../../python/blocks/projection'
+import { pythonProjectModules } from '../../python/blocks/projectModules'
 import {
   bindPythonVisualOrigins,
   type PythonWorkspaceOrigins,
 } from '../../python/blocks/provenance'
+import { attachPythonCallLabels } from '../../python/blocks/pythonCallLabels'
+import { pythonResolverOptionsOf } from '../../python/blocks/resolverOptions'
 import { preparePythonWorkspaceRestore } from '../../python/blocks/restoreWorkspace'
+import type { PythonProjectModules } from '../../python/blocks/scope'
 import { type PythonPaletteSelection, searchPythonPalette } from '../../python/blocks/selection'
 import {
   type PythonWorkspaceDraft,
@@ -29,7 +39,12 @@ import {
 } from '../../python/blocks/workspacePresentation'
 import { rebasePythonWorkspaceState, savePythonWorkspace } from '../../python/blocks/workspaceState'
 import { createPythonAnalysisController } from '../../python/language/controller'
-import type { PythonParsedDocument, PythonSourceRange } from '../../python/language/types'
+import type { PythonAnalysisSession } from '../../python/language/session'
+import type {
+  PythonNode,
+  PythonParsedDocument,
+  PythonSourceRange,
+} from '../../python/language/types'
 import { useHighlightStore } from '../../state/highlightStore'
 import { useProjectStore, useProjectStoreApi } from '../../state/projectStore'
 import {
@@ -73,12 +88,14 @@ export interface PythonBlocklyEditorProps {
 function toolbox(
   palette: PythonPaletteSelection,
   query: string,
+  codecs: readonly PythonBlockCodec[],
 ): Blockly.utils.toolbox.ToolboxDefinition {
+  const registry = new Map(codecs.map((codec) => [codec.id, codec]))
   const groups = new Map<string, Blockly.utils.toolbox.StaticCategoryInfo>()
   const categories = new Map<string, Blockly.utils.toolbox.StaticCategoryInfo>()
   for (const entry of searchPythonPalette(palette, query)) {
     const groupName = entry.path[0]!
-    const name = entry.path.slice(1).join(' › ')
+    const category = entry.path[1]!
     let group = groups.get(groupName)
     if (!group) {
       group = {
@@ -86,7 +103,7 @@ function toolbox(
         name: groupName,
         contents: [],
         id: undefined,
-        colour: entry.owner === 'python-turtle' ? '140' : '210',
+        colour: PYTHON_PALETTE_GROUPS[entry.owner].colour,
         categorystyle: undefined,
         cssconfig: undefined,
         hidden: undefined,
@@ -94,22 +111,27 @@ function toolbox(
       groups.set(groupName, group)
     }
     const key = entry.path.join(' › ')
-    let category = categories.get(key)
-    if (!category) {
-      category = {
+    let target = categories.get(key)
+    if (!target) {
+      target = {
         kind: 'category',
-        name,
-        colour: entry.owner === 'python-turtle' ? '140' : '210',
+        name: pythonCategoryLabel(entry.owner, category),
+        colour: pythonCategoryColour(entry.owner, category),
         contents: [],
         id: undefined,
         categorystyle: undefined,
         cssconfig: undefined,
         hidden: undefined,
       }
-      categories.set(key, category)
-      group.contents.push(category)
+      categories.set(key, target)
+      group.contents.push(target)
     }
-    category.contents.push({ kind: 'block', type: entry.id })
+    const codec = registry.get(entry.id)
+    target.contents.push(
+      codec
+        ? (pythonPaletteBlockState(codec, codecs) as Blockly.utils.toolbox.BlockInfo)
+        : { kind: 'block', type: entry.id },
+    )
   }
   // Blockly decides category mode from the entries, even for categoryToolbox.
   // Keep that mode when search/curation leaves no insertable blocks.
@@ -126,6 +148,30 @@ function toolbox(
     })
   return { kind: 'categoryToolbox', contents: [...groups.values()] }
 }
+
+const COMMIT_DEBOUNCE_MS = 350
+const COMMIT_MAX_WAIT_MS = 2000
+
+async function sourceRevision(source: string) {
+  const bytes = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(source))
+  return [...new Uint8Array(bytes)].map((value) => value.toString(16).padStart(2, '0')).join('')
+}
+/** Only an absolute `from module import *` can depend on another file of the project. */
+const importsStar = (tree: PythonNode) =>
+  nodes(tree.fields.body) &&
+  tree.fields.body.some(
+    (statement) =>
+      statement.kind === 'ImportFrom' &&
+      nodes(statement.fields.names) &&
+      statement.fields.names.some((alias) => alias.fields.name === '*'),
+  )
+/** The other Python files, in a comparable form: a change there can change a star import. */
+const otherPythonSources = (files: Readonly<Record<string, string>> | undefined, path: string) =>
+  Object.entries(files ?? {})
+    .filter(([name]) => name !== path && name.endsWith('.py'))
+    .flat()
+const sameSources = (a: readonly string[], b: readonly string[]) =>
+  a.length === b.length && a.every((value, index) => value === b[index])
 
 /** Python owns its parser/workspace; no JavaScript generator participates in this surface. */
 export function PythonBlocklyEditor(props: PythonBlocklyEditorProps) {
@@ -156,7 +202,10 @@ export function PythonBlocklyEditor(props: PythonBlocklyEditorProps) {
     phase: 'loading',
     message: 'Preparando os blocos Python…',
   })
-  const tools = useMemo(() => toolbox(props.palette, query), [props.palette, query])
+  const tools = useMemo(
+    () => toolbox(props.palette, query, props.codecs),
+    [props.palette, query, props.codecs],
+  )
   const currentTools = useRef(tools)
   currentTools.current = tools
   const surface = useRef<{
@@ -221,6 +270,13 @@ export function PythonBlocklyEditor(props: PythonBlocklyEditorProps) {
     let rootIds: string[] = []
     let offer: PythonWorkspaceDraft | undefined
     let timer: ReturnType<typeof setTimeout> | undefined
+    // `from settings import *` is understood from the project's own settings.py.
+    const knownStarExports = pythonResolverOptionsOf(props.codecs).starExports
+    let projectModules: PythonProjectModules | undefined
+    /** Parsed trees of the other files by content (null: it does not parse). */
+    let parsedModules = new Map<string, PythonNode | null>()
+    let modulesStale = false
+    let committing = false
     const instanceId = crypto.randomUUID()
     const currentProject = () => {
       const project = store.getState().project
@@ -247,6 +303,93 @@ export function PythonBlocklyEditor(props: PythonBlocklyEditorProps) {
     }
     const failure = (error: unknown) =>
       error instanceof Error ? error.message : 'Não foi possível atualizar os blocos.'
+    /** Exports of the project's modules, parsing (once per content) the files not seen yet. */
+    async function modulesFor(
+      analysis: Pick<PythonAnalysisSession, 'parse'>,
+      project: NonNullable<ReturnType<typeof currentProject>>,
+      tree: PythonNode,
+      token: number,
+    ): Promise<PythonProjectModules | undefined> {
+      if (!importsStar(tree)) return undefined
+      const trees = new Map<string, PythonNode | null>([[props.path, tree]])
+      const seen = new Map<string, PythonNode | null>()
+      for (const [path, source] of Object.entries(project.files)) {
+        if (path === props.path || !path.endsWith('.py')) continue
+        // null (does not parse) is remembered too: the same content is never parsed twice.
+        let parsedTree = seen.has(source) ? seen.get(source) : parsedModules.get(source)
+        if (parsedTree === undefined) {
+          try {
+            const document = await analysis.parse(
+              {
+                projectId: project.id,
+                instanceId,
+                path,
+                generation: token,
+                revision: await sourceRevision(source),
+              },
+              source,
+            )
+            parsedTree = document.tree && !document.diagnostics.length ? document.tree : null
+          } catch (error) {
+            if (error instanceof Error && error.name === 'AbortError') throw error
+            // A file that cannot be read proves nothing: its importers stay cautious.
+            parsedTree = null
+          }
+        }
+        seen.set(source, parsedTree)
+        trees.set(path, parsedTree)
+      }
+      parsedModules = seen
+      return pythonProjectModules({
+        paths: Object.keys(project.files),
+        trees,
+        entrypoint: project.python.entrypoint,
+        starExports: knownStarExports,
+      })
+    }
+    /** Another file changed: re-read what its star imports bind and relabel the blocks. */
+    async function refreshModules() {
+      const project = currentProject()
+      const source = project?.files[props.path]
+      const tree = parsed?.tree
+      if (!project || !tree || source !== parsed?.source) return
+      // A new analysis job would cancel the commit in flight; it runs again afterwards.
+      if (committing || commitTimer !== undefined) return
+      modulesStale = false
+      const token = ++generation
+      try {
+        const modules = await parser.run({
+          current: () =>
+            !disposed && token === generation && currentProject()?.files[props.path] === source,
+          execute: (analysis) => modulesFor(analysis, project, tree, token),
+        })
+        if (disposed || token !== generation || loadedSource !== source) return
+        projectModules = modules
+        updatePythonWorkspacePresentation(
+          workspace,
+          tree,
+          origins,
+          props.codecs,
+          props.officialModules,
+          projectModules,
+        )
+      } catch (error) {
+        if (error instanceof Error && error.name === 'AbortError') {
+          modulesStale = true
+          return
+        }
+        if (disposed || token !== generation || loadedSource !== source) return
+        // Without the other files, a star import of the project proves nothing.
+        projectModules = undefined
+        updatePythonWorkspacePresentation(
+          workspace,
+          tree,
+          origins,
+          props.codecs,
+          props.officialModules,
+        )
+      }
+    }
     function load(document: PythonParsedDocument, draft?: PythonWorkspaceDraft) {
       if (!document.tree) return
       const restored = draft
@@ -265,6 +408,7 @@ export function PythonBlocklyEditor(props: PythonBlocklyEditorProps) {
           const projection = pythonASTToVisual(document.tree, {
             codecs: props.codecs,
             officialModules: props.officialModules,
+            projectModules,
           })
           rootIds = pythonVisualToWorkspace(projection, workspace, props.codecs)
           for (const id of rootIds) workspace.getBlockById(id)?.moveBy(24, 24)
@@ -281,6 +425,7 @@ export function PythonBlocklyEditor(props: PythonBlocklyEditorProps) {
           origins,
           props.codecs,
           props.officialModules,
+          projectModules,
         )
         fingerprint = JSON.stringify(savePythonWorkspace(workspace, origins))
         loadedSource = document.source
@@ -294,27 +439,35 @@ export function PythonBlocklyEditor(props: PythonBlocklyEditorProps) {
     async function refresh() {
       const project = currentProject()
       const source = project?.files[props.path]
-      if (disposed || !project || source === undefined || parsed?.source === source) return
+      if (disposed || !project || source === undefined) return
+      if (parsed?.source === source) {
+        if (modulesStale) await refreshModules()
+        return
+      }
       const token = ++generation
+      modulesStale = false
       report('loading', 'Atualizando os blocos a partir do código…')
       try {
-        const result = await parser.run({
+        const { document: result, modules } = await parser.run({
           current: () =>
             !disposed && token === generation && currentProject()?.files[props.path] === source,
           execute: async (analysis) => {
-            const bytes = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(source))
-            const revision = [...new Uint8Array(bytes)]
-              .map((value) => value.toString(16).padStart(2, '0'))
-              .join('')
-            return analysis.parse(
+            const revision = await sourceRevision(source)
+            const document = await analysis.parse(
               { projectId: project.id, instanceId, path: props.path, generation: token, revision },
               source,
             )
+            const modules =
+              document.tree && !document.diagnostics.length
+                ? await modulesFor(analysis, project, document.tree, token)
+                : undefined
+            return { document, modules }
           },
         })
         if (disposed || token !== generation || currentProject()?.files[props.path] !== source)
           return
         parsed = result
+        projectModules = modules
         if (!result.tree || result.diagnostics.length) {
           report(
             'syntax',
@@ -384,6 +537,7 @@ export function PythonBlocklyEditor(props: PythonBlocklyEditorProps) {
         const token = ++generation
         fingerprint = nextFingerprint
         report('saving', 'Aplicando os blocos ao código…')
+        committing = true
         const result = commitPythonWorkspaceGesture({
           store,
           analysis: parser,
@@ -399,6 +553,7 @@ export function PythonBlocklyEditor(props: PythonBlocklyEditorProps) {
         })
         void result.then(
           (document) => {
+            committing = false
             if (disposed || token !== generation) return
             parsed = document
             loadedSource = document.source
@@ -409,7 +564,11 @@ export function PythonBlocklyEditor(props: PythonBlocklyEditorProps) {
               origins,
               props.codecs,
               props.officialModules,
+              projectModules,
             )
+            // A star import the gesture added is read from the other files afterwards.
+            if (!projectModules && importsStar(document.tree!)) modulesStale = true
+            if (modulesStale) schedule()
             // Only the captured gesture was committed. A later live edit can
             // precede delivery of its Blockly event (RAF followed by a timer).
             fingerprint = JSON.stringify(rebasePythonWorkspaceState(saved, origins))
@@ -418,11 +577,14 @@ export function PythonBlocklyEditor(props: PythonBlocklyEditorProps) {
             flush()
           },
           (error: unknown) => {
+            committing = false
             if (token === generation && !(error instanceof Error && error.name === 'AbortError'))
               report('ready', failure(error))
+            if (modulesStale) schedule()
           },
         )
       } catch (error) {
+        committing = false
         report('ready', failure(error))
       }
     }
@@ -439,10 +601,54 @@ export function PythonBlocklyEditor(props: PythonBlocklyEditorProps) {
         const range = block ? origins.get(block.id)?.range : undefined
         if (range) callbacks.current.onSelectRange?.(range)
       }
-      if (!event.isUiEvent) flush()
+      if (!event.isUiEvent) scheduleCommit()
+    }
+    // One commit per gesture: typing in a field or dragging a stack fires many events, and each
+    // commit re-parses the whole file. Explicit saves, mode changes and page exit still flush now
+    // through the pending-edits registry.
+    let commitTimer: ReturnType<typeof setTimeout> | undefined
+    let firstPendingAt = 0
+    function scheduleCommit() {
+      const now = performance.now()
+      if (commitTimer === undefined) firstPendingAt = now
+      clearTimeout(commitTimer)
+      const run = () => {
+        if (workspace.isDragging() && performance.now() - firstPendingAt < COMMIT_MAX_WAIT_MS) {
+          commitTimer = setTimeout(run, COMMIT_DEBOUNCE_MS)
+          return
+        }
+        commitTimer = undefined
+        flush()
+      }
+      commitTimer =
+        now - firstPendingAt >= COMMIT_MAX_WAIT_MS
+          ? setTimeout(run, 0)
+          : setTimeout(run, COMMIT_DEBOUNCE_MS)
+    }
+    const flushNow = () => {
+      clearTimeout(commitTimer)
+      commitTimer = undefined
+      flush()
     }
     workspace.addChangeListener(changed)
-    const unregisterFlush = pending?.register(flush)
+    // "chamar mover com distancia ⟨10⟩": the names follow the def while the child edits.
+    const detachCallLabels = attachPythonCallLabels(workspace)
+    const unregisterFlush = pending?.register(flushNow)
+    // A pending gesture is applied before the child acts anywhere else (typing in the code of
+    // the Ponte, a button that rewrites the file): once the source changes, the blocks can no
+    // longer be committed against it and the gesture would be lost.
+    const leave = (event: Event) => {
+      // Mid-drag the block is detached: the scheduled commit applies it when it is dropped.
+      if (commitTimer === undefined || workspace.isDragging()) return
+      const target = event instanceof FocusEvent ? event.relatedTarget : event.target
+      if (target instanceof Node && element.contains(target)) return
+      // Blockly's own widgets (dropdowns, the field editor) live outside the workspace element.
+      if (target instanceof Element && target.closest('.blocklyWidgetDiv, .blocklyDropDownDiv'))
+        return
+      flushNow()
+    }
+    element.addEventListener('focusout', leave)
+    document.addEventListener('pointerdown', leave, true)
     const adapter = createBlocklyHistory(workspace)
     const unregisterHistory = history?.register('blocks', adapter)
     const activate = () => history?.markActive('blocks')
@@ -451,8 +657,16 @@ export function PythonBlocklyEditor(props: PythonBlocklyEditorProps) {
     const resize = new ResizeObserver(() => Blockly.svgResize(workspace))
     resize.observe(element)
     let previousSource = currentProject()?.files[props.path]
+    let previousOthers = otherPythonSources(currentProject()?.files, props.path)
     const unsubscribe = store.subscribe(() => {
-      const source = currentProject()?.files[props.path]
+      const files = currentProject()?.files
+      const source = files?.[props.path]
+      const others = otherPythonSources(files, props.path)
+      if (!sameSources(others, previousOthers)) {
+        previousOthers = others
+        modulesStale = true
+        if (source === previousSource) schedule()
+      }
       if (source !== previousSource) {
         previousSource = source
         schedule()
@@ -572,7 +786,12 @@ export function PythonBlocklyEditor(props: PythonBlocklyEditorProps) {
         projectId: project.id,
         path: props.path,
         sourceHash: studioTutorSourceHash(source),
-        synchronization: draft?.pending || offer ? 'pending' : sameSource ? 'ready' : 'unavailable',
+        synchronization:
+          draft?.pending || offer || commitTimer !== undefined
+            ? 'pending'
+            : sameSource
+              ? 'ready'
+              : 'unavailable',
         // A parse still in flight must not describe old blocks as current source.
         ...(sameSource ? { workspace: Blockly.serialization.workspaces.save(workspace) } : {}),
       }
@@ -582,6 +801,7 @@ export function PythonBlocklyEditor(props: PythonBlocklyEditorProps) {
     void refresh()
     return () => {
       flush()
+      clearTimeout(commitTimer)
       disposed = true
       generation++
       clearTimeout(timer)
@@ -591,8 +811,11 @@ export function PythonBlocklyEditor(props: PythonBlocklyEditorProps) {
       adapter.dispose()
       resize.disconnect()
       element.removeEventListener('pointerdown', activate)
+      element.removeEventListener('focusout', leave)
+      document.removeEventListener('pointerdown', leave, true)
       element.removeEventListener('focusin', activate)
       workspace.removeChangeListener(changed)
+      detachCallLabels()
       parser.dispose()
       workspace.dispose()
       if (classicCapture.current === capture) classicCapture.current = null

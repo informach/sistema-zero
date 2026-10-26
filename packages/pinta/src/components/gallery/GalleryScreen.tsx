@@ -31,8 +31,9 @@ import {
 } from '../../core/gallerySearch'
 import { expandSelection } from '../../core/gallerySelection'
 import { perfMeasure } from '../../core/perf'
-import { isTilesetKind, type PintaAsset } from '../../core/project'
+import { isTilesetKind, type PintaAsset, tilemapUsesTileset } from '../../core/project'
 import type { PintaHostChromeStatus, PintaInitialIntent } from '../../core/types'
+import { isTilemapBundle } from '../../export/assetJson'
 import { type PintaBackupReadFailure, readPintaBackupFile } from '../../export/backupFile'
 import { triggerDownload } from '../../export/download'
 import { importPintaJson } from '../../export/projectJson'
@@ -228,7 +229,9 @@ export function GalleryScreen(): JSX.Element {
   const removeTarget = assets.find((a) => a.id === removeId) ?? null
   const dependentMaps =
     removeTarget && isTilesetKind(removeTarget)
-      ? assets.filter((asset) => asset.kind === 'tilemap' && asset.tilesetId === removeTarget.id)
+      ? assets.filter(
+          (asset) => asset.kind === 'tilemap' && tilemapUsesTileset(asset, removeTarget.id),
+        )
       : []
   const tilesets = useMemo(() => assets.filter(isTilesetKind), [assets])
   const lastStyle = usePintaGallery((state) => state.lastStyle)
@@ -393,15 +396,7 @@ export function GalleryScreen(): JSX.Element {
         showToast(warnings[0] ?? COPY.gallery.restoreError)
         return
       }
-      const bundledMap =
-        restored.length === 2 &&
-        restored.some(
-          (asset) =>
-            asset.kind === 'tilemap' &&
-            restored.some(
-              (candidate) => isTilesetKind(candidate) && candidate.id === asset.tilesetId,
-            ),
-        )
+      const bundledMap = isTilemapBundle(restored)
       const { added, skipped } = await gallery
         .getState()
         .importAssets(restored, { atomic: bundledMap })
@@ -411,7 +406,7 @@ export function GalleryScreen(): JSX.Element {
       }
       const suffix = skipped > 0 || warnings.length > 0 ? COPY.gallery.restorePartial : ''
       showToast(
-        (bundledMap && added === 2
+        (bundledMap && added === restored.length
           ? COPY.gallery.restoredMapBundle
           : added === 1
             ? COPY.gallery.restoredOne

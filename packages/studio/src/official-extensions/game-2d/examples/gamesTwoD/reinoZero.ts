@@ -2504,30 +2504,8 @@ export const reinoZeroExample: ExtensionExample = beginnerGameExample({
   description:
     'Aventura de plataforma autoral com 8 mundos e 32 fases, 1 ou 2 jogadores alternados, segredos, inimigos, chefes e segunda volta difícil. Setas/WASD movem, Z/Espaço pula, X corre, Backspace seleciona 1 ou 2 jogadores, Enter inicia e Esc pausa.',
   ir: {
-    html: [{ type: 'canvas', id: 'tela', width: 256, height: 240 }],
-    css: [
-      {
-        selector: 'body',
-        declarations: {
-          background: '#070b16',
-          display: 'flex',
-          'align-items': 'center',
-          'justify-content': 'center',
-          'min-height': '100vh',
-          margin: '0',
-        },
-      },
-      {
-        selector: 'canvas',
-        declarations: {
-          background: '#5c94fc',
-          border: '4px solid #f7e7b2',
-          'image-rendering': 'pixelated',
-          'max-width': '100%',
-          height: 'auto',
-        },
-      },
-    ],
+    html: [],
+    css: [],
     version: 2,
     behavior: {
       molds: [
@@ -2549,6 +2527,21 @@ export const reinoZeroExample: ExtensionExample = beginnerGameExample({
         { type: 'g2d:allEnemiesGroup', varName: 'todosInimigos' },
       ],
       start: [
+        {
+          type: 'g2d:setupStage',
+          width: 256,
+          height: 240,
+          bg: '#5c94fc',
+          __id: 'exemplo-reino-zero',
+        },
+        {
+          type: 'g2d:setStageDescription',
+          description:
+            'Aventura de plataforma autoral com 8 mundos e 32 fases, 1 ou 2 jogadores alternados, segredos, inimigos, chefes e segunda volta difícil. Setas/WASD movem, Z/Espaço pula, X corre, Backspace seleciona 1 ou 2 jogadores, Enter inicia e Esc pausa.',
+          __id: 'exemplo-reino-zero-descricao',
+        },
+        { type: 'g2d:stageBorder', color: '#f7e7b2', width: 4 },
+
         { type: 'g2d:enableClassicControls', mode: 'auto' },
         { type: 'g2d:setGravity', value: n(0.42) },
         ...mapDeclarations(),

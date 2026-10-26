@@ -9,9 +9,8 @@ mock.module('@cloudflare/sandbox', () => ({
 }))
 
 const { createStudioRuntimeHandler } = await import('../src/index')
-const { parseCheckRequest, proCheckEntry, withCheckEntry, CHECK_ENTRY_PATH } = await import(
-  '../src/check'
-)
+const { parseCheckRequest, proCheckEntry, proCheckModules, withCheckEntry, CHECK_ENTRY_PATH } =
+  await import('../src/check')
 type Env = import('../src/index').Env
 type SandboxFactory = Parameters<typeof createStudioRuntimeHandler>[0]
 
@@ -427,4 +426,39 @@ describe('o pedido de teste', () => {
     expect(entry).toContain(`Object.defineProperty(globalThis, "${SCOPE}"`)
     expect(withCheckEntry('<main></main>')).toEndWith(`src="./${CHECK_ENTRY_PATH}"></script>`)
   })
+})
+
+test('Pro observes an explicitly exported value from an existing project module', () => {
+  const value = {
+    id: 'position',
+    rule: {
+      type: 'behavior',
+      steps: [],
+      expect: {
+        target: { kind: 'moduleValue', module: 'src/regras.ts', path: 'jogador.position.z' },
+        compare: 'decreased',
+      },
+    },
+  } as const
+  const request = parseCheckRequest({ ...proBody, objectives: [value, dobro] })
+  expect(request.mode).toBe('pro')
+  expect(proCheckModules(request.objectives)).toEqual(['src/regras.ts'])
+  expect(() => parseCheckRequest({ ...classicBody, objectives: [value] })).toThrow('Pro')
+  expect(() =>
+    parseCheckRequest({
+      ...proBody,
+      objectives: [
+        {
+          ...value,
+          rule: {
+            ...value.rule,
+            expect: {
+              ...value.rule.expect,
+              target: { ...value.rule.expect.target, module: 'src/foreign.ts' },
+            },
+          },
+        },
+      ],
+    }),
+  ).toThrow('arquivo do projeto')
 })

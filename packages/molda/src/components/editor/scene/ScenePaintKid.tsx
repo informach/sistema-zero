@@ -15,18 +15,20 @@ import { Button } from '../../ui/Button'
 import { ApplyTextureDialog } from '../model/ApplyTextureDialog'
 import { SceneFlipbookPreview } from './SceneFlipbookPreview'
 import { ScenePaintToolbox } from './ScenePaintToolbox'
+import { SceneTile } from './SceneTile'
+import { sceneCommand } from './sceneCommandRegistry'
 import type { useSceneWorkshop } from './useSceneWorkshop'
 
 export function ScenePaintColumn({ workshop }: { workshop: ReturnType<typeof useSceneWorkshop> }) {
   const { paint } = workshop
   const copy = COPY.scene
-  // As texturas moram na galeria do app: a oficina montada sozinha não oferece o "Vestir".
+  // As texturas prontas moram na galeria do app; a pintura direta funciona sem ela.
   const app = useOptionalMoldaApp()
-  const [dressing, setDressing] = useState(false)
+  const [choosingTexture, setChoosingTexture] = useState(false)
   const target = paint.session?.target ?? null
   const latest = useRef(target)
   latest.current = target
-  const canDress = !!app && !!target && (target.imageKind ?? 'color') === 'color'
+  const canUseTexture = !!app && !!target && (target.imageKind ?? 'color') === 'color'
   // A pintura que se mexe é leitura, sempre livre. Com `paint.flipbook`, a prévia mora em "Mais
   // jeitos de pintar"; sem ele, a criança ainda assiste daqui.
   const { can } = useMoldaToolAccess()
@@ -56,21 +58,26 @@ export function ScenePaintColumn({ workshop }: { workshop: ReturnType<typeof use
         onChooseTool={() => {
           if (workshop.area === 'uv') workshop.openArea('sheet')
         }}
-        {...(canDress
-          ? {
-              onDress: () => {
-                paint.cancel()
-                setDressing(true)
-              },
-            }
-          : {})}
       />
+      {canUseTexture && (
+        <section aria-label="Texturas prontas" className="border-t border-mld-border pt-3">
+          <SceneTile
+            icon={sceneCommand('paint.dress').icon}
+            label={sceneCommand('paint.dress').label}
+            aria-haspopup="dialog"
+            onClick={() => {
+              paint.cancel()
+              setChoosingTexture(true)
+            }}
+          />
+        </section>
+      )}
       {app && (
         <ApplyTextureDialog
-          open={dressing && canDress}
-          onClose={() => setDressing(false)}
+          open={choosingTexture && canUseTexture}
+          onClose={() => setChoosingTexture(false)}
           onApply={(texture, mode) => {
-            setDressing(false)
+            setChoosingTexture(false)
             const current = latest.current
             // A peça de agora: a textura chega depois de ler o disco, e o alvo pode ter mudado.
             if (current)

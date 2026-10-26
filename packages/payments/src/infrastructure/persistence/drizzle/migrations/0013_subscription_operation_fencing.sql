@@ -1,0 +1,3 @@
+ALTER TABLE "payments"."subscription_operations" ADD COLUMN "execution_id" uuid;--> statement-breakpoint
+ALTER TABLE "payments"."subscription_operations" ADD COLUMN "execution_attempts" integer DEFAULT 0 NOT NULL;--> statement-breakpoint
+ALTER TABLE "payments"."subscription_operations" ADD CONSTRAINT "subscription_operations_execution_check" CHECK (("payments"."subscription_operations"."execution_attempts" = 0 and "payments"."subscription_operations"."execution_id" is null) or ("payments"."subscription_operations"."execution_attempts" > 0 and "payments"."subscription_operations"."execution_id" is not null and "payments"."subscription_operations"."started_at" is not null));

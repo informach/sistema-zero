@@ -15,7 +15,7 @@ import { collectTypes } from './exampleSourceUtils'
 export const CHEFAO_SOURCE = `
 SZGameKit3D.setup({ width: 1280, height: 720, world: 50, sky: "#1e1b4b", ground: "#312e81" });
 SZGameKit3D.setEffects({ shadows: true, bloom: true, strength: 1.4, vignette: true });
-SZGameKit3D.setScreenText("menu", "O Chefão das Sombras", "Clique no chefão para atacar e desvie do anel de tiros com WASD. Ele fica mais bravo (e se cura) a cada fase!", "Enfrentar");
+SZGameKit3D.setScreenText("inicio", "O Chefão das Sombras", "Clique no chefão para atacar e desvie do anel de tiros com WASD. Ele fica mais bravo (e se cura) a cada fase!", "Enfrentar");
 SZGameKit3D.setScreenText("vitoria", "Sombra derrotada!", "Você venceu as três fases do chefão.", "Enfrentar de novo");
 SZGameKit3D.setScreenText("fim", "O herói caiu...", "O anel de tiros te pegou. Desvie mais na próxima!", "Tentar de novo");
 SZGameKit3D.defineMold("chefao", { health: 100, speed: 0 }, function () {
@@ -88,7 +88,7 @@ SZGameKit3D.onEntityDeath("chefao", function (ela) {
 SZGameKit3D.onEntityDeath("heroi", function (ela) {
   SZGameKit3D.burstOn("explosao", ela);
   SZGameKit3D.playEffect("gameover");
-  SZGameKit3D.endGame();
+  SZGameKit3D.endGame("perdeu");
 });
 SZGameKit3D.onUpdate(function (dt) {
   if (SZGameKit3D.mousePressed()) {
@@ -99,9 +99,9 @@ SZGameKit3D.onUpdate(function (dt) {
       SZGameKit3D.playEffect("hit");
     }
   }
-  SZGameKit3D.cullFar("tiro", 28);
-  SZGameKit3D.setHud("top-left", "Fase " + fase + " de 3");
-  SZGameKit3D.setHud("top-right", "Clique no chefão!");
+  SZGameKit3D.cullFar("tiro", SZGameKit3D.worldSize() / 2);
+  SZGameKit3D.hudText("top-left", "Fase " + fase + " de 3");
+  SZGameKit3D.hudText("top-right", "Clique no chefão!");
 });
 SZGameKit3D.start();
 `.trim()

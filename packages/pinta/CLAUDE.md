@@ -304,6 +304,30 @@ barra sticky. Ganho: 232-288px → ~204px (1920) / ~256px (1366 com sidebar) at�
   jogo na FRENTE dos swatches fixos (dedupe; SÓ no vetor — o bitmap é indexado em 16 cores e não
   muda). `sanitizeProjectRef` é o portão ÚNICO (exportado: o `galleryStore.create` também o usa) —
   hex minúsculo, ≤8 cores, nome no teto; malformado descarta o REF, nunca o asset.
+- **`sourceRef?: string` (25/10/2026)**: a origem de uma CÓPIA de desenho de exemplo
+  (`example-pygame:<jogo>/<id do documento>`), gravada por `importDrawingsForStudio(json, ids,
+  {origin})` no "Editar no Pinta" dos jogos da galeria do Estúdio. Com ela cada documento de
+  exemplo tem UMA cópia na galeria da criança: outro mapa sobre o mesmo tileset, ou o próprio
+  tileset depois do mapa, reaproveitam a cópia (mesmo tipo e mesmo tamanho de peça), e pintar uma
+  peça re-deriva no Estúdio o tileset e todo mapa ligado. Mora no documento (e não num índice
+  local) para viajar com o desenho pela nuvem. `sanitizeSourceRef` omite ausente/malformado
+  (desenho comum byte-idêntico); `cloneWithNewIds` (Duplicar, restauro) TIRA a marca: a cópia de
+  uma cópia é um desenho novo. Testes: `core/sourceRef.test.ts`, `export/studioImportDrawings.test.ts`.
+  **Review do mesmo dia (25/10/2026):**
+  - ⚠️ **Uma importação por vez por banco** (`serializeImport` em `export/studioLibrary.ts`): a
+    importação lê a galeria, decide o reaproveitamento e só depois grava, e "Editar" no mapa e
+    logo nas peças dele criava DUAS cópias do mesmo tileset (pintar uma não mudava o mapa). Fila
+    FIFO por namespace nesta aba + a trava nomeada do navegador (`navigator.locks`,
+    `pinta:studio-import:<ns>`) entre abas. Sem Web Locks, a escolha converge na próxima vez.
+  - **`pickCopy`**: entre as cópias de um documento vale a mais recente COMPATÍVEL (uma
+    incompatível mais nova não esconde uma compatível antiga); nas peças, vence antes a cópia que
+    um mapa copiado já usa — com cópias repetidas, todo "Editar" seguinte cai na mesma.
+  - A regra da marca é UMA, no core (`@sistemazero/core/studio/pinta-source-ref`):
+    `PINTA_SOURCE_REF_PATTERN` (o Pinta saneia) e `PINTA_EXAMPLE_NAME_PATTERN` (o Estúdio
+    reconhece os nomes de jogo/desenho). O padrão do Pinta já aceitava `_` (o review disse que
+    não); o teste do core prova que todo nome aceito compõe uma marca válida.
+  - O Estúdio não guarda mais cache das cópias (`exampleDrawingLink.ts`): cada tentativa pede
+    de novo com a origem e o Pinta devolve a cópia que existe — ou faz outra, se ela foi apagada.
 - **`PintaAssetKind` = ESTILO × PAPEL** (união discriminada plana de 7 kinds):
   `pixel-sprite` · `pixel-background` · `tileset` · `tilemap` (papel dos dois estilos — o
   `tilesetId` aponta para tileset pixel OU vetorial) · `vector-sprite` · `vector-background` ·
@@ -2087,6 +2111,154 @@ de lá); o kids (`pinta-client`) liga o callback só com o Estúdio Completo. QA
 "Decoração" como frente → payload separa fundo (sem a peça 5) e frente (só a peça 5), zero erro no
 console. ⚠️ **Follow-up adiado:** o dropdown 'frente' do bloco `sz_gk_draw_tilemap` na extensão gk
 (desamarrar de `solid`) NÃO entrou — evitei tocar os arquivos do WIP concorrente da gk.
+
+## Camadas de OBJETOS + peças POR CAMADA no mapa (10/2026)
+
+Contexto: a plataforma deixa de aceitar arquivos Tiled/TMX, então o mapa inteiro tem de nascer no
+Pinta — inclusive o que não é peça (onde o jogador começa, inimigos, portas, áreas de colisão).
+
+- **Modelo** (`core/project.ts`): `TilemapLayer = TilemapTileLayer | TilemapObjectLayer`.
+  - Camada de PEÇAS: a de sempre + `tilesetId?` (as peças DELA). ⭐ `kind?: 'tiles'` e `tilesetId?`
+    são OPCIONAIS de propósito: o sanitize OMITE os dois na forma canônica (o `tilesetId` igual ao
+    do mapa também some), então todo mapa antigo atravessa o round-trip **byte a byte**. Leia sempre
+    por `tileLayerTilesetId(map, layer)`; `tilemapTilesetIds(map)` lista todas (a padrão primeiro).
+  - Camada de OBJETOS: `{kind: 'objects', id, name, visible, objects}`; objeto =
+    `{id, name, type, x, y, width, height, properties}` em PIXELS DO MAPA (largura e altura 0 =
+    PONTO). `properties`: `string | number | boolean`, chave em `OBJECT_PROPERTY_KEY_PATTERN`
+    (começa com letra; `normalizeObjectPropertyKey` é o da UI). As duas variantes têm as chaves da
+    outra como `never` opcional (`cells?: never` etc.): ler `layer.front` na união dá `undefined`,
+    escrever uma camada de objetos com células não compila.
+  - Tetos (`PINTA_LIMITS`): 8 camadas (peças + objetos somados; era 4), 512 objetos por camada,
+    16 propriedades, chave ≤ 32, texto ≤ 200, nome/tipo ≤ 48, coordenada ≤ `maxObjectCoord`
+    (128 × 48). O sanitize DESCARTA objeto sem id ou com medida não numérica, propriedade de tipo
+    desconhecido e camada de `kind` desconhecido; arredonda/corta o resto. Mapa sem NENHUMA camada
+    de peças é descartado (e `removeLayer` não tira a última).
+  - ⚠️ **O sanitize não sabe o tamanho da peça** (ele vê um asset só). A regra "toda peça do mapa
+    tem o MESMO estilo e o mesmo `tileSize` das peças padrão" (`isCompatibleMapTileset`) é imposta
+    por quem conhece os tilesets: `setLayerTileset` recusa (mesmo asset), `collectMapTilesets`/
+    `resolveMapTilesets` (`tiles/mapTilesets.ts`) deixam o incompatível de fora (a camada dele não
+    aparece; nunca é desenhada com as peças erradas) e `buildTilemap` LANÇA.
+- **Ops puras**: `tiles/tilemapOps.ts` (`addObjectLayer`, `setLayerTileset`, `flattenWithTilesets` —
+  o achatado que diz de QUAL tileset veio cada peça —, `topTileAt`, `usesMapTileset`, `growTilemap`
+  com `tileSize` empurra os objetos) e `tiles/mapObjects.ts` (criar/mudar/apagar objeto,
+  propriedades com recusa tipada, hit-test, encaixe). ⭐ `remapTilemapCells(map, change, tilesetId)`:
+  inserir/apagar peça renumera SÓ as camadas daquele tileset (o `TileStrip` passa o id).
+- **Desenho**: os renderizadores recebem `MapTilesets` (UM tileset, como sempre, ou a lista). Pixel
+  pinta cada célula com a paleta do tileset dela (`composeSheetPngDataUrl` aceita `colors` por
+  célula); vetor mantém `tile-<i>` para as peças padrão (markup de mapa antigo igual) e usa
+  `tile-<s>-<i>` para as outras. Miniatura da galeria, ZIP, ExportDialog, biblioteca do Estúdio e a
+  miniatura da ponte passam TODAS as peças.
+- **`.pinta.json` v2** (`export/projectJson.ts`): só sai v2 quando algum desenho PRECISA
+  (`tilemapNeedsV2`: objeto ou peça por camada); o resto continua v1 byte a byte (cloud, hashes da
+  imagem derivada e versões antigas do Pinta não percebem nada). O import lê 1 e 2 e recusa o resto.
+  As duas versões têm um dígito: o cabeçalho mede o mesmo (o medidor incremental conta com isso).
+  `assetBundleToJson` leva todas as peças do mapa; `isTilemapBundle` reconhece o pacote (restauro
+  atômico). `galleryStore.importAssets` religa o padrão E cada camada (`remapTilemapTilesetIds`);
+  `remove` recusa apagar peças usadas por QUALQUER camada; o pack por seleção leva todas.
+- **Fronteira com o Estúdio** (decisão: os runtimes JS continuam como estão): o `PintaTilemapMeta`
+  segue sendo de UM tileset, o padrão do mapa. `tilemapToStudioGrid` (grade colável, `.grade.txt`,
+  meta da ponte, `frontGrid`, `tilemapFront`) leva só as camadas dessas peças; as de outras peças
+  e os objetos aparecem na miniatura e no `.pinta-tilemap.json`. A imagem derivada PLANA do
+  Estúdio (`selection.kind: 'tilemap'`) idem, com UMA dependência; o `kind: 'map'` (pygame) leva
+  todas as peças e os objetos — ver a seção logo abaixo.
+- **`.pinta-tilemap.json` v2** (`export/studioGrid.ts`): os campos antigos ficam (`tileSize`, `cols`,
+  `rows`, `grid`, `solid`, `platform` = peças padrão) + `format: 'pinta-tilemap'`, `version: 2`,
+  `tilesets: [{name, tileSize, columns, tileCount, solid[], platform[]}]` (padrão primeiro) e, por
+  camada, `type: 'tiles'` (`name`, `visible`, `front` — antes se perdia —, `tileset` = índice em
+  `tilesets` ou `null`, `cells`) ou `type: 'objects'` (`name`, `visible`, `objects`).
+- **Editor** (`TilemapEditor`): uma folha por tileset (`sheetsRef`, refeita só quando AQUELE muda;
+  carregamento vetorial cancelado esquece a entrada para recomeçar). Painel de camadas: "Nova
+  camada" (peças) e "Nova camada de objetos"; a camada de peças ativa mostra "Peças desta camada"
+  quando há outras compatíveis. A caixa troca com o TIPO da camada ativa (`MAP_TOOLS[].modes`;
+  `object-select`/`object-point`/`object-rect`, V/O/R, mais a Mão e "Encaixar os objetos na
+  grade"). Os objetos moram num `<svg>` por cima do canvas (`MapObjectsOverlay`, `viewBox` em
+  pixels do mapa, hit-test por CONTA), tocável só na camada de objetos com ferramenta de objeto;
+  `replace` no arrasto + `commitGesture` = um desfazer por gesto. Encaixe: canto de área na linha da
+  grade, ponto no MEIO da peça. `MapObjectPanel`: lista (o caminho do teclado) + nome, tipo, X/Y,
+  largura/altura e propriedades (texto / número / sim ou não); texto e número gravam ao sair do
+  campo ou no Enter (Esc devolve), para não criar um desfazer por letra. Delete apaga o objeto.
+- **Por código** (`@sistemazero/pinta/assets`): `buildTilemap({name, tileset, tilesets?, cols?,
+  rows?, layers, objectUnits?})` com `LayerSpec` (peças: `rows` em arte ou `cells`, `tileset`,
+  `front`) e `ObjectLayerSpec` (`kind: 'objects'`, `objects` com `x/y/width/height` em pixels ou
+  em peças). LANÇA no erro de autoria e confere que o mapa sobrevive inteiro ao sanitize.
+- **Ficou de fora**: ícone de sprite no objeto (`spriteAssetId`) — pede seletor de desenho no painel
+  e miniatura no palco; misturar peças pixel e vetor no mesmo mapa; desenhar as camadas de outras
+  peças no "Jogar meu mapa"/runtimes JS.
+- Testes: `tiles/mapObjects.test.ts` (sanitize, tetos, propriedades, ops, renumerar por tileset,
+  wire, v1/v2, pacote, `.pinta-tilemap.json`, SVG e minimapa com várias peças),
+  `templates/builders.test.ts`, `components/editor/mapObjectsUi.test.tsx` (camada, ponto, área,
+  propriedades, Delete, peças por camada), mais casos em `galleryStore.test.ts`,
+  `gallerySelection.test.ts` e `studioBridge.test.ts`. Helper de teste: `tileLayerAt(map, i)`
+  (`testing/fixtures.ts`).
+
+**Review da integração com o Estúdio (25/10/2026), o que mudou aqui:**
+- ⚠️ **A camada sem as peças dela NÃO tapa a de baixo** (`DrawableTile`, 3º parâmetro de
+  `flattenWithTilesets` e 5º de `topTileAt`/`flattenCellAt`; o filtro sai de `drawableMapTile`
+  sobre o `resolveMapTilesets`, ou de `drawableIn` com as peças que o editor achou). O achatado
+  decidia quem vencia a célula ANTES de saber se o tileset existia: a camada cujas peças sumiram
+  (ou são de outro tamanho) ficava em branco por cima do chão no editor, no PNG/miniatura, no SVG
+  e no minimapa, enquanto o atlas `map` do pygame omite a camada. Agora só vence a peça que um
+  tileset achado TEM (a casa que aponta para peça inexistente também não tapa, como o -1 do
+  atlas). Sem o filtro, a regra antiga (export de grade, que só leva as peças padrão).
+- **O rascunho do painel não se perde** (`CommitInput` do `MapObjectPanel`): tocar outro objeto
+  no mapa trocava a seleção no `pointerdown`, antes do blur, e o `key={selected.id}` remontava os
+  campos sem gravar. O `MapObjectsOverlay` tira o foco do campo ANTES de ler o asset do gesto (o
+  blur grava de forma síncrona, e o `commitGesture(base)` não engole a edição), e o campo que
+  desmonta com rascunho pendente grava na desmontagem. Texto igual = nada gravado (nenhum
+  desfazer vazio). `setObjectProperty` ignora mudar/renomear uma chave que já saiu (o rascunho da
+  linha apagada não a ressuscita).
+- **O campo mostra o valor GRAVADO**: depois de gravar, o recusado (chave repetida/inválida,
+  número ilegível) volta ao de antes e o aceito chega pelo `value` (`useLayoutEffect`, sem um
+  quadro do velho).
+- **Delete/Backspace respeitam as janelas do Pinta** (`isPintaModalOpen`), como os outros atalhos.
+- Testes: `mapObjectsUi.test.tsx` (rascunho com e sem foco, sem desfazer vazio, Delete com
+  janela, chave recusada) e o caso "a camada sem as peças dela" de `mapObjects.test.ts`.
+
+⚠️⚠️ **Risco registrado (M3, sem conserto no Pinta): cliente ANTIGO regravando pela nuvem.** Um
+bundle anterior às camadas de objetos (outro aparelho com a aba aberta) desce o mapa novo pelo
+`sanitizePintaAsset` DELE, que descarta a camada de objetos e corta as camadas 5 a 8 (o teto era
+4), e grava o resultado no IndexedDB local. Se a criança mexer nele lá, a subida leva o mapa
+cortado por cima do da conta. O Pinta não alcança o código velho; a proteção barata existe no
+Members: a reserva recusa com `CREATION_CLIENT_OUTDATED` quem declara `formatVersion` menor que o
+guardado (o Molda já usa). Para ligá-la, o host (member-shell, não este pacote) teria de: subir
+os mapas com `formatVersion: 2` em `pinta-cloud-persistence.ts` (todo mapa, não só o que precisa
+de v2: senão apagar a camada de objetos rebaixaria para 1 e o próprio cliente novo seria
+recusado), criar a nuvem do Pinta com `maxFormatVersion: 2` em `pinta-client.tsx` e
+`molda-client.tsx` (senão o DELETE de um item v2 é recusado), e o mesmo no canal `lesson-pinta`.
+Mesmo assim o aparelho velho guarda a cópia cortada no disco local e, depois do F5, a edição dele
+sobe (é o que a criança viu e editou). Janela: até a aba antiga recarregar.
+
+## PNG com os dados do Pinta dentro, para o pygame (10/2026)
+
+Projetos Python com `python-pygame@1.0.0` trazem o desenho INTEIRO, com os dados num `iTXt` do
+próprio PNG; o leitor é o `pinta.py` do Estúdio (`carregar_sprite`/`carregar_pecas`/`carregar_mapa`).
+
+- **Receita** (`@sistemazero/core/studio/pinta-image`): `selection.kind` ganhou `spritesheet`
+  (sprite pixel/vetor), `tileset` (folha inteira) e `map` (atlas de todas as peças do mapa + camadas
+  + objetos). Sempre PNG (`output: 'svg'` recusado). Dependências: `map` = TODAS as peças usadas
+  (1..8, a padrão primeiro), `tilemap` segue com exatamente 1, o resto 0
+  (`pintaImageDependencyRule`). As chaves das receitas antigas não mudaram.
+- **Geometria por construção**: `export/portableImageData.ts` (puro) usa `packAnimationsGeometry` e
+  `tilesetGridGeometry`; o atlas empilha as folhas (padrão primeiro, depois `tilemapTilesetIds`),
+  alinhadas à esquerda. Todo número do JSON é em pixels da SAÍDA (× `scale`); quadro/peça com
+  fração de pixel na saída é recusado ("Escolha outra escala"). Camada de peças sem tileset (ou
+  incompatível) sai do JSON, casa que aponta para peça inexistente vira -1, e a `hitbox` é a do
+  `spriteHitbox` (`null` = quadro inteiro).
+- **O bloco** (`export/pngText.ts`): `iTXt` logo depois do IHDR (offset 33): `pinta` + NUL + flag 1
+  + método 0 + idioma vazio + NUL + traduzida vazia + NUL + zlib(JSON UTF-8), comprimido pelo
+  fflate (determinístico: mesma entrada, mesmos bytes, mesma SHA). `pngCrc32` é o único CRC do
+  pacote (o `readPngDimensions` também o usa). O pacote só ESCREVE o bloco: o leitor (espelho do
+  `ler_dados` do `pinta.py`) mora no `portableImageData.test.ts` (era `readPngITxt`, exportado só
+  para o teste e descomprimindo sem teto).
+- **Captura**: `capturePintaAssetForImage` lê o mapa e TODAS as peças numa transação só
+  (`tilesets`, compatíveis, padrão primeiro; `tileset` segue sendo o padrão). Camada que troca de
+  peças entre as leituras = `source-changed`. `inspectImageForStudio(id, { selection })`: com
+  `map` a provenance lista todas as peças; sem o campo, a resposta histórica (só a padrão).
+- **Resumo da galeria**: `imageSelection.sheet` (tamanho da folha/atlas em pixels do desenho) em
+  `frame`, `tile` e `tilemap` diz ao Estúdio que o desenho oferece o modo novo.
+- Testes: `export/portableImageData.test.ts` (decodifica o PNG, lê o iTXt, bytes crus, atlas com
+  várias peças, objetos, determinismo, limites) e o bloco "tileset per layer" de
+  `portableImageCapture.test.ts`.
 
 ## Full review (correções) — 18/07/2026
 

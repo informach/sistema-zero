@@ -1,4 +1,5 @@
 import { describe, expect, test } from 'bun:test'
+import type { Vec3 } from '../core/model'
 import { structuredBytes } from '../core/structuredBytes'
 import { createSceneEditorStore } from '../state/sceneEditorStore'
 import { createScenePersistence } from '../state/scenePersistence'
@@ -16,6 +17,7 @@ import {
 } from './commands'
 import type { MoldaSceneDocument } from './document'
 import { identityMatrix } from './matrix'
+import { scenePieceCoordinates, setScenePieceCoordinates } from './pieceCoordinates'
 import { readSceneDocument } from './readDocument'
 
 describe('animation and existing scene commands', () => {
@@ -58,7 +60,7 @@ describe('animation and existing scene commands', () => {
     expect(source).toEqual(original)
   })
 
-  test('delta clips survive static grouping/rest changes; animated pivots and absolute rewrites refuse atomically', () => {
+  test('delta clips survive rest changes; local moves retarget keys while grouping and turns stay guarded', () => {
     const source = animatedScene()
     source.animations[0]?.tracks.push(sceneRotationTrack())
     const original = structuredClone(source)
@@ -75,7 +77,86 @@ describe('animation and existing scene commands', () => {
       animations: source.animations.map((clip) => ({ ...clip, space: 'local' })),
     }
     expect(() => groupSceneNodes(absolute, ['body'])).toThrow('posição local original')
-    expect(() => transformSceneNodes(absolute, ['body'], delta)).toThrow('posição local original')
+    const moved = transformSceneNodes(absolute, ['body'], delta)
+    expect(moved.animations?.[0]?.tracks[0]?.keys[0]?.value).toEqual([1, 0, 0])
+    expect(() => setScenePieceCoordinates(absolute, 'body', 'rotation', [0, 0, 90])).toThrow(
+      'Converta o movimento',
+    )
+    expect(source).toEqual(original)
+  })
+
+  test('resizing a piece with local animation scales its absolute keys and keeps the clip editable', () => {
+    const source = animatedScene()
+    const node = source.nodes.find((entry) => entry.id === 'body')!
+    if (node.transform.kind !== 'trs') throw new Error('Expected rigid fixture')
+    const rest = node.transform
+    source.animations[0] = {
+      ...source.animations[0]!,
+      space: 'local',
+      tracks: [
+        {
+          nodeId: 'body',
+          channel: 'translation',
+          keys: [
+            { time: 0, value: [...rest.translation], interpolation: 'linear' },
+            {
+              time: 2,
+              value: [rest.translation[0] + 3, rest.translation[1], rest.translation[2]],
+              interpolation: 'linear',
+            },
+          ],
+        },
+        {
+          nodeId: 'body',
+          channel: 'scale',
+          keys: [
+            { time: 0, value: [...rest.scale], interpolation: 'linear' },
+            {
+              time: 2,
+              value: [rest.scale[0] * 1.5, rest.scale[1], rest.scale[2]],
+              interpolation: 'linear',
+            },
+          ],
+        },
+        sceneRotationTrack(),
+      ],
+    }
+    const original = structuredClone(source)
+    const dimensions = scenePieceCoordinates(source, 'body').dimensions
+    const doubled = dimensions.map((value) => value * 2) as Vec3
+    const resized = setScenePieceCoordinates(source, 'body', 'dimensions', doubled)
+    const changed = resized.nodes.find((entry) => entry.id === 'body')!
+    if (changed.transform.kind !== 'trs') throw new Error('Expected rigid resize')
+    const shift = changed.transform.translation.map(
+      (value, axis) => value - rest.translation[axis]!,
+    )
+    expect(scenePieceCoordinates(resized, 'body').dimensions).toEqual(doubled)
+    const translation = resized.animations?.[0]?.tracks.find(
+      (track) => track.nodeId === 'body' && track.channel === 'translation',
+    )
+    const scale = resized.animations?.[0]?.tracks.find(
+      (track) => track.nodeId === 'body' && track.channel === 'scale',
+    )
+    expect(translation?.keys.map((key) => key.value)).toEqual([
+      rest.translation.map((value, axis) => value + shift[axis]!) as Vec3,
+      [
+        rest.translation[0] + 3 + shift[0]!,
+        rest.translation[1] + shift[1]!,
+        rest.translation[2] + shift[2]!,
+      ],
+    ])
+    expect(scale?.keys.map((key) => key.value)).toEqual([
+      rest.scale.map((value) => value * 2) as Vec3,
+      [rest.scale[0] * 3, rest.scale[1] * 2, rest.scale[2] * 2],
+    ])
+    expect(resized.animations?.[0]?.tracks[2]).toEqual(source.animations[0]?.tracks[2])
+    expect(readSceneDocument(resized).status).toBe('valid')
+    const delta = identityMatrix()
+    delta[0] = delta[5] = delta[10] = 2
+    const dragged = transformSceneNodes(source, ['body'], delta)
+    const draggedScale = dragged.animations?.[0]?.tracks.find((track) => track.channel === 'scale')
+    expect(draggedScale?.keys[0]?.value).toEqual(rest.scale.map((value) => value * 2) as Vec3)
+    expect(readSceneDocument(dragged).status).toBe('valid')
     expect(source).toEqual(original)
   })
 

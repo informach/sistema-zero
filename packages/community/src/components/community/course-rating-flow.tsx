@@ -282,6 +282,7 @@ export function CourseRatingFlow({
                       key={o.value}
                       size="sm"
                       variant={answers[q.key] === o.value ? 'default' : 'outline'}
+                      aria-pressed={answers[q.key] === o.value}
                       onClick={() => toggleAnswer(q.key, o.value)}
                     >
                       {o.label}

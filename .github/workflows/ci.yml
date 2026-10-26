@@ -36,10 +36,10 @@ concurrency:
 jobs:
   ci:
     name: ci
-    # Typecheck do Studio (~16 min) + imagem/playtests isolados + exports com npm ci.
-    # O limite do job inclui essas provas reais; não altera orçamentos do produto.
+    # Baseline CI 40129239034: 41m14s; as provas novas Python/3D acrescentam ~4m19s.
+    # Dê margem ao job completo sem ampliar os deadlines individuais ou do produto.
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 60
     services:
       marketing-postgres:
         image: postgres:16
@@ -127,7 +127,7 @@ jobs:
 
       - name: Validate Python performance and reproduction instruments
         working-directory: packages/studio
-        run: bun --no-env-file test ./scripts/python/reproduction.test.ts ./e2e-runtime/performanceAcceptance.test.ts ./e2e-runtime/gamePerformance.test.ts ./e2e-python-editor/f1AcceptanceReporter.test.ts
+        run: bun --no-env-file test ./scripts/python/reproduction.test.ts ./scripts/python/approved-eval.test.ts ./e2e-runtime/performanceAcceptance.test.ts ./e2e-runtime/gamePerformance.test.ts ./e2e-python-editor/f1AcceptanceReporter.test.ts
 
       - name: Verificar cancelamento Python por RPC no runtime real
         working-directory: packages/studio-language-service
@@ -141,6 +141,40 @@ jobs:
           bun packages/studio/scripts/build-python-runtime.ts
           bun test ./packages/studio/scripts/python/prepare-stdlib.test.ts
           bun test ./packages/studio/scripts/python/provided-modules.test.ts
+
+      - name: Provar objetivos Python com programas reais no sandbox sem rede
+        timeout-minutes: 8
+        env:
+          STUDIO_PYTHON_TEST_CACHE: ${{ github.workspace }}/.cache/studio-python-runtime
+        run: |
+          bun packages/studio-runtime/tests/python-mission-smoke.ts
+          bun packages/studio-runtime/tests/python-playtest-smoke.ts --docker --health
+
+      - name: Provar objetivos Jogo 3D e three.js no sandbox sem rede
+        timeout-minutes: 5
+        env:
+          STUDIO_PYTHON_TEST_CACHE: ${{ github.workspace }}/.cache/studio-python-runtime
+        run: bun packages/studio-runtime/tests/three-objectives-smoke.ts
+
+      - name: Preservar evidências dos objetivos Python e 3D
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: python-project-mission-evidence
+          retention-days: 7
+          if-no-files-found: ignore
+          path: |
+            .cache/studio-python-runtime/playtest-docker/**/native-output.json
+            .cache/studio-python-runtime/playtest-docker/**/python-playtest-result.json
+            .cache/studio-python-runtime/playtest-docker/**/cleanup.json
+            .cache/studio-python-runtime/mission-docker/**/process.json
+            .cache/studio-python-runtime/mission-docker/**/judge.json
+            .cache/studio-python-runtime/mission-docker/**/cleanup.json
+            .cache/studio-python-runtime/mission-docker/**/python-mission-options.json
+            .cache/studio-python-runtime/mission-docker/**/python-mission-result.json
+            .cache/studio-python-runtime/three-objectives/**/summary.json
+            .cache/studio-python-runtime/three-objectives/**/cleanup.json
+            .cache/studio-python-runtime/three-objectives/**/scene.jpg
 
       - name: Preparar testes de mídia das oficinas
         working-directory: packages/live-recorder
@@ -183,6 +217,11 @@ jobs:
       - name: Instalar o compilador confiável para as provas fora da imagem
         run: npm ci --ignore-scripts --no-audit --no-fund --prefix packages/studio-runtime/runtime
 
+      - name: Preparar o Chromium exato do executor Pro fora da imagem
+        # Os exports usam o playwright-core fixado no runtime, que tem revisão
+        # própria de Chromium; o browser do Studio/gravador não o substitui.
+        run: node packages/studio-runtime/runtime/node_modules/playwright-core/cli.js install --with-deps chromium --only-shell
+
       # Credenciais e posse de portas do runtime são homologadas no Windows; o
       # FFmpeg empacotado do desktop também precisa de uma plataforma suportada.
       - name: Testes dos pacotes web e serviços
@@ -197,9 +236,13 @@ jobs:
           # macOS é a referência recomendada para Safari: playwright.dev/docs/browsers#webkit.
           STUDIO_STORAGE_BROWSER: chromium
 
-      - name: Verificar IR gerada dos exemplos 3D
+      - name: Verificar IR gerada dos exemplos e receitas de jogos
         working-directory: packages/studio
-        run: bun run check:game-3d-examples
+        run: |
+          bun run check:game-3d-examples
+          bun run check:world-3d-examples
+          bun run check:game-2d-recipes
+          bun run check:game-2d-advanced-recipes
 
       - name: Verificar fontes, regras e exports dos kits de jogos
         working-directory: packages/studio
@@ -208,7 +251,11 @@ jobs:
           bun run check:pro-typescript-libs
           bun run check:python-text-sources
           bun run check:python-visual-examples
-          bun --no-env-file test ./scripts/python/reference-game-audio.test.ts ./scripts/python/generate-visual-example-block-metadata.test.ts
+          bun run check:pgzero-games
+          bun run check:raylib-games
+          bun run check:pygame-games
+          (cd ../pinta && bun scripts/pygame-gallery/generate.ts --check && bun test scripts/pygame-gallery/drawing.test.ts scripts/pygame-gallery/png.test.ts scripts/pygame-gallery/derivation.test.ts)
+          bun --no-env-file test ./scripts/python/reference-game-audio.test.ts ./scripts/python/generate-visual-example-block-metadata.test.ts ./scripts/python/pgzero-art-png.test.ts
           bun run test:canvas-survival
           bun run test:grid-games
           bun run verify:canvas-export
@@ -248,6 +295,25 @@ jobs:
         run: cd packages/fiscal && bun test tests/db
         env:
           TEST_DATABASE_URL: postgres://postgres:postgres@localhost:55432/sistemazero
+
+      # O passo geral não fornece TEST_DATABASE_URL: sem estas etapas, as provas
+      # financeiras de transação, concorrência e migrações seriam puladas.
+      - name: Criar bancos descartáveis de Payments e Messaging
+        run: |
+          PGPASSWORD=postgres psql -h 127.0.0.1 -p 55432 -U postgres -d postgres -v ON_ERROR_STOP=1 -c "CREATE DATABASE payments_financial_ci"
+          PGPASSWORD=postgres psql -h 127.0.0.1 -p 55432 -U postgres -d postgres -v ON_ERROR_STOP=1 -c "CREATE DATABASE messaging_recovery_ci_test"
+
+      - name: Testes DB payments (Postgres real)
+        working-directory: packages/payments
+        run: bun test tests/db
+        env:
+          TEST_DATABASE_URL: postgres://postgres:postgres@127.0.0.1:55432/payments_financial_ci
+
+      - name: Testes DB messaging (Postgres real)
+        working-directory: packages/messaging
+        run: bun test tests/db
+        env:
+          TEST_DATABASE_URL: postgres://postgres:postgres@127.0.0.1:55432/messaging_recovery_ci_test
 
       # ⚠️ A pasta INTEIRA, como no fiscal acima. Até 15/08 esta linha apontava para UM
       # arquivo, então os outros 10 — justamente os documentados como "o único teste que
@@ -350,6 +416,34 @@ jobs:
           path: packages/pensa/.cache/playwright-native-results
           if-no-files-found: ignore
 
+  studio-python-extensions:
+    name: studio-python-extensions
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: '1.3.11'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.14.2'
+      - name: Instalar dependências (lockfile congelado)
+        run: bun install --frozen-lockfile
+      - name: Conferir todos os jogos Pygame-ce em Blocos com o Python do runtime
+        env:
+          PYTHON: python
+        run: bun --no-env-file packages/studio/scripts/python/pygame-block-coverage.ts --check
+      - name: Instalar a biblioteca nativa de referência
+        run: 'python -m pip install --only-binary=:all: pygame-ce==2.5.7'
+      - name: Conferir a ponte e os materiais do Pinta com pygame-ce real
+        run: |
+          python -I -B packages/studio/scripts/python/test-pygame-bridge.py
+          python -I -B packages/studio/scripts/python/test-pinta-module.py
+
   studio-storage-macos:
     name: studio-storage-macos
     runs-on: macos-latest
@@ -393,12 +487,17 @@ jobs:
         run: |
           & "$env:SystemRoot/System32/WindowsPowerShell/v1.0/powershell.exe" -NoProfile -NonInteractive -ExecutionPolicy Bypass -File packages/agent-runtime/src/process/windows-job.ps1 -OutputFile "$env:RUNNER_TEMP/sistemazero-job-proof.exe"
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Instalar Chromium para os testes nativos
+        timeout-minutes: 5
+        working-directory: packages/agent-runtime
+        env:
+          PLAYWRIGHT_DOWNLOAD_CONNECTION_TIMEOUT: '45000'
+        run: |
+          node ../agent-integrations/node_modules/playwright-core/cli.js install chromium
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       - name: Testar runtime nativo
         working-directory: packages/agent-runtime
-        run: |
-          bun ../agent-integrations/node_modules/playwright-core/cli.js install chromium
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          bun test
+        run: bun test
       - name: Testar desktop e mídia empacotada
         working-directory: packages/marketing-desktop
         run: bun test
@@ -582,7 +681,7 @@ jobs:
 
   deploy-staging:
     name: deploy-staging
-    needs: [ci, desktop-windows, studio-storage-macos, community-kids-e2e, studio-e2e-chromium, studio-e2e-firefox, studio-e2e-webkit, members-image]
+    needs: [ci, studio-python-extensions, desktop-windows, studio-storage-macos, community-kids-e2e, studio-e2e-chromium, studio-e2e-firefox, studio-e2e-webkit, members-image]
     # Só push na staging (ou dispatch manual) — PR para a main NUNCA deploya.
     if: github.ref == 'refs/heads/staging' && (github.event_name == 'workflow_dispatch' || github.event_name == 'push')
     runs-on: ubuntu-latest
@@ -786,54 +885,15 @@ jobs:
             echo "  $s → deployment $ID"
           }
 
-          # espera os serviços pedidos chegarem a estado terminal (healthcheck gateia o SUCCESS)
-          # a API às vezes devolve corpo não-JSON transitório num poll — conta como
-          # poll perdido (segue tentando) e só aborta após 5 rounds ruins SEGUIDOS
+          # Uma consulta readonly por round para toda a onda, com backoff da API.
+          # Os IDs vêm somente dos ACKs; o monitor nunca dispara/repete deployments.
           esperar() {
-            local deadline=$((SECONDS + 60 * 60))
-            local i=0 REMAINING HTTP_TIMEOUT
-            FAIL=0; PENDING=1; BADPOLLS=0
-            while [ "$SECONDS" -lt "$deadline" ]; do
-              i=$((i+1))
-              REMAINING=$((deadline - SECONDS))
-              sleep "$((REMAINING < 20 ? REMAINING : 20))"
-              if [ "$SECONDS" -ge "$deadline" ]; then PENDING=1; break; fi
-              PENDING=0; LINE=""; ROUND_OK=1
-              for s in "$@"; do
-                REMAINING=$((deadline - SECONDS))
-                if [ "$REMAINING" -le 0 ]; then PENDING=1; break; fi
-                HTTP_TIMEOUT=$((REMAINING < 15 ? REMAINING : 15))
-                Q=$(jq -nc --arg id "${DEP[$s]}" '{query:"query($id:String!){deployment(id:$id){status}}",variables:{id:$id}}')
-                RESP=$(gql "$Q" "$HTTP_TIMEOUT") || RESP=""
-                if [ "$SECONDS" -ge "$deadline" ]; then PENDING=1; break; fi
-                if ! echo "$RESP" | jq -e . >/dev/null 2>&1; then
-                  echo "  poll de $s devolveu corpo não-JSON: $(echo "$RESP" | head -c 120)"
-                  ROUND_OK=0; PENDING=1; LINE="$LINE $s=?"
-                  continue
-                fi
-                ST=$(echo "$RESP" | jq -r '.data.deployment.status // "?"')
-                LINE="$LINE $s=$ST"
-                case "$ST" in
-                  SUCCESS) ;;
-                  FAILED|CRASHED|REMOVED) FAIL=1 ;;
-                  *) PENDING=1 ;;
-                esac
-              done
-              if [ "$ROUND_OK" -eq 1 ]; then
-                BADPOLLS=0
-              else
-                BADPOLLS=$((BADPOLLS+1))
-                if [ "$BADPOLLS" -ge 5 ]; then
-                  echo "::error::API do Railway sem resposta válida em $BADPOLLS polls consecutivos"
-                  exit 1
-                fi
-              fi
-              echo "[$i]$LINE"
-              [ "$PENDING" -eq 0 ] && break
+            local entries='[]' s
+            for s in "$@"; do
+              entries=$(jq -c --arg service "$s" --arg id "${DEP[$s]}" --arg serviceId "${SVC_ID[$s]}" \
+                '. + [{service:$service,id:$id,serviceId:$serviceId}]' <<< "$entries")
             done
-            # FAIL/PENDING são conferidos pelo caller. Um predicado falso no
-            # último round não pode abortar sob errexit antes desse diagnóstico.
-            return 0
+            RAILWAY_DEPLOYMENTS="$entries" node scripts/ci/staging-deploy-monitor.mjs "$GITHUB_SHA"
           }
 
           # O wrapper é a barreira canônica: migrations/V0 -> Auth novo e antigos
@@ -849,5 +909,4 @@ jobs:
           if [ "${#DEP[@]}" -eq 0 ]; then echo "onda canônica concluída; nenhum outro serviço solicitado"; exit 0; fi
 
           esperar "${!DEP[@]}"
-          if [ "$FAIL" -eq 1 ] || [ "$PENDING" -eq 1 ]; then echo "::error::deploy do staging não convergiu"; exit 1; fi
           echo "staging atualizado ✅"

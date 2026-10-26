@@ -5,6 +5,7 @@ import { makeModel } from '../testing/fixtures'
 import {
   addScenePrimitive,
   convertSceneNodesToMesh,
+  resizeScenePrimitive,
   setSceneNodeFlag,
   setScenePrimitiveDetail,
 } from './commands'
@@ -19,9 +20,9 @@ import { readSceneDocument } from './readDocument'
 import { readSceneGeometry } from './readGeometry'
 
 test('every boundary tessellation has a closed oriented surface and an exact drawing/conversion budget', () => {
-  for (const kind of ['cylinder', 'sphere'] as const) {
+  for (const kind of ['cylinder', 'sphere', 'torus'] as const) {
     for (const around of [3, 7, 64]) {
-      for (const down of kind === 'sphere' ? [2, 9, 32] : [1]) {
+      for (const down of kind === 'sphere' ? [2, 9, 32] : kind === 'torus' ? [3, 8, 32] : [1]) {
         const base = {
           id: 'g',
           from: [-1.123456789, -2, -3] as [number, number, number],
@@ -29,13 +30,18 @@ test('every boundary tessellation has a closed oriented surface and an exact dra
           surfaces: {},
         }
         const source: SceneCurvedPrimitive =
-          kind === 'sphere'
-            ? { ...base, kind, tessellation: { around, down } }
-            : { ...base, kind, tessellation: { around } }
+          kind === 'cylinder'
+            ? { ...base, kind, tessellation: { around } }
+            : { ...base, kind, tessellation: { around, down } }
         const { mesh } = primitiveMesh(source)
         const drawn = buildSceneGeometry(source)
         const converted = buildSceneGeometry(mesh)
-        const expected = kind === 'sphere' ? around * (down - 1) * 2 : around * 4
+        const expected =
+          kind === 'sphere'
+            ? around * (down - 1) * 2
+            : kind === 'torus'
+              ? around * down * 2
+              : around * 4
         expect(drawn.issues).toEqual([])
         expect(drawn.faceIds).toHaveLength(expected)
         expect(primitiveTriangleCount(source)).toBe(expected)
@@ -60,10 +66,39 @@ test('every boundary tessellation has a closed oriented surface and an exact dra
         }
         expect(
           Object.keys(mesh.vertices).length - edges.size + Object.keys(mesh.faces).length,
-        ).toBe(2)
+        ).toBe(kind === 'torus' ? 0 : 2)
       }
     }
   }
+})
+
+test('torus keeps its painted surface and detail through save, resize and conversion', () => {
+  const added = addScenePrimitive(migrateLegacyModel(makeModel()).document, 'torus', 'Torus')
+  const node = added.nodes.at(-1)!
+  if (node.kind !== 'mesh') throw new Error('Missing torus node')
+  const geometry = added.geometries.at(-1)!
+  if (geometry.kind !== 'torus') throw new Error('Missing torus geometry')
+  expect(geometry.from).toEqual([-1, -0.35, -1])
+  expect(geometry.to).toEqual([1, 0.35, 1])
+  expect(primitiveDetail(geometry)).toEqual({ around: 16, down: 8 })
+  expect(new Set(primitiveMesh(geometry).surfaceByFace.values())).toEqual(new Set(['around']))
+  const changed = setScenePrimitiveDetail(added, node.id, { around: 12, down: 6 })
+  const resized = resizeScenePrimitive(changed, node.id, [3, 1, 4])
+  const resizedGeometry = resized.geometries.at(-1)!
+  if (resizedGeometry.kind !== 'torus') throw new Error('Missing resized torus')
+  expect(
+    resizedGeometry.to.map((value, axis) => value - (resizedGeometry.from[axis] ?? NaN)),
+  ).toEqual([3, 1, 4])
+  expect(primitiveDetail(resizedGeometry)).toEqual({ around: 12, down: 6 })
+  const decoded = readSceneDocument(sceneToJson(resized))
+  expect(decoded.status).toBe('valid')
+  if (decoded.status === 'valid')
+    expect(decoded.document.geometries.at(-1)).toEqual(resizedGeometry)
+  const converted = convertSceneNodesToMesh(resized, [node.id])
+  expect(buildSceneGeometry(converted.geometries.at(-1)!).positions).toEqual(
+    buildSceneGeometry(resizedGeometry).positions,
+  )
+  expect(() => readSceneGeometry({ ...geometry, tessellation: { around: 12, down: 2 } })).toThrow()
 })
 
 test('strict detail boundaries reject coercion, wrong fields and invalid budgets without synthesizing defaults', () => {

@@ -2,7 +2,15 @@ import assert from 'node:assert/strict'
 import { mkdir, open, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 import { awaitWithSignal } from '@sistemazero/core/http'
+import {
+  judgePythonProjectExecution,
+  preparePythonProjectExecution,
+} from '@sistemazero/core/learning'
 import { studioPythonExecutionRevision } from '@sistemazero/core/studio/python-execution-content'
+import {
+  pythonMissionRequest,
+  pythonProjectStructureRecipe,
+} from '@sistemazero/core/studio/python-mission-execution'
 import { StudioPythonPlaytestRecipeSchema } from '@sistemazero/core/studio/python-playtest'
 import { verifyStudioPythonDeployment } from '@sistemazero/core/studio/python-runtime-distribution'
 import { createStudioRuntimeRelease } from '@sistemazero/core/studio/runtime-catalog'
@@ -22,6 +30,27 @@ if (restartBeforeCancel && !cancelDuringExec)
   throw new Error('The restart proof requires --cancel-during-exec.')
 const structure = process.argv.includes('--structure')
 const turtle = process.argv.includes('--turtle')
+const mission = process.argv.includes('--mission')
+const health = process.argv.includes('--health')
+if (
+  health &&
+  (mission ||
+    turtle ||
+    cancelDuringExec ||
+    process.argv.includes('--preview') ||
+    process.argv.includes('--builder'))
+)
+  throw new Error('Run structure health separately from other SDK proofs.')
+if (
+  mission &&
+  (cancelDuringExec ||
+    turtle ||
+    process.argv.includes('--preview') ||
+    process.argv.includes('--builder'))
+)
+  throw new Error(
+    'Mission SDK qualification has its own fixed program and lifecycle; run other proofs separately.',
+  )
 const preview = process.argv.includes('--preview')
 const builder = process.argv.includes('--builder')
 const builderDatabaseUrl = process.env.STUDIO_BUILDER_TEST_DATABASE_URL
@@ -42,23 +71,33 @@ if (builder) {
   )
     throw new Error('Only the owned local full-schema builder QA database is allowed')
 }
-const validate = process.argv.includes('--validate') || turtle || preview
+const validate = process.argv.includes('--validate') || turtle || preview || mission || health
 const recipe = StudioPythonPlaytestRecipeSchema.parse(
-  turtle
-    ? {
-        version: 1,
-        stdin: ['Lia'],
-        keys: ['Space'],
-        clicks: [{ x: 0.25, y: 0.25 }],
-        requireGraphics: true,
-      }
-    : { version: 1 },
+  health
+    ? pythonProjectStructureRecipe()
+    : turtle
+      ? {
+          version: 1,
+          stdin: ['Lia'],
+          keys: ['Space'],
+          clicks: [{ x: 0.25, y: 0.25 }],
+          requireGraphics: true,
+        }
+      : { version: 1 },
 )
 if (process.platform === 'win32' && !linuxDocker)
   throw new Error(
     'Wrangler Containers requires Linux. Run this proof with --linux-docker on Windows.',
   )
-const build = await buildPythonRuntimeDistribution()
+const testCache = process.env.STUDIO_PYTHON_TEST_CACHE
+const build = await buildPythonRuntimeDistribution(
+  testCache
+    ? {
+        vendorDirectory: path.join(testCache, 'vendor'),
+        outputDirectory: path.join(testCache, 'distributions'),
+      }
+    : undefined,
+)
 lifetime.throwIfAborted()
 const release = await createStudioRuntimeRelease({
   manifestVersion: 1,
@@ -178,7 +217,14 @@ const files = [
   },
   { path: 'empty.py', bytes: new Uint8Array(0) },
   ...(validate
-    ? [{ path: 'helper.py', bytes: new TextEncoder().encode('message = "sdk-validation-ação"\n') }]
+    ? [
+        {
+          path: 'helper.py',
+          bytes: new TextEncoder().encode(
+            'message = "sdk-validation-ação"\ndef somar(a, b):\n    return a + b\n',
+          ),
+        },
+      ]
     : []),
   ...(turtle
     ? [
@@ -240,6 +286,47 @@ const content = {
   ),
 }
 const seed = path.join(directory, 'seed.json')
+const snapshot = {
+  ...content,
+  projectId: 'sdk-proof',
+  revision: await studioPythonExecutionRevision(content),
+}
+const missionPlan = mission
+  ? await preparePythonProjectExecution(
+      {
+        projectId: snapshot.projectId,
+        revision: snapshot.revision,
+        runtimeManifestSha256: release.manifestSha256,
+        runId: crypto.randomUUID(),
+      },
+      [
+        {
+          id: 'output',
+          rule: {
+            type: 'behavior',
+            steps: [],
+            expect: {
+              target: { kind: 'console' },
+              compare: 'contains',
+              value: 'sdk-validation-ação',
+            },
+          },
+        },
+        {
+          id: 'function',
+          rule: {
+            type: 'functionReturns',
+            module: 'helper.py',
+            name: 'somar',
+            cases: [
+              { args: [2, 3], expected: 5 },
+              { args: [-1, 1], expected: 0 },
+            ],
+          },
+        },
+      ],
+    )
+  : undefined
 await writeFile(
   seed,
   JSON.stringify({
@@ -253,6 +340,7 @@ await writeFile(
     restartBeforeCancel,
     structure,
     validate,
+    ...(missionPlan ? { mission: pythonMissionRequest(missionPlan) } : {}),
     turtle,
     preview,
     ...(builder
@@ -348,6 +436,25 @@ try {
   await writeFile(path.join(directory, 'result.json'), JSON.stringify({ exit, stdout, stderr }))
   console.log(JSON.stringify({ evidence: directory, exit, stdout, stderr: stderr.slice(-12_000) }))
   assert.equal(exit, 0, 'Native SDK inspection proof failed')
+  if (missionPlan) {
+    const proof = stdout
+      .split('\n')
+      .flatMap((line) => {
+        try {
+          return [JSON.parse(line)]
+        } catch {
+          return []
+        }
+      })
+      .find((value) => value?.missionValidated === true)
+    assert.ok(proof, 'SDK did not return its actual mission observations')
+    const results = judgePythonProjectExecution(missionPlan, proof.report.mission)
+    assert.ok(
+      results.every((result) => result.passed),
+      JSON.stringify(results),
+    )
+    await writeFile(path.join(directory, 'mission-judge.json'), JSON.stringify({ results }))
+  }
 } finally {
   lifetime.removeEventListener('abort', abortChild)
   if (child.exitCode === null) child.kill()

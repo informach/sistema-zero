@@ -1,3 +1,4 @@
+import type { SubscriptionCycleAccess } from '@sistemazero/core/billing'
 import { DomainEvent } from '../shared/domain-event'
 
 export class PaymentCreatedEvent extends DomainEvent {
@@ -33,6 +34,7 @@ export class PaymentPaidEvent extends DomainEvent {
       paidAt: string
       /** Assinatura-pai quando o pagamento é um CICLO de recorrência (senão null). */
       subscriptionId: string | null
+      cycleAccess?: SubscriptionCycleAccess
     },
   ) {
     super(aggregateId)
@@ -60,6 +62,24 @@ export class PaymentFailedEvent extends DomainEvent {
 
   toPayload(): Record<string, unknown> {
     return { paymentId: this.aggregateId, ...this.data }
+  }
+}
+
+export class PaymentSubscriptionPeriodConfirmedEvent extends DomainEvent {
+  readonly eventName = 'payment.subscription_period_confirmed'
+  constructor(
+    aggregateId: string,
+    private readonly data: {
+      consumerId: string
+      subscriptionId: string
+      paidAt: string
+      cycleAccess: SubscriptionCycleAccess
+    },
+  ) {
+    super(aggregateId)
+  }
+  toPayload(): Record<string, unknown> {
+    return { paymentId: this.aggregateId, ...structuredClone(this.data) }
   }
 }
 

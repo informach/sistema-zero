@@ -4,7 +4,8 @@
  * É o que a aula precisa em três momentos: a criança ENVIA o desenho ao professor, ela RETOMA de
  * onde parou ao reabrir o bloco, e ela BAIXA o arquivo para levar ao Pinta completo.
  *
- * ⭐ **O envelope é o MESMO `pinta-gallery` v1 do backup da galeria**, com um asset no array. Isso
+ * ⭐ **O envelope é o MESMO `pinta-gallery` do backup da galeria** (v1; v2 só quando um mapa tem
+ * objetos ou peças por camada), com um asset no array. Isso
  * não é economia de código, é o que faz o "baixar aqui, importar lá" funcionar sem nenhuma ponte
  * nova: o arquivo que o bloco gera é exatamente um `.pinta.json` que a galeria já sabe restaurar.
  *
@@ -14,7 +15,8 @@
  * certo; para RETOMAR o próprio trabalho seria fatal, porque cada abertura do bloco criaria um
  * desenho novo. Por isso este módulo fala com o `importPintaJson` DIRETO e nunca com o store.
  */
-import { isTilesetKind, type PintaAsset } from '../core/project'
+import { isTilesetKind, type PintaAsset, tilemapUsesTileset } from '../core/project'
+import { collectMapTilesetsFrom } from '../tiles/mapTilesets'
 import { galleryToPintaJson, importPintaJson } from './projectJson'
 
 export interface AssetImportResult {
@@ -44,10 +46,25 @@ export function assetBundleToJson(
   galleryAssets: readonly PintaAsset[],
 ): string | null {
   if (asset.kind !== 'tilemap') return assetToJson(asset)
-  const tileset = galleryAssets.find(
-    (candidate) => isTilesetKind(candidate) && candidate.id === asset.tilesetId,
-  )
-  return tileset ? galleryToPintaJson([tileset, asset]) : null
+  // Mapa com várias peças leva TODAS (a padrão primeiro); as que sumiram da
+  // galeria ficam de fora e as camadas delas voltam sem aparência, como sempre.
+  const tilesets = collectMapTilesetsFrom(asset, galleryAssets)
+  return tilesets.length > 0 ? galleryToPintaJson([...tilesets, asset]) : null
+}
+
+/**
+ * O arquivo é o pacote de UM mapa (o que `assetBundleToJson` gera)? Um mapa só +
+ * tilesets que ele usa, com as peças padrão dele presentes. A galeria restaura
+ * esse pacote de forma ATÔMICA (ou volta tudo, ou nada).
+ */
+export function isTilemapBundle(assets: readonly PintaAsset[]): boolean {
+  const maps = assets.filter((asset) => asset.kind === 'tilemap')
+  const map = maps[0]
+  if (maps.length !== 1 || map?.kind !== 'tilemap') return false
+  const rest = assets.filter((asset) => asset !== map)
+  if (rest.length === 0 || !rest.every(isTilesetKind)) return false
+  if (!rest.some((tileset) => tileset.id === map.tilesetId)) return false
+  return rest.every((tileset) => tilemapUsesTileset(map, tileset.id))
 }
 
 /**

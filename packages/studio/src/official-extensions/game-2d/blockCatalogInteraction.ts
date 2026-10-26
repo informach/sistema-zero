@@ -4,12 +4,8 @@ import {
   GAME_TWO_D_EVENT_COLOR as EVENT_C,
   GAME_TWO_D_ENEMY_BEHAVIOR_OPTIONS,
   GAME_TWO_D_ENEMY_SMART_OPTIONS,
+  GAME_TWO_D_KEY_OPTIONS,
 } from './blockCatalogShared'
-
-const numberKeyOptions: Array<[string, string]> = Array.from({ length: 10 }, (_, digit) => [
-  `tecla ${digit}`,
-  String(digit),
-])
 
 const currentGameTwoDInteractionBlocks: BlockDefinition[] = [
   // ---- Mouse / toque ----
@@ -41,23 +37,7 @@ const currentGameTwoDInteractionBlocks: BlockDefinition[] = [
       {
         type: 'field_dropdown',
         name: 'KEY',
-        options: [
-          ['→ seta direita', 'ArrowRight'],
-          ['← seta esquerda', 'ArrowLeft'],
-          ['↑ seta para cima', 'ArrowUp'],
-          ['↓ seta para baixo', 'ArrowDown'],
-          ['barra de espaço', 'Space'],
-          ['Enter', 'Enter'],
-          ['Escape', 'Escape'],
-          ['tecla A', 'a'],
-          ['tecla D', 'd'],
-          ['tecla W', 'w'],
-          ['tecla S', 's'],
-          ['tecla F', 'f'],
-          ['tecla P', 'p'],
-          ['tecla R', 'r'],
-          ...numberKeyOptions,
-        ],
+        options: [...GAME_TWO_D_KEY_OPTIONS],
       },
     ],
     message1: 'fazer %1',
@@ -127,22 +107,7 @@ const currentGameTwoDInteractionBlocks: BlockDefinition[] = [
       {
         type: 'field_dropdown',
         name: 'KEY',
-        options: [
-          ['→ seta direita', 'ArrowRight'],
-          ['← seta esquerda', 'ArrowLeft'],
-          ['↑ seta para cima', 'ArrowUp'],
-          ['↓ seta para baixo', 'ArrowDown'],
-          ['barra de espaço', 'Space'],
-          ['Enter', 'Enter'],
-          ['tecla A', 'a'],
-          ['tecla D', 'd'],
-          ['tecla W', 'w'],
-          ['tecla S', 's'],
-          ['tecla F', 'f'],
-          ['tecla P', 'p'],
-          ['tecla R', 'r'],
-          ...numberKeyOptions,
-        ],
+        options: [...GAME_TWO_D_KEY_OPTIONS],
       },
     ],
     output: 'JSValue',
@@ -270,7 +235,7 @@ const currentGameTwoDInteractionBlocks: BlockDefinition[] = [
     args0: [{ type: 'field_sprite_picker', name: 'SPRITE', text: 'estrela' }],
     colour: C,
     tooltip:
-      'Responde sim quando a animação de "uma vez só" já tocou tudo. A que repete nunca acaba, então responde não. Encaixe num "se" para sumir com o sprite ou trocar a imagem dele. ⚠️ Enquanto ele fica congelado no último quadro a resposta continua sendo sim, a cada quadro. Faça ali algo que MUDE o sprite: um "somar 1 ponto" sozinho somaria sem parar.',
+      'Responde sim depois que uma animação de uma vez termina; a resposta permanece sim no último quadro. No “se”, troque o estado, a imagem ou remova o sprite para não repetir o efeito.',
   },
   {
     type: 'sz_g2d_set_state_anim',
@@ -316,7 +281,7 @@ const currentGameTwoDInteractionBlocks: BlockDefinition[] = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Use DENTRO do "a cada quadro do jogo": troca a animação sozinho conforme o estado do sprite (parado, andando, pulando, caindo, tomando dano) e vira o desenho para a esquerda/direita conforme ele anda. Perder vida mostra a animação de dano.',
+      'A cada quadro, escolhe a animação pelo estado: parado, andando, pulando, caindo ou tomando dano. Também vira o desenho para o lado do movimento. Perder vida mostra a animação de dano.',
   },
   // ---- Tipos de inimigo (v0.22.0): classes de inimigo com comportamento pronto ----
   {
@@ -332,7 +297,7 @@ const currentGameTwoDInteractionBlocks: BlockDefinition[] = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Uma janela para TODOS os inimigos, de todos os tipos, sempre atualizada: quem nasce entra, quem morre sai na hora. Serve para as ações que valem para todos, com um bloco só em vez de um por tipo: colisões, "para cada", contar quantos faltam, desenhar. Cada tipo continua tendo o seu "Atualizar" e o seu "Desenhar", porque cada um tem o seu jeito de se mexer e os seus tiros. Ponha em "Meus moldes" (antes ou depois de criar os tipos, tanto faz).',
+      'Em Meus moldes, cria um grupo sempre atualizado com todos os inimigos. Serve para contar, percorrer e detectar contatos. Cada tipo ainda precisa do próprio atualizar e desenhar.',
   },
   {
     type: 'sz_g2d_define_enemy_type',
@@ -358,8 +323,7 @@ const currentGameTwoDInteractionBlocks: BlockDefinition[] = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Você escolhe o jeito dele: um comportamento agora, e mais quantos quiser depois com o "O tipo de inimigo ... também é ...". Cria uma CLASSE de inimigo (como o Goomba ou o Koopa): escolha os atributos UMA vez e solte quantos quiser. Monte em "Meus moldes": ele descreve a receita sem soltar inimigo nenhum. O visual segue esta ordem: figura desenhada > imagem > cor. O tipo funciona nos blocos de grupo (para cada, contar, colisões).' +
-      ' Escolheu o raio? Ele só machuca com o bloco "Para cada raio do tipo ... que acertar o sprite ...", dentro do "A cada quadro do jogo".',
+      'Em Meus moldes, define atributos e comportamento sem criar inimigos. Depois solte cópias do tipo. Figura tem prioridade sobre imagem e cor. Raios causam dano somente pelo bloco de contato do raio.',
   },
   {
     // Irmão do de cima, com um campo SÓ no lugar do comportamento: cada
@@ -386,8 +350,7 @@ const currentGameTwoDInteractionBlocks: BlockDefinition[] = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'O ATALHO: escolha só o quanto ele é esperto e o resto vem pronto, inclusive os ajustes. Quer montar peça por peça? Use o "Criar tipo de inimigo" logo acima. Monte em "Meus moldes". Dá para somar mais coisa depois com o "O tipo de inimigo ... também é ..." (é assim que um inimigo burro ganha um raio). ⚠️ Se você somar um jeito de ANDAR, ele TROCA o andar que veio com a inteligência; somar uma AÇÃO (atirar, raio, espinho) acrescenta.' +
-      ' Escolheu o raio? Ele só machuca com o bloco "Para cada raio do tipo ... que acertar o sprite ...", dentro do "A cada quadro do jogo".',
+      'Em Meus moldes, cria um tipo com comportamentos prontos. Acrescentar um modo de andar substitui o anterior; ações se somam. Raios precisam do bloco de contato do raio para causar dano.',
   },
   {
     type: 'sz_g2d_enemy_add_behavior',
@@ -402,8 +365,7 @@ const currentGameTwoDInteractionBlocks: BlockDefinition[] = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Junte quantos comportamentos quiser no mesmo inimigo. Os jeitos de se mexer não se somam: se você juntar dois, vale o último que somou. Já as ações se juntam todas, então patrulha mais atirador anda E atira. O lugar normal é em "Meus moldes", logo depois de criar o tipo; dentro de um evento ou temporizador, também dá para somar no meio do jogo e deixar a próxima onda mais difícil.' +
-      ' Escolheu o raio? Ele só machuca com o bloco "Para cada raio do tipo ... que acertar o sprite ...", dentro do "A cada quadro do jogo".',
+      'Soma ações ao tipo; um modo de andar substitui o anterior. Use após definir o tipo em Meus moldes ou num evento para mudar durante a partida. Raios precisam do bloco de contato do raio.',
   },
   {
     type: 'sz_g2d_enemy_state_anim',
@@ -439,7 +401,7 @@ const currentGameTwoDInteractionBlocks: BlockDefinition[] = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Guarda a animação de UM estado para TODOS os inimigos do tipo (o "Atualizar os inimigos" troca sozinho). Em "Ao iniciar", ponha depois de carregar a folha. Também cabe dentro de um evento ou temporizador para trocar a animação no meio do jogo; não repita a cada quadro.',
+      'Escolhe a animação de um estado para todas as cópias do tipo. Use depois de carregar a folha, em Ao iniciar, ou num evento para mudar durante o jogo. O atualizador troca as animações sozinho.',
   },
   {
     type: 'sz_g2d_enemy_type_param',
@@ -474,7 +436,7 @@ const currentGameTwoDInteractionBlocks: BlockDefinition[] = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Ajuste fino do comportamento do tipo. Ajuste em "Meus moldes", logo depois de criar o tipo; dentro de um evento ou temporizador, o novo valor passa a valer no meio do jogo. Cada valor serve a alguns comportamentos (a vida serve a todos, e só a quem nascer daqui para a frente): a lista de quem aproveita cada um está no manual.',
+      'Ajusta o comportamento do tipo em Meus moldes ou durante um evento. Cada parâmetro serve a comportamentos específicos; consulte o manual. A vida inicial vale só para as próximas cópias.',
   },
   {
     type: 'sz_g2d_spawn_enemy',
@@ -494,7 +456,7 @@ const currentGameTwoDInteractionBlocks: BlockDefinition[] = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Solta um inimigo NOVO do tipo em x/y, já com a vida, o dano e as animações do tipo. Fora do "a cada quadro"; para ondas, ponha dentro de "A cada N quadros fazer". O "chamado" é opcional: preencha só quando quiser falar DESTE inimigo depois (a barra de vida do chefão, por exemplo).',
+      'Cria uma cópia do tipo em x/y com seus atributos e animações. Para ondas, use uma raiz periódica. O nome é opcional; preencha para referir-se a essa cópia, como a vida de um chefe.',
   },
   {
     type: 'sz_g2d_update_enemy_type',
@@ -557,7 +519,7 @@ const currentGameTwoDInteractionBlocks: BlockDefinition[] = [
     nextStatement: 'JSStmt',
     colour: EVENT_C,
     tooltip:
-      'Use DENTRO do "a cada quadro". Para cada tiro dos inimigos do tipo que acertar o sprite, o tiro SOME e o "fazer" roda com ele (ex.: machucar o jogador). Quer que o tiro doa diferente de encostar no inimigo? Ponha aqui dentro o "Machucar o sprite em ... e deixá-lo invencível por ... quadros" e escolha o número deste ataque.',
+      'A cada quadro, detecta cada tiro que acertou, remove-o e executa o fazer. Dentro, use “Machucar o sprite em … e deixá-lo invencível por … quadros” para definir dano por tiro.',
   },
   {
     type: 'sz_g2d_on_enemy_beam_hit',
@@ -577,7 +539,7 @@ const currentGameTwoDInteractionBlocks: BlockDefinition[] = [
     nextStatement: 'JSStmt',
     colour: EVENT_C,
     tooltip:
-      'Use DENTRO do "a cada quadro". Enquanto o feixe estiver LIGADO e encostando no sprite, o "fazer" roda com o inimigo dono do raio; ao contrário do tiro, o raio NÃO some ao acertar. Ponha dentro o "Machucar o sprite com o dano de contato do inimigo", ou o "Machucar o sprite em ... e deixá-lo invencível por ... quadros" se o raio tiver que doer mais. ⚠️ "Mudar a vida" aqui não serve: este bloco roda a cada quadro, e sem os quadros piscando a vida some de uma vez.',
+      'A cada quadro, detecta o raio ligado no sprite e entrega seu dono ao fazer. O raio permanece. Use “Machucar o sprite em … e deixá-lo invencível por … quadros” para não tirar vida sem parar.',
   },
   {
     type: 'sz_g2d_on_enemy_hurt',
@@ -594,7 +556,7 @@ const currentGameTwoDInteractionBlocks: BlockDefinition[] = [
     nextStatement: 'JSStmt',
     colour: EVENT_C,
     tooltip:
-      'Roda toda vez que um inimigo desse tipo PERDE vida e continua vivo. É o coração de um chefão com várias formas ou estados: leia a vida dele aqui dentro e, quando chegar na metade, deixe-o furioso (mudar a cor, atirar mais rápido, juntar um comportamento). Quem chegou a zero não passa por aqui, e sim pelo "Quando um inimigo do tipo ... for derrotado".',
+      'Quando um inimigo perde vida e continua vivo, executa o “fazer”. Use a vida dele para mudar o comportamento de um chefe. Se chegar a zero, dispara o evento de derrotado, não este.',
   },
   {
     type: 'sz_g2d_hurt_by_enemy',
@@ -609,7 +571,7 @@ const currentGameTwoDInteractionBlocks: BlockDefinition[] = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Tira da vida do sprite o dano do inimigo (ou do tiro) e faz o sprite piscar. Enquanto pisca, ele é INVENCÍVEL (não leva dano de novo). O jeito clássico de dar um respiro depois do dano. Use dentro do "a cada quadro do jogo", quando o sprite estiver encostando no inimigo. Usa o dano do TIPO, igual nos três ataques dele; para um ataque doer mais, troque pelo "Machucar o sprite em ... e deixá-lo invencível por ... quadros". Se o inimigo virou casco e está PARADO, encostar nele o CHUTA em vez de machucar.',
+      'Aplica o dano do tipo e invencibilidade no contato. Para outro dano, use “Machucar o sprite em … e deixá-lo invencível por … quadros”. Encostar num casco parado o chuta.',
   },
   {
     type: 'sz_g2d_stomp_enemy',
@@ -626,7 +588,7 @@ const currentGameTwoDInteractionBlocks: BlockDefinition[] = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'O pulo em cima do inimigo: se o sprite estiver CAINDO nele, o inimigo é derrotado e o sprite dá um quiquinho para cima. Encostar de lado não derrota, e ali quem age é o "Machucar o sprite com o dano de contato". Use dentro do "a cada quadro do jogo".',
+      'Se o jogador cair sobre o inimigo, derrota-o e rebate para cima. Encostar de lado não derrota; trate o dano de contato separadamente. Use a cada quadro.',
   },
   {
     type: 'sz_g2d_enemy_damage',
@@ -672,7 +634,7 @@ const currentGameTwoDInteractionBlocks: BlockDefinition[] = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Versão simples para jogos de UMA TELA: a própria borda atraída funciona como chão. Encaixe “Aplicar a gravidade do mundo” logo acima. Para cair em buracos ou pousar em mapas/figuras, use “Mover estilo plataforma sobre o terreno” e uma colisão de terreno.',
+      'A borda da tela funciona como chão. Use “Aplicar a gravidade do mundo” logo antes. Para buracos e mapas, use o movimento sobre terreno e uma colisão de terreno.',
   },
   {
     type: 'sz_g2d_top_down',
@@ -702,7 +664,7 @@ const currentGameTwoDInteractionBlocks: BlockDefinition[] = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Voa com as setas, sem gravidade nenhuma. A diferença para o "4 direções" é o PESO: leva um tiquinho para engatar, continua planando um bom tanto depois que você solta e demora para virar de lado, então é preciso fazer a curva antes. Bom para passarinho e fadinha. A velocidade que você põe é a máxima.',
+      'Voa com as setas, sem gravidade, acelerando e desacelerando aos poucos. Continua planando ao soltar e demora para virar. A velocidade escolhida é a máxima.',
   },
   {
     type: 'sz_g2d_flap',
@@ -717,7 +679,7 @@ const currentGameTwoDInteractionBlocks: BlockDefinition[] = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Cada toque na seta pra cima, no W, no espaço ou na tela dá um empurrão, inclusive no ar. Para o sprite voltar a cair, encaixe "Aplicar a gravidade do mundo" logo acima. Segurar a tecla não sobe para sempre: cada batida precisa de um toque novo.',
+      'Cada toque em ↑, W, Espaço ou na tela dá um impulso, inclusive no ar. Segurar não repete. Use “Aplicar a gravidade do mundo” logo antes para voltar a cair.',
   },
   {
     type: 'sz_g2d_swim',
@@ -825,7 +787,7 @@ const currentGameTwoDInteractionBlocks: BlockDefinition[] = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Monta os DADOS do mapa desenhado no Pinta: grade, peças e colisões já vêm juntas. Depois prepare onde e com que tamanho ele fica, ou crie um Mundo diretamente desse mapa. Para editar uma grade na mão, use “Criar mapa de tiles”.',
+      'Lê o mapa do Pinta com grade, peças e colisões. Depois prepare o tamanho e a posição ou crie um Mundo com ele. Para escrever a grade manualmente, use “Criar mapa de tiles”.',
   },
   {
     type: 'sz_g2d_create_tilemap',
@@ -845,7 +807,7 @@ const currentGameTwoDInteractionBlocks: BlockDefinition[] = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Monta os DADOS do mapa a partir de um tileset. O tamanho informado é o de cada quadro NA ARTE. Depois escolha uma preparação: encaixar na tela, posicionar no mundo ou criar um Mundo desse mapa. Cada número da grade escolhe um quadro; ";" separa linhas, espaço separa números e "." deixa vazio. Tiles sólidos barram por todos os lados; tiles plataforma deixam passar por baixo.',
+      'Cria os dados do mapa; depois prepare posição e tamanho. Os números escolhem peças, “;” separa linhas e “.” deixa vazio. Sólidos bloqueiam todos os lados; plataformas deixam passar por baixo.',
   },
 
   {
@@ -862,7 +824,7 @@ const currentGameTwoDInteractionBlocks: BlockDefinition[] = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Desenha um desenho seu cobrindo a tela inteira, agora, neste quadro. Use logo depois de limpar a tela, para o cenário ficar atrás do resto. É o irmão de "Pôr o cenário atrás de tudo": aquele se põe uma vez em "Ao iniciar" e volta sozinho; este você desenha a cada quadro, escolhendo a ordem das camadas.',
+      'Desenha o cenário cobrindo a tela neste quadro. Use logo após limpar para ficar atrás dos sprites. Para reaparecer sozinho em todo quadro, use “Pôr o cenário atrás de tudo” em Ao iniciar.',
   },
   {
     type: 'sz_g2d_tilemap_collide',

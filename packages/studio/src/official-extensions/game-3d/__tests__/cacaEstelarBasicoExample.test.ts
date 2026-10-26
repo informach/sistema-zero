@@ -63,26 +63,28 @@ describe('Exemplo Caça Estelar — drift contra o parser real', () => {
     const statements = behaviorStatements(cacaEstelarBasicoExample.ir)
     const types = collectTypes(statements)
     for (const t of [
-      'g3d:createSwarm', // o enxame de naves inimigas
-      'g3d:spawnInSwarm', // nascem na borda
-      'g3d:countSwarm', // teto do enxame
+      'g3d:createGroup', // o grupo de naves inimigas
+      'g3d:spawnCopy', // nascem na borda
+      'g3d:countGroup', // teto do grupo
       'g3d:everySeconds', // cadência de spawn
       'randomFloat', // o ângulo sorteado da posição de nascimento
       'g3d:keyDown', // setas/WASD + o disparo (barra de espaço)
       'g3d:setPosition', // a nave voa livre no plano (com clamp na tela)
       'g3d:isNear', // alcance do tiro + contato + raio de perseguição
       'g3d:moveTowards', // as naves inimigas perseguem
-      'g3d:forEachInSwarm', // varre as inimigas por quadro
-      'g3d:removeFromSwarm', // abatida pelo tiro ou some ao encostar
+      'g3d:forEachInGroup', // varre as inimigas por quadro
+      'g3d:removeFromGroup', // abatida pelo tiro ou some ao encostar
       'g3d:spin', // as inimigas longe vagam (giram)
       'g3d:getPos', // posição da nave
       'g3d:animate', // o laço de quadro 3D
-      'event', // o botão Jogar de novo
-      'setProperty', // placar e escudos no HUD
-      'classOp', // mostra a tela de fim
+      'g3d:cornerText', // HUD nativo
+      'g3d:gameOver', // tela de fim nativa
     ]) {
       expect(types.has(t)).toBe(true)
     }
+    expect(types.has('g3d:addScore')).toBe(true)
+    expect(types.has('g3d:screenText')).toBe(true)
+    expect(types.has('g3d:gameOver')).toBe(true)
     const raw = JSON.stringify(statements)
     expect(raw).toContain('"cacas"')
     expect(raw).toContain('"pontos"')
@@ -90,7 +92,7 @@ describe('Exemplo Caça Estelar — drift contra o parser real', () => {
     expect(raw).toContain('"rodando"')
   })
 
-  it('⭐ é montado com GENÉRICOS (um enxame), não com um kit pronto', () => {
+  it('⭐ é montado com GENÉRICOS (um grupo), não com um kit pronto', () => {
     const types = collectTypes(behaviorStatements(cacaEstelarBasicoExample.ir))
     expect(types.has('g3d:createFullscreenScene')).toBe(true)
     expect(types.has('g3d:createRaceScene')).toBe(false)

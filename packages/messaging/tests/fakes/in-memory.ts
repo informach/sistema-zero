@@ -118,6 +118,17 @@ export class InMemoryMessageRepository implements MessageRepository {
     this.store.set(m.id, m)
     this.drain(m)
   }
+  async withdrawQueued(m: Message): Promise<void> {
+    const current = this.store.get(m.id)
+    if (
+      !current ||
+      current.version !== m.version ||
+      current.state.consumerId !== m.state.consumerId ||
+      (current.status !== 'QUEUED' && current.status !== 'SCHEDULED')
+    )
+      throw new ConcurrencyConflictError(m.id)
+    await this.update(m)
+  }
   async findById(id: string): Promise<Message | null> {
     const m = this.store.get(id)
     return m ? this.snapshot(m) : null

@@ -137,9 +137,11 @@ test('opaque source and target contexts survive the Blockly representation', () 
       node('Assert', { test: name('ready'), msg: null }),
     ])
     const roots = pythonVisualToWorkspace(pythonASTToVisual(original), workspace)
+    // `*rest` is a block of its own now; the assert stays a source block.
     expect(
       workspace.getAllBlocks(false).filter((block) => block.type.startsWith('sz_py_source_')),
-    ).toHaveLength(2)
+    ).toHaveLength(1)
+    expect(workspace.getAllBlocks(false).some((block) => block.type === 'sz_py_starred')).toBe(true)
     expect(
       pythonSemanticTree(pythonVisualToAST(pythonWorkspaceToVisual(workspace, roots))),
     ).toEqual(pythonSemanticTree(original))
@@ -164,7 +166,11 @@ test('argument resizing preserves connections and participates in Blockly undo a
     block.setPythonOption('args:count', 2)
     expect(block.getInputTargetBlock('args:0')?.id).toBe(connected.id)
     expect(block.getInput('args:1')).not.toBeNull()
-    expect(() => pythonWorkspaceToVisual(workspace, roots)).toThrow('Preencha')
+    // The new socket starts with the documented default as a shadow, as in the palette.
+    const added = block.getInputTargetBlock('args:1')
+    expect(added?.isShadow()).toBe(true)
+    expect(added?.getFieldValue('TEXT')).toBe('Olá!')
+    expect(() => pythonWorkspaceToVisual(workspace, roots)).not.toThrow()
     await new Promise((resolve) => setTimeout(resolve, 10))
     workspace.undo(false)
     expect(block.getInput('args:1')).toBeNull()
@@ -172,6 +178,20 @@ test('argument resizing preserves connections and participates in Blockly undo a
     workspace.undo(true)
     expect(block.getInput('args:1')).not.toBeNull()
     expect(block.getInputTargetBlock('args:0')?.id).toBe(connected.id)
+    // Redo brings the socket back with its default, not empty.
+    expect(block.getInputTargetBlock('args:1')?.getFieldValue('TEXT')).toBe('Olá!')
+    expect(() => pythonWorkspaceToVisual(workspace, roots)).not.toThrow()
+    // Removing the socket that holds only the default shadow is allowed; a placed block is not.
+    block.getInputTargetBlock('args:1')!.setFieldValue('Tchau', 'TEXT')
+    await new Promise((resolve) => setTimeout(resolve, 10))
+    block.setPythonOption('args:count', 1)
+    expect(block.getInput('args:1')).toBeNull()
+    await new Promise((resolve) => setTimeout(resolve, 10))
+    // Undoing the removal brings the shadow back with what the child had typed in it.
+    workspace.undo(false)
+    expect(block.getInputTargetBlock('args:1')?.getFieldValue('TEXT')).toBe('Tchau')
+    workspace.undo(true)
+    expect(block.getInput('args:1')).toBeNull()
     expect(() => block.setPythonOption('args:count', 0)).toThrow('Desconecte')
     expect(block.getInputTargetBlock('args:0')?.id).toBe(connected.id)
   } finally {
@@ -241,6 +261,119 @@ test('the title label is presentation only; the editable literal field carries t
     expect(JSON.stringify(pythonVisualToAST(pythonWorkspaceToVisual(workspace, roots)))).toContain(
       '{"literal":"int","value":"4"}',
     )
+  } finally {
+    workspace.dispose()
+  }
+})
+
+const settle = () => new Promise((resolve) => setTimeout(resolve, 10))
+
+test('adding and removing a case or except is one undo step each way, even for a fresh empty piece', async () => {
+  registerPythonBlocks()
+  for (const [type, key, piece] of [
+    ['sz_py_match', 'cases:count', 'sz_py_case'],
+    ['sz_py_try', 'handlers:count', 'sz_py_except'],
+  ] as const) {
+    const workspace = new Blockly.Workspace()
+    try {
+      const block = workspace.newBlock(type) as PythonBlocklyBlock
+      const prefix = key.replace(':count', '')
+      const before = Number(block.pythonState.layout.extra![key])
+      const last = `${prefix}:${before}`
+      await settle()
+      workspace.clearUndo()
+      // Adicionar: a real piece arrives in the new input.
+      block.setPythonOption(key, before + 1)
+      const added = block.getInputTargetBlock(last)!
+      expect(added.type, type).toBe(piece)
+      expect(added.isShadow(), type).toBe(false)
+      await settle()
+      // Remover right away: the untouched piece goes with its input.
+      block.setPythonOption(key, before)
+      expect(block.getInput(last), type).toBeNull()
+      expect(workspace.getBlockById(added.id), type).toBeNull()
+      await settle()
+      // Undo the removal: the input and its piece come back, connected.
+      workspace.undo(false)
+      expect(block.pythonState.layout.extra![key], type).toBe(before + 1)
+      expect(block.getInputTargetBlock(last)?.type, type).toBe(piece)
+      // Undo the addition: back to the original shape, nothing left floating.
+      workspace.undo(false)
+      expect(block.pythonState.layout.extra![key], type).toBe(before)
+      expect(block.getInput(last), type).toBeNull()
+      expect(workspace.getTopBlocks(false).length, type).toBe(1)
+      // Redo brings the piece back together with its input (its default shadows too).
+      workspace.undo(true)
+      const redone = block.getInputTargetBlock(last)!
+      expect(redone?.type, type).toBe(piece)
+      expect(
+        redone.getChildren(false).some((child) => child.isShadow()),
+        type,
+      ).toBe(true)
+      workspace.undo(true)
+      expect(block.getInput(last), type).toBeNull()
+      expect(workspace.getTopBlocks(false).length, type).toBe(1)
+      // A piece the child changed still has to be moved out first.
+      block.setPythonOption(key, before + 1)
+      const changed = block.getInputTargetBlock(last)!
+      const command = workspace.newBlock('sz_py_pass')
+      changed.getInput('body')!.connection!.connect(command.previousConnection!)
+      expect(() => block.setPythonOption(key, before), type).toThrow('Desconecte')
+      expect(block.getInputTargetBlock(last)?.id, type).toBe(changed.id)
+    } finally {
+      workspace.dispose()
+    }
+  }
+})
+
+test('a node above the block ceiling stays as exact Python text, and the rest loads', () => {
+  const arg = (id: string) => node('arg', { arg: id, annotation: null, type_comment: null })
+  const args = Array.from({ length: 400 }, (_, i) => arg(`a${i}`))
+  const keywordOnly = Array.from({ length: 300 }, (_, i) => arg(`k${i}`))
+  // 400 parameters + 400 defaults + 300 keyword-only + 300 defaults: 1400 sockets.
+  const parameters = node('arguments', {
+    posonlyargs: [],
+    args,
+    vararg: null,
+    kwonlyargs: keywordOnly,
+    kw_defaults: keywordOnly.map(() => integer('0')),
+    kwarg: null,
+    defaults: args.map(() => integer('1')),
+  })
+  const tree = moduleNode([
+    node('FunctionDef', {
+      name: 'f',
+      args: parameters,
+      body: [pass()],
+      decorator_list: [],
+      returns: null,
+      type_comment: null,
+      type_params: [],
+    }),
+    // A full call: 512 values and 512 named values still fit one block.
+    node('Expr', {
+      value: call(
+        name('f'),
+        Array.from({ length: 512 }, (_, i) => integer(String(i))),
+        Array.from({ length: 512 }, (_, i) =>
+          node('keyword', { arg: `n${i}`, value: integer('0') }),
+        ),
+      ),
+    }),
+  ])
+  const projection = pythonASTToVisual(tree)
+  const definition = projection.body[0]!
+  expect(definition.kind).toBe('block')
+  const held = definition.kind === 'block' ? definition.inputs.flatMap((input) => input.nodes) : []
+  expect(held.some((item) => item.kind === 'source' && item.node.kind === 'arguments')).toBe(true)
+  const callBlock = projection.body[1]!
+  expect(callBlock.kind).toBe('block')
+  const workspace = new Blockly.Workspace()
+  try {
+    const roots = pythonVisualToWorkspace(projection, workspace)
+    expect(
+      pythonSemanticTree(pythonVisualToAST(pythonWorkspaceToVisual(workspace, roots))),
+    ).toEqual(pythonSemanticTree(tree))
   } finally {
     workspace.dispose()
   }

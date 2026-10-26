@@ -8,7 +8,7 @@ import {
   type Object3D,
   SkinnedMesh,
 } from 'three'
-import fixture from './fixtures/molda-skinned.json'
+import fixture from '../../__tests__/three3d/molda-skinned.json'
 import { type KitApi, loadStartedKit } from './kitHarness'
 
 type Entity = { mesh: Object3D; _mixer: AnimationMixer | null; _clips: AnimationClip[] | null }

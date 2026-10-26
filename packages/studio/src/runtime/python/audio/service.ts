@@ -2,16 +2,32 @@ import { awaitWithSignal } from '@sistemazero/core/http'
 import { digestAssetBytes } from '../../../core/assetBinary'
 import type { StudioHostAudioPreference } from '../../types'
 import type { PythonExecutionSnapshot } from '../protocol'
-import { PYTHON_AUDIO_LIMITS, readPythonAudioRequest } from './contract'
+import {
+  PYTHON_AUDIO_LIMITS,
+  PYTHON_MUSIC_VOICES,
+  pythonAudioMediaType,
+  readPythonAudioRequest,
+} from './contract'
+import { toneWav } from './tone'
 import { readPythonAudioWav } from './wav'
+
+/** Ended voices kept until a reply carries them, and how many one reply carries (2 KiB). */
+const ENDED_RETAINED = 256
+const ENDED_PER_REPLY = 64
 
 interface Voice {
   cancelled: AbortController
+  music: boolean
   audio?: HTMLAudioElement
+  /** music.pause(): kept paused until resume, so the track does not end meanwhile. */
+  paused?: boolean
   release?(): void
 }
 
 /** Host-owned media. Requests never supply executable URLs, media bytes or DOM options. */
+/** Different tone notes kept ready at once (a piano has 88 keys). */
+const TONE_CACHED_NOTES = 256
+
 export function createPythonAudioService(options: {
   snapshot: Pick<PythonExecutionSnapshot, 'files'>
   signal: AbortSignal
@@ -24,6 +40,13 @@ export function createPythonAudioService(options: {
   const resources = new Map<string, Promise<string>>()
   const urls = new Set<string>()
   const voices = new Map<number, Voice>()
+  // Voices that ended by themselves or could not play, reported with the next replies so
+  // Pygame Zero can run on_music_end and repeat Sound.play(loops=N).
+  const ended: number[] = []
+  const report = (id: number) => {
+    ended.push(id)
+    if (ended.length > ENDED_RETAINED) ended.splice(0, ended.length - ENDED_RETAINED)
+  }
   const lifetime = new AbortController()
   const signal = AbortSignal.any([options.signal, lifetime.signal])
   let windowStart = performance.now()
@@ -77,9 +100,13 @@ export function createPythonAudioService(options: {
     if (existing) return existing
     const file = files.get(path)
     if (file?.kind !== 'asset') throw new Error('O som precisa ser um material deste projeto.')
-    readPythonAudioWav(file.bytes)
+    const type = pythonAudioMediaType(path)
+    if (!type) throw new Error('Formato de som não suportado.')
+    if (type === 'audio/wav') readPythonAudioWav(file.bytes)
+    else if (file.bytes.byteLength > PYTHON_AUDIO_LIMITS.fileBytes)
+      throw new Error('O arquivo de som é grande demais.')
     // Blob captures exact bytes before the first await, independently of later caller mutations.
-    const blob = new Blob([file.bytes], { type: 'audio/wav' })
+    const blob = new Blob([file.bytes], { type })
     const pending = (async () => {
       const captured = new Uint8Array(await blob.arrayBuffer())
       if ((await digestAssetBytes(captured)) !== file.sha256)
@@ -93,15 +120,52 @@ export function createPythonAudioService(options: {
     return pending
   }
 
-  async function play(request: Extract<ReturnType<typeof readPythonAudioRequest>, { op: 'play' }>) {
-    if (voices.has(request.id)) throw new Error('Esse identificador de som já está em uso.')
-    if (voices.size >= PYTHON_AUDIO_LIMITS.voices)
+  /** A note of Pygame Zero's tone module: built once here, then reused like a file. */
+  function toneResource(tone: { hz: number; samples: number }): Promise<string> {
+    const key = `tone:${tone.hz}:${tone.samples}`
+    const existing = resources.get(key)
+    if (existing) return existing
+    // Notes are small, but a game could ask for endless different ones: keep a bounded number.
+    let notes = 0
+    for (const name of resources.keys()) if (name.startsWith('tone:')) notes++
+    if (notes >= TONE_CACHED_NOTES) throw new Error('O programa criou notas diferentes demais.')
+    signal.throwIfAborted()
+    const url = URL.createObjectURL(
+      new Blob([toneWav(tone.hz, tone.samples)], { type: 'audio/wav' }),
+    )
+    urls.add(url)
+    const ready = Promise.resolve(url)
+    resources.set(key, ready)
+    return ready
+  }
+
+  function admit(request: Extract<ReturnType<typeof readPythonAudioRequest>, { op: 'play' }>) {
+    // The music has its own channel, as in pygame: a busy game never silences it.
+    const music = request.music === true
+    let same = 0
+    for (const voice of voices.values()) if (voice.music === music) same++
+    if (same >= (music ? PYTHON_MUSIC_VOICES : PYTHON_AUDIO_LIMITS.voices))
       throw new Error('O programa atingiu o limite de sons simultâneos.')
-    const voice: Voice = { cancelled: new AbortController() }
+  }
+
+  async function play(request: Extract<ReturnType<typeof readPythonAudioRequest>, { op: 'play' }>) {
+    // A repeated id is the live voice's own: reporting it would end that voice for the program.
+    if (voices.has(request.id)) throw new Error('Esse identificador de som já está em uso.')
+    try {
+      admit(request)
+    } catch (error) {
+      // A refused play has ended for the program too: Pygame Zero stops waiting for it.
+      report(request.id)
+      throw error
+    }
+    const voice: Voice = { cancelled: new AbortController(), music: request.music === true }
     voices.set(request.id, voice)
     const voiceSignal = AbortSignal.any([signal, voice.cancelled.signal])
     try {
-      const url = await awaitWithSignal(() => resource(request.path), voiceSignal)
+      const url = await awaitWithSignal(
+        () => (request.tone ? toneResource(request.tone) : resource(request.path!)),
+        voiceSignal,
+      )
       voiceSignal.throwIfAborted()
       const audio = new Audio()
       voice.audio = audio
@@ -115,22 +179,38 @@ export function createPythonAudioService(options: {
       const failure = new Promise<never>((_resolve, reject) => {
         rejectLoad = reject
       })
-      const ended = () => stop(request.id, voice)
-      const failed = () => {
-        const error = new Error(`Não foi possível reproduzir o som ${request.path}.`)
+      // Sound.play(loops=N): the same element plays again at once, without a gap.
+      let repeats = request.repeat ?? 0
+      const finished = () => {
+        if (repeats > 0 && !voiceSignal.aborted) {
+          repeats--
+          audio.currentTime = 0
+          audio.play().catch(failed)
+          return
+        }
+        stop(request.id, voice)
+        report(request.id)
+      }
+      function failed() {
+        const error = new Error(
+          request.tone
+            ? 'Não foi possível tocar a nota do tone.'
+            : `Não foi possível reproduzir o som ${request.path}.`,
+        )
         rejectLoad(error)
         if (started) {
           stop(request.id, voice)
+          report(request.id)
           if (!disposed) options.onError(error)
         }
       }
-      audio.addEventListener('ended', ended, { once: true })
+      audio.addEventListener('ended', finished)
       audio.addEventListener('error', failed, { once: true })
       let released = false
       voice.release = () => {
         if (released) return
         released = true
-        audio.removeEventListener('ended', ended)
+        audio.removeEventListener('ended', finished)
         audio.removeEventListener('error', failed)
         audio.pause()
         audio.removeAttribute('src')
@@ -143,12 +223,21 @@ export function createPythonAudioService(options: {
       )
       voiceSignal.throwIfAborted()
       started = true
+      // Paused while it was still loading: it starts paused.
+      if (voice.paused) audio.pause()
     } catch (error) {
+      // A sound that could not play has ended for the program too (a stopped one has not).
+      const cancelled = voiceSignal.aborted
       stop(request.id, voice)
+      if (!cancelled) report(request.id)
       if (error instanceof DOMException && error.name === 'NotAllowedError')
         throw new Error('Clique em Jogar ou Executar para permitir o som e tente novamente.')
       throw error
     }
+  }
+
+  function takeEnded() {
+    return ended.length ? { ended: ended.splice(0, ENDED_PER_REPLY) } : {}
   }
 
   return {
@@ -161,22 +250,45 @@ export function createPythonAudioService(options: {
           windowStart = now
           commands = 0
         }
-        if (++commands > PYTHON_AUDIO_LIMITS.commandsPerSecond)
+        if (++commands > PYTHON_AUDIO_LIMITS.commandsPerSecond) {
+          if (request.op === 'play') report(request.id)
           throw new Error('O programa excedeu o limite de comandos de áudio.')
-        if (request.op === 'play') await play(request)
-        else if (request.id === null) {
+        }
+        if (request.op === 'poll') {
+          // Collects the ended voices below.
+        } else if (request.op === 'play') await play(request)
+        else if (request.op === 'volume') {
+          for (const id of 'ids' in request ? request.ids : [request.id]) {
+            const audio = voices.get(id)?.audio
+            if (audio) audio.volume = request.volume
+          }
+        } else if (request.op === 'pause' || request.op === 'resume') {
+          for (const id of 'ids' in request ? request.ids : [request.id]) {
+            const voice = voices.get(id)
+            if (!voice) continue
+            voice.paused = request.op === 'pause'
+            if (voice.paused) voice.audio?.pause()
+            else voice.audio?.play().catch(() => {})
+          }
+        } else if ('ids' in request) {
+          for (const id of request.ids) {
+            const voice = voices.get(id)
+            if (voice) stop(id, voice)
+          }
+        } else if (request.id === null) {
           for (const [id, voice] of voices) stop(id, voice)
         } else {
           const voice = voices.get(request.id)
           if (voice) stop(request.id, voice)
         }
         signal.throwIfAborted()
-        return JSON.stringify({ version: 1, ok: true })
+        return JSON.stringify({ version: 1, ok: true, ...takeEnded() })
       } catch (error) {
         return JSON.stringify({
           version: 1,
           ok: false,
           error: error instanceof Error ? error.message.slice(0, 1000) : 'Falha do áudio Python.',
+          ...takeEnded(),
         })
       }
     },

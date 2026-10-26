@@ -59,7 +59,10 @@ export function CatalogFilterBar({ filters, onChange }: Props) {
               onClick={() => onChange('acesso', option.value)}
               className={cn(
                 'sz-btn-sm px-1 text-[0.85rem] sm:px-[0.9rem] sm:text-[0.9rem]',
-                pressed ? 'sz-btn' : 'sz-btn-quiet bg-transparent hover:bg-muted',
+                // O filtro escolhido é a ficha escura: o amarelo fica só para a ação da tela.
+                pressed
+                  ? 'sz-btn-quiet bg-(--noite) text-(--texto-claro) hover:bg-(--noite) hover:text-(--texto-claro)'
+                  : 'sz-btn-quiet bg-transparent hover:bg-muted',
               )}
             >
               {option.label}

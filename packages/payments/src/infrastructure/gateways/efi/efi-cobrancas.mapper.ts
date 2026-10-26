@@ -2,9 +2,11 @@
 import type {
   ProviderChargeStatus,
   ProviderNotificationEntry,
+  ProviderSubscription,
   ProviderSubscriptionCharge,
   ProviderSubscriptionStatus,
 } from '../../../domain/ports/payment-gateway.port'
+import { cardFailureReason } from './card-failure-reason'
 import { EfiGatewayError } from './efi.errors'
 
 /**
@@ -343,13 +345,16 @@ export function parseCardDetailCharge(
   status: ProviderChargeStatus
   amountInCents: bigint
   paidAt?: Date
+  failureReason?: string
 } {
   const data = dataOf(raw)
+  const status = mapCardStatus(data?.status)
   return {
     providerPaymentId: String(data?.charge_id ?? data?.id ?? fallbackId),
-    status: mapCardStatus(data?.status),
+    status,
     amountInCents: principalInCents(data),
     paidAt: parseProviderDate(cardPaidAtRaw(data)),
+    failureReason: status === 'FAILED' ? cardFailureReason(data) : undefined,
   }
 }
 
@@ -490,14 +495,18 @@ export function parseCreateSubscriptionResponse(raw: any): ParsedSubscription {
 }
 
 /** Extrai status + id do `GET /subscription/:id` (reconciliação/cancelamento). */
-export function parseSubscriptionDetail(
-  raw: any,
-  fallbackId: string,
-): { providerSubscriptionId: string; status: ProviderSubscriptionStatus } {
+export function parseSubscriptionDetail(raw: any, fallbackId: string): ProviderSubscription {
   const data = dataOf(raw)
+  const next = data?.next_execution
+  const nextValid =
+    typeof next === 'string' &&
+    /^\d{4}-\d{2}-\d{2}$/.test(next) &&
+    parseProviderDate(`${next} 00:00:00`) !== undefined
   return {
     providerSubscriptionId: String(data?.subscription_id ?? data?.id ?? fallbackId),
     status: mapSubscriptionStatus(data?.status),
+    charges: parseSubscriptionCharges(raw),
+    nextExecution: nextValid ? next : undefined,
   }
 }
 
@@ -516,7 +525,11 @@ export function parseSubscriptionCharges(raw: any): ProviderSubscriptionCharge[]
   for (const entry of history) {
     const id = entry?.charge_id ?? entry?.id ?? entry?.identifiers?.charge_id
     if (id == null) continue
-    charges.push({ chargeId: String(id), status: mapCardStatus(entry?.status) })
+    charges.push({
+      chargeId: String(id),
+      status: mapCardStatus(entry?.status),
+      createdAt: parseProviderDate(entry?.created_at),
+    })
   }
   return charges
 }

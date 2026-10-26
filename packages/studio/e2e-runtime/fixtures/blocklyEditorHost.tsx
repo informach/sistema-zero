@@ -172,6 +172,15 @@ export async function createBlocklyEditorProbe() {
       stores.pendingEditorEdits.flush()
       return { source: source(), pending: draft()?.pending }
     },
+    /** A field edit, its real Blockly event, then a click outside the blocks: no explicit flush. */
+    async numberThenClickOutside(value: string) {
+      numberBlock().setFieldValue(value, 'NUMBER')
+      // Blockly delivers the change on the next frame; the commit itself waits 350 ms.
+      await new Promise((resolve) => requestAnimationFrame(() => setTimeout(resolve, 50)))
+      const before = draft()?.pending ?? false
+      document.body.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }))
+      return { before, after: draft()?.pending ?? false }
+    },
     numberDuringNextCommit(value: string) {
       const previous = source()
       unsubscribeGesture?.()
@@ -289,7 +298,7 @@ export async function createBlocklyEditorProbe() {
       stores.pendingEditorEdits.flush()
     },
     transferFunctionCommand() {
-      const from = workspace?.getTopBlocks(false).find((block) => block.type === 'sz_py_function')
+      const from = workspace?.getTopBlocks(false).find((block) => block.type === 'sz_py_def')
       const to = from?.getNextBlock()
       const command = from?.getInputTargetBlock('body')
       const destination = to?.getInputTargetBlock('body')
@@ -303,7 +312,23 @@ export async function createBlocklyEditorProbe() {
       }
       stores.pendingEditorEdits.flush()
     },
-    emptyFunctionBody(type = 'sz_py_function', input = 'body') {
+    /** A + / − control of a block (an optional branch, how many "senão se"). */
+    setOption(type: string, key: string, value: number | boolean, emptyInput?: string) {
+      const block = workspace?.getAllBlocks(false).find((block) => block.type === type) as
+        | (Blockly.Block & { setPythonOption(key: string, value: number | boolean): void })
+        | undefined
+      if (!block) throw new Error('Block missing')
+      Blockly.Events.setGroup(true)
+      try {
+        // A branch is emptied before its − removes it; one group, one Undo.
+        if (emptyInput) block.getInputTargetBlock(emptyInput)?.dispose(false)
+        block.setPythonOption(key, value)
+      } finally {
+        Blockly.Events.setGroup(false)
+      }
+      stores.pendingEditorEdits.flush()
+    },
+    emptyFunctionBody(type = 'sz_py_def', input = 'body') {
       const block = workspace?.getAllBlocks(false).find((block) => block.type === type)
       const command = block?.getInputTargetBlock(input)
       if (!command) throw new Error('Statement input missing')

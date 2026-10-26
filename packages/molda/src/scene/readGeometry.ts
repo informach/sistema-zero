@@ -44,7 +44,7 @@ export function readSceneGeometry(
 ): SceneGeometry {
   const kind = v.choice(
     v.record(raw, path).kind,
-    ['box', 'wedge', 'cylinder', 'sphere', 'mesh', 'path'],
+    ['box', 'wedge', 'cylinder', 'sphere', 'torus', 'mesh', 'path'],
     `${path}.kind`,
   )
   const row = v.record(raw, path, [
@@ -55,7 +55,7 @@ export function readSceneGeometry(
       : kind === 'path'
         ? ['points', 'radius', 'around', 'endCaps', 'closed', 'surfaces']
         : ['from', 'to', 'surfaces']),
-    ...(kind === 'cylinder' || kind === 'sphere' ? ['tessellation'] : []),
+    ...(kind === 'cylinder' || kind === 'sphere' || kind === 'torus' ? ['tessellation'] : []),
   ])
   const id = v.id(row.id, `${path}.id`)
   if (kind === 'path') {
@@ -89,7 +89,11 @@ export function readSceneGeometry(
       id,
       from,
       to,
-      surfaces: readSurfaces(row.surfaces, path, FACES_BY_SHAPE[kind]),
+      surfaces: readSurfaces(
+        row.surfaces,
+        path,
+        kind === 'torus' ? ['around'] : FACES_BY_SHAPE[kind],
+      ),
     }
     const primitive: ScenePrimitiveGeometry =
       kind === 'cylinder'
@@ -100,13 +104,13 @@ export function readSceneGeometry(
               ? {}
               : { tessellation: readPrimitiveDetail('cylinder', row.tessellation) }),
           }
-        : kind === 'sphere'
+        : kind === 'sphere' || kind === 'torus'
           ? {
               ...base,
               kind,
               ...(row.tessellation === undefined
                 ? {}
-                : { tessellation: readPrimitiveDetail('sphere', row.tessellation) }),
+                : { tessellation: readPrimitiveDetail(kind, row.tessellation) }),
             }
           : { ...base, kind }
     budget.triangles += primitiveTriangleCount(primitive)

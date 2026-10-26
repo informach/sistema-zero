@@ -1,8 +1,10 @@
 import { expect, test } from 'bun:test'
+import { PythonProjectExecutionRequestSchema } from '@sistemazero/core/studio/python-mission-execution'
 import { StudioPythonPlaytestRecipeSchema } from '@sistemazero/core/studio/python-playtest'
 import {
   StudioPythonInputReferenceSchema,
   StudioPythonInspectionRequestSchema,
+  StudioPythonMissionRequestSchema,
   StudioPythonValidationRequestSchema,
 } from '@sistemazero/core/studio/python-validation-input'
 
@@ -17,6 +19,36 @@ const input = StudioPythonInputReferenceSchema.parse({
   executionId: 'python-sdk-1234567890abcdef',
   revision: 'c'.repeat(64),
   expiresAt: 1_000,
+})
+test('SDK mission envelope preserves probes, structure and immutable identity without a playtest recipe', () => {
+  const mission = PythonProjectExecutionRequestSchema.parse({
+    version: 1,
+    identity: {
+      projectId: input.projectId,
+      revision: input.revision,
+      runtimeManifestSha256: 'd'.repeat(64),
+      runId: crypto.randomUUID(),
+      objectivesSha256: 'e'.repeat(64),
+    },
+    probes: [{ id: 'out', type: 'behavior', steps: [], target: { kind: 'console' } }],
+  })
+  const request = createPythonSdkInspectionRequest(
+    { mission, validate: true, structure: false },
+    input,
+  )
+  expect(StudioPythonMissionRequestSchema.parse(request)).toEqual({
+    version: 1,
+    input,
+    structure: false,
+    mission,
+  })
+  expect(request).not.toHaveProperty('recipe')
+  expect(
+    StudioPythonMissionRequestSchema.safeParse({
+      ...request,
+      mission: { ...mission, identity: { ...mission.identity, revision: 'f'.repeat(64) } },
+    }).success,
+  ).toBe(false)
 })
 
 for (const structure of [false, true])

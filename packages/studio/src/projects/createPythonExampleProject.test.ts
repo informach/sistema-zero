@@ -1,4 +1,6 @@
 import { expect, test } from 'bun:test'
+import { readdirSync, readFileSync } from 'node:fs'
+import { join, relative } from 'node:path'
 import { buildPythonProvidedModuleMetadata } from '@sistemazero/core/studio/python-provided-modules-render'
 import { SZ_AUDIO_MODULE_DESCRIPTOR } from '@sistemazero/core/studio/python-provided-modules-sz-audio'
 import type { StudioPythonRuntimeFeature } from '@sistemazero/core/studio/python-runtime-features'
@@ -9,11 +11,18 @@ import {
 } from '@sistemazero/core/studio/runtime-catalog'
 import { IDBFactory } from 'fake-indexeddb'
 import { unzipSync } from 'fflate'
+import { PGZERO_GAMES, type PgzeroGame } from '../examples/python/pgzeroGames.manifest'
+import { PYGAME_GAMES } from '../examples/python/pygameGames.manifest'
+import { RAYLIB_GAMES } from '../examples/python/raylibGames.manifest'
 import { VISUAL_REFERENCE_GAMES } from '../examples/python/visualReferenceGames.manifest'
 import type { PythonExampleCreationPort, PythonExampleEntry } from '../examples/pythonCatalog'
 import { PYTHON_EXAMPLE_SUMMARIES } from '../examples/pythonCatalog'
 import { exportProjectSource } from '../export/sourceExport'
 import { PYTHON_PROGRAMMING_CODECS } from '../python/blocks/catalog'
+import { PYTHON_PGZERO_CODECS } from '../python/extensions/pgzero/catalog'
+import { PYTHON_PYGAME_CODECS } from '../python/extensions/pygame/catalog'
+import { PYTHON_RAYLIB_2D_CODECS } from '../python/extensions/raylib2d/catalog'
+import { PYTHON_RAYLIB_3D_CODECS } from '../python/extensions/raylib3d/catalog'
 import { PYTHON_TURTLE_CODECS } from '../python/extensions/turtle/catalog'
 import { TURTLE_EXTENSION } from '../runtime/python/turtle/contract'
 import { pythonEnvironmentFixture } from '../state/fixtures/pythonEnvironment'
@@ -56,9 +65,14 @@ async function fixture(
       catalog: f.environment.catalog,
       runtime: f.project.runtime,
       releaseStatus: 'active' as const,
-      authoringBlockIds: [...PYTHON_PROGRAMMING_CODECS, ...PYTHON_TURTLE_CODECS].map(
-        ({ id }) => id,
-      ),
+      authoringBlockIds: [
+        ...PYTHON_PROGRAMMING_CODECS,
+        ...PYTHON_TURTLE_CODECS,
+        ...PYTHON_PGZERO_CODECS,
+        ...PYTHON_RAYLIB_2D_CODECS,
+        ...PYTHON_RAYLIB_3D_CODECS,
+        ...PYTHON_PYGAME_CODECS,
+      ].map(({ id }) => id),
       authoringCuration: {
         pythonLevel: 3 as const,
         allowedModes: ['blocks', 'bridge', 'code'] as ('blocks' | 'bridge' | 'code')[],
@@ -452,6 +466,9 @@ test('module compatibility never substitutes the fresh host authorization', asyn
     expect(await listAllProjects()).toEqual([])
   }))
 
+const pgzeroKeys = PGZERO_GAMES.flatMap(({ key }) => [`python:${key}:blocks`, `python:${key}:code`])
+const raylibKeys = RAYLIB_GAMES.flatMap(({ key }) => [`python:${key}:blocks`, `python:${key}:code`])
+const pygameKeys = PYGAME_GAMES.flatMap(({ key }) => [`python:${key}:blocks`, `python:${key}:code`])
 const visualKeys = VISUAL_REFERENCE_GAMES.flatMap(({ key }) => [
   `python:${key}:blocks`,
   `python:${key}:code`,
@@ -462,6 +479,9 @@ test('the Python catalog keeps the original race and adds the separately license
     'python:turtle-race-original',
     'python:maze-lights',
     ...visualKeys,
+    ...pgzeroKeys,
+    ...raylibKeys,
+    ...pygameKeys,
   ])
 })
 
@@ -764,3 +784,122 @@ test('invalid material cannot be silently dropped or leave a saved candidate', a
     ).rejects.toThrow()
     expect(await listAllProjects()).toEqual([])
   }))
+
+for (const key of pgzeroKeys)
+  test(`${key} creates and reopens its whole program and media; the desktop copy reads every SVG as PNG`, async () => {
+    const entry = PYTHON_EXAMPLE_SUMMARIES.find((candidate) => candidate.key === key)
+    if (!entry) throw new Error(`Missing Pygame Zero game ${key}`)
+    await fixture(async (port) => {
+      const payload = await entry.load()
+      const saved = await createPythonExampleProject(entry, port, options())
+      expect(saved.kind).toBe(entry.kind)
+      expect(saved.installedExtensions.map(({ id }) => id)).toEqual(['python-pgzero'])
+      const reopened = await loadSanitizedProjectById(saved.id)
+      if (reopened?.programmingLanguage !== 'python') throw new Error('Saved Python game required')
+      expect(reopened.assets).toEqual(payload.assets ? [...payload.assets] : undefined)
+      for (const asset of payload.assets ?? [])
+        expect(asset.proPath).toMatch(
+          /^(images\/[a-z_0-9]+\.(svg|png)|sounds\/[a-z_]+\.wav|music\/[a-z_]+\.ogg|fonts\/[a-z0-9]+\.ttf)$/,
+        )
+      const { buildPythonSourceFiles } = await import('../export/pythonSource')
+      const sizes: [number, number][] = []
+      const { files } = await buildPythonSourceFiles(reopened, null, {
+        rasterizeSvg: async (_svg, width, height) => {
+          sizes.push([width, height])
+          return new Uint8Array([137, 80, 78, 71])
+        },
+      })
+      for (const [path, text] of Object.entries(payload.files)) expect(files[path]).toEqual(text)
+      // The text files the game reads with open() (the waves of the space shooter) travel too.
+      const game = PGZERO_GAMES.find(
+        (candidate) =>
+          key === `python:${candidate.key}:blocks` || key === `python:${candidate.key}:code`,
+      ) as PgzeroGame
+      for (const name of game.dataFiles ?? []) {
+        expect(Object.keys(payload.files)).toContain(name)
+        expect(files[name]).toBe((payload.files as Record<string, string>)[name])
+      }
+      // A game with its own font takes the font and its license to the computer.
+      if (game.font) {
+        expect(files[`fonts/${game.font}.ttf`]).toBeDefined()
+        expect(String(files['LICENSE-fonte.txt'])).toContain('SIL OPEN FONT LICENSE')
+      }
+      const vectors = (payload.assets ?? []).filter(({ proPath }) => proPath?.endsWith('.svg'))
+      for (const asset of vectors)
+        expect(files[asset.proPath!.replace(/\.svg$/, '.png')]).toBeDefined()
+      expect(sizes).toHaveLength(vectors.length)
+      expect(files['requisitos-pygame-zero.txt']).toBe('pygame-ce==2.5.8\nnumpy\n')
+    }, entry.kind)
+  })
+
+for (const key of raylibKeys)
+  test(`${key} creates and reopens its whole program and media; the desktop copy takes the real raylib`, async () => {
+    const entry = PYTHON_EXAMPLE_SUMMARIES.find((candidate) => candidate.key === key)
+    if (!entry) throw new Error(`Missing Raylib game ${key}`)
+    await fixture(async (port) => {
+      const payload = await entry.load()
+      const saved = await createPythonExampleProject(entry, port, options())
+      expect(saved.kind).toBe(entry.kind)
+      expect(saved.installedExtensions.map(({ id }) => id)).toEqual([entry.extensions[0]!.id])
+      const reopened = await loadSanitizedProjectById(saved.id)
+      if (reopened?.programmingLanguage !== 'python') throw new Error('Saved Python game required')
+      expect(reopened.assets).toEqual(payload.assets ? [...payload.assets] : undefined)
+      for (const asset of payload.assets ?? [])
+        expect(asset.proPath).toMatch(
+          /^(images\/[a-z0-9-]+\.png|sounds\/[a-z0-9-]+\.wav|music\/[a-z0-9-]+\.ogg|fonts\/[a-z0-9]+\.ttf|models\/[a-z0-9-]+\.glb)$/,
+        )
+      const { buildPythonSourceFiles } = await import('../export/pythonSource')
+      const { files } = await buildPythonSourceFiles(reopened, null)
+      for (const [path, text] of Object.entries(payload.files)) expect(files[path]).toEqual(text)
+      expect(files['requisitos-raylib.txt']).toBe('raylib==6.0.1.0\n')
+
+      // The ZIP the child downloads carries, byte for byte, the very folder the playtests run on
+      // the real raylib 6.0.1.0 (scripts/python/raylib-playtest): what plays there plays at home.
+      const exported = await exportProjectSource(reopened, {
+        runtimeCatalog: port.environments[0]!.context.catalog,
+      })
+      expect(exported.warnings).toEqual([])
+      const zip = unzipSync(new Uint8Array(await exported.blob.arrayBuffer()))
+      const folder = join(import.meta.dir, '../examples/python/raylib', key.split(':')[1]!)
+      const onDisk = readdirSync(folder, { recursive: true, withFileTypes: true }).filter((file) =>
+        file.isFile(),
+      )
+      expect(onDisk.length).toBeGreaterThan(3)
+      for (const file of onDisk) {
+        const path = relative(folder, join(file.parentPath, file.name)).replaceAll('\\', '/')
+        expect(zip[path], path).toEqual(new Uint8Array(readFileSync(join(folder, path))))
+      }
+      expect(new TextDecoder().decode(zip['requisitos-raylib.txt'])).toBe('raylib==6.0.1.0\n')
+      // The browser engine never travels: the desktop raylib is the one pip installs.
+      for (const path of Object.keys(zip)) expect(path).not.toMatch(/(^|\/)(pyray|raylib)(\.py|\/)/)
+      expect(zip['index.html']).toBeUndefined()
+    }, entry.kind)
+  })
+
+for (const key of pygameKeys)
+  test(`${key} creates, reopens and exports its Pygame-ce program, Pinta drawings and sounds`, async () => {
+    const entry = PYTHON_EXAMPLE_SUMMARIES.find((candidate) => candidate.key === key)
+    if (!entry) throw new Error(`Missing Pygame-ce game ${key}`)
+    await fixture(async (port) => {
+      port.environments[0]!.context.grantedExtensionIds = ['python-pygame']
+      const payload = await entry.load()
+      const saved = await createPythonExampleProject(entry, port, options())
+      expect(saved.kind).toBe(entry.kind)
+      expect(saved.installedExtensions.map(({ id }) => id)).toEqual(['python-pygame'])
+      const reopened = await loadSanitizedProjectById(saved.id)
+      if (reopened?.programmingLanguage !== 'python') throw new Error('Saved Python game required')
+      expect(reopened.assets).toEqual(payload.assets ? [...payload.assets] : undefined)
+      const { files } = await (await import('../export/pythonSource')).buildPythonSourceFiles(
+        reopened,
+        null,
+      )
+      for (const [path, content] of Object.entries(payload.files))
+        expect(files[path]).toEqual(content)
+      for (const asset of payload.assets ?? []) {
+        expect(asset.proPath).toMatch(/^assets\/[A-Za-z0-9_-]+\.(png|wav|ogg)$/)
+        expect(files[asset.proPath!]).toEqual(Buffer.from(asset.dataUrl.split(',')[1]!, 'base64'))
+      }
+      expect(files['requisitos-pygame-ce.txt']).toBe('pygame-ce==2.5.7\n')
+      expect(files['pinta.py']).toContain('def carregar_mapa(nome)')
+    }, entry.kind)
+  })

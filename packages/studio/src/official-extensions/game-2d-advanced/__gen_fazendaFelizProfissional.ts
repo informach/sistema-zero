@@ -24,14 +24,9 @@ SZGameKit.setup({ width: 960, height: 540, background: "#2b4a1e", accent: "#ffd2
 SZGameKit.setScreenText("menu", "Fazenda Feliz Profissional", "Setas ou WASD: andar. Q: trocar a ferramenta. Espaço: usar. C: dormir. V: vender. Junte 50 moedas!", "Começar");
 SZGameKit.setScreenText("vitoria", "Que fazenda!", "Você juntou 50 moedas cuidando da terra!", "Plantar de novo");
 SZGameKit.defineLook("fazendeiro", function (ctx) {
-  ctx.fillStyle = "#8a5a2b";
-  ctx.fillRect(4, 0, 26, 6);
-  ctx.fillStyle = "#f7c8a2";
-  ctx.beginPath();
-  ctx.arc(17, 12, 8, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.fillStyle = "#d98c40";
-  ctx.fillRect(7, 20, 20, 16);
+  SZGameKit.drawRectangle(4, 0, 26, 6, "#8a5a2b");
+  SZGameKit.drawCircle(17, 12, 8, "#f7c8a2");
+  SZGameKit.drawRectangle(7, 20, 20, 16, "#d98c40");
 }, 34, 36);
 const fazendeiro = SZGameKit.createCharacter({ w: 34, h: 36, speed: 200, color: "#d98c40" });
 SZGameKit.placeCharacter(fazendeiro, 700, 450);
@@ -111,42 +106,31 @@ SZGameKit.onUpdate(function (dt) {
 SZGameKit.onDraw(function (ctx) {
   SZGameKit.drawBackground("#3a5a2a", true);
   for (let i = 0; i < 24; i++) {
-    ctx.fillStyle = "#6b4a2b";
-    ctx.fillRect(canteiroX[i], canteiroY[i], 84, 84);
+    SZGameKit.drawRectangle(canteiroX[i], canteiroY[i], 84, 84, "#6b4a2b");
     if (molhado[i] == 1) {
-      ctx.fillStyle = "#4a3320";
+      SZGameKit.drawRectangle(canteiroX[i] + 6, canteiroY[i] + 6, 72, 72, "#4a3320");
     } else {
-      ctx.fillStyle = "#7a5636";
+      SZGameKit.drawRectangle(canteiroX[i] + 6, canteiroY[i] + 6, 72, 72, "#7a5636");
     }
-    ctx.fillRect(canteiroX[i] + 6, canteiroY[i] + 6, 72, 72);
     if (canteiro[i] == 1) {
-      ctx.fillStyle = "#5a4326";
-      ctx.fillRect(canteiroX[i] + 14, canteiroY[i] + 28, 56, 6);
-      ctx.fillRect(canteiroX[i] + 14, canteiroY[i] + 48, 56, 6);
+      SZGameKit.drawRectangle(canteiroX[i] + 14, canteiroY[i] + 28, 56, 6, "#5a4326");
+      SZGameKit.drawRectangle(canteiroX[i] + 14, canteiroY[i] + 48, 56, 6, "#5a4326");
     }
     if (canteiro[i] == 2) {
-      ctx.fillStyle = "#4fae3a";
-      ctx.beginPath();
-      ctx.arc(canteiroX[i] + 42, canteiroY[i] + 50, 14, 0, Math.PI * 2);
-      ctx.fill();
+      SZGameKit.drawCircle(canteiroX[i] + 42, canteiroY[i] + 50, 14, "#4fae3a");
     }
     if (canteiro[i] == 3) {
-      ctx.fillStyle = "#ffd24a";
-      ctx.beginPath();
-      ctx.arc(canteiroX[i] + 42, canteiroY[i] + 42, 20, 0, Math.PI * 2);
-      ctx.fill();
+      SZGameKit.drawCircle(canteiroX[i] + 42, canteiroY[i] + 42, 20, "#ffd24a");
     }
   }
   SZGameKit.drawCharacter(fazendeiro);
   SZGameKit.drawEffects();
 });
 SZGameKit.onDrawHud(function (ctx) {
-  ctx.fillStyle = "#fff8e1";
-  ctx.font = "22px sans-serif";
-  ctx.fillText("Ferramenta: " + ferramentas[ferramenta], 20, 34);
-  ctx.fillText("Moedas: " + moedas, 20, 62);
-  ctx.fillText("Colheita: " + colheita, 20, 90);
-  ctx.fillText("Dia: " + dia, 820, 34);
+  SZGameKit.drawText("Ferramenta: " + ferramentas[ferramenta], 20, 34, 22, "#fff8e1");
+  SZGameKit.drawText("Moedas: " + moedas, 20, 62, 22, "#fff8e1");
+  SZGameKit.drawText("Colheita: " + colheita, 20, 90, 22, "#fff8e1");
+  SZGameKit.drawText("Dia: " + dia, 820, 34, 22, "#fff8e1");
 });
 `.trim()
 

@@ -13,7 +13,17 @@ export function SceneComponentMirror({
   return (
     <ComponentPage
       title="Espelhar"
-      description="Crie o outro lado igualzinho."
+      help={{
+        title: 'Como funciona o espelho',
+        content: (
+          <>
+            <p>Crie o outro lado igualzinho.</p>
+            <p>
+              O plano do espelho fica fixo. Parar mantém os dois lados e permite editar cada um.
+            </p>
+          </>
+        ),
+      }}
       backLabel="Faces"
       onBack={onBack}
     >
@@ -23,19 +33,13 @@ export function SceneComponentMirror({
           : 'Escolha faces de um lado da peça para espelhar.'}
       </p>
       {symmetry && (
-        <>
-          <p className="mld-component-description">
-            O plano do espelho fica fixo. Parar mantém os dois lados na peça e permite editar cada
-            um.
-          </p>
-          <ComponentButton
-            onClick={() => {
-              if (stop()) onBack()
-            }}
-          >
-            Parar de espelhar
-          </ComponentButton>
-        </>
+        <ComponentButton
+          onClick={() => {
+            if (stop()) onBack()
+          }}
+        >
+          Parar de espelhar
+        </ComponentButton>
       )}
       <ComponentButton onClick={onBack}>Voltar</ComponentButton>
     </ComponentPage>

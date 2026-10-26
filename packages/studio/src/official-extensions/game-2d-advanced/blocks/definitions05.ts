@@ -93,7 +93,7 @@ export const gameKitBlockDefinitions05: BlockDefinition[] = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Os DADOS de uma espécie. Os pontos são do NÍVEL 1; cada nível dá +8 de vida, +2 de força e +1 de defesa. O TIPO você inventa (fogo, gelo, doce, dinossauro…). Sem imagem nem aparência, vira um retângulo. Use uma vez por bicho.',
+      'Define uma espécie no nível 1. Cada nível soma 8 de vida, 2 de força e 1 de defesa. Invente seu tipo. Sem imagem ou aparência, usa a cor. Defina uma vez por espécie.',
   },
 
   {
@@ -140,7 +140,7 @@ export const gameKitBlockDefinitions05: BlockDefinition[] = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'VOCÊ inventa a regra: 2 = super efetivo, 0.5 = fraquinho, 0 = não teve efeito. Três destes fazem o triângulo clássico (fogo > planta > água > fogo). E aí a batalha vira ESCOLHER o golpe certo, que é a graça do gênero. Sem tabela, todo golpe vale 1×.',
+      'Define a força de um tipo contra outro: 2 dobra o dano, 0.5 reduz à metade e 0 anula. Invente combinações como fogo, planta e água. Sem regra, o multiplicador é 1.',
   },
 
   {
@@ -416,7 +416,7 @@ export const gameKitBlockDefinitions05: BlockDefinition[] = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Dá um golpe na direção que o personagem olha: cria uma área de acerto na frente dele por um tempinho. Combina com "o golpe acertou?" para machucar o inimigo. Chame quando o jogador apertar o botão de ataque (ex.: "se a tecla espaço foi apertada").',
+      'Cria uma área de golpe à frente do personagem por um tempo. Combine com O golpe acertou? para causar dano. Use quando o jogador apertar o botão de ataque.',
   },
 
   {
@@ -483,7 +483,7 @@ export const gameKitBlockDefinitions05: BlockDefinition[] = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     tooltip:
-      'O golpe não machuca no instante em que você aperta: primeiro vem o RECUO (o braço indo) e só depois a janela em que ele acerta. Sem isso, quem aperta primeiro sempre ganha. O retângulo branco aparece só enquanto machuca. 0 e 0 = machuca o golpe inteiro.',
+      'Define o preparo antes do acerto e quanto tempo o golpe machuca, em segundos. A área branca aparece durante o acerto. Com os dois valores em 0, o golpe machuca durante todo o movimento.',
   },
 
   // ---- 🎬 Animação ----
@@ -578,7 +578,7 @@ export const gameKitBlockDefinitions05: BlockDefinition[] = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     tooltip:
-      'Diga uma vez qual animação é de cada estado; o "Animar sozinho" troca na hora certa. Marque a caixinha para tocar uma vez e parar no último quadro. Para impedir que outro estado interrompa, use "Pôr no estado por N segundos".',
+      'Define a animação de cada estado para Animar sozinho. Uma vez para no último quadro. Para evitar interrupção por outro estado, use Pôr no estado por N segundos.',
   },
 
   {

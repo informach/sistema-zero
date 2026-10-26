@@ -280,7 +280,7 @@ describe('ferramentas da malha (M3)', () => {
     )
   })
 
-  test('Loop cut abre a bandeja larga, cria cortes múltiplos e mantém um desfazer', async () => {
+  test('Corte em faixa abre a bandeja larga, cria cortes múltiplos e mantém um desfazer', async () => {
     const callbacks = await openAndConvert()
     fireEvent.click(screen.getByRole('button', { name: copy.modes.edge }))
     act(() => callbacks.onMeshPick({ kind: 'edge', keys: ['v_010', 'v_011'] }, false))

@@ -19,28 +19,8 @@ export const muralhaDoReinoExample: ExtensionExample = beginnerGameExample({
   description:
     'Clique embaixo para comprar torres que atiram sozinhas nos invasores. Segure as 6 ondas e não deixe ninguém encostar no castelo. Enter começa e reinicia.',
   ir: {
-    html: [{ type: 'canvas', id: 'tela', width: 480, height: 300 }],
-    css: [
-      {
-        selector: 'body',
-        declarations: {
-          background: '#0f1424',
-          display: 'flex',
-          'align-items': 'center',
-          'justify-content': 'center',
-          'min-height': '100vh',
-          margin: '0',
-        },
-      },
-      {
-        selector: 'canvas',
-        declarations: {
-          border: '3px solid #ffffff',
-          'border-radius': '18px',
-          background: '#33502f',
-        },
-      },
-    ],
+    html: [],
+    css: [],
     version: 2,
     behavior: {
       molds: [
@@ -280,6 +260,21 @@ export const muralhaDoReinoExample: ExtensionExample = beginnerGameExample({
         },
       ],
       start: [
+        {
+          type: 'g2d:setupStage',
+          width: 480,
+          height: 300,
+          bg: '#33502f',
+          __id: 'exemplo-muralha-do-reino',
+        },
+        {
+          type: 'g2d:setStageDescription',
+          description:
+            'Clique embaixo para comprar torres que atiram sozinhas nos invasores. Segure as 6 ondas e não deixe ninguém encostar no castelo. Enter começa e reinicia.',
+          __id: 'exemplo-muralha-do-reino-descricao',
+        },
+        { type: 'g2d:stageBorder', color: '#ffffff', width: 3 },
+
         {
           type: 'g2d:fitScreen',
           percent: {

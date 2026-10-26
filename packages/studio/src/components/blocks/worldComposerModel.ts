@@ -44,6 +44,7 @@ const PLACEMENTS: Record<string, PlacementDefinition> = {
   sz_w3d_door: { label: 'Porta', x: 'X', z: 'Z' },
   sz_w3d_place_thing: { label: 'Objeto', x: 'X', z: 'Z' },
   sz_w3d_place_model: { label: 'Modelo', x: 'X', z: 'Z' },
+  sz_w3d_collectible: { label: 'Coletáveis', x: 'X', z: 'Z' },
 }
 
 function numberInput(block: Blockly.Block, inputName: string): number | null {

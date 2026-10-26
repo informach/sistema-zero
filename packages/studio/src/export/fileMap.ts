@@ -8,7 +8,7 @@ import {
   type Project,
   soundManifest,
 } from '#core'
-import { loadExtensionBootstrapScript } from '#extensions'
+import { extensionBootstrapContext, loadExtensionBootstrapScript } from '#extensions'
 import { findExtension } from '#official-extensions'
 import { buildProAssetBundle } from '../core/proAssets'
 import { gameUiFontBootstrapScript, loadGameUiFont } from '../official-extensions/gameUiFont'
@@ -20,7 +20,7 @@ import { rewriteCssAssetUrlsToAssetNames } from '../preview/cssAssets'
 import { buildInputRuntime } from '../preview/inputBridge'
 import { transpileExtra } from '../preview/transpile'
 import type { Minifiers } from './minify'
-import { buildProductionIndexHtml } from './productionHtml'
+import { buildProductionIndexHtml, hasCanonicalCssLink } from './productionHtml'
 import {
   buildPwaRevision,
   buildServiceWorker,
@@ -64,9 +64,9 @@ export async function buildClassicFileMap(
   const rawCss = project.files['style.css'] ?? ''
   const rawJs = project.files['script.js'] ?? ''
 
-  // Placement inline ⇒ style.css/script.js vêm vazios (o conteúdo já está dentro
-  // do index.html). Só emite o arquivo externo quando há conteúdo.
-  const hasExternalCss = rawCss.trim().length > 0
+  // Inline CSS needs no companion file. An existing external link still needs
+  // its target, even when an extension-only project has no authored CSS.
+  const hasExternalCss = rawCss.trim().length > 0 || hasCanonicalCssLink(rawHtml)
   let hasExternalJs = rawJs.trim().length > 0
   let jsIsModule = MODULE_RE.test(rawJs)
 
@@ -169,6 +169,13 @@ export async function buildClassicFileMap(
   const extensionScriptSrcs: string[] = []
   const importmap: Record<string, string> = {}
   let usesEsmImports = false
+  // O MESMO contexto do preview e da capa (o código do aluno como ele é, antes do export): o
+  // site publicado leva a mesma variante de cada runtime que o preview rodou.
+  const bootstrapContext = extensionBootstrapContext({
+    html: project.files['index.html'],
+    js: project.files['script.js'],
+    extraFiles: project.extraFiles,
+  })
   for (const installed of project.installedExtensions) {
     const ext = findExtension(installed.id)
     if (!ext) {
@@ -179,9 +186,12 @@ export async function buildClassicFileMap(
       continue
     }
     const src = `sz-ext/${installed.id}.js`
-    files[`public/${src}`] = await minifiers.js(await loadExtensionBootstrapScript(ext), {
-      module: Boolean(ext.runtime.esmImports),
-    })
+    files[`public/${src}`] = await minifiers.js(
+      await loadExtensionBootstrapScript(ext, bootstrapContext),
+      {
+        module: Boolean(ext.runtime.esmImports),
+      },
+    )
     extensionScriptSrcs.push(src)
     if (ext.runtime.esmImports) {
       Object.assign(importmap, ext.runtime.esmImports)

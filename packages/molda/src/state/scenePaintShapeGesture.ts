@@ -1,4 +1,4 @@
-import { PALETTE_SIZE } from '../core/palette'
+import { paletteBaseSize } from '../core/sanitize'
 import type { PixelShape } from '../paint/shapeTexels'
 import type { BrushSize, Texel } from '../paint/skinPaint'
 import type { ScenePixelRegion } from '../scene/composite'
@@ -158,7 +158,7 @@ export function createScenePaintShapeGesture(
           image,
           target.layerId,
           point,
-          PALETTE_SIZE + (prepared.extraColors?.length ?? 0),
+          paletteBaseSize(prepared) + (prepared.extraColors?.length ?? 0),
         )
         const revision = state.contentRevision
         const draft: ScenePaintDraft = {

@@ -1,6 +1,7 @@
 import type { JSX } from 'react'
 import type { ProjectAsset } from '#core'
 import { Button } from '#ui'
+import type { PgzeroAudioRole } from '../../../core/pgzeroMediaPaths'
 import {
   AssetNameInput,
   AssetRow,
@@ -13,7 +14,11 @@ export interface SoundsTabProps extends AssetsTabCommon {
   sounds: ProjectAsset[]
   allowUpload: boolean
   busy: boolean
-  onUpload: () => void
+  /** Pygame Zero keeps short sounds and songs in different folders: two doors. */
+  pgzero?: boolean
+  /** Raylib too (sounds/ and music/), and the code opens them by path. */
+  raylib?: boolean
+  onUpload: (role?: PgzeroAudioRole) => void
 }
 
 /**
@@ -25,15 +30,42 @@ export function SoundsTab({
   sounds,
   allowUpload,
   busy,
+  pgzero = false,
+  raylib = false,
   onUpload,
   onRename,
   onDelete,
+  codeNameOf,
 }: SoundsTabProps): JSX.Element {
   return (
     <div className="flex flex-col gap-4">
-      {allowUpload ? (
+      {allowUpload && (pgzero || raylib) ? (
         <div className="flex flex-col gap-2">
-          <Button variant="primary" size="sm" disabled={busy} onClick={onUpload}>
+          <div className="flex flex-wrap gap-2">
+            <Button variant="primary" size="sm" disabled={busy} onClick={() => onUpload('sound')}>
+              {busy ? 'Processando…' : '🔊 Enviar som curto'}
+            </Button>
+            <Button variant="primary" size="sm" disabled={busy} onClick={() => onUpload('music')}>
+              {busy ? 'Processando…' : '🎵 Enviar música'}
+            </Button>
+          </div>
+          {raylib ? (
+            <p className="text-xs text-sz-fg-mute">
+              Som curto vai para a pasta sounds e abre com load_sound('sounds/nome.wav'). Música vai
+              para a pasta music e abre com load_music_stream('music/nome.mp3'). WAV, OGG, MP3 ou
+              FLAC, até 5 MB por arquivo.
+            </p>
+          ) : (
+            <p className="text-xs text-sz-fg-mute">
+              Som curto (WAV ou OGG) vai para a pasta sounds e toca com sounds.nome.play(). Música
+              (MP3 ou OGG) vai para a pasta music e toca com music.play('nome'). Até 5 MB por
+              arquivo.
+            </p>
+          )}
+        </div>
+      ) : allowUpload ? (
+        <div className="flex flex-col gap-2">
+          <Button variant="primary" size="sm" disabled={busy} onClick={() => onUpload()}>
             {busy ? 'Processando…' : '🔊 Enviar som'}
           </Button>
           {/* O que cabe, ANTES do envio. A dúvida veio da dona do produto ("qual
@@ -69,6 +101,7 @@ export function SoundsTab({
                   asset={asset}
                   what="o som"
                   onRename={onRename}
+                  codeName={codeNameOf?.(asset)}
                   className="min-w-0 flex-1"
                 />
                 {/* biome-ignore lint/a11y/useMediaCaption: efeito sonoro de jogo, sem fala/legenda */}

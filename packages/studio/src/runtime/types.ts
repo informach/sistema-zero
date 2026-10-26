@@ -3,6 +3,10 @@ import type {
   StudioPythonActivity,
   StudioPythonActivityFeedback,
 } from '@sistemazero/core/studio/python-activity'
+import type {
+  StudioPythonMissionFrameObservation,
+  StudioPythonMissionProbe,
+} from '@sistemazero/core/studio/python-mission-observation'
 import type { StudioRuntimeImage } from '@sistemazero/core/studio/runtime-image'
 
 export type { StudioRuntimeImage } from '@sistemazero/core/studio/runtime-image'
@@ -53,6 +57,10 @@ export type StudioRuntimeEvent = { identity: StudioExecutionIdentity; sequence: 
 )
 
 export interface StudioRuntimeSession {
+  /** Read-only probes on a dedicated validation generation. Never a client verdict. */
+  observePythonMission?(
+    probe: StudioPythonMissionProbe,
+  ): Promise<StudioPythonMissionFrameObservation>
   /** Available only on a dedicated Python activity generation. Never server authority. */
   applyPythonActivityControls?(): Promise<void>
   checkPythonActivity?(): Promise<StudioPythonActivityFeedback>
@@ -75,6 +83,7 @@ export interface StudioRuntimeSession {
 }
 
 export interface StudioRuntimePrepareInput {
+  pythonMission?: true
   /** Trusted host UI preference. Never supplied by learner source or frame messages. */
   hostAudio?: StudioHostAudioPreference
   /** Host-owned lesson criteria, separate from the editable project and its execution digest. */

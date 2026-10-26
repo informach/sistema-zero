@@ -1,6 +1,8 @@
 import { StudioPythonActivityFeedbackSchema } from '@sistemazero/core/studio/python-activity'
+import { readStudioPythonMissionObservation } from '@sistemazero/core/studio/python-mission-observation'
 import { readPythonAudioRequest } from './audio/contract'
 import { PYTHON_CONSOLE_LIMITS, type PythonConsoleBatch, type PythonWorkerEvent } from './protocol'
+import { isPythonSavedFileChange } from './savedFiles'
 
 const record = (value: unknown): value is Record<string, unknown> =>
   value !== null && typeof value === 'object' && !Array.isArray(value)
@@ -15,6 +17,18 @@ const count = (value: unknown): value is number =>
 export function readPythonWorkerEvent(raw: unknown): PythonWorkerEvent | undefined {
   if (!record(raw)) return
   switch (raw.type) {
+    case 'mission-result': {
+      if (!isPythonRequestId(raw.requestId)) return
+      try {
+        return {
+          type: 'mission-result',
+          requestId: raw.requestId,
+          observation: readStudioPythonMissionObservation(raw.observation),
+        }
+      } catch {
+        return
+      }
+    }
     case 'audio': {
       if (!isPythonRequestId(raw.requestId)) return
       try {
@@ -23,6 +37,16 @@ export function readPythonWorkerEvent(raw: unknown): PythonWorkerEvent | undefin
         return
       }
       return { type: 'audio', requestId: raw.requestId, request: raw.request as string }
+    }
+    case 'saved-flushed':
+      return { type: 'saved-flushed' }
+    case 'saved-file': {
+      if (!isPythonSavedFileChange(raw.path, raw.bytes)) return
+      return {
+        type: 'saved-file',
+        path: raw.path as string,
+        bytes: raw.bytes as Uint8Array<ArrayBuffer> | null,
+      }
     }
     case 'activity-result': {
       if (
@@ -51,8 +75,8 @@ export function readPythonWorkerEvent(raw: unknown): PythonWorkerEvent | undefin
       for (const entry of raw.images) {
         if (
           !record(entry) ||
+          // Id 0 is legal: Pygame Zero sends its draw list as attachment 0.
           !count(entry.id) ||
-          !entry.id ||
           ids.has(entry.id) ||
           !(entry.bytes instanceof Uint8Array) ||
           !(entry.bytes.buffer instanceof ArrayBuffer) ||

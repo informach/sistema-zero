@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs'
 import type {
   StudioPythonClassicDocument,
   StudioPythonProDocument,
@@ -6,12 +7,16 @@ import { turtleF1Source } from '../../packages/studio/e2e-python-editor/fixtures
 import { preparePythonExecutionSnapshot } from '../../packages/studio/src/runtime/python/snapshot'
 import { documentFixture } from '../../packages/studio/src/state/fixtures/projectDocuments'
 import { audioFixtures, portableAudioAsset } from './audioFixtures'
+import { PGZERO_EXTENSION, PGZERO_FIXTURE_ASSETS, pgzeroFixtures } from './pgzeroFixtures'
+import { RAYLIB_FIXTURE_ASSETS, raylibFixtureExtension, raylibFixtures } from './raylibFixtures'
 import { TURTLE_EXTENSION, turtleFixtures } from './turtleFixtures'
 
 /** Behavioral fixtures, never a production runtime catalog or author template. */
 const cases: Record<string, string> = {
   ...audioFixtures,
   ...turtleFixtures,
+  ...pgzeroFixtures,
+  ...raylibFixtures,
   turtleF1: turtleF1Source('red'),
   osSystem: `import os
 print('os-system result', os.system('aplay start_up.wav > /dev/null 2>&1 &'))
@@ -156,6 +161,12 @@ export async function runtimeFixtureProject(
       blocksState: null,
     }
   }
+  const { isPgzeroExampleFixture, pgzeroExampleProject } = await import('./pgzeroFixtures')
+  if (isPgzeroExampleFixture(name)) return pgzeroExampleProject(name)
+  const { isRaylibExampleFixture, raylibExampleProject } = await import('./raylibFixtures')
+  if (isRaylibExampleFixture(name)) return raylibExampleProject(name)
+  const { isPygameExampleFixture, pygameExampleProject } = await import('./pygameFixtures')
+  if (isPygameExampleFixture(name)) return pygameExampleProject(name)
   const { isGameFixture, gameFixtureProject } = await import('./gameFixtures')
   if (isGameFixture(name)) return gameFixtureProject(name)
   const source = cases[name]
@@ -181,6 +192,16 @@ export async function runtimeFixtureProject(
         content: "AUTHOR = 'author audio preserved'\n",
       }
   }
+  if (name in raylibFixtures) {
+    project.installedExtensions = [
+      { ...raylibFixtureExtension(name), installedAt: project.createdAt },
+    ]
+    project.assets = [...RAYLIB_FIXTURE_ASSETS]
+  }
+  if (name in pgzeroFixtures) {
+    project.installedExtensions = [{ ...PGZERO_EXTENSION, installedAt: project.createdAt }]
+    project.assets = [...PGZERO_FIXTURE_ASSETS]
+  }
   if (name in turtleFixtures || name === 'turtleF1') {
     project.installedExtensions = [{ ...TURTLE_EXTENSION, installedAt: project.createdAt }]
     project.assets = [
@@ -195,6 +216,23 @@ export async function runtimeFixtureProject(
       },
     ]
     if (name === 'turtleF1') project.assets = []
+    if (name === 'turtlePintaShape')
+      project.assets.push({
+        id: 'nave',
+        name: 'nave',
+        kind: 'image',
+        source: 'upload',
+        proPath: 'assets/nave.svg',
+        dataUrl: `data:image/svg+xml;charset=utf-8,${encodeURIComponent(
+          readFileSync(
+            new URL(
+              '../../packages/studio/scripts/turtle/fixtures/pinta-nave.svg',
+              import.meta.url,
+            ),
+            'utf8',
+          ),
+        )}`,
+      })
     if (name === 'turtleInvalidImage' || name === 'turtleImageInput') {
       // Valid dimensions/signature with missing image data: reaches the native
       // decoder, whose error must return to Python instead of killing its worker.

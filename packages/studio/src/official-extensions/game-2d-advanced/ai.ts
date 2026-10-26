@@ -9,7 +9,8 @@ responsivo de resolução interna FIXA + arquitetura P24 (event bus, moldes
 data-driven com pooling, combate com i-frames, missão, partículas, som). O
 runtime encapsula só o que nunca muda; a MECÂNICA (movimento custom, colisões,
 pontos, fases) o aluno escreve nos ganchos com blocos do núcleo
-(se/variáveis/matemática/Canvas). Não confundir com a extensão "Jogo 2D"
+(se/variáveis/matemática). Desenho e interface usam exclusivamente os blocos
+da extensão. HTML, CSS, Canvas e acesso direto ao contexto ficam na etapa sem extensão. Não confundir com a extensão "Jogo 2D"
 (game-2d, SZGame2D) — aquela traz comportamentos prontos; esta traz a
 arquitetura. Não misturar as duas no mesmo projeto.
 
@@ -105,7 +106,7 @@ API global injetada como window.SZGameKit:
 - Laço: onUpdate(fn(dt)) — dt em SEGUNDOS, clampado a 0.1 (aba em segundo plano
   não teleporta); onUpdate só roda em "jogando" (pausa congela de graça).
   onDraw(fn(ctx)) — roda todo quadro fora do menu; ctx é um
-  CanvasRenderingContext2D real: os blocos de Canvas do núcleo funcionam dentro.
+  contexto interno: use os blocos de desenho da extensão, sem acesso direto ao Canvas.
   drawBackground(cor, grade): pinta a tela toda (apaga o quadro anterior) +
   grade opcional de 40px.
 - Personagens: createCharacter({ image, w, h, speed, color }) → objeto PLANO
@@ -122,7 +123,7 @@ API global injetada como window.SZGameKit:
 - 📢 Avisos (event bus do P24 — a espinha da arquitetura): on(nome, fn) escuta;
   emit(nome) dispara. Desacopla quem causa de quem reage (ex.: goblin morre →
   emit("inimigo:morreu"); o listener soma o kill e toca o som).
-- 🐛 Moldes & enxames (data-driven + object pooling do vídeo de otimização):
+- 📦 Moldes e cópias (data-driven + object pooling do vídeo de otimização):
   defineMold(nome, { w, h, health, speed, damage, color, image, look }) define
   os DADOS de um tipo; spawnFromMold(molde, x, y) nasce 1 (reaproveita
   recolhidos — rápido com centenas); const chefe = spawnFromMold(...) dá
@@ -136,7 +137,7 @@ API global injetada como window.SZGameKit:
 - 🎨 Aparência (vetorial): defineLook(nome, fn(ctx), baseW, baseH) desenha uma
   vez em coords LOCAIS (0,0 = canto, no tamanho-base) — molde com look ganha o
   visual escalado ao w/h dele; drawLook(nome, x, y, w, h) desenha avulso
-  (escala do tamanho-base). Blocos de Canvas do núcleo valem dentro da fn.
+  (escala do tamanho-base). Use as figuras nativas da extensão dentro da função.
 - 🎯 Comportamentos (steering): seek(c, alvo, dt) persegue; drift(c, dt)
   vagueia; face(c, alvo) espelha o desenho na direção do alvo.
 - 🗡️ Combate (P24): hurt(c, dano, iframesSeg) tira vida + invencibilidade
@@ -145,7 +146,7 @@ API global injetada como window.SZGameKit:
   hit VÁLIDO empurra e toca som). knockback(c, de, força) empurra com
   decaimento; touchCircle(a, b) colisão por círculo; isDead(c) vida <= 0;
   healthOf(c); drawHealthBar(c, max) barrinha em cima (max 0 = usa maxHealth).
-- 🖥️ HUD & Missão: setMission(segundos, kills) — cumpriu (sobreviveu OU
+- 🖥️ Placar e missão: setMission(segundos, kills) — cumpriu (sobreviveu OU
   derrotou) → estado "vitoria" (tela pronta) + emit("missao:completa");
   missionKill() soma 1 kill; kills() / timeSurvived(); drawTimer(x, y) mm:ss.
 - ✨ Faíscas (partículas data-driven pooled): defineEffect(nome, { count,
@@ -204,7 +205,7 @@ API global injetada como window.SZGameKit:
   visual; rpgOnEnterMap("rota") → rpgBlockCell/rpgCreateNpc/pkmGrassCells/pkmWild;
   rpgOnTalk("professora") → pkmGive+pkmGiveBall; rpgOnTalk("enfermeira") →
   pkmHealTeam; rpgOnBattleEnd → "se pkmCaught() e pkmTeamSize() >= 3: vitoria".
-- 🧙 Kit RPG (Canvas RPG Kit em blocos; mecânicas PRONTAS sobre o mesmo motor):
+- 🧙 Kit RPG (aventura em blocos; mecânicas PRONTAS sobre o mesmo motor):
   rpgMoveGrid(heroi, cellPx, dt) — andar por CÉLULAS c/ paredes, portas e o
   ESPAÇO conversando com o NPC à frente (use no onUpdate; a fala/batalha travam
   o herói sozinhas); rpgBlockCell(cx, cy) parede; rpgCell(n) célula→px;
@@ -243,7 +244,7 @@ API global injetada como window.SZGameKit:
   rpgAddFlag('intro')". Reserva de intenção: herói e NPC não entram na mesma
   célula. setWalkSheet(c, "folha", fw, fh) = folha de ANDAR de 4 linhas
   (baixo/cima/esquerda/direita) animada pela direção + movimento.
-- 🗨️ Fala & escolhas (GERAL — o motor desenha e navega em QUALQUER jogo, apesar do
+- 🗨️ Fala e escolhas (GERAL — o motor desenha e navega em QUALQUER jogo, apesar do
   prefixo rpg no nome): rpgSay(texto, quem) = caixa typewriter (fila; ESPAÇO avança;
   emite "fala:terminada"). rpgMenu(titulo, fn) abre um menu no canvas (setas +
   espaço/clique) e roda a opção escolhida; DENTRO do fn use rpgOption(label, optFn)
@@ -295,13 +296,13 @@ API global injetada como window.SZGameKit:
   "cor", chefão?) guarda uma FICHA de inimigo; rpgBattleNamed(nome) começa a batalha
   contra a ficha (inimigo principal) e rpgAddFoeNamed(nome) enfileira mais — "define
   separado, escolhe na hora" (como os moldes do mundo). Ficha inexistente = no-op+aviso.
-- 🗺️ Mundo & profundidade (tiles do Ninja Adventure; GERAL, vale fora do RPG):
+- 🗺️ Mapas e profundidade (tiles do Ninja Adventure; GERAL, vale fora do RPG):
   loadTilemap(nome, assetDeMapa) lê um MAPA do Pinta (grade+peças+sólidos juntos,
   via ASSET_META). No onDraw, drawTilemap(nome, "chão") ANTES dos personagens e
   drawTilemap(nome, "topos") (só peças sólidas) OU drawTilemap(nome, "frente") (a
   camada da frente marcada no Pinta) DEPOIS = profundidade (herói passa atrás).
   drawByDepth(quem) desenha por Y (quem está mais embaixo, na frente) o personagem
-  passado + TODOS os enxames vivos + os NPCs do RPG (se houver) — substitui
+  passado + TODOS os grupos vivos + os NPCs do RPG (se houver) — substitui
   drawCharacter+rpgDrawNpcs. drawShadow(c) = sombrinha sob o personagem (antes de
   desenhá-lo). cameraShake(força, segundos) treme a tela (impacto), com câmera
   ligada ou não.
@@ -357,7 +358,7 @@ API global injetada como window.SZGameKit:
   REPETE; o rpgWait só vale dentro de "Fazer a cena").
 - 👾 nearestActive(molde, x, y) = o vivo mais perto de um ponto (tower defense, IA
   de horda que escolhe alvo).
-- 🎲 randomActive(molde) = um vivo QUALQUER do pool, ou null (em 🎲 Sorte & medida)
+- 🎲 randomActive(molde) = um vivo QUALQUER do pool, ou null (em 🎲 Sorteios e medidas)
   — o invasor aleatório que atira, o sorteado do power-up. Sempre teste null.
 - 🎲 pickActive(molde, "maior"|"menor", prop) = o vivo com o máximo/mínimo de uma
   propriedade (x/y/vx/vy/speed/w/h/health/maxHealth/damage/pathProgress). ⭐ é o
@@ -370,7 +371,7 @@ API global injetada como window.SZGameKit:
   Serve tower defense/patrulha/esteira/cutscene em trilho/corrida. Pontos podem
   ficar fora da tela.
 - 🏁 Jogo de tabuleiro (R30 — Ludo/Jogo da Vida; a criança MONTA): rollDice(lados)
-  = sorteia 1..lados (o dado, em 🎲 Sorte & medida). Ordem de turno (anel):
+  = sorteia 1..lados (o dado, em 🎲 Sorteios e medidas). Ordem de turno (anel):
   playersSetup(n) · currentPlayer() (a vez, 1..n) · nextPlayer() (rodízio; volta ao 1)
   · onTurnChange(fn). Trilha de CASAS (reusa 🛤️: cada pathPoint é uma casa):
   moveAlongTrack(quem, casas, "trilha") avança N casas e PARA na casa (desliza +
@@ -389,7 +390,7 @@ API global injetada como window.SZGameKit:
   shockwave(x, y, raio, segundos, cor) = círculo que cresce e some, SÓ VISUAL —
   dano em área é receita: forEachActive + distanceBetween < raio → hurt.
 - 🖥️ floatText(texto, x, y, cor, tamanho) = "+100" que sobe e some sozinho
-  (0,75 s, coords do MUNDO — acompanha a câmera; em 🖥️ HUD & Missão). Pontos:
+  (0,75 s, coords do MUNDO — acompanha a câmera; em 🖥️ Placar e missão). Pontos:
   floatText("+" + pontos, ...).
 - 🎨 leanOnMove(quem, graus) = tomba suave ao andar de lado (nave/peixe/moto;
   0 desliga; soma com o setAngle) · scrollImage(imagem, vx, vy) = fundo que
@@ -401,16 +402,16 @@ API global injetada como window.SZGameKit:
   rpgCountItem(nome) LÊ — crafting ("3 madeiras"), loja, coleta. As FLAGS
   (rpgAddFlag/rpgHasFlag) também são gerais e vivem coladas na 🧠 Memória: a flag
   morre com a partida, o valor guardado sobrevive a fechar o jogo.
-- 🔧 Propriedades & direção (GERAL): propertyOf(quem, "x"|"y"|"vx"|"vy"|"speed"|"w"|
+- 🔧 Dados e direção (GERAL): propertyOf(quem, "x"|"y"|"vx"|"vy"|"speed"|"w"|
   "h"|"health"|"maxHealth"|"damage") e setProperty(quem, prop, v) = a chave-mestra
   p/ o que não tem bloco
   pronto. setFacingDir(quem, "down"|"up"|"left"|"right")/facingOf(quem) — a
   direção move DOIS sistemas: a folha de andar e a caixa do attackFacing.
-- 🗺️ Peças por célula (em 🗺️ Mundo & profundidade): tileAt(mapa, x, y), setTileAt(mapa, x, y, peca),
+- 🗺️ Peças por célula (em 🗺️ Mapas e profundidade): tileAt(mapa, x, y), setTileAt(mapa, x, y, peca),
   breakTileAt(mapa, quem) (mundo destrutível/cavar), setTileSize(px) (padrão 64).
 - ✨ tweenTo(quem, x, y, s) desliza suave até um ponto (porta/plataforma/cutscene)
   — chame UMA vez, não todo quadro.
-- 🧭 Regiões · 🎲 Sorte & medida · 🌫️ Sumir & transição · 🧠 Memória (GERAIS, fora
+- 🧭 Regiões · 🎲 Sorteios e medidas · 🌫️ Sumir e transições · 🧠 Memória (GERAIS, fora
   de todo kit — é com eles que se inventa gênero):
   defineRegion(nome, x, y, w, h) = retângulo com NOME (grama, porta, zona de dano,
   área segura) + isInside(quem, regiao) + ⭐ overlapPercent(quem, regiao) 0..100 —
@@ -567,7 +568,13 @@ API global injetada como window.SZGameKit:
   golpe (padrão: "se didHit(heroi, inimigo): hurt(inimigo)"). patrolAround(quem, ox,
   oy, raio) = inimigo vagueia perto do posto (no onUpdate). Combate de AÇÃO usa
   createCharacter + moveWithKeys + hurt/isInvincible (não a batalha por turnos do
-  RPG). O HUD de corações — drawHearts(atual, max, x, y) — é 🖥️ HUD & Missão.
+  RPG). O HUD de corações — drawHearts(atual, max, x, y) — é 🖥️ Placar e missão.
+
+DESENHO NATIVO:
+- drawRectangle(x, y, w, h, cor), drawCircle(x, y, raio, cor),
+  drawTriangle(x1, y1, x2, y2, x3, y3, cor) e drawText(texto, x, y, tamanho, cor).
+  Use em onDraw, onDrawHud e defineLook; o contexto é escolhido pelo motor.
+  Não gere blocos HTML/CSS/Canvas, chamadas ctx.* nem rawJS de desenho.
 
 REGRAS DE OURO ao gerar código:
 - Velocidade SEMPRE × dt (px/segundo), nunca px/quadro.
@@ -589,7 +596,7 @@ REGRAS DE OURO ao gerar código:
   emit" DENTRO do forEachActive.
 - Vitória: prefira setMission (tela "vitoria" pronta + aviso
   "missao:completa"). Derrota: endGame() (tela "fim").
-- Enxames: SEMPRE parear startSpawner com cullOffscreen no onUpdate.
+- Grupos: SEMPRE parear startSpawner com cullOffscreen no onUpdate.
 ${sceneSummary}
 ${sceneReference}
 `

@@ -7,7 +7,11 @@ import { encodeSceneGlb } from '../../../export/sceneGlb'
 import { addScenePrimitive, editSceneMesh } from '../../../scene/commands'
 import { createSceneProject } from '../../../scene/createProject'
 import { identityMatrix } from '../../../scene/matrix'
-import { meshComponentEdges, meshComponentIds } from '../../../scene/meshComponents'
+import {
+  convertMeshComponents,
+  meshComponentEdges,
+  meshComponentIds,
+} from '../../../scene/meshComponents'
 import { editMeshFaces } from '../../../scene/meshFaces'
 import { indexMeshEdges, meshEdgeKey } from '../../../scene/meshTopology'
 import { sceneGeometryMesh } from '../../../scene/parametricGeometry'
@@ -172,7 +176,7 @@ test('point extrusion uses the mesh permission without requiring advanced mesh t
   }
 })
 
-test('creating a face from two border edges previews without saving, cancels, and selects a face ready to pull', () => {
+test('creating a face from two border edges previews without saving, cancels, and stays in Linhas with the new face lines', () => {
   const f = fixture(true)
   try {
     const mesh = sceneGeometryMesh(f.source.geometries[0]!)
@@ -198,8 +202,14 @@ test('creating a face from two border edges previews without saving, cancels, an
     act(() => f.view.result.current.components.operation.start('create'))
     act(() => expect(f.view.result.current.components.operation.confirm()).toBe(true))
     const created = f.editor.getState().content
-    expect(f.view.result.current.components.selection?.mode).toBe('face')
-    expect(f.view.result.current.components.selection?.ids).toHaveLength(1)
+    const createdMesh = sceneGeometryMesh(created.geometries[0]!)
+    const newFace = Object.keys(createdMesh.faces).find((id) => !Object.hasOwn(mesh.faces, id))!
+    // Criar a face em Linhas continua em Linhas, com as linhas da face nova escolhidas.
+    expect(f.view.result.current.components.selection?.mode).toBe('edge')
+    expect([...(f.view.result.current.components.selection?.ids ?? [])].sort()).toEqual(
+      convertMeshComponents(createdMesh, { mode: 'face', ids: [newFace] }, 'edge').sort(),
+    )
+    act(() => f.view.result.current.components.open('face', [newFace]))
     act(() => f.view.result.current.components.beginPreview('extrude'))
     act(() => expect(f.view.result.current.components.preview.update(1)).toBe(true))
     act(() => f.view.result.current.components.preview.confirm())
@@ -211,6 +221,35 @@ test('creating a face from two border edges previews without saving, cancels, an
     act(() => f.view.result.current.undo())
     expect(f.editor.getState().content.geometries).toEqual(f.source.geometries)
     expect(f.editor.getState().canUndo).toBe(false)
+  } finally {
+    f.close()
+  }
+})
+
+test('face tool picks two edges of one mesh in sequence without Shift or selecting layers', () => {
+  const f = fixture(true)
+  try {
+    const mesh = sceneGeometryMesh(f.source.geometries[0]!)
+    const opposite = [...indexMeshEdges(mesh).edges]
+      .filter(([, incident]) => incident.length === 1)
+      .map(([id]) => id)
+      .filter((id) => {
+        const [a, b] = meshComponentEdges(mesh).get(id)!
+        return mesh.vertices[a]![1] === mesh.vertices[b]![1]
+      })
+    act(() => f.view.result.current.components.open('edge'))
+    act(() => expect(f.view.result.current.components.operation.start('create')).toBe(true))
+    expect(f.view.result.current.components.operation.canConfirm).toBe(false)
+    act(() => f.view.result.current.components.select(opposite[0]!, false))
+    expect(f.view.result.current.components.selection?.ids).toEqual([opposite[0]!])
+    act(() => f.view.result.current.components.select(opposite[1]!, false))
+    expect(f.view.result.current.components.selection?.ids).toEqual(opposite)
+    expect(f.view.result.current.components.operation.canConfirm).toBe(true)
+    act(() => expect(f.view.result.current.components.operation.confirm()).toBe(true))
+    expect(f.editor.getState().content.nodes).toHaveLength(1)
+    expect(
+      Object.keys(sceneGeometryMesh(f.editor.getState().content.geometries[0]!).faces),
+    ).toHaveLength(6)
   } finally {
     f.close()
   }

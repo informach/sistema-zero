@@ -9,6 +9,12 @@ import {
   MOLD_ONLY_STATEMENT_TYPES,
   START_ONLY_STATEMENT_TYPES,
 } from '#ir'
+import {
+  NO_PALETTE_TREE_DRIFT,
+  NO_TOOLBOX_DRIFT,
+  paletteTreeDrift,
+  toolboxDrift,
+} from '../../__tests__/paletteDrift'
 import { GAME_UI_FONT_IDS } from '../../gameUiFonts/catalog'
 import { gameTwoDPromptContext } from '../ai'
 import { gameTwoDPromptSummary } from '../aiSummary'
@@ -25,6 +31,7 @@ import {
 } from '../classicContracts'
 import { gameTwoDDocs } from '../docs'
 import { gameTwoDManifest } from '../manifest'
+import { GAME_TWO_D_PALETTE } from '../palette'
 import {
   GAME_TWO_D_AREAS,
   GAME_TWO_D_LIFECYCLE_GUIDANCE,
@@ -220,19 +227,11 @@ describe('g2d — a doc/IA não podem citar categoria que não existe', () => {
     }
   })
 
-  it('todo bloco visível está na toolbox, e em UM lugar só (sem balde "Mais")', () => {
-    // Bloco fora do SUBCATS cai no grupo genérico "Mais" — some do lugar certo sem
-    // erro nenhum. É a versão silenciosa do mesmo problema.
-    const conta = new Map<string, number>()
-    for (const t of tiposNaToolbox(gameTwoDToolboxCategory)) conta.set(t, (conta.get(t) ?? 0) + 1)
-    const visiveis = gameTwoDBlocks
-      .filter((b) => !(b as { hidden?: boolean }).hidden)
-      .map((b) => b.type)
-    expect({
-      foraDaToolbox: visiveis.filter((t) => !conta.has(t)),
-      emDoisLugares: [...conta.entries()].filter(([, n]) => n > 1).map(([t]) => t),
-      baldeMais: nomesDeCategoria(gameTwoDToolboxCategory).filter((n) => n === 'Mais'),
-    }).toEqual({ foraDaToolbox: [], emDoisLugares: [], baldeMais: [] })
+  it('todo bloco visível está na paleta em UM lugar só, sem fantasma e sem balde "Mais"', () => {
+    // Bloco fora da árvore some da paleta sem erro nenhum. A rede é a comum das
+    // extensões (`paletteDrift.ts`).
+    expect(paletteTreeDrift(GAME_TWO_D_PALETTE, gameTwoDBlocks)).toEqual(NO_PALETTE_TREE_DRIFT)
+    expect(toolboxDrift(gameTwoDToolboxCategory, gameTwoDBlocks)).toEqual(NO_TOOLBOX_DRIFT)
   })
 
   it('a contagem de blocos está travada (remoção acidental salta aqui)', () => {
@@ -282,7 +281,7 @@ describe('g2d — a doc/IA não podem citar categoria que não existe', () => {
       gameTwoDRuntime.indexOf('var ENEMY_SMART_COMBOS'),
     )
     expect(tabela.length).toBeGreaterThan(200)
-    const naTabela = [...tabela.matchAll(/^\s{4}'([a-z-]+)':/gm)].map((m) => m[1])
+    const naTabela = [...tabela.matchAll(/^\s*'([a-z-]+)':/gm)].map((m) => m[1])
     expect(naTabela.sort()).toEqual([...G2D_ENEMY_BEHAVIORS].sort())
   })
 
@@ -371,7 +370,7 @@ describe('g2d — a doc/IA não podem citar categoria que não existe', () => {
       gameTwoDRuntime.indexOf('function createSmartEnemyType'),
     )
     expect(mapa.length).toBeGreaterThan(150)
-    const niveis = [...mapa.matchAll(/^\s{4}'([a-z]+)':/gm)].map((m) => m[1])
+    const niveis = [...mapa.matchAll(/^\s*'([a-z]+)':/gm)].map((m) => m[1])
     expect(niveis.sort()).toEqual([...G2D_ENEMY_SMARTS].sort())
     const usados = [...mapa.matchAll(/'([a-z-]+)'(?=[,\]])/g)].map((m) => m[1] ?? '')
     expect(
@@ -386,7 +385,7 @@ describe('g2d — a doc/IA não podem citar categoria que não existe', () => {
       gameTwoDRuntime.indexOf('var ENEMY_BEHAVIOR_LABELS = {'),
     )
     expect(mapa.length).toBeGreaterThan(200)
-    const donos = [...mapa.matchAll(/^\s{4}'([a-z]+)':/gm)].map((m) => m[1])
+    const donos = [...mapa.matchAll(/^\s*'([a-z]+)':/gm)].map((m) => m[1])
     expect(donos.sort()).toEqual([...G2D_ENEMY_PARAMS].sort())
   })
 
@@ -743,7 +742,7 @@ describe('g2d — a doc/IA não podem citar categoria que não existe', () => {
       gameTwoDRuntime.indexOf('function _enemyOwnerLabels'),
     )
     expect(mapa.length).toBeGreaterThan(200)
-    const nomeados = [...mapa.matchAll(/^\s{4}'([a-z-]+)':/gm)].map((m) => m[1] ?? '')
+    const nomeados = [...mapa.matchAll(/^\s*'([a-z-]+)':/gm)].map((m) => m[1] ?? '')
     expect(nomeados.sort()).toEqual([...G2D_ENEMY_BEHAVIORS].sort())
   })
 
@@ -1049,15 +1048,14 @@ describe('g2d — a doc/IA não podem citar categoria que não existe', () => {
    * mediana da extensão, com uma tabela de donos de parâmetro em prosa corrida dentro
    * de um balão. Explicação longa é conteúdo de MANUAL.
    *
-   * O teto é uma CATRACA, não um ideal: 580 congela as duas maiores que sobraram (os
-   * dois criadores de tipo, que têm nove soquetes cada) e fecha a porta para a próxima
-   * crescer. Quem precisar de mais texto escreve no manual e encolhe a dica.
+   * O teto de 220 caracteres mantém a mesma régua das extensões 3D.
+   * Instruções extensas pertencem ao manual.
    */
   it('nenhuma dica de bloco passa do teto de tamanho', () => {
     const compridas = gameTwoDBlocks
       .filter((block) => !block.hidden)
       .map((block) => ({ type: block.type, tamanho: String(block.tooltip ?? '').length }))
-      .filter((item) => item.tamanho > 580)
+      .filter((item) => item.tamanho > 220)
     expect(compridas).toEqual([])
   })
 

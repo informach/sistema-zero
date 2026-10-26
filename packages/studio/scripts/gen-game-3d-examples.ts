@@ -16,23 +16,42 @@ import { A_LENDA_DO_HEROI_SOURCE } from '../src/official-extensions/game-3d/__ge
 import { CACA_ESTELAR_SOURCE } from '../src/official-extensions/game-3d/__gen_cacaEstelar'
 import { CERCO_NA_BASE_SOURCE } from '../src/official-extensions/game-3d/__gen_cercoNaBase'
 import { CORRIDA_INFINITA_SOURCE } from '../src/official-extensions/game-3d/__gen_corridaInfinita'
+import {
+  DODGE_SOURCE,
+  NIGHT_SOURCE,
+  ROTATING_CUBE_SOURCE,
+  SHAPES_SOURCE,
+  SWARM_SOURCE,
+} from '../src/official-extensions/game-3d/__gen_demoExamples'
+import {
+  CROSSING_SOURCE,
+  RACE_SOURCE,
+  STACK_SOURCE,
+} from '../src/official-extensions/game-3d/__gen_kits'
 import { LABIRINTO_ROBOS_SOURCE } from '../src/official-extensions/game-3d/__gen_labirintoRobos'
 import { MINA_DE_CRISTAIS_SOURCE } from '../src/official-extensions/game-3d/__gen_minaDeCristais'
 import { MUNDO_BLOCOS_SOURCE } from '../src/official-extensions/game-3d/__gen_mundoBlocos'
 import { PATRULHA_ESPACIAL_SOURCE } from '../src/official-extensions/game-3d/__gen_patrulhaEspacial'
+import {
+  MEU_HEROI_MOLDA_SOURCE,
+  PEGA_ESTRELAS_SOURCE,
+} from '../src/official-extensions/game-3d/__gen_primeirosJogos'
 import { REINO_COGUMELO_SOURCE } from '../src/official-extensions/game-3d/__gen_reinoCogumelo'
 import { REUNIR_REBANHO_SOURCE } from '../src/official-extensions/game-3d/__gen_reunirRebanho'
 import { TORRES_DEFENSORAS_SOURCE } from '../src/official-extensions/game-3d/__gen_torresDefensoras'
 import { A_LENDA_DO_HEROI_PROFISSIONAL_SOURCE } from '../src/official-extensions/game-3d-advanced/__gen_aLendaDoHeroiProfissional'
+import { ARENA_CRISTAIS_SOURCE } from '../src/official-extensions/game-3d-advanced/__gen_arenaCristais'
 import { ATRAVESSE_PROFISSIONAL_SOURCE } from '../src/official-extensions/game-3d-advanced/__gen_atravesseProfissional'
 import { CACA_ESTELAR_PROFISSIONAL_SOURCE } from '../src/official-extensions/game-3d-advanced/__gen_cacaEstelarProfissional'
 import { CERCO_NA_BASE_PROFISSIONAL_SOURCE } from '../src/official-extensions/game-3d-advanced/__gen_cercoNaBaseProfissional'
 import { CHEFAO_SOURCE } from '../src/official-extensions/game-3d-advanced/__gen_chefao'
 import { CORRIDA_PROFISSIONAL_SOURCE } from '../src/official-extensions/game-3d-advanced/__gen_corridaProfissional'
 import { GUARDIAO_SOURCE } from '../src/official-extensions/game-3d-advanced/__gen_guardiao'
+import { HEROI_MOLDA_SOURCE } from '../src/official-extensions/game-3d-advanced/__gen_heroiMolda'
 import { LABIRINTO_PROFISSIONAL_SOURCE } from '../src/official-extensions/game-3d-advanced/__gen_labirintoProfissional'
 import { MINA_DE_CRISTAIS_PROFISSIONAL_SOURCE } from '../src/official-extensions/game-3d-advanced/__gen_minaDeCristaisProfissional'
 import { MUNDO_PROFISSIONAL_SOURCE } from '../src/official-extensions/game-3d-advanced/__gen_mundoProfissional'
+import { NOITE_FOGUEIRAS_SOURCE } from '../src/official-extensions/game-3d-advanced/__gen_noiteFogueiras'
 import { PATRULHA_PROFISSIONAL_SOURCE } from '../src/official-extensions/game-3d-advanced/__gen_patrulhaProfissional'
 import { QUICARAM_SOURCE } from '../src/official-extensions/game-3d-advanced/__gen_quicaram'
 import { REUNIR_REBANHO_PROFISSIONAL_SOURCE } from '../src/official-extensions/game-3d-advanced/__gen_reunirRebanhoProfissional'
@@ -65,6 +84,16 @@ function sourceFromLegacyTest(filename: string): string {
 }
 
 const baseSources: Record<string, string> = {
+  crossingExample: CROSSING_SOURCE,
+  raceExample: RACE_SOURCE,
+  stackExample: STACK_SOURCE,
+  rotatingCubeExample: ROTATING_CUBE_SOURCE,
+  shapesExample: SHAPES_SOURCE,
+  nightExample: NIGHT_SOURCE,
+  swarmExample: SWARM_SOURCE,
+  dodgeExample: DODGE_SOURCE,
+  pegaEstrelasExample: PEGA_ESTRELAS_SOURCE,
+  meuHeroiMoldaExample: MEU_HEROI_MOLDA_SOURCE,
   corridaInfinitaExample: CORRIDA_INFINITA_SOURCE,
   labirintoRobosExample: LABIRINTO_ROBOS_SOURCE,
   mundoBlocosExample: MUNDO_BLOCOS_SOURCE,
@@ -86,6 +115,9 @@ const advancedSources: Record<string, string> = {
   guardiaoDoPortalExample: GUARDIAO_SOURCE,
   tiroAoAlvoExample: TIRO_SOURCE,
   chefaoDasSombrasExample: CHEFAO_SOURCE,
+  arenaDosCristaisExample: ARENA_CRISTAIS_SOURCE,
+  heroiDoMoldaExample: HEROI_MOLDA_SOURCE,
+  noiteDasFogueirasExample: NOITE_FOGUEIRAS_SOURCE,
   corridaInfinitaProfissionalExample: CORRIDA_PROFISSIONAL_SOURCE,
   labirintoDosRobosProfissionalExample: LABIRINTO_PROFISSIONAL_SOURCE,
   mundoDeBlocosProfissionalExample: MUNDO_PROFISSIONAL_SOURCE,

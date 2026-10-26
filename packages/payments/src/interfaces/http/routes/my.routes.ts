@@ -1,19 +1,36 @@
-import { Elysia } from 'elysia'
+import { ForbiddenError, UnauthorizedError } from '@sistemazero/core/http'
+import { Elysia, t } from 'elysia'
+import { z } from 'zod'
 import type { CancelSubscriptionService } from '../../../application/cancel-subscription/cancel-subscription.service'
 import type { GetMyPaymentService } from '../../../application/get-my-payment/get-my-payment.service'
 import type { ListMyPaymentsService } from '../../../application/list-my-payments/list-my-payments.service'
 import type { ListMySubscriptionsService } from '../../../application/list-my-subscriptions/list-my-subscriptions.service'
+import type { RetrySubscriptionChargeService } from '../../../application/subscription-card/retry-subscription-charge.service'
+import type { UpdateSubscriptionCardService } from '../../../application/subscription-card/update-subscription-card.service'
 import { AdminIdParam, MyPaymentsQuery } from '../dtos'
 import { requireBuyer } from '../my-auth'
 
 const DEFAULT_LIMIT = 20
 const MAX_LIMIT = 100
+const EmptyCardIntentBody = z.strictObject({})
+const CardExecutionBody = z.strictObject({
+  paymentToken: z.string().min(1).max(255),
+  card: z.strictObject({
+    brand: z.string().regex(/^[a-z][a-z0-9-]{1,31}$/),
+    last4: z.string().regex(/^\d{4}$/),
+  }),
+})
+const RetryIntentBody = z.strictObject({ paymentId: z.uuid() })
+const RetryExecutionBody = CardExecutionBody.extend({ consent: z.literal(true) })
 
 export interface MyRoutesDeps {
   listMyPayments: ListMyPaymentsService
   getMyPayment: GetMyPaymentService
   listMySubscriptions: ListMySubscriptionsService
   cancelSubscription: CancelSubscriptionService
+  updateSubscriptionCard: UpdateSubscriptionCardService
+  retrySubscriptionCharge: RetrySubscriptionChargeService
+  cardConfig: { accountIdentifier?: string; environment: 'sandbox' | 'production' }
   /**
    * Token interno do gateway (`x-internal-token`) — prova de que o e-mail do
    * X-Auth-User-Email veio de lá. Ausente (dev/local) = checagem desligada.
@@ -32,6 +49,15 @@ export interface MyRoutesDeps {
  * TODA consulta é escopada pelo e-mail — id alheio → 404 (anti-IDOR).
  */
 export function myRoutes(deps: MyRoutesDeps) {
+  const subscriptionBuyer = (headers: Record<string, string | undefined>) => {
+    const buyer = requireBuyer(headers, deps.internalToken)
+    if (headers['x-auth-account-id'] || headers['x-auth-impersonator-id']) {
+      throw new ForbiddenError(
+        'Entre com a própria conta do responsável ou titular para administrar a assinatura.',
+      )
+    }
+    return buyer
+  }
   return (
     new Elysia({ prefix: '/payments/my' })
       .get(
@@ -52,11 +78,109 @@ export function myRoutes(deps: MyRoutesDeps) {
         const { email } = requireBuyer(headers, deps.internalToken)
         return deps.listMySubscriptions.execute(email)
       })
+      .get('/card-config', ({ headers }) => {
+        subscriptionBuyer(headers)
+        return {
+          available: Boolean(deps.cardConfig.accountIdentifier),
+          accountIdentifier: deps.cardConfig.accountIdentifier ?? null,
+          environment: deps.cardConfig.environment,
+        }
+      })
+      .get(
+        '/subscriptions/:id/card-intents',
+        async ({ params, headers }) => {
+          const { email } = subscriptionBuyer(headers)
+          return deps.updateSubscriptionCard.getActiveIntent(email, params.id)
+        },
+        { params: AdminIdParam },
+      )
+      .post(
+        '/subscriptions/:id/card-intents',
+        async ({ params, headers }) => {
+          const { email } = subscriptionBuyer(headers)
+          return deps.updateSubscriptionCard.createIntent(email, params.id)
+        },
+        { params: AdminIdParam, body: EmptyCardIntentBody },
+      )
+      .get(
+        '/subscriptions/:id/card-intents/:intentId',
+        async ({ params, headers }) => {
+          const { email } = subscriptionBuyer(headers)
+          return deps.updateSubscriptionCard.getIntent(email, params.id, params.intentId)
+        },
+        {
+          params: t.Object({
+            id: t.String({ format: 'uuid' }),
+            intentId: t.String({ format: 'uuid' }),
+          }),
+        },
+      )
+      .post(
+        '/subscriptions/:id/card-intents/:intentId',
+        async ({ params, headers, body }) => {
+          const { email } = subscriptionBuyer(headers)
+          return deps.updateSubscriptionCard.execute(email, params.id, params.intentId, body)
+        },
+        {
+          params: t.Object({
+            id: t.String({ format: 'uuid' }),
+            intentId: t.String({ format: 'uuid' }),
+          }),
+          // Standard Schema preserva a rejeição de extras; a normalização TypeBox
+          // da aplicação não deve descartar silenciosamente PAN/CVV recebidos.
+          body: CardExecutionBody,
+        },
+      )
+      .get(
+        '/subscriptions/:id/retry-intents',
+        async ({ params, headers }) => {
+          const { email } = subscriptionBuyer(headers)
+          return deps.retrySubscriptionCharge.getActiveIntent(email, params.id)
+        },
+        { params: AdminIdParam },
+      )
+      .post(
+        '/subscriptions/:id/retry-intents',
+        async ({ params, headers, body }) => {
+          const { email } = subscriptionBuyer(headers)
+          return deps.retrySubscriptionCharge.createIntent(email, params.id, body.paymentId)
+        },
+        { params: AdminIdParam, body: RetryIntentBody },
+      )
+      .get(
+        '/subscriptions/:id/retry-intents/:intentId',
+        async ({ params, headers }) => {
+          const { email } = subscriptionBuyer(headers)
+          return deps.retrySubscriptionCharge.getIntent(email, params.id, params.intentId)
+        },
+        {
+          params: t.Object({
+            id: t.String({ format: 'uuid' }),
+            intentId: t.String({ format: 'uuid' }),
+          }),
+        },
+      )
+      .post(
+        '/subscriptions/:id/retry-intents/:intentId',
+        async ({ params, headers, body }) => {
+          const { email } = subscriptionBuyer(headers)
+          return deps.retrySubscriptionCharge.execute(email, params.id, params.intentId, body)
+        },
+        {
+          params: t.Object({
+            id: t.String({ format: 'uuid' }),
+            intentId: t.String({ format: 'uuid' }),
+          }),
+          body: RetryExecutionBody,
+        },
+      )
       .delete(
         '/subscriptions/:id',
         async ({ params, headers }) => {
-          const { email } = requireBuyer(headers, deps.internalToken)
-          return deps.cancelSubscription.executeForEmail(email, params.id)
+          const { email } = subscriptionBuyer(headers)
+          const actorId = headers['x-auth-user-id']?.trim()
+          if (!actorId) throw new UnauthorizedError('Autenticação necessária')
+          return deps.cancelSubscription.executeForEmail(email, params.id, actorId)
         },
         { params: AdminIdParam },
       )

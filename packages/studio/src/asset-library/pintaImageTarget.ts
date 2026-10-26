@@ -6,7 +6,8 @@ import {
 } from '@sistemazero/core/studio/pinta-image'
 import { STUDIO_PYTHON_MATERIAL_DATA_LIMITS } from '@sistemazero/core/studio/python-material-policy'
 import type { ProjectAsset } from '#core'
-import { decodeProjectAsset } from '../core/assetBinary'
+import { decodeProjectAsset, isSvgDataUrl } from '../core/assetBinary'
+import { pgzeroSvgSize } from '../runtime/python/pgzero/svgSize'
 import {
   TURTLE_GRAPHICS_LIMITS,
   TURTLE_IMAGE_DIMENSION_LIMIT,
@@ -66,15 +67,33 @@ export function assertPintaImageFits(
 ): void {
   if (!PintaImageDerivationSchema.safeParse(image.derivation).success)
     throw new Error('Os dados da seleção de imagem são inválidos. Escolha a imagem novamente.')
-  if (!image.dataUrl.startsWith('data:image/png;base64,'))
-    throw new Error('A prévia precisa ser uma imagem PNG.')
+  const svg = image.derivation.output.mime === 'image/svg+xml'
+  if (svg ? !isSvgDataUrl(image.dataUrl) : !image.dataUrl.startsWith('data:image/png;base64,'))
+    throw new Error(
+      svg ? 'A prévia precisa ser um desenho SVG.' : 'A prévia precisa ser uma imagem PNG.',
+    )
   assertPintaImageDimensions(image.derivation.output.width, image.derivation.output.height, limits)
   if (
     image.derivation.output.bytes > limits.imageBytes ||
     image.dataUrl.length > limits.dataUrlChars
   )
-    throw new Error('A imagem ultrapassa o espaço disponível no projeto. Escolha outra escala.')
+    throw new Error(
+      svg
+        ? 'O desenho vetorial ultrapassa o espaço disponível no projeto. Escolha um quadro mais simples ou remova algumas formas.'
+        : 'A imagem ultrapassa o espaço disponível no projeto. Escolha outra escala.',
+    )
   const bytes = decodeProjectAsset(image.dataUrl).bytes
+  if (svg) {
+    // The size Pygame Zero reads from the root element must be the chosen output size.
+    const size = pgzeroSvgSize(new TextDecoder().decode(bytes))
+    if (
+      bytes.byteLength !== image.derivation.output.bytes ||
+      size?.width !== image.derivation.output.width ||
+      size?.height !== image.derivation.output.height
+    )
+      throw new Error('Os dados do desenho não correspondem à prévia.')
+    return
+  }
   const decoded = readTurtleImage(bytes)
   if (
     bytes.byteLength !== image.derivation.output.bytes ||

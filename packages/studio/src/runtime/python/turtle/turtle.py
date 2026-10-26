@@ -2047,16 +2047,124 @@ class RawTurtle(TPen, TNavigator):
         self.pen(resizemode='user', stretchfactor=stretchfactor, outline=outline)
 
     def shearfactor(self, shear=None):
-        raise NotImplementedError('Esta API Turtle não está disponível no navegador: shearfactor')
+        """Set or return the current shearfactor.
+
+        Optional argument: shear -- number, tangent of the shear angle
+
+        Shear the turtleshape according to the given shearfactor shear,
+        which is the tangent of the shear angle. DO NOT change the
+        turtle's heading (direction of movement).
+        If shear is not given: return the current shearfactor, i. e. the
+        tangent of the shear angle, by which lines parallel to the
+        heading of the turtle are sheared.
+
+        Examples (for a Turtle instance named turtle):
+        >>> turtle.shape("circle")
+        >>> turtle.shapesize(5,2)
+        >>> turtle.shearfactor(0.5)
+        >>> turtle.shearfactor()
+        >>> 0.5
+        """
+        if shear is None:
+            return self._shearfactor
+        self.pen(resizemode='user', shearfactor=shear)
 
     def tiltangle(self, angle=None):
-        raise NotImplementedError('Esta API Turtle não está disponível no navegador: tiltangle')
+        """Set or return the current tilt-angle.
+
+        Optional argument: angle -- number
+
+        Rotate the turtleshape to point in the direction specified by angle,
+        regardless of its current tilt-angle. DO NOT change the turtle's
+        heading (direction of movement).
+        If angle is not given: return the current tilt-angle, i. e. the angle
+        between the orientation of the turtleshape and the heading of the
+        turtle (its direction of movement).
+
+        Examples (for a Turtle instance named turtle):
+        >>> turtle.shape("circle")
+        >>> turtle.shapesize(5, 2)
+        >>> turtle.tiltangle()
+        0.0
+        >>> turtle.tiltangle(45)
+        >>> turtle.tiltangle()
+        45.0
+        >>> turtle.stamp()
+        >>> turtle.fd(50)
+        >>> turtle.tiltangle(-45)
+        >>> turtle.tiltangle()
+        315.0
+        >>> turtle.stamp()
+        >>> turtle.fd(50)
+        """
+        if angle is None:
+            tilt = -math.degrees(self._tilt) * self._angleOrient
+            return tilt / self._degreesPerAU % self._fullcircle
+        else:
+            tilt = -angle * self._degreesPerAU * self._angleOrient
+            tilt = math.radians(tilt) % math.tau
+            self.pen(resizemode='user', tilt=tilt)
 
     def tilt(self, angle):
-        raise NotImplementedError('Esta API Turtle não está disponível no navegador: tilt')
+        """Rotate the turtleshape by angle.
+
+        Argument:
+        angle - a number
+
+        Rotate the turtleshape by angle from its current tilt-angle,
+        but do NOT change the turtle's heading (direction of movement).
+
+        Examples (for a Turtle instance named turtle):
+        >>> turtle.shape("circle")
+        >>> turtle.shapesize(5,2)
+        >>> turtle.tilt(30)
+        >>> turtle.fd(50)
+        >>> turtle.tilt(30)
+        >>> turtle.fd(50)
+        """
+        self.tiltangle(angle + self.tiltangle())
 
     def shapetransform(self, t11=None, t12=None, t21=None, t22=None):
-        raise NotImplementedError('Esta API Turtle não está disponível no navegador: shapetransform')
+        """Set or return the current transformation matrix of the turtle shape.
+
+        Optional arguments: t11, t12, t21, t22 -- numbers.
+
+        If none of the matrix elements are given, return the transformation
+        matrix.
+        Otherwise set the given elements and transform the turtleshape
+        according to the matrix consisting of first row t11, t12 and
+        second row t21, 22.
+        Modify stretchfactor, shearfactor and tiltangle according to the
+        given matrix.
+
+        Examples (for a Turtle instance named turtle):
+        >>> turtle.shape("square")
+        >>> turtle.shapesize(4,2)
+        >>> turtle.shearfactor(-0.5)
+        >>> turtle.shapetransform()
+        (4.0, -1.0, -0.0, 2.0)
+        """
+        if t11 is t12 is t21 is t22 is None:
+            return self._shapetrafo
+        m11, m12, m21, m22 = self._shapetrafo
+        if t11 is not None:
+            m11 = t11
+        if t12 is not None:
+            m12 = t12
+        if t21 is not None:
+            m21 = t21
+        if t22 is not None:
+            m22 = t22
+        if t11 * t22 - t12 * t21 == 0:
+            raise TurtleGraphicsError('Bad shape transform matrix: must not be singular')
+        self._shapetrafo = (m11, m12, m21, m22)
+        alfa = math.atan2(-m21, m11) % math.tau
+        sa, ca = (math.sin(alfa), math.cos(alfa))
+        a11, a12, a21, a22 = (ca * m11 - sa * m21, ca * m12 - sa * m22, sa * m11 + ca * m21, sa * m12 + ca * m22)
+        self._stretchfactor = (a11, a22)
+        self._shearfactor = a12 / a22
+        self._tilt = alfa
+        self.pen(resizemode='user')
 
     def _polytrafo(self, poly):
         """Computes transformed polygon shapes from a shape
@@ -2135,6 +2243,11 @@ class RawTurtle(TPen, TNavigator):
                 for item in titem:
                     screen._drawpoly(item, ((0, 0), (0, 0), (0, 0)), '', '')
             self._hidden_from_screen = True
+
+        if screen._mission_observation:
+            screen._observe_turtle(id(self), self._position,
+                                   titem if isinstance(titem, (list, tuple)) else [titem],
+                                   not self._hidden_from_screen)
 
     def stamp(self):
         """Stamp a copy of the turtleshape onto the canvas and return its id.
@@ -2908,6 +3021,14 @@ def exitonclick():
         Turtle._screen = Screen()
     return Turtle._screen.exitonclick()
 
+def getcanvas():
+    if Turtle._screen is None:
+        if not TurtleScreen._RUNNING:
+            TurtleScreen._RUNNING = True
+            raise Terminator
+        Turtle._screen = Screen()
+    return Turtle._screen.getcanvas()
+
 def getshapes():
     if Turtle._screen is None:
         if not TurtleScreen._RUNNING:
@@ -2931,6 +3052,30 @@ def mainloop():
             raise Terminator
         Turtle._screen = Screen()
     return Turtle._screen.mainloop()
+
+def mode(mode=None):
+    if Turtle._screen is None:
+        if not TurtleScreen._RUNNING:
+            TurtleScreen._RUNNING = True
+            raise Terminator
+        Turtle._screen = Screen()
+    return Turtle._screen.mode(mode)
+
+def no_animation():
+    if Turtle._screen is None:
+        if not TurtleScreen._RUNNING:
+            TurtleScreen._RUNNING = True
+            raise Terminator
+        Turtle._screen = Screen()
+    return Turtle._screen.no_animation()
+
+def numinput(title, prompt, default=None, minval=None, maxval=None):
+    if Turtle._screen is None:
+        if not TurtleScreen._RUNNING:
+            TurtleScreen._RUNNING = True
+            raise Terminator
+        Turtle._screen = Screen()
+    return Turtle._screen.numinput(title, prompt, default, minval, maxval)
 
 def onkey(fun, key):
     if Turtle._screen is None:
@@ -2988,6 +3133,22 @@ def resetscreen():
         Turtle._screen = Screen()
     return Turtle._screen.resetscreen()
 
+def screensize(canvwidth=None, canvheight=None, bg=None):
+    if Turtle._screen is None:
+        if not TurtleScreen._RUNNING:
+            TurtleScreen._RUNNING = True
+            raise Terminator
+        Turtle._screen = Screen()
+    return Turtle._screen.screensize(canvwidth, canvheight, bg)
+
+def save(filename, *, overwrite=False):
+    if Turtle._screen is None:
+        if not TurtleScreen._RUNNING:
+            TurtleScreen._RUNNING = True
+            raise Terminator
+        Turtle._screen = Screen()
+    return Turtle._screen.save(filename, overwrite=overwrite)
+
 def setup(width=0.5, height=0.75, startx=None, starty=None):
     if Turtle._screen is None:
         if not TurtleScreen._RUNNING:
@@ -2995,6 +3156,22 @@ def setup(width=0.5, height=0.75, startx=None, starty=None):
             raise Terminator
         Turtle._screen = Screen()
     return Turtle._screen.setup(width, height, startx, starty)
+
+def setworldcoordinates(llx, lly, urx, ury):
+    if Turtle._screen is None:
+        if not TurtleScreen._RUNNING:
+            TurtleScreen._RUNNING = True
+            raise Terminator
+        Turtle._screen = Screen()
+    return Turtle._screen.setworldcoordinates(llx, lly, urx, ury)
+
+def textinput(title, prompt):
+    if Turtle._screen is None:
+        if not TurtleScreen._RUNNING:
+            TurtleScreen._RUNNING = True
+            raise Terminator
+        Turtle._screen = Screen()
+    return Turtle._screen.textinput(title, prompt)
 
 def title(titlestring):
     if Turtle._screen is None:
@@ -3068,6 +3245,14 @@ def begin_fill():
         Turtle._pen = Turtle()
     return Turtle._pen.begin_fill()
 
+def begin_poly():
+    if Turtle._pen is None:
+        if not TurtleScreen._RUNNING:
+            TurtleScreen._RUNNING = True
+            raise Terminator
+        Turtle._pen = Turtle()
+    return Turtle._pen.begin_poly()
+
 def bk(distance):
     if Turtle._pen is None:
         if not TurtleScreen._RUNNING:
@@ -3124,6 +3309,14 @@ def color(*args):
         Turtle._pen = Turtle()
     return Turtle._pen.color(*args)
 
+def degrees(fullcircle=360.0):
+    if Turtle._pen is None:
+        if not TurtleScreen._RUNNING:
+            TurtleScreen._RUNNING = True
+            raise Terminator
+        Turtle._pen = Turtle()
+    return Turtle._pen.degrees(fullcircle)
+
 def distance(x, y=None):
     if Turtle._pen is None:
         if not TurtleScreen._RUNNING:
@@ -3155,6 +3348,14 @@ def end_fill():
             raise Terminator
         Turtle._pen = Turtle()
     return Turtle._pen.end_fill()
+
+def end_poly():
+    if Turtle._pen is None:
+        if not TurtleScreen._RUNNING:
+            TurtleScreen._RUNNING = True
+            raise Terminator
+        Turtle._pen = Turtle()
+    return Turtle._pen.end_poly()
 
 def fd(distance):
     if Turtle._pen is None:
@@ -3188,6 +3389,22 @@ def forward(distance):
         Turtle._pen = Turtle()
     return Turtle._pen.forward(distance)
 
+def get_poly():
+    if Turtle._pen is None:
+        if not TurtleScreen._RUNNING:
+            TurtleScreen._RUNNING = True
+            raise Terminator
+        Turtle._pen = Turtle()
+    return Turtle._pen.get_poly()
+
+def getpen():
+    if Turtle._pen is None:
+        if not TurtleScreen._RUNNING:
+            TurtleScreen._RUNNING = True
+            raise Terminator
+        Turtle._pen = Turtle()
+    return Turtle._pen.getpen()
+
 def getscreen():
     if Turtle._pen is None:
         if not TurtleScreen._RUNNING:
@@ -3195,6 +3412,22 @@ def getscreen():
             raise Terminator
         Turtle._pen = Turtle()
     return Turtle._pen.getscreen()
+
+def get_shapepoly():
+    if Turtle._pen is None:
+        if not TurtleScreen._RUNNING:
+            TurtleScreen._RUNNING = True
+            raise Terminator
+        Turtle._pen = Turtle()
+    return Turtle._pen.get_shapepoly()
+
+def getturtle():
+    if Turtle._pen is None:
+        if not TurtleScreen._RUNNING:
+            TurtleScreen._RUNNING = True
+            raise Terminator
+        Turtle._pen = Turtle()
+    return Turtle._pen.getturtle()
 
 def goto(x, y=None):
     if Turtle._pen is None:
@@ -3300,6 +3533,14 @@ def pd():
         Turtle._pen = Turtle()
     return Turtle._pen.pd()
 
+def pen(pen=None, **pendict):
+    if Turtle._pen is None:
+        if not TurtleScreen._RUNNING:
+            TurtleScreen._RUNNING = True
+            raise Terminator
+        Turtle._pen = Turtle()
+    return Turtle._pen.pen(pen, **pendict)
+
 def pencolor(*args):
     if Turtle._pen is None:
         if not TurtleScreen._RUNNING:
@@ -3356,6 +3597,14 @@ def pu():
         Turtle._pen = Turtle()
     return Turtle._pen.pu()
 
+def radians():
+    if Turtle._pen is None:
+        if not TurtleScreen._RUNNING:
+            TurtleScreen._RUNNING = True
+            raise Terminator
+        Turtle._pen = Turtle()
+    return Turtle._pen.radians()
+
 def right(angle):
     if Turtle._pen is None:
         if not TurtleScreen._RUNNING:
@@ -3371,6 +3620,14 @@ def reset():
             raise Terminator
         Turtle._pen = Turtle()
     return Turtle._pen.reset()
+
+def resizemode(rmode=None):
+    if Turtle._pen is None:
+        if not TurtleScreen._RUNNING:
+            TurtleScreen._RUNNING = True
+            raise Terminator
+        Turtle._pen = Turtle()
+    return Turtle._pen.resizemode(rmode)
 
 def rt(angle):
     if Turtle._pen is None:
@@ -3412,6 +3669,14 @@ def setposition(x, y=None):
         Turtle._pen = Turtle()
     return Turtle._pen.setposition(x, y)
 
+def setundobuffer(size):
+    if Turtle._pen is None:
+        if not TurtleScreen._RUNNING:
+            TurtleScreen._RUNNING = True
+            raise Terminator
+        Turtle._pen = Turtle()
+    return Turtle._pen.setundobuffer(size)
+
 def setx(x):
     if Turtle._pen is None:
         if not TurtleScreen._RUNNING:
@@ -3443,6 +3708,22 @@ def shapesize(stretch_wid=None, stretch_len=None, outline=None):
             raise Terminator
         Turtle._pen = Turtle()
     return Turtle._pen.shapesize(stretch_wid, stretch_len, outline)
+
+def shapetransform(t11=None, t12=None, t21=None, t22=None):
+    if Turtle._pen is None:
+        if not TurtleScreen._RUNNING:
+            TurtleScreen._RUNNING = True
+            raise Terminator
+        Turtle._pen = Turtle()
+    return Turtle._pen.shapetransform(t11, t12, t21, t22)
+
+def shearfactor(shear=None):
+    if Turtle._pen is None:
+        if not TurtleScreen._RUNNING:
+            TurtleScreen._RUNNING = True
+            raise Terminator
+        Turtle._pen = Turtle()
+    return Turtle._pen.shearfactor(shear)
 
 def showturtle():
     if Turtle._pen is None:
@@ -3476,6 +3757,30 @@ def stamp():
         Turtle._pen = Turtle()
     return Turtle._pen.stamp()
 
+def teleport(x=None, y=None, *, fill_gap: bool = False) -> None:
+    if Turtle._pen is None:
+        if not TurtleScreen._RUNNING:
+            TurtleScreen._RUNNING = True
+            raise Terminator
+        Turtle._pen = Turtle()
+    return Turtle._pen.teleport(x, y, fill_gap=fill_gap)
+
+def tilt(angle):
+    if Turtle._pen is None:
+        if not TurtleScreen._RUNNING:
+            TurtleScreen._RUNNING = True
+            raise Terminator
+        Turtle._pen = Turtle()
+    return Turtle._pen.tilt(angle)
+
+def tiltangle(angle=None):
+    if Turtle._pen is None:
+        if not TurtleScreen._RUNNING:
+            TurtleScreen._RUNNING = True
+            raise Terminator
+        Turtle._pen = Turtle()
+    return Turtle._pen.tiltangle(angle)
+
 def towards(x, y=None):
     if Turtle._pen is None:
         if not TurtleScreen._RUNNING:
@@ -3491,6 +3796,22 @@ def turtlesize(stretch_wid=None, stretch_len=None, outline=None):
             raise Terminator
         Turtle._pen = Turtle()
     return Turtle._pen.turtlesize(stretch_wid, stretch_len, outline)
+
+def undo():
+    if Turtle._pen is None:
+        if not TurtleScreen._RUNNING:
+            TurtleScreen._RUNNING = True
+            raise Terminator
+        Turtle._pen = Turtle()
+    return Turtle._pen.undo()
+
+def undobufferentries():
+    if Turtle._pen is None:
+        if not TurtleScreen._RUNNING:
+            TurtleScreen._RUNNING = True
+            raise Terminator
+        Turtle._pen = Turtle()
+    return Turtle._pen.undobufferentries()
 
 def up():
     if Turtle._pen is None:
@@ -3535,4 +3856,4 @@ def ycor():
 done = mainloop
 Pen = Turtle
 RawPen = RawTurtle
-__all__ = ['Screen', 'Shape', 'Terminator', 'Turtle', 'Vec2D', 'addshape', 'back', 'backward', 'begin_fill', 'bgcolor', 'bgpic', 'bk', 'bye', 'circle', 'clear', 'clearscreen', 'clearstamp', 'clearstamps', 'clone', 'color', 'colormode', 'delay', 'distance', 'done', 'dot', 'down', 'end_fill', 'exitonclick', 'fd', 'fillcolor', 'filling', 'forward', 'getscreen', 'getshapes', 'goto', 'heading', 'hideturtle', 'home', 'ht', 'isdown', 'isvisible', 'left', 'listen', 'lt', 'mainloop', 'onclick', 'ondrag', 'onkey', 'onkeypress', 'onkeyrelease', 'onrelease', 'onscreenclick', 'ontimer', 'pd', 'pencolor', 'pendown', 'pensize', 'penup', 'pos', 'position', 'pu', 'register_shape', 'reset', 'resetscreen', 'right', 'rt', 'seth', 'setheading', 'setpos', 'setposition', 'setup', 'setx', 'sety', 'shape', 'shapesize', 'showturtle', 'speed', 'st', 'stamp', 'title', 'towards', 'tracer', 'turtles', 'turtlesize', 'up', 'update', 'width', 'window_height', 'window_width', 'write', 'xcor', 'ycor']
+__all__ = ['Pen', 'RawPen', 'RawTurtle', 'Screen', 'Shape', 'Terminator', 'Turtle', 'TurtleScreen', 'Vec2D', 'addshape', 'back', 'backward', 'begin_fill', 'begin_poly', 'bgcolor', 'bgpic', 'bk', 'bye', 'circle', 'clear', 'clearscreen', 'clearstamp', 'clearstamps', 'clone', 'color', 'colormode', 'degrees', 'delay', 'distance', 'done', 'dot', 'down', 'end_fill', 'end_poly', 'exitonclick', 'fd', 'fillcolor', 'filling', 'forward', 'get_poly', 'get_shapepoly', 'getcanvas', 'getpen', 'getscreen', 'getshapes', 'getturtle', 'goto', 'heading', 'hideturtle', 'home', 'ht', 'isdown', 'isvisible', 'left', 'listen', 'lt', 'mainloop', 'mode', 'no_animation', 'numinput', 'onclick', 'ondrag', 'onkey', 'onkeypress', 'onkeyrelease', 'onrelease', 'onscreenclick', 'ontimer', 'pd', 'pen', 'pencolor', 'pendown', 'pensize', 'penup', 'pos', 'position', 'pu', 'radians', 'register_shape', 'reset', 'resetscreen', 'resizemode', 'right', 'rt', 'save', 'screensize', 'seth', 'setheading', 'setpos', 'setposition', 'setundobuffer', 'setup', 'setworldcoordinates', 'setx', 'sety', 'shape', 'shapesize', 'shapetransform', 'shearfactor', 'showturtle', 'speed', 'st', 'stamp', 'teleport', 'textinput', 'tilt', 'tiltangle', 'title', 'towards', 'tracer', 'turtles', 'turtlesize', 'undo', 'undobufferentries', 'up', 'update', 'width', 'window_height', 'window_width', 'write', 'xcor', 'ycor']

@@ -37,7 +37,21 @@ export default async function CatalogPage() {
         kicker="Catálogo da comunidade"
         title="Cursos"
         lead="Os cursos que já são seus e os que você ainda pode conhecer, organizados por trilha."
-      />
+      >
+        {/* As trilhas no palco: é por elas que se descobre o caminho (Estúdio à noite). */}
+        {tracks.length > 0 ? (
+          <section aria-labelledby="trilhas" className="mt-6 flex flex-col gap-5">
+            <h2 id="trilhas" className="sz-h3">
+              Trilhas
+            </h2>
+            <div className="grid gap-5">
+              {tracks.map((summary) => (
+                <TrackCard key={summary.track} summary={summary} />
+              ))}
+            </div>
+          </section>
+        ) : null}
+      </PageBand>
       <PageBody>
         {courses.length === 0 ? (
           <section className="sz-card flex flex-col items-center gap-3 px-6 py-14 text-center">
@@ -46,16 +60,6 @@ export default async function CatalogPage() {
           </section>
         ) : (
           <>
-            {tracks.length > 0 ? (
-              <section aria-labelledby="trilhas" className="flex flex-col gap-5">
-                <h2 id="trilhas" className="sz-h2">
-                  Trilhas
-                </h2>
-                {tracks.map((summary) => (
-                  <TrackCard key={summary.track} summary={summary} />
-                ))}
-              </section>
-            ) : null}
             {/* Busca/filtros client-side persistidos na URL (?q=&acesso=&ordem=). */}
             <CourseCatalogClient courses={courses} progressBySlug={progressBySlug} />
           </>

@@ -73,7 +73,7 @@ export function ProfileNav({
   return (
     <nav
       aria-label="Seções do perfil"
-      className="sz-card scrollbar-subtle flex gap-1 overflow-x-auto p-2 lg:sticky lg:top-[5.2rem] lg:w-[14rem] lg:flex-none lg:flex-col lg:overflow-visible lg:p-3"
+      className="sz-card scrollbar-subtle flex gap-1 overflow-x-auto p-2 lg:sticky lg:top-6 lg:w-[14rem] lg:flex-none lg:flex-col lg:overflow-visible lg:p-3"
     >
       {items.map((section) => {
         const Icon = section.icon

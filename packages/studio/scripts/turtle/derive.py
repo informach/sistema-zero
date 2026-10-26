@@ -72,7 +72,7 @@ require(patches == {'image': 1, 'canvas': 1, 'darwin': 1}, 'Port edits no longer
 # unchanged because the contracted high-level methods use them.
 unsupported = {
     'TurtleScreen': {'getcanvas', 'save', 'setworldcoordinates'},
-    'RawTurtle': {'undo', 'shapetransform', 'shearfactor', 'tilt', 'tiltangle'},
+    'RawTurtle': {'undo'},
 }
 quota_checks = 0
 shape_checks = 0
@@ -227,14 +227,18 @@ require(internal_updates == 2, 'Internal screen update insertion points changed'
 
 screen_names = set('bgcolor bgpic colormode delay getshapes listen mainloop onkey onkeypress '
                    'onkeyrelease onclick ontimer register_shape addshape tracer turtles update '
-                   'clear clearscreen reset resetscreen onscreenclick window_width window_height'.split())
+                   'clear clearscreen reset resetscreen onscreenclick window_width window_height '
+                   'screensize mode textinput numinput no_animation getcanvas setworldcoordinates '
+                   'save'.split())
 window_names = set('setup title bye exitonclick'.split())
 turtle_names = set('forward fd backward back bk left lt right rt goto setpos setposition setx sety '
                   'home setheading seth position pos xcor ycor heading distance towards penup pu up '
                   'pendown pd down isdown pensize width pencolor fillcolor color circle dot '
                   'begin_fill end_fill filling write shape shapesize turtlesize showturtle st '
                   'hideturtle ht isvisible speed clone stamp clearstamp clearstamps clear reset '
-                  'getscreen onclick onrelease ondrag'.split())
+                  'getscreen onclick onrelease ondrag teleport pen degrees radians begin_poly '
+                  'end_poly get_poly getturtle getpen get_shapepoly resizemode setundobuffer '
+                  'undobufferentries undo tilt tiltangle shapetransform shearfactor'.split())
 entries = []
 for owner, cls, names in [('Screen', reference._Screen, screen_names | window_names),
                            ('Turtle', reference.Turtle, turtle_names),
@@ -291,7 +295,8 @@ suffix = (ROOT / 'screen.py.inc').read_text(encoding='utf-8')
 output = header + ast.unparse(engine) + '\n\n' + suffix + '\n' + '\n'.join(functions)
 output += '\ndone = mainloop\nPen = Turtle\nRawPen = RawTurtle\n'
 output += '__all__ = ' + repr(sorted(set(e['name'] for e in entries if e['owner'] == 'turtle') |
-                                   {'Screen', 'Turtle', 'Vec2D', 'Terminator', 'done'})) + '\n'
+                                   {'Screen', 'Turtle', 'Vec2D', 'Terminator', 'done', 'Pen',
+                                    'RawTurtle', 'RawPen', 'TurtleScreen'})) + '\n'
 compile(output, 'turtle.py', 'exec')
 require(not re.search(r'\bTK\.|\btkinter\b', ast.unparse(engine)), 'Unexpected Tk dependency')
 OUTPUT.mkdir(parents=True, exist_ok=True)

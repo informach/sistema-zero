@@ -18,14 +18,14 @@ const { jobs } = Bun.YAML.parse(workflow) as {
 const deploy = workflow.slice(workflow.indexOf('\n  deploy-staging:'))
 const resolver = resolve('scripts/ci/staging-deploy-baseline.mjs')
 
-test('only the deployment job receives the larger wall-clock budget', () => {
+test('CI and deployment budgets preserve individual proofs and other job deadlines', () => {
   expect(STAGING_DEPLOYMENT_TIMEOUT_MS).toBe(60 * 60 * 1000)
   expect(STAGING_ROLLOUT_TIMEOUT_MS).toBe(140 * 60 * 1000)
   expect(deploy).toContain('timeout-minutes: 240')
-  expect(deploy).toContain('local deadline=$((SECONDS + 60 * 60))')
-  expect(deploy).toContain('while [ "$SECONDS" -lt "$deadline" ]')
-  expect(deploy).toContain('HTTP_TIMEOUT=$((REMAINING < 15 ? REMAINING : 15))')
-  expect(deploy).toContain('RESP=$(gql "$Q" "$HTTP_TIMEOUT")')
+  expect(deploy).toContain('node scripts/ci/staging-deploy-monitor.mjs "$GITHUB_SHA"')
+  const monitor = readFileSync('scripts/ci/staging-deploy-monitor.mjs', 'utf8')
+  expect(monitor).toContain('const deadline = now() + STAGING_DEPLOYMENT_TIMEOUT_MS')
+  expect(monitor).toContain('railwayReadQuery(query, variables,')
   expect(deploy).toContain(`--connect-timeout 5 --max-time "\${2:-15}"`)
   expect(deploy).not.toContain('seq 1 60')
   expect(
@@ -35,7 +35,8 @@ test('only the deployment job receives the larger wall-clock budget', () => {
         .map(([name, job]) => [name, job['timeout-minutes']]),
     ),
   ).toEqual({
-    ci: 45,
+    ci: 60,
+    'studio-python-extensions': 15,
     'studio-storage-macos': 15,
     'desktop-windows': 20,
     'community-kids-e2e': 20,
@@ -44,11 +45,22 @@ test('only the deployment job receives the larger wall-clock budget', () => {
     'studio-e2e-webkit': 20,
     'members-image': 25,
   })
+  expect(deploy).toContain('needs: [ci, studio-python-extensions,')
   expect(
     jobs.ci!.steps.find(
       (step) => step.name === 'Verificar cancelamento Python por RPC no runtime real',
     )?.['timeout-minutes'],
   ).toBe(2)
+  expect(
+    jobs.ci!.steps.find(
+      (step) => step.name === 'Provar objetivos Python com programas reais no sandbox sem rede',
+    )?.['timeout-minutes'],
+  ).toBe(8)
+  expect(
+    jobs.ci!.steps.find(
+      (step) => step.name === 'Provar objetivos Jogo 3D e three.js no sandbox sem rede',
+    )?.['timeout-minutes'],
+  ).toBe(5)
 })
 
 test('workflow resolves before installation, public/provider access, SSH and apply', () => {

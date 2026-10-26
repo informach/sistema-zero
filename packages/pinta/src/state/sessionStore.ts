@@ -21,7 +21,14 @@ import {
  * Ferramentas da sessão: as do motor pixel + a Mão (navegação, mapa/vetor) + a
  * Seleção (recorta/move um retângulo — vive no PixelCanvas, não no motor puro).
  */
-export type PintaSessionTool = PixelToolId | 'pan' | 'select'
+/** As ferramentas da camada de OBJETOS do mapa (mexer, marcar ponto, desenhar área). */
+export type MapObjectToolId = 'object-select' | 'object-point' | 'object-rect'
+
+export type PintaSessionTool = PixelToolId | 'pan' | 'select' | MapObjectToolId
+
+export function isMapObjectTool(tool: PintaSessionTool): tool is MapObjectToolId {
+  return tool === 'object-select' || tool === 'object-point' || tool === 'object-rect'
+}
 
 export const ZOOM_LEVELS = [2, 4, 6, 8, 12, 16, 24, 32] as const
 

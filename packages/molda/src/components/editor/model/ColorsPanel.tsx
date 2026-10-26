@@ -1,8 +1,8 @@
 /**
- * As cores: a paleta (16 fixas + extras) como swatches. No MONTAR, tocar
+ * As cores: a paleta base (16 a 33 posições + extras) como swatches. No MONTAR, tocar
  * pinta a cor BASE da peça selecionada; no PINTAR, escolhe a cor do lápis. O
  * "+" abre o seletor de cor NATIVO (regra da casa: nada de painel de cor
- * custom) e a cor nova entra nas extras; a lixeira só apaga extras (as 16 são
+ * custom) e a cor nova entra nas extras; a lixeira só apaga extras (as cores da base são
  * fixas por contrato do bitmap indexado).
  *
  * O "+" é um GESTO, não um clique: o seletor nativo dispara `input` a cada passo
@@ -18,14 +18,8 @@ import { normalizeHex } from '../../../core/color'
 import { COPY } from '../../../core/copy'
 import { MOLDA_LIMITS } from '../../../core/limits'
 import type { MoldaPaletteFields } from '../../../core/model'
-import {
-  isPaletteId,
-  PALETTE_SIZE,
-  PALETTES,
-  type PaletteId,
-  RESERVED_INDEX,
-} from '../../../core/palette'
-import { resolvePaletteColors } from '../../../core/sanitize'
+import { isPaletteId, PALETTES, type PaletteId, RESERVED_INDEX } from '../../../core/palette'
+import { paletteBaseSize, resolvePaletteColors } from '../../../core/sanitize'
 import { IconButton } from '../../ui/Button'
 import { Plus, Trash2 } from '../../ui/icons'
 import { Panel } from '../../ui/Panel'
@@ -51,7 +45,7 @@ export function ColorsPanel({
   onAddColor: (hex: string) => void
   /** O seletor fechou (ou perdeu o foco): fecha o gesto com UM desfazer. Idempotente. */
   onAddColorEnd: () => void
-  /** Só as extras (índice ≥ 16) são apagáveis. */
+  /** Só as extras, após a paleta base, são apagáveis. */
   onRemoveColor: (index: number) => void
   onPalette: (id: PaletteId) => void
   className?: string
@@ -88,7 +82,7 @@ export function ColorsPanel({
     return [{ index, hex, key: count === 1 ? hex : `${hex}-${count}` }]
   })
   const extrasFull = (model.extraColors?.length ?? 0) >= MOLDA_LIMITS.maxExtraColors
-  const removable = activeIndex !== null && activeIndex >= PALETTE_SIZE
+  const removable = activeIndex !== null && activeIndex >= paletteBaseSize(model)
 
   function onColorInput(event: ChangeEvent<HTMLInputElement>): void {
     const hex = normalizeHex(event.target.value)

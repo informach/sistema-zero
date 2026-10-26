@@ -90,7 +90,7 @@ describe('Exemplo Mina de Cristais Profissional — drift contra o parser real',
   it('⭐ veias novas surgem sozinhas: spawn semeado com teto por countAlive', () => {
     const statements = behaviorStatements(minaDeCristaisProfissionalExample.ir)
     const types = collectTypes(statements)
-    for (const t of ['g3k:spawn', 'g3k:countAlive', 'g3k:randomChance', 'g3k:randomBetween']) {
+    for (const t of ['g3k:spawn', 'g3k:countAlive', 'g3k:random', 'g3k:random']) {
       expect(types.has(t)).toBe(true)
     }
   })
@@ -113,18 +113,18 @@ describe('Exemplo Mina de Cristais Profissional — drift contra o parser real',
   it('vitória por meta e derrota por tempo: setState menu/vitória/fim + onUpdate', () => {
     const statements = behaviorStatements(minaDeCristaisProfissionalExample.ir)
     const types = collectTypes(statements)
-    for (const t of ['g3k:setScreenText', 'g3k:setState', 'g3k:hudText', 'g3k:onUpdate']) {
+    for (const t of ['g3k:screenText', 'g3k:setState', 'g3k:cornerText', 'g3k:onUpdate']) {
       expect(types.has(t)).toBe(true)
     }
     const raw = JSON.stringify(statements)
-    for (const screen of ['"menu"', '"vitoria"', '"fim"']) {
+    for (const screen of ['"inicio"', '"vitoria"', '"fim"']) {
       expect(raw).toContain(screen)
     }
   })
 
   it('⭐ o acaso passa pelo sorteio do kit (a semente não pode mentir)', () => {
     const types = collectTypes(behaviorStatements(minaDeCristaisProfissionalExample.ir))
-    expect(types.has('g3k:randomBetween')).toBe(true)
+    expect(types.has('g3k:random')).toBe(true)
     expect(types.has('g3k:setSeed')).toBe(true)
     expect(types.has('randomInt')).toBe(false)
     expect(types.has('randomFloat')).toBe(false)

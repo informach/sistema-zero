@@ -64,14 +64,82 @@ export const gameThreeDPlatformRuntimeSource = `
     warn(msg);
   }
 
+  // ---- Geometria e material COMPARTILHADOS pela fase (lote 14) --------------
+  // Uma fase de ~300 blocos tem poucos TIPOS de peça (medidas × cor × estampa): cada tipo é
+  // UMA geometria e UM material, reaproveitados por todas as peças iguais e por cada coluna
+  // que o streaming materializa de novo (antes, cada peça e cada volta da câmera criavam os
+  // seus na GPU). Não há InstancedMesh: tijolo que quebra, surpresa que vira pedra, tema que
+  // troca e inimigo que some seguem sendo uma malha cada, com a mesma física e o mesmo
+  // descarte. Quem mudar o material de uma peça ganha um clone só dela (copy-on-write).
+  function stageCache(world, st) {
+    if (!st.cache) {
+      st.cache = { geo: Object.create(null), mat: Object.create(null) };
+      if (!world._disposers) world._disposers = [];
+      world._disposers.push(function () { disposeStageCache(st); });
+    }
+    return st.cache;
+  }
+  function disposeStageCache(st) {
+    var c = st && st.cache;
+    if (!c) return;
+    st.cache = null;
+    for (var gk in c.geo) if (c.geo[gk].dispose) try { c.geo[gk].dispose(); } catch (e) {}
+    for (var mk in c.mat) if (c.mat[mk].dispose) try { c.mat[mk].dispose(); } catch (e) {}
+  }
+  function stageGeometry(world, st, w, h, d) {
+    var c = stageCache(world, st);
+    var key = w + '|' + h + '|' + d;
+    var g = c.geo[key];
+    if (!g) {
+      g = new THREE.BoxGeometry(w, h, d);
+      if (!g.userData) g.userData = {};
+      g.userData.szStageCache = true;
+      c.geo[key] = g;
+    }
+    return g;
+  }
+  function stageMaterial(world, st, color, tex) {
+    var c = stageCache(world, st);
+    var hex = String(color).toLowerCase();
+    var key = hex + '|' + (tex ? tex.uuid : '');
+    var m = c.mat[key];
+    if (!m) {
+      m = new THREE.MeshStandardMaterial({ color: color });
+      if (tex) m.map = tex;
+      if (!m.userData) m.userData = {};
+      m.userData.szStageCache = true;
+      m.userData.szStageColor = hex;
+      c.mat[key] = m;
+    }
+    return m;
+  }
+  // A estampa de uma peça da fase: troca o material pelo do cache com a textura (a mesma
+  // de antes, cacheada por estampa, cores e repetição), em vez de mexer no compartilhado.
+  function stagePaint(mesh, kind, colorA, colorB) {
+    var world = mesh && mesh._szWorld;
+    var st = world && world._stage;
+    var base = mesh && mesh.material;
+    if (!st || !base || !base.userData || !base.userData.szStageCache) {
+      paintPattern(mesh, kind, colorA, colorB);
+      return;
+    }
+    var tex = patternTexture(mesh, kind, colorA, colorB);
+    if (!tex) return;
+    mesh.material = stageMaterial(world, st, base.userData.szStageColor, tex);
+  }
+  // Material próprio (clonado por quem pintou) sai com a peça; o do cache fica.
+  function releaseStageLook(mesh) {
+    var m = mesh && mesh.material;
+    if (m && m.dispose && !(m.userData && m.userData.szStageCache)) m.dispose();
+  }
+
   // ---- Construção de peças (fora do teto de objetos do aluno) --------------
   function stageMesh(world, st, w, h, d, color) {
     if (st.meshes.length >= MAX_STAGE_MESHES) {
       stageWarn(st, 'malhas', 'a fase tem peças demais na tela; encurte o mapa ou junte trechos de chão.');
       return null;
     }
-    var mesh = new THREE.Mesh(new THREE.BoxGeometry(w, h, d),
-      new THREE.MeshStandardMaterial({ color: color }));
+    var mesh = new THREE.Mesh(stageGeometry(world, st, w, h, d), stageMaterial(world, st, color, null));
     mesh.castShadow = false;      // cenário não projeta sombra: metade do custo
     mesh.receiveShadow = true;
     mesh.userData.sz = { hw: w / 2, hh: h / 2, hd: d / 2, vx: 0, vy: 0, vz: 0,
@@ -95,8 +163,10 @@ export const gameThreeDPlatformRuntimeSource = `
     if (world.scene && world.scene.remove) world.scene.remove(mesh);
     removeFromArray(st.meshes, mesh);
     if (world._solids) removeFromArray(world._solids, mesh);
-    if (mesh.geometry && mesh.geometry.dispose) mesh.geometry.dispose();
-    if (mesh.material && mesh.material.dispose) mesh.material.dispose();
+    // Geometria e material do cache ficam para a próxima peça igual.
+    var geometry = mesh.geometry;
+    if (geometry && geometry.dispose && !(geometry.userData && geometry.userData.szStageCache)) geometry.dispose();
+    releaseStageLook(mesh);
   }
 
   // ---- O mapa da fase, em texto -------------------------------------------
@@ -194,7 +264,7 @@ export const gameThreeDPlatformRuntimeSource = `
       if (floor) {
         floor.userData._stageThemeRole = 'ground';
         floor.position.set((run.from + (run.to - run.from) / 2) * TILE, -TILE, STAGE_Z);
-        paintPattern(floor, st.theme === 'castelo' ? 'pedra' : 'terra', t.ground, t.groundB);
+        stagePaint(floor, st.theme === 'castelo' ? 'pedra' : 'terra', t.ground, t.groundB);
         stageSolid(world, st, floor);
         floor.userData._stageCol = col;
         floor.userData._stageColEnd = run.to;
@@ -208,7 +278,7 @@ export const gameThreeDPlatformRuntimeSource = `
       if (pillar) {
         pillar.userData._stageThemeRole = 'hard';
         pillar.position.set(s.x * TILE, (s.from + (s.to - s.from) / 2) * TILE, STAGE_Z);
-        paintPattern(pillar, 'pedra', t.hard, t.brickB);
+        stagePaint(pillar, 'pedra', t.hard, t.brickB);
         stageSolid(world, st, pillar);
         pillar.userData._stageCol = col;
       }
@@ -220,7 +290,7 @@ export const gameThreeDPlatformRuntimeSource = `
       if (brick) {
         brick.userData._stageThemeRole = 'brick';
         brick.position.set(b.x * TILE, b.y * TILE, STAGE_Z);
-        paintPattern(brick, 'tijolo', t.brick, t.brickB);
+        stagePaint(brick, 'tijolo', t.brick, t.brickB);
         stageSolid(world, st, brick);
         brick.userData._stageCol = col;
         brick.userData._brick = b;
@@ -233,7 +303,7 @@ export const gameThreeDPlatformRuntimeSource = `
         q.used ? '#9a6a3a' : '#f8b800');
       if (box) {
         box.position.set(q.x * TILE, q.y * TILE, STAGE_Z);
-        paintPattern(box, q.used ? 'pedra' : 'interrogacao',
+        stagePaint(box, q.used ? 'pedra' : 'interrogacao',
           q.used ? '#9a6a3a' : '#f8b800', q.used ? '#6a4a28' : '#7a4a08');
         stageSolid(world, st, box);
         box.userData._stageCol = col;
@@ -246,7 +316,7 @@ export const gameThreeDPlatformRuntimeSource = `
       var body = stageMesh(world, st, 2 * TILE, pipe.h * TILE, STAGE_DEPTH + 0.2, '#00a800');
       if (body) {
         body.position.set((pipe.x + 0.5) * TILE, (pipe.h / 2 - 0.5) * TILE, STAGE_Z);
-        paintPattern(body, 'cano', '#00a800', '#88f888');
+        stagePaint(body, 'cano', '#00a800', '#88f888');
         stageSolid(world, st, body);
         body.userData._stageCol = col;
         body.userData._pipe = pipe;
@@ -258,7 +328,7 @@ export const gameThreeDPlatformRuntimeSource = `
       var coin = stageMesh(world, st, 0.6 * TILE, 0.6 * TILE, 0.2, '#fcd000');
       if (coin) {
         coin.position.set(c.x * TILE, c.y * TILE, STAGE_Z);
-        paintPattern(coin, 'moeda', '#fcd000', '#f8f8b0');
+        stagePaint(coin, 'moeda', '#fcd000', '#f8f8b0');
         coin.userData._stageCol = col;
         coin.userData._coin = c;
         st.coins.push(coin);
@@ -281,7 +351,7 @@ export const gameThreeDPlatformRuntimeSource = `
       var solto = stageMesh(world, st, TILE, TILE, STAGE_DEPTH, '#9a6a3a');
       if (solto) {
         solto.position.set(h.x * TILE, h.y * TILE, STAGE_Z);
-        paintPattern(solto, 'pedra', '#9a6a3a', '#6a4a28');
+        stagePaint(solto, 'pedra', '#9a6a3a', '#6a4a28');
         stageSolid(world, st, solto);
         solto.userData._stageCol = col;
       }
@@ -292,7 +362,7 @@ export const gameThreeDPlatformRuntimeSource = `
       var lift = stageMesh(world, st, 2.4 * TILE, 0.4 * TILE, STAGE_DEPTH, '#f8b800');
       if (lift) {
         lift.position.set(mv.x * TILE, mv.y * TILE, STAGE_Z);
-        paintPattern(lift, 'listras', '#f8b800', '#a06000');
+        stagePaint(lift, 'listras', '#f8b800', '#a06000');
         stageSolid(world, st, lift);
         carryRiders(lift);
         lift.userData._stageCol = col;
@@ -306,7 +376,7 @@ export const gameThreeDPlatformRuntimeSource = `
       var poca = stageMesh(world, st, (lv.to - lv.from + 1) * TILE, TILE, STAGE_DEPTH, '#f83800');
       if (poca) {
         poca.position.set((lv.from + (lv.to - lv.from) / 2) * TILE, -0.5 * TILE, STAGE_Z);
-        paintPattern(poca, 'lava', '#f83800', '#f8d000');
+        stagePaint(poca, 'lava', '#f83800', '#f8d000');
         poca.userData._stageCol = col;
         poca.userData._stageColEnd = lv.to;
         poca.userData._lava = true;
@@ -333,7 +403,7 @@ export const gameThreeDPlatformRuntimeSource = `
       var bola = stageMesh(world, st, 0.5, 0.5, 0.5, '#f8b800');
       if (!bola) return;
       bola.position.set(spec.x * TILE, spec.y * TILE, STAGE_Z);
-      paintPattern(bola, 'lava', '#f8b800', '#f83800');
+      stagePaint(bola, 'lava', '#f8b800', '#f83800');
       bola.userData._stageCol = col;
       bola.userData._firebar = { spec: spec, dist: i * 0.7 };
       st.hazards.push(bola);
@@ -345,7 +415,7 @@ export const gameThreeDPlatformRuntimeSource = `
     var chefe = stageMesh(world, st, 1.8, 2.2, 1.4, '#00a800');
     if (!chefe) return;
     chefe.position.set(col * TILE, 1.1, STAGE_Z);
-    paintPattern(chefe, 'pedra', '#00a800', '#f8b800');
+    stagePaint(chefe, 'pedra', '#00a800', '#f8b800');
     chefe.userData.sz.gravity = -0.02;
     chefe.userData._stageCol = col;
     chefe.userData._boss = true;
@@ -411,7 +481,7 @@ export const gameThreeDPlatformRuntimeSource = `
     if (keep) {
       keep.userData._stageThemeRole = 'brick';
       keep.position.set((col + 2) * TILE, 2 * TILE, STAGE_Z);
-      paintPattern(keep, 'tijolo', t.brick, t.brickB);
+      stagePaint(keep, 'tijolo', t.brick, t.brickB);
       keep.userData._stageCol = col;
       keep.userData._stageColEnd = col + 4;
     }
@@ -443,7 +513,11 @@ export const gameThreeDPlatformRuntimeSource = `
 
   // ---- API do kit ---------------------------------------------------------
   function createPlatformScene(canvasId) {
-    var world = createScene(canvasId);
+    return setupPlatformCanvas(requireCanvas(canvasId));
+  }
+  function setupPlatformCanvas(canvas) {
+    disposeWorldsUsingCanvas(canvas);
+    var world = _setupWorld(canvas, canvasDimension(canvas, 'width', 480), canvasDimension(canvas, 'height', 360));
     if (!world) return world;
     var st = stageState(world);
     applyStageTheme(world, st, 'dia');
@@ -464,13 +538,16 @@ export const gameThreeDPlatformRuntimeSource = `
       if (!role) continue;
       var color = t[role];
       if (!color) continue;
-      setColor(mesh, color);
+      // O tema troca o material pelo do cache (mesma cor e estampa de antes, sem mexer no
+      // material que outras peças usam).
+      releaseStageLook(mesh);
+      mesh.material = stageMaterial(world, st, color, null);
       if (role === 'ground') {
-        paintPattern(mesh, st.theme === 'castelo' ? 'pedra' : 'terra', t.ground, t.groundB);
+        stagePaint(mesh, st.theme === 'castelo' ? 'pedra' : 'terra', t.ground, t.groundB);
       } else if (role === 'hard') {
-        paintPattern(mesh, 'pedra', t.hard, t.brickB);
+        stagePaint(mesh, 'pedra', t.hard, t.brickB);
       } else if (role === 'brick') {
-        paintPattern(mesh, 'tijolo', t.brick, t.brickB);
+        stagePaint(mesh, 'tijolo', t.brick, t.brickB);
       }
     }
   }
@@ -487,7 +564,7 @@ export const gameThreeDPlatformRuntimeSource = `
     var hero = createBlock(world, { width: 0.8, height: 1.5, depth: 0.8,
       color: color || '#e03010' });
     if (!hero) return null;
-    body(hero, -0.02);
+    body(hero, 72); // = -0.02 por quadro (gravidade positiva, por segundo²)
     setPosition(hero, st.spawnX * TILE, 2, STAGE_Z);
     st.hero = hero;
     return hero;
@@ -692,9 +769,7 @@ export const gameThreeDPlatformRuntimeSource = `
       if (!tiro.parent) { st.shots.splice(i, 1); continue; }
       stepBody(tiro, world);
       if (tiro.userData.sz.grounded) tiro.userData.sz.vy = 0.16;
-      var morreu = false;
-      forEachHit(tiro, 'esquerda', function () { morreu = true; });
-      forEachHit(tiro, 'direita', function () { morreu = true; });
+      var morreu = hitOnSide(tiro, 'esquerda') || hitOnSide(tiro, 'direita');
       if (Math.abs(tiro.position.x - objectValue(tiro, 'origem')) > 18) morreu = true;
       if (tiro.position.y < -8) morreu = true;
       for (var k = st.enemies.length - 1; k >= 0; k--) {
@@ -722,7 +797,7 @@ export const gameThreeDPlatformRuntimeSource = `
     if (!tiro) return false;
     var dir = hero.userData.sz.vx < 0 ? -1 : 1;
     tiro.position.set(hero.position.x + dir * 0.8, hero.position.y, STAGE_Z);
-    paintPattern(tiro, 'moeda', '#f8b800', '#f83800');
+    stagePaint(tiro, 'moeda', '#f8b800', '#f83800');
     tiro.userData.sz.gravity = -0.03;
     tiro.userData.sz.vx = dir * 0.22;
     setObjectValue(tiro, 'origem', hero.position.x);
@@ -773,8 +848,8 @@ export const gameThreeDPlatformRuntimeSource = `
       stepBody(e, world);
       // Bateu numa parede: vira. É o Goomba do cano do trecho 4 da 1-1 — e é o
       // mesmo ricochete que faz a concha chutada voltar contra o jogador.
-      forEachHit(e, 'esquerda', function () { setObjectValue(e, 'dir', 1); });
-      forEachHit(e, 'direita', function () { setObjectValue(e, 'dir', -1); });
+      if (hitOnSide(e, 'esquerda')) setObjectValue(e, 'dir', 1);
+      if (hitOnSide(e, 'direita')) setObjectValue(e, 'dir', -1);
       if (shell === 2) shellSweeps(world, st, e);
       if (e.position.y < -8) { retireEnemy(world, st, e); continue; }
       hitHeroAgainstEnemy(world, st, who, e);
@@ -811,7 +886,7 @@ export const gameThreeDPlatformRuntimeSource = `
     var fase = objectValue(planta, 'fase');
     // "Em cima do cano" é ter os PÉS acima da boca dele — não apenas estar mais
     // alto que o centro da planta, que é verdade até para quem passa ao lado.
-    var pes = who.position.y - who.userData.sz.hh;
+    var pes = who.position.y - halfY(who, who.userData.sz);
     var heroiEmCima = Math.abs(who.position.x - planta.position.x) < 1.2 &&
       pes >= base + 0.9;
     var alvo = heroiEmCima ? base - 1 : base + (Math.sin(st.clock * 1.1 + fase) > 0 ? 1.1 : -1);
@@ -823,8 +898,8 @@ export const gameThreeDPlatformRuntimeSource = `
     var dir = objectValue(chefe, 'dir') || -1;
     chefe.userData.sz.vx = dir * 0.02;
     stepBody(chefe, world);
-    forEachHit(chefe, 'esquerda', function () { setObjectValue(chefe, 'dir', 1); });
-    forEachHit(chefe, 'direita', function () { setObjectValue(chefe, 'dir', -1); });
+    if (hitOnSide(chefe, 'esquerda')) setObjectValue(chefe, 'dir', 1);
+    if (hitOnSide(chefe, 'direita')) setObjectValue(chefe, 'dir', -1);
   }
 
   function retireEnemy(world, st, e) {
@@ -839,7 +914,7 @@ export const gameThreeDPlatformRuntimeSource = `
     var shell = objectValue(e, 'shell');
     var kind = objectValue(e, 'kind');
     var fromAbove = who.userData.sz.vy < 0 &&
-      who.position.y - who.userData.sz.hh > e.position.y;
+      who.position.y - halfY(who, who.userData.sz) > e.position.y;
     // A estrela mata no toque. A piscada de quem acabou de levar dano NÃO mata:
     // ela só protege, e é por isso que a invencibilidade tem dois donos aqui.
     if (st.invincible > 0 && st.starred) {
@@ -918,33 +993,50 @@ export const gameThreeDPlatformRuntimeSource = `
     fireStage(st, 'pegar-moeda', null);
   }
 
-  /** Cabeçada por baixo: quebra tijolo (só grande) e abre bloco de surpresa. */
+  // O laço quente do kit não cria funções por quadro: os lados batidos são lidos direto da
+  // lista do stepBody, e a cabeçada usa UM tratador fixo com o contexto em variáveis.
+  function hitOnSide(obj, side) {
+    var s = obj && obj.userData ? obj.userData.sz : null;
+    if (!s || !s.hits) return false;
+    for (var i = 0; i < s.hits.length; i++) if (s.hits[i].side === side) return true;
+    return false;
+  }
+  var _headWorld = null, _headSt = null, _headWho = null;
   function stepStageBlocks(world, st, who) {
     revealHiddenBlocks(world, st, who);
-    forEachHit(who, 'cabeca', function (hit) {
-      var mesh = hit.other;
-      if (!mesh || !mesh.userData) return;
-      var question = mesh.userData._question;
-      if (question && !question.used) {
-        question.used = 1;
-        paintPattern(mesh, 'pedra', '#9a6a3a', '#6a4a28');
-        st.score = st.score + 50;
-        givePrize(world, st, who, question, mesh);
-        return;
+    // Guarda o contexto de fora: um "Quando…" da fase pode rodar outro passo no meio.
+    var wasWorld = _headWorld, wasSt = _headSt, wasWho = _headWho;
+    _headWorld = world; _headSt = st; _headWho = who;
+    try { forEachHit(who, 'cabeca', headButt); } finally {
+      _headWorld = wasWorld; _headSt = wasSt; _headWho = wasWho;
+    }
+  }
+  /** Cabeçada por baixo: quebra tijolo (só grande) e abre bloco de surpresa. */
+  function headButt(hit) {
+    var world = _headWorld, st = _headSt, who = _headWho;
+    if (!st) return;
+    var mesh = hit.other;
+    if (!mesh || !mesh.userData) return;
+    var question = mesh.userData._question;
+    if (question && !question.used) {
+      question.used = 1;
+      stagePaint(mesh, 'pedra', '#9a6a3a', '#6a4a28');
+      st.score = st.score + 50;
+      givePrize(world, st, who, question, mesh);
+      return;
+    }
+    var brick = mesh.userData._brick;
+    if (brick) {
+      st.score = st.score + 50;
+      if (st.power > 0) {
+        brick.broken = 1;
+        dropStageMesh(world, st, mesh);
+        playEffect('explosion');
+        fireStage(st, 'quebrar-tijolo', null);
+      } else {
+        playEffect('hit');
       }
-      var brick = mesh.userData._brick;
-      if (brick) {
-        st.score = st.score + 50;
-        if (st.power > 0) {
-          brick.broken = 1;
-          dropStageMesh(world, st, mesh);
-          playEffect('explosion');
-          fireStage(st, 'quebrar-tijolo', null);
-        } else {
-          playEffect('hit');
-        }
-      }
-    });
+    }
   }
 
   /**
@@ -955,7 +1047,7 @@ export const gameThreeDPlatformRuntimeSource = `
   function revealHiddenBlocks(world, st, who) {
     if (who.userData.sz.vy <= 0) return;
     var p = st.parts;
-    var topo = who.position.y + who.userData.sz.hh;
+    var topo = who.position.y + halfY(who, who.userData.sz);
     for (var i = 0; i < p.escondido.length; i++) {
       var h = p.escondido[i];
       if (h.found) continue;
@@ -1003,8 +1095,9 @@ export const gameThreeDPlatformRuntimeSource = `
     st.score = st.score + 1000;
     playEffect('coin');
     if (was === 0 && st.hero) {
+      // SÓ a escala: a colisão (halfY = hh x scale.y) já cresce junto. Multiplicar o hh
+      // também deixava o herói grande com o dobro da altura de colisão (flutuava 0,7 acima do chão).
       st.hero.scale.y = 1.6;
-      st.hero.userData.sz.hh = st.hero.userData.sz.hh * 1.6;
       st.hero.position.y = st.hero.position.y + 0.4;
     }
     fireStage(st, prize === 'flor' ? 'pegar-flor' : 'pegar-cogumelo', null);

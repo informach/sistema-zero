@@ -19,6 +19,7 @@ export default defineConfig({
           'python-lifecycle.spec.ts',
           'python-profile.spec.ts',
           'python-turtle.spec.ts',
+          'python-turtle-gallery.spec.ts',
           'python-games.spec.ts',
           // python-pacman-portable needs a pinned prebuilt distribution: playwright.python-games.config.ts
           'python-audio.spec.ts',

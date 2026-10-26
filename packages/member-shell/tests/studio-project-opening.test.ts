@@ -23,7 +23,7 @@ test('real Studio hosts keep opening owners across asynchronous handoffs in an i
       new Response(child.stderr).text(),
     ])
     expect(code, stdout + stderr).toBe(0)
-    expect(stdout + stderr).toMatch(/\b14 pass\b/)
+    expect(stdout + stderr).toMatch(/\b15 pass\b/)
   } finally {
     clearTimeout(deadline)
     if (child.exitCode === null) child.kill()

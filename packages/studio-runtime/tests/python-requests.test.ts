@@ -1,5 +1,10 @@
 import { expect, test } from 'bun:test'
+import { preparePythonProjectExecution } from '@sistemazero/core/learning'
 import { studioPythonExecutionRevision } from '@sistemazero/core/studio/python-execution-content'
+import {
+  pythonMissionRecipe,
+  pythonMissionRequest,
+} from '@sistemazero/core/studio/python-mission-execution'
 import {
   StudioPythonPlaytestRecipeSchema,
   StudioPythonPlaytestReportSchema,
@@ -17,7 +22,9 @@ import {
 import { pythonDistributionFixture } from './python-distribution-fixture'
 import { pythonInputFixture } from './python-input-fixture'
 
-async function fixture(fixtureOptions: { playtest?: boolean; standalone?: boolean } = {}) {
+async function fixture(
+  fixtureOptions: { playtest?: boolean; standalone?: boolean; missions?: boolean } = {},
+) {
   const f = await pythonInputFixture()
   const runtime = await pythonDistributionFixture(fixtureOptions)
   await runtime.store()
@@ -180,6 +187,118 @@ async function fixture(fixtureOptions: { playtest?: boolean; standalone?: boolea
   }
 }
 
+test('mission ingress refuses an older runtime before creating any execution owner', async () => {
+  const x = await fixture({ playtest: true, missions: false })
+  const input = await x.open()
+  expect((await x.upload(input)).status).toBe(200)
+  const response = await x.send('check', {
+    version: 1,
+    input,
+    structure: false,
+    mission: {
+      version: 1,
+      identity: {
+        projectId: input.projectId,
+        revision: input.revision,
+        runtimeManifestSha256: x.selection.manifestSha256,
+        objectivesSha256: 'e'.repeat(64),
+        runId: crypto.randomUUID(),
+      },
+      probes: [{ id: 'out', type: 'behavior', steps: [], target: { kind: 'console' } }],
+    },
+  })
+  expect(response.status).toBe(409)
+  expect(x.counts().created).toBe(0)
+})
+
+test('mission execution admits only bound probes and rechecks report identity, errors and cleanup', async () => {
+  const x = await fixture({ playtest: true })
+  const reference = await x.open()
+  expect((await x.upload(reference)).status).toBe(200)
+  const plan = await preparePythonProjectExecution(
+    {
+      projectId: x.request.snapshot.projectId,
+      revision: x.request.snapshot.revision,
+      runtimeManifestSha256: x.selection.manifestSha256,
+      runId: crypto.randomUUID(),
+    },
+    [
+      {
+        id: 'console',
+        rule: {
+          type: 'behavior',
+          steps: [],
+          expect: { target: { kind: 'console' }, compare: 'contains', value: 'private-answer' },
+        },
+      },
+    ],
+  )
+  const mission = pythonMissionRequest(plan)
+  expect(JSON.stringify(mission)).not.toContain('private-answer')
+  const report = {
+    version: 1,
+    projectId: x.request.snapshot.projectId,
+    status: 'passed',
+    inspection: x.report,
+    mission: {
+      version: 1,
+      identity: mission.identity,
+      observations: [
+        {
+          id: 'console',
+          type: 'behavior',
+          initial: { found: true, value: '' },
+          final: { found: true, value: 'actual-output' },
+        },
+      ],
+    },
+    executions: [
+      {
+        id: 'console',
+        report: { ...x.execution, recipe: pythonMissionRecipe(mission.probes[0]!) },
+      },
+    ],
+  }
+  let admitted = 0
+  x.options.jobs = {
+    async check(raw) {
+      admitted++
+      expect(raw).toEqual({ version: 1, input: reference, structure: false, mission })
+      return { status: 200, body: { ok: true, report } }
+    },
+    async inspect() {
+      throw new Error('Missions must execute')
+    },
+    async validate() {
+      throw new Error('Missions use their own immutable operation')
+    },
+    async cancel() {
+      return { retired: true, cleanupConfirmed: true }
+    },
+    async discardPreview() {
+      throw new Error('A mission cannot publish previews')
+    },
+  }
+  const request = { version: 1, input: reference, structure: false, mission }
+  expect((await x.send('check', request)).status).toBe(200)
+  expect(admitted).toBe(1)
+  expect(x.counts().created).toBe(0)
+  expect(
+    (
+      await x.send('check', {
+        ...request,
+        mission: { ...mission, identity: { ...mission.identity, revision: 'f'.repeat(64) } },
+      })
+    ).status,
+  ).toBe(400)
+  expect(admitted).toBe(1)
+  report.executions[0]!.report.stopped = false
+  expect((await x.send('check', request)).status).toBe(500)
+  x.setStatus('revoked')
+  expect((await x.send('check', request)).status).toBe(409)
+  expect(admitted).toBe(2)
+})
+
 test('validation checks configuration, release and input generation before starting learner execution', async () => {
   for (const withdraw of [
     'configuration',
@@ -282,6 +401,9 @@ test('validation delegates its exact request and rechecks the complete report', 
   const operation = { version: 1, input: reference, structure: false, recipe: x.recipe }
   const seen: unknown[] = []
   x.options.jobs = {
+    async check() {
+      throw new Error('This scenario must not admit a Python mission')
+    },
     async inspect() {
       throw new Error('Validation cannot delegate to compile-only admission')
     },
@@ -497,6 +619,9 @@ test('ingress delegates inspection without creating an unowned sandbox and reval
   expect((await x.upload(reference)).status).toBe(200)
   const seen: unknown[] = []
   const jobs: PythonInspectionJobs = {
+    async check() {
+      throw new Error('This scenario must not admit a Python mission')
+    },
     async inspect(raw) {
       seen.push(raw)
       return { status: 200, body: { ok: true, report: x.report } }
@@ -530,6 +655,9 @@ test('ingress cancels owned execution before closing its input and does not ackn
   let confirmed = false
   let calls = 0
   x.options.jobs = {
+    async check() {
+      throw new Error('This scenario must not admit a Python mission')
+    },
     async inspect() {
       throw new Error('Removal must not inspect')
     },
@@ -559,6 +687,9 @@ test('ingress refuses a delegated report when its input is closed during the job
   const reference = await x.open()
   expect((await x.upload(reference)).status).toBe(200)
   x.options.jobs = {
+    async check() {
+      throw new Error('This scenario must not admit a Python mission')
+    },
     async inspect() {
       await x.store.remove(reference, new AbortController().signal)
       return { status: 200, body: { ok: true, report: x.report } }

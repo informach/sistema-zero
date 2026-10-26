@@ -6,6 +6,10 @@
 export const gameKit3DPromptContext = `
 Extensão "Jogo 3D Avançado" (game-3d-advanced): a base de um jogo 3D
 profissional via window.SZGameKit3D (Three.js por dentro, encapsulado).
+Para a criança, fale em "objeto" (nunca "entidade"), "tirar do jogo" (nunca
+"recolher"), "jorro de faíscas" e "sorteio repetível com o código". Placar,
+telas de início/fim, contagem, sorteio e tremor são as REGRAS COMUNS das três
+extensões 3D (mesma cara no Jogo 3D e no Mundo 3D).
 Unidades em metros do mundo 3D. Receita canônica: setup -> defineMold (peças
 dentro) -> ganchos (onEnterState('jogando') monta a partida; cérebros por
 estado). O envelope gerado chama start() AUTOMATICAMENTE uma única vez no fim;
@@ -21,7 +25,8 @@ API global (cada método corresponde a exatamente 1 bloco):
   'rampa'|'modelo', material: 'normal'|'metal'|'vidro'|'brilho', color, texture,
   model, w, h, d, x, y, z}) — o part SÓ funciona dentro do defineMold; 'brilho'
   acende no bloom; texture = nome de imagem do projeto; shape 'modelo' + model =
-  nome de um .glb do projeto (o colisor segue sendo a caixa w/h/d).
+  nome de um .glb do projeto: o modelo CABE INTEIRO na caixa w/h/d sem esticar
+  (centralizado; com y 0.5 e h 1 pisa no chão) e o colisor vira a caixa medida.
 - Céu de foto: setSkyPhoto('nome') — um .hdr do projeto vira o céu 360 e ilumina
   a cena. GLB/HDR carregam por parse() de um ArrayBuffer (a rede é bloqueada no
   preview); KTX2/Draco NÃO existem (precisariam de WASM). O orçamento das
@@ -33,18 +38,20 @@ API global (cada método corresponde a exatamente 1 bloco):
   tiro da torre); startSpawner('molde', segundos, 'edge'|'anywhere');
   stopSpawner('molde'); forEachAlive('molde', function (item) {});
   countAlive('molde'); recycle(ent); recycleAll('molde'); cullFar('molde', d).
-- Laço/teclas: onUpdate(function (dt) {}) — roda só no estado 'jogando';
-  moveWithKeys(ent, velocidade) — WASD/setas no chão, dt embutido;
-  keyDown('w'); keyPressed('j'); setPauseKey('Escape'). keyPressed vale só na
-  transição para apertada; repetição automática do teclado não rearma o evento
-  nem alterna a pausa.
+- Laço/teclas: onUpdate(function (dt) {}) — roda só no estado 'jogando' (dt =
+  o tempo deste quadro, em segundos); moveWithKeys(ent, velocidade) — WASD/setas
+  no chão, tempo embutido; keyDown('KeyW'); keyPressed('Space');
+  setPauseKey('Escape'). As teclas são o dropdown COMUM das extensões 3D
+  (KeyW/KeyA/KeyS/KeyD, Space, KeyF, ShiftLeft, ArrowUp/Down/Left/Right, Enter,
+  KeyE, KeyQ, KeyR, KeyP); outra tecla vira código avançado. keyPressed vale só
+  na transição para apertada; repetição automática não rearma nem alterna a pausa.
 - Câmera: cameraFollow(ent, dist, altura); cameraOrbit(dist); cameraTop(alt);
   cameraFps(ent) — 1a pessoa, olhar com o mouse (clique captura o ponteiro);
   cameraAngle(azGraus, elGraus) — gira/inclina a órbita por código;
   cameraDistance(d) — vale p/ órbita E seguir; cameraLens(graus) — FOV (60 =
   normal, 30 = zoom de mira); cameraLookAt(ent) / cameraLookAtPoint(x, y, z) —
   o PIVÔ da órbita/de-cima (antes era cravado na origem do mundo);
-  cameraShake(forca, seg) — tremor de impacto, decai sozinho, usa a semente;
+  cameraShake(forca, seg) — tremor de impacto (regra comum), decai sozinho;
   cameraSmooth(lambda) — suavidade do seguir (3 = padrão).
 - ⭐ CONVENÇÃO DE FRENTE: a frente do molde é +Z (a do curso e a dos .glb) —
   moveForward/lookAt/faceVelocity/aimAt/isAimingAt todos usam +Z. Ponha o
@@ -73,21 +80,40 @@ API global (cada método corresponde a exatamente 1 bloco):
   makeSolid + setVelocity: ela CARREGA quem esta em cima, sem bloco novo.
   Tiro rapido nao tunela: o motor varre o caminho e acha o primeiro impacto;
   substeps refinam rampas e penetracoes.
-- Anima o modelo (.glb): setStateAnim('molde', 'estado', 'Clipe') — ⭐ AMARRA a
-  animação ao estado da FSM (o setEntityState troca o clipe sozinho, com
-  crossfade); playAnim(ent, 'Clipe', loop) — na hora (loop=false fica no ultimo
-  quadro e pode ser chamado de novo depois que terminar); stopAnim(ent). O nome
+- Anima o modelo (.glb): setStateAnim('molde', 'estado', 'Clipe', loop) — ⭐
+  AMARRA a animação ao estado da FSM (o setEntityState troca o clipe sozinho,
+  com crossfade; loop=false = "uma vez", omitido = repetindo); playAnim(ent,
+  'Clipe', loop) — na hora (loop=false fica no ultimo quadro e pode ser chamado
+  de novo depois que terminar); stopAnim(ent); animSpeed(ent, 1) — velocidade
+  das animações (0.5 câmera lenta, 2 o dobro); onAnimEnd('molde', 'Clipe',
+  function (ela) {}) — roda quando uma animação "uma vez" termina num objeto
+  vivo do molde (o pulo acabou, voltar a andar). O nome
   do clipe vem de DENTRO do .glb (Idle/Run/Walk —
   cada site nomeia do seu jeito); clipe inexistente = aviso, nunca exceção. O
   mixer é POR ENTIDADE (nasce no spawn, não no part) e o clone usa SkeletonUtils
   (o clone comum não reamarra o esqueleto). Molde só de peças não tem animação.
-- ⭐ Acaso: setSeed(n) — a MESMA semente da a MESMA partida (0 = acaso de verdade).
-  randomBetween(a, b) e randomChance(percent) sao o sorteio DO KIT e obedecem a
-  semente. NUNCA gere Math.random() nem o bloco "numero aleatorio" do nucleo
-  dentro de um jogo 3D que use setSeed: eles IGNORAM a semente e quebram a
-  reprodutibilidade.
-- Tempo: startTimer(seg); timeLeft(); stopTimer(); onTimerEnd(fn) — o relogio da
-  crianca (so corre em 'jogando'; a pausa congela; recomecar zera).
+- ⭐ Sorteio: setSeed(n) — "deixar o sorteio repetível com o código n": o MESMO
+  código dá a MESMA partida (0 = sorteio de verdade). randomBetween(a, b) — um
+  número INTEIRO de a até b, contando os dois (como um dado); randomChance(p) —
+  verdadeiro em p% das vezes. Os dois obedecem ao código. Para um valor com
+  vírgula, divida: randomBetween(5, 12) / 10. NUNCA gere Math.random() nem o
+  bloco "numero aleatorio" do nucleo num jogo que use setSeed.
+- Contagem: startTimer(seg); timeLeft() — segundos inteiros que faltam;
+  stopTimer(); onTimerEnd(fn). Aparece sozinha em cima, no meio; so corre em
+  'jogando'; a pausa congela; recomecar zera.
+- Placar: addScore(n) — soma aos pontos (aparecem sozinhos em cima, à direita);
+  score() — os pontos agora. Zeram ao entrar em 'jogando' fora da pausa.
+- Mochila: putInBag('chave', 1); takeFromBag('chave', 1) (nunca negativo);
+  bagCount('chave'); bagHas('chave'); clearBag(). Aparece sozinha embaixo, à
+  esquerda. Continua entre as fases e ZERA ao recomeçar a partida.
+- Guardar o progresso (neste computador): saveValue('recorde', valor) — número
+  ou texto; savedValue('recorde', 0) — o guardado, ou o valor reserva. Sem
+  storage ou com a memória cheia, só avisa.
+- Fases: onLevelStart(function () {}) — roda no começo da partida (fase 1,
+  depois do onEnterState('jogando')) e a cada nextLevel(); level() — o número
+  da fase. nextLevel() troca no começo do quadro seguinte: todos saem do jogo,
+  os startSpawner e a contagem param; pontos e mochila continuam. Monte cada
+  fase (herói, inimigos, contagem) no onLevelStart. Menu e recomeçar voltam à 1.
 - Fala: say(ent, 'texto', seg) — balao ancorado NA entidade, acompanha ela na
   tela e some sozinho (1 por entidade); hideSay(ent).
 - Musica: playMusic('nome') — em loop, UMA por vez; stopMusic(). O playSound e
@@ -120,6 +146,9 @@ API global (cada método corresponde a exatamente 1 bloco):
   seekPoint(quem, x, z) — anda rumo a um PONTO do mundo (waypoint/patrulha; so
   no plano, para ao chegar); aimAt(quem, alvo, suavidade) — giro suave de torre
   (slerp); faceVelocity(ent); isAimingAt(a, b) — hora de atirar.
+  patrol(ent, ax, az, bx, bz, velocidade) — vai e volta entre dois pontos do
+  chão, virado para onde anda, parando meio segundo em cada ponta; é um passo
+  por quadro (use no onEntityStateUpdate do estado de patrulha ou no onUpdate).
 - Vizinhança (grade espacial): forEachNear(ent, 'molde', raio, function
   (vizinho) {}); const alvo = nearest('molde', ent); touches(a, b, dist).
 - Combate: hurt(ent, dano) — i-frames de 0.5s embutidos; healthOf(ent);
@@ -147,15 +176,16 @@ API global (cada método corresponde a exatamente 1 bloco):
   defineEmitter aceita curve: 'linear'|'suave'|'pulso'|'fogo' (curva de vida
   assada numa textura; 'fogo' + glow nasce luz pura e morre fumaca — o
   additiveOverLife do curso).
-- Telas/HUD: setScreenText('menu'|'pausa'|'carregando'|'fim'|'vitoria',
-  titulo, texto, botao); createScreen('nome', titulo, texto);
-  addButton('tela', 'rotulo', function () {}); showScreen('nome');
-  hideScreens(); setHud('top-left'|'top-center'|'top-right'|'bottom-left'|
-  'bottom-right', texto) — texto vazio apaga.
+- Telas/HUD: setScreenText('inicio'|'fim'|'vitoria', 'titulo', 'texto',
+  'botao') — textos FIXOS (a tela de início é o menu); createScreen('nome',
+  titulo, texto); addButton('tela', 'rotulo', function () {}); showScreen('nome');
+  hideScreens(); hudText('top-left'|'top-center'|'top-right'|'bottom-left'|
+  'bottom-center'|'bottom-right', texto) — texto vazio apaga.
 - Estados do jogo: setState('jogando'); onEnterState('estado', function ()
-  {}); stateIs('estado'); state(); returnToMenu(); endGame(). Entrar em
-  'jogando' fora da pausa RECOMEÇA a arena (recolhe todas as entidades).
-  Retomar de 'pausa' para 'jogando' preserva a arena e NÃO repete o gancho de
+  {}); stateIs('estado'); state(); returnToMenu(); endGame('perdeu'|'ganhou')
+  — vai para o estado 'fim' ou 'vitoria'. Entrar em 'jogando' fora da pausa
+  RECOMEÇA a arena (tira todos do jogo; placar, contagem e cantos zeram).
+  Retomar de 'pausado' para 'jogando' preserva a arena e NÃO repete o gancho de
   entrada. setState com o estado atual também não repete esse gancho.
 - Avisos: on('nome', function () {}); emit('nome').
 - Som: loadSound('nome', 'asset'); playSound('nome'); playEffect('coin'|
@@ -165,13 +195,13 @@ API global (cada método corresponde a exatamente 1 bloco):
 
 Quando ajudar o aluno com o Jogo 3D Avançado:
 - A partida se monta dentro de onEnterState('jogando') — nascer o herói com
-  const, espalhar enfeites, ligar fábricas, zerar pontos.
+  const, espalhar enfeites, ligar o nascer sem parar (startSpawner), zerar pontos.
 - Cérebro de torre: 'parado' acha o alvo (nearest + exists + touches) e vai
   para 'mirar'; 'mirar' usa aimAt e isAimingAt e vai para 'atirar'; ao entrar
   em 'atirar' usa spawnFrom + moveForward no tiro e vai para 'recarregar';
   stateTimer volta para 'parado'.
 - Nunca crie moldes, ganchos ou atratores dentro do onUpdate. Registre recursos
-  moldes, efeitos, emissores e sons carregados em **🧩 Meus moldes** (são receitas),
+  moldes, efeitos, jorros de faíscas e sons carregados em **🧩 Meus moldes** (são receitas),
   persistentes uma vez em **⚙️ Ao iniciar**, chapéus em **⚡ Quando acontecer**
   e onUpdate/cérebros em **🔁 Enquanto estiver rodando**. Luzes
   podem ser acesas em eventos de entrada de estado. Não gere start(): o projeto

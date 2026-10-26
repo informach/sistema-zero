@@ -26,10 +26,12 @@ Gateway** (NUNCA os serviços direto). Visual na paleta do Pen, com os temas **P
 > (react-three-fiber + pdf.js; PDF privado com marca d'água, ver §E-book)). A COMUNIDADE
 > (feed/fórum/etc.) é fatia futura.
 >
-> **Header (direção de arte de 18/10/2026, ver §Direção de arte adulta):** logo à esquerda, os seis
-> destinos com ícone E texto (Início, Cursos, Criar, Oficinas, Comunidade, Ajuda — `nav.ts`; do `xl`
-> para baixo descem, só com o texto, para uma segunda linha que rola de lado), o botão **Recados** com selo de
-> não-lidos e o menu do perfil à direita. Seu progresso, Meu avatar 3D, Meu espaço 3D, Meu perfil,
+> **Moldura (o "Estúdio à noite", 25/10/2026, ver §Estúdio à noite):** do `lg` para cima, o **menu
+> lateral escuro** (`community-nav.tsx`, `CommunitySidebar`): logo, os seis destinos com ícone E texto
+> (Início, Cursos, Criar, Oficinas, Comunidade, Ajuda — `nav.ts`), **Recados** com o selo de não lidos e,
+> no pé, o cartão da pessoa (foto com o anel da etapa, nome, etapa) que abre o menu do perfil. Abaixo
+> do `lg`, a **barra do topo** (logo, Recados, foto) e as **abas fixas embaixo**: Início, Cursos, Criar,
+> Comunidade e **Mais** (Oficinas, Recados, Seu progresso, Ajuda, perfil, avatar, espaço, compras). Seu progresso, Meu avatar 3D, Meu espaço 3D, Meu perfil,
 > Compras e Sair vivem no **menu do perfil** (`user-menu.tsx`; regras de exibição em
 > `lib/user-display.ts` — nome → handle do e-mail → "Membro"/"M"). NÃO existe rota `/home` (a home É
 > a raiz). A imagem da pessoa é a **foto do avatar 3D** (`PersonAvatar`, como no Kids): o layout do
@@ -60,7 +62,7 @@ estão as portas:
   `sz-card-sm` e o token `--topo` DESTE app: renomear um deles derruba o cartão) e `/oficinas/aulas/[id]` (`live-room-client.tsx`: o `LiveClassroom` com
   a aula do encontro no slot, `LessonBlocks` de sempre, dentro de `sz-aula-adulto`). Atualizar a
   aula é RELER o JSON (`useLiveLesson`), nunca `router.refresh()`. O bloco Estúdio é o projeto ao
-  vivo, SEM o Mural (`publishToMural` fica desligado). Item **Oficinas** no menu do topo (`nav.ts`).
+  vivo, SEM o Mural (`publishToMural` fica desligado). Item **Oficinas** no menu lateral (`nav.ts`; no celular, em Mais).
 - A página lê a sala e a aula no servidor (`loadLiveRoomInitial`, só leitura: o primeiro quadro já
   é a sala com a aula) e a aula ainda fechada para a vaga (`LIVE_LESSON_CLOSED`) vira a espera
   gentil `LiveLessonClosed`, nunca erro.
@@ -73,16 +75,17 @@ estão as portas:
   a regra vem DEPOIS da geral, e a chave repetida vence (doc do Next). O resto do app segue com a
   câmera e o microfone fechados. Por isso a sala se abre e se deixa por navegação COMPLETA (`<a>`):
   os cartões da agenda e o "Voltar às oficinas" já são `<a>`.
-- **`globals.css`**: `--sz-lesson-stage-top` (abaixo do cabeçalho fixo: 6.75rem no celular, que
-  tem duas linhas, e 4.25rem a partir do md), a reserva da barra da chamada no `<main>`
+- **`globals.css`**: `--sz-lesson-stage-top` (3.9rem: abaixo da barra compacta do topo, que a sala
+  tem em toda largura, sem menu lateral nem abas), a reserva da barra da chamada no `<main>`
   (`--sz-live-bar-height`) e o fundo alternativo em volta da transmissão fixa.
 - Teste: `tests/live-room.test.ts` (os cabeçalhos da sala e do resto, as rotas e a pele adulta).
 
 ## Tema: a paleta do Pen, e a COR escolhida pela pessoa (17/09/2026)
 
 O visual segue as telas-modelo do Pen (`esboço plataforma.pen`, quadro "Paleta"): **um fundo só por
-página** e a **barra do topo escura** (a âncora do Pen; o adulto não tem menu lateral). Não existe
-claro/escuro.
+página** e uma âncora escura. ⚠️ Desde o "Estúdio à noite" (25/10/2026) a âncora é o **menu
+lateral** (computador) ou a barra do topo com as abas (celular), e o escuro é FIXO (`--noite-*`, não
+segue a cor escolhida): ver §Estúdio à noite. Não existe claro/escuro.
 
 ⭐ **Desde 17/09/2026 a cor principal é escolhida por CADA PESSOA, em Meu perfil**, entre seis
 swatches curados (`@sistemazero/core/palette`: `blue teal green orange pink purple`), e a cor da
@@ -161,20 +164,24 @@ a plataforma já faz.
   ⚠️ Media query em `rem` continua medindo 16 px (`xl` = 1280 px), é regra do CSS, não da raiz.
   ⚠️ Medida em px no JS de componente compartilhado não cresce com a raiz: o vídeo flutuante da aula
   (`FLOAT_BAR_HEIGHT`/`FLOAT_FRAME` do member-shell) tem a barra e a moldura presas em px aqui.
-- **Fontes**: Atkinson Hyperlegible Next (texto, `--font-sans`) e Bricolage Grotesque (títulos,
-  `--font-display`, `.sz-display`), por `next/font/google` no layout raiz. Linha de 1.6.
+- **Fontes**: Atkinson Hyperlegible Next (texto, `--font-sans`), Bricolage Grotesque (títulos,
+  `--font-display`, `.sz-display`) e, desde 25/10/2026, Silkscreen (`--font-pixel`, só rótulos curtos de
+  17 px ou mais: `sz-kicker`, `sz-num`, os números do palco), por `next/font/google` no layout raiz.
+  Linha de 1.6.
 - **Vocabulário de classes** (bloco "A PELE DA COMUNIDADE ADULTA" do `globals.css`): `sz-page`
   (largura e respiro), `sz-band` (a faixa do topo de cada página), `sz-kicker`, `sz-h1`…`sz-h4`,
   `sz-lead`, `sz-card`/`sz-card-sm`/`sz-soft`, `sz-btn` (+ `-outline`, `-quiet`, `-white`, `-sm`),
   `sz-iconbtn`, `sz-link`, `sz-chip` (+ `-ok`, `-acao`, `-aviso`, `-novo`, `-escuro`), `sz-num`,
-  `sz-tile`, `sz-label` (⚠️ nunca `sz-bar`: é a barra de ferramentas do Estúdio, no mesmo CSS).
-  Botão é retângulo de cantos de 12 px e 56 px de altura, sem relevo; o `[data-slot="button"]` do
+  `sz-tile`, `sz-label` (⚠️ nunca `sz-bar`: é a barra de ferramentas do Estúdio, no mesmo CSS) e, do
+  "Estúdio à noite", `sz-palco`, `sz-hud` e `sz-mira` (ver §Estúdio à noite).
+  Botão é retângulo de cantos de 14 px e 56 px de altura; desde 25/10/2026 o `sz-btn` é o AMARELO com
+  degrau (ver §Estúdio à noite); o `[data-slot="button"]` do
   `@sistemazero/ui` segue a mesma forma (48 px), só nas páginas da comunidade (o escopo é a raiz
   sem `data-embedded`, num `:where()` sem peso). Chip sempre com ícone ou palavra, nunca só cor.
   Tons: `--acao-tint` e `--sucesso-tint` por `color-mix`, `--aviso-tint` = o amarelo de superfície do
   `ui`, `--aviso-texto` um literal de tinta: ⚠️ nada de hexadecimal da PALETA aqui (o contrato do
-  `ui` continua valendo). Foco: contorno de 3 px na cor de ação (`--ring`); a cor de ação clara só
-  sobre o escuro (barra do topo, faixas `--topo`), onde é ela que passa de 3:1.
+  `ui` continua valendo). Foco: contorno de 3 px na cor de ação (`--ring`) na bancada; no palco
+  (`sz-band`/`sz-palco`) o `--ring` é o amarelo (`--cta`), que passa de 3:1 sobre a noite.
 - **Primitivos de página** (`components/community/page.tsx`): `PageBand` (kicker, título, lead,
   voltar, ações), `PageBody`, `BackLink`, `SectionHeader`. Cada página desenha a própria faixa de
   ponta a ponta e cuida da largura (`sz-page`): o `CommunityFrame` só dá a moldura antiga
@@ -187,6 +194,69 @@ a plataforma já faz.
   página Criar só aponta para lá ("Quanto resta de créditos"). ⚠️ O painel (`ai-credits-panel.tsx`)
   conta em "créditos" e escreve o aviso de esgotado ele mesmo; o `meter` do core também fala em
   "créditos" e "o Zappy e o Pensa" (ver §Vocabulário).
+
+## Estúdio à noite (25/10/2026)
+
+Pedido dela: a comunidade adulta estava "sem vida, sem sal". A proposta é o Canvas "Comunidade adulta,
+nova direção de arte" (todas as telas, computador e celular); a implementação ficou SÓ com o que a
+plataforma já faz (as sugestões de recurso novo do Canvas ficaram de fora, decisão dela).
+
+- **O conceito:** o **palco** escuro (descobrir e comemorar: a faixa do topo de toda página, a Jornada,
+  o Mural, as ferramentas) e a **bancada** clara (ler e fazer: listas, aulas, formulários). Um
+  **amarelo por tela** para a ação; progresso sempre à vista (barra em gomos, anel da etapa).
+- **Tokens** (`globals.css`, bloco "ESTÚDIO À NOITE"): `--noite`, `--noite-2`, `--palco`, `--carta`,
+  `--carta-2`, `--linha-escura`, `--texto-claro(-2)`, `--legenda-clara`, `--menta`, `--dourado`,
+  `--laranja`, `--cta-degrau` são literais (os MESMOS do `theme-arcade.css` do funil adulto, `--cda-*`;
+  nenhum é valor gerado pelo `ui`, e o contrato de lá continua verde). `--cta` (amarelo) e `--rosa` vêm dos
+  tokens do `ui`; `--degrau-claro` é o `--sz-community-card-step`. O escuro NÃO
+  segue a cor escolhida: ela vira o acento pessoal (`--primary`: links, selos, barra de progresso na
+  bancada, filtro ativo do Mural; o filtro do catálogo é o chip escuro da noite). No palco o
+  `--primary` vira a versão CLARA da cor (`--sz-community-action-light`, texto em cima na noite): a
+  escura dava 2,9:1 sobre a carta. `--topo-*` aponta para a noite (é contrato do member-shell e do
+  `cosmetics-adult.css`). `themeColor` do layout é o `--noite-2`.
+- **`.sz-band` / `.sz-palco`:** em vez de pintar peça por peça, REDEFINEM os tokens semânticos
+  (`--foreground`, `--card`, `--border`, `--muted(-foreground)`, `--link`, `--ring`, os tons
+  `--acao/--sucesso/--aviso-*`, `--degrau-claro: transparent`) para o subárvore. Todo cartão, chip,
+  link, campo e texto apagado lá dentro vira a versão escura sozinho. A grade de pontos fica no próprio
+  `background-image` (⚠️ sem `::before`: não cria contexto de empilhamento, e os menus que abrem da
+  faixa continuam por cima do conteúdo). Bloco escuro dentro da bancada = `sz-palco` + `rounded-*`.
+- **Botões:** `sz-btn` = amarelo com degrau de 4 px (desce no `:active`, com `prefers-reduced-motion`
+  respeitado); `sz-btn-outline` = branco com contorno e degrau na bancada, só contorno claro no palco;
+  `sz-btn-white` = o claro com degrau para cima do escuro. O `Button` do `ui` (`[data-slot="button"]`,
+  variante `default`) também vira amarelo, MAS só nas páginas da comunidade: a regra exclui a raiz com
+  `.sz-aula-adulto`, `data-embedded` e `[data-sz-public-player]` (aula, sala ao vivo, ferramentas e
+  jogo público são peças do Kids e seguem com a cor de ação). ⚠️ A regra mira o `data-slot`, nunca
+  `bg-primary` solto: filtro ativo, bolha de conversa e selo usam `bg-primary` como acento. O degrau
+  (box-shadow) apaga o `ring` do foco, então a mesma regra devolve o foco como `outline`; botão de
+  escolha com `aria-pressed` (respostas da avaliação do curso) fica fora dela (seleção, não ação).
+- **Peças novas:** `sz-hud` (o trilho do `ProgressBar` e do `Meter` em dez gomos por `mask-image`; o
+  valor segue contínuo para o leitor de tela; menta no palco, acento na bancada, verde no `data-feito`),
+  `sz-mira` (os cantos amarelos da capa em destaque, por dentro da moldura). `sz-num-acao` e
+  `sz-chip-novo` são o amarelo ("você está aqui" = a cor do botão que leva lá).
+  `.sz-progress` NÃO mudou: o member-shell usa no player da aula.
+- **Moldura:** `CommunityFrame` monta `CommunitySidebar` + `CommunityTopBar` + `CommunityTabs`
+  (`community-nav.tsx`); o `<main>` reserva a altura das abas abaixo do `lg`. A aula continua sem
+  moldura e a sala ao vivo usa `CommunityTopBar compact` em toda largura. ⚠️ Duas logos escuras na
+  mesma página: a do menu lateral passa `instancia="menu"` ao `BrandLogo` (ids dos degradês; sem isso
+  o ZERO some quando a da barra está escondida). Os `sticky` de página usam `lg:top-6` (não há mais
+  barra no alto do computador). ⚠️⚠️ O `<main>` é filho DIRETO do `.sz-app` fora das páginas da
+  comunidade (aula, sala ao vivo, ferramentas de tela cheia): as regras `.sz-app:has(.sz-aula-adulto) >
+  main` (reserva do rodapé fixo, largura total) dependem disso; o invólucro com o menu lateral só existe
+  nas páginas da comunidade. Os não lidos de Recados são UMA leitura no `CommunityFrame`
+  (`useTeacherUnread(pathname, app || live)`, passada como `unread` às três peças, que ficam montadas
+  e só escondidas por CSS); a aula e as ferramentas não buscam. As abas do celular: no DOM, as abas
+  antes do painel "Mais" (`flex-col-reverse` só desenha o painel por cima), Tab para fora fecha, e com
+  o painel aberto o destaque vai para "Mais" sem tirar o `aria-current` da página atual.
+- **Páginas:** Início (saudação, cartão Continuar com a mira e Seu ritmo no palco; módulo e Recados na
+  bancada; Mural num palco no pé), Cursos (trilhas no palco), Curso (capa grande com mira, módulo atual
+  com moldura amarela), Seu progresso (números com rótulo em pixel colorido; a Jornada num bloco de
+  palco), Criar (as ferramentas no palco, cada uma com a faixa de arte na cor dela), Comunidade (o
+  Mural num bloco de palco), 404/erro (`StatusScreen` no palco, o número em pixel), entrada (o painel
+  do `AuthSplitShell` é palco). As demais herdam pelos tokens.
+- **Prévia** (fora do git): `tmp/estudio-noite/` renderiza as páginas REAIS no navegador com o shell
+  falso (`server-stub.ts`: `shell.grupo.metodo` → `fixtures.ts`; sem fixture, 503 e a página degrada como
+  em produção) e os Server Components assíncronos resolvidos antes do render. `bun tmp/estudio-noite/serve.ts`
+  (:4393, `?s=inicio|cursos|…`, `/__rebuild` recompila).
 
 ## Vocabulário: o recurso tem nome, sem "IA" solta (20/10/2026)
 
@@ -465,7 +535,7 @@ Browser → /api/* (Route Handlers, mesma origem, cookie HttpOnly)
   `/login?erro=impersonacao`. A sessão vem com a claim **`act`** (RFC 8693 — `act.sub/email/name`
   = ADMIN; parse em `lib/act.ts`, puro/testado; `SessionUser.act?` em types) e refresh de TTL
   CURTO (2h, o auth preserva na rotação). UI: **`ImpersonationBanner`** (faixa âmbar persistente
-  acima do topnav no layout `(app)`) com "Encerrar" = logout normal (revoga a família) +
+  no alto do `CommunityFrame`, acima da barra e do menu lateral) com "Encerrar" = logout normal (revoga a família) +
   `window.location.replace('/login')` somente após confirmação 2xx; falha mantém cookies/banner e
   permite tentar novamente. A sessão nasce **SOMENTE-LEITURA**, mas o banner permite ao
   admin ativar explicitamente o modo `write`: a mudança é idempotente, reemite só o access token,
@@ -553,11 +623,12 @@ Browser → /api/* (Route Handlers, mesma origem, cookie HttpOnly)
 ```
 src/
   app/
-    layout.tsx              Root (Atkinson Hyperlegible Next + Bricolage Grotesque + Geist Mono,
+    layout.tsx              Root (Atkinson Hyperlegible Next + Bricolage Grotesque + Geist Mono +
+                            Silkscreen, a letra em pixel dos sobretítulos e números,
                             data-sz-palette no <html>, Providers: Toaster)
     (auth)/                 Grupo público (AuthSplitShell: form + imagem da comunidade)
       login/ · esqueci-senha/ · redefinir-senha/   (page + *-form.tsx client)
-    (app)/                  Grupo logado (layout gate + avatar fresco + CommunityTopnav)
+    (app)/                  Grupo logado (layout gate + avatar fresco + CommunityFrame → community-nav)
       page.tsx              / (HOME) — grid "Meus cursos" (CourseCard + .sz-progress)
       cursos/               /cursos "Todos os cursos" (catálogo c/ lock → página de vendas)
       cursos/trilha/[track]/ Trilha (2d|3d): os cursos da trilha por nível (`lib/course-levels.ts`)
@@ -605,7 +676,7 @@ src/
             download-mime.ts (MIME/marca dos downloads por sinais reais — puro, testado)
             csrf.ts (same-origin via Sec-Fetch-Site — puro, testado) · cookies.ts (nomes dos
             cookies, __Host- em prod — puro, testado)
-  components/ community/* (topnav/user-menu/user-avatar/cards/blocos/course-rating-flow)
+  components/ community/* (community-nav/user-menu/user-avatar/cards/blocos/course-rating-flow)
             community/ebook/* — LIVRO 3D do bloco e-book: ebook-block.tsx (resolve URL via
             LessonPlayerContext + dynamic ssr:false) → ebook-book.impl.tsx (Canvas r3f +
             OrbitControls restrito + botões/label + slider de brilho — preferência via
@@ -735,8 +806,8 @@ valida e só então importa o `server.js` standalone).
   `POST /helpdesk/portal/tickets/:id/messages` chegam pelo gateway e são expostos pelo BFF em
   `/api/helpdesk/portal/*`. A rota adulta `/ajuda` usa o `CustomerHelpdeskPortal` compartilhado:
   tickets são sempre do titular autenticado, notas internas não chegam ao browser e uma mensagem
-  do cliente reabre o chamado quando ele aguardava resposta. O item **Ajuda** pertence ao topo
-  adulto e `/ajuda` fica nos `protectedPrefixes`.
+  do cliente reabre o chamado quando ele aguardava resposta. O item **Ajuda** pertence à
+  navegação principal adulta (menu lateral e "Mais") e `/ajuda` fica nos `protectedPrefixes`.
 - Members (JWT + x-internal-token injetados pelo gateway): `GET /members/courses` →
   `{courses: MyCourseView[]}` (+`continueLessonId`); `GET /members/catalog` →
   `{courses: CatalogCourseView[]}` ("Todos os cursos": published + `hasAccess` + `salesPageUrl` —

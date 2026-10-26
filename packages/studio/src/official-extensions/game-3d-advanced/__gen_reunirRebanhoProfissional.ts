@@ -18,12 +18,13 @@ import { collectTypes } from './exampleSourceUtils'
  * zona (makeTrigger): um seguidor que a toca é entregue (recycle + ponto). Reúna
  * 8 antes do tempo acabar. ⭐ o filtro do onOverlap por isMold("bicho") E
  * entityStateIs("seguindo") impede o pastor e os que só vagam de contarem ponto.
- * Sorteio 100% do kit sob setSeed. Tudo procedural, sem .glb.
+ * Sorteio 100% do kit sob setSeed. Tudo procedural, sem .glb. Clicar num bichinho mostra
+ * o cérebro dele: "o mouse está sobre …?" acha quem foi clicado e o balão diz "o estado de …".
  */
 export const REUNIR_REBANHO_PROFISSIONAL_SOURCE = `
 SZGameKit3D.setup({ width: 1280, height: 720, world: 60, sky: "#7dd3fc", ground: "#166534" });
 SZGameKit3D.setEffects({ shadows: true, bloom: true, strength: 1.1, vignette: true });
-SZGameKit3D.setScreenText("menu", "Reunir o Rebanho Profissional", "Ande com WASD ou as setas. Chegue perto dos bichinhos que vagam para eles seguirem você e leve o rebanho ao curral dourado. Reúna 8 antes do tempo acabar!", "Pastorear");
+SZGameKit3D.setScreenText("inicio", "Reunir o Rebanho Profissional", "Ande com WASD ou as setas. Chegue perto dos bichinhos que vagam para eles seguirem você e leve o rebanho ao curral dourado. Reúna 8 antes do tempo acabar! Clique num bichinho para ver o que ele está pensando.", "Pastorear");
 SZGameKit3D.setScreenText("vitoria", "Rebanho reunido!", "Você guiou 8 bichinhos até o curral. Que pastor!", "Pastorear de novo");
 SZGameKit3D.setScreenText("fim", "O tempo acabou...", "Faltaram bichinhos no curral. Chegue perto para eles seguirem e leve o grupo junto!", "Tentar de novo");
 SZGameKit3D.defineMold("pastor", { health: 1, speed: 0 }, function () {
@@ -72,16 +73,16 @@ SZGameKit3D.onEnterState("jogando", function () {
   SZGameKit3D.say(guia, "Toca o rebanho!", 2);
 });
 SZGameKit3D.onEntityStateUpdate("pastor", "parado", function (ela, dt) {
-  if (SZGameKit3D.keyDown("a") || SZGameKit3D.keyDown("esquerda")) {
+  if (SZGameKit3D.keyDown("KeyA") || SZGameKit3D.keyDown("ArrowLeft")) {
     pastorX = pastorX - 13 * dt;
   }
-  if (SZGameKit3D.keyDown("d") || SZGameKit3D.keyDown("direita")) {
+  if (SZGameKit3D.keyDown("KeyD") || SZGameKit3D.keyDown("ArrowRight")) {
     pastorX = pastorX + 13 * dt;
   }
-  if (SZGameKit3D.keyDown("w") || SZGameKit3D.keyDown("cima")) {
+  if (SZGameKit3D.keyDown("KeyW") || SZGameKit3D.keyDown("ArrowUp")) {
     pastorZ = pastorZ - 13 * dt;
   }
-  if (SZGameKit3D.keyDown("s") || SZGameKit3D.keyDown("baixo")) {
+  if (SZGameKit3D.keyDown("KeyS") || SZGameKit3D.keyDown("ArrowDown")) {
     pastorZ = pastorZ + 13 * dt;
   }
   if (pastorX < -24) {
@@ -97,7 +98,7 @@ SZGameKit3D.onEntityStateUpdate("pastor", "parado", function (ela, dt) {
     pastorZ = 24;
   }
   SZGameKit3D.place(ela, pastorX, 1, pastorZ);
-  SZGameKit3D.setHud("top-left", "Reunidos: " + pontos + " de 8");
+  SZGameKit3D.hudText("top-left", "Reunidos: " + pontos + " de 8");
 });
 SZGameKit3D.stateTimer("bicho", "parado", 0.2, "vagando");
 SZGameKit3D.onEnterEntityState("bicho", "vagando", function (ela) {
@@ -142,8 +143,15 @@ SZGameKit3D.onUpdate(function (dt) {
     proximoBicho = 3;
     SZGameKit3D.spawn("bicho", SZGameKit3D.randomBetween(-16, 16), 0.5, SZGameKit3D.randomBetween(-16, 16));
   }
-  SZGameKit3D.setHud("top-right", "Tempo: " + Math.floor(tempoRestante) + "s");
-  SZGameKit3D.setHud("bottom-right", "No campo: " + SZGameKit3D.countAlive("bicho"));
+  SZGameKit3D.hudText("top-right", "Tempo: " + Math.floor(tempoRestante) + "s");
+  SZGameKit3D.hudText("bottom-right", "No campo: " + SZGameKit3D.countAlive("bicho"));
+  if (SZGameKit3D.mousePressed()) {
+    SZGameKit3D.forEachAlive("bicho", function (bicho) {
+      if (SZGameKit3D.pointerOver(bicho)) {
+        SZGameKit3D.say(bicho, "Estou " + SZGameKit3D.stateOf(bicho), 1.5);
+      }
+    });
+  }
   if (pontos >= 8) {
     SZGameKit3D.playEffect("win");
     SZGameKit3D.setState("vitoria");

@@ -18,7 +18,7 @@ import { parseExampleLifecycleSource } from './exampleLifecycleSource'
  * Drift do exemplo "Reunir o Rebanho" — o Entity Management de NÍVEL BÁSICO
  * montado só com genéricos do Jogo 3D: o herói (setas/WASD) reúne os bichinhos
  * que vagam (giram parados) e os leva ao curral. O bichinho muda de ESTADO ao
- * ser alcançado (sai do enxame "errantes" e entra no "seguidores", passando a
+ * ser alcançado (sai do grupo "errantes" e entra no "seguidores", passando a
  * moveTowards o herói). A IR embutida em examples.ts foi GERADA pelo parser real
  * a partir do SOURCE (que mora no __gen_reunirRebanho.ts, importado aqui para que
  * fonte e teste NUNCA divirjam).
@@ -62,27 +62,29 @@ describe('Exemplo Reunir o Rebanho — drift contra o parser real', () => {
     const statements = behaviorStatements(reunirRebanhoBasicoExample.ir)
     const types = collectTypes(statements)
     for (const t of [
-      'g3d:createSwarm', // dois enxames: errantes e seguidores
-      'g3d:spawnInSwarm', // bichinhos nascem (errantes) e mudam de estado (seguidores)
-      'g3d:countSwarm', // teto do enxame de errantes
+      'g3d:createGroup', // dois grupos: errantes e seguidores
+      'g3d:spawnCopy', // bichinhos nascem (errantes) e mudam de estado (seguidores)
+      'g3d:countGroup', // teto do grupo de errantes
       'g3d:everySeconds', // cadência de spawn + relógio
       'randomFloat', // o ângulo sorteado da posição de nascimento
       'g3d:keyDown', // controle do herói pelas setas/WASD
       'g3d:moveBy', // o herói anda no campo
       'g3d:isNear', // alcançar bichinho + chegar no curral
       'g3d:moveTowards', // os seguidores vão atrás do herói
-      'g3d:forEachInSwarm', // varre errantes e seguidores por quadro
-      'g3d:removeFromSwarm', // sai de um enxame ao mudar de estado / ser entregue
+      'g3d:forEachInGroup', // varre errantes e seguidores por quadro
+      'g3d:removeFromGroup', // sai de um grupo ao mudar de estado / ser entregue
       'g3d:spin', // os bichinhos errantes giram (vagam)
       'g3d:getPos', // posição do herói e do bichinho
       'g3d:animate', // o laço de quadro 3D
-      'event', // o botão Jogar de novo
-      'setProperty', // placar e relógio no HUD
-      'classOp', // mostra/esconde a tela de fim
+      'g3d:cornerText', // HUD nativo
+      'g3d:gameOver', // tela de fim nativa
     ]) {
       expect(types.has(t)).toBe(true)
     }
-    // Dois enxames distintos e o estado do jogo vivem em variáveis.
+    // Dois grupos distintos e o estado do jogo vivem em variáveis.
+    expect(types.has('g3d:addScore')).toBe(true)
+    expect(types.has('g3d:screenText')).toBe(true)
+    expect(types.has('g3d:gameOver')).toBe(true)
     const raw = JSON.stringify(statements)
     expect(raw).toContain('"errantes"')
     expect(raw).toContain('"seguidores"')
@@ -91,7 +93,7 @@ describe('Exemplo Reunir o Rebanho — drift contra o parser real', () => {
     expect(raw).toContain('"rodando"')
   })
 
-  it('⭐ é montado com GENÉRICOS (dois enxames), não com um kit pronto', () => {
+  it('⭐ é montado com GENÉRICOS (dois grupos), não com um kit pronto', () => {
     const types = collectTypes(behaviorStatements(reunirRebanhoBasicoExample.ir))
     expect(types.has('g3d:createFullscreenScene')).toBe(true)
     expect(types.has('g3d:createRaceScene')).toBe(false)

@@ -1,0 +1,50 @@
+[
+  {
+    "label": "lado",
+    "path": {
+      "body": 2,
+      "inputs": [
+        {
+          "name": "VALUE",
+          "index": 0
+        }
+      ]
+    },
+    "codecId": "sz_py_integer",
+    "field": "NUMBER",
+    "before": "48",
+    "after": "52"
+  },
+  {
+    "label": "title",
+    "path": {
+      "body": 8,
+      "inputs": [
+        {
+          "name": "value",
+          "index": 0
+        }
+      ]
+    },
+    "codecId": "sz_py_text",
+    "field": "TEXT",
+    "before": "Bombas no Labirinto",
+    "after": "Bombas no Labirinto!"
+  },
+  {
+    "label": "alcance",
+    "path": {
+      "body": 9,
+      "inputs": [
+        {
+          "name": "VALUE",
+          "index": 0
+        }
+      ]
+    },
+    "codecId": "sz_py_integer",
+    "field": "NUMBER",
+    "before": "3",
+    "after": "4"
+  }
+]

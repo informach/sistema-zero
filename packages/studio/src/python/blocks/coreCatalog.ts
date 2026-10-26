@@ -1,4 +1,5 @@
 import type { PythonNode } from '../language/types'
+import { requiredField, requiredInput } from './catalogHelpers'
 import type { PythonBlockCodec, PythonBlockShape, PythonCategory } from './contract'
 import {
   boolean,
@@ -13,16 +14,6 @@ import {
   withTargetContext,
 } from './nodes'
 
-const field = (shape: PythonBlockShape, key: string) => {
-  const value = shape.fields.find((field) => field.name === key)?.value
-  if (value === undefined) throw new Error('O bloco Python perdeu um campo obrigatório.')
-  return value
-}
-const input = (shape: PythonBlockShape, key: string) => {
-  const value = shape.inputs.find((input) => input.name === key)
-  if (value?.nodes.length !== 1) throw new Error('Preencha o valor do bloco Python.')
-  return value.nodes[0]!
-}
 const base = (
   id: string,
   title: string,
@@ -47,6 +38,7 @@ const literals: PythonBlockCodec[] = [
       'Um texto Python. Pode conter acentos, emojis e quebras de linha.',
     ),
     role: 'value',
+    compact: 'quoted',
     defaultNode: () => text('Olá!'),
     decode(value) {
       return value.kind === 'Constant' &&
@@ -56,7 +48,7 @@ const literals: PythonBlockCodec[] = [
         : undefined
     },
     encode(shape) {
-      return text(field(shape, 'TEXT'))
+      return text(requiredField(shape, 'TEXT'))
     },
   },
   {
@@ -69,6 +61,7 @@ const literals: PythonBlockCodec[] = [
       'Um número inteiro, sem perder precisão em valores grandes.',
     ),
     role: 'value',
+    compact: 'plain',
     defaultNode: integer,
     decode(value) {
       const literal = value.fields.value
@@ -83,7 +76,7 @@ const literals: PythonBlockCodec[] = [
         : undefined
     },
     encode(shape) {
-      const value = field(shape, 'NUMBER')
+      const value = requiredField(shape, 'NUMBER')
       if (!/^(0|[1-9][0-9]*)$/.test(value))
         throw new Error(
           'Digite um número inteiro positivo ou zero. Para negativo, use o bloco de sinal.',
@@ -123,7 +116,7 @@ const literals: PythonBlockCodec[] = [
         : undefined
     },
     encode(shape) {
-      const value = field(shape, 'BOOL')
+      const value = requiredField(shape, 'BOOL')
       if (!['True', 'False'].includes(value)) throw new Error('Valor lógico inválido.')
       return boolean(value === 'True')
     },
@@ -147,22 +140,16 @@ const literals: PythonBlockCodec[] = [
     encode: none,
   },
   {
-    ...base(
-      'variable',
-      'valor da variável',
-      'Variáveis',
-      1,
-      'name',
-      'Lê uma variável no escopo atual.',
-    ),
+    ...base('variable', 'variável', 'Variáveis', 1, 'name', 'Lê uma variável no escopo atual.'),
     role: 'value',
+    compact: 'plain',
     defaultNode: name,
     decode(value) {
       return value.kind === 'Name' &&
         typeof value.fields.id === 'string' &&
         ['Load', 'Store', 'Del'].includes(contextOf(value) ?? '')
         ? {
-            fields: [{ name: 'NAME', label: 'variável', value: value.fields.id }],
+            fields: [{ name: 'NAME', label: '', value: value.fields.id }],
             inputs: [],
             extra: { context: contextOf(value)! },
           }
@@ -172,7 +159,7 @@ const literals: PythonBlockCodec[] = [
       const context = shape.extra?.context ?? 'Load'
       if (!['Load', 'Store', 'Del'].includes(String(context)))
         throw new Error('Escopo de variável inválido.')
-      return name(field(shape, 'NAME'), context as 'Load' | 'Store' | 'Del')
+      return name(requiredField(shape, 'NAME'), context as 'Load' | 'Store' | 'Del')
     },
   },
 ]
@@ -215,12 +202,12 @@ const operators: PythonBlockCodec[] = [
         : undefined
     },
     encode(shape) {
-      const op = field(shape, 'OP')
+      const op = requiredField(shape, 'OP')
       if (!binaryOptions.some(([, kind]) => kind === op)) throw new Error('Operação inválida.')
       return node('BinOp', {
-        left: input(shape, 'LEFT'),
+        left: requiredInput(shape, 'LEFT'),
         op: node(op),
-        right: input(shape, 'RIGHT'),
+        right: requiredInput(shape, 'RIGHT'),
       })
     },
   },
@@ -251,7 +238,7 @@ const operators: PythonBlockCodec[] = [
           : undefined
       },
       encode(shape) {
-        return node('UnaryOp', { op: node(op), operand: input(shape, 'VALUE') })
+        return node('UnaryOp', { op: node(op), operand: requiredInput(shape, 'VALUE') })
       },
     }),
   ),
@@ -261,7 +248,7 @@ const statements: PythonBlockCodec[] = [
   {
     ...base(
       'assign',
-      'guardar valor',
+      'guardar',
       'Variáveis',
       1,
       'target = value',
@@ -287,15 +274,15 @@ const statements: PythonBlockCodec[] = [
             fields: [],
             inputs: [
               { name: 'TARGET', label: 'em', role: 'value', nodes: [targets[0]] },
-              { name: 'VALUE', label: 'guardar', role: 'value', nodes: [value.fields.value] },
+              { name: 'VALUE', label: 'o valor', role: 'value', nodes: [value.fields.value] },
             ],
           }
         : undefined
     },
     encode(shape) {
       return node('Assign', {
-        targets: [withTargetContext(input(shape, 'TARGET'), 'Store')],
-        value: input(shape, 'VALUE'),
+        targets: [withTargetContext(requiredInput(shape, 'TARGET'), 'Store')],
+        value: requiredInput(shape, 'VALUE'),
         type_comment: null,
       })
     },
@@ -303,13 +290,14 @@ const statements: PythonBlockCodec[] = [
   {
     ...base(
       'expression',
-      'executar',
+      'calcular sem guardar',
       'Funções',
-      1,
+      3,
       'expression',
-      'Executa uma chamada ou expressão, sem guardar seu resultado.',
+      'Calcula um valor e não guarda o resultado.',
     ),
     role: 'statement',
+    hidden: true,
     defaultNode: () => node('Expr', { value: name('valor') }),
     decode(value) {
       return value.kind === 'Expr' && isNode(value.fields.value)
@@ -320,7 +308,7 @@ const statements: PythonBlockCodec[] = [
         : undefined
     },
     encode(shape) {
-      return node('Expr', { value: input(shape, 'VALUE') })
+      return node('Expr', { value: requiredInput(shape, 'VALUE') })
     },
   },
   ...(

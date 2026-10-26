@@ -1,4 +1,4 @@
-import { afterEach, expect, test } from 'bun:test'
+import { afterAll, afterEach, beforeAll, expect, test } from 'bun:test'
 import { mkdir, mkdtemp, readFile, rm, symlink, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { dirname, join, resolve, sep } from 'node:path'
@@ -9,15 +9,32 @@ import {
   createStudioRuntimeRelease,
   StudioRuntimeReleaseSchema,
 } from '@sistemazero/core/studio/runtime-catalog'
+import {
+  prepareStudioAuthoringOptions,
+  studioAuthoringChoices,
+} from '../../studio/src/core/authoringOptions'
+import { PYGAME_GAME_EXAMPLES } from '../../studio/src/examples/python/pygameGames'
+import { PGZERO_MODULE_FILES } from '../../studio/src/runtime/python/pgzero/contract'
+import {
+  PYGAME_CE_WHEEL,
+  PYGAME_MODULE_FILES,
+} from '../../studio/src/runtime/python/pygame/contract'
+import { RAYLIB_MODULE_FILES } from '../../studio/src/runtime/python/raylib/contract'
+import { TURTLE_MODULE_FILES } from '../../studio/src/runtime/python/turtle/contract'
 import { runPythonPromotionCommand } from '../scripts/promote-python-runtime'
 import {
   type PythonPromotionInput,
   preparePythonPromotion,
+  setPinnedPygameWheelForTests,
   verifyPythonPromotionPlan,
 } from '../scripts/python-promotion-plan'
 import { uploadPythonPromotion } from '../scripts/python-promotion-r2'
 import { sha256 } from '../src/artifacts'
-import { pythonDistributionFixture } from './python-distribution-fixture'
+import { fixturePygameWheel, pythonDistributionFixture } from './python-distribution-fixture'
+
+// The fixtures write a stand-in wheel; the check against the pinned one has its own test.
+beforeAll(() => setPinnedPygameWheelForTests(fixturePygameWheel()))
+afterAll(() => setPinnedPygameWheelForTests(null))
 
 const directories: string[] = []
 afterEach(async () => {
@@ -49,10 +66,19 @@ async function fixture(
     'analysis-frame.mjs',
     'turtle-renderer.mjs',
     'turtle-protocol.mjs',
-    'turtle/turtle.py',
-    'turtle/_sz_turtle_backend.py',
-    'turtle/_sz_turtle_colors.py',
-    'turtle/_sz_turtle_limits.py',
+    ...TURTLE_MODULE_FILES.map((name) => `turtle/${name}`),
+    'pgzero-renderer.mjs',
+    'pgzero-protocol.mjs',
+    ...PGZERO_MODULE_FILES.map((name) => `pgzero/${name}`),
+    'raylib-renderer.mjs',
+    'raylib-protocol.mjs',
+    ...RAYLIB_MODULE_FILES.map((name) => `raylib/${name}`),
+    'LICENSE-pgzero.txt',
+    'LICENSE-freefont.txt',
+    'LICENSE-raylib.txt',
+    'LICENSE-raylib-python-cffi.txt',
+    ...PYGAME_MODULE_FILES.map((path) => `pygame/${path}`),
+    PYGAME_CE_WHEEL.file,
   ])
     storage.contents.set(path, new TextEncoder().encode(`fixture:${path}`))
   const distribution = {
@@ -111,6 +137,15 @@ test('offline plan is deterministic, binds distinct hashes and registers real Py
     first.deployment.release.manifestSha256,
   )
   expect(first.configuration.members.releases[0]?.blockIds).toContain('sz_py_print')
+  expect(first.deployment.release.manifest.extensions).toContainEqual({
+    id: 'python-pygame',
+    versions: ['1.0.0'],
+  })
+  expect(first.configuration.members.releases[0]?.blockIds).toContain('sz_py_pygame_init')
+  expect(first.configuration.members.releases[0]?.blockIds).toContain('sz_py_pygame_image_load')
+  const approved = new Set(first.configuration.members.releases[0]?.blockIds)
+  for (const example of PYGAME_GAME_EXAMPLES.filter((entry) => entry.kind === 'classic'))
+    expect(example.requiredBlockIds?.every((id) => approved.has(id))).toBe(true)
   expect(first.configuration.members.releases[0]?.categoryIds).toContain('Entrada e saída')
   expect(first.configuration.members.releases[0]?.categoryIds).not.toContain('python-basics')
   expect(first.configuration.members.releases[0]?.proTemplateIds).toEqual(['python-blank'])
@@ -130,12 +165,78 @@ test('offline plan is deterministic, binds distinct hashes and registers real Py
   expect(await verifyPythonPromotionPlan(first, first.planSha256)).toEqual(first)
 })
 
+test('a product promotion exposes Pygame-ce, the two Raylib extensions and their own blocks', async () => {
+  const f = await fixture()
+  const plan = await preparePythonPromotion(f.input)
+  expect(plan.deployment.release.manifest.extensions.map(({ id }) => id)).toEqual([
+    'python-turtle',
+    'python-pgzero',
+    'python-pygame',
+    'python-raylib-2d',
+    'python-raylib-3d',
+  ])
+  const blocks = plan.configuration.members.releases[0]!.blockIds
+  expect(blocks.some((id) => id.startsWith('sz_py_rl2d_'))).toBe(true)
+  expect(blocks.some((id) => id.startsWith('sz_py_rl3d_'))).toBe(true)
+})
+
+test.each([
+  'pgzero/pgzero/__init__.py',
+  'raylib/_szraylib/_camera3d.py',
+  'raylib-renderer.mjs',
+  'pgzero/freesansbold.ttf',
+  'LICENSE-raylib.txt',
+])('a product promotion refuses a manifest without %s even when the remaining hashes match', async (missing) => {
+  const f = await fixture()
+  const distribution = {
+    ...f.distribution,
+    files: f.distribution.files.filter(({ path }) => path !== missing),
+  }
+  await writeFile(join(f.directory, 'distribution.json'), JSON.stringify(distribution))
+  await expect(
+    preparePythonPromotion({
+      ...f.input,
+      distribution: {
+        directory: f.directory,
+        sha256: await sha256Hex(canonicalJson(distribution)),
+      },
+    }),
+  ).rejects.toThrow(`Artefato de produto obrigatório ausente: ${missing}.`)
+})
+
+for (const missing of ['pygame/_szpygame/__init__.py', 'pygame/pinta.py', PYGAME_CE_WHEEL.file])
+  test(`promotion rejects a distribution that omits the Pygame-ce file ${missing}`, async () => {
+    const f = await fixture()
+    const distribution = {
+      ...f.distribution,
+      files: f.distribution.files.filter(({ path }) => path !== missing),
+    }
+    await writeFile(join(f.directory, 'distribution.json'), JSON.stringify(distribution))
+    f.input.distribution.sha256 = await sha256Hex(canonicalJson(distribution))
+    await expect(preparePythonPromotion(f.input)).rejects.toThrow(
+      `Artefato Pygame-ce obrigatório ausente: ${missing}`,
+    )
+  })
+
+test('promotion rejects a Pygame-ce wheel other than the one the Studio pinned', async () => {
+  const f = await fixture()
+  // Same name, bytes the distribution manifest vouches for, but not PYGAME_CE_WHEEL's sha.
+  setPinnedPygameWheelForTests(null)
+  try {
+    await expect(preparePythonPromotion(f.input)).rejects.toThrow(
+      `A wheel Pygame-ce do artefato não é a fixada no Estúdio (${PYGAME_CE_WHEEL.file}, sha256 ${PYGAME_CE_WHEEL.sha256})`,
+    )
+  } finally {
+    setPinnedPygameWheelForTests(fixturePygameWheel())
+  }
+})
+
 test('promotion selects APIs from an explicit current-format implementation feature array', async () => {
   for (const features of [[], ['turtle-compound-shapes']] as const) {
     const f = await fixture('staging', features)
     const plan = await preparePythonPromotion(f.input)
     const blockIds = plan.configuration.members.releases[0]!.blockIds
-    for (const id of ['sz_py_turtle_module_Shape', 'sz_py_turtle_shape_addcomponent'])
+    for (const id of ['sz_py_turtle_new_shape', 'sz_py_turtle_shape_addcomponent'])
       expect(blockIds.includes(id)).toBe(
         features.some((feature) => feature === 'turtle-compound-shapes'),
       )
@@ -149,12 +250,142 @@ test('repeating the current deployment preserves its exact approved policy and p
   const f = await fixture()
   const previous = await preparePythonPromotion(f.input)
   const policy = previous.configuration.members.releases[0]!
-  expect(policy.blockIds.filter((id) => id.startsWith('sz_py_turtle_'))).toHaveLength(180)
+  // One block per Turtle concept since the 2026-10 palette review (aliases and spellings share it).
+  expect(
+    policy.blockIds.filter(
+      (id) => id.startsWith('sz_py_turtle_') && id !== 'sz_py_turtle_pinta_shape',
+    ),
+  ).toHaveLength(84)
+  expect(policy.blockIds.filter((id) => id === 'sz_py_turtle_pinta_shape')).toHaveLength(1)
   const baseline = structuredClone(previous.configuration)
   const next = await preparePythonPromotion({ ...f.input, baseline })
   expect(next.configuration.members.releases).toEqual(baseline.members.releases)
   expect(next.configuration.worker.deployments).toEqual(baseline.worker.deployments)
   expect(next.deployment).toEqual(previous.deployment)
+  expect(await verifyPythonPromotionPlan(next, next.planSha256)).toEqual(next)
+})
+
+test.each([
+  'worker',
+  'members',
+] as const)('a new release reconciles an interrupted retirement in %s without rewriting its baseline', async (authority) => {
+  const f = await fixture()
+  const previous = await preparePythonPromotion(f.input)
+  const baseline = structuredClone(previous.configuration)
+  if (authority === 'worker') baseline.worker.deployments[0]!.status = 'retired'
+  else baseline.members.releases[0]!.status = 'retired'
+  const observed = canonicalJson(baseline)
+  const next = await preparePythonPromotion({
+    ...f.input,
+    baseline,
+    release: { ...f.input.release, releaseId: 'recovered-1' },
+  })
+  expect(next.configuration.worker.deployments.map(({ status }) => status)).toEqual([
+    'retired',
+    'active',
+  ])
+  expect(next.configuration.members.releases.map(({ status }) => status)).toEqual([
+    'retired',
+    'active',
+  ])
+  expect(canonicalJson(baseline)).toBe(observed)
+  expect(canonicalJson(next.input.baseline)).toBe(observed)
+  expect(next.configuration.members.catalog.releases[0]).toEqual(previous.deployment.release)
+  expect(await verifyPythonPromotionPlan(next, next.planSha256)).toEqual(next)
+
+  // Repeating the old identity cannot be used as a reactivation mechanism.
+  await expect(preparePythonPromotion({ ...f.input, baseline })).rejects.toThrow(
+    'Os estados anteriores da release divergem.',
+  )
+  await expect(
+    preparePythonPromotion({
+      ...f.input,
+      baseline,
+      release: { ...f.input.release, profileId: 'unrelated', releaseId: 'new-1' },
+    }),
+  ).rejects.toThrow('Os estados anteriores da release divergem.')
+})
+
+test.each([
+  'worker',
+  'members',
+] as const)('interrupted retirement recovery never reconciles a revoked release in %s', async (authority) => {
+  const f = await fixture()
+  const previous = await preparePythonPromotion(f.input)
+  const baseline = structuredClone(previous.configuration)
+  if (authority === 'worker') baseline.worker.deployments[0]!.status = 'revoked'
+  else baseline.members.releases[0]!.status = 'revoked'
+  await expect(
+    preparePythonPromotion({
+      ...f.input,
+      baseline,
+      release: { ...f.input.release, releaseId: 'new-1' },
+    }),
+  ).rejects.toThrow('Os estados anteriores da release divergem.')
+})
+
+test('recovery still rejects a divergent final state when the requested release is retired', async () => {
+  const f = await fixture()
+  const first = await preparePythonPromotion(f.input)
+  const secondInput = {
+    ...f.input,
+    baseline: first.configuration,
+    release: { ...f.input.release, releaseId: 'second-1' },
+  }
+  const second = await preparePythonPromotion(secondInput)
+  const baseline = structuredClone(second.configuration)
+  baseline.worker.deployments[0]!.status = 'active'
+  baseline.worker.deployments[1]!.status = 'retired'
+  baseline.members.releases[1]!.status = 'retired'
+  await expect(preparePythonPromotion({ ...secondInput, baseline })).rejects.toThrow(
+    'Os estados anteriores da release divergem.',
+  )
+})
+
+test.each([
+  'staging',
+  'production',
+] as const)('a new active release retires only superseded releases of its Python profile in %s', async (environment) => {
+  const f = await fixture(environment)
+  const first = await preparePythonPromotion(f.input)
+  const other = await preparePythonPromotion({
+    ...f.input,
+    baseline: first.configuration,
+    release: { ...f.input.release, profileId: 'another-python', releaseId: 'another-1' },
+  })
+  const untouched = canonicalJson(other.configuration)
+  const next = await preparePythonPromotion({
+    ...f.input,
+    baseline: other.configuration,
+    release: { ...f.input.release, releaseId: 'next-1' },
+  })
+  expect(next.configuration.members.releases.map(({ status }) => status)).toEqual([
+    'retired',
+    'active',
+    'active',
+  ])
+  expect(next.configuration.worker.deployments.map(({ status }) => status)).toEqual([
+    'retired',
+    'active',
+    'active',
+  ])
+  expect(next.configuration.members.catalog.releases).toContainEqual(first.deployment.release)
+  expect(next.configuration.hosts).toHaveLength(3)
+  expect(canonicalJson(other.configuration)).toBe(untouched)
+  const options = await prepareStudioAuthoringOptions({
+    legacyJavaScript: true,
+    catalog: next.configuration.members,
+  })
+  for (const kind of ['classic', 'pro'] as const) {
+    const choices = studioAuthoringChoices(options, kind)
+    expect(choices[0]?.key).toBe('javascript')
+    const targetProfile = choices.filter(
+      (choice) => choice.policy?.runtime.profileId === f.input.release.profileId,
+    )
+    expect(targetProfile.map(({ key }) => key)).toEqual([next.deployment.release.manifestSha256])
+  }
+  const old = await preparePythonPromotion({ ...f.input, baseline: next.configuration })
+  expect(old.configuration).toEqual(next.configuration)
   expect(await verifyPythonPromotionPlan(next, next.planSha256)).toEqual(next)
 })
 

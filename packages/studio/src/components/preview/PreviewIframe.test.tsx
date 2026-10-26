@@ -309,3 +309,57 @@ describe('chosenCoverPausesSnapshots (B3, 26/09/2026): o preview para de fotogra
     ).toBe(false)
   })
 })
+
+describe('PreviewIframe — o Kit Plataforma troca de variante AO VIVO', () => {
+  beforeEach(() => {
+    useProjectStore.setState({ project: null, isDirty: false, saveError: null })
+    useUIStore.setState({ previewRunning: true })
+  })
+
+  afterEach(() => {
+    cleanup()
+    useProjectStore.setState({ project: null, isDirty: false, saveError: null })
+    useUIStore.setState({ previewRunning: true })
+  })
+
+  it('sem o kit no código, o runtime vem sem ele; a criança usa o kit e o runtime recarrega com ele', async () => {
+    const base = createPreviewProject()
+    const withJs = (js: string): Project => ({
+      ...base,
+      files: { ...base.files, 'script.js': js },
+      installedExtensions: [{ id: 'game-3d', version: '0.31.0', installedAt: 0 }],
+    })
+    // `MAX_STAGE_MESHES` só existe no fragmento do kit; `platformKitAbsent` só na variante sem.
+    useProjectStore.setState({
+      project: withJs('const cena = SZGame3D.createFullscreenScene("#000");'),
+      isDirty: false,
+      saveError: null,
+    })
+    render(<PreviewIframe />)
+    fireEvent.load(screen.getByTitle('Pré-visualização'))
+    await waitFor(
+      () => {
+        const doc = getPreviewSrcDoc()
+        expect(doc).toContain('platformKitAbsent')
+        expect(doc).not.toContain('MAX_STAGE_MESHES')
+      },
+      { timeout: 5000 },
+    )
+
+    act(() => {
+      useProjectStore.setState({
+        project: withJs('const jogo = SZGame3D.createPlatformScene("tela");'),
+        isDirty: true,
+        saveError: null,
+      })
+    })
+    await waitFor(
+      () => {
+        const doc = getPreviewSrcDoc()
+        expect(doc).toContain('MAX_STAGE_MESHES')
+        expect(doc).not.toContain('platformKitAbsent')
+      },
+      { timeout: 5000 },
+    )
+  })
+})

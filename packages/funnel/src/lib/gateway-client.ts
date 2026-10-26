@@ -1,3 +1,4 @@
+import type { BillingPeriod } from '@sistemazero/core/billing'
 import { canonicalHmacMessage, signHmac } from '@sistemazero/core/security'
 
 // Cliente do funil → api-gateway (BFF). Assina por HMAC de borda exatamente como
@@ -119,7 +120,11 @@ export interface GrantMembersInput {
   paymentId: string
   /** ISO-8601 (opcional; a área de membros usa "agora" se ausente). */
   paidAt?: string
-  subscription?: { subscriptionId: string; intervalMonths: number | null }
+  subscription?: {
+    subscriptionId: string
+    intervalMonths: number | null
+    billingPeriod?: BillingPeriod
+  }
   /** Compatibilidade legada: compra por período em meses, sem assinatura. */
   accessPeriodMonths?: number
   /** Política imutável aceita na compra; ausente apenas em cobranças legadas/ciclos posteriores. */

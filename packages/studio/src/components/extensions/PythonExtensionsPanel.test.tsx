@@ -2,6 +2,7 @@ import { afterEach, expect, test } from 'bun:test'
 import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { createEmptyProject } from '#core'
 import { createStudioRuntimeAuthority } from '../../runtime/authority'
+import { RAYLIB_2D_EXTENSION, RAYLIB_3D_EXTENSION } from '../../runtime/python/raylib/contract'
 import { pythonEnvironmentFixture } from '../../state/fixtures/pythonEnvironment'
 import { StudioStoresContext } from '../../state/storesContext'
 import { createStudioStores } from '../../state/studioStores'
@@ -49,12 +50,14 @@ test('same environment updates installation availability and cancels an older pe
       </StudioRuntimeEnvironmentProvider>
     </StudioStoresContext.Provider>,
   )
-  const install = await screen.findByRole('button', { name: 'Instalar' })
+  const install = await screen.findByRole('button', { name: 'Instalar Turtle' })
   expect(install.hasAttribute('disabled')).toBe(false)
   fireEvent.click(install)
   await entered.promise
   await act(async () => authority.update({ ...initial, grantedExtensionIds: [] }))
-  expect(screen.getByRole('button', { name: 'Instalar' }).hasAttribute('disabled')).toBe(true)
+  expect(screen.getByRole('button', { name: 'Instalar Turtle' }).hasAttribute('disabled')).toBe(
+    true,
+  )
   await act(async () => {
     gate.resolve()
     await gate.promise
@@ -62,7 +65,9 @@ test('same environment updates installation availability and cancels an older pe
   expect(stores.project.getState().project).toBe(project)
   expect(project.installedExtensions).toEqual([])
   await act(async () => authority.update(initial))
-  expect(screen.getByRole('button', { name: 'Instalar' }).hasAttribute('disabled')).toBe(false)
+  expect(screen.getByRole('button', { name: 'Instalar Turtle' }).hasAttribute('disabled')).toBe(
+    false,
+  )
 })
 
 for (const revoked of ['environment', 'curation'] as const)
@@ -107,7 +112,7 @@ for (const revoked of ['environment', 'curation'] as const)
       )
     }
     const mounted = render(content(false))
-    fireEvent.click(await screen.findByRole('button', { name: 'Instalar' }))
+    fireEvent.click(await screen.findByRole('button', { name: 'Instalar Turtle' }))
     mounted.rerender(content(true))
     await act(async () => {
       release()
@@ -137,12 +142,12 @@ test('the language panel installs lazily, refuses unavailable removal analysis a
       </StudioRuntimeEnvironmentProvider>
     </StudioStoresContext.Provider>,
   )
-  const install = await screen.findByRole('button', { name: 'Instalar' })
+  const install = await screen.findByRole('button', { name: 'Instalar Turtle' })
   expect(screen.getByText('Turtle')).toBeTruthy()
   expect(screen.queryByText('Jogo 2D')).toBeNull()
   expect(analyses).toBe(0)
   fireEvent.click(install)
-  const remove = await screen.findByRole('button', { name: 'Remover' })
+  const remove = await screen.findByRole('button', { name: 'Remover Turtle' })
   expect(stores.project.getState().project?.installedExtensions[0]?.id).toBe('python-turtle')
   expect(analyses).toBe(0)
   fireEvent.click(remove)
@@ -179,11 +184,14 @@ test('a Python project without a host runtime cannot offer an unapproved install
       <ExtensionsPanel open onClose={() => {}} />
     </StudioStoresContext.Provider>,
   )
-  const install = await screen.findByRole('button', { name: 'Instalar' })
+  const install = await screen.findByRole('button', { name: 'Instalar Turtle' })
   expect(install.hasAttribute('disabled')).toBe(true)
   fireEvent.click(install)
   expect(stores.project.getState().project?.installedExtensions).toEqual([])
-  expect(screen.getByText('O ambiente Python ainda não está disponível nesta página.')).toBeTruthy()
+  // Turtle, Pygame Zero, Pygame-ce and both Raylib extensions explain why they cannot be installed here.
+  expect(
+    screen.getAllByText('O ambiente Python ainda não está disponível nesta página.'),
+  ).toHaveLength(5)
 })
 
 for (const retirement of ['unmount', 'close', 'source', 'curation'] as const) {
@@ -221,7 +229,7 @@ for (const retirement of ['unmount', 'close', 'source', 'curation'] as const) {
       )
     }
     const mounted = render(content())
-    fireEvent.click(await screen.findByRole('button', { name: 'Remover' }))
+    fireEvent.click(await screen.findByRole('button', { name: 'Remover Turtle' }))
     fireEvent.click(
       within(await screen.findByRole('dialog', { name: 'Remover extensão?' })).getByRole('button', {
         name: 'Remover',
@@ -243,3 +251,34 @@ for (const retirement of ['unmount', 'close', 'source', 'curation'] as const) {
     expect(document.querySelectorAll('iframe')).toHaveLength(0)
   })
 }
+
+test('com a Raylib 2D instalada, a Raylib 3D oferece a troca em vez de pedir para remover', async () => {
+  const { project, environment } = await pythonEnvironmentFixture('classic')
+  const granted = {
+    ...environment,
+    access: (current: Parameters<typeof environment.access>[0]) => ({
+      ...environment.access(current),
+      grantedExtensionIds: [RAYLIB_2D_EXTENSION.id, RAYLIB_3D_EXTENSION.id],
+    }),
+  }
+  const stores = createStudioStores({ persistence: 'none' })
+  stores.project.getState().setProject({
+    ...project,
+    installedExtensions: [{ ...RAYLIB_2D_EXTENSION, installedAt: 1 }],
+  })
+  render(
+    <StudioStoresContext.Provider value={stores}>
+      <StudioRuntimeEnvironmentProvider value={granted}>
+        <ExtensionsPanel open onClose={() => {}} />
+      </StudioRuntimeEnvironmentProvider>
+    </StudioStoresContext.Provider>,
+  )
+  const swap = await screen.findByRole('button', { name: 'Trocar para Raylib 3D' })
+  expect(swap.hasAttribute('disabled')).toBe(false)
+  expect(swap.textContent).toBe('Trocar para Raylib 3D')
+  expect(screen.getByText('Entra no lugar da Raylib 2D, e o código continua o mesmo.')).toBeTruthy()
+  // As outras extensões de tela continuam pedindo para remover antes.
+  expect(screen.getByRole('button', { name: 'Instalar Turtle' }).hasAttribute('disabled')).toBe(
+    true,
+  )
+})

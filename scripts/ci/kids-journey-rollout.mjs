@@ -19,6 +19,7 @@ import {
   productionApplicationIds,
   resolveKidsJourneyTarget,
 } from '../release/kids-journey-targets.mjs'
+import { railwayReadQuery } from './railway-read-query.mjs'
 
 // Deployment orchestration only; product/test execution budgets are independent.
 export const STAGING_ROLLOUT_TIMEOUT_MS = 140 * 60 * 1000
@@ -349,7 +350,22 @@ export function createRailwayPorts(sha, env, identity, options = {}) {
     })
     return error
   }
-  const gql = async (query, variables) => {
+  const gql = async (query, variables, deadline) => {
+    // Only read-side polling has retries. The mutation path below stays single-attempt.
+    if (Number.isFinite(deadline) && /^query\b/.test(query)) {
+      try {
+        return await railwayReadQuery(query, variables, {
+          token: env.RAILWAY_TOKEN,
+          deadline,
+          fetch: doFetch,
+          now,
+          sleep,
+          log,
+        })
+      } catch (error) {
+        throw apiFailure(error.code ?? 'api-operation-rejected', error.httpStatus)
+      }
+    }
     const signal = AbortSignal.timeout(15000)
     let response
     try {
@@ -401,20 +417,22 @@ export function createRailwayPorts(sha, env, identity, options = {}) {
       throw apiFailure('api-response-invalid', response.status)
     return result.data
   }
-  const active = async (service) => {
+  const active = async (service, deadline) => {
     const data = await gql(
       'query($s:String!,$e:String!){serviceInstance(serviceId:$s,environmentId:$e){activeDeployments{id status meta}}}',
       { s: target[service], e: target.environment },
+      deadline,
     )
     const rows = data.serviceInstance?.activeDeployments
     if (!Array.isArray(rows)) throw new Error('Inventário de deployments inválido')
     return rows
   }
-  const deployment = async (id) =>
+  const deployment = async (id, deadline) =>
     (
       await gql(
         'query($id:String!){deployment(id:$id){id projectId environmentId serviceId status meta}}',
         { id },
+        deadline,
       )
     ).deployment
   const matchesContext = (current, service, id) =>
@@ -434,6 +452,7 @@ export function createRailwayPorts(sha, env, identity, options = {}) {
           status: { notIn: ['SUCCESS', 'FAILED', 'CRASHED', 'REMOVED', 'SKIPPED'] },
         },
       },
+      deadline,
     )
     checkTime(deadline)
     if (
@@ -676,7 +695,7 @@ export function createRailwayPorts(sha, env, identity, options = {}) {
           step = `${label}-adoption-pending`
           await requireNoPending(service, deadline)
           step = `${label}-adoption-predecessors`
-          const old = await Promise.all(adoption.previousIds.map(deployment))
+          const old = await Promise.all(adoption.previousIds.map((oldId) => deployment(oldId)))
           checkTime(deadline)
           if (
             old.some(
@@ -753,7 +772,7 @@ export function createRailwayPorts(sha, env, identity, options = {}) {
         for (let index = 0; ; index++) {
           checkRetirementTime()
           step = `${label}-${index === 0 ? 'first-poll' : 'deployment-poll'}`
-          const current = await deployment(id)
+          const current = await deployment(id, deadline)
           checkRetirementTime()
           if (targetName === 'production' && !matchesContext(current, service, id))
             throw new Error('Identidade do deployment de produção divergente')
@@ -772,7 +791,7 @@ export function createRailwayPorts(sha, env, identity, options = {}) {
               throw new Error('SHA remoto divergente')
             }
             step = `${label}-retirement-inventory`
-            const rows = await active(service)
+            const rows = await active(service, deadline)
             checkRetirementTime()
             before.set(service, [
               ...new Set([
@@ -782,7 +801,7 @@ export function createRailwayPorts(sha, env, identity, options = {}) {
             ])
             step = `${label}-retirement-poll`
             const oldIds = (before.get(service) ?? []).filter((oldId) => oldId !== id)
-            const old = await Promise.all(oldIds.map(deployment))
+            const old = await Promise.all(oldIds.map((oldId) => deployment(oldId, deadline)))
             checkRetirementTime()
             if (
               targetName === 'production' &&
@@ -809,9 +828,16 @@ export function createRailwayPorts(sha, env, identity, options = {}) {
           await sleep(Math.min(STAGING_DEPLOYMENT_POLL_MS, deadline - now()))
         }
       } catch (error) {
-        throw rolloutFailure(error, {
+        let failure = error
+        if (apiFailures.get(error)?.reason === 'read-deadline') {
+          reason = 'retirement-timeout'
+          failure = new Error(
+            `Antigos deployments ${service} ainda não retirados; não capturar coorte`,
+          )
+        }
+        throw rolloutFailure(failure, {
           step,
-          ...failureDetails(error, reason),
+          ...failureDetails(failure, reason),
           mutationOutcome: 'acknowledged',
           ...(typeof id === 'string' && uuidPattern.test(id) ? { deployment: id } : {}),
           ...(deploymentStatus ? { deploymentStatus } : {}),

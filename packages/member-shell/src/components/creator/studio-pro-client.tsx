@@ -19,6 +19,7 @@ import { createStudioCloudSync } from '../../lib/studio-cloud'
 import { createStudioCloudTransport } from '../../lib/studio-cloud-transport'
 import { reportStudioError } from '../../lib/studio-error'
 import { EMBEDDED_STUDIO_FRAME, EmbeddedAppLoadingBody } from './embedded-app-loading'
+import { openCreationInMolda, openDrawingInPinta } from './open-creation-tab'
 import { HostChromeAnnouncer, useHostChrome } from './use-host-chrome'
 import {
   canOpenPensaMission,
@@ -148,12 +149,6 @@ function StudioProClientSession({
   })
   const share = useStudioShare(challenge, audience === 'kids' || zappyEnabled)
   const handleActivity = useStudioActivity(taskSession, false)
-  const openDrawing = useCallback((id: string) => {
-    window.open(`/pinta?desenho=${encodeURIComponent(id)}`, '_blank', 'noopener,noreferrer')
-  }, [])
-  const openCreation = useCallback((id: string) => {
-    window.open(`/molda?criacao=${encodeURIComponent(id)}`, '_blank', 'noopener,noreferrer')
-  }, [])
   const tutor = useKidsStudioTutor({
     viewerId,
     zappyEnabled,
@@ -286,8 +281,8 @@ function StudioProClientSession({
             moldaLibrary={moldaLibrary}
             teamLibrary={teamLibrary}
             taskSession={taskSession}
-            onEditDrawing={pintaLibrary ? openDrawing : undefined}
-            onEditCreation={moldaLibrary ? openCreation : undefined}
+            onEditDrawing={pintaLibrary ? openDrawingInPinta : undefined}
+            onEditCreation={moldaLibrary ? openCreationInMolda : undefined}
           />
         </mod.StudioHostChromeProvider>
       ) : (

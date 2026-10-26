@@ -7,6 +7,11 @@ import { resolveLearning, STANDALONE_CONFIG, StudioConfigProvider } from '../../
 import { StudioExamplesVisibleProvider } from '../../studio/examples-visibility'
 import { JavaScriptExtensionsPanel as ExtensionsPanel } from './JavaScriptExtensionsPanel'
 
+// O painel importa e valida os catálogos reais de todas as extensões. A primeira
+// carga fria excede o padrão de 1 s do Testing Library (1,4 s na reprodução);
+// mantenha a espera limitada dentro dos 5 s do teste, sem sleeps ou catálogos falsos.
+const EXAMPLE_CATALOG_WAIT = { timeout: 4_000 }
+
 // Exemplos prontos (CORE_EXAMPLES + os das extensões) são material de TESTE do
 // admin — podem estar desatualizados/com erro. Só aparecem quando o host libera
 // (playground); para clientes o default `false` do contexto os esconde. O painel
@@ -43,7 +48,7 @@ describe('ExtensionsPanel — exemplos gated por showExamples', () => {
       </StudioExamplesVisibleProvider>,
     )
     expect(screen.getByText('Exemplos clássicos (sem extensão)')).not.toBeNull()
-    await screen.findByRole('button', { name: 'Pegue a moeda' })
+    await screen.findByRole('button', { name: 'Pegue a moeda' }, EXAMPLE_CATALOG_WAIT)
   })
 
   it('carrega o catálogo pesado somente quando o painel de exemplos está visível', async () => {
@@ -54,7 +59,9 @@ describe('ExtensionsPanel — exemplos gated por showExamples', () => {
       </StudioExamplesVisibleProvider>,
     )
 
-    expect(await screen.findByRole('button', { name: 'Pegue a moeda' })).not.toBeNull()
+    expect(
+      await screen.findByRole('button', { name: 'Pegue a moeda' }, EXAMPLE_CATALOG_WAIT),
+    ).not.toBeNull()
   })
 
   it('default do contexto (sem provider) esconde — cliente nunca vê exemplo à toa', () => {
@@ -108,6 +115,31 @@ describe('ExtensionsPanel — extensões para instalar gated por nível', () => 
     expect(screen.getByText(ext2d.manifest.name)).not.toBeNull()
     expect(screen.getByText(ext3d.manifest.name)).not.toBeNull()
     expect(screen.queryByText(w3d.manifest.name)).toBeNull()
+  })
+
+  it('uma extensão 3D por degrau: intermediario-3d vê o Mundo 3D, só avancado-3d vê o Avançado', () => {
+    const w3d = OFFICIAL_CATALOG.find((e) => e.manifest.id === 'world-3d')
+    const g3k = OFFICIAL_CATALOG.find((e) => e.manifest.id === 'game-3d-advanced')
+    if (!w3d || !g3k) throw new Error('fixture: esperava world-3d e game-3d-advanced no catálogo')
+    expect(g3k.minLevel).toBe('avancado-3d')
+    for (const [level, seesAdvanced] of [
+      ['intermediario-3d', false],
+      ['avancado-3d', true],
+    ] as const) {
+      seedProject()
+      const config = {
+        ...STANDALONE_CONFIG,
+        learning: resolveLearning({ level, allowLevelReveal: false }),
+      }
+      render(
+        <StudioConfigProvider value={config}>
+          <ExtensionsPanel open onClose={() => {}} />
+        </StudioConfigProvider>,
+      )
+      expect(screen.getByText(w3d.manifest.name)).not.toBeNull()
+      expect(screen.queryByText(g3k.manifest.name) !== null, level).toBe(seesAdvanced)
+      cleanup()
+    }
   })
 
   it('avançado (literal LEGADO → topo da escada) vê as duas (2D e 3D)', () => {

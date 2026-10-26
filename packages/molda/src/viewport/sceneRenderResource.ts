@@ -1,10 +1,13 @@
 import {
+  BackSide,
   BufferAttribute,
   BufferGeometry,
   type ColorSpace,
   Group,
   type Intersection,
+  type Material,
   Mesh,
+  MeshBasicMaterial,
   MeshStandardMaterial,
   NoColorSpace,
   type Object3D,
@@ -53,7 +56,7 @@ import { requireScene } from '../scene/validation'
 import { SceneSkinResource } from './SceneSkinResource'
 import { SceneSurfaceQuery } from './SceneSurfaceQuery'
 import { applySceneGeometryUvUpload } from './sceneGeometryUvUpload'
-import { SceneMaterialResource } from './sceneMaterialResource'
+import { SCENE_XRAY_ALPHA, SceneMaterialResource } from './sceneMaterialResource'
 import { ScenePaintResource } from './scenePaintResource'
 import { type SceneEdgeSegments, sceneVisibleEdges } from './sceneVisibleEdges'
 
@@ -127,6 +130,19 @@ export class SceneRenderResource {
   private readonly geometries = new Map<string, GeometryEntry>()
   private readonly materials = new Map<string, MaterialEntry>()
   private materialRevision = 0
+  private xray = false
+  // The back of open meshes and of flipped faces: a dark workshop-only tone that never takes a
+  // click or a brush and stays out of photos. Pushed back in depth, a double-sided material's
+  // own back still wins where it exists.
+  private readonly backMaterial = new MeshBasicMaterial({
+    color: 0x1d2333,
+    side: BackSide,
+    polygonOffset: true,
+    polygonOffsetFactor: 1,
+    polygonOffsetUnits: 1,
+  })
+  private readonly hiddenBackMaterial = new MeshBasicMaterial({ visible: false })
+  private readonly backs = new Map<Mesh, Mesh>()
   private readonly paints = new Map<string, PaintEntry>()
   private readonly frames = new Map<string, { source: SceneImageFlipbook; frame: number }>()
   private readonly meshes = new Map<string, Mesh<BufferGeometry, MeshStandardMaterial[]>>()
@@ -184,9 +200,35 @@ export class SceneRenderResource {
     return true
   }
 
+  /** View-only: fades every material, including ones the next document brings. */
+  setXray(on: boolean): void {
+    if (this.disposed) return
+    this.xray = on
+    for (const entry of this.materials.values()) entry.resource.setXray(on)
+    if (this.backMaterial.transparent !== on) this.backMaterial.needsUpdate = true
+    this.backMaterial.transparent = on
+    this.backMaterial.depthWrite = !on
+    this.backMaterial.opacity = on ? SCENE_XRAY_ALPHA : 1
+  }
+
+  /** Workshop-only backs, hidden while the thumbnail is taken. */
+  backSides(): Object3D[] {
+    return [...this.backs.values()]
+  }
+
   instanceFor(object: Object3D): SceneInstance | null {
     const id = this.identity.get(object)
     return id ? (this.instances.get(id) ?? null) : null
+  }
+
+  /** Workshop guides must not fill the scene seen through authorial transparency. */
+  authoredTransparencyFor(object: Object3D): boolean {
+    const instance = this.instanceFor(object)
+    const geometry = instance && this.geometries.get(instance.geometryId)
+    if (!instance || !geometry) return false
+    return geometry.slots.some(
+      (id) => this.materials.get(id ?? instance.materialId)?.resource.authoredTransparency,
+    )
   }
 
   /** Authorial boundaries include coplanar cuts; render triangulation is never an edit edge. */
@@ -537,6 +579,7 @@ export class SceneRenderResource {
     }
     for (const [id, prepared] of preparedMaterials) {
       const resource = this.materials.get(id)?.resource ?? new SceneMaterialResource()
+      resource.setXray(this.xray)
       resource.update({
         source: prepared.source,
         base: prepared.base,
@@ -628,6 +671,9 @@ export class SceneRenderResource {
     this.paints.clear()
     this.frames.clear()
     this.meshes.clear()
+    this.backs.clear()
+    this.backMaterial.dispose()
+    this.hiddenBackMaterial.dispose()
     this.instances.clear()
     this.source = null
     this.index = null
@@ -639,15 +685,17 @@ export class SceneRenderResource {
   private releaseMesh(id: string, mesh: Mesh) {
     if (mesh instanceof SkinnedMesh) this.skinOwners.get(mesh)?.releaseMesh(mesh)
     mesh.removeFromParent()
+    this.backs.delete(mesh)
     this.skinOwners.delete(mesh)
     this.identity.delete(mesh)
     this.meshes.delete(id)
   }
 
   private drawInstance(instance: SceneInstance, geometry: GeometryEntry, skin?: SceneSkinResource) {
-    const materials = geometry.slots.map(
-      (id) => this.materials.get(id ?? instance.materialId)!.resource.material,
+    const resources = geometry.slots.map(
+      (id) => this.materials.get(id ?? instance.materialId)!.resource,
     )
+    const materials = resources.map((resource) => resource.material)
     let mesh = this.meshes.get(instance.id)
     if (mesh && this.skinOwners.get(mesh) !== skin) {
       this.releaseMesh(instance.id, mesh)
@@ -658,12 +706,22 @@ export class SceneRenderResource {
       mesh.castShadow = true
       mesh.receiveShadow = true
       if (skin) this.skinOwners.set(mesh, skin)
+      else {
+        // A skinned back would need its own skeleton binding; skinned pieces show no back.
+        const back = new Mesh(geometry.geometry, this.backMaterial)
+        back.raycast = () => {}
+        back.name = 'verso'
+        mesh.add(back)
+        this.backs.set(mesh, back)
+      }
       mesh.matrixAutoUpdate = false
       this.meshes.set(instance.id, mesh)
       this.identity.set(mesh, instance.id)
       this.root.add(mesh)
     } else {
       mesh.geometry = skin?.geometry ?? geometry.geometry
+      const back = this.backs.get(mesh)
+      if (back) back.geometry = mesh.geometry
       const previous = mesh.material
       if (
         previous.length !== materials.length ||
@@ -671,7 +729,33 @@ export class SceneRenderResource {
       )
         mesh.material = materials
     }
+    // Three.js renders every visible material group into the shadow map, even when
+    // its color pass blends alpha. Suppress only those groups so opaque faces and
+    // authored cutouts in the same mesh keep casting their normal shadows.
+    let shadowState: { material: Material; depthWrite: boolean; colorWrite: boolean } | null = null
+    mesh.onBeforeShadow = (_renderer, _object, _camera, _shadowCamera, _geometry, depth, group) => {
+      // Three passes a geometry group here; its published callback type says Group.
+      const slot = (group as unknown as { materialIndex?: number } | null)?.materialIndex ?? 0
+      if (!resources[slot]?.authoredTransparency) return
+      shadowState = { material: depth, depthWrite: depth.depthWrite, colorWrite: depth.colorWrite }
+      depth.depthWrite = false
+      depth.colorWrite = false
+    }
+    mesh.onAfterShadow = () => {
+      if (!shadowState) return
+      shadowState.material.depthWrite = shadowState.depthWrite
+      shadowState.material.colorWrite = shadowState.colorWrite
+      shadowState = null
+    }
     mesh.name = instance.name
+    const back = this.backs.get(mesh)
+    if (back) {
+      const transparent = resources.map((resource) => resource.authoredTransparency)
+      back.visible = transparent.some((value) => !value)
+      back.material = transparent.some(Boolean)
+        ? transparent.map((value) => (value ? this.hiddenBackMaterial : this.backMaterial))
+        : this.backMaterial
+    }
     mesh.matrix.fromArray(instance.worldMatrix)
     mesh.matrixWorldNeedsUpdate = true
     mesh.visible = !instance.hidden

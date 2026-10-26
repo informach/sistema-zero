@@ -61,25 +61,28 @@ describe('Exemplo Mina de Cristais — drift contra o parser real', () => {
     )
   })
 
-  it('exercita as mecânicas prometidas (iso, clique-cavar, dois enxames, ondas, tempo)', () => {
+  it('exercita as mecânicas prometidas (iso, clique-cavar, dois grupos, ondas, tempo)', () => {
     const statements = behaviorStatements(minaDeCristaisBasicoExample.ir)
     const types = collectTypes(statements)
     for (const t of [
-      'g3d:isometricCamera', // câmera isométrica, mouse livre
+      'g3d:cameraMode', // câmera isométrica, mouse livre
       'g3d:pickAtMouse', // clicar num bloco para cavar
-      'g3d:createSwarm', // os enxames de pedra e de cristal
-      'g3d:spawnInSwarm',
-      'g3d:removeFromSwarm', // cavar = remover
-      'g3d:countSwarm', // saber se removeu (pedra x cristal)
+      'g3d:createGroup', // os grupos de pedra e de cristal
+      'g3d:spawnCopy',
+      'g3d:removeFromGroup', // cavar = remover
+      'g3d:countGroup', // saber se removeu (pedra x cristal)
       'g3d:everySeconds', // veias novas + o relógio
       'g3d:setMaterial', // o brilho dos cristais
       'forRange', // o campo inicial de blocos
-      'event', // clique + botão Minerar de novo
-      'setProperty', // placar/tempo no HUD
+      'g3d:onGame', // eventos e reinício são do motor
+      'g3d:cornerText', // HUD nativo
     ]) {
       expect(types.has(t)).toBe(true)
     }
-    // Dois enxames (pedra e cristal), placar e um RELÓGIO vivem em variáveis.
+    // Dois grupos (pedra e cristal), placar e um RELÓGIO vivem em variáveis.
+    expect(types.has('g3d:addScore')).toBe(true)
+    expect(types.has('g3d:screenText')).toBe(true)
+    expect(types.has('g3d:gameOver')).toBe(true)
     const raw = JSON.stringify(statements)
     expect(raw).toContain('"pedras"')
     expect(raw).toContain('"cristais"')
@@ -100,7 +103,7 @@ describe('Exemplo Mina de Cristais — drift contra o parser real', () => {
     expect(raw).toContain('"tempo"')
   })
 
-  it('⭐ é montado com GENÉRICOS (dois enxames + iso), não com um kit pronto', () => {
+  it('⭐ é montado com GENÉRICOS (dois grupos + iso), não com um kit pronto', () => {
     const types = collectTypes(behaviorStatements(minaDeCristaisBasicoExample.ir))
     expect(types.has('g3d:createFullscreenScene')).toBe(true)
     expect(types.has('g3d:createRaceScene')).toBe(false)

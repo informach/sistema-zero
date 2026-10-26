@@ -6,6 +6,7 @@ import {
   type VectorTilesetAsset,
 } from '../core/project'
 import { tilemapToStudioGrid, tilesetSolidList } from '../export/studioGrid'
+import { tileLayerAt } from '../testing/fixtures'
 import type { VectorShape } from '../vector/model'
 import {
   packVectorTileset,
@@ -46,8 +47,7 @@ function makeTileset(count: number): VectorTilesetAsset {
 
 function makeTilemap(tilesetId: string): TilemapAsset {
   const tilemap = createTilemapAsset({ name: 'fase-v', tilesetId, cols: 3, rows: 2 })
-  const layer = tilemap.layers[0]
-  if (!layer) throw new Error('camada esperada')
+  const layer = tileLayerAt(tilemap)
   // [0 1 .; . 1 0]
   layer.cells.set([0, 1, -1, -1, 1, 0])
   return tilemap

@@ -30,142 +30,47 @@ export const mundoPirataProfissionalExample: ExtensionExample = withIndependentP
           ctxName: 'ctx',
           body: [
             {
-              type: 'canvasFillStyle',
-              ctxVar: 'ctx',
-              color: {
-                type: 'color',
-                value: '#c0392b',
-              },
+              type: 'gk:drawRectangle',
+              x: { type: 'num', value: 6 },
+              y: { type: 'num', value: 14 },
+              w: { type: 'num', value: 18 },
+              h: { type: 'num', value: 18 },
+              color: { type: 'color', value: '#c0392b' },
             },
             {
-              type: 'canvasFillRect',
-              ctxVar: 'ctx',
-              x: {
-                type: 'num',
-                value: 6,
-              },
-              y: {
-                type: 'num',
-                value: 14,
-              },
-              w: {
-                type: 'num',
-                value: 18,
-              },
-              h: {
-                type: 'num',
-                value: 18,
-              },
+              type: 'gk:drawCircle',
+              x: { type: 'num', value: 15 },
+              y: { type: 'num', value: 9 },
+              r: { type: 'num', value: 7 },
+              color: { type: 'color', value: '#f7c8a2' },
             },
             {
-              type: 'canvasFillStyle',
-              ctxVar: 'ctx',
-              color: {
-                type: 'color',
-                value: '#f7c8a2',
-              },
+              type: 'gk:drawRectangle',
+              x: { type: 'num', value: 3 },
+              y: { type: 'num', value: 3 },
+              w: { type: 'num', value: 24 },
+              h: { type: 'num', value: 6 },
+              color: { type: 'color', value: '#2c3e50' },
             },
             {
-              type: 'canvasArc',
-              ctxVar: 'ctx',
-              x: {
-                type: 'num',
-                value: 15,
-              },
-              y: {
-                type: 'num',
-                value: 9,
-              },
-              r: {
-                type: 'num',
-                value: 7,
-              },
+              type: 'gk:drawRectangle',
+              x: { type: 'num', value: 8 },
+              y: { type: 'num', value: 32 },
+              w: { type: 'num', value: 6 },
+              h: { type: 'num', value: 12 },
+              color: { type: 'color', value: '#34495e' },
             },
             {
-              type: 'canvasFillStyle',
-              ctxVar: 'ctx',
-              color: {
-                type: 'color',
-                value: '#2c3e50',
-              },
-            },
-            {
-              type: 'canvasFillRect',
-              ctxVar: 'ctx',
-              x: {
-                type: 'num',
-                value: 3,
-              },
-              y: {
-                type: 'num',
-                value: 3,
-              },
-              w: {
-                type: 'num',
-                value: 24,
-              },
-              h: {
-                type: 'num',
-                value: 6,
-              },
-            },
-            {
-              type: 'canvasFillStyle',
-              ctxVar: 'ctx',
-              color: {
-                type: 'color',
-                value: '#34495e',
-              },
-            },
-            {
-              type: 'canvasFillRect',
-              ctxVar: 'ctx',
-              x: {
-                type: 'num',
-                value: 8,
-              },
-              y: {
-                type: 'num',
-                value: 32,
-              },
-              w: {
-                type: 'num',
-                value: 6,
-              },
-              h: {
-                type: 'num',
-                value: 12,
-              },
-            },
-            {
-              type: 'canvasFillRect',
-              ctxVar: 'ctx',
-              x: {
-                type: 'num',
-                value: 17,
-              },
-              y: {
-                type: 'num',
-                value: 32,
-              },
-              w: {
-                type: 'num',
-                value: 6,
-              },
-              h: {
-                type: 'num',
-                value: 12,
-              },
+              type: 'gk:drawRectangle',
+              x: { type: 'num', value: 17 },
+              y: { type: 'num', value: 32 },
+              w: { type: 'num', value: 6 },
+              h: { type: 'num', value: 12 },
+              color: { type: 'color', value: '#34495e' },
             },
           ],
-          baseW: {
-            type: 'num',
-            value: 30,
-          },
-          baseH: {
-            type: 'num',
-            value: 44,
-          },
+          baseW: { type: 'num', value: 30 },
+          baseH: { type: 'num', value: 44 },
         },
         {
           type: 'gk:defineLook',
@@ -173,90 +78,32 @@ export const mundoPirataProfissionalExample: ExtensionExample = withIndependentP
           ctxName: 'ctx',
           body: [
             {
-              type: 'canvasFillStyle',
-              ctxVar: 'ctx',
-              color: {
-                type: 'color',
-                value: '#8d6e63',
-              },
+              type: 'gk:drawRectangle',
+              x: { type: 'num', value: 0 },
+              y: { type: 'num', value: 0 },
+              w: { type: 'num', value: 80 },
+              h: { type: 'num', value: 40 },
+              color: { type: 'color', value: '#8d6e63' },
             },
             {
-              type: 'canvasFillRect',
-              ctxVar: 'ctx',
-              x: {
-                type: 'num',
-                value: 0,
-              },
-              y: {
-                type: 'num',
-                value: 0,
-              },
-              w: {
-                type: 'num',
-                value: 80,
-              },
-              h: {
-                type: 'num',
-                value: 40,
-              },
+              type: 'gk:drawRectangle',
+              x: { type: 'num', value: 0 },
+              y: { type: 'num', value: 0 },
+              w: { type: 'num', value: 80 },
+              h: { type: 'num', value: 5 },
+              color: { type: 'color', value: '#6d4c41' },
             },
             {
-              type: 'canvasFillStyle',
-              ctxVar: 'ctx',
-              color: {
-                type: 'color',
-                value: '#6d4c41',
-              },
-            },
-            {
-              type: 'canvasFillRect',
-              ctxVar: 'ctx',
-              x: {
-                type: 'num',
-                value: 0,
-              },
-              y: {
-                type: 'num',
-                value: 0,
-              },
-              w: {
-                type: 'num',
-                value: 80,
-              },
-              h: {
-                type: 'num',
-                value: 5,
-              },
-            },
-            {
-              type: 'canvasFillRect',
-              ctxVar: 'ctx',
-              x: {
-                type: 'num',
-                value: 0,
-              },
-              y: {
-                type: 'num',
-                value: 20,
-              },
-              w: {
-                type: 'num',
-                value: 80,
-              },
-              h: {
-                type: 'num',
-                value: 2,
-              },
+              type: 'gk:drawRectangle',
+              x: { type: 'num', value: 0 },
+              y: { type: 'num', value: 20 },
+              w: { type: 'num', value: 80 },
+              h: { type: 'num', value: 2 },
+              color: { type: 'color', value: '#6d4c41' },
             },
           ],
-          baseW: {
-            type: 'num',
-            value: 80,
-          },
-          baseH: {
-            type: 'num',
-            value: 40,
-          },
+          baseW: { type: 'num', value: 80 },
+          baseH: { type: 'num', value: 40 },
         },
         {
           type: 'gk:defineLook',
@@ -264,70 +111,24 @@ export const mundoPirataProfissionalExample: ExtensionExample = withIndependentP
           ctxName: 'ctx',
           body: [
             {
-              type: 'canvasFillStyle',
-              ctxVar: 'ctx',
-              color: {
-                type: 'color',
-                value: '#a1887f',
-              },
+              type: 'gk:drawRectangle',
+              x: { type: 'num', value: 0 },
+              y: { type: 'num', value: 0 },
+              w: { type: 'num', value: 90 },
+              h: { type: 'num', value: 16 },
+              color: { type: 'color', value: '#a1887f' },
             },
             {
-              type: 'canvasFillRect',
-              ctxVar: 'ctx',
-              x: {
-                type: 'num',
-                value: 0,
-              },
-              y: {
-                type: 'num',
-                value: 0,
-              },
-              w: {
-                type: 'num',
-                value: 90,
-              },
-              h: {
-                type: 'num',
-                value: 16,
-              },
-            },
-            {
-              type: 'canvasFillStyle',
-              ctxVar: 'ctx',
-              color: {
-                type: 'color',
-                value: '#7a5628',
-              },
-            },
-            {
-              type: 'canvasFillRect',
-              ctxVar: 'ctx',
-              x: {
-                type: 'num',
-                value: 0,
-              },
-              y: {
-                type: 'num',
-                value: 12,
-              },
-              w: {
-                type: 'num',
-                value: 90,
-              },
-              h: {
-                type: 'num',
-                value: 4,
-              },
+              type: 'gk:drawRectangle',
+              x: { type: 'num', value: 0 },
+              y: { type: 'num', value: 12 },
+              w: { type: 'num', value: 90 },
+              h: { type: 'num', value: 4 },
+              color: { type: 'color', value: '#7a5628' },
             },
           ],
-          baseW: {
-            type: 'num',
-            value: 90,
-          },
-          baseH: {
-            type: 'num',
-            value: 16,
-          },
+          baseW: { type: 'num', value: 90 },
+          baseH: { type: 'num', value: 16 },
         },
         {
           type: 'gk:defineLook',
@@ -335,90 +136,32 @@ export const mundoPirataProfissionalExample: ExtensionExample = withIndependentP
           ctxName: 'ctx',
           body: [
             {
-              type: 'canvasFillStyle',
-              ctxVar: 'ctx',
-              color: {
-                type: 'color',
-                value: '#8e44ad',
-              },
+              type: 'gk:drawRectangle',
+              x: { type: 'num', value: 2 },
+              y: { type: 'num', value: 6 },
+              w: { type: 'num', value: 24 },
+              h: { type: 'num', value: 18 },
+              color: { type: 'color', value: '#8e44ad' },
             },
             {
-              type: 'canvasFillRect',
-              ctxVar: 'ctx',
-              x: {
-                type: 'num',
-                value: 2,
-              },
-              y: {
-                type: 'num',
-                value: 6,
-              },
-              w: {
-                type: 'num',
-                value: 24,
-              },
-              h: {
-                type: 'num',
-                value: 18,
-              },
+              type: 'gk:drawRectangle',
+              x: { type: 'num', value: 6 },
+              y: { type: 'num', value: 0 },
+              w: { type: 'num', value: 4 },
+              h: { type: 'num', value: 8 },
+              color: { type: 'color', value: '#ffffff' },
             },
             {
-              type: 'canvasFillStyle',
-              ctxVar: 'ctx',
-              color: {
-                type: 'color',
-                value: '#ffffff',
-              },
-            },
-            {
-              type: 'canvasFillRect',
-              ctxVar: 'ctx',
-              x: {
-                type: 'num',
-                value: 6,
-              },
-              y: {
-                type: 'num',
-                value: 0,
-              },
-              w: {
-                type: 'num',
-                value: 4,
-              },
-              h: {
-                type: 'num',
-                value: 8,
-              },
-            },
-            {
-              type: 'canvasFillRect',
-              ctxVar: 'ctx',
-              x: {
-                type: 'num',
-                value: 14,
-              },
-              y: {
-                type: 'num',
-                value: 0,
-              },
-              w: {
-                type: 'num',
-                value: 4,
-              },
-              h: {
-                type: 'num',
-                value: 8,
-              },
+              type: 'gk:drawRectangle',
+              x: { type: 'num', value: 14 },
+              y: { type: 'num', value: 0 },
+              w: { type: 'num', value: 4 },
+              h: { type: 'num', value: 8 },
+              color: { type: 'color', value: '#ffffff' },
             },
           ],
-          baseW: {
-            type: 'num',
-            value: 28,
-          },
-          baseH: {
-            type: 'num',
-            value: 24,
-          },
+          baseW: { type: 'num', value: 28 },
+          baseH: { type: 'num', value: 24 },
         },
         {
           type: 'gk:defineLook',
@@ -426,70 +169,24 @@ export const mundoPirataProfissionalExample: ExtensionExample = withIndependentP
           ctxName: 'ctx',
           body: [
             {
-              type: 'canvasFillStyle',
-              ctxVar: 'ctx',
-              color: {
-                type: 'color',
-                value: '#16a085',
-              },
+              type: 'gk:drawRectangle',
+              x: { type: 'num', value: 0 },
+              y: { type: 'num', value: 4 },
+              w: { type: 'num', value: 28 },
+              h: { type: 'num', value: 16 },
+              color: { type: 'color', value: '#16a085' },
             },
             {
-              type: 'canvasFillRect',
-              ctxVar: 'ctx',
-              x: {
-                type: 'num',
-                value: 0,
-              },
-              y: {
-                type: 'num',
-                value: 4,
-              },
-              w: {
-                type: 'num',
-                value: 28,
-              },
-              h: {
-                type: 'num',
-                value: 16,
-              },
-            },
-            {
-              type: 'canvasFillStyle',
-              ctxVar: 'ctx',
-              color: {
-                type: 'color',
-                value: '#0e6655',
-              },
-            },
-            {
-              type: 'canvasFillRect',
-              ctxVar: 'ctx',
-              x: {
-                type: 'num',
-                value: 4,
-              },
-              y: {
-                type: 'num',
-                value: 8,
-              },
-              w: {
-                type: 'num',
-                value: 20,
-              },
-              h: {
-                type: 'num',
-                value: 4,
-              },
+              type: 'gk:drawRectangle',
+              x: { type: 'num', value: 4 },
+              y: { type: 'num', value: 8 },
+              w: { type: 'num', value: 20 },
+              h: { type: 'num', value: 4 },
+              color: { type: 'color', value: '#0e6655' },
             },
           ],
-          baseW: {
-            type: 'num',
-            value: 28,
-          },
-          baseH: {
-            type: 'num',
-            value: 20,
-          },
+          baseW: { type: 'num', value: 28 },
+          baseH: { type: 'num', value: 20 },
         },
         {
           type: 'gk:defineLook',
@@ -497,70 +194,24 @@ export const mundoPirataProfissionalExample: ExtensionExample = withIndependentP
           ctxName: 'ctx',
           body: [
             {
-              type: 'canvasFillStyle',
-              ctxVar: 'ctx',
-              color: {
-                type: 'color',
-                value: '#5d4037',
-              },
+              type: 'gk:drawRectangle',
+              x: { type: 'num', value: 0 },
+              y: { type: 'num', value: 8 },
+              w: { type: 'num', value: 26 },
+              h: { type: 'num', value: 20 },
+              color: { type: 'color', value: '#5d4037' },
             },
             {
-              type: 'canvasFillRect',
-              ctxVar: 'ctx',
-              x: {
-                type: 'num',
-                value: 0,
-              },
-              y: {
-                type: 'num',
-                value: 8,
-              },
-              w: {
-                type: 'num',
-                value: 26,
-              },
-              h: {
-                type: 'num',
-                value: 20,
-              },
-            },
-            {
-              type: 'canvasFillStyle',
-              ctxVar: 'ctx',
-              color: {
-                type: 'color',
-                value: '#3e2723',
-              },
-            },
-            {
-              type: 'canvasFillRect',
-              ctxVar: 'ctx',
-              x: {
-                type: 'num',
-                value: 2,
-              },
-              y: {
-                type: 'num',
-                value: 0,
-              },
-              w: {
-                type: 'num',
-                value: 12,
-              },
-              h: {
-                type: 'num',
-                value: 12,
-              },
+              type: 'gk:drawRectangle',
+              x: { type: 'num', value: 2 },
+              y: { type: 'num', value: 0 },
+              w: { type: 'num', value: 12 },
+              h: { type: 'num', value: 12 },
+              color: { type: 'color', value: '#3e2723' },
             },
           ],
-          baseW: {
-            type: 'num',
-            value: 26,
-          },
-          baseH: {
-            type: 'num',
-            value: 28,
-          },
+          baseW: { type: 'num', value: 26 },
+          baseH: { type: 'num', value: 28 },
         },
         {
           type: 'gk:defineLook',
@@ -568,38 +219,15 @@ export const mundoPirataProfissionalExample: ExtensionExample = withIndependentP
           ctxName: 'ctx',
           body: [
             {
-              type: 'canvasFillStyle',
-              ctxVar: 'ctx',
-              color: {
-                type: 'color',
-                value: '#e0f7fa',
-              },
-            },
-            {
-              type: 'canvasArc',
-              ctxVar: 'ctx',
-              x: {
-                type: 'num',
-                value: 6,
-              },
-              y: {
-                type: 'num',
-                value: 6,
-              },
-              r: {
-                type: 'num',
-                value: 6,
-              },
+              type: 'gk:drawCircle',
+              x: { type: 'num', value: 6 },
+              y: { type: 'num', value: 6 },
+              r: { type: 'num', value: 6 },
+              color: { type: 'color', value: '#e0f7fa' },
             },
           ],
-          baseW: {
-            type: 'num',
-            value: 12,
-          },
-          baseH: {
-            type: 'num',
-            value: 12,
-          },
+          baseW: { type: 'num', value: 12 },
+          baseH: { type: 'num', value: 12 },
         },
         {
           type: 'gk:defineLook',
@@ -607,66 +235,23 @@ export const mundoPirataProfissionalExample: ExtensionExample = withIndependentP
           ctxName: 'ctx',
           body: [
             {
-              type: 'canvasFillStyle',
-              ctxVar: 'ctx',
-              color: {
-                type: 'color',
-                value: '#ffd166',
-              },
+              type: 'gk:drawCircle',
+              x: { type: 'num', value: 8 },
+              y: { type: 'num', value: 8 },
+              r: { type: 'num', value: 7 },
+              color: { type: 'color', value: '#ffd166' },
             },
             {
-              type: 'canvasArc',
-              ctxVar: 'ctx',
-              x: {
-                type: 'num',
-                value: 8,
-              },
-              y: {
-                type: 'num',
-                value: 8,
-              },
-              r: {
-                type: 'num',
-                value: 7,
-              },
-            },
-            {
-              type: 'canvasFillStyle',
-              ctxVar: 'ctx',
-              color: {
-                type: 'color',
-                value: '#f0a500',
-              },
-            },
-            {
-              type: 'canvasFillRect',
-              ctxVar: 'ctx',
-              x: {
-                type: 'num',
-                value: 6,
-              },
-              y: {
-                type: 'num',
-                value: 4,
-              },
-              w: {
-                type: 'num',
-                value: 4,
-              },
-              h: {
-                type: 'num',
-                value: 8,
-              },
+              type: 'gk:drawRectangle',
+              x: { type: 'num', value: 6 },
+              y: { type: 'num', value: 4 },
+              w: { type: 'num', value: 4 },
+              h: { type: 'num', value: 8 },
+              color: { type: 'color', value: '#f0a500' },
             },
           ],
-          baseW: {
-            type: 'num',
-            value: 16,
-          },
-          baseH: {
-            type: 'num',
-            value: 16,
-          },
+          baseW: { type: 'num', value: 16 },
+          baseH: { type: 'num', value: 16 },
         },
         {
           type: 'gk:defineLook',
@@ -674,94 +259,33 @@ export const mundoPirataProfissionalExample: ExtensionExample = withIndependentP
           ctxName: 'ctx',
           body: [
             {
-              type: 'canvasFillStyle',
-              ctxVar: 'ctx',
-              color: {
-                type: 'color',
-                value: '#8a8a8a',
-              },
+              type: 'gk:drawRectangle',
+              x: { type: 'num', value: 4 },
+              y: { type: 'num', value: 0 },
+              w: { type: 'num', value: 4 },
+              h: { type: 'num', value: 70 },
+              color: { type: 'color', value: '#8a8a8a' },
             },
             {
-              type: 'canvasFillRect',
-              ctxVar: 'ctx',
-              x: {
-                type: 'num',
-                value: 4,
-              },
-              y: {
-                type: 'num',
-                value: 0,
-              },
-              w: {
-                type: 'num',
-                value: 4,
-              },
-              h: {
-                type: 'num',
-                value: 70,
-              },
-            },
-            {
-              type: 'canvasFillStyle',
-              ctxVar: 'ctx',
-              color: {
-                type: 'color',
-                value: '#e63946',
-              },
-            },
-            {
-              type: 'canvasFillRect',
-              ctxVar: 'ctx',
-              x: {
-                type: 'num',
-                value: 8,
-              },
-              y: {
-                type: 'num',
-                value: 4,
-              },
-              w: {
-                type: 'num',
-                value: 36,
-              },
-              h: {
-                type: 'num',
-                value: 24,
-              },
+              type: 'gk:drawRectangle',
+              x: { type: 'num', value: 8 },
+              y: { type: 'num', value: 4 },
+              w: { type: 'num', value: 36 },
+              h: { type: 'num', value: 24 },
+              color: { type: 'color', value: '#e63946' },
             },
           ],
-          baseW: {
-            type: 'num',
-            value: 48,
-          },
-          baseH: {
-            type: 'num',
-            value: 70,
-          },
+          baseW: { type: 'num', value: 48 },
+          baseH: { type: 'num', value: 70 },
         },
         {
           type: 'gk:defineMold',
           name: 'chao',
-          w: {
-            type: 'num',
-            value: 80,
-          },
-          h: {
-            type: 'num',
-            value: 40,
-          },
-          health: {
-            type: 'num',
-            value: 1,
-          },
-          speed: {
-            type: 'num',
-            value: 0,
-          },
-          damage: {
-            type: 'num',
-            value: 0,
-          },
+          w: { type: 'num', value: 80 },
+          h: { type: 'num', value: 40 },
+          health: { type: 'num', value: 1 },
+          speed: { type: 'num', value: 0 },
+          damage: { type: 'num', value: 0 },
           color: '#8d6e63',
           image: '',
           look: 'tijolo',
@@ -769,26 +293,11 @@ export const mundoPirataProfissionalExample: ExtensionExample = withIndependentP
         {
           type: 'gk:defineMold',
           name: 'tabua',
-          w: {
-            type: 'num',
-            value: 90,
-          },
-          h: {
-            type: 'num',
-            value: 16,
-          },
-          health: {
-            type: 'num',
-            value: 1,
-          },
-          speed: {
-            type: 'num',
-            value: 0,
-          },
-          damage: {
-            type: 'num',
-            value: 0,
-          },
+          w: { type: 'num', value: 90 },
+          h: { type: 'num', value: 16 },
+          health: { type: 'num', value: 1 },
+          speed: { type: 'num', value: 0 },
+          damage: { type: 'num', value: 0 },
           color: '#a1887f',
           image: '',
           look: 'tabua',
@@ -796,26 +305,11 @@ export const mundoPirataProfissionalExample: ExtensionExample = withIndependentP
         {
           type: 'gk:defineMold',
           name: 'moeda',
-          w: {
-            type: 'num',
-            value: 16,
-          },
-          h: {
-            type: 'num',
-            value: 16,
-          },
-          health: {
-            type: 'num',
-            value: 1,
-          },
-          speed: {
-            type: 'num',
-            value: 0,
-          },
-          damage: {
-            type: 'num',
-            value: 0,
-          },
+          w: { type: 'num', value: 16 },
+          h: { type: 'num', value: 16 },
+          health: { type: 'num', value: 1 },
+          speed: { type: 'num', value: 0 },
+          damage: { type: 'num', value: 0 },
           color: '#ffd166',
           image: '',
           look: 'moeda',
@@ -823,26 +317,11 @@ export const mundoPirataProfissionalExample: ExtensionExample = withIndependentP
         {
           type: 'gk:defineMold',
           name: 'dente',
-          w: {
-            type: 'num',
-            value: 28,
-          },
-          h: {
-            type: 'num',
-            value: 24,
-          },
-          health: {
-            type: 'num',
-            value: 1,
-          },
-          speed: {
-            type: 'num',
-            value: 0,
-          },
-          damage: {
-            type: 'num',
-            value: 0,
-          },
+          w: { type: 'num', value: 28 },
+          h: { type: 'num', value: 24 },
+          health: { type: 'num', value: 1 },
+          speed: { type: 'num', value: 0 },
+          damage: { type: 'num', value: 0 },
           color: '#8e44ad',
           image: '',
           look: 'dente',
@@ -850,26 +329,11 @@ export const mundoPirataProfissionalExample: ExtensionExample = withIndependentP
         {
           type: 'gk:defineMold',
           name: 'casco',
-          w: {
-            type: 'num',
-            value: 28,
-          },
-          h: {
-            type: 'num',
-            value: 20,
-          },
-          health: {
-            type: 'num',
-            value: 1,
-          },
-          speed: {
-            type: 'num',
-            value: 0,
-          },
-          damage: {
-            type: 'num',
-            value: 0,
-          },
+          w: { type: 'num', value: 28 },
+          h: { type: 'num', value: 20 },
+          health: { type: 'num', value: 1 },
+          speed: { type: 'num', value: 0 },
+          damage: { type: 'num', value: 0 },
           color: '#16a085',
           image: '',
           look: 'casco',
@@ -877,26 +341,11 @@ export const mundoPirataProfissionalExample: ExtensionExample = withIndependentP
         {
           type: 'gk:defineMold',
           name: 'canhao',
-          w: {
-            type: 'num',
-            value: 26,
-          },
-          h: {
-            type: 'num',
-            value: 28,
-          },
-          health: {
-            type: 'num',
-            value: 1,
-          },
-          speed: {
-            type: 'num',
-            value: 0,
-          },
-          damage: {
-            type: 'num',
-            value: 0,
-          },
+          w: { type: 'num', value: 26 },
+          h: { type: 'num', value: 28 },
+          health: { type: 'num', value: 1 },
+          speed: { type: 'num', value: 0 },
+          damage: { type: 'num', value: 0 },
           color: '#5d4037',
           image: '',
           look: 'canhao',
@@ -904,26 +353,11 @@ export const mundoPirataProfissionalExample: ExtensionExample = withIndependentP
         {
           type: 'gk:defineMold',
           name: 'perola',
-          w: {
-            type: 'num',
-            value: 12,
-          },
-          h: {
-            type: 'num',
-            value: 12,
-          },
-          health: {
-            type: 'num',
-            value: 1,
-          },
-          speed: {
-            type: 'num',
-            value: 0,
-          },
-          damage: {
-            type: 'num',
-            value: 0,
-          },
+          w: { type: 'num', value: 12 },
+          h: { type: 'num', value: 12 },
+          health: { type: 'num', value: 1 },
+          speed: { type: 'num', value: 0 },
+          damage: { type: 'num', value: 0 },
           color: '#e0f7fa',
           image: '',
           look: 'perola',
@@ -931,590 +365,279 @@ export const mundoPirataProfissionalExample: ExtensionExample = withIndependentP
         {
           type: 'gk:defineEffect',
           name: 'poeira',
-          count: {
-            type: 'num',
-            value: 8,
-          },
+          count: { type: 'num', value: 8 },
           color: '#ffffff',
-          size: {
-            type: 'num',
-            value: 3,
-          },
-          life: {
-            type: 'num',
-            value: 0.4,
-          },
-          speed: {
-            type: 'num',
-            value: 100,
-          },
-          gravity: {
-            type: 'num',
-            value: 300,
-          },
+          size: { type: 'num', value: 3 },
+          life: { type: 'num', value: 0.4 },
+          speed: { type: 'num', value: 100 },
+          gravity: { type: 'num', value: 300 },
         },
         {
           type: 'gk:defineEffect',
           name: 'estrela',
-          count: {
-            type: 'num',
-            value: 12,
-          },
+          count: { type: 'num', value: 12 },
           color: '#ffd166',
-          size: {
-            type: 'num',
-            value: 4,
-          },
-          life: {
-            type: 'num',
-            value: 0.5,
-          },
-          speed: {
-            type: 'num',
-            value: 160,
-          },
-          gravity: {
-            type: 'num',
-            value: 0,
-          },
+          size: { type: 'num', value: 4 },
+          life: { type: 'num', value: 0.5 },
+          speed: { type: 'num', value: 160 },
+          gravity: { type: 'num', value: 0 },
         },
         {
           type: 'gk:defineRegion',
           name: 'fim',
-          x: {
-            type: 'num',
-            value: 1560,
-          },
-          y: {
-            type: 'num',
-            value: 250,
-          },
-          w: {
-            type: 'num',
-            value: 90,
-          },
-          h: {
-            type: 'num',
-            value: 100,
-          },
+          x: { type: 'num', value: 1560 },
+          y: { type: 'num', value: 250 },
+          w: { type: 'num', value: 90 },
+          h: { type: 'num', value: 100 },
         },
       ],
       start: [
         {
           type: 'gk:setup',
-          w: {
-            type: 'num',
-            value: 800,
-          },
-          h: {
-            type: 'num',
-            value: 400,
-          },
+          w: { type: 'num', value: 800 },
+          h: { type: 'num', value: 400 },
           bg: '#8ecae6',
           accent: '#e63946',
         },
         {
           type: 'gk:setScreenText',
           screen: 'menu',
-          title: {
-            type: 'str',
-            value: 'Mundo Pirata Profissional',
-          },
+          title: { type: 'str', value: 'Mundo Pirata Profissional' },
           text: {
             type: 'str',
             value:
               'Corra com as setas, pule com a seta para cima e desça pelas tábuas com a seta para baixo. Pise nos inimigos, pegue as moedas e chegue na bandeira sem perder as 3 vidas!',
           },
-          button: {
-            type: 'str',
-            value: 'Aventurar',
-          },
+          button: { type: 'str', value: 'Aventurar' },
         },
         {
           type: 'gk:setScreenText',
           screen: 'vitoria',
-          title: {
-            type: 'str',
-            value: 'Bandeira conquistada!',
-          },
-          text: {
-            type: 'str',
-            value: 'Você atravessou o mundo pirata inteiro. Que capitão!',
-          },
-          button: {
-            type: 'str',
-            value: 'Jogar de novo',
-          },
+          title: { type: 'str', value: 'Bandeira conquistada!' },
+          text: { type: 'str', value: 'Você atravessou o mundo pirata inteiro. Que capitão!' },
+          button: { type: 'str', value: 'Jogar de novo' },
         },
         {
           type: 'gk:setScreenText',
           screen: 'fim',
-          title: {
-            type: 'str',
-            value: 'Fim da linha...',
-          },
+          title: { type: 'str', value: 'Fim da linha...' },
           text: {
             type: 'str',
             value: 'Suas vidas acabaram. Pise nos inimigos por cima e desvie das pérolas!',
           },
-          button: {
-            type: 'str',
-            value: 'Tentar de novo',
-          },
+          button: { type: 'str', value: 'Tentar de novo' },
         },
         {
           type: 'gk:setJumpFeel',
-          coyote: {
-            type: 'num',
-            value: 0.1,
-          },
-          buffer: {
-            type: 'num',
-            value: 0.1,
-          },
-          hold: {
-            type: 'num',
-            value: 0.3,
-          },
-          gravity: {
-            type: 'num',
-            value: 2000,
-          },
+          coyote: { type: 'num', value: 0.1 },
+          buffer: { type: 'num', value: 0.1 },
+          hold: { type: 'num', value: 0.3 },
+          gravity: { type: 'num', value: 2000 },
         },
         {
           type: 'gk:createCharacter',
           varName: 'heroi',
           image: '',
-          w: {
-            type: 'num',
-            value: 30,
-          },
-          h: {
-            type: 'num',
-            value: 44,
-          },
-          speed: {
-            type: 'num',
-            value: 220,
-          },
+          w: { type: 'num', value: 30 },
+          h: { type: 'num', value: 44 },
+          speed: { type: 'num', value: 220 },
           color: '#4a76b8',
         },
-        {
-          type: 'gk:stateLook',
-          charVar: 'heroi',
-          state: 'parado',
-          look: 'piratao',
-        },
-        {
-          type: 'var',
-          name: 'vidas',
-          value: {
-            type: 'num',
-            value: 3,
-          },
-        },
-        {
-          type: 'var',
-          name: 'pontos',
-          value: {
-            type: 'num',
-            value: 0,
-          },
-        },
-        {
-          type: 'var',
-          name: 'proximaPerola',
-          value: {
-            type: 'num',
-            value: 1.6,
-          },
-        },
+        { type: 'gk:stateLook', charVar: 'heroi', state: 'parado', look: 'piratao' },
+        { type: 'var', name: 'vidas', value: { type: 'num', value: 3 } },
+        { type: 'var', name: 'pontos', value: { type: 'num', value: 0 } },
+        { type: 'var', name: 'proximaPerola', value: { type: 'num', value: 1.6 } },
         {
           type: 'gk:setCheckpoint',
-          x: {
-            type: 'num',
-            value: 40,
-          },
-          y: {
-            type: 'num',
-            value: 250,
-          },
+          x: { type: 'num', value: 40 },
+          y: { type: 'num', value: 250 },
         },
+        { type: 'gk:respawn', charVar: 'heroi' },
         {
-          type: 'gk:respawn',
-          charVar: 'heroi',
+          type: 'gk:spawnFromMold',
+          mold: 'chao',
+          x: { type: 'num', value: 0 },
+          y: { type: 'num', value: 340 },
         },
         {
           type: 'gk:spawnFromMold',
           mold: 'chao',
-          x: {
-            type: 'num',
-            value: 0,
-          },
-          y: {
-            type: 'num',
-            value: 340,
-          },
+          x: { type: 'num', value: 80 },
+          y: { type: 'num', value: 340 },
         },
         {
           type: 'gk:spawnFromMold',
           mold: 'chao',
-          x: {
-            type: 'num',
-            value: 80,
-          },
-          y: {
-            type: 'num',
-            value: 340,
-          },
+          x: { type: 'num', value: 160 },
+          y: { type: 'num', value: 340 },
         },
         {
           type: 'gk:spawnFromMold',
           mold: 'chao',
-          x: {
-            type: 'num',
-            value: 160,
-          },
-          y: {
-            type: 'num',
-            value: 340,
-          },
+          x: { type: 'num', value: 240 },
+          y: { type: 'num', value: 340 },
         },
         {
           type: 'gk:spawnFromMold',
           mold: 'chao',
-          x: {
-            type: 'num',
-            value: 240,
-          },
-          y: {
-            type: 'num',
-            value: 340,
-          },
+          x: { type: 'num', value: 480 },
+          y: { type: 'num', value: 340 },
         },
         {
           type: 'gk:spawnFromMold',
           mold: 'chao',
-          x: {
-            type: 'num',
-            value: 480,
-          },
-          y: {
-            type: 'num',
-            value: 340,
-          },
+          x: { type: 'num', value: 560 },
+          y: { type: 'num', value: 340 },
         },
         {
           type: 'gk:spawnFromMold',
           mold: 'chao',
-          x: {
-            type: 'num',
-            value: 560,
-          },
-          y: {
-            type: 'num',
-            value: 340,
-          },
+          x: { type: 'num', value: 640 },
+          y: { type: 'num', value: 340 },
         },
         {
           type: 'gk:spawnFromMold',
           mold: 'chao',
-          x: {
-            type: 'num',
-            value: 640,
-          },
-          y: {
-            type: 'num',
-            value: 340,
-          },
+          x: { type: 'num', value: 880 },
+          y: { type: 'num', value: 340 },
         },
         {
           type: 'gk:spawnFromMold',
           mold: 'chao',
-          x: {
-            type: 'num',
-            value: 880,
-          },
-          y: {
-            type: 'num',
-            value: 340,
-          },
+          x: { type: 'num', value: 960 },
+          y: { type: 'num', value: 340 },
         },
         {
           type: 'gk:spawnFromMold',
           mold: 'chao',
-          x: {
-            type: 'num',
-            value: 960,
-          },
-          y: {
-            type: 'num',
-            value: 340,
-          },
+          x: { type: 'num', value: 1040 },
+          y: { type: 'num', value: 340 },
         },
         {
           type: 'gk:spawnFromMold',
           mold: 'chao',
-          x: {
-            type: 'num',
-            value: 1040,
-          },
-          y: {
-            type: 'num',
-            value: 340,
-          },
+          x: { type: 'num', value: 1120 },
+          y: { type: 'num', value: 340 },
         },
         {
           type: 'gk:spawnFromMold',
           mold: 'chao',
-          x: {
-            type: 'num',
-            value: 1120,
-          },
-          y: {
-            type: 'num',
-            value: 340,
-          },
+          x: { type: 'num', value: 1200 },
+          y: { type: 'num', value: 340 },
         },
         {
           type: 'gk:spawnFromMold',
           mold: 'chao',
-          x: {
-            type: 'num',
-            value: 1200,
-          },
-          y: {
-            type: 'num',
-            value: 340,
-          },
+          x: { type: 'num', value: 1280 },
+          y: { type: 'num', value: 340 },
         },
         {
           type: 'gk:spawnFromMold',
           mold: 'chao',
-          x: {
-            type: 'num',
-            value: 1280,
-          },
-          y: {
-            type: 'num',
-            value: 340,
-          },
+          x: { type: 'num', value: 1360 },
+          y: { type: 'num', value: 340 },
         },
         {
           type: 'gk:spawnFromMold',
           mold: 'chao',
-          x: {
-            type: 'num',
-            value: 1360,
-          },
-          y: {
-            type: 'num',
-            value: 340,
-          },
+          x: { type: 'num', value: 1440 },
+          y: { type: 'num', value: 340 },
         },
         {
           type: 'gk:spawnFromMold',
           mold: 'chao',
-          x: {
-            type: 'num',
-            value: 1440,
-          },
-          y: {
-            type: 'num',
-            value: 340,
-          },
-        },
-        {
-          type: 'gk:spawnFromMold',
-          mold: 'chao',
-          x: {
-            type: 'num',
-            value: 1520,
-          },
-          y: {
-            type: 'num',
-            value: 340,
-          },
+          x: { type: 'num', value: 1520 },
+          y: { type: 'num', value: 340 },
         },
         {
           type: 'gk:spawnFromMold',
           mold: 'tabua',
-          x: {
-            type: 'num',
-            value: 320,
-          },
-          y: {
-            type: 'num',
-            value: 250,
-          },
+          x: { type: 'num', value: 320 },
+          y: { type: 'num', value: 250 },
         },
         {
           type: 'gk:spawnFromMold',
           mold: 'tabua',
-          x: {
-            type: 'num',
-            value: 700,
-          },
-          y: {
-            type: 'num',
-            value: 230,
-          },
+          x: { type: 'num', value: 700 },
+          y: { type: 'num', value: 230 },
         },
         {
           type: 'gk:spawnFromMold',
           mold: 'tabua',
-          x: {
-            type: 'num',
-            value: 1080,
-          },
-          y: {
-            type: 'num',
-            value: 250,
-          },
+          x: { type: 'num', value: 1080 },
+          y: { type: 'num', value: 250 },
         },
         {
           type: 'gk:spawnFromMold',
           mold: 'tabua',
-          x: {
-            type: 'num',
-            value: 1300,
-          },
-          y: {
-            type: 'num',
-            value: 220,
-          },
+          x: { type: 'num', value: 1300 },
+          y: { type: 'num', value: 220 },
         },
         {
           type: 'gk:spawnFromMold',
           mold: 'moeda',
-          x: {
-            type: 'num',
-            value: 160,
-          },
-          y: {
-            type: 'num',
-            value: 300,
-          },
+          x: { type: 'num', value: 160 },
+          y: { type: 'num', value: 300 },
         },
         {
           type: 'gk:spawnFromMold',
           mold: 'moeda',
-          x: {
-            type: 'num',
-            value: 350,
-          },
-          y: {
-            type: 'num',
-            value: 210,
-          },
+          x: { type: 'num', value: 350 },
+          y: { type: 'num', value: 210 },
         },
         {
           type: 'gk:spawnFromMold',
           mold: 'moeda',
-          x: {
-            type: 'num',
-            value: 730,
-          },
-          y: {
-            type: 'num',
-            value: 190,
-          },
+          x: { type: 'num', value: 730 },
+          y: { type: 'num', value: 190 },
         },
         {
           type: 'gk:spawnFromMold',
           mold: 'moeda',
-          x: {
-            type: 'num',
-            value: 980,
-          },
-          y: {
-            type: 'num',
-            value: 300,
-          },
+          x: { type: 'num', value: 980 },
+          y: { type: 'num', value: 300 },
         },
         {
           type: 'gk:spawnFromMold',
           mold: 'moeda',
-          x: {
-            type: 'num',
-            value: 1110,
-          },
-          y: {
-            type: 'num',
-            value: 210,
-          },
+          x: { type: 'num', value: 1110 },
+          y: { type: 'num', value: 210 },
         },
         {
           type: 'gk:spawnFromMold',
           mold: 'moeda',
-          x: {
-            type: 'num',
-            value: 1330,
-          },
-          y: {
-            type: 'num',
-            value: 180,
-          },
+          x: { type: 'num', value: 1330 },
+          y: { type: 'num', value: 180 },
         },
         {
           type: 'gk:spawnFromMold',
           mold: 'moeda',
-          x: {
-            type: 'num',
-            value: 1480,
-          },
-          y: {
-            type: 'num',
-            value: 300,
-          },
+          x: { type: 'num', value: 1480 },
+          y: { type: 'num', value: 300 },
         },
         {
           type: 'gk:spawnFromMold',
           mold: 'dente',
-          x: {
-            type: 'num',
-            value: 620,
-          },
-          y: {
-            type: 'num',
-            value: 316,
-          },
+          x: { type: 'num', value: 620 },
+          y: { type: 'num', value: 316 },
         },
         {
           type: 'gk:spawnFromMold',
           mold: 'casco',
-          x: {
-            type: 'num',
-            value: 1000,
-          },
-          y: {
-            type: 'num',
-            value: 320,
-          },
+          x: { type: 'num', value: 1000 },
+          y: { type: 'num', value: 320 },
         },
         {
           type: 'gk:spawnFromMold',
           mold: 'canhao',
-          x: {
-            type: 'num',
-            value: 1240,
-          },
-          y: {
-            type: 'num',
-            value: 312,
-          },
+          x: { type: 'num', value: 1240 },
+          y: { type: 'num', value: 312 },
         },
         {
           type: 'gk:cameraFollow',
           charVar: 'heroi',
-          w: {
-            type: 'num',
-            value: 1700,
-          },
-          h: {
-            type: 'num',
-            value: 400,
-          },
+          w: { type: 'num', value: 1700 },
+          h: { type: 'num', value: 400 },
         },
       ],
       events: [
@@ -1528,58 +651,28 @@ export const mundoPirataProfissionalExample: ExtensionExample = withIndependentP
               value: {
                 type: 'binop',
                 op: '-',
-                left: {
-                  type: 'var',
-                  name: 'vidas',
-                },
-                right: {
-                  type: 'num',
-                  value: 1,
-                },
+                left: { type: 'var', name: 'vidas' },
+                right: { type: 'num', value: 1 },
               },
             },
             {
               type: 'gk:cameraShake',
-              intensity: {
-                type: 'num',
-                value: 8,
-              },
-              seconds: {
-                type: 'num',
-                value: 0.3,
-              },
+              intensity: { type: 'num', value: 8 },
+              seconds: { type: 'num', value: 0.3 },
             },
-            {
-              type: 'gk:playEffect',
-              fx: 'hurt',
-            },
-            {
-              type: 'gk:respawn',
-              charVar: 'heroi',
-            },
+            { type: 'gk:playEffect', fx: 'hurt' },
+            { type: 'gk:respawn', charVar: 'heroi' },
             {
               type: 'if',
               cond: {
                 type: 'binop',
                 op: '<',
-                left: {
-                  type: 'var',
-                  name: 'vidas',
-                },
-                right: {
-                  type: 'num',
-                  value: 1,
-                },
+                left: { type: 'var', name: 'vidas' },
+                right: { type: 'num', value: 1 },
               },
               then: [
-                {
-                  type: 'gk:playEffect',
-                  fx: 'gameover',
-                },
-                {
-                  type: 'gk:setState',
-                  name: 'fim',
-                },
+                { type: 'gk:playEffect', fx: 'gameover' },
+                { type: 'gk:setState', name: 'fim' },
               ],
             },
           ],
@@ -1593,35 +686,14 @@ export const mundoPirataProfissionalExample: ExtensionExample = withIndependentP
             {
               type: 'gk:platformerHero',
               charVar: 'heroi',
-              speed: {
-                type: 'num',
-                value: 220,
-              },
-              force: {
-                type: 'num',
-                value: 640,
-              },
+              speed: { type: 'num', value: 220 },
+              force: { type: 'num', value: 640 },
               dtVar: 'dt',
             },
-            {
-              type: 'gk:dropThrough',
-              charVar: 'heroi',
-            },
-            {
-              type: 'gk:collideGroup',
-              charVar: 'heroi',
-              mold: 'chao',
-            },
-            {
-              type: 'gk:oneWayPlatform',
-              charVar: 'heroi',
-              mold: 'tabua',
-              dtVar: 'dt',
-            },
-            {
-              type: 'gk:platformerAnim',
-              charVar: 'heroi',
-            },
+            { type: 'gk:dropThrough', charVar: 'heroi' },
+            { type: 'gk:collideGroup', charVar: 'heroi', mold: 'chao' },
+            { type: 'gk:oneWayPlatform', charVar: 'heroi', mold: 'tabua', dtVar: 'dt' },
+            { type: 'gk:platformerAnim', charVar: 'heroi' },
             {
               type: 'gk:forEachActive',
               mold: 'moeda',
@@ -1629,11 +701,7 @@ export const mundoPirataProfissionalExample: ExtensionExample = withIndependentP
               body: [
                 {
                   type: 'if',
-                  cond: {
-                    type: 'gk:charactersTouch',
-                    aVar: 'heroi',
-                    bVar: 'moeda',
-                  },
+                  cond: { type: 'gk:charactersTouch', aVar: 'heroi', bVar: 'moeda' },
                   then: [
                     {
                       type: 'gk:burst',
@@ -1641,52 +709,28 @@ export const mundoPirataProfissionalExample: ExtensionExample = withIndependentP
                       x: {
                         type: 'binop',
                         op: '+',
-                        left: {
-                          type: 'gk:charX',
-                          charVar: 'moeda',
-                        },
-                        right: {
-                          type: 'num',
-                          value: 8,
-                        },
+                        left: { type: 'gk:charX', charVar: 'moeda' },
+                        right: { type: 'num', value: 8 },
                       },
                       y: {
                         type: 'binop',
                         op: '+',
-                        left: {
-                          type: 'gk:charY',
-                          charVar: 'moeda',
-                        },
-                        right: {
-                          type: 'num',
-                          value: 8,
-                        },
+                        left: { type: 'gk:charY', charVar: 'moeda' },
+                        right: { type: 'num', value: 8 },
                       },
                     },
-                    {
-                      type: 'gk:playEffect',
-                      fx: 'coin',
-                    },
+                    { type: 'gk:playEffect', fx: 'coin' },
                     {
                       type: 'assign',
                       name: 'pontos',
                       value: {
                         type: 'binop',
                         op: '+',
-                        left: {
-                          type: 'var',
-                          name: 'pontos',
-                        },
-                        right: {
-                          type: 'num',
-                          value: 1,
-                        },
+                        left: { type: 'var', name: 'pontos' },
+                        right: { type: 'num', value: 1 },
                       },
                     },
-                    {
-                      type: 'gk:recycle',
-                      charVar: 'moeda',
-                    },
+                    { type: 'gk:recycle', charVar: 'moeda' },
                   ],
                 },
               ],
@@ -1701,27 +745,15 @@ export const mundoPirataProfissionalExample: ExtensionExample = withIndependentP
                   cond: {
                     type: 'binop',
                     op: '>',
-                    left: {
-                      type: 'gk:charX',
-                      charVar: 'heroi',
-                    },
-                    right: {
-                      type: 'gk:charX',
-                      charVar: 'bicho',
-                    },
+                    left: { type: 'gk:charX', charVar: 'heroi' },
+                    right: { type: 'gk:charX', charVar: 'bicho' },
                   },
                   then: [
                     {
                       type: 'gk:setVelocity',
                       charVar: 'bicho',
-                      vx: {
-                        type: 'num',
-                        value: 70,
-                      },
-                      vy: {
-                        type: 'num',
-                        value: 0,
-                      },
+                      vx: { type: 'num', value: 70 },
+                      vy: { type: 'num', value: 0 },
                     },
                   ],
                   else: [
@@ -1731,48 +763,24 @@ export const mundoPirataProfissionalExample: ExtensionExample = withIndependentP
                       vx: {
                         type: 'binop',
                         op: '-',
-                        left: {
-                          type: 'num',
-                          value: 0,
-                        },
-                        right: {
-                          type: 'num',
-                          value: 70,
-                        },
+                        left: { type: 'num', value: 0 },
+                        right: { type: 'num', value: 70 },
                       },
-                      vy: {
-                        type: 'num',
-                        value: 0,
-                      },
+                      vy: { type: 'num', value: 0 },
                     },
                   ],
                 },
-                {
-                  type: 'gk:moveByVelocity',
-                  charVar: 'bicho',
-                  dtVar: 'dt',
-                },
+                { type: 'gk:moveByVelocity', charVar: 'bicho', dtVar: 'dt' },
                 {
                   type: 'gk:applyGravity',
                   charVar: 'bicho',
-                  g: {
-                    type: 'num',
-                    value: 1600,
-                  },
+                  g: { type: 'num', value: 1600 },
                   dtVar: 'dt',
                 },
-                {
-                  type: 'gk:collideGroup',
-                  charVar: 'bicho',
-                  mold: 'chao',
-                },
+                { type: 'gk:collideGroup', charVar: 'bicho', mold: 'chao' },
                 {
                   type: 'if',
-                  cond: {
-                    type: 'gk:charactersTouch',
-                    aVar: 'heroi',
-                    bVar: 'bicho',
-                  },
+                  cond: { type: 'gk:charactersTouch', aVar: 'heroi', bVar: 'bicho' },
                   then: [
                     {
                       type: 'if',
@@ -1782,19 +790,10 @@ export const mundoPirataProfissionalExample: ExtensionExample = withIndependentP
                         left: {
                           type: 'binop',
                           op: '+',
-                          left: {
-                            type: 'gk:charY',
-                            charVar: 'heroi',
-                          },
-                          right: {
-                            type: 'num',
-                            value: 30,
-                          },
+                          left: { type: 'gk:charY', charVar: 'heroi' },
+                          right: { type: 'num', value: 30 },
                         },
-                        right: {
-                          type: 'gk:charY',
-                          charVar: 'bicho',
-                        },
+                        right: { type: 'gk:charY', charVar: 'bicho' },
                       },
                       then: [
                         {
@@ -1803,51 +802,25 @@ export const mundoPirataProfissionalExample: ExtensionExample = withIndependentP
                           x: {
                             type: 'binop',
                             op: '+',
-                            left: {
-                              type: 'gk:charX',
-                              charVar: 'bicho',
-                            },
-                            right: {
-                              type: 'num',
-                              value: 14,
-                            },
+                            left: { type: 'gk:charX', charVar: 'bicho' },
+                            right: { type: 'num', value: 14 },
                           },
-                          y: {
-                            type: 'gk:charY',
-                            charVar: 'bicho',
-                          },
+                          y: { type: 'gk:charY', charVar: 'bicho' },
                         },
-                        {
-                          type: 'gk:playEffect',
-                          fx: 'hit',
-                        },
+                        { type: 'gk:playEffect', fx: 'hit' },
                         {
                           type: 'assign',
                           name: 'pontos',
                           value: {
                             type: 'binop',
                             op: '+',
-                            left: {
-                              type: 'var',
-                              name: 'pontos',
-                            },
-                            right: {
-                              type: 'num',
-                              value: 2,
-                            },
+                            left: { type: 'var', name: 'pontos' },
+                            right: { type: 'num', value: 2 },
                           },
                         },
-                        {
-                          type: 'gk:recycle',
-                          charVar: 'bicho',
-                        },
+                        { type: 'gk:recycle', charVar: 'bicho' },
                       ],
-                      else: [
-                        {
-                          type: 'gk:emit',
-                          event: 'pirata:levou',
-                        },
-                      ],
+                      else: [{ type: 'gk:emit', event: 'pirata:levou' }],
                     },
                   ],
                 },
@@ -1858,51 +831,28 @@ export const mundoPirataProfissionalExample: ExtensionExample = withIndependentP
               mold: 'casco',
               itemName: 'bicho',
               body: [
-                {
-                  type: 'gk:moveByVelocity',
-                  charVar: 'bicho',
-                  dtVar: 'dt',
-                },
+                { type: 'gk:moveByVelocity', charVar: 'bicho', dtVar: 'dt' },
                 {
                   type: 'gk:applyGravity',
                   charVar: 'bicho',
-                  g: {
-                    type: 'num',
-                    value: 1600,
-                  },
+                  g: { type: 'num', value: 1600 },
                   dtVar: 'dt',
                 },
-                {
-                  type: 'gk:collideGroup',
-                  charVar: 'bicho',
-                  mold: 'chao',
-                },
+                { type: 'gk:collideGroup', charVar: 'bicho', mold: 'chao' },
                 {
                   type: 'if',
                   cond: {
                     type: 'binop',
                     op: '<',
-                    left: {
-                      type: 'gk:charX',
-                      charVar: 'bicho',
-                    },
-                    right: {
-                      type: 'num',
-                      value: 900,
-                    },
+                    left: { type: 'gk:charX', charVar: 'bicho' },
+                    right: { type: 'num', value: 900 },
                   },
                   then: [
                     {
                       type: 'gk:setVelocity',
                       charVar: 'bicho',
-                      vx: {
-                        type: 'num',
-                        value: 55,
-                      },
-                      vy: {
-                        type: 'num',
-                        value: 0,
-                      },
+                      vx: { type: 'num', value: 55 },
+                      vy: { type: 'num', value: 0 },
                     },
                   ],
                 },
@@ -1911,14 +861,8 @@ export const mundoPirataProfissionalExample: ExtensionExample = withIndependentP
                   cond: {
                     type: 'binop',
                     op: '>',
-                    left: {
-                      type: 'gk:charX',
-                      charVar: 'bicho',
-                    },
-                    right: {
-                      type: 'num',
-                      value: 1140,
-                    },
+                    left: { type: 'gk:charX', charVar: 'bicho' },
+                    right: { type: 'num', value: 1140 },
                   },
                   then: [
                     {
@@ -1927,29 +871,16 @@ export const mundoPirataProfissionalExample: ExtensionExample = withIndependentP
                       vx: {
                         type: 'binop',
                         op: '-',
-                        left: {
-                          type: 'num',
-                          value: 0,
-                        },
-                        right: {
-                          type: 'num',
-                          value: 55,
-                        },
+                        left: { type: 'num', value: 0 },
+                        right: { type: 'num', value: 55 },
                       },
-                      vy: {
-                        type: 'num',
-                        value: 0,
-                      },
+                      vy: { type: 'num', value: 0 },
                     },
                   ],
                 },
                 {
                   type: 'if',
-                  cond: {
-                    type: 'gk:charactersTouch',
-                    aVar: 'heroi',
-                    bVar: 'bicho',
-                  },
+                  cond: { type: 'gk:charactersTouch', aVar: 'heroi', bVar: 'bicho' },
                   then: [
                     {
                       type: 'if',
@@ -1959,19 +890,10 @@ export const mundoPirataProfissionalExample: ExtensionExample = withIndependentP
                         left: {
                           type: 'binop',
                           op: '+',
-                          left: {
-                            type: 'gk:charY',
-                            charVar: 'heroi',
-                          },
-                          right: {
-                            type: 'num',
-                            value: 30,
-                          },
+                          left: { type: 'gk:charY', charVar: 'heroi' },
+                          right: { type: 'num', value: 30 },
                         },
-                        right: {
-                          type: 'gk:charY',
-                          charVar: 'bicho',
-                        },
+                        right: { type: 'gk:charY', charVar: 'bicho' },
                       },
                       then: [
                         {
@@ -1980,51 +902,25 @@ export const mundoPirataProfissionalExample: ExtensionExample = withIndependentP
                           x: {
                             type: 'binop',
                             op: '+',
-                            left: {
-                              type: 'gk:charX',
-                              charVar: 'bicho',
-                            },
-                            right: {
-                              type: 'num',
-                              value: 14,
-                            },
+                            left: { type: 'gk:charX', charVar: 'bicho' },
+                            right: { type: 'num', value: 14 },
                           },
-                          y: {
-                            type: 'gk:charY',
-                            charVar: 'bicho',
-                          },
+                          y: { type: 'gk:charY', charVar: 'bicho' },
                         },
-                        {
-                          type: 'gk:playEffect',
-                          fx: 'hit',
-                        },
+                        { type: 'gk:playEffect', fx: 'hit' },
                         {
                           type: 'assign',
                           name: 'pontos',
                           value: {
                             type: 'binop',
                             op: '+',
-                            left: {
-                              type: 'var',
-                              name: 'pontos',
-                            },
-                            right: {
-                              type: 'num',
-                              value: 2,
-                            },
+                            left: { type: 'var', name: 'pontos' },
+                            right: { type: 'num', value: 2 },
                           },
                         },
-                        {
-                          type: 'gk:recycle',
-                          charVar: 'bicho',
-                        },
+                        { type: 'gk:recycle', charVar: 'bicho' },
                       ],
-                      else: [
-                        {
-                          type: 'gk:emit',
-                          event: 'pirata:levou',
-                        },
-                      ],
+                      else: [{ type: 'gk:emit', event: 'pirata:levou' }],
                     },
                   ],
                 },
@@ -2036,14 +932,8 @@ export const mundoPirataProfissionalExample: ExtensionExample = withIndependentP
               value: {
                 type: 'binop',
                 op: '-',
-                left: {
-                  type: 'var',
-                  name: 'proximaPerola',
-                },
-                right: {
-                  type: 'var',
-                  name: 'dt',
-                },
+                left: { type: 'var', name: 'proximaPerola' },
+                right: { type: 'var', name: 'dt' },
               },
             },
             {
@@ -2051,50 +941,25 @@ export const mundoPirataProfissionalExample: ExtensionExample = withIndependentP
               cond: {
                 type: 'binop',
                 op: '<=',
-                left: {
-                  type: 'var',
-                  name: 'proximaPerola',
-                },
-                right: {
-                  type: 'num',
-                  value: 0,
-                },
+                left: { type: 'var', name: 'proximaPerola' },
+                right: { type: 'num', value: 0 },
               },
               then: [
-                {
-                  type: 'assign',
-                  name: 'proximaPerola',
-                  value: {
-                    type: 'num',
-                    value: 2,
-                  },
-                },
+                { type: 'assign', name: 'proximaPerola', value: { type: 'num', value: 2 } },
                 {
                   type: 'gk:spawnNamed',
                   varName: 'bala',
                   mold: 'perola',
-                  x: {
-                    type: 'num',
-                    value: 1240,
-                  },
-                  y: {
-                    type: 'num',
-                    value: 306,
-                  },
+                  x: { type: 'num', value: 1240 },
+                  y: { type: 'num', value: 306 },
                 },
                 {
                   type: 'if',
                   cond: {
                     type: 'binop',
                     op: '<',
-                    left: {
-                      type: 'gk:charX',
-                      charVar: 'heroi',
-                    },
-                    right: {
-                      type: 'num',
-                      value: 1240,
-                    },
+                    left: { type: 'gk:charX', charVar: 'heroi' },
+                    right: { type: 'num', value: 1240 },
                   },
                   then: [
                     {
@@ -2103,33 +968,18 @@ export const mundoPirataProfissionalExample: ExtensionExample = withIndependentP
                       vx: {
                         type: 'binop',
                         op: '-',
-                        left: {
-                          type: 'num',
-                          value: 0,
-                        },
-                        right: {
-                          type: 'num',
-                          value: 150,
-                        },
+                        left: { type: 'num', value: 0 },
+                        right: { type: 'num', value: 150 },
                       },
-                      vy: {
-                        type: 'num',
-                        value: 0,
-                      },
+                      vy: { type: 'num', value: 0 },
                     },
                   ],
                   else: [
                     {
                       type: 'gk:setVelocity',
                       charVar: 'bala',
-                      vx: {
-                        type: 'num',
-                        value: 150,
-                      },
-                      vy: {
-                        type: 'num',
-                        value: 0,
-                      },
+                      vx: { type: 'num', value: 150 },
+                      vy: { type: 'num', value: 0 },
                     },
                   ],
                 },
@@ -2140,76 +990,34 @@ export const mundoPirataProfissionalExample: ExtensionExample = withIndependentP
               mold: 'perola',
               itemName: 'bala',
               body: [
-                {
-                  type: 'gk:moveByVelocity',
-                  charVar: 'bala',
-                  dtVar: 'dt',
-                },
+                { type: 'gk:moveByVelocity', charVar: 'bala', dtVar: 'dt' },
                 {
                   type: 'if',
-                  cond: {
-                    type: 'gk:charactersTouch',
-                    aVar: 'heroi',
-                    bVar: 'bala',
-                  },
+                  cond: { type: 'gk:charactersTouch', aVar: 'heroi', bVar: 'bala' },
                   then: [
-                    {
-                      type: 'gk:recycle',
-                      charVar: 'bala',
-                    },
-                    {
-                      type: 'gk:emit',
-                      event: 'pirata:levou',
-                    },
+                    { type: 'gk:recycle', charVar: 'bala' },
+                    { type: 'gk:emit', event: 'pirata:levou' },
                   ],
                 },
               ],
             },
-            {
-              type: 'gk:cullOffscreen',
-              mold: 'perola',
-              margin: {
-                type: 'num',
-                value: 200,
-              },
-            },
+            { type: 'gk:cullOffscreen', mold: 'perola', margin: { type: 'num', value: 200 } },
             {
               type: 'if',
               cond: {
                 type: 'binop',
                 op: '>',
-                left: {
-                  type: 'gk:charY',
-                  charVar: 'heroi',
-                },
-                right: {
-                  type: 'num',
-                  value: 430,
-                },
+                left: { type: 'gk:charY', charVar: 'heroi' },
+                right: { type: 'num', value: 430 },
               },
-              then: [
-                {
-                  type: 'gk:emit',
-                  event: 'pirata:levou',
-                },
-              ],
+              then: [{ type: 'gk:emit', event: 'pirata:levou' }],
             },
             {
               type: 'if',
-              cond: {
-                type: 'gk:isInside',
-                charVar: 'heroi',
-                region: 'fim',
-              },
+              cond: { type: 'gk:isInside', charVar: 'heroi', region: 'fim' },
               then: [
-                {
-                  type: 'gk:playEffect',
-                  fx: 'win',
-                },
-                {
-                  type: 'gk:setState',
-                  name: 'vitoria',
-                },
+                { type: 'gk:playEffect', fx: 'win' },
+                { type: 'gk:setState', name: 'vitoria' },
               ],
             },
           ],
@@ -2218,70 +1026,25 @@ export const mundoPirataProfissionalExample: ExtensionExample = withIndependentP
           type: 'gk:onDraw',
           ctxName: 'ctx',
           body: [
-            {
-              type: 'gk:drawBackground',
-              color: '#8ecae6',
-              grid: false,
-            },
-            {
-              type: 'gk:drawActive',
-              mold: 'chao',
-            },
-            {
-              type: 'gk:drawActive',
-              mold: 'tabua',
-            },
-            {
-              type: 'gk:drawActive',
-              mold: 'moeda',
-            },
+            { type: 'gk:drawBackground', color: '#8ecae6', grid: false },
+            { type: 'gk:drawActive', mold: 'chao' },
+            { type: 'gk:drawActive', mold: 'tabua' },
+            { type: 'gk:drawActive', mold: 'moeda' },
             {
               type: 'gk:drawLook',
               look: 'bandeira',
-              x: {
-                type: 'num',
-                value: 1560,
-              },
-              y: {
-                type: 'num',
-                value: 270,
-              },
-              w: {
-                type: 'num',
-                value: 48,
-              },
-              h: {
-                type: 'num',
-                value: 70,
-              },
+              x: { type: 'num', value: 1560 },
+              y: { type: 'num', value: 270 },
+              w: { type: 'num', value: 48 },
+              h: { type: 'num', value: 70 },
             },
-            {
-              type: 'gk:drawActive',
-              mold: 'dente',
-            },
-            {
-              type: 'gk:drawActive',
-              mold: 'casco',
-            },
-            {
-              type: 'gk:drawActive',
-              mold: 'canhao',
-            },
-            {
-              type: 'gk:drawActive',
-              mold: 'perola',
-            },
-            {
-              type: 'gk:drawShadow',
-              charVar: 'heroi',
-            },
-            {
-              type: 'gk:drawCharacter',
-              charVar: 'heroi',
-            },
-            {
-              type: 'gk:drawEffects',
-            },
+            { type: 'gk:drawActive', mold: 'dente' },
+            { type: 'gk:drawActive', mold: 'casco' },
+            { type: 'gk:drawActive', mold: 'canhao' },
+            { type: 'gk:drawActive', mold: 'perola' },
+            { type: 'gk:drawShadow', charVar: 'heroi' },
+            { type: 'gk:drawCharacter', charVar: 'heroi' },
+            { type: 'gk:drawEffects' },
           ],
         },
         {
@@ -2289,66 +1052,30 @@ export const mundoPirataProfissionalExample: ExtensionExample = withIndependentP
           ctxName: 'ctx',
           body: [
             {
-              type: 'canvasFillStyle',
-              ctxVar: 'ctx',
-              color: {
-                type: 'color',
-                value: '#0e2a38',
-              },
-            },
-            {
-              type: 'canvasFont',
-              ctxVar: 'ctx',
-              size: 24,
-              family: 'sans-serif',
-            },
-            {
-              type: 'canvasFillText',
-              ctxVar: 'ctx',
+              type: 'gk:drawText',
               text: {
                 type: 'binop',
                 op: '+',
-                left: {
-                  type: 'str',
-                  value: 'Vidas: ',
-                },
-                right: {
-                  type: 'var',
-                  name: 'vidas',
-                },
+                left: { type: 'str', value: 'Vidas: ' },
+                right: { type: 'var', name: 'vidas' },
               },
-              x: {
-                type: 'num',
-                value: 20,
-              },
-              y: {
-                type: 'num',
-                value: 36,
-              },
+              x: { type: 'num', value: 20 },
+              y: { type: 'num', value: 36 },
+              size: { type: 'num', value: 24 },
+              color: { type: 'color', value: '#0e2a38' },
             },
             {
-              type: 'canvasFillText',
-              ctxVar: 'ctx',
+              type: 'gk:drawText',
               text: {
                 type: 'binop',
                 op: '+',
-                left: {
-                  type: 'str',
-                  value: 'Tesouro: ',
-                },
-                right: {
-                  type: 'var',
-                  name: 'pontos',
-                },
+                left: { type: 'str', value: 'Tesouro: ' },
+                right: { type: 'var', name: 'pontos' },
               },
-              x: {
-                type: 'num',
-                value: 20,
-              },
-              y: {
-                type: 'num',
-                value: 68,
-              },
+              x: { type: 'num', value: 20 },
+              y: { type: 'num', value: 68 },
+              size: { type: 'num', value: 24 },
+              color: { type: 'color', value: '#0e2a38' },
             },
           ],
         },

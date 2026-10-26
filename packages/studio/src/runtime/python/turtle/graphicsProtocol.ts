@@ -17,6 +17,7 @@ export interface TurtlePatch {
   y?: number
 }
 export type TurtleOperation =
+  | { op: 'actor'; id: number; x: number; y: number; items: number[]; visible: boolean }
   | { op: 'create'; id: number; kind: 'polygon' | 'line' }
   | { op: 'create'; id: number; kind: 'image'; image: number; x: number; y: number }
   | {
@@ -117,6 +118,26 @@ export function readTurtleGraphicsRequest(raw: unknown): TurtleGraphicsRequest {
       }
       if (op === 'delete' && id === 'all') return { op, id }
       if (!identifier(id)) invalid()
+      if (op === 'actor') {
+        if (
+          !finite(operation.x) ||
+          !finite(operation.y) ||
+          typeof operation.visible !== 'boolean' ||
+          !Array.isArray(operation.items) ||
+          !operation.items.length ||
+          operation.items.length > 128 ||
+          !operation.items.every(identifier)
+        )
+          invalid()
+        return {
+          op,
+          id,
+          x: operation.x,
+          y: operation.y,
+          items: [...operation.items],
+          visible: operation.visible,
+        }
+      }
       if (op === 'delete') return { op, id }
       if (op === 'raise' || op === 'lower') return { op, id }
       if (op === 'bind') {

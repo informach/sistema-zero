@@ -29,7 +29,7 @@ import { collectTypes } from './exampleSourceUtils'
 export const MUNDO_PROFISSIONAL_SOURCE = `
 SZGameKit3D.setup({ width: 1280, height: 720, world: 44, sky: "#7dd3fc", ground: "#86efac" });
 SZGameKit3D.setEffects({ shadows: true, bloom: true, strength: 1, vignette: false });
-SZGameKit3D.setScreenText("menu", "Mundo de Blocos", "Ande com WASD e pule com espaço. Escolha o bloco com 1, 2 e 3 e clique no chão perto de você para construir. Aperte X para reciclar. Coloque um bloco junto da muralha, suba nele e pule até o topo!", "Construir");
+SZGameKit3D.setScreenText("inicio", "Mundo de Blocos", "Ande com WASD e pule com espaço. Escolha o bloco com E, Q e F e clique no chão perto de você para construir. Aperte Enter para reciclar. Coloque um bloco junto da muralha, suba nele e pule até o topo!", "Construir");
 SZGameKit3D.setScreenText("vitoria", "Chegou ao topo!", "Você colocou um bloco, subiu nele e pulou até o topo da muralha. Jogue de novo e invente outro caminho!", "Construir de novo");
 SZGameKit3D.defineMold("heroi", { health: 100, speed: 0 }, function () {
   SZGameKit3D.part({ shape: "box", color: "#f59e0b", w: 0.8, h: 0.9, d: 0.5, x: 0, y: 0.45, z: 0 });
@@ -87,16 +87,16 @@ SZGameKit3D.onEnterState("jogando", function () {
 SZGameKit3D.onEntityStateUpdate("heroi", "parado", function (ela, dt) {
   SZGameKit3D.platformerKeys(ela, 6, 9);
   blocos = SZGameKit3D.countAlive("grama") + SZGameKit3D.countAlive("pedra") + SZGameKit3D.countAlive("madeira");
-  if (SZGameKit3D.keyPressed("1")) {
+  if (SZGameKit3D.keyPressed("KeyE")) {
     tipoDeBloco = "grama";
   }
-  if (SZGameKit3D.keyPressed("2")) {
+  if (SZGameKit3D.keyPressed("KeyQ")) {
     tipoDeBloco = "pedra";
   }
-  if (SZGameKit3D.keyPressed("3")) {
+  if (SZGameKit3D.keyPressed("KeyF")) {
     tipoDeBloco = "madeira";
   }
-  if (SZGameKit3D.keyPressed("x")) {
+  if (SZGameKit3D.keyPressed("Enter")) {
     if (modo === "construir") {
       modo = "reciclar";
     } else {
@@ -113,7 +113,7 @@ SZGameKit3D.onEntityStateUpdate("heroi", "parado", function (ela, dt) {
       }
     } else {
       if (blocos >= 30) {
-        SZGameKit3D.say(ela, "O mundo lotou! Aperte X e recicle uns blocos.", 2);
+        SZGameKit3D.say(ela, "O mundo lotou! Aperte Enter e recicle uns blocos.", 2);
       } else {
         const celulaX = Math.round(SZGameKit3D.groundPoint("x") / 2) * 2;
         const celulaZ = Math.round(SZGameKit3D.groundPoint("z") / 2) * 2;
@@ -139,9 +139,9 @@ SZGameKit3D.onEntityStateUpdate("heroi", "parado", function (ela, dt) {
   }
 });
 SZGameKit3D.onUpdate(function (dt) {
-  SZGameKit3D.setHud("top-left", "Blocos: " + blocos + " de 30");
-  SZGameKit3D.setHud("bottom-left", "Bloco: " + tipoDeBloco + " (1 2 3)");
-  SZGameKit3D.setHud("top-right", "Modo: " + modo + " (X troca)");
+  SZGameKit3D.hudText("top-left", "Blocos: " + blocos + " de 30");
+  SZGameKit3D.hudText("bottom-left", "Bloco: " + tipoDeBloco + " (E Q F)");
+  SZGameKit3D.hudText("top-right", "Modo: " + modo + " (Enter troca)");
 });
 SZGameKit3D.start();
 `.trim()
@@ -167,7 +167,7 @@ if (import.meta.main) {
     name: 'Mundo de Blocos Profissional',
     experience: 'game',
     description:
-      'Construtor 3D em 3ª pessoa: ande, pule e clique no chão perto de você para plantar blocos sólidos (1, 2 e 3 trocam o tipo). Coloque um bloco, suba nele e pule até o topo da muralha. X recicla.',
+      'Construtor 3D em 3ª pessoa: ande, pule e clique no chão perto de você para plantar blocos sólidos (E, Q e F trocam o tipo). Coloque um bloco, suba nele e pule até o topo da muralha. Enter recicla.',
     ir: {
       html: [],
       css: [],

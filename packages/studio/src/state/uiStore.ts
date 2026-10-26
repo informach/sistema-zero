@@ -6,7 +6,8 @@ import { StudioStoresContext } from './storesContext'
 
 export type BottomTab = 'console' | 'terminal' | 'ai'
 /** As três abas da janela "Materiais do jogo" — e as três portas dela no menu ⋯. */
-export type AssetsTab = 'images' | 'sounds' | 'models3d'
+/** `fonts` só aparece nos projetos Raylib (TTF/OTF), e não tem porta no menu ⋯. */
+export type AssetsTab = 'images' | 'sounds' | 'models3d' | 'fonts'
 export type ConsoleVisibilityOverride = boolean | null
 
 /**

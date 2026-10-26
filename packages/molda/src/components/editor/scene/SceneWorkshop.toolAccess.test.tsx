@@ -130,17 +130,26 @@ test('the basic pivot offers point picking and presets without the advanced mode
   }
 })
 
-test('the basic animation keeps duration and repeat available in the right panel', async () => {
+test('the basic timeline changes duration and keeps every pose in time with it', async () => {
   const { editor, view } = mount(animatedScene())
   try {
     await openTab(copy.animationMode)
-    const settings = await screen.findByText(copy.animationSettings)
-    fireEvent.click(settings)
-    const duration = screen.getByRole('combobox', { name: 'Duração do movimento' })
+    const timeline = within(await screen.findByRole('region', { name: copy.animationTimeline }))
+    const duration = timeline.getByRole('combobox', { name: 'Duração do movimento' })
+    const originalKeys = editor
+      .getState()
+      .content.animations![0]!.tracks[0]!.keys.map((key) => key.time)
     fireEvent.change(duration, { target: { value: '3' } })
     expect(editor.getState().content.animations![0]!.duration).toBe(3)
-    fireEvent.click(screen.getByRole('checkbox', { name: copy.animationLoop }))
+    expect(
+      editor.getState().content.animations![0]!.tracks[0]!.keys.map((key) => key.time),
+    ).toEqual(originalKeys.map((time) => time * 1.5))
+    const repeat = timeline.getByRole('checkbox', { name: copy.animationLoop })
+    expect((repeat as HTMLInputElement).checked).toBe(true)
+    fireEvent.click(repeat)
     expect(editor.getState().content.animations![0]!.loop).toBe(false)
+    fireEvent.click(repeat)
+    expect(editor.getState().content.animations![0]!.loop).toBe(true)
   } finally {
     view.unmount()
     editor.getState().dispose()
@@ -246,10 +255,13 @@ describe('a oficina no nível de entrada', () => {
     // Group, ungroup and multiselect move into the tree; the destination selector adds one control.
     // The requested Plano adds one visible creation button, within model.pieces.
     expect(vazio.view.getByRole('button', { name: COPY.scene.plane })).toBeDefined()
+    expect(vazio.view.getByRole('button', { name: COPY.scene.torus })).toBeDefined()
+    // Torus adds one visible shape control in Modelar.
     // A biblioteca de paletas acrescenta um único gatilho recolhido no Modelar.
-    expect(montadosVazio.length, montadosVazio.join(' | ')).toBeLessThanOrEqual(64)
+    // O Raio-X pedido acrescenta uma alternância de vista, ao lado da grade.
+    expect(montadosVazio.length, montadosVazio.join(' | ')).toBeLessThanOrEqual(66)
     // Cut, import, pivot and component selection are now explicit basic authoring actions.
-    expect(encaradosVazio.length, encaradosVazio.join(' | ')).toBeLessThanOrEqual(47)
+    expect(encaradosVazio.length, encaradosVazio.join(' | ')).toBeLessThanOrEqual(49)
     cleanup()
 
     const comPeca = mount(withPiece())
@@ -258,8 +270,8 @@ describe('a oficina no nível de entrada', () => {
     const encaradosPeca = frontControls(comPeca.view.container)
     // Position, size, pivot and rotation contribute 12 inputs in the approved basic inspector.
     // Flip contributes one disclosure, three axis actions and the in-place option.
-    expect(montadosPeca.length, montadosPeca.join(' | ')).toBeLessThanOrEqual(113)
-    expect(encaradosPeca.length, encaradosPeca.join(' | ')).toBeLessThanOrEqual(86)
+    expect(montadosPeca.length, montadosPeca.join(' | ')).toBeLessThanOrEqual(114)
+    expect(encaradosPeca.length, encaradosPeca.join(' | ')).toBeLessThanOrEqual(88)
   })
 
   test('nenhum controle de família trancada aparece, em nenhuma aba, nem abrindo tudo', async () => {
@@ -313,6 +325,20 @@ describe('a oficina no nível de entrada', () => {
       openEveryDisclosure(view.container)
     })
     expect(screen.queryByText(SCENE_TOOL_ACCESS_COPY.upcoming)).toBeNull()
+  })
+
+  test('textura e camadas continua acessível quando as ferramentas avançadas estão liberadas', async () => {
+    const { editor, view } = mount(withPiece(), null)
+    try {
+      choosePiece(view.container)
+      await openTab(SCENE_PAINT_COPY.tab)
+      const texture = await screen.findByText(copy.appearanceTitle)
+      fireEvent.click(texture)
+      expect(await screen.findByText('Pintura do modelo')).toBeTruthy()
+    } finally {
+      view.unmount()
+      editor.getState().dispose()
+    }
   })
 
   test('o espelho do básico é o do meio: sem escolher eixo nem posição', () => {

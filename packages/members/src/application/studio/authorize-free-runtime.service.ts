@@ -91,13 +91,16 @@ export class AuthorizeFreeRuntimeService {
       release.manifest.extensions.map(({ id }) => id),
       reward.blocks,
     )
-    if (
-      !hasPythonCourseAccess(reward.blocks) ||
-      (request.subject.kind === 'classic' &&
-        (curriculum.blockIds.length === 0 || pythonCourseUnlockIssue(curriculum.blockIds) !== null))
-    )
+    if (!hasPythonCourseAccess(reward.blocks))
       throw new AccessDeniedError(
         'Conclua um curso Python para liberar este ambiente no Estúdio Completo.',
+      )
+    if (
+      request.subject.kind === 'classic' &&
+      (curriculum.blockIds.length === 0 || pythonCourseUnlockIssue(curriculum.blockIds) !== null)
+    )
+      throw new AccessDeniedError(
+        'O ambiente Python deste projeto precisa ser atualizado. Tente novamente em instantes.',
       )
     const curation = {
       pythonLevel: 3 as const,

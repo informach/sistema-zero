@@ -4,11 +4,12 @@ import { defaultLessonSection } from '@sistemazero/core/learning'
 import { verifyStudioPythonExecutionMetadata } from '@sistemazero/core/studio/python-execution-content'
 import { StudioPythonInspectionReportSchema } from '@sistemazero/core/studio/python-inspection'
 import { createStudioRuntimeCatalog } from '@sistemazero/core/studio/runtime-catalog'
-import { PythonActivityInspectionService } from '../../src/application/studio/python-activity-inspection.service'
+import { PythonProjectCheckerService } from '../../src/application/studio/python-project-checker.service'
 import { createStudioRuntimeHosts } from '../../src/domain/studio/runtime-hosts'
 import { createStudioRuntimePolicy } from '../../src/domain/studio/runtime-policy'
 import { buildApp, grantLifetime, seedSampleCourse } from '../helpers'
 import { galleryPythonSourceFixture, PNG } from './gallery-python-source'
+import { controlledPythonValidation } from './python-execution-evidence'
 
 export const GALLERY_TEST_USER = '22222222-2222-2222-2222-222222222222'
 // Real Members handler/services, HTTP gzip reader, snapshots, report verifiers and persistence
@@ -27,11 +28,11 @@ export async function pythonGalleryFixture(
     ]),
   )
   let inspections = 0
-  const inspector = new PythonActivityInspectionService({
+  const inspector = new PythonProjectCheckerService({
     runtimeUrl: 'https://runtime.test',
     runtimeToken: 's'.repeat(32),
     policy,
-    async inspect(input) {
+    async validate(input) {
       inspections++
       const snapshot = await verifyStudioPythonExecutionMetadata(input.snapshot)
       const main = new TextDecoder().decode(await input.read('main.py', input.signal))
@@ -42,7 +43,7 @@ export async function pythonGalleryFixture(
       const expected = Buffer.from(PNG.split(',')[1]!, 'base64')
       expect(asset.sha256).toBe(createHash('sha256').update(expected).digest('hex'))
       expect(await input.read(asset.path, input.signal)).toEqual(new Uint8Array(expected))
-      return StudioPythonInspectionReportSchema.parse({
+      const inspection = StudioPythonInspectionReportSchema.parse({
         version: 1,
         revision: snapshot.revision,
         runtimeManifestSha256: snapshot.configuration.runtime.manifestSha256,
@@ -66,10 +67,11 @@ export async function pythonGalleryFixture(
             },
           })),
       })
+      return controlledPythonValidation(input, inspection)
     },
   })
   const env = buildApp({
-    pythonActivities: inspector,
+    pythonProjectChecker: inspector,
     galleryStudioSource: unavailable ? undefined : source.service,
   })
   const course = seedSampleCourse(env.courses, 'curso-demo', 'published', 'kids')

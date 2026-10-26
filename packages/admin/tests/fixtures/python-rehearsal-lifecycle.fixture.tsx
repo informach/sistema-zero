@@ -12,8 +12,8 @@ let inspectionSignal: AbortSignal | undefined
 function receivedSignal(): AbortSignal | undefined {
   return inspectionSignal
 }
-mock.module('../../src/components/studio/inspect-python-section-project', () => ({
-  inspectPythonSectionProject: async (input: { assertCurrent(): void; signal: AbortSignal }) => {
+mock.module('../../src/components/studio/check-python-section-project', () => ({
+  checkPythonSectionProject: async (input: { assertCurrent(): void; signal: AbortSignal }) => {
     inspectionSignal = input.signal
     entered.resolve()
     await release.promise

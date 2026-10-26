@@ -26,9 +26,7 @@ import { buildGameTwoDRuntimeApiSource } from './runtimeContract'
  * `SZGame2D.createSprite(...)` no script.js e seguir o link mental até esta
  * função.
  */
-export const gameTwoDRuntimeSource =
-  buildProjectRunContextRuntime() +
-  '\n' +
+const gameTwoDEngineSource =
   `(function () {
   var _szGameUIFont = (window.SZGameUIFont && window.SZGameUIFont.family) || 'sans-serif';
   // ⚠️ Defensivo de propósito: a família deixou de vir embutida no runtime e passou
@@ -124,4 +122,11 @@ export const gameTwoDRuntimeSource =
   `
 })();`
 
-export const gameTwoDRuntime = compactOfficialRuntimeSource(gameTwoDRuntimeSource)
+export const gameTwoDRuntimeSource = buildProjectRunContextRuntime() + '\n' + gameTwoDEngineSource
+
+// The serialized project context may contain a template literal after the host
+// build minifies it. Keep it intact and compact only the authored engine.
+export const gameTwoDRuntime =
+  buildProjectRunContextRuntime() +
+  '\n' +
+  compactOfficialRuntimeSource(gameTwoDEngineSource, { trimIndent: true })

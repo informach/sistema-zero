@@ -11,6 +11,32 @@ import { ViewportCamera } from '../src/viewport/viewportCamera'
 
 test.use({ hasTouch: false })
 
+test('timeline header changes repeat and duration with one undo each', async ({ page }, info) => {
+  const source = { ...animatedScene(), name: 'Farol de teste' }
+  await page.goto('/?nivel=god')
+  await page.locator('input[name="molda-backup"]').setInputFiles({
+    name: 'farol.molda.json',
+    mimeType: 'application/json',
+    buffer: Buffer.from(JSON.stringify(sceneToJson(source))),
+  })
+  await page.getByRole('button', { name: 'Modelo Farol de teste', exact: true }).click()
+  await page.getByRole('button', { name: COPY.scene.animationMode, exact: true }).click()
+  const timeline = page.getByRole('region', { name: COPY.scene.animationTimeline })
+  await expect(timeline.getByRole('button', { name: COPY.scene.animationPoseRecord })).toBeVisible()
+  const repeat = timeline.getByRole('checkbox', { name: COPY.scene.animationLoop })
+  await expect(repeat).toBeChecked()
+  await timeline.getByText('Repetir', { exact: true }).click()
+  await expect(repeat).not.toBeChecked()
+  const duration = timeline.getByRole('spinbutton', { name: 'Duração do movimento' })
+  await duration.fill('4')
+  await duration.press('Enter')
+  await expect(duration).toHaveValue('4')
+  await page.getByRole('button', { name: COPY.editor.undo, exact: true }).click()
+  await expect(duration).toHaveValue('2')
+  await expect(repeat).not.toBeChecked()
+  await page.screenshot({ path: info.outputPath('timeline-header.png') })
+})
+
 test('basic rings and scale preserve undo, and visible edge points cut two closed native pieces', async ({
   page,
 }, info) => {

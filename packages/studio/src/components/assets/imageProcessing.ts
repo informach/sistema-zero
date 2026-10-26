@@ -8,11 +8,27 @@ export interface ProcessedImage {
 }
 
 const DEFAULT_MAX_DIM = 512
+/** Below this the drawing stops being recognisable: refuse instead of shrinking further. */
+const MIN_STEP_DIM = 64
+
+/** The size caps of the destination project (JavaScript by default, Python passes its own). */
+export interface AssetUploadLimits {
+  maxAssetDataUrlChars: number
+  maxAudioDataUrlChars: number
+}
 
 export async function fileToAssetDataUrl(
   file: File,
   maxDim = DEFAULT_MAX_DIM,
+  /** `png`: the destination cannot open WebP (Pygame Zero finds png/gif/jpg/bmp/svg). */
+  format: 'compact' | 'png' = 'compact',
+  /**
+   * Python projects: their own size caps, and an image over the cap shrinks step by step
+   * before it is refused (a PNG has no quality knob to turn down).
+   */
+  python?: { limits: AssetUploadLimits },
 ): Promise<ProcessedImage> {
+  const maxChars = (python?.limits ?? PROJECT_ASSET_LIMITS).maxAssetDataUrlChars
   const isSvg = file.type === 'image/svg+xml' || file.name.toLowerCase().endsWith('.svg')
   if (!file.type.startsWith('image/') && !isSvg) {
     throw new Error('Selecione um arquivo de imagem.')
@@ -21,7 +37,7 @@ export async function fileToAssetDataUrl(
   const comma = sourceUrl.indexOf(',')
   if (comma < 0) throw new Error('Não foi possível ler a imagem.')
   const imageUrl = isSvg ? `data:image/svg+xml;base64,${sourceUrl.slice(comma + 1)}` : sourceUrl
-  if (isSvg && imageUrl.length > PROJECT_ASSET_LIMITS.maxAssetDataUrlChars) {
+  if (isSvg && imageUrl.length > maxChars) {
     throw new Error('O SVG é grande demais para o projeto. Simplifique o desenho no Pinta.')
   }
   const img = await loadImage(imageUrl)
@@ -33,6 +49,22 @@ export async function fileToAssetDataUrl(
     return { dataUrl: imageUrl, width: w0, height: h0 }
   }
 
+  for (let dim = maxDim; ; dim = Math.floor(dim * 0.75)) {
+    const encoded = encodeRaster(img, w0, h0, dim, format, maxChars)
+    if (encoded.dataUrl.length <= maxChars) return encoded
+    if (!python || Math.floor(dim * 0.75) < MIN_STEP_DIM || Math.max(w0, h0) <= MIN_STEP_DIM) break
+  }
+  throw new Error('A imagem continua grande demais após reduzir. Tente uma imagem menor.')
+}
+
+function encodeRaster(
+  img: HTMLImageElement,
+  w0: number,
+  h0: number,
+  maxDim: number,
+  format: 'compact' | 'png',
+  maxChars: number,
+): ProcessedImage {
   const scale = Math.min(1, maxDim / Math.max(w0, h0))
   const width = Math.max(1, Math.round(w0 * scale))
   const height = Math.max(1, Math.round(h0 * scale))
@@ -45,23 +77,22 @@ export async function fileToAssetDataUrl(
   ctx.drawImage(img, 0, 0, width, height)
 
   let dataUrl = ''
-  try {
-    dataUrl = canvas.toDataURL('image/webp', 0.85)
-  } catch {
-    // canvas pode lançar se a imagem "tingiu" (cross-origin) — improvável p/ upload local.
+  if (format === 'compact') {
+    try {
+      dataUrl = canvas.toDataURL('image/webp', 0.85)
+    } catch {
+      // canvas pode lançar se a imagem "tingiu" (cross-origin) — improvável p/ upload local.
+    }
   }
   if (!dataUrl.startsWith('data:image/webp')) {
     dataUrl = canvas.toDataURL('image/png')
   }
   // Acima do teto: tenta WebP em qualidade menor antes de desistir.
-  if (dataUrl.length > PROJECT_ASSET_LIMITS.maxAssetDataUrlChars) {
+  if (format === 'compact' && dataUrl.length > maxChars) {
     try {
       const retry = canvas.toDataURL('image/webp', 0.6)
       if (retry.startsWith('data:image/webp') && retry.length < dataUrl.length) dataUrl = retry
     } catch {}
-  }
-  if (dataUrl.length > PROJECT_ASSET_LIMITS.maxAssetDataUrlChars) {
-    throw new Error('A imagem continua grande demais após reduzir. Tente uma imagem menor.')
   }
   return { dataUrl, width, height }
 }
@@ -71,7 +102,10 @@ export async function fileToAssetDataUrl(
  * recodificar (áudio não rasteriza no canvas): só valida o tipo e o teto. Um som
  * grande demais falha com mensagem gentil (não há downscale como na imagem).
  */
-export async function fileToAudioAssetDataUrl(file: File): Promise<{ dataUrl: string }> {
+export async function fileToAudioAssetDataUrl(
+  file: File,
+  limits: AssetUploadLimits = PROJECT_ASSET_LIMITS,
+): Promise<{ dataUrl: string }> {
   if (!file.type.startsWith('audio/')) {
     throw new Error('Selecione um arquivo de som (mp3, wav, ogg…).')
   }
@@ -79,7 +113,7 @@ export async function fileToAudioAssetDataUrl(file: File): Promise<{ dataUrl: st
   if (!dataUrl.startsWith('data:audio/')) {
     throw new Error('Som inválido ou em formato não suportado.')
   }
-  if (dataUrl.length > PROJECT_ASSET_LIMITS.maxAudioDataUrlChars) {
+  if (dataUrl.length > limits.maxAudioDataUrlChars) {
     // ⚠️ A mensagem NOMEIA o wav: ele ocupa ~10× o de um mp3 pelo mesmo som, e é
     // o motivo real de 9 em 10 recusas — dizer só "grande demais" deixava a
     // criança achando que o som era longo, quando o problema era o formato.
@@ -122,6 +156,22 @@ export async function fileTo3DAssetDataUrl(file: File): Promise<{
     throw new Error('O arquivo 3D é grande demais (teto ~5 MB). Exporte um modelo mais leve.')
   }
   return { dataUrl, kind, fileName: file.name }
+}
+
+/**
+ * Lê uma fonte `.ttf`/`.otf` com o MIME FORÇADO pela extensão (o navegador dá `font/ttf`,
+ * `application/x-font-ttf` ou nada, conforme o sistema). Os bytes são conferidos no store.
+ */
+export async function fileToFontAssetDataUrl(
+  file: File,
+): Promise<{ dataUrl: string; fileName: string }> {
+  const lower = file.name.toLowerCase()
+  const mime = lower.endsWith('.ttf') ? 'font/ttf' : lower.endsWith('.otf') ? 'font/otf' : null
+  if (!mime) throw new Error('Selecione uma fonte .ttf ou .otf.')
+  const raw = await readAsDataUrl(file)
+  const comma = raw.indexOf(',')
+  if (comma < 0) throw new Error('Falha ao ler o arquivo.')
+  return { dataUrl: `data:${mime};base64,${raw.slice(comma + 1)}`, fileName: file.name }
 }
 
 function readAsDataUrl(file: File): Promise<string> {

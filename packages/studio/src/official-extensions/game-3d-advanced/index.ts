@@ -37,15 +37,15 @@ const SKELETON_UTILS_CDN = `${THREE_CDN}/examples/jsm/utils/SkeletonUtils.js?ext
 export const gameKit3DExtension: ExtensionDefinition = {
   manifest: gameKit3DManifest,
   examples: defineExtensionExamples(
-    17,
+    20,
     async () => (await import('./exampleCatalog')).gameKit3DExamples,
   ),
   conflictsWith: fullscreenConflictsFor('game-3d-advanced'),
-  // Reclassificado p/ INTERMEDIÁRIO 3D (26/07/2026): o kit passa a abrir no Arquiteto
-  // de Mundos (junto do Mundo 3D), não só na Lenda. Continua sendo base de engine
-  // (FSM/pooling/grade), mas gated pela jornada (só chega ao Arquiteto quem subiu 6
-  // níveis). O piso por prefixo sz_g3k_ (em blockLevels.ts) acompanha este minLevel.
-  minLevel: 'intermediario-3d',
+  // AVANÇADO 3D (review 3D, 10/2026): uma extensão por degrau. Jogo 3D abre no
+  // iniciante-3d, Mundo 3D no intermediario-3d e este kit de engine (FSM/pooling/grade)
+  // fica no degrau de cima. O piso por prefixo sz_g3k_ (em blockLevels.ts) acompanha
+  // este minLevel.
+  minLevel: 'avancado-3d',
   blockly: {
     blocks: gameKit3DBlocks,
     toolboxCategory: gameKit3DToolboxCategory,

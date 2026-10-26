@@ -10,6 +10,7 @@ import { ensureBlocklyInitialized } from '../../../blockly/setup'
 import { buildWorkspaceStateFromIR } from '../../../blockly/workspaceState'
 import { parseJS } from '../../../parsers/js'
 import { gameKitBlocks } from '../blocks'
+import { gameKitExamples } from '../exampleCatalog'
 import {
   arenaGoblinsExample,
   aventuraProfissionalExample,
@@ -126,7 +127,7 @@ const REQUIRED_TYPES = {
     'gk:restartGame',
     'gk:charactersTouch',
     'gk:gameWidth',
-    'canvasFillText',
+    'gk:drawText',
   ],
   'Arena dos Goblins': [
     'gk:onEvent',
@@ -597,8 +598,10 @@ beforeAll(() => {
 })
 
 describe('game-2d-advanced — catálogo dos exemplos', () => {
-  it('manifest mantém os 38 exemplos canônicos na ordem da vitrine', () => {
-    expect(gameKitExtension.examples.count).toBe(EXAMPLES.length)
+  it('manifest mantém os 38 jogos canônicos e as dez receitas na vitrine', () => {
+    expect(EXAMPLES).toHaveLength(38)
+    expect(gameKitExamples).toHaveLength(48)
+    expect(gameKitExtension.examples.count).toBe(gameKitExamples.length)
     expect(gameKitExtension.minLevel).toBe('intermediario-2d')
   })
 

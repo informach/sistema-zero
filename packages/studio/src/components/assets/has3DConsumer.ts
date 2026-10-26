@@ -1,4 +1,5 @@
 import type { EditableStudioProject as Project } from '../../core/editableProject'
+import { projectUsesRaylib, projectUsesRaylib3D } from '../../core/raylibMediaPaths'
 
 /**
  * Quem CONSOME `.glb`/`.hdr` no projeto. Sem nenhum consumidor, um binário 3D seria
@@ -50,7 +51,9 @@ function blocksStateUsesCanvas3D(blocksState: Project['blocksState']): boolean {
 export function projectHas3DConsumer(
   project: ThreeDConsumerProjectLike | null | undefined,
 ): boolean {
-  if (!project || project.programmingLanguage === 'python') return false
+  if (!project) return false
+  // In Python only the Raylib 3D extension opens a model (`load_model('models/nave.glb')`).
+  if (project.programmingLanguage === 'python') return projectUsesRaylib3D(project)
   // Pro imports engines through npm; block-extension installation is not its capability gate.
   if (project.kind === 'pro') return true
   if ((project.installedExtensions ?? []).some((e) => THREE_D_CONSUMER_EXTENSIONS.has(e.id))) {
@@ -76,10 +79,32 @@ export function projectHas3DMaterials(
   project: (ThreeDConsumerProjectLike & Pick<Project, 'assets'>) | null | undefined,
   hasMoldaLibrary: boolean,
 ): boolean {
-  if (project?.programmingLanguage === 'python') return false
-  if (hasMoldaLibrary) return true
-  if (projectHas3DConsumer(project)) return true
-  return (project?.assets ?? []).some(
+  const has3DFile = (project?.assets ?? []).some(
     (asset) => asset.kind === 'model3d' || asset.kind === 'environment3d',
   )
+  // Python: only Raylib reaches the Molda (its texture is an image in Raylib 2D too). Without
+  // Raylib, the tab stays only to manage a 3D file left behind (removing Raylib 3D keeps it).
+  if (project?.programmingLanguage === 'python' && !projectUsesRaylib(project)) return has3DFile
+  if (hasMoldaLibrary) return true
+  if (projectHas3DConsumer(project)) return true
+  return has3DFile
+}
+
+/**
+ * Whether a model, a sky, a texture or a drawing may enter the project from the Molda and the
+ * Team windows. Raylib has its own rule: a texture is an image in Raylib 2D, and a model or a
+ * sky needs Raylib 3D (the sky enters as a panorama PNG: the desktop raylib does not open .hdr).
+ */
+export function creationBlockedFor3D(
+  kind: 'model' | 'sky' | 'texture' | 'drawing',
+  gate: { has3D: boolean; raylib: boolean },
+): boolean {
+  if (kind === 'texture' || kind === 'drawing') return false
+  if (gate.raylib) return !gate.has3D
+  return !gate.has3D
+}
+
+/** The note that explains the blocked creations in that project. */
+export function creation3DNoteKey(gate: { raylib: boolean }): string {
+  return gate.raylib ? 'moldaImport.needs3dRaylib' : 'moldaImport.needs3d'
 }

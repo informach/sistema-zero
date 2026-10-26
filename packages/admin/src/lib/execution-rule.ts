@@ -66,6 +66,8 @@ export function targetLabel(target: ExecutionTarget): string {
   switch (target.kind) {
     case 'value':
       return target.path || '(variável)'
+    case 'moduleValue':
+      return `${target.path || '(valor exportado)'} (${target.module || '(arquivo)'})`
     case 'spritePosition':
       return `${target.path || '(personagem)'}.${target.axis}`
     case 'text':

@@ -2,10 +2,56 @@ import { resolveStudioProjectCapabilities } from '@sistemazero/core/studio/proje
 import { selectStudioRuntimeRelease } from '@sistemazero/core/studio/runtime-catalog'
 import type { PythonProjectDocument } from '../../core/editableProject'
 import type { StudioRuntimeEnvironment } from '../../runtime/environment'
+import { PGZERO_EXTENSION } from '../../runtime/python/pgzero/contract'
+import { PYGAME_EXTENSION } from '../../runtime/python/pygame/contract'
+import {
+  RAYLIB_2D_EXTENSION,
+  RAYLIB_3D_EXTENSION,
+  RAYLIB_EXTENSION_IDS,
+} from '../../runtime/python/raylib/contract'
 import { TURTLE_EXTENSION } from '../../runtime/python/turtle/contract'
 import type { ProjectStoreApi } from '../../state/projectStore'
 import type { PythonAnalysisController } from '../language/controller'
-import { PYTHON_EXTENSIONS } from './catalog'
+import { PYTHON_CANVAS_EXTENSION_IDS, PYTHON_EXTENSIONS } from './catalog'
+
+/**
+ * Raylib 2D and Raylib 3D are mutually exclusive, like every canvas extension, but one can take
+ * the place of the other in a single step: the same pyray code runs on both, and asking the
+ * learner to remove one first would be blocked by code that uses it.
+ */
+export function pythonRaylibSwapRival(
+  installed: readonly { id: string }[],
+  extension: { id: string },
+): { id: string } | undefined {
+  if (!(RAYLIB_EXTENSION_IDS as readonly string[]).includes(extension.id)) return undefined
+  return installed.find(
+    (item) =>
+      item.id !== extension.id && (RAYLIB_EXTENSION_IDS as readonly string[]).includes(item.id),
+  )
+}
+
+/**
+ * Which check of the learner's code a change needs, if any: removing Turtle or a Raylib while
+ * the code still imports it, or swapping Raylib 3D for Raylib 2D while the code calls a 3D
+ * function (it would fail with Raylib 2D). The panel prepares the analysis from this answer.
+ */
+export function pythonExtensionCodeCheck(
+  installed: readonly { id: string }[],
+  extension: { id: string },
+  action: 'install' | 'remove',
+): 'turtle' | 'pgzero' | 'pygame' | 'raylib-remove' | 'raylib-to-2d' | null {
+  if (action === 'remove') {
+    if (extension.id === TURTLE_EXTENSION.id) return 'turtle'
+    if (extension.id === PGZERO_EXTENSION.id) return 'pgzero'
+    if (extension.id === PYGAME_EXTENSION.id) return 'pygame'
+    return (RAYLIB_EXTENSION_IDS as readonly string[]).includes(extension.id)
+      ? 'raylib-remove'
+      : null
+  }
+  return extension.id === RAYLIB_2D_EXTENSION.id && pythonRaylibSwapRival(installed, extension)
+    ? 'raylib-to-2d'
+    : null
+}
 
 export function pythonExtensionInstallIssue(
   project: PythonProjectDocument,
@@ -19,6 +65,19 @@ export function pythonExtensionInstallIssue(
     )
   )
     return 'Esta extensão Python ainda não está disponível.'
+  const swapped = pythonRaylibSwapRival(project.installedExtensions, extension)
+  const canvasRival = PYTHON_CANVAS_EXTENSION_IDS.includes(extension.id)
+    ? project.installedExtensions.find(
+        (item) =>
+          item.id !== extension.id &&
+          item.id !== swapped?.id &&
+          PYTHON_CANVAS_EXTENSION_IDS.includes(item.id),
+      )
+    : undefined
+  if (canvasRival) {
+    const name = (id: string) => PYTHON_EXTENSIONS.find((item) => item.id === id)?.name ?? id
+    return `${name(canvasRival.id)} e ${name(extension.id)} usam a mesma tela: remova ${name(canvasRival.id)} antes de instalar ${name(extension.id)}.`
+  }
   if (!environment) return 'O ambiente Python ainda não está disponível nesta página.'
   if (allowedIds && !allowedIds.includes(extension.id))
     return 'Esta ferramenta não está liberada nesta tarefa.'
@@ -29,7 +88,7 @@ export function pythonExtensionInstallIssue(
   if (access.releaseStatus !== 'active')
     return 'Esta versão do ambiente não aceita novas extensões.'
   const installedExtensions = project.installedExtensions
-    .filter((item) => item.id !== extension.id)
+    .filter((item) => item.id !== extension.id && item.id !== swapped?.id)
     .map(({ id, version }) => ({ id, version }))
   const resolved = resolveStudioProjectCapabilities({
     ...access,
@@ -52,6 +111,10 @@ export function pythonExtensionInstallIssue(
     )
     ? null
     : 'Esta extensão não está liberada para este projeto.'
+}
+
+function extensionName(id: string) {
+  return PYTHON_EXTENSIONS.find((item) => item.id === id)?.name ?? id
 }
 
 /** Re-check authority at the action boundary; never delete or rewrite learner source. */
@@ -128,31 +191,118 @@ export async function changePythonExtension(options: {
       if (existing?.version === extension.version) return
       if (existing) throw new Error('Remova a versão instalada antes de escolher outra.')
     } else if (!existing) return
-    if (action === 'remove' && extension.id === TURTLE_EXTENSION.id) {
+    const check = pythonExtensionCodeCheck(expected.installedExtensions, extension, action)
+    if (check === 'turtle' || check === 'pgzero' || check === 'pygame') {
       if (!options.analysis || !removalPolicy?.environment)
         throw new Error(
           'A análise Python não está disponível para conferir a remoção. Seu código foi preservado.',
         )
-      const { inspectPythonTurtleRemoval, PythonExtensionInUseError } = await import(
+      const { inspectPythonReferences, PythonExtensionInUseError } = await import(
         './removalReferences'
       )
       current()
-      let references: Awaited<ReturnType<typeof inspectPythonTurtleRemoval>>
+      const label = extensionName(extension.id)
+      const modules =
+        check === 'turtle'
+          ? ['turtle', 'formas_do_pinta']
+          : check === 'pgzero'
+            ? ['pgzero', 'pgzrun', 'pygame']
+            : ['pygame', 'pinta']
+      let references: Awaited<ReturnType<typeof inspectPythonReferences>>
       try {
-        references = await inspectPythonTurtleRemoval(expected, options.analysis, current)
+        const implicit =
+          check === 'pgzero'
+            ? await import('./pgzero/catalog').then(({ PGZERO_BUILTINS }) => ({
+                provided: {
+                  provider: 'pgzero',
+                  names: [...PGZERO_BUILTINS.keys()],
+                  handlers: [
+                    'draw',
+                    'update',
+                    'on_key_down',
+                    'on_key_up',
+                    'on_mouse_down',
+                    'on_mouse_up',
+                    'on_mouse_move',
+                    'on_music_end',
+                  ],
+                },
+              }))
+            : {}
+        current()
+        references = await inspectPythonReferences(expected, options.analysis, current, {
+          modules,
+          label,
+          ...implicit,
+        })
       } catch (cause) {
         current()
         throw new Error(
-          `Não foi possível concluir a análise de remoção de Turtle: ${cause instanceof Error ? cause.message : 'análise indisponível'}. Seu código e seus materiais foram preservados.`,
+          `Não foi possível concluir a análise de remoção de ${label}: ${cause instanceof Error ? cause.message : 'análise indisponível'}. Seu código e seus materiais foram preservados.`,
         )
       }
       current()
-      if (references.length) throw new PythonExtensionInUseError(references)
+      if (references.length)
+        throw new PythonExtensionInUseError(references, {
+          subject: `${label} ainda é usada`,
+          advice: 'Ajuste esses trechos antes de remover.',
+        })
+    }
+    const swapped =
+      action === 'install'
+        ? pythonRaylibSwapRival(expected.installedExtensions, extension)
+        : undefined
+    const raylibCheck =
+      check === 'raylib-remove' ? 'remove' : check === 'raylib-to-2d' ? 'to-2d' : null
+    if (raylibCheck) {
+      if (!options.analysis || !(removalPolicy ?? initialPolicy).environment)
+        throw new Error(
+          'A análise Python não está disponível para conferir o código. Seu código foi preservado.',
+        )
+      const { inspectPythonReferences, PythonExtensionInUseError } = await import(
+        './removalReferences'
+      )
+      const label = raylibCheck === 'remove' ? extensionName(extension.id) : 'Raylib 3D'
+      const query =
+        raylibCheck === 'remove'
+          ? { modules: ['pyray', 'raylib'], label }
+          : await import('../../runtime/python/raylib/threeDFunctions.generated').then(
+              ({ RAYLIB_3D_FUNCTIONS, RAYLIB_3D_C_FUNCTIONS }) => ({
+                modules: ['pyray', 'raylib'],
+                label,
+                names: new Set([...RAYLIB_3D_FUNCTIONS, ...RAYLIB_3D_C_FUNCTIONS]),
+              }),
+            )
+      current()
+      let references: Awaited<ReturnType<typeof inspectPythonReferences>>
+      try {
+        references = await inspectPythonReferences(expected, options.analysis, current, query)
+      } catch (cause) {
+        current()
+        throw new Error(
+          `Não foi possível conferir o código: ${cause instanceof Error ? cause.message : 'análise indisponível'}. Seu código e seus materiais foram preservados.`,
+        )
+      }
+      current()
+      if (references.length)
+        throw new PythonExtensionInUseError(
+          references,
+          raylibCheck === 'remove'
+            ? {
+                subject: `O código ainda usa o raylib`,
+                advice: `Apague esses trechos antes de remover ${label}. Para trocar de Raylib, instale ${extensionName(extension.id === RAYLIB_2D_EXTENSION.id ? RAYLIB_3D_EXTENSION.id : RAYLIB_2D_EXTENSION.id)} direto: ela entra no lugar desta.`,
+              }
+            : {
+                subject: 'O código usa funções que só a Raylib 3D tem',
+                advice:
+                  'Com a Raylib 2D elas dariam erro. Tire esses trechos antes de trocar para a Raylib 2D.',
+              },
+        )
     }
     const extensions =
       action === 'install'
         ? [
-            ...expected.installedExtensions,
+            ...expected.installedExtensions.filter((item) => item.id !== swapped?.id),
             { id: extension.id, version: extension.version, installedAt: Date.now() },
           ]
         : expected.installedExtensions.filter((item) => item.id !== extension.id)

@@ -57,3 +57,10 @@ export function pythonSemanticTree(value: PythonValue): unknown {
     ),
   }
 }
+/** The Name at the start of `a.b.c` / `a[0].b`, if any. */
+export function pythonRootName(value: PythonValue | undefined): PythonNode | undefined {
+  let current = isNode(value) ? value : undefined
+  while (current && (current.kind === 'Attribute' || current.kind === 'Subscript'))
+    current = isNode(current.fields.value) ? current.fields.value : undefined
+  return current?.kind === 'Name' && typeof current.fields.id === 'string' ? current : undefined
+}

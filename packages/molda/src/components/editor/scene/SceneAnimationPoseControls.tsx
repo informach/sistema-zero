@@ -9,6 +9,7 @@ export function SceneAnimationPoseControls({
   gesture,
   enabled,
   panel = false,
+  showRecord = true,
   onRecord,
   onAutoKey,
   canMark = false,
@@ -16,6 +17,7 @@ export function SceneAnimationPoseControls({
   gesture: SceneAnimationPoseGesture
   enabled: boolean
   panel?: boolean
+  showRecord?: boolean
   onRecord?(): void
   onAutoKey?(enabled: boolean): void
   canMark?: boolean
@@ -51,17 +53,15 @@ export function SceneAnimationPoseControls({
       }
     >
       <div className={panel ? 'grid gap-2' : 'flex flex-wrap items-center gap-2'}>
-        <button
-          type="button"
-          className={`sz-tool-pill ${panel ? 'mld-pill-sun w-full justify-center' : 'sz-tool-pill--primary'} text-sm disabled:cursor-not-allowed disabled:opacity-50`}
-          disabled={
-            !enabled || (!snapshot.pending && !canMark) || snapshot.dragging || !!snapshot.error
-          }
-          onClick={onRecord ?? gesture.record}
-        >
-          <DiamondPlus aria-hidden="true" />
-          {copy.animationPoseRecord}
-        </button>
+        {showRecord && (
+          <SceneAnimationPoseRecordButton
+            gesture={gesture}
+            enabled={enabled}
+            canMark={canMark}
+            onRecord={onRecord}
+            panel={panel}
+          />
+        )}
         {(!panel || snapshot.pending || snapshot.error) && (
           <button
             type="button"
@@ -99,5 +99,35 @@ export function SceneAnimationPoseControls({
         </p>
       )}
     </section>
+  )
+}
+
+export function SceneAnimationPoseRecordButton({
+  gesture,
+  enabled,
+  canMark = false,
+  onRecord,
+  panel = false,
+}: {
+  gesture: SceneAnimationPoseGesture
+  enabled: boolean
+  canMark?: boolean
+  onRecord?(): void
+  panel?: boolean
+}) {
+  const snapshot = useSyncExternalStore(gesture.subscribe, gesture.getSnapshot, gesture.getSnapshot)
+  if (!useMoldaToolAccess().can('animate.create')) return null
+  return (
+    <button
+      type="button"
+      className={`sz-tool-pill ${panel ? 'mld-pill-sun w-full justify-center' : 'sz-tool-pill--primary'} shrink-0 text-sm disabled:cursor-not-allowed disabled:opacity-50`}
+      disabled={
+        !enabled || (!snapshot.pending && !canMark) || snapshot.dragging || !!snapshot.error
+      }
+      onClick={onRecord ?? gesture.record}
+    >
+      <DiamondPlus aria-hidden="true" />
+      {COPY.scene.animationPoseRecord}
+    </button>
   )
 }

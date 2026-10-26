@@ -1,5 +1,5 @@
 import type { FunnelRepo, Lead, LeadUpdate } from '../db/repo'
-import type { FunnelOfferContract } from '../funnels/registry'
+import { type FunnelOfferContract, getFunnelByKey } from '../funnels/registry'
 import {
   type AddressFormInput,
   BoletoFormSchema,
@@ -128,6 +128,14 @@ function leadMetadata(
     nome: lead.nome,
     email: lead.email,
     telefone: lead.telefone,
+  }
+  // Authority is the registered server-side lead origin, never a browser field,
+  // product label, SKU prefix or the current default funnel for legacy purchases.
+  const funnel = getFunnelByKey(lead.funnel)
+  if (funnel) {
+    meta.billingAudience = funnel.audience === 'kids' ? 'kids' : 'adult'
+    meta.billingAudienceSource = 'funnel-registry-v1'
+    meta.billingFunnelKey = funnel.key
   }
   if (charge.couponCode) meta.couponCode = charge.couponCode
   return meta

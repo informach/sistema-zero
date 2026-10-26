@@ -19,9 +19,9 @@ export class AuthorizeAuthoringRuntimeService {
     private readonly clock: () => number = Date.now,
   ) {}
 
-  async execute(
+  async authorizeContext(
     actor: { userId: string; accountId: string; privileged: boolean; readOnly: boolean },
-    request: StudioAuthoringRuntimeRequest,
+    request: Omit<StudioAuthoringRuntimeRequest, 'revision'>,
   ) {
     if (!actor.privileged || actor.readOnly)
       throw new AccessDeniedError('Somente a equipe ativa pode executar o projeto de autoria.')
@@ -51,6 +51,15 @@ export class AuthorizeAuthoringRuntimeService {
     })
     if (resolved.releaseStatus !== 'active')
       throw new AccessDeniedError('Escolha um ambiente ativo para a autoria desta aula.')
+    return { curation, resolved }
+  }
+
+  async execute(
+    actor: { userId: string; accountId: string; privileged: boolean; readOnly: boolean },
+    request: StudioAuthoringRuntimeRequest,
+  ) {
+    const { curation, resolved } = await this.authorizeContext(actor, request)
+    const context = request.context
     const issuedAt = this.clock()
     return StudioAuthoringRuntimeDecisionSchema.parse({
       version: 1,

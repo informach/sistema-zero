@@ -10,7 +10,9 @@ import {
 import {
   makeAnimatedGlb,
   makeHdrDataUrl,
-} from '../src/official-extensions/game-3d-advanced/__tests__/assetFixtures'
+} from '../src/official-extensions/__tests__/three3d/assetFixtures'
+import { MEU_HEROI_MOLDA_SOURCE } from '../src/official-extensions/game-3d/__gen_primeirosJogos'
+import { HEROI_DO_MOLDA_GLB } from '../src/official-extensions/game-3d/exampleAssets'
 import { renderProjectToPreviewDocAsync } from '../src/preview/renderProject'
 
 const EXPERIENCE_LABEL = {
@@ -371,7 +373,7 @@ async function openAndExercise(page: Page, contract: ExampleQAContract): Promise
         descriptionId: expect.stringMatching(/\S/),
         tabIndex: '0',
         description: expect.stringMatching(
-          /setas|espaço|enter|arraste|segurando|mouse|dedo|toque|↑|←/i,
+          /setas|espaço|enter|arraste|segurando|mouse|dedo|toque|cliqu|teclas?|↑|←|\buse\s+[1-9](?:\s+a\s+[1-9])?\b/i,
         ),
       })
   }
@@ -587,6 +589,237 @@ SZGameKit3D.start();
   await page.locator('#pending-assets-preview').evaluate((iframe) => iframe.remove())
   await page.waitForTimeout(300)
 
+  expect(diagnostics, diagnostics.join('\n')).toEqual([])
+})
+
+/**
+ * Review 3D (lote 15): o MESMO caminho de GLB animado + HDR do Avançado, agora no Jogo 3D e no
+ * Mundo 3D, que passaram a usar o carregador comum (`three3dModelsRuntime.ts`). O modelo é o
+ * GLB REAL do Molda com ossos que o exemplo "Meu herói do Molda" embute (clipes "Acenar" e
+ * "Esticar"); o céu é um HDR vermelho, que prova pelo pixel que o fundo é a foto 360°.
+ */
+function collect3DDiagnostics(page: Page): string[] {
+  const diagnostics: string[] = []
+  page.on('pageerror', (error) => diagnostics.push(`pageerror: ${error.message}`))
+  page.on('console', (message) => {
+    if (message.type() !== 'warning' && message.type() !== 'error') return
+    const text = message.text()
+    if (text.includes('GL Driver Message') && text.includes('ReadPixels')) return
+    diagnostics.push(`${message.type()}: ${text}`)
+  })
+  return diagnostics
+}
+
+function moldaAssetsProject(
+  id: string,
+  extensionId: 'game-3d' | 'world-3d',
+  script: string,
+): Project {
+  const now = Date.now()
+  return {
+    id,
+    name: `Molda no ${extensionId}`,
+    createdAt: now,
+    updatedAt: now,
+    mode: 'bridge',
+    files: {
+      'index.html': '<main></main>',
+      'style.css': 'html, body { margin: 0; overflow: hidden; }',
+      'script.js': script.trim(),
+    },
+    assets: [
+      {
+        id: 'asset-heroi',
+        name: 'heroi-do-molda',
+        kind: 'model3d',
+        dataUrl: HEROI_DO_MOLDA_GLB,
+        originalFileName: 'heroi-do-molda.glb',
+        source: 'upload',
+      },
+      {
+        id: 'asset-ceu',
+        name: 'ceu-hdr',
+        kind: 'environment3d',
+        dataUrl: makeHdrDataUrl(255, 8, 8),
+        originalFileName: 'ceu.hdr',
+        source: 'upload',
+      },
+    ],
+    ir: null,
+    blocksState: null,
+    installedExtensions: [{ id: extensionId, version: '0.1.0', installedAt: now }],
+  }
+}
+
+async function mountAssetPreview(page: Page, srcdoc: string, id: string): Promise<FrameLocator> {
+  await page.evaluate(
+    ([documentSource, frameId]) => {
+      const iframe = document.createElement('iframe')
+      iframe.id = frameId
+      iframe.setAttribute('sandbox', 'allow-scripts allow-pointer-lock')
+      iframe.style.width = '800px'
+      iframe.style.height = '500px'
+      iframe.srcdoc = documentSource
+      document.body.appendChild(iframe)
+    },
+    [srcdoc, id] as const,
+  )
+  return page.frameLocator(`#${id}`)
+}
+
+/** Linha de cima do desenho: quantas de três amostras saem com o vermelho do céu HDR. */
+async function redSkySamples(preview: FrameLocator): Promise<number> {
+  return preview
+    .locator('canvas')
+    .first()
+    .evaluate(async (element) => {
+      const target = element as HTMLCanvasElement
+      await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()))
+      const gl = target.getContext('webgl2') ?? target.getContext('webgl')
+      if (!gl || gl.drawingBufferWidth < 8 || gl.drawingBufferHeight < 8) return 0
+      const y = gl.drawingBufferHeight - Math.max(2, Math.round(gl.drawingBufferHeight * 0.04))
+      let red = 0
+      for (const share of [0.25, 0.5, 0.75]) {
+        const pixel = new Uint8Array(4)
+        const x = Math.round(gl.drawingBufferWidth * share)
+        gl.readPixels(x, y, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, pixel)
+        if (pixel[0]! > pixel[2]! + 20 && pixel[0]! > pixel[1]! + 20 && pixel[3]! > 0) red++
+      }
+      return red
+    })
+}
+
+/** Segunda instância removida assim que o canvas nasce: o carregamento tardio não pode quebrar. */
+async function expectTeardownWhileLoading(page: Page, srcdoc: string) {
+  await mountAssetPreview(page, srcdoc, 'pending-molda-preview')
+  await expect(page.frameLocator('#pending-molda-preview').locator('canvas')).toBeAttached({
+    timeout: 20_000,
+  })
+  await page.locator('#pending-molda-preview').evaluate((iframe) => iframe.remove())
+  await page.waitForTimeout(300)
+}
+
+test('game-3d: o herói do Molda (GLB com ossos) anima e o céu HDR percorre o preview real', async ({
+  page,
+}) => {
+  const diagnostics = collect3DDiagnostics(page)
+  const project = moldaAssetsProject(
+    'e2e-game-3d-molda',
+    'game-3d',
+    `${MEU_HEROI_MOLDA_SOURCE}
+SZGame3D.skyPhoto(cena, "ceu-hdr");
+window.__heroi = heroi;`,
+  )
+  const srcdoc = await renderProjectToPreviewDocAsync(project)
+
+  await page.goto('/')
+  await page.evaluate(() => document.body.replaceChildren())
+  const preview = await mountAssetPreview(page, srcdoc, 'molda-preview')
+  const canvas = preview.locator('canvas').first()
+  await expect(canvas).toBeVisible({ timeout: 20_000 })
+
+  const heroState = () =>
+    preview.locator('body').evaluate(() => {
+      type Node3D = { isSkinnedMesh?: boolean; traverse(fn: (node: Node3D) => void): void }
+      const host = window as unknown as {
+        __SZGAME_ASSETS_3D?: Record<string, unknown>
+        __heroi?: {
+          userData?: { sz?: { modelRoot?: Node3D; anim?: { current(): string } | null } }
+        }
+      }
+      const state = host.__heroi?.userData?.sz
+      let skinned = 0
+      state?.modelRoot?.traverse((node) => {
+        if (node.isSkinnedMesh) skinned++
+      })
+      return {
+        assetKinds: Object.keys(host.__SZGAME_ASSETS_3D ?? {}).sort(),
+        skinned: skinned > 0,
+        clip: state?.anim?.current() ?? '',
+      }
+    })
+
+  // Parado, o exemplo pede "Acenar" a cada quadro.
+  await expect
+    .poll(heroState, { timeout: 20_000 })
+    .toEqual({ assetKinds: ['ceu-hdr', 'heroi-do-molda'], skinned: true, clip: 'Acenar' })
+
+  // Andando (setas), o mesmo laço troca para "Esticar".
+  await canvas.click({ position: { x: 400, y: 250 } })
+  await page.keyboard.down('ArrowUp')
+  await expect.poll(async () => (await heroState()).clip, { timeout: 10_000 }).toBe('Esticar')
+  await page.keyboard.up('ArrowUp')
+
+  await expect.poll(() => redSkySamples(preview), { timeout: 20_000 }).toBeGreaterThanOrEqual(2)
+
+  await expectTeardownWhileLoading(page, srcdoc)
+  expect(diagnostics, diagnostics.join('\n')).toEqual([])
+})
+
+test('world-3d: personagem e "Pôr o modelo" do Molda com o céu HDR percorrem o preview real', async ({
+  page,
+}) => {
+  const diagnostics = collect3DDiagnostics(page)
+  // Clipe inexistente ou modelo que não carrega viram aviso no console (e reprovam abaixo).
+  // Código cru da Ponte: o `start()` é do código (o gerador só o emite a partir da IR).
+  const project = moldaAssetsProject(
+    'e2e-world-3d-molda',
+    'world-3d',
+    `
+SZWorld3D.setup({ style: 'floresta', world: 120 });
+SZWorld3D.person('#3b82f6', 'nenhum');
+SZWorld3D.personModel('heroi-do-molda', 1.7);
+SZWorld3D.modelAnim('personagem', '', 'parado', 'Acenar');
+SZWorld3D.modelAnim('personagem', '', 'andando', 'Esticar');
+SZWorld3D.placeModel('heroi-do-molda', 4, 6, 2, 0, 'Esticar');
+SZWorld3D.skyPhoto('ceu-hdr');
+SZWorld3D.start();
+`,
+  )
+  const srcdoc = await renderProjectToPreviewDocAsync(project)
+
+  await page.goto('/')
+  await page.evaluate(() => document.body.replaceChildren())
+  const preview = await mountAssetPreview(page, srcdoc, 'molda-preview')
+  const canvas = preview.locator('canvas').first()
+  await expect(canvas).toBeVisible({ timeout: 20_000 })
+  const startButton = preview.locator('button:visible').first()
+  if ((await startButton.count()) > 0) await startButton.click({ force: true })
+
+  await expect
+    .poll(
+      () =>
+        preview
+          .locator('body')
+          .evaluate(() =>
+            Object.keys(
+              (window as unknown as { __SZGAME_ASSETS_3D?: Record<string, unknown> })
+                .__SZGAME_ASSETS_3D ?? {},
+            ).sort(),
+          ),
+      { timeout: 20_000 },
+    )
+    .toEqual(['ceu-hdr', 'heroi-do-molda'])
+
+  await expect.poll(() => redSkySamples(preview), { timeout: 20_000 }).toBeGreaterThanOrEqual(2)
+
+  // O corpo do Molda segue a física do personagem: W anda para a frente (+z).
+  const playerZ = () =>
+    preview
+      .locator('body')
+      .evaluate(
+        () =>
+          (
+            window as unknown as { SZWorld3D?: { playerPos(axis: string): number } }
+          ).SZWorld3D?.playerPos('z') ?? 0,
+      )
+  const z0 = await playerZ()
+  await canvas.click({ position: { x: 400, y: 250 } })
+  await page.keyboard.down('w')
+  await expect.poll(playerZ, { timeout: 10_000 }).toBeGreaterThan(z0 + 0.5)
+  await page.keyboard.up('w')
+
+  await expectTeardownWhileLoading(page, srcdoc)
   expect(diagnostics, diagnostics.join('\n')).toEqual([])
 })
 

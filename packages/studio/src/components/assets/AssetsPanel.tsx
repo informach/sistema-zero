@@ -1,8 +1,10 @@
+import { STUDIO_PYTHON_MATERIAL_DATA_LIMITS } from '@sistemazero/core/studio/python-material-policy'
 import { type JSX, useEffect, useId, useMemo, useRef, useState } from 'react'
 import { useShallow } from 'zustand/react/shallow'
 import { PROJECT_ASSET_LIMITS, type ProjectAsset } from '#core'
 import { Button, ConfirmDialog, Modal } from '#ui'
 import type { LibraryAsset } from '../../asset-library/catalog'
+import { exampleDrawingDocumentId, exampleDrawingRefOf } from '../../asset-library/exampleDrawings'
 import {
   getPersonalAsset,
   getPersonalAssetsNamespace,
@@ -17,7 +19,14 @@ import {
   takeDrawingSyncFailures,
 } from '../../asset-library/personalSync'
 import { isPythonProject, type EditableStudioProject as Project } from '../../core/editableProject'
+import {
+  type PgzeroAudioRole,
+  pgzeroCodeName,
+  projectUsesPgzero,
+} from '../../core/pgzeroMediaPaths'
+import { projectUsesRaylib, raylibCodePath } from '../../core/raylibMediaPaths'
 import { captureAndStoreProjectThumb } from '../../cover/thumbCapture'
+import { hasPygameExtension } from '../../runtime/python/pygame/contract'
 import { useProjectStore, useProjectStoreApi } from '../../state/projectStore'
 import { retryProApplication } from '../../state/proRevision'
 import {
@@ -41,11 +50,13 @@ import {
   evidencedOriginOf,
   personalKindOf,
 } from './creationOrigin'
+import { linkExampleDrawing } from './exampleDrawingLink'
 import { projectHas3DConsumer, projectHas3DMaterials } from './has3DConsumer'
 import {
   fileTo3DAssetDataUrl,
   fileToAssetDataUrl,
   fileToAudioAssetDataUrl,
+  fileToFontAssetDataUrl,
 } from './imageProcessing'
 import { MoldaImportDialog } from './MoldaImportDialog'
 import { PintaImportDialog } from './PintaImportDialog'
@@ -53,6 +64,7 @@ import { ProAssetPaths } from './ProAssetPaths'
 import { TeamImportDialog } from './TeamImportDialog'
 import { TileConfigDialog, type TileConfigDialogProps } from './TileConfigDialog'
 import { type AssetsTabItem, AssetsTabStrip } from './tabs/common'
+import { FontsTab } from './tabs/FontsTab'
 import { ImagesTab } from './tabs/ImagesTab'
 import { Models3DTab } from './tabs/Models3DTab'
 import { SoundsTab } from './tabs/SoundsTab'
@@ -100,6 +112,29 @@ type PendingDeletion =
   | { scope: 'project'; id: string; name: string; operation?: ProWorkspaceOperation }
   | { scope: 'personal'; id: string; name: string }
 
+/**
+ * Uma aba em branco com "Preparando o desenho…", aberta no gesto do clique. Sem `noopener`
+ * (com ele o navegador devolve `null` e não haveria como levá-la ao Pinta depois); o
+ * `opener` é cortado logo em seguida. Bloqueada ou indisponível → `null` (o host abre como
+ * sempre).
+ */
+function openPreparingTab(): Window | null {
+  try {
+    const tab = window.open('', '_blank')
+    if (!tab) return null
+    try {
+      tab.opener = null
+      tab.document.title = 'Preparando o desenho…'
+      tab.document.body.textContent = 'Preparando o desenho no Pinta…'
+    } catch {
+      // A aba é nossa (about:blank); se o navegador não deixar escrever, ela só fica em branco.
+    }
+    return tab
+  } catch {
+    return null
+  }
+}
+
 export function AssetsPanel({
   open,
   onClose,
@@ -112,6 +147,39 @@ export function AssetsPanel({
   const t = useT()
   const isPro = useProjectStore((s) => s.project?.kind === 'pro')
   const isPython = useProjectStore((s) => !!s.project && isPythonProject(s.project))
+  // Pygame Zero reads images/, sounds/ and music/ by name: the store places each upload.
+  const usesPgzero = useProjectStore(
+    (s) => !!s.project && isPythonProject(s.project) && projectUsesPgzero(s.project),
+  )
+  // Raylib opens a material by its PATH (`images/nave.png`): fonts, and the two sound doors.
+  const usesRaylib = useProjectStore(
+    (s) => !!s.project && isPythonProject(s.project) && projectUsesRaylib(s.project),
+  )
+  // Pygame Zero opens a material by its FILE name and Raylib by its path: every card shows it.
+  const codeEntrypoint = useProjectStore((s) =>
+    s.project &&
+    isPythonProject(s.project) &&
+    (projectUsesPgzero(s.project) || projectUsesRaylib(s.project))
+      ? s.project.python.entrypoint
+      : undefined,
+  )
+  const usesPygame = useProjectStore(
+    (s) =>
+      !!s.project &&
+      isPythonProject(s.project) &&
+      hasPygameExtension(s.project.installedExtensions),
+  )
+  const codeNameOf = useMemo(
+    () =>
+      codeEntrypoint !== undefined
+        ? usesRaylib
+          ? (asset: ProjectAsset) => raylibCodePath(asset, codeEntrypoint)
+          : (asset: ProjectAsset) => pgzeroCodeName(asset, codeEntrypoint)
+        : usesPygame
+          ? (asset: ProjectAsset) => asset.proPath
+          : undefined,
+    [codeEntrypoint, usesRaylib, usesPygame],
+  )
   const { hasProject, assets, has3DExtension, has3DMaterials, coverAssetName } = useProjectStore(
     useShallow((s) => ({
       hasProject: Boolean(s.project),
@@ -149,7 +217,10 @@ export function AssetsPanel({
   }
   const fileRef = useRef<HTMLInputElement>(null)
   const soundRef = useRef<HTMLInputElement>(null)
+  // Which Pygame Zero door opened the sound picker (a short sound or a song).
+  const audioRoleRef = useRef<PgzeroAudioRole | undefined>(undefined)
   const modelRef = useRef<HTMLInputElement>(null)
+  const fontRef = useRef<HTMLInputElement>(null)
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
   const [pendingDeletion, setPendingDeletion] = useState<PendingDeletion | null>(null)
@@ -163,8 +234,10 @@ export function AssetsPanel({
   // .glb / céu .hdr) vivem na mesma lista de assets; separamos só para exibir
   // em seções distintas (um .glb na grade de imagens viraria <img> quebrado).
   const images = assets.filter(
-    (a) => a.kind !== 'audio' && a.kind !== 'model3d' && a.kind !== 'environment3d',
+    (a) =>
+      a.kind !== 'audio' && a.kind !== 'model3d' && a.kind !== 'environment3d' && a.kind !== 'font',
   )
+  const fonts = assets.filter((a) => a.kind === 'font')
   const sounds = assets.filter((a) => a.kind === 'audio')
   const models3d = assets.filter((a) => a.kind === 'model3d' || a.kind === 'environment3d')
   // "Usar como peças" / "Usar como mapa (fatiar)" — upload vira tileset/mapa sem Pinta.
@@ -360,7 +433,18 @@ export function AssetsPanel({
    */
   const editTargetOf = (asset: ProjectAsset): EditTarget | null => {
     const id = personalIdOf(asset)
-    if (!id) return null
+    if (!id) {
+      // Desenho de um jogo de exemplo: o Pinta só o recebe quando a criança pede.
+      const example = isPython ? exampleDrawingRefOf(asset) : null
+      return example && onEditDrawing && pintaLibrary?.importDrawings
+        ? {
+            id: exampleDrawingDocumentId(example),
+            origin: 'pinta',
+            open: onEditDrawing,
+            example: true,
+          }
+        : null
+    }
     const origin = creationOriginOf(asset, personalById.get(id), catalogOrigins.get(id))
     if (!origin) return null
     const open = origin === 'pinta' ? onEditDrawing : onEditCreation
@@ -375,8 +459,72 @@ export function AssetsPanel({
    */
   const openInOriginApp = (asset: ProjectAsset, target: EditTarget) => {
     setError(null)
+    if (target.example) {
+      void editExampleDrawing(asset, target)
+      return
+    }
     target.open(target.id)
     void repairPersonalRecord(asset, target)
+  }
+
+  /**
+   * Primeira edição de um desenho de jogo de exemplo: copia para a galeria do Pinta, prepara a
+   * imagem e liga o material (mesmo nome, mesmo arquivo); só então abre o Pinta no desenho
+   * novo. Daí em diante o material é um desenho do Pinta comum e o clique abre direto.
+   */
+  const preparingExamples = useRef(
+    new Map<string, { tab: Window | null; controller: AbortController }>(),
+  )
+  const [preparingExample, setPreparingExample] = useState<string | null>(null)
+  // O painel que sai no meio da preparação cancela o que está em voo e fecha a aba
+  // "Preparando o desenho…" (sem isto ela ficava órfã, em branco, para sempre).
+  useEffect(() => {
+    const preparing = preparingExamples.current
+    return () => {
+      for (const { tab, controller } of preparing.values()) {
+        controller.abort()
+        tab?.close()
+      }
+      preparing.clear()
+    }
+  }, [])
+  const editExampleDrawing = async (asset: ProjectAsset, target: EditTarget) => {
+    if (!pintaLibrary || preparingExamples.current.has(asset.id)) return
+    const controller = new AbortController()
+    // A aba nasce AQUI, ainda dentro do clique (antes de qualquer `await`): o Safari do iPad
+    // bloqueia a aberta depois. O host só a leva ao Pinta quando o desenho estiver pronto.
+    const tab = openPreparingTab()
+    preparingExamples.current.set(asset.id, { tab, controller })
+    setPreparingExample(asset.name)
+    try {
+      const result = await linkExampleDrawing(asset.id, {
+        adapter: pintaLibrary,
+        store: storeApi,
+        signal: controller.signal,
+      })
+      if (controller.signal.aborted) return
+      if (!result.ok) {
+        tab?.close()
+        setError(result.error)
+        return
+      }
+      setPersonalTick((tick) => tick + 1)
+      if (tab?.closed) {
+        // A criança fechou a aba enquanto esperava. Abrir outra agora, longe do clique, o Safari
+        // bloqueia sem avisar; o material já está ligado, então o próximo "Editar" abre direto.
+        setError('A aba do Pinta foi fechada. O desenho está pronto: toque em Editar de novo.')
+        return
+      }
+      target.open(result.drawingId, tab)
+    } catch {
+      if (controller.signal.aborted) return
+      tab?.close()
+      setError('Não deu para abrir o Pinta agora. Tente de novo.')
+    } finally {
+      if (preparingExamples.current.get(asset.id)?.controller === controller)
+        preparingExamples.current.delete(asset.id)
+      if (!controller.signal.aborted) setPreparingExample(null)
+    }
   }
 
   /**
@@ -499,7 +647,13 @@ export function AssetsPanel({
     const taken = new Set(assets.map((a) => a.name))
     try {
       for (const file of Array.from(files)) {
-        const { dataUrl, width, height } = await fileToAssetDataUrl(file)
+        const { dataUrl, width, height } = await fileToAssetDataUrl(
+          file,
+          undefined,
+          // O raylib do computador não abre WebP: no Pygame Zero e no Raylib a imagem fica PNG.
+          usesPgzero || usesRaylib ? 'png' : 'compact',
+          isPython ? { limits: STUDIO_PYTHON_MATERIAL_DATA_LIMITS } : undefined,
+        )
         const base = file.name.replace(/\.[^.]+$/, '')
         const name = uniqueAssetName(base, taken)
         const err = addAsset({ name, dataUrl, width, height, source: 'upload' })
@@ -507,6 +661,9 @@ export function AssetsPanel({
           setError(err)
           break
         }
+        // The store may keep another name (in Pygame Zero, the name the code uses): reserve
+        // every name the project really has now.
+        for (const asset of storeApi.getState().project?.assets ?? []) taken.add(asset.name)
         taken.add(name)
       }
     } catch (e) {
@@ -524,14 +681,28 @@ export function AssetsPanel({
     const taken = new Set(assets.map((a) => a.name))
     try {
       for (const file of Array.from(files)) {
-        const { dataUrl } = await fileToAudioAssetDataUrl(file)
+        const { dataUrl } = await fileToAudioAssetDataUrl(
+          file,
+          isPython ? STUDIO_PYTHON_MATERIAL_DATA_LIMITS : undefined,
+        )
         const base = file.name.replace(/\.[^.]+$/, '')
         const name = uniqueAssetName(base, taken)
-        const err = addAsset({ name, dataUrl, kind: 'audio', source: 'upload' })
+        const err = addAsset({
+          name,
+          dataUrl,
+          kind: 'audio',
+          source: 'upload',
+          ...((usesPgzero || usesRaylib) && audioRoleRef.current
+            ? { pgzeroAudio: audioRoleRef.current }
+            : {}),
+        })
         if (err) {
           setError(err)
           break
         }
+        // The store may keep another name (in Pygame Zero, the name the code uses): reserve
+        // every name the project really has now.
+        for (const asset of storeApi.getState().project?.assets ?? []) taken.add(asset.name)
         taken.add(name)
       }
     } catch (e) {
@@ -559,6 +730,9 @@ export function AssetsPanel({
           setError(err)
           break
         }
+        // The store may keep another name (in Pygame Zero, the name the code uses): reserve
+        // every name the project really has now.
+        for (const asset of storeApi.getState().project?.assets ?? []) taken.add(asset.name)
         taken.add(name)
       }
     } catch (e) {
@@ -566,6 +740,38 @@ export function AssetsPanel({
     } finally {
       setBusy(false)
       if (modelRef.current) modelRef.current.value = ''
+    }
+  }
+
+  const handleFontFiles = async (files: FileList | null) => {
+    if (!files || files.length === 0) return
+    setError(null)
+    setBusy(true)
+    const taken = new Set(assets.map((a) => a.name))
+    try {
+      for (const file of Array.from(files)) {
+        const { dataUrl, fileName } = await fileToFontAssetDataUrl(file)
+        const name = uniqueAssetName(file.name.replace(/\.[^.]+$/, ''), taken)
+        // O nome do arquivo vai junto: o store cruza a extensão com o MIME e os bytes.
+        const err = addAsset({
+          name,
+          dataUrl,
+          kind: 'font',
+          originalFileName: fileName,
+          source: 'upload',
+        })
+        if (err) {
+          setError(err)
+          break
+        }
+        for (const asset of storeApi.getState().project?.assets ?? []) taken.add(asset.name)
+        taken.add(name)
+      }
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Falha ao processar a fonte.')
+    } finally {
+      setBusy(false)
+      if (fontRef.current) fontRef.current.value = ''
     }
   }
 
@@ -669,6 +875,10 @@ export function AssetsPanel({
     { id: 'images', label: t('assets.tab.images'), icon: '🖼️' },
     { id: 'sounds', label: t('assets.tab.sounds'), icon: '🔊' },
     ...(has3DTab ? [{ id: 'models3d' as const, label: t('assets.tab.models3d'), icon: '🧊' }] : []),
+    // Só o Raylib abre fonte própria; uma fonte que sobrou (extensão trocada) segue gerenciável.
+    ...(usesRaylib || fonts.length > 0
+      ? [{ id: 'fonts' as const, label: t('assets.tab.fonts'), icon: '🔤' }]
+      : []),
   ]
   // A aba pedida pode ter deixado de existir (a criança removeu a extensão 3D e
   // apagou os modelos com a janela aberta): cai para a primeira, nunca em branco.
@@ -726,12 +936,23 @@ export function AssetsPanel({
                 className="hidden"
                 onChange={(e) => void handleAudioFiles(e.target.files)}
               />
+              {usesRaylib ? (
+                <input
+                  ref={fontRef}
+                  type="file"
+                  name="project-font-files"
+                  accept=".ttf,.otf"
+                  multiple
+                  className="hidden"
+                  onChange={(e) => void handleFontFiles(e.target.files)}
+                />
+              ) : null}
               {has3DExtension ? (
                 <input
                   ref={modelRef}
                   type="file"
                   name="project-3d-files"
-                  accept=".glb,.hdr"
+                  accept={usesRaylib ? '.glb' : '.glb,.hdr'}
                   multiple
                   className="hidden"
                   onChange={(e) => void handle3DFiles(e.target.files)}
@@ -786,6 +1007,11 @@ export function AssetsPanel({
               Tentar guardar de novo
             </Button>
           )}
+          <p aria-live="polite" className="text-xs text-sz-fg-soft">
+            {preparingExample
+              ? `Copiando o desenho "${preparingExample}" para a sua galeria do Pinta…`
+              : ''}
+          </p>
           {error && (
             <p
               role="alert"
@@ -826,6 +1052,7 @@ export function AssetsPanel({
                 onConfigureTiles={(asset, mode) => setTileConfig({ asset, mode })}
                 onRename={handleRename}
                 onDelete={deleteFromProject}
+                codeNameOf={codeNameOf}
                 editTargetOf={editTargetOf}
                 onOpenInOrigin={openInOriginApp}
                 isOriginUnknown={isOriginUnknown}
@@ -837,7 +1064,8 @@ export function AssetsPanel({
                 onDeletePersonal={(drawing) =>
                   setPendingDeletion({ scope: 'personal', id: drawing.id, name: drawing.name })
                 }
-                onAddFromLibrary={addFromLibrary}
+                // The library pictures are SVG, which the desktop raylib does not open.
+                onAddFromLibrary={usesRaylib ? null : addFromLibrary}
               />
             ) : null}
             {activeTab === 'sounds' ? (
@@ -845,9 +1073,26 @@ export function AssetsPanel({
                 sounds={sounds}
                 allowUpload={allowUpload}
                 busy={busy}
-                onUpload={() => soundRef.current?.click()}
+                pgzero={usesPgzero}
+                raylib={usesRaylib}
+                onUpload={(role) => {
+                  audioRoleRef.current = role
+                  soundRef.current?.click()
+                }}
                 onRename={handleRename}
                 onDelete={deleteFromProject}
+                codeNameOf={codeNameOf}
+              />
+            ) : null}
+            {activeTab === 'fonts' ? (
+              <FontsTab
+                fonts={fonts}
+                allowUpload={allowUpload && usesRaylib}
+                busy={busy}
+                onUpload={() => fontRef.current?.click()}
+                onRename={handleRename}
+                onDelete={deleteFromProject}
+                codeNameOf={codeNameOf}
               />
             ) : null}
             {activeTab === 'models3d' ? (
@@ -863,6 +1108,8 @@ export function AssetsPanel({
                 onDelete={deleteFromProject}
                 editTargetOf={editTargetOf}
                 onOpenInOrigin={openInOriginApp}
+                raylib={usesRaylib}
+                codeNameOf={codeNameOf}
               />
             ) : null}
           </div>

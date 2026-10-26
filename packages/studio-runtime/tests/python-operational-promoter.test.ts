@@ -188,6 +188,58 @@ test('synthetic storage port: real store functions keep marker/config order, rea
   // This is a synthetic port contract test, not native conditional/checksum qualification.
 })
 
+test('readback uses at most four native reads and retains ownership until they all settle', async () => {
+  const f = await fixture()
+  const handler = createPromotionHandler(f.raw, () => now)
+  let release!: () => void, entered!: () => void
+  const gate = new Promise<void>((resolve) => {
+    release = resolve
+  })
+  const firstRead = new Promise<void>((resolve) => {
+    entered = resolve
+  })
+  let pending = 0,
+    peak = 0,
+    settled = false
+  const env = {
+    ...f.env,
+    PYTHON_RUNTIME: {
+      put: f.storage.bucket.put,
+      async get(key: string) {
+        pending++
+        peak = Math.max(peak, pending)
+        entered()
+        try {
+          await gate
+          return await f.storage.bucket.get(key)
+        } finally {
+          pending--
+        }
+      },
+    },
+  }
+  const result = handler(await f.request(), env).then((response) => {
+    settled = true
+    return response
+  })
+  await firstRead
+  const startedTogether = peak
+  let busy: number
+  try {
+    busy = (await handler(await f.request(), env)).status
+    expect(settled).toBe(false)
+  } finally {
+    release()
+  }
+  const response = await result
+  expect(startedTogether).toBe(4)
+  expect(peak).toBeLessThanOrEqual(4)
+  expect(pending).toBe(0)
+  expect(busy!).toBe(429)
+  expect(response.status).toBe(200)
+  expect(await response.json()).toHaveProperty('verifiedObjects', f.storage.contents.size + 2)
+})
+
 test('one isolate admits one body; second authorized request429 is never read', async () => {
   const f = await fixture(),
     handler = createPromotionHandler(f.raw, () => now)

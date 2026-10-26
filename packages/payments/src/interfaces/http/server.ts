@@ -19,6 +19,13 @@ import type { GetPaymentsStatsService } from '../../application/payments-stats/g
 import type { GetSubscriptionStatsService } from '../../application/payments-stats/get-subscription-stats.service'
 import type { ProcessPaymentService } from '../../application/process-payment/process-payment.service'
 import type { RefundPaymentService } from '../../application/refund-payment/refund-payment.service'
+import type { RetrySubscriptionChargeService } from '../../application/subscription-card/retry-subscription-charge.service'
+import type { UpdateSubscriptionCardService } from '../../application/subscription-card/update-subscription-card.service'
+import type { ConfirmSubscriptionPeriodService } from '../../application/subscription-recovery/confirm-subscription-period.service'
+import type { ConfirmSubscriptionRetryService } from '../../application/subscription-recovery/confirm-subscription-retry.service'
+import type { ListRecoveryReviewService } from '../../application/subscription-recovery/list-recovery-review.service'
+import type { RecoveryPolicyService } from '../../application/subscription-recovery/recovery-policy.service'
+import type { ReviewHistoricalAdmissionService } from '../../application/subscription-recovery/review-historical-admission.service'
 import type { ConsumerRepository } from '../../domain/ports/consumer-repository.port'
 import type { Env } from '../../infrastructure/config/env'
 import type { Logger } from '../../infrastructure/logging/logger'
@@ -50,6 +57,14 @@ export interface HttpDeps {
   createSubscription: CreateSubscriptionService
   getSubscription: GetSubscriptionService
   cancelSubscription: CancelSubscriptionService
+  recoveryPolicy: RecoveryPolicyService
+  recoveryReview: ListRecoveryReviewService
+  confirmSubscriptionPeriod: ConfirmSubscriptionPeriodService
+  confirmSubscriptionRetry: ConfirmSubscriptionRetryService
+  reviewHistoricalAdmission: ReviewHistoricalAdmissionService
+  resolveSupersededRecovery: import('../../application/subscription-recovery/resolve-superseded-recovery.service').ResolveSupersededRecoveryService
+  retrySubscriptionCharge: RetrySubscriptionChargeService
+  updateSubscriptionCard: UpdateSubscriptionCardService
   handleWebhook: HandleProviderWebhookService
   handleBoletoNotification: HandleBoletoNotificationService
   getMetrics: () => Promise<MetricsSnapshot>
@@ -131,7 +146,21 @@ export function createServer(deps: HttpDeps) {
       }
       return undefined
     })
-    .onError({ as: 'global' }, ({ code, error, set }) => {
+    .onError({ as: 'global' }, ({ code, error, set, request }) => {
+      if (
+        code === 'VALIDATION' &&
+        ['/card-intents', '/retry-intents'].some((path) =>
+          new URL(request.url).pathname.includes(path),
+        )
+      ) {
+        set.status = 400
+        return {
+          error: {
+            code: 'VALIDATION_ERROR',
+            message: 'Dados inválidos para a solicitação de cartão.',
+          },
+        }
+      }
       if (error instanceof TooManyRequestsError && error.retryAfterSeconds) {
         set.headers['retry-after'] = String(error.retryAfterSeconds)
       }
@@ -205,6 +234,12 @@ export function createServer(deps: HttpDeps) {
         getMyPayment: deps.getMyPayment,
         listMySubscriptions: deps.listMySubscriptions,
         cancelSubscription: deps.cancelSubscription,
+        updateSubscriptionCard: deps.updateSubscriptionCard,
+        retrySubscriptionCharge: deps.retrySubscriptionCharge,
+        cardConfig: {
+          accountIdentifier: deps.env.EFI_ACCOUNT_IDENTIFIER,
+          environment: deps.env.EFI_SANDBOX ? 'sandbox' : 'production',
+        },
         internalToken: deps.internalToken,
       }),
     )
@@ -218,6 +253,12 @@ export function createServer(deps: HttpDeps) {
     )
     .use(
       adminRoutes({
+        recoveryPolicy: deps.recoveryPolicy,
+        recoveryReview: deps.recoveryReview,
+        confirmSubscriptionPeriod: deps.confirmSubscriptionPeriod,
+        confirmSubscriptionRetry: deps.confirmSubscriptionRetry,
+        reviewHistoricalAdmission: deps.reviewHistoricalAdmission,
+        resolveSupersededRecovery: deps.resolveSupersededRecovery,
         requireAdminEnabled: deps.requireAdminEnabled,
         internalToken: deps.internalToken,
         listPayments: deps.listPayments,

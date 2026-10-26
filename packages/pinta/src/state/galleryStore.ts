@@ -6,20 +6,20 @@
  */
 import { createStore, type StoreApi } from 'zustand/vanilla'
 import { COPY } from '../core/copy'
-import { newId } from '../core/id'
 import { createAsset, type NewAssetInput } from '../core/newAsset'
 import { perfSpanAsync } from '../core/perf'
 import {
   assetStyle,
   isTilesetKind,
   normalizeAssetName,
-  PINTA_LIMITS,
   type PintaAsset,
   type PintaAssetStyle,
   type PintaProjectRef,
   sanitizeProjectRef,
+  tilemapUsesTileset,
 } from '../core/project'
 import { findTemplate } from '../templates/catalog'
+import { cloneWithNewIds, planImport, uniqueName } from './importPlan'
 import {
   createPintaPersistence,
   isPintaStorageBudgetError,
@@ -97,37 +97,6 @@ function upsertSorted(assets: PintaAsset[], asset: PintaAsset): PintaAsset[] {
 
 function persistenceErrorMessage(error: unknown): string {
   return isPintaStorageBudgetError(error) ? COPY.gallery.storageBudget : COPY.editor.saveError
-}
-
-/** Nome único por sufixo numérico (`heroi` → `heroi-2`), respeitando o teto. */
-function uniqueName(base: string, taken: Set<string>): string | null {
-  if (!taken.has(base)) return base
-  // Sem teto de desenhos na galeria, o sufixo vai até 999 antes de desistir.
-  for (let n = 2; n <= 999; n += 1) {
-    const suffix = `-${n}`
-    const prefix = base.slice(0, PINTA_LIMITS.maxNameChars - suffix.length).replace(/-+$/, '')
-    const candidate = `${prefix}${suffix}`
-    if (!taken.has(candidate)) return candidate
-  }
-  return null
-}
-
-/** Clona um asset com ids NOVOS (asset + animações + camadas) p/ o Duplicar. */
-function cloneWithNewIds(asset: PintaAsset, name: string): PintaAsset {
-  const now = Date.now()
-  const copy = structuredClone(asset)
-  copy.id = newId()
-  copy.name = name
-  copy.createdAt = now
-  copy.updatedAt = now
-  if (copy.kind === 'pixel-sprite') {
-    copy.animations = copy.animations.map((a) => ({ ...a, id: newId() }))
-  } else if (copy.kind === 'vector-sprite') {
-    copy.animations = copy.animations.map((a) => ({ ...a, id: newId() }))
-  } else if (copy.kind === 'tilemap') {
-    copy.layers = copy.layers.map((l) => ({ ...l, id: newId() }))
-  }
-  return copy
 }
 
 /**
@@ -310,7 +279,7 @@ export function createGalleryStore(
       if (!asset) return false
       if (
         isTilesetKind(asset) &&
-        get().assets.some((item) => item.kind === 'tilemap' && item.tilesetId === asset.id)
+        get().assets.some((item) => item.kind === 'tilemap' && tilemapUsesTileset(item, asset.id))
       ) {
         set({ mutateError: COPY.gallery.tilesetInUse })
         return false
@@ -364,45 +333,24 @@ export function createGalleryStore(
         return { added: 0, skipped: incoming.length }
       }
 
-      // Mapa id-antigo → id-novo p/ religar tilemaps aos SEUS tilesets do backup.
-      const idMap = new Map<string, string>()
-      const prepared: PintaAsset[] = []
-      const preparedTilesetIds = new Set<string>()
-      const taken = new Set(current.map((asset) => asset.name))
-      for (const asset of eligible) {
-        if (
-          asset.kind === 'tilemap' &&
-          incomingTilesetIds.has(asset.tilesetId) &&
-          !preparedTilesetIds.has(asset.tilesetId)
-        ) {
-          skipped += 1
-          importError ??= COPY.gallery.restoreMissingTileset
-          continue
-        }
-        const name = uniqueName(asset.name, taken)
-        if (!name) {
-          skipped += 1
-          importError ??= COPY.newAsset.nameTaken
-          continue
-        }
-        const clone = cloneWithNewIds(asset, name)
-        idMap.set(asset.id, clone.id)
-        if (isTilesetKind(asset)) preparedTilesetIds.add(asset.id)
-        prepared.push(clone)
-        taken.add(name)
-      }
-      if (options.atomic && prepared.length !== incoming.length) {
+      // Mapa id-antigo → id-novo p/ religar tilemaps aos SEUS tilesets do backup
+      // (as peças padrão E as de cada camada; peça de camada que não veio no
+      // arquivo segue apontando para o id de antes: a camada volta sem aparência,
+      // o mapa não se perde).
+      const plan = planImport(
+        eligible,
+        incomingTilesetIds,
+        new Set(current.map((asset) => asset.name)),
+      )
+      const idMap = plan.idMap
+      skipped += plan.skipped
+      importError ??= plan.error
+      if (options.atomic && plan.pairs.length !== incoming.length) {
         set({ mutateError: importError ?? COPY.editor.saveError })
         return { added: 0, skipped: incoming.length }
       }
 
-      const restoredPairs = prepared.map((source) => ({
-        source,
-        restored:
-          source.kind === 'tilemap'
-            ? { ...source, tilesetId: idMap.get(source.tilesetId) ?? source.tilesetId }
-            : source,
-      }))
+      const restoredPairs = plan.pairs
       const restored = restoredPairs.map(({ restored: asset }) => asset)
       if (options.atomic) {
         try {

@@ -1,7 +1,7 @@
+import { maskCpf } from '@sistemazero/ui/credit-card'
 import { formatTelefone } from '@sistemazero/ui/phone'
 import { useEffect, useMemo, useState } from 'react'
 import { apiPost } from '../lib/api-fetch'
-import { maskCpf } from '../lib/card-utils'
 import { type CheckoutContactInput, CheckoutContactSchema } from '../lib/checkout-schema'
 import { fieldErrors } from '../lib/contact-schema'
 import type { CouponPresentation } from '../lib/coupon-query'

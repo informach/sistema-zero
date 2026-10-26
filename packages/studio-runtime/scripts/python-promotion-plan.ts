@@ -21,13 +21,35 @@ import { createStudioAuthoringPolicy } from '../../members/src/domain/studio/aut
 import { createStudioRuntimeHosts } from '../../members/src/domain/studio/runtime-hosts'
 import { PYTHON_PROGRAMMING_CODECS } from '../../studio/src/python/blocks/catalog'
 import { describePythonCatalog } from '../../studio/src/python/blocks/selection'
+import { PYTHON_PGZERO_CODECS } from '../../studio/src/python/extensions/pgzero/catalog'
+import { PYTHON_PYGAME_CODECS } from '../../studio/src/python/extensions/pygame/catalog'
+import { PYTHON_RAYLIB_2D_CODECS } from '../../studio/src/python/extensions/raylib2d/catalog'
+import { PYTHON_RAYLIB_3D_CODECS } from '../../studio/src/python/extensions/raylib3d/catalog'
 import { PYTHON_TURTLE_CODECS } from '../../studio/src/python/extensions/turtle/catalog'
+import { PGZERO_EXTENSION } from '../../studio/src/runtime/python/pgzero/contract'
+import {
+  PYGAME_CE_WHEEL,
+  PYGAME_EXTENSION,
+  PYGAME_MODULE_FILES,
+} from '../../studio/src/runtime/python/pygame/contract'
+import {
+  RAYLIB_2D_EXTENSION,
+  RAYLIB_3D_EXTENSION,
+} from '../../studio/src/runtime/python/raylib/contract'
 import { TURTLE_EXTENSION } from '../../studio/src/runtime/python/turtle/contract'
 import { createConfiguredPythonRuntime } from '../src/python-configuration'
 import { describePythonRuntimeConfiguration } from '../src/python-configuration-storage'
 import { verifyPythonDistributionFiles } from './python-distribution-files'
 
 export { readPromotionFile } from './python-distribution-files'
+
+// The pygame-ce wheel a distribution must carry: the one the Studio pinned (contract.ts).
+let pinnedPygameWheel: { file: string; bytes: number; sha256: string } = PYGAME_CE_WHEEL
+
+/** Test fixtures carry a stand-in wheel under the same name; production checks the pinned one. */
+export function setPinnedPygameWheelForTests(wheel: { bytes: number; sha256: string } | null) {
+  pinnedPygameWheel = wheel ? { ...wheel, file: PYGAME_CE_WHEEL.file } : PYGAME_CE_WHEEL
+}
 
 const origin = z.string().refine((value) => {
   try {
@@ -102,7 +124,10 @@ const union = <T>(previous: readonly T[], added: readonly T[]) => [
   ...new Set([...previous, ...added]),
 ]
 
-async function validateConfiguration(configuration: z.infer<typeof configurationSchema>) {
+async function validateConfiguration(
+  configuration: z.infer<typeof configurationSchema>,
+  superseding?: { profileId: string; releaseId: string },
+) {
   if (
     Buffer.byteLength(canonicalJson(configuration.members)) > 2_000_000 ||
     Buffer.byteLength(canonicalJson(configuration.hosts)) > 200_000
@@ -127,7 +152,16 @@ async function validateConfiguration(configuration: z.infer<typeof configuration
     const policy = configuration.members?.releases.find(
       ({ runtime }) => runtime.manifestSha256 === deployment.release.manifestSha256,
     )
-    if (policy && policy.status !== status)
+    // An interrupted rollout can retire a release in only one authority. A new
+    // release of that same profile may retire it in both; never revive a revoked
+    // release, reconcile another profile, or accept divergent immutable bytes.
+    // The resulting configuration is checked again without this allowance.
+    const interruptedRetirement =
+      superseding?.profileId === deployment.release.profileId &&
+      superseding.releaseId !== deployment.release.releaseId &&
+      ((status === 'active' && policy?.status === 'retired') ||
+        (status === 'retired' && policy?.status === 'active'))
+    if (policy && policy.status !== status && !interruptedRetirement)
       throw new Error('Os estados anteriores da release divergem.')
   }
 }
@@ -140,11 +174,24 @@ export async function preparePythonPromotion(raw: unknown, baseDirectory = proce
     throw new Error('O runtime deve ter uma origem distinta dos aplicativos.')
   if (input.baseline.previewOrigin && input.baseline.previewOrigin !== input.target.runtimeOrigin)
     throw new Error('A promoção não troca a origem de previews existente.')
-  await validateConfiguration(input.baseline)
+  await validateConfiguration(input.baseline, input.release)
   const distribution = await verifyPythonDistributionFiles(
     input.distribution.directory,
     input.distribution.sha256,
   )
+  const distributedPaths = new Set(distribution.files.map(({ path }) => path))
+  for (const path of PYGAME_MODULE_FILES)
+    if (!distributedPaths.has(`pygame/${path}`))
+      throw new Error(`Artefato Pygame-ce obrigatório ausente: pygame/${path}.`)
+  const wheel = distribution.files.find(({ path }) => path === pinnedPygameWheel.file)
+  if (!wheel) throw new Error(`Artefato Pygame-ce obrigatório ausente: ${pinnedPygameWheel.file}.`)
+  // The distribution only proves the bytes match ITS manifest; the browser runs the wheel the
+  // Studio pinned (and recorded its JavaScript snippets from), so both must be that one.
+  if (wheel.sha256 !== pinnedPygameWheel.sha256 || wheel.bytes !== pinnedPygameWheel.bytes)
+    throw new Error(
+      `A wheel Pygame-ce do artefato não é a fixada no Estúdio (${pinnedPygameWheel.file}, ` +
+        `sha256 ${pinnedPygameWheel.sha256}).`,
+    )
   const release = StudioRuntimeReleaseSchema.parse(
     await createStudioRuntimeRelease({
       manifestVersion: 1,
@@ -152,7 +199,13 @@ export async function preparePythonPromotion(raw: unknown, baseDirectory = proce
       programmingLanguage: 'python',
       kinds: ['classic', 'pro'],
       modes: ['blocks', 'bridge', 'code'],
-      extensions: [{ id: TURTLE_EXTENSION.id, versions: [TURTLE_EXTENSION.version] }],
+      extensions: [
+        { id: TURTLE_EXTENSION.id, versions: [TURTLE_EXTENSION.version] },
+        { id: PGZERO_EXTENSION.id, versions: [PGZERO_EXTENSION.version] },
+        { id: PYGAME_EXTENSION.id, versions: [PYGAME_EXTENSION.version] },
+        { id: RAYLIB_2D_EXTENSION.id, versions: [RAYLIB_2D_EXTENSION.version] },
+        { id: RAYLIB_3D_EXTENSION.id, versions: [RAYLIB_3D_EXTENSION.version] },
+      ],
       sourceTargets: ['browser', 'desktop'],
       requiredBrowserFeatures: ['wasm', 'worker', 'jspi', 'trusted-types'],
       artifacts: distribution.files.map(({ path, sha256 }) => ({ path, sha256 })),
@@ -204,7 +257,14 @@ export async function preparePythonPromotion(raw: unknown, baseDirectory = proce
   )
   const status = existingPolicy?.status ?? existingDeployment?.status ?? 'active'
   // Approval follows these immutable bytes, not every codec in the current editor.
-  const codecs = [...PYTHON_PROGRAMMING_CODECS, ...PYTHON_TURTLE_CODECS].filter((codec) =>
+  const codecs = [
+    ...PYTHON_PROGRAMMING_CODECS,
+    ...PYTHON_TURTLE_CODECS,
+    ...PYTHON_PGZERO_CODECS,
+    ...PYTHON_PYGAME_CODECS,
+    ...PYTHON_RAYLIB_2D_CODECS,
+    ...PYTHON_RAYLIB_3D_CODECS,
+  ].filter((codec) =>
     (codec.requiredRuntimeFeatures ?? []).every((feature) =>
       distribution.features.includes(feature),
     ),
@@ -239,6 +299,24 @@ export async function preparePythonPromotion(raw: unknown, baseDirectory = proce
       releases: [{ id: release.releaseId, manifestSha256: release.manifestSha256 }],
     })
   if (!existingDeployment) worker.deployments.push({ status, deployment })
+  // One authoring release per profile. Retain immutable history and other profiles;
+  // repeating a retired release must never reactivate it or retire the current one.
+  if (status === 'active') {
+    for (const candidate of members.releases)
+      if (
+        candidate.status === 'active' &&
+        candidate.runtime.profileId === runtime.profileId &&
+        candidate.runtime.manifestSha256 !== runtime.manifestSha256
+      )
+        candidate.status = 'retired'
+    for (const candidate of worker.deployments)
+      if (
+        candidate.status === 'active' &&
+        candidate.deployment.release.profileId === runtime.profileId &&
+        candidate.deployment.release.manifestSha256 !== runtime.manifestSha256
+      )
+        candidate.status = 'retired'
+  }
   worker.parentOrigins = union(worker.parentOrigins, input.target.parentOrigins)
   const hosts = structuredClone(input.baseline.hosts)
   const host = hosts.find((entry) => entry.runtime.manifestSha256 === release.manifestSha256)

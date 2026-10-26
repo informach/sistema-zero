@@ -45,28 +45,8 @@ export const aventuraHeroiExample: ExtensionExample = beginnerGameExample({
     },
   ],
   ir: {
-    html: [{ type: 'canvas', id: 'tela', width: 480, height: 360 }],
-    css: [
-      {
-        selector: 'body',
-        declarations: {
-          background: '#24401c',
-          display: 'flex',
-          'align-items': 'center',
-          'justify-content': 'center',
-          'min-height': '100vh',
-          margin: '0',
-        },
-      },
-      {
-        selector: 'canvas',
-        declarations: {
-          border: '3px solid #ffffff',
-          'border-radius': '18px',
-          background: '#7ec850',
-        },
-      },
-    ],
+    html: [],
+    css: [],
     version: 2,
     behavior: {
       molds: [
@@ -335,6 +315,21 @@ export const aventuraHeroiExample: ExtensionExample = beginnerGameExample({
         },
       ],
       start: [
+        {
+          type: 'g2d:setupStage',
+          width: 480,
+          height: 360,
+          bg: '#7ec850',
+          __id: 'exemplo-aventura-do-her-i',
+        },
+        {
+          type: 'g2d:setStageDescription',
+          description:
+            'Ande com as setas pelo mundo grande, corte o mato com espaço e derrote os 4 guardiões. A espada nasce na direção em que você olha. Enter começa e reinicia.',
+          __id: 'exemplo-aventura-do-her-i-descricao',
+        },
+        { type: 'g2d:stageBorder', color: '#ffffff', width: 3 },
+
         {
           type: 'g2d:fitScreen',
           percent: {

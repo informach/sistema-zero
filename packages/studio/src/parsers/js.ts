@@ -44,12 +44,29 @@ import {
   platformGameThreeDDeclarationToIR,
   platformGameThreeDExpressionToIR,
 } from '../official-extensions/game-3d/platformCodec'
+import {
+  gameKit3DGameplayCallToIR,
+  gameKit3DGameplayExprCallToIR,
+  gameKit3DGameplaySimpleValue,
+} from '../official-extensions/game-3d-advanced/gameplayCodec'
+import { gameKit3DModelCallToIR } from '../official-extensions/game-3d-advanced/modelCodec'
+import {
+  gameRulesCallToIR,
+  gameRulesExpressionCallToIR,
+  gameRulesSimpleValue,
+} from '../official-extensions/game3dRules/codec'
 import { isSceneExpression } from '../official-extensions/scene-2d/ir'
+import { isThreeKeyCode } from '../official-extensions/threeKeys'
+import {
+  world3DDropdownIsValid,
+  world3DNewCallToIR,
+} from '../official-extensions/world-3d/worldCodec'
 import { canvas3DSymbolKindsForClass } from '../three/canvas3dContract'
 import {
   canvas3DMacroFromPlaceholder,
   prepareCanvas3DSourceForParse,
 } from '../three/canvas3dMacroCodec'
+import { isFullscreenGame3DKit } from '../three/fullscreenKits'
 import { game3dCallArityIsValid, game3dDropdownArgumentIsValid } from '../three/game3dContract'
 
 const BABEL_OPTS: ParserOptions = {
@@ -650,8 +667,15 @@ function isNamedMemberExpression(node: Node | null | undefined): node is NamedMe
 
 type InlineFunction = Babel.ArrowFunctionExpression | Babel.FunctionExpression
 
+// `async`/gerador ficam de fora: nenhum bloco de callback guarda o modificador, e a Ponte o
+// perdia em silêncio (`async () => { await … }` voltava sem `async` e quebrava). Fica código
+// avançado, inteiro.
 function isInlineFunction(node: Node | null | undefined): node is InlineFunction {
-  return node?.type === 'ArrowFunctionExpression' || node?.type === 'FunctionExpression'
+  return (
+    (node?.type === 'ArrowFunctionExpression' || node?.type === 'FunctionExpression') &&
+    !node.async &&
+    !node.generator
+  )
 }
 
 /** Callback legado sem parâmetro ou callback atual com o `event` canônico. */
@@ -1940,6 +1964,9 @@ function mapExpressionStatement(
   // game-3d: SZGame3D.animate(cena, () => {…}) e helpers de uma linha
   // (setBackground, setCameraPosition, setPosition, setRotation). Idem: ANTES do
   // método genérico — senão viram memberCall.
+  // Regras de jogo 3D (placar, vida, telas…) nos globais das extensões 3D ligadas.
+  const rulesCall = gameRulesCallToIR(expr, platformTools(source, ctx))
+  if (rulesCall) return rulesCall
   const g3dCall = tryMatchGame3DCall(expr, source, ctx)
   if (g3dCall) return g3dCall
 
@@ -3554,15 +3581,25 @@ function tryMatchGame2DCall(expr: Node, source: string, ctx: ParseCtx): JSStatem
     }
     case 'defineShape': {
       // generator: SZGame2D.defineShape("nome", function (ctx) {…})
-      if (args[0]?.type !== 'StringLiteral' || !isFn(args[1])) return null
-      const ctxParam = identifierName(args[1].params?.[0])
+      const callback = args[1]
+      if (
+        args[0]?.type !== 'StringLiteral' ||
+        !isFn(callback) ||
+        callback.params.length !== 1 ||
+        identifierName(callback.params[0]) !== 'ctx' ||
+        (callback.type === 'FunctionExpression' && callback.id !== null)
+      ) {
+        // O bloco possui um único contexto implícito, ctx. Reconhecer outro nome,
+        // parâmetro ou modificador faria o gerador mudar o binding da função.
+        return asRaw(source, expr)
+      }
       // O parâmetro é um CONTEXTO 2D — registrar em ctxVars para que os blocos de
       // Canvas dentro da figura round-trippem (senão viram rawJS).
-      if (ctxParam) ctx.ctxVars.add(ctxParam)
+      ctx.ctxVars.add('ctx')
       return {
         type: 'g2d:defineShape',
         shapeName: args[0].value as string,
-        body: bodyOfFn(args[1], source, ctx),
+        body: bodyOfFn(callback, source, ctx),
       }
     }
     case 'setShape': {
@@ -7749,13 +7786,9 @@ function matchWorld3DExpr(node: Node, ctx?: ParseCtx): JSExpr | null {
   if (method === 'raceBest' && args.length === 0) return { type: 'w3d:raceBest' }
   if (method === 'pinsDown' && args.length === 0) return { type: 'w3d:pinsDown' }
   if (method === 'knockedCount' && args.length === 0) return { type: 'w3d:knockedCount' }
-  if (method === 'carPos' && args[0]?.type === 'StringLiteral') {
+  if (method === 'playerPos' && args[0]?.type === 'StringLiteral') {
     const axis = args[0].value as string
-    if (W3D_POS_AXES.has(axis)) return { type: 'w3d:carPos', axis: axis as 'x' | 'y' | 'z' }
-  }
-  if (method === 'personPos' && args[0]?.type === 'StringLiteral') {
-    const paxis = args[0].value as string
-    if (W3D_POS_AXES.has(paxis)) return { type: 'w3d:personPos', axis: paxis as 'x' | 'y' | 'z' }
+    if (W3D_POS_AXES.has(axis)) return { type: 'w3d:playerPos', axis: axis as 'x' | 'y' | 'z' }
   }
   if (method === 'isDriving' && args.length === 0) return { type: 'w3d:isDriving' }
   if (method === 'coinCount' && args.length === 0) return { type: 'w3d:coinCount' }
@@ -7773,11 +7806,9 @@ function matchWorld3DExpr(node: Node, ctx?: ParseCtx): JSExpr | null {
       return { type: 'w3d:inventoryHas', item, n }
     }
   }
-  if (method === 'keyDown' && args[0]?.type === 'StringLiteral') {
-    return { type: 'w3d:keyDown', key: args[0].value as string }
-  }
-  if (method === 'keyPressed' && args[0]?.type === 'StringLiteral') {
-    return { type: 'w3d:keyPressed', key: args[0].value as string }
+  if ((method === 'keyDown' || method === 'keyPressed') && args.length === 1) {
+    const key = args[0]?.type === 'StringLiteral' ? args[0].value : undefined
+    if (world3DDropdownIsValid(method, key)) return { type: `w3d:${method}`, key }
   }
   if (method === 'groundHeight' && args.length === 2) {
     const x = toExpr(args[0], ctx)
@@ -7795,6 +7826,8 @@ function tryMatchWorld3DCall(expr: Node, source: string, ctx: ParseCtx): JSState
   const call = asSZWorld3DCall(expr)
   if (!call) return null
   const { method, args } = call
+  const lot10 = world3DNewCallToIR(method, args, platformTools(source, ctx))
+  if (lot10 !== undefined) return lot10
   const isFn = isInlineFunction
 
   switch (method) {
@@ -7886,11 +7919,6 @@ function tryMatchWorld3DCall(expr: Node, source: string, ctx: ParseCtx): JSState
     }
     case 'stopMusic':
       return args.length === 0 ? { type: 'w3d:stopMusic' } : null
-    case 'hud': {
-      if (args[1]?.type !== 'StringLiteral') return null
-      const t = toExpr(args[0], ctx)
-      return isSimpleValue(t) ? { type: 'w3d:hud', text: t, corner: args[1].value as string } : null
-    }
     case 'say': {
       const t = toExpr(args[0], ctx)
       const secs = toExpr(args[1], ctx)
@@ -8096,8 +8124,22 @@ function tryMatchWorld3DCall(expr: Node, source: string, ctx: ParseCtx): JSState
       const z = toExpr(args[2], ctx)
       const s = toExpr(args[3], ctx)
       const deg = toExpr(args[4], ctx)
-      return isSimpleValue(x) && isSimpleValue(z) && isSimpleValue(s) && isSimpleValue(deg)
-        ? { type: 'w3d:placeModel', model: args[0].value as string, x, z, s, deg }
+      // Só 5 ou 6 argumentos viram bloco: um a mais sumiria com o clipe em silêncio.
+      const clip = args.length === 6 ? w3dStringLiteral(args[5]) : args.length === 5 ? '' : null
+      return isSimpleValue(x) &&
+        isSimpleValue(z) &&
+        isSimpleValue(s) &&
+        isSimpleValue(deg) &&
+        clip !== null
+        ? {
+            type: 'w3d:placeModel',
+            model: args[0].value as string,
+            x,
+            z,
+            s,
+            deg,
+            ...(clip ? { clip } : {}),
+          }
         : null
     }
     case 'clearArea': {
@@ -8631,13 +8673,6 @@ function tryMatchWorld3DCall(expr: Node, source: string, ctx: ParseCtx): JSState
       if (mode !== 'seguir' && mode !== 'topo' && mode !== 'cinema') return null
       return { type: 'w3d:cameraMode', mode }
     }
-    case 'cameraShake': {
-      const force = toExpr(args[0], ctx)
-      const secs = toExpr(args[1], ctx)
-      return isSimpleValue(force) && isSimpleValue(secs)
-        ? { type: 'w3d:cameraShake', force, secs }
-        : null
-    }
     case 'dayNight': {
       const minutes = toExpr(args[0], ctx)
       return isSimpleValue(minutes) ? { type: 'w3d:dayNight', minutes } : null
@@ -8693,14 +8728,6 @@ function asSZGameKit3DCall(expr: Node): { method: string; args: Node[] } | null 
 
 /** Enums fixos dos dropdowns — valor desconhecido → null → rawJS (o dropdown
  * coagiria para a 1ª opção e o round-trip mentiria; padrão do gk). */
-const G3K_FIXED_SCREENS = new Set(['menu', 'pausa', 'carregando', 'fim', 'vitoria'])
-const G3K_HUD_SLOTS = new Set([
-  'top-left',
-  'top-center',
-  'top-right',
-  'bottom-left',
-  'bottom-right',
-])
 // ⚠️ Espelha o dropdown SHAPE do `sz_g3k_part`. Valor de forma que exista no
 // bloco mas falte aqui faz o `part()` INTEIRO cair em rawJS na Ponte — silencioso
 // e global (não só o molde da forma nova).
@@ -8742,6 +8769,8 @@ function matchGameKit3DExpr(node: Node, ctx?: ParseCtx): JSExpr | null {
   const call = asSZGameKit3DCall(node)
   if (!call) return null
   const { method, args } = call
+  const gameplay = gameKit3DGameplayExprCallToIR(method, args, platformTools('', ctx))
+  if (gameplay !== undefined) return gameplay
   if (method === 'worldSize' && args.length === 0) return { type: 'g3k:worldSize' }
   if (method === 'state' && args.length === 0) return { type: 'g3k:gameState' }
   if (method === 'stateIs' && args[0]?.type === 'StringLiteral') {
@@ -8750,11 +8779,11 @@ function matchGameKit3DExpr(node: Node, ctx?: ParseCtx): JSExpr | null {
   if (method === 'countAlive' && args[0]?.type === 'StringLiteral') {
     return { type: 'g3k:countAlive', mold: args[0].value as string }
   }
-  if (method === 'keyDown' && args[0]?.type === 'StringLiteral') {
-    return { type: 'g3k:keyDown', key: args[0].value as string }
-  }
-  if (method === 'keyPressed' && args[0]?.type === 'StringLiteral') {
-    return { type: 'g3k:keyPressed', key: args[0].value as string }
+  // As teclas são o dropdown COMUM das extensões 3D (`threeKeys.ts`): outra tecla vira código.
+  if ((method === 'keyDown' || method === 'keyPressed') && args[0]?.type === 'StringLiteral') {
+    const key = args[0].value as string
+    if (!isThreeKeyCode(key)) return null
+    return { type: method === 'keyDown' ? 'g3k:keyDown' : 'g3k:keyPressed', key }
   }
   if (method === 'mouseDown' && args.length === 0) return { type: 'g3k:mouseDown' }
   if (method === 'mousePressed' && args.length === 0) return { type: 'g3k:mousePressed' }
@@ -8828,18 +8857,6 @@ function matchGameKit3DExpr(node: Node, ctx?: ParseCtx): JSExpr | null {
     const aVar = identifierName(args[0])
     const bVar = identifierName(args[1])
     if (aVar && bVar) return { type: 'g3k:distanceBetween', aVar, bVar }
-  }
-  if (method === 'randomBetween') {
-    const from = toExpr(args[0], ctx)
-    const to = toExpr(args[1], ctx)
-    if (isSimpleValue(from) && isSimpleValue(to)) return { type: 'g3k:randomBetween', from, to }
-  }
-  if (method === 'randomChance') {
-    const percent = toExpr(args[0], ctx)
-    if (isSimpleValue(percent)) return { type: 'g3k:randomChance', percent }
-  }
-  if (method === 'timeLeft' && args.length === 0) {
-    return { type: 'g3k:timeLeft' }
   }
   if (method === 'maxHealthOf') {
     const charVar = identifierName(args[0])
@@ -9147,6 +9164,11 @@ function tryMatchGameKit3DCall(expr: Node, source: string, ctx: ParseCtx): JSSta
   const call = asSZGameKit3DCall(expr)
   if (!call) return null
   const { method, args } = call
+  const tools = platformTools(source, ctx)
+  const model = gameKit3DModelCallToIR(method, args, tools)
+  if (model !== undefined) return model
+  const gameplay = gameKit3DGameplayCallToIR(method, args, tools)
+  if (gameplay !== undefined) return gameplay
   const isFn = isInlineFunction
 
   switch (method) {
@@ -9376,6 +9398,7 @@ function tryMatchGameKit3DCall(expr: Node, source: string, ctx: ParseCtx): JSSta
     }
     case 'setPauseKey': {
       if (args[0]?.type !== 'StringLiteral') return null
+      if (args[0].value !== 'Escape' && !isThreeKeyCode(args[0].value)) return null
       return { type: 'g3k:setPauseKey', key: args[0].value as string }
     }
     case 'cameraFollow': {
@@ -9403,13 +9426,6 @@ function tryMatchGameKit3DCall(expr: Node, source: string, ctx: ParseCtx): JSSta
     case 'cameraDistance': {
       const dist = toExpr(args[0], ctx)
       return isSimpleValue(dist) ? { type: 'g3k:cameraDistance', dist } : null
-    }
-    case 'cameraShake': {
-      const strength = toExpr(args[0], ctx)
-      const seconds = toExpr(args[1], ctx)
-      return isSimpleValue(strength) && isSimpleValue(seconds)
-        ? { type: 'g3k:cameraShake', strength, seconds }
-        : null
     }
     case 'cameraLens': {
       const fov = toExpr(args[0], ctx)
@@ -9536,37 +9552,12 @@ function tryMatchGameKit3DCall(expr: Node, source: string, ctx: ParseCtx): JSSta
       const charVar = identifierName(args[0])
       return charVar ? { type: 'g3k:stopAnim', charVar } : null
     }
-    case 'setStateAnim': {
-      if (
-        args[0]?.type !== 'StringLiteral' ||
-        args[1]?.type !== 'StringLiteral' ||
-        args[2]?.type !== 'StringLiteral'
-      ) {
-        return null
-      }
-      return {
-        type: 'g3k:setStateAnim',
-        mold: args[0].value as string,
-        state: args[1].value as string,
-        clip: args[2].value as string,
-      }
-    }
     case 'playMusic': {
       if (args[0]?.type !== 'StringLiteral') return null
       return { type: 'g3k:playMusic', name: args[0].value as string }
     }
     case 'stopMusic':
       return args.length === 0 ? { type: 'g3k:stopMusic' } : null
-    case 'startTimer': {
-      const seconds = toExpr(args[0], ctx)
-      return isSimpleValue(seconds) ? { type: 'g3k:startTimer', seconds } : null
-    }
-    case 'stopTimer':
-      return args.length === 0 ? { type: 'g3k:stopTimer' } : null
-    case 'onTimerEnd': {
-      if (!isFn(args[0])) return null
-      return { type: 'g3k:onTimerEnd', body: bodyOfFn(args[0], source, ctx) }
-    }
     case 'say': {
       const charVar = identifierName(args[0])
       const textValue = toExpr(args[1], ctx)
@@ -9779,17 +9770,6 @@ function tryMatchGameKit3DCall(expr: Node, source: string, ctx: ParseCtx): JSSta
         body: bodyOfFn(args[1], source, ctx),
       }
     }
-    case 'setScreenText': {
-      if (args[0]?.type !== 'StringLiteral') return null
-      const screen = args[0].value as string
-      if (!G3K_FIXED_SCREENS.has(screen)) return null
-      const title = toExpr(args[1], ctx)
-      const text = toExpr(args[2], ctx)
-      const button = toExpr(args[3], ctx)
-      return isSimpleValue(title) && isSimpleValue(text) && isSimpleValue(button)
-        ? { type: 'g3k:setScreenText', screen, title, text, button }
-        : null
-    }
     case 'createScreen': {
       if (args[0]?.type !== 'StringLiteral') return null
       const title = toExpr(args[1], ctx)
@@ -9816,13 +9796,6 @@ function tryMatchGameKit3DCall(expr: Node, source: string, ctx: ParseCtx): JSSta
     }
     case 'hideScreens':
       return args.length === 0 ? { type: 'g3k:hideScreens' } : null
-    case 'setHud': {
-      if (args[0]?.type !== 'StringLiteral') return null
-      const slot = args[0].value as string
-      if (!G3K_HUD_SLOTS.has(slot)) return null
-      const text = toExpr(args[1], ctx)
-      return isSimpleValue(text) ? { type: 'g3k:hudText', slot, text } : null
-    }
     case 'setState': {
       if (args[0]?.type !== 'StringLiteral') return null
       return { type: 'g3k:setState', name: args[0].value as string }
@@ -9837,8 +9810,6 @@ function tryMatchGameKit3DCall(expr: Node, source: string, ctx: ParseCtx): JSSta
     }
     case 'returnToMenu':
       return args.length === 0 ? { type: 'g3k:returnToMenu' } : null
-    case 'endGame':
-      return args.length === 0 ? { type: 'g3k:endGame' } : null
     case 'on': {
       if (args[0]?.type !== 'StringLiteral' || !isFn(args[1])) return null
       return {
@@ -9911,8 +9882,8 @@ function tryMatchGameKit3DVarInit(name: string, init: Node, ctx: ParseCtx): JSSt
 
 /**
  * SZGame3D.* como statement: setBackground/setCameraPosition/setPosition/setRotation/animate
- * e a física/kit (setVelocity/jump/applyGravity/controlWithKeys/setScale/cameraFollow/spawnEnemy/
- * updateGroup/pruneOffscreen/forEachInGroup/removeFromGroup/clearGroup/everyFrames/everySeconds/stop).
+ * e a física/kit (setVelocity/jump/applyGravity/controlWithKeys/setScale/spawnEnemy/
+ * updateGroup/pruneOffscreen/forEachInGroup/removeFromGroup/clearGroup/everySeconds/stop).
  * ANTES do método genérico — senão viram memberCall. As coordenadas (x/y/z/força/escala)
  * precisam ser valores representáveis; senão a linha cai em código avançado.
  */
@@ -10002,13 +9973,6 @@ function tryMatchGame3DCall(expr: Node, source: string, ctx: ParseCtx): JSStatem
       if (!objVar || !isSimpleValue(speed)) return null
       return { type: 'g3d:controlWithKeys', objVar, speed }
     }
-    case 'cameraFollow': {
-      // generator: SZGame3D.cameraFollow(world, obj)
-      const worldVar = identifierName(args[0])
-      const objVar = identifierName(args[1])
-      if (!worldVar || !objVar) return null
-      return { type: 'g3d:cameraFollow', worldVar, objVar }
-    }
     case 'spawnEnemy': {
       // generator: SZGame3D.spawnEnemy(world, group, speed)
       const worldVar = identifierName(args[0])
@@ -10042,12 +10006,6 @@ function tryMatchGame3DCall(expr: Node, source: string, ctx: ParseCtx): JSStatem
       const groupVar = identifierName(args[0])
       if (!groupVar) return null
       return { type: 'g3d:clearGroup', groupVar }
-    }
-    case 'stop': {
-      // generator: SZGame3D.stop(world)
-      const worldVar = identifierName(args[0])
-      if (!worldVar) return null
-      return { type: 'g3d:stop', worldVar }
     }
     case 'crosserMove': {
       const objVar = identifierName(args[0])
@@ -10109,13 +10067,6 @@ function tryMatchGame3DCall(expr: Node, source: string, ctx: ParseCtx): JSStatem
         speed,
       }
     }
-    case 'isometricCamera': {
-      // generator: SZGame3D.isometricCamera(world, followObj | null)
-      const worldVar = identifierName(args[0])
-      const followVar = identifierName(args[1])
-      if (!worldVar || (!followVar && args[1]?.type !== 'NullLiteral')) return null
-      return { type: 'g3d:isometricCamera', worldVar, followVar: followVar || '' }
-    }
     case 'moveAcross': {
       // generator: SZGame3D.moveAcross(group, speed, min, max)
       const groupVar = identifierName(args[0])
@@ -10133,13 +10084,6 @@ function tryMatchGame3DCall(expr: Node, source: string, ctx: ParseCtx): JSStatem
       const col = toExpr(args[2], ctx)
       if (!objVar || !isSimpleValue(row) || !isSimpleValue(col)) return null
       return { type: 'g3d:gridPosition', objVar, row, col }
-    }
-    case 'topCamera': {
-      // generator: SZGame3D.topCamera(world, followObj | null)
-      const worldVar = identifierName(args[0])
-      const followVar = identifierName(args[1])
-      if (!worldVar || (!followVar && args[1]?.type !== 'NullLiteral')) return null
-      return { type: 'g3d:topCamera', worldVar, followVar: followVar || '' }
     }
     case 'moveInCircle': {
       const objVar = identifierName(args[0])
@@ -10320,26 +10264,6 @@ function tryMatchGame3DCall(expr: Node, source: string, ctx: ParseCtx): JSStatem
       if (!aVar || !bVar) return null
       return { type: 'g3d:resolveCollision', aVar, bVar }
     }
-    case 'fpsCamera': {
-      const worldVar = identifierName(args[0])
-      const objVar = identifierName(args[1])
-      if (!worldVar || !objVar) return null
-      return { type: 'g3d:fpsCamera', worldVar, objVar }
-    }
-    case 'orbitCamera': {
-      const worldVar = identifierName(args[0])
-      const objVar = identifierName(args[1])
-      if (!worldVar || !objVar) return null
-      return { type: 'g3d:orbitCamera', worldVar, objVar }
-    }
-    case 'thirdPersonCamera': {
-      const worldVar = identifierName(args[0])
-      const objVar = identifierName(args[1])
-      const dist = toExpr(args[2], ctx)
-      const height = toExpr(args[3], ctx)
-      if (!worldVar || !objVar || !isSimpleValue(dist) || !isSimpleValue(height)) return null
-      return { type: 'g3d:thirdPersonCamera', worldVar, objVar, dist, height }
-    }
     case 'cameraLookAt': {
       const worldVar = identifierName(args[0])
       const objVar = identifierName(args[1])
@@ -10367,11 +10291,6 @@ function tryMatchGame3DCall(expr: Node, source: string, ctx: ParseCtx): JSStatem
       const objVar = identifierName(args[0])
       if (!objVar || args[1]?.type !== 'StringLiteral') return null
       return { type: 'g3d:setMaterial', objVar, kind: args[1].value as string }
-    }
-    case 'setTexture': {
-      const objVar = identifierName(args[0])
-      if (!objVar || args[1]?.type !== 'StringLiteral') return null
-      return { type: 'g3d:setTexture', objVar, asset: args[1].value as string }
     }
     case 'setVisible': {
       const objVar = identifierName(args[0])
@@ -10417,6 +10336,8 @@ function tryMatchGame3DCall(expr: Node, source: string, ctx: ParseCtx): JSStatem
         !isSimpleValue(z)
       )
         return null
+      // O 7º ("com-sombra"/"sem-sombra") já passou pelo dropdown do asSZGame3DCall.
+      const shadow = args[6]?.type === 'StringLiteral' && args[6].value === 'com-sombra'
       return {
         type: 'g3d:addPointLight',
         worldVar,
@@ -10425,6 +10346,7 @@ function tryMatchGame3DCall(expr: Node, source: string, ctx: ParseCtx): JSStatem
         x,
         y,
         z,
+        ...(shadow ? { shadow: true as const } : {}),
       }
     }
     case 'setFog': {
@@ -10456,28 +10378,16 @@ function tryMatchGame3DCall(expr: Node, source: string, ctx: ParseCtx): JSStatem
       if (!worldVar || args[1]?.type !== 'StringLiteral') return null
       return { type: 'g3d:setShadows', worldVar, mode: args[1].value as string }
     }
-    case 'spawnInSwarm': {
-      const swarmVar = identifierName(args[0])
+    case 'spawnCopy': {
+      // generator: SZGame3D.spawnCopy(group, original, x, y, z)
+      const groupVar = identifierName(args[0])
       const originalVar = identifierName(args[1])
       const x = toExpr(args[2], ctx)
       const y = toExpr(args[3], ctx)
       const z = toExpr(args[4], ctx)
-      if (!swarmVar || !originalVar || !isSimpleValue(x) || !isSimpleValue(y) || !isSimpleValue(z))
+      if (!groupVar || !originalVar || !isSimpleValue(x) || !isSimpleValue(y) || !isSimpleValue(z))
         return null
-      return { type: 'g3d:spawnInSwarm', swarmVar, originalVar, x, y, z }
-    }
-    case 'forEachInSwarm': {
-      const swarmVar = identifierName(args[0])
-      const cb = args[1]
-      if (!swarmVar || !isFn(cb)) return null
-      const params = cb.params ?? []
-      if (params.length !== 1 || params[0]?.type !== 'Identifier') return null
-      return {
-        type: 'g3d:forEachInSwarm',
-        swarmVar,
-        itemName: params[0].name as string,
-        body: bodyOfFn(cb, source, ctx),
-      }
+      return { type: 'g3d:spawnCopy', groupVar, originalVar, x, y, z }
     }
     case 'forEachInGroup': {
       // generator: SZGame3D.forEachInGroup(group, (item) => {…})
@@ -10509,13 +10419,6 @@ function tryMatchGame3DCall(expr: Node, source: string, ctx: ParseCtx): JSStatem
         body: bodyOfFn(cb, source, ctx),
       }
     }
-    case 'everyFramesLoop': {
-      // generator: SZGame3D.everyFramesLoop(n, () => {…}) — irmão do "A cada quadro 3D"
-      const n = toExpr(args[0], ctx)
-      const cb = args[1]
-      if (!isSimpleValue(n) || !isFn(cb) || (cb.params ?? []).length !== 0) return null
-      return { type: 'g3d:everyFrames', n, body: bodyOfFn(cb, source, ctx) }
-    }
     case 'everySecondsLoop': {
       // generator: SZGame3D.everySecondsLoop(secs, () => {…})
       const secs = toExpr(args[0], ctx)
@@ -10523,24 +10426,18 @@ function tryMatchGame3DCall(expr: Node, source: string, ctx: ParseCtx): JSStatem
       if (!isSimpleValue(secs) || !isFn(cb) || (cb.params ?? []).length !== 0) return null
       return { type: 'g3d:everySeconds', secs, body: bodyOfFn(cb, source, ctx) }
     }
-    case 'removeFromSwarm': {
-      const swarmVar = identifierName(args[0])
-      const itemVar = identifierName(args[1])
-      if (!swarmVar || !itemVar) return null
-      return { type: 'g3d:removeFromSwarm', swarmVar, itemVar }
-    }
-    case 'pruneSwarm': {
-      const swarmVar = identifierName(args[0])
+    case 'pruneArea': {
+      const groupVar = identifierName(args[0])
       const min = toExpr(args[2], ctx)
       const max = toExpr(args[3], ctx)
       if (
-        !swarmVar ||
+        !groupVar ||
         args[1]?.type !== 'StringLiteral' ||
         !isSimpleValue(min) ||
         !isSimpleValue(max)
       )
         return null
-      return { type: 'g3d:pruneSwarm', swarmVar, axis: args[1].value as string, min, max }
+      return { type: 'g3d:pruneArea', groupVar, axis: args[1].value as string, min, max }
     }
     case 'playNote': {
       const freq = toExpr(args[0], ctx)
@@ -10600,6 +10497,11 @@ function tryMatchGame3DVarInit(name: string, init: Node, ctx: ParseCtx): JSState
   if (method === 'createFullscreenScene') {
     // Argumento de cor opcional: código antigo sem cor cai no padrão.
     const bg = args[0]?.type === 'StringLiteral' ? (args[0].value as string) : '#0b1020'
+    if (args.length > 2) return null
+    if (args.length === 2) {
+      if (args[1]?.type !== 'StringLiteral' || !isFullscreenGame3DKit(args[1].value)) return null
+      return { type: 'g3d:createFullscreenScene', varName: name, bg, kit: args[1].value }
+    }
     return { type: 'g3d:createFullscreenScene', varName: name, bg }
   }
   if (method === 'createBox') {
@@ -10730,11 +10632,6 @@ function tryMatchGame3DVarInit(name: string, init: Node, ctx: ParseCtx): JSState
     if (!worldVar) return null
     return { type: 'g3d:createModel', varName: name, worldVar }
   }
-  if (method === 'createSwarm') {
-    const worldVar = identifierName(args[0])
-    if (!worldVar) return null
-    return { type: 'g3d:createSwarm', varName: name, worldVar }
-  }
   return null
 }
 
@@ -10760,11 +10657,6 @@ function matchGame3DExpr(node: Node, ctx?: ParseCtx): JSExpr | null {
     const groupVar = identifierName(args[1])
     if (objVar && groupVar) return { type: 'g3d:hitAny', objVar, groupVar }
   }
-  if (method === 'touchesBox') {
-    const objVar = identifierName(args[0])
-    const groupVar = identifierName(args[1])
-    if (objVar && groupVar) return { type: 'g3d:touchesBox', objVar, groupVar }
-  }
   if (method === 'crosserHit') {
     const objVar = identifierName(args[0])
     const worldVar = identifierName(args[1])
@@ -10778,10 +10670,6 @@ function matchGame3DExpr(node: Node, ctx?: ParseCtx): JSExpr | null {
     const aVar = identifierName(args[0])
     const bVar = identifierName(args[1])
     if (aVar && bVar) return { type: 'g3d:distanceTo', aVar, bVar }
-  }
-  if (method === 'countSwarm') {
-    const swarmVar = identifierName(args[0])
-    if (swarmVar) return { type: 'g3d:countSwarm', swarmVar }
   }
   if (method === 'countGroup') {
     const groupVar = identifierName(args[0])
@@ -12737,6 +12625,8 @@ function toExpr(node: Node | null | undefined, ctx?: ParseCtx): JSExpr | null {
       const g2dExpr = matchGame2DExpr(node, ctx)
       if (g2dExpr) return g2dExpr
       // SZGame3D.keyDown / collides / hitAny → perguntas 3D (booleanos).
+      const rulesExpr = gameRulesExpressionCallToIR(node, platformTools('', ctx))
+      if (rulesExpr) return rulesExpr
       const g3dExpr = matchGame3DExpr(node, ctx)
       if (g3dExpr) return g3dExpr
       // SZGameKit.keyDown / touching / width / state… → valores do kit profissional.
@@ -12955,6 +12845,10 @@ function isSimpleValue(expr: JSExpr | null): expr is JSExpr {
   if (isSceneExpression(expr)) return expr.args.every(isSimpleValue)
   // Os reporters do lote de plataforma do Jogo 3D vivem no codec da extensão.
   if (PLATFORM_SIMPLE_VALUE_TYPES.has(expr.type)) return true
+  const rulesSimple = gameRulesSimpleValue(expr, isSimpleValue)
+  if (rulesSimple !== undefined) return rulesSimple
+  const gameplaySimple = gameKit3DGameplaySimpleValue(expr, isSimpleValue)
+  if (gameplaySimple !== undefined) return gameplaySimple
   const nativeRuntime = nativeRuntimeSimpleValue(expr, isSimpleValue)
   if (nativeRuntime !== undefined) return nativeRuntime
   switch (expr.type) {
@@ -13043,11 +12937,9 @@ function isSimpleValue(expr: JSExpr | null): expr is JSExpr {
     case 'g3d:keyDown':
     case 'g3d:collides':
     case 'g3d:hitAny':
-    case 'g3d:touchesBox':
     case 'g3d:crosserHit':
     case 'g3d:crosserRow':
     case 'g3d:distanceTo':
-    case 'g3d:countSwarm':
     case 'g3d:countGroup':
     case 'g3d:isNear':
     case 'g3d:raceHit':
@@ -13178,18 +13070,14 @@ function isSimpleValue(expr: JSExpr | null): expr is JSExpr {
     case 'g3k:pointerOver':
     case 'g3k:groundPoint':
     case 'g3k:velocityOf':
-    case 'g3k:randomBetween':
-    case 'g3k:randomChance':
-    case 'g3k:timeLeft':
     case 'g3k:distanceBetween':
     case 'g3k:maxHealthOf':
     case 'g3k:stateOf':
     case 'g3k:stateIs':
     case 'g3k:gameState':
     case 'w3d:worldSize':
-    case 'w3d:carPos':
+    case 'w3d:playerPos':
     case 'w3d:carSpeed':
-    case 'w3d:personPos':
     case 'w3d:isDriving':
     case 'w3d:coinCount':
     case 'w3d:hasAchievement':

@@ -1,8 +1,8 @@
-import { isTilesetKind, type PintaAsset } from './project'
+import { isTilesetKind, type PintaAsset, tilemapTilesetIds } from './project'
 
 /**
- * Expande a seleção do PACK com as dependências: um mapa selecionado leva o
- * TILESET dele junto (decisão da dona — sem a peça o mapa é recusado no
+ * Expande a seleção do PACK com as dependências: um mapa selecionado leva os
+ * TILESETS dele junto (o padrão e os das camadas) (decisão da dona — sem a peça o mapa é recusado no
  * restauro; mesma régua do `assetBundleToJson`). Devolve os assets na ordem da
  * galeria com os tilesets PRIMEIRO (precedente do bundle; o `importAssets` já
  * religa por id em qualquer ordem — aqui é consistência, não contrato).
@@ -27,11 +27,14 @@ export function expandSelection(
   }
   for (const asset of assets) {
     if (asset.kind !== 'tilemap' || !wanted.has(asset.id)) continue
-    if (wanted.has(asset.tilesetId)) continue
-    const tileset = assets.find((c) => isTilesetKind(c) && c.id === asset.tilesetId)
-    if (tileset) {
-      wanted.add(tileset.id)
-      autoIncluded.push(tileset.id)
+    // Todas as peças do mapa (a padrão e as de cada camada).
+    for (const tilesetId of tilemapTilesetIds(asset)) {
+      if (wanted.has(tilesetId)) continue
+      const tileset = assets.find((c) => isTilesetKind(c) && c.id === tilesetId)
+      if (tileset) {
+        wanted.add(tileset.id)
+        autoIncluded.push(tileset.id)
+      }
     }
   }
   const picked = assets.filter((asset) => wanted.has(asset.id))

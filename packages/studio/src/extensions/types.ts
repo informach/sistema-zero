@@ -137,6 +137,16 @@ export interface ExtensionDocumentationProvider {
 
 export type { ExtensionToolboxCategory, ToolboxBlockInputs } from './toolboxTypes'
 
+/**
+ * O que o host sabe do projeto ao pedir o runtime (lote 14 do review 3D). Monte SEMPRE com
+ * `extensionBootstrapContext` (`runtime.ts`): preview, capa, export e player têm de passar o
+ * MESMO texto para o mesmo projeto, senão injetariam variantes diferentes.
+ */
+export interface ExtensionBootstrapContext {
+  /** Todo o código do aluno que vai para o documento: index.html, script.js e os extras. */
+  code: string
+}
+
 export type ExtensionRuntimeDefinition = {
   /** Contrato interno do ciclo de vida; obrigatório em toda extensão oficial. */
   lifecycle: RuntimeLifecycleContract
@@ -147,11 +157,23 @@ export type ExtensionRuntimeDefinition = {
       /** Compatibilidade para fixtures/runtimes pequenos já residentes. */
       bootstrapScript: string
       loadBootstrapScript?: never
+      bootstrapVariant?: never
     }
   | {
-      /** Importa o chunk pesado somente quando a extensão vai executar. */
+      /**
+       * Importa o chunk pesado somente quando a extensão vai executar. Sem contexto (chamador
+       * antigo, teste) devolve o runtime COMPLETO: é a variante segura.
+       */
       bootstrapScript?: never
-      loadBootstrapScript(): Promise<string>
+      loadBootstrapScript(context?: ExtensionBootstrapContext): Promise<string>
+      /**
+       * Chave curta da variante que `loadBootstrapScript(context)` devolve para este código.
+       * `''` é a variante padrão, a MESMA de `loadBootstrapScript()` sem contexto. O host
+       * memoiza por (runtime, chave): dois códigos com a mesma chave recebem o mesmo texto,
+       * então a chave tem de decidir o texto sozinha. Sem a função, a extensão tem uma
+       * variante só e o contexto não muda nada.
+       */
+      bootstrapVariant?(context: ExtensionBootstrapContext): string
     }
 )
 

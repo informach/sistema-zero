@@ -6,24 +6,15 @@ import { isNode, nodes } from '../blocks/nodes'
 import {
   absolutePythonImport,
   movedPythonPath,
+  PYTHON_RESERVED_MODULES,
   type PythonModuleLocation,
   pythonModulePaths,
   pythonPathWithin,
   relativePythonImport,
 } from './modulePaths'
-import standardModules from './standardModules.json'
 import type { PythonNode, PythonParsedDocument, PythonToken, PythonValue } from './types'
 
-// CPython 3.14.2 sys.stdlib_module_names plus interpreter-owned browser modules.
-// A cached, builtin or frozen module may outrank a source file; never guess its binding.
-const reservedModules = new Set([
-  ...standardModules,
-  'js',
-  'pyodide',
-  'pyodide_js',
-  '_pyodide',
-  '_pyodide_core',
-])
+const reservedModules = PYTHON_RESERVED_MODULES
 function inertPackage(document: PythonParsedDocument | undefined) {
   const body = document?.tree?.fields.body
   return (

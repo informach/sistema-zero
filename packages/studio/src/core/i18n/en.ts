@@ -83,6 +83,7 @@ export const en: Record<string, string> = {
   'assets.tab.images': 'Images',
   'assets.tab.sounds': 'Sounds',
   'assets.tab.models3d': '3D models',
+  'assets.tab.fonts': 'Fonts',
   'extensions.install': 'Install',
   'extensions.remove': 'Remove',
   'extensions.installed': 'Installed',
@@ -256,6 +257,23 @@ export const en: Record<string, string> = {
     'This frame is a still image. Its selected position follows the frame order in Pinta.',
   'pintaImport.image.fullMap':
     'The whole map becomes one image, with every visible layer, including the front layer.',
+  'pintaImport.image.vector':
+    'This drawing comes in as a vector (SVG): it stays sharp at any size and Pygame Zero shows it at the chosen size.',
+  'pintaImport.image.turtleShape':
+    'This drawing comes in as a vector (SVG) and becomes a turtle shape that turns with the turtle: use the "use the Pinta drawing as a shape" block.',
+  'pintaImport.image.mode': 'What to bring',
+  'pintaImport.image.mode.spritesheet': 'Sheet with every animation',
+  'pintaImport.image.mode.frame': 'One frame',
+  'pintaImport.image.mode.tileset': 'Every tile',
+  'pintaImport.image.mode.tile': 'One tile',
+  'pintaImport.image.mode.map': 'Map with layers and objects',
+  'pintaImport.image.mode.tilemap': 'Map image',
+  'pintaImport.image.spritesheetData':
+    'The sheet carries its animations and collision box. In code, use pinta.carregar_sprite with the image name.',
+  'pintaImport.image.tilesetData':
+    'The sheet carries which tiles are solid and which are platforms. In code, use pinta.carregar_pecas with the image name.',
+  'pintaImport.image.mapData':
+    'The image carries every tile of the map, its layers and objects. In code, use pinta.carregar_mapa with the image name.',
   'pintaImport.image.preparing': 'Preparing the image…',
   'pintaImport.image.preview': 'Selected image preview',
   'pintaImport.image.add': 'Add image',
@@ -268,6 +286,23 @@ export const en: Record<string, string> = {
     'This animation, frame or tile is unavailable. Choose again.',
   'pintaImport.image.selectionChanged':
     'The received image does not match your choice. Review the selection.',
+  'models3d.raylibUploadTitle': '3D model (.glb) for Raylib 3D',
+  'models3d.raylibHowTo':
+    "Open the model using its path in code, such as load_model('models/ship.glb').",
+  'models3d.uploadTitle':
+    '3D model (.glb, with animations and bones) or 360° sky (.hdr) for 3D Game, 3D World, Advanced 3D Game and Canvas 3D',
+  'models3d.howTo': 'Use the model NAME in the blocks:',
+  'models3d.howTo.game3d':
+    '3D Game: "Create the object with the model" puts the model in the scene, and "Play the animation" makes it move.',
+  'models3d.howTo.advanced':
+    'Advanced 3D Game: the "imported model" part of the mold, with one animation for each state.',
+  'models3d.howTo.world3d':
+    '3D World: "Place the model" moves, and "Scatter" keeps the copies still. The character, the friend and the car can use a model too.',
+  'models3d.howTo.sky': '360° sky (.hdr): the "Use the 360° sky" block.',
+  'models3d.badge.clips': '🎬 {names}',
+  'models3d.badge.clipsTitle': 'Animations of this model: {names}',
+  'models3d.badge.skinned': '🦴 with bones',
+  'models3d.badge.animatedPaint': '🎞️ moving paint',
   'moldaImport.button': '🧊 Bring from Molda',
   'moldaImport.title': 'Bring from Molda',
   'moldaImport.subtitle':
@@ -287,6 +322,8 @@ export const en: Record<string, string> = {
   'moldaImport.add': 'Add to project',
   'moldaImport.adding': 'Bringing…',
   'moldaImport.inProject': '✓ in project',
+  'moldaImport.needs3dRaylib':
+    '3D models and 360° skies belong to the Raylib 3D extension (the sky comes in as a panorama image). The texture comes in as an image.',
   'moldaImport.needs3d':
     'Install Game 3D, Advanced Game 3D or World 3D (Extensions panel) to use models and skies. The texture comes in as an image.',
   'moldaImport.kind.model': '🧊 model',

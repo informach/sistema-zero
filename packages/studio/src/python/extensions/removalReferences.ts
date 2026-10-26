@@ -6,33 +6,67 @@ import {
 import type { PythonProjectDocument } from '../../core/editableProject'
 import { pythonFilesToTree } from '../../state/pythonProjectLayout'
 import { isNode } from '../blocks/nodes'
+import { pythonBindingResolver } from '../blocks/scope'
 import { assertPythonVisualDraftSettled } from '../blocks/workspaceDraft'
 import type { PythonAnalysisController } from '../language/controller'
 import { pythonParentPath } from '../language/modulePaths'
 import { PYTHON_ANALYSIS_LIMITS, type PythonValue } from '../language/types'
+import { pythonApiReferenceMatcher } from './referenceMatcher'
 
 export interface PythonExtensionReference {
   path: string
   line: number
 }
 export class PythonExtensionInUseError extends Error {
-  constructor(readonly references: PythonExtensionReference[]) {
+  constructor(
+    readonly references: PythonExtensionReference[],
+    /** What is still in use and what to do, before the list of places. */
+    reason?: { subject: string; advice: string },
+  ) {
+    const places = references
+      .slice(0, 20)
+      .map(({ path, line }) => `${path}:${line}`)
+      .join(', ')
     super(
-      `Turtle ainda é usada em ${references
-        .slice(0, 20)
-        .map(({ path, line }) => `${path}:${line}`)
-        .join(
-          ', ',
-        )}. Ajuste esses imports antes de remover. Seu código e seus materiais foram preservados.`,
+      `${reason?.subject ?? 'Turtle ainda é usada'} em ${places}. ${reason?.advice ?? 'Ajuste esses imports antes de remover.'} Seu código e seus materiais foram preservados.`,
     )
   }
 }
 
+/** What a removal or a swap looks for in the learner's code. */
+export interface PythonReferenceQuery {
+  /** Imported modules that count as a use (``import pyray``, ``from raylib import *``). */
+  modules: readonly string[]
+  /** Name shown in the messages (Turtle, Raylib 2D…). */
+  label: string
+  /**
+   * When present, only these names count, wherever they are used: as a name (``draw_cube(…)``
+   * after ``from pyray import *``) or as an attribute (``pyray.draw_cube``, ``rl.DrawCube``).
+   * Module-only imports do not count; explicit imports of these names do, including aliases.
+   */
+  names?: ReadonlySet<string>
+  /** Names injected into the entry point by the extension, without an import. */
+  provided?: { provider: string; names: readonly string[]; handlers: readonly string[] }
+}
+
 /** Only CPython AST data is inspected; learner source is never evaluated. */
-export async function inspectPythonTurtleRemoval(
+export function inspectPythonTurtleRemoval(
   project: PythonProjectDocument,
   analysis: Pick<PythonAnalysisController, 'run'>,
   current: () => void,
+): Promise<PythonExtensionReference[]> {
+  return inspectPythonReferences(project, analysis, current, {
+    modules: ['turtle', 'formas_do_pinta'],
+    label: 'Turtle',
+  })
+}
+
+/** Where the learner's code uses a module (or some of its names); source is never evaluated. */
+export async function inspectPythonReferences(
+  project: PythonProjectDocument,
+  analysis: Pick<PythonAnalysisController, 'run'>,
+  current: () => void,
+  query: PythonReferenceQuery,
 ): Promise<PythonExtensionReference[]> {
   assertPythonVisualDraftSettled(project)
   const tree = project.kind === 'classic' ? pythonFilesToTree(project.files) : project.tree
@@ -53,8 +87,12 @@ export async function inspectPythonTurtleRemoval(
   const root = pythonParentPath(project.python.entrypoint)
   const base = root ? `${root}/` : ''
   // Namespace directories and analysis-only .pyi files do not hide the runtime module.
-  const shadowed = [`${base}turtle.py`, `${base}turtle/__init__.py`].some(
-    (path) => tree[path]?.kind === 'file',
+  // A module of the learner with the same name (pyray.py) is what the import loads.
+  const modules = query.modules.filter(
+    (module) =>
+      ![`${base}${module}.py`, `${base}${module}/__init__.py`].some(
+        (path) => tree[path]?.kind === 'file',
+      ),
   )
   const instanceId = crypto.randomUUID()
   return analysis.run({
@@ -77,9 +115,21 @@ export async function inspectPythonTurtleRemoval(
         current()
         if (!document.tree || document.diagnostics.length)
           throw new Error(
-            `Não foi possível conferir ${path}: corrija a sintaxe antes de remover Turtle. Seus arquivos foram preservados.`,
+            `Não foi possível conferir ${path}: corrija a sintaxe antes de remover ${query.label}. Seus arquivos foram preservados.`,
           )
         tokenCount += document.tokens.length
+        const selective =
+          query.names && pythonApiReferenceMatcher(document.tree, modules, query.names)
+        const entrypoint = path === project.python.entrypoint
+        const provided = new Set(query.provided?.names)
+        const handlers = new Set(query.provided?.handlers)
+        const provider = query.provided?.provider
+        const implicitResolver =
+          entrypoint && provider
+            ? pythonBindingResolver(document.tree, new Set([...modules, provider]), new Set(), {
+                builtins: new Map([...provided].map((name) => [name, { provider }])),
+              })
+            : undefined
         const pending: PythonValue[] = [document.tree]
         while (pending.length) {
           const value = pending.pop()!
@@ -112,16 +162,30 @@ export async function inspectPythonTurtleRemoval(
               (alias) =>
                 isNode(alias) &&
                 typeof alias.fields.name === 'string' &&
-                alias.fields.name.split('.')[0] === 'turtle',
+                modules.includes(alias.fields.name.split('.')[0]!),
             )
-          if (
-            !shadowed &&
-            references.length < 20 &&
-            (imported ||
+          const implicit =
+            implicitResolver &&
+            ((value.kind === 'Name' &&
+              typeof value.fields.id === 'string' &&
+              ((provided.has(value.fields.id) &&
+                implicitResolver(value, { root: value.fields.id, builtin: provider })) ||
+                (handlers.has(value.fields.id) &&
+                  isNode(value.fields.ctx) &&
+                  value.fields.ctx.kind === 'Store' &&
+                  implicitResolver(value, { root: value.fields.id, handler: provider })))) ||
+              (value.kind === 'FunctionDef' &&
+                typeof value.fields.name === 'string' &&
+                handlers.has(value.fields.name) &&
+                implicitResolver(value, { root: value.fields.name, handler: provider })))
+          const used = selective
+            ? selective(value)
+            : imported ||
               (absoluteFrom &&
                 typeof value.fields.module === 'string' &&
-                value.fields.module.split('.')[0] === 'turtle'))
-          ) {
+                modules.includes(value.fields.module.split('.')[0]!)) ||
+              implicit
+          if (modules.length && references.length < 20 && used) {
             const offset = value.range?.start ?? 0
             references.push({ path, line: source.slice(0, offset).split(/\r\n|\r|\n/).length })
           }

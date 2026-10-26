@@ -31,6 +31,7 @@ import {
   StudioPythonValidationRequestSchema,
 } from '@sistemazero/core/studio/python-validation-input'
 import { z } from 'zod'
+import { PYGAME_EXTENSION } from '../../studio/src/runtime/python/pygame/contract'
 import { verifyPythonPromotionPlan } from './python-promotion-plan'
 
 export const STAGING_PYTHON_RUNTIME_ORIGIN =
@@ -136,6 +137,18 @@ export async function pinPythonExecutionPlan(raw: unknown, options: PythonExecut
       (item) => item.id === 'python-turtle' && item.versions.includes('1.0.0'),
     ),
     'Turtle 1.0.0 is required.',
+  )
+  assert(
+    deployment.release.manifest.extensions.some(
+      (item) => item.id === 'python-pgzero' && item.versions.includes('1.0.0'),
+    ),
+    'Pygame Zero 1.0.0 is required.',
+  )
+  assert(
+    deployment.release.manifest.extensions.some(
+      (item) => item.id === PYGAME_EXTENSION.id && item.versions.includes(PYGAME_EXTENSION.version),
+    ),
+    'Pygame-ce 1.0.0 is required.',
   )
   assert(
     ['inspect.mjs', 'playtest.mjs'].every((path) =>

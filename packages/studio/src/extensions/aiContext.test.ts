@@ -1,9 +1,25 @@
 import { describe, expect, it } from 'bun:test'
 import { gameTwoDExtension } from '../official-extensions/game-2d'
 import { gameKitExtension } from '../official-extensions/game-2d-advanced'
+import { GAME_EXTENSION_VISUAL_GUIDANCE } from '../official-extensions/gameVisualPolicy'
+import { SERVER_MECHANIC_DOCUMENTS } from '../official-extensions/serverKnowledge'
 import { formatExtensionPromptContext } from './aiContext'
 
 describe('formatExtensionPromptContext', () => {
+  it('o provider detalhado do Jogo 2D também usa somente o desenho da extensão', async () => {
+    const detailed = await gameTwoDExtension.ai?.loadPromptContext?.()
+    expect(detailed).toStartWith(GAME_EXTENSION_VISUAL_GUIDANCE)
+    expect(detailed).not.toContain('CANVAS NA MÃO')
+    expect(detailed).not.toMatch(/\bctx\.(?:rect|clip|isPointInPath|isPointInStroke)\(/)
+  })
+
+  it('mantém as etapas visuais explícitas para todos os jogos e documentos do tutor', () => {
+    const context = formatExtensionPromptContext([gameTwoDExtension, gameKitExtension])
+    expect(context.split(GAME_EXTENSION_VISUAL_GUIDANCE)).toHaveLength(2)
+    for (const document of SERVER_MECHANIC_DOCUMENTS)
+      expect(document.content).toStartWith(GAME_EXTENSION_VISUAL_GUIDANCE)
+    expect(formatExtensionPromptContext([])).toBe('')
+  })
   it('usa o resumo operacional da extensão avançada sem enviar o manual inteiro', () => {
     const context = formatExtensionPromptContext([gameKitExtension])
 

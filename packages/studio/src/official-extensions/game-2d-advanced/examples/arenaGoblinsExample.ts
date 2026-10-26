@@ -33,94 +33,33 @@ export const arenaGoblinsExample: ExtensionExample = {
           ctxName: 'ctx',
           body: [
             {
-              type: 'canvasFillStyle',
-              ctxVar: 'ctx',
-              color: {
-                type: 'color',
-                value: '#e94f4f',
-              },
+              type: 'gk:drawRectangle',
+              x: { type: 'num', value: 0 },
+              y: { type: 'num', value: 0 },
+              w: { type: 'num', value: 40 },
+              h: { type: 'num', value: 40 },
+              color: { type: 'color', value: '#e94f4f' },
             },
             {
-              type: 'canvasFillRect',
-              ctxVar: 'ctx',
-              x: {
-                type: 'num',
-                value: 0,
-              },
-              y: {
-                type: 'num',
-                value: 0,
-              },
-              w: {
-                type: 'num',
-                value: 40,
-              },
-              h: {
-                type: 'num',
-                value: 40,
-              },
-            },
-            {
-              type: 'canvasFillStyle',
-              ctxVar: 'ctx',
-              color: {
-                type: 'color',
-                value: '#ffffff',
-              },
-            },
-            {
-              type: 'canvasFillRect',
-              ctxVar: 'ctx',
-              x: {
-                type: 'num',
-                value: 26,
-              },
-              y: {
-                type: 'num',
-                value: 12,
-              },
-              w: {
-                type: 'num',
-                value: 6,
-              },
-              h: {
-                type: 'num',
-                value: 6,
-              },
+              type: 'gk:drawRectangle',
+              x: { type: 'num', value: 26 },
+              y: { type: 'num', value: 12 },
+              w: { type: 'num', value: 6 },
+              h: { type: 'num', value: 6 },
+              color: { type: 'color', value: '#ffffff' },
             },
           ],
-          baseW: {
-            type: 'num',
-            value: 40,
-          },
-          baseH: {
-            type: 'num',
-            value: 40,
-          },
+          baseW: { type: 'num', value: 40 },
+          baseH: { type: 'num', value: 40 },
         },
         {
           type: 'gk:defineMold',
           name: 'goblin',
-          w: {
-            type: 'num',
-            value: 40,
-          },
-          h: {
-            type: 'num',
-            value: 40,
-          },
-          health: {
-            type: 'num',
-            value: 20,
-          },
-          speed: {
-            type: 'num',
-            value: 120,
-          },
-          damage: {
-            type: 'num',
-            value: 10,
-          },
+          w: { type: 'num', value: 40 },
+          h: { type: 'num', value: 40 },
+          health: { type: 'num', value: 20 },
+          speed: { type: 'num', value: 120 },
+          damage: { type: 'num', value: 10 },
           color: '#e94f4f',
           image: '',
           look: 'goblin',
@@ -128,114 +67,51 @@ export const arenaGoblinsExample: ExtensionExample = {
         {
           type: 'gk:defineEffect',
           name: 'poeira',
-          count: {
-            type: 'num',
-            value: 14,
-          },
+          count: { type: 'num', value: 14 },
           color: '#caa977',
-          size: {
-            type: 'num',
-            value: 4,
-          },
-          life: {
-            type: 'num',
-            value: 0.5,
-          },
-          speed: {
-            type: 'num',
-            value: 180,
-          },
-          gravity: {
-            type: 'num',
-            value: 260,
-          },
+          size: { type: 'num', value: 4 },
+          life: { type: 'num', value: 0.5 },
+          speed: { type: 'num', value: 180 },
+          gravity: { type: 'num', value: 260 },
         },
       ],
       start: [
         {
           type: 'gk:setup',
-          w: {
-            type: 'num',
-            value: 960,
-          },
-          h: {
-            type: 'num',
-            value: 540,
-          },
+          w: { type: 'num', value: 960 },
+          h: { type: 'num', value: 540 },
           bg: '#12203a',
           accent: '#4a9eff',
         },
         {
           type: 'gk:setScreenText',
           screen: 'menu',
-          title: {
-            type: 'str',
-            value: 'Arena dos Goblins',
-          },
-          text: {
-            type: 'str',
-            value: 'WASD anda - J golpeia - derrote 10!',
-          },
-          button: {
-            type: 'str',
-            value: 'Entrar na arena',
-          },
+          title: { type: 'str', value: 'Arena dos Goblins' },
+          text: { type: 'str', value: 'WASD anda - J golpeia - derrote 10!' },
+          button: { type: 'str', value: 'Entrar na arena' },
         },
         {
           type: 'gk:setMission',
-          seconds: {
-            type: 'num',
-            value: 60,
-          },
-          killCount: {
-            type: 'num',
-            value: 10,
-          },
+          seconds: { type: 'num', value: 60 },
+          killCount: { type: 'num', value: 10 },
         },
         {
           type: 'gk:createCharacter',
           varName: 'heroi',
           image: '',
-          w: {
-            type: 'num',
-            value: 48,
-          },
-          h: {
-            type: 'num',
-            value: 48,
-          },
-          speed: {
-            type: 'num',
-            value: 300,
-          },
+          w: { type: 'num', value: 48 },
+          h: { type: 'num', value: 48 },
+          speed: { type: 'num', value: 300 },
           color: '#4a9eff',
         },
-        {
-          type: 'gk:resetCharacter',
-          charVar: 'heroi',
-        },
-        {
-          type: 'gk:startSpawner',
-          mold: 'goblin',
-          seconds: {
-            type: 'num',
-            value: 1.2,
-          },
-        },
+        { type: 'gk:resetCharacter', charVar: 'heroi' },
+        { type: 'gk:startSpawner', mold: 'goblin', seconds: { type: 'num', value: 1.2 } },
       ],
       events: [
         {
           type: 'gk:onEvent',
           event: 'inimigo:morreu',
-          body: [
-            {
-              type: 'gk:missionKill',
-            },
-            {
-              type: 'gk:playEffect',
-              fx: 'explosion',
-            },
-          ],
+          body: [{ type: 'gk:missionKill' }, { type: 'gk:playEffect', fx: 'explosion' }],
         },
       ],
       loops: [
@@ -243,101 +119,51 @@ export const arenaGoblinsExample: ExtensionExample = {
           type: 'gk:onUpdate',
           dtName: 'dt',
           body: [
-            {
-              type: 'gk:moveWithKeys',
-              charVar: 'heroi',
-              dtVar: 'dt',
-            },
-            {
-              type: 'gk:keepOnScreen',
-              charVar: 'heroi',
-            },
+            { type: 'gk:moveWithKeys', charVar: 'heroi', dtVar: 'dt' },
+            { type: 'gk:keepOnScreen', charVar: 'heroi' },
             {
               type: 'gk:forEachActive',
               mold: 'goblin',
               itemName: 'item',
               body: [
-                {
-                  type: 'gk:seek',
-                  charVar: 'item',
-                  targetVar: 'heroi',
-                  dtVar: 'dt',
-                },
-                {
-                  type: 'gk:face',
-                  charVar: 'item',
-                  targetVar: 'heroi',
-                },
+                { type: 'gk:seek', charVar: 'item', targetVar: 'heroi', dtVar: 'dt' },
+                { type: 'gk:face', charVar: 'item', targetVar: 'heroi' },
                 {
                   type: 'if',
                   cond: {
                     type: 'logical',
                     op: '&&',
-                    left: {
-                      type: 'gk:keyPressed',
-                      key: 'j',
-                    },
-                    right: {
-                      type: 'gk:touchCircle',
-                      aVar: 'heroi',
-                      bVar: 'item',
-                    },
+                    left: { type: 'gk:keyPressed', key: 'j' },
+                    right: { type: 'gk:touchCircle', aVar: 'heroi', bVar: 'item' },
                   },
                   then: [
                     {
                       type: 'gk:hurt',
                       charVar: 'item',
-                      amount: {
-                        type: 'num',
-                        value: 10,
-                      },
-                      iframes: {
-                        type: 'num',
-                        value: 0.2,
-                      },
+                      amount: { type: 'num', value: 10 },
+                      iframes: { type: 'num', value: 0.2 },
                     },
                     {
                       type: 'gk:knockback',
                       charVar: 'item',
                       fromVar: 'heroi',
-                      force: {
-                        type: 'num',
-                        value: 300,
-                      },
+                      force: { type: 'num', value: 300 },
                     },
-                    {
-                      type: 'gk:playEffect',
-                      fx: 'hit',
-                    },
+                    { type: 'gk:playEffect', fx: 'hit' },
                   ],
                 },
                 {
                   type: 'if',
-                  cond: {
-                    type: 'gk:isDead',
-                    charVar: 'item',
-                  },
+                  cond: { type: 'gk:isDead', charVar: 'item' },
                   then: [
                     {
                       type: 'gk:burst',
                       effect: 'poeira',
-                      x: {
-                        type: 'gk:charX',
-                        charVar: 'item',
-                      },
-                      y: {
-                        type: 'gk:charY',
-                        charVar: 'item',
-                      },
+                      x: { type: 'gk:charX', charVar: 'item' },
+                      y: { type: 'gk:charY', charVar: 'item' },
                     },
-                    {
-                      type: 'gk:recycle',
-                      charVar: 'item',
-                    },
-                    {
-                      type: 'gk:emit',
-                      event: 'inimigo:morreu',
-                    },
+                    { type: 'gk:recycle', charVar: 'item' },
+                    { type: 'gk:emit', event: 'inimigo:morreu' },
                   ],
                 },
                 {
@@ -345,68 +171,35 @@ export const arenaGoblinsExample: ExtensionExample = {
                   cond: {
                     type: 'logical',
                     op: '&&',
-                    left: {
-                      type: 'gk:touchCircle',
-                      aVar: 'item',
-                      bVar: 'heroi',
-                    },
+                    left: { type: 'gk:touchCircle', aVar: 'item', bVar: 'heroi' },
                     right: {
                       type: 'logicalNot',
-                      value: {
-                        type: 'gk:isInvincible',
-                        charVar: 'heroi',
-                      },
+                      value: { type: 'gk:isInvincible', charVar: 'heroi' },
                     },
                   },
                   then: [
                     {
                       type: 'gk:hurt',
                       charVar: 'heroi',
-                      amount: {
-                        type: 'num',
-                        value: 10,
-                      },
-                      iframes: {
-                        type: 'num',
-                        value: 1,
-                      },
+                      amount: { type: 'num', value: 10 },
+                      iframes: { type: 'num', value: 1 },
                     },
                     {
                       type: 'gk:knockback',
                       charVar: 'heroi',
                       fromVar: 'item',
-                      force: {
-                        type: 'num',
-                        value: 400,
-                      },
+                      force: { type: 'num', value: 400 },
                     },
-                    {
-                      type: 'gk:playEffect',
-                      fx: 'hurt',
-                    },
+                    { type: 'gk:playEffect', fx: 'hurt' },
                   ],
                 },
               ],
             },
-            {
-              type: 'gk:cullOffscreen',
-              mold: 'goblin',
-              margin: {
-                type: 'num',
-                value: 200,
-              },
-            },
+            { type: 'gk:cullOffscreen', mold: 'goblin', margin: { type: 'num', value: 200 } },
             {
               type: 'if',
-              cond: {
-                type: 'gk:isDead',
-                charVar: 'heroi',
-              },
-              then: [
-                {
-                  type: 'gk:endGame',
-                },
-              ],
+              cond: { type: 'gk:isDead', charVar: 'heroi' },
+              then: [{ type: 'gk:endGame' }],
             },
           ],
         },
@@ -414,40 +207,15 @@ export const arenaGoblinsExample: ExtensionExample = {
           type: 'gk:onDraw',
           ctxName: 'ctx',
           body: [
-            {
-              type: 'gk:drawBackground',
-              color: '#0f3460',
-              grid: true,
-            },
-            {
-              type: 'gk:drawActive',
-              mold: 'goblin',
-            },
-            {
-              type: 'gk:drawCharacter',
-              charVar: 'heroi',
-            },
-            {
-              type: 'gk:drawEffects',
-            },
-            {
-              type: 'gk:drawHealthBar',
-              charVar: 'heroi',
-              max: {
-                type: 'num',
-                value: 0,
-              },
-            },
+            { type: 'gk:drawBackground', color: '#0f3460', grid: true },
+            { type: 'gk:drawActive', mold: 'goblin' },
+            { type: 'gk:drawCharacter', charVar: 'heroi' },
+            { type: 'gk:drawEffects' },
+            { type: 'gk:drawHealthBar', charVar: 'heroi', max: { type: 'num', value: 0 } },
             {
               type: 'gk:drawTimer',
-              x: {
-                type: 'num',
-                value: 20,
-              },
-              y: {
-                type: 'num',
-                value: 40,
-              },
+              x: { type: 'num', value: 20 },
+              y: { type: 'num', value: 40 },
             },
           ],
         },

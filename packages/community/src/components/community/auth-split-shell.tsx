@@ -29,20 +29,13 @@ export function AuthSplitShell({ children, aside }: { children: ReactNode; aside
         </div>
       </div>
       {aside ? (
-        <aside
-          className="hidden min-w-0 flex-[0_1_46%] items-center justify-center bg-(--topo) px-12 py-16 text-(--topo-texto) lg:flex"
-          style={{ backgroundImage: GRADE_DO_PAINEL, backgroundSize: '2rem 2rem' }}
-        >
+        <aside className="sz-palco hidden min-w-0 flex-[0_1_46%] items-center justify-center bg-(--palco) px-12 py-16 lg:flex">
           {aside}
         </aside>
       ) : null}
     </main>
   )
 }
-
-/** O papel quadriculado da faixa das páginas, em branco quase transparente sobre o marinho. */
-const GRADE_DO_PAINEL =
-  'linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px)'
 
 export interface AuthAsideItem {
   /** Ícone do item; sem ele, o número da ordem. */
@@ -67,7 +60,7 @@ export function AuthAside({
     <section aria-label={label} className="flex max-w-[26rem] flex-col gap-7">
       <div className="flex flex-col gap-3">
         <h2 className="sz-h1-sm text-white">{title}</h2>
-        {lead ? <p className="m-0">{lead}</p> : null}
+        {lead ? <p className="m-0 text-(--texto-claro-2)">{lead}</p> : null}
       </div>
       <ul className="m-0 flex list-none flex-col gap-5 p-0">
         {items.map((item, i) => {
@@ -76,11 +69,11 @@ export function AuthAside({
             <li key={item.title ?? i} className="flex items-start gap-4">
               <span
                 aria-hidden="true"
-                className="inline-flex size-[2.6rem] flex-none items-center justify-center rounded-xl bg-(--topo-borda) font-bold text-(--sz-community-action-light)"
+                className="inline-flex size-[2.6rem] flex-none items-center justify-center rounded-xl bg-(--carta) font-(family-name:--font-pixel) text-(--cta)"
               >
                 {Icon ? <Icon className="size-6" /> : i + 1}
               </span>
-              <span>
+              <span className="text-(--texto-claro-2)">
                 {item.title ? <strong className="text-white">{item.title} </strong> : null}
                 {item.text}
               </span>

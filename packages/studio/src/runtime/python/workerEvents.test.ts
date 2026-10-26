@@ -29,6 +29,12 @@ test('graphics bounds reject shared memory, duplicate images and excessive paylo
     images: [{ id: 1, bytes: new Uint8Array(4) }],
   }
   expect(readPythonWorkerEvent(event)).toEqual(event)
+  // Pygame Zero's draw list travels as attachment 0.
+  const list = { ...event, images: [{ id: 0, bytes: new Uint8Array(8) }] }
+  expect(readPythonWorkerEvent(list)).toEqual(list)
+  expect(
+    readPythonWorkerEvent({ ...event, images: [{ id: -1, bytes: new Uint8Array(8) }] }),
+  ).toBeUndefined()
   expect(readPythonWorkerEvent({ ...event, request: 'x'.repeat(2_000_001) })).toBeUndefined()
   expect(
     readPythonWorkerEvent({ ...event, images: [...event.images, ...event.images] }),
@@ -95,4 +101,25 @@ test('console refuses shape, count and aggregate quotas without traversing exces
     expect(
       readPythonWorkerEvent({ type: 'console', batches: [{ ...batch, ...replacement }] }),
     ).toBeUndefined()
+})
+
+test('a saved file carries only a portable path and bounded bytes', () => {
+  const bytes = new Uint8Array([1, 2, 3])
+  expect(
+    readPythonWorkerEvent({ type: 'saved-file', path: 'placar.txt', bytes, extra: 1 }),
+  ).toEqual({ type: 'saved-file', path: 'placar.txt', bytes })
+  // A deleted file: bytes null, and still only a portable path.
+  expect(readPythonWorkerEvent({ type: 'saved-file', path: 'placar.txt', bytes: null })).toEqual({
+    type: 'saved-file',
+    path: 'placar.txt',
+    bytes: null,
+  })
+  for (const raw of [
+    { type: 'saved-file', path: '../placar.txt', bytes: null },
+    { type: 'saved-file', path: 'placar.txt' },
+    { type: 'saved-file', path: '../placar.txt', bytes },
+    { type: 'saved-file', path: 'placar.txt', bytes: [1, 2, 3] },
+    { type: 'saved-file', path: 'placar.txt', bytes: new Uint8Array(64 * 1024 + 1) },
+  ])
+    expect(readPythonWorkerEvent(raw)).toBeUndefined()
 })

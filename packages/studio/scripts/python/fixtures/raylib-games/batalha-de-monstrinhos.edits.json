@@ -1,0 +1,34 @@
+[
+  {
+    "label": "largura",
+    "path": {
+      "body": 2,
+      "inputs": [
+        {
+          "name": "VALUE",
+          "index": 0
+        }
+      ]
+    },
+    "codecId": "sz_py_integer",
+    "field": "NUMBER",
+    "before": "800",
+    "after": "820"
+  },
+  {
+    "label": "escala",
+    "path": {
+      "body": 4,
+      "inputs": [
+        {
+          "name": "VALUE",
+          "index": 0
+        }
+      ]
+    },
+    "codecId": "sz_py_integer",
+    "field": "NUMBER",
+    "before": "6",
+    "after": "5"
+  }
+]

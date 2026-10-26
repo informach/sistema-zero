@@ -2,11 +2,14 @@ import { canonicalJson } from '@sistemazero/core/creations'
 import {
   PintaImageDerivationSchema,
   type PintaImageRecipe,
+  type PintaImageSelectionSummary,
   pintaImageRecipeKey,
 } from '@sistemazero/core/studio/pinta-image'
 import type { ProjectAsset } from '#core'
 import { personalIdOf } from '../../asset-library/personalSync'
-import { isPythonProject } from '../../core/editableProject'
+import { type EditableStudioProject, isPythonProject } from '../../core/editableProject'
+import { projectUsesPgzero } from '../../core/pgzeroMediaPaths'
+import { hasTurtleExtension } from '../../runtime/python/turtle/contract'
 import type { ProjectStoreApi } from '../../state/projectStore'
 import type { StudioMoldaImportResult } from '../../studio/molda-library'
 import type { StudioPintaImportResult } from '../../studio/pinta-library'
@@ -50,6 +53,30 @@ export function projectPintaImageFromRecipe(
   return state.project?.assets?.find(
     (asset) => asset.pintaImage && pintaImageRecipeKey(asset.pintaImage.recipe) === key,
   )
+}
+
+/**
+ * The output format is the DESTINATION's decision, written into the recipe: a Pygame Zero
+ * project gets the real vector (SVG) of a vector drawing; a Turtle project gets it only when
+ * the drawing is solid shapes (it becomes a turtle shape through formas_do_pinta); pixel art
+ * and Python without an extension get PNG. Reviewing a material keeps the format it already
+ * has: its Python file (`.png`/`.svg`) is part of its identity. If the child later adds what a
+ * turtle shape cannot draw, formas_do_pinta says so and suggests bringing it as a new drawing.
+ */
+export function pintaImageOutputFor(
+  project: EditableStudioProject | null | undefined,
+  facts: PintaImageSelectionSummary | undefined,
+  reviewing?: Pick<PintaImageRecipe, 'output'>,
+): PintaImageRecipe['output'] {
+  if (reviewing) return reviewing.output
+  if (!project || !isPythonProject(project) || !facts || facts.kind === 'unavailable')
+    return undefined
+  // Pygame Zero opens SVG. In a Turtle project the vector becomes a turtle shape
+  // (formas_do_pinta), which needs shapes only; with text, a picture or a mask it stays PNG.
+  if (projectUsesPgzero(project)) return facts.vector === true ? 'svg' : undefined
+  if (hasTurtleExtension(project.installedExtensions))
+    return facts.vector === true && facts.turtleShape === true ? 'svg' : undefined
+  return undefined
 }
 
 /** Desenho do Pinta (imagem + animações/peças/mapa). */
@@ -114,6 +141,28 @@ export function addPintaCreationToProject(
 }
 
 /** Criação do Molda: modelo (`.glb`), textura (imagem) ou céu (`.hdr`). */
+/**
+ * A Molda creation as a Raylib project takes it: the 360° sky (.hdr), which the desktop raylib
+ * does not open, becomes a panorama PNG in `images/` (the game draws it inside a sphere). The
+ * converter loads on demand, only when a sky goes into a Raylib project.
+ */
+export async function raylibReadyCreation(
+  asset: MoldaCreationAsset,
+  raylib: boolean,
+): Promise<MoldaCreationAsset> {
+  if (!raylib || asset.kind !== 'environment3d') return asset
+  const { skyPanoramaPng } = await import('./skyPanorama')
+  const panorama = skyPanoramaPng(asset.dataUrl)
+  return {
+    ...asset,
+    kind: 'image',
+    dataUrl: panorama.dataUrl,
+    originalFileName: `${asset.name}.png`,
+    width: panorama.width,
+    height: panorama.height,
+  }
+}
+
 export function addMoldaCreationToProject(
   state: ProjectStoreActions,
   asset: MoldaCreationAsset,

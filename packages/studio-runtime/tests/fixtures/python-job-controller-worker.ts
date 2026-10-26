@@ -7,8 +7,9 @@ import { createPythonJobStateStore } from '../../src/python-job-state'
 
 /** Local controller qualification without a configured runtime or any SDK container. */
 export class JobControllerProbe extends PythonInspectionJob {
-  read() {
-    return createPythonJobStateStore(this.ctx.storage.sql).read()
+  read(): string | undefined {
+    const state = createPythonJobStateStore(this.ctx.storage.sql).read()
+    return state ? JSON.stringify(state) : undefined
   }
   restart() {
     this.ctx.abort('EXPECTED_LOCAL_PYTHON_CONTROLLER_RESTART')
@@ -37,7 +38,12 @@ export default {
     const url = new URL(request.url)
     const stub = env.Probe.getByName(url.searchParams.get('probe') ?? 'default')
     try {
-      if (url.pathname === '/read') return Response.json({ result: await stub.read() })
+      if (url.pathname === '/read') {
+        const serialized = await stub.read()
+        return Response.json({
+          result: serialized === undefined ? undefined : JSON.parse(serialized),
+        })
+      }
       if (url.pathname === '/alarm') {
         await stub.runAlarm()
         return Response.json({ result: true })

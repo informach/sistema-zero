@@ -3,7 +3,8 @@
 import { isMoldaAssetId } from '../core/id'
 import { isTexelsPerUnit, MOLDA_LIMITS } from '../core/limits'
 import { isSnap, type MoldaPaletteFields, type Vec3 } from '../core/model'
-import { isPaletteId, PALETTE_SIZE } from '../core/palette'
+import { isPaletteId, MAX_CUSTOM_PALETTE_SIZE, PALETTE_SIZE } from '../core/palette'
+import { paletteBaseSize } from '../core/sanitize'
 import { base64ToBytes } from '../core/skinCodec'
 import { readSceneAlphaMask } from './alphaMask'
 import { readSceneBendLimit } from './bendLimit'
@@ -286,10 +287,10 @@ function palette(row: Record<string, unknown>): MoldaPaletteFields {
   if (row.customPalette !== undefined || row.paletteId === 'custom') {
     const custom = v.record(row.customPalette, 'customPalette', ['name', 'colors'])
     const colors = v
-      .list(custom.colors, 'customPalette.colors', PALETTE_SIZE)
+      .list(custom.colors, 'customPalette.colors', MAX_CUSTOM_PALETTE_SIZE)
       .map((color) => hex(color, 'customPalette.colors', true))
     v.requireScene(
-      colors.length === PALETTE_SIZE && colors[0] === '' && colors.some(Boolean),
+      colors.length >= PALETTE_SIZE && colors[0] === '' && colors.some(Boolean),
       'customPalette.colors',
       'Paleta vazia ou sem índice reservado.',
     )
@@ -377,7 +378,7 @@ export function readSceneDocumentStructure<Image>(
       'Configuração de grade inválida.',
     )
     const paletteFields = palette(row)
-    const paletteSize = PALETTE_SIZE + (paletteFields.extraColors?.length ?? 0)
+    const paletteSize = paletteBaseSize(paletteFields) + (paletteFields.extraColors?.length ?? 0)
     const budget: ReadBudget = { vertices: 0, triangles: 0, edges: 0, pixels: 0, layers: 0 }
     const animations =
       row.animations === undefined ? undefined : readSceneAnimations(row.animations)

@@ -48,7 +48,7 @@ describe('Exemplo Quadra Maluca — drift contra o parser real', () => {
       'g3k:cameraOrbit', // a câmera arrastável — onde o WASD saía torto
       'g3k:cameraLookAt', // olhar uma ENTIDADE (era cravado na origem)
       'g3k:cameraAngle', // girar por código (antes só o mouse mexia)
-      'g3k:cameraShake', // tremor no impacto
+      'g3k:shakeCamera', // tremor no impacto
       'g3k:platformerKeys', // o WASD relativo à câmera
       'g3k:makeTrigger',
       'g3k:onOverlap',

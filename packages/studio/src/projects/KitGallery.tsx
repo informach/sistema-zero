@@ -221,6 +221,8 @@ const KIT_EMOJI: Record<string, string> = {
   'Quadra Maluca': '🏀',
   'Guardião do Portal': '🌀',
   'Tiro ao Alvo': '🎯',
+  'Arena dos Cristais': '🔑',
+  'Herói do Molda': '🦸',
   'O Chefão das Sombras': '🌑',
   'Vila do Dragão': '👑',
   'Floresta Ninja': '🥷',
@@ -247,6 +249,8 @@ const KIT_EMOJI: Record<string, string> = {
   'Atravesse a Rua': '🐔',
   'Desvie dos blocos': '🚧',
   'Cubo girando': '🧊',
+  'Pega-Estrelas': '🌟',
+  'Meu herói do Molda': '🧸',
   'Passeio 3D (na mão)': '🚗',
   'Atravesse a Rua (na mão)': '🐣',
   'Corrida Maluca (na mão)': '🚙',
@@ -434,9 +438,6 @@ function KitCard({
               {entry.kind === 'pro'
                 ? 'Pro'
                 : t(entry.mode === 'blocks' ? 'mode.blocks' : 'mode.bridge')}
-              {entry.extensions.some((extension) => extension.id === 'python-turtle')
-                ? ' · Turtle'
-                : ''}
             </span>
           ) : null}
           {entry.difficulty ? (
@@ -548,12 +549,12 @@ export function KitGallery({
     setGroups(null)
     const pending =
       programmingLanguage === 'python'
-        ? import('../examples/pythonCatalog').then(({ PYTHON_EXAMPLE_SUMMARIES }) => ({
-            groups: PYTHON_EXAMPLE_SUMMARIES.length
-              ? [{ extensionId: 'python', label: 'Python', entries: [...PYTHON_EXAMPLE_SUMMARIES] }]
-              : [],
-            failedExtensionIds: [],
-          }))
+        ? import('../examples/pythonCatalog').then(
+            ({ PYTHON_EXAMPLE_SUMMARIES, groupPythonExamples }) => ({
+              groups: groupPythonExamples(PYTHON_EXAMPLE_SUMMARIES),
+              failedExtensionIds: [],
+            }),
+          )
         : buildKitGroupsResult(t)
     void pending
       .then(({ groups: nextGroups, failedExtensionIds }) => {

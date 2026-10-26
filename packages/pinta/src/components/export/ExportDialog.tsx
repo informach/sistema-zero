@@ -17,7 +17,6 @@ import { COPY } from '../../core/copy'
 import {
   type AnyTilesetAsset,
   assetStyle,
-  isTilesetKind,
   normalizeAssetName,
   type PintaAsset,
   resolveAssetPalette,
@@ -43,6 +42,7 @@ import {
   vectorSheetPngDataUrl,
   vectorSheetPortableSvg,
 } from '../../export/vectorSheet'
+import { collectMapTilesetsFrom } from '../../tiles/mapTilesets'
 import { tilesetPngDataUrl } from '../../tiles/packTileset'
 import { vectorTilesetPngDataUrl, vectorTilesetPortableSvg } from '../../tiles/packVectorTileset'
 import { tilemapPngDataUrl } from '../../tiles/renderTilemap'
@@ -170,12 +170,9 @@ export function ExportDialog({
   const tileset = asset.kind === 'tileset' ? asset : null
   const vectorTileset = asset.kind === 'vector-tileset' ? asset : null
   const tilemap = asset.kind === 'tilemap' ? asset : null
-  const mapTileset = tilemap
-    ? (gallery
-        .getState()
-        .assets.find((a): a is AnyTilesetAsset => isTilesetKind(a) && a.id === tilemap.tilesetId) ??
-      null)
-    : null
+  // As peças do mapa (a padrão primeiro): imagem e .pinta-tilemap.json levam todas.
+  const mapTilesets = tilemap ? collectMapTilesetsFrom(tilemap, gallery.getState().assets) : []
+  const mapTileset: AnyTilesetAsset | null = mapTilesets[0] ?? null
   const activeDoc = isVector ? activeShapesOf(asset, frameRef) : null
   // A animação SELECIONADA (a que está tocando na prévia) é a que vira GIF.
   // Separadas por estilo: os quadros são bitmap num caso e formas no outro, e a
@@ -348,7 +345,7 @@ export function ExportDialog({
             <Button
               onClick={() =>
                 downloadText(
-                  tilemapExportJson(tilemap, mapTileset),
+                  tilemapExportJson(tilemap, mapTilesets),
                   `${asset.name}.pinta-tilemap.json`,
                 )
               }
@@ -361,12 +358,12 @@ export function ExportDialog({
               onClick={() => {
                 if (mapTileset.kind === 'tileset') {
                   downloadDataUrl(
-                    tilemapPngDataUrl(tilemap, mapTileset, scale),
+                    tilemapPngDataUrl(tilemap, mapTilesets, scale),
                     `${asset.name}.png`,
                   )
                 } else {
                   downloadAsyncPng(
-                    vectorTilemapPngDataUrl(tilemap, mapTileset, scale),
+                    vectorTilemapPngDataUrl(tilemap, mapTilesets, scale),
                     `${asset.name}.png`,
                   )
                 }
@@ -382,7 +379,7 @@ export function ExportDialog({
                 {COPY.exportDialog.recipeTitle}
               </p>
               <pre className="whitespace-pre-wrap font-sans text-sm text-pin-text">
-                {tilemapRecipe(tilemap, mapTileset)}
+                {tilemapRecipe(tilemap, mapTilesets)}
               </pre>
             </div>
           </>

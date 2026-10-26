@@ -1,12 +1,14 @@
 import assert from 'node:assert/strict'
-import { copyFile, mkdir, readFile, writeFile } from 'node:fs/promises'
+import { chmod, copyFile, mkdir, readFile, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 import { studioPythonExecutionRevision } from '@sistemazero/core/studio/python-execution-content'
+import { pythonProjectStructureRecipe } from '@sistemazero/core/studio/python-mission-execution'
 import {
   StudioPythonPlaytestRecipeSchema,
   verifyStudioPythonPlaytestCapture,
   verifyStudioPythonPlaytestReport,
 } from '@sistemazero/core/studio/python-playtest'
+import { studioPythonLogicalFiles } from '@sistemazero/core/studio/python-runtime-distribution'
 import { pythonFrameContentSecurityPolicy } from '@sistemazero/core/studio/python-runtime-policy'
 import { createStudioRuntimeRelease } from '@sistemazero/core/studio/runtime-catalog'
 import { buildPythonRuntimeDistribution } from '../../studio/scripts/build-python-runtime'
@@ -15,8 +17,24 @@ import { sha256 } from '../src/artifacts'
 // Explicit headless proof. Docker also checks network/resource isolation; neither mode qualifies SDK/remote/performance.
 const root = path.resolve(import.meta.dirname, '../../..')
 const docker = process.argv.includes('--docker')
-const image = 'sistemazero-studio-runtime:python-playtest-verify'
+const health = process.argv.includes('--health')
+const cache = process.env.STUDIO_PYTHON_TEST_CACHE ?? path.join(root, '.cache/studio-python-l0')
+let image = process.env.STUDIO_PYTHON_TEST_IMAGE ?? 'sistemazero-studio-runtime:verify'
 if (docker) {
+  const pin = Bun.spawn(['docker', 'image', 'inspect', image, '--format', '{{.Id}}'], {
+    windowsHide: true,
+    stdout: 'pipe',
+    stderr: 'pipe',
+  })
+  const [code, output, error] = await Promise.all([
+    pin.exited,
+    new Response(pin.stdout).text(),
+    new Response(pin.stderr).text(),
+  ])
+  assert.equal(code, 0, error)
+  image = output.trim()
+  assert.match(image, /^sha256:[a-f0-9]{64}$/)
+
   const profile = Bun.spawn(
     [
       'docker',
@@ -48,7 +66,10 @@ if (docker) {
     'The Docker proof requires the current trusted image',
   )
 }
-const build = await buildPythonRuntimeDistribution()
+const build = await buildPythonRuntimeDistribution({
+  vendorDirectory: path.join(cache, 'vendor'),
+  outputDirectory: path.join(cache, 'distributions'),
+})
 const release = await createStudioRuntimeRelease({
   manifestVersion: 1,
   profileId: 'python-playtest-verify',
@@ -69,8 +90,7 @@ const release = await createStudioRuntimeRelease({
   },
 })
 const evidence = path.join(
-  root,
-  '.cache/studio-python-l0',
+  cache,
   docker ? 'playtest-docker' : 'playtest-native',
   crypto.randomUUID(),
 )
@@ -96,7 +116,7 @@ const turtle = [
   'screen.mainloop()',
   '',
 ].join('\n')
-for (const [name, source, expected] of [
+const standardCases = [
   ['console', 'from helper import marker\nprint(marker)\n', 'passed'],
   ['empty', '', 'passed'],
   ['import-error', 'import absent_student_package\n', 'failed'],
@@ -104,7 +124,14 @@ for (const [name, source, expected] of [
   ['completed-missing-input', 'print("done without input")\n', 'failed'],
   ['turtle', turtle, 'passed'],
   ['modified-file', 'print("original")\n', 'transport-failed'],
-] as const) {
+] as const
+const healthCases = [
+  ['health-correct', 'while False:\n    pass\n', 'passed'],
+  ['health-import-error', 'import absent_student_package\n', 'failed'],
+  ['health-cpu-loop', 'while True:\n    pass\n', 'failed'],
+  ['health-input', 'input("Nome?")\n', 'failed'],
+] as const
+for (const [name, source, expected] of health ? healthCases : standardCases) {
   const directory = path.join(evidence, name)
   await mkdir(path.join(directory, 'runtime'), { recursive: true })
   await mkdir(path.join(directory, 'project'), { recursive: true })
@@ -164,17 +191,19 @@ for (const [name, source, expected] of [
     revision: await studioPythonExecutionRevision(content),
   }
   const recipe = StudioPythonPlaytestRecipeSchema.parse(
-    name === 'import-error-input' || name === 'completed-missing-input'
-      ? { version: 1, stdin: ['Lia'], keys: ['Space'] }
-      : name === 'turtle'
-        ? {
-            version: 1,
-            stdin: ['Lia'],
-            keys: ['Space'],
-            clicks: [{ x: 0.25, y: 0.25 }],
-            requireGraphics: true,
-          }
-        : { version: 1 },
+    health
+      ? pythonProjectStructureRecipe()
+      : name === 'import-error-input' || name === 'completed-missing-input'
+        ? { version: 1, stdin: ['Lia'], keys: ['Space'] }
+        : name === 'turtle'
+          ? {
+              version: 1,
+              stdin: ['Lia'],
+              keys: ['Space'],
+              clicks: [{ x: 0.25, y: 0.25 }],
+              requireGraphics: true,
+            }
+          : { version: 1 },
   )
   for (const [file, bytes] of files) await writeFile(path.join(directory, 'project', file), bytes)
   await writeFile(
@@ -182,7 +211,8 @@ for (const [name, source, expected] of [
     JSON.stringify({
       version: 1,
       runtimeManifestSha256: release.manifestSha256,
-      runtimeFiles: build.manifest.files,
+      runtimeFiles: studioPythonLogicalFiles(build.manifest),
+      runtimeDeployment: { release, distribution: build.manifest },
       runtimeContentSecurityPolicy: pythonFrameContentSecurityPolicy(
         `https://studio-python-runtime.invalid/v1/runtimes/${release.manifestSha256}/`,
       ),
@@ -193,6 +223,10 @@ for (const [name, source, expected] of [
   if (name === 'modified-file')
     await writeFile(path.join(directory, 'project/main.py'), 'print("tampered")\n')
   const containerName = `sz-python-playtest-${crypto.randomUUID().replaceAll('-', '')}`
+  // The fresh proof output directory belongs to the host runner (often UID 1001),
+  // while the production image remains UID 1000. Only this attempt's output root
+  // needs write access; do not run the learner image as root or weaken its flags.
+  if (process.platform !== 'win32') await chmod(directory, 0o777)
   const command = docker
     ? [
         'docker',
@@ -231,45 +265,84 @@ for (const [name, source, expected] of [
     stdout: 'pipe',
     stderr: 'pipe',
   })
-  const [exitCode, stdout, stderr] = await Promise.all([
-    child.exited,
-    new Response(child.stdout).text(),
-    new Response(child.stderr).text(),
-  ])
-  await writeFile(
-    path.join(directory, 'native-output.json'),
-    JSON.stringify({ exitCode, stdout, stderr }),
-  )
-  if (expected === 'transport-failed') {
-    assert.notEqual(exitCode, 0, stdout + stderr)
-    assert.match(stderr, /size changed|hash changed/)
-  } else {
-    assert.equal(exitCode, 0, stdout + stderr)
-    const report = await verifyStudioPythonPlaytestReport(
-      JSON.parse(await readFile(path.join(directory, 'python-playtest-result.json'), 'utf8')),
-      snapshot,
-      recipe,
+  let expired = false
+  const deadline = setTimeout(() => {
+    expired = true
+    if (docker)
+      void Bun.spawn(['docker', 'stop', '--time', '1', containerName], {
+        windowsHide: true,
+        stdout: 'ignore',
+        stderr: 'ignore',
+      }).exited
+    else child.kill()
+  }, 40_000)
+  try {
+    const [exitCode, stdout, stderr] = await Promise.all([
+      child.exited,
+      new Response(child.stdout).text(),
+      new Response(child.stderr).text(),
+    ])
+    await writeFile(
+      path.join(directory, 'native-output.json'),
+      JSON.stringify({ exitCode, stdout, stderr, expired }),
     )
-    assert.equal(report.status, expected)
-    assert.equal(report.stopped, true)
-    if (name === 'console') assert.match(report.stdout, /helper-output/)
-    if (name.startsWith('import-error'))
-      assert.match(report.errors.join(' '), /absent_student_package/)
-    if (name === 'import-error-input' || name === 'completed-missing-input') {
-      assert.equal(report.input.stdinSubmitted, 0)
-      assert.equal(report.input.keysDispatched, 0)
-      assert.match(report.errors.join(' '), /entradas da receita/)
+    assert.equal(expired, false, 'The proof exceeded its external deadline')
+    if (expected === 'transport-failed') {
+      assert.notEqual(exitCode, 0, stdout + stderr)
+      assert.match(stderr, /size changed|hash changed/)
+    } else {
+      assert.equal(exitCode, 0, stdout + stderr)
+      const report = await verifyStudioPythonPlaytestReport(
+        JSON.parse(await readFile(path.join(directory, 'python-playtest-result.json'), 'utf8')),
+        snapshot,
+        recipe,
+      )
+      assert.equal(report.status, expected)
+      assert.equal(report.stopped, true)
+      if (name === 'console') assert.match(report.stdout, /helper-output/)
+      if (name.startsWith('import-error'))
+        assert.match(report.errors.join(' '), /absent_student_package/)
+      if (name === 'import-error-input' || name === 'completed-missing-input') {
+        assert.equal(report.input.stdinSubmitted, 0)
+        assert.equal(report.input.keysDispatched, 0)
+        assert.match(report.errors.join(' '), /entradas da receita/)
+      }
+      if (name === 'turtle') {
+        assert.match(report.stdout, /ola Lia/)
+        assert.match(report.stdout, /key-fired/)
+        assert.match(report.stdout, /click-fired/)
+        assert.ok(report.capture)
+        await verifyStudioPythonPlaytestCapture(
+          report.capture,
+          new Uint8Array(await readFile(path.join(directory, report.capture.path))),
+        )
+      }
     }
-    if (name === 'turtle') {
-      assert.match(report.stdout, /ola Lia/)
-      assert.match(report.stdout, /key-fired/)
-      assert.match(report.stdout, /click-fired/)
-      assert.ok(report.capture)
-      await verifyStudioPythonPlaytestCapture(
-        report.capture,
-        new Uint8Array(await readFile(path.join(directory, report.capture.path))),
+    console.log(JSON.stringify({ name, expected, exitCode, evidence: directory }))
+  } finally {
+    clearTimeout(deadline)
+    if (docker) {
+      await Bun.spawn(['docker', 'rm', '-f', containerName], {
+        windowsHide: true,
+        stdout: 'ignore',
+        stderr: 'ignore',
+      }).exited
+      const remaining = Bun.spawn(['docker', 'ps', '-aq', '--filter', `name=^/${containerName}$`], {
+        windowsHide: true,
+        stdout: 'pipe',
+        stderr: 'pipe',
+      })
+      const [code, ids, error] = await Promise.all([
+        remaining.exited,
+        new Response(remaining.stdout).text(),
+        new Response(remaining.stderr).text(),
+      ])
+      assert.equal(code, 0, error)
+      assert.equal(ids.trim(), '', 'The owned container must retire')
+      await writeFile(
+        path.join(directory, 'cleanup.json'),
+        JSON.stringify({ containerName, confirmed: true }),
       )
     }
   }
-  console.log(JSON.stringify({ name, expected, exitCode, evidence: directory }))
 }

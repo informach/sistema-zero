@@ -17,7 +17,7 @@ import { readSceneDocument } from './readDocument'
 
 describe('scene primitives and locators', () => {
   test('all forms render and resize with local origin and paint intact', () => {
-    for (const kind of ['box', 'wedge', 'cylinder', 'sphere'] as const) {
+    for (const kind of ['box', 'wedge', 'cylinder', 'sphere', 'torus'] as const) {
       const source = migrateLegacyModel(makeModel()).document
       const added = addScenePrimitive(source, kind, kind)
       const node = added.nodes.at(-1)

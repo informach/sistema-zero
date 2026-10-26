@@ -182,8 +182,8 @@ export function buildApp(
     projectExecutor?: import('../src/domain/ports/project-execution-checker.port').ProjectExecutionChecker
     studioAuthoringPolicy?: import('../src/domain/studio/authoring-policy').StudioAuthoringPolicy
     studioRuntimePolicy?: import('../src/domain/studio/runtime-policy').StudioRuntimePolicy
-    pythonActivities?: Pick<
-      import('../src/application/studio/python-activity-inspection.service').PythonActivityInspectionService,
+    pythonProjectChecker?: Pick<
+      import('../src/application/studio/python-project-checker.service').PythonProjectCheckerService,
       'grade'
     >
     sectionPythonLive?: Pick<
@@ -405,9 +405,9 @@ export function buildApp(
     awardGamification,
     opts.projectExecutor,
     async (courseId) => (await courses.findCourseById(courseId))?.audience ?? 'kids',
-    opts.pythonActivities
+    opts.pythonProjectChecker
       ? {
-          inspections: opts.pythonActivities,
+          checker: opts.pythonProjectChecker,
           bindings: studioBindings,
           live: opts.sectionPythonLive,
         }

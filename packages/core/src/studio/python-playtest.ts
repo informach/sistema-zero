@@ -16,38 +16,47 @@ export const STUDIO_PYTHON_PLAYTEST_LIMITS = Object.freeze({
 })
 
 /** Host-owned, bounded observations. No code, selectors, URLs or filesystem paths. */
-export const StudioPythonPlaytestRecipeSchema = z.strictObject({
-  version: z.literal(1),
-  observeMs: z.number().int().min(250).max(10_000).default(1000),
-  stdin: z
-    .array(
-      z
-        .string()
-        .max(4096)
-        .regex(/^[^\r\n]*$/),
-    )
-    .max(4)
-    .default([]),
-  keys: z
-    .array(
-      z
-        .string()
-        .regex(/^(?:ArrowUp|ArrowDown|ArrowLeft|ArrowRight|Space|Enter|Escape|[a-zA-Z0-9])$/),
-    )
-    .max(8)
-    .default([]),
-  clicks: z
-    .array(
-      z.strictObject({
-        x: z.number().min(0).max(1),
-        y: z.number().min(0).max(1),
-        button: z.enum(['left', 'middle', 'right']).default('left'),
-      }),
-    )
-    .max(4)
-    .default([]),
-  requireGraphics: z.boolean().default(false),
-})
+export const StudioPythonPlaytestRecipeSchema = z
+  .strictObject({
+    /** A protected verification generation, never a project-controlled setting. */
+    mission: z.literal(true).optional(),
+    /** Mission checks read renderer primitives; PNG is collected only when explicitly useful. */
+    capture: z.literal(false).optional(),
+    version: z.literal(1),
+    observeMs: z.number().int().min(250).max(10_000).default(1000),
+    stdin: z
+      .array(
+        z
+          .string()
+          .max(4096)
+          .regex(/^[^\r\n]*$/),
+      )
+      .max(4)
+      .default([]),
+    keys: z
+      .array(
+        z
+          .string()
+          .regex(/^(?:ArrowUp|ArrowDown|ArrowLeft|ArrowRight|Space|Enter|Escape|[a-zA-Z0-9])$/),
+      )
+      .max(8)
+      .default([]),
+    clicks: z
+      .array(
+        z.strictObject({
+          x: z.number().min(0).max(1),
+          y: z.number().min(0).max(1),
+          button: z.enum(['left', 'middle', 'right']).default('left'),
+        }),
+      )
+      .max(4)
+      .default([]),
+    requireGraphics: z.boolean().default(false),
+  })
+  .refine(
+    (recipe) => !(recipe.requireGraphics && recipe.capture === false),
+    'Uma prova que exige captura gráfica não pode desativar a captura.',
+  )
 export type StudioPythonPlaytestRecipe = z.infer<typeof StudioPythonPlaytestRecipeSchema>
 
 export const StudioPythonPlaytestCaptureSchema = z.strictObject({

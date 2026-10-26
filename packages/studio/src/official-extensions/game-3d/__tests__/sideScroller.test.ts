@@ -20,7 +20,7 @@ function arena() {
   call(api, 'setSolid', chao)
   const heroi = call(api, 'createBox', world, { size: 1 })
   call(api, 'setPosition', heroi, 0, 0.5, 0)
-  call(api, 'body', heroi, -0.02)
+  call(api, 'body', heroi, 72)
   for (let f = 0; f < 5; f++) call(api, 'stepBody', heroi, world)
   return { ...bancada, world, chao, heroi }
 }
@@ -47,7 +47,7 @@ describe('game-3d — plataforma clássica: inércia, corrida e pulo variável',
   it('anda só no eixo X: a seta para cima não empurra em Z', () => {
     const { api, fire, world, heroi } = arena()
     fire('keydown', { code: 'ArrowUp', preventDefault() {} })
-    for (let f = 0; f < 30; f++) call(api, 'classicPlatformer', heroi, world, 0.08, 0.2)
+    for (let f = 0; f < 30; f++) call(api, 'classicPlatformer', heroi, world, 4.8, 12)
     fire('keyup', { code: 'ArrowUp' })
     expect(Math.abs((heroi.position as V3Like).z)).toBeLessThan(0.001)
   })
@@ -55,9 +55,9 @@ describe('game-3d — plataforma clássica: inércia, corrida e pulo variável',
   it('tem inércia: a velocidade sobe aos poucos e desce aos poucos ao soltar', () => {
     const { api, fire, world, heroi } = arena()
     fire('keydown', { code: 'ArrowRight', preventDefault() {} })
-    call(api, 'classicPlatformer', heroi, world, 0.08, 0.2)
+    call(api, 'classicPlatformer', heroi, world, 4.8, 12)
     const primeiroQuadro = meta(heroi).vx
-    for (let f = 0; f < 30; f++) call(api, 'classicPlatformer', heroi, world, 0.08, 0.2)
+    for (let f = 0; f < 30; f++) call(api, 'classicPlatformer', heroi, world, 4.8, 12)
     const emVelocidadeMaxima = meta(heroi).vx
     // Acelera: o primeiro quadro está longe do máximo.
     expect(primeiroQuadro).toBeGreaterThan(0)
@@ -66,7 +66,7 @@ describe('game-3d — plataforma clássica: inércia, corrida e pulo variável',
 
     // Desacelera: soltar não zera de uma vez.
     fire('keyup', { code: 'ArrowRight' })
-    call(api, 'classicPlatformer', heroi, world, 0.08, 0.2)
+    call(api, 'classicPlatformer', heroi, world, 4.8, 12)
     const logoAposSoltar = meta(heroi).vx
     expect(logoAposSoltar).toBeGreaterThan(0)
     expect(logoAposSoltar).toBeLessThan(emVelocidadeMaxima)
@@ -79,7 +79,7 @@ describe('game-3d — plataforma clássica: inércia, corrida e pulo variável',
       call(api, 'setVelocity', heroi, 0, 0, 0)
       fire('keydown', { code: 'ArrowRight', preventDefault() {} })
       if (comCorrida) fire('keydown', { code: 'ShiftLeft', preventDefault() {} })
-      for (let f = 0; f < 90; f++) call(api, 'classicPlatformer', heroi, world, 0.08, 0.2)
+      for (let f = 0; f < 90; f++) call(api, 'classicPlatformer', heroi, world, 4.8, 12)
       const v = meta(heroi).vx
       fire('keyup', { code: 'ArrowRight' })
       fire('keyup', { code: 'ShiftLeft' })
@@ -95,13 +95,13 @@ describe('game-3d — plataforma clássica: inércia, corrida e pulo variável',
     const altura = (quadrosComBotao: number) => {
       call(api, 'setPosition', heroi, 0, 0.5, 0)
       call(api, 'setVelocity', heroi, 0, 0, 0)
-      for (let f = 0; f < 5; f++) call(api, 'classicPlatformer', heroi, world, 0.08, 0.2)
+      for (let f = 0; f < 5; f++) call(api, 'classicPlatformer', heroi, world, 4.8, 12)
       const chaoY = (heroi.position as V3Like).y
       fire('keydown', { code: 'Space', preventDefault() {} })
       let topo = chaoY
       for (let f = 0; f < 150; f++) {
         if (f === quadrosComBotao) fire('keyup', { code: 'Space' })
-        call(api, 'classicPlatformer', heroi, world, 0.08, 0.2)
+        call(api, 'classicPlatformer', heroi, world, 4.8, 12)
         topo = Math.max(topo, (heroi.position as V3Like).y)
       }
       fire('keyup', { code: 'Space' })
@@ -118,7 +118,7 @@ describe('game-3d — plataforma clássica: inércia, corrida e pulo variável',
     let pulos = 0
     let subindoAntes = false
     for (let f = 0; f < 200; f++) {
-      call(api, 'classicPlatformer', heroi, world, 0.08, 0.2)
+      call(api, 'classicPlatformer', heroi, world, 4.8, 12)
       const subindo = meta(heroi).vy > 0.1
       if (subindo && !subindoAntes) pulos++
       subindoAntes = subindo
@@ -145,7 +145,7 @@ describe('game-3d — de que lado a colisão bateu', () => {
     const heroi = call(api, 'createBox', world, { size: 1 })
     call(api, 'setPosition', heroi, 0, 1.9, 0)
     call(api, 'body', heroi, 0)
-    call(api, 'setVelocity', heroi, 0, 0.3, 0)
+    call(api, 'setVelocity', heroi, 0, 18, 0)
     call(api, 'stepBody', heroi, world)
 
     const cabeca: unknown[] = []
@@ -167,7 +167,7 @@ describe('game-3d — de que lado a colisão bateu', () => {
     const corpo = call(api, 'createBox', world, { size: 1 })
     call(api, 'setPosition', corpo, 1.9, 0, 0)
     call(api, 'body', corpo, 0)
-    call(api, 'setVelocity', corpo, 0.3, 0, 0)
+    call(api, 'setVelocity', corpo, 18, 0, 0)
     call(api, 'stepBody', corpo, world)
 
     const lados: string[] = []
@@ -212,7 +212,7 @@ describe('game-3d — plataforma que carrega e plataforma que se atravessa', () 
     call(api, 'carryRiders', plataforma)
     const heroi = call(api, 'createBox', world, { size: 1 })
     call(api, 'setPosition', heroi, 0, 1, 0)
-    call(api, 'body', heroi, -0.02)
+    call(api, 'body', heroi, 72)
     call(api, 'stepBody', heroi, world)
 
     const xAntes = (heroi.position as V3Like).x
@@ -238,14 +238,14 @@ describe('game-3d — plataforma que carrega e plataforma que se atravessa', () 
     const subindo = call(api, 'createBox', world, { size: 1 })
     call(api, 'setPosition', subindo, 0, 1, 0)
     call(api, 'body', subindo, 0)
-    call(api, 'setVelocity', subindo, 0, 0.2, 0)
+    call(api, 'setVelocity', subindo, 0, 12, 0)
     for (let f = 0; f < 40; f++) call(api, 'stepBody', subindo, world)
     expect((subindo.position as V3Like).y).toBeGreaterThan(4)
 
     // Caindo de cima: pousa.
     const caindo = call(api, 'createBox', world, { size: 1 })
     call(api, 'setPosition', caindo, 0, 8, 0)
-    call(api, 'body', caindo, -0.02)
+    call(api, 'body', caindo, 72)
     for (let f = 0; f < 200; f++) call(api, 'stepBody', caindo, world)
     expect((caindo.position as V3Like).y).toBeCloseTo(4, 1)
     expect(meta(caindo).grounded).toBe(true)

@@ -144,6 +144,49 @@ function transport(
 }
 
 describe('actual Railway boundary without remote I/O', () => {
+  test('rate-limited retirement observes Retry-After without repeating the acknowledged mutation', async () => {
+    let limited = false
+    const f = transport({
+      retire: true,
+      reply(query) {
+        if (query.includes('deployment(id:') && !limited) {
+          limited = true
+          return new Response('sensitive quota body', {
+            status: 429,
+            headers: { 'retry-after': '120' },
+          })
+        }
+      },
+    })
+    await f.ports.preflight()
+    const id = await f.ports.deploy('members')
+    await f.ports.waitRetired('members', id)
+    expect(f.elapsed()).toBe(120_000)
+    expect(f.queries.filter((query) => query.startsWith('mutation'))).toHaveLength(1)
+    expect(f.logs).toContainEqual({
+      stage: 'railway-read-backoff',
+      reason: 'api-rate-limited',
+      waitMs: 120_000,
+    })
+    expect(JSON.stringify(f.logs)).not.toContain('sensitive quota body')
+  })
+
+  test('a quota wait cannot extend the absolute retirement deadline or authorize migration', async () => {
+    const f = transport({
+      retire: true,
+      reply: (query) =>
+        query.includes('deployment(id:')
+          ? new Response('', { status: 429, headers: { 'retry-after': '120' } })
+          : undefined,
+    })
+    await f.ports.preflight()
+    const id = await f.ports.deploy('members')
+    await expect(f.ports.waitRetired('members', id, 60_000)).rejects.toThrow('não retirados')
+    expect(f.elapsed()).toBe(60_000)
+    expect(f.queries.filter((query) => query.startsWith('mutation'))).toHaveLength(1)
+    expect(f.commands.filter((command) => command[1] === 'ssh')).toHaveLength(2)
+  })
+
   test('explicit adoption reuses only the exact healthy image and still requires retirement plus admission', async () => {
     const f = transport({ adoption, retire: true })
     await f.ports.preflight()
@@ -313,7 +356,7 @@ describe('actual Railway boundary without remote I/O', () => {
     ] as const) {
       const f = transport({
         reply: (_query, current) =>
-          current === call
+          (call === 5 ? current >= call : current === call)
             ? Response.json(
                 { data: { serviceInstanceDeployV2: 'sensitive-invalid-ack' } },
                 { status },
@@ -335,12 +378,12 @@ describe('actual Railway boundary without remote I/O', () => {
         ...(status !== 200 ? { httpStatus: status } : {}),
         ...(call === 5 ? { deployment: newId } : {}),
       })
-      expect(f.queries).toHaveLength(call)
+      expect(f.queries).toHaveLength(call === 5 ? call + 4 : call)
       expect(f.queries.filter((query) => query.startsWith('mutation'))).toHaveLength(
         call === 3 ? 0 : 1,
       )
       expect(f.commands.filter((command) => command[1] === 'ssh')).toHaveLength(2)
-      expect(f.polls()).toBe(0)
+      expect(f.polls()).toBe(call === 5 ? 4 : 0)
       expect(JSON.stringify([describeKidsJourneyRolloutFailure(caught), f.logs])).not.toContain(
         'sensitive',
       )

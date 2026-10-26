@@ -60,6 +60,10 @@ const EnvSchema = z
     // Trusted deployment configuration. Never populated from an authoring/project request.
     // Missing preserves JS v2; v3 publication requires a verified approved catalog.
     STUDIO_AUTHORING_POLICY_JSON: z.string().min(1).max(2_000_000).optional(),
+    STUDIO_AUTHORING_POLICY_SHA256: z
+      .string()
+      .regex(/^[a-f0-9]{64}$/)
+      .optional(),
     STUDIO_RUNTIME_HOSTS_JSON: z.string().min(1).max(200_000).optional(),
     // Dedicated authenticated Python service. Never fall back to the JS/Pro service.
     STUDIO_PYTHON_RUNTIME_URL: z.string().url().optional(),
@@ -251,6 +255,15 @@ const EnvSchema = z
       .optional()
       .transform((value) => normalizeAvatarPhotoPrefixes(value)),
   })
+  .refine(
+    (env) =>
+      env.STUDIO_AUTHORING_POLICY_JSON === undefined ||
+      env.STUDIO_AUTHORING_POLICY_SHA256 === undefined,
+    {
+      message: 'Configure apenas uma origem do catálogo do Estúdio: JSON ou SHA256.',
+      path: ['STUDIO_AUTHORING_POLICY_SHA256'],
+    },
+  )
   .refine(
     (env) => {
       if (!env.STUDIO_GALLERY_STORAGE_BASE_URL) return true

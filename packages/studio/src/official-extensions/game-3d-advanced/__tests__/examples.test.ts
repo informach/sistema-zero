@@ -23,7 +23,7 @@ import { collectTypes, stripIds } from './testUtils'
 const SOURCE = `
 SZGameKit3D.setup({ width: 1280, height: 720, world: 60, sky: "#0b1026", ground: "#14532d" });
 SZGameKit3D.setEffects({ shadows: true, bloom: true, strength: 1.2, vignette: true });
-SZGameKit3D.setScreenText("menu", "Defesa da Torre Profissional", "Os invasores vêm da beirada do mundo. Suas torres têm cérebro próprio!", "Defender");
+SZGameKit3D.setScreenText("inicio", "Defesa da Torre Profissional", "Os invasores vêm da beirada do mundo. Suas torres têm cérebro próprio!", "Defender");
 SZGameKit3D.setScreenText("vitoria", "O cristal sobreviveu!", "As torres agradecem.", "Defender de novo");
 SZGameKit3D.setScreenText("fim", "O cristal caiu!", "Os invasores passaram. Proteja o cristal na próxima!", "Tentar de novo");
 SZGameKit3D.defineMold("cristal", { health: 200, speed: 0 }, function () {
@@ -108,12 +108,12 @@ SZGameKit3D.onEntityDeath("invasor", function (ela) {
 SZGameKit3D.onEntityDeath("cristal", function (ela) {
   SZGameKit3D.burstOn("explosao", ela);
   SZGameKit3D.playEffect("gameover");
-  SZGameKit3D.endGame();
+  SZGameKit3D.endGame("perdeu");
 });
 SZGameKit3D.onUpdate(function (dt) {
   SZGameKit3D.cullFar("tiro", 40);
-  SZGameKit3D.setHud("top-left", "Derrotados: " + pontos);
-  SZGameKit3D.setHud("top-right", "Invasores: " + SZGameKit3D.countAlive("invasor"));
+  SZGameKit3D.hudText("top-left", "Derrotados: " + pontos);
+  SZGameKit3D.hudText("top-right", "Invasores: " + SZGameKit3D.countAlive("invasor"));
 });
 SZGameKit3D.start();
 `.trim()

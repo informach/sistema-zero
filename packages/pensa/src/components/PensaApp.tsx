@@ -155,7 +155,15 @@ function PensaWorkspace({
   const [kind, setKind] = useState<'planning' | 'help'>(initialHelpMissionId ? 'help' : 'planning')
   const [helpMissionId, setHelpMissionId] = useState(initialHelpMissionId)
   const [voiceBusy, setVoiceBusy] = useState(false)
-  const [tab, setTab] = useState<ProjectTab>(initialHelpMissionId ? 'conversa' : 'plano')
+  const [projectTab, setProjectTab] = useState<{
+    projectId: string | null
+    value: ProjectTab
+    initialHelpPending: boolean
+  }>({
+    projectId: null,
+    value: 'plano',
+    initialHelpPending: Boolean(initialHelpMissionId && initialProjectId),
+  })
   const [joining, setJoining] = useState(false)
   const [joinError, setJoinError] = useState<string | null>(null)
   const [teamOpen, setTeamOpen] = useState(false)
@@ -177,8 +185,6 @@ function PensaWorkspace({
   const sendKey = useRef<{ fingerprint: string; id: string } | null>(null)
   const joinKey = useRef<{ code: string; id: string } | null>(null)
   const lastOpened = useRef<string | null>(initialProjectId)
-  // `?ajuda=` abre o jogo do link já na Conversa (no celular), uma vez só.
-  const helpTabPending = useRef(Boolean(initialHelpMissionId && initialProjectId))
 
   const projectId = view?.project.id ?? null
   const showChange = projectId !== null && changeFor === projectId
@@ -188,19 +194,20 @@ function PensaWorkspace({
   const preview = previewState && previewState.projectId === projectId ? previewState : null
   const setPreview = (next: Preview | null) =>
     setPreviewState(next && projectId ? { ...next, projectId } : null)
-  // Trocar de jogo volta à aba do plano. O primeiro jogo aberto por `?ajuda=` fica na Conversa
-  // (o efeito também roda antes de a view chegar, com `projectId` nulo, e não pode gastar a aba
-  // da ajuda nesse momento).
-  // biome-ignore lint/correctness/useExhaustiveDependencies: resets only when the project changes.
-  useEffect(() => {
-    if (!projectId) return
-    if (helpTabPending.current && projectId === initialProjectId) {
-      helpTabPending.current = false
-      return
-    }
-    helpTabPending.current = false
-    setTab('plano')
-  }, [projectId])
+  // Resolve the project boundary before committing its controls. A passive effect
+  // can otherwise reset a help click made just after the project becomes visible.
+  const initialHelpTab =
+    projectTab.initialHelpPending && projectId === initialProjectId ? 'conversa' : 'plano'
+  if (projectTab.projectId !== projectId) {
+    setProjectTab({
+      projectId,
+      value: initialHelpTab,
+      initialHelpPending: projectId === null && projectTab.initialHelpPending,
+    })
+  }
+  const tab = projectTab.projectId === projectId ? projectTab.value : initialHelpTab
+  const setTab = (value: ProjectTab) =>
+    setProjectTab({ projectId, value, initialHelpPending: false })
 
   const draftKeyFor = (mode: 'planning' | 'help', missionId: string | null) =>
     `sz:pensa:draft:${adapter.viewerId ?? 'session'}:${view?.project.id ?? 'new'}:${mode}:${mode === 'help' ? (missionId ?? 'general') : 'idea'}`

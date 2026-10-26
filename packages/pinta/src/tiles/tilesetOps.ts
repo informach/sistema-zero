@@ -10,7 +10,13 @@
  */
 import { newId } from '../core/id'
 import type { AnyTilesetAsset, TilemapAsset, VectorFrame } from '../core/project'
-import { createBitmap, PINTA_LIMITS, type PintaBitmap } from '../core/project'
+import {
+  createBitmap,
+  isTileLayer,
+  PINTA_LIMITS,
+  type PintaBitmap,
+  tileLayerTilesetId,
+} from '../core/project'
 import { cloneBitmap } from '../pixel/bitmap'
 
 type TileOf<A extends AnyTilesetAsset> = A['tiles'][number]
@@ -109,11 +115,15 @@ export function cycleCollision<A extends AnyTilesetAsset>(asset: A, index: numbe
  *   ≥ insertedAt sobem 1 (continuam na MESMA peça de antes);
  * - `removedAt`: célula com o índice removido vira VAZIA (-1); índices maiores
  *   descem 1.
- * Aplicar em TODOS os tilemaps do tileset (o chamador filtra por `tilesetId`).
+ * Aplicar em TODOS os tilemaps que usam o tileset (`tilemapUsesTileset`). Com
+ * `tilesetId`, só as camadas que usam ESSE tileset são renumeradas — num mapa
+ * com várias peças, apagar uma peça de um tileset não pode mexer nas células das
+ * camadas de outro. Sem ele, todas as camadas de peças (o comportamento antigo).
  */
 export function remapTilemapCells(
   tilemap: TilemapAsset,
   change: { insertedAt: number } | { removedAt: number },
+  tilesetId?: string,
 ): TilemapAsset {
   const remapOne = (value: number): number => {
     if (value < 0) return -1
@@ -123,6 +133,8 @@ export function remapTilemapCells(
   }
   let touched = false
   const layers = tilemap.layers.map((layer) => {
+    if (!isTileLayer(layer)) return layer
+    if (tilesetId !== undefined && tileLayerTilesetId(tilemap, layer) !== tilesetId) return layer
     const cells = new Int16Array(layer.cells.length)
     let layerTouched = false
     for (let i = 0; i < layer.cells.length; i += 1) {

@@ -31,6 +31,10 @@ export const GAME_3D_LIFECYCLE: RuntimeLifecycleContract = {
   extensionId: 'game-3d',
   globalName: 'SZGame3D',
   runMethod: 'runProject',
+  // "Recomeçar o jogo" roda a fábrica de novo no MESMO documento: o contexto da partida
+  // encerra listeners e timers do código gerado antes de cada execução.
+  managedProjectRun: true,
+  restartMethod: 'restart',
   disposeMethod: 'disposeAll',
 }
 
@@ -50,6 +54,10 @@ export const WORLD_3D_LIFECYCLE: RuntimeLifecycleContract = {
   globalName: 'SZWorld3D',
   runMethod: 'runProject',
   bootMethod: 'start',
+  // "Recomeçar o jogo" é LEVE no Mundo 3D: o jogador volta ao começo e as regras zeram, mas o
+  // mundo (terreno, cidade, natureza) NÃO é reconstruído e o projeto NÃO roda de novo. Por isso
+  // não há `managedProjectRun`: os listeners e laços da partida continuam valendo.
+  restartMethod: 'restart',
   disposeMethod: 'disposeAll',
 }
 

@@ -10,6 +10,10 @@ import {
 } from '../official-extensions/game-2d/classicCodec'
 import { textSpriteExpressionToCode } from '../official-extensions/game-2d/textCodec'
 import { isTextSpriteExpression } from '../official-extensions/game-2d/textIR'
+import { gameKit3DGameplayExpressionToCode } from '../official-extensions/game-3d-advanced/gameplayCodec'
+import { isGameKit3DGameplayExpression } from '../official-extensions/game-3d-advanced/gameplayIR'
+import { gameRulesExpressionToCode } from '../official-extensions/game3dRules/codec'
+import { isGameRulesExpression } from '../official-extensions/game3dRules/ir'
 import { sceneToCode } from '../official-extensions/scene-2d/codec'
 import { isSceneExpression } from '../official-extensions/scene-2d/ir'
 import { normalizeIdentifier, safeIdent } from './identifier'
@@ -227,6 +231,16 @@ export function compileExpr(
     return `SZGame2D.circleCollides(${identifiers.get(expr.aVar)}, ${identifiers.get(expr.bVar)})`
   if (isSceneExpression(expr))
     return sceneToCode(expr, (arg) => compileExpr(arg, 0, identifiers, rec))
+  if (isGameKit3DGameplayExpression(expr))
+    return gameKit3DGameplayExpressionToCode(expr, (value) =>
+      compileExpr(value, 0, identifiers, rec),
+    )
+  if (isGameRulesExpression(expr))
+    return gameRulesExpressionToCode(
+      expr,
+      (value) => compileExpr(value, 0, identifiers, rec),
+      (name) => identifiers.get(name),
+    )
   if (isTextSpriteExpression(expr))
     return textSpriteExpressionToCode(
       expr,
@@ -343,6 +357,8 @@ export function compileExpr(
       return `SZGame3D.hitIs(${identifiers.get(expr.hitVar)}, ${identifiers.get(expr.objVar)})`
     case 'g3d:objectValue':
       return `SZGame3D.objectValue(${identifiers.get(expr.objVar)}, ${JSON.stringify(expr.key)})`
+    case 'g3d:animationDone':
+      return `SZGame3D.animationDone(${identifiers.get(expr.objVar)})`
     case 'g3d:stageAsk': {
       const what = JSON.stringify(expr.what)
       if (expr.op === 'heroi') return `SZGame3D.heroIs(${identifiers.get(expr.objVar)}, ${what})`
@@ -359,12 +375,8 @@ export function compileExpr(
       return `SZGame3D.crosserHit(${identifiers.get(expr.objVar)}, ${identifiers.get(expr.worldVar)})`
     case 'g3d:crosserRow':
       return `SZGame3D.crosserRow(${identifiers.get(expr.objVar)})`
-    case 'g3d:touchesBox':
-      return `SZGame3D.touchesBox(${identifiers.get(expr.objVar)}, ${identifiers.get(expr.groupVar)})`
     case 'g3d:distanceTo':
       return `SZGame3D.distanceTo(${identifiers.get(expr.aVar)}, ${identifiers.get(expr.bVar)})`
-    case 'g3d:countSwarm':
-      return `SZGame3D.countSwarm(${identifiers.get(expr.swarmVar)})`
     case 'g3d:countGroup':
       return `SZGame3D.countGroup(${identifiers.get(expr.groupVar)})`
     case 'g3d:isNear':
@@ -624,12 +636,6 @@ export function compileExpr(
       return `SZGameKit3D.velocityOf(${identifiers.get(expr.charVar)}, ${JSON.stringify(expr.axis)})`
     case 'g3k:distanceBetween':
       return `SZGameKit3D.distanceBetween(${identifiers.get(expr.aVar)}, ${identifiers.get(expr.bVar)})`
-    case 'g3k:randomBetween':
-      return `SZGameKit3D.randomBetween(${compileExpr(valueToExpr(expr.from), 0, identifiers)}, ${compileExpr(valueToExpr(expr.to), 0, identifiers)})`
-    case 'g3k:randomChance':
-      return `SZGameKit3D.randomChance(${compileExpr(valueToExpr(expr.percent), 0, identifiers)})`
-    case 'g3k:timeLeft':
-      return 'SZGameKit3D.timeLeft()'
     case 'g3k:maxHealthOf':
       return `SZGameKit3D.maxHealthOf(${identifiers.get(expr.charVar)})`
     case 'g3k:stateOf':
@@ -643,12 +649,10 @@ export function compileExpr(
       return 'SZWorld3D.worldSize()'
     case 'w3d:groundHeight':
       return `SZWorld3D.groundHeight(${compileExpr(valueToExpr(expr.x), 0, identifiers, rec)}, ${compileExpr(valueToExpr(expr.z), 0, identifiers, rec)})`
-    case 'w3d:carPos':
-      return `SZWorld3D.carPos(${JSON.stringify(expr.axis)})`
     case 'w3d:carSpeed':
       return 'SZWorld3D.carSpeed()'
-    case 'w3d:personPos':
-      return `SZWorld3D.personPos(${JSON.stringify(expr.axis)})`
+    case 'w3d:playerPos':
+      return `SZWorld3D.playerPos(${JSON.stringify(expr.axis)})`
     case 'w3d:isDriving':
       return 'SZWorld3D.isDriving()'
     case 'w3d:coinCount':

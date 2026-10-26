@@ -1,0 +1,3036 @@
+{
+  "id": "bf320f9f-a0e4-4405-b4c2-bab0d3af0762",
+  "prevId": "34b59c1b-5fcc-4098-9bba-15eb6d95181f",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "payments.consumers": {
+      "name": "consumers",
+      "schema": "payments",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "hmac_secret": {
+          "name": "hmac_secret",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "allowed_cidrs": {
+          "name": "allowed_cidrs",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "ARRAY[]::text[]"
+        },
+        "webhook_url": {
+          "name": "webhook_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "subscribed_events": {
+          "name": "subscribed_events",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "ARRAY[]::text[]"
+        },
+        "is_active": {
+          "name": "is_active",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "payments.idempotency_keys": {
+      "name": "idempotency_keys",
+      "schema": "payments",
+      "columns": {
+        "consumer_id": {
+          "name": "consumer_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "key": {
+          "name": "key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "request_hash": {
+          "name": "request_hash",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "reservation_id": {
+          "name": "reservation_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "state": {
+          "name": "state",
+          "type": "idempotency_state",
+          "typeSchema": "payments",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "response_status": {
+          "name": "response_status",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "response_body": {
+          "name": "response_body",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "expires_at": {
+          "name": "expires_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "idempotency_expires_idx": {
+          "name": "idempotency_expires_idx",
+          "columns": [
+            {
+              "expression": "expires_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "idempotency_keys_consumer_id_key_pk": {
+          "name": "idempotency_keys_consumer_id_key_pk",
+          "columns": [
+            "consumer_id",
+            "key"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "payments.outbox": {
+      "name": "outbox",
+      "schema": "payments",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "aggregate_id": {
+          "name": "aggregate_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "event_name": {
+          "name": "event_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "payload": {
+          "name": "payload",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "status": {
+          "name": "status",
+          "type": "outbox_status",
+          "typeSchema": "payments",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'PENDING'"
+        },
+        "attempt_count": {
+          "name": "attempt_count",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "published_at": {
+          "name": "published_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "outbox_status_created_idx": {
+          "name": "outbox_status_created_idx",
+          "columns": [
+            {
+              "expression": "status",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "created_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "payments.payments": {
+      "name": "payments",
+      "schema": "payments",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "version": {
+          "name": "version",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "consumer_id": {
+          "name": "consumer_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "status": {
+          "name": "status",
+          "type": "payment_status",
+          "typeSchema": "payments",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "method": {
+          "name": "method",
+          "type": "payment_method",
+          "typeSchema": "payments",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "amount_in_cents": {
+          "name": "amount_in_cents",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "currency": {
+          "name": "currency",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "provider": {
+          "name": "provider",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "provider_payment_id": {
+          "name": "provider_payment_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "txid": {
+          "name": "txid",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "idempotency_key": {
+          "name": "idempotency_key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "card": {
+          "name": "card",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "pix_qr_code": {
+          "name": "pix_qr_code",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "boleto": {
+          "name": "boleto",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "boleto_request": {
+          "name": "boleto_request",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "customer": {
+          "name": "customer",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "metadata": {
+          "name": "metadata",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'{}'::jsonb"
+        },
+        "failure_reason": {
+          "name": "failure_reason",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "cycle_access": {
+          "name": "cycle_access",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "period_confirmation": {
+          "name": "period_confirmation",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "prior_failure_reason": {
+          "name": "prior_failure_reason",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "prior_failed_at": {
+          "name": "prior_failed_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "subscription_id": {
+          "name": "subscription_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "charge_attempts": {
+          "name": "charge_attempts",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "charge_claimed_at": {
+          "name": "charge_claimed_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "paid_at": {
+          "name": "paid_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "expires_at": {
+          "name": "expires_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "payments_consumer_idem_uq": {
+          "name": "payments_consumer_idem_uq",
+          "columns": [
+            {
+              "expression": "consumer_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "idempotency_key",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "payments_status_idx": {
+          "name": "payments_status_idx",
+          "columns": [
+            {
+              "expression": "status",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "payments_txid_uq": {
+          "name": "payments_txid_uq",
+          "columns": [
+            {
+              "expression": "txid",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "where": "txid IS NOT NULL",
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "payments_provider_payment_idx": {
+          "name": "payments_provider_payment_idx",
+          "columns": [
+            {
+              "expression": "provider",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "provider_payment_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "payments_pending_charge_idx": {
+          "name": "payments_pending_charge_idx",
+          "columns": [
+            {
+              "expression": "created_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "where": "provider_payment_id IS NULL AND status = 'PENDING'",
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "payments_reconcile_idx": {
+          "name": "payments_reconcile_idx",
+          "columns": [
+            {
+              "expression": "updated_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "where": "status = 'PENDING' AND provider_payment_id IS NOT NULL",
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "payments_subscription_idx": {
+          "name": "payments_subscription_idx",
+          "columns": [
+            {
+              "expression": "subscription_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "payments_customer_email_idx": {
+          "name": "payments_customer_email_idx",
+          "columns": [
+            {
+              "expression": "lower((\"customer\" ->> 'email'))",
+              "asc": true,
+              "isExpression": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "payments_created_at_idx": {
+          "name": "payments_created_at_idx",
+          "columns": [
+            {
+              "expression": "created_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "payments_paid_at_idx": {
+          "name": "payments_paid_at_idx",
+          "columns": [
+            {
+              "expression": "paid_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "where": "paid_at IS NOT NULL",
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "payments_txid_trgm_idx": {
+          "name": "payments_txid_trgm_idx",
+          "columns": [
+            {
+              "expression": "txid",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last",
+              "opclass": "gin_trgm_ops"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "gin",
+          "with": {}
+        },
+        "payments_provider_payment_trgm_idx": {
+          "name": "payments_provider_payment_trgm_idx",
+          "columns": [
+            {
+              "expression": "provider_payment_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last",
+              "opclass": "gin_trgm_ops"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "gin",
+          "with": {}
+        },
+        "payments_id_text_trgm_idx": {
+          "name": "payments_id_text_trgm_idx",
+          "columns": [
+            {
+              "expression": "(\"id\"::text) gin_trgm_ops",
+              "asc": true,
+              "isExpression": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "gin",
+          "with": {}
+        },
+        "payments_customer_email_trgm_idx": {
+          "name": "payments_customer_email_trgm_idx",
+          "columns": [
+            {
+              "expression": "(\"customer\" ->> 'email') gin_trgm_ops",
+              "asc": true,
+              "isExpression": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "gin",
+          "with": {}
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "payments.subscription_cancellation_audit": {
+      "name": "subscription_cancellation_audit",
+      "schema": "payments",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "subscription_id": {
+          "name": "subscription_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "consumer_id": {
+          "name": "consumer_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "origin": {
+          "name": "origin",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "actor_id": {
+          "name": "actor_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "recovery_case_id": {
+          "name": "recovery_case_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "requested_at": {
+          "name": "requested_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "recorded_at": {
+          "name": "recorded_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "confirmed_at": {
+          "name": "confirmed_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "ended_status": {
+          "name": "ended_status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "withdrawn_at": {
+          "name": "withdrawn_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "withdrawal_reason": {
+          "name": "withdrawal_reason",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "supersedes_id": {
+          "name": "supersedes_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "superseded_by": {
+          "name": "superseded_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "superseded_at": {
+          "name": "superseded_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "subscription_cancellation_audit_history_idx": {
+          "name": "subscription_cancellation_audit_history_idx",
+          "columns": [
+            {
+              "expression": "subscription_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "recorded_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "subscription_cancellation_audit_case_idx": {
+          "name": "subscription_cancellation_audit_case_idx",
+          "columns": [
+            {
+              "expression": "recovery_case_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "subscription_cancellation_audit_subscription_id_subscriptions_id_fk": {
+          "name": "subscription_cancellation_audit_subscription_id_subscriptions_id_fk",
+          "tableFrom": "subscription_cancellation_audit",
+          "tableTo": "subscriptions",
+          "schemaTo": "payments",
+          "columnsFrom": [
+            "subscription_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "subscription_cancellation_audit_recovery_case_id_subscription_recovery_cases_id_fk": {
+          "name": "subscription_cancellation_audit_recovery_case_id_subscription_recovery_cases_id_fk",
+          "tableFrom": "subscription_cancellation_audit",
+          "tableTo": "subscription_recovery_cases",
+          "schemaTo": "payments",
+          "columnsFrom": [
+            "recovery_case_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "subscription_cancellation_audit_origin_check": {
+          "name": "subscription_cancellation_audit_origin_check",
+          "value": "\"payments\".\"subscription_cancellation_audit\".\"origin\" in ('CUSTOMER','ADMIN','CONSUMER','NONPAYMENT','EXTERNAL','SCHEDULE_COMPLETED')"
+        },
+        "subscription_cancellation_audit_actor_check": {
+          "name": "subscription_cancellation_audit_actor_check",
+          "value": "(\"payments\".\"subscription_cancellation_audit\".\"origin\" = 'EXTERNAL' and \"payments\".\"subscription_cancellation_audit\".\"actor_id\" is null) or (\"payments\".\"subscription_cancellation_audit\".\"origin\" <> 'EXTERNAL' and \"payments\".\"subscription_cancellation_audit\".\"actor_id\" is not null and length(\"payments\".\"subscription_cancellation_audit\".\"actor_id\") between 1 and 128)"
+        },
+        "subscription_cancellation_audit_case_check": {
+          "name": "subscription_cancellation_audit_case_check",
+          "value": "(\"payments\".\"subscription_cancellation_audit\".\"origin\" = 'NONPAYMENT' and \"payments\".\"subscription_cancellation_audit\".\"recovery_case_id\" is not null and \"payments\".\"subscription_cancellation_audit\".\"actor_id\" = 'system:subscription-recovery') or (\"payments\".\"subscription_cancellation_audit\".\"origin\" <> 'NONPAYMENT' and \"payments\".\"subscription_cancellation_audit\".\"recovery_case_id\" is null)"
+        },
+        "subscription_cancellation_audit_request_check": {
+          "name": "subscription_cancellation_audit_request_check",
+          "value": "(\"payments\".\"subscription_cancellation_audit\".\"origin\" in ('EXTERNAL','SCHEDULE_COMPLETED') and \"payments\".\"subscription_cancellation_audit\".\"requested_at\" is null) or (\"payments\".\"subscription_cancellation_audit\".\"origin\" not in ('EXTERNAL','SCHEDULE_COMPLETED') and \"payments\".\"subscription_cancellation_audit\".\"requested_at\" is not null and \"payments\".\"subscription_cancellation_audit\".\"requested_at\" <= \"payments\".\"subscription_cancellation_audit\".\"recorded_at\")"
+        },
+        "subscription_cancellation_audit_confirmation_check": {
+          "name": "subscription_cancellation_audit_confirmation_check",
+          "value": "(\"payments\".\"subscription_cancellation_audit\".\"confirmed_at\" is null and \"payments\".\"subscription_cancellation_audit\".\"ended_status\" is null) or (\"payments\".\"subscription_cancellation_audit\".\"confirmed_at\" is not null and \"payments\".\"subscription_cancellation_audit\".\"ended_status\" is not null and \"payments\".\"subscription_cancellation_audit\".\"ended_status\" in ('CANCELED','EXPIRED') and \"payments\".\"subscription_cancellation_audit\".\"confirmed_at\" >= \"payments\".\"subscription_cancellation_audit\".\"recorded_at\")"
+        },
+        "subscription_cancellation_audit_observed_check": {
+          "name": "subscription_cancellation_audit_observed_check",
+          "value": "\"payments\".\"subscription_cancellation_audit\".\"origin\" not in ('EXTERNAL','SCHEDULE_COMPLETED') or \"payments\".\"subscription_cancellation_audit\".\"confirmed_at\" is not null"
+        },
+        "subscription_cancellation_audit_schedule_check": {
+          "name": "subscription_cancellation_audit_schedule_check",
+          "value": "\"payments\".\"subscription_cancellation_audit\".\"origin\" <> 'SCHEDULE_COMPLETED' or (\"payments\".\"subscription_cancellation_audit\".\"actor_id\" = 'system:subscription-schedule' and \"payments\".\"subscription_cancellation_audit\".\"ended_status\" = 'EXPIRED')"
+        },
+        "subscription_cancellation_audit_withdrawal_check": {
+          "name": "subscription_cancellation_audit_withdrawal_check",
+          "value": "(\"payments\".\"subscription_cancellation_audit\".\"withdrawn_at\" is null and \"payments\".\"subscription_cancellation_audit\".\"withdrawal_reason\" is null) or (\"payments\".\"subscription_cancellation_audit\".\"withdrawn_at\" is not null and \"payments\".\"subscription_cancellation_audit\".\"withdrawal_reason\" is not null and \"payments\".\"subscription_cancellation_audit\".\"origin\" = 'NONPAYMENT' and \"payments\".\"subscription_cancellation_audit\".\"confirmed_at\" is null and \"payments\".\"subscription_cancellation_audit\".\"withdrawal_reason\" in ('RECOVERED','OPERATOR_REVIEW') and \"payments\".\"subscription_cancellation_audit\".\"withdrawn_at\" >= \"payments\".\"subscription_cancellation_audit\".\"recorded_at\")"
+        },
+        "subscription_cancellation_audit_superseded_check": {
+          "name": "subscription_cancellation_audit_superseded_check",
+          "value": "((\"payments\".\"subscription_cancellation_audit\".\"superseded_by\" is null and \"payments\".\"subscription_cancellation_audit\".\"superseded_at\" is null) or (\"payments\".\"subscription_cancellation_audit\".\"superseded_by\" is not null and \"payments\".\"subscription_cancellation_audit\".\"superseded_at\" is not null and \"payments\".\"subscription_cancellation_audit\".\"superseded_by\" <> \"payments\".\"subscription_cancellation_audit\".\"id\" and \"payments\".\"subscription_cancellation_audit\".\"superseded_at\" >= \"payments\".\"subscription_cancellation_audit\".\"recorded_at\")) and (\"payments\".\"subscription_cancellation_audit\".\"supersedes_id\" is null or \"payments\".\"subscription_cancellation_audit\".\"supersedes_id\" <> \"payments\".\"subscription_cancellation_audit\".\"id\")"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "payments.subscription_operations": {
+      "name": "subscription_operations",
+      "schema": "payments",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "subscription_id": {
+          "name": "subscription_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "consumer_id": {
+          "name": "consumer_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "provider_subscription_id": {
+          "name": "provider_subscription_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "kind": {
+          "name": "kind",
+          "type": "subscription_operation_kind",
+          "typeSchema": "payments",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "state": {
+          "name": "state",
+          "type": "subscription_operation_state",
+          "typeSchema": "payments",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "provider_payment_id": {
+          "name": "provider_payment_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "amount_in_cents": {
+          "name": "amount_in_cents",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "retry_terms": {
+          "name": "retry_terms",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "currency": {
+          "name": "currency",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'BRL'"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "expires_at": {
+          "name": "expires_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "started_at": {
+          "name": "started_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "execution_id": {
+          "name": "execution_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "execution_attempts": {
+          "name": "execution_attempts",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "completed_at": {
+          "name": "completed_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "result": {
+          "name": "result",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "confirmation": {
+          "name": "confirmation",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "subscription_operations_active_uq": {
+          "name": "subscription_operations_active_uq",
+          "columns": [
+            {
+              "expression": "subscription_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "where": "\"payments\".\"subscription_operations\".\"state\" in ('READY', 'EXECUTING', 'UNKNOWN')",
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "subscription_operations_subscription_idx": {
+          "name": "subscription_operations_subscription_idx",
+          "columns": [
+            {
+              "expression": "subscription_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "created_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "subscription_operations_pending_idx": {
+          "name": "subscription_operations_pending_idx",
+          "columns": [
+            {
+              "expression": "state",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "started_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "subscription_operations_subscription_id_subscriptions_id_fk": {
+          "name": "subscription_operations_subscription_id_subscriptions_id_fk",
+          "tableFrom": "subscription_operations",
+          "tableTo": "subscriptions",
+          "schemaTo": "payments",
+          "columnsFrom": [
+            "subscription_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "subscription_operations_amount_check": {
+          "name": "subscription_operations_amount_check",
+          "value": "(\n      (\"payments\".\"subscription_operations\".\"kind\" = 'RETRY' and \"payments\".\"subscription_operations\".\"provider_payment_id\" is not null and \"payments\".\"subscription_operations\".\"amount_in_cents\" is not null and \"payments\".\"subscription_operations\".\"amount_in_cents\" > 0)\n    or (\"payments\".\"subscription_operations\".\"kind\" <> 'RETRY' and \"payments\".\"subscription_operations\".\"provider_payment_id\" is null and \"payments\".\"subscription_operations\".\"amount_in_cents\" is null)\n  )"
+        },
+        "subscription_operations_currency_check": {
+          "name": "subscription_operations_currency_check",
+          "value": "\"payments\".\"subscription_operations\".\"currency\" = 'BRL'"
+        },
+        "subscription_operations_confirmation_check": {
+          "name": "subscription_operations_confirmation_check",
+          "value": "\"payments\".\"subscription_operations\".\"confirmation\" is null or (\"payments\".\"subscription_operations\".\"kind\" = 'RETRY' and \"payments\".\"subscription_operations\".\"state\" = 'SUCCEEDED' and jsonb_typeof(\"payments\".\"subscription_operations\".\"confirmation\") = 'object')"
+        },
+        "subscription_operations_retry_terms_check": {
+          "name": "subscription_operations_retry_terms_check",
+          "value": "(\"payments\".\"subscription_operations\".\"kind\" = 'RETRY' and \"payments\".\"subscription_operations\".\"retry_terms\" is not null and jsonb_typeof(\"payments\".\"subscription_operations\".\"retry_terms\") = 'object') or (\"payments\".\"subscription_operations\".\"kind\" <> 'RETRY' and \"payments\".\"subscription_operations\".\"retry_terms\" is null)"
+        },
+        "subscription_operations_deadline_check": {
+          "name": "subscription_operations_deadline_check",
+          "value": "\"payments\".\"subscription_operations\".\"expires_at\" > \"payments\".\"subscription_operations\".\"created_at\""
+        },
+        "subscription_operations_execution_check": {
+          "name": "subscription_operations_execution_check",
+          "value": "(\"payments\".\"subscription_operations\".\"execution_attempts\" = 0 and \"payments\".\"subscription_operations\".\"execution_id\" is null) or (\"payments\".\"subscription_operations\".\"execution_attempts\" > 0 and \"payments\".\"subscription_operations\".\"execution_id\" is not null and \"payments\".\"subscription_operations\".\"started_at\" is not null)"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "payments.subscription_paid_cycles": {
+      "name": "subscription_paid_cycles",
+      "schema": "payments",
+      "columns": {
+        "subscription_id": {
+          "name": "subscription_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "provider_payment_id": {
+          "name": "provider_payment_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "recorded_at": {
+          "name": "recorded_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "subscription_paid_cycles_subscription_id_subscriptions_id_fk": {
+          "name": "subscription_paid_cycles_subscription_id_subscriptions_id_fk",
+          "tableFrom": "subscription_paid_cycles",
+          "tableTo": "subscriptions",
+          "schemaTo": "payments",
+          "columnsFrom": [
+            "subscription_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "subscription_paid_cycles_subscription_id_provider_payment_id_pk": {
+          "name": "subscription_paid_cycles_subscription_id_provider_payment_id_pk",
+          "columns": [
+            "subscription_id",
+            "provider_payment_id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "subscription_paid_cycle_charge_check": {
+          "name": "subscription_paid_cycle_charge_check",
+          "value": "length(\"payments\".\"subscription_paid_cycles\".\"provider_payment_id\") between 1 and 200"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "payments.subscription_plans": {
+      "name": "subscription_plans",
+      "schema": "payments",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "provider": {
+          "name": "provider",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "interval_months": {
+          "name": "interval_months",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "repeats": {
+          "name": "repeats",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "repeats_key": {
+          "name": "repeats_key",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "provider_plan_id": {
+          "name": "provider_plan_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "subscription_plans_key_uq": {
+          "name": "subscription_plans_key_uq",
+          "columns": [
+            {
+              "expression": "provider",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "interval_months",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "repeats_key",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "payments.subscription_recovery_admission_reviews": {
+      "name": "subscription_recovery_admission_reviews",
+      "schema": "payments",
+      "columns": {
+        "case_id": {
+          "name": "case_id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "payment_id": {
+          "name": "payment_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "actor_id": {
+          "name": "actor_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "request_id": {
+          "name": "request_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "audience": {
+          "name": "audience",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "policy_version": {
+          "name": "policy_version",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "payment_version": {
+          "name": "payment_version",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "source_observed_at": {
+          "name": "source_observed_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "source_charge_created_at": {
+          "name": "source_charge_created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "approved_at": {
+          "name": "approved_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "subscription_recovery_admission_reviews_request_uq": {
+          "name": "subscription_recovery_admission_reviews_request_uq",
+          "columns": [
+            {
+              "expression": "request_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "subscription_recovery_admission_reviews_payment_uq": {
+          "name": "subscription_recovery_admission_reviews_payment_uq",
+          "columns": [
+            {
+              "expression": "payment_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "subscription_recovery_admission_reviews_case_id_subscription_recovery_cases_id_fk": {
+          "name": "subscription_recovery_admission_reviews_case_id_subscription_recovery_cases_id_fk",
+          "tableFrom": "subscription_recovery_admission_reviews",
+          "tableTo": "subscription_recovery_cases",
+          "schemaTo": "payments",
+          "columnsFrom": [
+            "case_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "subscription_recovery_admission_reviews_payment_id_payments_id_fk": {
+          "name": "subscription_recovery_admission_reviews_payment_id_payments_id_fk",
+          "tableFrom": "subscription_recovery_admission_reviews",
+          "tableTo": "payments",
+          "schemaTo": "payments",
+          "columnsFrom": [
+            "payment_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "subscription_recovery_admission_reviews_actor_check": {
+          "name": "subscription_recovery_admission_reviews_actor_check",
+          "value": "length(btrim(\"payments\".\"subscription_recovery_admission_reviews\".\"actor_id\")) between 1 and 200"
+        },
+        "subscription_recovery_admission_reviews_audience_check": {
+          "name": "subscription_recovery_admission_reviews_audience_check",
+          "value": "\"payments\".\"subscription_recovery_admission_reviews\".\"audience\" in ('kids', 'adult')"
+        },
+        "subscription_recovery_admission_reviews_version_check": {
+          "name": "subscription_recovery_admission_reviews_version_check",
+          "value": "\"payments\".\"subscription_recovery_admission_reviews\".\"policy_version\" >= 0 and \"payments\".\"subscription_recovery_admission_reviews\".\"payment_version\" >= 0"
+        },
+        "subscription_recovery_admission_reviews_source_check": {
+          "name": "subscription_recovery_admission_reviews_source_check",
+          "value": "\"payments\".\"subscription_recovery_admission_reviews\".\"source_charge_created_at\" <= \"payments\".\"subscription_recovery_admission_reviews\".\"source_observed_at\" and \"payments\".\"subscription_recovery_admission_reviews\".\"source_observed_at\" <= \"payments\".\"subscription_recovery_admission_reviews\".\"approved_at\" and \"payments\".\"subscription_recovery_admission_reviews\".\"approved_at\" - \"payments\".\"subscription_recovery_admission_reviews\".\"source_observed_at\" <= interval '60 seconds'"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "payments.subscription_recovery_admissions": {
+      "name": "subscription_recovery_admissions",
+      "schema": "payments",
+      "columns": {
+        "payment_id": {
+          "name": "payment_id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "policy": {
+          "name": "policy",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "activated_at": {
+          "name": "activated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "discovered_at": {
+          "name": "discovered_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "state": {
+          "name": "state",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "reason": {
+          "name": "reason",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "case_id": {
+          "name": "case_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "attempts": {
+          "name": "attempts",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "next_attempt_at": {
+          "name": "next_attempt_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "lease_id": {
+          "name": "lease_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "lease_until": {
+          "name": "lease_until",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "subscription_recovery_admissions_due_idx": {
+          "name": "subscription_recovery_admissions_due_idx",
+          "columns": [
+            {
+              "expression": "next_attempt_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "where": "\"payments\".\"subscription_recovery_admissions\".\"state\" = 'PENDING'",
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "subscription_recovery_admissions_payment_id_payments_id_fk": {
+          "name": "subscription_recovery_admissions_payment_id_payments_id_fk",
+          "tableFrom": "subscription_recovery_admissions",
+          "tableTo": "payments",
+          "schemaTo": "payments",
+          "columnsFrom": [
+            "payment_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "subscription_recovery_admissions_case_id_subscription_recovery_cases_id_fk": {
+          "name": "subscription_recovery_admissions_case_id_subscription_recovery_cases_id_fk",
+          "tableFrom": "subscription_recovery_admissions",
+          "tableTo": "subscription_recovery_cases",
+          "schemaTo": "payments",
+          "columnsFrom": [
+            "case_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "subscription_recovery_admissions_state_check": {
+          "name": "subscription_recovery_admissions_state_check",
+          "value": "\"payments\".\"subscription_recovery_admissions\".\"state\" in ('PENDING','ADMITTED','REVIEW','IGNORED')"
+        },
+        "subscription_recovery_admissions_result_check": {
+          "name": "subscription_recovery_admissions_result_check",
+          "value": "(\"payments\".\"subscription_recovery_admissions\".\"state\" = 'PENDING' and \"payments\".\"subscription_recovery_admissions\".\"reason\" is null and \"payments\".\"subscription_recovery_admissions\".\"case_id\" is null and \"payments\".\"subscription_recovery_admissions\".\"next_attempt_at\" is not null) or (\"payments\".\"subscription_recovery_admissions\".\"state\" = 'ADMITTED' and \"payments\".\"subscription_recovery_admissions\".\"reason\" is null and \"payments\".\"subscription_recovery_admissions\".\"case_id\" is not null and \"payments\".\"subscription_recovery_admissions\".\"next_attempt_at\" is null) or (\"payments\".\"subscription_recovery_admissions\".\"state\" in ('REVIEW','IGNORED') and \"payments\".\"subscription_recovery_admissions\".\"reason\" is not null and \"payments\".\"subscription_recovery_admissions\".\"case_id\" is null and \"payments\".\"subscription_recovery_admissions\".\"next_attempt_at\" is null)"
+        },
+        "subscription_recovery_admissions_reason_check": {
+          "name": "subscription_recovery_admissions_reason_check",
+          "value": "\"payments\".\"subscription_recovery_admissions\".\"reason\" is null or \"payments\".\"subscription_recovery_admissions\".\"reason\" in ('AUDIENCE_UNKNOWN','LEGACY_RENEWAL','SOURCE_DATE_UNKNOWN','NO_LONGER_ELIGIBLE','CASE_EXISTS','PROVIDER_DIVERGENCE','PROVIDER_UNAVAILABLE')"
+        },
+        "subscription_recovery_admissions_lease_check": {
+          "name": "subscription_recovery_admissions_lease_check",
+          "value": "(\"payments\".\"subscription_recovery_admissions\".\"lease_id\" is null) = (\"payments\".\"subscription_recovery_admissions\".\"lease_until\" is null)"
+        },
+        "subscription_recovery_admissions_attempts_check": {
+          "name": "subscription_recovery_admissions_attempts_check",
+          "value": "\"payments\".\"subscription_recovery_admissions\".\"attempts\" >= 0 and \"payments\".\"subscription_recovery_admissions\".\"attempts\" <= 5"
+        },
+        "subscription_recovery_admissions_dates_check": {
+          "name": "subscription_recovery_admissions_dates_check",
+          "value": "\"payments\".\"subscription_recovery_admissions\".\"activated_at\" <= \"payments\".\"subscription_recovery_admissions\".\"discovered_at\""
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "payments.subscription_recovery_cases": {
+      "name": "subscription_recovery_cases",
+      "schema": "payments",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "version": {
+          "name": "version",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "subscription_id": {
+          "name": "subscription_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "consumer_id": {
+          "name": "consumer_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "provider_subscription_id": {
+          "name": "provider_subscription_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "payment_id": {
+          "name": "payment_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "provider_payment_id": {
+          "name": "provider_payment_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "audience": {
+          "name": "audience",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "amount_in_cents": {
+          "name": "amount_in_cents",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "policy": {
+          "name": "policy",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "state": {
+          "name": "state",
+          "type": "subscription_recovery_state",
+          "typeSchema": "payments",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "reason": {
+          "name": "reason",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "first_failure_at": {
+          "name": "first_failure_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "opened_at": {
+          "name": "opened_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "initial_notice_id": {
+          "name": "initial_notice_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "initial_notice_accepted_at": {
+          "name": "initial_notice_accepted_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "deadline_at": {
+          "name": "deadline_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "last_reminder_day": {
+          "name": "last_reminder_day",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "last_provider_check_at": {
+          "name": "last_provider_check_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "next_action_at": {
+          "name": "next_action_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "closed_at": {
+          "name": "closed_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "lease_id": {
+          "name": "lease_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "lease_until": {
+          "name": "lease_until",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "subscription_recovery_origin_uq": {
+          "name": "subscription_recovery_origin_uq",
+          "columns": [
+            {
+              "expression": "payment_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "subscription_recovery_active_uq": {
+          "name": "subscription_recovery_active_uq",
+          "columns": [
+            {
+              "expression": "subscription_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "where": "\"payments\".\"subscription_recovery_cases\".\"state\" in ('OPEN', 'PAYMENT_PENDING', 'CANCEL_PENDING', 'MANUAL_REVIEW')",
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "subscription_recovery_due_idx": {
+          "name": "subscription_recovery_due_idx",
+          "columns": [
+            {
+              "expression": "next_action_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "where": "\"payments\".\"subscription_recovery_cases\".\"next_action_at\" is not null",
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "subscription_recovery_audience_idx": {
+          "name": "subscription_recovery_audience_idx",
+          "columns": [
+            {
+              "expression": "audience",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "state",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "opened_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "subscription_recovery_cases_subscription_id_subscriptions_id_fk": {
+          "name": "subscription_recovery_cases_subscription_id_subscriptions_id_fk",
+          "tableFrom": "subscription_recovery_cases",
+          "tableTo": "subscriptions",
+          "schemaTo": "payments",
+          "columnsFrom": [
+            "subscription_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "subscription_recovery_cases_payment_id_payments_id_fk": {
+          "name": "subscription_recovery_cases_payment_id_payments_id_fk",
+          "tableFrom": "subscription_recovery_cases",
+          "tableTo": "payments",
+          "schemaTo": "payments",
+          "columnsFrom": [
+            "payment_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "subscription_recovery_amount_check": {
+          "name": "subscription_recovery_amount_check",
+          "value": "\"payments\".\"subscription_recovery_cases\".\"amount_in_cents\" > 0"
+        },
+        "subscription_recovery_version_check": {
+          "name": "subscription_recovery_version_check",
+          "value": "\"payments\".\"subscription_recovery_cases\".\"version\" >= 0"
+        },
+        "subscription_recovery_audience_check": {
+          "name": "subscription_recovery_audience_check",
+          "value": "\"payments\".\"subscription_recovery_cases\".\"audience\" in ('kids', 'adult')"
+        },
+        "subscription_recovery_failure_check": {
+          "name": "subscription_recovery_failure_check",
+          "value": "\"payments\".\"subscription_recovery_cases\".\"first_failure_at\" <= \"payments\".\"subscription_recovery_cases\".\"opened_at\""
+        },
+        "subscription_recovery_policy_check": {
+          "name": "subscription_recovery_policy_check",
+          "value": "\"payments\".\"subscription_recovery_cases\".\"policy\" ? 'version' and \"payments\".\"subscription_recovery_cases\".\"policy\" ? 'windowDays' and \"payments\".\"subscription_recovery_cases\".\"policy\" ? 'reminderDays' and jsonb_typeof(\"payments\".\"subscription_recovery_cases\".\"policy\"->'version') = 'number' and jsonb_typeof(\"payments\".\"subscription_recovery_cases\".\"policy\"->'windowDays') = 'number' and (\"payments\".\"subscription_recovery_cases\".\"policy\"->>'version')::integer > 0 and (\"payments\".\"subscription_recovery_cases\".\"policy\"->>'windowDays')::integer between 1 and 30 and jsonb_typeof(\"payments\".\"subscription_recovery_cases\".\"policy\"->'reminderDays') = 'array'"
+        },
+        "subscription_recovery_notice_check": {
+          "name": "subscription_recovery_notice_check",
+          "value": "(\n    (\"payments\".\"subscription_recovery_cases\".\"initial_notice_id\" is null and \"payments\".\"subscription_recovery_cases\".\"initial_notice_accepted_at\" is null and \"payments\".\"subscription_recovery_cases\".\"deadline_at\" is null)\n    or (\"payments\".\"subscription_recovery_cases\".\"initial_notice_id\" is not null and \"payments\".\"subscription_recovery_cases\".\"initial_notice_accepted_at\" is not null and \"payments\".\"subscription_recovery_cases\".\"deadline_at\" is not null\n      and \"payments\".\"subscription_recovery_cases\".\"initial_notice_accepted_at\" >= \"payments\".\"subscription_recovery_cases\".\"opened_at\"\n      and \"payments\".\"subscription_recovery_cases\".\"deadline_at\" = \"payments\".\"subscription_recovery_cases\".\"initial_notice_accepted_at\" + ((\"payments\".\"subscription_recovery_cases\".\"policy\"->>'windowDays')::integer * interval '86400 seconds'))\n  )"
+        },
+        "subscription_recovery_terminal_check": {
+          "name": "subscription_recovery_terminal_check",
+          "value": "(\"payments\".\"subscription_recovery_cases\".\"state\" in ('RECOVERED', 'CANCELED')) = (\"payments\".\"subscription_recovery_cases\".\"closed_at\" is not null)"
+        },
+        "subscription_recovery_due_check": {
+          "name": "subscription_recovery_due_check",
+          "value": "(\"payments\".\"subscription_recovery_cases\".\"state\" in ('RECOVERED', 'CANCELED', 'MANUAL_REVIEW')) = (\"payments\".\"subscription_recovery_cases\".\"next_action_at\" is null)"
+        },
+        "subscription_recovery_closed_check": {
+          "name": "subscription_recovery_closed_check",
+          "value": "\"payments\".\"subscription_recovery_cases\".\"closed_at\" is null or \"payments\".\"subscription_recovery_cases\".\"closed_at\" >= \"payments\".\"subscription_recovery_cases\".\"opened_at\""
+        },
+        "subscription_recovery_reason_check": {
+          "name": "subscription_recovery_reason_check",
+          "value": "\"payments\".\"subscription_recovery_cases\".\"reason\" is null or \"payments\".\"subscription_recovery_cases\".\"reason\" in ('PAID', 'SUBSEQUENT_CYCLE_PAID', 'EXTERNAL_CANCELLATION', 'UNPAID_AFTER_NOTICE', 'PAYMENT_UNCERTAIN', 'CONTACT_FAILED', 'PROVIDER_DIVERGENCE')"
+        },
+        "subscription_recovery_cancel_notice_check": {
+          "name": "subscription_recovery_cancel_notice_check",
+          "value": "\"payments\".\"subscription_recovery_cases\".\"state\" <> 'CANCEL_PENDING' or \"payments\".\"subscription_recovery_cases\".\"initial_notice_id\" is not null"
+        },
+        "subscription_recovery_lease_check": {
+          "name": "subscription_recovery_lease_check",
+          "value": "(\"payments\".\"subscription_recovery_cases\".\"lease_id\" is null) = (\"payments\".\"subscription_recovery_cases\".\"lease_until\" is null)"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "payments.subscription_recovery_notices": {
+      "name": "subscription_recovery_notices",
+      "schema": "payments",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "case_id": {
+          "name": "case_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "purpose": {
+          "name": "purpose",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "day": {
+          "name": "day",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "request": {
+          "name": "request",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "attempt_count": {
+          "name": "attempt_count",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "last_attempt_at": {
+          "name": "last_attempt_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "message_id": {
+          "name": "message_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "message_status": {
+          "name": "message_status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "accepted_at": {
+          "name": "accepted_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "delivered_at": {
+          "name": "delivered_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "observed_at": {
+          "name": "observed_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "subscription_recovery_notices_purpose_uq": {
+          "name": "subscription_recovery_notices_purpose_uq",
+          "columns": [
+            {
+              "expression": "case_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "purpose",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "day",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "subscription_recovery_notices_message_uq": {
+          "name": "subscription_recovery_notices_message_uq",
+          "columns": [
+            {
+              "expression": "message_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "subscription_recovery_notices_case_id_subscription_recovery_cases_id_fk": {
+          "name": "subscription_recovery_notices_case_id_subscription_recovery_cases_id_fk",
+          "tableFrom": "subscription_recovery_notices",
+          "tableTo": "subscription_recovery_cases",
+          "schemaTo": "payments",
+          "columnsFrom": [
+            "case_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "subscription_recovery_notices_purpose_check": {
+          "name": "subscription_recovery_notices_purpose_check",
+          "value": "\"payments\".\"subscription_recovery_notices\".\"purpose\" in ('INITIAL', 'REMINDER', 'RECOVERED', 'CANCELED')"
+        },
+        "subscription_recovery_notices_day_check": {
+          "name": "subscription_recovery_notices_day_check",
+          "value": "(\"payments\".\"subscription_recovery_notices\".\"purpose\" = 'REMINDER' and \"payments\".\"subscription_recovery_notices\".\"day\" between 1 and 29) or (\"payments\".\"subscription_recovery_notices\".\"purpose\" <> 'REMINDER' and \"payments\".\"subscription_recovery_notices\".\"day\" = 0)"
+        },
+        "subscription_recovery_notices_attempt_check": {
+          "name": "subscription_recovery_notices_attempt_check",
+          "value": "\"payments\".\"subscription_recovery_notices\".\"attempt_count\" >= 0 and ((\"payments\".\"subscription_recovery_notices\".\"attempt_count\" = 0 and \"payments\".\"subscription_recovery_notices\".\"last_attempt_at\" is null) or (\"payments\".\"subscription_recovery_notices\".\"attempt_count\" > 0 and \"payments\".\"subscription_recovery_notices\".\"last_attempt_at\" is not null and \"payments\".\"subscription_recovery_notices\".\"last_attempt_at\" >= \"payments\".\"subscription_recovery_notices\".\"created_at\"))"
+        },
+        "subscription_recovery_notices_receipt_check": {
+          "name": "subscription_recovery_notices_receipt_check",
+          "value": "(\"payments\".\"subscription_recovery_notices\".\"message_id\" is null and \"payments\".\"subscription_recovery_notices\".\"message_status\" is null and \"payments\".\"subscription_recovery_notices\".\"accepted_at\" is null and \"payments\".\"subscription_recovery_notices\".\"delivered_at\" is null and \"payments\".\"subscription_recovery_notices\".\"observed_at\" is null) or (\"payments\".\"subscription_recovery_notices\".\"message_id\" is not null and \"payments\".\"subscription_recovery_notices\".\"message_status\" is not null and \"payments\".\"subscription_recovery_notices\".\"accepted_at\" is not null and \"payments\".\"subscription_recovery_notices\".\"observed_at\" is not null and \"payments\".\"subscription_recovery_notices\".\"accepted_at\" >= \"payments\".\"subscription_recovery_notices\".\"created_at\" and \"payments\".\"subscription_recovery_notices\".\"observed_at\" >= \"payments\".\"subscription_recovery_notices\".\"accepted_at\" and (\"payments\".\"subscription_recovery_notices\".\"delivered_at\" is null or \"payments\".\"subscription_recovery_notices\".\"delivered_at\" between \"payments\".\"subscription_recovery_notices\".\"accepted_at\" and \"payments\".\"subscription_recovery_notices\".\"observed_at\"))"
+        },
+        "subscription_recovery_notices_status_check": {
+          "name": "subscription_recovery_notices_status_check",
+          "value": "\"payments\".\"subscription_recovery_notices\".\"message_status\" is null or \"payments\".\"subscription_recovery_notices\".\"message_status\" in ('QUEUED', 'SCHEDULED', 'SENDING', 'SENT', 'DELIVERED', 'READ', 'FAILED', 'SUPPRESSED')"
+        },
+        "subscription_recovery_notices_delivery_check": {
+          "name": "subscription_recovery_notices_delivery_check",
+          "value": "\"payments\".\"subscription_recovery_notices\".\"message_status\" is null or \"payments\".\"subscription_recovery_notices\".\"message_status\" not in ('DELIVERED', 'READ') or \"payments\".\"subscription_recovery_notices\".\"delivered_at\" is not null"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "payments.subscription_recovery_policy": {
+      "name": "subscription_recovery_policy",
+      "schema": "payments",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "version": {
+          "name": "version",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "window_days": {
+          "name": "window_days",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "reminder_days": {
+          "name": "reminder_days",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "enabled": {
+          "name": "enabled",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "activated_at": {
+          "name": "activated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "updated_by": {
+          "name": "updated_by",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "subscription_recovery_policy_singleton": {
+          "name": "subscription_recovery_policy_singleton",
+          "value": "\"payments\".\"subscription_recovery_policy\".\"id\" = 1"
+        },
+        "subscription_recovery_policy_version": {
+          "name": "subscription_recovery_policy_version",
+          "value": "\"payments\".\"subscription_recovery_policy\".\"version\" > 0"
+        },
+        "subscription_recovery_policy_window": {
+          "name": "subscription_recovery_policy_window",
+          "value": "\"payments\".\"subscription_recovery_policy\".\"window_days\" between 1 and 30"
+        },
+        "subscription_recovery_policy_reminders": {
+          "name": "subscription_recovery_policy_reminders",
+          "value": "jsonb_typeof(\"payments\".\"subscription_recovery_policy\".\"reminder_days\") = 'array'"
+        },
+        "subscription_recovery_policy_activation": {
+          "name": "subscription_recovery_policy_activation",
+          "value": "not \"payments\".\"subscription_recovery_policy\".\"enabled\" or \"payments\".\"subscription_recovery_policy\".\"activated_at\" is not null"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "payments.subscription_recovery_policy_audit": {
+      "name": "subscription_recovery_policy_audit",
+      "schema": "payments",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "version": {
+          "name": "version",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "actor_id": {
+          "name": "actor_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "snapshot": {
+          "name": "snapshot",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "subscription_recovery_policy_audit_version_uq": {
+          "name": "subscription_recovery_policy_audit_version_uq",
+          "columns": [
+            {
+              "expression": "version",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "payments.subscription_recovery_resolutions": {
+      "name": "subscription_recovery_resolutions",
+      "schema": "payments",
+      "columns": {
+        "case_id": {
+          "name": "case_id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "actor_id": {
+          "name": "actor_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "request_id": {
+          "name": "request_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "payment_id": {
+          "name": "payment_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "payment_version": {
+          "name": "payment_version",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "subscription_version": {
+          "name": "subscription_version",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "original_payment_version": {
+          "name": "original_payment_version",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "provider_payment_id": {
+          "name": "provider_payment_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "original_charge_created_at": {
+          "name": "original_charge_created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "charge_created_at": {
+          "name": "charge_created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "period_starts_at": {
+          "name": "period_starts_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "period_ends_at": {
+          "name": "period_ends_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "observed_at": {
+          "name": "observed_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "resolved_at": {
+          "name": "resolved_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "recovery_resolution_request_uq": {
+          "name": "recovery_resolution_request_uq",
+          "columns": [
+            {
+              "expression": "request_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "subscription_recovery_resolutions_case_id_subscription_recovery_cases_id_fk": {
+          "name": "subscription_recovery_resolutions_case_id_subscription_recovery_cases_id_fk",
+          "tableFrom": "subscription_recovery_resolutions",
+          "tableTo": "subscription_recovery_cases",
+          "schemaTo": "payments",
+          "columnsFrom": [
+            "case_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "subscription_recovery_resolutions_payment_id_payments_id_fk": {
+          "name": "subscription_recovery_resolutions_payment_id_payments_id_fk",
+          "tableFrom": "subscription_recovery_resolutions",
+          "tableTo": "payments",
+          "schemaTo": "payments",
+          "columnsFrom": [
+            "payment_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "recovery_resolution_version_check": {
+          "name": "recovery_resolution_version_check",
+          "value": "\"payments\".\"subscription_recovery_resolutions\".\"payment_version\" >= 0 and \"payments\".\"subscription_recovery_resolutions\".\"subscription_version\" >= 0 and \"payments\".\"subscription_recovery_resolutions\".\"original_payment_version\" >= 0"
+        },
+        "recovery_resolution_actor_check": {
+          "name": "recovery_resolution_actor_check",
+          "value": "length(trim(\"payments\".\"subscription_recovery_resolutions\".\"actor_id\")) between 1 and 200"
+        },
+        "recovery_resolution_dates_check": {
+          "name": "recovery_resolution_dates_check",
+          "value": "\"payments\".\"subscription_recovery_resolutions\".\"original_charge_created_at\" < \"payments\".\"subscription_recovery_resolutions\".\"charge_created_at\" and \"payments\".\"subscription_recovery_resolutions\".\"charge_created_at\" <= \"payments\".\"subscription_recovery_resolutions\".\"observed_at\" and \"payments\".\"subscription_recovery_resolutions\".\"period_starts_at\" <= \"payments\".\"subscription_recovery_resolutions\".\"observed_at\" and \"payments\".\"subscription_recovery_resolutions\".\"period_starts_at\" < \"payments\".\"subscription_recovery_resolutions\".\"period_ends_at\" and \"payments\".\"subscription_recovery_resolutions\".\"observed_at\" <= \"payments\".\"subscription_recovery_resolutions\".\"resolved_at\" and \"payments\".\"subscription_recovery_resolutions\".\"resolved_at\" <= \"payments\".\"subscription_recovery_resolutions\".\"observed_at\" + interval '60 seconds'"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "payments.subscriptions": {
+      "name": "subscriptions",
+      "schema": "payments",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "version": {
+          "name": "version",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "consumer_id": {
+          "name": "consumer_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "status": {
+          "name": "status",
+          "type": "subscription_status",
+          "typeSchema": "payments",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "provider": {
+          "name": "provider",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "provider_subscription_id": {
+          "name": "provider_subscription_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "provider_plan_id": {
+          "name": "provider_plan_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "interval_months": {
+          "name": "interval_months",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "repeats": {
+          "name": "repeats",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "amount_in_cents": {
+          "name": "amount_in_cents",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "currency": {
+          "name": "currency",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "card": {
+          "name": "card",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "customer": {
+          "name": "customer",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "idempotency_key": {
+          "name": "idempotency_key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "cycles_completed": {
+          "name": "cycles_completed",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "last_charge_id": {
+          "name": "last_charge_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "last_charge_at": {
+          "name": "last_charge_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "last_reconciled_at": {
+          "name": "last_reconciled_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "billing_schedule": {
+          "name": "billing_schedule",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "cycle_history_review": {
+          "name": "cycle_history_review",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "metadata": {
+          "name": "metadata",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'{}'::jsonb"
+        },
+        "cancel_requested_at": {
+          "name": "cancel_requested_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "cancellation_record": {
+          "name": "cancellation_record",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "cancellation_next_attempt_at": {
+          "name": "cancellation_next_attempt_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "canceled_at": {
+          "name": "canceled_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "subscriptions_consumer_idem_uq": {
+          "name": "subscriptions_consumer_idem_uq",
+          "columns": [
+            {
+              "expression": "consumer_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "idempotency_key",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "subscriptions_provider_sub_idx": {
+          "name": "subscriptions_provider_sub_idx",
+          "columns": [
+            {
+              "expression": "provider",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "provider_subscription_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "subscriptions_status_idx": {
+          "name": "subscriptions_status_idx",
+          "columns": [
+            {
+              "expression": "status",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "subscriptions_cancellation_requests_idx": {
+          "name": "subscriptions_cancellation_requests_idx",
+          "columns": [
+            {
+              "expression": "cancellation_next_attempt_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "cancel_requested_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "where": "\"payments\".\"subscriptions\".\"cancel_requested_at\" is not null and \"payments\".\"subscriptions\".\"status\" in ('ACTIVE', 'PENDING')",
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "subscriptions_reconcile_idx": {
+          "name": "subscriptions_reconcile_idx",
+          "columns": [
+            {
+              "expression": "last_reconciled_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "first"
+            },
+            {
+              "expression": "last_charge_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "first"
+            },
+            {
+              "expression": "id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "where": "status = 'ACTIVE' AND provider_subscription_id IS NOT NULL",
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "subscriptions_created_at_idx": {
+          "name": "subscriptions_created_at_idx",
+          "columns": [
+            {
+              "expression": "created_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "subscriptions_provider_sub_trgm_idx": {
+          "name": "subscriptions_provider_sub_trgm_idx",
+          "columns": [
+            {
+              "expression": "provider_subscription_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last",
+              "opclass": "gin_trgm_ops"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "gin",
+          "with": {}
+        },
+        "subscriptions_id_text_trgm_idx": {
+          "name": "subscriptions_id_text_trgm_idx",
+          "columns": [
+            {
+              "expression": "(\"id\"::text) gin_trgm_ops",
+              "asc": true,
+              "isExpression": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "gin",
+          "with": {}
+        },
+        "subscriptions_customer_email_trgm_idx": {
+          "name": "subscriptions_customer_email_trgm_idx",
+          "columns": [
+            {
+              "expression": "(\"customer\" ->> 'email') gin_trgm_ops",
+              "asc": true,
+              "isExpression": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "gin",
+          "with": {}
+        },
+        "subscriptions_customer_email_idx": {
+          "name": "subscriptions_customer_email_idx",
+          "columns": [
+            {
+              "expression": "lower((\"customer\" ->> 'email'))",
+              "asc": true,
+              "isExpression": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "payments.webhook_deliveries": {
+      "name": "webhook_deliveries",
+      "schema": "payments",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "consumer_id": {
+          "name": "consumer_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "event_name": {
+          "name": "event_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "dedup_key": {
+          "name": "dedup_key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "payload": {
+          "name": "payload",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "status": {
+          "name": "status",
+          "type": "delivery_status",
+          "typeSchema": "payments",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'PENDING'"
+        },
+        "attempts": {
+          "name": "attempts",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "next_attempt_at": {
+          "name": "next_attempt_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "last_status_code": {
+          "name": "last_status_code",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "last_error": {
+          "name": "last_error",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "webhook_deliveries_due_idx": {
+          "name": "webhook_deliveries_due_idx",
+          "columns": [
+            {
+              "expression": "status",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "next_attempt_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "webhook_deliveries_dedup_uq": {
+          "name": "webhook_deliveries_dedup_uq",
+          "columns": [
+            {
+              "expression": "consumer_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "event_name",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "dedup_key",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "payments.webhook_events": {
+      "name": "webhook_events",
+      "schema": "payments",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "provider": {
+          "name": "provider",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "provider_event_id": {
+          "name": "provider_event_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "event_type": {
+          "name": "event_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "payload": {
+          "name": "payload",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "received_at": {
+          "name": "received_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "processed_at": {
+          "name": "processed_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "webhook_provider_event_uq": {
+          "name": "webhook_provider_event_uq",
+          "columns": [
+            {
+              "expression": "provider",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "provider_event_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {
+    "payments.delivery_status": {
+      "name": "delivery_status",
+      "schema": "payments",
+      "values": [
+        "PENDING",
+        "SUCCEEDED",
+        "DEAD"
+      ]
+    },
+    "payments.idempotency_state": {
+      "name": "idempotency_state",
+      "schema": "payments",
+      "values": [
+        "IN_FLIGHT",
+        "COMPLETED"
+      ]
+    },
+    "payments.outbox_status": {
+      "name": "outbox_status",
+      "schema": "payments",
+      "values": [
+        "PENDING",
+        "PUBLISHED",
+        "DEAD"
+      ]
+    },
+    "payments.payment_method": {
+      "name": "payment_method",
+      "schema": "payments",
+      "values": [
+        "PIX",
+        "BOLETO",
+        "CREDIT_CARD"
+      ]
+    },
+    "payments.payment_status": {
+      "name": "payment_status",
+      "schema": "payments",
+      "values": [
+        "PENDING",
+        "AUTHORIZED",
+        "PAID",
+        "FAILED",
+        "EXPIRED",
+        "CANCELED",
+        "REFUNDED"
+      ]
+    },
+    "payments.subscription_operation_kind": {
+      "name": "subscription_operation_kind",
+      "schema": "payments",
+      "values": [
+        "CARD_UPDATE",
+        "RETRY",
+        "CANCEL"
+      ]
+    },
+    "payments.subscription_operation_state": {
+      "name": "subscription_operation_state",
+      "schema": "payments",
+      "values": [
+        "READY",
+        "EXECUTING",
+        "UNKNOWN",
+        "SUCCEEDED",
+        "REJECTED"
+      ]
+    },
+    "payments.subscription_recovery_state": {
+      "name": "subscription_recovery_state",
+      "schema": "payments",
+      "values": [
+        "OPEN",
+        "PAYMENT_PENDING",
+        "CANCEL_PENDING",
+        "RECOVERED",
+        "CANCELED",
+        "MANUAL_REVIEW"
+      ]
+    },
+    "payments.subscription_status": {
+      "name": "subscription_status",
+      "schema": "payments",
+      "values": [
+        "PENDING",
+        "ACTIVE",
+        "CANCELED",
+        "EXPIRED"
+      ]
+    }
+  },
+  "schemas": {
+    "payments": "payments"
+  },
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

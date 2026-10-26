@@ -33,6 +33,11 @@ O apply do Railway pode iniciar deployments quando altera build ou deploy. Por i
 
 Ao adicionar uma variável pelo painel, inclua seu nome em `variables.ts`, na lista comum ou na lista específica do ambiente. Use `preserve()` para manter seu valor no Railway. Se o nome estiver ausente, o plano mostrará uma exclusão e o gate impedirá a aplicação. Alterar apenas o valor de uma variável preservada não exige editar o repositório.
 
+O catálogo grande do Estúdio usa `members.STUDIO_AUTHORING_POLICY_SHA256`, que seleciona um JSON
+versionado dentro da imagem. Não configure simultaneamente `STUDIO_AUTHORING_POLICY_JSON`.
+Empacotamento, validação e troca coordenada de política/hosts estão em
+[`docs/operations/studio-authoring-catalog.md`](../docs/operations/studio-authoring-catalog.md).
+
 O gate automático aceita somente alterações seguras de build e deploy das aplicações existentes. Toda alteração de origem é recusada, inclusive main sem checkSuites: mudanças de repo, branch ou trigger exigem operação explícita, com nova leitura dos 18 toggles e da configuração. Também recusa mudanças em variáveis, domínios, bancos, volumes, Evolution e operações destrutivas. Não omitir source para tentar preservá-lo: a CLI pode traduzir isso em source:null.
 
 ## Conferir localmente

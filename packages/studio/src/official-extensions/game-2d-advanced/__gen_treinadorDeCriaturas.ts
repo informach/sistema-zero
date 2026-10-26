@@ -39,104 +39,65 @@ SZGameKit.setup({ width: 960, height: 540, background: "#5c9e4a", accent: "#e639
 SZGameKit.setScreenText("menu", "Treinador de Criaturas Profissional", "Setas: andar pela cidade. ESPAÇO de frente para um aldeão: conversar. Pise na grama alta para achar criaturas selvagens, batalhe por turnos e jogue a bola para capturar. Pegue 3 criaturas!", "Começar a jornada");
 SZGameKit.setScreenText("vitoria", "Você é um Mestre!", "Capturou 3 criaturas da cidade e virou a nova lenda dos treinadores!", "Jogar de novo");
 SZGameKit.defineLook("treinador", function (ctx) {
-  ctx.fillStyle = "#c0392b";
-  ctx.fillRect(10, 0, 24, 12);
-  ctx.fillStyle = "#ffd8a8";
-  ctx.fillRect(13, 12, 18, 12);
-  ctx.fillStyle = "#2b6cb0";
-  ctx.fillRect(8, 24, 28, 20);
-  ctx.fillStyle = "#2d3436";
-  ctx.fillRect(12, 44, 8, 12);
-  ctx.fillRect(24, 44, 8, 12);
+  SZGameKit.drawRectangle(10, 0, 24, 12, "#c0392b");
+  SZGameKit.drawRectangle(13, 12, 18, 12, "#ffd8a8");
+  SZGameKit.drawRectangle(8, 24, 28, 20, "#2b6cb0");
+  SZGameKit.drawRectangle(12, 44, 8, 12, "#2d3436");
+  SZGameKit.drawRectangle(24, 44, 8, 12, "#2d3436");
 }, 44, 56);
 SZGameKit.defineLook("professor", function (ctx) {
-  ctx.fillStyle = "#ecf0f1";
-  ctx.fillRect(8, 22, 28, 24);
-  ctx.fillStyle = "#ffd8a8";
-  ctx.fillRect(13, 10, 18, 14);
-  ctx.fillStyle = "#bdc3c7";
-  ctx.fillRect(11, 4, 22, 8);
+  SZGameKit.drawRectangle(8, 22, 28, 24, "#ecf0f1");
+  SZGameKit.drawRectangle(13, 10, 18, 14, "#ffd8a8");
+  SZGameKit.drawRectangle(11, 4, 22, 8, "#bdc3c7");
 }, 44, 56);
 SZGameKit.defineLook("aldea", function (ctx) {
-  ctx.fillStyle = "#8e44ad";
-  ctx.fillRect(8, 20, 28, 26);
-  ctx.fillStyle = "#ffe8cc";
-  ctx.fillRect(13, 8, 18, 14);
-  ctx.fillStyle = "#f1c40f";
-  ctx.fillRect(11, 2, 22, 8);
+  SZGameKit.drawRectangle(8, 20, 28, 26, "#8e44ad");
+  SZGameKit.drawRectangle(13, 8, 18, 14, "#ffe8cc");
+  SZGameKit.drawRectangle(11, 2, 22, 8, "#f1c40f");
 }, 44, 56);
 SZGameKit.defineLook("idoso", function (ctx) {
-  ctx.fillStyle = "#7f8c8d";
-  ctx.fillRect(8, 22, 28, 24);
-  ctx.fillStyle = "#ffe8cc";
-  ctx.fillRect(13, 10, 18, 14);
-  ctx.fillStyle = "#ecf0f1";
-  ctx.fillRect(12, 6, 20, 6);
+  SZGameKit.drawRectangle(8, 22, 28, 24, "#7f8c8d");
+  SZGameKit.drawRectangle(13, 10, 18, 14, "#ffe8cc");
+  SZGameKit.drawRectangle(12, 6, 20, 6, "#ecf0f1");
 }, 44, 56);
 SZGameKit.defineLook("enfermeira", function (ctx) {
-  ctx.fillStyle = "#e74c3c";
-  ctx.fillRect(8, 22, 28, 24);
-  ctx.fillStyle = "#ffd8a8";
-  ctx.fillRect(13, 10, 18, 14);
-  ctx.fillStyle = "#ffffff";
-  ctx.fillRect(11, 4, 22, 8);
-  ctx.fillStyle = "#e74c3c";
-  ctx.fillRect(19, 5, 6, 6);
+  SZGameKit.drawRectangle(8, 22, 28, 24, "#e74c3c");
+  SZGameKit.drawRectangle(13, 10, 18, 14, "#ffd8a8");
+  SZGameKit.drawRectangle(11, 4, 22, 8, "#ffffff");
+  SZGameKit.drawRectangle(19, 5, 6, 6, "#e74c3c");
 }, 44, 56);
 SZGameKit.defineLook("chaminho", function (ctx) {
-  ctx.fillStyle = "#e05a2b";
-  ctx.beginPath();
-  ctx.arc(22, 24, 18, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.fillStyle = "#ffd43b";
-  ctx.fillRect(14, 2, 8, 12);
-  ctx.fillStyle = "#ffffff";
-  ctx.fillRect(15, 20, 6, 6);
-  ctx.fillRect(26, 20, 6, 6);
+  SZGameKit.drawCircle(22, 24, 18, "#e05a2b");
+  SZGameKit.drawRectangle(14, 2, 8, 12, "#ffd43b");
+  SZGameKit.drawRectangle(15, 20, 6, 6, "#ffffff");
+  SZGameKit.drawRectangle(26, 20, 6, 6, "#ffffff");
 }, 44, 44);
 SZGameKit.defineLook("gotoso", function (ctx) {
-  ctx.fillStyle = "#2b7de0";
-  ctx.beginPath();
-  ctx.arc(22, 24, 18, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.fillStyle = "#a5d8ff";
-  ctx.fillRect(18, 4, 8, 12);
-  ctx.fillStyle = "#ffffff";
-  ctx.fillRect(15, 20, 6, 6);
-  ctx.fillRect(26, 20, 6, 6);
+  SZGameKit.drawCircle(22, 24, 18, "#2b7de0");
+  SZGameKit.drawRectangle(18, 4, 8, 12, "#a5d8ff");
+  SZGameKit.drawRectangle(15, 20, 6, 6, "#ffffff");
+  SZGameKit.drawRectangle(26, 20, 6, 6, "#ffffff");
 }, 44, 44);
 SZGameKit.defineLook("brotim", function (ctx) {
-  ctx.fillStyle = "#3f9d3f";
-  ctx.beginPath();
-  ctx.arc(22, 24, 18, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.fillStyle = "#69db7c";
-  ctx.fillRect(18, 2, 8, 14);
-  ctx.fillStyle = "#ffffff";
-  ctx.fillRect(15, 20, 6, 6);
-  ctx.fillRect(26, 20, 6, 6);
+  SZGameKit.drawCircle(22, 24, 18, "#3f9d3f");
+  SZGameKit.drawRectangle(18, 2, 8, 14, "#69db7c");
+  SZGameKit.drawRectangle(15, 20, 6, 6, "#ffffff");
+  SZGameKit.drawRectangle(26, 20, 6, 6, "#ffffff");
 }, 44, 44);
 SZGameKit.defineLook("casa", function (ctx) {
-  ctx.fillStyle = "#c9a76b";
-  ctx.fillRect(0, 24, 64, 40);
-  ctx.fillStyle = "#8e3b2a";
-  ctx.fillRect(0, 4, 64, 22);
-  ctx.fillStyle = "#3a271a";
-  ctx.fillRect(24, 42, 16, 22);
+  SZGameKit.drawRectangle(0, 24, 64, 40, "#c9a76b");
+  SZGameKit.drawRectangle(0, 4, 64, 22, "#8e3b2a");
+  SZGameKit.drawRectangle(24, 42, 16, 22, "#3a271a");
 }, 64, 64);
 SZGameKit.defineLook("arvore", function (ctx) {
-  ctx.fillStyle = "#6b4226";
-  ctx.fillRect(26, 40, 12, 24);
-  ctx.fillStyle = "#2f7d32";
-  ctx.fillRect(6, 4, 52, 40);
+  SZGameKit.drawRectangle(26, 40, 12, 24, "#6b4226");
+  SZGameKit.drawRectangle(6, 4, 52, 40, "#2f7d32");
 }, 64, 64);
 SZGameKit.defineLook("mato", function (ctx) {
-  ctx.fillStyle = "#2f9e44";
-  ctx.fillRect(6, 22, 10, 34);
-  ctx.fillRect(24, 10, 10, 46);
-  ctx.fillRect(42, 24, 10, 32);
-  ctx.fillStyle = "#51cf66";
-  ctx.fillRect(15, 32, 8, 24);
+  SZGameKit.drawRectangle(6, 22, 10, 34, "#2f9e44");
+  SZGameKit.drawRectangle(24, 10, 10, 46, "#2f9e44");
+  SZGameKit.drawRectangle(42, 24, 10, 32, "#2f9e44");
+  SZGameKit.drawRectangle(15, 32, 8, 24, "#51cf66");
 }, 64, 64);
 SZGameKit.pkmCreature("Chaminho", "fogo", 30, 9, 4, 7, "", "chaminho");
 SZGameKit.pkmCreature("Gotoso", "água", 32, 8, 5, 6, "", "gotoso");
@@ -221,10 +182,8 @@ SZGameKit.onDraw(function (ctx) {
 });
 SZGameKit.onDrawHud(function (ctx) {
   SZGameKit.pkmDrawTeam(16, 14);
-  ctx.fillStyle = "#123018";
-  ctx.font = "16px sans-serif";
-  ctx.fillText("Criaturas capturadas: " + (SZGameKit.pkmTeamSize() - 1) + " de 3", 20, 128);
-  ctx.fillText("Bolas: " + SZGameKit.pkmBallCount(), 20, 150);
+  SZGameKit.drawText("Criaturas capturadas: " + (SZGameKit.pkmTeamSize() - 1) + " de 3", 20, 128, 16, "#123018");
+  SZGameKit.drawText("Bolas: " + SZGameKit.pkmBallCount(), 20, 150, 16, "#123018");
 });
 `.trim()
 

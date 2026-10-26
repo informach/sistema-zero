@@ -58,26 +58,26 @@ describe('Exemplo Corrida Infinita 3D — drift contra o parser real', () => {
     const statements = behaviorStatements(corridaInfinitaExample.ir)
     const types = collectTypes(statements)
     for (const t of [
-      'event', // setas esquerda/direita trocam de pista (keydown do núcleo)
-      'eventProp', // a tecla do evento (event.key)
+      'g3d:onGame', // "Quando apertar a tecla" ← / → troca de pista
       'g3d:moveTowards', // o deslize suave até a pista da vez
       'g3d:keyDown', // espaço/seta para cima seguram o pulo no loop
       'g3d:jump', // o pulo com física do g3d
       'g3d:applyGravity', // a gravidade sobre o chão longo
       'g3d:everySeconds', // cadência periódica (spawn + relógio da dificuldade)
-      'g3d:spawnInSwarm', // obstáculo nasce LONGE numa pista sorteada
-      'randomFloat', // o sorteio da pista
+      'g3d:spawnCopy', // obstáculo nasce LONGE numa pista sorteada
+      'g3d:random', // o sorteio da pista ("um número de -1 a 1")
       'g3d:moveBy', // o mundo vem até o herói
       'g3d:collides', // herói × obstáculo = fim de jogo
-      'g3d:pruneSwarm', // limpeza de quem passou do herói
-      'setProperty', // o placar por tempo no HUD
+      'g3d:pruneArea', // limpeza de quem passou do herói
+      'g3d:addScore', // um ponto por segundo vivo (o placar aparece sozinho)
+      'g3d:gameOver', // bateu = fim de jogo com "Jogar de novo" (lote 7, sem HTML)
     ]) {
       expect(types.has(t)).toBe(true)
     }
-    // O placar é TEMPO de sobrevivência e a dificuldade CRESCE: as variáveis
-    // aparecem na IR (tempo somado e velocidade somada num "A cada 1 segundo").
+    // O placar é TEMPO de sobrevivência e a dificuldade CRESCE: a velocidade somada
+    // num "A cada 1 segundo" aparece na IR; o HTML do placar saiu (blocos de regras).
+    expect(corridaInfinitaExample.ir.html).toEqual([])
     const raw = JSON.stringify(statements)
-    expect(raw).toContain('"tempo"')
     expect(raw).toContain('"velocidade"')
     expect(raw).toContain('"pista"')
   })

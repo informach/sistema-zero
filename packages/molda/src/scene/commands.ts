@@ -22,6 +22,7 @@ import type {
 } from './document'
 import { indexSceneDocument } from './documentIndex'
 import { reparentPreservingWorld } from './graph'
+import { changeSceneRestWithLocalAnimations } from './localAnimationRest'
 import { SCENE_MATERIAL_IMAGE_KEYS, sceneMaterialImageIds } from './materialImages'
 import {
   type AffineMatrix,
@@ -34,7 +35,7 @@ import {
 } from './matrix'
 import { meshSymmetrySource, synchronizeMeshSymmetry } from './meshSymmetry'
 import { parametricMesh, sceneGeometryMesh } from './parametricGeometry'
-import { primitiveDetail, readPrimitiveDetail } from './primitiveDetail'
+import { primitiveDetail, readPrimitiveDetail, TORUS_PROFILE } from './primitiveDetail'
 import { resizeScenePaint } from './resizePaint'
 import { duplicateSceneSkinTargets } from './skinTargets'
 import { rigidSceneTransform } from './transformTrs'
@@ -58,7 +59,7 @@ export function addScenePrimitive(
   name: string,
   nextId: SceneIdFactory = newId,
 ): MoldaSceneDocument {
-  choice(kind, ['box', 'wedge', 'cylinder', 'sphere'], 'kind')
+  choice(kind, ['box', 'wedge', 'cylinder', 'sphere', 'torus'], 'kind')
   return addSceneShape(document, kind, name, nextId)
 }
 
@@ -69,7 +70,7 @@ export function addSceneShape(
   name: string,
   nextId: SceneIdFactory = newId,
 ): MoldaSceneDocument {
-  choice(kind, ['box', 'wedge', 'cylinder', 'sphere', 'plane'], 'kind')
+  choice(kind, ['box', 'wedge', 'cylinder', 'sphere', 'torus', 'plane'], 'kind')
   const allocate = allocateId(document, nextId)
   const nodeId = allocate()
   const geometryId = allocate()
@@ -90,10 +91,16 @@ export function addSceneShape(
         materialId,
         hidden: false,
         locked: false,
-        pivot: kind === 'plane' ? [0, 0, 0] : [0, -1, 0],
+        pivot:
+          kind === 'plane'
+            ? [0, 0, 0]
+            : [0, kind === 'torus' ? -TORUS_PROFILE.initialHalfHeight : -1, 0],
         transform: {
           kind: 'trs',
-          translation: kind === 'plane' ? [0, 0, 0] : [0, 1, 0],
+          translation:
+            kind === 'plane'
+              ? [0, 0, 0]
+              : [0, kind === 'torus' ? TORUS_PROFILE.initialHalfHeight : 1, 0],
           rotation: [0, 0, 0, 1],
           scale: [1, 1, 1],
         },
@@ -118,7 +125,13 @@ export function addSceneShape(
             },
             looseEdges: [],
           }
-        : { id: geometryId, kind, from: [-1, -1, -1], to: [1, 1, 1], surfaces: {} },
+        : {
+            id: geometryId,
+            kind,
+            from: [-1, kind === 'torus' ? -TORUS_PROFILE.initialHalfHeight : -1, -1],
+            to: [1, kind === 'torus' ? TORUS_PROFILE.initialHalfHeight : 1, 1],
+            surfaces: {},
+          },
     ],
     materials: [
       ...document.materials,
@@ -232,14 +245,14 @@ export function setScenePrimitiveDetail(
   requireScene(node?.kind === 'mesh', 'node', 'Escolha uma forma curva para mudar os detalhes.')
   const geometry = selected.index.geometries.get(node.geometryId)
   requireScene(
-    geometry?.kind === 'cylinder' || geometry?.kind === 'sphere',
+    geometry?.kind === 'cylinder' || geometry?.kind === 'sphere' || geometry?.kind === 'torus',
     'geometry',
-    'Esse ajuste é para cilindros e esferas que ainda são formas.',
+    'Esse ajuste é para cilindros, bolas e torus que ainda são formas.',
   )
   const changed =
     geometry.kind === 'cylinder'
       ? { ...geometry, tessellation: readPrimitiveDetail('cylinder', detail) }
-      : { ...geometry, tessellation: readPrimitiveDetail('sphere', detail) }
+      : { ...geometry, tessellation: readPrimitiveDetail(geometry.kind, detail) }
   const before = primitiveDetail(geometry)
   const after = primitiveDetail(changed)
   if (before.around === after.around && before.down === after.down) return document
@@ -390,14 +403,6 @@ export function transformSceneNodes(
   editable(selected)
   if (!selected.roots.size || delta.every((value, i) => value === identityMatrix()[i]))
     return document
-  for (const clip of document.animations ?? [])
-    if (clip.space === 'local')
-      for (const track of clip.tracks)
-        requireScene(
-          !selected.covered.has(track.nodeId),
-          `animations.${clip.id}.${track.nodeId}`,
-          'Esse clipe usa a posição local original. Converta o movimento antes de mudar a organização ou o pivô.',
-        )
   const reflection = affineDeterminant(delta) < 0
   const nodes = document.nodes.map((node): ModelSceneNode => {
     if (!selected.roots.has(node.id)) return node
@@ -418,7 +423,9 @@ export function transformSceneNodes(
     }
     return { ...node, transform: reflection ? affine : rigidSceneTransform(affine) }
   })
-  return finish(resizeScenePaint(document, { ...document, nodes }))
+  return finish(
+    resizeScenePaint(document, changeSceneRestWithLocalAnimations(document, nodes, selected.roots)),
+  )
 }
 
 /** Group pivot starts at the selected geometry's world center. Different parents join at root. */

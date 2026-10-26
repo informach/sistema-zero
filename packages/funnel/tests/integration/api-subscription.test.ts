@@ -3,7 +3,6 @@ import type { Env } from '../../src/lib/env'
 import { LEAD_COOKIE } from '../../src/lib/lead-session'
 import { clearOfferCache } from '../../src/server/catalog'
 import { startCard, startPix, startSubscription } from '../../src/server/checkout'
-import { makeSendChargeFailed } from '../../src/server/dunning'
 import { makeFulfill } from '../../src/server/fulfillment'
 import { makeExtendMembersForCycle, makeGrantMembers } from '../../src/server/members-grant'
 import { makeResolveOffer } from '../../src/server/offer'
@@ -109,6 +108,44 @@ beforeEach(() => {
 })
 
 describe('POST /api/checkout/subscription', () => {
+  test.each([
+    ['kids/comunidade-dos-criadores', 'kids'],
+    ['pro/comunidade-dos-criadores', 'adult'],
+    ['kids/not-a-registered-funnel', undefined],
+    [null, undefined],
+  ] as const)('compra fixa público pela origem registrada, sem inferir pelo nome/SKU: %s', async (funnel, expectedAudience) => {
+    const { repo } = createFakeRepo()
+    const { id } = await repo.createLead(funnel)
+    const gw = subscriptionGateway()
+    const response = await startSubscription(
+      req(cookieFor(id), { ...SUB_CARD, billingAudience: 'forged-browser-value' }),
+      deps(repo, gw),
+    )
+    expect(response.status).toBe(200)
+    expect(gw.calls.createSubscription).toHaveLength(1)
+    expect(gw.calls.createSubscription[0]?.input).toMatchObject({
+      metadata: expectedAudience
+        ? {
+            billingAudience: expectedAudience,
+            billingAudienceSource: 'funnel-registry-v1',
+            billingFunnelKey: funnel,
+          }
+        : { sku: 'clube-dos-criadores' },
+    })
+    const input = gw.calls.createSubscription[0]?.input
+    if (
+      !input ||
+      typeof input !== 'object' ||
+      !('metadata' in input) ||
+      !input.metadata ||
+      typeof input.metadata !== 'object'
+    )
+      throw new Error('Missing canonical metadata')
+    if (!expectedAudience) {
+      expect('billingAudience' in input.metadata).toBe(false)
+      expect('billingAudienceSource' in input.metadata).toBe(false)
+    }
+  })
   test('cria a assinatura (mensal), grava subscription no lead e marca pago no ACTIVE', async () => {
     const { repo, leads, events, payments } = createFakeRepo()
     const gw = subscriptionGateway()
@@ -484,10 +521,6 @@ describe('webhook: renovação de ciclo + falha de cobrança', () => {
       fulfill: makeFulfill({ repo: fake.repo, gateway: gw.gateway }),
       grantMembers: makeGrantMembers(grantDeps),
       extendMembersForCycle: makeExtendMembersForCycle(grantDeps),
-      sendChargeFailed: makeSendChargeFailed({
-        gateway: gw.gateway,
-        communityUrl: 'https://app.example',
-      }),
     }
   }
 
@@ -559,6 +592,123 @@ describe('webhook: renovação de ciclo + falha de cobrança', () => {
     expect(fake.processed.has('d-1')).toBe(true)
   })
 
+  test('renovação quitada tarde leva período original ao Members e conserva paidAt financeiro', async () => {
+    const fake = createFakeRepo()
+    const gw = createFakeGateway()
+    await paidSubscriber(fake)
+    const period = { startsAt: '2026-09-16T12:00:00.000Z', endsAt: '2026-10-16T12:00:00.000Z' }
+    const response = await handlePaymentWebhook(
+      whReq({
+        event: 'payment.paid',
+        data: {
+          paymentId: 'pay-cycle-2',
+          subscriptionId: 'sub-1',
+          paidAt: '2026-10-24T12:00:00.000Z',
+          cycleAccess: { version: 1, kind: 'VERIFIED_PERIOD', period },
+        },
+      }),
+      webhookDeps(fake, gw),
+    )
+    expect(response.status).toBe(200)
+    expect(gw.calls.grant[0]?.input).toMatchObject({
+      paymentId: 'pay-cycle-2',
+      paidAt: '2026-10-24T12:00:00.000Z',
+      subscription: { subscriptionId: 'sub-1', intervalMonths: 1, billingPeriod: period },
+    })
+    expect(gw.calls.messages).toHaveLength(0)
+    expect(gw.calls.ensureBuyer).toHaveLength(0)
+  })
+
+  test('período em revisão não concede acesso; confirmação posterior não repete compra ou boas-vindas', async () => {
+    const fake = createFakeRepo()
+    const gw = createFakeGateway()
+    await paidSubscriber(fake)
+    const data = {
+      paymentId: 'pay-cycle-2',
+      subscriptionId: 'sub-1',
+      paidAt: '2026-10-24T12:00:00.000Z',
+    }
+    const review = await handlePaymentWebhook(
+      whReq(
+        {
+          event: 'payment.paid',
+          data: {
+            ...data,
+            cycleAccess: { version: 1, kind: 'REVIEW_REQUIRED', reason: 'PERIOD_UNAVAILABLE' },
+          },
+        },
+        'qa-review',
+      ),
+      webhookDeps(fake, gw),
+    )
+    expect(await review.json()).toMatchObject({ accessReviewRequired: true })
+    expect(gw.calls.grant).toHaveLength(0)
+    expect(fake.processed.has('qa-review')).toBe(true)
+    const period = { startsAt: '2026-09-16T12:00:00.000Z', endsAt: '2026-10-16T12:00:00.000Z' }
+    const confirmed = await handlePaymentWebhook(
+      whReq(
+        {
+          event: 'payment.subscription_period_confirmed',
+          data: { ...data, cycleAccess: { version: 1, kind: 'VERIFIED_PERIOD', period } },
+        },
+        'qa-confirmed',
+      ),
+      webhookDeps(fake, gw),
+    )
+    expect(confirmed.status).toBe(200)
+    expect(gw.calls.grant).toHaveLength(1)
+    expect(gw.calls.grant[0]?.input).toMatchObject({ subscription: { billingPeriod: period } })
+    expect(gw.calls.messages).toHaveLength(0)
+    expect(gw.calls.ensureBuyer).toHaveLength(0)
+  })
+
+  test('período malformado ou confirmação de outra assinatura não concede nem consome a entrega', async () => {
+    const fake = createFakeRepo()
+    const gw = createFakeGateway()
+    await paidSubscriber(fake)
+    const bad = await handlePaymentWebhook(
+      whReq(
+        {
+          event: 'payment.paid',
+          data: {
+            paymentId: 'pay-cycle-2',
+            subscriptionId: 'sub-1',
+            cycleAccess: {
+              version: 1,
+              kind: 'VERIFIED_PERIOD',
+              period: { startsAt: '2026-10-16T12:00:00.000Z', endsAt: '2026-09-16T12:00:00.000Z' },
+            },
+          },
+        },
+        'qa-bad',
+      ),
+      webhookDeps(fake, gw),
+    )
+    expect(bad.status).toBe(400)
+    expect(fake.processed.has('qa-bad')).toBe(false)
+    const wrong = await handlePaymentWebhook(
+      whReq(
+        {
+          event: 'payment.subscription_period_confirmed',
+          data: {
+            paymentId: 'pay-sub-1',
+            subscriptionId: 'wrong-sub',
+            cycleAccess: {
+              version: 1,
+              kind: 'VERIFIED_PERIOD',
+              period: { startsAt: '2026-09-16T12:00:00.000Z', endsAt: '2026-10-16T12:00:00.000Z' },
+            },
+          },
+        },
+        'qa-wrong',
+      ),
+      webhookDeps(fake, gw),
+    )
+    expect(wrong.status).toBe(409)
+    expect(gw.calls.grant).toHaveLength(0)
+    expect(fake.processed.has('qa-wrong')).toBe(false)
+  })
+
   test('extend falhou → 502 GRANT_RETRY sem marcar a entrega (gateway re-entrega)', async () => {
     const fake = createFakeRepo()
     const gw = createFakeGateway()
@@ -623,7 +773,7 @@ describe('webhook: renovação de ciclo + falha de cobrança', () => {
     expect(grant.subscription?.subscriptionId).toBe('sub-1')
   })
 
-  test('payment.failed com subscriptionId → dunning idempotente por cobrança', async () => {
+  test('payment.failed é reconhecido sem avisos duplicados ou extensão de acesso pelo Funil', async () => {
     const fake = createFakeRepo()
     const gw = createFakeGateway()
     await paidSubscriber(fake)
@@ -638,12 +788,8 @@ describe('webhook: renovação de ciclo + falha de cobrança', () => {
     expect(res.status).toBe(200)
     expect(fake.processed.has('d-1')).toBe(true)
 
-    const email = gw.calls.messages.find((m) => m.input.channel === 'email')
-    expect(email?.input.templateKey).toBe('subscription-charge-failed')
-    expect(email?.idempotencyKey).toBe('dunning-pay-cycle-3')
-    // WhatsApp também sai (telefone BR válido no lead).
-    const wa = gw.calls.messages.find((m) => m.input.channel === 'whatsapp')
-    expect(wa?.idempotencyKey).toBe('dunning-wa-pay-cycle-3')
+    expect(gw.calls.messages).toHaveLength(0)
+    expect(gw.calls.grant).toHaveLength(0)
   })
 
   test('payment.failed de assinatura desconhecida → 200 (nada a fazer), entrega marcada', async () => {

@@ -1,5 +1,14 @@
 import { describe, expect, test } from 'bun:test'
-import { DataTexture, Mesh, MeshStandardMaterial, Raycaster, SRGBColorSpace, Vector3 } from 'three'
+import {
+  BackSide,
+  DataTexture,
+  Mesh,
+  MeshDepthMaterial,
+  MeshStandardMaterial,
+  Raycaster,
+  SRGBColorSpace,
+  Vector3,
+} from 'three'
 import {
   addSceneMirror,
   deleteSceneNodes,
@@ -12,6 +21,7 @@ import type { MoldaSceneDocument } from '../scene/document'
 import { paintSceneImage } from '../scene/imagePaint'
 import { identityMatrix } from '../scene/matrix'
 import { migrateLegacyModel } from '../scene/migrateLegacy'
+import { patchScenePieceAppearance } from '../scene/pieceAppearance'
 import { makeModel } from '../testing/fixtures'
 import { RgbaTexture } from './rgbaTexture'
 import { SceneRenderResource } from './sceneRenderResource'
@@ -319,4 +329,167 @@ describe('scene draw resource ownership', () => {
     resource.dispose()
     expect(() => new RgbaTexture(new Uint8Array(4), 2, 2)).toThrow('Dimensões')
   })
+})
+
+test('open meshes show a dark back that never takes a click and fades with the X-ray', () => {
+  const source = migrateLegacyModel(makeModel()).document
+  const resource = new SceneRenderResource()
+  try {
+    resource.update(source)
+    const mesh = resource.root.children.find((child) => child instanceof Mesh) as Mesh
+    const back = mesh.children.find((child) => child instanceof Mesh) as Mesh
+    expect(back.geometry).toBe(mesh.geometry)
+    expect((back.material as MeshStandardMaterial).side).toBe(BackSide)
+    expect(resource.backSides()).toContain(back)
+    // From inside the piece, only its real material decides what is hit.
+    const ray = new Raycaster(new Vector3(0, 0, 0), new Vector3(0, 1, 0))
+    const hits: unknown[] = []
+    back.raycast(ray, hits as never)
+    expect(hits).toHaveLength(0)
+    resource.setXray(true)
+    expect((back.material as MeshStandardMaterial).transparent).toBe(true)
+    expect(back.visible).toBe(true)
+    resource.setXray(false)
+    expect((back.material as MeshStandardMaterial).transparent).toBe(false)
+  } finally {
+    resource.dispose()
+  }
+})
+
+test('a transparent piece does not show the workshop back through its gradient', () => {
+  const source = fixture()
+  const resource = new SceneRenderResource()
+  try {
+    resource.update(source)
+    const body = mesh(resource, 'body')
+    const back = body.children.find((child) => child instanceof Mesh)
+    if (!(back instanceof Mesh)) throw new Error('Missing workshop back')
+    expect(back.visible).toBe(true)
+    const transparent = patchScenePieceAppearance(source, 'body', {
+      baseColor: { kind: 'rgba', value: [0, 0, 0, 0] },
+    })
+    resource.update(transparent)
+    expect(materials(body).some((material) => material.transparent)).toBe(true)
+    expect(back.visible).toBe(false)
+    resource.update(source)
+    expect(back.visible).toBe(true)
+  } finally {
+    resource.dispose()
+  }
+})
+
+test('a mixed-material piece keeps the dark back only behind opaque faces', () => {
+  const source = fixture()
+  const mixed = {
+    ...source,
+    materials: source.materials.map((material) =>
+      material.id === 'material:body'
+        ? {
+            ...material,
+            baseColor: {
+              kind: 'rgba' as const,
+              value: [0, 0, 0, 0] as [number, number, number, number],
+            },
+          }
+        : material,
+    ),
+  }
+  const resource = new SceneRenderResource()
+  try {
+    resource.update(mixed)
+    const body = mesh(resource, 'body')
+    const back = body.children.find((child) => child instanceof Mesh)
+    if (!(back instanceof Mesh)) throw new Error('Missing workshop back')
+    const frontMaterials = materials(body)
+    expect(frontMaterials.some((material) => material.transparent)).toBe(true)
+    expect(frontMaterials.some((material) => !material.transparent)).toBe(true)
+    const backMaterials = Array.isArray(back.material) ? back.material : [back.material]
+    expect(back.visible).toBe(true)
+    expect(backMaterials.map((material) => material.visible)).toEqual(
+      frontMaterials.map((material) => !material.transparent),
+    )
+  } finally {
+    resource.dispose()
+  }
+})
+
+test('only opaque and cutout material groups write to the shadow map', () => {
+  const source = fixture()
+  const resource = new SceneRenderResource()
+  try {
+    const translucent = {
+      ...source,
+      materials: source.materials.map((material) =>
+        material.id === 'material:body'
+          ? {
+              ...material,
+              baseColor: {
+                kind: 'rgba' as const,
+                value: [0, 0, 0, 0.4] as [number, number, number, number],
+              },
+            }
+          : material,
+      ),
+    }
+    resource.update(translucent)
+    const body = mesh(resource, 'body')
+    const slots = materials(body)
+    const transparentIndex = slots.findIndex((material) => material.transparent)
+    const opaqueIndex = slots.findIndex((material) => !material.transparent)
+    expect(transparentIndex).toBeGreaterThanOrEqual(0)
+    expect(opaqueIndex).toBeGreaterThanOrEqual(0)
+    const depth = new MeshDepthMaterial()
+    const shadowGroup = (materialIndex: number) => ({ start: 0, count: 3, materialIndex })
+    const before = (materialIndex: number) =>
+      body.onBeforeShadow(
+        null as never,
+        null as never,
+        null as never,
+        null as never,
+        body.geometry,
+        depth,
+        shadowGroup(materialIndex) as never,
+      )
+    const after = (materialIndex: number) =>
+      body.onAfterShadow(
+        null as never,
+        null as never,
+        null as never,
+        null as never,
+        body.geometry,
+        depth,
+        shadowGroup(materialIndex) as never,
+      )
+    expect(body.castShadow).toBe(true)
+    before(transparentIndex)
+    expect(depth.depthWrite).toBe(false)
+    expect(depth.colorWrite).toBe(false)
+    after(transparentIndex)
+    expect(depth.depthWrite).toBe(true)
+    expect(depth.colorWrite).toBe(true)
+    before(opaqueIndex)
+    expect(depth.depthWrite).toBe(true)
+    expect(depth.colorWrite).toBe(true)
+    after(opaqueIndex)
+
+    const cutout = {
+      ...translucent,
+      materials: translucent.materials.map((material) =>
+        material.id === 'material:body'
+          ? { ...material, alphaMask: { cutoff: 0.5, opacity: 1 } }
+          : material,
+      ),
+    }
+    resource.update(cutout)
+    before(transparentIndex)
+    expect(depth.depthWrite).toBe(true)
+    after(transparentIndex)
+    resource.update(translucent)
+    before(transparentIndex)
+    expect(depth.depthWrite).toBe(false)
+    after(transparentIndex)
+    depth.dispose()
+  } finally {
+    resource.dispose()
+  }
 })

@@ -234,6 +234,9 @@ export async function createAnalysisControllerProbe() {
             .getAllBlocks(false)
             .find((block) => block.type === 'sz_py_print') as PythonBlocklyBlock
           printed.setPythonOption('args:count', 3)
+          // The new socket starts with the default value; taking it out leaves the block
+          // incomplete on purpose.
+          printed.getInput('args:2')!.connection!.setShadowState(null)
           let error = ''
           try {
             await commitPythonWorkspaceGesture({

@@ -21,7 +21,7 @@ import { collectTypes } from './exampleSourceUtils'
 export const CERCO_NA_BASE_PROFISSIONAL_SOURCE = `
 SZGameKit3D.setup({ width: 1280, height: 720, world: 55, sky: "#1a0f2e", ground: "#2d1b3d" });
 SZGameKit3D.setEffects({ shadows: true, bloom: true, strength: 1.4, vignette: true });
-SZGameKit3D.setScreenText("menu", "Cerco na Base Profissional", "Olhe com o mouse e ande com WASD. Segure o espaço para CARREGAR o blaster e solte para atirar: quanto mais carregado, mais forte. A munição recarrega sozinha. Derrote 12 aliens antes que a vida acabe!", "Defender");
+SZGameKit3D.setScreenText("inicio", "Cerco na Base Profissional", "Olhe com o mouse e ande com WASD. Segure o espaço para CARREGAR o blaster e solte para atirar: quanto mais carregado, mais forte. A munição recarrega sozinha. Derrote 12 aliens antes que a vida acabe!", "Defender");
 SZGameKit3D.setScreenText("vitoria", "Base salva!", "Você segurou a invasão e derrotou os 12 aliens.", "Defender de novo");
 SZGameKit3D.setScreenText("fim", "A base caiu...", "Os aliens passaram. Carregue o tiro para acertar mais forte e cuide da munição!", "Tentar de novo");
 SZGameKit3D.defineMold("heroi", { health: 6, speed: 0 }, function () {
@@ -64,7 +64,7 @@ SZGameKit3D.onEnterState("jogando", function () {
 });
 SZGameKit3D.onEntityStateUpdate("heroi", "parado", function (ela, dt) {
   SZGameKit3D.moveFps(ela, 7);
-  if (SZGameKit3D.keyDown("espaço") || SZGameKit3D.mouseDown()) {
+  if (SZGameKit3D.keyDown("Space") || SZGameKit3D.mouseDown()) {
     carga = carga + dt;
     if (carga > 1.4) {
       carga = 1.4;
@@ -146,9 +146,9 @@ SZGameKit3D.onUpdate(function (dt) {
   }
   SZGameKit3D.cullFar("tiroFraco", 60);
   SZGameKit3D.cullFar("tiroForte", 60);
-  SZGameKit3D.setHud("top-left", "Aliens: " + derrotados + " de 12");
-  SZGameKit3D.setHud("top-right", "Munição: " + Math.floor(municao));
-  SZGameKit3D.setHud("bottom-left", "Carga: " + Math.floor(carga * 70));
+  SZGameKit3D.hudText("top-left", "Aliens: " + derrotados + " de 12");
+  SZGameKit3D.hudText("top-right", "Munição: " + Math.floor(municao));
+  SZGameKit3D.hudText("bottom-left", "Carga: " + Math.floor(carga * 70));
   if (derrotados >= 12) {
     SZGameKit3D.playEffect("win");
     SZGameKit3D.setState("vitoria");

@@ -8,6 +8,7 @@ import {
   soundManifest,
 } from '#core'
 import { isDocumentRecord } from '../core/projectDocument'
+import { extensionBootstrapContext } from '../extensions/runtime'
 import { resolveGameUiFontId } from '../official-extensions/gameUiFonts/resolve'
 import {
   buildJavaScriptClassicDocument,
@@ -81,6 +82,12 @@ export async function renderProjectToPreviewDocAsync(
   const resources = await loadJavaScriptClassicResources(
     installedExtensions.flatMap((e) => (e && typeof e.id === 'string' ? [e.id] : [])),
     resolveGameUiFontId({ ir: playableProject.ir, files }),
+    // O MESMO contexto do preview, da capa e do export (o código que vai para o documento).
+    extensionBootstrapContext({
+      html: files['index.html'],
+      js: files['script.js'],
+      extraFiles,
+    }),
   )
 
   return buildJavaScriptClassicDocument({

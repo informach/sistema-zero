@@ -32,6 +32,7 @@ test('local file import previews before one undoable commit and rejects pending 
     persistence: { save: async () => undefined },
     autosaveMs: 60_000,
   })
+  const imported: (typeof source)[] = []
   function Harness() {
     const document = useStore(editor, (state) => state.asset)
     return (
@@ -44,6 +45,7 @@ test('local file import previews before one undoable commit and rejects pending 
           editor.getState().commit(next)
           return next
         }}
+        onImported={(next) => imported.push(next)}
       />
     )
   }
@@ -53,10 +55,13 @@ test('local file import previews before one undoable commit and rejects pending 
     </StrictMode>,
   )
   const file = new File([new Uint8Array(encodePng(new Uint8Array(pixels), 2, 2))], 'cores.png')
-  const choose = () =>
+  const choose = () => {
+    if (!screen.queryByRole('dialog', { name: COPY.scene.imageImportTitle }))
+      fireEvent.click(screen.getByRole('button', { name: COPY.scene.imageImportTitle }))
     fireEvent.change(screen.getByLabelText(COPY.scene.imageImportChoose), {
       target: { files: [file] },
     })
+  }
   try {
     choose()
     await waitFor(() => expect(runtime.images.length).toBe(1))
@@ -73,6 +78,8 @@ test('local file import previews before one undoable commit and rejects pending 
     expect(editor.getState().asset.images.at(-1)!.layers[0]!.pixels).toEqual(
       new Uint8Array([...pixels.slice(8), ...pixels.slice(0, 8)]),
     )
+    expect(imported).toHaveLength(1)
+    expect(imported[0]!.images.at(-1)!.id).toBe(editor.getState().asset.images.at(-1)!.id)
     expect(screen.queryByRole('button', { name: COPY.scene.imageImportConfirm }) === null).toBe(
       true,
     )

@@ -303,6 +303,34 @@ describe('galleryStore — CRUD sobre o IndexedDB local', () => {
     expect(await listAllAssets()).toHaveLength(0)
   })
 
+  it('importAssets religa as peças de CADA camada aos ids novos (mapa com várias peças)', async () => {
+    const { addLayer } = await import('../tiles/tilemapOps')
+    const { tileLayerAt } = await import('../testing/fixtures')
+    const store = createGalleryStore()
+    const chao = createTilesetAsset({ name: 'chao', tileSize: 16 })
+    const casas = createTilesetAsset({ name: 'casas', tileSize: 16 })
+    const map = addLayer(
+      createTilemapAsset({ name: 'vila', tilesetId: chao.id, cols: 2, rows: 1 }),
+      'Casas',
+      casas.id,
+    )
+
+    const result = await store.getState().importAssets([map, casas, chao], { atomic: true })
+
+    expect(result).toEqual({ added: 3, skipped: 0 })
+    const assets = store.getState().assets
+    const newChao = assets.find((a) => a.name === 'chao')
+    const newCasas = assets.find((a) => a.name === 'casas')
+    const newMap = assets.find((a) => a.kind === 'tilemap')
+    if (newMap?.kind !== 'tilemap' || !newChao || !newCasas) throw new Error('import esperado')
+    expect(newChao.id).not.toBe(chao.id)
+    expect(newMap.tilesetId).toBe(newChao.id)
+    expect(tileLayerAt(newMap, 1).tilesetId).toBe(newCasas.id)
+    // E apagar as peças de UMA camada é recusado como as peças do mapa sempre foram.
+    expect(await store.getState().remove(newCasas.id)).toBe(false)
+    expect(store.getState().mutateError).toBe(COPY.gallery.tilesetInUse)
+  })
+
   it('importAssets recusa mapa cuja biblioteca de peças não existe', async () => {
     const store = createGalleryStore()
     const map = createTilemapAsset({

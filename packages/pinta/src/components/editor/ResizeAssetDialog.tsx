@@ -10,7 +10,8 @@ import type { JSX } from 'react'
 import { useState } from 'react'
 import { type ResizeTarget, resizeAsset, resizeCuts } from '../../core/assetResize'
 import { COPY } from '../../core/copy'
-import type { PintaAsset } from '../../core/project'
+import { isTilesetKind, type PintaAsset } from '../../core/project'
+import { usePintaGallery } from '../appContext'
 import { CustomSizeFields } from '../gallery/CustomSizeFields'
 import { type CustomSizeValues, EMPTY_CUSTOM_VALUES, parseCustomInt } from '../gallery/customSize'
 import { Button } from '../ui/Button'
@@ -41,10 +42,16 @@ export function ResizeAssetDialog({
   const valido = largura !== null && altura !== null
   const mudou = valido && (largura !== target.width || altura !== target.height)
   const corta = valido && resizeCuts(asset, largura, altura)
+  // Mapa: o tamanho da peça faz os OBJETOS andarem junto com as células.
+  const tileSize = usePintaGallery((state) => {
+    if (asset.kind !== 'tilemap') return undefined
+    const tileset = state.assets.find((a) => a.id === asset.tilesetId)
+    return tileset && isTilesetKind(tileset) ? tileset.tileSize : undefined
+  })
 
   function aplicar(): void {
     if (!mudou || largura === null || altura === null) return
-    const proximo = resizeAsset(asset, largura, altura)
+    const proximo = resizeAsset(asset, largura, altura, 'center', { tileSize })
     if (!proximo || proximo === asset) return
     onResize(proximo)
     onClose()

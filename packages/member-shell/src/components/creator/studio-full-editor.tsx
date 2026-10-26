@@ -18,31 +18,18 @@ import {
   PensaProjectLanguageRefused,
 } from '../../lib/pensa-studio-link'
 import { reportStudioError } from '../../lib/studio-error'
+import { StudioRuntimeNotice } from '../studio/studio-runtime-notice'
 import { useFocusMode } from './focus-mode'
+import { openCreationInMolda, openDrawingInPinta } from './open-creation-tab'
 import { useStudioActivity } from './use-studio-activity'
 
 type StudioModule = typeof import('@sistemazero/studio')
+// "Editar no Pinta/Molda": aba nova já na criação (ver `open-creation-tab.ts`).
 type EditorState =
   | { status: 'loading' }
   | { status: 'ready'; project: Project; releaseOpening: () => void }
   | { status: 'not-found' }
   | { status: 'pensa-refused'; message: string }
-
-/**
- * "Editar o desenho" nos assets vindos do Pinta: abre o Pinta em aba nova já
- * naquele desenho. O id viaja na URL porque `noopener` isola as duas abas.
- */
-function openDrawingInPinta(drawingId: string): void {
-  window.open(`/pinta?desenho=${encodeURIComponent(drawingId)}`, '_blank', 'noopener,noreferrer')
-}
-
-/**
- * "Editar a criação" nos modelos, céus e texturas vindos do Molda: abre o Molda em
- * aba nova já naquela criação (o `molda-client` lê `?criacao=` no 1º render).
- */
-function openCreationInMolda(creationId: string): void {
-  window.open(`/molda?criacao=${encodeURIComponent(creationId)}`, '_blank', 'noopener,noreferrer')
-}
 
 /** Carrega o projeto local e concentra apenas o ciclo de vida do editor aberto. */
 export function StudioFullEditor({
@@ -222,17 +209,13 @@ export function StudioFullEditor({
   return (
     <div className="flex h-full min-h-0 flex-col">
       {pythonUnavailable && (
-        <div
-          role={runtime.error ? 'alert' : 'status'}
-          className="flex items-center gap-2 px-3 py-2 text-sm"
-        >
-          {runtime.error ?? 'Preparando Python…'}
-          {runtime.error && (
-            <button type="button" onClick={runtime.retry}>
-              Tentar novamente
-            </button>
-          )}
-        </div>
+        <StudioRuntimeNotice
+          theme={theme}
+          projectName={state.project.name}
+          error={runtime.error}
+          onRetry={runtime.retry}
+          onExit={onExit}
+        />
       )}
       <div className="min-h-0 flex-1" hidden={pythonUnavailable} inert={pythonUnavailable}>
         {mountEditor && (

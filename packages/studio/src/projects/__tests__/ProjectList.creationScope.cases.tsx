@@ -235,7 +235,8 @@ async function openCreation(onOpenProject: (id: string) => void, pro = true) {
   const view = render(<ProjectList professional onOpenProject={onOpenProject} theme="light" />)
   await screen.findByText(t('projects.empty'))
   fireEvent.click(screen.getByRole('button', { name: '+ Novo projeto' }))
-  if (pro) fireEvent.click(screen.getByRole('radio', { name: /Pro \(código\)/ }))
+  const dialog = await screen.findByRole('dialog', { name: t('projects.newModal.title') })
+  if (pro) fireEvent.click(within(dialog).getByRole('radio', { name: /Pro \(código\)/ }))
   return view
 }
 

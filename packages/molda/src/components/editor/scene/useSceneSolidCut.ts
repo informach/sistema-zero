@@ -8,6 +8,7 @@ import { meshSectionPath } from '../../../scene/meshSectionPath'
 import { indexMeshEdges } from '../../../scene/meshTopology'
 import { sceneLocalBounds } from '../../../scene/pivot'
 import { prepareSceneSolidCut } from '../../../scene/solidCut'
+import { sceneSolidCutLinePlane } from '../../../scene/solidCutLine'
 import {
   type SceneCutPoint,
   sceneCutPoint,
@@ -135,20 +136,21 @@ export function useSceneSolidCut(
       cut: {
         segments: plane ? worldSegments(plane, owner.numericPlane ? undefined : localPoints) : [],
         provisional,
-        midpoints: midpoint
-          ? [...owner.topology.edges.keys()]
-              .filter(
-                (id) =>
-                  !owner.points.some((point) => point.edgeId === id && point.t === 0.5) &&
-                  !(hover?.edgeId === id && hover.t === 0.5),
-              )
-              .map((edgeId) =>
-                transformPoint(
-                  world,
-                  sceneCutPoint(owner.prepared.mesh, { edgeId, t: 0.5 }, owner.topology),
-                ),
-              )
-          : [],
+        midpoints:
+          midpoint && !owner.numericPlane
+            ? [...owner.topology.edges.keys()]
+                .filter(
+                  (id) =>
+                    !owner.points.some((point) => point.edgeId === id && point.t === 0.5) &&
+                    !(hover?.edgeId === id && hover.t === 0.5),
+                )
+                .map((edgeId) =>
+                  transformPoint(
+                    world,
+                    sceneCutPoint(owner.prepared.mesh, { edgeId, t: 0.5 }, owner.topology),
+                  ),
+                )
+            : [],
       },
       ...(current ? { hover: current } : {}),
     }
@@ -214,13 +216,13 @@ export function useSceneSolidCut(
         before?.edgeId === point?.edgeId && before?.t === point?.t ? before : point,
       )
     },
-    start: (nodeId: string) => {
+    start: (nodeId: string, edgeIds?: readonly string[]) => {
       cancel()
       if (!canUse()) return
       try {
         const state = editor.getState()
         const prepared = prepareSceneSolidCut(state.content, nodeId)
-        show({
+        const initial: CutOwner = {
           source: state.content,
           revision: state.contentRevision,
           nodeId,
@@ -230,7 +232,15 @@ export function useSceneSolidCut(
           topology: indexMeshEdges(prepared.mesh),
           world: indexSceneDocument(state.content).scene.worldMatrices.get(nodeId)!,
           extent: Math.max(...(sceneLocalBounds(state.content, nodeId)?.size ?? [1])),
-        })
+        }
+        show(initial)
+        if (edgeIds?.length) {
+          try {
+            show({ ...initial, numericPlane: sceneSolidCutLinePlane(prepared.mesh, edgeIds) })
+          } catch (reason) {
+            setError(reason instanceof Error ? reason.message : 'Escolha outra linha para separar.')
+          }
+        }
       } catch (reason) {
         setError(reason instanceof Error ? reason.message : 'Escolha uma peça para cortar.')
       }

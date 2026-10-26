@@ -98,6 +98,7 @@ export const ptBR: Record<string, string> = {
   'assets.tab.images': 'Imagens',
   'assets.tab.sounds': 'Sons',
   'assets.tab.models3d': 'Modelos 3D',
+  'assets.tab.fonts': 'Fontes',
   // A capa do card "Meus Jogos": uma imagem do projeto vira a capa fixa, vencendo a foto
   // automática do preview (26/09/2026).
   'assets.cover.use': '⭐ Usar como capa',
@@ -287,6 +288,23 @@ export const ptBR: Record<string, string> = {
     'Este quadro é uma imagem parada. A posição escolhida acompanha a ordem dos quadros no Pinta.',
   'pintaImport.image.fullMap':
     'O mapa inteiro vira uma imagem, com todas as camadas visíveis, incluindo a camada da frente.',
+  'pintaImport.image.vector':
+    'Este desenho entra como vetor (SVG): fica nítido em qualquer tamanho e o Pygame Zero o mostra no tamanho escolhido.',
+  'pintaImport.image.turtleShape':
+    'Este desenho entra como vetor (SVG) e vira uma forma da tartaruga, que gira junto com ela: use o bloco "usar o desenho do Pinta como forma".',
+  'pintaImport.image.mode': 'O que trazer',
+  'pintaImport.image.mode.spritesheet': 'Folha com todas as animações',
+  'pintaImport.image.mode.frame': 'Um quadro',
+  'pintaImport.image.mode.tileset': 'Todas as peças',
+  'pintaImport.image.mode.tile': 'Uma peça',
+  'pintaImport.image.mode.map': 'Mapa com camadas e objetos',
+  'pintaImport.image.mode.tilemap': 'Imagem do mapa',
+  'pintaImport.image.spritesheetData':
+    'A folha leva junto as animações e a caixa de colisão. No código, use pinta.carregar_sprite com o nome da imagem.',
+  'pintaImport.image.tilesetData':
+    'A folha leva junto quais peças são sólidas e quais são plataforma. No código, use pinta.carregar_pecas com o nome da imagem.',
+  'pintaImport.image.mapData':
+    'A imagem leva todas as peças do mapa, as camadas e os objetos. No código, use pinta.carregar_mapa com o nome da imagem.',
   'pintaImport.image.preparing': 'Preparando a imagem…',
   'pintaImport.image.preview': 'Prévia da imagem escolhida',
   'pintaImport.image.add': 'Adicionar imagem',
@@ -301,6 +319,23 @@ export const ptBR: Record<string, string> = {
   'pintaImport.image.selectionChanged':
     'A imagem recebida não corresponde à sua escolha. Confira a seleção novamente.',
 
+  'models3d.raylibUploadTitle': 'Modelo 3D (.glb) para o Raylib 3D',
+  'models3d.raylibHowTo':
+    "Abra o modelo pelo caminho dele no código, como load_model('models/nave.glb').",
+  'models3d.uploadTitle':
+    'Modelo 3D (.glb, com animações e ossos) ou céu 360° (.hdr) para Jogo 3D, Mundo 3D, Jogo 3D Avançado e Canvas 3D',
+  'models3d.howTo': 'Use o NOME do modelo nos blocos:',
+  'models3d.howTo.game3d':
+    'Jogo 3D: "Criar o objeto com o modelo" põe o modelo na cena, e "Tocar a animação" faz ele se mexer.',
+  'models3d.howTo.advanced':
+    'Jogo 3D Avançado: a peça "modelo importado" do molde, com uma animação para cada estado.',
+  'models3d.howTo.world3d':
+    'Mundo 3D: "Pôr o modelo" se mexe, e "Espalhar" deixa as cópias paradas. O personagem, o amigo e o carro também podem usar um modelo.',
+  'models3d.howTo.sky': 'Céu 360° (.hdr): o bloco "Usar o céu 360°".',
+  'models3d.badge.clips': '🎬 {names}',
+  'models3d.badge.clipsTitle': 'Animações deste modelo: {names}',
+  'models3d.badge.skinned': '🦴 com ossos',
+  'models3d.badge.animatedPaint': '🎞️ pintura que se mexe',
   'moldaImport.button': '🧊 Trazer do Molda',
   'moldaImport.title': 'Trazer do Molda',
   'moldaImport.subtitle':
@@ -323,6 +358,8 @@ export const ptBR: Record<string, string> = {
   'moldaImport.inProject': '✓ no projeto',
   'moldaImport.needs3d':
     'Instale o Jogo 3D, o Jogo 3D Avançado ou o Mundo 3D (painel de Extensões) para usar modelos e céus. A textura entra como imagem.',
+  'moldaImport.needs3dRaylib':
+    'Modelos 3D e céus 360° são da extensão Raylib 3D (o céu entra como imagem panorâmica). A textura entra como imagem.',
   'moldaImport.kind.model': '🧊 modelo',
   'moldaImport.kind.texture': '🧱 textura',
   'moldaImport.kind.sky': '🌤️ céu',

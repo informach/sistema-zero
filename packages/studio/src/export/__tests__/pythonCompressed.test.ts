@@ -27,6 +27,10 @@ for (const kind of ['classic', 'pro'] as const)
     })
     const release = await createStudioRuntimeRelease({
       ...environment.catalog.releases[0]!.manifest,
+      python: {
+        ...environment.catalog.releases[0]!.manifest.python!,
+        features: runtime.deployment.distribution.features,
+      },
       artifacts: runtime.deployment.distribution.files.map(({ path, sha256 }) => ({
         path,
         sha256,

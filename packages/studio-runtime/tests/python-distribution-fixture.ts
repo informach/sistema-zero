@@ -1,13 +1,16 @@
+import { createHash } from 'node:crypto'
 import { gzipSync } from 'node:zlib'
 import {
   StudioPythonDistributionSchema,
   studioPythonRuntimePrefix,
   studioPythonRuntimeRoute,
 } from '@sistemazero/core/studio/python-runtime-distribution'
+import { PYTHON_PROJECT_MISSION_FEATURE } from '@sistemazero/core/studio/python-runtime-features'
 import {
   createStudioRuntimeRelease,
   type StudioRuntimeReleaseStatus,
 } from '@sistemazero/core/studio/runtime-catalog'
+import { PYGAME_CE_WHEEL } from '../../studio/src/runtime/python/pygame/contract'
 import { sha256 } from '../src/artifacts'
 import {
   createPythonDistributionServer,
@@ -15,8 +18,20 @@ import {
   storePythonRuntimeDistribution,
 } from '../src/python-distributions'
 
+/** The stand-in wheel the promotion fixtures write (`<prefix><name>`): its own size and sha. */
+export function fixturePygameWheel(prefix = 'fixture:') {
+  const bytes = new TextEncoder().encode(`${prefix}${PYGAME_CE_WHEEL.file}`)
+  return { bytes: bytes.byteLength, sha256: createHash('sha256').update(bytes).digest('hex') }
+}
+
 export async function pythonDistributionFixture(
-  options: { playtest?: boolean; standalone?: boolean; boot?: boolean; compressed?: boolean } = {},
+  options: {
+    playtest?: boolean
+    standalone?: boolean
+    boot?: boolean
+    compressed?: boolean
+    missions?: boolean
+  } = {},
 ) {
   const contents = new Map<string, Uint8Array<ArrayBuffer>>()
   for (const path of [
@@ -53,7 +68,7 @@ export async function pythonDistributionFixture(
     pyodideVersion: '314.0.7',
     pythonVersion: '3.14.2',
     providedModules: [],
-    features: [],
+    features: options.missions === false ? [] : [PYTHON_PROJECT_MISSION_FEATURE],
     previewHostAudioVersion: 1,
     ...(httpRepresentations.length ? { httpRepresentations } : {}),
     files: await Promise.all(
@@ -80,7 +95,7 @@ export async function pythonDistributionFixture(
       version: distribution.pythonVersion,
       packages: [],
       providedModules: [],
-      features: [],
+      features: distribution.features,
     },
   })
   const deployment = { release, distribution }

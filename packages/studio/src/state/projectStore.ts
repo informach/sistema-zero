@@ -38,13 +38,23 @@ import type { SZIRInput } from '#ir'
 import { findExtension } from '#official-extensions'
 import { reconcileDrawingsFromRestoredProject } from '../asset-library/personalSync'
 import { createProProject as createProProjectFromTemplate } from '../components/code/pro-templates'
-import { projectAssetFileExtension } from '../core/assetBinary'
+import { pythonAssetFileExtension } from '../core/assetBinary'
 import {
   isPythonProject,
   type EditableStudioProject as Project,
   type PythonProjectDocument,
   type PythonProProjectDocument,
 } from '../core/editableProject'
+import {
+  type PgzeroAudioRole,
+  pgzeroMediaPath,
+  pgzeroNameForPath,
+  pgzeroRelocatedAssets,
+  pgzeroRenamedAsset,
+  pgzeroSvgAssetSize,
+  projectUsesPgzero,
+  pythonProjectOccupiedPaths,
+} from '../core/pgzeroMediaPaths'
 import { readPintaImageAssetMetadata } from '../core/pintaImageAsset'
 import { parseProAssistance } from '../core/proAssistance'
 import {
@@ -58,11 +68,20 @@ import {
 import type { StudioProjectFactoryContext } from '../core/projectFactory'
 import { withoutProjectPublication } from '../core/projectPublication'
 import type { ProAssistanceMeta } from '../core/proProject'
+import {
+  projectUsesRaylib,
+  projectUsesRaylib3D,
+  raylibPlacedAsset,
+  raylibRelocatedAssets,
+  raylibRenamedAsset,
+} from '../core/raylibMediaPaths'
 import type { StudioPersistenceAdapter } from '../persistence/types'
 import {
   emptyPythonWorkspaceState,
   preservePythonWorkspaceDraft,
 } from '../python/blocks/workspaceDraft'
+import { hasPygameExtension } from '../runtime/python/pygame/contract'
+import { hasTurtleExtension } from '../runtime/python/turtle/contract'
 import { prepareEditableCloudProject } from './editableCloudProject'
 import { prepareEditableStudioProject } from './editableProjectValidation'
 import {
@@ -267,6 +286,13 @@ interface ProjectStore {
   /** Persiste a origem descoberta de um asset pessoal legado. */
   setAssetLibraryOrigin: (id: string, origin: 'pinta' | 'molda') => string | null
   /**
+   * Liga uma imagem que AINDA NÃO veio da biblioteca pessoal (o desenho de um jogo de
+   * exemplo) ao desenho copiado para o Pinta: vira `personal:<id>` com a receita do Pinta,
+   * mantendo id, NOME e arquivo (`proPath`) — o código do jogo a carrega por eles. Só para
+   * projetos Python (a receita é deles). Devolve erro legível ou `null`.
+   */
+  linkAssetToPintaImage: (id: string, link: LinkAssetToPintaImageInput) => string | null
+  /**
    * Escolhe uma IMAGEM do projeto como capa fixa do card (`null` = voltar à foto automática).
    * Só grava o nome no projeto (bumpa `updatedAt`, então sobe pela nuvem como qualquer edição);
    * quem regrava a miniatura na hora é quem chama (`captureAndStoreProjectThumb`). Devolve erro
@@ -310,11 +336,11 @@ interface ProjectStatePatch {
 export interface NewAssetInput {
   name: string
   dataUrl: string
-  /** `'image'` (padrão), `'audio'` (som/música), `'model3d'` (.glb) ou
-   *  `'environment3d'` (céu .hdr). */
-  kind?: 'image' | 'audio' | 'model3d' | 'environment3d'
-  /** Nome do arquivo original — OBRIGATÓRIO nos 3D (a validação cruza a
-   *  extensão com o MIME e a assinatura binária). */
+  /** `'image'` (padrão), `'audio'` (som/música), `'model3d'` (.glb),
+   *  `'environment3d'` (céu .hdr) ou `'font'` (TTF/OTF, só no Raylib). */
+  kind?: ProjectAsset['kind']
+  /** Nome do arquivo original — OBRIGATÓRIO nos 3D e nas fontes (a validação cruza
+   *  a extensão com o MIME e a assinatura binária). */
   originalFileName?: string
   width?: number
   height?: number
@@ -327,10 +353,23 @@ export interface NewAssetInput {
   pintaImage?: unknown
   /** Attribution travels with the bytes through native/web export and publication. */
   license?: ProjectAsset['license']
+  /** Pygame Zero and Raylib: the child chose a short sound (`sounds/`) or a song (`music/`). */
+  pgzeroAudio?: PgzeroAudioRole
   /** Metadados do Pinta (animações/tiles/mapa) — saneados no store antes de guardar. */
   sprite?: unknown
   tileset?: unknown
   tilemap?: unknown
+}
+
+/** Entrada de `linkAssetToPintaImage`: o resultado do "Trazer do Pinta" de UM desenho. */
+export interface LinkAssetToPintaImageInput {
+  dataUrl: string
+  width?: number
+  height?: number
+  /** `personal:<id do desenho>` (a receita confere que é o mesmo desenho). */
+  libId: string
+  libRevision?: number
+  pintaImage: unknown
 }
 
 /**
@@ -1085,8 +1124,23 @@ export function createProjectStore(
         if (get().project !== expected) return 'O projeto mudou. Tente novamente.'
         if (get().editingAccess !== 'author') return 'Este projeto está em observação.'
         const { refinePythonProjectDocument } = await import('./pythonProjectValidation')
+        // Pygame Zero searches images/, sounds/ and music/: materials added before it move there.
+        // Raylib opens files from images/, sounds/, music/, fonts/ (and models/ in 3D).
+        const raylibNext = projectUsesRaylib({ installedExtensions: extensions })
+        const raylibChanged =
+          raylibNext &&
+          (!projectUsesRaylib(expected) ||
+            projectUsesRaylib3D(expected) !==
+              projectUsesRaylib3D({ installedExtensions: extensions }))
+        const relocated = raylibChanged
+          ? raylibRelocatedAssets({ ...expected, installedExtensions: extensions })
+          : !projectUsesPgzero(expected) && projectUsesPgzero({ installedExtensions: extensions })
+            ? pgzeroRelocatedAssets(expected)
+            : undefined
+        if (relocated && 'error' in relocated) return relocated.error
         const project = await refinePythonProjectDocument({
           ...expected,
+          ...relocated,
           installedExtensions: extensions,
           ...(expected.kind === 'classic'
             ? {
@@ -1243,13 +1297,20 @@ export function createProjectStore(
           ? STUDIO_PYTHON_MATERIAL_DATA_LIMITS
           : PROJECT_ASSET_LIMITS
         const kind: ProjectAsset['kind'] =
-          input.kind === 'audio' || input.kind === 'model3d' || input.kind === 'environment3d'
+          input.kind === 'audio' ||
+          input.kind === 'model3d' ||
+          input.kind === 'environment3d' ||
+          input.kind === 'font'
             ? input.kind
             : 'image'
         const isImage = kind === 'image'
         const is3D = kind === 'model3d' || kind === 'environment3d'
-        if (isPythonProject(p) && is3D)
+        // Raylib decides its 3D files itself (models in Raylib 3D, the reason otherwise);
+        // every other Python environment takes images and sounds.
+        if (isPythonProject(p) && is3D && !projectUsesRaylib(p))
           return 'Este ambiente Python aceita imagens e sons. Os recursos 3D ainda não estão disponíveis.'
+        if (kind === 'font' && !(isPythonProject(p) && projectUsesRaylib(p)))
+          return 'Fontes TTF e OTF entram nos projetos com a extensão Raylib.'
         const noun =
           kind === 'audio'
             ? 'som'
@@ -1257,14 +1318,18 @@ export function createProjectStore(
               ? 'modelo 3D'
               : kind === 'environment3d'
                 ? 'céu (.hdr)'
-                : 'imagem'
+                : kind === 'font'
+                  ? 'fonte'
+                  : 'imagem'
         const name = normalizeAssetName(input.name)
         if (!name) return 'Use um nome simples (letras, números e hífen).'
         // A UI já validou; aqui revalidamos o teto e o esquema do data: URL. Nos 3D
         // o nome do arquivo faz parte do contrato (extensão × MIME × assinatura
         // binária) — sem ele, ou com bytes que não batem, recusa na porta.
         const fileName3D =
-          is3D && typeof input.originalFileName === 'string' ? input.originalFileName : undefined
+          (is3D || kind === 'font') && typeof input.originalFileName === 'string'
+            ? input.originalFileName
+            : undefined
         if (!isValidAssetDataUrl(input.dataUrl, kind, fileName3D, dataLimits)) {
           return `${noun} inválido ou grande demais.`
         }
@@ -1322,11 +1387,45 @@ export function createProjectStore(
         }
         if (isPythonProject(p)) {
           const mime = input.dataUrl.slice(5).split(/[;,]/, 1)[0]!.toLowerCase()
-          const extension =
-            mime === 'audio/flac' || mime === 'audio/x-flac'
-              ? 'flac'
-              : projectAssetFileExtension(mime, kind)
-          asset.proPath = `assets/${name}.${extension}`
+          const extension = pythonAssetFileExtension(mime, kind)
+          if (projectUsesRaylib(p)) {
+            // raylib opens a file by its path: `images/nave.png` next to the main file.
+            const placed = raylibPlacedAsset(p, asset, extension, input.pgzeroAudio)
+            if ('error' in placed) return placed.error
+            asset.proPath = placed.asset.proPath
+            asset.name = placed.asset.name
+          } else if (projectUsesPgzero(p)) {
+            // Pygame Zero finds media by name in the folders next to the main file.
+            const placed = pgzeroMediaPath({
+              entrypoint: p.python.entrypoint,
+              name,
+              kind,
+              extension,
+              role: kind === 'audio' ? input.pgzeroAudio : undefined,
+              occupied: pythonProjectOccupiedPaths(p),
+            })
+            if ('error' in placed) return placed.error
+            asset.proPath = placed.path
+            // The panel name reads like the code name (`acerto_2` beside an `acerto`).
+            asset.name = pgzeroNameForPath(placed.path, name, assets, asset.id)
+            if (extension === 'svg') {
+              const size = pgzeroSvgAssetSize(input.dataUrl)
+              if ('error' in size) return size.error
+              asset.width = size.width
+              asset.height = size.height
+            }
+          } else {
+            // Turtle opens PNG/GIF as images; a vector from the Pinta becomes a turtle shape
+            // through formas_do_pinta.registrar('assets/nome.svg'). Pygame-ce reads PNG/GIF only,
+            // and without Turtle a vector has no use.
+            if (
+              pintaImage?.output.mime === 'image/svg+xml' &&
+              (!hasTurtleExtension(p.installedExtensions) ||
+                hasPygameExtension(p.installedExtensions))
+            )
+              return 'Este projeto abre só imagens PNG ou GIF. Traga este desenho do Pinta como PNG.'
+            asset.proPath = `assets/${name}.${extension}`
+          }
           if (!isStudioPythonAssetPath(asset.proPath))
             return 'Este formato de imagem ou som ainda não é compatível com o projeto Python.'
           return commitPython({ ...p, assets: [...assets, asset] })
@@ -1431,6 +1530,12 @@ export function createProjectStore(
         } else if (!isValidAssetDataUrl(image.dataUrl, 'image', undefined, dataLimits)) {
           return 'Imagem inválida ou grande demais.'
         }
+        // A redrawn SVG in a Pygame Zero folder must still be one Pygame Zero can size.
+        const svgSize =
+          isPythonProject(p) && projectUsesPgzero(p) && /\.svg$/i.test(target.proPath ?? '')
+            ? pgzeroSvgAssetSize(image.dataUrl)
+            : undefined
+        if (svgSize && 'error' in svgSize) return svgSize.error
         // Orçamento do projeto contando o asset NOVO no lugar do velho (o
         // `addAsset` só checa o teto na entrada; um desenho reeditado pode ter
         // ficado bem maior).
@@ -1507,6 +1612,59 @@ export function createProjectStore(
         set({ project: bump({ ...p, assets }), isDirty: true, saveError: null })
         return null
       },
+      linkAssetToPintaImage: (id, link) => {
+        const p = get().project
+        if (!p?.assets) return 'Sem imagens no projeto.'
+        if (!isPythonProject(p)) return 'A receita do Pinta pertence a um projeto Python.'
+        const target = p.assets.find((asset) => asset.id === id)
+        if (!target) return 'Imagem não encontrada.'
+        if (target.kind !== 'image') return 'Esse arquivo não é uma imagem.'
+        if (target.libId?.startsWith('personal:'))
+          return 'Esta imagem já está ligada a um desenho do Pinta.'
+        if (
+          !isValidAssetDataUrl(link.dataUrl, 'image', undefined, STUDIO_PYTHON_MATERIAL_DATA_LIMITS)
+        )
+          return 'Imagem inválida ou grande demais.'
+        // Os metadados de JavaScript (peças/mapa configurados aqui) não valem para a receita.
+        const { sprite: _sprite, tileset: _tileset, tilemap: _tilemap, ...kept } = target
+        const libRevision =
+          typeof link.libRevision === 'number' &&
+          Number.isFinite(link.libRevision) &&
+          link.libRevision > 0
+            ? Math.round(link.libRevision)
+            : undefined
+        const candidate: ProjectAsset = {
+          ...kept,
+          source: 'library',
+          libId: link.libId,
+          libOrigin: 'pinta',
+          dataUrl: link.dataUrl,
+          ...(typeof link.width === 'number' && link.width > 0 ? { width: link.width } : {}),
+          ...(typeof link.height === 'number' && link.height > 0 ? { height: link.height } : {}),
+          pintaImage: link.pintaImage as ProjectAsset['pintaImage'],
+        }
+        if (libRevision !== undefined) candidate.libRevision = libRevision
+        else delete candidate.libRevision
+        try {
+          const metadata = readPintaImageAssetMetadata(candidate)
+          if (!metadata) return 'Escolha uma imagem do desenho antes de ligá-lo ao Pinta.'
+          candidate.pintaImage = metadata
+        } catch (error) {
+          return error instanceof Error ? error.message : 'A receita do Pinta é inválida.'
+        }
+        const othersChars = p.assets.reduce(
+          (sum, asset) => (asset.id === id ? sum : sum + asset.dataUrl.length),
+          0,
+        )
+        if (
+          othersChars + link.dataUrl.length >
+          STUDIO_PYTHON_MATERIAL_DATA_LIMITS.maxAssetsTotalChars
+        )
+          return `O desenho "${target.name}" cresceu e não cabe mais neste jogo.`
+        const assets = p.assets.map((asset) => (asset.id === id ? candidate : asset))
+        set({ project: bump({ ...p, assets }), isDirty: true, saveError: null })
+        return null
+      },
       renameAsset: (id, newName) => {
         const p = get().project
         if (!p?.assets) return 'Sem imagens no projeto.'
@@ -1518,6 +1676,20 @@ export function createProjectStore(
           return 'Já existe uma imagem com esse nome.'
         }
         if (target.name === name) return null
+        if (isPythonProject(p) && (projectUsesPgzero(p) || projectUsesRaylib(p))) {
+          // Pygame Zero finds the file by name and raylib by path: the file follows the name.
+          const renamed = projectUsesRaylib(p)
+            ? raylibRenamedAsset(p, target, name)
+            : pgzeroRenamedAsset(p, target, name)
+          if ('error' in renamed) return renamed.error
+          const cover =
+            p.coverAssetName === target.name ? { coverAssetName: renamed.asset.name } : {}
+          return commitPython({
+            ...p,
+            ...cover,
+            assets: p.assets.map((a) => (a.id === id ? renamed.asset : a)),
+          })
+        }
         const next = p.assets.map((a) => (a.id === id ? { ...a, name } : a))
         // A capa escolhida segue o nome novo.
         const cover = p.coverAssetName === target.name ? { coverAssetName: name } : {}

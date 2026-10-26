@@ -21,8 +21,31 @@ import {
   collectTextSpriteIdentifiers,
   textSpriteStatementToCode,
 } from '../official-extensions/game-2d/textCodec'
+import {
+  collectGameKitDrawingIdentifiers,
+  gameKitDrawingStatementToCode,
+} from '../official-extensions/game-2d-advanced/drawingCodec'
+import {
+  collectGameKit3DGameplayExpressionIdentifiers,
+  collectGameKit3DGameplayIdentifiers,
+  gameKit3DGameplayStatementToCode,
+} from '../official-extensions/game-3d-advanced/gameplayCodec'
+import {
+  collectGameKit3DModelIdentifiers,
+  gameKit3DModelStatementToCode,
+} from '../official-extensions/game-3d-advanced/modelCodec'
+import {
+  collectGameRulesExpressionIdentifiers,
+  collectGameRulesIdentifiers,
+  gameRulesStatementToCode,
+} from '../official-extensions/game3dRules/codec'
+import { isGameRulesStatement } from '../official-extensions/game3dRules/ir'
 import { sceneToCode } from '../official-extensions/scene-2d/codec'
 import { isSceneExpression, isSceneStatement } from '../official-extensions/scene-2d/ir'
+import {
+  collectWorld3DNewIdentifiers,
+  world3DNewStatementToCode,
+} from '../official-extensions/world-3d/worldCodec'
 import { canvas3DAddonImport } from '../three/canvas3dAddons'
 import { CANVAS3D_SEMANTIC_STATEMENT_TYPES } from '../three/canvas3dContract'
 import { wrapCanvas3DMacro, wrapCanvas3DRuntime } from '../three/canvas3dMacroCodec'
@@ -623,11 +646,9 @@ function stripNestedAnimationLoops(stmt: JSStatement, hoisted: JSStatement[]): J
       // eventos (click etc.) mantêm o hoisting histórico (teste travado).
       if (stmt.event === 'load') return stmt
       return { ...stmt, body: extractAnimationLoops(stmt.body, hoisted) }
-    case 'g3d:forEachInSwarm':
     case 'g3d:forEachHit':
     case 'g3d:forEachInGroup':
     case 'g3d:pruneOffscreen':
-    case 'g3d:everyFrames':
     case 'g3d:everySeconds':
     case 'forEach':
     case 'imageOnLoad':
@@ -802,6 +823,15 @@ function compileStatementCode(
       pad,
       recAt,
       styleAccess,
+    })
+  }
+  if (isGameRulesStatement(stmt)) {
+    return gameRulesStatementToCode(stmt, {
+      pad,
+      id: (name) => identifiers.get(name),
+      expression: (value) => compileExpr(value, 0, identifiers, recAt(base)),
+      body: (body) =>
+        compileStatements(body, indent + 1, identifiers, childMapContext(mapContext, base + 1)),
     })
   }
   if (isRoutedExtensionStatement(stmt)) {
@@ -2380,7 +2410,7 @@ function compileStatementCode(
       case 'g3d:createScene':
         return `${pad}const ${identifiers.get(stmt.varName)} = SZGame3D.createScene(${JSON.stringify(stmt.canvasId)});`
       case 'g3d:createFullscreenScene':
-        return `${pad}const ${identifiers.get(stmt.varName)} = SZGame3D.createFullscreenScene(${JSON.stringify(stmt.bg)});`
+        return `${pad}const ${identifiers.get(stmt.varName)} = SZGame3D.createFullscreenScene(${JSON.stringify(stmt.bg)}${stmt.kit ? `, ${JSON.stringify(stmt.kit)}` : ''});`
       case 'g3d:setBackground':
         return `${pad}SZGame3D.setBackground(${identifiers.get(stmt.worldVar)}, ${JSON.stringify(stmt.color)});`
       case 'g3d:setCameraPosition':
@@ -2414,8 +2444,10 @@ function compileStatementCode(
         return `${pad}SZGame3D.controlWithKeys(${identifiers.get(stmt.objVar)}, ${compileExpr(valueToExpr(stmt.speed), 0, identifiers, recAt(base))});`
       case 'g3d:setScale':
         return `${pad}SZGame3D.setScale(${identifiers.get(stmt.objVar)}, ${compileExpr(stmt.factor, 0, identifiers, recAt(base))});`
-      case 'g3d:cameraFollow':
-        return `${pad}SZGame3D.cameraFollow(${identifiers.get(stmt.worldVar)}, ${identifiers.get(stmt.objVar)});`
+      case 'g3d:cameraMode':
+        return `${pad}SZGame3D.cameraMode(${identifiers.get(stmt.worldVar)}, ${JSON.stringify(stmt.mode)}, ${stmt.objVar ? identifiers.get(stmt.objVar) : 'null'});`
+      case 'g3d:cameraDistance':
+        return `${pad}SZGame3D.cameraDistance(${identifiers.get(stmt.worldVar)}, ${compileExpr(valueToExpr(stmt.dist), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.height), 0, identifiers, recAt(base))});`
       case 'g3d:createGroup':
         return `${pad}const ${identifiers.get(stmt.varName)} = SZGame3D.createGroup();`
       case 'g3d:spawnEnemy':
@@ -2428,8 +2460,6 @@ function compileStatementCode(
         return `${pad}SZGame3D.removeFromGroup(${identifiers.get(stmt.groupVar)}, ${identifiers.get(stmt.objVar)});`
       case 'g3d:clearGroup':
         return `${pad}SZGame3D.clearGroup(${identifiers.get(stmt.groupVar)});`
-      case 'g3d:stop':
-        return `${pad}SZGame3D.stop(${identifiers.get(stmt.worldVar)});`
       case 'g3d:createCrossingScene':
         return `${pad}const ${identifiers.get(stmt.varName)} = SZGame3D.createCrossingScene(${JSON.stringify(stmt.canvasId)});`
       case 'g3d:createCrosser':
@@ -2446,8 +2476,6 @@ function compileStatementCode(
         return `${pad}SZGame3D.generateRows(${identifiers.get(stmt.worldVar)}, ${compileExpr(valueToExpr(stmt.count), 0, identifiers, recAt(base))});`
       case 'g3d:moveTraffic':
         return `${pad}SZGame3D.moveTraffic(${identifiers.get(stmt.worldVar)});`
-      case 'g3d:isometricCamera':
-        return `${pad}SZGame3D.isometricCamera(${identifiers.get(stmt.worldVar)}, ${stmt.followVar ? identifiers.get(stmt.followVar) : 'null'});`
       case 'g3d:gridStep':
         return `${pad}SZGame3D.gridStep(${identifiers.get(stmt.objVar)});`
       case 'g3d:gridMove':
@@ -2456,8 +2484,6 @@ function compileStatementCode(
         return `${pad}SZGame3D.moveAcross(${identifiers.get(stmt.groupVar)}, ${compileExpr(valueToExpr(stmt.speed), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.min), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.max), 0, identifiers, recAt(base))});`
       case 'g3d:gridPosition':
         return `${pad}SZGame3D.gridPosition(${identifiers.get(stmt.objVar)}, ${compileExpr(stmt.row, 0, identifiers, recAt(base))}, ${compileExpr(stmt.col, 0, identifiers, recAt(base))});`
-      case 'g3d:topCamera':
-        return `${pad}SZGame3D.topCamera(${identifiers.get(stmt.worldVar)}, ${stmt.followVar ? identifiers.get(stmt.followVar) : 'null'});`
       case 'g3d:moveInCircle':
         return `${pad}SZGame3D.moveInCircle(${identifiers.get(stmt.objVar)}, ${compileExpr(valueToExpr(stmt.radius), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.speed), 0, identifiers, recAt(base))});`
       case 'g3d:createRaceScene':
@@ -2575,12 +2601,6 @@ function compileStatementCode(
 ${body}
 ${pad}});`
       }
-      case 'g3d:fpsCamera':
-        return `${pad}SZGame3D.fpsCamera(${identifiers.get(stmt.worldVar)}, ${identifiers.get(stmt.objVar)});`
-      case 'g3d:orbitCamera':
-        return `${pad}SZGame3D.orbitCamera(${identifiers.get(stmt.worldVar)}, ${identifiers.get(stmt.objVar)});`
-      case 'g3d:thirdPersonCamera':
-        return `${pad}SZGame3D.thirdPersonCamera(${identifiers.get(stmt.worldVar)}, ${identifiers.get(stmt.objVar)}, ${compileExpr(valueToExpr(stmt.dist), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.height), 0, identifiers, recAt(base))});`
       case 'g3d:cameraLookAt':
         return `${pad}SZGame3D.cameraLookAt(${identifiers.get(stmt.worldVar)}, ${identifiers.get(stmt.objVar)});`
       case 'g3d:setFOV':
@@ -2605,8 +2625,17 @@ ${pad}});`
         return `${pad}SZGame3D.setOpacity(${identifiers.get(stmt.objVar)}, ${compileExpr(valueToExpr(stmt.opacity), 0, identifiers, recAt(base))});`
       case 'g3d:setMaterial':
         return `${pad}SZGame3D.setMaterial(${identifiers.get(stmt.objVar)}, ${JSON.stringify(stmt.kind)});`
-      case 'g3d:setTexture':
-        return `${pad}SZGame3D.setTexture(${identifiers.get(stmt.objVar)}, ${JSON.stringify(stmt.asset)});`
+      case 'g3d:setTexture': {
+        const times =
+          stmt.repeat === undefined
+            ? ''
+            : `, ${compileExpr(valueToExpr(stmt.repeat), 0, identifiers, recAt(base))}`
+        return `${pad}SZGame3D.setTexture(${identifiers.get(stmt.objVar)}, ${JSON.stringify(stmt.asset)}${times});`
+      }
+      case 'g3d:modelAnimation':
+        return stmt.op === 'parar'
+          ? `${pad}SZGame3D.stopAnimation(${identifiers.get(stmt.objVar)});`
+          : `${pad}SZGame3D.playAnimation(${identifiers.get(stmt.objVar)}, ${JSON.stringify(stmt.clip ?? '')}, ${JSON.stringify(stmt.mode ?? 'repetir')});`
       case 'g3d:setVisible':
         return `${pad}SZGame3D.setVisible(${identifiers.get(stmt.objVar)}, ${JSON.stringify(stmt.mode)});`
       case 'g3d:removeObject':
@@ -2618,26 +2647,15 @@ ${pad}});`
       case 'g3d:addSunLight':
         return `${pad}SZGame3D.addSunLight(${identifiers.get(stmt.worldVar)}, ${JSON.stringify(stmt.color)}, ${compileExpr(valueToExpr(stmt.intensity), 0, identifiers, recAt(base))});`
       case 'g3d:addPointLight':
-        return `${pad}SZGame3D.addPointLight(${identifiers.get(stmt.worldVar)}, ${JSON.stringify(stmt.color)}, ${compileExpr(valueToExpr(stmt.intensity), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.y), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.z), 0, identifiers, recAt(base))});`
+        return `${pad}SZGame3D.addPointLight(${identifiers.get(stmt.worldVar)}, ${JSON.stringify(stmt.color)}, ${compileExpr(valueToExpr(stmt.intensity), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.y), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.z), 0, identifiers, recAt(base))}${stmt.shadow ? ', "com-sombra"' : ''});`
       case 'g3d:setFog':
         return `${pad}SZGame3D.setFog(${identifiers.get(stmt.worldVar)}, ${JSON.stringify(stmt.color)}, ${compileExpr(valueToExpr(stmt.near), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.far), 0, identifiers, recAt(base))});`
       case 'g3d:setSky':
         return `${pad}SZGame3D.setSky(${identifiers.get(stmt.worldVar)}, ${JSON.stringify(stmt.top)}, ${JSON.stringify(stmt.bottom)});`
       case 'g3d:setShadows':
         return `${pad}SZGame3D.setShadows(${identifiers.get(stmt.worldVar)}, ${JSON.stringify(stmt.mode)});`
-      case 'g3d:createSwarm':
-        return `${pad}const ${identifiers.get(stmt.varName)} = SZGame3D.createSwarm(${identifiers.get(stmt.worldVar)});`
-      case 'g3d:spawnInSwarm':
-        return `${pad}SZGame3D.spawnInSwarm(${identifiers.get(stmt.swarmVar)}, ${identifiers.get(stmt.originalVar)}, ${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.y), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.z), 0, identifiers, recAt(base))});`
-      case 'g3d:forEachInSwarm': {
-        const body = compileStatements(
-          stmt.body,
-          indent + 1,
-          identifiers,
-          childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
-        )
-        return `${pad}SZGame3D.forEachInSwarm(${identifiers.get(stmt.swarmVar)}, (${identifiers.get(stmt.itemName)}) => {\n${body}\n${pad}});`
-      }
+      case 'g3d:spawnCopy':
+        return `${pad}SZGame3D.spawnCopy(${identifiers.get(stmt.groupVar)}, ${identifiers.get(stmt.originalVar)}, ${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.y), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.z), 0, identifiers, recAt(base))});`
       case 'g3d:forEachInGroup': {
         const body = compileStatements(
           stmt.body,
@@ -2656,15 +2674,6 @@ ${pad}});`
         )
         return `${pad}SZGame3D.pruneOffscreen(${identifiers.get(stmt.worldVar)}, ${identifiers.get(stmt.groupVar)}, (${identifiers.get(stmt.itemName)}) => {\n${body}\n${pad}});`
       }
-      case 'g3d:everyFrames': {
-        const body = compileStatements(
-          stmt.body,
-          indent + 1,
-          identifiers,
-          childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
-        )
-        return `${pad}SZGame3D.everyFramesLoop(${compileExpr(valueToExpr(stmt.n), 0, identifiers, recAt(base))}, () => {\n${body}\n${pad}});`
-      }
       case 'g3d:everySeconds': {
         const body = compileStatements(
           stmt.body,
@@ -2674,10 +2683,8 @@ ${pad}});`
         )
         return `${pad}SZGame3D.everySecondsLoop(${compileExpr(valueToExpr(stmt.secs), 0, identifiers, recAt(base))}, () => {\n${body}\n${pad}});`
       }
-      case 'g3d:removeFromSwarm':
-        return `${pad}SZGame3D.removeFromSwarm(${identifiers.get(stmt.swarmVar)}, ${identifiers.get(stmt.itemVar)});`
-      case 'g3d:pruneSwarm':
-        return `${pad}SZGame3D.pruneSwarm(${identifiers.get(stmt.swarmVar)}, ${JSON.stringify(stmt.axis)}, ${compileExpr(valueToExpr(stmt.min), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.max), 0, identifiers, recAt(base))});`
+      case 'g3d:pruneArea':
+        return `${pad}SZGame3D.pruneArea(${identifiers.get(stmt.groupVar)}, ${JSON.stringify(stmt.axis)}, ${compileExpr(valueToExpr(stmt.min), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.max), 0, identifiers, recAt(base))});`
       case 'g3d:playNote':
         return `${pad}SZGame3D.playNote(${compileExpr(valueToExpr(stmt.freq), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.ms), 0, identifiers, recAt(base))});`
       case 'g3d:playEffect':
@@ -2700,6 +2707,10 @@ ${pad}});`
   }
 
   function gameKitStatementToCode(): string {
+    const drawing = gameKitDrawingStatementToCode(stmt, pad, (value) =>
+      compileExpr(value, 0, identifiers, recAt(base)),
+    )
+    if (drawing !== undefined) return drawing
     switch (stmt.type) {
       // ----- game-2d-advanced (kit profissional) -----
       case 'gk:setup':
@@ -3507,6 +3518,17 @@ ${pad}});`
   }
 
   function gameKitThreeDStatementToCode(): string {
+    const codecTools = {
+      pad,
+      id: (name: string) => identifiers.get(name),
+      expression: (value: JSExpr) => compileExpr(value, 0, identifiers, recAt(base)),
+      body: (body: JSStatement[]) =>
+        compileStatements(body, indent + 1, identifiers, childMapContext(mapContext, base + 1)),
+    }
+    const model =
+      gameKit3DModelStatementToCode(stmt, codecTools) ??
+      gameKit3DGameplayStatementToCode(stmt, codecTools)
+    if (model !== undefined) return model
     switch (stmt.type) {
       // ---- Jogo 3D Avançado (game-3d-advanced): window.SZGameKit3D ----
       case 'g3k:setup':
@@ -3582,8 +3604,6 @@ ${pad}});`
         return `${pad}SZGameKit3D.cameraAngle(${compileExpr(valueToExpr(stmt.az), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.el), 0, identifiers, recAt(base))});`
       case 'g3k:cameraDistance':
         return `${pad}SZGameKit3D.cameraDistance(${compileExpr(valueToExpr(stmt.dist), 0, identifiers, recAt(base))});`
-      case 'g3k:cameraShake':
-        return `${pad}SZGameKit3D.cameraShake(${compileExpr(valueToExpr(stmt.strength), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.seconds), 0, identifiers, recAt(base))});`
       case 'g3k:cameraLens':
         return `${pad}SZGameKit3D.cameraLens(${compileExpr(valueToExpr(stmt.fov), 0, identifiers, recAt(base))});`
       case 'g3k:cameraLookAt':
@@ -3622,27 +3642,10 @@ ${pad}});`
         return `${pad}SZGameKit3D.playAnim(${identifiers.get(stmt.charVar)}, ${JSON.stringify(stmt.clip)}, ${stmt.loop});`
       case 'g3k:stopAnim':
         return `${pad}SZGameKit3D.stopAnim(${identifiers.get(stmt.charVar)});`
-      case 'g3k:setStateAnim':
-        return `${pad}SZGameKit3D.setStateAnim(${JSON.stringify(stmt.mold)}, ${JSON.stringify(stmt.state)}, ${JSON.stringify(stmt.clip)});`
       case 'g3k:playMusic':
         return `${pad}SZGameKit3D.playMusic(${JSON.stringify(stmt.name)});`
       case 'g3k:stopMusic':
         return `${pad}SZGameKit3D.stopMusic();`
-      case 'g3k:startTimer':
-        return `${pad}SZGameKit3D.startTimer(${compileExpr(valueToExpr(stmt.seconds), 0, identifiers, recAt(base))});`
-      case 'g3k:stopTimer':
-        return `${pad}SZGameKit3D.stopTimer();`
-      case 'g3k:onTimerEnd': {
-        const body = compileStatements(
-          stmt.body,
-          indent + 1,
-          identifiers,
-          childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
-        )
-        return `${pad}SZGameKit3D.onTimerEnd(() => {
-  ${body}
-  ${pad}});`
-      }
       case 'g3k:say':
         return `${pad}SZGameKit3D.say(${identifiers.get(stmt.charVar)}, ${compileExpr(valueToExpr(stmt.text), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.seconds), 0, identifiers, recAt(base))});`
       case 'g3k:hideSay':
@@ -3776,8 +3779,6 @@ ${pad}});`
         return `${pad}SZGameKit3D.stopEmitter(${JSON.stringify(stmt.effect)});`
       case 'g3k:addAttractor':
         return `${pad}SZGameKit3D.addAttractor(${JSON.stringify(stmt.effect)}, ${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.y), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.z), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.intensity), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.radius), 0, identifiers, recAt(base))});`
-      case 'g3k:setScreenText':
-        return `${pad}SZGameKit3D.setScreenText(${JSON.stringify(stmt.screen)}, ${compileExpr(valueToExpr(stmt.title), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.text), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.button), 0, identifiers, recAt(base))});`
       case 'g3k:createScreen':
         return `${pad}SZGameKit3D.createScreen(${JSON.stringify(stmt.name)}, ${compileExpr(valueToExpr(stmt.title), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.text), 0, identifiers, recAt(base))});`
       case 'g3k:addButton': {
@@ -3793,8 +3794,6 @@ ${pad}});`
         return `${pad}SZGameKit3D.showScreen(${JSON.stringify(stmt.name)});`
       case 'g3k:hideScreens':
         return `${pad}SZGameKit3D.hideScreens();`
-      case 'g3k:hudText':
-        return `${pad}SZGameKit3D.setHud(${JSON.stringify(stmt.slot)}, ${compileExpr(valueToExpr(stmt.text), 0, identifiers, recAt(base))});`
       case 'g3k:setState':
         return `${pad}SZGameKit3D.setState(${JSON.stringify(stmt.name)});`
       case 'g3k:onEnterState': {
@@ -3808,8 +3807,6 @@ ${pad}});`
       }
       case 'g3k:returnToMenu':
         return `${pad}SZGameKit3D.returnToMenu();`
-      case 'g3k:endGame':
-        return `${pad}SZGameKit3D.endGame();`
       case 'g3k:onEvent': {
         const body = compileStatements(
           stmt.body,
@@ -3835,6 +3832,13 @@ ${pad}});`
   }
 
   function worldThreeDStatementToCode(): string {
+    const lot10 = world3DNewStatementToCode(stmt, {
+      pad,
+      expression: (value) => compileExpr(value, 0, identifiers, recAt(base)),
+      body: (body) =>
+        compileStatements(body, indent + 1, identifiers, childMapContext(mapContext, base + 1)),
+    })
+    if (lot10 !== undefined) return lot10
     switch (stmt.type) {
       // ---- Mundo 3D (world-3d) ----
       case 'w3d:setup':
@@ -3865,8 +3869,6 @@ ${pad}});`
         return `${pad}SZWorld3D.playMusic(${JSON.stringify(stmt.name)});`
       case 'w3d:stopMusic':
         return `${pad}SZWorld3D.stopMusic();`
-      case 'w3d:hud':
-        return `${pad}SZWorld3D.hud(${compileExpr(valueToExpr(stmt.text), 0, identifiers, recAt(base))}, ${JSON.stringify(stmt.corner)});`
       case 'w3d:say':
         return `${pad}SZWorld3D.say(${compileExpr(valueToExpr(stmt.text), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.secs), 0, identifiers, recAt(base))});`
       case 'w3d:point':
@@ -3958,7 +3960,7 @@ ${pad}});`
       case 'w3d:placeThing':
         return `${pad}SZWorld3D.placeThing(${JSON.stringify(stmt.thing)}, ${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.z), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.s), 0, identifiers, recAt(base))});`
       case 'w3d:placeModel':
-        return `${pad}SZWorld3D.placeModel(${JSON.stringify(stmt.model)}, ${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.z), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.s), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.deg), 0, identifiers, recAt(base))});`
+        return `${pad}SZWorld3D.placeModel(${JSON.stringify(stmt.model)}, ${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.z), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.s), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.deg), 0, identifiers, recAt(base))}${stmt.clip ? `, ${JSON.stringify(stmt.clip)}` : ''});`
       case 'w3d:clearArea':
         return `${pad}SZWorld3D.clearArea(${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.z), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.r), 0, identifiers, recAt(base))});`
       case 'w3d:onCrash': {
@@ -4172,8 +4174,6 @@ ${pad}});`
         return `${pad}SZWorld3D.clouds(${JSON.stringify(stmt.amount)});`
       case 'w3d:cameraMode':
         return `${pad}SZWorld3D.cameraMode(${JSON.stringify(stmt.mode)});`
-      case 'w3d:cameraShake':
-        return `${pad}SZWorld3D.cameraShake(${compileExpr(valueToExpr(stmt.force), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.secs), 0, identifiers, recAt(base))});`
       case 'w3d:effects':
         return `${pad}SZWorld3D.setEffects(${JSON.stringify(stmt.on ? 'ligados' : 'desligados')}, ${compileExpr(valueToExpr(stmt.strength), 0, identifiers, recAt(base))});`
       case 'w3d:dayNight':
@@ -4308,10 +4308,8 @@ function reserveClassNames(statements: JSStatement[], scope: IdentifierScope): v
       case 'g2d:everySeconds':
       case 'g2d:afterSeconds':
       case 'g3d:animate':
-      case 'g3d:forEachInSwarm':
       case 'g3d:forEachInGroup':
       case 'g3d:pruneOffscreen':
-      case 'g3d:everyFrames':
       case 'g3d:everySeconds':
         reserveClassNames(stmt.body, scope)
         break
@@ -4378,10 +4376,8 @@ function reserveCanvasElements(statements: JSStatement[], scope: IdentifierScope
       case 'g2d:everySeconds':
       case 'g2d:afterSeconds':
       case 'g3d:animate':
-      case 'g3d:forEachInSwarm':
       case 'g3d:forEachInGroup':
       case 'g3d:pruneOffscreen':
-      case 'g3d:everyFrames':
       case 'g3d:everySeconds':
         reserveCanvasElements(stmt.body, scope)
         break
@@ -4416,12 +4412,15 @@ function collectIdentifierNames(statements: JSStatement[]): Set<string> {
 }
 
 function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): void {
+  if (collectGameKitDrawingIdentifiers(stmt, names, collectExprIdentifiers)) return
   if (isSceneStatement(stmt)) {
     for (const arg of stmt.args) collectExprIdentifiers(arg, names)
     if ('parameter' in stmt && stmt.parameter) names.add(stmt.parameter)
     if ('body' in stmt) for (const child of stmt.body) collectStatementIdentifiers(child, names)
     return
   }
+  if (collectGameRulesIdentifiers(stmt, names, collectExprIdentifiers, collectStatementIdentifiers))
+    return
   if (stmt.type.startsWith('g2d:')) {
     gameTwoDStatementIdentifiers()
     return
@@ -5989,9 +5988,14 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
         names.add(stmt.objVar)
         collectExprIdentifiers(valueToExpr(stmt.speed), names)
         return
-      case 'g3d:cameraFollow':
+      case 'g3d:cameraMode':
         names.add(stmt.worldVar)
-        names.add(stmt.objVar)
+        if (stmt.objVar) names.add(stmt.objVar)
+        return
+      case 'g3d:cameraDistance':
+        names.add(stmt.worldVar)
+        collectExprIdentifiers(valueToExpr(stmt.dist), names)
+        collectExprIdentifiers(valueToExpr(stmt.height), names)
         return
       case 'g3d:createGroup':
         names.add(stmt.varName)
@@ -6015,16 +6019,9 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
       case 'g3d:clearGroup':
         names.add(stmt.groupVar)
         return
-      case 'g3d:everyFrames':
-        collectExprIdentifiers(valueToExpr(stmt.n), names)
-        for (const child of stmt.body) collectStatementIdentifiers(child, names)
-        return
       case 'g3d:everySeconds':
         collectExprIdentifiers(valueToExpr(stmt.secs), names)
         for (const child of stmt.body) collectStatementIdentifiers(child, names)
-        return
-      case 'g3d:stop':
-        names.add(stmt.worldVar)
         return
       case 'g3d:createCrossingScene':
         names.add(stmt.varName)
@@ -6055,10 +6052,6 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
         names.add(stmt.worldVar)
         collectExprIdentifiers(valueToExpr(stmt.count), names)
         return
-      case 'g3d:isometricCamera':
-        names.add(stmt.worldVar)
-        if (stmt.followVar) names.add(stmt.followVar)
-        return
       case 'g3d:moveAcross':
         names.add(stmt.groupVar)
         collectExprIdentifiers(valueToExpr(stmt.speed), names)
@@ -6069,10 +6062,6 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
         names.add(stmt.objVar)
         collectExprIdentifiers(stmt.row, names)
         collectExprIdentifiers(stmt.col, names)
-        return
-      case 'g3d:topCamera':
-        names.add(stmt.worldVar)
-        if (stmt.followVar) names.add(stmt.followVar)
         return
       case 'g3d:moveInCircle':
         names.add(stmt.objVar)
@@ -6216,17 +6205,9 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
         names.add(stmt.aVar)
         names.add(stmt.bVar)
         return
-      case 'g3d:fpsCamera':
-      case 'g3d:orbitCamera':
       case 'g3d:cameraLookAt':
         names.add(stmt.worldVar)
         names.add(stmt.objVar)
-        return
-      case 'g3d:thirdPersonCamera':
-        names.add(stmt.worldVar)
-        names.add(stmt.objVar)
-        collectExprIdentifiers(valueToExpr(stmt.dist), names)
-        collectExprIdentifiers(valueToExpr(stmt.height), names)
         return
       case 'g3d:setFOV':
         names.add(stmt.worldVar)
@@ -6265,9 +6246,13 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
         return
       case 'g3d:setColor':
       case 'g3d:setMaterial':
-      case 'g3d:setTexture':
       case 'g3d:setVisible':
+      case 'g3d:modelAnimation':
         names.add(stmt.objVar)
+        return
+      case 'g3d:setTexture':
+        names.add(stmt.objVar)
+        if (stmt.repeat !== undefined) collectExprIdentifiers(valueToExpr(stmt.repeat), names)
         return
       case 'g3d:setOpacity':
         names.add(stmt.objVar)
@@ -6302,21 +6287,12 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
         collectExprIdentifiers(valueToExpr(stmt.near), names)
         collectExprIdentifiers(valueToExpr(stmt.far), names)
         return
-      case 'g3d:createSwarm':
-        names.add(stmt.varName)
-        names.add(stmt.worldVar)
-        return
-      case 'g3d:spawnInSwarm':
-        names.add(stmt.swarmVar)
+      case 'g3d:spawnCopy':
+        names.add(stmt.groupVar)
         names.add(stmt.originalVar)
         collectExprIdentifiers(valueToExpr(stmt.x), names)
         collectExprIdentifiers(valueToExpr(stmt.y), names)
         collectExprIdentifiers(valueToExpr(stmt.z), names)
-        return
-      case 'g3d:forEachInSwarm':
-        names.add(stmt.swarmVar)
-        names.add(stmt.itemName)
-        for (const child of stmt.body) collectStatementIdentifiers(child, names)
         return
       case 'g3d:forEachInGroup':
         names.add(stmt.groupVar)
@@ -6329,12 +6305,8 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
         names.add(stmt.itemName)
         for (const child of stmt.body) collectStatementIdentifiers(child, names)
         return
-      case 'g3d:removeFromSwarm':
-        names.add(stmt.swarmVar)
-        names.add(stmt.itemVar)
-        return
-      case 'g3d:pruneSwarm':
-        names.add(stmt.swarmVar)
+      case 'g3d:pruneArea':
+        names.add(stmt.groupVar)
         collectExprIdentifiers(valueToExpr(stmt.min), names)
         collectExprIdentifiers(valueToExpr(stmt.max), names)
         return
@@ -7289,6 +7261,21 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
   }
 
   function gameKitThreeDStatementIdentifiers(): void {
+    if (
+      collectGameKit3DModelIdentifiers(
+        stmt,
+        names,
+        collectExprIdentifiers,
+        collectStatementIdentifiers,
+      ) ||
+      collectGameKit3DGameplayIdentifiers(
+        stmt,
+        names,
+        collectExprIdentifiers,
+        collectStatementIdentifiers,
+      )
+    )
+      return
     switch (stmt.type) {
       // ---- Jogo 3D Avançado (game-3d-advanced) ----
       case 'g3k:setup':
@@ -7352,7 +7339,6 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
       case 'g3k:hideScreens':
       case 'g3k:setState':
       case 'g3k:returnToMenu':
-      case 'g3k:endGame':
       case 'g3k:emit':
       case 'g3k:loadSound':
       case 'g3k:playSound':
@@ -7429,10 +7415,6 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
         return
       case 'g3k:cameraDistance':
         collectExprIdentifiers(valueToExpr(stmt.dist), names)
-        return
-      case 'g3k:cameraShake':
-        collectExprIdentifiers(valueToExpr(stmt.strength), names)
-        collectExprIdentifiers(valueToExpr(stmt.seconds), names)
         return
       case 'g3k:cameraLens':
         collectExprIdentifiers(valueToExpr(stmt.fov), names)
@@ -7594,11 +7576,6 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
         names.add(stmt.itemName)
         for (const child of stmt.body) collectStatementIdentifiers(child, names)
         return
-      case 'g3k:setScreenText':
-        collectExprIdentifiers(valueToExpr(stmt.title), names)
-        collectExprIdentifiers(valueToExpr(stmt.text), names)
-        collectExprIdentifiers(valueToExpr(stmt.button), names)
-        return
       case 'g3k:createScreen':
         collectExprIdentifiers(valueToExpr(stmt.title), names)
         collectExprIdentifiers(valueToExpr(stmt.text), names)
@@ -7607,11 +7584,7 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
         collectExprIdentifiers(valueToExpr(stmt.label), names)
         for (const child of stmt.body) collectStatementIdentifiers(child, names)
         return
-      case 'g3k:hudText':
-        collectExprIdentifiers(valueToExpr(stmt.text), names)
-        return
       case 'g3k:onEnterState':
-      case 'g3k:onTimerEnd':
       case 'g3k:onEvent':
         for (const child of stmt.body) collectStatementIdentifiers(child, names)
         return
@@ -7625,13 +7598,8 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
         collectExprIdentifiers(valueToExpr(stmt.text), names)
         collectExprIdentifiers(valueToExpr(stmt.seconds), names)
         return
-      case 'g3k:startTimer':
-        collectExprIdentifiers(valueToExpr(stmt.seconds), names)
-        return
-      case 'g3k:setStateAnim':
       case 'g3k:playMusic':
       case 'g3k:stopMusic':
-      case 'g3k:stopTimer':
         return
       case 'g3k:playTone':
         collectExprIdentifiers(valueToExpr(stmt.freq), names)
@@ -7643,6 +7611,10 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
   }
 
   function worldThreeDStatementIdentifiers(): void {
+    if (
+      collectWorld3DNewIdentifiers(stmt, names, collectExprIdentifiers, collectStatementIdentifiers)
+    )
+      return
     switch (stmt.type) {
       // ---- Mundo 3D (world-3d) ----
       case 'w3d:setup':
@@ -7679,9 +7651,6 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
         return
       case 'w3d:carBoost':
         collectExprIdentifiers(valueToExpr(stmt.force), names)
-        return
-      case 'w3d:hud':
-        collectExprIdentifiers(valueToExpr(stmt.text), names)
         return
       case 'w3d:say':
         collectExprIdentifiers(valueToExpr(stmt.text), names)
@@ -8009,10 +7978,6 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
         return
       case 'w3d:cameraMode':
         return
-      case 'w3d:cameraShake':
-        collectExprIdentifiers(valueToExpr(stmt.force), names)
-        collectExprIdentifiers(valueToExpr(stmt.secs), names)
-        return
       case 'w3d:dayNight':
         collectExprIdentifiers(valueToExpr(stmt.minutes), names)
         return
@@ -8036,6 +8001,8 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
 }
 
 function collectExprIdentifiers(expr: JSExpr, names: Set<string>): void {
+  if (collectGameRulesExpressionIdentifiers(expr, names, collectExprIdentifiers)) return
+  if (collectGameKit3DGameplayExpressionIdentifiers(expr, names, collectExprIdentifiers)) return
   if (isSceneExpression(expr)) {
     for (const arg of expr.args) collectExprIdentifiers(arg, names)
     return
@@ -8418,9 +8385,8 @@ function collectExprIdentifiers(expr: JSExpr, names: Set<string>): void {
     case 'g3k:gameState':
     case 'g3k:groundPoint':
     case 'w3d:worldSize':
-    case 'w3d:carPos':
+    case 'w3d:playerPos':
     case 'w3d:carSpeed':
-    case 'w3d:personPos':
     case 'w3d:isDriving':
     case 'w3d:coinCount':
     case 'w3d:hasAchievement':

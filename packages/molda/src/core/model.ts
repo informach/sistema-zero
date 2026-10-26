@@ -116,7 +116,7 @@ export type MoldaAssetPaletteId = PaletteId | 'custom'
 
 export interface MoldaCustomPalette {
   name: string
-  /** 16 posições; `''` = slot vazio (preservado para os índices não deslocarem). */
+  /** 16 a 33 posições; `''` = slot vazio (preservado para os índices não deslocarem). */
   colors: readonly string[]
 }
 
@@ -137,7 +137,7 @@ export interface MoldaAssetBase {
 export interface MoldaPaletteFields {
   paletteId: MoldaAssetPaletteId
   customPalette?: MoldaCustomPalette
-  /** Cores extras (índices ≥ 16), até 48. Chave OMITIDA quando vazia. */
+  /** Cores extras (índices após a paleta base), até 48. Chave OMITIDA quando vazia. */
   extraColors?: string[]
 }
 

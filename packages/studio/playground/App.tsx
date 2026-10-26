@@ -362,7 +362,10 @@ function EditorScreen({
         onReady={() => console.debug('[host] onReady')}
         // Botão "Editar" nos desenhos do Pinta. No app de verdade abre
         // `/pinta?desenho=<id>` numa aba nova; aqui só loga (não há Pinta).
-        onEditDrawing={(drawingId) => console.debug('[host] onEditDrawing', drawingId)}
+        onEditDrawing={(drawingId, tab) => {
+          tab?.close()
+          console.debug('[host] onEditDrawing', drawingId)
+        }}
         // "Trazer do Pinta" com galeria fake (ver pintaLibraryDemo).
         pintaLibrary={pintaLibraryDemo}
         // "Trazer do Molda" com os três tipos codificados de verdade (ver moldaLibraryDemo).

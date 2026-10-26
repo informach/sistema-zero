@@ -27,18 +27,10 @@ export function Meter({
       aria-valuenow={current}
       aria-valuemin={0}
       aria-valuemax={max}
-      className={cn(
-        'h-[0.7rem] overflow-hidden rounded-full bg-[color-mix(in_oklab,var(--foreground)_10%,var(--card))]',
-        className,
-      )}
+      data-feito={tone === 'ok' ? 'true' : undefined}
+      className={cn('sz-hud', className)}
     >
-      <span
-        className={cn(
-          'block h-full rounded-full',
-          tone === 'ok' ? 'bg-(--pen-sucesso)' : 'bg-primary',
-        )}
-        style={{ width: `${percent}%` }}
-      />
+      <span style={{ width: `${percent}%` }} />
     </div>
   )
 }

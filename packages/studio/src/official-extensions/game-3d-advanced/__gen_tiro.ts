@@ -11,11 +11,16 @@ import { collectTypes, stripIds } from './exampleSourceUtils'
  * (createScreen/addButton/showScreen/hideScreens), gaveta da entidade
  * (setEntityValue/entityValue), teclado por keyPressed, céu em runtime (setSky)
  * e os ajustes de câmera por código (cameraAngle/cameraLens).
+ *
+ * As duas telas próprias mostram os dois jeitos de usar uma tela: a DICA (E) é para LER, então
+ * pausa o jogo (antes ela abria com a contagem correndo e os alvos fugindo) e o "Entendi!"
+ * volta a jogar; o "Prepare a mira!" é um aviso rápido que o próprio jogo fecha sozinho com
+ * "Esconder todas as telas" depois de 1,5 s, sem pausar.
  */
 export const TIRO_SOURCE = `
 SZGameKit3D.setup({ width: 1280, height: 720, world: 40, sky: "#1e1b4b", ground: "#365314" });
 SZGameKit3D.setEffects({ shadows: true, bloom: true, strength: 1.1, vignette: true });
-SZGameKit3D.setScreenText("menu", "Tiro ao Alvo", "Clique nos alvos antes que eles fujam. O dourado vale 3! Faça 12 pontos em 25 segundos. Aperte H para a dica.", "Valendo!");
+SZGameKit3D.setScreenText("inicio", "Tiro ao Alvo", "Clique nos alvos antes que eles fujam. O dourado vale 3! Faça 12 pontos em 25 segundos. Aperte E para a dica.", "Valendo!");
 SZGameKit3D.setScreenText("vitoria", "Olho de águia!", "Pontaria perfeita.", "De novo");
 SZGameKit3D.setScreenText("fim", "O tempo acabou...", "Foi por pouco!", "Tentar de novo");
 SZGameKit3D.defineMold("alvo", { health: 1, speed: 0 }, function () {
@@ -28,11 +33,13 @@ SZGameKit3D.defineMold("dourado", { health: 1, speed: 0 }, function () {
   SZGameKit3D.part({ shape: "box", color: "#78350f", w: 0.25, h: 1.5, d: 0.25, x: 0, y: 0.75, z: 0 });
 });
 SZGameKit3D.defineEffect("acerto", { count: 18, colorFrom: "#fde047", colorTo: "#b91c1c", spread: 5, sizeFrom: 0.4, sizeTo: 0, life: 0.5, gravity: 2 });
-SZGameKit3D.createScreen("dica", "Dica de caçador", "O dourado foge mais rápido! Aperte C para a lente de mira e V para a lente normal.");
+SZGameKit3D.createScreen("dica", "Dica de caçador", "O dourado foge mais rápido! Aperte a seta para cima para a lente de mira e a seta para baixo para a lente normal.");
 SZGameKit3D.addButton("dica", "Entendi!", function () {
-  SZGameKit3D.hideScreens();
+  SZGameKit3D.setState("jogando");
 });
+SZGameKit3D.createScreen("pronto", "Prepare a mira!", "Os alvos vão aparecer pelo campo.");
 let pontos = 0;
+let preparo = 0;
 SZGameKit3D.onEnterState("jogando", function () {
   pontos = 0;
   SZGameKit3D.setSeed(3);
@@ -44,6 +51,8 @@ SZGameKit3D.onEnterState("jogando", function () {
   SZGameKit3D.startTimer(25);
   SZGameKit3D.startSpawner("alvo", 1, "anywhere");
   SZGameKit3D.startSpawner("dourado", 5, "anywhere");
+  preparo = 1.5;
+  SZGameKit3D.showScreen("pronto");
 });
 SZGameKit3D.onEnterEntityState("alvo", "parado", function (ela) {
   SZGameKit3D.setEntityValue(ela, "valor", 1);
@@ -64,15 +73,22 @@ SZGameKit3D.on("acertou", function () {
   SZGameKit3D.cameraShake(0.15, 0.15);
 });
 SZGameKit3D.onUpdate(function (dt) {
-  SZGameKit3D.setHud("top-left", "Pontos: " + pontos + "/12");
-  SZGameKit3D.setHud("top-right", "Tempo: " + Math.ceil(SZGameKit3D.timeLeft()) + "s");
-  if (SZGameKit3D.keyPressed("h")) {
+  SZGameKit3D.hudText("top-left", "Pontos: " + pontos + "/12");
+  SZGameKit3D.hudText("top-right", "Tempo: " + Math.ceil(SZGameKit3D.timeLeft()) + "s");
+  if (preparo > 0) {
+    preparo = preparo - dt;
+    if (preparo <= 0) {
+      SZGameKit3D.hideScreens();
+    }
+  }
+  if (SZGameKit3D.keyPressed("KeyE")) {
+    SZGameKit3D.setState("pausado");
     SZGameKit3D.showScreen("dica");
   }
-  if (SZGameKit3D.keyPressed("c")) {
+  if (SZGameKit3D.keyPressed("ArrowUp")) {
     SZGameKit3D.cameraLens(30);
   }
-  if (SZGameKit3D.keyPressed("v")) {
+  if (SZGameKit3D.keyPressed("ArrowDown")) {
     SZGameKit3D.cameraLens(50);
   }
   if (SZGameKit3D.mousePressed()) {
@@ -96,7 +112,7 @@ SZGameKit3D.onUpdate(function (dt) {
   }
 });
 SZGameKit3D.onTimerEnd(function () {
-  SZGameKit3D.endGame();
+  SZGameKit3D.endGame("perdeu");
 });
 SZGameKit3D.start();
 `.trim()

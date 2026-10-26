@@ -22,7 +22,7 @@ export function ContinueCard({ course, next }: { course: CourseDetailView; next:
 
   return (
     <article className="sz-card flex flex-col overflow-hidden md:flex-row">
-      <div className="relative aspect-video bg-(--topo) md:aspect-auto md:min-h-[16.5rem] md:flex-[0_0_42%]">
+      <div className="sz-mira relative aspect-video bg-(--topo) md:aspect-auto md:min-h-[16.5rem] md:flex-[0_0_42%]">
         <div className="absolute inset-0">
           <CourseCover src={course.coverImageUrl} />
         </div>
@@ -112,7 +112,7 @@ export function CurrentModuleCard({
                   </span>
                 ) : null}
                 {current ? (
-                  <span className="sz-chip sz-chip-acao">Continue aqui</span>
+                  <span className="sz-chip sz-chip-novo">Continue aqui</span>
                 ) : lesson.locked ? (
                   <span className="sz-chip">
                     <Lock aria-hidden />
@@ -137,7 +137,7 @@ export function CurrentModuleCard({
                   className={cn(
                     base,
                     '-mx-4 rounded-[0.7rem] px-4 text-foreground transition-colors',
-                    current ? 'bg-(--acao-tint)' : 'hover:bg-muted',
+                    current ? 'bg-(--aviso-tint)' : 'hover:bg-muted',
                   )}
                 >
                   {row}

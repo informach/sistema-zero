@@ -68,6 +68,10 @@ export function registerPaymentEventHandlers(
       logger.warn('handler.payment_failed', { aggregateId: message.aggregateId })
       await enqueueDelivery(message)
     })
+    .on('payment.subscription_period_confirmed', async (message) => {
+      logger.info('handler.subscription_period_confirmed', { aggregateId: message.aggregateId })
+      await enqueueDelivery(message)
+    })
     .on('payment.expired', async (message) => {
       logger.info('handler.payment_expired', { aggregateId: message.aggregateId })
       await enqueueDelivery(message)

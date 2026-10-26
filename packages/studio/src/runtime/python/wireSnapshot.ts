@@ -6,6 +6,7 @@ import {
 import { isStudioProjectId } from '@sistemazero/core/studio/project-format'
 import { STUDIO_PYTHON_MATERIAL_LIMITS } from '@sistemazero/core/studio/python-material-policy'
 import type { PythonExecutionSnapshot } from './protocol'
+import { isPythonSavedFile, PYTHON_SAVED_FILE_LIMITS } from './savedFiles'
 
 const hash = (value: unknown): value is string =>
   typeof value === 'string' && /^[a-f0-9]{64}$/.test(value)
@@ -59,6 +60,21 @@ export function readPythonWireSnapshot(raw: unknown): PythonExecutionSnapshot {
       bytes: file.bytes as Uint8Array<ArrayBuffer>,
     })
   }
+  const saved: { path: string; bytes: Uint8Array<ArrayBuffer> }[] = []
+  if (raw.saved !== undefined) {
+    if (!Array.isArray(raw.saved) || raw.saved.length > PYTHON_SAVED_FILE_LIMITS.files)
+      throw new Error('Arquivos guardados do snapshot Python inválidos.')
+    let savedTotal = 0
+    for (const file of raw.saved) {
+      if (!record(file) || !isPythonSavedFile(file.path, file.bytes))
+        throw new Error('Arquivo guardado do snapshot Python inválido.')
+      const bytes = file.bytes as Uint8Array<ArrayBuffer>
+      savedTotal += bytes.byteLength
+      if (savedTotal > PYTHON_SAVED_FILE_LIMITS.totalBytes)
+        throw new Error('Os arquivos guardados excedem a cota.')
+      saved.push({ path: file.path as string, bytes })
+    }
+  }
   return {
     version: 1,
     projectId: raw.projectId,
@@ -66,5 +82,6 @@ export function readPythonWireSnapshot(raw: unknown): PythonExecutionSnapshot {
     configuration: { runtime, python, extensions },
     directories: [...raw.directories],
     files,
+    ...(raw.saved === undefined ? {} : { saved }),
   }
 }

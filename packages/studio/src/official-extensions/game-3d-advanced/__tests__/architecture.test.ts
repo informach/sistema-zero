@@ -18,15 +18,25 @@ describe('arquitetura do runtime do Jogo 3D Avançado', () => {
     expect(gameKit3DRuntime).not.toContain('__SZ_GAME_KIT_3D_PROJECT_RUNTIME__')
   })
 
-  it('reutiliza o mesmo decoder de data URL entre os runtimes 3D', () => {
-    const modelAssets = source('../runtimeModelAssets.ts')
-    const worldRuntime = source('../../world-3d/runtime.ts')
-    const sharedAssetRuntime = source('../../assetRuntime.ts')
-
-    expect(modelAssets).toContain("from '../assetRuntime'")
-    expect(worldRuntime).toContain("from '../assetRuntime'")
-    expect(modelAssets).not.toContain('function dataUrlToBuffer(url)')
-    expect(worldRuntime).not.toContain('function dataUrlToBuffer(url)')
-    expect(sharedAssetRuntime).toContain('function dataUrlToBuffer(url)')
+  it('os três runtimes 3D usam o MESMO carregador de modelos (decoder, GLTFLoader e HDR)', () => {
+    const shared = source('../../three3dModelsRuntime.ts')
+    expect(shared).toContain("from './assetRuntime'")
+    expect(shared).toContain('GLTFLoader().parse')
+    expect(source('../../assetRuntime.ts')).toContain('function dataUrlToBuffer(url)')
+    const fragments: Record<string, string[]> = {
+      'game-3d': ['runtime.ts', 'runtimeModelAssets.ts'],
+      'game-3d-advanced': ['runtime.ts', 'runtimeModelAssets.ts'],
+      'world-3d': ['runtime.ts'],
+    }
+    for (const [dir, files] of Object.entries(fragments)) {
+      expect(source(`../../${dir}/runtime.ts`)).toContain("from '../three3dModelsRuntime'")
+      for (const file of files) {
+        const text = source(`../../${dir}/${file}`)
+        expect(text).not.toContain('GLTFLoader().parse')
+        expect(text).not.toContain('HDRLoader().parse')
+        expect(text).not.toContain('function dataUrlToBuffer')
+        expect(text).not.toContain("from '../assetRuntime'")
+      }
+    }
   })
 })

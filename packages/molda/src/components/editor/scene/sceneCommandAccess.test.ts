@@ -57,6 +57,7 @@ describe('família de cada comando', () => {
       'view.isolate',
       'view.frame',
       'view.grid',
+      'view.xray',
       'view.supports',
     ])
   })
@@ -65,6 +66,7 @@ describe('família de cada comando', () => {
     expect(lockedFor(entry)).toEqual([
       'tool.box',
       'tool.lasso',
+      'tool.pull',
       'node.convert-mesh',
       'mode.mesh',
       'mesh.extrude',

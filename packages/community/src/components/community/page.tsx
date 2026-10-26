@@ -4,8 +4,8 @@ import type { ReactNode } from 'react'
 import { cn } from '@/lib/cn'
 
 /**
- * A faixa do topo de toda página adulta (direção de arte de 18/10/2026): o papel quadriculado de
- * quem desenha jogos, com o sobretítulo em mono, o título na Bricolage e a frase de apoio.
+ * A faixa do topo de toda página adulta: o palco do "Estúdio à noite" (25/10/2026, `sz-band`), com
+ * a grade de pontos, o sobretítulo em pixel, o título na Bricolage e a frase de apoio.
  */
 export function PageBand({
   kicker,

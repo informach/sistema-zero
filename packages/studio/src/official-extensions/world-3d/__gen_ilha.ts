@@ -31,9 +31,9 @@ SZWorld3D.lamp(-6, 6);
 SZWorld3D.npc("Lia", 8, 10, "#f97316", "palha");
 SZWorld3D.npcWander("Lia", 10);
 SZWorld3D.npcTalk("Lia", function () {
-  SZWorld3D.npcSay("Lia", "Oi! Bem-vindo a ilha!");
+  SZWorld3D.npcSay("Lia", "Oi! Bem-vindo à ilha!");
   SZWorld3D.npcSay("Lia", "Dizem que o farol guarda um tesouro...");
-  SZWorld3D.npcSay("Lia", "Pegue 15 moedas e va ate la!");
+  SZWorld3D.npcSay("Lia", "Pegue 15 moedas e vá até lá!");
 });
 SZWorld3D.coinsScatter(30);
 SZWorld3D.coinsRing(8, 60, -70, 8);
@@ -45,8 +45,8 @@ SZWorld3D.onCollect(function () {
 });
 SZWorld3D.onQuestDone("moedas", function () {
   SZWorld3D.fireworks();
-  SZWorld3D.say("Missao completa! Voce e um Cacador de Moedas!", 4);
-  SZWorld3D.achievement("Cacador de Moedas");
+  SZWorld3D.say("Missão completa! Você é um Caçador de Moedas!", 4);
+  SZWorld3D.achievement("Caçador de Moedas");
 });
 SZWorld3D.marker("moeda", 60, -70);
 SZWorld3D.guideArrow(60, -70, "ligada");

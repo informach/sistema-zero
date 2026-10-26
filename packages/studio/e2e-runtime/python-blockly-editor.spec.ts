@@ -124,6 +124,18 @@ test('a gesture queued during source publication is subsequently committed', asy
   await expect(page.locator('.blocklyTextInputField').filter({ hasText: /^41$/ })).toBeVisible()
 })
 
+test('a gesture still waiting for its commit is applied when the child clicks outside', async ({
+  page,
+}) => {
+  // The commit waits for the end of the gesture; a click elsewhere (the code of the Ponte, a
+  // button that rewrites the file) must not leave it behind, or the next source change loses it.
+  const staged = await page.evaluate(() => pythonBlocklyEditorProbe.numberThenClickOutside('40'))
+  expect(staged).toEqual({ before: false, after: true })
+  await expect
+    .poll(() => page.evaluate(() => pythonBlocklyEditorProbe.state().source))
+    .toBe('# placar\nx = (40)\nprint(x)\n')
+})
+
 test('restore cannot replace a newer draft offered by another owner', async ({ page }) => {
   await page.evaluate(() => pythonBlocklyEditorProbe.number('12a'))
   await expect(page.getByRole('status')).toContainText('número inteiro')
@@ -157,9 +169,7 @@ test('search can return no blocks and recover its curated toolbox', async ({ pag
 })
 
 test('shadowing a built-in changes its label without breaking visual history', async ({ page }) => {
-  await expect(
-    page.getByRole('region').getByText('mostrar no console', { exact: true }),
-  ).toBeVisible()
+  await expect(page.getByRole('region').getByText('mostrar', { exact: true })).toBeVisible()
   await page.evaluate(() => pythonBlocklyEditorProbe.renameAssignment('print'))
   await expect(
     page.getByRole('region').getByText('chamada Python (ver código)', { exact: true }),
@@ -167,9 +177,7 @@ test('shadowing a built-in changes its label without breaking visual history', a
   await expect.poll(() => page.evaluate(() => pythonBlocklyEditorProbe.state().pending)).toBe(false)
   expect(await page.evaluate(() => pythonBlocklyEditorProbe.state().source)).toContain('print = 3')
   await page.evaluate(() => pythonBlocklyEditorProbe.undo())
-  await expect(
-    page.getByRole('region').getByText('mostrar no console', { exact: true }),
-  ).toBeVisible()
+  await expect(page.getByRole('region').getByText('mostrar', { exact: true })).toBeVisible()
   await expect
     .poll(() => page.evaluate(() => pythonBlocklyEditorProbe.state().source))
     .toBe('# placar\nx = 3\nprint(x)\n')
@@ -182,9 +190,7 @@ test('shadowing a built-in changes its label without breaking visual history', a
   await expect(
     page.getByRole('region').getByText('chamada Python (ver código)', { exact: true }),
   ).toBeVisible()
-  await expect(
-    page.getByRole('region').getByText('mostrar no console', { exact: true }),
-  ).toHaveCount(0)
+  await expect(page.getByRole('region').getByText('mostrar', { exact: true })).toHaveCount(0)
 })
 
 test('file switching and remount preserve each visual layout and its notes', async ({ page }) => {
@@ -290,7 +296,10 @@ test('an optional branch and its header can be removed, undone and restored from
     ),
   )
   await expect(page.locator('.blocklyTextInputField').filter({ hasText: /^2$/ })).toBeVisible()
-  await page.evaluate(() => pythonBlocklyEditorProbe.emptyFunctionBody('sz_py_if', 'orelse'))
+  // The "senão" branch is a − control on the if block (it is no longer inferred from an empty body).
+  await page.evaluate(() =>
+    pythonBlocklyEditorProbe.setOption('sz_py_if', 'orelse:present', false, 'orelse'),
+  )
   const empty = 'if True:\n    print(1)\n# alternativa\n# opção\n'
   await expect.poll(() => page.evaluate(() => pythonBlocklyEditorProbe.state().source)).toBe(empty)
   await expect.poll(() => page.evaluate(() => pythonBlocklyEditorProbe.state().pending)).toBe(false)
@@ -384,7 +393,8 @@ test('source selection survives parser startup and debounce without applying sta
     pythonBlocklyEditorProbe.selectSource(pythonBlocklyEditorProbe.state().source.indexOf('3'))
     pythonBlocklyEditorProbe.remount()
   })
-  await expect(page.locator('.blocklyHighlighted')).toContainText('número inteiro')
+  // Literal numbers read as their value (a compact block): the highlight shows the 3.
+  await expect(page.locator('.blocklyHighlighted')).toContainText('3')
   await page.evaluate(() => {
     pythonBlocklyEditorProbe.source('x = 19\n')
     pythonBlocklyEditorProbe.selectSource(4)

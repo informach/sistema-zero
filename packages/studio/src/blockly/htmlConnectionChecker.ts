@@ -2,6 +2,7 @@ import * as Blockly from 'blockly/core'
 import { htmlContentModelForBlock, isHTMLBlockChildAllowed } from '../html/catalog'
 import {
   areaForBlockType,
+  contextsGrantedByBodyContext,
   contractEventObjectCapability,
   contractProvidesUserGesture,
   effectiveBodyExecution,
@@ -399,8 +400,9 @@ function nestedStatementContexts(ancestors: readonly Blockly.Block[]): Set<State
     const placement = contract?.placement
     const bodyExecution = effectiveBodyExecution(contract)
 
-    if (!bodyContextBoundaryReached && contract?.bodyContext) {
-      contexts.add(contract.bodyContext)
+    if (!bodyContextBoundaryReached) {
+      for (const granted of contextsGrantedByBodyContext(contract?.bodyContext))
+        contexts.add(granted)
     }
 
     if (placement?.role === 'event') contexts.add('event-body')

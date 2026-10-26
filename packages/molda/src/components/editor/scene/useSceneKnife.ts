@@ -211,7 +211,7 @@ export function useSceneKnife(
           requireScene(
             point.kind === 'edge',
             'edge',
-            'Clique em uma linha da peça para escolher a faixa do Loop cut.',
+            'Clique em uma linha da peça para escolher a faixa do corte.',
           )
           show({ ...current, points: [point] })
           setError(null)

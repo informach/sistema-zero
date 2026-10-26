@@ -81,11 +81,6 @@ export function SceneAnimationInspector({
     () => (authoringClip ? sceneAnimationKeySelection(authoringClip, workshop.selected) : null),
     [authoringClip, workshop.selected],
   )
-  const lastPoseTime = useMemo(
-    () =>
-      clip?.tracks.reduce((last, track) => Math.max(last, track.keys.at(-1)?.time ?? 0), 0) ?? 0,
-    [clip],
-  )
   if (!clip)
     return workshop.tool === 'pivot' && can('model.pivot') ? (
       <div className="border-t border-mld-border pt-3">
@@ -155,6 +150,7 @@ export function SceneAnimationInspector({
           <SceneAnimationPoseControls
             gesture={workshop.animationPose}
             panel
+            showRecord={false}
             enabled={!snapshot.playing && !snapshot.source?.preview}
             canMark={
               workshop.selected.length === 1 && ['move', 'rotate', 'scale'].includes(workshop.tool)
@@ -407,7 +403,7 @@ export function SceneAnimationInspector({
             </Button>
           </div>
         )}
-        {(create || batch) && (
+        {batch && (
           <details
             className="rounded-lg border border-mld-border px-2"
             onToggle={(event) => {
@@ -417,60 +413,6 @@ export function SceneAnimationInspector({
             <summary className="flex min-h-11 cursor-pointer items-center text-sm font-bold">
               {copy.animationSettings}
             </summary>
-            {create && !batch && (
-              <div className="space-y-3 pb-3">
-                <label className="block space-y-1 text-sm">
-                  <span>Duração do movimento</span>
-                  <select
-                    name="animationDuration"
-                    value={clip.duration}
-                    className={field}
-                    onChange={(event) => {
-                      const duration = Number(event.target.value)
-                      workshop.requestTransition(() =>
-                        run((source) =>
-                          configureSceneAnimation(source, clip.id, {
-                            duration,
-                            fps: clip.fps,
-                            loop: clip.loop,
-                          }),
-                        ),
-                      )
-                    }}
-                  >
-                    {[...new Set([1, 1.5, 2, 3, 5, clip.duration])]
-                      .sort((a, b) => a - b)
-                      .map((duration) => (
-                        <option key={duration} value={duration} disabled={duration < lastPoseTime}>
-                          {duration.toLocaleString('pt-BR')} s
-                          {duration < lastPoseTime ? ' · há poses depois' : ''}
-                        </option>
-                      ))}
-                  </select>
-                </label>
-                <label className="flex min-h-11 items-center gap-2 text-sm">
-                  <input
-                    name="animationLoop"
-                    type="checkbox"
-                    checked={clip.loop}
-                    className="size-5 accent-mld-accent"
-                    onChange={(event) => {
-                      const loop = event.target.checked
-                      workshop.requestTransition(() =>
-                        run((source) =>
-                          configureSceneAnimation(source, clip.id, {
-                            duration: clip.duration,
-                            fps: clip.fps,
-                            loop,
-                          }),
-                        ),
-                      )
-                    }}
-                  />
-                  {copy.animationLoop}
-                </label>
-              </div>
-            )}
             {batch && (
               <form
                 className="space-y-3 pb-3"
@@ -492,7 +434,7 @@ export function SceneAnimationInspector({
                       return configureSceneAnimation(base, clip.id, {
                         duration,
                         fps: sceneAnimationFormNumber(data, 'fps'),
-                        loop: data.has('loop'),
+                        loop: clip.loop,
                       })
                     },
                     'settings',
@@ -529,15 +471,6 @@ export function SceneAnimationInspector({
                       required
                       className={field}
                     />
-                  </label>
-                  <label className="flex min-h-11 items-center gap-2 text-sm">
-                    <input
-                      name="loop"
-                      type="checkbox"
-                      className="size-5 accent-mld-accent"
-                      defaultChecked={clip.loop}
-                    />
-                    {copy.animationLoop}
                   </label>
                 </div>
                 <Button type="submit" className="w-full text-sm">

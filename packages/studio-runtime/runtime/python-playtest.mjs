@@ -148,6 +148,36 @@ try {
   await driveRecipe()
   // This is the explicitly requested observation window, not a substitute for readiness events.
   await page.waitForTimeout(recipe.observeMs)
+  if (recipe.mission) {
+    // Concept criteria are complementary to execution, never a compile-only
+    // shortcut. A real checkpoint refuses a stalled/unresponsive interpreter.
+    let checkpointTimer
+    try {
+      await Promise.race([
+        page.evaluate(() =>
+          Reflect.get(globalThis, '__studioPythonPlaytest').observe({
+            type: 'value',
+            path: '__name__',
+          }),
+        ),
+        new Promise((_, reject) => {
+          checkpointTimer = setTimeout(
+            () => reject(new Error('O programa não respondeu à verificação.')),
+            2000,
+          )
+        }),
+      ])
+    } catch (error) {
+      await page.evaluate(
+        (message) => Reflect.get(globalThis, '__studioPythonPlaytest').programFailure(message),
+        error instanceof Error
+          ? error.message.slice(0, 2000)
+          : 'O programa não concluiu a verificação.',
+      )
+    } finally {
+      clearTimeout(checkpointTimer)
+    }
+  }
   const result = await page.evaluate(() =>
     Reflect.get(globalThis, '__studioPythonPlaytest').finish(),
   )

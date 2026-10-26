@@ -16,6 +16,7 @@ import {
   LockOpen,
   type LucideIcon,
   Spline,
+  Torus,
   TriangleRight,
   Waypoints,
 } from '../../ui/icons'
@@ -29,6 +30,7 @@ export type SceneHierarchyShape =
   | 'wedge'
   | 'cylinder'
   | 'sphere'
+  | 'torus'
   | 'mesh'
   | 'path'
   | 'group'
@@ -40,6 +42,7 @@ export const SHAPE_LOOK: Record<SceneHierarchyShape, [LucideIcon, string]> = {
   wedge: [TriangleRight, 'var(--mld-shape-wedge)'],
   cylinder: [Cylinder, 'var(--mld-shape-cylinder)'],
   sphere: [Circle, 'var(--mld-shape-sphere)'],
+  torus: [Torus, 'var(--mld-shape-torus)'],
   mesh: [Waypoints, 'var(--mld-shape-special)'],
   path: [Spline, 'var(--mld-shape-special)'],
   group: [Folder, 'var(--mld-shape-cylinder)'],

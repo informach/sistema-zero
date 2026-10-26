@@ -1,0 +1,81 @@
+# Catálogo do Estúdio no Members
+
+O catálogo aprovado contém os manifestos e as permissões das releases. Não contém tokens nem
+origens dos serviços. O catálogo com duas releases excede os 32.768 bytes aceitos em uma variável
+do Railway. Em staging e produção, ele acompanha o código da imagem; a variável
+`STUDIO_AUTHORING_POLICY_SHA256` seleciona o arquivo por SHA-256 dos bytes completos.
+
+Os arquivos ficam em `packages/members/src/infrastructure/config/studio-authoring-catalogs/`.
+O Dockerfile já copia essa árvore de fontes. Não é necessário copiar docs, caches ou provas para
+a imagem. O Members verifica tamanho, hash, schema, manifestos e consistência do catálogo antes
+de abrir conexões. Arquivo ausente ou inválido interrompe o boot. Não há download nem fallback.
+
+## Preparar uma revisão
+
+1. Gere e revise o catálogo pelo plano canônico de promoção Python, preservando as releases
+   necessárias para projetos salvos. Empacotar um arquivo não qualifica um runtime.
+2. Formate o JSON antes de empacotar. A partir da raiz, execute:
+
+   ```sh
+   bun packages/members/scripts/package-studio-authoring-policy.ts caminho/catalogo.json
+   bun test packages/members/tests/unit/studio-policy-configuration.test.ts
+   ```
+
+3. Versione o arquivo produzido e revise suas diferenças. Não renomeie nem edite um arquivo
+   depois de calcular o hash. Uma alteração produz outro arquivo. O teste confere todos os
+   arquivos distribuídos, inclusive os mantidos para rollback.
+4. Integre e implante o código com o novo arquivo, mantendo a configuração atual até o serviço
+   concluir a atualização. Confirme o SHA da aplicação e a presença do arquivo na imagem.
+
+## Ativar e voltar
+
+`STUDIO_AUTHORING_POLICY_JSON` continua disponível para configurações locais e implantações
+existentes. As duas origens são mutuamente exclusivas: configurar JSON e SHA256 juntos falha.
+Ausência de ambas preserva o comportamento JavaScript sem catálogo Python.
+
+Após a qualificação do runtime e sem uma onda concorrente de deploy:
+
+1. Confira o plano aprovado e leia as variáveis atuais sem registrar credenciais.
+2. Com `variable set --skip-deploys`, configure juntos o SHA256 e `STUDIO_RUNTIME_HOSTS_JSON`
+   do mesmo plano. Releia e confira os valores. A CLI não oferece `--skip-deploys` em
+   `variable delete`: remova `STUDIO_AUTHORING_POLICY_JSON` **por último**, quando essa remoção
+   já puder disparar o deploy da configuração final coerente. Não reinicie no estado intermediário.
+3. Releia as três variáveis e acompanhe o deployment disparado. Se a remoção não iniciar um,
+   faça o redeploy do Members. Aguarde a saúde da nova instância e confirme o ambiente realmente
+   carregado. Verifique descoberta, abertura de projeto existente e execução na release nova.
+4. Para rollback, restaure o conjunto completo de política e hosts anteriores, com a mesma
+   supressão de deploys intermediários, releia e reinicie. Não deixe os hosts de uma release que
+   não existe no catálogo selecionado.
+
+O seletor não altera direitos por conta, conquistas, privilégios de admin ou curadoria de aulas.
+É somente a origem da configuração de implantação. Revogar uma release ou excluir seu arquivo
+é uma decisão separada: não faça isso para reduzir tamanho de variável.
+
+## Catálogos empacotados
+
+- Catálogo após conciliação das extensões JavaScript e Python: `3cbc366dcb213c5f26d996aef7898e0a1d47bce340fe501539982fcd33f3231d`.
+- Tamanho: 79.822 bytes formatados.
+- Conteúdo igual a `configuration.members` dos planos integrados R1 de staging e produção.
+- Release nova: `2026-10-25-integrated-games-1`, com Turtle, Pygame Zero, Pygame-ce e Raylib 2D/3D.
+- Distribuição: `ecb8756beb4b6b0450aa3fdb5ffc9ec70a53d16f72a8ec4d264477e99de47735`.
+- A release `2026-10-22-visual-games-3` é mantida como `retired`; seus manifestos não mudam.
+- Empacotamento não significa ativação: o seletor só muda após a qualificação e o deploy da imagem.
+
+O plano canônico também permite concluir uma implantação interrompida: se Worker e Members
+divergem apenas entre `active` e `retired` para a mesma identidade imutável do perfil substituído,
+uma nova release pode retirar essa versão nas duas autoridades. O plano registra o estado real
+anterior sem reescrevê-lo. A configuração final continua exigindo estados iguais. Divergências
+envolvendo `revoked`, outro perfil, identidade ou conteúdo são recusadas; repetir uma versão
+retirada não a reativa.
+
+Catálogos anteriores, preservados como artefatos de histórico (não selecionados automaticamente):
+
+- Pygame antes da conciliação: `2747a0372378b1bf6768796e11b9b261625aa6a5cebac0bfff6c18778fffff5f`,
+  80.597 bytes; release `2026-10-25-pygame-1`, distribuição `74b006e5…`. Não qualifica o motor
+  resultante da conciliação com as revisões locais.
+
+- SHA256: `88a14e73605fa5b3ddaee7344c35b3571db8bba7cd9d1e7722856e356430e6c7`.
+- Tamanho: 74.491 bytes formatados; o JSON compacto tinha 51.612 bytes.
+- Conteúdo igual ao campo `configuration.members` dos planos R4 de staging e produção.
+- Inclui as duas releases; a nova é `2026-10-25-raylib-1`.
+- Provas locais do carregador não substituem CI, implantação ou a aceitação pelas interfaces.

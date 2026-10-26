@@ -149,11 +149,8 @@ export const cacaMoedasExample: ExtensionExample = {
             { type: 'gk:drawBackground', color: '#0f3460', grid: true },
             { type: 'gk:drawCharacter', charVar: 'heroi' },
             { type: 'gk:drawCharacter', charVar: 'moeda' },
-            { type: 'canvasFillStyle', ctxVar: 'ctx', color: { type: 'color', value: '#ffffff' } },
-            { type: 'canvasFont', ctxVar: 'ctx', size: 24, family: 'sans-serif' },
             {
-              type: 'canvasFillText',
-              ctxVar: 'ctx',
+              type: 'gk:drawText',
               text: {
                 type: 'binop',
                 op: '+',
@@ -162,6 +159,8 @@ export const cacaMoedasExample: ExtensionExample = {
               },
               x: { type: 'num', value: 20 },
               y: { type: 'num', value: 40 },
+              size: { type: 'num', value: 24 },
+              color: { type: 'color', value: '#ffffff' },
             },
           ],
         },

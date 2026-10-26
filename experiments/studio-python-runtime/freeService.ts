@@ -20,6 +20,7 @@ import { createStudioAuthoringPolicy } from '../../packages/members/src/domain/s
 import { createStudioRuntimeHosts } from '../../packages/members/src/domain/studio/runtime-hosts'
 import { createStudioRuntimePolicy } from '../../packages/members/src/domain/studio/runtime-policy'
 import { PYTHON_PROGRAMMING_CODECS } from '../../packages/studio/src/python/blocks/catalog'
+import { PYTHON_PGZERO_CODECS } from '../../packages/studio/src/python/extensions/pgzero/catalog'
 import { PYTHON_TURTLE_CODECS } from '../../packages/studio/src/python/extensions/turtle/catalog'
 
 /** Local qualification only: real free authorization/catalog, controlled account/product/achievement ports. */
@@ -36,7 +37,7 @@ export async function createFreeRuntimeProbe(release: StudioRuntimeRelease, orig
     releaseId: release.releaseId,
     manifestSha256: release.manifestSha256,
   }
-  const codecs = [...PYTHON_PROGRAMMING_CODECS, ...PYTHON_TURTLE_CODECS]
+  const codecs = [...PYTHON_PROGRAMMING_CODECS, ...PYTHON_TURTLE_CODECS, ...PYTHON_PGZERO_CODECS]
   const configuration = StudioAuthoringCatalogSchema.parse({
     version: 1,
     catalog: {

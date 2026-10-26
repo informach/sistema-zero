@@ -110,7 +110,7 @@ import { AuthorizePublicRuntimeService } from './application/studio/authorize-pu
 import { AuthorizePythonAnalysisService } from './application/studio/authorize-python-analysis.service'
 import { FreeStudioAccessService } from './application/studio/free-studio-access.service'
 import { OpenLessonStudioService } from './application/studio/open-lesson-studio.service'
-import { PythonActivityInspectionService } from './application/studio/python-activity-inspection.service'
+import { PythonProjectCheckerService } from './application/studio/python-project-checker.service'
 import { StudioPythonBuilderPolicy } from './application/studio-pro/python-builder-policy'
 import { StudioBuilderService } from './application/studio-pro/studio-builder.service'
 import { createStudioBuilderCoordinator } from './application/studio-pro/studio-builder-coordinator'
@@ -128,10 +128,10 @@ import {
 import { ZappyHistoryService } from './application/zappy/zappy-history.service'
 import { ZappyKnowledgeService } from './application/zappy/zappy-knowledge.service'
 import type { LiveRewardsPort } from './domain/ports/live-rewards.port'
-import { createStudioAuthoringPolicy } from './domain/studio/authoring-policy'
 import { createStudioRuntimeHosts } from './domain/studio/runtime-hosts'
 import { createStudioRuntimePolicy } from './domain/studio/runtime-policy'
 import type { Env } from './infrastructure/config/env'
+import { loadStudioAuthoringPolicy } from './infrastructure/config/studio-authoring-policy'
 import { createAuthHttpGateway } from './infrastructure/gateways/auth-http.gateway'
 import { createCatalogHttpGateway } from './infrastructure/gateways/catalog-http.gateway'
 import { FunnelChallengeAnalyticsGateway } from './infrastructure/gateways/funnel-challenge-analytics.gateway'
@@ -250,10 +250,7 @@ const BOOT_CYCLE_DELAY_MS = 15_000
  */
 export async function createApplication(env: Env): Promise<Application> {
   // Verify before opening connections: malformed deployment policy fails startup.
-  const studioAuthoringPolicy =
-    env.STUDIO_AUTHORING_POLICY_JSON === undefined
-      ? undefined
-      : await createStudioAuthoringPolicy(JSON.parse(env.STUDIO_AUTHORING_POLICY_JSON))
+  const studioAuthoringPolicy = await loadStudioAuthoringPolicy(env)
   if (env.STUDIO_RUNTIME_HOSTS_JSON && !studioAuthoringPolicy)
     throw new Error('Os hosts de execução precisam de um catálogo aprovado.')
   const studioRuntimePolicy = studioAuthoringPolicy
@@ -750,7 +747,7 @@ export async function createApplication(env: Env): Promise<Application> {
   const creationsRepo = new DrizzleCreationsRepository(db)
   const awardGamification = new AwardGamificationService(gamificationRepo, clock, logger)
   const studioBindings = new DrizzleStudioLessonBindingRepository(db)
-  const pythonActivityInspections = new PythonActivityInspectionService({
+  const pythonProjectChecker = new PythonProjectCheckerService({
     runtimeUrl: env.STUDIO_PYTHON_RUNTIME_URL,
     runtimeToken: env.STUDIO_PYTHON_RUNTIME_TOKEN,
     policy: studioRuntimePolicy,
@@ -769,7 +766,7 @@ export async function createApplication(env: Env): Promise<Application> {
     awardGamification,
     projectExecutor,
     async (courseId) => (await courses.findCourseById(courseId))?.audience ?? 'kids',
-    { inspections: pythonActivityInspections, bindings: studioBindings, live: liveWorkspace },
+    { checker: pythonProjectChecker, bindings: studioBindings, live: liveWorkspace },
   )
   const learning = new LearningService(
     learningRepository,

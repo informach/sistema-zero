@@ -75,6 +75,7 @@ export type ExecutionClickTarget =
  */
 export type ExecutionTarget =
   | { kind: 'value'; path: string }
+  | { kind: 'moduleValue'; module: string; path: string }
   | { kind: 'spritePosition'; path: string; axis: 'x' | 'y' }
   | { kind: 'text' }
   | { kind: 'console' }
@@ -164,24 +165,32 @@ const record = (v: unknown): v is Record<string, unknown> =>
   typeof v === 'object' && v !== null && !Array.isArray(v)
 
 const IDENTIFIER = /^[A-Za-z_$][A-Za-z0-9_$]*$/
+const PYTHON_IDENTIFIER = /^[\p{ID_Start}_][\p{ID_Continue}]*$/u
 /** `src/regras.ts`: caminho relativo de arquivo de código, sem subir pastas. */
 const MODULE_PATH = /^(?:[A-Za-z0-9_-]+\/)*[A-Za-z0-9_.-]+\.(?:m?js|jsx|ts|tsx)$/
+const PYTHON_MODULE_PATH = /^(?:[A-Za-z0-9_-]+\/)*[A-Za-z0-9_.-]+\.py$/
 
-export function isExecutionValuePath(path: unknown): path is string {
+export function isExecutionValuePath(
+  path: unknown,
+  language: 'javascript' | 'python' = 'javascript',
+): path is string {
   if (typeof path !== 'string' || path.length > 200) return false
   const parts = path.split('.')
   return (
     parts.length >= 1 &&
     parts.length <= EXECUTION_LIMITS.maxPathSegments &&
-    parts.every((part) => IDENTIFIER.test(part))
+    parts.every((part) => (language === 'python' ? PYTHON_IDENTIFIER : IDENTIFIER).test(part))
   )
 }
 
-export function isExecutionModulePath(path: unknown): path is string {
+export function isExecutionModulePath(
+  path: unknown,
+  language: 'javascript' | 'python' = 'javascript',
+): path is string {
   return (
     typeof path === 'string' &&
     path.length <= 200 &&
-    MODULE_PATH.test(path) &&
+    (language === 'python' ? PYTHON_MODULE_PATH : MODULE_PATH).test(path) &&
     !path.split('/').some((part) => part === '..' || part === '.' || part === 'node_modules')
   )
 }
@@ -316,6 +325,7 @@ function areSteps(steps: unknown): steps is ExecutionStep[] {
 function isTarget(
   target: unknown,
   context: ExecutionStepValidationContext,
+  language: 'javascript' | 'python',
 ): target is ExecutionTarget {
   if (!record(target)) return false
   switch (target.kind) {
@@ -324,14 +334,24 @@ function isTarget(
         Object.keys(target).length === 3 &&
         (context === 'draft'
           ? typeof target.path === 'string' && target.path.length <= 200
-          : isExecutionValuePath(target.path) &&
+          : isExecutionValuePath(target.path, language) &&
             !target.path
               .split('.')
               .some((part) => ['__proto__', 'prototype', 'constructor'].includes(part))) &&
         (target.axis === 'x' || target.axis === 'y')
       )
+    case 'moduleValue':
+      return (
+        language === 'javascript' &&
+        Object.keys(target).length === 3 &&
+        isExecutionModulePath(target.module) &&
+        isExecutionValuePath(target.path) &&
+        !target.path
+          .split('.')
+          .some((part) => ['__proto__', 'prototype', 'constructor'].includes(part))
+      )
     case 'value':
-      return isExecutionValuePath(target.path) && Object.keys(target).length === 2
+      return isExecutionValuePath(target.path, language) && Object.keys(target).length === 2
     case 'text':
     case 'console':
       return Object.keys(target).length === 1
@@ -348,8 +368,9 @@ function isTarget(
 function isExpectation(
   expect: unknown,
   context: ExecutionStepValidationContext,
+  language: 'javascript' | 'python',
 ): expect is ExecutionExpectation {
-  if (!record(expect) || !isTarget(expect.target, context)) return false
+  if (!record(expect) || !isTarget(expect.target, context, language)) return false
   if (
     expect.target.kind === 'spritePosition' &&
     Object.keys(expect).some((key) => !['target', 'compare', 'value'].includes(key))
@@ -383,6 +404,7 @@ function isExpectation(
 export function isSectionExecutionRule(
   rule: unknown,
   context: ExecutionStepValidationContext = 'final',
+  language: 'javascript' | 'python' = 'javascript',
 ): rule is SectionExecutionRule {
   if (!record(rule)) return false
   switch (rule.type) {
@@ -392,7 +414,7 @@ export function isSectionExecutionRule(
           ['type', 'steps', 'expect', 'observation'].includes(key),
         ) &&
         areSteps(rule.steps) &&
-        isExpectation(rule.expect, context) &&
+        isExpectation(rule.expect, context, language) &&
         (rule.observation === undefined
           ? rule.expect.target.kind !== 'spritePosition'
           : record(rule.observation) &&
@@ -412,9 +434,9 @@ export function isSectionExecutionRule(
       return (
         Object.keys(rule).every((key) => ['type', 'name', 'module', 'cases'].includes(key)) &&
         typeof rule.name === 'string' &&
-        IDENTIFIER.test(rule.name) &&
+        (language === 'python' ? PYTHON_IDENTIFIER : IDENTIFIER).test(rule.name) &&
         rule.name.length <= 100 &&
-        (rule.module === undefined || isExecutionModulePath(rule.module)) &&
+        (rule.module === undefined || isExecutionModulePath(rule.module, language)) &&
         Array.isArray(rule.cases) &&
         rule.cases.length >= 1 &&
         rule.cases.length <= EXECUTION_LIMITS.maxCases &&
@@ -770,6 +792,8 @@ function targetName(target: ExecutionTarget): string {
   switch (target.kind) {
     case 'value':
       return target.path
+    case 'moduleValue':
+      return `${target.path} (${target.module})`
     case 'spritePosition':
       return `${target.path}.${target.axis}`
     case 'text':
@@ -796,6 +820,8 @@ export function judgeExecutionObservation(
   if (!observation) return { passed: false, detail: 'O teste não relatou este objetivo.' }
   if (observation.error)
     return { passed: false, detail: `O teste não terminou: ${observation.error}` }
+  if (observation.errors?.length)
+    return { passed: false, detail: 'O jogo relatou erro durante a observação.' }
   if (rule.type === 'functionReturns') {
     if (observation.missing)
       return {

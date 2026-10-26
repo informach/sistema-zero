@@ -34,7 +34,7 @@ const counter = (prefix = 'id') => {
 }
 const empty = () => migrateLegacyModel(makeModel({ parts: [] })).document
 
-function withShape(kind: 'box' | 'wedge' | 'cylinder' | 'sphere') {
+function withShape(kind: 'box' | 'wedge' | 'cylinder' | 'sphere' | 'torus') {
   const nextId = counter()
   const document = addScenePrimitive(empty(), kind, 'peça', nextId)
   return { document, node: meshNode(document, document.nodes.at(-1)!.id), nextId }
@@ -202,6 +202,22 @@ describe('formas: um bloco por superfície, no tamanho da pele do editor antigo'
     if (geometry.kind !== 'sphere') throw new Error('Bola ausente.')
     expect(geometry.surfaces.around?.uv).toEqual({ origin: [0, 0], u: [1, 0], v: [0, 1] })
     expectUnchangedLook(s.document, s.target.materialId, s.target.imageId)
+  })
+
+  test('torus cria uma folha contínua para pintar o anel', () => {
+    const torus = withShape('torus')
+    const result = ready(
+      ensureScenePaintSurface(torus.document, { nodeId: torus.node.id }, torus.nextId),
+    )
+    const geometry = geometryOf(result.document, torus.node.id)
+    if (geometry.kind !== 'torus') throw new Error('Torus ausente.')
+    const image = result.document.images.find((entry) => entry.id === result.target.imageId)!
+    expect(geometry.surfaces.around?.uv).toEqual({ origin: [0, 0], u: [1, 0], v: [0, 1] })
+    expect(image.width).toBeGreaterThan(0)
+    expect(image.height).toBeGreaterThan(0)
+    expect(
+      findScenePaintTarget(result.document, { nodeId: torus.node.id, faceId: 'around' }),
+    ).toEqual(result.target)
   })
 
   test('tubo com tampas: a lateral mede a volta e o comprimento, as tampas o diâmetro', () => {

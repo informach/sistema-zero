@@ -5,8 +5,9 @@
  * seleção. Ops PURAS sobre o tilemap (mesmo contrato mesma-ref das ops de
  * `tilemapOps.ts`).
  */
-import type { TilemapAsset, TilemapLayer } from '../core/project'
+import type { TilemapAsset } from '../core/project'
 import type { CellPos, CellRect } from './cellGeometry'
+import { withTileLayer } from './tilemapOps'
 
 export interface TileStamp {
   cols: number
@@ -72,19 +73,6 @@ export function blockCells(visited: CellPos, anchor: CellPos, stamp: TileStamp):
   return out
 }
 
-function withLayer(
-  tilemap: TilemapAsset,
-  layerId: string,
-  update: (layer: TilemapLayer) => TilemapLayer,
-): TilemapAsset {
-  const index = tilemap.layers.findIndex((l) => l.id === layerId)
-  const layer = tilemap.layers[index]
-  if (!layer) return tilemap
-  const next = update(layer)
-  if (next === layer) return tilemap
-  return { ...tilemap, layers: tilemap.layers.map((l, i) => (i === index ? next : l)) }
-}
-
 /**
  * Aplica o padrão do carimbo (ancorado em `anchor`) nas `cells` da camada.
  * Buraco (`-1`) do carimbo PULA (não apaga) e índice ≥ `tileCount` também pula
@@ -99,7 +87,7 @@ export function stampCells(
   anchor: CellPos,
   tileCount: number,
 ): TilemapAsset {
-  return withLayer(tilemap, layerId, (layer) => {
+  return withTileLayer(tilemap, layerId, (layer) => {
     let cells2: Int16Array | null = null
     for (const { col, row } of cells) {
       if (col < 0 || row < 0 || col >= tilemap.cols || row >= tilemap.rows) continue

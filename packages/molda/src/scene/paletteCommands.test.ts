@@ -32,6 +32,56 @@ test('trocar a paleta conserva extras e guarda as cores personalizadas no docume
   expect(preset.extraColors).toEqual(['#123456'])
 })
 
+test('paleta de 32 cores preserva a extra pintada em materiais e camadas indexadas', () => {
+  const source = addScenePaletteColor(base(), '#123456')!.document
+  const document = {
+    ...source,
+    materials: [
+      {
+        id: 'material',
+        name: 'Teste',
+        baseColor: { kind: 'palette' as const, index: 16 },
+        roughness: 1,
+        metalness: 0,
+        doubleSided: false,
+      },
+    ],
+    images: [
+      {
+        id: 'image',
+        name: 'Tinta',
+        width: 2,
+        height: 1,
+        encoding: 'indexed' as const,
+        layers: [
+          {
+            id: 'layer',
+            name: 'Camada',
+            visible: true,
+            opacity: 1,
+            pixels: Uint8Array.from([16, 1]),
+          },
+        ],
+      },
+    ],
+  }
+  const colors = [
+    '',
+    ...Array.from({ length: 32 }, (_, i) => `#${i.toString(16).padStart(2, '0')}aabb`),
+  ]
+  const wide = setScenePalette(document, {
+    paletteId: 'custom',
+    customPalette: { name: 'Imagem', colors },
+  })
+  expect(wide.extraColors).toEqual(['#123456'])
+  expect(wide.materials[0]?.baseColor).toEqual({ kind: 'palette', index: 33 })
+  expect([...wide.images[0]!.layers[0]!.pixels]).toEqual([33, 1])
+  expect(readSceneDocument(sceneToJson(wide)).status).toBe('valid')
+  const restored = setScenePalette(wide, { paletteId: 'arcade' })
+  expect(restored.materials[0]?.baseColor).toEqual({ kind: 'palette', index: 16 })
+  expect([...restored.images[0]!.layers[0]!.pixels]).toEqual([16, 1])
+})
+
 test('cor que já existe reaproveita o índice; cor nova vira extra no fim, sem mexer nas outras', () => {
   const document = base()
   const colors = resolvePaletteColors(document)

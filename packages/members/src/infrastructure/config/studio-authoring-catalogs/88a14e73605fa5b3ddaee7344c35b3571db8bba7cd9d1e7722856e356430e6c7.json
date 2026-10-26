@@ -1,0 +1,1880 @@
+{
+  "version": 1,
+  "catalog": {
+    "profiles": [
+      {
+        "id": "python-browser",
+        "languages": ["python"],
+        "kinds": ["classic", "pro"],
+        "modes": ["blocks", "bridge", "code"],
+        "levels": [],
+        "releases": [
+          {
+            "id": "2026-10-22-visual-games-3",
+            "manifestSha256": "bc5710a137facb82e4f1a24df6e370406217f5fc4707c64861adf381d10d3e80"
+          },
+          {
+            "id": "2026-10-25-raylib-1",
+            "manifestSha256": "ebf22fb7962d057fd29757c4b7d5e4c5fc69d9b3c11b92c0cb116c7386fba078"
+          }
+        ]
+      }
+    ],
+    "releases": [
+      {
+        "profileId": "python-browser",
+        "releaseId": "2026-10-22-visual-games-3",
+        "manifestSha256": "bc5710a137facb82e4f1a24df6e370406217f5fc4707c64861adf381d10d3e80",
+        "manifest": {
+          "manifestVersion": 1,
+          "profileId": "python-browser",
+          "releaseId": "2026-10-22-visual-games-3",
+          "programmingLanguage": "python",
+          "kinds": ["classic", "pro"],
+          "modes": ["blocks", "bridge", "code"],
+          "capabilities": [
+            "edit",
+            "execute",
+            "pause",
+            "publish",
+            "export-source",
+            "python-repl",
+            "assist"
+          ],
+          "extensions": [
+            {
+              "id": "python-turtle",
+              "versions": ["1.0.0"]
+            }
+          ],
+          "sourceTargets": ["browser", "desktop"],
+          "requiredBrowserFeatures": ["wasm", "worker", "jspi", "trusted-types"],
+          "artifacts": [
+            {
+              "path": "LICENSE-pyodide.txt",
+              "sha256": "1f256ecad192880510e84ad60474eab7589218784b9a50bc7ceee34c2b91f1d5"
+            },
+            {
+              "path": "LICENSE-python.txt",
+              "sha256": "b0e25a78cffb43f4d92de8b61ccfa1f1f98ecbc22330b54b5251e7b6ba010231"
+            },
+            {
+              "path": "LICENSE-tk.txt",
+              "sha256": "2cde822b93ca16ae535c954b7dfe658b4ad10df2a193628d1b358f1765e8b198"
+            },
+            {
+              "path": "SOURCES.txt",
+              "sha256": "1974e400ea27dd7b752c27452cd9cd8e70d8a6cdc5d5d6432fe3abadb6676185"
+            },
+            {
+              "path": "_http/gzip/00cad5af5add00a7cbda70df5ce5fbb0572c1e5cdc464018a691eceda6fec0ba.gz",
+              "sha256": "00cad5af5add00a7cbda70df5ce5fbb0572c1e5cdc464018a691eceda6fec0ba"
+            },
+            {
+              "path": "_http/gzip/165465def5fb0a24e7a7ec131d18142781da1facf0d6b0294311922bce02511b.gz",
+              "sha256": "165465def5fb0a24e7a7ec131d18142781da1facf0d6b0294311922bce02511b"
+            },
+            {
+              "path": "_http/gzip/37634a76b2c64e3f40311b9929c3290187e10253795bf14ab36e51d50fedfd16.gz",
+              "sha256": "37634a76b2c64e3f40311b9929c3290187e10253795bf14ab36e51d50fedfd16"
+            },
+            {
+              "path": "_http/gzip/3b98f8c12d353655a4862875e8c301eb3e01774b8d67414ad8d6762f63c0e99a.gz",
+              "sha256": "3b98f8c12d353655a4862875e8c301eb3e01774b8d67414ad8d6762f63c0e99a"
+            },
+            {
+              "path": "_http/gzip/4cd1bbbee07ba2c205681fbf8ab609286bed6d7199f627bfafd8ae5442364eae.gz",
+              "sha256": "4cd1bbbee07ba2c205681fbf8ab609286bed6d7199f627bfafd8ae5442364eae"
+            },
+            {
+              "path": "_http/gzip/50272bde6e44283c839d9b6f1d1c6174043f10fd8f88594e4cc93aca1e0da5d4.gz",
+              "sha256": "50272bde6e44283c839d9b6f1d1c6174043f10fd8f88594e4cc93aca1e0da5d4"
+            },
+            {
+              "path": "_http/gzip/79cef1e3f648d539941b0cca5520fb39db91dc5525ea50179b89fd37a3c11bcd.gz",
+              "sha256": "79cef1e3f648d539941b0cca5520fb39db91dc5525ea50179b89fd37a3c11bcd"
+            },
+            {
+              "path": "_http/gzip/8378eaae6050b021a06be62f0a228686f08d560bb29792078c995b49f9a14f32.gz",
+              "sha256": "8378eaae6050b021a06be62f0a228686f08d560bb29792078c995b49f9a14f32"
+            },
+            {
+              "path": "_http/gzip/86528cc2b1afde5be792cb5d0665bf4921264825f161239ac964c1e90cb83a4f.gz",
+              "sha256": "86528cc2b1afde5be792cb5d0665bf4921264825f161239ac964c1e90cb83a4f"
+            },
+            {
+              "path": "_http/gzip/9f3cdeb67749240be65b039846c516e590ebccaae2310fa105a0af8af1cc4ca7.gz",
+              "sha256": "9f3cdeb67749240be65b039846c516e590ebccaae2310fa105a0af8af1cc4ca7"
+            },
+            {
+              "path": "_http/gzip/ae7092c002996d35eed474036613d67bb6d1f4a096a89dd97a6f1ca718893ac5.gz",
+              "sha256": "ae7092c002996d35eed474036613d67bb6d1f4a096a89dd97a6f1ca718893ac5"
+            },
+            {
+              "path": "_http/gzip/ebe7381dffd7fd3ce7e5d3ab7f23f05d28f93ed867bc06f066829a29152725ab.gz",
+              "sha256": "ebe7381dffd7fd3ce7e5d3ab7f23f05d28f93ed867bc06f066829a29152725ab"
+            },
+            {
+              "path": "analysis-frame.mjs",
+              "sha256": "0e5885fe8d76c7df6b75b83e53f91ca5c7ec5039b9106ef37e37e000bfcadc97"
+            },
+            {
+              "path": "analysis-worker.mjs",
+              "sha256": "c5c23b7ff96ae2760cc453c55e00de61e0ba19d53ccb380c0c099c3d1531a6a7"
+            },
+            {
+              "path": "analysis.html",
+              "sha256": "13970058beb50f34f3653a3ed0b195d59501a52c0280f4b9baaa5427cbd55f1c"
+            },
+            {
+              "path": "boot-loader-derivation.json",
+              "sha256": "a8463b59d61b4e0685403d855ed3f6b20e29cc85d57d3d88a51b4f2da7837466"
+            },
+            {
+              "path": "boot-reader.mjs",
+              "sha256": "672b5b18280df2a34e439650f1ca9917e6f9a6c6bda63649c955ba62d50b8d02"
+            },
+            {
+              "path": "frame.html",
+              "sha256": "f59ecd6bc140b7547ab61e5f4e244c8ded33822a12acb35e013bfb06c24335fe"
+            },
+            {
+              "path": "frame.mjs",
+              "sha256": "1fab674d7398af8cc3d586c190f14a93e028b9c57e8c9a22bb87c1db7a9c9b6e"
+            },
+            {
+              "path": "http-compression-recipe.json",
+              "sha256": "8d674ea629041f3c2da3611af9dc7e5fa45112fa65b05dbe92ce41c7dcc5b0d5"
+            },
+            {
+              "path": "inspect.mjs",
+              "sha256": "d65d7c72db4a7a593837dd11830eadf0a5cc63f68145f3fa68eb69c952962c05"
+            },
+            {
+              "path": "playtest.mjs",
+              "sha256": "4eb2ac1a702c4a9b1b983f9efd29358970e36da2e42f5f18d6045644346e2a59"
+            },
+            {
+              "path": "pyodide-lock.json",
+              "sha256": "5dc2fc119108bc148c7457dc86e7675b5c87e1cafd420b9c34c1eaef7b36c010"
+            },
+            {
+              "path": "pyodide.asm.mjs",
+              "sha256": "eb71d9513398562cdcde73ec7bb03b4871f6cc21de69d42aa69884994e503e9b"
+            },
+            {
+              "path": "pyodide.asm.wasm",
+              "sha256": "cc36e3cab04fdfc9a63ff13eb52eae2b911bf46c025cc7b281f394bd3de1d5e6"
+            },
+            {
+              "path": "pyodide.mjs",
+              "sha256": "1f221325de3f148ba9aa91bf429560a8cc59a52ac5c6a2c8031393f5ec8bcaf1"
+            },
+            {
+              "path": "python-modules/sz_audio/1.0.0/__init__.pyi",
+              "sha256": "a106c0445d95c7b37424f79c75e3a67969a126322e4ce298654b03b3f48e1a97"
+            },
+            {
+              "path": "python-modules/sz_audio/1.0.0/descriptor.json",
+              "sha256": "6b5b150175565bf9360172a88819bef5200149cd8db55c62709d4934f126cf49"
+            },
+            {
+              "path": "python_stdlib.zip",
+              "sha256": "afc02bfca854c42376d79358e1c808da58c49801de3b0e9e8b16e01b3a4d9b1a"
+            },
+            {
+              "path": "standalone.mjs",
+              "sha256": "eaea4c4e9a0d683b7b9f149cd4f049159991a1f5e2333ad529ed8f4c9510a9ad"
+            },
+            {
+              "path": "turtle-protocol.mjs",
+              "sha256": "2ab82a77c9e1cc10f549899e1c4eadcf878d351cebf009e421a0aa878c5b0c57"
+            },
+            {
+              "path": "turtle-renderer.mjs",
+              "sha256": "112a53a3bc60324779e2d12ba05aafc3ccf6d39d6fa80c89462bee42c87ed935"
+            },
+            {
+              "path": "turtle/_sz_turtle_backend.py",
+              "sha256": "58bf25afe157fb1ba451094971d0d75aa93d01637c9b3c5ecef588f1acd79638"
+            },
+            {
+              "path": "turtle/_sz_turtle_colors.py",
+              "sha256": "468f1b95da4156d6c4b587d365b7f21a5f4913457b7d071221c7d1a4c2097fbc"
+            },
+            {
+              "path": "turtle/_sz_turtle_limits.py",
+              "sha256": "e6ee8908c4eac8f079696e87e1c630836f78722adcd60647a07e1cdb08538862"
+            },
+            {
+              "path": "turtle/turtle.py",
+              "sha256": "2021d502599df3a6f523810807028ae1508f144e8f74fb0c454b4c5c72e16834"
+            },
+            {
+              "path": "worker.mjs",
+              "sha256": "4f1928678999865c5caa954e9f551f3620d1a987bf05bf75967a187767f8dd10"
+            }
+          ],
+          "python": {
+            "version": "3.14.2",
+            "packages": [],
+            "providedModules": [
+              {
+                "descriptor": {
+                  "descriptorVersion": 1,
+                  "kind": "portable-audio",
+                  "importName": "sz_audio",
+                  "version": "1.0.0",
+                  "provider": "sistema-zero",
+                  "summary": "Som portátil do Sistema Zero. É um módulo separado de Turtle e da biblioteca padrão do Python.",
+                  "api": [
+                    {
+                      "name": "play",
+                      "signature": "(path: str, *, loop: bool = False, volume: float = 1.0) -> int",
+                      "summary": "Começa um WAV sem esperar seu fim e devolve o identificador do som. loop repete; volume vai de 0 a 1."
+                    },
+                    {
+                      "name": "stop",
+                      "signature": "(handle: int | None = None) -> None",
+                      "summary": "Para o som indicado por play. Sem argumento, para todos os sons desta execução."
+                    }
+                  ],
+                  "browser": {
+                    "installation": "runtime-bundled",
+                    "paths": "captured-project-assets",
+                    "requiresUserGesture": true,
+                    "lifetime": "execution-session",
+                    "notes": [
+                      "Disponível somente quando a release aprovada fornece este módulo; não precisa instalar pelo pip no navegador.",
+                      "Use o caminho relativo de um WAV dos materiais capturados do projeto. Não aceita URL, comando de shell ou arquivo externo.",
+                      "Clique em Jogar ou Executar para permitir o som. Stop, reinício ou fechamento da execução encerram as vozes.",
+                      "No navegador, a página e a sessão podem continuar abertas para o REPL depois que o arquivo inicial termina; o áudio acompanha essa sessão.",
+                      "Um módulo autoral com esse nome mantém a precedência normal do Python; não atribua a ele esta API."
+                    ]
+                  },
+                  "audio": {
+                    "container": "RIFF/WAVE",
+                    "encoding": "PCM16",
+                    "channels": [1, 2],
+                    "assetsTotalBytes": 33554432,
+                    "policy": {
+                      "version": 1,
+                      "requestBytes": 2048,
+                      "voices": 16,
+                      "commandsPerSecond": 64,
+                      "wavChunks": 256,
+                      "fileBytes": 33554432,
+                      "durationSeconds": 600,
+                      "minimumSampleRate": 8000,
+                      "maximumSampleRate": 96000
+                    }
+                  },
+                  "native": {
+                    "distribution": "sistema-zero-audio",
+                    "requiresPython": ">=3.14.2,<3.15",
+                    "installation": "exported-package",
+                    "lifetime": "process",
+                    "dependencies": {
+                      "setuptools": "84.2.0",
+                      "miniaudio": "1.71",
+                      "cffi": "2.1.1",
+                      "pycparser": "3.11"
+                    },
+                    "notes": [
+                      "Instale o pacote local e suas dependências pelo install.txt indicado no LEIA-ME da exportação, usando o Python do ambiente virtual na pasta principal do projeto.",
+                      "A instalação separada permite importar sz_audio mesmo quando o arquivo inicial está em uma subpasta; os requisitos e módulos autorais são preservados.",
+                      "As dependências nativas são separadas do lock do navegador. É necessário um dispositivo de saída disponível; a exportação não certifica a execução neste computador.",
+                      "play não bloqueia nem mantém o processo Python aberto. Um script curto pode terminar antes de o som tocar; no desktop, mantenha o laço normal do programa, como turtle.done() ou turtle.mainloop(). Encerrar o processo encerra o áudio.",
+                      "Não instale um pacote chamado turtle pelo pip. Turtle nativo usa a biblioteca padrão e o suporte gráfico Tk do computador."
+                    ]
+                  }
+                },
+                "descriptorArtifact": {
+                  "path": "python-modules/sz_audio/1.0.0/descriptor.json",
+                  "sha256": "6b5b150175565bf9360172a88819bef5200149cd8db55c62709d4934f126cf49"
+                },
+                "typingArtifact": {
+                  "path": "python-modules/sz_audio/1.0.0/__init__.pyi",
+                  "sha256": "a106c0445d95c7b37424f79c75e3a67969a126322e4ce298654b03b3f48e1a97"
+                },
+                "browserArtifacts": [
+                  {
+                    "path": "worker.mjs",
+                    "sha256": "4f1928678999865c5caa954e9f551f3620d1a987bf05bf75967a187767f8dd10"
+                  },
+                  {
+                    "path": "frame.mjs",
+                    "sha256": "1fab674d7398af8cc3d586c190f14a93e028b9c57e8c9a22bb87c1db7a9c9b6e"
+                  },
+                  {
+                    "path": "standalone.mjs",
+                    "sha256": "eaea4c4e9a0d683b7b9f149cd4f049159991a1f5e2333ad529ed8f4c9510a9ad"
+                  },
+                  {
+                    "path": "playtest.mjs",
+                    "sha256": "4eb2ac1a702c4a9b1b983f9efd29358970e36da2e42f5f18d6045644346e2a59"
+                  }
+                ]
+              }
+            ],
+            "features": ["turtle-compound-shapes"]
+          }
+        }
+      },
+      {
+        "profileId": "python-browser",
+        "releaseId": "2026-10-25-raylib-1",
+        "manifestSha256": "ebf22fb7962d057fd29757c4b7d5e4c5fc69d9b3c11b92c0cb116c7386fba078",
+        "manifest": {
+          "manifestVersion": 1,
+          "profileId": "python-browser",
+          "releaseId": "2026-10-25-raylib-1",
+          "programmingLanguage": "python",
+          "kinds": ["classic", "pro"],
+          "modes": ["blocks", "bridge", "code"],
+          "capabilities": [
+            "edit",
+            "execute",
+            "pause",
+            "publish",
+            "export-source",
+            "python-repl",
+            "assist"
+          ],
+          "extensions": [
+            {
+              "id": "python-turtle",
+              "versions": ["1.0.0"]
+            },
+            {
+              "id": "python-pgzero",
+              "versions": ["1.0.0"]
+            },
+            {
+              "id": "python-raylib-2d",
+              "versions": ["1.0.0"]
+            },
+            {
+              "id": "python-raylib-3d",
+              "versions": ["1.0.0"]
+            }
+          ],
+          "sourceTargets": ["browser", "desktop"],
+          "requiredBrowserFeatures": ["wasm", "worker", "jspi", "trusted-types"],
+          "artifacts": [
+            {
+              "path": "LICENSE-freefont.txt",
+              "sha256": "c49cb04726fa5c4f0ecaa8bcb08649ddf527d951581fc45ddd4ce4a0909abf7c"
+            },
+            {
+              "path": "LICENSE-pgzero.txt",
+              "sha256": "da7eabb7bafdf7d3ae5e9f223aa5bdc1eece45ac569dc21b3b037520b4464768"
+            },
+            {
+              "path": "LICENSE-pyodide.txt",
+              "sha256": "1f256ecad192880510e84ad60474eab7589218784b9a50bc7ceee34c2b91f1d5"
+            },
+            {
+              "path": "LICENSE-python.txt",
+              "sha256": "b0e25a78cffb43f4d92de8b61ccfa1f1f98ecbc22330b54b5251e7b6ba010231"
+            },
+            {
+              "path": "LICENSE-raylib-python-cffi.txt",
+              "sha256": "0becf16567beb77fa252b7664631dd177c8f9a1889e48995b45379c7130e5303"
+            },
+            {
+              "path": "LICENSE-raylib.txt",
+              "sha256": "882a5a819cf562aa3583aae3af3f2211dda15c63de9fc8cc4b399a2f9e78d799"
+            },
+            {
+              "path": "LICENSE-tk.txt",
+              "sha256": "2cde822b93ca16ae535c954b7dfe658b4ad10df2a193628d1b358f1765e8b198"
+            },
+            {
+              "path": "SOURCES.txt",
+              "sha256": "fa8a5b9873b0186c5c9e644cd5dd6c2af24363a6753b06508415e4bbb0b36541"
+            },
+            {
+              "path": "_http/gzip/00cad5af5add00a7cbda70df5ce5fbb0572c1e5cdc464018a691eceda6fec0ba.gz",
+              "sha256": "00cad5af5add00a7cbda70df5ce5fbb0572c1e5cdc464018a691eceda6fec0ba"
+            },
+            {
+              "path": "_http/gzip/0a867d4c29edc09e47cf0d393ba887d52b4804959027446539e8de6670111e23.gz",
+              "sha256": "0a867d4c29edc09e47cf0d393ba887d52b4804959027446539e8de6670111e23"
+            },
+            {
+              "path": "_http/gzip/165465def5fb0a24e7a7ec131d18142781da1facf0d6b0294311922bce02511b.gz",
+              "sha256": "165465def5fb0a24e7a7ec131d18142781da1facf0d6b0294311922bce02511b"
+            },
+            {
+              "path": "_http/gzip/37634a76b2c64e3f40311b9929c3290187e10253795bf14ab36e51d50fedfd16.gz",
+              "sha256": "37634a76b2c64e3f40311b9929c3290187e10253795bf14ab36e51d50fedfd16"
+            },
+            {
+              "path": "_http/gzip/3e87bf6af320155e2d086a27365bdc33366218909683afd9ad199056f97756d9.gz",
+              "sha256": "3e87bf6af320155e2d086a27365bdc33366218909683afd9ad199056f97756d9"
+            },
+            {
+              "path": "_http/gzip/531f73328d8380af5b26533f57e695607ddf357931a036bc113e7b608d493603.gz",
+              "sha256": "531f73328d8380af5b26533f57e695607ddf357931a036bc113e7b608d493603"
+            },
+            {
+              "path": "_http/gzip/6cbe7f5a889c495783bb7db961101edd713ecb888dd710cfe6cc7e2dd42dad21.gz",
+              "sha256": "6cbe7f5a889c495783bb7db961101edd713ecb888dd710cfe6cc7e2dd42dad21"
+            },
+            {
+              "path": "_http/gzip/9f3cdeb67749240be65b039846c516e590ebccaae2310fa105a0af8af1cc4ca7.gz",
+              "sha256": "9f3cdeb67749240be65b039846c516e590ebccaae2310fa105a0af8af1cc4ca7"
+            },
+            {
+              "path": "_http/gzip/a0abc584846921195edbe09e6f5b3bfd691af9b22b1d693ae1d96242abdd484c.gz",
+              "sha256": "a0abc584846921195edbe09e6f5b3bfd691af9b22b1d693ae1d96242abdd484c"
+            },
+            {
+              "path": "_http/gzip/b324b9a9b0e6377d81ed4807f06883d6c798009a72988e4ad59c398c3fcccc26.gz",
+              "sha256": "b324b9a9b0e6377d81ed4807f06883d6c798009a72988e4ad59c398c3fcccc26"
+            },
+            {
+              "path": "_http/gzip/b38c5d984033083d1d0006a69685a00d33e2bbc2fb8880c0e498b19cfe6eab26.gz",
+              "sha256": "b38c5d984033083d1d0006a69685a00d33e2bbc2fb8880c0e498b19cfe6eab26"
+            },
+            {
+              "path": "_http/gzip/b630b349dea28f8a487130216fea13b4fe6f61b27b97c038f4d4dd00bb56ae63.gz",
+              "sha256": "b630b349dea28f8a487130216fea13b4fe6f61b27b97c038f4d4dd00bb56ae63"
+            },
+            {
+              "path": "_http/gzip/cb406c6e6099327c9e83ff1f5fd8e85913ecc99c1eb36d243ce777cf63036532.gz",
+              "sha256": "cb406c6e6099327c9e83ff1f5fd8e85913ecc99c1eb36d243ce777cf63036532"
+            },
+            {
+              "path": "_http/gzip/d26ad566647f4d8ae3683f929aac1f17f074815dc1fc084e63e6212676a15bd1.gz",
+              "sha256": "d26ad566647f4d8ae3683f929aac1f17f074815dc1fc084e63e6212676a15bd1"
+            },
+            {
+              "path": "_http/gzip/f233e6e10ba0f50a0f0045d4e16fed18fc6e845622e2d653236a96be8cd74beb.gz",
+              "sha256": "f233e6e10ba0f50a0f0045d4e16fed18fc6e845622e2d653236a96be8cd74beb"
+            },
+            {
+              "path": "_http/gzip/fb4a0055daa73ba73a3f93e5ee357ac265a02c7b6c76f1e5362c7e68cdbee690.gz",
+              "sha256": "fb4a0055daa73ba73a3f93e5ee357ac265a02c7b6c76f1e5362c7e68cdbee690"
+            },
+            {
+              "path": "analysis-frame.mjs",
+              "sha256": "9e422cb1e304db3a2923eaa0cffbe501a04c100c4dd05301f11f534518a98ef8"
+            },
+            {
+              "path": "analysis-worker.mjs",
+              "sha256": "c5c23b7ff96ae2760cc453c55e00de61e0ba19d53ccb380c0c099c3d1531a6a7"
+            },
+            {
+              "path": "analysis.html",
+              "sha256": "13970058beb50f34f3653a3ed0b195d59501a52c0280f4b9baaa5427cbd55f1c"
+            },
+            {
+              "path": "boot-loader-derivation.json",
+              "sha256": "a8463b59d61b4e0685403d855ed3f6b20e29cc85d57d3d88a51b4f2da7837466"
+            },
+            {
+              "path": "boot-reader.mjs",
+              "sha256": "672b5b18280df2a34e439650f1ca9917e6f9a6c6bda63649c955ba62d50b8d02"
+            },
+            {
+              "path": "frame.html",
+              "sha256": "f59ecd6bc140b7547ab61e5f4e244c8ded33822a12acb35e013bfb06c24335fe"
+            },
+            {
+              "path": "frame.mjs",
+              "sha256": "b58d844af4702c76631acade89468dea841cd39a751760f61cc8986a009583c5"
+            },
+            {
+              "path": "http-compression-recipe.json",
+              "sha256": "8d674ea629041f3c2da3611af9dc7e5fa45112fa65b05dbe92ce41c7dcc5b0d5"
+            },
+            {
+              "path": "inspect.mjs",
+              "sha256": "120f2559ec7949623afc64eb7c8bd113420c34d7dd69607ef46b182300cbc504"
+            },
+            {
+              "path": "pgzero-protocol.mjs",
+              "sha256": "056d07d56f2a092b9cbb09230f0c48b812a24cc2d5576781b2867c08f9722e2a"
+            },
+            {
+              "path": "pgzero-renderer.mjs",
+              "sha256": "20460cc70e1d668969513a0a3aa6afcfcdb12656b2109714846fbc85b77b9ba2"
+            },
+            {
+              "path": "pgzero/freesansbold.ttf",
+              "sha256": "bf9251269f11e4b35582a99376096deee3d0c4973a459cbd97b0bebc01f440ad"
+            },
+            {
+              "path": "pgzero/pgzero/__init__.py",
+              "sha256": "85716e05d47f16fc29ae31bbae344d8aee3513eda7dbdd445f9c3d7a45f119c0"
+            },
+            {
+              "path": "pgzero/pgzero/_colors.py",
+              "sha256": "7292619af066c9fbf52f8e13914a9c395001e3d0ed8c793f48f3718570ab631d"
+            },
+            {
+              "path": "pgzero/pgzero/_pgrect.py",
+              "sha256": "3d7a9b21a02f6ffe99519a3bf047b0084ee30cf0881e2d9fe4374dd51e35b4db"
+            },
+            {
+              "path": "pgzero/pgzero/_sz.py",
+              "sha256": "2e2a1409ddebeecc2bd4b5bb93df0f565a88f261dc54c34e0ab9d68e7ca2d735"
+            },
+            {
+              "path": "pgzero/pgzero/actor.py",
+              "sha256": "1ab685170aa93ce579f49b070a0b799fb141849e3eb06eeefbbdc8b23d5ead88"
+            },
+            {
+              "path": "pgzero/pgzero/animation.py",
+              "sha256": "cfb3db0974000b7365871dc021cdf5eeccd23353acbce9f9950ebd029ab21d88"
+            },
+            {
+              "path": "pgzero/pgzero/builtins.py",
+              "sha256": "20987f0431be3f512ffc21518281c1dbf4b1845dd1c2964137304462ceab88fe"
+            },
+            {
+              "path": "pgzero/pgzero/clock.py",
+              "sha256": "5177d7f3a0f698ee7f1769d21982af249dce3ea4e1bdacca4cdf96a34ce44ffe"
+            },
+            {
+              "path": "pgzero/pgzero/constants.py",
+              "sha256": "c94fd85284480ac31688d679190a6c64195894e136eb390fbea67fe7bc00ae6f"
+            },
+            {
+              "path": "pgzero/pgzero/game.py",
+              "sha256": "72ac22a907bbd611821b9ae596e721c307af2eb24b7f3f5e80837c67400e371b"
+            },
+            {
+              "path": "pgzero/pgzero/keyboard.py",
+              "sha256": "0a2f699b0eeb7ea57d7cd23396b3c1e48d3396000cff3951d67e577348c5efd6"
+            },
+            {
+              "path": "pgzero/pgzero/loaders.py",
+              "sha256": "21b7ad0d37ec7079fbbb5f3618210d95643ea09fbb7858a67e5c118f6c9909b0"
+            },
+            {
+              "path": "pgzero/pgzero/music.py",
+              "sha256": "92adf9f7a5819f22c7e7a861b26ed64a64394b12307622519c07cad122e29e57"
+            },
+            {
+              "path": "pgzero/pgzero/rect.py",
+              "sha256": "c78bea7749e41e6e57c7b15ce8f1db6e399e8c5fb84da126b893f51464dd9eda"
+            },
+            {
+              "path": "pgzero/pgzero/runner.py",
+              "sha256": "b045730ff38e6549a6171069de790d9db6a137cc004251b9205f8459ad5825f0"
+            },
+            {
+              "path": "pgzero/pgzero/screen.py",
+              "sha256": "ab9ea6bed8bff8e9535bf3b4007c0b0dbe493b7b0905d5c2e02846a891a88138"
+            },
+            {
+              "path": "pgzero/pgzero/spellcheck.py",
+              "sha256": "eee616bbe1486d67069ad2a2637de6785e0f2aac4a38f079eca689f89a4c4899"
+            },
+            {
+              "path": "pgzero/pgzero/tone.py",
+              "sha256": "9d4c91a92ee2fd494519c9731d40f48e5fa24faf62dae1f06058ee9c8aa1324c"
+            },
+            {
+              "path": "pgzero/pgzrun.py",
+              "sha256": "71a83e70889f67d2528d21129a6f1578e149f0a7216759e5a04c16d069189149"
+            },
+            {
+              "path": "pgzero/pygame/__init__.py",
+              "sha256": "069621f2052309b89df32e2b7226d01efd2adab13f3d56fe00aa65fab24a46c3"
+            },
+            {
+              "path": "pgzero/pygame/draw.py",
+              "sha256": "104e87c2ef894af9e3810e6fb4880b2d9d929a40f6fea1ed14031f0621a57974"
+            },
+            {
+              "path": "pgzero/pygame/image.py",
+              "sha256": "e796a96e56faf1914e363e37984659f5cbd08c47c9088095891b40042ecf9fef"
+            },
+            {
+              "path": "pgzero/pygame/math.py",
+              "sha256": "6174aba854745507179e6f7ebe2c35e21ee4ddad036a4739b90c6da6c2fbfce8"
+            },
+            {
+              "path": "pgzero/pygame/mixer.py",
+              "sha256": "c7b7ee52eacbc0c62d4d831d215d31e2bb3a626735a2c6ce2c5163b7dfc0b4d1"
+            },
+            {
+              "path": "playtest.mjs",
+              "sha256": "50b18bb09401bbb6e498804bcb8fe05b552e265a00b57ceee6dfcd0fb3abdaf0"
+            },
+            {
+              "path": "pyodide-lock.json",
+              "sha256": "5dc2fc119108bc148c7457dc86e7675b5c87e1cafd420b9c34c1eaef7b36c010"
+            },
+            {
+              "path": "pyodide.asm.mjs",
+              "sha256": "eb71d9513398562cdcde73ec7bb03b4871f6cc21de69d42aa69884994e503e9b"
+            },
+            {
+              "path": "pyodide.asm.wasm",
+              "sha256": "cc36e3cab04fdfc9a63ff13eb52eae2b911bf46c025cc7b281f394bd3de1d5e6"
+            },
+            {
+              "path": "pyodide.mjs",
+              "sha256": "1f221325de3f148ba9aa91bf429560a8cc59a52ac5c6a2c8031393f5ec8bcaf1"
+            },
+            {
+              "path": "python-modules/sz_audio/1.0.0/__init__.pyi",
+              "sha256": "a106c0445d95c7b37424f79c75e3a67969a126322e4ce298654b03b3f48e1a97"
+            },
+            {
+              "path": "python-modules/sz_audio/1.0.0/descriptor.json",
+              "sha256": "6b5b150175565bf9360172a88819bef5200149cd8db55c62709d4934f126cf49"
+            },
+            {
+              "path": "python_stdlib.zip",
+              "sha256": "afc02bfca854c42376d79358e1c808da58c49801de3b0e9e8b16e01b3a4d9b1a"
+            },
+            {
+              "path": "raylib-protocol.mjs",
+              "sha256": "7d8b5dc7419e205935ac1ccae61b7f4bde2a9601b5f940954bc3573ccba5c098"
+            },
+            {
+              "path": "raylib-renderer.mjs",
+              "sha256": "f4702212f86445bb3bac75ae2445f6d0b5541e0c24be6c87cb19a74690086be5"
+            },
+            {
+              "path": "raylib/_szraylib/__init__.py",
+              "sha256": "3f052e81d5cb7b221fc898b45765c6207f5a1ecdbee9e496eff918631af7bc5d"
+            },
+            {
+              "path": "raylib/_szraylib/_api.py",
+              "sha256": "deeb1ffadff5c648bf5287c815b3eb8ec351262d53542b4a403f033cd8758835"
+            },
+            {
+              "path": "raylib/_szraylib/_args.py",
+              "sha256": "05c845401789094f3497d9fe946b0b7896157393c0a0e9df3f8fc345c604859c"
+            },
+            {
+              "path": "raylib/_szraylib/_assets.py",
+              "sha256": "cec2d7e49ab1501ce350043f3441e71e6e714c8409b71dfc458a6d03766745d3"
+            },
+            {
+              "path": "raylib/_szraylib/_audio.py",
+              "sha256": "c13c317a67146e14b17856c7498d38215b1b677df4d9397e70f4692f6ca9aef2"
+            },
+            {
+              "path": "raylib/_szraylib/_camera2d.py",
+              "sha256": "b5d3401fe26044b8edb94c135bb3b9c5bab831e74acbfe7d6b9ce3504e27da2e"
+            },
+            {
+              "path": "raylib/_szraylib/_camera3d.py",
+              "sha256": "45a4516505234aced743da45be059858a3fc524a2a12c30617da6b0008e2d6ff"
+            },
+            {
+              "path": "raylib/_szraylib/_collide2d.py",
+              "sha256": "def8bf582ded08cfe1c5a6df2a97704fbc66c707b105b76f7adeab4a12996173"
+            },
+            {
+              "path": "raylib/_szraylib/_collide3d.py",
+              "sha256": "3090c44659844a0500601979228cbca53aa37a20172c2da5bd248fcbaf4a5d16"
+            },
+            {
+              "path": "raylib/_szraylib/_colors.py",
+              "sha256": "fb873f7ef242d8c034da73223a0bf9fb4a338813acbf2f825592fa723d5919dc"
+            },
+            {
+              "path": "raylib/_szraylib/_constants.py",
+              "sha256": "1a1a0e129d7eaed27f085590dd1efb872100025d71bd32038b7db4151ac69b8a"
+            },
+            {
+              "path": "raylib/_szraylib/_core.py",
+              "sha256": "ef975990866298de652a61ab3e0780c73dd479ee3fab2b0639845c5a86e24952"
+            },
+            {
+              "path": "raylib/_szraylib/_default_font.py",
+              "sha256": "dd3a132c87bafe2b3340b253e8ddb1ef28f806f32a8c827437108ba593f4bbf6"
+            },
+            {
+              "path": "raylib/_szraylib/_draw2d.py",
+              "sha256": "ab49db12d5b5fdff4bd4e597ae28bd73c5c44d7da3df9d28a27610d9df8780c8"
+            },
+            {
+              "path": "raylib/_szraylib/_draw3d.py",
+              "sha256": "e8dc70f91df9a3ad104d30e8c34d38d8165f700878471178c2a614cb774cc78c"
+            },
+            {
+              "path": "raylib/_szraylib/_ffi.py",
+              "sha256": "aebc198019b921f8c0b7a20a98942bd6c3cb6d595fc63af21368dae22dbe3008"
+            },
+            {
+              "path": "raylib/_szraylib/_gltf.py",
+              "sha256": "2e028861fdefdb999bd1c1dcd00d49603c79bf61f9e6700975e503e299a1aea8"
+            },
+            {
+              "path": "raylib/_szraylib/_models.py",
+              "sha256": "4e886567929e8491013a6f90f8360900af07c33516c4c4a39abda7d3f74e4255"
+            },
+            {
+              "path": "raylib/_szraylib/_names.py",
+              "sha256": "6df53490f011929bf64164edce86b06320474e6a096cf68c8b64a97f28b5fa1b"
+            },
+            {
+              "path": "raylib/_szraylib/_random.py",
+              "sha256": "7c8ad79788810178accf7eee7e49128bcac76a7832f208d3bf77685eec25cf48"
+            },
+            {
+              "path": "raylib/_szraylib/_raymath.py",
+              "sha256": "c199e986edf6dea9c57841880466dfbf39af90bd124e8a4a4cf4032a2afa1732"
+            },
+            {
+              "path": "raylib/_szraylib/_rt.py",
+              "sha256": "a0ea8c517cfeab9bd96cc5707cb9ef21ca917d1b8aed6bbdfc08b8983d2e1209"
+            },
+            {
+              "path": "raylib/_szraylib/_shaders.py",
+              "sha256": "a182f1ecd114741cd292fc23bd4f4c4ea8a47fc3b6ee696d9d1c65cd43e8f59b"
+            },
+            {
+              "path": "raylib/_szraylib/_shapes.py",
+              "sha256": "3c94a094a7a2c23a691e3da0d3fb6df3102ac764a714c0f78fbf0668ee3d4b58"
+            },
+            {
+              "path": "raylib/_szraylib/_structs.py",
+              "sha256": "71f132424a5e39f6da462a035a149f6d53cd962f92f104d4847688d2d1ea60f0"
+            },
+            {
+              "path": "raylib/_szraylib/_text.py",
+              "sha256": "b30d88cc1c3fd0e1068c3c1f74de2d441154fbb10fd6c6d10f960640209b33af"
+            },
+            {
+              "path": "raylib/pyray/__init__.py",
+              "sha256": "9b9d9ff3a77bb430335ba145a08761cd5dc171886fa88a93a114140f0a7bab81"
+            },
+            {
+              "path": "raylib/raylib/__init__.py",
+              "sha256": "ee099ae481c151d601e1deea115558eaed3de6086587a7a45f3df43e09c1e8a4"
+            },
+            {
+              "path": "raylib/raylib/colors.py",
+              "sha256": "ec9f0605581dcf05c8dcb54b9058093e2cf28880e8a3b654287f100007e62ed8"
+            },
+            {
+              "path": "raylib/raylib/defines.py",
+              "sha256": "e38e28ca10c726f66b0e4770285970413dbccb3dda19ba35cf63f6962ef12b50"
+            },
+            {
+              "path": "raylib/raylib/enums.py",
+              "sha256": "eb54b659e263ce40a3525e4aa70cdf9132e9abe76615b4ac316a7749a24ed09b"
+            },
+            {
+              "path": "standalone.mjs",
+              "sha256": "70fa29e93542ac997e56fb181f8d3380b99ff240a91a24a37db60c822e9c6910"
+            },
+            {
+              "path": "turtle-protocol.mjs",
+              "sha256": "f440ff6ef2e413f3a3ae18d9d58384ab911f3dad2c34e99c4f79a1dbc1d90b60"
+            },
+            {
+              "path": "turtle-renderer.mjs",
+              "sha256": "5503af4f458addd3989ed99186e6f3d600cde01da03a8acc1593293f156d031a"
+            },
+            {
+              "path": "turtle/_sz_turtle_backend.py",
+              "sha256": "18a4b3353c50fe99e76dc714972980b8f8b8a3b4edb6d5313b070715063c82ae"
+            },
+            {
+              "path": "turtle/_sz_turtle_colors.py",
+              "sha256": "468f1b95da4156d6c4b587d365b7f21a5f4913457b7d071221c7d1a4c2097fbc"
+            },
+            {
+              "path": "turtle/_sz_turtle_limits.py",
+              "sha256": "e6ee8908c4eac8f079696e87e1c630836f78722adcd60647a07e1cdb08538862"
+            },
+            {
+              "path": "turtle/formas_do_pinta.py",
+              "sha256": "c0ebef6d17ae4b809f9cb880ae5d31e0989267ede9b86312f04e1704bccd0b99"
+            },
+            {
+              "path": "turtle/turtle.py",
+              "sha256": "c766dd33e3c2a701c2daac45a8f6b3073f626763dcaaf6805ba08314dd39f0ce"
+            },
+            {
+              "path": "worker.mjs",
+              "sha256": "78bc3b50a515c88054ff0b2bf331183589819c7b885dd22c05b7e60f882e5daf"
+            }
+          ],
+          "python": {
+            "version": "3.14.2",
+            "packages": [],
+            "providedModules": [
+              {
+                "descriptor": {
+                  "descriptorVersion": 1,
+                  "kind": "portable-audio",
+                  "importName": "sz_audio",
+                  "version": "1.0.0",
+                  "provider": "sistema-zero",
+                  "summary": "Som portátil do Sistema Zero. É um módulo separado de Turtle e da biblioteca padrão do Python.",
+                  "api": [
+                    {
+                      "name": "play",
+                      "signature": "(path: str, *, loop: bool = False, volume: float = 1.0) -> int",
+                      "summary": "Começa um WAV sem esperar seu fim e devolve o identificador do som. loop repete; volume vai de 0 a 1."
+                    },
+                    {
+                      "name": "stop",
+                      "signature": "(handle: int | None = None) -> None",
+                      "summary": "Para o som indicado por play. Sem argumento, para todos os sons desta execução."
+                    }
+                  ],
+                  "browser": {
+                    "installation": "runtime-bundled",
+                    "paths": "captured-project-assets",
+                    "requiresUserGesture": true,
+                    "lifetime": "execution-session",
+                    "notes": [
+                      "Disponível somente quando a release aprovada fornece este módulo; não precisa instalar pelo pip no navegador.",
+                      "Use o caminho relativo de um WAV dos materiais capturados do projeto. Não aceita URL, comando de shell ou arquivo externo.",
+                      "Clique em Jogar ou Executar para permitir o som. Stop, reinício ou fechamento da execução encerram as vozes.",
+                      "No navegador, a página e a sessão podem continuar abertas para o REPL depois que o arquivo inicial termina; o áudio acompanha essa sessão.",
+                      "Um módulo autoral com esse nome mantém a precedência normal do Python; não atribua a ele esta API."
+                    ]
+                  },
+                  "audio": {
+                    "container": "RIFF/WAVE",
+                    "encoding": "PCM16",
+                    "channels": [1, 2],
+                    "assetsTotalBytes": 33554432,
+                    "policy": {
+                      "version": 1,
+                      "requestBytes": 2048,
+                      "voices": 16,
+                      "commandsPerSecond": 64,
+                      "wavChunks": 256,
+                      "fileBytes": 33554432,
+                      "durationSeconds": 600,
+                      "minimumSampleRate": 8000,
+                      "maximumSampleRate": 96000
+                    }
+                  },
+                  "native": {
+                    "distribution": "sistema-zero-audio",
+                    "requiresPython": ">=3.14.2,<3.15",
+                    "installation": "exported-package",
+                    "lifetime": "process",
+                    "dependencies": {
+                      "setuptools": "84.2.0",
+                      "miniaudio": "1.71",
+                      "cffi": "2.1.1",
+                      "pycparser": "3.11"
+                    },
+                    "notes": [
+                      "Instale o pacote local e suas dependências pelo install.txt indicado no LEIA-ME da exportação, usando o Python do ambiente virtual na pasta principal do projeto.",
+                      "A instalação separada permite importar sz_audio mesmo quando o arquivo inicial está em uma subpasta; os requisitos e módulos autorais são preservados.",
+                      "As dependências nativas são separadas do lock do navegador. É necessário um dispositivo de saída disponível; a exportação não certifica a execução neste computador.",
+                      "play não bloqueia nem mantém o processo Python aberto. Um script curto pode terminar antes de o som tocar; no desktop, mantenha o laço normal do programa, como turtle.done() ou turtle.mainloop(). Encerrar o processo encerra o áudio.",
+                      "Não instale um pacote chamado turtle pelo pip. Turtle nativo usa a biblioteca padrão e o suporte gráfico Tk do computador."
+                    ]
+                  }
+                },
+                "descriptorArtifact": {
+                  "path": "python-modules/sz_audio/1.0.0/descriptor.json",
+                  "sha256": "6b5b150175565bf9360172a88819bef5200149cd8db55c62709d4934f126cf49"
+                },
+                "typingArtifact": {
+                  "path": "python-modules/sz_audio/1.0.0/__init__.pyi",
+                  "sha256": "a106c0445d95c7b37424f79c75e3a67969a126322e4ce298654b03b3f48e1a97"
+                },
+                "browserArtifacts": [
+                  {
+                    "path": "worker.mjs",
+                    "sha256": "78bc3b50a515c88054ff0b2bf331183589819c7b885dd22c05b7e60f882e5daf"
+                  },
+                  {
+                    "path": "frame.mjs",
+                    "sha256": "b58d844af4702c76631acade89468dea841cd39a751760f61cc8986a009583c5"
+                  },
+                  {
+                    "path": "standalone.mjs",
+                    "sha256": "70fa29e93542ac997e56fb181f8d3380b99ff240a91a24a37db60c822e9c6910"
+                  },
+                  {
+                    "path": "playtest.mjs",
+                    "sha256": "50b18bb09401bbb6e498804bcb8fe05b552e265a00b57ceee6dfcd0fb3abdaf0"
+                  }
+                ]
+              }
+            ],
+            "features": ["turtle-compound-shapes", "project-missions-v1"]
+          }
+        }
+      }
+    ]
+  },
+  "releases": [
+    {
+      "runtime": {
+        "profileId": "python-browser",
+        "releaseId": "2026-10-22-visual-games-3",
+        "manifestSha256": "bc5710a137facb82e4f1a24df6e370406217f5fc4707c64861adf381d10d3e80"
+      },
+      "status": "retired",
+      "proTemplateIds": ["python-blank"],
+      "blockIds": [
+        "sz_py_abs",
+        "sz_py_alias",
+        "sz_py_and",
+        "sz_py_arithmetic",
+        "sz_py_assign",
+        "sz_py_attribute",
+        "sz_py_boolean",
+        "sz_py_break",
+        "sz_py_call",
+        "sz_py_class",
+        "sz_py_collection_pop",
+        "sz_py_collection_remove",
+        "sz_py_compare",
+        "sz_py_continue",
+        "sz_py_delete",
+        "sz_py_dict_items",
+        "sz_py_dict_keys",
+        "sz_py_dict_values",
+        "sz_py_dictionary",
+        "sz_py_except",
+        "sz_py_expression",
+        "sz_py_float",
+        "sz_py_float_call",
+        "sz_py_for",
+        "sz_py_format_value",
+        "sz_py_function",
+        "sz_py_if",
+        "sz_py_import",
+        "sz_py_import_from",
+        "sz_py_input",
+        "sz_py_int",
+        "sz_py_integer",
+        "sz_py_interpolation",
+        "sz_py_keyword",
+        "sz_py_lambda",
+        "sz_py_len",
+        "sz_py_list",
+        "sz_py_list_append",
+        "sz_py_math_ceil",
+        "sz_py_math_floor",
+        "sz_py_math_pi",
+        "sz_py_math_sqrt",
+        "sz_py_max",
+        "sz_py_min",
+        "sz_py_negative",
+        "sz_py_none",
+        "sz_py_not",
+        "sz_py_or",
+        "sz_py_parameter",
+        "sz_py_parameters",
+        "sz_py_pass",
+        "sz_py_positive",
+        "sz_py_print",
+        "sz_py_raise",
+        "sz_py_random_choice",
+        "sz_py_random_randint",
+        "sz_py_range",
+        "sz_py_return",
+        "sz_py_round",
+        "sz_py_set",
+        "sz_py_set_add",
+        "sz_py_set_create",
+        "sz_py_str",
+        "sz_py_subscript",
+        "sz_py_text",
+        "sz_py_text_join",
+        "sz_py_text_lower",
+        "sz_py_text_replace",
+        "sz_py_text_split",
+        "sz_py_text_strip",
+        "sz_py_text_upper",
+        "sz_py_try",
+        "sz_py_tuple",
+        "sz_py_turtle_module_Screen",
+        "sz_py_turtle_module_Shape",
+        "sz_py_turtle_module_Turtle",
+        "sz_py_turtle_module_addshape",
+        "sz_py_turtle_module_back",
+        "sz_py_turtle_module_backward",
+        "sz_py_turtle_module_begin_fill",
+        "sz_py_turtle_module_bgcolor",
+        "sz_py_turtle_module_bgpic",
+        "sz_py_turtle_module_bk",
+        "sz_py_turtle_module_bye",
+        "sz_py_turtle_module_circle",
+        "sz_py_turtle_module_clear",
+        "sz_py_turtle_module_clearscreen",
+        "sz_py_turtle_module_clearstamp",
+        "sz_py_turtle_module_clearstamps",
+        "sz_py_turtle_module_clone",
+        "sz_py_turtle_module_color",
+        "sz_py_turtle_module_colormode",
+        "sz_py_turtle_module_delay",
+        "sz_py_turtle_module_distance",
+        "sz_py_turtle_module_done",
+        "sz_py_turtle_module_dot",
+        "sz_py_turtle_module_down",
+        "sz_py_turtle_module_end_fill",
+        "sz_py_turtle_module_exitonclick",
+        "sz_py_turtle_module_fd",
+        "sz_py_turtle_module_fillcolor",
+        "sz_py_turtle_module_filling",
+        "sz_py_turtle_module_forward",
+        "sz_py_turtle_module_getscreen",
+        "sz_py_turtle_module_getshapes",
+        "sz_py_turtle_module_goto",
+        "sz_py_turtle_module_heading",
+        "sz_py_turtle_module_hideturtle",
+        "sz_py_turtle_module_home",
+        "sz_py_turtle_module_ht",
+        "sz_py_turtle_module_isdown",
+        "sz_py_turtle_module_isvisible",
+        "sz_py_turtle_module_left",
+        "sz_py_turtle_module_listen",
+        "sz_py_turtle_module_lt",
+        "sz_py_turtle_module_mainloop",
+        "sz_py_turtle_module_onclick",
+        "sz_py_turtle_module_ondrag",
+        "sz_py_turtle_module_onkey",
+        "sz_py_turtle_module_onkeypress",
+        "sz_py_turtle_module_onkeyrelease",
+        "sz_py_turtle_module_onrelease",
+        "sz_py_turtle_module_onscreenclick",
+        "sz_py_turtle_module_ontimer",
+        "sz_py_turtle_module_pd",
+        "sz_py_turtle_module_pencolor",
+        "sz_py_turtle_module_pendown",
+        "sz_py_turtle_module_pensize",
+        "sz_py_turtle_module_penup",
+        "sz_py_turtle_module_pos",
+        "sz_py_turtle_module_position",
+        "sz_py_turtle_module_pu",
+        "sz_py_turtle_module_register_shape",
+        "sz_py_turtle_module_reset",
+        "sz_py_turtle_module_resetscreen",
+        "sz_py_turtle_module_right",
+        "sz_py_turtle_module_rt",
+        "sz_py_turtle_module_seth",
+        "sz_py_turtle_module_setheading",
+        "sz_py_turtle_module_setpos",
+        "sz_py_turtle_module_setposition",
+        "sz_py_turtle_module_setup",
+        "sz_py_turtle_module_setx",
+        "sz_py_turtle_module_sety",
+        "sz_py_turtle_module_shape",
+        "sz_py_turtle_module_shapesize",
+        "sz_py_turtle_module_showturtle",
+        "sz_py_turtle_module_speed",
+        "sz_py_turtle_module_st",
+        "sz_py_turtle_module_stamp",
+        "sz_py_turtle_module_title",
+        "sz_py_turtle_module_towards",
+        "sz_py_turtle_module_tracer",
+        "sz_py_turtle_module_turtles",
+        "sz_py_turtle_module_turtlesize",
+        "sz_py_turtle_module_up",
+        "sz_py_turtle_module_update",
+        "sz_py_turtle_module_width",
+        "sz_py_turtle_module_window_height",
+        "sz_py_turtle_module_window_width",
+        "sz_py_turtle_module_write",
+        "sz_py_turtle_module_xcor",
+        "sz_py_turtle_module_ycor",
+        "sz_py_turtle_screen_addshape",
+        "sz_py_turtle_screen_bgcolor",
+        "sz_py_turtle_screen_bgpic",
+        "sz_py_turtle_screen_bye",
+        "sz_py_turtle_screen_clear",
+        "sz_py_turtle_screen_clearscreen",
+        "sz_py_turtle_screen_colormode",
+        "sz_py_turtle_screen_delay",
+        "sz_py_turtle_screen_exitonclick",
+        "sz_py_turtle_screen_getshapes",
+        "sz_py_turtle_screen_listen",
+        "sz_py_turtle_screen_mainloop",
+        "sz_py_turtle_screen_onclick",
+        "sz_py_turtle_screen_onkey",
+        "sz_py_turtle_screen_onkeypress",
+        "sz_py_turtle_screen_onkeyrelease",
+        "sz_py_turtle_screen_onscreenclick",
+        "sz_py_turtle_screen_ontimer",
+        "sz_py_turtle_screen_register_shape",
+        "sz_py_turtle_screen_reset",
+        "sz_py_turtle_screen_resetscreen",
+        "sz_py_turtle_screen_setup",
+        "sz_py_turtle_screen_title",
+        "sz_py_turtle_screen_tracer",
+        "sz_py_turtle_screen_turtles",
+        "sz_py_turtle_screen_update",
+        "sz_py_turtle_screen_window_height",
+        "sz_py_turtle_screen_window_width",
+        "sz_py_turtle_shape_addcomponent",
+        "sz_py_turtle_turtle_back",
+        "sz_py_turtle_turtle_backward",
+        "sz_py_turtle_turtle_begin_fill",
+        "sz_py_turtle_turtle_bk",
+        "sz_py_turtle_turtle_circle",
+        "sz_py_turtle_turtle_clear",
+        "sz_py_turtle_turtle_clearstamp",
+        "sz_py_turtle_turtle_clearstamps",
+        "sz_py_turtle_turtle_clone",
+        "sz_py_turtle_turtle_color",
+        "sz_py_turtle_turtle_distance",
+        "sz_py_turtle_turtle_dot",
+        "sz_py_turtle_turtle_down",
+        "sz_py_turtle_turtle_end_fill",
+        "sz_py_turtle_turtle_fd",
+        "sz_py_turtle_turtle_fillcolor",
+        "sz_py_turtle_turtle_filling",
+        "sz_py_turtle_turtle_forward",
+        "sz_py_turtle_turtle_getscreen",
+        "sz_py_turtle_turtle_goto",
+        "sz_py_turtle_turtle_heading",
+        "sz_py_turtle_turtle_hideturtle",
+        "sz_py_turtle_turtle_home",
+        "sz_py_turtle_turtle_ht",
+        "sz_py_turtle_turtle_isdown",
+        "sz_py_turtle_turtle_isvisible",
+        "sz_py_turtle_turtle_left",
+        "sz_py_turtle_turtle_lt",
+        "sz_py_turtle_turtle_onclick",
+        "sz_py_turtle_turtle_ondrag",
+        "sz_py_turtle_turtle_onrelease",
+        "sz_py_turtle_turtle_pd",
+        "sz_py_turtle_turtle_pencolor",
+        "sz_py_turtle_turtle_pendown",
+        "sz_py_turtle_turtle_pensize",
+        "sz_py_turtle_turtle_penup",
+        "sz_py_turtle_turtle_pos",
+        "sz_py_turtle_turtle_position",
+        "sz_py_turtle_turtle_pu",
+        "sz_py_turtle_turtle_reset",
+        "sz_py_turtle_turtle_right",
+        "sz_py_turtle_turtle_rt",
+        "sz_py_turtle_turtle_seth",
+        "sz_py_turtle_turtle_setheading",
+        "sz_py_turtle_turtle_setpos",
+        "sz_py_turtle_turtle_setposition",
+        "sz_py_turtle_turtle_setx",
+        "sz_py_turtle_turtle_sety",
+        "sz_py_turtle_turtle_shape",
+        "sz_py_turtle_turtle_shapesize",
+        "sz_py_turtle_turtle_showturtle",
+        "sz_py_turtle_turtle_speed",
+        "sz_py_turtle_turtle_st",
+        "sz_py_turtle_turtle_stamp",
+        "sz_py_turtle_turtle_towards",
+        "sz_py_turtle_turtle_turtlesize",
+        "sz_py_turtle_turtle_up",
+        "sz_py_turtle_turtle_width",
+        "sz_py_turtle_turtle_write",
+        "sz_py_turtle_turtle_xcor",
+        "sz_py_turtle_turtle_ycor",
+        "sz_py_update",
+        "sz_py_variable",
+        "sz_py_while"
+      ],
+      "categoryIds": [
+        "Animação e tempo",
+        "Aparência e imagens",
+        "Caneta e desenho",
+        "Classes e objetos",
+        "Entrada e saída",
+        "Eventos",
+        "Funções",
+        "Listas e coleções",
+        "Lógica e decisões",
+        "Movimento",
+        "Módulos",
+        "Números e matemática",
+        "Repetições",
+        "Tartarugas",
+        "Tela",
+        "Textos",
+        "Tratamento de erros",
+        "Variáveis"
+      ]
+    },
+    {
+      "runtime": {
+        "profileId": "python-browser",
+        "releaseId": "2026-10-25-raylib-1",
+        "manifestSha256": "ebf22fb7962d057fd29757c4b7d5e4c5fc69d9b3c11b92c0cb116c7386fba078"
+      },
+      "status": "active",
+      "proTemplateIds": ["python-blank"],
+      "blockIds": [
+        "sz_py_abs",
+        "sz_py_alias",
+        "sz_py_and",
+        "sz_py_arithmetic",
+        "sz_py_assign",
+        "sz_py_assign_many",
+        "sz_py_attribute",
+        "sz_py_audio_play",
+        "sz_py_audio_play_value",
+        "sz_py_audio_stop",
+        "sz_py_boolean",
+        "sz_py_break",
+        "sz_py_call",
+        "sz_py_class",
+        "sz_py_collection_pop",
+        "sz_py_collection_pop_statement",
+        "sz_py_collection_remove",
+        "sz_py_compare",
+        "sz_py_continue",
+        "sz_py_def",
+        "sz_py_delete",
+        "sz_py_dict_get",
+        "sz_py_dict_items",
+        "sz_py_dict_keys",
+        "sz_py_dict_values",
+        "sz_py_dictionary",
+        "sz_py_enumerate",
+        "sz_py_except",
+        "sz_py_expression",
+        "sz_py_file_read",
+        "sz_py_file_write",
+        "sz_py_float",
+        "sz_py_float_call",
+        "sz_py_for",
+        "sz_py_forever",
+        "sz_py_format_spec",
+        "sz_py_format_value",
+        "sz_py_function",
+        "sz_py_global",
+        "sz_py_if",
+        "sz_py_if_value",
+        "sz_py_import",
+        "sz_py_import_all",
+        "sz_py_import_from",
+        "sz_py_import_one",
+        "sz_py_input",
+        "sz_py_int",
+        "sz_py_integer",
+        "sz_py_interpolation",
+        "sz_py_keyword",
+        "sz_py_lambda",
+        "sz_py_len",
+        "sz_py_list",
+        "sz_py_list_append",
+        "sz_py_list_call",
+        "sz_py_list_clear",
+        "sz_py_list_comprehension",
+        "sz_py_list_index",
+        "sz_py_list_insert",
+        "sz_py_list_sort",
+        "sz_py_math_atan2",
+        "sz_py_math_ceil",
+        "sz_py_math_cos",
+        "sz_py_math_degrees",
+        "sz_py_math_floor",
+        "sz_py_math_hypot",
+        "sz_py_math_pi",
+        "sz_py_math_radians",
+        "sz_py_math_sin",
+        "sz_py_math_sqrt",
+        "sz_py_max",
+        "sz_py_method",
+        "sz_py_method_value",
+        "sz_py_min",
+        "sz_py_negative",
+        "sz_py_none",
+        "sz_py_nonlocal",
+        "sz_py_not",
+        "sz_py_or",
+        "sz_py_parameter",
+        "sz_py_parameters",
+        "sz_py_pass",
+        "sz_py_pgzero_actor",
+        "sz_py_pgzero_actor_draw",
+        "sz_py_pgzero_actor_property",
+        "sz_py_pgzero_angle_to",
+        "sz_py_pgzero_animate",
+        "sz_py_pgzero_animate_value",
+        "sz_py_pgzero_animation_stop",
+        "sz_py_pgzero_clock_schedule",
+        "sz_py_pgzero_clock_schedule_interval",
+        "sz_py_pgzero_clock_schedule_unique",
+        "sz_py_pgzero_clock_unschedule",
+        "sz_py_pgzero_collidelist",
+        "sz_py_pgzero_collidepoint",
+        "sz_py_pgzero_colliderect",
+        "sz_py_pgzero_distance_to",
+        "sz_py_pgzero_draw",
+        "sz_py_pgzero_draw_circle",
+        "sz_py_pgzero_draw_filled_circle",
+        "sz_py_pgzero_draw_filled_rect",
+        "sz_py_pgzero_draw_line",
+        "sz_py_pgzero_draw_rect",
+        "sz_py_pgzero_draw_text",
+        "sz_py_pgzero_draw_textbox",
+        "sz_py_pgzero_exit",
+        "sz_py_pgzero_go",
+        "sz_py_pgzero_height",
+        "sz_py_pgzero_image_get_at",
+        "sz_py_pgzero_image_height",
+        "sz_py_pgzero_image_width",
+        "sz_py_pgzero_keyboard",
+        "sz_py_pgzero_keyboard_index",
+        "sz_py_pgzero_keys",
+        "sz_py_pgzero_mouse",
+        "sz_py_pgzero_music_play",
+        "sz_py_pgzero_music_play_once",
+        "sz_py_pgzero_music_stop",
+        "sz_py_pgzero_music_volume",
+        "sz_py_pgzero_on_key_down",
+        "sz_py_pgzero_on_key_up",
+        "sz_py_pgzero_on_mouse_down",
+        "sz_py_pgzero_on_mouse_move",
+        "sz_py_pgzero_on_mouse_up",
+        "sz_py_pgzero_on_music_end",
+        "sz_py_pgzero_pygame_circle",
+        "sz_py_pgzero_pygame_ellipse",
+        "sz_py_pgzero_pygame_line",
+        "sz_py_pgzero_pygame_polygon",
+        "sz_py_pgzero_pygame_rect",
+        "sz_py_pgzero_rect",
+        "sz_py_pgzero_screen_blit",
+        "sz_py_pgzero_screen_clear",
+        "sz_py_pgzero_screen_fill",
+        "sz_py_pgzero_screen_get_at",
+        "sz_py_pgzero_sound_play",
+        "sz_py_pgzero_sound_stop",
+        "sz_py_pgzero_title",
+        "sz_py_pgzero_tone_create",
+        "sz_py_pgzero_tone_play",
+        "sz_py_pgzero_update",
+        "sz_py_pgzero_width",
+        "sz_py_positive",
+        "sz_py_print",
+        "sz_py_raise",
+        "sz_py_random_choice",
+        "sz_py_random_randint",
+        "sz_py_random_random",
+        "sz_py_random_shuffle",
+        "sz_py_random_uniform",
+        "sz_py_range",
+        "sz_py_repeat",
+        "sz_py_return",
+        "sz_py_rl2d_Camera2D",
+        "sz_py_rl2d_Color",
+        "sz_py_rl2d_Rectangle",
+        "sz_py_rl2d_Vector2",
+        "sz_py_rl2d_begin_blend_mode",
+        "sz_py_rl2d_begin_drawing",
+        "sz_py_rl2d_begin_mode_2d",
+        "sz_py_rl2d_begin_scissor_mode",
+        "sz_py_rl2d_begin_texture_mode",
+        "sz_py_rl2d_blend",
+        "sz_py_rl2d_check_collision_circle_rec",
+        "sz_py_rl2d_check_collision_circles",
+        "sz_py_rl2d_check_collision_point_circle",
+        "sz_py_rl2d_check_collision_point_rec",
+        "sz_py_rl2d_check_collision_recs",
+        "sz_py_rl2d_clamp",
+        "sz_py_rl2d_clear_background",
+        "sz_py_rl2d_close_audio_device",
+        "sz_py_rl2d_close_window",
+        "sz_py_rl2d_color",
+        "sz_py_rl2d_color_from_hsv",
+        "sz_py_rl2d_draw_circle",
+        "sz_py_rl2d_draw_circle_gradient",
+        "sz_py_rl2d_draw_circle_lines",
+        "sz_py_rl2d_draw_circle_sector",
+        "sz_py_rl2d_draw_circle_v",
+        "sz_py_rl2d_draw_ellipse",
+        "sz_py_rl2d_draw_fps",
+        "sz_py_rl2d_draw_line",
+        "sz_py_rl2d_draw_line_bezier",
+        "sz_py_rl2d_draw_line_ex",
+        "sz_py_rl2d_draw_line_v",
+        "sz_py_rl2d_draw_pixel",
+        "sz_py_rl2d_draw_pixel_v",
+        "sz_py_rl2d_draw_poly",
+        "sz_py_rl2d_draw_poly_lines",
+        "sz_py_rl2d_draw_rectangle",
+        "sz_py_rl2d_draw_rectangle_gradient_h",
+        "sz_py_rl2d_draw_rectangle_gradient_v",
+        "sz_py_rl2d_draw_rectangle_lines",
+        "sz_py_rl2d_draw_rectangle_lines_ex",
+        "sz_py_rl2d_draw_rectangle_pro",
+        "sz_py_rl2d_draw_rectangle_rec",
+        "sz_py_rl2d_draw_rectangle_rounded",
+        "sz_py_rl2d_draw_rectangle_rounded_lines_ex",
+        "sz_py_rl2d_draw_rectangle_v",
+        "sz_py_rl2d_draw_ring",
+        "sz_py_rl2d_draw_text",
+        "sz_py_rl2d_draw_text_ex",
+        "sz_py_rl2d_draw_texture",
+        "sz_py_rl2d_draw_texture_ex",
+        "sz_py_rl2d_draw_texture_pro",
+        "sz_py_rl2d_draw_texture_rec",
+        "sz_py_rl2d_draw_texture_v",
+        "sz_py_rl2d_draw_triangle",
+        "sz_py_rl2d_draw_triangle_lines",
+        "sz_py_rl2d_end_blend_mode",
+        "sz_py_rl2d_end_drawing",
+        "sz_py_rl2d_end_mode_2d",
+        "sz_py_rl2d_end_scissor_mode",
+        "sz_py_rl2d_end_texture_mode",
+        "sz_py_rl2d_fade",
+        "sz_py_rl2d_field",
+        "sz_py_rl2d_gen_image_color",
+        "sz_py_rl2d_gen_image_gradient_linear",
+        "sz_py_rl2d_get_char_pressed",
+        "sz_py_rl2d_get_collision_rec",
+        "sz_py_rl2d_get_font_default",
+        "sz_py_rl2d_get_fps",
+        "sz_py_rl2d_get_frame_time",
+        "sz_py_rl2d_get_key_pressed",
+        "sz_py_rl2d_get_mouse_delta",
+        "sz_py_rl2d_get_mouse_position",
+        "sz_py_rl2d_get_mouse_wheel_move",
+        "sz_py_rl2d_get_mouse_x",
+        "sz_py_rl2d_get_mouse_y",
+        "sz_py_rl2d_get_random_value",
+        "sz_py_rl2d_get_screen_height",
+        "sz_py_rl2d_get_screen_to_world_2d",
+        "sz_py_rl2d_get_screen_width",
+        "sz_py_rl2d_get_time",
+        "sz_py_rl2d_get_world_to_screen_2d",
+        "sz_py_rl2d_hide_cursor",
+        "sz_py_rl2d_image_color_grayscale",
+        "sz_py_rl2d_image_color_invert",
+        "sz_py_rl2d_image_color_tint",
+        "sz_py_rl2d_image_flip_horizontal",
+        "sz_py_rl2d_image_resize",
+        "sz_py_rl2d_init_audio_device",
+        "sz_py_rl2d_init_window",
+        "sz_py_rl2d_is_key_down",
+        "sz_py_rl2d_is_key_pressed",
+        "sz_py_rl2d_is_key_released",
+        "sz_py_rl2d_is_mouse_button_down",
+        "sz_py_rl2d_is_mouse_button_pressed",
+        "sz_py_rl2d_is_mouse_button_released",
+        "sz_py_rl2d_is_sound_playing",
+        "sz_py_rl2d_key",
+        "sz_py_rl2d_load_font",
+        "sz_py_rl2d_load_font_ex",
+        "sz_py_rl2d_load_image",
+        "sz_py_rl2d_load_music_stream",
+        "sz_py_rl2d_load_render_texture",
+        "sz_py_rl2d_load_sound",
+        "sz_py_rl2d_load_texture",
+        "sz_py_rl2d_load_texture_from_image",
+        "sz_py_rl2d_measure_text",
+        "sz_py_rl2d_measure_text_ex",
+        "sz_py_rl2d_mouse_button",
+        "sz_py_rl2d_pause_music_stream",
+        "sz_py_rl2d_play_music_stream",
+        "sz_py_rl2d_play_sound",
+        "sz_py_rl2d_resume_music_stream",
+        "sz_py_rl2d_set_exit_key",
+        "sz_py_rl2d_set_music_volume",
+        "sz_py_rl2d_set_random_seed",
+        "sz_py_rl2d_set_sound_volume",
+        "sz_py_rl2d_set_target_fps",
+        "sz_py_rl2d_set_window_title",
+        "sz_py_rl2d_show_cursor",
+        "sz_py_rl2d_stop_music_stream",
+        "sz_py_rl2d_stop_sound",
+        "sz_py_rl2d_unload_image",
+        "sz_py_rl2d_unload_music_stream",
+        "sz_py_rl2d_unload_sound",
+        "sz_py_rl2d_unload_texture",
+        "sz_py_rl2d_update_music_stream",
+        "sz_py_rl2d_vector2_add",
+        "sz_py_rl2d_vector2_distance",
+        "sz_py_rl2d_vector2_length",
+        "sz_py_rl2d_vector2_lerp",
+        "sz_py_rl2d_vector2_normalize",
+        "sz_py_rl2d_vector2_rotate",
+        "sz_py_rl2d_vector2_scale",
+        "sz_py_rl2d_vector2_subtract",
+        "sz_py_rl2d_window_loop",
+        "sz_py_rl2d_window_should_close",
+        "sz_py_rl3d_BoundingBox",
+        "sz_py_rl3d_Camera2D",
+        "sz_py_rl3d_Camera3D",
+        "sz_py_rl3d_Color",
+        "sz_py_rl3d_Ray",
+        "sz_py_rl3d_Rectangle",
+        "sz_py_rl3d_Vector2",
+        "sz_py_rl3d_Vector3",
+        "sz_py_rl3d_begin_blend_mode",
+        "sz_py_rl3d_begin_drawing",
+        "sz_py_rl3d_begin_mode_2d",
+        "sz_py_rl3d_begin_mode_3d",
+        "sz_py_rl3d_begin_scissor_mode",
+        "sz_py_rl3d_begin_shader_mode",
+        "sz_py_rl3d_begin_texture_mode",
+        "sz_py_rl3d_blend",
+        "sz_py_rl3d_camera_mode",
+        "sz_py_rl3d_check_collision_box_sphere",
+        "sz_py_rl3d_check_collision_boxes",
+        "sz_py_rl3d_check_collision_circle_rec",
+        "sz_py_rl3d_check_collision_circles",
+        "sz_py_rl3d_check_collision_point_circle",
+        "sz_py_rl3d_check_collision_point_rec",
+        "sz_py_rl3d_check_collision_recs",
+        "sz_py_rl3d_check_collision_spheres",
+        "sz_py_rl3d_clamp",
+        "sz_py_rl3d_clear_background",
+        "sz_py_rl3d_close_audio_device",
+        "sz_py_rl3d_close_window",
+        "sz_py_rl3d_color",
+        "sz_py_rl3d_color_from_hsv",
+        "sz_py_rl3d_disable_cursor",
+        "sz_py_rl3d_draw_billboard",
+        "sz_py_rl3d_draw_billboard_rec",
+        "sz_py_rl3d_draw_bounding_box",
+        "sz_py_rl3d_draw_capsule",
+        "sz_py_rl3d_draw_circle",
+        "sz_py_rl3d_draw_circle_gradient",
+        "sz_py_rl3d_draw_circle_lines",
+        "sz_py_rl3d_draw_circle_sector",
+        "sz_py_rl3d_draw_circle_v",
+        "sz_py_rl3d_draw_cube",
+        "sz_py_rl3d_draw_cube_v",
+        "sz_py_rl3d_draw_cube_wires",
+        "sz_py_rl3d_draw_cylinder",
+        "sz_py_rl3d_draw_cylinder_ex",
+        "sz_py_rl3d_draw_ellipse",
+        "sz_py_rl3d_draw_fps",
+        "sz_py_rl3d_draw_grid",
+        "sz_py_rl3d_draw_line",
+        "sz_py_rl3d_draw_line_3d",
+        "sz_py_rl3d_draw_line_bezier",
+        "sz_py_rl3d_draw_line_ex",
+        "sz_py_rl3d_draw_line_v",
+        "sz_py_rl3d_draw_model",
+        "sz_py_rl3d_draw_model_ex",
+        "sz_py_rl3d_draw_model_wires",
+        "sz_py_rl3d_draw_pixel",
+        "sz_py_rl3d_draw_pixel_v",
+        "sz_py_rl3d_draw_plane",
+        "sz_py_rl3d_draw_poly",
+        "sz_py_rl3d_draw_poly_lines",
+        "sz_py_rl3d_draw_ray",
+        "sz_py_rl3d_draw_rectangle",
+        "sz_py_rl3d_draw_rectangle_gradient_h",
+        "sz_py_rl3d_draw_rectangle_gradient_v",
+        "sz_py_rl3d_draw_rectangle_lines",
+        "sz_py_rl3d_draw_rectangle_lines_ex",
+        "sz_py_rl3d_draw_rectangle_pro",
+        "sz_py_rl3d_draw_rectangle_rec",
+        "sz_py_rl3d_draw_rectangle_rounded",
+        "sz_py_rl3d_draw_rectangle_rounded_lines_ex",
+        "sz_py_rl3d_draw_rectangle_v",
+        "sz_py_rl3d_draw_ring",
+        "sz_py_rl3d_draw_sphere",
+        "sz_py_rl3d_draw_sphere_wires",
+        "sz_py_rl3d_draw_text",
+        "sz_py_rl3d_draw_text_ex",
+        "sz_py_rl3d_draw_texture",
+        "sz_py_rl3d_draw_texture_ex",
+        "sz_py_rl3d_draw_texture_pro",
+        "sz_py_rl3d_draw_texture_rec",
+        "sz_py_rl3d_draw_texture_v",
+        "sz_py_rl3d_draw_triangle",
+        "sz_py_rl3d_draw_triangle_3d",
+        "sz_py_rl3d_draw_triangle_lines",
+        "sz_py_rl3d_enable_cursor",
+        "sz_py_rl3d_end_blend_mode",
+        "sz_py_rl3d_end_drawing",
+        "sz_py_rl3d_end_mode_2d",
+        "sz_py_rl3d_end_mode_3d",
+        "sz_py_rl3d_end_scissor_mode",
+        "sz_py_rl3d_end_shader_mode",
+        "sz_py_rl3d_end_texture_mode",
+        "sz_py_rl3d_fade",
+        "sz_py_rl3d_ffi_new",
+        "sz_py_rl3d_field",
+        "sz_py_rl3d_gen_image_color",
+        "sz_py_rl3d_gen_image_gradient_linear",
+        "sz_py_rl3d_gen_mesh_cube",
+        "sz_py_rl3d_gen_mesh_cylinder",
+        "sz_py_rl3d_gen_mesh_plane",
+        "sz_py_rl3d_gen_mesh_sphere",
+        "sz_py_rl3d_get_char_pressed",
+        "sz_py_rl3d_get_collision_rec",
+        "sz_py_rl3d_get_font_default",
+        "sz_py_rl3d_get_fps",
+        "sz_py_rl3d_get_frame_time",
+        "sz_py_rl3d_get_key_pressed",
+        "sz_py_rl3d_get_model_bounding_box",
+        "sz_py_rl3d_get_mouse_delta",
+        "sz_py_rl3d_get_mouse_position",
+        "sz_py_rl3d_get_mouse_wheel_move",
+        "sz_py_rl3d_get_mouse_x",
+        "sz_py_rl3d_get_mouse_y",
+        "sz_py_rl3d_get_random_value",
+        "sz_py_rl3d_get_ray_collision_box",
+        "sz_py_rl3d_get_ray_collision_mesh",
+        "sz_py_rl3d_get_ray_collision_sphere",
+        "sz_py_rl3d_get_screen_height",
+        "sz_py_rl3d_get_screen_to_world_2d",
+        "sz_py_rl3d_get_screen_to_world_ray",
+        "sz_py_rl3d_get_screen_width",
+        "sz_py_rl3d_get_shader_location",
+        "sz_py_rl3d_get_time",
+        "sz_py_rl3d_get_world_to_screen",
+        "sz_py_rl3d_get_world_to_screen_2d",
+        "sz_py_rl3d_hide_cursor",
+        "sz_py_rl3d_image_color_grayscale",
+        "sz_py_rl3d_image_color_invert",
+        "sz_py_rl3d_image_color_tint",
+        "sz_py_rl3d_image_flip_horizontal",
+        "sz_py_rl3d_image_resize",
+        "sz_py_rl3d_init_audio_device",
+        "sz_py_rl3d_init_window",
+        "sz_py_rl3d_is_cursor_hidden",
+        "sz_py_rl3d_is_key_down",
+        "sz_py_rl3d_is_key_pressed",
+        "sz_py_rl3d_is_key_released",
+        "sz_py_rl3d_is_model_animation_valid",
+        "sz_py_rl3d_is_mouse_button_down",
+        "sz_py_rl3d_is_mouse_button_pressed",
+        "sz_py_rl3d_is_mouse_button_released",
+        "sz_py_rl3d_is_sound_playing",
+        "sz_py_rl3d_key",
+        "sz_py_rl3d_load_font",
+        "sz_py_rl3d_load_font_ex",
+        "sz_py_rl3d_load_image",
+        "sz_py_rl3d_load_model",
+        "sz_py_rl3d_load_model_animations",
+        "sz_py_rl3d_load_model_from_mesh",
+        "sz_py_rl3d_load_music_stream",
+        "sz_py_rl3d_load_render_texture",
+        "sz_py_rl3d_load_shader",
+        "sz_py_rl3d_load_shader_from_memory",
+        "sz_py_rl3d_load_sound",
+        "sz_py_rl3d_load_texture",
+        "sz_py_rl3d_load_texture_from_image",
+        "sz_py_rl3d_material_map",
+        "sz_py_rl3d_matrix_multiply",
+        "sz_py_rl3d_matrix_rotate_xyz",
+        "sz_py_rl3d_matrix_rotate_y",
+        "sz_py_rl3d_matrix_translate",
+        "sz_py_rl3d_measure_text",
+        "sz_py_rl3d_measure_text_ex",
+        "sz_py_rl3d_mouse_button",
+        "sz_py_rl3d_pause_music_stream",
+        "sz_py_rl3d_play_music_stream",
+        "sz_py_rl3d_play_sound",
+        "sz_py_rl3d_projection",
+        "sz_py_rl3d_resume_music_stream",
+        "sz_py_rl3d_rl_disable_backface_culling",
+        "sz_py_rl3d_rl_disable_depth_mask",
+        "sz_py_rl3d_rl_enable_backface_culling",
+        "sz_py_rl3d_rl_enable_depth_mask",
+        "sz_py_rl3d_set_exit_key",
+        "sz_py_rl3d_set_material_texture",
+        "sz_py_rl3d_set_music_volume",
+        "sz_py_rl3d_set_random_seed",
+        "sz_py_rl3d_set_shader_value",
+        "sz_py_rl3d_set_sound_volume",
+        "sz_py_rl3d_set_target_fps",
+        "sz_py_rl3d_set_window_title",
+        "sz_py_rl3d_show_cursor",
+        "sz_py_rl3d_stop_music_stream",
+        "sz_py_rl3d_stop_sound",
+        "sz_py_rl3d_uniform_type",
+        "sz_py_rl3d_unload_image",
+        "sz_py_rl3d_unload_music_stream",
+        "sz_py_rl3d_unload_sound",
+        "sz_py_rl3d_unload_texture",
+        "sz_py_rl3d_update_camera",
+        "sz_py_rl3d_update_camera_pro",
+        "sz_py_rl3d_update_model_animation",
+        "sz_py_rl3d_update_music_stream",
+        "sz_py_rl3d_vector2_add",
+        "sz_py_rl3d_vector2_distance",
+        "sz_py_rl3d_vector2_length",
+        "sz_py_rl3d_vector2_lerp",
+        "sz_py_rl3d_vector2_normalize",
+        "sz_py_rl3d_vector2_rotate",
+        "sz_py_rl3d_vector2_scale",
+        "sz_py_rl3d_vector2_subtract",
+        "sz_py_rl3d_vector3_add",
+        "sz_py_rl3d_vector3_distance",
+        "sz_py_rl3d_vector3_length",
+        "sz_py_rl3d_vector3_lerp",
+        "sz_py_rl3d_vector3_normalize",
+        "sz_py_rl3d_vector3_rotate_by_axis_angle",
+        "sz_py_rl3d_vector3_scale",
+        "sz_py_rl3d_vector3_subtract",
+        "sz_py_rl3d_window_loop",
+        "sz_py_rl3d_window_should_close",
+        "sz_py_round",
+        "sz_py_run",
+        "sz_py_run_value",
+        "sz_py_set",
+        "sz_py_set_add",
+        "sz_py_set_create",
+        "sz_py_slice",
+        "sz_py_sorted",
+        "sz_py_str",
+        "sz_py_subscript",
+        "sz_py_sum",
+        "sz_py_text",
+        "sz_py_text_endswith",
+        "sz_py_text_find",
+        "sz_py_text_isdigit",
+        "sz_py_text_join",
+        "sz_py_text_lower",
+        "sz_py_text_replace",
+        "sz_py_text_split",
+        "sz_py_text_startswith",
+        "sz_py_text_strip",
+        "sz_py_text_upper",
+        "sz_py_time_monotonic",
+        "sz_py_time_time",
+        "sz_py_try",
+        "sz_py_tuple",
+        "sz_py_tuple_call",
+        "sz_py_turtle_new_screen",
+        "sz_py_turtle_new_shape",
+        "sz_py_turtle_new_turtle",
+        "sz_py_turtle_pinta_shape",
+        "sz_py_turtle_screen_bgcolor",
+        "sz_py_turtle_screen_bgcolor_valor",
+        "sz_py_turtle_screen_bgpic",
+        "sz_py_turtle_screen_bgpic_valor",
+        "sz_py_turtle_screen_bye",
+        "sz_py_turtle_screen_clear",
+        "sz_py_turtle_screen_colormode",
+        "sz_py_turtle_screen_colormode_valor",
+        "sz_py_turtle_screen_delay",
+        "sz_py_turtle_screen_delay_valor",
+        "sz_py_turtle_screen_exitonclick",
+        "sz_py_turtle_screen_getshapes",
+        "sz_py_turtle_screen_listen",
+        "sz_py_turtle_screen_mainloop",
+        "sz_py_turtle_screen_onclick",
+        "sz_py_turtle_screen_onkey",
+        "sz_py_turtle_screen_onkeypress",
+        "sz_py_turtle_screen_ontimer",
+        "sz_py_turtle_screen_register_shape",
+        "sz_py_turtle_screen_reset",
+        "sz_py_turtle_screen_setup",
+        "sz_py_turtle_screen_title",
+        "sz_py_turtle_screen_tracer",
+        "sz_py_turtle_screen_tracer_valor",
+        "sz_py_turtle_screen_turtles",
+        "sz_py_turtle_screen_update",
+        "sz_py_turtle_screen_window_height",
+        "sz_py_turtle_screen_window_width",
+        "sz_py_turtle_shape_addcomponent",
+        "sz_py_turtle_turtle_back",
+        "sz_py_turtle_turtle_begin_fill",
+        "sz_py_turtle_turtle_circle",
+        "sz_py_turtle_turtle_clear",
+        "sz_py_turtle_turtle_clearstamp",
+        "sz_py_turtle_turtle_clearstamps",
+        "sz_py_turtle_turtle_clone",
+        "sz_py_turtle_turtle_color",
+        "sz_py_turtle_turtle_color_valor",
+        "sz_py_turtle_turtle_distance",
+        "sz_py_turtle_turtle_dot",
+        "sz_py_turtle_turtle_end_fill",
+        "sz_py_turtle_turtle_fillcolor",
+        "sz_py_turtle_turtle_fillcolor_valor",
+        "sz_py_turtle_turtle_filling",
+        "sz_py_turtle_turtle_forward",
+        "sz_py_turtle_turtle_getscreen",
+        "sz_py_turtle_turtle_goto",
+        "sz_py_turtle_turtle_heading",
+        "sz_py_turtle_turtle_hideturtle",
+        "sz_py_turtle_turtle_home",
+        "sz_py_turtle_turtle_isdown",
+        "sz_py_turtle_turtle_isvisible",
+        "sz_py_turtle_turtle_left",
+        "sz_py_turtle_turtle_onclick",
+        "sz_py_turtle_turtle_ondrag",
+        "sz_py_turtle_turtle_onrelease",
+        "sz_py_turtle_turtle_pencolor",
+        "sz_py_turtle_turtle_pencolor_valor",
+        "sz_py_turtle_turtle_pendown",
+        "sz_py_turtle_turtle_pensize",
+        "sz_py_turtle_turtle_pensize_valor",
+        "sz_py_turtle_turtle_penup",
+        "sz_py_turtle_turtle_pos",
+        "sz_py_turtle_turtle_reset",
+        "sz_py_turtle_turtle_right",
+        "sz_py_turtle_turtle_setheading",
+        "sz_py_turtle_turtle_setx",
+        "sz_py_turtle_turtle_sety",
+        "sz_py_turtle_turtle_shape",
+        "sz_py_turtle_turtle_shape_valor",
+        "sz_py_turtle_turtle_shapesize",
+        "sz_py_turtle_turtle_shapesize_valor",
+        "sz_py_turtle_turtle_showturtle",
+        "sz_py_turtle_turtle_speed",
+        "sz_py_turtle_turtle_speed_valor",
+        "sz_py_turtle_turtle_stamp",
+        "sz_py_turtle_turtle_stamp_valor",
+        "sz_py_turtle_turtle_towards",
+        "sz_py_turtle_turtle_write",
+        "sz_py_turtle_turtle_xcor",
+        "sz_py_turtle_turtle_ycor",
+        "sz_py_update",
+        "sz_py_variable",
+        "sz_py_while",
+        "sz_py_with_open"
+      ],
+      "categoryIds": [
+        "Animação",
+        "Animação e tempo",
+        "Animações",
+        "Aparência",
+        "Atores",
+        "Avançado",
+        "Caneta e cores",
+        "Classes e objetos",
+        "Colisões",
+        "Colisões 3D",
+        "Cores e sorteio",
+        "Câmera 2D",
+        "Câmera 3D",
+        "Desenhar",
+        "Entrada e saída",
+        "Eventos",
+        "Formas",
+        "Formas 3D",
+        "Funções",
+        "Imagens",
+        "Imagens e texturas",
+        "Janela",
+        "Janela e laço",
+        "Listas e coleções",
+        "Lógica e decisões",
+        "Modelos",
+        "Mouse travado",
+        "Movimento",
+        "Módulos",
+        "Números e matemática",
+        "Quando acontecer",
+        "Relógio",
+        "Repetições",
+        "Shaders",
+        "Som",
+        "Sons e música",
+        "Tartarugas",
+        "Teclado e mouse",
+        "Tela",
+        "Texto",
+        "Textos",
+        "Tratamento de erros",
+        "Variáveis",
+        "Vetores 3D",
+        "Vetores e retângulos"
+      ]
+    }
+  ]
+}

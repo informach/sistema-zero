@@ -71,6 +71,20 @@ await withPensaCutoverMigrations(migrationRoot, async (folder, tags) => {
     )
 })
 assert.equal(existsSync(temporaryPensaFolder), false)
+// Verify packaged catalogs using the actual loader in the final read-only image.
+const { loadStudioAuthoringPolicy, STUDIO_POLICY_DIRECTORY } = await import(
+  '/app/packages/members/src/infrastructure/config/studio-authoring-policy.ts'
+)
+const bundledCatalogs = readdirSync(STUDIO_POLICY_DIRECTORY).filter((name) =>
+  name.endsWith('.json'),
+)
+assert.ok(bundledCatalogs.length > 0)
+for (const file of bundledCatalogs) {
+  const policy = await loadStudioAuthoringPolicy({
+    STUDIO_AUTHORING_POLICY_SHA256: file.slice(0, -5),
+  })
+  assert.ok(policy.describe().releases.length > 0)
+}
 const operations = readdirSync('/app/packages/members/scripts')
   .filter((name) => name.endsWith('.ts'))
   .map((name) => `/app/packages/members/scripts/${name}`)
@@ -147,6 +161,7 @@ console.log(
     runtimeStartGraph: true,
     migrationCli: true,
     pensaSqlSelection: true,
+    verifiedBundledCatalogs: bundledCatalogs.length,
     maintenanceDoesNotImportApplication: true,
     migrationsApplied: false,
     applicationBooted: false,

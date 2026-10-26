@@ -54,7 +54,8 @@ export function bitmapToPngDataUrl(
  * `cellWidth`×`cellHeight`. `null` sem canvas 2D.
  */
 export function composeSheetPngDataUrl(input: {
-  cells: Array<{ bitmap: PintaBitmap; col: number; row: number }>
+  /** `colors` na célula vence o do pedido (mapa com peças de paletas diferentes). */
+  cells: Array<{ bitmap: PintaBitmap; col: number; row: number; colors?: readonly string[] }>
   cellWidth: number
   cellHeight: number
   columns: number
@@ -69,7 +70,7 @@ export function composeSheetPngDataUrl(input: {
   const ctx = canvas.getContext('2d')
   if (!ctx) return null
   for (const cell of input.cells) {
-    const rgba = bitmapToRGBA(cell.bitmap, input.colors)
+    const rgba = bitmapToRGBA(cell.bitmap, cell.colors ?? input.colors)
     ctx.putImageData(
       new ImageData(rgba, cell.bitmap.width, cell.bitmap.height),
       cell.col * input.cellWidth,

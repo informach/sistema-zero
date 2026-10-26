@@ -1,4 +1,5 @@
 import { TEXT_SPRITE_DECLARATION_FIELDS } from '../official-extensions/game-2d/textIR'
+import { gameRulesItemName } from '../official-extensions/game3dRules/ir'
 import {
   CANVAS3D_SEMANTIC_DECLARATION_FIELDS,
   CANVAS3D_SEMANTIC_PHYSICS_ID_DECLARATION_FIELDS,
@@ -286,7 +287,7 @@ function addOwnedName(
   target.set(owner, owned)
 }
 
-const GAME3D_SYMBOL_KINDS: readonly Game3DSymbolKind[] = ['world', 'object', 'group', 'swarm']
+const GAME3D_SYMBOL_KINDS: readonly Game3DSymbolKind[] = ['world', 'object', 'group']
 
 function emptyGame3DSymbols(): Record<Game3DSymbolKind, Set<string>> {
   return Object.fromEntries(GAME3D_SYMBOL_KINDS.map((kind) => [kind, new Set<string>()])) as Record<
@@ -567,7 +568,6 @@ const GAME3D_REFERENCE_LABELS: Readonly<Record<Game3DSymbolKind, string>> = {
   world: 'mundo do Jogo 3D',
   object: 'objeto do Jogo 3D',
   group: 'grupo do Jogo 3D',
-  swarm: 'enxame do Jogo 3D',
 }
 
 function validateGame3DReferences(
@@ -1249,10 +1249,15 @@ function validateStatements(
         addName(childCallbackBase.variables, name)
         addName(childSuspensionBase.variables, name)
       })
-      if (statement.type === 'g3d:forEachInSwarm') {
-        addName(childSymbols.game3d.object, statement.itemName)
-        addName(childCallbackBase.game3d.object, statement.itemName)
-        addName(childSuspensionBase.game3d.object, statement.itemName)
+      // O objeto da vez do "para cada" (e de quem saiu da tela) é um objeto do jogo.
+      const gameItem =
+        statement.type === 'g3d:forEachInGroup' || statement.type === 'g3d:pruneOffscreen'
+          ? statement.itemName
+          : gameRulesItemName(statement)
+      if (gameItem) {
+        addName(childSymbols.game3d.object, gameItem)
+        addName(childCallbackBase.game3d.object, gameItem)
+        addName(childSuspensionBase.game3d.object, gameItem)
       }
       child.canvasContexts.forEach((name) => {
         addName(childSymbols.canvasContexts, name)

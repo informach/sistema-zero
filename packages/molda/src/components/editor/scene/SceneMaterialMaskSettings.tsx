@@ -2,6 +2,7 @@ import { COPY } from '../../../core/copy'
 import { patchSceneMaterial } from '../../../scene/appearanceCommands'
 import type { SceneMaterial } from '../../../scene/document'
 import { Button } from '../../ui/Button'
+import { SceneHelpButton } from './SceneHelpButton'
 import { SCENE_APPEARANCE_FIELD as field, type SceneAppearanceApply } from './sceneAppearanceForm'
 
 /** Optional detail, using the same explicit apply/undo boundary as material finish. */
@@ -39,7 +40,10 @@ export function SceneMaterialMaskSettings({
           )
         }}
       >
-        <p className="text-xs text-mld-muted">{copy.materialMaskHint}</p>
+        <SceneHelpButton title="Como funciona o recorte">
+          <p>{copy.materialMaskHint}</p>
+          <p>{copy.materialMaskRangeHint}</p>
+        </SceneHelpButton>
         <label className="block space-y-1 text-sm">
           <span>{copy.materialMaskCutoff}</span>
           <input
@@ -67,7 +71,6 @@ export function SceneMaterialMaskSettings({
             className={field}
           />
         </label>
-        <p className="text-xs text-mld-muted">{copy.materialMaskRangeHint}</p>
         <Button type="submit" className="w-full text-sm">
           {copy.materialMaskApply}
         </Button>

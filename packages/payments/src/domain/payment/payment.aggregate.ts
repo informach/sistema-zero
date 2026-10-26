@@ -1,3 +1,8 @@
+import {
+  type BillingPeriod,
+  readSubscriptionCycleAccess,
+  type SubscriptionCycleAccess,
+} from '@sistemazero/core/billing'
 import { AggregateRoot } from '../shared/aggregate-root'
 import { InvalidStateTransitionError, ValidationError } from '../shared/errors'
 import { type Address, Customer } from '../value-objects/customer'
@@ -14,8 +19,14 @@ import {
   PaymentFailedEvent,
   PaymentPaidEvent,
   PaymentRefundedEvent,
+  PaymentSubscriptionPeriodConfirmedEvent,
 } from './payment.events'
 import { canTransition, PaymentStatus } from './payment.status'
+import {
+  confirmPeriodAuthority,
+  type PeriodConfirmationAudit,
+  type PeriodConfirmationAuthority,
+} from './period-confirmation'
 
 /** Dados do QR Code Pix retornados pelo provedor. */
 export interface PixQrCode {
@@ -56,6 +67,10 @@ interface CustomerSnapshot {
 
 /** Representação serializável do agregado, usada pela camada de persistência. */
 export interface PaymentSnapshot {
+  priorFailureReason: string | null
+  priorFailedAt: Date | null
+  cycleAccess: SubscriptionCycleAccess | null
+  periodConfirmation: PeriodConfirmationAudit | null
   id: string
   /** Versão para controle de concorrência otimista (bumped a cada gravação). */
   version: number
@@ -85,6 +100,10 @@ export interface PaymentSnapshot {
 }
 
 interface PaymentState {
+  priorFailureReason: string | null
+  priorFailedAt: Date | null
+  cycleAccess: SubscriptionCycleAccess | null
+  periodConfirmation: PeriodConfirmationAudit | null
   version: number
   consumerId: string
   amount: Money
@@ -152,6 +171,10 @@ export class PaymentAggregate extends AggregateRoot<string> {
       id,
       {
         version: 0,
+        cycleAccess: null,
+        periodConfirmation: null,
+        priorFailureReason: null,
+        priorFailedAt: null,
         consumerId: input.consumerId,
         amount: input.amount,
         method: input.method,
@@ -224,6 +247,10 @@ export class PaymentAggregate extends AggregateRoot<string> {
       snapshot.id,
       {
         version: snapshot.version,
+        cycleAccess: decodeCycleAccess(snapshot.cycleAccess),
+        periodConfirmation: structuredClone(snapshot.periodConfirmation ?? null),
+        priorFailureReason: snapshot.priorFailureReason ?? null,
+        priorFailedAt: snapshot.priorFailedAt ? new Date(snapshot.priorFailedAt) : null,
         consumerId: snapshot.consumerId,
         amount,
         method,
@@ -279,6 +306,53 @@ export class PaymentAggregate extends AggregateRoot<string> {
     // Idempotente: se já está pago, não reprocessa nem reemite evento.
     if (this.state.status === PaymentStatus.PAID) return
     this.transitionTo(PaymentStatus.PAID)
+    this.recordPaid(paidAt)
+  }
+
+  /**
+   * Liquidação de um ciclo após retry confirmado no provedor. Uma recusa de
+   * cartão não encerra a cobrança na Efí. A exceção é restrita ao MESMO ciclo,
+   * assinatura, provedor e valor; não altera as transições dos pagamentos avulsos.
+   * O chamador deve obter a confirmação na fonte, nunca no corpo do webhook.
+   */
+  confirmSubscriptionChargePaid(input: {
+    access?: SubscriptionCycleAccess | { kind: 'INITIAL_CAPTURE' }
+    subscriptionId: string
+    provider: string
+    providerPaymentId: string
+    amount: Money
+    paidAt?: Date
+  }): void {
+    if (
+      !this.state.subscriptionId ||
+      this.state.subscriptionId !== input.subscriptionId ||
+      this.state.method.type !== 'CREDIT_CARD' ||
+      this.state.provider !== input.provider ||
+      !this.state.providerPaymentId ||
+      this.state.providerPaymentId !== input.providerPaymentId ||
+      this.state.amount.currency !== input.amount.currency ||
+      this.state.amount.amountInCents !== input.amount.amountInCents
+    ) {
+      throw new ValidationError('Confirmação não corresponde ao ciclo de assinatura')
+    }
+    if (this.state.status === PaymentStatus.PAID) return
+    if (input.access?.kind === 'INITIAL_CAPTURE') this.state.cycleAccess = null
+    else if (input.access) this.state.cycleAccess = decodeCycleAccess(input.access)
+    else if (this.state.status === PaymentStatus.FAILED)
+      this.state.cycleAccess = { version: 1, kind: 'REVIEW_REQUIRED', reason: 'PERIOD_UNAVAILABLE' }
+    if (this.state.status !== PaymentStatus.FAILED) {
+      this.markPaid(input.paidAt)
+      return
+    }
+    this.state.priorFailureReason = this.state.failureReason
+    this.state.priorFailedAt = new Date(this.state.updatedAt)
+    this.state.status = PaymentStatus.PAID
+    this.state.failureReason = null
+    this.touch()
+    this.recordPaid(input.paidAt)
+  }
+
+  private recordPaid(paidAt?: Date): void {
     // Defesa em profundidade: um `Date` inválido (timestamp garbage do provedor)
     // faria `toISOString()` abaixo lançar e travaria a confirmação. Cai para "agora".
     this.state.paidAt = paidAt && !Number.isNaN(paidAt.getTime()) ? paidAt : new Date()
@@ -289,6 +363,7 @@ export class PaymentAggregate extends AggregateRoot<string> {
         txid: this.state.txid,
         paidAt: this.state.paidAt.toISOString(),
         subscriptionId: this.state.subscriptionId,
+        ...(this.state.cycleAccess ? { cycleAccess: structuredClone(this.state.cycleAccess) } : {}),
       }),
     )
   }
@@ -304,6 +379,49 @@ export class PaymentAggregate extends AggregateRoot<string> {
         consumerId: this.state.consumerId,
         reason,
         subscriptionId: this.state.subscriptionId,
+      }),
+    )
+  }
+
+  /** Resolves access evidence without emitting a second financial receipt. */
+  confirmSubscriptionPeriod(
+    period: BillingPeriod,
+    now: Date,
+    authority: PeriodConfirmationAuthority,
+  ): void {
+    if (
+      this.state.status !== PaymentStatus.PAID ||
+      !this.state.subscriptionId ||
+      this.state.method.type !== 'CREDIT_CARD' ||
+      !this.state.paidAt ||
+      !Number.isFinite(now.getTime())
+    )
+      throw new ValidationError('Pagamento não permite conferir período da assinatura')
+    const access = decodeCycleAccess({ version: 1, kind: 'VERIFIED_PERIOD', period })
+    if (access?.kind !== 'VERIFIED_PERIOD') throw new ValidationError('Período inválido')
+    if (this.state.cycleAccess?.kind === 'VERIFIED_PERIOD') {
+      if (
+        this.state.cycleAccess.period.startsAt === period.startsAt &&
+        this.state.cycleAccess.period.endsAt === period.endsAt
+      )
+        return
+      throw new ValidationError('Período já confirmado não pode ser substituído')
+    }
+    if (this.state.cycleAccess?.kind !== 'REVIEW_REQUIRED')
+      throw new ValidationError('Pagamento sem revisão de período pendente')
+    this.state.periodConfirmation = confirmPeriodAuthority(
+      authority,
+      now,
+      this.state.cycleAccess.reason,
+    )
+    this.state.cycleAccess = access
+    this.touch()
+    this.addEvent(
+      new PaymentSubscriptionPeriodConfirmedEvent(this.id, {
+        consumerId: this.state.consumerId,
+        subscriptionId: this.state.subscriptionId,
+        paidAt: this.state.paidAt.toISOString(),
+        cycleAccess: structuredClone(access),
       }),
     )
   }
@@ -383,6 +501,10 @@ export class PaymentAggregate extends AggregateRoot<string> {
 
   get amount(): Money {
     return this.state.amount
+  }
+
+  get cycleAccess(): SubscriptionCycleAccess | null {
+    return structuredClone(this.state.cycleAccess)
   }
 
   get method(): PaymentMethod {
@@ -479,6 +601,10 @@ export class PaymentAggregate extends AggregateRoot<string> {
 
     return {
       id: this.id,
+      cycleAccess: structuredClone(this.state.cycleAccess),
+      periodConfirmation: structuredClone(this.state.periodConfirmation),
+      priorFailureReason: this.state.priorFailureReason,
+      priorFailedAt: this.state.priorFailedAt ? new Date(this.state.priorFailedAt) : null,
       version: this.state.version,
       consumerId: this.state.consumerId,
       amountInCents: this.state.amount.amountInCents,
@@ -503,5 +629,13 @@ export class PaymentAggregate extends AggregateRoot<string> {
       paidAt: this.state.paidAt,
       expiresAt: this.state.expiresAt,
     }
+  }
+}
+
+function decodeCycleAccess(value: unknown): SubscriptionCycleAccess | null {
+  try {
+    return readSubscriptionCycleAccess(value)
+  } catch {
+    throw new ValidationError('Conferência do período de acesso inválida')
   }
 }

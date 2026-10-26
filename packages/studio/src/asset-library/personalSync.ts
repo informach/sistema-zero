@@ -153,6 +153,35 @@ export function personalIdOf(asset: Pick<ProjectAsset, 'libId'>): string | null 
  * não geram trabalho. `libRevision` é um token de igualdade, não um relógio global:
  * valores produzidos por aparelhos distintos nunca são ordenados.
  */
+/**
+ * The Molda's 360° sky enters a Raylib project as its panorama PNG (`raylibReadyCreation`: the
+ * desktop raylib does not open .hdr), so the project holds an IMAGE of an `environment3d`
+ * record. A newer sky in the Molda becomes a new panorama here, and then it syncs like any
+ * image; the same revision is not converted again (the conversion is not free).
+ */
+export async function raylibSkyAsImage(
+  asset: ProjectAsset,
+  drawing: PersonalAsset | null,
+): Promise<PersonalAsset | null> {
+  if (!drawing || asset.kind !== 'image' || drawing.kind !== 'environment3d') return drawing
+  if ((drawing.origin ?? asset.libOrigin) !== 'molda') return drawing
+  if (asset.libRevision === drawing.updatedAt) return null
+  try {
+    const { skyPanoramaPng } = await import('../components/assets/skyPanorama')
+    const panorama = skyPanoramaPng(drawing.dataUrl)
+    return {
+      ...drawing,
+      kind: 'image',
+      dataUrl: panorama.dataUrl,
+      width: panorama.width,
+      height: panorama.height,
+      originalFileName: undefined,
+    }
+  } catch {
+    return null
+  }
+}
+
 export function drawingNeedsSync(asset: ProjectAsset, drawing: PersonalAsset | null): boolean {
   if (!drawing) return false
   if (asset.kind === 'audio') return false
@@ -188,7 +217,10 @@ export async function reconcileDrawingsFromRestoredProject(
   const personalIds = nextAssets
     .filter(
       (asset): asset is ProjectAsset =>
-        !!asset && asset.kind !== 'audio' && asset.pintaImage === undefined,
+        !!asset &&
+        asset.kind !== 'audio' &&
+        asset.kind !== 'font' &&
+        asset.pintaImage === undefined,
     )
     .map((asset) => personalIdOf(asset))
     .filter((id): id is string => id !== null)
@@ -200,10 +232,20 @@ export async function reconcileDrawingsFromRestoredProject(
     const id = personalIdOf(asset)
     // A captured frame is deliberately different from the canonical spritesheet.
     // It must retain the editable drawing identity, never become a personal copy.
-    if (!id || asset.kind === 'audio' || asset.pintaImage !== undefined) continue
+    if (!id || asset.kind === 'audio' || asset.kind === 'font' || asset.pintaImage !== undefined)
+      continue
     try {
       const drawing = drawings.get(id) ?? null
       if (!drawing) continue
+      // The Molda's sky in a Raylib project (its panorama PNG): the restored game keeps the
+      // panorama it came with, and only a sky edited here afterwards goes in again.
+      if (asset.kind === 'image' && drawing.kind === 'environment3d') {
+        if (asset.libRevision !== drawing.updatedAt) {
+          nextAssets[index] = { ...asset, libRevision: drawing.updatedAt }
+          projectChanged = true
+        }
+        continue
+      }
       if (drawing.kind !== asset.kind) continue
       if (drawing.dataUrl === asset.dataUrl) {
         if (asset.libRevision !== drawing.updatedAt) {
@@ -445,7 +487,7 @@ async function sweepUnmeasured(
         }
         if (!context.canonicalChanged) continue
         const id = personalIdOf(asset)
-        const drawing = id ? (drawings.get(id) ?? null) : null
+        const drawing = await raylibSkyAsImage(asset, id ? (drawings.get(id) ?? null) : null)
         if (!drawingNeedsSync(asset, drawing) || !drawing) continue
         if (asset.pintaImage !== undefined) {
           pushFailure(
@@ -589,7 +631,7 @@ async function syncOpenProject(
       }
       if (!context.canonicalChanged) continue
       const id = personalIdOf(asset)
-      const drawing = id ? (drawings.get(id) ?? null) : null
+      const drawing = await raylibSkyAsImage(asset, id ? (drawings.get(id) ?? null) : null)
       if (!drawingNeedsSync(asset, drawing) || !drawing) continue
       if (asset.pintaImage !== undefined) {
         pushFailure(

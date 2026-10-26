@@ -1,0 +1,7 @@
+# Production application build budget
+
+The canonical production attempt 40053371140 promoted source `6067b14e78dbc0db788d986e78407ed6185bf562`. Its backend/configuration barrier passed. Six selected services reached the promoted version; Kids was still building when the application wave's independent twenty-minute deadline expired. The checkpoint calls this `retirement-timeout`, but the provider observation at 02:41 UTC showed Kids BUILDING with the old successful deployment retained. The acknowledged deployment is `8e2b4e71-d0c0-4f27-a7de-0222f6983a23`; do not interpret this failure as proof the build stopped, and do not blindly dispatch a duplicate.
+
+Production applications now share a finite sixty-minute application-wave budget, matching the existing canonical per-deployment allowance. The outer wave still stops at 175 minutes and the GitHub job at 180. Source, CI, configuration, backend barrier, predecessor retirement and pending-deployment checks remain mandatory.
+
+Causal test with the correct three-argument deployment-port contract: a thirty-minute application build fails with the old twenty-minute budget and passes with sixty. A first local test used the wrong argument position; that negative is retained separately and is not causal product evidence. Final focused production suites: 61 pass, 171 assertions, zero failures. This code change does not retroactively mark the old workflow successful or prove the pending Kids deployment completed.

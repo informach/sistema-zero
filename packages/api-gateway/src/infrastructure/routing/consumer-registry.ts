@@ -10,7 +10,9 @@ export function createStaticConsumerRepository(
     byId.set(c.id, {
       id: c.id,
       hmacSecret: c.hmacSecret,
-      allowedCidrs: c.allowedCidrs,
+      allowedCidrs: Object.freeze([...c.allowedCidrs]),
+      allowedRouteIds:
+        c.allowedRouteIds === undefined ? undefined : Object.freeze([...c.allowedRouteIds]),
       isActive: c.isActive,
     })
   }

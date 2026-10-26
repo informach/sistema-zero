@@ -1,5 +1,12 @@
 'use client'
 
+import {
+  SubscriptionCardUpdate,
+  SubscriptionChargeRetry,
+  SubscriptionOperationNotice,
+} from '@sistemazero/member-shell/components/billing/subscription-card-update'
+import { useMySubscriptions } from '@sistemazero/member-shell/components/billing/use-my-subscriptions'
+
 import { comunidadeAdultoContinuarUrl } from '@sistemazero/member-shell/lib/adult-links'
 import { Button } from '@sistemazero/ui/button'
 import { Dialog } from '@sistemazero/ui/dialog'
@@ -73,22 +80,9 @@ function SubscriptionStatusChip({ status }: { status: string }) {
 
 /** "Minha assinatura": só aparece quando o comprador tem alguma. */
 export function SubscriptionsSection() {
-  const [subs, setSubs] = useState<MySubscriptionView[]>([])
+  const { subscriptions: subs, loading, error, refresh: load } = useMySubscriptions()
   const [confirming, setConfirming] = useState<MySubscriptionView | null>(null)
   const [canceling, setCanceling] = useState(false)
-
-  const load = useCallback(async () => {
-    try {
-      const data = await apiGet<{ items: MySubscriptionView[] }>('/api/payments/my/subscriptions')
-      setSubs(data.items)
-    } catch {
-      // Sem assinaturas visíveis em falha — a lista de compras segue útil.
-    }
-  }, [])
-
-  useEffect(() => {
-    void load()
-  }, [load])
 
   async function cancel(sub: MySubscriptionView) {
     setCanceling(true)
@@ -97,13 +91,34 @@ export function SubscriptionsSection() {
       toast.success('Assinatura cancelada. Seu acesso continua até o fim do período já pago.')
       setConfirming(null)
       await load()
-    } catch {
-      toast.error('Não foi possível cancelar. Tente novamente.')
+    } catch (error) {
+      const pending =
+        error &&
+        typeof error === 'object' &&
+        'code' in error &&
+        error.code === 'SUBSCRIPTION_CANCELLATION_PENDING'
+      toast.error(
+        pending
+          ? 'Pedido de cancelamento recebido. Estamos aguardando a confirmação da operadora.'
+          : 'Não foi possível confirmar o cancelamento. Confira a situação da assinatura.',
+      )
+      setConfirming(null)
+      await load()
     } finally {
       setCanceling(false)
     }
   }
 
+  if (loading) return <p role="status">Consultando assinaturas…</p>
+  if (error)
+    return (
+      <div role="alert" className="sz-card space-y-3 p-6">
+        <p>Não foi possível consultar suas assinaturas.</p>
+        <Button variant="outline" onClick={() => void load()}>
+          Atualizar assinaturas
+        </Button>
+      </div>
+    )
   if (subs.length === 0) return null
   const comebackId = comebackSubscriptionId(subs)
 
@@ -115,6 +130,9 @@ export function SubscriptionsSection() {
       <h2 id="compras-assinatura" className="sz-h3">
         {subs.length === 1 ? 'Minha assinatura' : 'Minhas assinaturas'}
       </h2>
+      <Button variant="outline" className="self-start" onClick={() => void load()}>
+        Atualizar assinaturas
+      </Button>
       <ul className="flex flex-col gap-3">
         {subs.map((sub) => {
           const next = nextChargeDate(sub)
@@ -136,7 +154,17 @@ export function SubscriptionsSection() {
                 </p>
               </div>
               <SubscriptionStatusChip status={sub.status} />
-              {sub.status === 'ACTIVE' ? (
+              <SubscriptionOperationNotice operation={sub.pendingOperation} />
+              {sub.cancelRequestedAt && sub.status === 'ACTIVE' ? (
+                <p role="status" className="text-sm text-muted-foreground">
+                  Cancelamento solicitado. Aguardando confirmação da operadora; seu período já pago
+                  continua preservado.
+                </p>
+              ) : null}
+              {sub.status === 'ACTIVE' && !sub.cancelRequestedAt ? (
+                <SubscriptionCardUpdate subscriptionId={sub.id} onUpdated={() => void load()} />
+              ) : null}
+              {sub.status === 'ACTIVE' && !sub.cancelRequestedAt ? (
                 <button
                   type="button"
                   className="sz-btn-outline sz-btn-sm"
@@ -310,6 +338,17 @@ export function PurchasesClient() {
                       <span>{formatDay(payment.paidAt ?? payment.createdAt)}</span>
                     </span>
                   </button>
+                  {payment.status === 'FAILED' &&
+                  payment.method === 'CREDIT_CARD' &&
+                  payment.subscriptionId ? (
+                    <div className="px-4 pb-4">
+                      <SubscriptionChargeRetry
+                        subscriptionId={payment.subscriptionId}
+                        paymentId={payment.id}
+                        onUpdated={() => void load(offset)}
+                      />
+                    </div>
+                  ) : null}
                 </li>
               ))}
             </ul>

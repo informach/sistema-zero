@@ -3,6 +3,8 @@ import { useShallow } from 'zustand/react/shallow'
 import type { ProjectAsset } from '#core'
 import { Button, Modal } from '#ui'
 import { personalIdOf } from '../../asset-library/personalSync'
+import { isPythonProject } from '../../core/editableProject'
+import { projectUsesRaylib } from '../../core/raylibMediaPaths'
 import { normalizeSearchText } from '../../core/searchText'
 import { useProjectStore, useProjectStoreApi } from '../../state/projectStore'
 import { useT } from '../../studio/i18n'
@@ -11,8 +13,12 @@ import {
   type StudioTeamArtSummary,
   useStudioTeamLibrary,
 } from '../../studio/team-library'
-import { addMoldaCreationToProject, addPintaCreationToProject } from './addCreationToProject'
-import { projectHas3DConsumer } from './has3DConsumer'
+import {
+  addMoldaCreationToProject,
+  addPintaCreationToProject,
+  raylibReadyCreation,
+} from './addCreationToProject'
+import { creation3DNoteKey, creationBlockedFor3D, projectHas3DConsumer } from './has3DConsumer'
 
 /**
  * Janela "Trazer da equipe" (Pensa em equipe, 14/10/2026): as artes que as colegas
@@ -80,13 +86,15 @@ export function TeamImportDialog({ onClose, onImported }: TeamImportDialogProps)
   const t = useT()
   const adapter = useStudioTeamLibrary()
   const storeApi = useProjectStoreApi()
-  const { assets, has3D, projectId } = useProjectStore(
+  const { assets, has3D, raylib, projectId } = useProjectStore(
     useShallow((s) => ({
       assets: s.project?.assets ?? EMPTY_ASSETS,
       projectId: s.project?.id,
       has3D: projectHas3DConsumer(s.project),
+      raylib: !!s.project && isPythonProject(s.project) && projectUsesRaylib(s.project),
     })),
   )
+  const gate = { has3D, raylib }
 
   const [load, setLoad] = useState<LoadState>({ phase: 'loading' })
   const [reloadKey, setReloadKey] = useState(0)
@@ -173,12 +181,16 @@ export function TeamImportDialog({ onClose, onImported }: TeamImportDialogProps)
         if (refusal.code === 'not-found') removeCard(item.id)
         return
       }
+      // Num projeto Raylib, o céu do Molda vira imagem panorâmica antes de entrar.
+      const molda =
+        imported.tool === 'molda' ? await raylibReadyCreation(imported.result.asset, raylib) : null
+      if (!current()) return
       const state = owner.storeApi.getState()
       // O MESMO caminho das janelas do Pinta e do Molda (atualiza no lugar se já está no jogo).
       const err =
         imported.tool === 'pinta'
           ? addPintaCreationToProject(state, imported.result.asset)
-          : addMoldaCreationToProject(state, imported.result.asset)
+          : addMoldaCreationToProject(state, molda ?? imported.result.asset)
       if (err) {
         setError(err)
         return
@@ -194,7 +206,7 @@ export function TeamImportDialog({ onClose, onImported }: TeamImportDialogProps)
   }
 
   const visible = load.phase === 'ready' ? filterTeamArt(load.items, query) : []
-  const someoneNeeds3D = !has3D && visible.some((item) => teamArtNeeds3D(item.kind))
+  const someoneNeeds3D = visible.some((item) => creationBlockedFor3D(item.kind, gate))
 
   return (
     <Modal
@@ -269,7 +281,7 @@ export function TeamImportDialog({ onClose, onImported }: TeamImportDialogProps)
 
         {someoneNeeds3D ? (
           <p role="note" className="text-xs text-sz-fg-soft">
-            {t('moldaImport.needs3d')}
+            {t(creation3DNoteKey(gate))}
           </p>
         ) : null}
 
@@ -303,7 +315,7 @@ export function TeamImportDialog({ onClose, onImported }: TeamImportDialogProps)
           <ul className="grid grid-cols-1 gap-2 sm:grid-cols-2">
             {visible.map((item) => {
               const added = Boolean(item.assetId && inProject.has(item.assetId))
-              const blocked = !has3D && teamArtNeeds3D(item.kind)
+              const blocked = creationBlockedFor3D(item.kind, gate)
               return (
                 <li
                   key={item.id}
@@ -365,7 +377,7 @@ export function TeamImportDialog({ onClose, onImported }: TeamImportDialogProps)
                         size="sm"
                         className="min-h-11"
                         disabled={busyId !== null || blocked}
-                        title={blocked ? t('moldaImport.needs3d') : undefined}
+                        title={blocked ? t(creation3DNoteKey(gate)) : undefined}
                         onClick={() => void handleAdd(item)}
                       >
                         {busyId === item.id ? t('teamImport.adding') : t('teamImport.add')}

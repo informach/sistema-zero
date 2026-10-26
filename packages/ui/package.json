@@ -9,6 +9,8 @@
     ".": "./src/index.ts",
     "./cn": "./src/lib/cn.ts",
     "./phone": "./src/lib/phone.ts",
+    "./credit-card": "./src/lib/credit-card.ts",
+    "./efi-card-token": "./src/lib/efi-card-token.ts",
     "./console-apps": "./src/lib/console-apps.ts",
     "./tokens": "./src/tokens/index.ts",
     "./styles/*": "./src/styles/*",
@@ -31,6 +33,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-react": "^0.546.0",
+    "payment-token-efi": "3.3.0",
     "tailwind-merge": "^3.4.0"
   },
   "peerDependencies": {

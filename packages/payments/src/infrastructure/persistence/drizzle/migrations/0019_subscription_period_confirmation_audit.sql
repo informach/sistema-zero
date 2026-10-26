@@ -1,0 +1,1 @@
+ALTER TABLE "payments"."payments" ADD COLUMN "period_confirmation" jsonb;

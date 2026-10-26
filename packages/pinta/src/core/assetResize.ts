@@ -15,7 +15,14 @@
 
 import { translateShape } from '../vector/geometry'
 import type { VectorShape } from '../vector/model'
-import type { PintaAsset, PintaBitmap, PintaPixelFrame } from './project'
+import {
+  isObjectLayer,
+  type PintaAsset,
+  type PintaBitmap,
+  type PintaPixelFrame,
+  type TilemapLayer,
+  type TilemapObjectLayer,
+} from './project'
 import { createBitmap, PINTA_LIMITS } from './projectConfig'
 
 /** Onde a arte antiga cai dentro do tamanho novo. */
@@ -130,6 +137,32 @@ function moverFormas(
   return shapes.map((shape) => translateShape(shape, dx, dy))
 }
 
+/**
+ * Os objetos de uma camada no mapa redimensionado: deslocados pelas células da
+ * âncora e trazidos para dentro do mapa novo (um retângulo maior que o mapa fica
+ * colado no canto, com o tamanho que tinha).
+ */
+function resizeObjectLayer(
+  layer: TilemapObjectLayer,
+  dCols: number,
+  dRows: number,
+  cols: number,
+  rows: number,
+  tileSize: number | undefined,
+): TilemapObjectLayer {
+  if (!tileSize || layer.objects.length === 0) return layer
+  const mapW = cols * tileSize
+  const mapH = rows * tileSize
+  return {
+    ...layer,
+    objects: layer.objects.map((object) => ({
+      ...object,
+      x: Math.max(0, Math.min(object.x + dCols * tileSize, mapW - object.width)),
+      y: Math.max(0, Math.min(object.y + dRows * tileSize, mapH - object.height)),
+    })),
+  }
+}
+
 function clamp(valor: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, Math.round(valor)))
 }
@@ -147,6 +180,8 @@ export function resizeAsset(
   width: number,
   height: number,
   anchor: ResizeAnchor = 'center',
+  /** Só mapa: o tamanho da peça, para os OBJETOS andarem junto com as células. */
+  options: { tileSize?: number } = {},
 ): PintaAsset | null {
   const alvo = resizeTargetOf(asset)
   if (!alvo) return null
@@ -195,10 +230,14 @@ export function resizeAsset(
         ...asset,
         cols: w,
         rows: h,
-        layers: asset.layers.map((layer) => {
-          const cells = new Int16Array(w * h).fill(-1)
+        layers: asset.layers.map((layer): TilemapLayer => {
           const dx = offsetFor(anchor, asset.cols, w)
           const dy = offsetFor(anchor, asset.rows, h)
+          // Objetos andam com as peças (`tileSize` em pixels do mapa) e ficam
+          // DENTRO do mapa novo: encolher não pode deixar um objeto onde ninguém
+          // alcança. Sem `tileSize` (o tamanho da peça é do tileset), ficam onde estão.
+          if (isObjectLayer(layer)) return resizeObjectLayer(layer, dx, dy, w, h, options.tileSize)
+          const cells = new Int16Array(w * h).fill(-1)
           for (let r = 0; r < asset.rows; r += 1) {
             const destinoR = r + dy
             if (destinoR < 0 || destinoR >= h) continue

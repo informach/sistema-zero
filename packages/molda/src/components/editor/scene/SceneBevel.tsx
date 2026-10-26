@@ -17,7 +17,7 @@ export function SceneBevel({ count, onApply }: { count: number; onApply(depth: n
           if (valid && count > 0) onApply(depth)
         }}
       >
-        <p id={`${prefix}-hint`} className="text-xs text-mld-muted">
+        <p id={`${prefix}-hint`} className="sr-only">
           {COPY.scene.bevelHint}
         </p>
         <label className="block space-y-1 text-sm">

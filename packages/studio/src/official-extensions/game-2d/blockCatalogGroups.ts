@@ -43,7 +43,7 @@ export const gameTwoDGroupAndHudBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Cria um sprite colorido e coloca no grupo. Use x/y com "número aleatório" para nascer em lugares diferentes; vx/vy dão a velocidade. O nome é opcional: preencha quando quiser fazer algo com esse sprite logo depois (animar, dar vida…).',
+      'Cria um sprite colorido no grupo, com posição e velocidade. Use sorteios para variar o lugar. O nome é opcional; preencha para animar ou dar vida a essa cópia logo depois.',
   },
   {
     type: 'sz_g2d_spawn_image_in_group',
@@ -163,7 +163,7 @@ export const gameTwoDGroupAndHudBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Remove do grupo os sprites que saíram da tela e roda o "fazer" para cada um (ex.: perder uma vida quando um asteroide escapa). Só tira quem já foi embora de verdade: o que nasce fora da tela e ainda está vindo continua no jogo.',
+      'Remove quem saiu da tela e executa o “fazer” para cada sprite removido. Quem nasce fora e ainda está vindo continua no jogo. Use o evento para contar uma perda ou um ponto.',
   },
   {
     type: 'sz_g2d_add_to_group',
@@ -375,7 +375,7 @@ export const gameTwoDGroupAndHudBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Cobre a tela inteira com um desenho seu: ótimo para a tela de abertura, a de vitória e a de fim de jogo. A imagem cobre sem deformar (o que sobra fica de fora). Ponha dentro de um "se a tela atual é…" e desenhe por cima o que quiser.',
+      'Cobre a tela com uma imagem sem deformar; as sobras ficam de fora. Use a cada quadro dentro de “se a tela atual é…”. Desenhe texto por cima para criar abertura, vitória ou derrota.',
   },
   {
     type: 'sz_g2d_show_screen',
@@ -550,7 +550,7 @@ export const gameTwoDGroupAndHudBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Monta um desenho com formas (retângulo, círculo, linha…) e dá um nome a ele. Depois, "Criar sprite com a figura" usa esse desenho. Você desenha DENTRO do quadro do sprite: x/y começam no cantinho (0,0). Dá para usar também os blocos de Canvas aqui dentro.',
+      'Em Meus moldes, define uma figura com retângulos, círculos e linhas da extensão. Depois crie um sprite com essa figura. As posições começam no canto (0,0) da caixa do sprite.',
   },
   {
     type: 'sz_g2d_create_shape_sprite',

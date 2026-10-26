@@ -55,15 +55,20 @@ export function BrandLogo({
   fundo,
   className,
   label = 'Sistema Zero',
+  instancia,
 }: {
   /** O fundo onde a logo pousa: `escuro` (letras claras) ou `claro` (letras escuras). */
   fundo: 'escuro' | 'claro'
   className?: string
   label?: string
+  /** Sufixo dos ids dos degradês quando a página tem DUAS logos do mesmo fundo (o menu lateral e
+   *  a barra do celular da comunidade adulta). Sem ele, o `url(#…)` da segunda aponta para os
+   *  degradês da primeira, e se a primeira estiver escondida (`display: none`) o ZERO some. */
+  instancia?: string
 }) {
   const d = DESENHOS[fundo]
-  // Ids fixos por fundo: só existe uma logo de cada por página.
-  const id = `sz-logo-${fundo}`
+  // Ids fixos por fundo (e por instância, quando a página tem mais de uma do mesmo fundo).
+  const id = instancia ? `sz-logo-${fundo}-${instancia}` : `sz-logo-${fundo}`
   const [z1, z2, z3, z4] = d.degradeZero
   const [e1, e2, e3, e4] = d.degradeEstrela
   const de = { stopColor: `var(--logo-zero-${fundo}-de)` }

@@ -14,6 +14,7 @@
 import type { ExtensionExample } from '#extensions'
 import { generateJS } from '#generators'
 import { assetMetaManifest } from '../../../core/project'
+import type { SpriteSceneApi } from '../../scene-2d/spriteContract'
 import { gameTwoDRuntime } from '../runtime'
 import type { GameTwoDLifecycleApi } from '../runtimeContract'
 
@@ -76,18 +77,19 @@ export interface CapturedCity {
  * Só o recorte que os testes leem. Os tipos capturados acima são substitutos
  * estruturais dos do runtime — por isso a API não é o `GameTwoDRuntimeApi` inteiro.
  */
-export type RuntimeApi = Pick<GameTwoDLifecycleApi, 'sceneIs'> & {
-  spawn(group: CapturedGroup, options: Record<string, unknown>): CapturedSprite | null
-  cameraX(): number
-  actionDown(action: string): boolean
-  actionPressed(action: string): boolean
-  countGroup(group: CapturedGroup | CapturedEnemyType): number
-  clearGroup(group: CapturedGroup | CapturedEnemyType): void
-  getHealth(sprite: CapturedSprite): number
-  spriteX(sprite: CapturedSprite): number
-  spriteY(sprite: CapturedSprite): number
-  isPaused(): boolean
-}
+export type RuntimeApi = Pick<GameTwoDLifecycleApi, 'sceneIs'> &
+  Pick<SpriteSceneApi, 'spriteTrackValue'> & {
+    spawn(group: CapturedGroup, options: Record<string, unknown>): CapturedSprite | null
+    cameraX(): number
+    actionDown(action: string): boolean
+    actionPressed(action: string): boolean
+    countGroup(group: CapturedGroup | CapturedEnemyType): number
+    clearGroup(group: CapturedGroup | CapturedEnemyType): void
+    getHealth(sprite: CapturedSprite): number
+    spriteX(sprite: CapturedSprite): number
+    spriteY(sprite: CapturedSprite): number
+    isPaused(): boolean
+  }
 
 /** Um texto desenhado pela fonte de pixel neste quadro. */
 export interface CapturedPixelText {

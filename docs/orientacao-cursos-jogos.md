@@ -36,15 +36,32 @@ As camadas do Estúdio e o papel pedagógico de cada uma:
 | **Jogo 2D** (básico) | `game-2d` | Porta de entrada. Loop explícito, sprites, colisão, timers — cada conceito é UM bloco visível. |
 | **Jogo 2D Avançado** | `game-2d-advanced` (SZGameKit) | O "motor de verdade": moldes (classes), spawner+pool, FSM por entidade, telas, tilemap rico. |
 | **Núcleo "na mão"** | sem extensão | JavaScript + canvas puro com OOP. O aluno vê que o motor não é mágica. |
-| **Jogo 3D** (básico) | `game-3d` | Porta do 3D: mesma lógica do 2D com câmera e eixo Z. |
-| **Jogo 3D Avançado** | `game-3d-advanced` (SZGameKit3D) | FSM, pool, física, moldes — o SZGameKit do 3D. |
-| **Mundo 3D** | `world-3d` | Mundo aberto: terreno, veículo, trânsito autônomo, NPC com diálogo, missão, interiores. Usada junto com a 3D Avançado no nível Intermediário 3D. |
+| **Jogo 3D** (básico) | `game-3d` (SZGame3D) | Porta do 3D: mesma lógica do 2D com câmera e eixo Z. O núcleo (40 blocos) fecha um jogo inteiro: cena, objetos, mover, encostar, grupos, pontos, vida, telas e recomeçar. O resto (câmeras, física de plataforma, kits prontos) é do Intermediário 3D. |
+| **Mundo 3D** | `world-3d` (SZWorld3D) | Mundo aberto pronto: terreno, natureza, cidade, veículo, amigos com diálogo, missões. Vira jogo com as mesmas regras de pontos, vida, contagem e telas do Jogo 3D. |
+| **Jogo 3D Avançado** | `game-3d-advanced` (SZGameKit3D) | FSM, pool, física, moldes — o SZGameKit do 3D, mais fases, mochila e progresso guardado. |
 | **Canvas 3D "na mão"** | `canvas-3d` (núcleo) | three.js cru, fiel na Ponte. O topo da escada. |
+
+As três extensões 3D usam os modelos do **Molda** do mesmo jeito: modelo com ossos, animações
+escolhidas pelo nome do clipe, pintura animada e céu 360° (review 3D de 24/10/2026).
+
+**Contrato dos jogos com extensão (25/10/2026):** exemplos e jogos de aulas usam Programação
+para as regras e a própria extensão para preparar tela, desenhar, mostrar texto, placar e telas.
+Não usam blocos de HTML, CSS, Canvas 2D ou Canvas 3D, nem escondem essas operações em código cru.
+HTML, CSS e JavaScript/Canvas diretamente pertencem à etapa sem extensão. O Canvas interno ao
+motor continua sendo um detalhe de implementação, sem virar pré-requisito para a criança.
+
+**Núcleo inicial do Jogo 2D:** a curadoria de entrada está em
+`game-2d/initialCore.ts` e cobre Pegue a moeda, Herói que anda, Mini plataforma, Sala com paredes,
+Cadê Todo Mundo? e A Chave do Farol, incluindo as construções intermediárias e a personalização
+das duas aventuras. O restante do Jogo 2D também pertence ao Iniciante 2D; as aulas apresentam as
+ferramentas gradualmente por `allowBlocks`. Ferramentas 2D não dependem de um degrau 3D.
 
 **Uma camada por nível de curso, exclusiva.** O aluno sobe de nível quando troca de camada,
 não quando o jogo fica maior: Iniciante 2D = Jogo 2D · Intermediário 2D = Jogo 2D Avançado ·
-Avançado 2D = sem extensão · Iniciante 3D = Jogo 3D · Intermediário 3D = Jogo 3D Avançado +
-Mundo 3D · Avançado 3D = sem extensão. **2D antes de 3D, sempre.** A grade dos 49 cursos que
+Avançado 2D = sem extensão · Iniciante 3D = núcleo do Jogo 3D · Intermediário 3D = Jogo 3D
+completo + Mundo 3D · Avançado 3D = Jogo 3D Avançado + Canvas 3D na mão (review 3D de
+24/10/2026: uma extensão 3D por degrau; antes o Avançado dividia o Intermediário 3D com o
+Mundo 3D). **2D antes de 3D, sempre.** A grade dos 49 cursos que
 sai dessa regra está em `comunidade-dos-criadores/entregas/cursos/trilha-cursos-jogos.md`.
 
 ---
@@ -103,8 +120,8 @@ aluno).
 | 9 | **Inimigos como TIPO** | definir uma vez, nascer muitos = a semente de "classe" | `define_enemy_type`, `spawn_enemy`, `on_enemy_defeated` |
 | 10 | **Mundo e câmera** | o mundo é maior que a tela; a tela é uma janela | `create_tilemap`, `tilemap_collide`, `camera_follow`, `draw_group_by_y` |
 | 11 | **Motor avançado 2D** | moldes (classes), spawner+pool, FSM por entidade, telas ricas | gk: `define_mold`, `start_spawner`+`recycle`, `set_entity_state`, `draw_by_depth` |
-| 12 | **Porta do 3D** | tudo igual, MAIS: eixo Z, câmera, Y para cima | g3d: `create_scene`, `sz_g3d_animate` ("A cada quadro 3D"), `sz_g3d_dt` |
-| 13 | **Motor avançado 3D** | FSM/pool/física no espaço | g3k: `define_mold`+`part`, `camera_fps`/`move_fps`, `pick`, `cull_far` |
+| 12 | **Porta do 3D** | tudo igual, MAIS: eixo Z, câmera, Y para cima | g3d: `create_fullscreen_scene`, `sz_g3d_animate` ("A cada quadro da cena"), `hit_any`, `add_score`/`set_life`/`end_game`/`restart`; w3d (Intermediário 3D): o mundo pronto com as mesmas regras de jogo |
+| 13 | **Motor avançado 3D** | FSM/pool/física no espaço | g3k: `define_mold`+`part`, `camera_fps`/`move_fps`, `pick`, `cull_far`, `next_level` |
 | 14 | **Na mão (topo)** | OOP de verdade; three.js cru; dt real | núcleo: classes + canvas; canvas-3d: `THREE.*` + "tempo do quadro" |
 
 Regras da escada:
@@ -119,8 +136,9 @@ Regras da escada:
 **Onde cada degrau cai nos níveis de curso.** Pela regra de uma camada por nível (seção 1), os
 degraus **1 a 10 são todos da extensão Jogo 2D**, então cabem inteiros no **Iniciante 2D**, e os
 degraus 9 e 10 são justamente os que fecham esse nível. O **Intermediário 2D** é o degrau 11, e só
-ele. O **Avançado 2D** é o degrau 14 na versão canvas. O **Iniciante 3D** é o degrau 12, o
-**Intermediário 3D** o 13, e o **Avançado 3D** o 14 na versão three.js.
+ele. O **Avançado 2D** é o degrau 14 na versão canvas. O **Iniciante 3D** é o degrau 12 com o
+núcleo do Jogo 3D, o **Intermediário 3D** é o degrau 12 completo (o resto do Jogo 3D e o Mundo
+3D), e o **Avançado 3D** são os degraus 13 (Jogo 3D Avançado) e 14 na versão three.js.
 
 > Correção registrada: versões anteriores deste documento tratavam os degraus 9 e 10 como
 > Intermediário 2D. Os blocos que os realizam (`define_enemy_type`, `create_tilemap`,
@@ -398,20 +416,22 @@ termos; divergência é bug de conformidade.
 
 | Conceito | Termo canônico | Onde já vale |
 |---|---|---|
-| Colisão (pergunta contínua) | **"está encostando" / "se encostam"** | `sz_g2d_touches`, `sz_gk_characters_touch`, `sz_gk_touching_circle`, `sz_g3d_collides`, `sz_g3d_touches_box`, `sz_g3k_touches` |
+| Colisão (pergunta contínua) | **"está encostando" / "se encostam"** | `sz_g2d_touches`, `sz_gk_characters_touch`, `sz_gk_touching_circle`, `sz_g3d_collides`, `sz_g3d_hit_any`, `sz_g3k_touches` |
 | Colisão (evento de borda) | **"começar a encostar"** / "Quando … encostar" | `sz_g2d_on_overlap`, `sz_g3k_on_overlap` |
-| Colisão contra grupo | **"encostou em algum de"** | `sz_g2d_on_group_overlap`, `sz_g3d_hit_any` |
+| Colisão contra grupo | **"encostou em algum de"** | `sz_g2d_on_group_overlap`, `sz_g3d_hit_any`, `sz_g3d_on_touch_group` ("Quando … encostar em algum do grupo") |
 | Trombada de veículo (crash) | **"bater forte"** — exceção proposital | kits de corrida g3d, world-3d |
 | Recarga de ação | **"recarga"** ("pode agir? recarga de N quadros") | `sz_g2d_cooldown_ready` |
-| Fim de vida | **"as vidas … acabaram?"** | `sz_g2d_health_depleted`; g3k usa "derrotado" para o EVENTO (`on_entity_death`) |
-| Dano | **"levar dano"** | `sz_g2d_hurt_by_enemy`, `sz_g3k_hurt`/`on_hurt` |
-| Repetição no tempo | **"a cada N segundos / N quadros"** | `every_seconds`/`every_frames` (g2d, g3d, gk, g3k) |
-| Ação única no tempo | **"depois de N segundos"** | `sz_g2d_after_seconds` |
-| Loop do jogo | **"A cada quadro"** | `sz_g2d_update_each_frame`, `sz_g3d_animate` ("A cada quadro 3D") |
+| Fim de vida | **"as vidas … acabaram?"** | `sz_g2d_health_depleted`; g3k usa "derrotado" para o EVENTO (`on_entity_death`); g3d e w3d usam o EVENTO "Quando a vida de … acabar" (`on_life_over`, regras de jogo comuns) |
+| Dano | **"levar dano"** | `sz_g2d_hurt_by_enemy`, `sz_g3k_hurt`/`on_hurt`; o bloco 3D diz "Machucar … tirando N de vida" (`sz_g3d_hurt`, `sz_w3d_hurt`, `sz_g3k_hurt`) |
+| Repetição no tempo | **"a cada N segundos / N quadros"** | `every_seconds`/`every_frames` (g2d); `sz_gk_every_seconds`; no g3d só `every_seconds`; o g3k repete pelo "A cada N s, nascer" e pela contagem |
+| Ação única no tempo | **"depois de N segundos"** | `sz_g2d_after_seconds`, `sz_g3d_after_seconds`, `sz_w3d_after_seconds` |
+| Loop do jogo | **"A cada quadro"** | `sz_g2d_update_each_frame`, `sz_g3d_animate` ("A cada quadro da cena") |
 | Nascer entidade | **"Nascer"** | `spawn_in_group`, `spawn_enemy`, `sz_g3k_spawn` |
 | Limpeza fora da tela | **"limpar/descartar quem saiu"** | `prune_offscreen`, `cull_offscreen`, `cull_far` |
 | Forma de colisão visível | **"caixa de colisão"** | `draw_hitbox` (2D), wireframe/esfera de debug (3D) |
 | Dial de dificuldade | **"área de colisão de N%"** | `sz_g2d_set_hitbox_scale` |
+| Figura preenchida do jogo | **"Desenhar retângulo / círculo / triângulo"** | `sz_gk_draw_rectangle`, `sz_gk_draw_circle`, `sz_gk_draw_triangle`; posição, dimensões e cor pertencem a cada figura |
+| Texto no desenho do jogo | **"Escrever … em x … y … tamanho … cor …"** | `sz_gk_draw_text`; `y` marca a base do texto, com a fonte do jogo |
 
 **Termos pedagógicos** — o nome que a AULA usa para o padrão, quando ele difere do rótulo do bloco.
 Estes são conteúdo tanto quanto os de cima, e divergir deles também é bug de conformidade:

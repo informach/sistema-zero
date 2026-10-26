@@ -57,7 +57,7 @@ export default async function CoursePage({ params }: { params: Promise<{ slug: s
         <div className="sz-page flex flex-col gap-5 pt-7 pb-9 md:pb-12">
           <BackLink href={`/cursos/trilha/${track}`} label={`Trilha ${trackLabel(track)}`} />
           <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:gap-10">
-            <div className="sz-card-sm relative aspect-video w-full overflow-hidden bg-(--topo) lg:w-[26rem] lg:flex-none">
+            <div className="sz-card-sm sz-mira relative aspect-video w-full overflow-hidden bg-(--topo) shadow-[0_24px_48px_rgb(0_0_0/0.45)] lg:w-[30rem] lg:flex-none">
               <CourseCover src={course.coverImageUrl} />
             </div>
             <div className="flex min-w-0 flex-1 flex-col gap-3.5">
@@ -121,19 +121,19 @@ export default async function CoursePage({ params }: { params: Promise<{ slug: s
                 aria-labelledby={`modulo-${module.id}`}
                 className={cn(
                   'sz-card overflow-hidden',
-                  current && 'shadow-[0_0_0_3px_var(--primary)]',
+                  current && 'shadow-[0_0_0_3px_var(--cta),0_4px_0_var(--cta-degrau)]',
                 )}
               >
                 <div
                   className={cn(
                     'flex flex-wrap items-center gap-x-4 gap-y-2 border-border border-b p-5 md:p-6',
-                    current ? 'bg-(--acao-tint)' : 'bg-background',
+                    current ? 'bg-(--aviso-tint)' : 'bg-background',
                   )}
                 >
                   <span
                     className={cn(
-                      'font-mono',
-                      current ? 'text-(--acao-texto)' : 'text-muted-foreground',
+                      'font-(family-name:--font-pixel) text-[0.85rem] uppercase tracking-[0.06em]',
+                      current ? 'text-(--aviso-texto)' : 'text-muted-foreground',
                     )}
                   >
                     {moduleNumber(moduleIndex)}
@@ -156,7 +156,7 @@ export default async function CoursePage({ params }: { params: Promise<{ slug: s
                   <span
                     className={cn(
                       'sz-chip',
-                      allDone ? 'sz-chip-ok' : current ? 'sz-chip-acao' : null,
+                      allDone ? 'sz-chip-ok' : current ? 'sz-chip-novo' : null,
                     )}
                   >
                     {allDone ? <Check aria-hidden /> : null}
@@ -204,7 +204,7 @@ export default async function CoursePage({ params }: { params: Promise<{ slug: s
                             </span>
                           ) : null}
                           {here ? (
-                            <span className="sz-chip sz-chip-acao">Continue aqui</span>
+                            <span className="sz-chip sz-chip-novo">Continue aqui</span>
                           ) : null}
                           {lesson.id === firstLockedId ? (
                             <span className="font-bold text-[0.85rem]">
@@ -249,7 +249,7 @@ export default async function CoursePage({ params }: { params: Promise<{ slug: s
 
         <aside
           aria-label="Apoio do curso"
-          className="flex w-full flex-col gap-5 lg:sticky lg:top-[7.6rem] xl:top-[5.2rem] lg:w-[19rem] lg:flex-none"
+          className="flex w-full flex-col gap-5 lg:sticky lg:top-6 lg:w-[19rem] lg:flex-none"
         >
           {materialLessons.length > 0 ? (
             <article className="sz-card flex flex-col gap-3.5 p-5 md:p-7">

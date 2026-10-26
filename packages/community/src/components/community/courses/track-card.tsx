@@ -16,7 +16,8 @@ export function trackLead(summary: Pick<TrackSummary<unknown>, 'levels'>): strin
 /**
  * O cartão de uma trilha em Cursos (direção de arte de 18/10/2026): o selo Trilha com a contagem,
  * o nome do eixo, o texto de apoio, um selo por nível com os concluídos e o caminho desenhado.
- * O cartão inteiro leva à página da trilha.
+ * O cartão inteiro leva à página da trilha. Mora no palco de Cursos (Estúdio à noite): a carta escura
+ * com o botão de contorno, porque o amarelo da tela é o "Continuar" do catálogo.
  */
 export function TrackCard({ summary }: { summary: TrackSummary<unknown> }) {
   const total = summary.courses.length
@@ -53,7 +54,7 @@ export function TrackCard({ summary }: { summary: TrackSummary<unknown> }) {
             </li>
           ))}
         </ul>
-        <span className="sz-btn mt-2 self-start group-hover:bg-(--primary-hover)">
+        <span className="sz-btn-outline mt-2 self-start group-hover:bg-(--carta-2)">
           Ver a trilha
           <ArrowRight aria-hidden />
         </span>

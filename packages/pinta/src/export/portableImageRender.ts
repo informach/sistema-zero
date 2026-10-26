@@ -3,16 +3,37 @@ import {
   type PintaImageTargetLimits,
 } from '@sistemazero/core/studio/pinta-image'
 import type { AnyTilesetAsset, PintaBitmap, TilemapAsset } from '../core/project'
-import { resolveAssetPalette } from '../core/project'
+import { isTileLayer, resolveAssetPalette, tileLayerTilesetId } from '../core/project'
 import { bitmapToRGBA } from '../pixel/render'
 import type { VectorShape } from '../vector/model'
 import { embedVectorFonts, vectorToPortableSvg } from '../vector/portableSvg'
 import { sceneDefsMarkup, shapesToMarkup, type VectorDoc } from '../vector/svg'
+import { pngCrc32 } from './pngText'
 
 export type PintaImageScene =
   | { kind: 'pixel'; bitmap: PintaBitmap; colors: readonly string[] }
   | { kind: 'vector'; doc: VectorDoc }
   | { kind: 'map'; map: TilemapAsset; tileset: AnyTilesetAsset }
+  /** A whole sheet/atlas of pixel cells, in SOURCE pixels (the output scales it, no blur). */
+  | { kind: 'pixel-cells'; width: number; height: number; cells: PixelSceneCell[] }
+  /** A whole sheet/atlas of vector cells (each a clipped nested `<svg>`), in SOURCE units. */
+  | { kind: 'vector-cells'; width: number; height: number; cells: VectorSceneCell[] }
+
+/** One bitmap placed at x/y; its own width/height is the cell size. */
+export interface PixelSceneCell {
+  bitmap: PintaBitmap
+  colors: readonly string[]
+  x: number
+  y: number
+}
+
+export interface VectorSceneCell {
+  shapes: VectorShape[]
+  x: number
+  y: number
+  width: number
+  height: number
+}
 
 /** The production implementation owns all native resources. Tests can use a real native canvas. */
 export interface PintaImageRaster {
@@ -90,12 +111,6 @@ export const browserPintaImageRaster: PintaImageRaster = {
   },
 }
 
-const crcTable = Uint32Array.from({ length: 256 }, (_, value) => {
-  let crc = value
-  for (let bit = 0; bit < 8; bit++) crc = (crc >>> 1) ^ (crc & 1 ? 0xedb88320 : 0)
-  return crc >>> 0
-})
-
 /** Only PNG raster references are allowed by Pinta's vector model. No URL/other MIME fallback. */
 export function pngBytes(dataUrl: string, limits: PintaImageTargetLimits): Uint8Array<ArrayBuffer> {
   const prefix = 'data:image/png;base64,'
@@ -147,11 +162,7 @@ export function readPngDimensions(
       (type[0] === type[0]?.toUpperCase() && !['IHDR', 'PLTE', 'IDAT', 'IEND'].includes(type))
     )
       throw new Error('Use um PNG estático válido.')
-    let crc = 0xffffffff
-    for (let index = cursor + 4; index < cursor + 8 + length; index++) {
-      crc = (crc >>> 8) ^ crcTable[(crc ^ bytes[index]!) & 0xff]!
-    }
-    if ((crc ^ 0xffffffff) >>> 0 !== view.getUint32(cursor + 8 + length))
+    if (pngCrc32(bytes, cursor + 4, cursor + 8 + length) !== view.getUint32(cursor + 8 + length))
       throw new Error('Integridade PNG inválida.')
     if (type === 'IDAT') imageData = true
     cursor += length + 12
@@ -168,8 +179,12 @@ export function readPngDimensions(
 
 function* mapCells(map: TilemapAsset) {
   // Includes visible front layers, in their original z-order. Transparent top tiles keep the floor.
+  // Only the layers drawn with the map's DEFAULT tileset: the scene (and the derivation's single
+  // dependency) carries that one tileset; layers using another one are left out, never drawn with
+  // the wrong pieces. Object layers have no tiles.
   for (const layer of map.layers) {
-    if (!layer.visible) continue
+    if (!isTileLayer(layer) || !layer.visible) continue
+    if (tileLayerTilesetId(map, layer) !== map.tilesetId) continue
     for (let index = 0; index < layer.cells.length; index++) {
       const tile = layer.cells[index]!
       if (tile >= 0) yield { tile, col: index % map.cols, row: Math.floor(index / map.cols) }
@@ -179,6 +194,7 @@ function* mapCells(map: TilemapAsset) {
 
 function sceneShapes(scene: PintaImageScene): VectorShape[] {
   if (scene.kind === 'vector') return scene.doc.shapes
+  if (scene.kind === 'vector-cells') return scene.cells.flatMap((cell) => cell.shapes)
   if (scene.kind !== 'map' || scene.tileset.kind !== 'vector-tileset') return []
   const used = new Set([...mapCells(scene.map)].map((cell) => cell.tile))
   return [...used].flatMap((index) =>
@@ -205,8 +221,19 @@ export function validateSceneImages(
   }
 }
 
-async function sceneSvg(scene: Exclude<PintaImageScene, { kind: 'pixel' }>): Promise<string> {
+/** Each cell is a nested `<svg>`: it clips like a bitmap cell, with per-cell definition ids. */
+function vectorCellsSvg(scene: Extract<PintaImageScene, { kind: 'vector-cells' }>): string {
+  const cells = scene.cells.map((cell, index) => {
+    const prefix = `cell-${index}-`
+    return `<svg x="${cell.x}" y="${cell.y}" width="${cell.width}" height="${cell.height}" viewBox="0 0 ${cell.width} ${cell.height}">${sceneDefsMarkup(cell.shapes, prefix)}${shapesToMarkup(cell.shapes, '', prefix)}</svg>`
+  })
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${scene.width}" height="${scene.height}" viewBox="0 0 ${scene.width} ${scene.height}">${cells.join('')}</svg>`
+}
+
+async function sceneSvg(scene: VectorScene): Promise<string> {
   if (scene.kind === 'vector') return vectorToPortableSvg(scene.doc)
+  if (scene.kind === 'vector-cells')
+    return embedVectorFonts(vectorCellsSvg(scene), sceneShapes(scene))
   if (scene.tileset.kind !== 'vector-tileset') throw new Error('Peças vetoriais esperadas.')
   const tileset = scene.tileset,
     map = scene.map,
@@ -229,6 +256,57 @@ async function sceneSvg(scene: Exclude<PintaImageScene, { kind: 'pixel' }>): Pro
   )
 }
 
+/** True when the scene has a portable vector document (an SVG recipe can be honored). */
+export function pintaImageSceneIsVector(scene: PintaImageScene): boolean {
+  return vectorScene(scene) !== null
+}
+
+type VectorScene = Exclude<PintaImageScene, { kind: 'pixel' } | { kind: 'pixel-cells' }>
+
+function vectorScene(scene: PintaImageScene): VectorScene | null {
+  return scene.kind === 'vector' ||
+    scene.kind === 'vector-cells' ||
+    (scene.kind === 'map' && scene.tileset.kind === 'vector-tileset')
+    ? scene
+    : null
+}
+
+/**
+ * The selected vector as a self-contained SVG whose ROOT says the output size: `width`/`height`
+ * are the scaled output and the `viewBox` keeps the content's own coordinates, so a Pygame Zero
+ * reader (root size, nanosvg rule) and the browser draw it at exactly width x height.
+ * Same markup as the PNG path, which rasterizes this very document.
+ */
+export async function renderPintaImageSvg(
+  scene: PintaImageScene,
+  width: number,
+  height: number,
+  limits: PintaImageTargetLimits,
+  signal?: AbortSignal,
+): Promise<string> {
+  signal?.throwIfAborted()
+  assertPintaImageDimensions(width, height, limits)
+  const vector = vectorScene(scene)
+  if (!vector) throw new Error('Este desenho é de pixels e só pode vir como imagem PNG.')
+  validateSceneImages(scene, width * height, limits)
+  const svg = await sceneSvg(vector)
+  signal?.throwIfAborted()
+  return withRootSize(svg, width, height)
+}
+
+function withRootSize(svg: string, width: number, height: number): string {
+  const rootEnd = svg.indexOf('>')
+  if (!svg.startsWith('<svg') || rootEnd < 0) throw new Error('O desenho vetorial é inválido.')
+  const root = svg.slice(0, rootEnd)
+  if (!/\swidth="[^"]*"/.test(root) || !/\sheight="[^"]*"/.test(root) || !/\sviewBox="/.test(root))
+    throw new Error('O desenho vetorial não diz o próprio tamanho.')
+  return (
+    root
+      .replace(/(\s)width="[^"]*"/, `$1width="${width}"`)
+      .replace(/(\s)height="[^"]*"/, `$1height="${height}"`) + svg.slice(rootEnd)
+  )
+}
+
 export async function renderPintaImage(
   scene: PintaImageScene,
   width: number,
@@ -241,10 +319,8 @@ export async function renderPintaImage(
   assertPintaImageDimensions(width, height, limits)
   validateSceneImages(scene, width * height, limits)
   // Font imports finish before any native allocation. The SVG viewport, not its viewBox, is scaled.
-  const svg =
-    scene.kind === 'vector' || (scene.kind === 'map' && scene.tileset.kind === 'vector-tileset')
-      ? await sceneSvg(scene)
-      : null
+  const vector = vectorScene(scene)
+  const svg = vector ? await sceneSvg(vector) : null
   signal?.throwIfAborted()
   const canvases: HTMLCanvasElement[] = []
   let allocatedPixels = 0
@@ -282,7 +358,33 @@ export async function renderPintaImage(
       }
       if (scene.kind === 'pixel')
         context.drawImage(bitmapCanvas(scene.bitmap, scene.colors), 0, 0, width, height)
-      else if (scene.kind === 'map' && scene.tileset.kind === 'tileset') {
+      else if (scene.kind === 'pixel-cells') {
+        // One staging canvas per cell SIZE, reused: drawImage copies synchronously, so a
+        // 40-tile sheet allocates one small canvas instead of forty.
+        const staging = new Map<string, HTMLCanvasElement>()
+        const scaleX = width / scene.width,
+          scaleY = height / scene.height
+        for (const cell of scene.cells) {
+          const size = `${cell.bitmap.width}x${cell.bitmap.height}`
+          let base = staging.get(size)
+          if (!base) {
+            base = create(cell.bitmap.width, cell.bitmap.height)
+            staging.set(size, base)
+          }
+          const ctx = base.getContext('2d')
+          if (!ctx) throw new Error('Canvas 2D indisponível para as peças.')
+          const data = ctx.createImageData(cell.bitmap.width, cell.bitmap.height)
+          data.data.set(bitmapToRGBA(cell.bitmap, cell.colors))
+          ctx.putImageData(data, 0, 0)
+          context.drawImage(
+            base,
+            cell.x * scaleX,
+            cell.y * scaleY,
+            cell.bitmap.width * scaleX,
+            cell.bitmap.height * scaleY,
+          )
+        }
+      } else if (scene.kind === 'map' && scene.tileset.kind === 'tileset') {
         const tiles = new Map<number, HTMLCanvasElement>()
         const colors = resolveAssetPalette(scene.tileset)
         const cellWidth = width / scene.map.cols,

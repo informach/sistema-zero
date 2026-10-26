@@ -19,11 +19,11 @@ SZWorld3D.scatter(80, "pedras");
 SZWorld3D.car({ style: "jipe", color: "#38bdf8" });
 SZWorld3D.carBoost(1.5);
 SZWorld3D.engineSound("ligado");
-SZWorld3D.totemText(0, 12, "Inverno Magico", "Uma noite de neve. Dirija com cuidado, o gelo escorrega!");
+SZWorld3D.totemText(0, 12, "Inverno Mágico", "Uma noite de neve. Dirija com cuidado, o gelo escorrega!");
 SZWorld3D.totemText(30, -20, "Floresta Gelada", "Os pinheiros dormem sob a neve.");
 SZWorld3D.cameraMode("seguir");
 SZWorld3D.onUpdate(function (dt) {
-  SZWorld3D.hud("Noite de neve", "baixo-esquerda");
+  SZWorld3D.hudText("bottom-left", "Noite de neve");
 });
 `.trim()
 

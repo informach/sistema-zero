@@ -149,7 +149,10 @@ function ForumCard({ forum: { space, channels } }: { forum: ForumSpace }) {
                 {channel.postingPolicy === 'staff_only' ? (
                   <Lock aria-hidden className="size-5 flex-none text-muted-foreground" />
                 ) : (
-                  <span aria-hidden className="w-5 flex-none text-center font-mono">
+                  <span
+                    aria-hidden
+                    className="w-5 flex-none text-center font-(family-name:--font-pixel)"
+                  >
                     #
                   </span>
                 )}
@@ -199,9 +202,10 @@ function ShowcaseArt() {
 
 function ShowcaseSpaceCard({ space }: { space: HubSpaceView }) {
   return (
+    // O Mural é comemoração: a carta de palco no meio da bancada (Estúdio à noite).
     <section
       aria-labelledby={`espaco-${space.id}`}
-      className="sz-card flex flex-col overflow-hidden md:flex-row"
+      className="sz-palco flex flex-col overflow-hidden rounded-[1.2rem] md:flex-row"
     >
       <div className="h-[11rem] flex-none md:h-auto md:w-[17rem]">
         <ShowcaseArt />
@@ -215,7 +219,7 @@ function ShowcaseSpaceCard({ space }: { space: HubSpaceView }) {
             'Jogos prontos da comunidade, para jogar no navegador e fazer a sua versão.'}
         </p>
         <div className="mt-auto flex flex-wrap gap-3 pt-1">
-          <Link href="/mural-dos-criadores-adulto" prefetch={false} className="sz-btn">
+          <Link href="/mural-dos-criadores-adulto" prefetch={false} className="sz-btn-white">
             Ver o Mural
           </Link>
           <Link href="/desafios" prefetch={false} className="sz-btn-outline">

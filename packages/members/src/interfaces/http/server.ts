@@ -4,6 +4,7 @@ import {
   assertAccountMutationAllowed,
   PayloadTooLargeError,
 } from '@sistemazero/core/http'
+import { SECTION_PYTHON_PROJECT_TEST_BODY_BYTES } from '@sistemazero/core/learning'
 import type { Logger } from '@sistemazero/core/logging'
 import { Elysia } from 'elysia'
 import type { LiveMaterialsService } from '../../application/live/live-materials.service'
@@ -104,6 +105,8 @@ const PINTA_SUBMISSION_PATH = /\/pinta-submission$/
 // (o gateway já capa em 512 KB na borda — este é o backstop interno, mesmo
 // racional do MAX_STUDIO_BODY_BYTES).
 function bodyLimitForPath(pathname: string, env: Env): number {
+  if (pathname === '/members/admin/python-project-checks/test')
+    return SECTION_PYTHON_PROJECT_TEST_BODY_BYTES
   if (pathname === '/members/internal/studio-ai/builder') return 3_004_096
   if (
     PINTA_SUBMISSION_PATH.test(pathname) ||
@@ -143,6 +146,7 @@ export function createServer(deps: HttpDeps) {
   // O teto do Bun.serve é o MAIOR dos limites — o per-rota (mais estrito) é
   // aplicado no `onParse`; senão o Bun cortaria a entrega do Estúdio antes dela.
   const serveCeiling = Math.max(
+    SECTION_PYTHON_PROJECT_TEST_BODY_BYTES,
     deps.env.MAX_REQUEST_BODY_BYTES,
     deps.env.MAX_STUDIO_BODY_BYTES,
     1024 * 1024,

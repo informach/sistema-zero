@@ -47,13 +47,13 @@ export function registerExampleContractTests({
   source,
   stage,
 }: ExampleContractOptions): void {
-  it('parseJS(SOURCE) ≡ IR embutida (zero rawJS/memberCall), fora a dupla do wrapper', () => {
+  it('parseJS(SOURCE) ≡ IR embutida (zero rawJS/memberCall), fora o preparo nativo do palco', () => {
     const parsed = stripIds(parseExampleLifecycleSource(source))
     const types = collectTypes(parsed)
     expect(types.has('rawJS')).toBe(false)
     expect(types.has('memberCall')).toBe(false)
 
-    // ⚠️ A dupla do wrapper é conferida no início de `start`, e não da lista
+    // ⚠️ O preparo nativo é conferido no início de `start`, e não da lista
     // achatada: desde 🧩 Meus moldes, quem abre a lista são as definições
     // (figura, tipo de inimigo), que rodam antes do preparo do palco.
     const embeddedBehavior = normalizeSZIR(example.ir).behavior
@@ -70,7 +70,10 @@ export function registerExampleContractTests({
     const withoutWrapper = stripIds(
       behaviorStatements({
         ...normalizeSZIR(example.ir),
-        behavior: { ...embeddedBehavior, start: embeddedBehavior.start.slice(2) },
+        behavior: {
+          ...embeddedBehavior,
+          start: embeddedBehavior.start.slice(embeddedStart[2]?.type === 'g2d:stageBorder' ? 3 : 2),
+        },
       }),
     )
     expect(parsed).toEqual(withoutWrapper)

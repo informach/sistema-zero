@@ -192,6 +192,78 @@ describe.skipIf(!testDatabaseUrl)('Atomicidade no Postgres real (outbox/version/
     expect(row?.version).toBe(1)
   })
 
+  test('ciclo quitado conserva recusa; conferência do período e evento fazem rollback juntos', async () => {
+    const payment = PaymentAggregate.create({
+      consumerId: 'sys-test',
+      amount: Money.fromCents(9700),
+      method: PaymentMethod.recurringCard({ brand: 'visa', last4: '4242' }),
+      subscriptionId: crypto.randomUUID(),
+      idempotencyKey: IdempotencyKey.create(`cycle-${crypto.randomUUID()}`),
+    })
+    payment.registerProviderCharge({ providerPaymentId: 'qa-period-charge' })
+    payment.markFailed('Recusa original de teste')
+    await repo.save(payment)
+    const failed = await repo.findById(payment.id)
+    if (!failed?.subscriptionId) throw new Error('Ciclo QA ausente')
+    const failedAt = failed.toSnapshot().updatedAt
+    failed.confirmSubscriptionChargePaid({
+      subscriptionId: failed.subscriptionId,
+      provider: 'EFI',
+      providerPaymentId: 'qa-period-charge',
+      amount: Money.fromCents(9700),
+      paidAt: new Date('2026-10-24T12:00:00Z'),
+    })
+    await repo.save(failed)
+    const paid = await repo.findById(payment.id)
+    if (!paid) throw new Error('Pagamento QA ausente')
+    expect(paid.toSnapshot()).toMatchObject({
+      priorFailureReason: 'Recusa original de teste',
+      priorFailedAt: failedAt,
+      failureReason: null,
+      cycleAccess: { version: 1, kind: 'REVIEW_REQUIRED', reason: 'PERIOD_UNAVAILABLE' },
+    })
+    const authority = {
+      actorId: 'qa-admin',
+      requestId: crypto.randomUUID(),
+      providerSubscriptionId: 'qa-provider',
+      sourceObservedAt: new Date('2026-10-24T13:00:00Z'),
+    }
+    const period = { startsAt: '2026-09-16T12:00:00.000Z', endsAt: '2026-10-16T12:00:00.000Z' }
+    paid.confirmSubscriptionPeriod(period, new Date('2026-10-24T13:00:00Z'), authority)
+    addPoisonEvent(paid)
+    expect(await rejectionOf(repo.save(paid))).toBeInstanceOf(Error)
+    expect(paid.events).toHaveLength(2)
+    expect(paid.events[0]?.eventName).toBe('payment.subscription_period_confirmed')
+    expect(paid.events[1]?.eventName as unknown).toBeNull()
+    expect((await repo.findById(payment.id))?.cycleAccess?.kind).toBe('REVIEW_REQUIRED')
+    expect((await repo.findById(payment.id))?.toSnapshot().periodConfirmation).toBeNull()
+    const uncommitted = await conn.sql`
+      select 1 from payments.outbox where aggregate_id = ${payment.id}
+      and event_name = 'payment.subscription_period_confirmed'`
+    expect(uncommitted).toHaveLength(0)
+    const retry = await repo.findById(payment.id)
+    if (!retry) throw new Error('Pagamento QA ausente')
+    retry.confirmSubscriptionPeriod(period, new Date('2026-10-24T13:00:00Z'), authority)
+    await repo.save(retry)
+    expect(retry.events).toHaveLength(0)
+    expect((await repo.findById(payment.id))?.cycleAccess).toEqual({
+      version: 1,
+      kind: 'VERIFIED_PERIOD',
+      period,
+    })
+    expect((await repo.findById(payment.id))?.toSnapshot().periodConfirmation?.actorId).toBe(
+      'qa-admin',
+    )
+    const events = await conn.sql`
+      select event_name from payments.outbox where aggregate_id = ${payment.id}
+      and event_name in ('payment.paid', 'payment.failed', 'payment.subscription_period_confirmed')`
+    expect(events.map((event) => event.event_name).sort()).toEqual([
+      'payment.failed',
+      'payment.paid',
+      'payment.subscription_period_confirmed',
+    ])
+  })
+
   test('payments_txid_uq: 2º pagamento com o MESMO txid falha (23505); txid NULL não colide', async () => {
     const txid = `txid${crypto.randomUUID().replaceAll('-', '')}`.slice(0, 32)
     const p1 = newPixPayment()

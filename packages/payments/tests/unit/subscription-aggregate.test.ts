@@ -17,6 +17,44 @@ function build(overrides?: Partial<Parameters<typeof SubscriptionAggregate.creat
 }
 
 describe('SubscriptionAggregate', () => {
+  test('atualizar cartão confirmado preserva plano, preço, ciclo e histórico', () => {
+    const subscription = build()
+    subscription.registerProviderSubscription('provider-qa')
+    subscription.activate()
+    subscription.recordCharge('charge-qa', new Date('2026-10-16T12:00:00Z'))
+    const before = subscription.toSnapshot()
+    subscription.updateCard({ brand: 'mastercard', last4: '1234' })
+    const after = subscription.toSnapshot()
+    expect(after.card).toEqual({ brand: 'mastercard', last4: '1234' })
+    expect(after.amountInCents).toBe(before.amountInCents)
+    expect(after.providerPlanId).toBe(before.providerPlanId)
+    expect(after.lastChargeAt).toEqual(before.lastChargeAt)
+    expect(after.cyclesCompleted).toBe(before.cyclesCompleted)
+    expect(after.status).toBe('ACTIVE')
+  })
+
+  test('pedido de cancelamento é durável e idempotente e bloqueia troca antes da confirmação', () => {
+    const subscription = build()
+    subscription.activate()
+    expect(subscription.requestCancellation({ origin: 'ADMIN', actorId: 'qa-admin' })).toBe(true)
+    const requestedAt = subscription.cancelRequestedAt
+    expect(requestedAt).toBeInstanceOf(Date)
+    expect(subscription.requestCancellation({ origin: 'ADMIN', actorId: 'qa-admin' })).toBe(false)
+    expect(subscription.cancelRequestedAt).toBe(requestedAt)
+    expect(subscription.status).toBe('ACTIVE')
+    expect(subscription.canceledAt).toBeNull()
+    const restored = SubscriptionAggregate.restore(subscription.toSnapshot())
+    expect(restored.cancelRequestedAt).toEqual(requestedAt)
+    expect(() => restored.updateCard({ brand: 'visa', last4: '1234' })).toThrow(
+      InvalidStateTransitionError,
+    )
+    expect(
+      subscription
+        .pullEvents()
+        .filter((event) => event.eventName === 'subscription.cancellation_requested'),
+    ).toHaveLength(1)
+  })
+
   test('create → PENDING + evento subscription.created', () => {
     const sub = build()
     expect(sub.status).toBe('PENDING')

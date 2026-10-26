@@ -206,12 +206,15 @@ describe('inventário da oficina: o que a criança alcança', () => {
     // Group, ungroup and multiselect move into the tree; the destination selector adds one control.
     // The requested Plano adds one visible creation button.
     expect(vazio.view.getByRole('button', { name: copy.plane })).toBeDefined()
+    expect(vazio.view.getByRole('button', { name: copy.torus })).toBeDefined()
+    // Torus adds one visible shape control in Modelar.
     // A biblioteca de paletas acrescenta um único gatilho recolhido no Modelar.
-    expect(controlInventory(vazio.view.container).length).toBeLessThanOrEqual(69)
+    // O Raio-X pedido acrescenta uma alternância de vista, ao lado da grade.
+    expect(controlInventory(vazio.view.container).length).toBeLessThanOrEqual(71)
     expect(
       encaradosVazio.length,
       `encarados na abertura: ${encaradosVazio.join(' | ')}`,
-    ).toBeLessThanOrEqual(49)
+    ).toBeLessThanOrEqual(51)
     cleanup()
 
     const comPeca = mount(withPiece())
@@ -219,11 +222,11 @@ describe('inventário da oficina: o que a criança alcança', () => {
     const encaradosPeca = frontControls(comPeca.view.container)
     // 12 coordinate inputs are now available directly, with pivot and component tools.
     // Flip adds its disclosure, three axes and the in-place option, behind the disclosure.
-    expect(controlInventory(comPeca.view.container).length).toBeLessThanOrEqual(127)
+    expect(controlInventory(comPeca.view.container).length).toBeLessThanOrEqual(128)
     expect(
       encaradosPeca.length,
       `encarados com uma peça escolhida: ${encaradosPeca.join(' | ')}`,
-    ).toBeLessThanOrEqual(89)
+    ).toBeLessThanOrEqual(91)
   })
 
   /**
@@ -247,12 +250,16 @@ describe('inventário da oficina: o que a criança alcança', () => {
     // One dismiss button persists the contextual hint preference, as in the reference.
     // Two optional disclosures replace the duplicate palette eyedropper (+1 mounted control).
     // One explicit UV-simple action repairs an existing piece without exposing UV editing tools.
-    expect(montados.length, montados.join(' | ')).toBeLessThanOrEqual(84)
+    // A ajuda da pintura abre em modal sem ocupar espaço permanente no painel.
+    // Textura e camadas voltou ao nível avançado como uma revelação fechada (+1 montado).
+    expect(montados.length, montados.join(' | ')).toBeLessThanOrEqual(86)
     // Scope (2), UV grid and hue/hex replace the native picker; saved swatches stay bounded.
     // Named UV/material/sheet areas and the visible contextual brush section add four controls.
     // Ready colors stay in front; the new palette library has one collapsed entry.
     // HSV, favorites, UV/materials and layers are now closed.
-    expect(encarados.length, encarados.join(' | ')).toBeLessThanOrEqual(57)
+    // The requested X-ray adds one view toggle beside the grid.
+    // A entrada fechada de Textura e camadas também fica à vista (+1 controle).
+    expect(encarados.length, encarados.join(' | ')).toBeLessThanOrEqual(60)
   })
 
   test('todo controle tem nome: sem nome, a criança não acha e o leitor de tela não fala', () => {

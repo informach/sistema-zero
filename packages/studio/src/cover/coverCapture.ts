@@ -5,7 +5,11 @@ import {
   type Project,
   soundManifest,
 } from '#core'
-import { type ExtensionPermission, loadExtensionBootstrapScripts } from '#extensions'
+import {
+  type ExtensionPermission,
+  extensionBootstrapContext,
+  loadExtensionBootstrapScripts,
+} from '#extensions'
 import { findExtension } from '#official-extensions'
 import { buildPreviewDoc, withCoreImports } from '#preview'
 import {
@@ -64,7 +68,15 @@ async function extensionContext(project: Project): Promise<{
     const extension = findExtension(id)
     return extension ? [extension] : []
   })
-  const extensionScripts = await loadExtensionBootstrapScripts(extensions)
+  // O MESMO contexto do preview e do export: a capa injeta a mesma variante de cada runtime.
+  const extensionScripts = await loadExtensionBootstrapScripts(
+    extensions,
+    extensionBootstrapContext({
+      html: project.files['index.html'],
+      js: project.files['script.js'],
+      extraFiles: project.extraFiles,
+    }),
+  )
   const extensionImports: Record<string, string> = {}
   const permissions = new Set<ExtensionPermission>()
   for (const id of ids) {

@@ -124,7 +124,7 @@ export const gameTwoDFundamentalBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Soma o vx à posição x e o vy à posição y uma vez. Esses valores ficam guardados no próprio sprite: defina-os com “Mudar a velocidade do sprite” ou altere-os com gravidade, impulso e controles. Use a cada quadro; se vx e vy forem 0, ele não se move.',
+      'Soma o vx à posição x e o vy à posição y uma vez, em pixels por quadro. Defina a velocidade antes ou altere com gravidade e controles. Use a cada quadro; se vx e vy forem 0, ele não se move.',
   },
   {
     // Sem número de propósito: a força vem do "Botar a gravidade do mundo" (uma
@@ -163,7 +163,7 @@ export const gameTwoDFundamentalBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Muda o tamanho da área de colisão do sprite: menor que 100% = colisão mais justa para DANO; maior = mais fácil de PEGAR (moedas). Vale para as perguntas de encostar; "impedir de atravessar" continua usando o tamanho cheio. Veja a área real com "Mostrar a caixa de colisão".',
+      'Ajusta a área das perguntas de contato: menor que 100% facilita evitar dano; maior facilita coletar. Bloqueio sólido usa a caixa cheia. Confira com “Mostrar a caixa de colisão”.',
   },
 
   // ---- Áudio ----
@@ -781,7 +781,7 @@ export const gameTwoDFundamentalBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Multiplica o tamanho atual a partir do centro: 2 dobra, 0,5 reduz à metade. No sprite de texto ele muda a CAIXA, e o texto quebra linha dentro dela; para mudar a letra use o “Multiplicar o tamanho do texto do sprite”. Repetir a cada quadro multiplica de novo a cada quadro.',
+      'Multiplica o tamanho pelo centro: 2 dobra, 0,5 reduz à metade. Em texto, muda a caixa e a quebra de linha; a letra tem outro bloco. Cada execução multiplica de novo.',
   },
 
   // ---- Tier 1: Mundo ----
@@ -995,6 +995,6 @@ export const gameTwoDFundamentalBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Põe um desenho seu como fundo do jogo, atrás de todo o resto. Ele COBRE a tela inteira sem deformar: se a proporção do desenho for diferente da tela, sobra um pouco para fora. Um desenho de 960 por 540 cabe exatinho na tela larga. Ponha uma vez em "Ao iniciar" e ele volta sozinho em todo quadro. Para escolher a ordem das camadas você mesmo, use "Desenhar o cenário" dentro do 🔁.',
+      'Ponha uma vez em Ao iniciar: a imagem cobre o fundo e volta sozinha após limpar. As sobras ficam de fora, sem deformar. Para escolher a ordem a cada quadro, use “Desenhar o cenário”.',
   },
 ] satisfies BlockDefinition[]

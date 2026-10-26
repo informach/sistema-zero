@@ -38,7 +38,9 @@ export async function loadStudioAuthoringPalette(
         pythonAuthoring: [{ runtime: policy.runtime, blockIds: policy.blockIds }],
       },
     )
-    const entries = loaded.catalog.filter((entry) => loaded.approvedBlockIds.has(entry.id))
+    const entries = loaded.catalog.filter(
+      (entry) => !entry.hidden && loaded.approvedBlockIds.has(entry.id),
+    )
     return {
       blocks: entries.map((entry) => ({
         type: entry.id,

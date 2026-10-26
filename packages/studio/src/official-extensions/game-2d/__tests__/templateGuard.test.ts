@@ -122,7 +122,7 @@ function firstExportedConst(src: string, file: string): string {
 describe('Guarda dos template literals do Jogo 2D', () => {
   it('runtime composto: limites esperados e nenhuma interpolação acidental', () => {
     const src = readFileSync(join(DIR, 'runtime.ts'), 'utf8')
-    expect(composedTemplateHazards(src, 'gameTwoDRuntimeSource =', 6).interpolations).toEqual([])
+    expect(composedTemplateHazards(src, 'gameTwoDEngineSource =', 6).interpolations).toEqual([])
 
     const domains = readFileSync(join(DIR, '../runtimeDomains.ts'), 'utf8')
     expect(composedTemplateHazards(domains, 'gameRuntimeDomains =', 2).interpolations).toEqual([])

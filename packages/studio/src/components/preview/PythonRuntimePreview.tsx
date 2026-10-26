@@ -4,6 +4,7 @@ import type { PythonProjectDocument } from '../../core/editableProject'
 import type { StudioRuntimeCapture } from '../../runtime/capture'
 import type { StudioRuntimeEnvironment } from '../../runtime/environment'
 import { pythonProjectNeedsAudioGesture } from '../../runtime/python/audio/activation'
+import { isPythonCanvasExtension } from '../../runtime/python/canvasExtension'
 import {
   createPythonExecutionController,
   type PythonExecutionController,
@@ -153,8 +154,9 @@ export function PythonRuntimePreview(props: PythonRuntimePreviewProps) {
     }
   }, [view.status, view.input?.requestId])
 
-  const hasTurtle = props.project.installedExtensions.some(
-    (extension) => extension.id === 'python-turtle',
+  // Turtle, Pygame Zero, Pygame-ce and the Raylib extensions draw on the execution canvas.
+  const hasTurtle = props.project.installedExtensions.some((extension) =>
+    isPythonCanvasExtension(extension.id),
   )
   useEffect(() => {
     const capture = props.capture

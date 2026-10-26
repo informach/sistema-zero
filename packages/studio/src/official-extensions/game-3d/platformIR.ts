@@ -1,7 +1,9 @@
 import { z } from 'zod'
 import type { JSExpr, JSStatement } from '../../ir/schema'
 import {
+  type ModelAssetsGameThreeDExpr,
   type ModelAssetsGameThreeDStatement,
+  modelAssetsGameThreeDExpressionSchemas,
   modelAssetsGameThreeDStatementSchemas,
 } from './modelAssetsIR'
 
@@ -92,6 +94,24 @@ interface StageFrame extends Common {
   worldVar: string
   objVar: string
 }
+/**
+ * "Câmera da cena ⟨W⟩: ⟨modo⟩ ⟨objeto⟩" — UM nó no lugar das seis câmeras antigas
+ * (seguir, 3ª pessoa, de cima, isométrica, 1ª pessoa, orbital). `objVar` vazio =
+ * sem alvo (de cima, isométrica e em volta olham o centro).
+ */
+interface CameraMode extends Common {
+  type: 'g3d:cameraMode'
+  worldVar: string
+  mode: string
+  objVar: string
+}
+/** "Distância da câmera da cena ⟨W⟩: ⟨6⟩ altura ⟨3⟩" — vale para a câmera que segue. */
+interface CameraDistance extends Common {
+  type: 'g3d:cameraDistance'
+  worldVar: string
+  dist: number | JSExpr
+  height: number | JSExpr
+}
 interface StageNode extends Common {
   type: 'g3d:stage'
   op: 'tema' | 'montar' | 'limpar' | 'recomecar' | 'numero'
@@ -117,6 +137,8 @@ export type PlatformGameThreeDStatement =
   | StageNode
   | StageFrame
   | OnStage
+  | CameraMode
+  | CameraDistance
   // Modelo .glb e céu .hdr do Molda (lote 7): entram pela MESMA porta da fachada,
   // porque cada import novo no `ir/schema.ts` custa linhas que ele não tem.
   | ModelAssetsGameThreeDStatement
@@ -145,7 +167,13 @@ interface StageAsk extends Common {
 }
 
 /** Os reporters do lote, no lado dos TIPOS. */
-export type PlatformGameThreeDExpr = KeyPressed | HitIs | ObjectValue | StageAsk
+export type PlatformGameThreeDExpr =
+  | KeyPressed
+  | HitIs
+  | ObjectValue
+  | StageAsk
+  // "⟨X⟩ terminou a animação?" (review 3D, lote 6), pela mesma porta.
+  | ModelAssetsGameThreeDExpr
 
 export function platformGameThreeDExpressionSchemas(irText: () => z.ZodString, id: IdField) {
   return [
@@ -160,6 +188,7 @@ export function platformGameThreeDExpressionSchemas(irText: () => z.ZodString, i
       what: irText(),
       ...id,
     }),
+    ...modelAssetsGameThreeDExpressionSchemas(irText, id),
   ] as const
 }
 
@@ -237,6 +266,20 @@ export function platformGameThreeDStatementSchemas(
       worldVar: irText(),
       event: irText(),
       body: z.array(statement),
+      ...id,
+    }),
+    z.object({
+      type: z.literal('g3d:cameraMode'),
+      worldVar: irText(),
+      mode: z.enum(['tras', 'longe', 'cima', 'isometrica', 'primeira-pessoa', 'em-volta']),
+      objVar: z.string(),
+      ...id,
+    }),
+    z.object({
+      type: z.literal('g3d:cameraDistance'),
+      worldVar: irText(),
+      dist: numeric,
+      height: numeric,
       ...id,
     }),
     ...modelAssetsGameThreeDStatementSchemas(expr, irText, id),

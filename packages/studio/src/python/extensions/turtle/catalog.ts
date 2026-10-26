@@ -1,10 +1,13 @@
 import reference from '../../../runtime/python/turtle/api-reference.json'
-import { listSlot } from '../../blocks/catalogHelpers'
-import type { PythonBlockBinding, PythonBlockCodec } from '../../blocks/contract'
-import { attribute, call, isNode, name, node, pythonSemanticTree } from '../../blocks/nodes'
-import { structuralCodec } from '../../blocks/structuralCodec'
-import type { PythonNode } from '../../language/types'
-import { turtleTeachingLabel } from './labels'
+import {
+  optional,
+  type PythonApiCallee,
+  pythonApiCallCodec,
+  required,
+} from '../../blocks/apiCallCodec'
+import type { PythonBlockCodec } from '../../blocks/contract'
+import { integer, name, text } from '../../blocks/nodes'
+import { TURTLE_CONCEPTS, type TurtleConcept } from './labels'
 
 interface TurtleAPI {
   owner: string
@@ -13,162 +16,210 @@ interface TurtleAPI {
   canonical: string
   receiver?: string | null
 }
-const same = (a: PythonNode, b: PythonNode) =>
-  JSON.stringify(pythonSemanticTree(a)) === JSON.stringify(pythonSemanticTree(b))
-function makeCodec(entry: TurtleAPI): PythonBlockCodec {
-  const procedural = entry.owner === 'turtle'
-  const receiver = procedural ? entry.receiver : entry.owner
-  const receiverLabel =
-    entry.owner === 'Screen' ? 'tela' : entry.owner === 'Shape' ? 'forma' : 'tartaruga'
-  const teaching = turtleTeachingLabel(entry.canonical, receiver)
-  const target = () => attribute(name(procedural ? 'turtle' : receiverLabel), entry.name)
-  const codec = structuralCodec({
-    id: `sz_py_turtle_${procedural ? 'module' : entry.owner.toLowerCase()}_${entry.name}`,
-    owner: 'python-turtle',
-    title: `${teaching.title} · ${entry.name}`,
-    category: teaching.category,
-    level: teaching.level,
-    role: 'value',
-    api: `${entry.owner}.${entry.name}${entry.signature}`,
-    help: teaching.help,
-    starter:
-      procedural &&
-      [
-        'forward',
-        'right',
-        'left',
-        'penup',
-        'pendown',
-        'pencolor',
-        'circle',
-        'write',
-        'bgcolor',
-        'done',
-      ].includes(entry.name),
-    dependencies: [
-      'sz_py_import',
-      ...(!procedural ? [`sz_py_turtle_module_${entry.owner}`, 'sz_py_assign'] : []),
-      ...(['onclick', 'onrelease', 'ondrag', 'onkey', 'onkeypress', 'ontimer'].includes(
-        entry.canonical,
-      )
-        ? ['sz_py_function', 'sz_py_turtle_module_mainloop']
-        : []),
-      ...(['onkey', 'onkeypress'].includes(entry.canonical) ? ['sz_py_turtle_module_listen'] : []),
-      ...(entry.canonical === 'tracer' ? ['sz_py_turtle_module_update'] : []),
-      ...(['begin_fill', 'end_fill'].includes(entry.canonical)
-        ? [
-            `sz_py_turtle_${procedural ? 'module' : 'turtle'}_${entry.canonical === 'begin_fill' ? 'end_fill' : 'begin_fill'}`,
-          ]
-        : []),
-      ...(['clearstamp', 'clearstamps'].includes(entry.canonical)
-        ? [`sz_py_turtle_${procedural ? 'module' : 'turtle'}_stamp`]
-        : []),
-    ],
-    defaultNode: () => call(target(), structuredClone(teaching.args ?? [])),
-    slots: [listSlot('args', 'argumento'), listSlot('keywords', 'argumento nomeado', 'keyword')],
-  })
-  function bindingFor(value: PythonNode): PythonBlockBinding | undefined {
-    const func = value.fields.func
-    if (value.kind !== 'Call' || !isNode(func)) return
-    if (procedural && func.kind === 'Name' && typeof func.fields.id === 'string')
-      return { root: func.fields.id, module: 'turtle', member: entry.name }
-    if (
-      func.kind !== 'Attribute' ||
-      func.fields.attr !== entry.name ||
-      !isNode(func.fields.value) ||
-      func.fields.value.kind !== 'Name' ||
-      typeof func.fields.value.fields.id !== 'string'
-    )
-      return
-    return {
-      root: func.fields.value.fields.id,
-      module: 'turtle',
-      ...(procedural ? {} : { instance: entry.owner as 'Turtle' | 'Screen' | 'Shape' }),
-    }
+const entries = reference.entries as TurtleAPI[]
+
+/** Procedural names first in this order, so the palette shows the spelling books use. */
+const PREFERRED_MODULE_NAME: Readonly<Record<string, string>> = { mainloop: 'done' }
+
+function namesOf(concept: TurtleConcept) {
+  const method: string[] = []
+  const module: string[] = []
+  for (const entry of entries) {
+    if (entry.canonical !== concept.canonical) continue
+    if (concept.owner === 'turtle') {
+      if (entry.owner === 'turtle') module.push(entry.name)
+    } else if (entry.owner === concept.owner) method.push(entry.name)
+    else if (entry.owner === 'turtle' && (entry.receiver ?? 'Turtle') === concept.owner)
+      module.push(entry.name)
   }
+  const sortCanonical = (list: string[]) => {
+    const first = PREFERRED_MODULE_NAME[concept.canonical] ?? concept.canonical
+    return [...new Set(list)].sort((a, b) => Number(b === first) - Number(a === first))
+  }
+  return { method: sortCanonical(method), module: sortCanonical(module) }
+}
+
+/** Method names that only Turtle objects have: taught on any receiver (self.caneta.penup()). */
+const DISTINCTIVE = new Set([
+  'forward',
+  'back',
+  'right',
+  'left',
+  'goto',
+  'setheading',
+  'home',
+  'setx',
+  'sety',
+  'xcor',
+  'ycor',
+  'heading',
+  'towards',
+  'penup',
+  'pendown',
+  'pencolor',
+  'fillcolor',
+  'pensize',
+  'begin_fill',
+  'end_fill',
+  'filling',
+  'isdown',
+  'circle',
+  'dot',
+  'stamp',
+  'clearstamp',
+  'clearstamps',
+  'shapesize',
+  'hideturtle',
+  'showturtle',
+  'isvisible',
+  'onkeypress',
+  'onkey',
+  'listen',
+  'ontimer',
+  'tracer',
+  'bgcolor',
+  'bgpic',
+  'register_shape',
+  'exitonclick',
+  'window_width',
+  'window_height',
+  'colormode',
+  'getshapes',
+  'ondrag',
+  'onrelease',
+  'addcomponent',
+])
+
+const RECEIVERS = {
+  Turtle: { label: 'tartaruga', variable: 't' },
+  Screen: { label: 'tela', variable: 'tela' },
+  Shape: { label: 'forma', variable: 'forma' },
+} as const
+
+function calleeOf(concept: TurtleConcept): PythonApiCallee {
+  const { method, module } = namesOf(concept)
+  if (concept.owner === 'turtle') {
+    if (!module.length) throw new Error(`Turtle.${concept.canonical} sem nome de módulo.`)
+    return { kind: 'module', module: 'turtle', names: module }
+  }
+  if (!method.length) throw new Error(`Turtle.${concept.canonical} sem método.`)
+  const receiver = RECEIVERS[concept.owner]
   return {
-    ...codec,
-    ...(['Shape', 'addcomponent'].includes(entry.canonical)
-      ? { requiredRuntimeFeatures: ['turtle-compound-shapes'] as const }
-      : {}),
-    binding: { root: 'turtle', module: 'turtle' },
-    bindingFor,
-    decode(value) {
-      const func = value.fields.func
-      if (value.kind !== 'Call' || !isNode(func)) return
-      let root: string | undefined
-      let object: PythonNode | undefined
-      let style: 'module' | 'imported' | 'method'
-      if (
-        procedural &&
-        func.kind === 'Name' &&
-        typeof func.fields.id === 'string' &&
-        same(func, name(func.fields.id))
-      ) {
-        root = func.fields.id
-        style = 'imported'
-      } else if (
-        func.kind === 'Attribute' &&
-        func.fields.attr === entry.name &&
-        isNode(func.fields.value) &&
-        same(func, attribute(func.fields.value, entry.name))
-      ) {
-        if (procedural) {
-          if (
-            func.fields.value.kind !== 'Name' ||
-            typeof func.fields.value.fields.id !== 'string' ||
-            !same(func.fields.value, name(func.fields.value.fields.id))
-          )
-            return
-          root = func.fields.value.fields.id
-          style = 'module'
-        } else {
-          object = func.fields.value
-          style = 'method'
-        }
-      } else return
-      const shape = codec.decode(node('Call', { ...value.fields, func: target() }))
-      if (!shape) return
-      shape.extra = { ...shape.extra, callStyle: style }
-      if (root !== undefined)
-        shape.fields.unshift({
-          name: 'ROOT',
-          label: style === 'imported' ? 'nome importado' : 'módulo',
-          value: root,
-        })
-      if (object)
-        shape.inputs.unshift({
-          name: 'receiver',
-          label: receiverLabel,
-          role: 'value',
-          nodes: [object],
-        })
-      return shape
+    kind: 'method',
+    names: method,
+    receiver: {
+      label: receiver.label,
+      default: () => name(receiver.variable),
+      instance: { module: 'turtle', name: concept.owner },
+      ...(DISTINCTIVE.has(concept.canonical) ? { any: true } : {}),
     },
-    encode(shape) {
-      const value = codec.encode(shape)
-      const style = shape.extra?.callStyle
-      if (procedural) {
-        const root = shape.fields.find((field) => field.name === 'ROOT')?.value
-        if (
-          !root ||
-          !/^[_\p{ID_Start}][_\p{ID_Continue}]*$/u.test(root) ||
-          !['module', 'imported'].includes(String(style))
-        )
-          throw new Error('Escolha o nome do módulo ou da função importada.')
-        value.fields.func = style === 'module' ? attribute(name(root), entry.name) : name(root)
-      } else {
-        const object = shape.inputs.find((input) => input.name === 'receiver')
-        if (style !== 'method' || object?.nodes.length !== 1)
-          throw new Error('Escolha a tartaruga, tela ou forma que vai receber o comando.')
-        value.fields.func = attribute(object.nodes[0]!, entry.name)
-      }
-      return value
-    },
+    ...(module.length ? { module: 'turtle', moduleNames: module } : {}),
   }
 }
 
-/** Draft codecs: runtime qualification/host approval remain independent required gates. */
-export const PYTHON_TURTLE_CODECS: readonly PythonBlockCodec[] = Object.freeze(
-  reference.entries.map(makeCodec),
-)
+const idOf = (concept: TurtleConcept) =>
+  `sz_py_turtle_${concept.owner === 'turtle' ? 'new' : concept.owner === 'Turtle' ? 'turtle' : concept.owner.toLowerCase()}_${concept.canonical.toLowerCase()}`
+
+function codecsOf(concept: TurtleConcept): PythonBlockCodec[] {
+  const callee = calleeOf(concept)
+  const names = callee.kind === 'path' ? [] : callee.names
+  const api = `${concept.owner === 'turtle' ? 'turtle' : concept.owner}.${names.join(' / ')}${
+    entries.find(
+      (entry) =>
+        entry.canonical === concept.canonical &&
+        (entry.owner === concept.owner || concept.owner === 'turtle'),
+    )?.signature ?? '()'
+  }`
+  const base = {
+    owner: 'python-turtle' as const,
+    title: concept.title,
+    category: concept.category,
+    level: concept.level,
+    help: concept.help,
+    api,
+    callee,
+    ...(concept.canonical === 'addcomponent' || concept.canonical === 'Shape'
+      ? { requiredRuntimeFeatures: ['turtle-compound-shapes'] as const }
+      : {}),
+  }
+  const codecs = [
+    pythonApiCallCodec({
+      ...base,
+      id: idOf(concept),
+      role: concept.role,
+      params: concept.params ?? [],
+      ...(concept.variadic ? { variadic: concept.variadic } : {}),
+      ...(concept.starter ? { starter: true } : {}),
+      dependencies: dependenciesOf(concept),
+    }),
+  ]
+  // `cor = turtle.pencolor()`: the same concept used to read the current value.
+  if (concept.getter)
+    codecs.push(
+      pythonApiCallCodec({
+        ...base,
+        id: `${idOf(concept)}_valor`,
+        title: concept.getterTitle ?? `${concept.title} atual`,
+        role: 'value',
+        params: (concept.params ?? []).map((param) => ({
+          ...param,
+          optional: true,
+          initial: false,
+        })),
+        ...(concept.variadic
+          ? { variadic: { ...concept.variadic, minimum: 0, defaults: () => [] } }
+          : {}),
+        hidden: true,
+      }),
+    )
+  return codecs
+}
+
+function dependenciesOf(concept: TurtleConcept): string[] {
+  const dependencies = ['sz_py_import_one']
+  if (concept.owner !== 'turtle') dependencies.push('sz_py_assign')
+  if (
+    ['onclick', 'onrelease', 'ondrag', 'onkey', 'onkeypress', 'ontimer'].includes(concept.canonical)
+  )
+    dependencies.push('sz_py_function', 'sz_py_turtle_screen_mainloop')
+  if (['onkey', 'onkeypress'].includes(concept.canonical))
+    dependencies.push('sz_py_turtle_screen_listen')
+  if (concept.canonical === 'tracer') dependencies.push('sz_py_turtle_screen_update')
+  if (concept.canonical === 'begin_fill') dependencies.push('sz_py_turtle_turtle_end_fill')
+  if (concept.canonical === 'end_fill') dependencies.push('sz_py_turtle_turtle_begin_fill')
+  if (['clearstamp', 'clearstamps'].includes(concept.canonical))
+    dependencies.push('sz_py_turtle_turtle_stamp')
+  if (concept.canonical === 'addcomponent') dependencies.push('sz_py_turtle_new_shape')
+  return dependencies
+}
+
+/** One block per Turtle concept: aliases, procedural and method forms share it. */
+/** A vector drawing from the Pinta as a turtle shape (formas_do_pinta, beside turtle.py). */
+const PINTA_SHAPE_CODEC = pythonApiCallCodec({
+  id: 'sz_py_turtle_pinta_shape',
+  owner: 'python-turtle',
+  title: '🎨 usar o desenho do Pinta como forma',
+  category: 'Aparência',
+  level: 2,
+  role: 'statement',
+  help: 'Transforma um desenho vetorial do Pinta numa forma da tartaruga: ela gira junto e cresce sem borrar. Depois escolha a forma pelo nome do arquivo (de assets/nave.svg sai a forma nave). O desenho fica virado para a direita, para onde a tartaruga anda.',
+  api: "formas_do_pinta.registrar('assets/nave.svg')",
+  callee: { kind: 'module', module: 'formas_do_pinta', names: ['registrar'] },
+  params: [
+    required('caminho', '', () => text('assets/nave.svg'), 'pos'),
+    optional('nome', 'com o nome', () => text('nave')),
+    optional('tamanho', 'com o lado maior de', () => integer('64')),
+  ],
+  // It needs `import formas_do_pinta`, and the next step is wearing the shape.
+  dependencies: ['sz_py_import_one', 'sz_py_turtle_turtle_shape'],
+})
+
+export const PYTHON_TURTLE_CODECS: readonly PythonBlockCodec[] = [
+  ...TURTLE_CONCEPTS.flatMap(codecsOf),
+  PINTA_SHAPE_CODEC,
+]
+
+/** Names `from turtle import *` provides (the procedural API and the classes). */
+export const TURTLE_STAR_EXPORTS: readonly string[] = [
+  ...new Set(entries.filter((entry) => entry.owner === 'turtle').map((entry) => entry.name)),
+]

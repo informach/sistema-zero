@@ -35,6 +35,9 @@ for (const mode of ['Modelar', 'Animar'] as const) {
     })
     await page.getByRole('button', { name: 'Modelo Giro fácil', exact: true }).click()
     await page.getByRole('button', { name: 'Escolher caixa', exact: true }).click()
+    // Import converts rigid legacy local-delta clips to equivalent local channels.
+    // Pivot editing must preserve the clip that was actually loaded.
+    const loaded = await savedProject(page)
     if (mode === 'Animar') await page.getByRole('button', { name: mode, exact: true }).click()
     await page.getByRole('button', { name: 'Pivô', exact: true }).click()
     const panel = page.getByRole('region', { name: 'Onde a peça gira', exact: true })
@@ -79,7 +82,7 @@ for (const mode of ['Modelar', 'Animar'] as const) {
       source.nodes.map((entry) => entry.transform),
     )
     expect(changed.geometries).toEqual(source.geometries)
-    expect(changed.animations).toEqual(source.animations)
+    expect(changed.animations).toEqual(loaded.animations)
     await page.getByRole('button', { name: COPY.editor.undo, exact: true }).click()
     expect((await savedProject(page)).nodes).toEqual(source.nodes)
     await page.getByRole('button', { name: COPY.editor.redo, exact: true }).click()

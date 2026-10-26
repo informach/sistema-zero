@@ -1,6 +1,14 @@
 'use client'
 
 import {
+  SubscriptionCardUpdate,
+  SubscriptionChargeRetry,
+  SubscriptionOperationNotice,
+} from '@sistemazero/member-shell/components/billing/subscription-card-update'
+import { useMySubscriptions } from '@sistemazero/member-shell/components/billing/use-my-subscriptions'
+import { paidSubscriptionPeriodRunning } from '@sistemazero/member-shell/lib/subscription-card'
+
+import {
   comebackSubscriptionId,
   isKidsComunidadeSubscription,
 } from '@sistemazero/member-shell/lib/subscription-comeback'
@@ -33,18 +41,6 @@ function formatDay(value: Date | string): string {
     year: 'numeric',
     timeZone: 'America/Sao_Paulo',
   })
-}
-
-/**
- * O período já pago de uma assinatura cancelada ainda não terminou: a última cobrança (ou a
- * criação) mais um intervalo. A data é derivada, como a da próxima cobrança (`nextChargeDate`).
- */
-function paidPeriodRunning(subscription: MySubscriptionView, now: Date): boolean {
-  if (subscription.status !== 'CANCELED') return false
-  const end = new Date(subscription.lastChargeAt ?? subscription.createdAt)
-  if (Number.isNaN(end.getTime())) return false
-  end.setMonth(end.getMonth() + subscription.intervalMonths)
-  return end > now
 }
 
 const DIALOG_ACTIONS =
@@ -117,6 +113,16 @@ export function PurchaseHistory() {
                   {PAYMENT_STATUS_LABELS[payment.status] ?? payment.status}
                 </span>
               </span>
+              {payment.status === 'FAILED' &&
+              payment.method === 'CREDIT_CARD' &&
+              payment.subscriptionId ? (
+                <SubscriptionChargeRetry
+                  subscriptionId={payment.subscriptionId}
+                  paymentId={payment.id}
+                  onUpdated={() => void load(0)}
+                  className="basis-full sm:basis-auto"
+                />
+              ) : null}
             </li>
           ))}
         </ul>
@@ -137,22 +143,9 @@ export function PurchaseHistory() {
 
 /** As assinaturas da conta, cada uma num cartão, com o cancelamento confirmado. */
 export function ParentSubscriptions() {
-  const [subs, setSubs] = useState<MySubscriptionView[]>([])
+  const { subscriptions: subs, loading, error, refresh: load } = useMySubscriptions()
   const [confirming, setConfirming] = useState<MySubscriptionView | null>(null)
   const [canceling, setCanceling] = useState(false)
-
-  const load = useCallback(async () => {
-    try {
-      const data = await apiGet<{ items: MySubscriptionView[] }>('/api/payments/my/subscriptions')
-      setSubs(data.items)
-    } catch {
-      // Sem assinaturas em falha: o histórico de compras segue útil.
-    }
-  }, [])
-
-  useEffect(() => {
-    void load()
-  }, [load])
 
   async function cancel(subscription: MySubscriptionView) {
     setCanceling(true)
@@ -161,13 +154,34 @@ export function ParentSubscriptions() {
       toast.success('Assinatura cancelada. O acesso continua até o fim do período já pago.')
       setConfirming(null)
       await load()
-    } catch {
-      toast.error('Não foi possível cancelar. Tente novamente.')
+    } catch (error) {
+      const pending =
+        error &&
+        typeof error === 'object' &&
+        'code' in error &&
+        error.code === 'SUBSCRIPTION_CANCELLATION_PENDING'
+      toast.error(
+        pending
+          ? 'Pedido de cancelamento recebido. Estamos aguardando a confirmação da operadora.'
+          : 'Não foi possível confirmar o cancelamento. Confira a situação da assinatura.',
+      )
+      setConfirming(null)
+      await load()
     } finally {
       setCanceling(false)
     }
   }
 
+  if (loading) return <p role="status">Consultando assinaturas…</p>
+  if (error)
+    return (
+      <div role="alert" className="kids-carta space-y-3 p-6">
+        <p>Não foi possível consultar suas assinaturas.</p>
+        <Button variant="outline" onClick={() => void load()}>
+          Atualizar assinaturas
+        </Button>
+      </div>
+    )
   if (subs.length === 0) return null
   // Só a Comunidade Kids Encerrada mais recente leva à continuidade, e nenhuma com outra ativa
   // (régua do member-shell). A Cancelada ainda tem acesso: o botão ali faria pagar duas vezes.
@@ -176,6 +190,9 @@ export function ParentSubscriptions() {
 
   return (
     <>
+      <Button variant="outline" className="self-start" onClick={() => void load()}>
+        Atualizar assinaturas
+      </Button>
       {subs.map((subscription) => {
         const next = nextChargeDate(subscription)
         const suffix =
@@ -209,12 +226,26 @@ export function ParentSubscriptions() {
                 {next ? ` · próxima cobrança por volta de ${formatDay(next)}` : null}
               </span>
             </p>
-            {paidPeriodRunning(subscription, now) ? (
+            <SubscriptionOperationNotice operation={subscription.pendingOperation} />
+            {paidSubscriptionPeriodRunning(subscription, now) ? (
               <p className="text-muted-foreground text-sm">
                 O acesso continua até o fim do período já pago.
               </p>
             ) : null}
-            {active ? (
+            {subscription.cancelRequestedAt && active ? (
+              <p role="status" className="text-sm text-muted-foreground">
+                Cancelamento solicitado. Aguardando confirmação da operadora; seu período já pago
+                continua preservado.
+              </p>
+            ) : null}
+            {active && !subscription.cancelRequestedAt ? (
+              <SubscriptionCardUpdate
+                subscriptionId={subscription.id}
+                onUpdated={() => void load()}
+                className="self-start"
+              />
+            ) : null}
+            {active && !subscription.cancelRequestedAt ? (
               <button
                 type="button"
                 className="min-h-11 self-start font-bold text-destructive text-sm underline-offset-4 hover:underline"

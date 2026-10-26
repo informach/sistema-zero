@@ -21,9 +21,9 @@ import { getSession } from '@/server/session'
 export const dynamic = 'force-dynamic'
 
 /**
- * O Início adulto (direção de arte de 18/10/2026): a saudação com a próxima aula na faixa, o
- * cartão "Continuar" e o módulo atual, os recados e o ritmo ao lado, os cursos da pessoa e as
- * novidades do Mural. Cada parte some sozinha quando o dado não existe.
+ * O Início adulto (o "Estúdio à noite", 25/10/2026): no palco, a saudação, o cartão "Continuar"
+ * com a capa do jogo e o ritmo; na bancada, o módulo atual, os recados, os cursos da pessoa e, num
+ * palco no pé, as novidades do Mural. Cada parte some sozinha quando o dado não existe.
  */
 export default async function HomePage() {
   const [user, courses, threads, unread] = await Promise.all([
@@ -53,68 +53,68 @@ export default async function HomePage() {
 
   return (
     <>
+      {/* O PALCO: a saudação, o "ponto de save" (a próxima aula, com a capa do jogo) e o ritmo. */}
       <section className="sz-band">
-        <div className="sz-page flex flex-col gap-2.5 pt-10 pb-9 md:pt-12 md:pb-11">
-          {course ? (
-            <div className="flex items-center gap-2.5">
-              <svg
-                viewBox="0 0 28 28"
-                aria-hidden
-                className="size-[1.2rem] shrink-0 fill-none stroke-primary"
-              >
-                <circle cx="14" cy="14" r="12" strokeWidth="1.5" opacity="0.5" />
-                <circle cx="14" cy="14" r="5" className="fill-primary stroke-none" />
-              </svg>
+        <div className="sz-page flex flex-col gap-8 pt-10 pb-12 md:pt-12 md:pb-14">
+          <div className="flex flex-col gap-2.5">
+            {course ? (
               <span className="sz-kicker">
                 {course.title} · {course.progress.completedLessons} de{' '}
                 {course.progress.totalLessons} aulas concluídas
               </span>
+            ) : null}
+            <h1 className="sz-h1">{greeting}</h1>
+            <p className="sz-lead">
+              {next
+                ? `Sua próxima aula é a ${next.number}: ${next.lesson.title}. Está tudo salvo do jeito que você deixou.`
+                : nextCourse && !course
+                  ? `Continue o curso ${nextCourse.title}.`
+                  : myCourses.length > 0
+                    ? 'Escolha um curso para continuar de onde parou.'
+                    : 'Assim que sua compra for confirmada, seus cursos aparecem aqui.'}
+            </p>
+            {/* O detalhe do curso não veio: o "continuar" sai dos dados da lista, como antes. */}
+            {nextCourse && !course ? (
+              <Link
+                href={`/cursos/${encodeURIComponent(nextCourse.courseSlug)}${nextCourse.continueLessonId ? `/aulas/${encodeURIComponent(nextCourse.continueLessonId)}` : ''}`}
+                prefetch={false}
+                className="sz-btn mt-2 self-start"
+              >
+                <Play className="fill-current" aria-hidden />
+                Continuar
+              </Link>
+            ) : null}
+          </div>
+          {next && course ? (
+            <div className="flex flex-col items-stretch gap-6 lg:flex-row">
+              <div className="min-w-0 flex-1">
+                <ContinueCard course={course} next={next} />
+              </div>
+              <div className="lg:w-[19rem] lg:flex-none">
+                <RhythmCard />
+              </div>
             </div>
-          ) : null}
-          <h1 className="sz-h1">{greeting}</h1>
-          <p className="sz-lead">
-            {next
-              ? `Sua próxima aula é a ${next.number}: ${next.lesson.title}.`
-              : nextCourse && !course
-                ? `Continue o curso ${nextCourse.title}.`
-                : myCourses.length > 0
-                  ? 'Escolha um curso para continuar de onde parou.'
-                  : 'Assim que sua compra for confirmada, seus cursos aparecem aqui.'}
-          </p>
-          {/* O detalhe do curso não veio: o "continuar" sai dos dados da lista, como antes. */}
-          {nextCourse && !course ? (
-            <Link
-              href={`/cursos/${encodeURIComponent(nextCourse.courseSlug)}${nextCourse.continueLessonId ? `/aulas/${encodeURIComponent(nextCourse.continueLessonId)}` : ''}`}
-              prefetch={false}
-              className="sz-btn mt-2 self-start"
-            >
-              <Play className="fill-current" aria-hidden />
-              Continuar
-            </Link>
-          ) : null}
+          ) : (
+            <div className="md:max-w-[28rem]">
+              <RhythmCard />
+            </div>
+          )}
         </div>
       </section>
 
+      {/* A BANCADA: o módulo da próxima aula, os recados e os cursos. */}
       <PageBody>
         {next && course ? (
           <div className="flex flex-col items-start gap-7 lg:flex-row">
-            <div className="flex w-full min-w-0 flex-1 flex-col gap-7">
-              <ContinueCard course={course} next={next} />
+            <div className="w-full min-w-0 flex-1">
               <CurrentModuleCard course={course} next={next} />
             </div>
-            <aside
-              aria-label="Recados e ritmo"
-              className="flex w-full flex-col gap-5 lg:w-[19rem] lg:flex-none"
-            >
+            <aside aria-label="Recados" className="w-full lg:w-[19rem] lg:flex-none">
               <RecadosCard threads={recentThreads} unread={unreadCount} />
-              <RhythmCard />
             </aside>
           </div>
         ) : (
-          <div className="grid gap-5 md:grid-cols-2">
-            <RecadosCard threads={recentThreads} unread={unreadCount} />
-            <RhythmCard />
-          </div>
+          <RecadosCard threads={recentThreads} unread={unreadCount} />
         )}
 
         <section aria-labelledby="seus-cursos" className="flex flex-col gap-5">
@@ -149,12 +149,12 @@ export default async function HomePage() {
             </ul>
           )}
         </section>
-
-        {/* O Mural vem do hub: não segura o resto do Início (chega quando ficar pronta). */}
-        <Suspense fallback={null}>
-          <ShowcaseNews viewerId={user?.id ?? null} />
-        </Suspense>
       </PageBody>
+
+      {/* O Mural vem do hub: não segura o resto do Início (chega quando ficar pronta). */}
+      <Suspense fallback={null}>
+        <ShowcaseNews viewerId={user?.id ?? null} />
+      </Suspense>
     </>
   )
 }

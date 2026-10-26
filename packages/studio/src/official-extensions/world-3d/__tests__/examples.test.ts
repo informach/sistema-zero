@@ -2,6 +2,7 @@ import { describe, expect, it } from 'bun:test'
 import { behaviorStatements, normalizeSZIR, SZIRV2Schema } from '#ir'
 import { parseJS } from '../../../parsers/js'
 import { BOLICHE_SOURCE } from '../__gen_boliche'
+import { CACA_ESTRELAS_SOURCE } from '../__gen_cacaEstrelas'
 import { COASTAL_PROCEDURAL_SOURCE } from '../__gen_coastal_procedural'
 import { CORRIDA_SOURCE } from '../__gen_corrida'
 import { FAZENDINHA_SOURCE } from '../__gen_fazendinha'
@@ -16,6 +17,7 @@ import { VILA_SOURCE } from '../__gen_vila'
 import { VOCATION_PROCEDURAL_SOURCE } from '../__gen_vocation_procedural'
 import {
   bolicheExample,
+  cacaEstrelasExample,
   coastalProceduralExample,
   corridaExample,
   fazendinhaExample,
@@ -35,7 +37,7 @@ import { worldThreeDExtension } from '../index'
 /**
  * Drift dos exemplos da vitrine do Mundo 3D: a IR embutida em examples.ts foi
  * gerada pelo parser real a partir do fonte em __gen_<nome>.ts. Se o parser
- * mudar a forma canônica, este teste avisa — re-rode o __gen e re-embuta.
+ * mudar a forma canônica, este teste avisa: rode `bun run gen:world-3d-examples`.
  */
 
 function stripIds<T>(value: T): T {
@@ -61,34 +63,47 @@ function collectTypes(value: unknown, out: Set<string> = new Set()): Set<string>
   return out
 }
 
+// Na ORDEM da vitrine (review 3D, 10/2026): do passeio mais simples ao mais cheio de
+// sistemas; os três mundos de referência fecham a lista.
 const CASES = [
   { name: 'Meu Mundo', source: MEU_MUNDO_SOURCE, example: meuMundoExample },
-  { name: 'Corrida do Por do Sol', source: CORRIDA_SOURCE, example: corridaExample },
-  { name: 'Corrida Maluca Profissional', source: PISTA_MALUCA_SOURCE, example: pistaMalucaExample },
-  { name: 'Boliche na Praca', source: BOLICHE_SOURCE, example: bolicheExample },
-  { name: 'Inverno Magico', source: INVERNO_SOURCE, example: invernoExample },
-  { name: 'Ilha dos Criadores', source: ILHA_SOURCE, example: ilhaExample },
-  { name: 'Parque dos Brinquedos', source: PARQUE_SOURCE, example: parqueExample },
-  { name: 'Vila das Vocacoes', source: VILA_SOURCE, example: vilaExample },
-  { name: 'Base da Lua', source: LUA_SOURCE, example: luaExample },
+  { name: 'Inverno Mágico', source: INVERNO_SOURCE, example: invernoExample },
   { name: 'Fazendinha', source: FAZENDINHA_SOURCE, example: fazendinhaExample },
-  { name: 'Folio Procedural', source: FOLIO_PROCEDURAL_SOURCE, example: folioProceduralExample },
+  { name: 'Base da Lua', source: LUA_SOURCE, example: luaExample },
+  { name: 'Parque dos Brinquedos', source: PARQUE_SOURCE, example: parqueExample },
+  // Lote 10: o primeiro jogo completo (regras de jogo), entre o Parque e o Boliche.
+  { name: 'Caça às Estrelas', source: CACA_ESTRELAS_SOURCE, example: cacaEstrelasExample },
+  { name: 'Boliche na Praça', source: BOLICHE_SOURCE, example: bolicheExample },
+  { name: 'Corrida do Pôr do Sol', source: CORRIDA_SOURCE, example: corridaExample },
+  { name: 'Ilha dos Criadores', source: ILHA_SOURCE, example: ilhaExample },
+  { name: 'Vila das Vocações', source: VILA_SOURCE, example: vilaExample },
+  { name: 'Pista Maluca', source: PISTA_MALUCA_SOURCE, example: pistaMalucaExample },
+  { name: 'Passeio das Letras', source: FOLIO_PROCEDURAL_SOURCE, example: folioProceduralExample },
+  { name: 'Costa das Ilhas', source: COASTAL_PROCEDURAL_SOURCE, example: coastalProceduralExample },
   {
-    name: 'Coastal World Procedural',
-    source: COASTAL_PROCEDURAL_SOURCE,
-    example: coastalProceduralExample,
-  },
-  {
-    name: 'Vocation Vista Procedural',
+    name: 'Cidade das Carreiras',
     source: VOCATION_PROCEDURAL_SOURCE,
     example: vocationProceduralExample,
   },
 ]
 
 describe('Mundo 3D — exemplos da vitrine', () => {
-  it('o provider registra os 13 exemplos', () => {
-    expect(world3DExamples.length).toBe(13)
-    expect(worldThreeDExtension.examples.count).toBe(13)
+  it('o provider registra os 14 exemplos', () => {
+    // 13 → 14 no lote 10 do review 3D: "Caça às Estrelas".
+    expect(world3DExamples.length).toBe(14)
+    expect(worldThreeDExtension.examples.count).toBe(14)
+  })
+
+  it('a vitrine segue a ordem nova, com os nomes acentuados', () => {
+    expect(world3DExamples.map((example) => example.name)).toEqual(CASES.map((c) => c.name))
+    expect(world3DExamples).toEqual(CASES.map((c) => c.example))
+  })
+
+  it('nenhum título ou descrição cita marca de outro estúdio (vão para "Créditos e inspirações")', () => {
+    const text = world3DExamples
+      .map((example) => `${example.name} ${example.description}`)
+      .join(' ')
+    expect(text).not.toMatch(/folio|bruno|coastal|vocation vista|profissiona/i)
   })
 
   for (const { name, source, example } of CASES) {

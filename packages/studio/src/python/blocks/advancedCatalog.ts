@@ -1,33 +1,30 @@
 import type { PythonNode } from '../language/types'
-import { bodySlot, listSlot, metadata, textSlot, valueSlot } from './catalogHelpers'
-import type { PythonBlockCodec, PythonBlockShape } from './contract'
+import {
+  bodySlot,
+  listSlot,
+  metadata,
+  requiredInput,
+  shapeCount,
+  textSlot,
+  valueSlot,
+} from './catalogHelpers'
+import type { PythonBlockCodec } from './contract'
 import { pythonDecimalFieldToHex, pythonFloatFromHex } from './float'
 import { boolean, integer, isNode, name, node, nodes, pass, text, withTargetContext } from './nodes'
-import { resizePythonShape } from './shapeControls'
+import { PYTHON_MAX_ITEMS, pythonInputsByName, resizePythonShape } from './shapeControls'
 import { structuralCodec } from './structuralCodec'
 
-const count = (shape: PythonBlockShape, key: string, minimum = 0) => {
-  const value = shape.extra?.[key]
-  if (typeof value !== 'number' || !Number.isSafeInteger(value) || value < minimum || value > 32)
-    throw new Error('Quantidade de entradas inválida.')
-  return value
-}
-const input = (shape: PythonBlockShape, key: string) => {
-  const value = shape.inputs.find((entry) => entry.name === key)
-  if (value?.nodes.length !== 1) throw new Error('Preencha todas as entradas do bloco.')
-  return value.nodes[0]!
-}
 const comparisons = [
-  ['igual', 'Eq'],
-  ['diferente', 'NotEq'],
-  ['menor', 'Lt'],
-  ['até', 'LtE'],
-  ['maior', 'Gt'],
-  ['pelo menos', 'GtE'],
+  ['=', 'Eq'],
+  ['≠', 'NotEq'],
+  ['<', 'Lt'],
+  ['≤', 'LtE'],
+  ['>', 'Gt'],
+  ['≥', 'GtE'],
   ['está em', 'In'],
   ['não está em', 'NotIn'],
-  ['é o mesmo objeto', 'Is'],
-  ['não é o mesmo objeto', 'IsNot'],
+  ['é', 'Is'],
+  ['não é', 'IsNot'],
 ] as const
 const arithmetic = ['Add', 'Sub', 'Mult', 'Div', 'FloorDiv', 'Mod', 'Pow']
 const argumentsNode = () =>
@@ -52,6 +49,7 @@ export const PYTHON_ADVANCED_BLOCK_CODECS: readonly PythonBlockCodec[] = [
       'float',
       'Um número decimal Python. Use ponto, como 2.5; o valor segue a precisão binária oficial.',
     ),
+    compact: 'plain',
     defaultNode: () =>
       node('Constant', { value: { literal: 'float', value: '0x1.4000000000000p+1' }, kind: null }),
     decode(value) {
@@ -108,7 +106,9 @@ export const PYTHON_ADVANCED_BLOCK_CODECS: readonly PythonBlockCodec[] = [
       '< <= > >= == != in not in is is not',
       'Compara valores. Comparações encadeadas avaliam cada valor apenas uma vez, como no Python.',
     ),
-    controls: [{ key: 'count', label: 'comparação', kind: 'count', minimum: 1, maximum: 32 }],
+    controls: [
+      { key: 'count', label: 'comparação', kind: 'count', minimum: 1, maximum: PYTHON_MAX_ITEMS },
+    ],
     reshape(shape, key, value) {
       if (key !== 'count' || typeof value !== 'number' || value < 1)
         throw new Error('Use pelo menos uma comparação.')
@@ -124,7 +124,7 @@ export const PYTHON_ADVANCED_BLOCK_CODECS: readonly PythonBlockCodec[] = [
         !nodes(ops) ||
         !nodes(comparators) ||
         !ops.length ||
-        ops.length > 32 ||
+        ops.length > PYTHON_MAX_ITEMS ||
         ops.length !== comparators.length ||
         !ops.every((op) => comparisons.some(([, kind]) => kind === op.kind))
       )
@@ -149,16 +149,16 @@ export const PYTHON_ADVANCED_BLOCK_CODECS: readonly PythonBlockCodec[] = [
       }
     },
     encode(shape) {
-      const size = count(shape, 'count', 1)
+      const size = shapeCount(shape, 'count', 1)
       const ops: PythonNode[] = [],
         comparators: PythonNode[] = []
       for (let i = 0; i < size; i++) {
         const op = shape.fields.find((field) => field.name === `op:${i}`)?.value
         if (!comparisons.some(([, kind]) => kind === op)) throw new Error('Comparação inválida.')
         ops.push(node(op!))
-        comparators.push(input(shape, `right:${i}`))
+        comparators.push(requiredInput(shape, `right:${i}`))
       }
-      return node('Compare', { left: input(shape, 'left'), ops, comparators })
+      return node('Compare', { left: requiredInput(shape, 'left'), ops, comparators })
     },
   },
   {
@@ -203,10 +203,10 @@ export const PYTHON_ADVANCED_BLOCK_CODECS: readonly PythonBlockCodec[] = [
     encode(shape) {
       const op = shape.fields.find((field) => field.name === 'op')?.value
       if (!op || !arithmetic.includes(op)) throw new Error('Operação inválida.')
-      const target = withTargetContext(input(shape, 'target'), 'Store')
+      const target = withTargetContext(requiredInput(shape, 'target'), 'Store')
       if (!['Name', 'Attribute', 'Subscript'].includes(target.kind))
         throw new Error('Atualize uma variável, atributo ou item.')
-      return node('AugAssign', { target, op: node(op), value: input(shape, 'value') })
+      return node('AugAssign', { target, op: node(op), value: requiredInput(shape, 'value') })
     },
   },
   {
@@ -220,7 +220,13 @@ export const PYTHON_ADVANCED_BLOCK_CODECS: readonly PythonBlockCodec[] = [
       'Guarda pares de chave e valor, na ordem de inserção. Cada chave identifica um valor.',
     ),
     controls: [
-      { key: 'count', label: 'par chave e valor', kind: 'count', minimum: 0, maximum: 32 },
+      {
+        key: 'count',
+        label: 'par chave e valor',
+        kind: 'count',
+        minimum: 0,
+        maximum: PYTHON_MAX_ITEMS,
+      },
     ],
     reshape(shape, key, value) {
       if (key !== 'count' || typeof value !== 'number')
@@ -235,7 +241,7 @@ export const PYTHON_ADVANCED_BLOCK_CODECS: readonly PythonBlockCodec[] = [
         !nodes(keys) ||
         !nodes(values) ||
         keys.length !== values.length ||
-        keys.length > 32
+        keys.length > PYTHON_MAX_ITEMS
       )
         return
       return {
@@ -248,10 +254,16 @@ export const PYTHON_ADVANCED_BLOCK_CODECS: readonly PythonBlockCodec[] = [
       }
     },
     encode(shape) {
-      const size = count(shape, 'count')
+      const size = shapeCount(shape, 'count')
+      const inputs = pythonInputsByName(shape)
+      const entry = (key: string) => {
+        const found = inputs.get(key)
+        if (found?.nodes.length !== 1) throw new Error('Preencha todas as entradas do bloco.')
+        return found.nodes[0]!
+      }
       return node('Dict', {
-        keys: Array.from({ length: size }, (_, i) => input(shape, `key:${i}`)),
-        values: Array.from({ length: size }, (_, i) => input(shape, `value:${i}`)),
+        keys: Array.from({ length: size }, (_, i) => entry(`key:${i}`)),
+        values: Array.from({ length: size }, (_, i) => entry(`value:${i}`)),
       })
     },
   },

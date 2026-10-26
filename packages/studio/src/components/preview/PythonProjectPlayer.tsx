@@ -2,6 +2,7 @@ import { forwardRef, type Ref, useEffect, useLayoutEffect, useRef, useState } fr
 import type { PythonProjectDocument } from '../../core/editableProject'
 import { createPublicPythonRuntimeEnvironment } from '../../runtime/publicEnvironment'
 import { pythonProjectNeedsAudioGesture } from '../../runtime/python/audio/activation'
+import { isPythonCanvasExtension } from '../../runtime/python/canvasExtension'
 import { createPythonConsoleBuffer } from '../../runtime/python/consoleBuffer'
 import {
   createPythonExecutionController,
@@ -182,8 +183,9 @@ export const PythonProjectPlayer = forwardRef<
     }
   }, [props.project, playId, publicationRevision, request, ref])
 
-  const hasTurtle = props.project.installedExtensions.some(
-    (extension) => extension.id === 'python-turtle',
+  // Turtle, Pygame Zero, Pygame-ce and the Raylib extensions draw on the execution canvas.
+  const hasTurtle = props.project.installedExtensions.some((extension) =>
+    isPythonCanvasExtension(extension.id),
   )
   const omitted = output.reduce((total, entry) => total + entry.omittedChars, 0)
   return (

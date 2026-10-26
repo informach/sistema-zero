@@ -1,0 +1,13 @@
+# Durable recovery notices
+
+Each recovery case now owns a durable outbound envelope for each purpose/day. Its idempotency key is derived from the case identity, purpose and reminder day. Preparation precedes network I/O; subsequent preparation returns the original contact, variables and template key, even if account data changes. A short transaction checks the current case lease/version and locks the case; it never holds a transaction across a network call.
+
+Attempts and minimal Messaging receipts are separate records of evidence. A receipt cannot replace the message identity, acceptance time or terminal delivery evidence. Delivery/read status requires a delivery timestamp. The envelope is strict, bounded to 32 KiB, and does not accept extra card fields. Lease takeover fences prior writers. Initial notice acceptance still has to be explicitly applied to the case; inserting or observing a notice alone cannot start the seven-day clock.
+
+An unsent closeout confirmation can be resumed for up to 24 hours, with two-minute spacing after an attempt. This reclaims the closed case only to finish its original confirmation; it never reopens the financial state. A recorded accepted message ends these retries. Messaging remains responsible for its own delivery retries; this ledger does not claim queued means delivered. A confirmation still unaccepted at the horizon remains in history for operational review.
+
+Generated migration: `0012_subscription_recovery_notices.sql`, generated from Drizzle schema, not handwritten SQL. A draft constraint incorrectly accepted a positive attempt count with a null attempt time because SQL CHECK permits UNKNOWN. A real direct-write negative reproduced this. The draft and its QA database were preserved; migration 0012 was regenerated before commit and all migrations applied to a new QA database (`sistemazero_recovery_test_r4`, owned localhost-only Postgres).
+
+Fresh evidence: Payments suite against that real PostgreSQL: 427 tests, 1,147 assertions, no failures or skips. Includes replica races, restart, lease expiry/takeover, immutable receipts, premature reminder refusal, finite closeout retry, strict envelopes, database constraints, plus prior cancellation/card/policy regressions. The initial typed date interpolation failure and draft-constraint failure remain in local evidence; the final repository uses Drizzle's timestamp encoder.
+
+This lot is persistence and scheduling preparation. Recovery admission, complete orchestration, message templates, Admin operations, retry-period safety, sandbox and real application proofs remain required before activation. No real recipient was contacted and no provider subscription was changed.

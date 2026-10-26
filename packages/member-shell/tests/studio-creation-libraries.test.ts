@@ -23,7 +23,7 @@ test('creation-library hook owns its browser and mocked modules in an isolated r
       new Response(child.stderr).text(),
     ])
     expect(code, stdout + stderr).toBe(0)
-    expect(stdout + stderr).toMatch(/\b29 pass\b/)
+    expect(stdout + stderr).toMatch(/\b31 pass\b/)
   } finally {
     clearTimeout(deadline)
     if (child.exitCode === null) child.kill()

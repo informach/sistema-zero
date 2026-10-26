@@ -448,7 +448,7 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
         isCategoryAllowed(e.blockly.toolboxCategory.name, extensionMinLevel(e), profile),
       )
       .map((e) => e.blockly.toolboxCategory)
-    return buildCoreToolbox(extras, profile)
+    return buildCoreToolbox(extras, profile, ids)
   }, [installedIdsKey, profile])
   initialToolboxRef.current ??= toolbox
 

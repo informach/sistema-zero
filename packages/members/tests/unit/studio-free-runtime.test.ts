@@ -211,7 +211,7 @@ test('Turtle installation cannot grant itself; earned block owners gate discover
     ...original.configuration.catalog.releases[0]!.manifest,
     extensions: [{ id: 'python-turtle', versions: ['1.0.0'] }],
   })
-  const turtle = pythonCourseBlockClosure(['sz_py_turtle_module_forward'])
+  const turtle = pythonCourseBlockClosure(['sz_py_turtle_turtle_forward'])
   const f = await setup('classic', release, undefined, ['sz_py_pass', ...turtle])
   f.request.subject.installedExtensions = [{ id: 'python-turtle', version: '1.0.0' }]
   expect((await f.service.options(f.actor)).pythonGrantedExtensionIds).toEqual([])
@@ -351,11 +351,45 @@ test('Classic refuses an approved intersection missing dependencies without expa
   const f = await setup('classic', undefined, undefined, ['sz_py_print'])
   f.state.blocks = pythonCourseBlockClosure(['sz_py_print'])
   const options = await f.service.options(f.actor)
-  expect(options.catalog?.releases[0]?.blockIds).toEqual(['sz_py_print'])
-  await expect(f.service.execute(f.actor, f.request)).rejects.toThrow('Python')
-  await expect(f.service.execute({ ...f.actor, privileged: true }, f.request)).rejects.toThrow(
-    'Python',
-  )
+  expect(options.catalog?.releases[0]?.blockIds).toEqual([])
+  // An incomplete host approval is an environment problem, including for staff;
+  // it must not tell an admin to earn course achievements or expand the approval.
+  for (const actor of [f.actor, { ...f.actor, privileged: true }]) {
+    await expect(f.service.execute(actor, f.request)).rejects.toThrow('precisa ser atualizado')
+  }
+})
+
+test('an unrelated incomplete palette entry cannot block staff opening an existing Python project', async () => {
+  const f = await setup('classic', undefined, undefined, ['sz_py_pass', 'sz_py_print'])
+  f.state.owned = false
+  f.state.blocks = []
+  const staff = { ...f.actor, privileged: true }
+  const before = f.policy.describe()
+  const options = await f.service.options(staff)
+  expect(options.canCreatePython).toBe(true)
+  expect(options.catalog?.releases[0]?.blockIds).toEqual(['sz_py_pass'])
+  const decision = await f.service.execute(staff, f.request)
+  expect(decision.projectId).toBe(f.project.id)
+  expect(decision.runtime).toEqual(f.project.runtime)
+  expect(decision.blockIds).toEqual(['sz_py_pass'])
+  expect(decision.blockIds).not.toContain('sz_py_print')
+  for (const companion of pythonCourseBlockClosure(['sz_py_print']).filter(
+    (id) => id !== 'sz_py_print',
+  ))
+    expect(decision.blockIds).not.toContain(companion)
+  expect(f.policy.describe()).toEqual(before)
+  expect(f.state.reads.every(({ port }) => port === 'staff-preview')).toBe(true)
+})
+
+test('complete earned blocks remain usable while incomplete unearned companions are never granted', async () => {
+  const f = await setup('classic', undefined, undefined, ['sz_py_pass', 'sz_py_print'])
+  f.state.blocks = ['sz_py_pass', 'sz_py_print']
+  const options = await f.service.options(f.actor)
+  expect(options.catalog?.releases[0]?.blockIds).toEqual(['sz_py_pass'])
+  expect((await f.service.execute(f.actor, f.request)).blockIds).toEqual(['sz_py_pass'])
+  f.state.frozen = []
+  f.state.blocks = ['sz_py_print']
+  await expect(f.service.execute(f.actor, f.request)).rejects.toThrow('precisa ser atualizado')
 })
 
 test('a Pro code-only profile retains earned extension owners without a Classic palette', async () => {
@@ -366,7 +400,7 @@ test('a Pro code-only profile retains earned extension owners without a Classic 
   })
   const f = await setup('pro', release, undefined, [])
   f.state.capabilities = ['studio', 'pro']
-  f.state.blocks = pythonCourseBlockClosure(['sz_py_turtle_module_forward'])
+  f.state.blocks = pythonCourseBlockClosure(['sz_py_turtle_turtle_forward'])
   f.request.subject.installedExtensions = [{ id: 'python-turtle', version: '1.0.0' }]
   const options = await f.service.options(f.actor)
   expect(options.pythonGrantedExtensionIds).toEqual(['python-turtle'])
@@ -466,8 +500,11 @@ test('builder Python denies missing execution configuration, mismatched metadata
   ).rejects.toThrow()
 })
 
-test('active staff bypasses achievement gates, while support cannot execute even as staff', async () => {
-  const f = await setup('pro')
+test.each([
+  'classic',
+  'pro',
+] as const)('active staff bypasses %s achievement gates, while support cannot execute even as staff', async (kind) => {
+  const f = await setup(kind)
   f.state.owned = false
   const staff = { ...f.actor, userId: f.actor.accountId, privileged: true }
   expect((await f.service.options(staff)).canCreatePython).toBe(true)

@@ -67,3 +67,14 @@ test('body movement snaps the resulting position and leaves untouched fractional
   expect(f.deltas.at(-1)![12] + 0.25).toBeCloseTo(1.3, 12)
   f.mover.end(true)
 })
+
+test('dragging a face directly pulls along its normal even when that normal points at the camera', () => {
+  const f = fixture()
+  expect(f.mover.begin(new Vector3(), 100, 100, 'front', null, [0, 0, 1])).toBe(true)
+  f.mover.move(100, 80, null)
+  expect(f.deltas.at(-1)![12]).toBe(0)
+  expect(f.deltas.at(-1)![13]).toBe(0)
+  expect(f.deltas.at(-1)![14]).toBeCloseTo(1, 9)
+  f.mover.end(true)
+  expect(f.ends).toEqual([true])
+})

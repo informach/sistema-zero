@@ -334,6 +334,14 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
     return isReadonlyImpersonation(user) ? impersonationReadonly() : null
   }
 
+  async function requireOwnBillingSession(): Promise<NextResponse | null> {
+    const user = await session.getSession()
+    if (!user) return NextResponse.json({ error: { code: 'UNAUTHENTICATED' } }, { status: 401 })
+    if (user.act || user.kids?.kind === 'student')
+      return NextResponse.json({ error: { code: 'BILLING_ACCOUNT_REQUIRED' } }, { status: 403 })
+    return null
+  }
+
   // ── Auth ──────────────────────────────────────────────────────────────────
 
   async function replaceLogin(
@@ -1609,6 +1617,105 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
     },
   }
 
+  const paymentsMyCardConfig = {
+    GET: async () => {
+      const denied = await requireOwnBillingSession()
+      if (denied) return denied
+      const { status, body } = await payments.getCardConfig()
+      return NextResponse.json(body, { status })
+    },
+  }
+  const paymentsMyCardIntents = {
+    GET: async (_req: Request, ctx: { params: Promise<{ id: string }> }) => {
+      const denied = await requireOwnBillingSession()
+      if (denied) return denied
+      const { id } = await ctx.params
+      if (!UUID_RE.test(id)) return invalidInput()
+      const { status, body } = await payments.getActiveCardIntent(id)
+      return NextResponse.json(body, { status })
+    },
+    POST: async (_req: Request, ctx: { params: Promise<{ id: string }> }) => {
+      const denied = await requireOwnBillingSession()
+      if (denied) return denied
+      const { id } = await ctx.params
+      if (!UUID_RE.test(id)) return invalidInput()
+      const { status, body } = await payments.createCardIntent(id)
+      return NextResponse.json(body, { status })
+    },
+  }
+  const cardUpdateBody = z.strictObject({
+    paymentToken: z.string().min(1).max(255),
+    card: z.strictObject({
+      brand: z.string().regex(/^[a-z][a-z0-9-]{1,31}$/),
+      last4: z.string().regex(/^\d{4}$/),
+    }),
+  })
+  const paymentsMyCardIntent = {
+    GET: async (_req: Request, ctx: { params: Promise<{ id: string; intentId: string }> }) => {
+      const denied = await requireOwnBillingSession()
+      if (denied) return denied
+      const { id, intentId } = await ctx.params
+      if (!UUID_RE.test(id) || !UUID_RE.test(intentId)) return invalidInput()
+      const { status, body } = await payments.getCardIntent(id, intentId)
+      return NextResponse.json(body, { status })
+    },
+    POST: async (req: Request, ctx: { params: Promise<{ id: string; intentId: string }> }) => {
+      const denied = await requireOwnBillingSession()
+      if (denied) return denied
+      const { id, intentId } = await ctx.params
+      if (!UUID_RE.test(id) || !UUID_RE.test(intentId)) return invalidInput()
+      const parsed = cardUpdateBody.safeParse(await req.json().catch(() => null))
+      if (!parsed.success) return invalidInput()
+      const { status, body } = await payments.updateSubscriptionCard(id, intentId, parsed.data)
+      return NextResponse.json(body, { status })
+    },
+  }
+
+  const paymentsMyRetryIntents = {
+    GET: async (_req: Request, ctx: { params: Promise<{ id: string }> }) => {
+      const denied = await requireOwnBillingSession()
+      if (denied) return denied
+      const { id } = await ctx.params
+      if (!UUID_RE.test(id)) return invalidInput()
+      const { status, body } = await payments.getActiveRetryIntent(id)
+      return NextResponse.json(body, { status })
+    },
+    POST: async (req: Request, ctx: { params: Promise<{ id: string }> }) => {
+      const denied = await requireOwnBillingSession()
+      if (denied) return denied
+      const { id } = await ctx.params
+      if (!UUID_RE.test(id)) return invalidInput()
+      const parsed = z
+        .strictObject({ paymentId: z.uuid() })
+        .safeParse(await req.json().catch(() => null))
+      if (!parsed.success) return invalidInput()
+      const { status, body } = await payments.createRetryIntent(id, parsed.data.paymentId)
+      return NextResponse.json(body, { status })
+    },
+  }
+  const paymentsMyRetryIntent = {
+    GET: async (_req: Request, ctx: { params: Promise<{ id: string; intentId: string }> }) => {
+      const denied = await requireOwnBillingSession()
+      if (denied) return denied
+      const { id, intentId } = await ctx.params
+      if (!UUID_RE.test(id) || !UUID_RE.test(intentId)) return invalidInput()
+      const { status, body } = await payments.getRetryIntent(id, intentId)
+      return NextResponse.json(body, { status })
+    },
+    POST: async (req: Request, ctx: { params: Promise<{ id: string; intentId: string }> }) => {
+      const denied = await requireOwnBillingSession()
+      if (denied) return denied
+      const { id, intentId } = await ctx.params
+      if (!UUID_RE.test(id) || !UUID_RE.test(intentId)) return invalidInput()
+      const parsed = cardUpdateBody
+        .extend({ consent: z.literal(true) })
+        .safeParse(await req.json().catch(() => null))
+      if (!parsed.success) return invalidInput()
+      const { status, body } = await payments.paySubscriptionCharge(id, intentId, parsed.data)
+      return NextResponse.json(body, { status })
+    },
+  }
+
   /**
    * Cancela a PRÓPRIA assinatura (o acesso segue até o fim do ciclo pago +
    * carência). Escrita → sessão real (impersonação read-only).
@@ -1859,6 +1966,11 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
     teacherThreadRead,
     paymentsMy,
     paymentsMySubscriptions,
+    paymentsMyCardConfig,
+    paymentsMyCardIntents,
+    paymentsMyCardIntent,
+    paymentsMyRetryIntents,
+    paymentsMyRetryIntent,
     paymentsMySubscriptionCancel,
     profilesList,
     profileCreate,

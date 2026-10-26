@@ -1,5 +1,5 @@
 import { createGestureCoordinator, type GestureToken } from '../core/gesture'
-import { PALETTE_SIZE } from '../core/palette'
+import { paletteBaseSize } from '../core/sanitize'
 import type { BrushSize, Texel } from '../paint/skinPaint'
 import type { ScenePixelRegion } from '../scene/composite'
 import type { MoldaSceneDocument, SceneImage } from '../scene/document'
@@ -77,7 +77,7 @@ export function createScenePaintGesture(
           resolveScenePaintTarget(prepared.document, target).image,
           prepared.color,
           brush,
-          PALETTE_SIZE + (prepared.document.extraColors?.length ?? 0),
+          paletteBaseSize(prepared.document) + (prepared.document.extraColors?.length ?? 0),
         )
         const selectedRegion = region ? readImageRegion(region, image) : undefined
         active = {

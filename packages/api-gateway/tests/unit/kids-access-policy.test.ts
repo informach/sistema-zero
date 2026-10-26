@@ -14,6 +14,18 @@ const student: KidsSessionClaim = {
   grantId: crypto.randomUUID(),
 }
 describe('áreas separadas no servidor', () => {
+  test('cartão de assinatura só é acessível ao responsável, sem exigir produto ativo', () => {
+    for (const path of [
+      '/payments/my/card-config',
+      '/payments/my/subscriptions/sub/card-intents',
+      '/payments/my/subscriptions/sub/card-intents/intent',
+    ]) {
+      for (const method of ['GET', 'POST']) {
+        expect(kidsMayAccess(parent, path, method, 'responsavel')).toBe(true)
+        expect(kidsMayAccess(student, path, method, 'aluno-admin')).toBe(false)
+      }
+    }
+  })
   test('preserva perfil público e publicação no Mural, sem abrir outras rotas internas', () => {
     const publicProfile = `/auth/internal/profiles/${crypto.randomUUID()}/public`
     expect(kidsMayAccess(student, publicProfile, 'GET', 'andre')).toBe(true)

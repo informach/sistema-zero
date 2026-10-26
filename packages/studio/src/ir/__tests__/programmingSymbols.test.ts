@@ -686,7 +686,7 @@ describe('símbolos léxicos da Programação', () => {
     ).toBe(true)
   })
 
-  it('recusa objetos, grupos e enxames do Jogo 3D que não existem nesse ponto', () => {
+  it('recusa objetos e grupos do Jogo 3D que não existem nesse ponto', () => {
     const parsed = SZIRSchema.safeParse(
       game3DProject([
         { type: 'g3d:createFullscreenScene', varName: 'mundo', bg: '#101020' },
@@ -710,8 +710,8 @@ describe('símbolos léxicos da Programação', () => {
           speed: 2,
         },
         {
-          type: 'g3d:spawnInSwarm',
-          swarmVar: 'estrelas',
+          type: 'g3d:spawnCopy',
+          groupVar: 'estrelas',
           originalVar: 'heroi',
           x: 0,
           y: 0,
@@ -797,7 +797,10 @@ describe('símbolos léxicos da Programação', () => {
       ]),
     )
     const worldCommand = SZIRSchema.safeParse(
-      game3DProject([...shared, { type: 'g3d:fpsCamera', worldVar: 'mundo', objVar: 'objetoCru' }]),
+      game3DProject([
+        ...shared,
+        { type: 'g3d:cameraMode', worldVar: 'mundo', mode: 'primeira-pessoa', objVar: 'objetoCru' },
+      ]),
     )
 
     expect(genericTransform.success).toBe(true)
@@ -834,7 +837,7 @@ describe('símbolos léxicos da Programação', () => {
     expect(parsed.success).toBe(true)
   })
 
-  it('distingue os tipos 3D e libera o item local de um para-cada no enxame', () => {
+  it('distingue os tipos 3D e libera o objeto da vez de um para-cada no grupo', () => {
     const wrongKind = SZIRSchema.safeParse(
       game3DProject([
         { type: 'g3d:createGroup', varName: 'inimigos' },
@@ -851,10 +854,10 @@ describe('símbolos léxicos da Programação', () => {
     const localItem = SZIRSchema.safeParse(
       game3DProject([
         { type: 'g3d:createFullscreenScene', varName: 'mundo', bg: '#101020' },
-        { type: 'g3d:createSwarm', varName: 'estrelas', worldVar: 'mundo' },
+        { type: 'g3d:createGroup', varName: 'estrelas' },
         {
-          type: 'g3d:forEachInSwarm',
-          swarmVar: 'estrelas',
+          type: 'g3d:forEachInGroup',
+          groupVar: 'estrelas',
           itemName: 'estrela',
           body: [
             {

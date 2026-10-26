@@ -1,10 +1,10 @@
 'use client'
 
-import { ChevronRight, LogOut, Palette, Receipt, Trophy, User } from 'lucide-react'
+import { ChevronRight, LogOut, Palette, PersonStanding, Receipt, Sofa, Trophy } from 'lucide-react'
 import Link from 'next/link'
 import { useEffect, useId, useRef, useState } from 'react'
 import { cn } from '@/lib/cn'
-import { stageBadgeOf, stageSpokenLabel } from '@/lib/journey-stage'
+import { stageBadgeOf, stageName, stageSpokenLabel, stageTinyLabel } from '@/lib/journey-stage'
 import type { SessionUserWithAvatar } from '@/lib/types'
 import { getUserDisplayName, getUserInitials } from '@/lib/user-display'
 import { useAdultGamification } from './gamification-provider'
@@ -51,7 +51,15 @@ export function PersonAvatar({
  * ⚠️ A cor mora em Meu perfil: dois lugares escrevendo o mesmo estado foi como o adulto e o kids
  * divergiram antes.
  */
-export function UserMenu({ user }: { user: SessionUserWithAvatar }) {
+export function UserMenu({
+  user,
+  variant = 'avatar',
+}: {
+  user: SessionUserWithAvatar
+  /** `avatar`: a foto redonda da barra do celular, o painel abre para baixo. `card`: o cartão da
+   *  pessoa no pé do menu lateral (foto, nome e etapa), o painel abre para cima. */
+  variant?: 'avatar' | 'card'
+}) {
   const [open, setOpen] = useState(false)
   const [busy, setBusy] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
@@ -108,30 +116,69 @@ export function UserMenu({ user }: { user: SessionUserWithAvatar }) {
         if (open && next && !ref.current?.contains(next)) setOpen(false)
       }}
     >
-      <button
-        ref={trigger}
-        type="button"
-        onClick={() => setOpen((value) => !value)}
-        aria-label={`Menu do perfil de ${name}${stage ? `, ${stageSpokenLabel(stage)}` : ''}`}
-        aria-expanded={open}
-        aria-controls={panelId}
-        className={cn(
-          'block rounded-full transition-opacity hover:opacity-90',
-          // Com a jornada, o anel da etapa é a borda (aberto, um contorno branco em volta); sem
-          // ela, a borda de sempre.
-          !stage && 'border-2',
-          !stage && (open ? 'border-white' : 'border-(--sz-community-action-light)'),
-          stage && open && 'outline-2 outline-white outline-offset-2',
-        )}
-      >
-        <StageRing badge={stage} dark>
-          <PersonAvatar user={user} className="size-[2.4rem] text-[0.85rem]" />
-        </StageRing>
-      </button>
+      {variant === 'card' ? (
+        <button
+          ref={trigger}
+          type="button"
+          onClick={() => setOpen((value) => !value)}
+          aria-label={`Menu do perfil de ${name}${stage ? `, ${stageSpokenLabel(stage)}` : ''}`}
+          aria-expanded={open}
+          aria-controls={panelId}
+          className={cn(
+            'flex w-full min-w-0 items-center gap-3 rounded-[1rem] bg-(--carta) p-3 text-left transition-colors hover:bg-(--carta-2)',
+            open && 'shadow-[inset_0_0_0_2px_var(--cta)]',
+          )}
+        >
+          <StageRing badge={stage} dark>
+            <PersonAvatar user={user} className="size-[2.4rem] text-[0.85rem]" />
+          </StageRing>
+          <span className="flex min-w-0 flex-1 flex-col">
+            <strong className="truncate text-(--texto-claro) text-[0.9rem]">{name}</strong>
+            <span className="truncate text-(--legenda-clara) text-[0.85rem]">
+              {stage ? `${stageTinyLabel(stage)} · ${stageName(stage)}` : 'Meu perfil'}
+            </span>
+          </span>
+          <ChevronRight
+            className={cn(
+              'size-5 shrink-0 text-(--legenda-clara) transition-transform',
+              open && '-rotate-90',
+            )}
+            aria-hidden
+          />
+        </button>
+      ) : (
+        <button
+          ref={trigger}
+          type="button"
+          onClick={() => setOpen((value) => !value)}
+          aria-label={`Menu do perfil de ${name}${stage ? `, ${stageSpokenLabel(stage)}` : ''}`}
+          aria-expanded={open}
+          aria-controls={panelId}
+          className={cn(
+            'block rounded-full transition-opacity hover:opacity-90',
+            // Com a jornada, o anel da etapa é a borda (aberto, um contorno branco em volta); sem
+            // ela, a borda de sempre.
+            !stage && 'border-2',
+            !stage && (open ? 'border-white' : 'border-(--sz-community-action-light)'),
+            stage && open && 'outline-2 outline-white outline-offset-2',
+          )}
+        >
+          <StageRing badge={stage} dark>
+            <PersonAvatar user={user} className="size-[2.4rem] text-[0.85rem]" />
+          </StageRing>
+        </button>
+      )}
       {open ? (
         <div
           id={panelId}
-          className="absolute right-0 z-50 mt-2 w-[min(20rem,calc(100vw-1.6rem))] overflow-hidden rounded-[1rem] border border-border bg-popover text-popover-foreground shadow-[0_18px_40px_rgba(15,26,51,0.18)]"
+          className={cn(
+            'absolute z-50 w-[min(20rem,calc(100vw-1.6rem))] overflow-hidden rounded-[1rem] border border-border bg-popover text-popover-foreground shadow-[0_18px_40px_rgba(15,26,51,0.18)]',
+            // Janela baixa (notebook com zoom, celular deitado): o painel cabe na tela e rola por
+            // dentro, em vez de sair pelo alto (cartão do menu lateral) ou por trás das abas.
+            variant === 'card'
+              ? 'bottom-full left-0 mb-2 max-h-[calc(100dvh-8rem)] overflow-y-auto'
+              : 'right-0 mt-2 max-h-[calc(100dvh-8.5rem)] overflow-y-auto',
+          )}
         >
           <div className="flex items-center gap-3.5 border-border border-b px-5 py-4">
             <StageRing badge={stage}>
@@ -162,11 +209,11 @@ export function UserMenu({ user }: { user: SessionUserWithAvatar }) {
             <ChevronRight className="size-5" aria-hidden />
           </Link>
           <Link href="/meu-avatar" prefetch={false} onClick={close} className={item}>
-            <User className="size-5" aria-hidden />
+            <PersonStanding className="size-5" aria-hidden />
             <strong>Meu avatar 3D</strong>
           </Link>
           <Link href="/quarto" prefetch={false} onClick={close} className={item}>
-            <User className="size-5" aria-hidden />
+            <Sofa className="size-5" aria-hidden />
             <strong>Meu espaço 3D</strong>
           </Link>
           <Link href="/perfil" prefetch={false} onClick={close} className={item}>

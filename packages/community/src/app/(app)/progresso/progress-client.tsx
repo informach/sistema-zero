@@ -137,17 +137,20 @@ export function ProgressClient({
             <StatTile
               icon={Sparkles}
               label="Experiência"
+              tone="var(--menta)"
               value={`${numberPt.format(progress.xp)} XP`}
             />
             <StatTile
               icon={Flame}
               label="Sequência"
+              tone="var(--laranja)"
               value={`${progress.streak.current} ${progress.streak.current === 1 ? 'dia' : 'dias'}`}
             />
             {progress.coins ? (
               <StatTile
                 icon={Coins}
                 label="Moedas"
+                tone="var(--dourado)"
                 value={progress.coins.unlimited ? '∞' : numberPt.format(progress.coins.balance)}
               />
             ) : null}
@@ -156,8 +159,8 @@ export function ProgressClient({
               prefetch={false}
               className="sz-card-sm flex flex-col gap-1 p-5 text-foreground no-underline transition-colors hover:border-foreground"
             >
-              <TileLabel icon={Trophy} label="Ranking geral" />
-              <strong className="sz-display text-[1.6rem]">
+              <TileLabel icon={Trophy} label="Ranking geral" tone="var(--rosa)" />
+              <strong className="sz-display text-[1.5rem] leading-[1.1] md:text-[2rem]">
                 {position ? `${position.position}º lugar` : 'Ver ranking'}
               </strong>
             </Link>
@@ -189,20 +192,35 @@ export function ProgressClient({
   )
 }
 
-function TileLabel({ icon: Icon, label }: { icon: LucideIcon; label: string }) {
+/** O rótulo do número do palco: em pixel, numa cor por número (o texto diz o que é; a cor só
+ *  separa um do outro de longe). */
+function TileLabel({ icon: Icon, label, tone }: { icon: LucideIcon; label: string; tone: string }) {
   return (
-    <span className="flex items-center gap-2 text-[0.9rem] text-muted-foreground">
+    <span
+      className="flex items-center gap-2 font-(family-name:--font-pixel) text-[0.85rem] uppercase tracking-[0.06em]"
+      style={{ color: tone }}
+    >
       <Icon className="size-[1.1rem]" aria-hidden />
       {label}
     </span>
   )
 }
 
-function StatTile({ icon, label, value }: { icon: LucideIcon; label: string; value: ReactNode }) {
+function StatTile({
+  icon,
+  label,
+  value,
+  tone,
+}: {
+  icon: LucideIcon
+  label: string
+  value: ReactNode
+  tone: string
+}) {
   return (
-    <div className="sz-card-sm flex flex-col gap-1 p-5">
-      <TileLabel icon={icon} label={label} />
-      <strong className="sz-display text-[1.6rem]">{value}</strong>
+    <div className="sz-card-sm flex flex-col gap-1.5 p-5">
+      <TileLabel icon={icon} label={label} tone={tone} />
+      <strong className="sz-display text-[1.5rem] leading-[1.1] md:text-[2rem]">{value}</strong>
     </div>
   )
 }
@@ -221,7 +239,11 @@ function JourneySection({
   const total = stage.total
   const current = isLegend(stage) ? undefined : journey.stages[stage.position - 1]
   return (
-    <section aria-labelledby="progresso-jornada" className="sz-card flex flex-col gap-6 p-6 md:p-8">
+    // A Jornada é comemoração: um bloco de palco no meio da bancada (Estúdio à noite).
+    <section
+      aria-labelledby="progresso-jornada"
+      className="sz-palco flex flex-col gap-6 rounded-[1.2rem] p-6 md:p-8"
+    >
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div className="flex min-w-0 flex-1 basis-[20rem] flex-col gap-2">
           <h2 id="progresso-jornada" className="sz-h2">
@@ -235,6 +257,7 @@ function JourneySection({
         <StageChip badge={stage} />
       </div>
       <JourneyRibbon
+        dark
         badge={stage}
         currentShare={
           current?.requirements.length

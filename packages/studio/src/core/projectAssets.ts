@@ -109,9 +109,10 @@ export interface ProjectAsset {
    * Imagem (desenho/sprite), áudio (som/música importado) ou binário 3D:
    * `model3d` (modelo GLB) / `environment3d` (céu HDR). Os 3D são carregados
    * pelo runtime do Jogo 3D Avançado via `.parse()` (nunca por fetch — a rede
-   * é bloqueada no preview).
+   * é bloqueada no preview). `font` (TTF/OTF) é só dos projetos Python: o
+   * Raylib e o Pygame Zero abrem a fonte pelo caminho do arquivo.
    */
-  kind: 'image' | 'audio' | 'model3d' | 'environment3d'
+  kind: 'image' | 'audio' | 'model3d' | 'environment3d' | 'font'
   /**
    * `data:image/...;base64,...` (imagem), `data:audio/...;base64,...` (áudio) ou
    * `data:model|image/...;base64,...` (3D) — validado: o prefixo precisa casar
@@ -119,7 +120,7 @@ export interface ProjectAsset {
    */
   dataUrl: string
   /**
-   * Nome do arquivo original (ex.: `nave.glb`). Só nos assets 3D, onde a
+   * Nome do arquivo original (ex.: `nave.glb`). Só nos assets 3D e nas fontes, onde a
    * EXTENSÃO é sinal de tipo: `isValidAssetDataUrl` cruza extensão × MIME ×
    * assinatura binária, então um `.glb` com bytes de HDR é recusado.
    */
@@ -188,6 +189,11 @@ const MAX_AUDIO_DATA_URL_CHARS = 7_000_000
  * verdade. Com o orçamento total de ~24 MB dá p/ ~4 modelos por projeto.
  */
 const MAX_MODEL3D_DATA_URL_CHARS = 7_000_000
+/**
+ * Teto do `dataUrl` de UMA fonte (~1,4 MB de binário). As fontes dos jogos (pixel,
+ * título) têm de 20 a 400 KB; uma fonte com milhares de glifos não tem lugar aqui.
+ */
+const MAX_FONT_DATA_URL_CHARS = 2_000_000
 /** Orçamento total de assets do projeto (~24 MB de binário inflado em base64;
  * subido de ~8 MB em 2026-07 p/ caber sons importados de até ~5 MB). */
 const MAX_ASSETS_TOTAL_CHARS = 33_000_000
@@ -234,7 +240,7 @@ function isAsset3DKind(value: unknown): value is Asset3DKind {
 }
 
 /** Decodifica só o COMEÇO do base64 (o header basta p/ a assinatura). */
-function dataUrlHeadBytes(value: string, count: number): Uint8Array | null {
+export function dataUrlHeadBytes(value: string, count: number): Uint8Array | null {
   const comma = value.indexOf(',')
   if (comma < 0) return null
   // 4 chars de base64 = 3 bytes; pega com folga e corta depois.
@@ -257,7 +263,7 @@ function startsWithBytes(bytes: Uint8Array, sig: readonly number[]): boolean {
 }
 
 /** `glTF` + versão 2 em uint32 LE. Versão 1 é recusada (o three não abre). */
-function isGlbV2(bytes: Uint8Array): boolean {
+export function isGlbV2(bytes: Uint8Array): boolean {
   if (!startsWithBytes(bytes, [0x67, 0x6c, 0x54, 0x46])) return false
   if (bytes.length < 8) return false
   const b0 = bytes[4] ?? 0
@@ -276,6 +282,32 @@ function hasValid3DSignature(kind: Asset3DKind, value: string): boolean {
   const bytes = dataUrlHeadBytes(value, 16)
   if (!bytes) return false
   return kind === 'model3d' ? isGlbV2(bytes) : isRadianceHdr(bytes)
+}
+
+/**
+ * Fontes: a extensão do arquivo decide o MIME, e os bytes precisam ser de uma fonte
+ * sfnt. `00 01 00 00` e `true` são contornos TrueType, `OTTO` é CFF; as duas
+ * extensões aceitam as três assinaturas, porque há `.otf` com contornos TrueType.
+ * WOFF/WOFF2 ficam de fora: o raylib do computador não abre esses formatos.
+ */
+const FONT_SPECS: Readonly<Record<string, string>> = {
+  '.ttf': 'data:font/ttf',
+  '.otf': 'data:font/otf',
+}
+
+function fontMimeFor(fileName: string): string | undefined {
+  const dot = fileName.lastIndexOf('.')
+  return dot < 0 ? undefined : FONT_SPECS[fileName.slice(dot).toLowerCase()]
+}
+
+function isSfntFont(value: string): boolean {
+  const bytes = dataUrlHeadBytes(value, 4)
+  if (!bytes) return false
+  return (
+    startsWithBytes(bytes, [0x00, 0x01, 0x00, 0x00]) ||
+    startsWithBytes(bytes, [0x74, 0x72, 0x75, 0x65]) ||
+    startsWithBytes(bytes, [0x4f, 0x54, 0x54, 0x4f])
+  )
 }
 
 function toPositiveInt(value: unknown): number | null {
@@ -443,18 +475,24 @@ export function normalizeAssetName(input: string): string | null {
  * qualquer outro esquema. `kind` opcional: `'image'`/`'audio'` exige aquele
  * prefixo; ausente aceita imagem OU áudio (cada um no seu teto).
  *
- * Para os kinds 3D (`model3d`/`environment3d`) a validação é TRI-MODAL e o
+ * Para os kinds 3D (`model3d`/`environment3d`) e a `font` a validação é TRI-MODAL e o
  * `fileName` é OBRIGATÓRIO: extensão × MIME × assinatura binária precisam
  * concordar. É o que impede um `.glb` com bytes de HDR — ou um GLB versão 1,
  * que o three não abre — de entrar no projeto e só explodir no runtime.
  */
 export function isValidAssetDataUrl(
   value: unknown,
-  kind?: 'image' | 'audio' | Asset3DKind,
+  kind?: ProjectAsset['kind'],
   fileName?: string,
   dataLimits: ProjectAssetDataLimits = PROJECT_ASSET_LIMITS,
 ): value is string {
   if (typeof value !== 'string') return false
+  if (kind === 'font') {
+    if (value.length > MAX_FONT_DATA_URL_CHARS || typeof fileName !== 'string') return false
+    const mime = fontMimeFor(fileName)
+    if (!mime || (!value.startsWith(`${mime};`) && !value.startsWith(`${mime},`))) return false
+    return isSfntFont(value)
+  }
   if (isAsset3DKind(kind)) {
     const spec = ASSET_3D_SPECS[kind]
     if (value.length > MAX_MODEL3D_DATA_URL_CHARS) return false
@@ -525,7 +563,8 @@ export function sanitizeProjectAssets(
     if (!item || typeof item !== 'object' || Array.isArray(item)) continue
     const a = item as Record<string, unknown>
     const pintaImage = readPintaImageAssetMetadata(a)
-    if (a.kind !== 'image' && a.kind !== 'audio' && !isAsset3DKind(a.kind)) continue
+    if (a.kind !== 'image' && a.kind !== 'audio' && a.kind !== 'font' && !isAsset3DKind(a.kind))
+      continue
     const kind: ProjectAsset['kind'] = a.kind
     // 3D: a validação cruza extensão × MIME × assinatura, então o nome do
     // arquivo original faz parte do contrato (sem ele o asset é descartado).
@@ -546,7 +585,8 @@ export function sanitizeProjectAssets(
     if (materialPath(a.proPath)) asset.proPath = a.proPath
     const license = sanitizeProjectAssetLicense(a.license)
     if (license) asset.license = license
-    if (fileName && isAsset3DKind(kind)) asset.originalFileName = fileName.slice(0, 128)
+    if (fileName && (isAsset3DKind(kind) || kind === 'font'))
+      asset.originalFileName = fileName.slice(0, 128)
     if (typeof a.width === 'number' && Number.isFinite(a.width) && a.width > 0) {
       asset.width = Math.floor(a.width)
     }

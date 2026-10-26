@@ -156,9 +156,9 @@ describe('Exemplo Labirinto dos Robôs Profissional — drift contra o parser re
     const types = collectTypes(behaviorStatements(labirintoDosRobosProfissionalExample.ir))
     for (const t of [
       'g3k:onHurt',
-      'g3k:cameraShake',
+      'g3k:shakeCamera',
       'g3k:onEntityDeath',
-      'g3k:endGame',
+      'g3k:gameOver',
       'g3k:setState',
     ]) {
       expect(types.has(t)).toBe(true)
@@ -169,8 +169,8 @@ describe('Exemplo Labirinto dos Robôs Profissional — drift contra o parser re
     const statements = behaviorStatements(labirintoDosRobosProfissionalExample.ir)
     const types = collectTypes(statements)
     for (const t of [
-      'g3k:setScreenText',
-      'g3k:hudText',
+      'g3k:screenText',
+      'g3k:cornerText',
       'g3k:setFog',
       'g3k:addLight',
       'g3k:setAmbient',
@@ -180,15 +180,15 @@ describe('Exemplo Labirinto dos Robôs Profissional — drift contra o parser re
       expect(types.has(t)).toBe(true)
     }
     const raw = JSON.stringify(statements)
-    for (const screen of ['"menu"', '"vitoria"', '"fim"']) {
+    for (const screen of ['"inicio"', '"vitoria"', '"fim"']) {
       expect(raw).toContain(screen)
     }
   })
 
   it('⭐ o acaso do exemplo passa TODO pelo sorteio do kit (a semente não pode mentir)', () => {
     const types = collectTypes(behaviorStatements(labirintoDosRobosProfissionalExample.ir))
-    expect(types.has('g3k:randomBetween')).toBe(true)
-    expect(types.has('g3k:randomChance')).toBe(true)
+    expect(types.has('g3k:random')).toBe(true)
+    expect(types.has('g3k:random')).toBe(true)
     expect(types.has('randomInt')).toBe(false)
     expect(types.has('randomFloat')).toBe(false)
     expect(
