@@ -562,8 +562,19 @@ describe('AssetsPanel — desenhos dos jogos de exemplo (Pygame-ce) vão ao Pint
   function exampleAdapter() {
     const imports: Array<{ json: string; ids: string[]; origin?: string }> = []
     const recipes: unknown[] = []
+    const provenance = { sourceSha256: 'a'.repeat(64), dependencies: [] }
+    const inspections: string[] = []
     const adapter: PintaLibraryAdapter = {
       list: async () => [],
+      // Like the real host: linking the material wakes the drawing sweep, which inspects the
+      // recipe. Without this the sweep failed and its message replaced the one under test.
+      inspectImage: async (drawingId) => {
+        inspections.push(drawingId)
+        return structuredClone(provenance)
+      },
+      previewImage: async () => {
+        throw new Error('A receita não mudou: a prévia não deveria ser pedida.')
+      },
       importDrawings: async (input) => {
         imports.push(structuredClone(input))
         return {
@@ -602,7 +613,7 @@ describe('AssetsPanel — desenhos dos jogos de exemplo (Pygame-ce) vão ao Pint
             libRevision: 9,
             pintaImage: {
               recipe,
-              provenance: { sourceSha256: 'a'.repeat(64), dependencies: [] },
+              provenance: structuredClone(provenance),
               output: {
                 mime: 'image/png' as const,
                 width: 1,
@@ -615,7 +626,7 @@ describe('AssetsPanel — desenhos dos jogos de exemplo (Pygame-ce) vão ao Pint
         }
       },
     }
-    return { adapter, imports, recipes }
+    return { adapter, imports, recipes, inspections }
   }
 
   /** The tab the panel opens inside the click (Safari blocks one opened after an await). */
@@ -733,11 +744,12 @@ describe('AssetsPanel — desenhos dos jogos de exemplo (Pygame-ce) vão ao Pint
     const opened: string[] = []
     renderPanel((id) => opened.push(id), { pintaLibrary: fake.adapter })
     fireEvent.click(await screen.findByRole('button', { name: 'Editar nave no Pinta' }))
-    await screen.findByText(
-      'A aba do Pinta foi fechada. O desenho está pronto: toque em Editar de novo.',
-      {},
-      { timeout: 5_000 },
-    )
+    const closedTab = 'A aba do Pinta foi fechada. O desenho está pronto: toque em Editar de novo.'
+    await screen.findByText(closedTab, {}, { timeout: 5_000 })
+    // Linking wakes the drawing sweep; the message must survive it.
+    await waitFor(() => expect(fake.inspections).toContain('pinta-nave'))
+    await flushEffects()
+    expect(screen.getByText(closedTab)).toBeTruthy()
     // The host is not called (it would `window.open` after an await, which Safari blocks).
     expect(opened).toEqual([])
     expect(spy).toHaveBeenCalledTimes(1)
