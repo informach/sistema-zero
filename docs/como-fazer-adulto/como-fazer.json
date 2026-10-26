@@ -92,24 +92,28 @@
             "id": "inicio",
             "title": "Abra o Início",
             "body": "Clique em **Início**, no menu. No alto da página, a frase “Sua próxima aula é a…” diz o número e o nome da aula em que você vai continuar.",
+            "imageUrl": "https://cdn.sistemazero.com.br/adulto/como-fazer/primeiros-continuar-o-curso/inicio-92f076f2bea4eb8e.webp",
             "imageAlt": "Página Início com a saudação, a frase Sua próxima aula é a 2 e o item Início marcado no menu da esquerda."
           },
           {
             "id": "continuar",
             "title": "Clique para continuar",
             "body": "No cartão da próxima aula, clique em **Continuar a aula**, seguido do número da aula. A aula abre e mostra a parte em que você parou.",
+            "imageUrl": "https://cdn.sistemazero.com.br/adulto/como-fazer/primeiros-continuar-o-curso/continuar-241d9f0a230c6596.webp",
             "imageAlt": "Cartão da próxima aula no Início, com a capa do curso, a barra de progresso e o botão amarelo Continuar a aula 2 destacado."
           },
           {
             "id": "cursos",
             "title": "Ou escolha pelo curso",
             "body": "Mais abaixo, em **Seus cursos**, clique em **Continuar** no cartão do curso que você quer. Na página do curso, o botão **Continuar de onde parei** leva para a próxima aula.",
+            "imageUrl": "https://cdn.sistemazero.com.br/adulto/como-fazer/primeiros-continuar-o-curso/cursos-c35a40bcd6fdb8be.webp",
             "imageAlt": "Seção Seus cursos do Início com o cartão do curso Cadê Todo Mundo? e o botão Continuar destacado."
           },
           {
             "id": "lista",
             "title": "Veja as outras aulas",
             "body": "Para escolher outra aula, clique em **Ver todas as aulas**. A aula marcada com **Continue aqui** é a próxima, e as aulas com cadeado abrem quando a anterior for concluída.",
+            "imageUrl": "https://cdn.sistemazero.com.br/adulto/como-fazer/primeiros-continuar-o-curso/lista-1f60b643b0aead36.webp",
             "imageAlt": "Página do curso com a lista de aulas por módulo, a aula marcada Continue aqui e uma aula com cadeado e o aviso Abre quando a anterior for concluída."
           }
         ],
@@ -148,30 +152,35 @@
             "id": "destinos",
             "title": "Conheça os seis destinos",
             "body": "No computador, o menu fica à esquerda da tela: **Início**, **Cursos**, **Criar**, **Oficinas**, **Comunidade** e **Ajuda**. Clique em um deles para abrir a página, e o item da página em que você está fica marcado com uma faixa amarela.",
+            "imageUrl": "https://cdn.sistemazero.com.br/adulto/como-fazer/primeiros-menu-do-alto/destinos-095b2733da9994cb.webp",
             "imageAlt": "Menu escuro da esquerda com a logo, os seis destinos com ícone e texto e o item Início marcado com a faixa amarela."
           },
           {
             "id": "o-que-tem",
             "title": "Saiba o que tem em cada um",
             "body": "Em **Cursos** ficam os seus cursos, organizados por trilha. Em **Criar** ficam as ferramentas, como o Estúdio e o Pinta. Em **Oficinas** ficam os encontros ao vivo, e em **Ajuda**, os tutoriais e o atendimento da equipe.",
+            "imageUrl": "https://cdn.sistemazero.com.br/adulto/como-fazer/primeiros-menu-do-alto/o-que-tem-30bdab4a8c063d7c.webp",
             "imageAlt": "Página Cursos aberta pelo menu da esquerda, com o item Cursos marcado e as trilhas lado a lado."
           },
           {
             "id": "recados",
             "title": "Encontre os Recados",
             "body": "Logo abaixo dos seis destinos fica **Recados**, com as respostas da equipe. Quando há mensagem nova, aparece ao lado o número de recados novos.",
+            "imageUrl": "https://cdn.sistemazero.com.br/adulto/como-fazer/primeiros-menu-do-alto/recados-cacc8928208b2fd7.webp",
             "imageAlt": "Item Recados no menu da esquerda, abaixo de Ajuda, com o selo amarelo de 2 recados novos destacado."
           },
           {
             "id": "perfil",
             "title": "Abra o menu do perfil",
             "body": "No pé do menu fica o cartão com a sua foto, o seu nome e a sua etapa. Clique nele para ver **Seu progresso**, **Meu avatar 3D**, **Meu espaço 3D**, **Meu perfil**, **Compras e assinatura** e **Sair**.",
+            "imageUrl": "https://cdn.sistemazero.com.br/adulto/como-fazer/primeiros-menu-do-alto/perfil-455a6a7c71ab6451.webp",
             "imageAlt": "Menu do perfil aberto para cima a partir do cartão da pessoa no pé do menu da esquerda, com Seu progresso, Meu avatar 3D, Meu espaço 3D, Meu perfil, Compras e assinatura e Sair."
           },
           {
             "id": "tela-menor",
             "title": "No celular, use as abas de baixo",
             "body": "No celular e no tablet, o menu vira abas na parte de baixo da tela: **Início**, **Cursos**, **Criar**, **Comunidade** e **Mais**. Em **Mais** ficam **Oficinas ao vivo**, **Recados**, **Seu progresso**, **Ajuda**, **Meu perfil**, **Meu avatar 3D**, **Meu espaço 3D** e **Compras e assinatura**. No alto, o envelope abre os Recados e a sua foto abre o menu do perfil.",
+            "imageUrl": "https://cdn.sistemazero.com.br/adulto/como-fazer/primeiros-menu-do-alto/tela-menor-358a425de9a8cc6b.webp",
             "imageAlt": "Tela do celular com as abas Início, Cursos, Criar, Comunidade e Mais embaixo e o painel Mais aberto com a lista dos outros destinos."
           }
         ],
@@ -212,12 +221,14 @@
             "id": "abrir",
             "title": "Abra Seu progresso",
             "body": "No computador, clique no cartão com a sua foto, no pé do menu, e depois em **Seu progresso**. No celular, clique em **Mais** e depois em **Seu progresso**.",
+            "imageUrl": "https://cdn.sistemazero.com.br/adulto/como-fazer/primeiros-ver-o-progresso/abrir-5431a7d1cb7053b3.webp",
             "imageAlt": "Menu do perfil aberto no pé do menu da esquerda, com o item Seu progresso e a linha de XP e sequência destacados."
           },
           {
             "id": "numeros",
             "title": "Confira os números",
             "body": "No alto aparecem **Experiência**, com os seus pontos de XP, **Sequência**, em dias, e **Ranking geral**, com a sua posição. Quando a sua conta tem moedas, aparece também **Moedas**. Clique em **Ranking geral** para ver o ranking e a liga da semana.",
+            "imageUrl": "https://cdn.sistemazero.com.br/adulto/como-fazer/primeiros-ver-o-progresso/numeros-08b11e85c6b56944.webp",
             "imageAlt": "Faixa escura de Seu progresso com os quadros Experiência, Sequência, Moedas e Ranking geral."
           },
           {
@@ -236,12 +247,14 @@
             "id": "conquistas",
             "title": "Veja as conquistas",
             "body": "Em **Conquistas** ficam as que você já ganhou, com a data, e as que ainda faltam, marcadas com **Ainda não conquistada**.",
+            "imageUrl": "https://cdn.sistemazero.com.br/adulto/como-fazer/primeiros-ver-o-progresso/conquistas-38ab4d374099ca6b.webp",
             "imageAlt": "Seção Conquistas com cartões conquistados, com a data, e cartões apagados com Ainda não conquistada."
           },
           {
             "id": "pausa",
             "title": "Programe uma pausa, se precisar",
             "body": "Em **Sua sequência**, na parte **Programar uma pausa**, escolha o **Início da pausa** e o **Fim da pausa** e clique em **Programar pausa**. Durante a pausa, a sequência não se perde, e **Encerrar pausa** termina a pausa antes da data.",
+            "imageUrl": "https://cdn.sistemazero.com.br/adulto/como-fazer/primeiros-ver-o-progresso/pausa-4382bf8a8255d4cf.webp",
             "imageAlt": "Cartão Sua sequência com os campos Início da pausa e Fim da pausa preenchidos e o botão Programar pausa destacado."
           }
         ],
@@ -275,30 +288,35 @@
             "id": "abrir",
             "title": "Abra os Recados",
             "body": "No computador, clique em **Recados**, no menu, logo abaixo de **Ajuda**. O número ao lado mostra quantos recados novos há. No celular, clique no envelope, no alto da tela.",
+            "imageUrl": "https://cdn.sistemazero.com.br/adulto/como-fazer/primeiros-ler-os-recados/abrir-cacc8928208b2fd7.webp",
             "imageAlt": "Item Recados no menu da esquerda com o selo de recados novos destacado."
           },
           {
             "id": "escolher",
             "title": "Escolha uma conversa",
             "body": "Clique na conversa que você quer ler. A etiqueta mostra o assunto, como **Dúvida na aula**, **Entrega** ou **Comunidade**, e **Novo** marca o que você ainda não leu.",
+            "imageUrl": "https://cdn.sistemazero.com.br/adulto/como-fazer/primeiros-ler-os-recados/escolher-1b1413ca5535f657.webp",
             "imageAlt": "Página Recados com a lista de conversas, cada uma com o ícone e a etiqueta do assunto, e uma conversa com o selo Novo destacada."
           },
           {
             "id": "responder",
             "title": "Escreva a sua resposta",
             "body": "No campo **Sua resposta**, escreva o que quer dizer e clique em **Enviar resposta**. A resposta da equipe aparece nesta mesma conversa.",
+            "imageUrl": "https://cdn.sistemazero.com.br/adulto/como-fazer/primeiros-ler-os-recados/responder-71a1bb3f643a2e3f.webp",
             "imageAlt": "Conversa aberta com as mensagens da equipe e suas, o campo Sua resposta preenchido e o botão Enviar resposta destacado."
           },
           {
             "id": "voltar",
             "title": "Volte para a aula",
             "body": "Quando a conversa nasceu de uma dúvida numa aula, o botão **Voltar à parte**, seguido do nome da parte, abre a parte da aula de que ela fala.",
+            "imageUrl": "https://cdn.sistemazero.com.br/adulto/como-fazer/primeiros-ler-os-recados/voltar-97164f2bfdae41bf.webp",
             "imageAlt": "Cabeçalho de uma conversa do tipo Dúvida na aula com o botão Voltar à parte destacado."
           },
           {
             "id": "inicio",
             "title": "Veja também no Início",
             "body": "Os recados mais recentes aparecem no cartão **Recados**, na página **Início**.",
+            "imageUrl": "https://cdn.sistemazero.com.br/adulto/como-fazer/primeiros-ler-os-recados/inicio-223046033d67ac41.webp",
             "imageAlt": "Cartão Recados da página Início com as duas conversas mais recentes e o número de novos."
           }
         ],
@@ -330,12 +348,14 @@
             "id": "ajuda",
             "title": "Abra a Ajuda",
             "body": "Clique em **Ajuda**, no menu. No celular, clique em **Mais** e depois em **Ajuda**.",
+            "imageUrl": "https://cdn.sistemazero.com.br/adulto/como-fazer/primeiros-achar-um-passo-a-passo/ajuda-0edd3215ce4ea6b2.webp",
             "imageAlt": "Página Ajuda com o título Em que a gente pode ajudar e o item Ajuda marcado no menu da esquerda."
           },
           {
             "id": "buscar",
             "title": "Escreva o que você quer fazer",
             "body": "No campo de busca, no alto da página, escreva uma ou duas palavras, como “senha” ou “certificado”, e clique em **Buscar no Como fazer**.",
+            "imageUrl": "https://cdn.sistemazero.com.br/adulto/como-fazer/primeiros-achar-um-passo-a-passo/buscar-e365bf3d4f45036d.webp",
             "imageAlt": "Campo de busca claro no alto da página Ajuda com a palavra senha escrita e o botão Buscar no Como fazer destacado."
           },
           {
@@ -387,6 +407,7 @@
             "id": "aumentar",
             "title": "Aumente a página",
             "body": "Segure a tecla Ctrl e pressione a tecla de mais (+). Cada vez que pressionar, a página fica um pouco maior. No Mac, use a tecla Command no lugar do Ctrl.",
+            "imageUrl": "https://cdn.sistemazero.com.br/adulto/como-fazer/primeiros-letra-maior/aumentar-0a045f12f93284c2.webp",
             "imageAlt": "Página Início ampliada, com a letra e os botões bem maiores que o normal."
           },
           {
@@ -438,12 +459,14 @@
             "id": "curso",
             "title": "Abra o curso",
             "body": "Clique em **Cursos**, no menu, e abra o curso. Você também pode clicar em **Continuar** no cartão do curso, no **Início**.",
+            "imageUrl": "https://cdn.sistemazero.com.br/adulto/como-fazer/aula-abrir-e-passar-de-secao/curso-2ed821817d99fa5b.webp",
             "imageAlt": "Página Cursos com o cartão do curso Cadê Todo Mundo? na trilha e o selo Liberado para você."
           },
           {
             "id": "aula",
             "title": "Escolha a aula",
             "body": "Na página do curso, clique na aula que quer abrir. A marca **Continue aqui** mostra a próxima aula, e as aulas com cadeado abrem quando a anterior for concluída.",
+            "imageUrl": "https://cdn.sistemazero.com.br/adulto/como-fazer/aula-abrir-e-passar-de-secao/aula-0a1dd98c7bb37e40.webp",
             "imageAlt": "Lista de aulas da página do curso com a aula marcada Continue aqui destacada e as aulas seguintes com cadeado."
           },
           {
@@ -456,12 +479,14 @@
             "id": "falta",
             "title": "Veja o que falta",
             "body": "Se **Próxima parte** estiver apagado, leia a faixa logo acima dos botões: depois de **Para seguir:** aparece o que ainda falta. Quando aparecer **Tudo pronto nesta parte. Pode seguir!**, avance.",
+            "imageUrl": "https://cdn.sistemazero.com.br/adulto/como-fazer/aula-abrir-e-passar-de-secao/falta-3e25c49f8b46d694.webp",
             "imageAlt": "Pé da aula com a faixa Para seguir mostrando o que falta e o botão Próxima parte apagado."
           },
           {
             "id": "sair",
             "title": "Volte ao curso",
             "body": "Para sair da aula, clique no botão redondo com a seta, no canto de cima, à esquerda. Ele leva de volta à página do curso.",
+            "imageUrl": "https://cdn.sistemazero.com.br/adulto/como-fazer/aula-abrir-e-passar-de-secao/sair-40da8a110b1ec2d5.webp",
             "imageAlt": "Alto da aula com o botão redondo da seta para a esquerda destacado, ao lado da barra de progresso."
           }
         ],
@@ -496,30 +521,35 @@
             "id": "posicao",
             "title": "Veja em que parte você está",
             "body": "No alto da aula, a barra mostra quanto da aula você já fez, e ao lado fica o contador, como **Seção 2 de 5**. No computador, embaixo da barra aparece também quantas partes você já concluiu.",
+            "imageUrl": "https://cdn.sistemazero.com.br/adulto/como-fazer/aula-usar-o-indice/posicao-972a25cba5f65939.webp",
             "imageAlt": "Alto da aula com a barra de progresso, a linha 1 de 5 seções concluídas e o contador Seção 2 de 5 destacado."
           },
           {
             "id": "aulas",
             "title": "Abra a lista de aulas",
             "body": "Clique na alça presa à borda direita da tela, a pequena aba com uma seta. A lista abre do lado direito e mostra os módulos, as aulas e o seu progresso no curso.",
+            "imageUrl": "https://cdn.sistemazero.com.br/adulto/como-fazer/aula-usar-o-indice/aulas-574e000b32025b17.webp",
             "imageAlt": "Aula com a lista de aulas aberta à direita, mostrando o nome do curso, a porcentagem e os módulos, e a alça da borda destacada."
           },
           {
             "id": "ler",
             "title": "Leia a lista",
             "body": "As aulas concluídas mostram um sinal de visto, e as que ainda estão fechadas mostram um cadeado. Elas abrem quando a aula anterior for concluída.",
+            "imageUrl": "https://cdn.sistemazero.com.br/adulto/como-fazer/aula-usar-o-indice/ler-624ce3ae05a21235.webp",
             "imageAlt": "Lista de aulas com aulas concluídas com o sinal de visto, a aula atual marcada e as seguintes com cadeado."
           },
           {
             "id": "ir",
             "title": "Vá para outra aula",
             "body": "Clique no nome de uma aula liberada para abri-la. Para fechar a lista, clique na alça de novo.",
+            "imageUrl": "https://cdn.sistemazero.com.br/adulto/como-fazer/aula-usar-o-indice/ir-8c17c2049e01cc1d.webp",
             "imageAlt": "Lista de aulas com o ponteiro sobre o nome de uma aula liberada."
           },
           {
             "id": "voltar-parte",
             "title": "Reveja uma parte que já passou",
             "body": "Para rever uma parte da mesma aula, clique em **Anterior**, no pé da aula, quantas vezes precisar. Depois, use **Próxima parte** para voltar aonde estava.",
+            "imageUrl": "https://cdn.sistemazero.com.br/adulto/como-fazer/aula-usar-o-indice/voltar-parte-9c4ec6719785d3f6.webp",
             "imageAlt": "Pé da aula com o botão Anterior destacado."
           }
         ],
@@ -716,24 +746,28 @@
             "id": "abrir",
             "title": "Abra o pedido de ajuda",
             "body": "No pé da aula, clique em **Preciso de ajuda**. Abre um campo para você escrever.",
+            "imageUrl": "https://cdn.sistemazero.com.br/adulto/como-fazer/aula-pedir-ajuda/abrir-ad14da635d1dd3a1.webp",
             "imageAlt": "Pé da aula com os botões Anterior, Preciso de ajuda e Próxima parte, e Preciso de ajuda destacado."
           },
           {
             "id": "escrever",
             "title": "Conte onde travou",
             "body": "Em **Em que ponto desta parte você ficou com dúvida?**, escreva o que tentou fazer e o que apareceu na tela. A conversa fica ligada a esta parte da aula.",
+            "imageUrl": "https://cdn.sistemazero.com.br/adulto/como-fazer/aula-pedir-ajuda/escrever-0b69aabc1ec20cf4.webp",
             "imageAlt": "Campo Em que ponto desta parte você ficou com dúvida? com uma dúvida escrita."
           },
           {
             "id": "enviar",
             "title": "Envie",
             "body": "Clique em **Enviar para a equipe**. Aparece o aviso **Pedido enviado. A resposta aparecerá nos seus recados.**",
+            "imageUrl": "https://cdn.sistemazero.com.br/adulto/como-fazer/aula-pedir-ajuda/enviar-2392df298a5cf96a.webp",
             "imageAlt": "Aviso Pedido enviado. A resposta aparecerá nos seus recados., com o link Ver conversa ao lado."
           },
           {
             "id": "acompanhar",
             "title": "Acompanhe a resposta",
             "body": "Clique em **Ver conversa** para abrir o pedido. Quando a equipe responder, a mensagem chega em **Recados**, no menu.",
+            "imageUrl": "https://cdn.sistemazero.com.br/adulto/como-fazer/aula-pedir-ajuda/acompanhar-1a586629fcef8810.webp",
             "imageAlt": "Página Recados com a conversa Dúvida na aula aberta e o pedido enviado."
           }
         ],
@@ -862,30 +896,35 @@
             "id": "abrir",
             "title": "Abra a avaliação",
             "body": "Na página do curso, clique em **Avaliar o curso**. Dentro de uma aula, abra a lista de aulas pela alça da borda direita e clique em **Deixe uma classificação**, logo abaixo do progresso.",
+            "imageUrl": "https://cdn.sistemazero.com.br/adulto/como-fazer/aula-avaliar-o-curso/abrir-510eb3e1bf482407.webp",
             "imageAlt": "Topo da página do curso com o botão Avaliar o curso destacado ao lado de Continuar de onde parei."
           },
           {
             "id": "estrelas",
             "title": "Escolha as estrelas",
             "body": "Em **Como você classificaria este curso?**, clique nas estrelas, de uma a cinco. Dá para marcar meia estrela.",
+            "imageUrl": "https://cdn.sistemazero.com.br/adulto/como-fazer/aula-avaliar-o-curso/estrelas-e465811900face1b.webp",
             "imageAlt": "Janela Como você classificaria este curso? com as cinco estrelas e quatro delas marcadas."
           },
           {
             "id": "comentario",
             "title": "Conte o motivo",
             "body": "Em **Por que deixou esta classificação?**, escreva, se quiser, o que achou do curso e clique em **Salvar e continuar**.",
+            "imageUrl": "https://cdn.sistemazero.com.br/adulto/como-fazer/aula-avaliar-o-curso/comentario-88eccfd0e41eb6f2.webp",
             "imageAlt": "Janela Por que deixou esta classificação? com um comentário escrito e o botão Salvar e continuar destacado."
           },
           {
             "id": "perguntas",
             "title": "Responda às perguntas rápidas",
             "body": "Responda **Sim**, **Não** ou **Não sei** em cada pergunta e clique em **Salvar e continuar**. Se preferir, clique em **Pular**.",
+            "imageUrl": "https://cdn.sistemazero.com.br/adulto/como-fazer/aula-avaliar-o-curso/perguntas-a24094fbef197d40.webp",
             "imageAlt": "Janela Conte-nos mais (opcional). com as perguntas e as opções Sim, Não e Não sei, e os botões Pular e Salvar e continuar."
           },
           {
             "id": "terminar",
             "title": "Termine",
             "body": "Na tela **Obrigado por ajudar nossa comunidade!**, clique em **Salvar e sair**. Depois de avaliar, o botão **Avaliar o curso** sai da página do curso.",
+            "imageUrl": "https://cdn.sistemazero.com.br/adulto/como-fazer/aula-avaliar-o-curso/terminar-db8eebf1e4232b4d.webp",
             "imageAlt": "Janela Obrigado por ajudar nossa comunidade! com o nome da pessoa, as estrelas, o comentário e o botão Salvar e sair destacado."
           }
         ],
@@ -1598,7 +1637,7 @@
           {
             "id": "desfazer",
             "title": "Volte uma mudança",
-            "body": "Com o desenho aberto, clique em **Desfazer**, na barra de cima. No teclado, segure Ctrl e aperte Z.",
+            "body": "Com o desenho aberto, clique em **Desfazer**, na barra de cima. No teclado, segure Ctrl e pressione Z.",
             "imageAlt": "Barra de cima do Pinta com a seta Desfazer destacada."
           },
           {
@@ -1675,13 +1714,13 @@
           {
             "id": "mudar",
             "title": "Mude o desenho depois",
-            "body": "No Estúdio completo, abra **Mais opções** → **Imagens** e clique em **Editar** ao lado do desenho. O Pinta abre numa aba nova. Quando você salva lá, o desenho se atualiza sozinho no jogo.",
+            "body": "No Estúdio completo, abra **Mais opções** → **Materiais** → **Imagens** e clique em **Editar** ao lado do desenho. O Pinta abre numa aba nova. Quando você salva lá, o desenho se atualiza sozinho no jogo.",
             "imageAlt": "Janela Materiais do jogo na aba Imagens, com o botão Editar ao lado de um desenho do Pinta destacado."
           },
           {
             "id": "aula",
             "title": "No Estúdio da aula",
-            "body": "Dentro da aula, o Estúdio não mostra **Trazer do Pinta**. No Pinta, abra o desenho, clique em **Baixar**, deixe o tamanho em **×1** e escolha **Imagem (PNG)** num cenário ou **Quadro atual (PNG)** num personagem. Depois, no Estúdio da aula, abra **Mais opções** → **Imagens** e clique em **Enviar imagem**.",
+            "body": "Dentro da aula, o Estúdio não mostra **Trazer do Pinta**. No Pinta, abra o desenho, clique em **Baixar**, deixe o tamanho em **×1** e escolha **Imagem (PNG)** num cenário ou **Quadro atual (PNG)** num personagem. Depois, no Estúdio da aula, abra **Mais opções** → **Materiais** → **Imagens** e clique em **Enviar imagem**.",
             "imageAlt": "Estúdio de uma aula com a janela Materiais do jogo aberta na aba Imagens e o botão Enviar imagem destacado."
           }
         ],
@@ -1922,7 +1961,7 @@
           {
             "id": "nome",
             "title": "Dê um nome e volte depois",
-            "body": "Depois de aceitar o plano, o nome do jogo fica no alto. Para trocar, clique no lápis ao lado do nome, escreva o nome novo e aperte Enter. Para voltar outro dia, clique em **Continuar** no cartão do jogo, em **Meus jogos**.",
+            "body": "Depois de aceitar o plano, o nome do jogo fica no alto. Para trocar, clique no lápis ao lado do nome, escreva o nome novo e pressione Enter. Para voltar outro dia, clique em **Continuar** no cartão do jogo, em **Meus jogos**.",
             "imageAlt": "Topo do jogo no Pensa com o lápis ao lado do nome destacado."
           }
         ],
@@ -2831,12 +2870,14 @@
             "id": "abrir",
             "title": "Abra o Mural",
             "body": "Clique em **Comunidade**, no menu, e no cartão **Mural dos Criadores**, com o link **Ver o Mural**. Abre a página **Mural dos Criadores**.",
+            "imageUrl": "https://cdn.sistemazero.com.br/adulto/como-fazer/comunidade-jogar-no-mural/abrir-fbb9a91d63907d65.webp",
             "imageAlt": "Página Comunidade com os cartões Mural dos Criadores, Desafio do mês e Ranking e liga, e o cartão do Mural destacado."
           },
           {
             "id": "filtrar",
             "title": "Escolha o que ver",
             "body": "Clique em **Novidades** para ver os jogos mais recentes ou em **Mais jogados** para ver os preferidos da comunidade. No mês de um desafio, o filtro **Desafio:**, seguido do tema, mostra os jogos dele.",
+            "imageUrl": "https://cdn.sistemazero.com.br/adulto/como-fazer/comunidade-jogar-no-mural/filtrar-e20488ff5d46ba2e.webp",
             "imageAlt": "Faixa do Mural dos Criadores com os filtros Novidades, Mais jogados e Desafio, e Novidades marcado."
           },
           {
@@ -2886,24 +2927,28 @@
             "id": "entrar",
             "title": "Entre no Clube",
             "body": "Clique em **Comunidade**, no menu. No cartão do Clube dos Criadores, clique em **Entrar** ou no nome de um canal.",
+            "imageUrl": "https://cdn.sistemazero.com.br/adulto/como-fazer/comunidade-conversar-no-clube/entrar-65e7eed1b43e2f55.webp",
             "imageAlt": "Cartão do Clube dos Criadores na página Comunidade com o botão Entrar destacado e a lista de canais."
           },
           {
             "id": "canal",
             "title": "Escolha um canal",
             "body": "Cada canal é um assunto. Nos canais marcados com **Só a equipe publica**, só a equipe escreve, e **Novidades** mostra onde há mensagem nova.",
+            "imageUrl": "https://cdn.sistemazero.com.br/adulto/como-fazer/comunidade-conversar-no-clube/canal-d3536d4ebd51a28d.webp",
             "imageAlt": "Lista de canais do Clube com um canal marcado Só a equipe publica e outro com o selo Novidades."
           },
           {
             "id": "comentar",
             "title": "Leia e comente",
             "body": "Clique num tópico para ler a conversa. Em **Escreva um comentário**, escreva a sua mensagem e clique em **Comentar**.",
+            "imageUrl": "https://cdn.sistemazero.com.br/adulto/como-fazer/comunidade-conversar-no-clube/comentar-734f9b5d12018cd5.webp",
             "imageAlt": "Tópico aberto no Clube com os comentários e o campo Escreva um comentário com o botão Comentar destacado."
           },
           {
             "id": "novo",
             "title": "Abra uma conversa nova",
             "body": "Clique em **Novo tópico**, preencha o **Título** e a mensagem e clique em **Publicar**.",
+            "imageUrl": "https://cdn.sistemazero.com.br/adulto/como-fazer/comunidade-conversar-no-clube/novo-bb024a176717574e.webp",
             "imageAlt": "Formulário Novo tópico com o campo Título, a mensagem e o botão Publicar destacado."
           },
           {
@@ -2916,6 +2961,7 @@
             "id": "aparecer",
             "title": "Escolha como você aparece",
             "body": "Com o perfil público desligado, as outras pessoas veem você como “Colega”. Para mudar, clique em **Alterar em Meu perfil**, no quadro **Como você aparece** da página Comunidade.",
+            "imageUrl": "https://cdn.sistemazero.com.br/adulto/como-fazer/comunidade-conversar-no-clube/aparecer-86bcbc6991adf2f6.webp",
             "imageAlt": "Quadro Como você aparece da página Comunidade com o nome Colega, Perfil público desligado e o link Alterar em Meu perfil."
           }
         ],
@@ -2946,6 +2992,7 @@
             "id": "tema",
             "title": "Veja o tema",
             "body": "Clique em **Comunidade**, no menu, e no cartão **Desafio do mês**, com o link **Ver o desafio**. No Mural, o link **Ver o desafio do mês** leva ao mesmo lugar. A página mostra o tema e a descrição do mês.",
+            "imageUrl": "https://cdn.sistemazero.com.br/adulto/como-fazer/comunidade-desafio-do-mes/tema-d87c9d7ff3bce287.webp",
             "imageAlt": "Página do Desafio do mês com a faixa amarela no alto, o nome do mês, o tema e a descrição."
           },
           {
@@ -2970,6 +3017,7 @@
             "id": "acesso",
             "title": "Se o botão for outro",
             "body": "Se aparecer **Consultar requisitos e acesso** no lugar de **Criar meu jogo**, clique nele para ver na sua jornada o que ainda falta.",
+            "imageUrl": "https://cdn.sistemazero.com.br/adulto/como-fazer/comunidade-desafio-do-mes/acesso-8293ecb010b44314.webp",
             "imageAlt": "Página do Desafio do mês com o botão Consultar requisitos e acesso no lugar de Criar meu jogo."
           }
         ],
@@ -3116,6 +3164,7 @@
             "id": "abrir",
             "title": "Abra o ranking",
             "body": "Clique em **Comunidade**, no menu, e no cartão **Ranking e liga**, com o link **Ver o ranking**. Em **Seu progresso**, o quadro **Ranking geral** leva ao mesmo lugar.",
+            "imageUrl": "https://cdn.sistemazero.com.br/adulto/como-fazer/comunidade-ranking-e-liga/abrir-2085e5d5ac56e3e5.webp",
             "imageAlt": "Página Comunidade com o cartão Ranking e liga destacado."
           },
           {
@@ -3128,6 +3177,7 @@
             "id": "liga",
             "title": "Veja a sua liga da semana",
             "body": "Em **Sua liga semanal**, aparece a sua liga, como **Liga Bronze**, e a sua posição nesta semana. A liga recomeça toda semana e junta pessoas num ritmo parecido com o seu.",
+            "imageUrl": "https://cdn.sistemazero.com.br/adulto/como-fazer/comunidade-ranking-e-liga/liga-87fa46cbf6947a78.webp",
             "imageAlt": "Seção Sua liga semanal com o selo Liga Bronze e a frase Posição 3 nesta semana."
           },
           {
@@ -3167,12 +3217,14 @@
             "id": "link",
             "title": "Abra o link da mensagem",
             "body": "Depois da compra, chega por e-mail e por WhatsApp uma mensagem de boas-vindas com um link para criar a sua senha. Clique no botão da mensagem para abrir a página **Criar a sua senha**.",
+            "imageUrl": "https://cdn.sistemazero.com.br/adulto/como-fazer/conta-primeiro-acesso/link-e682cae6829a7925.webp",
             "imageAlt": "Página Criar a sua senha com o palco Boas-vindas à comunidade e os três próximos passos."
           },
           {
             "id": "senha",
             "title": "Escolha a senha",
             "body": "Escreva a senha em **Senha nova**, com pelo menos 10 caracteres, e repita a mesma em **Repita a senha**. Depois, clique em **Salvar senha**.",
+            "imageUrl": "https://cdn.sistemazero.com.br/adulto/como-fazer/conta-primeiro-acesso/senha-d25c723a40b09fbe.webp",
             "imageAlt": "Formulário Criar a sua senha com os campos Senha nova e Repita a senha preenchidos e o botão Salvar senha destacado."
           },
           {
@@ -3191,6 +3243,7 @@
             "id": "link-ruim",
             "title": "Se o link não funcionar",
             "body": "Se aparecer **Este link venceu**, **Este link não vale mais** ou **Este link está incompleto**, clique em **Pedir um código por e-mail** (ou em **Esqueci minha senha**) e crie a senha com o código que chega no seu e-mail.",
+            "imageUrl": "https://cdn.sistemazero.com.br/adulto/como-fazer/conta-primeiro-acesso/link-ruim-98b4581f141a34aa.webp",
             "imageAlt": "Página Este link venceu com o botão Pedir um código por e-mail destacado."
           }
         ],
@@ -3225,24 +3278,28 @@
             "id": "modo",
             "title": "Escolha entrar com código",
             "body": "Na tela **Entrar**, clique em **Com código no e-mail**.",
+            "imageUrl": "https://cdn.sistemazero.com.br/adulto/como-fazer/conta-entrar-com-codigo/modo-0b3b0dc07d433138.webp",
             "imageAlt": "Tela Entrar com as opções Com senha e Com código no e-mail, e Com código no e-mail destacado."
           },
           {
             "id": "email",
             "title": "Peça o código",
             "body": "Escreva o seu **E-mail** e clique em **Enviar código**. Se houver uma conta com esse e-mail, chega um código de 6 números. Confira também a caixa de spam.",
+            "imageUrl": "https://cdn.sistemazero.com.br/adulto/como-fazer/conta-entrar-com-codigo/email-8ecdc8cdd40711b3.webp",
             "imageAlt": "Formulário de entrada com o campo E-mail preenchido e o botão Enviar código destacado."
           },
           {
             "id": "codigo",
             "title": "Digite o código",
             "body": "No campo **Código de acesso**, digite os 6 números e clique em **Entrar**.",
+            "imageUrl": "https://cdn.sistemazero.com.br/adulto/como-fazer/conta-entrar-com-codigo/codigo-abe8a4e8f6b54154.webp",
             "imageAlt": "Campo Código de acesso com os 6 números digitados e o botão Entrar."
           },
           {
             "id": "reenviar",
             "title": "Se o código não chegar",
             "body": "Clique em **Reenviar código** ou em **Usar outro e-mail**. O código funciona para quem já criou a senha da conta. No primeiro acesso, veja [como criar a sua senha](/como-fazer/conta-primeiro-acesso).",
+            "imageUrl": "https://cdn.sistemazero.com.br/adulto/como-fazer/conta-entrar-com-codigo/reenviar-e3fc7ee95cc4a2f0.webp",
             "imageAlt": "Formulário com o aviso do código enviado e os links Reenviar código e Usar outro e-mail."
           }
         ],
@@ -3272,24 +3329,28 @@
             "id": "perfil",
             "title": "Abra Meu perfil",
             "body": "Clique no cartão com a sua foto, no pé do menu, e depois em **Meu perfil**. Na lista ao lado das partes da página, clique em **Senha**.",
+            "imageUrl": "https://cdn.sistemazero.com.br/adulto/como-fazer/conta-trocar-a-senha/perfil-7f8315b053bc4658.webp",
             "imageAlt": "Página Meu perfil com a lista Avatar, Dados pessoais, Cor da plataforma, Na comunidade e Senha, e o item Senha destacado."
           },
           {
             "id": "preencher",
             "title": "Preencha os campos",
             "body": "Em **Alterar senha**, escreva a **Senha atual**, a **Nova senha**, com pelo menos 10 caracteres, e repita a nova em **Confirmar nova senha**.",
+            "imageUrl": "https://cdn.sistemazero.com.br/adulto/como-fazer/conta-trocar-a-senha/preencher-123cfa124fa7619c.webp",
             "imageAlt": "Cartão Alterar senha com os campos Senha atual, Nova senha e Confirmar nova senha preenchidos."
           },
           {
             "id": "salvar",
             "title": "Salve",
             "body": "Clique em **Alterar senha**. Você sai de todos os aparelhos e entra de novo com a senha nova.",
+            "imageUrl": "https://cdn.sistemazero.com.br/adulto/como-fazer/conta-trocar-a-senha/salvar-fd6ebd5bc92949b2.webp",
             "imageAlt": "Botão Alterar senha destacado no fim do cartão, com o aviso de que você sai de todos os aparelhos."
           },
           {
             "id": "esqueci",
             "title": "Se esqueceu a senha atual",
             "body": "Na tela **Entrar**, clique em **Esqueci minha senha**. Escreva o **E-mail da sua conta** e clique em **Enviar código**. Depois, digite o **Código de acesso**, a **Senha nova** e **Repita a senha nova**, e clique em **Salvar a senha nova**.",
+            "imageUrl": "https://cdn.sistemazero.com.br/adulto/como-fazer/conta-trocar-a-senha/esqueci-334a2db79a20a6e0.webp",
             "imageAlt": "Tela Esqueci minha senha com os dois passos, o campo E-mail da sua conta e o botão Enviar código."
           }
         ],
@@ -3321,30 +3382,35 @@
             "id": "abrir",
             "title": "Abra os dados pessoais",
             "body": "Abra **Meu perfil**, pelo cartão com a sua foto no pé do menu, e clique em **Dados pessoais**.",
+            "imageUrl": "https://cdn.sistemazero.com.br/adulto/como-fazer/conta-mudar-nome-e-telefone/abrir-1b31535b944150e1.webp",
             "imageAlt": "Página Meu perfil com o item Dados pessoais destacado na lista das partes."
           },
           {
             "id": "editar",
             "title": "Mude o que precisar",
             "body": "Corrija **Nome**, **Sobrenome** ou **Telefone**. No telefone, use o DDD e o número.",
+            "imageUrl": "https://cdn.sistemazero.com.br/adulto/como-fazer/conta-mudar-nome-e-telefone/editar-3999b6912e723cb2.webp",
             "imageAlt": "Cartão Dados pessoais com os campos Nome, Sobrenome, Telefone e E-mail."
           },
           {
             "id": "salvar",
             "title": "Salve",
             "body": "Clique em **Salvar dados** e espere o aviso **Dados salvos.**",
+            "imageUrl": "https://cdn.sistemazero.com.br/adulto/como-fazer/conta-mudar-nome-e-telefone/salvar-a55a8aa09afe8dfa.webp",
             "imageAlt": "Botão Salvar dados destacado e o aviso Dados salvos."
           },
           {
             "id": "comunidade",
             "title": "Mude o nome na comunidade",
             "body": "O nome que aparece para a comunidade fica em **Na comunidade**, no campo **Nome de exibição**. Depois de mudar, clique em **Salvar preferências**.",
+            "imageUrl": "https://cdn.sistemazero.com.br/adulto/como-fazer/conta-mudar-nome-e-telefone/comunidade-af472feb3b54d8ab.webp",
             "imageAlt": "Cartão Identidade na comunidade com o campo Nome de exibição e o botão Salvar preferências destacado."
           },
           {
             "id": "email",
             "title": "Para trocar o e-mail",
             "body": "O e-mail não muda por aqui. Se precisar trocar, [abra um chamado com a equipe](/como-fazer/conta-abrir-chamado).",
+            "imageUrl": "https://cdn.sistemazero.com.br/adulto/como-fazer/conta-mudar-nome-e-telefone/email-e944b7397443082f.webp",
             "imageAlt": "Campo E-mail apagado com a dica O e-mail não muda por aqui."
           }
         ],
@@ -3377,24 +3443,28 @@
             "id": "abrir",
             "title": "Abra a cor da plataforma",
             "body": "Abra **Meu perfil**, pelo cartão com a sua foto no pé do menu, e clique em **Cor da plataforma**.",
+            "imageUrl": "https://cdn.sistemazero.com.br/adulto/como-fazer/conta-escolher-a-cor/abrir-aea779d83f717da9.webp",
             "imageAlt": "Página Meu perfil com o item Cor da plataforma destacado na lista das partes."
           },
           {
             "id": "escolher",
             "title": "Escolha uma cor",
             "body": "Clique num dos seis círculos: azul, turquesa, verde, laranja, rosa ou roxo. Os links, os selos e os destaques mudam na hora, e o botão principal continua amarelo, para você achar sempre.",
+            "imageUrl": "https://cdn.sistemazero.com.br/adulto/como-fazer/conta-escolher-a-cor/escolher-dcc2789d6f3e4169.webp",
             "imageAlt": "Cartão Cor da plataforma com os seis círculos de cor e o verde marcado."
           },
           {
             "id": "guardar",
             "title": "Pronto, já está guardada",
             "body": "A escolha é guardada sozinha, sem botão de salvar. Embaixo das cores aparece **Cor escolhida:** e o nome da cor.",
+            "imageUrl": "https://cdn.sistemazero.com.br/adulto/como-fazer/conta-escolher-a-cor/guardar-a642c879aa834cf1.webp",
             "imageAlt": "Cartão Cor da plataforma com a frase Cor escolhida: Verde. embaixo dos círculos."
           },
           {
             "id": "computador",
             "title": "Vale em qualquer computador",
             "body": "A cor vale em qualquer computador em que você entrar com a sua conta. Se aparecer uma falha, clique em **Tentar de novo**.",
+            "imageUrl": "https://cdn.sistemazero.com.br/adulto/como-fazer/conta-escolher-a-cor/computador-b1473fe218f10582.webp",
             "imageAlt": "Página Início com os links e destaques na cor escolhida."
           }
         ],
@@ -3426,30 +3496,35 @@
             "id": "abrir",
             "title": "Abra o avatar",
             "body": "Clique no cartão com a sua foto, no pé do menu, e depois em **Meu avatar 3D**. Em **Meu perfil**, o botão **Criar meu avatar** (ou **Editar meu avatar**) leva ao mesmo lugar.",
+            "imageUrl": "https://cdn.sistemazero.com.br/adulto/como-fazer/conta-montar-o-avatar/abrir-698c2651c92ed69c.webp",
             "imageAlt": "Menu do perfil aberto com o item Meu avatar 3D destacado."
           },
           {
             "id": "escolher",
             "title": "Escolha a aparência",
             "body": "Em **Personalizar**, escolha uma parte do avatar, como **Cabelo** ou **Blusa**, e clique na opção e na cor que quiser. **Sortear visual** monta uma combinação para você.",
+            "imageUrl": "https://cdn.sistemazero.com.br/adulto/como-fazer/conta-montar-o-avatar/escolher-1de478e133d0cded.webp",
             "imageAlt": "Tela Meu avatar 3D com o avatar no centro, a lista de partes, os modelos de cabelo e as cores."
           },
           {
             "id": "moedas",
             "title": "Peças com preço",
             "body": "Algumas peças custam moedas. Ao clicar numa delas, você vê uma prévia e decide se quer usar. Para desistir, clique em **Agora não**.",
+            "imageUrl": "https://cdn.sistemazero.com.br/adulto/como-fazer/conta-montar-o-avatar/moedas-2bc16c43f3985f4e.webp",
             "imageAlt": "Prévia de uma peça com preço em moedas e o botão Agora não."
           },
           {
             "id": "salvar",
             "title": "Salve",
             "body": "Clique em **Salvar** e espere o aviso **Mudanças salvas.**",
+            "imageUrl": "https://cdn.sistemazero.com.br/adulto/como-fazer/conta-montar-o-avatar/salvar-97e1d97e40186533.webp",
             "imageAlt": "Botão Salvar destacado e o aviso Mudanças salvas."
           },
           {
             "id": "foto",
             "title": "Tire a foto",
             "body": "Clique em **Cabine de fotos**, escolha uma pose e clique em **Tirar foto**. Essa foto aparece no seu cartão do menu e na comunidade. Para sair, clique em **Voltar ao meu perfil** ou em **Voltar ao início**, conforme o caminho por onde você entrou.",
+            "imageUrl": "https://cdn.sistemazero.com.br/adulto/como-fazer/conta-montar-o-avatar/foto-3371b2ae27820ade.webp",
             "imageAlt": "Cabine de fotos com as poses, o avatar posando e o botão Tirar foto destacado."
           }
         ],
@@ -3481,30 +3556,35 @@
             "id": "abrir",
             "title": "Abra o espaço",
             "body": "Clique no cartão com a sua foto, no pé do menu, e depois em **Meu espaço 3D**.",
+            "imageUrl": "https://cdn.sistemazero.com.br/adulto/como-fazer/conta-montar-o-espaco/abrir-ebb8ab0f36f1f540.webp",
             "imageAlt": "Menu do perfil aberto com o item Meu espaço 3D destacado."
           },
           {
             "id": "itens",
             "title": "Escolha os itens",
             "body": "Nas abas, como **Móveis**, **Enfeites**, **Troféus** e **Plantas**, clique num item para colocá-lo no espaço.",
+            "imageUrl": "https://cdn.sistemazero.com.br/adulto/como-fazer/conta-montar-o-espaco/itens-036ce190d16a8876.webp",
             "imageAlt": "Tela Meu espaço 3D com o espaço no centro e as abas Móveis, Enfeites, Troféus e Plantas, com a aba Móveis aberta."
           },
           {
             "id": "arrumar",
             "title": "Arrume as peças",
             "body": "Arraste a peça com o mouse para mudar de lugar. Com uma peça escolhida, use **Girar**, **Pôr em cima de…** ou **Tirar**.",
+            "imageUrl": "https://cdn.sistemazero.com.br/adulto/como-fazer/conta-montar-o-espaco/arrumar-e1f62c13d711f353.webp",
             "imageAlt": "Peça escolhida no espaço com os botões Girar, Pôr em cima de… e Tirar."
           },
           {
             "id": "teclado",
             "title": "Use o teclado, se preferir",
             "body": "As setas movem a peça, a tecla R gira, a tecla Delete tira e a tecla Esc solta a peça.",
+            "imageUrl": "https://cdn.sistemazero.com.br/adulto/como-fazer/conta-montar-o-espaco/teclado-e0691047407ab84f.webp",
             "imageAlt": "Dica do teclado no painel do espaço, com as setas, R, Delete e Esc."
           },
           {
             "id": "salvar",
             "title": "Salve",
             "body": "Clique em **Salvar espaço** e espere o aviso **Espaço salvo.** Cada conquista na comunidade vira um troféu para o seu espaço.",
+            "imageUrl": "https://cdn.sistemazero.com.br/adulto/como-fazer/conta-montar-o-espaco/salvar-32141668a2b4c1c6.webp",
             "imageAlt": "Botão Salvar espaço destacado e o aviso Espaço salvo."
           }
         ],
@@ -3595,6 +3675,7 @@
             "id": "abrir",
             "title": "Abra as compras",
             "body": "Clique no cartão com a sua foto, no pé do menu, e depois em **Compras e assinatura**. No celular, ela fica em **Mais**.",
+            "imageUrl": "https://cdn.sistemazero.com.br/adulto/como-fazer/conta-compras-e-assinatura/abrir-5c186ec8694d8508.webp",
             "imageAlt": "Menu do perfil aberto com o item Compras e assinatura destacado."
           },
           {
@@ -3607,6 +3688,7 @@
             "id": "compras",
             "title": "Veja cada compra",
             "body": "Em **Histórico de compras**, clique numa linha para abrir **Detalhes da compra**, com descrição, valor, método, data e status.",
+            "imageUrl": "https://cdn.sistemazero.com.br/adulto/como-fazer/conta-compras-e-assinatura/compras-fdf69e28df5ccb15.webp",
             "imageAlt": "Janela Detalhes da compra com a descrição, o valor, o método, a data e o status."
           },
           {
@@ -3707,18 +3789,21 @@
             "id": "abrir",
             "title": "Abra o atendimento",
             "body": "Clique em **Ajuda**, no menu, e desça até **Atendimento**. Clique em **Abrir chamado**.",
+            "imageUrl": "https://cdn.sistemazero.com.br/adulto/como-fazer/conta-abrir-chamado/abrir-0cfa38795a320ef9.webp",
             "imageAlt": "Parte Atendimento da página Ajuda com o botão Abrir chamado destacado."
           },
           {
             "id": "preencher",
             "title": "Conte o que aconteceu",
             "body": "Preencha o **Assunto**, escolha o tema em **Sobre o que você precisa de ajuda?** e escreva em **Como podemos ajudar?** o que você tentou fazer e o que apareceu na tela.",
+            "imageUrl": "https://cdn.sistemazero.com.br/adulto/como-fazer/conta-abrir-chamado/preencher-de2428d5baa257d4.webp",
             "imageAlt": "Formulário do chamado com os campos Assunto, Sobre o que você precisa de ajuda? e Como podemos ajudar? preenchidos."
           },
           {
             "id": "enviar",
             "title": "Envie",
             "body": "Clique em **Enviar chamado**. A conversa abre, e o chamado fica na lista do **Atendimento**.",
+            "imageUrl": "https://cdn.sistemazero.com.br/adulto/como-fazer/conta-abrir-chamado/enviar-cf99062df6445b39.webp",
             "imageAlt": "Botão Enviar chamado destacado no fim do formulário."
           },
           {
@@ -3731,12 +3816,14 @@
             "id": "acompanhar",
             "title": "Acompanhe a conversa",
             "body": "Clique em **Atualizar** para ver respostas novas. Para responder, escreva em **Sua mensagem** e clique em **Enviar mensagem**.",
+            "imageUrl": "https://cdn.sistemazero.com.br/adulto/como-fazer/conta-abrir-chamado/acompanhar-df1b285c59e822ec.webp",
             "imageAlt": "Conversa do chamado com o botão Atualizar no alto e o campo Sua mensagem com o botão Enviar mensagem."
           },
           {
             "id": "aula",
             "title": "Dúvida de aula vai pela aula",
             "body": "Para uma dúvida sobre uma aula, use **Preciso de ajuda** dentro dela. Veja [como pedir ajuda sem sair da aula](/como-fazer/aula-pedir-ajuda).",
+            "imageUrl": "https://cdn.sistemazero.com.br/adulto/como-fazer/conta-abrir-chamado/aula-d00d1ff7661f43b3.webp",
             "imageAlt": "Recado Dúvida sobre uma aula? da página Ajuda, que indica o botão Preciso de ajuda."
           }
         ],
