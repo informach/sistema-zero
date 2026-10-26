@@ -31,12 +31,17 @@ export default async function CatalogPage() {
     (summary) => summary.courses.length > 0,
   )
 
+  // O botão amarelo vai para a trilha em que a pessoa está (a primeira com nível em andamento).
+  const primaryTrack = tracks.find((summary) =>
+    summary.levels.some((level) => level.state === 'current'),
+  )?.track
+
   return (
     <>
       <PageBand
         kicker="Catálogo da comunidade"
         title="Cursos"
-        lead="Os cursos que já são seus e os que você ainda pode conhecer, organizados por trilha."
+        lead="Cada curso termina com um jogo seu, pronto para jogar e mostrar. Comece por uma trilha e avance um nível de cada vez."
       >
         {/* As trilhas no palco: é por elas que se descobre o caminho (Estúdio à noite). */}
         {tracks.length > 0 ? (
@@ -44,9 +49,13 @@ export default async function CatalogPage() {
             <h2 id="trilhas" className="sz-h3">
               Trilhas
             </h2>
-            <div className="grid gap-5">
+            <div className="grid gap-5 md:grid-cols-2">
               {tracks.map((summary) => (
-                <TrackCard key={summary.track} summary={summary} />
+                <TrackCard
+                  key={summary.track}
+                  summary={summary}
+                  primary={summary.track === primaryTrack}
+                />
               ))}
             </div>
           </section>

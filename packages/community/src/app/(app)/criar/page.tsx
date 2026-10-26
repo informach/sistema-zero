@@ -164,14 +164,14 @@ function ToolArt({ tool, available }: { tool: Tool; available: boolean }) {
     <div
       aria-hidden
       className={cn(
-        'relative flex h-[6.5rem] items-end justify-between p-5',
+        'relative flex h-[8.5rem] items-end justify-between p-5 md:h-[9.5rem]',
         !available && 'saturate-[0.35]',
       )}
       style={{
         background: `linear-gradient(135deg, ${tool.color}, color-mix(in oklab, ${tool.color} 55%, var(--dourado)))`,
       }}
     >
-      <span className="font-(family-name:--font-pixel) text-[1.6rem] text-white uppercase leading-none tracking-[0.04em] [text-shadow:2px_2px_0_rgb(0_0_0/0.35)]">
+      <span className="font-(family-name:--font-pixel) text-[2rem] text-white uppercase leading-none tracking-[0.12em] [text-shadow:3px_3px_0_rgb(0_0_0/0.35)]">
         {tool.name}
       </span>
       <span className="inline-flex size-[2.6rem] items-center justify-center rounded-[0.8rem] bg-(--noite)/80 text-(--texto-claro)">
@@ -199,7 +199,7 @@ function ToolCard({ tool, status }: { tool: Tool; status: ToolStatus }) {
         </div>
         <p className="text-muted-foreground">{tool.description}</p>
         {status.kind === 'locked' ? (
-          <p className="text-[0.85rem] text-foreground">
+          <p className="text-(--aviso-texto) text-[0.85rem]">
             <strong>Por quê:</strong> {LOCK_REASON[status.reason]}
           </p>
         ) : null}

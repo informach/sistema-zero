@@ -248,11 +248,27 @@ plataforma já faz (as sugestões de recurso novo do Canvas ficaram de fora, dec
   antes do painel "Mais" (`flex-col-reverse` só desenha o painel por cima), Tab para fora fecha, e com
   o painel aberto o destaque vai para "Mais" sem tirar o `aria-current` da página atual.
 - **Páginas:** Início (saudação, cartão Continuar com a mira e Seu ritmo no palco; módulo e Recados na
-  bancada; Mural num palco no pé), Cursos (trilhas no palco), Curso (capa grande com mira, módulo atual
-  com moldura amarela), Seu progresso (números com rótulo em pixel colorido; a Jornada num bloco de
-  palco), Criar (as ferramentas no palco, cada uma com a faixa de arte na cor dela), Comunidade (o
-  Mural num bloco de palco), 404/erro (`StatusScreen` no palco, o número em pixel), entrada (o painel
-  do `AuthSplitShell` é palco). As demais herdam pelos tokens.
+  bancada; Mural num palco no pé), Cursos (as trilhas lado a lado no palco, o caminho no alto do
+  cartão e o amarelo na trilha em que a pessoa está), Trilha (o nível atual em amarelo), Etapa ("Ao
+  concluir, libera" em cartões no palco, o curso em andamento com a moldura amarela), Curso (capa
+  grande com mira, módulo atual com moldura amarela), Seu progresso (números com rótulo em pixel
+  colorido; a Jornada como uma linha de etapas com "Você está aqui" e o cartão da etapa atual), Criar
+  (as ferramentas no palco, cada uma com a arte na cor dela; a tela de ferramenta fechada,
+  `ToolNotice`, é um palco com a arte e o cadeado, e o `data-sz-tool-notice` devolve a letra de 20 px
+  dentro da rota de tela cheia), Comunidade (Mural, Desafio do mês e Ranking em cartões com arte no
+  palco; o Clube na bancada), Desafio do mês (palco com a faixa amarela e os passos), Ranking (a liga
+  da semana no palco, com as linhas de quem sobe e de quem volta), Recados (ícone por tipo e a
+  conversa aberta marcada em amarelo), Ajuda (a busca é a folha clara no palco), Meu perfil (o nome
+  no título, a parte à vista marcada em amarelo, o Embaixador num bloco de palco), Compras (a
+  assinatura no palco).
+- **Entrada e páginas públicas** (Canvas "Entrar e páginas públicas"): o `AuthSplitShell` põe o PALCO
+  à esquerda (logo escura, sobretítulo em pixel, título grande e os itens com números coloridos) e o
+  formulário numa folha branca à direita; no celular, a logo clara e a folha. Entrar: "Use o e-mail da
+  sua compra", "Esqueci minha senha" na linha do rótulo da senha, o código em pixel. `PublicTopBar`
+  (`public-top-bar.tsx`) é a barra escura de toda página pública (Ajuda para entrar, Validar,
+  404/erro). Validar: o certificado como um cartão da noite com a moldura dourada (`.sz-certificado`).
+  404 "Esta página saiu do mapa." e erro "Esta página tropeçou." com o monitor em pixel. `/jogar`
+  segue o `PublicPlayer` do member-shell (cabeçalho na noite pelos tokens `--topo-*`).
 - **Prévia** (fora do git): `tmp/estudio-noite/` renderiza as páginas REAIS no navegador com o shell
   falso (`server-stub.ts`: `shell.grupo.metodo` → `fixtures.ts`; sem fixture, 503 e a página degrada como
   em produção) e os Server Components assíncronos resolvidos antes do render. `bun tmp/estudio-noite/serve.ts`

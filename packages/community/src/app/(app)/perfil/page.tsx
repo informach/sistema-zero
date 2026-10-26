@@ -10,6 +10,7 @@ import { ProfileNav } from '@/components/community/profile/profile-nav'
 import { PublicProfileSettings } from '@/components/community/public-profile-settings'
 import { PersonAvatar } from '@/components/community/user-menu'
 import { PALETTE_COOKIE } from '@/lib/cookies'
+import { getUserDisplayName } from '@/lib/user-display'
 import { getMeReadonly } from '@/server/auth'
 import { getAvatarReadonly } from '@/server/members'
 import { isOwnAdultAccountSession } from '@/server/own-account'
@@ -90,7 +91,10 @@ export default async function ProfilePage() {
         <div className="sz-page flex flex-wrap items-center gap-6 pt-10 pb-9 md:pt-11 md:pb-10">
           <PersonAvatar user={person} className="size-[4.8rem] text-[1.6rem]" />
           <div className="flex min-w-0 flex-1 basis-[18rem] flex-col gap-1.5">
-            <h1 className="sz-h1">Meu perfil</h1>
+            <span className="sz-kicker">Meu perfil</span>
+            <h1 className="sz-h1 break-words">
+              {getUserDisplayName(user.firstName, user.lastName, user.email)}
+            </h1>
             <p className="sz-lead break-words">
               {user.email} · seus dados, sua cor e como você aparece na comunidade.
             </p>
