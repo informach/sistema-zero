@@ -53,8 +53,10 @@ export function operationView(row: typeof pensaOperations.$inferSelect): P.Pensa
     status: row.status,
     calls: row.calls,
     error: row.error,
-    // Só a falha diz se uma nova tentativa ainda cabe no orçamento (a mesma régua da reivindicação).
-    ...(row.status === 'failed' ? { retryable: pensaOperationRetryable(row) } : {}),
+    // Só a falha SEM orçamento diz `retryable: false` (a mesma régua da reivindicação); ausente
+    // vale "pode tentar". O campo sai só nesse caso raro porque o Kids valida a view com schema
+    // estrito: o app ainda sem o campo, no meio de um deploy, recusaria qualquer falha.
+    ...(row.status === 'failed' && !pensaOperationRetryable(row) ? { retryable: false } : {}),
     createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt.toISOString(),
   })

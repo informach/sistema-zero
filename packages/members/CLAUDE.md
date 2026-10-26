@@ -492,6 +492,10 @@ Preparação recomenda extensões oficiais; cursos e tutor ensinam a implementa�
   recusar corrida; exclusão de plano preserva criações independentes e dados financeiros.
 - Checkpoints usam prepare/copy/commit/abort e restore com CAS. Cópia falha ocupa cota
   até o job cleanupId do manifesto ser confirmado; tentar novamente exige novo pedido.
+- Operação falha SEM orçamento (`pensaOperationRetryable`, `domain/pensa/operation-budget.ts`)
+  sai com `retryable: false` e o app esconde "Tentar de novo"; o retry dela responde
+  `QUOTA_EXCEEDED`. ⚠️ O campo só é emitido quando é `false` (26/10/2026): o Kids valida a view
+  com `z.strictObject`, e um app ainda sem o campo, na janela do deploy, recusaria toda falha.
 - Migrations 0126–0128 substituem os dados operacionais anteriores, preservando criações,
   XP, contadores, reservas e outbox. DDL é gerada; não editar SQL/snapshots gerados.
 - Verificação: test:pensa-db exige PENSA_TEST_DATABASE_URL local/pensa_*, aplica migrations

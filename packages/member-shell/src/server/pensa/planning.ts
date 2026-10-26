@@ -204,15 +204,29 @@ function inventoryKeyOf(
   creation: PensaGameDefinition['assetSlots'][number]['existing'],
 ): string | null {
   if (!creation) return null
-  const index = inventory
-    .slice(0, MODEL_INVENTORY_LIMIT)
-    .findIndex(
-      (item) =>
-        item.creation.tool === creation.tool &&
-        item.creation.profileId === creation.profileId &&
-        item.creation.creationId === creation.creationId,
-    )
+  const index = inventory.findIndex((item) => sameCreation(item.creation, creation))
   return index < 0 ? null : inventoryKey(index)
+}
+
+type InventoryCreation = PensaContext['inventory'][number]['creation']
+function sameCreation(a: InventoryCreation, b: InventoryCreation): boolean {
+  return a.tool === b.tool && a.profileId === b.profileId && a.creationId === b.creationId
+}
+
+/**
+ * O inventário que o modelo enxerga: as primeiras criações e, além delas, as que o plano salvo
+ * já escolheu. Sem isso, a arte escolhida que ficou além do limite ia ao modelo sem chave e a
+ * resposta fiel (`source: 'existing'`) era recusada. A chave é sempre a posição real.
+ */
+function inventoryForModel(context: PensaContext) {
+  const definition = context.view.draft?.definition ?? context.view.revision?.definition
+  const chosen = definition?.assetSlots.flatMap((slot) => (slot.existing ? [slot.existing] : []))
+  return context.inventory.flatMap((item, index) =>
+    index < MODEL_INVENTORY_LIMIT ||
+    chosen?.some((creation) => sameCreation(creation, item.creation))
+      ? [{ key: inventoryKey(index), name: item.name, kind: item.kind }]
+      : [],
+  )
 }
 
 function definitionForModel(
@@ -321,9 +335,7 @@ function contextForModel(context: PensaContext, focus: string) {
     sources: context.sources
       .slice(0, 3)
       .map((item) => ({ id: item.id, excerpt: item.text.slice(0, 1000) })),
-    inventory: context.inventory
-      .slice(0, MODEL_INVENTORY_LIMIT)
-      .map((item, index) => ({ key: inventoryKey(index), name: item.name, kind: item.kind })),
+    inventory: inventoryForModel(context),
   }
 }
 

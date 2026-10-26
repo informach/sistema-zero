@@ -401,6 +401,66 @@ test('a drawing chosen from the inventory survives the next round of the convers
   })
 })
 
+// O modelo enxerga só as primeiras 80 criações; a arte já escolhida vem junto mesmo depois delas,
+// com a chave da posição real (full review de 26/10/2026).
+test('a chosen drawing beyond the first eighty creations keeps its key', async () => {
+  const context = pensaContext()
+  const draft = context.view.draft
+  if (!draft?.definition) throw new Error('Missing draft')
+  const base = {
+    tool: 'pinta' as const,
+    profileId: PENSA_ACTOR.profileId,
+    saveRevision: '1',
+    contentFingerprint: null,
+  }
+  context.inventory = Array.from({ length: 90 }, (_, index) => ({
+    name: `desenho-${index + 1}`,
+    kind: 'sprite' as const,
+    creation: { ...base, creationId: `desenho-${index + 1}` },
+  }))
+  const chosen = context.inventory[85]!.creation
+  draft.definition.assetSlots = [
+    {
+      id: pensaId(40),
+      name: 'Cesta',
+      kind: 'sprite',
+      description: 'A cesta que pega as folhas.',
+      source: 'existing',
+      existing: chosen,
+    },
+  ]
+  let shown = ''
+  const result = await producePensaStep(
+    { ...pensaWork(context), input: { message: 'Lugares fixos' } },
+    context,
+    async (options) => {
+      const request = PensaJsonObjectSchema.parse(JSON.parse(options.user))
+      shown = JSON.stringify(request.data)
+      const previous = PensaJsonObjectSchema.parse(
+        PensaJsonObjectSchema.parse(request.data).previous,
+      )
+      const slots = PensaJsonObjectSchema.array().parse(previous.assetSlots)
+      return options.schema.parse({
+        ...rawDefinition(pensaDefinition()),
+        assetSlots: slots.map(({ key, name, kind, description, source, existingInventoryKey }) => ({
+          key,
+          name,
+          kind,
+          description,
+          source,
+          existingInventoryKey: existingInventoryKey ?? null,
+        })),
+      })
+    },
+  )
+  expect(shown).toContain('"key":"inventory86"')
+  expect(shown).not.toContain('"key":"inventory85"')
+  if (result.type !== 'step') throw new Error('Expected the definition to be accepted')
+  expect(PensaJsonObjectSchema.parse(result.output).definition).toMatchObject({
+    assetSlots: [{ id: pensaId(40), source: 'existing', existing: chosen }],
+  })
+})
+
 test('a chosen drawing that left the inventory is shown without an invented key', async () => {
   const context = pensaContext()
   const draft = context.view.draft

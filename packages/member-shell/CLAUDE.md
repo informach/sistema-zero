@@ -161,7 +161,7 @@ Testes HTTP/Next precisam dos construtores nativos de Request/Response/Headers. 
 ## Objetivos da parte no cartão da criança (18/10/2026)
 
 [`docs/plans/2026-10-18-objetivos-do-estudio.md`](../../docs/plans/2026-10-18-objetivos-do-estudio.md). `components/studio/section-project-check.tsx` (`SectionProjectCheck` → `ObjectivesCard`):
-UM botão ("Verificar esta parte"), a lista dos obrigatórios e, separada, a dos **Desafios extras**
+UM botão ("Verificar projeto"), a lista dos obrigatórios e, separada, a dos **Desafios extras**
 (5 XP uma vez). Desde 23/10/2026, a faixa mantém progresso e verificação visíveis; o título
 abre os detalhes, recolhidos no início e abertos quando há pendência na resposta. A dica só
 aparece num objetivo que FALTOU depois de verificar (antes tiraria a
@@ -841,8 +841,8 @@ autor da resposta automática do atendimento segue **"Assistente de IA"** (`cust
 
 Desde a unificação de 21/10/2026, as telas de aula que os dois apps dividem falam a MESMA língua:
 **curso → módulo → aula → parte** (o nome "módulo" para o grupo de aulas foi decidido em 23/10/2026,
-valendo também para o Admin), com **Próxima parte**, **Partes da aula**, **Verificar esta parte**,
-**Objetivos desta parte**, **Enviar meu projeto**, **Enviar de novo**, **Concluir aula**, **Baixar meu
+valendo também para o Admin), com **Próxima parte**, **Partes da aula**, **Verificar projeto**,
+**Objetivos do projeto**, **Enviar meu projeto**, **Enviar de novo**, **Concluir aula**, **Baixar meu
 certificado**, o material **Passo a passo do projeto** e **a equipe** como quem recebe e responde
 ("Recados da equipe"). "Aventura" só descreve a história de um curso e "fase", um nível real de jogo;
 "Mundo" e "unidade" não nomeiam o módulo (a trilha e o baú do Kids dizem "Módulo N" desde 23/10/2026;

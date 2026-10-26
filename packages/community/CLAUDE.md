@@ -343,7 +343,7 @@ Kids:
 
 Desde a unificação de 21/10/2026 as duas comunidades usam os mesmos nomes: **curso → módulo → aula →
 parte** ("módulo" para o grupo de aulas foi decidido em 23/10/2026 e vale também no Admin). Rótulos:
-**Próxima parte**, **Partes da aula**, **Verificar esta parte**, **Objetivos desta parte**, **Enviar meu
+**Próxima parte**, **Partes da aula**, **Verificar projeto**, **Objetivos do projeto**, **Enviar meu
 projeto**, **Enviar de novo**, **Concluir aula** e **Baixar meu certificado**; o material é **Passo a passo
 do projeto** e quem recebe e responde é **a equipe**. A comunidade adulta deixou de dizer "Próxima seção"
 e "professor" nas telas de aula. O contrato é o `COMMON_LESSON_COPY` do member-shell (o
@@ -399,7 +399,7 @@ avatar, espaço 3D, perfil público e Como fazer), na mesma régua da seção an
   (`FEATURED_SLUGS`, do lote `docs/como-fazer-adulto`); sem tutorial, só a busca. O tutorial aberto
   de uma aula (`?voltar=`, régua `resolveHelpReturn` do member-shell) mostra "Você veio da aula …"
   com "Voltar para a aula", e os "Veja também" levam a volta junto.
-- **Como fazer adulto**: o conteúdo (8 coleções, 50 tutoriais) está em `docs/como-fazer-adulto/`
+- **Como fazer adulto**: o conteúdo (8 coleções, 64 tutoriais) está em `docs/como-fazer-adulto/`
   (`como-fazer.json` + `validar.ts` + README). Publicar é manual: Admin → Como fazer → plataforma
   Adulto → importar → revisar e publicar. Os ícones `users` e `user` entraram na allowlist do core.
 

@@ -701,7 +701,7 @@ a tecnologia.
 ⭐⭐ Decisão da dona em 21/10/2026, que desfez a de 06/10: a área da criança e a comunidade adulta
 falam a mesma língua nas aulas. A estrutura é **curso → módulo → aula → parte**, igual no Kids, no
 adulto e no Admin (o nome "módulo" para o grupo de aulas foi decidido em 23/10/2026). Os rótulos
-são **Próxima parte**, **Partes da aula**, **Verificar esta parte**, **Objetivos desta parte**,
+são **Próxima parte**, **Partes da aula**, **Verificar projeto**, **Objetivos do projeto**,
 **Enviar meu projeto**, **Enviar de novo**, **Concluir aula** e **Baixar meu certificado**. O
 material é **Passo a passo do projeto**, no PDF e no botão. Quem recebe os envios e responde os
 recados é **a equipe** ("Recados da equipe"). A regra e os exemplos estão nas Diretrizes
