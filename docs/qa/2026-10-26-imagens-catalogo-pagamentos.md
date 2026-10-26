@@ -7,4 +7,3 @@ Foram construídas as duas imagens finais no Docker local com o lockfile congela
 Em PostgreSQL 17 isolado e recém-criado, os comandos de migração reais de ambos os serviços concluíram com sucesso. As imagens finais iniciaram com seus comandos padrão e seus endpoints `/readyz` responderam HTTP 200, com banco pronto; Pagamentos também reportou o aquecimento do cliente Efí como pronto usando credenciais e certificado de teste. Não foram feitas cobranças nem chamadas reais à Efí. Verificou-se que o processo roda como `bun` e que documentação, cache e os demais workspaces não estão na imagem final.
 
 O tempo de publicação e a saúde dos serviços após deploy no Railway ainda precisam ser medidos em staging; o teste local não explica nem elimina eventuais atrasos de infraestrutura do provedor.
-
