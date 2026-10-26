@@ -827,6 +827,7 @@ export const COPY = {
     paintGradientNeedsRgba:
       'Gradientes e carimbos precisam de cores livres. Converta a imagem para RGBA; você pode desfazer a conversão.',
     paintGradientConvertHint: 'Para usar gradiente ou carimbo, libere as cores desta textura.',
+    paintGradientConvertAction: 'Liberar cores para gradiente',
     paintGradientHint:
       'Arraste do começo até o fim da mistura. O gradiente preenche a área selecionada, ou a imagem toda quando não há seleção. Se a peça tiver cor de base, ela aparece nas partes transparentes.',
     paintGradientColors: 'Cores do gradiente',
