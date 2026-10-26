@@ -53,3 +53,18 @@ continuam sujeitas à revisão de conteúdo; não se alterou gravação nesta re
 
 Este documento registra qualificação local. CI da composição, publicação da imagem nova,
 provas hospedadas e rollout da segunda liberação precisam de seus próprios recibos.
+
+## Conciliação posterior do remoto/local
+
+Depois do primeiro fechamento, entraram `b0d94b1ad` e seu equivalente local `a675d56d3`,
+além do layout avatar/quarto (`f8e039ae5`, `144be0164`). A composição `2a5e8f36c`
+contém ambas as histórias, sem conflito de conteúdo. Revistos: remapeamento dos anexos
+no clone de curso, identidade das artes existentes na conversa do Pensa, orçamento único
+de retomada, base durável da substituição de projeto e ajustes visuais dos cosméticos.
+
+Verificações focadas novas: Shell 11/33, Members 11/41, Pensa 7/24, Kids 12/36,
+abertura do Estúdio 10/70 casos internos (um wrapper, sem dupla contagem), todos positivos.
+Biblioteca adulta: 64 tutoriais em oito coleções válidos, com avisos editoriais de ausência
+de imagens e menções comerciais preservados. Nenhum tutorial foi importado no Admin por
+esta operação. Perfil do executor continuou exato após essa conciliação; nenhum arquivo
+do runtime ou Core Studio mudou entre a imagem qualificada e a composição nova.
