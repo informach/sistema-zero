@@ -2,7 +2,7 @@
  * Unreleased model domain. Not accepted by the public reader/writer yet.
  * Geometry lives in node-local coordinates; atlas, mirrors and GPU buffers are derived.
  */
-import type { TexelsPerUnit } from '../core/limits'
+import type { PaintTextureDensity, TexelsPerUnit } from '../core/limits'
 import type {
   MoldaAssetBase,
   MoldaPaletteFields,
@@ -136,6 +136,8 @@ export interface SceneImage {
   width: number
   height: number
   encoding: 'indexed' | 'rgba'
+  /** Pixel density selected when this piece's UV template was generated. */
+  texelsPerUnit?: PaintTextureDensity
   /** Bottom to top. Composite/atlas are derived and must not be persisted as a second source. */
   layers: SceneImageLayer[]
   flipbook?: SceneImageFlipbook

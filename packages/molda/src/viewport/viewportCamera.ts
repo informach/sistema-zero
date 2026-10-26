@@ -128,6 +128,53 @@ export class ViewportCamera {
     this.applyFrame(this.view, bounds, direction, false)
   }
 
+  /** Extend the current view's depth as geometry grows, without changing its zoom or orbit target. */
+  keepBoundsInDepth(bounds: Bounds | null): boolean {
+    if (!bounds) return false
+    drawingNumbers([...bounds.min, ...bounds.max])
+    requireScene(
+      bounds.min.every((value, i) => value <= bounds.max[i]!),
+      'camera',
+      'Os limites da vista estão invertidos.',
+    )
+    const perspective = this.perspective.clone(),
+      orthographic = this.orthographic.clone(),
+      camera = this.camera === this.perspective ? perspective : orthographic
+    const outward = camera.position.clone().sub(this.target).normalize()
+    const forward = outward.clone().negate()
+    let closest = Infinity
+    let farthest = -Infinity
+    for (const x of [bounds.min[0], bounds.max[0]])
+      for (const y of [bounds.min[1], bounds.max[1]])
+        for (const z of [bounds.min[2], bounds.max[2]]) {
+          const depth = new Vector3(x, y, z).sub(camera.position).dot(forward)
+          closest = Math.min(closest, depth)
+          farthest = Math.max(farthest, depth)
+        }
+    const radius =
+      new Vector3(
+        bounds.max[0] - bounds.min[0],
+        bounds.max[1] - bounds.min[1],
+        bounds.max[2] - bounds.min[2],
+      ).length() / 2
+    const padding = Math.max(0.25, radius * 0.02, camera.near * 2)
+    const missingNear = camera.near + padding - closest
+    const retreat = missingNear > Math.max(1e-9, Math.abs(closest) * 1e-12) ? missingNear : 0
+    const missingFar = farthest + retreat + padding - camera.far
+    const far =
+      missingFar > Math.max(1e-9, Math.abs(camera.far) * 1e-12)
+        ? camera.far + missingFar
+        : camera.far
+    if (retreat === 0 && far === camera.far) return false
+    camera.position.addScaledVector(outward, retreat)
+    camera.far = far
+    camera.updateMatrixWorld(true)
+    project(perspective, orthographic, this.aspect, this.verticalSpan)
+    this.perspective.copy(perspective, false)
+    this.orthographic.copy(orthographic, false)
+    return true
+  }
+
   private applyFrame(
     view: CameraView,
     bounds: Bounds | null,

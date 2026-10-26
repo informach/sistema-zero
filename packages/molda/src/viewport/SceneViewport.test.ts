@@ -199,6 +199,30 @@ function setup(
 }
 
 describe('scene viewport lifecycle and picking', () => {
+  test('editing an existing piece beyond the camera keeps its geometry inside the depth range', () => {
+    const f = setup()
+    try {
+      const initialCamera = f.count().camera!
+      const target = new Vector3(0, 1, 100)
+      expect(Math.abs(target.clone().project(initialCamera).z)).toBeGreaterThan(1)
+      const piece = f.source.nodes.find((node) => node.kind === 'mesh')!
+      const move = identityMatrix()
+      move[14] = 100
+      const moved = transformSceneNodes(f.source, [piece.id], move)
+      const before = initialCamera.position.clone()
+      const zoom = (initialCamera as OrthographicCamera).zoom
+
+      f.viewport.setDocument(moved)
+      f.tick()
+      const camera = f.count().camera!
+      expect(Math.abs(target.project(camera).z)).toBeLessThan(1)
+      expect(camera.position.distanceTo(before)).toBeGreaterThan(0)
+      expect((camera as OrthographicCamera).zoom).toBe(zoom)
+    } finally {
+      f.close()
+    }
+  })
+
   test.each([
     'face',
     'edge',

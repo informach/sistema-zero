@@ -686,7 +686,14 @@ export class SceneViewport implements SceneViewportPort {
     this.updateEditingEnabled()
     this.updateVisibility(supports, weights)
     if (first) this.frame()
-    else if (added.length) this.ensureVisible(added)
+    else {
+      if (this.rig.keepBoundsInDepth(this.bounds(false)) && this.orbit)
+        this.orbit.maxDistance = Math.max(
+          this.orbit.maxDistance,
+          this.rig.camera.position.distanceTo(this.rig.target) * 4,
+        )
+      if (added.length) this.ensureVisible(added)
+    }
     this.request()
     return issues
   }

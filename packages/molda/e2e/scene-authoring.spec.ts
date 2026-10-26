@@ -308,7 +308,10 @@ test('paint uses the real UV grid, saved palette, temporary picker and one undo 
   await page.mouse.up()
   await expect(page.getByLabel('Cor hexadecimal', { exact: true })).toHaveValue('#f0352b')
   await expect(page.getByRole('button', { name: COPY.editor.undo, exact: true })).toBeDisabled()
+  const stageSettings = page.locator('summary').filter({ hasText: 'Mais ajustes do palco' })
+  await stageSettings.click()
   await page.getByRole('button', { name: 'Quadradinhos', exact: true }).click()
+  await stageSettings.click()
   await page.getByRole('button', { name: 'Espelho de pintura', exact: true }).click()
   const canvas = page.locator('canvas').first()
   const bounds = (await canvas.boundingBox())!

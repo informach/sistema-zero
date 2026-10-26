@@ -252,14 +252,15 @@ describe('inventário da oficina: o que a criança alcança', () => {
     // One explicit UV-simple action repairs an existing piece without exposing UV editing tools.
     // A ajuda da pintura abre em modal sem ocupar espaço permanente no painel.
     // Textura e camadas voltou ao nível avançado como uma revelação fechada (+1 montado).
-    expect(montados.length, montados.join(' | ')).toBeLessThanOrEqual(86)
+    // Criar e Importar textura são as duas ações agora visíveis na aba Pintar.
+    expect(montados.length, montados.join(' | ')).toBeLessThanOrEqual(88)
     // Scope (2), UV grid and hue/hex replace the native picker; saved swatches stay bounded.
     // Named UV/material/sheet areas and the visible contextual brush section add four controls.
     // Ready colors stay in front; the new palette library has one collapsed entry.
     // HSV, favorites, UV/materials and layers are now closed.
     // The requested X-ray adds one view toggle beside the grid.
     // A entrada fechada de Textura e camadas também fica à vista (+1 controle).
-    expect(encarados.length, encarados.join(' | ')).toBeLessThanOrEqual(60)
+    expect(encarados.length, encarados.join(' | ')).toBeLessThanOrEqual(62)
   })
 
   test('todo controle tem nome: sem nome, a criança não acha e o leitor de tela não fala', () => {

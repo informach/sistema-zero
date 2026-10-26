@@ -227,6 +227,7 @@ export function copySceneMaterialForNode(
   nodeId: string,
   materialId: string,
   nextId: () => string = newId,
+  options: { copyImages?: boolean } = {},
 ) {
   const selected = sceneCommandSelection(document, [nodeId])
   requireEditableScene(selected)
@@ -239,7 +240,10 @@ export function copySceneMaterialForNode(
     'Escolha um material desta peça.',
   )
   const geometry = selected.index.geometries.get(node.geometryId)!
-  const images = [...sceneMaterialImageIds(source)].map((id) => usage.index.images.get(id)!)
+  const images =
+    options.copyImages === false
+      ? []
+      : [...sceneMaterialImageIds(source)].map((id) => usage.index.images.get(id)!)
   const bytes = images.reduce(
     (total, image) =>
       total + image.layers.reduce((total, layer) => total + layer.pixels.byteLength, 0),
@@ -261,7 +265,9 @@ export function copySceneMaterialForNode(
   }))
   const copiedMaterial = { ...source, id }
   for (const field of SCENE_MATERIAL_IMAGE_KEYS)
-    if (source[field] !== undefined) copiedMaterial[field] = imageIds.get(source[field])!
+    if (source[field] !== undefined)
+      copiedMaterial[field] =
+        options.copyImages === false ? undefined : imageIds.get(source[field])!
   let changed: SceneGeometry = geometry
   const remap = <T extends { materialId?: string }>(face: T): T =>
     face.materialId === materialId ? { ...face, materialId: id } : face
