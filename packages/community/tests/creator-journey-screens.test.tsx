@@ -101,3 +101,28 @@ test('masteries show the real entry, the rubric and the nucleus credit without i
   expect(html).toContain(area.levels[0]!.rubric.criteria[0]!.title.replace(/^O aluno\b/, 'Você'))
   expect(html).not.toContain('Revisar curso')
 })
+
+test('a power with 2D and 3D versions gives each version its own action', () => {
+  const { view, catalog, mine } = creatorSceneFixture('adult', 'pair')
+  const stage = view.stages[0]!
+  const [first, second] = stage.powers
+  const done = { ...first!.courses[0]!, state: 'completed' as const }
+  const other = { ...second!.courses[0]!, state: 'available' as const }
+  const twoVersions = { ...stage, powers: [{ ...first!, courses: [done, other] }] }
+  const html = renderToStaticMarkup(
+    <AdultCreatorTrail
+      view={{ ...view, stages: [twoVersions, ...view.stages.slice(1)] }}
+      level={stage.level}
+      catalog={catalog.map((course) =>
+        course.courseId === other.courseId
+          ? { ...course, track: '3d' as const }
+          : course.courseId === done.courseId
+            ? { ...course, track: '2d' as const }
+            : course,
+      )}
+      mine={mine}
+    />,
+  )
+  expect(html).toContain('2D: Abrir de novo')
+  expect(html).toContain('3D: Começar')
+})

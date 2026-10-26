@@ -112,6 +112,11 @@ const ROLE: Record<string, { label: string; hint: string }> = {
   },
 }
 
+/** O nome do papel do curso no currículo ("Curso da trilha 2D", "Poder"...), o mesmo da tela. */
+export function creatorRoleLabel(role: string): string {
+  return ROLE[role]?.label ?? role
+}
+
 export function CourseCurriculumPlacement({
   curriculum,
   courseId,

@@ -22,6 +22,7 @@ import {
   creatorNextStep,
   creatorStageChecklist,
   creatorStageMissing,
+  creatorStageSummary,
   ROMAN_LEVEL,
 } from '@sistemazero/member-shell/lib/creator-journey-presentation'
 import {
@@ -119,11 +120,13 @@ function ChecklistCard({
   rows,
   percent,
   done,
+  showBar = true,
 }: {
   title: string
   rows: Row[]
   percent: number
   done: boolean
+  showBar?: boolean
 }) {
   return (
     <div className="sz-card-sm flex w-full flex-col gap-3 p-5 md:w-[21rem] md:flex-none">
@@ -144,7 +147,9 @@ function ChecklistCard({
           </li>
         ))}
       </ul>
-      <ProgressBar value={percent} label="Quanto da etapa está feito" done={done} />
+      {showBar ? (
+        <ProgressBar value={percent} label="Quanto da etapa está feito" done={done} />
+      ) : null}
     </div>
   )
 }
@@ -303,27 +308,34 @@ export function CreatorMissionCard({
   )
 }
 
-/** Um Poder na grade: a dimensão e as aulas no alto, o nome, a frase e o botão. */
+/**
+ * Um Poder na grade: a dimensão e as aulas no alto, o nome, a frase e o botão. Com versões 2D e
+ * 3D, cada versão ganha a sua ação ("2D: Abrir de novo", "3D: Começar"): elas contam uma vez
+ * para a etapa, mas a pessoa pode querer fazer as duas.
+ */
 function CreatorPowerCard({
   title,
   card,
+  versions,
   tracks,
   done,
   note,
 }: {
   title: string
   card: CreatorEntryCardView
+  versions: readonly CreatorEntryCardView[]
   tracks: string
   done: boolean
-  note: string | null
+  note: (version: CreatorEntryCardView) => string | null
 }) {
+  const many = versions.length > 1
   return (
     <article className="sz-card-sm flex h-full flex-col gap-3 p-5">
       <div className="flex items-center justify-between gap-2">
         <span className="text-[0.85rem] text-muted-foreground">
           {[
             tracks,
-            card.lessons
+            !many && card.lessons
               ? `${card.lessons.total} ${card.lessons.total === 1 ? 'aula' : 'aulas'}`
               : null,
           ]
@@ -340,17 +352,52 @@ function CreatorPowerCard({
       {card.subtitle ? (
         <p className="m-0 line-clamp-3 text-[0.95rem] text-muted-foreground">{card.subtitle}</p>
       ) : null}
-      <div className="mt-auto">
-        {card.continueHref ? (
-          <EntryAction card={card} label={done ? 'Abrir de novo' : null} className="self-start" />
+      <div className="mt-auto flex flex-col items-start gap-2">
+        {many ? (
+          versions.map((version) => (
+            <PowerVersionAction key={version.courseId} version={version} note={note(version)} />
+          ))
+        ) : card.continueHref ? (
+          <EntryAction
+            card={card}
+            label={card.status === 'done' ? 'Abrir de novo' : null}
+            className="self-start"
+          />
         ) : (
           <span className={cn('sz-chip', PHRASE_CHIP)}>
             <Lock aria-hidden />
-            {note}
+            {note(card)}
           </span>
         )}
       </div>
     </article>
+  )
+}
+
+function PowerVersionAction({
+  version,
+  note,
+}: {
+  version: CreatorEntryCardView
+  note: string | null
+}) {
+  const track = version.track === '3d' ? '3D' : version.track === '2d' ? '2D' : version.title
+  const action = version.status === 'done' ? 'Abrir de novo' : creatorEntryAction(version.status)
+  if (version.continueHref && action)
+    return (
+      <Link
+        href={version.continueHref}
+        prefetch={false}
+        className={cn(version.status === 'done' ? 'sz-btn-outline' : 'sz-btn', 'sz-btn-sm')}
+      >
+        {track}: {action}
+      </Link>
+    )
+  return (
+    <span className={cn('sz-chip', PHRASE_CHIP)}>
+      <Lock aria-hidden />
+      {track}: {note ?? 'Ainda fechado'}
+    </span>
   )
 }
 
@@ -407,6 +454,9 @@ export function AdultCreatorTrail({
   const card = (entry: Parameters<typeof creatorEntryCard>[0]) =>
     creatorEntryCard(entry, catalog, mine)
   const future = !stage.available && !stage.earned && !stage.completed
+  // Etapa guardada de um progresso anterior (o piso da jornada), sem os passos feitos aqui: diz
+  // isso em vez de "concluída" ao lado de uma lista em zero.
+  const keptOnly = stage.earned && !list.complete
   const note = (item: CreatorEntryCardView, role?: 'base3d' | 'after-pair') =>
     creatorEntryNote(item.status, future ? { futureStage: stage.title } : { role })
   const base2d = card(stage.base2d)
@@ -414,7 +464,9 @@ export function AdultCreatorTrail({
   const mission = card(stage.mission)
   const currentStage = creatorCurrentStage(view)
   // Só as ferramentas que a comunidade adulta sabe apresentar (a política filtra; aqui é a rede).
-  const tools = (capabilities[stage.level] ?? []).filter((capability) => capability in UNLOCK_TILES)
+  const tools = (capabilities[stage.level] ?? []).filter((capability) =>
+    Object.hasOwn(UNLOCK_TILES, capability),
+  )
   const color = { '--etapa-cor': stageColor(badge) } as CSSProperties
 
   return (
@@ -447,17 +499,26 @@ export function AdultCreatorTrail({
                 <p className="sz-lead m-0">
                   {future
                     ? `Esta etapa abre quando você concluir a anterior. Já dá para ver o que vem por aqui.`
-                    : stage.completed
-                      ? 'Etapa concluída. Os cursos continuam abertos para você rever e ampliar seus jogos.'
-                      : `Faça os cursos da trilha, a missão e ${stage.minimumPowers} ${powerWord(stage.minimumPowers)} para concluir a etapa.`}
+                    : keptOnly
+                      ? creatorStageSummary(stage)
+                      : stage.completed
+                        ? 'Etapa concluída. Os cursos continuam abertos para você rever e ampliar seus jogos.'
+                        : `Faça os cursos da trilha, a missão e ${stage.minimumPowers} ${powerWord(stage.minimumPowers)} para concluir a etapa.`}
                 </p>
               </div>
             </div>
             <ChecklistCard
-              title={stage.completed ? 'Etapa concluída' : 'Para concluir a etapa'}
+              title={
+                keptOnly
+                  ? 'O que você fez aqui'
+                  : stage.completed
+                    ? 'Etapa concluída'
+                    : 'Para concluir a etapa'
+              }
               rows={checklistRows(stage, mission)}
               percent={list.percent}
               done={list.complete}
+              showBar={!keptOnly}
             />
           </div>
           {view.paused ? (
@@ -508,7 +569,11 @@ export function AdultCreatorTrail({
             <h2 id="etapa-onde" className="sz-h4">
               Onde você está na jornada
             </h2>
-            <Link href="/progresso" prefetch={false} className="sz-link">
+            <Link
+              href="/progresso"
+              prefetch={false}
+              className="sz-link inline-flex min-h-11 items-center"
+            >
               Ver a jornada inteira
             </Link>
           </div>
@@ -601,20 +666,23 @@ function PowersSection({
       .sort()
       .map((track) => (track === '3d' ? '3D' : '2D'))
       .join(' e ')
-    return { power, primary, tracks }
+    return { power, primary, options, tracks }
   })
-  const render = ({ power, primary, tracks }: (typeof cards)[number]) =>
+  const render = ({ power, primary, options, tracks }: (typeof cards)[number]) =>
     primary ? (
       <li key={power.mechanicId}>
         <CreatorPowerCard
           title={power.title}
           card={primary}
+          versions={options}
           tracks={tracks}
           done={power.completed}
-          note={creatorEntryNote(
-            primary.status,
-            future ? { futureStage: stage.title } : { role: 'after-pair' },
-          )}
+          note={(version) =>
+            creatorEntryNote(
+              version.status,
+              future ? { futureStage: stage.title } : { role: 'after-pair' },
+            )
+          }
         />
       </li>
     ) : null
@@ -1017,7 +1085,7 @@ export function AdultMasteryArea({
                             key={entry.courseId}
                             href={card.continueHref}
                             prefetch={false}
-                            className="sz-link inline-flex items-center gap-1.5"
+                            className="sz-link inline-flex min-h-11 items-center gap-1.5"
                           >
                             {card.title === workshop.title
                               ? card.status === 'done'

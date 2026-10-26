@@ -21,7 +21,11 @@ nome/e-mail. Ver `docs/runbooks/2026-10-26-admin-business-community.md` para mig
   trilha (2D, 3D), Missão, Poderes ("N exigidos · M publicados"; uma versão publicada conta pelo
   Poder) e Extras ("não contam para subir"), cada um com Publicado, Falta publicar, Arquivado ou
   Vínculo indisponível, e os avisos ("Só 1 Poder publicado e 2 exigidos: ninguém consegue subir
-  deste posto."). Pronto = os três cursos fixos publicados e Poderes publicados ≥ exigidos.
+  deste posto.", "Falta publicar o curso 3D da trilha e a missão: ninguém consegue subir deste
+  posto."). Pronto = os três cursos fixos publicados e Poderes publicados ≥ exigidos. Falha ao
+  carregar os cursos mostra `LoadError` com "Tentar de novo" (nunca a grade vazia como se nada
+  estivesse vinculado), e as linhas de curso usam o mesmo nome de papel do editor
+  (`creatorRoleLabel`).
   Clicar num curso abre a edição dele; "Adicionar Poder", "Adicionar extra", "Editar posto" e um
   vínculo sem curso levam ao editor com `?posto=<level>` (`creatorJourneyEditorHref`). **Nada aqui
   grava** (decisão dela: mostrar e levar ao editor). A lista de cursos agora carrega nas DUAS
@@ -29,7 +33,9 @@ nome/e-mail. Ver `docs/runbooks/2026-10-26-admin-business-community.md` para mig
 - **Editor** (`creator-curriculum-editor.tsx`): a regra em quatro passos, os postos e as Maestrias
   em grade, o cartão do posto em seções ("Sobre o posto", "Cursos da trilha (2D e 3D)", "Missão",
   "Poderes · N exigidos", "Extras · não contam para subir", "Ferramentas conquistadas neste
-  posto"), a situação do curso embaixo de cada seletor e as ferramentas pelo NOME
+  posto"), a situação do curso embaixo de cada seletor (`CourseSelect`: rótulo próprio e a
+  situação ligada por `aria-describedby`; arquivado diz que some para quem ainda não tem o curso)
+  e as ferramentas pelo NOME
   (`KIDS_TOOL_LABELS`, nunca o id cru). `?posto=` é lido depois de montar.
 - **Editar dados do curso**: "Lugar na Jornada do Criador" em chips (posto e papel) com o que cada
   papel quer dizer. **Jornada adulta**: título "Jornada do Criador" e `LoadError` na falha de carga.

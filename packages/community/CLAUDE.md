@@ -170,6 +170,12 @@ que saiu da página da etapa). Nomes: **Cursos da trilha**, Missão, Poderes, Ex
 - ⚠️ Frase em `sz-chip` (o motivo do cadeado) leva `h-auto whitespace-normal`: o chip não quebra
   linha e "Abre depois dos cursos da trilha Explorador(a) de Mundos" passava da tela a 390 px. A
   régua das etapas tem `relative` e `contain: inline-size` (rola por dentro sem empurrar a página).
+- **Poder com 2D e 3D**: cada versão ganha o seu botão ("2D: Abrir de novo", "3D: Começar"; o
+  cadeado diz o motivo por versão). As versões contam uma vez para a etapa, mas a pessoa pode
+  fazer as duas. "Abrir de novo" só na versão que ela concluiu.
+- **Etapa conquistada sem concluir tudo** (posto herdado, `earned` sem a lista completa): o
+  cartão vira "O que você fez aqui", sem a barra, e a frase de cima é a do resumo
+  (`creatorStageSummary`), nunca "Faça os cursos…" para quem já passou da etapa.
 - Testes: `tests/creator-journey-screens.test.tsx`; o e2e roda com a prévia (ver abaixo).
 
 ## Jornada do Criador com currículo (25/10/2026)

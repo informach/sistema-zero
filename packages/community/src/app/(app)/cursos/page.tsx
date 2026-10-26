@@ -61,7 +61,11 @@ export default async function CatalogPage() {
               <h2 id="jornada-do-criador" className="sz-h3">
                 Jornada do Criador
               </h2>
-              <Link href="/progresso" prefetch={false} className="sz-link">
+              <Link
+                href="/progresso"
+                prefetch={false}
+                className="sz-link inline-flex min-h-11 items-center"
+              >
                 Ver seu progresso
               </Link>
             </div>

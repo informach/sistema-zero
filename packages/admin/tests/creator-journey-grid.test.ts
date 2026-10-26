@@ -102,3 +102,20 @@ test('the editor link follows the lens and opens the post', () => {
   )
   expect(creatorCourseId(1)).toMatch(/^10000000/)
 })
+
+test('an unpublished trail course or mission says why the post is not ready', () => {
+  const curriculum = creatorCurriculumFixture()
+  const stage = curriculum.stages[2]!
+  const view = creatorJourneyGrid(
+    curriculum,
+    catalogFor().map((item) =>
+      item.id === stage.missionCourseId || item.id === stage.base3dCourseId
+        ? { ...item, status: 'draft' }
+        : item,
+    ),
+  ).stages[2]!
+  expect(view.ready).toBe(false)
+  expect(view.warnings[0]).toBe(
+    'Falta publicar o curso 3D da trilha e a missão: ninguém consegue subir deste posto.',
+  )
+})

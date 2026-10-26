@@ -77,6 +77,9 @@ function gridCourse(
 
 const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`
 
+const joinNames = (names: readonly string[]) =>
+  names.length <= 1 ? (names[0] ?? '') : `${names.slice(0, -1).join(', ')} e ${names.at(-1)}`
+
 export function creatorJourneyGrid(
   curriculum: CreatorJourneyCurriculum,
   courses: readonly CourseView[],
@@ -99,6 +102,18 @@ export function creatorJourneyGrid(
     const publishedPowers = powers.filter((power) => power.published).length
     const fixed = [base2d, base3d, mission]
     const warnings: string[] = []
+    // Os passos fixos (cursos da trilha e missão) em rascunho ou arquivados prendem todo mundo
+    // no posto, como a falta de Poderes. O vínculo sem curso tem o aviso próprio, mais abaixo.
+    const named: [string, CreatorGridCourse][] = [
+      ['o curso 2D da trilha', base2d],
+      ['o curso 3D da trilha', base3d],
+      ['a missão', mission],
+    ]
+    const unpublished = named
+      .filter(([, item]) => item.state === 'draft' || item.state === 'archived')
+      .map(([name]) => name)
+    if (unpublished.length)
+      warnings.push(`Falta publicar ${joinNames(unpublished)}: ninguém consegue subir deste posto.`)
     if (publishedPowers < stage.minimumPowers)
       warnings.push(
         `${publishedPowers === 0 ? 'Nenhum Poder publicado' : `Só ${plural(publishedPowers, 'Poder publicado', 'Poderes publicados')}`} e ${plural(stage.minimumPowers, 'exigido', 'exigidos')}: ninguém consegue subir deste posto.`,

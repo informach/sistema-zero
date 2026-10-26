@@ -5,7 +5,7 @@ import { Button } from '@sistemazero/ui/button'
 import { Card } from '@sistemazero/ui/card'
 import { Input } from '@sistemazero/ui/input'
 import Link from 'next/link'
-import { type ReactNode, useEffect, useRef, useState } from 'react'
+import { type ReactNode, useEffect, useId, useRef, useState } from 'react'
 import { cn } from '@/lib/cn'
 import { KIDS_TOOL_LABELS } from '@/lib/kids-journey-editor'
 import type { CourseView } from '@/lib/types'
@@ -63,28 +63,13 @@ export function CreatorCurriculumEditor({
     })
   }
   const selector = (label: string, courseId: string, change: (id: string) => void) => (
-    <label className="grid min-w-0 gap-1.5 text-sm">
-      <span className="font-medium">{label}</span>
-      <select
-        className="min-h-11 w-full rounded-lg border bg-background px-3 py-2"
-        value={courseId}
-        disabled={disabled}
-        onChange={(event) => change(event.target.value)}
-      >
-        {!availableCourses.some((course) => course.id === courseId) ? (
-          <option value={courseId}>
-            {courseId ? `Vínculo indisponível (${courseId})` : 'Escolha um curso'}
-          </option>
-        ) : null}
-        {availableCourses.map((course) => (
-          <option key={course.id} value={course.id}>
-            {course.title}
-            {course.status === 'published' ? '' : ' · em preparação'}
-          </option>
-        ))}
-      </select>
-      <CourseState course={availableCourses.find((course) => course.id === courseId)} />
-    </label>
+    <CourseSelect
+      label={label}
+      courseId={courseId}
+      courses={availableCourses}
+      disabled={disabled}
+      onChange={change}
+    />
   )
   const courseList = (label: string, ids: readonly string[], change: (ids: string[]) => void) => (
     <fieldset className="space-y-2">
@@ -813,12 +798,66 @@ function EditorSection({
   )
 }
 
-/** A situação do curso escolhido, embaixo do seletor: escrita, nunca só a cor. */
-function CourseState({ course }: { course: CourseView | undefined }) {
-  const [text, tone] = !course
-    ? ['O curso deste vínculo não está na lista. Escolha outro.', 'text-destructive']
-    : course.status === 'published'
-      ? ['Publicado', 'text-success-foreground']
-      : ['Em preparação: ainda não aparece para o aluno', 'text-warning']
-  return <span className={cn('text-xs', tone)}>{text}</span>
+/**
+ * O seletor de um vínculo: o curso escolhido e, embaixo (fora do rótulo, ligado por
+ * `aria-describedby`), a situação dele escrita, nunca só a cor.
+ */
+function CourseSelect({
+  label,
+  courseId,
+  courses,
+  disabled,
+  onChange,
+}: {
+  label: string
+  courseId: string
+  courses: readonly CourseView[]
+  disabled: boolean
+  onChange: (id: string) => void
+}) {
+  const id = useId()
+  const course = courses.find((item) => item.id === courseId)
+  const [text, tone] = !courseId
+    ? ['Nenhum curso escolhido ainda.', 'text-muted-foreground']
+    : !course
+      ? ['O curso deste vínculo não está na lista. Escolha outro.', 'text-destructive']
+      : course.status === 'published'
+        ? ['Publicado', 'text-success-foreground']
+        : course.status === 'archived'
+          ? ['Arquivado: não aparece para quem ainda não tem o curso', 'text-warning']
+          : ['Em preparação: ainda não aparece para o aluno', 'text-warning']
+  return (
+    <div className="grid min-w-0 gap-1.5 text-sm">
+      <label htmlFor={`${id}-curso`} className="font-medium">
+        {label}
+      </label>
+      <select
+        id={`${id}-curso`}
+        aria-describedby={`${id}-situacao`}
+        className="min-h-11 w-full rounded-lg border bg-background px-3 py-2"
+        value={courseId}
+        disabled={disabled}
+        onChange={(event) => onChange(event.target.value)}
+      >
+        {!course ? (
+          <option value={courseId}>
+            {courseId ? `Vínculo indisponível (${courseId})` : 'Escolha um curso'}
+          </option>
+        ) : null}
+        {courses.map((item) => (
+          <option key={item.id} value={item.id}>
+            {item.title}
+            {item.status === 'published'
+              ? ''
+              : item.status === 'archived'
+                ? ' · arquivado'
+                : ' · em preparação'}
+          </option>
+        ))}
+      </select>
+      <span id={`${id}-situacao`} className={cn('text-xs', tone)}>
+        {text}
+      </span>
+    </div>
+  )
 }
