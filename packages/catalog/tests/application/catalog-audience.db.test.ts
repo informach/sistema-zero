@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { createLogger } from '@sistemazero/core/logging'
 import { migrate } from 'drizzle-orm/postgres-js/migrator'
+import type { TransactionSql } from 'postgres'
 import { CreateCouponService } from '../../src/application/create-coupon/create-coupon.service'
 import { CreateOfferService } from '../../src/application/create-offer/create-offer.service'
 import { CreateProductService } from '../../src/application/create-product/create-product.service'
@@ -53,55 +54,82 @@ describe.skipIf(!url)('comunidade do catálogo em PostgreSQL real', () => {
       await connection.close()
     }
   })
-  async function apply() {
-    await connection!.sql.begin(async (tx) => {
-      for (const statement of backfill) await tx.unsafe(statement)
-    })
+  async function apply(tx: TransactionSql) {
+    for (const statement of backfill) await tx.unsafe(statement)
   }
-  async function legacy(sku: string) {
+  async function legacy(sql: TransactionSql, sku: string) {
     const id = crypto.randomUUID()
-    await connection!
-      .sql`insert into catalog.products(id,version,sku,slug,name,created_at,updated_at) values(${id},4,${sku},${sku},${sku},'2026-01-01','2026-01-02')`
+    await sql`insert into catalog.products(id,version,sku,slug,name,created_at,updated_at) values(${id},4,${sku},${sku},${sku},'2026-01-01','2026-01-02')`
     return id
   }
+  async function withLegacyProducts(check: (tx: TransactionSql) => Promise<void>) {
+    // This guarded, disposable DB exercises the historical backfill too. Roll back
+    // both the old shape and the fixtures, leaving the final contract unchanged.
+    const rollback = new Error('rollback legacy fixture')
+    try {
+      await connection!.sql.begin(async (tx) => {
+        await tx.unsafe('ALTER TABLE catalog.products ALTER COLUMN audience DROP NOT NULL')
+        await check(tx)
+        throw rollback
+      })
+    } catch (error) {
+      if (error !== rollback) throw error
+    }
+  }
   test('backfill explícito é idempotente e preserva identidade, versão, metadata e datas', async () => {
-    await legacy('estudio-completo')
-    await legacy('adult-estudio-completo')
-    await legacy('desafio-do-primeiro-jogo')
-    const before = await connection!
-      .sql`select id,version,metadata,created_at,updated_at from catalog.products order by sku`
-    await apply()
-    await apply()
-    expect(
-      await connection!
-        .sql`select id,version,metadata,created_at,updated_at from catalog.products order by sku`,
-    ).toEqual(before)
-    expect(
-      (await connection!.sql`select sku,audience from catalog.products order by sku`).map((row) => [
-        row.sku,
-        row.audience,
-      ]),
-    ).toEqual([
-      ['adult-estudio-completo', 'adult'],
-      ['desafio-do-primeiro-jogo', 'kids'],
-      ['estudio-completo', 'kids'],
-    ])
+    await withLegacyProducts(async (sql) => {
+      await legacy(sql, 'estudio-completo')
+      await legacy(sql, 'adult-estudio-completo')
+      await legacy(sql, 'desafio-do-primeiro-jogo')
+      const before =
+        await sql`select id,version,metadata,created_at,updated_at from catalog.products order by sku`
+      await apply(sql)
+      await apply(sql)
+      expect(
+        await sql`select id,version,metadata,created_at,updated_at from catalog.products order by sku`,
+      ).toEqual(before)
+      expect(
+        (await sql`select sku,audience from catalog.products order by sku`).map((row) => [
+          row.sku,
+          row.audience,
+        ]),
+      ).toEqual([
+        ['adult-estudio-completo', 'adult'],
+        ['desafio-do-primeiro-jogo', 'kids'],
+        ['estudio-completo', 'kids'],
+      ])
+    })
   })
   test('produto desconhecido interrompe a classificação e reverte as atualizações do lote', async () => {
-    await legacy('estudio-completo')
-    await legacy('produto-sem-classificacao')
-    const failure = await apply().then(
-      () => null,
-      (error: unknown) => error,
-    )
-    expect(failure).toBeInstanceOf(Error)
-    expect(failure instanceof Error && failure.message).toContain('Unclassified catalog products')
-    expect(
-      (
-        await connection!
-          .sql`select count(*)::integer as total from catalog.products where audience is null`
-      )[0]?.total,
-    ).toBe(2)
+    await withLegacyProducts(async (sql) => {
+      await legacy(sql, 'estudio-completo')
+      await legacy(sql, 'produto-sem-classificacao')
+      const failure = await sql
+        .savepoint((tx) => apply(tx))
+        .then(
+          () => null,
+          (error: unknown) => error,
+        )
+      expect(failure).toBeInstanceOf(Error)
+      expect(failure instanceof Error && failure.message).toContain('Unclassified catalog products')
+      expect(
+        (
+          await sql`select count(*)::integer as total from catalog.products where audience is null`
+        )[0]?.total,
+      ).toBe(2)
+    })
+  })
+  test('contrato final recusa produto e cupom sem comunidade, inclusive por SQL direto', async () => {
+    for (const statement of [
+      "insert into catalog.products(id,sku,slug,name,created_at,updated_at) values(gen_random_uuid(),'sem-publico','sem-publico','Sem público',now(),now())",
+      "insert into catalog.coupons(id,code,type,created_at,updated_at) values(gen_random_uuid(),'SEMPUBLICO','percent',now(),now())",
+    ]) {
+      const error = await connection!.sql.unsafe(statement).then(
+        () => null,
+        (error: unknown) => error,
+      )
+      expect(error).toMatchObject({ code: '23502', column_name: 'audience' })
+    }
   })
   test('consulta e total são filtrados antes de paginar produtos, ofertas e cupons', async () => {
     const products = new DrizzleProductRepository(connection!.db),

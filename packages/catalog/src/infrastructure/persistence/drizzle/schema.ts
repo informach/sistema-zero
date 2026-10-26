@@ -48,8 +48,7 @@ export const products = catalog.table(
   'products',
   {
     id: uuid('id').primaryKey(),
-    // Expand phase: backfill precedes the final NOT NULL migration.
-    audience: catalogAudienceEnum('audience'),
+    audience: catalogAudienceEnum('audience').notNull(),
     version: integer('version').notNull().default(0),
     sku: text('sku').notNull(),
     slug: text('slug').notNull(),
@@ -186,7 +185,7 @@ export const coupons = catalog.table(
   'coupons',
   {
     id: uuid('id').primaryKey(),
-    audience: catalogAudienceEnum('audience'),
+    audience: catalogAudienceEnum('audience').notNull(),
     version: integer('version').notNull().default(0),
     code: text('code').notNull(),
     type: couponTypeEnum('type').notNull(),
