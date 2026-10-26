@@ -750,7 +750,7 @@ de rede e usa o `threadId` retornado em Ver conversa. `TeacherLessonLink` permit
 `#section=<id>`; o player só abre seção acessível. `helpContext` da mensagem guarda revisão e pendências.
 O rótulo do link é `copy.secoes.voltarParaSecao` do `LessonCopy` ("Voltar à seção" no adulto, "Voltar à parte"
 no Kids). `useTeacherUnread(scope, enabled = true)` revalida por navegação (com `enabled` falso não busca), foco/visibilidade, eventos de leitura/resposta e a cada 30s
-em primeiro plano. Compartilhado pelos sinos do Kids e Adultos.
+em primeiro plano. Compartilhado pelo sino do Kids e pela moldura do adulto (`CommunityFrame`, uma leitura só).
 `SectionProjectCheck` mostra cada objetivo e só atualiza progresso após resposta persistida.
 Não confundir estrutura verificada no servidor com execução comprovada do jogo.
 

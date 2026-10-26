@@ -1,7 +1,7 @@
 'use client'
 
 import { BrandLogo } from '@sistemazero/ui/brand-logo'
-import { CircleHelp, Ellipsis, Home, Mail, Radio, Receipt, Trophy, User } from 'lucide-react'
+import { Ellipsis, Mail, Palette, PersonStanding, Receipt, Sofa, Trophy } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useEffect, useId, useRef, useState } from 'react'
@@ -174,24 +174,29 @@ export function CommunityTopBar({
 /** As quatro abas fixas do celular; o resto mora em "Mais". */
 const TAB_HREFS = ['/', '/cursos', '/criar', '/comunidade'] as const
 
-/** O que fica em "Mais": as rotas que não têm aba (e acendem "Mais" quando abertas). */
-const MORE_LINKS = [
-  { href: '/oficinas', label: 'Oficinas ao vivo', icon: Radio },
+function navItem(href: string): NavItem {
+  const item = NAV_ITEMS.find((candidate) => candidate.href === href)
+  if (!item) throw new Error(`Item de navegação ausente: ${href}`)
+  return item
+}
+
+/**
+ * O que fica em "Mais": as rotas que não têm aba (e acendem "Mais" quando abertas). Oficinas e
+ * Ajuda vêm do `NAV_ITEMS` (os mesmos prefixos do menu lateral); só o rótulo muda.
+ */
+const MORE_LINKS: readonly NavItem[] = [
+  { ...navItem('/oficinas'), label: 'Oficinas ao vivo' },
   { href: '/recados', label: 'Recados', icon: Mail },
   { href: '/progresso', label: 'Seu progresso', icon: Trophy },
-  { href: '/ajuda', label: 'Ajuda', icon: CircleHelp, match: ['/como-fazer'] },
-  { href: '/perfil', label: 'Meu perfil', icon: User },
-  { href: '/meu-avatar', label: 'Meu avatar 3D', icon: User },
-  { href: '/quarto', label: 'Meu espaço 3D', icon: Home },
+  navItem('/ajuda'),
+  { href: '/perfil', label: 'Meu perfil', icon: Palette },
+  { href: '/meu-avatar', label: 'Meu avatar 3D', icon: PersonStanding },
+  { href: '/quarto', label: 'Meu espaço 3D', icon: Sofa },
   { href: '/compras', label: 'Compras e assinatura', icon: Receipt },
-] as const
+]
 
 function inMore(pathname: string) {
-  return MORE_LINKS.some((link) =>
-    [link.href, ...('match' in link ? link.match : [])].some(
-      (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`),
-    ),
-  )
+  return MORE_LINKS.some((link) => isNavItemActive(link, pathname))
 }
 
 /**
@@ -237,7 +242,7 @@ export function CommunityTabs({ unread }: { unread: number }) {
 
   const tabClass = (active: boolean) =>
     cn(
-      'flex min-h-[3.2rem] min-w-0 flex-col items-center justify-center gap-0.5 px-0.5 pt-1.5 pb-2 font-bold text-[clamp(0.75rem,4.2vw,0.85rem)] leading-tight no-underline',
+      'flex min-h-[3.2rem] min-w-0 flex-col items-center justify-center gap-0.5 pt-1.5 pb-2 font-bold text-[0.85rem] leading-tight no-underline',
       active ? 'text-(--cta)' : 'text-(--legenda-clara) hover:text-(--texto-claro)',
     )
 
@@ -256,7 +261,7 @@ export function CommunityTabs({ unread }: { unread: number }) {
     >
       <nav
         aria-label="Principal"
-        className="grid grid-cols-[1fr_1fr_1fr_1.6fr_1fr] border-(--linha-escura) border-t pb-[env(safe-area-inset-bottom)]"
+        className="grid grid-cols-[1fr_1fr_1fr_1.85fr_1fr] border-(--linha-escura) border-t pb-[env(safe-area-inset-bottom)]"
       >
         {tabs.map((item) => {
           const Icon = item.icon
@@ -268,6 +273,8 @@ export function CommunityTabs({ unread }: { unread: number }) {
               prefetch={false}
               aria-current={current ? 'page' : undefined}
               // Com o painel aberto, o destaque passa para "Mais"; a página atual segue anunciada.
+              // A aba da página atual não troca a rota: fecha o painel no clique.
+              onClick={() => setOpen(false)}
               className={tabClass(current && !open)}
             >
               <Icon className="size-6" aria-hidden />
@@ -297,17 +304,18 @@ export function CommunityTabs({ unread }: { unread: number }) {
         </button>
       </nav>
       {open ? (
-        <div
+        <nav
           id={panelId}
+          aria-labelledby={`${panelId}-titulo`}
           className="max-h-[70dvh] overflow-y-auto border-(--linha-escura) border-t px-3 pt-3 pb-2"
         >
-          <p className="sz-kicker px-2 pb-2">Mais</p>
+          <p id={`${panelId}-titulo`} className="sz-kicker px-2 pb-2">
+            Mais
+          </p>
           <ul className="grid grid-cols-1 gap-1 sm:grid-cols-2">
             {MORE_LINKS.map((link) => {
               const Icon = link.icon
-              const active = [link.href, ...('match' in link ? link.match : [])].some(
-                (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`),
-              )
+              const active = isNavItemActive(link, pathname)
               return (
                 <li key={link.href}>
                   <Link
@@ -326,7 +334,7 @@ export function CommunityTabs({ unread }: { unread: number }) {
               )
             })}
           </ul>
-        </div>
+        </nav>
       ) : null}
     </div>
   )

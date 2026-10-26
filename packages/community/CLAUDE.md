@@ -173,15 +173,15 @@ a plataforma já faz.
   `sz-lead`, `sz-card`/`sz-card-sm`/`sz-soft`, `sz-btn` (+ `-outline`, `-quiet`, `-white`, `-sm`),
   `sz-iconbtn`, `sz-link`, `sz-chip` (+ `-ok`, `-acao`, `-aviso`, `-novo`, `-escuro`), `sz-num`,
   `sz-tile`, `sz-label` (⚠️ nunca `sz-bar`: é a barra de ferramentas do Estúdio, no mesmo CSS) e, do
-  "Estúdio à noite", `sz-palco`, `sz-hud`, `sz-mira` e `sz-save` (ver §Estúdio à noite).
+  "Estúdio à noite", `sz-palco`, `sz-hud` e `sz-mira` (ver §Estúdio à noite).
   Botão é retângulo de cantos de 14 px e 56 px de altura; desde 25/10/2026 o `sz-btn` é o AMARELO com
   degrau (ver §Estúdio à noite); o `[data-slot="button"]` do
   `@sistemazero/ui` segue a mesma forma (48 px), só nas páginas da comunidade (o escopo é a raiz
   sem `data-embedded`, num `:where()` sem peso). Chip sempre com ícone ou palavra, nunca só cor.
   Tons: `--acao-tint` e `--sucesso-tint` por `color-mix`, `--aviso-tint` = o amarelo de superfície do
   `ui`, `--aviso-texto` um literal de tinta: ⚠️ nada de hexadecimal da PALETA aqui (o contrato do
-  `ui` continua valendo). Foco: contorno de 3 px na cor de ação (`--ring`); a cor de ação clara só
-  sobre o escuro (barra do topo, faixas `--topo`), onde é ela que passa de 3:1.
+  `ui` continua valendo). Foco: contorno de 3 px na cor de ação (`--ring`) na bancada; no palco
+  (`sz-band`/`sz-palco`) o `--ring` é o amarelo (`--cta`), que passa de 3:1 sobre a noite.
 - **Primitivos de página** (`components/community/page.tsx`): `PageBand` (kicker, título, lead,
   voltar, ações), `PageBody`, `BackLink`, `SectionHeader`. Cada página desenha a própria faixa de
   ponta a ponta e cuida da largura (`sz-page`): o `CommunityFrame` só dá a moldura antiga
@@ -207,10 +207,12 @@ plataforma já faz (as sugestões de recurso novo do Canvas ficaram de fora, dec
 - **Tokens** (`globals.css`, bloco "ESTÚDIO À NOITE"): `--noite`, `--noite-2`, `--palco`, `--carta`,
   `--carta-2`, `--linha-escura`, `--texto-claro(-2)`, `--legenda-clara`, `--menta`, `--dourado`,
   `--laranja`, `--cta-degrau` são literais (os MESMOS do `theme-arcade.css` do funil adulto, `--cda-*`;
-  nenhum é valor gerado pelo `ui`, e o contrato de lá continua verde). `--cta` (amarelo), `--rosa` e
-  `--azul-claro` vêm dos tokens do `ui`; `--degrau-claro` é o `--sz-community-card-step`. O escuro NÃO
+  nenhum é valor gerado pelo `ui`, e o contrato de lá continua verde). `--cta` (amarelo) e `--rosa` vêm dos
+  tokens do `ui`; `--degrau-claro` é o `--sz-community-card-step`. O escuro NÃO
   segue a cor escolhida: ela vira o acento pessoal (`--primary`: links, selos, barra de progresso na
-  bancada, filtro ativo). `--topo-*` aponta para a noite (é contrato do member-shell e do
+  bancada, filtro ativo do Mural; o filtro do catálogo é o chip escuro da noite). No palco o
+  `--primary` vira a versão CLARA da cor (`--sz-community-action-light`, texto em cima na noite): a
+  escura dava 2,9:1 sobre a carta. `--topo-*` aponta para a noite (é contrato do member-shell e do
   `cosmetics-adult.css`). `themeColor` do layout é o `--noite-2`.
 - **`.sz-band` / `.sz-palco`:** em vez de pintar peça por peça, REDEFINEM os tokens semânticos
   (`--foreground`, `--card`, `--border`, `--muted(-foreground)`, `--link`, `--ring`, os tons
@@ -229,8 +231,8 @@ plataforma já faz (as sugestões de recurso novo do Canvas ficaram de fora, dec
   escolha com `aria-pressed` (respostas da avaliação do curso) fica fora dela (seleção, não ação).
 - **Peças novas:** `sz-hud` (o trilho do `ProgressBar` e do `Meter` em dez gomos por `mask-image`; o
   valor segue contínuo para o leitor de tela; menta no palco, acento na bancada, verde no `data-feito`),
-  `sz-mira` (os cantos amarelos da capa em destaque, por dentro da moldura), `sz-save` (o ponto de
-  save). `sz-num-acao` e `sz-chip-novo` são o amarelo ("você está aqui" = a cor do botão que leva lá).
+  `sz-mira` (os cantos amarelos da capa em destaque, por dentro da moldura). `sz-num-acao` e
+  `sz-chip-novo` são o amarelo ("você está aqui" = a cor do botão que leva lá).
   `.sz-progress` NÃO mudou: o member-shell usa no player da aula.
 - **Moldura:** `CommunityFrame` monta `CommunitySidebar` + `CommunityTopBar` + `CommunityTabs`
   (`community-nav.tsx`); o `<main>` reserva a altura das abas abaixo do `lg`. A aula continua sem
@@ -533,7 +535,7 @@ Browser → /api/* (Route Handlers, mesma origem, cookie HttpOnly)
   `/login?erro=impersonacao`. A sessão vem com a claim **`act`** (RFC 8693 — `act.sub/email/name`
   = ADMIN; parse em `lib/act.ts`, puro/testado; `SessionUser.act?` em types) e refresh de TTL
   CURTO (2h, o auth preserva na rotação). UI: **`ImpersonationBanner`** (faixa âmbar persistente
-  acima do topnav no layout `(app)`) com "Encerrar" = logout normal (revoga a família) +
+  no alto do `CommunityFrame`, acima da barra e do menu lateral) com "Encerrar" = logout normal (revoga a família) +
   `window.location.replace('/login')` somente após confirmação 2xx; falha mantém cookies/banner e
   permite tentar novamente. A sessão nasce **SOMENTE-LEITURA**, mas o banner permite ao
   admin ativar explicitamente o modo `write`: a mudança é idempotente, reemite só o access token,
@@ -621,7 +623,8 @@ Browser → /api/* (Route Handlers, mesma origem, cookie HttpOnly)
 ```
 src/
   app/
-    layout.tsx              Root (Atkinson Hyperlegible Next + Bricolage Grotesque + Geist Mono,
+    layout.tsx              Root (Atkinson Hyperlegible Next + Bricolage Grotesque + Geist Mono +
+                            Silkscreen, a letra em pixel dos sobretítulos e números,
                             data-sz-palette no <html>, Providers: Toaster)
     (auth)/                 Grupo público (AuthSplitShell: form + imagem da comunidade)
       login/ · esqueci-senha/ · redefinir-senha/   (page + *-form.tsx client)
@@ -803,8 +806,8 @@ valida e só então importa o `server.js` standalone).
   `POST /helpdesk/portal/tickets/:id/messages` chegam pelo gateway e são expostos pelo BFF em
   `/api/helpdesk/portal/*`. A rota adulta `/ajuda` usa o `CustomerHelpdeskPortal` compartilhado:
   tickets são sempre do titular autenticado, notas internas não chegam ao browser e uma mensagem
-  do cliente reabre o chamado quando ele aguardava resposta. O item **Ajuda** pertence ao topo
-  adulto e `/ajuda` fica nos `protectedPrefixes`.
+  do cliente reabre o chamado quando ele aguardava resposta. O item **Ajuda** pertence à
+  navegação principal adulta (menu lateral e "Mais") e `/ajuda` fica nos `protectedPrefixes`.
 - Members (JWT + x-internal-token injetados pelo gateway): `GET /members/courses` →
   `{courses: MyCourseView[]}` (+`continueLessonId`); `GET /members/catalog` →
   `{courses: CatalogCourseView[]}` ("Todos os cursos": published + `hasAccess` + `salesPageUrl` —

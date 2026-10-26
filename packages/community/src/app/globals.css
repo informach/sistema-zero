@@ -136,7 +136,6 @@
   --cta-degrau: #c98a00;
   --cta-tinta: var(--noite);
   --rosa: var(--sz-community-pink-light);
-  --azul-claro: var(--sz-community-blue-light);
   --menta: #7ce3a6;
   --dourado: #ffd45c;
   --laranja: #ff9a4d;
@@ -1044,6 +1043,11 @@ input[type="password"]::-webkit-strong-password-auto-fill-button {
     --border: var(--linha-escura);
     --input: var(--legenda-clara);
     --ring: var(--cta);
+    /* O acento pessoal (selo, filtro do Mural, ícone do menu) na versão clara da cor: a escura some
+       sobre a carta (2,9:1). O texto em cima dele passa a ser o escuro da noite. */
+    --primary: var(--sz-community-action-light);
+    --primary-foreground: var(--noite);
+    --primary-hover: color-mix(in oklab, var(--sz-community-action-light) 82%, white);
     --link: var(--cta);
     --link-hover: var(--dourado);
     --interactive-text: var(--cta);
@@ -1069,10 +1073,10 @@ input[type="password"]::-webkit-strong-password-auto-fill-button {
     letter-spacing: 0.06em;
     line-height: 1.25;
     text-transform: uppercase;
-    color: var(--kicker-cor, var(--acao-texto));
+    color: var(--acao-texto);
   }
   :is(.sz-band, .sz-palco) .sz-kicker {
-    color: var(--kicker-cor, var(--sz-community-action-light));
+    color: var(--sz-community-action-light);
   }
   .sz-h1,
   .sz-h1-sm,
@@ -1187,7 +1191,7 @@ input[type="password"]::-webkit-strong-password-auto-fill-button {
     background-color: var(--card);
     color: var(--foreground);
     box-shadow:
-      inset 0 0 0 2px var(--sz-community-line),
+      inset 0 0 0 2px var(--foreground),
       0 4px 0 var(--degrau-claro);
   }
   .sz-btn-outline:hover {
@@ -1369,7 +1373,7 @@ input[type="password"]::-webkit-strong-password-auto-fill-button {
   .sz-hud > span {
     display: block;
     height: 100%;
-    background: var(--hud-cor, var(--primary));
+    background: var(--primary);
   }
   .sz-hud[data-feito="true"] > span {
     background: var(--pen-sucesso);
@@ -1378,7 +1382,7 @@ input[type="password"]::-webkit-strong-password-auto-fill-button {
     background: rgb(242 244 250 / 0.16);
   }
   :is(.sz-band, .sz-palco) .sz-hud > span {
-    background: var(--hud-cor, var(--menta));
+    background: var(--menta);
   }
   /* A MIRA: os cantos amarelos em volta da capa em destaque, como a mira de um jogo. Por dentro
      da moldura (a capa corta o que passa da borda). */
@@ -1404,22 +1408,6 @@ input[type="password"]::-webkit-strong-password-auto-fill-button {
     border-top: 0;
     border-left: 0;
   }
-  /* O "Salvo": o ponto de save de um jogo, que diz que nada do que a pessoa fez se perde. */
-  .sz-save {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-weight: 700;
-    color: var(--pen-ok-texto);
-  }
-  .sz-save::before {
-    content: "";
-    width: 0.55rem;
-    height: 0.55rem;
-    border-radius: 9999px;
-    background: currentColor;
-  }
-
   /* A cor da etapa (`components/community/journey/stage.tsx`): o anel em volta da foto, o ponto, o
      chip e a fita. `--etapa-cor` chega pelo `style` de cada peça. */
   .sz-etapa-anel {

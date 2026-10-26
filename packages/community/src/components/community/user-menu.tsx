@@ -1,6 +1,6 @@
 'use client'
 
-import { ChevronRight, LogOut, Palette, Receipt, Trophy, User } from 'lucide-react'
+import { ChevronRight, LogOut, Palette, PersonStanding, Receipt, Sofa, Trophy } from 'lucide-react'
 import Link from 'next/link'
 import { useEffect, useId, useRef, useState } from 'react'
 import { cn } from '@/lib/cn'
@@ -173,9 +173,10 @@ export function UserMenu({
           id={panelId}
           className={cn(
             'absolute z-50 w-[min(20rem,calc(100vw-1.6rem))] overflow-hidden rounded-[1rem] border border-border bg-popover text-popover-foreground shadow-[0_18px_40px_rgba(15,26,51,0.18)]',
-            // Na barra do celular deitado, o painel cabe entre a barra e as abas e rola por dentro.
+            // Janela baixa (notebook com zoom, celular deitado): o painel cabe na tela e rola por
+            // dentro, em vez de sair pelo alto (cartão do menu lateral) ou por trás das abas.
             variant === 'card'
-              ? 'bottom-full left-0 mb-2'
+              ? 'bottom-full left-0 mb-2 max-h-[calc(100dvh-8rem)] overflow-y-auto'
               : 'right-0 mt-2 max-h-[calc(100dvh-8.5rem)] overflow-y-auto',
           )}
         >
@@ -208,11 +209,11 @@ export function UserMenu({
             <ChevronRight className="size-5" aria-hidden />
           </Link>
           <Link href="/meu-avatar" prefetch={false} onClick={close} className={item}>
-            <User className="size-5" aria-hidden />
+            <PersonStanding className="size-5" aria-hidden />
             <strong>Meu avatar 3D</strong>
           </Link>
           <Link href="/quarto" prefetch={false} onClick={close} className={item}>
-            <User className="size-5" aria-hidden />
+            <Sofa className="size-5" aria-hidden />
             <strong>Meu espaço 3D</strong>
           </Link>
           <Link href="/perfil" prefetch={false} onClick={close} className={item}>
