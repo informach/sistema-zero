@@ -1,6 +1,10 @@
 # Seeds da plataforma para produção
 
-> Implementação local em revisão; nenhum seed foi aplicado. A execução remota pertence ao operador da promoção de produção.
+> Histórico do lote de 22/10. Atualização de 26/10: a nova Jornada foi ativada nos dois
+> ambientes e o Clube adulto foi definido/criado com Geral e Recados da equipe.
+> Ver [Jornada](../../qa/2026-10-26-creator-journey-activation.md) e
+> [Clube adulto](../../qa/2026-10-26-adult-club-seed.md). A pendência do Clube descrita abaixo
+> registra o estado anterior; o seed atual já inclui sua definição.
 
 **Objetivo:** popular configurações comerciais e jornadas com fontes aprovadas, sem recriar alunos, conquistas, matrículas ou conteúdo pedagógico.
 

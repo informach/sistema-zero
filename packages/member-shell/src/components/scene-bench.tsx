@@ -138,7 +138,9 @@ export function Medida({
    */
   const descrito = nota ? `${id}-nota` : undefined
   /** Ver o comentário do layout logo abaixo: dez caracteres é o que sobra para o nome numa linha. */
-  const umaLinha = label.length <= 10
+  // O campo editável precisa de 80 px próprios; em telas estreitas ele não pode
+  // dividir a linha do deslizante e cobrir os botões de passo.
+  const umaLinha = label.length <= 10 && !digitavel
   return (
     /*
      * ⭐⭐ UMA LINHA onde cabe (18/09/2026): `rótulo · − ▬▬ + · valor`. É a peça da maquete que ela

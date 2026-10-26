@@ -52,6 +52,7 @@ const PALCOS = [
 
 /** As bancadas: os controles de cada cena. */
 const BANCADAS = [
+  'scene-discovery-controls.tsx',
   'scene-lesson-controls.tsx',
   'scene-core-controls.tsx',
   // Lote 5 do Raio-X (G4): o ateliê, com os nomes do Pinta.
@@ -67,6 +68,7 @@ const BANCADAS = [
 ] as const
 
 const CROMO = [
+  'scene-discovery-controls.tsx',
   'scene-activity.tsx',
   'scene-core-controls.tsx',
   'scene-atelie-controls.tsx',

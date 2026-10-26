@@ -219,19 +219,25 @@ function PredictionQuizSession({
         <h3 className="sz-display text-2xl" ref={heading} tabIndex={-1}>
           Você relembrou as regras.
         </h3>
-        <div className="sz-garden-remember">
-          <span>01</span>
-          <p>
-            O toque executa a reação no <strong>esconderijo escolhido</strong>.
-          </p>
-        </div>
-        <div className="sz-garden-remember">
-          <span>02</span>
-          <p>
-            <strong>Achados guarda um valor.</strong> Cada novo personagem soma 1.
-          </p>
-        </div>
-        <p className="text-sm">O toque vazio e o repetido não somam. Uma nova busca começa em 0.</p>
+        {questions.every((q) => q.predictionScene?.startsWith('garden-')) && (
+          <>
+            <div className="sz-garden-remember">
+              <span>01</span>
+              <p>
+                O toque executa a reação no <strong>esconderijo escolhido</strong>.
+              </p>
+            </div>
+            <div className="sz-garden-remember">
+              <span>02</span>
+              <p>
+                <strong>Achados guarda um valor.</strong> Cada novo personagem soma 1.
+              </p>
+            </div>
+            <p className="text-sm">
+              O toque vazio e o repetido não somam. Uma nova busca começa em 0.
+            </p>
+          </>
+        )}
         <p className="text-sm">Revisão concluída. Use o botão da aula para continuar.</p>
         <SceneButton
           onClick={() => {
@@ -307,7 +313,6 @@ function PredictionQuizSession({
               key={question.id}
               scene={question.predictionScene}
               result={checked}
-              choice={selected}
               onAnimating={setScenePlaying}
             />
           ) : (

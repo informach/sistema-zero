@@ -40,7 +40,7 @@ function channel(
     status: 'active',
   }
 }
-/** Same Kids definitions as the original seed. No SEED_PUBLIC access override. */
+/** Separate Kids/adult spaces and entitlements. No SEED_PUBLIC access override. */
 export const COMMUNITY_SEED_DEFINITIONS: readonly Definition[] = [
   {
     space: space(
@@ -92,14 +92,34 @@ export const COMMUNITY_SEED_DEFINITIONS: readonly Definition[] = [
       },
     ],
   },
-]
-export const COMMUNITY_SEED_PENDING = [
   {
-    audience: 'adult',
-    communityRef: 'adult-clube-dos-criadores',
-    reason: 'Definição completa de espaço e canais ainda não aprovada.',
+    space: {
+      slug: 'clube-dos-criadores-adulto',
+      name: 'Clube dos Criadores',
+      description: 'Troque ideias, tire dúvidas e compartilhe o que você está criando.',
+      iconUrl: null,
+      audience: 'adult',
+      accessConfig: {
+        visibility: 'community_gated',
+        courses: [],
+        communities: ['adult-clube-dos-criadores'],
+        roles: [],
+      },
+      requiresApproval: false,
+      teaserWhenLocked: true,
+      status: 'active',
+    },
+    channels: [
+      channel('geral', 'Geral', 'members', 0),
+      channel('recados-da-equipe', 'Recados da equipe', 'staff_only', 1),
+    ],
   },
-] as const
+]
+export const COMMUNITY_SEED_PENDING: readonly {
+  audience: 'adult' | 'kids'
+  communityRef: string
+  reason: string
+}[] = []
 
 export type CommunitySeedMode = 'plan' | 'status' | 'apply'
 export function parseCommunitySeedArgs(

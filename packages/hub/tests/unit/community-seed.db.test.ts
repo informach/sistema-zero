@@ -42,7 +42,7 @@ describe.skipIf(!url)('Hub seed PostgreSQL adapter', () => {
       expect((await runCommunitySeed(mode, ports)).created).toEqual([])
     expect(await db.select().from(spaces)).toHaveLength(0)
     expect(await db.select().from(channels)).toHaveLength(0)
-    expect((await runCommunitySeed('apply', ports)).created).toHaveLength(7)
+    expect((await runCommunitySeed('apply', ports)).created).toHaveLength(10)
     expect((await runCommunitySeed('apply', ports)).created).toEqual([])
     const current = await ports.findSpace('clube-dos-criadores')
     if (!current) throw new Error('Missing seeded space')

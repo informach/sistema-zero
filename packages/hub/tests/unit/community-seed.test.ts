@@ -71,11 +71,7 @@ test('Hub default/plan/status perform no write; public override and unsupported 
     const result = await runCommunitySeed(mode, f.ports)
     expect(result.created).toEqual([])
     expect(result.before.entries.every((entry) => entry.state === 'missing')).toBe(true)
-    expect(
-      result.before.pendingDefinitions.some(
-        (entry) => entry.communityRef === 'adult-clube-dos-criadores',
-      ),
-    ).toBe(true)
+    expect(result.before.pendingDefinitions).toEqual([])
   }
   expect(f.spaces.size + f.channels.size).toBe(0)
 })
@@ -84,7 +80,19 @@ test('Hub creates the exact approved structure once and repeats without mutation
   const f = fixture()
   const first = await runCommunitySeed('apply', f.ports)
   expect(first.outcome).toBe('defined-scope-complete')
-  expect(first.created).toHaveLength(7)
+  expect(first.created).toHaveLength(10)
+  const adultClub = f.spaces.get('clube-dos-criadores-adulto')!
+  expect(adultClub).toMatchObject({
+    name: 'Clube dos Criadores',
+    audience: 'adult',
+    requiresApproval: false,
+    accessConfig: { visibility: 'community_gated', communities: ['adult-clube-dos-criadores'] },
+  })
+  expect(adultClub.id).not.toBe(f.spaces.get('clube-dos-criadores')!.id)
+  expect(f.channels.get(`${adultClub.id}/geral`)).toMatchObject({ postingPolicy: 'members' })
+  expect(f.channels.get(`${adultClub.id}/recados-da-equipe`)).toMatchObject({
+    postingPolicy: 'staff_only',
+  })
   expect(
     [...f.spaces.values()]
       .filter((space) => space.audience === 'kids')

@@ -1,6 +1,7 @@
 import type { SceneAction } from '@sistemazero/core/learning/scene'
 import { KeyRound, NotebookPen, Pause, Play, RotateCcw, StepForward } from 'lucide-react'
 import { useState } from 'react'
+import { Medida } from './scene-bench'
 import { SceneCenarioProvider } from './scene-cenario-context'
 import { CollectionMemoryStage } from './scene-collect-and-remember'
 import { Frame, Note, SceneButton, useDiscovery } from './scene-discovery-frame'
@@ -487,30 +488,16 @@ export function Position() {
       }
     >
       {(['x', 'y'] as const).map((axis) => (
-        <div className="sz-discovery-axis" data-active="true" key={axis}>
-          <span>
-            {axis === 'x' ? '↔ Horizontal · x' : '↕ Vertical · y'}
-            <b>{p[axis]}</b>
-          </span>
-          <input
-            className="explore-range"
-            aria-label={axis === 'x' ? 'Mover horizontalmente' : 'Mover verticalmente'}
-            type="range"
-            min="0"
-            max={axis === 'x' ? 448 : 328}
-            step="1"
-            value={p[axis]}
-            onChange={(e) => move(axis, Number(e.target.value))}
-          />
-          <div>
-            <SceneButton onClick={() => move(axis, p[axis] - (axis === 'x' ? 60 : 40))}>
-              {axis === 'x' ? '← Menos x' : '↑ Menos y'}
-            </SceneButton>
-            <SceneButton onClick={() => move(axis, p[axis] + (axis === 'x' ? 60 : 40))}>
-              {axis === 'x' ? 'Mais x →' : 'Mais y ↓'}
-            </SceneButton>
-          </div>
-        </div>
+        <Medida
+          key={axis}
+          label={axis === 'x' ? 'Horizontal x' : 'Vertical y'}
+          value={p[axis]}
+          min={0}
+          max={axis === 'x' ? 448 : 328}
+          passo={axis === 'x' ? 60 : 40}
+          digitavel
+          onChange={(value) => move(axis, value)}
+        />
       ))}
       <div className="sz-discovery-controls">
         <SceneButton onClick={() => m.dispatch({ type: 'restart-key-position' })}>
@@ -531,27 +518,6 @@ export function Position() {
             : 'Escolha os movimentos para levar a chave até o alvo. Todos os controles continuam livres.'}
         </Note>
       )}
-      <details className="sz-discovery-details">
-        <summary>Escolher os números</summary>
-        <div className="sz-discovery-number-fields">
-          {(['x', 'y'] as const).map((axis) => (
-            <label key={axis}>
-              {axis === 'x' ? 'Horizontal x' : 'Vertical y'}
-              <input
-                type="number"
-                inputMode="numeric"
-                min="0"
-                max={axis === 'x' ? 448 : 328}
-                value={p[axis]}
-                onChange={(e) => {
-                  const n = Number(e.target.value)
-                  if (Number.isFinite(n)) move(axis, n)
-                }}
-              />
-            </label>
-          ))}
-        </div>
-      </details>
       <ControlsHint />
     </Frame>
   )

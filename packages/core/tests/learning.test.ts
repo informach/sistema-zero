@@ -30,6 +30,7 @@ import {
   stepExperiment,
 } from '../src/learning/scene'
 import { scenePaths } from './fixtures/exploration-paths'
+import { freeExplorationPaths } from './fixtures/free-exploration-paths'
 
 const section = {
   id: 'section',
@@ -545,7 +546,10 @@ function caminhoDeSucesso(block: InteractiveBlock, onde: string): LearningAnswer
     // torna a missão inalcançável passaria batido — e o defeito só apareceria com a criança nele.
     const start = sceneStart(activity)
     let sessao = initialExperiment(start)
-    for (const action of ROTAS_DAS_AULAS[onde] ?? scenePaths[activity.scene]) {
+    const path = activity.setup?.freeExploration
+      ? (freeExplorationPaths[activity.scene] ?? scenePaths[activity.scene])
+      : (ROTAS_DAS_AULAS[onde] ?? scenePaths[activity.scene])
+    for (const action of path) {
       const parts: SceneAction[] =
         action.type === 'advance' && action.seconds > 1
           ? [

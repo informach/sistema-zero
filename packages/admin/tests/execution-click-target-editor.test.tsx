@@ -98,7 +98,7 @@ test('the real objective editor edits all three canonical targets and exposes in
         .map((element) => element.textContent)
         .join(' '),
     ).not.toContain('inválidos')
-    expect(container.textContent).not.toContain('Cliques em alvos só valem')
+    expect(container.textContent).not.toContain('Interações com sprites só valem')
     await act(async () =>
       [...container.querySelectorAll('button')]
         .find((button) => button.textContent === 'Adicionar passo')!
@@ -168,7 +168,7 @@ test('an adaptive click in an unsupported workspace has an explicit authoring er
       [...container.querySelectorAll('[role="alert"]')]
         .map((element) => element.textContent)
         .join(' '),
-    ).toContain('Cliques em alvos só valem no Jogo 2D clássico JavaScript.')
+    ).toContain('Interações com sprites só valem no Jogo 2D clássico JavaScript.')
   } finally {
     await act(async () => root.unmount())
     container.remove()

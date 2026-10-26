@@ -41,8 +41,35 @@ nova e os containers saudáveis. Produção foi testada depois dessa mesma confi
 São provas de operador autorizado usando cliente canônico, Worker/DO e executor real.
 Não equivalem a uma nova homologação integral de todos os jogos ou do percurso de aluno.
 
-## Fechamento pendente deste registro
+## Produção: confirmação posterior ao limite de acompanhamento
 
-A onda Railway de produção `40337356091` ainda está em andamento. A classificação financeira
-de produção, a conferência autenticada das interfaces e o contrato NOT NULL serão registrados
-após a execução; este documento não os declara concluídos.
+A onda `40337356091` terminou com falha de acompanhamento (`hub-deployment-poll`,
+`retirement-timeout`), após períodos de rate limit da API Railway. Não houve nova tentativa
+de build: a implantação reconhecida do Hub concluiu depois do prazo. Leitura posterior
+conferiu os 17 serviços em `600039144`, todos SUCCESS, e os anteriores REMOVED. Isso confirma
+a convergência no provedor; não transforma o resultado negativo do workflow em CI verde.
+
+O plano de configuração remoto estava sem alterações. A auditoria readonly confirmou as
+migrations de Catalog, Payments e Members. Em staging há uma entrada histórica adicional
+no journal Members; todos os 141 timestamps do journal atual constam nos dois ambientes.
+
+Classificação financeira aplicada em produção: 15 pagamentos e duas assinaturas, sem
+conflitos ou registros sem origem. A conferência seguinte retornou zero alterações.
+Não houve mudança de cobrança, valor ou estado financeiro. Catálogo: 9 produtos Kids e
+10 adultos. Admin autenticado confirmou esses totais, 16 contas compartilhadas, transações
+Kids/adultos separadas e 404 ao consultar produto com o público errado.
+
+## Jornada do Criador: ativação explícita
+
+O bootstrap publicado na versão 1 era a política anterior, sem `curriculum`. Sua presença
+não comprovava ativação da proposta de 25/10. Em 26/10 a usuária esclareceu que a nova proposta
+deve substituir as regras anteriores nos dois públicos. A operação e os resultados estão em
+[ativação da Jornada](2026-10-26-creator-journey-activation.md). Não confundir o seed antigo
+adulto de sete etapas planejadas com o novo currículo completo.
+
+O contrato NOT NULL do catálogo e a composição adicional de exploração livre/tipografia
+continuam sendo uma segunda liberação; não estão incluídos no SHA de produção acima.
+
+O [Clube adulto](2026-10-26-adult-club-seed.md) foi criado nos dois ambientes com canais
+e acessos próprios. A [revisão adicional](2026-10-26-integrated-exploration-review.md)
+registra as correções e verificações locais da próxima liberação.
