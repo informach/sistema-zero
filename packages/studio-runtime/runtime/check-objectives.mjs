@@ -5,6 +5,7 @@
 import fs from 'node:fs/promises'
 import path from 'node:path'
 import { chromium } from 'playwright-core'
+import { approachSprite } from './check-approach.mjs'
 import {
   CLICK_TARGET_LIMITS,
   chooseTargetPoint,
@@ -418,6 +419,9 @@ async function runSteps(page, steps, probe, afterStep) {
         } finally {
           await page.keyboard.up(step.key)
         }
+      } else if (step.action === 'approachSprite') {
+        if (mode !== 'classic') throw Error('Navegação adaptativa exige o Jogo 2D clássico.')
+        await approachSprite(probe, page, { scope, ...step })
       } else if (step.action === 'clickTarget') {
         if (mode !== 'classic')
           throw new Error('Este executor não oferece o alvo adaptativo neste ambiente.')

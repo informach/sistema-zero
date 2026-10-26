@@ -62,7 +62,14 @@ const behavior = z.strictObject({
   type: z.literal('behavior'),
   stdin: input,
   steps: z
-    .array(z.custom<MissionStep>((step) => isExecutionStep(step) && step.action !== 'clickTarget'))
+    .array(
+      z.custom<MissionStep>(
+        (step) =>
+          isExecutionStep(step) &&
+          step.action !== 'clickTarget' &&
+          step.action !== 'approachSprite',
+      ),
+    )
     .max(EXECUTION_LIMITS.maxSteps),
   target,
   observation: z

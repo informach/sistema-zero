@@ -229,6 +229,10 @@ export function QuizBuilder({
                     <option value="garden-touch">Jardim: toque nas pedras</option>
                     <option value="garden-count">Jardim: vazio e novo achado</option>
                     <option value="garden-repeat">Jardim: toque repetido</option>
+                    <option value="lighthouse-order">Farol: ordem dos comandos</option>
+                    <option value="lighthouse-memory">Farol: memória da coleta</option>
+                    <option value="lighthouse-door">Farol: resposta da porta</option>
+                    <option value="lighthouse-retest">Farol: nova partida</option>
                   </Select>
                 </Field>
                 <div className="flex items-start justify-between gap-2">

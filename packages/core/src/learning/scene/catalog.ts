@@ -1233,6 +1233,18 @@ const SCENE_MODEL_DEFINITIONS: Record<SceneId, Omit<SceneModel, 'predictionPrevi
     extra: 'O que aconteceria se você ligasse outra ação ao mesmo toque?',
     goals: [
       {
+        id: 'touched-bush',
+        label: 'O arbusto recebeu a reação',
+        pedido: 'Teste a reação no arbusto.',
+        soNoCaso: true,
+      },
+      {
+        id: 'touched-rocks',
+        label: 'As pedras receberam a reação',
+        pedido: 'Teste a reação nas pedras.',
+        soNoCaso: true,
+      },
+      {
         id: 'no-response',
         label: 'O toque sozinho não revelou ninguém',
         pedido: 'Toque no esconderijo antes de ligar a reação.',
@@ -1399,6 +1411,24 @@ const SCENE_MODEL_DEFINITIONS: Record<SceneId, Omit<SceneModel, 'predictionPrevi
     extra: 'Quantos quadros o sprite leva para chegar à borda com velocidade 3? E com 1?',
     goals: [
       {
+        id: 'no-movement-command',
+        label: 'A tecla não moveu sem o comando',
+        pedido: 'Compare um quadro com a tecla apertada e sem o bloco de mover.',
+        soNoCaso: true,
+      },
+      {
+        id: 'stopped-after-release',
+        label: 'Soltar a tecla interrompeu os passos',
+        pedido: 'Depois de andar, solte a tecla e avance outro quadro.',
+        soNoCaso: true,
+      },
+      {
+        id: 'compared-command-order',
+        label: 'As duas ordens foram testadas',
+        pedido: 'Compare o próximo quadro nas duas ordens dos blocos.',
+        soNoCaso: true,
+      },
+      {
         id: 'still-without-arrow',
         label: 'Sem a seta, o sprite ficou parado',
         pedido:
@@ -1456,6 +1486,31 @@ const SCENE_MODEL_DEFINITIONS: Record<SceneId, Omit<SceneModel, 'predictionPrevi
       'O x escolhe o lugar para os lados. O y escolhe o lugar para cima ou para baixo; quanto maior o y, mais embaixo a chave fica.',
     extra: 'Que lugar você escolheria para a chave na sua aventura?',
     goals: [
+      {
+        id: 'x-minus',
+        label: 'Você explorou a esquerda',
+        pedido: 'Mude o x para menos e compare o lugar da chave.',
+        soNoCaso: true,
+      },
+      {
+        id: 'x-plus',
+        label: 'Você explorou a direita',
+        pedido: 'Mude o x para mais e compare o lugar da chave.',
+        soNoCaso: true,
+      },
+      {
+        id: 'y-minus',
+        label: 'Você explorou cima',
+        pedido: 'Mude o y para menos e compare o lugar da chave.',
+        soNoCaso: true,
+      },
+      {
+        id: 'y-plus',
+        label: 'Você explorou baixo',
+        pedido: 'Mude o y para mais e compare o lugar da chave.',
+        soNoCaso: true,
+      },
+
       {
         id: 'mover-horizontal',
         label: 'Só o x mudou: a chave foi para o lado',

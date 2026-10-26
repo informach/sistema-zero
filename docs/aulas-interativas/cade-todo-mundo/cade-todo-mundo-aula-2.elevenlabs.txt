@@ -14,7 +14,7 @@
 
 [confident, clear, unhurried voice] No jardim, a variável achados guarda quantos personagens você encontrou. O placar mostra esse valor. Cada novo personagem acrescenta um ao número que já estava guardado.
 
-[upbeat, encouraging voice] Agora você vai acompanhar uma busca e observar quando esse número muda e quando continua igual. O Zappy vai acompanhar cada etapa da experiência. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai acompanhar uma busca e observar quando esse número muda e quando continua igual. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 
 [long pause]
 

@@ -487,3 +487,17 @@ Objetivos JavaScript de `type: behavior` podem incluir até oito `checkpoints`, 
 O editor mostra cada verificação intermediária, seu momento, alvo, comparação e valor. Ao remover um passo, remove também as verificações desse passo e renumera as posteriores; a interface informa esse comportamento. O seletor do alvo de texto também é editável, tanto na expectativa final quanto nas intermediárias.
 
 O alvo de texto pode restringir a leitura com `selector` (até 200 caracteres, seleção no DOM isolado). No jardim, `#sz-game-hud-status [data-sz-hud-kind="label"]` observa as mensagens desenhadas, separadas do placar pelo HUD acessível da extensão. Isso permite verificar ausência da mensagem com zero, um e dois achados e presença com três, aceitando o texto personalizado. Os cliques usam alvos adaptativos, sem fixar coordenadas da solução.
+
+## Exploração livre dos cursos introdutórios (26/10/2026)
+
+`activity.setup.freeExploration: true` seleciona a condução aprovada para `touch-response`, `found-counter`, `lighthouse-walk`, `collect-and-remember`, `lighthouse-key` e `lighthouse-position`. É uma opção explícita: outras atividades e retratos anteriores conservam os contratos existentes. A projeção pública mantém a configuração de interface; a avaliação e o replay continuam no servidor.
+
+Em `lighthouse-walk`, `movement-command` adiciona/retira o comando, `hold-arrow` representa a tecla e `walk-frames` aceita somente 1 ou 10 quadros. `walk-order` e `test-walk-order` fazem a comparação identificada junto à borda. O caso inicial pode retirar o comando por `setup.actions`; não pode avançar o mundo antes da pessoa. Os campos novos do retrato são opcionais para ler sessões antigas, validados e clonados explicitamente.
+
+No jardim livre, os dois esconderijos ficam disponíveis desde o início; `restart-hiding-places` prepara outra tentativa conservando a ligação e as descobertas. Um toque vazio em zero também pode demonstrar ausência de mudança. O reset total limpa estado, descobertas e histórico; o desfazer livre restaura a evidência correspondente ao retrato, preservando a contagem de ações e dicas. Reinícios de partida conservam as descobertas.
+
+`discovery-guidance.ts` é a fonte das falas estáticas. Os slots `discovery:<id>` entram em `falasDaCena` e no inventário `zappy-etapas.json`; o áudio precisa corresponder ao texto efetivo. As pistas e os pedidos das metas também precisam usar os nomes dos controles da versão livre.
+
+O quiz com demonstração aceita também `lighthouse-order`, `lighthouse-memory`, `lighthouse-door` e `lighthouse-retest`. A mesma modalidade mantém respostas e explicações privadas no GET do aluno, corrige uma pergunta sem conceder progresso e valida a tentativa completa no servidor. A demonstração não substitui a correção. A prévia autoral usa seu contexto próprio com gabarito local.
+
+Os objetivos do Farol complementam a estrutura com observação de memória e das duas respostas da porta. O passo `approachSprite` é exclusivo do Jogo 2D clássico JavaScript: envia teclas reais até a área de contato atual, com prazo limitado e até quatro alvos a evitar. Não recebe valores esperados nem altera variáveis ou posições do projeto. O orçamento do deslocamento entra nos limites de passos, objetivo e seção. Pro e Python recusam essa operação. Testar a solução, erros plausíveis, outras posições e artes, além do transporte e da privacidade das regras.

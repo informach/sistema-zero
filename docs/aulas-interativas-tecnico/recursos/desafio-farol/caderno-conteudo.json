@@ -3,7 +3,7 @@
     "id": "p1",
     "kicker": "Passo a passo do projeto",
     "title": "A Chave do Farol",
-    "subtitle": "Um barco precisa chegar à costa. Você vai programar as regras para o curso acontecer.",
+    "subtitle": "Um barco precisa chegar à costa. Você vai programar as regras deste jogo.",
     "items": [
       {
         "kind": "text",
@@ -18,7 +18,7 @@
       {
         "kind": "step",
         "title": "Encontre seu passo",
-        "text": "No alto de cada página estão o dia e a parte, como na tela da aula.<br/><b>Dia 1 · O personagem ganha movimento:</b> o personagem anda e fica inteiro na tela, páginas {{pagina:andar-experiencia}} a {{pagina:p3}}.<br/><b>Dia 2 · A chave muda o curso:</b> o jogo pega a chave, guarda que pegou e avisa, páginas {{pagina:memoria-experiencia}} a {{pagina:coleta-testes}}.<br/><b>Dia 3 · A luz do farol:</b> o farol confere a chave e acende, páginas {{pagina:porta-experiencia}} a {{pagina:p8}}.<br/><b>A surpresa do final:</b> escolhas e galerias, páginas {{pagina:personalizar}} a {{pagina:galeria-farois}}.<br/><b>Avisos, lugar da chave e envio:</b> páginas {{pagina:farol-mensagens}} a {{pagina:posicionar-chave}}.<br/><b>Publique no Mural:</b> página {{pagina:p9}}.<br/><b>As regras do seu curso:</b> página {{pagina:revisao-final}}.<br/><b>Certificado e ajuda:</b> página {{pagina:p10}}."
+        "text": "No alto de cada página estão o dia e a parte, como na tela da aula.<br/><b>Dia 1 · O personagem ganha movimento:</b> o personagem anda e fica inteiro na tela, páginas {{pagina:andar-experiencia}} a {{pagina:p3}}.<br/><b>Dia 2 · A chave muda o curso:</b> o jogo pega a chave, guarda que pegou e avisa, páginas {{pagina:memoria-experiencia}} a {{pagina:coleta-testes}}.<br/><b>Dia 3 · A luz do farol:</b> o farol confere a chave e acende, páginas {{pagina:porta-experiencia}} a {{pagina:p8}}.<br/><b>A surpresa do final:</b> escolhas e galerias, páginas {{pagina:personalizar}} a {{pagina:galeria-farois}}.<br/><b>Avisos, lugar da chave e envio:</b> páginas {{pagina:farol-mensagens}} a {{pagina:posicionar-chave}}.<br/><b>Publique no Mural:</b> página {{pagina:p9}}.<br/><b>As regras do seu jogo:</b> página {{pagina:revisao-final}}.<br/><b>Certificado e ajuda:</b> página {{pagina:p10}}."
       },
       {
         "kind": "box",
@@ -32,26 +32,27 @@
     "id": "andar-experiencia",
     "kicker": "Dia 1 · Parte 3 · Experiência antes da montagem",
     "title": "Como o personagem anda",
-    "subtitle": "O jogo repete os blocos de A cada quadro do jogo. Veja o que acontece com a seta.",
+    "subtitle": "Compare a regra, a tecla e a passagem dos quadros.",
     "items": [
       {
         "kind": "text",
-        "text": "Na experiência, cada repetição do jogo é um <b>quadro</b>. O <b>x</b> mostra onde o personagem está."
+        "text": "Cada repetição do jogo é um <b>quadro</b>. O movimento é uma pequena mudança que pode se repetir."
       },
       {
         "kind": "step",
-        "title": "1. Sem a seta",
-        "text": "Deixe <b>Segurar a seta para a direita</b> desligado e clique em <b>Avançar 1 quadro</b>. Olhe o quadro e o x."
+        "title": "Compare a regra e a tecla",
+        "text": "Use <b>Adicionar bloco de mover</b> ou <b>Retirar bloco de mover</b> para editar a regra. O <b>Teclado de teste</b> faz outra coisa: simula uma tecla apertada ou solta."
       },
       {
         "kind": "step",
-        "title": "2. Com a seta",
-        "text": "Ligue <b>Segurar a seta para a direita</b> e clique em <b>Avançar 1 quadro</b> algumas vezes. Olhe o x de novo."
+        "title": "Observe vários quadros",
+        "text": "Avance <b>1</b> ou <b>10 quadros</b>, ou deixe os quadros passarem automaticamente. Compare início, lugar anterior, atual e próximo passo."
       },
       {
-        "kind": "step",
-        "title": "3. Deixe rodar",
-        "text": "Clique em <b>Rodar</b> e veja o personagem andar. Depois clique em <b>Próxima parte</b> para montar o movimento no seu jogo."
+        "kind": "box",
+        "title": "Você escolhe a ordem",
+        "text": "Teste com e sem o bloco; com a tecla apertada e solta. Repita quando quiser. Ao terminar, clique em <b>Próxima parte</b>.",
+        "tone": "experience"
       }
     ]
   },
@@ -116,18 +117,18 @@
     "items": [
       {
         "kind": "step",
-        "title": "1. Sem o limite",
-        "text": "Deixe <b>Manter dentro da tela</b> desligado. Ligue <b>Segurar a seta para a direita</b> e clique em <b>Rodar</b>. Olhe o personagem quando ele chega na borda."
+        "title": "Compare com e sem limite",
+        "text": "No teclado de teste, aperte a tecla. Avance os quadros e observe a borda. Use <b>Adicionar bloco de limite</b> ou <b>Retirar bloco de limite</b> para comparar."
       },
       {
         "kind": "step",
-        "title": "2. Com o limite",
-        "text": "Clique em <b>Recomeçar</b>. Ligue <b>Manter dentro da tela</b> e clique em <b>Rodar</b> de novo. Compare."
+        "title": "Compare as duas ordens",
+        "text": "Abra <b>Experimentar a ordem dos comandos</b>. Escolha uma ordem e avance o quadro desse teste. Troque a ordem e compare o resultado junto à borda."
       },
       {
         "kind": "box",
-        "title": "Da experiência para o seu jogo",
-        "text": "Depois dos dois testes, clique em <b>Próxima parte</b>. No seu jogo, o personagem também sai pela beirada. O limite vai logo abaixo do bloco de movimento.",
+        "title": "Repita do seu jeito",
+        "text": "Você pode mudar a regra durante o teste e voltar ao início sem perder as descobertas. Ao terminar, clique em <b>Próxima parte</b>.",
         "tone": "experience"
       }
     ]
@@ -170,23 +171,23 @@
       },
       {
         "kind": "step",
-        "title": "1. Colete sem guardar",
-        "text": "Deixe <b>Guardar a coleta</b> desligado e clique em <b>Encostar na chave</b>. Compare a chave, o aviso e o valor de temChave."
+        "title": "Compare uma coleta",
+        "text": "Use <b>Adicionar ação de guardar</b> ou <b>Retirar ação de guardar</b>. Depois, <b>Encostar na chave</b> testa o encontro. Observe chave, aviso e temChave."
       },
       {
         "kind": "step",
-        "title": "2. Mude a regra e compare",
-        "text": "Clique em <b>Recomeçar a partida</b>. Ligue <b>Guardar a coleta</b> e clique em <b>Encostar na chave</b> outra vez. Compare o valor guardado, a chave e o aviso com o primeiro teste."
+        "title": "Mude a regra e compare",
+        "text": "Você pode editar a regra quando quiser. A mudança vale para o próximo encontro. <b>Recomeçar a partida</b> traz outra chave e conserva a regra escolhida."
       },
       {
         "kind": "step",
-        "title": "3. Afaste e recomece",
-        "text": "Clique em <b>Afastar</b> e olhe temChave. Depois clique em <b>Recomeçar a partida</b> e confira o que voltou ao começo. Para construir essa regra no seu jogo, clique em <b>Próxima parte</b>."
+        "title": "Observe ao afastar e recomeçar",
+        "text": "Depois de guardar uma coleta, use <b>Afastar</b> e observe temChave. Compare com uma partida nova. Escolha a ordem e repita os testes."
       },
       {
         "kind": "box",
-        "title": "Uma coisa de cada vez",
-        "text": "Depois de recolher, recomece a partida antes de mudar Guardar a coleta. Assim você testa a regra em um novo encontro.",
+        "title": "O que fica guardado?",
+        "text": "A regra atual e a coleta anterior são coisas diferentes. Editar a regra não muda o que já aconteceu. Ao terminar, clique em <b>Próxima parte</b>.",
         "tone": "note"
       }
     ]
@@ -303,13 +304,13 @@
       },
       {
         "kind": "step",
-        "title": "1. Teste sem a chave",
-        "text": "Sem levar a chave, clique em <b>Testar a porta</b>. Veja o valor de temChave e qual resposta a porta escolhe."
+        "title": "Prepare uma situação",
+        "text": "Use <b>Dar a chave ao personagem</b> ou <b>Tirar a chave do personagem</b>. Esses botões preparam o teste; no jogo, o personagem precisa encontrar a chave."
       },
       {
         "kind": "step",
-        "title": "2. Teste com a chave",
-        "text": "Clique em <b>Levar a chave</b> e depois em <b>Testar a porta</b> outra vez. Compare o valor e a resposta escolhida com o primeiro teste."
+        "title": "Teste e compare",
+        "text": "Clique em <b>Testar a porta</b> e veja o valor de temChave e a resposta escolhida. Prepare a outra situação e compare. Você pode começar por qualquer uma e repetir."
       },
       {
         "kind": "box",
@@ -596,18 +597,18 @@
       },
       {
         "kind": "step",
-        "title": "1. Mude só o x",
-        "text": "Na experiência, clique no número de <b>Posição horizontal x</b>, apague o <b>211</b>, escreva <b>160</b> e clique fora do campo. Deixe o y em 53 e observe a chave. O quadrado pontilhado mostra onde ela estava."
+        "title": "Explore os dois eixos",
+        "text": "Os controles de <b>x</b> e <b>y</b> estão disponíveis desde o começo. Use os botões ou deslizantes. Vá para os lados, para cima e para baixo; você escolhe por onde começar."
       },
       {
         "kind": "step",
-        "title": "2. Mude só o y",
-        "text": "Deixe o x em 160. Clique no número de <b>Posição vertical y</b>, apague o <b>53</b>, escreva <b>250</b> e clique fora do campo. Compare a direção com o primeiro teste."
+        "title": "Compare os lugares",
+        "text": "Mude um número por vez. A marca de início permanece, e o pontilhado mostra o lugar anterior. Se quiser números exatos, abra <b>Escolher os números</b>."
       },
       {
         "kind": "box",
-        "title": "Da experiência para o seu jogo",
-        "text": "A experiência muda o lugar, sem mudar a imagem ou o tamanho. Se quiser repetir, clique em <b>Recomeçar</b>. Quando terminar, clique em <b>Próxima parte</b>.",
+        "title": "Um desafio opcional",
+        "text": "Use <b>Mostrar um alvo</b> para tentar levar a chave até ele. Todos os controles continuam livres. Ao terminar, clique em <b>Próxima parte</b>.",
         "tone": "experience"
       }
     ]
@@ -637,7 +638,7 @@
       {
         "kind": "step",
         "title": "3. Confira o lugar",
-        "text": "Repare se a chave aparece inteira. Se ela ficar atrás do farol ou da faixa do aviso, quem joga não vai achar; se ficar em cima do personagem, ele já começa com a chave. Nesses casos, escolha um dos três lugares acima."
+        "text": "Repare se a chave aparece inteira. Se ela ficar atrás do farol ou da faixa do aviso, quem joga não vai achar; se ficar em cima do personagem, ele já começa com a chave. Nesses casos, escolha outro lugar visível e acessível."
       },
       {
         "kind": "step",
@@ -690,7 +691,7 @@
   {
     "id": "revisao-final",
     "kicker": "Seu certificado · Parte 1",
-    "title": "As regras do seu curso",
+    "title": "As regras do seu jogo",
     "subtitle": "Antes do certificado, confira o que faz as regras do seu jogo funcionarem.",
     "lit": true,
     "items": [
@@ -701,13 +702,13 @@
       },
       {
         "kind": "step",
-        "title": "1. Pense no que você construiu",
-        "text": "As perguntas retomam o movimento, a informação da chave, a resposta do farol e os testes da porta. Clique em <b>Começar!</b>, escolha uma resposta em cada pergunta e clique em <b>Próxima</b>; na última, clique em <b>Responder!</b>."
+        "title": "Escolha e veja acontecendo",
+        "text": "As quatro perguntas retomam movimento, memória e porta. Escolha uma resposta e clique em <b>Ver o que acontece</b>. Observe a cena antes de continuar."
       },
       {
         "kind": "step",
-        "title": "2. Leia e confira",
-        "text": "Leia o porquê de cada resposta. Se alguma estiver errada, clique em <b>Tentar de novo!</b> e responda outra vez, sem esperar."
+        "title": "Compare e tente de novo",
+        "text": "Leia a explicação. Se precisar, clique em <b>Tentar de novo</b> na mesma pergunta. Com a resposta conferida, use <b>Próxima pergunta</b>; na última, <b>Concluir revisão</b>."
       },
       {
         "kind": "step",

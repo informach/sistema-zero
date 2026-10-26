@@ -121,6 +121,7 @@ import {
  */
 export function openScene(start: SceneStart): SceneState {
   const base = initialScene(start)
+  if (start.setup?.freeExploration && start.scene === 'touch-response') base.match.gardenRound = 2
   const acoes = start.setup?.actions
   if (!acoes?.length) return base
   const montado = acoes.reduce((estado, acao) => stepScene(start, estado, acao), base)
@@ -377,7 +378,9 @@ export function stepScene(
 ): SceneState {
   if (!isSceneAction(action, start.scene)) return previous
   if (
-    (action.type === 'remember-collection' && !previous.collection.keyPresent) ||
+    (action.type === 'remember-collection' &&
+      !previous.collection.keyPresent &&
+      !start.setup?.freeExploration) ||
     (action.type === 'collect-key' && !previous.collection.keyPresent) ||
     (action.type === 'leave-key' && previous.collection.position !== 'touching')
   )
@@ -433,6 +436,8 @@ export function stepScene(
           : 'cima'
       const other = horizontal ? 'y' : 'x'
       s.caption = `A chave foi para ${direction}. ${axis} mudou de ${before} para ${value}; ${other} continuou ${s.keyPosition[other]}.`
+      if (start.setup?.freeExploration)
+        observe(s, `${axis}-${value > before ? 'plus' : 'minus'}`, 'Uma direção foi experimentada')
       observe(
         s,
         horizontal ? 'mover-horizontal' : 'mover-vertical',
@@ -451,9 +456,12 @@ export function stepScene(
     }
     case 'remember-collection':
       s.collection.remember = action.enabled
-      s.caption = action.enabled
-        ? 'Guardar a coleta está ligado.'
-        : 'Guardar a coleta está desligado.'
+      s.caption =
+        !s.collection.keyPresent && start.setup?.freeExploration
+          ? 'A regra mudou para o próximo encontro; a coleta anterior permanece igual.'
+          : action.enabled
+            ? 'Guardar a coleta está ligado.'
+            : 'Guardar a coleta está desligado.'
       break
     case 'collect-key':
       s.collection.keyPresent = false
@@ -488,6 +496,34 @@ export function stepScene(
         collectedThisRound: false,
       }
       s.caption = 'A partida recomeçou. A chave voltou ao chão.'
+      break
+    case 'movement-command':
+      s.walk.movement = action.enabled
+      s.walk.run = 0
+      break
+    case 'walk-frames':
+      s.clock.carry = 0
+      for (let i = 0; i < action.count; i++) quadroDoAndar(s)
+      break
+    case 'walk-order':
+      s.walk.order = action.order
+      s.walk.orderResult = false
+      break
+    case 'test-walk-order': {
+      const order = s.walk.order ?? 'correct'
+      const tried = s.walk.testedOrders ?? []
+      if (!tried.includes(order)) s.walk.testedOrders = [...tried, order]
+      s.walk.orderResult = true
+      if (s.walk.testedOrders?.length === 2)
+        observe(s, 'compared-command-order', 'As duas ordens foram testadas junto à borda')
+      break
+    }
+    case 'restart-hiding-places':
+      s.match.gardenRound = 2
+      s.match.gardenFound = []
+      s.match.gardenChosen = undefined
+      s.match.screen = 'start'
+      s.caption = 'Os esconderijos voltaram. A ligação continua como você deixou.'
       break
     case 'hold-arrow':
       // ⚠️ Sem legenda: a chave da bancada diz o estado, e a frase "a seta está segurada" seria a
@@ -562,7 +598,19 @@ export function stepScene(
       }
       const found = s.match.gardenFound ?? []
       if (!found.includes(action.id)) s.match.gardenFound = [...found, action.id]
-      if (action.id === 1)
+      if (start.setup?.freeExploration) observe(s, 'responds', 'O toque executou a reação')
+      if (start.setup?.freeExploration)
+        observe(
+          s,
+          action.id === 0 ? 'touched-bush' : 'touched-rocks',
+          'Um esconderijo recebeu a reação',
+        )
+      if (
+        start.setup?.freeExploration
+          ? s.evidence.discoveries.includes('touched-bush') &&
+            s.evidence.discoveries.includes('touched-rocks')
+          : action.id === 1
+      )
         observe(s, 'second-target', 'Outro esconderijo recebeu o toque e foi escolhido')
       s.match.screen = s.match.gardenFound?.includes(0) ? 'playing' : 'start'
       s.caption = `Escolhido agora: ${action.id === 0 ? 'arbusto' : 'pedras'}. Só esse esconderijo ficou invisível.`
@@ -591,7 +639,8 @@ export function stepScene(
     }
     case 'look-around':
       s.match.counterUpdate = { before: s.match.points, after: s.match.points, kind: 'empty' }
-      if (s.match.points > 0) observe(s, 'no-find', 'Procurar sem encontrar não mudou Achados')
+      if (s.match.points > 0 || start.setup?.freeExploration)
+        observe(s, 'no-find', 'Procurar sem encontrar não mudou Achados')
       s.caption = 'Você procurou, mas não encontrou ninguém. Achados continua igual.'
       break
     case 'restart-search':
@@ -2096,12 +2145,17 @@ function quadroDoAndar(s: SceneState): void {
   const antes = walk.x
   const limite = lighthouseWalkMaxX()
   walk.frame = Math.min(walk.frame + 1, LIGHTHOUSE_WALK.max)
-  if (walk.arrow) walk.x = Math.min(walk.x + walk.speed, LIGHTHOUSE_WALK.max)
+  if (walk.arrow && walk.movement !== false)
+    walk.x = Math.min(walk.x + walk.speed, LIGHTHOUSE_WALK.max)
   if (walk.keepInside) walk.x = Math.max(0, Math.min(walk.x, limite))
   walk.trail = [...walk.trail, walk.x].slice(-LIGHTHOUSE_WALK.trail)
   walk.idle = walk.x === antes ? Math.min(walk.idle + 1, walk.frame) : 0
   walk.run = walk.arrow && walk.x > antes ? Math.min(walk.run + 1, walk.frame) : 0
-  if (!walk.arrow && walk.x === antes)
+  if (walk.arrow && walk.movement === false)
+    observe(s, 'no-movement-command', 'A tecla não moveu sem o comando')
+  if (!walk.arrow && walk.movement !== false && antes > LIGHTHOUSE_WALK.start && walk.x === antes)
+    observe(s, 'stopped-after-release', 'Soltar a tecla interrompeu os passos')
+  if (!walk.arrow && walk.movement !== false && walk.x === antes)
     observe(s, 'still-without-arrow', 'Sem a seta, o sprite ficou parado')
   if (walk.run >= LIGHTHOUSE_WALK.runSeen)
     observe(s, 'moves-each-frame', 'Com a seta, o sprite andou a cada quadro')
@@ -3059,9 +3113,13 @@ export function sceneClockShouldStop(
   before: SceneState,
   after: SceneState,
   preset?: ScenePreset,
+  freeWalk = false,
 ): boolean {
   if (scene === 'once-vs-always') return onceRunFinished(after.once, oncePreset(preset))
-  if (scene === 'lighthouse-walk' && lighthouseWalkIdleStop(before, after)) return true
+  if (scene === 'lighthouse-walk') {
+    if (lighthouseWalkIdleStop(before, after)) return true
+    if (freeWalk) return false
+  }
   const salta = isSceneAction({ type: 'jump', input: 'tap' }, scene)
   if (salta && (after.flight.time === null || sceneJumpLeftView(scene, before, after))) return true
   return sceneClockReachedStop(scene, after)

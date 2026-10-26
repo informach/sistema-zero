@@ -173,7 +173,14 @@ describe('o lugar da chave no mapa do Farol', () => {
       cenario: 'farol',
       setup: { goals: ['mover-horizontal', 'mover-vertical'] },
     } as const
-    expect(sceneGoalIds(start.scene)).toEqual(['mover-horizontal', 'mover-vertical'])
+    expect(sceneGoalIds(start.scene)).toEqual([
+      'x-minus',
+      'x-plus',
+      'y-minus',
+      'y-plus',
+      'mover-horizontal',
+      'mover-vertical',
+    ])
     expect(isExperimentationActivity(activity)).toBe(true)
     expect(
       isInteractiveBlock({

@@ -414,7 +414,8 @@ test('a dívida de parâmetros JS sem tipo não pode crescer', () => {
   // `_inspectGroupItems(group, limit)`; os quatro têm tipos JSDoc explícitos.
   // +1: `_inspectSpriteBounds(sprite)` tem tipo JSDoc e reutiliza a projeção oficial.
   // +1: `_inspectSpritePosition(sprite)` tem JSDoc GameTwoDSprite explícito.
-  expect(runtimeFunctionParameterCount(gameTwoDRuntime)).toBeLessThanOrEqual(1490)
+  // +1: `_inspectContactBounds(sprite)` tem JSDoc GameTwoDSprite e lê a caixa de colisão sem mutar.
+  expect(runtimeFunctionParameterCount(gameTwoDRuntime)).toBeLessThanOrEqual(1491)
 })
 
 test('volume ZERO deixa mudo de verdade (não cai em fallback)', () => {

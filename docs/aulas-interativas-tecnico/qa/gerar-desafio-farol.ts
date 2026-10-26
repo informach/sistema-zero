@@ -1,6 +1,7 @@
 /** Regenera os manifestos e o inventário do Desafio do farol. Não importa nem publica aulas. */
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
+import { discoverySpeechSteps } from '../../../packages/core/src/learning/scene/discovery-guidance'
 import { FAROL_LAYOUT } from '../../../packages/studio/src/arte/farol-assets'
 import {
   chaveRecolhida,
@@ -271,7 +272,7 @@ const experienciaAndar = (
   goals: string[],
   // As descobertas da cena dizem "o sprite" (a palavra dos blocos); antes da parte 4, que explica
   // a palavra, a experiência do quadro troca o rótulo por "personagem" (revisão de 13/10/2026).
-  goalCopy?: Record<string, { label: string }>,
+  goalCopy?: Record<string, { label?: string; pedido?: string }>,
 ) => ({
   key,
   content: {
@@ -285,7 +286,14 @@ const experienciaAndar = (
       type: 'experimentation',
       scene: 'lighthouse-walk',
       cenario: 'farol',
-      setup: { goals, ...(goalCopy ? { goalCopy } : {}) },
+      setup: {
+        freeExploration: true,
+        ...(key === 'experiencia-quadro'
+          ? { actions: [{ type: 'movement-command', enabled: false }] }
+          : {}),
+        goals,
+        ...(goalCopy ? { goalCopy } : {}),
+      },
     },
   },
 })
@@ -314,16 +322,23 @@ const dia1 = {
     video('video-d1-quadro', 'Como o personagem anda', 'desafio-dia-1.roteiro.md'),
     fala(
       'ponte-d1-quadro',
-      'Sua vez! Teste sem a seta e com a seta e repare no que acontece com o x. Quando terminar, clique em Próxima parte.',
+      'Sua vez! Compare a regra de movimento, a tecla e a passagem dos quadros. Quando terminar, clique em Próxima parte.',
     ),
     experienciaAndar(
       'experiencia-quadro',
       'Como o personagem anda',
-      'Deixe Segurar a seta para a direita desligado e clique em Avançar 1 quadro. Olhe o x. Depois ligue Segurar a seta para a direita e clique em Avançar 1 quadro algumas vezes. Por último, clique em Rodar.',
-      ['still-without-arrow', 'moves-each-frame'],
+      'Compare o comando de mover na regra, a tecla do teclado de teste e a passagem dos quadros. Você escolhe a ordem e pode repetir quantas vezes quiser.',
+      ['no-movement-command', 'still-without-arrow', 'moves-each-frame', 'stopped-after-release'],
       {
-        'still-without-arrow': { label: 'Sem a seta, o personagem ficou parado' },
-        'moves-each-frame': { label: 'Com a seta, o personagem andou a cada quadro' },
+        'still-without-arrow': {
+          label: 'Com o bloco e a tecla solta, o personagem ficou parado',
+          pedido: 'Com o bloco na regra, solte a tecla e avance um quadro.',
+        },
+        'moves-each-frame': {
+          label: 'Com o bloco e a tecla apertada, ele andou a cada quadro',
+          pedido:
+            'Adicione o bloco de mover, aperte a tecla no teclado de teste e avance vários quadros.',
+        },
       },
     ),
     video('video-d1-andar', 'Faça o personagem andar', 'desafio-dia-1.roteiro.md'),
@@ -339,8 +354,14 @@ const dia1 = {
     experienciaAndar(
       'experiencia-limite',
       'Até onde ele pode ir?',
-      'Deixe Manter dentro da tela desligado, ligue Segurar a seta para a direita e clique em Rodar. Veja o que acontece na borda. Depois clique em Recomeçar, ligue Manter dentro da tela e clique em Rodar de novo.',
-      ['left-the-screen', 'stayed-inside'],
+      'Compare o que acontece na borda com e sem o bloco de limite. Teste também as duas ordens dos blocos. Você pode repetir e mudar a regra durante o teste.',
+      ['left-the-screen', 'stayed-inside', 'compared-command-order'],
+      {
+        'left-the-screen': {
+          pedido: 'Retire o bloco de limite, use o teclado de teste e avance até a borda.',
+        },
+        'stayed-inside': { pedido: 'Adicione o bloco de limite e avance mais quadros na borda.' },
+      },
     ),
     video('video-d1-borda', 'Mantenha o personagem na tela', 'desafio-dia-1.roteiro.md'),
     fala(
@@ -410,9 +431,14 @@ const dia2 = {
         title: 'O jogo guardou a chave?',
         semPerguntaFinal: true,
         instructions:
-          'Deixe Guardar a coleta desligado e clique em Encostar na chave. Olhe a chave, o aviso e temChave. Clique em Recomeçar a partida, ligue Guardar a coleta e clique em Encostar na chave de novo. Depois clique em Afastar e, por último, em Recomeçar a partida. Acompanhe temChave em cada teste.',
+          'Compare uma coleta com e sem a ação de guardar. Observe também o valor ao afastar e recomeçar a partida. Você escolhe a ordem dos testes.',
         hints: [],
-        activity: { type: 'experimentation', scene: 'collect-and-remember', cenario: 'farol' },
+        activity: {
+          type: 'experimentation',
+          scene: 'collect-and-remember',
+          cenario: 'farol',
+          setup: { freeExploration: true },
+        },
       },
     },
     video('video-d2-recolher', 'Recolha a chave', 'desafio-dia-2.roteiro.md'),
@@ -493,11 +519,12 @@ const dia3 = {
         title: 'A porta precisa da chave',
         semPerguntaFinal: true,
         instructions:
-          'Sem levar a chave, clique em Testar a porta. Depois clique em Levar a chave e em Testar a porta de novo. Compare temChave e a resposta escolhida nas duas vezes.',
+          'Prepare o personagem com ou sem a chave e teste a porta. Compare a resposta nas duas situações; você pode repetir quantas vezes quiser.',
         hints: [],
         activity: {
           type: 'experimentation',
           scene: 'lighthouse-key',
+          setup: { freeExploration: true },
           cenario: 'farol',
         },
       },
@@ -535,13 +562,13 @@ const dia3 = {
         title: 'Como escolher um lugar para a chave',
         semPerguntaFinal: true,
         instructions:
-          'Clique no número de Posição horizontal x, apague o 211, escreva 160 e clique fora do campo. Observe para onde a chave foi. Depois, sem mexer no x, faça o mesmo em Posição vertical y: troque 53 por 250 e clique fora do campo. Compare as duas mudanças. Se quiser repetir, clique em Recomeçar.',
+          'Explore os dois eixos em qualquer ordem. Mude um número por vez e observe para onde a chave vai. Se quiser um desafio, mostre um alvo e leve a chave até ele.',
         hints: [],
         activity: {
           type: 'experimentation',
           scene: 'lighthouse-position',
           cenario: 'farol',
-          setup: { goals: ['mover-horizontal', 'mover-vertical'] },
+          setup: { freeExploration: true, goals: ['x-minus', 'x-plus', 'y-minus', 'y-plus'] },
         },
       },
     },
@@ -742,3 +769,26 @@ const formatted = Bun.spawnSync({
 if (formatted.exitCode !== 0) {
   throw new Error(`Biome não conseguiu formatar os manifestos: ${formatted.stderr.toString()}`)
 }
+
+gravarArquivo(
+  resolve(DIR, 'zappy-etapas.json'),
+  `${JSON.stringify(
+    {
+      version: 1,
+      experiences: Object.fromEntries(
+        Object.entries({
+          'experiencia-quadro': 'walk',
+          'experiencia-limite': 'edge',
+          'experiencia-memoria': 'memory',
+          'experiencia-porta': 'door',
+          'experiencia-posicao': 'position',
+        }).map(([key, prefix]) => [
+          key,
+          discoverySpeechSteps().filter((s) => s.id.startsWith(`${prefix}-`)),
+        ]),
+      ),
+    },
+    null,
+    2,
+  )}\n`,
+)

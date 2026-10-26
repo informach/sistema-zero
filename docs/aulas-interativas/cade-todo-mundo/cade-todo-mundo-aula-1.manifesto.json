@@ -1026,7 +1026,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Sua vez! Investigue a ligação entre o toque e a reação no jardim. O Zappy acompanha cada etapa da experiência."
+        "text": "Sua vez! Investigue a ligação entre o toque e a reação no jardim. Você escolhe a ordem dos testes, e o Zappy sugere o que observar."
       }
     },
     {
@@ -1036,13 +1036,14 @@
         "required": true,
         "semPerguntaFinal": true,
         "title": "O toque faz o jogo responder",
-        "instructions": "Primeiro, toque no arbusto. Observe o jardim com a reação desligada.",
+        "instructions": "Compare os toques com a reação ligada e desligada. Escolha qual esconderijo testar e repita quando quiser.",
         "hints": [],
         "activity": {
           "type": "experimentation",
           "scene": "touch-response",
           "cenario": "jardim",
           "setup": {
+            "freeExploration": true,
             "goals": ["no-response", "responds", "second-target"]
           }
         }

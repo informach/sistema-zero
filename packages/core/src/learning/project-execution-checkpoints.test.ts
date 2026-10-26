@@ -63,3 +63,29 @@ test('recusa etapas fora da sequência, dados desconhecidos e seletores inválid
     }),
   ).toBe(true)
 })
+
+test('sprite navigation validates paths, time budgets, obstacles and unknown data', () => {
+  const step = {
+    action: 'approachSprite',
+    actorPath: 'personagem',
+    targetPath: 'chave',
+    timeoutMs: 4500,
+    avoidPaths: ['farol'],
+  }
+  const valid = { ...rule, steps: [step] }
+  expect(isSectionExecutionRule(valid)).toBe(true)
+  for (const patch of [
+    { actorPath: 'chave' },
+    { targetPath: 'x.__proto__' },
+    { timeoutMs: 7501 },
+    { timeoutMs: 99 },
+    { avoidPaths: ['farol', 'farol'] },
+    { avoidPaths: ['chave'] },
+    { avoidPaths: ['personagem'] },
+    { extra: true },
+  ])
+    expect(
+      isSectionExecutionRule({ ...valid, steps: [{ ...step, ...patch }] }),
+      JSON.stringify(patch),
+    ).toBe(false)
+})

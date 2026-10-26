@@ -42,6 +42,7 @@ export const EXECUTION_LIMITS = {
    */
   maxSectionWaitMs: 40_000,
   maxHoldMs: 5_000,
+  maxApproachMs: 7_500,
   maxIdleBaselineMs: 250,
   /** Coordenada de clique, na tela do jogo. */
   maxCoordinate: 4_000,
@@ -59,6 +60,13 @@ export type ExecutionStep =
   | { action: 'press'; key: ExecutionKey; holdMs?: number }
   | { action: 'click'; x: number; y: number }
   | { action: 'clickTarget'; target: ExecutionClickTarget }
+  | {
+      action: 'approachSprite'
+      actorPath: string
+      targetPath: string
+      avoidPaths?: string[]
+      timeoutMs: number
+    }
 
 /** Um gesto no palco atual, nunca uma posição ou aparência da solução da professora. */
 export type ExecutionClickTarget =
@@ -259,6 +267,31 @@ export function isExecutionStep(
             n <= EXECUTION_LIMITS.maxCoordinate,
         )
       )
+    case 'approachSprite': {
+      const path = (v: unknown) =>
+        context === 'draft'
+          ? typeof v === 'string' && v.length <= 200
+          : isExecutionValuePath(v) &&
+            !v.split('.').some((p) => ['constructor', 'prototype', '__proto__'].includes(p))
+      return (
+        Object.keys(step).every((k) =>
+          ['action', 'actorPath', 'targetPath', 'avoidPaths', 'timeoutMs'].includes(k),
+        ) &&
+        path(step.actorPath) &&
+        path(step.targetPath) &&
+        step.actorPath !== step.targetPath &&
+        Number.isInteger(step.timeoutMs) &&
+        Number(step.timeoutMs) >= 100 &&
+        Number(step.timeoutMs) <= EXECUTION_LIMITS.maxApproachMs &&
+        (step.avoidPaths === undefined ||
+          (Array.isArray(step.avoidPaths) &&
+            step.avoidPaths.length <= 4 &&
+            new Set(step.avoidPaths).size === step.avoidPaths.length &&
+            step.avoidPaths.every(
+              (p: unknown) => path(p) && p !== step.actorPath && p !== step.targetPath,
+            )))
+      )
+    }
     case 'clickTarget': {
       if (Object.keys(step).length !== 2 || !record(step.target)) return false
       const target = step.target
@@ -293,7 +326,13 @@ export function executionRuleBudgetMs(rule: SectionExecutionRule): number {
     rule.steps.reduce(
       (sum, step) =>
         sum +
-        (step.action === 'wait' ? step.ms : step.action === 'press' ? (step.holdMs ?? 80) : 0),
+        (step.action === 'wait'
+          ? step.ms
+          : step.action === 'press'
+            ? (step.holdMs ?? 80)
+            : step.action === 'approachSprite'
+              ? step.timeoutMs
+              : 0),
       0,
     )
   )
@@ -318,7 +357,14 @@ function areSteps(steps: unknown): steps is ExecutionStep[] {
   }
   const waited = steps.reduce(
     (sum: number, step: ExecutionStep) =>
-      sum + (step.action === 'wait' ? step.ms : step.action === 'press' ? (step.holdMs ?? 0) : 0),
+      sum +
+      (step.action === 'wait'
+        ? step.ms
+        : step.action === 'press'
+          ? (step.holdMs ?? 0)
+          : step.action === 'approachSprite'
+            ? step.timeoutMs
+            : 0),
     0,
   )
   return waited <= EXECUTION_LIMITS.maxTotalWaitMs

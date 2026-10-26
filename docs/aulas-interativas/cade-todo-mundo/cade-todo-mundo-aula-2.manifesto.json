@@ -26,7 +26,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Sua vez! Acompanhe o valor guardado durante a busca. O Zappy acompanha cada etapa da experiência."
+        "text": "Sua vez! Acompanhe o valor guardado durante a busca. Você escolhe a ordem dos testes, e o Zappy sugere o que observar."
       }
     },
     {
@@ -43,6 +43,7 @@
           "scene": "found-counter",
           "cenario": "jardim",
           "setup": {
+            "freeExploration": true,
             "goals": ["first-find", "second-find", "no-find", "repeat", "back-to-zero"]
           }
         }

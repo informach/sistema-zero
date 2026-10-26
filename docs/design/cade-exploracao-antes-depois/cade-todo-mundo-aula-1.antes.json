@@ -1,0 +1,226 @@
+{
+  "version": 5,
+  "courseSlug": "cade-todo-mundo",
+  "lessonSlug": "aula-1",
+  "title": "O primeiro achado",
+  "blocks": [
+    {
+      "key": "experiencia-toque",
+      "content": {
+        "kind": "interactive",
+        "required": true,
+        "semPerguntaFinal": true,
+        "title": "O toque faz o jogo responder",
+        "instructions": "Primeiro, toque no arbusto. Observe o jardim com a reação desligada.",
+        "hints": [],
+        "activity": {
+          "type": "experimentation",
+          "scene": "touch-response",
+          "cenario": "jardim",
+          "setup": {
+            "goals": [
+              "no-response",
+              "responds",
+              "second-target"
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "sections": [
+    {
+      "key": "apresentacao",
+      "title": "Bem-vindo ao jardim",
+      "intent": "presentation",
+      "objective": "Jogar a versão pronta e encontrar os três personagens antes de construir o próprio jogo.",
+      "blockKeys": [
+        "video-a1-abertura",
+        "ponte-a1-jogo",
+        "jogo-pronto"
+      ],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": [
+          "video-a1-abertura",
+          "jogo-pronto"
+        ]
+      }
+    },
+    {
+      "key": "seu-caderno-do-aluno",
+      "title": "Seu passo a passo do projeto",
+      "intent": "material",
+      "objective": "Conhecer o caderno e saber onde consultá-lo durante a construção do jogo.",
+      "blockKeys": [
+        "video-a1-caderno",
+        "ponte-a1-caderno",
+        "caderno"
+      ],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": [
+          "video-a1-caderno"
+        ]
+      }
+    },
+    {
+      "key": "toque-e-resposta",
+      "title": "O que um toque faz?",
+      "intent": "exploration",
+      "objective": "Comparar o mesmo toque antes e depois de ligar uma ação, sem palpite obrigatório.",
+      "blockKeys": [
+        "video-a1-toque",
+        "ponte-a1-toque",
+        "experiencia-toque"
+      ],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": [
+          "video-a1-toque",
+          "experiencia-toque"
+        ]
+      }
+    },
+    {
+      "key": "primeiro-achado",
+      "title": "Faça alguém aparecer",
+      "intent": "delivery",
+      "objective": "Encaixar a reação no evento preparado e tocar num esconderijo do próprio jogo.",
+      "blockKeys": [
+        "video-a1-programar",
+        "ponte-a1-programar",
+        "projeto"
+      ],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": [
+          "video-a1-programar",
+          "projeto"
+        ],
+        "projectChecks": [
+          {
+            "id": "revelar-ao-toque",
+            "label": "O toque revela só o personagem daquele esconderijo.",
+            "hint": "No teste das pedras, só as pedras devem ficar invisíveis. Confira qual esconderijo a reação altera.",
+            "rule": {
+              "type": "behavior",
+              "steps": [
+                {
+                  "action": "clickTarget",
+                  "target": {
+                    "kind": "sprite",
+                    "path": "esconderijo2",
+                    "groupPath": "esconderijos"
+                  }
+                }
+              ],
+              "expect": {
+                "target": {
+                  "kind": "value",
+                  "path": "esconderijo2.opacity"
+                },
+                "compare": "equals",
+                "value": 0
+              },
+              "checkpoints": [
+                {
+                  "afterStep": 1,
+                  "expect": {
+                    "target": {
+                      "kind": "value",
+                      "path": "esconderijo1.opacity"
+                    },
+                    "compare": "notEquals",
+                    "value": 0
+                  }
+                },
+                {
+                  "afterStep": 1,
+                  "expect": {
+                    "target": {
+                      "kind": "value",
+                      "path": "esconderijo3.opacity"
+                    },
+                    "compare": "notEquals",
+                    "value": 0
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "id": "outros-esconderijos",
+            "label": "Outros esconderijos também respondem aos próprios toques.",
+            "hint": "Teste outros esconderijos: cada um precisa revelar o próprio personagem.",
+            "rule": {
+              "type": "behavior",
+              "steps": [
+                {
+                  "action": "clickTarget",
+                  "target": {
+                    "kind": "sprite",
+                    "path": "esconderijo1",
+                    "groupPath": "esconderijos"
+                  }
+                },
+                {
+                  "action": "clickTarget",
+                  "target": {
+                    "kind": "sprite",
+                    "path": "esconderijo3",
+                    "groupPath": "esconderijos"
+                  }
+                }
+              ],
+              "expect": {
+                "target": {
+                  "kind": "value",
+                  "path": "esconderijo3.opacity"
+                },
+                "compare": "equals",
+                "value": 0
+              },
+              "checkpoints": [
+                {
+                  "afterStep": 1,
+                  "expect": {
+                    "target": {
+                      "kind": "value",
+                      "path": "esconderijo1.opacity"
+                    },
+                    "compare": "equals",
+                    "value": 0
+                  }
+                },
+                {
+                  "afterStep": 2,
+                  "expect": {
+                    "target": {
+                      "kind": "value",
+                      "path": "esconderijo2.opacity"
+                    },
+                    "compare": "notEquals",
+                    "value": 0
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

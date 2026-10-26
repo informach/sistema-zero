@@ -51,7 +51,7 @@ export function TouchRule({ enabled, chosen }: { enabled: boolean; chosen: strin
       <p className="sz-garden-caption">
         {enabled
           ? 'O toque executa a reação só no esconderijo escolhido. Os outros continuam como estavam.'
-          : 'O toque pode acontecer sem revelar ninguém. Primeiro teste; depois ligue a reação.'}
+          : 'O toque pode acontecer sem revelar ninguém. Você pode ligar, desligar e comparar quantas vezes quiser.'}
       </p>
     </div>
   )

@@ -26,3 +26,11 @@ Aplicada ao código e aos materiais locais conforme [as diretrizes](../../aulas-
 Produção de áudio, escuta, edição dos clipes, importação no curso de destino e publicação são etapas separadas. Os arquivos plannedVideo não representam vídeo novo publicado.
 
 [Implementação, evidências de validação e etapas de produção restantes](REVISAO-2026-10-25.md).
+
+## Exploração livre orientada por objetivos, 26/10/2026
+
+Experiências atualizadas com as comparações disponíveis desde o início, testes em qualquer ordem e repetição depois da conclusão. O próximo botão sugerido usa a cor principal; outras opções permanecem utilizáveis. Reiniciar uma tentativa preserva descobertas; recomeçar a experiência limpa o ensaio. O quiz mantém previsão, cena, correção e nova tentativa. As falas de Zappy acompanham o estado da experiência e estão em `zappy-etapas.json`.
+
+Vídeos conceituais explicam o conceito e convidam à investigação, sem ditar cliques. A montagem no Estúdio continua completa. Fontes, roteiros, manifestos e PDF foram sincronizados. Produzir áudio/vídeo, importar os materiais e publicar continuam etapas de produção. Consulte [as diretrizes de autoria](../../aulas-interativas-tecnico/DESCOBERTA-GUIADA.md).
+
+[Revisão da implementação, correções e evidências de validação](../../aulas-interativas-tecnico/REVISAO-EXPLORACAO-2026-10-26.md).
