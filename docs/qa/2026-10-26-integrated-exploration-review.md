@@ -40,7 +40,7 @@ Tipagem passou em Core, Shell, Members, Admin, Kids, Community e Studio Runtime.
 Diagnósticos anteriores das fixtures/sobreposição foram preservados. Nenhum skip é positivo.
 
 Imagem `sz-runtime-business-scope:phase2-20261026`: smoke não-root/dependências protegidas
-passou; cinco kits canvas/phaser/three passaram na validação Docker com captura real.
+passou; seis kits canvas/phaser/three passaram na validação Docker com captura real.
 Perfil Linux verificou correspondência Core/gerador/runtime. Avisos de chunk grande do Vite
 permanecem avisos, não foram ocultados.
 
@@ -81,3 +81,10 @@ retângulo de layout não prova visibilidade. O teste agora exige visibilidade r
 comparador para medir também seus controles. Cinco cenários, incluindo 320/360/390 px,
 passaram localmente com o comparador aberto; a confirmação Linux pertence ao próximo CI.
 Não se reduziu a tolerância nem se excluiu esse controle da prova quando visível.
+
+A rodada `40359142639` confirmou que o botão aberto ainda excedia o console de 320 px
+no Linux. O botão direto do comparador herdava `white-space: nowrap` do componente base;
+agora respeita a largura disponível, quebra o texto e cresce em altura. Uma regressão
+adicional com texto de 20 px reproduziu o vazamento localmente antes da correção.
+Após o ajuste, os seis cenários de caminhada passaram (incluindo o texto ampliado e
+o clique no botão); Biome e `git diff --check` passaram. Confirmação Linux continua no CI.

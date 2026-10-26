@@ -738,6 +738,11 @@
 .free-order > p {
   margin: 10px 0;
 }
+.free-order > button {
+  max-width: 100%;
+  height: auto;
+  white-space: normal;
+}
 .free-order .sz-discovery-choices {
   margin: 14px 0;
 }

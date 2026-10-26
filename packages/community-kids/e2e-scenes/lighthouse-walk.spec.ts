@@ -93,3 +93,26 @@ for (const largura of [320, 360, 390]) {
     }
   })
 }
+
+test('o comando de ordem cabe no painel estreito também com texto ampliado', async ({ page }) => {
+  await page.setViewportSize({ width: 320, height: 844 })
+  await abrir(page, 'experiencia-limite')
+  await page.getByText('Experimentar a ordem dos comandos', { exact: true }).click()
+  const button = page.getByRole('button', { name: 'Avançar nessa ordem', exact: true })
+  await button.evaluate((element) => {
+    element.style.fontSize = '20px'
+  })
+  const bounds = await button.evaluate((element) => {
+    const parent = element.parentElement
+    if (!parent) throw new Error('Painel de ordem ausente')
+    const panel = parent.getBoundingClientRect()
+    const rect = element.getBoundingClientRect()
+    return {
+      inside: rect.left >= panel.left && rect.right <= panel.right,
+      clipped: element.scrollWidth > element.clientWidth,
+    }
+  })
+  expect(bounds).toEqual({ inside: true, clipped: false })
+  await button.click()
+  await expect(page.locator('.edge-zoom')).toHaveAttribute('data-out', 'false')
+})
