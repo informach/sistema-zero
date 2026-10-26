@@ -506,14 +506,14 @@
       max-height: 26%;
     }
     .mld-inspector-sections[data-activity="paint"] .mld-inspector-overview {
-      flex: 1 1 auto;
+      flex: 0 1 44%;
       min-height: 128px;
-      max-height: 70%;
+      max-height: 50%;
     }
     .mld-inspector-sections[data-activity="paint"] .mld-inspector-properties {
-      flex: 0 1 auto;
-      min-height: 80px;
-      max-height: 30%;
+      flex: 1 1 0;
+      min-height: 220px;
+      max-height: none;
     }
     /* Ao abrir a pintura de perto/camadas, reservar espaço para trabalhar na imagem. */
     .mld-inspector-sections[data-activity="paint"]:has(.mld-inspector-properties details[open]) {
