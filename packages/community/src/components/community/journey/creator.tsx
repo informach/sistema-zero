@@ -86,7 +86,10 @@ function checklistRows(stage: CreatorStageView, missionCard: CreatorEntryCardVie
   return [
     {
       label: 'Cursos da trilha',
-      detail: `${list.courses.done} de 2`,
+      detail:
+        !list.courses.complete && list.courses.preparing
+          ? 'Em preparação'
+          : `${list.courses.done} de 2`,
       done: list.courses.complete,
     },
     {
@@ -95,9 +98,11 @@ function checklistRows(stage: CreatorStageView, missionCard: CreatorEntryCardVie
         ? 'Concluída'
         : missionCard.lessons && missionCard.lessons.done > 0
           ? `${missionCard.lessons.done} de ${missionCard.lessons.total} aulas`
-          : list.mission.available
-            ? 'Por fazer'
-            : 'Depois dos cursos',
+          : list.mission.preparing
+            ? 'Em preparação'
+            : list.mission.available
+              ? 'Por fazer'
+              : 'Depois dos cursos',
       done: list.mission.complete,
     },
     {

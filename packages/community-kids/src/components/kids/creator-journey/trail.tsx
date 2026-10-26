@@ -103,7 +103,7 @@ export function KidsCreatorTrail({
         </div>
         <p className="mt-4 max-w-4xl font-medium text-[1.0625rem] text-muted-foreground">
           {future
-            ? `Tudo aqui abre quando você chegar a ${stage.title}. Você já pode espiar o que vem pela frente.`
+            ? `A trilha inteira abre quando você chegar a ${stage.title}. Os cursos daqui que você já tem continuam abertos para você.`
             : relation === 'past'
               ? stage.earned && !list.complete
                 ? creatorStageSummary(stage)

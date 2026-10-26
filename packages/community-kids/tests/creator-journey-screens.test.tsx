@@ -31,6 +31,10 @@ test('a course in preparation keeps its title and offers no lesson button', () =
   )
   expect(container.textContent).toContain(stage.base2d.title!)
   expect(container.textContent).toContain('Curso em preparação')
+  const courseLinks = [...container.querySelectorAll('section a')].filter((link) =>
+    /^\/cursos\/(?!trilha)/.test(link.getAttribute('href') ?? ''),
+  )
+  expect(courseLinks.length).toBe(0)
 })
 
 test('a trail the child has not reached stays locked, also by its address', () => {

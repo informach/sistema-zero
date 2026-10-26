@@ -95,7 +95,7 @@ export function LevelUpCelebration({
         </h2>
         <p className="mt-2 text-muted-foreground text-sm">
           {trail?.previous
-            ? `Você terminou os cursos, a missão e os Poderes da Trilha ${trail.previous}.`
+            ? `Você completou a Trilha ${trail.previous}.`
             : 'Você conquistou mais um posto na sua jornada de criação!'}
         </p>
 

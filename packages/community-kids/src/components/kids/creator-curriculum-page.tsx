@@ -179,7 +179,7 @@ function CurrentTrail({
               <p className="font-bold text-muted-foreground text-xs">Poderes</p>
               <p className="sz-display mt-0.5 text-xl">
                 {list.powers.complete
-                  ? `Você já tem os ${list.powers.required === 1 ? 'Poder' : 'Poderes'} desta trilha!`
+                  ? `Você já tem ${list.powers.required === 1 ? 'o Poder' : 'os Poderes'} desta trilha!`
                   : `Você já tem ${list.powers.done} de ${list.powers.required} ${list.powers.required === 1 ? 'Poder' : 'Poderes'}`}
               </p>
               <p className="mt-1 font-medium text-[0.9375rem] text-muted-foreground">
@@ -187,7 +187,7 @@ function CurrentTrail({
                   ? 'Os Poderes abrem quando você termina os cursos da trilha.'
                   : list.powers.complete
                     ? `Quer mais? Ainda há ${stage.powers.length - list.powers.done} para explorar nesta trilha.`
-                    : `Escolha mais ${remaining} entre os ${stage.powers.length} desta trilha.`}
+                    : `Escolha ${list.powers.done > 0 ? 'mais ' : ''}${remaining} entre os ${stage.powers.length} desta trilha.`}
               </p>
             </div>
             <div className="w-full shrink-0 md:w-56">

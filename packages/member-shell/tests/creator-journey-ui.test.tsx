@@ -94,13 +94,41 @@ test('mastery shows its actual entry and the language-independent approach', () 
   expect(creatorMasteryApproach(art)).not.toContain('Trocar de editor')
 })
 
-test('a reviewed nucleus credit does not invent completion of its courses', () => {
+test('a nucleus course card follows the course state, never the level credit', () => {
   const { view, catalog, mine } = creatorSceneFixture('kids', 'mastery')
   const level = view.masteries[0]!.levels[0]!
-  const credited = { ...level, nucleusCompleted: true }
-  expect(credited.nucleusCourses.length).toBeGreaterThan(0)
-  for (const entry of credited.nucleusCourses)
-    expect(creatorEntryCard(entry, catalog, mine).status).not.toBe('done')
+  expect(level.nucleusCourses.length).toBeGreaterThan(0)
+  for (const entry of level.nucleusCourses) {
+    const card = creatorEntryCard(entry, catalog, mine)
+    expect(card.status === 'done').toBe(entry.state === 'completed')
+  }
+})
+
+test('a course in preparation never links to its lessons, even when it is in Meus cursos', () => {
+  const { view, catalog, mine } = creatorSceneFixture('kids', 'pair')
+  const entry = { ...view.stages[0]!.base2d, state: 'unavailable' as const }
+  const card = creatorEntryCard(entry, catalog, mine)
+  expect(card.status).toBe('planned')
+  expect(card.href).toBeNull()
+  expect(card.continueHref).toBeNull()
+})
+
+test('agreement and preparation in what is missing', () => {
+  const { view } = creatorSceneFixture('kids', 'mission')
+  const construtor = {
+    ...view.stages[1]!,
+    base2d: { ...view.stages[1]!.base2d, state: 'completed' as const },
+    base3d: { ...view.stages[1]!.base3d, state: 'completed' as const },
+    mission: { ...view.stages[1]!.mission, state: 'completed' as const },
+    powersCompleted: 0,
+  }
+  expect(creatorStageMissing(construtor)).toBe('Faltam 2 Poderes')
+  const preparing = {
+    ...construtor,
+    mission: { ...construtor.mission, state: 'unavailable' as const },
+  }
+  expect(creatorStageMissing(preparing)).toBeNull()
+  expect(creatorStageChecklist(preparing).mission.preparing).toBe(true)
 })
 
 test('a paused curriculum explains preservation without promising a promotion', () => {

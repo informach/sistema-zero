@@ -118,8 +118,9 @@ export function creatorCourseLockFromBody(body: unknown, skin: CreatorJourneySki
  */
 export interface CreatorStageChecklist {
   /** Os dois cursos da trilha (2D e 3D). */
-  courses: { done: number; total: 2; complete: boolean }
-  mission: { complete: boolean; available: boolean }
+  /** `preparing`: um dos dois ainda está em preparação (nenhum caminho para a aula). */
+  courses: { done: number; total: 2; complete: boolean; preparing: boolean }
+  mission: { complete: boolean; available: boolean; preparing: boolean }
   /** `required` é o mínimo da política (1 na Faísca, 2 nos demais). */
   powers: { done: number; required: number; complete: boolean }
   /** Passos feitos e o total que conta para subir (3 + Poderes exigidos). */
@@ -128,6 +129,8 @@ export interface CreatorStageChecklist {
   /** 0 a 100, inteiro. */
   percent: number
   complete: boolean
+  /** Um curso que o posto pede (da trilha ou a missão) ainda está em preparação. */
+  preparing: boolean
 }
 
 export function creatorStageChecklist(stage: CreatorStageView): CreatorStageChecklist {
@@ -138,8 +141,18 @@ export function creatorStageChecklist(stage: CreatorStageView): CreatorStageChec
   const done = coursesDone + Number(missionDone) + powersDone
   const total = 3 + stage.minimumPowers
   return {
-    courses: { done: coursesDone, total: 2, complete: coursesDone === 2 },
-    mission: { complete: missionDone, available: stage.mission.state !== 'locked' },
+    courses: {
+      done: coursesDone,
+      total: 2,
+      complete: coursesDone === 2,
+      preparing: stage.base2d.state === 'unavailable' || stage.base3d.state === 'unavailable',
+    },
+    mission: {
+      complete: missionDone,
+      available: stage.mission.state !== 'locked' && stage.mission.state !== 'unavailable',
+      preparing: stage.mission.state === 'unavailable',
+    },
+    preparing: stagePreparing(stage),
     powers: {
       done: stage.powersCompleted,
       required: stage.minimumPowers,
@@ -159,6 +172,11 @@ function joinPt(parts: readonly string[]): string {
   return `${parts.slice(0, -1).join(', ')} e ${parts.at(-1)}`
 }
 
+/** Um curso que o posto pede ainda não foi publicado: ninguém consegue cumprir o passo agora. */
+function stagePreparing(stage: CreatorStageView): boolean {
+  return [stage.base2d, stage.base3d, stage.mission].some((entry) => entry.state === 'unavailable')
+}
+
 function missingCourse(stage: CreatorStageView): '2D' | '3D' | 'both' | null {
   const has2d = stage.base2d.state === 'completed'
   const has3d = stage.base3d.state === 'completed'
@@ -172,6 +190,9 @@ function missingCourse(stage: CreatorStageView): '2D' | '3D' | 'both' | null {
  * os requisitos do posto já estão cumpridos.
  */
 export function creatorStageTodo(stage: CreatorStageView, skin: CreatorJourneySkin): string | null {
+  // Pedir um curso que ainda está em preparação seria um passo impossível: quem chama cai na
+  // frase de `creatorJourneyHint`, que diz que os cursos estão sendo preparados.
+  if (stagePreparing(stage)) return null
   const course = missingCourse(stage)
   const finish = skin === 'kids' ? 'termine' : 'conclua'
   const parts: string[] = []
@@ -190,6 +211,7 @@ export function creatorStageTodo(stage: CreatorStageView, skin: CreatorJourneySk
 
 /** O que falta, como NOME ("Falta a missão e 2 Poderes"). `null` com tudo cumprido. */
 export function creatorStageMissing(stage: CreatorStageView): string | null {
+  if (stagePreparing(stage)) return null
   const course = missingCourse(stage)
   const parts: string[] = []
   if (course) parts.push(course === 'both' ? 'os cursos da trilha' : `o curso ${course} da trilha`)
@@ -197,7 +219,10 @@ export function creatorStageMissing(stage: CreatorStageView): string | null {
   const powers = stage.minimumPowers - Math.min(stage.powersCompleted, stage.minimumPowers)
   if (powers > 0) parts.push(`${powers} ${powerWord(powers)}`)
   if (!parts.length) return null
-  return `${course === 'both' ? 'Faltam' : 'Falta'} ${joinPt(parts)}`
+  // O verbo antes concorda com o primeiro item: "Faltam os cursos…", "Faltam 2 Poderes",
+  // "Falta a missão e 2 Poderes".
+  const plural = course === 'both' || (!course && stage.mission.state === 'completed' && powers > 1)
+  return `${plural ? 'Faltam' : 'Falta'} ${joinPt(parts)}`
 }
 
 /** Presentation of the server's evaluated facts. This never grants access or advancement. */
@@ -245,7 +270,7 @@ export function creatorJourneyHint(view: CreatorJourneyView): string {
     return 'A progressão está pausada. Seus cursos e conquistas continuam guardados; você pode continuar criando com os acessos já liberados.'
   const stage = creatorCurrentStage(view)
   if (!stage) return 'Sua jornada continua nas Maestrias. Escolha a área que quer aprofundar.'
-  if (stage.base2d.state === 'unavailable' || stage.base3d.state === 'unavailable')
+  if (stagePreparing(stage))
     return 'Os próximos cursos desta trilha estão em preparação. Seus cursos e conquistas continuam guardados.'
   if (!stage.pairCompleted)
     return 'Conclua os cursos 2D e 3D da trilha para abrir a missão, os Poderes e os extras.'
@@ -318,7 +343,10 @@ export function creatorEntryCard(
       ? own.careerLock?.locked !== true
       : false
   const slug = source?.courseSlug
-  const href = opens && slug ? `/cursos/${encodeURIComponent(slug)}` : null
+  // Curso em preparação mostra o nome, nunca um caminho para a aula (mesmo que a pessoa o
+  // tenha em Meus cursos, como um arquivado de matrícula específica).
+  const href =
+    entry.state !== 'unavailable' && opens && slug ? `/cursos/${encodeURIComponent(slug)}` : null
   const progress = own?.progress
   const lessons =
     progress && progress.totalLessons > 0

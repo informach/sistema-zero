@@ -327,7 +327,18 @@ function CurriculumLadder({ view }: { view: KidsJourneyView }) {
       slug: stage.level as StudentLevelSlug,
       label: stage.title,
       genre: stage.genre ?? null,
-      tools: capabilityPhrase(tools[stage.level as StudentLevelSlug] ?? []),
+      // "Liberado" só para o que a criança já ganhou; o resto da trilha é o que ela "libera".
+      // As ferramentas chegam durante a trilha (depois do 2D, do 3D, do par ou de um curso).
+      earnedTools: capabilityPhrase(
+        (tools[stage.level as StudentLevelSlug] ?? []).filter((capability) =>
+          view.earned.capabilities.includes(capability),
+        ),
+      ),
+      tools: capabilityPhrase(
+        (tools[stage.level as StudentLevelSlug] ?? []).filter(
+          (capability) => !view.earned.capabilities.includes(capability),
+        ),
+      ),
       done: stage.completed,
       stage,
     })),
@@ -335,6 +346,7 @@ function CurriculumLadder({ view }: { view: KidsJourneyView }) {
       slug: 'god' as const,
       label: 'Lenda',
       genre: 'As Maestrias',
+      earnedTools: null,
       tools: null,
       done: false,
       stage: null,
@@ -398,9 +410,15 @@ function CurriculumLadder({ view }: { view: KidsJourneyView }) {
                   <span className="text-muted-foreground">{row.genre}</span>
                 </p>
               ) : null}
+              {row.earnedTools ? (
+                <p className="mt-0.5 text-[0.8125rem] leading-snug">
+                  <span className="font-bold">Liberado: </span>
+                  <span className="text-muted-foreground">{row.earnedTools}</span>
+                </p>
+              ) : null}
               {row.tools ? (
                 <p className="mt-0.5 text-[0.8125rem] leading-snug">
-                  <span className="font-bold">{done || current ? 'Liberado: ' : 'Libera: '}</span>
+                  <span className="font-bold">Libera: </span>
                   <span className="text-muted-foreground">{row.tools}</span>
                 </p>
               ) : null}

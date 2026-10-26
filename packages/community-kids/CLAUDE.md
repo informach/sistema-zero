@@ -28,7 +28,9 @@ voltaram, nas peças da casa, em `components/kids/creator-journey/` (`parts`, `t
 - **`/cursos/trilha/[level]`** (`KidsCreatorTrail`): medalhão, a faixa "Para virar X", cursos da
   trilha, missão, Poderes (6 e "Ver todos"), extras e o cartão do próximo nível com as ferramentas
   reais (`curriculumTrailCapabilities` em `lib/journey-rewards.ts`, de `advances[i].capabilities`).
-  Trilha futura: o mesmo desenho com "Abre quando você chegar a X".
+  Trilha ainda não alcançada: o recado "Esta parte do mapa ainda está bloqueada" (ver a trava
+  abaixo); a que abriu só por um curso avulso mostra o desenho com "A trilha inteira abre quando
+  você chegar a X".
 - **Maestrias**: `KidsMasteryHub` ("Escolha no que quer ficar craque") e `KidsMasteryArea`.
 - **Início, perfil, pais, curso, Criar e celebração**: `creator-journey-card` com as pílulas,
   `journey-timeline` (escada de postos), `child-progress` (pílulas), `KidsCourseJourneyContext`

@@ -189,22 +189,17 @@ function adultScreen(): ReactNode {
       </>
     )
   return (
-    <>
-      <PageBand
-        kicker="Catálogo da comunidade"
-        title="Cursos"
-        lead="Sete etapas até a Lenda. Em cada uma, os cursos da trilha em 2D e 3D, uma missão para criar um jogo seu e os Poderes para ampliá-lo."
-      >
-        <section className="mt-6 flex flex-col gap-5">
-          <h2 className="sz-h3">Jornada do Criador</h2>
-          <AdultCreatorStepper view={view} />
-          <AdultCreatorNextStep view={view} catalog={catalog} mine={mine} />
-        </section>
-      </PageBand>
-      <PageBody>
+    <PageBand
+      kicker="Catálogo da comunidade"
+      title="Cursos"
+      lead="Sete etapas até a Lenda. Em cada uma, os cursos da trilha em 2D e 3D, uma missão para criar um jogo seu e os Poderes para ampliá-lo."
+    >
+      <section className="mt-6 flex flex-col gap-5">
+        <h2 className="sz-h3">Jornada do Criador</h2>
+        <AdultCreatorStepper view={view} />
         <AdultCreatorNextStep view={view} catalog={catalog} mine={mine} />
-      </PageBody>
-    </>
+      </section>
+    </PageBand>
   )
 }
 createRoot(document.getElementById('root')!).render(

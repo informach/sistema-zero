@@ -126,7 +126,11 @@ export function checklistItems(
     {
       id: 'cursos',
       label: 'Cursos da trilha',
-      detail: list.courses.complete ? null : `${list.courses.done} de 2`,
+      detail: list.courses.complete
+        ? null
+        : list.courses.preparing
+          ? 'Em preparação'
+          : `${list.courses.done} de 2`,
       done: list.courses.complete,
     },
     {
@@ -136,9 +140,11 @@ export function checklistItems(
         ? null
         : missionLessons && missionLessons.done > 0
           ? `${missionLessons.done} de ${missionLessons.total} aulas`
-          : list.mission.available
-            ? 'Por fazer'
-            : 'Depois dos cursos',
+          : list.mission.preparing
+            ? 'Em preparação'
+            : list.mission.available
+              ? 'Por fazer'
+              : 'Depois dos cursos',
       done: list.mission.complete,
     },
     {
