@@ -1,5 +1,25 @@
 # CLAUDE.md — @sistemazero/member-shell
 
+## Peças novas do avatar e a aba Enfeite (26/10/2026)
+
+Pedido dela, a partir do Canvas "Provador do avatar": 32 peças próprias, iguais no Kids e no
+adulto (lista e ids em `docs/gamificacao.md` §6; os scripts que as geram moram em
+`community-kids/scripts/avatar-blender/`).
+
+- **Categoria nova `hairAccessory` ("Enfeite")**, entre Chapéu e Blusa: laço, tiara, coroa de
+  flores, presilhas e orelhinhas. Removível (`enfeite-none`), com a paleta das roupas, e o chapéu
+  a esconde junto com o cabelo (`AVATAR_HIDE_GROUPS.hat`). No Kids entra no grupo Cabeça
+  (`KIDS_AVATAR_CATEGORY_GROUPS`); no adulto, nas frases de `skin.ts` (`categories`,
+  `colorHeading`, `itemsHeading`). As duas miniaturas (`thumb-canvas.tsx` e o gerador) a tratam
+  como peça de cabeça.
+- **Acessório com cor**: `accessory` passou a usar a paleta das roupas (o colar e o cachecol
+  novos, e a gravata e a gravata-borboleta, que já tinham `Color_`). Default `#e74c3c`.
+- **`AVATAR_FIXED_COLOR_PARTS` + `paletteForPart(categoria, peça)`**: peça de cor embutida numa
+  categoria com paleta (brincos de metal, óculos 2, fantasias) esconde a fileira de cores, porque
+  a cor não mudaria nada. O configurador usa `paletteForPart` na tela e no "Surpreenda-me".
+  ⚠️ O teste do Kids lê os materiais de cada GLB: peça sem `Color_` fora da lista reprova.
+- Peças novas têm nome que diz o que são ("Rabo de cavalo alto"); as antigas seguem numeradas.
+
 ## Avatar e quarto do Kids com o painel ao lado (26/10/2026)
 
 Pedido dela, a partir do Canvas "Kids · avatar e quarto com painel ao lado": as telas do Kids
