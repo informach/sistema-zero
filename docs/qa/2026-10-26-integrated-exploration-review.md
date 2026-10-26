@@ -95,3 +95,6 @@ passados diretamente ao editor e à persistência. A fixture agora usa a prepara
 canônica existente para obter o documento editável, preservando sua revisão local,
 sem cast nem supressão. Os dez casos isolados/70 asserções passaram após o ajuste,
 inclusive troca pelo envio e recusa de conflito real entre abas, em JavaScript e Python.
+A checagem semântica focada pelo TypeScript confirmou zero diagnósticos no arquivo
+alterado depois de verificar também o retorno nulo da preparação. Ela não substitui
+a tipagem completa do próximo CI; o primeiro diagnóstico local foi preservado.
