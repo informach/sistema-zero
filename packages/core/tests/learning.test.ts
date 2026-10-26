@@ -276,7 +276,8 @@ const MANIFESTOS = listarArquivosAulas()
   .sort()
 describe('os manifestos atuais das aulas', () => {
   test('o inventário distingue os cursos, incluindo o novo Desafio e Cadê Todo Mundo?', () => {
-    expect(MANIFESTOS).toHaveLength(37)
+    expect(MANIFESTOS).toHaveLength(40)
+    expect(MANIFESTOS.filter((name) => name.startsWith('ilha-aula-'))).toHaveLength(3)
     expect(MANIFESTOS.filter((name) => name.startsWith('cade-todo-mundo-'))).toHaveLength(3)
     expect(MANIFESTOS.filter((name) => name.startsWith('corre-dino-'))).toHaveLength(13)
     expect(MANIFESTOS.filter((name) => name.startsWith('desafio-'))).toHaveLength(4)
@@ -473,6 +474,19 @@ describe('progressão inicial de Nave Contra Asteroides', () => {
 
 /** Percursos dos casos autorais que mudam a montagem ou as metas da cena padrão. */
 const ROTAS_DAS_AULAS: Record<string, SceneAction[]> = {
+  'ilha-aula-2.manifesto.json/experiencia-posicao-3d': [
+    { type: 'island-axis', axis: 'x', value: 4 },
+    { type: 'island-axis', axis: 'x', value: -4 },
+    { type: 'island-axis', axis: 'y', value: 4 },
+    { type: 'island-axis', axis: 'y', value: 0 },
+    { type: 'island-axis', axis: 'z', value: 4 },
+    { type: 'island-axis', axis: 'z', value: -4 },
+  ],
+  'ilha-aula-2.manifesto.json/experiencia-contato-3d': [
+    { type: 'island-test' },
+    { type: 'island-axis', axis: 'y', value: 1 },
+    { type: 'island-test' },
+  ],
   'corre-dino-aula-01.manifesto.json/experiencia-uma-vez-e-sempre': [
     { type: 'place-in-area', card: 'move', area: 'start' },
     ...segundos(6),
@@ -546,9 +560,11 @@ function caminhoDeSucesso(block: InteractiveBlock, onde: string): LearningAnswer
     // torna a missão inalcançável passaria batido — e o defeito só apareceria com a criança nele.
     const start = sceneStart(activity)
     let sessao = initialExperiment(start)
-    const path = activity.setup?.freeExploration
-      ? (freeExplorationPaths[activity.scene] ?? scenePaths[activity.scene])
-      : (ROTAS_DAS_AULAS[onde] ?? scenePaths[activity.scene])
+    const path =
+      ROTAS_DAS_AULAS[onde] ??
+      (activity.setup?.freeExploration
+        ? (freeExplorationPaths[activity.scene] ?? scenePaths[activity.scene])
+        : scenePaths[activity.scene])
     for (const action of path) {
       const parts: SceneAction[] =
         action.type === 'advance' && action.seconds > 1
@@ -602,7 +618,13 @@ describe('o cenário das cenas dos cursos', () => {
   }
 
   const cenasDosCursos = () => {
-    const achadas: { aula: string; chave: string; curso: string; cenario?: string }[] = []
+    const achadas: {
+      aula: string
+      chave: string
+      curso: string
+      cena: string
+      cenario?: string
+    }[] = []
     for (const arquivo of MANIFESTOS) {
       const manifest: unknown = JSON.parse(readFileSync(caminhoAula(arquivo), 'utf8'))
       if (!isLearningManifest(manifest)) continue
@@ -614,6 +636,7 @@ describe('o cenário das cenas dos cursos', () => {
           aula: arquivo,
           chave: bloco.key,
           curso: manifest.courseSlug,
+          cena: activity.scene,
           cenario: activity.cenario,
         })
       }
@@ -626,21 +649,27 @@ describe('o cenário das cenas dos cursos', () => {
     expect(cenasDosCursos().length).toBeGreaterThan(20)
   })
 
-  test('⭐⭐ toda cena DECLARA o cenário: nenhuma depende de adivinhação', () => {
+  test('⭐⭐ cenas com cenário compartilhado o DECLARAM; a Ilha 3D possui palco próprio', () => {
     const sem = cenasDosCursos()
-      .filter((c) => c.cenario === undefined)
+      .filter((c) => c.cena !== 'island-3d' && c.cenario === undefined)
       .map((c) => `${c.aula} ${c.chave}`)
     expect(sem).toEqual([])
+    const ilha = cenasDosCursos().filter((c) => c.cena === 'island-3d')
+    expect(ilha).toHaveLength(3)
+    expect(ilha.every((c) => c.curso === 'jornada-faisca-base-3d' && c.cenario === undefined)).toBe(
+      true,
+    )
   })
 
   test('⭐⭐ e o cenário declarado é o do CURSO', () => {
     const erradas = cenasDosCursos()
       .filter(
         (c) =>
+          c.cena !== 'island-3d' &&
           c.cenario !==
-          (c.aula === 'meu-jeito-aula-01.manifesto.json' && c.chave === 'experiencia-copia'
-            ? 'nave'
-            : CENARIO_DO_CURSO[c.curso]),
+            (c.aula === 'meu-jeito-aula-01.manifesto.json' && c.chave === 'experiencia-copia'
+              ? 'nave'
+              : CENARIO_DO_CURSO[c.curso]),
       )
       .map((c) => `${c.aula} ${c.chave}: ${c.cenario} num curso ${c.curso}`)
     expect(erradas).toEqual([])
