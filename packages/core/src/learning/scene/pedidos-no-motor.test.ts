@@ -1046,6 +1046,16 @@ const CENAS: Record<SceneId, Cena> = {
           m.faz({ type: 'start', input: 'tap' })
         },
       },
+      'second-target': {
+        texto: 'Clique em Testar com outro esconderijo e toque nas pedras.',
+        faz: (m) => {
+          ligado(m, 'touch', true)
+          if (!m.estado.evidence.discoveries.includes('responds'))
+            m.faz({ type: 'start', input: 'tap' })
+          if (m.estado.match.gardenRound !== 2) m.faz({ type: 'other-hiding-place' })
+          m.faz({ type: 'touch-hiding-place', id: 1 })
+        },
+      },
     },
     mostra: (s) => s.match.screen === 'playing',
     revelaNaConclusao:
@@ -1069,6 +1079,13 @@ const CENAS: Record<SceneId, Cena> = {
         faz: (m) => {
           m.faz({ type: 'find-character', id: 0 })
           m.faz({ type: 'look-around' })
+        },
+      },
+      repeat: {
+        texto: 'Toque de novo onde um personagem apareceu.',
+        faz: (m) => {
+          if (!m.estado.match.foundIds?.includes(0)) m.faz({ type: 'find-character', id: 0 })
+          m.faz({ type: 'find-character', id: 0 })
         },
       },
       'back-to-zero': {

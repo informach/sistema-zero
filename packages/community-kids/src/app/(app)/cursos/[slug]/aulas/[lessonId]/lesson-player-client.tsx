@@ -192,6 +192,7 @@ export function LessonPlayer({
         progress: course.progress,
         progressAfter: res,
         publicationPending:
+          !course.curriculum &&
           typeof course.careerSlot === 'number' &&
           res.percent === 100 &&
           course.milestones?.showcased === false,
@@ -210,6 +211,7 @@ export function LessonPlayer({
     secao?.index,
     course.progress,
     course.careerSlot,
+    course.curriculum,
     course.milestones?.showcased,
     lessonDrafts,
     lessonCompleted,

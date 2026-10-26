@@ -19,14 +19,14 @@
     },
     {
       "key": "video-a2-variavel",
-      "plannedVideo": "Título: Um número que acompanha a busca\n\nMaster integral da professora. Roteiro: cade-todo-mundo-aula-2.roteiro.md. Substituições kids: [{\"id\":\"video-a2-variavel-K1\",\"clipe\":\"video-a2-variavel\",\"personagem\":\"Dedé\",\"ocorrencia\":1,\"ancoraAntes\":\"vai para 1, porque eu encontrei um personagem e o jogo somou um. Se eu toco em outro, ele soma de novo, e agora é 2.\",\"ancoraDepois\":\"Vamos ver. Olha aqui: eu toco num espaço vazio. Tá vendo? O número não muda. Isso acontece porque a regra que soma está\",\"falaPrincipal\":\"E se eu tocar num espaço vazio do jardim?\",\"falaPersonagem\":\"E se eu tocar num espaço vazio do jardim?\",\"tags\":[\"[curious]\"]}]"
+      "plannedVideo": "Título: Um número que acompanha a busca\n\nMaster integral da professora. Roteiro: cade-todo-mundo-aula-2.roteiro.md. Substituições kids: []"
     },
     {
       "key": "ponte-a2-variavel",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Sua vez! Procure no jardim e fique de olho no número Achados. Quando terminar, clique em Próxima parte."
+        "text": "Sua vez! Acompanhe o valor guardado durante a busca. O Zappy acompanha cada etapa da experiência."
       }
     },
     {
@@ -36,12 +36,15 @@
         "required": true,
         "semPerguntaFinal": true,
         "title": "Quantos você já encontrou?",
-        "instructions": "Toque em um esconderijo e olhe Achados. Toque em outro. Depois toque num espaço vazio do jardim. Por último, clique em Recomeçar a busca.",
+        "instructions": "Encontre um personagem. Olhe o valor guardado em achados e o placar.",
         "hints": [],
         "activity": {
           "type": "experimentation",
           "scene": "found-counter",
-          "cenario": "jardim"
+          "cenario": "jardim",
+          "setup": {
+            "goals": ["first-find", "second-find", "no-find", "repeat", "back-to-zero"]
+          }
         }
       }
     },
@@ -2884,14 +2887,14 @@
     },
     {
       "key": "video-a2-fecho",
-      "plannedVideo": "Título: Publique seu jogo\n\nMaster integral da professora. Roteiro: cade-todo-mundo-aula-2.roteiro.md. Substituições kids: [{\"id\":\"video-a2-fecho-K1\",\"clipe\":\"video-a2-fecho\",\"personagem\":\"Dedé\",\"ocorrencia\":1,\"ancoraAntes\":\"terminar. Seu jogo está no Mural! Agora você, a sua família e os seus amigos podem jogar o jogo que você criou.\",\"ancoraDepois\":\"Clique em Copiar link de jogar e mande esse link para a sua família e os seus amigos. Quem receber pode jogar direto,\",\"falaPrincipal\":\"E para mostrar o jogo para alguém?\",\"falaPersonagem\":\"E para mostrar o jogo para alguém?\",\"tags\":[\"[curious]\"]}]"
+      "plannedVideo": "Título: Seu jogo está pronto\n\nMaster integral da professora. Roteiro: cade-todo-mundo-aula-2.roteiro.md. Substituições kids: [{\"id\":\"video-a2-fecho-K1\",\"clipe\":\"video-a2-fecho\",\"personagem\":\"Dedé\",\"ocorrencia\":1,\"ancoraAntes\":\"terminar. Seu jogo está no Mural! Agora você, a sua família e os seus amigos podem jogar o jogo que você criou.\",\"ancoraDepois\":\"Clique em Copiar link de jogar e mande esse link para a sua família e os seus amigos. Quem receber pode jogar direto,\",\"falaPrincipal\":\"E para mostrar o jogo para alguém?\",\"falaPersonagem\":\"E para mostrar o jogo para alguém?\",\"tags\":[\"[curious]\"]}]"
     },
     {
       "key": "ponte-a2-publicar",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Hora de mostrar o seu jogo! Publique no Mural, copie o link de jogar e mande para a sua família e os seus amigos. Se precisar, peça ajuda a um adulto. Depois clique em Fechar e em Concluir aula."
+        "text": "Seu jogo está pronto! Se quiser, publique no Mural, copie o link de jogar e compartilhe com a sua família e os seus amigos. Se precisar, peça ajuda a um adulto. Você pode concluir a aula e continuar a jornada sem publicar."
       }
     },
     {
@@ -2946,48 +2949,285 @@
         "projectChecks": [
           {
             "id": "revelar-ao-toque",
-            "label": "Revele o personagem tocado deixando o esconderijo escolhido invisível.",
+            "label": "O toque revela só o personagem daquele esconderijo.",
+            "hint": "No teste das pedras, só as pedras devem ficar invisíveis. Confira qual esconderijo a reação altera.",
             "rule": {
-              "type": "usesBlock",
-              "blockType": "sz_g2d_on_group_click",
-              "area": "events",
-              "fields": {
-                "GROUP": "esconderijos",
-                "ITEM": "escolhido"
-              },
-              "inputBlocks": {
-                "BODY": {
-                  "blockType": "sz_g2d_set_opacity",
-                  "fields": {
-                    "SPRITE": "escolhido"
-                  },
-                  "inputs": {
-                    "PERCENT": 0
+              "type": "behavior",
+              "steps": [
+                {
+                  "action": "clickTarget",
+                  "target": {
+                    "kind": "sprite",
+                    "path": "esconderijo2",
+                    "groupPath": "esconderijos"
                   }
                 }
-              }
+              ],
+              "expect": {
+                "target": {
+                  "kind": "value",
+                  "path": "esconderijo2.opacity"
+                },
+                "compare": "equals",
+                "value": 0
+              },
+              "checkpoints": [
+                {
+                  "afterStep": 1,
+                  "expect": {
+                    "target": {
+                      "kind": "value",
+                      "path": "esconderijo1.opacity"
+                    },
+                    "compare": "notEquals",
+                    "value": 0
+                  }
+                },
+                {
+                  "afterStep": 1,
+                  "expect": {
+                    "target": {
+                      "kind": "value",
+                      "path": "esconderijo3.opacity"
+                    },
+                    "compare": "notEquals",
+                    "value": 0
+                  }
+                }
+              ]
             }
           },
           {
             "id": "somar-achado",
-            "label": "Some 1 em achados dentro do evento de clicar ou tocar no esconderijo.",
+            "label": "Cada novo personagem acrescenta 1 a Achados.",
+            "hint": "Encontre personagens diferentes: Achados deve passar por 1, 2 e 3. Somar 1 é diferente de colocar 1.",
             "rule": {
-              "type": "usesBlock",
-              "blockType": "sz_g2d_on_group_click",
-              "area": "events",
-              "fields": {
-                "GROUP": "esconderijos",
-                "ITEM": "escolhido"
-              },
-              "inputBlocks": {
-                "BODY": {
-                  "blockType": "sz_js_var_increment",
-                  "fields": {
-                    "NAME": "achados",
-                    "DELTA": 1
+              "type": "behavior",
+              "steps": [
+                {
+                  "action": "clickTarget",
+                  "target": {
+                    "kind": "sprite",
+                    "path": "esconderijo1",
+                    "groupPath": "esconderijos"
+                  }
+                },
+                {
+                  "action": "clickTarget",
+                  "target": {
+                    "kind": "sprite",
+                    "path": "esconderijo2",
+                    "groupPath": "esconderijos"
+                  }
+                },
+                {
+                  "action": "clickTarget",
+                  "target": {
+                    "kind": "sprite",
+                    "path": "esconderijo3",
+                    "groupPath": "esconderijos"
                   }
                 }
-              }
+              ],
+              "expect": {
+                "target": {
+                  "kind": "value",
+                  "path": "achados"
+                },
+                "compare": "equals",
+                "value": 3
+              },
+              "checkpoints": [
+                {
+                  "afterStep": 1,
+                  "expect": {
+                    "target": {
+                      "kind": "value",
+                      "path": "achados"
+                    },
+                    "compare": "equals",
+                    "value": 1
+                  }
+                },
+                {
+                  "afterStep": 2,
+                  "expect": {
+                    "target": {
+                      "kind": "value",
+                      "path": "achados"
+                    },
+                    "compare": "equals",
+                    "value": 2
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "id": "nao-recontar",
+            "label": "Toques no vazio ou no mesmo lugar mantêm a contagem.",
+            "hint": "Depois de achar alguém, teste o mesmo lugar e o vazio. Nenhum desses toques deve executar outra soma.",
+            "rule": {
+              "type": "behavior",
+              "steps": [
+                {
+                  "action": "clickTarget",
+                  "target": {
+                    "kind": "sprite",
+                    "path": "esconderijo1",
+                    "groupPath": "esconderijos"
+                  }
+                },
+                {
+                  "action": "clickTarget",
+                  "target": {
+                    "kind": "lastPoint"
+                  }
+                },
+                {
+                  "action": "clickTarget",
+                  "target": {
+                    "kind": "outsideGroup",
+                    "path": "esconderijos"
+                  }
+                }
+              ],
+              "expect": {
+                "target": {
+                  "kind": "value",
+                  "path": "achados"
+                },
+                "compare": "equals",
+                "value": 1
+              },
+              "checkpoints": [
+                {
+                  "afterStep": 1,
+                  "expect": {
+                    "target": {
+                      "kind": "value",
+                      "path": "achados"
+                    },
+                    "compare": "equals",
+                    "value": 1
+                  }
+                },
+                {
+                  "afterStep": 2,
+                  "expect": {
+                    "target": {
+                      "kind": "value",
+                      "path": "achados"
+                    },
+                    "compare": "equals",
+                    "value": 1
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "id": "mensagem-tres-achados",
+            "label": "A mensagem aparece depois dos três achados.",
+            "hint": "Com dois achados, a mensagem ainda não deve aparecer. Ela aparece quando os três foram encontrados.",
+            "rule": {
+              "type": "behavior",
+              "steps": [
+                {
+                  "action": "wait",
+                  "ms": 600
+                },
+                {
+                  "action": "clickTarget",
+                  "target": {
+                    "kind": "sprite",
+                    "path": "esconderijo1",
+                    "groupPath": "esconderijos"
+                  }
+                },
+                {
+                  "action": "wait",
+                  "ms": 600
+                },
+                {
+                  "action": "clickTarget",
+                  "target": {
+                    "kind": "sprite",
+                    "path": "esconderijo2",
+                    "groupPath": "esconderijos"
+                  }
+                },
+                {
+                  "action": "wait",
+                  "ms": 600
+                },
+                {
+                  "action": "clickTarget",
+                  "target": {
+                    "kind": "sprite",
+                    "path": "esconderijo3",
+                    "groupPath": "esconderijos"
+                  }
+                },
+                {
+                  "action": "wait",
+                  "ms": 600
+                }
+              ],
+              "expect": {
+                "target": {
+                  "kind": "text",
+                  "selector": "#sz-game-hud-status [data-sz-hud-kind=\"label\"]"
+                },
+                "compare": "notEquals",
+                "value": ""
+              },
+              "checkpoints": [
+                {
+                  "afterStep": 1,
+                  "expect": {
+                    "target": {
+                      "kind": "text",
+                      "selector": "#sz-game-hud-status [data-sz-hud-kind=\"label\"]"
+                    },
+                    "compare": "equals",
+                    "value": ""
+                  }
+                },
+                {
+                  "afterStep": 3,
+                  "expect": {
+                    "target": {
+                      "kind": "text",
+                      "selector": "#sz-game-hud-status [data-sz-hud-kind=\"label\"]"
+                    },
+                    "compare": "equals",
+                    "value": ""
+                  }
+                },
+                {
+                  "afterStep": 5,
+                  "expect": {
+                    "target": {
+                      "kind": "text",
+                      "selector": "#sz-game-hud-status [data-sz-hud-kind=\"label\"]"
+                    },
+                    "compare": "equals",
+                    "value": ""
+                  }
+                },
+                {
+                  "afterStep": 7,
+                  "expect": {
+                    "target": {
+                      "kind": "value",
+                      "path": "achados"
+                    },
+                    "compare": "equals",
+                    "value": 3
+                  }
+                }
+              ]
             }
           }
         ]
@@ -3010,9 +3250,9 @@
     },
     {
       "key": "conclusao",
-      "title": "Publique seu jogo",
+      "title": "Seu jogo está pronto",
       "intent": "closing",
-      "objective": "Publicar o jogo com o resumo pronto e a capa gerada; fechar a confirmação e concluir a aula.",
+      "objective": "Concluir a aula com o projeto enviado; compartilhar no Mural é uma escolha.",
       "blockKeys": ["video-a2-fecho", "ponte-a2-publicar", "ajuda-a2-publicar"],
       "workspaceKey": "projeto",
       "externalTool": null,

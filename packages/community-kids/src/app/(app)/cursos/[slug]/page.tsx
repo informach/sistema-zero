@@ -1,3 +1,4 @@
+import { CourseCurriculumContext } from '@sistemazero/member-shell/components/course-curriculum-context'
 import { kidsJourneyAccess } from '@sistemazero/member-shell/lib/kids-journey-access'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
@@ -33,7 +34,11 @@ export default async function CoursePage({
   if (status === 404 || status === 403) notFound()
   if (status === 423)
     return (
-      <KidsLockedCourse reason={journeyLockReason(body)} requiredLevel={journeyLockLevel(body)} />
+      <KidsLockedCourse
+        body={body}
+        reason={journeyLockReason(body)}
+        requiredLevel={journeyLockLevel(body)}
+      />
     )
   if (status !== 200 || !body) throw new Error('Falha ao carregar o curso')
   const course = body
@@ -59,6 +64,18 @@ export default async function CoursePage({
           </h1>
         </div>
       </KidsBand>
+
+      {course.curriculum || course.accessReason ? (
+        <KidsBand tone="creme" innerClassName="py-3 md:py-4">
+          <div className="mx-auto max-w-[40rem]">
+            <CourseCurriculumContext
+              placement={course.curriculum}
+              accessReason={course.accessReason}
+              skin="kids"
+            />
+          </div>
+        </KidsBand>
+      ) : null}
 
       {/* A régua saiu: quem separa as partes agora é a troca de FAIXA. */}
       {pendingPublication && (deliveryState === 'pending' || deliveryState === 'delivered') ? (

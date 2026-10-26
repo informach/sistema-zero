@@ -60,7 +60,7 @@ const initialChoices = (): LearningChoice[] => [
   { id: 'second', label: 'Segunda possibilidade' },
 ]
 
-const ZAPPY_SPEECH_LABELS: Record<SceneSpeechSlot, string> = {
+const ZAPPY_SPEECH_LABELS: Partial<Record<SceneSpeechSlot, string>> = {
   instruction: 'Instrução da cena',
   'prediction-context': 'Contexto do palpite',
   'prediction-question': 'Pergunta do palpite',
@@ -516,7 +516,7 @@ export function LearningBuilder({
           <ZappySpeechEditor
             rows={falasDoZappy.map((fala) => ({
               id: fala.slot,
-              label: ZAPPY_SPEECH_LABELS[fala.slot],
+              label: ZAPPY_SPEECH_LABELS[fala.slot] ?? `Etapa: ${fala.slot.slice(7)}`,
               visibleText: fala.visibleText,
               override: cena.zappySpeech?.[fala.slot],
             }))}

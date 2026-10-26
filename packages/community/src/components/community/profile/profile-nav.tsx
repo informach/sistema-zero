@@ -86,7 +86,9 @@ export function ProfileNav({
             onClick={() => setActive(section.id)}
             className={cn(
               'flex min-h-[2.8rem] flex-none items-center gap-3 whitespace-nowrap rounded-[0.6rem] px-3.5 text-foreground no-underline transition-colors',
-              current ? 'bg-(--acao-tint) font-bold text-(--acao-texto)' : 'hover:bg-muted',
+              current
+                ? 'bg-(--aviso-tint) font-bold shadow-[inset_4px_0_0_var(--cta)]'
+                : 'hover:bg-muted',
             )}
           >
             <Icon className="size-5 flex-none" aria-hidden />

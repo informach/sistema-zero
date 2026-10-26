@@ -45,19 +45,32 @@ export function Field({
   label,
   hint,
   error,
+  action,
   children,
 }: {
   id: string
   label: string
   hint?: ReactNode
   error?: string
+  /** Um link na linha do rótulo, à direita (o "Esqueci minha senha" do Entrar). */
+  action?: ReactNode
   children: ReactNode
 }) {
+  const labelEl = (
+    <label htmlFor={id} className="font-bold">
+      {label}
+    </label>
+  )
   return (
     <div className="flex flex-col gap-2">
-      <label htmlFor={id} className="font-bold">
-        {label}
-      </label>
+      {action ? (
+        <div className="flex flex-wrap items-center justify-between gap-x-4">
+          {labelEl}
+          {action}
+        </div>
+      ) : (
+        labelEl
+      )}
       {hint ? (
         <span id={`${id}-dica`} className="text-muted-foreground text-xs">
           {hint}
@@ -162,7 +175,7 @@ export function PasswordRule({
   )
 }
 
-/** O código de 6 números, em letra de máquina e espaçado. */
+/** O código de 6 números, na letra em pixel do Estúdio à noite e espaçado. */
 export function CodeInput({
   id,
   value,
@@ -187,7 +200,10 @@ export function CodeInput({
       onChange={(e) => onChange(e.target.value.replace(/\D/g, '').slice(0, 6))}
       aria-invalid={invalid || undefined}
       aria-describedby={ariaDescribedBy}
-      className={cn(inputClass(invalid), 'font-mono text-[1.4rem] tracking-[0.4em]')}
+      className={cn(
+        inputClass(invalid),
+        'font-(family-name:--font-pixel) text-[1.5rem] tracking-[0.4em]',
+      )}
     />
   )
 }

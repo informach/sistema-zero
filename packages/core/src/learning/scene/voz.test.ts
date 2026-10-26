@@ -20,6 +20,26 @@ import {
 } from './voz'
 
 describe('o texto falado', () => {
+  it('cada etapa do jardim tem identidade e pronúncia independentes', () => {
+    const block = {
+      instructions: 'Explore.',
+      activity: { type: 'scene', scene: 'touch-response' as const },
+    }
+    const rows = falasDaCena(block)
+    expect(new Set(rows.map((row) => row.slot)).size).toBe(rows.length)
+    const one = rows[1]!
+    const two = rows[2]!
+    const zappySpeech = {
+      [one.slot]: { sourceText: one.visibleText, speechText: 'Primeira fala ajustada.' },
+      [two.slot]: { sourceText: two.visibleText, speechText: 'Outra fala ajustada.' },
+    }
+    expect(isSceneSpeechOverrides(zappySpeech)).toBe(true)
+    const updated = falasDaCena({ ...block, activity: { ...block.activity, zappySpeech } })
+    expect(updated[1]?.speechText).toBe('Primeira fala ajustada.')
+    expect(updated[2]?.speechText).toBe('Outra fala ajustada.')
+    expect(updated[0]?.speechText).toBe('Explore.')
+    expect(isSceneSpeechOverrides({ 'garden:invented': zappySpeech[one.slot] })).toBe(false)
+  })
   it('tira os símbolos da tela e colapsa o espaço', () => {
     expect(textoFalado('↑ Pular  agora')).toBe('Pular agora')
     expect(textoFalado('✓ Você descobriu! 🎉')).toBe('Você descobriu!')

@@ -1,6 +1,7 @@
 import { createHash } from 'node:crypto'
 import { creatorCommunityAccessRef } from '@sistemazero/core/creations'
 import type { AdultProfilePreferences } from '@sistemazero/core/profiles'
+import type { CreatorMasteriesResponse, CreatorMasteryEvidenceResponse } from '../lib/mastery'
 import 'server-only'
 import type { StudioAiAccountView, StudioAiPolicyInput } from '@sistemazero/core/ai-credits'
 import type { StudioPublicProjectMetadata } from '@sistemazero/core/studio/public-metadata'
@@ -515,6 +516,13 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
     /** Catálogo "Todos os cursos" (published da vitrine + flag hasAccess do aluno). */
     listCatalog(): Promise<GatewayResponse<{ courses: CatalogCourseView[] }>> {
       return gw.gatewayFetch('/members/catalog', { query: { audience } })
+    },
+
+    getCreatorMasteriesReadonly(): Promise<GatewayResponse<CreatorMasteriesResponse>> {
+      return gw.gatewayFetchReadonly('/members/journey/masteries', { query: { audience } })
+    },
+    getCreatorMasteryEvidenceReadonly(): Promise<GatewayResponse<CreatorMasteryEvidenceResponse>> {
+      return gw.gatewayFetchReadonly('/members/journey/masteries/evidence', { query: { audience } })
     },
 
     /**
@@ -1250,10 +1258,11 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
       lessonId: string,
       blockId: string,
       answers: Record<string, string[]>,
+      questionId?: string,
     ): Promise<GatewayResponse<QuizAttemptResultView>> {
       return gw.gatewayFetch(
         `/members/lessons/${enc(lessonId)}/blocks/${enc(blockId)}/quiz-attempts`,
-        { method: 'POST', body: { answers } },
+        { method: 'POST', body: { answers, ...(questionId ? { questionId } : {}) } },
       )
     },
 

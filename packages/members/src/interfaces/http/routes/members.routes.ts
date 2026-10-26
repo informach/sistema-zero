@@ -1040,6 +1040,7 @@ export function membersRoutes(deps: MembersRoutesDeps) {
             body.answers,
             isPrivilegedActor(headers),
             resolveAccountId(headers),
+            body.questionId,
           )
         },
         { body: QuizAttemptBody, params: QuizAttemptParams },

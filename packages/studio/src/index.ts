@@ -21,6 +21,7 @@ export type {
   StudioProBuildFileLimitError,
   StudioProBuildLimits,
 } from '#core'
+export { PythonRuntimePreview } from './components/preview/PythonRuntimePreview'
 export {
   BLOCK_LEVEL_OPTIONS,
   BLOCK_LEVELS,

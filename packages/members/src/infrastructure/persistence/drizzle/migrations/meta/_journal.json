@@ -974,6 +974,20 @@
       "when": 1792493298588,
       "tag": "0138_adult_journey_reached",
       "breakpoints": true
+    },
+    {
+      "idx": 139,
+      "version": "7",
+      "when": 1792975821971,
+      "tag": "0139_creator_journey_masteries",
+      "breakpoints": true
+    },
+    {
+      "idx": 140,
+      "version": "7",
+      "when": 1793004351794,
+      "tag": "0140_adult_molda_curriculum_bands",
+      "breakpoints": true
     }
   ]
 }

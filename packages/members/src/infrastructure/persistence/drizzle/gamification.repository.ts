@@ -90,10 +90,7 @@ import {
   xpEvents,
 } from './schema'
 import { DrizzleStudioUnlockRepository } from './studio-unlock.repository'
-import {
-  eligibleStudioGrants,
-  studioGrantCompletionMatchesCourse,
-} from './studio-unlock-eligibility'
+import { eligibleStudioGrants, studioGrantSourceInAudience } from './studio-unlock-eligibility'
 
 type CoinSourceTypeValue = (typeof coinEvents.sourceType.enumValues)[number]
 
@@ -115,15 +112,6 @@ function masterAccessType(audience: CourseAudience): 'all_courses' | 'all_kids_c
 
 function entitlementInAudience(audience: CourseAudience) {
   return and(eq(courses.slug, entitlements.courseRef), eq(courses.audience, audience))
-}
-
-function publishedStudioGrantSourceInAudience(audience: CourseAudience) {
-  return and(
-    eq(courses.id, xpEvents.sourceId),
-    eq(courses.audience, audience),
-    eq(courses.status, 'published'),
-    studioGrantCompletionMatchesCourse(),
-  )
 }
 
 function activeAudienceAccessPredicate(audience: CourseAudience, now: Date) {
@@ -1148,46 +1136,23 @@ export class DrizzleGamificationRepository implements GamificationRepository {
   }
 
   async getStudioUnlockRevision(userId: string, audience: CourseAudience): Promise<string> {
-    const showcased = alias(xpEvents, 'studio_revision_sc')
-    const eligible =
-      audience === 'kids'
-        ? and(
-            isNotNull(courses.id),
-            or(eq(courses.modality, 'live'), isNull(courses.careerSlot), isNotNull(showcased.id)),
-          )
-        : isNotNull(courses.id)
     const rows = await this.db
       .select({
         courseId: xpEvents.sourceId,
         completedAt: xpEvents.createdAt,
-        showcasedAt: showcased.createdAt,
         courseUpdatedAt: courses.updatedAt,
-        liveCourseId: courses.id,
-        careerSlot: courses.careerSlot,
-        modality: courses.modality,
       })
       .from(xpEvents)
-      .leftJoin(courses, publishedStudioGrantSourceInAudience(audience))
-      .leftJoin(
-        showcased,
-        and(
-          eq(showcased.userId, xpEvents.userId),
-          eq(showcased.audience, xpEvents.audience),
-          eq(showcased.sourceType, 'course_showcased'),
-          eq(showcased.sourceId, xpEvents.sourceId),
-        ),
+      .leftJoin(courses, studioGrantSourceInAudience(audience))
+      .where(
+        and(eq(xpEvents.userId, userId), eq(xpEvents.audience, audience), isNotNull(courses.id)),
       )
-      .where(and(eq(xpEvents.userId, userId), eq(xpEvents.audience, audience), eligible))
 
     return studioUnlockRevision(
       rows.map((row) => ({
         courseId: row.courseId,
         completedAt: row.completedAt,
-        showcasedAt:
-          (audience === 'adult' || row.modality === 'live' || row.careerSlot === null) &&
-          row.liveCourseId !== null
-            ? null
-            : row.showcasedAt,
+        showcasedAt: null,
         courseUpdatedAt: row.courseUpdatedAt,
       })),
     )

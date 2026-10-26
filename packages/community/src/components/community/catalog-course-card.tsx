@@ -1,3 +1,5 @@
+import { CourseCurriculumContext } from '@sistemazero/member-shell/components/course-curriculum-context'
+import { creatorCourseLockPresentation } from '@sistemazero/member-shell/lib/creator-journey-presentation'
 import { ArrowRight, Check, Lock } from 'lucide-react'
 import Link from 'next/link'
 import type { LockedCourseLink } from '@/lib/continuity'
@@ -23,6 +25,8 @@ export function CatalogCourseCard({ course, progress, locked }: CatalogCourseCar
   const href = `/cursos/${encodeURIComponent(course.courseSlug)}`
   const done = course.hasAccess && isCourseDone({ milestones: course.milestones, progress })
   const started = !done && (progress?.completedLessons ?? 0) > 0
+  const journeyLocked = course.hasAccess && course.careerLock?.locked === true
+  const journeyLock = creatorCourseLockPresentation(course.curriculum, 'adult')
 
   return (
     <article className="sz-card flex h-full flex-col overflow-hidden sm:flex-row">
@@ -40,7 +44,20 @@ export function CatalogCourseCard({ course, progress, locked }: CatalogCourseCar
       <div className="flex min-w-0 flex-1 flex-col gap-2.5 p-5 md:p-6">
         <span className="sz-kicker">{courseKicker(course)}</span>
         <h3 className="sz-h3">{course.title}</h3>
-        {!course.hasAccess ? (
+        <CourseCurriculumContext
+          placement={course.curriculum}
+          accessReason={course.accessReason}
+          skin="adult"
+          compact
+        />
+        {journeyLocked ? (
+          <>
+            <p className="text-muted-foreground">{journeyLock.message}</p>
+            <Link href={journeyLock.href} className="sz-btn-outline sz-btn-sm mt-auto self-start">
+              {journeyLock.cta}
+            </Link>
+          </>
+        ) : !course.hasAccess ? (
           <>
             <span className="text-[0.85rem] text-muted-foreground">
               Ainda não faz parte do seu acesso.

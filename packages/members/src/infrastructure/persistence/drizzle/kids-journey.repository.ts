@@ -12,6 +12,7 @@ import {
   KidsJourneyEarnedSchema,
   type KidsJourneyPolicy,
   KidsJourneyPolicySchema,
+  kidsJourneyOpenCourseIds,
   pauseKidsJourneyPolicy,
   projectKidsJourney,
 } from '@sistemazero/core/journey'
@@ -32,11 +33,13 @@ import {
   type KidsJourneyRepository,
   type KidsJourneySnapshot,
 } from '../../../domain/ports/kids-journey-repository.port'
+import { listCreatorCourseGrants, saveCreatorCourseGrants } from './creator-journey-course-grants'
 import type { Database } from './db'
 import { withKidsJourneyCatalogPublicationFence } from './kids-journey-catalog-fence'
 import { type KidsJourneyEventFact, kidsMilestonesFromEvents } from './kids-journey-facts'
 import { lockLearningOwner } from './learning-owner-lock'
 import { lessonContentAvailable } from './lesson-availability'
+import { readMasteryJourneyFacts } from './mastery-journey-facts'
 import {
   activeLessonBlocks,
   courses,
@@ -70,6 +73,7 @@ const ActorSchema = z.discriminatedUnion('kind', [
 ])
 const CatalogCourseSchema = z.strictObject({
   id: IdentityUuidSchema,
+  title: z.string().optional(),
   graduationOnly: z.boolean(),
   audience: z.enum(['kids', 'adult']),
   modality: z.enum(['recorded', 'live']),
@@ -97,6 +101,9 @@ function orderedEarned(input: unknown): KidsJourneyEarned {
       entry: JOURNEY_COURSE_TIERS.filter((tier) => earned.courseAccess.entry.includes(tier)),
       expanded: JOURNEY_COURSE_TIERS.filter((tier) => earned.courseAccess.expanded.includes(tier)),
       reward: JOURNEY_COURSE_TIERS.filter((tier) => earned.courseAccess.reward.includes(tier)),
+      ...(earned.courseAccess.creatorCourseIds
+        ? { creatorCourseIds: [...new Set(earned.courseAccess.creatorCourseIds)].sort() }
+        : {}),
     },
   }
 }
@@ -156,6 +163,7 @@ async function readCatalog(tx: Transaction): Promise<KidsJourneyCatalogCourse[]>
   const rows = await tx
     .select({
       id: courses.id,
+      title: courses.title,
       level: courses.level,
       track: courses.track,
       audience: courses.audience,
@@ -197,6 +205,10 @@ async function readOwnedEarned(
     .where(inArray(kidsJourneyEarned.userId, ids))
   const bindingById = new Map(bindings.map((row) => [row.userId, row.accountId]))
   const earnedById = new Map(earnedRows.map((row) => [row.userId, row]))
+  const courseGrants = await listCreatorCourseGrants(
+    tx,
+    owners.map((owner) => ({ ...owner, audience: 'kids' })),
+  )
   for (const owner of owners) {
     const binding = bindingById.get(owner.userId)
     const earned = earnedById.get(owner.userId)
@@ -216,6 +228,9 @@ async function readOwnedEarned(
           entry: earned.entryTiers,
           expanded: earned.expandedTiers,
           reward: earned.rewardTiers,
+          ...((courseGrants.get(earned.userId)?.length ?? 0) > 0
+            ? { creatorCourseIds: courseGrants.get(earned.userId)! }
+            : {}),
         },
       }),
     ]),
@@ -230,6 +245,10 @@ async function readProfiles(
   if (!owners.length) return new Map()
   const ids = owners.map((owner) => owner.userId)
   const earnedById = await readOwnedEarned(tx, owners)
+  const masteryFacts = await readMasteryJourneyFacts(
+    tx,
+    owners.map((owner) => ({ ...owner, audience: 'kids' })),
+  )
   const rows = await tx
     .select({
       userId: xpEvents.userId,
@@ -256,6 +275,7 @@ async function readProfiles(
         {
           ...owner,
           milestones: milestones.get(owner.userId) ?? [],
+          masteryFacts: masteryFacts.get(owner.userId)!,
           registered: earnedById.has(owner.userId),
           earned: earnedById.get(owner.userId) ?? emptyEarned(),
         },
@@ -299,6 +319,12 @@ async function saveEarned(
       },
       setWhere: eq(kidsJourneyEarned.accountId, owner.accountId),
     })
+  await saveCreatorCourseGrants(
+    tx,
+    { ...owner, audience: 'kids' },
+    version,
+    earned.courseAccess.creatorCourseIds ?? [],
+  )
 }
 
 /** Each indexed source contributes at most one candidate; no population-wide UNION DISTINCT. */
@@ -486,6 +512,7 @@ async function reconcileProfile(
     catalog,
     earned: profile.earned,
     milestones: profile.milestones,
+    ...profile.masteryFacts,
   })
   await saveEarned(tx, owner, policy.version, view.earned)
 }
@@ -855,6 +882,7 @@ export class DrizzleKidsJourneyRepository implements KidsJourneyRepository {
           catalog,
           earned: frozen,
           milestones: profile.milestones,
+          ...profile.masteryFacts,
         }).earned
       }
       await saveEarned(tx, owner, expectedVersion, nextEarned)
@@ -955,9 +983,32 @@ export class DrizzleKidsJourneyRepository implements KidsJourneyRepository {
           policyVersion: current.expectedVersion,
           catalog: current.catalog,
           milestones: profile.milestones,
+          ...profile.masteryFacts,
           earned: profile.earned,
         })
-        await saveEarned(tx, owner, current.expectedVersion, view.earned)
+        const retainedCourseIds =
+          current.expectedVersion >= 1
+            ? kidsJourneyOpenCourseIds({
+                policy: current.sourcePolicy,
+                policyVersion: current.expectedVersion,
+                catalog: current.catalog,
+                milestones: profile.milestones,
+                ...profile.masteryFacts,
+                earned: profile.earned,
+              })
+            : []
+        await saveEarned(tx, owner, current.expectedVersion, {
+          ...view.earned,
+          courseAccess: {
+            ...view.earned.courseAccess,
+            creatorCourseIds: [
+              ...new Set([
+                ...(view.earned.courseAccess.creatorCourseIds ?? []),
+                ...retainedCourseIds,
+              ]),
+            ],
+          },
+        })
       }
       const cursor = next?.userId ?? current.cursor
       const remaining = await nextCohortOwner(tx, id, cursor, current.upperBound)

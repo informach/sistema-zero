@@ -2,6 +2,7 @@
 
 As 37 aulas dos cinco cursos têm uma única fonte editorial em [Aulas interativas](../aulas-interativas/README.md). Não há geração separada por público.
 
+- [Conceito, investigação e construção](DESCOBERTA-GUIADA.md): vídeo conceitual, Zappy por etapa, previsão e objetivos observáveis.
 - [Diretrizes pedagógicas](DIRETRIZES-PEDAGOGICAS.md): clareza, instrução completa e linguagem comum.
 - [Voz ElevenLabs v4](DIRETRIZES-VOZ-ELEVENLABS.md), [formato do roteiro](ESPEC-ROTEIRO.md) e [Dedé/Debinha](AVATARES-NOS-VIDEOS.md).
 - [Briefing](BRIEFING.md), [manifesto](ESPEC-MANIFESTO.md), [plataforma](REFERENCIA-PLATAFORMA.md) e [blocos](REFERENCIA-BLOCOS-JOGO-2D.json).

@@ -20,6 +20,7 @@ export default async function ResetPasswordPage({
         token ? (
           <AuthAside
             label="Os próximos passos"
+            kicker="Primeiro acesso"
             title="Boas-vindas à comunidade"
             lead="Em três passos você chega à sua primeira aula."
             items={[

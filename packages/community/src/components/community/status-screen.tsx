@@ -1,7 +1,6 @@
-import { BrandLogo } from '@sistemazero/ui/brand-logo'
 import type { LucideIcon } from 'lucide-react'
-import Link from 'next/link'
 import type { ReactNode } from 'react'
+import { PublicTopBar } from './public-top-bar'
 
 /**
  * A tela inteira de recado (direção de arte de 18/10/2026; no palco desde o "Estúdio à noite",
@@ -12,6 +11,7 @@ import type { ReactNode } from 'react'
 export function StatusScreen({
   big,
   icon: Icon,
+  art,
   title,
   text,
   children,
@@ -19,6 +19,8 @@ export function StatusScreen({
   /** Um número grande decorativo (o 404). */
   big?: string
   icon?: LucideIcon
+  /** Uma figura decorativa no lugar do ícone (o monitor em pixel da página de erro). */
+  art?: ReactNode
   title: string
   text: ReactNode
   /** Os botões. */
@@ -27,21 +29,7 @@ export function StatusScreen({
   return (
     // O recado inteiro no palco (Estúdio à noite): a barra com a logo e o número grande em pixel.
     <div className="sz-palco flex min-h-dvh flex-col">
-      <header className="border-(--linha-escura) border-b bg-(--topo)">
-        <div className="sz-page flex min-h-20 items-center">
-          <Link
-            href="/"
-            aria-label="Comunidade Sistema Zero: ir para o início"
-            className="rounded-md focus-visible:outline-3 focus-visible:outline-(--sz-community-action-light) focus-visible:outline-offset-2"
-          >
-            <BrandLogo
-              fundo="escuro"
-              label="Comunidade Sistema Zero"
-              className="block h-auto w-40"
-            />
-          </Link>
-        </div>
-      </header>
+      <PublicTopBar href="/" label="Comunidade Sistema Zero: ir para o início" />
       <main className="sz-page flex flex-1 items-center justify-center py-14">
         <section
           aria-labelledby="recado-titulo"
@@ -55,6 +43,7 @@ export function StatusScreen({
               {big}
             </span>
           ) : null}
+          {art ? <span aria-hidden="true">{art}</span> : null}
           {Icon ? (
             <span
               aria-hidden="true"

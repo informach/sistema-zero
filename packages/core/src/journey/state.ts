@@ -1,4 +1,5 @@
 import { type JourneyLevelSlug, journeyLevelAtLeast } from './catalog'
+import type { CreatorCoursePlacement, CreatorJourneyView } from './creator-curriculum'
 
 export const AI_APPS_MIN_LEVEL: JourneyLevelSlug = 'hacker'
 export const FREE_CREATION_MIN_LEVEL: JourneyLevelSlug = 'coder'
@@ -18,6 +19,7 @@ export type CreativeToolId = keyof typeof CREATIVE_TOOL_LEVELS
 export type ToolAvailability = 'available' | 'career-locked' | 'not-included' | 'unavailable'
 
 export interface ParentJourneyView {
+  curriculum?: CreatorJourneyView
   level: JourneyLevelSlug
   nextLevel: JourneyLevelSlug | null
   pendingPublications: { courseSlug: string; title: string }[]
@@ -51,6 +53,7 @@ export interface JourneyCourseMilestones {
 }
 
 export interface JourneyCourse {
+  curriculum?: CreatorCoursePlacement | null
   careerSlot?: number | null
   careerLock?: { locked: boolean }
   milestones?: JourneyCourseMilestones
@@ -68,17 +71,19 @@ export type CourseJourneyState =
 
 /** Earned milestones are permanent; adding lessons or bonus courses cannot revoke them. */
 export function journeyCourseQualified(course: {
+  curriculum?: CreatorCoursePlacement | null
   careerSlot?: number | null
   milestones?: JourneyCourseMilestones
 }): boolean {
   return Boolean(
     course.milestones?.completed &&
-      (typeof course.careerSlot !== 'number' || course.milestones.showcased),
+      (course.curriculum || typeof course.careerSlot !== 'number' || course.milestones.showcased),
   )
 }
 
 export function courseJourneyState(course: JourneyCourse): CourseJourneyState {
   if (course.careerLock?.locked) return 'locked'
+  if (course.curriculum && course.milestones?.completed) return 'review'
   if (
     typeof course.careerSlot === 'number' &&
     course.milestones?.completed &&
@@ -94,6 +99,28 @@ export function courseJourneyState(course: JourneyCourse): CourseJourneyState {
 
 /** Server-ordered courses break ties; foundation publication is the first prerequisite. */
 export function nextJourneyCourse<T extends JourneyCourse>(courses: readonly T[]): T | null {
+  const creatorCourses = courses.filter(
+    (course) => course.curriculum && ['continue', 'start'].includes(courseJourneyState(course)),
+  )
+  if (creatorCourses.length) {
+    const priority: Record<CreatorCoursePlacement['role'], number> = {
+      base2d: 0,
+      base3d: 1,
+      mission: 2,
+      power: 3,
+      'mastery-nucleus': 4,
+      'mastery-workshop': 5,
+      'mastery-project': 6,
+      extra: 7,
+    }
+    return (
+      creatorCourses.find((course) => courseJourneyState(course) === 'continue') ??
+      [...creatorCourses].sort(
+        (a, b) => priority[a.curriculum!.role] - priority[b.curriculum!.role],
+      )[0] ??
+      null
+    )
+  }
   const pending = courses.filter((course) => courseJourneyState(course) === 'publish')
   return (
     pending.find((course) => course.careerSlot === 1) ??

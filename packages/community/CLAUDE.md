@@ -143,6 +143,37 @@ adulto e virou um dos swatches. O antigo par Padrão⇄Pink não existe mais.
   nas oito páginas, nos dois temas.
 - ⚠️ O admin (`globals.css` próprio), o `@sistemazero/ui` e o member-shell NÃO mudaram.
 
+## Jornada do Criador com currículo (25/10/2026)
+
+Quando `AdultJourneyView.curriculum` existe, ele é a única autoridade dos postos e das
+Maestrias. As descrições anteriores de etapas, trilhas por dificuldade e publicação obrigatória
+aplicam-se apenas a políticas históricas sem `curriculum`. Não reconstruir progressão no cliente.
+
+- `/cursos` mostra mapa, próximo passo e catálogo; `/cursos/etapa/[id]` recebe o `level` estável
+  do posto e apresenta bases 2D→3D, missão, poderes e extras. O par abre as escolhas; promoção
+  pede missão completa e 1 poder na Faísca, 2 nos demais. Publicação e extras são opcionais.
+- `/maestrias` e `/maestrias/[areaId]` leem os seis caminhos do Members. Cada nível tem núcleo
+  ou crédito validado, 2 oficinas distintas e projeto aprovado. Níveis em acordeões; o atual
+  abre por padrão. Projetos são enviados por `evidenceId` de uma versão imutável já salva.
+- `@sistemazero/member-shell/components/creator-journey` compartilha apenas apresentação.
+  O adulto mantém PageBand/PageBody, palco escuro, bancada clara, fontes e mínimos de leitura
+  do Estúdio à noite. Não trocar os tokens do app por estilos do protótipo.
+- Catálogo, curso e aula usam `careerLock` do servidor. `curriculum` no curso informa vínculo;
+  `accessReason` explica compra direta, presente e acesso preservado. Acesso avulso não muda posto.
+  Recados de bloqueio das Maestrias apontam ao nível e à área definidos no DTO, inclusive no
+  acesso direto a uma aula. O Molda recebe faixas de ferramentas derivadas das três capacidades
+  canônicas; políticas adultas históricas sem currículo mantêm Molda integral.
+- Integração do Canvas de 26/10: manter o visual remoto de catálogo, criação e progresso e
+  o ramo de currículo antes da projeção histórica. `toolStageTitle` informa o próprio posto
+  que ensina a ferramenta quando há currículo; `ToolNotice` explica a liberação durante seus
+  cursos, sem prometer a etapa seguinte. Pensa usa o par/cursos configurados, e a condição de
+  curso avançado continua somente na política histórica. Os cartões de liberação contemplam
+  também as duas faixas avançadas do Molda.
+- `playwright.creator-journey.config.ts` valida componentes reais nas duas peles em 390/768/1440.
+  A prévia isolada é `bun ../member-shell/qa/creator-journey-serve.ts` (127.0.0.1:4394), sem banco
+  nem gateway. `qa/cache-creator-preview-fonts.ts` baixa somente fontes públicas para cache local
+  opcional; os testes de produção usam as fontes do layout Next.
+
 ## Direção de arte adulta (18/10/2026)
 
 O público são **adultos iniciantes** que querem criar jogos e projetos digitais (a definição do
@@ -248,11 +279,27 @@ plataforma já faz (as sugestões de recurso novo do Canvas ficaram de fora, dec
   antes do painel "Mais" (`flex-col-reverse` só desenha o painel por cima), Tab para fora fecha, e com
   o painel aberto o destaque vai para "Mais" sem tirar o `aria-current` da página atual.
 - **Páginas:** Início (saudação, cartão Continuar com a mira e Seu ritmo no palco; módulo e Recados na
-  bancada; Mural num palco no pé), Cursos (trilhas no palco), Curso (capa grande com mira, módulo atual
-  com moldura amarela), Seu progresso (números com rótulo em pixel colorido; a Jornada num bloco de
-  palco), Criar (as ferramentas no palco, cada uma com a faixa de arte na cor dela), Comunidade (o
-  Mural num bloco de palco), 404/erro (`StatusScreen` no palco, o número em pixel), entrada (o painel
-  do `AuthSplitShell` é palco). As demais herdam pelos tokens.
+  bancada; Mural num palco no pé), Cursos (as trilhas lado a lado no palco, o caminho no alto do
+  cartão e o amarelo na trilha em que a pessoa está), Trilha (o nível atual em amarelo), Etapa ("Ao
+  concluir, libera" em cartões no palco, o curso em andamento com a moldura amarela), Curso (capa
+  grande com mira, módulo atual com moldura amarela), Seu progresso (números com rótulo em pixel
+  colorido; a Jornada como uma linha de etapas com "Você está aqui" e o cartão da etapa atual), Criar
+  (as ferramentas no palco, cada uma com a arte na cor dela; a tela de ferramenta fechada,
+  `ToolNotice`, é um palco com a arte e o cadeado, e o `data-sz-tool-notice` devolve a letra de 20 px
+  dentro da rota de tela cheia), Comunidade (Mural, Desafio do mês e Ranking em cartões com arte no
+  palco; o Clube na bancada), Desafio do mês (palco com a faixa amarela e os passos), Ranking (a liga
+  da semana no palco, com as linhas de quem sobe e de quem volta), Recados (ícone por tipo e a
+  conversa aberta marcada em amarelo), Ajuda (a busca é a folha clara no palco), Meu perfil (o nome
+  no título, a parte à vista marcada em amarelo, o Embaixador num bloco de palco), Compras (a
+  assinatura no palco).
+- **Entrada e páginas públicas** (Canvas "Entrar e páginas públicas"): o `AuthSplitShell` põe o PALCO
+  à esquerda (logo escura, sobretítulo em pixel, título grande e os itens com números coloridos) e o
+  formulário numa folha branca à direita; no celular, a logo clara e a folha. Entrar: "Use o e-mail da
+  sua compra", "Esqueci minha senha" na linha do rótulo da senha, o código em pixel. `PublicTopBar`
+  (`public-top-bar.tsx`) é a barra escura de toda página pública (Ajuda para entrar, Validar,
+  404/erro). Validar: o certificado como um cartão da noite com a moldura dourada (`.sz-certificado`).
+  404 "Esta página saiu do mapa." e erro "Esta página tropeçou." com o monitor em pixel. `/jogar`
+  segue o `PublicPlayer` do member-shell (cabeçalho na noite pelos tokens `--topo-*`).
 - **Prévia** (fora do git): `tmp/estudio-noite/` renderiza as páginas REAIS no navegador com o shell
   falso (`server-stub.ts`: `shell.grupo.metodo` → `fixtures.ts`; sem fixture, 503 e a página degrada como
   em produção) e os Server Components assíncronos resolvidos antes do render. `bun tmp/estudio-noite/serve.ts`

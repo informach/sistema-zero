@@ -34,37 +34,24 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 **Clipe:** `video-a2-variavel`
 
-**Na tela:** mostrar a experiência com **Achados: 0**. Tocar em um esconderijo e depois em outro, deixando ver 1 e 2. Parar com o placar em 2 para a entrada do Dedé. **Ilustração a reaproveitar nos dois públicos:** na comparação do placar, usar a animação já preparada do placar de futebol virando de 0 para 1, com o personagem comemorando e a legenda "+1". Preservar o mascote ou personagem do material existente. Manter a entrada breve, no ponto da analogia, sem cobrir a experiência; a professora explica, sem voz do Zappy.
+**Na tela:** reaproveitar a animação do placar de futebol recebendo um gol. Mostrar a relação entre o valor guardado em `achados` e o placar que lê esse valor; uma mudança simples pode ilustrar a soma. Os testes com jardim vazio, repetição e nova busca ficam para a exploração guiada da pessoa. A cena abre em zero e sem progresso.
 
 **Fala para ElevenLabs:**
 
 ```text
-[engaging, energetic, conversational voice] Vamos ver como o jogo guarda a contagem. Nesta experiência, a gente vai usar uma variável, um lugar onde o jogo guarda um número que pode mudar.
+[engaging, energetic, conversational voice] Para contar os personagens encontrados, o seu jogo precisa guardar um número. A gente chama esse lugar de variável. Ela guarda um valor que pode mudar.
 
-[confident, clear, unhurried voice] Repare em Achados: esse número mostra quantos personagens a gente já encontrou. A cada personagem, ele muda.
+[interested, animated voice] Sabe o placar de um jogo de futebol? Ele mostra quantos gols já aconteceram. Quando sai outro gol, o número aumenta em um.
 
-[engaging, energetic, conversational voice] Sabe o placar de um jogo de futebol? A cada gol, o placar soma um. Aqui no jardim é parecido: cada personagem encontrado é como um gol, e o jogo soma um em Achados.
+[confident, clear, unhurried voice] No jardim, a variável achados guarda quantos personagens você encontrou. O placar mostra esse valor. Cada novo personagem acrescenta um ao número que já estava guardado.
 
-[interested, animated voice] Olha aqui: quando eu toco num esconderijo, Achados vai para 1, porque eu encontrei um personagem e o jogo somou um. Se eu toco em outro, ele soma de novo, e agora é 2.
-
-[curious] E se eu tocar num espaço vazio do jardim?
-
-[engaging, energetic, conversational voice] Vamos ver. [interested, animated voice] Olha aqui: eu toco num espaço vazio. Tá vendo? O número não muda. Isso acontece porque a regra que soma está ligada aos esconderijos: ela só funciona quando eu toco num esconderijo. Ali não tinha nenhum, então nada foi somado.
-
-[engaging, energetic, conversational voice] Por último, eu clico em Recomeçar a busca, e Achados volta para zero, igual ao placar no começo de um jogo novo.
-
-[upbeat, encouraging voice] Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai acompanhar uma busca e observar quando esse número muda e quando continua igual. O Zappy vai acompanhar cada etapa da experiência. Quando terminar, clique em Próxima parte.
 ```
 
-**Substituições na edição kids:**
 
-| ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
-| --- | --- | --- | --- | --- | --- | --- |
-| video-a2-variavel-K1 | Dedé | 1 | vai para 1, porque eu encontrei um personagem e o jogo somou um. Se eu toco em outro, ele soma de novo, e agora é 2. | E se eu tocar num espaço vazio do jardim? | Vamos ver. Olha aqui: eu toco num espaço vazio. Tá vendo? O número não muda. Isso acontece porque a regra que soma está | [curious] |
+**Falas dentro da experiência:** fonte compartilhada `packages/core/src/learning/scene/garden.ts`, exportada em `zappy-etapas.json`. Diferenciar valor atual, última operação e leitura no placar. As falas avançam pelos testes realizados, inclusive vazio, repetição e reinício.
 
-No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
-
-**Recado na página (não gravar):** Sua vez! Procure no jardim e fique de olho no número Achados. Quando terminar, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Acompanhe o valor guardado durante a busca. O Zappy acompanha cada etapa da experiência.
 
 ## Parte 3. Cada personagem vale um achado
 
@@ -153,7 +140,7 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 **Recado na página (não gravar):** A surpresa chegou! Escolha os personagens e prepare os esconderijos da sua brincadeira: troque a imagem clicando no nome dela, no fim de cada bloco Criar sprite. Se quiser, escreva também a sua mensagem do final. Depois encontre todo mundo de novo, clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Próxima parte.
 
-## Parte 5. Publique seu jogo
+## Parte 5. Seu jogo está pronto
 
 **Clipe:** `video-a2-fecho`
 
@@ -162,9 +149,9 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 **Fala para ElevenLabs:**
 
 ```text
-[engaging, energetic, conversational voice] Agora chegou a hora de publicar o seu jogo, do jeito que você deixou, para a sua família e os seus amigos jogarem!
+[engaging, energetic, conversational voice] Seu jogo está pronto! Se quiser, você pode publicar no Mural para a sua família e os seus amigos jogarem. Você também pode clicar em Concluir aula e continuar a jornada sem publicar.
 
-[engaging, energetic, conversational voice] Para isso, clique em Compartilhar, no alto do Estúdio. Aqui, ele pode aparecer só como uma setinha para cima. [confident, clear, unhurried voice] Repare que o resumo do projeto já vem preenchido, então pode deixar como está.
+[engaging, energetic, conversational voice] Se escolher compartilhar, clique em Compartilhar, no alto do Estúdio. Aqui, ele pode aparecer só como uma setinha para cima. [confident, clear, unhurried voice] Repare que o resumo do projeto já vem preenchido, então pode deixar como está.
 
 [engaging, energetic, conversational voice] Depois, clique em Gerar capa e espere a imagem aparecer. [interested, animated voice] Olha só: essa é a capa que vai apresentar o seu jogo!
 
@@ -187,4 +174,4 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
 
-**Recado na página (não gravar):** Hora de mostrar o seu jogo! Publique no Mural, copie o link de jogar e mande para a sua família e os seus amigos. Se precisar, peça ajuda a um adulto. Depois clique em Fechar e em Concluir aula.
+**Recado na página (não gravar):** Seu jogo está pronto! Se quiser, publique no Mural, copie o link de jogar e compartilhe com a sua família e os seus amigos. Se precisar, peça ajuda a um adulto. Você pode concluir a aula e continuar a jornada sem publicar.

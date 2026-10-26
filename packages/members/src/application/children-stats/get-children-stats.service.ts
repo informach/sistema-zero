@@ -255,6 +255,7 @@ export class GetChildrenStatsService {
           : null
         return {
           career: {
+            ...(kids?.journey.curriculum ? { curriculum: kids.journey.curriculum } : {}),
             level: level.slug,
             nextLevel: level.next,
             pendingPublications: published

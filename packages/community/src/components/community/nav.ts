@@ -18,7 +18,7 @@ export interface NavItem {
  */
 export const NAV_ITEMS: readonly NavItem[] = [
   { href: '/', label: 'Início', icon: Home },
-  { href: '/cursos', label: 'Cursos', icon: BookOpen },
+  { href: '/cursos', label: 'Cursos', icon: BookOpen, match: ['/maestrias'] },
   { href: '/criar', label: 'Criar', icon: Sparkles },
   // As oficinas ao vivo (cursos ao vivo, 14/10/2026): só as turmas em que a pessoa tem vaga.
   { href: '/oficinas', label: 'Oficinas', icon: Radio },

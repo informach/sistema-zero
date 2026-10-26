@@ -1,5 +1,18 @@
 # @sistemazero/api-gateway — Guia do Agente
 
+## Jornada do Criador e Maestrias (25/10/2026)
+
+Rotas exatas de aluno: GET `/members/journey/masteries`, GET `/members/journey/masteries/evidence`
+e POST `/members/journey/masteries/:areaId/levels/:level/submissions`. JWT ativo e token interno;
+Members deriva conta/perfil/público, confere assinatura e recusa mutação em suporte.
+
+Equipe: GET `/members/admin/journey/masteries/submissions`, GET `.../:id`, POST `.../:id/review`,
+staff+/active. Members exige conta própria, sem perfil/impersonação nem autoaprovação. Não expor
+wildcard nem permitir payload do navegador definir aluno/revisor/rubrica. Limite de envio é 16 KiB,
+de revisão 64 KiB; o snapshot vem do servidor, não do corpo de revisão. Políticas Kids/adulta
+continuam nos endpoints existentes e preservam seus controles de versão/coorte.
+
+
 ## Fachada da equipe no TUI (15/10/2026)
 
 `auth-staff-operations` preserva Bearer somente para o auth, exige JWT staff+/active e permite até 2.032.768 bytes/65 s para builds tipados. O auth revalida a sessão e a permissão em banco. `messaging-staff-delegation` permanece HMAC e restringe allowedConsumers a auth; o messaging exige também o token interno e verifica o consumer. Não adicionar JWT às rotas S2S nem copiar segredos internos para o TUI.

@@ -137,6 +137,7 @@ test('a validação do Admin aceita o plano montado (IA na etapa avançada)', as
     new InMemoryAdultJourneyRepository({ events: [] }),
     {
       findCourseById: async (id: string) => (byId.get(id) as unknown as Course | undefined) ?? null,
+      findCoursesByIds: async (ids: string[]) => ids.flatMap(id => byId.has(id) ? [byId.get(id) as unknown as Course] : []),
     },
     () => new Date('2026-10-19T12:00:00Z'),
   )
@@ -183,6 +184,7 @@ function seedOnceHarness(catalog: readonly SeedCourse[]) {
     repository,
     {
       findCourseById: async (id: string) => (byId.get(id) as unknown as Course | undefined) ?? null,
+      findCoursesByIds: async (ids: string[]) => ids.flatMap(id => byId.has(id) ? [byId.get(id) as unknown as Course] : []),
     },
     () => new Date('2026-10-20T12:00:00Z'),
   )

@@ -1,5 +1,57 @@
 # CLAUDE.md — @sistemazero/members
 
+## Jornada com par 2D/3D e Maestrias (25/10/2026)
+
+Contrato em `docs/jornada-do-criador.md`; seed em `docs/jornada-criador-seed.md`.
+`policy.curriculum` seleciona a regra compartilhada para os dois públicos. Notas antigas de
+49 posições/showcase/tierAccess abaixo só governam políticas históricas sem currículo.
+
+- Promoção: par + missão nas duas dimensões + Poderes distintos aplicados (1 no Faísca, 2 nos outros).
+  Pós-par abre missão, Poderes e extras. Cada conclusão concede blocos sem publicação no Mural,
+  inclusive em cursos arquivados ainda acessíveis. O predicado comum de leitura/concessão/revisão
+  aceita published/archived e exclui draft; blocos já congelados não são revogados.
+- `independent-course-access.ts` reconhece Farol/Cadê por concessão específica ativa independente.
+  Consultar todas as concessões; a mais forte pode esconder a compra avulsa. Assinatura específica
+  não é compra. Presentes explícitos e concessões independentes mantêm seu prazo.
+- `creator_journey_course_grants` preserva acesso pedagógico por UUID; não substitui licença.
+  Kids captura no protocolo existente. Adulto captura a política saindo em lotes na mesma transação
+  antes do CAS, incluindo quem nunca abriu a página de progresso.
+- `MasteryService` e `mastery.repository.ts`: evidência própria por conta/perfil/público, snapshot de
+  projeto e rubrica, revisão imutável por entrega e selo monotônico. `studio_submissions.reviewedAt`
+  continua sendo conferência, sem valor de aprovação pedagógica.
+- Núcleo + duas oficinas distintas + critérios aprovados + predecessor concedem o selo. Créditos
+  precisam de justificativa. Rubrica enviada é preservada no reenvio; capacidades do selo vêm do
+  snapshot, sem inventar capacidades adicionadas depois à política.
+  Uma única entrega suficiente testemunha cada conquista. A primeira definição persistida sob lock
+  da conta governa os reenvios; o recibo de envio preserva admissão somente no nível iniciado.
+  `award(record, {policyVersion})` retorna saved/existing/deferred. Pausa ou versão concorrente
+  adiam a conquista sem desfazer uma revisão já gravada; só resultados persistidos entram na view.
+- `/members/journey/masteries` e `/evidence` leem o próprio aluno; envio exige assinatura.
+  Revisão em `/members/admin/journey/masteries/submissions/:id/review` exige conta própria da equipe,
+  sem suporte/perfil/autoaprovação. O backend repete a autorização.
+- Migration gerada `0139_creator_journey_masteries`. Gravações usam lock/cerca de exclusão da conta;
+  purga insere a fence antes de qualquer delete e remove entregas/revisões/selos. Respeitar ordem
+  de locks da captura adulta (fence antes de awards, awards antes da policy) para evitar ciclos.
+  Kids cerca o award com shared advisory de policy; adulto reserva ROW EXCLUSIVE em awards antes
+  de ler/travar a política. Listas de evidências/progresso não carregam payloads de projetos.
+- `journey:seed-creator` resolve slugs, preserva UUID/conteúdo e cria apenas drafts com outlines.
+  Não publica gravações inexistentes nem escreve política ignorando preparação/versionamento.
+  `creatorSeed.requiredLessonIds` exige cobertura completa na publicação; deletes/despublicação
+  de partes obrigatórias usam a mesma trava do curso. DELETE de identidade planejada é recusado
+  também em rascunho (editar título/conteúdo preserva o ID); despublicar a aula exige curso fora
+  de publicação. Clone remapeia esses IDs. Cursos existentes
+  sem esse metadata mantêm sua estrutura; o seed só reporta revisão editorial de textos antigos.
+- Runtime de revisão Python usa `mastery-review`, snapshot da entrega e conta própria da equipe.
+  O cliente envia submissionId e operação execute/analyze; o servidor resolve projeto/digest.
+  O BFF deriva as referências da galeria do detalhe imutável; Members confere chaves/origem e
+  materializa assets antes de autorizar. `analyze` permite somente o parser visual do snapshot.
+  Esse contexto não concede publicação, edição, LSP, REPL ou acesso de aluno.
+- Revisões e selos Kids reconciliam earned/UUID na mesma transação, na ordem conta → perfil →
+  gamification → política. Isso preserva créditos e cursos abertos após o lote de preparação.
+  `mastery-journey-facts` transporta definições, admissões, créditos e selos sem payload de projeto
+  para os mesmos gates de cursos/ferramentas e para captura da política que está saindo.
+
+
 ## Presente adulto: curso + Mural adulto de 7 dias (20/10/2026)
 
 O presente (bolsa do @sistemazero/referrals) ganhou público: `kids` (o de sempre) ou `adult`

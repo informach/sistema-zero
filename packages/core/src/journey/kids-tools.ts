@@ -34,6 +34,9 @@ export function kidsCreativeToolAvailability(input: {
   // Unknown/paused/removed awards remain a real lock, without promising an invented future rank.
   if (preview || journey.mode !== 'active' || journey.readiness.horizon === null)
     return { state: 'career-locked', requiredLevel: null }
+  // Early grants belong to course milestones, not the next promotion. The curriculum UI names
+  // the precise course; a rank promise here would contradict that earlier unlock.
+  if (journey.curriculum) return { state: 'career-locked', requiredLevel: null }
   const horizon = JOURNEY_LEVEL_SLUGS.indexOf(journey.readiness.horizon)
   let requiredIndex = 0
   for (const capability of missing) {

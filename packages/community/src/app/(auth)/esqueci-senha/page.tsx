@@ -9,6 +9,7 @@ export default function ForgotPasswordPage() {
       aside={
         <AuthAside
           label="Dicas para a senha"
+          kicker="Senha nova"
           title="Uma senha fácil de lembrar e difícil de adivinhar"
           items={[
             {

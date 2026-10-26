@@ -175,17 +175,24 @@ function executionIssues(
     if (syntax) errors.push(`A regra em JavaScript tem um erro de escrita: ${syntax}`)
   }
   if (rule.type === 'behavior') {
-    const target = rule.expect.target
-    if (target.kind === 'moduleValue' && !pro)
-      errors.push('Valores exportados por arquivo só valem no projeto Pro.')
-    if (target.kind === 'value' && pro)
-      errors.push(
-        'No projeto Pro, confira um valor exportado, o texto da página, o console ou o estado do kit.',
-      )
-    if (target.kind === 'game' && !template?.kitVersion)
-      errors.push('O estado do jogo (fase, pontos, meta, vida) só existe nos kits Pro.')
-    else if (target.kind === 'game' && !kitStateFields(template?.id).includes(target.field))
-      errors.push('Este kit Pro não mostra a vida do jogador: confira a fase, os pontos ou a meta.')
+    for (const expectation of [
+      rule.expect,
+      ...(rule.checkpoints ?? []).map((point) => point.expect),
+    ]) {
+      const target = expectation.target
+      if (target.kind === 'moduleValue' && !pro)
+        errors.push('Valores exportados por arquivo só valem no projeto Pro.')
+      if (target.kind === 'value' && pro)
+        errors.push(
+          'No projeto Pro, confira um valor exportado, o texto da página, o console ou o estado do kit.',
+        )
+      if (target.kind === 'game' && !template?.kitVersion)
+        errors.push('O estado do jogo (fase, pontos, meta, vida) só existe nos kits Pro.')
+      else if (target.kind === 'game' && !kitStateFields(template?.id).includes(target.field))
+        errors.push(
+          'Este kit Pro não mostra a vida do jogador: confira a fase, os pontos ou a meta.',
+        )
+    }
   }
   if (rule.type === 'functionReturns') {
     if (pro && !rule.module)

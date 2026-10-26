@@ -1,4 +1,5 @@
 import { nextJourneyCourse } from '@sistemazero/core/journey'
+import { CreatorJourneySummary } from '@sistemazero/member-shell/components/creator-journey'
 import { BookOpen, Play } from 'lucide-react'
 import Link from 'next/link'
 import { Suspense } from 'react'
@@ -17,6 +18,7 @@ import {
   listTeacherThreadsReadonly,
 } from '@/server/members'
 import { getSession } from '@/server/session'
+import { shell } from '@/server/shell'
 
 export const dynamic = 'force-dynamic'
 
@@ -26,15 +28,18 @@ export const dynamic = 'force-dynamic'
  * palco no pé, as novidades do Mural. Cada parte some sozinha quando o dado não existe.
  */
 export default async function HomePage() {
-  const [user, courses, threads, unread] = await Promise.all([
+  const [user, courses, threads, unread, gamification] = await Promise.all([
     getSession(),
     listMyCourses(),
     listTeacherThreadsReadonly().catch(() => null),
     getTeacherThreadsUnreadReadonly().catch(() => null),
+    shell.members.getGamificationReadonly({ withRanking: true }).catch(() => null),
   ])
   if (courses.status !== 200)
     throw new Error('Não foi possível consultar seus cursos. Tente novamente.')
   const myCourses = courses.body?.courses ?? []
+  const curriculum =
+    gamification?.status === 200 ? gamification.body?.journey?.curriculum : undefined
   const nextCourse = nextJourneyCourse(myCourses)
   const detail = nextCourse ? await getMyCourse(nextCourse.courseSlug).catch(() => null) : null
   const course = detail?.status === 200 ? detail.body : null
@@ -104,6 +109,9 @@ export default async function HomePage() {
 
       {/* A BANCADA: o módulo da próxima aula, os recados e os cursos. */}
       <PageBody>
+        {curriculum ? (
+          <CreatorJourneySummary view={curriculum} skin="adult" courses={myCourses} />
+        ) : null}
         {next && course ? (
           <div className="flex flex-col items-start gap-7 lg:flex-row">
             <div className="w-full min-w-0 flex-1">
@@ -131,7 +139,7 @@ export default async function HomePage() {
               </Link>
             }
           />
-          {myCourses.length === 0 ? (
+          {myCourses.filter((item) => item.careerLock?.locked !== true).length === 0 ? (
             <div className="sz-card flex flex-col items-center gap-3 px-6 py-14 text-center">
               <BookOpen className="size-10 text-muted-foreground" aria-hidden />
               <p className="font-bold">Nenhum curso liberado ainda</p>
@@ -141,11 +149,13 @@ export default async function HomePage() {
             </div>
           ) : (
             <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-              {myCourses.map((item) => (
-                <li key={item.courseSlug}>
-                  <CourseCard course={item} />
-                </li>
-              ))}
+              {myCourses
+                .filter((item) => item.careerLock?.locked !== true)
+                .map((item) => (
+                  <li key={item.courseSlug}>
+                    <CourseCard course={item} />
+                  </li>
+                ))}
             </ul>
           )}
         </section>

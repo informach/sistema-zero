@@ -1,4 +1,5 @@
 import {
+  Award,
   BookOpen,
   CalendarDays,
   Contact,
@@ -82,6 +83,7 @@ export const NAV_GROUPS: NavGroup[] = [
         icon: Inbox,
         badgeKey: 'entregas',
       },
+      { label: 'Maestrias', href: '/admin/professor/maestrias', icon: Award },
       {
         label: 'Recados',
         href: '/admin/professor/recados',

@@ -4,6 +4,10 @@ import {
   type KidsJourneyView,
   kidsRequirementKey,
 } from '@sistemazero/core/journey'
+import {
+  creatorCurrentStage,
+  creatorJourneyHint,
+} from '@sistemazero/member-shell/lib/creator-journey-presentation'
 import { levelInfo } from './level-info'
 
 export type CanonicalJourneyProgress =
@@ -49,6 +53,28 @@ export function canonicalPendingCourses(
 
 /** Presentation reads the canonical requirement states; it never re-evaluates course eligibility. */
 export function canonicalJourneyProgress(view: KidsJourneyView): CanonicalJourneyProgress {
+  if (view.curriculum) {
+    if (view.mode === 'paused')
+      return {
+        kind: 'paused',
+        hint: 'Suas conquistas estão guardadas. A progressão da jornada está pausada.',
+      }
+    const stage = creatorCurrentStage(view.curriculum)
+    if (!stage) return { kind: 'top', hint: creatorJourneyHint(view.curriculum) }
+    const done =
+      Number(stage.base2d.state === 'completed') +
+      Number(stage.base3d.state === 'completed') +
+      Number(stage.mission.state === 'completed') +
+      Math.min(stage.powersCompleted, stage.minimumPowers)
+    const total = 3 + stage.minimumPowers
+    return {
+      kind: 'pending',
+      remaining: total - done,
+      done,
+      ready: total,
+      hint: creatorJourneyHint(view.curriculum),
+    }
+  }
   if (view.nextLevel === null) return { kind: 'top', hint: null }
   if (view.mode === 'paused')
     return {

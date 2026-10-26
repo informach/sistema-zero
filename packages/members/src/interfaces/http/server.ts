@@ -24,6 +24,7 @@ import { buildErrorResponse } from './error-handler'
 import { isOversizeBody, markOversizeBody, setRawBody } from './raw-body'
 import { type AdminRoutesDeps, adminRoutes } from './routes/admin.routes'
 import { adultJourneyRoutes } from './routes/adult-journey.routes'
+import { masteryRoutes } from './routes/mastery.routes'
 import { adultProfileRoutes } from './routes/adult-profile.routes'
 import { type ContentRoutesDeps, contentRoutes } from './routes/content.routes'
 import { creationCleanupRoutes } from './routes/creation-cleanup.routes'
@@ -52,6 +53,7 @@ export interface HttpDeps {
   kidsJourney?: Parameters<typeof kidsJourneyRoutes>[0]
   kidsProfileAdmission?: Parameters<typeof kidsProfileAdmissionRoutes>[0]
   adultJourney?: Parameters<typeof adultJourneyRoutes>[0]
+  masteries?: Parameters<typeof masteryRoutes>[0]
   adultProfiles?: Parameters<typeof adultProfileRoutes>[0]
   liveMaterials?: LiveMaterialsService
   livePublication?: LivePublicationService
@@ -252,6 +254,7 @@ export function createServer(deps: HttpDeps) {
     .use(creationsRoutes(deps.creations))
     .use(deps.adultProfiles ? adultProfileRoutes(deps.adultProfiles) : new Elysia())
     .use(deps.adultJourney ? adultJourneyRoutes(deps.adultJourney) : new Elysia())
+    .use(deps.masteries ? masteryRoutes(deps.masteries) : new Elysia())
     .use(deps.kidsJourney ? kidsJourneyRoutes(deps.kidsJourney) : new Elysia())
     .use(
       creationCleanupRoutes({

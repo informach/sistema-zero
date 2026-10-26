@@ -6,16 +6,16 @@ export default function NotFound() {
   return (
     <StatusScreen
       big="404"
-      title="Página não encontrada"
-      text="O endereço que você acessou não existe ou foi movido. Escolha um dos caminhos abaixo."
+      title="Esta página saiu do mapa."
+      text="O endereço não existe ou mudou de lugar. Escolha um caminho para continuar."
     >
       <Link href="/" className="sz-btn">
-        Ir para o início
+        Ir para o Início
       </Link>
       <Link href="/cursos" className="sz-btn-outline">
         Ver os cursos
       </Link>
-      <Link href="/ajuda" className="sz-btn-outline">
+      <Link href="/ajuda" className="sz-link inline-flex min-h-14 items-center px-3">
         Ajuda
       </Link>
     </StatusScreen>

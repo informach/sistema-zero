@@ -535,13 +535,53 @@ export function stepScene(
         observe(s, 'locked-without-key', 'A porta ficou fechada sem a chave')
       }
       break
+    case 'other-hiding-place':
+      if (
+        !s.match.touch ||
+        !s.evidence.discoveries.includes('responds') ||
+        s.match.gardenRound === 2
+      )
+        break
+      s.match.gardenRound = 2
+      s.match.gardenFound = []
+      s.match.gardenChosen = undefined
+      s.match.screen = 'start'
+      s.caption = 'A mesma regra continua ligada. Agora toque nas pedras.'
+      break
+    case 'touch-hiding-place': {
+      if (s.match.gardenRound !== 2) break
+      if (s.match.gardenFound?.includes(action.id)) {
+        s.caption = 'O esconderijo já está invisível. Este toque não executou outra reação.'
+        break
+      }
+      s.match.gardenChosen = action.id
+      if (!s.match.touch) {
+        observe(s, 'no-response', 'Tocou sem reação e o esconderijo continuou visível.')
+        s.caption = 'O toque aconteceu, mas a reação está desligada.'
+        break
+      }
+      const found = s.match.gardenFound ?? []
+      if (!found.includes(action.id)) s.match.gardenFound = [...found, action.id]
+      if (action.id === 1)
+        observe(s, 'second-target', 'Outro esconderijo recebeu o toque e foi escolhido')
+      s.match.screen = s.match.gardenFound?.includes(0) ? 'playing' : 'start'
+      s.caption = `Escolhido agora: ${action.id === 0 ? 'arbusto' : 'pedras'}. Só esse esconderijo ficou invisível.`
+      break
+    }
     case 'find-character': {
       const foundIds = s.match.foundIds ?? []
       if (foundIds.includes(action.id)) {
+        s.match.counterUpdate = { before: s.match.points, after: s.match.points, kind: 'repeat' }
+        observe(s, 'repeat', 'Repetir o toque não executou outra soma')
         s.caption = 'Este personagem já foi encontrado. Achados continua igual.'
         break
       }
       s.match.foundIds = [...foundIds, action.id]
+      s.match.counterUpdate = {
+        before: s.match.points,
+        after: s.match.foundIds.length,
+        kind: 'add',
+      }
       s.match.points = s.match.foundIds.length
       if (s.match.points === 1) observe(s, 'first-find', 'Achados aumentou após encontrar alguém')
       if (s.match.points === 2)
@@ -550,10 +590,12 @@ export function stepScene(
       break
     }
     case 'look-around':
+      s.match.counterUpdate = { before: s.match.points, after: s.match.points, kind: 'empty' }
       if (s.match.points > 0) observe(s, 'no-find', 'Procurar sem encontrar não mudou Achados')
       s.caption = 'Você procurou, mas não encontrou ninguém. Achados continua igual.'
       break
     case 'restart-search':
+      s.match.counterUpdate = { before: s.match.points, after: 0, kind: 'reset' }
       if (s.match.points > 0) observe(s, 'back-to-zero', 'Uma nova busca começou com zero achados')
       s.match.points = 0
       s.match.foundIds = []
@@ -1004,6 +1046,7 @@ export function stepScene(
       break
 
     case 'start':
+      if (scene === 'touch-response' && action.input === 'tap') s.match.gardenChosen = 0
       // ⚠️ Na `restart` o toque na tela vale em TODA tela (lote 5): no início começa, no fim faz o
       // que a criança escolheu para o toque. É o evento único do Estúdio ("qualquer tecla ou toque").
       if (scene === 'restart') {

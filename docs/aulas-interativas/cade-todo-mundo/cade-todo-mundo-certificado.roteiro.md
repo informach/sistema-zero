@@ -4,7 +4,7 @@ A professora grava toda a fala principal. Na edição kids, substituir apenas os
 
 ## Parte 1. Como o seu jardim funciona
 
-**Recado na página (não gravar):** Você fez os personagens aparecerem e ensinou o jogo a contar. Agora vamos relembrar essas regras com três perguntas. Se errar alguma, leia o porquê, clique em Tentar de novo e responda outra vez.
+**Recado na página (não gravar):** Você fez os personagens aparecerem e ensinou o jogo a contar. Agora faça uma previsão em cada pergunta e clique em Ver o que acontece. Compare com a cena e a explicação. Você pode tentar de novo.
 
 ## Parte 2. Comemore sua criação
 

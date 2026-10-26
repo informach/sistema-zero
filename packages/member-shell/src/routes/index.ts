@@ -2,6 +2,7 @@ import { createHash } from 'node:crypto'
 import { isContentFingerprint } from '@sistemazero/core/creations'
 import { createGalleryDeliveryRoutes } from './gallery-delivery'
 import { createLearningRoutes } from './learning'
+import { createMasteryRoutes } from './masteries'
 import { createProfilePreferencesRoutes } from './profile-preferences'
 import { createStudioFreeRuntimeRoutes } from './studio-free-runtime'
 import { createStudioLessonRuntimeRoutes } from './studio-lesson-runtime'
@@ -261,6 +262,7 @@ function readMessageSpoken(raw: unknown): boolean {
 }
 
 const QuizAttemptBody = z.object({
+  questionId: z.string().min(1).max(64).optional(),
   // Espelha o TypeBox do members: ≤100 questões, ≤20 choices/questão, chaves/ids ≤64.
   answers: z
     .record(z.string().min(1).max(64), z.array(z.string().min(1).max(64)).max(20))
@@ -1405,6 +1407,7 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
         lessonId,
         blockId,
         parsed.data.answers,
+        parsed.data.questionId,
       )
       return NextResponse.json(body ?? { ok: status === 200 }, { status })
     },
@@ -1919,6 +1922,7 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
     attachmentDownload,
     ebookDownload,
     courseRating,
+    masteries: createMasteryRoutes(session, gateway),
     lessonComplete,
     gamificationMe,
     gamificationRanking,

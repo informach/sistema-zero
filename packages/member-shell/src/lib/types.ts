@@ -159,6 +159,8 @@ export interface CourseMilestonesView {
  * "Todos os cursos" da plataforma com a flag de acesso do aluno.
  */
 export interface CatalogCourseView {
+  curriculum?: import('@sistemazero/core/journey').CreatorCoursePlacement
+  accessReason?: 'journey' | 'direct-purchase' | 'gift' | 'manual-grant' | 'retained' | 'staff'
   /** Stable curriculum identity for explicit policy requirements; labels/slugs may change. */
   courseId: string
   courseSlug: string
@@ -267,6 +269,8 @@ export interface CertificateValidationView {
 
 /** Item de `GET /members/courses` → `{ courses: MyCourseView[] }`. */
 export interface MyCourseView {
+  curriculum?: import('@sistemazero/core/journey').CreatorCoursePlacement
+  accessReason?: 'journey' | 'direct-purchase' | 'gift' | 'manual-grant' | 'retained' | 'staff'
   /** Stable curriculum identity for explicit policy requirements; labels/slugs may change. */
   courseId: string
   courseSlug: string
@@ -364,6 +368,9 @@ export interface CourseRatingView {
 
 /** `GET /members/courses/:slug` — detalhe com módulos/aulas (outline). */
 export interface CourseDetailView {
+  curriculum?: import('@sistemazero/core/journey').CreatorCoursePlacement
+  accessReason?: 'journey' | 'direct-purchase' | 'gift' | 'manual-grant' | 'retained' | 'staff'
+  careerLock?: JourneyCourseLockView
   /** Stable catalog ID; optional while rolling out the Members upgrade. */
   id?: string
   /** Permanent course milestones; independent of newly added lessons. */
@@ -441,6 +448,7 @@ export interface AudioBlock {
  */
 export interface QuizQuestion {
   id: string
+  predictionScene?: 'garden-touch' | 'garden-count' | 'garden-repeat'
   prompt: string
   choices: { id: string; label: string }[]
   /** Pronúncia da pergunta na voz do Zappy (a da explicação não vem no GET). */

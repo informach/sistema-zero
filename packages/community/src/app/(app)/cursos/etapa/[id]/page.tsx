@@ -1,11 +1,28 @@
 import type { AdultCreatorCapability } from '@sistemazero/core/journey'
-import { ArrowRight, Check, CheckCircle2, Lock, Trophy } from 'lucide-react'
+import { CreatorPost } from '@sistemazero/member-shell/components/creator-journey'
+import { creatorStageSummary } from '@sistemazero/member-shell/lib/creator-journey-presentation'
+import {
+  ArrowLeftRight,
+  ArrowRight,
+  Box,
+  Check,
+  CheckCircle2,
+  Code2,
+  Lightbulb,
+  Lock,
+  type LucideIcon,
+  MessageCircle,
+  Palette,
+  Puzzle,
+  Trophy,
+} from 'lucide-react'
 import Link from 'next/link'
-import { notFound } from 'next/navigation'
+import { notFound, redirect } from 'next/navigation'
 import type { CSSProperties } from 'react'
 import { CourseCover, ProgressBar } from '@/components/community/courses/course-cover'
 import { JourneyRibbon } from '@/components/community/journey/stage'
-import { BackLink, PageBody } from '@/components/community/page'
+import { BackLink, PageBand, PageBody } from '@/components/community/page'
+import { cn } from '@/lib/cn'
 import { type LockedCourseLink, lockedCourseLink } from '@/lib/continuity'
 import { isCourseDone } from '@/lib/course-levels'
 import {
@@ -21,20 +38,65 @@ import { shell } from '@/server/shell'
 
 export const dynamic = 'force-dynamic'
 
-const CAPABILITIES: Record<AdultCreatorCapability, string> = {
-  studio: 'o Estúdio livre',
-  pinta: 'o Pinta',
-  molda: 'o Molda, a oficina 3D',
-  bridge: 'a Ponte entre blocos e código',
-  pro: 'o Estúdio Pro, com código',
-  ai: 'o tutor Zappy no Estúdio',
-  pensa: 'o Pensa',
-}
-
-/** "a, b e c" */
-function joinPt(items: string[]): string {
-  if (items.length <= 1) return items[0] ?? ''
-  return `${items.slice(0, -1).join(', ')} e ${items.at(-1)}`
+/** Os cartões de "Ao concluir, libera": o nome, para que serve e o ícone na cor do palco. */
+const UNLOCK_TILES: Record<
+  AdultCreatorCapability,
+  { name: string; text: string; icon: LucideIcon; tone: string }
+> = {
+  studio: {
+    name: 'O Estúdio livre',
+    text: 'Crie jogos seus, fora das aulas.',
+    icon: Puzzle,
+    tone: 'text-(--cta)',
+  },
+  pinta: {
+    name: 'O Pinta',
+    text: 'Desenhe os personagens do seu jogo.',
+    icon: Palette,
+    tone: 'text-(--rosa)',
+  },
+  molda: {
+    name: 'O Molda',
+    text: 'A oficina 3D, para modelar objetos.',
+    icon: Box,
+    tone: 'text-(--laranja)',
+  },
+  'molda-intermediate': {
+    name: 'Molda intermediário',
+    text: 'Amplie os modelos e animações dos seus jogos.',
+    icon: Box,
+    tone: 'text-(--laranja)',
+  },
+  'molda-professional': {
+    name: 'Molda profissional',
+    text: 'Use as ferramentas avançadas de modelagem para jogos.',
+    icon: Box,
+    tone: 'text-(--laranja)',
+  },
+  bridge: {
+    name: 'A Ponte',
+    text: 'Veja os blocos virarem código.',
+    icon: ArrowLeftRight,
+    tone: 'text-(--menta)',
+  },
+  pro: {
+    name: 'O Estúdio Pro',
+    text: 'Crie o jogo escrevendo código.',
+    icon: Code2,
+    tone: 'text-(--dourado)',
+  },
+  ai: {
+    name: 'O Zappy',
+    text: 'O tutor que ajuda você no Estúdio.',
+    icon: MessageCircle,
+    tone: 'text-(--menta)',
+  },
+  pensa: {
+    name: 'O Pensa',
+    text: 'Planeja o jogo com você, em missões.',
+    icon: Lightbulb,
+    tone: 'text-(--cta)',
+  },
 }
 
 type CourseState = 'pronto' | 'publicar' | 'andamento' | 'novo' | 'sem-acesso'
@@ -74,6 +136,29 @@ export default async function StagePage({ params }: { params: Promise<{ id: stri
         </div>
       </PageBody>
     )
+  const curriculum = gamification.body?.journey?.curriculum
+  if (curriculum) {
+    if (id === 'god' || id === 'lenda') redirect('/maestrias')
+    const post = curriculum.stages.find((item) => item.level === id)
+    if (!post) notFound()
+    return (
+      <>
+        <PageBand
+          kicker={curriculum.level === post.level ? 'Seu posto atual' : 'Jornada do Criador'}
+          title={post.title}
+          lead={creatorStageSummary(post)}
+          back={{ href: '/cursos', label: 'Voltar ao mapa' }}
+        />
+        <PageBody>
+          <CreatorPost
+            stage={post}
+            catalog={catalog?.status === 200 ? (catalog.body?.courses ?? []) : []}
+            skin="adult"
+          />
+        </PageBody>
+      </>
+    )
+  }
   const journey = normalizeJourney(gamification.body?.journey)
   const index = journey?.configured ? journey.stages.findIndex((stage) => stage.id === id) : -1
   const stage = journey && index >= 0 ? journey.stages[index] : undefined
@@ -112,12 +197,8 @@ export default async function StagePage({ params }: { params: Promise<{ id: stri
     return { requirement, course, progress, state }
   })
   const ready = rows.filter((row) => row.state === 'pronto').length
-  const unlocks = stage.capabilities.map((capability) => CAPABILITIES[capability])
-  const unlockText = unlocks.length
-    ? joinPt(unlocks)
-    : index === journey.stages.length - 1
-      ? 'o título de Lenda'
-      : 'a próxima etapa'
+  const isLast = index === journey.stages.length - 1
+  const nextStage = journey.stages[index + 1]
   const color = { '--etapa-cor': stageColor(badge) } as CSSProperties
 
   return (
@@ -146,9 +227,6 @@ export default async function StagePage({ params }: { params: Promise<{ id: stri
                   Etapa {badge.position} de {total}
                 </span>
                 <h1 className="sz-h1 break-words">{stage.title}</h1>
-                <p className="sz-lead m-0">
-                  <b>Ao concluir, libera:</b> {unlockText}.
-                </p>
               </div>
             </div>
             <div className="sz-card-sm flex w-full flex-col gap-2.5 p-5 md:w-[19rem] md:flex-none">
@@ -182,14 +260,53 @@ export default async function StagePage({ params }: { params: Promise<{ id: stri
               </span>
             </div>
           </div>
+          <section aria-labelledby="etapa-libera" className="mt-2 flex flex-col gap-3">
+            <h2 id="etapa-libera" className="sz-kicker">
+              Ao concluir, libera
+            </h2>
+            <ul className="m-0 grid list-none gap-3 p-0 sm:grid-cols-2 lg:grid-cols-3">
+              {stage.capabilities.map((capability) => {
+                const tile = UNLOCK_TILES[capability]
+                return (
+                  <UnlockTile
+                    key={capability}
+                    icon={tile.icon}
+                    tone={tile.tone}
+                    name={tile.name}
+                    text={tile.text}
+                  />
+                )
+              })}
+              {isLast ? (
+                <UnlockTile
+                  icon={Trophy}
+                  tone="text-(--dourado)"
+                  name="O título de Lenda"
+                  text="O fim da jornada, com tudo liberado."
+                />
+              ) : (
+                <UnlockTile
+                  icon={ArrowRight}
+                  tone="text-(--sz-community-action-light)"
+                  name={`A etapa ${badge.position + 1}`}
+                  text={nextStage?.title ?? 'A próxima etapa da jornada.'}
+                />
+              )}
+            </ul>
+          </section>
         </div>
       </section>
 
       <PageBody className="gap-8">
-        <section aria-labelledby="etapa-onde" className="flex flex-col gap-3">
-          <h2 id="etapa-onde" className="sz-h4">
-            Onde você está na jornada
-          </h2>
+        <section aria-labelledby="etapa-onde" className="sz-card flex flex-col gap-4 p-5 md:p-7">
+          <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+            <h2 id="etapa-onde" className="sz-h4">
+              Onde você está na jornada
+            </h2>
+            <Link href="/progresso" prefetch={false} className="sz-link">
+              Ver a jornada inteira
+            </Link>
+          </div>
           <JourneyRibbon
             badge={current}
             currentShare={
@@ -251,7 +368,13 @@ function StageCourseRow({
   const href = `/cursos/${encodeURIComponent(course.courseSlug)}`
   const info = STATE[state]
   return (
-    <article className="sz-card-sm flex flex-col gap-4 p-4 sm:flex-row sm:items-center md:p-5">
+    <article
+      className={cn(
+        'sz-card-sm flex flex-col gap-4 p-4 sm:flex-row sm:items-center md:p-5',
+        // O curso em andamento ganha a moldura amarela: é o "você está aqui" da etapa.
+        state === 'andamento' && 'shadow-[0_0_0_3px_var(--cta),0_4px_0_var(--cta-degrau)]',
+      )}
+    >
       <div className="aspect-[32/17] w-full flex-none overflow-hidden rounded-[0.8rem] bg-(--topo) sm:w-[11rem]">
         <CourseCover src={course.coverImageUrl} />
       </div>
@@ -298,5 +421,35 @@ function StageCourseRow({
         )}
       </div>
     </article>
+  )
+}
+
+function UnlockTile({
+  icon: Icon,
+  tone,
+  name,
+  text,
+}: {
+  icon: LucideIcon
+  tone: string
+  name: string
+  text: string
+}) {
+  return (
+    <li className="sz-card-sm flex items-start gap-3.5 p-4">
+      <span
+        aria-hidden="true"
+        className={cn(
+          'inline-flex size-11 flex-none items-center justify-center rounded-xl bg-(--carta-2)',
+          tone,
+        )}
+      >
+        <Icon className="size-6" />
+      </span>
+      <span className="flex min-w-0 flex-col">
+        <strong>{name}</strong>
+        <span className="text-[0.85rem] text-muted-foreground">{text}</span>
+      </span>
+    </li>
   )
 }

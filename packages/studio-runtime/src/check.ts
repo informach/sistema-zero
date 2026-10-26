@@ -74,7 +74,11 @@ export function parseCheckRequest(value: unknown): CheckRequest {
     if (
       objectives.some(
         (objective) =>
-          objective.rule.type === 'behavior' && objective.rule.expect.target.kind === 'moduleValue',
+          objective.rule.type === 'behavior' &&
+          [
+            objective.rule.expect,
+            ...(objective.rule.checkpoints ?? []).map((point) => point.expect),
+          ].some((expectation) => expectation.target.kind === 'moduleValue'),
       )
     )
       throw new InvalidBuildRequestError('Valores exportados só valem no projeto Pro.')
@@ -116,13 +120,21 @@ export function parseCheckRequest(value: unknown): CheckRequest {
         throw new InvalidBuildRequestError('A função precisa estar num arquivo do projeto.')
       if (
         rule.type === 'behavior' &&
-        rule.expect.target.kind === 'moduleValue' &&
-        !Object.hasOwn(build.files, rule.expect.target.module)
+        [rule.expect, ...(rule.checkpoints ?? []).map((point) => point.expect)].some(
+          (expectation) =>
+            expectation.target.kind === 'moduleValue' &&
+            !Object.hasOwn(build.files, expectation.target.module),
+        )
       )
         throw new InvalidBuildRequestError(
           'O valor exportado precisa estar num arquivo do projeto.',
         )
-      if (rule.type === 'behavior' && rule.expect.target.kind === 'value')
+      if (
+        rule.type === 'behavior' &&
+        [rule.expect, ...(rule.checkpoints ?? []).map((point) => point.expect)].some(
+          (expectation) => expectation.target.kind === 'value',
+        )
+      )
         throw new InvalidBuildRequestError('Projeto Pro não confere variáveis diretamente.')
     }
     return { mode, executionId, scope, build, objectives, screenshots }
@@ -134,12 +146,14 @@ export function parseCheckRequest(value: unknown): CheckRequest {
 export function proCheckModules(objectives: readonly ExecutionObjectiveRequest[]): string[] {
   return [
     ...new Set(
-      objectives.flatMap((objective) =>
-        objective.rule.type === 'functionReturns' && objective.rule.module
-          ? [objective.rule.module]
-          : objective.rule.type === 'behavior' &&
-              objective.rule.expect.target.kind === 'moduleValue'
-            ? [objective.rule.expect.target.module]
+      objectives.flatMap(({ rule }) =>
+        rule.type === 'functionReturns' && rule.module
+          ? [rule.module]
+          : rule.type === 'behavior'
+            ? [rule.expect, ...(rule.checkpoints ?? []).map((point) => point.expect)].flatMap(
+                (expectation) =>
+                  expectation.target.kind === 'moduleValue' ? [expectation.target.module] : [],
+              )
             : [],
       ),
     ),

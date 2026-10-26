@@ -175,6 +175,7 @@ export default async function HomePage() {
       {courses.length > 0 ? (
         <KidsBand tone="menta">
           <CreatorJourneyCard
+            courses={courses}
             gamification={gamification}
             avatarPhotoUrl={avatarPhotoUrl}
             name={greetName ?? null}

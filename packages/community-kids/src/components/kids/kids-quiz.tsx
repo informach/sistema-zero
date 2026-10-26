@@ -1,8 +1,11 @@
 'use client'
 
+import { validatePredictionQuiz } from '@sistemazero/core/learning'
+
 import { falaDaQuestaoDoQuiz, letraDaAlternativa } from '@sistemazero/core/learning/scene'
 import { DialogueBlockView } from '@sistemazero/member-shell/components/dialogue-block'
 import { useLessonPlayer } from '@sistemazero/member-shell/components/lesson-player-context'
+import { PredictionQuiz } from '@sistemazero/member-shell/components/prediction-quiz'
 import { renderInline, renderMarkdown } from '@sistemazero/member-shell/lib/markdown'
 import { Spinner } from '@sistemazero/ui/spinner'
 import { ArrowLeft, Check, Sparkles, Timer, Trophy } from 'lucide-react'
@@ -32,7 +35,18 @@ interface Props {
  * "hora de revisar a correção"; `passingScore` segue bloqueando
  * o "Concluir aula" (gate do backend — aqui só refletimos o estado).
  */
-export function KidsQuiz({ blockId, content, quizState }: Props) {
+export function KidsQuiz(props: Props) {
+  const predictionError = validatePredictionQuiz(props.content.questions)
+  if (predictionError)
+    return <p role="alert">Esta revisão precisa de um ajuste na autoria: {predictionError}</p>
+  return props.content.questions.length > 0 &&
+    props.content.questions.every((q) => q.predictionScene) ? (
+    <PredictionQuiz key={`${props.blockId}:${JSON.stringify(props.content)}`} {...props} />
+  ) : (
+    <ClassicKidsQuiz {...props} />
+  )
+}
+function ClassicKidsQuiz({ blockId, content, quizState }: Props) {
   const player = useLessonPlayer()
   const helpReturnPath = player
     ? `/cursos/${encodeURIComponent(player.courseSlug)}/aulas/${encodeURIComponent(player.lessonId)}`

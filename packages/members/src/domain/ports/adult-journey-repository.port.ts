@@ -27,6 +27,7 @@ export interface AdultJourneyRepository {
   /** Os marcos de VÁRIAS pessoas numa consulta só (a etapa nas listas: ranking, Mural, Clube). */
   listMilestonesForUsers(userIds: readonly string[]): Promise<Map<string, AdultCourseMilestone[]>>
   listGranted(userId: string): Promise<AdultCreatorCapability[]>
+  listCourseGrants(userId: string): Promise<string[]>
   /** O piso gravado (a posição mais alta já alcançada); `null` sem registro. */
   getReached(userId: string): Promise<number | null>
   /** Os pisos de VÁRIAS pessoas numa consulta só (só leitura, para as listas). */
@@ -42,5 +43,6 @@ export interface AdultJourneyRepository {
     capabilities: readonly AdultCreatorCapability[],
     now: Date,
     reachedPosition?: number | null,
+    courseIds?: readonly string[],
   ): Promise<boolean>
 }

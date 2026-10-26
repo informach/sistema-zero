@@ -228,10 +228,29 @@ async function runObjective(objective, index) {
       return { id: objective.id, type: rule.type, ...outcome, screenshot, errors }
     }
     const initial = await readTarget(probe, rule.expect.target, lines)
-    await runSteps(page, rule.steps, probe)
+    const checkpoints = await Promise.all(
+      (rule.checkpoints ?? []).map(async (point) => ({
+        initial: await readTarget(probe, point.expect.target, lines),
+      })),
+    )
+    const capture = async (afterStep) => {
+      for (const [i, point] of (rule.checkpoints ?? []).entries())
+        if (point.afterStep === afterStep)
+          checkpoints[i].final = await readTarget(probe, point.expect.target, lines)
+    }
+    await capture(0)
+    await runSteps(page, rule.steps, probe, capture)
     const final = await readTarget(probe, rule.expect.target, lines)
     const screenshot = await shoot(page, index)
-    return { id: objective.id, type: rule.type, initial, final, screenshot, errors }
+    return {
+      id: objective.id,
+      type: rule.type,
+      initial,
+      final,
+      ...(rule.checkpoints ? { checkpoints } : {}),
+      screenshot,
+      errors,
+    }
   } finally {
     await context.close().catch(() => undefined)
   }
@@ -384,8 +403,9 @@ ${code}
   return { verdict: returned === 'true', returned }
 }
 
-async function runSteps(page, steps, probe) {
+async function runSteps(page, steps, probe, afterStep) {
   let targets
+  let index = 0
   try {
     for (const step of steps) {
       if (step.action === 'wait') await page.waitForTimeout(step.ms)
@@ -420,6 +440,7 @@ async function runSteps(page, steps, probe) {
         await targets.call('admit', point)
         await waitForPaint(probe)
       } else throw new Error('O executor não oferece esta ação de teste.')
+      await afterStep?.(++index)
     }
     await page.waitForTimeout(SETTLE_MS)
   } finally {
@@ -442,7 +463,7 @@ async function readTarget(probe, target, lines) {
   // O texto é lido no mundo isolado: o jogo não troca o `innerText` de lá.
   if (target.kind === 'text')
     return probe.isolated(
-      `(() => { const t = document.body ? document.body.innerText : ''; if (t.length > 50000) throw new Error('O texto excedeu os limites de observação.'); return { found: true, value: t } })()`,
+      `(() => { const selector = ${JSON.stringify(target.selector ?? null)}; const nodes = selector ? [...document.querySelectorAll(selector)] : []; if (nodes.length > 100) throw new Error('O texto excedeu os limites de observação.'); const t = selector ? nodes.map(node => node.textContent ?? '').join('\u0020') : (document.body ? document.body.innerText : ''); if (t.length > 50000) throw new Error('O texto excedeu os limites de observação.'); return { found: true, value: t } })()`,
     )
   return probe.main(readTargetInPage, { scope, target, maxChars: MAX_VALUE_CHARS })
 }

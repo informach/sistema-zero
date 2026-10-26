@@ -12,6 +12,7 @@ import { useRouter } from 'next/navigation'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { AdminHeader } from '@/components/admin/admin-header'
+import { CreatorCurriculumEditor } from '@/components/admin/creator-curriculum-editor'
 import { usePlatform } from '@/components/admin/platform-provider'
 import { type ApiError, apiGet, apiSend } from '@/lib/api'
 import { journeyLensHref } from '@/lib/platform-transition'
@@ -22,6 +23,8 @@ const labels: Record<AdultCreatorCapability, string> = {
   studio: 'Estúdio livre',
   pinta: 'Pinta',
   molda: 'Molda',
+  'molda-intermediate': 'Molda: ferramentas intermediárias',
+  'molda-professional': 'Molda: ferramentas profissionais',
   bridge: 'Ponte: blocos e código',
   pro: 'Modo Pro',
   ai: 'Zappy',
@@ -163,8 +166,9 @@ export function AdultJourneyEditor() {
               continuam sendo conferidos à parte.
             </p>
             <p>
-              O Zappy e o Pensa pedem um curso avançado terminado nesta etapa ou numa anterior. O
-              que o aluno já ganhou continua com ele quando a jornada muda.
+              {draft?.curriculum
+                ? 'As ferramentas seguem as conquistas publicadas no currículo, incluindo as faixas do Molda. Os acessos já conquistados ficam preservados quando a jornada muda.'
+                : 'O Zappy e o Pensa pedem um curso avançado terminado nesta etapa ou numa anterior. O que o aluno já ganhou continua com ele quando a jornada muda.'}
             </p>
           </Card>
           {error ? (
@@ -182,196 +186,214 @@ export function AdultJourneyEditor() {
                   estiverem prontos; uma etapa sem cursos permanece bloqueada.
                 </Card>
               ) : null}
-              {draft.stages.map((stage, index) => (
-                <Card key={stage.id} className="space-y-4 p-5">
-                  <div className="flex flex-wrap items-center justify-between gap-3">
-                    <h2 className="font-semibold">Etapa {index + 1}</h2>
-                    <div className="flex gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        disabled={saving || index === 0}
-                        onClick={() => move(index, -1)}
-                      >
-                        Subir
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        disabled={saving || index === draft.stages.length - 1}
-                        onClick={() => move(index, 1)}
-                      >
-                        Descer
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        disabled={saving}
-                        onClick={() =>
-                          setDraft((policy) =>
-                            policy
-                              ? {
-                                  ...policy,
-                                  stages: policy.stages.filter((item) => item.id !== stage.id),
-                                }
-                              : policy,
-                          )
-                        }
-                      >
-                        Remover etapa
-                      </Button>
-                    </div>
-                  </div>
-                  <label className="grid gap-2 text-sm">
-                    Nome da etapa
-                    <Input
-                      value={stage.title}
-                      disabled={saving}
-                      onChange={(event) =>
-                        updateStage(stage.id, (item) => ({ ...item, title: event.target.value }))
-                      }
-                    />
-                  </label>
-                  <fieldset className="space-y-3">
-                    <legend className="mb-2 font-medium">Cursos que esta etapa pede</legend>
-                    {stage.requirements.length === 0 ? (
-                      <p role="status" className="text-sm text-muted-foreground">
-                        Aguardando cursos. Esta etapa não libera avanços nem ferramentas enquanto
-                        não tiver cursos vinculados.
-                      </p>
-                    ) : null}
-                    {stage.requirements.map((requirement, requirementIndex) => (
-                      <div key={requirement.courseId} className="flex flex-wrap items-center gap-2">
-                        <label className="grid min-w-48 flex-1 gap-1 text-sm">
-                          Curso
-                          <select
-                            value={requirement.courseId}
+              {draft.curriculum ? (
+                <CreatorCurriculumEditor
+                  value={draft.curriculum}
+                  courses={courses}
+                  disabled={saving}
+                  onChange={(curriculum) => setDraft({ ...draft, curriculum })}
+                />
+              ) : null}
+              {!draft.curriculum
+                ? draft.stages.map((stage, index) => (
+                    <Card key={stage.id} className="space-y-4 p-5">
+                      <div className="flex flex-wrap items-center justify-between gap-3">
+                        <h2 className="font-semibold">Etapa {index + 1}</h2>
+                        <div className="flex gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            disabled={saving || index === 0}
+                            onClick={() => move(index, -1)}
+                          >
+                            Subir
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            disabled={saving || index === draft.stages.length - 1}
+                            onClick={() => move(index, 1)}
+                          >
+                            Descer
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
                             disabled={saving}
-                            className="rounded-md border bg-background p-2"
-                            onChange={(event) =>
-                              updateStage(stage.id, (item) => ({
-                                ...item,
-                                requirements: item.requirements.map((entry, at) =>
-                                  at === requirementIndex
-                                    ? { ...entry, courseId: event.target.value }
-                                    : entry,
-                                ),
-                              }))
+                            onClick={() =>
+                              setDraft((policy) =>
+                                policy
+                                  ? {
+                                      ...policy,
+                                      stages: policy.stages.filter((item) => item.id !== stage.id),
+                                    }
+                                  : policy,
+                              )
                             }
                           >
-                            {!courses.some((course) => course.id === requirement.courseId) ? (
-                              <option value={requirement.courseId}>Curso indisponível</option>
-                            ) : null}
-                            {courses.map((course) => (
-                              <option
-                                key={course.id}
-                                value={course.id}
-                                disabled={stage.requirements.some(
-                                  (entry) => entry !== requirement && entry.courseId === course.id,
-                                )}
-                              >
-                                {course.title} ({courseTierLabel(course.level ?? '', course.track)})
-                              </option>
-                            ))}
-                          </select>
-                        </label>
-                        <label className="grid gap-1 text-sm">
-                          O que o aluno faz
-                          <select
-                            value={requirement.milestone}
-                            disabled={saving}
-                            className="rounded-md border bg-background p-2"
-                            onChange={(event) => {
-                              const milestone =
-                                event.target.value === 'showcase' ? 'showcase' : 'complete'
-                              updateStage(stage.id, (item) => ({
-                                ...item,
-                                requirements: item.requirements.map((entry, at) =>
-                                  at === requirementIndex ? { ...entry, milestone } : entry,
-                                ),
-                              }))
-                            }}
-                          >
-                            <option value="complete">Concluir o curso</option>
-                            <option value="showcase">Concluir e publicar projeto</option>
-                          </select>
-                        </label>
-                        <Button
-                          variant="outline"
+                            Remover etapa
+                          </Button>
+                        </div>
+                      </div>
+                      <label className="grid gap-2 text-sm">
+                        Nome da etapa
+                        <Input
+                          value={stage.title}
                           disabled={saving}
-                          onClick={() =>
+                          onChange={(event) =>
                             updateStage(stage.id, (item) => ({
                               ...item,
-                              requirements: item.requirements.filter(
-                                (_, at) => at !== requirementIndex,
-                              ),
+                              title: event.target.value,
                             }))
                           }
-                        >
-                          Remover curso
-                        </Button>
-                      </div>
-                    ))}
-                    <Button
-                      variant="outline"
-                      disabled={
-                        saving ||
-                        !courses.some(
-                          (course) =>
-                            !stage.requirements.some(
-                              (requirement) => requirement.courseId === course.id,
-                            ),
-                        )
-                      }
-                      onClick={() => {
-                        const course = courses.find(
-                          (course) =>
-                            !stage.requirements.some(
-                              (requirement) => requirement.courseId === course.id,
-                            ),
-                        )
-                        if (course)
-                          updateStage(stage.id, (item) => ({
-                            ...item,
-                            requirements: [
-                              ...item.requirements,
-                              { courseId: course.id, milestone: 'complete' },
-                            ],
-                          }))
-                      }}
-                    >
-                      Adicionar curso
-                    </Button>
-                  </fieldset>
-                  <fieldset>
-                    <legend className="mb-3 font-medium">O que esta etapa libera</legend>
-                    <div className="flex flex-wrap gap-4">
-                      {ADULT_CREATOR_CAPABILITIES.map((capability) => (
-                        <label key={capability} className="flex items-center gap-2 text-sm">
-                          <input
-                            type="checkbox"
-                            disabled={saving}
-                            checked={stage.capabilities.includes(capability)}
-                            onChange={(event) =>
+                        />
+                      </label>
+                      <fieldset className="space-y-3">
+                        <legend className="mb-2 font-medium">Cursos que esta etapa pede</legend>
+                        {stage.requirements.length === 0 ? (
+                          <p role="status" className="text-sm text-muted-foreground">
+                            Aguardando cursos. Esta etapa não libera avanços nem ferramentas
+                            enquanto não tiver cursos vinculados.
+                          </p>
+                        ) : null}
+                        {stage.requirements.map((requirement, requirementIndex) => (
+                          <div
+                            key={requirement.courseId}
+                            className="flex flex-wrap items-center gap-2"
+                          >
+                            <label className="grid min-w-48 flex-1 gap-1 text-sm">
+                              Curso
+                              <select
+                                value={requirement.courseId}
+                                disabled={saving}
+                                className="rounded-md border bg-background p-2"
+                                onChange={(event) =>
+                                  updateStage(stage.id, (item) => ({
+                                    ...item,
+                                    requirements: item.requirements.map((entry, at) =>
+                                      at === requirementIndex
+                                        ? { ...entry, courseId: event.target.value }
+                                        : entry,
+                                    ),
+                                  }))
+                                }
+                              >
+                                {!courses.some((course) => course.id === requirement.courseId) ? (
+                                  <option value={requirement.courseId}>Curso indisponível</option>
+                                ) : null}
+                                {courses.map((course) => (
+                                  <option
+                                    key={course.id}
+                                    value={course.id}
+                                    disabled={stage.requirements.some(
+                                      (entry) =>
+                                        entry !== requirement && entry.courseId === course.id,
+                                    )}
+                                  >
+                                    {course.title} (
+                                    {courseTierLabel(course.level ?? '', course.track)})
+                                  </option>
+                                ))}
+                              </select>
+                            </label>
+                            <label className="grid gap-1 text-sm">
+                              O que o aluno faz
+                              <select
+                                value={requirement.milestone}
+                                disabled={saving}
+                                className="rounded-md border bg-background p-2"
+                                onChange={(event) => {
+                                  const milestone =
+                                    event.target.value === 'showcase' ? 'showcase' : 'complete'
+                                  updateStage(stage.id, (item) => ({
+                                    ...item,
+                                    requirements: item.requirements.map((entry, at) =>
+                                      at === requirementIndex ? { ...entry, milestone } : entry,
+                                    ),
+                                  }))
+                                }}
+                              >
+                                <option value="complete">Concluir o curso</option>
+                                <option value="showcase">Concluir e publicar projeto</option>
+                              </select>
+                            </label>
+                            <Button
+                              variant="outline"
+                              disabled={saving}
+                              onClick={() =>
+                                updateStage(stage.id, (item) => ({
+                                  ...item,
+                                  requirements: item.requirements.filter(
+                                    (_, at) => at !== requirementIndex,
+                                  ),
+                                }))
+                              }
+                            >
+                              Remover curso
+                            </Button>
+                          </div>
+                        ))}
+                        <Button
+                          variant="outline"
+                          disabled={
+                            saving ||
+                            !courses.some(
+                              (course) =>
+                                !stage.requirements.some(
+                                  (requirement) => requirement.courseId === course.id,
+                                ),
+                            )
+                          }
+                          onClick={() => {
+                            const course = courses.find(
+                              (course) =>
+                                !stage.requirements.some(
+                                  (requirement) => requirement.courseId === course.id,
+                                ),
+                            )
+                            if (course)
                               updateStage(stage.id, (item) => ({
                                 ...item,
-                                capabilities: event.target.checked
-                                  ? [...item.capabilities, capability]
-                                  : item.capabilities.filter((value) => value !== capability),
+                                requirements: [
+                                  ...item.requirements,
+                                  { courseId: course.id, milestone: 'complete' },
+                                ],
                               }))
-                            }
-                          />
-                          {labels[capability]}
-                        </label>
-                      ))}
-                    </div>
-                  </fieldset>
-                </Card>
-              ))}
+                          }}
+                        >
+                          Adicionar curso
+                        </Button>
+                      </fieldset>
+                      <fieldset>
+                        <legend className="mb-3 font-medium">O que esta etapa libera</legend>
+                        <div className="flex flex-wrap gap-4">
+                          {ADULT_CREATOR_CAPABILITIES.map((capability) => (
+                            <label key={capability} className="flex items-center gap-2 text-sm">
+                              <input
+                                type="checkbox"
+                                disabled={saving}
+                                checked={stage.capabilities.includes(capability)}
+                                onChange={(event) =>
+                                  updateStage(stage.id, (item) => ({
+                                    ...item,
+                                    capabilities: event.target.checked
+                                      ? [...item.capabilities, capability]
+                                      : item.capabilities.filter((value) => value !== capability),
+                                  }))
+                                }
+                              />
+                              {labels[capability]}
+                            </label>
+                          ))}
+                        </div>
+                      </fieldset>
+                    </Card>
+                  ))
+                : null}
               <div className="flex flex-wrap gap-3">
                 <Button
                   variant="outline"
-                  disabled={saving}
+                  disabled={saving || Boolean(draft.curriculum)}
                   onClick={() => {
                     setDraft((policy) =>
                       policy

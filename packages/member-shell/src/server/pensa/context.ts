@@ -16,6 +16,7 @@ import {
 import type { MoldaAssetKind } from '@sistemazero/molda/assets'
 import { MOLDA_TOOL_FAMILIES } from '@sistemazero/molda/tools'
 import type { PintaAssetKind } from '@sistemazero/pinta/assets'
+import { adultMoldaOpenBands } from '../../lib/adult-molda-tool-access'
 import {
   hasKidsCapability,
   isKidsStaffPreview,
@@ -209,9 +210,11 @@ export async function loadPensaContext(
       : kidsStudioTier(participantKids(facts.code.profileId), facts.code.blocks)
   const catalog = pensaCatalog(tier, '3d')
   const moldaTools = (profileId: string) => {
+    const adultJourney = participantJourney(profileId)
+    const adultBands = adultJourney ? adultMoldaOpenBands(adultJourney) : []
     return MOLDA_TOOL_FAMILIES.filter((tool) =>
       adult
-        ? participantJourney(profileId)?.capabilities.includes('molda')
+        ? adultBands.includes(tool.band)
         : hasKidsCapability(participantKids(profileId), KIDS_MOLDA_BAND_CAPABILITIES[tool.band]),
     ).map((tool) => tool.id)
   }

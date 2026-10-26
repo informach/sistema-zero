@@ -125,14 +125,14 @@
     },
     {
       "key": "video-d3-fecho",
-      "plannedVideo": "Título: Publique seu jogo\n\nMaster integral da professora. Roteiro: desafio-dia-3.roteiro.md. Substituições kids: []"
+      "plannedVideo": "Título: Seu jogo está pronto\n\nMaster integral da professora. Roteiro: desafio-dia-3.roteiro.md. Substituições kids: []"
     },
     {
       "key": "ponte-d3-publicar",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Hora de mostrar o seu jogo! Publique no Mural, copie o link de jogar e mande para a sua família e os seus amigos. Se precisar, peça ajuda a um adulto. Depois clique em Fechar e em Concluir aula."
+        "text": "Seu jogo está pronto! Se quiser, publique no Mural, copie o link de jogar e compartilhe com a sua família e os seus amigos. Se precisar, peça ajuda a um adulto. Você pode concluir a aula e continuar a jornada sem publicar."
       }
     },
     {
@@ -7174,9 +7174,9 @@
     },
     {
       "key": "fecho",
-      "title": "Publique seu jogo",
+      "title": "Seu jogo está pronto",
       "intent": "closing",
-      "objective": "Publicar o projeto construído no Mural e concluir a aula.",
+      "objective": "Concluir a aula com o projeto enviado; compartilhar no Mural é uma escolha.",
       "blockKeys": ["video-d3-fecho", "ponte-d3-publicar", "ajuda-publicar"],
       "workspaceKey": "projeto",
       "externalTool": null,

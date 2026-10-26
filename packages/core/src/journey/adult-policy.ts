@@ -1,4 +1,11 @@
 import { z } from 'zod'
+import { JOURNEY_LEVEL_SLUGS } from './catalog'
+import {
+  CreatorJourneyCurriculumSchema,
+  type CreatorJourneyProjectionInput,
+  type CreatorJourneyView,
+  projectCreatorJourney,
+} from './creator-curriculum'
 
 export const ADULT_CREATOR_CAPABILITIES = [
   'studio',
@@ -8,6 +15,8 @@ export const ADULT_CREATOR_CAPABILITIES = [
   'pro',
   'ai',
   'pensa',
+  'molda-intermediate',
+  'molda-professional',
 ] as const
 export type AdultCreatorCapability = (typeof ADULT_CREATOR_CAPABILITIES)[number]
 
@@ -23,12 +32,16 @@ const Stage = z.strictObject({
   title: z.string().trim().min(1).max(120),
   // Sem curso vinculado, a etapa é um planejamento e permanece bloqueada.
   requirements: z.array(Requirement).max(200),
-  capabilities: z.array(z.enum(ADULT_CREATOR_CAPABILITIES)).max(7),
+  capabilities: z.array(z.enum(ADULT_CREATOR_CAPABILITIES)).max(ADULT_CREATOR_CAPABILITIES.length),
 })
 
 /** Configuração adulta independente do catálogo de posições Kids. */
 export const AdultJourneyPolicySchema = z
-  .strictObject({ schemaVersion: z.literal(1), stages: z.array(Stage).max(500) })
+  .strictObject({
+    schemaVersion: z.literal(1),
+    stages: z.array(Stage).max(500),
+    curriculum: CreatorJourneyCurriculumSchema.optional(),
+  })
   .superRefine((policy, ctx) => {
     const ids = new Set<string>()
     for (const [index, stage] of policy.stages.entries()) {
@@ -77,6 +90,7 @@ export interface AdultJourneyView {
     /** O que a etapa libera quando termina. */
     capabilities: AdultCreatorCapability[]
   }[]
+  curriculum?: CreatorJourneyView
 }
 
 /**
@@ -128,7 +142,58 @@ export function projectAdultJourney(
   milestones: readonly AdultCourseMilestone[],
   frozen: readonly AdultCreatorCapability[] = [],
   reachedPosition: number | null = null,
+  context: Pick<
+    CreatorJourneyProjectionInput,
+    | 'catalog'
+    | 'masteryApprovals'
+    | 'masteryAwards'
+    | 'masteryAdmissions'
+    | 'masteryDefinitions'
+    | 'retainedCourseIds'
+  > = {},
 ): AdultJourneyView {
+  if (policy.curriculum) {
+    const curriculum = projectCreatorJourney({
+      ...context,
+      curriculum: policy.curriculum,
+      audience: 'adult',
+      completedCourseIds: milestones
+        .filter((milestone) => milestone.completed)
+        .map((milestone) => milestone.courseId),
+      earnedLevel:
+        JOURNEY_LEVEL_SLUGS[Math.min(7, normalizeAdultJourneyFloor(reachedPosition) - 1)]!,
+      earnedCapabilities: frozen,
+    })
+    const adultCapabilities = (capabilities: readonly string[]) =>
+      ADULT_CREATOR_CAPABILITIES.filter((capability) => capabilities.includes(capability))
+    return {
+      audience: 'adult',
+      policyVersion: version,
+      configured: true,
+      capabilities: adultCapabilities(curriculum.capabilities),
+      curriculum,
+      stages: curriculum.stages.map((stage, index) => {
+        const definition = policy.curriculum!.stages[index]!
+        const entries = [stage.base2d, stage.base3d, stage.mission]
+        return {
+          id: stage.level,
+          title: stage.title,
+          completed: stage.completed,
+          available: stage.available,
+          requirements: entries.map((entry) => ({
+            courseId: entry.courseId,
+            milestone: 'complete' as const,
+          })),
+          missing: stage.earned
+            ? []
+            : entries
+                .filter((entry) => entry.state !== 'completed')
+                .map((entry) => ({ courseId: entry.courseId, milestone: 'complete' as const })),
+          capabilities: adultCapabilities(definition.grants.flatMap((grant) => grant.capabilities)),
+        }
+      }),
+    }
+  }
   const byCourse = new Map(milestones.map((milestone) => [milestone.courseId, milestone]))
   const earned = new Set(frozen)
   const floor = normalizeAdultJourneyFloor(reachedPosition)

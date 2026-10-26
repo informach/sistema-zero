@@ -145,7 +145,7 @@ export default async function TrackPage({ params }: { params: Promise<{ track: s
                       Concluído
                     </span>
                   ) : level.state === 'current' ? (
-                    <span className="sz-chip sz-chip-acao">Você está aqui</span>
+                    <span className="sz-chip sz-chip-novo">Você está aqui</span>
                   ) : null}
                 </div>
                 <ul className="flex flex-col gap-5">
@@ -184,16 +184,16 @@ export default async function TrackPage({ params }: { params: Promise<{ track: s
   )
 }
 
-/** O marco do nível na linha do tempo: ✓ verde quando feito, o número na cor de ação quando atual. */
+/** O marco do nível na linha do tempo: ✓ verde quando feito, o número em amarelo quando atual. */
 function TimelineNode({ state, number }: { state: LevelState; number: number | null }) {
   return (
     <div aria-hidden className="flex w-[2.4rem] flex-none flex-col items-center md:w-[3.2rem]">
       <span
         className={cn(
-          'inline-flex size-[2.4rem] items-center justify-center rounded-full font-bold text-[1.1rem] md:size-[3.2rem]',
+          'inline-flex size-[2.4rem] items-center justify-center rounded-full font-(family-name:--font-pixel) text-[1.1rem] md:size-[3.2rem]',
           state === 'done' && 'bg-(--pen-sucesso) text-white',
           state === 'current' &&
-            'bg-primary text-primary-foreground shadow-[0_0_0_6px_var(--acao-tint)]',
+            'bg-(--cta) text-(--cta-tinta) shadow-[0_0_0_6px_var(--aviso-tint)]',
           state === 'upcoming' && 'bg-muted text-foreground',
         )}
       >
@@ -294,7 +294,7 @@ function TrackCourseRow({
     <article
       className={cn(
         'sz-card flex flex-col overflow-hidden sm:flex-row',
-        highlighted && started && 'shadow-[0_0_0_3px_var(--primary)]',
+        highlighted && started && 'shadow-[0_0_0_3px_var(--cta),0_4px_0_var(--cta-degrau)]',
       )}
     >
       <div className="relative aspect-video bg-(--topo) sm:aspect-auto sm:min-h-[9.5rem] sm:flex-[0_0_15rem]">

@@ -9,7 +9,7 @@ do usuário em 03/10/2026, toda seção tem um contexto inicial curto e pertinen
 o jogo, seu estado atual ou a necessidade; depois dizer o que fazer.
 
 - Apresentação (jogo pronto, demonstração com UM exemplo): dizer qual jogo será construído e a situação; mostrar na primeira pessoa um exemplo ("Olha aqui: quando eu toco num esconderijo, aparece quem estava atrás"), sem resolver a partida; só no fim passar a vez ("Agora é a sua vez: jogue até encontrar os três personagens").
-- Experiência (demonstração na primeira pessoa, como numa conversa): "Esta é uma experiência para a gente entender como funciona a ação e a reação. Olha aqui: quando eu toco no arbusto, nada acontece. Tá vendo? É que o jogo ainda não sabe o que fazer quando alguém toca no arbusto. Então a gente precisa dizer isso para ele… Agora é a sua vez: faça esses mesmos testes na experiência."
+- Experiência: explicar o conceito com uma situação concreta e propor uma investigação. A atividade conduz os testes por falas do Zappy determinadas pelo estado; o vídeo não recita os cliques.
 - Construção depois de uma experiência: lembrar o que ela mostrou, testar no próprio jogo o que ainda falta e dizer o que será montado. "Lembra da experiência da parte anterior? Cada personagem encontrado somava um em Achados. Agora a gente vai fazer o seu jogo contar do mesmo jeito! Primeiro, toque num esconderijo do seu jogo. Tá vendo? O personagem aparece, mas Achados continua em zero, porque o jogo ainda não sabe que precisa contar. Então a gente vai ensinar o jogo a somar um em Achados toda vez que um esconderijo for tocado." Sem mandar clicar em Anterior.
 - Material (o caderno, que a criança conhece como Passo a passo do projeto): "Olha aqui: este é o seu Passo a passo do projeto! Nele estão os passos para montar o seu jogo, com os blocos que você vai usar e o lugar de cada um. Então, se você esquecer algum passo, é só voltar aqui e abrir o mapa. Se quiser, você pode ler aqui mesmo. E, se preferir, também pode clicar em Baixar para guardar o mapa e consultar onde quiser." (fala atual de `aulas/cade-todo-mundo-aula-1.roteiro.md`). Não dizer "não precisa baixar nem imprimir": a criança entende como uma ordem para não baixar.
 - Encerramento: nomear o resultado e dar a próxima ação.
@@ -76,44 +76,17 @@ direto ao tutorial, junto à atividade. A ajuda escrita não acrescenta outra ta
 
 Na fala, "clique em Próxima parte" basta. Não explicar o que é uma parte, todos os botões
 vizinhos e as diferenças entre celular e computador. No Kids, o rótulo é **Próxima parte**
-(a comunidade adulta continua com **Próxima seção**).
+(a comunidade adulta também usa **Próxima parte**).
 
-## 4. Experiências: explicar enquanto faz
+## 4. Experiências: preparar e acompanhar a investigação
 
-A experiência e a explicação andam juntas (Diretrizes, seção 2), e o vídeo é uma
-**demonstração**: o narrador faz os testes e explica na primeira pessoa. Ele não dá ordens à
-criança antes da vez dela. O vídeo segue esta ordem:
+Aplicar [Conceito, investigação e construção](DESCOBERTA-GUIADA.md), direção de 25/10/2026. O vídeo explica o conceito com uma situação concreta, uma analogia curta e a ligação com o jogo. Termina com um convite que diga o que observar. Uma demonstração breve pode ajudar; os testes completos e os nomes dos controles da experiência ficam com a própria atividade.
 
-1. Diz qual ideia a experiência ensina, com o nome dela ("Esta é uma experiência para a gente
-   entender…").
-2. Puxa a atenção ("Olha aqui:"), faz cada gesto no ritmo da fala e mostra o resultado real.
-3. Diz por que aquilo aconteceu, ligado à regra que a criança vai montar, com uma comparação curta
-   do dia a dia quando ajudar.
-4. Muda a regra e explica a diferença.
-5. Termina em "Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique
-   em Próxima parte."
+Nas notas de tela, registrar a ilustração e os elementos que tornam a ideia concreta. Preservar cócegas/risada e futebol no Cadê. Não mostrar a resolução de todas as descobertas nem narrar uma sequência de cliques para a pessoa reproduzir.
 
-Exemplo do toque, como numa conversa: "Esta é uma experiência para a gente entender como funciona
-a ação e a reação. Olha aqui: quando eu toco no arbusto, nada acontece. Tá vendo? É que o jogo ainda
-não sabe o que fazer quando alguém toca no arbusto. Então a gente precisa dizer isso para ele. Na
-vida é assim também: toda ação tem uma reação. Por exemplo, se alguém faz cócegas em você, você ri.
-A cócega é a ação, e a risada é a reação. No seu jogo, o toque é a ação. E a reação que a gente
-quer é o arbusto ficar invisível, para aparecer quem está escondido atrás dele. Mas, para o jogo ter
-essa reação, a gente precisa ligar a reação ao toque. Por isso, eu clico em Ligar a reação ao toque
-e toco no arbusto de novo. Olha só: agora sim ele fica invisível, e dá para ver o coelho que estava
-atrás! Então essa é a reação que eu liguei ao toque: o arbusto ficar invisível."
+Registrar também as falas internas do Zappy, as condições de cada etapa, a ação principal e os retornos. A fonte deve ser compartilhada com o player; texto, gravação e botão precisam corresponder ao mesmo estado. A ponte da página convida à investigação sem duplicar a primeira instrução. Passos obrigatórios permanecem acessíveis sem abrir pistas.
 
-Os passos para a criança ficam nas instruções da experiência, no imperativo. A ponte do Zappy liga o vídeo à experiência numa frase curta, sem repetir os passos.
-As montagens seguem no imperativo: ali a criança faz junto com o vídeo.
-
-A comparação parte de uma regra que a criança já vive e chega ao passo concreto, com a palavra do
-botão ou do bloco. Evitar frases abstratas como "na programação, nada é automático".
-
-Na frase da comparação, a nota de tela descreve um **meme ilustrado** (regra completa nas Diretrizes, seção 2).
-
-A experiência continua cobrando as metas da própria pessoa; ver o vídeo não basta. Não esconder
-um passo obrigatório nas pistas. "Explore e descubra" sozinho não orienta. Não acrescentar
-questionários ou mudar as experiências só para encurtar a fala.
+O Estúdio conserva a montagem completa, no imperativo, com bloco literal, destino, encaixe, campo, valor e teste. O quiz de previsão mostra a cena antes, pede a escolha e apresenta o resultado com correção imediata e nova tentativa. A tentativa completa continua sendo corrigida e registrada no servidor.
 
 ## 5. Falar com quem está fazendo
 

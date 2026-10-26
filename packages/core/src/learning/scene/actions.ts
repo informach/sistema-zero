@@ -159,6 +159,8 @@ export type SceneAction =
   | { type: 'key-position'; axis: 'x' | 'y'; value: number }
   | { type: 'restart-key-position' }
   | { type: 'find-character'; id: 0 | 1 | 2 }
+  | { type: 'other-hiding-place' }
+  | { type: 'touch-hiding-place'; id: 0 | 1 }
   | { type: 'look-around' | 'restart-search' }
   | { type: 'value-source'; source: 'fixed' | 'read' }
   | { type: 'box-marks'; on: boolean }
@@ -731,6 +733,10 @@ export function isSceneAction(value: unknown, scene: SceneId): value is SceneAct
       return scene === 'lighthouse-position'
     case 'find-character':
       return scene === 'found-counter' && (value.id === 0 || value.id === 1 || value.id === 2)
+    case 'other-hiding-place':
+      return scene === 'touch-response'
+    case 'touch-hiding-place':
+      return scene === 'touch-response' && (value.id === 0 || value.id === 1)
     case 'look-around':
     case 'restart-search':
       return scene === 'found-counter'

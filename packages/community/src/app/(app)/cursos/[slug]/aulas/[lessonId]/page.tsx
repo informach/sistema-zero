@@ -48,6 +48,18 @@ export default async function LessonPage({
     getAvatarReadonly().catch(() => null),
   ])
   if (courseRes.status === 404 || courseRes.status === 403) notFound()
+  if (courseRes.status === 423) {
+    const lock = creatorCourseLockFromBody(courseRes.body, 'adult')
+    return (
+      <Card className="mx-auto flex max-w-lg flex-col gap-4 p-8">
+        <h1 className="sz-display text-xl">{lock.title}</h1>
+        <p>{lock.message}</p>
+        <Link href={lock.href} className="sz-btn-gradient self-start">
+          {lock.cta}
+        </Link>
+      </Card>
+    )
+  }
   if (courseRes.status !== 200 || !courseRes.body) throw new Error('Falha ao carregar o curso')
   const course = courseRes.body
 
@@ -91,3 +103,5 @@ export default async function LessonPage({
     />
   )
 }
+
+import { creatorCourseLockFromBody } from '@sistemazero/member-shell/lib/creator-journey-presentation'

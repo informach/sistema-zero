@@ -1,4 +1,6 @@
 import { courseJourneyState } from '@sistemazero/core/journey'
+import { CourseCurriculumContext } from '@sistemazero/member-shell/components/course-curriculum-context'
+import { creatorCourseLockPresentation } from '@sistemazero/member-shell/lib/creator-journey-presentation'
 import { ArrowRight, BookOpen, CircleCheck, Gift, Lock, Play } from 'lucide-react'
 import Link from 'next/link'
 import type { ReactNode } from 'react'
@@ -118,7 +120,13 @@ export function CatalogCourseCard({
 
   const text = (
     <div className="min-w-0">
-      {linha ? (
+      <CourseCurriculumContext
+        placement={course.curriculum}
+        accessReason={course.accessReason}
+        skin="kids"
+        compact
+      />
+      {linha && !course.curriculum ? (
         <p className="font-bold text-muted-foreground text-xs">
           {course.journeyRole === 'extra'
             ? 'Curso extra'
@@ -154,7 +162,16 @@ export function CatalogCourseCard({
     // Bloqueado pela jornada: um CTA único de largura total (sem status duplicado do
     // lado). Curso-base → CTA clicável que NOMEIA o curso a fazer; etapa futura → rótulo
     // apagado não-tocável (o card é um <div>, não pode parecer botão).
-    foundationFirst ? (
+    course.curriculum ? (
+      <span className="space-y-2 block">
+        <span className="block text-sm text-muted-foreground">
+          {creatorCourseLockPresentation(course.curriculum, 'kids').message}
+        </span>
+        <span className="sz-btn-gradient-block">
+          {creatorCourseLockPresentation(course.curriculum, 'kids').cta}
+        </span>
+      </span>
+    ) : foundationFirst ? (
       <span className="sz-btn-gradient-block">
         <span className="font-normal text-[11px]">Comece por esta:</span>
         <span className="flex items-center gap-1.5">
@@ -312,6 +329,15 @@ function CardShell({
       </Link>
     )
   }
+  if (journeyLocked && course.curriculum)
+    return (
+      <Link
+        href={creatorCourseLockPresentation(course.curriculum, 'kids').href}
+        className="group kid-pop block h-full"
+      >
+        {body}
+      </Link>
+    )
   if (journeyLocked && course.careerLock?.foundationCourseSlug) {
     return (
       <Link
