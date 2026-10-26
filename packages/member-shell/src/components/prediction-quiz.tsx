@@ -1,4 +1,5 @@
 'use client'
+import { IslandQuizScene } from './quiz-island-scene'
 import { gradeLearningQuiz, isManifestQuiz } from '@sistemazero/core/learning'
 import { falaDaExplicacaoDoQuiz, falaDaQuestaoDoQuiz } from '@sistemazero/core/learning/scene'
 import { ArrowRight, Check, CheckCircle2, Hand, Play, RotateCcw, Sparkles, X } from 'lucide-react'
@@ -308,7 +309,14 @@ function PredictionQuizSession({
             {checked ? <CheckCircle2 size={16} aria-hidden /> : <Hand size={16} aria-hidden />}
             {checked ? 'Resultado da experiência' : 'Antes do teste'}
           </span>
-          {question.predictionScene?.startsWith('lighthouse-') ? (
+          {question.predictionScene?.startsWith('island-') ? (
+            <IslandQuizScene
+              key={question.id}
+              scene={question.predictionScene}
+              result={checked}
+              onAnimating={setScenePlaying}
+            />
+          ) : question.predictionScene?.startsWith('lighthouse-') ? (
             <LighthouseQuizScene
               key={question.id}
               scene={question.predictionScene}
@@ -428,7 +436,7 @@ function PredictionQuizSession({
           {!checked ? (
             <SceneButton
               tom="gesto"
-              disabled={selected === null || busy}
+              disabled={selected === null || busy || scenePlaying}
               onClick={() => void reveal()}
             >
               <Play size={16} aria-hidden />

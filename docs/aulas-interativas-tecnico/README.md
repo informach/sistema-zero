@@ -1,7 +1,8 @@
 # Apoio técnico das aulas interativas
 
-As 37 aulas dos cinco cursos têm uma única fonte editorial em [Aulas interativas](../aulas-interativas/README.md). Não há geração separada por público.
+As 40 aulas dos seis cursos têm uma única fonte editorial em [Aulas interativas](../aulas-interativas/README.md). Não há geração separada por público.
 
+- [A Ilha do Farol](modulos-a-ilha-do-farol.md): curso 3D do Faísca, três aulas sem certificado, comandos e contrato de troca das artes do Molda.
 - [Conceito, investigação e construção](DESCOBERTA-GUIADA.md): vídeo conceitual, Zappy por etapa, previsão e objetivos observáveis.
 - [Diretrizes pedagógicas](DIRETRIZES-PEDAGOGICAS.md): clareza, instrução completa e linguagem comum.
 - [Voz ElevenLabs v4](DIRETRIZES-VOZ-ELEVENLABS.md), [formato do roteiro](ESPEC-ROTEIRO.md) e [Dedé/Debinha](AVATARES-NOS-VIDEOS.md).

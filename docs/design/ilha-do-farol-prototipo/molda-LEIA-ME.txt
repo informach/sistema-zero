@@ -1,0 +1,34 @@
+A ILHA DO FAROL — PROJETOS EDITÁVEIS DO MOLDA
+
+COMO ABRIR
+Na galeria do Molda, use “Importar projeto” e selecione ilha-do-farol-molda.zip.
+Isso cria projetos separados. Também pode importar um único .molda.json da pasta projetos.
+
+O QUE EDITAR
+Cada objeto tem seu projeto: mar, terreno, ponte, dois coqueiros, vegetação pequena,
+farol apagado, farol aceso, veleiro, pedras, aventureiro e chave.
+A bancada das experiências vai em um projeto adicional.
+“Ilha — Cena completa” mostra a disposição de todos os elementos.
+As peças têm nomes; abra os grupos na árvore do Molda para escolher uma parte.
+O feixe de luz fica oculto na versão apagada do farol.
+Na cena completa, o mar ocupa uma área grande. Para trabalhar mais perto da ilha,
+oculte o grupo Mar pelo ícone de olho e use Enquadrar. Ligue o olho para vê-lo de novo.
+
+COMO DEVOLVER
+Use “Baixar projeto” no Molda e devolva os arquivos .molda.json que você alterou.
+Para ajustes de posição da ilha, devolva também o projeto “Cena completa”.
+As cópias são independentes: editar a pedra separada não atualiza a cena automaticamente.
+Se alterar o mesmo objeto na cena e no arquivo separado, informe qual versão deve prevalecer.
+Preserve os nomes dos grupos principais, a escala e a orientação dos objetos, quando possível.
+Pode editar cores, formas e peças internas normalmente.
+
+DETALHES DA ENTREGA
+Os objetos separados preservam a resolução das superfícies do protótipo.
+A cena montada usa menos divisões nas curvas para respeitar os limites de edição do Molda.
+As cores dos materiais, dimensões, rotações e posições são extraídas dos modelos do protótipo.
+A iluminação da oficina pode fazer as cores parecerem diferentes das do jogo.
+O Molda também mostra as faces das superfícies curvas com seu próprio sombreamento.
+A câmera, a iluminação, as colisões e os comandos do jogo serão configurados na reintegração.
+A caixa invisível de contato do personagem não é uma peça visual para editar.
+mapa-de-reintegracao.json registra as posições originais, câmera e área de contato.
+Este pacote contém as artes editáveis; não contém a programação do jogo.

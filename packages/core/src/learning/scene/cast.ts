@@ -371,6 +371,7 @@ export const SCENE_ROLES: Readonly<Record<SceneId, readonly SceneRole[]>> = {
   'entity-state': [],
   'delta-time': ['hero'],
   'circle-collision': [],
+  'island-3d': [],
   'axis-z': [],
   'camera-3d': [],
   mesh: [],

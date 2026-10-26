@@ -132,6 +132,10 @@ export interface QuizQuestion {
     | 'lighthouse-memory'
     | 'lighthouse-door'
     | 'lighthouse-retest'
+    | 'island-view'
+    | 'island-position'
+    | 'island-height'
+    | 'island-retest'
   prompt: string
   choices: QuizChoice[]
   correctChoiceIds: string[]

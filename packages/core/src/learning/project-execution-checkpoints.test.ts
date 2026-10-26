@@ -89,3 +89,26 @@ test('sprite navigation validates paths, time budgets, obstacles and unknown dat
       JSON.stringify(patch),
     ).toBe(false)
 })
+
+test('3D navigation requires a bounded floor and preserves the global time budget', () => {
+  const step = {
+    action: 'approachObject3d',
+    actorPath: 'personagem',
+    targetPath: 'chave',
+    timeoutMs: 7000,
+    walkable: [{ minX: -10, maxX: 10, minZ: -5, maxZ: 5 }],
+  }
+  expect(isSectionExecutionRule({ ...rule, steps: [step] })).toBe(true)
+  for (const walkable of [
+    undefined,
+    [],
+    [{ minX: 0, maxX: 0, minZ: 0, maxZ: 1 }],
+    [{ minX: -1000, maxX: 1, minZ: 0, maxZ: 1 }],
+    [{ minX: 0, maxX: 1, minZ: 0, maxZ: NaN }],
+  ])
+    expect(isSectionExecutionRule({ ...rule, steps: [{ ...step, walkable }] })).toBe(false)
+  expect(isSectionExecutionRule({ ...rule, steps: [step, step, step] })).toBe(false)
+  expect(isSectionExecutionRule({ ...rule, steps: [{ ...step, action: 'approachSprite' }] })).toBe(
+    false,
+  )
+})

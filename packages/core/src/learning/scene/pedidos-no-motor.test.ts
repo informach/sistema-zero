@@ -133,6 +133,48 @@ const passarCinco = (m: Maos, unit: number) =>
   m.faz({ type: 'sample', kind: 'velocity', unit, guided: false })
 
 const CENAS: Record<SceneId, Cena> = {
+  'island-3d': {
+    pedidos: {
+      'other-view': {
+        texto: 'Compare a vista de frente com outra vista.',
+        faz: (m) => m.faz({ type: 'island-view', view: 'side' }),
+      },
+      'same-place': {
+        texto: 'Depois de comparar, responda o que mudou.',
+        faz: (m) => {
+          m.faz({ type: 'island-view', view: 'side' })
+          m.faz({ type: 'island-answer', answer: 'camera' })
+        },
+      },
+      ...Object.fromEntries(
+        (['x', 'y', 'z'] as const).map((axis) => [
+          `axis-${axis}`,
+          {
+            texto: `Aumente e diminua ${axis}, observando a chave.`,
+            faz: (m: Maos) => {
+              m.faz({ type: 'island-axis', axis, value: 4 })
+              m.faz({ type: 'island-axis', axis, value: 0 })
+            },
+          },
+        ]),
+      ),
+      'contact-apart': {
+        texto: 'Prepare uma separação e teste o encontro.',
+        faz: (m) => {
+          m.faz({ type: 'island-axis', axis: 'y', value: 4 })
+          m.faz({ type: 'island-test' })
+        },
+      },
+      'contact-touch': {
+        texto: 'Aproxime os objetos e teste o encontro.',
+        faz: (m) => {
+          m.faz({ type: 'island-axis', axis: 'y', value: 1 })
+          m.faz({ type: 'island-test' })
+        },
+      },
+    },
+    mostra: (s) => s.island3d?.view === 'side',
+  },
   'copy-vs-original': {
     pedidos: {
       exported: {
@@ -2190,6 +2232,18 @@ const CENAS: Record<SceneId, Cena> = {
 }
 
 function startForGoal(scene: SceneId, goal: string): SceneStart {
+  if (scene === 'island-3d')
+    return {
+      scene,
+      setup: {
+        goals: goal.startsWith('axis-')
+          ? ['axis-x', 'axis-y', 'axis-z']
+          : goal.startsWith('contact-')
+            ? ['contact-apart', 'contact-touch']
+            : ['other-view', 'same-place'],
+        freeExploration: true,
+      },
+    }
   if (['touched-bush', 'touched-rocks', 'x-minus', 'x-plus', 'y-minus', 'y-plus'].includes(goal))
     return { scene, setup: { freeExploration: true } }
   if (scene === 'once-vs-always' && goal === 'lives-loop')

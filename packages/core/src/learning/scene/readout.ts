@@ -182,6 +182,26 @@ function leituras(
   cenario: SceneCenarioId,
 ): SceneReading[] {
   switch (scene) {
+    case 'island-3d':
+      return [
+        {
+          label: 'Ponto de vista',
+          value:
+            state.island3d?.view === 'top'
+              ? 'Cima'
+              : state.island3d?.view === 'side'
+                ? 'Lado'
+                : 'Frente',
+          tone: 'a',
+        },
+        {
+          label: 'Posição da chave',
+          value: state.island3d
+            ? `x ${state.island3d.key.x} · y ${state.island3d.key.y} · z ${state.island3d.key.z}`
+            : 'Inicial',
+          tone: 'b',
+        },
+      ]
     case 'fixed-vs-read':
       return [
         { label: 'centro x da nave', value: String(state.fixedRead.heroX), tone: 'a' },
@@ -1022,6 +1042,8 @@ function situacao(scene: SceneId, state: SceneState): string {
   if (c) return c
   const onde = ONDE[state.match.screen] ?? 'Na tela de início'
   switch (scene) {
+    case 'island-3d':
+      return 'Compare o lugar dos objetos e o ponto de vista. Todos os controles estão livres.'
     case 'fixed-vs-read':
       return `A nave está em x ${state.fixedRead.heroX}. O próximo tiro usa ${state.fixedRead.source === 'fixed' ? 'o número 400' : 'o centro x da nave'}. Há ${state.fixedRead.marks.length} marcas de nascimento.`
     case 'collision-pair':

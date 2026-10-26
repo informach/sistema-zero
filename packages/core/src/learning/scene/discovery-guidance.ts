@@ -1,9 +1,11 @@
+import { islandGuidance, ISLAND_SPEECH } from './island-3d'
 import type { SceneId } from './actions'
 import type { SceneActivity } from './index'
 import type { SceneState } from './state'
 
 /** Shared authored speech: player and recording inventory always use the same text. */
 const speech = {
+  ...ISLAND_SPEECH,
   'walk-empty':
     'A regra está vazia. Você pode apertar a tecla no teclado de teste e avançar um quadro, ou começar adicionando o bloco.',
   'walk-no-command':
@@ -80,24 +82,28 @@ const speech = {
 } as const
 export function discoverySpeechSteps(scene?: SceneId) {
   const prefixes =
-    scene === 'touch-response'
-      ? ['touch']
-      : scene === 'found-counter'
-        ? ['count']
-        : scene === 'lighthouse-walk'
-          ? ['walk', 'edge']
-          : scene === 'collect-and-remember'
-            ? ['memory']
-            : scene === 'lighthouse-key'
-              ? ['door']
-              : scene === 'lighthouse-position'
-                ? ['position']
-                : []
+    scene === 'island-3d'
+      ? ['island']
+      : scene === 'touch-response'
+        ? ['touch']
+        : scene === 'found-counter'
+          ? ['count']
+          : scene === 'lighthouse-walk'
+            ? ['walk', 'edge']
+            : scene === 'collect-and-remember'
+              ? ['memory']
+              : scene === 'lighthouse-key'
+                ? ['door']
+                : scene === 'lighthouse-position'
+                  ? ['position']
+                  : []
   return Object.entries(speech)
     .filter(([id]) => !scene || prefixes.some((prefix) => id.startsWith(`${prefix}-`)))
     .map(([id, text]) => ({ id, text }))
 }
 export function discoveryGuidance(activity: SceneActivity, state: SceneState) {
+  if (activity.scene === 'island-3d' && state.island3d)
+    return islandGuidance(state, activity.setup?.goals)
   const has = (id: string) => state.evidence.discoveries.includes(id)
   let id: keyof typeof speech = 'count-start'
   switch (activity.scene) {

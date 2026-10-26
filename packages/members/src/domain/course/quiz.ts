@@ -98,6 +98,10 @@ export interface MemberQuizContent {
       | 'lighthouse-memory'
       | 'lighthouse-door'
       | 'lighthouse-retest'
+      | 'island-view'
+      | 'island-position'
+      | 'island-height'
+      | 'island-retest'
     prompt: string
     choices: QuizChoice[]
     /** Só a pronúncia da PERGUNTA: a da explicação contaria o gabarito. */

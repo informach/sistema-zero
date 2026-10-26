@@ -1,0 +1,184 @@
+{
+  "version": 1,
+  "units": "Mesmas unidades do Jogo 3D; y é a altura.",
+  "projects": [
+    {
+      "file": "projetos/mar.molda.json",
+      "name": "Ilha — Mar",
+      "nodes": 2,
+      "parts": 1,
+      "position": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "file": "projetos/terreno.molda.json",
+      "name": "Ilha — Terreno e praia",
+      "nodes": 12,
+      "parts": 11,
+      "position": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "file": "projetos/ponte.molda.json",
+      "name": "Ilha — Ponte",
+      "nodes": 16,
+      "parts": 15,
+      "position": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "file": "projetos/coqueiro-tras.molda.json",
+      "name": "Ilha — Coqueiro de trás",
+      "nodes": 17,
+      "parts": 16,
+      "position": [
+        -7,
+        0,
+        -4.2
+      ]
+    },
+    {
+      "file": "projetos/coqueiro-frente.molda.json",
+      "name": "Ilha — Coqueiro da frente",
+      "nodes": 17,
+      "parts": 16,
+      "position": [
+        -6.6,
+        0,
+        4.5
+      ]
+    },
+    {
+      "file": "projetos/vegetacao.molda.json",
+      "name": "Ilha — Vegetação pequena",
+      "nodes": 10,
+      "parts": 9,
+      "position": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "file": "projetos/farol-apagado.molda.json",
+      "name": "Ilha — Farol",
+      "nodes": 21,
+      "parts": 20,
+      "position": [
+        5.2,
+        0,
+        0.1
+      ]
+    },
+    {
+      "file": "projetos/veleiro.molda.json",
+      "name": "Ilha — Veleiro",
+      "nodes": 11,
+      "parts": 10,
+      "position": [
+        8.5,
+        -0.1,
+        4.5
+      ]
+    },
+    {
+      "file": "projetos/pedras.molda.json",
+      "name": "Ilha — Pedras",
+      "nodes": 5,
+      "parts": 4,
+      "position": [
+        -2,
+        0,
+        -1
+      ]
+    },
+    {
+      "file": "projetos/aventureiro.molda.json",
+      "name": "Ilha — Aventureiro",
+      "nodes": 23,
+      "parts": 21,
+      "position": [
+        -6.5,
+        0.8,
+        0.75
+      ]
+    },
+    {
+      "file": "projetos/chave.molda.json",
+      "name": "Ilha — Chave",
+      "nodes": 5,
+      "parts": 4,
+      "position": [
+        -2,
+        1,
+        -3
+      ]
+    },
+    {
+      "file": "projetos/farol-aceso.molda.json",
+      "name": "Ilha — Farol aceso",
+      "nodes": 21,
+      "parts": 20,
+      "position": [
+        5.2,
+        0,
+        0.1
+      ]
+    },
+    {
+      "file": "projetos/bancada.molda.json",
+      "name": "Ilha — Bancada das experiências",
+      "nodes": 3,
+      "parts": 2,
+      "position": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "file": "projetos/cena-completa.molda.json",
+      "name": "Ilha — Cena completa",
+      "nodes": 139,
+      "parts": 127,
+      "position": [
+        0,
+        0,
+        0
+      ]
+    }
+  ],
+  "camera": {
+    "position": [
+      0,
+      12,
+      21
+    ],
+    "target": [
+      -1,
+      0,
+      0
+    ],
+    "fov": 48
+  },
+  "heroContact": {
+    "width": 0.85,
+    "height": 1.6,
+    "depth": 0.75,
+    "centerY": 0.8
+  },
+  "boatVictoryPosition": [
+    6.6,
+    -0.1,
+    4.5
+  ]
+}

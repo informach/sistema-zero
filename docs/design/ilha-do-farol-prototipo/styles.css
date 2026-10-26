@@ -1,0 +1,436 @@
+.ilha-world-legend span {
+  background: #fffffff2;
+  border-radius: 8px;
+  padding: 4px 8px;
+  font-size: 11px;
+  font-weight: 850;
+  color: #974207;
+}
+.ilha-quiz-grid > div {
+  min-width: 0;
+}
+.ilha-page {
+  max-width: 1580px;
+}
+.ilha-page .farol-layout {
+  grid-template-columns: 200px minmax(0, 1fr);
+}
+.ilha-page .farol-main {
+  min-width: 0;
+}
+.ilha-world {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1.1;
+  border: 2px solid #163454;
+  border-radius: 17px;
+  overflow: hidden;
+  background: #d8f3fc;
+}
+.ilha-world iframe {
+  border: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+.ilha-world > p {
+  position: absolute;
+  inset: 20px;
+  background: white;
+  color: #8f2525;
+  padding: 16px;
+}
+.ilha-camera-label {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  background: #ffffffed;
+  color: #1d3f56;
+  border: 1px solid #c3d7e1;
+  border-radius: 30px;
+  padding: 7px 12px;
+  font-size: 12px;
+  font-weight: 800;
+  pointer-events: none;
+}
+.ilha-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+  margin: 12px 0;
+}
+.ilha-control-title {
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: 0.03em;
+  margin-top: 18px;
+  color: var(--color-foreground);
+}
+.ilha-question {
+  border-top: 1px solid var(--color-border);
+  margin-top: 22px;
+  padding-top: 20px;
+}
+.ilha-question > p {
+  font-size: 14px;
+  margin-top: 12px;
+  min-height: 40px;
+}
+.ilha-axes {
+  display: grid;
+  gap: 15px;
+  margin: 14px 0 18px;
+}
+.ilha-axes label {
+  display: block;
+  border: 1px solid var(--color-border);
+  border-radius: 13px;
+  background: var(--color-card);
+  padding: 12px;
+}
+.ilha-axes label > span {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  font-weight: 750;
+  margin-bottom: 10px;
+}
+.ilha-axes b {
+  border-radius: 8px;
+  padding: 4px 10px;
+  color: #fff;
+  background: #cc681f;
+}
+.ilha-axes [data-axis="z"] b {
+  background: #2579a8;
+}
+.ilha-axes [data-axis="y"] b {
+  background: #b43c7a;
+}
+.ilha-axes label > div {
+  display: grid;
+  grid-template-columns: 40px minmax(30px, 1fr) 40px 55px;
+  align-items: center;
+  gap: 8px;
+}
+.ilha-axes button {
+  padding: 8px;
+  min-width: 0;
+  min-height: 40px;
+}
+.ilha-axes input[type="range"] {
+  width: 100%;
+  accent-color: var(--color-primary);
+}
+.ilha-axes input[type="number"] {
+  width: 55px;
+  border: 1px solid var(--color-border);
+  border-radius: 7px;
+  padding: 6px 3px;
+  background: var(--color-background);
+  color: var(--color-foreground);
+  font-weight: 800;
+}
+.ilha-free {
+  color: var(--color-muted-foreground);
+  font-size: 12px;
+  line-height: 1.65;
+  margin: 18px 0;
+}
+.ilha-pad {
+  display: flex;
+  gap: 8px;
+  margin: 12px 0;
+}
+.ilha-pad button {
+  min-width: 48px;
+}
+.ilha-tag {
+  font-size: 12px;
+  font-weight: 850;
+  display: inline-block;
+  padding: 7px 12px;
+  background: var(--color-secondary);
+  border-radius: 30px;
+  color: var(--color-primary);
+}
+.ilha-title {
+  font-size: 27px;
+  font-weight: 800;
+  line-height: 1.2;
+  margin: 16px 0 20px;
+}
+.ilha-quiz-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 24px;
+  margin-top: 24px;
+}
+
+.ilha-quiz-grid small {
+  display: block;
+  font-size: 12px;
+  color: var(--color-muted-foreground);
+  margin-top: 8px;
+}
+.ilha-question-title {
+  font-size: 19px;
+  line-height: 1.4;
+  font-weight: 850;
+  margin: 16px 0;
+}
+.ilha-answers {
+  display: grid;
+  gap: 12px;
+  margin: 22px 0;
+}
+.ilha-answers label {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  border: 2px solid var(--color-border);
+  border-radius: 14px;
+  padding: 15px;
+  background: var(--color-card);
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 700;
+}
+.ilha-answers label[data-selected="true"] {
+  border-color: var(--color-primary);
+  background: var(--color-secondary);
+}
+.ilha-answers input {
+  margin-top: 4px;
+  accent-color: var(--color-primary);
+  width: 17px;
+  height: 17px;
+  flex-shrink: 0;
+}
+.ilha-feedback {
+  border-radius: 12px;
+  background: #fff3cf;
+  color: #765214;
+  padding: 14px;
+  margin: 12px 0;
+  font-weight: 850;
+}
+.ilha-feedback[data-correct="true"] {
+  background: #e0f2e8;
+  color: #146347;
+}
+.ilha-finish {
+  max-width: 780px;
+  margin: auto;
+}
+.ilha-finish h2 {
+  font-size: 30px;
+  font-weight: 800;
+  margin: 20px 0;
+}
+.ilha-finish p {
+  margin: 15px 0;
+}
+.ilha-finish button {
+  margin-top: 20px;
+}
+.ilha-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.ilha-text-button {
+  font-size: 12px;
+  text-decoration: underline;
+  padding: 8px;
+  cursor: pointer;
+}
+.ilha-objectives {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  gap: 12px;
+  margin: 0 0 20px;
+}
+.ilha-objectives li {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  border: 1px solid var(--color-border);
+  padding: 14px;
+  border-radius: 14px;
+  background: var(--color-card);
+}
+.ilha-objectives li > span {
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: var(--color-muted-foreground);
+}
+.ilha-objectives strong {
+  font-size: 14px;
+  line-height: 1.5;
+  display: block;
+}
+.ilha-objectives li[data-status="ok"] {
+  background: #ebf6ef;
+  border-color: #b7d9c8;
+}
+.ilha-objectives li[data-status="ok"] > span {
+  color: #287758;
+}
+.ilha-objectives li[data-status="error"] {
+  background: #fff5df;
+  border-color: #e8cc87;
+}
+.ilha-objectives li[data-status="error"] > span {
+  color: #95640e;
+}
+.ilha-objectives p {
+  font-size: 13px;
+  margin-top: 10px;
+  color: #765214;
+}
+.ilha-approval-note {
+  margin: 20px 0;
+  border: 1px dashed var(--color-border);
+  border-radius: 12px;
+  padding: 15px;
+  background: var(--color-secondary);
+  font-size: 13px;
+}
+.ilha-approval-note p {
+  margin: 7px 0 12px;
+}
+.ilha-approval-note select {
+  border: 1px solid var(--color-border);
+  padding: 9px;
+  border-radius: 8px;
+  background: var(--color-card);
+  margin-left: 8px;
+  max-width: 100%;
+}
+.ilha-delivery {
+  margin-top: 20px;
+}
+.ilha-delivery > button {
+  margin-top: 16px;
+}
+.ilha-details {
+  border-top: 1px solid var(--color-border);
+  padding-top: 18px;
+  margin-top: 22px;
+  font-size: 13px;
+}
+.ilha-details summary {
+  cursor: pointer;
+  font-weight: 800;
+}
+.ilha-details p {
+  margin-top: 12px;
+}
+.ilha-footer {
+  font-size: 12px;
+  line-height: 1.7;
+  color: var(--color-muted-foreground);
+  margin: 28px 0 0;
+  text-align: center;
+}
+.ilha-page button:focus-visible,
+.ilha-page input:focus-visible,
+.ilha-page select:focus-visible {
+  outline: 3px solid var(--color-primary);
+  outline-offset: 3px;
+}
+.ilha-page .farol-note {
+  margin-top: 12px;
+}
+.ilha-page .farol-proposed .sz-scene-console {
+  gap: 16px;
+}
+.ilha-page .farol-simple-hud > strong {
+  display: block;
+  margin-top: 12px;
+  font-size: 15px;
+}
+@media (max-width: 1100px) {
+  .ilha-page .farol-layout {
+    grid-template-columns: 1fr;
+  }
+  .ilha-page .farol-sidebar {
+    position: static;
+  }
+  .ilha-page .farol-sidebar nav {
+    display: flex;
+    flex-wrap: wrap;
+  }
+  .ilha-page .farol-sidebar nav button {
+    flex: 1 1 150px;
+  }
+  .ilha-page .farol-side-note,
+  .ilha-page .farol-sidebar > .ilha-free {
+    display: none;
+  }
+}
+@media (max-width: 700px) {
+  .ilha-page {
+    padding: 14px 12px;
+  }
+  .ilha-page .farol-hero {
+    padding: 20px 18px;
+  }
+  .ilha-page .farol-hero-bottom {
+    align-items: flex-start;
+    gap: 15px;
+    flex-direction: column;
+  }
+  .ilha-quiz-grid {
+    grid-template-columns: 1fr;
+  }
+  .ilha-world {
+    aspect-ratio: 1.05;
+  }
+  .ilha-page .farol-card {
+    padding: 18px 14px;
+  }
+  .ilha-page .farol-prototype-label {
+    font-size: 10px;
+    padding: 4px 7px;
+  }
+  .ilha-page .farol-brand {
+    font-size: 11px;
+  }
+  .ilha-approval-note select {
+    margin: 7px 0 0;
+    display: block;
+  }
+  .ilha-axes label > div {
+    grid-template-columns: 36px minmax(30px, 1fr) 36px 50px;
+    gap: 6px;
+  }
+  .ilha-axes input[type="number"] {
+    width: 50px;
+  }
+  .ilha-title {
+    font-size: 24px;
+  }
+}
+
+.ilha-world-legend {
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+  right: 10px;
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  pointer-events: none;
+}
+
+.ilha-world-legend [data-axis="z"] {
+  color: #186385;
+}
+.ilha-world-legend [data-axis="y"] {
+  color: #9c2f67;
+}

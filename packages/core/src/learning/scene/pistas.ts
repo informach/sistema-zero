@@ -25,6 +25,7 @@ import type { SceneId } from './actions'
 export type PistaMeta = readonly string[] | { readonly algumaDe: readonly string[] }
 
 export const PISTA_DA_META: Record<SceneId, readonly [PistaMeta, PistaMeta, PistaMeta]> = {
+  'island-3d': [['other-view'], ['same-place'], ['same-place']],
   'once-vs-always': [
     ['once'],
     ['always', 'on-event', 'lives-loop'],

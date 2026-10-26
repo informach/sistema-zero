@@ -1,0 +1,70 @@
+# A Ilha do Farol — mapa de implementação
+
+Identidade: `jornada-faisca-base-3d`, Faísca, três aulas, sem certificado. [Autoria](../aulas-interativas/a-ilha-do-farol/README.md) e [decisões](../aulas-interativas/a-ilha-do-farol/proposta.md).
+
+## Fontes
+
+- `qa/ilha-do-farol-conteudo.ts`: fala integral, notas de tela e passos do caderno.
+- `qa/ilha-do-farol-projeto.ts`: nove projetos progressivos; só IR de Programação e Jogo 3D.
+- `qa/ilha-do-farol-assets.ts`: exportação dos modelos individuais do Molda, dimensões e otimização.
+- `qa/gerar-ilha-artes.ts`: cena completa das experiências, carregada sob demanda pelo player.
+- `qa/ilha-do-farol-criterios.ts` e `ilha-do-farol-observacao.ts`: montagem e execução real.
+- `qa/ilha-do-farol-quiz.ts`: perguntas, explicações e gabarito privado.
+- `core/learning/scene/island-3d.ts`: estado, ações, evidências e falas compartilhadas do Zappy.
+- `member-shell/components/scene-island-*`: controles reais e renderização 3D, sem renderização contínua em repouso.
+- `studio-runtime/runtime/check-approach-3d.mjs`: planejamento pelo chão e entrada de teclado, sem mutação de estado do aluno.
+
+## Regenerar
+
+```powershell
+bun docs/aulas-interativas-tecnico/qa/gerar-ilha-artes.ts
+bun docs/aulas-interativas-tecnico/qa/gerar-ilha-do-farol.ts
+bun docs/aulas-interativas-tecnico/qa/ilha-preview/build.ts
+bun docs/aulas-interativas-tecnico/recursos/ilha-farol/gerar-caderno.ts
+node docs/aulas-interativas-tecnico/recursos/ilha-farol/renderizar-caderno.mjs
+```
+
+O PDF reutiliza o CSS, Nunito, Baloo 2, cartões e desenhos de encaixe do Cadê Todo Mundo. Chrome imprime o HTML; PyMuPDF ajuda na inspeção visual. O gerador recusa conteúdo cortado ou sobreposto ao rodapé. As dependências de otimização GLB são de autoria, não entram no runtime do aluno. Os modelos finais entregues pelo responsável devem seguir [o contrato de reintegração](../aulas-interativas/a-ilha-do-farol/reintegracao-molda.md).
+
+## Verificar
+
+```powershell
+bun docs/aulas-interativas-tecnico/qa/validar-manifestos.ts
+python docs/aulas-interativas-tecnico/validar-roteiros.py
+bun docs/aulas-interativas-tecnico/qa/gerar-falas-elevenlabs.ts --check
+bun test docs/aulas-interativas-tecnico/qa
+bun test packages/core/src/learning/scene packages/core/src/learning/project-execution-checkpoints.test.ts
+bun test packages/studio-runtime/tests/check-approach-3d.test.mjs packages/studio-runtime/tests/check-javascript-modules.test.mjs
+bun docs/aulas-interativas-tecnico/qa/ilha-do-farol-browser.ts
+bun docs/aulas-interativas-tecnico/qa/ilha-do-farol-browser.ts outra-posicao
+bun docs/aulas-interativas-tecnico/qa/ilha-do-farol-browser.ts sem-memoria
+bun docs/aulas-interativas-tecnico/qa/ilha-do-farol-browser.ts chave-alta
+bun docs/aulas-interativas-tecnico/qa/ilha-do-farol-browser.ts sem-movimento
+bun docs/aulas-interativas-tecnico/qa/ilha-do-farol-browser.ts barco-lento
+bun docs/aulas-interativas-tecnico/qa/ilha-do-farol-browser.ts posicao-correta
+bun docs/aulas-interativas-tecnico/qa/ilha-do-farol-browser.ts posicao-inalterada
+bun docs/aulas-interativas-tecnico/qa/ilha-preview/build.ts
+node docs/aulas-interativas-tecnico/qa/ilha-preview/verify.mjs
+```
+
+Os testes de navegador usam Chrome local; `SZ_CHECK_CHROMIUM` pode indicar outro executável. No Windows, o driver roda em Node. O executor usa os módulos oficiais de Three da versão fixada no próprio runtime, servidos localmente sem rede. A prévia HTML usa os componentes reais da aula e registra screenshots em `.cache/ilha-do-farol/`.
+
+Validar também a imagem Linux, porque a latência do WebGL por software difere do Chrome local:
+
+```powershell
+bun run --cwd packages/studio-runtime gen:validation-profile
+bun run --cwd packages/studio-runtime check:validation-profile
+docker build --load --platform linux/amd64 --provenance=false -t sistemazero-studio-runtime:verify packages/studio-runtime
+bun docs/aulas-interativas-tecnico/qa/ilha-do-farol-browser.ts correto --docker
+bun docs/aulas-interativas-tecnico/qa/ilha-do-farol-browser.ts outra-posicao --docker
+bun docs/aulas-interativas-tecnico/qa/ilha-do-farol-browser.ts sem-memoria --docker
+bun docs/aulas-interativas-tecnico/qa/ilha-do-farol-browser.ts chave-alta --docker
+bun docs/aulas-interativas-tecnico/qa/ilha-do-farol-browser.ts sem-movimento --docker
+bun docs/aulas-interativas-tecnico/qa/ilha-do-farol-browser.ts barco-lento --docker
+bun docs/aulas-interativas-tecnico/qa/ilha-do-farol-browser.ts posicao-correta --docker
+bun docs/aulas-interativas-tecnico/qa/ilha-do-farol-browser.ts posicao-inalterada --docker
+```
+
+`SZ_CHECK_DOCKER_IMAGE` permite indicar outra tag local. O contêiner roda sem rede. As verificações de navegação 3D usam uma cena por vez, metade da densidade de pixels e as mesmas dimensões CSS; isso reduz o trabalho de rasterização sem mudar câmera, colisão ou velocidade. A navegação lê coordenadas do mesmo quadro, envia pulsos de teclado e conserva margem nas bordas. Não altera variáveis do aluno nem aumenta os prazos de teste. Regenerar o perfil após mudanças no executor também atualiza os contratos compartilhados com Python.
+
+Os geradores não importam conteúdo no Admin, não publicam aulas, não geram áudio e não fazem deploy. A autoria detalhada fica ligada à identidade curricular já reservada; o outline histórico do seed conserva seu hash para não invalidar um curso existente.
