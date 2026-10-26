@@ -142,3 +142,10 @@ A seleção fresca Members (seed/acesso, revisão Maestria, runtime e quiz) pass
 acima. Revisão conferiu snapshot autorizado de Maestria, identidade de equipe no servidor,
 retenção de direitos e separação entre seed offline e publicação efetiva. Conteúdo editorial
 não foi importado nos ambientes. Isso ainda não declara CI ou deploy aprovados.
+
+Conferência remota do runtime: o arquivo Wrangler versionado tinha referências de catálogo
+anteriores às ativas. Leitura das versões ativas (ordenadas por data), download dos objetos R2,
+SHA-256 e validação integral pelo Core confirmaram staging `f69814b9…` (três retiradas e uma
+release ativa) e produção `2c53c74c…` (uma retirada e uma ativa). O arquivo agora preserva esses
+catálogos no próximo deploy. Nenhuma release foi reativada, revogada ou acrescentada nesta
+correção; os demais valores de configuração coincidem com o serviço ativo.
