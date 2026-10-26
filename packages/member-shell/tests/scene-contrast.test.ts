@@ -37,8 +37,16 @@ import { cssHexValuesForCustomProperty } from './css-custom-properties'
 const TEMAS_DO_PERFIL = Object.fromEntries(
   PALETTES.map((palette) => [PALETTE_LABELS[palette], derive(palette).action]),
 ) as Record<string, string>
+/** Na comunidade adulta, painéis escuros usam o acento claro como --primary. */
+const TEMAS_CLAROS_DO_PALCO = Object.fromEntries(
+  PALETTES.map((palette) => [
+    `${PALETTE_LABELS[palette]} no palco`,
+    derive(palette)['action-light'],
+  ]),
+) as Record<string, string>
 const TEMAS = {
   ...TEMAS_DO_PERFIL,
+  ...TEMAS_CLAROS_DO_PALCO,
   /** O fallback do `var(--primary, …)`: qualquer superfície sem tema. */
   reserva: '#315f92',
 }
@@ -176,15 +184,20 @@ describe('o papel da cena continua legível em todos os temas', () => {
     }
   })
 
-  test('a ação de cada paleta chega a --primary nos dois apps de aluno', () => {
+  test('as ações normais e as do palco chegam a --primary nos apps de aluno', () => {
     const acoesCanonicas = PALETTES.map((palette) => derive(palette).action).sort()
+    const acoesDoPalco = PALETTES.map((palette) => derive(palette)['action-light'])
     const hosts = [
       ['kids', '../../community-kids/src/app/globals.css'],
       ['adulto', '../../community/src/app/globals.css'],
     ] as const
     for (const [app, caminho] of hosts) {
       const acoesDoHost = cssHexValuesForCustomProperty(join(import.meta.dir, caminho), '--primary')
-      expect({ app, acoesDoHost: acoesDoHost.sort() }).toEqual({ app, acoesDoHost: acoesCanonicas })
+      const esperadas =
+        app === 'adulto'
+          ? [...new Set([...acoesCanonicas, ...acoesDoPalco])].sort()
+          : acoesCanonicas
+      expect({ app, acoesDoHost: acoesDoHost.sort() }).toEqual({ app, acoesDoHost: esperadas })
     }
   })
 
