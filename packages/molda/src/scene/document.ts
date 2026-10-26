@@ -78,12 +78,13 @@ export type ScenePrimitiveGeometry = ScenePrimitiveBase &
     | { kind: 'box' }
     | { kind: 'wedge' }
     | { kind: 'cylinder'; tessellation?: { around: number } }
+    | { kind: 'cone'; tessellation?: { around: number } }
     | { kind: 'sphere'; tessellation?: { around: number; down: number } }
     | { kind: 'torus'; tessellation?: { around: number; down: number } }
   )
 export type SceneCurvedPrimitive = Extract<
   ScenePrimitiveGeometry,
-  { kind: 'cylinder' | 'sphere' | 'torus' }
+  { kind: 'cylinder' | 'cone' | 'sphere' | 'torus' }
 >
 
 /** Authorial polyline; closed paths reuse the first ring, without duplicate control points. */

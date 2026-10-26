@@ -1,10 +1,13 @@
 import { expect, test } from 'bun:test'
 import { makeSceneGridGeometry } from '../testing/sceneFixtures'
 import { sceneUvOverlapArea } from '../testing/sceneUvOverlapOracle'
+import { addScenePrimitive } from './commands'
+import { createSceneProject } from './createProject'
 import type { SceneMeshGeometry } from './document'
 import { composeTransform } from './matrix'
 import { pixelMeshUv } from './meshPixelUv'
 import { indexMeshUv } from './meshUv'
+import { sceneGeometryMesh } from './parametricGeometry'
 
 test('cut faces share one pixel-aligned chart at exact density, regardless of corner order', () => {
   const source = makeSceneGridGeometry(4)
@@ -107,4 +110,30 @@ test('coincident surfaces stay in separate charts and a densely cut plane stays 
   const joined = pixelMeshUv(dense, Object.keys(dense.faces), 4)
   expect(joined.charts).toHaveLength(1)
   expect(joined.charts[0]).toHaveLength(400)
+})
+
+test('a cone unfolds into compact connected islands without overlap or density loss', () => {
+  const document = addScenePrimitive(
+    createSceneProject({ kind: 'empty', name: 'Cone' }),
+    'cone',
+    'cone',
+  )
+  const mesh = sceneGeometryMesh(document.geometries.at(-1)!)
+  const plan = pixelMeshUv(mesh, Object.keys(mesh.faces), 16)
+  expect(plan.charts).toHaveLength(2)
+  expect(plan.charts.map((group) => group.length).sort((a, b) => a - b)).toEqual([1, 31])
+  expect(sceneUvOverlapArea(plan.mesh)).toBe(0)
+  const face = mesh.faces['side:0']!
+  const mapped = plan.mesh.faces['side:0']!
+  const physical = Math.hypot(
+    ...mesh.vertices[face.corners[0]!.vertexId]!.map(
+      (value, axis) => value - mesh.vertices[face.corners[1]!.vertexId]![axis]!,
+    ),
+  )
+  const pixelEdge = Math.hypot(
+    ...mapped.corners[0]!.uv.map(
+      (value, axis) => (value - mapped.corners[1]!.uv[axis]!) * plan.width,
+    ),
+  )
+  expect(pixelEdge).toBeCloseTo(physical * 16, 8)
 })

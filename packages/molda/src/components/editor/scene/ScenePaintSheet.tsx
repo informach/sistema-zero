@@ -44,7 +44,13 @@ export function ScenePaintSheet({
         }
       : undefined
   const image = texture?.image ?? { width: 64, height: 64 }
-  const imageKey = JSON.stringify([primary?.id, texture?.image.id, image.width, image.height])
+  const imageKey = JSON.stringify([
+    workshop.area,
+    primary?.id,
+    texture?.image.id,
+    image.width,
+    image.height,
+  ])
   const paintIds = useMemo(
     () =>
       geometry && workshop.paintFaceId ? scenePaintFaceIds(geometry, workshop.paintFaceId) : [],
@@ -56,6 +62,13 @@ export function ScenePaintSheet({
       : mesh && paintIds.length
         ? meshUvBounds(mesh, paintIds)
         : undefined
+  const uvMesh = uv?.mesh
+  const uvVisibleIds = uv?.visibleIds
+  const contentBounds = useMemo(() => {
+    if (!adjusting || !uvMesh) return undefined
+    const ids = uvVisibleIds ?? Object.keys(uvMesh.faces)
+    return ids.length ? meshUvBounds(uvMesh, ids) : undefined
+  }, [adjusting, uvMesh, uvVisibleIds])
   function cancel() {
     paint.cancel()
     setCancelKey((key) => key + 1)
@@ -95,9 +108,10 @@ export function ScenePaintSheet({
     <SceneTextureViewport
       image={image}
       imageKey={imageKey}
-      view={state.view}
-      onView={state.setView}
+      view={adjusting ? state.uvView : state.view}
+      onView={adjusting ? state.setUvView : state.setView}
       bounds={bounds}
+      contentBounds={contentBounds}
       onCancel={cancel}
     >
       {content}
@@ -172,7 +186,7 @@ export function ScenePaintSheet({
                 <Button
                   size="compact"
                   variant="ghost"
-                  data-close-menu
+                  className="mld-uv-organize"
                   disabled={!components.canEdit}
                   onClick={workshop.mapPaintUv}
                 >

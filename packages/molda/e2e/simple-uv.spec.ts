@@ -347,7 +347,8 @@ for (const dark of [false, true])
       'true',
     )
     const canvas = area.getByRole('img', { name: COPY.scene.uvCanvas })
-    await expect(area.getByLabel('Zoom da folha', { exact: true })).toHaveText(retainedZoom!)
+    await expect(area.getByRole('button', { name: 'Ver mapa' })).toBeVisible()
+    await expect(area.getByRole('button', { name: 'Folha inteira' })).toBeVisible()
     const box = (await canvas.boundingBox())!
     const at = (u: number, v: number) => ({ x: box.x + u * box.width, y: box.y + v * box.height })
     const center = at(0.5, 0.5)
@@ -372,7 +373,7 @@ for (const dark of [false, true])
     expect(changedMesh.faces.f_0_0!.corners[0]!.uv).toEqual([2 / 16, 1 / 8])
     expect(changed.images).toEqual(source.images)
     await page.getByRole('button', { name: COPY.editor.undo, exact: true }).click()
-    await area.getByRole('button', { name: 'Ajustar', exact: true }).click()
+    await area.getByRole('button', { name: 'Folha inteira', exact: true }).click()
     const scaleHandle = area.getByRole('button', { name: 'Redimensionar mapa, canto 3' })
     const handleBox = (await scaleHandle.boundingBox())!
     const scaleBox = (await canvas.boundingBox())!
@@ -540,10 +541,10 @@ for (const dark of [false, true])
     await area.getByRole('button', { name: 'Restaurar folha' }).click()
     await expect(page.locator('.mld-stage-viewport')).toBeVisible()
     await area.getByRole('button', { name: 'Pintar na folha' }).click()
-    await expect(sheet.getByLabel('Zoom da folha', { exact: true })).toHaveText(viewBeforeExpand!)
+    await expect(sheet.getByLabel('Zoom da folha', { exact: true })).toHaveText(retainedZoom!)
     await sheet.getByRole('button', { name: 'Fechar folha de pintura' }).click()
     await page.getByRole('button', { name: 'Folha de pintura', exact: true }).click()
-    await expect(sheet.getByLabel('Zoom da folha', { exact: true })).toHaveText(viewBeforeExpand!)
+    await expect(sheet.getByLabel('Zoom da folha', { exact: true })).toHaveText(retainedZoom!)
     for (const dimensions of [
       { width: 1280, height: 720 },
       { width: 1024, height: 600 },

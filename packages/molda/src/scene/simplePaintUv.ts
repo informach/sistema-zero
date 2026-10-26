@@ -52,7 +52,7 @@ export function simpleScenePaintUv(
     const plan = pixelMeshUv(
       sourceMesh,
       faces,
-      document.settings.texelsPerUnit,
+      image?.texelsPerUnit ?? document.settings.texelsPerUnit,
       selected.index.scene.worldMatrices.get(nodeId)!,
     )
     return { materialId, faces, material, image, plan }
@@ -86,6 +86,7 @@ export function simpleScenePaintUv(
           name: node.name,
           width: plan.width,
           height: plan.height,
+          texelsPerUnit: document.settings.texelsPerUnit,
           encoding: 'indexed',
           layers: [
             {
@@ -100,6 +101,7 @@ export function simpleScenePaintUv(
     const paint: SceneImage = {
       ...remapped,
       id: imageId,
+      texelsPerUnit: image?.texelsPerUnit ?? document.settings.texelsPerUnit,
       layers: image
         ? remapped.layers.map((layer) => ({ ...layer, id: allocate() }))
         : remapped.layers,

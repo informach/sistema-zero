@@ -233,7 +233,16 @@ function surfaceUnits(
             Math.PI * ((TORUS_PROFILE.tubeRadius * (size[0] + size[2])) / 4 + size[1] / 2),
           ] as [number, number])
         : null
-      : faceUnits(geometry.kind, size, surface)
+      : geometry.kind === 'cone'
+        ? surface === 'side'
+          ? ([
+              (Math.PI * (size[0] + size[2])) / 2,
+              Math.hypot(size[1], Math.max(size[0], size[2]) / 2),
+            ] as [number, number])
+          : surface === 'bottom'
+            ? ([size[0], size[2]] as [number, number])
+            : null
+        : faceUnits(geometry.kind, size, surface)
   if (!units) throw new Error(`Superfície ${surface} fora da forma ${geometry.kind}.`)
   return units
 }

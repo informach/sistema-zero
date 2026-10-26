@@ -59,7 +59,7 @@ export function addScenePrimitive(
   name: string,
   nextId: SceneIdFactory = newId,
 ): MoldaSceneDocument {
-  choice(kind, ['box', 'wedge', 'cylinder', 'sphere', 'torus'], 'kind')
+  choice(kind, ['box', 'wedge', 'cylinder', 'cone', 'sphere', 'torus'], 'kind')
   return addSceneShape(document, kind, name, nextId)
 }
 
@@ -70,7 +70,7 @@ export function addSceneShape(
   name: string,
   nextId: SceneIdFactory = newId,
 ): MoldaSceneDocument {
-  choice(kind, ['box', 'wedge', 'cylinder', 'sphere', 'torus', 'plane'], 'kind')
+  choice(kind, ['box', 'wedge', 'cylinder', 'cone', 'sphere', 'torus', 'plane'], 'kind')
   const allocate = allocateId(document, nextId)
   const nodeId = allocate()
   const geometryId = allocate()
@@ -245,13 +245,16 @@ export function setScenePrimitiveDetail(
   requireScene(node?.kind === 'mesh', 'node', 'Escolha uma forma curva para mudar os detalhes.')
   const geometry = selected.index.geometries.get(node.geometryId)
   requireScene(
-    geometry?.kind === 'cylinder' || geometry?.kind === 'sphere' || geometry?.kind === 'torus',
+    geometry?.kind === 'cylinder' ||
+      geometry?.kind === 'cone' ||
+      geometry?.kind === 'sphere' ||
+      geometry?.kind === 'torus',
     'geometry',
-    'Esse ajuste é para cilindros, bolas e torus que ainda são formas.',
+    'Esse ajuste é para cilindros, cones, bolas e torus que ainda são formas.',
   )
   const changed =
-    geometry.kind === 'cylinder'
-      ? { ...geometry, tessellation: readPrimitiveDetail('cylinder', detail) }
+    geometry.kind === 'cylinder' || geometry.kind === 'cone'
+      ? { ...geometry, tessellation: readPrimitiveDetail(geometry.kind, detail) }
       : { ...geometry, tessellation: readPrimitiveDetail(geometry.kind, detail) }
   const before = primitiveDetail(geometry)
   const after = primitiveDetail(changed)

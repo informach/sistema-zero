@@ -7,6 +7,10 @@ export interface TextureFrame {
   width: number
   height: number
 }
+export interface TextureBounds {
+  min: readonly number[]
+  max: readonly number[]
+}
 
 /** Camera units are source texels. Zoom changes the view, never the image or its UVs. */
 export function fitTextureCamera(frame: TextureFrame, image: TextureFrame): TextureCamera {
@@ -18,6 +22,22 @@ export function fitTextureCamera(frame: TextureFrame, image: TextureFrame): Text
     x: (frame.width - image.width * scale) / 2,
     y: (frame.height - image.height * scale) / 2,
     scale,
+  }
+}
+
+/** Frame UV content in image coordinates without changing the image or its UVs. */
+export function fitTextureCameraBounds(
+  frame: TextureFrame,
+  image: TextureFrame,
+  bounds: TextureBounds,
+): TextureCamera {
+  const width = Math.max(1, (bounds.max[0]! - bounds.min[0]!) * image.width)
+  const height = Math.max(1, (bounds.max[1]! - bounds.min[1]!) * image.height)
+  const camera = fitTextureCamera(frame, { width, height })
+  return {
+    ...camera,
+    x: camera.x - bounds.min[0]! * image.width * camera.scale,
+    y: camera.y - (1 - bounds.max[1]!) * image.height * camera.scale,
   }
 }
 
