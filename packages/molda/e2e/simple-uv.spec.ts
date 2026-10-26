@@ -176,10 +176,13 @@ for (const dark of [false, true])
         if (shared.has(vertexId)) expect(pixel).toEqual(shared.get(vertexId)!)
         shared.set(vertexId, pixel)
       }
+    const stageSettings = page.locator('summary').filter({ hasText: 'Mais ajustes do palco' })
+    await stageSettings.click()
     await expect(page.getByRole('button', { name: 'Quadradinhos', exact: true })).toHaveAttribute(
       'aria-pressed',
       'true',
     )
+    await stageSettings.click()
     await page.screenshot({ path: `.cache/uv-simples-${dark ? 'escuro' : 'claro'}.png` })
     await page.locator('summary').filter({ hasText: 'Vista: Livre' }).click()
     await page.getByRole('button', { name: 'Frente', exact: true }).click()

@@ -57,6 +57,150 @@ function ready(result: ReturnType<typeof ensureScenePaintSurface>) {
 const overlaps = (a: ScenePixelRegion, b: ScenePixelRegion) =>
   !(a.x1 < b.x0 || b.x1 < a.x0 || a.y1 < b.y0 || b.y1 < a.y0)
 
+describe('textura por peça com densidade escolhida', () => {
+  test('cria mapas de 16px a 512px e guarda a densidade ao reabrir', () => {
+    for (const density of [1, 2, 4, 8, 16, 32] as const) {
+      const f = withShape('box')
+      const result = ready(
+        ensureScenePaintSurface(
+          f.document,
+          { nodeId: f.node.id, density, replaceExisting: true, name: `Mapa ${density * 16}px` },
+          f.nextId,
+        ),
+      )
+      const image = result.document.images.find((entry) => entry.id === result.target.imageId)!
+      expect(image.name).toBe(`Mapa ${density * 16}px`)
+      expect(image.texelsPerUnit).toBe(density)
+      expect(image.width).toBeGreaterThanOrEqual(density * 2)
+      expect(readSceneDocument(sceneToJson(result.document)).status).toBe('valid')
+    }
+  })
+
+  test('importa pixels originais sem reamostrar e mantém as faces na escala escolhida', () => {
+    const f = withShape('box')
+    const template = ready(
+      ensureScenePaintSurface(f.document, { nodeId: f.node.id, density: 16 }, f.nextId),
+    )
+    const templateImage = template.document.images.find(
+      (entry) => entry.id === template.target.imageId,
+    )!
+    const width = Math.min(SCENE_LIMITS.imageSide, templateImage.width * 2)
+    const height = Math.min(SCENE_LIMITS.imageSide, templateImage.height * 2)
+    const pixels = Uint8Array.from({ length: width * height * 4 }, (_, index) => index % 251)
+    const imported = ready(
+      ensureScenePaintSurface(
+        f.document,
+        {
+          nodeId: f.node.id,
+          density: 16,
+          replaceExisting: true,
+          name: 'Arte importada',
+          raster: { width, height, pixels },
+        },
+        counter('import'),
+      ),
+    )
+    const image = imported.document.images.find((entry) => entry.id === imported.target.imageId)!
+    expect([image.width, image.height, image.encoding, image.texelsPerUnit]).toEqual([
+      width,
+      height,
+      'rgba',
+      16,
+    ])
+    expect(image.layers[0]!.pixels).toEqual(pixels)
+    expect(image.layers[0]!.pixels).not.toBe(pixels)
+    const geometry = geometryOf(imported.document, f.node.id)
+    if (geometry.kind === 'mesh') throw new Error('A caixa deveria continuar uma forma.')
+    const keys = Object.keys(geometry.surfaces)
+    expect(faceRects(imported.document, f.node.id, image.id, keys)).toEqual(
+      faceRects(template.document, f.node.id, templateImage.id, keys),
+    )
+    expect(() =>
+      ensureScenePaintSurface(f.document, {
+        nodeId: f.node.id,
+        density: 16,
+        raster: { width: 16, height: 16, pixels: new Uint8Array(16 * 16 * 4) },
+      }),
+    ).toThrow('imagem maior')
+    expect(f.document.images).toHaveLength(0)
+  })
+
+  test('o mesmo mapa de importação preserva a escala em uma malha editável', () => {
+    const f = withShape('box')
+    const source = convertSceneNodesToMesh(f.document, [f.node.id], f.nextId)
+    const template = ready(
+      ensureScenePaintSurface(source, { nodeId: f.node.id, density: 8 }, f.nextId),
+    )
+    const oldImage = template.document.images.find((entry) => entry.id === template.target.imageId)!
+    const width = oldImage.width * 2
+    const height = oldImage.height * 2
+    const imported = ready(
+      ensureScenePaintSurface(
+        source,
+        {
+          nodeId: f.node.id,
+          density: 8,
+          replaceExisting: true,
+          raster: { width, height, pixels: new Uint8Array(width * height * 4) },
+        },
+        counter('mesh-import'),
+      ),
+    )
+    const geometry = geometryOf(imported.document, f.node.id)
+    if (geometry.kind !== 'mesh') throw new Error('A caixa deveria continuar uma malha.')
+    const keys = Object.keys(geometry.faces)
+    expect(faceRects(imported.document, f.node.id, imported.target.imageId, keys)).toEqual(
+      faceRects(template.document, f.node.id, template.target.imageId, keys),
+    )
+  })
+
+  test('uma nova textura preserva a anterior no documento', () => {
+    const f = withShape('box')
+    const first = ready(
+      ensureScenePaintSurface(f.document, { nodeId: f.node.id, density: 1 }, f.nextId),
+    )
+    const second = ready(
+      ensureScenePaintSurface(
+        first.document,
+        { nodeId: f.node.id, density: 32, replaceExisting: true },
+        f.nextId,
+      ),
+    )
+    expect(second.target.imageId).not.toBe(first.target.imageId)
+    expect(second.document.images.find((entry) => entry.id === first.target.imageId)).toBeDefined()
+    expect(
+      second.document.images.find((entry) => entry.id === second.target.imageId)?.texelsPerUnit,
+    ).toBe(32)
+  })
+
+  test('substituir uma textura compartilhada mantém a imagem antiga sem criar uma cópia órfã', () => {
+    const f = withShape('box')
+    const first = ready(ensureScenePaintSurface(f.document, { nodeId: f.node.id }, f.nextId))
+    const other = addScenePrimitive(first.document, 'box', 'outra', f.nextId)
+    const otherNode = meshNode(other, other.nodes.at(-1)!.id)
+    const shared = {
+      ...other,
+      nodes: other.nodes.map((entry) =>
+        entry.id === otherNode.id ? { ...otherNode, materialId: first.target.materialId } : entry,
+      ),
+    }
+    const replaced = ready(
+      ensureScenePaintSurface(
+        shared,
+        { nodeId: f.node.id, density: 4, replaceExisting: true },
+        f.nextId,
+      ),
+    )
+    expect(replaced.document.images).toHaveLength(shared.images.length + 1)
+    expect(replaced.target.imageId).not.toBe(first.target.imageId)
+    expect(meshNode(replaced.document, otherNode.id).materialId).toBe(first.target.materialId)
+    expect(
+      replaced.document.materials.find((entry) => entry.id === first.target.materialId)
+        ?.colorImageId,
+    ).toBe(first.target.imageId)
+  })
+})
+
 function faceRects(document: MoldaSceneDocument, nodeId: string, imageId: string, keys: string[]) {
   const image = document.images.find((entry) => entry.id === imageId)!
   const geometry = geometryOf(document, nodeId)

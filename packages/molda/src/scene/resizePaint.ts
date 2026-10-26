@@ -306,6 +306,8 @@ export function resizeScenePaint(
     for (const originalId of used) {
       let material = usage.index.materials.get(originalId)!
       if (!material.colorImageId) continue
+      const originalImage = usage.index.images.get(material.colorImageId)!
+      if (originalImage.texelsPerUnit !== undefined && originalImage.texelsPerUnit !== 1) continue
       if (
         (usage.materials.get(originalId)?.length ?? 0) > 1 ||
         SCENE_MATERIAL_IMAGE_KEYS.some(

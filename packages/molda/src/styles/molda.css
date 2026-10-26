@@ -650,7 +650,7 @@
     width: 100%;
     font-size: 12px;
   }
-  /* "Mais ferramentas" e "Mais pincéis": o resumo é um ladrilho quieto com a seta embaixo, e o
+  /* "Mais ferramentas": o resumo é um ladrilho quieto com a seta embaixo, e o
      conteúdo aberto ganha o fio da linha à esquerda, como um galho. */
   .mld-rail-more {
     border-radius: 12px;

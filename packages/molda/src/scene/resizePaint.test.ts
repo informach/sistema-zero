@@ -99,6 +99,29 @@ test('resizing expands the grid without multiplying paint pixels or retaining re
   expect(readSceneDocument(next).status).toBe('valid')
 })
 
+test('resizing a piece with a shared high-density texture does not duplicate its image', () => {
+  let document = createSceneProject({ kind: 'empty', name: 'Pixels' })
+  document = addSceneShape(document, 'box', 'Primeira')
+  const firstId = document.nodes.at(-1)!.id
+  const painted = ensureScenePaintSurface(document, { nodeId: firstId, density: 8 })
+  if (painted.status !== 'ready') throw new Error('Missing painting')
+  document = addSceneShape(painted.document, 'box', 'Segunda')
+  const secondId = document.nodes.at(-1)!.id
+  document = {
+    ...document,
+    nodes: document.nodes.map((node) =>
+      node.id === secondId && node.kind === 'mesh'
+        ? { ...node, materialId: painted.target.materialId }
+        : node,
+    ),
+  }
+  const resized = setScenePieceCoordinates(document, firstId, 'dimensions', [6, 2, 2])
+  expect(resized.images).toHaveLength(document.images.length)
+  expect(resized.materials).toHaveLength(document.materials.length)
+  expect(shown(resized, firstId).node.materialId).toBe(shown(resized, secondId).node.materialId)
+  expect(readSceneDocument(resized).status).toBe('valid')
+})
+
 test('moving and turning preserve painting references; a group scale adjusts each descendant once', () => {
   const f = setup('box')
   const move = setScenePieceCoordinates(f.document, f.id, 'position', [4, 0, 1])

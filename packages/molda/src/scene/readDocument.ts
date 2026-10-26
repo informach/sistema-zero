@@ -1,7 +1,7 @@
 /** Unreleased v2 reader. Intentionally separate from the destructive v1 repair/snap path. */
 
 import { isMoldaAssetId } from '../core/id'
-import { isTexelsPerUnit, MOLDA_LIMITS } from '../core/limits'
+import { isPaintTextureDensity, isTexelsPerUnit, MOLDA_LIMITS } from '../core/limits'
 import { isSnap, type MoldaPaletteFields, type Vec3 } from '../core/model'
 import { isPaletteId, MAX_CUSTOM_PALETTE_SIZE, PALETTE_SIZE } from '../core/palette'
 import { paletteBaseSize } from '../core/sanitize'
@@ -225,6 +225,7 @@ export function readSceneImageStructure<Pixel>(
     'width',
     'height',
     'encoding',
+    'texelsPerUnit',
     'layers',
     'flipbook',
   ])
@@ -233,6 +234,12 @@ export function readSceneImageStructure<Pixel>(
   const flipbook =
     row.flipbook === undefined ? undefined : readSceneImageFlipbook(row.flipbook, { width, height })
   const encoding = v.choice(row.encoding, ['indexed', 'rgba'], `${path}.encoding`)
+  const texelsPerUnit = row.texelsPerUnit === undefined ? undefined : row.texelsPerUnit
+  v.requireScene(
+    texelsPerUnit === undefined || isPaintTextureDensity(texelsPerUnit),
+    `${path}.texelsPerUnit`,
+    'Densidade de pixels inválida.',
+  )
   const bytes = width * height * (encoding === 'rgba' ? 4 : 1)
   const layers = v.list(row.layers, `${path}.layers`, SCENE_LIMITS.layersPerImage)
   budget.layers += layers.length
@@ -263,6 +270,7 @@ export function readSceneImageStructure<Pixel>(
     width,
     height,
     encoding,
+    ...(texelsPerUnit === undefined ? {} : { texelsPerUnit }),
     layers: parsedLayers,
     ...(flipbook ? { flipbook } : {}),
   }

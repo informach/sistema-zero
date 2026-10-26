@@ -44,7 +44,6 @@ export const SCENE_PAINT_COPY = {
   mirror: 'Espelho de pintura',
   /** O nome curto no ladrilho do trilho (o nome acessível segue o `mirror`). */
   mirrorShort: 'Espelhar',
-  moreBrushes: 'Mais pincéis',
   mirrorHint:
     'Reflete no eixo X local, pelo meio de cada peça, independentemente do pivô. Duas peças soltas não se espelham: para isso, use o “Criar espelho” do Modelar.',
   /** A linha que aparece com o espelho ligado (a dica do botão só aparece com o mouse). */

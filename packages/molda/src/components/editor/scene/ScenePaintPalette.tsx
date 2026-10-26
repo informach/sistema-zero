@@ -11,6 +11,7 @@ import { swatchClass } from '../../ui/interaction'
 import { SceneColorPicker } from './SceneColorPicker'
 import { SceneHelpButton } from './SceneHelpButton'
 import { ScenePaletteLibrary } from './ScenePaletteLibrary'
+import { sceneCommand } from './sceneCommandRegistry'
 import type { useScenePaint } from './useScenePaint'
 
 export function scenePaletteSwatches(palette: MoldaPaletteFields) {
@@ -65,6 +66,8 @@ export function ScenePaintPalette({
   ].filter((entry, index, all) => all.findIndex((other) => other.hex === entry.hex) === index)
   const favorite = colors.some((entry) => entry.hex === hex)
   const copy = SCENE_PAINT_COPY
+  const rotateCommand = sceneCommand('paint.rotate')
+  const RotateIcon = rotateCommand.icon
   const instruction = paint.eraser
     ? paint.eraseMode === 'cutout' && (paint.data?.imageKind ?? 'color') === 'color'
       ? copy.instructions.cutout
@@ -212,6 +215,19 @@ export function ScenePaintPalette({
           <p className="text-sm text-mld-muted" aria-live="polite">
             {instruction}
           </p>
+          <Button
+            variant="ghost"
+            className="w-full justify-start text-sm"
+            data-paint-tool="paint.rotate"
+            aria-pressed={paint.rotate}
+            aria-keyshortcuts={rotateCommand.shortcut?.display}
+            title={`${rotateCommand.label}${rotateCommand.shortcut ? ` (${rotateCommand.shortcut.display})` : ''}`}
+            disabled={busy}
+            onClick={paint.setRotate}
+          >
+            <RotateIcon aria-hidden="true" className="size-4" />
+            {copy.rotate}
+          </Button>
           {paint.fill && (
             <fieldset className="space-y-1">
               <legend className="text-sm font-bold">O que pintar?</legend>

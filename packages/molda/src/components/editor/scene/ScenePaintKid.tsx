@@ -14,6 +14,7 @@ import { useMoldaToolAccess } from '../../toolAccess'
 import { Button } from '../../ui/Button'
 import { ApplyTextureDialog } from '../model/ApplyTextureDialog'
 import { SceneFlipbookPreview } from './SceneFlipbookPreview'
+import { ScenePaintTextureActions } from './ScenePaintTextureActions'
 import { ScenePaintToolbox } from './ScenePaintToolbox'
 import { SceneTile } from './SceneTile'
 import { sceneCommand } from './sceneCommandRegistry'
@@ -58,6 +59,11 @@ export function ScenePaintColumn({ workshop }: { workshop: ReturnType<typeof use
         onChooseTool={() => {
           if (workshop.area === 'uv') workshop.openArea('sheet')
         }}
+      />
+      <ScenePaintTextureActions
+        key={workshop.primary?.id ?? 'no-piece'}
+        workshop={workshop}
+        currentName={shown?.image.name}
       />
       {canUseTexture && (
         <section aria-label="Texturas prontas" className="border-t border-mld-border pt-3">

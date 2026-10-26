@@ -67,6 +67,13 @@ export const MOLDA_LIMITS = {
 } as const
 
 export type TexelsPerUnit = (typeof MOLDA_LIMITS.texelsPerUnit)[number]
+/** Blockbench-style 16x–512x pixel density for a texture on one scene piece. */
+export const PAINT_TEXTURE_DENSITIES = [1, 2, 4, 8, 16, 32] as const
+export type PaintTextureDensity = (typeof PAINT_TEXTURE_DENSITIES)[number]
+
+export function isPaintTextureDensity(value: unknown): value is PaintTextureDensity {
+  return (PAINT_TEXTURE_DENSITIES as readonly number[]).includes(value as number)
+}
 /** New workshop creations only; legacy readers and factories retain their original default. */
 export const NEW_MODEL_TEXELS_PER_UNIT: TexelsPerUnit = 1
 export type TextureSize = (typeof MOLDA_LIMITS.textureSizes)[number]
