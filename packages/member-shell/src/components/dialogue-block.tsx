@@ -28,10 +28,8 @@ export interface DialogueSpeech {
  * Balão de fala do mascote, no lugar de contexto corrido. Para criança, "o Zappy
  * te explicando" lê melhor que um parágrafo solto acima da atividade.
  *
- * O mascote é asset do KIDS (o member-shell não tem `public/`, então referenciar
- * `/zappy/*.webp` daqui daria 404 na comunidade adulta). Por isso ele entra por
- * SLOT: o kids injeta o Zappy, e o adulto vê o mesmo balão como recado
- * destacado, sem personagem.
+ * O personagem entra por slot: cada comunidade fornece sua apresentação, enquanto
+ * este componente mantém o mesmo texto, narração e controle acessível de áudio.
  *
  * ⚠️ Mascote e balão são IRMÃOS na mesma linha, e a cauda é ancorada na borda
  * ESQUERDA do balão. Isso evita de graça a armadilha do balão do tutorial, onde

@@ -24,6 +24,7 @@ import { CertificateBlockView } from './certificate-block'
 import { DialogueBlockView } from './dialogue-block'
 import { EbookBlockView } from './ebook/ebook-block'
 import { InteractiveLessonBlock } from './learning-activity'
+import { useLessonPlayer } from './lesson-player-context'
 import { LessonVideo } from './lesson-video'
 import { MaterialsBlockView } from './materials-block'
 import { PintaBlockView } from './pinta/pinta-block'
@@ -70,6 +71,7 @@ function BlockRenderer({
   enableStudioShare: boolean
   enableHelpLinks: boolean
 }) {
+  const player = useLessonPlayer()
   const content = block.content as Record<string, unknown> | null
   if (!content || typeof content !== 'object') return null
 
@@ -78,9 +80,15 @@ function BlockRenderer({
       return <InteractiveLessonBlock block={block} />
     case 'rich_text':
       return <RichText content={content as unknown as RichTextBlock} helpLinks={enableHelpLinks} />
-    // Sem `mascot`: o mascote é asset do kids. Aqui o balão vira recado destacado.
     case 'dialogue':
-      return <DialogueBlockView content={content as unknown as DialogueBlock} />
+      return (
+        <DialogueBlockView
+          content={content as unknown as DialogueBlock}
+          mascot={player?.dialogueMascot?.(
+            (content as unknown as DialogueBlock).pose ?? 'speaking',
+          )}
+        />
+      )
     case 'video':
       return <LessonVideo content={content as unknown as VideoBlock} />
     case 'image':

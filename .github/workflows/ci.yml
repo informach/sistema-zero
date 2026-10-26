@@ -859,6 +859,8 @@ jobs:
                   packages/admin/*) add admin ;;
                   packages/community/*) add community ;;
                   packages/member-shell/*) add community; add community-kids; add admin ;; # BFF dos 2 apps de aluno + o admin (studio-embed/entregas dependem dele)
+                  # O adulto empacota as mesmas poses do Zappy usadas pelo Kids nas aulas.
+                  packages/community-kids/public/zappy/*.webp) add community; add community-kids ;;
                   packages/community-kids/*) add community-kids ;;
                   packages/hub/*) add hub ;; # backend da comunidade (Clube/Mural) — serviço próprio
                   packages/fiscal/*) add fiscal ;;

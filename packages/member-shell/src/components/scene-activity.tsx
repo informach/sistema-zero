@@ -404,8 +404,8 @@ export function SceneActivityView({
   const guided = free ? discoveryGuidance(activity, visto) : gardenStep(m, visto)
   const instruction = guided?.text ?? content.instructions
   /**
-   * Cada etapa recebe seu próprio balão e sua própria fila de voz. O app Kids acrescenta o
-   * mascote; fora dele o mesmo diálogo continua legível e falável sem duplicar a semântica.
+   * Cada etapa recebe seu próprio balão e sua própria fila de voz. Quando a parte adulta já
+   * apresenta um diálogo, a instrução preserva texto e áudio sem repetir o personagem.
    */
   const renderDialogue = (text: string, speech: DialogueSpeech) => {
     /**
@@ -420,7 +420,13 @@ export function SceneActivityView({
         : undefined
     const fala = { ...speech, vozes: activity.vozes, roteiros: roteiro ? [roteiro] : undefined }
     if (player?.renderInstruction) return player.renderInstruction(text, 'speaking', fala)
-    return <DialogueBlockView content={{ kind: 'dialogue', text }} speech={fala} />
+    return (
+      <DialogueBlockView
+        content={{ kind: 'dialogue', text }}
+        speech={fala}
+        mascot={secao?.temDialogo ? undefined : player?.dialogueMascot?.('speaking')}
+      />
+    )
   }
   /**
    * O degrau `nivel` da escada, com a cena de AGORA: o texto e as metas a que ele serve (M1). A pista do
