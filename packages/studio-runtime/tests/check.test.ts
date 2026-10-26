@@ -357,12 +357,19 @@ describe('o pedido de teste', () => {
     )
   })
 
-  test('clique adaptativo é admitido no clássico e recusado no Pro antes de abrir o jogo', () => {
+  test.each([
+    'clickTarget',
+    'approachSprite',
+  ])('%s é admitido no clássico e recusado no Pro antes de abrir o jogo', (action) => {
     const objective = {
       id: 'alvo',
       rule: {
         type: 'behavior',
-        steps: [{ action: 'clickTarget', target: { kind: 'outsideGroup', path: 'esconderijos' } }],
+        steps: [
+          action === 'clickTarget'
+            ? { action, target: { kind: 'outsideGroup', path: 'esconderijos' } }
+            : { action, actorPath: 'personagem', targetPath: 'chave', timeoutMs: 7500 },
+        ],
         expect: { target: { kind: 'text' }, compare: 'contains', value: 'Achados' },
       },
     }

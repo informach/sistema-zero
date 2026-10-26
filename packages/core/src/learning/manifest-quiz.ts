@@ -4,7 +4,14 @@ export interface ManifestQuiz {
   passingScore: number
   questions: Array<{
     id: string
-    predictionScene?: 'garden-touch' | 'garden-count' | 'garden-repeat'
+    predictionScene?:
+      | 'garden-touch'
+      | 'garden-count'
+      | 'garden-repeat'
+      | 'lighthouse-order'
+      | 'lighthouse-memory'
+      | 'lighthouse-door'
+      | 'lighthouse-retest'
     prompt: string
     choices: { id: string; label: string }[]
     correctChoiceIds: string[]
@@ -25,7 +32,16 @@ export function validatePredictionQuiz(
     return 'Escolha uma cena para todas as perguntas da revisão com demonstração.'
   if (
     questions.some(
-      (q) => !['garden-touch', 'garden-count', 'garden-repeat'].includes(q.predictionScene ?? ''),
+      (q) =>
+        ![
+          'garden-touch',
+          'garden-count',
+          'garden-repeat',
+          'lighthouse-order',
+          'lighthouse-memory',
+          'lighthouse-door',
+          'lighthouse-retest',
+        ].includes(q.predictionScene ?? ''),
     )
   )
     return 'Cena da previsão inválida'
@@ -54,7 +70,15 @@ export function isManifestQuiz(v: unknown): v is ManifestQuiz {
       ids.has(q.id) ||
       !text(q.prompt, 5000) ||
       (q.predictionScene !== undefined &&
-        !['garden-touch', 'garden-count', 'garden-repeat'].includes(q.predictionScene as string)) ||
+        ![
+          'garden-touch',
+          'garden-count',
+          'garden-repeat',
+          'lighthouse-order',
+          'lighthouse-memory',
+          'lighthouse-door',
+          'lighthouse-retest',
+        ].includes(q.predictionScene as string)) ||
       !Array.isArray(q.choices) ||
       q.choices.length < 2 ||
       q.choices.length > 20 ||

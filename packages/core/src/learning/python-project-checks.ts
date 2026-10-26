@@ -54,7 +54,10 @@ const executionDraft = z.discriminatedUnion('type', [
     steps: z
       .array(
         z.custom<Exclude<ExecutionStep, { action: 'clickTarget' }>>(
-          (step) => isExecutionStep(step) && step.action !== 'clickTarget',
+          (step) =>
+            isExecutionStep(step) &&
+            step.action !== 'clickTarget' &&
+            step.action !== 'approachSprite',
         ),
       )
       .max(EXECUTION_LIMITS.maxSteps),

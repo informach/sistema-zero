@@ -45,3 +45,15 @@ python docs/aulas-interativas-tecnico/recursos/meu-jeito/gerar-materiais.py
 As saídas são `docs/aulas-interativas/<curso>/passo-a-passo-do-projeto.pdf`. Requerem Bun, Python/Playwright e Chrome ou Edge. Os pipelines verificam fontes, imagens, cores e limites; revise visualmente os PDFs renderizados após mudanças. Não use os antigos argumentos `--adulto` ou o fluxo de traduções por trecho.
 
 Importar é uma etapa separada: confira curso/aula de destino e preserve anexos existentes. O adaptador comum só altera `courseSlug` entre o curso canônico e seu correspondente adulto, mantendo aula, blocos, partes e critérios. A geração local não publica vídeos nem gera áudio pago.
+
+
+## Ensaiar a exploração livre de Cadê e Farol
+
+O ensaio usa os componentes e manifestos reais, na prévia de autoria. Não grava progresso de alunos. Execute na raiz:
+
+```powershell
+bun docs/aulas-interativas-tecnico/qa/exploracao/build.ts
+node docs/aulas-interativas-tecnico/qa/exploracao/verify.mjs
+```
+
+O HTML fica em `.cache/experiencias-reais.html`. O verificador cobre as sete experiências, quiz, desfazer, reinício, liberdade de ordem, várias larguras e modo ampliado. Os objetivos de execução são qualificados separadamente em `packages/studio-runtime/tests/{cade-garden,farol}-browser.test.ts`, com `SZ_CHECK_CHROMIUM` apontando para o executável do Chromium/Chrome. Os dados de Antes dos protótipos ficam congelados, sem importar os manifestos novos.

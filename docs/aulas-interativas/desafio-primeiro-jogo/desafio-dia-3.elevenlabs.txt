@@ -1,16 +1,12 @@
-[engaging, energetic, conversational voice] O seu jogo já guarda se o personagem pegou a chave. Agora, esta é uma experiência para a gente entender como funciona uma condição.
+[engaging, energetic, conversational voice] O seu jogo já guarda se o personagem pegou a chave. Agora ele vai usar essa informação para escolher uma resposta. Uma pergunta que ajuda o jogo a decidir se chama condição.
 
-[interested, animated voice] Olha aqui: sem levar a chave, eu clico em Testar a porta. Tá vendo? A porta não abre. É que, antes de abrir, ela faz uma pergunta: temChave é verdadeiro? Ou seja, o personagem está com a chave? Uma pergunta assim se chama condição.
+[engaging, energetic, conversational voice] É como a porta da sua casa: para abrir, você precisa da chave. No jogo, a pergunta é: temChave é verdadeiro? Ou seja, o personagem está com a chave?
 
-[engaging, energetic, conversational voice] Como temChave está falso, a resposta é não, e por isso a porta escolhe o senão: fica fechada e avisa que falta a chave. É como a porta da sua casa: ela só abre se você tiver a chave.
+[curious] E se a resposta for não?
 
-[curious] E se eu trouxer a chave agora?
+[engaging, energetic, conversational voice] A regra tem dois caminhos. O então diz o que fazer quando a resposta é sim. O senão diz o que fazer quando a resposta é não. A pergunta é a mesma, mas a resposta pode mudar com o valor guardado.
 
-[engaging, energetic, conversational voice] Vamos ver. Agora eu clico em Levar a chave e em Testar a porta de novo. [interested, animated voice] Olha só: agora temChave está verdadeiro, a resposta é sim, e por isso a porta escolhe o então: abre e acende o farol!
-
-[engaging, energetic, conversational voice] Ou seja: a pergunta é sempre a mesma, mas a resposta muda conforme o valor de temChave.
-
-[upbeat, encouraging voice] Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte.
+[engaging, energetic, conversational voice] Na experiência, prepare o personagem com ou sem chave e teste a porta. Observe qual caminho a regra escolhe. Você pode começar por qualquer situação e repetir. Quando terminar, clique em Próxima parte.
 
 [long pause]
 
@@ -160,17 +156,15 @@
 
 [long pause]
 
-[engaging, energetic, conversational voice] Esta é uma experiência para a gente entender como escolher o lugar da chave. Dois números guardam esse lugar: x e y.
+[engaging, energetic, conversational voice] Você pode escolher outro lugar para a chave na sua aventura. Para dizer esse lugar ao jogo, a gente usa dois números: x e y.
 
-[interested, animated voice] Olha aqui: em Posição horizontal x, o número está em 211. Eu clico nesse número, apago o 211, escrevo 160 e clico fora do campo. [confident, clear, unhurried voice] Repare: a chave foi para a esquerda, sem subir nem descer, e o quadrado pontilhado mostra onde ela estava. O x escolhe o lugar na horizontal: um número menor leva para a esquerda, e um maior leva para a direita.
+[engaging, energetic, conversational voice] O x escolhe o lugar na horizontal, para os lados. Um número menor leva para a esquerda; um maior leva para a direita.
 
 [curious] E para subir ou descer?
 
-[engaging, energetic, conversational voice] A gente muda o y. Agora eu deixo o x em 160 e mudo só Posição vertical y: ele está em 53, e eu escrevo 250 do mesmo jeito. [interested, animated voice] Olha só: a chave desceu. O y escolhe o lugar na vertical. Na tela do jogo, a contagem começa no 0, lá em cima, e vai crescendo para baixo. Por isso, um número maior leva para baixo, e um menor leva para cima.
+[engaging, energetic, conversational voice] A gente muda o y, que escolhe o lugar na vertical. Na tela do jogo, a contagem começa em zero lá em cima e cresce para baixo. Por isso, um y maior leva para baixo, e um menor leva para cima.
 
-[engaging, energetic, conversational voice] A chave continua com o mesmo desenho e do mesmo tamanho. Só o lugar mudou.
-
-[upbeat, encouraging voice] Agora é a sua vez: faça esses mesmos testes na experiência, um número por vez. Se quiser repetir, clique em Recomeçar. Quando terminar, clique em Próxima parte.
+[engaging, energetic, conversational voice] Agora explore os dois números na experiência. Mude um por vez e observe a chave. Você pode começar pelo x ou pelo y, ir e voltar, e escolher lugares bem diferentes. Se quiser, tente levar a chave até o alvo. Quando terminar, clique em Próxima parte.
 
 [long pause]
 

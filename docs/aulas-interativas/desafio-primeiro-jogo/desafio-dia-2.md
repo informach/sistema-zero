@@ -1,6 +1,11 @@
 # A Chave do Farol · Dia 2 · A chave muda o curso
 
-**Conferência da equipe, 19/10/2026 (não gravar):** exemplos privados por parte, conforme o manifesto e sua fonte geradora. recolher, guardar e programar-chave têm soluções distintas: retirar a chave; guardar a informação sem aviso; acrescentar o aviso. Cada entrada conserva a etapa anterior. O projeto inicial e a continuidade permanecem; a entrada para ensaio não substitui o baseline da verificação. Cores, imagens, textos e magnitude de velocidade do exemplo não são respostas únicas. A direção precisa continuar coerente e zero não demonstra movimento. Os objetivos atuais deste piloto conferem estrutura; os testes jogados do roteiro continuam necessários e não foram certificados automaticamente como comportamento. Esta revisão conserva as falas e as âncoras de edição já registradas. Não informa nova gravação, publicação ou ensaio com crianças.
+## Atualização aplicada em 26/10/2026
+
+A versão vigente segue [exploração orientada por objetivos](../../aulas-interativas-tecnico/DESCOBERTA-GUIADA.md): vídeos conceituais explicam e convidam; a experiência oferece controles livres e orientação pelo estado; o Estúdio conserva a instrução completa de montagem. Edição da regra, entrada de quem joga e execução são gestos distintos. As notas datadas anteriores abaixo registram o histórico. O roteiro e o manifesto atualizados são a referência de produção; os clipes ainda precisam de gravação/edição/importação.
+
+
+**Conferência da equipe, 19/10/2026 (não gravar):** exemplos privados por parte, conforme o manifesto e sua fonte geradora. recolher, guardar e programar-chave têm soluções distintas: retirar a chave; guardar a informação sem aviso; acrescentar o aviso. Cada entrada conserva a etapa anterior. O projeto inicial e a continuidade permanecem; a entrada para ensaio não substitui o baseline da verificação. Cores, imagens, textos e magnitude de velocidade do exemplo não são respostas únicas. A direção precisa continuar coerente e zero não demonstra movimento. Os objetivos atuais combinam estrutura e observação em execução. Movimento, memória após afastamento e os dois caminhos da porta são testados no jogo por entradas reais, preservando as escolhas de arte e posição; os testes jogados do roteiro continuam parte da construção. Esta revisão conserva as falas e as âncoras de edição já registradas. Não informa nova gravação, publicação ou ensaio com crianças.
 
 
 ## Resumo
@@ -59,11 +64,13 @@ A verificação aceitava temChave verdadeiro em outro encontro e não cobrava a 
 ### Seção 1. O jogo guardou a chave?
 
 - **Intenção:** exploração (`exploration`).
-- **Por que existe:** distinguir recolher, avisar e guardar antes de programar.
-- **Conclui quando:** vídeo e quatro descobertas reais na experiência.
-- **Blocos:** `video-d2-contexto`, `ponte-d2-contexto`, novo `experiencia-memoria`. O vídeo é uma demonstração: o narrador faz cada gesto na primeira pessoa e explica; só no fim passa a vez, e a pessoa repete os testes na experiência, que cobra as metas.
+- **Conclui quando:** vídeo e 4 descobertas observadas, sem ordem obrigatória.
+- **Blocos:** `video-d2-contexto`, `ponte-d2-contexto`, `experiencia-memoria`.
+- **Metas da experiência:** `collected-without-memory`, `collected-with-memory`, `remembered-after-leaving`, `reset-after-remembering`.
 
-**Ponte do Zappy na página (não gravar):** Sua vez! Faça os testes e fique de olho em temChave: compare o que some da tela com o que fica guardado. Quando terminar, clique em Próxima parte.
+Comparar os dois modos em qualquer ordem: recolher sem guardar; recolher guardando; afastar-se depois de guardar; recomeçar uma partida depois de guardar. A regra pode ser editada a qualquer momento. Uma edição após a coleta vale para o próximo encontro, sem alterar retroativamente o valor guardado. A cena distingue chave retirada, aviso e memória. Recomeçar a partida mantém a regra e as descobertas; Recomeçar experiência limpa tudo.
+
+**Convite da experiência:** Compare uma coleta com e sem a ação de guardar. Observe também o valor ao afastar e recomeçar a partida. Você escolhe a ordem dos testes.
 
 ### Seção 2. Recolha a chave
 
@@ -80,7 +87,7 @@ O projeto do Dia 1 ainda não tem a área **Quando acontecer**: o Estúdio só c
 
 - **Intenção:** aplicação (`application`), com verificação e sem envio.
 - **Por que existe:** aplicar a memória vista na experiência: temChave começa em falso e vira verdadeiro no encontro.
-- **Conclui quando:** vídeo e aprovação de sete critérios: movimento, retirada e temChave começando em falso e mudando para verdadeiro no encontro. A montagem mantém a ordem ensinada; a verificação também aceita guardar a coleta antes de retirar a chave no mesmo encontro.
+- **Conclui quando:** vídeo e aprovação de oito critérios, incluindo memória persistente observada em execução: movimento, retirada e temChave começando em falso e mudando para verdadeiro no encontro. A montagem mantém a ordem ensinada; a verificação também aceita guardar a coleta antes de retirar a chave no mesmo encontro.
 - **Blocos:** `video-d2-guardar`, `ponte-d2-guardar`; Estúdio pela `workspaceKey: projeto`.
 
 **Ponte do Zappy na página (não gravar):** Agora ensine o seu jogo a lembrar da chave! Crie temChave começando em falso e mude para verdadeiro no encontro com a chave. Depois clique em Verificar projeto. Quando aparecer Objetivo cumprido!, clique em Próxima parte.
@@ -91,7 +98,7 @@ A mudança de temChave não aparece no jogo. A fala diz isso com honestidade: qu
 
 - **Intenção:** construção e entrega (`delivery`).
 - **Por que existe:** mostrar a mensagem da coleta, testar a coleta inteira e entregar o dia.
-- **Conclui quando:** vídeo, aprovação dos oito critérios e envio confirmado do projeto.
+- **Conclui quando:** vídeo, aprovação dos nove critérios e envio confirmado do projeto.
 - **Blocos:** `video-d2-programar`, `ponte-d2-programar` e o Estúdio `projeto` com a cadeia existente.
 
 **Ponte do Zappy na página (não gravar):** Agora avise quem está jogando! Mostre uma mensagem quando a chave for encontrada. Teste a coleta e clique em Verificar projeto. Depois clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Concluir aula.
@@ -102,7 +109,7 @@ Testar coleta, mudança do aviso e reinício por Atualizar, que a fala pede ("Ag
 
 Cena `collect-and-remember`, cenário Farol: Guardar a coleta, Encostar na chave, Afastar e Recomeçar a partida. Quatro metas: coletar sem memória, coletar com memória, conservar a informação ao afastar e reiniciar depois da coleta guardada. O reinício mantém a regra escolhida e as descobertas, mas recoloca a chave e temChave falso. O controle da regra fica indisponível depois da coleta, com motivo visível, até reiniciar. Sem palpite ou pergunta final obrigatórios.
 
-A verificação é cumulativa em cada montagem: a parte 2 confere o movimento e a retirada; a parte 3 acrescenta temChave; a entrega confere os oito critérios. O texto do aviso pode usar palavras próprias; o teste jogado confere seu sentido.
+A verificação é cumulativa em cada montagem: a parte 2 confere o movimento e a retirada; a parte 3 acrescenta temChave; a entrega confere os nove critérios. O texto do aviso pode usar palavras próprias; o teste jogado confere seu sentido.
 
 ## Vídeos
 

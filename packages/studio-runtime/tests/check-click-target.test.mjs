@@ -167,6 +167,7 @@ function readerFixture(height = 360) {
     SZGame2D: api,
     _managedGroups: new WeakSet([group]),
     _managedSprites: managedSprites,
+    _managedArtHitboxes: new WeakSet(),
     _destroyedSprites: new WeakSet(),
     MAX_GROUP: 400,
     _logicalW: 640,

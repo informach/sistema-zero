@@ -124,10 +124,20 @@ export function StepsEditor({
               const action = e.target.value
               if (
                 (!graphics && action !== 'wait') ||
-                (python && ['sprite', 'outsideGroup', 'lastPoint'].includes(action))
+                (python &&
+                  ['sprite', 'outsideGroup', 'lastPoint', 'approachSprite'].includes(action))
               )
                 return
               if (singlePress && action !== 'press' && action !== 'hold') return
+              if (action === 'approachSprite') {
+                patch(at, {
+                  action: 'approachSprite',
+                  actorPath: '',
+                  targetPath: '',
+                  timeoutMs: 4500,
+                })
+                return
+              }
               if (action === 'sprite') {
                 patch(at, {
                   action: 'clickTarget',
@@ -173,6 +183,11 @@ export function StepsEditor({
               Clicar na tela
             </option>
             {!python && (
+              <option value="approachSprite" disabled={singlePress}>
+                Levar um personagem até outro com as teclas
+              </option>
+            )}
+            {!python && (
               <option value="sprite" disabled={singlePress}>
                 Clicar no lugar de um personagem
               </option>
@@ -188,6 +203,62 @@ export function StepsEditor({
               </option>
             )}
           </Select>
+          {step.action === 'approachSprite' && (
+            <>
+              <Input
+                aria-label={`Personagem que anda no passo ${at + 1}`}
+                className="w-36"
+                placeholder="Personagem"
+                maxLength={200}
+                value={step.actorPath}
+                onChange={(e) => patch(at, { ...step, actorPath: e.target.value })}
+              />
+              <Input
+                aria-label={`Destino do passo ${at + 1}`}
+                className="w-36"
+                placeholder="Destino"
+                maxLength={200}
+                value={step.targetPath}
+                onChange={(e) => patch(at, { ...step, targetPath: e.target.value })}
+              />
+              <Input
+                aria-label={`Evitar no passo ${at + 1}`}
+                className="w-52"
+                placeholder="Evitar: chave, obstaculo"
+                maxLength={804}
+                value={(step.avoidPaths ?? []).join(', ')}
+                onChange={(e) => {
+                  const paths = e.target.value
+                    .split(',')
+                    .map((p) => p.trim())
+                    .filter(Boolean)
+                    .slice(0, 4)
+                  patch(at, { ...step, avoidPaths: paths })
+                }}
+              />
+              <Input
+                type="number"
+                aria-label={`Prazo do deslocamento no passo ${at + 1}`}
+                className="w-24"
+                min={100}
+                max={EXECUTION_LIMITS.maxApproachMs}
+                value={step.timeoutMs}
+                onChange={(e) =>
+                  patch(at, {
+                    ...step,
+                    timeoutMs: Math.max(
+                      100,
+                      Math.min(
+                        EXECUTION_LIMITS.maxApproachMs,
+                        Math.round(Number(e.target.value) || 100),
+                      ),
+                    ),
+                  })
+                }
+              />
+              <span>ms</span>
+            </>
+          )}
           {step.action === 'clickTarget' && step.target.kind === 'sprite' && (
             <>
               <Input
@@ -312,7 +383,7 @@ export function StepsEditor({
           ? 'Este teste usa uma tecla. A observação sem tecla acontece antes desse passo.'
           : python
             ? 'Passos em ordem. Cliques usam pixels da janela do programa; teclado e mouse exigem uma extensão gráfica.'
-            : `Até ${EXECUTION_LIMITS.maxSteps} passos e ${EXECUTION_LIMITS.maxTotalWaitMs / 1000} s de espera somada. O clique na tela usa coordenadas na prévia (1024 por 640). Os cliques em personagens e grupos usam o palco atual do Jogo 2D clássico JavaScript; repetir exige um clique anterior em personagem ou fora do grupo, e mantém aquele lugar.`}
+            : `Até ${EXECUTION_LIMITS.maxSteps} passos e ${EXECUTION_LIMITS.maxTotalWaitMs / 1000} s de espera somada. O clique na tela usa coordenadas na prévia (1024 por 640). O deslocamento usa as teclas e a geometria atual, com prazo limitado. Os cliques em personagens e grupos usam o palco atual do Jogo 2D clássico JavaScript; repetir exige um clique anterior em personagem ou fora do grupo, e mantém aquele lugar.`}
       </p>
     </fieldset>
   )

@@ -149,7 +149,10 @@ export function isSceneSetupAction(acao: unknown, scene: SceneId): acao is Scene
   // "Recomeçar" da bancada volta ao começo de fábrica, e um caso que abrisse fora da tela
   // poria a criança num lugar ao qual ela não consegue voltar. Sem tempo e sem seta, o x não
   // sai do começo.
-  if (scene === 'lighthouse-walk' && (acao.type === 'advance' || acao.type === 'hold-arrow'))
+  if (
+    scene === 'lighthouse-walk' &&
+    ['advance', 'hold-arrow', 'walk-frames', 'test-walk-order'].includes(acao.type)
+  )
     return false
   return true
 }
@@ -163,7 +166,20 @@ export function isSceneSetupAction(acao: unknown, scene: SceneId): acao is Scene
  */
 export function isSceneSetup(value: unknown, scene: SceneId): value is SceneSetup {
   if (!isRecord(value)) return false
-  const { actions, goals: alvo, preset, goalCopy } = value
+  const { actions, goals: alvo, preset, goalCopy, freeExploration } = value
+  if (
+    freeExploration !== undefined &&
+    (typeof freeExploration !== 'boolean' ||
+      ![
+        'touch-response',
+        'found-counter',
+        'lighthouse-walk',
+        'lighthouse-position',
+        'collect-and-remember',
+        'lighthouse-key',
+      ].includes(scene))
+  )
+    return false
   if (actions !== undefined) {
     if (!Array.isArray(actions) || actions.length === 0 || actions.length > SETUP_LIMITS.actions)
       return false
@@ -198,7 +214,12 @@ export function isSceneSetup(value: unknown, scene: SceneId): value is SceneSetu
     }
   }
   if (alvo === undefined)
-    return actions !== undefined || preset !== undefined || goalCopy !== undefined
+    return (
+      actions !== undefined ||
+      preset !== undefined ||
+      goalCopy !== undefined ||
+      freeExploration !== undefined
+    )
   const disponiveis = sceneGoalIds(scene)
   const possiveis =
     scene === 'once-vs-always'
@@ -344,3 +365,5 @@ export function sceneHintsFor(activity: SceneActivity): readonly string[] {
   if (activity.scene === 'layers' && activity.pilha === 'camadas') return LAYERS_CAMADAS.hints
   return sceneModel(activity.scene).hints
 }
+
+export { discoveryGuidance, discoverySpeechSteps } from './discovery-guidance'

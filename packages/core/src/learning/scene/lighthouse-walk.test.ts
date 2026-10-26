@@ -357,12 +357,18 @@ describe('lighthouse-walk: o modelo e os três usos do Dia 1', () => {
     expect(m.group).toBe('motion')
     expect(sceneDefaultGoalIds('lighthouse-walk')).toEqual([...CASOS.andar])
     expect(sceneGoalIds('lighthouse-walk')).toEqual([
+      'no-movement-command',
+      'stopped-after-release',
+      'compared-command-order',
       ...CASOS.andar,
       ...CASOS.velocidade,
       ...CASOS.limite,
     ])
     const rotulos = Object.fromEntries(m.goals.map((g) => [g.id, g.label]))
     expect(rotulos).toEqual({
+      'no-movement-command': 'A tecla não moveu sem o comando',
+      'stopped-after-release': 'Soltar a tecla interrompeu os passos',
+      'compared-command-order': 'As duas ordens foram testadas',
       'still-without-arrow': 'Sem a seta, o sprite ficou parado',
       'moves-each-frame': 'Com a seta, o sprite andou a cada quadro',
       'step-speed-3': 'Com velocidade 3, ele andou 3 a cada quadro',
@@ -375,6 +381,9 @@ describe('lighthouse-walk: o modelo e os três usos do Dia 1', () => {
   test('⚠️ o pedido diz o gesto com o nome do botão, e nunca o resultado', () => {
     const RESULTADO = /parad|andou|saiu|ficou|inteiro|fora da tela|passou/i
     const BOTOES = [
+      'bloco de mover',
+      'solte a tecla',
+      'ordens dos blocos',
       'Segurar a seta para a direita',
       'Avançar 1 quadro',
       'Rodar',

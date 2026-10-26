@@ -14,10 +14,10 @@
       "clipe": "video-d2-contexto",
       "personagem": "Dedé",
       "ocorrencia": 1,
-      "ancoraAntes": "regra da coleta responde a esse evento: ela tira a chave do chão e muda o aviso. Mas tá vendo? temChave continua falso.",
-      "ancoraDepois": "É que tirar a chave do chão não guarda essa informação. Olha aqui na regra: a linha Alterar temChave para verdadeiro",
-      "falaPrincipal": "Mas a chave sumiu. Por que ainda está falso?",
-      "falaPersonagem": "Mas a chave sumiu. Por que ainda está falso?",
+      "ancoraAntes": "is? Aqui, o jogo usa a variável temChave. O nome ajuda a entender a pergunta: o personagem tem chave? Verdadeiro quer dizer sim; falso quer dizer não.",
+      "ancoraDepois": "Fazer a chave sumir, mudar o aviso e guardar a coleta são ações diferentes. A informação só fica guardada se a regra também fizer isso. Agora compare",
+      "falaPrincipal": "Mas a chave sumiu. Isso já quer dizer que o jogo guardou?",
+      "falaPersonagem": "Mas a chave sumiu. Isso já quer dizer que o jogo guardou?",
       "tags": ["[curious]"]
     },
     {

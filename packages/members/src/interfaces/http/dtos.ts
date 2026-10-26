@@ -1005,7 +1005,15 @@ const QuizBlockSchema = t.Object({
       // prompt/label/explanation são MARKDOWN (formatação rica + imagens `![](url)`
       // do editor TipTap do admin) — limites folgados p/ caber URLs de imagem do R2.
       predictionScene: t.Optional(
-        t.Union([t.Literal('garden-touch'), t.Literal('garden-count'), t.Literal('garden-repeat')]),
+        t.Union([
+          t.Literal('garden-touch'),
+          t.Literal('garden-count'),
+          t.Literal('garden-repeat'),
+          t.Literal('lighthouse-order'),
+          t.Literal('lighthouse-memory'),
+          t.Literal('lighthouse-door'),
+          t.Literal('lighthouse-retest'),
+        ]),
       ),
       prompt: t.String({ minLength: 1, maxLength: 5000 }),
       choices: t.Array(

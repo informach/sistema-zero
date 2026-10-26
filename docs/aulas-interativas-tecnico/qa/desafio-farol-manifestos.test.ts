@@ -4,6 +4,7 @@ import { resolve } from 'node:path'
 import {
   blockCheckpoint,
   blockPrediction,
+  isExecutionRule,
   isLearningManifest,
   type LearningManifest,
 } from '../../../packages/core/src/learning'
@@ -40,11 +41,13 @@ function manifesto(name: string): LearningManifest {
 }
 
 function checks(name: string): SectionProjectCheck[] {
-  // A decisão continua verificada antes das escolhas; desde 11/10 o envio é posterior.
+  // Aqui são conferidas as regras de estrutura. As regras de execução não aprovam estaticamente;
+  // farol-browser.test.ts as confere no Chromium com entradas reais e erros plausíveis.
   const sectionKey = name === 'dia-3' ? 'decisao' : name === 'dia-2' ? 'programar-chave' : 'borda'
   return (
-    manifesto(name).sections.find((section) => section.key === sectionKey)?.completion
-      ?.projectChecks ?? []
+    manifesto(name)
+      .sections.find((section) => section.key === sectionKey)
+      ?.completion?.projectChecks?.filter((check) => !isExecutionRule(check.rule)) ?? []
   )
 }
 
@@ -275,7 +278,7 @@ describe('Desafio do Primeiro Jogo — A Chave do Farol', () => {
       'programar-chave',
     ])
     expect(m.sections.map((section) => section.completion?.projectChecks?.length ?? 0)).toEqual([
-      0, 4, 7, 8,
+      0, 4, 8, 9,
     ])
     const activity = m.blocks.find((block) => block.key === 'experiencia-memoria')?.content
     if (activity?.kind !== 'interactive') throw new Error('Experiência de memória ausente')
@@ -337,7 +340,7 @@ describe('Desafio do Primeiro Jogo — A Chave do Farol', () => {
       throw new Error('Experiência de posição ausente')
     }
     expect(position.activity.scene).toBe('lighthouse-position')
-    expect(position.activity.setup?.goals).toEqual(['mover-horizontal', 'mover-vertical'])
+    expect(position.activity.setup?.goals).toEqual(['x-minus', 'x-plus', 'y-minus', 'y-plus'])
     expect(m.sections.find((section) => section.key === 'posicao')?.completion?.blockIds).toEqual([
       'video-d3-posicao',
       'experiencia-posicao',
@@ -349,11 +352,11 @@ describe('Desafio do Primeiro Jogo — A Chave do Farol', () => {
     expect(delivery.workspaceKey).toBe(intermediate.workspaceKey)
     expect(intermediate.blockKeys).not.toContain('projeto')
     expect(intermediate.completion?.blockIds).toEqual(['video-d3-sem-chave'])
-    expect(intermediate.completion?.projectChecks).toHaveLength(10)
+    expect(intermediate.completion?.projectChecks).toHaveLength(12)
     expect(decision.intent).toBe('application')
     expect(decision.blockKeys).not.toContain('projeto')
     expect(decision.completion?.blockIds).toEqual(['video-d3-decisao'])
-    expect(decision.completion?.projectChecks).toHaveLength(14)
+    expect(decision.completion?.projectChecks).toHaveLength(17)
     expect(delivery.completion?.blockIds).toEqual(['video-d3-posicionar-chave', 'projeto'])
     expect(delivery.blockKeys).toContain('projeto')
     expect(m.sections[5]?.intent).toBe('exploration')
@@ -571,4 +574,20 @@ describe('Desafio do Primeiro Jogo — A Chave do Farol', () => {
     // 6 no bloco do Mapa do Dia 1 e 1 na publicação do Dia 3 (os 2 do "andar" saíram em 07/10).
     expect(links).toBe(7)
   })
+})
+
+test('Farol execution objectives remain pending until the native observer reports their behavior', () => {
+  const checks =
+    manifesto('dia-3').sections.find((s) => s.key === 'decisao')?.completion?.projectChecks ?? []
+  const runtime = checks.filter((c) => isExecutionRule(c.rule))
+  expect(runtime.map((c) => c.id)).toEqual(
+    expect.arrayContaining([
+      'memoria-em-execucao',
+      'porta-sem-chave-em-execucao',
+      'porta-com-chave-em-execucao',
+    ]),
+  )
+  expect(
+    evaluateStudioSectionProject(runtime, montarProjetoFarol('concluido')).every((c) => !c.passed),
+  ).toBe(true)
 })

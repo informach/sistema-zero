@@ -84,15 +84,16 @@ export const cadeTodoMundo = {
 } satisfies CourseReview
 
 export const farol = {
-  title: 'As regras do seu curso',
+  title: 'As regras do seu jogo',
   intro:
-    'Você fez o personagem andar, pegar a chave e acender o farol. Agora vamos relembrar essas regras com quatro perguntas. Se errar alguma, leia o porquê, clique em Tentar de novo e responda outra vez.',
+    'Você fez o personagem andar, pegar a chave e acender o farol. Escolha uma resposta em cada pergunta e clique em Ver o que acontece. Compare com a cena e a explicação. Você pode tentar de novo.',
   content: {
     kind: 'quiz',
     passingScore: 100,
     questions: [
       {
         id: 'q1',
+        predictionScene: 'lighthouse-order',
         prompt:
           'Seu personagem anda até a beirada da tela. Que ordem você montou para ele não sair da tela?',
         choices: [
@@ -111,10 +112,11 @@ export const farol = {
         ],
         correctChoiceIds: ['b'],
         explanation:
-          'Dentro de A cada quadro do jogo, primeiro o personagem anda e, logo depois, Manter o sprite personagem dentro da tela segura ele na borda. Se o limite viesse antes, o personagem andaria depois da conferência, e um pedacinho dele passaria da borda. E, conferido só no começo, o limite não seguraria nada depois. Por isso ele fica dentro de A cada quadro do jogo.',
+          'A cada quadro, o personagem se move primeiro. Depois, o bloco de limite corrige o passo que acabou de acontecer e o mantém dentro da tela.',
       },
       {
         id: 'q-memoria-coleta',
+        predictionScene: 'lighthouse-memory',
         prompt:
           'Você pegou a chave: ela sumiu do chão e o aviso mudou. Mas, no farol, o jogo disse que falta a chave. A pergunta do farol está certa. O que você deve conferir primeiro nos blocos da coleta?',
         choices: [
@@ -133,10 +135,11 @@ export const farol = {
         ],
         correctChoiceIds: ['b'],
         explanation:
-          'Destruir o sprite já funcionou: a chave sumiu do chão. Alterar aviso também: a mensagem mudou. Essas duas ações não guardam a coleta em temChave. Dentro do encontro com a chave, o bloco que altera temChave precisa guardar verdadeiro. É essa informação que o farol consulta depois.',
+          'Fazer a chave sumir e mudar o aviso não guarda a coleta. A ação de guardar precisa colocar verdadeiro em temChave. É essa informação que a porta consulta.',
       },
       {
         id: 'q3',
+        predictionScene: 'lighthouse-door',
         prompt:
           'Você chega ao farol sem recolher a chave. Com a condição que programou, o que o jogo deve fazer?',
         choices: [
@@ -155,10 +158,11 @@ export const farol = {
         ],
         correctChoiceIds: ['c'],
         explanation:
-          'A porta confere temChave. Se você não pegou a chave, temChave ainda é falso, e o jogo segue o senão: avisa que falta a chave. Antes de você montar o senão, era isso que acontecia: nada. O então, que acende o farol e chama o barco, só acontece quando temChave é verdadeiro.',
+          'Sem chave, temChave é falso. O jogo segue o senão: mantém o farol apagado e avisa que falta a chave. Com a chave, seguiria o então.',
       },
       {
         id: 'q4',
+        predictionScene: 'lighthouse-retest',
         prompt:
           'Você pegou a chave, chegou ao farol e viu a luz acender. Qual teste ainda falta para conferir a regra da porta?',
         choices: [
@@ -178,7 +182,7 @@ export const farol = {
         ],
         correctChoiceIds: ['b'],
         explanation:
-          'A porta tem duas respostas, a do então e a do senão. Você já conferiu o caminho com a chave. Na mesma partida, temChave continua verdadeiro, por isso o farol escolheria o então de novo. Só numa partida nova temChave volta a ser falso: clique em Atualizar e vá direto até a porta do farol. A luz deve continuar apagada, e o aviso deve dizer que falta a chave. Testar só o caminho que dá certo pode esconder uma regra montada no lugar errado.',
+          'Você testou com a chave. Recomece a partida para testar sem ela. O farol deve continuar apagado e avisar que falta a chave. Assim você compara as duas respostas.',
       },
     ],
   },

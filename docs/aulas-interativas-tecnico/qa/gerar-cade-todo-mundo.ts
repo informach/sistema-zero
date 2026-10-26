@@ -1,7 +1,7 @@
 /** Gera apenas os três manifestos derivados deste curso. Não altera catálogo nem outros cursos. */
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
-import { gardenSpeechSteps } from '../../../packages/core/src/learning/scene/garden'
+import { discoverySpeechSteps } from '../../../packages/core/src/learning/scene/discovery-guidance'
 import { JARDIM_PARES, jardimSpriteRect } from '../../../packages/studio/src/arte/jardim-assets'
 import {
   montarProjetoCadeTodoMundo,
@@ -254,7 +254,7 @@ const aula1 = {
     video('video-a1-toque', 'Um toque pode chamar uma ação'),
     dialogue(
       'ponte-a1-toque',
-      'Sua vez! Investigue a ligação entre o toque e a reação no jardim. O Zappy acompanha cada etapa da experiência.',
+      'Sua vez! Investigue a ligação entre o toque e a reação no jardim. Você escolhe a ordem dos testes, e o Zappy sugere o que observar.',
     ),
     {
       key: 'experiencia-toque',
@@ -263,13 +263,14 @@ const aula1 = {
         required: true,
         semPerguntaFinal: true,
         title: 'O toque faz o jogo responder',
-        instructions: 'Primeiro, toque no arbusto. Observe o jardim com a reação desligada.',
+        instructions:
+          'Compare os toques com a reação ligada e desligada. Escolha qual esconderijo testar e repita quando quiser.',
         hints: [],
         activity: {
           type: 'experimentation',
           scene: 'touch-response',
           cenario: 'jardim',
-          setup: { goals: ['no-response', 'responds', 'second-target'] },
+          setup: { freeExploration: true, goals: ['no-response', 'responds', 'second-target'] },
         },
       },
     },
@@ -333,7 +334,7 @@ const aula2 = {
     video('video-a2-variavel', 'Um número que acompanha a busca'),
     dialogue(
       'ponte-a2-variavel',
-      'Sua vez! Acompanhe o valor guardado durante a busca. O Zappy acompanha cada etapa da experiência.',
+      'Sua vez! Acompanhe o valor guardado durante a busca. Você escolhe a ordem dos testes, e o Zappy sugere o que observar.',
     ),
     {
       key: 'experiencia-achados',
@@ -348,7 +349,10 @@ const aula2 = {
           type: 'experimentation',
           scene: 'found-counter',
           cenario: 'jardim',
-          setup: { goals: ['first-find', 'second-find', 'no-find', 'repeat', 'back-to-zero'] },
+          setup: {
+            freeExploration: true,
+            goals: ['first-find', 'second-find', 'no-find', 'repeat', 'back-to-zero'],
+          },
         },
       },
     },
@@ -542,15 +546,15 @@ if (formatted.exitCode !== 0) {
 
 await gravarArquivo(
   resolve(DIR, 'zappy-etapas.json'),
-  JSON.stringify(
+  `${JSON.stringify(
     {
       version: 1,
       experiences: {
-        'experiencia-toque': gardenSpeechSteps('touch-response'),
-        'experiencia-achados': gardenSpeechSteps('found-counter'),
+        'experiencia-toque': discoverySpeechSteps().filter((s) => s.id.startsWith('touch-')),
+        'experiencia-achados': discoverySpeechSteps().filter((s) => s.id.startsWith('count-')),
       },
     },
     null,
     2,
-  ) + '\n',
+  )}\n`,
 )

@@ -2,11 +2,11 @@
 
 [long pause]
 
-[curious] E se eu clicar em Rodar?
+[curious] E se eu soltar a tecla?
 
 [long pause]
 
-[curious] Como eu faço ele parar na borda?
+[curious] E a ordem dos blocos faz diferença?
 
 [long pause]
 

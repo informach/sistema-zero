@@ -6,33 +6,31 @@ A professora grava toda a fala principal. Na edição kids, substituir apenas os
 
 **Clipe:** `video-d3-condicao`
 
-**Na tela:** mostrar a cena da porta com o mostrador `temChave`, no estado inicial: `temChave` falso, porta fechada, botão **Levar a chave** e nenhuma resposta escolhida. Clicar em **Testar a porta** sem a chave. No "Tá vendo?", deixar ver a porta fechada e o aviso. No "temChave é verdadeiro?", apontar a linha "se temChave for verdadeiro" do painel **A regra da porta**. No "escolhe o senão", apontar o mostrador `temChave` em falso e a linha do senão com **✓ escolhido**. Manter esse estado até a pergunta da Debinha, sem levar a chave ainda.
+**Na tela:** Mostrar uma porta de casa e a chave como analogia. Apontar a pergunta e os dois caminhos da regra do farol, sem escolher uma resposta na cena. Os botões de dar/tirar a chave preparam situações de teste; não representam comandos de coleta no projeto.
 
 **Fala para ElevenLabs:**
 
 ```text
-[engaging, energetic, conversational voice] O seu jogo já guarda se o personagem pegou a chave. Agora, esta é uma experiência para a gente entender como funciona uma condição.
+[engaging, energetic, conversational voice] O seu jogo já guarda se o personagem pegou a chave. Agora ele vai usar essa informação para escolher uma resposta. Uma pergunta que ajuda o jogo a decidir se chama condição.
 
-[interested, animated voice] Olha aqui: sem levar a chave, eu clico em Testar a porta. Tá vendo? A porta não abre. É que, antes de abrir, ela faz uma pergunta: temChave é verdadeiro? Ou seja, o personagem está com a chave? Uma pergunta assim se chama condição.
+[engaging, energetic, conversational voice] É como a porta da sua casa: para abrir, você precisa da chave. No jogo, a pergunta é: temChave é verdadeiro? Ou seja, o personagem está com a chave?
 
-[engaging, energetic, conversational voice] Como temChave está falso, a resposta é não, e por isso a porta escolhe o senão: fica fechada e avisa que falta a chave. É como a porta da sua casa: ela só abre se você tiver a chave.
+[curious] E se a resposta for não?
 
-[curious] E se eu trouxer a chave agora?
+[engaging, energetic, conversational voice] A regra tem dois caminhos. O então diz o que fazer quando a resposta é sim. O senão diz o que fazer quando a resposta é não. A pergunta é a mesma, mas a resposta pode mudar com o valor guardado.
 
-[engaging, energetic, conversational voice] Vamos ver. Agora eu clico em Levar a chave e em Testar a porta de novo. [interested, animated voice] Olha só: agora temChave está verdadeiro, a resposta é sim, e por isso a porta escolhe o então: abre e acende o farol!
-
-[engaging, energetic, conversational voice] Ou seja: a pergunta é sempre a mesma, mas a resposta muda conforme o valor de temChave.
-
-[upbeat, encouraging voice] Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte.
+[engaging, energetic, conversational voice] Na experiência, prepare o personagem com ou sem chave e teste a porta. Observe qual caminho a regra escolhe. Você pode começar por qualquer situação e repetir. Quando terminar, clique em Próxima parte.
 ```
 
 **Substituições na edição kids:**
 
 | ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
 | --- | --- | --- | --- | --- | --- | --- |
-| video-d3-condicao-K1 | Debinha | 1 | escolhe o senão: fica fechada e avisa que falta a chave. É como a porta da sua casa: ela só abre se você tiver a chave. | E se eu trouxer a chave agora? | Vamos ver. Agora eu clico em Levar a chave e em Testar a porta de novo. Olha só: agora temChave está verdadeiro, a | [curious] |
+| video-d3-condicao-K1 | Debinha | 1 | . É como a porta da sua casa: para abrir, você precisa da chave. No jogo, a pergunta é: temChave é verdadeiro? Ou seja, o personagem está com a chave? | E se a resposta for não? | A regra tem dois caminhos. O então diz o que fazer quando a resposta é sim. O senão diz o que fazer quando a resposta é não. A pergunta é a mesma, mas | [curious] |
 
 No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
+
+**Falas dentro da experiência:** `packages/core/src/learning/scene/discovery-guidance.ts`, exportadas em `zappy-etapas.json`. A orientação sugere comparações pelo estado observado; os controles permanecem livres.
 
 **Recado na página (não gravar):** Sua vez! Teste a mesma porta sem a chave e com a chave e repare em qual resposta a porta escolhe. Quando terminar, clique em Próxima parte.
 
@@ -243,31 +241,31 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 **Clipe:** `video-d3-posicao`
 
-**Na tela:** abrir a cena **lighthouse-position** com x 211 e y 53, sem quadrado pontilhado (sessão sem progresso nesta experiência). Apontar a chave e os controles **Posição horizontal x** e **Posição vertical y**. Mudar apenas x para 160 **pelo campo de digitar**: clicar no número 211, apagar, escrever 160 e clicar fora do campo (a chave só se move depois desse clique). Não usar os botões − e + (andam de 20 em 20: 191, 171, 151, nunca 160) nem o deslizante (difícil parar no número exato). No "Repare", apontar o quadrado pontilhado do lugar anterior. Manter y em 53 até a pergunta da Debinha. A experiência não muda o projeto da criança.
+**Na tela:** Apresentar somente aqui as coordenadas x/y. Usar setas horizontais e verticais na mesma arte do jogo. Mostrar os dois controles disponíveis e a marca inicial, sem prescrever números, ordem de eixos ou uma sequência obrigatória. O alvo é opcional.
 
 **Fala para ElevenLabs:**
 
 ```text
-[engaging, energetic, conversational voice] Esta é uma experiência para a gente entender como escolher o lugar da chave. Dois números guardam esse lugar: x e y.
+[engaging, energetic, conversational voice] Você pode escolher outro lugar para a chave na sua aventura. Para dizer esse lugar ao jogo, a gente usa dois números: x e y.
 
-[interested, animated voice] Olha aqui: em Posição horizontal x, o número está em 211. Eu clico nesse número, apago o 211, escrevo 160 e clico fora do campo. [confident, clear, unhurried voice] Repare: a chave foi para a esquerda, sem subir nem descer, e o quadrado pontilhado mostra onde ela estava. O x escolhe o lugar na horizontal: um número menor leva para a esquerda, e um maior leva para a direita.
+[engaging, energetic, conversational voice] O x escolhe o lugar na horizontal, para os lados. Um número menor leva para a esquerda; um maior leva para a direita.
 
 [curious] E para subir ou descer?
 
-[engaging, energetic, conversational voice] A gente muda o y. Agora eu deixo o x em 160 e mudo só Posição vertical y: ele está em 53, e eu escrevo 250 do mesmo jeito. [interested, animated voice] Olha só: a chave desceu. O y escolhe o lugar na vertical. Na tela do jogo, a contagem começa no 0, lá em cima, e vai crescendo para baixo. Por isso, um número maior leva para baixo, e um menor leva para cima.
+[engaging, energetic, conversational voice] A gente muda o y, que escolhe o lugar na vertical. Na tela do jogo, a contagem começa em zero lá em cima e cresce para baixo. Por isso, um y maior leva para baixo, e um menor leva para cima.
 
-[engaging, energetic, conversational voice] A chave continua com o mesmo desenho e do mesmo tamanho. Só o lugar mudou.
-
-[upbeat, encouraging voice] Agora é a sua vez: faça esses mesmos testes na experiência, um número por vez. Se quiser repetir, clique em Recomeçar. Quando terminar, clique em Próxima parte.
+[engaging, energetic, conversational voice] Agora explore os dois números na experiência. Mude um por vez e observe a chave. Você pode começar pelo x ou pelo y, ir e voltar, e escolher lugares bem diferentes. Se quiser, tente levar a chave até o alvo. Quando terminar, clique em Próxima parte.
 ```
 
 **Substituições na edição kids:**
 
 | ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
 | --- | --- | --- | --- | --- | --- | --- |
-| video-d3-posicao-K1 | Debinha | 1 | ela estava. O x escolhe o lugar na horizontal: um número menor leva para a esquerda, e um maior leva para a direita. | E para subir ou descer? | A gente muda o y. Agora eu deixo o x em 160 e mudo só Posição vertical y: ele está em 53, e eu escrevo 250 do mesmo | [curious] |
+| video-d3-posicao-K1 | Debinha | 1 | a gente usa dois números: x e y. O x escolhe o lugar na horizontal, para os lados. Um número menor leva para a esquerda; um maior leva para a direita. | E para subir ou descer? | A gente muda o y, que escolhe o lugar na vertical. Na tela do jogo, a contagem começa em zero lá em cima e cresce para baixo. Por isso, um y maior lev | [curious] |
 
 No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
+
+**Falas dentro da experiência:** `packages/core/src/learning/scene/discovery-guidance.ts`, exportadas em `zappy-etapas.json`. A orientação sugere comparações pelo estado observado; os controles permanecem livres.
 
 **Recado na página (não gravar):** Sua vez! Mude um número de cada vez e repare para onde a chave vai. Quando terminar, clique em Próxima parte.
 

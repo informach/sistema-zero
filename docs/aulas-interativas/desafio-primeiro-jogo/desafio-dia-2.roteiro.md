@@ -6,39 +6,31 @@ A professora grava toda a fala principal. Na edição kids, substituir apenas os
 
 **Clipe:** `video-d2-contexto`
 
-**Na tela:** abrir direto na experiência `collect-and-remember`, com a chave no chão. Na primeira frase, apontar o personagem e a chave da cena; o teste no projeto da pessoa fica para a retomada da parte 2. Depois demonstrar a coleta com Guardar a coleta desligado, no ritmo da fala. No "Repare neste nome aqui", apontar o mostrador `temChave`. No "Olha só", deixar ver a chave subindo e sumindo e o aviso novo na faixa do jogo. No "A regra da coleta", apontar a regra na bancada, começando pelo bloco do evento. No "tá vendo?", manter `temChave` em falso à vista.
+**Na tela:** Apresentar a analogia de anotar para lembrar. Mostrar a chave, o aviso e a memória como três elementos distintos. Nomear temChave e os valores falso/verdadeiro sem demonstrar a sequência inteira. A atividade permite mudar a regra, recolher, afastar e iniciar outra partida.
 
 **Fala para ElevenLabs:**
 
 ```text
-[engaging, energetic, conversational voice] O seu personagem já anda, mas passa pela chave sem pegar. Para o jogo saber que a chave foi pega, ele precisa guardar essa informação. Esta é uma experiência para a gente entender como uma variável guarda uma informação do jogo.
+[engaging, energetic, conversational voice] O seu personagem já anda. Agora o jogo vai precisar lembrar quando ele encontrou a chave. Para guardar essa informação, a gente usa uma variável, que é um lugar com nome onde o jogo guarda um valor.
 
-[confident, clear, unhurried voice] Repare neste nome aqui: temChave. temChave é uma variável: um lugar com nome onde o jogo guarda uma informação. O próprio nome é uma pergunta: o personagem tem chave? E a resposta só pode ser verdadeiro, que quer dizer sim, ou falso, que quer dizer não. Agora está falso, porque ele ainda não pegou a chave.
+[engaging, energetic, conversational voice] Sabe quando você anota uma coisa para lembrar depois? Aqui, o jogo usa a variável temChave. O nome ajuda a entender a pergunta: o personagem tem chave? Verdadeiro quer dizer sim; falso quer dizer não.
 
-[engaging, energetic, conversational voice] Sabe quando você anota uma coisa para lembrar depois? O jogo também precisa guardar o que aconteceu. Aqui, ele guarda na variável temChave: quando você pega a chave, essa informação muda para verdadeiro.
+[curious] Mas a chave sumiu. Isso já quer dizer que o jogo guardou?
 
-[interested, animated voice] Olha aqui: com Guardar a coleta desligado, eu clico em Encostar na chave. [interested, animated voice] Olha só: a chave saiu do chão, e o aviso mudou. Encostar na chave é um evento, que é uma coisa que acontece no jogo. A regra da coleta responde a esse evento: ela tira a chave do chão e muda o aviso. Mas tá vendo? temChave continua falso.
+[engaging, energetic, conversational voice] Fazer a chave sumir, mudar o aviso e guardar a coleta são ações diferentes. A informação só fica guardada se a regra também fizer isso.
 
-[curious] Mas a chave sumiu. Por que ainda está falso?
-
-[engaging, energetic, conversational voice] É que tirar a chave do chão não guarda essa informação. Olha aqui na regra: a linha Alterar temChave para verdadeiro está desligada. Falta anotar que a chave foi pega. E é essa anotação que a porta do farol vai conferir.
-
-[engaging, energetic, conversational voice] A regra só pode mudar com a chave no chão. Por isso, eu clico em Recomeçar a partida, ligo Guardar a coleta e clico em Encostar na chave de novo. [interested, animated voice] Olha só: a chave sumiu e o aviso mudou do mesmo jeito, mas desta vez temChave virou verdadeiro! O jogo anotou que a chave foi pega.
-
-[engaging, energetic, conversational voice] E quando eu clico em Afastar, temChave continua verdadeiro, mesmo longe da chave. É que a anotação fica guardada.
-
-[engaging, energetic, conversational voice] Por último, eu clico em Recomeçar a partida, e temChave volta para falso, porque uma partida nova começa com o caderno em branco.
-
-[upbeat, encouraging voice] Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte.
+[engaging, energetic, conversational voice] Agora compare essas ações na experiência. Observe a chave, o aviso e temChave. Experimente também se afastar e recomeçar a partida. Você escolhe a ordem dos testes. Quando terminar, clique em Próxima parte.
 ```
 
 **Substituições na edição kids:**
 
 | ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
 | --- | --- | --- | --- | --- | --- | --- |
-| video-d2-contexto-K1 | Dedé | 1 | regra da coleta responde a esse evento: ela tira a chave do chão e muda o aviso. Mas tá vendo? temChave continua falso. | Mas a chave sumiu. Por que ainda está falso? | É que tirar a chave do chão não guarda essa informação. Olha aqui na regra: a linha Alterar temChave para verdadeiro | [curious] |
+| video-d2-contexto-K1 | Dedé | 1 | is? Aqui, o jogo usa a variável temChave. O nome ajuda a entender a pergunta: o personagem tem chave? Verdadeiro quer dizer sim; falso quer dizer não. | Mas a chave sumiu. Isso já quer dizer que o jogo guardou? | Fazer a chave sumir, mudar o aviso e guardar a coleta são ações diferentes. A informação só fica guardada se a regra também fizer isso. Agora compare  | [curious] |
 
 No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
+
+**Falas dentro da experiência:** `packages/core/src/learning/scene/discovery-guidance.ts`, exportadas em `zappy-etapas.json`. A orientação sugere comparações pelo estado observado; os controles permanecem livres.
 
 **Recado na página (não gravar):** Sua vez! Faça os testes e fique de olho em temChave: compare o que some da tela com o que fica guardado. Quando terminar, clique em Próxima parte.
 

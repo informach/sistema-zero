@@ -392,3 +392,38 @@ test('sprite and group registration do not expose private identity sets through 
     bounds: { x: 31, y: 47, w: 20, h: 30 },
   })
 })
+
+test('contact observation reads collision geometry without mutating sprites or invoking authored getters and proxies', () => {
+  const result = vm.runInContext(
+    `(() => {
+  const inspect=__SZSTUDIO_RUNTIME_INSPECTORS['game-2d:observation']();
+  const actor=SZGame2D.createSprite({x:10,y:20,w:50,h:40});
+  const before=JSON.stringify(actor), box=inspect.contactBounds(actor), unchanged=JSON.stringify(actor)===before;
+  let calls=0;
+  Object.defineProperty(actor,'x',{get(){calls++;return 10},configurable:true});
+  const getter=inspect.contactBounds(actor);
+  Object.defineProperty(actor,'x',{value:10,configurable:true});
+  actor._hitboxArt=new Proxy({x:0,y:0,w:1,h:1},{get(){calls++;throw Error('Proxy read')},getOwnPropertyDescriptor(){calls++;throw Error('Proxy descriptor')}});
+  const proxyArt=inspect.contactBounds(actor);
+  const proxySprite=inspect.contactBounds(new Proxy(actor,{get(){calls++;throw Error('Proxy sprite')}}));
+  return {unchanged,box,getter,proxyArt,proxySprite,calls};
+ })()`,
+    canvasContext(),
+  )
+  expect(result.unchanged).toBe(true)
+  expect({ ...result.box }).toEqual({
+    destroyed: false,
+    x: 10,
+    y: 20,
+    w: 50,
+    h: 40,
+    rawX: 10,
+    rawY: 20,
+    rawW: 50,
+    rawH: 40,
+  })
+  expect(result.getter).toBeNull()
+  expect(result.proxyArt).toBeNull()
+  expect(result.proxySprite).toBeNull()
+  expect(result.calls).toBe(0)
+})

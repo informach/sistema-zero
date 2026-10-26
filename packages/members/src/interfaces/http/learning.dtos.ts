@@ -88,6 +88,14 @@ const SceneActionSchema = t.Union([
   t.Object({ type: t.Literal('restart-collection') }),
   // O andar do Farol (05/10/2026): a velocidade é uma das duas do domínio.
   t.Object({ type: t.Literal('hold-arrow'), held: t.Boolean() }),
+  t.Object({ type: t.Literal('movement-command'), enabled: t.Boolean() }),
+  t.Object({ type: t.Literal('walk-frames'), count: t.Union([t.Literal(1), t.Literal(10)]) }),
+  t.Object({
+    type: t.Literal('walk-order'),
+    order: t.Union([t.Literal('correct'), t.Literal('reverse')]),
+  }),
+  t.Object({ type: t.Literal('test-walk-order') }),
+  t.Object({ type: t.Literal('restart-hiding-places') }),
   t.Object({
     type: t.Literal('walk-speed'),
     speed: t.Union(LIGHTHOUSE_WALK_SPEEDS.map((v) => t.Literal(v))),
@@ -463,6 +471,7 @@ const SceneSetupActions = t.Array(SceneActionSchema, {
   maxItems: SETUP_LIMITS.actions,
 })
 const SceneSetupSchema = t.Object({
+  freeExploration: t.Optional(t.Boolean()),
   actions: t.Optional(SceneSetupActions),
   preset: t.Optional(
     t.Union([
@@ -684,14 +693,26 @@ function sectionRuleSchema(context: ExecutionStepValidationContext) {
       }),
       t
         .Transform(
-          t.Object(
-            { action: t.Literal('clickTarget'), target: t.Unknown() },
-            { additionalProperties: true },
-          ),
+          t.Union([
+            t.Object(
+              { action: t.Literal('clickTarget'), target: t.Unknown() },
+              { additionalProperties: true },
+            ),
+            t.Object(
+              {
+                action: t.Literal('approachSprite'),
+                actorPath: t.String(),
+                targetPath: t.String(),
+                timeoutMs: t.Number(),
+                avoidPaths: t.Optional(t.Array(t.String())),
+              },
+              { additionalProperties: true },
+            ),
+          ]),
         )
         .Decode((value) => {
           if (!isExecutionStep(value, context))
-            throw new ValidationError('O clique em alvo tem valores inválidos.')
+            throw new ValidationError('A interação com sprite tem valores inválidos.')
           return value
         })
         .Encode((value) => value),
