@@ -48,7 +48,7 @@ const TOOL_COLORS: Record<CreativeToolKey, string> = {
  * A tela de quem chega a uma ferramenta fechada (Estúdio à noite, 25/10/2026): o palco com o
  * recado à esquerda (o motivo, o próximo passo e a volta para Criar) e a arte da ferramenta com o
  * cadeado à direita. ⚠️ As rotas das ferramentas são de tela cheia (`data-embedded`, base de 16 px);
- * o `data-sz-tool-notice` devolve a letra de 20 px da comunidade só a esta tela (`globals.css`).
+ * o `data-sz-tool-notice` devolve a letra de 18 px da comunidade só a esta tela (`globals.css`).
  */
 export function ToolNotice({
   tool,

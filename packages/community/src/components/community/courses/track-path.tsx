@@ -15,7 +15,7 @@ const STATE_WORDS: Record<LevelState, string> = {
  * O caminho da trilha no cartão de Cursos (direção de arte de 18/10/2026): uma parada por nível que
  * TEM curso (nunca promete nível futuro), verde quando concluído, na cor de ação quando é o atual.
  * Desenho em `viewBox` fixo; as cores são os tokens da paleta, que seguem a cor da pessoa. ⚠️ Sem
- * texto dentro do desenho: escalado, ele ficava abaixo de 17 px; os nomes dos níveis estão nos
+ * texto dentro do desenho: escalado, ele ficava abaixo da menor letra (15 px); os nomes dos níveis estão nos
  * chips do cartão e na descrição do `aria-label`.
  */
 export function TrackPath({ stops }: { stops: Stop[] }) {

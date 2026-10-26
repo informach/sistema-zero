@@ -7,8 +7,8 @@
    e deixavam as moedas, a barra de compra, o troféu conquistado e o "Tirar" sem fundo.
 
    ⚠️ Duas réguas de letra: o avatar é tela cheia (`data-embedded`, raiz de 16 px), o espaço é página
-   (raiz de 20 px). Cada raiz declara as próprias medidas em `--cos-*`; o resto do arquivo só as lê.
-   Menor letra: 17 px nos dois. Alvos de toque: 44 px ou mais.
+   (raiz de 18 px). Cada raiz declara as próprias medidas em `--cos-*`; o resto do arquivo só as lê.
+   Menor letra: 15 px nos dois. Alvos de toque: 44 px ou mais.
    ⚠️ Nenhum hexadecimal da PALETA aqui (a cor de ação é a escolhida no perfil): só tokens do app e
    tintas de ESTADO (o texto do "Tirar"), como o `--aviso-texto` do globals.css.
    ============================================================================ */
@@ -26,20 +26,20 @@
   /* Raiz de 16 px (o avatar volta à base dos editores). */
   .sz-cos-av {
     --cos-text: 1.125rem;
-    --cos-small: 1.0625rem;
+    --cos-small: 0.9375rem;
     --cos-btn-h: 3.25rem;
     --cos-btn-h-sm: 3rem;
     --cos-chip-h: 2.75rem;
     --cos-swatch: 2.75rem;
   }
-  /* Raiz de 20 px (o espaço é página da comunidade). */
+  /* Raiz de 18 px (o espaço é página da comunidade). */
   .sz-cos-room {
     --cos-text: 1rem;
     --cos-small: 0.85rem;
     --cos-btn-h: 2.8rem;
-    --cos-btn-h-sm: 2.4rem;
-    --cos-chip-h: 2.2rem;
-    --cos-swatch: 2.4rem;
+    --cos-btn-h-sm: 2.5rem;
+    --cos-chip-h: 2.5rem;
+    --cos-swatch: 2.5rem;
   }
 
   /* ── Peças comuns ─────────────────────────────────────────────────────────────────── */

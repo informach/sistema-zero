@@ -184,20 +184,21 @@ rótulos com texto), sem nada que fale de idade ou exclua a outra célula. O des
 o Canvas "Comunidade adulta · direção de arte" (todas as telas, desktop e celular); ele usa só o que
 a plataforma já faz.
 
-- ⭐ **Letra base de 20 px.** `html { font-size: 125% }` no `globals.css`: tudo que é `rem` (as
-  páginas, o `@sistemazero/ui`, o player e os blocos do member-shell) cresce junto, sem bifurcar
-  componente compartilhado. Menor letra permitida: **17 px** (`--text-xs` sobe para `0.85rem`; não
+- ⭐ **Letra base de 18 px** (era 20 px até 26/10/2026; decisão dela: a página ficava inflada, com
+  pouco conteúdo por tela no notebook). `html { font-size: 112.5% }` no `globals.css`: tudo que é
+  `rem` (as páginas, o `@sistemazero/ui`, o player e os blocos do member-shell) cresce junto, sem
+  bifurcar componente compartilhado. Menor letra permitida: **15 px** (`--text-xs` sobe para `0.85rem`; não
   use `text-[0.8rem]` ou menos; o `size="sm"` do `Button`, que usa `text-[0.8rem]`, é corrigido no
   `globals.css`). ⚠️ As telas cheias de ferramenta (`data-embedded`: Estúdio, Pinta, Molda, Pensa e
   o avatar; e o jogo público `/jogar`, por `data-sz-public-player`) voltam a 100% e ao `--text-xs`
   do Tailwind: são editores densos com medidas próprias. O Estúdio DENTRO da aula e da sala ao vivo
-  segue a raiz de 20 px, como o resto da aula; a letra dos blocos é do editor (zoom + e −).
+  segue a raiz de 18 px, como o resto da aula; a letra dos blocos é do editor (zoom + e −).
   ⚠️ Media query em `rem` continua medindo 16 px (`xl` = 1280 px), é regra do CSS, não da raiz.
   ⚠️ Medida em px no JS de componente compartilhado não cresce com a raiz: o vídeo flutuante da aula
   (`FLOAT_BAR_HEIGHT`/`FLOAT_FRAME` do member-shell) tem a barra e a moldura presas em px aqui.
 - **Fontes**: Atkinson Hyperlegible Next (texto, `--font-sans`), Bricolage Grotesque (títulos,
   `--font-display`, `.sz-display`) e, desde 25/10/2026, Silkscreen (`--font-pixel`, só rótulos curtos de
-  17 px ou mais: `sz-kicker`, `sz-num`, os números do palco), por `next/font/google` no layout raiz.
+  15 px ou mais: `sz-kicker`, `sz-num`, os números do palco), por `next/font/google` no layout raiz.
   Linha de 1.6.
 - **Vocabulário de classes** (bloco "A PELE DA COMUNIDADE ADULTA" do `globals.css`): `sz-page`
   (largura e respiro), `sz-band` (a faixa do topo de cada página), `sz-kicker`, `sz-h1`…`sz-h4`,
@@ -205,9 +206,9 @@ a plataforma já faz.
   `sz-iconbtn`, `sz-link`, `sz-chip` (+ `-ok`, `-acao`, `-aviso`, `-novo`, `-escuro`), `sz-num`,
   `sz-tile`, `sz-label` (⚠️ nunca `sz-bar`: é a barra de ferramentas do Estúdio, no mesmo CSS) e, do
   "Estúdio à noite", `sz-palco`, `sz-hud` e `sz-mira` (ver §Estúdio à noite).
-  Botão é retângulo de cantos de 14 px e 56 px de altura; desde 25/10/2026 o `sz-btn` é o AMARELO com
+  Botão é retângulo de cantos de 14 px e 50 px de altura (2,8rem); desde 25/10/2026 o `sz-btn` é o AMARELO com
   degrau (ver §Estúdio à noite); o `[data-slot="button"]` do
-  `@sistemazero/ui` segue a mesma forma (48 px), só nas páginas da comunidade (o escopo é a raiz
+  `@sistemazero/ui` segue a mesma forma (45 px, 2,5rem: alvo nunca abaixo de 44 px), só nas páginas da comunidade (o escopo é a raiz
   sem `data-embedded`, num `:where()` sem peso). Chip sempre com ícone ou palavra, nunca só cor.
   Tons: `--acao-tint` e `--sucesso-tint` por `color-mix`, `--aviso-tint` = o amarelo de superfície do
   `ui`, `--aviso-texto` um literal de tinta: ⚠️ nada de hexadecimal da PALETA aqui (o contrato do
@@ -217,7 +218,7 @@ a plataforma já faz.
   voltar, ações), `PageBody`, `BackLink`, `SectionHeader`. Cada página desenha a própria faixa de
   ponta a ponta e cuida da largura (`sz-page`): o `CommunityFrame` só dá a moldura antiga
   (`max-w-6xl`) à **aula** e à **sala ao vivo**, que são componentes do Kids e mantêm o layout.
-- **Aula**: mesmo layout do player compartilhado; muda só a pele (rodapé com botões de 56 px,
+- **Aula**: mesmo layout do player compartilhado; muda só a pele (rodapé com botões de 50 px,
   chips das atividades com fundo, a letra maior pela raiz). Nada de regra nova no member-shell.
 - **Créditos do Zappy e do Pensa**: o cálculo mora no `core` (`resolveAiCredits(view, { audience:
   'adult' })`) e chega ao Pensa e ao Zappy do Estúdio pelo `audience`. O cartão fica em **Meu
@@ -285,7 +286,7 @@ plataforma já faz (as sugestões de recurso novo do Canvas ficaram de fora, dec
   grande com mira, módulo atual com moldura amarela), Seu progresso (números com rótulo em pixel
   colorido; a Jornada como uma linha de etapas com "Você está aqui" e o cartão da etapa atual), Criar
   (as ferramentas no palco, cada uma com a arte na cor dela; a tela de ferramenta fechada,
-  `ToolNotice`, é um palco com a arte e o cadeado, e o `data-sz-tool-notice` devolve a letra de 20 px
+  `ToolNotice`, é um palco com a arte e o cadeado, e o `data-sz-tool-notice` devolve a letra de 18 px
   dentro da rota de tela cheia), Comunidade (Mural, Desafio do mês e Ranking em cartões com arte no
   palco; o Clube na bancada), Desafio do mês (palco com a faixa amarela e os passos), Ranking (a liga
   da semana no palco, com as linhas de quem sobe e de quem volta), Recados (ícone por tipo e a
