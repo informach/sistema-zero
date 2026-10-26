@@ -110,6 +110,11 @@ const SceneActionSchema = t.Union([
     type: t.Literal('find-character'),
     id: t.Union([t.Literal(0), t.Literal(1), t.Literal(2)]),
   }),
+  t.Object({ type: t.Literal('other-hiding-place') }),
+  t.Object({
+    type: t.Literal('touch-hiding-place'),
+    id: t.Union([t.Literal(0), t.Literal(1)]),
+  }),
   t.Object({ type: t.Literal('look-around') }),
   t.Object({ type: t.Literal('restart-search') }),
   t.Object({
