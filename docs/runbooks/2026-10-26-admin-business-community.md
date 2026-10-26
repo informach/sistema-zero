@@ -189,3 +189,10 @@ adicionais já exigidas pelos manifestos commitados: outro esconderijo e toque r
 percurso foi completado por ações reais do motor, sem marcar metas artificialmente nem mudar
 manifestos/falas. Core completo passou 1.607 testes/82.059 asserções; a suíte de desenho das
 cenas Kids que compartilha o percurso passou 138 testes/502 asserções.
+
+A rota completa expôs uma lacuna real no DTO Members: `other-hiding-place` e
+`touch-hiding-place` existiam no motor, mas não na autoria HTTP tipada. Incluídas as duas
+ações com IDs estritos 0/1, prova de ida/volta sem poda e cinco negativos para IDs inválidos.
+Suíte Members posterior: 1.968 positivos/14.664 asserções, 532 condicionais pulados, zero
+falhas; tipagem completa Members passou. O teste de integração que revelou o defeito
+permanece ativo.
