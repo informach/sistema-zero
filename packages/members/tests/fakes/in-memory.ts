@@ -29,6 +29,7 @@ import {
   isCompletionGatingBlock,
   type PintaBlock,
   pintaAssetKindOf,
+  remapBlockAttachmentIds,
   toMemberFacingStudioContent,
 } from '../../src/domain/course/lesson-block'
 import { type QuizAttemptSummary, quizGateFingerprint } from '../../src/domain/course/quiz'
@@ -717,11 +718,23 @@ export class InMemoryCourseRepository implements CourseRepository, ContentAdminR
       for (const l of this.lessons.filter((l) => l.moduleId === m.id)) {
         const newLessonId = randomUUID()
         this.lessons.push({ ...l, id: newLessonId, moduleId: newModuleId, courseId: clone.id })
+        const attachmentIds = new Map(
+          this.attachments.filter((a) => a.lessonId === l.id).map((a) => [a.id, randomUUID()]),
+        )
         for (const b of this.blocks.filter((b) => b.lessonId === l.id)) {
-          this.blocks.push({ ...b, id: randomUUID(), lessonId: newLessonId })
+          this.blocks.push({
+            ...b,
+            id: randomUUID(),
+            lessonId: newLessonId,
+            content: remapBlockAttachmentIds(b.content, (id) => attachmentIds.get(id)),
+          })
         }
         for (const a of this.attachments.filter((a) => a.lessonId === l.id)) {
-          this.attachments.push({ ...a, id: randomUUID(), lessonId: newLessonId })
+          this.attachments.push({
+            ...a,
+            id: attachmentIds.get(a.id) as string,
+            lessonId: newLessonId,
+          })
         }
       }
     }

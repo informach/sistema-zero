@@ -16,7 +16,7 @@ const labels: Record<string, string> = {
   lesson_complete: 'Concluir aulas',
   quiz_passed: 'Passar nos quizzes',
   unit_complete: 'Concluir módulos',
-  studio_submitted: 'Enviar projetos ao professor',
+  studio_submitted: 'Enviar projetos à equipe',
   course_showcased: 'Publicar projetos dos cursos',
   course_rated: 'Avaliar cursos',
   room_item_buy: 'Personalizar seu espaço',

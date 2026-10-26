@@ -5,7 +5,7 @@
  * - o formato que o Importar do admin aceita (`HelpImportBody`, sem campo a mais);
  * - a coleção de cada tutorial existe, as posições não se repetem;
  * - slugs únicos, `related` e links `[..](/como-fazer/<slug>)` do corpo apontam para tutoriais do lote;
- * - exatamente 50 tutoriais em 8 coleções, cada coleção com pelo menos 3 tutoriais;
+ * - exatamente 64 tutoriais em 8 coleções, cada coleção com pelo menos 3 tutoriais;
  * - de 3 a 6 passos por tutorial (régua editorial deste lote);
  * - a linguagem comum (ver `vocabularioAdulto` abaixo).
  *
@@ -23,10 +23,13 @@ import {
   validateHelpCollection,
   validateHelpTutorial,
 } from '../../packages/core/src/help'
-import { PALAVRAS_DA_ESCOLA } from '../aulas-interativas-tecnico/qa/palavras-da-escola'
+import {
+  CONCORDANCIA_ERRADA,
+  PALAVRAS_DA_ESCOLA,
+} from '../aulas-interativas-tecnico/qa/palavras-da-escola'
 
 /** Tamanho do lote combinado no plano da biblioteca adulta (mude aqui se o lote crescer). */
-const TOTAL_DE_TUTORIAIS = 50
+const TOTAL_DE_TUTORIAIS = 64
 const TOTAL_DE_COLECOES = 8
 const MINIMO_POR_COLECAO = 3
 const PASSOS_MIN = 3
@@ -54,12 +57,21 @@ const CHAVES_PASSO = new Set(['id', 'title', 'body', 'imageUrl', 'imageAlt'])
  * O vocabulário da comunidade adulta nos textos que a pessoa LÊ: título e descrição da coleção;
  * título, resumo, título e corpo de cada passo e texto alternativo da imagem. O público é de
  * adultos iniciantes (a régua de leitura é de 50 a 70 anos, sem nunca tratar a pessoa como idosa):
- * - nomes de navegação comuns, permitindo temas de aventura e fases reais de jogo;
+ * - os MESMOS nomes das duas comunidades desde 21/10/2026 (Diretrizes Pedagógicas, seção 6):
+ *   curso → módulo → aula → parte, Próxima parte, Concluir aula, Enviar meu projeto. Reprovam os
+ *   rótulos antigos de navegação (`PALAVRAS_DA_ESCOLA`) e a concordância que a troca palavra por
+ *   palavra deixa ("o parte", "próximo parte", "uma curso": `CONCORDANCIA_ERRADA`);
+ * - quem recebe e responde é **a equipe**: "professor(a)" reprova. Quem conduz uma oficina ao vivo
+ *   também não tem gênero fixo na tela ("quem conduz", ou o nome);
+ * - o recurso tem nome, sem "IA" solta: o Zappy, o Pensa, créditos, assistente virtual;
+ * - botão é "clique em": "toque/aperte em **Botão**" reprova;
  * - "Mostra" com maiúscula é o nome antigo do Mural dos Criadores (o verbo "mostra" passa);
  * - nada de tratamento que infantiliza ou envelhece (senhor, senhora, vovó, vovô, idoso);
  * - "criança": a ajuda adulta fala com o dono da conta.
- * Ficam de fora as `keywords` (a busca precisa achar "mostra" e "missão", que a pessoa digita por
- * costume ou porque leu numa tela compartilhada) e o endereço dos links (é slug).
+ * Ficam de fora as `keywords` (a busca precisa achar "mostra", "professor", "seção" e "IA", que a
+ * pessoa digita por costume ou porque leu numa tela compartilhada) e o endereço dos links (é slug).
+ * "Seção" e "missão" não reprovam: o contador da aula ainda diz "Seção 2 de 5" e "Missões" é o
+ * nome de uma parte de Seu progresso e das tarefas do Pensa. Cite-as só como a tela as escreve.
  */
 /**
  * Palavra inteira com fronteira UNICODE: o `\b` do JavaScript só conhece letras ASCII, e "vovó"
@@ -75,6 +87,23 @@ const PALAVRAS_PROIBIDAS: ReadonlyArray<{ padrao: RegExp; motivo: string }> = [
     motivo: 'rótulo anterior à linguagem comum',
   },
   // Só com maiúscula: o verbo "mostra" ("a tela mostra") continua valendo.
+  {
+    padrao: new RegExp(CONCORDANCIA_ERRADA.source, 'giu'),
+    motivo: 'concordância errada depois da troca de nomes',
+  },
+  {
+    padrao: palavra('professor(?:a|es|as)?'),
+    motivo: 'quem recebe e responde é "a equipe"; na oficina, "quem conduz"',
+  },
+  {
+    padrao: palavra('IA|intelig[êe]ncia artificial', 'gu'),
+    motivo: 'o recurso tem nome: o Zappy, o Pensa, créditos ou assistente virtual',
+  },
+  {
+    padrao:
+      /(?<![\p{L}\p{N}_])(?:toque|tocar|toca|aperte|apertar|aperta)\s+(?:em|no|na|nos|nas)\s+\*\*/giu,
+    motivo: 'botão e controle é "clique em"',
+  },
   { padrao: palavra('Mostra', 'gu'), motivo: 'nome antigo: no adulto é "Mural"' },
   { padrao: palavra('senhor(?:a|es|as)?'), motivo: 'tratamento que envelhece: use "você"' },
   { padrao: palavra('vov[óô]s?'), motivo: 'tratamento que infantiliza ou envelhece' },

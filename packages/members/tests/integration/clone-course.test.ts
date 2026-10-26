@@ -58,6 +58,55 @@ describe('clone de curso para a outra plataforma', () => {
     )
   })
 
+  // O clone deixava o e-book e os materiais apontando para os anexos da ORIGEM, e o arquivo
+  // aparecia "sem uso" na aula copiada (26/10/2026).
+  test('e-book e materiais passam a citar os anexos copiados, com a marca do Zappy', async () => {
+    const { app, courses } = buildApp()
+    const { courseId, lessonIds } = seedSampleCourse(courses, 'curso-anexos', 'published', 'kids')
+    const original = courses.attachments.find((a) => a.lessonId === lessonIds[0])
+    if (!original) throw new Error('fixture sem anexo')
+    original.zappyStudentNotebook = true
+    courses.blocks.push({
+      id: crypto.randomUUID(),
+      lessonId: lessonIds[0],
+      kind: 'materials',
+      sortOrder: 9,
+      content: {
+        kind: 'materials',
+        items: [
+          { id: 'caderno', kind: 'file', attachmentId: original.id },
+          { id: 'site', kind: 'link', url: 'https://exemplo.com', label: 'Site' },
+        ],
+      },
+    })
+
+    const res = await clone(app, courseId, { audience: 'adult' })
+    expect(res.status).toBe(201)
+    const view = await readJson(res)
+    const lessonIdsClone = new Set(
+      courses.lessons.filter((l) => l.courseId === view.id).map((l) => l.id),
+    )
+    const copia = courses.attachments.find((a) => lessonIdsClone.has(a.lessonId))
+    if (!copia) throw new Error('clone sem anexo')
+    expect(copia.id).not.toBe(original.id)
+    expect(copia.zappyStudentNotebook).toBe(true)
+    const blocos = courses.blocks.filter((b) => lessonIdsClone.has(b.lessonId))
+    const ebook = blocos.find((b) => b.content.kind === 'ebook')
+    const materiais = blocos.find((b) => b.content.kind === 'materials')
+    expect(ebook?.content.kind === 'ebook' && ebook.content.attachmentId).toBe(copia.id)
+    expect(materiais?.content.kind === 'materials' && materiais.content.items).toEqual([
+      { id: 'caderno', kind: 'file', attachmentId: copia.id },
+      { id: 'site', kind: 'link', url: 'https://exemplo.com', label: 'Site' },
+    ])
+    // A origem fica como estava.
+    const materiaisOrigem = courses.blocks.find(
+      (b) => b.lessonId === lessonIds[0] && b.content.kind === 'materials',
+    )
+    expect(
+      materiaisOrigem?.content.kind === 'materials' && materiaisOrigem.content.items[0],
+    ).toEqual({ id: 'caderno', kind: 'file', attachmentId: original.id })
+  })
+
   test('clone adulto→kids mantém o studioUnlockBlocks; slug/título custom valem', async () => {
     const { app, courses } = buildApp()
     const { courseId } = seedSampleCourse(courses, 'curso-adulto', 'published', 'adult')

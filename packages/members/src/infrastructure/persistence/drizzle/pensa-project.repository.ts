@@ -1,6 +1,7 @@
 import { createHash, randomUUID } from 'node:crypto'
 import * as P from '@sistemazero/core/pensa'
 import { and, count, desc, eq, inArray, isNull, ne, sql } from 'drizzle-orm'
+import { pensaOperationRetryable } from '../../../domain/pensa/operation-budget'
 import { pensaError } from '../../../domain/pensa/project.errors'
 import type { Database } from './db'
 import { lockPensaAccount, releasePensaReservation, releasePensaUsage } from './pensa-reservations'
@@ -52,6 +53,8 @@ export function operationView(row: typeof pensaOperations.$inferSelect): P.Pensa
     status: row.status,
     calls: row.calls,
     error: row.error,
+    // Só a falha diz se uma nova tentativa ainda cabe no orçamento (a mesma régua da reivindicação).
+    ...(row.status === 'failed' ? { retryable: pensaOperationRetryable(row) } : {}),
     createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt.toISOString(),
   })

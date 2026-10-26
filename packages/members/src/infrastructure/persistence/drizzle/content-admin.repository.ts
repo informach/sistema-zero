@@ -29,7 +29,11 @@ import {
   CreatorSeedMetadataSchema,
   creatorSeedRequiredLessonIds,
 } from '../../../domain/course/creator-seed-metadata'
-import type { LessonBlockContent, LessonBlockKind } from '../../../domain/course/lesson-block'
+import {
+  type LessonBlockContent,
+  type LessonBlockKind,
+  remapBlockAttachmentIds,
+} from '../../../domain/course/lesson-block'
 import { quizGateFingerprint } from '../../../domain/course/quiz'
 import {
   assertNoLegacyStudioExamples,
@@ -528,10 +532,15 @@ export class DrizzleContentAdminRepository implements ContentAdminRepository {
         if (!mapped) throw new Error('Parte ausente no mapa do clone')
         return mapped
       }
+      // Os anexos ganham ids novos, e os blocos que os citam (e-book, materiais) acompanham.
+      const attachmentIdMap = new Map(srcAttachments.map((a) => [a.id, randomUUID()]))
       const clonedContents = new Map(
         srcBlocks.map((block) => [
           block.id,
-          remapStudioExampleContent(block.content, (sectionId) => sectionIdMap.get(sectionId)),
+          remapBlockAttachmentIds(
+            remapStudioExampleContent(block.content, (sectionId) => sectionIdMap.get(sectionId)),
+            (id) => attachmentIdMap.get(id),
+          ),
         ]),
       )
       // The full target context is checked before any cloned registry is persisted.
@@ -642,12 +651,13 @@ export class DrizzleContentAdminRepository implements ContentAdminRepository {
       if (srcAttachments.length > 0) {
         await tx.insert(lessonAttachments).values(
           srcAttachments.map((a) => ({
-            id: randomUUID(),
+            id: attachmentIdMap.get(a.id) as string,
             lessonId: lessonIdMap.get(a.lessonId) as string,
             label: a.label,
             url: a.url,
             fileType: a.fileType,
             sizeBytes: a.sizeBytes,
+            zappyStudentNotebook: a.zappyStudentNotebook,
             sortOrder: a.sortOrder,
           })),
         )

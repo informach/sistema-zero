@@ -12,6 +12,7 @@ import { createCodeObservationRegistry } from '../monaco/codeObservation'
 import { snapshotProjectWithCurrentAuthority } from '../state/bridgeAuthority'
 import { prepareEditableStudioProject } from '../state/editableProjectValidation'
 import { flushProjectOperations } from '../state/projectOperations'
+import { inheritLocalRevision } from '../state/projectStorageRevision'
 import { useProjectStore, useProjectStoreApi } from '../state/projectStore'
 import { useSettingsStore } from '../state/settingsStore'
 import { StudioStoresContext } from '../state/storesContext'
@@ -391,7 +392,11 @@ function StudioCoreBody({
             listener()
         }),
       save: () => persistence.save(),
-      replaceProject: (project) => setReplacedProject(project),
+      // O snapshot do host (o envio que veio da rede) não tem linhagem local: com o mesmo id do
+      // documento aberto, ele continua a base durável DESTE editor. Sem isso o autosave seguinte
+      // nascia sem base e o CAS acusava "alterado ou apagado em outra aba" com uma aba só.
+      replaceProject: (project) =>
+        setReplacedProject(inheritLocalRevision(projectStoreApi.getState().project, project)),
       prepareHandoff: async () => {
         pendingEditorEdits?.flush()
         await flushProjectOperations(projectStoreApi)

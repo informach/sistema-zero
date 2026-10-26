@@ -118,12 +118,12 @@ export const BADGE_INFO: Record<BadgeSlug, BadgeInfo> = {
   },
   'studio-master-3': {
     title: 'Oficina de jogos',
-    description: 'Três projetos do Estúdio alcançaram a meta!',
+    description: 'Você cumpriu os objetivos do Estúdio em três aulas!',
     icon: Gamepad2,
   },
   'studio-master-10': {
     title: 'Mestre do Estúdio',
-    description: 'Dez projetos do Estúdio alcançaram a meta. Você é um game designer!',
+    description: 'Você cumpriu os objetivos do Estúdio em dez aulas. Você é um game designer!',
     icon: Crown,
   },
   'coins-saver-300': {
@@ -143,12 +143,12 @@ export const BADGE_INFO: Record<BadgeSlug, BadgeInfo> = {
   },
   'pensa-first-launch': {
     title: 'Plano aprovado',
-    description: 'Você organizou e aprovou a Versão 1 do plano de um jogo!',
+    description: 'Você concluiu o seu primeiro projeto com o Pensa!',
     icon: Rocket,
   },
   'pensa-creator-3': {
     title: 'Cabeça de criador',
-    description: 'Três versões planejadas com o Pensa. Você pensa como gente grande!',
+    description: 'Três projetos concluídos com o Pensa. Você pensa como gente grande!',
     icon: BrainCircuit,
   },
   'challenge-first': {
