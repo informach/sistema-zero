@@ -93,7 +93,7 @@ export function StepsEditor({
   /** A posição relativa compara uma única tecla, com controle idle separado. */
   singlePress?: boolean
   environment?: PythonExecutionEditorEnvironment
-  onChange: (steps: ExecutionStep[]) => void
+  onChange: (steps: ExecutionStep[], removedAt?: number) => void
 }) {
   const python = environment?.language === 'python'
   const graphics = !python || environment.graphics !== 'none'
@@ -261,32 +261,34 @@ export function StepsEditor({
               ms
             </label>
           )}
-          {step.action === 'click' && (
-            <>
-              {(['x', 'y'] as const).map((axis) => (
-                <label key={axis} className="flex items-center gap-1">
-                  {axis}
-                  <Input
-                    type="number"
-                    className="w-20"
-                    aria-label={`${axis} do clique no passo ${at + 1}`}
-                    min={0}
-                    max={EXECUTION_LIMITS.maxCoordinate}
-                    value={step[axis]}
-                    onChange={(e) =>
-                      patch(at, { ...step, [axis]: Math.max(0, Number(e.target.value) || 0) })
-                    }
-                  />
-                </label>
-              ))}
-            </>
-          )}
+          {step.action === 'click' &&
+            (['x', 'y'] as const).map((axis) => (
+              <label key={axis} className="flex items-center gap-1">
+                {axis}
+                <Input
+                  type="number"
+                  className="w-20"
+                  aria-label={`${axis} do clique no passo ${at + 1}`}
+                  min={0}
+                  max={EXECUTION_LIMITS.maxCoordinate}
+                  value={step[axis]}
+                  onChange={(e) =>
+                    patch(at, { ...step, [axis]: Math.max(0, Number(e.target.value) || 0) })
+                  }
+                />
+              </label>
+            ))}
           <Button
             variant="ghost"
             size="sm"
             aria-label={`Tirar o passo ${at + 1}`}
             disabled={singlePress && steps.length === 1}
-            onClick={() => onChange(steps.filter((_, i) => i !== at))}
+            onClick={() =>
+              onChange(
+                steps.filter((_, i) => i !== at),
+                at,
+              )
+            }
           >
             Tirar
           </Button>
@@ -316,8 +318,123 @@ export function StepsEditor({
   )
 }
 
-function BehaviorEditor({
+type BehaviorEditorProps = {
+  rule: Behavior
+  index: number
+  isPro: boolean
+  isKit: boolean
+  kitFields?: readonly ExecutionGameField[]
+  environment?: PythonExecutionEditorEnvironment
+  onChange: (rule: Behavior) => void
+}
+
+function BehaviorEditor(props: BehaviorEditorProps) {
+  const { rule, index, environment, onChange } = props
+  const checkpoints = rule.checkpoints ?? []
+  const setCheckpoints = (next: NonNullable<Behavior['checkpoints']>, steps = rule.steps) => {
+    const { checkpoints: _previous, ...rest } = rule
+    onChange({ ...rest, steps, ...(next.length ? { checkpoints: next } : {}) })
+  }
+  return (
+    <div className="space-y-3">
+      <StepsEditor
+        steps={rule.steps}
+        index={index}
+        singlePress={rule.expect.target.kind === 'spritePosition'}
+        environment={environment}
+        onChange={(steps, removedAt) => {
+          // A checkpoint belongs to the observed step. Removing it also removes that observation.
+          const next =
+            removedAt === undefined
+              ? checkpoints
+              : checkpoints
+                  .filter((point) => point.afterStep !== removedAt + 1)
+                  .map((point) => ({
+                    ...point,
+                    afterStep:
+                      point.afterStep > removedAt + 1 ? point.afterStep - 1 : point.afterStep,
+                  }))
+          setCheckpoints(next, steps)
+        }}
+      />
+      <ExpectationEditor {...props} />
+      {environment?.language !== 'python' && rule.expect.target.kind !== 'spritePosition' && (
+        <fieldset className="space-y-3 rounded-lg border border-border p-3">
+          <legend className="font-medium">Verificações durante o teste</legend>
+          <p className="text-xs text-muted-foreground">
+            Todas precisam passar. Ao tirar um passo, sua verificação também é retirada; as
+            seguintes acompanham a nova numeração.
+          </p>
+          {checkpoints.map((point, at) => (
+            // biome-ignore lint/suspicious/noArrayIndexKey: fields are controlled by the rule
+            <div key={at} className="space-y-2 border-b border-border pb-3">
+              <label className="block text-sm">
+                Quando conferir
+                <Select
+                  aria-label={`Momento da verificação ${at + 1} do objetivo ${index + 1}`}
+                  value={point.afterStep}
+                  onChange={(e) =>
+                    setCheckpoints(
+                      checkpoints.map((p, i) =>
+                        i === at ? { ...p, afterStep: Number(e.target.value) } : p,
+                      ),
+                    )
+                  }
+                >
+                  <option value={0}>Antes dos passos</option>
+                  {rule.steps.map((_, step) => (
+                    // biome-ignore lint/suspicious/noArrayIndexKey: options represent step numbers, not stateful step components
+                    <option key={step + 1} value={step + 1}>
+                      Após o passo {step + 1}
+                    </option>
+                  ))}
+                </Select>
+              </label>
+              <ExpectationEditor
+                {...props}
+                checkpointIndex={at}
+                rule={{ ...rule, expect: point.expect }}
+                onChange={(next) =>
+                  setCheckpoints(
+                    checkpoints.map((p, i) => (i === at ? { ...p, expect: next.expect } : p)),
+                  )
+                }
+              />
+              <Button
+                variant="ghost"
+                size="sm"
+                aria-label={`Tirar verificação ${at + 1}`}
+                onClick={() => setCheckpoints(checkpoints.filter((_, i) => i !== at))}
+              >
+                Tirar verificação
+              </Button>
+            </div>
+          ))}
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={checkpoints.length >= 8}
+            onClick={() =>
+              setCheckpoints([
+                ...checkpoints,
+                {
+                  afterStep: rule.steps.length,
+                  expect: { target: { kind: 'text' }, compare: 'equals', value: '' },
+                },
+              ])
+            }
+          >
+            Adicionar verificação intermediária
+          </Button>
+        </fieldset>
+      )}
+    </div>
+  )
+}
+
+function ExpectationEditor({
   rule,
+  checkpointIndex,
   index,
   isPro,
   isKit,
@@ -326,6 +443,7 @@ function BehaviorEditor({
   onChange,
 }: {
   rule: Behavior
+  checkpointIndex?: number
   index: number
   isPro: boolean
   isKit: boolean
@@ -333,6 +451,11 @@ function BehaviorEditor({
   environment?: PythonExecutionEditorEnvironment
   onChange: (rule: Behavior) => void
 }) {
+  const position =
+    checkpointIndex === undefined
+      ? String(index + 1)
+      : `${index + 1}, verificação ${checkpointIndex + 1}`
+  const allowMotion = checkpointIndex === undefined && !rule.checkpoints?.length
   const python = environment?.language === 'python'
   const kitHas = (field: ExecutionGameField) => isKit && (!kitFields || kitFields.includes(field))
   const { target, compare } = rule.expect
@@ -347,14 +470,16 @@ function BehaviorEditor({
   const comparisons = EXECUTION_COMPARES.filter((value) =>
     motion
       ? relative(value)
-      : (python && target.kind === 'value') || target.kind === 'moduleValue'
-        ? true
-        : !relative(value),
+      : checkpointIndex !== undefined
+        ? !relative(value)
+        : (python && target.kind === 'value') || target.kind === 'moduleValue'
+          ? true
+          : !relative(value),
   )
   const comparisonFits = comparisons.includes(compare)
   const withTarget = (next: ExecutionTarget) => {
     if (next.kind === 'spritePosition') {
-      if (!hasOnePress || (isPro && !python) || !actorPositions) return
+      if (!allowMotion || !hasOnePress || (isPro && !python) || !actorPositions) return
       const { value: _value, ...expect } = rule.expect
       onChange({
         ...rule,
@@ -379,18 +504,15 @@ function BehaviorEditor({
   const needsValue = !EXECUTION_COMPARES_WITHOUT_VALUE.includes(compare)
   return (
     <div className="space-y-3">
-      <StepsEditor
-        steps={rule.steps}
-        index={index}
-        singlePress={motion}
-        environment={environment}
-        onChange={(steps) => onChange({ ...rule, steps })}
-      />
       <fieldset className="space-y-2 text-sm">
-        <legend className="font-medium">No fim, conferir</legend>
+        <legend className="font-medium">
+          {checkpointIndex === undefined
+            ? 'No fim, conferir'
+            : `Verificação ${checkpointIndex + 1}`}
+        </legend>
         <div className="flex flex-wrap items-center gap-2">
           <Select
-            aria-label={`O que conferir no objetivo ${index + 1}`}
+            aria-label={`O que conferir no objetivo ${position}`}
             value={target.kind === 'game' ? `game:${target.field}` : target.kind}
             onChange={(e) => {
               const value = e.target.value
@@ -422,7 +544,7 @@ function BehaviorEditor({
             )}
             <option
               value="spritePosition"
-              disabled={(isPro && !python) || !hasOnePress || !actorPositions}
+              disabled={!allowMotion || (isPro && !python) || !hasOnePress || !actorPositions}
             >
               A posição de um personagem após uma tecla
             </option>
@@ -445,9 +567,26 @@ function BehaviorEditor({
               </>
             )}
           </Select>
+          {target.kind === 'text' && (
+            <label className="space-y-1">
+              <span className="block text-xs">Seletor do texto (vazio: página inteira)</span>
+              <Input
+                aria-label={`Seletor do texto do objetivo ${position}`}
+                value={target.selector ?? ''}
+                maxLength={200}
+                onChange={(e) =>
+                  withTarget(
+                    e.target.value.trim()
+                      ? { kind: 'text', selector: e.target.value }
+                      : { kind: 'text' },
+                  )
+                }
+              />
+            </label>
+          )}
           {target.kind === 'value' && (
             <Input
-              aria-label={`Variável do objetivo ${index + 1}`}
+              aria-label={`Variável do objetivo ${position}`}
               placeholder="pontos ou heroi.x"
               className="w-40"
               maxLength={200}
@@ -458,7 +597,7 @@ function BehaviorEditor({
           {target.kind === 'moduleValue' && (
             <>
               <Input
-                aria-label={`Arquivo do valor do objetivo ${index + 1}`}
+                aria-label={`Arquivo do valor do objetivo ${position}`}
                 placeholder="src/main.ts"
                 value={target.module}
                 maxLength={200}
@@ -466,7 +605,7 @@ function BehaviorEditor({
                 onChange={(e) => withTarget({ ...target, module: e.target.value.trim() })}
               />
               <Input
-                aria-label={`Valor exportado do objetivo ${index + 1}`}
+                aria-label={`Valor exportado do objetivo ${position}`}
                 placeholder="jogador.position.z"
                 value={target.path}
                 maxLength={200}
@@ -481,7 +620,7 @@ function BehaviorEditor({
           {target.kind === 'spritePosition' && (
             <>
               <Input
-                aria-label={`Personagem do objetivo ${index + 1}`}
+                aria-label={`Personagem do objetivo ${position}`}
                 placeholder="Nome do personagem"
                 className="w-40"
                 maxLength={200}
@@ -489,7 +628,7 @@ function BehaviorEditor({
                 onChange={(e) => withTarget({ ...target, path: e.target.value })}
               />
               <Select
-                aria-label={`Eixo do objetivo ${index + 1}`}
+                aria-label={`Eixo do objetivo ${position}`}
                 value={target.axis}
                 onChange={(e) => {
                   const axis = e.target.value
@@ -502,7 +641,7 @@ function BehaviorEditor({
             </>
           )}
           <Select
-            aria-label={`Comparação do objetivo ${index + 1}`}
+            aria-label={`Comparação do objetivo ${position}`}
             value={compare}
             onChange={(e) => {
               const next = comparisons.find((option) => option === e.target.value)
@@ -535,7 +674,7 @@ function BehaviorEditor({
           </Select>
           {needsValue && (
             <Input
-              aria-label={`Valor esperado do objetivo ${index + 1}`}
+              aria-label={`Valor esperado do objetivo ${position}`}
               className="w-32"
               maxLength={EXECUTION_LIMITS.maxTextChars}
               value={formatJson(rule.expect.value ?? '')}

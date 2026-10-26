@@ -31,6 +31,10 @@ const CAMPOS_COMPATIVEIS = new Set([
   'match.scoreClock',
   'match.scoreFrameTicks',
   'match.foundIds',
+  'match.gardenRound',
+  'match.gardenChosen',
+  'match.gardenFound',
+  'match.counterUpdate',
   'lighthouse.checkedKey',
 ])
 

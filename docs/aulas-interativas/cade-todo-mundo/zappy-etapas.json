@@ -1,0 +1,60 @@
+{
+  "version": 1,
+  "experiences": {
+    "experiencia-toque": [
+      {
+        "id": "touch-complete",
+        "text": "Você viu a regra em outro esconderijo. Experimente os toques na ordem que quiser."
+      },
+      {
+        "id": "touch-connect",
+        "text": "Agora ligue a reação ao toque. O mesmo toque poderá executar uma ação.",
+        "primary": "connect"
+      },
+      {
+        "id": "touch-first",
+        "text": "Primeiro, toque no arbusto. Observe o jardim com a reação desligada."
+      },
+      {
+        "id": "touch-other",
+        "text": "Agora toque nas pedras. Qual esconderijo deve ficar invisível? Observe o escolhido na ligação."
+      },
+      {
+        "id": "touch-next",
+        "text": "O toque executou a reação. Clique em Testar com outro esconderijo para conferir a mesma regra em outro lugar.",
+        "primary": "other"
+      },
+      {
+        "id": "touch-again",
+        "text": "Toque no arbusto mais uma vez. A reação está ligada. Observe o que muda."
+      }
+    ],
+    "experiencia-achados": [
+      {
+        "id": "count-complete",
+        "text": "Agora explore do seu jeito. Acompanhe o valor que fica guardado entre um toque e outro."
+      },
+      {
+        "id": "count-first",
+        "text": "Encontre um personagem. Olhe o valor guardado em achados e o placar."
+      },
+      {
+        "id": "count-second",
+        "text": "Encontre outro personagem. O jogo vai somar ao valor que já estava guardado."
+      },
+      {
+        "id": "count-empty",
+        "text": "Toque no espaço vazio do jardim. O valor guardado vai mudar?"
+      },
+      {
+        "id": "count-repeat",
+        "text": "Toque de novo onde um personagem apareceu. Observe se a regra de somar é executada."
+      },
+      {
+        "id": "count-restart",
+        "text": "Clique em Recomeçar a busca. Observe o valor inicial e os esconderijos.",
+        "primary": "restart"
+      }
+    ]
+  }
+}

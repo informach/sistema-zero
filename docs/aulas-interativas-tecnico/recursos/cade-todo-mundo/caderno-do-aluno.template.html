@@ -167,14 +167,14 @@
   <section class="page lesson-one construction">
     <div class="inner">
       <div class="lesson-hero"><img class="scene" src="{{SCENE_HIDDEN}}" alt="Jardim com personagens escondidos"><div class="lesson-hero-text"><div class="kicker">Fase 1</div><h2>O primeiro achado</h2><p>Você vai ligar uma reação ao toque: o esconderijo fica invisível e o personagem aparece.</p></div></div>
-      <div class="soft-box activity"><span class="pill pill--experience">Experiência</span><p>No seu jogo, toque num esconderijo: nada acontece. Na experiência da parte anterior, o arbusto só ficou invisível depois que você ligou a reação ao toque. Os passos abaixo fazem isso no seu jogo.</p></div>
+      <div class="soft-box activity"><span class="pill pill--experience">Experiência</span><p>No seu jogo, toque num esconderijo: nada acontece. Na experiência, você comparou a reação desligada e ligada e observou o escolhido mudar entre esconderijos. Os passos abaixo constroem essa regra no seu jogo.</p></div>
       <span class="pill pill--build">Montar no Estúdio</span>
       <h3 class="section-head">Faça o personagem aparecer</h3>
       <div class="steps">
         <div class="step"><span class="number">1</span><p>Na área <strong>Quando acontecer</strong>, encontre o bloco <strong>Quando clicar/tocar num sprite do grupo esconderijos chamá-lo de escolhido</strong>. Ele já está no projeto.</p></div>
         <div class="step"><span class="number">2</span><p>Deixe à vista o espaço ao lado de <strong>fazer</strong>. Em <span class="path">Jogo 2D &gt; Sprites &gt; Aparência</span>, pegue <strong>Deixar o sprite ___ com ___% de visibilidade</strong> e solte ali.</p></div>
         <div class="step"><span class="number">3</span><p>Troque <strong>jogador</strong> por <strong>escolhido</strong>, no fim da lista, e <strong>50</strong> por <strong>0</strong>.</p></div>
-        <div class="step"><span class="number">4</span><p>Toque nos esconderijos do seu jogo. Seus personagens aparecem, mas Achados ainda fica em zero, porque o jogo ainda não conta.</p></div>
+        <div class="step"><span class="number">4</span><p>Toque em esconderijos diferentes. Só o escolhido fica invisível. Achados ainda fica em zero, porque o jogo ainda não conta.</p></div>
       </div>
       <div class="blocks"><h3>Se no seu jogo não aconteceu isso, confira se ficou assim</h3><div class="event-block" data-block-type="sz_frame_events"><span class="tag">Áreas do projeto · Quando acontecer</span><div class="event-body"><div class="block" data-block-type="sz_g2d_on_group_click">Quando clicar/tocar num sprite do grupo <span class="field">esconderijos</span> chamá-lo de <span class="field">escolhido</span><div class="do-row"><span class="do-label">fazer</span><div class="event-body"><div class="block block--game" data-block-type="sz_g2d_set_opacity">Deixar o sprite <span class="field">escolhido</span> com <span class="value-block" data-block-type="sz_val_number"><span class="field">0</span></span>% de visibilidade</div></div></div></div></div></div></div>
       <div class="check"><span class="pill pill--test">Verificar e enviar</span><p class="endline">Depois de corrigir, teste de novo. Funcionou? Clique em <strong>Verificar projeto</strong>. Se faltar alguma coisa, corrija os blocos e clique de novo, até aparecer <strong>Objetivo cumprido!</strong> Espere <strong>Salvo</strong>, clique em <strong>Enviar meu projeto</strong> e confirme em <strong>Enviar</strong>. Depois, clique em <strong>Concluir aula</strong>.</p></div>
@@ -185,14 +185,14 @@
   <section class="page lesson-two construction">
     <div class="inner">
       <div class="lesson-hero"><img class="scene" src="{{SCENE_REVEALED}}" alt="Jardim com os três personagens"><div class="lesson-hero-text"><div class="kicker">Fase 2</div><h2>Complete a busca</h2><p>Agora o jogo vai contar cada descoberta.</p></div></div>
-      <div class="soft-box activity"><span class="pill pill--experience">Experiência</span><p>No seu jogo, Achados fica em zero. Na experiência da parte anterior, cada achado somava um.</p></div>
+      <div class="soft-box activity"><span class="pill pill--experience">Experiência</span><p>No seu jogo, Achados fica em zero. Na experiência, achados guardava um único valor e o placar mostrava esse valor. Cada novo personagem somava um; vazio e repetição mantinham a contagem.</p></div>
       <span class="pill pill--build">Montar no Estúdio</span>
       <h3 class="section-head">Cada personagem vale um achado</h3>
       <div class="steps">
         <div class="step"><span class="number">1</span><p>Em <strong>Quando acontecer</strong>, encontre o evento do toque, com a ação de visibilidade dentro.</p></div>
         <div class="step"><span class="number">2</span><p>Com a visibilidade à vista, em <span class="path">Programação &gt; Variáveis</span>, pegue <strong>Somar ___ em variável ___</strong> e solte <strong>logo abaixo</strong>.</p></div>
         <div class="step"><span class="number">3</span><p>Deixe <strong>1</strong>. Troque <strong>contador</strong> por <strong>achados</strong>, o número do jogo.</p></div>
-        <div class="step"><span class="number">4</span><p>Toque nos três esconderijos: Achados vai a <strong>1, 2 e 3</strong>, e aparece a mensagem do final.</p></div>
+        <div class="step"><span class="number">4</span><p>Teste vazio e repetição: a contagem fica igual. Encontre os três personagens: Achados vai a <strong>1, 2 e 3</strong>. A mensagem aparece só no terceiro.</p></div>
       </div>
       <div class="blocks"><h3>Se algo não funcionou no seu jogo, confira se ficou assim</h3><div class="event-block" data-block-type="sz_frame_events"><span class="tag">Áreas do projeto · Quando acontecer</span><div class="event-body"><div class="block" data-block-type="sz_g2d_on_group_click">Quando clicar/tocar num sprite do grupo <span class="field">esconderijos</span> chamá-lo de <span class="field">escolhido</span><div class="do-row"><span class="do-label">fazer</span><div class="event-body"><div class="block block--game" data-block-type="sz_g2d_set_opacity">Deixar o sprite <span class="field">escolhido</span> com <span class="value-block" data-block-type="sz_val_number"><span class="field">0</span></span>% de visibilidade</div><div class="block block--program" data-block-type="sz_js_var_increment">Somar <span class="value-block" data-block-type="sz_val_number"><span class="field">1</span></span> em variável <span class="field">achados</span></div></div></div></div></div></div></div>
       <div class="check"><span class="pill pill--test">Verificar e continuar</span><p class="endline">Depois de corrigir, teste de novo. Funcionou? Clique em <strong>Verificar projeto</strong>. Se faltar alguma coisa, corrija os blocos e clique de novo, até aparecer <strong>Objetivo cumprido!</strong> Seu jogo é salvo automaticamente enquanto você monta. Para continuar, clique em <strong>Próxima parte</strong>.</p></div>
@@ -215,7 +215,7 @@
   </section>
   <section class="page lesson-two">
     <div class="inner">
-      <div class="lesson-hero"><img class="scene" src="{{SCENE_REVEALED}}" alt="O jogo com os personagens encontrados"><div class="lesson-hero-text"><div class="kicker">Fase 2 · Fechamento</div><h2>Publique seu jogo</h2><p>Seu jogo está com a sua cara. Agora convide sua família e seus amigos para jogar!</p></div></div>
+      <div class="lesson-hero"><img class="scene" src="{{SCENE_REVEALED}}" alt="O jogo com os personagens encontrados"><div class="lesson-hero-text"><div class="kicker">Fase 2 · Fechamento</div><h2>Seu jogo está pronto</h2><p>Seu projeto já foi entregue. Se quiser compartilhar no Mural, siga os passos abaixo. Você também pode concluir a aula e continuar a jornada sem publicar.</p></div></div>
       <div class="steps">
         <div class="step"><span class="number">1</span><p>No alto do Estúdio da aula, depois de enviar o projeto, clique em <strong>Compartilhar</strong>. Ele pode aparecer só como uma setinha para cima.</p></div>
         <div class="step"><span class="number">2</span><p>O resumo do projeto já vem preenchido. Deixe como está. Clique em <strong>Gerar capa</strong> e confira a imagem do seu jogo.</p></div>
@@ -231,8 +231,8 @@
       <div class="lesson-hero"><img class="scene" src="{{SCENE_REVEALED}}" alt="Jardim com os três personagens"><div class="lesson-hero-text"><div class="kicker">Fase 3 · Seu certificado</div><h2>Reveja o que criou</h2><p>Você fez os personagens aparecerem e o jogo contar cada achado.</p></div></div>
       <div class="soft-box activity"><span class="pill pill--experience">Como o seu jardim funciona</span><p>Na primeira parte desta aula, leia a fala do Zappy e responda às três perguntas sobre seu jogo. Essa parte não tem vídeo.</p></div>
       <div class="steps">
-        <div class="step"><span class="number">1</span><p>Clique em <strong>Começar!</strong>. Escolha uma resposta em cada pergunta e clique em <strong>Próxima</strong>; na última, clique em <strong>Responder!</strong>.</p></div>
-        <div class="step"><span class="number">2</span><p>Leia o porquê de cada resposta. Se alguma estiver errada, clique em <strong>Tentar de novo!</strong> e responda outra vez, sem esperar. Quando todas estiverem corretas, clique em <strong>Próxima parte</strong>.</p></div>
+        <div class="step"><span class="number">1</span><p>Observe a cena, escolha sua previsão e clique em <strong>Ver o que acontece</strong>. Compare sua resposta com o resultado no jardim.</p></div>
+        <div class="step"><span class="number">2</span><p>Leia ou ouça a explicação. Se precisar, clique em <strong>Tentar de novo</strong>. Depois de acertar, use <strong>Próxima pergunta</strong>. Na última, clique em <strong>Concluir revisão</strong> e avance na aula.</p></div>
       </div>
       <h3 class="section-head">Comemore sua criação</h3>
       <div class="check"><p>Na parte seguinte, assista ao vídeo e clique em <strong>Baixar meu certificado</strong>. Depois que baixar, clique em <strong>Concluir aula</strong>. Se já pegou o certificado, o botão mostra <strong>Baixar certificado (PDF)</strong>.</p></div>

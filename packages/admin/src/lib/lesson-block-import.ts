@@ -1,3 +1,4 @@
+import { validatePredictionQuiz } from '@sistemazero/core/learning'
 import type { BlockCatalogEntry } from '@sistemazero/studio'
 import { z } from 'zod'
 import type { QuizQuestion } from '@/lib/types'
@@ -26,6 +27,7 @@ const QuizChoiceImportSchema = z.strictObject({
 
 const QuizQuestionImportSchema = z
   .strictObject({
+    predictionScene: z.enum(['garden-touch', 'garden-count', 'garden-repeat']).optional(),
     prompt: nonBlankMarkdown(5_000, 'Informe o enunciado.'),
     choices: z.array(QuizChoiceImportSchema).min(2, 'Adicione ao menos 2 alternativas.'),
     explanation: z.string().max(5_000, 'Use no máximo 5000 caracteres.').optional(),
@@ -136,6 +138,7 @@ export function parseQuizImport(text: string): ImportParseResult<ImportedQuizVal
     return {
       id: crypto.randomUUID(),
       prompt: question.prompt,
+      ...(question.predictionScene ? { predictionScene: question.predictionScene } : {}),
       choices: generatedChoices.map(({ id, label }) => ({ id, label })),
       correctChoiceIds: generatedChoices
         .filter((choice) => choice.correct)
@@ -144,6 +147,8 @@ export function parseQuizImport(text: string): ImportParseResult<ImportedQuizVal
     }
   })
 
+  const predictionError = validatePredictionQuiz(questions)
+  if (predictionError) return { success: false, errors: [predictionError] }
   return {
     success: true,
     data: {

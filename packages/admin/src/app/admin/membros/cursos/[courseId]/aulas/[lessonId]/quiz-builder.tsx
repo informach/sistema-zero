@@ -1,5 +1,6 @@
 'use client'
 
+import { validatePredictionQuiz } from '@sistemazero/core/learning'
 import {
   falaDaExplicacaoDoQuiz,
   falaDaPerguntaDoQuiz,
@@ -9,6 +10,7 @@ import {
 import { Button } from '@sistemazero/ui/button'
 import { Input } from '@sistemazero/ui/input'
 import { Field } from '@sistemazero/ui/label'
+import { Select } from '@sistemazero/ui/select'
 import { Tabs } from '@sistemazero/ui/tabs'
 import { Plus, Trash2 } from 'lucide-react'
 import { useState } from 'react'
@@ -96,7 +98,9 @@ export function QuizBuilder({
   function toggleCorrect(q: QuizQuestion, choiceId: string) {
     const correct = q.correctChoiceIds.includes(choiceId)
       ? q.correctChoiceIds.filter((id) => id !== choiceId)
-      : [...q.correctChoiceIds, choiceId]
+      : q.predictionScene
+        ? [choiceId]
+        : [...q.correctChoiceIds, choiceId]
     patchQuestion(q.id, { correctChoiceIds: correct })
   }
 
@@ -168,6 +172,11 @@ export function QuizBuilder({
         </div>
       ) : (
         <div role="tabpanel" aria-label="Editar quiz manualmente" className="flex flex-col gap-4">
+          {validatePredictionQuiz(value.questions) && (
+            <p role="alert" className="text-sm text-destructive">
+              {validatePredictionQuiz(value.questions)}
+            </p>
+          )}
           <Field
             label="Nota de corte (%)"
             htmlFor="qb-passing"
@@ -201,6 +210,27 @@ export function QuizBuilder({
           ) : (
             value.questions.map((q, qi) => (
               <div key={q.id} className="space-y-3 rounded-lg border border-border p-3">
+                <Field
+                  label="Demonstração da previsão"
+                  htmlFor={`prediction-${q.id}`}
+                  hint="Para usar Ver o que acontece, escolha uma cena em todas as perguntas e uma única alternativa correta em cada uma."
+                >
+                  <Select
+                    id={`prediction-${q.id}`}
+                    value={q.predictionScene ?? ''}
+                    onChange={(e) =>
+                      patchQuestion(q.id, {
+                        predictionScene: (e.target.value ||
+                          undefined) as QuizQuestion['predictionScene'],
+                      })
+                    }
+                  >
+                    <option value="">Sem demonstração (quiz comum)</option>
+                    <option value="garden-touch">Jardim: toque nas pedras</option>
+                    <option value="garden-count">Jardim: vazio e novo achado</option>
+                    <option value="garden-repeat">Jardim: toque repetido</option>
+                  </Select>
+                </Field>
                 <div className="flex items-start justify-between gap-2">
                   <span className="text-xs font-semibold text-muted-foreground">
                     Pergunta {qi + 1}

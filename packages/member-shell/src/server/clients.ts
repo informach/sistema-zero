@@ -1250,10 +1250,11 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
       lessonId: string,
       blockId: string,
       answers: Record<string, string[]>,
+      questionId?: string,
     ): Promise<GatewayResponse<QuizAttemptResultView>> {
       return gw.gatewayFetch(
         `/members/lessons/${enc(lessonId)}/blocks/${enc(blockId)}/quiz-attempts`,
-        { method: 'POST', body: { answers } },
+        { method: 'POST', body: { answers, ...(questionId ? { questionId } : {}) } },
       )
     },
 

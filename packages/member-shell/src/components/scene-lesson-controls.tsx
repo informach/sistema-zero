@@ -19,7 +19,7 @@ import { CopyVsOriginalControls, PublishedCopyControls } from './scene-copies'
 import { CoreSceneControls } from './scene-core-controls'
 import { DinoNumbersControls } from './scene-dino-numbers-controls'
 import { FixedVsReadControls } from './scene-fixed-vs-read'
-import { FoundCounterControls } from './scene-found-counter'
+import { GardenLearningControls } from './scene-garden-learning'
 import { InvincibilityControls } from './scene-invincibility'
 import { LighthouseKeyControls } from './scene-lighthouse-key'
 import { LighthousePositionControls } from './scene-lighthouse-position'
@@ -99,28 +99,9 @@ export function LessonSceneControls({
           dispatch={dispatch}
         />
       )}
-      {m === 'touch-response' && (
-        <div className="flex flex-wrap gap-2">
-          {/* Console v2 (30/09/2026): ligar a reação É a ação principal deste momento — tom de
-              GESTO e largura cheia (`sz-scene-acao-principal`); ligada, vira a chave "ligado". */}
-          <SceneButton
-            tom={state.match.touch ? 'ligado' : 'gesto'}
-            className="sz-scene-acao-principal"
-            aria-pressed={state.match.touch}
-            onClick={() =>
-              dispatch({ type: 'connect', port: 'touch', enabled: !state.match.touch })
-            }
-          >
-            {state.match.touch ? 'Desligar a reação ao toque' : 'Ligar a reação ao toque'}
-          </SceneButton>
-          {state.match.screen === 'playing' && (
-            <SceneButton tom="discreta" onClick={() => dispatch({ type: 'home' })}>
-              Testar de novo com a reação {state.match.touch ? 'ligada' : 'desligada'}
-            </SceneButton>
-          )}
-        </div>
+      {(m === 'touch-response' || m === 'found-counter') && (
+        <GardenLearningControls scene={m} state={state} dispatch={dispatch} />
       )}
-      {m === 'found-counter' && <FoundCounterControls dispatch={dispatch} />}
       {m === 'lighthouse-key' && <LighthouseKeyControls state={state} dispatch={dispatch} />}
       {m === 'lighthouse-position' && (
         <LighthousePositionControls state={state} dispatch={dispatch} />

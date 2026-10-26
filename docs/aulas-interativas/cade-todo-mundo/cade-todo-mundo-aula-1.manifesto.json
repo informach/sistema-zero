@@ -1019,14 +1019,14 @@
     },
     {
       "key": "video-a1-toque",
-      "plannedVideo": "Título: Um toque pode chamar uma ação\n\nMaster integral da professora. Roteiro: cade-todo-mundo-aula-1.roteiro.md. Substituições kids: [{\"id\":\"video-a1-toque-K1\",\"clipe\":\"video-a1-toque\",\"personagem\":\"Debinha\",\"ocorrencia\":1,\"ancoraAntes\":\"aparecer quem está escondido atrás dele. Mas, para o jogo ter essa reação, a gente precisa ligar a reação ao toque.\",\"ancoraDepois\":\"Eu clico em Ligar a reação ao toque e toco no arbusto de novo. Olha só: agora sim ele fica invisível, e dá para ver o\",\"falaPrincipal\":\"E como faz essa ligação?\",\"falaPersonagem\":\"E como faz essa ligação?\",\"tags\":[\"[curious]\"]}]"
+      "plannedVideo": "Título: Um toque pode chamar uma ação\n\nMaster integral da professora. Roteiro: cade-todo-mundo-aula-1.roteiro.md. Substituições kids: []"
     },
     {
       "key": "ponte-a1-toque",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Sua vez! Faça os dois testes no mesmo arbusto e repare no que muda. Quando terminar, clique em Próxima parte."
+        "text": "Sua vez! Investigue a ligação entre o toque e a reação no jardim. O Zappy acompanha cada etapa da experiência."
       }
     },
     {
@@ -1036,12 +1036,15 @@
         "required": true,
         "semPerguntaFinal": true,
         "title": "O toque faz o jogo responder",
-        "instructions": "Toque no arbusto. Depois clique em Ligar a reação ao toque e toque no arbusto de novo. Compare as duas vezes.",
+        "instructions": "Primeiro, toque no arbusto. Observe o jardim com a reação desligada.",
         "hints": [],
         "activity": {
           "type": "experimentation",
           "scene": "touch-response",
-          "cenario": "jardim"
+          "cenario": "jardim",
+          "setup": {
+            "goals": ["no-response", "responds", "second-target"]
+          }
         }
       }
     },
@@ -3847,26 +3850,110 @@
         "projectChecks": [
           {
             "id": "revelar-ao-toque",
-            "label": "Revele o personagem tocado deixando o esconderijo escolhido invisível.",
+            "label": "O toque revela só o personagem daquele esconderijo.",
+            "hint": "No teste das pedras, só as pedras devem ficar invisíveis. Confira qual esconderijo a reação altera.",
             "rule": {
-              "type": "usesBlock",
-              "blockType": "sz_g2d_on_group_click",
-              "area": "events",
-              "fields": {
-                "GROUP": "esconderijos",
-                "ITEM": "escolhido"
-              },
-              "inputBlocks": {
-                "BODY": {
-                  "blockType": "sz_g2d_set_opacity",
-                  "fields": {
-                    "SPRITE": "escolhido"
-                  },
-                  "inputs": {
-                    "PERCENT": 0
+              "type": "behavior",
+              "steps": [
+                {
+                  "action": "clickTarget",
+                  "target": {
+                    "kind": "sprite",
+                    "path": "esconderijo2",
+                    "groupPath": "esconderijos"
                   }
                 }
-              }
+              ],
+              "expect": {
+                "target": {
+                  "kind": "value",
+                  "path": "esconderijo2.opacity"
+                },
+                "compare": "equals",
+                "value": 0
+              },
+              "checkpoints": [
+                {
+                  "afterStep": 1,
+                  "expect": {
+                    "target": {
+                      "kind": "value",
+                      "path": "esconderijo1.opacity"
+                    },
+                    "compare": "notEquals",
+                    "value": 0
+                  }
+                },
+                {
+                  "afterStep": 1,
+                  "expect": {
+                    "target": {
+                      "kind": "value",
+                      "path": "esconderijo3.opacity"
+                    },
+                    "compare": "notEquals",
+                    "value": 0
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "id": "outros-esconderijos",
+            "label": "Outros esconderijos também respondem aos próprios toques.",
+            "hint": "Teste outros esconderijos: cada um precisa revelar o próprio personagem.",
+            "rule": {
+              "type": "behavior",
+              "steps": [
+                {
+                  "action": "clickTarget",
+                  "target": {
+                    "kind": "sprite",
+                    "path": "esconderijo1",
+                    "groupPath": "esconderijos"
+                  }
+                },
+                {
+                  "action": "clickTarget",
+                  "target": {
+                    "kind": "sprite",
+                    "path": "esconderijo3",
+                    "groupPath": "esconderijos"
+                  }
+                }
+              ],
+              "expect": {
+                "target": {
+                  "kind": "value",
+                  "path": "esconderijo3.opacity"
+                },
+                "compare": "equals",
+                "value": 0
+              },
+              "checkpoints": [
+                {
+                  "afterStep": 1,
+                  "expect": {
+                    "target": {
+                      "kind": "value",
+                      "path": "esconderijo1.opacity"
+                    },
+                    "compare": "equals",
+                    "value": 0
+                  }
+                },
+                {
+                  "afterStep": 2,
+                  "expect": {
+                    "target": {
+                      "kind": "value",
+                      "path": "esconderijo2.opacity"
+                    },
+                    "compare": "notEquals",
+                    "value": 0
+                  }
+                }
+              ]
             }
           }
         ]

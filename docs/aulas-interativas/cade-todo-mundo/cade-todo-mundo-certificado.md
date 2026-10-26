@@ -41,3 +41,7 @@ responsável. O vídeo atual precisa ser substituído por uma nova gravação de
 Vocabulário do curso (06/10/2026): o PDF sem imagem base tem o título **Certificado de Criador**
 e a frase "completou o curso Cadê Todo Mundo?", no lugar de "concluiu Cadê Todo Mundo?". A fala
 e o Zappy terminam em **Concluir aula**.
+
+## Revisão de 25/10/2026
+
+Três previsões: objeto escolhido; vazio seguido de novo personagem; repetição. Cada pergunta mostra a cena antes, recebe a escolha e revela o resultado em Ver o que acontece. A correção imediata permite tentar de novo na mesma questão. O servidor corrige cada previsão sem gravar conclusão parcial; somente a tentativa completa alimenta aprovação e progresso. O vídeo de celebração e o certificado continuam com seus IDs e encaminhamentos.

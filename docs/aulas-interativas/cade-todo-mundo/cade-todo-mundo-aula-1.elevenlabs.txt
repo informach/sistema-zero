@@ -20,19 +20,13 @@
 
 [long pause]
 
-[engaging, energetic, conversational voice] Nesta experiência, vamos ver como funciona a ação e a reação.
-
-[interested, animated voice] Olha aqui: quando eu toco no arbusto, nada acontece. Tá vendo? É que o jogo ainda não sabe o que fazer quando alguém toca no arbusto. Então a gente precisa dizer isso para ele.
+[engaging, energetic, conversational voice] Nesta parte, a gente vai entender uma ideia importante para fazer o seu jogo responder: a ação e a reação.
 
 [interested, animated voice] Sabe quando alguém faz cócegas em você e você não consegue parar de rir? A cócega é a ação, e a risada é a reação.
 
-[engaging, energetic, conversational voice] No seu jogo, o toque é a ação. E a reação que a gente quer é o arbusto ficar invisível, para aparecer quem está escondido atrás dele. Mas, para o jogo ter essa reação, a gente precisa ligar a reação ao toque.
+[engaging, energetic, conversational voice] No seu jogo, o toque é a ação. A reação que a gente quer é um esconderijo ficar invisível, para aparecer quem está atrás dele. Essa reação precisa estar ligada ao toque para acontecer.
 
-[curious] E como faz essa ligação?
-
-[engaging, energetic, conversational voice] Eu clico em Ligar a reação ao toque e toco no arbusto de novo. [interested, animated voice] Olha só: agora sim ele fica invisível, e dá para ver o coelho que estava atrás! Então essa é a reação que eu liguei ao toque: o arbusto ficar invisível.
-
-[upbeat, encouraging voice] Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora é a sua vez de investigar essa ligação no jardim. Observe o que acontece antes e depois de ligar a reação. O Zappy vai acompanhar cada etapa da experiência. Quando terminar, clique em Próxima parte.
 
 [long pause]
 

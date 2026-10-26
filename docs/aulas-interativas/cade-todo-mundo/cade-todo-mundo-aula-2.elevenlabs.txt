@@ -8,21 +8,13 @@
 
 [long pause]
 
-[engaging, energetic, conversational voice] Vamos ver como o jogo guarda a contagem. Nesta experiência, a gente vai usar uma variável, um lugar onde o jogo guarda um número que pode mudar.
+[engaging, energetic, conversational voice] Para contar os personagens encontrados, o seu jogo precisa guardar um número. A gente chama esse lugar de variável. Ela guarda um valor que pode mudar.
 
-[confident, clear, unhurried voice] Repare em Achados: esse número mostra quantos personagens a gente já encontrou. A cada personagem, ele muda.
+[interested, animated voice] Sabe o placar de um jogo de futebol? Ele mostra quantos gols já aconteceram. Quando sai outro gol, o número aumenta em um.
 
-[engaging, energetic, conversational voice] Sabe o placar de um jogo de futebol? A cada gol, o placar soma um. Aqui no jardim é parecido: cada personagem encontrado é como um gol, e o jogo soma um em Achados.
+[confident, clear, unhurried voice] No jardim, a variável achados guarda quantos personagens você encontrou. O placar mostra esse valor. Cada novo personagem acrescenta um ao número que já estava guardado.
 
-[interested, animated voice] Olha aqui: quando eu toco num esconderijo, Achados vai para 1, porque eu encontrei um personagem e o jogo somou um. Se eu toco em outro, ele soma de novo, e agora é 2.
-
-[curious] E se eu tocar num espaço vazio do jardim?
-
-[engaging, energetic, conversational voice] Vamos ver. [interested, animated voice] Olha aqui: eu toco num espaço vazio. Tá vendo? O número não muda. Isso acontece porque a regra que soma está ligada aos esconderijos: ela só funciona quando eu toco num esconderijo. Ali não tinha nenhum, então nada foi somado.
-
-[engaging, energetic, conversational voice] Por último, eu clico em Recomeçar a busca, e Achados volta para zero, igual ao placar no começo de um jogo novo.
-
-[upbeat, encouraging voice] Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai acompanhar uma busca e observar quando esse número muda e quando continua igual. O Zappy vai acompanhar cada etapa da experiência. Quando terminar, clique em Próxima parte.
 
 [long pause]
 
@@ -84,9 +76,9 @@
 
 [long pause]
 
-[engaging, energetic, conversational voice] Agora chegou a hora de publicar o seu jogo, do jeito que você deixou, para a sua família e os seus amigos jogarem!
+[engaging, energetic, conversational voice] Seu jogo está pronto! Se quiser, você pode publicar no Mural para a sua família e os seus amigos jogarem. Você também pode clicar em Concluir aula e continuar a jornada sem publicar.
 
-[engaging, energetic, conversational voice] Para isso, clique em Compartilhar, no alto do Estúdio. Aqui, ele pode aparecer só como uma setinha para cima. [confident, clear, unhurried voice] Repare que o resumo do projeto já vem preenchido, então pode deixar como está.
+[engaging, energetic, conversational voice] Se escolher compartilhar, clique em Compartilhar, no alto do Estúdio. Aqui, ele pode aparecer só como uma setinha para cima. [confident, clear, unhurried voice] Repare que o resumo do projeto já vem preenchido, então pode deixar como está.
 
 [engaging, energetic, conversational voice] Depois, clique em Gerar capa e espere a imagem aparecer. [interested, animated voice] Olha só: essa é a capa que vai apresentar o seu jogo!
 

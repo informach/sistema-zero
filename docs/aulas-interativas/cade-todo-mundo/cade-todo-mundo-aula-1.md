@@ -1,175 +1,32 @@
-# Cadê Todo Mundo? | Aula 1: O primeiro achado
+# O primeiro achado
 
-**Conferência da equipe, 19/10/2026 (não gravar):** exemplos privados por parte, conforme o manifesto e sua fonte geradora. primeiro-achado: entrada sem reação; solução com a reação no toque. O projeto inicial e a continuidade permanecem; a entrada para ensaio não substitui o baseline da verificação. Cores, imagens, textos e magnitude de velocidade do exemplo não são respostas únicas. A direção precisa continuar coerente e zero não demonstra movimento. Os objetivos atuais deste piloto conferem estrutura; os testes jogados do roteiro continuam necessários e não foram certificados automaticamente como comportamento. Esta revisão conserva as falas e as âncoras de edição já registradas. Não informa nova gravação, publicação ou ensaio com crianças.
+**Direção atual, 25/10/2026:** vídeo conceitual → investigação guiada pelo Zappy → construção no Estúdio → previsão e comparação no quiz. Seguir [Descoberta guiada](../../aulas-interativas-tecnico/DESCOBERTA-GUIADA.md). A implementação e os materiais locais não significam mídia gravada ou curso publicado.
 
+O conceito central é ligar um acontecimento a uma reação e aplicar a reação ao objeto escolhido naquele acontecimento. A pessoa já consegue tocar no jardim; vai construir a regra que revela cada personagem.
 
-## Direção da revisão
+| Parte | O que acontece | Saída |
+| --- | --- | --- |
+| Bem-vindo ao jardim | O vídeo apresenta a brincadeira com um exemplo. A pessoa joga até encontrar três personagens. | Jogo pronto concluído e vídeo assistido. |
+| Seu passo a passo do projeto | Apresentação do material de consulta, com leitura e download opcionais. | Vídeo assistido. |
+| O que um toque faz? | Vídeo conceitual com cócegas/risada. Experiência compara reação desligada/ligada e depois outro esconderijo. | Três descobertas realizadas. |
+| Faça alguém aparecer | Retomada breve, apresentação dos comandos e montagem completa da reação no evento preparado. | Projeto verificado, salvo e enviado. |
 
-Revisão de linguagem de 27/09/2026, depois de duas crianças assistirem ao curso. Uma delas não
-entendeu que deveria jogar a versão pronta na abertura. O vídeo misturava apresentação do jogo
-e uso da plataforma. A revisão mantém as quatro seções, a experiência e os critérios de
-conclusão. Muda a fala e as orientações de gravação.
+## Vídeo e experiência
 
-O jardim, os personagens, os esconderijos e a estrutura do jogo vêm preparados. A criança
-acrescenta a reação ao toque. O roteiro mostra exatamente essa autoria.
+Preservar a ilustração das cócegas e a risada do Zappy. O vídeo nomeia ação e reação, liga a ideia ao jogo e propõe observar o que muda quando existe uma reação ligada ao toque. Os nomes dos controles e a sequência de testes ficam na atividade.
 
-A revisão de 06/10/2026 faz todas as falas conversarem com a criança e chamarem a atenção dela
-para o que aparece na tela ("Olha aqui", "Olha só", "Repare", "Tá vendo?"), sem mudar seções nem
-critérios. O caderno passa a ser apresentado como escolha: ler na aula ou baixar para guardar.
-Saiu o "não precisa baixar nem imprimir", que a criança entenderia como uma ordem para não baixar.
-No mesmo dia, a pedido do responsável, cada fala virou uma conversa contínua: as frases se ligam,
-cada resultado vem com o porquê e a experiência diz com clareza qual é a ação (o toque) e qual é a
-reação (o esconderijo ficar invisível). Saiu da montagem a frase solta "O jardim e os personagens
-já estão preparados": a criança vê o que já está no projeto, e o que vem pronto só entra na fala
-quando ajuda a ação, como o evento que já está em **Quando acontecer**.
+O motor determina as falas da experiência, com chaves estáveis e voz correspondente ao texto. Primeiro pede o toque sem reação; depois orienta ligar a reação e tocar novamente. Após a revelação, Testar com outro esconderijo aparece como botão principal. A reação já ligada passa a botão secundário. A nova rodada tem arbusto e pedras; o diagrama mostra quem foi escolhido e apenas aquele esconderijo fica invisível.
 
-Ainda em 06/10/2026, o vocabulário do curso (Diretrizes, seção 6): no que a criança vê e ouve,
-aula virou fase, seção virou parte, o caderno virou Passo a passo do projeto (a parte se chama **Seu Mapa
-da Aventura**) e professor virou equipe. As falas citam os botões novos (**Próxima parte**,
-**Verificar projeto**, **Objetivo cumprido!**, **Enviar meu projeto**, **Concluir aula**);
-seções, blocos e critérios não mudaram. Na mesma noite, o botão de envio passou a dizer o que
-ela envia (**Enviar meu projeto**), e quem recebe passou a ser a equipe.
+Manter os componentes reais, o diagrama colorido, o estado da ligação, as descobertas, as pistas, o desfazer e o resumo final. Cor acompanha rótulos e ícones. Texto, Ouvir e botão principal correspondem à mesma etapa. Não iniciar áudio inesperado ao trocar a fala.
 
-No full review de 06/10/2026, a explicação de **escolhido** foi partida em duas frases curtas ("Cada
-esconderijo é um sprite, que é um objeto do jogo. E escolhido é o nome que o jogo dá ao esconderijo
-que você tocar.") e a ponte da experiência do toque passou a terminar em "Quando terminar, clique em
-Próxima parte.". No Passo a passo do projeto, a página da Fase 1 deixou de inverter ação e reação: o toque
-é a ação, e a reação ligada a ele é o esconderijo ficar invisível.
+## Construção e objetivos
 
-## Vozes e estado da produção
+A montagem preserva paleta, nome literal do bloco, destino antes da peça, encaixe, campo, valor e teste. A pessoa coloca a reação de visibilidade no evento do grupo esconderijos, usando escolhido. Testar objetos diferentes antes de verificar, salvar e enviar.
 
-Em 10/10/2026, o responsável informou que os quatro vídeos da professora já estão gravados e
-confirmou **Debinha** como o avatar desta aula. O roteiro agora identifica as seis participações
-informadas: duas na abertura, uma no mapa, uma na experiência e duas na montagem. Cada entrada
-tem um ID de edição, a fala literal e a saída antes de a professora continuar. “E os outros dois?”
-passa para a Debinha; não repetir a pergunta na voz da professora.
+Dois objetivos observáveis: o toque revela apenas o personagem daquele esconderijo; outros esconderijos respondem aos próprios toques. A verificação executa o jogo e escolhe os alvos pela identidade e geometria atuais dos sprites. Confere também que os outros esconderijos continuam visíveis. Não exige uma imagem, cor ou posição única.
 
-Usar **Professora**, **Debinha (avatar)** e **Zappy na página (não gravar)** para distinguir as
-vozes. O Zappy não fala dentro dos vídeos; suas instruções ficam na página, com o recurso Ouvir
-da plataforma. Se aparecer no meme ou na interface filmada, sua presença é visual.
+## Fontes e produção
 
-Preservar o áudio já gravado e localizar as inserções pelas âncoras do
-[roteiro completo](cade-todo-mundo-aula-1.roteiro.md). A edição final e a publicação ainda precisam
-ser conferidas; não presumir que foram concluídas. As regras para os próximos roteiros e os
-exemplos com Dedé na Aula 2 estão em [Avatares nos vídeos](../../aulas-interativas-tecnico/AVATARES-NOS-VIDEOS.md).
+O roteiro de produção é a fonte da professora. A fonte dos manifestos é `qa/gerar-cade-todo-mundo.ts`; o registro de falas internas vem de `scene/garden.ts`, exportado em `zappy-etapas.json`. Regenerar manifesto, TXT e edição após mudar o roteiro. Preservar chaves dos clipes, seções e projeto. A nova gravação substitui o clipe conceitual; as substituições de personagens da montagem permanecem nas tabelas do roteiro.
 
-## Sequência
-
-| Seção | Vídeo | O que fazer | Conclusão |
-| --- | --- | --- | --- |
-| Bem-vindo ao jardim | 40 a 55 s | jogar a versão pronta e encontrar os três personagens | vídeo e três achados |
-| Seu passo a passo do projeto | 35 a 45 s | conhecer o mapa e seguir; ler aqui mesmo ou baixar, se quiser | vídeo |
-| O que um toque faz? | 70 a 90 s | tocar com a reação desligada, ligar e tocar novamente; comparar | vídeo e duas metas |
-| Faça alguém aparecer | 4 a 5 min | encaixar a visibilidade no evento, testar, verificar a etapa e enviar | vídeo, verificação aprovada e envio |
-
-Os tempos da tabela foram revistos em 10/10/2026 e já contam as falas da Debinha: cobrem a fala
-estimada a 137 palavras por minuto e, na montagem, os gestos sem fala. Medir a duração final sem
-acelerar a montagem. Não aumentar os vídeos de apresentação para atingir
-uma duração mínima.
-
-## Orientação por seção
-
-### Bem-vindo ao jardim
-
-A primeira fala diz qual jogo será construído e apresenta a versão pronta. O vídeo é uma
-demonstração, como nas experiências: o narrador mostra como se joga com UM achado ("Olha aqui:
-quando eu toco num esconderijo…"), deixa os outros para a criança descobrir e só no fim passa a
-vez: jogar até encontrar os três, pois a parte exige esse resultado, e clicar em **Próxima parte**.
-
-Antes de passar a vez, a fala planta a surpresa do final (decisão do responsável, 07/10/2026): "Ah, e
-tem mais uma coisa: no fim do curso tem uma surpresa esperando por você. Ela vai deixar o seu jogo
-ainda mais seu." Conta que a surpresa existe, sem dizer o que é. Ela é revelada em **Deixe o jogo com
-a sua cara**, na Aula 2, e lembrada uma vez no fim desta aula.
-
-O jogo pronto é uma cópia separada do projeto de construção. O Zappy resume a ação. O vídeo
-não apresenta seções, player, ampliação, reinício, caderno ou Estúdio.
-
-### Seu passo a passo do projeto
-
-Chamar a atenção para o caderno real ("Olha aqui: este é o seu Passo a passo do projeto!") e dizer que
-ele tem os passos para consultar se surgir dúvida. Ler e baixar são escolhas, oferecidas como
-convite: ler aqui mesmo ou clicar em **Baixar** para guardar o material e consultar onde
-quiser. A fala não diz que a criança não precisa baixar ou imprimir: ela entenderia como uma ordem
-para não fazer (ajuste do responsável, 06/10/2026). Encaminhar diretamente para a próxima seção.
-Apenas este bloco recebe o PDF; a Aula 2 continua usando a mesma referência.
-
-**Zappy na página (não gravar):** “Este é o seu Passo a passo do projeto! Quando precisar de um passo, você pode ler aqui mesmo ou baixar para guardar. Para continuar, clique em Próxima parte.”
-
-### O que um toque faz?
-
-O vídeo é uma demonstração que explica enquanto faz (Diretrizes, seção 2): o narrador faz os testes na primeira pessoa e só no fim passa a vez. Dizer que a experiência mostra ação e
-reação e apontar para ela. Tocar no arbusto: nada acontece ("Tá vendo?"), porque o jogo ainda não
-sabe o que fazer quando alguém toca no arbusto, e a gente precisa dizer isso para ele. Comparar com
-um exemplo do cotidiano: a cócega provoca a risada do Zappy na animação. No jogo, o toque é a
-ação, e a reação que a gente quer é o arbusto ficar invisível; para o jogo ter essa reação, a gente
-precisa ligá-la ao toque. Clicar em **Ligar a reação ao toque**, tocar de novo e mostrar o arbusto
-invisível com o coelho atrás ("Olha só: agora sim…"), dizendo que essa é a reação ligada ao toque.
-Tudo numa conversa contínua, sem frases soltas. Terminar em "Agora é a sua vez": a criança repete
-os dois testes, e a experiência cobra as metas.
-
-Na frase das cócegas, reaproveitar a animação já preparada da pena e da risada do Zappy, com o mascote apenas visual, sem voz; ajustar o intervalo ao novo áudio. Não esconder os passos
-obrigatórios nas pistas. Manter a experiência existente, sem palpite ou pergunta final. A fala
-não inclui campainha, tour de controles ou retorno à seção do caderno.
-
-### Faça alguém aparecer
-
-Começar pela retomada, numa conversa curta: pedir um toque num esconderijo do próprio jogo e
-mostrar que nada acontece, porque o toque ainda não tem nenhuma reação ligada a ele. Depois,
-lembrar que, na experiência da parte anterior, o arbusto só ficou invisível depois de ligar a reação
-ao toque, e convidar a fazer isso com os esconderijos do jogo.
-
-Antes de "Para começar, encontre a área Quando acontecer", apresentar os comandos como instruções
-que dizem ao jogo o que fazer e que aparecem como blocos. No "Olha aqui: neste menu", apontar
-a paleta de comandos como o lugar de escolher os blocos, sem pegar nenhum ainda. Esta é a primeira
-montagem: a apresentação liga a experiência ao uso dos blocos. Não repetir a explicação de ação e
-reação nem dizer que o jardim e os personagens estão preparados.
-
-Só então mostrar o evento que já está em **Quando acontecer** ("Olha aqui:
-nessa área já tem o bloco…", é ele que percebe o toque), trazendo a área à vista se ela começar fora
-da tela, e explicar **escolhido** como o esconderijo tocado. Com o espaço ao lado de **fazer** à vista,
-ensinar o caminho **Jogo 2D > Sprites > Aparência** e o bloco de visibilidade, que nasce com
-**jogador** e **50**: trocar o nome para **escolhido**, que fica no fim da lista, e o valor para
-**0**.
-
-A prévia atualiza automaticamente. Pedir o toque em dois esconderijos e conferir a revelação.
-Depois do teste, iniciar a conferência com "Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim:", seguida do encaixe, sprite e valor. Essa abertura deixa claro quando a criança deve conferir. **Achados** ainda fica em zero nesta aula.
-
-Após o teste, clicar em **Verificar projeto**. Se faltar algo, corrigir os blocos e verificar
-novamente. Quando aparecer **Objetivo cumprido!**, esperar **Salvo**, usar **Enviar
-meu projeto**, confirmar em **Enviar** e aguardar a conclusão do envio antes de **Concluir
-fase**. O recado é opcional. Entre o envio e **Concluir aula**, reconhecer a conquista com
-"Pronto, você já programou a primeira regra do seu jogo!", sem pedir que a criança olhe para o jogo
-novamente. Retomar a surpresa como parte da conversa, uma vez só, sem mostrar nada dela:
-"E lembra da surpresa que eu te contei lá no começo do curso? Pois é, ela está quase chegando!
-Na próxima aula, você já vai descobrir o que é." A verificação exige esse clique; o envio não a
-executa automaticamente.
-
-## Tutoriais retirados do vídeo
-
-Os detalhes de pausa, replay, divisória, ampliação, abas, olhinho, leitor do caderno e o passo a
-passo do download ficam na biblioteca Como Fazer; a fala do caderno só aponta o botão **Baixar**. O mapa de destinos está em
-[REVISAO-LINGUAGEM-CADE-TODO-MUNDO-2026-09-27.md](../../aulas-interativas-tecnico/REVISAO-LINGUAGEM-CADE-TODO-MUNDO-2026-09-27.md).
-A biblioteca é consulta, sem pré-requisito ou seção extra.
-
-## Conferência da edição
-
-Conferir rótulos e encaixes no Estúdio incorporado, largura estreita e larga, atualização da
-prévia, verificação da etapa, envio e avanço. Manter mouse, toque e teclado nas experiências existentes. Conferir o
-caderno real anexado e a sua presença na captura; não substituir o anexo pela lista vazia do molde editorial.
-
-O ensaio da abertura deve comprovar que a criança reconhece o jogo a construir, começa a jogar
-sem explicação adicional e sabe como seguir. Conferir as oito entradas da Debinha na versão
-editada, sem sobrepor vozes nem cobrir os controles. A gravação base foi informada como concluída;
-avaliar uma fala complementar somente se a edição revelar uma lacuna concreta. Os manifestos
-locais continuam como moldes de autoria.
-
-## Revisão de ritmo e entendimento · 10/10/2026
-
-O roteiro tem 8 entradas ao todo. As novas falas abaixo distribuem perguntas, reações e descobertas ao longo da montagem. A fala de entendimento aplica a ideia a um exemplo ou consequência; a comemoração pode ser breve. Preservar os passos e deixar o resultado visível antes da reação.
-
-A parte 4 recebeu duas inserções entre trechos do áudio já gravado. Na parte 3, a resposta a A1P3-D01 perde o "Por isso," na edição: a pergunta "E como eu faço essa ligação?" pede o como, e a resposta passa a começar pela demonstração ("eu clico em Ligar a reação ao toque…"). Nenhuma fala é regravada; as partes 1 e 2 continuam iguais. “Funcionou?” vem antes de “Agora sim!”. [Cortes exatos](../../aulas-interativas-tecnico/edicao-cade-aula-1-reacoes.md).
-
-| Entrada | Depois da professora | Criança | Retomada da professora |
-| --- | --- | --- | --- |
-| A1P4-R01 | “Olha aqui: nessa área já tem o bloco Quando clicar ou tocar num sprite do grupo esconderijos, chamá-lo de escolhido. É ele que percebe quando alguém toca num esconderijo. Cada esconderijo é um sprite, que é um objeto do jogo. E escolhido é o nome que o jogo dá ao esconderijo que você tocar.” | Debinha: “Ah! Se eu tocar no arbusto, ele vira o escolhido!” | “A reação vai ficar dentro desse bloco, no espaço vazio ao lado da palavra fazer. Então deixe esse espaço à vista.” |
-| A1P4-R02 | “Funcionou?” | Debinha: “Agora sim!” | “Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente.” |
+Conferir o material em PDF, testar teclado e toque, desfazer, reinício e retomada. Validar com iniciantes se a pessoa reconhece qual objeto recebeu a ação, em vez de apenas seguir os botões.

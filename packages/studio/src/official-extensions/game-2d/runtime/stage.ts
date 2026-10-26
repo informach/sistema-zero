@@ -134,7 +134,19 @@ export const gameTwoDStageRuntime = `  // ---- Palco implícito: o runtime é DO
     var signature = keys.map(function (key) { return _hudValues[key]; }).filter(Boolean).join('. ');
     if (signature !== _lastHudSignature) {
       var node = _ensureHudStatusNode();
-      if (node) node.textContent = signature;
+      if (node) {
+        node.textContent = '';
+        var separator = '';
+        for (var index = 0; index < keys.length; index++) {
+          var key = keys[index];
+          if (!_hudValues[key]) continue;
+          var part = document.createElement('span');
+          part.setAttribute('data-sz-hud-kind', key.split(':')[0]);
+          part.textContent = separator + _hudValues[key];
+          node.appendChild(part);
+          separator = '. ';
+        }
+      }
       _lastHudSignature = signature;
     }
     _hudDirty = false;

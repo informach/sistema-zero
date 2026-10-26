@@ -261,6 +261,7 @@ function readMessageSpoken(raw: unknown): boolean {
 }
 
 const QuizAttemptBody = z.object({
+  questionId: z.string().min(1).max(64).optional(),
   // Espelha o TypeBox do members: ≤100 questões, ≤20 choices/questão, chaves/ids ≤64.
   answers: z
     .record(z.string().min(1).max(64), z.array(z.string().min(1).max(64)).max(20))
@@ -1405,6 +1406,7 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
         lessonId,
         blockId,
         parsed.data.answers,
+        parsed.data.questionId,
       )
       return NextResponse.json(body ?? { ok: status === 200 }, { status })
     },

@@ -584,6 +584,7 @@ export interface AudioBlock {
 }
 export interface QuizQuestion {
   id: string
+  predictionScene?: 'garden-touch' | 'garden-count' | 'garden-repeat'
   prompt: string
   choices: { id: string; label: string }[]
   correctChoiceIds: string[]

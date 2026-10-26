@@ -1,4 +1,6 @@
+import type { SceneId } from './actions'
 import { isSceneAudioUrl } from './audio-url'
+import { gardenSpeechSteps } from './garden'
 
 /**
  * A voz do Zappy nas cenas: o dicionário `roteiro efetivo → arquivo`.
@@ -234,6 +236,8 @@ export const SCENE_SPEECH_SLOTS = [
   'prediction-context',
   'prediction-question',
   'checkpoint',
+  ...gardenSpeechSteps('touch-response').map((step) => `garden:${step.id}` as const),
+  ...gardenSpeechSteps('found-counter').map((step) => `garden:${step.id}` as const),
 ] as const
 export type SceneSpeechSlot = (typeof SCENE_SPEECH_SLOTS)[number]
 export type SceneSpeechOverrides = Readonly<Partial<Record<SceneSpeechSlot, ZappySpeechOverride>>>
@@ -278,10 +282,14 @@ export function falasDaCena(bloco: {
     prompt: string
     choices: readonly { label: string }[]
   }
-  activity?: { type: string; zappySpeech?: SceneSpeechOverrides }
+  activity?: { type: string; scene?: SceneId; zappySpeech?: SceneSpeechOverrides }
 }): readonly ZappySpeech[] {
   const falas: readonly [SceneSpeechSlot, string][] = [
     ['instruction', falaDaInstrucao(bloco.instructions ?? '')],
+    ...gardenSpeechSteps(bloco.activity?.scene).map((step): [SceneSpeechSlot, string] => [
+      `garden:${step.id}`,
+      step.text,
+    ]),
     [
       'prediction-context',
       bloco.prediction ? falaDoContextoDoPalpite('Seu palpite', bloco.prediction.context) : '',

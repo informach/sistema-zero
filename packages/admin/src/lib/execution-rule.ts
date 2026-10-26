@@ -71,7 +71,7 @@ export function targetLabel(target: ExecutionTarget): string {
     case 'spritePosition':
       return `${target.path || '(personagem)'}.${target.axis}`
     case 'text':
-      return 'o texto da página'
+      return target.selector ? `o texto em ${target.selector}` : 'o texto da página'
     case 'console':
       return 'o console'
     case 'game':
@@ -103,7 +103,13 @@ export function describeExecutionRule(rule: SectionExecutionRule): string {
   const tail = EXECUTION_COMPARES_WITHOUT_VALUE.includes(compare)
     ? ''
     : ` ${formatJson(value ?? '')}`
-  return `O jogo faz algo: ${baseline}${steps}; conferir se ${targetLabel(target)} ${COMPARE_LABELS[compare]}${tail}`
+  const intermediate = (rule.checkpoints ?? [])
+    .map(
+      (point) =>
+        `após o passo ${point.afterStep}, conferir se ${targetLabel(point.expect.target)} ${COMPARE_LABELS[point.expect.compare]}${EXECUTION_COMPARES_WITHOUT_VALUE.includes(point.expect.compare) ? '' : ` ${formatJson(point.expect.value ?? '')}`}`,
+    )
+    .join('; ')
+  return `O jogo faz algo: ${baseline}${steps}; conferir se ${targetLabel(target)} ${COMPARE_LABELS[compare]}${tail}${intermediate ? `; ${intermediate}` : ''}`
 }
 
 /**

@@ -160,7 +160,7 @@ describe('curso gratuito Cadê Todo Mundo?', () => {
       })
       expect(experience.content.semPerguntaFinal).toBe(true)
       expect(experience.content.instructions).toBe(
-        'Toque em um esconderijo e olhe Achados. Toque em outro. Depois toque num espaço vazio do jardim. Por último, clique em Recomeçar a busca.',
+        'Encontre um personagem. Olhe o valor guardado em achados e o placar.',
       )
       expect(experience.content.prediction).toBeUndefined()
       expect(blockPrediction(experience.content)).toBeUndefined()
@@ -174,6 +174,8 @@ describe('curso gratuito Cadê Todo Mundo?', () => {
     expect(practice?.completion?.projectChecks?.map((check) => check.id)).toEqual([
       'revelar-ao-toque',
       'somar-achado',
+      'nao-recontar',
+      'mensagem-tres-achados',
     ])
     const delivery = m.sections.find((section) => section.key === 'personalizar')
     expect(delivery?.intent).toBe('delivery')
@@ -298,19 +300,20 @@ describe('curso gratuito Cadê Todo Mundo?', () => {
     expect(concept.completion?.blockIds).toEqual(['video-a1-toque', 'experiencia-toque'])
     const practice = m.sections.find((s) => s.key === 'primeiro-achado')!
     expect(practice.completion?.blockIds).toEqual(['video-a1-programar', 'projeto'])
-    expect(practice.completion?.projectChecks).toHaveLength(1)
+    expect(practice.completion?.projectChecks).toHaveLength(2)
   })
 
-  test('cada regra de conclusão corresponde a um bloco que a criança realmente adiciona', () => {
+  test('objetivos observáveis são válidos para blocos e exigem execução real', () => {
     const first = manifesto('aula-1')
     const firstStudio = first.blocks.find((b) => b.key === 'projeto')?.content
     expect(projectCheckAuthoring(firstStudio).issues(checks('aula-1')[0]!.rule)).toEqual([])
+    expect(checks('aula-1').every((check) => check.rule.type === 'behavior')).toBe(true)
     const before = montarProjetoCadeTodoMundo()
     expect(evaluateStudioSectionProject(checks('aula-1'), before).every((c) => !c.passed)).toBe(
       true,
     )
     const afterFirst = montarProjetoCadeTodoMundo(true)
-    expect(evaluateStudioSectionProject(checks('aula-1'), afterFirst).every((c) => c.passed)).toBe(
+    expect(evaluateStudioSectionProject(checks('aula-1'), afterFirst).every((c) => !c.passed)).toBe(
       true,
     )
 
@@ -319,12 +322,17 @@ describe('curso gratuito Cadê Todo Mundo?', () => {
     for (const check of checks('aula-2'))
       expect(projectCheckAuthoring(secondStudio).issues(check.rule), check.id).toEqual([])
     // A entrega da Aula 2 conserva a regra da Aula 1; só a contagem é nova.
-    expect(checks('aula-2').map((check) => check.id)).toEqual(['revelar-ao-toque', 'somar-achado'])
+    expect(checks('aula-2').map((check) => check.id)).toEqual([
+      'revelar-ao-toque',
+      'somar-achado',
+      'nao-recontar',
+      'mensagem-tres-achados',
+    ])
     const depoisDaAula1 = evaluateStudioSectionProject(checks('aula-2'), afterFirst)
-    expect(depoisDaAula1.find((c) => c.checkId === 'revelar-ao-toque')?.passed).toBe(true)
+    expect(depoisDaAula1.find((c) => c.checkId === 'revelar-ao-toque')?.passed).toBe(false)
     expect(depoisDaAula1.find((c) => c.checkId === 'somar-achado')?.passed).toBe(false)
     const finished = montarProjetoCompleto()
-    expect(evaluateStudioSectionProject(checks('aula-2'), finished).every((c) => c.passed)).toBe(
+    expect(evaluateStudioSectionProject(checks('aula-2'), finished).every((c) => !c.passed)).toBe(
       true,
     )
   })

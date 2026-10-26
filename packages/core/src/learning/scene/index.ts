@@ -43,6 +43,7 @@ export * from './catalog'
 export * from './cenario'
 export * from './engine'
 export * from './evaluate'
+export * from './garden'
 // O núcleo do Iniciante 2D do lote 5 do Raio-X: as réguas da tecla, do laço, da ficha, da câmera,
 // do encosto, da recarga, da mira, da diagonal e do mapa escrito.
 export * from './nucleo'

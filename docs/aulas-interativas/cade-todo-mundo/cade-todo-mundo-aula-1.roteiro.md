@@ -56,35 +56,24 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 **Clipe:** `video-a1-toque`
 
-**Na tela:** mostrar a experiência com a reação desligada. No "Olha aqui", tocar no arbusto e deixar ver que nada acontece; no "Tá vendo?", manter o arbusto parado na tela. Clicar em **Ligar a reação ao toque**, tocar de novo e, no "Olha só", deixar ver o arbusto invisível e o coelho. No fim, apontar a experiência para a pessoa repetir. **Ilustração a reaproveitar nos dois públicos:** na comparação das cócegas, usar a animação já preparada do Zappy rindo com a pena fazendo cócegas e a legenda "ação: cócega · reação: risada". Manter a entrada breve, no ponto da analogia, sem cobrir a experiência. Zappy permanece visual, sem fala no vídeo. Não produzir uma animação de campainha para esta revisão.
+**Na tela:** explicar ação e reação com a animação já produzida da pena fazendo cócegas e o Zappy rindo, com a legenda “ação: cócega · reação: risada”. Em seguida, mostrar um toque e a ideia de ligação com uma reação no jardim, sem percorrer a interface da experiência nem revelar os testes com outro esconderijo. A atividade real começa sem progresso. O Zappy da página orienta cada etapa conforme o estado; não sobrepor sua voz à professora.
 
 **Fala para ElevenLabs:**
 
 ```text
-[engaging, energetic, conversational voice] Nesta experiência, vamos ver como funciona a ação e a reação.
-
-[interested, animated voice] Olha aqui: quando eu toco no arbusto, nada acontece. Tá vendo? É que o jogo ainda não sabe o que fazer quando alguém toca no arbusto. Então a gente precisa dizer isso para ele.
+[engaging, energetic, conversational voice] Nesta parte, a gente vai entender uma ideia importante para fazer o seu jogo responder: a ação e a reação.
 
 [interested, animated voice] Sabe quando alguém faz cócegas em você e você não consegue parar de rir? A cócega é a ação, e a risada é a reação.
 
-[engaging, energetic, conversational voice] No seu jogo, o toque é a ação. E a reação que a gente quer é o arbusto ficar invisível, para aparecer quem está escondido atrás dele. Mas, para o jogo ter essa reação, a gente precisa ligar a reação ao toque.
+[engaging, energetic, conversational voice] No seu jogo, o toque é a ação. A reação que a gente quer é um esconderijo ficar invisível, para aparecer quem está atrás dele. Essa reação precisa estar ligada ao toque para acontecer.
 
-[curious] E como faz essa ligação?
-
-[engaging, energetic, conversational voice] Eu clico em Ligar a reação ao toque e toco no arbusto de novo. [interested, animated voice] Olha só: agora sim ele fica invisível, e dá para ver o coelho que estava atrás! Então essa é a reação que eu liguei ao toque: o arbusto ficar invisível.
-
-[upbeat, encouraging voice] Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora é a sua vez de investigar essa ligação no jardim. Observe o que acontece antes e depois de ligar a reação. O Zappy vai acompanhar cada etapa da experiência. Quando terminar, clique em Próxima parte.
 ```
 
-**Substituições na edição kids:**
 
-| ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
-| --- | --- | --- | --- | --- | --- | --- |
-| video-a1-toque-K1 | Debinha | 1 | aparecer quem está escondido atrás dele. Mas, para o jogo ter essa reação, a gente precisa ligar a reação ao toque. | E como faz essa ligação? | Eu clico em Ligar a reação ao toque e toco no arbusto de novo. Olha só: agora sim ele fica invisível, e dá para ver o | [curious] |
+**Falas dentro da experiência:** fonte compartilhada `packages/core/src/learning/scene/garden.ts`, exportada em `zappy-etapas.json`. Uma fala por estado; texto, botão principal e voz devem corresponder à mesma etapa. Os controles e os retornos são apresentados durante a interação, sem reproduzir uma sequência de cliques no vídeo.
 
-No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
-
-**Recado na página (não gravar):** Sua vez! Faça os dois testes no mesmo arbusto e repare no que muda. Quando terminar, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Investigue a ligação entre o toque e a reação no jardim. O Zappy acompanha cada etapa da experiência.
 
 ## Parte 4. Faça alguém aparecer
 

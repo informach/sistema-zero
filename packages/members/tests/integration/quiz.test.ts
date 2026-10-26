@@ -84,6 +84,43 @@ const updateBlock = (
 ) => publishBlock(app, lessonId, { content }, {}, blockId)
 
 describe('Quiz server-side', () => {
+  test('previsão corrige só a pergunta pedida, permite corrigir e não registra aprovação parcial', async () => {
+    const { app, courses, entitlements } = buildApp()
+    const course = seedSampleCourse(courses)
+    grantLifetime(entitlements, { userId: USER, courseRef: course.slug })
+    const lessonId = course.lessonIds[0]
+    const blockId = seedQuizBlock(courses, lessonId, { passingScore: 100 })
+    const block = courses.blocks.find((b) => b.id === blockId)!
+    if (block.content.kind !== 'quiz') throw Error('Quiz ausente')
+    block.content.questions[0]!.predictionScene = 'garden-touch'
+    const check = (questionId: string, answers: Record<string, string[]>) =>
+      app.handle(
+        new Request(
+          `http://localhost/members/lessons/${lessonId}/blocks/${blockId}/quiz-attempts`,
+          { method: 'POST', headers: authHeaders, body: JSON.stringify({ questionId, answers }) },
+        ),
+      )
+    const wrong = await check('q1', { q1: ['a'] })
+    expect(wrong.status).toBe(200)
+    const correction = await readJson(wrong)
+    expect(correction.questions).toHaveLength(1)
+    expect(correction.questions[0].correct).toBe(false)
+    expect(correction.attemptsCount).toBe(0)
+    expect(correction.passed).toBe(false)
+    expect(correction.gamification).toBeNull()
+    expect((await readJson(await check('q1', { q1: ['b'] }))).questions[0].correct).toBe(true)
+    const lesson = await readJson(await getLesson(app, course.slug, lessonId))
+    const shown = lesson.blocks.find((b: { id: string }) => b.id === blockId)
+    expect(shown.quizState.attemptsCount).toBe(0)
+    expect(shown.quizState.passed).toBe(false)
+    expect(shown.content.questions[0].predictionScene).toBe('garden-touch')
+    expect(JSON.stringify(shown.content)).not.toContain('correctChoiceIds')
+    expect((await check('q2', { q2: ['a'] })).status).toBe(404)
+    expect((await check('q1', { q1: ['b'], q2: ['a'] })).status).toBe(404)
+    const final = await readJson(await submit(app, lessonId, blockId, { q1: ['b'], q2: ['a'] }))
+    expect(final.passed).toBe(true)
+    expect(final.attemptsCount).toBe(1)
+  })
   test('GET da aula NÃO vaza gabarito e traz quizState zerado', async () => {
     const { app, courses, entitlements } = buildApp()
     const course = seedSampleCourse(courses)

@@ -705,6 +705,7 @@ export const CourseRatingBody = t.Object({
  * questionId → choiceIds marcados. Score é calculado NO SERVIDOR.
  */
 export const QuizAttemptBody = t.Object({
+  questionId: t.Optional(t.String({ minLength: 1, maxLength: 64 })),
   answers: t.Record(
     t.String({ minLength: 1, maxLength: 64 }),
     t.Array(t.String({ minLength: 1, maxLength: 64 }), { maxItems: 20 }),
@@ -1002,6 +1003,9 @@ const QuizBlockSchema = t.Object({
       id: t.String({ minLength: 1, maxLength: 64 }),
       // prompt/label/explanation são MARKDOWN (formatação rica + imagens `![](url)`
       // do editor TipTap do admin) — limites folgados p/ caber URLs de imagem do R2.
+      predictionScene: t.Optional(
+        t.Union([t.Literal('garden-touch'), t.Literal('garden-count'), t.Literal('garden-repeat')]),
+      ),
       prompt: t.String({ minLength: 1, maxLength: 5000 }),
       choices: t.Array(
         t.Object({

@@ -18,3 +18,11 @@ Os arquivos de cada aula ficam nesta pasta. **Conteúdo** reúne a proposta e as
 | O primeiro achado | [Abrir](cade-todo-mundo-aula-1.md) | [Abrir](cade-todo-mundo-aula-1.roteiro.md) | [JSON](cade-todo-mundo-aula-1.manifesto.json) | [TXT](cade-todo-mundo-aula-1.elevenlabs.txt) |
 | Complete a busca | [Abrir](cade-todo-mundo-aula-2.md) | [Abrir](cade-todo-mundo-aula-2.roteiro.md) | [JSON](cade-todo-mundo-aula-2.manifesto.json) | [TXT](cade-todo-mundo-aula-2.elevenlabs.txt) |
 | Seu certificado | [Abrir](cade-todo-mundo-certificado.md) | [Abrir](cade-todo-mundo-certificado.roteiro.md) | [JSON](cade-todo-mundo-certificado.manifesto.json) | [TXT](cade-todo-mundo-certificado.elevenlabs.txt) |
+
+## Revisão de descoberta guiada, 25/10/2026
+
+Aplicada ao código e aos materiais locais conforme [as diretrizes](../../aulas-interativas-tecnico/DESCOBERTA-GUIADA.md). Os dois vídeos conceituais preparam a investigação; as experiências orientam cada teste pelo estado. O quiz tem previsão, cena resultante e correção por pergunta. Os objetivos conferem comportamento em execução. [Falas internas do Zappy](zappy-etapas.json) registram os textos por etapa.
+
+Produção de áudio, escuta, edição dos clipes, importação no curso de destino e publicação são etapas separadas. Os arquivos plannedVideo não representam vídeo novo publicado.
+
+[Implementação, evidências de validação e etapas de produção restantes](REVISAO-2026-10-25.md).

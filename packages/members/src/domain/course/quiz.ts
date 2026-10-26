@@ -1,3 +1,4 @@
+import { validatePredictionQuiz } from '@sistemazero/core/learning'
 import {
   type QuizQuestionSpeech,
   type SceneVozes,
@@ -29,6 +30,8 @@ export const QUIZ_RETRY_COOLDOWN_MS = 90_000
  * Retorna a mensagem do problema, ou `null` se válido.
  */
 export function validateQuizAuthoring(block: QuizBlock): string | null {
+  const predictionError = validatePredictionQuiz(block.questions)
+  if (predictionError) return predictionError
   // Quiz COM nota de corte PRECISA de questões: um quiz vazio não é respondível
   // pelo aluno (a UI nem renderiza), então o gate da aula nunca seria satisfeito
   // → conclusão travada para sempre. Quiz vazio SEM nota de corte segue permitido
@@ -87,6 +90,7 @@ export interface MemberQuizContent {
   kind: 'quiz'
   questions: {
     id: string
+    predictionScene?: 'garden-touch' | 'garden-count' | 'garden-repeat'
     prompt: string
     choices: QuizChoice[]
     /** Só a pronúncia da PERGUNTA: a da explicação contaria o gabarito. */
@@ -110,6 +114,7 @@ export function toMemberFacingQuizContent(block: QuizBlock): MemberQuizContent {
     questions: block.questions.map((q) => ({
       id: q.id,
       prompt: q.prompt,
+      ...(q.predictionScene ? { predictionScene: q.predictionScene } : {}),
       choices: q.choices.map((c) => ({ id: c.id, label: c.label })),
       ...(q.zappySpeech?.question ? { zappySpeech: { question: q.zappySpeech.question } } : {}),
     })),

@@ -260,6 +260,10 @@ export interface SceneMatch {
   points: number
   /** Os esconderijos já abertos na busca da cena `found-counter`; ausente nos retratos antigos. */
   foundIds?: number[]
+  gardenRound?: 1 | 2
+  gardenChosen?: 0 | 1
+  gardenFound?: number[]
+  counterUpdate?: import('./garden').GardenUpdate
   clockRemainder: number
   scoreIdle: number
   /**
@@ -2068,6 +2072,8 @@ export function cloneScene(state: SceneState): SceneState {
       tries: state.match.tries.map((t) => ({ ...t })),
       seen: [...state.match.seen],
       foundIds: state.match.foundIds ? [...state.match.foundIds] : undefined,
+      ...(state.match.gardenFound ? { gardenFound: [...state.match.gardenFound] } : {}),
+      ...(state.match.counterUpdate ? { counterUpdate: { ...state.match.counterUpdate } } : {}),
     },
     contact: { ...state.contact },
     speed: {
@@ -2565,6 +2571,32 @@ function isMotorE3DExtra(g: Record<string, unknown>): boolean {
 function isCorreDinoSegundaMetade(g: Record<string, unknown>): boolean {
   const L = SCENE_LIMITS
   const match = g.match as Record<string, unknown>
+  if (match.gardenRound !== undefined && match.gardenRound !== 1 && match.gardenRound !== 2)
+    return false
+  if (match.gardenChosen !== undefined && match.gardenChosen !== 0 && match.gardenChosen !== 1)
+    return false
+  if (
+    match.gardenFound !== undefined &&
+    (!Array.isArray(match.gardenFound) ||
+      match.gardenFound.length > 2 ||
+      !match.gardenFound.every((id) => id === 0 || id === 1) ||
+      new Set(match.gardenFound).size !== match.gardenFound.length)
+  )
+    return false
+  if (match.counterUpdate !== undefined) {
+    const u = match.counterUpdate
+    if (
+      !isRecord(u) ||
+      !['initial', 'add', 'empty', 'repeat', 'reset'].includes(u.kind as string) ||
+      !Number.isInteger(u.before) ||
+      !Number.isInteger(u.after) ||
+      (u.before as number) < 0 ||
+      (u.before as number) > 3 ||
+      (u.after as number) < 0 ||
+      (u.after as number) > 3
+    )
+      return false
+  }
   if (!numbers(match.seen, 3) || match.seen.length !== 3 || !num(match.cleared)) return false
   if (
     match.foundIds !== undefined &&

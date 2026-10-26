@@ -57,6 +57,7 @@ export class SubmitQuizAttemptService {
     answers: QuizAnswers,
     privileged = false,
     accountId?: string,
+    questionId?: string,
   ): Promise<QuizAttemptResultView> {
     const lesson = await this.courses.findLessonWithContent(lessonId)
     // Aula rascunho é invisível ao aluno → também não aceita tentativas de quiz.
@@ -87,6 +88,25 @@ export class SubmitQuizAttemptService {
     const block = lesson.blocks.find((b) => b.id === blockId)
     if (block?.content.kind !== 'quiz') throw new QuizBlockNotFoundError()
 
+    if (questionId !== undefined) {
+      const question = block.content.questions.find((q) => q.id === questionId)
+      if (
+        !question?.predictionScene ||
+        Object.keys(answers).length !== 1 ||
+        !answers[questionId]?.length ||
+        !answers[questionId]?.every((id) => question.choices.some((c) => c.id === id))
+      )
+        throw new QuizBlockNotFoundError()
+      const grade = gradeQuizAttempt({ ...block.content, questions: [question] }, answers)
+      // Observation only: no attempt, cooldown, completion, or XP is created here.
+      return {
+        ...grade,
+        passed: false,
+        attemptsCount: 0,
+        retryAvailableAt: null,
+        gamification: null,
+      }
+    }
     const now = this.clock()
     const formative = await this.sections.isCriterion(lessonId, blockId)
     const summary = (await this.attempts.summarizeByBlockIds(userId, [blockId])).get(blockId)

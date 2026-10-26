@@ -550,10 +550,10 @@ const dia3 = {
       'ponte-d3-posicionar-chave',
       'Agora escolha onde fica a chave! Mude o x e o y no bloco Criar sprite chave, como x 160 e y 250 para a parte de baixo. Teste o caminho até a chave e até a porta do farol. Depois clique em Enviar meu projeto e confirme em Enviar. Se mudar alguma coisa depois de enviar, clique em Enviar de novo e confirme em Reenviar. Quando aparecer Projeto enviado!, clique em Próxima parte.',
     ),
-    video('video-d3-fecho', 'Publique seu jogo', 'desafio-dia-3.roteiro.md'),
+    video('video-d3-fecho', 'Seu jogo está pronto', 'desafio-dia-3.roteiro.md'),
     fala(
       'ponte-d3-publicar',
-      'Hora de mostrar o seu jogo! Publique no Mural, copie o link de jogar e mande para a sua família e os seus amigos. Se precisar, peça ajuda a um adulto. Depois clique em Fechar e em Concluir aula.',
+      'Seu jogo está pronto! Se quiser, publique no Mural, copie o link de jogar e compartilhe com a sua família e os seus amigos. Se precisar, peça ajuda a um adulto. Você pode concluir a aula e continuar a jornada sem publicar.',
     ),
     projeto('dia-3'),
     ajudaComoFazer('ajuda-publicar', 'Para consultar ao publicar', [
@@ -637,9 +637,9 @@ const dia3 = {
     ),
     secao(
       'fecho',
-      'Publique seu jogo',
+      'Seu jogo está pronto',
       'closing',
-      'Publicar o projeto construído no Mural e concluir a aula.',
+      'Concluir a aula com o projeto enviado; compartilhar no Mural é uma escolha.',
       ['video-d3-fecho', 'ponte-d3-publicar', 'ajuda-publicar'],
       ['video-d3-fecho'],
       'projeto',

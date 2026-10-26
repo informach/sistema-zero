@@ -4,6 +4,7 @@ export interface ManifestQuiz {
   passingScore: number
   questions: Array<{
     id: string
+    predictionScene?: 'garden-touch' | 'garden-count' | 'garden-repeat'
     prompt: string
     choices: { id: string; label: string }[]
     correctChoiceIds: string[]
@@ -14,6 +15,24 @@ const record = (v: unknown): v is Record<string, unknown> =>
   typeof v === 'object' && v !== null && !Array.isArray(v)
 const text = (v: unknown, max: number): v is string =>
   typeof v === 'string' && v.trim().length > 0 && v.length <= max
+
+/** A demonstração é um modo do quiz inteiro, com uma previsão por pergunta. */
+export function validatePredictionQuiz(
+  questions: readonly { predictionScene?: string; correctChoiceIds?: readonly string[] }[],
+): string | null {
+  if (!questions.some((q) => q.predictionScene !== undefined)) return null
+  if (questions.some((q) => !q.predictionScene))
+    return 'Escolha uma cena para todas as perguntas da revisão com demonstração.'
+  if (
+    questions.some(
+      (q) => !['garden-touch', 'garden-count', 'garden-repeat'].includes(q.predictionScene ?? ''),
+    )
+  )
+    return 'Cena da previsão inválida'
+  if (questions.some((q) => q.correctChoiceIds !== undefined && q.correctChoiceIds.length !== 1))
+    return 'Uma previsão precisa de uma única alternativa correta'
+  return null
+}
 export function isManifestQuiz(v: unknown): v is ManifestQuiz {
   if (
     !record(v) ||
@@ -28,12 +47,14 @@ export function isManifestQuiz(v: unknown): v is ManifestQuiz {
   )
     return false
   const ids = new Set<string>()
-  return v.questions.every((q) => {
+  const valid = v.questions.every((q) => {
     if (
       !record(q) ||
       !text(q.id, 64) ||
       ids.has(q.id) ||
       !text(q.prompt, 5000) ||
+      (q.predictionScene !== undefined &&
+        !['garden-touch', 'garden-count', 'garden-repeat'].includes(q.predictionScene as string)) ||
       !Array.isArray(q.choices) ||
       q.choices.length < 2 ||
       q.choices.length > 20 ||
@@ -57,4 +78,5 @@ export function isManifestQuiz(v: unknown): v is ManifestQuiz {
       q.correctChoiceIds.every((id) => typeof id === 'string' && choices.has(id))
     )
   })
+  return valid && validatePredictionQuiz(v.questions) === null
 }

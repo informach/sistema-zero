@@ -21,17 +21,6 @@
       "tags": ["[curious]"]
     },
     {
-      "id": "video-a1-toque-K1",
-      "clipe": "video-a1-toque",
-      "personagem": "Debinha",
-      "ocorrencia": 1,
-      "ancoraAntes": "aparecer quem está escondido atrás dele. Mas, para o jogo ter essa reação, a gente precisa ligar a reação ao toque.",
-      "ancoraDepois": "Eu clico em Ligar a reação ao toque e toco no arbusto de novo. Olha só: agora sim ele fica invisível, e dá para ver o",
-      "falaPrincipal": "E como faz essa ligação?",
-      "falaPersonagem": "E como faz essa ligação?",
-      "tags": ["[curious]"]
-    },
-    {
       "id": "video-a1-programar-K1",
       "clipe": "video-a1-programar",
       "personagem": "Debinha",

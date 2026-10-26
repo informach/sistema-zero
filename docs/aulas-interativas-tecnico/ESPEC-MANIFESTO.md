@@ -473,3 +473,17 @@ roteiro tem um trecho para cada bloco com `plannedVideo`, sem sobra nem falta.
 **Exceção:** o campo `Origem:` de um `plannedVideo` cita a chave do clipe da **gravação antiga** de
 onde a fala vem. Essa chave é procedência, não resíduo, e continua no arquivo mesmo depois de o
 conceito sair do curso.
+
+## Descoberta guiada: contratos de 25/10/2026
+
+Seguir [Conceito, investigação e construção](DESCOBERTA-GUIADA.md). O Cadê mantém IDs de blocos, seções, clipes e projetos. As metas novas são selecionadas explicitamente em `activity.setup.goals`: `second-target` em `touch-response` e `repeat` em `found-counter`. Missões antigas sem essa seleção conservam suas metas de fábrica.
+
+As falas internas do jardim vêm de `packages/core/src/learning/scene/garden.ts`; `zappy-etapas.json` é um derivado para consulta e produção. Cada etapa tem um slot `garden:<id da etapa>` em `zappySpeech`, separado de `instruction`, para ajustar sua pronúncia independentemente. O player resolve a fala e a ação principal a partir do mesmo estado, inclusive após desfazer e retomar. A orientação deve continuar realizável após reinício antecipado. A voz usa a chave do texto efetivo, sem aproveitar o áudio de uma instrução diferente.
+
+Uma pergunta de quiz pode declarar `predictionScene`: `garden-touch`, `garden-count` ou `garden-repeat`. Quando uma pergunta usa demonstração, todas as perguntas do bloco precisam de uma cena e de uma única alternativa correta; autoria, importação e manifesto rejeitam configurações mistas. O editor oferece o seletor de cena por pergunta. O curso usa as três situações para previsão, resultado da cena e correção imediata. O conteúdo público conserva esse descritor, mas remove gabarito, explicação e voz da explicação. A consulta por pergunta envia `questionId` e apenas a resposta daquela questão ao endpoint de tentativas; recebe somente sua correção e não persiste tentativa, aprovação ou XP. O rascunho local preserva posição e respostas por aluno, aula, bloco e conteúdo; a prévia usa seu contexto próprio. A correção é conferida novamente ao retomar. A submissão completa mantém a validação autoritativa e o registro existentes. Sem `passingScore`, a prévia também funciona como quiz de fixação.
+
+Objetivos JavaScript de `type: behavior` podem incluir até oito `checkpoints`, cada um com `afterStep` (0 para o início ou o índice de um passo realizado) e `expect`. Todos os pontos e a expectativa final precisam passar. Uma observação ausente ou incompleta reprova. Essa extensão é para o executor JavaScript; não declarar checkpoints no executor Python nem em uma observação de movimento `idleBeforeAction`.
+
+O editor mostra cada verificação intermediária, seu momento, alvo, comparação e valor. Ao remover um passo, remove também as verificações desse passo e renumera as posteriores; a interface informa esse comportamento. O seletor do alvo de texto também é editável, tanto na expectativa final quanto nas intermediárias.
+
+O alvo de texto pode restringir a leitura com `selector` (até 200 caracteres, seleção no DOM isolado). No jardim, `#sz-game-hud-status [data-sz-hud-kind="label"]` observa as mensagens desenhadas, separadas do placar pelo HUD acessível da extensão. Isso permite verificar ausência da mensagem com zero, um e dois achados e presença com três, aceitando o texto personalizado. Os cliques usam alvos adaptativos, sem fixar coordenadas da solução.

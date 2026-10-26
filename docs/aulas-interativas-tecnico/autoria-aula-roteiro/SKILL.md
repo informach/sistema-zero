@@ -9,7 +9,7 @@ Direção comum de 21/10/2026: simplicidade para uma criança compreender, trata
 
 ## Antes de escrever
 
-- Leia `docs/aulas-interativas-tecnico/DIRETRIZES-PEDAGOGICAS.md` inteiro, `DIRETRIZES-VOZ-ELEVENLABS.md` e `ESPEC-ROTEIRO.md`. Instruções do usuário prevalecem.
+- Leia `docs/aulas-interativas-tecnico/DIRETRIZES-PEDAGOGICAS.md` inteiro, `DIRETRIZES-VOZ-ELEVENLABS.md` e `ESPEC-ROTEIRO.md`, além de `DESCOBERTA-GUIADA.md`. Instruções do usuário prevalecem.
 - Leia proposta, manifesto e roteiro em `docs/aulas-interativas/<curso>/`. Confira o gerador em `docs/aulas-interativas-tecnico/qa/`; Nave, Dino e Meu Jeito têm fonte `.conteudo.json`, Cadê e Farol têm a fala no roteiro de produção.
 - Confira nomes de controles e comportamento no código. Não existe tradução adulta separada nem pasta editorial kids/adulto.
 
@@ -18,7 +18,7 @@ Direção comum de 21/10/2026: simplicidade para uma criança compreender, trata
 1. Situe a tarefa e convide para uma ação concreta. Use jogar, curso, aula, parte e Passo a passo do projeto.
 2. Preserve todos os passos: destino visível antes da peça, caminho da paleta, bloco literal, encaixe, campo, valor, teste e correção.
 3. Explique a palavra nova quando necessária. Escolha analogias comuns às idades, humor moderado e conversa com você, a gente e eu na demonstração. Traga o exemplo para quem assiste: “Sabe quando alguém faz cócegas em você e você não consegue parar de rir?”. Evite descrições distantes ou fabricadas como “vem aquela risada”; leia em voz alta e varie as construções sem repetir uma fórmula em todas as aulas. Evite voz de bebê, diminutivos de rotina e elogios excessivos. Preserve ilustrações já produzidas que expliquem bem para todos: mascote e humor visual, por si, não exigem uma troca de analogia. No Cadê, reaproveitar as cócegas/risada e o placar de futebol.
-4. Na experiência, o narrador demonstra na primeira pessoa e só no fim passa a vez. A instrução da atividade orienta os testes sem antecipar respostas.
+4. No vídeo conceitual, explicar a ideia com situação concreta e convidar a uma investigação. A experiência orienta um teste por vez, por falas do Zappy determinadas pelo estado. Texto, voz e botão principal acompanham a mesma etapa; as demais ações têm aparência de botão secundário. A montagem do Estúdio conserva todos os passos. O quiz de previsão apresenta cena, escolha, resultado e correção imediata, com nova tentativa e validação no servidor. Ler DESCOBERTA-GUIADA.md; esta direção de 25/10/2026 atualiza a antiga demonstração completa dos testes no vídeo.
 5. Termine na ação real: Próxima parte, envio com confirmação ou Concluir aula. Consulta ao material e Como Fazer continuam opcionais.
 6. Mantenha o master contínuo e completo. Pensamentos citados podem ter sua frase exata substituída por Dedé ou Debinha no kids; preparação e retomada da professora permanecem. Não chamar personagens pelo nome no master.
 
