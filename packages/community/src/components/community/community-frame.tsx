@@ -1,6 +1,7 @@
 'use client'
 import { isEmbeddedAppPath } from '@sistemazero/member-shell/lib/embedded-app-path'
 import { isLessonPath } from '@sistemazero/member-shell/lib/lesson-path'
+import { useTeacherUnread } from '@sistemazero/member-shell/lib/teacher-unread'
 import { usePathname } from 'next/navigation'
 import type { ReactNode } from 'react'
 import type { SessionUserWithAvatar } from '@/lib/types'
@@ -37,6 +38,26 @@ export function CommunityFrame({
   // conteúdo (`sz-page`).
   const framed = lesson || live
   const app = !embedded && !framed
+  // Os não lidos de Recados: UMA leitura para o menu lateral, a barra e as abas (as três ficam
+  // montadas, só escondidas por CSS; três hooks seriam três buscas a cada rota, foco e 30 s). A aula
+  // e as ferramentas de tela cheia não mostram o selo e não buscam.
+  const unread = useTeacherUnread(pathname, app || live)
+  // ⚠️ O `<main>` é filho DIRETO do `.sz-app` fora da moldura: as regras da aula e da sala ao vivo
+  // (`.sz-app:has(.sz-aula-adulto) > main`, a reserva do rodapé fixo) dependem disso.
+  const main = (
+    <main
+      id="conteudo"
+      className={
+        embedded
+          ? 'flex min-h-0 w-full flex-1 overflow-hidden'
+          : framed
+            ? 'mx-auto w-full max-w-6xl flex-1 px-4 py-8 md:px-6'
+            : 'min-w-0 flex-1 pb-[calc(4.2rem+env(safe-area-inset-bottom))] lg:pb-0'
+      }
+    >
+      {children}
+    </main>
+  )
 
   return (
     <div
@@ -44,24 +65,17 @@ export function CommunityFrame({
       className={`sz-app flex flex-col bg-background ${embedded ? 'h-dvh overflow-hidden' : 'min-h-screen'}`}
     >
       {banner}
-      {live ? <CommunityTopBar user={user} compact /> : null}
-      {app ? <CommunityTopBar user={user} /> : null}
-      <div className={app ? 'flex min-h-0 flex-1' : 'contents'}>
-        {app ? <CommunitySidebar user={user} /> : null}
-        <main
-          id="conteudo"
-          className={
-            embedded
-              ? 'flex min-h-0 w-full flex-1 overflow-hidden'
-              : framed
-                ? 'mx-auto w-full max-w-6xl flex-1 px-4 py-8 md:px-6'
-                : 'min-w-0 flex-1 pb-[calc(4.2rem+env(safe-area-inset-bottom))] lg:pb-0'
-          }
-        >
-          {children}
-        </main>
-      </div>
-      {app ? <CommunityTabs /> : null}
+      {live ? <CommunityTopBar user={user} unread={unread} compact /> : null}
+      {app ? <CommunityTopBar user={user} unread={unread} /> : null}
+      {app ? (
+        <div className="flex min-h-0 flex-1">
+          <CommunitySidebar user={user} unread={unread} />
+          {main}
+        </div>
+      ) : (
+        main
+      )}
+      {app ? <CommunityTabs unread={unread} /> : null}
     </div>
   )
 }

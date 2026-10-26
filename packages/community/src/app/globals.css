@@ -666,18 +666,25 @@ a.bg-primary.text-primary-foreground:hover:not([aria-disabled="true"]) {
    da pessoa, não ação. A aula, a sala ao vivo, as ferramentas de tela
    cheia e o jogo público são peças do Kids e seguem com a cor de ação de lá. */
 :root:not(:has(.sz-aula-adulto, .sz-app[data-embedded="true"], [data-sz-public-player]))
-  [data-slot="button"].bg-primary.text-primary-foreground {
+  [data-slot="button"].bg-primary.text-primary-foreground:not([aria-pressed]) {
   background-color: var(--cta);
   color: var(--cta-tinta);
   box-shadow: 0 3px 0 var(--cta-degrau);
 }
 :root:not(:has(.sz-aula-adulto, .sz-app[data-embedded="true"], [data-sz-public-player]))
-  [data-slot="button"].bg-primary.text-primary-foreground:is(
+  [data-slot="button"].bg-primary.text-primary-foreground:not([aria-pressed]):is(
     button:hover:not(:disabled),
     a:hover:not([aria-disabled="true"])
   ) {
   background-color: var(--dourado);
   color: var(--cta-tinta);
+}
+/* O anel de foco do `Button` é um `ring` (box-shadow), que o degrau acima apaga: o foco volta como
+   contorno. A resposta escolhida (`aria-pressed`) é seleção, não ação, e fica com a cor da pessoa. */
+:root:not(:has(.sz-aula-adulto, .sz-app[data-embedded="true"], [data-sz-public-player]))
+  [data-slot="button"].bg-primary.text-primary-foreground:not([aria-pressed]):focus-visible {
+  outline: 3px solid var(--ring);
+  outline-offset: 2px;
 }
 
 @layer components {
@@ -1130,6 +1137,10 @@ input[type="password"]::-webkit-strong-password-auto-fill-button {
     background: var(--card);
     color: var(--card-foreground);
     box-shadow: 0 3px 0 var(--degrau-claro);
+  }
+  /* Os cartões da sala ao vivo e da aula são do Kids: sem o degrau do Estúdio à noite. */
+  .sz-aula-adulto .sz-card-sm {
+    box-shadow: none;
   }
   .sz-soft {
     border-radius: 0.8rem;

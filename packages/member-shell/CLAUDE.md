@@ -749,7 +749,7 @@ pressão de disco — o rascunho da criança sumia sem culpado.
 de rede e usa o `threadId` retornado em Ver conversa. `TeacherLessonLink` permite retornar ao hash
 `#section=<id>`; o player só abre seção acessível. `helpContext` da mensagem guarda revisão e pendências.
 O rótulo do link é `copy.secoes.voltarParaSecao` do `LessonCopy` ("Voltar à seção" no adulto, "Voltar à parte"
-no Kids). `useTeacherUnread` revalida por navegação, foco/visibilidade, eventos de leitura/resposta e a cada 30s
+no Kids). `useTeacherUnread(scope, enabled = true)` revalida por navegação (com `enabled` falso não busca), foco/visibilidade, eventos de leitura/resposta e a cada 30s
 em primeiro plano. Compartilhado pelos sinos do Kids e Adultos.
 `SectionProjectCheck` mostra cada objetivo e só atualiza progresso após resposta persistida.
 Não confundir estrutura verificada no servidor com execução comprovada do jogo.

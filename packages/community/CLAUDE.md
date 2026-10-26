@@ -224,7 +224,9 @@ plataforma já faz (as sugestões de recurso novo do Canvas ficaram de fora, dec
   variante `default`) também vira amarelo, MAS só nas páginas da comunidade: a regra exclui a raiz com
   `.sz-aula-adulto`, `data-embedded` e `[data-sz-public-player]` (aula, sala ao vivo, ferramentas e
   jogo público são peças do Kids e seguem com a cor de ação). ⚠️ A regra mira o `data-slot`, nunca
-  `bg-primary` solto: filtro ativo, bolha de conversa e selo usam `bg-primary` como acento.
+  `bg-primary` solto: filtro ativo, bolha de conversa e selo usam `bg-primary` como acento. O degrau
+  (box-shadow) apaga o `ring` do foco, então a mesma regra devolve o foco como `outline`; botão de
+  escolha com `aria-pressed` (respostas da avaliação do curso) fica fora dela (seleção, não ação).
 - **Peças novas:** `sz-hud` (o trilho do `ProgressBar` e do `Meter` em dez gomos por `mask-image`; o
   valor segue contínuo para o leitor de tela; menta no palco, acento na bancada, verde no `data-feito`),
   `sz-mira` (os cantos amarelos da capa em destaque, por dentro da moldura), `sz-save` (o ponto de
@@ -235,7 +237,14 @@ plataforma já faz (as sugestões de recurso novo do Canvas ficaram de fora, dec
   moldura e a sala ao vivo usa `CommunityTopBar compact` em toda largura. ⚠️ Duas logos escuras na
   mesma página: a do menu lateral passa `instancia="menu"` ao `BrandLogo` (ids dos degradês; sem isso
   o ZERO some quando a da barra está escondida). Os `sticky` de página usam `lg:top-6` (não há mais
-  barra no alto do computador).
+  barra no alto do computador). ⚠️⚠️ O `<main>` é filho DIRETO do `.sz-app` fora das páginas da
+  comunidade (aula, sala ao vivo, ferramentas de tela cheia): as regras `.sz-app:has(.sz-aula-adulto) >
+  main` (reserva do rodapé fixo, largura total) dependem disso; o invólucro com o menu lateral só existe
+  nas páginas da comunidade. Os não lidos de Recados são UMA leitura no `CommunityFrame`
+  (`useTeacherUnread(pathname, app || live)`, passada como `unread` às três peças, que ficam montadas
+  e só escondidas por CSS); a aula e as ferramentas não buscam. As abas do celular: no DOM, as abas
+  antes do painel "Mais" (`flex-col-reverse` só desenha o painel por cima), Tab para fora fecha, e com
+  o painel aberto o destaque vai para "Mais" sem tirar o `aria-current` da página atual.
 - **Páginas:** Início (saudação, cartão Continuar com a mira e Seu ritmo no palco; módulo e Recados na
   bancada; Mural num palco no pé), Cursos (trilhas no palco), Curso (capa grande com mira, módulo atual
   com moldura amarela), Seu progresso (números com rótulo em pixel colorido; a Jornada num bloco de
@@ -616,7 +625,7 @@ src/
                             data-sz-palette no <html>, Providers: Toaster)
     (auth)/                 Grupo público (AuthSplitShell: form + imagem da comunidade)
       login/ · esqueci-senha/ · redefinir-senha/   (page + *-form.tsx client)
-    (app)/                  Grupo logado (layout gate + avatar fresco + CommunityTopnav)
+    (app)/                  Grupo logado (layout gate + avatar fresco + CommunityFrame → community-nav)
       page.tsx              / (HOME) — grid "Meus cursos" (CourseCard + .sz-progress)
       cursos/               /cursos "Todos os cursos" (catálogo c/ lock → página de vendas)
       cursos/trilha/[track]/ Trilha (2d|3d): os cursos da trilha por nível (`lib/course-levels.ts`)

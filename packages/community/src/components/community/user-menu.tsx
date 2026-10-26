@@ -173,7 +173,10 @@ export function UserMenu({
           id={panelId}
           className={cn(
             'absolute z-50 w-[min(20rem,calc(100vw-1.6rem))] overflow-hidden rounded-[1rem] border border-border bg-popover text-popover-foreground shadow-[0_18px_40px_rgba(15,26,51,0.18)]',
-            variant === 'card' ? 'bottom-full left-0 mb-2' : 'right-0 mt-2',
+            // Na barra do celular deitado, o painel cabe entre a barra e as abas e rola por dentro.
+            variant === 'card'
+              ? 'bottom-full left-0 mb-2'
+              : 'right-0 mt-2 max-h-[calc(100dvh-8.5rem)] overflow-y-auto',
           )}
         >
           <div className="flex items-center gap-3.5 border-border border-b px-5 py-4">

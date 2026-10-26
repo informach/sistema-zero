@@ -1,6 +1,5 @@
 'use client'
 
-import { useTeacherUnread } from '@sistemazero/member-shell/lib/teacher-unread'
 import { BrandLogo } from '@sistemazero/ui/brand-logo'
 import { CircleHelp, Ellipsis, Home, Mail, Radio, Receipt, Trophy, User } from 'lucide-react'
 import Link from 'next/link'
@@ -37,13 +36,18 @@ function UnreadBadge({ count }: { count: number }) {
  * etapa, nome e etapa), que abre o menu do perfil. O item da página atual ganha a carta escura e a
  * barra amarela à esquerda, além do `aria-current`.
  */
-export function CommunitySidebar({ user }: { user: SessionUserWithAvatar }) {
+export function CommunitySidebar({
+  user,
+  unread,
+}: {
+  user: SessionUserWithAvatar
+  unread: number
+}) {
   const pathname = usePathname() ?? ''
-  const unread = useTeacherUnread(pathname)
   const recadosActive = pathname === '/recados' || pathname.startsWith('/recados/')
 
   return (
-    <aside className="sz-palco sticky top-0 hidden h-dvh w-[14.4rem] shrink-0 flex-col gap-1 border-(--linha-escura) border-r bg-(--topo) bg-none px-3 py-5 lg:flex">
+    <aside className="sz-palco sticky top-0 z-30 hidden h-dvh w-[14.4rem] shrink-0 flex-col gap-1 border-(--linha-escura) border-r bg-(--topo) bg-none px-3 py-5 lg:flex">
       <Link
         href="/"
         prefetch={false}
@@ -57,7 +61,8 @@ export function CommunitySidebar({ user }: { user: SessionUserWithAvatar }) {
           className="block h-auto w-[8rem]"
         />
       </Link>
-      <nav aria-label="Principal" className="flex flex-col gap-1">
+      {/* Só a lista rola numa janela baixa: o cartão da pessoa fica sempre à vista no pé. */}
+      <nav aria-label="Principal" className="flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto">
         {NAV_ITEMS.map((item) => (
           <SidebarLink key={item.href} item={item} active={isNavItemActive(item, pathname)} />
         ))}
@@ -74,7 +79,7 @@ export function CommunitySidebar({ user }: { user: SessionUserWithAvatar }) {
           <UnreadBadge count={unread} />
         </Link>
       </nav>
-      <div className="mt-auto pt-4">
+      <div className="shrink-0 pt-4">
         <UserMenu user={user} variant="card" />
       </div>
     </aside>
@@ -113,13 +118,14 @@ function SidebarLink({ item, active }: { item: NavItem; active: boolean }) {
  */
 export function CommunityTopBar({
   user,
+  unread,
   compact = false,
 }: {
   user: SessionUserWithAvatar
+  unread: number
   compact?: boolean
 }) {
   const pathname = usePathname() ?? ''
-  const unread = useTeacherUnread(pathname)
   const recadosActive = pathname === '/recados' || pathname.startsWith('/recados/')
   return (
     <header
@@ -194,9 +200,8 @@ function inMore(pathname: string) {
  * "Mais" abre um painel com o resto (Oficinas, Recados, Seu progresso, Ajuda, perfil e compras):
  * botão com `aria-expanded`, Esc fecha e devolve o foco, clicar fora fecha.
  */
-export function CommunityTabs() {
+export function CommunityTabs({ unread }: { unread: number }) {
   const pathname = usePathname() ?? ''
-  const unread = useTeacherUnread(pathname)
   const [open, setOpen] = useState(false)
   const panelId = useId()
   const ref = useRef<HTMLDivElement>(null)
@@ -232,56 +237,38 @@ export function CommunityTabs() {
 
   const tabClass = (active: boolean) =>
     cn(
-      'flex min-h-[3.2rem] flex-col items-center justify-center gap-0.5 px-1 pt-1.5 pb-2 font-bold text-[0.85rem] leading-tight no-underline',
+      'flex min-h-[3.2rem] min-w-0 flex-col items-center justify-center gap-0.5 px-0.5 pt-1.5 pb-2 font-bold text-[clamp(0.75rem,4.2vw,0.85rem)] leading-tight no-underline',
       active ? 'text-(--cta)' : 'text-(--legenda-clara) hover:text-(--texto-claro)',
     )
 
+  // ⚠️ A ordem no DOM é abas → painel (o leitor de tela chega ao "Mais" e logo depois ao que ele
+  // abriu); o `flex-col-reverse` só desenha o painel por cima das abas.
   return (
-    <div ref={ref} className="sz-palco fixed inset-x-0 bottom-0 z-40 bg-(--topo) bg-none lg:hidden">
-      {open ? (
-        <div
-          id={panelId}
-          className="max-h-[70dvh] overflow-y-auto border-(--linha-escura) border-t px-3 pt-3 pb-2"
-        >
-          <p className="sz-kicker px-2 pb-2">Mais</p>
-          <ul className="grid grid-cols-1 gap-1 sm:grid-cols-2">
-            {MORE_LINKS.map((link) => {
-              const Icon = link.icon
-              const active = [link.href, ...('match' in link ? link.match : [])].some(
-                (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`),
-              )
-              return (
-                <li key={link.href}>
-                  <Link
-                    href={link.href}
-                    prefetch={false}
-                    aria-current={active ? 'page' : undefined}
-                    className={sidebarItemClass(active)}
-                  >
-                    <Icon className="size-6 shrink-0" aria-hidden />
-                    {link.label}
-                    {link.href === '/recados' ? <UnreadBadge count={unread} /> : null}
-                  </Link>
-                </li>
-              )
-            })}
-          </ul>
-        </div>
-      ) : null}
+    <div
+      ref={ref}
+      className="sz-palco fixed inset-x-0 bottom-0 z-40 flex flex-col-reverse bg-(--topo) bg-none lg:hidden"
+      // Como no menu do perfil: só fecha quando o foco VAI para fora (Tab); o clique fora já fecha
+      // pelo `mousedown`.
+      onBlur={(event) => {
+        const next = event.relatedTarget as Node | null
+        if (open && next && !ref.current?.contains(next)) setOpen(false)
+      }}
+    >
       <nav
         aria-label="Principal"
-        className="grid grid-cols-5 border-(--linha-escura) border-t pb-[env(safe-area-inset-bottom)]"
+        className="grid grid-cols-[1fr_1fr_1fr_1.6fr_1fr] border-(--linha-escura) border-t pb-[env(safe-area-inset-bottom)]"
       >
         {tabs.map((item) => {
           const Icon = item.icon
-          const active = !open && isNavItemActive(item, pathname)
+          const current = isNavItemActive(item, pathname)
           return (
             <Link
               key={item.href}
               href={item.href}
               prefetch={false}
-              aria-current={active ? 'page' : undefined}
-              className={tabClass(active)}
+              aria-current={current ? 'page' : undefined}
+              // Com o painel aberto, o destaque passa para "Mais"; a página atual segue anunciada.
+              className={tabClass(current && !open)}
             >
               <Icon className="size-6" aria-hidden />
               {item.label}
@@ -309,6 +296,38 @@ export function CommunityTabs() {
           {unread > 0 ? <span className="sr-only">, {unreadLabel(unread)}</span> : null}
         </button>
       </nav>
+      {open ? (
+        <div
+          id={panelId}
+          className="max-h-[70dvh] overflow-y-auto border-(--linha-escura) border-t px-3 pt-3 pb-2"
+        >
+          <p className="sz-kicker px-2 pb-2">Mais</p>
+          <ul className="grid grid-cols-1 gap-1 sm:grid-cols-2">
+            {MORE_LINKS.map((link) => {
+              const Icon = link.icon
+              const active = [link.href, ...('match' in link ? link.match : [])].some(
+                (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`),
+              )
+              return (
+                <li key={link.href}>
+                  <Link
+                    href={link.href}
+                    prefetch={false}
+                    aria-current={active ? 'page' : undefined}
+                    // O link da página atual não troca a rota: fecha o painel no clique.
+                    onClick={() => setOpen(false)}
+                    className={sidebarItemClass(active)}
+                  >
+                    <Icon className="size-6 shrink-0" aria-hidden />
+                    {link.label}
+                    {link.href === '/recados' ? <UnreadBadge count={unread} /> : null}
+                  </Link>
+                </li>
+              )
+            })}
+          </ul>
+        </div>
+      ) : null}
     </div>
   )
 }

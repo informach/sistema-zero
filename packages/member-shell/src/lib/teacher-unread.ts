@@ -6,10 +6,12 @@ export function refreshTeacherUnread() {
   window.dispatchEvent(new Event('sz:teacher-unread'))
 }
 
-export function useTeacherUnread(scope: string) {
+/** `enabled` falso não busca nada (telas sem o selo, como a aula em tela inteira). */
+export function useTeacherUnread(scope: string, enabled = true) {
   const [count, setCount] = useState(0)
   // biome-ignore lint/correctness/useExhaustiveDependencies: navegar entre recados deve atualizar a leitura imediatamente.
   useEffect(() => {
+    if (!enabled) return
     let active = true
     let sequence = 0
     const refresh = async () => {
@@ -34,6 +36,6 @@ export function useTeacherUnread(scope: string) {
       window.removeEventListener('sz:teacher-unread', refresh)
       document.removeEventListener('visibilitychange', refresh)
     }
-  }, [scope])
+  }, [scope, enabled])
   return count
 }

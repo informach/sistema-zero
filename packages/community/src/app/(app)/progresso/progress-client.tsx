@@ -257,6 +257,7 @@ function JourneySection({
         <StageChip badge={stage} />
       </div>
       <JourneyRibbon
+        dark
         badge={stage}
         currentShare={
           current?.requirements.length
