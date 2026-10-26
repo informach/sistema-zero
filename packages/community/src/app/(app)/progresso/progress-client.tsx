@@ -29,6 +29,7 @@ import { useAdultGamification } from '@/components/community/gamification-provid
 import {
   AdultCreatorNextStep,
   AdultCreatorStepper,
+  AdultMasteriesOpen,
   creatorBadge,
 } from '@/components/community/journey/creator'
 import { StageChip } from '@/components/community/journey/stage'
@@ -120,6 +121,7 @@ function missingSentence(
 
 export function ProgressClient({
   readOnly,
+  staff = false,
   missions,
   ranking,
   courseTitles,
@@ -127,6 +129,8 @@ export function ProgressClient({
   mine,
 }: {
   readOnly: boolean
+  /** A equipe abre todas as etapas da régua. */
+  staff?: boolean
   missions: MissionsMeView | null
   /** A colocação lida pelo servidor (a atualização do cliente não a traz). */
   ranking: GamificationMeView['ranking'] | null
@@ -194,6 +198,7 @@ export function ProgressClient({
             titles={courseTitles}
             catalog={catalog}
             mine={mine}
+            staff={staff}
           />
         ) : null}
         <AdultMissions initial={missions} readOnly={readOnly} />
@@ -245,11 +250,13 @@ function JourneySection({
   titles,
   catalog,
   mine,
+  staff,
 }: {
   journey: AdultJourneyView
   titles: Record<string, string>
   catalog: readonly CatalogCourseView[]
   mine: readonly MyCourseView[]
+  staff: boolean
 }) {
   if (received.curriculum) {
     const curriculum = received.curriculum
@@ -271,8 +278,9 @@ function JourneySection({
           </div>
           <StageChip badge={creatorBadge(curriculum, curriculum.level)} />
         </div>
-        <AdultCreatorStepper view={curriculum} />
+        <AdultCreatorStepper view={curriculum} staff={staff} />
         <AdultCreatorNextStep view={curriculum} catalog={catalog} mine={mine} />
+        <AdultMasteriesOpen view={curriculum} />
         {unlocked.length ? (
           <span className="sz-chip sz-chip-ok h-auto self-start whitespace-normal py-1">
             <Check aria-hidden />

@@ -4,8 +4,9 @@ import type { ReactNode } from 'react'
 import { createRoot } from 'react-dom/client'
 import {
   AdultCreatorNextStep,
+  AdultCreatorPost,
   AdultCreatorStepper,
-  AdultCreatorTrail,
+  AdultMasteriesOpen,
   AdultMasteryArea,
   AdultMasteryHowItWorks,
   AdultMasteryHub,
@@ -141,12 +142,13 @@ function kidsScreen(): ReactNode {
 function adultScreen(): ReactNode {
   if (screen === 'post')
     return (
-      <AdultCreatorTrail
+      <AdultCreatorPost
         view={view}
         level={post.level}
         catalog={catalog}
         mine={mine}
         capabilities={capabilities as StageCapabilities}
+        staff={query.get('staff') === '1'}
       />
     )
   if (screen === 'areas')
@@ -196,8 +198,9 @@ function adultScreen(): ReactNode {
     >
       <section className="mt-6 flex flex-col gap-5">
         <h2 className="sz-h3">Jornada do Criador</h2>
-        <AdultCreatorStepper view={view} />
+        <AdultCreatorStepper view={view} staff={query.get('staff') === '1'} />
         <AdultCreatorNextStep view={view} catalog={catalog} mine={mine} />
+        <AdultMasteriesOpen view={view} />
       </section>
     </PageBand>
   )

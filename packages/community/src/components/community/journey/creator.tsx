@@ -22,9 +22,11 @@ import {
   creatorNextStep,
   creatorStageChecklist,
   creatorStageMissing,
+  creatorStageOpen,
   creatorStageSummary,
   ROMAN_LEVEL,
 } from '@sistemazero/member-shell/lib/creator-journey-presentation'
+import { HeadingDisclosure } from '@sistemazero/ui/heading-disclosure'
 import {
   ArrowRight,
   Box,
@@ -45,7 +47,7 @@ import {
 import Link from 'next/link'
 import type { CSSProperties, ReactNode } from 'react'
 import { CourseCover, ProgressBar } from '@/components/community/courses/course-cover'
-import { BackLink } from '@/components/community/page'
+import { BackLink, PageBody } from '@/components/community/page'
 import { cn } from '@/lib/cn'
 import type { StageBadge } from '@/lib/journey-stage'
 import { stageColor, stageInk } from '@/lib/journey-stage'
@@ -498,7 +500,9 @@ export function AdultCreatorTrail({
                 <h1 className="sz-h1 break-words">{stage.title}</h1>
                 <p className="sz-lead m-0">
                   {future
-                    ? `Esta etapa abre quando você concluir a anterior. Já dá para ver o que vem por aqui.`
+                    ? creatorStageOpen(stage)
+                      ? 'A etapa inteira abre quando você concluir a anterior. Os cursos daqui que você já tem continuam abertos para você.'
+                      : 'Você vê esta etapa por ser da equipe. Para quem aprende, ela abre ao concluir a anterior.'
                     : keptOnly
                       ? creatorStageSummary(stage)
                       : stage.completed
@@ -821,20 +825,152 @@ export function AdultCreatorNextStep({
   )
 }
 
-/** A régua das etapas do currículo, com a Lenda levando às Maestrias. */
-export function AdultCreatorStepper({ view }: { view: CreatorJourneyView }) {
+/**
+ * A régua das etapas do currículo, com a Lenda levando às Maestrias. A etapa ainda não alcançada
+ * fica cinza e sem link (`creatorStageOpen`, a mesma régua do mapa do Kids), e a Lenda só abre
+ * quando alcançada. A equipe (`staff`) continua abrindo tudo.
+ */
+export function AdultCreatorStepper({
+  view,
+  staff = false,
+}: {
+  view: CreatorJourneyView
+  staff?: boolean
+}) {
+  const reached = view.level === 'god'
   return (
     <JourneyStepper
       total={view.stages.length + 1}
-      legendReached={view.level === 'god'}
+      legendReached={reached}
       legendHref="/maestrias"
+      legendLocked={!reached && !staff}
       items={view.stages.map((stage) => ({
         key: stage.level,
         href: `/cursos/etapa/${encodeURIComponent(stage.level)}`,
         title: stage.title,
-        state: stage.level === view.level ? 'aqui' : stage.completed ? 'feita' : 'fechada',
+        state:
+          stage.level === view.level
+            ? 'aqui'
+            : stage.completed
+              ? 'feita'
+              : staff || creatorStageOpen(stage)
+                ? 'fechada'
+                : 'bloqueada',
       }))}
     />
+  )
+}
+
+/**
+ * A página de uma etapa: a etapa aberta (`AdultCreatorTrail`) ou, quando a pessoa ainda não
+ * chegou a ela, o aviso de bloqueio, também para quem digita o endereço. Abre a etapa atual, as
+ * concluídas ou conquistadas e a etapa em que o servidor já abriu um curso (compra avulsa,
+ * presente, acesso preservado). A equipe vê tudo.
+ */
+export function AdultCreatorPost({
+  view,
+  level,
+  catalog,
+  mine,
+  capabilities,
+  staff = false,
+}: {
+  view: CreatorJourneyView
+  level: string
+  catalog: Catalog
+  mine: Mine
+  capabilities?: StageCapabilities
+  staff?: boolean
+}) {
+  const stage = view.stages.find((item) => item.level === level)
+  if (!stage) return null
+  if (!staff && !creatorStageOpen(stage))
+    return <AdultLockedStage view={view} level={level} catalog={catalog} mine={mine} />
+  return (
+    <AdultCreatorTrail
+      view={view}
+      level={level}
+      catalog={catalog}
+      mine={mine}
+      capabilities={capabilities}
+    />
+  )
+}
+
+/** A etapa trancada: o aviso no palco e, na bancada, o próximo passo da etapa em que a pessoa está. */
+function AdultLockedStage({
+  view,
+  level,
+  catalog,
+  mine,
+}: {
+  view: CreatorJourneyView
+  level: string
+  catalog: Catalog
+  mine: Mine
+}) {
+  const stage = view.stages.find((item) => item.level === level)!
+  const badge = creatorBadge(view, level)
+  return (
+    <>
+      <section className="sz-band">
+        <div className="sz-page flex flex-col gap-6 pt-7 pb-10 md:pb-12">
+          <BackLink href="/cursos" label="Voltar à jornada" />
+          <div className="flex flex-col items-start gap-5 sm:flex-row sm:items-center">
+            <StageMedal badge={badge} big locked />
+            <div className="flex min-w-0 flex-col gap-1.5">
+              <span className="sz-kicker">
+                Etapa {badge.position} de {badge.total} · {stage.title}
+              </span>
+              <h1 className="sz-h1 break-words">Esta etapa ainda está bloqueada</h1>
+              <p className="sz-lead m-0">
+                Veja na jornada o que falta para abrir a etapa {stage.title}. Suas conquistas
+                continuam guardadas.
+              </p>
+            </div>
+          </div>
+          <Link href="/progresso" prefetch={false} className="sz-btn-outline self-start">
+            Ver a jornada inteira
+          </Link>
+        </div>
+      </section>
+      <PageBody>
+        <section aria-labelledby="etapa-caminho" className="flex flex-col gap-4">
+          <h2 id="etapa-caminho" className="sz-h3">
+            O caminho até lá
+          </h2>
+          <AdultCreatorNextStep view={view} catalog={catalog} mine={mine} />
+        </section>
+      </PageBody>
+    </>
+  )
+}
+
+/**
+ * Uma Maestria abre antes da Lenda (depois dos cursos de uma trilha). Com a Lenda trancada na
+ * régua, este cartão é o caminho até elas, como no Kids.
+ */
+export function AdultMasteriesOpen({ view }: { view: CreatorJourneyView }) {
+  if (view.level === 'god' || !view.masteries.some((area) => area.available)) return null
+  return (
+    <section
+      aria-label="Maestrias abertas"
+      className="sz-card flex flex-col gap-4 p-5 md:flex-row md:items-center md:gap-6 md:p-6"
+    >
+      <MasteryTile id={view.masteries.find((area) => area.available)!.id} />
+      <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+        <span className="sz-kicker">Maestrias</span>
+        <h2 className="sz-h3">Você já pode começar uma Maestria</h2>
+        <p className="m-0 text-muted-foreground">
+          Os cursos que você fez abriram uma área para ficar craque. Dá para começar agora, sem
+          esperar a Lenda.
+        </p>
+      </div>
+      {/* Contorno: o amarelo da tela é o do próximo passo, logo acima. */}
+      <Link href="/maestrias" prefetch={false} className="sz-btn-outline">
+        Ver as Maestrias <ArrowRight aria-hidden />
+      </Link>
+    </section>
   )
 }
 
@@ -1001,55 +1137,64 @@ export function AdultMasteryArea({
         const done = levelDone(level)
         const now = current?.level === level.level
         return (
-          <details key={level.level} open={now} className="sz-card group/nivel p-5 md:p-7">
-            <summary className="flex cursor-pointer list-none items-start gap-4 rounded-[0.8rem] focus-visible:outline-3 focus-visible:outline-(--ring) focus-visible:outline-offset-4">
+          <HeadingDisclosure
+            key={level.level}
+            defaultOpen={now}
+            className="sz-card group/nivel p-5 md:p-7"
+            buttonClassName="rounded-[0.8rem] focus-visible:outline-3 focus-visible:outline-(--ring) focus-visible:outline-offset-4"
+            titleClassName="sz-h3"
+            panelClassName="mt-6 border-(--border) border-t pt-6"
+            leading={
               <span
                 aria-hidden="true"
                 className={cn('sz-num', done ? 'sz-num-ok' : now ? 'sz-num-acao' : '')}
               >
                 {done ? <Check className="size-4" /> : ROMAN_LEVEL[level.level]}
               </span>
-              <span className="flex min-w-0 flex-1 flex-col gap-1.5">
-                <span className="flex flex-wrap items-center gap-2">
-                  <span className="sz-kicker">Nível {ROMAN_LEVEL[level.level]}</span>
-                  <span
-                    className={cn(
-                      'sz-chip',
-                      PHRASE_CHIP,
-                      done ? 'sz-chip-ok' : now ? 'sz-chip-novo' : '',
-                    )}
-                  >
-                    {creatorMasteryLevelStatus(level, area, view)}
-                  </span>
-                </span>
-                <h2 className="sz-h3">{creatorMasteryLevelTitle(level)}</h2>
-                <span className="flex flex-wrap gap-2">
-                  <span className={cn('sz-chip', level.nucleusCompleted && 'sz-chip-ok')}>
-                    {level.nucleusCompleted ? <Check aria-hidden /> : null}
-                    Núcleo
-                  </span>
-                  <span className={cn('sz-chip', level.workshopsCompleted >= 2 && 'sz-chip-ok')}>
-                    {level.workshopsCompleted >= 2 ? <Check aria-hidden /> : null}
-                    Oficinas {Math.min(level.workshopsCompleted, 2)} de 2
-                  </span>
-                  <span
-                    className={cn(
-                      'sz-chip',
-                      PHRASE_CHIP,
-                      level.approval === 'approved' && 'sz-chip-ok',
-                    )}
-                  >
-                    {level.approval === 'approved' ? <Check aria-hidden /> : null}
-                    {creatorMasteryApprovalLabel(level)}
-                  </span>
-                </span>
+            }
+            kicker={<span className="sz-kicker">Nível {ROMAN_LEVEL[level.level]}</span>}
+            status={
+              <span
+                className={cn(
+                  'sz-chip',
+                  PHRASE_CHIP,
+                  done ? 'sz-chip-ok' : now ? 'sz-chip-novo' : '',
+                )}
+              >
+                {creatorMasteryLevelStatus(level, area, view)}
               </span>
+            }
+            title={creatorMasteryLevelTitle(level)}
+            details={
+              <>
+                <span className={cn('sz-chip', level.nucleusCompleted && 'sz-chip-ok')}>
+                  {level.nucleusCompleted ? <Check aria-hidden /> : null}
+                  Núcleo
+                </span>
+                <span className={cn('sz-chip', level.workshopsCompleted >= 2 && 'sz-chip-ok')}>
+                  {level.workshopsCompleted >= 2 ? <Check aria-hidden /> : null}
+                  Oficinas {Math.min(level.workshopsCompleted, 2)} de 2
+                </span>
+                <span
+                  className={cn(
+                    'sz-chip',
+                    PHRASE_CHIP,
+                    level.approval === 'approved' && 'sz-chip-ok',
+                  )}
+                >
+                  {level.approval === 'approved' ? <Check aria-hidden /> : null}
+                  {creatorMasteryApprovalLabel(level)}
+                </span>
+              </>
+            }
+            trailing={
               <ChevronDown
                 aria-hidden
-                className="mt-2 size-6 flex-none text-muted-foreground transition-transform group-open/nivel:rotate-180"
+                className="mt-2 size-6 flex-none text-muted-foreground transition-transform group-data-open/nivel:rotate-180"
               />
-            </summary>
-            <div className="mt-6 flex flex-col gap-7 border-(--border) border-t pt-6">
+            }
+          >
+            <div className="flex flex-col gap-7">
               {level.nucleusCourses.length ? (
                 <section className="flex flex-col gap-3">
                   <h3 className="sz-h4">O núcleo</h3>
@@ -1144,7 +1289,7 @@ export function AdultMasteryArea({
                 {submission?.(level)}
               </section>
             </div>
-          </details>
+          </HeadingDisclosure>
         )
       })}
     </div>

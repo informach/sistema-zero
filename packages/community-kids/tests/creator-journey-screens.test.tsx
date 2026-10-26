@@ -1,9 +1,13 @@
 import { afterEach, expect, test } from 'bun:test'
-import { cleanup, render } from '@testing-library/react'
+import { cleanup, fireEvent, render } from '@testing-library/react'
 import { creatorSceneFixture } from '../../member-shell/qa/creator-journey-fixtures'
 import { KidsCreatorCatalog, KidsCreatorPost } from '../src/components/kids/creator-curriculum-page'
 import { CreatorJourneyMapKids } from '../src/components/kids/creator-journey/map'
-import { KidsMasteryHub, MasteryHowItWorks } from '../src/components/kids/creator-journey/mastery'
+import {
+  KidsMasteryArea,
+  KidsMasteryHub,
+  MasteryHowItWorks,
+} from '../src/components/kids/creator-journey/mastery'
 import { KidsCreatorTrail } from '../src/components/kids/creator-journey/trail'
 
 afterEach(cleanup)
@@ -94,4 +98,31 @@ test('masteries explain the area entry and the art approach without editor conve
   const art = view.masteries.find((area) => area.id === 'arte2d')!
   const { container } = render(<MasteryHowItWorks area={art} />)
   expect(container.textContent).toContain('O jogo base já funciona')
+})
+
+test('each mastery level is a real heading with the toggle inside it', () => {
+  const { view, catalog, mine } = creatorSceneFixture('kids', 'mastery')
+  const area = view.masteries[0]!
+  const { container } = render(
+    <KidsMasteryArea area={area} catalog={catalog} mine={mine} view={view} />,
+  )
+  expect(container.querySelector('summary')).toBeNull()
+  const toggles = [...container.querySelectorAll('h2 > button[aria-expanded]')]
+  expect(toggles.length).toBe(area.levels.length)
+  expect(toggles.filter((button) => button.getAttribute('aria-expanded') === 'true').length).toBe(1)
+  // O nome do botão é o "Nível N" com o título; a lista de títulos da página os mostra.
+  const first = toggles[0]!
+  const name = first
+    .getAttribute('aria-labelledby')!
+    .split(' ')
+    .map((id) => container.querySelector(`[id="${id}"]`)?.textContent)
+    .join(' ')
+  expect(name).toContain('Nível I')
+  // Abrir e fechar pelo botão de verdade.
+  const closed = toggles.find((button) => button.getAttribute('aria-expanded') === 'false')!
+  const panel = container.querySelector(`[id="${closed.getAttribute('aria-controls')}"]`)!
+  expect(panel.hasAttribute('hidden')).toBe(true)
+  fireEvent.click(closed)
+  expect(closed.getAttribute('aria-expanded')).toBe('true')
+  expect(panel.hasAttribute('hidden')).toBe(false)
 })

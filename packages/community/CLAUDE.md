@@ -170,6 +170,20 @@ que saiu da página da etapa). Nomes: **Cursos da trilha**, Missão, Poderes, Ex
 - ⚠️ Frase em `sz-chip` (o motivo do cadeado) leva `h-auto whitespace-normal`: o chip não quebra
   linha e "Abre depois dos cursos da trilha Explorador(a) de Mundos" passava da tela a 390 px. A
   régua das etapas tem `relative` e `contain: inline-size` (rola por dentro sem empurrar a página).
+- ⚠️ **A trava das etapas (pedido dela, 26/10/2026, a mesma do mapa do Kids):** na régua
+  (`AdultCreatorStepper`, `JourneyStepper` com o estado `bloqueada`), a etapa que a pessoa ainda
+  não alcançou fica cinza, com o cadeado e "Ainda bloqueada" para o leitor, e NÃO é link; a Lenda
+  só leva às Maestrias quando alcançada. `/cursos/etapa/<nível>` passa por `AdultCreatorPost`: a
+  etapa trancada mostra "Esta etapa ainda está bloqueada", com "O caminho até lá" (o próximo passo
+  da etapa atual) embaixo. A régua é `creatorStageOpen` do member-shell (a etapa atual, as
+  concluídas ou conquistadas e a etapa em que o servidor já abriu um curso: compra avulsa,
+  presente, acesso preservado; nessa, a frase diz que a etapa inteira abre depois). A EQUIPE
+  (`isPrivilegedRole(session.role)`, nas páginas `/cursos`, `/progresso` e da etapa) abre tudo;
+  numa sessão de suporte o papel é o da pessoa, então a trava vale. Com a Lenda trancada,
+  `AdultMasteriesOpen` ("Você já pode começar uma Maestria") é o caminho até `/maestrias` quando
+  uma área já abriu. A jornada histórica (sem currículo) não usa o estado novo.
+- **Níveis das Maestrias**: `HeadingDisclosure` do `@sistemazero/ui` (título `<h2>` com o botão
+  dentro), no lugar de `<details>`/`<summary>`, que escondia o título do leitor de tela.
 - **Poder com 2D e 3D**: cada versão ganha o seu botão ("2D: Abrir de novo", "3D: Começar"; o
   cadeado diz o motivo por versão). As versões contam uma vez para a etapa, mas a pessoa pode
   fazer as duas. "Abrir de novo" só na versão que ela concluiu.

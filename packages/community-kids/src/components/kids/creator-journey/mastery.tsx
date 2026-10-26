@@ -14,6 +14,7 @@ import {
   creatorMasteryProgress,
   ROMAN_LEVEL,
 } from '@sistemazero/member-shell/lib/creator-journey-presentation'
+import { HeadingDisclosure } from '@sistemazero/ui/heading-disclosure'
 import {
   ArrowRight,
   Box,
@@ -282,8 +283,15 @@ export function KidsMasteryArea({
         const now = current?.level === level.level
         const project = creatorMasteryApprovalLabel(level)
         return (
-          <details key={level.level} open={now} className="kids-carta group/nivel p-5 md:p-6">
-            <summary className="flex cursor-pointer list-none items-start gap-4 rounded-2xl focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-4">
+          <HeadingDisclosure
+            key={level.level}
+            defaultOpen={now}
+            className="kids-carta group/nivel p-5 md:p-6"
+            buttonClassName="rounded-2xl focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-4"
+            titleClassName="sz-display text-xl md:text-2xl"
+            detailsClassName="mt-1.5"
+            panelClassName="mt-6 border-(--borda-carta) border-t pt-6"
+            leading={
               <span
                 aria-hidden="true"
                 className={cn(
@@ -297,32 +305,35 @@ export function KidsMasteryArea({
               >
                 {done ? <Check className="size-6" strokeWidth={3} /> : ROMAN_LEVEL[level.level]}
               </span>
-              <span className="min-w-0 flex-1">
-                <span className="flex flex-wrap items-center gap-2">
-                  <span className="font-extrabold text-muted-foreground text-xs uppercase tracking-[0.12em]">
-                    Nível {ROMAN_LEVEL[level.level]}
-                  </span>
-                  <KidsTag tone={done ? 'menta' : now ? 'amarelo' : 'muted'}>
-                    {creatorMasteryLevelStatus(level, area, view)}
-                  </KidsTag>
-                </span>
-                <h2 className="sz-display mt-1 text-xl md:text-2xl">
-                  {creatorMasteryLevelTitle(level)}
-                </h2>
-                <span className="mt-3 flex flex-wrap gap-2">
-                  <Pill done={level.nucleusCompleted}>Núcleo</Pill>
-                  <Pill done={level.workshopsCompleted >= 2}>
-                    Oficinas {Math.min(level.workshopsCompleted, 2)} de 2
-                  </Pill>
-                  <Pill done={level.approval === 'approved'}>{project}</Pill>
-                </span>
+            }
+            kicker={
+              <span className="font-extrabold text-muted-foreground text-xs uppercase tracking-[0.12em]">
+                Nível {ROMAN_LEVEL[level.level]}
               </span>
+            }
+            status={
+              <KidsTag tone={done ? 'menta' : now ? 'amarelo' : 'muted'}>
+                {creatorMasteryLevelStatus(level, area, view)}
+              </KidsTag>
+            }
+            title={creatorMasteryLevelTitle(level)}
+            details={
+              <>
+                <Pill done={level.nucleusCompleted}>Núcleo</Pill>
+                <Pill done={level.workshopsCompleted >= 2}>
+                  Oficinas {Math.min(level.workshopsCompleted, 2)} de 2
+                </Pill>
+                <Pill done={level.approval === 'approved'}>{project}</Pill>
+              </>
+            }
+            trailing={
               <ChevronDown
-                className="mt-3 size-5 shrink-0 text-muted-foreground transition-transform group-open/nivel:rotate-180"
+                className="mt-3 size-5 shrink-0 text-muted-foreground transition-transform group-data-open/nivel:rotate-180"
                 aria-hidden
               />
-            </summary>
-            <div className="mt-6 flex flex-col gap-7 border-(--borda-carta) border-t pt-6">
+            }
+          >
+            <div className="flex flex-col gap-7">
               {level.nucleusCourses.length ? (
                 <section className="flex flex-col gap-3">
                   <h3 className="sz-display text-lg">O núcleo</h3>
@@ -423,7 +434,7 @@ export function KidsMasteryArea({
                 {submission?.(level)}
               </section>
             </div>
-          </details>
+          </HeadingDisclosure>
         )
       })}
     </div>

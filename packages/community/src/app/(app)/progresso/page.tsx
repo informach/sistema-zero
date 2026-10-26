@@ -1,5 +1,6 @@
 import type { AdultJourneyView } from '@sistemazero/core/journey'
 import { isReadonlyImpersonation } from '@sistemazero/member-shell/lib/act'
+import { isPrivilegedRole } from '@sistemazero/member-shell/lib/studio-tier'
 import type { CatalogCourseView, MyCourseView } from '@sistemazero/member-shell/lib/types'
 import { getSession } from '@/server/session'
 import { shell } from '@/server/shell'
@@ -70,6 +71,7 @@ export default async function ProgressPage() {
   return (
     <ProgressClient
       readOnly={Boolean(session && isReadonlyImpersonation(session))}
+      staff={isPrivilegedRole(session?.role)}
       missions={
         missions?.status === 200 && missions.body?.audience === 'adult'
           ? (missions.body ?? null)
