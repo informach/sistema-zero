@@ -22,12 +22,15 @@ export type CamMode = 'customize' | 'photo'
  * A cena 3D ocupa só a faixa ACIMA do painel (layout flex no configurador), então "centrado na
  * cena" = "centrado na área visível, descontando a configuração de baixo".
  */
-// Personagem: pés em y=0, ~1,8 de altura (centro ~0,95). O quadro cobre ~2,6u → ~12% de folga
-// em cima (chapéu alto) e embaixo. Câmera um tico à esquerda e acima (vista 3/4 gentil).
-const CAM_POS = [-0.4, 1.1, 3.1] as const
+// Personagem: pés em y=0. ⚠️ A conta antiga supunha ~1,8 de altura, mas com cabelo volumoso o
+// boneco passa de 2,2 e com chapéu chega perto de 2,5: a moldura (alvo 0,95, distância 3,1, ~2,6u
+// de altura) cortava o topo do cabelo e a aba do chapéu (26/10/2026, medido na prévia). Hoje o
+// quadro cobre ~3,2u centrado em 1,15: do pódio ao chapéu mais alto, com folga em cima. Câmera um
+// tico à esquerda e acima (vista 3/4 gentil), na mesma direção de antes.
+const CAM_POS = [-0.5, 1.35, 3.85] as const
 // Cabine de fotos: um tico MAIS LONGE (nunca aproxima — a criança VÊ a pose inteira com folga).
-const CAM_POS_PHOTO = [-0.4, 1.1, 3.6] as const
-const CAM_TARGET = [0, 0.95, 0] as const
+const CAM_POS_PHOTO = [-0.5, 1.35, 4.35] as const
+const CAM_TARGET = [0, 1.15, 0] as const
 
 export function CameraManager({
   mode,
