@@ -196,3 +196,17 @@ ações com IDs estritos 0/1, prova de ida/volta sem poda e cinco negativos para
 Suíte Members posterior: 1.968 positivos/14.664 asserções, 532 condicionais pulados, zero
 falhas; tipagem completa Members passou. O teste de integração que revelou o defeito
 permanece ativo.
+
+O CI com PostgreSQL real encontrou quatro falhas no fixture antigo da jornada adulta:
+a publicação passou a capturar a política anterior, mas o banco parcial não tinha todas as
+tabelas consultadas. O teste agora usa banco isolado com o histórico real de migrations,
+explicitamente exigido no CI. Nenhuma trava ou regra de captura foi removida. Os seis casos
+passaram com 33 asserções, incluindo concorrência, versão obsoleta e seed idempotente;
+tipagem Members e lint do arquivo passaram.
+
+A bateria local `tests/db` executou 364 positivos e encontrou dois erros de configuração
+local (`127.0.0.1` onde o harness exige `localhost`) e uma ausência de ferramenta (`pg_dump`).
+Os dois arquivos foram executados com o endereço correto: 18 positivos/90 asserções. O teste
+de manutenção do Pensa com `pg_dump` passou no CI Linux da composição anterior `d800572fa`,
+sem diferença nesses fontes. Os 49 condicionais restantes continuam cobertos pelas etapas
+específicas do CI, não são contados como aprovação local. O novo CI integrado ainda é exigido.

@@ -353,6 +353,7 @@ jobs:
           STUDIO_TEST_DATABASE_URL: postgres://postgres:postgres@localhost:55432/studio_test_ci
           ZAPPY_QA_DATABASE_URL: postgres://postgres:postgres@localhost:55432/studio_test_zappy_135
           KIDS_JOURNEY_TEST_DATABASE_URL: postgres://postgres:postgres@127.0.0.1:55432/kids_journey_ci
+          ADULT_JOURNEY_TEST_DATABASE_URL: postgres://postgres:postgres@127.0.0.1:55432/kids_journey_adult_repository_ci
           KIDS_JOURNEY_PURGE_TEST_DATABASE_URL: postgres://postgres:postgres@127.0.0.1:55432/kids_journey_purge_ci
           CREATOR_JOURNEY_TEST_DATABASE_URL: postgres://postgres:postgres@127.0.0.1:55432/kids_journey_creator_ci
           CREATOR_REWARDS_TEST_DATABASE_URL: postgres://postgres:postgres@127.0.0.1:55432/kids_journey_creator_rewards_ci
