@@ -705,6 +705,13 @@
     width: 1.3rem;
     height: 1.3rem;
   }
+  /* Miniatura da peça do espaço (o PNG gerado do modelo 3D), no lugar do ícone. */
+  .sz-cos-tile-thumb {
+    flex: none;
+    width: 3.5rem;
+    height: 3.5rem;
+    object-fit: contain;
+  }
   .sz-cos-tile-name {
     overflow-wrap: anywhere;
   }
@@ -788,6 +795,15 @@
   .sz-cos-trophy-icon svg {
     width: 1.2rem;
     height: 1.2rem;
+  }
+  .sz-cos-trophy-icon:has(.sz-cos-trophy-thumb) {
+    width: 2.8rem;
+    height: 2.8rem;
+  }
+  .sz-cos-trophy-thumb {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
   }
   .sz-cos-trophy-text {
     display: flex;

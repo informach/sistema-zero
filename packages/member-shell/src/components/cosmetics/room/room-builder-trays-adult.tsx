@@ -6,6 +6,22 @@ import { ROOM_ITEM_INFO, ROOM_WALL_PALETTE } from '../../../lib/room-catalog'
 import type { RoomItemView, RoomThemeView } from '../../../lib/types'
 import { adultPrice, ADULT_ROOM_COPY as copy } from '../skin'
 import { RoomItemIcon } from './room-item-icon'
+import { RoomItemThumb } from './room-item-thumb'
+
+/** A miniatura da peça; sem a imagem, o ícone de linha na caixinha de sempre. */
+function TileThumb({ id }: { id: string }) {
+  return (
+    <RoomItemThumb
+      id={id}
+      className="sz-cos-tile-thumb"
+      fallback={
+        <span className="sz-cos-tile-icon">
+          <RoomItemIcon id={id} />
+        </span>
+      }
+    />
+  )
+}
 
 /**
  * As bandejas da pele ADULTA do construtor (prancha "Meu espaço 3D"): os mesmos gestos das do
@@ -45,9 +61,7 @@ export function AdultShopGrid({
             className="sz-cos-tile"
             data-confirming={confirming ? 'true' : undefined}
           >
-            <span className="sz-cos-tile-icon">
-              <RoomItemIcon id={it.id} />
-            </span>
+            <TileThumb id={it.id} />
             <span className="sz-cos-tile-name">{info.labelPt}</span>
             {locked ? <PriceChip price={it.price} confirming={confirming} /> : null}
           </button>
@@ -89,7 +103,11 @@ export function AdultTrophyTray({
               data-owned="true"
             >
               <span className="sz-cos-trophy-icon">
-                <RoomItemIcon id={t.id} />
+                <RoomItemThumb
+                  id={t.id}
+                  className="sz-cos-trophy-thumb"
+                  fallback={<RoomItemIcon id={t.id} />}
+                />
               </span>
               <span className="sz-cos-trophy-text">
                 <strong>{info.labelPt}</strong>
@@ -234,9 +252,7 @@ export function AdultPetTray({
             className="sz-cos-tile"
             data-confirming={confirming ? 'true' : undefined}
           >
-            <span className="sz-cos-tile-icon">
-              <RoomItemIcon id={p.id} />
-            </span>
+            <TileThumb id={p.id} />
             <span className="sz-cos-tile-name">{info.labelPt}</span>
             {p.locked ? (
               <PriceChip price={p.price} confirming={confirming} />

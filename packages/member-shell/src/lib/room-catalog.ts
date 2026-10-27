@@ -19,6 +19,8 @@ interface RoomItemInfo {
   surface?: number
   /** Item pequeno que pode ir EM CIMA de uma superfície (espelha o members). */
   stackable?: boolean
+  /** O GLB tem animação em laço (aquário, lâmpada de lava): a cena roda o relógio contínuo. */
+  animated?: boolean
   /** Classe de animação CSS legada (sem uso no renderer 3D — tolerada). */
   anim?: 'kid-room-grow' | 'kid-room-float' | 'kid-room-twinkle' | 'kid-room-flicker'
 }
@@ -35,6 +37,17 @@ export const ROOM_ITEM_INFO: Record<string, RoomItemInfo> = {
   tv: { labelPt: 'TV', emoji: '📺', w: 2, h: 1 },
   beliche: { labelPt: 'Beliche', emoji: '🛌', w: 2, h: 3 },
   pufe: { labelPt: 'Pufe', emoji: '💺', w: 1, h: 1 },
+  // Peças novas (27/10/2026), espelham o members.
+  'guarda-roupa': { labelPt: 'Guarda-roupa', emoji: '🚪', w: 2, h: 1 },
+  'criado-mudo': { labelPt: 'Criado-mudo', emoji: '🗃️', w: 1, h: 1, surface: 1 },
+  comoda: { labelPt: 'Cômoda', emoji: '🗂️', w: 2, h: 1, surface: 2 },
+  poltrona: { labelPt: 'Poltrona', emoji: '🛋️', w: 2, h: 2 },
+  'cadeira-gamer': { labelPt: 'Cadeira gamer', emoji: '🎮', w: 1, h: 1 },
+  'mesa-gamer': { labelPt: 'Mesa gamer', emoji: '🖥️', w: 3, h: 1 },
+  fliperama: { labelPt: 'Fliperama', emoji: '👾', w: 1, h: 1 },
+  teclado: { labelPt: 'Teclado musical', emoji: '🎹', w: 2, h: 1 },
+  'caminha-pet': { labelPt: 'Caminha do pet', emoji: '🐾', w: 1, h: 1 },
+  arranhador: { labelPt: 'Arranhador', emoji: '🐈', w: 1, h: 1 },
   // Decoração de chão
   ursinho: { labelPt: 'Ursinho', emoji: '🧸', w: 1, h: 1, stackable: true },
   balao: { labelPt: 'Balão', emoji: '🎈', w: 1, h: 2 },
@@ -42,6 +55,14 @@ export const ROOM_ITEM_INFO: Record<string, RoomItemInfo> = {
   globo: { labelPt: 'Globo', emoji: '🌍', w: 1, h: 1, stackable: true },
   guitarra: { labelPt: 'Guitarra', emoji: '🎸', w: 1, h: 2 },
   bola: { labelPt: 'Bola', emoji: '⚽', w: 1, h: 1, stackable: true },
+  'caixa-som': { labelPt: 'Caixa de som', emoji: '🔊', w: 1, h: 1, stackable: true },
+  'cesto-brinquedos': { labelPt: 'Cesto de brinquedos', emoji: '🧺', w: 1, h: 1 },
+  skate: { labelPt: 'Skate', emoji: '🛹', w: 1, h: 2 },
+  cafeteira: { labelPt: 'Cafeteira', emoji: '☕', w: 1, h: 1, stackable: true },
+  livros: { labelPt: 'Pilha de livros', emoji: '📖', w: 1, h: 1, stackable: true },
+  'porta-retrato': { labelPt: 'Porta-retrato', emoji: '📷', w: 1, h: 1, stackable: true },
+  aquario: { labelPt: 'Aquário', emoji: '🐠', w: 1, h: 1, stackable: true, animated: true },
+  vitrola: { labelPt: 'Vitrola', emoji: '🎵', w: 1, h: 1, stackable: true },
   // Decoração de PAREDE (mount: 'wall' — sobe na parede)
   quadro: { labelPt: 'Quadro', emoji: '🖼️', w: 2, h: 2, mount: 'wall' },
   estrela: { labelPt: 'Estrela', emoji: '⭐', w: 1, h: 1, mount: 'wall' },
@@ -50,12 +71,28 @@ export const ROOM_ITEM_INFO: Record<string, RoomItemInfo> = {
   prateleira: { labelPt: 'Prateleira', emoji: '🗄️', w: 2, h: 1, mount: 'wall' },
   poster: { labelPt: 'Pôster', emoji: '🏞️', w: 1, h: 2, mount: 'wall' },
   espelho: { labelPt: 'Espelho', emoji: '🪞', w: 1, h: 2, mount: 'wall' },
+  'letreiro-neon': { labelPt: 'Letreiro neon', emoji: '✨', w: 2, h: 1, mount: 'wall' },
+  'quadro-cortica': { labelPt: 'Quadro de cortiça', emoji: '📌', w: 2, h: 1, mount: 'wall' },
+  'mapa-mundi': { labelPt: 'Mapa-múndi', emoji: '🗺️', w: 2, h: 2, mount: 'wall' },
   // Plantas
   planta: { labelPt: 'Planta', emoji: '🪴', w: 1, h: 2 },
   arvore: { labelPt: 'Árvore', emoji: '🌳', w: 2, h: 3 },
+  cacto: { labelPt: 'Cacto', emoji: '🌵', w: 1, h: 1, stackable: true },
+  'vaso-flores': { labelPt: 'Vaso de flores', emoji: '💐', w: 1, h: 1, stackable: true },
+  'planta-pendurada': { labelPt: 'Planta pendurada', emoji: '🌿', w: 1, h: 2, mount: 'wall' },
   // Luzes
   luminaria: { labelPt: 'Luminária', emoji: '💡', w: 1, h: 2 },
   vela: { labelPt: 'Vela', emoji: '🕯️', w: 1, h: 1, stackable: true },
+  'luminaria-mesa': { labelPt: 'Luminária de mesa', emoji: '🔆', w: 1, h: 1, stackable: true },
+  'lampada-lava': {
+    labelPt: 'Lâmpada de lava',
+    emoji: '🫧',
+    w: 1,
+    h: 1,
+    stackable: true,
+    animated: true,
+  },
+  'varal-luzes': { labelPt: 'Varal de luzes', emoji: '🏮', w: 2, h: 1, mount: 'wall' },
   // Pets (campo `pet`)
   'pet-gato': { labelPt: 'Gato', emoji: '🐱', w: 1, h: 1 },
   'pet-cachorro': { labelPt: 'Cachorro', emoji: '🐶', w: 1, h: 1 },
@@ -92,6 +129,14 @@ export const ROOM_ITEM_INFO: Record<string, RoomItemInfo> = {
   // 🏆 Estante de Troféus (24/07) — vem de graça com o 1º troféu (não tem badge própria).
   'estante-trofeus': { labelPt: 'Estante de Troféus', emoji: '🏅', w: 3, h: 2, surface: 6 },
 }
+
+// ── Arquivos 3D (27/10/2026): cada peça tem um GLB feito no Blender e uma miniatura PNG, servidos
+// da pasta `public/room3d/` de CADA comunidade (same-origin, sem CORS). Os scripts que os geram
+// moram em `community-kids/scripts/room-blender/`; o teste `room3d-catalog` confere as duas pastas.
+/** GLB de uma peça (ex.: `/room3d/items/cama.glb`). */
+export const roomGlbUrl = (id: string): string => `/room3d/items/${id}.glb`
+/** Miniatura da peça nas bandejas (ex.: `/room3d/thumbs/cama.png`). */
+export const roomThumbUrl = (id: string): string => `/room3d/thumbs/${id}.png`
 
 /** Concedida junto com o 1º troféu (espelha `TROPHY_SHELF_ITEM_ID` do members). */
 export const TROPHY_SHELF_ITEM_ID = 'estante-trofeus'
@@ -133,6 +178,12 @@ export const SURFACE_SLOTS: Record<string, readonly SurfaceSlot[]> = {
     { x: 0.5, y: 0.76, z: 0.1 },
     { x: 0, y: 1.44, z: 0.1 },
     { x: 0, y: 2.1, z: 0.1 },
+  ],
+  // Criado-mudo (tampo em 0.64) e cômoda (tampo em 0.92, dois nichos).
+  'criado-mudo': [{ x: 0, y: 0.64, z: 0.02 }],
+  comoda: [
+    { x: -0.5, y: 0.92, z: 0.02 },
+    { x: 0.5, y: 0.92, z: 0.02 },
   ],
   // Estante de Troféus: 6 nichos em 2 fileiras × 3 colunas (pisos: base 0.2, prateleira 1.24).
   'estante-trofeus': [

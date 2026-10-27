@@ -1,5 +1,28 @@
 # CLAUDE.md — @sistemazero/member-shell
 
+## Quarto 3D com as peças do Blender (27/10/2026)
+
+Pedido dela: refazer as peças do quarto no Blender, com prévias nas bandejas como no avatar, e
+acrescentar peças novas. Vale para o Kids e o adulto (a cena e as bandejas moram aqui).
+
+- **`FurnitureModel` carrega o GLB** (`room-glb-model.tsx`: `useGLTF(roomGlbUrl(id), false, false)`,
+  uma cópia da cena por peça posicionada, `<Suspense fallback={null}>` e uma barreira de erro).
+  As primitivas de antes viraram `FurniturePrimitive`, a RESERVA quando o arquivo não baixa (peça
+  nova sem reserva cai na caixa). O `Pet3D` faz o mesmo com os bichinhos.
+- **Animação:** o GLB pode trazer animações (bichinhos, `aquario`, `lampada-lava`); o
+  `RoomGlbModel` toca todas em laço quando o `RoomMotionContext` deixa. O `RoomCanvas3D` liga o
+  contexto e o `frameloop="always"` com bichinho, festa ou peça com `animated` no
+  `ROOM_ITEM_INFO`, e desliga com `prefers-reduced-motion` e no `staticView`.
+- **Miniaturas:** `RoomItemThumb` (`room-item-thumb.tsx`) mostra `roomThumbUrl(id)` nas bandejas
+  (Kids: loja, troféus, bichinhos; adulto: os mesmos, com `.sz-cos-tile-thumb` e
+  `.sz-cos-trophy-thumb` no `cosmetics-adult.css` do community) e cai no emoji (Kids) ou no ícone
+  de linha (adulto) sem a imagem. O troféu travado do Kids mostra a miniatura apagada com o cadeado.
+- **Catálogo:** 27 peças novas em `ROOM_ITEM_INFO` (espelho do members), nichos novos no
+  criado-mudo (0,64) e na cômoda (0,92), ícones novos no `room-item-icon.tsx`.
+- Os arquivos ficam em `public/room3d/{items,thumbs}` de CADA app; scripts e contrato em
+  `community-kids/scripts/room-blender/README.md`; teste em
+  `community-kids/tests/room3d-catalog.test.ts`.
+
 ## Peças novas do avatar e a aba Enfeite (26/10/2026)
 
 Pedido dela, a partir do Canvas "Provador do avatar": 32 peças próprias, iguais no Kids e no

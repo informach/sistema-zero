@@ -5,8 +5,13 @@ import { useRef } from 'react'
 import type { Group } from 'three'
 import { COLS, FLOOR_HALF_X, FLOOR_HALF_Z, ROWS } from './coords'
 import { Ball, Box, Cone } from './prims'
+import { RoomGlbModel } from './room-glb-model'
 
-/** Bichinhos low-poly (gato/cachorro/passarinho) — frente em +Z, centrados, base em y=0. */
+/**
+ * Reserva em primitivas dos bichinhos (gato/cachorro/passarinho), frente em +Z, centrados, base
+ * em y=0. Desde 27/10/2026 o bichinho é o GLB do Blender, com o rabo e as asas animados no próprio
+ * arquivo; estas formas só aparecem se ele não baixar.
+ */
 function Cat() {
   return (
     <group>
@@ -119,7 +124,10 @@ export function Pet3D({
   if (!petId) return null
   return (
     <group ref={ref} position={[pos.current.x, isBird ? 0.7 : 0, pos.current.z]}>
-      {petId === 'pet-gato' ? <Cat /> : petId === 'pet-cachorro' ? <Dog /> : <Bird />}
+      <RoomGlbModel
+        itemId={petId}
+        fallback={petId === 'pet-gato' ? <Cat /> : petId === 'pet-cachorro' ? <Dog /> : <Bird />}
+      />
     </group>
   )
 }
