@@ -2,9 +2,9 @@
 
 - Chave dourada (`chave-farol.svg`): argola grossa, haste na diagonal e dois dentes. Fica de pé,
   de frente para a câmera; ~1 de lado, como a atual.
-- Veleiro (`veleiro.svg`): casco de madeira com friso dourado e vigias, vela branca na proa (que
-  aponta para -X, o lado da ilhota, para onde o barco anda no fim) e vela amarela atrás do mastro,
-  bandeira vermelha no alto. Referencial do Molda: linha d'água perto de z = 0.
+- Veleiro: a forma da referência da autora (`referencias/veleiro.glb`), com a vela branca na proa
+  (-X, o lado da ilhota, para onde o barco anda no fim). Referencial do Molda: linha d'água perto
+  de z = 0.
 - Aventureiro (`player-farol.svg`): cabeção, cabelo preto espetado, camiseta branca, short azul e
   tênis. Caixa de ~0,8 x 1,58 x 0,65, a mesma área de contato do atual; o jogo não gira o modelo,
   então ele fica de frente para a câmera, virado um pouco para o farol (+X), como no desenho.
@@ -36,77 +36,75 @@ def chave_dourada():
 
 
 # ── Veleiro ──────────────────────────────────────────────────────────────────
-X0, X1 = -1.5, 1.42  # proa e popa
+# Forma da referência da autora (`referencias/veleiro.glb`, feita no Molda): casco em elipse
+# simétrico de 2,86 x 1,04, borda cor de areia, miolo azul-marinho, mastro um pouco à frente do
+# centro, vela branca na proa (-X, o lado da ilhota) e amarela atrás, bandeira vermelha de rabo
+# de andorinha e duas vigias de cada lado. O acabamento é daqui.
+CX, CY = 1.43, 0.52          # meio comprimento e meia largura do casco
+Z_FUNDO, Z_BORDA = -0.36, 0.17
+XM = 0.15                    # mastro
 
 
-def _w(u):
-    return 0.6 * math.sin(math.pi / 2 * min(u / 0.62, 1)) ** 0.75 - (0.1 * ((u - 0.62) / 0.38) ** 2 if u > 0.62 else 0)
+def _meia_largura(x):
+    return CY * max(0.0, 1 - (x / CX) ** 2) ** 0.55
 
 
-def _ztop(u):
-    return 0.24 + 0.3 * (1 - u) ** 3 + 0.1 * u ** 4
+def _fundo(x):
+    return Z_FUNDO + 0.34 * (abs(x) / CX) ** 2.2
 
 
-def _zbot(u):
-    return -0.36 + 0.5 * (1 - min(u / 0.4, 1)) ** 2 + 0.14 * u ** 3
-
-
-def _casco_pt(u, a, out=1.0):
-    """Ponto do casco: u de 0 (proa) a 1 (popa); a de 0 (borda de -Y) a pi (borda de +Y)."""
-    w, zt, zb = _w(u), _ztop(u), _zbot(u)
-    return (X0 + (X1 - X0) * u, -w * math.cos(a) * out, zt - (zt - zb) * math.sin(a) ** 0.55)
+def _casco_pt(x, a, out=1.0):
+    """Ponto do casco na estação x; a de 0 (borda de -Y) a pi (borda de +Y)."""
+    w, zb = _meia_largura(x), _fundo(x)
+    # Seção cheia (expoente baixo): laterais quase retas, como o casco da referência.
+    return (x, -w * abs(math.cos(a)) ** 0.35 * math.copysign(1, math.cos(a)) * out, Z_BORDA - (Z_BORDA - zb) * math.sin(a) ** 2.2)
 
 
 def veleiro():
     reset()
     p = []
-    NU, NA = 28, 16
-    us = [(i / NU) ** 0.85 for i in range(NU + 1)]
+    NX, NA = 32, 16
+    xs = [CX * math.sin(math.pi * (i / NX - 0.5)) for i in range(NX + 1)]  # mais estações nas pontas
     bm = bmesh.new()
-    rows = [[bm.verts.new(_casco_pt(u, math.pi * k / NA)) for k in range(NA + 1)] for u in us]
-    for i in range(NU):
+    rows = [[bm.verts.new(_casco_pt(x, math.pi * k / NA)) for k in range(NA + 1)] for x in xs]
+    for i in range(NX):
         for k in range(NA):
             bm.faces.new((rows[i][k], rows[i + 1][k], rows[i + 1][k + 1], rows[i][k + 1]))
-    bm.faces.new(rows[-1])  # espelho de popa
     bmesh.ops.remove_doubles(bm, verts=bm.verts, dist=1e-4)
     bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
-    casco = lib_q._obj('casco', bm, 'casco')
-    shade_auto(casco, 50)
+    casco = lib_q._obj('casco', bm, 'cascoRef')
+    shade_auto(casco, 55)
     p.append(casco)
-    # Convés escuro (o "miolo" do barco no desenho), um pouco abaixo da borda.
-    borda_e = [_casco_pt(u, 0.12) for u in us[1:]]
-    borda_d = [_casco_pt(u, math.pi - 0.12) for u in us[1:]]
-    deck = [(x, y) for x, y, _ in borda_e] + [(x, y) for x, y, _ in reversed(borda_d)]
-    zdeck = min(z for _, _, z in borda_e) - 0.05
-    p.append(slab(deck, zdeck - 0.03, zdeck, 'marinho'))
-    # Friso dourado em volta da borda e frisos das tábuas.
-    friso = [_casco_pt(u, 0.0, 1.02) for u in us] + [_casco_pt(u, math.pi, 1.02) for u in reversed(us)]
-    p.append(tube(friso, [0.035] * len(friso), 'ouro', seg=6, cap=False))
-    for a in (0.62, 1.0):
+    # Miolo azul-marinho (o convés fundo do desenho) e a borda arredondada cor de areia.
+    miolo = blob(0, 0, CX - 0.17, CY - 0.12, n=48, wob=0.0)
+    p.append(slab(miolo, Z_BORDA - 0.06, Z_BORDA + 0.08, 'cascoMiolo'))
+    aro = [(CX * math.cos(t), CY * math.sin(t)) for t in (2 * math.pi * i / 64 for i in range(65))]
+    p.append(tube([(x * 0.995, y * 0.995, Z_BORDA + 0.035) for x, y in aro], [0.055] * len(aro), 'cascoBorda', seg=8, cap=False))
+    # Frisos das tábuas, acompanhando o casco nos dois lados.
+    for a in (0.5, 0.95):
         for lado in (a, math.pi - a):
-            linha = [_casco_pt(u, lado, 1.012) for u in us[2::2]]
-            p.append(tube(linha, [0.012] * len(linha), 'cascoLinha', seg=4))
-    # Vigias douradas dos dois lados.
-    for u in (0.32, 0.47, 0.62):
-        for s, a in ((-1, 0.38), (1, math.pi - 0.38)):
-            x, y, z = _casco_pt(u, a, 1.0)
-            p.append(torus(0.068, 0.02, (x, y + s * 0.006, z), 'ouro', seg=14, rseg=5, rot=(R(90), 0, 0)))
-            p.append(cyl(0.055, 0.02, (x, y + s * 0.004, z), 'marinho', verts=12, rot=(R(90), 0, 0)))
-    # Mastro, retranca e as duas velas.
-    xm = -0.1
-    p.append(cyl(0.045, 2.5, (xm, 0, zdeck + 1.25), 'mastro', verts=12, r2=0.032))
-    p.append(sphere(0.06, (xm, 0, zdeck + 2.52), 'ouro', subdiv=2))
-    p.append(cyl(0.03, 1.32, (xm + 0.66, 0, zdeck + 0.42), 'mastro', verts=10, rot=(0, R(90), 0)))
-    p.append(_vela((xm + 0.06, zdeck + 0.5), (xm + 0.06, zdeck + 2.38), (xm + 1.34, zdeck + 0.5), 'ouro', -0.16))
-    p.append(_vela((xm - 0.08, zdeck + 2.25), (xm - 0.08, zdeck + 0.42), (X0 + 0.22, zdeck + 0.42 + 0.1), 'vela', -0.12))
-    # Cabos finos: do topo do mastro à proa e à popa.
-    p.append(tube([(xm, 0, zdeck + 2.42), (X0 + 0.12, 0, _ztop(0.02) + 0.02)], [0.008, 0.008], 'mastro', seg=4))
-    p.append(tube([(xm, 0, zdeck + 2.42), (X1 - 0.05, 0, _ztop(1.0) + 0.02)], [0.008, 0.008], 'mastro', seg=4))
+            linha = [_casco_pt(x, lado, 1.01) for x in xs[2:-2]]
+            p.append(tube(linha, [0.011] * len(linha), 'cascoLinha', seg=4))
+    # Vigias: aro de bronze, vidro azul e um brilho, duas de cada lado (como na referência).
+    for x in (-0.48, 0.55):
+        for s, a in ((-1, 0.55), (1, math.pi - 0.55)):
+            px, py, pz = _casco_pt(x, a, 1.0)
+            p.append(torus(0.085, 0.024, (px, py + s * 0.01, pz), 'bronze', seg=16, rseg=6, rot=(R(90), 0, 0)))
+            p.append(cyl(0.068, 0.02, (px, py + s * 0.005, pz), 'vigiaVidro', verts=14, rot=(R(90), 0, 0)))
+            p.append(sphere(0.016, (px - 0.02, py + s * 0.02, pz + 0.025), 'olho', subdiv=1))
+    # Mastro com bolinha dourada e as duas velas estufadas.
+    p.append(cyl(0.045, 2.55, (XM, 0, Z_BORDA - 0.05 + 1.275), 'mastroRef', verts=12, r2=0.033))
+    p.append(sphere(0.06, (XM, 0, 2.68), 'ouro', subdiv=2))
+    p.append(_vela((XM + 0.06, 0.46), (XM + 0.06, 2.38), (1.68, 0.98), 'ouro', -0.16))
+    p.append(_vela((XM - 0.07, 2.36), (XM - 0.07, 0.42), (-0.99, 0.6), 'vela', -0.12))
+    # Cabos finos do topo do mastro à proa e à popa.
+    for xp in (-CX + 0.08, CX - 0.08):
+        p.append(tube([(XM, 0, 2.5), (xp, 0, Z_BORDA + 0.06)], [0.008, 0.008], 'mastroRef', seg=4))
     # Bandeira vermelha de rabo de andorinha, ondulada.
-    flag = prism([(0, 0), (0.5, 0.0), (0.38, 0.1), (0.5, 0.2), (0, 0.2)], 0.018,
-                 (xm + 0.04, 0, zdeck + 2.3), 'bandeira')
+    flag = prism([(0, 0), (0.47, 0.0), (0.36, 0.08), (0.47, 0.16), (0, 0.16)], 0.018,
+                 (XM + 0.02, 0, 2.47), 'bandeira')
     for v in flag.data.vertices:
-        v.co.y += 0.05 * math.sin(v.co.x * 9)
+        v.co.y += 0.045 * math.sin(v.co.x * 10)
     p.append(flag)
     export('veleiro', p)
 

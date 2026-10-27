@@ -51,6 +51,12 @@ lib_q.PALETTE.update({
     'feixe': ('#ffe49b', 0.5, '#ffe49b', 0.55),
     # barco e chave
     'casco': ('#835d3f', 0.75, None, 0),
+    'cascoRef': ('#967044', 0.75, None, 0),
+    'cascoBorda': ('#ca9e58', 0.7, None, 0),
+    'cascoMiolo': ('#22394b', 0.8, None, 0),
+    'mastroRef': ('#a17842', 0.8, None, 0),
+    'bronze': ('#b07a3a', 0.4, None, 0),
+    'vigiaVidro': ('#8fc6ff', 0.15, '#8fc6ff', 0.2),
     'cascoLinha': ('#73503a', 0.8, None, 0),
     'ouro': ('#f3b123', 0.35, '#f3b123', 0.12),
     'chaveOuro': ('#f3b123', 0.28, '#ffcf55', 0.22),
@@ -339,3 +345,159 @@ def importar_referencia(nome):
         if o.type != 'MESH':
             bpy.data.objects.remove(o)
     return malhas
+
+
+def mat_gradiente(nome, cor, alfas, emissao=None, forca=0.0, culling=True):
+    """Material translúcido com o alfa em degradê ao longo do V da textura (0 = início da peça,
+    1 = ponta), como a luz do farol da referência do Molda: forte junto ao vidro e sumindo na ponta.
+    `culling` deixa só a face de fora (sem dobrar a transparência com o lado de dentro)."""
+    if nome in lib_q._MATS:
+        return lib_q._MATS[nome]
+    n = 64
+    img = bpy.data.images.new(nome, width=4, height=n, alpha=True)
+    rgb = srgb_px(cor)
+    px = []
+    for j in range(n):
+        t = j / (n - 1)
+        # Interpola os alfas pedidos (lista de valores igualmente espaçados).
+        k = t * (len(alfas) - 1)
+        i = min(int(k), len(alfas) - 2)
+        a = alfas[i] + (alfas[i + 1] - alfas[i]) * (k - i)
+        px += [*rgb, a] * 4
+    img.pixels[:] = px
+    img.pack()
+    m = bpy.data.materials.new(nome)
+    m.use_nodes = True
+    nt = m.node_tree
+    b = nt.nodes['Principled BSDF']
+    tex = nt.nodes.new('ShaderNodeTexImage')
+    tex.image = img
+    tex.interpolation = 'Linear'
+    # Sem repetir: a ponta (alfa ~0) não pode misturar com o começo (alfa forte) na borda.
+    tex.extension = 'EXTEND'
+    nt.links.new(tex.outputs['Color'], b.inputs['Base Color'])
+    nt.links.new(tex.outputs['Alpha'], b.inputs['Alpha'])
+    b.inputs['Roughness'].default_value = 0.6
+    if emissao:
+        b.inputs['Emission Color'].default_value = (*srgb(emissao), 1)
+        b.inputs['Emission Strength'].default_value = forca
+    m.surface_render_method = 'BLENDED'
+    m.use_backface_culling = culling
+    lib_q._MATS[nome] = m
+    return m
+
+
+def srgb_px(h):
+    """Cor para os pixels da imagem do Blender (linear, como ela guarda)."""
+    return srgb(h)
+
+
+def tubo_aberto(r0, r1, L, m, seg=24, anel=6, eixo='X', sentido=1):
+    """Tronco de cone ABERTO (sem tampas) que sai da origem ao longo de `eixo`, de raio r0 a r1,
+    com UV: U em volta e V do começo (0) à ponta (1). Para os feixes e o vidro aceso."""
+    bm = bmesh.new()
+    uv = bm.loops.layers.uv.new()
+    rings = []
+    for j in range(anel + 1):
+        t = j / anel
+        r = r0 + (r1 - r0) * t
+        ring = []
+        for i in range(seg):
+            a = 2 * math.pi * i / seg
+            c1, c2 = r * math.cos(a), r * math.sin(a)
+            d = sentido * L * t
+            ring.append(bm.verts.new((d, c1, c2) if eixo == 'X' else (c1, c2, d)))
+        rings.append(ring)
+    for j in range(anel):
+        for i in range(seg):
+            i2 = (i + 1) % seg
+            f = bm.faces.new((rings[j][i], rings[j][i2], rings[j + 1][i2], rings[j + 1][i]))
+            for loop, (uu, vv) in zip(f.loops, ((i / seg, j / anel), ((i + 1) / seg, j / anel),
+                                                 ((i + 1) / seg, (j + 1) / anel), (i / seg, (j + 1) / anel))):
+                loop[uv].uv = (uu, vv)
+    bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+    # Normais para FORA (o lado que fica à vista com o culling).
+    for f in bm.faces:
+        c = f.calc_center_median()
+        radial = Vector((0, c.y, c.z)) if eixo == 'X' else Vector((c.x, c.y, 0))
+        if f.normal.dot(radial) < 0:
+            f.normal_flip()
+    me = bpy.data.meshes.new('tubo')
+    bm.to_mesh(me)
+    bm.free()
+    o = bpy.data.objects.new('tubo', me)
+    bpy.context.collection.objects.link(o)
+    o.data.materials.append(m)
+    for p in o.data.polygons:
+        p.use_smooth = True
+    return o
+
+
+def clipes(objs_chaves, fps=24):
+    """Grava as animações como faixas do NLA com o NOME do clipe: o exportador junta as faixas de
+    mesmo nome de todos os objetos numa animação só do glTF (o nome que o bloco "tocar a animação"
+    usa). `objs_chaves` = {clipe: {objeto: {'scale' | 'rotation_euler': [(quadro, valor), ...]}}}."""
+    sc = bpy.context.scene
+    sc.render.fps = fps
+    for clipe, por_obj in objs_chaves.items():
+        for o, props in por_obj.items():
+            o.animation_data_create()
+            act = bpy.data.actions.new(f'{clipe}-{o.name}')
+            o.animation_data.action = act
+            fim = 0
+            for prop, chaves in props.items():
+                if prop.startswith('_'):
+                    continue
+                for quadro, valor in chaves:
+                    setattr(o, prop, valor)
+                    o.keyframe_insert(data_path=prop, frame=quadro)
+                    fim = max(fim, quadro)
+            if props.get('_linear'):
+                for fc in _fcurves(act):
+                    for kp in fc.keyframe_points:
+                        kp.interpolation = 'LINEAR'
+            o.animation_data.action = None
+            trilha = o.animation_data.nla_tracks.new()
+            trilha.name = clipe
+            trilha.strips.new(clipe, 0, act)
+    return sc
+
+
+def _fcurves(act):
+    """As curvas de uma ação (no Blender 5 elas moram nas camadas/canais da ação em camadas)."""
+    if hasattr(act, 'fcurves') and act.fcurves:
+        return list(act.fcurves)
+    out = []
+    for layer in getattr(act, 'layers', []):
+        for strip in layer.strips:
+            for bag in strip.channelbags:
+                out += list(bag.fcurves)
+    return out
+
+
+def repouso_no_glb(path, escalas):
+    """Grava a pose de REPOUSO (a do modelo parado, antes de qualquer animação) nos nós do GLB.
+
+    Com faixas do NLA o exportador do glTF avalia o quadro inicial e grava a pose animada como
+    repouso; aqui ela volta a ser a de verdade. `escalas` = {nome do nó: (x, y, z)} já no y para
+    cima do glTF. Rotação de repouso: nenhuma."""
+    import json, struct
+    with open(path, 'rb') as f:
+        dados = f.read()
+    n = struct.unpack('<I', dados[12:16])[0]
+    doc = json.loads(dados[20:20 + n])
+    resto = dados[20 + n:]
+    vistos = set()
+    for no in doc['nodes']:
+        if no.get('name') in escalas:
+            no['scale'] = list(escalas[no['name']])
+            no.pop('rotation', None)
+            vistos.add(no['name'])
+    falta = set(escalas) - vistos
+    if falta:
+        raise RuntimeError(f'nós ausentes no GLB: {sorted(falta)}')
+    js = json.dumps(doc, separators=(',', ':')).encode()
+    js += b' ' * ((4 - len(js) % 4) % 4)
+    total = 12 + 8 + len(js) + len(resto)
+    with open(path, 'wb') as f:
+        f.write(dados[:8] + struct.pack('<I', total) + struct.pack('<I', len(js)) + b'JSON' + js + resto)
