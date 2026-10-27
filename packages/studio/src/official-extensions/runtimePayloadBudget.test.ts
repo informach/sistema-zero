@@ -22,6 +22,8 @@ const BUDGETS: readonly {
   context?: ExtensionBootstrapContext
   maxChars: number
   maxGzipBytes: number
+  /** Bun usa compressores diferentes no Windows e no Linux. */
+  maxGzipBytesWindows?: number
 }[] = [
   // ⚠️ SUBIU no lote 2 do review 3D (carregador de modelos compartilhado,
   // `three3dModelsRuntime.ts`: 24_907 caracteres, 7_746 bytes gzip, já sem indentação nem
@@ -89,7 +91,16 @@ const BUDGETS: readonly {
   // LIGHT_SUN no lugar dos números soltos. Medido: 227_324.
   // 27/10 (cenário da ilha com acabamento de jogo): +257 no carregador comum dos três, a peça
   // translúcida e o material szSemSombra não fazem sombra. Medido: 227_581.
-  { extension: gameThreeDExtension, maxChars: 227_700, maxGzipBytes: 62_800 },
+  // 27/10: percurso iniciante da Ilha: áreas caminháveis, andar e animações,
+  // contato entre objetos e enquadramento responsivo. +2_755 caracteres no runtime.
+  // Medido: 230_336 caracteres; gzip Bun 1.3.11 Linux 62_225 / Windows 64_626.
+  // Os tetos gzip mantêm a catraca própria para cada compressor.
+  {
+    extension: gameThreeDExtension,
+    maxChars: 230_500,
+    maxGzipBytes: 62_800,
+    maxGzipBytesWindows: 64_700,
+  },
   // ⬇️ Lote 14 do review 3D (P2): o Kit Plataforma (`runtimePlatform.ts`) só entra quando o
   // código do projeto usa um método dele (`game-3d/platformKitVariant.ts`); os outros 20
   // exemplos do catálogo recebem esta variante. O completo, acima, segue sendo o de quem usa o
@@ -105,8 +116,11 @@ const BUDGETS: readonly {
     // 27/10: +2_370, o mesmo da variante completa (acima). Medido: 193_164 / 52_171.
     // 27/10, luz do motor: as duas constantes de luz. Medido: 193_242.
     // 27/10, +257 do carregador comum (o que não faz sombra). Medido: 193_499.
-    maxChars: 193_600,
+    // Mesmo percurso iniciante: 196_254 caracteres; gzip Bun 1.3.11 Linux 52_811 /
+    // Windows 54_908. O teto cobre ambos, sem incluir o Kit Plataforma.
+    maxChars: 196_400,
     maxGzipBytes: 53_100,
+    maxGzipBytesWindows: 55_000,
   },
   // Medido: 341_986 caracteres, 93_312 bytes gzip.
   // ⚠️ SUBIU nos lotes 8-9 do review 3D: o Mundo 3D passou a injetar o fragmento COMPARTILHADO
@@ -162,7 +176,13 @@ const BUDGETS: readonly {
   // 25/10: HUD central compartilhado, sem controles dos kits: 344_930 / 102_843.
   // 27/10: +1_228, as texturas do .glb pela img (ver o Jogo 3D). Medido: 346_158 / 100_414.
   // 27/10: +257, o que não faz sombra no carregador comum (ver o Jogo 3D). Medido: 346_415.
-  { extension: worldThreeDExtension, maxChars: 346_500, maxGzipBytes: 102_900 },
+  // Windows, mesmo conteúdo: 103_642 bytes gzip.
+  {
+    extension: worldThreeDExtension,
+    maxChars: 346_500,
+    maxGzipBytes: 102_900,
+    maxGzipBytesWindows: 103_700,
+  },
   // Medido: 213_707 caracteres, 62_113 bytes gzip.
   // ⬇️ DESCEU no lote 11 (o Avançado consome as regras comuns): entrou o fragmento
   // COMPARTILHADO `game3dRules/runtime.ts` (~15_900 caracteres / ~5_300 bytes gzip; placar,
@@ -202,7 +222,13 @@ const BUDGETS: readonly {
   // 25/10: HUD central compartilhado, sem controles dos kits: 209_159 / 61_537.
   // 27/10: +1_187, as texturas do .glb pela img (ver o Jogo 3D). Medido: 210_387 / 60_177.
   // 27/10: +257, o que não faz sombra no carregador comum (ver o Jogo 3D). Medido: 210_644.
-  { extension: gameKit3DExtension, maxChars: 210_700, maxGzipBytes: 61_600 },
+  // Windows, mesmo conteúdo: 62_048 bytes gzip.
+  {
+    extension: gameKit3DExtension,
+    maxChars: 210_700,
+    maxGzipBytes: 61_600,
+    maxGzipBytesWindows: 62_100,
+  },
 ]
 
 async function bootstrapSource(
@@ -217,12 +243,21 @@ async function bootstrapSource(
 }
 
 describe('runtimes 3D: catraca de payload', () => {
-  for (const { extension, variant, context, maxChars, maxGzipBytes } of BUDGETS) {
+  for (const {
+    extension,
+    variant,
+    context,
+    maxChars,
+    maxGzipBytes,
+    maxGzipBytesWindows,
+  } of BUDGETS) {
     const name = variant ? `${extension.manifest.id} (${variant})` : extension.manifest.id
-    it(`${name} cabe em ${maxChars} caracteres e ${maxGzipBytes} bytes gzip`, async () => {
+    const gzipLimit =
+      process.platform === 'win32' ? (maxGzipBytesWindows ?? maxGzipBytes) : maxGzipBytes
+    it(`${name} cabe em ${maxChars} caracteres e ${gzipLimit} bytes gzip`, async () => {
       const source = await bootstrapSource(extension, context)
       expect(source.length).toBeLessThanOrEqual(maxChars)
-      expect(Bun.gzipSync(source).byteLength).toBeLessThanOrEqual(maxGzipBytes)
+      expect(Bun.gzipSync(source).byteLength).toBeLessThanOrEqual(gzipLimit)
       // Anti-vácuo: um runtime vazio ou só com o import passaria em qualquer teto.
       expect(source.length).toBeGreaterThan(maxChars * 0.5)
     })
