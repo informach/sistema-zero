@@ -6,7 +6,7 @@ import fs from 'node:fs/promises'
 import path from 'node:path'
 import { chromium } from 'playwright-core'
 import { approachSprite } from './check-approach.mjs'
-import { approachObject3d } from './check-approach-3d.mjs'
+import { approachObject3d, NavigationBlocked } from './check-approach-3d.mjs'
 import {
   CLICK_TARGET_LIMITS,
   chooseTargetPoint,
@@ -113,7 +113,9 @@ try {
         results[next.index] = await runObjective(next.objective, next.index).catch((error) => ({
           id: next.objective.id,
           type: next.objective.rule.type,
-          error: String(error?.message ?? error).slice(0, 500),
+          ...(error instanceof NavigationBlocked
+            ? { actionFailure: 'navigation-blocked' }
+            : { error: String(error?.message ?? error).slice(0, 500) }),
         }))
       }
     }),

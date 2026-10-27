@@ -742,6 +742,8 @@ export interface ExecutionObservedValue {
 export interface ExecutionObservation {
   id: string
   type: SectionExecutionRule['type']
+  /** The game kept advancing but the controlled object did not follow keyboard input. */
+  actionFailure?: 'navigation-blocked'
   initial?: ExecutionObservedValue
   final?: ExecutionObservedValue
   checkpoints?: { initial?: ExecutionObservedValue; final?: ExecutionObservedValue }[]
@@ -798,6 +800,14 @@ export function executionObservationUnavailableReason(
 ): string | undefined {
   if (!observation || observation.type !== rule.type) return 'O teste não relatou este objetivo.'
   if (observation.error) return observation.error
+  if (observation.actionFailure === 'navigation-blocked') {
+    if (
+      (rule.type === 'behavior' || rule.type === 'script') &&
+      rule.steps.some((step) => step.action === 'approachObject3d')
+    )
+      return undefined
+    return 'O teste relatou uma ação incompatível com o objetivo.'
+  }
   if (rule.type !== 'behavior') return undefined
   if (rule.expect.compare === 'increased' || rule.expect.compare === 'decreased') {
     for (const value of [observation.initial, observation.final])
@@ -921,6 +931,8 @@ export function judgeExecutionObservation(
   if (!observation) return { passed: false, detail: 'O teste não relatou este objetivo.' }
   if (observation.error)
     return { passed: false, detail: `O teste não terminou: ${observation.error}` }
+  if (observation.actionFailure === 'navigation-blocked')
+    return { passed: false, detail: 'O personagem não avançou até o alvo com as setas.' }
   if (observation.errors?.length)
     return { passed: false, detail: 'O jogo relatou erro durante a observação.' }
   if (rule.type === 'functionReturns') {

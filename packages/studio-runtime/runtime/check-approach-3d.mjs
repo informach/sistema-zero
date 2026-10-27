@@ -1,6 +1,7 @@
 // Host-only planning. Reads bounded numeric properties and sends actual keyboard events.
 // Walkable rectangles describe the authored floor, never a learner's key position.
 import { createExecutionObservationCodec } from './execution-observation.generated.mjs'
+export class NavigationBlocked extends Error {}
 export function planApproach3d(actor, target, walkable, avoid = []) {
   const unit = 0.25,
     margin = 0.12
@@ -106,9 +107,22 @@ export async function approachObject3d(page, step, readMany) {
   const actor = await geometry(step.actorPath),
     target = await geometry(step.targetPath),
     avoid = await Promise.all((step.avoidPaths ?? []).map(geometry))
+  // A confirmed running world distinguishes an unresponsive character from a stalled renderer.
+  const framePath = `${step.actorPath}._szWorld._frameNo`
+  const initialFrame = await numbers([framePath])
+    .then(([frame]) => frame)
+    .catch(() => null)
   const route = planApproach3d(actor, target, step.walkable, avoid),
     deadline = Date.now() + step.timeoutMs
   let held = null
+  let previousPulse = null
+  let observedMovement = false
+  const navigationBlocked = async () => {
+    const frame = await numbers([framePath])
+      .then(([value]) => value)
+      .catch(() => null)
+    return initialFrame !== null && frame !== null && frame - initialFrame >= 4
+  }
   const release = async () => {
     if (held) {
       const k = held
@@ -126,6 +140,7 @@ export async function approachObject3d(page, step, readMany) {
           `${step.actorPath}.position.x`,
           `${step.actorPath}.position.z`,
         ])
+        if (x !== actor.x || z !== actor.z) observedMovement = true
         const dx = goal.x - x,
           dz = goal.z - z,
           distance = Math.abs(dx) + Math.abs(dz)
@@ -135,7 +150,11 @@ export async function approachObject3d(page, step, readMany) {
         }
         stalled = distance >= lastDistance - 0.002 ? stalled + 1 : 0
         lastDistance = distance
-        if (stalled > 25) throw Error('O personagem não avança até o alvo com as setas.')
+        if (stalled > 25) {
+          if (await navigationBlocked())
+            throw new NavigationBlocked('O personagem não avança até o alvo com as setas.')
+          throw Error('Não foi possível observar quadros suficientes para testar o movimento.')
+        }
         const next =
           Math.abs(dx) > 0.22
             ? dx > 0
@@ -144,6 +163,21 @@ export async function approachObject3d(page, step, readMany) {
             : dz > 0
               ? 'ArrowDown'
               : 'ArrowUp'
+        const coordinate = Math.abs(dx) > 0.22 ? x : z
+        const remaining = Math.abs(dx) > 0.22 ? Math.abs(dx) : Math.abs(dz)
+        // Estimate speed from the last actual pulse. Larger safe pulses reduce the
+        // number of expensive browser round trips on software-rendered 3D, while
+        // limiting each pulse to half the remaining distance at the measured speed.
+        const speed =
+          previousPulse?.key === next
+            ? Math.abs(coordinate - previousPulse.coordinate) / previousPulse.duration
+            : 0
+        const duration =
+          speed > 0.0001
+            ? Math.max(16, Math.min(200, Math.floor((remaining * 0.5) / speed)))
+            : remaining > 0.6
+              ? 80
+              : 16
         if (held !== next) {
           await release()
           held = next
@@ -151,12 +185,16 @@ export async function approachObject3d(page, step, readMany) {
         }
         // Move in bounded pulses, then read a stationary position. A slow CDP
         // observation must not keep a key held and overshoot the next corner.
-        const remaining = Math.abs(dx) > 0.22 ? Math.abs(dx) : Math.abs(dz)
-        await page.waitForTimeout(remaining > 0.6 ? 80 : 16)
+        await page.waitForTimeout(duration)
         await release()
+        previousPulse = { key: next, coordinate, duration }
       }
       await release()
-      if (!reached) throw Error('O personagem não chegou ao alvo no tempo do teste.')
+      if (!reached) {
+        if (!observedMovement && (await navigationBlocked()))
+          throw new NavigationBlocked('O personagem não avança até o alvo com as setas.')
+        throw Error('O personagem não chegou ao alvo no tempo do teste.')
+      }
     }
     await page.waitForTimeout(80)
   } finally {

@@ -1,5 +1,9 @@
-import { expect, test } from 'bun:test'
-import { planApproach3d } from '../runtime/check-approach-3d.mjs'
+import { expect, spyOn, test } from 'bun:test'
+import {
+  approachObject3d,
+  NavigationBlocked,
+  planApproach3d,
+} from '../runtime/check-approach-3d.mjs'
 
 const floor = [
   { minX: -11, maxX: 0.6, minZ: -5, maxZ: 5 },
@@ -23,6 +27,76 @@ test('3D route follows the bridge and the actual position; height cannot be fake
   expect(planApproach3d(actor, farol, floor, [key]).length).toBeGreaterThan(1)
 })
 
+test.each([
+  [true, false],
+  [false, false],
+  [true, true],
+  [false, true],
+])('objeto parado: quadros=%s, leitura lenta=%s', async (framesAdvance, slowRead) => {
+  let now = 0,
+    held = null
+  const clock = spyOn(Date, 'now').mockImplementation(() => now)
+  const page = {
+    keyboard: {
+      down: async (key) => {
+        held = key
+      },
+      up: async () => {
+        held = null
+      },
+    },
+    waitForTimeout: async (ms) => {
+      now += ms + (slowRead ? 1000 : 0)
+    },
+  }
+  const values = {
+    'personagem.position.x': 0,
+    'personagem.position.y': 0,
+    'personagem.position.z': 0,
+    'personagem.userData.sz.hw': 0.5,
+    'personagem.userData.sz.hh': 0.5,
+    'personagem.userData.sz.hd': 0.5,
+    'alvo.position.x': 10,
+    'alvo.position.y': 0,
+    'alvo.position.z': 0,
+    'alvo.userData.sz.hw': 0.5,
+    'alvo.userData.sz.hh': 0.5,
+    'alvo.userData.sz.hd': 0.5,
+  }
+  const read = async (paths) =>
+    paths.map((path) => ({
+      found: true,
+      value: {
+        format: 'sz-observed-v1',
+        value: [
+          0,
+          path.endsWith('._szWorld._frameNo')
+            ? framesAdvance
+              ? Math.floor(now / 40)
+              : 0
+            : values[path],
+        ],
+      },
+    }))
+  try {
+    const pending = approachObject3d(
+      page,
+      {
+        actorPath: 'personagem',
+        targetPath: 'alvo',
+        walkable: [{ minX: -1, maxX: 11, minZ: -1, maxZ: 1 }],
+        timeoutMs: slowRead ? 7000 : 20000,
+      },
+      read,
+    )
+    if (framesAdvance) await expect(pending).rejects.toBeInstanceOf(NavigationBlocked)
+    else await expect(pending).rejects.toThrow(slowRead ? 'tempo do teste' : 'quadros suficientes')
+    expect(held).toBeNull()
+  } finally {
+    clock.mockRestore()
+  }
+})
+
 test('route from the key crosses the narrow bridge away from its edges', () => {
   const farol = { x: 5.2, y: 2, z: 0.1, hw: 0.6, hh: 2, hd: 0.6 }
   const route = planApproach3d({ ...actor, x: -3.75, z: -1.5 }, farol, floor)
@@ -41,5 +115,72 @@ test('route from the key crosses the narrow bridge away from its edges', () => {
             ),
           ).toBe(true)
     }
+  }
+})
+
+test.each([
+  1, 4, 8,
+])('pulsos adaptativos respeitam a distância com velocidade %i', async (speed) => {
+  let now = 0,
+    x = 0,
+    held = null
+  const clock = spyOn(Date, 'now').mockImplementation(() => now)
+  const durations = []
+  const page = {
+    keyboard: {
+      down: async (key) => {
+        held = key
+      },
+      up: async () => {
+        held = null
+      },
+    },
+    waitForTimeout: async (ms) => {
+      now += ms
+      if (held) {
+        durations.push(ms)
+        x += ((held === 'ArrowRight' ? 1 : -1) * speed * ms) / 1000
+      }
+    },
+  }
+  const values = {
+    'personagem.position.y': 0,
+    'personagem.position.z': 0,
+    'personagem.userData.sz.hw': 0.5,
+    'personagem.userData.sz.hh': 0.5,
+    'personagem.userData.sz.hd': 0.5,
+    'alvo.position.x': 10,
+    'alvo.position.y': 0,
+    'alvo.position.z': 0,
+    'alvo.userData.sz.hw': 0.5,
+    'alvo.userData.sz.hh': 0.5,
+    'alvo.userData.sz.hd': 0.5,
+  }
+  const read = async (paths) =>
+    paths.map((path) => ({
+      found: true,
+      value: {
+        format: 'sz-observed-v1',
+        value: [0, path === 'personagem.position.x' ? x : values[path]],
+      },
+    }))
+  try {
+    await approachObject3d(
+      page,
+      {
+        actorPath: 'personagem',
+        targetPath: 'alvo',
+        walkable: [{ minX: -1, maxX: 11, minZ: -1, maxZ: 1 }],
+        timeoutMs: 20000,
+      },
+      read,
+    )
+    expect(x).toBeGreaterThan(9)
+    expect(x).toBeLessThan(10)
+    expect(held).toBeNull()
+    expect(durations.every((ms) => ms >= 16 && ms <= 200)).toBe(true)
+    expect(durations.some((ms) => ms > 80)).toBe(true)
+  } finally {
+    clock.mockRestore()
   }
 })
