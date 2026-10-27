@@ -374,6 +374,16 @@ jobs:
         env:
           TEST_DATABASE_URL: postgres://postgres:postgres@localhost:55432/sistemazero
 
+      - name: Testes DB do Arquipélago Vagalume (Postgres real)
+        run: |
+          PGPASSWORD=postgres psql -h localhost -p 55432 -U postgres -d postgres -v ON_ERROR_STOP=1 -c "CREATE DATABASE arquipelago_test"
+          cd packages/arquipelago-api && bun test tests/db
+        env:
+          TEST_DATABASE_URL: postgres://postgres:postgres@localhost:55432/arquipelago_test
+
+      - name: Build do cliente do Arquipélago Vagalume (manifesto validado pelo contrato)
+        run: bun run --filter '@sistemazero/arquipelago' build
+
       - name: Separação comercial Kids e Adultos (Postgres isolado)
         run: |
           PGPASSWORD=postgres psql -h localhost -p 55432 -U postgres -d postgres -v ON_ERROR_STOP=1 -c "CREATE DATABASE catalog_audience_test"
@@ -859,6 +869,12 @@ jobs:
                   packages/admin/*) add admin ;;
                   packages/community/*) add community ;;
                   packages/member-shell/*) add community; add community-kids; add admin ;; # BFF dos 2 apps de aluno + o admin (studio-embed/entregas dependem dele)
+                  # Avatar 3D e quarto 3D compartilhados pela plataforma e pelo Arquipélago Vagalume.
+                  packages/avatar-quarto/*) add community; add community-kids; add admin ;;
+                  # Contrato da porta do jogo: a página que hospeda o Arquipélago nas duas comunidades.
+                  packages/arquipelago-contracts/*) add community; add community-kids ;;
+                  # packages/arquipelago e packages/arquipelago-api: o jogo e o serviço dele ainda não têm
+                  # serviço no Railway (rollout de infraestrutura à parte); o CI testa e compila os dois.
                   # O adulto empacota as mesmas poses do Zappy usadas pelo Kids nas aulas.
                   packages/community-kids/public/zappy/*.webp) add community; add community-kids ;;
                   packages/community-kids/*) add community-kids ;;

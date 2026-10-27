@@ -1,0 +1,48 @@
+{
+  "name": "@sistemazero/avatar-quarto",
+  "version": "0.1.0",
+  "description": "O avatar 3D e o quarto 3D (catálogos, modelos e cena), compartilhados pela plataforma (member-shell) e pelo jogo Arquipélago Vagalume. Consumido como TS source.",
+  "type": "module",
+  "private": true,
+  "exports": {
+    "./avatar/asset-part": "./src/avatar/asset-part.tsx",
+    "./avatar/avatar-rig": "./src/avatar/avatar-rig.tsx",
+    "./avatar/catalog": "./src/avatar/catalog.ts",
+    "./avatar/measure": "./src/avatar/measure.ts",
+    "./avatar/visible-parts": "./src/avatar/visible-parts.ts",
+    "./quarto/catalog": "./src/quarto/catalog.ts",
+    "./quarto/coords": "./src/quarto/coords.ts",
+    "./quarto/floor": "./src/quarto/floor.tsx",
+    "./quarto/furniture-models": "./src/quarto/furniture-models.tsx",
+    "./quarto/furniture-piece": "./src/quarto/furniture-piece.tsx",
+    "./quarto/geometry": "./src/quarto/geometry.ts",
+    "./quarto/materials": "./src/quarto/materials.ts",
+    "./quarto/pet-3d": "./src/quarto/pet-3d.tsx",
+    "./quarto/prims": "./src/quarto/prims.tsx",
+    "./quarto/room-glb-model": "./src/quarto/room-glb-model.tsx",
+    "./quarto/room-lights": "./src/quarto/room-lights.tsx",
+    "./quarto/walls": "./src/quarto/walls.tsx",
+    "./use-reduced-motion": "./src/use-reduced-motion.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "bun test",
+    "check": "biome check .",
+    "check:fix": "biome check --write ."
+  },
+  "dependencies": {
+    "@react-three/drei": "^10",
+    "@react-three/fiber": "^9",
+    "three": "^0.184.0"
+  },
+  "peerDependencies": {
+    "react": "^19",
+    "react-dom": "^19"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.3.14",
+    "@types/react": "^19",
+    "@types/three": "^0.184.1",
+    "typescript": "^5.7.0"
+  }
+}
