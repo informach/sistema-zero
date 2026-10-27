@@ -156,6 +156,7 @@ const CALLBACK_BODY_EXECUTION: ReadonlyMap<string, CallbackBodyExecution> = new 
     'gk:onEvent',
 
     // Jogo 3D e Jogo 3D avançado.
+    'g3d:onTouch',
     'g3d:animate',
     'g3d:everySeconds',
     'g3k:onUpdate',

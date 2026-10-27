@@ -9,7 +9,6 @@ import {
   type InstalledExtension,
   type Project,
   type ProjectAsset,
-  pendingCourseModels,
   preloadCourseModels,
   soundManifest,
 } from '#core'
@@ -405,29 +404,48 @@ export function PreviewIframe(): JSX.Element {
   // Manifesto de sons (nome → dataUrl de áudio) — mesmo ciclo de vida do de imagem.
   const soundsManifest = useMemo(() => soundManifest(assets), [assets])
   // Binários 3D (modelo GLB / céu HDR) — canal próprio (o de imagem os filtraria).
-  // Modelos da biblioteca dos cursos: o projeto guarda a referência e o arquivo é carregado
-  // aqui antes do primeiro documento (com a referência só, o jogo abriria sem as peças).
-  // Falhar ao carregar também libera: o jogo roda sem aquela peça em vez de ficar parado.
-  // Só os modelos que o código cita (a personalização de um curso traz todas as variações).
-  const courseModelsPending = pendingCourseModels(assets, debouncedJs).join(',')
-  const [courseModelsSettled, setCourseModelsSettled] = useState('')
-  const courseModelsReady =
-    courseModelsPending === '' || courseModelsSettled === courseModelsPending
+  // Uma falha de modelo não pode virar uma cena vazia apresentada como jogo pronto.
+  const courseModelRequest = useMemo(
+    () => ({ assets, code: debouncedJs, attempt: renderNonce }),
+    [assets, debouncedJs, renderNonce],
+  )
+  const [courseModelState, setCourseModelState] = useState<{
+    request: typeof courseModelRequest
+    manifest: ReturnType<typeof asset3DManifest> | null
+    error: string | null
+  } | null>(null)
   useEffect(() => {
-    if (!courseModelsPending) return
     let active = true
-    const settle = () => {
-      if (active) setCourseModelsSettled(courseModelsPending)
-    }
-    void preloadCourseModels(assets, debouncedJs).then(settle, settle)
+    void preloadCourseModels(courseModelRequest.assets, courseModelRequest.code).then(
+      () => {
+        if (active)
+          setCourseModelState({
+            request: courseModelRequest,
+            manifest: asset3DManifest(courseModelRequest.assets),
+            error: null,
+          })
+      },
+      (error: unknown) => {
+        if (active)
+          setCourseModelState({
+            request: courseModelRequest,
+            manifest: null,
+            error:
+              error instanceof Error
+                ? error.message
+                : 'Não consegui carregar os modelos do jogo. Tente de novo.',
+          })
+      },
+    )
     return () => {
       active = false
     }
-  }, [assets, debouncedJs, courseModelsPending])
-  const models3dManifest = useMemo(
-    () => (courseModelsReady ? asset3DManifest(assets) : {}),
-    [assets, courseModelsReady],
-  )
+  }, [courseModelRequest])
+  const courseModelsReady =
+    courseModelState?.request === courseModelRequest && courseModelState.manifest !== null
+  const courseModelError =
+    courseModelState?.request === courseModelRequest ? courseModelState.error : null
+  const models3dManifest = courseModelsReady ? courseModelState!.manifest! : undefined
 
   const previewBudgetInput = useMemo(
     () => ({
@@ -840,6 +858,33 @@ export function PreviewIframe(): JSX.Element {
               ? remoteDocument.error
               : 'Preparando o jogo no ambiente isolado…'}
         </p>
+      )}
+      {previewRunning && !courseModelsReady && extensionRuntimesReady && (
+        <div
+          role={courseModelError ? 'alert' : 'status'}
+          className="absolute inset-0 flex items-center justify-center bg-sz-panel/95 p-6 text-center"
+        >
+          <div className="max-w-sm rounded-md border border-sz-border bg-sz-bg p-4 shadow-lg">
+            <p className="text-sm font-semibold text-sz-fg">
+              {courseModelError
+                ? 'Os modelos do jogo não carregaram'
+                : 'Carregando os modelos do jogo…'}
+            </p>
+            {courseModelError && (
+              <>
+                <p className="mt-2 text-xs text-sz-fg-soft">{courseModelError}</p>
+                <Button
+                  className="mt-3"
+                  size="sm"
+                  variant="primary"
+                  onClick={() => setRenderNonce((n) => n + 1)}
+                >
+                  Tentar de novo
+                </Button>
+              </>
+            )}
+          </div>
+        </div>
       )}
       {previewRunning && extensionRuntimesLoading && (
         <div

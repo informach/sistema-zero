@@ -4072,6 +4072,63 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
             groundVar: f(block, 'GROUND'),
           },
         }
+      case 'sz_g3d_top_down':
+        seen.add('game-3d')
+        return {
+          kind: 'js',
+          value: {
+            type: 'g3d:topDown',
+            objVar: f(block, 'OBJ'),
+            speed: exprInput(block, 'SPEED', { type: 'num', value: 3 }),
+          },
+        }
+      case 'sz_g3d_walk_area':
+        seen.add('game-3d')
+        return {
+          kind: 'js',
+          value: {
+            type: 'g3d:walkArea',
+            objVar: f(block, 'OBJ'),
+            minX: exprInput(block, 'MINX', { type: 'num', value: -10 }),
+            maxX: exprInput(block, 'MAXX', { type: 'num', value: 10 }),
+            minZ: exprInput(block, 'MINZ', { type: 'num', value: -5 }),
+            maxZ: exprInput(block, 'MAXZ', { type: 'num', value: 5 }),
+          },
+        }
+      case 'sz_g3d_frame_scene':
+        seen.add('game-3d')
+        return {
+          kind: 'js',
+          value: {
+            type: 'g3d:frameScene',
+            worldVar: f(block, 'WORLD'),
+            width: exprInput(block, 'W', { type: 'num', value: 24 }),
+            height: exprInput(block, 'H', { type: 'num', value: 8 }),
+            depth: exprInput(block, 'D', { type: 'num', value: 16 }),
+          },
+        }
+      case 'sz_g3d_on_touch':
+        seen.add('game-3d')
+        return {
+          kind: 'js',
+          value: {
+            type: 'g3d:onTouch',
+            objVar: f(block, 'OBJ'),
+            otherVar: f(block, 'OTHER'),
+            body: getStatementChildren(block, 'BODY', seen),
+          },
+        }
+      case 'sz_g3d_walk_animations':
+        seen.add('game-3d')
+        return {
+          kind: 'js',
+          value: {
+            type: 'g3d:walkAnimations',
+            objVar: f(block, 'OBJ'),
+            idle: f(block, 'IDLE'),
+            walking: f(block, 'WALK'),
+          },
+        }
       case 'sz_g3d_control_keys':
         seen.add('game-3d')
         return {

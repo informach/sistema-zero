@@ -941,7 +941,7 @@ describe('blocos de animação e "repetindo" — cadeia', () => {
     )
   })
 
-  it('aridades, contexto e degrau: tocar é núcleo; parar e "terminou?" sobem um degrau', () => {
+  it('aridades, contexto e degrau: tocar e conferir o fim são básicos; parar é intermediário', () => {
     expect(GAME3D_CALL_ARITIES.playAnimation).toBe(3)
     expect(GAME3D_CALL_ARITIES.stopAnimation).toBe(1)
     expect(GAME3D_CALL_ARITIES.animationDone).toBe(1)
@@ -964,7 +964,7 @@ describe('blocos de animação e "repetindo" — cadeia', () => {
     ])
     expect(resolveBlockLevel('sz_g3d_play_animation')).toBe('iniciante-3d')
     expect(resolveBlockLevel('sz_g3d_stop_animation')).toBe('intermediario-3d')
-    expect(resolveBlockLevel('sz_g3d_animation_done')).toBe('intermediario-3d')
+    expect(resolveBlockLevel('sz_g3d_animation_done')).toBe('iniciante-3d')
   })
 })
 

@@ -23,3 +23,12 @@ Quatro questões: ponto de vista; mudança de x sem mudar altura; separação es
 Os objetivos de montagem dizem quais relações entre blocos conferir. Os objetivos executados observam movimento nas quatro direções, chave visível antes do contato, coleta no lugar atual, memória persistente, farol sem chave, vitória e reinício. A navegação automática usa as posições e dimensões atuais, caminha com teclas reais pelos caminhos preparados e não escreve em variáveis do aluno. Mensagens não precisam repetir as palavras da professora.
 
 Há nove retratos de projeto para entrada e solução das partes. A solução de uma parte intermediária não contém silenciosamente a construção da parte seguinte. O envio acontece uma vez por aula, depois das alterações; a versão enviada precisa corresponder ao projeto atual.
+
+## Restrição de nível
+
+Tanto A Chave do Farol quanto A Ilha do Farol usam apenas blocos básicos. Na Ilha, a
+preparação do cenário também respeita esse limite: não esconder listas ou uma longa regra de
+coordenadas em um trecho pronto. Usar comandos concretos da extensão para andar, delimitar
+caminhos, animar a caminhada e detectar um encontro entre dois elementos. As variáveis simples
+e o se/senão permanecem explícitos. O termo objeto nos blocos visuais significa um elemento da
+cena, não a estrutura de dados de Programação. Conferir o nível real sem liberar exceções na paleta.

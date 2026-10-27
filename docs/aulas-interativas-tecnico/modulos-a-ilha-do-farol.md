@@ -9,6 +9,9 @@ Identidade: `jornada-faisca-base-3d`, Faísca, três aulas, sem certificado. [Au
 - `docs/design/ilha-do-farol-blender/`: os modelos no Blender (cenários, faróis animados, barcos, chaves e personagens animados).
 - `qa/publicar-ilha-modelos.ts`: otimiza os GLBs do Blender, grava a biblioteca de modelos dos cursos (`packages/studio/src/core/course-models/`) e o `modelos.json` (sha, clipes, caixa).
 - `qa/ilha-do-farol-assets.ts`: as referências dos modelos no projeto (GLB mínimo + `libId`), com os nomes da Chave do Farol 2D.
+- `qa/gerar-ilha-do-farol.ts`: conserva referências compactas nos manifestos e embute as 24 malhas no arquivo final importável. O jogo usa os comandos básicos de Jogo 3D 0.32.0; atualizar o aplicativo antes dos manifestos.
+- `qa/farois-basicos.test.ts`: garante blocos iniciantes em todas as etapas dos dois Faróis, inclusive ao converter JavaScript de volta a blocos, e malhas reais no arquivo portátil.
+- `qa/ilha-do-farol-importacao.mjs`: importa no playground real, simula biblioteca incompatível e confere erro e nova tentativa para uma referência indisponível.
 - `qa/gerar-ilha-artes.ts`: cena das experiências montada com os mesmos modelos e a bancada do Blender (nós `Chave`, `Aventureiro`, `Pedras`, `Bancada`), carregada sob demanda pelo player.
 - `qa/ilha-do-farol-criterios.ts` e `ilha-do-farol-observacao.ts`: montagem e execução real.
 - `qa/ilha-do-farol-quiz.ts`: perguntas, explicações e gabarito privado.
@@ -40,6 +43,8 @@ bun docs/aulas-interativas-tecnico/qa/validar-manifestos.ts
 python docs/aulas-interativas-tecnico/validar-roteiros.py
 bun docs/aulas-interativas-tecnico/qa/gerar-falas-elevenlabs.ts --check
 bun test docs/aulas-interativas-tecnico/qa
+# Com o playground do Estúdio iniciado (bun run --filter @sistemazero/studio dev):
+node docs/aulas-interativas-tecnico/qa/ilha-do-farol-importacao.mjs
 bun test packages/core/src/learning/scene packages/core/src/learning/project-execution-checkpoints.test.ts
 bun test packages/studio-runtime/tests/check-approach-3d.test.mjs packages/studio-runtime/tests/check-javascript-modules.test.mjs
 bun docs/aulas-interativas-tecnico/qa/ilha-do-farol-browser.ts

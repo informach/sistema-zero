@@ -2943,6 +2943,50 @@ function statementToBlockInner(stmt: JSStatement): SerializedBlocklyBlock | null
           {},
           stmt.__id,
         )
+      case 'g3d:topDown': {
+        const speed = exprToValueBlock(stmt.speed)
+        if (speed === null) return rawJSBlock(stmt)
+        return block('sz_g3d_top_down', { OBJ: stmt.objVar }, {}, stmt.__id, { SPEED: speed })
+      }
+      case 'g3d:walkArea': {
+        const minX = exprToValueBlock(stmt.minX)
+        const maxX = exprToValueBlock(stmt.maxX)
+        const minZ = exprToValueBlock(stmt.minZ)
+        const maxZ = exprToValueBlock(stmt.maxZ)
+        if (minX === null || maxX === null || minZ === null || maxZ === null)
+          return rawJSBlock(stmt)
+        return block('sz_g3d_walk_area', { OBJ: stmt.objVar }, {}, stmt.__id, {
+          MINX: minX,
+          MAXX: maxX,
+          MINZ: minZ,
+          MAXZ: maxZ,
+        })
+      }
+      case 'g3d:frameScene': {
+        const width = exprToValueBlock(stmt.width)
+        const height = exprToValueBlock(stmt.height)
+        const depth = exprToValueBlock(stmt.depth)
+        if (width === null || height === null || depth === null) return rawJSBlock(stmt)
+        return block('sz_g3d_frame_scene', { WORLD: stmt.worldVar }, {}, stmt.__id, {
+          W: width,
+          H: height,
+          D: depth,
+        })
+      }
+      case 'g3d:onTouch':
+        return block(
+          'sz_g3d_on_touch',
+          { OBJ: stmt.objVar, OTHER: stmt.otherVar },
+          { BODY: statementsToBlocks(stmt.body) },
+          stmt.__id,
+        )
+      case 'g3d:walkAnimations':
+        return block(
+          'sz_g3d_walk_animations',
+          { OBJ: stmt.objVar, IDLE: stmt.idle, WALK: stmt.walking },
+          {},
+          stmt.__id,
+        )
       case 'g3d:controlWithKeys': {
         const speed = exprToValueBlock(valueToExpr(stmt.speed))
         return speed === null

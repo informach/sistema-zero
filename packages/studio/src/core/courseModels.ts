@@ -4,7 +4,7 @@ import type { ProjectAsset } from './project'
 /**
  * Biblioteca de modelos dos cursos.
  *
- * Os modelos 3D de um curso (a Ilha do Farol tem 25, com as variações da personalização) não
+ * Os modelos 3D de um curso (a Ilha do Farol tem 24, com as variações da personalização) não
  * cabem dentro de cada projeto: o manifesto de uma aula tem teto de 2 MiB e o projeto da
  * criança viaja inteiro para a nuvem. Então o arquivo fica guardado UMA vez aqui, num módulo
  * gerado por modelo (`course-models/m-<sha256>.generated.ts`), e o projeto leva só:
@@ -15,7 +15,8 @@ import type { ProjectAsset } from './project'
  *
  * Quem monta o jogo (prévia, player público, capa, exportação) chama `preloadCourseModels`
  * antes, e o `asset3DManifest` troca o mínimo pelo modelo de verdade. ⚠️ O modelo resolvido
- * NUNCA é gravado no projeto: o que se salva continua sendo a referência.
+ * não é gravado automaticamente no projeto da aula. Arquivos portáteis de importação e
+ * exportações podem embutir as malhas com `resolveCourseModels`, preservadas ao reabrir.
  */
 export const COURSE_MODEL_LIB_PREFIX = 'modelo-curso:'
 
@@ -43,12 +44,28 @@ export function isCourseModelLibId(libId: unknown): boolean {
 const resolved = new Map<string, string>()
 const inFlight = new Map<string, Promise<void>>()
 
-/** O GLB completo já carregado (data URL), ou `undefined`. Síncrono, para o manifesto. */
-export function courseModelDataUrl(
-  asset: Pick<ProjectAsset, 'kind' | 'source' | 'libId'>,
-): string | undefined {
+/** Um arquivo portátil leva a malha; a referência compacta tem uma marca explícita no GLB. */
+export function isCourseModelStub(asset: Pick<ProjectAsset, 'dataUrl'>): boolean {
+  const data = asset.dataUrl
+  if (!data.startsWith('data:model/gltf-binary;base64,')) return false
+  // Apenas o cabeçalho JSON do GLB; não decodificar megabytes a cada renderização.
+  try {
+    const head = atob(data.slice(data.indexOf(',') + 1, data.indexOf(',') + 1 + 2048))
+    const bytes = Uint8Array.from(head, (c) => c.charCodeAt(0))
+    if (bytes.length < 20) return false
+    const length = new DataView(bytes.buffer).getUint32(12, true)
+    if (length > bytes.length - 20) return false
+    const json = JSON.parse(new TextDecoder().decode(bytes.subarray(20, 20 + length)))
+    return typeof json.asset?.extras?.szModeloCurso === 'string'
+  } catch {
+    return false
+  }
+}
+
+/** O GLB completo já carregado, sem substituir arquivos reais embutidos ou editados. */
+export function courseModelDataUrl(asset: ProjectAsset): string | undefined {
   const sha = courseModelSha(asset)
-  return sha ? resolved.get(sha) : undefined
+  return sha && isCourseModelStub(asset) ? resolved.get(sha) : undefined
 }
 
 /**
@@ -62,7 +79,7 @@ function usedBy(code: string | undefined, name: string): boolean {
 }
 
 /**
- * Referências do projeto que ainda não foram carregadas (e que esta versão conhece). Com
+ * Referências do projeto que ainda não foram carregadas (inclusive as desconhecidas, para informar a incompatibilidade). Com
  * `code`, só as que o código usa; sem ele, todas.
  */
 export function pendingCourseModels(
@@ -73,7 +90,7 @@ export function pendingCourseModels(
   const out: string[] = []
   for (const asset of assets) {
     const sha = courseModelSha(asset)
-    if (!sha || resolved.has(sha) || !COURSE_MODEL_LOADERS[sha] || out.includes(sha)) continue
+    if (!sha || !isCourseModelStub(asset) || resolved.has(sha) || out.includes(sha)) continue
     if (usedBy(code, asset.name)) out.push(sha)
   }
   return out
@@ -83,10 +100,26 @@ function load(sha: string): Promise<void> {
   const running = inFlight.get(sha)
   if (running) return running
   const loader = COURSE_MODEL_LOADERS[sha]
-  if (!loader) return Promise.resolve()
+  if (!loader)
+    return Promise.reject(
+      new Error(
+        'Este projeto usa modelos que esta versão do Estúdio ainda não tem. Recarregue a página ou importe o arquivo completo do projeto.',
+      ),
+    )
   const job = loader()
     .then((mod) => {
-      if (typeof mod.default === 'string') resolved.set(sha, mod.default)
+      if (
+        typeof mod.default !== 'string' ||
+        !mod.default.startsWith('data:model/gltf-binary;base64,')
+      )
+        throw new Error('O arquivo de um modelo não pôde ser carregado. Tente de novo.')
+      resolved.set(sha, mod.default)
+    })
+    .catch((cause: unknown) => {
+      throw new Error(
+        'Não consegui carregar um modelo do jogo. Confira sua conexão e tente de novo.',
+        { cause },
+      )
     })
     .finally(() => inFlight.delete(sha))
   inFlight.set(sha, job)
@@ -95,8 +128,8 @@ function load(sha: string): Promise<void> {
 
 /**
  * Carrega os modelos da biblioteca que o projeto usa (com `code`, só os que o código cita).
- * Referência desconhecida (projeto feito por um Estúdio mais novo) fica com o GLB mínimo: o
- * jogo roda, sem aquela peça.
+ * Referência desconhecida ou falha de carregamento interrompe a preparação com um erro.
+ * Nunca apresentar um jogo aparentemente pronto com modelos vazios.
  */
 export async function preloadCourseModels(
   assets: readonly ProjectAsset[] | null | undefined,

@@ -7,8 +7,8 @@ Use o teclado para jogar: setas ou WASD. R recomeça.
 ### Faça o personagem andar
 
 1. Abra Enquanto estiver rodando e deixe à vista A cada quadro da cena cena.
-2. Antes de Mover o grupo jogadores, encaixe Jogo 3D → Movimento → Andar com o teclado → Mover jogador com o teclado (WASD/setas), 3 por segundo.
-3. Troque jogador por personagem e 3 por 4.
+2. Antes de Escrever no canto da tela, encaixe Jogo 3D → Movimento → Andar com o teclado → Andar com personagem usando WASD/setas, velocidade 3.
+3. Escolha personagem e troque a velocidade de 3 por 4.
 4. Execute o jogo. Pressione e solte cada seta: ande nas quatro direções e pare ao soltar. Confira a ponte e a beirada.
 5. Verifique o projeto, corrija se necessário e espere Salvo.
 
@@ -29,7 +29,7 @@ Use o teclado para jogar: setas ou WASD. R recomeça.
 ### Recolha a chave
 
 1. Deixe à vista um espaço dentro de Quando acontecer, depois do evento da tecla R.
-2. Jogo 3D → Encostar → Encostar: arraste Quando personagem encostar em algum do grupo chaves, chamando de item.
+2. Jogo 3D → Encostar → Encostar: arraste Quando personagem encostar em chave.
 3. Dentro do fazer, encaixe Jogo 3D → Objetos → Aparência → Esconder o objeto chave.
 4. Jogue até a chave. Confira que ela some apenas no encontro. Pressione R para repetir.
 
@@ -37,12 +37,12 @@ Use o teclado para jogar: setas ou WASD. R recomeça.
 
 1. Deixe à vista Ao iniciar, depois da linha que cria aviso. Em Programação → Variáveis, pegue Criar variável e encaixe ali. Escreva temChave no nome.
 2. No valor da variável, encaixe verdadeiro ou falso de Programação → Lógica e Se. Escolha falso: a partida começa sem chave.
-3. Deixe à vista o encontro com chaves, depois de Esconder o objeto chave. Encaixe Alterar variável, de Programação → Variáveis. Escolha temChave e encaixe o valor verdadeiro, de Programação → Lógica e Se.
+3. Deixe à vista o encontro com chave, depois de Esconder o objeto chave. Encaixe Alterar variável, de Programação → Variáveis. Escolha temChave e encaixe o valor verdadeiro, de Programação → Lógica e Se.
 4. Confira os dois lugares. A coleta deve guardar a informação até o reinício.
 
 ### Conte que a chave foi recolhida
 
-1. Deixe à vista o encontro com chaves, depois de temChave verdadeiro. Em Programação → Variáveis, pegue Alterar variável e encaixe ali. Escolha aviso.
+1. Deixe à vista o encontro com chave, depois de temChave verdadeiro. Em Programação → Variáveis, pegue Alterar variável e encaixe ali. Escolha aviso.
 2. Em Programação → Valores, pegue Texto e encaixe no valor. Escreva Você pegou a chave! Agora vá ao farol.
 3. Jogue, recolha e se afaste. O aviso deve continuar. Reinicie: chave e aviso inicial voltam.
 4. Verifique, aguarde Salvo e envie o projeto com confirmação.
@@ -51,7 +51,7 @@ Use o teclado para jogar: setas ou WASD. R recomeça.
 
 ### O farol precisa conferir a chave
 
-1. Deixe à vista Quando acontecer, depois do evento da coleta e fora do fazer dele. Em Jogo 3D → Encostar → Encostar, pegue outro encontro com alguém de um grupo. Encaixe ali, escolha personagem e portas e deixe item como está.
+1. Deixe à vista Quando acontecer, depois do evento da coleta e fora do fazer dele. Em Jogo 3D → Encostar → Encostar, pegue Quando personagem encostar em chave. Encaixe ali, escolha personagem no primeiro nome e farol no segundo.
 2. No fazer desse encontro, encaixe Programação → Lógica e Se → Se; clique em + senão.
 3. Retire a comparação x maior que zero da pergunta do Se. No lugar dela, encaixe valor da variável, de Programação → Valores, e escolha temChave.
 4. Deixe à vista o senão. Encaixe Alterar variável, de Programação → Variáveis, e escolha aviso. Encaixe Texto, de Programação → Valores, com Falta a chave. Procure na ilha antes de voltar. Deixe então vazio nesta parte.
@@ -59,7 +59,7 @@ Use o teclado para jogar: setas ou WASD. R recomeça.
 
 ### Acenda o farol com a chave
 
-1. No encontro com portas, deixe à vista o então do Se temChave.
+1. No encontro com farol, deixe à vista o então do Se temChave.
 2. Jogo 3D → Objetos → 🎬 Animação do modelo: encaixe Tocar a animação dentro do então.
 3. No primeiro espaço, escolha acender. No objeto, escolha farol. No último, escolha uma vez.
 4. Depois dele, encaixe Alterar variável, de Programação → Variáveis. Escolha ganhou. Encaixe verdadeiro ou falso, de Programação → Lógica e Se, e escolha verdadeiro.

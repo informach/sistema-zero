@@ -7,6 +7,13 @@ canvas sozinho. Crie cena, objetos, luzes, modelos e grupos uma única vez, fora
 “A cada quadro da cena”. Dentro do quadro, mova, anime, aplique física e teste se
 encostou. Vários blocos “A cada quadro” da mesma cena rodam em ordem.
 
+FAÍSCA: use topDown(personagem, velocidade) no quadro: ele já anda, sem grupo.
+walkArea(personagem,minX,maxX,minZ,maxZ) define caminhos em Ao iniciar; walkAnimations
+escolhe parado/andando. onTouch(personagem,chave,()=>{...}) registra o encontro direto.
+frameScene(cena,largura,altura,profundidade) enquadra o jogo também em painéis estreitos.
+Não usar listas, objetos literais, propriedades genéricas ou blocos intermediários no Faísca.
+controlWithKeys mantém o contrato antigo de somente definir velocidade.
+
 UNIDADES: velocidades são POR SEGUNDO (andar 3, pulo 5, gravidade 36) e ângulos em
 GRAUS (girar 120 graus por segundo; 90 = um quarto de volta). “Mover/Girar de uma vez”
 agem uma vez só; o giro contínuo é o “Girar … sem parar”.
