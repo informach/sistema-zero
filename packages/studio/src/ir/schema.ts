@@ -3147,6 +3147,34 @@ export type JSStatement =
     })
   | (JSStatementCommon & { type: 'g3d:jump'; objVar: string; force: JSExpr })
   | (JSStatementCommon & { type: 'g3d:applyGravity'; objVar: string; groundVar: string })
+  | (JSStatementCommon & { type: 'g3d:topDown'; objVar: string; speed: JSExpr })
+  | (JSStatementCommon & {
+      type: 'g3d:walkArea'
+      objVar: string
+      minX: JSExpr
+      maxX: JSExpr
+      minZ: JSExpr
+      maxZ: JSExpr
+    })
+  | (JSStatementCommon & {
+      type: 'g3d:frameScene'
+      worldVar: string
+      width: JSExpr
+      height: JSExpr
+      depth: JSExpr
+    })
+  | (JSStatementCommon & {
+      type: 'g3d:onTouch'
+      objVar: string
+      otherVar: string
+      body: JSStatement[]
+    })
+  | (JSStatementCommon & {
+      type: 'g3d:walkAnimations'
+      objVar: string
+      idle: string
+      walking: string
+    })
   | (JSStatementCommon & { type: 'g3d:controlWithKeys'; objVar: string; speed: number | JSExpr })
   | (JSStatementCommon & { type: 'g3d:setScale'; objVar: string; factor: JSExpr })
   // Game 3D — ⏱️ "A cada N segundos": raiz própria em 🔁 (a câmera virou `g3d:cameraMode`).
@@ -7408,6 +7436,38 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       type: z.literal('g3d:applyGravity'),
       objVar: irText(),
       groundVar: irText(),
+      ...idField,
+    }),
+    z.object({ type: z.literal('g3d:topDown'), objVar: irText(), speed: JSExprSchema, ...idField }),
+    z.object({
+      type: z.literal('g3d:walkArea'),
+      objVar: irText(),
+      minX: JSExprSchema,
+      maxX: JSExprSchema,
+      minZ: JSExprSchema,
+      maxZ: JSExprSchema,
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g3d:frameScene'),
+      worldVar: irText(),
+      width: JSExprSchema,
+      height: JSExprSchema,
+      depth: JSExprSchema,
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g3d:onTouch'),
+      objVar: irText(),
+      otherVar: irText(),
+      body: z.array(JSStatementSchema),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g3d:walkAnimations'),
+      objVar: irText(),
+      idle: irText(),
+      walking: irText(),
       ...idField,
     }),
     z.object({
@@ -11971,6 +12031,11 @@ export const G3D_STATEMENT_TYPES = new Set([
   'g3d:setVelocity',
   'g3d:jump',
   'g3d:applyGravity',
+  'g3d:topDown',
+  'g3d:walkArea',
+  'g3d:frameScene',
+  'g3d:onTouch',
+  'g3d:walkAnimations',
   'g3d:controlWithKeys',
   'g3d:setScale',
   'g3d:everySeconds',

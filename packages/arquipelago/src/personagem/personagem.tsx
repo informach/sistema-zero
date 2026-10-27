@@ -66,7 +66,8 @@ export function Personagem() {
     const col = colisor.current
     if (!b || !col) return
     const estado = loja.getState()
-    const parado = estado.menuAberto || estado.tempoAcabou
+    const parado =
+      estado.menuAberto || estado.ferramentaAberta || estado.tempoAcabou || estado.tempoPausado
 
     if (pedidos.teleporte) {
       b.setNextKinematicTranslation(pedidos.teleporte)

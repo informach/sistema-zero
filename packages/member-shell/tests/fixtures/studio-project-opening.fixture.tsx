@@ -17,7 +17,7 @@ import type { StudioTier } from '../../src/lib/studio-tier'
 
 GlobalRegistrator.register({ settings: { disableIframePageLoading: true } })
 ;(globalThis as Record<string, unknown>).IS_REACT_ACT_ENVIRONMENT = true
-const { act, useEffect, useState } = await import('react')
+const { act, useEffect, useImperativeHandle, useState } = await import('react')
 const { createRoot } = await import('react-dom/client')
 const cleanups: Array<() => void> = []
 function render(node: React.ReactNode) {
@@ -58,6 +58,8 @@ let runtimeLoading = false
 let runtimeError: string | undefined
 let editorMounts = 0
 let editorUnmounts = 0
+let completionSaves = 0
+let completionDirty = false
 const retryRuntime = mock(() => {})
 const exitEditor = mock(() => {})
 const loads: Array<{
@@ -89,8 +91,21 @@ mock.module('@sistemazero/studio', () => ({
     namespace = value
   },
   canRunProMode: () => true,
+  loadProjectSnapshotForCloud: async (id: string) => ({ id, name: 'snapshot', assets: [] }),
   StudioEditor: (props: StudioEditorProps) => {
     editorProps = props
+    useImperativeHandle(
+      props.ref,
+      () =>
+        ({
+          async save() {
+            completionSaves++
+          },
+          isDirty: () => completionDirty,
+          getProject: () => props.initialProject ?? null,
+        }) as never,
+      [props.initialProject],
+    )
     const [buffer, setBuffer] = useState('original')
     useEffect(() => {
       editorMounts++
@@ -140,7 +155,15 @@ const tier: StudioTier = {
   canCreateProProject: true,
   canPromoteToPro: true,
 }
-function ui(kind: 'classic' | 'pro', id: string, prepareProject?: () => Promise<void>) {
+function ui(
+  kind: 'classic' | 'pro',
+  id: string,
+  prepareProject?: () => Promise<void>,
+  onCompletionControlChange?: (
+    value: { flush(): Promise<{ id: string; snapshot: unknown }> } | null,
+  ) => void,
+  onOpenEmbeddedPro?: (value: EditableStudioProject) => void,
+) {
   return kind === 'classic' ? (
     <StudioFullEditor
       mod={mod}
@@ -156,6 +179,8 @@ function ui(kind: 'classic' | 'pro', id: string, prepareProject?: () => Promise<
       taskSession={undefined}
       pintaLibrary={undefined}
       moldaLibrary={undefined}
+      onCompletionControlChange={onCompletionControlChange}
+      onOpenEmbeddedPro={onOpenEmbeddedPro}
     />
   ) : (
     <StudioProEditor
@@ -165,6 +190,7 @@ function ui(kind: 'classic' | 'pro', id: string, prepareProject?: () => Promise<
       theme="light"
       onExit={exitEditor}
       prepareProject={prepareProject}
+      onCompletionControlChange={onCompletionControlChange}
     />
   )
 }
@@ -197,6 +223,8 @@ beforeEach(async () => {
   runtimeError = undefined
   editorMounts = 0
   editorUnmounts = 0
+  completionSaves = 0
+  completionDirty = false
   retryRuntime.mockClear()
   exitEditor.mockClear()
   delete tier.allowBlocks
@@ -210,6 +238,50 @@ afterEach(async () => {
   })
   for (const owner of acquired)
     expect(isProjectOpening({ identity: owner.scope }, owner.id)).toBe(false)
+})
+test('o controle do Estúdio salva antes de devolver o snapshot e recusa projeto sujo', async () => {
+  const value = await project('classic', 'javascript')
+  let control: { flush(): Promise<{ id: string; snapshot: unknown }> } | null = null
+  const view = render(
+    ui('classic', value.id, undefined, (item) => {
+      control = item
+    }),
+  )
+  await waitFor(() => expect(loads.length).toBe(1))
+  await act(async () => loads[0]?.gate.resolve(value))
+  await waitFor(() => expect(editorProps?.initialProject.id).toBe(value.id))
+  const response = await control!.flush()
+  expect(completionSaves).toBe(1)
+  expect(response).toEqual({
+    id: value.id,
+    snapshot: { id: value.id, name: 'snapshot', assets: [] },
+  })
+  completionDirty = true
+  await expect(control!.flush()).rejects.toThrow('mudou')
+  view.unmount()
+  expect(control).toBeNull()
+})
+test('projeto Pro é encaminhado ao host sem navegar para fora do jogo', async () => {
+  const value = await project('pro', 'javascript')
+  const opened: string[] = []
+  render(ui('classic', value.id, undefined, undefined, (item) => opened.push(item.id)))
+  await waitFor(() => expect(loads.length).toBe(1))
+  await act(async () => loads[0]?.gate.resolve(value))
+  await waitFor(() => expect(opened).toEqual([value.id]))
+})
+test('controle do Estúdio Pro salva e captura o projeto certo', async () => {
+  const value = await project('pro', 'javascript')
+  let control: { flush(): Promise<{ id: string; snapshot: unknown }> } | null = null
+  render(
+    ui('pro', value.id, undefined, (item) => {
+      control = item
+    }),
+  )
+  await waitFor(() => expect(loads.length).toBe(1))
+  await act(async () => loads[0]?.gate.resolve(value))
+  await waitFor(() => expect(editorProps?.initialProject.id).toBe(value.id))
+  expect((await control!.flush()).id).toBe(value.id)
+  expect(completionSaves).toBe(1)
 })
 for (const kind of ['classic', 'pro'] as const)
   for (const language of ['javascript', 'python'] as const) {

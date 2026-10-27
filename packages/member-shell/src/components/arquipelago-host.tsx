@@ -4,14 +4,53 @@ import {
   ManifestoDoClienteSchema,
   type ModuloDoArquipelago,
   type MontagemDoArquipelago,
+  type PedidoDeFerramenta,
   type Plataforma,
   type PublicoJogo,
   posicaoDoPostoKids,
   QuartoSchema,
+  type ResultadoDeFerramenta,
   VERSAO_CONTRATO_PLATAFORMA,
 } from '@sistemazero/arquipelago-contracts'
-import { useEffect, useRef, useState } from 'react'
+import { type AdultJourneyView, adultJourneyPosition } from '@sistemazero/core/journey'
+import type { MoldaToolAccess } from '@sistemazero/molda/tools'
+import { Component, lazy, type ReactNode, Suspense, useEffect, useRef, useState } from 'react'
+import type { ArquipelagoStudioConfig } from '../lib/arquipelago-studio'
 import { sessionFetch } from '../lib/session-fetch'
+
+const CreationDialog = lazy(() =>
+  import('./arquipelago-creation-dialog').then((m) => ({ default: m.ArquipelagoCreationDialog })),
+)
+
+class ToolLoadBoundary extends Component<
+  { children: ReactNode; onCancel: () => void },
+  { failed: boolean }
+> {
+  state = { failed: false }
+  static getDerivedStateFromError() {
+    return { failed: true }
+  }
+  render() {
+    if (!this.state.failed) return this.props.children
+    return (
+      <div
+        className="absolute inset-0 z-50 grid place-items-center bg-background p-6 text-center text-foreground"
+        role="alert"
+      >
+        <div>
+          <p>Não foi possível abrir a ferramenta agora.</p>
+          <button
+            type="button"
+            onClick={this.props.onCancel}
+            className="mt-4 rounded-full bg-primary px-5 py-2 font-semibold text-primary-foreground"
+          >
+            Voltar ao jogo
+          </button>
+        </div>
+      </div>
+    )
+  }
+}
 
 /** O repasse do BFF (`routes/arquipelago.ts`). */
 const BASE = '/api/arquipelago'
@@ -19,6 +58,71 @@ const BASE = '/api/arquipelago'
 const CAMINHOS_DO_JOGO = new Set(['/acesso', '/salvamento', '/tempo'])
 
 type Estado = 'carregando' | 'pronto' | 'indisponivel' | 'erro'
+
+export function pertenceAoPerfil(corpo: unknown, viewerId: string): boolean {
+  return (
+    !!corpo && typeof corpo === 'object' && (corpo as { viewerId?: unknown }).viewerId === viewerId
+  )
+}
+
+/** `null` é liberação total explícita; ausência ou resposta malformada não abre a oficina. */
+export function lerFerramentasMolda(
+  value: unknown,
+): { ok: true; access: MoldaToolAccess | null } | { ok: false } {
+  if (value === null) return { ok: true, access: null }
+  if (!value || typeof value !== 'object') return { ok: false }
+  const candidate = value as { allow?: unknown; upcoming?: unknown }
+  if (!Array.isArray(candidate.allow) || !candidate.allow.every((item) => typeof item === 'string'))
+    return { ok: false }
+  if (
+    candidate.upcoming !== undefined &&
+    (!Array.isArray(candidate.upcoming) ||
+      !candidate.upcoming.every(
+        (item) =>
+          item &&
+          typeof item.when === 'string' &&
+          Array.isArray(item.families) &&
+          item.families.every((family: unknown) => typeof family === 'string'),
+      ))
+  )
+    return { ok: false }
+  return { ok: true, access: candidate as MoldaToolAccess }
+}
+
+function lerStudioConfig(value: unknown, viewerId: string): ArquipelagoStudioConfig | null {
+  if (!value || typeof value !== 'object') return null
+  const c = value as Record<string, unknown>
+  const tier = c.tier && typeof c.tier === 'object' ? (c.tier as Record<string, unknown>) : null
+  const strings = (x: unknown) => Array.isArray(x) && x.every((item) => typeof item === 'string')
+  if (
+    c.viewerId !== viewerId ||
+    !tier ||
+    tier.freeStudio !== true ||
+    tier.hasPalette !== true ||
+    typeof tier.level !== 'string' ||
+    !strings(tier.allowedExtensions) ||
+    !strings(tier.initialExtensions) ||
+    !strings(tier.allowedModes) ||
+    (tier.allowBlocks !== undefined && !strings(tier.allowBlocks)) ||
+    typeof tier.pro !== 'boolean' ||
+    typeof tier.bridge !== 'boolean' ||
+    typeof tier.canCreateProProject !== 'boolean' ||
+    typeof tier.canPromoteToPro !== 'boolean' ||
+    tier.allowLevelReveal !== false ||
+    ![
+      'showExamples',
+      'showPythonCreation',
+      'pintaOwned',
+      'moldaOwned',
+      'zappyEnabled',
+      'narrationEnabled',
+      'voiceInputEnabled',
+    ].every((key) => typeof c[key] === 'boolean') ||
+    !(c.aiCredits === null || (c.aiCredits && typeof c.aiCredits === 'object'))
+  )
+    return null
+  return c as unknown as ArquipelagoStudioConfig
+}
 
 async function json(url: string, init?: RequestInit): Promise<{ status: number; corpo: unknown }> {
   const resposta = await sessionFetch(url, init)
@@ -44,6 +148,7 @@ export function criarPlataformaDoArquipelago(opcoes: {
   publico: PublicoJogo
   perfil: { id: string; primeiroNome: string }
   voltarPara: string
+  abrirFerramenta?: (pedido: PedidoDeFerramenta) => Promise<ResultadoDeFerramenta>
 }): Plataforma {
   return {
     versaoContrato: VERSAO_CONTRATO_PLATAFORMA,
@@ -51,9 +156,13 @@ export function criarPlataformaDoArquipelago(opcoes: {
     perfil: opcoes.perfil,
     async lerJornada() {
       const r = await json('/api/members/gamification/me')
-      const posto =
-        r.status === 200 ? (r.corpo as { level?: { slug?: string } } | null)?.level?.slug : null
-      return { posicao: posicaoDoPostoKids(posto) }
+      const dados =
+        r.status === 200
+          ? (r.corpo as { level?: { slug?: string }; journey?: AdultJourneyView } | null)
+          : null
+      if (opcoes.publico === 'adulto')
+        return { posicao: adultJourneyPosition(dados?.journey)?.position ?? 1 }
+      return { posicao: posicaoDoPostoKids(dados?.level?.slug) }
     },
     async lerAvatar() {
       const r = await json('/api/members/avatar')
@@ -79,12 +188,14 @@ export function criarPlataformaDoArquipelago(opcoes: {
     servico: {
       async buscar(caminho, pedido) {
         if (!CAMINHOS_DO_JOGO.has(caminho)) return { status: 404, corpo: { code: 'NOT_FOUND' } }
-        return json(`${BASE}${caminho}`, corpoJson(pedido?.metodo ?? 'GET', pedido?.corpo))
+        return json(`${BASE}${caminho}`, {
+          ...corpoJson(pedido?.metodo ?? 'GET', pedido?.corpo),
+          signal: pedido?.sinal,
+        })
       },
     },
-    // As ferramentas de verdade (Pinta, Molda, Estúdio) abrem por cima do jogo numa fase
-    // seguinte; por enquanto o jogo recebe "indisponível" e segue sem elas.
-    abrirFerramenta: async () => ({ situacao: 'indisponivel', motivo: 'em-breve' }),
+    abrirFerramenta:
+      opcoes.abrirFerramenta ?? (async () => ({ situacao: 'indisponivel', motivo: 'em-breve' })),
     voltarParaPlataforma: () => window.location.assign(opcoes.voltarPara),
     relatarErro: (erro, contexto) => console.error(`[arquipelago] ${contexto}`, erro),
   }
@@ -98,15 +209,68 @@ export function ArquipelagoHost(props: {
   publico: PublicoJogo
   perfil: { id: string; primeiroNome: string }
   voltarPara: string
+  narrationEnabled?: boolean
 }) {
   const elemento = useRef<HTMLDivElement>(null)
   const [estado, setEstado] = useState<Estado>('carregando')
+  const [creation, setCreation] = useState<{
+    ferramenta: 'pinta' | 'molda' | 'estudio'
+    studioAvailable: boolean
+    toolAccess: MoldaToolAccess | null
+    studioConfig: ArquipelagoStudioConfig | null
+  } | null>(null)
+  const pendente = useRef<((resultado: ResultadoDeFerramenta) => void) | null>(null)
+  const abrindo = useRef(false)
   const { publico, voltarPara } = props
   const { id, primeiroNome } = props.perfil
 
   useEffect(() => {
     let vivo = true
     let montagem: MontagemDoArquipelago | null = null
+    const abrirFerramenta = async (pedido: PedidoDeFerramenta): Promise<ResultadoDeFerramenta> => {
+      if (pedido.molde !== undefined) return { situacao: 'indisponivel', motivo: 'em-breve' }
+      if (abrindo.current || pendente.current)
+        return { situacao: 'indisponivel', motivo: 'ocupado' }
+      abrindo.current = true
+      try {
+        const acesso = await json(`${BASE}/ferramentas/${pedido.ferramenta}`)
+        if (!vivo) return { situacao: 'cancelado' }
+        const situacao = (acesso.corpo as { situacao?: string } | null)?.situacao
+        if (acesso.status !== 200 || situacao !== 'disponivel')
+          return {
+            situacao: 'indisponivel',
+            motivo: situacao === 'bloqueada' ? 'acesso-necessario' : 'em-breve',
+          }
+        if (!pertenceAoPerfil(acesso.corpo, id))
+          return { situacao: 'indisponivel', motivo: 'em-breve' }
+        const tools =
+          pedido.ferramenta === 'molda'
+            ? lerFerramentasMolda((acesso.corpo as { toolAccess?: unknown } | null)?.toolAccess)
+            : { ok: true as const, access: null }
+        if (!tools.ok) return { situacao: 'indisponivel', motivo: 'em-breve' }
+        const studioConfig =
+          pedido.ferramenta === 'estudio'
+            ? lerStudioConfig((acesso.corpo as { studioConfig?: unknown } | null)?.studioConfig, id)
+            : null
+        if (pedido.ferramenta === 'estudio' && !studioConfig)
+          return { situacao: 'indisponivel', motivo: 'em-breve' }
+        return await new Promise<ResultadoDeFerramenta>((resolve) => {
+          pendente.current = resolve
+          setCreation({
+            ferramenta: pedido.ferramenta,
+            toolAccess: tools.access,
+            studioConfig,
+            studioAvailable:
+              pedido.ferramenta === 'estudio' ||
+              (acesso.corpo as { studioAvailable?: unknown } | null)?.studioAvailable === true,
+          })
+        })
+      } catch {
+        return { situacao: 'indisponivel', motivo: 'em-breve' }
+      } finally {
+        abrindo.current = false
+      }
+    }
     void (async () => {
       const resposta = await fetch(`${BASE}/cliente/manifesto.json`, { cache: 'no-store' })
       const manifesto = resposta.ok
@@ -127,7 +291,12 @@ export function ArquipelagoHost(props: {
       }
       montagem = modulo.montarArquipelago(
         elemento.current,
-        criarPlataformaDoArquipelago({ publico, perfil: { id, primeiroNome }, voltarPara }),
+        criarPlataformaDoArquipelago({
+          publico,
+          perfil: { id, primeiroNome },
+          voltarPara,
+          abrirFerramenta,
+        }),
       )
       setEstado('pronto')
     })().catch((erro) => {
@@ -136,6 +305,8 @@ export function ArquipelagoHost(props: {
     })
     return () => {
       vivo = false
+      pendente.current?.({ situacao: 'cancelado' })
+      pendente.current = null
       montagem?.desmontar()
     }
   }, [publico, id, primeiroNome, voltarPara])
@@ -144,6 +315,43 @@ export function ArquipelagoHost(props: {
     // A moldura usa estilo próprio (não classes): o jogo ocupa a tela em qualquer app que hospede.
     <div style={{ position: 'fixed', inset: 0, background: '#0e1430' }}>
       <div ref={elemento} style={{ position: 'absolute', inset: 0 }} />
+      {creation ? (
+        <ToolLoadBoundary
+          onCancel={() => {
+            setCreation(null)
+            const resolve = pendente.current
+            pendente.current = null
+            resolve?.({ situacao: 'indisponivel', motivo: 'em-breve' })
+          }}
+        >
+          <Suspense
+            fallback={
+              <div
+                className="absolute inset-0 grid place-items-center bg-background text-foreground"
+                role="status"
+              >
+                Abrindo a ferramenta…
+              </div>
+            }
+          >
+            <CreationDialog
+              ferramenta={creation.ferramenta}
+              viewerId={id}
+              audience={publico === 'kids' ? 'kids' : 'adult'}
+              studioAvailable={creation.studioAvailable}
+              narrationEnabled={props.narrationEnabled ?? false}
+              toolAccess={creation.toolAccess}
+              studioConfig={creation.studioConfig}
+              onFinish={(criacaoId) => {
+                setCreation(null)
+                const resolve = pendente.current
+                pendente.current = null
+                resolve?.(criacaoId ? { situacao: 'pronto', criacaoId } : { situacao: 'cancelado' })
+              }}
+            />
+          </Suspense>
+        </ToolLoadBoundary>
+      ) : null}
       {estado === 'pronto' ? null : (
         <div
           className="grid place-items-center p-6 text-center text-white"

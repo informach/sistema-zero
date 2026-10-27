@@ -3,6 +3,7 @@ import {
   Blocks,
   Box,
   CalendarDays,
+  Castle,
   CircleHelp,
   CircleUserRound,
   Compass,
@@ -33,6 +34,7 @@ export interface NavChild {
 export interface NavItem {
   href: string
   label: string
+  mobileLabel?: string
   icon: LucideIcon
   /**
    * Os destinos da parte. Com filhos, o item do menu ABRE a lista em vez de navegar
@@ -64,6 +66,13 @@ export const NAV_ITEMS: NavItem[] = [
     icon: CalendarDays,
     backLabel: 'Voltar às oficinas',
     desktopOnly: true,
+  },
+  {
+    href: '/arquipelago',
+    label: 'Arquipélago',
+    mobileLabel: 'Jogo',
+    icon: Castle,
+    backLabel: 'Voltar ao Arquipélago',
   },
   {
     href: '/criar',
@@ -107,6 +116,11 @@ export const NAV_ITEMS: NavItem[] = [
 ]
 
 export const MOBILE_NAV_ITEMS = NAV_ITEMS.filter((item) => !item.desktopOnly)
+
+/** O serviço do jogo decide se este perfil pode ver a entrada. */
+export function visibleNavItems(items: NavItem[], arquipelagoLiberado: boolean): NavItem[] {
+  return items.filter((item) => item.href !== '/arquipelago' || arquipelagoLiberado)
+}
 
 /**
  * O "Como fazer" (a biblioteca de ajuda, 26/09/2026) fica FORA de `NAV_ITEMS` de propósito:

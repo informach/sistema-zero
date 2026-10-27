@@ -45,7 +45,7 @@ describe('backToSection', () => {
   it('toda seção com página interna devolve a própria frase de voltar', () => {
     // O Início não tem páginas internas (a raiz só casa exata), então fica de fora.
     const secoes = NAV_ITEMS.filter((item) => item.href !== '/')
-    expect(secoes.length).toBe(5) // Cursos, Oficinas, Criar, Comunidade, Meu espaço
+    expect(secoes.length).toBe(6) // Cursos, Oficinas, Arquipélago, Criar, Comunidade, Meu espaço
     for (const item of secoes) {
       expect(backToSection(`${item.href}/interna`)).toEqual({
         href: item.href,

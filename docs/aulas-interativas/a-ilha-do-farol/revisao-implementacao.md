@@ -1,4 +1,20 @@
-# Revisão completa — 26/10/2026
+# Revisão: importação e nível Faísca — 27/10/2026
+
+Esta revisão substitui as decisões de movimento e grupos do registro histórico abaixo.
+
+- **Prévia azul:** a biblioteca anterior aceitava uma referência desconhecida e entregava um GLB vazio ao jogo. O projeto original renderizou na biblioteca local atual; portanto, a versão exata que falhou em staging não foi confirmada. A falha com referência indisponível foi reproduzida localmente. A prévia agora bloqueia a partida incompleta, explica o erro e permite tentar novamente. O arquivo completo embute as 24 malhas; os manifestos das aulas conservam referências compactas.
+- **Faísca:** substituídos grupos, listas, leituras de propriedades e a condição extensa dos limites por comandos básicos de movimento, áreas permitidas, animações de caminhada e encontro entre dois elementos. A criança continua construindo a memória `temChave` e a decisão com `Se / Senão`. A Chave do Farol já estava no nível básico. Uma regressão cobre todas as etapas dos dois cursos, inclusive a conversão do JavaScript de volta aos blocos, sem exceções de paleta.
+- **Câmera:** enquadramento da área de jogo acompanha a largura da prévia, inclusive no painel estreito do Estúdio.
+- **Materiais:** roteiros, falas derivadas, critérios, manifestos, montagem e caderno de 27 páginas atualizados. As artes e as escolhas de personalização foram preservadas.
+- **Compatibilidade:** atualizar o aplicativo com Jogo 3D 0.32.0 antes de importar os manifestos ou o projeto regenerados. O arquivo portátil resolve a dependência das artes; os comandos novos continuam dependendo da extensão atualizada. Não houve implantação remota nesta revisão.
+
+Verificações locais: importação real no playground com biblioteca atual e com identificadores de biblioteca desconhecidos; erro e nova tentativa para referência compacta indisponível; seis cenários do executor (solução, personalização, outra posição, chave alta, sem memória e sem movimento); regressões de movimento em 60/120 Hz, limites, contato com geometria real, câmera e conversão entre JavaScript/IR/Blockly. PDF renderizado, sem transbordamento e com inspeção visual das 27 páginas. Manifestos, roteiros e derivados de voz validados.
+
+Reprodução da importação: iniciar o playground do Estúdio e executar `node docs/aulas-interativas-tecnico/qa/ilha-do-farol-importacao.mjs`. Aceita `SZ_STUDIO_URL` e `SZ_CHECK_CHROMIUM`.
+
+Resultado final da revisão: **1.018 testes do Estúdio e 61 testes dos cursos aprovados**; TypeScript 5.9.3 sem erros; build do playground aprovado; Biome sem erros (avisos existentes nos scripts de autoria); `git diff --check` limpo. A matriz de encaixes encontrou e corrigiu o contexto do novo evento de encontro, que precisava aceitar comandos de som como os demais eventos de jogo. A suíte de geometria usa Three.js real para conferir entrada, permanência, saída e novo contato, além de ignorar um elemento escondido.
+
+## Registro histórico — 26/10/2026
 
 Escopo: código alterado, executor, três aulas, três experiências, quatro questões com demonstração, nove etapas de projeto, objetivos, copy, roteiros, manifestos, falas, edição, modelos provisórios, documentação e PDF. Sem certificado. Os projetos usam Programação e Jogo 3D.
 

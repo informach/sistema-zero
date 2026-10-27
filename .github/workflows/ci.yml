@@ -771,6 +771,9 @@ jobs:
           RAILWAY_API_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
         run: |
           node scripts/ci/railway-config.mjs plan staging "$RUNNER_TEMP/railway-staging-plan.json"
+          node scripts/ci/staging-watch-paths.mjs "$RUNNER_TEMP/railway-staging-plan.json"
+          # O patch acima não deploya e altera o estado remoto: o apply exige plano fresco.
+          node scripts/ci/railway-config.mjs plan staging "$RUNNER_TEMP/railway-staging-plan.json"
           node scripts/ci/kids-journey-rollout.mjs check-plan "$RUNNER_TEMP/railway-staging-plan.json"
           node scripts/ci/railway-config.mjs apply staging "$RUNNER_TEMP/railway-staging-plan.json"
 
@@ -787,6 +790,7 @@ jobs:
           # ids dos serviços no Railway (não são segredo)
           declare -A SVC_ID=(
             [api-gateway]=2b7748bc-d3e3-4aff-bd94-3f514b53c44f
+            [arquipelago-api]=ee19a264-7708-471a-adf9-c9db1cfdb9a2
             [auth]=8c57d71d-3a8e-48f1-9627-63f1528b9a48
             [catalog]=0e59f903-6bd8-4c3e-8792-34ea7479c13c
             [payments]=1d2455ac-05cd-436b-a39d-3f07392713f3
@@ -854,7 +858,7 @@ jobs:
                   # core é lib COMPARTILHADA: além dos serviços, os 3 apps Next o EMPACOTAM
                   # (admin/community via member-shell+studio; kids direto) — sem eles aqui, o
                   # front servia um core VELHO até alguém deployar na mão.
-                  packages/core/*) for s in api-gateway auth catalog payments members messaging funnel fiscal hub marketing referrals admin community community-kids marketing-app; do add "$s"; done; [ -n "${SVC_ID[helpdesk]:-}" ] && add helpdesk; [ -n "${SVC_ID[helpdesk-app]:-}" ] && add helpdesk-app ;;
+                  packages/core/*) for s in api-gateway arquipelago-api auth catalog payments members messaging funnel fiscal hub marketing referrals admin community community-kids marketing-app; do add "$s"; done; [ -n "${SVC_ID[helpdesk]:-}" ] && add helpdesk; [ -n "${SVC_ID[helpdesk-app]:-}" ] && add helpdesk-app ;;
                   packages/ui/*) add admin; add community; add community-kids; add funnel; add marketing-app; [ -n "${SVC_ID[helpdesk-app]:-}" ] && add helpdesk-app ;;
                   packages/api-gateway/*) add api-gateway ;;
                   packages/auth/*) add auth ;;
@@ -870,11 +874,10 @@ jobs:
                   packages/community/*) add community ;;
                   packages/member-shell/*) add community; add community-kids; add admin ;; # BFF dos 2 apps de aluno + o admin (studio-embed/entregas dependem dele)
                   # Avatar 3D e quarto 3D compartilhados pela plataforma e pelo Arquipélago Vagalume.
-                  packages/avatar-quarto/*) add community; add community-kids; add admin ;;
+                  packages/avatar-quarto/*) add community; add community-kids; add admin; add arquipelago-api ;;
                   # Contrato da porta do jogo: a página que hospeda o Arquipélago nas duas comunidades.
-                  packages/arquipelago-contracts/*) add community; add community-kids ;;
-                  # packages/arquipelago e packages/arquipelago-api: o jogo e o serviço dele ainda não têm
-                  # serviço no Railway (rollout de infraestrutura à parte); o CI testa e compila os dois.
+                  packages/arquipelago-contracts/*) add community; add community-kids; add arquipelago-api ;;
+                  packages/arquipelago/*|packages/arquipelago-api/*) add arquipelago-api ;;
                   # O adulto empacota as mesmas poses do Zappy usadas pelo Kids nas aulas.
                   packages/community-kids/public/zappy/*.webp) add community; add community-kids ;;
                   packages/community-kids/*) add community-kids ;;
@@ -904,6 +907,11 @@ jobs:
             fi
           fi
 
+          ARQUIPELAGO_STATE=$(node scripts/ci/staging-arquipelago-preflight.mjs "$GITHUB_SHA")
+          if [ "$ARQUIPELAGO_STATE" = 'initial' ]; then add arquipelago-api; fi
+          if [ "$ARQUIPELAGO_STATE" != 'initial' ] && [[ "$ARQUIPELAGO_STATE" != ready:* ]]; then
+            echo '::error::Estado do Arquipélago não verificado'; exit 1
+          fi
           if [ "${#WANT[@]}" -eq 0 ]; then
             echo "nenhum serviço afetado por este push — nada a deployar ✅"
             exit 0
@@ -943,6 +951,16 @@ jobs:
             unset 'WANT[members]' 'WANT[auth]'
           elif [ -n "${WANT[community-kids]:-}" ] || [ -n "${WANT[community]:-}" ] || [ -n "${WANT[admin]:-}" ]; then
             node scripts/ci/kids-journey-rollout.mjs verify "$GITHUB_SHA"
+          fi
+          # O gateway só recebe a nova URL depois de o serviço e a migração estarem saudáveis.
+          if [ -n "${WANT[arquipelago-api]:-}" ]; then
+            ARQUIPELAGO_FRESH=$(node scripts/ci/staging-arquipelago-preflight.mjs "$GITHUB_SHA")
+            if [ "$ARQUIPELAGO_FRESH" != "$ARQUIPELAGO_STATE" ]; then
+              echo '::error::Estado do Arquipélago mudou durante a onda'; exit 1
+            fi
+            disparar arquipelago-api
+            esperar arquipelago-api
+            unset 'WANT[arquipelago-api]' 'DEP[arquipelago-api]'
           fi
           # Retirar os backends comerciais antigos antes de enviar filtros por
           # comunidade a partir do Admin novo. Nenhum POST repetido pelo monitor.

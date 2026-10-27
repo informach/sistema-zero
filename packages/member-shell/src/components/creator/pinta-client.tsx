@@ -3,12 +3,18 @@
 // O CSS do Pinta (tokens + @theme que GERA as utilitárias pin-*) é carregado pelo
 // `@import` em `app/globals.css`, DENTRO do pipeline Tailwind — mesmo gotcha do
 // Estúdio/Pensa: um JS-import aqui só traria os tokens, sem gerar as utilitárias.
-import type { PintaHostAdapter, PintaInitialIntent } from '@sistemazero/pinta'
+import type {
+  PintaCompletionControl,
+  PintaHostAdapter,
+  PintaInitialIntent,
+} from '@sistemazero/pinta'
 import { RefreshCw } from 'lucide-react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { concluirPinta } from '../../lib/arquipelago-pinta'
 import { type CreationsCloud, createCreationsCloud } from '../../lib/creations-cloud'
 import { creatorStorageNamespace } from '../../lib/creator-storage-namespace'
+import type { EmbeddedCreationControl } from '../../lib/embedded-creation-control'
 import { navigatePensaMission } from '../../lib/pensa-next-mission'
 import {
   createCloudMirroredPintaPersistence,
@@ -49,11 +55,13 @@ export function PintaClient({
   audience = 'kids',
   studioAvailable,
   narrationEnabled = false,
+  onCompletionControlChange,
 }: {
   viewerId: string | null
   audience?: 'adult' | 'kids'
   studioAvailable: boolean
   narrationEnabled?: boolean
+  onCompletionControlChange?: (control: EmbeddedCreationControl | null) => void
 }) {
   const localNamespace = creatorStorageNamespace(viewerId, audience)
   const [mod, setMod] = useState<PintaModule | null>(null)
@@ -61,6 +69,22 @@ export function PintaClient({
   // "Guardado na sua conta": a fila da nuvem (uma por montagem, por perfil) e o
   // armazenamento local EMBRULHADO no espelho — o pacote continua sem backend.
   const [cloud, setCloud] = useState<CreationsCloud | null>(null)
+  const pintaControl = useRef<PintaCompletionControl | null>(null)
+  const registrarControle = useCallback((controle: PintaCompletionControl | null) => {
+    pintaControl.current = controle
+  }, [])
+  useEffect(() => {
+    if (!onCompletionControlChange) return
+    onCompletionControlChange({
+      async concluir() {
+        if (!pintaControl.current || !cloud)
+          throw new Error('O Pinta ainda não está pronto para guardar a criação')
+        return concluirPinta(pintaControl.current, cloud)
+      },
+    })
+    return () => onCompletionControlChange(null)
+  }, [cloud, onCompletionControlChange])
+
   // A DESCIDA está em andamento (o wrapper avisa `sync-start`/`sync-end`): selo "buscando…".
   const [syncing, setSyncing] = useState(false)
   const [persistence, setPersistence] = useState<PintaPersistenceLike | null>(null)
@@ -341,6 +365,7 @@ export function PintaClient({
               <mod.PintaApp
                 key={handoff?.mission.id ?? 'free'}
                 adapter={adapter}
+                onCompletionControlChange={registrarControle}
                 onWorkspaceChange={setWorkspaceActive}
                 {...(persistence ? { persistence } : {})}
               />

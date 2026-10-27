@@ -66,7 +66,7 @@ export interface RespostaDoServico {
 export interface ServicoDoJogo {
   buscar(
     caminho: string,
-    opcoes?: { metodo?: 'GET' | 'POST' | 'PUT'; corpo?: unknown },
+    opcoes?: { metodo?: 'GET' | 'POST' | 'PUT'; corpo?: unknown; sinal?: AbortSignal },
   ): Promise<RespostaDoServico>
 }
 

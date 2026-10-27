@@ -31,10 +31,12 @@ function isLiveRoomPath(pathname: string): boolean {
 export function CommunityFrame({
   user,
   banner,
+  arquipelagoLiberado = false,
   children,
 }: {
   user: SessionUserWithAvatar
   banner: ReactNode
+  arquipelagoLiberado?: boolean
   children: ReactNode
 }) {
   const pathname = usePathname() ?? ''
@@ -83,13 +85,18 @@ export function CommunityFrame({
       {app ? <CommunityTopBar user={user} unread={unread} /> : null}
       {app ? (
         <div className="flex min-h-0 flex-1">
-          <CommunitySidebar user={user} unread={unread} collapsed={menuCollapsed} />
+          <CommunitySidebar
+            user={user}
+            unread={unread}
+            collapsed={menuCollapsed}
+            arquipelagoLiberado={arquipelagoLiberado}
+          />
           {main}
         </div>
       ) : (
         main
       )}
-      {app ? <CommunityTabs unread={unread} /> : null}
+      {app ? <CommunityTabs unread={unread} arquipelagoLiberado={arquipelagoLiberado} /> : null}
       {focus ? (
         // O menu só existe do `lg` para cima, e a alça também (por CSS: medir a janela no
         // primeiro quadro desencontraria o HTML do servidor). Irmã do menu, não mora no cabeçalho:

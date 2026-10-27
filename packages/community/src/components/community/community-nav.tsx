@@ -1,5 +1,6 @@
 'use client'
 
+import { ArquipelagoNavLink } from '@sistemazero/member-shell/components/arquipelago-nav-link'
 import { BrandLogo } from '@sistemazero/ui/brand-logo'
 import { Ellipsis, Mail, Palette, PersonStanding, Receipt, Sofa, Trophy } from 'lucide-react'
 import Link from 'next/link'
@@ -7,7 +8,7 @@ import { usePathname } from 'next/navigation'
 import { type CSSProperties, useEffect, useId, useRef, useState } from 'react'
 import { cn } from '@/lib/cn'
 import type { SessionUserWithAvatar } from '@/lib/types'
-import { isNavItemActive, NAV_ITEMS, type NavItem } from './nav'
+import { isNavItemActive, NAV_ITEMS, type NavItem, visibleCommunityNav } from './nav'
 import { UserMenu } from './user-menu'
 
 // `prefetch={false}` PROPOSITAL em todos os links (mesmo motivo do kids): rotas `force-dynamic` +
@@ -48,10 +49,12 @@ export function CommunitySidebar({
   user,
   unread,
   collapsed = false,
+  arquipelagoLiberado = false,
 }: {
   user: SessionUserWithAvatar
   unread: number
   collapsed?: boolean
+  arquipelagoLiberado?: boolean
 }) {
   const pathname = usePathname() ?? ''
   const recadosActive = pathname === '/recados' || pathname.startsWith('/recados/')
@@ -88,7 +91,7 @@ export function CommunitySidebar({
         </Link>
         {/* Só a lista rola numa janela baixa: o cartão da pessoa fica sempre à vista no pé. */}
         <nav aria-label="Principal" className="flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto">
-          {NAV_ITEMS.map((item) => (
+          {visibleCommunityNav(NAV_ITEMS, arquipelagoLiberado).map((item) => (
             <SidebarLink key={item.href} item={item} active={isNavItemActive(item, pathname)} />
           ))}
           <span aria-hidden className="mx-2 my-2.5 h-px bg-(--linha-escura)" />
@@ -124,15 +127,14 @@ function sidebarItemClass(active: boolean) {
 function SidebarLink({ item, active }: { item: NavItem; active: boolean }) {
   const Icon = item.icon
   return (
-    <Link
+    <ArquipelagoNavLink
       href={item.href}
-      prefetch={false}
       aria-current={active ? 'page' : undefined}
       className={sidebarItemClass(active)}
     >
       <Icon className="size-6 shrink-0" aria-hidden />
       {item.label}
-    </Link>
+    </ArquipelagoNavLink>
   )
 }
 
@@ -212,6 +214,7 @@ function navItem(href: string): NavItem {
  */
 const MORE_LINKS: readonly NavItem[] = [
   { ...navItem('/oficinas'), label: 'Oficinas ao vivo' },
+  navItem('/arquipelago'),
   { href: '/recados', label: 'Recados', icon: Mail },
   { href: '/progresso', label: 'Seu progresso', icon: Trophy },
   navItem('/ajuda'),
@@ -221,8 +224,8 @@ const MORE_LINKS: readonly NavItem[] = [
   { href: '/compras', label: 'Compras e assinatura', icon: Receipt },
 ]
 
-function inMore(pathname: string) {
-  return MORE_LINKS.some((link) => isNavItemActive(link, pathname))
+function inMore(pathname: string, links: readonly NavItem[]) {
+  return links.some((link) => isNavItemActive(link, pathname))
 }
 
 /**
@@ -231,7 +234,13 @@ function inMore(pathname: string) {
  * "Mais" abre um painel com o resto (Oficinas, Recados, Seu progresso, Ajuda, perfil e compras):
  * botão com `aria-expanded`, Esc fecha e devolve o foco, clicar fora fecha.
  */
-export function CommunityTabs({ unread }: { unread: number }) {
+export function CommunityTabs({
+  unread,
+  arquipelagoLiberado = false,
+}: {
+  unread: number
+  arquipelagoLiberado?: boolean
+}) {
   const pathname = usePathname() ?? ''
   const [open, setOpen] = useState(false)
   const panelId = useId()
@@ -240,7 +249,8 @@ export function CommunityTabs({ unread }: { unread: number }) {
   const tabs = TAB_HREFS.map((href) => NAV_ITEMS.find((item) => item.href === href)).filter(
     (item): item is NavItem => Boolean(item),
   )
-  const moreActive = inMore(pathname)
+  const moreLinks = visibleCommunityNav(MORE_LINKS, arquipelagoLiberado)
+  const moreActive = inMore(pathname, moreLinks)
 
   // Trocar de página fecha o painel.
   // biome-ignore lint/correctness/useExhaustiveDependencies: o efeito reage SÓ à troca de rota.
@@ -339,14 +349,13 @@ export function CommunityTabs({ unread }: { unread: number }) {
             Mais
           </p>
           <ul className="grid grid-cols-1 gap-1 sm:grid-cols-2">
-            {MORE_LINKS.map((link) => {
+            {moreLinks.map((link) => {
               const Icon = link.icon
               const active = isNavItemActive(link, pathname)
               return (
                 <li key={link.href}>
-                  <Link
+                  <ArquipelagoNavLink
                     href={link.href}
-                    prefetch={false}
                     aria-current={active ? 'page' : undefined}
                     // O link da página atual não troca a rota: fecha o painel no clique.
                     onClick={() => setOpen(false)}
@@ -355,7 +364,7 @@ export function CommunityTabs({ unread }: { unread: number }) {
                     <Icon className="size-6 shrink-0" aria-hidden />
                     {link.label}
                     {link.href === '/recados' ? <UnreadBadge count={unread} /> : null}
-                  </Link>
+                  </ArquipelagoNavLink>
                 </li>
               )
             })}

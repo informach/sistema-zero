@@ -2440,6 +2440,23 @@ function compileStatementCode(
         return `${pad}SZGame3D.jump(${identifiers.get(stmt.objVar)}, ${compileExpr(stmt.force, 0, identifiers, recAt(base))});`
       case 'g3d:applyGravity':
         return `${pad}SZGame3D.applyGravity(${identifiers.get(stmt.objVar)}, ${identifiers.get(stmt.groundVar)});`
+      case 'g3d:topDown':
+        return `${pad}SZGame3D.topDown(${identifiers.get(stmt.objVar)}, ${compileExpr(stmt.speed, 0, identifiers, recAt(base))});`
+      case 'g3d:walkArea':
+        return `${pad}SZGame3D.walkArea(${identifiers.get(stmt.objVar)}, ${compileExpr(stmt.minX, 0, identifiers, recAt(base))}, ${compileExpr(stmt.maxX, 0, identifiers, recAt(base))}, ${compileExpr(stmt.minZ, 0, identifiers, recAt(base))}, ${compileExpr(stmt.maxZ, 0, identifiers, recAt(base))});`
+      case 'g3d:frameScene':
+        return `${pad}SZGame3D.frameScene(${identifiers.get(stmt.worldVar)}, ${compileExpr(stmt.width, 0, identifiers, recAt(base))}, ${compileExpr(stmt.height, 0, identifiers, recAt(base))}, ${compileExpr(stmt.depth, 0, identifiers, recAt(base))});`
+      case 'g3d:onTouch': {
+        const body = compileStatements(
+          stmt.body,
+          indent + 1,
+          identifiers,
+          childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
+        )
+        return `${pad}SZGame3D.onTouch(${identifiers.get(stmt.objVar)}, ${identifiers.get(stmt.otherVar)}, () => {\n${body}\n${pad}});`
+      }
+      case 'g3d:walkAnimations':
+        return `${pad}SZGame3D.walkAnimations(${identifiers.get(stmt.objVar)}, ${JSON.stringify(stmt.idle)}, ${JSON.stringify(stmt.walking)});`
       case 'g3d:controlWithKeys':
         return `${pad}SZGame3D.controlWithKeys(${identifiers.get(stmt.objVar)}, ${compileExpr(valueToExpr(stmt.speed), 0, identifiers, recAt(base))});`
       case 'g3d:setScale':
@@ -4307,6 +4324,7 @@ function reserveClassNames(statements: JSStatement[], scope: IdentifierScope): v
       case 'g2d:everyFrames':
       case 'g2d:everySeconds':
       case 'g2d:afterSeconds':
+      case 'g3d:onTouch':
       case 'g3d:animate':
       case 'g3d:forEachInGroup':
       case 'g3d:pruneOffscreen':
@@ -4375,6 +4393,7 @@ function reserveCanvasElements(statements: JSStatement[], scope: IdentifierScope
       case 'g2d:everyFrames':
       case 'g2d:everySeconds':
       case 'g2d:afterSeconds':
+      case 'g3d:onTouch':
       case 'g3d:animate':
       case 'g3d:forEachInGroup':
       case 'g3d:pruneOffscreen':
@@ -5983,6 +6002,31 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
       case 'g3d:applyGravity':
         names.add(stmt.objVar)
         names.add(stmt.groundVar)
+        return
+      case 'g3d:topDown':
+        names.add(stmt.objVar)
+        collectExprIdentifiers(stmt.speed, names)
+        return
+      case 'g3d:walkArea':
+        names.add(stmt.objVar)
+        collectExprIdentifiers(stmt.minX, names)
+        collectExprIdentifiers(stmt.maxX, names)
+        collectExprIdentifiers(stmt.minZ, names)
+        collectExprIdentifiers(stmt.maxZ, names)
+        return
+      case 'g3d:frameScene':
+        names.add(stmt.worldVar)
+        collectExprIdentifiers(stmt.width, names)
+        collectExprIdentifiers(stmt.height, names)
+        collectExprIdentifiers(stmt.depth, names)
+        return
+      case 'g3d:onTouch':
+        names.add(stmt.objVar)
+        names.add(stmt.otherVar)
+        for (const child of stmt.body) collectStatementIdentifiers(child, names)
+        return
+      case 'g3d:walkAnimations':
+        names.add(stmt.objVar)
         return
       case 'g3d:controlWithKeys':
         names.add(stmt.objVar)

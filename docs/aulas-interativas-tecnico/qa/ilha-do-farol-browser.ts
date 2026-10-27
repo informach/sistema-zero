@@ -52,7 +52,7 @@ const p = montarProjetoIlha(
   ),
   scope = '__sz0123456789abcdef01234567'
 let js = p.files['script.js']
-if (scenario === 'sem-movimento') js = js.replace(/SZGame3D.controlWithKeys\([^;]+;/, '')
+if (scenario === 'sem-movimento') js = js.replace(/SZGame3D.topDown\([^;]+;/, '')
 if (scenario === 'sem-memoria') js = js.replace(/temChave = true/g, 'temChave = false')
 if (scenario === 'chave-alta')
   js = js.replace(/setPosition\(chave, -3, 1, -2\)/, 'setPosition(chave, -3, 3, -2)')

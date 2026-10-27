@@ -23,7 +23,11 @@ const DIREITA = new Set(['KeyD', 'ArrowRight'])
 
 function digitando(alvo: EventTarget | null): boolean {
   const el = alvo as HTMLElement | null
-  return Boolean(el && (el.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName)))
+  return Boolean(
+    el &&
+      (el.isContentEditable ||
+        el.closest?.('button, a, input, textarea, select, [role=button], [contenteditable=true]')),
+  )
 }
 
 /** Liga o teclado ao controle. Devolve a função que desliga. */

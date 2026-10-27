@@ -6,7 +6,11 @@ personalização do 2D. Substituem os projetos do Molda de `../ilha-do-farol-mol
 
 **Estado: ligado ao curso.** Os modelos ficam na biblioteca de modelos dos cursos do Estúdio
 (`packages/studio/src/core/course-models/`, ver `core/courseModels.ts`): o projeto da criança leva
-só a referência de cada um, e o Estúdio carrega o arquivo na hora de rodar o jogo.
+só a referência de cada um nos manifestos das aulas, e o Estúdio carrega o arquivo na hora
+de rodar o jogo. O arquivo completo `ilha-do-farol.szproject.json` embute as 24 malhas para
+importação portátil, sem depender da biblioteca de modelos da versão instalada. Os comandos
+do projeto exigem Jogo 3D 0.32.0 ou posterior. Referências indisponíveis interrompem a prévia
+com uma mensagem e opção de tentar novamente, em vez de abrir uma cena sem modelos.
 
 | Categoria | Peças (nome na lista do bloco) | Caixa comum (`lib_ilha.CAIXAS`) |
 |---|---|---|

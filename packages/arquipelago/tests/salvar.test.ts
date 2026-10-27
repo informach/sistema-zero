@@ -95,15 +95,24 @@ describe('fila de salvamento', () => {
 
 describe('plataforma de mentira', () => {
   test('cumpre o contrato: acesso, quarto, avatar e tempo livre do Kids', async () => {
-    const p = criarPlataformaFalsa({ limiteDiarioMinutos: 10 })
+    const p = criarPlataformaFalsa({
+      limiteDiarioMinutos: 10,
+      agora: () => new Date('2026-10-27T15:00:00Z'),
+    })
     const acesso = await p.servico.buscar('/acesso')
     expect(acesso.status).toBe(200)
     expect((acesso.corpo as { limiteDiarioMinutos: number }).limiteDiarioMinutos).toBe(10)
     expect((await p.lerQuarto()).placedItems.length).toBeGreaterThan(0)
     expect(Object.keys((await p.lerAvatar()).slots).length).toBeGreaterThan(0)
     for (let i = 0; i < 5; i++)
-      await p.servico.buscar('/tempo', { metodo: 'POST', corpo: { segundos: 120 } })
-    const r = await p.servico.buscar('/tempo', { metodo: 'POST', corpo: { segundos: 60 } })
+      await p.servico.buscar('/tempo', {
+        metodo: 'POST',
+        corpo: { segundos: 120, eventoId: crypto.randomUUID(), dia: '2026-10-27' },
+      })
+    const r = await p.servico.buscar('/tempo', {
+      metodo: 'POST',
+      corpo: { segundos: 60, eventoId: crypto.randomUUID(), dia: '2026-10-27' },
+    })
     expect((r.corpo as { acabou: boolean }).acabou).toBe(true)
   })
 

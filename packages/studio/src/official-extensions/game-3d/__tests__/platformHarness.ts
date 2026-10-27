@@ -1,3 +1,4 @@
+import * as RealThree from 'three'
 import { gameThreeDRuntime } from '../runtime'
 
 /**
@@ -23,7 +24,7 @@ export interface V3Like {
   z: number
 }
 
-export function loadRuntime() {
+export function loadRuntime({ realGeometry = false } = {}) {
   type Listener = (ev: unknown) => void
   const listeners: Record<string, Listener[]> = {}
 
@@ -180,6 +181,12 @@ export function loadRuntime() {
     RepeatWrapping: 1000,
     NearestFilter: 1003,
     SRGBColorSpace: 'srgb',
+  }
+
+  // Os testes de contato usam geometria e matrizes reais; só a GPU continua falsa.
+  if (realGeometry) {
+    const renderer = THREE.WebGLRenderer
+    Object.assign(THREE, RealThree, { WebGLRenderer: renderer })
   }
 
   const win = {

@@ -1,0 +1,24 @@
+{
+  "build": {
+    "builder": "DOCKERFILE",
+    "dockerfilePath": "packages/arquipelago-api/Dockerfile",
+    "watchPatterns": [
+      "/packages/arquipelago/**",
+      "/packages/arquipelago-api/**",
+      "/packages/arquipelago-contracts/**",
+      "/packages/avatar-quarto/**",
+      "/packages/core/**",
+      "/bun.lock",
+      "/package.json",
+      "/.dockerignore",
+      "/scripts/release/**",
+      "/.railway/**"
+    ]
+  },
+  "deploy": {
+    "preDeployCommand": ["bun run --filter @sistemazero/arquipelago-api db:migrate"],
+    "startCommand": "bun scripts/release/start.mjs packages/arquipelago-api/src/index.ts",
+    "healthcheckPath": "/readyz",
+    "restartPolicyMaxRetries": 3
+  }
+}

@@ -6,6 +6,7 @@
  */
 export * from './assets/index'
 export type { MoldaHostAdapter } from './components/appContext'
+export type { MoldaCompletionControl } from './components/completionControl'
 export { MoldaHostChromeProvider, useMoldaHostChrome } from './components/hostChrome'
 export type { MoldaAppProps } from './components/MoldaApp'
 export { MoldaApp } from './components/MoldaApp'

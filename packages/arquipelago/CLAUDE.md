@@ -84,8 +84,11 @@ decisões da dona: Canvas `https://claude.ai/artifact/5eNo1oqsndxmV6MPLxaz1W` e 
 
 - `SalvamentoV1` (contrato) com versão; gravação por revisão (CAS). Revisão velha recebe 409
   `SALVAMENTO_DESATUALIZADO` e o jogo adota o que está guardado.
-- Tempo livre: o jogo conta e manda a cada 60 s (`POST /tempo`); quem decide se acabou é o serviço
-  (limite padrão de 30 min no Kids, ajustável pelos pais).
+- Tempo livre do Kids: cada segundo ativo fica em IndexedDB por perfil; lotes de até 10 s são
+  enviados com UUID e dia de São Paulo. O serviço trata repetições de forma idempotente; uma
+  falha pausa o jogo até confirmar a fila. O limite padrão é 30 min e os pais podem alterá-lo.
+  A comunidade adulta não tem limite diário nem usa esta fila. O dia do evento usa o relógio do
+  aparelho, e os limites dessa confiança precisam ser considerados antes da abertura em produção.
 
 ## Rodar
 
@@ -93,4 +96,7 @@ decisões da dona: Canvas `https://claude.ai/artifact/5eNo1oqsndxmV6MPLxaz1W` e 
   `limite`, `liberado`, `novo`, `persistir`, `em=x,z[,y]`, `adiantar`). Serve `/avatar3d` e `/room3d`
   do `public/` do community-kids.
 - `bun run build`: `dist/cliente/` com chunks com hash e `manifesto.json` validado pelo contrato.
-- `bun test`, `bun run typecheck`.
+- `bun test`, `bun run typecheck`, `bun run test:tempo-browser` (Chrome instalado).
+- `tests/tempo-api.integration.test.ts` requer `ARQUIPELAGO_TEMPO_TEST_DATABASE_URL` apontando
+  para banco Postgres local descartável cujo nome começa com `arquipelago_test`; aplicar as
+  migrações do serviço antes do teste. Sem essa variável o teste é pulado.

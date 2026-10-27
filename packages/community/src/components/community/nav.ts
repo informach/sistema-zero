@@ -1,4 +1,4 @@
-import { BookOpen, CircleHelp, Home, Radio, Sparkles, Users } from 'lucide-react'
+import { BookOpen, Castle, CircleHelp, Home, Radio, Sparkles, Users } from 'lucide-react'
 
 export interface NavItem {
   href: string
@@ -22,6 +22,7 @@ export const NAV_ITEMS: readonly NavItem[] = [
   { href: '/criar', label: 'Criar', icon: Sparkles },
   // As oficinas ao vivo (cursos ao vivo, 14/10/2026): só as turmas em que a pessoa tem vaga.
   { href: '/oficinas', label: 'Oficinas', icon: Radio },
+  { href: '/arquipelago', label: 'Arquipélago', icon: Castle },
   {
     href: '/comunidade',
     label: 'Comunidade',
@@ -37,4 +38,12 @@ export function isNavItemActive(item: NavItem, pathname: string): boolean {
   return [item.href, ...(item.match ?? [])].some(
     (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`),
   )
+}
+
+/** Só apresenta o jogo quando o serviço liberou o público. */
+export function visibleCommunityNav(
+  items: readonly NavItem[],
+  arquipelagoLiberado: boolean,
+): readonly NavItem[] {
+  return items.filter((item) => item.href !== '/arquipelago' || arquipelagoLiberado)
 }

@@ -17,6 +17,7 @@ import { Hud } from './interface/hud'
 import { TelaBloqueado, TelaCarregando, TelaDescanso, TelaErro } from './interface/telas'
 import { Cena } from './mundo/cena'
 import { criarRegistro } from './mundo/interativos'
+import { criarFilaDeTempo } from './sistemas/fila-tempo'
 import { criarFilaDeSalvamento, type FilaDeSalvamento } from './sistemas/salvar'
 
 type Situacao =
@@ -75,11 +76,27 @@ async function carregar(plataforma: Plataforma): Promise<Situacao> {
     },
     aoErro: (e) => plataforma.relatarErro(e, 'salvamento'),
   })
-  // Um jogo novo já nasce guardado.
+  const filaTempo =
+    plataforma.publico === 'kids'
+      ? await criarFilaDeTempo({
+          perfil: plataforma.perfil.id,
+          servico: plataforma.servico,
+          aoConfirmar: (tempo) =>
+            loja.getState().registrarTempo(tempo.usadoHojeSegundos, tempo.acabou),
+          aoErro: (erro) => {
+            plataforma.relatarErro(erro, 'tempo-livre')
+            loja.getState().definirTempoPausado(true)
+          },
+        }).catch((erro) => {
+          fila?.parar()
+          throw erro
+        })
+      : null
+  // Um jogo novo só entra na fila depois que a recuperação do tempo termina.
   if (guardado.revisao === 0) fila.guardar(salvamento)
-
   const contexto: ContextoDoJogo = {
     loja,
+    filaTempo,
     plataforma,
     controle: criarControle(),
     interativos: criarRegistro(),
@@ -106,6 +123,64 @@ class Barreira extends Component<
   }
 }
 
+function TelaTempoPausado({ contexto }: { contexto: ContextoDoJogo }) {
+  const dialogo = useRef<HTMLDialogElement>(null)
+  const [tentando, setTentando] = useState(false)
+  useEffect(() => {
+    const atual = dialogo.current
+    if (atual && !atual.open) atual.showModal()
+    return () => {
+      if (atual?.open) atual.close()
+    }
+  }, [])
+  return (
+    <dialog
+      ref={dialogo}
+      className="arq-tela"
+      aria-labelledby="arq-tempo-titulo"
+      onCancel={(evento) => evento.preventDefault()}
+      style={{
+        width: '100vw',
+        height: '100dvh',
+        maxWidth: 'none',
+        maxHeight: 'none',
+        margin: 0,
+        border: 0,
+      }}
+    >
+      <div>
+        <div className="arq-zappy" />
+        <h1 id="arq-tempo-titulo">Vamos tentar de novo</h1>
+        <p>O jogo está pausado enquanto guardamos o tempo jogado.</p>
+        <button
+          type="button"
+          className="arq-botao"
+          disabled={tentando}
+          onClick={() => {
+            setTentando(true)
+            void contexto.filaTempo
+              ?.guardarEEnviar()
+              .then(() => {
+                contexto.loja.getState().definirTempoPausado(false)
+              })
+              .catch(() => {})
+              .finally(() => setTentando(false))
+          }}
+        >
+          {tentando ? 'Tentando…' : 'Tentar novamente'}
+        </button>
+        <button
+          type="button"
+          className="arq-botao leve"
+          onClick={() => contexto.plataforma.voltarParaPlataforma()}
+        >
+          Voltar para a plataforma
+        </button>
+      </div>
+    </dialog>
+  )
+}
+
 function JogoPronto({
   contexto,
   fila,
@@ -116,6 +191,7 @@ function JogoPronto({
   aoFalhar: (e: unknown) => void
 }) {
   const tempoAcabou = useStore(contexto.loja, (s) => s.tempoAcabou)
+  const tempoPausado = useStore(contexto.loja, (s) => s.tempoPausado)
   useEffect(() => ligarTeclado(contexto.controle), [contexto])
   useEffect(() => {
     const aoEsconder = () => {
@@ -144,6 +220,7 @@ function JogoPronto({
       </Barreira>
       <Relogios />
       <Hud />
+      {tempoPausado && !tempoAcabou ? <TelaTempoPausado contexto={contexto} /> : null}
       {tempoAcabou ? (
         <div style={{ position: 'absolute', inset: 0 }}>
           <TelaDescanso aoVoltar={() => contexto.plataforma.voltarParaPlataforma()} />
@@ -163,6 +240,10 @@ export function Jogo({ plataforma }: { plataforma: Plataforma }) {
     carregar(plataforma)
       .then((s) => {
         if (minha === tentativa.current) setSituacao(s)
+        else if (s.tipo === 'pronto') {
+          void s.contexto.filaTempo?.encerrar().catch(() => {})
+          s.fila.parar()
+        }
       })
       .catch((e) => {
         plataforma.relatarErro(e, 'carregar')
@@ -172,6 +253,9 @@ export function Jogo({ plataforma }: { plataforma: Plataforma }) {
 
   useEffect(() => {
     iniciar()
+    return () => {
+      tentativa.current += 1
+    }
   }, [iniciar])
 
   const aoFalhar = useCallback(

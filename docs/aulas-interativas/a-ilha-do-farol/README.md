@@ -1,6 +1,6 @@
 # A Ilha do Farol
 
-Curso do posto **Faísca**, depois de **A Chave do Farol**. Três aulas em blocos com a extensão **Jogo 3D**, sem certificado. As artes 3D são feitas no Blender ([scripts e contrato](../../design/ilha-do-farol-blender/README.md)), fiéis à Chave do Farol em 2D e com as mesmas variações da personalização: 8 personagens, 4 faróis, 4 barcos, 3 chaves e 4 cenários. O projeto leva só a referência de cada modelo; o Estúdio carrega o arquivo da biblioteca de modelos dos cursos.
+Curso do posto **Faísca**, depois de **A Chave do Farol**. Três aulas em blocos com a extensão **Jogo 3D**, sem certificado. As artes 3D são feitas no Blender ([scripts e contrato](../../design/ilha-do-farol-blender/README.md)), fiéis à Chave do Farol em 2D e com as mesmas variações da personalização: 8 personagens, 4 faróis, 4 barcos, 3 chaves e 4 cenários. Os projetos nos manifestos levam referências compactas da biblioteca. O arquivo importável leva as 24 malhas completas, para abrir sem depender da versão dessa biblioteca. Uma falha nas referências interrompe a preparação e mostra uma nova tentativa.
 
 | Aula | Conceito novo e investigação | Construção no Estúdio |
 | --- | --- | --- |
@@ -29,3 +29,16 @@ O caderno é anexado uma única vez, em `materiais`, na parte 2 da primeira aula
 Usar o curso reservado **`jornada-faisca-base-3d`**; na oferta adulta, **`jornada-faisca-base-3d-adulto`**. A projeção de destino conserva os IDs internos e a cadeia do projeto. Conferir os cursos existentes por slug antes de importar; não recriar o curso nem reiniciar progresso. O currículo aponta para esta autoria, mantendo o hash do outline original do seed. Os títulos e a montagem completos vêm destes manifestos. Havendo aulas provisórias no Admin, reconciliar sua identidade antes da publicação.
 
 Um ensaio com iniciantes ainda é necessário para avaliar compreensão, legibilidade e tempo de exploração. Os testes de software conferem funcionamento, não comprovam aprendizagem.
+
+## Faísca: revisão de 27/10/2026
+
+O projeto usa somente blocos iniciantes, sem listas, estruturas de objetos de Programação,
+leitura genérica de propriedades ou JavaScript cru. Movimento, áreas permitidas, animações de
+caminhada e encontro direto são comandos do Jogo 3D. As regras de coleta, `temChave`, aviso e
+`se/senão` continuam no programa da criança. A câmera enquadra toda a área jogável ao mudar o
+tamanho da prévia. O teste `farois-basicos.test.ts` cobre todas as etapas dos dois Faróis e a
+conversão do código para blocos, sem exceções de `allowBlocks`.
+
+Esta versão usa Jogo 3D 0.32.0. Atualizar o aplicativo no staging antes de importar os manifestos
+regenerados: eles usam os novos comandos. O arquivo final é portátil quanto às artes; os comandos
+continuam dependendo da versão correspondente da extensão.

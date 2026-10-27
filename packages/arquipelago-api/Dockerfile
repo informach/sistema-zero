@@ -10,9 +10,11 @@ ENV NODE_ENV=production
 # Copia o workspace (o .dockerignore exclui node_modules/.git/.env etc.).
 COPY . .
 
-# Instala exatamente o que está no lockfile (inclui devDeps: drizzle-kit é
-# necessário para rodar as migrations no pre-deploy).
-RUN bun install --frozen-lockfile
+# Instala somente o serviço, o jogo e os workspaces dos quais eles dependem.
+# Inclui devDeps: drizzle-kit é necessário para rodar as migrations no pre-deploy.
+RUN bun install --frozen-lockfile \
+    --filter '@sistemazero/arquipelago-api...' \
+    --filter '@sistemazero/arquipelago...'
 
 # O cliente do jogo é publicado por este serviço (/arquipelago/cliente/*): compilar aqui mantém
 # o jogo fora do build da plataforma, e cada deploy do serviço traz o manifesto da sua versão.

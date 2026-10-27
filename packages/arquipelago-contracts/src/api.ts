@@ -46,6 +46,8 @@ export const ConflitoDeSalvamentoSchema = z.object({
 export type ConflitoDeSalvamento = z.infer<typeof ConflitoDeSalvamentoSchema>
 
 export const RegistrarTempoSchema = z.strictObject({
+  eventoId: z.uuid(),
+  dia: z.iso.date(),
   /** Segundos jogados desde o último aviso (o jogo avisa a cada minuto). */
   segundos: z.number().int().min(1).max(120),
 })

@@ -34,6 +34,7 @@ export const GAME_THREE_D_PALETTE: ExtensionPaletteTree = [
       {
         name: 'Câmera',
         types: [
+          'sz_g3d_frame_scene',
           'sz_g3d_camera_mode',
           'sz_g3d_camera_distance',
           'sz_g3d_camera_shake',
@@ -98,7 +99,14 @@ export const GAME_THREE_D_PALETTE: ExtensionPaletteTree = [
     sections: [
       {
         name: 'Andar com o teclado',
-        types: ['sz_g3d_control_keys', 'sz_g3d_jump', 'sz_g3d_apply_gravity'],
+        types: [
+          'sz_g3d_top_down',
+          'sz_g3d_walk_area',
+          'sz_g3d_walk_animations',
+          'sz_g3d_control_keys',
+          'sz_g3d_jump',
+          'sz_g3d_apply_gravity',
+        ],
       },
       {
         name: 'Movimentos prontos',
@@ -144,7 +152,13 @@ export const GAME_THREE_D_PALETTE: ExtensionPaletteTree = [
     sections: [
       {
         name: 'Encostar',
-        types: ['sz_g3d_on_touch_group', 'sz_g3d_collides', 'sz_g3d_hit_any', 'sz_g3d_is_near'],
+        types: [
+          'sz_g3d_on_touch',
+          'sz_g3d_on_touch_group',
+          'sz_g3d_collides',
+          'sz_g3d_hit_any',
+          'sz_g3d_is_near',
+        ],
       },
       {
         name: 'Física de plataforma',

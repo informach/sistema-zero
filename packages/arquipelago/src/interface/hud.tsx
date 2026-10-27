@@ -1,3 +1,4 @@
+import type { FerramentaDaPlataforma } from '@sistemazero/arquipelago-contracts'
 import { useEffect, useState } from 'react'
 import { useEstado, useJogo } from '../estado/contexto'
 import { restanteDeHoje } from '../estado/loja'
@@ -123,6 +124,31 @@ function Acao() {
 function Menu() {
   const { loja, plataforma } = useJogo()
   const aberto = useEstado((s) => s.menuAberto)
+  const ferramentaAberta = useEstado((s) => s.ferramentaAberta)
+  const [aviso, setAviso] = useState('')
+  async function abrirFerramenta(ferramenta: FerramentaDaPlataforma) {
+    if (loja.getState().ferramentaAberta) return
+    setAviso('')
+    loja.getState().definirFerramentaAberta(true)
+    try {
+      const resultado = await plataforma.abrirFerramenta({
+        ferramenta,
+        proposito: 'criar no Arquipélago',
+      })
+      if (resultado.situacao === 'pronto') setAviso('Sua criação foi guardada.')
+      if (resultado.situacao === 'indisponivel')
+        setAviso(
+          resultado.motivo === 'acesso-necessario'
+            ? 'Confira seu acesso e sua jornada para usar esta ferramenta.'
+            : 'Esta ferramenta não está disponível para abrir agora.',
+        )
+    } catch (erro) {
+      plataforma.relatarErro(erro, 'abrir-ferramenta')
+      setAviso('Não consegui abrir a ferramenta agora. Tente novamente.')
+    } finally {
+      loja.getState().definirFerramentaAberta(false)
+    }
+  }
   if (!aberto) return null
   return (
     <div className="arq-sobre">
@@ -134,9 +160,25 @@ function Menu() {
           <li>Usar o que está perto: E</li>
           <li>Girar a câmera: arraste na tela · Aproximar: roda do mouse</li>
         </ul>
+        <p>Crie com as ferramentas da plataforma:</p>
+        <div className="arq-ferramentas">
+          {(['pinta', 'molda', 'estudio'] as const).map((ferramenta) => (
+            <button
+              key={ferramenta}
+              type="button"
+              className="arq-botao leve"
+              disabled={ferramentaAberta}
+              onClick={() => void abrirFerramenta(ferramenta)}
+            >
+              {ferramenta === 'pinta' ? 'Pinta' : ferramenta === 'molda' ? 'Molda' : 'Estúdio'}
+            </button>
+          ))}
+        </div>
+        {aviso ? <p role="status">{aviso}</p> : null}
         <button
           type="button"
           className="arq-botao"
+          disabled={ferramentaAberta}
           onClick={() => loja.getState().abrirMenu(false)}
         >
           Continuar jogando
@@ -144,6 +186,7 @@ function Menu() {
         <button
           type="button"
           className="arq-botao leve"
+          disabled={ferramentaAberta}
           onClick={() => plataforma.voltarParaPlataforma()}
         >
           Voltar para a plataforma
@@ -157,7 +200,8 @@ export function Hud() {
   const { loja } = useJogo()
   useEffect(() => {
     const tecla = (e: KeyboardEvent) => {
-      if (e.code === 'Escape') loja.getState().abrirMenu(!loja.getState().menuAberto)
+      if (e.code === 'Escape' && !loja.getState().tempoPausado && !loja.getState().ferramentaAberta)
+        loja.getState().abrirMenu(!loja.getState().menuAberto)
     }
     window.addEventListener('keydown', tecla)
     return () => window.removeEventListener('keydown', tecla)
