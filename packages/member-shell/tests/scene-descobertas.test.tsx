@@ -12,18 +12,18 @@ const meta = (id: string, complete: boolean, label = `Conclusão de ${id}`): Sce
   ({ id, complete, label }) as SceneGoalProgress
 
 describe('SceneDescobertas', () => {
-  test('sem metas não há título nem lista, só a região viva (sr-only)', () => {
-    const markup = renderToStaticMarkup(<SceneDescobertas goals={[]} resposta="" />)
+  test('sem metas não há título, lista ou região de conferência vazia', () => {
+    const markup = renderToStaticMarkup(<SceneDescobertas goals={[]} />)
     expect(markup).not.toContain('<h4')
     expect(markup).not.toContain('aria-labelledby')
     expect(markup).not.toContain('<ol')
-    expect(markup).toContain('aria-live="polite"')
-    expect(markup).toContain('class="sr-only"')
+    expect(markup).not.toContain('aria-live="polite"')
+    expect(markup).not.toContain('class="sr-only"')
   })
 
   test('⚠️ a pendente é trancada e NEUTRA; a feita mostra a conclusão; cada uma tem número para o leitor', () => {
     const markup = renderToStaticMarkup(
-      <SceneDescobertas goals={[meta('a', true, 'O Dino existe'), meta('b', false)]} resposta="" />,
+      <SceneDescobertas goals={[meta('a', true, 'O Dino existe'), meta('b', false)]} />,
     )
     expect(markup).toContain('O Dino existe')
     expect(markup).not.toContain('Conclusão de b')
@@ -38,7 +38,7 @@ describe('SceneDescobertas', () => {
 
   test('⚠️ a linha de ações só existe com uma ação de verdade (um array de null não conta)', () => {
     const vazia = renderToStaticMarkup(
-      <SceneDescobertas goals={[meta('a', true)]} resposta="">
+      <SceneDescobertas goals={[meta('a', true)]}>
         {null}
         {false}
         {null}
@@ -47,25 +47,12 @@ describe('SceneDescobertas', () => {
     expect(vazia).not.toContain('sz-scene-descobertas-acoes')
 
     const comAcao = renderToStaticMarkup(
-      <SceneDescobertas goals={[meta('a', true)]} resposta="">
+      <SceneDescobertas goals={[meta('a', true)]}>
         {null}
-        <button type="button">Conferir</button>
+        <button type="button">Uma pista</button>
       </SceneDescobertas>,
     )
     expect(comAcao).toContain('sz-scene-descobertas-acoes')
-    expect(comAcao).toContain('>Conferir</button>')
-  })
-
-  test('a resposta do Conferir mora aqui, na região viva, e some quando vazia', () => {
-    const com = renderToStaticMarkup(
-      <SceneDescobertas
-        goals={[meta('a', false)]}
-        resposta="Ainda não. Tente: toque no arbusto."
-      />,
-    )
-    expect(com).toContain('sz-scene-conferir-resposta')
-    expect(com).toContain('Ainda não. Tente: toque no arbusto.')
-    const sem = renderToStaticMarkup(<SceneDescobertas goals={[meta('a', false)]} resposta="" />)
-    expect(sem).not.toContain('sz-scene-conferir-resposta')
+    expect(comAcao).toContain('>Uma pista</button>')
   })
 })

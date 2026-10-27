@@ -2200,7 +2200,7 @@ Conferência visual das 45 com os componentes de produção: `bun run galeria:ce
 | `scene-activity.tsx` | O player (`SceneActivityView`): sessão, gravação, palpite, pergunta, rodapé e relógio. Não escreve palco nem peça de bancada. |
 | `scene-prediction.tsx` | O palpite antes de mexer: as três peças do PENDENTE (`PalpiteContexto`, `PalpitePergunta`, `PalpiteOpcoes`, que o console monta) e a linha congelada depois da escolha. |
 | `scene-console.tsx` | ⭐⭐ O CONSOLE: `SceneConsole`, `ConsoleFala`, `ConsoleMundo` e `ConsolePrancha`. Só moldura. |
-| `scene-descobertas.tsx` | ⭐⭐ "O que você já descobriu" (`SceneDescobertas`): a lista das metas, feita com a conclusão, pendente trancada e neutra; as ações da descoberta e a resposta do Conferir moram nela. |
+| `scene-descobertas.tsx` | ⭐⭐ "O que você já descobriu" (`SceneDescobertas`): a lista das metas, feita com a conclusão, pendente trancada e neutra; as ações da descoberta moram nela; o player anuncia a conclusão automaticamente. |
 | `scene-hud.tsx` | ⭐⭐ O PLACAR do jogo dentro do palco: `PlacarDoJogo`, `VidaDoJogo` e `CoracaoDoJogo`. |
 | `scene-conclusion.tsx` | "Você descobriu!", a pergunta "Agora explique" e o "Ver a explicação" da revisita (`SceneExplicacao`, montado no fim do bloco das descobertas). |
 | `scene-demo-controls.tsx` | A demonstração guiada e a `MontagemTravada`. |
@@ -2238,13 +2238,13 @@ ajustes dela. Hoje o console é:
 │ ┏━━━━ o mundo, moldura escura de 4px ━━━┓ │ SUA VEZ · gesto cheio · bancada      │
 │ ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛ │ O QUE VOCÊ JÁ DESCOBRIU              │
 │ [↶ Desfazer] [↺ Recomeçar]               │ ✓ a conclusão · 🔒 trancada e neutra │
-│ ( i  a frase da situação, largura toda ) │ [💡 Uma pista]          [✓ Conferir] │
+│ ( i  a frase da situação, largura toda ) │ [💡 Uma pista]                      │
 │                                          │ palpite congelado · Agora explique   │
 └──────────────────────────────────────────┴──────────────────────────────────────┘
 ```
 
 - **Arquivos:** `scene-activity.tsx` (o ramo da experiência, com `desfazer`, `recomecar`, `umaPista`,
-  `conferirOuContinuar` e `FraseDaSituacao` como constantes), `scene-frame.tsx` (a faixa em
+  `continuarParaPergunta` e `FraseDaSituacao` como constantes), `scene-frame.tsx` (a faixa em
   ladrilhos: `.sz-scene-faixa` com a placa e o medidor, `<dl class="sz-scene-hud">` com um
   `.sz-scene-hud-tile` por leitura), **`scene-descobertas.tsx`** (`SceneDescobertas`, a lista) e
   `styles/scene.css` (bloco "O CONSOLE v2"). O kids veste por VARIÁVEIS (`--sz-scene-deck`,
@@ -2263,15 +2263,14 @@ ajustes dela. Hoje o console é:
   mora sob o mundo, no `.sz-scene-mundo-rodape`, começando na esquerda e na largura toda (era o
   fim da coluna de ações); (3) os ladrilhos têm o valor ESCURO e a cor do par só na bolinha antes
   dele ("cada número de uma cor parecia carnaval"); (4) a descoberta pendente fica trancada e
-  NEUTRA ("Ainda tem uma descoberta aqui."), e o `pedido` segue saindo só no Conferir e na pista.
+  NEUTRA ("Ainda tem uma descoberta aqui."), e o `pedido` continua disponível na pista.
 - ⚠️⚠️ **O `label` de meta pendente NUNCA entra no DOM** (é a conclusão). Travado em
   `community-kids/tests/lesson-scene-console-v2.test.tsx`, que também pina o momento, a situação
   dentro do painel do mundo e cada ferramenta perto do que ela mexe; a ORDEM do fonte está em
   `tests/scene-experience-layout.test.tsx`: faixa → mundo → situação → fala → pista → prancha →
   descobertas → palpite/conclusão.
 - **Cada ferramenta mora perto do que ela mexe:** Desfazer e Recomeçar no pé do mundo; Uma pista,
-  e Conferir/Continuar na lista de descobertas, junto da resposta do Conferir (era um
-  parágrafo solto embaixo do console). Os NOMES acessíveis não mudaram.
+  e Continuar na lista de descobertas. Os NOMES acessíveis não mudaram.
 - **A ação principal do momento sai na largura toda:** o gesto sozinho (`.sz-scene-gestos >
   :only-child`) ou o botão que a bancada marca com `sz-scene-acao-principal` (hoje o "Ligar a
   reação ao toque", que passou a `tom="gesto"` enquanto a reação está desligada).
@@ -2440,7 +2439,7 @@ mudou foi só onde cada peça mora. Quem veste o jogo é o que está DENTRO do p
   moldura leem como uma coisa só. O RODAPÉ também: as ferramentas e o "Conferir" são o que a criança
   faz COM a cena, e dentro da moldura viravam mais uma faixa. ⚠️ Substituído em 30/09 (console v2):
   a comparação mora no painel das AÇÕES, depois da lista de descobertas; Desfazer/Recomeçar no pé do
-  MUNDO; Uma pista/Conferir na lista.
+  MUNDO; Uma pista/Continuar na lista.
 - **A "Agora é sua vez" usa o MESMO console** (`scene-sandbox.tsx`), com a fala do Zappy chegando
   pela prop `fala`: ela é a experimentação continuando, então não pode ter outra cara.
 - ⚠️ As três ferramentas do rodapé passaram de `tom="discreta"` (fantasma) para **`tom="ferramenta"`**
@@ -2605,16 +2604,12 @@ acrescenta mais o modelo da cena automaticamente.
   descoberta e some no gesto seguinte (`palpiteNaHora`); a linha permanente repete "Seu palpite: … Ao
   testar: …". Na revisita sem palpite guardado, nada.
 
-**Conferir, pista e missão restrita.**
-- **"Conferir"** (contorno: enquanto a cena espera um gesto, o azul cheio é o do gesto) responde com o `pedido`
-  da meta que falta ("Ainda não. Tente: …"), **nunca com o `label`**, que é a conclusão. Meta sem `pedido` cai
-  na pista de nível 1; metas feitas com o arranjo desfeito (`layers`, `jump-sound`) respondem o gesto que o
-  avaliador devolve. A resposta é CONGELADA no clique e sai no gesto seguinte: calculada ao vivo numa região
-  viva, ela dizia "Ainda não." e a regra no render do gesto que concluía.
-- Depois de concluir ele dá lugar a **"Continuar ↓"** (`tom="gesto"`), que leva o foco à pergunta e só aparece
-  com ela fora da janela (`IntersectionObserver`). Na revisita, nenhum dos dois. Há UM "Recomeçar".
-  Substituído (16/09/2026): "Já descobri" + "Ver de novo" → "Conferir"/"Continuar ↓", porque a cena se avalia
-  sozinha (o botão nunca concluía nada) e "Ver de novo" deixava "você concluiu" sobre um palco vazio.
+**Conclusão automática, pista e missão restrita (27/10/2026).**
+- O botão **Conferir foi removido de todas as experiências**, por decisão do responsável. As
+  descobertas são reconhecidas durante os gestos e os testes; não há confirmação extra. Zappy,
+  lista de descobertas e Uma pista orientam a exploração. Não recriar a antiga resposta “Ainda não”.
+- **Continuar ↓** (`tom="gesto"`) continua levando o foco à pergunta após concluir, somente quando
+  ela estiver fora da janela (`IntersectionObserver`). Na revisita ele não aparece.
 - **Um azul cheio por vez:** o gesto da cena (`gestoEmDestaque` do `botoesDoMundo`) apaga quando o "Continuar"
   acende.
 - **"Uma pista"** entra ABAIXO da instrução, que nunca some (quem pede ajuda é quem vai relê-la), com o degrau à
@@ -2628,7 +2623,7 @@ acrescenta mais o modelo da cena automaticamente.
   ("Tente: …"), porque a escada do modelo mandava mexer no eixo que a aula não cobra. Só o player encolhe: o
   members confere `hintsUsed` contra os três do modelo.
 - ⚠️ Substituído em 30/09 (console v2): não há mais rodapé de ferramentas (Desfazer/Recomeçar no pé
-  do mundo, Uma pista/Conferir na lista de descobertas). Histórico: ferramentas à esquerda, o caminho
+  do mundo, Uma pista/Continuar na lista de descobertas). Histórico: ferramentas à esquerda, o caminho
   para a frente à direita (`ml-auto`). ⚠️ Os NOMES acessíveis das
   ferramentas são o contrato dos testes; abaixo de 480px elas ficam só com o ícone (`min-w-11`).
 
@@ -2655,7 +2650,7 @@ acrescenta mais o modelo da cena automaticamente.
   palavra do servidor (o gabarito não sai de lá); `PERGUNTA_MUDOU` oferece "Abrir de novo" e a frase desenhada é
   a do vocabulário do app (`copy.cena.perguntaMudou`, ver "A linguagem das telas de aula"). Resposta enviada
   com a cena DESFEITA vira a caixa neutra "Para conferir, deixe a cena como estava quando você descobriu."
-  (`aguardaCena`), nunca âmbar. ⚠️ Toda região viva (esta, a do Conferir, a de anúncios) existe SEMPRE, com o
+  (`aguardaCena`), nunca âmbar. ⚠️ Toda região viva (esta e a de anúncios) existe SEMPRE, com o
   texto por dentro: montada junto do conteúdo, não é anunciada.
 
 **Gravação.**

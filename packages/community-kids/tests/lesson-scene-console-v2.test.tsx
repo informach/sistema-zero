@@ -117,20 +117,15 @@ describe('o console v2: o momento, as descobertas e o pé do mundo', () => {
     const situacao = visual.querySelector('[data-lugar-reservado="situacao"] p.sz-scene-situacao')
     expect(situacao).not.toBeNull()
     expect(situacao?.getAttribute('role')).toBe('status')
-    // Desfazer e Recomeçar mexem no mundo; Uma pista e Conferir falam da descoberta.
+    // Desfazer e Recomeçar mexem no mundo; Uma pista orienta a descoberta.
     expect(visual.contains(screen.getByRole('button', { name: 'Desfazer' }))).toBe(true)
     expect(visual.contains(screen.getByRole('button', { name: 'Recomeçar' }))).toBe(true)
     expect(descobertas.contains(screen.getByRole('button', { name: 'Uma pista' }))).toBe(true)
-    expect(descobertas.contains(screen.getByRole('button', { name: 'Conferir' }))).toBe(true)
+    expect(screen.queryByRole('button', { name: 'Conferir' })).toBeNull()
     // A bancada diz o que ela é.
     expect(container.querySelector('.sz-scene-prancha .sz-scene-prancha-titulo')?.textContent).toBe(
       'Sua vez',
     )
-
-    // A resposta do Conferir sai ao lado do botão que a pediu, dentro da lista de descobertas.
-    fireEvent.click(screen.getByRole('button', { name: 'Conferir' }))
-    const resposta = await screen.findByText(/^Ainda não\. Tente:/)
-    expect(descobertas.contains(resposta)).toBe(true)
   })
 
   test('a faixa vira ladrilhos com o valor escuro: a cor do par fica na classe do valor', async () => {

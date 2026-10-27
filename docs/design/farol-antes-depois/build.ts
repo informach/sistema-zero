@@ -76,8 +76,8 @@ export async function buildPrototype({
             let source = await readFile(args.path, 'utf8')
             source = exact(
               source,
-              "return <DialogueBlockView content={{ kind: 'dialogue', text }} speech={fala} />",
-              "return <DialogueBlockView content={{ kind: 'dialogue', text }} speech={fala} mascot={<Mascot />} />",
+              "mascot={secao?.temDialogo || semMascote ? undefined : player?.dialogueMascot?.('speaking')}",
+              'mascot={<Mascot />}',
             )
             return {
               contents: 'import {Mascot} from ' + shared + ';\n' + source,

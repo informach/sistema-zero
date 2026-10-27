@@ -102,3 +102,12 @@ Avaliar a posição escolhida pelo aluno, sem fixar a posição da solução. Um
 Reutilizar também a estrutura editorial dos cursos anteriores: material de consulta opcional na parte 2 da primeira aula, retomadas por referência nas seguintes e passo a passo completo de montagem. O PDF mantém tipografia, capa, cabeçalhos, cartões, numeração e cores dos blocos do modelo existente. Renderizar e conferir todas as páginas, além de validar os nomes e encaixes. Uma mudança de dimensão não é motivo para inventar outro padrão visual ou emitir outro certificado.
 
 O teste do curso inclui a imagem real do executor, além do navegador local. Conferir uma solução completa, personalização válida e erros plausíveis. Falha de infraestrutura não é evidência de erro da criança. As rotas automatizadas precisam tolerar a latência das entradas, sem modificar o programa nem confundir o destino do exemplo com o objetivo pedagógico.
+
+## Conclusão sem conferência extra — 27/10/2026
+
+Todas as experiências reconhecem as descobertas durante a interação. Não mostrar nem orientar
+um clique em **Conferir**: esse botão foi removido por ser redundante e sugerir uma confirmação
+obrigatória. A criança recebe orientação do Zappy, da lista de descobertas e de **Uma pista**.
+Conservar as ações que executam o experimento, como **Testar o encontro**, e a resposta às perguntas.
+Quando houver uma pergunta após a descoberta, **Continuar** pode levar o foco até ela; isso não
+substitui nem altera a avaliação automática ou a correção da resposta no servidor.
