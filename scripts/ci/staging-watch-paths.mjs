@@ -78,6 +78,25 @@ export async function reconcileWatchPaths(plan, config, tree, ports) {
   return { count: ids.length, patchId: id }
 }
 
+/** Observa o ID da operação devolvido pelo Railway sem repetir a mutação. */
+export async function waitForWatchWorkflow(id, ports, timeoutMs = 120_000) {
+  const deadline = ports.now() + timeoutMs
+  while (ports.now() < deadline) {
+    let status
+    try {
+      status = await ports.status(id)
+    } catch {
+      await ports.sleep(2_000)
+      continue
+    }
+    if (status === 'Complete') return
+    if (status === 'Error') throw new Error('Railway não aplicou os caminhos')
+    if (!['Running', 'NotFound'].includes(status)) throw new Error('Estado inesperado da operação')
+    await ports.sleep(2_000)
+  }
+  throw new Error('Tempo esgotado aguardando os caminhos do Railway')
+}
+
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   const env = { ...process.env }
   for (const key of ['RAILWAY_PROJECT_ID', 'RAILWAY_ENVIRONMENT_ID', 'RAILWAY_SERVICE_ID', '_'])
@@ -148,26 +167,17 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
       console.log(`Railway confirmou a operação ${id}; aguardando conclusão sem repetir a mutação`)
     },
     async wait(id) {
-      const deadline = Date.now() + 120_000
-      while (Date.now() < deadline) {
-        // O retorno da mutação é o ID do workflow, não o ID do patch da configuração.
-        let item
-        try {
-          item = api('query($id:String!){workflowStatus(workflowId:$id){status}}', {
-            id,
-          })?.workflowStatus
-        } catch {
-          // Consulta somente leitura: aguardar indisponibilidade transitória nunca repete o POST.
-          await new Promise((resolve) => setTimeout(resolve, 2_000))
-          continue
-        }
-        if (item?.status === 'Complete') return
-        if (item?.status === 'Error') throw new Error('Railway não aplicou os caminhos')
-        if (!['Running', 'NotFound'].includes(item?.status))
-          throw new Error('Estado inesperado da operação')
-        await new Promise((resolve) => setTimeout(resolve, 2_000))
-      }
-      throw new Error('Tempo esgotado aguardando os caminhos do Railway')
+      await waitForWatchWorkflow(id, {
+        now: Date.now,
+        async status(workflowId) {
+          return api('query($id:String!){workflowStatus(workflowId:$id){status}}', {
+            id: workflowId,
+          })?.workflowStatus?.status
+        },
+        async sleep(ms) {
+          await new Promise((resolve) => setTimeout(resolve, ms))
+        },
+      })
     },
     async config() {
       return config()

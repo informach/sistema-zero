@@ -1,6 +1,10 @@
 import { expect, test } from 'bun:test'
 import { railwayCliVersion, railwayEnvironments } from './railway-config.mjs'
-import { reconcileWatchPaths, watchPathsPatch } from './staging-watch-paths.mjs'
+import {
+  reconcileWatchPaths,
+  waitForWatchWorkflow,
+  watchPathsPatch,
+} from './staging-watch-paths.mjs'
 
 const tree = 'a'.repeat(40)
 const id = 'e00eca0b-5323-4424-9b58-fdb073cfce82'
@@ -164,4 +168,32 @@ test('mesmo plano vazio aguarda alterações em andamento antes de liberar o dep
     }),
   ).rejects.toThrow('ocupado')
   expect(commits).toBe(0)
+})
+
+test('acompanha o identificador real do workflow e recupera falhas de leitura sem repetir a escrita', async () => {
+  let now = 0
+  const observed: string[] = []
+  const states = ['unavailable', 'NotFound', 'Running', 'Complete']
+  await waitForWatchWorkflow('commitChanges/env/op', {
+    now: () => now,
+    async status(id: string) {
+      observed.push(id)
+      const state = states.shift()
+      if (state === 'unavailable') throw new Error('transitório')
+      return state
+    },
+    async sleep(ms: number) {
+      now += ms
+    },
+  })
+  expect(observed).toEqual(Array(4).fill('commitChanges/env/op'))
+  await expect(
+    waitForWatchWorkflow('id', {
+      now: () => now,
+      async status() {
+        return 'Error'
+      },
+      async sleep() {},
+    }),
+  ).rejects.toThrow('não aplicou')
 })
