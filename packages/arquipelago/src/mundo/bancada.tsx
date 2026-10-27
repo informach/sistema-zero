@@ -1,12 +1,13 @@
 import { useFrame } from '@react-three/fiber'
 import { CuboidCollider, RigidBody } from '@react-three/rapier'
 import { useMemo, useRef } from 'react'
-import { BoxGeometry, EdgesGeometry, type Group } from 'three'
+import { AdditiveBlending, BoxGeometry, EdgesGeometry, type Group } from 'three'
 import { useJogo } from '../estado/contexto'
 import { ITENS } from '../sistemas/itens'
 import { cozinhar, RECEITAS, receitaPossivel } from '../sistemas/receitas'
 import { useInterativo } from './interativos'
 import { ALTURA_DA_TERRA, BANCADA } from './medidas'
+import { ComReserva, copiarNo, MODELOS, materiaisDe, useModelo } from './modelos'
 
 /**
  * A bancada de cozinhar chega como PROJETO AZUL: já funciona (dá para cozinhar) e espera a
@@ -14,12 +15,6 @@ import { ALTURA_DA_TERRA, BANCADA } from './medidas'
  */
 export function Bancada() {
   const { loja } = useJogo()
-  const brilho = useRef<Group>(null)
-  const caixa = useMemo(() => new BoxGeometry(2.2, 1.0, 1.0), [])
-  const arestas = useMemo(() => new EdgesGeometry(caixa), [caixa])
-  useFrame(({ clock }) => {
-    if (brilho.current) brilho.current.position.y = 0.5 + Math.sin(clock.elapsedTime * 2) * 0.03
-  })
   useInterativo('bancada', {
     x: BANCADA.x,
     z: BANCADA.z,
@@ -50,17 +45,68 @@ export function Bancada() {
   })
   return (
     <group position={[BANCADA.x, ALTURA_DA_TERRA, BANCADA.z]}>
-      <group ref={brilho}>
-        <mesh geometry={caixa}>
-          <meshBasicMaterial color="#5aa9ff" transparent opacity={0.18} depthWrite={false} />
-        </mesh>
-        <lineSegments geometry={arestas}>
-          <lineBasicMaterial color="#2f6df6" />
-        </lineSegments>
-      </group>
+      <ComReserva reserva={<ProjetoDeAntes />}>
+        <ProjetoDoModelo />
+      </ComReserva>
       <RigidBody type="fixed" colliders={false}>
         <CuboidCollider args={[1.1, 0.5, 0.5]} position={[0, 0.5, 0]} />
       </RigidBody>
+    </group>
+  )
+}
+
+/**
+ * O projeto azul do Blender: uma bancada de cozinha em holograma (fogão, pia, portas) sobre um
+ * projetor. O holograma flutua e pulsa de leve.
+ */
+function ProjetoDoModelo() {
+  const raiz = useModelo(MODELOS.bancada)
+  const { projetor, holograma, arestas, volume } = useMemo(() => {
+    const h = copiarNo(raiz, 'holograma', true)
+    const vol = materiaisDe(h, 'holograma')
+    // Luz somada: o holograma clareia o que está atrás em vez de tapar.
+    for (const m of [...vol, ...materiaisDe(h, 'hologramaAresta')]) {
+      m.blending = AdditiveBlending
+      m.depthWrite = false
+      m.transparent = true
+    }
+    return {
+      projetor: copiarNo(raiz, 'projetor', true),
+      holograma: h,
+      arestas: materiaisDe(h, 'hologramaAresta'),
+      volume: vol,
+    }
+  }, [raiz])
+  useFrame(({ clock }) => {
+    const t = clock.elapsedTime
+    holograma.position.y = 0.03 + Math.sin(t * 2) * 0.03
+    for (const m of arestas) m.emissiveIntensity = 1.2 + Math.sin(t * 3) * 0.3
+    for (const m of volume) m.opacity = 0.22 + Math.sin(t * 2.4) * 0.05
+  })
+  return (
+    <>
+      <primitive object={projetor} />
+      <primitive object={holograma} />
+    </>
+  )
+}
+
+/** A caixa azul de antes (formas do código). */
+function ProjetoDeAntes() {
+  const brilho = useRef<Group>(null)
+  const caixa = useMemo(() => new BoxGeometry(2.2, 1.0, 1.0), [])
+  const arestas = useMemo(() => new EdgesGeometry(caixa), [caixa])
+  useFrame(({ clock }) => {
+    if (brilho.current) brilho.current.position.y = 0.5 + Math.sin(clock.elapsedTime * 2) * 0.03
+  })
+  return (
+    <group ref={brilho}>
+      <mesh geometry={caixa}>
+        <meshBasicMaterial color="#5aa9ff" transparent opacity={0.18} depthWrite={false} />
+      </mesh>
+      <lineSegments geometry={arestas}>
+        <lineBasicMaterial color="#2f6df6" />
+      </lineSegments>
     </group>
   )
 }

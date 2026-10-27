@@ -40,6 +40,10 @@ decisões da dona: Canvas `https://claude.ai/artifact/5eNo1oqsndxmV6MPLxaz1W` e 
   sempre com `new URL(caminho, import.meta.url)`: o caminho é relativo à pasta do cliente, não à
   página. O Zappy (`assets/zappy.glb`, animações `voar` e `parado`, material `luz` na bunda) sai
   de `arte/zappy/zappy.py` (Blender sem tela, o mesmo `bpy` das peças do quarto).
+- `assets/mundo/`: o mundo feito no Blender (chão, árvores, casa, horta, bancada, farol, píer,
+  pontes e ilhas do anel), um script por peça em `arte/mundo/` (`build_all.py`, nós e materiais
+  no README de lá). `mundo/modelos.tsx` carrega; cada peça mostra a forma simples do código até o
+  modelo chegar, e os colisores continuam no código.
 
 ## Salvamento e tempo
 

@@ -14,15 +14,15 @@ até lá ficam na galeria de modelos do playground.
 | Peça | Estado | Observação |
 |---|---|---|
 | Zappy, o vagalume (voar, parado, cauda que brilha) | ✅ | `arte/zappy` |
-| Terreno da ilha central (grama, areia, espuma, tufos, flores, pedras, caminho) | 🟡 | mesma conta da física |
-| Árvores (variações), arbustos e pedras | 🟡 | |
-| Casa: paredes, telhado separado, varanda, janelas que acendem, porta nova | 🟡 | o quarto é o da plataforma |
-| Horta: 6 canteiros, alface, tomate e milho em 3 estágios | 🟡 | |
-| Bancada com o projeto azul | 🟡 | |
-| Farol da sua ilha (apagado e aceso, feixe que gira) | 🟡 | |
-| Píer com boia e barquinho | 🟡 | |
-| Tábuas, cordas e postes das pontes | 🟡 | |
-| As 6 ilhas do anel em versão leve (cinza até a cor chegar) | 🟡 | |
+| Terreno da ilha central (grama, areia, espuma, tufos, flores, pedras, caminho) | ✅ | mesma conta da física |
+| Árvores (variações), arbustos e pedras | ✅ | |
+| Casa: paredes, telhado separado, varanda, janelas que acendem, porta nova | ✅ | o quarto é o da plataforma |
+| Horta: 6 canteiros, alface, tomate e milho em 3 estágios | ✅ | |
+| Bancada com o projeto azul | ✅ | |
+| Farol da sua ilha (apagado e aceso, feixe que gira) | ✅ | |
+| Píer com boia e barquinho | ✅ | |
+| Tábuas, cordas e postes das pontes | ✅ | |
+| As 6 ilhas do anel em versão leve (cinza até a cor chegar) | ✅ | |
 
 ## Lote 2: personagens
 

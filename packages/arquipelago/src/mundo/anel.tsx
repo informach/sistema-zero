@@ -3,19 +3,23 @@ import { CuboidCollider, CylinderCollider, RigidBody } from '@react-three/rapier
 import { type Ilha, ilhaAberta } from '@sistemazero/arquipelago-contracts'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import {
+  type BufferGeometry,
   Color,
   CylinderGeometry,
   Euler,
   type InstancedMesh,
+  type Material,
   Matrix4,
+  type Mesh,
+  type MeshStandardMaterial,
   Quaternion,
   Vector3,
 } from 'three'
 import { useEstado, useJogo } from '../estado/contexto'
 import { useInterativo } from './interativos'
 import { ALTURA_DA_TERRA, ilhasEmVolta, RAIO_DA_ILHA_DO_ANEL, trajetoDaPonte } from './medidas'
+import { CINZA, ComReserva, copiarNo, coresOriginais, MODELOS, tingir, useModelo } from './modelos'
 
-const CINZA = new Color('#b3b8c1')
 const TRECHO_QUEBRADO = 0.25
 const DURACAO_DA_CHEGADA_MS = 4500
 
@@ -198,14 +202,49 @@ function IlhaDoAnel({
   centro: { x: number; z: number }
   cor: number
 }) {
+  const flutua = ilha.id === 'nuvens'
+  const y = flutua ? ALTURA_DAS_NUVENS : 0
+  return (
+    <group position={[centro.x, y, centro.z]}>
+      <ComReserva reserva={<IlhaDeAntes ilha={ilha} cor={cor} />}>
+        <IlhaDoModelo ilha={ilha} cor={cor} />
+      </ComReserva>
+      <RigidBody type="fixed" colliders={false}>
+        <CylinderCollider
+          args={[0.8, RAIO_DA_ILHA_DO_ANEL - 0.5]}
+          position={[0, ALTURA_DA_TERRA - 0.8, 0]}
+        />
+      </RigidBody>
+    </group>
+  )
+}
+
+/**
+ * A ilha do Blender (`ilhas-do-anel.glb`, um nó por ilha). O lado da chegada da ponte (+x do
+ * modelo) é virado para a sua ilha; as cores saem do cinza conforme `cor` (a lava acende junto).
+ */
+function IlhaDoModelo({ ilha, cor }: { ilha: Ilha; cor: number }) {
+  const raiz = useModelo(MODELOS.ilhas)
+  const { modelo, cores } = useMemo(() => {
+    const copia = copiarNo(raiz, ilha.id, true)
+    copia.rotation.y = Math.PI - ((ilha.angulo ?? 0) * Math.PI) / 180
+    return { modelo: copia, cores: coresOriginais(copia) }
+  }, [raiz, ilha.id, ilha.angulo])
+  useEffect(() => {
+    tingir(cores, cor)
+  }, [cores, cor])
+  return <primitive object={modelo} />
+}
+
+/** A silhueta de antes (formas do código). */
+function IlhaDeAntes({ ilha, cor }: { ilha: Ilha; cor: number }) {
   const geometria = useMemo(
     () => geometriaDeIlha(RAIO_DA_ILHA_DO_ANEL, ilha.posicao * 1.7),
     [ilha.posicao],
   )
   const flutua = ilha.id === 'nuvens'
-  const y = flutua ? ALTURA_DAS_NUVENS : 0
   return (
-    <group position={[centro.x, y, centro.z]}>
+    <>
       <mesh geometry={geometria} position={[0, ALTURA_DA_TERRA - 0.8, 0]}>
         <meshStandardMaterial
           color={tinta(ilha.id === 'pico' ? '#e8eef5' : '#7dbb5a', cor)}
@@ -221,13 +260,7 @@ function IlhaDoAnel({
       <group position={[0, ALTURA_DA_TERRA, 0]}>
         <Enfeites id={ilha.id} cor={cor} />
       </group>
-      <RigidBody type="fixed" colliders={false}>
-        <CylinderCollider
-          args={[0.8, RAIO_DA_ILHA_DO_ANEL - 0.5]}
-          position={[0, ALTURA_DA_TERRA - 0.8, 0]}
-        />
-      </RigidBody>
-    </group>
+    </>
   )
 }
 
@@ -237,7 +270,7 @@ const tmpE = new Euler(0, 0, 0, 'YXZ')
 const tmpV = new Vector3()
 const UM = new Vector3(1, 1, 1)
 
-/** Tábuas da ponte (uma malha instanciada) e a colisão por trechos. */
+/** Tábuas da ponte (instanciadas), postes e corda, e a colisão por trechos. */
 function Ponte({
   ilha,
   inteira,
@@ -249,7 +282,7 @@ function Ponte({
 }) {
   const pontos = useMemo(() => trajetoDaPonte(ilha, 36), [ilha])
   const tabuas = useMemo(() => {
-    const lista: { x: number; y: number; z: number; giro: number; incl: number }[] = []
+    const lista: Tabua[] = []
     for (let i = 0; i < pontos.length - 1; i++) {
       const a = pontos[i]
       const b = pontos[i + 1]
@@ -269,20 +302,7 @@ function Ponte({
     }
     return lista
   }, [pontos])
-  const malha = useRef<InstancedMesh>(null)
   const limite = Math.floor(tabuas.length * (inteira ? tabuasVisiveis : TRECHO_QUEBRADO))
-  useEffect(() => {
-    const m = malha.current
-    if (!m) return
-    tabuas.forEach((t, i) => {
-      tmpE.set(t.incl, t.giro, 0)
-      tmpQ.setFromEuler(tmpE)
-      tmpV.set(t.x, i < limite ? t.y : -50, t.z)
-      tmpM.compose(tmpV, tmpQ, UM)
-      m.setMatrixAt(i, tmpM)
-    })
-    m.instanceMatrix.needsUpdate = true
-  }, [tabuas, limite])
 
   const trechos = useMemo(() => {
     const ate = inteira ? pontos.length - 1 : Math.floor((pontos.length - 1) * TRECHO_QUEBRADO)
@@ -308,10 +328,9 @@ function Ponte({
 
   return (
     <>
-      <instancedMesh ref={malha} args={[undefined, undefined, tabuas.length]} frustumCulled={false}>
-        <boxGeometry args={[2.2, 0.14, 0.5]} />
-        <meshStandardMaterial color={inteira ? '#b07c4f' : '#9aa0aa'} flatShading />
-      </instancedMesh>
+      <ComReserva reserva={<TabuasDeAntes tabuas={tabuas} limite={limite} inteira={inteira} />}>
+        <PonteDoModelo tabuas={tabuas} limite={limite} inteira={inteira} />
+      </ComReserva>
       {inteira && tabuasVisiveis < 1 ? null : (
         <RigidBody type="fixed" colliders={false}>
           {trechos.map((t, i) => (
@@ -320,6 +339,177 @@ function Ponte({
           ))}
         </RigidBody>
       )}
+    </>
+  )
+}
+
+interface Tabua {
+  x: number
+  y: number
+  z: number
+  giro: number
+  incl: number
+}
+
+/** Põe cada tábua no lugar; as que ainda não chegaram ficam escondidas lá embaixo. */
+function useTabuasNoLugar(malha: InstancedMesh | null, tabuas: Tabua[], limite: number) {
+  useEffect(() => {
+    if (!malha) return
+    tabuas.forEach((t, i) => {
+      tmpE.set(t.incl, t.giro, 0)
+      tmpQ.setFromEuler(tmpE)
+      tmpV.set(t.x, i < limite ? t.y : -50, t.z)
+      tmpM.compose(tmpV, tmpQ, UM)
+      malha.setMatrixAt(i, tmpM)
+    })
+    malha.instanceMatrix.needsUpdate = true
+  }, [malha, tabuas, limite])
+}
+
+function TabuasDeAntes({
+  tabuas,
+  limite,
+  inteira,
+}: {
+  tabuas: Tabua[]
+  limite: number
+  inteira: boolean
+}) {
+  const [malha, setMalha] = useState<InstancedMesh | null>(null)
+  useTabuasNoLugar(malha, tabuas, limite)
+  return (
+    <instancedMesh
+      ref={setMalha}
+      args={[undefined, undefined, tabuas.length]}
+      frustumCulled={false}
+    >
+      <boxGeometry args={[2.2, 0.14, 0.5]} />
+      <meshStandardMaterial color={inteira ? '#b07c4f' : '#9aa0aa'} flatShading />
+    </instancedMesh>
+  )
+}
+
+/** De quantas em quantas tábuas vai um par de postes (com a corda entre eles). */
+const TABUAS_POR_POSTE = 6
+const LADO_DO_POSTE = 1.2
+const ALTURA_DA_CORDA = 0.8
+const CINZA_DA_PONTE = new Color('#9aa0aa')
+const FRENTE = new Vector3(0, 0, 1)
+const tmpA = new Vector3()
+const tmpB = new Vector3()
+const tmpD = new Vector3()
+
+function geometriaEMaterial(raiz: ReturnType<typeof useModelo>, nome: string) {
+  const malha = copiarNo(raiz, nome, true) as Mesh
+  return {
+    geometria: malha.geometry as BufferGeometry,
+    material: malha.material as MeshStandardMaterial,
+  }
+}
+
+/**
+ * A ponte do Blender: tábuas, postes e corda instanciados. Quebrada, fica cinza e sem corda;
+ * quando abre, tábuas e postes aparecem um a um e a corda vai junto.
+ */
+function PonteDoModelo({
+  tabuas,
+  limite,
+  inteira,
+}: {
+  tabuas: Tabua[]
+  limite: number
+  inteira: boolean
+}) {
+  const raiz = useModelo(MODELOS.ponte)
+  const pecas = useMemo(() => {
+    const tabua = geometriaEMaterial(raiz, 'tabua')
+    const poste = geometriaEMaterial(raiz, 'poste')
+    const corda = geometriaEMaterial(raiz, 'corda')
+    return {
+      tabua,
+      poste,
+      corda,
+      corDaTabua: tabua.material.color.clone(),
+      corDoPoste: poste.material.color.clone(),
+    }
+  }, [raiz])
+  useEffect(() => {
+    pecas.tabua.material.color.copy(inteira ? pecas.corDaTabua : CINZA_DA_PONTE)
+    pecas.poste.material.color.copy(inteira ? pecas.corDoPoste : CINZA_DA_PONTE)
+  }, [inteira, pecas])
+
+  // Postes: dos dois lados, de tantas em tantas tábuas, com a base no tampo da tábua.
+  const postes = useMemo(() => {
+    const lista: { tabua: number; pos: Vector3; q: Quaternion }[] = []
+    for (let i = 0; i < tabuas.length; i += TABUAS_POR_POSTE) {
+      const t = tabuas[i]
+      if (!t) continue
+      for (const lado of [-1, 1]) {
+        const dx = Math.cos(t.giro) * LADO_DO_POSTE * lado
+        const dz = -Math.sin(t.giro) * LADO_DO_POSTE * lado
+        lista.push({
+          tabua: i,
+          pos: new Vector3(t.x + dx, t.y + 0.02, t.z + dz),
+          q: new Quaternion().setFromEuler(new Euler(0, t.giro, 0)),
+        })
+      }
+    }
+    return lista
+  }, [tabuas])
+  const [malhaTabuas, setMalhaTabuas] = useState<InstancedMesh | null>(null)
+  const [malhaPostes, setMalhaPostes] = useState<InstancedMesh | null>(null)
+  const [malhaCorda, setMalhaCorda] = useState<InstancedMesh | null>(null)
+  useTabuasNoLugar(malhaTabuas, tabuas, limite)
+  useEffect(() => {
+    if (!malhaPostes) return
+    postes.forEach((p, i) => {
+      tmpV.copy(p.pos)
+      if (p.tabua >= limite) tmpV.y = -50
+      tmpM.compose(tmpV, p.q, UM)
+      malhaPostes.setMatrixAt(i, tmpM)
+    })
+    malhaPostes.instanceMatrix.needsUpdate = true
+  }, [malhaPostes, postes, limite])
+  useEffect(() => {
+    if (!malhaCorda) return
+    // Corda: de um poste ao próximo do mesmo lado (os postes vêm em pares, lado -1 e +1).
+    for (let i = 0; i < postes.length; i++) {
+      const a = postes[i]
+      const b = postes[i + 2]
+      const visivel = inteira && a && b && b.tabua < limite
+      if (!a || !b || !visivel) {
+        tmpM.makeScale(0, 0, 0)
+        malhaCorda.setMatrixAt(i, tmpM)
+        continue
+      }
+      tmpA.copy(a.pos).setY(a.pos.y + ALTURA_DA_CORDA)
+      tmpB.copy(b.pos).setY(b.pos.y + ALTURA_DA_CORDA)
+      tmpD.subVectors(tmpB, tmpA)
+      const comprimento = tmpD.length()
+      tmpQ.setFromUnitVectors(FRENTE, tmpD.normalize())
+      tmpV.set(1, 1, comprimento)
+      tmpM.compose(tmpA, tmpQ, tmpV)
+      malhaCorda.setMatrixAt(i, tmpM)
+    }
+    malhaCorda.instanceMatrix.needsUpdate = true
+  }, [malhaCorda, postes, limite, inteira])
+  return (
+    <>
+      <instancedMesh
+        ref={setMalhaTabuas}
+        args={[pecas.tabua.geometria, pecas.tabua.material as Material, tabuas.length]}
+        frustumCulled={false}
+      />
+      <instancedMesh
+        ref={setMalhaPostes}
+        args={[pecas.poste.geometria, pecas.poste.material as Material, postes.length]}
+        frustumCulled={false}
+      />
+      <instancedMesh
+        ref={setMalhaCorda}
+        args={[pecas.corda.geometria, pecas.corda.material as Material, postes.length]}
+        frustumCulled={false}
+      />
     </>
   )
 }

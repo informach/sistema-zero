@@ -1,10 +1,12 @@
 import type { Canteiro as DadosDoCanteiro, Semente } from '@sistemazero/arquipelago-contracts'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import { Color } from 'three'
 import { useEstado, useJogo } from '../estado/contexto'
-import { colher, estagio, plantar, progresso, regar } from '../sistemas/horta'
+import { colher, type Estagio, estagio, plantar, progresso, regar } from '../sistemas/horta'
 import { adicionar, ITENS, quantidade, remover } from '../sistemas/itens'
 import { useInterativo } from './interativos'
 import { ALTURA_DA_TERRA, HORTA } from './medidas'
+import { ComReserva, copiarNo, MODELOS, materiaisDe, useModelo } from './modelos'
 
 const ORDEM: Semente[] = ['alface', 'tomate', 'milho']
 const COR_DA_PLANTA: Record<Semente, string> = {
@@ -94,38 +96,132 @@ function Canteiro({
     },
   )
 
+  return (
+    <group position={[x, ALTURA_DA_TERRA, z]}>
+      <ComReserva reserva={<CanteiroDeAntes canteiro={canteiro} fase={fase} p={p} />}>
+        <CanteiroDoModelo
+          semente={canteiro.semente ?? null}
+          regado={Boolean(canteiro.regadoEm)}
+          fase={fase}
+          p={p}
+          indice={indice}
+        />
+      </ComReserva>
+    </group>
+  )
+}
+
+/** As quatro covas de cada canteiro (a terra fica em y = 0,22). */
+const COVAS: [number, number][] = [
+  [-0.35, -0.35],
+  [0.35, -0.35],
+  [-0.35, 0.35],
+  [0.35, 0.35],
+]
+const ALTURA_DA_TERRA_DO_CANTEIRO = 0.22
+const TERRA_REGADA = new Color('#4a3220')
+
+/** Qual nó do `horta.glb` mostra a planta neste estágio. */
+function noDaPlanta(semente: Semente | null, fase: Estagio): string | null {
+  if (fase === 'vazio') return null
+  if (fase === 'semente' || !semente) return 'semente'
+  const sufixo = fase === 'brotando' ? 'broto' : fase === 'crescendo' ? 'crescendo' : 'maduro'
+  return `${semente}-${sufixo}`
+}
+
+/** Dentro de cada estágio a planta ainda cresce um pouco (o progresso vai de 0 a 1). */
+function tamanhoNoEstagio(fase: Estagio, p: number): number {
+  if (fase === 'brotando') return 0.65 + 0.35 * Math.min(1, p / 0.4)
+  if (fase === 'crescendo') return 0.75 + 0.25 * Math.min(1, (p - 0.4) / 0.6)
+  return 1
+}
+
+/** O canteiro de tábuas do Blender, com a planta do estágio em cada cova. */
+function CanteiroDoModelo({
+  semente,
+  regado,
+  fase,
+  p,
+  indice,
+}: {
+  semente: Semente | null
+  regado: boolean
+  fase: Estagio
+  p: number
+  indice: number
+}) {
+  const raiz = useModelo(MODELOS.horta)
+  const { caixa, terra } = useMemo(() => {
+    const copia = copiarNo(raiz, 'canteiro', true)
+    const [t] = materiaisDe(copia, 'terra')
+    return { caixa: copia, terra: t ? { material: t, cor: t.color.clone() } : null }
+  }, [raiz])
+  useEffect(() => {
+    if (terra) terra.material.color.copy(regado ? TERRA_REGADA : terra.cor)
+  }, [regado, terra])
+  const nome = noDaPlanta(semente, fase)
+  const plantas = useMemo(() => (nome ? COVAS.map(() => copiarNo(raiz, nome)) : []), [raiz, nome])
+  const tamanho = tamanhoNoEstagio(fase, p)
+  return (
+    <>
+      <primitive object={caixa} />
+      {plantas.map((planta, i) => {
+        const [dx, dz] = COVAS[i] ?? [0, 0]
+        return (
+          <group
+            key={`${nome}-${dx},${dz}`}
+            position={[dx, ALTURA_DA_TERRA_DO_CANTEIRO, dz]}
+            rotation-y={indice * 0.9 + i * 1.6}
+            scale={tamanho}
+          >
+            <primitive object={planta} />
+          </group>
+        )
+      })}
+    </>
+  )
+}
+
+/** O canteiro de antes (formas do código). */
+function CanteiroDeAntes({
+  canteiro,
+  fase,
+  p,
+}: {
+  canteiro: DadosDoCanteiro
+  fase: Estagio
+  p: number
+}) {
   const altura = fase === 'vazio' ? 0 : fase === 'semente' ? 0.12 : 0.15 + p * 0.65
   const cor = canteiro.semente ? COR_DA_PLANTA[canteiro.semente] : '#6fae4f'
   return (
-    <group position={[x, ALTURA_DA_TERRA, z]}>
+    <>
       <mesh position={[0, 0.1, 0]}>
         <boxGeometry args={[1.35, 0.22, 1.35]} />
         <meshStandardMaterial color={canteiro.regadoEm ? '#5a3d24' : '#7c5836'} flatShading />
       </mesh>
       {fase === 'vazio'
         ? null
-        : [-0.35, 0.35].flatMap((dx) =>
-            [-0.35, 0.35].map((dz) => (
-              <group key={`${dx}${dz}`} position={[dx, 0.22, dz]}>
-                <mesh position={[0, altura / 2, 0]}>
-                  <coneGeometry args={[0.12 + p * 0.08, Math.max(0.1, altura), 5]} />
-                  <meshStandardMaterial color="#58b05a" flatShading />
+        : COVAS.map(([dx, dz]) => (
+            <group key={`${dx}${dz}`} position={[dx, ALTURA_DA_TERRA_DO_CANTEIRO, dz]}>
+              <mesh position={[0, altura / 2, 0]}>
+                <coneGeometry args={[0.12 + p * 0.08, Math.max(0.1, altura), 5]} />
+                <meshStandardMaterial color="#58b05a" flatShading />
+              </mesh>
+              {fase === 'maduro' ? (
+                <mesh position={[0, altura + 0.08, 0]}>
+                  <icosahedronGeometry args={[0.16, 0]} />
+                  <meshStandardMaterial
+                    color={cor}
+                    flatShading
+                    emissive={cor}
+                    emissiveIntensity={0.15}
+                  />
                 </mesh>
-                {fase === 'maduro' ? (
-                  <mesh position={[0, altura + 0.08, 0]}>
-                    <icosahedronGeometry args={[0.16, 0]} />
-                    <meshStandardMaterial
-                      color={cor}
-                      flatShading
-                      emissive={cor}
-                      emissiveIntensity={0.15}
-                    />
-                  </mesh>
-                ) : null}
-              </group>
-            )),
-          )}
-    </group>
+              ) : null}
+            </group>
+          ))}
+    </>
   )
 }
 

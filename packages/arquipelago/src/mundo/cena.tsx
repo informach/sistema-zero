@@ -13,6 +13,10 @@ import { Ceu } from './ceu'
 import { Farol } from './farol'
 import { Horta } from './horta'
 import { IlhaCentral } from './ilha-central'
+import { carregarModelos } from './modelos'
+
+// Os modelos do mundo começam a baixar junto com o jogo (cada peça mostra a forma simples até chegar).
+carregarModelos()
 
 /** A cena 3D inteira. A física (Rapier) roda dentro dela. */
 export function Cena({ aoFalhar }: { aoFalhar: (e: unknown) => void }) {
