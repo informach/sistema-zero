@@ -74,10 +74,10 @@ até lá ficam na galeria de modelos do playground.
 | Bosque dos Bichos | 🟡 | `arte/ilhas/bosque.py`: percurso nas copas (4 deques, pontes de corda, escada em espiral, escorregador), casa na árvore, cabana da Capi, cercadinho, lago, 3 cipós soltos, toras, flores |
 | Vila Doce | 🟡 | `arte/ilhas/vila_doce.py`: padaria, sorveteria com terraço, feira de 6 barracas, 3 casinhas de telhado plano (o percurso), fonte de chocolate |
 | Recife Coral | 🟡 | `arte/ilhas/recife.py`: corais de 4 tipos, 10 algas que balançam, caverna submarina, cais e `barco.glb` (balançar), casa da Maré, mapas |
-| Pico Gelado | ⬜ | montanha, iglu, pinheiros nevados, paredes de gelo, trenó, palco do Floco |
-| Vale dos Dinos | ⬜ | vulcão, fósseis, ninhos, samambaias gigantes, observatório da Jade |
-| Ilha das Nuvens | ⬜ | ilhas flutuantes, tear do arco-íris, balão, ninho da Iriê |
-| O alto do Farol (final) | ⬜ | sala da lanterna, os rascunhos da Íris |
+| Pico Gelado | 🟡 | `arte/ilhas-b/pico.py`: montanha com a trilha em espiral até o cume, iglu, pinheiros nevados (2), parede de gelo em degraus, lago congelado, palco do Floco; trenó em `pico-treno.glb` |
+| Vale dos Dinos | 🟡 | `arte/ilhas-b/vale.py`: vulcão com o nó `lava` (material que acende), escavação com o esqueleto, três ninhos com ovos, samambaias gigantes, cavalinhas, observatório da Jade |
+| Ilha das Nuvens | 🟡 | `arte/ilhas-b/nuvens.py`: tear com `fio-1` a `fio-6`, ninho da Iriê na árvore alta, `plataforma-1` a `-4` em degraus; balão com `flutuar` em `nuvens-balao.glb` |
+| O alto do Farol (final) | 🟡 | `arte/ilhas-b/alto_do_farol.py`: sala da lanterna com a `lente` que gira (`girar`), escada em caracol, mesa e quadro com os rascunhos da Íris, janelas e varanda |
 
 ## Lote 7: movimento, veículos e festas
 
