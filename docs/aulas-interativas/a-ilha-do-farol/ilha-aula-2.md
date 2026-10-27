@@ -63,7 +63,7 @@ Recolha a chave.
 - Faça o personagem andar para o fundo com a seta correspondente.
 - Faça o personagem andar para a frente com a seta correspondente.
 - Em Ao iniciar, defina os três valores da posição de chave.
-- Esconda chave dentro do encontro do personagem com chaves.
+- Esconda chave dentro do encontro do personagem com chave.
 - Alcance a chave no lugar escolhido e recolha apenas ao encostar.
 
 **Zappy na página (não gravar):** Sua vez! Monte a regra, teste no seu jogo e clique em Verificar projeto. Depois de conferir os objetivos e aparecer Salvo, clique em Próxima parte.
@@ -82,10 +82,10 @@ Guarde que você pegou a chave.
 - Faça o personagem andar para o fundo com a seta correspondente.
 - Faça o personagem andar para a frente com a seta correspondente.
 - Em Ao iniciar, defina os três valores da posição de chave.
-- Esconda chave dentro do encontro do personagem com chaves.
+- Esconda chave dentro do encontro do personagem com chave.
 - Alcance a chave no lugar escolhido e recolha apenas ao encostar.
 - Comece temChave em falso, em Ao iniciar.
-- No mesmo encontro com chaves, esconda a chave e guarde temChave verdadeiro.
+- No mesmo encontro com chave, esconda a chave e guarde temChave verdadeiro.
 - Guarde a coleta e conserve a chave ao continuar andando.
 
 **Zappy na página (não gravar):** Sua vez! Monte a regra, teste no seu jogo e clique em Verificar projeto. Depois de conferir os objetivos e aparecer Salvo, clique em Próxima parte.
@@ -104,12 +104,12 @@ Conte que a chave foi recolhida.
 - Faça o personagem andar para o fundo com a seta correspondente.
 - Faça o personagem andar para a frente com a seta correspondente.
 - Em Ao iniciar, defina os três valores da posição de chave.
-- Esconda chave dentro do encontro do personagem com chaves.
+- Esconda chave dentro do encontro do personagem com chave.
 - Alcance a chave no lugar escolhido e recolha apenas ao encostar.
 - Comece temChave em falso, em Ao iniciar.
-- No mesmo encontro com chaves, esconda a chave e guarde temChave verdadeiro.
+- No mesmo encontro com chave, esconda a chave e guarde temChave verdadeiro.
 - Guarde a coleta e conserve a chave ao continuar andando.
-- Mude aviso dentro do encontro com chaves.
+- Mude aviso dentro do encontro com chave.
 
 **Zappy na página (não gravar):** Confira o jogo e os objetivos. Aguarde Salvo, clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Próxima parte.
 

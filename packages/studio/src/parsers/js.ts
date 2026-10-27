@@ -9966,6 +9966,49 @@ function tryMatchGame3DCall(expr: Node, source: string, ctx: ParseCtx): JSStatem
       if (!objVar || !groundVar) return null
       return { type: 'g3d:applyGravity', objVar, groundVar }
     }
+    case 'topDown': {
+      const objVar = identifierName(args[0])
+      const speed = toExpr(args[1], ctx)
+      if (!objVar || !isSimpleValue(speed)) return null
+      return { type: 'g3d:topDown', objVar, speed }
+    }
+    case 'walkArea': {
+      const objVar = identifierName(args[0])
+      const minX = toExpr(args[1], ctx)
+      const maxX = toExpr(args[2], ctx)
+      const minZ = toExpr(args[3], ctx)
+      const maxZ = toExpr(args[4], ctx)
+      if (
+        !objVar ||
+        !isSimpleValue(minX) ||
+        !isSimpleValue(maxX) ||
+        !isSimpleValue(minZ) ||
+        !isSimpleValue(maxZ)
+      )
+        return null
+      return { type: 'g3d:walkArea', objVar, minX, maxX, minZ, maxZ }
+    }
+    case 'frameScene': {
+      const worldVar = identifierName(args[0])
+      const width = toExpr(args[1], ctx)
+      const height = toExpr(args[2], ctx)
+      const depth = toExpr(args[3], ctx)
+      if (!worldVar || !isSimpleValue(width) || !isSimpleValue(height) || !isSimpleValue(depth))
+        return null
+      return { type: 'g3d:frameScene', worldVar, width, height, depth }
+    }
+    case 'onTouch': {
+      const objVar = identifierName(args[0]),
+        otherVar = identifierName(args[1])
+      if (!objVar || !otherVar || !isFn(args[2]) || args[2].params.length) return null
+      return { type: 'g3d:onTouch', objVar, otherVar, body: bodyOfFn(args[2], source, ctx) }
+    }
+    case 'walkAnimations': {
+      const objVar = identifierName(args[0])
+      if (!objVar || args[1]?.type !== 'StringLiteral' || args[2]?.type !== 'StringLiteral')
+        return null
+      return { type: 'g3d:walkAnimations', objVar, idle: args[1].value, walking: args[2].value }
+    }
     case 'controlWithKeys': {
       // generator: SZGame3D.controlWithKeys(obj, speed)
       const objVar = identifierName(args[0])

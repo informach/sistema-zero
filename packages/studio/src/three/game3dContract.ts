@@ -71,6 +71,11 @@ export const GAME3D_SEMANTIC_REFERENCE_FIELDS: Readonly<
   'g3d:setVelocity': [object()],
   'g3d:jump': [object()],
   'g3d:applyGravity': [object(), object('groundVar')],
+  'g3d:topDown': [object()],
+  'g3d:walkArea': [object()],
+  'g3d:frameScene': [world()],
+  'g3d:onTouch': [object(), object('otherVar')],
+  'g3d:walkAnimations': [object()],
   'g3d:controlWithKeys': [object()],
   'g3d:setScale': [object()],
   // O objeto pode ficar em branco nos modos que não seguem ninguém (vazio não é conferido).
@@ -419,6 +424,11 @@ export const GAME3D_CALL_ARITIES: Readonly<Record<string, number | readonly numb
   setVelocity: 4,
   applyGravity: 2,
   jump: 2,
+  topDown: 2,
+  walkArea: 5,
+  walkAnimations: 3,
+  frameScene: 4,
+  onTouch: 3,
   controlWithKeys: 2,
   cameraMode: 3,
   cameraDistance: 3,
@@ -598,6 +608,8 @@ export function game3dCallArityIsValid(method: string, count: number): boolean {
  * compartilhada pelo placement dos blocos e pela validação de IR importada.
  */
 export const GAME3D_START_ONLY_STATEMENT_TYPES: ReadonlySet<string> = new Set([
+  'g3d:walkArea',
+  'g3d:walkAnimations',
   'g3d:createScene',
   'g3d:createFullscreenScene',
   'g3d:createBox',

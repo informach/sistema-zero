@@ -6,6 +6,7 @@ import {
   learningImportBodyBytes,
 } from '../../../packages/core/src/learning/authoring-manifest-projection'
 import { ISLAND_SPEECH } from '../../../packages/core/src/learning/scene/island-3d'
+import { resolveCourseModels } from '../../../packages/studio/src/core/courseModels'
 import { derivadosDeVoz } from './gerar-falas-elevenlabs'
 import { gravarArquivo } from './gravar-arquivo'
 import { ilhaAulas } from './ilha-do-farol-conteudo'
@@ -311,7 +312,11 @@ write('zappy-etapas.json', {
     ]),
   ),
 })
-write('ilha-do-farol.szproject.json', jogoPronto)
+// Arquivo de importação portátil: leva os modelos reais, sem depender da biblioteca do host.
+write('ilha-do-farol.szproject.json', {
+  ...jogoPronto,
+  assets: await resolveCourseModels(jogoPronto.assets),
+})
 write(
   'passo-a-passo.md',
   '# Passo a passo do projeto — A Ilha do Farol\n\nUse o teclado para jogar: setas ou WASD. R recomeça.\n\n' +

@@ -17,11 +17,11 @@ const check = (id: string, label: string, rule: SectionStructureRule): SectionPr
   label,
   rule,
 })
-const encounter = (group: string, body: ProjectBlockPattern[]): SectionStructureRule => ({
+const encounter = (other: string, body: ProjectBlockPattern[]): SectionStructureRule => ({
   type: 'usesBlock',
   area: 'events',
-  blockType: 'sz_g3d_on_touch_group',
-  fields: { OBJ: 'personagem', GROUP: group },
+  blockType: 'sz_g3d_on_touch',
+  fields: { OBJ: 'personagem', OTHER: other },
   inputBlocksAll: { BODY: body },
 })
 const set = (name: string, value?: boolean): ProjectBlockPattern => ({
@@ -36,7 +36,7 @@ const visibility = (OBJ: string, MODE: string): ProjectBlockPattern => ({
   fields: { OBJ, MODE },
 })
 const branch = (where: 'THEN' | 'ELSE', body: ProjectBlockPattern[]) =>
-  encounter('portas', [
+  encounter('farol', [
     {
       blockType: 'sz_js_if_else',
       inputBlocks: { COND: { blockType: 'sz_val_variable', fields: { NAME: 'temChave' } } },
@@ -50,7 +50,7 @@ const movement = check(
     type: 'usesBlock',
     area: 'loops',
     blockType: 'sz_g3d_animate',
-    inputBlocks: { BODY: { blockType: 'sz_g3d_control_keys', fields: { OBJ: 'personagem' } } },
+    inputBlocks: { BODY: { blockType: 'sz_g3d_top_down', fields: { OBJ: 'personagem' } } },
   },
 )
 const directions: SectionProjectCheck[] = (
@@ -101,8 +101,8 @@ const changedPosition: SectionProjectCheck[] = (['x', 'z'] as const).map((axis) 
 }))
 const collect = check(
   'recolher-no-encontro',
-  'Esconda chave dentro do encontro do personagem com chaves.',
-  encounter('chaves', [visibility('chave', 'hide')]),
+  'Esconda chave dentro do encontro do personagem com chave.',
+  encounter('chave', [visibility('chave', 'hide')]),
 )
 const memory = check('memoria-inicial', 'Comece temChave em falso, em Ao iniciar.', {
   type: 'usesBlock',
@@ -113,22 +113,22 @@ const memory = check('memoria-inicial', 'Comece temChave em falso, em Ao iniciar
 })
 const remember = check(
   'guardar-na-coleta',
-  'No mesmo encontro com chaves, esconda a chave e guarde temChave verdadeiro.',
-  encounter('chaves', [visibility('chave', 'hide'), set('temChave', true)]),
+  'No mesmo encontro com chave, esconda a chave e guarde temChave verdadeiro.',
+  encounter('chave', [visibility('chave', 'hide'), set('temChave', true)]),
 )
 const message = check(
   'aviso-na-coleta',
-  'Mude aviso dentro do encontro com chaves.',
-  encounter('chaves', [set('aviso')]),
+  'Mude aviso dentro do encontro com chave.',
+  encounter('chave', [set('aviso')]),
 )
 const missing = check(
   'resposta-sem-chave',
-  'No encontro com portas, consulte temChave e mude aviso no senão.',
+  'No encontro com farol, consulte temChave e mude aviso no senão.',
   branch('ELSE', [set('aviso')]),
 )
 const win = check(
   'resposta-com-chave',
-  'No então do encontro com portas, toque a animação acender no farol uma vez, guarde ganhou e mude aviso.',
+  'No então do encontro com farol, toque a animação acender no farol uma vez, guarde ganhou e mude aviso.',
   branch('THEN', [
     {
       blockType: 'sz_g3d_play_animation',

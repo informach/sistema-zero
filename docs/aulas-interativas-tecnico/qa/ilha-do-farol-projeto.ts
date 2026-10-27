@@ -60,33 +60,25 @@ export function ilhaSource(parte: IlhaParte, escolhas: IlhaEscolhas = {}): strin
   const n = ILHA_PARTES.indexOf(parte)
   return `
 const cena=SZGame3D.createFullscreenScene("#94d5f5");
-SZGame3D.setCameraPosition(cena,0,12,21);
-SZGame3D.setFOV(cena,48);
+SZGame3D.frameScene(cena,24,7,14);
 ${placed(escolhas, 'cenario', [0, 0, 0])}
 ${placed(escolhas, 'farol', [5.2, 0, 0.1])}
 ${placed(escolhas, 'barco', [8.5, -0.1, 4.5])}
 ${placed(escolhas, 'pedra', [-2, 0, -1])}
 ${placed(escolhas, 'personagem', [-6.5, 0.8, 0.75], true)}
 ${placed(escolhas, 'chave', n >= 2 ? [-3, 1, -2] : [-2, 1, -3], true)}
-const centro=SZGame3D.createModel(cena);
-SZGame3D.setPosition(centro,-1,0,0);
-SZGame3D.cameraLookAt(cena,centro);
-const chaves=SZGame3D.createGroup();
-chaves.push(chave);
-const portas=SZGame3D.createGroup();
-portas.push(farol);
-const jogadores=SZGame3D.createGroup();
-jogadores.push(personagem);
+SZGame3D.walkArea(personagem,-11,0.7,-5,5);
+SZGame3D.walkArea(personagem,0.6,4.1,0.4,1.1);
+SZGame3D.walkArea(personagem,4,6.1,-0.5,1.7);
+SZGame3D.walkAnimations(personagem,"parado","andando");
 let ganhou=false;
 let aviso="Encontre a chave e leve o personagem até o farol.";
 ${n >= 4 ? 'let temChave=false;' : ''}
-let antesX=-6.5;
-let antesZ=0.75;
 SZGame3D.hudText("bottom-center","Setas ou WASD: andar. R: recomeçar.");
 SZGame3D.onKey("KeyR",()=>{SZGame3D.restart();});
 ${
   n >= 3
-    ? `SZGame3D.onTouchGroup(personagem,chaves,(item)=>{
+    ? `SZGame3D.onTouch(personagem,chave,()=>{
   SZGame3D.setVisible(chave,"hide");
   ${n >= 4 ? 'temChave=true;' : ''}
   ${n >= 5 ? 'aviso="Você pegou a chave! Agora vá ao farol.";' : ''}
@@ -95,7 +87,7 @@ ${
 }
 ${
   n >= 6
-    ? `SZGame3D.onTouchGroup(personagem,portas,(item)=>{
+    ? `SZGame3D.onTouch(personagem,farol,()=>{
   if(temChave){
     ${
       n >= 7
@@ -109,21 +101,7 @@ ${
     : ''
 }
 SZGame3D.animate(cena,()=>{
-  ${n >= 1 ? 'SZGame3D.controlWithKeys(personagem,4);' : ''}
-  SZGame3D.updateGroupNoGravity(jogadores);
-  if(!((SZGame3D.objectValue(personagem,"x")>=-11 && SZGame3D.objectValue(personagem,"x")<=0.6 && SZGame3D.objectValue(personagem,"z")>=-5 && SZGame3D.objectValue(personagem,"z")<=5) || (SZGame3D.objectValue(personagem,"x")>=0.6 && SZGame3D.objectValue(personagem,"x")<=4 && SZGame3D.objectValue(personagem,"z")>=0.4 && SZGame3D.objectValue(personagem,"z")<=1.1) || (SZGame3D.objectValue(personagem,"x")>=4 && SZGame3D.objectValue(personagem,"x")<=6.1 && SZGame3D.objectValue(personagem,"z")>=-0.5 && SZGame3D.objectValue(personagem,"z")<=1.7))){
-    SZGame3D.setPosition(personagem,antesX,0.8,antesZ);
-    SZGame3D.setVelocity(personagem,0,0,0);
-  }else{
-    antesX=SZGame3D.objectValue(personagem,"x");
-    antesZ=SZGame3D.objectValue(personagem,"z");
-  }
-  if(SZGame3D.isMoving(personagem)){
-    SZGame3D.faceVelocity(personagem);
-    SZGame3D.playAnimation(personagem,"andando","repetir");
-  }else{
-    SZGame3D.playAnimation(personagem,"parado","repetir");
-  }
+  ${n >= 1 ? 'SZGame3D.topDown(personagem,4);' : ''}
   SZGame3D.hudText("top-center",aviso);
   if(ganhou){
     SZGame3D.moveTowards(barco,${chegada.join(',')},1.8);

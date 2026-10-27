@@ -1,4 +1,4 @@
-import { describe, expect, test } from 'bun:test'
+import { describe, expect, spyOn, test } from 'bun:test'
 import { createHash } from 'node:crypto'
 import { readdirSync, readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
@@ -9,6 +9,7 @@ import {
   courseModelSha,
   courseModelStub,
   isCourseModelLibId,
+  isCourseModelStub,
   pendingCourseModels,
   preloadCourseModels,
   resolveCourseModels,
@@ -77,20 +78,28 @@ describe('biblioteca de modelos dos cursos', () => {
     const sha = file.slice(2, 66)
     const real = `data:model/gltf-binary;base64,${moduleBytes(file).toString('base64')}`
     const desconhecido = reference('c'.repeat(64), [], 'outro')
-    const assets = [reference(sha), desconhecido]
-    expect(asset3DManifest(assets).modelo?.dataUrl).toBe(assets[0]!.dataUrl)
+    const assets = [reference(sha)]
+    expect(asset3DManifest(assets)).toEqual({})
     expect(pendingCourseModels(assets)).toEqual([sha])
     await preloadCourseModels(assets)
     expect(pendingCourseModels(assets)).toEqual([])
     const manifest = asset3DManifest(assets)
     expect(manifest.modelo?.dataUrl).toBe(real)
-    // Sem módulo nesta versão do Estúdio: fica o GLB mínimo (o jogo roda sem a peça).
-    expect(manifest.outro?.dataUrl).toBe(desconhecido.dataUrl)
+    // Uma versão incompatível informa o erro em vez de executar sem as peças.
+    expect(pendingCourseModels([desconhecido])).toEqual(['c'.repeat(64)])
+    await expect(preloadCourseModels([desconhecido])).rejects.toThrow('esta versão')
+    expect(asset3DManifest([desconhecido])).toEqual({})
     // O projeto continua guardando só a referência.
     expect(assets[0]!.dataUrl).not.toBe(real)
     const resolvidos = await resolveCourseModels(assets)
     expect(resolvidos[0]!.dataUrl).toBe(real)
-    expect(resolvidos[1]).toBe(desconhecido)
+    // Arquivo portátil, até com referência desconhecida: usa a malha embutida.
+    const portable = { ...desconhecido, dataUrl: real }
+    expect(isCourseModelStub(portable)).toBe(false)
+    expect(pendingCourseModels([portable])).toEqual([])
+    await preloadCourseModels([portable])
+    expect(asset3DManifest([portable]).outro?.dataUrl).toBe(real)
+    expect((await resolveCourseModels([portable]))[0]).toBe(portable)
   })
 
   test('com o código, só os modelos que ele cita são carregados', async () => {
@@ -103,6 +112,22 @@ describe('biblioteca de modelos dos cursos', () => {
     expect(pendingCourseModels(assets)).toEqual([a, b])
     await preloadCourseModels(assets, code)
     expect(pendingCourseModels(assets)).toEqual([b])
-    expect(asset3DManifest(assets).robo?.dataUrl).toBe(assets[1]!.dataUrl)
+    expect(asset3DManifest(assets).robo).toBeUndefined()
+  })
+  test('uma falha de download não vira modelo vazio e permite tentar de novo', async () => {
+    clearCourseModelCacheForTests()
+    const sha = FILES[0]!.slice(2, 66),
+      assets = [reference(sha)]
+    const loader = spyOn(COURSE_MODEL_LOADERS, sha).mockRejectedValueOnce(new Error('offline'))
+    try {
+      await expect(preloadCourseModels(assets)).rejects.toThrow('Confira sua conexão')
+      expect(pendingCourseModels(assets)).toEqual([sha])
+      expect(asset3DManifest(assets)).toEqual({})
+      await preloadCourseModels(assets)
+      expect(pendingCourseModels(assets)).toEqual([])
+      expect(asset3DManifest(assets).modelo?.dataUrl.length).toBeGreaterThan(1000)
+    } finally {
+      loader.mockRestore()
+    }
   })
 })
