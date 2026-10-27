@@ -102,6 +102,7 @@ const nextConfig: NextConfig = {
   transpilePackages: [
     '@sistemazero/ui',
     '@sistemazero/member-shell',
+    '@sistemazero/avatar-quarto',
     '@sistemazero/studio',
     // ⚠️ O bloco de Pinta é KIDS na prática, mas o renderizador de blocos é COMPARTILHADO: o
     // `lesson-blocks` do member-shell referencia o `PintaBlockView`, então o bundler do adulto

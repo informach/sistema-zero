@@ -129,6 +129,7 @@ const nextConfig: NextConfig = {
     '@sistemazero/studio',
     '@sistemazero/pinta',
     '@sistemazero/member-shell',
+    '@sistemazero/avatar-quarto',
   ],
   // Security headers em TODAS as respostas (inclui `/api/media/*`, que fica fora
   // do matcher do `proxy.ts`). Fonte única — não duplicar no proxy.

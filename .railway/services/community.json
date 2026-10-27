@@ -6,6 +6,8 @@
       "/packages/community/**",
       "/packages/core/**",
       "/packages/member-shell/**",
+      "/packages/avatar-quarto/**",
+      "/packages/arquipelago-contracts/**",
       "/packages/helpdesk-contracts/**",
       "/packages/molda/**",
       "/packages/pensa/**",

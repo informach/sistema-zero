@@ -1,0 +1,23 @@
+{
+  "name": "@sistemazero/arquipelago-contracts",
+  "version": "0.1.0",
+  "description": "Contrato do Arquipélago Vagalume: a porta entre o jogo e a plataforma, o salvamento e as respostas do serviço do jogo, tudo com versão. Puro (sem React, sem three).",
+  "type": "module",
+  "private": true,
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "bun test",
+    "check": "biome check .",
+    "check:fix": "biome check --write ."
+  },
+  "dependencies": {
+    "zod": "4.3.6"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.3.14",
+    "typescript": "^5.7.0"
+  }
+}

@@ -3,6 +3,7 @@ import 'server-only'
 import { sessionCookieNames } from './lib/cookies'
 import { paletteCookieName } from './lib/palette-cookie'
 import { createShellRoutes } from './routes'
+import { createArquipelagoRoutes } from './routes/arquipelago'
 import { createCertificateRoutes } from './routes/certificate'
 import { createCreationCleanupWorkerRoutes } from './routes/creation-cleanup'
 import { createCreationsRoutes } from './routes/creations'
@@ -90,6 +91,7 @@ export function createShell(cfg: ShellConfig) {
     }),
     ...createHubRoutes({ hub, members, media, session, audience: cfg.audience }),
     ...createHelpdeskRoutes({ gateway, session, audience: cfg.audience }),
+    ...createArquipelagoRoutes({ gateway }),
     ...createStudioRoutes({ hub, members, media, audience: cfg.audience }),
     ...createStudioPythonLanguageRoutes(media, { members, audience: cfg.audience }),
     ...createStudioZappyRoutes({ members, session, audience: cfg.audience }),

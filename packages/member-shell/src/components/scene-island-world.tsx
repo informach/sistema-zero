@@ -45,9 +45,11 @@ export function IslandWorld({
         'Cena 3D da ilha; a descrição e os valores estão ao lado dos controles.',
       )
       host.current.appendChild(renderer.domElement)
-      world.add(new T.AmbientLight('#ffffff', 1.3))
-      const sun = new T.DirectionalLight('#ffffff', 2)
-      sun.position.set(-3, 10, 8)
+      // A mesma luz que o Jogo 3D cria em toda cena (LIGHT_AMBIENT e LIGHT_SUN do runtime):
+      // os modelos do Blender saem aqui com a cor que têm no jogo.
+      world.add(new T.AmbientLight('#ffffff', 2.1))
+      const sun = new T.DirectionalLight('#ffffff', 1.7)
+      sun.position.set(3, 5, 4)
       world.add(sun)
       const resources = new Set<THREE.BufferGeometry | THREE.Material | THREE.Texture>()
       const release = (root: THREE.Object3D) =>
@@ -72,7 +74,22 @@ export function IslandWorld({
         renderer.forceContextLoss()
         renderer.domElement.remove()
       }
-      const gltf = await new GLTFLoader().loadAsync(ILHA_SCENE_GLB)
+      // As texturas de dentro do .glb (o céu em degradê): no Chrome o GLTFLoader as lê com
+      // fetch(blob:), que a CSP dos apps não libera em connect-src. Pela <img> (o caminho que
+      // ele usa no Safari) o img-src blob: deixa. O arquivo em si é decodificado aqui.
+      const loader = new GLTFLoader()
+      loader.register((parser) => {
+        const p = parser as unknown as {
+          textureLoader: THREE.Loader
+          options: { manager: THREE.LoadingManager }
+        }
+        p.textureLoader = new T.TextureLoader(p.options.manager)
+        return { name: 'sz_textures_by_img' }
+      })
+      const glb = Uint8Array.from(atob(ILHA_SCENE_GLB.slice(ILHA_SCENE_GLB.indexOf(',') + 1)), (c) =>
+        c.charCodeAt(0),
+      )
+      const gltf = await loader.parseAsync(glb.buffer, '')
       if (disposed) {
         release(gltf.scene)
         for (const r of resources) r.dispose()
@@ -80,7 +97,7 @@ export function IslandWorld({
       }
       const scene = gltf.scene
       world.add(scene)
-      // Root labels are an explicit round-trip contract in the Molda delivery guide.
+      // Os nós de topo são o contrato de gerar-ilha-artes.ts (docs/aulas-interativas-tecnico/qa).
       const named = (name: string) => {
         const o = scene.children.find((o) => o.name === name.replaceAll(' ', '_'))
         if (!o) throw Error(`Modelo ausente: ${name}`)
@@ -88,13 +105,8 @@ export function IslandWorld({
       }
       const key = named('Chave'),
         hero = named('Aventureiro'),
-        rock = named('Pedras')
-      const bench = new T.Mesh(
-        new T.BoxGeometry(10.6, 0.15, 10.6),
-        new T.MeshStandardMaterial({ color: '#508f82' }),
-      )
-      bench.position.y = -0.1
-      world.add(bench)
+        rock = named('Pedras'),
+        bench = named('Bancada')
       const grid = new T.GridHelper(8, 8, '#3784bc', '#b8d4a3')
       grid.position.y = 0.01
       world.add(grid)
@@ -134,9 +146,9 @@ export function IslandWorld({
           full = s.mode === 'view'
         for (const root of scene.children) root.visible = full || root === key || root === hero
         rock.visible = full
+        bench.visible = !full
         key.position.set(s.key.x, s.key.y, s.key.z)
         hero.position.set(full ? -6.5 : s.hero.x, 0.8, full ? 0.75 : s.hero.z)
-        bench.visible = !full
         grid.visible = s.mode === 'position'
         origin.visible = before.visible = projection.visible = ray.visible = s.mode === 'position'
         origin.position.set(-2, 0.04, -3)

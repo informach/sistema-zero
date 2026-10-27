@@ -288,3 +288,33 @@ describe('Jogo 3D — regras de jogo de ponta a ponta', () => {
     expect(vistos).not.toContain(primeira)
   })
 })
+
+describe('Jogo 3D — peça de efeito do modelo fora da área de toque', () => {
+  it('um nó com szSemCaixa (o feixe do farol) não aumenta a caixa do encontro', () => {
+    const { api } = boot()
+    const cena = api.createFullscreenScene?.('#000') as unknown
+    const farol = api.createBox?.(cena, { size: 1 }) as THREE.Mesh
+    const heroi = api.createBox?.(cena, { size: 1 }) as THREE.Mesh
+    api.setPosition?.(heroi, 3, 0, 0)
+    // O modelo montado: o corpo no lugar do objeto e o feixe comprido para o lado do herói.
+    const modelo = new THREE.Group()
+    const feixe = new THREE.Mesh(new THREE.BoxGeometry(4, 0.2, 0.2))
+    feixe.position.set(2, 0, 0)
+    modelo.add(new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1)), feixe)
+    farol.add(modelo)
+    ;(farol.userData.sz as Record<string, unknown>).modelRoot = modelo
+    // Sem a marca, o feixe conta (a régua de sempre).
+    expect(api.hitAny?.(heroi, [farol])).toBe(true)
+    // Marcado como efeito, ele sai da caixa; o corpo continua valendo.
+    const outro = new THREE.Group()
+    const feixe2 = feixe.clone()
+    feixe2.userData = { szSemCaixa: true }
+    outro.add(new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1)), feixe2)
+    farol.remove(modelo)
+    farol.add(outro)
+    ;(farol.userData.sz as Record<string, unknown>).modelRoot = outro
+    expect(api.hitAny?.(heroi, [farol])).toBe(false)
+    api.setPosition?.(heroi, 0.8, 0, 0)
+    expect(api.hitAny?.(heroi, [farol])).toBe(true)
+  })
+})

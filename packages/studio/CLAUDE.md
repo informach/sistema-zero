@@ -11,6 +11,22 @@ apenas o parser da representação em blocos, sem conceder edição, LSP, assist
 exportado para esse host: no Admin, executar a entrega e inspecionar seu código em `observer`
 são superfícies separadas. Não usar `authoring` com um rascunho inventado para revisar entregas.
 
+## A luz do Jogo 3D é a cor escolhida (27/10/2026)
+
+O Jogo 3D cria em toda cena `AmbientLight` 2,1 + `DirectionalLight` 1,7 (`LIGHT_AMBIENT` e
+`LIGHT_SUN` no runtime; vale também para o Kit Empilhar). Com a luz fisicamente correta o three.js
+divide a luz por pi, e a soma antiga (0,6 + 0,9) mostrava ~78% da cor: tudo saía apagado. Medido
+com os novos números, a frente sai com 0,99 da cor, o topo com ~1,03 e a face sem sol com 0,83.
+Os blocos de luz da criança SOMAM a esta luz e não mudaram.
+- A oficina do Molda (`molda/src/viewport/workshopLights.ts`) usa os MESMOS números;
+  `game-3d/__tests__/workshopLights.test.ts` compara os dois pelo texto (os pacotes não se importam).
+- ⚠️ O Kit Travessia (`setupCrossingLights`) ficou com a luz de antes: a paleta dele foi escolhida
+  para ela, e com a nova a grama virava verde-limão.
+- ⚠️ Mundo 3D e Jogo 3D Avançado NÃO mudaram: usam ACES (no renderer e no composer com bloom),
+  ciclo de dia e noite e grama com shader próprio. Qualquer tone mapping desloca a cor (medido:
+  ACES e Neutral mudam o matiz); igualar a cor lá é um projeto do pipeline inteiro, com revisão
+  dos 34 exemplos.
+
 ## O recurso tem nome, sem "IA" solta (20/10/2026)
 
 Pedido da dona, o mesmo dos dois apps (vocabulário completo nos CLAUDE.md de `community` e

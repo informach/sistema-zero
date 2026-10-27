@@ -8,8 +8,6 @@ import {
   BoxGeometry,
   CircleGeometry,
   DataTexture,
-  DirectionalLight,
-  HemisphereLight,
   Mesh,
   MeshStandardMaterial,
   NearestFilter,
@@ -24,6 +22,7 @@ import {
 } from 'three'
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
 import { DemandRenderLoop } from './demandRenderLoop'
+import { workshopLights } from './workshopLights'
 
 export interface TexturePreviewLike {
   setTexture(rgba: Uint8Array, size: number): void
@@ -69,10 +68,8 @@ export class TexturePreview implements TexturePreviewLike {
     this.orbit.update()
     this.orbit.addEventListener('change', this.onOrbitChange)
 
-    const hemisphere = new HemisphereLight(0xffffff, 0x7f8fa8, 1.3)
-    const sun = new DirectionalLight(0xffffff, 2)
-    sun.position.set(5, 8, 6)
-    this.scene.add(hemisphere, sun)
+    // A luz do jogo (a mesma da oficina): a textura aparece aqui com a cor que vai ter lá.
+    this.scene.add(...workshopLights())
     const ground = new Mesh(
       new CircleGeometry(4, 40),
       new MeshStandardMaterial({ color: 0xd7e3f2, roughness: 1, metalness: 0 }),

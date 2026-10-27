@@ -80,7 +80,14 @@ const BUDGETS: readonly {
   // cancelamento/descarte), clique na cena, HUD central e limpeza ao falhar WebGL.
   // É código compartilhado necessário para retirar HTML/CSS dos 19 exemplos;
   // nenhum novo laço de renderização foi criado. Medido: 224_876 / 62_782.
-  { extension: gameThreeDExtension, maxChars: 224_900, maxGzipBytes: 62_800 },
+  // ⚠️ 27/10 (Ilha do Farol com os modelos do Blender), +2_370 caracteres; o gzip caiu para
+  // 61_639. Compartilhado com os três (~+1_190): as texturas de dentro do .glb lidas pela img
+  // quando a CSP do documento recusa fetch(blob:) (o connect-src 'none' do preview), porque o
+  // GLTFLoader do Chrome as lê assim e o modelo saía sem textura. Do Jogo 3D: peça de efeito (szSemCaixa) fora da área de toque, modelo até 200
+  // (um cenário inteiro) sem o cubo cinza acima de 64, e o normalBias da sombra (acne).
+  // 27/10 (luz do motor igual à oficina do Molda): as constantes LIGHT_AMBIENT e
+  // LIGHT_SUN no lugar dos números soltos. Medido: 227_324.
+  { extension: gameThreeDExtension, maxChars: 227_400, maxGzipBytes: 62_800 },
   // ⬇️ Lote 14 do review 3D (P2): o Kit Plataforma (`runtimePlatform.ts`) só entra quando o
   // código do projeto usa um método dele (`game-3d/platformKitVariant.ts`); os outros 20
   // exemplos do catálogo recebem esta variante. O completo, acima, segue sendo o de quem usa o
@@ -93,7 +100,9 @@ const BUDGETS: readonly {
     // ⚠️ SUBIU com a correção do review de 24/10/2026 (+4_470 / +1_067; o mesmo conjunto da
     // variante completa, acima, menos o do Kit). Medido: 185_682 caracteres, 51_568 bytes gzip.
     // Mesmos recursos nativos, sem o Kit Plataforma: 190_794 / 53_051.
-    maxChars: 190_800,
+    // 27/10: +2_370, o mesmo da variante completa (acima). Medido: 193_164 / 52_171.
+    // 27/10, luz do motor: as duas constantes de luz. Medido: 193_242.
+    maxChars: 193_300,
     maxGzipBytes: 53_100,
   },
   // Medido: 341_986 caracteres, 93_312 bytes gzip.
@@ -148,7 +157,8 @@ const BUDGETS: readonly {
   // carrinho para…" do Ao iniciar deixou de ser ignorado. Medido: 344_375 caracteres, 102_711 bytes
   // gzip.
   // 25/10: HUD central compartilhado, sem controles dos kits: 344_930 / 102_843.
-  { extension: worldThreeDExtension, maxChars: 345_000, maxGzipBytes: 102_900 },
+  // 27/10: +1_228, as texturas do .glb pela img (ver o Jogo 3D). Medido: 346_158 / 100_414.
+  { extension: worldThreeDExtension, maxChars: 346_200, maxGzipBytes: 102_900 },
   // Medido: 213_707 caracteres, 62_113 bytes gzip.
   // ⬇️ DESCEU no lote 11 (o Avançado consome as regras comuns): entrou o fragmento
   // COMPARTILHADO `game3dRules/runtime.ts` (~15_900 caracteres / ~5_300 bytes gzip; placar,
@@ -186,7 +196,8 @@ const BUDGETS: readonly {
   // +2_366 / +515 (o runtime montado SEM as mudanças do Avançado mede 207_525 / 61_104) e as
   // correções do Avançado +1_079 / +324. Medido FINAL: 208_604 caracteres, 61_428 bytes gzip.
   // 25/10: HUD central compartilhado, sem controles dos kits: 209_159 / 61_537.
-  { extension: gameKit3DExtension, maxChars: 209_200, maxGzipBytes: 61_600 },
+  // 27/10: +1_187, as texturas do .glb pela img (ver o Jogo 3D). Medido: 210_387 / 60_177.
+  { extension: gameKit3DExtension, maxChars: 210_400, maxGzipBytes: 61_600 },
 ]
 
 async function bootstrapSource(

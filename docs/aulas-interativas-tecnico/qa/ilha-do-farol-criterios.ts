@@ -128,10 +128,12 @@ const missing = check(
 )
 const win = check(
   'resposta-com-chave',
-  'No então do encontro com portas, troque os faróis, guarde ganhou e mude aviso.',
+  'No então do encontro com portas, toque a animação acender no farol uma vez, guarde ganhou e mude aviso.',
   branch('THEN', [
-    visibility('farol', 'hide'),
-    visibility('farolAceso', 'show'),
+    {
+      blockType: 'sz_g3d_play_animation',
+      fields: { CLIP: 'acender', OBJ: 'farol', MODE: 'uma-vez' },
+    },
     set('ganhou', true),
     set('aviso'),
   ]),
@@ -146,6 +148,7 @@ export function ilhaChecks(part: IlhaParte): SectionProjectCheck[] {
       'aviso',
       'sem-chave',
       'decisao',
+      'aparencia',
       'personalizar',
     ],
     n = ids.indexOf(part)

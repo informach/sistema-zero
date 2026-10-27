@@ -33,6 +33,46 @@ const THREE_MODELS_TEMPLATE = `
 
 /*__SZ_DATA_URL_RUNTIME__*/
 
+  // As imagens de DENTRO do .glb: no Chrome o GLTFLoader as lê com fetch(blob:), e uma CSP
+  // que não libera blob: em connect-src (a do preview: connect-src 'none') recusa, e o modelo
+  // sai sem textura, em silêncio. Nesse documento elas vêm pela img (o caminho que o próprio
+  // GLTFLoader usa no Safari), que o img-src blob: deixa.
+  function blobFetchBlocked() {
+    try {
+      var metas = document.getElementsByTagName('meta');
+      for (var i = 0; i < metas.length; i++) {
+        if (String(metas[i].getAttribute('http-equiv') || '').toLowerCase() !== 'content-security-policy') continue;
+        // Sem barra invertida: este texto é um template literal.
+        var parts = String(metas[i].getAttribute('content') || '').toLowerCase().split(';');
+        var connect = null, fallback = null;
+        for (var j = 0; j < parts.length; j++) {
+          var part = parts[j].trim();
+          if (part.indexOf('connect-src') === 0) connect = part.slice(11);
+          else if (part.indexOf('default-src') === 0) fallback = part.slice(11);
+        }
+        var rule = connect !== null ? connect : fallback;
+        if (rule === null) continue;
+        var tokens = rule.split(' ');
+        if (tokens.indexOf('blob:') < 0 && tokens.indexOf('*') < 0) return true;
+      }
+    } catch (e) {}
+    return false;
+  }
+  function newGltfLoader(mod) {
+    var loader = new mod.GLTFLoader();
+    if (THREE.TextureLoader && loader.register && blobFetchBlocked()) {
+      loader.register(function (parser) {
+        if (parser.textureLoader && parser.textureLoader.isImageBitmapLoader) {
+          var images = new THREE.TextureLoader(parser.options.manager);
+          images.setCrossOrigin(parser.options.crossOrigin);
+          parser.textureLoader = images;
+        }
+        return { name: 'sz_textures_by_img' };
+      });
+    }
+    return loader;
+  }
+
   function createSzModels(host) {
     var assets = host.assets || {};
     var note = host.fallbackNote || '';
@@ -581,7 +621,7 @@ const THREE_MODELS_TEMPLATE = `
         if (isGone()) { flush(null); return; }
         gltfMod = mod;
         try {
-          new mod.GLTFLoader().parse(buf, '', function (gltf) {
+          newGltfLoader(mod).parse(buf, '', function (gltf) {
             var install = function () {
               // O parse não cancela: uma conclusão tardia é dona destes recursos e os solta.
               if (settled || isGone()) {

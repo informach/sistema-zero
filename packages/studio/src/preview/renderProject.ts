@@ -5,6 +5,7 @@ import {
   assetMetaManifest,
   type JavaScriptProjectDocument,
   type Project,
+  preloadCourseModels,
   soundManifest,
 } from '#core'
 import { isDocumentRecord } from '../core/projectDocument'
@@ -79,6 +80,8 @@ export async function renderProjectToPreviewDocAsync(
     ? playableProject.extraFiles
     : undefined
   const assets = Array.isArray(playableProject.assets) ? playableProject.assets : undefined
+  // Modelos da biblioteca dos cursos: o projeto guarda a referência, o jogo precisa do arquivo.
+  await preloadCourseModels(assets, files['script.js'])
   const resources = await loadJavaScriptClassicResources(
     installedExtensions.flatMap((e) => (e && typeof e.id === 'string' ? [e.id] : [])),
     resolveGameUiFontId({ ir: playableProject.ir, files }),

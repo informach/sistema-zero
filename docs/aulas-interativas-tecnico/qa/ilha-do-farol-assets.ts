@@ -1,114 +1,110 @@
 import { readFileSync } from 'node:fs'
-import { resolve } from 'node:path'
-import { Logger, NodeIO } from '@gltf-transform/core'
-import { ALL_EXTENSIONS } from '@gltf-transform/extensions'
-import { dedup, prune, quantize, weld } from '@gltf-transform/functions'
-import { encodeSceneGlb } from '../../../packages/molda/src/export/sceneGlb'
-import { buildSceneGeometry } from '../../../packages/molda/src/scene/geometry'
-import { indexSceneNodes } from '../../../packages/molda/src/scene/graph'
-import { readSceneDocument } from '../../../packages/molda/src/scene/readDocument'
+import {
+  COURSE_MODEL_LIB_PREFIX,
+  courseModelStub,
+} from '../../../packages/studio/src/core/courseModels'
 import type { ProjectAsset } from '../../../packages/studio/src/core/project'
+import { type IlhaModelo, type IlhaPeca, MODELOS_JSON } from './publicar-ilha-modelos'
 
-const io = new NodeIO()
-  .registerExtensions(ALL_EXTENSIONS)
-  .setLogger(new Logger(Logger.Verbosity.SILENT))
+/**
+ * Os modelos da Ilha do Farol vêm do Blender (`docs/design/ilha-do-farol-blender`), publicados
+ * na biblioteca de modelos dos cursos por `publicar-ilha-modelos.ts`. O projeto leva só a
+ * REFERÊNCIA de cada um (o GLB mínimo com os nomes das animações); o Estúdio carrega o arquivo.
+ *
+ * Os nomes são os mesmos das imagens da Chave do Farol em 2D: na personalização a criança
+ * escolhe "pirata" ou "barco-pirata" nos dois cursos. Cada categoria tem UMA caixa (o build do
+ * Blender confere), então trocar o modelo não muda tamanho, centro nem área de toque.
+ */
+const modelos = JSON.parse(readFileSync(MODELOS_JSON, 'utf8')) as Record<IlhaPeca, IlhaModelo>
 
-/** Replace only the source project here after the author returns the edited Molda files. */
-export const ILHA_ART_SOURCES = {
-  mar: 'mar',
-  terreno: 'terreno',
-  ponte: 'ponte',
-  coqueiroTras: 'coqueiro-tras',
-  coqueiroFrente: 'coqueiro-frente',
-  vegetacao: 'vegetacao',
-  farol: 'farol-apagado',
-  farolAceso: 'farol-aceso',
-  barco: 'veleiro',
-  pedra: 'pedras',
-  personagem: 'aventureiro',
-  chave: 'chave',
-} as const
-const sourceDir = resolve(import.meta.dirname, '../../design/ilha-do-farol-molda/projetos')
-async function load(name: string, file: string) {
-  const read = readSceneDocument(
-    JSON.parse(readFileSync(resolve(sourceDir, `${file}.molda.json`), 'utf8')),
-  )
-  if (read.status !== 'valid') throw Error(`Arte inválida: ${file}`)
-  const doc = structuredClone(read.document)
-  // Same display detail as the approved whole-scene export; editable sources stay intact.
-  for (const g of doc.geometries) if (g.kind === 'sphere') g.tessellation = { around: 16, down: 8 }
-  const index = indexSceneNodes(doc.nodes),
-    byGeometry = new Map(doc.geometries.map((g) => [g.id, g]))
-  const min = [Infinity, Infinity, Infinity],
-    max = [-Infinity, -Infinity, -Infinity]
-  const visible = (id: string): boolean => {
-    const n = index.nodes.get(id)!
-    return !n.hidden && (!n.parentId || visible(n.parentId))
-  }
-  for (const node of doc.nodes) {
-    if (node.kind !== 'mesh' || !visible(node.id)) continue
-    const p = buildSceneGeometry(byGeometry.get(node.geometryId)!).positions,
-      m = index.worldMatrices.get(node.id)!
-    for (let i = 0; i < p.length; i += 3)
-      for (let a = 0; a < 3; a++) {
-        const v = m[a] * p[i] + m[4 + a] * p[i + 1] + m[8 + a] * p[i + 2] + m[12 + a]
-        min[a] = Math.min(min[a], v)
-        max[a] = Math.max(max[a], v)
-      }
-  }
-  const glb = encodeSceneGlb(doc, { allowLosses: true })
-  if (glb.issues.some((i) => i.code !== 'hidden-node'))
-    throw Error(`Perda na arte ${file}: ${JSON.stringify(glb.issues)}`)
-  const center = min.map((v, i) => (v + max[i]) / 2) as [number, number, number]
-  const size = Math.max(...max.map((v, i) => v - min[i]))
-  const optimized = await io.readBinary(glb.bytes)
-  await optimized.transform(
-    weld({ overwrite: true }),
-    dedup(),
-    quantize({ quantizePosition: 14, quantizeNormal: 10 }),
-    // Quantization can make formerly distinct vertices identical. Re-index and quantize
-    // again so the final GLB retains compact integer attributes instead of floats.
-    weld({ overwrite: true }),
-    quantize({ quantizePosition: 14, quantizeNormal: 10 }),
-    prune(),
-  )
-  const bytes = await io.writeBinary(optimized)
-  const asset: ProjectAsset = {
-    id: `ilha-modelo-${name}`,
-    name: `ilha-${file}`,
+/** O nome do asset (o que aparece na lista do bloco) de cada peça do Blender. */
+const nomeDoAsset = (peca: IlhaPeca) => peca.replace(/^cenario-/, '')
+
+function referencia(peca: IlhaPeca): ProjectAsset {
+  const m = modelos[peca]
+  if (!m) throw new Error(`Modelo ausente em modelos.json: ${peca}`)
+  const name = nomeDoAsset(peca)
+  return {
+    id: `ilha-modelo-${peca}`,
+    name,
     kind: 'model3d',
     source: 'library',
-    originalFileName: `ilha-${file}.glb`,
-    dataUrl: `data:model/gltf-binary;base64,${Buffer.from(bytes).toString('base64')}`,
+    libId: `${COURSE_MODEL_LIB_PREFIX}${m.sha}`,
+    originalFileName: `${name}.glb`,
+    dataUrl: courseModelStub(m.sha, m.clips),
   }
-  return { asset, center, size }
 }
+
+export const ILHA_PERSONAGENS = [
+  'aventureiro',
+  'menina-de-laco',
+  'marinheira',
+  'menino-de-bone',
+  'exploradora-de-chapeu',
+  'pirata',
+  'mergulhador',
+  'robo',
+] as const satisfies readonly IlhaPeca[]
+export const ILHA_CENARIOS = [
+  'cenario-praia-tropical',
+  'cenario-costa-rochosa',
+  'cenario-ilha-nevada',
+  'cenario-noite-na-ilha',
+] as const satisfies readonly IlhaPeca[]
+export const ILHA_BARCOS = [
+  'veleiro',
+  'barco-de-pesca',
+  'lancha',
+  'barco-pirata',
+] as const satisfies readonly IlhaPeca[]
+export const ILHA_CHAVES = [
+  'chave-dourada',
+  'chave-prateada',
+  'chave-de-estrela',
+] as const satisfies readonly IlhaPeca[]
+export const ILHA_FAROIS = [
+  'farol-listrado',
+  'farol-de-pedra',
+  'farol-de-madeira',
+  'farol-colorido',
+] as const satisfies readonly IlhaPeca[]
+
+/** O que cada objeto do jogo usa no começo do curso (a versão do vídeo e do caderno). */
+export const ILHA_PADRAO = {
+  cenario: 'cenario-praia-tropical',
+  pedra: 'pedras',
+  farol: 'farol-listrado',
+  barco: 'veleiro',
+  personagem: 'aventureiro',
+  chave: 'chave-dourada',
+} as const satisfies Record<string, IlhaPeca>
+export type IlhaObjeto = keyof typeof ILHA_PADRAO
+
+export interface IlhaModel {
+  asset: ProjectAsset
+  /** Centro da caixa no y para cima do jogo (para pôr o modelo no lugar do Blender). */
+  center: [number, number, number]
+  /** Lado maior: o `size` que mantém o tamanho do Blender. */
+  size: number
+  clips: string[]
+}
+export function ilhaModelo(peca: IlhaPeca): IlhaModel {
+  const m = modelos[peca]
+  return { asset: referencia(peca), center: m.center, size: m.size, clips: m.clips }
+}
+/** O nome do asset da peça (o valor do bloco "Criar o objeto … com o modelo"). */
+export const ilhaNome = nomeDoAsset
+
 export const ILHA_MODELS = Object.fromEntries(
-  await Promise.all(
-    Object.entries(ILHA_ART_SOURCES).map(async ([name, file]) => [name, await load(name, file)]),
-  ),
-) as Record<keyof typeof ILHA_ART_SOURCES, Awaited<ReturnType<typeof load>>>
-// The two authored palms are identical except for the root scale and identity. Share the
-// binary only while that remains true; keep each palm's own measured center and size.
-function samePalmGeometry(): boolean {
-  const canonical = (file: string) => {
-    const doc = JSON.parse(readFileSync(resolve(sourceDir, `${file}.molda.json`), 'utf8'))
-    delete doc.id
-    delete doc.name
-    delete doc.createdAt
-    delete doc.updatedAt
-    doc.nodes[0].name = 'Coqueiro'
-    doc.nodes[0].transform.scale = [1, 1, 1]
-    return JSON.stringify(doc).replaceAll(file, 'coqueiro')
-  }
-  return canonical('coqueiro-frente') === canonical('coqueiro-tras')
-}
-if (samePalmGeometry()) {
-  ILHA_MODELS.coqueiroFrente = {
-    ...ILHA_MODELS.coqueiroFrente,
-    asset: ILHA_MODELS.coqueiroTras.asset,
-  }
-}
-export const ILHA_ASSETS = [
-  ...new Map(Object.values(ILHA_MODELS).map((m) => [m.asset.id, m.asset])).values(),
-]
+  Object.entries(ILHA_PADRAO).map(([objeto, peca]) => [objeto, ilhaModelo(peca)]),
+) as Record<IlhaObjeto, IlhaModel>
+
+/** Todas as peças no projeto desde a primeira aula: a personalização só troca o nome. */
+export const ILHA_ASSETS: ProjectAsset[] = [
+  ...ILHA_CENARIOS,
+  'pedras' as const,
+  ...ILHA_FAROIS,
+  ...ILHA_BARCOS,
+  ...ILHA_CHAVES,
+  ...ILHA_PERSONAGENS,
+].map(referencia)

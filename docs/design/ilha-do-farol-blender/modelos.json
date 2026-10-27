@@ -1,0 +1,302 @@
+{
+  "cenario-praia-tropical": {
+    "sha": "46c60b85a5fb8344c9353c86e9a9edaa505e5bec084b25bd50e270ff246917ff",
+    "bytes": 253272,
+    "clips": [],
+    "center": [
+      0,
+      33.6,
+      0
+    ],
+    "size": 140
+  },
+  "cenario-costa-rochosa": {
+    "sha": "a6c7fd2fc0c45e98d88f9f1a68194cea9a026f63c0662257a7a756f4871c49ae",
+    "bytes": 225620,
+    "clips": [],
+    "center": [
+      0,
+      33.6,
+      0
+    ],
+    "size": 140
+  },
+  "cenario-ilha-nevada": {
+    "sha": "a063b798f122bed3071cdbf62f1de7c24d15d67ac59d13e44f443cf0a0c7d4e4",
+    "bytes": 241412,
+    "clips": [],
+    "center": [
+      0,
+      33.6,
+      0
+    ],
+    "size": 140
+  },
+  "cenario-noite-na-ilha": {
+    "sha": "da534abf90c703e55d53156361b46ef02de50bcd614767c110a407b6b8922548",
+    "bytes": 247496,
+    "clips": [],
+    "center": [
+      0,
+      33.6,
+      0
+    ],
+    "size": 140
+  },
+  "pedras": {
+    "sha": "08dd48406d48e2e1a296ad550fc82f068b4deca1adb765f3d7b0ac8cac2cf152",
+    "bytes": 21516,
+    "clips": [],
+    "center": [
+      -0.0241,
+      1.1118,
+      0.4597
+    ],
+    "size": 4.2335
+  },
+  "farol-listrado": {
+    "sha": "f02bdf32b7cb8d3d6c85baa0e0d1dc6d6678039128c81335b0642330f5255ad9",
+    "bytes": 145904,
+    "clips": [
+      "acender",
+      "aceso"
+    ],
+    "center": [
+      0,
+      2.65,
+      0
+    ],
+    "size": 5.3
+  },
+  "farol-de-pedra": {
+    "sha": "bb6d1f4bd64c0a8b42a203163bf27527008cfd3d558bf89767f7f6cb1d5d10eb",
+    "bytes": 236616,
+    "clips": [
+      "acender",
+      "aceso"
+    ],
+    "center": [
+      0,
+      2.65,
+      0
+    ],
+    "size": 5.3
+  },
+  "farol-de-madeira": {
+    "sha": "85a8faeda61c842928b0ab3677e3342661eeabe986d49d7bdacd04a235be0cc7",
+    "bytes": 145888,
+    "clips": [
+      "acender",
+      "aceso"
+    ],
+    "center": [
+      0,
+      2.65,
+      0
+    ],
+    "size": 5.3
+  },
+  "farol-colorido": {
+    "sha": "0a7901fa620987663c3917cf205780d1e1612da8fcbffe205471e9501b4a9ec9",
+    "bytes": 144828,
+    "clips": [
+      "acender",
+      "aceso"
+    ],
+    "center": [
+      0,
+      2.65,
+      0
+    ],
+    "size": 5.3
+  },
+  "veleiro": {
+    "sha": "79c21c120f91d3703c81aed955f630079ac407e2e968220e9685244f467ab345",
+    "bytes": 80024,
+    "clips": [],
+    "center": [
+      0,
+      1.16,
+      0
+    ],
+    "size": 3.1
+  },
+  "barco-de-pesca": {
+    "sha": "9db58123e677bc92524c5c8529a51651d5915b51b03e52979262f8ca82d529cf",
+    "bytes": 158172,
+    "clips": [],
+    "center": [
+      0,
+      1.16,
+      0
+    ],
+    "size": 3.1
+  },
+  "lancha": {
+    "sha": "d81e6d3b726b4b68776dd152d61bd4a6ec10c54339d5518254490b72be569d38",
+    "bytes": 110024,
+    "clips": [],
+    "center": [
+      0,
+      1.16,
+      0
+    ],
+    "size": 3.1
+  },
+  "barco-pirata": {
+    "sha": "f2cec94fcd9acea42c87cc9c079896fcb0440faf0dfa08e713f0329b71f88f43",
+    "bytes": 153000,
+    "clips": [],
+    "center": [
+      0,
+      1.16,
+      0
+    ],
+    "size": 3.1
+  },
+  "chave-dourada": {
+    "sha": "c61100d76a79a288af54d565825027c3aef9410b506a2eafc242ae667344401e",
+    "bytes": 34136,
+    "clips": [],
+    "center": [
+      0.02,
+      0.03,
+      0
+    ],
+    "size": 1.24
+  },
+  "chave-prateada": {
+    "sha": "42d175e834fa3587f6c76a3be64643d05a348e4f005f3cb9bab6f1b4752c53fa",
+    "bytes": 67408,
+    "clips": [],
+    "center": [
+      0.02,
+      0.03,
+      0
+    ],
+    "size": 1.24
+  },
+  "chave-de-estrela": {
+    "sha": "2917ea86e1a5f15c9a36ee65ce627bc2f088c97dfe470ce7e5f0df314cc5a485",
+    "bytes": 37604,
+    "clips": [],
+    "center": [
+      0.02,
+      0.03,
+      0
+    ],
+    "size": 1.24
+  },
+  "aventureiro": {
+    "sha": "3edd1abdaeb67b153adfb1c625267e887d390e5274ad93d725abc53cf0f71a51",
+    "bytes": 119704,
+    "clips": [
+      "andando",
+      "parado"
+    ],
+    "center": [
+      0,
+      0.79,
+      0
+    ],
+    "size": 1.66
+  },
+  "menina-de-laco": {
+    "sha": "9a9cd8727a2361f6e8e996baa1cfa1f4dc29632f3c4d823ecff8fd4ae2c5a27e",
+    "bytes": 129952,
+    "clips": [
+      "andando",
+      "parado"
+    ],
+    "center": [
+      0,
+      0.79,
+      0
+    ],
+    "size": 1.66
+  },
+  "marinheira": {
+    "sha": "dbafa3170b71c6c564ddaa619e675dcaf3e5aa63451467b3a6f77b8dc8f88c92",
+    "bytes": 121552,
+    "clips": [
+      "andando",
+      "parado"
+    ],
+    "center": [
+      0,
+      0.79,
+      0
+    ],
+    "size": 1.66
+  },
+  "menino-de-bone": {
+    "sha": "748dc008c317705f4532f5c671ad0daece3c295254a356b3fa6a36f1eab7756f",
+    "bytes": 110340,
+    "clips": [
+      "andando",
+      "parado"
+    ],
+    "center": [
+      0,
+      0.79,
+      0
+    ],
+    "size": 1.66
+  },
+  "exploradora-de-chapeu": {
+    "sha": "a2aa9ace2f2dba275d8f8b7688b3b4196e6caccf6c9404a58d7dc7947e26ce03",
+    "bytes": 138992,
+    "clips": [
+      "andando",
+      "parado"
+    ],
+    "center": [
+      0,
+      0.79,
+      0
+    ],
+    "size": 1.66
+  },
+  "pirata": {
+    "sha": "fe0453251cf4587f7e7441b3d8abf4eab5da96305a47f0993743edb6c011eb3d",
+    "bytes": 151320,
+    "clips": [
+      "andando",
+      "parado"
+    ],
+    "center": [
+      0,
+      0.79,
+      0
+    ],
+    "size": 1.66
+  },
+  "mergulhador": {
+    "sha": "7070666ea4aa33af7be5abf954b8f45d99e2b5fb56d4662a72bf005f73248e96",
+    "bytes": 129380,
+    "clips": [
+      "andando",
+      "parado"
+    ],
+    "center": [
+      0,
+      0.79,
+      0
+    ],
+    "size": 1.66
+  },
+  "robo": {
+    "sha": "48e7ae10862e3529d57a77dac7849601995534a83939a0060782892581334a50",
+    "bytes": 55780,
+    "clips": [
+      "andando",
+      "parado"
+    ],
+    "center": [
+      0,
+      0.79,
+      0
+    ],
+    "size": 1.66
+  }
+}

@@ -1,0 +1,53 @@
+import { createLogger, type Logger } from '@sistemazero/core/logging'
+import { ServicoDoJogo } from './application/servico-do-jogo'
+import type { Env } from './infrastructure/config/env'
+import { withSentryMirror } from './infrastructure/observability/sentry'
+import { createDbConnection } from './infrastructure/persistence/drizzle/db'
+import { DrizzleRepositorioDoJogo } from './infrastructure/persistence/drizzle/repositorio'
+import { createServer } from './interfaces/http/server'
+
+export interface Application {
+  logger: Logger
+  start(): Promise<void>
+  stop(): Promise<void>
+}
+
+export function createApplication(env: Env): Application {
+  const logger = withSentryMirror(
+    createLogger({ level: env.NODE_ENV === 'production' ? 'info' : 'debug' }),
+  )
+  const connection = createDbConnection(env.DATABASE_URL, { max: env.DATABASE_POOL_MAX })
+  const servico = new ServicoDoJogo(new DrizzleRepositorioDoJogo(connection.db), {
+    modo: env.ARQUIPELAGO_MODO,
+    publicos: new Set(env.ARQUIPELAGO_PUBLICOS),
+    lista: new Set(env.ARQUIPELAGO_LISTA),
+  })
+  const app = createServer({
+    logger,
+    servico,
+    cliente: { dir: env.ARQUIPELAGO_CLIENTE_DIR, servirMapas: env.ARQUIPELAGO_SERVIR_MAPAS },
+    tokenInterno: env.INTERNAL_API_TOKEN,
+    maxRequestBodyBytes: env.MAX_REQUEST_BODY_BYTES,
+    readiness: async () => {
+      await connection.sql`select 1`
+    },
+  })
+
+  let server: ReturnType<typeof app.listen> | null = null
+  return {
+    logger,
+    async start() {
+      server = app.listen({ hostname: env.HOST, port: env.PORT })
+      logger.info('app.started', {
+        port: env.PORT,
+        appEnv: env.APP_ENV ?? 'dev',
+        modo: env.ARQUIPELAGO_MODO,
+        publicos: env.ARQUIPELAGO_PUBLICOS,
+      })
+    },
+    async stop() {
+      await server?.stop()
+      await connection.close()
+    },
+  }
+}

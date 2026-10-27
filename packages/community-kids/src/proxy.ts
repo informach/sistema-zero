@@ -32,6 +32,8 @@ export const proxy = createMemberProxy({
     '/pinta',
     // Molda (oficina 3D): mesmo regime do Pinta — só a página é gateada.
     '/molda',
+    // Arquipélago Vagalume (o jogo): a página exige sessão de perfil.
+    '/arquipelago',
     // Recados (conversas com o professor — canal de retorno).
     '/recados',
     // O Ranking se defendia só no RSC (redirect na página). Com o menu oferecendo o
@@ -64,7 +66,9 @@ export const config = {
   // O executor interno do Studio usa segredo de serviço e não pode exigir sessão/CSRF de navegador.
   // `api/certificates` (validação PÚBLICA do certificado pelo QR — `GET /api/certificates/:id/validate`)
   // fica FORA do matcher: é anônima (sem gate de sessão), igual a `api/studio/play`.
+  // `api/arquipelago/cliente` (o jogo compilado: manifesto e módulos com hash) também fica FORA:
+  // o navegador importa o módulo sem a prova da sessão (`x-sz-session`) e o arquivo é público.
   matcher: [
-    '/((?!_next/static|_next/image|favicon.ico|api/me/avatar|api/members/avatar/snapshot|api/hub/uploads/image|api/hub/showcase|api/studio/publish|api/studio/play|api/studio/cleanup|api/studio/reservation-cleanup|api/internal/studio-play|api/internal/studio-publication-cleanup|api/internal/creation-cleanups|api/internal/studio-builder/execute|api/certificates).*)',
+    '/((?!_next/static|_next/image|favicon.ico|api/me/avatar|api/members/avatar/snapshot|api/hub/uploads/image|api/hub/showcase|api/studio/publish|api/studio/play|api/studio/cleanup|api/studio/reservation-cleanup|api/internal/studio-play|api/internal/studio-publication-cleanup|api/internal/creation-cleanups|api/internal/studio-builder/execute|api/certificates|api/arquipelago/cliente).*)',
   ],
 }

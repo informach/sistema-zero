@@ -263,7 +263,7 @@
       }
     },
     {
-      "includes": ["packages/member-shell/**/*.tsx"],
+      "includes": ["packages/member-shell/**/*.tsx", "packages/avatar-quarto/**/*.tsx"],
       "linter": {
         "rules": {
           "a11y": {
