@@ -199,6 +199,15 @@
     top: 10px;
   }
 }
+/* AMPLIADA (27/10/2026, print dela): o painel da cena estica até o fim, como nas outras
+ * experiências, e o palco encaixa na altura que sobra. Preso no alto, ele encolhia para 395px
+ * numa janela de 960, ganhava uma barra própria e a cena ficava MENOR do que na aula. O
+ * `relative` é o do painel fora daqui (contém os `sr-only`). */
+.sz-scene-workspace--expanded .sz-discovery-proposed .sz-scene-console-visual {
+  align-self: stretch;
+  position: relative;
+  top: auto;
+}
 @media (max-width: 1000px) {
   .sz-discovery-trio .sz-discovery-note {
     padding: 8px;

@@ -66,8 +66,8 @@ const bundle = await Bun.build({
           let source = await readFile(args.path, 'utf8')
           source = exact(
             source,
-            "return <DialogueBlockView content={{ kind: 'dialogue', text }} speech={fala} />",
-            "return <DialogueBlockView content={{ kind: 'dialogue', text }} speech={fala} mascot={<PrototypeMascot />} />",
+            "mascot={secao?.temDialogo || semMascote ? undefined : player?.dialogueMascot?.('speaking')}",
+            'mascot={<PrototypeMascot />}',
           )
           return {
             contents: 'import { PrototypeMascot } from ' + shared + ';\n' + source,

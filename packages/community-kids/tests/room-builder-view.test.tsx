@@ -76,6 +76,17 @@ describe('RoomBuilderView — contrato do boundary de apresentação', () => {
     )
   })
 
+  test('a seta e o título da página dividem UMA linha com as moedas e o Salvar', () => {
+    // 27/10/2026, pedido dela: o cabeçalho enxuto do avatar. Antes a página tinha uma faixa só
+    // para o título (291px) e o quarto não cabia na janela.
+    render(<RoomBuilderView {...viewProps()} header={<h1>Meu quarto</h1>} />)
+    const titulo = screen.getByRole('heading', { name: 'Meu quarto' })
+    const salvar = screen.getByRole('button', { name: 'Salvar quarto' })
+    const linha = salvar.parentElement
+    expect(linha?.contains(titulo)).toBe(true)
+    expect(within(linha as HTMLElement).getByText('25')).toBeDefined()
+  })
+
   test('encaminha seleção, empilhamento, edição, compra e salvamento', () => {
     const props = viewProps()
     const onSelectPiece = mock(() => {})

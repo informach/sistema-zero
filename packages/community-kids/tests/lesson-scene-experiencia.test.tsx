@@ -93,11 +93,8 @@ describe('A1 · a pilha da layers como o painel Camadas do Pinta (Meu Jeito Aula
     fireEvent.click(screen.getByRole('button', { name: 'Uma camada para trás: Chama' }))
     await waitFor(() => expect(linhas()).toEqual(['dino', 'floresta']))
     expect(naFaixa('na frente')).toBe('a pedra')
-    // O "Conferir" diz o gesto do Pinta, e nunca "o fim da ordem de desenhar".
-    fireEvent.click(screen.getByRole('button', { name: 'Conferir' }))
-    const resposta = await screen.findByText(/^Ainda não\. Tente:/)
-    expect(resposta.textContent).toContain('uma camada para a frente')
-    expect(resposta.textContent).not.toMatch(/ordem de desenhar|fim da lista/)
+    expect(screen.queryByRole('button', { name: 'Conferir' })).toBeNull()
+    expect(screen.getByRole('button', { name: 'Uma camada para a frente: Chama' })).toBeTruthy()
   })
 
   test('sem a pilha, a lista de blocos do Estúdio de sempre (Corre Dino Aula 2)', async () => {
@@ -232,7 +229,7 @@ describe('M3 · a faixa e a frase reservam a MAIOR altura que a cena atinge, ant
 })
 
 describe('M4 · layers: "Descobertas 2 de 3" até a terceira troca, sem "2 de 2" parado', () => {
-  test('⚠️⚠️ duas trocas mostram 2 de 3 e o "Conferir" pede a terceira; a terceira conclui', async () => {
+  test('⚠️⚠️ duas trocas mostram 2 de 3; a terceira conclui automaticamente', async () => {
     abrir(bloco({ type: 'experimentation', scene: 'layers' }))
     await palpitar('layers')
     for (let i = 0; i < 2; i++)
@@ -240,12 +237,7 @@ describe('M4 · layers: "Descobertas 2 de 3" até a terceira troca, sem "2 de 2"
     await waitFor(() => expect(screen.getByRole('meter').getAttribute('aria-valuenow')).toBe('2'))
     expect(screen.getByRole('meter').getAttribute('aria-valuemax')).toBe('3')
     expect(screen.queryByText('Descobertas 2 de 2')).toBeNull()
-    fireEvent.click(screen.getByRole('button', { name: 'Conferir' }))
-    expect(
-      await screen.findByText(
-        'Ainda não. Tente: leve o Dino de novo para o fim da ordem de desenhar.',
-      ),
-    ).toBeTruthy()
+    expect(screen.queryByRole('button', { name: 'Conferir' })).toBeNull()
     fireEvent.click(await screen.findByRole('button', { name: /^Descer / }))
     expect((await screen.findAllByText('Você descobriu!')).length).toBeGreaterThan(0)
   })

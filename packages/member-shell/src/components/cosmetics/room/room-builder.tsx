@@ -2,7 +2,15 @@
 
 import { sessionFetch as fetch } from '@sistemazero/member-shell/lib/session-fetch'
 
-import { type ComponentType, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import {
+  type ComponentType,
+  type ReactNode,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 import { toast } from 'sonner'
 import { ROOM_GRID, ROOM_ITEM_INFO, ROOM_WALL_PALETTE } from '../../../lib/room-catalog'
 import type { RoomEditorView, RoomItemView, RoomStateView, RoomThemeView } from '../../../lib/types'
@@ -34,12 +42,15 @@ export function RoomBuilder({
   skin = 'kids',
   trophyHints,
   view: View = RoomBuilderView,
+  header,
 }: {
   avatarPhotoUrl?: string | null
   skin?: CosmeticsSkin
   /** Pele adulta: como conquistar cada troféu, na voz do app (o Kids usa o `TROPHY_HINT`). */
   trophyHints?: Readonly<Record<string, string>>
   view?: RoomBuilderViewComponent
+  /** A seta de voltar e o título, na mesma linha das moedas e do Salvar (ver `RoomBuilderViewProps`). */
+  header?: ReactNode
 }) {
   const messages = ROOM_MESSAGES[skin]
   const [data, setData] = useState<RoomEditorView | null>(null)
@@ -475,6 +486,7 @@ export function RoomBuilder({
 
   return (
     <View
+      header={header}
       trophyHints={trophyHints}
       scene={{
         avatarPhotoUrl,

@@ -4,6 +4,22 @@ import { Lock } from 'lucide-react'
 import { cn } from '../../../lib/cn'
 import { ROOM_ITEM_INFO, ROOM_WALL_PALETTE, TROPHY_HINT } from '../../../lib/room-catalog'
 import type { RoomItemView, RoomThemeView } from '../../../lib/types'
+import { RoomItemThumb } from './room-item-thumb'
+
+/** A miniatura da peça, com o emoji de reserva (sem a imagem, a bandeja segue legível). */
+function Thumb({ id, emoji, dim }: { id: string; emoji: string; dim?: boolean }) {
+  return (
+    <RoomItemThumb
+      id={id}
+      className={cn('size-14 object-contain', dim && 'opacity-50 grayscale')}
+      fallback={
+        <span className="text-2xl" aria-hidden="true">
+          {emoji}
+        </span>
+      }
+    />
+  )
+}
 
 export function ShopGrid({
   items,
@@ -35,9 +51,7 @@ export function ShopGrid({
             onClick={() => (locked ? onBuy(it.id) : onPick(it))}
             className="flex flex-col items-center gap-1 rounded-2xl border-2 border-border p-2 text-xs transition-colors hover:border-primary disabled:opacity-60"
           >
-            <span className="text-2xl" aria-hidden="true">
-              {info.emoji}
-            </span>
+            <Thumb id={it.id} emoji={info.emoji} />
             <span className="truncate font-semibold">{info.labelPt}</span>
             {locked ? <PriceChip price={it.price} confirming={confirmingId === it.id} /> : null}
           </button>
@@ -79,9 +93,7 @@ export function TrophyTray({
               onClick={() => onPick(t)}
               className="flex flex-col items-center gap-1 rounded-2xl border-2 border-(--kids-lime) bg-(--kids-lime-tint) p-2 text-xs transition-colors hover:border-primary"
             >
-              <span className="text-2xl" aria-hidden="true">
-                {info.emoji}
-              </span>
+              <Thumb id={t.id} emoji={info.emoji} />
               <span className="truncate font-semibold">{info.labelPt}</span>
               <span className="text-muted-foreground">Conquistado!</span>
             </button>
@@ -90,8 +102,9 @@ export function TrophyTray({
               key={t.id}
               className="flex flex-col items-center gap-1 rounded-2xl border-2 border-border border-dashed p-2 text-center text-xs opacity-80"
             >
-              <span className="grid size-8 place-items-center" aria-hidden="true">
-                <Lock className="size-5 text-muted-foreground" />
+              <span className="relative grid place-items-center" aria-hidden="true">
+                <Thumb id={t.id} emoji={info.emoji} dim />
+                <Lock className="absolute right-0 bottom-0 size-5 rounded-full bg-card p-0.5 text-muted-foreground" />
               </span>
               <span className="truncate font-semibold">{info.labelPt}</span>
               <span className="text-muted-foreground">
@@ -232,9 +245,7 @@ export function PetTray({
               current === p.id ? 'border-primary' : 'border-border',
             )}
           >
-            <span className="text-2xl" aria-hidden="true">
-              {info.emoji}
-            </span>
+            <Thumb id={p.id} emoji={info.emoji} />
             <span className="font-semibold">{info.labelPt}</span>
             {p.locked ? <PriceChip price={p.price} confirming={confirmingId === p.id} /> : null}
           </button>

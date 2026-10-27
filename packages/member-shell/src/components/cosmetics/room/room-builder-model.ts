@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react'
 import {
   floorInfo,
   lightingPreset,
@@ -92,6 +93,8 @@ export type RoomBuilderViewProps = {
   selection: RoomBuilderSelection
   wallet: RoomBuilderWallet
   catalog: RoomBuilderCatalog
+  /** O começo da barra de cima (a seta de voltar e o título), desenhado pela página. Só o Kids usa. */
+  header?: ReactNode
 }
 
 /** Os itens de chão/parede da aba (troféus têm aba própria). */

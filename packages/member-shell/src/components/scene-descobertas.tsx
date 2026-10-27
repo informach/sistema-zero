@@ -14,11 +14,10 @@ import { Children, type ReactNode, useId } from 'react'
  * ⚠️⚠️ O `label` de uma meta PENDENTE nunca entra no DOM: ele é a conclusão (a resposta), e foi por
  * isso que o `title` das bolinhas do medidor saiu em 09/2026. A pendente fica trancada e NEUTRA
  * ("Ainda tem uma descoberta aqui."): decisão dela de 30/09, para preservar a experimentação — o
- * gesto que falta continua saindo só no "Conferir" e na pista.
+ * gesto que falta continua disponível na pista.
  *
- * Os `children` são a linha de ações da descoberta (Uma pista, o som, Conferir/Continuar), e a
- * `resposta` do Conferir mora aqui, ao lado do botão que a pediu. ⚠️ A região viva existe SEMPRE
- * (sr-only quando vazia): montada junto do texto, ela não é anunciada.
+ * Os `children` são a linha de ações da descoberta (Uma pista e Continuar).
+ * O player anuncia automaticamente as descobertas e a conclusão.
  *
  * Na REVISITA, a `explicacao` ("Ver a explicação", fechada) fecha o bloco: é o único lugar em que a
  * regra e o porquê do professor sobrevivem a um F5 (01/10/2026; antes era um cartão verde embaixo
@@ -26,13 +25,10 @@ import { Children, type ReactNode, useId } from 'react'
  */
 export function SceneDescobertas({
   goals,
-  resposta,
   explicacao,
   children,
 }: {
   goals: readonly SceneGoalProgress[]
-  /** A resposta do "Conferir", já congelada pelo player; vazia quando não há. */
-  resposta: string
   /** O "Ver a explicação" da revisita; ausente na primeira vez. */
   explicacao?: ReactNode
   children?: ReactNode
@@ -75,16 +71,6 @@ export function SceneDescobertas({
         <div className="sz-scene-descobertas-acoes">{children}</div>
       ) : null}
       {explicacao}
-      <p
-        className={
-          resposta
-            ? 'sz-scene-conferir-resposta rounded-2xl bg-primary/5 px-4 py-3 text-sm'
-            : 'sr-only'
-        }
-        aria-live="polite"
-      >
-        {resposta}
-      </p>
     </section>
   )
 }

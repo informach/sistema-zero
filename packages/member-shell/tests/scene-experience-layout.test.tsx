@@ -52,7 +52,7 @@ describe('a experiência aproxima cada coisa do que ela mexe', () => {
     const inicioDasDescobertas = ramo.indexOf('<SceneDescobertas')
     const fimDasDescobertas = ramo.indexOf('</SceneDescobertas>')
     const umaPista = ramo.indexOf('{umaPista}')
-    const conferir = ramo.indexOf('{conferirOuContinuar}')
+    const continuar = ramo.indexOf('{continuarParaPergunta}')
 
     expect(desfazer).toBeGreaterThan(-1)
     expect(desfazer).toBeLessThan(fimDoVisual)
@@ -60,8 +60,8 @@ describe('a experiência aproxima cada coisa do que ela mexe', () => {
     expect(recomecar).toBeLessThan(fimDoVisual)
     expect(umaPista).toBeGreaterThan(inicioDasDescobertas)
     expect(umaPista).toBeLessThan(fimDasDescobertas)
-    expect(conferir).toBeGreaterThan(inicioDasDescobertas)
-    expect(conferir).toBeLessThan(fimDasDescobertas)
+    expect(continuar).toBeGreaterThan(inicioDasDescobertas)
+    expect(continuar).toBeLessThan(fimDasDescobertas)
   })
 
   test('em uma vez e sempre, configura as ações antes de avançar o passo', () => {

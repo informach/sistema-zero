@@ -1,5 +1,19 @@
 # CLAUDE.md — @sistemazero/community-kids
 
+## Peças do quarto feitas no Blender (27/10/2026)
+
+As 39 peças do quarto foram refeitas no Blender e entraram 27 novas (lista em
+`docs/gamificacao.md` §7). O desenho e as regras moram no member-shell (seção de mesmo nome).
+
+- **Os arquivos ficam em DUAS pastas** (`public/room3d/items` e `public/room3d/thumbs` daqui e da
+  comunidade adulta). `tests/room3d-catalog.test.ts` confere GLB e miniatura iguais nas duas, que
+  só as peças animadas têm animação e o lugar de cada peça parada no quarto (lido do GLB).
+- **`scripts/room-blender/`**: os scripts (`bpy` 5.2.3, sem tela), `build_all.py` e o README com o
+  contrato. **`bun run gen:room-thumbs`** gera as miniaturas com o three.js da instalação e grava
+  nas duas comunidades.
+- `tests/room-trophy-models.test.ts` agora confere a RESERVA (`FurniturePrimitive`): o modelo
+  principal é o GLB, conferido pelo teste acima.
+
 ## Peças novas do avatar (26/10/2026)
 
 32 peças modeladas no Blender (Canvas "Provador do avatar"), com a aba nova Enfeite; o contrato do
@@ -19,9 +33,22 @@ catálogo está no CLAUDE.md do member-shell e a lista em `docs/gamificacao.md` 
 
 As duas telas trocaram o painel de baixo pelo painel ao lado do 3D quando a área do editor tem
 45rem ou mais (proposta do Canvas "Kids · avatar e quarto com painel ao lado"). O desenho e as
-regras moram no member-shell (seção de mesmo nome lá). Aqui nada mudou na página: o avatar segue
-app embarcado (menu recolhido, `MainContainer` com a altura da janela) e o quarto segue nas duas
-`KidsBand` com `kids-band-foco`. No celular o quarto gruda abaixo da barra do topo (h-14).
+regras moram no member-shell (seção de mesmo nome lá). O avatar segue app embarcado (menu
+recolhido, `MainContainer` com a altura da janela). No celular o quarto gruda abaixo da barra do
+topo (h-14).
+
+⭐ **O quarto ocupa a tela como o avatar (27/10/2026, pedido dela).** O cabeçalho grande (faixa
+própria com seta, selo, título e subtítulo: 291px, e a página rolava) virou UMA linha no alto do
+editor: o `QuartoHeader` (a seta `overlay`, o mesmo botão do avatar, e o título) entra pela prop
+`header` do `RoomBuilder`, ao lado das moedas e do "Salvar quarto". A página tem UMA `KidsBand`
+com a `QUARTO_FAIXA` (`max-w-none`, 16px de respiro), a mesma do esqueleto. A partir do `md`, com o
+editor em 45rem ou mais, ele tem a altura da janela e o quarto enche o espaço à esquerda do painel
+(a moldura troca o 3:2 pela altura; a câmera encaixa em qualquer formato), encolhendo só quando o
+menu abre. A classe `kids-band-foco` e a regra dela no `globals.css` saíram (só o quarto usava). O
+quarto continua no regime de faixas, não no dos apps embarcados: no celular a página rola até os
+itens. Medido no staging: 726×484 → 972×808 em 1440×900, sem rolagem. Testes:
+`tests/quarto-foco.test.tsx`, `tests/room-builder-view.test.tsx` e, no member-shell,
+`tests/kids-cosmetics-layout.test.tsx`.
 
 ## As telas da Jornada do Criador no visual Kids (26/10/2026)
 
