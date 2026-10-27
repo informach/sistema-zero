@@ -132,4 +132,26 @@ describe('a porta da plataforma para o jogo', () => {
       situacao: 'indisponivel',
     })
   })
+
+  test('a sessão de tempo passa apenas pelo host Kids', async () => {
+    const pedidos = servir({
+      'POST /api/arquipelago/tempo/sessao': { status: 200, body: { situacao: 'ativa' } },
+    })
+    const comando = { sessaoId: 'id', sequencia: 0, acao: 'iniciar' }
+    expect(
+      await plataforma().servico.buscar('/tempo/sessao', { metodo: 'POST', corpo: comando }),
+    ).toEqual({
+      status: 200,
+      corpo: { situacao: 'ativa' },
+    })
+    const adulto = criarPlataformaDoArquipelago({
+      publico: 'adulto',
+      perfil: { id: 'a1', primeiroNome: 'Lia' },
+      voltarPara: '/',
+    })
+    expect(
+      (await adulto.servico.buscar('/tempo/sessao', { metodo: 'POST', corpo: comando })).status,
+    ).toBe(404)
+    expect(pedidos.map((p) => p.url)).toEqual(['/api/arquipelago/tempo/sessao'])
+  })
 })

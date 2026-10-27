@@ -49,6 +49,13 @@ describe('Arquipélago Vagalume no gateway', () => {
       'arquipelago-acesso',
     )
     expect(registry.resolve('POST', '/arquipelago/tempo', 'v1')?.route.id).toBe('arquipelago-tempo')
+    expect(registry.resolve('POST', '/arquipelago/tempo/sessao', 'v1')?.route).toMatchObject({
+      id: 'arquipelago-tempo-sessao',
+      auth: { strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      maxBodyBytes: 1024,
+      rateLimit: { max: 30, windowMs: 60_000, by: 'principal' },
+    })
     expect(registry.resolve('PUT', '/arquipelago/familia/limite', 'v1')?.route.id).toBe(
       'arquipelago-familia-limite',
     )

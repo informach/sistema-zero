@@ -65,6 +65,14 @@ export function arquipelagoGateway(opts: {
       },
       {
         ...jogador,
+        id: 'arquipelago-tempo-sessao',
+        methods: ['POST'],
+        pathPattern: '/arquipelago/tempo/sessao',
+        maxBodyBytes: 1024,
+        rateLimit: { max: 30, windowMs: 60_000, by: 'principal' },
+      },
+      {
+        ...jogador,
         id: 'arquipelago-familia-limite',
         methods: ['GET', 'PUT'],
         pathPattern: '/arquipelago/familia/limite',

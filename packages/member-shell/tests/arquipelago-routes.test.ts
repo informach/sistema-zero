@@ -29,6 +29,15 @@ afterEach(() => {
 })
 
 describe('repasse do Arquipélago', () => {
+  test('a sessão de tempo é repassada ao gateway com corpo limitado', async () => {
+    const { routes, chamadas } = montar({ status: 200, body: { situacao: 'ativa' } })
+    const corpo = { sessaoId: 'id', sequencia: 0, acao: 'iniciar' }
+    const resposta = await routes.arquipelagoSessaoTempo.POST(pedido(JSON.stringify(corpo)))
+    expect(resposta.status).toBe(200)
+    expect(chamadas).toEqual([{ caminho: '/arquipelago/tempo/sessao', metodo: 'POST', corpo }])
+    expect((await routes.arquipelagoSessaoTempo.POST(pedido('{invalido'))).status).toBe(400)
+    expect(chamadas).toHaveLength(1)
+  })
   test('acesso e salvamento vão ao serviço do jogo pelo gateway, com a resposta inteira', async () => {
     const { routes, chamadas } = montar({ status: 409, body: { error: { code: 'X' }, atual: {} } })
     const r = await routes.arquipelagoSalvamento.PUT(pedido('{"revisaoBase":1}'))
