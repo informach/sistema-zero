@@ -83,6 +83,6 @@ até lá ficam na galeria de modelos do playground.
 
 | Peça | Estado | Observação |
 |---|---|---|
-| Kit de movimento: cipó, equipamento de mergulho, planador, patins | ⬜ | |
-| Veículos: barquinho da chegada, barco entre ilhas, trenó, balão | ⬜ | |
-| Carnaval, Festa Junina (bandeirinhas, fogueira, barracas), Noite das Lanternas, fim de ano | ⬜ | roupas de época são peças do avatar (plataforma) |
+| Kit de movimento: cipó, equipamento de mergulho, planador, patins | 🟡 | `arte/festas/movimento.py`: cipó com `pegada` e `balancar`, máscara e pés de pato e patins vestidos no avatar (`cabeca`, `pe-esq`, `pe-dir`), planador com `pegada` e `planar` |
+| Veículos: barquinho da chegada, barco entre ilhas, trenó, balão | 🟡 | `arte/festas/veiculos.py`: barquinho com os remos e `remar`, barco com cabine e `balancar`, os dois com `assento`; trenó e balão ficam nas ilhas completas (Lote 6) |
+| Carnaval, Festa Junina (bandeirinhas, fogueira, barracas), Noite das Lanternas, fim de ano | 🟡 | `arte/festas`: um arquivo por festa, uma peça por nó (fogueira com `crepitar`, lanterna do lago com `flutuar`, fogos com `estourar`); roupas de época são peças do avatar (plataforma) |
