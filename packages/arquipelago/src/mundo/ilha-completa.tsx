@@ -1,0 +1,393 @@
+import { useFrame, useThree } from '@react-three/fiber'
+import {
+  RigidBody,
+  RoundCuboidCollider,
+  RoundCylinderCollider,
+  TrimeshCollider,
+} from '@react-three/rapier'
+import type { Ilha, IlhaId } from '@sistemazero/arquipelago-contracts'
+import { useEffect, useRef, useState } from 'react'
+import {
+  type Camera,
+  type Material,
+  type Object3D,
+  type Scene,
+  Vector3,
+  type WebGLRenderer,
+} from 'three'
+import bosqueGlb from '../assets/ilhas/bosque.glb'
+import { useJogo } from '../estado/contexto'
+import {
+  type EstadoDaIlha,
+  esmaecer,
+  opacidadeAlvo,
+  proximoEstadoDaIlha,
+} from '../sistemas/ilhas-completas'
+import { buscarIlha, soltarIlha } from './carregar-ilha'
+import {
+  bordaQueCabe,
+  type ColisorDaIlha,
+  lerColisores,
+  soParaOCorpo,
+  tirarNosDeColisao,
+} from './colisores-da-ilha'
+import {
+  aplicarSuave,
+  type Copa,
+  caixaNoMundo,
+  esmaecidasAgora,
+  separarCopas,
+  tapa,
+  usarSuave,
+} from './copas'
+import { GRUPO_SO_DO_CORPO } from './grupos'
+import {
+  DISTANCIA_DA_TROCA,
+  DURACAO_DA_TROCA,
+  DURACAO_DO_ESMAECER_DA_COPA,
+  MARGEM_DA_ESPERA_PELO_CHAO,
+  naPonteDa,
+  nivelDeDetalhe,
+  OPACIDADE_DA_COPA_NA_FRENTE,
+  RAIO_DA_ILHA_DO_ANEL,
+} from './medidas'
+import { type CorOriginal, coresOriginais, materiaisDe, tingir } from './modelos'
+
+/**
+ * As ilhas completas do Blender (`arte/ilhas/`). Cada uma ocupa o mesmo lugar da versão leve
+ * (mesmo chão, a chegada da ponte no +x do modelo) e traz os próprios nós de colisão `col-*`.
+ */
+export interface IlhaCompletaInfo {
+  url: string
+}
+
+export const ILHAS_COMPLETAS: Partial<Record<IlhaId, IlhaCompletaInfo>> = {
+  bosque: { url: new URL(bosqueGlb, import.meta.url).href },
+}
+
+/** O giro que vira a chegada da ponte (+x do modelo) para a sua ilha, igual ao da versão leve. */
+export function giroDaIlha(ilha: Ilha): number {
+  return Math.PI - ((ilha.angulo ?? 0) * Math.PI) / 180
+}
+
+/** O que fica pronto antes de a ilha aparecer: o desenho já girado, os colisores e as cores. */
+export interface IlhaPreparada {
+  modelo: Object3D
+  colisores: ColisorDaIlha[]
+  /** Os materiais opacos de tudo (as peças que esmaecem têm, além deles, cópias transparentes). */
+  materiais: Material[]
+  copas: Copa[]
+  cores: CorOriginal[]
+}
+
+/**
+ * Solta o que a ilha criou fora da cena do arquivo: as cópias transparentes das peças que esmaecem
+ * (a cena volta aos materiais opacos, que o `soltarIlha` solta junto com o resto).
+ */
+export function soltarExtras(preparada: IlhaPreparada) {
+  esmaecidasAgora.clear()
+  for (const copa of preparada.copas) {
+    usarSuave(copa, false)
+    for (const s of copa.suaves) s.dispose()
+  }
+}
+
+/** Uma cena se prepara uma vez só (os nós `col-*` saem dela na primeira leitura). */
+const preparadas = new WeakMap<Object3D, IlhaPreparada>()
+
+export function prepararIlha(cena: Object3D, ilha: Ilha): IlhaPreparada {
+  const feita = preparadas.get(cena)
+  if (feita) return feita
+  cena.rotation.y = giroDaIlha(ilha)
+  const colisores = lerColisores(cena)
+  tirarNosDeColisao(cena)
+  // O arquivo é só desta ilha (não vem de um cache dividido): tinge e esmaece os materiais dele.
+  const copas = separarCopas(cena)
+  const preparada = {
+    modelo: cena,
+    colisores,
+    materiais: materiaisDe(cena),
+    copas,
+    cores: coresOriginais(cena),
+  }
+  preparadas.set(cena, preparada)
+  return preparada
+}
+
+/**
+ * O esmaecer que troca a leve pela completa sem estalo. Usa `alphaHash` (pontilhado que some com
+ * a distância), que desenha na passada opaca: nada de ordenar transparências nem de apagar a
+ * profundidade no meio da troca. Material já transparente (a água) só multiplica a opacidade.
+ */
+const opacidadeDeFabrica = new WeakMap<Material, number>()
+
+export function aplicarOpacidade(materiais: Material[], opacidade: number) {
+  const pontilhar = opacidade < 1
+  for (const m of materiais) {
+    let base = opacidadeDeFabrica.get(m)
+    if (base === undefined) {
+      base = m.opacity
+      opacidadeDeFabrica.set(m, base)
+    }
+    m.opacity = base * opacidade
+    if (m.transparent) continue
+    if (m.alphaHash !== pontilhar) {
+      m.alphaHash = pontilhar
+      m.needsUpdate = true
+    }
+  }
+}
+
+/** Do centro do corpo à cabeça: é a cabeça que a câmera precisa ver. */
+const ALTURA_DA_CABECA = 0.5
+/** Do centro do corpo aos pés (quase: o pé encosta no chão). */
+const ALTURA_DOS_PES = 0.7
+/** Meia largura do avatar (os lados do corpo também contam). */
+const MEIA_LARGURA = 0.4
+/** Onde o Zappy voa: ao lado do avatar e acima do centro do corpo. */
+const LADO_DO_ZAPPY = 0.9
+const ALTURA_DO_ZAPPY = 1.3
+
+/** Quase inteira: liga o pontilhado (para compilar o shader dele) sem nada sumir na tela. */
+const QUASE_INTEIRA = 0.999
+
+/**
+ * Compila os shaders das duas versões (inteira e pontilhada) da completa e o pontilhado da leve
+ * ANTES da troca: compilar na hora daria um soluço justo quando a ilha aparece.
+ */
+async function aquecer(
+  gl: WebGLRenderer,
+  camera: Camera,
+  cena: Scene,
+  preparada: IlhaPreparada,
+  leve: Object3D | undefined,
+) {
+  try {
+    for (const opacidade of [QUASE_INTEIRA, 1]) {
+      aplicarOpacidade(preparada.materiais, opacidade)
+      await gl.compileAsync(preparada.modelo, camera, cena)
+    }
+    // E as cópias transparentes das peças que esmaecem na frente da câmera.
+    for (const copa of preparada.copas) usarSuave(copa, true)
+    await gl.compileAsync(preparada.modelo, camera, cena)
+    for (const copa of preparada.copas) usarSuave(copa, false)
+    if (leve) {
+      const materiais = materiaisDe(leve)
+      aplicarOpacidade(materiais, QUASE_INTEIRA)
+      await gl.compileAsync(leve, camera, cena)
+      aplicarOpacidade(materiais, 1)
+    }
+  } catch {
+    // Compilar antes é só para não soluçar; se falhar, compila na primeira vez que desenhar.
+  }
+}
+
+/** O que a leve e a completa dividem durante a troca. */
+export interface Troca {
+  /** 0 = só a leve; 1 = só a completa. */
+  opacidade: number
+  /** Os colisores da completa já estão no mundo da física. */
+  colisoresNaCena?: boolean
+  /** O desenho da versão leve (para compilar o pontilhado dela junto). */
+  leve?: Object3D
+}
+
+/**
+ * Leva a ilha pelo ciclo `longe → carregando → pronta → ativa → descarregando` pela posição do
+ * personagem (lida a cada quadro, fora do React; o estado do React só muda nas transições).
+ */
+export function useIlhaCompleta(
+  ilha: Ilha,
+  centro: { x: number; z: number },
+  aberta: boolean,
+  troca: Troca,
+): { estado: EstadoDaIlha; preparada: IlhaPreparada | null } {
+  const { rastro, pedidos } = useJogo()
+  const { gl, camera, scene } = useThree()
+  const info = ILHAS_COMPLETAS[ilha.id]
+  const [estado, setEstado] = useState<EstadoDaIlha>('longe')
+  const [preparada, setPreparada] = useState<IlhaPreparada | null>(null)
+  const vivo = useRef({
+    estado: 'longe' as EstadoDaIlha,
+    preparada: null as IlhaPreparada | null,
+    falhou: false,
+    // Cada carga tem um número: uma resposta que chega depois de a ilha ser solta é ignorada.
+    carga: 0,
+  })
+
+  useFrame((_, dt) => {
+    const v = vivo.current
+    const distancia = Math.hypot(rastro.x - centro.x, rastro.z - centro.z)
+    const perto =
+      !!info &&
+      aberta &&
+      nivelDeDetalhe(distancia, naPonteDa(ilha, rastro.x, rastro.z)) !== 'silhueta'
+    if (!perto) v.falhou = false
+    troca.opacidade = esmaecer(troca.opacidade, opacidadeAlvo(v.estado), dt, DURACAO_DA_TROCA)
+    const proximo = proximoEstadoDaIlha(v.estado, {
+      perto,
+      naTroca: perto && distancia < DISTANCIA_DA_TROCA,
+      carregada: v.preparada !== null,
+      falhou: v.falhou,
+      saiuDeVista: troca.opacidade <= 0,
+    })
+    // Com o personagem em cima da ilha antes de o chão de verdade chegar (o jogo abriu num deque),
+    // ele espera no ar em vez de cair até a versão leve.
+    const chegando =
+      v.estado === 'carregando' ||
+      v.estado === 'pronta' ||
+      (v.estado === 'ativa' && !troca.colisoresNaCena)
+    if (chegando && distancia < RAIO_DA_ILHA_DO_ANEL + MARGEM_DA_ESPERA_PELO_CHAO) {
+      pedidos.chaoChegando.add(ilha.id)
+    } else pedidos.chaoChegando.delete(ilha.id)
+    if (proximo === v.estado) return
+    v.estado = proximo
+    setEstado(proximo)
+    if (proximo !== 'carregando' || !info) return
+    const carga = ++v.carga
+    buscarIlha(info.url)
+      .then(async (cena) => {
+        if (carga !== v.carga) return
+        const p = prepararIlha(cena, ilha)
+        await aquecer(gl, camera, scene, p, troca.leve)
+        if (carga !== v.carga) return
+        v.preparada = p
+        setPreparada(p)
+      })
+      .catch(() => {
+        if (carga === v.carga) v.falhou = true
+      })
+  })
+
+  // De volta a longe: a cena já tirou a completa (este efeito roda depois do React), então
+  // geometrias, materiais e texturas podem ser soltos sem a placa de vídeo desenhar de novo.
+  useEffect(() => {
+    if (estado !== 'longe' || !info) return
+    const v = vivo.current
+    v.carga++
+    if (v.preparada) soltarExtras(v.preparada)
+    v.preparada = null
+    setPreparada(null)
+    soltarIlha(info.url)
+  }, [estado, info])
+  useEffect(
+    () => () => {
+      pedidos.chaoChegando.delete(ilha.id)
+      if (info) soltarIlha(info.url)
+    },
+    [info, pedidos, ilha.id],
+  )
+
+  return { estado, preparada }
+}
+
+/** Os colisores dos nós `col-*`, com as bordas arredondadas (o personagem não engancha). */
+function ColisoresDaIlha({ colisores, troca }: { colisores: ColisorDaIlha[]; troca: Troca }) {
+  // Os colisores entram no mundo nos efeitos dos filhos, que rodam antes deste.
+  useEffect(() => {
+    troca.colisoresNaCena = true
+    return () => {
+      troca.colisoresNaCena = false
+    }
+  }, [troca])
+  return (
+    <RigidBody type="fixed" colliders={false}>
+      {colisores.map((c) => {
+        if (c.forma === 'malha') {
+          return <TrimeshCollider key={c.nome} args={[c.vertices, c.indices]} />
+        }
+        if (c.forma === 'cilindro') {
+          const b = bordaQueCabe(c.meiaAltura, c.raio)
+          return (
+            <RoundCylinderCollider
+              key={c.nome}
+              args={[c.meiaAltura - b, c.raio - b, b]}
+              position={c.posicao}
+              quaternion={c.rotacao}
+            />
+          )
+        }
+        const [x, y, z] = c.meio
+        const b = bordaQueCabe(x, y, z)
+        return (
+          <RoundCuboidCollider
+            key={c.nome}
+            collisionGroups={soParaOCorpo(c.nome) ? GRUPO_SO_DO_CORPO : undefined}
+            args={[x - b, y - b, z - b, b]}
+            position={c.posicao}
+            quaternion={c.rotacao}
+          />
+        )
+      })}
+    </RigidBody>
+  )
+}
+
+/**
+ * A ilha completa na cena: entra e sai esmaecendo (`troca.opacidade`), com as cores saindo do
+ * cinza como as da leve. Só colide quando está ativa.
+ */
+export function IlhaCompleta({
+  preparada,
+  cor,
+  colide,
+  troca,
+}: {
+  preparada: IlhaPreparada
+  cor: number
+  colide: boolean
+  troca: Troca
+}) {
+  useEffect(() => {
+    tingir(preparada.cores, cor)
+  }, [preparada, cor])
+  const { rastro } = useJogo()
+  const camera = useThree((s) => s.camera)
+  const aplicada = useRef(-1)
+  const pontos = useRef(Array.from({ length: 6 }, () => new Vector3()))
+  useFrame((_, dt) => {
+    if (troca.opacidade !== aplicada.current) {
+      aplicada.current = troca.opacidade
+      aplicarOpacidade(preparada.materiais, troca.opacidade)
+      preparada.modelo.visible = troca.opacidade > 0
+    }
+    // A copa, o tronco ou o telhado que fica entre a câmera e o avatar (cabeça, peito, pés e os
+    // dois lados do corpo, vistos da câmera, e o Zappy) esmaece suave e volta quando sai da frente.
+    const [cabeca, peito, pes, esquerda, direita, zappy] = pontos.current
+    cabeca?.set(rastro.x, rastro.y + ALTURA_DA_CABECA, rastro.z)
+    peito?.set(rastro.x, rastro.y, rastro.z)
+    pes?.set(rastro.x, rastro.y - ALTURA_DOS_PES, rastro.z)
+    const lx = camera.position.z - rastro.z
+    const lz = -(camera.position.x - rastro.x)
+    const l = Math.hypot(lx, lz) || 1
+    esquerda?.set(rastro.x + (lx / l) * MEIA_LARGURA, rastro.y, rastro.z + (lz / l) * MEIA_LARGURA)
+    direita?.set(rastro.x - (lx / l) * MEIA_LARGURA, rastro.y, rastro.z - (lz / l) * MEIA_LARGURA)
+    // O Zappy voa do lado direito do avatar, um pouco acima (o mesmo lugar de `personagem/zappy`).
+    zappy?.set(
+      rastro.x + Math.cos(rastro.giro) * LADO_DO_ZAPPY,
+      rastro.y + ALTURA_DO_ZAPPY,
+      rastro.z - Math.sin(rastro.giro) * LADO_DO_ZAPPY,
+    )
+    for (const copa of preparada.copas) {
+      // Com a câmera dentro da copa ela some de vez (de dentro, a copa só atrapalha).
+      const alvo =
+        copa.ehCopa && caixaNoMundo(copa).containsPoint(camera.position)
+          ? 0
+          : tapa(copa, pontos.current, camera.position)
+            ? OPACIDADE_DA_COPA_NA_FRENTE
+            : 1
+      copa.visivel = esmaecer(copa.visivel, alvo, dt, DURACAO_DO_ESMAECER_DA_COPA)
+      usarSuave(copa, copa.visivel < 1)
+      if (copa.suaveLigado) {
+        aplicarSuave(copa, copa.visivel)
+        esmaecidasAgora.add(copa.no.name)
+      } else esmaecidasAgora.delete(copa.no.name)
+    }
+  })
+  return (
+    <>
+      <primitive object={preparada.modelo} />
+      {colide && <ColisoresDaIlha colisores={preparada.colisores} troca={troca} />}
+    </>
+  )
+}

@@ -24,6 +24,12 @@ export interface Ambiente {
 /** Pedidos de fora para o personagem (o cochilo leva de volta para casa). */
 export interface Pedidos {
   teleporte: { x: number; y: number; z: number } | null
+  /**
+   * Ilhas cujo chão de verdade ainda está chegando com o personagem em cima delas (o jogo abriu
+   * com ele num deque da ilha completa): enquanto houver alguma, ele fica parado no ar em vez de
+   * cair até a versão leve.
+   */
+  chaoChegando: Set<string>
 }
 
 export interface ContextoDoJogo {

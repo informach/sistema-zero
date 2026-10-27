@@ -16,9 +16,27 @@ import {
   Vector3,
 } from 'three'
 import { useEstado, useJogo } from '../estado/contexto'
+import { completaColide, completaNaCena, type EstadoDaIlha } from '../sistemas/ilhas-completas'
+import {
+  aplicarOpacidade,
+  giroDaIlha,
+  IlhaCompleta,
+  type IlhaPreparada,
+  type Troca,
+  useIlhaCompleta,
+} from './ilha-completa'
 import { useInterativo } from './interativos'
 import { ALTURA_DA_TERRA, ilhasEmVolta, RAIO_DA_ILHA_DO_ANEL, trajetoDaPonte } from './medidas'
-import { CINZA, ComReserva, copiarNo, coresOriginais, MODELOS, tingir, useModelo } from './modelos'
+import {
+  CINZA,
+  ComReserva,
+  copiarNo,
+  coresOriginais,
+  MODELOS,
+  materiaisDe,
+  tingir,
+  useModelo,
+} from './modelos'
 
 const TRECHO_QUEBRADO = 0.25
 const DURACAO_DA_CHEGADA_MS = 4500
@@ -197,24 +215,42 @@ function IlhaDoAnel({
   ilha,
   centro,
   cor,
+  estado,
+  preparada,
+  troca,
 }: {
   ilha: Ilha
   centro: { x: number; z: number }
   cor: number
+  estado: EstadoDaIlha
+  preparada: IlhaPreparada | null
+  troca: Troca
 }) {
   const flutua = ilha.id === 'nuvens'
   const y = flutua ? ALTURA_DAS_NUVENS : 0
+  // A leve fica sempre montada: é a reserva enquanto a completa baixa ou se ela falhar, e some
+  // esmaecendo quando a completa entra. Só uma das duas colide por vez.
   return (
     <group position={[centro.x, y, centro.z]}>
       <ComReserva reserva={<IlhaDeAntes ilha={ilha} cor={cor} />}>
-        <IlhaDoModelo ilha={ilha} cor={cor} />
+        <IlhaDoModelo ilha={ilha} cor={cor} troca={troca} />
       </ComReserva>
-      <RigidBody type="fixed" colliders={false}>
-        <CylinderCollider
-          args={[0.8, RAIO_DA_ILHA_DO_ANEL - 0.5]}
-          position={[0, ALTURA_DA_TERRA - 0.8, 0]}
+      {!completaColide(estado) && (
+        <RigidBody type="fixed" colliders={false}>
+          <CylinderCollider
+            args={[0.8, RAIO_DA_ILHA_DO_ANEL - 0.5]}
+            position={[0, ALTURA_DA_TERRA - 0.8, 0]}
+          />
+        </RigidBody>
+      )}
+      {preparada && completaNaCena(estado) && (
+        <IlhaCompleta
+          preparada={preparada}
+          cor={cor}
+          colide={completaColide(estado)}
+          troca={troca}
         />
-      </RigidBody>
+      )}
     </group>
   )
 }
@@ -223,16 +259,31 @@ function IlhaDoAnel({
  * A ilha do Blender (`ilhas-do-anel.glb`, um nó por ilha). O lado da chegada da ponte (+x do
  * modelo) é virado para a sua ilha; as cores saem do cinza conforme `cor` (a lava acende junto).
  */
-function IlhaDoModelo({ ilha, cor }: { ilha: Ilha; cor: number }) {
+function IlhaDoModelo({ ilha, cor, troca }: { ilha: Ilha; cor: number; troca: Troca }) {
   const raiz = useModelo(MODELOS.ilhas)
-  const { modelo, cores } = useMemo(() => {
+  const { modelo, cores, materiais } = useMemo(() => {
     const copia = copiarNo(raiz, ilha.id, true)
-    copia.rotation.y = Math.PI - ((ilha.angulo ?? 0) * Math.PI) / 180
-    return { modelo: copia, cores: coresOriginais(copia) }
-  }, [raiz, ilha.id, ilha.angulo])
+    copia.rotation.y = giroDaIlha(ilha)
+    return { modelo: copia, cores: coresOriginais(copia), materiais: materiaisDe(copia) }
+  }, [raiz, ilha])
   useEffect(() => {
     tingir(cores, cor)
   }, [cores, cor])
+  useEffect(() => {
+    troca.leve = modelo
+    return () => {
+      if (troca.leve === modelo) troca.leve = undefined
+    }
+  }, [troca, modelo])
+  // Sai esmaecendo quando a completa entra (e volta quando ela sai); parada, não mexe em nada.
+  const aplicada = useRef(1)
+  useFrame(() => {
+    const opacidade = 1 - troca.opacidade
+    if (opacidade === aplicada.current) return
+    aplicada.current = opacidade
+    aplicarOpacidade(materiais, opacidade)
+    modelo.visible = opacidade > 0
+  })
   return <primitive object={modelo} />
 }
 
@@ -548,6 +599,8 @@ function IlhaComPonte({ ilha, centro }: { ilha: Ilha; centro: { x: number; z: nu
   const jornada = useEstado((s) => s.jornada)
   const aberta = ilhaAberta(ilha.id, jornada)
   const chegada = useChegada(ilha, aberta)
+  const troca = useRef<Troca>({ opacidade: 0 }).current
+  const { estado, preparada } = useIlhaCompleta(ilha, centro, aberta, troca)
   // Na ilha aberta (nesta fase só a silhueta), o Zappy explica o que vem.
   useInterativo(`ilha-${ilha.id}`, {
     x: centro.x,
@@ -563,7 +616,14 @@ function IlhaComPonte({ ilha, centro }: { ilha: Ilha; centro: { x: number; z: nu
   })
   return (
     <>
-      <IlhaDoAnel ilha={ilha} centro={centro} cor={aberta ? chegada : 0} />
+      <IlhaDoAnel
+        ilha={ilha}
+        centro={centro}
+        cor={aberta ? chegada : 0}
+        estado={estado}
+        preparada={preparada}
+        troca={troca}
+      />
       <Ponte ilha={ilha} inteira={aberta} tabuasVisiveis={chegada} />
     </>
   )

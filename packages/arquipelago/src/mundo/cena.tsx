@@ -13,6 +13,7 @@ import { Ceu } from './ceu'
 import { Farol } from './farol'
 import { Horta } from './horta'
 import { IlhaCentral } from './ilha-central'
+import { Medidor } from './medidor'
 import { carregarModelos } from './modelos'
 
 // Os modelos do mundo começam a baixar junto com o jogo (cada peça mostra a forma simples até chegar).
@@ -52,10 +53,11 @@ export function Cena({ aoFalhar }: { aoFalhar: (e: unknown) => void }) {
           <Farol />
           <Anel />
           <Personagem />
+          <Camera />
         </Physics>
         <Zappy />
       </Suspense>
-      <Camera />
+      <Medidor />
     </Canvas>
   )
 }

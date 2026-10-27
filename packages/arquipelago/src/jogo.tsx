@@ -85,7 +85,7 @@ async function carregar(plataforma: Plataforma): Promise<Situacao> {
     interativos: criarRegistro(),
     rastro: { x: 0, y: 0, z: 0, giro: 0, inclinacao: 0.5 },
     ambiente: { luz: 1, noite: false },
-    pedidos: { teleporte: null },
+    pedidos: { teleporte: null, chaoChegando: new Set() },
   }
   return { tipo: 'pronto', contexto, fila }
 }

@@ -1,8 +1,9 @@
 # Ilhas completas no Blender
 
 As versões completas das ilhas do anel. Cada uma tem um script Python que monta a ilha no Blender
-sem tela (o mesmo `bpy` do mundo) e grava os GLBs em `src/assets/ilhas/`. O jogo ainda não carrega
-estes arquivos: hoje ele mostra a versão leve (`ilhas-do-anel.glb`, de `arte/mundo/ilhas_anel.py`).
+sem tela (o mesmo `bpy` do mundo) e grava os GLBs em `src/assets/ilhas/`. O jogo mostra a versão
+leve (`ilhas-do-anel.glb`, de `arte/mundo/ilhas_anel.py`) e troca pela completa quando a pessoa
+atravessa a ponte. Por enquanto só o Bosque está ligado (`src/mundo/ilha-completa.tsx`).
 
 Por enquanto existem três ilhas: Bosque dos Bichos, Vila Doce e Recife Coral.
 
@@ -23,6 +24,7 @@ ALVO=0,2,0 DIR=0.75,0.85,1 DIST=46 AGUA=1 \
 `ILHAS_OUT=/outra/pasta` grava em outro lugar. O `build_all.py` lê cada GLB e confere:
 
 - os nós, as âncoras e os clipes do contrato abaixo;
+- os grupos de nós de colisão `col-*` que o jogo espera, e que nenhum deles tem material;
 - o teto de cada ilha (40 mil triângulos e 1,5 MB) e o das peças soltas;
 - o `relatorio.json` terminando em quebra de linha.
 
@@ -43,8 +45,8 @@ chegada (`conferir_corredor`).
   - no Recife, a caverna submarina fica do lado de fora (−x, até 21 do centro) e o cais avança 16
     para o mar;
   - no Bosque, as copas e o galho dos cipós passam um pouco da borda.
-- **Colisões:** o modelo só desenha, como no resto do mundo. Os colisores de cada peça (deques,
-  pontes, escada, telhados planos, cais) entram no código quando a ilha for ligada.
+- **Colisões:** o desenho nunca vira colisão. Cada ilha traz nós de colisão `col-*`, feitos à mão
+  ao lado das peças (veja abaixo). Vila Doce e Recife ainda não têm os deles.
 - **Brilho:** os vidros que acendem (`vidroJanela`, `lampiao`, `lanterna`) e os novos `perolaLuz` e
   `cristalLuz` saem com força de emissão 1; o jogo regula o brilho.
 
@@ -52,7 +54,7 @@ chegada (`conferir_corredor`).
 
 | Arquivo | Nós (malhas) | Âncoras (nós vazios) | Clipes | Triângulos | Tamanho |
 |---|---|---|---|---|---|
-| `bosque.glb` | `terreno`, `agua`, `construcoes`, `vegetacao`, `cipo-1`, `cipo-2`, `cipo-3` | comuns + `escada`, `casa-na-arvore`, `cabana`, `cercado`, `lago`, `escorregador-fim`, `copas-1`…`copas-4` | não tem | 27.926 | 900 KB |
+| `bosque.glb` | `terreno`, `agua`, `construcoes`, `vegetacao`, `cipo-1`…`cipo-3`, `copa-1`…`copa-11`, `tronco-1`…`tronco-5`, `telhado-casa-na-arvore` e 215 `col-*` | comuns + `escada`, `casa-na-arvore`, `cabana`, `cercado`, `lago`, `escorregador-fim`, `copas-1`…`copas-4` | não tem | 27.782 | 950 KB |
 | `vila-doce.glb` | `terreno`, `fonte`, `construcoes`, `telhados`, `feira`, `enfeites` | comuns + `fonte`, `padaria`, `sorveteria`, `telhados-inicio`, `telhados-1`…`telhados-3`, `telhados-fim`, `barraca-1`…`barraca-6` | não tem | 27.606 | 925 KB |
 | `recife.glb` | `terreno`, `lagoa`, `construcoes`, `corais`, `enfeites`, `caverna`, `alga-1`…`alga-10` | comuns + `casa-mare`, `mapa`, `lagoa`, `cais`, `barco`, `caverna-entrada`, `caverna`, `caverna-tesouro`, `mergulho` | `balancar` (2 s, as algas) | 17.484 | 547 KB |
 | `bosque-props.glb` | `arvore-grande-a`/`-b`/`-c`, `arvore-media`, `moita`, `tora`, `toco`, `cogumelo` | | não tem | 3.958 | 84 KB |
@@ -62,6 +64,43 @@ chegada (`conferir_corredor`).
 
 As peças soltas ficam cada uma na origem, com o pé em y = 0, para o jogo repetir (e o modo de
 construir usar depois). Nas ilhas, as mesmas peças já vêm posicionadas dentro dos nós.
+
+### Nós de colisão (`col-*`)
+
+Formas simples e invisíveis, exportadas no mesmo GLB, que o jogo lê para montar os colisores do
+Rapier (`src/mundo/colisores-da-ilha.ts`). Os ajudantes estão no `lib_ilhas.py`: `col_caixa`,
+`col_cilindro`, `col_entre` (cilindro de um ponto a outro, para tronco torto) e `col_terreno`. As
+peças que se pisam (`plataforma`, `ponte_corda`, `escada_espiral`, `cerca`, `arvore_grande`,
+`arvore_media`, `tora`, `toco`) recebem uma lista `col` e põem a colisão delas ali, ao lado do
+desenho; o `exportar(..., colisores=col)` grava tudo.
+
+- **Nome é a forma:**
+  - `col-terreno`: malha de triângulos, a única (cópia do tampo, da praia e do barranco);
+  - `col-cil-<peça>-<n>`: cilindro em pé no eixo do nó;
+  - `col-<peça>-<n>`: caixa.
+- **Tamanho no nó, não na malha:** todo nó usa a mesma malha unitária (cubo de lado 1, cilindro de
+  diâmetro 1 e altura 1) e guarda posição, giro e escala no TRS. O jogo mede a caixa da malha vezes
+  a escala, então outra forma também serviria.
+- **Sem material:** o jogo tira os nós da cena ao ler; o `build_all.py` reprova `col-*` com material.
+- **O que colide no Bosque:** chão, deques e o guarda-corpo deles (aberto onde chega ponte, escada
+  e escorregador), o piso das pontes em trechos que seguem a barriga e uma parede baixa sob cada
+  corrimão, os degraus, a casa na árvore, o escorregador e as laterais dele, a cabana (caixa até o
+  beiral), a varanda, os postes, o barril, o caixote, a cerca, a casinha, o cocho e o feno do
+  cercadinho, os troncos (um cilindro por trecho, 85% da grossura do desenho), as toras e os tocos.
+- **O que não colide:** copas, raízes, moitas, flores, cogumelos, pedrinhas, tufos, tocas e os
+  enfeites miúdos das construções. O personagem passa por eles sem tropeçar.
+- O jogo arredonda as bordas (3 cm) para o personagem não enganchar em quina de degrau ou deque.
+
+### Nós que esmaecem (`copa-*`, `tronco-*`, `telhado-*`)
+
+O que pode tapar a câmera no percurso sai em nós próprios, para o jogo esmaecer só o que está entre
+a câmera e o personagem (e voltar quando sai da frente):
+
+- `copa-1`…`copa-11`: a copa de cada árvore, com os galhos lá de cima (`arvore_grande(..., copa=lista)`
+  e `arvore_media(..., folhas=lista)`);
+- `tronco-1`…`tronco-5`: os troncos das árvores grandes (`arvore_grande(..., tronco=lista)`); eles
+  também colidem com a câmera, que os contorna, e esmaecem quando tapam só um pedaço do avatar;
+- `telhado-casa-na-arvore`: o telhado e a bandeirinha.
 
 ### Âncoras
 
@@ -104,8 +143,9 @@ A posição de cada âncora (x, y, z do jogo) está no `relatorio.json`. As espe
 
 - **Bosque dos Bichos:**
   - árvores grandes de três tipos (a copa larga, a alta em andares e o ipê rosa);
-  - percurso nas copas: começa na casa na árvore, com escada em espiral de degraus de 0,33, passa
-    por três pontes de corda entre deques de 4,0 a 4,8 de altura e termina num escorregador;
+  - percurso nas copas: começa na casa na árvore, com escada em espiral de degraus de 0,33 que
+    chega no deque longe da casa e da ponte, passa por três pontes de corda entre deques de 4,0 a
+    4,8 de altura (raio de 2,0 a 2,9, com folga para contornar o tronco) e termina num escorregador;
   - a cabana de toras da Capi, com a placa da cruz verde, varanda, chaminé e floreiras;
   - o cercadinho dos bichos para adotar e o lago com vitórias-régias;
   - três cipós num galho comprido por cima do lago;

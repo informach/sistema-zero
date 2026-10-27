@@ -74,6 +74,10 @@ export function Personagem() {
       pedidos.teleporte = null
       return
     }
+    if (pedidos.chaoChegando.size > 0) {
+      velY.current = 0
+      return
+    }
 
     const p = b.translation()
     const nadando = p.y - DO_CENTRO_AO_PE + CINTURA < NIVEL_DA_AGUA && !noChao.current

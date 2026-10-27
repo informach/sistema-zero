@@ -124,3 +124,89 @@ export function dentroDaCasa(x: number, z: number): boolean {
     Math.abs(z - CENTRO_DA_CASA.z) < QUARTO.fundo / 2
   )
 }
+
+/**
+ * A faixa que conta como "na ponte" para buscar a ilha completa: um pouco mais larga que a ponte e
+ * começando antes dela (na praia da sua ilha), para o arquivo já estar lido quando a pessoa chegar.
+ */
+export const BUSCA_NA_PONTE = {
+  meiaLargura: 3,
+  antesDaPonte: 4,
+  depoisDaPonte: 2,
+} as const
+
+/**
+ * A completa toma o lugar da leve no meio da ponte (a 17 da borda da ilha): de longe a troca
+ * esmaecida mal se nota e o arquivo teve a primeira metade da ponte para ser lido.
+ */
+export const DISTANCIA_DA_TROCA = RAIO_DA_ILHA_DO_ANEL + 17
+/** Segundos do esmaecer entre a leve e a completa (curto, mas sem estalo). */
+export const DURACAO_DA_TROCA = 0.8
+/** Até onde, além da borda da ilha, o personagem espera no ar o chão da completa chegar. */
+export const MARGEM_DA_ESPERA_PELO_CHAO = 1
+/**
+ * Raio das bordas arredondadas dos colisores das ilhas completas: o personagem escorrega pela
+ * quina de um degrau ou deque em vez de enganchar nela.
+ */
+export const BORDA_DOS_COLISORES = 0.03
+
+/**
+ * Copa, tronco ou telhado que fica entre a câmera e o personagem esmaece (transparência suave) até
+ * esta opacidade e volta quando sai da frente, no tempo de `DURACAO_DO_ESMAECER_DA_COPA` segundos.
+ */
+export const OPACIDADE_DA_COPA_NA_FRENTE = 0.25
+export const DURACAO_DO_ESMAECER_DA_COPA = 0.3
+
+/**
+ * A câmera nunca atravessa o que é sólido: um raio do personagem até ela para `FOLGA_DA_CAMERA`
+ * antes da parede (o plano de corte não entra nela). Ela encosta na hora e só se afasta de novo
+ * aos poucos (`VOLTA_DA_CAMERA`, por segundo), sem tranco.
+ */
+export const FOLGA_DA_CAMERA = 0.35
+/**
+ * O raio da bolinha que a câmera lança até ela: mais grossa que um raio, cobre a meia largura do
+ * avatar e a casca do tronco, que é mais grossa que o colisor dele.
+ */
+export const RAIO_DA_SONDA_DA_CAMERA = 0.45
+/** Mais perto que isto a câmera entraria na cabeça do avatar. */
+export const DISTANCIA_MINIMA_DA_CAMERA = 0.4
+export const VOLTA_DA_CAMERA = 3
+
+/**
+ * Quando o raio bate perto (menos de `tapada` da distância), a câmera gira para o lado livre e, sem
+ * lado livre, sobe estes ângulos (por cima do ombro), ficando com o que der mais espaço se ganhar
+ * pelo menos `ganhoMinimo`.
+ */
+export const GRUA_DA_CAMERA = {
+  tapada: 0.6,
+  /** Giros para o lado que a câmera testa primeiro, e quanto livre basta para ir por ali. */
+  giros: [0.5, 1.0],
+  basta: 0.9,
+  giroPorSegundo: 1.5,
+  subidas: [0.45, 0.9],
+  inclinacaoMaxima: 1.25,
+  ganhoMinimo: 0.5,
+} as const
+
+/**
+ * Lá no alto (deques e pontes), a câmera desce o ângulo e chega mais perto: mostra o caminho à
+ * frente por baixo das copas em vez de olhar de cima através delas.
+ */
+export const CAMERA_NO_ALTO = {
+  /** Quanto acima do tampo da ilha o personagem precisa estar. */
+  acimaDoChao: 2.5,
+  inclinacaoMaxima: 0.3,
+  distanciaMaxima: 6.5,
+} as const
+
+/** A posição está em cima da ponte desta ilha (do fim da praia até a borda da ilha do anel)? */
+export function naPonteDa(ilha: Ilha, x: number, z: number): boolean {
+  const a = ((ilha.angulo ?? 0) * Math.PI) / 180
+  const ao = x * Math.cos(a) + z * Math.sin(a)
+  const deLado = Math.abs(-x * Math.sin(a) + z * Math.cos(a))
+  return (
+    deLado < BUSCA_NA_PONTE.meiaLargura &&
+    ao > RAIO_DA_PRAIA - BUSCA_NA_PONTE.antesDaPonte &&
+    ao < RAIO_DO_ANEL - RAIO_DA_ILHA_DO_ANEL + BUSCA_NA_PONTE.depoisDaPonte
+  )
+}

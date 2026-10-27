@@ -45,6 +45,41 @@ decisões da dona: Canvas `https://claude.ai/artifact/5eNo1oqsndxmV6MPLxaz1W` e 
   no README de lá). `mundo/modelos.tsx` carrega; cada peça mostra a forma simples do código até o
   modelo chegar, e os colisores continuam no código.
 
+## Ilhas completas (o Bosque, 27/10/2026)
+
+- `src/sistemas/ilhas-completas.ts`: o ciclo puro `longe → carregando → pronta → ativa →
+  descarregando`. Busca na cabeça da ponte (`naPonteDa`, faixa `BUSCA_NA_PONTE`), troca no meio dela
+  (`DISTANCIA_DA_TROCA`), solta na volta à ilha central. Falha fica na versão leve até a pessoa se
+  afastar.
+- `src/mundo/carregar-ilha.ts`: `GLTFLoader` próprio (não o cache do `useGLTF`), no máximo UMA ilha
+  completa na memória; soltar libera geometria, material e textura (até de arquivo que ainda chega).
+- `src/mundo/ilha-completa.tsx` (`useIlhaCompleta`, `IlhaCompleta`): lê e prepara antes da troca,
+  compila os shaders (`compileAsync`: inteira, pontilhada e as cópias transparentes) e faz o
+  cross-fade da troca com `alphaHash` em `DURACAO_DA_TROCA`; a leve continua montada como reserva e
+  só uma das duas colide. Jogo aberto em cima da ilha: o personagem espera no ar
+  (`pedidos.chaoChegando`) até os colisores chegarem.
+- Colisão: os nós `col-*` do GLB (`src/mundo/colisores-da-ilha.ts`; convenção no README de
+  `arte/ilhas`), cuboide/cilindro arredondados (`BORDA_DOS_COLISORES`) e malha só no `col-terreno`.
+  A malha de desenho nunca vira colisão.
+- Câmera (`personagem/camera.tsx`, dentro do `<Physics>`): uma bolinha da cabeça e do peito até
+  ela (`castShape`, grupos de `mundo/grupos.ts`: o guarda-corpo invisível não conta) a encosta na
+  hora e a afasta aos poucos (`sistemas/camera.ts`); tapada de perto, gira para o lado livre e,
+  sem lado livre, sobe por cima do ombro (`GRUA_DA_CAMERA`); lá no alto desce o ângulo
+  (`CAMERA_NO_ALTO`). Copas, troncos e telhados (`copa-*`, `tronco-*`, `telhado-*`,
+  `mundo/copas.ts`) entre a câmera e o avatar (cabeça, peito, pés, lados e o Zappy, raio contra a
+  malha) esmaecem com transparência suave: trocam para cópias `transparent` sem `depthWrite`
+  enquanto tapam e voltam aos materiais opacos depois. Soltar a ilha solta as cópias também.
+- Prova de memória (playground): `__arquipelagoLevar(x, y, z, giro)` leva o personagem; na mesma
+  pose da ilha central, antes e depois de duas visitas, as geometrias na placa (`geometrias`)
+  nunca passam das penduradas na cena (`geometriasNaCena`) e ficam iguais entre as voltas.
+- Medir: `localStorage['arquipelago:medir'] = '1'` deixa `renderer.info`, a posição, o giro, a
+  câmera, as peças esmaecidas e o que a última ilha solta liberou em
+  `globalThis.__arquipelagoDesenho` (`src/mundo/medidor.tsx`).
+- Testes: `tests/ilhas-completas.test.ts` (ciclo, memória, esmaecer), `tests/camera-e-copas.test.ts`
+  (distância da câmera, peças que esmaecem e a troca de materiais) e
+  `tests/colisores-da-ilha.test.ts` (lê o `bosque.glb`: grupos, sem material, percurso nas copas de
+  ponta a ponta, escada, escorregador, corredor da chegada livre).
+
 ## Salvamento e tempo
 
 - `SalvamentoV1` (contrato) com versão; gravação por revisão (CAS). Revisão velha recebe 409
@@ -55,7 +90,7 @@ decisões da dona: Canvas `https://claude.ai/artifact/5eNo1oqsndxmV6MPLxaz1W` e 
 ## Rodar
 
 - `bun run dev`: playground em `http://127.0.0.1:4520` (parâmetros na URL: `posicao`, `publico`,
-  `limite`, `liberado`, `novo`, `persistir`, `em=x,z`, `adiantar`). Serve `/avatar3d` e `/room3d`
+  `limite`, `liberado`, `novo`, `persistir`, `em=x,z[,y]`, `adiantar`). Serve `/avatar3d` e `/room3d`
   do `public/` do community-kids.
 - `bun run build`: `dist/cliente/` com chunks com hash e `manifesto.json` validado pelo contrato.
 - `bun test`, `bun run typecheck`.

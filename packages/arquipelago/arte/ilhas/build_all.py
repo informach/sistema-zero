@@ -3,8 +3,9 @@
   /tmp/claude-0/blender-venv/bin/python -B arte/ilhas/build_all.py
 
 Cada ilha roda num processo próprio (a cena do Blender começa limpa). Depois, sem o Blender, lê o
-JSON de cada GLB e confere: os nós e as âncoras do contrato (README), os clipes, o teto de
-triângulos e de tamanho, e o `relatorio.json` terminando em quebra de linha. O corredor da chegada
+JSON de cada GLB e confere: os nós e as âncoras do contrato (README), os clipes, os nós de colisão
+`col-*` (os grupos que o jogo espera, sem material), o teto de triângulos e de tamanho, e o
+`relatorio.json` terminando em quebra de linha. O corredor da chegada
 é conferido dentro de cada script, antes de exportar (`conferir_corredor`).
 """
 import json
@@ -20,10 +21,19 @@ ILHAS = ['bosque', 'vila_doce', 'recife']
 COMUNS = ['chegada', 'morador', 'lumi-1', 'lumi-2', 'lumi-3', 'lumi-4']
 CONTRATO = {
     'bosque': {
-        'nos': ['terreno', 'agua', 'construcoes', 'vegetacao', 'cipo-1', 'cipo-2', 'cipo-3'],
+        # copa-1…copa-11 (a copa de cada árvore: 4 do percurso, a do galho e 6 de enfeite), tronco-1…5 (os
+        # troncos das árvores grandes) e telhado-casa-na-arvore ficam à parte para o jogo esmaecer o que
+        # estiver entre a câmera e o personagem.
+        'nos': ['terreno', 'agua', 'construcoes', 'vegetacao', 'cipo-1', 'cipo-2', 'cipo-3']
+        + [f'copa-{i}' for i in range(1, 12)] + [f'tronco-{i}' for i in range(1, 6)] + ['telhado-casa-na-arvore'],
         'ancoras': COMUNS + ['escada', 'casa-na-arvore', 'cabana', 'cercado', 'lago', 'escorregador-fim',
                              'copas-1', 'copas-2', 'copas-3', 'copas-4'],
         'clipes': [],
+        # Grupos de nós de colisão (o nome sem o número do fim): o percurso nas copas inteiro, a casa na
+        # árvore, o escorregador, a cabana, o cercadinho, os troncos e o chão.
+        'colisores': ['col-terreno', 'col-cil-deque', 'col-guarda', 'col-ponte', 'col-ponte-lado', 'col-degrau',
+                      'col-casa-na-arvore', 'col-escorregador', 'col-escorregador-lado', 'col-cabana', 'col-varanda',
+                      'col-cerca', 'col-cil-tronco', 'col-cil-tora', 'col-cil-toco'],
     },
     'vila-doce': {
         'nos': ['terreno', 'fonte', 'construcoes', 'telhados', 'feira', 'enfeites'],
@@ -89,6 +99,20 @@ def main():
         for a in c['ancoras']:
             if a not in vazios:
                 erros.append(f'{pid}: falta a âncora {a}')
+        grupos = set()
+        for n in doc.get('nodes', []):
+            nome = n.get('name', '')
+            if not nome.startswith('col-'):
+                continue
+            grupos.add(nome.rsplit('-', 1)[0] if nome.rsplit('-', 1)[-1].isdigit() else nome)
+            prims = doc['meshes'][n['mesh']]['primitives'] if 'mesh' in n else []
+            if not prims:
+                erros.append(f'{pid}: {nome} sem malha')
+            elif any('material' in pr for pr in prims):
+                erros.append(f'{pid}: {nome} tem material (colisão não desenha)')
+        for g in c.get('colisores', []):
+            if g not in grupos:
+                erros.append(f'{pid}: falta o colisor {g}')
         clipes = sorted(a.get('name') for a in doc.get('animations', []))
         if clipes != sorted(c['clipes']):
             erros.append(f'{pid}: clipes {clipes}, esperado {c["clipes"]}')
@@ -101,7 +125,7 @@ def main():
     print(f'TOTAL: {len(dados)} arquivos, {tris} triângulos, {kb / 1024:.2f} MB')
     if erros:
         sys.exit('ERROS:\n  ' + '\n  '.join(erros))
-    print('CONFERIDO: nós, âncoras, clipes, tetos e relatório')
+    print('CONFERIDO: nós, âncoras, colisores, clipes, tetos e relatório')
 
 
 if __name__ == '__main__':

@@ -51,14 +51,14 @@
         "z": 6.6
       },
       "escada": {
-        "x": 1.24,
+        "x": -0.49,
         "y": 1.0,
-        "z": -1.82
+        "z": 0.1
       },
       "escorregador-fim": {
-        "x": 2.45,
+        "x": 2.62,
         "y": 1.0,
-        "z": 10.03
+        "z": 10.12
       },
       "lago": {
         "x": 4.4,
@@ -92,17 +92,57 @@
       }
     },
     "clipes": "",
-    "kb": 900.1,
+    "colisores": {
+      "col-cabana": 1,
+      "col-caixote": 1,
+      "col-casa-na-arvore": 1,
+      "col-casinha": 1,
+      "col-cerca": 5,
+      "col-cil-barril": 1,
+      "col-cil-deque": 4,
+      "col-cil-feno": 1,
+      "col-cil-poste": 2,
+      "col-cil-toco": 3,
+      "col-cil-tora": 3,
+      "col-cil-tronco": 26,
+      "col-cocho": 1,
+      "col-degrau": 12,
+      "col-escorregador": 12,
+      "col-escorregador-lado": 24,
+      "col-guarda": 67,
+      "col-ponte": 16,
+      "col-ponte-lado": 32,
+      "col-terreno": 1,
+      "col-varanda": 1
+    },
+    "kb": 950.5,
     "nos": {
       "agua": 82,
       "cipo-1": 268,
       "cipo-2": 268,
       "cipo-3": 268,
-      "construcoes": 10598,
+      "construcoes": 10360,
+      "copa-1": 900,
+      "copa-10": 210,
+      "copa-11": 1156,
+      "copa-2": 672,
+      "copa-3": 900,
+      "copa-4": 672,
+      "copa-5": 210,
+      "copa-6": 210,
+      "copa-7": 210,
+      "copa-8": 210,
+      "copa-9": 210,
+      "telhado-casa-na-arvore": 94,
       "terreno": 1022,
-      "vegetacao": 15420
+      "tronco-1": 96,
+      "tronco-2": 96,
+      "tronco-3": 96,
+      "tronco-4": 96,
+      "tronco-5": 96,
+      "vegetacao": 9380
     },
-    "triangulos": 27926
+    "triangulos": 27782
   },
   "bosque-props": {
     "ancoras": {},

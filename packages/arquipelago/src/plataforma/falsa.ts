@@ -25,8 +25,8 @@ export interface OpcoesDaPlataformaFalsa {
   quarto?: QuartoDoJogo
   persistir?: boolean
   agora?: () => Date
-  /** Começa fora de casa, com a porta já aberta, neste ponto (para testar a ilha). */
-  comecarEm?: { x: number; z: number }
+  /** Começa fora de casa, com a porta já aberta, neste ponto (para testar a ilha). `y` padrão 6. */
+  comecarEm?: { x: number; z: number; y?: number }
   /** Volta o começo do jogo N minutos (para ver a noite: 13). */
   adiantarMinutos?: number
 }
@@ -70,7 +70,7 @@ export function criarPlataformaFalsa(o: OpcoesDaPlataformaFalsa = {}): Plataform
       revisao: 1,
       salvamento: {
         ...inicial,
-        posicao: { x: o.comecarEm.x, y: 6, z: o.comecarEm.z },
+        posicao: { x: o.comecarEm.x, y: o.comecarEm.y ?? 6, z: o.comecarEm.z },
         casa: { portaNova: true },
       },
       atualizadoEm: agora().toISOString(),
