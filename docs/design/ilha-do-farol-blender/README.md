@@ -10,7 +10,7 @@ só a referência de cada um, e o Estúdio carrega o arquivo na hora de rodar o 
 
 | Categoria | Peças (nome na lista do bloco) | Caixa comum (`lib_ilha.CAIXAS`) |
 |---|---|---|
-| cenário | `praia-tropical`, `costa-rochosa`, `ilha-nevada`, `noite-na-ilha` (mar, ilha, ponte, árvores, pedras pequenas e céu) | x e y ±70, z de -0,5 a 67,7 (tamanho 140) |
+| cenário | `praia-tropical`, `costa-rochosa`, `ilha-nevada`, `noite-na-ilha` (mar, terreno, grama, ponte, árvores, moitas e céu; as pedras são o modelo `pedras`) | x e y ±70, z de -0,5 a 67,7 (tamanho 140) |
 | farol | `farol-listrado`, `farol-de-pedra`, `farol-de-madeira`, `farol-colorido`, todos com os clipes `acender` e `aceso` | x e y ±0,9, z de 0 a 5,3 |
 | barco | `veleiro`, `barco-de-pesca`, `lancha`, `barco-pirata` | x ±1,55, y ±0,68, z de -0,38 a 2,7 |
 | chave | `chave-dourada`, `chave-prateada`, `chave-de-estrela` | x de -0,6 a 0,64, y ±0,12, z de -0,54 a 0,6 |
@@ -44,13 +44,17 @@ ILHA_OUT=./out bun docs/aulas-interativas-tecnico/qa/gerar-ilha-artes.ts        
 bun docs/aulas-interativas-tecnico/qa/gerar-ilha-do-farol.ts                    # aulas
 ```
 
+⚠️ O publicador lê as 24 peças da pasta `ILHA_OUT` e regrava a biblioteca inteira: a pasta precisa
+ter TODAS, na versão publicada. Uma peça velha ou faltando muda o sha dela (ou falha). Gere de novo
+só o que mudou e copie para a pasta de onde a última publicação saiu.
+
 ⚠️ Depois que o curso sair, um modelo substituído CONTINUA na biblioteca (o projeto salvo de uma
 criança aponta para o sha antigo). `--remover-antigos` no publicador só antes do lançamento.
 
 | Arquivo | O quê |
 |---|---|
 | `lib_ilha.py` | paleta tirada dos SVGs, formas (contorno em camadas, faixa, folha, pedra, superelipsoide, mecha), materiais em degradê, clipes por faixas do NLA, as caixas das categorias e a exportação |
-| `cenario.py` | os quatro cenários, as pedras e a bancada |
+| `cenario.py` | os quatro cenários (terreno, mar, grama), as pedras e a bancada |
 | `farol.py` | os quatro faróis com a luz animada |
 | `barcos.py` | barco de pesca, lancha e barco pirata |
 | `objetos.py` | as três chaves, o veleiro e o aventureiro (com o esqueleto e os clipes que os outros personagens usam) |
@@ -74,6 +78,16 @@ criança aponta para o sha antigo). `--remover-antigos` no publicador só antes 
   movimento) e `parado` quando para.
 - As pedras precisam esconder a chave em (-2, 1, -3), o esconderijo da aula 1. Mexeu nelas, rode
   `verificar_pedra.py`.
+- **Cenário com acabamento de jogo 3D** (27/10/2026: não precisa copiar o 2D): o chão é um terreno
+  contínuo com a cor nos vértices (`COLOR_0`; areia, trilha, praia seca e molhada) que desce e
+  continua por baixo do mar translúcido (o raso clareia sozinho sobre a areia), com uma linha de
+  espuma na beira; a grama é um tapete à parte com a borda nítida e inclinada, manchas de tom e
+  tufos. O material do chão leva `szSemSombra` nos extras: o Jogo 3D não o deixa fazer sombra (uma
+  folha aberta faria sombra nela mesma nas encostas). Peça translúcida (a água, o feixe) também não
+  faz sombra.
+- Ao juntar as peças, só a primeira camada de UV vira `TEXCOORD_0`: a camada do céu se chama
+  `UVMap`, como as outras, e o material liga a textura a ela num nó UV Map. Sem isso o exportador
+  gravava `texCoord: -1`, a otimização tirava as coordenadas e o degradê do céu sumia.
 - As texturas (o céu e o degradê da luz) vão dentro do GLB. O Jogo 3D e a cena das experiências as
   leem pela img: o fetch(blob:) do GLTFLoader esbarra na CSP.
 

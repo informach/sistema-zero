@@ -22,6 +22,11 @@ Os blocos de luz da criança SOMAM a esta luz e não mudaram.
   `game-3d/__tests__/workshopLights.test.ts` compara os dois pelo texto (os pacotes não se importam).
 - ⚠️ O Kit Travessia (`setupCrossingLights`) ficou com a luz de antes: a paleta dele foi escolhida
   para ela, e com a nova a grama virava verde-limão.
+- **Quem não faz sombra** (carregador comum dos três jogos 3D, `castsNoShadow` em
+  `three3dModelsRuntime.ts`): a parte translúcida de um `.glb` (água, feixe de luz) e o material com
+  `szSemSombra` nos extras (o chão de um cenário, uma folha aberta que faria sombra nela mesma nas
+  encostas). Elas continuam RECEBENDO sombra. Sem isso, o mar translúcido da Ilha do Farol
+  escurecia tudo embaixo dele num retângulo do tamanho da área da sombra.
 - ⚠️ Mundo 3D e Jogo 3D Avançado NÃO mudaram: usam ACES (no renderer e no composer com bloom),
   ciclo de dia e noite e grama com shader próprio. Qualquer tone mapping desloca a cor (medido:
   ACES e Neutral mudam o matiz); igualar a cor lá é um projeto do pipeline inteiro, com revisão

@@ -87,7 +87,9 @@ const BUDGETS: readonly {
   // (um cenário inteiro) sem o cubo cinza acima de 64, e o normalBias da sombra (acne).
   // 27/10 (luz do motor igual à oficina do Molda): as constantes LIGHT_AMBIENT e
   // LIGHT_SUN no lugar dos números soltos. Medido: 227_324.
-  { extension: gameThreeDExtension, maxChars: 227_400, maxGzipBytes: 62_800 },
+  // 27/10 (cenário da ilha com acabamento de jogo): +257 no carregador comum dos três, a peça
+  // translúcida e o material szSemSombra não fazem sombra. Medido: 227_581.
+  { extension: gameThreeDExtension, maxChars: 227_700, maxGzipBytes: 62_800 },
   // ⬇️ Lote 14 do review 3D (P2): o Kit Plataforma (`runtimePlatform.ts`) só entra quando o
   // código do projeto usa um método dele (`game-3d/platformKitVariant.ts`); os outros 20
   // exemplos do catálogo recebem esta variante. O completo, acima, segue sendo o de quem usa o
@@ -102,7 +104,8 @@ const BUDGETS: readonly {
     // Mesmos recursos nativos, sem o Kit Plataforma: 190_794 / 53_051.
     // 27/10: +2_370, o mesmo da variante completa (acima). Medido: 193_164 / 52_171.
     // 27/10, luz do motor: as duas constantes de luz. Medido: 193_242.
-    maxChars: 193_300,
+    // 27/10, +257 do carregador comum (o que não faz sombra). Medido: 193_499.
+    maxChars: 193_600,
     maxGzipBytes: 53_100,
   },
   // Medido: 341_986 caracteres, 93_312 bytes gzip.
@@ -158,7 +161,8 @@ const BUDGETS: readonly {
   // gzip.
   // 25/10: HUD central compartilhado, sem controles dos kits: 344_930 / 102_843.
   // 27/10: +1_228, as texturas do .glb pela img (ver o Jogo 3D). Medido: 346_158 / 100_414.
-  { extension: worldThreeDExtension, maxChars: 346_200, maxGzipBytes: 102_900 },
+  // 27/10: +257, o que não faz sombra no carregador comum (ver o Jogo 3D). Medido: 346_415.
+  { extension: worldThreeDExtension, maxChars: 346_500, maxGzipBytes: 102_900 },
   // Medido: 213_707 caracteres, 62_113 bytes gzip.
   // ⬇️ DESCEU no lote 11 (o Avançado consome as regras comuns): entrou o fragmento
   // COMPARTILHADO `game3dRules/runtime.ts` (~15_900 caracteres / ~5_300 bytes gzip; placar,
@@ -197,7 +201,8 @@ const BUDGETS: readonly {
   // correções do Avançado +1_079 / +324. Medido FINAL: 208_604 caracteres, 61_428 bytes gzip.
   // 25/10: HUD central compartilhado, sem controles dos kits: 209_159 / 61_537.
   // 27/10: +1_187, as texturas do .glb pela img (ver o Jogo 3D). Medido: 210_387 / 60_177.
-  { extension: gameKit3DExtension, maxChars: 210_400, maxGzipBytes: 61_600 },
+  // 27/10: +257, o que não faz sombra no carregador comum (ver o Jogo 3D). Medido: 210_644.
+  { extension: gameKit3DExtension, maxChars: 210_700, maxGzipBytes: 61_600 },
 ]
 
 async function bootstrapSource(

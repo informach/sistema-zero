@@ -316,6 +316,18 @@ const THREE_MODELS_TEMPLATE = `
       disposeSkeletons(root, seenSkeletons);
     }
 
+    // Não fazem sombra: a superfície translúcida (a água, o feixe do farol), cuja sombra sairia
+    // chapada, como se fosse sólida; e o material marcado szSemSombra nos extras do .glb (o chão
+    // de um cenário: uma folha aberta, que faria sombra nela mesma nas encostas).
+    function castsNoShadow(m) {
+      var list = m && m.length ? m : [m];
+      for (var i = 0; i < list.length; i++) {
+        var one = list[i];
+        if (!one || !(one.transparent || (one.userData && one.userData.szSemSombra))) return false;
+      }
+      return true;
+    }
+
     function instantiate(hit, opts) {
       if (!hit || !hit.scene) return null;
       var o = opts || {};
@@ -324,7 +336,7 @@ const THREE_MODELS_TEMPLATE = `
         root.traverse(function (node) {
           if (!node.isMesh) return;
           if (o.shadows) {
-            node.castShadow = true;
+            node.castShadow = !castsNoShadow(node.material);
             if (o.shadows !== 'cast') node.receiveShadow = true;
           }
           if (!o.ownMaterials || !node.material) return;

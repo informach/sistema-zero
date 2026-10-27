@@ -546,6 +546,58 @@ describe('createSzModels — cópias com ossos', () => {
     expectPose(second, skinFixture.rest)
   })
 
+  it('a parte translúcida (água, feixe) e o chão marcado szSemSombra recebem sombra mas não fazem', async () => {
+    const positions = new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0])
+    const gltf = {
+      asset: { version: '2.0' },
+      scene: 0,
+      scenes: [{ nodes: [0, 1, 2] }],
+      nodes: [
+        { name: 'pedra', mesh: 0 },
+        { name: 'agua', mesh: 1 },
+        { name: 'chao', mesh: 2 },
+      ],
+      materials: [
+        { name: 'pedra' },
+        {
+          name: 'mar',
+          alphaMode: 'BLEND',
+          pbrMetallicRoughness: { baseColorFactor: [0.4, 0.6, 1, 0.6] },
+        },
+        { name: 'terreno', extras: { szSemSombra: true } },
+      ],
+      meshes: [
+        { primitives: [{ attributes: { POSITION: 0 }, material: 0 }] },
+        { primitives: [{ attributes: { POSITION: 0 }, material: 1 }] },
+        { primitives: [{ attributes: { POSITION: 0 }, material: 2 }] },
+      ],
+      bufferViews: [{ buffer: 0, byteOffset: 0, byteLength: 36 }],
+      accessors: [
+        {
+          bufferView: 0,
+          componentType: 5126,
+          count: 3,
+          type: 'VEC3',
+          min: [0, 0, 0],
+          max: [1, 1, 0],
+        },
+      ],
+    }
+    const b = bench({
+      ilha: { kind: 'model3d', dataUrl: encodeGlb(gltf, new Uint8Array(positions.buffer)) },
+    })
+    const copy = b.models.instantiate(await loaded(b, 'ilha'), { shadows: true })
+    const meshes = new Map<string, RealTHREE.Mesh>()
+    copy.traverse((node) => {
+      if ((node as RealTHREE.Mesh).isMesh) meshes.set(node.name, node as RealTHREE.Mesh)
+    })
+    expect(meshes.get('pedra')?.castShadow).toBe(true)
+    for (const name of ['agua', 'chao']) {
+      expect(meshes.get(name)?.castShadow).toBe(false)
+      expect(meshes.get(name)?.receiveShadow).toBe(true)
+    }
+  })
+
   it('sem o SkeletonUtils carregado, uma skin NUNCA cai no clone comum', async () => {
     const donor = await loaded(
       bench({ boneco: { kind: 'model3d', dataUrl: skinFixture.dataUrl } }),
