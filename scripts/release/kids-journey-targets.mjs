@@ -2,9 +2,10 @@ const project = '415d5a1c-5f75-432c-8445-b395d0977ce3'
 const members = 'aa282801-ffba-477c-af6d-394b2f4f9af9'
 const auth = '8c57d71d-3a8e-48f1-9627-63f1528b9a48'
 
-/** Only this already provisioned production service may opt into a first deployment. */
+/** Only these already provisioned production services may opt into a first deployment. */
 export const initialProductionApplicationIds = Object.freeze({
   'live-recorder': 'a4e0c11a-03be-4ada-bd79-d8f4cdf8d3fd',
+  'arquipelago-api': 'ee19a264-7708-471a-adf9-c9db1cfdb9a2',
 })
 
 /** Closed provider identities; caller input cannot override any UUID. */
@@ -34,6 +35,7 @@ export function resolveKidsJourneyTarget(target = 'staging') {
 export function productionApplicationIds(env) {
   const ids = {
     'api-gateway': '2b7748bc-d3e3-4aff-bd94-3f514b53c44f',
+    'arquipelago-api': 'ee19a264-7708-471a-adf9-c9db1cfdb9a2',
     auth,
     catalog: '0e59f903-6bd8-4c3e-8792-34ea7479c13c',
     payments: '1d2455ac-05cd-436b-a39d-3f07392713f3',

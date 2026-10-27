@@ -10,6 +10,7 @@ export const railwayEnvironments = {
 const applicationNames = new Set([
   'admin',
   'api-gateway',
+  'arquipelago-api',
   'auth',
   'catalog',
   'community',

@@ -144,6 +144,16 @@ test('verified bootstrap is used when no later eligible deployment exists', asyn
   expect(await resolveBefore(f.ctx, f.deps)).toMatchObject({ before: B, source: 'bootstrap' })
 })
 
+test('serviço criado depois do bootstrap histórico usa identidade fixa sem inventar histórico', async () => {
+  const f = fixture()
+  Object.assign(f.ctx.configuredServices, {
+    'arquipelago-api': 'ee19a264-7708-471a-adf9-c9db1cfdb9a2',
+  })
+  expect(await resolveBefore(f.ctx, f.deps)).toMatchObject({ before: B, source: 'bootstrap' })
+  Object.assign(f.ctx.configuredServices, { 'arquipelago-api': uuid(42) })
+  await expect(resolveBefore(f.ctx, f.deps)).rejects.toThrow('identity diverged')
+})
+
 test('service map parses actual Bash body and adds only configured optional services', () => {
   const text = `declare -A SVC_ID=(\n [svc]=${uuid(1)}\n [other-app]=${uuid(3)}\n)`
   expect(configuredServiceIds(text, {})).toEqual({ svc: uuid(1), 'other-app': uuid(3) })

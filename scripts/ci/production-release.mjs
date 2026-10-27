@@ -160,11 +160,18 @@ export function selectProductionServices(csv, ids) {
 }
 
 /** A first deployment is deliberate and closed to the already provisioned recorder. */
-export function selectInitialProductionApplications(value, services) {
-  if (value === undefined || value === false || value === 'false' || value === '') return []
-  if ((value !== true && value !== 'true') || !services.includes('live-recorder'))
-    throw new Error('Inicialização explícita permite somente o gravador selecionado')
-  return ['live-recorder']
+export function selectInitialProductionApplications(value, services, gameValue = false) {
+  const result = []
+  for (const [choice, service] of [
+    [value, 'live-recorder'],
+    [gameValue, 'arquipelago-api'],
+  ]) {
+    if (choice === undefined || choice === false || choice === 'false' || choice === '') continue
+    if ((choice !== true && choice !== 'true') || !services.includes(service))
+      throw new Error('Inicialização explícita exige o serviço selecionado')
+    result.push(service)
+  }
+  return result
 }
 
 /** One owner; apps cannot be scheduled by this function before the V1 result. */
@@ -174,6 +181,7 @@ export async function runProductionRelease(input, ports) {
   const initialApplications = selectInitialProductionApplications(
     input.initializeRecorder,
     services,
+    input.initializeArquipelago,
   )
   validateProductionRolloutPlan(input.plan)
   const deadline = ports.now() + 175 * 60 * 1000
@@ -185,7 +193,11 @@ export async function runProductionRelease(input, ports) {
   }
   await bounded(() => ports.checkSource())
   await bounded(() => ports.backend.requireNativeDisabled(Object.keys(ports.ids), deadline))
-  await bounded(() => ports.backend.preflightApplications(services, deadline, initialApplications))
+  // O gateway novo já terá a URL do jogo: sem jogo selecionado, exigir um ativo saudável.
+  const inventory = services.includes('api-gateway')
+    ? [...new Set([...services, 'arquipelago-api'])]
+    : services
+  await bounded(() => ports.backend.preflightApplications(inventory, deadline, initialApplications))
   await bounded(() => ports.backend.preflight(deadline))
   // This operation is readonly: nonempty config is refused above and again by runConfig.
   await bounded(() => ports.checkConfiguration())
@@ -208,7 +220,8 @@ export async function runProductionRelease(input, ports) {
   const commercialBackends = new Set(['catalog', 'payments', 'referrals'])
   const phases = [
     apps.filter((name) => commercialBackends.has(name)),
-    apps.filter((name) => !commercialBackends.has(name)),
+    apps.filter((name) => name === 'arquipelago-api'),
+    apps.filter((name) => !commercialBackends.has(name) && name !== 'arquipelago-api'),
   ]
   // The Admin must not send community filters to a previous backend version.
   // Retire old commercial readers/writers before starting dependent applications.
@@ -295,6 +308,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
       const initialApplications = selectInitialProductionApplications(
         process.env.INITIALIZE_RECORDER,
         selected,
+        process.env.INITIALIZE_ARQUIPELAGO,
       )
       const plan = JSON.parse(readFileSync(planPath, 'utf8'))
       validateProductionRolloutPlan(plan)
@@ -337,7 +351,13 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
         },
       })
       const result = await runProductionRelease(
-        { sha, services, plan, initializeRecorder: process.env.INITIALIZE_RECORDER },
+        {
+          sha,
+          services,
+          plan,
+          initializeRecorder: process.env.INITIALIZE_RECORDER,
+          initializeArquipelago: process.env.INITIALIZE_ARQUIPELAGO,
+        },
         {
           ids,
           backend,

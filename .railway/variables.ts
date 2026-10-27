@@ -58,7 +58,21 @@ const common: Record<string, string[]> = {
     'RECOVERY_KIDS_BILLING_URL',
     'TRUST_PROXY',
   ],
+  'arquipelago-api': [
+    'APP_ENV',
+    'ARQUIPELAGO_COINS_TOKEN',
+    'ARQUIPELAGO_MODO',
+    'ARQUIPELAGO_PUBLICOS',
+    'DATABASE_URL',
+    'DATABASE_POOL_MAX',
+    'INTERNAL_API_TOKEN',
+    'MEMBERS_URL',
+    'NODE_ENV',
+    'PORT',
+  ],
   'api-gateway': [
+    'ARQUIPELAGO_URL',
+    'ARQUIPELAGO_INTERNAL_TOKEN',
     'AUTH_ALLOWED_CIDRS',
     'AUTH_HMAC_SECRET',
     'AUTH_INTERNAL_TOKEN',
@@ -315,6 +329,7 @@ const common: Record<string, string[]> = {
     'R2_SECRET_ACCESS_KEY',
   ],
   members: [
+    'ARQUIPELAGO_COINS_TOKEN',
     'STUDIO_AI_VAULT_KEYS',
     'STUDIO_AI_VAULT_ACTIVE_ID',
     'STUDIO_AI_CALLBACK_ORIGINS',
@@ -443,6 +458,7 @@ const common: Record<string, string[]> = {
 
 const extra: Record<string, Record<string, string[]>> = {
   staging: {
+    'arquipelago-api': [],
     'live-recorder': [],
     hub: [],
     catalog: [],
@@ -464,6 +480,7 @@ const extra: Record<string, Record<string, string[]>> = {
     'community-kids': ['NEXT_PUBLIC_KIDS_CHEST_RIVE_URL'],
   },
   production: {
+    'arquipelago-api': [],
     'live-recorder': [],
     hub: ['RELEASE_MAINTENANCE_MODE', 'SENTRY_DSN'],
     catalog: ['SENTRY_DSN'],

@@ -344,6 +344,33 @@ describe('one production owner and canonical V1 barrier', () => {
     expect(() => selectInitialProductionApplications(true, ['admin'])).toThrow()
     expect(() => selectInitialProductionApplications('all', ['live-recorder'])).toThrow()
   })
+  test('primeiro Arquipélago é explícito e fica saudável antes do gateway', async () => {
+    const fixture = wave()
+    const result = await runProductionRelease(
+      { sha, services: 'api-gateway,arquipelago-api', plan, initializeArquipelago: true },
+      fixture.ports,
+    )
+    expect(result.initialApplications).toEqual(['arquipelago-api'])
+    expect(fixture.order.indexOf('REMOVED-old-arquipelago-api')).toBeLessThan(
+      fixture.order.indexOf('POST-api-gateway'),
+    )
+    expect(() => selectInitialProductionApplications(false, ['api-gateway'], true)).toThrow()
+  })
+  test('atualizar o gateway isoladamente exige inventário saudável do jogo', async () => {
+    const fixture = wave()
+    let inspected: string[] = []
+    Object.assign(fixture.ports.backend, {
+      async preflightApplications(services: string[]) {
+        inspected = services
+        throw new Error('jogo indisponível')
+      },
+    })
+    await expect(
+      runProductionRelease({ sha, services: 'api-gateway', plan }, fixture.ports),
+    ).rejects.toThrow('jogo indisponível')
+    expect(inspected).toContain('arquipelago-api')
+    expect(fixture.order).not.toContain('POST-api-gateway')
+  })
   test('Members/Auth retire and verify V1 before any app POST', async () => {
     const fixture = wave()
     const result = await runProductionRelease(
@@ -477,7 +504,7 @@ function application(
     skipped?: boolean
     wrongContext?: boolean
     blockedCheckpoint?: boolean
-    service?: 'admin' | 'live-recorder'
+    service?: 'admin' | 'live-recorder' | 'arquipelago-api'
     initiallyEmpty?: boolean
     concurrentActive?: boolean
     pending?: boolean
@@ -568,6 +595,13 @@ function application(
 }
 
 describe('apps reuse the real canonical deployment ports, without an SSH backend probe', () => {
+  test('first Arquipélago deployment requires its exact identity and proves readiness', async () => {
+    const fixture = application({ service: 'arquipelago-api', initiallyEmpty: true })
+    await fixture.ports.preflightApplications(['arquipelago-api'], Infinity, ['arquipelago-api'])
+    const id = await fixture.ports.deploy('arquipelago-api')
+    await fixture.ports.waitRetired('arquipelago-api', id)
+    expect(fixture.mutations()).toBe(1)
+  })
   test('first recorder deployment uses its exact identity, then proves unique healthy readiness', async () => {
     const fixture = application({ service: 'live-recorder', initiallyEmpty: true })
     await fixture.ports.preflightApplications(['live-recorder'], Infinity, ['live-recorder'])
@@ -597,7 +631,7 @@ describe('apps reuse the real canonical deployment ports, without an SSH backend
     )
     await expect(
       ports.preflightApplications(['live-recorder'], Infinity, ['live-recorder']),
-    ).rejects.toThrow('somente o gravador')
+    ).rejects.toThrow('explicitamente provisionados')
     expect(calls).toBe(0)
   })
   test.each([

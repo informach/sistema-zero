@@ -15,6 +15,11 @@ on:
         type: boolean
         default: false
         required: false
+      initialize_arquipelago:
+        description: 'Primeira implantação do Arquipélago já provisionado, sem deployment ativo'
+        type: boolean
+        default: false
+        required: false
 
 concurrency:
   group: deploy-production
@@ -64,6 +69,7 @@ jobs:
           EXPECTED_SHA: ${{ github.event.inputs.expected_sha }}
           SELECTED_SERVICES: ${{ github.event.inputs.services }}
           INITIALIZE_RECORDER: ${{ github.event.inputs.initialize_recorder }}
+          INITIALIZE_ARQUIPELAGO: ${{ github.event.inputs.initialize_arquipelago }}
         run: node scripts/ci/production-release.mjs deploy "$EXPECTED_SHA" "$SELECTED_SERVICES" "$RUNNER_TEMP/production-plan/railway-production-plan.json"
       - name: Guardar checkpoints da onda, inclusive resultado desconhecido
         if: always()

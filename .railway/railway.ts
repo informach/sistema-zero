@@ -23,6 +23,7 @@ const rootServices = new Set([
   'catalog',
   'payments',
   'api-gateway',
+  'arquipelago-api',
   'auth',
   'messaging',
   'community',
