@@ -2,6 +2,7 @@ import {
   asset3DManifest,
   assetManifest,
   assetMetaManifest,
+  preloadCourseModels,
   type Project,
   soundManifest,
 } from '#core'
@@ -100,6 +101,7 @@ async function runCapture(
 ): Promise<string | null> {
   if (opts.requireIsolatedPreview && !opts.originAdapter) return null
   const ctx = await extensionContext(project)
+  await preloadCourseModels(project.assets)
   const parentOrigin = window.location.origin
   const warmupMs = opts.warmupMs ?? DEFAULT_WARMUP_MS
   const timeoutMs = opts.timeoutMs ?? warmupMs + 4_000
