@@ -101,33 +101,28 @@ def ponte():
 
 
 def _coqueiro(pid, seed, lean, yaw0):
+    """Coqueiro do desenho: tronco liso e curvo afinando para cima, copa de folhas largas e lisas
+    em três verdes caindo em volta, e cocos escuros embaixo da copa."""
     reset()
     rnd = random.Random(seed)
     p = []
     H = 2.15
-    # Tronco curvo em gomos (os anéis do desenho), afinando para cima.
-    N = 9
-    pts = [Vector((lean[0] * (t / N) ** 1.8, lean[1] * (t / N) ** 1.8, H * t / N)) for t in range(N + 1)]
-    for i in range(N):
-        a, b = pts[i], pts[i + 1]
-        r0 = 0.15 - 0.05 * i / N
-        mid = a.lerp(b, 0.5)
-        p.append(tube([tuple(a), tuple(a.lerp(b, 0.15)), tuple(mid), tuple(b.lerp(a, 0.08)), tuple(b)],
-                      [r0 * 0.88, r0 * 1.05, r0, r0 * 0.92, r0 * 0.82], 'tronco' if i % 2 else 'troncoEscuro', seg=12))
-    top = pts[-1]
-    # Copa: folhas compridas e recortadas caindo em volta, em dois tons.
-    for k in range(8):
-        yaw = yaw0 + 2 * math.pi * k / 8 + rnd.uniform(-0.15, 0.15)
-        L = rnd.uniform(1.35, 1.6)
-        p.append(leaf((top.x, top.y, top.z + 0.05), yaw, L, 0.3, 'folha' if k % 2 else 'folhaEscura',
-                      lift=0.45, droop=1.05 + rnd.uniform(-0.1, 0.15), fold=0.35, teeth=7, n=16))
+    N = 12
+    pts = [(lean[0] * (t / N) ** 1.8, lean[1] * (t / N) ** 1.8, H * t / N) for t in range(N + 1)]
+    p.append(tube(pts, [0.16 - 0.065 * t / N for t in range(N + 1)], 'troncoLiso', seg=12))
+    top = Vector(pts[-1])
+    verdes = ['folhaEscura', 'folha', 'folhaClara']
+    for k in range(7):
+        yaw = yaw0 + 2 * math.pi * k / 7 + rnd.uniform(-0.12, 0.12)
+        L = rnd.uniform(1.3, 1.55)
+        p.append(leaf((top.x, top.y, top.z + 0.05), yaw, L, 0.3, verdes[k % 3],
+                      lift=0.5, droop=1.1 + rnd.uniform(-0.1, 0.15), fold=0.3, n=16))
     for k in range(3):  # folhas novas, mais curtas e para cima
-        yaw = yaw0 + 2 * math.pi * (k + 0.3) / 3
-        p.append(leaf((top.x, top.y, top.z + 0.08), yaw, 0.8, 0.2, 'folha', lift=0.55, droop=0.55, fold=0.3, teeth=5))
-    for k in range(3):
-        a = 2 * math.pi * k / 3 + 0.4
-        p.append(sphere(0.12, (top.x + 0.13 * math.cos(a), top.y + 0.13 * math.sin(a), top.z - 0.1), 'coco', subdiv=2))
-    p.append(sphere(0.16, (top.x, top.y, top.z + 0.02), 'troncoEscuro', subdiv=2))
+        yaw = yaw0 + 2 * math.pi * (k + 0.5) / 3
+        p.append(leaf((top.x, top.y, top.z + 0.08), yaw, 0.75, 0.26, 'folhaClara', lift=0.6, droop=0.55, fold=0.3))
+    for k in range(3):  # cocos grandes logo abaixo da copa, à vista como no desenho
+        a = 2 * math.pi * k / 3 + 0.4 + yaw0
+        p.append(sphere(0.15, (top.x + 0.17 * math.cos(a), top.y + 0.17 * math.sin(a), top.z - 0.14), 'coco', subdiv=2))
     export(pid, p)
 
 
@@ -140,13 +135,16 @@ def coqueiro_frente():
 
 
 def _moita(x, z, seed, s=1.0):
+    """Moita do desenho: três folhas largas e pontudas abertas em leque, a do meio mais em pé."""
     rnd = random.Random(seed)
     p = []
     cx, cy = g(x, z)
-    for k in range(7):
-        yaw = 2 * math.pi * k / 7 + rnd.uniform(-0.3, 0.3)
-        p.append(leaf((cx, cy, 0.02), yaw, 0.38 * s * rnd.uniform(0.85, 1.15), 0.085 * s,
-                      'folha' if k % 2 else 'folhaEscura', lift=0.42 * s, droop=0.3 * s, fold=0.45, n=8))
+    giro = rnd.uniform(0, 2 * math.pi)
+    for abre, m in ((-1, 'folhaEscura'), (0, 'grama'), (1, 'folhaEscura')):
+        # As do lado abrem para fora; a do meio sobe quase reta.
+        yaw = giro + abre * math.pi / 2
+        p.append(leaf((cx, cy, 0.03), yaw, (0.24 if abre else 0.05) * s, 0.1 * s, m,
+                      lift=(0.24 if abre else 0.4) * s, droop=(0.06 if abre else 0.0) * s, fold=0.35, n=8))
     return p
 
 
@@ -168,11 +166,36 @@ def pedras():
     p.append(rock((-1.05, -0.3, 0), (1.5, 1.25, 2.1), 'pedra', seed=72, rough=0.18, flat_top=0.15, top_m='pedraClara'))
     for x, y, s, sd in ((1.25, -0.85, 0.5, 73), (-0.3, -0.95, 0.38, 74), (1.55, 0.35, 0.42, 75)):
         p.append(rock((x, y, 0), (s * 1.2, s, s * 0.75), 'pedraEscura', seed=sd, subdiv=1, rough=0.2, top_m='pedra'))
-    # Musgo no alto das pedras: liga as pedras à grama da ilha.
-    for loc, rr in (((0.0, -0.1, 2.72), (0.55, 0.42, 0.09)), ((0.75, 0.3, 2.62), (0.35, 0.3, 0.07)),
-                    ((-1.1, -0.3, 2.05), (0.32, 0.27, 0.06))):
-        p.append(ellipsoid(loc, rr, 'musgo', seg=14, ring=8))
+    # Musgo no alto das pedras (liga as pedras à grama da ilha), pousado no topo de verdade: um raio
+    # de cima para baixo acha a altura da pedra em cada ponto.
+    bpy.context.view_layer.update()
+    deps = bpy.context.evaluated_depsgraph_get()
+    for (x, y), rr in (((0.0, -0.1), (0.55, 0.42, 0.09)), ((0.75, 0.3), (0.35, 0.3, 0.07)),
+                       ((-1.05, -0.3), (0.32, 0.27, 0.06))):
+        hit, loc, *_ = bpy.context.scene.ray_cast(deps, Vector((x, y, 10)), Vector((0, 0, -1)))
+        if hit:
+            p.append(ellipsoid((x, y, loc.z - rr[2] * 0.35), rr, 'musgo', seg=14, ring=8))
     export('pedras', p)
 
 
-TODOS = ['mar', 'terreno', 'ponte', 'coqueiro-tras', 'coqueiro-frente', 'vegetacao', 'pedras']
+def bancada():
+    """Bancada das experiências: o chão de 10 x 10 em que a aula mostra o personagem, a chave, os
+    eixos e a grade. Tampo de grama no nível 0 (a grade e os marcadores da cena ficam logo acima)
+    sobre uma base de areia com borda de espuma, como um pedaço da ilha."""
+    reset()
+    p = []
+    quadrado = lambda m: [(x * m, y * m) for x, y in ((-1, -1), (1, -1), (1, 1), (-1, 1))]
+    p.append(slab(quadrado(5.35), -0.3, -0.12, 'espuma', bevel=0.06, segs=3))
+    p.append(slab(quadrado(5.3), -0.25, -0.03, 'areia', bevel=0.08, segs=3))
+    p.append(slab(quadrado(5.0), -0.06, 0.0, 'gramaBorda', bevel=0.03, segs=2))
+    # Pedrinhas na areia da borda (as manchinhas do desenho), fora do tampo.
+    rnd = random.Random(81)
+    for _ in range(14):
+        lado = rnd.choice((-1, 1))
+        t = rnd.uniform(-4.9, 4.9)
+        x, y = (lado * 5.15, t) if rnd.random() < 0.5 else (t, lado * 5.15)
+        p.append(ellipsoid((x, y, -0.03), (rnd.uniform(0.05, 0.1), rnd.uniform(0.04, 0.08), 0.02), 'areiaEscura', seg=8, ring=5))
+    export('bancada', p)
+
+
+TODOS = ['mar', 'terreno', 'ponte', 'coqueiro-tras', 'coqueiro-frente', 'vegetacao', 'pedras', 'bancada']

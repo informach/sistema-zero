@@ -19,9 +19,11 @@ Chave do Farol (`packages/studio/src/arte/assets/farol/*.svg`). Substituem os pr
 | `veleiro` | veleiro | (8,5, -0,1, 4,5) |
 | `aventureiro` | aventureiro | centro em (-6,5, 0,8, 0,75) |
 | `chave-dourada` | chave | centro em (-2, 1, -3) e (-3, 1, -2) |
+| `bancada` | bancada das experiências | origem, tampo em y = 0 (hoje a cena das experiências desenha uma caixa no código, `scene-island-world.tsx`) |
 
 As imagens de `previa/` comparam o 2D, o 3D atual e o novo, renderizados com o three.js do jogo,
-a câmera do curso e as luzes do Jogo 3D.
+a câmera do curso e as luzes do Jogo 3D: a cena inteira, o farol apagado e aceso, e todas as 13
+peças lado a lado (`comparacao-elementos-1` e `-2`; o atual sai do próprio GLB do Molda).
 
 ## Preparar
 
@@ -43,7 +45,7 @@ ILHA_OUT=./out /tmp/blender-venv/bin/python verificar_pedra.py         # a pedra
 | Arquivo | O quê |
 |---|---|
 | `lib_ilha.py` | paleta tirada dos SVGs e formas da ilha (contorno orgânico em camadas, faixa, folha, pedra lapidada, superelipsoide, mecha); reaproveita `community-kids/scripts/room-blender/lib_q.py` |
-| `cenario.py` | mar, terreno, ponte, coqueiros, moitas e pedras |
+| `cenario.py` | mar, terreno, ponte, coqueiros, moitas, pedras e a bancada das experiências |
 | `farol.py` | farol listrado, apagado e aceso |
 | `objetos.py` | chave, veleiro e aventureiro |
 | `verificar_pedra.py` | lança raios da câmera do jogo até cada vértice da chave e falha se algum ficar à vista |
@@ -71,6 +73,6 @@ ILHA_OUT=./out /tmp/blender-venv/bin/python verificar_pedra.py         # a pedra
 3. **Luz do curso**: com a luz de hoje (ambiente 0,65 do curso + 0,6 e sol 0,9 do motor), o three.js
    entrega ~60% da cor e tudo sai apagado em relação ao 2D (vale também para a arte atual). A prévia
    "luz ajustada" usa ambiente 1,4 e um "Adicionar sol" de 0,7 a mais (blocos que já existem).
-4. **Peso**: depois da quantização do `ilha-do-farol-assets.ts`, as 12 peças somam ~770 KB, contra
+4. **Peso**: depois da quantização do `ilha-do-farol-assets.ts`, as peças da ilha somam ~730 KB, contra
    ~216 KB das atuais, e todo projeto do curso leva os assets embutidos. Com as variações (8
    personagens, 4 faróis, 4 barcos, 3 chaves, 4 cenários), embutir tudo em cada projeto não serve.
