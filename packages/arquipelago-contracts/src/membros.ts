@@ -108,3 +108,53 @@ export function mapaDasIlhasEmOrdem(): boolean {
     ILHAS.every((ilha, i) => ilha.posto === POSTOS_DA_JORNADA[i] && ilha.posicao === i + 1)
   )
 }
+
+const ResultadoDeObjetivoSchema = z.strictObject({ id: z.string().max(80), passou: z.boolean() })
+
+/**
+ * `POST /members/internal/arquipelago/objetivos/analisar`: o Members confere um desafio com o
+ * MESMO verificador das aulas. Corpo: `{audience, projetoInicial, gabarito, objetivos}`.
+ * - `blocosDoGabarito`: os tipos de bloco do gabarito que existem no catálogo do Estúdio, sem os
+ *   de moldura (`contract.domain === 'frame'`) e sem os que já vêm no projeto inicial.
+ * - `vista`: os objetivos como a criança os vê (`projectObjectiveView`, sem a regra).
+ * - `problemas`: o que impede publicar (regra inválida, Python, Pro, objetivo obrigatório em que o
+ *   gabarito não passa, objetivos que rodam o jogo demais, executor fora do ar...).
+ */
+export const AnaliseDosMembrosSchema = z.strictObject({
+  blocosDoGabarito: z.array(BlocoSchema).max(5000),
+  blocosDesconhecidos: z.array(BlocoSchema).max(5000),
+  vista: z
+    .array(
+      z.strictObject({
+        id: z.string().max(80),
+        label: z.string().max(200),
+        hint: z.string().max(300).optional(),
+        optional: z.literal(true).optional(),
+        kind: z.enum(['block', 'idea', 'game', 'function', 'script']),
+      }),
+    )
+    .max(20),
+  problemas: z
+    .array(
+      z.strictObject({
+        codigo: z.string().min(1).max(60),
+        mensagem: z.string().min(1).max(500),
+        objetivoId: z.string().max(80).optional(),
+      }),
+    )
+    .max(100),
+  gabarito: z.array(ResultadoDeObjetivoSchema).max(20),
+  inicial: z.array(ResultadoDeObjetivoSchema).max(20),
+})
+export type AnaliseDosMembros = z.infer<typeof AnaliseDosMembrosSchema>
+
+/**
+ * `POST /members/internal/arquipelago/objetivos/verificar`: confere o projeto da pessoa.
+ * Corpo: `{requester, audience, objetivos, projetoInicial, projeto}` (o `requester` é quem joga,
+ * para o limite de conferências do executor ser por pessoa). 424 = executor fora; 429 = ocupado.
+ */
+export const VerificacaoDosMembrosSchema = z.strictObject({
+  passou: z.boolean(),
+  resultados: z.array(ResultadoDeObjetivoSchema).max(20),
+})
+export type VerificacaoDosMembros = z.infer<typeof VerificacaoDosMembrosSchema>
