@@ -71,7 +71,6 @@ lib_q.PALETTE.update({
     'areiaClara': ('#fae1ab', 0.95, None, 0),
     'areia': ('#dfc283', 0.95, None, 0),
     'areiaEscura': ('#c9aa6c', 0.95, None, 0),
-    'gramaBorda': ('#4e9081', 0.9, None, 0),
     'grama': ('#0b7a54', 0.9, None, 0),
     'folha': ('#29905a', 0.8, None, 0),
     'folhaEscura': ('#21734f', 0.8, None, 0),
@@ -540,7 +539,8 @@ def exportar_estatico(pid, objs):
     o.select_set(True)
     path = os.path.join(lib_q.OUT, f'{pid}.glb')
     bpy.ops.export_scene.gltf(filepath=path, export_format='GLB', use_selection=True, export_apply=True,
-                              export_yup=True, export_texcoords=True, export_animations=False)
+                              export_yup=True, export_texcoords=True, export_animations=False,
+                              export_extras=True)
     tris = sum(len(p.vertices) - 2 for p in o.data.polygons)
     print('EXPORTADO', pid, tris, 'triângulos', os.path.getsize(path) // 1024, 'KB')
 

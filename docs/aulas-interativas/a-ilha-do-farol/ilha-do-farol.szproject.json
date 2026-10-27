@@ -9,7 +9,7 @@
   "files": {
     "index.html": "<!doctype html>\n<html lang=\"pt-BR\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n    <title>A Ilha do Farol</title>\n    <link rel=\"stylesheet\" href=\"style.css\" />\n  </head>\n  <body>\n\n    <script src=\"script.js\"></script>\n  </body>\n</html>\n",
     "style.css": "",
-    "script.js": "SZGame3D.runProject(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame3D.restart());\n  // Ao iniciar\n  const cena = SZGame3D.createFullscreenScene(\"#94d5f5\");\n  SZGame3D.setCameraPosition(cena, 0, 12, 21);\n  SZGame3D.setFOV(cena, 48);\n  const cenario = SZGame3D.createModelFile(cena, \"praia-tropical\", 140);\n  SZGame3D.setPosition(cenario, 0, 33.6, 0);\n  const farol = SZGame3D.createModelFile(cena, \"farol-listrado\", 5.3);\n  SZGame3D.setPosition(farol, 5.2, 2.65, 0.1);\n  const barco = SZGame3D.createModelFile(cena, \"veleiro\", 3.1);\n  SZGame3D.setPosition(barco, 8.5, 1.06, 4.5);\n  const pedra = SZGame3D.createModelFile(cena, \"pedras\", 4.2335);\n  SZGame3D.setPosition(pedra, -2.0241, 1.1118, -0.5403);\n  const personagem = SZGame3D.createModelFile(cena, \"aventureiro\", 1.66);\n  SZGame3D.setPosition(personagem, -6.5, 0.8, 0.75);\n  const chave = SZGame3D.createModelFile(cena, \"chave-dourada\", 1.24);\n  SZGame3D.setPosition(chave, -3, 1, -2);\n  const centro = SZGame3D.createModel(cena);\n  SZGame3D.setPosition(centro, -1, 0, 0);\n  SZGame3D.cameraLookAt(cena, centro);\n  const chaves = SZGame3D.createGroup();\n  chaves.push(chave);\n  const portas = SZGame3D.createGroup();\n  portas.push(farol);\n  const jogadores = SZGame3D.createGroup();\n  jogadores.push(personagem);\n  let ganhou = false;\n  let aviso = \"Encontre a chave e leve o personagem até o farol.\";\n  let temChave = false;\n  let antesX = -6.5;\n  let antesZ = 0.75;\n  SZGame3D.hudText(\"bottom-center\", \"Setas ou WASD: andar. R: recomeçar.\");\n  // Quando acontecer\n  SZGame3D.onKey(\"KeyR\", () => {\n    SZGame3D.restart();\n  });\n  SZGame3D.onTouchGroup(personagem, chaves, (item) => {\n    SZGame3D.setVisible(chave, \"hide\");\n    temChave = true;\n    aviso = \"Você pegou a chave! Agora vá ao farol.\";\n  });\n  SZGame3D.onTouchGroup(personagem, portas, (item) => {\n    if (temChave) {\n      SZGame3D.playAnimation(farol, \"acender\", \"uma-vez\");\n      ganhou = true;\n      aviso = \"Você acendeu o farol! O barco pode chegar.\";\n    } else {\n      aviso = \"Falta a chave. Procure na ilha antes de voltar.\";\n    }\n  });\n  // Enquanto estiver rodando\n  SZGame3D.animate(cena, () => {\n    SZGame3D.controlWithKeys(personagem, 4);\n    SZGame3D.updateGroupNoGravity(jogadores);\n    if (!(SZGame3D.objectValue(personagem, \"x\") >= -11 && SZGame3D.objectValue(personagem, \"x\") <= 0.6 && SZGame3D.objectValue(personagem, \"z\") >= -5 && SZGame3D.objectValue(personagem, \"z\") <= 5 || SZGame3D.objectValue(personagem, \"x\") >= 0.6 && SZGame3D.objectValue(personagem, \"x\") <= 4 && SZGame3D.objectValue(personagem, \"z\") >= 0.4 && SZGame3D.objectValue(personagem, \"z\") <= 1.1 || SZGame3D.objectValue(personagem, \"x\") >= 4 && SZGame3D.objectValue(personagem, \"x\") <= 6.1 && SZGame3D.objectValue(personagem, \"z\") >= -0.5 && SZGame3D.objectValue(personagem, \"z\") <= 1.7)) {\n      SZGame3D.setPosition(personagem, antesX, 0.8, antesZ);\n      SZGame3D.setVelocity(personagem, 0, 0, 0);\n    } else {\n      antesX = SZGame3D.objectValue(personagem, \"x\");\n      antesZ = SZGame3D.objectValue(personagem, \"z\");\n    }\n    if (SZGame3D.isMoving(personagem)) {\n      SZGame3D.faceVelocity(personagem);\n      SZGame3D.playAnimation(personagem, \"andando\", \"repetir\");\n    } else {\n      SZGame3D.playAnimation(personagem, \"parado\", \"repetir\");\n    }\n    SZGame3D.hudText(\"top-center\", aviso);\n    if (ganhou) {\n      SZGame3D.moveTowards(barco, 6.6, 1.06, 4.5, 1.8);\n      if (SZGame3D.animationDone(farol)) {\n        SZGame3D.playAnimation(farol, \"aceso\", \"repetir\");\n      }\n    }\n  });\n});\n"
+    "script.js": "SZGame3D.runProject(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame3D.restart());\n  // Ao iniciar\n  const cena = SZGame3D.createFullscreenScene(\"#94d5f5\");\n  SZGame3D.setCameraPosition(cena, 0, 12, 21);\n  SZGame3D.setFOV(cena, 48);\n  const cenario = SZGame3D.createModelFile(cena, \"praia-tropical\", 140);\n  SZGame3D.setPosition(cenario, 0, 33.6, 0);\n  const farol = SZGame3D.createModelFile(cena, \"farol-listrado\", 5.3);\n  SZGame3D.setPosition(farol, 5.2, 2.65, 0.1);\n  const barco = SZGame3D.createModelFile(cena, \"veleiro\", 3.1);\n  SZGame3D.setPosition(barco, 8.5, 1.06, 4.5);\n  const pedra = SZGame3D.createModelFile(cena, \"pedras\", 4.5298);\n  SZGame3D.setPosition(pedra, -2.0258, 1.1897, -0.5081);\n  const personagem = SZGame3D.createModelFile(cena, \"aventureiro\", 1.66);\n  SZGame3D.setPosition(personagem, -6.5, 0.8, 0.75);\n  const chave = SZGame3D.createModelFile(cena, \"chave-dourada\", 1.24);\n  SZGame3D.setPosition(chave, -3, 1, -2);\n  const centro = SZGame3D.createModel(cena);\n  SZGame3D.setPosition(centro, -1, 0, 0);\n  SZGame3D.cameraLookAt(cena, centro);\n  const chaves = SZGame3D.createGroup();\n  chaves.push(chave);\n  const portas = SZGame3D.createGroup();\n  portas.push(farol);\n  const jogadores = SZGame3D.createGroup();\n  jogadores.push(personagem);\n  let ganhou = false;\n  let aviso = \"Encontre a chave e leve o personagem até o farol.\";\n  let temChave = false;\n  let antesX = -6.5;\n  let antesZ = 0.75;\n  SZGame3D.hudText(\"bottom-center\", \"Setas ou WASD: andar. R: recomeçar.\");\n  // Quando acontecer\n  SZGame3D.onKey(\"KeyR\", () => {\n    SZGame3D.restart();\n  });\n  SZGame3D.onTouchGroup(personagem, chaves, (item) => {\n    SZGame3D.setVisible(chave, \"hide\");\n    temChave = true;\n    aviso = \"Você pegou a chave! Agora vá ao farol.\";\n  });\n  SZGame3D.onTouchGroup(personagem, portas, (item) => {\n    if (temChave) {\n      SZGame3D.playAnimation(farol, \"acender\", \"uma-vez\");\n      ganhou = true;\n      aviso = \"Você acendeu o farol! O barco pode chegar.\";\n    } else {\n      aviso = \"Falta a chave. Procure na ilha antes de voltar.\";\n    }\n  });\n  // Enquanto estiver rodando\n  SZGame3D.animate(cena, () => {\n    SZGame3D.controlWithKeys(personagem, 4);\n    SZGame3D.updateGroupNoGravity(jogadores);\n    if (!(SZGame3D.objectValue(personagem, \"x\") >= -11 && SZGame3D.objectValue(personagem, \"x\") <= 0.6 && SZGame3D.objectValue(personagem, \"z\") >= -5 && SZGame3D.objectValue(personagem, \"z\") <= 5 || SZGame3D.objectValue(personagem, \"x\") >= 0.6 && SZGame3D.objectValue(personagem, \"x\") <= 4 && SZGame3D.objectValue(personagem, \"z\") >= 0.4 && SZGame3D.objectValue(personagem, \"z\") <= 1.1 || SZGame3D.objectValue(personagem, \"x\") >= 4 && SZGame3D.objectValue(personagem, \"x\") <= 6.1 && SZGame3D.objectValue(personagem, \"z\") >= -0.5 && SZGame3D.objectValue(personagem, \"z\") <= 1.7)) {\n      SZGame3D.setPosition(personagem, antesX, 0.8, antesZ);\n      SZGame3D.setVelocity(personagem, 0, 0, 0);\n    } else {\n      antesX = SZGame3D.objectValue(personagem, \"x\");\n      antesZ = SZGame3D.objectValue(personagem, \"z\");\n    }\n    if (SZGame3D.isMoving(personagem)) {\n      SZGame3D.faceVelocity(personagem);\n      SZGame3D.playAnimation(personagem, \"andando\", \"repetir\");\n    } else {\n      SZGame3D.playAnimation(personagem, \"parado\", \"repetir\");\n    }\n    SZGame3D.hudText(\"top-center\", aviso);\n    if (ganhou) {\n      SZGame3D.moveTowards(barco, 6.6, 1.06, 4.5, 1.8);\n      if (SZGame3D.animationDone(farol)) {\n        SZGame3D.playAnimation(farol, \"aceso\", \"repetir\");\n      }\n    }\n  });\n});\n"
   },
   "extraFiles": [],
   "assets": [
@@ -18,45 +18,45 @@
       "name": "praia-tropical",
       "kind": "model3d",
       "source": "library",
-      "libId": "modelo-curso:46c60b85a5fb8344c9353c86e9a9edaa505e5bec084b25bd50e270ff246917ff",
+      "libId": "modelo-curso:bfd874c157492f697126ddf5249e95c921d16095b9e6b5d7cdb1af91a71e3fb0",
       "originalFileName": "praia-tropical.glb",
-      "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAADMAAAAuAAAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6IjQ2YzYwYjg1YTVmYjgzNDRjOTM1M2M4NmU5YTllZGFhNTA1ZTViZWMwODRiMjViZDUwZTI3MGZmMjQ2OTE3ZmYifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dfSAg"
+      "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAADMAAAAuAAAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6ImJmZDg3NGMxNTc0OTJmNjk3MTI2ZGRmNTI0OWU5NWM5MjFkMTYwOTViOWU2YjVkN2NkYjFhZjkxYTcxZTNmYjAifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dfSAg"
     },
     {
       "id": "ilha-modelo-cenario-costa-rochosa",
       "name": "costa-rochosa",
       "kind": "model3d",
       "source": "library",
-      "libId": "modelo-curso:a6c7fd2fc0c45e98d88f9f1a68194cea9a026f63c0662257a7a756f4871c49ae",
+      "libId": "modelo-curso:5a204f9bebbd4e4cd8e8cb02c32b99214ed34548d57171b38d50eb262e54189a",
       "originalFileName": "costa-rochosa.glb",
-      "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAADMAAAAuAAAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6ImE2YzdmZDJmYzBjNDVlOThkODhmOWYxYTY4MTk0Y2VhOWEwMjZmNjNjMDY2MjI1N2E3YTc1NmY0ODcxYzQ5YWUifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dfSAg"
+      "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAADMAAAAuAAAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6IjVhMjA0ZjliZWJiZDRlNGNkOGU4Y2IwMmMzMmI5OTIxNGVkMzQ1NDhkNTcxNzFiMzhkNTBlYjI2MmU1NDE4OWEifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dfSAg"
     },
     {
       "id": "ilha-modelo-cenario-ilha-nevada",
       "name": "ilha-nevada",
       "kind": "model3d",
       "source": "library",
-      "libId": "modelo-curso:a063b798f122bed3071cdbf62f1de7c24d15d67ac59d13e44f443cf0a0c7d4e4",
+      "libId": "modelo-curso:eeb5ca402de6d4aa7d00e81511791cf2e59784e0613b5c2b2ec1ff82ea90c1a9",
       "originalFileName": "ilha-nevada.glb",
-      "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAADMAAAAuAAAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6ImEwNjNiNzk4ZjEyMmJlZDMwNzFjZGJmNjJmMWRlN2MyNGQxNWQ2N2FjNTlkMTNlNDRmNDQzY2YwYTBjN2Q0ZTQifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dfSAg"
+      "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAADMAAAAuAAAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6ImVlYjVjYTQwMmRlNmQ0YWE3ZDAwZTgxNTExNzkxY2YyZTU5Nzg0ZTA2MTNiNWMyYjJlYzFmZjgyZWE5MGMxYTkifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dfSAg"
     },
     {
       "id": "ilha-modelo-cenario-noite-na-ilha",
       "name": "noite-na-ilha",
       "kind": "model3d",
       "source": "library",
-      "libId": "modelo-curso:da534abf90c703e55d53156361b46ef02de50bcd614767c110a407b6b8922548",
+      "libId": "modelo-curso:a27425ab03e169154222fc938883102ea5b5f5da02255377508da1cf5e3e928d",
       "originalFileName": "noite-na-ilha.glb",
-      "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAADMAAAAuAAAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6ImRhNTM0YWJmOTBjNzAzZTU1ZDUzMTU2MzYxYjQ2ZWYwMmRlNTBiY2Q2MTQ3NjdjMTEwYTQwN2I2Yjg5MjI1NDgifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dfSAg"
+      "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAADMAAAAuAAAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6ImEyNzQyNWFiMDNlMTY5MTU0MjIyZmM5Mzg4ODMxMDJlYTViNWY1ZGEwMjI1NTM3NzUwOGRhMWNmNWUzZTkyOGQifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dfSAg"
     },
     {
       "id": "ilha-modelo-pedras",
       "name": "pedras",
       "kind": "model3d",
       "source": "library",
-      "libId": "modelo-curso:08dd48406d48e2e1a296ad550fc82f068b4deca1adb765f3d7b0ac8cac2cf152",
+      "libId": "modelo-curso:90c7bea3cff22808a8af04996db2caab82b0b2ec42369fbadaf74b4891367a04",
       "originalFileName": "pedras.glb",
-      "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAADMAAAAuAAAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6IjA4ZGQ0ODQwNmQ0OGUyZTFhMjk2YWQ1NTBmYzgyZjA2OGI0ZGVjYTFhZGI3NjVmM2Q3YjBhYzhjYWMyY2YxNTIifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dfSAg"
+      "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAADMAAAAuAAAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6IjkwYzdiZWEzY2ZmMjI4MDhhOGFmMDQ5OTZkYjJjYWFiODJiMGIyZWM0MjM2OWZiYWRhZjc0YjQ4OTEzNjdhMDQifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dfSAg"
     },
     {
       "id": "ilha-modelo-farol-listrado",
@@ -350,7 +350,7 @@
           "asset": "pedras",
           "size": {
             "type": "num",
-            "value": 4.2335
+            "value": 4.5298
           }
         },
         {
@@ -358,15 +358,15 @@
           "objVar": "pedra",
           "x": {
             "type": "num",
-            "value": -2.0241
+            "value": -2.0258
           },
           "y": {
             "type": "num",
-            "value": 1.1118
+            "value": 1.1897
           },
           "z": {
             "type": "num",
-            "value": -0.5403
+            "value": -0.5081
           }
         },
         {
@@ -1219,7 +1219,7 @@
                                                         "shadow": {
                                                           "type": "sz_val_number",
                                                           "fields": {
-                                                            "NUM": 4.2335
+                                                            "NUM": 4.5298
                                                           }
                                                         }
                                                       }
@@ -1235,7 +1235,7 @@
                                                             "shadow": {
                                                               "type": "sz_val_number",
                                                               "fields": {
-                                                                "NUM": -2.0241
+                                                                "NUM": -2.0258
                                                               }
                                                             }
                                                           },
@@ -1243,7 +1243,7 @@
                                                             "shadow": {
                                                               "type": "sz_val_number",
                                                               "fields": {
-                                                                "NUM": 1.1118
+                                                                "NUM": 1.1897
                                                               }
                                                             }
                                                           },
@@ -1251,7 +1251,7 @@
                                                             "shadow": {
                                                               "type": "sz_val_number",
                                                               "fields": {
-                                                                "NUM": -0.5403
+                                                                "NUM": -0.5081
                                                               }
                                                             }
                                                           }
