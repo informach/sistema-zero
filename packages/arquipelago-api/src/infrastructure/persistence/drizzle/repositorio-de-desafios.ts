@@ -1,13 +1,22 @@
-import type { MetadadosDoDesafio, SituacaoDoCadastro } from '@sistemazero/arquipelago-contracts'
-import { and, asc, eq, type SQL, sql } from 'drizzle-orm'
 import type {
+  MetadadosDoDesafio,
+  SituacaoDoCadastro,
+  VistaDoObjetivo,
+} from '@sistemazero/arquipelago-contracts'
+import { and, asc, eq, isNull, type SQL, sql } from 'drizzle-orm'
+import type {
+  ConclusaoGuardada,
   DesafioNoBanco,
+  DesafioPublicado,
   FiltroDosDesafios,
+  PublicacaoGuardada,
   RepositorioDeDesafios,
+  RepositorioDoJogadorNosDesafios,
   ResultadoDaEscrita,
+  SituacaoDasMoedas,
 } from '../../../domain/desafios.port'
 import type { Database } from './db'
-import { desafioPublicacoes, desafios } from './schema'
+import { desafioProgresso, desafioPublicacoes, desafios, desafiosConcluidos } from './schema'
 
 type Linha = typeof desafios.$inferSelect
 
@@ -226,5 +235,204 @@ function paraDominio(l: Linha, blocosPublicados: string[] | null): DesafioNoBanc
     atualizadoEm: l.atualizadoEm,
     atualizadoPor: l.atualizadoPor,
     blocosPublicados,
+  }
+}
+
+/** O lado de quem joga: publicações, tentativas e conclusões. */
+export class DrizzleRepositorioDoJogadorNosDesafios implements RepositorioDoJogadorNosDesafios {
+  constructor(private readonly db: Database) {}
+
+  async listarPublicados(publico: MetadadosDoDesafio['publico']): Promise<DesafioPublicado[]> {
+    return this.publicados(and(eq(desafios.publico, publico), eq(desafios.situacao, 'publicado')))
+  }
+
+  async lerPublicado(desafioId: string): Promise<DesafioPublicado | null> {
+    const [d] = await this.publicados(
+      and(eq(desafios.id, desafioId), eq(desafios.situacao, 'publicado')),
+    )
+    return d ?? null
+  }
+
+  private async publicados(filtro: SQL | undefined): Promise<DesafioPublicado[]> {
+    const linhas = await this.db
+      .select({ desafio: desafios, publicacao: desafioPublicacoes })
+      .from(desafios)
+      .innerJoin(
+        desafioPublicacoes,
+        and(
+          eq(desafioPublicacoes.desafioId, desafios.id),
+          eq(desafioPublicacoes.revisao, desafios.revisaoPublicada),
+        ),
+      )
+      .where(filtro)
+      .orderBy(asc(desafios.ilha), asc(desafios.ordem), asc(desafios.slug))
+    return linhas.map((l) => ({
+      ...semPublicacao(l.desafio),
+      publicacao: publicacaoDe(l.publicacao),
+    }))
+  }
+
+  async lerPublicacao(desafioId: string, revisao: number) {
+    const [l] = await this.db
+      .select({ desafio: desafios, publicacao: desafioPublicacoes })
+      .from(desafioPublicacoes)
+      .innerJoin(desafios, eq(desafios.id, desafioPublicacoes.desafioId))
+      .where(
+        and(eq(desafioPublicacoes.desafioId, desafioId), eq(desafioPublicacoes.revisao, revisao)),
+      )
+    return l ? { publicacao: publicacaoDe(l.publicacao), desafio: semPublicacao(l.desafio) } : null
+  }
+
+  async conclusoes(
+    jogadorId: string,
+    publico: MetadadosDoDesafio['publico'],
+  ): Promise<ConclusaoGuardada[]> {
+    const linhas = await this.db
+      .select({
+        c: desafiosConcluidos,
+        ilha: desafios.ilha,
+        tipo: desafios.tipo,
+        quadro: desafios.quadro,
+      })
+      .from(desafiosConcluidos)
+      .innerJoin(desafios, eq(desafios.id, desafiosConcluidos.desafioId))
+      .where(
+        and(eq(desafiosConcluidos.jogadorId, jogadorId), eq(desafiosConcluidos.publico, publico)),
+      )
+    return linhas.map(({ c, ilha, tipo, quadro }) => ({
+      desafioId: c.desafioId,
+      ilha: ilha as MetadadosDoDesafio['ilha'],
+      tipo: tipo as MetadadosDoDesafio['tipo'],
+      quadro,
+      revisao: c.revisao,
+      concluidoEm: c.concluidoEm,
+      extraConcluidoEm: c.extraConcluidoEm,
+      recompensaVistaEm: c.recompensaVistaEm,
+      moedas: c.moedas,
+      moedasSituacao: c.moedasSituacao as SituacaoDasMoedas,
+      moedasExtra: c.moedasExtra,
+      moedasExtraSituacao: c.moedasExtraSituacao as SituacaoDasMoedas,
+      moedasTetoSemana: c.moedasTetoSemana,
+      moedasExtraTetoSemana: c.moedasExtraTetoSemana,
+    }))
+  }
+
+  async progresso(jogadorId: string, desafioId: string) {
+    const [p] = await this.db
+      .select()
+      .from(desafioProgresso)
+      .where(
+        and(eq(desafioProgresso.jogadorId, jogadorId), eq(desafioProgresso.desafioId, desafioId)),
+      )
+    return p
+      ? {
+          revisao: p.revisao,
+          ultimosResultados: p.ultimosResultados as { id: string; passou: boolean }[],
+        }
+      : null
+  }
+
+  async guardarTentativa(e: Parameters<RepositorioDoJogadorNosDesafios['guardarTentativa']>[0]) {
+    await this.db
+      .insert(desafioProgresso)
+      .values({
+        jogadorId: e.jogadorId,
+        desafioId: e.desafioId,
+        revisao: e.revisao,
+        ultimosResultados: e.resultados,
+        atualizadoEm: e.agora,
+      })
+      .onConflictDoUpdate({
+        target: [desafioProgresso.jogadorId, desafioProgresso.desafioId],
+        set: { revisao: e.revisao, ultimosResultados: e.resultados, atualizadoEm: e.agora },
+      })
+  }
+
+  async concluir(e: Parameters<RepositorioDoJogadorNosDesafios['concluir']>[0]): Promise<boolean> {
+    const gravadas = await this.db
+      .insert(desafiosConcluidos)
+      .values({
+        jogadorId: e.jogadorId,
+        desafioId: e.desafioId,
+        publico: e.publico,
+        revisao: e.revisao,
+        concluidoEm: e.agora,
+        moedas: e.moedas,
+        moedasSituacao: e.moedas > 0 ? 'pendente' : 'nenhuma',
+        moedasExtra: e.moedasExtra,
+        moedasExtraSituacao: 'nenhuma',
+      })
+      .onConflictDoNothing({ target: [desafiosConcluidos.jogadorId, desafiosConcluidos.desafioId] })
+      .returning({ desafioId: desafiosConcluidos.desafioId })
+    return gravadas.length > 0
+  }
+
+  async marcarExtra(jogadorId: string, desafioId: string, agora: Date): Promise<boolean> {
+    const linhas = await this.db
+      .update(desafiosConcluidos)
+      .set({
+        extraConcluidoEm: agora,
+        moedasExtraSituacao: sql`case when ${desafiosConcluidos.moedasExtra} > 0 then 'pendente' else 'nenhuma' end`,
+      })
+      .where(
+        and(
+          eq(desafiosConcluidos.jogadorId, jogadorId),
+          eq(desafiosConcluidos.desafioId, desafioId),
+          isNull(desafiosConcluidos.extraConcluidoEm),
+        ),
+      )
+      .returning({ desafioId: desafiosConcluidos.desafioId })
+    return linhas.length > 0
+  }
+
+  async marcarMoedas(
+    jogadorId: string,
+    desafioId: string,
+    premio: 'principal' | 'extra',
+    situacao: SituacaoDasMoedas,
+    semana?: string,
+  ) {
+    const tetoSemana = situacao === 'teto' ? (semana ?? null) : null
+    await this.db
+      .update(desafiosConcluidos)
+      .set(
+        premio === 'principal'
+          ? { moedasSituacao: situacao, moedasTetoSemana: tetoSemana }
+          : { moedasExtraSituacao: situacao, moedasExtraTetoSemana: tetoSemana },
+      )
+      .where(
+        and(
+          eq(desafiosConcluidos.jogadorId, jogadorId),
+          eq(desafiosConcluidos.desafioId, desafioId),
+        ),
+      )
+  }
+
+  async marcarRecompensaVista(jogadorId: string, desafioId: string, agora: Date) {
+    await this.db
+      .update(desafiosConcluidos)
+      .set({ recompensaVistaEm: agora })
+      .where(
+        and(
+          eq(desafiosConcluidos.jogadorId, jogadorId),
+          eq(desafiosConcluidos.desafioId, desafioId),
+          isNull(desafiosConcluidos.recompensaVistaEm),
+        ),
+      )
+  }
+}
+
+function semPublicacao(l: Linha): Omit<DesafioPublicado, 'publicacao'> {
+  const d = paraDominio(l, null)
+  return { id: d.id, metadados: d.metadados, situacao: d.situacao }
+}
+
+function publicacaoDe(p: typeof desafioPublicacoes.$inferSelect): PublicacaoGuardada {
+  return {
+    desafioId: p.desafioId,
+    revisao: p.revisao,
+    conteudo: p.conteudo,
+    blocosExigidos: p.blocosExigidos,
+    vista: p.vista as VistaDoObjetivo[],
   }
 }

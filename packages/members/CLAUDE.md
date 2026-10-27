@@ -10,6 +10,11 @@ estas rotas, teste em `tests/arquipelago-internal.routes.test.ts`). Sem o token,
 - `GET /jornada`: `{kids: {versao, postos}, adulto: {versao, configurada, etapas}}`, no formato
   `JornadaDosMembrosSchema` do contrato do jogo (validado do lado do jogo; o Members não importa o
   contrato). Política do Kids não publicada = versão 0 sem postos; outra falha sobe como erro.
+- **Porta de moedas** (`arquipelago-coins.routes.ts`, token `ARQUIPELAGO_COINS_TOKEN`): teto
+  SEMANAL de **150** moedas do jogo por pessoa (`ARQUIPELAGO_TETO_SEMANAL_DE_MOEDAS`, segunda a
+  domingo em São Paulo, tudo ou nada, `WEEKLY_LIMIT`), separado do teto diário dos cursos. A conta
+  que levou ao número está em `docs/arquipelago-regras.md`. Teste: `tests/db/arquipelago-coins.test.ts`
+  (`ARQUIPELAGO_COINS_TEST_DATABASE_URL`, banco local `kids_journey_*`).
 - ⚠️ Railway: `ARQUIPELAGO_MEMBERS_TOKEN` é nome novo; criar no painel (members e arquipelago-api)
   antes de entrar no `.railway/variables.ts`.
 - `GET /jogador?userId&accountId&audience` (`ArquipelagoReadsService.jogador`): posição na jornada

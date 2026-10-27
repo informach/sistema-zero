@@ -14,7 +14,7 @@ import { ServicoDasCartas } from '../../src/application/servico-das-cartas'
 import { ServicoDoJogo } from '../../src/application/servico-do-jogo'
 import type { PortaDosMembros } from '../../src/domain/membros.port'
 import { CORPO_DA_EQUIPE, createServer } from '../../src/interfaces/http/server'
-import { DesafiosEmMemoria } from '../fakes/desafios'
+import { DesafiosEmMemoria, desafiosDesligados } from '../fakes/desafios'
 import { membrosDeMentira } from '../fakes/membros'
 import { RepositorioEmMemoria } from '../fakes/memoria'
 
@@ -97,6 +97,7 @@ function montar() {
       () => AGORA,
       () => '88888888-8888-4888-8888-888888888888',
     ),
+    desafios: desafiosDesligados(politica),
     cliente: { dir: '/nao-existe', servirMapas: false },
     tokenInterno: TOKEN,
     readiness: async () => {},

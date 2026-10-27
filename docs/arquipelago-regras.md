@@ -1,0 +1,899 @@
+# Arquipélago Vagalume: regras do jogo
+
+Levantamento de 27/10/2026, feito lendo o código. Para a visão geral dos pacotes e de como o jogo
+chega à criança, veja `docs/arquipelago.md`.
+
+## 1. Como ler este documento
+
+- **Vale o que está no código.** Cada regra traz o arquivo e o nome da constante ou da função onde
+  ela mora. Para mudar uma regra, mude ali. Este documento precisa ser atualizado junto.
+- Os caminhos começam em `packages/`. Os quatro pacotes do jogo são:
+  - `arquipelago-contracts`: os formatos e as regras divididas entre o jogo e o serviço.
+  - `arquipelago`: o jogo que roda no navegador.
+  - `arquipelago-api`: o serviço do jogo (salvamento, tempo livre, desafios, prêmios).
+  - `members`: guarda as moedas, a jornada e os blocos conquistados nos cursos.
+- Onde a documentação antiga diz outra coisa, este documento segue o código. A lista dessas
+  diferenças fica na última seção.
+- Quando algo não existe no código, o texto diz "não encontrado no código".
+
+## 2. O mundo: ilhas, postos e posições, o Farol
+
+### As oito ilhas
+
+Arquivo: `arquipelago-contracts/src/ilhas.ts`, constante `MAPA` (lista `ILHAS`). Este é o único
+lugar do mapa ilha → posto.
+
+| Ilha (`id`) | Nome | Posto que abre | Posição | Ângulo no anel |
+|---|---|---|---|---|
+| `sua-ilha` | Sua ilha | `noob` | 1 | centro |
+| `bosque` | Bosque dos Bichos | `coder` | 2 | 20° |
+| `vila-doce` | Vila Doce | `hacker` | 3 | -40° |
+| `recife` | Recife Coral | `explorer` | 4 | -100° |
+| `pico` | Pico Gelado | `elite` | 5 | -160° |
+| `vale-dos-dinos` | Vale dos Dinos | `architect` | 6 | 140° |
+| `nuvens` | Ilha das Nuvens | `champion` | 7 | 80° |
+| `farol` | O Farol | `god` | 8 | fica na sua ilha |
+
+- **Postos em ordem:** `POSTOS_DA_JORNADA` (`noob`, `coder`, `hacker`, `explorer`, `elite`,
+  `architect`, `champion`, `god`). Eles espelham `JOURNEY_LEVEL_SLUGS` do core
+  (`core/src/journey/catalog.ts`). A posição 1 é a Faísca no Kids. Os nomes que a criança vê
+  ficam na plataforma, não no jogo.
+- **Total de posições:** `POSICOES_DA_JORNADA = 8`.
+- **Regra de abertura:** `ilhaAberta(id, posicao)` diz que a ilha está aberta quando a posição
+  da pessoa é maior ou igual à posição da ilha. A sua ilha está sempre aberta (posição 1).
+- **Posto desconhecido vira posição 1:** `posicaoDoPostoKids` devolve 1 quando o posto não está
+  na lista.
+- **O jogo nunca dá posto.** Ele só lê a posição.
+
+### De onde vem a posição
+
+- **Kids:** a posição do posto conquistado na Jornada do Criador
+  (`members/src/application/arquipelago/arquipelago-reads.service.ts`, método `jogador`).
+- **Adulto:** a posição da etapa da jornada adulta. A Lenda é a posição depois da última etapa.
+  Sem jornada configurada, a posição é 1.
+
+### Conferência do mapa contra a jornada publicada
+
+Arquivo: `arquipelago-contracts/src/membros.ts`, função `conferirMapaDasIlhas`. Quem chama é
+`arquipelago-api/src/application/mapa-das-ilhas.ts` (`ConferenciaDoMapa`), uma vez, quando o
+serviço sobe.
+
+- **Kids:** os postos publicados no Members precisam ser exatamente os do mapa, na mesma ordem.
+  Política do Kids não publicada (versão 0) gera o problema `politica-nao-publicada`.
+- **Adulto:** a jornada precisa ter 7 etapas (`POSICOES_DA_JORNADA - 1`), uma por ilha antes do
+  Farol.
+- **Problema encontrado não derruba o serviço.** O resultado vai ao log
+  (`arquipelago.mapa_das_ilhas_invalido`) e ao `/readyz`, que continua respondendo 200. As
+  situações possíveis são `desligada`, `pendente`, `ok`, `com-problemas` e `indisponivel`.
+
+### No mundo 3D
+
+Arquivo: `arquipelago/src/mundo/medidas.ts`.
+
+- **Distâncias:** as ilhas do anel ficam a `RAIO_DO_ANEL = 82` do centro e têm raio
+  `RAIO_DA_ILHA_DO_ANEL = 13`. O gramado da sua ilha vai até 24 (`RAIO_DO_GRAMADO`), a praia até 29
+  (`RAIO_DA_PRAIA`) e o raso até 36 (`RAIO_DO_RASO`). Uma unidade é mais ou menos 1 metro.
+- **A ponte:** quando a ilha abre, a ponte aparece e a cor escorre pela ilha em 4,5 segundos
+  (`DURACAO_DA_CHEGADA_MS = 4500`, em `arquipelago/src/mundo/anel.tsx`). O Zappy avisa: "A ponte
+  para o ... ficou pronta". Essa chegada aparece uma vez só. A ilha entra em
+  `pontesVistas` no salvamento.
+- **Ilha aberta hoje:** chegar perto mostra a ação "Olhar em volta". O Zappy explica que os
+  moradores e os bichos chegam numa próxima fase.
+- **O Farol** fica na sua ilha, ao lado da casa (`FAROL = { x: -12, z: -13 }`). Ele acende quando a
+  posição é 8 ou mais (`arquipelago/src/mundo/farol.tsx`, `aceso = jornada >= 8`).
+- **Primeira entrada:** a pessoa aparece no quarto (`INICIO`). Enquanto a porta nova não foi
+  aberta (`casa.portaNova` falso), o Zappy diz: "Só o seu quarto ainda tem cor. Vamos abrir a
+  porta nova e acender o resto?".
+
+## 3. Quem pode jogar
+
+### Quem é quem
+
+Arquivo: `arquipelago-api/src/interfaces/http/identidade.ts`.
+
+| Quem | Como o serviço reconhece | O que pode |
+|---|---|---|
+| Criança do Kids | sessão de perfil (`x-auth-account-id`), contexto `student` ou sem contexto | joga; o salvamento e o tempo usado são do perfil; o limite é da conta da família |
+| Membro adulto | sem perfil e sem contexto do Kids | joga, sem limite de tempo |
+| Responsável do Kids | contexto `parent`, na própria conta | não joga; só lê e muda o limite diário da família |
+| Equipe | papel `superadmin`, `admin` ou `staff` (`PAPEIS_DA_EQUIPE`) | entra sempre que o jogo está ligado; vê todas as ilhas abertas e todos os blocos |
+| Suporte | sessão com `x-auth-impersonator-id` | só olha; nada é gravado |
+
+### As chaves de quem vê o jogo
+
+Arquivo: `arquipelago-api/src/infrastructure/config/env.ts`. Elas mudam sem deploy da plataforma.
+"Deploy" aqui quer dizer `NODE_ENV=production`, o que vale para staging e para produção.
+
+| Chave | Valores | Sem valor, no desenvolvimento | Sem valor, em deploy |
+|---|---|---|---|
+| `ARQUIPELAGO_MODO` | `desligado`, `lista`, `aberto` | `aberto` | `desligado` |
+| `ARQUIPELAGO_PUBLICOS` | `kids`, `adulto` (separados por vírgula) | `kids` | `kids` |
+| `ARQUIPELAGO_LISTA` | ids de perfil ou de conta, separados por vírgula | vazia | vazia |
+| `ARQUIPELAGO_DESAFIOS` | `desligado`, `equipe`, `aberto` | `aberto` | `desligado` |
+
+### A ordem da decisão
+
+Arquivo: `arquipelago-api/src/domain/acesso.ts`, função `decidirAcesso`. A ordem é esta:
+
+1. **Modo `desligado`:** ninguém entra, nem a equipe. O motivo é `desligado`. Pausar o jogo é
+   imediato.
+2. **Equipe:** entra.
+3. **Público fora de `ARQUIPELAGO_PUBLICOS`:** bloqueado, com o motivo `publico-desligado`.
+4. **Modo `lista`:** só entra quem tem o id do perfil ou o id da conta da família na lista. Os
+   outros recebem o motivo `fora-da-lista`.
+5. **Os demais:** entram.
+
+Bloqueado recebe 403 `ACESSO_BLOQUEADO` com o motivo. O jogo mostra a tela de bloqueio.
+
+### Suporte somente leitura
+
+Ao olhar o jogo como a pessoa, o suporte:
+
+- Lê o salvamento.
+- Não grava salvamento nem limite: recebe 403 `SOMENTE_LEITURA`.
+- Não gasta o tempo livre da criança. O serviço só lê o total
+  (`ServicoDoJogo.registrarTempo`).
+- Confere um desafio e vê o resultado. A tentativa não é guardada, nada é concluído e nenhum
+  prêmio é dado (`ServicoDosDesafios.verificar`).
+- Não dispara a cobrança de prêmios pendentes e não marca a festa do prêmio como vista.
+
+A escrita no Admin do jogo também fica bloqueada numa sessão de suporte (`lerEquipe`,
+`podeEscrever`).
+
+## 4. Tempo livre do Kids
+
+### Os números
+
+Arquivo: `arquipelago-contracts/src/limites.ts`.
+
+| Regra | Valor | Nome |
+|---|---|---|
+| Limite padrão por dia | 30 minutos | `LIMITE_DIARIO_PADRAO_MINUTOS` |
+| Mínimo que os pais escolhem | 10 minutos | `LIMITE_DIARIO_MINIMO_MINUTOS` |
+| Máximo que os pais escolhem | 240 minutos | `LIMITE_DIARIO_MAXIMO_MINUTOS` |
+| Passo | 5 minutos | `LIMITE_DIARIO_PASSO_MINUTOS` |
+
+- **Arredondamento:** `normalizarLimiteDiario` arredonda o que os pais escolhem para o múltiplo de
+  5 mais próximo e prende entre 10 e 240. Um valor inválido vira 30.
+- **Adulto:** não tem limite. O limite vem como `null`.
+- **O limite é da família, o tempo é de cada criança.** O limite fica na conta do responsável
+  (`contaId`). O tempo usado é contado por perfil. Com o limite de 30 minutos, cada criança da
+  família tem 30 minutos.
+- **Quem muda o limite:** só o responsável, pelas rotas `GET` e `PUT /arquipelago/familia/limite`.
+  Sem nada gravado, vale o padrão de 30.
+
+### O dia de São Paulo
+
+`diaDeSaoPaulo` (`limites.ts`) devolve o dia civil no fuso `America/Sao_Paulo`. O contador zera à
+meia-noite de São Paulo.
+
+### Quando o tempo conta
+
+Arquivo: `arquipelago/src/estado/relogios.tsx`. Um segundo conta quando tudo isto vale ao mesmo
+tempo:
+
+- a aba do jogo está visível;
+- o menu não está aberto;
+- nenhuma ferramenta da plataforma (Pinta, Molda, Estúdio) está aberta por cima do jogo;
+- o tempo do dia ainda não acabou;
+- o jogo não está pausado por erro do tempo.
+
+### Como o tempo chega ao serviço
+
+1. **Cada segundo fica guardado no aparelho.** Ele vai para o IndexedDB, por perfil
+   (`arquipelago/src/sistemas/armazem-tempo.ts`). Um lote fecha com 10 segundos
+   (`TAMANHO_LOTE = 10`) ou quando o dia de São Paulo muda.
+2. **O envio:** a cada 10 segundos guardados, quando a aba some e quando o jogo fecha
+   (`arquipelago/src/sistemas/fila-tempo.ts`). Cada lote vai com um id único (UUID) e o dia, com
+   prazo de 15 segundos por envio.
+3. **Lotes de aba fechada sem aviso** são recuperados e enviados na próxima abertura.
+4. **Se guardar ou enviar falhar,** o jogo pausa e mostra uma tela para tentar de novo.
+
+### O que o serviço faz com o tempo
+
+Arquivos: `arquipelago-api/src/application/servico-do-jogo.ts` (`registrarTempo`) e
+`arquipelago-api/src/infrastructure/persistence/drizzle/repositorio.ts` (`somarTempo`).
+
+- **Cada envio aceita de 1 a 120 segundos** (`RegistrarTempoSchema`, em
+  `arquipelago-contracts/src/api.ts`).
+- **Dia no futuro é recusado,** com 400.
+- **O mesmo lote enviado de novo não soma duas vezes.** Um lote repetido com dados diferentes
+  recebe 409 `TEMPO_CONFLITANTE`.
+- **O total de um dia nunca passa de 24 horas** (`TETO_DO_DIA = 86_400` segundos).
+- **Lote de um dia anterior** soma naquele dia. A resposta traz o total de hoje.
+- **Quem decide que acabou é o serviço:** `acabou` quando o usado de hoje for maior ou igual ao
+  limite vezes 60.
+
+### No jogo
+
+- **Abrir com o tempo esgotado** leva direto à tela de descanso (`arquipelago/src/jogo.tsx`,
+  `carregar`).
+- **O tempo acaba durante o jogo:** a tela de descanso aparece por cima e oferece voltar para a
+  plataforma.
+- **O que falta:** a pílula "Hoje: N min" mostra os minutos restantes, arredondados para cima
+  (`arquipelago/src/sistemas/tempo-livre.ts`, `minutosRestantes`).
+- O tempo livre é um controle dos pais, não uma trava de segurança. O dia do lote vem do relógio
+  do aparelho.
+
+## 5. Salvamento
+
+### O formato
+
+Arquivo: `arquipelago-contracts/src/salvamento.ts`.
+
+- **Versão:** `VERSAO_SALVAMENTO = 1` (`SalvamentoV1Schema`, estrito: campo desconhecido é
+  recusado).
+- **O que guarda:**
+  - as necessidades (fome, energia, diversão, cada uma de 0 a 100);
+  - a horta (até 24 canteiros);
+  - o inventário (item → quantidade, de 0 a 999; id do item com até 40 caracteres);
+  - a posição do personagem;
+  - as pontes já vistas;
+  - se a porta nova da casa foi aberta.
+- **Teto:** `SALVAMENTO_MAX_BYTES = 64 * 1024` (64 KB do documento em JSON). O serviço recusa acima
+  disso com 413 `SALVAMENTO_GRANDE_DEMAIS`. O corpo inteiro de uma chamada do jogo vai até 96 KB
+  (`MAX_REQUEST_BODY_BYTES`, em `env.ts`).
+- **Mudar o formato:** crie a V2 e escreva a migração da V1 em `migrarSalvamento`. Assim ninguém
+  perde o progresso.
+
+### O salvamento inicial
+
+Função `criarSalvamentoInicial`:
+
+| Campo | Valor inicial |
+|---|---|
+| Fome | 80 |
+| Energia | 100 |
+| Diversão | 70 |
+| Canteiros | 6 vazios (`c1` a `c6`) |
+| Inventário | 3 sementes de alface, 2 de tomate, 1 de milho |
+| Posição | nenhuma (começa no quarto) |
+| Pontes vistas | nenhuma |
+| Porta nova | fechada |
+
+### Revisão e conflito
+
+Arquivos: `arquipelago/src/sistemas/salvar.ts` (`criarFilaDeSalvamento`),
+`arquipelago-api/src/application/servico-do-jogo.ts` (`gravarSalvamento`) e o repositório.
+
+- **Quando o jogo grava:** junta as mudanças e grava a cada 20 segundos (`intervaloMs`, padrão
+  `20_000`). Também grava na hora quando a aba some e quando o jogo fecha.
+- **A trava da revisão:** cada gravação manda a revisão que o jogo conhece (`revisaoBase`). A
+  revisão 0 quer dizer que nada foi guardado ainda. O banco grava numa instrução só. Se outro
+  aparelho gravou antes, a revisão não bate e o serviço responde 409 `SALVAMENTO_DESATUALIZADO`
+  com o que está guardado.
+- **No conflito, vale o que está guardado.** O jogo adota a versão do serviço e o Zappy avisa:
+  "O seu jogo foi atualizado com o que você fez em outro aparelho." O que mudou neste aparelho
+  depois do envio se perde.
+- **Erro de rede não perde nada.** A mudança volta para a fila e vai na próxima volta.
+- **Jogo novo:** com a revisão 0, o salvamento inicial entra na fila logo na abertura.
+- **Salvamento guardado que não passa no formato atual:** o serviço responde 409
+  `SALVAMENTO_ILEGIVEL` e nunca devolve "vazio". Isso impede o jogo de criar um salvamento novo
+  por cima. O jogo mostra a tela de erro.
+- **Revisão máxima:** `REVISAO_MAXIMA = 2_147_483_647` (`api.ts`), o limite da coluna do banco.
+- **A posição do personagem** é guardada a cada 15 segundos de jogo ativo, se ele andou mais de 1
+  unidade (`relogios.tsx`).
+
+## 6. Sistemas do jogo
+
+As regras puras ficam em `arquipelago/src/sistemas/`. Os números de cena ficam em
+`arquipelago/src/mundo/medidas.ts` e nos componentes citados.
+
+### 6.1 Dia e noite
+
+Arquivo: `sistemas/tempo-do-dia.ts`.
+
+- **Duração:** um dia do jogo dura 16 minutos de verdade (`DURACAO_DO_DIA_MS = 16 * 60 * 1000`).
+- **Dia e noite:** a parte clara é 75% do dia (`PARTE_CLARA = 0.75`). São 12 minutos de dia (6h às
+  18h no relógio do jogo) e 4 minutos de noite (18h às 6h).
+- **Contagem dos dias:** o relógio parte do momento em que o salvamento foi criado (`criadoEm`).
+  O "Dia 1" é o primeiro. Ele não precisa ser salvo e é igual em qualquer aparelho.
+- **A luz** (`luzDoSol`): 0,25 no nascer e no pôr do sol, 1 ao meio-dia. Na noite, escurece nos
+  primeiros 15% e clareia nos últimos 15%. No meio da noite, a luz é 0.
+- **O relógio** aparece no topo da tela como "Dia N · HH:MM", com sol ou lua.
+
+### 6.2 Necessidades
+
+Arquivos: `sistemas/necessidades.ts` e `estado/relogios.tsx`.
+
+- **Quanto cai por minuto de jogo ativo** (`QUEDA_POR_MINUTO`):
+  - fome: 2;
+  - energia: 1,2 (o dobro correndo);
+  - diversão: 1.
+- **Atualização:** a cada 2 segundos de jogo ativo. As regras de "ativo" são as do tempo livre
+  (seção 4).
+- **Faixa:** cada necessidade fica entre 0 e 100.
+- **Cochilo:** com a energia em 0, o personagem volta para casa e a energia vai para 60. O Zappy
+  diz: "Você cansou e tirou um cochilo em casa. Nada se perdeu." Nada é castigado.
+- **Cama:** dormir na cama (ou no beliche) do quarto devolve a energia toda, 100 (`dormir`). Só
+  funciona se a pessoa tiver uma cama ou um beliche no quarto. O raio da ação é 2,6
+  (`mundo/casa.tsx`).
+- **Comer:** soma o valor da comida a cada necessidade (`comer`). A tabela está em 6.4.
+- **Humor** (`humor`):
+  - `cansado`: energia ou fome abaixo de 15;
+  - `otimo`: fome, energia e diversão acima de 60;
+  - `bem`: o resto.
+- **Ritmo:** o humor muda a velocidade de andar (`ritmo`). Ótimo é 1,1 vezes, bem é 1 vez, cansado
+  é 0,8 vez.
+
+### 6.3 Horta
+
+Arquivos: `sistemas/horta.ts` e `mundo/horta.tsx`.
+
+- **Os canteiros:** 6 no começo, numa grade de 3 colunas por 2 linhas (`HORTA` em `medidas.ts`).
+- **As sementes:** `SEMENTES` = alface, tomate, milho.
+- **O ciclo:** plantar, regar, esperar, colher. A planta só cresce depois de regada.
+- **Tempo para crescer, contado da rega** (`CRESCIMENTO_MS`). O código avisa que estes tempos são
+  curtos de propósito, para dar para ver crescer numa sessão:
+  - alface: 3 minutos;
+  - tomate: 5 minutos;
+  - milho: 8 minutos.
+- **Estágios** (`estagio`):
+  - `vazio`;
+  - `semente`: plantada e não regada;
+  - `brotando`: menos de 40% do tempo;
+  - `crescendo`: o resto do tempo;
+  - `maduro`: 100%.
+- **A horta cresce no tempo de verdade,** também com o jogo fechado.
+- **Colheita** (`COLHEITA`): alface 2, tomate 3, milho 2. Cada colheita devolve também 1 semente
+  da mesma planta, então a horta nunca acaba.
+- **Qual semente vai no canteiro:** o canteiro vazio planta a primeira semente que a pessoa tiver,
+  nesta ordem: alface, tomate, milho (`ORDEM` em `mundo/horta.tsx`).
+
+### 6.4 Itens
+
+Arquivo: `sistemas/itens.ts`, constante `ITENS`.
+
+| Item | Comer repõe |
+|---|---|
+| Semente de alface, de tomate, de milho | não é comida |
+| Alface | fome +8 |
+| Tomate | fome +10 |
+| Milho | fome +10 |
+| Salada da horta | fome +40, energia +5 |
+| Pipoca | fome +15, diversão +25 |
+
+- **Teto por item:** 999 (`adicionar`). Também é o teto do salvamento.
+- **Item desconhecido** (de uma versão futura) é ignorado pelo jogo.
+- **Na mochila,** a pessoa come um item clicando nele.
+
+### 6.5 Receitas
+
+Arquivos: `sistemas/receitas.ts` (`RECEITAS`) e `mundo/bancada.tsx`.
+
+| Receita | Precisa | Faz |
+|---|---|---|
+| Salada da horta | 1 alface e 1 tomate | 1 salada |
+| Pipoca | 1 milho | 2 pipocas |
+
+- **A bancada** oferece a primeira receita da lista que dá para fazer (`receitaPossivel`).
+- **Sem ingrediente,** o Zappy lista as receitas e o que cada uma precisa.
+- O raio da ação é 2,2.
+
+### 6.6 O personagem
+
+Arquivo: `arquipelago/src/personagem/personagem.tsx`.
+
+| Regra | Valor | Nome |
+|---|---|---|
+| Andar | 4,2 por segundo | `ANDAR` |
+| Correr | 7,2 por segundo | `CORRER` |
+| Nadar | 2,6 por segundo | `NADAR` |
+| Pulo | 8,5 | `PULO` |
+| Gravidade | -24 | `GRAVIDADE` |
+
+A velocidade final é multiplicada pelo ritmo do humor (6.2).
+
+### 6.7 O Zappy
+
+Arquivo: `sistemas/zappy.ts`. O Zappy voa ao lado do personagem.
+
+| Regra | Valor | Nome |
+|---|---|---|
+| Distância para a direita | 0,75 | `LADO_DO_ZAPPY` |
+| Distância para trás | 0,35 | `ATRAS_DO_ZAPPY` |
+| Altura acima do centro do corpo | 1,3 | `ALTURA_DO_ZAPPY` |
+| Abaixo desta velocidade, ela conta como parada | 0,3 por segundo | `VELOCIDADE_DE_ANDAR` |
+| Tempo parada antes de ele virar para ela | 0,6 s | `ESPERA_PARA_OLHAR_PARA_ELA` |
+| Primeira espiada na câmera | 3,5 s parada | `PRIMEIRA_ESPIADA` |
+| Espiada de novo a cada | 7 s | `PERIODO_DA_ESPIADA` |
+| Duração da espiada | 1,4 s | `DURACAO_DA_ESPIADA` |
+| Rapidez para dar a volta numa virada | 3,5 | `RAPIDEZ_EM_VOLTA` |
+| Inclinação nas curvas | 0,16 por giro, até 0,5 | `GANHO_DA_INCLINACAO`, `INCLINACAO_MAXIMA` |
+| Inclinação para a frente andando | até 0,22 | `MERGULHO_MAXIMO` |
+
+- **O lugar dele** (`lugarAoLado`): à direita e um pouco atrás de onde ela olha. Numa virada, ele
+  dá a volta pelo lado curto e não atravessa o corpo (`suavizarAngulo`).
+- **Para onde ele olha** (`paraOndeOlhar`): andando, para onde ela vai. Parada, para ela, com uma
+  espiada na câmera de tempos em tempos.
+- **As falas do Zappy** aparecem na tela por 7 segundos (`Dica`, em `interface/hud.tsx`).
+
+### 6.8 Câmera
+
+Arquivos: `sistemas/camera.ts`, `personagem/camera.tsx` e `mundo/medidas.ts`.
+
+- **Controle da pessoa:**
+  - arrastar gira em volta do personagem;
+  - a inclinação fica entre 0,12 e 1,25;
+  - a roda do mouse aproxima ou afasta, de 4 a 18;
+  - a distância inicial é 9.
+- **Dentro de casa:** a câmera fica a no máximo 8 e olha mais de cima (inclinação mínima 0,95).
+- **Parede ou tronco atrás do personagem:**
+  - a câmera encosta na hora e nunca atravessa (`distanciaDaCamera`);
+  - para antes da parede, com folga de 0,35 (`FOLGA_DA_CAMERA`);
+  - testa o caminho com uma bolinha de raio 0,45 (`RAIO_DA_SONDA_DA_CAMERA`);
+  - nunca chega a menos de 0,4 do personagem (`DISTANCIA_MINIMA_DA_CAMERA`);
+  - quando a parede sai da frente, volta para longe aos poucos, com rapidez 3 por segundo
+    (`VOLTA_DA_CAMERA`).
+- **Tapada de perto** (`GRUA_DA_CAMERA`): quando o espaço livre é menor que 60% da distância
+  (`tapada: 0.6`):
+  - primeiro a câmera gira para o lado livre, testando giros de 0,5 e 1,0 (`giros`);
+  - um lado serve quando sobram 90% da distância (`basta: 0.9`), e o giro anda 1,5 por segundo
+    (`giroPorSegundo`);
+  - sem lado livre, sobe por cima do ombro (`subidas` 0,45 e 0,9, até a inclinação 1,25), se
+    ganhar pelo menos 0,5 de espaço (`ganhoMinimo`).
+- **Lá no alto** (`CAMERA_NO_ALTO`): a 2,5 acima do chão da ilha (deques e pontes), a câmera desce
+  o ângulo (até 0,3) e chega mais perto (até 6,5), para mostrar o caminho por baixo das copas
+  (`pesoNoAlto`).
+- **Copas, troncos e telhados** entre a câmera e o personagem ficam transparentes, até a opacidade
+  0,25 (`OPACIDADE_DA_COPA_NA_FRENTE`), em 0,3 segundo (`DURACAO_DO_ESMAECER_DA_COPA`).
+
+### 6.9 Ilhas completas
+
+Arquivos: `sistemas/ilhas-completas.ts`, `mundo/ilha-completa.tsx` e `mundo/medidas.ts`.
+
+- **Duas versões:** cada ilha do anel tem uma versão leve e pode ter uma versão completa, feita
+  no Blender. Hoje só o Bosque tem a completa (`ILHAS_COMPLETAS` em `mundo/ilha-completa.tsx`).
+- **O ciclo** (`proximoEstadoDaIlha`): `longe` → `carregando` → `pronta` → `ativa` →
+  `descarregando` → `longe`.
+- **Quando busca:** a ilha precisa estar aberta. A busca começa quando a pessoa entra na faixa da
+  ponte (`BUSCA_NA_PONTE`: meia largura 3, começa 4 antes da ponte, vai até 2 depois) ou fica a
+  menos de 43 do centro da ilha (`nivelDeDetalhe`: raio da ilha + 30).
+- **Quando troca:** a completa toma o lugar da leve a menos de 30 do centro da ilha, no meio da
+  ponte (`DISTANCIA_DA_TROCA = RAIO_DA_ILHA_DO_ANEL + 17`). A troca esmaece em 0,8 segundo
+  (`DURACAO_DA_TROCA`).
+- **Colisão:** só a versão ativa colide. Nos outros estados, a leve colide.
+- **Voltar para a ilha central** solta a completa da memória.
+- **Falha ao carregar:** fica a versão leve, e o jogo só tenta de novo quando a pessoa se afasta e
+  volta.
+- **Jogo aberto em cima de uma ilha completa:** o personagem espera no ar até o chão de verdade
+  chegar (margem de 1 além da borda, `MARGEM_DA_ESPERA_PELO_CHAO`).
+
+## 7. Desafios
+
+Arquivos principais:
+
+- `arquipelago-contracts/src/desafios.ts` e `arquipelago-contracts/src/aprenda.ts`;
+- `arquipelago-api/src/domain/desafios.ts`;
+- `arquipelago-api/src/application/servico-dos-desafios.ts` (quem joga);
+- `arquipelago-api/src/application/servico-da-equipe.ts` (Admin).
+
+O jogo no navegador ainda não chama as rotas de desafios. Não encontrei no código do cliente
+nenhuma chamada a `/desafios` ou a `/cartas`. As regras abaixo são as do serviço.
+
+### 7.1 Tipos e quadros
+
+- **Tipos** (`TIPOS_DE_DESAFIO`): `quadro-das-cores`, `desafio-do-dia`, `pedido-de-morador`. Hoje
+  só o Quadro das Cores tem regra própria: ele tem um número de quadro. Regra própria para os
+  outros dois tipos não encontrada no código.
+- **Seis quadros por ilha** (`QUADROS_POR_ILHA = 6`).
+  - Só o Quadro das Cores tem número de quadro, de 1 a 6, e ele sempre tem
+    (`MetadadosDoDesafioSchema`).
+  - Cada número de quadro pode ter um desafio só por público e ilha, fora os arquivados (índice
+    `desafios_quadro_unico`). Outro desafio no mesmo quadro recebe 409 `QUADRO_OCUPADO`.
+- **Públicos** (`PUBLICOS_DO_DESAFIO`): `kids` e `adulto`. Cada desafio é de um público só e vale
+  para todas as pessoas desse público. Não é individual.
+- **Identificador (`slug`):** letras minúsculas, números e hífen, até 80 caracteres, único entre
+  todos os desafios (409 `SLUG_EM_USO`).
+- **Ordem:** de 0 a 10.000.
+- **A cor da ilha** é o número de quadros distintos do Quadro das Cores que a pessoa concluiu na
+  ilha, dividido por 6.
+  - O serviço manda `quadro.feitos` e `quadro.total = 6` em `GET /arquipelago/desafios`
+    (função `quadrosFeitos`).
+  - Concluídos de desafios arquivados também contam.
+  - `feitos` nunca passa de 6.
+  - A ilha considerada é a ilha onde o desafio está cadastrado hoje.
+
+### 7.2 Os limites do cadastro
+
+Arquivo: `arquipelago-contracts/src/desafios.ts`, constante `LIMITES_DO_DESAFIO`.
+
+| Regra | Valor | Nome |
+|---|---|---|
+| Título | 80 caracteres | `titulo` |
+| Enunciado | 2.000 caracteres | `enunciado` |
+| Cada dica | 300 caracteres | `dica` |
+| Número de dicas | 5 | `dicas` |
+| Objetivos | 20 | `objetivos` |
+| Objetivos que rodam o jogo | 8 | `objetivosQueRodam` |
+| Moedas do prêmio principal | até 100 | `moedas` |
+| Moedas do extra | até 50 | `moedasExtra` |
+| Blocos acrescentados ou retirados à mão | 200 de cada | `blocosManuais` |
+| Tamanho do projeto inicial ou do gabarito | 1.500.000 caracteres | `projetoCaracteres` |
+
+Outros limites do mesmo arquivo:
+
+- texto de cada objetivo: até 200 caracteres;
+- id de cada objetivo: até 80 caracteres;
+- título do desafio extra: até 80 caracteres;
+- texto do desafio extra: até 500 caracteres.
+
+O Members confere de novo os 20 objetivos e os 8 que rodam o jogo
+(`members/src/application/arquipelago/arquipelago-objectives.service.ts`,
+`LIMITES_DOS_OBJETIVOS`; o 8 vem de `EXECUTION_LIMITS.maxObjectives` em
+`core/src/learning/project-execution.ts`). As esperas somadas dos objetivos que rodam o jogo vão
+até 40 segundos (`maxSectionWaitMs`).
+
+### 7.3 Só JavaScript
+
+O objetivo aceita só `programmingLanguage: 'javascript'` (`ObjetivoDoDesafioSchema`). A análise
+do Members recusa projeto ou objetivo em Python (`PROJETO_PYTHON`, `OBJETIVO_PYTHON`) e projeto do
+Pro (`PROJETO_PRO`).
+
+### 7.4 Blocos exigidos
+
+- **A conta** (`blocosExigidos`, em `aprenda.ts`): os blocos do gabarito, mais os que a equipe
+  acrescentou, menos os que ela retirou.
+- **O que não conta como bloco do gabarito.** O Members só considera blocos que existem no catálogo
+  do Estúdio. Ficam de fora:
+  - os blocos de moldura (`contract.domain === 'frame'`), que estão sempre disponíveis;
+  - os blocos que já vêm no projeto inicial.
+  
+  A regra fica em `arquipelago-objectives.service.ts`.
+- **A lista fica congelada na publicação** (`blocosExigidos` em `desafio_publicacoes`). Mudar um
+  curso depois não muda o que o desafio pede até a próxima publicação.
+
+### 7.5 Como um desafio fica disponível
+
+Arquivo: `arquipelago-api/src/domain/desafios.ts`, função `situacaoDoDesafio`. A ordem é esta:
+
+1. **`concluido`:** a pessoa já concluiu. Nada mais é conferido.
+2. **`ilha-fechada`:** a posição da pessoa ainda não abre a ilha do desafio.
+3. **`faltam-blocos`:** falta algum bloco exigido entre os blocos que a pessoa conquistou nos
+   cursos.
+4. **`disponivel`:** a ilha está aberta e a pessoa tem todos os blocos.
+
+- **As ilhas abrem pelo posto.** Os desafios abrem pelos blocos conquistados nos cursos.
+- **De onde vêm a posição e os blocos:** do Members (`GET /members/internal/arquipelago/jogador`).
+  O serviço guarda a resposta por 30 segundos (seção 9.7).
+- **Equipe:** vê todas as ilhas abertas (posição 8) e tem todos os blocos.
+- **Desafio fechado:** abrir ou conferir um desafio que não está disponível recebe 403
+  `DESAFIO_BLOQUEADO`, com a situação.
+
+### 7.6 "Aprenda isso em"
+
+Arquivo: `arquipelago-contracts/src/aprenda.ts`, função `aprendaIssoEm`.
+
+- **O que mostra:** para cada bloco que falta, os cursos publicados que liberam esse bloco.
+- **A ordem:** do posto mais cedo para o mais tarde. Curso sem posto (como Maestria) vai por
+  último. No mesmo posto, a ordem é pelo título.
+- **De onde vêm os cursos:** do currículo do Members (`GET /curriculo-de-blocos`). Só entram cursos
+  publicados que liberam algum bloco.
+
+Para a equipe, `coberturaDosBlocos` dá três avisos por bloco exigido:
+
+- `sem-curso`: nenhum curso publicado libera o bloco;
+- `bloco-desconhecido`: o bloco não existe no catálogo do Estúdio;
+- `curso-depois-da-ilha`: o curso mais cedo fica num posto depois do posto da ilha, ou não tem
+  posto. A criança chega à ilha antes de poder fazer o desafio.
+
+### 7.7 Cadastro, análise e publicação (Admin)
+
+Arquivo: `arquipelago-api/src/application/servico-da-equipe.ts`.
+
+- **Quem lê:** a equipe (`superadmin`, `admin`, `staff`), na própria conta, sem perfil.
+- **Quem escreve:** só `superadmin` e `admin`, fora de sessão de suporte (`lerEquipe`). Os outros
+  recebem 403 `SEM_PERMISSAO`.
+- **Criar:** o desafio nasce como `rascunho`, na revisão 1.
+- **Gravar:** toda gravação manda a revisão que a pessoa da equipe abriu. Se alguém gravou antes, a
+  resposta é 409 `DESAFIO_DESATUALIZADO` com o que está guardado. Cada gravação soma 1 à revisão.
+- **Analisar:** mostra o que a publicação congelaria e não grava nada. Ela traz:
+  - os blocos do gabarito e os blocos exigidos;
+  - a cobertura dos cursos;
+  - os problemas;
+  - se o gabarito passa em cada objetivo;
+  - se o projeto inicial já passa em algum objetivo, o que seria um aviso de desafio resolvido
+    de saída.
+- **Publicar:**
+  - só publica a revisão que foi analisada;
+  - é recusado com 422 `DESAFIO_COM_PROBLEMAS` enquanto houver qualquer problema;
+  - grava uma cópia imutável em `desafio_publicacoes` (conteúdo, blocos, a vista dos objetivos e
+    a análise) e marca o desafio como `publicado`.
+- **Problemas que impedem publicar:**
+  - conferidos no serviço do jogo (`problemasLocais`): `SEM_OBJETIVO_OBRIGATORIO`,
+    `OBJETIVO_REPETIDO`, `EXTRA_SEM_TEXTO` (há objetivo opcional sem título e texto do extra) e
+    `MOEDAS_DEMAIS`;
+  - conferidos no Members: projeto ou gabarito inválido, Python ou Pro, objetivos demais, regra
+    inválida, espera demais e executor fora do ar. O mais importante é `GABARITO_NAO_PASSA`: o
+    gabarito precisa passar em todos os objetivos obrigatórios.
+- **Revisão publicada:** quem joga recebe sempre a última publicação. Mudanças gravadas depois de
+  publicar não chegam às crianças até publicar de novo. A lista do Admin mostra isso como
+  `alteradoDepoisDePublicar`.
+- **Arquivar:** o desafio sai da lista de quem joga. Quem estava com ele aberto e tenta conferir
+  recebe 409 `DESAFIO_MUDOU`. As conclusões já feitas continuam valendo.
+- **Reativar:** volta a `publicado` se já teve publicação, senão volta a `rascunho`. Se outro
+  desafio ocupou o quadro nesse meio tempo, a resposta é 409 `QUADRO_OCUPADO`.
+- **Publicar de novo a mesma revisão** (por exemplo, depois de reativar) mantém a primeira cópia.
+
+### 7.8 Jogar e conferir
+
+Arquivo: `arquipelago-api/src/application/servico-dos-desafios.ts`.
+
+- **Abrir** (`GET /arquipelago/desafios/:id`):
+  - devolve o título, o enunciado, as dicas, o desafio extra, os objetivos como a criança os vê e
+    o projeto inicial;
+  - o gabarito e as regras dos objetivos nunca vão para o navegador;
+  - os últimos resultados só aparecem se forem da mesma revisão publicada.
+- **Conferir** (`POST /arquipelago/desafios/:id/verificar`, com a revisão aberta e o projeto). O
+  corpo vai até 4 MB (`CORPO_DA_CONFERENCIA`).
+  1. **A revisão:** a revisão que a pessoa abriu continua conferível enquanto existir. Desafio
+     arquivado recebe 409 `DESAFIO_MUDOU`.
+  2. **Disponibilidade:** se ainda não foi concluído, o serviço confere de novo a ilha e os
+     blocos antes de gastar o executor.
+  3. **A conferência:** o Members confere o projeto com o mesmo verificador das aulas. Se o
+     executor estiver fora, cheio ou recusar, a resposta é 424, 429, 409 ou 400 e nada é
+     guardado.
+  4. **Suporte:** recebe o resultado e para aqui.
+  5. **A tentativa:** os resultados são guardados (`desafio_progresso`).
+  6. **O principal passa** quando todos os objetivos obrigatórios passaram
+     (`passouNosObrigatorios`). Desafio sem objetivo obrigatório nunca passa. A conclusão é
+     gravada uma vez só.
+  7. **O extra passa** quando todos os objetivos opcionais passaram na mesma conferência em que
+     o principal passou. Ele é marcado uma vez só.
+  8. **Os prêmios** desse desafio são cobrados na hora (seção 9).
+- **Refazer:** a pessoa pode abrir e conferir de novo um desafio concluído. A conclusão não se
+  repete. O extra pode ser ganho numa conferência posterior, sempre com o principal passando
+  junto.
+- **A festa do prêmio:** `POST /desafios/:id/recompensa-vista` marca que o jogo já mostrou a
+  festa, para não mostrar de novo.
+
+### 7.9 Feito continua feito
+
+Depois de concluído, o desafio nunca é recalculado:
+
+- `situacaoDoDesafio` devolve `concluido` antes de olhar a ilha e os blocos;
+- abrir e conferir não exigem disponibilidade de quem já concluiu;
+- as conclusões incluem desafios arquivados.
+
+Mudar os blocos de um curso, a lista da pessoa ou o desafio não tira o que ela fez.
+
+### 7.10 O liga e desliga
+
+- **A chave:** `ARQUIPELAGO_DESAFIOS` (`env.ts`).
+  - `desligado`: ninguém usa os desafios (403 `DESAFIOS_DESLIGADOS`).
+  - `equipe`: só a equipe, para testar.
+  - `aberto`: todos que podem jogar.
+- **Sem valor:** aberto no desenvolvimento, desligado em deploy.
+- **A política de acesso** (seção 3) vem antes da chave.
+- **Members não configurado** (`MEMBERS_URL` e `ARQUIPELAGO_MEMBERS_TOKEN`): os desafios
+  respondem 424 `PLATAFORMA_INDISPONIVEL`, e o resto do jogo segue.
+
+## 8. Cartões dos Lumis
+
+Arquivo: `arquipelago-contracts/src/cartas-lumi.ts`, constante `CARTAS_LUMI`. O catálogo fica no
+código, não no Admin, porque o que cada cartão faz na rotina é código do jogo.
+
+| Cartão | Tipo | Bloco do Estúdio que libera |
+|---|---|---|
+| Quando amanhecer | quando | nenhum, sempre disponível |
+| Quando anoitecer | quando | nenhum, sempre disponível |
+| Voar até | ação | nenhum, sempre disponível |
+| Regar | ação | nenhum, sempre disponível |
+| Colher | ação | nenhum, sempre disponível |
+| Guardar tudo | ação | nenhum, sempre disponível |
+| Repetir | controle | `sz_js_repeat` |
+| Para cada | controle | `sz_js_for_each` |
+| Enquanto | controle | `sz_js_while` |
+| Se | controle | `sz_js_if_else` |
+| Escolha | controle | `sz_js_switch` |
+| Esperar | controle | `sz_js_set_timeout_seconds` |
+| Guardar na memória | controle | `sz_js_var_create` |
+| Contar mais um | controle | `sz_js_var_increment` |
+
+- **Quem tem cada cartão** (`cartaConquistada`):
+  - cartões sem bloco ficam com todos;
+  - cartões de controle ficam com quem conquistou o bloco num curso, com a mesma fonte dos
+    desafios;
+  - a equipe tem todos.
+- **A rota** é `GET /arquipelago/cartas` (`arquipelago-api/src/application/servico-das-cartas.ts`).
+  Ela exige a política de acesso liberada. Para os cartões que faltam, ela traz o "Aprenda isso
+  em".
+- **No Admin,** a cobertura mostra de onde se aprende cada cartão. Para cartão, o aviso
+  `curso-depois-da-ilha` usa a Lenda (`god`) como limite.
+- **Members fora ou não configurado:** 424.
+- **O caderno dos Lumis no jogo:** não encontrado no código do cliente.
+
+## 9. Moedas e prêmios
+
+### 9.1 Valores por desafio
+
+| Regra | Valor | Arquivo e nome |
+|---|---|---|
+| Padrão do prêmio principal | 20 moedas | `arquipelago-contracts/src/desafios.ts`, `MOEDAS_PADRAO.principal` |
+| Padrão do extra | 10 moedas | `MOEDAS_PADRAO.extra` |
+| Máximo do principal | 100 moedas | `LIMITES_DO_DESAFIO.moedas` |
+| Máximo do extra | 50 moedas | `LIMITES_DO_DESAFIO.moedasExtra` |
+
+- **Prêmio 0:** o Admin pode pôr 0. O prêmio fica `nenhuma` e nada é cobrado.
+- **O valor pago** é o da revisão em que a pessoa concluiu o principal, para os dois prêmios. O
+  valor fica gravado em `desafios_concluidos`. Se a equipe mudar o prêmio depois, quem já concluiu
+  recebe o valor antigo, inclusive no extra feito mais tarde.
+
+### 9.2 O teto semanal
+
+Arquivo: `members/src/infrastructure/persistence/drizzle/arquipelago-coins.repository.ts`,
+constante `ARQUIPELAGO_TETO_SEMANAL_DE_MOEDAS = 150`.
+
+- **A semana:** de segunda a domingo, no horário de São Paulo
+  (`date_trunc('week', ...)` no fuso `America/Sao_Paulo`).
+- **O que conta:** a soma dos créditos do Arquipélago na semana, por pessoa e por público.
+- **Tudo ou nada:** se o prêmio inteiro não cabe no que sobra da semana, nada é pago e o Members
+  responde `WEEKLY_LIMIT`. O prêmio nunca é pago pela metade.
+- **Separado do teto dos cursos.** O teto diário de 100 moedas dos cursos (`DAILY_COIN_CAP`, em
+  `members/src/domain/gamification/coins.ts`) não inclui as moedas do jogo
+  (`applyDailyCap`).
+
+### 9.3 A conta que levou ao 150
+
+Decisão de 27/10/2026. Os valores dos cursos estão em `members/src/domain/gamification/coins.ts`
+(`COIN_VALUES`, `quizPassedCoins`) e em `members/src/domain/gamification/missions.ts`.
+
+| Atividade nos cursos | Moedas |
+|---|---|
+| Aula concluída | 5 (`LESSON_COMPLETE`) |
+| Quiz aprovado | 10 a 15 (`QUIZ_PASSED_BASE` 10 mais até 5 de bônus pela nota) |
+| Objetivos do Estúdio aprovados | 15 (`quizPassedCoins(100)`) |
+| Baú do fim do módulo | 15 (`UNIT_COMPLETE`) |
+| Missões | diárias de 10 a 15; semanais e mensais com valores maiores (`missions.ts`) |
+
+- **Quem estuda com regularidade** ganha entre 150 e 300 moedas por semana nos cursos.
+- **Quem usa muito** chega a cerca de 700 por semana, limitado pelo teto diário (7 dias × 100).
+  Os marcos de sequência de dias ficam fora do teto diário.
+- **O jogo dá no máximo metade** do que ganha quem estuda com regularidade (cerca de 300 por
+  semana). Por isso o teto é 150, e os cursos continuam sendo a fonte principal de moedas.
+- **Gasto só cosmético.** São 138 itens pagos de avatar e de quarto, de 30 a 300 moedas, com
+  mediana de 70:
+  - 74 peças do avatar, em `members/src/domain/avatar/avatar3d-catalog.ts`;
+  - 64 do quarto (móveis, decoração, temas, pisos e iluminação), em
+    `members/src/domain/room/room-catalog.ts`.
+
+### 9.4 Cada prêmio é pago uma vez
+
+Arquivo: `arquipelago-api/src/domain/desafios.ts`, função `chaveDasMoedas`.
+
+- **A chave:** cada prêmio tem uma chave fixa, um UUIDv5 de jogador + desafio + qual prêmio
+  (`principal` ou `extra`). O espaço de nomes é fixo (`NAMESPACE`).
+- **Repetir não paga de novo.** Repetir ou reenviar manda sempre a mesma chave. O Members não
+  paga duas vezes: a mesma chave com o mesmo valor devolve "já pago".
+- **A mesma chave com outro valor** é recusada (`KEY_CONFLICT`).
+- **No serviço do jogo,** a conclusão e o extra também são gravados uma vez só
+  (`concluir`, `marcarExtra`).
+
+### 9.5 As situações de um prêmio
+
+Arquivo: `arquipelago-api/src/domain/desafios.port.ts`, tipo `SituacaoDasMoedas`.
+
+| Situação | Quando |
+|---|---|
+| `nenhuma` | prêmio 0, ou o extra ainda não foi feito |
+| `pendente` | ganhou e ainda não foi confirmado pelo Members |
+| `creditado` | o Members confirmou, agora ou antes, com a mesma chave |
+| `teto` | o teto da semana estava cheio; a semana fica em `moedas_teto_semana` (ou `moedas_extra_teto_semana`) |
+
+### 9.6 Quando bate no teto
+
+Arquivo: `arquipelago-api/src/application/servico-dos-desafios.ts`, método `cobrarPendentes`.
+
+- **O prêmio não se perde.** Ele fica em `teto`, com a semana anotada (`semanaDeSaoPaulo`: a
+  segunda-feira da semana, em São Paulo).
+- **Na mesma semana,** não se tenta de novo.
+- **Numa semana seguinte,** o prêmio volta a ser cobrado.
+- **Bateu no teto, para tudo:** depois de um `teto`, o serviço não tenta os outros prêmios
+  daquela vez, porque o teto vale para todos eles naquela semana.
+
+### 9.7 Quando a cobrança acontece
+
+- **Ao ler a lista de desafios:** até 3 prêmios por leitura (`COBRANCAS_POR_LISTA = 3`). O resto
+  fica para a próxima.
+- **Ao concluir ou fazer o extra:** os prêmios daquele desafio, até 2, na hora.
+- **Prazo da porta de moedas:** 5 segundos (`TEMPO_DAS_MOEDAS_MS`, em
+  `arquipelago-api/src/infrastructure/members/moedas-http.ts`). Pagar nunca segura a resposta do
+  jogo.
+- **Suporte não dispara cobrança.**
+
+### 9.8 Members fora do ar
+
+- **Porta de moedas sem resposta** (rede, prazo ou resposta estranha): o prêmio fica `pendente`
+  e é cobrado de novo na próxima leitura ou conferência. A cobrança para naquela vez.
+- **Recusa definitiva** (por exemplo, dono diferente ou chave com outro valor): vai ao log
+  `arquipelago.moedas_recusadas` e o prêmio continua `pendente`.
+- **Sem `ARQUIPELAGO_COINS_TOKEN`:** a porta de moedas não existe e todos os prêmios ficam
+  `pendente`, esperando a configuração.
+- **Leituras do Members fora** (posição, blocos, currículo, conferência): os desafios e os cartões
+  respondem 424, e o resto do jogo segue (salvamento, tempo livre, acesso).
+- **Prazos das leituras** (`arquipelago-api/src/infrastructure/members/membros-http.ts`):
+  - 5 segundos por leitura (`TEMPO_DA_LEITURA_MS`);
+  - 160 segundos para conferir um projeto (`TEMPO_DA_CONFERENCIA_MS`).
+- **Cache das leituras** (`arquipelago-api/src/application/leituras-dos-membros.ts`):
+  - currículo de blocos: 5 minutos (`VALIDADE_DO_CURRICULO_MS`);
+  - posição e blocos da pessoa: 30 segundos (`VALIDADE_DO_JOGADOR_MS`);
+  - no máximo 5.000 pessoas no cache (`MAXIMO_DE_JOGADORES`), e a mais antiga sai primeiro;
+  - falha não fica no cache.
+
+## 10. Onde mudar cada número
+
+| Regra | Valor atual | Arquivo e nome |
+|---|---|---|
+| Ilha → posto | tabela da seção 2 | `arquipelago-contracts/src/ilhas.ts`, `MAPA` |
+| Ordem dos postos | 8 postos | `arquipelago-contracts/src/ilhas.ts`, `POSTOS_DA_JORNADA` |
+| Posições da jornada | 8 | `arquipelago-contracts/src/ilhas.ts`, `POSICOES_DA_JORNADA` |
+| Farol aceso | posição 8 | `arquipelago/src/mundo/farol.tsx`, `aceso` |
+| Chegada da cor na ilha | 4,5 s | `arquipelago/src/mundo/anel.tsx`, `DURACAO_DA_CHEGADA_MS` |
+| Modo do jogo | aberto em dev, desligado em deploy | `arquipelago-api/src/infrastructure/config/env.ts`, `ARQUIPELAGO_MODO` |
+| Públicos | `kids` | `env.ts`, `ARQUIPELAGO_PUBLICOS` |
+| Lista | vazia | `env.ts`, `ARQUIPELAGO_LISTA` |
+| Desafios ligados | aberto em dev, desligado em deploy | `env.ts`, `ARQUIPELAGO_DESAFIOS` |
+| Papéis da equipe | superadmin, admin, staff | `arquipelago-api/src/domain/jogador.ts`, `PAPEIS_DA_EQUIPE` |
+| Quem escreve desafios | superadmin, admin | `arquipelago-api/src/interfaces/http/identidade.ts`, `PAPEIS_QUE_ESCREVEM_DESAFIOS` |
+| Tempo livre padrão | 30 min | `arquipelago-contracts/src/limites.ts`, `LIMITE_DIARIO_PADRAO_MINUTOS` |
+| Tempo livre mínimo | 10 min | `limites.ts`, `LIMITE_DIARIO_MINIMO_MINUTOS` |
+| Tempo livre máximo | 240 min | `limites.ts`, `LIMITE_DIARIO_MAXIMO_MINUTOS` |
+| Passo do tempo livre | 5 min | `limites.ts`, `LIMITE_DIARIO_PASSO_MINUTOS` |
+| Lote de tempo | 10 s | `arquipelago/src/sistemas/armazem-tempo.ts`, `TAMANHO_LOTE` |
+| Segundos por envio de tempo | 1 a 120 | `arquipelago-contracts/src/api.ts`, `RegistrarTempoSchema` |
+| Teto de tempo por dia | 86.400 s | `arquipelago-api/src/infrastructure/persistence/drizzle/repositorio.ts`, `TETO_DO_DIA` |
+| Teto do salvamento | 64 KB | `arquipelago-contracts/src/salvamento.ts`, `SALVAMENTO_MAX_BYTES` |
+| Corpo das chamadas do jogo | 96 KB | `env.ts`, `MAX_REQUEST_BODY_BYTES` |
+| Intervalo do salvamento | 20 s | `arquipelago/src/sistemas/salvar.ts`, `intervaloMs` |
+| Salvamento inicial | tabela da seção 5 | `salvamento.ts`, `criarSalvamentoInicial` |
+| Duração do dia do jogo | 16 min | `arquipelago/src/sistemas/tempo-do-dia.ts`, `DURACAO_DO_DIA_MS` |
+| Parte clara do dia | 75% | `tempo-do-dia.ts`, `PARTE_CLARA` |
+| Queda das necessidades | fome 2, energia 1,2, diversão 1 por minuto | `arquipelago/src/sistemas/necessidades.ts`, `QUEDA_POR_MINUTO` |
+| Energia depois do cochilo | 60 | `arquipelago/src/estado/relogios.tsx` |
+| Humor e ritmo | 15 e 60; 1,1, 1, 0,8 | `necessidades.ts`, `humor` e `ritmo` |
+| Crescimento da horta | 3, 5 e 8 min | `arquipelago/src/sistemas/horta.ts`, `CRESCIMENTO_MS` |
+| Colheita | 2, 3 e 2 | `horta.ts`, `COLHEITA` |
+| Comida dos itens | tabela da seção 6.4 | `arquipelago/src/sistemas/itens.ts`, `ITENS` |
+| Receitas | tabela da seção 6.5 | `arquipelago/src/sistemas/receitas.ts`, `RECEITAS` |
+| Velocidades do personagem | 4,2, 7,2 e 2,6 | `arquipelago/src/personagem/personagem.tsx`, `ANDAR`, `CORRER`, `NADAR` |
+| Posição do Zappy | 0,75, 0,35 e 1,3 | `arquipelago/src/sistemas/zappy.ts`, `LADO_DO_ZAPPY`, `ATRAS_DO_ZAPPY`, `ALTURA_DO_ZAPPY` |
+| Câmera | seção 6.8 | `arquipelago/src/mundo/medidas.ts`, `GRUA_DA_CAMERA`, `CAMERA_NO_ALTO` e vizinhos |
+| Troca da ilha completa | 30 do centro, 0,8 s | `medidas.ts`, `DISTANCIA_DA_TROCA`, `DURACAO_DA_TROCA` |
+| Quadros por ilha | 6 | `arquipelago-contracts/src/desafios.ts`, `QUADROS_POR_ILHA` |
+| Limites do cadastro | seção 7.2 | `desafios.ts`, `LIMITES_DO_DESAFIO` |
+| Moedas padrão | 20 e 10 | `desafios.ts`, `MOEDAS_PADRAO` |
+| Máximo de moedas por desafio | 100 e 50 | `desafios.ts`, `LIMITES_DO_DESAFIO.moedas` e `.moedasExtra` |
+| Teto semanal de moedas do jogo | 150 | `members/src/infrastructure/persistence/drizzle/arquipelago-coins.repository.ts`, `ARQUIPELAGO_TETO_SEMANAL_DE_MOEDAS` |
+| Teto diário dos cursos | 100 | `members/src/domain/gamification/coins.ts`, `DAILY_COIN_CAP` |
+| Prêmios cobrados por leitura da lista | 3 | `arquipelago-api/src/application/servico-dos-desafios.ts`, `COBRANCAS_POR_LISTA` |
+| Prazo da porta de moedas | 5 s | `arquipelago-api/src/infrastructure/members/moedas-http.ts`, `TEMPO_DAS_MOEDAS_MS` |
+| Cache do currículo | 5 min | `arquipelago-api/src/application/leituras-dos-membros.ts`, `VALIDADE_DO_CURRICULO_MS` |
+| Cache da pessoa | 30 s | `leituras-dos-membros.ts`, `VALIDADE_DO_JOGADOR_MS` |
+| Cartões dos Lumis | tabela da seção 8 | `arquipelago-contracts/src/cartas-lumi.ts`, `CARTAS_LUMI` |
+
+## 11. Diferenças encontradas entre documentação e código
+
+O levantamento de 27/10/2026 achou dez pontos em que a documentação ou um comentário do código
+dizia outra coisa. Todos foram corrigidos no mesmo dia, seguindo o código:
+
+1. `docs/plans/2026-10-27-arquipelago-desafios.md` (linha "Moedas"): o teto semanal passou de 100
+   para 150, e o prêmio que bate no teto é cobrado de novo numa semana seguinte (antes dizia que
+   não era cobrado de novo).
+2. `docs/arquipelago.md` ("Ligado e pendente", item 2): o serviço do jogo já paga as moedas dos
+   desafios pela porta do Members.
+3. `packages/arquipelago-api/CLAUDE.md` ("Deploy"): o serviço já está registrado em `.railway/` e
+   no gateway; o que falta é provisionar e validar.
+4. `packages/arquipelago-contracts/CLAUDE.md`: a lista ganhou `desafios.ts`, `aprenda.ts`,
+   `cartas-lumi.ts` e os cartões em `api.ts`.
+5. `packages/arquipelago/CLAUDE.md` (`sistemas/`): a lista ganhou câmera, Zappy, ilhas completas
+   e os dois arquivos do tempo livre.
+6. "10 conferências por minuto por pessoa": hoje é o limite da rota `arquipelago-desafio-verificar`
+   no gateway (`packages/api-gateway/src/infrastructure/config/arquipelago-routes.ts`); o plano
+   passou a dizer isso.
+7. Comentário de `LIMITES_DO_DESAFIO.moedas`: 150 por semana.
+8. Comentário de `teto` em `arquipelago-api/src/domain/moedas.port.ts`: tenta de novo numa semana
+   seguinte.
+9. Comentário de `RegistrarTempoSchema.segundos`: lotes de até 10 s, e também ao esconder a aba ou
+   fechar o jogo.
+
+Se aparecer outra diferença, vale o código: corrija o documento e anote aqui.

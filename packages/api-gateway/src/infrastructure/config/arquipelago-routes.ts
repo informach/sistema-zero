@@ -85,6 +85,39 @@ export function arquipelagoGateway(opts: {
         pathPattern: '/arquipelago/cartas',
         rateLimit: { max: 60, windowMs: 60_000, by: 'principal' },
       },
+      // Desafios de quem joga (o serviço decide se estão ligados: ARQUIPELAGO_DESAFIOS). Conferir
+      // leva o projeto do Estúdio e roda o jogo no executor pelo Members: corpo e prazo das aulas.
+      {
+        ...jogador,
+        id: 'arquipelago-desafios',
+        methods: ['GET'],
+        pathPattern: '/arquipelago/desafios',
+        rateLimit: { max: 60, windowMs: 60_000, by: 'principal' },
+      },
+      {
+        ...jogador,
+        id: 'arquipelago-desafio-abrir',
+        methods: ['GET'],
+        pathPattern: '/arquipelago/desafios/:id',
+        rateLimit: { max: 60, windowMs: 60_000, by: 'principal' },
+      },
+      {
+        ...jogador,
+        id: 'arquipelago-desafio-verificar',
+        methods: ['POST'],
+        pathPattern: '/arquipelago/desafios/:id/verificar',
+        maxBodyBytes: 4 * 1024 * 1024,
+        timeoutMs: 165_000,
+        rateLimit: { max: 10, windowMs: 60_000, by: 'principal' },
+      },
+      {
+        ...jogador,
+        id: 'arquipelago-desafio-recompensa-vista',
+        methods: ['POST'],
+        pathPattern: '/arquipelago/desafios/:id/recompensa-vista',
+        maxBodyBytes: 1024,
+        rateLimit: { max: 30, windowMs: 60_000, by: 'principal' },
+      },
       {
         ...jogador,
         id: 'arquipelago-familia-limite',

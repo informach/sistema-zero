@@ -15,7 +15,13 @@ plataforma ↔ jogo ↔ serviço do jogo. Sem React, sem three, sem I/O.
 - `plataforma.ts`: a interface `Plataforma` que a página da plataforma implementa, versão do
   contrato, formato do quarto, pedido de ferramenta e manifesto do cliente.
 - `api.ts`: formatos das rotas do serviço (acesso, salvamento guardado e gravação por revisão,
-  tempo, limite da família).
+  tempo, limite da família, cartões do jogador).
+- `desafios.ts` (27/10/2026): desafios do jogo (conteúdo com versão e migração, metadados, visões
+  da equipe e da pessoa, molde do Estúdio de desafio, `LIMITES_DO_DESAFIO`, `MOEDAS_PADRAO`). As
+  visões da pessoa são estritas: gabarito e regra nunca saem.
+- `aprenda.ts`: "Aprenda isso em", blocos exigidos e a cobertura dos blocos pelos cursos.
+- `cartas-lumi.ts`: os 14 cartões da rotina dos Lumis e o bloco que libera cada cartão de controle.
+- As regras do jogo em linguagem da dona, com onde mudar cada número: `docs/arquipelago-regras.md`.
 
 Regras: mudar um formato salvo exige nova versão e migração (nunca alterar `V1` de forma
 incompatível); mudar a `Plataforma` de forma incompatível exige subir `VERSAO_CONTRATO_PLATAFORMA`.

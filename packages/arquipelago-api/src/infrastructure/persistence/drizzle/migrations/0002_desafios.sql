@@ -54,9 +54,11 @@ CREATE TABLE "arquipelago"."desafios_concluidos" (
 	"moedas_situacao" varchar(12) NOT NULL,
 	"moedas_extra" integer NOT NULL,
 	"moedas_extra_situacao" varchar(12) NOT NULL,
+	"moedas_teto_semana" varchar(10),
+	"moedas_extra_teto_semana" varchar(10),
 	CONSTRAINT "desafios_concluidos_jogador_id_desafio_id_pk" PRIMARY KEY("jogador_id","desafio_id"),
 	CONSTRAINT "desafios_concluidos_publico_check" CHECK ("arquipelago"."desafios_concluidos"."publico" in ('kids', 'adulto')),
-	CONSTRAINT "desafios_concluidos_moedas_check" CHECK ("arquipelago"."desafios_concluidos"."moedas_situacao" in ('nenhuma', 'pendente', 'creditado') and "arquipelago"."desafios_concluidos"."moedas_extra_situacao" in ('nenhuma', 'pendente', 'creditado'))
+	CONSTRAINT "desafios_concluidos_moedas_check" CHECK ("arquipelago"."desafios_concluidos"."moedas_situacao" in ('nenhuma', 'pendente', 'creditado', 'teto') and "arquipelago"."desafios_concluidos"."moedas_extra_situacao" in ('nenhuma', 'pendente', 'creditado', 'teto'))
 );
 --> statement-breakpoint
 ALTER TABLE "arquipelago"."desafio_progresso" ADD CONSTRAINT "desafio_progresso_desafio_id_desafios_id_fk" FOREIGN KEY ("desafio_id") REFERENCES "arquipelago"."desafios"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint

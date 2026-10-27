@@ -1,5 +1,5 @@
 {
-  "id": "f4769f77-e1d5-4231-a18d-86d8e8a2571d",
+  "id": "95fd443a-0b26-4447-a4a0-48d3f8a88c80",
   "prevId": "7fbc06b6-a3ea-47b9-8699-0de5a3145a4e",
   "version": "7",
   "dialect": "postgresql",
@@ -418,6 +418,18 @@
           "type": "varchar(12)",
           "primaryKey": false,
           "notNull": true
+        },
+        "moedas_teto_semana": {
+          "name": "moedas_teto_semana",
+          "type": "varchar(10)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "moedas_extra_teto_semana": {
+          "name": "moedas_extra_teto_semana",
+          "type": "varchar(10)",
+          "primaryKey": false,
+          "notNull": false
         }
       },
       "indexes": {
@@ -471,7 +483,7 @@
         },
         "desafios_concluidos_moedas_check": {
           "name": "desafios_concluidos_moedas_check",
-          "value": "\"arquipelago\".\"desafios_concluidos\".\"moedas_situacao\" in ('nenhuma', 'pendente', 'creditado') and \"arquipelago\".\"desafios_concluidos\".\"moedas_extra_situacao\" in ('nenhuma', 'pendente', 'creditado')"
+          "value": "\"arquipelago\".\"desafios_concluidos\".\"moedas_situacao\" in ('nenhuma', 'pendente', 'creditado', 'teto') and \"arquipelago\".\"desafios_concluidos\".\"moedas_extra_situacao\" in ('nenhuma', 'pendente', 'creditado', 'teto')"
         }
       },
       "isRLSEnabled": false

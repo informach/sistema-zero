@@ -19,7 +19,7 @@ import { ServicoDoJogo } from '../../src/application/servico-do-jogo'
 import type { PoliticaDeAcesso } from '../../src/domain/acesso'
 import { MembrosIndisponiveisError, type PortaDosMembros } from '../../src/domain/membros.port'
 import { createServer } from '../../src/interfaces/http/server'
-import { DesafiosEmMemoria } from '../fakes/desafios'
+import { DesafiosEmMemoria, desafiosDesligados } from '../fakes/desafios'
 import { membrosDeMentira } from '../fakes/membros'
 import { RepositorioEmMemoria } from '../fakes/memoria'
 
@@ -72,6 +72,7 @@ function montar(servirMapas = true) {
       new ConferenciaDoMapa(membros, createLogger({ level: 'error' })),
       () => AGORA,
     ),
+    desafios: desafiosDesligados(politica),
     cliente: { dir, servirMapas },
     tokenInterno: TOKEN,
     readiness: async () => {},

@@ -67,3 +67,24 @@ export class SemPermissaoDeEscritaError extends Error {
     super('Só a administração muda os desafios')
   }
 }
+
+/** `ARQUIPELAGO_DESAFIOS` desligado (ou só para a equipe e quem chama não é da equipe). */
+export class DesafiosDesligadosError extends Error {
+  constructor() {
+    super('Os desafios ainda não estão ligados')
+  }
+}
+
+/** A revisão que a pessoa abriu não vale mais (arquivado ou publicação que não existe). */
+export class DesafioMudouError extends Error {
+  constructor() {
+    super('O desafio mudou: abra de novo')
+  }
+}
+
+/** Ilha fechada ou faltam blocos: o desafio não abre nem confere. */
+export class DesafioBloqueadoError extends Error {
+  constructor(readonly situacao: 'ilha-fechada' | 'faltam-blocos') {
+    super('Este desafio ainda não está liberado')
+  }
+}

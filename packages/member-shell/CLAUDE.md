@@ -12,10 +12,15 @@ O jogo mora em pacotes próprios (`docs/arquipelago.md`); aqui só fica a porta 
   revisão, tempo e suporte somente leitura é o `arquipelago-api`). `arquipelagoCliente` (GET
   `/api/arquipelago/cliente/:arquivo`) repassa o cliente compilado na mesma origem, só nomes do
   build (`.js`, `.js.map`, `.glb`, `.json`), com o IP de quem pediu e só os cabeçalhos de cache.
+  Desafios (27/10/2026): `arquipelagoDesafios` (GET, `?ilha=` conferida), `arquipelagoDesafio`
+  (GET `:id` uuid), `arquipelagoDesafioVerificar` (POST, corpo até 4 MB, prazo de 165 s no
+  gateway; os shims põem `maxDuration = 180`) e `arquipelagoDesafioRecompensaVista` (POST).
 - **`components/arquipelago-host.tsx`**: `ArquipelagoHost` lê o manifesto, importa a entrada com
   `webpackIgnore`/`turbopackIgnore` e chama `montarArquipelago`; `criarPlataformaDoArquipelago`
   monta a `Plataforma` do contrato com as MESMAS rotas das telas (avatar, quarto, gamificação) e o
-  serviço só em `/acesso`, `/salvamento`, `/tempo` e `/cartas`. Ferramentas: Pinta, Molda e Estúdio abrem de
+  serviço só em `/acesso`, `/salvamento`, `/tempo`, `/cartas` e nos desafios (`caminhoDoJogo`:
+  lista com `?ilha=`, o desafio por uuid e o prêmio visto; conferir NÃO, quem manda o projeto é
+  o Estúdio de desafio da página). Ferramentas: Pinta, Molda e Estúdio abrem de
   verdade por cima do jogo (`arquipelago-creation-dialog.tsx`), com o jogo pausado.
 - **`components/arquipelago-porta.tsx`** (27/10/2026, polimento da Fase 0): `PortaDoArquipelago`
   desenha os estados antes de o jogo montar (abrindo, ainda não abriu, erro) na noite do

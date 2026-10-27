@@ -40,7 +40,7 @@ Lumis e o Admin do jogo").
 | Comunidade adulta com política antiga (etapas sem currículo) | Ilha pela **posição** da etapa; o Farol é a jornada completa | É o que o jogo já faz hoje; o validador avisa no Admin |
 | "Aprenda isso em" inclui oficinas ao vivo? | **Só cursos gravados publicados** nesta primeira versão | As oficinas não se divulgam fora delas |
 | Sessão de suporte pode conferir? | **Pode, sem gravar nada e sem prêmio** | Ajuda a equipe a reproduzir um problema |
-| Moedas | Por desafio, cadastradas no Admin (padrão 20 no principal e 10 no extra, teto 500 e 200), pela porta de moedas do Members com chave única | Respeita o teto semanal que já existe |
+| Moedas | Por desafio, cadastradas no Admin (padrão 20 no principal e 10 no extra, teto 100 e 50), pela porta de moedas do Members com chave única | O Members dá no máximo 150 moedas do jogo por semana (`ARQUIPELAGO_TETO_SEMANAL_DE_MOEDAS`, metade do que quem estuda com regularidade ganha nos cursos), tudo ou nada: um prêmio por desafio acima de 100 nunca caberia. Bateu no teto da semana, o prêmio fica como `teto` e é cobrado de novo numa semana seguinte (nunca se perde) |
 | Linguagem | **Só blocos (JavaScript)** na primeira versão; Python e Pro ficam de fora | Pro não tem blocos, então o desafio abriria para todos |
 
 ## Onde cada parte mora
@@ -93,7 +93,7 @@ Lumis e o Admin do jogo").
   Kids e a checagem de equipe no serviço), com teste em cada uma.
 - **Gabarito vazando:** as visões da pessoa são `strictObject` e um teste prova que gabarito e
   regra não passam.
-- **Custo do executor:** cache por impressão do projeto, 10 conferências por minuto por pessoa e
+- **Custo do executor:** cache por impressão do projeto, 10 conferências por minuto por pessoa no gateway (`arquipelago-desafio-verificar`) e
   424 (nunca 5xx) quando o executor está fora.
 - **Members fora do ar:** só os desafios desligam no jogo; o resto segue.
 - **Edição durante o jogo:** uma revisão publicada continua conferível enquanto existir;

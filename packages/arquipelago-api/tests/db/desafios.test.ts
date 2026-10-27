@@ -7,7 +7,10 @@ import {
   createDbConnection,
   type DbConnection,
 } from '../../src/infrastructure/persistence/drizzle/db'
-import { DrizzleRepositorioDeDesafios } from '../../src/infrastructure/persistence/drizzle/repositorio-de-desafios'
+import {
+  DrizzleRepositorioDeDesafios,
+  DrizzleRepositorioDoJogadorNosDesafios,
+} from '../../src/infrastructure/persistence/drizzle/repositorio-de-desafios'
 
 /**
  * O que só o Postgres real prova nos desafios: a revisão como trava sob corrida, os dois índices
@@ -209,5 +212,137 @@ describe.skipIf(!url)('DrizzleRepositorioDeDesafios (Postgres real)', () => {
       codigo = (erro as { code?: string }).code
     }
     expect(codigo).toBe('23514')
+  })
+})
+
+describe.skipIf(!url)('DrizzleRepositorioDoJogadorNosDesafios (Postgres real)', () => {
+  const JOGADOR = '11111111-1111-4111-8111-111111111111'
+  let conexao: DbConnection
+  let equipe: DrizzleRepositorioDeDesafios
+  let repo: DrizzleRepositorioDoJogadorNosDesafios
+
+  beforeAll(async () => {
+    conexao = createDbConnection(url!, { max: 6 })
+    await migrate(conexao.db, {
+      migrationsFolder: path.join(
+        import.meta.dir,
+        '../../src/infrastructure/persistence/drizzle/migrations',
+      ),
+      migrationsTable: 'arquipelago_migrations',
+    })
+    equipe = new DrizzleRepositorioDeDesafios(conexao.db)
+    repo = new DrizzleRepositorioDoJogadorNosDesafios(conexao.db)
+  })
+  afterAll(async () => {
+    await conexao?.close()
+  })
+  beforeEach(async () => {
+    await conexao.sql`truncate arquipelago.desafios cascade`
+  })
+
+  async function publicado(id: string, m = meta()) {
+    await equipe.criar({ id, metadados: m, conteudo, por: ADMIN, agora: AGORA })
+    const r = await equipe.publicar({ id, revisaoBase: 1, publicacao, por: ADMIN, agora: AGORA })
+    if (!r.ok) throw new Error('não publicou')
+  }
+  const concluir = () =>
+    repo.concluir({
+      jogadorId: JOGADOR,
+      desafioId: ID1,
+      publico: 'kids',
+      revisao: 1,
+      moedas: 20,
+      moedasExtra: 10,
+      agora: AGORA,
+    })
+
+  test('só publicados do público, com a última publicação; rascunho e arquivado ficam fora', async () => {
+    await publicado(ID1)
+    await equipe.criar({
+      id: ID2,
+      metadados: meta({ slug: 'rascunho', quadro: 2 }),
+      conteudo,
+      por: ADMIN,
+      agora: AGORA,
+    })
+    const lista = await repo.listarPublicados('kids')
+    expect(lista.map((d) => d.id)).toEqual([ID1])
+    expect(lista[0]?.publicacao).toMatchObject({ revisao: 1, blocosExigidos: ['a', 'b'] })
+    expect(await repo.listarPublicados('adulto')).toEqual([])
+    expect((await repo.lerPublicado(ID1))?.publicacao.revisao).toBe(1)
+    expect(await repo.lerPublicado(ID2)).toBeNull()
+    expect((await repo.lerPublicacao(ID1, 1))?.desafio.situacao).toBe('publicado')
+    expect(await repo.lerPublicacao(ID1, 2)).toBeNull()
+    await equipe.mudarSituacao({
+      id: ID1,
+      revisaoBase: 1,
+      situacao: 'arquivado',
+      por: ADMIN,
+      agora: AGORA,
+    })
+    expect(await repo.lerPublicado(ID1)).toBeNull()
+    // A publicação continua guardada (feito continua feito), com o desafio arquivado.
+    expect((await repo.lerPublicacao(ID1, 1))?.desafio.situacao).toBe('arquivado')
+  })
+
+  test('conclui uma vez só, mesmo em corrida; o extra também', async () => {
+    await publicado(ID1)
+    const vencedores = await Promise.all([concluir(), concluir(), concluir()])
+    expect(vencedores.filter(Boolean)).toHaveLength(1)
+    const extras = await Promise.all([
+      repo.marcarExtra(JOGADOR, ID1, AGORA),
+      repo.marcarExtra(JOGADOR, ID1, AGORA),
+    ])
+    expect(extras.filter(Boolean)).toHaveLength(1)
+    const [c] = await repo.conclusoes(JOGADOR, 'kids')
+    expect(c).toMatchObject({
+      desafioId: ID1,
+      ilha: 'bosque',
+      tipo: 'quadro-das-cores',
+      quadro: 1,
+      moedas: 20,
+      moedasSituacao: 'pendente',
+      moedasExtra: 10,
+      moedasExtraSituacao: 'pendente',
+      moedasTetoSemana: null,
+    })
+    expect(await repo.conclusoes(JOGADOR, 'adulto')).toEqual([])
+  })
+
+  test('moedas: teto guarda a semana; creditado limpa; recompensa vista uma vez', async () => {
+    await publicado(ID1)
+    await concluir()
+    await repo.marcarMoedas(JOGADOR, ID1, 'principal', 'teto', '2026-10-26')
+    let [c] = await repo.conclusoes(JOGADOR, 'kids')
+    expect(c).toMatchObject({ moedasSituacao: 'teto', moedasTetoSemana: '2026-10-26' })
+    await repo.marcarMoedas(JOGADOR, ID1, 'principal', 'creditado', '2026-11-02')
+    ;[c] = await repo.conclusoes(JOGADOR, 'kids')
+    expect(c).toMatchObject({ moedasSituacao: 'creditado', moedasTetoSemana: null })
+    await repo.marcarRecompensaVista(JOGADOR, ID1, AGORA)
+    await repo.marcarRecompensaVista(JOGADOR, ID1, new Date('2026-12-01T00:00:00Z'))
+    ;[c] = await repo.conclusoes(JOGADOR, 'kids')
+    expect(c?.recompensaVistaEm?.toISOString()).toBe(AGORA.toISOString())
+  })
+
+  test('tentativa guardada por revisão (a última vence)', async () => {
+    await publicado(ID1)
+    await repo.guardarTentativa({
+      jogadorId: JOGADOR,
+      desafioId: ID1,
+      revisao: 1,
+      resultados: [{ id: 'o1', passou: false }],
+      agora: AGORA,
+    })
+    await repo.guardarTentativa({
+      jogadorId: JOGADOR,
+      desafioId: ID1,
+      revisao: 1,
+      resultados: [{ id: 'o1', passou: true }],
+      agora: AGORA,
+    })
+    expect(await repo.progresso(JOGADOR, ID1)).toEqual({
+      revisao: 1,
+      ultimosResultados: [{ id: 'o1', passou: true }],
+    })
   })
 })

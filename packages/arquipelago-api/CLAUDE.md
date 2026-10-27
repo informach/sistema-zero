@@ -61,6 +61,41 @@ conteúdo, blocos derivados e exigidos, a vista dos objetivos e a análise), `de
   ⚠️ Nos testes de banco, `try/catch` em vez de `expect(...).rejects` (a consulta do postgres.js é
   preguiçosa e o `rejects` pode esperar para sempre).
 
+## Jogar os desafios (27/10/2026)
+
+Regras do jogo, em linguagem da dona e com onde mudar cada número: `docs/arquipelago-regras.md`.
+
+- `application/servico-dos-desafios.ts` (`ServicoDosDesafios`), liga com `ARQUIPELAGO_DESAFIOS`
+  (`desligado`, `equipe`, `aberto`; sem valor: aberto em dev e DESLIGADO em deploy; nome novo, fora
+  do `.railway/variables.ts` até existir no painel). Desligado → 403 `DESAFIOS_DESLIGADOS`; a
+  política do jogo (`decidirAcesso`) vem antes (403 `ACESSO_BLOQUEADO`); sem Members → 424.
+- Régua (`domain/desafios.ts`, pura): `situacaoDoDesafio` (concluído > ilha fechada > faltam
+  blocos > disponível; feito continua feito), `passouNosObrigatorios` (principal = todos os
+  obrigatórios, sem obrigatório nunca passa; extra = todos os opcionais), `chaveDasMoedas`
+  (UUIDv5 por jogador, desafio e prêmio) e `semanaDeSaoPaulo` (a segunda-feira da semana do teto).
+  A régua (posição e blocos) vem do `GET /jogador` (cache de 30 s); a equipe tem tudo aberto.
+- Rotas em `interfaces/http/rotas-dos-desafios.ts`: `GET /arquipelago/desafios[?ilha=]` (as ilhas
+  com aberta e a cor, `quadro.feitos` = quadros distintos concluídos na ilha, e os desafios com
+  situação, o que falta e "Aprenda isso em"), `GET /desafios/:id` (`DesafioAberto`: só a vista dos
+  objetivos e o projeto inicial; bloqueado → 403 `DESAFIO_BLOQUEADO` com `situacao`),
+  `POST /desafios/:id/verificar` (`{revisao, projeto}`; corpo até `CORPO_DA_CONFERENCIA`, 4 MB)
+  e `POST /desafios/:id/recompensa-vista`.
+- Conferir: a revisão que a pessoa abriu continua conferível enquanto existir; arquivado → 409
+  `DESAFIO_MUDOU`; revisão que não existe → 404. Não concluído é reconferido (ilha e blocos) antes
+  de gastar o executor. O executor fora, cheio ou recusando vira 424 `CONFERENCIA_INDISPONIVEL`,
+  429 `CONFERENCIA_OCUPADA`, 409 `CONFERENCIA_SINCRONIZANDO` ou 400 `PROJETO_RECUSADO`, e nada é
+  guardado. Passou: guarda a tentativa (`desafio_progresso`), conclui uma vez só e marca o extra
+  uma vez só (com o principal passando junto). Suporte confere sem guardar e sem prêmio.
+- Moedas: `domain/moedas.port.ts` + `infrastructure/members/moedas-http.ts` (`MoedasHttp`,
+  `POST /members/internal/arquipelago/coins` com `ARQUIPELAGO_COINS_TOKEN`, prazo de 5 s). O
+  prêmio nasce `pendente`; `creditado` ao confirmar; `WEEKLY_LIMIT` vira `teto` com a semana
+  (`moedas_teto_semana`) e é cobrado de novo numa semana seguinte; recusa definitiva vai ao log e
+  fica pendente; falha de rede fica pendente. A lista cobra até 3 prêmios por leitura; a
+  conferência cobra os do desafio na hora. Teto cheio para os outros prêmios da mesma ida.
+- Repositório: `DrizzleRepositorioDoJogadorNosDesafios`. Testes:
+  `tests/integration/desafios-do-jogador.test.ts`, `tests/unit/desafios.test.ts` e o bloco do
+  jogador em `tests/db/desafios.test.ts` (corrida da conclusão e do extra, semana do teto).
+
 ## Rotas (`/arquipelago/*`, todas exigem o `x-internal-token` em deploy)
 
 | Rota | Quem | O quê |
@@ -70,6 +105,7 @@ conteúdo, blocos derivados e exigidos, a vista dos objetivos e a análise), `de
 | `PUT /salvamento` | jogador liberado | `{revisaoBase, salvamento}`; revisão velha → 409 `SALVAMENTO_DESATUALIZADO` com `atual` |
 | `POST /tempo` | jogador liberado | `{eventoId, dia, segundos}` (1 a 120); repetição não soma novamente, conflito retorna 409 e data futura é recusada; devolve o total de hoje e `acabou` |
 | `GET /cartas` | jogador liberado | os cartões da rotina dos Lumis: os do jogo sempre, os de controle pelos blocos conquistados (equipe vê todos), e "Aprenda isso em" nos que faltam; Members fora ou não configurado → 424 `PLATAFORMA_INDISPONIVEL` |
+| `GET /desafios`, `GET /desafios/:id`, `POST /desafios/:id/verificar`, `POST /desafios/:id/recompensa-vista` | jogador liberado (com `ARQUIPELAGO_DESAFIOS`) | ver "Jogar os desafios" |
 | `GET\|PUT /familia/limite` | responsável do Kids | limite diário da família (padrão 30, de 10 a 240, passo 5) |
 | `GET /cliente/manifesto.json` e `/cliente/:arquivo` | página do jogo | o cliente compilado (manifesto sem cache, arquivos com hash em cache imutável; mapas só fora da produção) |
 
@@ -98,8 +134,10 @@ do `schema.ts`; nunca editar SQL/snapshot gerado) · `bun run db:migrate`.
 Testes de banco (`tests/db`) rodam contra um Postgres local descartável (`TEST_DATABASE_URL`, ou
 `localhost:5433`); sem banco são pulados. NUNCA apontar para staging/produção.
 
-## Deploy (ainda não ligado)
+## Deploy
 
-O `Dockerfile` existe, mas o serviço não está registrado no Railway nem no gateway: isso é um
-rollout de infraestrutura à parte (serviço novo, `DATABASE_URL`, `INTERNAL_API_TOKEN`,
-pre-deploy `db:migrate`, build do cliente com `bun run --filter @sistemazero/arquipelago build`).
+O serviço está registrado em `.railway/services/arquipelago-api.json` (variáveis em
+`.railway/variables.ts`) e as rotas estão no gateway (`arquipelago-routes.ts`, que só entram com
+`ARQUIPELAGO_URL`). Provisionar no Railway e validar com contas reais é da sessão que cuida do
+deploy (`docs/operations/arquipelago-first-deploy.md`); pre-deploy `db:migrate`, build do cliente
+com `bun run --filter @sistemazero/arquipelago build`.

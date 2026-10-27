@@ -10,6 +10,13 @@ export type ArquipelagoRoutes = ReturnType<typeof createArquipelagoRoutes>
 /** Salvamento de até 64 KB mais a revisão; tempo e limite são minúsculos (os mesmos do gateway). */
 const CORPO_DO_SALVAMENTO = 96 * 1024
 const CORPO_PEQUENO = 1024
+/** Conferir um desafio leva o projeto do Estúdio (o mesmo teto do serviço e do gateway). */
+const CORPO_DA_CONFERENCIA = 4 * 1024 * 1024
+/** Conferir roda o jogo no executor pelo Members: o prazo do "Verificar projeto" das aulas. */
+const ESPERA_DA_CONFERENCIA_MS = 165_000
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+/** As ilhas do contrato (minúsculas e hífen); o serviço confere o valor de verdade. */
+const ILHA = /^[a-z][a-z-]{0,39}$/
 /** Até os cabeçalhos chegarem; o corpo (o jogo tem MB) segue sem prazo total. */
 const ESPERA_DOS_CABECALHOS_MS = 15_000
 const CABECALHOS_DO_CLIENTE = ['content-type', 'cache-control', 'x-content-type-options', 'etag']
@@ -51,13 +58,23 @@ const invalido = () =>
  */
 export function createArquipelagoRoutes(deps: { gateway: GatewayModule }) {
   const { gateway } = deps
-  const chamar = (caminho: string, metodo: 'GET' | 'PUT' | 'POST', corpo?: unknown) =>
+  const chamar = (
+    caminho: string,
+    metodo: 'GET' | 'PUT' | 'POST',
+    corpo?: unknown,
+    extra: { query?: Record<string, string>; timeoutMs?: number } = {},
+  ) =>
     gateway
       .gatewayFetch(`/arquipelago${caminho}`, {
         method: metodo,
         ...(corpo === undefined ? {} : { body: corpo }),
+        ...extra,
       })
       .then(repasse)
+  const idDe = async (ctx: { params: Promise<{ id: string }> }) => {
+    const { id } = await ctx.params
+    return UUID.test(id) ? id : null
+  }
 
   const comCorpo =
     (caminho: string, metodo: 'PUT' | 'POST', teto: number) => async (req: Request) => {
@@ -74,6 +91,40 @@ export function createArquipelagoRoutes(deps: { gateway: GatewayModule }) {
     arquipelagoTempo: { POST: comCorpo('/tempo', 'POST', CORPO_PEQUENO) },
     /** Cartões da rotina dos Lumis (os de controle pelos blocos conquistados nos cursos). */
     arquipelagoCartas: { GET: () => chamar('/cartas', 'GET') },
+    /** Desafios da ilha (`?ilha=`): situação, o que falta e de onde se aprende. */
+    arquipelagoDesafios: {
+      GET: (req: Request) => {
+        const ilha = new URL(req.url).searchParams.get('ilha')
+        if (ilha !== null && !ILHA.test(ilha)) return invalido()
+        return chamar('/desafios', 'GET', undefined, ilha ? { query: { ilha } } : {})
+      },
+    },
+    /** O desafio aberto para o Estúdio de desafio (sem gabarito nem regra: o serviço garante). */
+    arquipelagoDesafio: {
+      GET: async (_req: Request, ctx: { params: Promise<{ id: string }> }) => {
+        const id = await idDe(ctx)
+        return id ? chamar(`/desafios/${id}`, 'GET') : invalido()
+      },
+    },
+    /** Conferir o projeto da pessoa: o serviço confere no Members e dá o prêmio uma vez só. */
+    arquipelagoDesafioVerificar: {
+      POST: async (req: Request, ctx: { params: Promise<{ id: string }> }) => {
+        const id = await idDe(ctx)
+        if (!id) return invalido()
+        const lido = await corpoJson(req, CORPO_DA_CONFERENCIA)
+        if (!lido.ok) return invalido()
+        return chamar(`/desafios/${id}/verificar`, 'POST', lido.corpo, {
+          timeoutMs: ESPERA_DA_CONFERENCIA_MS,
+        })
+      },
+    },
+    /** O jogo mostrou a festa do prêmio. */
+    arquipelagoDesafioRecompensaVista: {
+      POST: async (_req: Request, ctx: { params: Promise<{ id: string }> }) => {
+        const id = await idDe(ctx)
+        return id ? chamar(`/desafios/${id}/recompensa-vista`, 'POST', {}) : invalido()
+      },
+    },
     /** Área dos pais: o app embrulha com o portão do responsável. */
     arquipelagoLimiteDaFamilia: {
       GET: () => chamar('/familia/limite', 'GET'),

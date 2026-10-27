@@ -30,7 +30,8 @@ decisões da dona: Canvas `https://claude.ai/artifact/5eNo1oqsndxmV6MPLxaz1W` e 
 
 - `estado/`: loja zustand (uma por montagem), contexto, relógios (necessidades, posição, tempo).
 - `sistemas/`: regras puras e testadas (dia e noite, itens, necessidades, horta, receitas,
-  fila de salvamento, tempo livre). Sem React.
+  fila de salvamento, tempo livre com `armazem-tempo.ts` e `fila-tempo.ts`, câmera, Zappy e ilhas
+  completas). Sem React. Os números de cada regra, em linguagem da dona: `docs/arquipelago-regras.md`.
 - `mundo/`: medidas da ilha, céu, água, ilha central, casa com o quarto real, horta, bancada,
   farol, anel de ilhas com pontes.
 - `personagem/`: corpo cinemático com controlador do Rapier (andar, correr, pular, nadar),

@@ -195,7 +195,12 @@ A fórmula do quiz mora em `quizPassedCoins`.
 `DAILY_COIN_CAP = 100` (`coins.ts:24`) — limita o GANHO de **rotina** por dia civil SP. Aplicado
 por `applyDailyCap(amounts, earnedToday, cap)` no `award` e no `claimMission`. O excedente é
 **descartado** (limite duro de ganho/dia). Marcos de streak NÃO passam pelo `applyDailyCap`
-(são raros e não-grindáveis — capá-los perderia o bônus para sempre).
+(são raros e não-grindáveis — capá-los perderia o bônus para sempre). O prêmio das missões CONTA
+no teto (`claimMission`).
+
+**Moedas do Arquipélago Vagalume (jogo):** fora do teto diário, com teto SEMANAL próprio de **150**
+(`ARQUIPELAGO_TETO_SEMANAL_DE_MOEDAS`, `arquipelago-coins.repository.ts`, de segunda a domingo em
+São Paulo, tudo ou nada). Regras e a conta que levou ao número em `docs/arquipelago-regras.md`.
 
 **Como alterar:** editar `DAILY_COIN_CAP`.
 

@@ -92,4 +92,62 @@ describe('repasse do Arquipélago', () => {
     }
     expect(pedidos).toEqual(['/arquipelago/cliente/entrada-abc.js'])
   })
+
+  test('desafios: ilha e id conferidos no BFF; conferir com o prazo longo', async () => {
+    const chamadas: { caminho: string; opts: Record<string, unknown> }[] = []
+    const routes = createArquipelagoRoutes({
+      gateway: {
+        gatewayFetch: async (caminho: string, opts: Record<string, unknown>) => {
+          chamadas.push({ caminho, opts })
+          return { status: 200, body: { ok: true } }
+        },
+      } as never,
+    })
+    const id = '22222222-2222-4222-8222-222222222222'
+    const ctx = (valor: string) => ({ params: Promise.resolve({ id: valor }) })
+    await routes.arquipelagoDesafios.GET(new Request('http://local/api/arquipelago/desafios'))
+    await routes.arquipelagoDesafios.GET(
+      new Request('http://local/api/arquipelago/desafios?ilha=bosque'),
+    )
+    expect(
+      (
+        await routes.arquipelagoDesafios.GET(
+          new Request('http://local/api/arquipelago/desafios?ilha=../x'),
+        )
+      ).status,
+    ).toBe(400)
+    await routes.arquipelagoDesafio.GET(new Request('http://local'), ctx(id))
+    expect(
+      (await routes.arquipelagoDesafio.GET(new Request('http://local'), ctx('x'))).status,
+    ).toBe(400)
+    await routes.arquipelagoDesafioVerificar.POST(
+      new Request('http://local', { method: 'POST', body: '{"revisao":1,"projeto":{}}' }),
+      ctx(id),
+    )
+    await routes.arquipelagoDesafioRecompensaVista.POST(new Request('http://local'), ctx(id))
+    expect(chamadas.map((c) => c.caminho)).toEqual([
+      '/arquipelago/desafios',
+      '/arquipelago/desafios',
+      `/arquipelago/desafios/${id}`,
+      `/arquipelago/desafios/${id}/verificar`,
+      `/arquipelago/desafios/${id}/recompensa-vista`,
+    ])
+    expect(chamadas[1]?.opts.query).toEqual({ ilha: 'bosque' })
+    expect(chamadas[3]?.opts).toMatchObject({
+      method: 'POST',
+      body: { revisao: 1, projeto: {} },
+      timeoutMs: 165_000,
+    })
+  })
+
+  test('conferir: corpo acima de 4 MB não sai do BFF', async () => {
+    const { routes, chamadas } = montar({ status: 200, body: {} })
+    const grande = JSON.stringify({ revisao: 1, projeto: { x: 'a'.repeat(4 * 1024 * 1024) } })
+    const r = await routes.arquipelagoDesafioVerificar.POST(
+      new Request('http://local', { method: 'POST', body: grande }),
+      { params: Promise.resolve({ id: '22222222-2222-4222-8222-222222222222' }) },
+    )
+    expect(r.status).toBe(400)
+    expect(chamadas).toEqual([])
+  })
 })

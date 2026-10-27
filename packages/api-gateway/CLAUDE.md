@@ -15,7 +15,11 @@ curinga): leitura (`GET /arquipelago/admin/desafios[/:id]`, `/cobertura`, `POST 
 para superadmin/admin/staff; escrita (`POST /desafios`, `PUT /desafios/:id`, `POST
 …/:id/{publicar,arquivar,reativar}`) só superadmin/admin, com `audit: {}` e corpo de 4 MB (dois
 projetos do Estúdio). Analisar e publicar rodam o jogo no executor pelo Members: `timeoutMs:
-165_000`, 20/min. Testes:
+165_000`, 20/min. Desafios de quem joga (27/10/2026): `arquipelago-desafios` (`GET /arquipelago/desafios`),
+`arquipelago-desafio-abrir` (`GET …/:id`), `arquipelago-desafio-verificar` (`POST
+…/:id/verificar`, corpo 4 MB, `timeoutMs: 165_000`, 10/min) e
+`arquipelago-desafio-recompensa-vista`, na régua do jogador (o serviço decide se estão ligados).
+A criança alcança; o responsável não. Testes:
 `tests/unit/arquipelago-config.test.ts` e o fim de `tests/unit/kids-access-policy.test.ts`.
 
 

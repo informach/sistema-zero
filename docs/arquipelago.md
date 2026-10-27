@@ -95,8 +95,10 @@ Pendente:
 
 1. Provisionar o serviço e as variáveis no Railway como manda o passo a passo e validar com contas
    reais (as três ferramentas, o tempo livre e o salvamento) antes de abrir.
-2. O serviço do jogo ainda não chama a porta de moedas (sem fila de reenvio do lado dele). A
-   ligação das recompensas às ações do jogo precisa ser autorizada no servidor.
+2. As moedas dos desafios já saem pela porta do Members (`ServicoDosDesafios`, chave única, prêmio
+   pendente cobrado de novo e o que bateu no teto semanal de 150 cobrado na semana seguinte).
+   Outras recompensas do jogo (colheita, pedidos) ainda não pagam moedas: cada uma precisa ser
+   autorizada no servidor antes de ligar.
 3. O cartão dos pais aparece para toda família quando o serviço responde, mesmo fora da lista:
    o serviço não diz ao responsável se alguma criança da família vê o jogo.
 4. `abrirFerramenta` com um molde (o objeto de partida da ferramenta) ainda responde indisponível.

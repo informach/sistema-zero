@@ -80,3 +80,99 @@ export interface RepositorioDeDesafios {
     agora: Date
   }): Promise<ResultadoDaEscrita>
 }
+
+// ── Quem joga ────────────────────────────────────────────────────────────────────────────────
+
+/** A cópia publicada que a pessoa joga e que a conferência usa. */
+export interface PublicacaoGuardada {
+  desafioId: string
+  revisao: number
+  conteudo: unknown
+  blocosExigidos: string[]
+  vista: VistaDoObjetivo[]
+}
+
+export interface DesafioPublicado {
+  id: string
+  metadados: MetadadosDoDesafio
+  situacao: SituacaoDoCadastro
+  /** A última publicação (a que vale para quem ainda não concluiu). */
+  publicacao: PublicacaoGuardada
+}
+
+/**
+ * O prêmio em moedas de uma conclusão: `nenhuma` (prêmio zero), `pendente` (ainda não confirmado
+ * pelo Members), `creditado` ou `teto` (o teto semanal estava cheio: espera a semana seguinte).
+ */
+export type SituacaoDasMoedas = 'nenhuma' | 'pendente' | 'creditado' | 'teto'
+
+export interface ConclusaoGuardada {
+  desafioId: string
+  /** Onde o desafio mora hoje (para a cor da ilha: quadros feitos ÷ 6). */
+  ilha: MetadadosDoDesafio['ilha']
+  tipo: MetadadosDoDesafio['tipo']
+  quadro: number | null
+  revisao: number
+  concluidoEm: Date
+  extraConcluidoEm: Date | null
+  recompensaVistaEm: Date | null
+  moedas: number
+  moedasSituacao: SituacaoDasMoedas
+  moedasExtra: number
+  moedasExtraSituacao: SituacaoDasMoedas
+  /** Semana (`semanaDeSaoPaulo`) em que o prêmio bateu no teto; cobra de novo numa seguinte. */
+  moedasTetoSemana: string | null
+  moedasExtraTetoSemana: string | null
+}
+
+export interface RepositorioDoJogadorNosDesafios {
+  /** Desafios publicados do público (fora os arquivados), cada um com a última publicação. */
+  listarPublicados(publico: MetadadosDoDesafio['publico']): Promise<DesafioPublicado[]>
+  /** O desafio publicado (fora os arquivados) com a última publicação. */
+  lerPublicado(desafioId: string): Promise<DesafioPublicado | null>
+  /** Uma publicação específica (para conferir a revisão que a pessoa abriu). */
+  lerPublicacao(
+    desafioId: string,
+    revisao: number,
+  ): Promise<{
+    publicacao: PublicacaoGuardada
+    desafio: Omit<DesafioPublicado, 'publicacao'>
+  } | null>
+  /** Tudo o que a pessoa concluiu no público, arquivados inclusive (feito continua feito). */
+  conclusoes(
+    jogadorId: string,
+    publico: MetadadosDoDesafio['publico'],
+  ): Promise<ConclusaoGuardada[]>
+  progresso(
+    jogadorId: string,
+    desafioId: string,
+  ): Promise<{ revisao: number; ultimosResultados: { id: string; passou: boolean }[] } | null>
+  guardarTentativa(e: {
+    jogadorId: string
+    desafioId: string
+    revisao: number
+    resultados: { id: string; passou: boolean }[]
+    agora: Date
+  }): Promise<void>
+  /** Grava a conclusão uma vez só; devolve `true` só para quem gravou. */
+  concluir(e: {
+    jogadorId: string
+    desafioId: string
+    publico: MetadadosDoDesafio['publico']
+    revisao: number
+    moedas: number
+    moedasExtra: number
+    agora: Date
+  }): Promise<boolean>
+  /** Marca o desafio extra feito uma vez só; devolve `true` só na primeira. */
+  marcarExtra(jogadorId: string, desafioId: string, agora: Date): Promise<boolean>
+  marcarMoedas(
+    jogadorId: string,
+    desafioId: string,
+    premio: 'principal' | 'extra',
+    situacao: SituacaoDasMoedas,
+    /** Com `teto`: a semana em que bateu. */
+    semana?: string,
+  ): Promise<void>
+  marcarRecompensaVista(jogadorId: string, desafioId: string, agora: Date): Promise<void>
+}

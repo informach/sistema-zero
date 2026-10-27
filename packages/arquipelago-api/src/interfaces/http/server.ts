@@ -5,9 +5,12 @@ import { Elysia } from 'elysia'
 import {
   AcessoBloqueadoError,
   ConflitoDoCadastroError,
+  DesafioBloqueadoError,
   DesafioComProblemasError,
   DesafioDesatualizadoError,
+  DesafioMudouError,
   DesafioNaoEncontradoError,
+  DesafiosDesligadosError,
   PlataformaIndisponivelError,
   SalvamentoGrandeDemaisError,
   SalvamentoIlegivelError,
@@ -17,16 +20,20 @@ import {
 import type { ServicoDaEquipe } from '../../application/servico-da-equipe'
 import type { ServicoDasCartas } from '../../application/servico-das-cartas'
 import type { ServicoDoJogo } from '../../application/servico-do-jogo'
+import type { ServicoDosDesafios } from '../../application/servico-dos-desafios'
+import { ConferenciaIndisponivelError } from '../../domain/membros.port'
 import { DataTempoInvalidaError, EventoTempoConflitanteError } from '../../domain/tempo-erros'
 import { rotasDaEquipe } from './rotas-da-equipe'
 import { rotasDoCliente } from './rotas-do-cliente'
 import { CorpoInvalidoError, rotasDoJogo } from './rotas-do-jogo'
+import { rotasDosDesafios } from './rotas-dos-desafios'
 
 export interface DependenciasHttp {
   logger: Logger
   servico: ServicoDoJogo
   cartas: ServicoDasCartas
   equipe: ServicoDaEquipe
+  desafios: ServicoDosDesafios
   cliente: { dir: string; servirMapas: boolean }
   tokenInterno?: string
   maxRequestBodyBytes?: number
@@ -41,18 +48,29 @@ export interface DependenciasHttp {
  */
 export const CORPO_DA_EQUIPE = 4 * 1024 * 1024
 
+/** Conferir um desafio leva o projeto do Estúdio da pessoa (até 1,5 milhão de caracteres). */
+export const CORPO_DA_CONFERENCIA = 4 * 1024 * 1024
+const CONFERIR = /^\/arquipelago\/desafios\/[^/]+\/verificar$/
+
+/** O teto do corpo pelo caminho: Admin e conferência levam projetos; o resto é pequeno. */
+function tetoDoCaminho(caminho: string, tetoDoJogo: number): number {
+  if (caminho.startsWith('/arquipelago/admin/')) return CORPO_DA_EQUIPE
+  if (CONFERIR.test(caminho)) return CORPO_DA_CONFERENCIA
+  return tetoDoJogo
+}
+
 /**
  * Borda HTTP do serviço do jogo. Tudo em `/arquipelago/*` chega pelo gateway (JWT lá; aqui a
  * prova de origem é o `x-internal-token`). Falha aqui só afeta a página do jogo.
  */
 export function createServer(deps: DependenciasHttp) {
   const tetoDoJogo = deps.maxRequestBodyBytes ?? 96 * 1024
-  return new Elysia({ serve: { maxRequestBodySize: Math.max(tetoDoJogo, CORPO_DA_EQUIPE) } })
+  const tetoDoServidor = Math.max(tetoDoJogo, CORPO_DA_EQUIPE, CORPO_DA_CONFERENCIA)
+  return new Elysia({ serve: { maxRequestBodySize: tetoDoServidor } })
     .onRequest(({ request, set }) => {
-      // O servidor aceita até o teto da equipe; fora do Admin vale o teto pequeno do jogo.
+      // O servidor aceita até o maior teto; cada caminho tem o seu (o jogo, o pequeno).
       const tamanho = Number(request.headers.get('content-length') ?? 0)
-      const daEquipe = new URL(request.url).pathname.startsWith('/arquipelago/admin/')
-      if (tamanho > (daEquipe ? CORPO_DA_EQUIPE : tetoDoJogo)) {
+      if (tamanho > tetoDoCaminho(new URL(request.url).pathname, tetoDoJogo)) {
         set.status = 413
         return envelope('CORPO_GRANDE_DEMAIS', 'Requisição grande demais')
       }
@@ -74,6 +92,30 @@ export function createServer(deps: DependenciasHttp) {
         // 424, não 5xx: o disjuntor do gateway contaria a queda do Members contra o jogo inteiro.
         set.status = 424
         return envelope('PLATAFORMA_INDISPONIVEL', error.message)
+      }
+      if (error instanceof DesafiosDesligadosError) {
+        set.status = 403
+        return envelope('DESAFIOS_DESLIGADOS', error.message)
+      }
+      if (error instanceof DesafioMudouError) {
+        set.status = 409
+        return envelope('DESAFIO_MUDOU', error.message)
+      }
+      if (error instanceof DesafioBloqueadoError) {
+        set.status = 403
+        return { ...envelope('DESAFIO_BLOQUEADO', error.message), situacao: error.situacao }
+      }
+      if (error instanceof ConferenciaIndisponivelError) {
+        // Nada foi guardado: a pessoa tenta de novo. Nunca 5xx (disjuntor do gateway).
+        const resposta = {
+          indisponivel: [424, 'CONFERENCIA_INDISPONIVEL'],
+          ocupado: [429, 'CONFERENCIA_OCUPADA'],
+          sincronizando: [409, 'CONFERENCIA_SINCRONIZANDO'],
+          recusado: [400, 'PROJETO_RECUSADO'],
+        } as const
+        const [status, codigo] = resposta[error.motivo]
+        set.status = status
+        return envelope(codigo, error.message)
       }
       if (error instanceof DesafioNaoEncontradoError) {
         set.status = 404
@@ -138,6 +180,7 @@ export function createServer(deps: DependenciasHttp) {
       rotasDoJogo({ servico: deps.servico, cartas: deps.cartas, tokenInterno: deps.tokenInterno }),
     )
     .use(rotasDaEquipe({ equipe: deps.equipe, tokenInterno: deps.tokenInterno }))
+    .use(rotasDosDesafios({ desafios: deps.desafios, tokenInterno: deps.tokenInterno }))
     .get('/healthz', () => ({ status: 'ok' }))
     .get('/readyz', async ({ set }) => {
       try {

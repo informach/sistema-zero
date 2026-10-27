@@ -161,7 +161,9 @@ export const desafioProgresso = arquipelagoSchema.table(
 /**
  * Desafio feito. Feito continua feito: existindo a linha, a disponibilidade não é recalculada
  * (mudança nos blocos dos cursos não tira o que a pessoa fez). As moedas saem pela porta do
- * Members com chave única; `moedas_situacao` guarda o que ainda falta confirmar.
+ * Members com chave única; `moedas_situacao` guarda o que ainda falta confirmar (`teto` = o teto
+ * semanal de moedas do jogo já tinha sido alcançado: o prêmio espera e é cobrado de novo numa semana
+ * seguinte, guardada em `moedas_teto_semana`).
  */
 export const desafiosConcluidos = arquipelagoSchema.table(
   'desafios_concluidos',
@@ -179,6 +181,9 @@ export const desafiosConcluidos = arquipelagoSchema.table(
     moedasSituacao: varchar({ length: 12 }).notNull(),
     moedasExtra: integer().notNull(),
     moedasExtraSituacao: varchar({ length: 12 }).notNull(),
+    /** Semana (segunda, em São Paulo, `AAAA-MM-DD`) em que o prêmio bateu no teto semanal. */
+    moedasTetoSemana: varchar({ length: 10 }),
+    moedasExtraTetoSemana: varchar({ length: 10 }),
   },
   (t) => [
     primaryKey({ columns: [t.jogadorId, t.desafioId] }),
@@ -186,7 +191,7 @@ export const desafiosConcluidos = arquipelagoSchema.table(
     check('desafios_concluidos_publico_check', sql`${t.publico} in ('kids', 'adulto')`),
     check(
       'desafios_concluidos_moedas_check',
-      sql`${t.moedasSituacao} in ('nenhuma', 'pendente', 'creditado') and ${t.moedasExtraSituacao} in ('nenhuma', 'pendente', 'creditado')`,
+      sql`${t.moedasSituacao} in ('nenhuma', 'pendente', 'creditado', 'teto') and ${t.moedasExtraSituacao} in ('nenhuma', 'pendente', 'creditado', 'teto')`,
     ),
   ],
 )

@@ -52,6 +52,27 @@ describe('Arquipélago Vagalume no gateway', () => {
     expect(registry.resolve('GET', '/arquipelago/cartas', 'v1')?.route.id).toBe(
       'arquipelago-cartas',
     )
+    // Desafios de quem joga: o literal `desafios` e o `:id`; conferir com corpo e prazo das aulas.
+    const desafio = '22222222-2222-4222-8222-222222222222'
+    expect(registry.resolve('GET', '/arquipelago/desafios', 'v1')?.route.id).toBe(
+      'arquipelago-desafios',
+    )
+    expect(registry.resolve('GET', `/arquipelago/desafios/${desafio}`, 'v1')?.route.id).toBe(
+      'arquipelago-desafio-abrir',
+    )
+    expect(
+      registry.resolve('POST', `/arquipelago/desafios/${desafio}/verificar`, 'v1')?.route,
+    ).toMatchObject({
+      id: 'arquipelago-desafio-verificar',
+      authorize: { statuses: ['active'] },
+      maxBodyBytes: 4 * 1024 * 1024,
+      timeoutMs: 165_000,
+      rateLimit: { max: 10 },
+    })
+    expect(
+      registry.resolve('POST', `/arquipelago/desafios/${desafio}/recompensa-vista`, 'v1')?.route.id,
+    ).toBe('arquipelago-desafio-recompensa-vista')
+    expect(registry.resolve('DELETE', `/arquipelago/desafios/${desafio}`, 'v1')).toBeUndefined()
     expect(registry.resolve('PUT', '/arquipelago/familia/limite', 'v1')?.route.id).toBe(
       'arquipelago-familia-limite',
     )

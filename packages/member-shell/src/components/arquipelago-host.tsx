@@ -48,6 +48,18 @@ class ToolLoadBoundary extends Component<
 const BASE = '/api/arquipelago'
 /** As únicas rotas do serviço que o jogo chama (o limite da família é da área dos pais). */
 const CAMINHOS_DO_JOGO = new Set(['/acesso', '/salvamento', '/tempo', '/cartas'])
+const UUID = '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}'
+/**
+ * Os desafios: a lista (com `?ilha=`), o desafio aberto e o prêmio visto. Conferir NÃO está aqui:
+ * quem manda o projeto é o Estúdio de desafio da página, nunca o jogo.
+ */
+const DESAFIOS_DO_JOGO = new RegExp(
+  `^/desafios(?:\\?ilha=[a-z][a-z-]{0,39}|/${UUID}(?:/recompensa-vista)?)?$`,
+)
+
+export function caminhoDoJogo(caminho: string): boolean {
+  return CAMINHOS_DO_JOGO.has(caminho) || DESAFIOS_DO_JOGO.test(caminho)
+}
 
 type Estado = EstadoDaPorta | 'pronto'
 
@@ -179,7 +191,7 @@ export function criarPlataformaDoArquipelago(opcoes: {
     },
     servico: {
       async buscar(caminho, pedido) {
-        if (!CAMINHOS_DO_JOGO.has(caminho)) return { status: 404, corpo: { code: 'NOT_FOUND' } }
+        if (!caminhoDoJogo(caminho)) return { status: 404, corpo: { code: 'NOT_FOUND' } }
         return json(`${BASE}${caminho}`, {
           ...corpoJson(pedido?.metodo ?? 'GET', pedido?.corpo),
           signal: pedido?.sinal,

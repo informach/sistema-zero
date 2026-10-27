@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, test } from 'bun:test'
 import {
+  caminhoDoJogo,
   criarPlataformaDoArquipelago,
   lerFerramentasMolda,
   pertenceAoPerfil,
@@ -131,5 +132,25 @@ describe('a porta da plataforma para o jogo', () => {
     expect(await p.abrirFerramenta({ ferramenta: 'pinta', proposito: 'x' })).toMatchObject({
       situacao: 'indisponivel',
     })
+  })
+
+  test('desafios: lista, abrir e prêmio visto; conferir só pela página', () => {
+    const id = '22222222-2222-4222-8222-222222222222'
+    for (const ok of [
+      '/desafios',
+      '/desafios?ilha=bosque',
+      `/desafios/${id}`,
+      `/desafios/${id}/recompensa-vista`,
+    ])
+      expect(caminhoDoJogo(ok)).toBe(true)
+    for (const nao of [
+      `/desafios/${id}/verificar`,
+      '/desafios/nao-uuid',
+      '/desafios?ilha=../admin',
+      '/desafios?ilha=bosque&x=1',
+      '/admin/desafios',
+      '/familia/limite',
+    ])
+      expect(caminhoDoJogo(nao)).toBe(false)
   })
 })

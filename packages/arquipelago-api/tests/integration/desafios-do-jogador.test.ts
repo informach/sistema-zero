@@ -1,0 +1,617 @@
+import { beforeEach, describe, expect, mock, test } from 'bun:test'
+import {
+  type ConteudoDoDesafio,
+  type CurriculoDeBlocos,
+  DesafioAbertoSchema,
+  DesafiosDoJogadorSchema,
+  type MetadadosDoDesafio,
+  ResultadoDaVerificacaoSchema,
+} from '@sistemazero/arquipelago-contracts'
+import { createLogger } from '@sistemazero/core/logging'
+import { LeiturasDosMembros } from '../../src/application/leituras-dos-membros'
+import { ConferenciaDoMapa } from '../../src/application/mapa-das-ilhas'
+import { ServicoDaEquipe } from '../../src/application/servico-da-equipe'
+import { ServicoDasCartas } from '../../src/application/servico-das-cartas'
+import { ServicoDoJogo } from '../../src/application/servico-do-jogo'
+import {
+  type ModoDosDesafios,
+  ServicoDosDesafios,
+} from '../../src/application/servico-dos-desafios'
+import type { PoliticaDeAcesso } from '../../src/domain/acesso'
+import { chaveDasMoedas } from '../../src/domain/desafios'
+import {
+  ConferenciaIndisponivelError,
+  MembrosIndisponiveisError,
+  type PortaDosMembros,
+} from '../../src/domain/membros.port'
+import { MoedasIndisponiveisError, type PortaDasMoedas } from '../../src/domain/moedas.port'
+import { CORPO_DA_CONFERENCIA, createServer } from '../../src/interfaces/http/server'
+import { DesafiosEmMemoria, JogadorNosDesafiosEmMemoria } from '../fakes/desafios'
+import { membrosDeMentira } from '../fakes/membros'
+import { RepositorioEmMemoria } from '../fakes/memoria'
+
+const TOKEN = 'token-interno-de-teste'
+const PERFIL = '11111111-1111-4111-8111-111111111111'
+const CONTA = '22222222-2222-4222-8222-222222222222'
+const ADULTO = '44444444-4444-4444-8444-444444444444'
+const EQUIPE = '66666666-6666-4666-8666-666666666666'
+const CURSO = '55555555-5555-4555-8555-555555555555'
+const AGORA = new Date('2026-10-27T15:00:00Z')
+const BORBOLETA = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'
+const PONTE = 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb'
+const FAROL = 'cccccccc-cccc-4ccc-8ccc-cccccccccccc'
+
+const projeto = { files: { 'index.html': '', 'style.css': '', 'script.js': '' } }
+const conteudo = (titulo: string, over: Partial<ConteudoDoDesafio> = {}): ConteudoDoDesafio => ({
+  versao: 1,
+  titulo,
+  enunciado: 'Faça a borboleta voar até a flor.',
+  dicas: ['Comece pelo bloco de repetir.'],
+  projetoInicial: projeto,
+  gabarito: { segredo: 'gabarito-nunca-vai-ao-navegador' },
+  objetivos: [
+    { id: 'o1', label: 'Chega na flor', rule: { type: 'segredo-da-regra' } },
+    { id: 'o2', label: 'Pousa devagar', optional: true, rule: { type: 'outra-regra' } },
+  ],
+  desafioExtra: { titulo: 'Voo bonito', texto: 'Faça a borboleta pousar devagar.' },
+  recompensa: { cor: true, moedas: 20, moedasExtra: 10 },
+  blocosManuais: { acrescentar: [], retirar: [] },
+  ...over,
+})
+const metadados = (over: Partial<MetadadosDoDesafio>): MetadadosDoDesafio => ({
+  slug: 'borboleta',
+  publico: 'kids',
+  ilha: 'bosque',
+  tipo: 'quadro-das-cores',
+  quadro: 1,
+  ordem: 0,
+  ...over,
+})
+const vista = [
+  { id: 'o1', label: 'Chega na flor', kind: 'game' as const },
+  { id: 'o2', label: 'Pousa devagar', kind: 'game' as const, optional: true as const },
+]
+
+const curriculo: CurriculoDeBlocos = {
+  versao: 1,
+  cursos: [
+    {
+      courseId: CURSO,
+      titulo: 'Repetições',
+      slug: 'repeticoes',
+      posto: 'coder',
+      papel: 'base2d',
+      blocos: ['sz_js_repeat'],
+    },
+  ],
+  catalogo: [{ type: 'sz_js_repeat', rotulo: 'Repetir vezes', categoria: 'Programação' }],
+}
+
+let repo: JogadorNosDesafiosEmMemoria
+let agora: Date
+let politica: PoliticaDeAcesso
+let modo: ModoDosDesafios
+let blocos: string[]
+let posicao: number
+let verificar: ReturnType<typeof mock>
+let creditar: ReturnType<typeof mock>
+let membros: PortaDosMembros | null
+let moedas: PortaDasMoedas | null
+let app: ReturnType<typeof createServer>
+
+function publicar(
+  id: string,
+  m: MetadadosDoDesafio,
+  c: ConteudoDoDesafio,
+  blocosExigidos: string[],
+  revisao = 1,
+) {
+  const atual = repo.desafios.get(id)
+  const publicacao = { desafioId: id, revisao, conteudo: c, blocosExigidos, vista }
+  repo.desafios.set(id, {
+    id,
+    metadados: m,
+    situacao: 'publicado',
+    publicacoes: [...(atual?.publicacoes ?? []), publicacao],
+  })
+}
+
+function montar() {
+  const logger = createLogger({ level: 'error' })
+  const leituras = new LeiturasDosMembros(membros)
+  app = createServer({
+    logger,
+    servico: new ServicoDoJogo(new RepositorioEmMemoria(), politica, () => AGORA),
+    cartas: new ServicoDasCartas(politica, leituras),
+    equipe: new ServicoDaEquipe(
+      new DesafiosEmMemoria(),
+      membros,
+      leituras,
+      new ConferenciaDoMapa(membros, logger),
+      () => AGORA,
+    ),
+    desafios: new ServicoDosDesafios({
+      politica,
+      modo,
+      repo,
+      leituras,
+      membros,
+      moedas,
+      logger,
+      agora: () => agora,
+    }),
+    cliente: { dir: '/nao-existe', servirMapas: false },
+    tokenInterno: TOKEN,
+    readiness: async () => {},
+  })
+}
+
+beforeEach(() => {
+  repo = new JogadorNosDesafiosEmMemoria()
+  agora = AGORA
+  politica = { modo: 'aberto', publicos: new Set(['kids', 'adulto']), lista: new Set() }
+  modo = 'aberto'
+  blocos = ['sz_js_repeat']
+  posicao = 2
+  verificar = mock(async () => ({
+    passou: true,
+    resultados: [
+      { id: 'o1', passou: true },
+      { id: 'o2', passou: false },
+    ],
+  }))
+  creditar = mock(async () => ({ situacao: 'creditado' as const }))
+  membros = membrosDeMentira({
+    lerJogador: async () => ({ posicao, total: 8, blocos }),
+    lerCurriculo: async () => curriculo,
+    verificarObjetivos: verificar as unknown as PortaDosMembros['verificarObjetivos'],
+  })
+  moedas = { creditar: creditar as unknown as PortaDasMoedas['creditar'] }
+  // Bosque (posto coder = posição 2) e Farol (a Lenda, posição 8).
+  publicar(BORBOLETA, metadados({}), conteudo('A borboleta que voa'), ['sz_js_repeat'])
+  publicar(
+    PONTE,
+    metadados({ slug: 'ponte', tipo: 'desafio-do-dia', quadro: null, ordem: 1 }),
+    conteudo('A ponte'),
+    ['sz_js_while'],
+  )
+  publicar(
+    FAROL,
+    metadados({ slug: 'farol', ilha: 'farol', quadro: 1 }),
+    conteudo('A luz do farol'),
+    [],
+  )
+  montar()
+})
+
+const crianca = (extra: Record<string, string> = {}) => ({
+  'x-internal-token': TOKEN,
+  'x-auth-user-id': PERFIL,
+  'x-auth-account-id': CONTA,
+  'x-auth-kids-context': 'student',
+  'x-auth-user-role': 'member',
+  'x-auth-user-status': 'active',
+  ...extra,
+})
+const adulto = {
+  'x-internal-token': TOKEN,
+  'x-auth-user-id': ADULTO,
+  'x-auth-user-role': 'member',
+  'x-auth-user-status': 'active',
+}
+const daEquipe = {
+  'x-internal-token': TOKEN,
+  'x-auth-user-id': EQUIPE,
+  'x-auth-account-id': CONTA,
+  'x-auth-kids-context': 'student',
+  'x-auth-user-role': 'staff',
+  'x-auth-user-status': 'active',
+}
+
+async function chamar(
+  metodo: string,
+  caminho: string,
+  headers: Record<string, string>,
+  corpo?: unknown,
+) {
+  const r = await app.handle(
+    new Request(`http://local/arquipelago/desafios${caminho}`, {
+      method: metodo,
+      headers: corpo === undefined ? headers : { ...headers, 'content-type': 'application/json' },
+      body: corpo === undefined ? undefined : JSON.stringify(corpo),
+    }),
+  )
+  return { status: r.status, corpo: (await r.json()) as Record<string, unknown> }
+}
+
+const conferir = (id = BORBOLETA, revisao = 1, headers = crianca()) =>
+  chamar('POST', `/${id}/verificar`, headers, { revisao, projeto })
+
+describe('liga e desliga', () => {
+  test('desligado: 403 DESAFIOS_DESLIGADOS, inclusive para a equipe', async () => {
+    modo = 'desligado'
+    montar()
+    for (const h of [crianca(), daEquipe]) {
+      const r = await chamar('GET', '', h)
+      expect(r.status).toBe(403)
+      expect((r.corpo.error as { code: string }).code).toBe('DESAFIOS_DESLIGADOS')
+    }
+  })
+
+  test('só a equipe: criança recebe 403 e a equipe joga', async () => {
+    modo = 'equipe'
+    montar()
+    expect((await chamar('GET', '', crianca())).status).toBe(403)
+    expect((await chamar('GET', '', daEquipe)).status).toBe(200)
+  })
+
+  test('jogo fora da lista vence o modo dos desafios (403 ACESSO_BLOQUEADO)', async () => {
+    politica = { modo: 'lista', publicos: new Set(['kids']), lista: new Set() }
+    montar()
+    const r = await chamar('GET', '', crianca())
+    expect(r.status).toBe(403)
+    expect((r.corpo.error as { code: string }).code).toBe('ACESSO_BLOQUEADO')
+  })
+
+  test('sem Members: 424 PLATAFORMA_INDISPONIVEL', async () => {
+    membros = null
+    montar()
+    expect((await chamar('GET', '', crianca())).status).toBe(424)
+  })
+})
+
+describe('lista da ilha', () => {
+  test('situação de cada desafio, "Aprenda isso em" e a cor das ilhas', async () => {
+    const r = await chamar('GET', '', crianca())
+    expect(r.status).toBe(200)
+    const lista = DesafiosDoJogadorSchema.parse(r.corpo)
+    const por = new Map(lista.desafios.map((d) => [d.id, d]))
+    expect(por.get(BORBOLETA)?.situacao).toBe('disponivel')
+    expect(por.get(PONTE)?.situacao).toBe('faltam-blocos')
+    expect(por.get(PONTE)?.faltam).toEqual([{ bloco: 'sz_js_while', rotulo: null, cursos: [] }])
+    expect(por.get(FAROL)?.situacao).toBe('ilha-fechada')
+    expect(lista.ilhas.find((i) => i.id === 'bosque')).toEqual({
+      id: 'bosque',
+      aberta: true,
+      quadro: { feitos: 0, total: 6 },
+    })
+    expect(lista.ilhas.find((i) => i.id === 'farol')?.aberta).toBe(false)
+  })
+
+  test('filtro por ilha e o público certo (adulto não vê desafio do Kids)', async () => {
+    const r = DesafiosDoJogadorSchema.parse((await chamar('GET', '?ilha=farol', crianca())).corpo)
+    expect(r.desafios.map((d) => d.id)).toEqual([FAROL])
+    expect((await chamar('GET', '?ilha=lugar-nenhum', crianca())).status).toBe(400)
+    const doAdulto = DesafiosDoJogadorSchema.parse((await chamar('GET', '', adulto)).corpo)
+    expect(doAdulto.desafios).toEqual([])
+  })
+
+  test('o "Aprenda isso em" traz o curso que libera o bloco que falta', async () => {
+    blocos = []
+    montar()
+    const r = DesafiosDoJogadorSchema.parse((await chamar('GET', '', crianca())).corpo)
+    expect(r.desafios.find((d) => d.id === BORBOLETA)?.faltam).toEqual([
+      {
+        bloco: 'sz_js_repeat',
+        rotulo: 'Repetir vezes',
+        cursos: [{ courseId: CURSO, titulo: 'Repetições', slug: 'repeticoes', posto: 'coder' }],
+      },
+    ])
+  })
+
+  test('equipe vê todas as ilhas abertas e todos os blocos', async () => {
+    const r = DesafiosDoJogadorSchema.parse((await chamar('GET', '', daEquipe)).corpo)
+    expect(r.desafios.every((d) => d.situacao === 'disponivel')).toBe(true)
+    expect(r.ilhas.every((i) => i.aberta)).toBe(true)
+  })
+
+  test('nada da regra nem do gabarito vai na lista', async () => {
+    const texto = JSON.stringify((await chamar('GET', '', crianca())).corpo)
+    expect(texto).not.toContain('gabarito-nunca-vai-ao-navegador')
+    expect(texto).not.toContain('segredo-da-regra')
+  })
+})
+
+describe('abrir', () => {
+  test('disponível: o que o Estúdio de desafio precisa, sem gabarito e sem regra', async () => {
+    const r = await chamar('GET', `/${BORBOLETA}`, crianca())
+    expect(r.status).toBe(200)
+    const aberto = DesafioAbertoSchema.parse(r.corpo)
+    expect(aberto.objetivos).toEqual(vista)
+    expect(aberto.projetoInicial).toEqual(projeto)
+    expect(aberto.concluido).toBe(false)
+    expect(JSON.stringify(r.corpo)).not.toContain('gabarito-nunca-vai-ao-navegador')
+    expect(JSON.stringify(r.corpo)).not.toContain('segredo-da-regra')
+  })
+
+  test('faltam blocos ou ilha fechada: 403 DESAFIO_BLOQUEADO com a situação', async () => {
+    const ponte = await chamar('GET', `/${PONTE}`, crianca())
+    expect(ponte.status).toBe(403)
+    expect(ponte.corpo.situacao).toBe('faltam-blocos')
+    const farol = await chamar('GET', `/${FAROL}`, crianca())
+    expect(farol.corpo.situacao).toBe('ilha-fechada')
+  })
+
+  test('desconhecido, de outro público ou arquivado: 404', async () => {
+    expect((await chamar('GET', `/${BORBOLETA}`, adulto)).status).toBe(404)
+    const d = repo.desafios.get(BORBOLETA)
+    if (d) d.situacao = 'arquivado'
+    expect((await chamar('GET', `/${BORBOLETA}`, crianca())).status).toBe(404)
+    expect((await chamar('GET', '/nao-e-uuid', crianca())).status).toBe(400)
+  })
+
+  test('feito continua feito: concluído abre mesmo depois de perder os blocos', async () => {
+    await conferir()
+    blocos = []
+    montar()
+    const aberto = DesafioAbertoSchema.parse(
+      (await chamar('GET', `/${BORBOLETA}`, crianca())).corpo,
+    )
+    expect(aberto.concluido).toBe(true)
+    expect(aberto.ultimosResultados).toEqual([
+      { id: 'o1', passou: true },
+      { id: 'o2', passou: false },
+    ])
+    const lista = DesafiosDoJogadorSchema.parse((await chamar('GET', '', crianca())).corpo)
+    expect(lista.desafios.find((d) => d.id === BORBOLETA)?.situacao).toBe('concluido')
+  })
+
+  test('resultados de outra revisão não voltam ao abrir', async () => {
+    await conferir()
+    publicar(BORBOLETA, metadados({}), conteudo('A borboleta que voa'), ['sz_js_repeat'], 2)
+    const aberto = DesafioAbertoSchema.parse(
+      (await chamar('GET', `/${BORBOLETA}`, crianca())).corpo,
+    )
+    expect(aberto.revisao).toBe(2)
+    expect(aberto.ultimosResultados).toEqual([])
+  })
+})
+
+describe('conferir', () => {
+  test('passou: conclui uma vez só, paga as moedas com a chave única e pinta o quadro', async () => {
+    const r = await conferir()
+    expect(r.status).toBe(200)
+    expect(ResultadoDaVerificacaoSchema.parse(r.corpo)).toEqual({
+      passou: true,
+      resultados: [
+        { id: 'o1', passou: true },
+        { id: 'o2', passou: false },
+      ],
+      concluidoAgora: true,
+      extraAgora: false,
+    })
+    expect(verificar).toHaveBeenCalledTimes(1)
+    const pedido = verificar.mock.calls[0]?.[0] as Record<string, unknown>
+    expect(pedido.requester).toBe(PERFIL)
+    expect(pedido.audience).toBe('kids')
+    expect(pedido.projeto).toEqual(projeto)
+    expect(creditar).toHaveBeenCalledTimes(1)
+    expect(creditar.mock.calls[0]?.[0]).toEqual({
+      userId: PERFIL,
+      accountId: CONTA,
+      audience: 'kids',
+      key: chaveDasMoedas(PERFIL, BORBOLETA, 'principal'),
+      amount: 20,
+    })
+    expect(repo.concluidos.get(`${PERFIL}:${BORBOLETA}`)?.moedasSituacao).toBe('creditado')
+
+    const denovo = await conferir()
+    expect(denovo.corpo.concluidoAgora).toBe(false)
+    expect(creditar).toHaveBeenCalledTimes(1)
+    const lista = DesafiosDoJogadorSchema.parse((await chamar('GET', '', crianca())).corpo)
+    expect(lista.ilhas.find((i) => i.id === 'bosque')?.quadro.feitos).toBe(1)
+  })
+
+  test('o extra paga uma vez, com o principal passando junto', async () => {
+    await conferir()
+    verificar.mockImplementation(async () => ({
+      passou: true,
+      resultados: [
+        { id: 'o1', passou: true },
+        { id: 'o2', passou: true },
+      ],
+    }))
+    const r = await conferir()
+    expect(r.corpo).toMatchObject({ passou: true, concluidoAgora: false, extraAgora: true })
+    expect(creditar).toHaveBeenCalledTimes(2)
+    expect(creditar.mock.calls[1]?.[0]).toMatchObject({
+      key: chaveDasMoedas(PERFIL, BORBOLETA, 'extra'),
+      amount: 10,
+    })
+    expect((await conferir()).corpo.extraAgora).toBe(false)
+    expect(creditar).toHaveBeenCalledTimes(2)
+  })
+
+  test('não passou: guarda a tentativa e não conclui', async () => {
+    verificar.mockImplementation(async () => ({
+      passou: false,
+      resultados: [
+        { id: 'o1', passou: false },
+        { id: 'o2', passou: true },
+      ],
+    }))
+    const r = await conferir()
+    expect(r.corpo).toMatchObject({ passou: false, concluidoAgora: false, extraAgora: false })
+    expect(repo.concluidos.size).toBe(0)
+    expect(repo.progressos.get(`${PERFIL}:${BORBOLETA}`)?.revisao).toBe(1)
+    expect(creditar).not.toHaveBeenCalled()
+  })
+
+  test('teto semanal: o prêmio espera e chega na semana seguinte', async () => {
+    creditar.mockImplementation(async () => ({ situacao: 'teto' as const }))
+    await conferir()
+    const feito = () => repo.concluidos.get(`${PERFIL}:${BORBOLETA}`)
+    expect(feito()?.moedasSituacao).toBe('teto')
+    // 27/10/2026 é uma terça: a semana começa na segunda, 26/10.
+    expect(feito()?.moedasTetoSemana).toBe('2026-10-26')
+    // Na mesma semana (até domingo à noite em São Paulo) não insiste.
+    agora = new Date('2026-11-02T02:59:00Z')
+    await chamar('GET', '', crianca())
+    expect(creditar).toHaveBeenCalledTimes(1)
+    // Segunda-feira em São Paulo: cobra de novo com a MESMA chave.
+    agora = new Date('2026-11-02T03:01:00Z')
+    creditar.mockImplementation(async () => ({ situacao: 'creditado' as const }))
+    await chamar('GET', '', crianca())
+    expect(creditar).toHaveBeenCalledTimes(2)
+    expect(creditar.mock.calls[1]?.[0]).toMatchObject({
+      key: chaveDasMoedas(PERFIL, BORBOLETA, 'principal'),
+    })
+    expect(feito()?.moedasSituacao).toBe('creditado')
+    expect(feito()?.moedasTetoSemana).toBeNull()
+  })
+
+  test('teto cheio para os outros prêmios da mesma ida', async () => {
+    creditar.mockImplementation(async () => ({ situacao: 'teto' as const }))
+    verificar.mockImplementation(async () => ({
+      passou: true,
+      resultados: [
+        { id: 'o1', passou: true },
+        { id: 'o2', passou: true },
+      ],
+    }))
+    const r = await conferir()
+    expect(r.corpo).toMatchObject({ concluidoAgora: true, extraAgora: true })
+    expect(creditar).toHaveBeenCalledTimes(1)
+    expect(repo.concluidos.get(`${PERFIL}:${BORBOLETA}`)?.moedasExtraSituacao).toBe('pendente')
+  })
+
+  test('porta de moedas fora: prêmio pendente, cobrado de novo na lista', async () => {
+    creditar.mockImplementation(async () => {
+      throw new MoedasIndisponiveisError()
+    })
+    const r = await conferir()
+    expect(r.corpo.concluidoAgora).toBe(true)
+    expect(repo.concluidos.get(`${PERFIL}:${BORBOLETA}`)?.moedasSituacao).toBe('pendente')
+    creditar.mockImplementation(async () => ({ situacao: 'creditado' as const }))
+    await chamar('GET', '', crianca())
+    expect(creditar).toHaveBeenCalledTimes(2)
+    expect(creditar.mock.calls[1]?.[0]).toMatchObject({
+      key: chaveDasMoedas(PERFIL, BORBOLETA, 'principal'),
+    })
+    expect(repo.concluidos.get(`${PERFIL}:${BORBOLETA}`)?.moedasSituacao).toBe('creditado')
+  })
+
+  test('sem porta de moedas: conclui e o prêmio espera pendente', async () => {
+    moedas = null
+    montar()
+    expect((await conferir()).corpo.concluidoAgora).toBe(true)
+    expect(repo.concluidos.get(`${PERFIL}:${BORBOLETA}`)?.moedasSituacao).toBe('pendente')
+  })
+
+  test('recusa definitiva do Members vai ao log e o prêmio continua pendente', async () => {
+    creditar.mockImplementation(async () => ({ situacao: 'recusado' as const, codigo: 'X' }))
+    await conferir()
+    expect(repo.concluidos.get(`${PERFIL}:${BORBOLETA}`)?.moedasSituacao).toBe('pendente')
+  })
+
+  test('prêmio zero não chama a porta de moedas', async () => {
+    publicar(
+      BORBOLETA,
+      metadados({}),
+      conteudo('A borboleta que voa', {
+        recompensa: { cor: true, moedas: 0, moedasExtra: 0 },
+      }),
+      ['sz_js_repeat'],
+      2,
+    )
+    await conferir(BORBOLETA, 2)
+    expect(creditar).not.toHaveBeenCalled()
+    expect(repo.concluidos.get(`${PERFIL}:${BORBOLETA}`)?.moedasSituacao).toBe('nenhuma')
+  })
+
+  test('suporte confere sem gravar e sem prêmio', async () => {
+    const r = await conferir(BORBOLETA, 1, crianca({ 'x-auth-impersonator-id': EQUIPE }))
+    expect(r.corpo).toMatchObject({ passou: true, concluidoAgora: false })
+    expect(repo.concluidos.size).toBe(0)
+    expect(repo.progressos.size).toBe(0)
+    expect(creditar).not.toHaveBeenCalled()
+  })
+
+  test('revisão antiga continua conferível; arquivado ou revisão inexistente: 409/404', async () => {
+    publicar(BORBOLETA, metadados({}), conteudo('A borboleta que voa'), ['sz_js_repeat'], 2)
+    expect((await conferir(BORBOLETA, 1)).status).toBe(200)
+    expect((await conferir(BORBOLETA, 7)).status).toBe(404)
+    const d = repo.desafios.get(BORBOLETA)
+    if (d) d.situacao = 'arquivado'
+    const r = await conferir(BORBOLETA, 2)
+    expect(r.status).toBe(409)
+    expect((r.corpo.error as { code: string }).code).toBe('DESAFIO_MUDOU')
+  })
+
+  test('bloqueado não confere (e não gasta o executor)', async () => {
+    expect((await conferir(PONTE)).status).toBe(403)
+    expect(verificar).not.toHaveBeenCalled()
+  })
+
+  test('executor fora, cheio ou Members fora: nada é guardado', async () => {
+    const casos: [Error, number, string][] = [
+      [new ConferenciaIndisponivelError('indisponivel'), 424, 'CONFERENCIA_INDISPONIVEL'],
+      [new ConferenciaIndisponivelError('ocupado'), 429, 'CONFERENCIA_OCUPADA'],
+      [new ConferenciaIndisponivelError('recusado'), 400, 'PROJETO_RECUSADO'],
+      [new MembrosIndisponiveisError('rede'), 424, 'PLATAFORMA_INDISPONIVEL'],
+    ]
+    for (const [erro, status, codigo] of casos) {
+      verificar.mockImplementation(async () => {
+        throw erro
+      })
+      const r = await conferir()
+      expect(r.status).toBe(status)
+      expect((r.corpo.error as { code: string }).code).toBe(codigo)
+    }
+    expect(repo.progressos.size).toBe(0)
+    expect(repo.concluidos.size).toBe(0)
+  })
+
+  test('corpo: projeto grande passa até o teto da conferência; o resto do jogo segue pequeno', async () => {
+    const grande = 'x'.repeat(500_000)
+    const r = await chamar('POST', `/${BORBOLETA}/verificar`, crianca(), {
+      revisao: 1,
+      projeto: { files: { 'script.js': grande } },
+    })
+    expect(r.status).toBe(200)
+    const demais = await app.handle(
+      new Request(`http://local/arquipelago/desafios/${BORBOLETA}/verificar`, {
+        method: 'POST',
+        headers: {
+          ...crianca(),
+          'content-type': 'application/json',
+          'content-length': String(CORPO_DA_CONFERENCIA + 1),
+        },
+        body: '{}',
+      }),
+    )
+    expect(demais.status).toBe(413)
+    const salvamento = await app.handle(
+      new Request('http://local/arquipelago/salvamento', {
+        method: 'PUT',
+        headers: {
+          ...crianca(),
+          'content-type': 'application/json',
+          'content-length': String(500_000),
+        },
+        body: '{}',
+      }),
+    )
+    expect(salvamento.status).toBe(413)
+  })
+})
+
+describe('recompensa vista', () => {
+  test('marca uma vez; suporte não marca', async () => {
+    await conferir()
+    await chamar(
+      'POST',
+      `/${BORBOLETA}/recompensa-vista`,
+      crianca({ 'x-auth-impersonator-id': EQUIPE }),
+    )
+    expect(repo.concluidos.get(`${PERFIL}:${BORBOLETA}`)?.recompensaVistaEm).toBeNull()
+    expect((await chamar('POST', `/${BORBOLETA}/recompensa-vista`, crianca())).status).toBe(200)
+    const lista = DesafiosDoJogadorSchema.parse((await chamar('GET', '', crianca())).corpo)
+    expect(lista.desafios.find((d) => d.id === BORBOLETA)?.recompensaVista).toBe(true)
+  })
+
+  test('sem o token do gateway: 401', async () => {
+    const r = await chamar('GET', '', { ...crianca(), 'x-internal-token': 'outro' })
+    expect(r.status).toBe(401)
+  })
+})

@@ -101,6 +101,17 @@ describe('Arquipélago Vagalume', () => {
       }
     }
     expect(kidsMayAccess(student, '/arquipelago/cartas', 'GET', 'aluno')).toBe(true)
+    // Desafios: a criança lista, abre, confere e marca o prêmio visto; o responsável não joga.
+    const d = '/arquipelago/desafios/22222222-2222-4222-8222-222222222222'
+    for (const [method, path] of [
+      ['GET', '/arquipelago/desafios'],
+      ['GET', d],
+      ['POST', `${d}/verificar`],
+      ['POST', `${d}/recompensa-vista`],
+    ] as const) {
+      expect(kidsMayAccess(student, path, method, 'aluno')).toBe(true)
+      expect(kidsMayAccess(parent, path, method, 'responsavel')).toBe(false)
+    }
   })
   test('o responsável só muda o limite diário', () => {
     expect(kidsMayAccess(parent, '/arquipelago/familia/limite', 'GET', 'responsavel')).toBe(true)
