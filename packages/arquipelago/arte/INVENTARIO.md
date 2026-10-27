@@ -52,9 +52,9 @@ até lá ficam na galeria de modelos do playground.
 
 | Peça | Estado | Observação |
 |---|---|---|
-| Bichos do Bosque para adotar (filhote e adulto, truques) | ⬜ | os bichinhos do quarto já existem na plataforma |
-| Bichos de cada ilha (peixes e tartaruguinhas do recife, pinguins, filhotes de dino, pássaros das nuvens) | ⬜ | |
-| Dino de montaria do Vale | ⬜ | |
+| Bichos do Bosque para adotar (filhote e adulto, truques) | 🟡 | `arte/bichos/adotar.py`: cachorro caramelo, gato frajola, coelho e porquinho-da-índia, filhote e adulto; parado, andar, correr, sentar, feliz e o truque de cada um |
+| Bichos de cada ilha (peixes e tartaruguinhas do recife, pinguins, filhotes de dino, pássaros das nuvens) | 🟡 | `arte/bichos`: peixe-palhaço, cirurgião-azul, baiacu e tartaruguinha (nadar); pinguim e filhote (andar, deslizar); rex e tricerátops bebês (andar, pular); pássaro das Nuvens, bem-te-vi e borboleta do Bosque (voar, pousado) |
+| Dino de montaria do Vale | 🟡 | `arte/bichos/montaria.py`: parassaurolofo de sela; parado, andar, correr, pular; vazio `sela` no assento |
 
 ## Lote 5: itens, comida e coleção
 
