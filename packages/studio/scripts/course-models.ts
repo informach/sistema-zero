@@ -19,7 +19,10 @@ export function publishCourseModel(bytes: Uint8Array): string {
   const path = resolve(COURSE_MODELS_DIR, `m-${sha}.generated.ts`)
   if (!existsSync(path)) {
     const dataUrl = `data:model/gltf-binary;base64,${Buffer.from(bytes).toString('base64')}`
-    writeFileSync(path, `// Gerado por scripts/course-models.ts. Não edite.\nexport default '${dataUrl}'\n`)
+    writeFileSync(
+      path,
+      `// Gerado por scripts/course-models.ts. Não edite.\nexport default '${dataUrl}'\n`,
+    )
   }
   return sha
 }

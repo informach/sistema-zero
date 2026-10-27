@@ -86,8 +86,9 @@ export function IslandWorld({
         p.textureLoader = new T.TextureLoader(p.options.manager)
         return { name: 'sz_textures_by_img' }
       })
-      const glb = Uint8Array.from(atob(ILHA_SCENE_GLB.slice(ILHA_SCENE_GLB.indexOf(',') + 1)), (c) =>
-        c.charCodeAt(0),
+      const glb = Uint8Array.from(
+        atob(ILHA_SCENE_GLB.slice(ILHA_SCENE_GLB.indexOf(',') + 1)),
+        (c) => c.charCodeAt(0),
       )
       const gltf = await loader.parseAsync(glb.buffer, '')
       if (disposed) {

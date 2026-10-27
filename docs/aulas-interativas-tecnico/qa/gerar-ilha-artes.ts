@@ -26,7 +26,10 @@ const BLENDER_OUT =
   process.env.ILHA_OUT ?? resolve(import.meta.dirname, '../../design/ilha-do-farol-blender/out')
 
 function bytesDaBiblioteca(peca: IlhaPeca): Uint8Array {
-  const text = readFileSync(resolve(COURSE_MODELS_DIR, `m-${modelos[peca].sha}.generated.ts`), 'utf8')
+  const text = readFileSync(
+    resolve(COURSE_MODELS_DIR, `m-${modelos[peca].sha}.generated.ts`),
+    'utf8',
+  )
   return Buffer.from(/base64,([A-Za-z0-9+/=]+)'/.exec(text)![1]!, 'base64')
 }
 
@@ -63,8 +66,18 @@ await juntar(bytesDaBiblioteca('cenario-praia-tropical'), 'Ilha', [0, 0, 0])
 await juntar(bytesDaBiblioteca('farol-listrado'), 'Farol', [5.2, 0, 0.1])
 await juntar(bytesDaBiblioteca('veleiro'), 'Veleiro', [8.5, -0.1, 4.5])
 await juntar(bytesDaBiblioteca('pedras'), 'Pedras', [-2, 0, -1])
-await juntar(bytesDaBiblioteca('aventureiro'), 'Aventureiro', [-6.5, 0.8, 0.75], modelos.aventureiro.center)
-await juntar(bytesDaBiblioteca('chave-dourada'), 'Chave', [-3, 1, -2], modelos['chave-dourada'].center)
+await juntar(
+  bytesDaBiblioteca('aventureiro'),
+  'Aventureiro',
+  [-6.5, 0.8, 0.75],
+  modelos.aventureiro.center,
+)
+await juntar(
+  bytesDaBiblioteca('chave-dourada'),
+  'Chave',
+  [-3, 1, -2],
+  modelos['chave-dourada'].center,
+)
 // A bancada só existe para esta cena: sai direto do Blender (`build_all.py -- bancada`).
 await juntar(readFileSync(resolve(BLENDER_OUT, 'bancada.glb')), 'Bancada', [0, 0, 0])
 
@@ -72,7 +85,12 @@ await juntar(readFileSync(resolve(BLENDER_OUT, 'bancada.glb')), 'Bancada', [0, 0
 const buffer = cena.getRoot().listBuffers()[0]!
 for (const a of cena.getRoot().listAccessors()) a.setBuffer(buffer)
 for (const b of cena.getRoot().listBuffers()) if (b !== buffer) b.dispose()
-await cena.transform(weld({ overwrite: true }), dedup(), quantize({ quantizePosition: 14, quantizeNormal: 10 }), prune())
+await cena.transform(
+  weld({ overwrite: true }),
+  dedup(),
+  quantize({ quantizePosition: 14, quantizeNormal: 10 }),
+  prune(),
+)
 const bytes = await io.writeBinary(cena)
 writeFileSync(
   resolve(import.meta.dirname, '../../../packages/studio/src/arte/ilha-farol-scene.generated.ts'),

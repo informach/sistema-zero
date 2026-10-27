@@ -335,7 +335,11 @@ const galeria: Page[] = [
       grupo('Cenários', ['praia-tropical', 'costa-rochosa', 'ilha-nevada', 'noite-na-ilha'], true),
   },
 ]
-pages.splice(pages.findIndex((p) => p.id === '3-aparencia'), 0, ...galeria)
+pages.splice(
+  pages.findIndex((p) => p.id === '3-aparencia'),
+  0,
+  ...galeria,
+)
 const index = ilhaAulas
   .map(
     (a, i) =>

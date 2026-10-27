@@ -30,7 +30,11 @@ describe('a luz do Jogo 3D e a da oficina do Molda', () => {
   })
 
   it('a cena e o Kit Empilhar usam a luz única, sem números soltos', () => {
-    expect(gameThreeDRuntime.match(/new THREE\.AmbientLight\(0xffffff, LIGHT_AMBIENT\)/g)).toHaveLength(2)
-    expect(gameThreeDRuntime.match(/new THREE\.DirectionalLight\(0xffffff, LIGHT_SUN\)/g)).toHaveLength(2)
+    expect(
+      gameThreeDRuntime.match(/new THREE\.AmbientLight\(0xffffff, LIGHT_AMBIENT\)/g),
+    ).toHaveLength(2)
+    expect(
+      gameThreeDRuntime.match(/new THREE\.DirectionalLight\(0xffffff, LIGHT_SUN\)/g),
+    ).toHaveLength(2)
   })
 })

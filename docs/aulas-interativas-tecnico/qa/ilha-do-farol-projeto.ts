@@ -131,7 +131,10 @@ SZGame3D.animate(cena,()=>{
   }
 });`.trim()
 }
-export function montarProjetoIlha(parte: IlhaParte = 'inicio', escolhas: IlhaEscolhas = {}): Project {
+export function montarProjetoIlha(
+  parte: IlhaParte = 'inicio',
+  escolhas: IlhaEscolhas = {},
+): Project {
   const ir = normalizeSZIR({
     html: [],
     css: [],

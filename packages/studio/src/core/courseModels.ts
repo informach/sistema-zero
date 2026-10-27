@@ -106,7 +106,9 @@ export async function preloadCourseModels(
 }
 
 /** Os assets com o GLB completo no lugar das referências (para quem grava arquivos, como o Pro). */
-export async function resolveCourseModels(assets: readonly ProjectAsset[]): Promise<ProjectAsset[]> {
+export async function resolveCourseModels(
+  assets: readonly ProjectAsset[],
+): Promise<ProjectAsset[]> {
   await preloadCourseModels(assets)
   return assets.map((asset) => {
     const dataUrl = courseModelDataUrl(asset)
