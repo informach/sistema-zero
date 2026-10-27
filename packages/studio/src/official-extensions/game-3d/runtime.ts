@@ -1240,6 +1240,73 @@ const gameThreeDRuntimeBase = `import * as THREE from 'three';
     else if (keys.KeyS || keys.ArrowDown) s.vz = sp;
   }
 
+  // Percurso iniciante: uma ação de movimento, sem listas nem leitura de propriedades.
+  function walkArea(obj, minX, maxX, minZ, maxZ) {
+    if (!obj || !obj.position) return;
+    var a = finite(minX, -10), b = finite(maxX, 10), c = finite(minZ, -5), d = finite(maxZ, 5);
+    var areas = szData(obj).walkAreas || (szData(obj).walkAreas = []);
+    if (areas.length >= 128) return;
+    areas.push({ minX: Math.min(a, b), maxX: Math.max(a, b), minZ: Math.min(c, d), maxZ: Math.max(c, d) });
+  }
+  function walkAnimations(obj, idle, walking) {
+    if (!obj || !obj.position) return;
+    szData(obj).walkClips = { idle: String(idle || ''), walking: String(walking || '') };
+    if (idle) playAnimation(obj, idle, 'repetir');
+  }
+  function walkAllowed(areas, x, z) {
+    if (!areas || !areas.length) return true;
+    for (var i = 0; i < areas.length; i++) {
+      var a = areas[i];
+      if (x >= a.minX && x <= a.maxX && z >= a.minZ && z <= a.maxZ) return true;
+    }
+    return false;
+  }
+  function topDown(obj, speed) {
+    if (!obj || !obj.position) return;
+    controlWithKeys(obj, clamp(speed, 0, 100, 3));
+    var s = szData(obj), scale = frameScale(obj), startX = obj.position.x, startZ = obj.position.z;
+    var dx = s.vx * scale, dz = s.vz * scale;
+    // Verifica o caminho também, para não saltar por cima de um intervalo sem chão.
+    var steps = Math.max(1, Math.ceil(Math.max(Math.abs(dx), Math.abs(dz)) / 0.05));
+    for (var i = 0; i < steps; i++) {
+      var x = obj.position.x + dx / steps, z = obj.position.z + dz / steps;
+      if (!walkAllowed(s.walkAreas, x, z)) break;
+      obj.position.x = x; obj.position.z = z;
+    }
+    var moving = obj.position.x !== startX || obj.position.z !== startZ;
+    if (moving) faceVelocity(obj);
+    else { s.vx = 0; s.vz = 0; }
+    if (s.walkClips) {
+      var clip = moving ? s.walkClips.walking : s.walkClips.idle;
+      if (clip) playAnimation(obj, clip, 'repetir');
+    }
+  }
+  function onTouch(a, b, fn) {
+    if (!a || !b || a === b || typeof fn !== 'function') return;
+    if (worldOf(a) !== worldOf(b)) return;
+    rules.onTouchGroup(a, [b], fn);
+  }
+  // Enquadramento de uma área conhecida, independente do tamanho do painel da prévia.
+  function frameScene(world, width, height, depth) {
+    if (!world || !world.camera) return;
+    var w = clamp(width, 1, 500, 24), h = clamp(height, 1, 500, 8), d = clamp(depth, 1, 500, 16);
+    usePerspectiveCamera(world, true);
+    activateCameraMode(world, 'framed');
+    attachCameraToScene(world);
+    world._resizeCamera = function (cam, nw, nh) {
+      cam.aspect = nw / nh;
+      var tan = Math.tan(cam.fov * Math.PI / 360), up = Math.sqrt(3) / 2;
+      var projectedHeight = h / 2 * up + d / 4;
+      var projectedDepth = h / 4 + d / 2 * up;
+      var distance = 1.12 * Math.max(w / 2 / (tan * cam.aspect), projectedHeight / tan) + projectedDepth;
+      cam.far = Math.max(1000, distance + projectedDepth + 10);
+      cam.position.set(0, h / 2 + distance / 2, distance * up);
+      cam.lookAt(0, h / 2, 0);
+      cam.updateProjectionMatrix();
+    };
+    world._resize();
+  }
+
   // Câmera "segue de longe": guarda o enquadramento (offset) da hora em que ligou —
   // ou o da "distância da câmera", se a criança escolheu — e o _updateCameras
   // recompõe a posição a cada quadro.
@@ -2482,6 +2549,7 @@ const gameThreeDRuntimeBase = `import * as THREE from 'three';
   function activateCameraMode(world, mode) {
     if (!world) return;
     var previous = world._cameraMode;
+    if (previous === 'framed' && mode !== 'framed') world._resizeCamera = null;
     world._cameraMode = mode;
     if (mode !== 'follow') {
       world._camFollow = null;
@@ -4093,6 +4161,7 @@ const gameThreeDRuntimeBase = `import * as THREE from 'three';
     setVelocity: setVelocity,
     applyGravity: applyGravity,
     jump: jump,
+    topDown: topDown, walkArea: walkArea, walkAnimations: walkAnimations, onTouch: onTouch, frameScene: frameScene,
     controlWithKeys: controlWithKeys,
     keyDown: keyDown,
     keyPressed: keyPressed,

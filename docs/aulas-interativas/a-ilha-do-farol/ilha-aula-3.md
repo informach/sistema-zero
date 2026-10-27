@@ -20,13 +20,13 @@ O farol precisa conferir a chave.
 - Faça o personagem andar para o fundo com a seta correspondente.
 - Faça o personagem andar para a frente com a seta correspondente.
 - Em Ao iniciar, defina os três valores da posição de chave.
-- Esconda chave dentro do encontro do personagem com chaves.
+- Esconda chave dentro do encontro do personagem com chave.
 - Alcance a chave no lugar escolhido e recolha apenas ao encostar.
 - Comece temChave em falso, em Ao iniciar.
-- No mesmo encontro com chaves, esconda a chave e guarde temChave verdadeiro.
+- No mesmo encontro com chave, esconda a chave e guarde temChave verdadeiro.
 - Guarde a coleta e conserve a chave ao continuar andando.
-- Mude aviso dentro do encontro com chaves.
-- No encontro com portas, consulte temChave e mude aviso no senão.
+- Mude aviso dentro do encontro com chave.
+- No encontro com farol, consulte temChave e mude aviso no senão.
 - Em uma partida nova, o farol continua apagado e pede a chave.
 
 **Zappy na página (não gravar):** Sua vez! Monte a regra, teste no seu jogo e clique em Verificar projeto. Depois de conferir os objetivos e aparecer Salvo, clique em Próxima parte.
@@ -45,14 +45,14 @@ Acenda o farol com a chave.
 - Faça o personagem andar para o fundo com a seta correspondente.
 - Faça o personagem andar para a frente com a seta correspondente.
 - Em Ao iniciar, defina os três valores da posição de chave.
-- Esconda chave dentro do encontro do personagem com chaves.
+- Esconda chave dentro do encontro do personagem com chave.
 - Alcance a chave no lugar escolhido e recolha apenas ao encostar.
 - Comece temChave em falso, em Ao iniciar.
-- No mesmo encontro com chaves, esconda a chave e guarde temChave verdadeiro.
-- Mude aviso dentro do encontro com chaves.
-- No encontro com portas, consulte temChave e mude aviso no senão.
+- No mesmo encontro com chave, esconda a chave e guarde temChave verdadeiro.
+- Mude aviso dentro do encontro com chave.
+- No encontro com farol, consulte temChave e mude aviso no senão.
 - Em uma partida nova, o farol continua apagado e pede a chave.
-- No então do encontro com portas, toque a animação acender no farol uma vez, guarde ganhou e mude aviso.
+- No então do encontro com farol, toque a animação acender no farol uma vez, guarde ganhou e mude aviso.
 - Recolha a chave, acenda o farol e recomece uma partida.
 
 **Zappy na página (não gravar):** Sua vez! Monte a regra, teste no seu jogo e clique em Verificar projeto. Depois de conferir os objetivos e aparecer Salvo, clique em Próxima parte.
@@ -83,14 +83,14 @@ Deixe o jogo com a sua cara.
 - Faça o personagem andar para o fundo com a seta correspondente.
 - Faça o personagem andar para a frente com a seta correspondente.
 - Em Ao iniciar, defina os três valores da posição de chave.
-- Esconda chave dentro do encontro do personagem com chaves.
+- Esconda chave dentro do encontro do personagem com chave.
 - Alcance a chave no lugar escolhido e recolha apenas ao encostar.
 - Comece temChave em falso, em Ao iniciar.
-- No mesmo encontro com chaves, esconda a chave e guarde temChave verdadeiro.
-- Mude aviso dentro do encontro com chaves.
-- No encontro com portas, consulte temChave e mude aviso no senão.
+- No mesmo encontro com chave, esconda a chave e guarde temChave verdadeiro.
+- Mude aviso dentro do encontro com chave.
+- No encontro com farol, consulte temChave e mude aviso no senão.
 - Em uma partida nova, o farol continua apagado e pede a chave.
-- No então do encontro com portas, toque a animação acender no farol uma vez, guarde ganhou e mude aviso.
+- No então do encontro com farol, toque a animação acender no farol uma vez, guarde ganhou e mude aviso.
 - Recolha a chave, acenda o farol e recomece uma partida.
 
 **Zappy na página (não gravar):** Sua vez! Monte a regra, teste no seu jogo e clique em Verificar projeto. Depois de conferir os objetivos e aparecer Salvo, clique em Próxima parte.
@@ -109,14 +109,14 @@ Escolha seu esconderijo e teste de verdade.
 - Faça o personagem andar para o fundo com a seta correspondente.
 - Faça o personagem andar para a frente com a seta correspondente.
 - Em Ao iniciar, defina os três valores da posição de chave.
-- Esconda chave dentro do encontro do personagem com chaves.
+- Esconda chave dentro do encontro do personagem com chave.
 - Alcance a chave no lugar escolhido e recolha apenas ao encostar.
 - Comece temChave em falso, em Ao iniciar.
-- No mesmo encontro com chaves, esconda a chave e guarde temChave verdadeiro.
-- Mude aviso dentro do encontro com chaves.
-- No encontro com portas, consulte temChave e mude aviso no senão.
+- No mesmo encontro com chave, esconda a chave e guarde temChave verdadeiro.
+- Mude aviso dentro do encontro com chave.
+- No encontro com farol, consulte temChave e mude aviso no senão.
 - Em uma partida nova, o farol continua apagado e pede a chave.
-- No então do encontro com portas, toque a animação acender no farol uma vez, guarde ganhou e mude aviso.
+- No então do encontro com farol, toque a animação acender no farol uma vez, guarde ganhou e mude aviso.
 - Recolha a chave, acenda o farol e recomece uma partida.
 
 **Zappy na página (não gravar):** Confira o jogo e os objetivos. Aguarde Salvo, clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Próxima parte.

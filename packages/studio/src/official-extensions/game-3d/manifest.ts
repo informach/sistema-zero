@@ -3,7 +3,7 @@ import type { ExtensionManifest } from '#extensions'
 export const gameThreeDManifest: ExtensionManifest = {
   id: 'game-3d',
   name: 'Jogo 3D',
-  version: '0.31.0',
+  version: '0.32.0',
   description:
     'Blocos para criar jogos 3D com Three.js: cena, céu e câmera (um bloco com seis modos), objetos e modelos do Molda, movimento em "por segundo" e em graus, teclado e mouse, encostar, grupos que multiplicam um molde, placar, vida e telas de início e fim, tempo, sorteio e som. No fim, Kits prontos: "Desvie", "Travessia", "Corrida", "Empilhar" e "Plataforma". Three.js carrega de um CDN fixado.',
   category: 'games',
@@ -21,6 +21,16 @@ cenas e **jogos** 3D sobre WebGL. O Three.js é carregado de um CDN **fixado**
 A paleta tem dez famílias, na ordem em que um jogo é montado: 🎬 Cena, céu e câmera ·
 🧊 Objetos · 🏃 Movimento · 🎮 Controles · 💥 Encostar · 📦 Grupos · 🏆 Placar, vida e telas ·
 ⏱️ Tempo e sorteio · 🔊 Som · 🧰 Kits prontos.
+
+### Primeiros jogos, sem listas nem propriedades de objetos
+
+- **Andar com … usando WASD/setas** (\`topDown\`) lê as teclas, move no chão e vira o personagem, dentro de **A cada quadro**. Não somar **Mover o grupo**: este comando já aplica o movimento.
+- **Permitir … andar em x … e z …** (\`walkArea\`), em **Ao iniciar**, define uma área permitida. Várias áreas formam um caminho unido. O personagem não salta intervalos entre áreas. Sem áreas, o movimento é livre.
+- **Animações de …: parado …, andando …** (\`walkAnimations\`) prepara os clipes que esse movimento usa, em **Ao iniciar**.
+- **Quando … encostar em …** (\`onTouch\`) escolhe diretamente dois elementos da cena. Dispara uma vez por entrada no contato, sem grupo ou nome de item.
+- **Enquadrar a cena** (\`frameScene\`) mantém uma área centrada em x/z zero, acima do chão, visível ao redimensionar a prévia. Largura, altura e profundidade descrevem a área de jogo, sem incluir o céu.
+
+**Mover … com o teclado** (\`controlWithKeys\`) conserva o comportamento anterior: define velocidade para física/grupos aplicarem depois. Os comandos novos não alteram projetos existentes. Objetos da categoria visual são os elementos 3D; estruturas de dados de Programação continuam nos níveis posteriores.
 
 ### Unidades
 

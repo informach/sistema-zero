@@ -68,14 +68,14 @@ Master integral da professora. Sem intervenções de personagens nesta versão. 
 
 **Clipe:** `video-recolher`
 
-**Na tela:** Mostrar Quando acontecer existente com reinício por R. Novo encontro fica fora do evento R. Grupo chaves contém chave; item representa objeto encontrado. Confirmar literal do bloco no catálogo.
+**Na tela:** Mostrar Quando acontecer existente com reinício por R. Novo encontro fica fora do evento R. O evento escolhe diretamente personagem e chave, sem grupo nem nome de item.
 
 **Fala para ElevenLabs:**
 
 ```text
 [engaging, energetic, conversational voice] Você viu que o contato precisa acontecer também na altura. No seu jogo, leve o personagem até a chave. Ela ainda fica ali porque falta a reação do encontro.
 
-[confident, clear, unhurried voice] Volte aos blocos e encontre Quando acontecer. Já existe ali o evento da tecla R, que recomeça a partida. Deixe à vista um espaço depois desse evento, fora do fazer dele. Abra Jogo 3D, Encostar, Encostar. Pegue o bloco Quando um objeto encostar em algum do grupo. Encaixe no espaço que deixamos à vista. No objeto, escolha personagem; no grupo, escolha chaves. Deixe o nome item. O grupo chaves guarda o objeto que vamos recolher.
+[confident, clear, unhurried voice] Volte aos blocos e encontre Quando acontecer. Já existe ali o evento da tecla R, que recomeça a partida. Deixe à vista um espaço depois desse evento, fora do fazer dele. Abra Jogo 3D, Encostar, Encostar. Pegue o bloco Quando personagem encostar em chave. Encaixe no espaço que deixamos à vista. No primeiro nome, escolha personagem; no segundo, chave.
 
 [confident, clear, unhurried voice] Agora deixe à vista o fazer do novo encontro. Abra Jogo 3D, Objetos, Aparência e pegue o bloco de mostrar ou esconder o objeto. Encaixe dentro desse fazer. Escolha Esconder e, no objeto, chave.
 
@@ -101,7 +101,7 @@ Master integral da professora. Sem intervenções de personagens nesta versão. 
 
 [confident, clear, unhurried voice] Deixe à vista o fim da área Ao iniciar. Em Programação, Variáveis, pegue Criar variável e encaixe depois da linha que cria aviso. Escreva temChave no nome. Em Programação, Lógica e Se, pegue verdadeiro ou falso e coloque no valor dessa variável. Escolha falso, porque a partida começa sem a chave.
 
-[confident, clear, unhurried voice] Agora deixe à vista o encontro do personagem com chaves. Em Programação, Variáveis, pegue Alterar variável variável para e encaixe depois de Esconder o objeto chave. Escolha temChave. Em Programação, Lógica e Se, pegue verdadeiro ou falso e encaixe no valor. Aqui escolha verdadeiro.
+[confident, clear, unhurried voice] Agora deixe à vista o encontro do personagem com chave. Em Programação, Variáveis, pegue Alterar variável variável para e encaixe depois de Esconder o objeto chave. Escolha temChave. Em Programação, Lógica e Se, pegue verdadeiro ou falso e encaixe no valor. Aqui escolha verdadeiro.
 
 [interested, animated voice] Confira os dois lugares: ao começar, falso; ao recolher, verdadeiro. O valor não aparece como um objeto na ilha. Na próxima aula, o farol vai consultar essa informação.
 
@@ -123,7 +123,7 @@ Master integral da professora. Sem intervenções de personagens nesta versão. 
 ```text
 [engaging, energetic, conversational voice] Vamos mostrar na tela quando a coleta acontece. O jogo já exibe o texto guardado em aviso. Só precisamos mudar esse texto no encontro.
 
-[confident, clear, unhurried voice] Deixe à vista o encontro com chaves e a linha temChave verdadeiro. Em Programação, Variáveis, pegue Alterar variável variável para e encaixe depois dessa linha. Escolha aviso. Em Programação, Valores, pegue Texto, encaixe no valor e escreva: Você pegou a chave! Agora vá ao farol.
+[confident, clear, unhurried voice] Deixe à vista o encontro com chave e a linha temChave verdadeiro. Em Programação, Variáveis, pegue Alterar variável variável para e encaixe depois dessa linha. Escolha aviso. Em Programação, Valores, pegue Texto, encaixe no valor e escreva: Você pegou a chave! Agora vá ao farol.
 
 [upbeat, encouraging voice] Execute o jogo, recolha a chave e se afaste. A chave deve sumir e o novo aviso deve continuar na tela. Pressione R: a chave e o aviso inicial devem voltar. Se algo não funcionou, confira se esconder a chave, guardar verdadeiro e mudar aviso estão juntos no fazer do encontro. Corrija e teste novamente.
 

@@ -60,15 +60,11 @@ const visible = (name: string, show = false) =>
 const assign = (name: string, v: string) =>
   block('sz_js_var_assign', `Alterar variável ${field(name)} para ${v}`)
 const message = (s: string) => assign('aviso', value('sz_val_text', s))
-const encounter = (group: string, body: string) =>
+const encounter = (other: string, body: string) =>
   area(
     'sz_frame_events',
     'Quando acontecer',
-    nested(
-      'sz_g3d_on_touch_group',
-      `Quando ${field('personagem')} encostar em algum do grupo ${field(group)}, chamando de ${field('item')}`,
-      body,
-    ),
+    nested('sz_g3d_on_touch', `Quando ${field('personagem')} encostar em ${field(other)}`, body),
   )
 const choice = (yes: string, no: string) =>
   block(
@@ -88,11 +84,9 @@ const drawings: Record<string, string> = {
       'sz_g3d_animate',
       `A cada quadro da cena ${field('cena')}`,
       block(
-        'sz_g3d_control_keys',
-        `Mover ${field('personagem')} com o teclado (WASD/setas), ${num('4')} por segundo`,
-      ) +
-        block('sz_g3d_update_group_no_gravity', `Mover o grupo ${field('jogadores')}`) +
-        prepared('Conferência do caminho e outros blocos'),
+        'sz_g3d_top_down',
+        `Andar com ${field('personagem')} usando WASD/setas, velocidade ${num('4')}`,
+      ) + prepared('Aviso e chegada do barco'),
     ),
   ),
   posicao: area(
@@ -104,16 +98,16 @@ const drawings: Record<string, string> = {
         `Posição do objeto ${field('chave')} em x ${num('−3')} y ${num('1')} z ${num('−2')}`,
       ),
   ),
-  recolher: encounter('chaves', visible('chave')),
+  recolher: encounter('chave', visible('chave')),
   memoria:
     area(
       'sz_frame_start',
       'Ao iniciar',
       prepared('Blocos anteriores') +
         block('sz_js_var_create', `Criar variável ${field('temChave')} com valor ${bool('falso')}`),
-    ) + encounter('chaves', visible('chave') + assign('temChave', bool('verdadeiro'))),
+    ) + encounter('chave', visible('chave') + assign('temChave', bool('verdadeiro'))),
   aviso: encounter(
-    'chaves',
+    'chave',
     visible('chave') +
       assign('temChave', bool('verdadeiro')) +
       message('Você pegou a chave! Agora vá ao farol.'),
@@ -133,14 +127,14 @@ const drawings: Record<string, string> = {
       prepared('Outros blocos'),
   ),
   'sem-chave': encounter(
-    'portas',
+    'farol',
     choice(
       '<div class="prepared">Vazio nesta parte</div>',
       message('Falta a chave. Procure na ilha antes de voltar.'),
     ),
   ),
   decisao: encounter(
-    'portas',
+    'farol',
     choice(
       block(
         'sz_g3d_play_animation',

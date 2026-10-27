@@ -302,3 +302,18 @@ Aplicar a direção de 26/10/2026 em [Conceito, investigação e construção](D
 Simplicidade não significa limitar a experiência a um ou dois cliques. Oferecer repetição suficiente para perceber a relação: muitos quadros para movimento; ida e volta nos eixos; reação ligada/desligada em objetos diferentes; novo achado, vazio e repetição para contagem. Os objetivos são observações que podem ser feitas em qualquer ordem. Manter referências visuais permanentes quando elas tornam a comparação possível.
 
 Não ensinar x/y antes da experiência destinada a posição. Uma palavra do bloco, como velocidade, pode aparecer no bloco literal sem virar um painel de conceitos novos concorrentes. Um desafio adicional deve ser opcional e conservar todos os controles pertinentes.
+
+## Faísca: complexidade também no projeto inicial — 27/10/2026
+
+A Chave do Farol e A Ilha do Farol usam somente blocos básicos, inclusive nas partes que já
+vêm prontas. Não usar `allowBlocks` para contornar o nível de listas, objetos de Programação,
+propriedades genéricas ou código cru. Se a montagem exigir infraestrutura complexa, criar um
+comando reutilizável da extensão com um efeito concreto. Manter a lógica que a aula ensina
+visível: encontro, coleta, variável simples, mensagem e se/senão. Elementos visuais 3D podem
+ser chamados de objetos da cena; isso não introduz estruturas de objetos na programação.
+
+Verificar todos os projetos progressivos, a conversão código/blocos e a importação do arquivo
+entregue à pessoa. Arquivos portáteis levam as artes completas; referências compactas nos
+manifestos exigem uma biblioteca compatível e um erro visível quando não puderem carregar.
+Testar o enquadramento na prévia estreita, além do jogo em tela ampla. Atualizar montagem,
+critérios, roteiros e PDF juntos quando mudar o comando que a pessoa usa.
