@@ -15,7 +15,8 @@ código depois da Fase 0 (27/10/2026).
   interna do Members.
 - **Ferramentas de verdade:** melhorar o Pinta, o Molda ou o Estúdio tem que melhorar o jogo
   também. Por isso o jogo nunca carrega uma cópia delas: pede `plataforma.abrirFerramenta()` e a
-  página abre a ferramenta real por cima do jogo (na Fase 0 a resposta é "indisponível").
+  página abre a ferramenta real por cima do jogo (Pinta, Molda e Estúdio, com o jogo pausado e a
+  criação entregue só depois de confirmada na conta).
 - **Tempo livre no Kids:** 30 minutos por dia por padrão; os pais mudam (10 a 240, passo 5). Na
   comunidade adulta não há limite.
 
@@ -64,23 +65,38 @@ salvamento por revisão e tempo livre: `packages/arquipelago-api/CLAUDE.md`.
 
 - **member-shell:** repasses de uma linha para o `avatar-quarto`; `routes/arquipelago.ts` (repasse
   do serviço e do cliente); `components/arquipelago-host.tsx` (a página que hospeda o jogo).
-- **community-kids:** página `/arquipelago` (fora do grupo com menu, sem item de menu por
-  enquanto), shims em `app/api/arquipelago/*` e `app/api/parents/arquipelago/limite` (portão dos
+- **member-shell:** a porta (`components/arquipelago-porta.tsx`: a noite do arquipélago com a ilha
+  e o farol nos estados abrindo, ainda não abriu e erro, e o aviso por cima do jogo quando uma
+  ferramenta abre ou falha) e o diálogo da ferramenta (`arquipelago-creation-dialog.tsx`), que
+  vestem a pele de cada comunidade pelos tokens e pela `sz-btn-gradient`.
+- **community-kids:** página `/arquipelago` (fora do grupo com menu), item "Arquipélago" no menu
+  (aba "Jogo" no celular, ícone de palmeira) só quando o serviço libera o perfil, cartão "Tempo
+  livre no Arquipélago" na Família da área dos pais (escondido quando o serviço não responde),
+  shims em `app/api/arquipelago/*` e `app/api/parents/arquipelago/limite` (portão dos
   pais), `/arquipelago` nos prefixos protegidos, `api/arquipelago/cliente` fora do matcher do proxy,
   CSP própria da página com `'wasm-unsafe-eval'` garantido.
+- **community (adulto):** página `/arquipelago`, item no menu lateral e em "Mais" no celular, pela
+  mesma liberação do serviço; sem limite de tempo.
 - **api-gateway:** `src/infrastructure/config/arquipelago-routes.ts`, que só entra na config com
   `ARQUIPELAGO_URL` (sem a variável, o gateway fica idêntico). O escopo do Kids libera
   `/arquipelago/*` ao aluno (menos o limite da família) e só o limite ao responsável.
 - **CI:** os quatro pacotes entram sozinhos no typecheck e nos testes; o `ci.yml` ganhou os testes
   de banco do serviço e o build do cliente; o deploy de staging mapeia `avatar-quarto` e o contrato.
 
-## Ainda não ligado (rollout à parte)
+## Ligado e pendente (27/10/2026)
 
-1. Criar o serviço `arquipelago-api` no Railway (banco, `INTERNAL_API_TOKEN`, pre-deploy
-   `db:migrate`, `ARQUIPELAGO_MODO`) e registrar em `.railway/`.
-2. No gateway: `ARQUIPELAGO_URL` e `ARQUIPELAGO_INTERNAL_TOKEN`.
-3. Item de menu e cartão do limite diário na área dos pais.
-4. Abrir as ferramentas de verdade por cima do jogo, moedas pela porta interna do Members.
+Ligado no código: serviço registrado em `.railway/`, rotas do gateway, menu nas duas comunidades,
+cartão do limite na área dos pais, ferramentas de verdade por cima do jogo e a porta interna de
+moedas no Members (`POST /members/internal/arquipelago/coins`). O passo a passo do primeiro deploy
+está em `docs/operations/arquipelago-first-deploy.md`.
+
+Pendente:
+
+1. Provisionar o serviço e as variáveis no Railway como manda o passo a passo e validar com contas
+   reais (as três ferramentas, o tempo livre e o salvamento) antes de abrir.
+2. O serviço do jogo ainda não chama a porta de moedas (sem fila de reenvio do lado dele).
+3. O cartão dos pais aparece para toda família quando o serviço responde, mesmo fora da lista:
+   o serviço não diz ao responsável se alguma criança da família vê o jogo.
 
 ## Rodar sozinho
 

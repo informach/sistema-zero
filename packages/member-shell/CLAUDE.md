@@ -14,7 +14,17 @@ O jogo mora em pacotes próprios (`docs/arquipelago.md`); aqui só fica a porta 
 - **`components/arquipelago-host.tsx`**: `ArquipelagoHost` lê o manifesto, importa a entrada com
   `webpackIgnore`/`turbopackIgnore` e chama `montarArquipelago`; `criarPlataformaDoArquipelago`
   monta a `Plataforma` do contrato com as MESMAS rotas das telas (avatar, quarto, gamificação) e o
-  serviço só em `/acesso`, `/salvamento` e `/tempo`. Ferramentas: "indisponível" por enquanto.
+  serviço só em `/acesso`, `/salvamento` e `/tempo`. Ferramentas: Pinta, Molda e Estúdio abrem de
+  verdade por cima do jogo (`arquipelago-creation-dialog.tsx`), com o jogo pausado.
+- **`components/arquipelago-porta.tsx`** (27/10/2026, polimento da Fase 0): `PortaDoArquipelago`
+  desenha os estados antes de o jogo montar (abrindo, ainda não abriu, erro) na noite do
+  arquipélago (céu com estrelas, ilha com farol e casinha em SVG, sem arquivo para baixar), com o
+  Zappy só no Kids e a voz de cada público; `AvisoDaFerramenta` cobre o jogo enquanto a
+  ferramenta carrega e quando ela falha ("O jogo ficou pausado"). Animações com
+  `prefers-reduced-motion`. O diálogo da ferramenta tem cabeçalho com o nome e o ícone dela,
+  "Voltar ao jogo" e "Usar no jogo" (`sz-btn-gradient`, a cor de ação de cada pele); voltar com a
+  ferramenta ainda abrindo sai na hora, e "Sair sem guardar" só aparece quando guardar falhou.
+  Testes: `tests/arquipelago-porta.test.tsx` e a fixture do diálogo.
 - Dependência nova: `@sistemazero/arquipelago-contracts` (o único pacote do jogo que a plataforma
   pode importar). Testes: `tests/arquipelago-routes.test.ts` e `tests/arquipelago-host.test.ts`.
 
