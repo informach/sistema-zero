@@ -771,6 +771,9 @@ jobs:
           RAILWAY_API_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
         run: |
           node scripts/ci/railway-config.mjs plan staging "$RUNNER_TEMP/railway-staging-plan.json"
+          node scripts/ci/staging-watch-paths.mjs "$RUNNER_TEMP/railway-staging-plan.json"
+          # O patch acima não deploya e altera o estado remoto: o apply exige plano fresco.
+          node scripts/ci/railway-config.mjs plan staging "$RUNNER_TEMP/railway-staging-plan.json"
           node scripts/ci/kids-journey-rollout.mjs check-plan "$RUNNER_TEMP/railway-staging-plan.json"
           node scripts/ci/railway-config.mjs apply staging "$RUNNER_TEMP/railway-staging-plan.json"
 
