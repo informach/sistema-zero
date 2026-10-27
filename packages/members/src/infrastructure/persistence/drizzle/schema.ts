@@ -825,6 +825,8 @@ export const coinSourceTypeEnum = members.enum('coin_source_type', [
   // Publicou jogo standalone no Mural (retenção pós-cursos, 07/2026) — faucet
   // diário (1×/dia pelo sourceId do dia), dentro do teto DAILY_COIN_CAP.
   'studio_publish_day',
+  'arquipelago_credit',
+  'arquipelago_debit',
 ])
 
 // Perfil agregado (1 linha por aluno POR VITRINE — XP/streak kids e adult são

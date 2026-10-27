@@ -28,6 +28,13 @@ describe('quem vê o jogo', () => {
     ).toBe(false)
   })
 
+  test('modo aberto libera qualquer perfil Kids, sem exigir assinatura ou lista', () => {
+    expect(decidirAcesso(politica({ modo: 'aberto', lista: new Set() }), crianca)).toEqual({
+      liberado: true,
+      motivo: null,
+    })
+  })
+
   test('público desligado', () => {
     expect(decidirAcesso(politica({}), adulto)).toEqual({
       liberado: false,

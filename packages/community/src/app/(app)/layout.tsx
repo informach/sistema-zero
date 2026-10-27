@@ -1,4 +1,5 @@
 import { ImpersonationBanner } from '@sistemazero/member-shell/components/impersonation-banner'
+import { AcessoSchema } from '@sistemazero/member-shell/lib/arquipelago-contracts'
 import { learnerIdentity } from '@sistemazero/member-shell/lib/learner-identity'
 import { redirect } from 'next/navigation'
 import { CommunityFrame } from '@/components/community/community-frame'
@@ -18,10 +19,14 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   // A imagem da pessoa é a FOTO DO AVATAR 3D, como no Kids (direção de arte de 18/10/2026): a
   // foto enviada saiu. Best-effort e SOMENTE-LEITURA (layout é Server Component: refresh/escrita
   // de cookie aqui LANÇA). Sem avatar, gateway fora ou access expirado → as iniciais.
-  const [avatar, gamification] = await Promise.all([
+  const [avatar, gamification, acessoJogo] = await Promise.all([
     getAvatarReadonly().catch(() => null),
     shell.members.getGamificationReadonly({ withRanking: true }).catch(() => null),
+    shell.gateway
+      .gatewayFetchReadonly<unknown>('/arquipelago/acesso', { signal: AbortSignal.timeout(1500) })
+      .catch(() => null),
   ])
+  const acesso = AcessoSchema.safeParse(acessoJogo?.status === 200 ? acessoJogo.body : null)
   const avatarUrl = avatar?.status === 200 ? (avatar.body?.photoUrl ?? null) : null
   const user = { ...session, avatarUrl }
 
@@ -33,6 +38,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     >
       <CommunityFrame
         user={user}
+        arquipelagoLiberado={acesso.success && acesso.data.liberado}
         banner={
           session.act ? (
             <ImpersonationBanner

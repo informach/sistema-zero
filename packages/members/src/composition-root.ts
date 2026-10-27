@@ -153,6 +153,7 @@ import { DrizzleAdultJourneyRepository } from './infrastructure/persistence/driz
 import { DrizzleAdultProfileRepository } from './infrastructure/persistence/drizzle/adult-profile.repository'
 import { DrizzleAiUsageRepository } from './infrastructure/persistence/drizzle/ai-usage.repository'
 import { DrizzleAnalyticsRepository } from './infrastructure/persistence/drizzle/analytics.repository'
+import { ArquipelagoCoinsRepository } from './infrastructure/persistence/drizzle/arquipelago-coins.repository'
 import { DrizzleAvatarRepository } from './infrastructure/persistence/drizzle/avatar.repository'
 import { DrizzleCertificateRepository } from './infrastructure/persistence/drizzle/certificate.repository'
 import { DrizzleChallengeConfigRepository } from './infrastructure/persistence/drizzle/challenge-config.repository'
@@ -1152,6 +1153,10 @@ export async function createApplication(env: Env): Promise<Application> {
     () => clock().getTime(),
   )
   const server = createServer({
+    arquipelagoCoins: {
+      repository: new ArquipelagoCoinsRepository(db),
+      token: env.ARQUIPELAGO_COINS_TOKEN,
+    },
     liveMaterials,
     livePublication,
     liveBenefits,

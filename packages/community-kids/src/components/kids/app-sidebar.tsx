@@ -18,6 +18,7 @@ import {
   navMatch,
   openGroupFor,
   visibleChildren,
+  visibleNavItems,
 } from './nav'
 import { RecadosBell } from './recados-bell'
 import { StreakWidget } from './streak-widget'
@@ -160,6 +161,7 @@ export function AppSidebar({
   gamification,
   avatarPhotoUrl = null,
   tools = null,
+  arquipelagoLiberado = false,
 }: {
   user: SessionUserWithAvatar
   gamification: GamificationMeView | null
@@ -167,6 +169,7 @@ export function AppSidebar({
   avatarPhotoUrl?: string | null
   /** Ferramentas que a criança PODE abrir. `null` (dado indisponível) mostra todas. */
   tools?: CreativeToolId[] | null
+  arquipelagoLiberado?: boolean
 }) {
   const pathname = usePathname()
   // Modo foco da aula: o aluno pode esconder o menu p/ ganhar área útil (só em
@@ -213,7 +216,7 @@ export function AppSidebar({
         aria-label="Navegação principal"
         className="mt-6 flex min-h-0 flex-1 flex-col gap-1.5 overflow-y-auto overscroll-contain"
       >
-        {NAV_ITEMS.map((item) => {
+        {visibleNavItems(NAV_ITEMS, arquipelagoLiberado).map((item) => {
           const filhos = visibleChildren(item, tools)
           const active = isNavActive(pathname, item.href, navMatch(item))
           if (!filhos.length) return <NavLink key={item.href} item={item} active={active} />

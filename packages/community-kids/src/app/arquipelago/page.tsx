@@ -9,7 +9,7 @@ export const metadata: Metadata = { title: 'Arquipélago Vagalume' }
 /**
  * Arquipélago Vagalume: a página só hospeda o jogo (publicado à parte e carregado pelo
  * manifesto). Quem pode jogar é decidido pelo serviço do jogo; sem o serviço, o recado diz que
- * ainda não abriu. Sem item de menu por enquanto.
+ * ainda não abriu. O menu também consulta essa liberação.
  */
 export default async function ArquipelagoPage() {
   const session = await getSession()

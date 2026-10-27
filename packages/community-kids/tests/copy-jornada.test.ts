@@ -63,6 +63,7 @@ describe('o menu: Cursos ao lado de Criar', () => {
       'Início',
       'Cursos',
       'Oficinas',
+      'Arquipélago',
       'Criar',
       'Comunidade',
       'Meu espaço',

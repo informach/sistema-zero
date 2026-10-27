@@ -120,6 +120,27 @@ describe('acesso', () => {
     })
   })
 
+  test('adulto pode jogar no modo aberto sem limite de tempo', async () => {
+    politica = { ...politica, publicos: new Set(['kids', 'adulto']) }
+    montar()
+    const headers = {
+      'x-internal-token': TOKEN,
+      'x-auth-user-id': ADULTO,
+      'x-auth-user-role': 'member',
+      'x-auth-user-status': 'active',
+    }
+    expect((await chamar('GET', '/arquipelago/acesso', headers)).json).toMatchObject({
+      liberado: true,
+      limiteDiarioMinutos: null,
+    })
+    expect(
+      (await chamar('POST', '/arquipelago/tempo', headers, { segundos: 60 })).json,
+    ).toMatchObject({
+      limiteDiarioMinutos: null,
+      acabou: false,
+    })
+  })
+
   test('bloqueado não lê nem grava salvamento', async () => {
     politica = { ...politica, modo: 'lista' }
     montar()

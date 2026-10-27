@@ -10,6 +10,7 @@ import {
   QuartoSchema,
   VERSAO_CONTRATO_PLATAFORMA,
 } from '@sistemazero/arquipelago-contracts'
+import { type AdultJourneyView, adultJourneyPosition } from '@sistemazero/core/journey'
 import { useEffect, useRef, useState } from 'react'
 import { sessionFetch } from '../lib/session-fetch'
 
@@ -51,9 +52,13 @@ export function criarPlataformaDoArquipelago(opcoes: {
     perfil: opcoes.perfil,
     async lerJornada() {
       const r = await json('/api/members/gamification/me')
-      const posto =
-        r.status === 200 ? (r.corpo as { level?: { slug?: string } } | null)?.level?.slug : null
-      return { posicao: posicaoDoPostoKids(posto) }
+      const dados =
+        r.status === 200
+          ? (r.corpo as { level?: { slug?: string }; journey?: AdultJourneyView } | null)
+          : null
+      if (opcoes.publico === 'adulto')
+        return { posicao: adultJourneyPosition(dados?.journey)?.position ?? 1 }
+      return { posicao: posicaoDoPostoKids(dados?.level?.slug) }
     },
     async lerAvatar() {
       const r = await json('/api/members/avatar')

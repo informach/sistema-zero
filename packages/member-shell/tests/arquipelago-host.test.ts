@@ -33,6 +33,29 @@ describe('a porta da plataforma para o jogo', () => {
     expect(await plataforma().lerJornada()).toEqual({ posicao: 1 })
   })
 
+  test('o adulto usa a etapa da sua própria jornada', async () => {
+    servir({
+      'GET /api/members/gamification/me': {
+        status: 200,
+        body: {
+          journey: {
+            configured: true,
+            stages: [
+              { id: 'um', title: 'Um', completed: true },
+              { id: 'dois', title: 'Dois', completed: false },
+            ],
+          },
+        },
+      },
+    })
+    const adulto = criarPlataformaDoArquipelago({
+      publico: 'adulto',
+      perfil: { id: 'a1', primeiroNome: 'Lia' },
+      voltarPara: '/',
+    })
+    expect(await adulto.lerJornada()).toEqual({ posicao: 2 })
+  })
+
   test('avatar e quarto pelas mesmas rotas das telas da plataforma', async () => {
     const state = { theme: 'padrao', placedItems: [{ itemId: 'cama', x: 0, y: 1 }], pet: null }
     const pedidos = servir({
