@@ -138,6 +138,7 @@ def _farol_animado(pid, corpo, zl0, zl1):
         o.scale = z
     vidro.scale = (1, 1, QUASE_ZERO)
     feixe.rotation_euler = (0, 0, 0)
+    caixa_da_categoria([farol, feixe, vidro, lamp], farol, 'farol', pid)
     exportar_animado(pid, [farol, feixe, vidro, lamp])
 
 

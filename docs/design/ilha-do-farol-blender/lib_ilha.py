@@ -542,3 +542,56 @@ def exportar_estatico(pid, objs):
                               export_yup=True, export_texcoords=True, export_animations=False)
     tris = sum(len(p.vertices) - 2 for p in o.data.polygons)
     print('EXPORTADO', pid, tris, 'triângulos', os.path.getsize(path) // 1024, 'KB')
+
+
+# Caixa de cada categoria (Blender: z para cima, frente em -Y). O jogo encaixa o modelo pela caixa
+# e usa a caixa como área de toque; as variações de uma categoria têm TODAS esta caixa, então a
+# troca na personalização não muda tamanho, centro nem toque (no 2D vale a mesma regra).
+CAIXAS = {
+    'personagem': ((-0.5, -0.6, -0.04), (0.5, 0.6, 1.62)),
+    'farol': ((-0.9, -0.9, 0.0), (0.9, 0.9, 5.3)),
+    'barco': ((-1.55, -0.68, -0.38), (1.55, 0.68, 2.7)),
+    'chave': ((-0.6, -0.12, -0.54), (0.64, 0.12, 0.6)),
+}
+
+
+def caixa_mundo(objs):
+    """A caixa (mín, máx) das malhas na pose de repouso (as faixas do NLA ficam mudas na medida)."""
+    anim = [o.animation_data for o in objs if o.animation_data and o.animation_data.use_nla]
+    for a in anim:
+        a.use_nla = False
+    bpy.context.view_layer.update()
+    pts = [o.matrix_world @ Vector(c) for o in objs if o.type == 'MESH' for c in o.bound_box]
+    for a in anim:
+        a.use_nla = True
+    return (Vector([min(p[i] for p in pts) for i in range(3)]),
+            Vector([max(p[i] for p in pts) for i in range(3)]))
+
+
+def caixa_da_categoria(objs, base, categoria, pid):
+    """Confere que as peças cabem na caixa da categoria e põe dois marcos (triângulos de 1 mm, sem
+    material novo) nos cantos dela, na malha `base`, para a caixa do modelo ficar EXATAMENTE a da
+    categoria. Chamar na pose de repouso."""
+    mn, mx = (Vector(v) for v in CAIXAS[categoria])
+    a, b = caixa_mundo(objs)
+    fora = [f'{"xyz"[i]} {a[i]:.3f}..{b[i]:.3f}' for i in range(3) if a[i] < mn[i] - 1e-4 or b[i] > mx[i] + 1e-4]
+    if fora:
+        raise RuntimeError(f'{pid} passa da caixa de {categoria}: {", ".join(fora)}')
+    inv = base.matrix_world.inverted()
+    bm = bmesh.new()
+    bm.from_mesh(base.data)
+    e = 1e-3
+    for canto, s in ((mn, 1), (mx, -1)):
+        vs = [bm.verts.new(inv @ (canto + d)) for d in (Vector((0, 0, 0)), Vector((s * e, 0, 0)), Vector((0, s * e, 0)))]
+        bm.faces.new(vs)
+    bm.to_mesh(base.data)
+    bm.free()
+    a, b = caixa_mundo(objs)
+    assert (a - mn).length < 1e-4 and (b - mx).length < 1e-4, (pid, a, b)
+
+
+def exportar_na_caixa(pid, objs, categoria):
+    """Peça parada (uma malha só) com a caixa da categoria."""
+    o = join(objs, pid)
+    caixa_da_categoria([o], o, categoria, pid)
+    export(pid, [o])

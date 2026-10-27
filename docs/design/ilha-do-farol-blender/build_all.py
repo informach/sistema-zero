@@ -7,9 +7,9 @@ Cada id é uma função de um dos módulos abaixo, com `-` trocado por `_`.
 """
 import os, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-import cenario, farol, objetos, personagens
+import barcos, cenario, farol, objetos, personagens
 
-MODULOS = [cenario, farol, objetos, personagens]
+MODULOS = [cenario, farol, objetos, personagens, barcos]
 
 if __name__ == '__main__':
     pedidas = set(sys.argv[sys.argv.index('--') + 1:]) if '--' in sys.argv else set()

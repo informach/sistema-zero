@@ -92,7 +92,7 @@ def menino_de_bone():
     vermelho = c('#e23b3b', 0.6)
     cab.append(superellipsoid((0.76, 0.7, 0.46), (0, 0.04, CZ + 0.3), vermelho, e1=0.6, e2=0.6, flat_bottom=0.45))
     cab.append(cyl(0.375, 0.05, (0, 0.04, CZ + 0.27), 'camiseta', verts=28))
-    aba = superellipsoid((0.56, 0.4, 0.05), (0.02, -0.4, CZ + 0.27), c('#b82a2a', 0.6), e1=0.4, e2=0.8, rot=(R(-8), 0, 0))
+    aba = superellipsoid((0.54, 0.32, 0.05), (0.02, -0.34, CZ + 0.27), c('#b82a2a', 0.6), e1=0.4, e2=0.8, rot=(R(-8), 0, 0))
     cab.append(aba)
     cab.append(sphere(0.045, (0, 0.04, CZ + 0.53), vermelho, subdiv=2))
     _animar_boneco('menino-de-bone', partes)
@@ -122,7 +122,7 @@ def exploradora_de_chapeu():
     palha = c('#e2c27c', 0.85)
     cab.append(superellipsoid((0.6, 0.56, 0.24), (0, 0.04, CZ + 0.44), palha, e1=0.5, e2=0.6, flat_bottom=0.2))
     cab.append(cyl(0.3, 0.07, (0, 0.04, CZ + 0.37), c('#7a4b23'), verts=28))
-    cab.append(cyl(0.5, 0.035, (0, 0.04, CZ + 0.33), palha, verts=32, r2=0.47, bevel=0.012))
+    cab.append(cyl(0.47, 0.035, (0, 0.04, CZ + 0.33), palha, verts=32, r2=0.44, bevel=0.012))
     _animar_boneco('exploradora-de-chapeu', partes)
 
 
@@ -152,7 +152,7 @@ def pirata():
     cab.append(superellipsoid((0.72, 0.64, 0.3), (0, 0.04, CZ + 0.38), marinho, e1=0.5, e2=0.6, flat_bottom=0.2))
     cab.append(cyl(0.36, 0.07, (0, 0.04, CZ + 0.29), c('#e05245'), verts=28))
     for s in (-1, 1):
-        cab.append(superellipsoid((0.3, 0.5, 0.18), (s * 0.4, 0.04, CZ + 0.36), marinho, e1=0.5, e2=0.6,
+        cab.append(superellipsoid((0.24, 0.5, 0.18), (s * 0.34, 0.04, CZ + 0.36), marinho, e1=0.5, e2=0.6,
                                   rot=(0, R(s * 35), 0)))
     osso = c('#f3e5c7')
     cab.append(sphere(0.06, (0, -0.32, CZ + 0.42), osso, subdiv=2))
