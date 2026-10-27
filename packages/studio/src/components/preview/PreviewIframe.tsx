@@ -7,6 +7,8 @@ import {
   assetMetaManifest,
   type ExtraFile,
   type InstalledExtension,
+  pendingCourseModels,
+  preloadCourseModels,
   type Project,
   type ProjectAsset,
   soundManifest,
@@ -403,7 +405,29 @@ export function PreviewIframe(): JSX.Element {
   // Manifesto de sons (nome → dataUrl de áudio) — mesmo ciclo de vida do de imagem.
   const soundsManifest = useMemo(() => soundManifest(assets), [assets])
   // Binários 3D (modelo GLB / céu HDR) — canal próprio (o de imagem os filtraria).
-  const models3dManifest = useMemo(() => asset3DManifest(assets), [assets])
+  // Modelos da biblioteca dos cursos: o projeto guarda a referência e o arquivo é carregado
+  // aqui antes do primeiro documento (com a referência só, o jogo abriria sem as peças).
+  // Falhar ao carregar também libera: o jogo roda sem aquela peça em vez de ficar parado.
+  const [courseModelsSettledFor, setCourseModelsSettledFor] = useState<
+    readonly ProjectAsset[] | null
+  >(null)
+  const courseModelsReady =
+    courseModelsSettledFor === assets || pendingCourseModels(assets).length === 0
+  useEffect(() => {
+    if (pendingCourseModels(assets).length === 0) return
+    let active = true
+    const settle = () => {
+      if (active) setCourseModelsSettledFor(assets)
+    }
+    void preloadCourseModels(assets).then(settle, settle)
+    return () => {
+      active = false
+    }
+  }, [assets])
+  const models3dManifest = useMemo(
+    () => (courseModelsReady ? asset3DManifest(assets) : {}),
+    [assets, courseModelsReady],
+  )
 
   const previewBudgetInput = useMemo(
     () => ({
@@ -499,6 +523,7 @@ export function PreviewIframe(): JSX.Element {
     if (!currentProjectHasRun) return PAUSED_PREVIEW_DOC
     if (!extensionRuntimesReady) return PAUSED_PREVIEW_DOC
     if (!gameUiFontReady) return PAUSED_PREVIEW_DOC
+    if (!courseModelsReady) return PAUSED_PREVIEW_DOC
     // Aguarda hidratar o estado salvo antes do 1º build (ver storageReady acima).
     if (projectId && !storageReady) return PAUSED_PREVIEW_DOC
     const base = buildJavaScriptClassicDocument({
@@ -538,6 +563,7 @@ export function PreviewIframe(): JSX.Element {
     currentProjectHasRun,
     extensionRuntimesReady,
     gameUiFontReady,
+    courseModelsReady,
     gameUiFontState.bundle,
     projectId,
     storageReady,

@@ -5,6 +5,7 @@ import {
   isReservedProjectFileName,
   normalizeExtraFileName,
   normalizeProPath,
+  preloadCourseModels,
   type Project,
   soundManifest,
 } from '#core'
@@ -59,6 +60,8 @@ export async function buildClassicFileMap(
 ): Promise<ClassicFileMapResult> {
   const files: ExportFileMap = {}
   const warnings: string[] = []
+  // O site exportado leva o modelo de verdade, não a referência da biblioteca dos cursos.
+  await preloadCourseModels(project.assets)
 
   let rawHtml = project.files['index.html'] ?? ''
   const rawCss = project.files['style.css'] ?? ''
