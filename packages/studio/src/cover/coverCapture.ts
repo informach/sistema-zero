@@ -2,8 +2,8 @@ import {
   asset3DManifest,
   assetManifest,
   assetMetaManifest,
-  preloadCourseModels,
   type Project,
+  preloadCourseModels,
   soundManifest,
 } from '#core'
 import {

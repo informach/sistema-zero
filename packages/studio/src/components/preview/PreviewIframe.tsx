@@ -7,10 +7,10 @@ import {
   assetMetaManifest,
   type ExtraFile,
   type InstalledExtension,
-  pendingCourseModels,
-  preloadCourseModels,
   type Project,
   type ProjectAsset,
+  pendingCourseModels,
+  preloadCourseModels,
   soundManifest,
 } from '#core'
 import {

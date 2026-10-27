@@ -4,8 +4,8 @@ import { readdirSync, readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { COURSE_MODEL_LOADERS } from '../course-models/registry.generated'
 import {
-  clearCourseModelCacheForTests,
   COURSE_MODEL_LIB_PREFIX,
+  clearCourseModelCacheForTests,
   courseModelSha,
   courseModelStub,
   isCourseModelLibId,
@@ -45,7 +45,9 @@ describe('biblioteca de modelos dos cursos', () => {
       const sha = file.slice(2, 66)
       expect(createHash('sha256').update(moduleBytes(file)).digest('hex')).toBe(sha)
     }
-    expect(Object.keys(COURSE_MODEL_LOADERS).sort()).toEqual(FILES.map((f) => f.slice(2, 66)).sort())
+    expect(Object.keys(COURSE_MODEL_LOADERS).sort()).toEqual(
+      FILES.map((f) => f.slice(2, 66)).sort(),
+    )
   })
 
   test('o GLB mínimo passa na validação de assets e mostra os clipes ao seletor', () => {

@@ -5,8 +5,8 @@ import {
   isReservedProjectFileName,
   normalizeExtraFileName,
   normalizeProPath,
-  preloadCourseModels,
   type Project,
+  preloadCourseModels,
   soundManifest,
 } from '#core'
 import { extensionBootstrapContext, loadExtensionBootstrapScript } from '#extensions'

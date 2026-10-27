@@ -1,9 +1,9 @@
 import { readFileSync } from 'node:fs'
-import type { ProjectAsset } from '../../../packages/studio/src/core/project'
 import {
   COURSE_MODEL_LIB_PREFIX,
   courseModelStub,
 } from '../../../packages/studio/src/core/courseModels'
+import type { ProjectAsset } from '../../../packages/studio/src/core/project'
 import { type IlhaModelo, type IlhaPeca, MODELOS_JSON } from './publicar-ilha-modelos'
 
 /**
@@ -51,8 +51,17 @@ export const ILHA_CENARIOS = [
   'cenario-ilha-nevada',
   'cenario-noite-na-ilha',
 ] as const satisfies readonly IlhaPeca[]
-export const ILHA_BARCOS = ['veleiro', 'barco-de-pesca', 'lancha', 'barco-pirata'] as const satisfies readonly IlhaPeca[]
-export const ILHA_CHAVES = ['chave-dourada', 'chave-prateada', 'chave-de-estrela'] as const satisfies readonly IlhaPeca[]
+export const ILHA_BARCOS = [
+  'veleiro',
+  'barco-de-pesca',
+  'lancha',
+  'barco-pirata',
+] as const satisfies readonly IlhaPeca[]
+export const ILHA_CHAVES = [
+  'chave-dourada',
+  'chave-prateada',
+  'chave-de-estrela',
+] as const satisfies readonly IlhaPeca[]
 export const ILHA_FAROIS = [
   'farol-listrado',
   'farol-de-pedra',

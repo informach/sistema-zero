@@ -2,10 +2,10 @@ import { copyStudioProjectJson } from '@sistemazero/core/studio/project-json'
 import {
   asset3DManifest,
   assetManifest,
-  preloadCourseModels,
   assetMetaManifest,
   type JavaScriptProjectDocument,
   type Project,
+  preloadCourseModels,
   soundManifest,
 } from '#core'
 import { isDocumentRecord } from '../core/projectDocument'

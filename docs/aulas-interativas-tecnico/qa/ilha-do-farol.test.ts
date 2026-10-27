@@ -11,13 +11,16 @@ import {
   isSectionExecutionRule,
 } from '../../../packages/core/src/learning/project-execution'
 import { readManifestStudioProjectExamples } from '../../../packages/core/src/learning/studio-project-examples'
+import { ILHA_SCENE_GLB } from '../../../packages/studio/src/arte/ilha-farol-scene.generated'
 import { evaluateStudioSectionProject } from '../../../packages/studio/src/blockly/projectCheckAuthoring'
+import {
+  isCourseModelLibId,
+  knownCourseModels,
+} from '../../../packages/studio/src/core/courseModels'
+import { readGlbSummary } from '../../../packages/studio/src/core/glbSummary'
 import { isBlockTypeAllowed } from '../../../packages/studio/src/core/levels'
 import { sanitizeProjectAssets } from '../../../packages/studio/src/core/projectAssets'
 import { SZIRInputSchema } from '../../../packages/studio/src/ir/schema'
-import { ILHA_SCENE_GLB } from '../../../packages/studio/src/arte/ilha-farol-scene.generated'
-import { isCourseModelLibId, knownCourseModels } from '../../../packages/studio/src/core/courseModels'
-import { readGlbSummary } from '../../../packages/studio/src/core/glbSummary'
 import { ILHA_ASSETS, ILHA_MODELS } from './ilha-do-farol-assets'
 import { ilhaChecks } from './ilha-do-farol-criterios'
 import { ILHA_PARTES, montarProjetoIlha } from './ilha-do-farol-projeto'
@@ -110,11 +113,21 @@ describe('A Ilha do Farol', () => {
     }
     // Os nomes da Chave do Farol em 2D, para a criança reconhecer as opções.
     expect(p.assets.map((a) => a.name)).toEqual(
-      expect.arrayContaining(['aventureiro', 'pirata', 'barco-pirata', 'chave-de-estrela', 'farol-de-pedra', 'noite-na-ilha']),
+      expect.arrayContaining([
+        'aventureiro',
+        'pirata',
+        'barco-pirata',
+        'chave-de-estrela',
+        'farol-de-pedra',
+        'noite-na-ilha',
+      ]),
     )
     // O farol tem as duas animações; o personagem, parado e andando.
     expect(readGlbSummary(ILHA_MODELS.farol.asset.dataUrl)?.clips).toEqual(['acender', 'aceso'])
-    expect(readGlbSummary(ILHA_MODELS.personagem.asset.dataUrl)?.clips).toEqual(['andando', 'parado'])
+    expect(readGlbSummary(ILHA_MODELS.personagem.asset.dataUrl)?.clips).toEqual([
+      'andando',
+      'parado',
+    ])
     expect(JSON.stringify(p).length).toBeLessThan(60_000)
   })
   test('a cena das experiências tem os nós que a experiência move e esconde', () => {
