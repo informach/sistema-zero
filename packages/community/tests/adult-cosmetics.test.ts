@@ -32,7 +32,8 @@ describe('as páginas ligam a pele adulta', () => {
     expect(quarto).toContain('room/room-builder-adult')
     expect(quarto).toContain('<AdultRoomBuilder')
     expect(quarto).toContain('trophyHints={ADULT_TROPHY_HINTS}')
-    expect(quarto).toContain("back={{ href: '/progresso', label: 'Seu progresso' }}")
+    // O voltar mora na linha das moedas e do Salvar desde 27/10/2026 (como o avatar).
+    expect(quarto).toContain("{ href: '/progresso', label: 'Seu progresso' }")
   })
 
   test('o globals.css importa o CSS da pele', () => {

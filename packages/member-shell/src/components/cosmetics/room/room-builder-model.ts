@@ -93,7 +93,7 @@ export type RoomBuilderViewProps = {
   selection: RoomBuilderSelection
   wallet: RoomBuilderWallet
   catalog: RoomBuilderCatalog
-  /** O começo da barra de cima (a seta de voltar e o título), desenhado pela página. Só o Kids usa. */
+  /** O começo da barra de cima (a seta de voltar e o título), desenhado pela página (Kids e adulto). */
   header?: ReactNode
 }
 

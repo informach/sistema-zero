@@ -4,7 +4,7 @@ import { BrandLogo } from '@sistemazero/ui/brand-logo'
 import { Ellipsis, Mail, Palette, PersonStanding, Receipt, Sofa, Trophy } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { useEffect, useId, useRef, useState } from 'react'
+import { type CSSProperties, useEffect, useId, useRef, useState } from 'react'
 import { cn } from '@/lib/cn'
 import type { SessionUserWithAvatar } from '@/lib/types'
 import { isNavItemActive, NAV_ITEMS, type NavItem } from './nav'
@@ -13,6 +13,10 @@ import { UserMenu } from './user-menu'
 // `prefetch={false}` PROPOSITAL em todos os links (mesmo motivo do kids): rotas `force-dynamic` +
 // ida ao gateway numa réplica ÚNICA. O prefetch automático de todos os links do menu a cada página
 // vira tempestade de RSC/gateway; a navegação busca sob demanda.
+
+/** O id do menu lateral (a alça aponta para ele) e a largura dele, que a alça acompanha. */
+export const COMMUNITY_SIDEBAR_ID = 'community-sidebar'
+export const COMMUNITY_SIDEBAR_WIDTH = '14.4rem'
 
 function unreadLabel(count: number) {
   return count > 0 ? `Recados, ${count} ${count === 1 ? 'novo' : 'novos'}` : 'Recados'
@@ -35,52 +39,74 @@ function UnreadBadge({ count }: { count: number }) {
  * ícone E texto, Recados com o selo de não lidos e, no pé, o cartão da pessoa (foto com o anel da
  * etapa, nome e etapa), que abre o menu do perfil. O item da página atual ganha a carta escura e a
  * barra amarela à esquerda, além do `aria-current`.
+ *
+ * `collapsed` (27/10/2026): nas telas de foco o menu recolhe (a alça mora no `CommunityFrame`). A
+ * coluna encolhe até zero enquanto o conteúdo, de largura fixa, desliza junto para fora da tela:
+ * sem `overflow-hidden`, porque o menu do perfil abre mais largo que a coluna.
  */
 export function CommunitySidebar({
   user,
   unread,
+  collapsed = false,
 }: {
   user: SessionUserWithAvatar
   unread: number
+  collapsed?: boolean
 }) {
   const pathname = usePathname() ?? ''
   const recadosActive = pathname === '/recados' || pathname.startsWith('/recados/')
 
   return (
-    <aside className="sz-palco sticky top-0 z-30 hidden h-dvh w-[14.4rem] shrink-0 flex-col gap-1 border-(--linha-escura) border-r bg-(--topo) bg-none px-3 py-5 lg:flex">
-      <Link
-        href="/"
-        prefetch={false}
-        aria-label="Início"
-        className="mb-4 flex items-center rounded-[0.6rem] px-3 py-1"
+    <aside
+      id={COMMUNITY_SIDEBAR_ID}
+      inert={collapsed}
+      aria-hidden={collapsed || undefined}
+      className={cn(
+        'sticky top-0 z-30 hidden h-dvh shrink-0 transition-[width] duration-300 ease-in-out motion-reduce:transition-none lg:block',
+        collapsed ? 'w-0' : 'w-(--sz-menu-width)',
+      )}
+      style={{ '--sz-menu-width': COMMUNITY_SIDEBAR_WIDTH } as CSSProperties}
+    >
+      <div
+        className={cn(
+          'sz-palco flex h-full w-(--sz-menu-width) flex-col gap-1 border-(--linha-escura) border-r bg-(--topo) bg-none px-3 py-5 transition-[translate,opacity] duration-300 ease-in-out motion-reduce:transition-none',
+          collapsed ? '-translate-x-full opacity-0' : 'translate-x-0 opacity-100',
+        )}
       >
-        <BrandLogo
-          fundo="escuro"
-          instancia="menu"
-          label="Comunidade Sistema Zero"
-          className="block h-auto w-[8rem]"
-        />
-      </Link>
-      {/* Só a lista rola numa janela baixa: o cartão da pessoa fica sempre à vista no pé. */}
-      <nav aria-label="Principal" className="flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto">
-        {NAV_ITEMS.map((item) => (
-          <SidebarLink key={item.href} item={item} active={isNavItemActive(item, pathname)} />
-        ))}
-        <span aria-hidden className="mx-2 my-2.5 h-px bg-(--linha-escura)" />
         <Link
-          href="/recados"
+          href="/"
           prefetch={false}
-          aria-current={recadosActive ? 'page' : undefined}
-          aria-label={unreadLabel(unread)}
-          className={sidebarItemClass(recadosActive)}
+          aria-label="Início"
+          className="mb-4 flex items-center rounded-[0.6rem] px-3 py-1"
         >
-          <Mail className="size-6 shrink-0" aria-hidden />
-          Recados
-          <UnreadBadge count={unread} />
+          <BrandLogo
+            fundo="escuro"
+            instancia="menu"
+            label="Comunidade Sistema Zero"
+            className="block h-auto w-[8rem]"
+          />
         </Link>
-      </nav>
-      <div className="shrink-0 pt-4">
-        <UserMenu user={user} variant="card" />
+        {/* Só a lista rola numa janela baixa: o cartão da pessoa fica sempre à vista no pé. */}
+        <nav aria-label="Principal" className="flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto">
+          {NAV_ITEMS.map((item) => (
+            <SidebarLink key={item.href} item={item} active={isNavItemActive(item, pathname)} />
+          ))}
+          <span aria-hidden className="mx-2 my-2.5 h-px bg-(--linha-escura)" />
+          <Link
+            href="/recados"
+            prefetch={false}
+            aria-current={recadosActive ? 'page' : undefined}
+            aria-label={unreadLabel(unread)}
+            className={sidebarItemClass(recadosActive)}
+          >
+            <Mail className="size-6 shrink-0" aria-hidden />
+            Recados
+            <UnreadBadge count={unread} />
+          </Link>
+        </nav>
+        <div className="shrink-0 pt-4">
+          <UserMenu user={user} variant="card" />
+        </div>
       </div>
     </aside>
   )
