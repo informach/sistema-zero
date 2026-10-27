@@ -178,7 +178,7 @@ test.each([
   },
 ])('Ilha 3D: o servidor reproduz e confere $chave', async ({ arquivo, chave, commands }) => {
   const { gravar, tentar } = preparar(blocoDoManifesto(arquivo, chave))
-  const respostas = await gravar(commands)
+  const respostas = await gravar([...commands])
   expect(readExperimentSession('island-3d', respostas.sceneCheckpoint)).not.toBeNull()
   expect((await tentar(respostas)).passed).toBe(true)
 })
