@@ -63,7 +63,10 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
   )
   const result = await classifyArquipelagoInventory(data, sha, async (oldSha, newSha) => {
     try {
-      execFileSync('git', ['merge-base', '--is-ancestor', oldSha, newSha], { stdio: 'ignore', timeout: 5_000 })
+      execFileSync('git', ['merge-base', '--is-ancestor', oldSha, newSha], {
+        stdio: 'ignore',
+        timeout: 5_000,
+      })
       return true
     } catch {
       return false
