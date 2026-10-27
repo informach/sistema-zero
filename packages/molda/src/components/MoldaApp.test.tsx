@@ -15,6 +15,7 @@ import {
 import { DOCUMENT_KEY_PREFIX } from '../state/storageKeys'
 import { makeModel, makeSky, makeTexture } from '../testing/fixtures'
 import { nativeDatabase } from '../testing/nativeDatabase'
+import type { MoldaCompletionControl } from './completionControl'
 import { MoldaApp } from './MoldaApp'
 
 beforeEach(() => {
@@ -636,4 +637,58 @@ test('deep link para uma criação que não existe abre a galeria e AVISA', asyn
   )
   await screen.findByText(COPY.gallery.creationGone)
   screen.getByRole('heading', { level: 1, name: COPY.gallery.title })
+})
+
+test('controle do host grava o céu aberto antes de entregar o snapshot', async () => {
+  const persistence = createMemoryPersistence([makeSky()])
+  let control: MoldaCompletionControl | null = null
+  const view = render(
+    <MoldaApp
+      persistence={persistence}
+      adapter={{ initialAssetId: 'sky-1' }}
+      onCompletionControlChange={(value) => {
+        control = value
+      }}
+    />,
+  )
+  await screen.findByRole('button', { name: COPY.skyPresets.nublado })
+  fireEvent.click(screen.getByRole('button', { name: COPY.skyPresets.nublado }))
+  const results: Awaited<ReturnType<MoldaCompletionControl['flush']>>[] = []
+  await act(async () => {
+    results.push(await control!.flush())
+  })
+  const result = results[0]
+  expect(result?.id).toBe('sky-1')
+  expect(presetOf(persistence.snapshot()[0])).toBe('nublado')
+  expect(JSON.parse(result!.json).id).toBe('sky-1')
+  view.unmount()
+  expect(control).toBeNull()
+})
+
+test('controle do host recusa criação quando salvamento do editor falha', async () => {
+  const persistence = createMemoryPersistence([makeSky()])
+  persistence.save = async () => {
+    throw new Error('offline')
+  }
+  let control: MoldaCompletionControl | null = null
+  render(
+    <MoldaApp
+      persistence={persistence}
+      adapter={{ initialAssetId: 'sky-1' }}
+      onCompletionControlChange={(value) => {
+        control = value
+      }}
+    />,
+  )
+  await screen.findByRole('button', { name: COPY.skyPresets.nublado })
+  fireEvent.click(screen.getByRole('button', { name: COPY.skyPresets.nublado }))
+  let failed = false
+  await act(async () => {
+    try {
+      await control!.flush()
+    } catch {
+      failed = true
+    }
+  })
+  expect(failed).toBe(true)
 })

@@ -1,4 +1,5 @@
 import { ArquipelagoHost } from '@sistemazero/member-shell/components/arquipelago-host'
+import { getEnv } from '@sistemazero/member-shell/lib/env'
 import type { Metadata } from 'next'
 import { redirect } from 'next/navigation'
 import { SessionBoundary } from '@/components/kids/session-boundary'
@@ -24,7 +25,12 @@ export default async function ArquipelagoPage() {
           <SessionBoundary kind="student" />
         </>
       ) : null}
-      <ArquipelagoHost publico="kids" perfil={{ id: session.id, primeiroNome }} voltarPara="/" />
+      <ArquipelagoHost
+        publico="kids"
+        perfil={{ id: session.id, primeiroNome }}
+        voltarPara="/"
+        narrationEnabled={Boolean(getEnv().ELEVENLABS_API_KEY)}
+      />
     </>
   )
 }

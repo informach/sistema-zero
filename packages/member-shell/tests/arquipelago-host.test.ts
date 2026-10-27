@@ -1,5 +1,8 @@
 import { afterEach, describe, expect, test } from 'bun:test'
-import { criarPlataformaDoArquipelago } from '../src/components/arquipelago-host'
+import {
+  criarPlataformaDoArquipelago,
+  lerFerramentasMolda,
+} from '../src/components/arquipelago-host'
 
 const fetchOriginal = globalThis.fetch
 afterEach(() => {
@@ -29,6 +32,32 @@ const plataforma = () =>
   })
 
 describe('a porta da plataforma para o jogo', () => {
+  test('encaminha o pedido da ferramenta ao host e devolve somente o resultado dele', async () => {
+    const pedido = { ferramenta: 'pinta' as const, proposito: 'criar personagem' }
+    const recebidos: unknown[] = []
+    const p = criarPlataformaDoArquipelago({
+      publico: 'kids',
+      perfil: { id: 'p1', primeiroNome: 'Lia' },
+      voltarPara: '/',
+      async abrirFerramenta(value) {
+        recebidos.push(value)
+        return { situacao: 'pronto', criacaoId: 'real' }
+      },
+    })
+    expect(await p.abrirFerramenta(pedido)).toEqual({ situacao: 'pronto', criacaoId: 'real' })
+    expect(recebidos).toEqual([pedido])
+  })
+  test('paleta Molda exige resposta explícita e bem formada', () => {
+    expect(lerFerramentasMolda(undefined)).toEqual({ ok: false })
+    expect(
+      lerFerramentasMolda({ allow: ['basico'], upcoming: [{ when: 'depois', families: [1] }] }),
+    ).toEqual({ ok: false })
+    expect(lerFerramentasMolda(null)).toEqual({ ok: true, access: null })
+    expect(lerFerramentasMolda({ allow: ['basico'] })).toEqual({
+      ok: true,
+      access: { allow: ['basico'] },
+    })
+  })
   test('a jornada vira a posição do posto (sem leitura, Faísca)', async () => {
     servir({
       'GET /api/members/gamification/me': { status: 200, body: { level: { slug: 'explorer' } } },

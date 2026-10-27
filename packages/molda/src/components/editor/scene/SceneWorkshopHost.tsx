@@ -4,10 +4,12 @@ import { COPY } from '../../../core/copy'
 import { copySceneProject } from '../../../import/sceneProjectFile'
 import { createSceneProject, type SceneProjectStart } from '../../../scene/createProject'
 import type { MoldaSceneDocument } from '../../../scene/document'
+import { sceneToJson } from '../../../scene/documentJson'
 import { openSceneWorkshop } from '../../../state/openSceneWorkshop'
 import type { SceneEditorStore } from '../../../state/sceneEditorStore'
 import { createScenePersistence } from '../../../state/scenePersistence'
 import type { SceneViewportFactory } from '../../../viewport/sceneViewportTypes'
+import type { MoldaCompletionControl } from '../../completionControl'
 import { Button } from '../../ui/Button'
 import type { ResyncToStudio } from '../useStudioResync'
 import type { SceneExitMode } from './SceneExitControl'
@@ -24,6 +26,7 @@ export function SceneWorkshopHost({
   theme = 'light',
   resyncToStudio,
   canResyncToStudio,
+  onCompletionControlChange,
 }: {
   store: UseStore
   initialId?: string | null
@@ -33,6 +36,7 @@ export function SceneWorkshopHost({
   /** Ponte opcional para atualizar uma criação já levada ao Estúdio. */
   resyncToStudio?: ResyncToStudio
   canResyncToStudio?: (id: string) => Promise<boolean>
+  onCompletionControlChange?: (control: MoldaCompletionControl | null) => void
 }) {
   const scope = useMemo(
     () => ({ store, persistence: createScenePersistence(store), active: false }),
@@ -54,6 +58,20 @@ export function SceneWorkshopHost({
   const [opened, setOpened] = useState<Opened | null>(null)
   const [failure, setFailure] = useState<{ scope: typeof scope; id: string } | null>(null)
   const current = opened?.scope === scope && opened.id === id ? opened : null
+  useEffect(() => {
+    if (!onCompletionControlChange || !current) return
+    onCompletionControlChange({
+      async flush() {
+        await current.editor.getState().flush()
+        if (!scope.active) throw new Error('A oficina foi fechada durante o salvamento')
+        const state = current.editor.getState()
+        if (state.asset !== state.savedAsset || state.saveState !== 'saved')
+          throw new Error(state.saveError ?? 'A criação não foi salva')
+        return { id: state.savedAsset.id, json: JSON.stringify(sceneToJson(state.savedAsset)) }
+      },
+    })
+    return () => onCompletionControlChange(null)
+  }, [current, onCompletionControlChange, scope])
   const failed = failure?.scope === scope && failure.id === id
   const root = useRef<HTMLDivElement>(null)
   useLayoutEffect(() => {

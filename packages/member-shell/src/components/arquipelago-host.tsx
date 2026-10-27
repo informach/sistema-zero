@@ -4,15 +4,52 @@ import {
   ManifestoDoClienteSchema,
   type ModuloDoArquipelago,
   type MontagemDoArquipelago,
+  type PedidoDeFerramenta,
   type Plataforma,
   type PublicoJogo,
   posicaoDoPostoKids,
   QuartoSchema,
+  type ResultadoDeFerramenta,
   VERSAO_CONTRATO_PLATAFORMA,
 } from '@sistemazero/arquipelago-contracts'
 import { type AdultJourneyView, adultJourneyPosition } from '@sistemazero/core/journey'
-import { useEffect, useRef, useState } from 'react'
+import type { MoldaToolAccess } from '@sistemazero/molda/tools'
+import { Component, lazy, type ReactNode, Suspense, useEffect, useRef, useState } from 'react'
 import { sessionFetch } from '../lib/session-fetch'
+
+const CreationDialog = lazy(() =>
+  import('./arquipelago-creation-dialog').then((m) => ({ default: m.ArquipelagoCreationDialog })),
+)
+
+class ToolLoadBoundary extends Component<
+  { children: ReactNode; onCancel: () => void },
+  { failed: boolean }
+> {
+  state = { failed: false }
+  static getDerivedStateFromError() {
+    return { failed: true }
+  }
+  render() {
+    if (!this.state.failed) return this.props.children
+    return (
+      <div
+        className="absolute inset-0 z-50 grid place-items-center bg-background p-6 text-center text-foreground"
+        role="alert"
+      >
+        <div>
+          <p>Não foi possível abrir a ferramenta agora.</p>
+          <button
+            type="button"
+            onClick={this.props.onCancel}
+            className="mt-4 rounded-full bg-primary px-5 py-2 font-semibold text-primary-foreground"
+          >
+            Voltar ao jogo
+          </button>
+        </div>
+      </div>
+    )
+  }
+}
 
 /** O repasse do BFF (`routes/arquipelago.ts`). */
 const BASE = '/api/arquipelago'
@@ -20,6 +57,30 @@ const BASE = '/api/arquipelago'
 const CAMINHOS_DO_JOGO = new Set(['/acesso', '/salvamento', '/tempo'])
 
 type Estado = 'carregando' | 'pronto' | 'indisponivel' | 'erro'
+
+/** `null` é liberação total explícita; ausência ou resposta malformada não abre a oficina. */
+export function lerFerramentasMolda(
+  value: unknown,
+): { ok: true; access: MoldaToolAccess | null } | { ok: false } {
+  if (value === null) return { ok: true, access: null }
+  if (!value || typeof value !== 'object') return { ok: false }
+  const candidate = value as { allow?: unknown; upcoming?: unknown }
+  if (!Array.isArray(candidate.allow) || !candidate.allow.every((item) => typeof item === 'string'))
+    return { ok: false }
+  if (
+    candidate.upcoming !== undefined &&
+    (!Array.isArray(candidate.upcoming) ||
+      !candidate.upcoming.every(
+        (item) =>
+          item &&
+          typeof item.when === 'string' &&
+          Array.isArray(item.families) &&
+          item.families.every((family: unknown) => typeof family === 'string'),
+      ))
+  )
+    return { ok: false }
+  return { ok: true, access: candidate as MoldaToolAccess }
+}
 
 async function json(url: string, init?: RequestInit): Promise<{ status: number; corpo: unknown }> {
   const resposta = await sessionFetch(url, init)
@@ -45,6 +106,7 @@ export function criarPlataformaDoArquipelago(opcoes: {
   publico: PublicoJogo
   perfil: { id: string; primeiroNome: string }
   voltarPara: string
+  abrirFerramenta?: (pedido: PedidoDeFerramenta) => Promise<ResultadoDeFerramenta>
 }): Plataforma {
   return {
     versaoContrato: VERSAO_CONTRATO_PLATAFORMA,
@@ -90,9 +152,8 @@ export function criarPlataformaDoArquipelago(opcoes: {
         })
       },
     },
-    // As ferramentas de verdade (Pinta, Molda, Estúdio) abrem por cima do jogo numa fase
-    // seguinte; por enquanto o jogo recebe "indisponível" e segue sem elas.
-    abrirFerramenta: async () => ({ situacao: 'indisponivel', motivo: 'em-breve' }),
+    abrirFerramenta:
+      opcoes.abrirFerramenta ?? (async () => ({ situacao: 'indisponivel', motivo: 'em-breve' })),
     voltarParaPlataforma: () => window.location.assign(opcoes.voltarPara),
     relatarErro: (erro, contexto) => console.error(`[arquipelago] ${contexto}`, erro),
   }
@@ -106,15 +167,69 @@ export function ArquipelagoHost(props: {
   publico: PublicoJogo
   perfil: { id: string; primeiroNome: string }
   voltarPara: string
+  narrationEnabled?: boolean
 }) {
   const elemento = useRef<HTMLDivElement>(null)
   const [estado, setEstado] = useState<Estado>('carregando')
+  const [creation, setCreation] = useState<{
+    ferramenta: 'pinta' | 'molda'
+    studioAvailable: boolean
+    toolAccess: MoldaToolAccess | null
+  } | null>(null)
+  const pendente = useRef<((resultado: ResultadoDeFerramenta) => void) | null>(null)
+  const abrindo = useRef(false)
   const { publico, voltarPara } = props
   const { id, primeiroNome } = props.perfil
 
   useEffect(() => {
     let vivo = true
     let montagem: MontagemDoArquipelago | null = null
+    const abrirFerramenta = async (pedido: PedidoDeFerramenta): Promise<ResultadoDeFerramenta> => {
+      if (
+        (pedido.ferramenta !== 'pinta' && pedido.ferramenta !== 'molda') ||
+        pedido.molde !== undefined
+      )
+        return { situacao: 'indisponivel', motivo: 'em-breve' }
+      if (abrindo.current || pendente.current)
+        return { situacao: 'indisponivel', motivo: 'ocupado' }
+      abrindo.current = true
+      try {
+        const [acessoResult, estudioResult] = await Promise.allSettled([
+          json(`${BASE}/ferramentas/${pedido.ferramenta}`),
+          json(`${BASE}/ferramentas/estudio`),
+        ])
+        if (!vivo) return { situacao: 'cancelado' }
+        if (acessoResult.status !== 'fulfilled')
+          return { situacao: 'indisponivel', motivo: 'em-breve' }
+        const acesso = acessoResult.value
+        const estudio = estudioResult.status === 'fulfilled' ? estudioResult.value : null
+        const situacao = (acesso.corpo as { situacao?: string } | null)?.situacao
+        if (acesso.status !== 200 || situacao !== 'disponivel')
+          return {
+            situacao: 'indisponivel',
+            motivo: situacao === 'bloqueada' ? 'acesso-necessario' : 'em-breve',
+          }
+        const tools =
+          pedido.ferramenta === 'molda'
+            ? lerFerramentasMolda((acesso.corpo as { toolAccess?: unknown } | null)?.toolAccess)
+            : { ok: true as const, access: null }
+        if (!tools.ok) return { situacao: 'indisponivel', motivo: 'em-breve' }
+        return await new Promise<ResultadoDeFerramenta>((resolve) => {
+          pendente.current = resolve
+          setCreation({
+            ferramenta: pedido.ferramenta as 'pinta' | 'molda',
+            toolAccess: tools.access,
+            studioAvailable:
+              estudio?.status === 200 &&
+              (estudio.corpo as { situacao?: string } | null)?.situacao === 'disponivel',
+          })
+        })
+      } catch {
+        return { situacao: 'indisponivel', motivo: 'em-breve' }
+      } finally {
+        abrindo.current = false
+      }
+    }
     void (async () => {
       const resposta = await fetch(`${BASE}/cliente/manifesto.json`, { cache: 'no-store' })
       const manifesto = resposta.ok
@@ -135,7 +250,12 @@ export function ArquipelagoHost(props: {
       }
       montagem = modulo.montarArquipelago(
         elemento.current,
-        criarPlataformaDoArquipelago({ publico, perfil: { id, primeiroNome }, voltarPara }),
+        criarPlataformaDoArquipelago({
+          publico,
+          perfil: { id, primeiroNome },
+          voltarPara,
+          abrirFerramenta,
+        }),
       )
       setEstado('pronto')
     })().catch((erro) => {
@@ -144,6 +264,8 @@ export function ArquipelagoHost(props: {
     })
     return () => {
       vivo = false
+      pendente.current?.({ situacao: 'cancelado' })
+      pendente.current = null
       montagem?.desmontar()
     }
   }, [publico, id, primeiroNome, voltarPara])
@@ -152,6 +274,42 @@ export function ArquipelagoHost(props: {
     // A moldura usa estilo próprio (não classes): o jogo ocupa a tela em qualquer app que hospede.
     <div style={{ position: 'fixed', inset: 0, background: '#0e1430' }}>
       <div ref={elemento} style={{ position: 'absolute', inset: 0 }} />
+      {creation ? (
+        <ToolLoadBoundary
+          onCancel={() => {
+            setCreation(null)
+            const resolve = pendente.current
+            pendente.current = null
+            resolve?.({ situacao: 'indisponivel', motivo: 'em-breve' })
+          }}
+        >
+          <Suspense
+            fallback={
+              <div
+                className="absolute inset-0 grid place-items-center bg-background text-foreground"
+                role="status"
+              >
+                Abrindo a ferramenta…
+              </div>
+            }
+          >
+            <CreationDialog
+              ferramenta={creation.ferramenta}
+              viewerId={id}
+              audience={publico === 'kids' ? 'kids' : 'adult'}
+              studioAvailable={creation.studioAvailable}
+              narrationEnabled={props.narrationEnabled ?? false}
+              toolAccess={creation.toolAccess}
+              onFinish={(criacaoId) => {
+                setCreation(null)
+                const resolve = pendente.current
+                pendente.current = null
+                resolve?.(criacaoId ? { situacao: 'pronto', criacaoId } : { situacao: 'cancelado' })
+              }}
+            />
+          </Suspense>
+        </ToolLoadBoundary>
+      ) : null}
       {estado === 'pronto' ? null : (
         <div
           className="grid place-items-center p-6 text-center text-white"
