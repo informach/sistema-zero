@@ -62,6 +62,7 @@ Gateway. Cada serviço é um pacote em `packages/*`, deployável de forma indepe
 | [`@sistemazero/marketing-app`](packages/marketing-app) | 3012 | Front do marketing (Next.js 16, BFF via gateway): kanban, composer, calendário, biblioteca, conexões, métricas |
 | [`@sistemazero/helpdesk`](packages/helpdesk) | 3013 | Help desk com IA para e-mail e portal (back-end): ingestão Gmail por polling, tickets, SLA interno e IA copiloto com revisão humana — DDD/Hexagonal |
 | [`@sistemazero/helpdesk-app`](packages/helpdesk-app) | 3014 | Front do help desk (Next.js 16, BFF via gateway): painel operacional, fila SLA, thread/resposta, base de conhecimento, configurações |
+| [`@sistemazero/arquipelago-api`](packages/arquipelago-api) | 3015 | Serviço do jogo Arquipélago Vagalume: acesso, salvamento por revisão, tempo livre do Kids, limite da família e publicação do cliente, com schema próprio |
 | [`@sistemazero/funnel`](packages/funnel) | 4321 | Funil de vendas (Astro 6 + ilhas React): quiz → vendas → checkout (Pix/cartão/boleto) → admin |
 | [`@sistemazero/core`](packages/core) | — | Lib compartilhada (security/logging/errors/result/http), sem framework |
 | [`@sistemazero/member-shell`](packages/member-shell) | — | Shell compartilhado da área do aluno (route handlers, proxy anti-CSRF, componentes de domínio) — consumido por community/community-kids |
@@ -69,6 +70,9 @@ Gateway. Cada serviço é um pacote em `packages/*`, deployável de forma indepe
 | [`@sistemazero/studio-runtime`](packages/studio-runtime) | — | Executor Cloudflare isolado para compilar e visualizar atividades Pro |
 | [`@sistemazero/pensa`](packages/pensa) | — | Planejamento guiado (metodologia ZERO) p/ crianças planejarem jogos antes do Estúdio — lib (TS source) embarcada nos apps |
 | [`@sistemazero/pinta`](packages/pinta) | — | Editor de assets de jogos p/ crianças (pixel art, animações, tiles, vetor) — lib (TS source) embarcada nos apps |
+| [`@sistemazero/arquipelago`](packages/arquipelago) | — | O jogo 3D Arquipélago Vagalume (React Three Fiber + Rapier), compilado à parte e carregado pela página da plataforma |
+| [`@sistemazero/arquipelago-contracts`](packages/arquipelago-contracts) | — | Contrato do jogo (zod): a porta da plataforma, o salvamento e as respostas do serviço, com versão |
+| [`@sistemazero/avatar-quarto`](packages/avatar-quarto) | — | Avatar 3D e quarto 3D, divididos de propósito pela plataforma e pelo jogo |
 | [`@sistemazero/ui`](packages/ui) | — | Componentes compartilhados (admin + community) |
 | [`@sistemazero/tui`](packages/tui) | — | UI de terminal (React + OpenTUI) |
 
@@ -111,7 +115,7 @@ isolado por `pgSchema` no Drizzle:
 - `payments` → schema `payments` · `funnel` → schema `funil` · `auth` → schema `auth` ·
   `catalog` → schema `catalog` · `members` → schema `members` · `messaging` → schema `messaging` ·
   `fiscal` → schema `fiscal` · `hub` → schema `hub` · `marketing` → schema `marketing` ·
-  `helpdesk` → schema `helpdesk`.
+  `helpdesk` → schema `helpdesk` · `arquipelago-api` → schema `arquipelago`.
 - O gateway/admin/community/community-kids/core/tui **não** têm banco (admin/community/
   community-kids são BFFs do gateway; member-shell/studio/ui/core/tui são libs).
 - Cada serviço tem **journal de migrations próprio** (`<serviço>_migrations` no schema

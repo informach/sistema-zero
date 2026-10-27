@@ -1,0 +1,29 @@
+# Imagem do serviço @sistemazero/arquipelago-api (serviço do jogo Arquipélago Vagalume).
+# IMPORTANTE: o contexto de build é a RAIZ do monorepo (não esta pasta), pois o
+# Bun precisa do workspace inteiro para instalar as dependências (inclui
+# @sistemazero/core).
+FROM oven/bun:1
+
+WORKDIR /app
+ENV NODE_ENV=production
+
+# Copia o workspace (o .dockerignore exclui node_modules/.git/.env etc.).
+COPY . .
+
+# Instala somente o serviço, o jogo e os workspaces dos quais eles dependem.
+# Inclui devDeps: drizzle-kit é necessário para rodar as migrations no pre-deploy.
+RUN bun install --frozen-lockfile \
+    --filter '@sistemazero/arquipelago-api...' \
+    --filter '@sistemazero/arquipelago...'
+
+# O cliente do jogo é publicado por este serviço (/arquipelago/cliente/*): compilar aqui mantém
+# o jogo fora do build da plataforma, e cada deploy do serviço traz o manifesto da sua versão.
+RUN bun run --filter @sistemazero/arquipelago build
+
+# Documental: o app escuta em env.PORT (o Railway injeta $PORT em runtime).
+EXPOSE 3015
+
+# Roda como usuário sem privilégios (a imagem oven/bun já provê o usuário `bun`).
+USER bun
+
+CMD ["bun", "run", "--filter", "@sistemazero/arquipelago-api", "start"]

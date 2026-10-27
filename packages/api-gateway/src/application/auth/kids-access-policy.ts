@@ -46,6 +46,8 @@ export function kidsMayAccess(
       pathname.startsWith('/members/parents/') ||
       pathname.startsWith('/helpdesk/portal/') ||
       pathname === '/referrals/me/ambassador' ||
+      // Arquipélago Vagalume: o responsável só muda o tempo livre da família.
+      pathname === '/arquipelago/familia/limite' ||
       (method === 'GET' &&
         ['/members/profile-allowance', '/members/avatars', '/members/ai-usage/me'].includes(
           pathname,
@@ -63,6 +65,9 @@ export function kidsMayAccess(
   return (
     pathname.startsWith('/members/') ||
     pathname.startsWith('/hub/') ||
+    // Arquipélago Vagalume: o jogo da criança, menos o limite que só o responsável muda.
+    (pathname.startsWith('/arquipelago/') &&
+      !pathname.toLowerCase().startsWith('/arquipelago/familia/')) ||
     (method === 'GET' && pathname.startsWith('/catalog/'))
   )
 }

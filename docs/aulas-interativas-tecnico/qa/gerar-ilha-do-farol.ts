@@ -6,11 +6,18 @@ import {
   learningImportBodyBytes,
 } from '../../../packages/core/src/learning/authoring-manifest-projection'
 import { ISLAND_SPEECH } from '../../../packages/core/src/learning/scene/island-3d'
+import { resolveCourseModels } from '../../../packages/studio/src/core/courseModels'
 import { derivadosDeVoz } from './gerar-falas-elevenlabs'
 import { gravarArquivo } from './gravar-arquivo'
 import { ilhaAulas } from './ilha-do-farol-conteudo'
 import { ilhaChecks } from './ilha-do-farol-criterios'
-import { ILHA_CURSO, ILHA_PARTES, type IlhaParte, montarProjetoIlha } from './ilha-do-farol-projeto'
+import {
+  ILHA_CURSO,
+  ILHA_ESCOLHAS_DO_VIDEO,
+  ILHA_PARTES,
+  type IlhaParte,
+  montarProjetoIlha,
+} from './ilha-do-farol-projeto'
 import { ilhaQuiz } from './ilha-do-farol-quiz'
 import { extrairPartesElevenLabs, sincronizarRecadosNaPagina } from './roteiro-elevenlabs'
 
@@ -18,12 +25,19 @@ const dir = resolve(import.meta.dirname, '../../aulas-interativas/a-ilha-do-faro
 mkdirSync(dir, { recursive: true })
 const write = (name: string, v: string | object) =>
   gravarArquivo(resolve(dir, name), typeof v === 'string' ? v : JSON.stringify(v, null, 2) + '\n')
-const projects = Object.fromEntries(ILHA_PARTES.map((p) => [p, montarProjetoIlha(p)])) as Record<
-  IlhaParte,
-  ReturnType<typeof montarProjetoIlha>
->
+// Da parte da aparência em diante, os exemplos usam a combinação que o vídeo monta.
+const projects = Object.fromEntries(
+  ILHA_PARTES.map((p) => [
+    p,
+    montarProjetoIlha(p, p === 'aparencia' || p === 'personalizar' ? ILHA_ESCOLHAS_DO_VIDEO : {}),
+  ]),
+) as Record<IlhaParte, ReturnType<typeof montarProjetoIlha>>
+// O jogo pronto da primeira aula e o projeto final importável: os modelos do começo do curso.
+const jogoPronto = montarProjetoIlha('personalizar')
+// A aparência entrou depois: fica com o último número para os exemplos de antes não mudarem.
+const ORDEM_DOS_IDS: IlhaParte[] = [...ILHA_PARTES.filter((p) => p !== 'aparencia'), 'aparencia']
 const id = (p: IlhaParte) =>
-  `1fa00000-0000-4000-8000-${String(ILHA_PARTES.indexOf(p) + 1).padStart(12, '0')}`
+  `1fa00000-0000-4000-8000-${String(ORDEM_DOS_IDS.indexOf(p) + 1).padStart(12, '0')}`
 const palette = new Set<string>()
 const visit = (v: unknown) => {
   if (!v || typeof v !== 'object') return
@@ -39,7 +53,7 @@ const goals: Record<string, string[]> = {
 const builds: IlhaParte[][] = [
   ['movimento'],
   ['posicao', 'recolher', 'memoria', 'aviso'],
-  ['sem-chave', 'decisao', 'personalizar'],
+  ['sem-chave', 'decisao', 'aparencia', 'personalizar'],
 ]
 const starts: IlhaParte[] = ['inicio', 'movimento', 'aviso']
 for (const [i, aula] of ilhaAulas.entries()) {
@@ -70,7 +84,8 @@ for (const [i, aula] of ilhaAulas.entries()) {
     })
   }
   for (const t of aula.trechos) {
-    if (i === 2 && t.kind === 'delivery') addQuiz()
+    // A revisão vem logo depois de o farol acender, antes da personalização.
+    if (i === 2 && t.key === 'aparencia') addQuiz()
     const vk = `video-${t.key}`,
       pk = `ponte-${t.key}`,
       keys = [vk, pk],
@@ -106,7 +121,7 @@ for (const [i, aula] of ilhaAulas.entries()) {
           hints: [],
           activity: {
             type: 'project-play',
-            project: projects.personalizar,
+            project: jogoPronto,
             stage: { width: 960, height: 600 },
             completion: 'participation',
             targets: [],
@@ -297,7 +312,11 @@ write('zappy-etapas.json', {
     ]),
   ),
 })
-write('ilha-do-farol.szproject.json', projects.personalizar)
+// Arquivo de importação portátil: leva os modelos reais, sem depender da biblioteca do host.
+write('ilha-do-farol.szproject.json', {
+  ...jogoPronto,
+  assets: await resolveCourseModels(jogoPronto.assets),
+})
 write(
   'passo-a-passo.md',
   '# Passo a passo do projeto — A Ilha do Farol\n\nUse o teclado para jogar: setas ou WASD. R recomeça.\n\n' +

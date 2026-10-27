@@ -60,20 +60,20 @@ Master integral da professora. Sem intervenções de personagens nesta versão. 
 
 **Clipe:** `video-movimento`
 
-**Na tela:** Projeto inicio. Mostrar Enquanto estiver rodando, A cada quadro da cena cena, a condição que guarda os limites. Encaixar movimento antes de Mover o grupo jogadores. Não alterar a proteção do caminho.
+**Na tela:** Projeto inicio. Mostrar Enquanto estiver rodando, A cada quadro da cena cena. Encaixar Andar com personagem antes do aviso. As áreas permitidas e as animações já vêm configuradas em Ao iniciar.
 
 **Fala para ElevenLabs:**
 
 ```text
 [engaging, energetic, conversational voice] Na experiência, mudar a vista não moveu a chave. Agora vamos mover o personagem. Clique no seu jogo e pressione uma seta. Ele ainda fica parado, porque falta o comando de movimento.
 
-[confident, clear, unhurried voice] Volte aos blocos. Encontre a área Enquanto estiver rodando e deixe à vista A cada quadro da cena cena. Dentro dele, encontre Mover o grupo jogadores. Ele aplica o movimento aos objetos desse grupo, que contém o personagem. O novo bloco vai antes dele. O Se que vem depois mantém o personagem nos caminhos da ilha.
+[confident, clear, unhurried voice] Volte aos blocos. Encontre a área Enquanto estiver rodando e deixe à vista A cada quadro da cena cena. Dentro dele, encontre Escrever no canto da tela. O novo bloco vai antes desse aviso. As áreas por onde o personagem pode andar já estão preparadas em Ao iniciar.
 
-[confident, clear, unhurried voice] Abra Jogo 3D, Movimento, Andar com o teclado. Pegue Mover jogador com o teclado, WASD ou setas, 3 por segundo. Arraste até o lugar que deixamos à vista e solte quando aparecer o encaixe. Troque jogador por personagem. No número que vem em 3, coloque 4.
+[confident, clear, unhurried voice] Abra Jogo 3D, Movimento, Andar com o teclado. Pegue Andar com personagem usando WASD ou setas, velocidade 3. Arraste até o lugar que deixamos à vista e solte quando aparecer o encaixe. No nome, escolha personagem. No número que vem em 3, coloque 4.
 
 [engaging, energetic, conversational voice] Lembra dos quadros do jogo 2D? A cada quadro, esse comando confere as teclas pressionadas e move o personagem no chão. O número é a velocidade por segundo.
 
-[upbeat, encouraging voice] Execute o jogo. Clique nele, pressione a seta da direita por um tempo e solte. Faça o mesmo com as outras três. Repare: ele anda enquanto você pressiona e para quando solta. Experimente também chegar à ponte e à beirada.
+[upbeat, encouraging voice] Execute o jogo. Clique nele, pressione a seta da direita por um tempo e solte. Faça o mesmo com as outras três. Repare: ele anda enquanto você pressiona e para quando solta. Ele também mexe as pernas e os braços enquanto anda, e respira quando para: essas animações já vieram prontas no seu projeto. Experimente também chegar à ponte e à beirada.
 
 [reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos, confira os nomes e os encaixes que acabamos de montar e teste de novo.
 

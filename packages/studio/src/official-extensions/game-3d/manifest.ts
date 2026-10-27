@@ -3,7 +3,7 @@ import type { ExtensionManifest } from '#extensions'
 export const gameThreeDManifest: ExtensionManifest = {
   id: 'game-3d',
   name: 'Jogo 3D',
-  version: '0.31.0',
+  version: '0.32.0',
   description:
     'Blocos para criar jogos 3D com Three.js: cena, céu e câmera (um bloco com seis modos), objetos e modelos do Molda, movimento em "por segundo" e em graus, teclado e mouse, encostar, grupos que multiplicam um molde, placar, vida e telas de início e fim, tempo, sorteio e som. No fim, Kits prontos: "Desvie", "Travessia", "Corrida", "Empilhar" e "Plataforma". Three.js carrega de um CDN fixado.',
   category: 'games',
@@ -21,6 +21,16 @@ cenas e **jogos** 3D sobre WebGL. O Three.js é carregado de um CDN **fixado**
 A paleta tem dez famílias, na ordem em que um jogo é montado: 🎬 Cena, céu e câmera ·
 🧊 Objetos · 🏃 Movimento · 🎮 Controles · 💥 Encostar · 📦 Grupos · 🏆 Placar, vida e telas ·
 ⏱️ Tempo e sorteio · 🔊 Som · 🧰 Kits prontos.
+
+### Primeiros jogos, sem listas nem propriedades de objetos
+
+- **Andar com … usando WASD/setas** (\`topDown\`) lê as teclas, move no chão e vira o personagem, dentro de **A cada quadro**. Não somar **Mover o grupo**: este comando já aplica o movimento.
+- **Permitir … andar em x … e z …** (\`walkArea\`), em **Ao iniciar**, define uma área permitida. Várias áreas formam um caminho unido. O personagem não salta intervalos entre áreas. Sem áreas, o movimento é livre.
+- **Animações de …: parado …, andando …** (\`walkAnimations\`) prepara os clipes que esse movimento usa, em **Ao iniciar**.
+- **Quando … encostar em …** (\`onTouch\`) escolhe diretamente dois elementos da cena. Dispara uma vez por entrada no contato, sem grupo ou nome de item.
+- **Enquadrar a cena** (\`frameScene\`) mantém uma área centrada em x/z zero, acima do chão, visível ao redimensionar a prévia. Largura, altura e profundidade descrevem a área de jogo, sem incluir o céu.
+
+**Mover … com o teclado** (\`controlWithKeys\`) conserva o comportamento anterior: define velocidade para física/grupos aplicarem depois. Os comandos novos não alteram projetos existentes. Objetos da categoria visual são os elementos 3D; estruturas de dados de Programação continuam nos níveis posteriores.
 
 ### Unidades
 
@@ -54,7 +64,7 @@ em um evento ou em um construtor.
 ### 🧊 Objetos
 
 - **Criar o cubo**, **Criar a esfera** e **Criar a caixa** (medidas livres, boa para chão e paredes). Cilindro, cone, plano e anel completam as formas.
-- **Criar o objeto … com o modelo** põe na cena um modelo 3D de verdade (\`.glb\` montado no **Molda** e trazido em "Modelos 3D", ou enviado). Ele nasce como um cubo e ganha a forma do arquivo assim que carrega; o tamanho é o lado maior, em blocos, com o centro no lugar do cubo (posição, gravidade e encostar valem igual).
+- **Criar o objeto … com o modelo** põe na cena um modelo 3D de verdade (\`.glb\` montado no **Molda** e trazido em "Modelos 3D", ou enviado). Ele nasce como um cubo e ganha a forma do arquivo assim que carrega; o tamanho é o lado maior, em blocos (até 200), com o centro no lugar do cubo (posição, gravidade e encostar valem igual). Um cenário inteiro, maior que 64, não mostra o cubo enquanto carrega.
 - **🎬 Animação do modelo**: modelos do Molda com **animação** (ossos) e com **pintura que se mexe** funcionam no Jogo 3D. **Tocar a animação ⟨nome⟩ em ⟨objeto⟩ repetindo/uma vez** usa o nome do clipe criado no Molda (um nome que não existe avisa quais existem); dentro do **A cada quadro**, pedir a mesma animação de novo só a deixa continuar, e trocar o nome troca suavemente. **Parar a animação** e **⟨objeto⟩ terminou a animação?** (depois de "uma vez") completam. Cada cópia de grupo anima no seu tempo; a pintura animada anda sozinha, para na tela de pausa e volta ao começo no **Recomeçar**.
 - **Montar um modelo**: junte peças da mesma cena; mover o modelo move tudo.
 - **Aparência**: pintar, quanto aparece (opacidade), imagem (**repetindo N vezes** deixa o desenho lado a lado, bom para chão e parede), material, **estampa** (tijolo, pedra, grama, água, lava, moeda, xadrez… desenhadas na hora, sem arquivo), sem sombra e mostrar/esconder.

@@ -16,6 +16,7 @@ import { trackOnboardingEvent } from '@/lib/onboarding-telemetry'
 import { canAddProfile, type ProfileAllowance } from '@/lib/profile-allowance'
 import { familyAccessReady } from '@/lib/study-access-view'
 import type { ProfileView } from '@/lib/types'
+import { ArquipelagoLimitCard } from './_components/arquipelago-limit-card'
 import { AttentionList, attentionItems } from './_components/attention-list'
 import { AddChildCard, ChildCard } from './_components/child-card'
 import { ParentShell } from './_components/parent-shell'
@@ -268,6 +269,7 @@ export function ParentsClient({
           <ProfileAllowanceNote allowance={profileAllowance} profilesCount={profiles.length} />
         ) : null}
       </ParentSection>
+      <ArquipelagoLimitCard />
       {guideStep ? null : (
         <ParentSection
           title="Como funciona o acesso"

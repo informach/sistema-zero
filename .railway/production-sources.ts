@@ -5,6 +5,7 @@ import type { SourceConfig } from 'railway/iac'
 export const PRODUCTION_APPLICATION_NAMES = [
   'admin',
   'api-gateway',
+  'arquipelago-api',
   'auth',
   'catalog',
   'community',
@@ -33,6 +34,12 @@ export const PRODUCTION_GITHUB_SOURCES = Object.freeze({
     rootDirectory: '/',
   }),
   'api-gateway': Object.freeze({
+    type: 'github',
+    branch: 'main',
+    repo: 'informach/sistema-zero',
+    rootDirectory: '/',
+  }),
+  'arquipelago-api': Object.freeze({
     type: 'github',
     branch: 'main',
     repo: 'informach/sistema-zero',

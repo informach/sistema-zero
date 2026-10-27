@@ -1,5 +1,21 @@
 # CLAUDE.md — @sistemazero/community-kids
 
+## Arquipélago Vagalume: a página do jogo (27/10/2026)
+
+Desenho e regras em `docs/arquipelago.md`. Aqui mora só a página que hospeda o jogo.
+
+- **`/arquipelago`** (`app/arquipelago/page.tsx`, fora do grupo `(app)`: o jogo ocupa a tela) monta
+  o `ArquipelagoHost` do member-shell com o perfil da sessão. Sem item de menu por enquanto; quem
+  vê o jogo é o serviço do jogo (sem ele, a página diz "O Arquipélago ainda não abriu por aqui.").
+  Nenhuma variável de ambiente nova (a regra do Railway pede criar no painel antes).
+- Shims em `app/api/arquipelago/{acesso,salvamento,tempo,cliente/[arquivo]}` e
+  `app/api/parents/arquipelago/limite` (`requireParentGateAccountOnly`). `api/arquipelago/cliente`
+  fica FORA do matcher do proxy (o navegador importa o módulo sem `x-sz-session`).
+- `/arquipelago` nos `protectedPrefixes`; `next.config.ts`: `@sistemazero/arquipelago-contracts`
+  no `transpilePackages` e uma CSP própria da página que garante `'wasm-unsafe-eval'` (Rapier)
+  mesmo se a CSP estrita um dia fechar o WASM.
+
+
 ## Peças do quarto feitas no Blender (27/10/2026)
 
 As 39 peças do quarto foram refeitas no Blender e entraram 27 novas (lista em

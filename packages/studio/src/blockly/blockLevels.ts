@@ -203,6 +203,15 @@ const G3K_LEVEL: BlockLevel = 'avancado-3d'
  * ⚠️ Mexer aqui muda o degrau do bloco nas aulas curadas por nível e no Zappy/Pensa.
  */
 const INICIANTE_3D_G3D: ReadonlySet<string> = new Set<string>([
+  'sz_g3d_top_down',
+  'sz_g3d_walk_area',
+  'sz_g3d_walk_animations',
+  'sz_g3d_frame_scene',
+  'sz_g3d_on_touch',
+  // Ações diretas, como esconder um sprite e aproximá-lo de um destino no Jogo 2D.
+  'sz_g3d_animation_done',
+  'sz_g3d_set_visible',
+  'sz_g3d_move_towards',
   'sz_g3d_create_fullscreen_scene',
   'sz_g3d_animate',
   'sz_g3d_sky_photo',

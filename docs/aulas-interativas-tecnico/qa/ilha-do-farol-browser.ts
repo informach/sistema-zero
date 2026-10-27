@@ -7,12 +7,13 @@ import {
   judgeExecutionObservation,
 } from '../../../packages/core/src/learning/project-execution'
 import { instrumentCheckScript } from '../../../packages/studio/src/check/instrumentCheckScript'
+import { preloadCourseModels } from '../../../packages/studio/src/core/courseModels'
 import { asset3DManifest } from '../../../packages/studio/src/core/projectAssets'
 import { gameThreeDExtension } from '../../../packages/studio/src/official-extensions/game-3d'
 import { gameThreeDRuntimeWithoutPlatform } from '../../../packages/studio/src/official-extensions/game-3d/runtime'
 import { buildPreviewDoc } from '../../../packages/studio/src/preview/bootstrap'
 import { ilhaChecks } from './ilha-do-farol-criterios'
-import { montarProjetoIlha } from './ilha-do-farol-projeto'
+import { ILHA_ESCOLHAS_DO_VIDEO, montarProjetoIlha } from './ilha-do-farol-projeto'
 
 const root = resolve(import.meta.dirname, '../../..'),
   dir = resolve(
@@ -46,18 +47,26 @@ const scenario = process.argv[2] ?? 'correto'
 const positionScenario = scenario.startsWith('posicao-')
 const p = montarProjetoIlha(
     scenario === 'posicao-inalterada' ? 'movimento' : positionScenario ? 'posicao' : 'personalizar',
+    // Outros modelos em todos os objetos: a mesma caixa por categoria, o mesmo jogo.
+    scenario === 'personalizado' ? ILHA_ESCOLHAS_DO_VIDEO : {},
   ),
   scope = '__sz0123456789abcdef01234567'
 let js = p.files['script.js']
-if (scenario === 'sem-movimento') js = js.replace(/SZGame3D.controlWithKeys\([^;]+;/, '')
+if (scenario === 'sem-movimento') js = js.replace(/SZGame3D.topDown\([^;]+;/, '')
 if (scenario === 'sem-memoria') js = js.replace(/temChave = true/g, 'temChave = false')
 if (scenario === 'chave-alta')
   js = js.replace(/setPosition\(chave, -3, 1, -2\)/, 'setPosition(chave, -3, 3, -2)')
 if (scenario === 'outra-posicao')
   js = js.replace(/setPosition\(chave, -3, 1, -2\)/, 'setPosition(chave, -7, 1, 3)')
 if (scenario === 'barco-lento') js = js.replace('4.5, 1.8)', '4.5, 0.03)')
-if (scenario !== 'correto' && !positionScenario && js === p.files['script.js'])
+if (
+  !['correto', 'personalizado'].includes(scenario) &&
+  !positionScenario &&
+  js === p.files['script.js']
+)
   throw Error('Mutação não aplicada: ' + scenario)
+// Os modelos vêm da biblioteca dos cursos: o projeto guarda só a referência.
+await preloadCourseModels(p.assets, js)
 writeFileSync(
   resolve(dir, 'game.html'),
   buildPreviewDoc({
@@ -124,6 +133,7 @@ writeFileSync(
 console.log(JSON.stringify(verdicts, null, 2))
 const expected: Record<string, boolean[]> = {
   correto: [true, true, true, true, true, true, true],
+  personalizado: [true, true, true, true, true, true, true],
   'outra-posicao': [true, true, true, true, true, true, true],
   'sem-memoria': [true, true, true, true, true, true, false],
   'chave-alta': [true, true, true, true, false, true, false],

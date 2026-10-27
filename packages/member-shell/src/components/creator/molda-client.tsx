@@ -3,15 +3,17 @@
 // O CSS do Molda (tokens + @theme que GERA as utilitárias mld-*) é carregado pelo
 // `@import` em `app/globals.css`, DENTRO do pipeline Tailwind — mesmo gotcha do
 // Estúdio/Pensa/Pinta: um JS-import aqui só traria os tokens, sem gerar as utilitárias.
-import type { MoldaHostAdapter } from '@sistemazero/molda'
+import type { MoldaCompletionControl, MoldaHostAdapter } from '@sistemazero/molda'
 import { MOLDA_MAX_READ_VERSION } from '@sistemazero/molda/assets'
 import type { MoldaToolAccess } from '@sistemazero/molda/tools'
 import { PensaMissionLayout } from '@sistemazero/ui/pensa-mission-panel'
 import { RefreshCw } from 'lucide-react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { concluirMolda } from '../../lib/arquipelago-molda'
 import { type CreationsCloud, createCreationsCloud } from '../../lib/creations-cloud'
 import { creatorStorageNamespace } from '../../lib/creator-storage-namespace'
+import type { EmbeddedCreationControl } from '../../lib/embedded-creation-control'
 import {
   createCloudMirroredMoldaPersistence,
   type MoldaPersistenceLike,
@@ -53,6 +55,7 @@ export function MoldaClient({
   studioAvailable,
   toolAccess = null,
   narrationEnabled = false,
+  onCompletionControlChange,
 }: {
   viewerId: string | null
   audience?: 'adult' | 'kids'
@@ -60,6 +63,7 @@ export function MoldaClient({
   /** As ferramentas do posto (`moldaToolAccessFor`); `null` = tudo liberado. */
   toolAccess?: MoldaToolAccess | null
   narrationEnabled?: boolean
+  onCompletionControlChange?: (control: EmbeddedCreationControl | null) => void
 }) {
   const localNamespace = creatorStorageNamespace(viewerId, audience)
   const [mod, setMod] = useState<MoldaModule | null>(null)
@@ -67,6 +71,20 @@ export function MoldaClient({
   // "Guardado na sua conta": a fila da nuvem (uma por montagem, por perfil) e o
   // armazenamento local EMBRULHADO no espelho — o pacote continua sem backend.
   const [cloud, setCloud] = useState<CreationsCloud | null>(null)
+  const moldaControl = useRef<MoldaCompletionControl | null>(null)
+  const registerControl = useCallback((value: MoldaCompletionControl | null) => {
+    moldaControl.current = value
+  }, [])
+  useEffect(() => {
+    if (!onCompletionControlChange) return
+    onCompletionControlChange({
+      async concluir() {
+        if (!moldaControl.current || !cloud) throw new Error('O Molda ainda não está pronto')
+        return concluirMolda(moldaControl.current, cloud)
+      },
+    })
+    return () => onCompletionControlChange(null)
+  }, [cloud, onCompletionControlChange])
   // A DESCIDA está em andamento (o wrapper avisa `sync-start`/`sync-end`): selo "buscando…".
   const [syncing, setSyncing] = useState(false)
   const [persistence, setPersistence] = useState<MoldaPersistenceLike | null>(null)
@@ -380,6 +398,7 @@ export function MoldaClient({
             <div className="flex min-h-0 flex-1 flex-col">
               <mod.MoldaHostChromeProvider value={hostChrome}>
                 <mod.MoldaApp
+                  onCompletionControlChange={registerControl}
                   key={openRequest.revision}
                   adapter={adapter}
                   onWorkspaceChange={setWorkspaceActive}

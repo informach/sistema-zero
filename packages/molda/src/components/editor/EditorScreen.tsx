@@ -10,10 +10,12 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { useStore } from 'zustand'
 import { COPY } from '../../core/copy'
 import type { MoldaAsset } from '../../core/model'
+import { assetToJson } from '../../export/assetJson'
 import { exportLoadedAssetForStudio } from '../../export/studioLibrary'
 import { createEditorStore } from '../../state/editorStore'
 import { markMoldaAssetClosed, markMoldaAssetOpen } from '../../state/persistence'
 import { useMoldaApp } from '../appContext'
+import type { MoldaCompletionControl } from '../completionControl'
 import { Button } from '../ui/Button'
 import { isMoldaDialogOpen } from '../ui/Dialog'
 import { isTypingTarget } from '../ui/interaction'
@@ -31,9 +33,11 @@ const EDITORS = {
 function LoadedEditor({
   initial,
   onBack,
+  onCompletionControlChange,
 }: {
   initial: MoldaAsset
   onBack: () => void
+  onCompletionControlChange?: (control: MoldaCompletionControl | null) => void
 }): JSX.Element {
   const { adapter, gallery, persistence } = useMoldaApp()
   const { showToast } = useToast()
@@ -56,6 +60,22 @@ function LoadedEditor({
   })
   const closingRef = useRef(false)
   const lifetime = useRef(0)
+  useEffect(() => {
+    if (!onCompletionControlChange) return
+    onCompletionControlChange({
+      async flush() {
+        const generation = lifetime.current
+        await editor.getState().flush()
+        if (generation !== lifetime.current)
+          throw new Error('O editor foi fechado durante o salvamento')
+        const state = editor.getState()
+        if (state.asset !== state.savedAsset || state.saveState !== 'saved')
+          throw new Error(state.saveError ?? 'A criação não foi salva')
+        return { id: state.savedAsset.id, json: JSON.stringify(assetToJson(state.savedAsset)) }
+      },
+    })
+    return () => onCompletionControlChange(null)
+  }, [editor, onCompletionControlChange])
   const handleBack = useCallback(() => {
     if (closingRef.current) return
     closingRef.current = true
@@ -120,9 +140,11 @@ function LoadedEditor({
 export function EditorScreen({
   assetId,
   onBack,
+  onCompletionControlChange,
 }: {
   assetId: string
   onBack: () => void
+  onCompletionControlChange?: (control: MoldaCompletionControl | null) => void
 }): JSX.Element {
   const { persistence } = useMoldaApp()
   const { state, retry } = useAssetDocument(persistence, assetId)
@@ -143,5 +165,12 @@ export function EditorScreen({
       </div>
     )
   }
-  return <LoadedEditor key={state.asset.id} initial={state.asset} onBack={onBack} />
+  return (
+    <LoadedEditor
+      key={state.asset.id}
+      initial={state.asset}
+      onBack={onBack}
+      onCompletionControlChange={onCompletionControlChange}
+    />
+  )
 }

@@ -12,10 +12,21 @@ import type { StudioTier } from '@sistemazero/member-shell/lib/studio-tier'
 import { useIsDesktop } from '@sistemazero/member-shell/lib/use-is-desktop'
 import { RefreshCw } from 'lucide-react'
 import { useRouter } from 'next/navigation'
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import {
+  lazy,
+  Suspense,
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
+import { concluirStudio } from '../../lib/arquipelago-studio'
 import type { CreationsCloud } from '../../lib/creations-cloud'
 import { createStoredSyncedMarks } from '../../lib/creations-sync'
 import { creatorStorageNamespace } from '../../lib/creator-storage-namespace'
+import type { EmbeddedCreationControl } from '../../lib/embedded-creation-control'
 import { editorExitPath, linkStudioMission } from '../../lib/pensa-mission-link'
 import {
   clearPensaRestore,
@@ -35,6 +46,7 @@ import { createStudioCloudSync } from '../../lib/studio-cloud'
 import { createStudioCloudTransport } from '../../lib/studio-cloud-transport'
 import { authorizeJavaScriptCreation } from '../../lib/studio-javascript-creation'
 import { EMBEDDED_STUDIO_FRAME, EmbeddedAppLoadingBody } from './embedded-app-loading'
+import { openCreationInMolda, openDrawingInPinta } from './open-creation-tab'
 import { PensaMissionBlocked } from './pensa-mission-blocked'
 import { StudioFullEditor } from './studio-full-editor'
 import { HostChromeAnnouncer, useHostChrome } from './use-host-chrome'
@@ -53,7 +65,13 @@ import { useKidsStudioTutor } from './use-studio-tutor'
 // isso carregamos o módulo inteiro DENTRO de um effect (igual ao public-player) e o
 // server renderiza só o placeholder. `mod` guarda os exports carregados.
 type StudioModule = typeof import('@sistemazero/studio')
-type View = { name: 'list' } | { name: 'editor'; projectId: string }
+const EmbeddedStudioProEditor = lazy(() =>
+  import('../studio/studio-pro-editor').then((module) => ({ default: module.StudioProEditor })),
+)
+type View =
+  | { name: 'list' }
+  | { name: 'editor' | 'pro'; projectId: string }
+  | { name: 'pro-denied' }
 
 /**
  * Estúdio Completo embarcado na comunidade kids (produto vendável). Hospeda a navegação
@@ -78,6 +96,8 @@ export function StudioFullClient({
   moldaOwned = false,
   narrationEnabled = false,
   voiceInputEnabled = false,
+  onCompletionControlChange,
+  embeddedInArquipelago = false,
 }: {
   viewerId: string | null
   audience?: 'adult' | 'kids'
@@ -120,12 +140,25 @@ export function StudioFullClient({
   moldaOwned?: boolean
   narrationEnabled?: boolean
   voiceInputEnabled?: boolean
+  onCompletionControlChange?: (control: EmbeddedCreationControl | null) => void
+  embeddedInArquipelago?: boolean
 }) {
   const localNamespace = creatorStorageNamespace(viewerId, audience)
   const router = useRouter()
   const [mod, setMod] = useState<StudioModule | null>(null)
   const [loadError, setLoadError] = useState(false)
   const [view, setView] = useState<View>({ name: 'list' })
+  const viewRef = useRef(view)
+  const editorControl = useRef<{ flush(): Promise<{ id: string; snapshot: unknown }> } | null>(null)
+  useLayoutEffect(() => {
+    viewRef.current = view
+  }, [view])
+  const registerCompletionControl = useCallback(
+    (control: { flush(): Promise<{ id: string; snapshot: unknown }> } | null) => {
+      editorControl.current = control
+    },
+    [],
+  )
   const pythonCreationVisible = !taskId && showPythonCreation
   const freeOptions = useFreeStudioOptions(viewerId, pythonCreationVisible, audience)
   const [openingProject, setOpeningProject] = useState<'loading' | 'error' | null>(
@@ -147,7 +180,34 @@ export function StudioFullClient({
     pullMissing: () => Promise<void>
     /** Baixa E restaura um projeto (marca de sincronia avançada só depois de gravar). */
     restoreProject: (id: string) => Promise<boolean>
+    downloadProject: ReturnType<typeof createStudioCloudSync>['downloadProject']
   } | null>(null)
+  useEffect(() => {
+    if (!onCompletionControlChange) return
+    onCompletionControlChange({
+      async concluir() {
+        const before = viewRef.current
+        if (before.name === 'list') return null
+        if (before.name === 'pro-denied') throw new Error('O modo Pro não está disponível')
+        const editor = editorControl.current
+        if (!editor || !cloudSync) throw new Error('O Estúdio ainda não está pronto')
+        const id = await concluirStudio(editor, {
+          confirm: (id, options) => cloudSync.cloud.confirm(id, options),
+          downloadProject: (id) => cloudSync.downloadProject(id),
+        })
+        const after = viewRef.current
+        if (
+          (after.name !== 'editor' && after.name !== 'pro') ||
+          after.projectId !== before.projectId ||
+          editorControl.current !== editor ||
+          id !== before.projectId
+        )
+          throw new Error('O projeto aberto mudou durante o salvamento')
+        return id
+      },
+    })
+    return () => onCompletionControlChange(null)
+  }, [cloudSync, onCompletionControlChange])
   // A DESCIDA está em andamento (a lista já está na tela; o selo avisa "buscando…").
   const [syncing, setSyncing] = useState(false)
   const pullCancellationRef = useRef<{
@@ -170,6 +230,12 @@ export function StudioFullClient({
     },
     [cloudSync, viewerId, localNamespace],
   )
+  const embeddedProId = view.name === 'pro' ? view.projectId : null
+  const prepareEmbeddedPro = useCallback(async () => {
+    if (!embeddedProId || !cloudSync) throw new Error('O Estúdio ainda não está pronto')
+    await cloudSync.pullMissing()
+    await preparePensaOpen(embeddedProId)
+  }, [cloudSync, embeddedProId, preparePensaOpen])
   const precisaPrepararAbertura = useCallback(
     (projectId: string): boolean => {
       if (!viewerId) return false
@@ -241,6 +307,12 @@ export function StudioFullClient({
   // um PRÉ-FILTRO; o gate real é a capacidade (`canRunProMode`) na rota /estudio/pro.
   const isDesktop = useIsDesktop()
   const proAvailable = tier.pro && isDesktop
+  const openEmbeddedPro = useCallback(
+    (project: { id: string }) => {
+      setView(proAvailable ? { name: 'pro', projectId: project.id } : { name: 'pro-denied' })
+    },
+    [proAvailable],
+  )
   const {
     data: taskHandoff,
     status: taskHandoffStatus,
@@ -293,6 +365,7 @@ export function StudioFullClient({
             cancelPull: sync.cancelPull,
             pullMissing: sync.pullMissing,
             restoreProject: sync.restoreProject,
+            downloadProject: sync.downloadProject,
           })
           setSyncing(true)
           void sync
@@ -771,6 +844,39 @@ export function StudioFullClient({
                 />
               </div>
             </div>
+          ) : view.name === 'pro-denied' ? (
+            <div role="alert" className="grid h-full place-content-center gap-4 p-6 text-center">
+              <p>O modo Pro não está disponível nesta conta ou neste dispositivo.</p>
+              <button
+                type="button"
+                onClick={() => setView({ name: 'list' })}
+                className="rounded-full bg-primary px-5 py-2 font-semibold text-primary-foreground"
+              >
+                Voltar à galeria
+              </button>
+            </div>
+          ) : view.name === 'pro' ? (
+            <Suspense fallback={<EmbeddedAppLoadingBody label="Carregando o Estúdio Pro…" />}>
+              <EmbeddedStudioProEditor
+                key={JSON.stringify([viewerId, view.projectId, 'embedded-pro'])}
+                audience={audience}
+                freeRuntime
+                viewerId={viewerId}
+                storageNamespace={localNamespace}
+                projectId={view.projectId}
+                theme={studioTheme}
+                onExit={exitEditor}
+                tutor={tutor}
+                share={share}
+                prepareProject={prepareEmbeddedPro}
+                pintaLibrary={pintaLibrary}
+                moldaLibrary={moldaLibrary}
+                teamLibrary={teamLibrary}
+                onEditDrawing={pintaLibrary ? openDrawingInPinta : undefined}
+                onEditCreation={moldaLibrary ? openCreationInMolda : undefined}
+                onCompletionControlChange={registerCompletionControl}
+              />
+            </Suspense>
           ) : (
             <StudioFullEditor
               key={JSON.stringify([viewerId, view.projectId])}
@@ -789,6 +895,8 @@ export function StudioFullClient({
               pintaLibrary={pintaLibrary}
               moldaLibrary={moldaLibrary}
               teamLibrary={teamLibrary}
+              onCompletionControlChange={registerCompletionControl}
+              onOpenEmbeddedPro={embeddedInArquipelago ? openEmbeddedPro : undefined}
             />
           )}
         </mod.StudioHostChromeProvider>

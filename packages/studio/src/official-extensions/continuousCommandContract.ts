@@ -17,6 +17,7 @@ export const CONTINUOUS_EXTENSION_COMMANDS = [
   { blockType: 'sz_g2d_on_sprite_group_overlap', statementType: 'g2d:onSpriteGroupOverlap' },
   { blockType: 'sz_gk_overlap_groups', statementType: 'gk:overlapGroups' },
 
+  { blockType: 'sz_g3d_top_down', statementType: 'g3d:topDown' },
   { blockType: 'sz_g3d_control_keys', statementType: 'g3d:controlWithKeys' },
   { blockType: 'sz_g3d_apply_gravity', statementType: 'g3d:applyGravity' },
   { blockType: 'sz_g3d_grid_step', statementType: 'g3d:gridStep' },

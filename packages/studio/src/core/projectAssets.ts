@@ -1,4 +1,5 @@
 import type { PintaImageDerivation } from '@sistemazero/core/studio/pinta-image'
+import { courseModelDataUrl, isCourseModelStub } from './courseModels'
 import { readPintaImageAssetMetadata } from './pintaImageAsset'
 import { validProAssetPath } from './proAssetPaths'
 
@@ -679,7 +680,12 @@ export function asset3DManifest(
     if (!a || !isAsset3DKind(a.kind)) continue
     if (typeof a.name !== 'string' || typeof a.dataUrl !== 'string') continue
     if (typeof a.originalFileName !== 'string') continue
-    out[a.name] = { kind: a.kind, dataUrl: a.dataUrl, fileName: a.originalFileName }
+    // Modelo da biblioteca dos cursos já carregado (`preloadCourseModels`): o arquivo de
+    // verdade no lugar do GLB mínimo que o projeto guarda.
+    const resolvedModel = courseModelDataUrl(a)
+    if (!resolvedModel && isCourseModelStub(a)) continue
+    const dataUrl = resolvedModel ?? a.dataUrl
+    out[a.name] = { kind: a.kind, dataUrl, fileName: a.originalFileName }
   }
   return out
 }

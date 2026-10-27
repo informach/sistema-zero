@@ -44,16 +44,16 @@ export const ilhaAulas: { slug: string; title: string; trechos: IlhaTrecho[] }[]
         title: 'Faça o personagem andar',
         kind: 'build',
         screen:
-          'Projeto inicio. Mostrar Enquanto estiver rodando, A cada quadro da cena cena, a condição que guarda os limites. Encaixar movimento antes de Mover o grupo jogadores. Não alterar a proteção do caminho.',
+          'Projeto inicio. Mostrar Enquanto estiver rodando, A cada quadro da cena cena. Encaixar Andar com personagem antes do aviso. As áreas permitidas e as animações já vêm configuradas em Ao iniciar.',
         steps: [
           'Abra Enquanto estiver rodando e deixe à vista A cada quadro da cena cena.',
-          'Antes de Mover o grupo jogadores, encaixe Jogo 3D → Movimento → Andar com o teclado → Mover jogador com o teclado (WASD/setas), 3 por segundo.',
-          'Troque jogador por personagem e 3 por 4.',
+          'Antes de Escrever no canto da tela, encaixe Jogo 3D → Movimento → Andar com o teclado → Andar com personagem usando WASD/setas, velocidade 3.',
+          'Escolha personagem e troque a velocidade de 3 por 4.',
           'Execute o jogo. Pressione e solte cada seta: ande nas quatro direções e pare ao soltar. Confira a ponte e a beirada.',
           'Verifique o projeto, corrija se necessário e espere Salvo.',
         ],
         text:
-          '[engaging, energetic, conversational voice] Na experiência, mudar a vista não moveu a chave. Agora vamos mover o personagem. Clique no seu jogo e pressione uma seta. Ele ainda fica parado, porque falta o comando de movimento. [confident, clear, unhurried voice] Volte aos blocos. Encontre a área Enquanto estiver rodando e deixe à vista A cada quadro da cena cena. Dentro dele, encontre Mover o grupo jogadores. Ele aplica o movimento aos objetos desse grupo, que contém o personagem. O novo bloco vai antes dele. O Se que vem depois mantém o personagem nos caminhos da ilha. [confident, clear, unhurried voice] Abra Jogo 3D, Movimento, Andar com o teclado. Pegue Mover jogador com o teclado, WASD ou setas, 3 por segundo. Arraste até o lugar que deixamos à vista e solte quando aparecer o encaixe. Troque jogador por personagem. No número que vem em 3, coloque 4. [engaging, energetic, conversational voice] Lembra dos quadros do jogo 2D? A cada quadro, esse comando confere as teclas pressionadas e move o personagem no chão. O número é a velocidade por segundo. [upbeat, encouraging voice] Execute o jogo. Clique nele, pressione a seta da direita por um tempo e solte. Faça o mesmo com as outras três. Repare: ele anda enquanto você pressiona e para quando solta. Experimente também chegar à ponte e à beirada. ' +
+          '[engaging, energetic, conversational voice] Na experiência, mudar a vista não moveu a chave. Agora vamos mover o personagem. Clique no seu jogo e pressione uma seta. Ele ainda fica parado, porque falta o comando de movimento. [confident, clear, unhurried voice] Volte aos blocos. Encontre a área Enquanto estiver rodando e deixe à vista A cada quadro da cena cena. Dentro dele, encontre Escrever no canto da tela. O novo bloco vai antes desse aviso. As áreas por onde o personagem pode andar já estão preparadas em Ao iniciar. [confident, clear, unhurried voice] Abra Jogo 3D, Movimento, Andar com o teclado. Pegue Andar com personagem usando WASD ou setas, velocidade 3. Arraste até o lugar que deixamos à vista e solte quando aparecer o encaixe. No nome, escolha personagem. No número que vem em 3, coloque 4. [engaging, energetic, conversational voice] Lembra dos quadros do jogo 2D? A cada quadro, esse comando confere as teclas pressionadas e move o personagem no chão. O número é a velocidade por segundo. [upbeat, encouraging voice] Execute o jogo. Clique nele, pressione a seta da direita por um tempo e solte. Faça o mesmo com as outras três. Repare: ele anda enquanto você pressiona e para quando solta. Ele também mexe as pernas e os braços enquanto anda, e respira quando para: essas animações já vieram prontas no seu projeto. Experimente também chegar à ponte e à beirada. ' +
           verificar,
       },
       {
@@ -120,15 +120,15 @@ export const ilhaAulas: { slug: string; title: string; trechos: IlhaTrecho[] }[]
         title: 'Recolha a chave',
         kind: 'build',
         screen:
-          'Mostrar Quando acontecer existente com reinício por R. Novo encontro fica fora do evento R. Grupo chaves contém chave; item representa objeto encontrado. Confirmar literal do bloco no catálogo.',
+          'Mostrar Quando acontecer existente com reinício por R. Novo encontro fica fora do evento R. O evento escolhe diretamente personagem e chave, sem grupo nem nome de item.',
         steps: [
           'Deixe à vista um espaço dentro de Quando acontecer, depois do evento da tecla R.',
-          'Jogo 3D → Encostar → Encostar: arraste Quando personagem encostar em algum do grupo chaves, chamando de item.',
+          'Jogo 3D → Encostar → Encostar: arraste Quando personagem encostar em chave.',
           'Dentro do fazer, encaixe Jogo 3D → Objetos → Aparência → Esconder o objeto chave.',
           'Jogue até a chave. Confira que ela some apenas no encontro. Pressione R para repetir.',
         ],
         text:
-          '[engaging, energetic, conversational voice] Você viu que o contato precisa acontecer também na altura. No seu jogo, leve o personagem até a chave. Ela ainda fica ali porque falta a reação do encontro. [confident, clear, unhurried voice] Volte aos blocos e encontre Quando acontecer. Já existe ali o evento da tecla R, que recomeça a partida. Deixe à vista um espaço depois desse evento, fora do fazer dele. Abra Jogo 3D, Encostar, Encostar. Pegue o bloco Quando um objeto encostar em algum do grupo. Encaixe no espaço que deixamos à vista. No objeto, escolha personagem; no grupo, escolha chaves. Deixe o nome item. O grupo chaves guarda o objeto que vamos recolher. [confident, clear, unhurried voice] Agora deixe à vista o fazer do novo encontro. Abra Jogo 3D, Objetos, Aparência e pegue o bloco de mostrar ou esconder o objeto. Encaixe dentro desse fazer. Escolha Esconder e, no objeto, chave. [upbeat, encouraging voice] Execute o jogo e caminhe até a chave. Ela deve sumir quando o personagem encostar. Pressione R e repita por outro caminho. ' +
+          '[engaging, energetic, conversational voice] Você viu que o contato precisa acontecer também na altura. No seu jogo, leve o personagem até a chave. Ela ainda fica ali porque falta a reação do encontro. [confident, clear, unhurried voice] Volte aos blocos e encontre Quando acontecer. Já existe ali o evento da tecla R, que recomeça a partida. Deixe à vista um espaço depois desse evento, fora do fazer dele. Abra Jogo 3D, Encostar, Encostar. Pegue o bloco Quando personagem encostar em chave. Encaixe no espaço que deixamos à vista. No primeiro nome, escolha personagem; no segundo, chave. [confident, clear, unhurried voice] Agora deixe à vista o fazer do novo encontro. Abra Jogo 3D, Objetos, Aparência e pegue o bloco de mostrar ou esconder o objeto. Encaixe dentro desse fazer. Escolha Esconder e, no objeto, chave. [upbeat, encouraging voice] Execute o jogo e caminhe até a chave. Ela deve sumir quando o personagem encostar. Pressione R e repita por outro caminho. ' +
           verificar,
       },
       {
@@ -140,11 +140,11 @@ export const ilhaAulas: { slug: string; title: string; trechos: IlhaTrecho[] }[]
         steps: [
           'Deixe à vista Ao iniciar, depois da linha que cria aviso. Em Programação → Variáveis, pegue Criar variável e encaixe ali. Escreva temChave no nome.',
           'No valor da variável, encaixe verdadeiro ou falso de Programação → Lógica e Se. Escolha falso: a partida começa sem chave.',
-          'Deixe à vista o encontro com chaves, depois de Esconder o objeto chave. Encaixe Alterar variável, de Programação → Variáveis. Escolha temChave e encaixe o valor verdadeiro, de Programação → Lógica e Se.',
+          'Deixe à vista o encontro com chave, depois de Esconder o objeto chave. Encaixe Alterar variável, de Programação → Variáveis. Escolha temChave e encaixe o valor verdadeiro, de Programação → Lógica e Se.',
           'Confira os dois lugares. A coleta deve guardar a informação até o reinício.',
         ],
         text:
-          '[engaging, energetic, conversational voice] A chave sumiu. Lembra do jogo 2D? Sumir e guardar que pegamos a chave são ações diferentes. Vamos usar de novo temChave, a variável que responde se o personagem tem a chave. [confident, clear, unhurried voice] Deixe à vista o fim da área Ao iniciar. Em Programação, Variáveis, pegue Criar variável e encaixe depois da linha que cria aviso. Escreva temChave no nome. Em Programação, Lógica e Se, pegue verdadeiro ou falso e coloque no valor dessa variável. Escolha falso, porque a partida começa sem a chave. [confident, clear, unhurried voice] Agora deixe à vista o encontro do personagem com chaves. Em Programação, Variáveis, pegue Alterar variável variável para e encaixe depois de Esconder o objeto chave. Escolha temChave. Em Programação, Lógica e Se, pegue verdadeiro ou falso e encaixe no valor. Aqui escolha verdadeiro. [interested, animated voice] Confira os dois lugares: ao começar, falso; ao recolher, verdadeiro. O valor não aparece como um objeto na ilha. Na próxima aula, o farol vai consultar essa informação. ' +
+          '[engaging, energetic, conversational voice] A chave sumiu. Lembra do jogo 2D? Sumir e guardar que pegamos a chave são ações diferentes. Vamos usar de novo temChave, a variável que responde se o personagem tem a chave. [confident, clear, unhurried voice] Deixe à vista o fim da área Ao iniciar. Em Programação, Variáveis, pegue Criar variável e encaixe depois da linha que cria aviso. Escreva temChave no nome. Em Programação, Lógica e Se, pegue verdadeiro ou falso e coloque no valor dessa variável. Escolha falso, porque a partida começa sem a chave. [confident, clear, unhurried voice] Agora deixe à vista o encontro do personagem com chave. Em Programação, Variáveis, pegue Alterar variável variável para e encaixe depois de Esconder o objeto chave. Escolha temChave. Em Programação, Lógica e Se, pegue verdadeiro ou falso e encaixe no valor. Aqui escolha verdadeiro. [interested, animated voice] Confira os dois lugares: ao começar, falso; ao recolher, verdadeiro. O valor não aparece como um objeto na ilha. Na próxima aula, o farol vai consultar essa informação. ' +
           verificar,
       },
       {
@@ -154,13 +154,13 @@ export const ilhaAulas: { slug: string; title: string; trechos: IlhaTrecho[] }[]
         screen:
           'Atribuição aviso dentro da coleta. HUD existente lê aviso a cada quadro. Envio desta aula.',
         steps: [
-          'Deixe à vista o encontro com chaves, depois de temChave verdadeiro. Em Programação → Variáveis, pegue Alterar variável e encaixe ali. Escolha aviso.',
+          'Deixe à vista o encontro com chave, depois de temChave verdadeiro. Em Programação → Variáveis, pegue Alterar variável e encaixe ali. Escolha aviso.',
           'Em Programação → Valores, pegue Texto e encaixe no valor. Escreva Você pegou a chave! Agora vá ao farol.',
           'Jogue, recolha e se afaste. O aviso deve continuar. Reinicie: chave e aviso inicial voltam.',
           'Verifique, aguarde Salvo e envie o projeto com confirmação.',
         ],
         text:
-          '[engaging, energetic, conversational voice] Vamos mostrar na tela quando a coleta acontece. O jogo já exibe o texto guardado em aviso. Só precisamos mudar esse texto no encontro. [confident, clear, unhurried voice] Deixe à vista o encontro com chaves e a linha temChave verdadeiro. Em Programação, Variáveis, pegue Alterar variável variável para e encaixe depois dessa linha. Escolha aviso. Em Programação, Valores, pegue Texto, encaixe no valor e escreva: Você pegou a chave! Agora vá ao farol. [upbeat, encouraging voice] Execute o jogo, recolha a chave e se afaste. A chave deve sumir e o novo aviso deve continuar na tela. Pressione R: a chave e o aviso inicial devem voltar. Se algo não funcionou, confira se esconder a chave, guardar verdadeiro e mudar aviso estão juntos no fazer do encontro. Corrija e teste novamente. ' +
+          '[engaging, energetic, conversational voice] Vamos mostrar na tela quando a coleta acontece. O jogo já exibe o texto guardado em aviso. Só precisamos mudar esse texto no encontro. [confident, clear, unhurried voice] Deixe à vista o encontro com chave e a linha temChave verdadeiro. Em Programação, Variáveis, pegue Alterar variável variável para e encaixe depois dessa linha. Escolha aviso. Em Programação, Valores, pegue Texto, encaixe no valor e escreva: Você pegou a chave! Agora vá ao farol. [upbeat, encouraging voice] Execute o jogo, recolha a chave e se afaste. A chave deve sumir e o novo aviso deve continuar na tela. Pressione R: a chave e o aviso inicial devem voltar. Se algo não funcionou, confira se esconder a chave, guardar verdadeiro e mudar aviso estão juntos no fazer do encontro. Corrija e teste novamente. ' +
           enviar,
       },
       {
@@ -181,16 +181,16 @@ export const ilhaAulas: { slug: string; title: string; trechos: IlhaTrecho[] }[]
         title: 'O farol precisa conferir a chave',
         kind: 'build',
         screen:
-          'Partida sem chave primeiro. Encontro com portas como irmão da coleta. Se temChave com então vazio, senão aviso. Retomada breve sem experiência nova de memória/condição.',
+          'Partida sem chave primeiro. Encontro com farol como irmão da coleta. Se temChave com então vazio, senão aviso. Retomada breve sem experiência nova de memória/condição.',
         steps: [
-          'Deixe à vista Quando acontecer, depois do evento da coleta e fora do fazer dele. Em Jogo 3D → Encostar → Encostar, pegue outro encontro com alguém de um grupo. Encaixe ali, escolha personagem e portas e deixe item como está.',
+          'Deixe à vista Quando acontecer, depois do evento da coleta e fora do fazer dele. Em Jogo 3D → Encostar → Encostar, pegue Quando personagem encostar em chave. Encaixe ali, escolha personagem no primeiro nome e farol no segundo.',
           'No fazer desse encontro, encaixe Programação → Lógica e Se → Se; clique em + senão.',
           'Retire a comparação x maior que zero da pergunta do Se. No lugar dela, encaixe valor da variável, de Programação → Valores, e escolha temChave.',
           'Deixe à vista o senão. Encaixe Alterar variável, de Programação → Variáveis, e escolha aviso. Encaixe Texto, de Programação → Valores, com Falta a chave. Procure na ilha antes de voltar. Deixe então vazio nesta parte.',
           'Reinicie e vá direto ao farol sem recolher a chave. Confira o aviso e a luz apagada.',
         ],
         text:
-          '[engaging, energetic, conversational voice] No jogo 2D, o farol perguntava se você tinha a chave. Vamos montar essa mesma decisão na ilha 3D. Primeiro execute o jogo e vá ao farol sem recolher a chave. Ainda falta a resposta dele. [confident, clear, unhurried voice] Volte aos blocos. Em Quando acontecer, deixe à vista um espaço depois do encontro com chaves, fora do fazer dele. Abra Jogo 3D, Encostar, Encostar. Pegue outro encontro com alguém de um grupo e encaixe nesse espaço. Escolha personagem e o grupo portas. Deixe item como está. [confident, clear, unhurried voice] Deixe à vista o fazer desse novo encontro. Abra Programação, Lógica e Se e pegue Se. Encaixe dentro do fazer. O Se chega com a pergunta x maior que zero. Arraste essa comparação pelo sinal de maior até a lixeira para deixar o lugar da pergunta vazio. Em Programação, Valores, pegue valor da variável e encaixe nesse lugar. Troque x por temChave. Depois clique em mais senão, no próprio bloco Se, para abrir o segundo caminho. [engaging, energetic, conversational voice] Verdadeiro escolhe o então; falso escolhe o senão. Agora vamos construir a resposta para quem está sem chave. [confident, clear, unhurried voice] Deixe à vista o senão. Em Programação, Variáveis, pegue Alterar variável variável para e encaixe dentro dele. Escolha aviso. Em Programação, Valores, pegue Texto e encaixe no valor. Escreva: Falta a chave. Procure na ilha antes de voltar. Deixe o então vazio nesta parte. [upbeat, encouraging voice] Execute uma partida nova e vá direto ao farol, sem passar pela chave. O farol deve continuar apagado e o aviso deve pedir a chave. ' +
+          '[engaging, energetic, conversational voice] No jogo 2D, o farol perguntava se você tinha a chave. Vamos montar essa mesma decisão na ilha 3D. Primeiro execute o jogo e vá ao farol sem recolher a chave. Ainda falta a resposta dele. [confident, clear, unhurried voice] Volte aos blocos. Em Quando acontecer, deixe à vista um espaço depois do encontro com chave, fora do fazer dele. Abra Jogo 3D, Encostar, Encostar. Pegue Quando personagem encostar em chave e encaixe nesse espaço. Escolha personagem no primeiro nome e farol no segundo. [confident, clear, unhurried voice] Deixe à vista o fazer desse novo encontro. Abra Programação, Lógica e Se e pegue Se. Encaixe dentro do fazer. O Se chega com a pergunta x maior que zero. Arraste essa comparação pelo sinal de maior até a lixeira para deixar o lugar da pergunta vazio. Em Programação, Valores, pegue valor da variável e encaixe nesse lugar. Troque x por temChave. Depois clique em mais senão, no próprio bloco Se, para abrir o segundo caminho. [engaging, energetic, conversational voice] Verdadeiro escolhe o então; falso escolhe o senão. Agora vamos construir a resposta para quem está sem chave. [confident, clear, unhurried voice] Deixe à vista o senão. Em Programação, Variáveis, pegue Alterar variável variável para e encaixe dentro dele. Escolha aviso. Em Programação, Valores, pegue Texto e encaixe no valor. Escreva: Falta a chave. Procure na ilha antes de voltar. Deixe o então vazio nesta parte. [upbeat, encouraging voice] Execute uma partida nova e vá direto ao farol, sem passar pela chave. O farol deve continuar apagado e o aviso deve pedir a chave. ' +
           verificar,
       },
       {
@@ -198,17 +198,35 @@ export const ilhaAulas: { slug: string; title: string; trechos: IlhaTrecho[] }[]
         title: 'Acenda o farol com a chave',
         kind: 'build',
         screen:
-          'Montar quatro ações no então: esconder apagado, mostrar aceso, ganhou verdadeiro, aviso. Barco reage a ganhou no laço já preparado.',
+          'Projeto sem-chave. Montar três ações no então: Tocar a animação acender em farol uma vez, ganhou verdadeiro e aviso. Mostrar a regra pronta em Enquanto estiver rodando que troca para aceso repetindo e aproxima o barco. Testar sem chave e com chave; o feixe gira depois de acender.',
         steps: [
-          'No encontro com portas, deixe à vista o então do Se temChave.',
-          'Jogo 3D → Objetos → Aparência: encaixe Esconder o objeto farol.',
-          'No mesmo então, encaixe Mostrar o objeto farolAceso.',
-          'Depois de Mostrar farolAceso, encaixe Alterar variável, de Programação → Variáveis. Escolha ganhou. Encaixe verdadeiro ou falso, de Programação → Lógica e Se, e escolha verdadeiro.',
+          'No encontro com farol, deixe à vista o então do Se temChave.',
+          'Jogo 3D → Objetos → 🎬 Animação do modelo: encaixe Tocar a animação dentro do então.',
+          'No primeiro espaço, escolha acender. No objeto, escolha farol. No último, escolha uma vez.',
+          'Depois dele, encaixe Alterar variável, de Programação → Variáveis. Escolha ganhou. Encaixe verdadeiro ou falso, de Programação → Lógica e Se, e escolha verdadeiro.',
           'Ainda no então, encaixe mais um Alterar variável e escolha aviso. No valor, encaixe Texto, de Programação → Valores, e escreva Você acendeu o farol! O barco pode chegar.',
-          'Teste sem chave; depois recolha e volte ao farol. Confira a luz e a chegada do barco.',
+          'Teste sem chave; depois recolha e volte ao farol. Confira a luz acendendo, o feixe girando e a chegada do barco.',
         ],
         text:
-          '[engaging, energetic, conversational voice] O farol já responde quando falta a chave. Agora vamos ensinar a resposta para quem trouxe a chave. [confident, clear, unhurried voice] Nos blocos, encontre o encontro com portas e deixe à vista o então do Se temChave. Abra Jogo 3D, Objetos, Aparência. Pegue o bloco de mostrar ou esconder e encaixe dentro do então. Escolha Esconder e o objeto farol. No mesmo caminho da paleta, pegue outro bloco de visibilidade e encaixe depois dele. Neste, escolha Mostrar e o objeto farolAceso. [interested, animated voice] São as duas versões do farol: a apagada sai, e a acesa aparece no mesmo lugar. [confident, clear, unhurried voice] Ainda dentro do então, deixe à vista o lugar depois de Mostrar farolAceso. Em Programação, Variáveis, pegue Alterar variável variável para. Encaixe ali e escolha ganhou. Em Programação, Lógica e Se, pegue verdadeiro ou falso, coloque no valor e escolha verdadeiro. A regra do barco usa essa informação para se aproximar. [confident, clear, unhurried voice] Depois dessa linha, encaixe mais um Alterar variável variável para. Escolha aviso e encaixe um Texto de Programação, Valores. Escreva: Você acendeu o farol! O barco pode chegar. [upbeat, encouraging voice] Execute uma partida nova. Primeiro visite o farol sem chave: ele continua apagado. Depois pegue a chave e volte ao farol. Olha só: a luz acende, o aviso muda e o barco se aproxima. Pressione R para conferir o começo de outra partida. ' +
+          '[engaging, energetic, conversational voice] O farol já responde quando falta a chave. Agora vamos ensinar a resposta para quem trouxe a chave. [interested, animated voice] No jogo 2D, a gente trocava a imagem do farol apagado pela do farol aceso. Aqui o farol é um modelo só, e ele sabe acender: o modelo tem animações, como o personagem, que já anda e respira sozinho. [confident, clear, unhurried voice] Nos blocos, encontre o encontro com farol e deixe à vista o então do Se temChave. Abra Jogo 3D, Objetos, Animação do modelo. Pegue Tocar a animação e encaixe dentro do então. No primeiro espaço, escolha acender. No objeto, escolha farol. No último espaço, escolha uma vez. [engaging, energetic, conversational voice] Uma vez quer dizer que a luz acende e para no fim, acesa. Repetindo faria a animação recomeçar sem parar. [confident, clear, unhurried voice] Ainda dentro do então, deixe à vista o lugar depois de Tocar a animação. Em Programação, Variáveis, pegue Alterar variável variável para. Encaixe ali e escolha ganhou. Em Programação, Lógica e Se, pegue verdadeiro ou falso, coloque no valor e escolha verdadeiro. [interested, animated voice] Agora olhe em Enquanto estiver rodando: já existe uma regra pronta que usa ganhou. Quando a animação acender termina, ela deixa o farol aceso, com o feixe girando, e aproxima o barco. [confident, clear, unhurried voice] Volte ao então e, depois de ganhou, encaixe mais um Alterar variável variável para. Escolha aviso e encaixe um Texto de Programação, Valores. Escreva: Você acendeu o farol! O barco pode chegar. [upbeat, encouraging voice] Execute uma partida nova. Primeiro visite o farol sem chave: ele continua apagado. Depois pegue a chave e volte ao farol. Olha só: a luz acende, o feixe começa a girar, o aviso muda e o barco se aproxima. Pressione R para conferir o começo de outra partida. ' +
+          verificar,
+      },
+      {
+        key: 'aparencia',
+        title: 'Deixe o jogo com a sua cara',
+        kind: 'build',
+        screen:
+          'Projeto decisao. Antes de gravar, preparar duas combinações em perfis de teste (robo, lancha, chave-prateada, farol-colorido, ilha-nevada; mergulhador, veleiro, chave-dourada, farol-de-madeira, costa-rochosa) e gravar 3 a 4 segundos de cada com o farol acendendo e o barco chegando. Depois, ao vivo: em Ao iniciar, abrir a lista do modelo de cada Criar o objeto e escolher pirata, barco-pirata, chave-de-estrela, farol-de-pedra e noite-na-ilha. Não mudar nome do objeto nem tamanho.',
+        steps: [
+          'Em Ao iniciar, deixe à vista Criar o objeto personagem com o modelo aventureiro. Clique em aventureiro e escolha outro personagem da lista.',
+          'Faça o mesmo em Criar o objeto barco, chave e farol: clique no nome do modelo e escolha outro.',
+          'Em Criar o objeto cenario, troque praia-tropical por outro cenário: costa-rochosa, ilha-nevada ou noite-na-ilha.',
+          'Troque só o modelo. Deixe o nome do objeto, a cena e o tamanho como estão.',
+          'Teste a combinação: vá ao farol sem a chave, depois busque a chave e volte. Confira a luz e o barco.',
+          'Verifique o projeto e aguarde Salvo.',
+        ],
+        text:
+          '[curious] O seu farol já acende! E agora chegou uma surpresa: olha quantas versões o seu jogo pode ter. Outro personagem, outro barco, outra chave, outro farol e até outro cenário. [interested, animated voice] São as mesmas opções da Chave do Farol, com os mesmos nomes, agora em 3D. [engaging, energetic, conversational voice] Eu vou mostrar com o pirata. Você escolhe o que quiser, e o que você gostou pode ficar como está. [confident, clear, unhurried voice] Nos blocos, abra Ao iniciar e deixe à vista Criar o objeto personagem com o modelo aventureiro. Clique no nome aventureiro para abrir a lista e escolha outro. Eu escolho o pirata. [interested, animated voice] Olha só: ele aparece no mesmo lugar e do mesmo tamanho, porque todos os personagens deste jogo foram feitos com a mesma medida. E ele também anda e respira, como o aventureiro. [confident, clear, unhurried voice] Repare que o nome do objeto continua personagem, porque os outros blocos usam esse nome. Troque só o modelo e deixe o nome e o tamanho como estão. [engaging, energetic, conversational voice] Os blocos Criar o objeto barco, chave e farol funcionam do mesmo jeito: clique no nome do modelo e escolha outro. Eu vou escolher barco pirata, chave de estrela e farol de pedra. [interested, animated voice] No 2D, o farol tinha duas imagens, apagada e acesa. Aqui cada farol é um modelo só, e todos sabem acender. Por isso basta trocar num lugar. [engaging, energetic, conversational voice] Agora falta o lugar onde a história acontece. O primeiro Criar o objeto, o cenario, é a ilha inteira: o mar, o chão, a ponte, as árvores e o céu. Clique em praia tropical e escolha outro. Eu vou usar noite na ilha. [interested, animated voice] Olha só: o caminho, a ponte e o lugar do farol continuam os mesmos. [upbeat, encouraging voice] Agora teste a sua combinação! Vá até o farol sem a chave: ele continua apagado. Depois busque a chave e volte. Olha só: o farol de pedra acende, e o barco pirata vem chegando! [reassuring, encouraging voice] Se algo não funcionou, volte aos blocos e confira se você trocou só o modelo, e se cada modelo está no bloco do mesmo tipo: personagem no personagem, barco no barco. ' +
           verificar,
       },
       {
@@ -216,7 +234,7 @@ export const ilhaAulas: { slug: string; title: string; trechos: IlhaTrecho[] }[]
         title: 'Escolha seu esconderijo e teste de verdade',
         kind: 'delivery',
         screen:
-          'Personalizar somente posição da chave e mensagens. Valor inicial exemplo −3,1,−2. Não expor upload de modelos ainda. Testar acesso pelo chão e ambos os ramos; envio atualizado.',
+          'Projeto aparencia, com a combinação escolhida na parte anterior. Personalizar posição da chave e mensagens. Valor inicial exemplo −3,1,−2. Testar acesso pelo chão e ambos os ramos; envio atualizado.',
         steps: [
           'Em Ao iniciar → Posição do objeto chave, escolha x e z dentro da ilha. Mantenha uma altura que o personagem alcance.',
           'Se quiser, escreva seus próprios avisos nas linhas de atribuição, conservando a função de cada mensagem.',
@@ -234,7 +252,7 @@ export const ilhaAulas: { slug: string; title: string; trechos: IlhaTrecho[] }[]
         kind: 'closing',
         screen:
           'Depois do envio final, mostrar o Estúdio e a publicação opcional: Compartilhar, resumo, Gerar capa, Publicar, confirmação e Fechar. Sem certificado, venda ou autoria das artes. Concluir aula.',
-        text: '[pleased, lively voice] Você transformou a ideia da Chave do Farol em um jogo 3D! Programou o movimento, escolheu um lugar alcançável para a chave e fez o farol responder à coleta. Também aprendeu a mudar o ponto de vista para investigar o que a imagem não mostra de primeira. [upbeat, encouraging voice] Seu jogo está pronto! Se quiser publicar no Mural, clique em Compartilhar no Estúdio. O título já vem preenchido. Escreva um resumo, clique em Gerar capa e confira a imagem. Depois clique em Publicar e espere aparecer Seu jogo está no Mural! [pleased, lively voice] Olha só: seu jogo ganhou um lugar para outras pessoas jogarem! Clique em Copiar link de jogar para mostrar à família e aos amigos. Se precisar, peça ajuda a um adulto. [confident, clear, unhurried voice] Clique em Fechar para voltar. Você também pode continuar sem publicar. Para terminar, clique em Concluir aula.',
+        text: '[pleased, lively voice] Você transformou a ideia da Chave do Farol em um jogo 3D! Programou o movimento, escolheu um lugar alcançável para a chave, fez o farol acender com a coleta e deixou o jogo com a sua cara. Também aprendeu a mudar o ponto de vista para investigar o que a imagem não mostra de primeira. [upbeat, encouraging voice] Seu jogo está pronto! Se quiser publicar no Mural, clique em Compartilhar no Estúdio. O título já vem preenchido. Escreva um resumo, clique em Gerar capa e confira a imagem. Depois clique em Publicar e espere aparecer Seu jogo está no Mural! [pleased, lively voice] Olha só: seu jogo ganhou um lugar para outras pessoas jogarem! Clique em Copiar link de jogar para mostrar à família e aos amigos. Se precisar, peça ajuda a um adulto. [confident, clear, unhurried voice] Clique em Fechar para voltar. Você também pode continuar sem publicar. Para terminar, clique em Concluir aula.',
       },
     ],
   },

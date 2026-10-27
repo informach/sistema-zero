@@ -1,0 +1,36 @@
+{
+  "name": "@sistemazero/arquipelago",
+  "version": "0.1.0",
+  "description": "Arquipélago Vagalume: o jogo 3D das duas comunidades. Compilado à parte (Bun.build) e carregado pela página da plataforma por uma única função de entrada; não é importado por nenhum pacote da plataforma.",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "dev": "bun playground/servidor.ts",
+    "build": "bun scripts/build.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "bun test",
+    "check": "biome check .",
+    "check:fix": "biome check --write .",
+    "test:tempo-browser": "node playground/verificar-tempo-browser.mjs"
+  },
+  "dependencies": {
+    "@react-three/drei": "^10",
+    "@react-three/fiber": "^9",
+    "@react-three/rapier": "^2.1.0",
+    "@sistemazero/arquipelago-contracts": "workspace:*",
+    "@sistemazero/avatar-quarto": "workspace:*",
+    "react": "^19",
+    "react-dom": "^19",
+    "three": "^0.184.0",
+    "zustand": "^5.0.0"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.3.14",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "@types/three": "^0.184.1",
+    "fake-indexeddb": "6.2.5",
+    "playwright-core": "1.60.0",
+    "typescript": "^5.7.0"
+  }
+}

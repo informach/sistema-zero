@@ -1,0 +1,225 @@
+{
+  "algodao": {
+    "familia": "nuvens",
+    "raridade": "comum",
+    "triangulos": 2092,
+    "kb": 76.9,
+    "clipes": ["andar", "feliz", "parado", "pular", "trabalhar"],
+    "materiais": ["boca", "bochecha", "corpo", "detalhe", "lingua", "luz", "olho", "pupila"]
+  },
+  "bolha": {
+    "familia": "recife",
+    "raridade": "comum",
+    "triangulos": 2274,
+    "kb": 97.8,
+    "clipes": ["andar", "feliz", "parado", "pular", "trabalhar"],
+    "materiais": [
+      "boca",
+      "bochecha",
+      "corpo",
+      "corpo2",
+      "detalhe",
+      "lingua",
+      "luz",
+      "olho",
+      "pupila"
+    ]
+  },
+  "borrao": {
+    "tipo": "borrão do Cinza",
+    "triangulos": 2962,
+    "kb": 157.2,
+    "clipes": ["flutuar", "fugir", "preso", "virar"],
+    "materiais": ["boca", "bochecha", "faisca", "nevoa", "nevoa-clara", "olho", "pupila"]
+  },
+  "brigadeiro": {
+    "familia": "vila-doce",
+    "raridade": "raro",
+    "triangulos": 2972,
+    "kb": 117.3,
+    "clipes": ["andar", "feliz", "parado", "pular", "trabalhar"],
+    "materiais": [
+      "boca",
+      "bochecha",
+      "corpo",
+      "corpo2",
+      "detalhe",
+      "detalhe2",
+      "detalhe3",
+      "faisca",
+      "lingua",
+      "luz",
+      "olho",
+      "pupila"
+    ]
+  },
+  "brotinho": {
+    "familia": "dinos",
+    "raridade": "raro",
+    "triangulos": 2962,
+    "kb": 119.5,
+    "clipes": ["andar", "feliz", "parado", "pular", "trabalhar"],
+    "materiais": [
+      "boca",
+      "bochecha",
+      "corpo",
+      "corpo2",
+      "detalhe",
+      "faisca",
+      "luz",
+      "olho",
+      "pupila"
+    ]
+  },
+  "cristal": {
+    "familia": "pico",
+    "raridade": "raro",
+    "triangulos": 1470,
+    "kb": 96.8,
+    "clipes": ["andar", "feliz", "parado", "pular", "trabalhar"],
+    "materiais": [
+      "boca",
+      "bochecha",
+      "corpo",
+      "corpo2",
+      "faisca",
+      "lingua",
+      "luz",
+      "olho",
+      "pupila"
+    ]
+  },
+  "gelinho": {
+    "familia": "pico",
+    "raridade": "comum",
+    "triangulos": 2630,
+    "kb": 95.8,
+    "clipes": ["andar", "feliz", "parado", "pular", "trabalhar"],
+    "materiais": [
+      "boca",
+      "bochecha",
+      "corpo",
+      "corpo2",
+      "detalhe",
+      "lingua",
+      "luz",
+      "olho",
+      "pupila"
+    ]
+  },
+  "ipe": {
+    "familia": "bosque",
+    "raridade": "raro",
+    "triangulos": 2922,
+    "kb": 122.6,
+    "clipes": ["andar", "feliz", "parado", "pular", "trabalhar"],
+    "materiais": [
+      "barriga",
+      "boca",
+      "bochecha",
+      "corpo",
+      "corpo2",
+      "detalhe",
+      "detalhe2",
+      "faisca",
+      "luz",
+      "olho",
+      "pupila"
+    ]
+  },
+  "ovinho": {
+    "familia": "dinos",
+    "raridade": "comum",
+    "triangulos": 2828,
+    "kb": 103.7,
+    "clipes": ["andar", "feliz", "parado", "pular", "trabalhar"],
+    "materiais": [
+      "boca",
+      "bochecha",
+      "corpo",
+      "corpo2",
+      "detalhe",
+      "detalhe2",
+      "lingua",
+      "luz",
+      "olho",
+      "pupila"
+    ]
+  },
+  "perola": {
+    "familia": "recife",
+    "raridade": "raro",
+    "triangulos": 2808,
+    "kb": 109.0,
+    "clipes": ["andar", "feliz", "parado", "pular", "trabalhar"],
+    "materiais": [
+      "boca",
+      "bochecha",
+      "corpo",
+      "corpo2",
+      "detalhe",
+      "faisca",
+      "lingua",
+      "luz",
+      "olho",
+      "pupila"
+    ]
+  },
+  "pitanga": {
+    "familia": "bosque",
+    "raridade": "comum",
+    "triangulos": 2364,
+    "kb": 91.0,
+    "clipes": ["andar", "feliz", "parado", "pular", "trabalhar"],
+    "materiais": [
+      "boca",
+      "bochecha",
+      "corpo",
+      "corpo2",
+      "detalhe",
+      "detalhe2",
+      "lingua",
+      "luz",
+      "olho",
+      "pupila"
+    ]
+  },
+  "pluma": {
+    "familia": "nuvens",
+    "raridade": "raro",
+    "triangulos": 2626,
+    "kb": 114.3,
+    "clipes": ["andar", "feliz", "parado", "pular", "trabalhar"],
+    "materiais": [
+      "bochecha",
+      "corpo",
+      "corpo2",
+      "detalhe",
+      "faisca",
+      "luz",
+      "olho",
+      "pena1",
+      "pena2",
+      "pena3",
+      "pupila"
+    ]
+  },
+  "quindim": {
+    "familia": "vila-doce",
+    "raridade": "comum",
+    "triangulos": 2960,
+    "kb": 101.3,
+    "clipes": ["andar", "feliz", "parado", "pular", "trabalhar"],
+    "materiais": [
+      "boca",
+      "bochecha",
+      "corpo",
+      "corpo2",
+      "detalhe",
+      "lingua",
+      "luz",
+      "olho",
+      "pupila"
+    ]
+  }
+}

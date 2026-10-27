@@ -316,7 +316,14 @@ plataforma já faz (as sugestões de recurso novo do Canvas ficaram de fora, dec
   `sz-chip-novo` são o amarelo ("você está aqui" = a cor do botão que leva lá).
   `.sz-progress` NÃO mudou: o member-shell usa no player da aula.
 - **Moldura:** `CommunityFrame` monta `CommunitySidebar` + `CommunityTopBar` + `CommunityTabs`
-  (`community-nav.tsx`); o `<main>` reserva a altura das abas abaixo do `lg`. A aula continua sem
+  (`community-nav.tsx`); o `<main>` reserva a altura das abas abaixo do `lg`.
+  ⭐ **Menu recolhível (27/10/2026, como o Kids):** nas telas de foco (`isFocusOnlyPath` do
+  member-shell, hoje só `/quarto`) o menu nasce recolhido a cada entrada e o `CommunityFrame`
+  monta a alça `EdgePanelHandle` (escura, `hidden lg:flex`, `openOffset` =
+  `COMMUNITY_SIDEBAR_WIDTH`). A escolha vale só para a rota. A coluna encolhe até zero enquanto o
+  conteúdo desliza para fora (`inert` fechado); ⚠️ sem `overflow-hidden` na coluna, porque o menu
+  do perfil abre mais largo que ela. Nas outras páginas o menu fica aberto e sem alça.
+  Teste: `tests/menu-recolhivel.test.tsx`. A aula continua sem
   moldura e a sala ao vivo usa `CommunityTopBar compact` em toda largura. ⚠️ Duas logos escuras na
   mesma página: a do menu lateral passa `instancia="menu"` ao `BrandLogo` (ids dos degradês; sem isso
   o ZERO some quando a da barra está escondida). Os `sticky` de página usam `lg:top-6` (não há mais
@@ -431,7 +438,16 @@ avatar, espaço 3D, perfil público e Como fazer), na mesma régua da seção an
   novo, então o "Tentar de novo" de um erro de servidor ficava preso no mesmo erro.
 - **Meu avatar 3D e Meu espaço 3D** usam a pele adulta do member-shell: `/meu-avatar` passa
   `skin="adult"` e `/quarto` usa a entrada `AdultRoomBuilder` (`room-builder-adult`) com as dicas
-  de `src/lib/adult-trophy-hints.ts`. O desenho mora em `src/app/cosmetics-adult.css` (importado
+  de `src/lib/adult-trophy-hints.ts`.
+  ⭐ **27/10/2026, pedido dela (o mesmo do Kids):** o Meu espaço 3D saiu da `PageBand`. O voltar e o
+  título vão no `header` do construtor, na linha das moedas e do Salvar (`.sz-cos-room-head`), e a
+  página é só `.sz-cos-room-page` (respiro curto, sem a largura de leitura). O editor mede o
+  próprio contêiner (`container: sz-cos-room`): painel ao lado a partir de 45rem de contêiner e,
+  do `lg` para cima, a altura da janela, com o espaço enchendo a esquerda e só a lista de itens
+  (`.sz-cos-room-tray`) rolando. A moldura 3D troca o 3:2 por uma regra FORA de camada
+  (`.sz-cos-room-canvas`), porque o `aspect-[3/2]` do Tailwind vence a camada `components`.
+  ⚠️ A lista tem `position: relative`: sem isso os `sr-only` dos cartões escapavam da rolagem
+  interna e a página voltava a rolar (medido no staging). Menu recolhível: ver §Estúdio à noite. O desenho mora em `src/app/cosmetics-adult.css` (importado
   pelo `globals.css`) e lê os tokens daqui: renomear um token quebra o teste
   `tests/adult-cosmetics.test.ts`, não a cor calada.
 - **Formulários de entrada (review de 19/10/2026)**: o e-mail é conferido pela mesma régua do BFF

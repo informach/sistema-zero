@@ -7,6 +7,7 @@ import { PensaMissionLayout } from '@sistemazero/ui/pensa-mission-panel'
 import type { JSX } from 'react'
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { COPY } from '../core/copy'
+import type { PintaAsset } from '../core/project'
 import type { PintaHostAdapter } from '../core/types'
 import { createClipboardStore } from '../state/clipboardStore'
 import type { PintaEditorStore } from '../state/editorStore'
@@ -72,12 +73,19 @@ function InitialAssetOpener({ onMissing }: { onMissing(id: string): void }): nul
   return null
 }
 
+export interface PintaCompletionControl {
+  /** Salva o desenho aberto; `null` indica que a galeria está aberta. */
+  flush(): Promise<PintaAsset | null>
+}
+
 export function PintaApp({
+  onCompletionControlChange,
   adapter,
   persistence,
   onWorkspaceChange,
 }: {
   adapter?: PintaHostAdapter
+  onCompletionControlChange?: (control: PintaCompletionControl | null) => void
   /** Ausente = IndexedDB do perfil. O bloco de aula injeta o armazenamento dele. */
   persistence?: PintaPersistence
   /** Informa ao host quando o editor ocupa toda a área, sem acoplar o Pinta ao menu externo. */
@@ -132,6 +140,25 @@ export function PintaApp({
   const handleEditorReady = useCallback((editor: PintaEditorStore | null) => {
     editorRef.current = editor
   }, [])
+
+  useEffect(() => {
+    if (!onCompletionControlChange) return
+    const control: PintaCompletionControl = {
+      async flush() {
+        const editor = editorRef.current
+        if (!editor) return null
+        const resultado = await editor.getState().flush()
+        if (!resultado.ok) throw new Error(resultado.error)
+        if (editorRef.current !== editor)
+          throw new Error('O desenho aberto mudou enquanto era salvo')
+        const state = editor.getState()
+        if (state.asset !== state.savedAsset) throw new Error('O desenho mudou enquanto era salvo')
+        return state.savedAsset
+      },
+    }
+    onCompletionControlChange(control)
+    return () => onCompletionControlChange(null)
+  }, [onCompletionControlChange])
 
   // ⚠⚠ Navegação com identidade ESTÁVEL (18/09/2026, achado do full review da seta que
   // recolhe). O `context` depende do `adapter`, e o adapter passou a mudar de identidade a cada

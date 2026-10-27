@@ -8,7 +8,7 @@
  */
 import { clsx } from 'clsx'
 import type { JSX } from 'react'
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { unlistedReadIssues } from '../core/assetSummary'
 import { COPY } from '../core/copy'
 import { createGallerySceneSource } from '../state/gallerySceneSource'
@@ -19,6 +19,7 @@ import {
   type MoldaPersistence,
 } from '../state/persistence'
 import { MoldaAppProvider, type MoldaHostAdapter, useGallery, useMoldaApp } from './appContext'
+import type { MoldaCompletionControl } from './completionControl'
 import { DeferredModule } from './editor/DeferredEditor'
 import { EditorScreen } from './editor/EditorScreen'
 import { GalleryScreen } from './gallery/GalleryScreen'
@@ -32,6 +33,7 @@ export interface MoldaAppProps {
   className?: string
   /** Informa ao host quando a oficina ocupa a área de criação. */
   onWorkspaceChange?: (active: boolean) => void
+  onCompletionControlChange?: (control: MoldaCompletionControl | null) => void
 }
 
 type Screen = { type: 'gallery' } | { type: 'editor'; assetId: string; workshop: boolean }
@@ -79,6 +81,7 @@ export function MoldaApp({
   persistence,
   className,
   onWorkspaceChange,
+  onCompletionControlChange,
 }: MoldaAppProps): JSX.Element {
   const adapterValue = adapter ?? EMPTY_ADAPTER
   const [persist] = useState(() => persistence ?? getDefaultMoldaPersistence())
@@ -87,6 +90,37 @@ export function MoldaApp({
   const [scene] = useState(() => createGallerySceneSource(sceneStore))
   const [gallery] = useState(() => createGalleryStore(persist, { scene }))
   const [screen, setScreen] = useState<Screen>({ type: 'gallery' })
+  const screenRef = useRef(screen)
+  const editorControl = useRef<MoldaCompletionControl | null>(null)
+  useLayoutEffect(() => {
+    screenRef.current = screen
+  }, [screen])
+  const registerControl = useCallback((control: MoldaCompletionControl | null) => {
+    editorControl.current = control
+  }, [])
+  useEffect(() => {
+    if (!onCompletionControlChange) return
+    const control: MoldaCompletionControl = {
+      async flush() {
+        const before = screenRef.current
+        if (before.type === 'gallery') return null
+        const editor = editorControl.current
+        if (!editor) throw new Error('A criação ainda está abrindo')
+        const result = await editor.flush()
+        const after = screenRef.current
+        if (
+          after.type !== 'editor' ||
+          after.assetId !== before.assetId ||
+          editorControl.current !== editor ||
+          result?.id !== before.assetId
+        )
+          throw new Error('A criação aberta mudou durante o salvamento')
+        return result
+      },
+    }
+    onCompletionControlChange(control)
+    return () => onCompletionControlChange(null)
+  }, [onCompletionControlChange])
   const editorOpen = screen.type === 'editor'
   useLayoutEffect(() => {
     onWorkspaceChange?.(editorOpen)
@@ -139,6 +173,7 @@ export function MoldaApp({
                   store: sceneStore,
                   initialId: screen.assetId,
                   theme: adapterValue.theme ?? 'light',
+                  onCompletionControlChange: registerControl,
                   ...(adapterValue.resyncToStudio
                     ? {
                         resyncToStudio: adapterValue.resyncToStudio,
@@ -154,6 +189,7 @@ export function MoldaApp({
               <EditorScreen
                 key={screen.assetId}
                 assetId={screen.assetId}
+                onCompletionControlChange={registerControl}
                 onBack={() => setScreen({ type: 'gallery' })}
               />
             )}

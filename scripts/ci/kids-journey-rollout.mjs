@@ -462,6 +462,25 @@ export function createRailwayPorts(sha, env, identity, options = {}) {
     )
       throw new Error('Outro deployment pendente impede a adoção')
   }
+  const requireNoHistory = async (service, deadline) => {
+    const data = await gql(
+      'query($input:DeploymentListInput!){deployments(input:$input,first:1){edges{node{id}} pageInfo{hasNextPage}}}',
+      {
+        input: {
+          projectId: target.project,
+          environmentId: target.environment,
+          serviceId: target[service],
+        },
+      },
+      deadline,
+    )
+    if (
+      !Array.isArray(data.deployments?.edges) ||
+      data.deployments.edges.length !== 0 ||
+      data.deployments.pageInfo?.hasNextPage !== false
+    )
+      throw new Error('Primeira implantação do Arquipélago exige revisão do histórico')
+  }
   const single = async (service) => {
     const rows = await active(service)
     if (
@@ -611,23 +630,26 @@ export function createRailwayPorts(sha, env, identity, options = {}) {
         throw new Error('Seleção de aplicações de produção inválida')
       if (
         !Array.isArray(initial) ||
-        initial.length > 1 ||
+        new Set(initial).size !== initial.length ||
         initial.some(
           (service) =>
             targetName !== 'production' ||
-            service !== 'live-recorder' ||
+            !Object.hasOwn(initialProductionApplicationIds, service) ||
             target[service] !== initialProductionApplicationIds[service] ||
             !services.includes(service),
         )
       )
-        throw new Error('Primeira implantação permite somente o gravador de produção')
+        throw new Error(
+          'Primeira implantação permite apenas serviços de produção explicitamente provisionados',
+        )
       for (const service of services) {
         checkTime(deadline)
         if (initial.includes(service)) {
           const rows = await active(service)
           if (rows.length !== 0)
-            throw new Error('Gravador já tem deployment ativo; inicialização recusada')
+            throw new Error('Serviço já tem deployment ativo; inicialização recusada')
           await requireNoPending(service, deadline)
+          if (service === 'arquipelago-api') await requireNoHistory(service, deadline)
           initialApplications.add(service)
           before.set(service, [])
           log({ stage: 'initial-application-preflight', service })
@@ -722,12 +744,14 @@ export function createRailwayPorts(sha, env, identity, options = {}) {
           throw new Error('Preflight do serviço de produção ausente')
         const currentActive = await active(service)
         if (initialApplications.has(service) && currentActive.length !== 0)
-          throw new Error('Deployment concorrente impede inicialização do gravador')
+          throw new Error('Deployment concorrente impede inicialização do serviço')
         before.set(service, [
           ...new Set([...(before.get(service) ?? []), ...currentActive.map((item) => item.id)]),
         ])
         checkTime(deadline)
         if (targetName === 'production') await requireNoPending(service, deadline)
+        if (initialApplications.has(service) && service === 'arquipelago-api')
+          await requireNoHistory(service, deadline)
         if (options.beforeDeploy) await options.beforeDeploy(service, deadline)
         checkTime(deadline)
         step = `${label}-deploy-mutation`

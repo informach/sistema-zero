@@ -1,5 +1,24 @@
 # CLAUDE.md — @sistemazero/member-shell
 
+## Arquipélago Vagalume: a porta do jogo (27/10/2026)
+
+O jogo mora em pacotes próprios (`docs/arquipelago.md`); aqui só fica a porta da plataforma.
+
+- **`routes/arquipelago.ts`** (`createArquipelagoRoutes({ gateway })`, espalhado no `createShell`):
+  `arquipelagoAcesso` (GET), `arquipelagoSalvamento` (GET/PUT), `arquipelagoTempo` (POST) e
+  `arquipelagoLimiteDaFamilia` (GET/PUT, o app embrulha com o portão dos pais) repassam ao gateway
+  `/arquipelago/*` com a sessão; corpo JSON de até 96 KB, sem regra de jogo (quem decide acesso,
+  revisão, tempo e suporte somente leitura é o `arquipelago-api`). `arquipelagoCliente` (GET
+  `/api/arquipelago/cliente/:arquivo`) repassa o cliente compilado na mesma origem, só nomes do
+  build (`.js`, `.js.map`, `.glb`, `.json`), com o IP de quem pediu e só os cabeçalhos de cache.
+- **`components/arquipelago-host.tsx`**: `ArquipelagoHost` lê o manifesto, importa a entrada com
+  `webpackIgnore`/`turbopackIgnore` e chama `montarArquipelago`; `criarPlataformaDoArquipelago`
+  monta a `Plataforma` do contrato com as MESMAS rotas das telas (avatar, quarto, gamificação) e o
+  serviço só em `/acesso`, `/salvamento` e `/tempo`. Ferramentas: "indisponível" por enquanto.
+- Dependência nova: `@sistemazero/arquipelago-contracts` (o único pacote do jogo que a plataforma
+  pode importar). Testes: `tests/arquipelago-routes.test.ts` e `tests/arquipelago-host.test.ts`.
+
+
 ## Quarto 3D com as peças do Blender (27/10/2026)
 
 Pedido dela: refazer as peças do quarto no Blender, com prévias nas bandejas como no avatar, e

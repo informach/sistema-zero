@@ -1,5 +1,17 @@
 # @sistemazero/api-gateway — Guia do Agente
 
+## Arquipélago Vagalume (27/10/2026)
+
+`src/infrastructure/config/arquipelago-routes.ts` (`arquipelagoGateway`) só entra na config quando
+`ARQUIPELAGO_URL` existe: sem a variável, nenhum serviço nem rota nova (o jogo é um rollout à
+parte, sem entrar em `PROD_REQUIRED_SECRETS` nem em `nonLoopbackProdUrls`). Rotas: `/arquipelago/acesso`,
+`/salvamento` (GET/PUT, 96 KB), `/tempo` (POST, 1 KB), `/familia/limite` (GET/PUT) com JWT de
+conta ativa e `x-internal-token` (`ARQUIPELAGO_INTERNAL_TOKEN`), e `/arquipelago/cliente/:arquivo`
+pública (o cliente compilado). `kidsMayAccess`: o aluno alcança `/arquipelago/*` menos
+`/arquipelago/familia/*`; o responsável, só `/arquipelago/familia/limite`. Testes:
+`tests/unit/arquipelago-config.test.ts` e o fim de `tests/unit/kids-access-policy.test.ts`.
+
+
 ## Jornada do Criador e Maestrias (25/10/2026)
 
 Rotas exatas de aluno: GET `/members/journey/masteries`, GET `/members/journey/masteries/evidence`

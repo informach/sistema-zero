@@ -392,6 +392,23 @@ describe('runtime — a parte síncrona', () => {
     expect(warnings.filter((w) => w.includes('não está no projeto'))).toEqual([])
   })
 
+  it('um cenário inteiro (até 200 blocos) mantém o tamanho e não nasce como o cubo cinza', () => {
+    const api = loadApi({
+      ilha: { kind: 'model3d', dataUrl: 'data:model/gltf-binary;base64,Z2xURgIAAAAMAAAA' },
+    })
+    const world = fakeWorld()
+    const cenario = api.createModelFile(world, 'ilha', 140) as {
+      userData: { sz: { hw: number } }
+      material: { visible?: boolean }
+    }
+    expect(cenario.userData.sz.hw).toBe(70)
+    expect(cenario.material.visible).toBe(false)
+    const enorme = api.createModelFile(world, 'ilha', 5000) as { userData: { sz: { hw: number } } }
+    expect(enorme.userData.sz.hw).toBe(100)
+    const nave = api.createModelFile(world, 'ilha', 2) as { material: { visible?: boolean } }
+    expect(nave.material.visible).not.toBe(false)
+  })
+
   it('sem nome escolhido, avisa uma vez e ainda devolve o cubo', () => {
     const api = loadApi({})
     const world = fakeWorld()
@@ -924,7 +941,7 @@ describe('blocos de animação e "repetindo" — cadeia', () => {
     )
   })
 
-  it('aridades, contexto e degrau: tocar é núcleo; parar e "terminou?" sobem um degrau', () => {
+  it('aridades, contexto e degrau: tocar e conferir o fim são básicos; parar é intermediário', () => {
     expect(GAME3D_CALL_ARITIES.playAnimation).toBe(3)
     expect(GAME3D_CALL_ARITIES.stopAnimation).toBe(1)
     expect(GAME3D_CALL_ARITIES.animationDone).toBe(1)
@@ -947,7 +964,7 @@ describe('blocos de animação e "repetindo" — cadeia', () => {
     ])
     expect(resolveBlockLevel('sz_g3d_play_animation')).toBe('iniciante-3d')
     expect(resolveBlockLevel('sz_g3d_stop_animation')).toBe('intermediario-3d')
-    expect(resolveBlockLevel('sz_g3d_animation_done')).toBe('intermediario-3d')
+    expect(resolveBlockLevel('sz_g3d_animation_done')).toBe('iniciante-3d')
   })
 })
 

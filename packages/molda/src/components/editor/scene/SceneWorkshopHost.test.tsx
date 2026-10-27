@@ -11,6 +11,7 @@ import { deferred } from '../../../testing/deferred'
 import { nativeDatabase } from '../../../testing/nativeDatabase'
 import { makeSceneGlbFixture } from '../../../testing/sceneGlbFixture'
 import { sceneViewportProbe } from '../../../testing/sceneViewportProbe'
+import type { MoldaCompletionControl } from '../../completionControl'
 import { SceneWorkshopHost } from './SceneWorkshopHost'
 
 const start = COPY.scene.start,
@@ -27,6 +28,82 @@ function addBox() {
   fireEvent.click(screen.getByText(COPY.scene.add))
   fireEvent.click(screen.getByRole('button', { name: COPY.shapes.box }))
 }
+
+test('o host recebe a cena 3D somente depois de gravar as alterações pendentes', async () => {
+  const db = await nativeDatabase({ name: 'host-completion' })
+  const probe = sceneViewportProbe()
+  const source = createSceneProject({ kind: 'empty', name: 'Cena de teste' })
+  const persistence = createScenePersistence(db.store)
+  await persistence.save(source, null)
+  let control: MoldaCompletionControl | null = null
+  const view = render(
+    <SceneWorkshopHost
+      store={db.store}
+      initialId={source.id}
+      viewportFactory={probe.factory}
+      onCompletionControlChange={(value) => {
+        control = value
+      }}
+    />,
+  )
+  try {
+    await screen.findByRole('heading', { level: 1, name: source.name })
+    addBox()
+    const results: Awaited<ReturnType<MoldaCompletionControl['flush']>>[] = []
+    await act(async () => {
+      results.push(await control!.flush())
+    })
+    const result = results[0]
+    const read = await persistence.read(source.id)
+    if (read.status !== 'active' || !result) throw new Error('Cena não foi gravada')
+    expect(result.id).toBe(source.id)
+    expect(JSON.parse(result.json)).toEqual(sceneToJson(read.document))
+    expect(read.document.nodes.length).toBeGreaterThan(source.nodes.length)
+  } finally {
+    view.unmount()
+    db.close()
+  }
+})
+
+test('o host não recebe cena 3D quando a gravação falha', async () => {
+  const db = await nativeDatabase({ name: 'host-completion-failure' })
+  const probe = sceneViewportProbe()
+  const source = createSceneProject({ kind: 'empty', name: 'Cena com erro' })
+  await createScenePersistence(db.store).save(source, null)
+  let failWrites = false
+  const store: UseStore = (mode, callback) => {
+    if (mode === 'readwrite' && failWrites) return Promise.reject(new Error('disco indisponível'))
+    return db.store(mode, callback)
+  }
+  let control: MoldaCompletionControl | null = null
+  const view = render(
+    <SceneWorkshopHost
+      store={store}
+      initialId={source.id}
+      viewportFactory={probe.factory}
+      onCompletionControlChange={(value) => {
+        control = value
+      }}
+    />,
+  )
+  try {
+    await screen.findByRole('heading', { level: 1, name: source.name })
+    failWrites = true
+    addBox()
+    let failed = false
+    await act(async () => {
+      try {
+        await control!.flush()
+      } catch {
+        failed = true
+      }
+    })
+    expect(failed).toBe(true)
+  } finally {
+    view.unmount()
+    db.close()
+  }
+})
 
 test('native backup roundtrip previews before any write and restores as an independent new creation without overwriting its source', async () => {
   const db = await nativeDatabase({ name: 'host-restore' }),

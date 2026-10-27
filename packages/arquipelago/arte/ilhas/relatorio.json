@@ -1,0 +1,369 @@
+{
+  "barco": {
+    "ancoras": {},
+    "clipes": "balancar",
+    "kb": 69.5,
+    "nos": {
+      "barco": 2456
+    },
+    "triangulos": 2456
+  },
+  "bosque": {
+    "ancoras": {
+      "cabana": {
+        "x": 5.11,
+        "y": 1.0,
+        "z": -4.65
+      },
+      "casa-na-arvore": {
+        "x": -2.52,
+        "y": 5.0,
+        "z": -2.81
+      },
+      "cercado": {
+        "x": 2.4,
+        "y": 1.0,
+        "z": -9.2
+      },
+      "chegada": {
+        "x": 11.6,
+        "y": 1.0,
+        "z": 0.0
+      },
+      "copas-1": {
+        "x": -2.0,
+        "y": 5.0,
+        "z": -3.0
+      },
+      "copas-2": {
+        "x": -7.2,
+        "y": 5.4,
+        "z": -6.2
+      },
+      "copas-3": {
+        "x": -8.6,
+        "y": 5.8,
+        "z": 1.6
+      },
+      "copas-4": {
+        "x": -4.0,
+        "y": 5.2,
+        "z": 6.6
+      },
+      "escada": {
+        "x": 1.24,
+        "y": 1.0,
+        "z": -1.82
+      },
+      "escorregador-fim": {
+        "x": 2.45,
+        "y": 1.0,
+        "z": 10.03
+      },
+      "lago": {
+        "x": 4.4,
+        "y": 1.0,
+        "z": 5.6
+      },
+      "lumi-1": {
+        "x": -0.6,
+        "y": 1.0,
+        "z": 3.8
+      },
+      "lumi-2": {
+        "x": 3.4,
+        "y": 1.0,
+        "z": -2.2
+      },
+      "lumi-3": {
+        "x": -6.4,
+        "y": 1.0,
+        "z": 4.4
+      },
+      "lumi-4": {
+        "x": 6.6,
+        "y": 1.0,
+        "z": 8.6
+      },
+      "morador": {
+        "x": 4.4,
+        "y": 1.0,
+        "z": -3.81
+      }
+    },
+    "clipes": "",
+    "kb": 900.1,
+    "nos": {
+      "agua": 82,
+      "cipo-1": 268,
+      "cipo-2": 268,
+      "cipo-3": 268,
+      "construcoes": 10598,
+      "terreno": 1022,
+      "vegetacao": 15420
+    },
+    "triangulos": 27926
+  },
+  "bosque-props": {
+    "ancoras": {},
+    "clipes": "",
+    "kb": 84.0,
+    "nos": {
+      "arvore-grande-a": 1156,
+      "arvore-grande-b": 928,
+      "arvore-grande-c": 1088,
+      "arvore-media": 234,
+      "cogumelo": 180,
+      "moita": 192,
+      "toco": 72,
+      "tora": 108
+    },
+    "triangulos": 3958
+  },
+  "recife": {
+    "ancoras": {
+      "barco": {
+        "x": 2.27,
+        "y": 0.0,
+        "z": -16.15
+      },
+      "cais": {
+        "x": 4.1,
+        "y": 0.85,
+        "z": -14.44
+      },
+      "casa-mare": {
+        "x": -3.64,
+        "y": 1.0,
+        "z": 4.3
+      },
+      "caverna": {
+        "x": -17.6,
+        "y": -1.3,
+        "z": -2.0
+      },
+      "caverna-entrada": {
+        "x": -21.2,
+        "y": 0.0,
+        "z": -2.0
+      },
+      "caverna-tesouro": {
+        "x": -16.2,
+        "y": -1.3,
+        "z": -1.9
+      },
+      "chegada": {
+        "x": 11.6,
+        "y": 1.0,
+        "z": 0.0
+      },
+      "lagoa": {
+        "x": -0.6,
+        "y": 1.0,
+        "z": -0.6
+      },
+      "lumi-1": {
+        "x": 3.0,
+        "y": 1.0,
+        "z": 4.6
+      },
+      "lumi-2": {
+        "x": -4.6,
+        "y": 1.0,
+        "z": -4.0
+      },
+      "lumi-3": {
+        "x": 6.0,
+        "y": 1.0,
+        "z": -3.6
+      },
+      "lumi-4": {
+        "x": -7.6,
+        "y": 1.0,
+        "z": 2.4
+      },
+      "mapa": {
+        "x": -8.4,
+        "y": 1.0,
+        "z": 3.0
+      },
+      "mergulho": {
+        "x": 4.4,
+        "y": 0.0,
+        "z": -16.2
+      },
+      "morador": {
+        "x": -3.03,
+        "y": 1.0,
+        "z": 3.77
+      }
+    },
+    "clipes": "balancar",
+    "kb": 547.1,
+    "nos": {
+      "alga-1": 240,
+      "alga-10": 240,
+      "alga-2": 240,
+      "alga-3": 240,
+      "alga-4": 240,
+      "alga-5": 240,
+      "alga-6": 240,
+      "alga-7": 240,
+      "alga-8": 240,
+      "alga-9": 240,
+      "caverna": 2353,
+      "construcoes": 5841,
+      "corais": 3680,
+      "enfeites": 2144,
+      "lagoa": 164,
+      "terreno": 902
+    },
+    "triangulos": 17484
+  },
+  "recife-props": {
+    "ancoras": {},
+    "clipes": "balancar",
+    "kb": 49.3,
+    "nos": {
+      "alga": 240,
+      "coral-cerebro": 360,
+      "coral-galho": 120,
+      "coral-leque": 120,
+      "coral-tubo": 280,
+      "mapa-aberto": 220,
+      "mapa-rolo": 76
+    },
+    "triangulos": 1416
+  },
+  "vila-doce": {
+    "ancoras": {
+      "barraca-1": {
+        "x": 5.18,
+        "y": 1.0,
+        "z": 3.76
+      },
+      "barraca-2": {
+        "x": 3.49,
+        "y": 1.0,
+        "z": 5.37
+      },
+      "barraca-3": {
+        "x": 1.33,
+        "y": 1.0,
+        "z": 6.26
+      },
+      "barraca-4": {
+        "x": 5.18,
+        "y": 1.0,
+        "z": -3.76
+      },
+      "barraca-5": {
+        "x": 3.49,
+        "y": 1.0,
+        "z": -5.37
+      },
+      "barraca-6": {
+        "x": 1.33,
+        "y": 1.0,
+        "z": -6.26
+      },
+      "chegada": {
+        "x": 11.6,
+        "y": 1.0,
+        "z": 0.0
+      },
+      "fonte": {
+        "x": 0.0,
+        "y": 1.0,
+        "z": 0.0
+      },
+      "lumi-1": {
+        "x": 2.4,
+        "y": 1.0,
+        "z": 2.2
+      },
+      "lumi-2": {
+        "x": -3.2,
+        "y": 1.0,
+        "z": -1.6
+      },
+      "lumi-3": {
+        "x": 3.6,
+        "y": 1.0,
+        "z": -5.0
+      },
+      "lumi-4": {
+        "x": -4.2,
+        "y": 1.0,
+        "z": 4.0
+      },
+      "morador": {
+        "x": -1.35,
+        "y": 1.0,
+        "z": -5.63
+      },
+      "padaria": {
+        "x": -1.36,
+        "y": 1.0,
+        "z": -6.61
+      },
+      "sorveteria": {
+        "x": -4.58,
+        "y": 1.0,
+        "z": -3.96
+      },
+      "telhados-1": {
+        "x": -5.4,
+        "y": 3.0,
+        "z": 7.0
+      },
+      "telhados-2": {
+        "x": -8.6,
+        "y": 3.8,
+        "z": 3.6
+      },
+      "telhados-3": {
+        "x": -9.2,
+        "y": 4.6,
+        "z": -1.4
+      },
+      "telhados-fim": {
+        "x": -6.13,
+        "y": 5.4,
+        "z": -5.22
+      },
+      "telhados-inicio": {
+        "x": -2.6,
+        "y": 2.0,
+        "z": 6.6
+      }
+    },
+    "clipes": "",
+    "kb": 925.6,
+    "nos": {
+      "construcoes": 6216,
+      "enfeites": 4166,
+      "feira": 7630,
+      "fonte": 1996,
+      "telhados": 6200,
+      "terreno": 1398
+    },
+    "triangulos": 27606
+  },
+  "vila-doce-props": {
+    "ancoras": {},
+    "clipes": "",
+    "kb": 271.6,
+    "nos": {
+      "barraca": 1912,
+      "bengala": 212,
+      "casinha-a": 1820,
+      "casinha-b": 1932,
+      "casinha-c": 1800,
+      "jujuba": 64,
+      "lampiao": 86,
+      "pirulito": 140
+    },
+    "triangulos": 7966
+  }
+}

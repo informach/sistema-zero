@@ -1,0 +1,96 @@
+{
+  "arvores": {
+    "kb": 86.3,
+    "nos": {
+      "arvore-frutas": 1676,
+      "arvore-pinheiro": 328,
+      "arvore-redonda": 1036,
+      "coqueiro": 812
+    },
+    "triangulos": 3852
+  },
+  "bancada": {
+    "kb": 89.0,
+    "nos": {
+      "holograma": 1684,
+      "projetor": 658
+    },
+    "triangulos": 2342
+  },
+  "casa": {
+    "kb": 346.8,
+    "nos": {
+      "janelas": 1700,
+      "paredes": 748,
+      "porta": 596,
+      "revestimento": 740,
+      "telhado": 1876,
+      "varanda": 982
+    },
+    "triangulos": 6642
+  },
+  "farol": {
+    "kb": 200.3,
+    "nos": {
+      "facho": 80,
+      "farol": 5148,
+      "lampada": 516,
+      "vidro": 108
+    },
+    "triangulos": 5852
+  },
+  "horta": {
+    "kb": 111.1,
+    "nos": {
+      "alface-broto": 52,
+      "alface-crescendo": 100,
+      "alface-maduro": 432,
+      "canteiro": 656,
+      "milho-broto": 52,
+      "milho-crescendo": 112,
+      "milho-maduro": 484,
+      "semente": 128,
+      "tomate-broto": 52,
+      "tomate-crescendo": 134,
+      "tomate-maduro": 808
+    },
+    "triangulos": 3010
+  },
+  "ilhas-do-anel": {
+    "kb": 527.4,
+    "nos": {
+      "bosque": 3118,
+      "nuvens": 4012,
+      "pico": 1688,
+      "recife": 3064,
+      "vale-dos-dinos": 3014,
+      "vila-doce": 4440
+    },
+    "triangulos": 19336
+  },
+  "pier": {
+    "kb": 144.1,
+    "nos": {
+      "pier": 3604
+    },
+    "triangulos": 3604
+  },
+  "ponte": {
+    "kb": 8.6,
+    "nos": {
+      "corda": 20,
+      "poste": 128,
+      "tabua": 44
+    },
+    "triangulos": 192
+  },
+  "terreno": {
+    "kb": 446.3,
+    "nos": {
+      "chao": 7680,
+      "enfeites": 5640,
+      "espuma": 720
+    },
+    "triangulos": 14040
+  }
+}

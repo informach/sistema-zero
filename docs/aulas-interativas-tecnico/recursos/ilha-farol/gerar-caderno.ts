@@ -60,20 +60,21 @@ const visible = (name: string, show = false) =>
 const assign = (name: string, v: string) =>
   block('sz_js_var_assign', `Alterar variável ${field(name)} para ${v}`)
 const message = (s: string) => assign('aviso', value('sz_val_text', s))
-const encounter = (group: string, body: string) =>
+const encounter = (other: string, body: string) =>
   area(
     'sz_frame_events',
     'Quando acontecer',
-    nested(
-      'sz_g3d_on_touch_group',
-      `Quando ${field('personagem')} encostar em algum do grupo ${field(group)}, chamando de ${field('item')}`,
-      body,
-    ),
+    nested('sz_g3d_on_touch', `Quando ${field('personagem')} encostar em ${field(other)}`, body),
   )
 const choice = (yes: string, no: string) =>
   block(
     'sz_js_if_else',
     `Se ${value('sz_val_variable', 'temChave')}<div class="branch-label">então</div><div class="event-body">${yes}</div><div class="branch-label">senão</div><div class="event-body">${no}</div>`,
+  )
+const model = (name: string, file: string, size: string) =>
+  block(
+    'sz_g3d_create_model_file',
+    `Criar o objeto ${field(name)} com o modelo ${field(file)} na cena ${field('cena')} tamanho ${num(size)}`,
   )
 const drawings: Record<string, string> = {
   movimento: area(
@@ -83,11 +84,9 @@ const drawings: Record<string, string> = {
       'sz_g3d_animate',
       `A cada quadro da cena ${field('cena')}`,
       block(
-        'sz_g3d_control_keys',
-        `Mover ${field('personagem')} com o teclado (WASD/setas), ${num('4')} por segundo`,
-      ) +
-        block('sz_g3d_update_group_no_gravity', `Mover o grupo ${field('jogadores')}`) +
-        prepared('Conferência do caminho e outros blocos'),
+        'sz_g3d_top_down',
+        `Andar com ${field('personagem')} usando WASD/setas, velocidade ${num('4')}`,
+      ) + prepared('Aviso e chegada do barco'),
     ),
   ),
   posicao: area(
@@ -99,32 +98,48 @@ const drawings: Record<string, string> = {
         `Posição do objeto ${field('chave')} em x ${num('−3')} y ${num('1')} z ${num('−2')}`,
       ),
   ),
-  recolher: encounter('chaves', visible('chave')),
+  recolher: encounter('chave', visible('chave')),
   memoria:
     area(
       'sz_frame_start',
       'Ao iniciar',
       prepared('Blocos anteriores') +
         block('sz_js_var_create', `Criar variável ${field('temChave')} com valor ${bool('falso')}`),
-    ) + encounter('chaves', visible('chave') + assign('temChave', bool('verdadeiro'))),
+    ) + encounter('chave', visible('chave') + assign('temChave', bool('verdadeiro'))),
   aviso: encounter(
-    'chaves',
+    'chave',
     visible('chave') +
       assign('temChave', bool('verdadeiro')) +
       message('Você pegou a chave! Agora vá ao farol.'),
   ),
+  aparencia: area(
+    'sz_frame_start',
+    'Ao iniciar',
+    prepared('Criar a cena, a câmera e a luz') +
+      model('cenario', 'noite-na-ilha', '140') +
+      prepared('Posição do objeto cenario') +
+      model('farol', 'farol-de-pedra', '5.3') +
+      prepared('Posição do objeto farol') +
+      model('barco', 'barco-pirata', '3.1') +
+      prepared('Pedras e posições') +
+      model('personagem', 'pirata', '1.66') +
+      model('chave', 'chave-de-estrela', '1.24') +
+      prepared('Outros blocos'),
+  ),
   'sem-chave': encounter(
-    'portas',
+    'farol',
     choice(
       '<div class="prepared">Vazio nesta parte</div>',
       message('Falta a chave. Procure na ilha antes de voltar.'),
     ),
   ),
   decisao: encounter(
-    'portas',
+    'farol',
     choice(
-      visible('farol') +
-        visible('farolAceso', true) +
+      block(
+        'sz_g3d_play_animation',
+        `Tocar a animação ${field('acender')} em ${field('farol')} ${field('uma vez')}`,
+      ) +
         assign('ganhou', bool('verdadeiro')) +
         message('Você acendeu o farol! O barco pode chegar.'),
       message('Falta a chave. Procure na ilha antes de voltar.'),
@@ -204,7 +219,7 @@ const experiences: Record<string, { intro: string; steps: string[]; image: strin
 for (const [li, a] of ilhaAulas.entries()) {
   for (const [ti, t] of a.trechos.entries()) {
     const part = ti + 1 + (li === 2 && ti >= 2 ? 1 : 0)
-    if (li === 2 && t.kind === 'delivery')
+    if (li === 2 && t.key === 'aparencia')
       pages.push({
         id: 'quiz',
         lesson: 3,
@@ -276,6 +291,49 @@ for (const [li, a] of ilhaAulas.entries()) {
       })
   }
 }
+// A galeria da personalização: as miniaturas saem dos mesmos modelos do jogo
+// (docs/design/ilha-do-farol-blender/galeria), com o nome que aparece na lista do bloco.
+const galeriaDir = resolve(root, 'docs/design/ilha-do-farol-blender/galeria')
+const tile = (nome: string) =>
+  `<figure class="opcao"><img src="data:image/webp;base64,${readFileSync(resolve(galeriaDir, `${nome}.webp`)).toString('base64')}" alt="${esc(nome)}"><figcaption>${esc(nome)}</figcaption></figure>`
+const grupo = (titulo: string, nomes: string[], largo = false) =>
+  `<div class="galeria"><h3>${esc(titulo)}</h3><div class="opcoes${largo ? ' opcoes--largas' : ''}">${nomes.map(tile).join('')}</div></div>`
+const galeria: Page[] = [
+  {
+    id: '3-galeria-1',
+    lesson: 3,
+    kicker: 'Aula 3 · Parte 4 · Escolhas',
+    title: 'Todas as opções do seu jogo',
+    subtitle: 'O nome embaixo de cada uma é o mesmo da lista do bloco.',
+    body:
+      grupo('Personagens', [
+        'aventureiro',
+        'menina-de-laco',
+        'marinheira',
+        'menino-de-bone',
+        'exploradora-de-chapeu',
+        'pirata',
+        'mergulhador',
+        'robo',
+      ]) + grupo('Chaves', ['chave-dourada', 'chave-prateada', 'chave-de-estrela']),
+  },
+  {
+    id: '3-galeria-2',
+    lesson: 3,
+    kicker: 'Aula 3 · Parte 4 · Escolhas',
+    title: 'Barcos, faróis e cenários',
+    subtitle: 'Todo farol sabe acender: troque o modelo num lugar só.',
+    body:
+      grupo('Barcos', ['veleiro', 'barco-de-pesca', 'lancha', 'barco-pirata']) +
+      grupo('Faróis', ['farol-listrado', 'farol-de-pedra', 'farol-de-madeira', 'farol-colorido']) +
+      grupo('Cenários', ['praia-tropical', 'costa-rochosa', 'ilha-nevada', 'noite-na-ilha'], true),
+  },
+]
+pages.splice(
+  pages.findIndex((p) => p.id === '3-aparencia'),
+  0,
+  ...galeria,
+)
 const index = ilhaAulas
   .map(
     (a, i) =>
@@ -288,7 +346,7 @@ pages[0].body = pages[0].body.replace(
 )
 const cover = `<section class="page cover" data-id="capa"><div class="cover-art"><img class="scene" data-image="ilha" alt="Ilha em 3D com ponte e farol"></div><div class="cover-copy"><span class="badge">Passo a passo do projeto</span><h1>A Ilha<br>do <em>Farol</em></h1><p>Todos os passos para construir as regras do seu jogo em 3D.</p><div class="cover-bottom">Do primeiro movimento<br>à luz que guia o barco.</div></div></section>`
 const html = `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>Passo a passo do projeto - A Ilha do Farol</title><style>${css}
-.lesson-hero{min-height:38mm;margin-bottom:5mm}.lesson-hero .scene{width:32%;object-fit:cover;background:#94d5f5}.lesson-hero h2{font-size:22pt;text-wrap:balance}.lesson-hero .kicker{font-size:9pt;letter-spacing:.04em}.content{display:grid;gap:4mm;font-size:11pt}.content p{font-size:11pt;line-height:1.5;text-wrap:pretty}.content h3{margin-bottom:2mm}.box-note{background:var(--blue-soft)}.box-experience{background:var(--brand-soft);border:1px dashed #b9b0ff}.box-test{background:var(--green-soft)}.blocks{margin:0;padding:14px}.block,.event-block{line-height:1.65}.value-block{border:1px solid #ffffff70}.field{white-space:normal;box-decoration-break:clone}.prepared{color:var(--muted);background:#edf0f7;border-radius:8px;padding:6px 10px;font-size:9pt;font-weight:600}.branch-label{color:#fff;margin-top:6px}.diagram-note{font-size:9pt!important;color:var(--muted);margin-top:12px}.check p{margin-top:9px}.cover-art{height:50%;background:#94d5f5}.cover-art .scene{object-fit:contain}.cover .cover-bottom{margin-top:12mm}.experiment{width:100%;height:55mm;object-fit:contain;border-radius:14px;background:#eff5fa}.content .steps{gap:12px}.lesson-three{--accent:var(--green);--accent-soft:var(--green-soft)}.lesson-three .number{background:var(--green-soft);color:var(--green)}
+.lesson-hero{min-height:38mm;margin-bottom:5mm}.lesson-hero .scene{width:32%;object-fit:cover;background:#94d5f5}.lesson-hero h2{font-size:22pt;text-wrap:balance}.lesson-hero .kicker{font-size:9pt;letter-spacing:.04em}.content{display:grid;gap:4mm;font-size:11pt}.content p{font-size:11pt;line-height:1.5;text-wrap:pretty}.content h3{margin-bottom:2mm}.box-note{background:var(--blue-soft)}.box-experience{background:var(--brand-soft);border:1px dashed #b9b0ff}.box-test{background:var(--green-soft)}.blocks{margin:0;padding:14px}.block,.event-block{line-height:1.65}.value-block{border:1px solid #ffffff70}.field{white-space:normal;box-decoration-break:clone}.prepared{color:var(--muted);background:#edf0f7;border-radius:8px;padding:6px 10px;font-size:9pt;font-weight:600}.branch-label{color:#fff;margin-top:6px}.diagram-note{font-size:9pt!important;color:var(--muted);margin-top:12px}.check p{margin-top:9px}.cover-art{height:50%;background:#94d5f5}.cover-art .scene{object-fit:contain}.cover .cover-bottom{margin-top:12mm}.experiment{width:100%;height:55mm;object-fit:contain;border-radius:14px;background:#eff5fa}.content .steps{gap:12px}.galeria h3{margin-bottom:2mm}.opcoes{display:grid;grid-template-columns:repeat(4,1fr);gap:3mm}.opcoes--largas{grid-template-columns:repeat(4,1fr)}.opcao{margin:0;background:#fff;border:1px solid #e3e8f2;border-radius:10px;padding:2mm;text-align:center}.opcao img{width:100%;aspect-ratio:1;object-fit:contain;border-radius:8px}.opcoes--largas .opcao img{aspect-ratio:1.6;object-fit:cover}.opcao figcaption{font-size:8.5pt;font-weight:700;margin-top:1mm;word-break:break-word}.lesson-three{--accent:var(--green);--accent-soft:var(--green-soft)}.lesson-three .number{background:var(--green-soft);color:var(--green)}
 @media print{body{background:#fff}.page{margin:0}}
 </style></head><body>${cover}${pages.map((p, i) => `<section class="page lesson-${['one', 'two', 'three'][p.lesson - 1]}" data-id="${p.id}"><div class="inner"><div class="lesson-hero"><img class="scene" data-image="ilha" alt="A Ilha do Farol"><div class="lesson-hero-text"><div class="kicker">${esc(p.kicker)}</div><h2>${esc(p.title)}</h2><p>${esc(p.subtitle)}</p></div></div><div class="content">${p.body}</div></div><div class="page-no"><span class="brand">A Ilha do Farol | Passo a passo do projeto</span><span>${i + 2} / ${pages.length + 1}</span></div></section>`).join('\n')}</body></html>`
 writeFileSync(resolve(out, 'caderno.template.html'), html)

@@ -757,4 +757,102 @@ describe('PintaApp — missão funcional grava antes de concluir', () => {
     )
     expect(eventos).toEqual([])
   })
+
+  it('o controle do host confirma a edição pendente antes de entregar o desenho', async () => {
+    const { createMemoryPersistence } = await import('../state/memoryPersistence')
+    const { createPixelSpriteAsset } = await import('../core/project')
+    const nave = createPixelSpriteAsset({ name: 'nave', frameSize: 32 })
+    const memoria = createMemoryPersistence([nave])
+    let gravou = false
+    const persistence = {
+      ...memoria,
+      persistAssets: async (assets: Parameters<typeof memoria.persistAssets>[0]) => {
+        await memoria.persistAssets(assets)
+        gravou = true
+      },
+    }
+    const controle: { atual: import('./PintaApp').PintaCompletionControl | null } = { atual: null }
+    render(
+      <PintaApp
+        persistence={persistence}
+        onCompletionControlChange={(valor) => {
+          controle.atual = valor
+        }}
+      />,
+    )
+    await abrirNave()
+    editarPendente()
+    await act(async () => {
+      const salvo = await controle.atual?.flush()
+      expect(gravou).toBe(true)
+      expect(salvo?.id).toBe(nave.id)
+      expect(salvo?.id).toBeTruthy()
+    })
+  })
+
+  it('o controle do host rejeita se a gravação do desenho falhar', async () => {
+    const { createMemoryPersistence } = await import('../state/memoryPersistence')
+    const { createPixelSpriteAsset } = await import('../core/project')
+    const nave = createPixelSpriteAsset({ name: 'nave', frameSize: 32 })
+    const persistence = {
+      ...createMemoryPersistence([nave]),
+      persistAssets: async () => {
+        throw new Error('sem espaço')
+      },
+    }
+    const controle: { atual: import('./PintaApp').PintaCompletionControl | null } = { atual: null }
+    render(
+      <PintaApp
+        persistence={persistence}
+        onCompletionControlChange={(valor) => {
+          controle.atual = valor
+        }}
+      />,
+    )
+    await abrirNave()
+    editarPendente()
+    let erro: unknown
+    await act(async () => {
+      try {
+        await controle.atual?.flush()
+      } catch (e) {
+        erro = e
+      }
+    })
+    expect(erro).toBeInstanceOf(Error)
+  })
+})
+
+it('entrega ao host somente o desenho aberto e confirmado pela persistência', async () => {
+  const controle: { atual: import('./PintaApp').PintaCompletionControl | null } = { atual: null }
+  const { unmount } = render(
+    <PintaApp
+      onCompletionControlChange={(value) => {
+        controle.atual = value
+      }}
+    />,
+  )
+  await waitFor(() => expect(screen.getByText(COPY.gallery.empty)).toBeTruthy())
+  expect(await controle.atual?.flush()).toBeNull()
+  fireEvent.click(screen.getByRole('button', { name: COPY.gallery.create }))
+  fireEvent.click(screen.getByRole('button', { name: new RegExp(COPY.styles.pixel.title) }))
+  fireEvent.click(
+    screen.getByRole('button', { name: new RegExp(COPY.kinds['pixel-sprite'].title) }),
+  )
+  fireEvent.click(screen.getByRole('button', { name: COPY.newAsset.next }))
+  fireEvent.change(screen.getByPlaceholderText(COPY.newAsset.namePlaceholder), {
+    target: { value: 'Minha arte' },
+  })
+  fireEvent.click(screen.getByRole('button', { name: COPY.newAsset.createButton }))
+  await waitFor(() => expect(screen.getByText('minha-arte')).toBeTruthy())
+  await waitFor(async () => {
+    const salvo = await controle.atual?.flush()
+    expect(salvo?.name).toBe('minha-arte')
+    expect(typeof salvo?.id).toBe('string')
+  })
+  fireEvent.click(screen.getByRole('button', { name: COPY.editor.back }))
+  await waitFor(() => expect(screen.getByRole('button', { name: /Abrir minha-arte/ })).toBeTruthy())
+  expect(await controle.atual?.flush()).toBeNull()
+  unmount()
+  expect(controle.atual).toBeNull()
 })

@@ -10,7 +10,7 @@ test('resolved successful baseline retains the failed-push backlog in the actual
   const directory = mkdtempSync(join(tmpdir(), 'staging-backlog-control-'))
   const workflow = readFileSync('.github/workflows/ci.yml', 'utf8')
   const start = workflow.indexOf('          declare -A SVC_ID=(')
-  const end = workflow.indexOf(`          if [ "\${#WANT[@]}" -eq 0 ]; then`, start)
+  const end = workflow.indexOf('          ARQUIPELAGO_STATE=', start)
   expect(start).toBeGreaterThan(0)
   expect(end).toBeGreaterThan(start)
   const selector = workflow.slice(start, end)
@@ -25,6 +25,9 @@ test('resolved successful baseline retains the failed-push backlog in the actual
     LIVE_RECORDER_SERVICE_ID: uuid(3),
   }
   const configured = configuredServiceIds(workflow, optionalIds)
+  const historical = Object.fromEntries(
+    Object.entries(configured).filter(([name]) => name !== 'arquipelago-api'),
+  )
   const childEnv = {
     PATH: process.env.PATH ?? process.env.Path,
     SYSTEMROOT: process.env.SYSTEMROOT,
@@ -81,13 +84,13 @@ test('resolved successful baseline retains the failed-push backlog in the actual
           headSha: baseline,
           ci: { runId: 101, attempt: 1, jobId: 102 },
           coverage: {
-            ciServices: Object.keys(configured),
+            ciServices: Object.keys(historical),
             extraServices: [],
             ciReceiptSha256: 'a'.repeat(64),
           },
           ready: {
             receiptSha256: 'b'.repeat(64),
-            services: Object.entries(configured).map(([name, serviceId], index) => ({
+            services: Object.entries(historical).map(([name, serviceId], index) => ({
               name,
               serviceId,
               deploymentId: uuid(100 + index),
@@ -142,10 +145,10 @@ test('resolved successful baseline retains the failed-push backlog in the actual
     expect(select(failedPush)).toEqual(['admin'])
     expect(result.before).toBe(baseline)
     expect(select(result.before)).toEqual(Object.keys(configured).sort())
-    expect(select(result.before)).toHaveLength(18)
-    expect(select(failedPush, 'workflow_dispatch', 'all')).toHaveLength(18)
+    expect(select(result.before)).toHaveLength(19)
+    expect(select(failedPush, 'workflow_dispatch', 'all')).toHaveLength(19)
     expect(select(failedPush, 'workflow_dispatch', 'hub,funnel')).toEqual(['funnel', 'hub'])
-    expect(select(baseline, 'workflow_dispatch', 'auto')).toHaveLength(18)
+    expect(select(baseline, 'workflow_dispatch', 'auto')).toHaveLength(19)
   } finally {
     rmSync(directory, { recursive: true, force: true })
   }

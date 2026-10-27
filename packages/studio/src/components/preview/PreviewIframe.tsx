@@ -9,6 +9,7 @@ import {
   type InstalledExtension,
   type Project,
   type ProjectAsset,
+  preloadCourseModels,
   soundManifest,
 } from '#core'
 import {
@@ -403,7 +404,48 @@ export function PreviewIframe(): JSX.Element {
   // Manifesto de sons (nome → dataUrl de áudio) — mesmo ciclo de vida do de imagem.
   const soundsManifest = useMemo(() => soundManifest(assets), [assets])
   // Binários 3D (modelo GLB / céu HDR) — canal próprio (o de imagem os filtraria).
-  const models3dManifest = useMemo(() => asset3DManifest(assets), [assets])
+  // Uma falha de modelo não pode virar uma cena vazia apresentada como jogo pronto.
+  const courseModelRequest = useMemo(
+    () => ({ assets, code: debouncedJs, attempt: renderNonce }),
+    [assets, debouncedJs, renderNonce],
+  )
+  const [courseModelState, setCourseModelState] = useState<{
+    request: typeof courseModelRequest
+    manifest: ReturnType<typeof asset3DManifest> | null
+    error: string | null
+  } | null>(null)
+  useEffect(() => {
+    let active = true
+    void preloadCourseModels(courseModelRequest.assets, courseModelRequest.code).then(
+      () => {
+        if (active)
+          setCourseModelState({
+            request: courseModelRequest,
+            manifest: asset3DManifest(courseModelRequest.assets),
+            error: null,
+          })
+      },
+      (error: unknown) => {
+        if (active)
+          setCourseModelState({
+            request: courseModelRequest,
+            manifest: null,
+            error:
+              error instanceof Error
+                ? error.message
+                : 'Não consegui carregar os modelos do jogo. Tente de novo.',
+          })
+      },
+    )
+    return () => {
+      active = false
+    }
+  }, [courseModelRequest])
+  const courseModelsReady =
+    courseModelState?.request === courseModelRequest && courseModelState.manifest !== null
+  const courseModelError =
+    courseModelState?.request === courseModelRequest ? courseModelState.error : null
+  const models3dManifest = courseModelsReady ? courseModelState!.manifest! : undefined
 
   const previewBudgetInput = useMemo(
     () => ({
@@ -499,6 +541,7 @@ export function PreviewIframe(): JSX.Element {
     if (!currentProjectHasRun) return PAUSED_PREVIEW_DOC
     if (!extensionRuntimesReady) return PAUSED_PREVIEW_DOC
     if (!gameUiFontReady) return PAUSED_PREVIEW_DOC
+    if (!courseModelsReady) return PAUSED_PREVIEW_DOC
     // Aguarda hidratar o estado salvo antes do 1º build (ver storageReady acima).
     if (projectId && !storageReady) return PAUSED_PREVIEW_DOC
     const base = buildJavaScriptClassicDocument({
@@ -538,6 +581,7 @@ export function PreviewIframe(): JSX.Element {
     currentProjectHasRun,
     extensionRuntimesReady,
     gameUiFontReady,
+    courseModelsReady,
     gameUiFontState.bundle,
     projectId,
     storageReady,
@@ -814,6 +858,33 @@ export function PreviewIframe(): JSX.Element {
               ? remoteDocument.error
               : 'Preparando o jogo no ambiente isolado…'}
         </p>
+      )}
+      {previewRunning && !courseModelsReady && extensionRuntimesReady && (
+        <div
+          role={courseModelError ? 'alert' : 'status'}
+          className="absolute inset-0 flex items-center justify-center bg-sz-panel/95 p-6 text-center"
+        >
+          <div className="max-w-sm rounded-md border border-sz-border bg-sz-bg p-4 shadow-lg">
+            <p className="text-sm font-semibold text-sz-fg">
+              {courseModelError
+                ? 'Os modelos do jogo não carregaram'
+                : 'Carregando os modelos do jogo…'}
+            </p>
+            {courseModelError && (
+              <>
+                <p className="mt-2 text-xs text-sz-fg-soft">{courseModelError}</p>
+                <Button
+                  className="mt-3"
+                  size="sm"
+                  variant="primary"
+                  onClick={() => setRenderNonce((n) => n + 1)}
+                >
+                  Tentar de novo
+                </Button>
+              </>
+            )}
+          </div>
+        </div>
       )}
       {previewRunning && extensionRuntimesLoading && (
         <div
