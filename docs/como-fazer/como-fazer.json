@@ -60,7 +60,6 @@
           "trilha",
           "mapa",
           "começar",
-          "começar agora",
           "continuar",
           "concluir aula",
           "objetivos",
@@ -71,7 +70,8 @@
           "aprender",
           "cursos",
           "módulo",
-          "acessar curso"
+          "revisar curso",
+          "abrir a trilha"
         ],
         "steps": [
           {
@@ -84,16 +84,14 @@
           {
             "id": "trilha",
             "title": "Escolha uma trilha",
-            "body": "No mapa, clique no nível da trilha que você quer abrir. A página da trilha mostra os cursos dela. Os cursos da sua trilha de agora também ficam logo abaixo do mapa, na faixa **Cursos da trilha**.",
-            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-abrir-uma-aula/trilha-9ec8862a2525d52e.webp",
-            "imageAlt": "Mapa da Jornada do Criador com o nível Construtor(a) destacado para abrir a trilha."
+            "body": "No mapa, clique no seu nível, o que tem o balão **Você está aqui**, ou clique em **Abrir a trilha**. A página da trilha mostra os **Cursos da trilha**, a **Missão** e os **Poderes**. Os cursos da sua trilha também aparecem logo abaixo do mapa, em **Sua trilha agora**.",
+            "imageAlt": "Mapa da Jornada do Criador com o nível marcado Você está aqui destacado para abrir a trilha."
           },
           {
             "id": "curso",
             "title": "Abra o curso",
-            "body": "Escolha um curso liberado e clique no botão do cartão: **Começar agora**, se for a primeira vez, **Continuar**, se você já começou, ou **Acessar curso**. Na página do curso, as aulas ficam num caminho, separadas por módulo. Clique na aula que está liberada.",
-            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-abrir-uma-aula/curso-0356b9cd1252cc2e.webp",
-            "imageAlt": "Trilha Construtor(a) com o botão Continuar do curso Nave Contra Asteroides destacado."
+            "body": "Escolha um curso liberado e clique no botão do cartão: **Começar**, se for a primeira vez, **Continuar**, se você já começou, ou **Revisar curso**, se já terminou. Na página do curso, as aulas ficam num caminho, separadas por módulo. Clique na aula que está liberada.",
+            "imageAlt": "Cartão de um curso da trilha com o botão Continuar destacado."
           },
           {
             "id": "secoes",
@@ -166,15 +164,13 @@
           {
             "id": "jornada",
             "title": "Encontre o curso",
-            "body": "Na página **Início**, o cartão **Continue sua criação** tem o botão **Continuar**. Se você quer outro curso, clique em **Cursos**, escolha a trilha no mapa e clique em **Continuar** no cartão do curso que você estava fazendo.",
-            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-voltar-para-a-aula/jornada-4c0e730db8e31c36.webp",
-            "imageAlt": "Trilha da Jornada com o botão Continuar destacado no cartão do curso que você estava fazendo."
+            "body": "Na página **Início**, o cartão **Continue sua criação** tem o botão **Continuar**. Se você quer outro curso, clique em **Cursos** e, em **Sua trilha agora**, clique em **Continuar** no cartão do curso que você estava fazendo. Se ele não estiver ali, clique em **Mostrar**, em **Todos os cursos e seus acessos**.",
+            "imageAlt": "Faixa Sua trilha agora com o botão Continuar destacado no cartão do curso que você estava fazendo."
           },
           {
             "id": "aula",
             "title": "Abra a aula",
             "body": "No caminho das aulas, clique na aula que quer continuar: ela tem o balão **Continuar**. A plataforma abre a última parte que ficou guardada. Se precisar, clique em **Anterior** ou em **Próxima parte**.",
-            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-voltar-para-a-aula/aula-175c2090f3be0d7f.webp",
             "imageAlt": "Caminho das aulas do curso, com a faixa do módulo em cima e a aula em andamento, com o balão Continuar, destacada."
           },
           {
@@ -362,7 +358,12 @@
           "cadeado",
           "peça travada",
           "pose",
-          "cabine"
+          "cabine",
+          "enfeite",
+          "laço",
+          "tiara",
+          "orelhinhas",
+          "surpreenda-me"
         ],
         "steps": [
           {
@@ -375,30 +376,30 @@
           {
             "id": "montar",
             "title": "Escolha o visual",
-            "body": "Clique nas categorias, como **Cabelo** ou **Blusa**, e depois nas peças para experimentar. As bolinhas de cor em cima das categorias mudam a cor da peça. O botão das setinhas cruzadas, no canto de cima, sorteia um visual com peças que você já tem.",
-            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-montar-o-avatar/montar-c4c2fe58a22fd34a.webp",
-            "imageAlt": "Editor Meu avatar com a categoria Cabelo aberta e uma peça destacada para experimentar."
+            "body": "Clique nas categorias, como **Cabelo**, **Enfeite** ou **Blusa**, e depois nas peças para experimentar. Em **Enfeite** tem laço, tiara e orelhinhas. As bolinhas de cor, embaixo das categorias, mudam a cor da peça. Algumas peças já vêm com a cor delas e não mostram as bolinhas. Clique em **Surpreenda-me**, no canto de cima, para sortear um visual com peças que você já tem.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-montar-o-avatar/montar-090fcb922cef4d5d.webp",
+            "imageAlt": "Editor Meu avatar com a categoria Enfeite aberta e o Laço vestido de prévia."
           },
           {
             "id": "comprar",
             "title": "Desbloqueie uma peça com moedas",
             "body": "Peças com cadeado mostram o preço em moedas: clique numa delas para ver como fica no seu avatar. Para ficar com ela, clique em **Comprar por** e o preço, ou em **Deixar para depois** se mudar de ideia. Veja [como ganhar moedas](/como-fazer/plataforma-resgatar-missoes).",
-            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-montar-o-avatar/comprar-7f515a1d7395513b.webp",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-montar-o-avatar/comprar-f5a5c9ca649b6b36.webp",
             "imageAlt": "Editor Meu avatar com uma peça de cadeado vestida de prévia e a faixa Gostou? Está vestido de prévia!, com os botões Deixar para depois e Comprar por destacados."
           },
           {
             "id": "salvar",
             "title": "Guarde seu avatar",
             "body": "Clique em **Salvar** e espere terminar. No celular, o botão mostra só o sinal de certo. Se ele mostrar **Peça travada 🔒**, ainda tem uma peça com cadeado no visual: use suas moedas nessa peça ou troque por outra.",
-            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-montar-o-avatar/salvar-fcb4cc197e028551.webp",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-montar-o-avatar/salvar-56c432b9d0bd369f.webp",
             "imageAlt": "Editor Meu avatar com o botão Salvar destacado no canto de cima."
           },
           {
             "id": "foto",
             "title": "Tire uma foto do avatar",
-            "body": "Clique em **Cabine de fotos**, embaixo. Escolha uma pose, arraste o personagem para escolher o lado e clique em **Tirar foto**, no canto de cima. A foto vira a imagem do seu perfil.",
-            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-montar-o-avatar/foto-89d38b35297b3493.webp",
-            "imageAlt": "Cabine de fotos do avatar com as poses embaixo e o botão Tirar foto destacado no canto de cima."
+            "body": "Clique em **Cabine de fotos**, no alto do painel de escolhas. Escolha uma pose, arraste o personagem para escolher o lado e clique em **Tirar foto**, no canto de cima. A foto vira a imagem do seu perfil.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-montar-o-avatar/foto-27c981802fce6a1d.webp",
+            "imageAlt": "Cabine de fotos do avatar com as poses no painel ao lado e o botão Tirar foto destacado no canto de cima."
           }
         ],
         "related": [
@@ -505,7 +506,7 @@
       "position": 7,
       "draft": {
         "title": "Como ver suas trilhas e seu progresso",
-        "summary": "Entenda o mapa da Jornada, veja o que falta para o próximo nível e encontre os cursos de cada trilha.",
+        "summary": "Entenda o mapa da Jornada, veja o que falta para o próximo nível e encontre os cursos, a missão e os Poderes da sua trilha.",
         "keywords": [
           "jornada",
           "explorar",
@@ -523,43 +524,50 @@
           "próximo nível",
           "quanto falta",
           "cursos",
-          "próximos cursos",
           "cursos da trilha",
-          "módulo"
+          "módulo",
+          "missão",
+          "poderes",
+          "poder",
+          "sua trilha agora",
+          "abrir a trilha",
+          "subir de nível"
         ],
         "steps": [
           {
             "id": "mapa",
             "title": "Abra o mapa",
-            "body": "Clique em **Cursos** no menu. No alto, o selo **Você é** mostra o seu nível, e a frase embaixo dele conta quantos cursos faltam para o próximo nível. Mais abaixo, o mapa mostra os níveis da Jornada do Criador.",
-            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-ver-a-minha-jornada/mapa-ef6ba7d1d9bfdc32.webp",
-            "imageAlt": "Página Cursos da Jornada do Criador, aberta pelo item Cursos do menu, com o selo Você é e a frase do que falta para o próximo nível destacados."
+            "body": "Clique em **Cursos** no menu. No alto, o selo **Você é** mostra o seu nível, e a frase embaixo dele conta o que falta para o próximo nível. No mapa, o seu nível tem o balão **Você está aqui** e três etiquetas que mostram quanto você já fez: **Cursos**, **Missão** e **Poderes**.",
+            "imageAlt": "Página Cursos da Jornada do Criador, aberta pelo item Cursos do menu, com o selo Você é, a frase do que falta e o nível marcado Você está aqui, com as etiquetas Cursos, Missão e Poderes."
           },
           {
             "id": "trilha",
-            "title": "Veja os cursos da sua trilha",
-            "body": "Desça a página até **Cursos da trilha**, com o nome do seu nível: ali estão os cursos da sua trilha e quantos já estão prontos. Para ver outra trilha, clique no nível dela no mapa. Um nível que ainda não abriu balança e mostra um recado.",
-            "imageAlt": "Faixa Cursos da trilha com o contador de cursos prontos e os cartões dos cursos da trilha."
-          },
-          {
-            "id": "proximas",
-            "title": "Confira os Próximos cursos",
-            "body": "Se aparecer **Próximos cursos**, são cursos de outra trilha que fazem parte do seu próximo passo. Em cima de cada cartão está o que fazer: **Termine este curso.** ou **Termine e publique o seu jogo no Mural.**",
-            "imageAlt": "Faixa Próximos cursos com o recado Termine este curso. em cima do cartão de um curso de outra trilha."
+            "title": "Veja a sua trilha",
+            "body": "Embaixo do mapa, em **Sua trilha agora**, estão os cursos da sua trilha, a missão e os Poderes. Para ver a página inteira da trilha, clique em **Abrir a trilha** ou no seu nível no mapa. Um nível que você ainda não alcançou fica cinza, com cadeado, e só abre quando você chegar lá.",
+            "imageAlt": "Faixa Sua trilha agora com os cartões dos cursos da trilha, da missão e dos Poderes, e o botão Abrir a trilha destacado."
           },
           {
             "id": "curso",
             "title": "Confira o que está liberado",
-            "body": "Um curso liberado mostra quantas aulas você já fez e um botão para seguir, como **Começar agora** ou **Continuar**. Um curso bloqueado mostra o que vem antes: **Comece por este:** com o nome do curso, **Em breve na sua jornada** ou um prêmio que abre quando você chega a um nível.",
-            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-ver-a-minha-jornada/curso-8ef7e13bdce50ee2.webp",
-            "imageAlt": "Trilha com um curso liberado mostrando as aulas feitas e o botão Continuar, e um curso bloqueado com o recado Comece por este: e o nome do curso que vem antes."
+            "body": "Um curso que já abriu mostra quantas aulas você fez e um botão para seguir: **Começar**, **Continuar** ou **Revisar curso**. Um curso com cadeado diz quando abre, como **Abre depois do curso 2D da trilha** ou **Abre depois dos cursos da trilha**.",
+            "imageAlt": "Cursos da trilha com um curso que já abriu, mostrando as aulas feitas e o botão Continuar, e um curso com cadeado e o recado de quando ele abre."
+          },
+          {
+            "id": "missao",
+            "title": "Conheça a missão e os Poderes",
+            "body": "Quando você termina os cursos da trilha, abrem a **Missão** e os **Poderes**. A missão é um jogo novo, sem passo a passo, primeiro em 2D e depois em 3D. Os Poderes trazem mecânicas novas para os seus jogos. Em **Sua trilha agora**, clique em **Ver os Poderes** para conhecer todos. Quando eles abrirem, o botão vira **Escolher Poderes**.",
+            "imageAlt": "Faixa Sua trilha agora com o cartão Missão da trilha e o cartão Poderes, com o botão Ver os Poderes destacado."
           },
           {
             "id": "progresso",
             "title": "Acompanhe suas aulas",
-            "body": "Abra um curso liberado. No caminho das aulas, separado por módulos, as aulas concluídas têm uma marca de confirmação e as bloqueadas têm cadeado. Depois, volte ao mapa para escolher outra trilha.",
-            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-ver-a-minha-jornada/progresso-f334fca10c987cd7.webp",
+            "body": "Abra um curso liberado. No caminho das aulas, separado por módulos, as aulas concluídas têm uma marca de confirmação e as bloqueadas têm cadeado. Para voltar, clique em **Voltar à trilha**, no alto da página do curso.",
             "imageAlt": "Caminho das aulas do curso com a faixa Módulo em cima, uma aula concluída, marcada com confirmação, e uma aula bloqueada com cadeado."
+          },
+          {
+            "id": "subir",
+            "title": "Suba de nível",
+            "body": "Quando você completa uma trilha, aparece **Você subiu de nível!** com o seu nível novo e o que a trilha nova abriu. Clique em **Ver a Trilha** e o nome dela para ir até lá, ou em **Continuar depois**."
           }
         ],
         "related": ["plataforma-abrir-uma-aula", "plataforma-publicar-no-mural"]
@@ -2080,9 +2088,9 @@
           {
             "id": "escolher",
             "title": "Escolha uma peça",
-            "body": "Embaixo, clique numa aba, como **Móveis**, **Enfeites** ou **Plantas**, e depois na peça. Ela entra no quarto. Em **Parede**, escolha uma cor e clique numa parede para pintar.",
+            "body": "No painel das peças, ao lado do quarto, clique numa aba, como **Móveis**, **Enfeites** ou **Plantas**, e depois na peça. Ela entra no quarto. Em **Parede**, escolha uma cor e clique numa parede para pintar.",
             "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-arrumar-o-quarto/escolher-8ac1b67866942215.webp",
-            "imageAlt": "Editor Meu quarto com a aba Móveis aberta e uma peça destacada na bandeja."
+            "imageAlt": "Editor Meu quarto com a aba Móveis aberta e uma peça destacada no painel das peças."
           },
           {
             "id": "mover",
@@ -2102,7 +2110,8 @@
             "id": "trofeus",
             "title": "Coloque seus troféus",
             "body": "Na aba **Troféus** ficam as suas conquistas. Troféu não se compra: cada um abre quando você conquista o que ele pede.",
-            "imageAlt": "Bandeja do quarto na aba Troféus com os troféus conquistados."
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-arrumar-o-quarto/trofeus-d979d84ce0193adb.webp",
+            "imageAlt": "Painel do quarto na aba Troféus, com um troféu conquistado e os outros com cadeado e o que cada um pede."
           },
           {
             "id": "salvar",
@@ -4564,13 +4573,14 @@
           "torus",
           "rosca",
           "argola",
-          "anel"
+          "anel",
+          "cone"
         ],
         "steps": [
           {
             "id": "peca",
             "title": "Adicione uma peça",
-            "body": "Abra um modelo no Molda. Na aba **Modelar**, em **Adicionar**, à esquerda, clique numa forma: **Caixa**, **Rampa**, **Cilindro**, **Bola**, **Torus** ou **Plano**.",
+            "body": "Abra um modelo no Molda. Na aba **Modelar**, em **Adicionar**, à esquerda, clique numa forma: **Caixa**, **Rampa**, **Cilindro**, **Cone**, **Bola**, **Torus** ou **Plano**.",
             "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/molda-montar-e-pintar/peca-6b8dbc1b47bb7f9f.webp",
             "imageAlt": "Aba Modelar do Molda com as formas de Adicionar à esquerda, do Caixa ao Plano com o Torus no meio, e o botão Bola destacado."
           },
@@ -4622,15 +4632,79 @@
           "molda-salvar-e-reabrir",
           "molda-usar-no-estudio",
           "molda-juntar-e-separar-pecas",
-          "molda-trocar-a-paleta"
+          "molda-trocar-a-paleta",
+          "molda-textura-da-peca"
         ],
+        "toolRef": "molda"
+      }
+    },
+    {
+      "slug": "molda-textura-da-peca",
+      "collection": "molda",
+      "position": 2,
+      "draft": {
+        "title": "Como criar ou trazer uma textura para uma peça no Molda",
+        "summary": "Dê a uma peça uma textura nova para pintar, ou use um desenho seu como textura.",
+        "keywords": [
+          "molda",
+          "textura",
+          "criar textura",
+          "importar textura",
+          "desenho",
+          "imagem",
+          "png",
+          "jpeg",
+          "pinta",
+          "densidade",
+          "pixels",
+          "pintar",
+          "peça"
+        ],
+        "steps": [
+          {
+            "id": "escolher",
+            "title": "Escolha a peça",
+            "body": "Abra seu modelo, clique na aba **Pintar** e depois na peça. À esquerda, embaixo das ferramentas, aparecem **Criar textura** e **Importar textura**.",
+            "imageAlt": "Coluna da esquerda da aba Pintar do Molda com os botões Criar textura e Importar textura destacados."
+          },
+          {
+            "id": "criar",
+            "title": "Crie uma textura nova",
+            "body": "Clique em **Criar textura**. Em **Nome da textura**, deixe o nome que já vem ou escreva outro.",
+            "imageAlt": "Janela Criar textura do Molda com o campo Nome da textura preenchido."
+          },
+          {
+            "id": "densidade",
+            "title": "Escolha o tamanho dos quadradinhos",
+            "body": "Em **Densidade de pixels**, **16px** faz quadradinhos grandes. Os números maiores fazem quadradinhos menores, para pintar mais detalhes. Depois clique em **Criar e aplicar**.",
+            "imageAlt": "Janela Criar textura com a lista Densidade de pixels e o botão Criar e aplicar destacado."
+          },
+          {
+            "id": "pintar",
+            "title": "Pinte a textura nova",
+            "body": "A peça ganha a textura nova, sem desenho, e o nome dela aparece à esquerda, em Textura ativa. Pinte com o **Pincel**, como sempre. A pintura de antes sai dessa peça: para trazer de volta, clique na seta curva de desfazer, no alto.",
+            "imageAlt": "Aba Pintar do Molda com a frase Textura ativa à esquerda e um traço novo na peça."
+          },
+          {
+            "id": "importar",
+            "title": "Ou traga um desenho seu",
+            "body": "Clique em **Importar textura** e escolha uma imagem PNG ou JPEG, como um desenho feito no Pinta. Confira o nome e o tamanho na prévia e clique em **Importar e aplicar**.",
+            "imageAlt": "Janela Importar textura do Molda com a prévia da imagem e o botão Importar e aplicar destacado."
+          },
+          {
+            "id": "aviso",
+            "title": "Se aparecer um aviso",
+            "body": "Se a imagem for pequena, o Molda pede uma densidade menor ou uma imagem maior: troque em **Densidade de pixels** e clique de novo. Se o aviso falar de faces tortas, marque **Dividir faces tortas, se necessário** e clique de novo."
+          }
+        ],
+        "related": ["molda-montar-e-pintar", "molda-pintar-de-perto", "pinta-criar-um-desenho"],
         "toolRef": "molda"
       }
     },
     {
       "slug": "molda-salvar-e-reabrir",
       "collection": "molda",
-      "position": 2,
+      "position": 3,
       "draft": {
         "title": "Como guardar e reabrir uma criação no Molda",
         "summary": "O Molda guarda sozinho. Confira se está salvo, volte à galeria e baixe uma cópia.",
@@ -4688,7 +4762,7 @@
     {
       "slug": "molda-usar-no-estudio",
       "collection": "molda",
-      "position": 3,
+      "position": 4,
       "draft": {
         "title": "Como levar uma criação do Molda para o Estúdio",
         "summary": "Traga seu modelo, sua textura ou seu céu para um projeto de jogo.",
@@ -4737,7 +4811,7 @@
     {
       "slug": "molda-pintar-de-perto",
       "collection": "molda",
-      "position": 4,
+      "position": 5,
       "draft": {
         "title": "Como pintar quadradinho por quadradinho no Molda",
         "summary": "Veja os quadradinhos da pintura e pinte uma face de perto, um pixel de cada vez.",
@@ -4760,9 +4834,8 @@
           {
             "id": "grade",
             "title": "Mostre os quadradinhos",
-            "body": "Na aba **Pintar**, clique na peça. Depois clique em **Quadradinhos**, à esquerda, para ver a grade da pintura sobre o modelo.",
-            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/molda-pintar-de-perto/grade-2bc5ba2bc0debaa5.webp",
-            "imageAlt": "Aba Pintar do Molda com o botão Quadradinhos ligado e a grade de quadradinhos aparecendo sobre a peça."
+            "body": "Na aba **Pintar**, clique na peça. No alto da área do modelo, à direita de **Enquadrar**, clique no botão de ajustes, o de três tracinhos com uma setinha. Depois clique em **Quadradinhos** para ver a grade da pintura sobre o modelo.",
+            "imageAlt": "Aba Pintar do Molda com o menu de ajustes aberto no alto, à direita, e o botão Quadradinhos ligado, com a grade de quadradinhos sobre a peça."
           },
           {
             "id": "tamanho",
@@ -4781,7 +4854,7 @@
           {
             "id": "pixels",
             "title": "Pinte os quadradinhos",
-            "body": "Escolha uma cor e clique nos quadradinhos. Use **+** e **−** para mudar o zoom e marque **Grade de pixels** para ver as linhas. A pintura aparece no modelo 3D.",
+            "body": "Escolha uma cor e clique nos quadradinhos. Use os botões de mais e de menos para mudar o zoom e marque **Grade de pixels** para ver as linhas. A pintura aparece no modelo 3D.",
             "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/molda-pintar-de-perto/pixels-6527b1fbb222413b.webp",
             "imageAlt": "Painel Pintar de perto com alguns quadradinhos pintados, os botões de zoom e a opção Grade de pixels marcada."
           },
@@ -4800,7 +4873,7 @@
     {
       "slug": "molda-apagar-e-vazar",
       "collection": "molda",
-      "position": 5,
+      "position": 6,
       "draft": {
         "title": "Como apagar a tinta ou deixar buracos na pintura do Molda",
         "summary": "Use a Borracha para apagar a tinta ou para deixar quadradinhos vazados, como uma janela.",
@@ -4836,7 +4909,7 @@
           {
             "id": "arrastar",
             "title": "Arraste sobre a peça",
-            "body": "Arraste sobre a peça. Com **Deixar vazado**, os quadradinhos ficam vazados e dá para ver através deles. Use **Quadradinhos** e **Tamanho** **1** para fazer um buraco certinho.",
+            "body": "Arraste sobre a peça. Com **Deixar vazado**, os quadradinhos ficam vazados e dá para ver através deles. Para um buraco certinho, ligue **Quadradinhos** no botão de ajustes, no alto da área do modelo, e em **Tamanho** clique em **1**.",
             "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/molda-apagar-e-vazar/arrastar-a0c2048798c38de8.webp",
             "imageAlt": "Peça no Molda com uma janela vazada em quadradinhos, dando para ver o fundo através dela."
           },
@@ -4855,7 +4928,7 @@
     {
       "slug": "molda-movimento-pronto",
       "collection": "molda",
-      "position": 6,
+      "position": 7,
       "draft": {
         "title": "Como usar um movimento pronto no Molda",
         "summary": "Faça uma peça ou o modelo inteiro pular, balançar ou girar com poucos cliques.",
@@ -4921,7 +4994,7 @@
     {
       "slug": "molda-animar-com-poses",
       "collection": "molda",
-      "position": 7,
+      "position": 8,
       "draft": {
         "title": "Como criar um movimento com poses no Molda",
         "summary": "Mova as peças em momentos diferentes, marque cada pose e veja o movimento tocar.",
@@ -4997,7 +5070,7 @@
     {
       "slug": "molda-mudar-a-forma",
       "collection": "molda",
-      "position": 8,
+      "position": 9,
       "draft": {
         "title": "Como mudar a forma de uma peça com pontos, linhas e faces",
         "summary": "Escolha pontos, linhas ou faces de uma peça e arraste para criar formas novas. Use o Raio-X para ver através da peça, o Puxar para esticar faces e o Cortar para ganhar faces.",
@@ -5039,13 +5112,13 @@
           {
             "id": "escolher",
             "title": "Escolha pontos, linhas ou faces",
-            "body": "Com a peça escolhida, clique em **Pontos**, **Linhas** ou **Faces**, no alto da área do modelo. Isso funciona no Plano e também na Caixa, na Rampa, no Cilindro, na Bola e no Torus.",
+            "body": "Com a peça escolhida, clique em **Pontos**, **Linhas** ou **Faces**, no alto da área do modelo. Isso funciona no Plano e também na Caixa, na Rampa, no Cilindro, no Cone, na Bola e no Torus.",
             "imageAlt": "Alto da área do modelo no Molda com Escolher: Peça inteira, Pontos, Linhas e Faces, e Pontos destacado."
           },
           {
             "id": "atras",
             "title": "Veja através da peça",
-            "body": "Precisa escolher um ponto do lado de trás? Clique em **Raio-X**, o botão de dois quadrados ao lado da grade, no alto da área do modelo. As peças ficam transparentes e o clique alcança o que está atrás. Clique de novo para desligar.",
+            "body": "Precisa escolher um ponto do lado de trás? Clique no botão do Raio-X, o de dois quadrados ao lado da grade, no alto da área do modelo. As peças ficam transparentes e o clique alcança o que está atrás. Clique de novo para desligar.",
             "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/molda-mudar-a-forma/atras-b27a208b846a4701.webp",
             "imageAlt": "Alto da área do modelo no Molda com o botão Raio-X ligado ao lado da grade e a peça transparente, mostrando os pontos de trás."
           },
@@ -5087,7 +5160,7 @@
     {
       "slug": "molda-trazer-modelo-3d",
       "collection": "molda",
-      "position": 9,
+      "position": 10,
       "draft": {
         "title": "Como trazer um modelo 3D de um arquivo para o Molda",
         "summary": "Abra um arquivo GLB ou glTF, confira a prévia e junte o modelo às peças da sua criação.",
@@ -5152,7 +5225,7 @@
     {
       "slug": "molda-juntar-e-separar-pecas",
       "collection": "molda",
-      "position": 10,
+      "position": 11,
       "draft": {
         "title": "Como juntar ou separar peças no Molda",
         "summary": "Corte uma peça em duas, una várias peças numa só ou combine duas formas.",
@@ -5234,7 +5307,7 @@
     {
       "slug": "molda-trocar-a-paleta",
       "collection": "molda",
-      "position": 11,
+      "position": 12,
       "draft": {
         "title": "Como trocar as cores da paleta no Molda",
         "summary": "Escolha outra paleta, crie a sua ou tire as cores de uma imagem.",

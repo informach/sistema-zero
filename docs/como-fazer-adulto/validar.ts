@@ -29,7 +29,7 @@ import {
 } from '../aulas-interativas-tecnico/qa/palavras-da-escola'
 
 /** Tamanho do lote combinado no plano da biblioteca adulta (mude aqui se o lote crescer). */
-const TOTAL_DE_TUTORIAIS = 64
+const TOTAL_DE_TUTORIAIS = 67
 const TOTAL_DE_COLECOES = 8
 const MINIMO_POR_COLECAO = 3
 const PASSOS_MIN = 3

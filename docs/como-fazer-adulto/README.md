@@ -1,7 +1,7 @@
 # Como fazer: a biblioteca de ajuda da comunidade adulta
 
 `como-fazer.json` é o conteúdo da biblioteca **Como fazer** da comunidade adulta
-(`packages/community`, páginas `/ajuda` e `/como-fazer`): **8 coleções e 64 tutoriais** curtos, por
+(`packages/community`, páginas `/ajuda` e `/como-fazer`): **8 coleções e 67 tutoriais** curtos, por
 tarefa, em português do Brasil. O lote segue a prancha aprovada (Canvas "Comunidade adulta · direção
 de arte", quadros Como fazer e Tutorial). **Nada deste arquivo está publicado.**
 
@@ -60,7 +60,7 @@ bun docs/como-fazer-adulto/validar.ts
 
 Roda o mesmo validador que o members usa ao publicar (`validateHelpCollection`,
 `validateHelpTutorial`) e confere o lote inteiro: formato do import, coleções e posições, slugs
-únicos, `related` e links que existem, exatamente 64 tutoriais, pelo menos 3 por coleção, de 3 a 6
+únicos, `related` e links que existem, exatamente 67 tutoriais, pelo menos 3 por coleção, de 3 a 6
 passos e o vocabulário adulto nos textos que a pessoa lê: os rótulos antigos de navegação e a
 concordância errada da troca de nomes (`palavras-da-escola.ts`, a mesma régua das aulas e do Kids),
 "professor(a)", "IA" solta, "toque/aperte em" num botão, "Mostra", "senhor", "senhora", "vovó",
@@ -68,7 +68,7 @@ concordância errada da troca de nomes (`palavras-da-escola.ts`, a mesma régua 
 pessoa digita ("professor", "seção", "IA"). Sai com código 1 se algo reprovar.
 
 As sugestões do `helpEditorialWarnings` não bloqueiam. Hoje aparecem quatro, e todas são esperadas:
-os 64 tutoriais ainda não têm imagem, e três tutoriais citam a assinatura de propósito (o menu, que
+os tutoriais que ainda não têm imagem recebem a captura pelo admin, e três tutoriais citam a assinatura de propósito (o menu, que
 lista **Compras e assinatura**, o de compras, com o botão **Cancelar assinatura**, e o de trocar o
 cartão): a régua de "texto comercial" foi pensada para o Kids.
 

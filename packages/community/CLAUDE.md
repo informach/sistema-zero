@@ -448,7 +448,7 @@ avatar, espaço 3D, perfil público e Como fazer), na mesma régua da seção an
   (`FEATURED_SLUGS`, do lote `docs/como-fazer-adulto`); sem tutorial, só a busca. O tutorial aberto
   de uma aula (`?voltar=`, régua `resolveHelpReturn` do member-shell) mostra "Você veio da aula …"
   com "Voltar para a aula", e os "Veja também" levam a volta junto.
-- **Como fazer adulto**: o conteúdo (8 coleções, 64 tutoriais) está em `docs/como-fazer-adulto/`
+- **Como fazer adulto**: o conteúdo (8 coleções, 67 tutoriais) está em `docs/como-fazer-adulto/`
   (`como-fazer.json` + `validar.ts` + README). Publicar é manual: Admin → Como fazer → plataforma
   Adulto → importar → revisar e publicar. Os ícones `users` e `user` entraram na allowlist do core.
 

@@ -158,9 +158,9 @@
           {
             "id": "o-que-tem",
             "title": "Saiba o que tem em cada um",
-            "body": "Em **Cursos** ficam os seus cursos, organizados por trilha. Em **Criar** ficam as ferramentas, como o Estúdio e o Pinta. Em **Oficinas** ficam os encontros ao vivo, e em **Ajuda**, os tutoriais e o atendimento da equipe.",
-            "imageUrl": "https://cdn.sistemazero.com.br/adulto/como-fazer/primeiros-menu-do-alto/o-que-tem-30bdab4a8c063d7c.webp",
-            "imageAlt": "Página Cursos aberta pelo menu da esquerda, com o item Cursos marcado e as trilhas lado a lado."
+            "body": "Em **Cursos** ficam a **Jornada do Criador**, com as etapas e o seu próximo passo, e a lista **Todos os cursos**. Em **Criar** ficam as ferramentas, como o Estúdio e o Pinta. Em **Oficinas** ficam os encontros ao vivo, e em **Ajuda**, os tutoriais e o atendimento da equipe.",
+            "imageUrl": "https://cdn.sistemazero.com.br/adulto/como-fazer/primeiros-menu-do-alto/o-que-tem-7789d550b570afea.webp",
+            "imageAlt": "Página Cursos aberta pelo menu da esquerda, com o item Cursos marcado, a linha de etapas da Jornada do Criador e o cartão do próximo passo."
           },
           {
             "id": "recados",
@@ -214,7 +214,12 @@
           "missões",
           "resgatar",
           "pausa",
-          "férias"
+          "férias",
+          "jornada do criador",
+          "poderes",
+          "missão da trilha",
+          "lenda",
+          "próximo passo"
         ],
         "steps": [
           {
@@ -234,14 +239,16 @@
           {
             "id": "jornada",
             "title": "Veja a sua jornada",
-            "body": "Mais abaixo fica a sua jornada, com uma linha de etapas. A etapa marcada com **Você está aqui** é a atual, e o cartão dela diz quantos cursos já estão prontos e o que falta para concluir. Clique em **Ver a etapa** para abrir os cursos dela.",
-            "imageAlt": "Bloco escuro da jornada com a linha de etapas, o selo Você está aqui na etapa atual e o cartão da etapa com o botão Ver a etapa destacado."
+            "body": "Logo abaixo fica **Sua jornada**, com a linha das etapas até a **Lenda**. A etapa marcada com **Você está aqui** é a atual. As etapas em cinza, com cadeado, abrem quando você concluir a anterior. No cartão **Seu próximo passo**, clique em **Ver a etapa** para ver tudo o que a etapa pede.",
+            "imageUrl": "https://cdn.sistemazero.com.br/adulto/como-fazer/primeiros-ver-o-progresso/jornada-56574ccd3cd1ba52.webp",
+            "imageAlt": "Bloco Sua jornada com a linha de etapas, o selo Você está aqui na etapa atual, as etapas seguintes em cinza com cadeado e o cartão Seu próximo passo com o botão Ver a etapa destacado."
           },
           {
             "id": "missoes",
             "title": "Resgate as missões",
             "body": "Em **Missões**, as missões ficam separadas em **Diárias**, **Semanais** e **Mensais**, cada uma com a barra do quanto já foi feito. Quando uma fica pronta, clique em **Resgatar** para receber o XP e as moedas.",
-            "imageAlt": "Seção Missões com as colunas Diárias, Semanais e Mensais e uma missão pronta com o botão Resgatar destacado."
+            "imageUrl": "https://cdn.sistemazero.com.br/adulto/como-fazer/primeiros-ver-o-progresso/missoes-9c73a28c6507e798.webp",
+            "imageAlt": "Seção Missões com as colunas Diárias, Semanais e Mensais, cada missão com a barra do quanto já foi feito."
           },
           {
             "id": "conquistas",
@@ -258,13 +265,82 @@
             "imageAlt": "Cartão Sua sequência com os campos Início da pausa e Fim da pausa preenchidos e o botão Programar pausa destacado."
           }
         ],
-        "related": ["primeiros-menu-do-alto", "comunidade-ranking-e-liga", "conta-montar-o-espaco"]
+        "related": [
+          "primeiros-menu-do-alto",
+          "comunidade-ranking-e-liga",
+          "conta-montar-o-espaco",
+          "primeiros-seguir-a-jornada"
+        ]
+      }
+    },
+    {
+      "slug": "primeiros-seguir-a-jornada",
+      "collection": "primeiros-passos",
+      "position": 3,
+      "draft": {
+        "title": "Como seguir a Jornada do Criador",
+        "summary": "Veja em que etapa você está, qual é o próximo curso e o que cada etapa pede.",
+        "keywords": [
+          "jornada",
+          "jornada do criador",
+          "etapa",
+          "trilha",
+          "próximo passo",
+          "missão",
+          "poderes",
+          "extras",
+          "lenda",
+          "cadeado",
+          "bloqueada",
+          "ordem",
+          "cursos"
+        ],
+        "steps": [
+          {
+            "id": "abrir",
+            "title": "Veja onde você está",
+            "body": "Clique em **Cursos**, no menu. No alto fica a **Jornada do Criador**, com a linha das etapas até a **Lenda**. A etapa marcada com **Você está aqui** é a sua.",
+            "imageUrl": "https://cdn.sistemazero.com.br/adulto/como-fazer/primeiros-seguir-a-jornada/abrir-6aaee85f3d023bba.webp",
+            "imageAlt": "Página Cursos com a Jornada do Criador, a linha de etapas e o selo Você está aqui na etapa atual."
+          },
+          {
+            "id": "passo",
+            "title": "Siga o próximo passo",
+            "body": "No cartão **Seu próximo passo**, logo abaixo, aparece o curso que você pode fazer agora. Clique em **Começar** ou **Continuar** para abri-lo.",
+            "imageUrl": "https://cdn.sistemazero.com.br/adulto/como-fazer/primeiros-seguir-a-jornada/passo-1132f2b4209b4eea.webp",
+            "imageAlt": "Cartão Seu próximo passo da Jornada do Criador, com a etapa atual e os selos Cursos da trilha, Missão e Poder."
+          },
+          {
+            "id": "etapa",
+            "title": "Abra a etapa",
+            "body": "Clique em **Ver a etapa** para ver tudo o que ela pede: os **Cursos da trilha**, a **Missão** e os **Poderes**. O quadro **Para concluir a etapa** mostra o que você já fez.",
+            "imageUrl": "https://cdn.sistemazero.com.br/adulto/como-fazer/primeiros-seguir-a-jornada/etapa-6c38880ea9b5c671.webp",
+            "imageAlt": "Página da etapa com o quadro Para concluir a etapa destacado, ao lado do nome da etapa."
+          },
+          {
+            "id": "ordem",
+            "title": "Entenda a ordem",
+            "body": "Primeiro vem o curso 2D da trilha e depois o 3D. A missão, os Poderes e os **Extras** abrem depois dos dois cursos da trilha. Os Extras não contam para concluir a etapa."
+          },
+          {
+            "id": "fechada",
+            "title": "Etapas fechadas",
+            "body": "As etapas em cinza, com cadeado, ainda não abriram. Elas abrem quando você concluir a etapa anterior. Para ver a jornada também em Seu progresso, clique em **Ver seu progresso**.",
+            "imageUrl": "https://cdn.sistemazero.com.br/adulto/como-fazer/primeiros-seguir-a-jornada/fechada-8a9f5ad3e7170978.webp",
+            "imageAlt": "Linha de etapas da Jornada do Criador com as etapas seguintes em cinza e com cadeado."
+          }
+        ],
+        "related": [
+          "primeiros-ver-o-progresso",
+          "primeiros-continuar-o-curso",
+          "aula-abrir-e-passar-de-secao"
+        ]
       }
     },
     {
       "slug": "primeiros-ler-os-recados",
       "collection": "primeiros-passos",
-      "position": 3,
+      "position": 4,
       "draft": {
         "title": "Como ler e responder os Recados da equipe",
         "summary": "As respostas da equipe às suas dúvidas e aos seus projetos chegam em Recados, no menu.",
@@ -326,7 +402,7 @@
     {
       "slug": "primeiros-achar-um-passo-a-passo",
       "collection": "primeiros-passos",
-      "position": 4,
+      "position": 5,
       "draft": {
         "title": "Como achar um passo a passo no Como fazer",
         "summary": "Escreva o que você quer fazer na busca e abra o tutorial que combina com a sua dúvida.",
@@ -383,7 +459,7 @@
     {
       "slug": "primeiros-letra-maior",
       "collection": "primeiros-passos",
-      "position": 5,
+      "position": 6,
       "draft": {
         "title": "Como deixar a letra maior no computador",
         "summary": "Use Ctrl e + para aumentar tudo na tela e Ctrl e 0 para voltar ao tamanho normal.",
@@ -458,9 +534,9 @@
           {
             "id": "curso",
             "title": "Abra o curso",
-            "body": "Clique em **Cursos**, no menu, e abra o curso. Você também pode clicar em **Continuar** no cartão do curso, no **Início**.",
-            "imageUrl": "https://cdn.sistemazero.com.br/adulto/como-fazer/aula-abrir-e-passar-de-secao/curso-2ed821817d99fa5b.webp",
-            "imageAlt": "Página Cursos com o cartão do curso Cadê Todo Mundo? na trilha e o selo Liberado para você."
+            "body": "Clique em **Cursos**, no menu, e abra o curso na lista **Todos os cursos**, mais abaixo na página. Você também pode clicar em **Continuar** no cartão do curso, no **Início**.",
+            "imageUrl": "https://cdn.sistemazero.com.br/adulto/como-fazer/aula-abrir-e-passar-de-secao/curso-10a8f543c4510230.webp",
+            "imageAlt": "Lista Todos os cursos da página Cursos com o cartão do curso Cadê Todo Mundo? e o selo Liberado para você."
           },
           {
             "id": "aula",
@@ -468,6 +544,11 @@
             "body": "Na página do curso, clique na aula que quer abrir. A marca **Continue aqui** mostra a próxima aula, e as aulas com cadeado abrem quando a anterior for concluída.",
             "imageUrl": "https://cdn.sistemazero.com.br/adulto/como-fazer/aula-abrir-e-passar-de-secao/aula-0a1dd98c7bb37e40.webp",
             "imageAlt": "Lista de aulas da página do curso com a aula marcada Continue aqui destacada e as aulas seguintes com cadeado."
+          },
+          {
+            "id": "fechado",
+            "title": "Se o curso ainda não abriu",
+            "body": "Se aparecer **Um passo antes deste curso**, o curso ainda não abriu na sua jornada. Clique em **Ver o que falta na trilha** para ver o que fazer antes."
           },
           {
             "id": "secoes",
@@ -717,13 +798,67 @@
             "imageAlt": "Quiz com a frase Quiz concluído com 100% e, no pé da aula, o botão Próxima parte liberado."
           }
         ],
-        "related": ["aula-concluir", "aula-pedir-ajuda"]
+        "related": ["aula-concluir", "aula-pedir-ajuda", "aula-ouvir-as-explicacoes"]
+      }
+    },
+    {
+      "slug": "aula-ouvir-as-explicacoes",
+      "collection": "aulas",
+      "position": 5,
+      "draft": {
+        "title": "Como ouvir as explicações da aula",
+        "summary": "Clique em Ouvir para escutar as explicações da aula e as perguntas do quiz.",
+        "keywords": [
+          "ouvir",
+          "escutar",
+          "voz",
+          "áudio",
+          "som",
+          "parar",
+          "balão",
+          "explicação",
+          "ler para mim",
+          "zappy",
+          "aula",
+          "quiz"
+        ],
+        "steps": [
+          {
+            "id": "ouvir",
+            "title": "Clique em Ouvir",
+            "body": "Em algumas partes da aula aparece um balão com uma explicação. Quando o balão tem o botão **Ouvir**, clique nele para escutar a explicação em voz alta.",
+            "imageUrl": "https://cdn.sistemazero.com.br/adulto/como-fazer/aula-ouvir-as-explicacoes/ouvir-213dc918cd065fae.webp",
+            "imageAlt": "Balão com uma explicação da aula, logo abaixo do vídeo, e o botão Ouvir destacado."
+          },
+          {
+            "id": "parar",
+            "title": "Pare quando quiser",
+            "body": "Enquanto a explicação toca, o botão vira **Parar**. Clique nele para parar. Para ouvir de novo, clique em **Ouvir** outra vez.",
+            "imageUrl": "https://cdn.sistemazero.com.br/adulto/como-fazer/aula-ouvir-as-explicacoes/parar-c91abd3af1366c66.webp",
+            "imageAlt": "Balão da aula com o botão Parar destacado enquanto a explicação toca."
+          },
+          {
+            "id": "quiz",
+            "title": "Ouça as perguntas do quiz",
+            "body": "No quiz, clique em **Ouvir**, ao lado da pergunta, para escutar a pergunta e as alternativas. Depois que você responde, o **Ouvir** da explicação lê por que a resposta está certa."
+          },
+          {
+            "id": "som",
+            "title": "Se não ouvir nada",
+            "body": "Confira se o som do computador está ligado e se o volume não está no zero. Se o vídeo da aula estiver tocando, ele pausa quando a explicação começa."
+          }
+        ],
+        "related": [
+          "aula-responder-o-quiz",
+          "aula-pausar-e-rever-o-video",
+          "aula-abrir-e-passar-de-secao"
+        ]
       }
     },
     {
       "slug": "aula-pedir-ajuda",
       "collection": "aulas",
-      "position": 5,
+      "position": 6,
       "draft": {
         "title": "Como pedir ajuda sem sair da aula",
         "summary": "Clique em Preciso de ajuda, escreva a sua dúvida e acompanhe a resposta nos Recados.",
@@ -777,7 +912,7 @@
     {
       "slug": "aula-concluir",
       "collection": "aulas",
-      "position": 6,
+      "position": 7,
       "draft": {
         "title": "Como concluir uma aula",
         "summary": "Entenda o que aparece em Para seguir e quando o botão Concluir aula fica liberado.",
@@ -828,7 +963,7 @@
     {
       "slug": "aula-emitir-certificado",
       "collection": "aulas",
-      "position": 7,
+      "position": 8,
       "draft": {
         "title": "Como emitir o seu certificado",
         "summary": "Na aula do certificado, clique em Baixar meu certificado, guarde o PDF e conclua a aula.",
@@ -876,7 +1011,7 @@
     {
       "slug": "aula-avaliar-o-curso",
       "collection": "aulas",
-      "position": 8,
+      "position": 9,
       "draft": {
         "title": "Como avaliar um curso",
         "summary": "Deixe uma classificação de uma a cinco estrelas e, se quiser, um comentário.",
@@ -2492,14 +2627,15 @@
           "modelo 3d",
           "torus",
           "plano",
-          "rampa"
+          "rampa",
+          "cone"
         ],
         "toolRef": "molda",
         "steps": [
           {
             "id": "peca",
             "title": "Adicione uma peça",
-            "body": "Com o modelo aberto, fique na aba **Modelar**. Em **Adicionar**, à esquerda, clique em **Caixa**, **Rampa**, **Cilindro**, **Bola**, **Torus** ou **Plano** para pôr a peça na oficina.",
+            "body": "Com o modelo aberto, fique na aba **Modelar**. Em **Adicionar**, à esquerda, clique em **Caixa**, **Rampa**, **Cilindro**, **Cone**, **Bola**, **Torus** ou **Plano** para pôr a peça na oficina.",
             "imageAlt": "Aba Modelar do Molda com as formas de Adicionar na coluna da esquerda e o botão Bola destacado."
           },
           {
@@ -2531,14 +2667,78 @@
           "molda-comecar-uma-criacao",
           "molda-guardar-e-reabrir",
           "molda-juntar-e-separar-pecas",
-          "molda-criar-um-movimento"
+          "molda-criar-um-movimento",
+          "molda-textura-da-peca"
         ]
+      }
+    },
+    {
+      "slug": "molda-textura-da-peca",
+      "collection": "molda",
+      "position": 2,
+      "draft": {
+        "title": "Como criar ou trazer uma textura para uma peça no Molda",
+        "summary": "Dê a uma peça uma textura nova para pintar, ou use um desenho seu como textura.",
+        "keywords": [
+          "molda",
+          "textura",
+          "criar textura",
+          "importar textura",
+          "desenho",
+          "imagem",
+          "png",
+          "jpeg",
+          "pinta",
+          "densidade",
+          "pixels",
+          "pintar",
+          "peça"
+        ],
+        "steps": [
+          {
+            "id": "escolher",
+            "title": "Escolha a peça",
+            "body": "Abra seu modelo, clique na aba **Pintar** e depois na peça. À esquerda, embaixo das ferramentas, aparecem **Criar textura** e **Importar textura**.",
+            "imageAlt": "Coluna da esquerda da aba Pintar do Molda com os botões Criar textura e Importar textura destacados."
+          },
+          {
+            "id": "criar",
+            "title": "Crie uma textura nova",
+            "body": "Clique em **Criar textura**. Em **Nome da textura**, deixe o nome que já vem ou escreva outro.",
+            "imageAlt": "Janela Criar textura do Molda com o campo Nome da textura preenchido."
+          },
+          {
+            "id": "densidade",
+            "title": "Escolha o tamanho dos quadradinhos",
+            "body": "Em **Densidade de pixels**, **16px** faz quadradinhos grandes. Os números maiores fazem quadradinhos menores, para pintar mais detalhes. Depois clique em **Criar e aplicar**.",
+            "imageAlt": "Janela Criar textura com a lista Densidade de pixels e o botão Criar e aplicar destacado."
+          },
+          {
+            "id": "pintar",
+            "title": "Pinte a textura nova",
+            "body": "A peça ganha a textura nova, sem desenho, e o nome dela aparece à esquerda, em Textura ativa. Pinte com o **Pincel**, como de costume. A pintura de antes sai dessa peça: para trazê-la de volta, clique na seta curva de desfazer, no alto.",
+            "imageAlt": "Aba Pintar do Molda com a frase Textura ativa à esquerda e um traço novo na peça."
+          },
+          {
+            "id": "importar",
+            "title": "Ou use um desenho seu",
+            "body": "Clique em **Importar textura** e escolha uma imagem PNG ou JPEG, como um desenho feito no Pinta. Confira o nome e o tamanho na prévia e clique em **Importar e aplicar**.",
+            "imageAlt": "Janela Importar textura do Molda com a prévia da imagem e o botão Importar e aplicar destacado."
+          },
+          {
+            "id": "aviso",
+            "title": "Se aparecer um aviso",
+            "body": "Se a imagem for pequena, o Molda pede uma densidade menor ou uma imagem maior: troque em **Densidade de pixels** e clique de novo. Se o aviso falar de faces tortas, marque **Dividir faces tortas, se necessário** e clique de novo."
+          }
+        ],
+        "related": ["molda-montar-e-pintar", "pinta-criar-um-desenho"],
+        "toolRef": "molda"
       }
     },
     {
       "slug": "molda-guardar-e-reabrir",
       "collection": "molda",
-      "position": 2,
+      "position": 3,
       "draft": {
         "title": "Como guardar e reabrir uma criação no Molda",
         "summary": "Saia da oficina com a criação guardada e baixe uma cópia, se quiser.",
@@ -2594,7 +2794,7 @@
     {
       "slug": "molda-levar-para-o-estudio",
       "collection": "molda",
-      "position": 3,
+      "position": 4,
       "draft": {
         "title": "Como levar uma criação do Molda para o Estúdio",
         "summary": "Traga o modelo, a textura ou o céu para um projeto de jogo.",
@@ -2650,7 +2850,7 @@
     {
       "slug": "molda-juntar-e-separar-pecas",
       "collection": "molda",
-      "position": 4,
+      "position": 5,
       "draft": {
         "title": "Como juntar ou separar peças no Molda",
         "summary": "Corte uma peça em duas, una várias peças numa só ou combine duas formas.",
@@ -2716,7 +2916,7 @@
     {
       "slug": "molda-criar-um-movimento",
       "collection": "molda",
-      "position": 5,
+      "position": 6,
       "draft": {
         "title": "Como criar um movimento no Molda",
         "summary": "Use um movimento pronto ou marque poses na linha do tempo para animar o seu modelo.",
@@ -3489,7 +3689,8 @@
           "cabelo",
           "cabine de fotos",
           "3d",
-          "moedas"
+          "moedas",
+          "enfeite"
         ],
         "steps": [
           {
@@ -3502,9 +3703,9 @@
           {
             "id": "escolher",
             "title": "Escolha a aparência",
-            "body": "Em **Personalizar**, escolha uma parte do avatar, como **Cabelo** ou **Blusa**, e clique na opção e na cor que quiser. **Sortear visual** monta uma combinação para você.",
-            "imageUrl": "https://cdn.sistemazero.com.br/adulto/como-fazer/conta-montar-o-avatar/escolher-1de478e133d0cded.webp",
-            "imageAlt": "Tela Meu avatar 3D com o avatar no centro, a lista de partes, os modelos de cabelo e as cores."
+            "body": "Em **Personalizar**, escolha uma parte do avatar, como **Cabelo**, **Enfeite** ou **Blusa**, e clique na opção e na cor que quiser. Algumas peças já vêm com cor própria e, nelas, as cores não aparecem. **Sortear visual** monta uma combinação para você.",
+            "imageUrl": "https://cdn.sistemazero.com.br/adulto/como-fazer/conta-montar-o-avatar/escolher-926b4cbcf87d3842.webp",
+            "imageAlt": "Tela Meu avatar 3D com a parte Enfeite escolhida, as cores do enfeite e os modelos de enfeite."
           },
           {
             "id": "moedas",
