@@ -22,8 +22,37 @@ estas rotas, teste em `tests/arquipelago-internal.routes.test.ts`). Sem o token,
 - `tests/unit/arquipelago-cartas-conformance.test.ts` lê `arquipelago-contracts/src/cartas-lumi.ts`
   PELO CAMINHO (o contrato não é dependência do Members) e confere que todo bloco de cartão existe
   no `SERVER_BLOCK_CATALOG`.
-- Próximas rotas (plano `docs/plans/2026-10-27-arquipelago-desafios.md`): `/objetivos/analisar` e
-  `/objetivos/verificar`.
+- **Objetivos dos desafios** (plano `docs/plans/2026-10-27-arquipelago-desafios.md`,
+  `ArquipelagoObjectivesService` em `application/arquipelago/arquipelago-objectives.service.ts`,
+  injetado como `deps.objetivos`): o MESMO verificador das aulas,
+  `SectionProgressionService.evaluateObjectives({checks, project, initialProject, requester,
+  screenshots})` (o `testObjectives` virou um invólucro com `screenshots: true`; o jogo usa
+  `false`, então o cache de 10 min do executor vale). Nada é guardado. Corpo até 4 MB
+  (`ARQUIPELAGO_OBJECTIVES_BODY_BYTES` no `bodyLimitForPath`: são dois projetos).
+  - `POST /objetivos/analisar` `{audience, projetoInicial, gabarito, objetivos}` →
+    `AnaliseDosMembrosSchema`. Só corpo malformado é 400; o resto vira `problemas`: Python
+    (`OBJETIVO_PYTHON`/`PROJETO_PYTHON`), Pro (`PROJETO_PRO`), `bridgeCodeAhead`
+    (`PROJETO_SINCRONIZANDO`), mais de 20 objetivos ou de 8 que rodam o jogo, regra inválida
+    (`isSectionCompletion`), a régua da publicação das aulas com o inicial do desafio
+    (`sectionProjectChecksEnvironmentIssue`, `projectCheckAuthoring({initialProject}).issues`,
+    espera somada acima de `EXECUTION_LIMITS.maxSectionWaitMs`), só extras (`SEM_OBRIGATORIO`) e
+    `GABARITO_NAO_PASSA` (obrigatório em que o gabarito falha). Com problema de autoria, nada vai
+    ao executor e `gabarito`/`inicial` saem vazios. `blocosDoGabarito` = `projectBlockTypes` do
+    gabarito no `SERVER_BLOCK_CATALOG`, sem moldura (`contract.domain === 'frame'`) e sem os tipos
+    do inicial; `blocosDesconhecidos` = fora do catálogo. Executor fora → `EXECUTOR_INDISPONIVEL`
+    (ocupado: `EXECUTOR_OCUPADO`; recusa: `EXECUTOR_RECUSOU`), a estrutura segue conferida e os
+    que rodam o jogo saem `passou: false` sem acusar o gabarito. O limite do executor da análise
+    é um só (`arquipelago-admin`).
+  - `POST /objetivos/verificar` `{requester, audience, objetivos, projetoInicial, projeto}` →
+    `{passou, resultados}` (`passou` = todos os obrigatórios; sem obrigatório, `false`). Projeto
+    copiado como nas entregas (`copyStudioProjectJson` + `MAX_STUDIO_PROJECT_CHARS`), tipo igual
+    ao do inicial e nunca Pro (400 `VALIDATION_ERROR`), `bridgeCodeAhead` 409
+    `STUDIO_PROJECT_SYNCING`, recusa do executor 400 `PROJECT_CHECK_REJECTED`, executor fora (ou
+    análise incompleta) 424, ocupado 429 `PROJECT_CHECK_BUSY`. O `requester` (quem joga) é o
+    limite por pessoa do executor.
+  - Testes: `tests/unit/arquipelago-objectives.service.test.ts` (verificador de verdade, executor
+    falso, saídas conferidas contra o contrato lido PELO CAMINHO) e as rotas em
+    `tests/arquipelago-internal.routes.test.ts`.
 
 ## Jornada com par 2D/3D e Maestrias (25/10/2026)
 

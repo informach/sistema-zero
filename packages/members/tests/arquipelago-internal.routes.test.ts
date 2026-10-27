@@ -1,8 +1,15 @@
 import { expect, mock, test } from 'bun:test'
+import { ValidationError } from '@sistemazero/core/errors'
 import { UnauthorizedError } from '@sistemazero/core/http'
 import { JOURNEY_LEVEL_SLUGS } from '@sistemazero/core/journey'
 import { Elysia } from 'elysia'
 import { KidsJourneyUnavailableError } from '../src/domain/kids-journey/kids-journey.errors'
+import {
+  ProjectCheckBusyError,
+  ProjectCheckRejectedError,
+  ProjectCheckUnavailableError,
+  StudioProjectSyncingError,
+} from '../src/domain/learning/learning.errors'
 import { arquipelagoCoinsRoutes } from '../src/interfaces/http/routes/arquipelago-coins.routes'
 import { arquipelagoInternalRoutes } from '../src/interfaces/http/routes/arquipelago-internal.routes'
 
@@ -18,6 +25,7 @@ function criar(over: {
   policy?: () => Promise<{ version: number; policy: { stages: { id: string; title: string }[] } }>
   configurado?: string
   leituras?: unknown
+  objetivos?: unknown
 }) {
   const staffPreview = mock(over.staffPreview ?? (async () => ({ policyVersion: 4 })))
   const policy = mock(
@@ -41,6 +49,7 @@ function criar(over: {
         kidsJourney: { staffPreview } as never,
         adultJourney: { policy } as never,
         leituras: (over.leituras ?? { jogador: mock(), curriculoDeBlocos: mock() }) as never,
+        objetivos: (over.objetivos ?? { analisar: mock(), verificar: mock() }) as never,
         token: 'configurado' in over ? over.configurado : token,
       }),
     )
@@ -121,4 +130,123 @@ test('currículo de blocos exige o público', async () => {
   expect((await app.handle(ler('/curriculo-de-blocos'))).status).toBe(400)
   expect((await app.handle(ler('/curriculo-de-blocos?audience=adult'))).status).toBe(200)
   expect(curriculoDeBlocos).toHaveBeenCalledWith('adult')
+})
+
+const postar = (caminho: string, corpo: unknown, chave: string | null = token) =>
+  new Request(`http://local/members/internal/arquipelago${caminho}`, {
+    method: 'POST',
+    headers: {
+      'content-type': 'application/json',
+      ...(chave ? { 'x-arquipelago-token': chave } : {}),
+    },
+    body: JSON.stringify(corpo),
+  })
+const projeto = { formatVersion: 2, name: 'Desafio', files: {} }
+const objetivo = {
+  id: 'repetir',
+  label: 'Use o bloco repetir',
+  rule: { type: 'usesBlock', blockType: 'sz_js_repeat' },
+}
+const pedidoDeAnalise = {
+  audience: 'kids',
+  projetoInicial: projeto,
+  gabarito: projeto,
+  objetivos: [objetivo],
+}
+const pedidoDeVerificacao = {
+  requester: userId,
+  audience: 'kids',
+  objetivos: [objetivo],
+  projetoInicial: projeto,
+  projeto,
+}
+const analiseVazia = {
+  blocosDoGabarito: [],
+  blocosDesconhecidos: [],
+  vista: [],
+  problemas: [],
+  gabarito: [],
+  inicial: [],
+}
+
+test('objetivos exigem o token de leitura (nem ausente, nem o das moedas)', async () => {
+  const analisar = mock(async () => analiseVazia)
+  const verificar = mock(async () => ({ passou: true, resultados: [] }))
+  const { app } = criar({ objetivos: { analisar, verificar } })
+  for (const [caminho, corpo] of [
+    ['/objetivos/analisar', pedidoDeAnalise],
+    ['/objetivos/verificar', pedidoDeVerificacao],
+  ] as const) {
+    expect((await app.handle(postar(caminho, corpo, null))).status).toBe(401)
+    expect((await app.handle(postar(caminho, corpo, tokenDasMoedas))).status).toBe(401)
+  }
+  expect(analisar).toHaveBeenCalledTimes(0)
+  expect(verificar).toHaveBeenCalledTimes(0)
+})
+
+test('analisar valida o corpo e devolve a análise do serviço', async () => {
+  const analisar = mock(async () => analiseVazia)
+  const { app } = criar({ objetivos: { analisar, verificar: mock() } })
+  for (const ruim of [
+    { ...pedidoDeAnalise, audience: 'teen' },
+    { ...pedidoDeAnalise, gabarito: 'texto' },
+    { ...pedidoDeAnalise, objetivos: [{ ...objetivo, rule: 'x' }] },
+    { ...pedidoDeAnalise, objetivos: [{ ...objetivo, id: 'x'.repeat(81) }] },
+  ])
+    expect((await app.handle(postar('/objetivos/analisar', ruim))).status).toBe(400)
+  const ok = await app.handle(postar('/objetivos/analisar', pedidoDeAnalise))
+  expect(ok.status).toBe(200)
+  expect(await ok.json()).toEqual(analiseVazia)
+  expect(analisar).toHaveBeenCalledWith(pedidoDeAnalise)
+})
+
+test('verificar traduz os erros do verificador (400, 409, 424, 429)', async () => {
+  const casos: [unknown, number, string][] = [
+    [new ValidationError('Este projeto não é do tipo deste desafio.'), 400, 'VALIDATION_ERROR'],
+    [new ProjectCheckRejectedError('regra impossível'), 400, 'PROJECT_CHECK_REJECTED'],
+    [new StudioProjectSyncingError(), 409, 'STUDIO_PROJECT_SYNCING'],
+    [new ProjectCheckUnavailableError(), 424, 'PROJECT_CHECK_UNAVAILABLE'],
+    [new ProjectCheckBusyError(), 429, 'PROJECT_CHECK_BUSY'],
+  ]
+  for (const [erro, status, code] of casos) {
+    const { app } = criar({
+      objetivos: {
+        analisar: mock(),
+        verificar: async () => {
+          throw erro
+        },
+      },
+    })
+    const res = await app.handle(postar('/objetivos/verificar', pedidoDeVerificacao))
+    expect(res.status).toBe(status)
+    expect(((await res.json()) as { error: { code: string } }).error.code).toBe(code)
+  }
+  const quebrado = criar({
+    objetivos: {
+      analisar: mock(),
+      verificar: async () => {
+        throw new Error('banco fora')
+      },
+    },
+  })
+  expect(
+    (await quebrado.app.handle(postar('/objetivos/verificar', pedidoDeVerificacao))).status,
+  ).toBe(500)
+})
+
+test('verificar valida o corpo e repassa o pedido', async () => {
+  const verificar = mock(async () => ({
+    passou: true,
+    resultados: [{ id: 'repetir', passou: true }],
+  }))
+  const { app } = criar({ objetivos: { analisar: mock(), verificar } })
+  for (const ruim of [
+    { ...pedidoDeVerificacao, requester: 'nao-e-uuid' },
+    { ...pedidoDeVerificacao, objetivos: [] },
+    { ...pedidoDeVerificacao, projeto: null },
+  ])
+    expect((await app.handle(postar('/objetivos/verificar', ruim))).status).toBe(400)
+  const ok = await app.handle(postar('/objetivos/verificar', pedidoDeVerificacao))
+  expect(await ok.json()).toEqual({ passou: true, resultados: [{ id: 'repetir', passou: true }] })
+  expect(verificar).toHaveBeenCalledWith(pedidoDeVerificacao)
 })

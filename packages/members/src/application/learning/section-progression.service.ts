@@ -191,6 +191,48 @@ export class SectionProgressionService {
     })
   }
 
+  /**
+   * O verificador único dos objetivos JavaScript (estrutura no members, execução no executor),
+   * sem guardar nada nem premiar. Usado pelo "Testar agora" da autoria (`testObjectives`, com as
+   * capturas) e pelos desafios do Arquipélago (sem capturas, para o cache do executor valer).
+   * As falhas do executor sobem como erro de domínio: nunca viram aprovação.
+   */
+  async evaluateObjectives(input: {
+    checks: readonly {
+      id: string
+      rule: import('@sistemazero/core/learning').SectionObjectiveRule
+      optional?: true
+    }[]
+    project: unknown
+    initialProject?: unknown
+    requester: string
+    screenshots: boolean
+  }) {
+    const executed = await this.runExecution(
+      input.checks,
+      input.project,
+      input.initialProject,
+      input.requester,
+      input.screenshots,
+    )
+    const evaluation = evaluateStudioSectionObjectives(
+      input.checks,
+      input.project,
+      input.initialProject,
+      executed ? new Map(executed.results.map((r) => [r.id, r.passed])) : undefined,
+    )
+    const details = new Map(executed?.results.map((r) => [r.id, r.detail]) ?? [])
+    return {
+      results: evaluation.results.map((r) => ({
+        id: r.checkId,
+        passed: r.passed,
+        ...(details.get(r.checkId) ? { detail: details.get(r.checkId) } : {}),
+      })),
+      passed: evaluation.passed,
+      ...(executed?.screenshots ? { screenshots: executed.screenshots } : {}),
+    }
+  }
+
   async testObjectives(input: {
     checks: readonly {
       id: string
@@ -216,35 +258,12 @@ export class SectionProgressionService {
       )
         throw new ValidationError('O gabarito usa outro modelo Pro que o projeto inicial.')
     }
-    let executed: ProjectExecutionCheckOutput | undefined
     try {
-      executed = await this.runExecution(
-        input.checks,
-        input.project,
-        input.initialProject,
-        input.requester,
-        true,
-      )
+      return await this.evaluateObjectives({ ...input, screenshots: true })
     } catch (error) {
       // A equipe precisa do MOTIVO da recusa (a criança só lê "não consegui testar").
       if (error instanceof ProjectCheckRejectedError) throw new ValidationError(error.reason)
       throw error
-    }
-    const evaluation = evaluateStudioSectionObjectives(
-      input.checks,
-      input.project,
-      input.initialProject,
-      executed ? new Map(executed.results.map((r) => [r.id, r.passed])) : undefined,
-    )
-    const details = new Map(executed?.results.map((r) => [r.id, r.detail]) ?? [])
-    return {
-      results: evaluation.results.map((r) => ({
-        id: r.checkId,
-        passed: r.passed,
-        ...(details.get(r.checkId) ? { detail: details.get(r.checkId) } : {}),
-      })),
-      passed: evaluation.passed,
-      ...(executed?.screenshots ? { screenshots: executed.screenshots } : {}),
     }
   }
 
