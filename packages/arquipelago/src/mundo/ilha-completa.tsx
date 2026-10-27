@@ -144,9 +144,6 @@ const ALTURA_DA_CABECA = 0.5
 const ALTURA_DOS_PES = 0.7
 /** Meia largura do avatar (os lados do corpo também contam). */
 const MEIA_LARGURA = 0.4
-/** Onde o Zappy voa: ao lado do avatar e acima do centro do corpo. */
-const LADO_DO_ZAPPY = 0.9
-const ALTURA_DO_ZAPPY = 1.3
 
 /** Quase inteira: liga o pontilhado (para compilar o shader dele) sem nada sumir na tela. */
 const QUASE_INTEIRA = 0.999
@@ -362,12 +359,8 @@ export function IlhaCompleta({
     const l = Math.hypot(lx, lz) || 1
     esquerda?.set(rastro.x + (lx / l) * MEIA_LARGURA, rastro.y, rastro.z + (lz / l) * MEIA_LARGURA)
     direita?.set(rastro.x - (lx / l) * MEIA_LARGURA, rastro.y, rastro.z - (lz / l) * MEIA_LARGURA)
-    // O Zappy voa do lado direito do avatar, um pouco acima (o mesmo lugar de `personagem/zappy`).
-    zappy?.set(
-      rastro.x + Math.cos(rastro.giro) * LADO_DO_ZAPPY,
-      rastro.y + ALTURA_DO_ZAPPY,
-      rastro.z - Math.sin(rastro.giro) * LADO_DO_ZAPPY,
-    )
+    // O Zappy onde ele está de verdade (escrito por `personagem/zappy` a cada quadro).
+    zappy?.set(rastro.zappy.x, rastro.zappy.y, rastro.zappy.z)
     for (const copa of preparada.copas) {
       // Com a câmera dentro da copa ela some de vez (de dentro, a copa só atrapalha).
       const alvo =

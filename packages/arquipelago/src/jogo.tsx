@@ -100,7 +100,16 @@ async function carregar(plataforma: Plataforma): Promise<Situacao> {
     plataforma,
     controle: criarControle(),
     interativos: criarRegistro(),
-    rastro: { x: 0, y: 0, z: 0, giro: 0, inclinacao: 0.5 },
+    rastro: {
+      x: 0,
+      y: 0,
+      z: 0,
+      giro: 0,
+      inclinacao: 0.5,
+      direcao: 0,
+      velocidade: 0,
+      zappy: { x: 0, y: 0, z: 0 },
+    },
     ambiente: { luz: 1, noite: false },
     pedidos: { teleporte: null, chaoChegando: new Set() },
   }

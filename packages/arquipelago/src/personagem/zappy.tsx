@@ -5,7 +5,6 @@ import { Component, type ReactNode, Suspense, useEffect, useMemo, useRef } from 
 import {
   AdditiveBlending,
   type Group,
-  MathUtils,
   type Mesh,
   type MeshBasicMaterial,
   MeshStandardMaterial,
@@ -13,6 +12,18 @@ import {
 } from 'three'
 import zappyGlb from '../assets/zappy.glb'
 import { useJogo } from '../estado/contexto'
+import {
+  ALTURA_DO_ZAPPY,
+  diferencaDeAngulo,
+  giroPara,
+  inclinacaoNaCurva,
+  lugarAoLado,
+  mergulho,
+  paraOndeOlhar,
+  RAPIDEZ_EM_VOLTA,
+  suavizarAngulo,
+  VELOCIDADE_DE_ANDAR,
+} from '../sistemas/zappy'
 
 /**
  * O caminho que o Bun devolve é relativo à pasta da saída, não à página: resolve contra o próprio
@@ -24,38 +35,78 @@ const ESCALA = 0.3
 /** A bunda do Zappy no espaço do modelo (no Blender: y 0,38 para trás e z -0,2). */
 const BUNDA: [number, number, number] = [0, -0.2, -0.38]
 
-/** O Zappy, o vagalume guia, voando perto do ombro. À noite a bunda dele ilumina em volta. */
+/** Correndo ela anda a ~7 m/s: é aí que o Zappy mergulha o máximo para a frente. */
+const VELOCIDADE_DO_MERGULHO_MAXIMO = 7
+/** Longe do lugar dele (m), o Zappy bate as asas mesmo com ela parada. */
+const LONGE_DO_LUGAR = 0.35
+/** Mais longe que isso (m) foi um salto (início do jogo, teleporte): ele aparece no lugar, sem cruzar o mapa. */
+const SALTO = 8
+
+/**
+ * O Zappy, o vagalume guia, voando no ombro do personagem e virando junto com ele: andando, olha
+ * para onde ela vai e inclina nas curvas; parada, olha para ela e às vezes espia a câmera. Numa
+ * virada ele dá a volta por fora em vez de atravessar o corpo dela. À noite a bunda ilumina em volta.
+ */
 export function Zappy() {
   const { rastro, ambiente } = useJogo()
   const camera = useThree((s) => s.camera)
+  const reduzido = useReducedMotion()
   const grupo = useRef<Group>(null)
   const luz = useRef<PointLight>(null)
   const brilho = useRef({ forca: 1 })
   const voando = useRef(false)
-  const anterior = useRef({ x: 0, z: 0 })
-  useFrame(({ clock }, dt) => {
+  const voo = useRef({ emVolta: rastro.direcao, parado: 0, inclinacao: 0, iniciado: false })
+  useFrame(({ clock }, dtBruto) => {
     const g = grupo.current
     if (!g) return
+    const dt = Math.min(dtBruto, 0.1)
     const t = clock.elapsedTime
-    const alvoX = rastro.x + Math.cos(rastro.giro) * 0.9 + Math.sin(t * 1.3) * 0.25
-    const alvoZ = rastro.z - Math.sin(rastro.giro) * 0.9 + Math.cos(t * 1.1) * 0.25
-    const alvoY = rastro.y + 1.3 + Math.sin(t * 2.4) * 0.12
-    const k = 1 - Math.exp(-dt * 4)
+    const v = voo.current
+    const ela = { x: rastro.x, z: rastro.z }
+    // O lugar dele acompanha a direção dela pelo caminho mais curto, girando em volta do corpo.
+    v.emVolta = suavizarAngulo(v.emVolta, rastro.direcao, RAPIDEZ_EM_VOLTA, dt)
+    const lugar = lugarAoLado(ela, v.emVolta)
+    const balanco = reduzido ? 0.3 : 1
+    const alvoX = lugar.x + Math.sin(t * 1.3) * 0.12 * balanco
+    const alvoZ = lugar.z + Math.cos(t * 1.1) * 0.12 * balanco
+    const alvoY = rastro.y + ALTURA_DO_ZAPPY + Math.sin(t * 2.4) * 0.1 * balanco
+    if (!v.iniciado) g.rotation.order = 'YXZ'
+    if (!v.iniciado || Math.hypot(alvoX - g.position.x, alvoZ - g.position.z) > SALTO) {
+      g.position.set(alvoX, alvoY, alvoZ)
+      g.rotation.y = rastro.direcao
+      v.emVolta = rastro.direcao
+      v.iniciado = true
+    }
+    const k = 1 - Math.exp(-dt * 5)
     g.position.x += (alvoX - g.position.x) * k
     g.position.y += (alvoY - g.position.y) * k
     g.position.z += (alvoZ - g.position.z) * k
-    // Vira para onde está voando; parado, vira o rosto para a câmera.
-    const vx = (g.position.x - anterior.current.x) / Math.max(dt, 1e-3)
-    const vz = (g.position.z - anterior.current.z) / Math.max(dt, 1e-3)
-    anterior.current = { x: g.position.x, z: g.position.z }
-    const rapido = vx * vx + vz * vz > 0.6
-    voando.current = rapido
-    const alvoGiro = rapido
-      ? Math.atan2(vx, vz)
-      : Math.atan2(camera.position.x - g.position.x, camera.position.z - g.position.z)
-    const delta =
-      MathUtils.euclideanModulo(alvoGiro - g.rotation.y + Math.PI, Math.PI * 2) - Math.PI
-    g.rotation.y += delta * (1 - Math.exp(-dt * 5))
+    rastro.zappy.x = g.position.x
+    rastro.zappy.y = g.position.y
+    rastro.zappy.z = g.position.z
+
+    // Para onde olhar: o caminho dela, ela, ou a câmera numa espiada.
+    v.parado = rastro.velocidade > VELOCIDADE_DE_ANDAR ? 0 : v.parado + dt
+    const olhar = paraOndeOlhar(rastro.velocidade, v.parado)
+    const daqui = { x: g.position.x, z: g.position.z }
+    const alvoGiro =
+      olhar === 'caminho'
+        ? rastro.direcao
+        : olhar === 'ela'
+          ? giroPara(daqui, ela)
+          : giroPara(daqui, { x: camera.position.x, z: camera.position.z })
+    const antes = g.rotation.y
+    g.rotation.y = suavizarAngulo(antes, alvoGiro, olhar === 'camera' ? 4 : 6, dt)
+    // Inclina para dentro da curva pelo quanto girou neste quadro, e mergulha um pouco andando.
+    const giroPorSegundo = diferencaDeAngulo(antes, g.rotation.y) / Math.max(dt, 1e-3)
+    v.inclinacao += (inclinacaoNaCurva(giroPorSegundo) - v.inclinacao) * (1 - Math.exp(-dt * 6))
+    g.rotation.z = v.inclinacao
+    g.rotation.x +=
+      (mergulho(rastro.velocidade, VELOCIDADE_DO_MERGULHO_MAXIMO) - g.rotation.x) *
+      (1 - Math.exp(-dt * 4))
+    const longe = Math.hypot(alvoX - g.position.x, alvoZ - g.position.z) > LONGE_DO_LUGAR
+    voando.current = rastro.velocidade > VELOCIDADE_DE_ANDAR || longe
+
     // A bunda pulsa devagar; à noite brilha bem mais e a luz alcança longe.
     const noite = 1 - ambiente.luz
     brilho.current.forca = (1.4 + noite * 3.2) * (0.82 + 0.18 * Math.sin(t * 2.1))

@@ -14,6 +14,12 @@ export interface Rastro {
   /** Para onde a câmera olha (giro em torno do personagem). */
   giro: number
   inclinacao: number
+  /** Para onde o avatar está virado (giro `d` olha para `(sin d, cos d)`), escrito pelo personagem. */
+  direcao: number
+  /** Velocidade pedida no chão (m/s): zero parado, mesmo encostado numa parede andando. */
+  velocidade: number
+  /** Onde o Zappy está agora (lido pelas copas que esmaecem na frente dele). */
+  zappy: { x: number; y: number; z: number }
 }
 
 /** Luz do dia, escrita pelo céu a cada quadro e lida por janelas, Zappy e Farol. */

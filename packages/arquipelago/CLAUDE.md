@@ -80,6 +80,18 @@ decisões da dona: Canvas `https://claude.ai/artifact/5eNo1oqsndxmV6MPLxaz1W` e 
   `tests/colisores-da-ilha.test.ts` (lê o `bosque.glb`: grupos, sem material, percurso nas copas de
   ponta a ponta, escada, escorregador, corredor da chegada livre).
 
+## O Zappy vira junto com o personagem (27/10/2026, pedido dela)
+
+- `src/sistemas/zappy.ts` (puro, `tests/zappy.test.ts`): voa à direita e um pouco atrás de onde
+  ela OLHA (`lugarAoLado`, a direção do avatar, não o giro da câmera); numa virada o lugar gira em
+  volta dela pelo lado curto (`suavizarAngulo`, `RAPIDEZ_EM_VOLTA`), sem atravessar o corpo.
+- Olhar (`paraOndeOlhar`): andando, para onde ela vai (frente, costas ou lados); parada por
+  `ESPERA_PARA_OLHAR_PARA_ELA`, para ela, com uma espiada na câmera a cada `PERIODO_DA_ESPIADA`.
+- Inclina para dentro da curva pelo quanto girou (`inclinacaoNaCurva`) e mergulha um pouco andando
+  (`mergulho`); o grupo usa `rotation.order = 'YXZ'` (giro no mundo, mergulho e inclinação no corpo).
+- `rastro.direcao` e `rastro.velocidade` são escritos pelo personagem; `rastro.zappy` (onde ele
+  está) pelo Zappy, e é dele que as copas do Bosque leem para esmaecer na frente dele.
+
 ## Salvamento e tempo
 
 - `SalvamentoV1` (contrato) com versão; gravação por revisão (CAS). Revisão velha recebe 409

@@ -139,6 +139,8 @@ export function Personagem() {
     rastro.x = prox.x
     rastro.y = prox.y
     rastro.z = prox.z
+    rastro.direcao = direcao.current
+    rastro.velocidade = Math.hypot(vx, vz)
     estado.definirLugar({ dentroDeCasa: dentroDaCasa(prox.x, prox.z), nadando })
     estado.definirAlvo(parado ? null : maisPerto(interativos, prox.x, prox.z))
 
