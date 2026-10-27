@@ -10,7 +10,6 @@ import {
   applyExperimentSegment,
   type ExperimentSession,
   initialScene,
-  openScene,
   packExperiment,
   readSceneSegment,
   SCENE_IDS,
@@ -20,7 +19,6 @@ import {
   type SceneCheckpoint,
   type SceneId,
   sceneEmitsSound,
-  sceneGoals,
   sceneStart,
   stepScene,
 } from '@sistemazero/core/learning/scene'
@@ -767,7 +765,7 @@ describe('⭐⭐ a moldura: descoberta automática, pergunta e revisita', () => 
     for (const scene of SCENE_IDS) {
       render(<InteractiveLessonBlock block={block(scene)} previewContent={content(scene)} />)
       await screen.findByRole('button', { name: 'Uma pista' })
-      expect(screen.queryByRole('button', { name: 'Conferir', exact: true })).toBeNull()
+      expect(screen.queryByRole('button', { name: /^Conferir$/ })).toBeNull()
       expect(document.querySelector('.sz-scene-conferir-resposta')).toBeNull()
       cleanup()
     }
