@@ -1,9 +1,43 @@
 import { expect, test } from 'bun:test'
 import {
+  executionObservationUnavailableReason,
   isSectionExecutionRule,
   judgeExecutionObservation,
   type SectionExecutionRule,
 } from './project-execution'
+
+test('navegação comprovadamente bloqueada reprova, mas erro do executor segue indisponível', () => {
+  const navigation: SectionExecutionRule = {
+    type: 'behavior',
+    steps: [
+      { action: 'approachObject3d', actorPath: 'personagem', targetPath: 'chave', timeoutMs: 7000 },
+    ],
+    expect: { target: { kind: 'value', path: 'chave.visible' }, compare: 'equals', value: false },
+  }
+  const blocked = {
+    id: 'teste',
+    type: 'behavior' as const,
+    actionFailure: 'navigation-blocked' as const,
+  }
+  expect(executionObservationUnavailableReason(navigation, blocked)).toBeUndefined()
+  expect(judgeExecutionObservation(navigation, blocked).passed).toBe(false)
+  expect(
+    executionObservationUnavailableReason(navigation, {
+      id: 'teste',
+      type: 'behavior',
+      error: 'tempo',
+    }),
+  ).toBe('tempo')
+  expect(executionObservationUnavailableReason(rule, blocked)).toContain('incompatível')
+  const script: SectionExecutionRule = {
+    type: 'script',
+    steps: navigation.steps,
+    code: 'return true',
+  }
+  const scriptBlocked = { ...blocked, type: 'script' as const }
+  expect(executionObservationUnavailableReason(script, scriptBlocked)).toBeUndefined()
+  expect(judgeExecutionObservation(script, scriptBlocked).passed).toBe(false)
+})
 
 const rule: SectionExecutionRule = {
   type: 'behavior',

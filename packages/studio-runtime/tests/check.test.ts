@@ -68,11 +68,13 @@ function setup(
     ran?: boolean
     observations?: unknown[]
     rate?: boolean
+    threeDConfigured?: boolean
   } = {},
 ) {
   const written = new Map<string, string>()
   const commands: string[] = []
   const identities: string[] = []
+  const namespaces: unknown[] = []
   let destroyed = 0
   const sandbox = {
     destroy: async () => {
@@ -107,12 +109,16 @@ function setup(
       return { success: true, stdout: '', stderr: '' }
     },
   }
-  const factory = ((_namespace: unknown, identity: string) => {
+  const factory = ((namespace: unknown, identity: string) => {
+    namespaces.push(namespace)
     identities.push(identity)
     return sandbox
   }) as unknown as SandboxFactory
   const env = {
     ProBuildSandbox: {} as Env['ProBuildSandbox'],
+    ...(options.threeDConfigured === false
+      ? {}
+      : { ThreeDCheckSandbox: {} as NonNullable<Env['ThreeDCheckSandbox']> }),
     BUILD_RATE_LIMITER: { limit: async () => ({ success: options.rate ?? true }) },
     INTERNAL_TOKEN: TOKEN,
     PRO_ARTIFACTS: memoryArtifactBucket().bucket,
@@ -130,10 +136,49 @@ function setup(
       {} as ExecutionContext,
     )
   }
-  return { call, written, commands, identities, destroyed: () => destroyed }
+  return { call, written, commands, identities, namespaces, env, destroyed: () => destroyed }
 }
 
 describe('POST /v1/check', () => {
+  test('somente navegação 3D usa capacidade dedicada; ausência da capacidade falha fechada', async () => {
+    const objective = {
+      id: 'alvo-3d',
+      rule: {
+        type: 'behavior',
+        steps: [
+          {
+            action: 'approachObject3d',
+            actorPath: 'personagem',
+            targetPath: 'chave',
+            timeoutMs: 7000,
+            walkable: [{ minX: -10, maxX: 10, minZ: -10, maxZ: 10 }],
+          },
+        ],
+        expect: {
+          target: { kind: 'value', path: 'chave.visible' },
+          compare: 'equals',
+          value: false,
+        },
+      },
+    }
+    const normal = setup({
+      observations: [{ id: 'anda', type: 'behavior', final: { found: true, value: 1 } }],
+    })
+    await normal.call(classicBody)
+    expect(normal.namespaces).toEqual([normal.env.ProBuildSandbox])
+    const dedicated = setup({
+      observations: [{ id: 'alvo-3d', type: 'behavior', actionFailure: 'navigation-blocked' }],
+    })
+    const result = await dedicated.call({ ...classicBody, objectives: [objective] })
+    expect(result.status).toBe(200)
+    expect(((await result.json()) as { results: { passed: boolean }[] }).results[0]?.passed).toBe(
+      false,
+    )
+    expect(dedicated.namespaces).toEqual([dedicated.env.ThreeDCheckSandbox])
+    const missing = setup({ threeDConfigured: false })
+    expect((await missing.call({ ...classicBody, objectives: [objective] })).status).toBe(500)
+    expect(missing.namespaces).toHaveLength(0)
+  })
   test('directional observation remains conclusive only with its complete official idle/action evidence', async () => {
     const body = {
       ...classicBody,
