@@ -140,15 +140,21 @@ def _vela(a, b, c, m, billow, n=10):
 
 
 # ── Aventureiro ──────────────────────────────────────────────────────────────
-def _rosto(cz, fy=-0.3):
-    """Olhos grandes com pupila virada para o lado do farol (+X), brilho, nariz e sorriso aberto."""
+def _rosto(cz, fy=-0.3, pele='pele', cilios=None):
+    """Olhos grandes com pupila virada para o lado do farol (+X), brilho, nariz e sorriso aberto.
+    `cilios` (material) acrescenta três cílios em cada olho, como nas meninas do desenho."""
     p = []
     for s in (-1, 1):
         ex = s * 0.135
         p.append(ellipsoid((ex, fy + 0.02, cz + 0.02), (0.078, 0.04, 0.1), 'olho', seg=14, ring=8))
         p.append(ellipsoid((ex + 0.024, fy - 0.012, cz + 0.005), (0.038, 0.02, 0.06), 'pupila', seg=10, ring=6))
         p.append(sphere(0.015, (ex + 0.04, fy - 0.03, cz + 0.04), 'olho', subdiv=1))
-    p.append(ellipsoid((0.01, fy - 0.005, cz - 0.075), (0.042, 0.035, 0.036), 'pele', seg=12, ring=8))
+        if cilios:
+            for k in (-1, 0, 1):
+                ax = ex + s * 0.05 + k * 0.022
+                p.append(tube([(ax, fy + 0.0, cz + 0.11), (ax + s * 0.02 + k * 0.01, fy - 0.01, cz + 0.16)],
+                              [0.008, 0.004], cilios, seg=4))
+    p.append(ellipsoid((0.01, fy - 0.005, cz - 0.075), (0.042, 0.035, 0.036), pele, seg=12, ring=8))
     boca = [(0.085 * math.cos(math.pi + math.pi * i / 12), 0.06 * math.sin(math.pi + math.pi * i / 12)) for i in range(13)]
     p.append(prism(boca, 0.03, (0.025, fy + 0.005, cz - 0.15), 'boca', bevel=0.008))
     return p
@@ -172,34 +178,118 @@ def _cabelo(cz):
     return p
 
 
+# Juntas do boneco (o mesmo esqueleto para todos os personagens): pivô de cada parte.
+QUADRIL, OMBRO, PESCOCO = 0.33, 0.64, 0.74
+
+
+def _boneco_base(cores):
+    """Corpo comum dos personagens, em partes: {parte: [objetos]}. `cores` troca a roupa:
+    camiseta, manga, short, sapato e sola (nomes de materiais da paleta); opcionais: pele, perna
+    (a cor da perna: pele ou calça comprida), mao e saia (no lugar do short)."""
+    pele = cores.get('pele', 'pele')
+    perna_m = cores.get('perna', pele)
+    saia = cores.get('saia')
+    partes = {'Corpo': [], 'Cabeca': [], 'PernaE': [], 'PernaD': [], 'BracoE': [], 'BracoD': []}
+    for s, lado in ((-1, 'E'), (1, 'D')):
+        x = s * 0.1
+        perna = partes['Perna' + lado]
+        perna.append(superellipsoid((0.16, 0.27, 0.11), (x, -0.035, 0.065), cores['sapato'], e1=0.5, e2=0.5, flat_bottom=0.25))
+        perna.append(superellipsoid((0.17, 0.28, 0.05), (x, -0.035, 0.022), cores['sola'], e1=0.4, e2=0.5, flat_bottom=0.3))
+        perna.append(cyl(0.05 if perna_m == pele else 0.06, 0.2, (x, 0.0, 0.19), perna_m, verts=16))
+        if not saia:
+            perna.append(cyl(0.088, 0.12, (s * 0.095, 0.0, 0.265), cores['short'], verts=18, r2=0.1, bevel=0.015))
+        braco = partes['Braco' + lado]
+        braco.append(superellipsoid((0.15, 0.17, 0.15), (s * 0.21, 0, 0.63), cores['manga'], e1=0.7, e2=0.7, rot=(0, R(-s * 25), 0)))
+        braco.append(tube([(s * 0.235, 0, 0.6), (s * 0.26, -0.01, 0.48), (s * 0.26, -0.02, 0.41)],
+                          [0.046, 0.043, 0.04], pele, seg=8))
+        braco.append(sphere(0.058, (s * 0.262, -0.02, 0.38), cores.get('mao', pele), subdiv=2))
+    if saia:
+        # Saia rodada em vez do short: tronco de cone que abre para baixo.
+        partes['Corpo'].append(cyl(0.2, 0.2, (0, 0, 0.33), saia, verts=24, r2=0.17, bevel=0.02))
+    else:
+        partes['Corpo'].append(superellipsoid((0.38, 0.27, 0.22), (0, 0.0, 0.34), cores['short'], e1=0.5, e2=0.6, flat_bottom=0.15))
+    partes['Corpo'].append(superellipsoid((0.38, 0.27, 0.32), (0, 0.0, 0.56), cores['camiseta'], e1=0.55, e2=0.6))
+    partes['Corpo'].append(cyl(0.075, 0.08, (0, 0, 0.72), pele, verts=16))
+    cz = 1.0
+    cab = partes['Cabeca']
+    cab.append(superellipsoid((0.68, 0.6, 0.62), (0, 0, cz), pele, e1=0.55, e2=0.6, seg=28, ring=16))
+    for s in (-1, 1):  # orelhas
+        cab.append(ellipsoid((s * 0.335, -0.04, cz - 0.03), (0.045, 0.065, 0.08), pele, seg=14, ring=8))
+    cab += _rosto(cz, pele=pele, cilios=cores.get('cilios'))
+    return partes
+
+
+ALTURA = 1.58  # a do aventureiro: todo personagem tem a mesma altura (trocar não muda o tamanho)
+
+
+def _animar_boneco(pid, partes):
+    """Junta cada parte numa malha com o pivô na junta, monta a hierarquia (tudo pendurado no
+    Corpo) e grava os clipes do Jogo 3D:
+
+    - `parado` (2 s, laço): respira, os braços balançam de leve e a cabeça inclina um pouco;
+    - `andando` (0,5 s, laço): pernas e braços em passada alternada, o corpo sobe a cada passo e
+      inclina um pouco para a frente.
+
+    A frente olha para a câmera (+Z no jogo). Quem vira o boneco para o lado em que anda é o jogo
+    ("virar para a direção do movimento"), por isso não há giro embutido."""
+    # Mesma altura para todos: o chapéu ou a antena entram na conta e o boneco encolhe um pouco.
+    todos = [o for objs in partes.values() for o in objs]
+    bpy.context.view_layer.update()
+    zmax = max((o.matrix_world @ Vector(c)).z for o in todos for c in o.bound_box)
+    k = ALTURA / zmax
+    place(todos, scale=k)
+    pivos = {'Corpo': (0, 0, QUADRIL), 'Cabeca': (0, 0, PESCOCO), 'PernaE': (-0.1, 0, QUADRIL),
+             'PernaD': (0.1, 0, QUADRIL), 'BracoE': (-0.21, 0, OMBRO), 'BracoD': (0.21, 0, OMBRO)}
+    pivos = {n: tuple(c * k for c in v) for n, v in pivos.items()}
+    obj = {}
+    for nome, objs in partes.items():
+        o = join(objs, nome)
+        px, py, pz = pivos[nome]
+        o.data.transform(Matrix.Translation((-px, -py, -pz)))
+        o.location = (px, py, pz)
+        obj[nome] = o
+    corpo = obj['Corpo']
+    bpy.context.view_layer.update()
+    for nome, o in obj.items():
+        if nome != 'Corpo':
+            o.parent = corpo
+            o.location = Vector(pivos[nome]) - Vector(pivos['Corpo'])
+    z0 = QUADRIL * k
+
+    def rx(graus):
+        return (R(graus), 0, 0)
+
+    clipes({
+        'andando': {
+            corpo: {'location': [(0, (0, 0, z0)), (3, (0, 0, z0 + 0.035)), (6, (0, 0, z0)),
+                                 (9, (0, 0, z0 + 0.035)), (12, (0, 0, z0))],
+                    'rotation_euler': [(0, rx(5)), (3, rx(7)), (6, rx(5)), (9, rx(7)), (12, rx(5))]},
+            obj['Cabeca']: {'rotation_euler': [(0, rx(-3)), (3, rx(-1)), (6, rx(-3)), (9, rx(-1)), (12, rx(-3))]},
+            obj['PernaE']: {'rotation_euler': [(0, rx(-32)), (6, rx(32)), (12, rx(-32))]},
+            obj['PernaD']: {'rotation_euler': [(0, rx(32)), (6, rx(-32)), (12, rx(32))]},
+            obj['BracoE']: {'rotation_euler': [(0, rx(35)), (6, rx(-35)), (12, rx(35))]},
+            obj['BracoD']: {'rotation_euler': [(0, rx(-35)), (6, rx(35)), (12, rx(-35))]},
+        },
+        'parado': {
+            corpo: {'location': [(0, (0, 0, z0)), (24, (0, 0, z0 + 0.012)), (48, (0, 0, z0))]},
+            obj['Cabeca']: {'rotation_euler': [(0, (0, 0, 0)), (24, (0, R(4), R(3))), (48, (0, 0, 0))]},
+            obj['BracoE']: {'rotation_euler': [(0, (0, 0, 0)), (24, (R(-3), R(4), 0)), (48, (0, 0, 0))]},
+            obj['BracoD']: {'rotation_euler': [(0, (0, 0, 0)), (24, (R(-3), R(-4), 0)), (48, (0, 0, 0))]},
+        },
+    })
+    # Repouso: de pé e parado.
+    corpo.location = (0, 0, z0)
+    for o in obj.values():
+        o.rotation_euler = (0, 0, 0)
+    exportar_animado(pid, list(obj.values()))
+
+
 def aventureiro():
     reset()
-    p = []
-    # Tênis preto de sola branca, pernas, short azul.
-    for s in (-1, 1):
-        x = s * 0.1
-        p.append(superellipsoid((0.16, 0.27, 0.11), (x, -0.035, 0.065), 'sapato', e1=0.5, e2=0.5, flat_bottom=0.25))
-        p.append(superellipsoid((0.17, 0.28, 0.05), (x, -0.035, 0.022), 'camiseta', e1=0.4, e2=0.5, flat_bottom=0.3))
-        p.append(cyl(0.05, 0.16, (x, 0.0, 0.17), 'pele', verts=16))
-    p.append(superellipsoid((0.38, 0.27, 0.22), (0, 0.0, 0.34), 'short', e1=0.5, e2=0.6, flat_bottom=0.15))
-    for s in (-1, 1):
-        p.append(cyl(0.088, 0.12, (s * 0.095, 0.0, 0.265), 'short', verts=18, r2=0.1, bevel=0.015))
-    # Camiseta branca, mangas curtas, braços e mãos.
-    p.append(superellipsoid((0.38, 0.27, 0.32), (0, 0.0, 0.56), 'camiseta', e1=0.55, e2=0.6))
-    p.append(cyl(0.075, 0.08, (0, 0, 0.72), 'pele', verts=16))
-    for s in (-1, 1):
-        p.append(superellipsoid((0.15, 0.17, 0.15), (s * 0.21, 0, 0.63), 'camiseta', e1=0.7, e2=0.7, rot=(0, R(-s * 25), 0)))
-        p.append(tube([(s * 0.235, 0, 0.6), (s * 0.26, -0.01, 0.48), (s * 0.26, -0.02, 0.41)],
-                      [0.046, 0.043, 0.04], 'pele', seg=8))
-        p.append(sphere(0.058, (s * 0.262, -0.02, 0.38), 'pele', subdiv=2))
-    cz = 1.0
-    p.append(superellipsoid((0.68, 0.6, 0.62), (0, 0, cz), 'pele', e1=0.55, e2=0.6, seg=28, ring=16))
-    for s in (-1, 1):  # orelhas
-        p.append(ellipsoid((s * 0.335, -0.04, cz - 0.03), (0.045, 0.065, 0.08), 'pele', seg=14, ring=8))
-    p += _rosto(cz)
-    p += _cabelo(cz)
-    place(p, rot_z=R(25))
-    export('aventureiro', p)
+    partes = _boneco_base({'camiseta': 'camiseta', 'manga': 'camisetaSombra', 'short': 'short',
+                           'sapato': 'sapato', 'sola': 'camiseta'})
+    partes['Cabeca'] += _cabelo(1.0)
+    _animar_boneco('aventureiro', partes)
 
 
 TODOS = ['chave-dourada', 'veleiro', 'aventureiro']

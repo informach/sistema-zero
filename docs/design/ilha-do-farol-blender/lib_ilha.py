@@ -475,12 +475,12 @@ def _fcurves(act):
     return out
 
 
-def repouso_no_glb(path, escalas):
+def repouso_no_glb(path, poses):
     """Grava a pose de REPOUSO (a do modelo parado, antes de qualquer animação) nos nós do GLB.
 
     Com faixas do NLA o exportador do glTF avalia o quadro inicial e grava a pose animada como
-    repouso; aqui ela volta a ser a de verdade. `escalas` = {nome do nó: (x, y, z)} já no y para
-    cima do glTF. Rotação de repouso: nenhuma."""
+    repouso; aqui ela volta a ser a de verdade. `poses` = {nome do nó: {'translation', 'scale'}}
+    já no y para cima do glTF. Rotação de repouso: nenhuma."""
     import json, struct
     with open(path, 'rb') as f:
         dados = f.read()
@@ -489,11 +489,12 @@ def repouso_no_glb(path, escalas):
     resto = dados[20 + n:]
     vistos = set()
     for no in doc['nodes']:
-        if no.get('name') in escalas:
-            no['scale'] = list(escalas[no['name']])
+        if no.get('name') in poses:
+            for k, v in poses[no['name']].items():
+                no[k] = [round(c, 6) for c in v]
             no.pop('rotation', None)
             vistos.add(no['name'])
-    falta = set(escalas) - vistos
+    falta = set(poses) - vistos
     if falta:
         raise RuntimeError(f'nós ausentes no GLB: {sorted(falta)}')
     js = json.dumps(doc, separators=(',', ':')).encode()
@@ -501,3 +502,43 @@ def repouso_no_glb(path, escalas):
     total = 12 + 8 + len(js) + len(resto)
     with open(path, 'wb') as f:
         f.write(dados[:8] + struct.pack('<I', total) + struct.pack('<I', len(js)) + b'JSON' + js + resto)
+
+
+def exportar_animado(pid, objs):
+    """Exporta peças com clipes (faixas do NLA, ver `clipes`). A pose de REPOUSO de cada nó é a do
+    Blender antes de animar (posição, escala, sem rotação), regravada no GLB porque o exportador
+    grava a pose animada. Antes de chamar, deixe cada objeto na pose de repouso."""
+    repouso = {}
+    for o in objs:
+        if o.animation_data and o.animation_data.nla_tracks:
+            l, sc = o.location, o.scale
+            # Blender (z para cima) -> glTF (y para cima): (x, y, z) -> (x, z, -y).
+            repouso[o.name] = {'translation': (l.x, l.z, -l.y), 'scale': (sc.x, sc.z, sc.y)}
+            for t in o.animation_data.nla_tracks:
+                for st in t.strips:
+                    st.extrapolation = 'NOTHING'
+    bpy.context.scene.frame_current = -50
+    bpy.ops.object.select_all(action='DESELECT')
+    for o in objs:
+        o.select_set(True)
+    path = os.path.join(lib_q.OUT, f'{pid}.glb')
+    bpy.ops.export_scene.gltf(filepath=path, export_format='GLB', use_selection=True, export_apply=True,
+                              export_yup=True, export_texcoords=True, export_animations=True,
+                              export_animation_mode='NLA_TRACKS', export_anim_slide_to_zero=True,
+                              export_force_sampling=True, export_optimize_animation_size=False)
+    repouso_no_glb(path, repouso)
+    tris = sum(len(p.vertices) - 2 for o in objs if o.type == 'MESH' for p in o.data.polygons)
+    print('EXPORTADO', pid, tris, 'triângulos', os.path.getsize(path) // 1024, 'KB')
+
+
+def exportar_estatico(pid, objs):
+    """Como o `export` do quarto (uma malha só), mas com as coordenadas de textura: o céu e os
+    degradês leem a textura pelo UV."""
+    o = join(objs, pid)
+    bpy.ops.object.select_all(action='DESELECT')
+    o.select_set(True)
+    path = os.path.join(lib_q.OUT, f'{pid}.glb')
+    bpy.ops.export_scene.gltf(filepath=path, export_format='GLB', use_selection=True, export_apply=True,
+                              export_yup=True, export_texcoords=True, export_animations=False)
+    tris = sum(len(p.vertices) - 2 for p in o.data.polygons)
+    print('EXPORTADO', pid, tris, 'triângulos', os.path.getsize(path) // 1024, 'KB')
