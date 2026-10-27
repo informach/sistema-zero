@@ -10,6 +10,10 @@ const tempo = (segundos: number): SceneAction[] =>
 
 /** Authored success journeys, expressed as child actions rather than state/result flags. */
 export const scenePaths: Record<SceneId, SceneAction[]> = {
+  'island-3d': [
+    { type: 'island-view', view: 'side' },
+    { type: 'island-answer', answer: 'camera' },
+  ],
   'copy-vs-original': [
     { type: 'export-file' },
     { type: 'import-file' },

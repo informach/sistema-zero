@@ -99,7 +99,13 @@ export function CourseTrail({ course }: { course: CourseDetailView }) {
                     <li
                       key={node.lesson.id}
                       className="relative"
-                      style={{ height: 'var(--trail-row)' }}
+                      // A linha da aula atual ganha espaço para o balão, que fica acima do nó.
+                      style={{
+                        height:
+                          node.state === 'current'
+                            ? 'var(--trail-row-current)'
+                            : 'var(--trail-row)',
+                      }}
                     >
                       {(() => {
                         const inner = (
@@ -130,7 +136,10 @@ export function CourseTrail({ course }: { course: CourseDetailView }) {
                         )
                         const className =
                           'kids-node-link -ml-14 absolute top-0 flex w-28 flex-col items-center gap-1.5'
-                        const style = { left: `calc(50% + ${node.offset} * var(--trail-step))` }
+                        const style = {
+                          left: `calc(50% + ${node.offset} * var(--trail-step))`,
+                          ...(node.state === 'current' ? { top: 'var(--trail-balloon-room)' } : {}),
+                        }
                         // Aula travada: nó NÃO clicável (a regra de acesso é do backend).
                         return node.state === 'locked' ? (
                           <div

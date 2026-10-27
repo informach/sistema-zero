@@ -145,8 +145,12 @@ export function SceneFirstSteps({
           id={panelId}
           aria-labelledby={titleId}
           className={[
-            inline ? 'absolute right-0 top-full mt-2 max-h-[70vh]' : '',
-            'min-h-0 w-88 max-w-full space-y-3 overflow-auto overscroll-contain',
+            // Inline, o bloco de contenção é o botão "?" (40 px): `max-w-full` espremia o painel
+            // nessa largura. O teto é a tela.
+            inline
+              ? 'absolute right-0 top-full mt-2 max-h-[70vh] max-w-[calc(100vw-2rem)]'
+              : 'max-w-full',
+            'min-h-0 w-88 space-y-3 overflow-auto overscroll-contain',
             'rounded-xl border border-mld-border bg-mld-surface p-4 text-mld-text',
           ].join(' ')}
         >

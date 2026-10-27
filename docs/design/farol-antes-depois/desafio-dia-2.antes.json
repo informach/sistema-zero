@@ -1,0 +1,520 @@
+{
+  "version": 5,
+  "courseSlug": "desafio-primeiro-jogo",
+  "lessonSlug": "dia-2",
+  "title": "A chave muda o curso",
+  "retireBlockKeys": ["video-d2-teste"],
+  "blocks": [
+    {
+      "key": "experiencia-memoria",
+      "content": {
+        "kind": "interactive",
+        "required": true,
+        "title": "O jogo guardou a chave?",
+        "semPerguntaFinal": true,
+        "instructions": "Deixe Guardar a coleta desligado e clique em Encostar na chave. Olhe a chave, o aviso e temChave. Clique em Recomeçar a partida, ligue Guardar a coleta e clique em Encostar na chave de novo. Depois clique em Afastar e, por último, em Recomeçar a partida. Acompanhe temChave em cada teste.",
+        "hints": [],
+        "activity": {
+          "type": "experimentation",
+          "scene": "collect-and-remember",
+          "cenario": "farol"
+        }
+      }
+    }
+  ],
+  "sections": [
+    {
+      "key": "contexto",
+      "title": "O jogo guardou a chave?",
+      "intent": "exploration",
+      "objective": "Distinguir retirada, aviso e memória; observar a informação ao afastar e ao recomeçar.",
+      "blockKeys": ["video-d2-contexto", "ponte-d2-contexto", "experiencia-memoria"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-d2-contexto", "experiencia-memoria"]
+      }
+    },
+    {
+      "key": "recolher",
+      "title": "Recolha a chave",
+      "intent": "application",
+      "objective": "Programar o encontro entre personagem e chave e tirar a chave da partida.",
+      "blockKeys": ["video-d2-recolher", "ponte-d2-recolher"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-d2-recolher"],
+        "projectChecks": [
+          {
+            "id": "direcional",
+            "label": "Em Ao iniciar, use Ativar controles clássicos com só as quatro direções.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_enable_classic_controls",
+              "area": "start",
+              "fields": {
+                "MODE": "directions"
+              }
+            }
+          },
+          {
+            "id": "andar",
+            "label": "Dentro de A cada quadro do jogo, o bloco que move o personagem vem antes de Manter o sprite dentro da tela.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_update_each_frame",
+              "area": "loops",
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_g2d_top_down",
+                  "fields": {
+                    "SPRITE": "personagem"
+                  },
+                  "beforeBlock": "sz_g2d_clamp_to_screen"
+                }
+              }
+            }
+          },
+          {
+            "id": "borda",
+            "label": "Dentro de A cada quadro do jogo, mantenha o personagem dentro da tela.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_update_each_frame",
+              "area": "loops",
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_g2d_clamp_to_screen",
+                  "fields": {
+                    "SPRITE": "personagem"
+                  }
+                }
+              }
+            }
+          },
+          {
+            "id": "recolher",
+            "label": "Retire a chave dentro do encontro entre personagem e chave.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_on_overlap",
+              "area": "events",
+              "fieldAlternatives": [
+                {
+                  "A": "personagem",
+                  "B": "chave"
+                },
+                {
+                  "A": "chave",
+                  "B": "personagem"
+                }
+              ],
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_g2d_destroy_sprite",
+                  "fields": {
+                    "SPRITE": "chave"
+                  }
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "guardar",
+      "title": "Guarde que a chave foi encontrada",
+      "intent": "application",
+      "objective": "Criar temChave em falso e guardar verdadeiro no encontro com a chave.",
+      "blockKeys": ["video-d2-guardar", "ponte-d2-guardar"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-d2-guardar"],
+        "projectChecks": [
+          {
+            "id": "direcional",
+            "label": "Em Ao iniciar, use Ativar controles clássicos com só as quatro direções.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_enable_classic_controls",
+              "area": "start",
+              "fields": {
+                "MODE": "directions"
+              }
+            }
+          },
+          {
+            "id": "andar",
+            "label": "Dentro de A cada quadro do jogo, o bloco que move o personagem vem antes de Manter o sprite dentro da tela.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_update_each_frame",
+              "area": "loops",
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_g2d_top_down",
+                  "fields": {
+                    "SPRITE": "personagem"
+                  },
+                  "beforeBlock": "sz_g2d_clamp_to_screen"
+                }
+              }
+            }
+          },
+          {
+            "id": "borda",
+            "label": "Dentro de A cada quadro do jogo, mantenha o personagem dentro da tela.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_update_each_frame",
+              "area": "loops",
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_g2d_clamp_to_screen",
+                  "fields": {
+                    "SPRITE": "personagem"
+                  }
+                }
+              }
+            }
+          },
+          {
+            "id": "memoria",
+            "label": "Crie temChave começando em falso.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_js_var_create",
+              "area": "start",
+              "fields": {
+                "NAME": "temChave"
+              },
+              "inputs": {
+                "VALUE": false
+              }
+            }
+          },
+          {
+            "id": "encontro-chave",
+            "label": "No encontro com a chave, retire a chave e mude temChave.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_on_overlap",
+              "area": "events",
+              "fieldAlternatives": [
+                {
+                  "A": "personagem",
+                  "B": "chave"
+                },
+                {
+                  "A": "chave",
+                  "B": "personagem"
+                }
+              ],
+              "inputBlocksAll": {
+                "BODY": [
+                  {
+                    "blockType": "sz_g2d_destroy_sprite",
+                    "fields": {
+                      "SPRITE": "chave"
+                    }
+                  },
+                  {
+                    "blockType": "sz_js_var_assign",
+                    "fields": {
+                      "NAME": "temChave"
+                    },
+                    "inputs": {
+                      "VALUE": true
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "id": "recolher",
+            "label": "Retire a chave dentro do encontro entre personagem e chave.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_on_overlap",
+              "area": "events",
+              "fieldAlternatives": [
+                {
+                  "A": "personagem",
+                  "B": "chave"
+                },
+                {
+                  "A": "chave",
+                  "B": "personagem"
+                }
+              ],
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_g2d_destroy_sprite",
+                  "fields": {
+                    "SPRITE": "chave"
+                  }
+                }
+              }
+            }
+          },
+          {
+            "id": "lembrar",
+            "label": "Mude temChave para verdadeiro dentro do encontro com a chave.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_on_overlap",
+              "area": "events",
+              "fieldAlternatives": [
+                {
+                  "A": "personagem",
+                  "B": "chave"
+                },
+                {
+                  "A": "chave",
+                  "B": "personagem"
+                }
+              ],
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_js_var_assign",
+                  "fields": {
+                    "NAME": "temChave"
+                  },
+                  "inputs": {
+                    "VALUE": true
+                  }
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "programar-chave",
+      "title": "Avise quem está jogando",
+      "intent": "delivery",
+      "objective": "Mostrar o aviso da coleta, testar a coleta inteira e enviar a atividade.",
+      "blockKeys": ["video-d2-programar", "ponte-d2-programar", "projeto"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-d2-programar", "projeto"],
+        "projectChecks": [
+          {
+            "id": "direcional",
+            "label": "Em Ao iniciar, use Ativar controles clássicos com só as quatro direções.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_enable_classic_controls",
+              "area": "start",
+              "fields": {
+                "MODE": "directions"
+              }
+            }
+          },
+          {
+            "id": "andar",
+            "label": "Dentro de A cada quadro do jogo, o bloco que move o personagem vem antes de Manter o sprite dentro da tela.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_update_each_frame",
+              "area": "loops",
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_g2d_top_down",
+                  "fields": {
+                    "SPRITE": "personagem"
+                  },
+                  "beforeBlock": "sz_g2d_clamp_to_screen"
+                }
+              }
+            }
+          },
+          {
+            "id": "borda",
+            "label": "Dentro de A cada quadro do jogo, mantenha o personagem dentro da tela.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_update_each_frame",
+              "area": "loops",
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_g2d_clamp_to_screen",
+                  "fields": {
+                    "SPRITE": "personagem"
+                  }
+                }
+              }
+            }
+          },
+          {
+            "id": "memoria",
+            "label": "Crie temChave começando em falso.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_js_var_create",
+              "area": "start",
+              "fields": {
+                "NAME": "temChave"
+              },
+              "inputs": {
+                "VALUE": false
+              }
+            }
+          },
+          {
+            "id": "encontro-chave",
+            "label": "No encontro com a chave, retire a chave e atualize temChave e o aviso.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_on_overlap",
+              "area": "events",
+              "fieldAlternatives": [
+                {
+                  "A": "personagem",
+                  "B": "chave"
+                },
+                {
+                  "A": "chave",
+                  "B": "personagem"
+                }
+              ],
+              "inputBlocksAll": {
+                "BODY": [
+                  {
+                    "blockType": "sz_g2d_destroy_sprite",
+                    "fields": {
+                      "SPRITE": "chave"
+                    }
+                  },
+                  {
+                    "blockType": "sz_js_var_assign",
+                    "fields": {
+                      "NAME": "temChave"
+                    },
+                    "inputs": {
+                      "VALUE": true
+                    }
+                  },
+                  {
+                    "blockType": "sz_js_var_assign",
+                    "fields": {
+                      "NAME": "aviso"
+                    },
+                    "inputBlocks": {
+                      "VALUE": {
+                        "blockType": "sz_val_text"
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "id": "recolher",
+            "label": "Retire a chave dentro do encontro entre personagem e chave.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_on_overlap",
+              "area": "events",
+              "fieldAlternatives": [
+                {
+                  "A": "personagem",
+                  "B": "chave"
+                },
+                {
+                  "A": "chave",
+                  "B": "personagem"
+                }
+              ],
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_g2d_destroy_sprite",
+                  "fields": {
+                    "SPRITE": "chave"
+                  }
+                }
+              }
+            }
+          },
+          {
+            "id": "lembrar",
+            "label": "Mude temChave para verdadeiro dentro do encontro com a chave.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_on_overlap",
+              "area": "events",
+              "fieldAlternatives": [
+                {
+                  "A": "personagem",
+                  "B": "chave"
+                },
+                {
+                  "A": "chave",
+                  "B": "personagem"
+                }
+              ],
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_js_var_assign",
+                  "fields": {
+                    "NAME": "temChave"
+                  },
+                  "inputs": {
+                    "VALUE": true
+                  }
+                }
+              }
+            }
+          },
+          {
+            "id": "aviso-chave",
+            "label": "Mude aviso para um texto dentro do encontro com a chave.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_on_overlap",
+              "area": "events",
+              "fieldAlternatives": [
+                {
+                  "A": "personagem",
+                  "B": "chave"
+                },
+                {
+                  "A": "chave",
+                  "B": "personagem"
+                }
+              ],
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_js_var_assign",
+                  "fields": {
+                    "NAME": "aviso"
+                  },
+                  "inputBlocks": {
+                    "VALUE": {
+                      "blockType": "sz_val_text"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

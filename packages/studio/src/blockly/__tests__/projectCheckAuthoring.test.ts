@@ -765,14 +765,16 @@ describe('objetivos que rodam o jogo (etapa 3, 18/10/2026)', () => {
       )
   })
 
-  test('alvo adaptativo só é oferecido no Jogo 2D clássico JavaScript', () => {
+  test.each([
+    'clickTarget',
+    'approachSprite',
+  ] as const)('%s só é oferecido no Jogo 2D clássico JavaScript', (action) => {
     const rule: SectionExecutionRule = {
       type: 'behavior',
       steps: [
-        {
-          action: 'clickTarget',
-          target: { kind: 'sprite', path: 'esconderijo1', groupPath: 'esconderijos' },
-        },
+        action === 'clickTarget'
+          ? { action, target: { kind: 'sprite', path: 'esconderijo1', groupPath: 'esconderijos' } }
+          : { action, actorPath: 'personagem', targetPath: 'chave', timeoutMs: 1000 },
       ],
       expect: { target: { kind: 'value', path: 'achados' }, compare: 'equals', value: 1 },
     }

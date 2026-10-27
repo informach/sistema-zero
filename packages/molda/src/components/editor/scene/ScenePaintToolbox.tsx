@@ -1,6 +1,6 @@
 /**
  * As ferramentas da aba Pintar à vista: Lápis, Borracha, Balde e Conta-gotas, a largura do
- * traço e os recursos do editor antigo (girar a pintura da face, pintar de perto e espelho).
+ * traço, pintar de perto e espelho.
  * O resto (formas, área, degradê, carimbo, folha inteira) mora em "Mais
  * jeitos de pintar".
  *
@@ -13,7 +13,7 @@
  */
 import { SCENE_PAINT_COPY } from '../../../core/scenePaintCopy'
 import { RequiresTool } from '../../toolAccess'
-import { ChevronDown, FlipHorizontal2, Grid3x3 } from '../../ui/icons'
+import { FlipHorizontal2 } from '../../ui/icons'
 import { SCENE_TILE_GRID, SceneTile } from './SceneTile'
 import { sceneCommand } from './sceneCommandRegistry'
 import { SCENE_PAINT_ACTIONS, type ScenePaintActionId } from './scenePaintShortcuts'
@@ -123,38 +123,6 @@ export function ScenePaintToolbox({
         pressed={paint.mirror}
         onClick={() => paint.setMirror(!paint.mirror)}
       />
-      <SceneTile
-        data-toggle=""
-        icon={Grid3x3}
-        label="Quadradinhos"
-        title="Mostrar a grade da pintura sobre a superfície"
-        pressed={paint.grid}
-        onClick={() => paint.setGrid(!paint.grid)}
-      />
-      <details className="mld-rail-more">
-        <summary>
-          {SCENE_PAINT_COPY.moreBrushes}
-          <ChevronDown aria-hidden="true" />
-        </summary>
-        <div className={PAINT_TILES}>
-          {(['paint.rotate'] as const).map((id) => {
-            const command = sceneCommand(id)
-            return (
-              <SceneTile
-                key={id}
-                data-paint-tool={id}
-                icon={command.icon}
-                label={command.label}
-                pressed={rotate}
-                onClick={() => {
-                  onChooseTool?.()
-                  SCENE_PAINT_ACTIONS[id](paint)
-                }}
-              />
-            )
-          })}
-        </div>
-      </details>
     </RequiresTool>
   )
 }

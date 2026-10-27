@@ -346,9 +346,9 @@ export function SceneUvEditor({
             <Button variant="ghost" size="compact" data-close-menu onClick={() => onChoose([])}>
               {copy.faceNone}
             </Button>
-            {extraActions}
             {advancedControls}
           </SceneToolbarMenu>
+          {extraActions}
         </div>
       )}
       {!compact && <p className="text-xs text-mld-muted">{copy.uvVisualHint}</p>}

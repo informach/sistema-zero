@@ -74,7 +74,7 @@ for (const [width, escala] of [
     page.on('pageerror', (error) => errors.push(error.message))
     await page.goto('/quiz-zappy')
     await page.getByRole('button', { name: 'Começar!' }).click()
-    await expect(page.getByText('Pergunta 1 de 4')).toBeVisible()
+    await expect(page.getByText('Pergunta 1 de 3')).toBeVisible()
     // 0 = o Zappy da fala da parte; 1 = o Zappy da pergunta.
     await expect(page.locator('main canvas')).toHaveCount(2)
     const fala = await desenhoDoZappy(page, 0)

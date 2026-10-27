@@ -1,0 +1,20 @@
+.test-page {
+  max-width: 1400px;
+  margin: 20px auto;
+  padding: 16px;
+}
+.test-page nav {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin: 20px 0;
+}
+.test-page nav button {
+  min-height: 44px;
+  background: var(--color-secondary);
+  padding: 10px;
+  border-radius: 12px;
+}
+.test-page [data-complete] {
+  margin-top: 20px;
+}

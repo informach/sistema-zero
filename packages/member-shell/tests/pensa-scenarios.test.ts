@@ -17,7 +17,14 @@ import {
   OutlineReplySchema,
 } from '../src/server/pensa/contracts'
 import type { completePensaJson } from '../src/server/pensa-llm'
-import { PENSA_ACTOR, PENSA_DATE, pensaContext, pensaId, pensaWork } from './pensa-fixtures'
+import {
+  PENSA_ACTOR,
+  PENSA_DATE,
+  pensaContext,
+  pensaDefinition,
+  pensaId,
+  pensaWork,
+} from './pensa-fixtures'
 
 mock.module('server-only', () => ({}))
 const { producePensaStep } = await import('../src/server/pensa/planning')
@@ -324,4 +331,161 @@ test('an invented runtime is rejected before any mission cards are produced', as
       outline('invented-extension', ['Prepare o jogo', 'Crie caminhos', 'Confira o jogo'], ['r1']),
     ),
   ).rejects.toThrow('Não consegui organizar')
+})
+
+/**
+ * Incidente de 26/10/2026 (staging, Kids): depois que a criança escolhe um desenho seu num
+ * cartão, a rodada seguinte da conversa recebia a arte escolhida sem a chave do inventário e
+ * a resposta fiel ao que recebeu era recusada ("A criação existente … não corresponde"), nas
+ * duas tentativas da unidade. O modelo daqui devolve EXATAMENTE o que a definição anterior
+ * lhe mostra.
+ */
+test('a drawing chosen from the inventory survives the next round of the conversation', async () => {
+  const context = pensaContext()
+  const draft = context.view.draft
+  if (!draft?.definition) throw new Error('Missing draft')
+  const chosen = {
+    tool: 'pinta' as const,
+    profileId: PENSA_ACTOR.profileId,
+    creationId: 'cesto-plastico-1',
+    saveRevision: '3',
+    contentFingerprint: null,
+  }
+  context.inventory = [
+    {
+      name: 'cesto-palha',
+      kind: 'sprite',
+      creation: { ...chosen, creationId: 'cesto-palha-1', saveRevision: '1' },
+    },
+    // A criança mexeu no desenho no Pinta entre uma rodada e outra.
+    { name: 'cesto-plastico', kind: 'sprite', creation: { ...chosen, saveRevision: '4' } },
+  ]
+  draft.definition.assetSlots = [
+    {
+      id: pensaId(40),
+      name: 'Cesta',
+      kind: 'sprite',
+      description: 'A cesta que pega as folhas.',
+      source: 'existing',
+      existing: chosen,
+    },
+  ]
+  const complete: typeof completePensaJson = async (options) => {
+    const request = PensaJsonObjectSchema.parse(JSON.parse(options.user))
+    const previous = PensaJsonObjectSchema.parse(PensaJsonObjectSchema.parse(request.data).previous)
+    const slots = PensaJsonObjectSchema.array().parse(previous.assetSlots)
+    return options.schema.parse({
+      ...rawDefinition(pensaDefinition()),
+      // Sem a chave na definição anterior, o modelo fiel não tem de onde tirá-la.
+      assetSlots: slots.map(({ key, name, kind, description, source, existingInventoryKey }) => ({
+        key,
+        name,
+        kind,
+        description,
+        source,
+        existingInventoryKey: existingInventoryKey ?? null,
+      })),
+    })
+  }
+  const result = await producePensaStep(
+    { ...pensaWork(context), input: { message: 'Lugares fixos' } },
+    context,
+    complete,
+  )
+  if (result.type !== 'step') throw new Error('Expected the definition to be accepted')
+  const definition = PensaJsonObjectSchema.parse(result.output).definition
+  expect(definition).toMatchObject({
+    assetSlots: [
+      { id: pensaId(40), source: 'existing', existing: { ...chosen, saveRevision: '4' } },
+    ],
+  })
+})
+
+// O modelo enxerga só as primeiras 80 criações; a arte já escolhida vem junto mesmo depois delas,
+// com a chave da posição real (full review de 26/10/2026).
+test('a chosen drawing beyond the first eighty creations keeps its key', async () => {
+  const context = pensaContext()
+  const draft = context.view.draft
+  if (!draft?.definition) throw new Error('Missing draft')
+  const base = {
+    tool: 'pinta' as const,
+    profileId: PENSA_ACTOR.profileId,
+    saveRevision: '1',
+    contentFingerprint: null,
+  }
+  context.inventory = Array.from({ length: 90 }, (_, index) => ({
+    name: `desenho-${index + 1}`,
+    kind: 'sprite' as const,
+    creation: { ...base, creationId: `desenho-${index + 1}` },
+  }))
+  const chosen = context.inventory[85]!.creation
+  draft.definition.assetSlots = [
+    {
+      id: pensaId(40),
+      name: 'Cesta',
+      kind: 'sprite',
+      description: 'A cesta que pega as folhas.',
+      source: 'existing',
+      existing: chosen,
+    },
+  ]
+  let shown = ''
+  const result = await producePensaStep(
+    { ...pensaWork(context), input: { message: 'Lugares fixos' } },
+    context,
+    async (options) => {
+      const request = PensaJsonObjectSchema.parse(JSON.parse(options.user))
+      shown = JSON.stringify(request.data)
+      const previous = PensaJsonObjectSchema.parse(
+        PensaJsonObjectSchema.parse(request.data).previous,
+      )
+      const slots = PensaJsonObjectSchema.array().parse(previous.assetSlots)
+      return options.schema.parse({
+        ...rawDefinition(pensaDefinition()),
+        assetSlots: slots.map(({ key, name, kind, description, source, existingInventoryKey }) => ({
+          key,
+          name,
+          kind,
+          description,
+          source,
+          existingInventoryKey: existingInventoryKey ?? null,
+        })),
+      })
+    },
+  )
+  expect(shown).toContain('"key":"inventory86"')
+  expect(shown).not.toContain('"key":"inventory85"')
+  if (result.type !== 'step') throw new Error('Expected the definition to be accepted')
+  expect(PensaJsonObjectSchema.parse(result.output).definition).toMatchObject({
+    assetSlots: [{ id: pensaId(40), source: 'existing', existing: chosen }],
+  })
+})
+
+test('a chosen drawing that left the inventory is shown without an invented key', async () => {
+  const context = pensaContext()
+  const draft = context.view.draft
+  if (!draft?.definition) throw new Error('Missing draft')
+  draft.definition.assetSlots = [
+    {
+      id: pensaId(40),
+      name: 'Cesta',
+      kind: 'sprite',
+      description: 'A cesta que pega as folhas.',
+      source: 'existing',
+      existing: {
+        tool: 'pinta',
+        profileId: PENSA_ACTOR.profileId,
+        creationId: 'apagado',
+        saveRevision: '1',
+        contentFingerprint: null,
+      },
+    },
+  ]
+  let shown: unknown
+  await producePensaStep(pensaWork(context), context, async (options) => {
+    shown = PensaJsonObjectSchema.parse(JSON.parse(options.user)).data
+    return options.schema.parse(rawDefinition(pensaDefinition()))
+  })
+  expect(JSON.stringify(shown)).toContain('"existingInventoryKey":null')
+  expect(JSON.stringify(shown)).not.toContain('apagado')
 })

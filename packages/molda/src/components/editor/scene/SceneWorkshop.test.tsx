@@ -236,6 +236,22 @@ function swatch(
 }
 
 describe('scene workshop integration', () => {
+  test('o cone pode ser criado pelo ladrilho de formas 3D e desfeito', async () => {
+    const { editor, ports, view } = setup()
+    try {
+      await waitFor(() => expect(ports.length).toBeGreaterThan(0))
+      fireEvent.click(screen.getByRole('button', { name: COPY.scene.cone }))
+      expect(editor.getState().asset.geometries.at(-1)?.kind).toBe('cone')
+      expect(editor.getState().asset.nodes.at(-1)?.name).toBe(COPY.scene.cone)
+      expect(editor.getState().canUndo).toBe(true)
+      act(() => editor.getState().undo())
+      expect(editor.getState().asset.geometries.some((entry) => entry.kind === 'cone')).toBe(false)
+    } finally {
+      view.unmount()
+      editor.getState().dispose()
+    }
+  })
+
   test('a forma Torus pode ser criada pelo ladrilho de formas 3D', async () => {
     const { editor, ports, view } = setup()
     try {
@@ -3367,22 +3383,16 @@ describe('scene workshop integration', () => {
       ).toBe('true')
       fireEvent.click(screen.getByRole('button', { name: COPY.editor.undo }))
       expect(editor.getState().canUndo).toBe(false)
+      expect(screen.queryByRole('button', { name: COPY.scene.paintShapeTools.gradient })).toBeNull()
+      fireEvent.click(screen.getByRole('button', { name: COPY.scene.paintGradientConvertAction }))
+      await waitFor(() => expect(screen.queryByText(COPY.scene.imageTaskBusy) === null).toBe(true))
+      const converted = editor.getState().asset
+      expect(converted.images[0]!.encoding).toBe('rgba')
       const shapes = screen.getByText(COPY.scene.paintShapes).closest('details')!
       act(() => {
         shapes.open = true
         fireEvent(shapes, new Event('toggle'))
       })
-      expect(
-        (
-          screen.getByRole('button', {
-            name: COPY.scene.paintShapeTools.gradient,
-          }) as HTMLButtonElement
-        ).disabled,
-      ).toBe(true)
-      fireEvent.click(screen.getByRole('button', { name: COPY.scene.imageRgba }))
-      await waitFor(() => expect(screen.queryByText(COPY.scene.imageTaskBusy) === null).toBe(true))
-      const converted = editor.getState().asset
-      expect(converted.images[0]!.encoding).toBe('rgba')
       fireEvent.click(screen.getByRole('button', { name: COPY.scene.paintShapeTools.select }))
       key('Enter')
       key('ArrowRight')

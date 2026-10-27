@@ -256,12 +256,13 @@ describe('a oficina no nível de entrada', () => {
     // The requested Plano adds one visible creation button, within model.pieces.
     expect(vazio.view.getByRole('button', { name: COPY.scene.plane })).toBeDefined()
     expect(vazio.view.getByRole('button', { name: COPY.scene.torus })).toBeDefined()
-    // Torus adds one visible shape control in Modelar.
+    expect(vazio.view.getByRole('button', { name: COPY.scene.cone })).toBeDefined()
+    // Torus and Cone each add one visible shape control in Modelar.
     // A biblioteca de paletas acrescenta um único gatilho recolhido no Modelar.
     // O Raio-X pedido acrescenta uma alternância de vista, ao lado da grade.
-    expect(montadosVazio.length, montadosVazio.join(' | ')).toBeLessThanOrEqual(66)
+    expect(montadosVazio.length, montadosVazio.join(' | ')).toBeLessThanOrEqual(67)
     // Cut, import, pivot and component selection are now explicit basic authoring actions.
-    expect(encaradosVazio.length, encaradosVazio.join(' | ')).toBeLessThanOrEqual(49)
+    expect(encaradosVazio.length, encaradosVazio.join(' | ')).toBeLessThanOrEqual(50)
     cleanup()
 
     const comPeca = mount(withPiece())
@@ -270,8 +271,8 @@ describe('a oficina no nível de entrada', () => {
     const encaradosPeca = frontControls(comPeca.view.container)
     // Position, size, pivot and rotation contribute 12 inputs in the approved basic inspector.
     // Flip contributes one disclosure, three axis actions and the in-place option.
-    expect(montadosPeca.length, montadosPeca.join(' | ')).toBeLessThanOrEqual(114)
-    expect(encaradosPeca.length, encaradosPeca.join(' | ')).toBeLessThanOrEqual(88)
+    expect(montadosPeca.length, montadosPeca.join(' | ')).toBeLessThanOrEqual(115)
+    expect(encaradosPeca.length, encaradosPeca.join(' | ')).toBeLessThanOrEqual(89)
   })
 
   test('nenhum controle de família trancada aparece, em nenhuma aba, nem abrindo tudo', async () => {

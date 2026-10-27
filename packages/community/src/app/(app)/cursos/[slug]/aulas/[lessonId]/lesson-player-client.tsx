@@ -27,6 +27,7 @@ import { toast } from 'sonner'
 import type { RatingViewer } from '@/components/community/course-rating-flow'
 import { useAdultGamification } from '@/components/community/gamification-provider'
 import { LessonOutlineContent } from '@/components/community/lesson-outline-content'
+import { lessonZappy } from '@/components/community/lesson-zappy'
 import { type ApiError, apiSend } from '@/lib/api'
 import { cn } from '@/lib/cn'
 import type { CourseDetailView, LessonDetailView } from '@/lib/types'
@@ -147,6 +148,7 @@ export function LessonPlayer({
   const playerContext = useMemo<LessonPlayerContextValue>(
     () => ({
       lessonId: lesson.id,
+      dialogueMascot: lessonZappy,
       courseSlug: course.slug,
       viewerWatermark,
       viewerId,

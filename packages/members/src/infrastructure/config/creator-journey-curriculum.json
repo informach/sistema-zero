@@ -36,16 +36,22 @@
           ]
         },
         {
-          "title": "A Ilha 3D do Farol",
+          "title": "A Ilha do Farol",
           "dimension": "3D",
           "environment": "Blocos · núcleo do Jogo 3D",
-          "origin": "Adaptar Pega-Estrelas e as regras de coleta do Farol. O curso ainda precisa ser produzido.",
-          "status": "Novo curso sobre base existente",
+          "origin": "Curso escrito em docs/aulas-interativas/a-ilha-do-farol. Três aulas, Jogo 3D, sem certificado. Artes atuais substituíveis pelo Molda.",
+          "status": "Implementado localmente; produção de mídia e publicação pendentes",
           "lessons": [
             "A mesma ilha, com profundidade — jogar, comparar os eixos e mover o personagem com câmera fixa.",
             "A chave no mundo 3D — programar coleta e memória; prever o que acontecerá antes de testar.",
             "Acenda o farol — completar a decisão com menos instruções, testar os dois casos e reiniciar."
-          ]
+          ],
+          "authoredSource": {
+            "courseSlug": "jornada-faisca-base-3d",
+            "directory": "docs/aulas-interativas/a-ilha-do-farol",
+            "lessons": ["ilha-aula-1", "ilha-aula-2", "ilha-aula-3"],
+            "note": "O outline do seed conserva seu hash de identidade. A autoria detalhada e os títulos das aulas estão nos manifestos; importar no curso reservado sem recriar seu ID."
+          }
         }
       ],
       "mission": {

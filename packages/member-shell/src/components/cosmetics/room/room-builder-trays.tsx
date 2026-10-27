@@ -22,7 +22,7 @@ export function ShopGrid({
 }) {
   if (items.length === 0) return <Empty />
   return (
-    <div className="grid grid-cols-4 gap-2 sm:grid-cols-6">
+    <div className="grid grid-cols-4 gap-2 @min-[36rem]/bandeja:grid-cols-6">
       {items.map((it) => {
         const info = ROOM_ITEM_INFO[it.id]
         if (!info) return null
@@ -67,7 +67,7 @@ export function TrophyTray({
       <p className="font-semibold text-muted-foreground text-sm">
         Suas conquistas viram troféus de verdade no quarto! 🏆
       </p>
-      <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+      <div className="grid grid-cols-2 gap-2 @min-[36rem]/bandeja:grid-cols-3">
         {trophies.map((t) => {
           const info = ROOM_ITEM_INFO[t.id]
           if (!info) return null
@@ -141,7 +141,7 @@ export function ChoiceGrid({
   preview: (id: string) => React.ReactNode
 }) {
   return (
-    <div className="grid grid-cols-3 gap-2 sm:grid-cols-5">
+    <div className="grid grid-cols-3 gap-2 @min-[36rem]/bandeja:grid-cols-5">
       {choices.map((c) => (
         <button
           key={c.id}
@@ -168,7 +168,7 @@ export function WallTray({ brush, onPick }: { brush: string; onPick: (hex: strin
       <p className="font-semibold text-muted-foreground text-sm">
         Escolha uma cor e toque numa parede 🖌️
       </p>
-      <div className="grid grid-cols-6 gap-2 sm:grid-cols-9">
+      <div className="grid grid-cols-6 gap-2 @min-[36rem]/bandeja:grid-cols-9">
         {ROOM_WALL_PALETTE.map((c) => (
           <button
             key={c.hex}
@@ -204,7 +204,7 @@ export function PetTray({
   onBuy: (id: string) => void
 }) {
   return (
-    <div className="grid grid-cols-4 gap-2 sm:grid-cols-6">
+    <div className="grid grid-cols-4 gap-2 @min-[36rem]/bandeja:grid-cols-6">
       <button
         type="button"
         onClick={() => onPick(null)}

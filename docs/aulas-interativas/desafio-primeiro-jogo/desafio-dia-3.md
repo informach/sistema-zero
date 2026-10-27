@@ -1,6 +1,11 @@
 # A Chave do Farol · Dia 3 · A luz do farol
 
-**Conferência da equipe, 19/10/2026 (não gravar):** exemplos privados por parte, conforme o manifesto e sua fonte geradora. sem-chave tem solução transitória com então vazio; decisao completa o caminho com chave. personalizar reutiliza o jogo funcional: o aviso de objetivos já atendidos não exige trocar uma imagem só para criar uma diferença. O projeto inicial e a continuidade permanecem; a entrada para ensaio não substitui o baseline da verificação. Cores, imagens, textos e magnitude de velocidade do exemplo não são respostas únicas. A direção precisa continuar coerente e zero não demonstra movimento. Os objetivos atuais deste piloto conferem estrutura; os testes jogados do roteiro continuam necessários e não foram certificados automaticamente como comportamento. Esta revisão conserva as falas e as âncoras de edição já registradas. Não informa nova gravação, publicação ou ensaio com crianças.
+## Atualização aplicada em 26/10/2026
+
+A versão vigente segue [exploração orientada por objetivos](../../aulas-interativas-tecnico/DESCOBERTA-GUIADA.md): vídeos conceituais explicam e convidam; a experiência oferece controles livres e orientação pelo estado; o Estúdio conserva a instrução completa de montagem. Edição da regra, entrada de quem joga e execução são gestos distintos. As notas datadas anteriores abaixo registram o histórico. O roteiro e o manifesto atualizados são a referência de produção; os clipes ainda precisam de gravação/edição/importação.
+
+
+**Conferência da equipe, 19/10/2026 (não gravar):** exemplos privados por parte, conforme o manifesto e sua fonte geradora. sem-chave tem solução transitória com então vazio; decisao completa o caminho com chave. personalizar reutiliza o jogo funcional: o aviso de objetivos já atendidos não exige trocar uma imagem só para criar uma diferença. O projeto inicial e a continuidade permanecem; a entrada para ensaio não substitui o baseline da verificação. Cores, imagens, textos e magnitude de velocidade do exemplo não são respostas únicas. A direção precisa continuar coerente e zero não demonstra movimento. Os objetivos atuais combinam estrutura e observação em execução. Movimento, memória após afastamento e os dois caminhos da porta são testados no jogo por entradas reais, preservando as escolhas de arte e posição; os testes jogados do roteiro continuam parte da construção. Esta revisão conserva as falas e as âncoras de edição já registradas. Não informa nova gravação, publicação ou ensaio com crianças.
 
 
 ## Resumo
@@ -69,19 +74,19 @@ A revisão de 04/10 torna visíveis temChave, a pergunta e as duas respostas. O 
 ### Seção 1. O que a porta precisa?
 
 - **Intenção:** exploração (`exploration`).
-- **Por que existe:** concretizar a relação da condição antes de programar.
-- **Conclui quando:** vídeo e as duas tentativas reais na experiência.
+- **Conclui quando:** vídeo e 2 descobertas observadas, sem ordem obrigatória.
 - **Blocos:** `video-d3-condicao`, `ponte-d3-condicao`, `experiencia-porta`.
+- **Metas da experiência:** `locked-without-key`, `opened-with-key`.
 
-**Ponte do Zappy na página (não gravar):** Sua vez! Teste a mesma porta sem a chave e com a chave e repare em qual resposta a porta escolhe. Quando terminar, clique em Próxima parte.
+Preparar com ou sem chave em qualquer ordem. Dar/tirar a chave prepara a situação e limpa o destaque anterior; somente Testar a porta escolhe um ramo. Exibir a pergunta, os dois caminhos e o caminho executado. As duas descobertas exigem uma tentativa real. Continuar experimentando livremente depois de concluir.
 
-Abrir com o estado atual: a chave já pode ser recolhida, mas a porta ainda não responde. Explicar a condição enquanto faz, mostrando antes de definir: o primeiro teste, sem a chave, vem antes da palavra condição, e a fala diz que a resposta é não e a porta escolhe o senão; com a chave, a resposta é sim e ela escolhe o então. O vídeo é uma demonstração, o narrador faz cada gesto na primeira pessoa e só no fim passa a vez; depois, a pessoa repete os testes na experiência, que cobra as metas.
+**Convite da experiência:** Prepare o personagem com ou sem a chave e teste a porta. Compare a resposta nas duas situações; você pode repetir quantas vezes quiser.
 
 ### Seção 2. Avise quando faltar a chave
 
 - **Intenção:** aplicação (`application`).
 - **Por que existe:** montar e conferir a primeira resposta antes de ampliar a condição.
-- **Conclui quando:** vídeo e dez critérios cumulativos aprovados; não pede envio.
+- **Conclui quando:** vídeo e 12 critérios cumulativos aprovados; não pede envio.
 - **Blocos:** novo `video-d3-sem-chave`, `ponte-d3-sem-chave`, Estúdio pela `workspaceKey: projeto`.
 
 **Ponte do Zappy na página (não gravar):** Agora ensine o farol a avisar quando falta a chave! Monte o encontro com o farol, o Se e o aviso no senão. Depois vá até a porta do farol sem pegar a chave e clique em Verificar projeto. Quando aparecer Objetivo cumprido!, clique em Próxima parte.
@@ -92,7 +97,7 @@ Criar evento separado personagem/farol (o bloco chega com jogador e inimigo) e S
 
 - **Intenção:** aplicação (`application`), com verificação intermediária.
 - **Por que existe:** programar a relação observada no jogo da criança.
-- **Conclui quando:** vídeo e quatorze critérios cumulativos aprovados; não pede envio.
+- **Conclui quando:** vídeo e 17 critérios cumulativos aprovados; não pede envio.
 - **Blocos:** `video-d3-decisao`, `ponte-d3-decisao`; Estúdio pela `workspaceKey: projeto`.
 
 **Ponte do Zappy na página (não gravar):** Agora acenda o farol! Complete o espaço do então e teste sem a chave, com a chave e numa nova partida. Depois clique em Verificar projeto. Quando aparecer Objetivo cumprido!, clique em Próxima parte.
@@ -135,14 +140,14 @@ Editar os quatro textos de aviso: inicial em Ao iniciar, coleta no encontro com 
 
 ### Seção 6. Como escolher um lugar para a chave
 
-- **Intenção:** exploração (`exploration`) antes da escolha de posição.
-- **Por que existe:** tornar x/y observáveis antes de alterar o projeto.
-- **Conclui quando:** vídeo e mudanças nos dois eixos da experiência.
-- **Blocos:** `video-d3-posicao`, `ponte-d3-posicao`, `experiencia-posicao`; sem workspaceKey.
+- **Intenção:** exploração (`exploration`).
+- **Conclui quando:** vídeo e 4 descobertas observadas, sem ordem obrigatória.
+- **Blocos:** `video-d3-posicao`, `ponte-d3-posicao`, `experiencia-posicao`.
+- **Metas da experiência:** `x-minus`, `x-plus`, `y-minus`, `y-plus`.
 
-**Ponte do Zappy na página (não gravar):** Sua vez! Mude um número de cada vez e repare para onde a chave vai. Quando terminar, clique em Próxima parte.
+Apresentar x/y aqui, sem antecipá-los no movimento. Liberar ambos os eixos desde o início, com botões de 20 em 20, controles deslizantes e campos numéricos. Descobertas: esquerda, direita, cima e baixo, em qualquer ordem, sem coordenada obrigatória. Marcar lugar anterior e atual. O alvo é opcional. A experiência não altera o projeto do Estúdio.
 
-Cena `lighthouse-position`, cenário farol, metas `mover-horizontal` e `mover-vertical`. Controles **Posição horizontal x**, **Posição vertical y** e **Recomeçar**. Partir de x 211/y 53, mostrar só x 160 e depois só y 250, digitando no campo e clicando fora dele (o número só vai para a cena depois desse clique; os botões − e + andam de 20 em 20 e não chegam a 160 nem a 250). Demonstrar na primeira pessoa: x aumenta para a direita, y aumenta para baixo, porque a contagem do y começa no 0, no alto da tela, sem mudar desenho ou tamanho; o quadrado pontilhado marca o lugar anterior. Passar a vez no final. As metas exigem ação nos dois eixos, sem obrigar valores iguais à demonstração; sem palpite ou pergunta final. O Estúdio da criança não é alterado pela experiência.
+**Convite da experiência:** Explore os dois eixos em qualquer ordem. Mude um número por vez e observe para onde a chave vai. Se quiser um desafio, mostre um alvo e leve a chave até ele.
 
 ### Seção 7. Escolha onde fica a chave
 
@@ -162,7 +167,7 @@ Retomar x/y da experiência. Em **Ao iniciar → Criar sprite chave**, editar so
 - **Conclui quando:** vídeo; a publicação é a tarefa ensinada, sem requisito técnico novo de publicação.
 - **Blocos:** `video-d3-fecho`, `ponte-d3-publicar`, `ajuda-publicar` e o mesmo `projeto` pela workspaceKey.
 
-**Ponte do Zappy na página (não gravar):** Hora de mostrar o seu jogo! Publique no Mural, copie o link de jogar e mande para a sua família e os seus amigos. Se precisar, peça ajuda a um adulto. Depois clique em Fechar e em Concluir aula.
+**Ponte do Zappy na página (não gravar):** Seu jogo está pronto! Se quiser, publique no Mural, copie o link de jogar e compartilhe com a sua família e os seus amigos. Se precisar, peça ajuda a um adulto. Você pode concluir a aula e continuar a jornada sem publicar.
 
 **Compartilhar → manter o resumo → Gerar capa → conferir → Publicar → comemorar: Seu jogo está no Mural! → Copiar link de jogar e mandar para a família e os amigos → Fechar → Concluir aula**. O envio anterior libera Compartilhar. Trocar a capa e resolver problemas ficam no tutorial direto `plataforma-publicar-no-mural`, com retorno à aula. Na gravação: depois de publicar, o Compartilhar trava neste navegador ("Você já compartilhou este jogo no Mural. 🎉"); para repetir a tomada, usar outro perfil de ensaio com o projeto enviado e acesso ao Mural. A resposta à Debinha manda o link "para os seus amigos e a sua família" (13/10/2026: antes, "para eles", sem antecedente para quem assiste).
 

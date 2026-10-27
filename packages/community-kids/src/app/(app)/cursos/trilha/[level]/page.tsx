@@ -13,7 +13,7 @@ import { KidsMascot } from '@/components/kids/mascot'
 import { cn } from '@/lib/cn'
 import { coursesForLevel, tierCompletionByLevel, trilhaLocked } from '@/lib/journey-map'
 import { canonicalJourneyProgress } from '@/lib/journey-presentation'
-import { journeyRewardInfo } from '@/lib/journey-rewards'
+import { curriculumTrailCapabilities, journeyRewardInfo } from '@/lib/journey-rewards'
 import { LEVEL_ORDER, levelInfo } from '@/lib/level-info'
 import { canOpenFreeStudio } from '@/lib/studio-cta'
 import type { StudentLevelSlug } from '@/lib/types'
@@ -112,7 +112,15 @@ export default async function TrilhaPage({ params }: { params: Promise<{ level: 
       </KidsBand>
     )
   if (!isKidsStaffPreview(journey) && journey.curriculum)
-    return <KidsCreatorPost view={journey.curriculum} level={levelSlug} courses={all} />
+    return (
+      <KidsCreatorPost
+        view={journey.curriculum}
+        level={levelSlug}
+        courses={all}
+        mine={mineRes?.status === 200 ? (mineRes.body?.courses ?? []) : []}
+        capabilities={curriculumTrailCapabilities(journey)}
+      />
+    )
   // ⚠️ Posse + `freeStudio` + algum bloco conquistado: sem os três o atalho cairia na tela
   // de Estúdio trancado (clique morto).
   const studioOwned = canOpenFreeStudio(

@@ -5,6 +5,8 @@
 import fs from 'node:fs/promises'
 import path from 'node:path'
 import { chromium } from 'playwright-core'
+import { approachSprite } from './check-approach.mjs'
+import { approachObject3d, NavigationBlocked } from './check-approach-3d.mjs'
 import {
   CLICK_TARGET_LIMITS,
   chooseTargetPoint,
@@ -85,6 +87,9 @@ const MAX_CONSOLE_LINES = 200
 const MAX_LINE_CHARS = 300
 const MAX_VALUE_CHARS = 20_000
 const CONCURRENCY = 3
+const has3dNavigation = objectives.some(({ rule }) =>
+  rule.steps?.some((step) => step.action === 'approachObject3d'),
+)
 
 let browser
 const observations = []
@@ -96,15 +101,21 @@ try {
   })
   const queue = objectives.map((objective, index) => ({ objective, index }))
   const results = new Array(objectives.length)
+  // O Chromium da imagem usa renderização 3D por software. Três mundos simultâneos
+  // atrasam tanto os quadros e as entradas que a navegação oscila e vence o prazo.
+  // Estes projetos compartilham uma vaga de renderização, mantendo o orçamento existente.
+  const concurrency = has3dNavigation ? 1 : CONCURRENCY
   await Promise.all(
-    Array.from({ length: Math.min(CONCURRENCY, queue.length) }, async () => {
+    Array.from({ length: Math.min(concurrency, queue.length) }, async () => {
       for (;;) {
         const next = queue.shift()
         if (!next) return
         results[next.index] = await runObjective(next.objective, next.index).catch((error) => ({
           id: next.objective.id,
           type: next.objective.rule.type,
-          error: String(error?.message ?? error).slice(0, 500),
+          ...(error instanceof NavigationBlocked
+            ? { actionFailure: 'navigation-blocked' }
+            : { error: String(error?.message ?? error).slice(0, 500) }),
         }))
       }
     }),
@@ -123,6 +134,9 @@ try {
 async function runObjective(objective, index) {
   const context = await browser.newContext({
     viewport: { width: 1024, height: 640 },
+    // Keep CSS geometry, camera and keyboard behavior; rasterize fewer pixels
+    // for software WebGL. No learner state or game timing is modified.
+    deviceScaleFactor: has3dNavigation ? 0.5 : 1,
     acceptDownloads: false,
     serviceWorkers: 'block',
   })
@@ -418,6 +432,23 @@ async function runSteps(page, steps, probe, afterStep) {
         } finally {
           await page.keyboard.up(step.key)
         }
+      } else if (step.action === 'approachObject3d') {
+        if (mode !== 'classic') throw Error('Navegação 3D exige um projeto clássico.')
+        await approachObject3d(
+          page,
+          step,
+          async (paths) =>
+            (
+              await probe.main(readTargetInPage, {
+                scope,
+                targets: paths.map((path) => ({ kind: 'value', path })),
+                maxChars: MAX_VALUE_CHARS,
+              })
+            ).values,
+        )
+      } else if (step.action === 'approachSprite') {
+        if (mode !== 'classic') throw Error('Navegação adaptativa exige o Jogo 2D clássico.')
+        await approachSprite(probe, page, { scope, ...step })
       } else if (step.action === 'clickTarget') {
         if (mode !== 'classic')
           throw new Error('Este executor não oferece o alvo adaptativo neste ambiente.')
@@ -470,7 +501,12 @@ async function readTarget(probe, target, lines) {
 
 // ---- Rodam DENTRO da página (sem acesso a nada daqui de fora). ----
 
-function readTargetInPage({ scope, target, maxChars }, codec) {
+function readTargetInPage({ scope, target, targets, maxChars }, codec) {
+  if (targets) {
+    if (!Array.isArray(targets) || targets.length > 6)
+      throw Error('Observação 3D fora dos limites.')
+    return { values: targets.map((target) => readTargetInPage({ scope, target, maxChars }, codec)) }
+  }
   if (target.kind === 'game') {
     const game = window.__studioGame
     if (!game || typeof game.inspect !== 'function') return { found: false }

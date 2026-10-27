@@ -112,7 +112,7 @@ um tour das duas disposições. Conferir o roteiro nos dois tamanhos de tela.
 
 A Pré-visualização do Estúdio acompanha as mudanças automaticamente. Pedir a ação do jogo:
 "Toque em um esconderijo", "clique no jogo e segure a seta". Para botões, "clique em"; no jogo,
-"toque" ou "segure"; não usar "aperte" (Diretrizes, seção 6). Não inventar um botão de início nem
+"toque", "pressione/aperte a tecla" ou "segure a tecla", sempre nomeando a entrada. No teclado de teste, explicar a simulação; esses verbos nunca significam adicionar um bloco (Diretrizes, seção 6). Não inventar um botão de início nem
 mandar recarregar a página como passo genérico. Um reinício necessário ao teste deve usar o
 controle real e ser conferido antes da gravação.
 
@@ -186,3 +186,9 @@ Depois, fazer um ensaio com uma criança sem completar as instruções por fora 
 Na abertura, ela deve conseguir dizer qual jogo vai construir e começar a jogar a versão
 pronta. Ao terminar, deve saber como seguir. Os validadores conferem a estrutura; o ensaio
 confere se a fala funciona.
+
+## Revisão de 26/10/2026: propósito, escolha e linguagem
+
+Na experiência, registrar o que observar e comparar, mantendo a ordem de exploração livre. Não narrar uma lista de cliques que a pessoa apenas reproduz. Zappy pode sugerir uma comparação conforme o que falta observar, enquanto os demais controles continuam disponíveis. A montagem do Estúdio preserva todos os passos operacionais.
+
+Conferir, frase por frase, a diferença entre adicionar/retirar um comando, pressionar/soltar uma tecla e avançar/executar o teste. O texto precisa corresponder ao efeito real do controle. Registrar separadamente as regras atuais e o resultado anterior. Os reinícios de tentativa conservam as descobertas; o reinício da experiência limpa o percurso. Atualizar o caderno e os derivados junto com o roteiro e os manifestos.

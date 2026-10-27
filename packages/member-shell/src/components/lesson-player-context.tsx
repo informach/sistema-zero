@@ -11,6 +11,7 @@ import type {
 import { createContext, type ReactNode, useContext } from 'react'
 import type { LessonDraftCloud } from '../lib/lesson-draft-cloud'
 import type { LiveLessonWorkspace } from '../lib/live/lesson-slot'
+import type { DialoguePose } from '../lib/types'
 import type { DialogueSpeech } from './dialogue-block'
 
 /** O que um player de vídeo da aula sabe fazer a pedido de fora (o flutuante e o aviso). */
@@ -27,6 +28,8 @@ export type LessonVideoControls = {
  * blocos exibem a prévia sem watermark ou persistência de posição.
  */
 export interface LessonPlayerContextValue {
+  /** Personagem dos diálogos e instruções, fornecido pela comunidade que apresenta a aula. */
+  dialogueMascot?: (pose: DialoguePose) => ReactNode
   /**
    * O rótulo técnico da regra de conclusão. No Kids, toda etapa participa da aula e a criança
    * acompanha o percurso pela barra de progresso, então esse aviso não acrescenta orientação.

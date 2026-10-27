@@ -71,6 +71,13 @@
       "when": 1792783062113,
       "tag": "0009_catalog_audience_backfill",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1793015082897,
+      "tag": "0010_catalog_audience_required",
+      "breakpoints": true
     }
   ]
 }

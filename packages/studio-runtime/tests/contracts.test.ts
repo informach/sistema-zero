@@ -1,4 +1,6 @@
 import { describe, expect, test } from 'bun:test'
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 import { STUDIO_PRO_REMOTE_PACKAGES } from '@sistemazero/core/studio'
 import runtimeLock from '../runtime/package-lock.json' with { type: 'json' }
 import {
@@ -20,6 +22,26 @@ const valid = {
     'vite.config.ts': 'export default { plugins: [malicioso()] }',
   },
 }
+
+test('a imagem inclui os módulos locais importados pelo executor de objetivos', () => {
+  const root = resolve(import.meta.dirname, '..')
+  const dockerfile = readFileSync(resolve(root, 'Dockerfile'), 'utf8')
+  const copied = new Set(
+    [...dockerfile.matchAll(/^COPY (runtime\/[^\n]+)/gm)].flatMap((m) =>
+      m[1]!.trim().split(/\s+/).slice(0, -1),
+    ),
+  )
+  const queue = ['runtime/check-objectives.mjs'],
+    seen = new Set<string>()
+  for (const file of queue) {
+    if (seen.has(file)) continue
+    seen.add(file)
+    expect(copied.has(file), `${file} não entra na imagem`).toBe(true)
+    const code = readFileSync(resolve(root, file), 'utf8')
+    for (const m of code.matchAll(/from\s+['"]\.\/([^'"]+\.mjs)['"]/g))
+      queue.push(`runtime/${m[1]}`)
+  }
+})
 
 function versionAtLeast(actual: string, minimum: string): boolean {
   const actualParts = actual.split('.').map(Number)

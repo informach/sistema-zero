@@ -42,6 +42,7 @@ export const EXECUTION_LIMITS = {
    */
   maxSectionWaitMs: 40_000,
   maxHoldMs: 5_000,
+  maxApproachMs: 7_500,
   maxIdleBaselineMs: 250,
   /** Coordenada de clique, na tela do jogo. */
   maxCoordinate: 4_000,
@@ -59,6 +60,14 @@ export type ExecutionStep =
   | { action: 'press'; key: ExecutionKey; holdMs?: number }
   | { action: 'click'; x: number; y: number }
   | { action: 'clickTarget'; target: ExecutionClickTarget }
+  | {
+      action: 'approachSprite' | 'approachObject3d'
+      walkable?: { minX: number; maxX: number; minZ: number; maxZ: number }[]
+      actorPath: string
+      targetPath: string
+      avoidPaths?: string[]
+      timeoutMs: number
+    }
 
 /** Um gesto no palco atual, nunca uma posição ou aparência da solução da professora. */
 export type ExecutionClickTarget =
@@ -259,6 +268,56 @@ export function isExecutionStep(
             n <= EXECUTION_LIMITS.maxCoordinate,
         )
       )
+    case 'approachObject3d':
+    case 'approachSprite': {
+      const path = (v: unknown) =>
+        context === 'draft'
+          ? typeof v === 'string' && v.length <= 200
+          : isExecutionValuePath(v) &&
+            !v.split('.').some((p) => ['constructor', 'prototype', '__proto__'].includes(p))
+      return (
+        Object.keys(step).every((k) =>
+          [
+            'action',
+            'actorPath',
+            'targetPath',
+            'avoidPaths',
+            'timeoutMs',
+            ...(step.action === 'approachObject3d' ? ['walkable'] : []),
+          ].includes(k),
+        ) &&
+        (step.action !== 'approachObject3d' ||
+          (Array.isArray(step.walkable) &&
+            step.walkable.length > 0 &&
+            step.walkable.length <= 8 &&
+            step.walkable.every(
+              (r: unknown) =>
+                record(r) &&
+                Object.keys(r).length === 4 &&
+                ['minX', 'maxX', 'minZ', 'maxZ'].every(
+                  (k) =>
+                    typeof r[k] === 'number' &&
+                    Number.isFinite(r[k]) &&
+                    Math.abs(r[k] as number) <= 100,
+                ) &&
+                Number(r.minX) < Number(r.maxX) &&
+                Number(r.minZ) < Number(r.maxZ),
+            ))) &&
+        path(step.actorPath) &&
+        path(step.targetPath) &&
+        step.actorPath !== step.targetPath &&
+        Number.isInteger(step.timeoutMs) &&
+        Number(step.timeoutMs) >= 100 &&
+        Number(step.timeoutMs) <= EXECUTION_LIMITS.maxApproachMs &&
+        (step.avoidPaths === undefined ||
+          (Array.isArray(step.avoidPaths) &&
+            step.avoidPaths.length <= 4 &&
+            new Set(step.avoidPaths).size === step.avoidPaths.length &&
+            step.avoidPaths.every(
+              (p: unknown) => path(p) && p !== step.actorPath && p !== step.targetPath,
+            )))
+      )
+    }
     case 'clickTarget': {
       if (Object.keys(step).length !== 2 || !record(step.target)) return false
       const target = step.target
@@ -293,7 +352,13 @@ export function executionRuleBudgetMs(rule: SectionExecutionRule): number {
     rule.steps.reduce(
       (sum, step) =>
         sum +
-        (step.action === 'wait' ? step.ms : step.action === 'press' ? (step.holdMs ?? 80) : 0),
+        (step.action === 'wait'
+          ? step.ms
+          : step.action === 'press'
+            ? (step.holdMs ?? 80)
+            : step.action === 'approachSprite' || step.action === 'approachObject3d'
+              ? step.timeoutMs
+              : 0),
       0,
     )
   )
@@ -318,7 +383,14 @@ function areSteps(steps: unknown): steps is ExecutionStep[] {
   }
   const waited = steps.reduce(
     (sum: number, step: ExecutionStep) =>
-      sum + (step.action === 'wait' ? step.ms : step.action === 'press' ? (step.holdMs ?? 0) : 0),
+      sum +
+      (step.action === 'wait'
+        ? step.ms
+        : step.action === 'press'
+          ? (step.holdMs ?? 0)
+          : step.action === 'approachSprite' || step.action === 'approachObject3d'
+            ? step.timeoutMs
+            : 0),
     0,
   )
   return waited <= EXECUTION_LIMITS.maxTotalWaitMs
@@ -670,6 +742,8 @@ export interface ExecutionObservedValue {
 export interface ExecutionObservation {
   id: string
   type: SectionExecutionRule['type']
+  /** The game kept advancing but the controlled object did not follow keyboard input. */
+  actionFailure?: 'navigation-blocked'
   initial?: ExecutionObservedValue
   final?: ExecutionObservedValue
   checkpoints?: { initial?: ExecutionObservedValue; final?: ExecutionObservedValue }[]
@@ -726,6 +800,14 @@ export function executionObservationUnavailableReason(
 ): string | undefined {
   if (!observation || observation.type !== rule.type) return 'O teste não relatou este objetivo.'
   if (observation.error) return observation.error
+  if (observation.actionFailure === 'navigation-blocked') {
+    if (
+      (rule.type === 'behavior' || rule.type === 'script') &&
+      rule.steps.some((step) => step.action === 'approachObject3d')
+    )
+      return undefined
+    return 'O teste relatou uma ação incompatível com o objetivo.'
+  }
   if (rule.type !== 'behavior') return undefined
   if (rule.expect.compare === 'increased' || rule.expect.compare === 'decreased') {
     for (const value of [observation.initial, observation.final])
@@ -849,6 +931,8 @@ export function judgeExecutionObservation(
   if (!observation) return { passed: false, detail: 'O teste não relatou este objetivo.' }
   if (observation.error)
     return { passed: false, detail: `O teste não terminou: ${observation.error}` }
+  if (observation.actionFailure === 'navigation-blocked')
+    return { passed: false, detail: 'O personagem não avançou até o alvo com as setas.' }
   if (observation.errors?.length)
     return { passed: false, detail: 'O jogo relatou erro durante a observação.' }
   if (rule.type === 'functionReturns') {

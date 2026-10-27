@@ -3,6 +3,8 @@ import { openScene, SCENE_IDS, type SceneId } from '@sistemazero/core/learning/s
 import { renderToStaticMarkup } from 'react-dom/server'
 import { ExplorationPieces } from '../src/components/exploration-pieces'
 import { ExplorationStage } from '../src/components/exploration-stage'
+import { DiscoveryContext } from '../src/components/scene-discovery-frame'
+import { IslandDiscovery } from '../src/components/scene-island-discovery'
 import { LessonSceneControls } from '../src/components/scene-lesson-controls'
 
 /**
@@ -22,9 +24,33 @@ const GESTO_NO_PALCO: Partial<Record<SceneId, string>> = {
 }
 
 const nada = () => {}
+const ilha = () => {
+  const activity = { type: 'experimentation', scene: 'island-3d' } as const
+  return renderToStaticMarkup(
+    <DiscoveryContext.Provider
+      value={{
+        activity,
+        state: openScene({ scene: 'island-3d' }),
+        dispatch: nada,
+        instruction: 'Compare as vistas.',
+        running: false,
+        setRunning: nada,
+        dialogue: (text) => <p>{text}</p>,
+        tools: null,
+      }}
+    >
+      <IslandDiscovery />
+    </DiscoveryContext.Provider>,
+  )
+}
 
 describe('o despacho da cena chega a um palco e a uma bancada de verdade', () => {
   test.each(SCENE_IDS.map((scene) => [scene]))('%s: o palco desenha', (scene) => {
+    if (scene === 'island-3d') {
+      // O palco usa WebGL no cliente: no SSR existe o contêiner que receberá o canvas.
+      expect(ilha()).toContain('sz-island-canvas')
+      return
+    }
     const html = renderToStaticMarkup(
       <ExplorationStage
         activity={{ type: 'experimentation', scene }}
@@ -38,6 +64,13 @@ describe('o despacho da cena chega a um palco e a uma bancada de verdade', () =>
   test.each(
     SCENE_IDS.map((scene) => [scene]),
   )('%s: a bancada (ou o palco) tem onde mexer', (scene) => {
+    if (scene === 'island-3d') {
+      const html = ilha()
+      expect(html).toContain('Ver de frente')
+      expect(html).toContain('Ver de lado')
+      expect(html).toContain('Ver de cima')
+      return
+    }
     const state = openScene({ scene })
     const activity = { type: 'experimentation', scene } as const
     const bancada = renderToStaticMarkup(

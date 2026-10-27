@@ -1,0 +1,963 @@
+{
+  "version": 5,
+  "courseSlug": "desafio-primeiro-jogo",
+  "lessonSlug": "dia-3",
+  "title": "A luz do farol",
+  "blocks": [
+    {
+      "key": "experiencia-porta",
+      "content": {
+        "kind": "interactive",
+        "required": true,
+        "title": "A porta precisa da chave",
+        "semPerguntaFinal": true,
+        "instructions": "Sem levar a chave, clique em Testar a porta. Depois clique em Levar a chave e em Testar a porta de novo. Compare temChave e a resposta escolhida nas duas vezes.",
+        "hints": [],
+        "activity": {
+          "type": "experimentation",
+          "scene": "lighthouse-key",
+          "cenario": "farol"
+        }
+      }
+    },
+    {
+      "key": "experiencia-posicao",
+      "content": {
+        "kind": "interactive",
+        "required": true,
+        "title": "Como escolher um lugar para a chave",
+        "semPerguntaFinal": true,
+        "instructions": "Clique no número de Posição horizontal x, apague o 211, escreva 160 e clique fora do campo. Observe para onde a chave foi. Depois, sem mexer no x, faça o mesmo em Posição vertical y: troque 53 por 250 e clique fora do campo. Compare as duas mudanças. Se quiser repetir, clique em Recomeçar.",
+        "hints": [],
+        "activity": {
+          "type": "experimentation",
+          "scene": "lighthouse-position",
+          "cenario": "farol",
+          "setup": {
+            "goals": ["mover-horizontal", "mover-vertical"]
+          }
+        }
+      }
+    }
+  ],
+  "sections": [
+    {
+      "key": "condicao",
+      "title": "O que a porta precisa?",
+      "intent": "exploration",
+      "objective": "Experimentar a mesma porta sem e com chave antes de programar a condição.",
+      "blockKeys": ["video-d3-condicao", "ponte-d3-condicao", "experiencia-porta"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-d3-condicao", "experiencia-porta"]
+      }
+    },
+    {
+      "key": "sem-chave",
+      "title": "Avise quando faltar a chave",
+      "intent": "application",
+      "objective": "Programar o encontro com o farol e a resposta sem chave, mantendo então vazio por enquanto.",
+      "blockKeys": ["video-d3-sem-chave", "ponte-d3-sem-chave"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-d3-sem-chave"],
+        "projectChecks": [
+          {
+            "id": "direcional",
+            "label": "Em Ao iniciar, use Ativar controles clássicos com só as quatro direções.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_enable_classic_controls",
+              "area": "start",
+              "fields": {
+                "MODE": "directions"
+              }
+            }
+          },
+          {
+            "id": "andar",
+            "label": "Dentro de A cada quadro do jogo, o bloco que move o personagem vem antes de Manter o sprite dentro da tela.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_update_each_frame",
+              "area": "loops",
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_g2d_top_down",
+                  "fields": {
+                    "SPRITE": "personagem"
+                  },
+                  "beforeBlock": "sz_g2d_clamp_to_screen"
+                }
+              }
+            }
+          },
+          {
+            "id": "borda",
+            "label": "Dentro de A cada quadro do jogo, mantenha o personagem dentro da tela.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_update_each_frame",
+              "area": "loops",
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_g2d_clamp_to_screen",
+                  "fields": {
+                    "SPRITE": "personagem"
+                  }
+                }
+              }
+            }
+          },
+          {
+            "id": "memoria",
+            "label": "Crie temChave começando em falso.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_js_var_create",
+              "area": "start",
+              "fields": {
+                "NAME": "temChave"
+              },
+              "inputs": {
+                "VALUE": false
+              }
+            }
+          },
+          {
+            "id": "encontro-chave",
+            "label": "No encontro com a chave, retire a chave e atualize temChave e o aviso.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_on_overlap",
+              "area": "events",
+              "fieldAlternatives": [
+                {
+                  "A": "personagem",
+                  "B": "chave"
+                },
+                {
+                  "A": "chave",
+                  "B": "personagem"
+                }
+              ],
+              "inputBlocksAll": {
+                "BODY": [
+                  {
+                    "blockType": "sz_g2d_destroy_sprite",
+                    "fields": {
+                      "SPRITE": "chave"
+                    }
+                  },
+                  {
+                    "blockType": "sz_js_var_assign",
+                    "fields": {
+                      "NAME": "temChave"
+                    },
+                    "inputs": {
+                      "VALUE": true
+                    }
+                  },
+                  {
+                    "blockType": "sz_js_var_assign",
+                    "fields": {
+                      "NAME": "aviso"
+                    },
+                    "inputBlocks": {
+                      "VALUE": {
+                        "blockType": "sz_val_text"
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "id": "recolher",
+            "label": "Retire a chave dentro do encontro entre personagem e chave.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_on_overlap",
+              "area": "events",
+              "fieldAlternatives": [
+                {
+                  "A": "personagem",
+                  "B": "chave"
+                },
+                {
+                  "A": "chave",
+                  "B": "personagem"
+                }
+              ],
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_g2d_destroy_sprite",
+                  "fields": {
+                    "SPRITE": "chave"
+                  }
+                }
+              }
+            }
+          },
+          {
+            "id": "lembrar",
+            "label": "Mude temChave para verdadeiro dentro do encontro com a chave.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_on_overlap",
+              "area": "events",
+              "fieldAlternatives": [
+                {
+                  "A": "personagem",
+                  "B": "chave"
+                },
+                {
+                  "A": "chave",
+                  "B": "personagem"
+                }
+              ],
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_js_var_assign",
+                  "fields": {
+                    "NAME": "temChave"
+                  },
+                  "inputs": {
+                    "VALUE": true
+                  }
+                }
+              }
+            }
+          },
+          {
+            "id": "aviso-chave",
+            "label": "Mude aviso para um texto dentro do encontro com a chave.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_on_overlap",
+              "area": "events",
+              "fieldAlternatives": [
+                {
+                  "A": "personagem",
+                  "B": "chave"
+                },
+                {
+                  "A": "chave",
+                  "B": "personagem"
+                }
+              ],
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_js_var_assign",
+                  "fields": {
+                    "NAME": "aviso"
+                  },
+                  "inputBlocks": {
+                    "VALUE": {
+                      "blockType": "sz_val_text"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          {
+            "id": "condicao",
+            "label": "Faça o Se consultar temChave no encontro com o farol.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_on_overlap",
+              "area": "events",
+              "fieldAlternatives": [
+                {
+                  "A": "personagem",
+                  "B": "farol"
+                },
+                {
+                  "A": "farol",
+                  "B": "personagem"
+                }
+              ],
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_js_if_else",
+                  "inputBlocks": {
+                    "COND": {
+                      "blockType": "sz_val_variable",
+                      "fields": {
+                        "NAME": "temChave"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          {
+            "id": "aviso-sem-chave",
+            "label": "Altere aviso com um texto dentro de senão, no encontro com o farol.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_on_overlap",
+              "area": "events",
+              "fieldAlternatives": [
+                {
+                  "A": "personagem",
+                  "B": "farol"
+                },
+                {
+                  "A": "farol",
+                  "B": "personagem"
+                }
+              ],
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_js_if_else",
+                  "inputBlocks": {
+                    "COND": {
+                      "blockType": "sz_val_variable",
+                      "fields": {
+                        "NAME": "temChave"
+                      }
+                    },
+                    "ELSE": {
+                      "blockType": "sz_js_var_assign",
+                      "fields": {
+                        "NAME": "aviso"
+                      },
+                      "inputBlocks": {
+                        "VALUE": {
+                          "blockType": "sz_val_text"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "decisao",
+      "title": "Acenda o farol com a chave",
+      "intent": "application",
+      "objective": "Completar então, testar os dois caminhos e o reinício e verificar as regras antes de personalizar.",
+      "blockKeys": ["video-d3-decisao", "ponte-d3-decisao"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-d3-decisao"],
+        "projectChecks": [
+          {
+            "id": "direcional",
+            "label": "Em Ao iniciar, use Ativar controles clássicos com só as quatro direções.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_enable_classic_controls",
+              "area": "start",
+              "fields": {
+                "MODE": "directions"
+              }
+            }
+          },
+          {
+            "id": "andar",
+            "label": "Dentro de A cada quadro do jogo, o bloco que move o personagem vem antes de Manter o sprite dentro da tela.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_update_each_frame",
+              "area": "loops",
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_g2d_top_down",
+                  "fields": {
+                    "SPRITE": "personagem"
+                  },
+                  "beforeBlock": "sz_g2d_clamp_to_screen"
+                }
+              }
+            }
+          },
+          {
+            "id": "borda",
+            "label": "Dentro de A cada quadro do jogo, mantenha o personagem dentro da tela.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_update_each_frame",
+              "area": "loops",
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_g2d_clamp_to_screen",
+                  "fields": {
+                    "SPRITE": "personagem"
+                  }
+                }
+              }
+            }
+          },
+          {
+            "id": "memoria",
+            "label": "Crie temChave começando em falso.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_js_var_create",
+              "area": "start",
+              "fields": {
+                "NAME": "temChave"
+              },
+              "inputs": {
+                "VALUE": false
+              }
+            }
+          },
+          {
+            "id": "encontro-chave",
+            "label": "No encontro com a chave, retire a chave e atualize temChave e o aviso.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_on_overlap",
+              "area": "events",
+              "fieldAlternatives": [
+                {
+                  "A": "personagem",
+                  "B": "chave"
+                },
+                {
+                  "A": "chave",
+                  "B": "personagem"
+                }
+              ],
+              "inputBlocksAll": {
+                "BODY": [
+                  {
+                    "blockType": "sz_g2d_destroy_sprite",
+                    "fields": {
+                      "SPRITE": "chave"
+                    }
+                  },
+                  {
+                    "blockType": "sz_js_var_assign",
+                    "fields": {
+                      "NAME": "temChave"
+                    },
+                    "inputs": {
+                      "VALUE": true
+                    }
+                  },
+                  {
+                    "blockType": "sz_js_var_assign",
+                    "fields": {
+                      "NAME": "aviso"
+                    },
+                    "inputBlocks": {
+                      "VALUE": {
+                        "blockType": "sz_val_text"
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "id": "recolher",
+            "label": "Retire a chave dentro do encontro entre personagem e chave.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_on_overlap",
+              "area": "events",
+              "fieldAlternatives": [
+                {
+                  "A": "personagem",
+                  "B": "chave"
+                },
+                {
+                  "A": "chave",
+                  "B": "personagem"
+                }
+              ],
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_g2d_destroy_sprite",
+                  "fields": {
+                    "SPRITE": "chave"
+                  }
+                }
+              }
+            }
+          },
+          {
+            "id": "lembrar",
+            "label": "Mude temChave para verdadeiro dentro do encontro com a chave.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_on_overlap",
+              "area": "events",
+              "fieldAlternatives": [
+                {
+                  "A": "personagem",
+                  "B": "chave"
+                },
+                {
+                  "A": "chave",
+                  "B": "personagem"
+                }
+              ],
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_js_var_assign",
+                  "fields": {
+                    "NAME": "temChave"
+                  },
+                  "inputs": {
+                    "VALUE": true
+                  }
+                }
+              }
+            }
+          },
+          {
+            "id": "aviso-chave",
+            "label": "Mude aviso para um texto dentro do encontro com a chave.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_on_overlap",
+              "area": "events",
+              "fieldAlternatives": [
+                {
+                  "A": "personagem",
+                  "B": "chave"
+                },
+                {
+                  "A": "chave",
+                  "B": "personagem"
+                }
+              ],
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_js_var_assign",
+                  "fields": {
+                    "NAME": "aviso"
+                  },
+                  "inputBlocks": {
+                    "VALUE": {
+                      "blockType": "sz_val_text"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          {
+            "id": "condicao",
+            "label": "Faça o Se consultar temChave no encontro com o farol.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_on_overlap",
+              "area": "events",
+              "fieldAlternatives": [
+                {
+                  "A": "personagem",
+                  "B": "farol"
+                },
+                {
+                  "A": "farol",
+                  "B": "personagem"
+                }
+              ],
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_js_if_else",
+                  "inputBlocks": {
+                    "COND": {
+                      "blockType": "sz_val_variable",
+                      "fields": {
+                        "NAME": "temChave"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          {
+            "id": "aviso-sem-chave",
+            "label": "Altere aviso com um texto dentro de senão, no encontro com o farol.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_on_overlap",
+              "area": "events",
+              "fieldAlternatives": [
+                {
+                  "A": "personagem",
+                  "B": "farol"
+                },
+                {
+                  "A": "farol",
+                  "B": "personagem"
+                }
+              ],
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_js_if_else",
+                  "inputBlocks": {
+                    "COND": {
+                      "blockType": "sz_val_variable",
+                      "fields": {
+                        "NAME": "temChave"
+                      }
+                    },
+                    "ELSE": {
+                      "blockType": "sz_js_var_assign",
+                      "fields": {
+                        "NAME": "aviso"
+                      },
+                      "inputBlocks": {
+                        "VALUE": {
+                          "blockType": "sz_val_text"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          {
+            "id": "encontro-farol",
+            "label": "No mesmo então de temChave, registre a vitória, acenda o farol e atualize o aviso.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_on_overlap",
+              "area": "events",
+              "fieldAlternatives": [
+                {
+                  "A": "personagem",
+                  "B": "farol"
+                },
+                {
+                  "A": "farol",
+                  "B": "personagem"
+                }
+              ],
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_js_if_else",
+                  "inputBlocks": {
+                    "COND": {
+                      "blockType": "sz_val_variable",
+                      "fields": {
+                        "NAME": "temChave"
+                      }
+                    }
+                  },
+                  "inputBlocksAll": {
+                    "THEN": [
+                      {
+                        "blockType": "sz_js_var_assign",
+                        "fields": {
+                          "NAME": "ganhou"
+                        },
+                        "inputs": {
+                          "VALUE": true
+                        }
+                      },
+                      {
+                        "blockType": "sz_g2d_set_image",
+                        "fields": {
+                          "SPRITE": "farol"
+                        },
+                        "fieldOptions": {
+                          "IMAGE": [
+                            "farol-listrado-aceso",
+                            "farol-de-pedra-aceso",
+                            "farol-de-madeira-aceso",
+                            "farol-colorido-aceso",
+                            "farol-aceso"
+                          ]
+                        }
+                      },
+                      {
+                        "blockType": "sz_js_var_assign",
+                        "fields": {
+                          "NAME": "aviso"
+                        },
+                        "inputBlocks": {
+                          "VALUE": {
+                            "blockType": "sz_val_text"
+                          }
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          {
+            "id": "acender",
+            "label": "Troque a imagem do farol dentro de então, no encontro com o farol.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_on_overlap",
+              "area": "events",
+              "fieldAlternatives": [
+                {
+                  "A": "personagem",
+                  "B": "farol"
+                },
+                {
+                  "A": "farol",
+                  "B": "personagem"
+                }
+              ],
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_js_if_else",
+                  "inputBlocks": {
+                    "COND": {
+                      "blockType": "sz_val_variable",
+                      "fields": {
+                        "NAME": "temChave"
+                      }
+                    },
+                    "THEN": {
+                      "blockType": "sz_g2d_set_image",
+                      "fields": {
+                        "SPRITE": "farol"
+                      },
+                      "fieldOptions": {
+                        "IMAGE": [
+                          "farol-listrado-aceso",
+                          "farol-de-pedra-aceso",
+                          "farol-de-madeira-aceso",
+                          "farol-colorido-aceso",
+                          "farol-aceso"
+                        ]
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          {
+            "id": "vitoria",
+            "label": "Mude ganhou para verdadeiro dentro de então, no encontro com o farol.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_on_overlap",
+              "area": "events",
+              "fieldAlternatives": [
+                {
+                  "A": "personagem",
+                  "B": "farol"
+                },
+                {
+                  "A": "farol",
+                  "B": "personagem"
+                }
+              ],
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_js_if_else",
+                  "inputBlocks": {
+                    "COND": {
+                      "blockType": "sz_val_variable",
+                      "fields": {
+                        "NAME": "temChave"
+                      }
+                    },
+                    "THEN": {
+                      "blockType": "sz_js_var_assign",
+                      "fields": {
+                        "NAME": "ganhou"
+                      },
+                      "inputs": {
+                        "VALUE": true
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          {
+            "id": "aviso-vitoria",
+            "label": "Altere aviso com um texto dentro de então, no encontro com o farol.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_on_overlap",
+              "area": "events",
+              "fieldAlternatives": [
+                {
+                  "A": "personagem",
+                  "B": "farol"
+                },
+                {
+                  "A": "farol",
+                  "B": "personagem"
+                }
+              ],
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_js_if_else",
+                  "inputBlocks": {
+                    "COND": {
+                      "blockType": "sz_val_variable",
+                      "fields": {
+                        "NAME": "temChave"
+                      }
+                    },
+                    "THEN": {
+                      "blockType": "sz_js_var_assign",
+                      "fields": {
+                        "NAME": "aviso"
+                      },
+                      "inputBlocks": {
+                        "VALUE": {
+                          "blockType": "sz_val_text"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "personalizar",
+      "title": "Deixe o jogo com a sua cara",
+      "intent": "application",
+      "objective": "Escolher personagem, barco, chave, o par do farol e cenário com imagens do mesmo tipo e testar.",
+      "blockKeys": ["video-d3-personalizar", "ponte-d3-personalizar"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-d3-personalizar"],
+        "projectChecks": [
+          {
+            "id": "acender",
+            "label": "Dentro de então, no encontro com o farol, use a imagem acesa do farol que você escolheu.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_on_overlap",
+              "area": "events",
+              "fieldAlternatives": [
+                {
+                  "A": "personagem",
+                  "B": "farol"
+                },
+                {
+                  "A": "farol",
+                  "B": "personagem"
+                }
+              ],
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_js_if_else",
+                  "inputBlocks": {
+                    "COND": {
+                      "blockType": "sz_val_variable",
+                      "fields": {
+                        "NAME": "temChave"
+                      }
+                    },
+                    "THEN": {
+                      "blockType": "sz_g2d_set_image",
+                      "fields": {
+                        "SPRITE": "farol"
+                      },
+                      "fieldOptions": {
+                        "IMAGE": [
+                          "farol-listrado-aceso",
+                          "farol-de-pedra-aceso",
+                          "farol-de-madeira-aceso",
+                          "farol-colorido-aceso",
+                          "farol-aceso"
+                        ]
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "farol-mensagens",
+      "title": "Escreva seus avisos",
+      "intent": "closing",
+      "objective": "Escrever os quatro avisos do jogo com as próprias palavras e testar.",
+      "blockKeys": ["video-d3-farol-mensagens", "ponte-d3-farol-mensagens"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-d3-farol-mensagens"]
+      }
+    },
+    {
+      "key": "posicao",
+      "title": "Como escolher um lugar para a chave",
+      "intent": "exploration",
+      "objective": "Experimentar a posição horizontal e vertical antes de escolher onde a chave fica no jogo.",
+      "blockKeys": ["video-d3-posicao", "ponte-d3-posicao", "experiencia-posicao"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-d3-posicao", "experiencia-posicao"]
+      }
+    },
+    {
+      "key": "posicionar-chave",
+      "title": "Escolha onde fica a chave",
+      "intent": "delivery",
+      "objective": "Escolher uma posição visível e alcançável para a chave, testar o percurso completo e enviar o jogo.",
+      "blockKeys": ["video-d3-posicionar-chave", "ponte-d3-posicionar-chave", "projeto"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-d3-posicionar-chave", "projeto"],
+        "submissionUpToDate": true
+      }
+    },
+    {
+      "key": "fecho",
+      "title": "Seu jogo está pronto",
+      "intent": "closing",
+      "objective": "Concluir a aula com o projeto enviado; compartilhar no Mural é uma escolha.",
+      "blockKeys": ["video-d3-fecho", "ponte-d3-publicar", "ajuda-publicar"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-d3-fecho"]
+      }
+    }
+  ]
+}

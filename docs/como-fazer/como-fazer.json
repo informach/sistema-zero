@@ -3,7 +3,7 @@
     {
       "slug": "plataforma",
       "title": "Plataforma",
-      "description": "O menu, as aventuras, o seu perfil e o que fica em volta das ferramentas.",
+      "description": "O menu, os cursos, o seu perfil e o que fica em volta das ferramentas.",
       "icon": "compass",
       "tone": "marca",
       "position": 0
@@ -48,7 +48,7 @@
       "position": 0,
       "draft": {
         "title": "Como abrir uma aula e trocar de parte",
-        "summary": "Encontre a trilha, abra seu curso e siga as partes da aula.",
+        "summary": "Encontre a trilha, abra o seu curso e siga as partes da aula.",
         "keywords": [
           "fase",
           "parte",
@@ -60,7 +60,6 @@
           "trilha",
           "mapa",
           "começar",
-          "começar agora",
           "continuar",
           "concluir aula",
           "objetivos",
@@ -68,29 +67,31 @@
           "aula",
           "seção",
           "curso",
-          "aprender"
+          "aprender",
+          "cursos",
+          "módulo",
+          "revisar curso",
+          "abrir a trilha"
         ],
         "steps": [
           {
             "id": "jornada",
-            "title": "Clique em Explorar",
-            "body": "Clique em **Explorar** no menu da esquerda. No celular, ele fica na barra de baixo. Você verá o mapa da Jornada do Criador, com as trilhas.",
-            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-abrir-uma-aula/jornada-6d78ab1e35edac47.webp",
-            "imageAlt": "Tela inicial da plataforma com o item Explorar destacado no menu da esquerda."
+            "title": "Clique em Cursos",
+            "body": "Clique em **Cursos** no menu da esquerda. No celular, ele fica na barra de baixo. Você verá o mapa da Jornada do Criador, com os níveis de cada trilha.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-abrir-uma-aula/jornada-95e9cfa45a3fa9ae.webp",
+            "imageAlt": "Página Início com o item Cursos destacado no menu da esquerda."
           },
           {
             "id": "trilha",
             "title": "Escolha uma trilha",
-            "body": "No mapa, clique no nível da trilha que você quer abrir. Agora aparecem as aventuras daquela trilha. As aventuras da sua trilha de agora também ficam logo abaixo do mapa.",
-            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-abrir-uma-aula/trilha-b349cf314e4f409a.webp",
-            "imageAlt": "Mapa da Jornada do Criador com o nível Construtor(a) destacado para abrir a trilha."
+            "body": "No mapa, clique no seu nível, o que tem o balão **Você está aqui**, ou clique em **Abrir a trilha**. A página da trilha mostra os **Cursos da trilha**, a **Missão** e os **Poderes**. Os cursos da sua trilha também aparecem logo abaixo do mapa, em **Sua trilha agora**.",
+            "imageAlt": "Mapa da Jornada do Criador com o nível marcado Você está aqui destacado para abrir a trilha."
           },
           {
             "id": "curso",
             "title": "Abra o curso",
-            "body": "Escolha um curso liberada e clique no botão do cartão: **Começar agora**, se for a primeira vez, ou **Continuar**, se você já começou. Na página do curso, clique na aula disponível no caminho das aulas.",
-            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-abrir-uma-aula/curso-53942b66356e2de1.webp",
-            "imageAlt": "Trilha Construtor(a) com o botão Continuar do curso Nave Contra Asteroides destacado."
+            "body": "Escolha um curso liberado e clique no botão do cartão: **Começar**, se for a primeira vez, **Continuar**, se você já começou, ou **Revisar curso**, se já terminou. Na página do curso, as aulas ficam num caminho, separadas por módulo. Clique na aula que está liberada.",
+            "imageAlt": "Cartão de um curso da trilha com o botão Continuar destacado."
           },
           {
             "id": "secoes",
@@ -102,7 +103,7 @@
           {
             "id": "trancada",
             "title": "Confira o que falta",
-            "body": "Se a próxima parte ou fase tiver um cadeado, termine o que vem antes. A faixa **Para seguir:**, acima dos botões, diz o que falta: o vídeo, o quiz, um material, os objetivos do Estúdio ou o envio do seu projeto.",
+            "body": "Se a próxima parte ou a próxima aula tiver um cadeado, termine o que vem antes. A faixa **Para seguir:**, acima dos botões, diz o que falta: o vídeo, o quiz, um material, os objetivos do projeto ou o envio do seu projeto.",
             "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-abrir-uma-aula/trancada-a66f2e3a36fa2632.webp",
             "imageAlt": "Rodapé da aula com o aviso Para seguir, que diz o que falta fazer, e o botão Próxima parte ainda bloqueado."
           },
@@ -110,7 +111,7 @@
             "id": "concluir",
             "title": "Conclua a aula",
             "body": "Na última parte, clique em **Concluir aula** quando terminar. Se aparecer um aviso, faça o que falta e tente de novo. Veja o que acontece depois em [Como concluir a aula](/como-fazer/plataforma-concluir-a-fase).",
-            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-abrir-uma-aula/concluir-3af031274eadd2fa.webp",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-abrir-uma-aula/concluir-c4449e1356f065ac.webp",
             "imageAlt": "Última parte de uma aula com o rodapé mostrando Anterior e o botão Concluir aula destacado."
           }
         ],
@@ -132,7 +133,7 @@
       "position": 1,
       "draft": {
         "title": "Como continuar uma aula",
-        "summary": "Volte à seu curso e retome a aula que estava fazendo.",
+        "summary": "Volte ao seu curso e continue a aula de onde parou.",
         "keywords": [
           "continuar",
           "parei",
@@ -148,35 +149,36 @@
           "curso",
           "aprender",
           "outro computador",
-          "guardado na sua conta"
+          "guardado na sua conta",
+          "continue sua criação",
+          "cursos"
         ],
         "steps": [
           {
             "id": "perfil",
             "title": "Confira seu perfil",
             "body": "Use o mesmo perfil de criança em que você começou a aula. Cada perfil tem seu próprio progresso e suas criações. Se pedir para entrar, escolha seu perfil e a aula abre de novo.",
-            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-voltar-para-a-aula/perfil-80f41c65adc6c2d3.webp",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-voltar-para-a-aula/perfil-14ad006ef4737d9d.webp",
             "imageAlt": "Menu da esquerda com o nome e o avatar do perfil que está usando a plataforma destacados."
           },
           {
             "id": "jornada",
             "title": "Encontre o curso",
-            "body": "Clique em **Explorar**, escolha a trilha no mapa e depois clique em **Continuar** no curso que você estava fazendo.",
-            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-voltar-para-a-aula/jornada-53942b66356e2de1.webp",
-            "imageAlt": "Trilha da Jornada com o botão Continuar destacado no curso que estava sendo feita."
+            "body": "Na página **Início**, o cartão **Continue sua criação** tem o botão **Continuar**. Se você quer outro curso, clique em **Cursos** e, em **Sua trilha agora**, clique em **Continuar** no cartão do curso que você estava fazendo. Se ele não estiver ali, clique em **Mostrar**, em **Todos os cursos e seus acessos**.",
+            "imageAlt": "Faixa Sua trilha agora com o botão Continuar destacado no cartão do curso que você estava fazendo."
           },
           {
             "id": "aula",
             "title": "Abra a aula",
-            "body": "No caminho das aulas, clique na aula que quer continuar. A plataforma tenta abrir a última parte que ficou guardada. Use **Anterior** ou **Próxima parte** se precisar.",
-            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-voltar-para-a-aula/aula-175c2090f3be0d7f.webp",
-            "imageAlt": "Caminho das aulas do curso com a aula em andamento destacada para continuar."
+            "body": "No caminho das aulas, clique na aula que quer continuar: ela tem o balão **Continuar**. A plataforma abre a última parte que ficou guardada. Se precisar, clique em **Anterior** ou em **Próxima parte**.",
+            "imageAlt": "Caminho das aulas do curso, com a faixa do módulo em cima e a aula em andamento, com o balão Continuar, destacada."
           },
           {
             "id": "trabalho",
             "title": "Continue seu projeto",
             "body": "No Estúdio e no Pinta da aula, o que você faz fica guardado na sua conta. Com o aviso **Guardado na sua conta**, você pode continuar em outro aparelho. Veja [como continuar em outro aparelho](/como-fazer/plataforma-continuar-em-outro-aparelho).",
-            "imageAlt": "Cartão Seu projeto no Estúdio, numa fase, com o aviso Guardado na sua conta destacado ao lado do título."
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-voltar-para-a-aula/trabalho-0e97cb1fbf78acec.webp",
+            "imageAlt": "Cartão Seu projeto no Estúdio, numa aula, com o aviso Guardado na sua conta destacado ao lado do título."
           }
         ],
         "related": [
@@ -192,8 +194,8 @@
       "collection": "plataforma",
       "position": 2,
       "draft": {
-        "title": "Como mostrar o menu e a lista de fases",
-        "summary": "Encontre os botões para sair da ferramenta ou escolher outra fase.",
+        "title": "Como mostrar o menu e a lista de aulas",
+        "summary": "Encontre os botões para sair da ferramenta ou escolher outra aula.",
         "keywords": [
           "menu",
           "cadê o menu",
@@ -208,16 +210,16 @@
           {
             "id": "menu",
             "title": "Procure Mostrar menu",
-            "body": "Nas telas que escondem o menu da esquerda, clique na setinha da borda esquerda (**Mostrar menu**), quando ela aparecer. Para ter mais espaço na tela, clique de novo na setinha (**Esconder menu**).",
+            "body": "Nas telas que escondem o menu da esquerda, clique na setinha da borda esquerda, quando ela aparecer. Para ter mais espaço na tela, clique de novo na setinha.",
             "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-mostrar-o-menu/menu-4648bf08de2f6722.webp",
             "imageAlt": "Página da aula com o menu escondido e a setinha Mostrar menu destacada na borda esquerda."
           },
           {
             "id": "lista",
-            "title": "Abra a lista de fases",
-            "body": "Dentro da aula, clique na setinha da borda direita (**Mostrar lista de fases**) e escolha uma aula liberada. Para fechar a lista, clique de novo na setinha (**Esconder lista de fases**).",
+            "title": "Abra a lista de aulas",
+            "body": "Dentro da aula, clique na setinha da borda direita e escolha uma aula liberada. Para fechar a lista, clique de novo na setinha.",
             "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-mostrar-o-menu/lista-76d58e308202b26e.webp",
-            "imageAlt": "Página da aula com a setinha Mostrar lista de fases destacada na borda direita."
+            "imageAlt": "Página da aula com a setinha Mostrar lista de aulas destacada na borda direita."
           },
           {
             "id": "editor",
@@ -229,8 +231,8 @@
           {
             "id": "ampliada",
             "title": "Saia da tela ampliada",
-            "body": "Se o que você está fazendo ocupa a tela toda, use **Reduzir** ou **Voltar à aula**, conforme o botão que aparece. No celular, volte à tela da plataforma para usar a barra de navegação.",
-            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-mostrar-o-menu/ampliada-2f5b0e8ea55f847c.webp",
+            "body": "Se o que você está fazendo ocupa a tela toda, clique em **Reduzir** ou em **Voltar à aula**, conforme o botão que aparece. No celular, volte à tela da plataforma para usar a barra de navegação.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-mostrar-o-menu/ampliada-32d2bf0d2477b811.webp",
             "imageAlt": "Experiência ampliada ocupando a tela, com o botão Voltar à aula destacado."
           }
         ],
@@ -255,7 +257,9 @@
           "pergunta",
           "mensagem",
           "professor",
-          "envelope"
+          "envelope",
+          "falar",
+          "microfone"
         ],
         "steps": [
           {
@@ -268,7 +272,7 @@
           {
             "id": "escrever",
             "title": "Conte onde ficou com dúvida",
-            "body": "Escreva o que tentou fazer e o que apareceu. Por exemplo: “Meu personagem não pula quando aperto a tecla”. A equipe recebe também o nome do curso, da aula e da parte.",
+            "body": "Escreva o que tentou fazer e o que apareceu. Por exemplo: “Meu personagem não pula quando aperto a tecla”. A equipe recebe também o nome do curso, da aula e da parte. Se aparecer o botão **Falar**, você pode [falar em vez de escrever](/como-fazer/plataforma-falar-em-vez-de-escrever).",
             "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-pedir-ajuda/escrever-ed964d618b2e3d46.webp",
             "imageAlt": "Caixa Em que ponto desta parte você ficou com dúvida? aberta embaixo da aula, com a dúvida escrita no campo destacado."
           },
@@ -287,7 +291,7 @@
             "imageAlt": "Aviso Pedido enviado, a resposta aparecerá nos seus recados, com o link Ver conversa destacado."
           }
         ],
-        "related": ["plataforma-ler-recados"]
+        "related": ["plataforma-ler-recados", "plataforma-falar-em-vez-de-escrever"]
       }
     },
     {
@@ -312,20 +316,21 @@
             "id": "perfil",
             "title": "Abra seu perfil",
             "body": "No menu, clique em **Meu espaço** e depois em **Meu perfil**.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-escolher-a-minha-cor/perfil-be85078574b4053e.webp",
             "imageAlt": "Menu da esquerda com o grupo Meu espaço aberto e o item Meu perfil destacado."
           },
           {
             "id": "cor",
             "title": "Escolha uma cor",
             "body": "Procure **Cor do seu perfil** e clique na cor que você mais gosta. A tela muda para você ver como ficou.",
-            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-escolher-a-minha-cor/cor-cc685e37d49384f9.webp",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-escolher-a-minha-cor/cor-f5b859ec3ea3a6e3.webp",
             "imageAlt": "Parte Cor do seu perfil com as bolinhas de cor e uma delas destacada para escolher."
           },
           {
             "id": "guardar",
             "title": "Espere guardar",
             "body": "A cor vale para este perfil e é guardada sozinha, sem botão de salvar. Quando aparecer **Cor escolhida** embaixo das cores, ela já está guardada. Se aparecer uma falha, clique em **Tentar de novo**.",
-            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-escolher-a-minha-cor/guardar-fa150a55a0bab357.webp",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-escolher-a-minha-cor/guardar-13d0f1ee36aca3d2.webp",
             "imageAlt": "Cor do seu perfil com a nova cor marcada e o aviso Cor escolhida logo abaixo, sem botão de salvar."
           }
         ],
@@ -353,40 +358,48 @@
           "cadeado",
           "peça travada",
           "pose",
-          "cabine"
+          "cabine",
+          "enfeite",
+          "laço",
+          "tiara",
+          "orelhinhas",
+          "surpreenda-me"
         ],
         "steps": [
           {
             "id": "abrir",
             "title": "Abra Meu avatar",
             "body": "No menu, clique em **Meu espaço** e depois em **Meu avatar**. Você também pode clicar em **Personalizar avatar** no seu perfil.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-montar-o-avatar/abrir-000c2f6f7271b07a.webp",
             "imageAlt": "Menu da esquerda com o grupo Meu espaço aberto e o item Meu avatar destacado."
           },
           {
             "id": "montar",
             "title": "Escolha o visual",
-            "body": "Clique nas categorias, como **Cabelo** ou **Blusa**, e depois nas peças para experimentar. As bolinhas de cor em cima das categorias mudam a cor da peça. O botão das setinhas cruzadas, no canto de cima, sorteia um visual com peças que você já tem.",
-            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-montar-o-avatar/montar-c4c2fe58a22fd34a.webp",
-            "imageAlt": "Editor Meu avatar com a categoria Cabelo aberta e uma peça destacada para experimentar."
+            "body": "Clique nas categorias, como **Cabelo**, **Enfeite** ou **Blusa**, e depois nas peças para experimentar. Em **Enfeite** tem laço, tiara e orelhinhas. As bolinhas de cor, embaixo das categorias, mudam a cor da peça. Algumas peças já vêm com a cor delas e não mostram as bolinhas. Clique em **Surpreenda-me**, no canto de cima, para sortear um visual com peças que você já tem.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-montar-o-avatar/montar-090fcb922cef4d5d.webp",
+            "imageAlt": "Editor Meu avatar com a categoria Enfeite aberta e o Laço vestido de prévia."
           },
           {
             "id": "comprar",
             "title": "Desbloqueie uma peça com moedas",
             "body": "Peças com cadeado mostram o preço em moedas: clique numa delas para ver como fica no seu avatar. Para ficar com ela, clique em **Comprar por** e o preço, ou em **Deixar para depois** se mudar de ideia. Veja [como ganhar moedas](/como-fazer/plataforma-resgatar-missoes).",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-montar-o-avatar/comprar-f5a5c9ca649b6b36.webp",
             "imageAlt": "Editor Meu avatar com uma peça de cadeado vestida de prévia e a faixa Gostou? Está vestido de prévia!, com os botões Deixar para depois e Comprar por destacados."
           },
           {
             "id": "salvar",
             "title": "Guarde seu avatar",
             "body": "Clique em **Salvar** e espere terminar. No celular, o botão mostra só o sinal de certo. Se ele mostrar **Peça travada 🔒**, ainda tem uma peça com cadeado no visual: use suas moedas nessa peça ou troque por outra.",
-            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-montar-o-avatar/salvar-fcb4cc197e028551.webp",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-montar-o-avatar/salvar-56c432b9d0bd369f.webp",
             "imageAlt": "Editor Meu avatar com o botão Salvar destacado no canto de cima."
           },
           {
             "id": "foto",
             "title": "Tire uma foto do avatar",
-            "body": "Clique em **Cabine de fotos**, embaixo. Escolha uma pose, arraste o personagem para escolher o lado e clique em **Tirar foto**, no canto de cima. A foto vira a imagem do seu perfil.",
-            "imageAlt": "Cabine de fotos do avatar com as poses embaixo e o botão Tirar foto destacado no canto de cima."
+            "body": "Clique em **Cabine de fotos**, no alto do painel de escolhas. Escolha uma pose, arraste o personagem para escolher o lado e clique em **Tirar foto**, no canto de cima. A foto vira a imagem do seu perfil.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-montar-o-avatar/foto-27c981802fce6a1d.webp",
+            "imageAlt": "Cabine de fotos do avatar com as poses no painel ao lado e o botão Tirar foto destacado no canto de cima."
           }
         ],
         "related": [
@@ -420,20 +433,20 @@
             "id": "preparar",
             "title": "Teste o jogo",
             "body": "Abra o projeto no Estúdio e confira se ele funciona. Se estiver dentro de uma aula, primeiro [envie o seu projeto](/como-fazer/plataforma-enviar-atividade).",
-            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-publicar-no-mural/preparar-89fc413ec44eea0f.webp",
-            "imageAlt": "Estúdio da Fase 2 do Cadê Todo Mundo? com a Pré-visualização do jogo aberta e o botão Enviar de novo destacados."
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-publicar-no-mural/preparar-342c8b0778f84b14.webp",
+            "imageAlt": "Estúdio da aula Complete a busca, do Cadê Todo Mundo?, com a Pré-visualização do jogo aberta e o botão Enviar de novo destacados."
           },
           {
             "id": "compartilhar",
             "title": "Abra Compartilhar",
-            "body": "Clique em **Compartilhar**, o botão com a setinha para cima no canto da barra do Estúdio, quando ele estiver disponível. Nas aventuras, ele fica disponível depois que você envia o seu projeto: no Cadê Todo Mundo?, o da Fase 2; na Chave do Farol, o da parte **Escolha onde fica a chave**. Abre a janela **Compartilhar no Mural dos Criadores**.",
+            "body": "Clique em **Compartilhar**, o botão com a setinha para cima no canto da barra do Estúdio, quando ele estiver disponível. Nos cursos, ele fica liberado na aula em que o jogo fica pronto, depois que você envia o seu projeto: no Cadê Todo Mundo?, na aula Complete a busca; na Chave do Farol, na aula A luz do farol. Ele abre a janela **Compartilhar no Mural dos Criadores**.",
             "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-publicar-no-mural/compartilhar-6782ce0fbfda4375.webp",
             "imageAlt": "Barra do Estúdio na aula com o botão Compartilhar destacado, liberado depois do envio do projeto."
           },
           {
             "id": "texto",
             "title": "Confira o nome e o resumo",
-            "body": "Confira o **Resumo do projeto**. Dentro de um curso, como na Fase 2 do Cadê Todo Mundo? ou na última fase da Chave do Farol, o nome do jogo e o resumo já vêm prontos e podem ficar como estão. Nos outros projetos, confira também o **Título** e, se os textos estiverem vazios, escreva o nome do jogo e uma frase contando como jogar; quando aparecer **Escrever com ajuda do Zappy**, ele faz um rascunho do resumo para você mudar.",
+            "body": "Confira o **Resumo do projeto**. Nos cursos, como o Cadê Todo Mundo? e a Chave do Farol, o nome do jogo e o resumo já vêm prontos e podem ficar como estão. Nos outros projetos, confira também o **Título** e, se os textos estiverem vazios, escreva o nome do jogo e uma frase contando como jogar. Quando aparecer **Escrever com ajuda do Zappy**, ele faz um rascunho do resumo para você mudar.",
             "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-publicar-no-mural/texto-3d7b0008ed24ee47.webp",
             "imageAlt": "Janela Compartilhar no Mural dos Criadores com o Resumo do projeto já preenchido destacado."
           },
@@ -447,7 +460,9 @@
           {
             "id": "desafio",
             "title": "Participe do Desafio do mês, se quiser",
-            "body": "Se aparecer a caixa **Participar do Desafio do mês**, marque para o seu jogo entrar na prateleira do desafio no Mural. Veja [como participar do Desafio do mês](/como-fazer/estudio-participar-do-desafio-do-mes)."
+            "body": "Se aparecer a caixa **Participar do Desafio do mês**, marque para o seu jogo entrar na prateleira do desafio no Mural. Veja [como participar do Desafio do mês](/como-fazer/estudio-participar-do-desafio-do-mes).",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-publicar-no-mural/desafio-719bdfafb204e290.webp",
+            "imageAlt": "Janela Compartilhar no Mural dos Criadores, aberta no Estúdio, com a caixa Participar do Desafio do mês marcada e destacada."
           },
           {
             "id": "publicar",
@@ -473,7 +488,7 @@
           {
             "id": "opcional",
             "title": "Conclua a aula",
-            "body": "Nas aventuras, publicar é a última parte da aula: no Cadê Todo Mundo?, na Fase 2; na Chave do Farol, em **Publique seu jogo**. Quando aparecer **Seu jogo está no Mural!**, clique em **Fechar** e depois em **Concluir aula**.",
+            "body": "Se você publicou dentro de uma aula, quando aparecer **Seu jogo está no Mural!**, clique em **Fechar** e depois em **Concluir aula**, no rodapé.",
             "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-publicar-no-mural/opcional-af5fe807ac901d04.webp",
             "imageAlt": "Comemoração Seu jogo está no Mural! com o botão Fechar destacado, antes de concluir a aula."
           }
@@ -491,14 +506,13 @@
       "position": 7,
       "draft": {
         "title": "Como ver suas trilhas e seu progresso",
-        "summary": "Entenda o mapa da Jornada, veja o que falta para o próximo nível e encontre as aventuras de cada trilha.",
+        "summary": "Entenda o mapa da Jornada, veja o que falta para o próximo nível e encontre os cursos, a missão e os Poderes da sua trilha.",
         "keywords": [
           "jornada",
           "explorar",
           "mapa",
           "nível",
           "xp",
-          "próxima aventura",
           "aventuras",
           "trancado",
           "conquista",
@@ -509,39 +523,51 @@
           "próximo curso",
           "próximo nível",
           "quanto falta",
-          "próximas aventuras"
+          "cursos",
+          "cursos da trilha",
+          "módulo",
+          "missão",
+          "poderes",
+          "poder",
+          "sua trilha agora",
+          "abrir a trilha",
+          "subir de nível"
         ],
         "steps": [
           {
             "id": "mapa",
             "title": "Abra o mapa",
-            "body": "Clique em **Explorar** no menu. No alto, o selo **Você é** mostra o seu nível, e a frase embaixo dele conta quantas aventuras faltam para o próximo nível. Mais abaixo, o mapa mostra os níveis da Jornada do Criador.",
-            "imageAlt": "Página Aventuras da Jornada do Criador aberta pelo item Explorar do menu, com o selo Você é e a frase do que falta para o próximo nível destacados."
+            "body": "Clique em **Cursos** no menu. No alto, o selo **Você é** mostra o seu nível, e a frase embaixo dele conta o que falta para o próximo nível. No mapa, o seu nível tem o balão **Você está aqui** e três etiquetas que mostram quanto você já fez: **Cursos**, **Missão** e **Poderes**.",
+            "imageAlt": "Página Cursos da Jornada do Criador, aberta pelo item Cursos do menu, com o selo Você é, a frase do que falta e o nível marcado Você está aqui, com as etiquetas Cursos, Missão e Poderes."
           },
           {
             "id": "trilha",
-            "title": "Veja as aventuras da sua trilha",
-            "body": "Desça a página até **Aventuras da trilha**, com o nome do seu nível: ali estão as aventuras da sua trilha e quantas já estão prontas. Para ver outra trilha, clique no nível dela no mapa. Um nível que ainda não abriu balança e mostra um recado.",
-            "imageAlt": "Faixa Aventuras da trilha com o contador de aventuras prontas e os cartões das aventuras da trilha."
-          },
-          {
-            "id": "proximas",
-            "title": "Confira as Próximas aventuras",
-            "body": "Se aparecer **Próximas aventuras**, são aventuras de outra trilha que fazem parte do seu próximo passo. Em cima de cada cartão está o que fazer: **Termine este curso.** ou **Termine e publique o seu jogo no Mural.**"
+            "title": "Veja a sua trilha",
+            "body": "Embaixo do mapa, em **Sua trilha agora**, estão os cursos da sua trilha, a missão e os Poderes. Para ver a página inteira da trilha, clique em **Abrir a trilha** ou no seu nível no mapa. Um nível que você ainda não alcançou fica cinza, com cadeado, e só abre quando você chegar lá.",
+            "imageAlt": "Faixa Sua trilha agora com os cartões dos cursos da trilha, da missão e dos Poderes, e o botão Abrir a trilha destacado."
           },
           {
             "id": "curso",
             "title": "Confira o que está liberado",
-            "body": "Um curso liberada mostra quantas fases você já fez e um botão para seguir, como **Começar agora** ou **Continuar**. Uma bloqueada mostra o que vem antes: **Comece por esta:** com o nome do curso, **Em breve na sua jornada** ou um prêmio que abre quando você chega a um nível.",
-            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-ver-a-minha-jornada/curso-8ef7e13bdce50ee2.webp",
-            "imageAlt": "Trilha com um curso liberada mostrando as aulas feitas e o botão Continuar, e um curso bloqueada com o recado de qual aventura fazer antes."
+            "body": "Um curso que já abriu mostra quantas aulas você fez e um botão para seguir: **Começar**, **Continuar** ou **Revisar curso**. Um curso com cadeado diz quando abre, como **Abre depois do curso 2D da trilha** ou **Abre depois dos cursos da trilha**.",
+            "imageAlt": "Cursos da trilha com um curso que já abriu, mostrando as aulas feitas e o botão Continuar, e um curso com cadeado e o recado de quando ele abre."
+          },
+          {
+            "id": "missao",
+            "title": "Conheça a missão e os Poderes",
+            "body": "Quando você termina os cursos da trilha, abrem a **Missão** e os **Poderes**. A missão é um jogo novo, sem passo a passo, primeiro em 2D e depois em 3D. Os Poderes trazem mecânicas novas para os seus jogos. Em **Sua trilha agora**, clique em **Ver os Poderes** para conhecer todos. Quando eles abrirem, o botão vira **Escolher Poderes**.",
+            "imageAlt": "Faixa Sua trilha agora com o cartão Missão da trilha e o cartão Poderes, com o botão Ver os Poderes destacado."
           },
           {
             "id": "progresso",
             "title": "Acompanhe suas aulas",
-            "body": "Abra um curso liberada. No caminho das aulas, as concluídas têm uma marca de confirmação e as bloqueadas têm cadeado. Volte ao mapa para escolher outra trilha.",
-            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-ver-a-minha-jornada/progresso-f334fca10c987cd7.webp",
-            "imageAlt": "Caminho das aulas do curso com uma aula concluída, marcada com confirmação, e uma aula bloqueada com cadeado."
+            "body": "Abra um curso liberado. No caminho das aulas, separado por módulos, as aulas concluídas têm uma marca de confirmação e as bloqueadas têm cadeado. Para voltar, clique em **Voltar à trilha**, no alto da página do curso.",
+            "imageAlt": "Caminho das aulas do curso com a faixa Módulo em cima, uma aula concluída, marcada com confirmação, e uma aula bloqueada com cadeado."
+          },
+          {
+            "id": "subir",
+            "title": "Suba de nível",
+            "body": "Quando você completa uma trilha, aparece **Você subiu de nível!** com o seu nível novo e o que a trilha nova abriu. Clique em **Ver a Trilha** e o nome dela para ir até lá, ou em **Continuar depois**."
           }
         ],
         "related": ["plataforma-abrir-uma-aula", "plataforma-publicar-no-mural"]
@@ -568,7 +594,9 @@
           "ampliar jogo",
           "atividade",
           "vídeo sumiu",
-          "cadê o vídeo"
+          "cadê o vídeo",
+          "rolar",
+          "cadê o estúdio"
         ],
         "steps": [
           {
@@ -581,29 +609,30 @@
           {
             "id": "ampliar",
             "title": "Amplie o jogo ou a experiência",
-            "body": "Se aparecer **Ampliar experiência** ou **Ampliar jogo**, clique nele para ocupar mais espaço. Use **Voltar à aula** para ver o conteúdo junto novamente.",
+            "body": "Se aparecer **Ampliar experiência** ou **Ampliar jogo**, clique nele para ocupar mais espaço. Para ver o conteúdo junto de novo, clique em **Voltar à aula**.",
             "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-ampliar-a-atividade/ampliar-ee514ba14f1c6133.webp",
             "imageAlt": "Experiência da aula com o botão Ampliar experiência destacado."
           },
           {
             "id": "editor",
             "title": "Amplie o editor da aula",
-            "body": "O Estúdio e o Pinta dentro da aula também podem mostrar **Expandir**. Clique nele e use **Reduzir** para voltar.",
+            "body": "O Estúdio e o Pinta dentro da aula também mostram **Expandir**. Clique nele e, para voltar, clique em **Reduzir**.",
             "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-ampliar-a-atividade/editor-d35a19b7b5169c10.webp",
             "imageAlt": "Estúdio dentro da aula com o botão Expandir destacado."
           },
           {
             "id": "video",
             "title": "Veja o vídeo com a tela ampliada",
-            "body": "Com o jogo, a experiência ou o editor ampliado, o vídeo da parte fica escondido. Clique em **Vídeo** para ele aparecer num cantinho da tela. Clique de novo para esconder.",
+            "body": "Com o jogo, a experiência ou o editor ampliado, o vídeo da parte que estava tocando continua pequeno num cantinho da tela. Se ele estava parado, fica escondido: clique em **Vídeo** para ele aparecer. Clique de novo para esconder.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-ampliar-a-atividade/video-61fd02e22c9fa2d4.webp",
             "imageAlt": "Estúdio da aula ampliado, com o botão Vídeo destacado na barra de cima e o vídeo da parte num cantinho da tela."
           },
           {
             "id": "celular",
-            "title": "Alterne no celular",
-            "body": "Quando a tela mostrar **Ver exemplo** e **Criar**, clique em **Ver exemplo** para ler a orientação e em **Criar** para fazer o que a parte pede.",
-            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-ampliar-a-atividade/celular-8e951df451600d7a.webp",
-            "imageAlt": "Fase na tela do celular com as abas Ver exemplo e Criar destacadas no alto da parte."
+            "title": "Desça a tela no celular",
+            "body": "No celular e nas telas estreitas, a área de criação fica embaixo da orientação. Leia o que a parte pede e desça a tela para criar. Se quiser mais espaço, clique em **Ampliar jogo**, **Ampliar experiência** ou **Expandir**.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-ampliar-a-atividade/celular-a04d39c04c50b327.webp",
+            "imageAlt": "Aula na tela do celular com a orientação em cima e a área de criação logo abaixo, à vista depois de descer a tela."
           }
         ],
         "related": ["plataforma-mostrar-o-menu", "plataforma-pausar-e-rever-video"]
@@ -622,13 +651,13 @@
             "id": "abrir",
             "title": "Abra Como fazer",
             "body": "No computador, clique em **Como fazer**, perto do fim do menu da esquerda. No celular, use o ícone de interrogação na barra de cima.",
-            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-usar-o-como-fazer/abrir-c00b55d676f26067.webp",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-usar-o-como-fazer/abrir-ee0d71339458b328.webp",
             "imageAlt": "Menu da esquerda com o atalho Como fazer destacado, perto do fim do menu."
           },
           {
             "id": "buscar",
             "title": "Escreva o que precisa",
-            "body": "Em **O que você quer fazer?**, escreva uma palavra, como “fase”, “salvar” ou “camada”. Os resultados aparecem enquanto você escreve.",
+            "body": "Em **O que você quer fazer?**, escreva uma palavra, como “aula”, “salvar” ou “camada”. Os resultados aparecem enquanto você escreve.",
             "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-usar-o-como-fazer/buscar-80a407ea64907032.webp",
             "imageAlt": "Página Como fazer com a palavra salvar escrita na busca e a lista de tutoriais aparecendo logo abaixo."
           },
@@ -670,14 +699,14 @@
             "id": "trocar",
             "title": "Abra a troca de perfil",
             "body": "Se entrou no perfil de outra pessoa, clique no avatar ou no nome do perfil, no menu da plataforma. No celular, procure o avatar na barra de cima.",
-            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-trocar-de-perfil/trocar-7a4c15580d95b2a5.webp",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-trocar-de-perfil/trocar-9d24f9557e7a422f.webp",
             "imageAlt": "Menu da esquerda com o nome e o avatar do perfil destacados para abrir as opções da conta."
           },
           {
             "id": "selecionar",
             "title": "Entre no seu perfil",
             "body": "Clique em **Trocar de perfil** e escolha o seu na lista. Se o seu cartão mostrar **Pedir código**, peça ao responsável um código para o seu perfil neste computador, porque o código do seu irmão não abre o seu. As criações e o progresso de cada um ficam separados.",
-            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-trocar-de-perfil/selecionar-2e00d62061a09b95.webp",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-trocar-de-perfil/selecionar-0e28a247a176cfa4.webp",
             "imageAlt": "Menu do avatar aberto, com Trocar de perfil destacado, e as opções Meu perfil, Área dos pais e Sair."
           }
         ],
@@ -716,41 +745,48 @@
             "id": "encontrar",
             "title": "Procure os materiais",
             "body": "Abra a aula e a parte que traz os materiais. Eles aparecem junto do conteúdo, no bloco com o selo **Consulte**.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-baixar-materiais/encontrar-646b7bbc940a0232.webp",
             "imageAlt": "Parte da aula com o bloco Consulte destacado, mostrando o Passo a passo do projeto para baixar."
           },
           {
             "id": "livro",
             "title": "Leia o Passo a passo do projeto na tela",
-            "body": "Se o material aparecer como livro, use as setas de **Próxima página** e **Página anterior** para folhear.",
+            "body": "Se o material aparecer como livro, clique nas setas **Próxima página** e **Página anterior** para folhear.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-baixar-materiais/livro-f097fe16b4bb6792.webp",
             "imageAlt": "Passo a passo do projeto aberto como livro, com a seta Próxima página destacada."
           },
           {
             "id": "paginas",
             "title": "Escolha outra forma de leitura",
-            "body": "Para ver uma página por vez, clique em **Ler por páginas**. Nesse modo, use **Anterior** e **Próxima**. Os botões **+** e **−** mudam o tamanho da página.",
+            "body": "Para ver uma página por vez, clique em **Ler por páginas**. Nesse modo, clique em **Anterior** e em **Próxima**. Os botões **+** e **−** mudam o tamanho da página.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-baixar-materiais/paginas-5e2b9b4f2323a8f9.webp",
             "imageAlt": "Passo a passo do projeto no modo Ler por páginas, com esse botão destacado e os controles de página logo abaixo."
           },
           {
             "id": "baixar",
             "title": "Baixe o arquivo",
             "body": "Clique no nome do arquivo ou em **Baixar**. Espere o download e procure o arquivo na pasta de downloads do aparelho.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-baixar-materiais/baixar-0ff69749f913ed73.webp",
             "imageAlt": "Bloco Consulte com o arquivo do Passo a passo do projeto e o botão Baixar destacado ao lado do nome."
           },
           {
             "id": "obrigatorio",
             "title": "Confira os arquivos obrigatórios",
-            "body": "Se aparecer **Obrigatório para avançar**, baixe esse material antes de ir para a próxima parte. Após a confirmação, o botão mostra **Baixado**."
+            "body": "Se aparecer **Obrigatório para avançar**, baixe esse material antes de ir para a próxima parte. Após a confirmação, o botão mostra **Baixado**.",
+            "imageAlt": "Material com o selo Obrigatório para avançar ao lado do nome e o botão Baixar destacado."
           },
           {
             "id": "link",
             "title": "Abra os links",
-            "body": "Clique no material que tem um link para abrir outra aba. Depois, volte à aba da aula para continuar. Se o download não começar, confira se o navegador abriu uma nova aba com o arquivo."
+            "body": "Clique no material que tem um link para abrir outra aba. Depois, volte à aba da aula para continuar. Se o download não começar, confira se o navegador abriu uma nova aba com o arquivo.",
+            "imageAlt": "Bloco Consulte com um material de link destacado, que abre em outra aba."
           },
           {
             "id": "opcional",
             "title": "Consulte quando precisar",
-            "body": "O Passo a passo do projeto fica na parte **Seu Passo a passo do projeto**, na primeira fase do curso: volte a ela sempre que quiser rever um passo. Leia ali mesmo, na tela, ou baixe o mapa para guardar e consultar onde quiser. Para imprimir, peça ajuda a um responsável.",
-            "imageAlt": "Parte Seu Passo a passo do projeto com o mapa destacado para consultar durante as aulas."
+            "body": "O Passo a passo do projeto fica na parte **Seu passo a passo do projeto**, na primeira aula do curso: volte a ela sempre que quiser rever um passo. Leia ali mesmo, na tela, ou baixe o arquivo para guardar e consultar onde quiser. Para imprimir, peça ajuda a um responsável.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-baixar-materiais/opcional-e28f9b3582f91a37.webp",
+            "imageAlt": "Parte Seu passo a passo do projeto com o Passo a passo do projeto aberto como livro, destacado para consultar durante as aulas."
           }
         ],
         "related": ["plataforma-abrir-uma-aula"]
@@ -772,22 +808,26 @@
           "teste",
           "nota",
           "correção",
-          "aula"
+          "aula",
+          "previsão",
+          "ver o que acontece",
+          "revisão",
+          "próxima pergunta"
         ],
         "steps": [
           {
             "id": "responder",
             "title": "Escolha as respostas",
-            "body": "Onde aparecer **Responda**, clique em **Começar!**. Leia cada pergunta, marque uma resposta e clique em **Próxima** para ir à seguinte.",
-            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-responder-o-quiz/responder-2fdb94d1e97efa87.webp",
-            "imageAlt": "Pergunta do quiz com uma das respostas marcada e destacada."
+            "body": "Onde aparecer **Responda**, clique em **Começar!**. Leia cada pergunta, marque uma resposta e clique em **Próxima pergunta** para ir à seguinte.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-responder-o-quiz/responder-2bce4321c543b3e6.webp",
+            "imageAlt": "Pergunta do quiz com uma das respostas marcada e destacada, e o botão Próxima pergunta embaixo."
           },
           {
             "id": "enviar",
             "title": "Envie o quiz",
-            "body": "Na última pergunta, clique em **Responder!** e espere o resultado.",
-            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-responder-o-quiz/enviar-e824314804970607.webp",
-            "imageAlt": "Última pergunta do quiz respondida, com o botão de enviar as respostas destacado."
+            "body": "Na última pergunta, clique em **Responder** e espere o resultado.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-responder-o-quiz/enviar-d0c8e49b6a2c980d.webp",
+            "imageAlt": "Última pergunta do quiz respondida, com o botão Responder destacado."
           },
           {
             "id": "rever",
@@ -799,16 +839,23 @@
           {
             "id": "tentar",
             "title": "Tente de novo",
-            "body": "Clique em **Tentar de novo!** e depois em **Começar!** para responder outra vez. Se aparecer **Você pode tentar de novo em…**, espere o relógio acabar.",
-            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-responder-o-quiz/tentar-03d790b81765c6fc.webp",
-            "imageAlt": "Resultado do quiz abaixo da meta de acertos, com o botão Tentar de novo! destacado."
+            "body": "Clique em **Tentar de novo** e depois em **Começar!** para responder outra vez. Se aparecer **Você pode tentar de novo em…**, espere o relógio acabar.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-responder-o-quiz/tentar-d6af7e9e2c3cee13.webp",
+            "imageAlt": "Resultado do quiz abaixo da meta de acertos, com o botão Tentar de novo destacado."
           },
           {
             "id": "seguir",
             "title": "Continue a aula",
-            "body": "Quando aparecer **Quiz concluído**, avance para a próxima parte. Se for a última, use **Concluir aula** depois de fazer o que mais a aula pedir.",
+            "body": "Quando aparecer **Quiz concluído**, clique em **Próxima parte**. Se for a última parte, clique em **Concluir aula** depois de fazer o que mais a aula pedir.",
             "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-responder-o-quiz/seguir-c52b61a6959775c4.webp",
             "imageAlt": "Quiz aprovado com o aviso Quiz concluído destacado e o botão Próxima parte destacado no rodapé."
+          },
+          {
+            "id": "previsao",
+            "title": "Faça uma previsão, se o quiz pedir",
+            "body": "Em alguns quizzes, cada pergunta mostra uma cena antes de ela acontecer. Escolha o que você acha que vai acontecer e clique em **Ver o que acontece**. Depois compare a cena com a sua previsão e leia a explicação. Se não acertou, clique em **Tentar de novo**. Se acertou, clique em **Próxima pergunta** e, na última, em **Concluir revisão**.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-responder-o-quiz/previsao-1ff1c14f1f071e3a.webp",
+            "imageAlt": "Pergunta de previsão do quiz com a cena antes do toque, uma resposta escolhida e o botão Ver o que acontece destacado."
           }
         ],
         "related": [
@@ -844,19 +891,20 @@
             "id": "preparar",
             "title": "Confira seu projeto",
             "body": "Na aula, termine o seu jogo no Estúdio ou o seu desenho no Pinta e teste antes de enviar. Se embaixo do Estúdio aparecer **Objetivos do projeto**, clique em **Verificar projeto** para conferir o que a parte pede. Veja [como verificar os objetivos](/como-fazer/plataforma-verificar-objetivos).",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-enviar-atividade/preparar-246f4777d2d03441.webp",
             "imageAlt": "Estúdio da aula com o quadro Objetivos do projeto embaixo do projeto e o botão Verificar projeto destacado."
           },
           {
             "id": "abrir",
             "title": "Abra o envio",
-            "body": "No alto do Estúdio, clique em **Enviar meu projeto**. No Pinta, clique em **Enviar meu desenho**. Uma janela pede sua confirmação.",
+            "body": "No cabeçalho do cartão **Seu projeto no Estúdio**, clique em **Enviar meu projeto**. No Pinta da aula, clique em **Enviar meu desenho**. Uma janela pede sua confirmação.",
             "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-enviar-atividade/abrir-b681f22969a45ed5.webp",
             "imageAlt": "Barra do Estúdio na aula com o botão Enviar meu projeto destacado."
           },
           {
             "id": "confirmar",
             "title": "Confirme o envio",
-            "body": "Se quiser, escreva um recado para a equipe. Depois clique em **Enviar** e espere a confirmação antes de sair.",
+            "body": "Se quiser, escreva um recado para a equipe no campo **Recado (opcional)**. Depois clique em **Enviar** e espere a confirmação antes de sair.",
             "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-enviar-atividade/confirmar-aea5e100feb816db.webp",
             "imageAlt": "Janela Enviar o seu projeto? com um recado escrito e o botão Enviar destacado."
           },
@@ -871,7 +919,7 @@
             "id": "acompanhar",
             "title": "Veja a resposta",
             "body": "Acompanhe **Recados da equipe** para ler a resposta. O que você faz no Estúdio e no Pinta fica guardado na sua conta, mas só chega à equipe quando você envia.",
-            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-enviar-atividade/acompanhar-fc2f6aaf58d1f2c0.webp",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-enviar-atividade/acompanhar-9abb7efd3791b64f.webp",
             "imageAlt": "Menu da esquerda com Recados da equipe destacado, onde chega a resposta da equipe."
           }
         ],
@@ -913,12 +961,14 @@
           {
             "id": "escolher",
             "title": "Marque sua criação",
-            "body": "Na janela **Minhas criações do Pinta** ou **Minhas criações do Estúdio**, escolha o projeto ou os desenhos pedidos. A janela informa quantos você deve selecionar."
+            "body": "Na janela **Minhas criações do Pinta** ou **Minhas criações do Estúdio**, escolha o projeto ou os desenhos pedidos. A janela informa quantos você deve selecionar.",
+            "imageAlt": "Janela Minhas criações do Estúdio com os projetos guardados e um deles marcado com a borda azul."
           },
           {
             "id": "atualizar",
             "title": "Se a criação não aparecer",
-            "body": "Use **Abrir meu Pinta** ou **Abrir meu Estúdio** na aula. Guarde a criação na sua conta, volte à aba da aula e clique em **Atualizar galeria** na janela de escolha."
+            "body": "Clique em **Abrir meu Pinta** ou em **Abrir meu Estúdio**, na aula. Guarde a criação na sua conta, volte à aba da aula e clique em **Atualizar galeria** na janela de escolha.",
+            "imageAlt": "Janela Minhas criações do Estúdio com o botão Atualizar galeria destacado."
           },
           {
             "id": "enviar",
@@ -929,7 +979,7 @@
           {
             "id": "outra",
             "title": "Troque o envio se precisar",
-            "body": "Use **Enviar outra versão**, escolha de novo a criação e clique em **Enviar (1)**.",
+            "body": "Clique em **Enviar outra versão**, escolha de novo a criação e clique em **Enviar (1)**.",
             "imageAlt": "Parte da aula depois do envio, com o aviso Recebido! e o botão Enviar outra versão destacado."
           }
         ],
@@ -952,27 +1002,28 @@
           "professor",
           "envelope",
           "carta",
-          "recado novo"
+          "recado novo",
+          "falar"
         ],
         "steps": [
           {
             "id": "sino",
             "title": "Abra os recados",
             "body": "Clique em **Recados da equipe**, no menu da esquerda. No celular, clique no envelope na barra de cima. Um número mostra quantos recados novos chegaram.",
-            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-ler-recados/sino-716f734e807af315.webp",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-ler-recados/sino-ae793f3d83e2c651.webp",
             "imageAlt": "Menu da esquerda com o atalho Recados da equipe destacado, logo abaixo de Como fazer."
           },
           {
             "id": "conversa",
             "title": "Escolha a conversa",
             "body": "Abra o recado sobre a aula ou o projeto que quer conferir. Leia as mensagens da equipe.",
-            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-ler-recados/conversa-eaf032908abbc554.webp",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-ler-recados/conversa-edd5409cc3d4a048.webp",
             "imageAlt": "Página Recados da equipe com uma conversa sobre uma parte da aula destacada para abrir."
           },
           {
             "id": "responder",
             "title": "Escreva sua resposta",
-            "body": "No campo **Escreva uma resposta…**, conte o que precisa. Clique na setinha **Enviar resposta** e espere a mensagem aparecer na conversa.",
+            "body": "No campo da resposta, conte o que precisa. Se aparecer o botão **Falar**, você também pode falar em vez de escrever. Depois clique na setinha ao lado do campo e espere a mensagem aparecer na conversa.",
             "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-ler-recados/responder-ca8eaad68d91584f.webp",
             "imageAlt": "Conversa com a equipe com uma resposta escrita no campo Escreva uma resposta e a setinha Enviar resposta destacada."
           },
@@ -980,11 +1031,15 @@
             "id": "aula",
             "title": "Continue seu projeto",
             "body": "Na conversa, clique em **Voltar à parte** para abrir a parte da aula de que ela fala. Se mudou seu projeto e quer que a equipe veja, envie a nova versão.",
-            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-ler-recados/aula-c5c424cb3470a9c3.webp",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-ler-recados/aula-c954fbab0bbf0abe.webp",
             "imageAlt": "Conversa com a equipe com o link Voltar à parte destacado, acima das mensagens."
           }
         ],
-        "related": ["plataforma-enviar-atividade", "plataforma-pedir-ajuda"]
+        "related": [
+          "plataforma-enviar-atividade",
+          "plataforma-pedir-ajuda",
+          "plataforma-falar-em-vez-de-escrever"
+        ]
       }
     },
     {
@@ -1000,7 +1055,8 @@
             "id": "mural",
             "title": "Abra o Mural",
             "body": "No menu, clique em **Comunidade** → **Mural dos Criadores**. Se ele ainda estiver bloqueado para você, a tela explica.",
-            "imageAlt": "Menu da esquerda com o grupo Comunidade aberto e o item Mural dos Criadores destacado."
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-jogar-no-mural/mural-c648320e8bcb126a.webp",
+            "imageAlt": "Menu da esquerda com o grupo Comunidade aberto (Nossa turma, Mural dos Criadores, Clube dos Criadores e Ranking) e o item Mural dos Criadores destacado."
           },
           {
             "id": "jogo",
@@ -1012,7 +1068,7 @@
           {
             "id": "link",
             "title": "Mostre o jogo para alguém",
-            "body": "Volte à aba do Mural e use **Copiar link**. Em alguns aparelhos, esse botão abre as opções de compartilhar.",
+            "body": "Volte à aba do Mural e clique em **Copiar link**. Em alguns aparelhos, esse botão abre as opções de compartilhar.",
             "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-jogar-no-mural/link-904311da43662e4a.webp",
             "imageAlt": "Jogo aberto no Mural com o botão Copiar link destacado."
           },
@@ -1046,21 +1102,21 @@
           {
             "id": "pausar",
             "title": "Pause quando precisar",
-            "body": "Use o botão de pausa, com duas barrinhas, para parar o vídeo enquanto você faz o que ele mostra.",
+            "body": "Clique no botão de pausa, com duas barrinhas, para parar o vídeo enquanto você faz o que ele mostra.",
             "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-pausar-e-rever-video/pausar-e7a9ae749668ec23.webp",
             "imageAlt": "Vídeo tocando com o botão de pausa, de duas barrinhas, destacado no canto da barra de controles."
           },
           {
             "id": "voltar",
             "title": "Volte ao trecho que quer rever",
-            "body": "Na barra de tempo do vídeo, escolha um ponto antes do trecho que você quer ouvir de novo.",
+            "body": "Na barra de tempo do vídeo, clique num ponto antes do trecho que você quer ouvir de novo.",
             "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-pausar-e-rever-video/voltar-23218c3f34a1c10d.webp",
             "imageAlt": "Vídeo parado com a barra de tempo destacada para escolher o trecho que quer rever."
           },
           {
             "id": "continuar",
             "title": "Continue assistindo",
-            "body": "Use o botão de reprodução, com um triângulo, para continuar. Você pode repetir um trecho quantas vezes precisar.",
+            "body": "Clique no botão de reprodução, com um triângulo, para continuar. Você pode repetir um trecho quantas vezes precisar.",
             "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-pausar-e-rever-video/continuar-59f7d3485143fda7.webp",
             "imageAlt": "Vídeo parado com o botão de reprodução, com um triângulo, destacado para continuar assistindo."
           }
@@ -1089,7 +1145,7 @@
         "steps": [
           {
             "id": "jogar",
-            "title": "Jogue na própria fase",
+            "title": "Jogue na própria aula",
             "body": "Na parte que traz o jogo pronto, assista ao vídeo e jogue ali mesmo, na área do jogo. No Cadê Todo Mundo?, toque nos esconderijos até encontrar os três personagens escondidos no jardim.",
             "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-jogar-exemplo-da-aula/jogar-2e7497b097f3d297.webp",
             "imageAlt": "Parte da aula com o jogo pronto do jardim destacado para tocar e procurar os personagens."
@@ -1098,12 +1154,13 @@
             "id": "video",
             "title": "Assista ao vídeo, se pedir",
             "body": "Se a área do jogo mostrar **Primeiro, assista ao vídeo**, clique em **Ver o vídeo** e assista até o fim. Quando aparecer **Pronto! Agora é a sua vez**, o jogo abre.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-jogar-exemplo-da-aula/video-efc1e52f41d3a657.webp",
             "imageAlt": "Jogo pronto da aula coberto pelo aviso Primeiro, assista ao vídeo, com o botão Ver o vídeo destacado."
           },
           {
             "id": "ampliar",
             "title": "Dê mais espaço ao jogo",
-            "body": "Se quiser, clique em **Ampliar jogo**. Use **Voltar à aula** para ver o conteúdo junto de novo.",
+            "body": "Se quiser, clique em **Ampliar jogo**. Para ver o conteúdo junto de novo, clique em **Voltar à aula**.",
             "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-jogar-exemplo-da-aula/ampliar-f97180bf2104e08a.webp",
             "imageAlt": "Jogo pronto da aula com o botão Ampliar jogo destacado."
           },
@@ -1142,13 +1199,14 @@
           "baixar certificado",
           "concluir aventura",
           "diploma",
-          "curso"
+          "curso",
+          "concluir curso"
         ],
         "steps": [
           {
             "id": "abrir",
             "title": "Abra a aula do certificado",
-            "body": "Conclua as aulas anteriores e abra a aula do certificado no curso. Se aparecer um aviso de que faltam fases, volte ao caminho do curso e termine o que falta.",
+            "body": "Conclua as aulas anteriores e abra a aula **Seu certificado** no curso. Se aparecer um aviso de que faltam aulas, volte ao caminho do curso e termine o que falta.",
             "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-pegar-certificado/abrir-2a9e9f4c2b9d86f4.webp",
             "imageAlt": "Caminho das aulas do curso Cadê Todo Mundo? com a aula Seu certificado destacada."
           },
@@ -1156,7 +1214,7 @@
             "id": "pegar",
             "title": "Pegue seu certificado",
             "body": "Na aula **Seu certificado**, abra a parte **Comemore sua criação**, assista ao vídeo e clique em **Baixar meu certificado**. Espere o PDF baixar antes de sair.",
-            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-pegar-certificado/pegar-435987dad76a0691.webp",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-pegar-certificado/pegar-dfe1ee02f7817b56.webp",
             "imageAlt": "Parte Comemore sua criação da aula do certificado, com a fala do Zappy e o cartão Certificado de Criador; o botão Baixar meu certificado está destacado."
           },
           {
@@ -1168,14 +1226,14 @@
             "id": "concluir",
             "title": "Conclua a aula",
             "body": "Depois que o certificado baixar, clique em **Concluir aula**, na mesma parte.",
-            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-pegar-certificado/concluir-6086600b2bea66c7.webp",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-pegar-certificado/concluir-5baf9e0cc19e4c0c.webp",
             "imageAlt": "Parte Comemore sua criação, na aula Seu certificado, com o botão Concluir aula destacado no rodapé."
           },
           {
             "id": "novamente",
             "title": "Baixe outra vez se precisar",
-            "body": "Volte à mesma fase e clique em **Baixar certificado (PDF)**. Você recebe o mesmo certificado, sem precisar fazer o curso de novo.",
-            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-pegar-certificado/novamente-8c88cd435bfa2e6b.webp",
+            "body": "Volte à mesma aula e clique em **Baixar certificado (PDF)**. Você recebe o mesmo certificado, sem precisar fazer o curso de novo.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-pegar-certificado/novamente-c80956c60170d746.webp",
             "imageAlt": "Bloco Certificado de Criador na aula Seu certificado, com o botão Baixar certificado (PDF) destacado."
           }
         ],
@@ -1204,27 +1262,27 @@
             "id": "aluno",
             "title": "Abra a entrada da criança",
             "body": "Abra a comunidade no computador. Se aparecer **Quem vai entrar?**, clique em **Eu sou criador(a)**. Você não precisa de e-mail nem da senha do responsável.",
-            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-entrar-com-codigo/aluno-c7267b2fccdebb81.webp",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-entrar-com-codigo/aluno-025f2da0515addf5.webp",
             "imageAlt": "Tela Quem vai entrar? com o cartão Eu sou criador(a) destacado, ao lado de Eu sou responsável."
           },
           {
             "id": "codigo",
             "title": "Digite seu código",
             "body": "Digite as letras e os números do código no campo **Código de acesso** e clique em **Entrar para criar**. Se a tela mostrar perfis em vez do campo, clique em **Tenho um código**, ou no seu cartão, se ele mostrar **Pedir código**.",
-            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-entrar-com-codigo/codigo-9c60c7257df6559a.webp",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-entrar-com-codigo/codigo-56bac163bcbf6f76.webp",
             "imageAlt": "Tela Vamos começar? com o campo Código de acesso preenchido (o código aparece embaçado) e o botão Entrar para criar destacado."
           },
           {
             "id": "conferir",
             "title": "Confira se é você",
             "body": "Depois de entrar, confira se o nome e o avatar são os seus. Se o perfil não for o seu, abra o menu do avatar e clique em **Trocar de perfil**.",
-            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-entrar-com-codigo/conferir-c1bd338c014119ec.webp",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-entrar-com-codigo/conferir-e3a5040f619d635f.webp",
             "imageAlt": "Área da criança aberta, com o nome Leninha e o avatar dela destacados no pé do menu da esquerda."
           },
           {
             "id": "voltar",
             "title": "Volte pelo mesmo navegador",
-            "body": "O código vale por 10 minutos e funciona em um computador só. Depois disso, é só voltar neste mesmo computador e navegador e escolher seu perfil, até o prazo que o responsável escolheu terminar. Veja [como voltar às seus cursos](/como-fazer/plataforma-voltar-ao-meu-perfil).",
+            "body": "O código vale por 10 minutos e funciona em um navegador só. Depois disso, é só voltar neste mesmo computador e navegador e escolher seu perfil, até o prazo que o responsável escolheu terminar. Veja [como voltar aos seus cursos](/como-fazer/plataforma-voltar-ao-meu-perfil).",
             "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-entrar-com-codigo/voltar-0995e6987ddec050.webp",
             "imageAlt": "Na volta, no mesmo navegador, a tela Quem vai criar hoje? com o cartão da Leninha destacado, sem pedir código."
           }
@@ -1241,7 +1299,7 @@
       "collection": "plataforma",
       "position": 21,
       "draft": {
-        "title": "Como voltar às meus cursos",
+        "title": "Como voltar aos meus cursos",
         "summary": "Entre de novo no seu perfil pelo computador que já está autorizado e continue de onde parou.",
         "keywords": [
           "voltar",
@@ -1258,13 +1316,13 @@
             "id": "abrir",
             "title": "Abra a comunidade",
             "body": "Use o mesmo computador e o mesmo navegador em que você entrou antes. Se aparecer **Quem vai entrar?**, clique em **Eu sou criador(a)**.",
-            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-voltar-ao-meu-perfil/abrir-91fbf9b791f7488e.webp",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-voltar-ao-meu-perfil/abrir-3f0a0deacb798580.webp",
             "imageAlt": "Tela Quem vai entrar? com o cartão Eu sou criador(a) destacado."
           },
           {
             "id": "perfil",
             "title": "Escolha seu perfil",
-            "body": "Na tela **Quem vai criar hoje?**, confira se o nome e o avatar são os seus e clique no seu perfil. Se foi você quem entrou por último, seu cartão mostra **Último perfil usado**. Depois abra seu curso e continue de onde parou.",
+            "body": "Na tela **Quem vai criar hoje?**, confira se o nome e o avatar são os seus e clique no seu perfil. Se foi você quem entrou por último, seu cartão mostra **Último perfil usado**. Depois abra o seu curso e continue de onde parou.",
             "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-voltar-ao-meu-perfil/perfil-6e2a5f8c44e2b7a7.webp",
             "imageAlt": "Tela Quem vai criar hoje? com o selo Último perfil usado destacado no cartão da Leninha."
           },
@@ -1278,7 +1336,8 @@
           {
             "id": "vencido",
             "title": "Se pedir um código",
-            "body": "O acesso pode ter vencido ou ter sido encerrado, mas isso não apaga suas criações. Peça ao responsável para renovar o prazo ou preparar um código novo. Veja [o que fazer quando não consegue entrar](/como-fazer/plataforma-nao-consigo-entrar)."
+            "body": "O acesso pode ter vencido ou ter sido encerrado, mas isso não apaga suas criações. Peça ao responsável para renovar o prazo ou preparar um código novo. Veja [o que fazer quando não consegue entrar](/como-fazer/plataforma-nao-consigo-entrar).",
+            "imageAlt": "Tela Quem vai criar hoje? com o cartão da Leninha mostrando Pedir código no lugar de Entrar."
           }
         ],
         "related": [
@@ -1312,8 +1371,8 @@
           {
             "id": "conferir",
             "title": "Confira o código",
-            "body": "Veja se as letras e os números estão certos. O código vale por 10 minutos e funciona em um computador só. Se ele venceu ou já foi usado, peça ao responsável um código novo.",
-            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-nao-consigo-entrar/conferir-0fcf6bff2793bb6a.webp",
+            "body": "Veja se as letras e os números estão certos. O código vale por 10 minutos e funciona em um navegador só. Se ele venceu ou já foi usado, peça ao responsável um código novo.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-nao-consigo-entrar/conferir-6c08566cd2cb4373.webp",
             "imageAlt": "Campo Código de acesso com o aviso Esse código não liberou o acesso. Confira as letras ou peça um novo código ao responsável."
           },
           {
@@ -1326,7 +1385,8 @@
           {
             "id": "prazo",
             "title": "Se o prazo terminou",
-            "body": "Se o seu cartão mostrar **O prazo deste acesso terminou.**, acabou o tempo que o responsável escolheu. Peça ao responsável para renovar o prazo ou preparar um código novo. Suas criações continuam guardadas."
+            "body": "Se o seu cartão mostrar **O prazo deste acesso terminou.**, acabou o tempo que o responsável escolheu. Peça ao responsável para renovar o prazo ou preparar um código novo. Suas criações continuam guardadas.",
+            "imageAlt": "Tela Quem vai criar hoje? com o aviso O prazo deste acesso terminou. destacado no cartão da Leninha."
           },
           {
             "id": "encerrado",
@@ -1338,7 +1398,9 @@
           {
             "id": "tentativas",
             "title": "Se foram muitas tentativas",
-            "body": "Se aparecer **Foram muitas tentativas. Aguarde 10 minutos e tente novamente.**, espere 10 minutos antes de digitar o código de novo. Enquanto isso, confira o código com o responsável."
+            "body": "Se aparecer **Foram muitas tentativas. Aguarde 10 minutos e tente novamente.**, espere 10 minutos antes de digitar o código de novo. Enquanto isso, confira o código com o responsável.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-nao-consigo-entrar/tentativas-0754b69b46189ae3.webp",
+            "imageAlt": "Campo Código de acesso com o aviso Foram muitas tentativas. Aguarde 10 minutos e tente novamente. destacado."
           },
           {
             "id": "navegador",
@@ -1376,20 +1438,22 @@
           "gerar código",
           "computador da criança",
           "celular",
-          "irmãos"
+          "irmãos",
+          "data de nascimento",
+          "adicionar criança"
         ],
         "steps": [
           {
             "id": "entrar",
             "title": "Entre como responsável",
             "body": "Se aparecer **Quem vai entrar?**, clique em **Eu sou responsável**. Se a criança estiver usando a plataforma, abra o menu do avatar e clique em **Área dos pais**. Entre com o código enviado ao seu e-mail ou, em **Entrar com senha**, com a sua senha.",
-            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-preparar-acesso-da-crianca/entrar-5e61ed95aa821dfc.webp",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-preparar-acesso-da-crianca/entrar-4398f51e44fe1699.webp",
             "imageAlt": "Entrada da Área dos pais com o campo E-mail, o botão Enviar código destacado e a opção Entrar com senha."
           },
           {
             "id": "crianca",
             "title": "Abra a página da criança",
-            "body": "Na **Área dos pais**, em **Família**, clique em **Acesso nos aparelhos** no cartão da criança. Se ela ainda não tem perfil, clique em **Adicionar criança**, preencha os dados e clique em **Salvar**: a página dela abre em seguida. Irmãos no mesmo computador precisam cada um da sua autorização, feita na página de cada um.",
+            "body": "Na **Área dos pais**, em **Família**, clique em **Acesso nos aparelhos** no cartão da criança. Se ela ainda não tem perfil, clique em **Adicionar criança**, preencha o nome e a data de nascimento, que é obrigatória, e clique em **Salvar**: a página dela abre em seguida. Irmãos no mesmo computador precisam cada um da sua autorização, feita na página de cada um.",
             "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-preparar-acesso-da-crianca/crianca-03d470ba8ed5687d.webp",
             "imageAlt": "Família na Área dos pais: em Suas crianças, o cartão da Leninha com o botão Acesso nos aparelhos destacado."
           },
@@ -1517,42 +1581,50 @@
           "testando",
           "correção",
           "atividade",
-          "aula"
+          "aula",
+          "cumpridos",
+          "cadê a lista"
         ],
         "steps": [
           {
             "id": "encontrar",
             "title": "Encontre os objetivos",
-            "body": "Abra a parte da aula que tem o Estúdio. Embaixo do seu projeto fica o quadro **Objetivos do projeto**, com o que o seu jogo precisa fazer.",
-            "imageAlt": "Estúdio da aula com o quadro Objetivos do projeto embaixo do projeto, mostrando a lista de objetivos e o botão Verificar projeto."
+            "body": "Abra a parte da aula que tem o Estúdio. Embaixo do seu projeto fica a faixa **Objetivos do projeto**, com quantos objetivos você já cumpriu. Clique no título **Objetivos do projeto** para abrir a lista do que o seu jogo precisa fazer.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-verificar-objetivos/encontrar-9879deedf354c152.webp",
+            "imageAlt": "Estúdio da aula com a faixa Objetivos do projeto embaixo do projeto, aberta, mostrando o contador de cumpridos, a lista de objetivos e o botão Verificar projeto."
           },
           {
             "id": "verificar",
             "title": "Verifique o seu projeto",
             "body": "Faça o que a lista pede, teste o jogo e clique em **Verificar projeto**. Quando o objetivo precisa rodar o jogo, o botão mostra **Testando o seu jogo… isso leva alguns segundos.** Espere sem sair da parte.",
-            "imageAlt": "Quadro Objetivos do projeto com o botão Verificar projeto destacado."
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-verificar-objetivos/verificar-126226a4bb6bf1d8.webp",
+            "imageAlt": "Faixa Objetivos do projeto com o botão Verificar projeto destacado."
           },
           {
             "id": "cumprido",
             "title": "Veja o resultado",
             "body": "Cada objetivo cumprido ganha um sinal de certo. Quando todos estão prontos, aparece **Objetivo cumprido!**, ou **Objetivos cumpridos!** se ainda sobrar um desafio extra, e na primeira vez você ganha XP. Se não faltar mais nada na parte, a faixa de baixo diz **Tudo pronto nesta parte. Pode seguir!**",
-            "imageAlt": "Quadro Objetivos do projeto com todos os objetivos marcados de verde e o aviso Objetivo cumprido! destacado."
+            "imageAlt": "Faixa Objetivos do projeto com todos os objetivos marcados de verde e o aviso Objetivo cumprido! destacado."
           },
           {
             "id": "falta",
             "title": "Descubra o que falta",
-            "body": "Se aparecer **Ainda falta um objetivo. Veja a lista e tente de novo.**, procure o objetivo sem o sinal de certo. Leia a **Dica** embaixo dele, quando houver, mude o projeto e verifique de novo.",
-            "imageAlt": "Quadro Objetivos do projeto com um objetivo ainda sem o sinal de certo e o aviso Ainda falta um objetivo destacado."
+            "body": "Se aparecer **Ainda falta um objetivo. Veja a lista e tente de novo.**, a lista abre sozinha. Procure o objetivo sem o sinal de certo, leia a **Dica** embaixo dele, quando houver, mude o projeto e verifique de novo.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-verificar-objetivos/falta-85db900799439ae6.webp",
+            "imageAlt": "Faixa Objetivos do projeto com um objetivo ainda sem o sinal de certo, a Dica embaixo dele e o aviso Ainda falta um objetivo destacado."
           },
           {
             "id": "mudou",
             "title": "Verifique de novo depois de mudar",
-            "body": "Mexeu no projeto depois de verificar? Aparece **Você mexeu no projeto depois de verificar. Verifique de novo!** Clique outra vez em **Verificar projeto**."
+            "body": "Mexeu no projeto depois de verificar? Aparece **Você mexeu no projeto depois de verificar. Verifique de novo!** Clique outra vez em **Verificar projeto**.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-verificar-objetivos/mudou-26f9d51ef644839a.webp",
+            "imageAlt": "Faixa Objetivos do projeto com o aviso Você mexeu no projeto depois de verificar. Verifique de novo! e o botão Verificar projeto destacado."
           },
           {
             "id": "extra",
             "title": "Faça o desafio extra, se quiser",
-            "body": "Alguns objetivos ficam em **Desafio extra**. Eles não precisam para seguir, mas cada um que você cumpre vale XP."
+            "body": "Alguns objetivos ficam em **Desafio extra**, na mesma lista. Eles não precisam para seguir, mas cada um que você cumpre vale XP.",
+            "imageAlt": "Lista aberta dos Objetivos do projeto com a parte Desafio extra e a nota Não precisa para seguir. Vale XP! destacadas."
           },
           {
             "id": "erro",
@@ -1577,8 +1649,8 @@
       "collection": "plataforma",
       "position": 26,
       "draft": {
-        "title": "Como concluir a aula e abrir o baú do Mundo",
-        "summary": "Termine a aula, veja o que você ganhou e abra o baú quando acabar todas as aulas de um Mundo.",
+        "title": "Como concluir a aula e abrir o baú do módulo",
+        "summary": "Termine a aula, veja o que você ganhou e abra o baú quando acabar todas as aulas de um módulo.",
         "keywords": [
           "concluir aula",
           "terminar",
@@ -1597,42 +1669,52 @@
           "não consigo concluir",
           "botão apagado",
           "aula",
-          "curso"
+          "curso",
+          "módulo",
+          "baú do módulo"
         ],
         "steps": [
           {
             "id": "falta",
             "title": "Confira o que falta",
-            "body": "Na última parte da aula, olhe a faixa acima dos botões. Se **Concluir aula** estiver apagado, a faixa **Para seguir:** diz o que ainda falta fazer."
+            "body": "Na última parte da aula, olhe a faixa acima dos botões. Se **Concluir aula** estiver apagado, a faixa **Para seguir:** diz o que ainda falta fazer.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-concluir-a-fase/falta-c5d2c950ac0f790b.webp",
+            "imageAlt": "Última parte da aula com a faixa Para seguir: acima dos botões e o botão Concluir aula ainda apagado."
           },
           {
             "id": "concluir",
             "title": "Clique em Concluir aula",
             "body": "Quando tudo estiver pronto, clique em **Concluir aula**, no canto de baixo. Depois, o botão vira **Aula concluída**.",
             "imageAlt": "Última parte de uma aula com o rodapé mostrando Anterior e o botão Concluir aula destacado.",
-            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-abrir-uma-aula/concluir-3af031274eadd2fa.webp"
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-concluir-a-fase/concluir-c4449e1356f065ac.webp"
           },
           {
             "id": "festa",
             "title": "Veja o que você ganhou",
             "body": "Aparece **Aula concluída!** com o XP e as moedas que você ganhou e o fogo com os dias da sua sequência. Seu progresso fica guardado.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-concluir-a-fase/festa-3a3707b2a6a3c698.webp",
             "imageAlt": "Janela Aula concluída! com o Zappy comemorando, o XP e as moedas ganhos e o botão Próxima aula."
           },
           {
             "id": "seguir",
             "title": "Escolha para onde ir",
-            "body": "Clique em **Próxima aula** para continuar. Use **Voltar ao curso** para ver o caminho das aulas, ou **Ficar nesta aula** para rever o que fez. Se aparecer **Conferir publicação do projeto**, falta [publicar seu jogo no Mural](/como-fazer/plataforma-publicar-no-mural)."
+            "body": "Clique em **Próxima aula** para continuar. Clique em **Voltar ao curso** para ver o caminho das aulas, ou em **Ficar nesta aula** para rever o que fez. Se aparecer **Conferir publicação do projeto**, falta [publicar seu jogo no Mural](/como-fazer/plataforma-publicar-no-mural).",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-concluir-a-fase/seguir-0d1906119fd17fb7.webp",
+            "imageAlt": "Janela Aula concluída! com os botões Próxima aula, Voltar ao curso e Ficar nesta aula destacados."
           },
           {
             "id": "bau",
-            "title": "Abra o baú do Mundo",
-            "body": "Quando você termina todas as aulas de um Mundo, a festa avisa que tem um baú esperando. Volte à aventura e clique em **Abrir baú**, no caminho das aulas, para ganhar XP.",
-            "imageAlt": "Caminho das aulas do curso com o baú do fim do Mundo e a legenda Abrir baú destacados."
+            "title": "Abra o baú do módulo",
+            "body": "Quando você termina todas as aulas de um módulo, a festa avisa: **Você terminou o módulo! Tem um baú te esperando na trilha.** Volte ao curso e, no fim do módulo, clique em **Abrir baú** para ganhar XP.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-concluir-a-fase/bau-657e5f34282f41a3.webp",
+            "imageAlt": "Caminho das aulas do curso com o baú do fim do módulo e a legenda Abrir baú destacados."
           },
           {
             "id": "fechado",
             "title": "Se o baú estiver fechado",
-            "body": "O **Baú do Mundo** só abre quando todas as aulas daquele Mundo estão concluídas. Depois de aberto, ele mostra **Baú aberto!**"
+            "body": "O baú só abre quando todas as aulas daquele módulo estão concluídas. Enquanto isso, a legenda dele diz **Baú do módulo**. Depois de aberto, ele mostra **Baú aberto!**",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-concluir-a-fase/fechado-80b89e475ffdc24d.webp",
+            "imageAlt": "Fim de um módulo no caminho das aulas com o baú fechado e a legenda Baú do módulo."
           }
         ],
         "related": [
@@ -1683,12 +1765,16 @@
           {
             "id": "quiz",
             "title": "Ouça as perguntas do quiz",
-            "body": "No quiz, o botão **Ouvir** lê a pergunta e as respostas. Depois que você responde, ele também lê a explicação."
+            "body": "No quiz, o botão **Ouvir** lê a pergunta e as respostas. Depois que você responde, ele também lê a explicação.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-ouvir-o-zappy/quiz-9d1033d077191470.webp",
+            "imageAlt": "Pergunta do quiz com o botão Ouvir destacado no balão da pergunta."
           },
           {
             "id": "aviso",
             "title": "Ouça os avisos",
-            "body": "Quando aparecer **Primeiro, assista ao vídeo**, clique em **Ouvir**, se ele estiver no aviso, para escutar a orientação."
+            "body": "Quando aparecer **Primeiro, assista ao vídeo**, clique em **Ouvir**, se ele estiver no aviso, para escutar a orientação.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-ouvir-o-zappy/aviso-7b06591fb81f506c.webp",
+            "imageAlt": "Jogo pronto coberto pelo aviso Primeiro, assista ao vídeo, com o botão Ouvir destacado."
           },
           {
             "id": "som",
@@ -1727,24 +1813,27 @@
           "atualizar",
           "sem internet",
           "rascunho",
-          "aula"
+          "aula",
+          "salvando"
         ],
         "steps": [
           {
             "id": "selo",
             "title": "Confira se está guardado",
-            "body": "Depois que você mexe no Estúdio ou no Pinta da aula, aparece **Guardando na sua conta…** ao lado do título. Quando virar **Guardado na sua conta**, você pode continuar em outro aparelho.",
-            "imageAlt": "Cartão Seu projeto no Estúdio, numa fase, com o aviso Guardado na sua conta destacado ao lado do título."
+            "body": "Depois que você mexe no Estúdio ou no Pinta da aula, aparece **Salvando na sua conta…** ao lado do título. Quando virar **Guardado na sua conta**, você pode continuar em outro aparelho.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-continuar-em-outro-aparelho/selo-0e97cb1fbf78acec.webp",
+            "imageAlt": "Cartão Seu projeto no Estúdio, numa aula, com o aviso Guardado na sua conta destacado ao lado do título."
           },
           {
             "id": "abrir",
-            "title": "Abra a mesma fase no outro aparelho",
-            "body": "Entre com o mesmo perfil e abra a mesma fase e a mesma parte. O Estúdio ou o Pinta abre a versão mais nova do seu projeto."
+            "title": "Abra a mesma aula no outro aparelho",
+            "body": "Entre com o mesmo perfil e abra a mesma aula e a mesma parte. O Estúdio ou o Pinta abre a versão mais nova do seu projeto."
           },
           {
             "id": "outra",
             "title": "Troque de versão, se precisar",
-            "body": "Se você mexeu nos dois aparelhos, aparece o botão **Outra versão**. Clique nele e depois em **Trazer** para trocar as duas versões de lugar. Para voltar, faça igual."
+            "body": "Se você mexeu nos dois aparelhos, aparece o botão **Outra versão**. Clique nele e depois em **Trazer** para trocar as duas versões de lugar. Para voltar, faça igual.",
+            "imageAlt": "Cabeçalho do cartão Seu projeto no Estúdio com o botão Outra versão destacado."
           },
           {
             "id": "atualizar",
@@ -1754,7 +1843,8 @@
           {
             "id": "offline",
             "title": "Continue sem internet",
-            "body": "Com o aviso **Sem internet. Está guardado neste aparelho**, você pode continuar criando. Quando a internet voltar, o projeto vai para a sua conta."
+            "body": "Com o aviso **Sem internet. Está guardado neste aparelho**, você pode continuar criando. Quando a internet voltar, o projeto vai para a sua conta.",
+            "imageAlt": "Cartão Seu projeto no Estúdio com o aviso Sem internet. Está guardado neste aparelho destacado ao lado do título."
           },
           {
             "id": "enviado",
@@ -1790,7 +1880,9 @@
           "turma",
           "entrar na sala",
           "chamada",
-          "videochamada"
+          "videochamada",
+          "ir junto",
+          "testar meu computador"
         ],
         "steps": [
           {
@@ -1802,13 +1894,13 @@
           {
             "id": "testar",
             "title": "Teste antes do dia",
-            "body": "Clique em **Ver o encontro** e, em **Para o dia chegar tranquilo**, clique em **Testar câmera** e em **Testar microfone**. Só você vê o teste. Se puder, use um fone de ouvido.",
+            "body": "No cartão, clique em **Ver o encontro**. Em **Para o dia chegar tranquilo**, clique em **Testar câmera** e em **Testar microfone**. Só você vê e ouve o teste. Se puder, use um fone de ouvido.",
             "imageAlt": "Página do encontro marcado com o cartão Para o dia chegar tranquilo e os botões Testar câmera e Testar microfone destacados."
           },
           {
             "id": "entrar",
             "title": "Entre na sala",
-            "body": "A sala abre 15 minutos antes: no dia, clique em **Entrar na oficina** e depois em **Entrar na sala**. Você entra com a câmera e o microfone desligados. Se aparecer **Você está na recepção**, é só esperar até chamarem você.",
+            "body": "A sala abre 15 minutos antes. No dia, clique em **Entrar na sala** no cartão **Sua próxima oficina** e, na página do encontro, clique de novo em **Entrar na sala**. Você entra com a câmera e o microfone desligados. Se aparecer **Você está na recepção**, é só esperar até chamarem você.",
             "imageAlt": "Porta da sala no quadro da transmissão, com o botão Entrar na sala destacado ao lado de Testar meu computador."
           },
           {
@@ -1820,18 +1912,20 @@
           {
             "id": "ajuda",
             "title": "Peça ajuda ou converse",
-            "body": "Travou no projeto? Clique em **Pedir ajuda** e, quando resolver, em **Já consegui**. Em **Conversa** você escreve para a turma, e em **Materiais** baixa os arquivos do encontro."
+            "body": "Travou no projeto? Clique em **Pedir ajuda** e, quando resolver, em **Já consegui**. Em **Conversa** você escreve para a turma, e em **Materiais** baixa os arquivos do encontro.",
+            "imageAlt": "Barra de controles da sala com o botão Pedir ajuda destacado, ao lado de Conversa e Materiais."
           },
           {
             "id": "criar",
             "title": "Crie no seu projeto",
-            "body": "Embaixo da transmissão ficam as partes da aula e o **Seu projeto no Estúdio**, que fica guardado na sua conta. A próxima parte abre quando a turma chegar lá. No fim, clique em **Concluir aula**.",
-            "imageAlt": "Sala da oficina com a transmissão em cima e o bloco Seu projeto no Estúdio, com o aviso Guardado na sua conta destacado."
+            "body": "Embaixo da transmissão fica a orientação da parte, e ao lado fica o **Seu projeto no Estúdio**, que fica guardado na sua conta. A próxima parte abre quando a turma chegar lá. Se você voltou para rever uma parte, clique em **Ir junto** para seguir a turma. No fim, clique em **Concluir aula**.",
+            "imageAlt": "Sala da oficina com a transmissão em cima, a orientação da parte embaixo dela e, ao lado, o bloco Seu projeto no Estúdio com o aviso Guardado na sua conta destacado."
           },
           {
             "id": "sair",
             "title": "Saia da sala",
-            "body": "Para sair, clique em **Voltar às oficinas**, no alto da página. O seu projeto continua guardado."
+            "body": "Para sair, clique em **Voltar às oficinas**, no alto da página. O seu projeto continua guardado.",
+            "imageAlt": "Alto da página do encontro com o link Voltar às oficinas destacado."
           }
         ],
         "related": [
@@ -1870,13 +1964,14 @@
           {
             "id": "gravacao",
             "title": "Assista à gravação",
-            "body": "A gravação aparece no lugar da transmissão. Se ela ainda não estiver pronta, a tela avisa: volte mais tarde. Para escolher outra gravação, use **Encontro e gravações**.",
-            "imageAlt": "Sala de um encontro encerrado com a gravação no lugar da transmissão e o seletor Encontro e gravações destacado."
+            "body": "A gravação aparece no lugar da transmissão. Se ela ainda não estiver pronta, a tela avisa: volte mais tarde. Para escolher outra gravação, use a lista **Assistir**, acima da aula.",
+            "imageAlt": "Sala de um encontro encerrado com a gravação no lugar da transmissão e a lista Assistir destacada."
           },
           {
             "id": "continuar",
             "title": "Continue o projeto",
-            "body": "Embaixo, o projeto que você fez com a turma continua aberto para você mudar até a data do prazo. Ele fica guardado na sua conta."
+            "body": "Embaixo, o projeto que você fez com a turma continua aberto para você mudar até a data do prazo. Ele fica guardado na sua conta. No fim do encontro, o botão **Continuar criando** leva você até ele.",
+            "imageAlt": "Fim do encontro com o bloco Seu projeto, Guardado na sua conta, e o botão Continuar criando destacado."
           },
           {
             "id": "criar",
@@ -1887,7 +1982,8 @@
           {
             "id": "prazo",
             "title": "Quando o prazo termina",
-            "body": "Depois da data, o encontro mostra que o prazo terminou. Sua criação continua guardada e aparece em **Criar**, em **Criações das oficinas ao vivo**."
+            "body": "Depois da data, o encontro mostra **O prazo deste encontro terminou**. Sua criação continua guardada: clique em **Ir para Criar** e procure em **Criações das oficinas ao vivo**.",
+            "imageAlt": "Encontro com o recado O prazo deste encontro terminou e o botão Ir para Criar destacado."
           }
         ],
         "related": ["plataforma-entrar-na-oficina"]
@@ -1920,29 +2016,36 @@
             "id": "ver",
             "title": "Veja as missões",
             "body": "Na página **Início**, desça até **Missões**. Elas ficam separadas em **Hoje**, **Esta semana** e **Este mês**. Cada uma mostra quantas moedas e quanto XP ela vale.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-resgatar-missoes/ver-71c0c80a7167378d.webp",
             "imageAlt": "Início com a parte Missões, mostrando as missões de Hoje, Esta semana e Este mês com as moedas e o XP de cada uma."
           },
           {
             "id": "fazer",
             "title": "Cumpra a missão",
-            "body": "Faça o que a missão pede, como concluir uma aula ou publicar um jogo no Mural. O número ao lado, como 0/1, mostra quanto falta."
+            "body": "Faça o que a missão pede, como concluir uma aula ou publicar um jogo no Mural. O número ao lado, como 0/1, mostra quanto falta.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-resgatar-missoes/fazer-75a132477d84afa3.webp",
+            "imageAlt": "Missão em andamento com o contador 0/1 e a barrinha de progresso destacados."
           },
           {
             "id": "resgatar",
             "title": "Resgate a recompensa",
             "body": "Quando a missão termina, aparece o botão **Resgatar**. Clique nele para ganhar as moedas e o XP. Depois, a missão mostra **Resgatado ✅**.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-resgatar-missoes/resgatar-47c150296c4b1f66.webp",
             "imageAlt": "Missão concluída com o botão Resgatar destacado, ao lado de uma missão já marcada Resgatado."
           },
           {
             "id": "saldo",
             "title": "Veja suas moedas",
-            "body": "No computador, as moedas aparecem no pé do menu da esquerda, embaixo do XP. Você também ganha moedas ao concluir aulas, acertar quizzes e abrir o baú de um Mundo. Existe um limite de moedas por dia.",
+            "body": "No computador, as moedas aparecem no pé do menu da esquerda, embaixo do XP. Você também ganha moedas ao concluir aulas, acertar quizzes e abrir o baú de um módulo. Existe um limite de moedas por dia.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-resgatar-missoes/saldo-4d875bcb225bc14f.webp",
             "imageAlt": "Pé do menu da esquerda com o quadrinho de moedas destacado, embaixo da sequência e do XP."
           },
           {
             "id": "usar",
             "title": "Use suas moedas",
-            "body": "Com as moedas, você desbloqueia peças do [avatar](/como-fazer/plataforma-montar-o-avatar), coisas para o [quarto](/como-fazer/plataforma-arrumar-o-quarto) e protetores da sua sequência, em **Meu perfil**."
+            "body": "Com as moedas, você desbloqueia peças do [avatar](/como-fazer/plataforma-montar-o-avatar), coisas para o [quarto](/como-fazer/plataforma-arrumar-o-quarto) e protetores da sua sequência, em **Meu perfil**.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-resgatar-missoes/usar-a9ad27b386e87c89.webp",
+            "imageAlt": "Meu perfil com o cartão Proteja sua sequência e o botão Comprar destacado."
           }
         ],
         "related": [
@@ -1979,38 +2082,114 @@
             "id": "abrir",
             "title": "Abra Meu quarto",
             "body": "No menu, clique em **Meu espaço** e depois em **Meu quarto**. Você também pode clicar em **Arrumar o quarto** no seu perfil.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-arrumar-o-quarto/abrir-bff41c337ef90222.webp",
             "imageAlt": "Menu da esquerda com o grupo Meu espaço aberto e o item Meu quarto destacado."
           },
           {
             "id": "escolher",
             "title": "Escolha uma peça",
-            "body": "Embaixo, clique numa aba, como **Móveis**, **Enfeites** ou **Plantas**, e depois na peça. Ela entra no quarto. Em **Parede**, escolha uma cor e clique numa parede para pintar.",
-            "imageAlt": "Editor Meu quarto com a aba Móveis aberta e uma peça destacada na bandeja."
+            "body": "No painel das peças, ao lado do quarto, clique numa aba, como **Móveis**, **Enfeites** ou **Plantas**, e depois na peça. Ela entra no quarto. Em **Parede**, escolha uma cor e clique numa parede para pintar.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-arrumar-o-quarto/escolher-8ac1b67866942215.webp",
+            "imageAlt": "Editor Meu quarto com a aba Móveis aberta e uma peça destacada no painel das peças."
           },
           {
             "id": "mover",
             "title": "Mude a peça de lugar",
             "body": "Arraste a peça para onde quiser. Com ela escolhida, clique em **Girar** para virar, em **Em cima…** para pôr em cima de um móvel e em **Tirar** para devolver à bandeja.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-arrumar-o-quarto/mover-a8f9e2015cb93376.webp",
             "imageAlt": "Peça escolhida no quarto com os botões Girar, Em cima… e Tirar destacados."
           },
           {
             "id": "comprar",
             "title": "Desbloqueie com moedas",
-            "body": "Peça com cadeado mostra o preço. Clique nela e confira a faixa **Gostou?**: clique em **Comprar por** e o preço para ficar com ela, ou em **Deixar para depois**. Veja [como ganhar moedas](/como-fazer/plataforma-resgatar-missoes)."
+            "body": "Peça com cadeado mostra o preço. Clique nela e confira a faixa **Gostou?**: clique em **Comprar por** e o preço para ficar com ela, ou em **Deixar para depois**. Veja [como ganhar moedas](/como-fazer/plataforma-resgatar-missoes).",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-arrumar-o-quarto/comprar-13184aac1baa8399.webp",
+            "imageAlt": "Peça com cadeado escolhida no quarto e a faixa Gostou? com os botões Deixar para depois e Comprar por destacados."
           },
           {
             "id": "trofeus",
             "title": "Coloque seus troféus",
-            "body": "Na aba **Troféus** ficam as suas conquistas. Troféu não se compra: cada um abre quando você conquista o que ele pede."
+            "body": "Na aba **Troféus** ficam as suas conquistas. Troféu não se compra: cada um abre quando você conquista o que ele pede.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-arrumar-o-quarto/trofeus-d979d84ce0193adb.webp",
+            "imageAlt": "Painel do quarto na aba Troféus, com um troféu conquistado e os outros com cadeado e o que cada um pede."
           },
           {
             "id": "salvar",
             "title": "Guarde o quarto",
             "body": "Clique em **Salvar quarto** e espere aparecer **Quarto salvo! 🏠**.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-arrumar-o-quarto/salvar-a35e6c365f9b3baf.webp",
             "imageAlt": "Editor Meu quarto com o botão Salvar quarto destacado."
           }
         ],
         "related": ["plataforma-montar-o-avatar", "plataforma-resgatar-missoes"]
+      }
+    },
+    {
+      "slug": "plataforma-falar-em-vez-de-escrever",
+      "collection": "plataforma",
+      "position": 33,
+      "draft": {
+        "title": "Como falar em vez de escrever",
+        "summary": "Fale a sua dúvida ou o seu recado para a equipe, confira o texto que aparece e envie.",
+        "keywords": [
+          "falar",
+          "fala",
+          "microfone",
+          "voz",
+          "gravar",
+          "áudio",
+          "ditar",
+          "não sei escrever",
+          "escrever é difícil",
+          "falado",
+          "ouvir o que eu falei",
+          "parar",
+          "mandar áudio"
+        ],
+        "steps": [
+          {
+            "id": "onde",
+            "title": "Procure o botão Falar",
+            "body": "O botão **Falar** aparece embaixo das caixas de texto para a equipe: no **Preciso de ajuda** da aula, nos **Recados da equipe** e no recado de quando você envia o seu projeto. Ele só aparece se o seu responsável ligou a fala no seu perfil.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-falar-em-vez-de-escrever/onde-b7769f6668cbc5a9.webp",
+            "imageAlt": "Caixa Em que ponto desta parte você ficou com dúvida? aberta embaixo da aula, com o botão Falar destacado logo abaixo do campo."
+          },
+          {
+            "id": "gravar",
+            "title": "Clique em Falar e fale",
+            "body": "Clique em **Falar**. Na primeira vez, o navegador pergunta se pode usar o microfone: clique em permitir. Quando aparecer **Pode falar.**, conte a sua dúvida com calma, perto do microfone.",
+            "imageAlt": "Gravação em andamento com o aviso Pode falar., o relógio, a barrinha do microfone e o botão Parar destacado."
+          },
+          {
+            "id": "parar",
+            "title": "Clique em Parar quando terminar",
+            "body": "Quando terminar de falar, clique em **Parar**. A gravação pode ter até um minuto. Aparece **Escrevendo o que você falou…** e, logo depois, o texto entra na caixa.",
+            "imageAlt": "Caixa de texto com o aviso Escrevendo o que você falou… embaixo dela."
+          },
+          {
+            "id": "conferir",
+            "title": "Confira o texto",
+            "body": "Leia o texto que entrou na caixa. Para escutar, clique em **Ouvir**, ao lado de **Falar**. Se não ficou certo, fale de novo ou arrume o texto escrevendo.",
+            "imageAlt": "Caixa com o texto que veio da fala, o aviso Confira se ficou certo e o botão Ouvir destacado ao lado de Falar."
+          },
+          {
+            "id": "enviar",
+            "title": "Envie para a equipe",
+            "body": "Quando o texto estiver certo, clique no botão de enviar, como **Enviar para a equipe**. A gravação não fica guardada: a equipe recebe só o texto.",
+            "imageAlt": "Caixa com o texto conferido e o botão Enviar para a equipe destacado."
+          },
+          {
+            "id": "problema",
+            "title": "Se não funcionar",
+            "body": "Se aparecer **Não ouvi nada**, chegue mais perto do microfone e fale de novo. Se o aviso disser que o microfone está bloqueado, chame um adulto para permitir o microfone neste site. Você sempre pode escrever.",
+            "imageAlt": "Botão Falar com o aviso Não ouvi nada. Chegue mais perto do microfone e fale de novo. embaixo dele."
+          }
+        ],
+        "related": [
+          "plataforma-pedir-ajuda",
+          "plataforma-ler-recados",
+          "plataforma-enviar-atividade"
+        ]
       }
     },
     {
@@ -2044,7 +2223,7 @@
             "id": "pequena",
             "title": "Encontre a aba na tela pequena",
             "body": "Quando o editor mostrar abas, clique em **Pré-visualização**. Para voltar à programação, clique em **Blocos** ou **Código**.",
-            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/estudio-pre-visualizacao/pequena-f3c40de79ce122cc.webp",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/estudio-pre-visualizacao/pequena-4faba2603a6acb45.webp",
             "imageAlt": "Estúdio estreito dentro da aula, com as abas Blocos e Pré-visualização destacadas e o clique em Pré-visualização."
           },
           {
@@ -2057,12 +2236,12 @@
           {
             "id": "erro",
             "title": "Veja o que deu errado",
-            "body": "Se o jogo não funcionar, abra **Mais opções** → **Mostrar** → **Console**. Quando aparecer **Ver o bloco que causou o erro**, clique nele para encontrar o bloco.",
+            "body": "Se o jogo não funcionar, abra **Mais opções** → **Mostrar** → **Console**. Quando aparecer **Ver o bloco que causou o erro**, clique nele para encontrar o bloco. Se nada acontece e nenhum erro aparece, confira se os blocos estão dentro de uma [área do projeto](/como-fazer/estudio-areas-do-projeto).",
             "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/estudio-pre-visualizacao/erro-e0ab88f672452237.webp",
             "imageAlt": "Menu Mais opções aberto com Console destacado na parte Mostrar."
           }
         ],
-        "related": ["estudio-salvar-e-reabrir"],
+        "related": ["estudio-salvar-e-reabrir", "estudio-areas-do-projeto"],
         "toolRef": "estudio-completo"
       }
     },
@@ -2088,7 +2267,7 @@
             "id": "abrir",
             "title": "Abra o Estúdio",
             "body": "No menu da plataforma, clique em **Criar** e depois em **Estúdio**, se ele já estiver liberado para você.",
-            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/estudio-criar-um-projeto/abrir-3da26d0f880b8dac.webp",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/estudio-criar-um-projeto/abrir-43aecd620c6b0e12.webp",
             "imageAlt": "Menu da esquerda com o grupo Criar aberto e o item Estúdio destacado."
           },
           {
@@ -2101,19 +2280,23 @@
           {
             "id": "nome",
             "title": "Dê um nome",
-            "body": "Preencha **Nome do projeto** e clique em **Criar e abrir**. Se esse nome já existir, escolha outro. Se a janela mostrar **Tipo de projeto**, deixe **Clássico (blocos)** para criar com blocos.",
+            "body": "Preencha **Nome do projeto** e clique em **Criar e abrir**. Se esse nome já existir, escolha outro. Se a janela mostrar **Linguagem do projeto**, escolha a linguagem do curso que você fez. E se mostrar **Tipo de projeto**, deixe **Clássico (blocos)** para criar com blocos.",
             "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/estudio-criar-um-projeto/nome-991857f0e314ad9e.webp",
             "imageAlt": "Janela Novo projeto com o nome do projeto escrito e o botão Criar e abrir destacado."
           },
           {
             "id": "blocos",
             "title": "Comece a programar",
-            "body": "O editor abre com os blocos disponíveis. Para criar um jogo 2D, veja [como instalar a extensão Jogo 2D](/como-fazer/estudio-instalar-jogo-2d), quando ela estiver liberada.",
+            "body": "O editor abre com os blocos que você já conquistou nos cursos. O projeto novo começa vazio, então traga uma área, como **⚙️ Ao iniciar**, e monte os blocos dentro dela. Veja [como usar as áreas do projeto](/como-fazer/estudio-areas-do-projeto). Para criar um jogo 2D, veja também [como instalar a extensão Jogo 2D](/como-fazer/estudio-instalar-jogo-2d).",
             "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/estudio-criar-um-projeto/blocos-c1acb234732f34c3.webp",
-            "imageAlt": "Projeto novo aberto no Estúdio, com a caixa de blocos destacada à esquerda e a área de montar ao lado."
+            "imageAlt": "Projeto novo aberto no Estúdio, com a caixa de blocos destacada à esquerda e a área de montar vazia ao lado."
           }
         ],
-        "related": ["estudio-instalar-jogo-2d", "estudio-salvar-e-reabrir"],
+        "related": [
+          "estudio-areas-do-projeto",
+          "estudio-instalar-jogo-2d",
+          "estudio-salvar-e-reabrir"
+        ],
         "toolRef": "estudio-completo"
       }
     },
@@ -2160,7 +2343,7 @@
             "id": "aula",
             "title": "Se estiver dentro de uma aula",
             "body": "Na aula, as extensões já vêm preparadas e esse menu pode não aparecer. Use os blocos que a aula já trouxe.",
-            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/estudio-instalar-jogo-2d/aula-7ebad6eb71a8c766.webp",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/estudio-instalar-jogo-2d/aula-ee4351496786d787.webp",
             "imageAlt": "Estúdio dentro da aula com a caixa de blocos destacada, já trazendo os blocos de Jogo 2D que a aula usa."
           }
         ],
@@ -2216,6 +2399,7 @@
             "id": "aula",
             "title": "Se for um projeto da aula",
             "body": "Na aula, o Estúdio guarda o projeto na sua conta sozinho. Espere aparecer **Guardado na sua conta** ao lado de **Seu projeto no Estúdio**. Guardar não envia o projeto: para a equipe receber, use [Enviar meu projeto](/como-fazer/plataforma-enviar-atividade).",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/estudio-salvar-e-reabrir/aula-6c6c660e616e7ac9.webp",
             "imageAlt": "Cartão Seu projeto no Estúdio dentro da aula, com o aviso Guardado na sua conta destacado ao lado do título."
           }
         ],
@@ -2366,35 +2550,35 @@
             "id": "aula",
             "title": "Abra a aula certa",
             "body": "Use o mesmo perfil, abra a aula em que enviou o jogo e vá à parte com o Estúdio. Essa opção só traz uma versão que você já enviou. Para só continuar o que fez em outro computador, veja [como continuar o projeto da aula](/como-fazer/plataforma-continuar-em-outro-aparelho).",
-            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/estudio-recuperar-atividade-enviada/aula-250437101c2d806b.webp",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/estudio-recuperar-atividade-enviada/aula-25147c1ab1a54647.webp",
             "imageAlt": "Parte da aula com o cartão Seu projeto no Estúdio destacado, onde fica o jogo que você enviou."
           },
           {
             "id": "copia",
             "title": "Guarde o que está aberto, se precisar",
             "body": "Trazer a versão enviada troca o projeto que está aberto pelo que você enviou. Para guardar as mudanças de agora, use antes **Mais opções** → **Levar o jogo** → **Baixar o projeto**.",
-            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/estudio-recuperar-atividade-enviada/copia-324084cd316a2b8a.webp",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/estudio-recuperar-atividade-enviada/copia-a904adc457166fa4.webp",
             "imageAlt": "Menu Mais opções do Estúdio da aula com Baixar o projeto destacado na parte Levar o jogo."
           },
           {
             "id": "trazer",
             "title": "Escolha a versão enviada",
             "body": "Clique em **Mais opções** → **O meu jogo** → **Trazer o que eu enviei**.",
-            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/estudio-recuperar-atividade-enviada/trazer-c50be6df49c57648.webp",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/estudio-recuperar-atividade-enviada/trazer-150a20cbee71a3e6.webp",
             "imageAlt": "Menu Mais opções do Estúdio da aula com Trazer o que eu enviei destacado na parte O meu jogo."
           },
           {
             "id": "confirmar",
             "title": "Leia e confirme",
             "body": "Na janela **Trazer o que você enviou?**, clique em **Trazer**. Use **Cancelar** se preferir manter o projeto que está aberto.",
-            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/estudio-recuperar-atividade-enviada/confirmar-a94fa8760768d99c.webp",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/estudio-recuperar-atividade-enviada/confirmar-664de0a19336bbc7.webp",
             "imageAlt": "Janela Trazer o que você enviou? com o aviso de que o rascunho será trocado e o botão Trazer destacado."
           },
           {
             "id": "conferir",
             "title": "Confira o jogo",
             "body": "Espere carregar e teste o jogo. Se não houver uma versão enviada ou aparecer uma falha, leia o aviso. Não envie um projeto vazio no lugar do que você já enviou.",
-            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/estudio-recuperar-atividade-enviada/conferir-7d13e2e92b1857fb.webp",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/estudio-recuperar-atividade-enviada/conferir-fd85a4dca91343fb.webp",
             "imageAlt": "Estúdio da aula com a pré-visualização do jogo trazido destacada para testar."
           }
         ],
@@ -2498,12 +2682,16 @@
           {
             "id": "usar",
             "title": "Leve o bloco para o jogo",
-            "body": "Arraste o bloco encontrado para a área de montar e encaixe onde ele precisa ficar."
+            "body": "Arraste o bloco encontrado para a área de montar e encaixe onde ele precisa ficar.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/estudio-achar-e-organizar-blocos/usar-fd8b0a6433e69c92.webp",
+            "imageAlt": "Bloco encontrado na busca sendo arrastado para dentro da área Ao iniciar, destacado."
           },
           {
             "id": "nada",
             "title": "Se não achar",
-            "body": "Se aparecer **Nada encontrado**, tente outra palavra. A busca só mostra os blocos que você já tem neste projeto. Os blocos de uma extensão aparecem depois de [instalar a extensão](/como-fazer/estudio-instalar-jogo-2d)."
+            "body": "Se aparecer **Nada encontrado**, tente outra palavra. A busca só mostra os blocos que você já tem neste projeto. Os blocos de uma extensão aparecem depois de [instalar a extensão](/como-fazer/estudio-instalar-jogo-2d).",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/estudio-achar-e-organizar-blocos/nada-c1e0ddf4ec509094.webp",
+            "imageAlt": "Busca de blocos com uma palavra escrita no campo e o aviso Nada encontrado destacado."
           },
           {
             "id": "organizar",
@@ -2512,7 +2700,11 @@
             "imageAlt": "Menu aberto com o botão direito na área de montar, com a opção Organizar blocos destacada."
           }
         ],
-        "related": ["estudio-instalar-jogo-2d", "estudio-perguntar-ao-zappy"],
+        "related": [
+          "estudio-instalar-jogo-2d",
+          "estudio-perguntar-ao-zappy",
+          "estudio-areas-do-projeto"
+        ],
         "toolRef": "estudio-completo"
       }
     },
@@ -2539,17 +2731,22 @@
             "id": "tema",
             "title": "Conheça o tema",
             "body": "Na página **Início**, procure o cartão **Desafio do mês**, que aparece quando o desafio está liberado para você. Ele mostra o tema e uma ideia do que criar. Clique em **Ver os jogos do desafio** para se inspirar.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/estudio-participar-do-desafio-do-mes/tema-fa9d7e8bfaa40d0b.webp",
             "imageAlt": "Página Início com o cartão Desafio do mês destacado, mostrando o tema e os botões Criar no Estúdio e Ver os jogos do desafio."
           },
           {
             "id": "criar",
             "title": "Crie o seu jogo",
-            "body": "Clique em **Criar no Estúdio** e [comece um projeto](/como-fazer/estudio-criar-um-projeto) com o tema do mês. Teste o jogo na pré-visualização antes de publicar."
+            "body": "Clique em **Criar no Estúdio** e [comece um projeto](/como-fazer/estudio-criar-um-projeto) com o tema do mês. Teste o jogo na pré-visualização antes de publicar.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/estudio-participar-do-desafio-do-mes/criar-160f45dd7c73d5f2.webp",
+            "imageAlt": "Tela Meus Jogos do Estúdio com o botão Novo projeto destacado no alto."
           },
           {
             "id": "compartilhar",
             "title": "Abra o Compartilhar",
-            "body": "Com o jogo aberto, clique em **Compartilhar**. Preencha **Título**, **Resumo do projeto** e **Capa do projeto**, como no [passo a passo do Mural](/como-fazer/plataforma-publicar-no-mural)."
+            "body": "Com o jogo aberto, clique em **Compartilhar**. Preencha **Título**, **Resumo do projeto** e **Capa do projeto**, como no [passo a passo do Mural](/como-fazer/plataforma-publicar-no-mural).",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/estudio-participar-do-desafio-do-mes/compartilhar-1e639c12cac1a693.webp",
+            "imageAlt": "Janela Compartilhar no Mural dos Criadores com os campos Título, Resumo do projeto e Capa do projeto preenchidos e destacados."
           },
           {
             "id": "marcar",
@@ -2561,6 +2758,7 @@
             "id": "ver",
             "title": "Encontre seu jogo",
             "body": "Seu jogo entra na prateleira do desafio, no alto do **Mural dos Criadores**. No cartão da página **Início** aparece **Você já está participando!**.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/estudio-participar-do-desafio-do-mes/ver-6afaaa5a6fecb829.webp",
             "imageAlt": "Mural dos Criadores com a prateleira Desafio do mês destacada no alto, com os jogos do tema."
           }
         ],
@@ -2594,24 +2792,30 @@
           {
             "id": "copia",
             "title": "Guarde uma cópia, se quiser",
-            "body": "Recomeçar troca o que você fez pelo projeto inicial da aula. Para guardar uma cópia antes, use **Mais opções** → **Levar o jogo** → **Baixar o projeto**."
+            "body": "Recomeçar troca o que você fez pelo projeto inicial da aula. Para guardar uma cópia antes, use **Mais opções** → **Levar o jogo** → **Baixar o projeto**.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/estudio-recomecar-o-projeto-da-fase/copia-34f2d66a0479ac1d.webp",
+            "imageAlt": "Menu Mais opções do Estúdio da aula com Baixar o projeto destacado na parte Levar o jogo."
           },
           {
             "id": "recomecar",
             "title": "Clique em Recomeçar",
             "body": "No alto do cartão **Seu projeto no Estúdio**, clique em **Recomeçar**.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/estudio-recomecar-o-projeto-da-fase/recomecar-3edeec52c0057857.webp",
             "imageAlt": "Cartão Seu projeto no Estúdio dentro da aula com o botão Recomeçar destacado."
           },
           {
             "id": "confirmar",
             "title": "Leia e confirme",
             "body": "Na janela **Recomeçar do projeto inicial?**, clique em **Recomeçar**. Use **Cancelar** se preferir manter o projeto como está.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/estudio-recomecar-o-projeto-da-fase/confirmar-e47f39655ff29851.webp",
             "imageAlt": "Janela Recomeçar do projeto inicial? com o aviso e o botão Recomeçar destacado."
           },
           {
             "id": "envio",
             "title": "O que você enviou continua lá",
-            "body": "O projeto que você já enviou para a equipe continua guardado. Não envie o projeto inicial no lugar dele: termine o jogo e depois clique em **Enviar de novo**."
+            "body": "O projeto que você já enviou para a equipe continua guardado. Não envie o projeto inicial no lugar dele: termine o jogo, clique em **Enviar de novo** e depois em **Reenviar**. Se a janela avisar em vermelho que você está enviando o projeto inicial, clique em **Cancelar** e termine o jogo antes.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/estudio-recomecar-o-projeto-da-fase/envio-f6323205509e219f.webp",
+            "imageAlt": "Janela Enviar o seu projeto de novo? com o aviso vermelho de projeto inicial e o botão Reenviar destacado."
           }
         ],
         "related": [
@@ -2619,6 +2823,65 @@
           "estudio-recuperar-atividade-enviada",
           "plataforma-enviar-atividade"
         ]
+      }
+    },
+    {
+      "slug": "estudio-areas-do-projeto",
+      "collection": "estudio",
+      "position": 11,
+      "draft": {
+        "title": "Como fazer seus blocos funcionarem nas áreas do projeto",
+        "summary": "Coloque os blocos dentro de uma área, como Ao iniciar, para eles rodarem no jogo.",
+        "keywords": [
+          "áreas",
+          "área do projeto",
+          "não funciona",
+          "bloco não funciona",
+          "nada acontece",
+          "rascunho",
+          "aviso",
+          "triângulo",
+          "ao iniciar",
+          "quando acontecer",
+          "enquanto estiver rodando",
+          "meus moldes"
+        ],
+        "steps": [
+          {
+            "id": "gaveta",
+            "title": "Abra as áreas",
+            "body": "Com o projeto aberto em **Blocos**, clique em **🗂️ Áreas do projeto**, na caixa de blocos. Lá ficam as áreas que os seus blocos podem usar.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/estudio-areas-do-projeto/gaveta-010d894adf2d03cd.webp",
+            "imageAlt": "Caixa de blocos do Estúdio com a gaveta Áreas do projeto aberta e as áreas Ao iniciar, Quando acontecer e Enquanto estiver rodando, com a gaveta destacada."
+          },
+          {
+            "id": "escolher",
+            "title": "Escolha a área certa",
+            "body": "**⚙️ Ao iniciar** roda quando o jogo começa. **⚡ Quando acontecer** roda quando alguma coisa acontece, como apertar uma tecla. E **🔁 Enquanto estiver rodando** repete o tempo todo, enquanto o jogo roda. Arraste a área que você precisa para a área de montar.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/estudio-areas-do-projeto/escolher-67b01099d6f32c25.webp",
+            "imageAlt": "Área Ao iniciar sendo arrastada da gaveta para a área de montar, destacada."
+          },
+          {
+            "id": "encaixar",
+            "title": "Encaixe os blocos dentro",
+            "body": "Arraste os blocos para dentro da área, um embaixo do outro, até eles se encaixarem. Cada projeto tem só uma área de cada tipo, então junte nela tudo o que roda naquele momento.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/estudio-areas-do-projeto/encaixar-89a72f1ab7b68701.webp",
+            "imageAlt": "Área Ao iniciar com dois blocos encaixados dentro dela, com a área destacada."
+          },
+          {
+            "id": "rascunho",
+            "title": "Bloco solto é rascunho",
+            "body": "Um bloco fora das áreas fica guardado, mas não funciona no jogo. Ele aparece com um triângulo de aviso. Arraste a pilha para dentro da área certa e o aviso some.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/estudio-areas-do-projeto/rascunho-ff8d431ebe53b56c.webp",
+            "imageAlt": "Bloco solto na área de montar com o triângulo de aviso destacado, ao lado da área Ao iniciar."
+          }
+        ],
+        "related": [
+          "estudio-criar-um-projeto",
+          "estudio-achar-e-organizar-blocos",
+          "estudio-pre-visualizacao"
+        ],
+        "toolRef": "estudio-completo"
       }
     },
     {
@@ -2774,7 +3037,9 @@
           "desenho",
           "imagem",
           "adicionar",
-          "trazer do pinta"
+          "trazer do pinta",
+          "editar desenho",
+          "mudar o desenho"
         ],
         "steps": [
           {
@@ -2801,7 +3066,8 @@
           {
             "id": "aula",
             "title": "Se estiver no Estúdio de uma aula",
-            "body": "Na aula, a janela de materiais não mostra os desenhos do Pinta. No Pinta, abra o desenho, clique em **Baixar**, deixe o tamanho em **×1** e escolha **Quadro atual (PNG)** num personagem ou **Imagem (PNG)** num cenário. Depois volte à aula, abra **Mais opções** → **Imagens** e clique em **Enviar imagem**.",
+            "body": "Na aula, a janela de materiais não mostra os desenhos do Pinta. No Pinta, abra o desenho, clique em **Baixar**, deixe o tamanho em **×1** e escolha **Quadro atual (PNG)** num personagem ou **Imagem (PNG)** num cenário. Depois volte à aula, abra **Mais opções** → **Materiais** → **Imagens** e clique em **Enviar imagem**.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/pinta-usar-no-estudio/aula-fa63554a38cf45bf.webp",
             "imageAlt": "Estúdio de uma aula com a janela Materiais do jogo aberta na aba Imagens e o botão Enviar imagem destacado."
           },
           {
@@ -2814,7 +3080,7 @@
           {
             "id": "mudar",
             "title": "Mude o desenho depois",
-            "body": "No Estúdio completo, abra **Mais opções** → **Imagens** e clique em **Editar** ao lado do desenho. O Pinta abre numa aba nova. Quando você salvar lá, o desenho se atualiza sozinho no jogo e o Pinta mostra **Atualizado no Estúdio**.",
+            "body": "No Estúdio completo, abra **Mais opções** → **Materiais** → **Imagens** e clique em **Editar** ao lado do desenho. O Pinta abre numa aba nova. Quando você salvar lá, o desenho se atualiza sozinho no jogo e o Pinta mostra **Atualizado no Estúdio**.",
             "imageAlt": "Janela Materiais do jogo do Estúdio na aba Imagens, com o botão Editar ao lado de um desenho do Pinta destacado."
           }
         ],
@@ -2847,7 +3113,7 @@
           {
             "id": "desfazer",
             "title": "Volte uma mudança",
-            "body": "Com o desenho aberto, clique na seta **Desfazer**, na barra de cima. No teclado, você também pode usar **Ctrl + Z**.",
+            "body": "Com o desenho aberto, clique na seta **Desfazer**, na barra de cima. No teclado, você também pode usar Ctrl + Z.",
             "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/pinta-desfazer/desfazer-78165dc2b69e583f.webp",
             "imageAlt": "Barra de cima do Pinta com a seta Desfazer destacada."
           },
@@ -3148,7 +3414,11 @@
           "montar fase",
           "fase do jogo",
           "jogar meu mapa",
-          "carimbo"
+          "carimbo",
+          "camada",
+          "nova camada",
+          "camada da frente",
+          "por cima do personagem"
         ],
         "steps": [
           {
@@ -3182,6 +3452,13 @@
             "imageAlt": "Editor de mapa com o painel Peças para pintar e a ferramenta Lápis destacados, e peças pintadas na grade."
           },
           {
+            "id": "camadas",
+            "title": "Separe o mapa em camadas",
+            "body": "Em **Camadas**, clique em **Nova camada** para pintar enfeites sem mexer no chão. Depois clique no botão dos dois quadradinhos, ao lado da camada (**Camada da frente**). Ela ganha a etiqueta **frente** e, no jogo, aparece por cima do personagem.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/pinta-montar-um-mapa/camadas-c725db92449390b2.webp",
+            "imageAlt": "Painel Camadas do editor de mapa com o botão Nova camada e o botão Camada da frente de uma camada destacados, e a etiqueta frente ao lado do nome da camada."
+          },
+          {
             "id": "jogar",
             "title": "Jogue o seu mapa",
             "body": "Se o Estúdio estiver liberado, clique em **Jogar meu mapa**, na barra de cima. O Estúdio cria um jogo com o seu mapa e abre a tela **Meus Jogos**. Clique em **Abrir** no jogo com o nome do mapa e teste na pré-visualização.",
@@ -3213,7 +3490,9 @@
           "cores de uma imagem",
           "nova paleta",
           "colorir",
-          "outras cores"
+          "outras cores",
+          "molda",
+          "paleta do molda"
         ],
         "steps": [
           {
@@ -3243,11 +3522,16 @@
           {
             "id": "minhas",
             "title": "Use de novo em outro desenho",
-            "body": "As paletas que você cria ficam em **Minhas paletas**, na mesma lista, para qualquer desenho. Em **Gerenciar paletas** você troca o nome ou apaga. Apagar uma paleta não muda nenhum desenho.",
+            "body": "As paletas que você cria ficam em **Minhas paletas**, na mesma lista, para qualquer desenho. Elas aparecem também no Molda, e as que você cria no Molda aparecem aqui. Em **Gerenciar paletas** você troca o nome ou apaga. Apagar uma paleta não muda nenhum desenho.",
             "imageAlt": "Lista de paletas com a parte Minhas paletas e o item Gerenciar paletas destacados."
           }
         ],
-        "related": ["pinta-ferramentas", "pinta-trazer-uma-foto", "pinta-desfazer"],
+        "related": [
+          "pinta-ferramentas",
+          "pinta-trazer-uma-foto",
+          "pinta-desfazer",
+          "molda-trocar-a-paleta"
+        ],
         "toolRef": "pinta"
       }
     },
@@ -3412,7 +3696,9 @@
           {
             "id": "pasta",
             "title": "Ache o arquivo",
-            "body": "O Pinta avisa **Baixado! Procure na pasta de downloads.** O nome do arquivo começa com o nome do desenho."
+            "body": "O Pinta avisa **Baixado! Procure na pasta de downloads.** O nome do arquivo começa com o nome do desenho.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/pinta-baixar-imagem-ou-gif/pasta-8c08bc670a17a837.webp",
+            "imageAlt": "Tela do Pinta com o aviso Baixado! Procure na pasta de downloads. destacado."
           }
         ],
         "related": [
@@ -3445,7 +3731,10 @@
           "sem ideia",
           "falar",
           "microfone",
-          "nome do jogo"
+          "nome do jogo",
+          "renomear",
+          "trocar o nome",
+          "parar"
         ],
         "steps": [
           {
@@ -3458,30 +3747,35 @@
             "id": "novo",
             "title": "Comece um jogo",
             "body": "Em **Meus jogos**, clique em **Começar um jogo**, no cartão **Nova ideia de jogo**. No celular, o botão **Nova ideia de jogo** fica no pé da tela. No seu primeiro jogo, essa tela já abre sozinha.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/pensa-criar-um-plano/novo-ed06f8f8e5124579.webp",
             "imageAlt": "Tela Meus jogos do Pensa com o cartão Nova ideia de jogo e o botão Começar um jogo destacados."
           },
           {
             "id": "ideia",
             "title": "Conte sua ideia",
             "body": "Na caixa **Sua ideia**, conte o jogo que está na sua cabeça: o que o personagem faz, como ganha e como perde. Pode ser curtinho. Se aparecer o botão do microfone, dá para falar em vez de escrever.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/pensa-criar-um-plano/ideia-c39fe4fa70ce0ea5.webp",
             "imageAlt": "Tela Nova ideia de jogo com o Zappy falando e a caixa Sua ideia preenchida com a ideia de um jogo, destacada."
           },
           {
             "id": "semente",
             "title": "Está sem ideia pronta?",
             "body": "Em **Para começar sem ideia pronta**, clique num dos exemplos. Ele só preenche a caixa. Mude o que quiser antes de mandar.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/pensa-criar-um-plano/semente-bfd890f1c2ac5426.webp",
             "imageAlt": "Quadro Para começar sem ideia pronta com três exemplos e o exemplo Pegar o que cai do céu destacado."
           },
           {
             "id": "organizar",
             "title": "Mande para o Zappy",
-            "body": "Clique em **Organizar meu jogo**. Enquanto aparece **Estou montando o plano do seu jogo**, o Zappy separa as partes e a ordem das missões. Pode sair da tela: o plano continua quando você voltar.",
-            "imageAlt": "Tela do Zappy pensando, com o título Estou montando o plano do seu jogo e a lista de três passos destacada."
+            "body": "Clique em **Organizar meu jogo**. Enquanto aparece **Estou montando o plano do seu jogo**, o Zappy separa as partes e a ordem das missões. Pode sair da tela, porque o plano continua quando você voltar. Se mudou de ideia, clique em **Parar**.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/pensa-criar-um-plano/organizar-42f5cec1af3703a8.webp",
+            "imageAlt": "Tela do Zappy pensando, com o título Estou montando o plano do seu jogo, a lista de três passos destacada e o botão Parar embaixo."
           },
           {
             "id": "pergunta",
             "title": "Responda ao Zappy",
             "body": "Se faltar alguma coisa, o Zappy pergunta, uma de cada vez. Clique na resposta que combina com o seu jogo. Ou escreva em **Ou responda do seu jeito** e clique em **Responder**.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/pensa-criar-um-plano/pergunta-80a8428bf6973918.webp",
             "imageAlt": "Pergunta do Zappy com cartões de resposta e a caixa Ou responda do seu jeito, com os cartões destacados."
           },
           {
@@ -3492,7 +3786,7 @@
           {
             "id": "retomar",
             "title": "Continue depois",
-            "body": "Na lista **Meus jogos**, clique em **Conferir o plano** se o plano ainda espera você. Depois de aceito, o botão vira **Continuar**, e o cartão mostra quantas missões estão prontas.",
+            "body": "Na lista **Meus jogos**, clique em **Conferir o plano** se o plano ainda espera você. Depois de aceito, o botão vira **Continuar**, e o cartão mostra quantas missões estão prontas. Para mudar o nome do jogo, abra o jogo e clique no lápis ao lado do nome, no alto.",
             "imageAlt": "Cartão do jogo Cesta de Frutas na lista Meus jogos, com a barra de missões prontas e o botão Continuar destacado."
           }
         ],
@@ -3526,7 +3820,9 @@
           "onde estou",
           "plano",
           "jogo pronto",
-          "carta da ideia"
+          "carta da ideia",
+          "colocar no jogo",
+          "ideias para depois"
         ],
         "steps": [
           {
@@ -3559,7 +3855,8 @@
           {
             "id": "depois",
             "title": "Continue o jogo pronto",
-            "body": "Clique em **Abrir meu jogo** para jogar. Se você guardou ideias para depois, elas aparecem embaixo: clique em **Colocar no jogo** numa delas. Ela vai para a conversa: clique em **Enviar** para o Zappy preparar a mudança."
+            "body": "Clique em **Abrir meu jogo** para jogar. Se você guardou ideias para depois, elas aparecem embaixo. Clique em **Colocar no jogo** numa delas e ela vai para a conversa. Depois clique em **Enviar** para o Zappy preparar a mudança.",
+            "imageAlt": "Quadro Você guardou ideias para depois, abaixo do jogo pronto, com o botão Colocar no jogo de uma ideia destacado."
           }
         ],
         "related": [
@@ -3618,13 +3915,13 @@
           {
             "id": "painel",
             "title": "Ache o painel da missão",
-            "body": "A oficina abre com o painel da missão à direita. No celular, ele fica abaixo. Para recolher ou abrir o painel, clique no título dele.",
+            "body": "A oficina abre com o painel da missão à direita. Em telas menores, como no celular, ele fica embaixo da oficina. Para recolher ou abrir o painel, clique no título dele.",
             "imageAlt": "Estúdio aberto com o painel da missão à direita, mostrando o título da missão e O que você vai criar, com o título do painel destacado."
           },
           {
             "id": "mapa",
             "title": "Veja todas as missões",
-            "body": "Em **O mapa das missões**, cada bolinha é uma missão, e **Você está aqui** marca a de agora. Clique em qualquer missão para ler o que ela pede.",
+            "body": "Em **O mapa das missões**, cada bolinha é uma missão, e **Você está aqui** marca a de agora. Clique em qualquer missão para ler o que ela pede. No celular, o mapa mostra só as missões perto da de agora. Para ver todas, clique no botão **Ver as missões**, que mostra quantas missões o seu plano tem.",
             "imageAlt": "O mapa das missões do Cesta de Frutas com as missões em trilha e o selo Você está aqui destacado."
           },
           {
@@ -3697,7 +3994,8 @@
           {
             "id": "guardar",
             "title": "Quer só tirar da frente?",
-            "body": "No mesmo menu, **Mover para Guardados** tira o jogo de **Em andamento** sem apagar. Ele fica na aba **Guardados**, e **Trazer de volta** devolve o jogo. **Pausar por enquanto** deixa as missões esperando você voltar."
+            "body": "No mesmo menu, **Mover para Guardados** tira o jogo de **Em andamento** sem apagar. Ele fica na aba **Guardados**, e **Trazer de volta** devolve o jogo. **Pausar por enquanto** deixa as missões esperando você voltar.",
+            "imageAlt": "Tela Meus jogos com a aba Guardados aberta e o cartão do jogo com o selo Guardado, com a aba Guardados destacada."
           }
         ],
         "related": ["pensa-criar-um-plano", "pensa-voltar-uma-versao"],
@@ -3771,7 +4069,8 @@
           {
             "id": "mexer",
             "title": "Quer mexer de novo?",
-            "body": "Numa missão pronta, clique em **Quero mexer de novo**. Para parar no meio, escreva um lembrete em **Onde parei** e clique em **Guardar nota**. Ele aparece no Pensa quando você voltar."
+            "body": "Numa missão pronta, clique em **Quero mexer de novo**. Para parar no meio, escreva um lembrete em **Onde parei** e clique em **Guardar nota**. No Pinta e no Molda, clique antes em **Onde parei** para abrir o campo. O lembrete aparece no Pensa quando você voltar.",
+            "imageAlt": "Painel da missão no Estúdio com o campo Onde parei preenchido com um lembrete e o botão Guardar nota destacado."
           }
         ],
         "related": [
@@ -3804,19 +4103,21 @@
           "agora não",
           "outro jeito",
           "ideias para depois",
-          "elementos"
+          "elementos",
+          "por enquanto"
         ],
         "steps": [
           {
             "id": "carta",
             "title": "Leia a carta do jogo",
-            "body": "Em **A carta do jogo**, confira **Como se joga**, **O que o jogo precisa ter** e **Elementos do jogo**. Cada elemento diz onde vai ser feito, como **criar no Pinta**.",
-            "imageAlt": "A carta do jogo no plano para conferir, com Como se joga, O que o jogo precisa ter e Elementos do jogo destacados."
+            "body": "Em **A carta do jogo**, confira **Como se joga**, **A ideia que você contou**, **O que o jogo precisa ter** e **Elementos do jogo**. Cada elemento diz onde vai ser feito, como **criar no Pinta**.",
+            "imageAlt": "A carta do jogo no plano para conferir, com Como se joga, A ideia que você contou, O que o jogo precisa ter e Elementos do jogo destacados."
           },
           {
             "id": "jeito",
             "title": "Veja o que ficou de outro jeito",
-            "body": "Se aparecer **Uma parte precisou de outro jeito**, leia **Você pediu**, **No lugar** e **Continua**. Ali o Zappy conta o que ainda não dá para fazer e o que entra no lugar."
+            "body": "Se aparecer **Uma parte precisou de outro jeito**, leia **Você pediu**, **Por enquanto**, **No lugar** e **Continua**. Ali o Zappy conta o que ainda não dá para fazer e o que entra no lugar.",
+            "imageAlt": "Quadro Uma parte precisou de outro jeito, com o Zappy pensando e os itens Você pediu, Por enquanto, No lugar e Continua destacados."
           },
           {
             "id": "mapa",
@@ -3839,7 +4140,8 @@
           {
             "id": "depois",
             "title": "Ainda não decidiu?",
-            "body": "Clique em **Agora não**. O plano fica guardado, e o cartão do jogo mostra **Conferir o plano** para você voltar quando quiser."
+            "body": "Clique em **Agora não**. O plano fica guardado, e o cartão do jogo mostra **Conferir o plano** para você voltar quando quiser.",
+            "imageAlt": "Cartão do jogo na lista Meus jogos com o selo Plano para conferir e o botão Conferir o plano destacado."
           }
         ],
         "related": [
@@ -3895,7 +4197,8 @@
           {
             "id": "aviso",
             "title": "Se aparecer um aviso",
-            "body": "Se o projeto já usar outra ferramenta que não combina, o painel avisa. Clique em **Voltar ao plano** e conte ao Zappy na conversa para ele adaptar o caminho."
+            "body": "Se o projeto já usar outra ferramenta que não combina, o painel avisa, como **Este projeto já usa** e o nome dela. Clique em **Voltar ao plano** e conte ao Zappy na conversa para ele adaptar o caminho.",
+            "imageAlt": "Painel da missão de preparar no Estúdio com o aviso Este projeto já usa outra ferramenta destacado."
           },
           {
             "id": "pro",
@@ -3932,19 +4235,23 @@
           "deixar como está",
           "conferir de novo",
           "refazer",
-          "três vidas"
+          "três vidas",
+          "muda o resultado",
+          "sai do mapa",
+          "conferi de novo"
         ],
         "steps": [
           {
             "id": "pedir",
             "title": "Peça a mudança",
-            "body": "No jogo, clique em **Mudar uma parte do jogo**, na conversa com o Zappy. Escreva o que quer mudar, como \"quero que o jogo tenha três vidas\", e clique em **Enviar**.",
+            "body": "No jogo, clique em **Mudar uma parte do jogo**, na conversa com o Zappy. Escreva o que quer mudar, como \"quero que o jogo tenha três vidas\", e clique em **Enviar**. No celular, abra antes a aba **Conversa**. Lá o botão de enviar é a setinha redonda.",
             "imageAlt": "Conversa com o Zappy ao lado do plano, com o atalho Mudar uma parte do jogo e o botão Enviar destacados."
           },
           {
             "id": "esperar",
             "title": "Espere o Zappy",
-            "body": "Enquanto aparece **O Zappy está pensando**, ele prepara a mudança. Se ele fizer uma pergunta, clique na resposta que combina com o seu jogo."
+            "body": "Enquanto aparece **O Zappy está pensando**, ele prepara a mudança. Se ele fizer uma pergunta, ela aparece no alto do plano. Clique na resposta que combina com o seu jogo.",
+            "imageAlt": "Pergunta do Zappy no alto do plano do jogo, com os cartões de resposta destacados e o link Responder do meu jeito na conversa."
           },
           {
             "id": "ver",
@@ -3955,7 +4262,7 @@
           {
             "id": "conferir",
             "title": "Confira o que muda",
-            "body": "A tela conta as missões novas, as que mudam e as que saem do mapa. Em **Missões que mudam**, cada missão tem um selo, como **Missão nova** ou **Conferir de novo**.",
+            "body": "A tela conta as missões novas, as que mudam o resultado, as que precisam ser conferidas de novo e as que saem do mapa. Em **Missões que mudam**, cada missão tem um selo, como **Missão nova**, **Muda o resultado**, **Conferir de novo** ou **Sai do mapa**.",
             "imageAlt": "Tela da mudança com as quatro contagens e a lista Missões que mudam com os selos destacados."
           },
           {
@@ -3967,7 +4274,8 @@
           {
             "id": "de-novo",
             "title": "Confira de novo o que mudou",
-            "body": "Uma missão pronta que a mudança mexeu precisa ser conferida de novo. O cartão mostra **Vamos conferir de novo**: clique em **Conferir no** e o nome da oficina. Confira e clique em **Conferi de novo**."
+            "body": "Uma missão pronta que a mudança mexeu precisa ser conferida de novo. O cartão mostra **Vamos conferir de novo**: clique em **Conferir no** e o nome da oficina. Confira e clique em **Conferi de novo**.",
+            "imageAlt": "Cartão Vamos conferir de novo do jogo Cesta de Frutas com o botão Conferir no Estúdio destacado."
           }
         ],
         "related": [
@@ -4018,7 +4326,8 @@
           {
             "id": "oficina",
             "title": "De dentro da oficina",
-            "body": "No painel da missão, clique em **Preciso de ajuda**. No Estúdio, se o Zappy já estiver liberado para você, ele abre ao lado do jogo. Nos outros casos, o Pensa abre na conversa, já com a missão."
+            "body": "No painel da missão, clique em **Preciso de ajuda**. No Estúdio, se o Zappy já estiver liberado para você, ele abre ao lado do jogo. Nos outros casos, o Pensa abre na conversa, já com a missão.",
+            "imageAlt": "Pé do painel da missão no Estúdio com o botão Preciso de ajuda destacado ao lado de Voltar ao plano."
           },
           {
             "id": "celular",
@@ -4029,12 +4338,14 @@
           {
             "id": "ideias",
             "title": "Fique de olho nas ideias",
-            "body": "Cada mensagem usa uma ideia, e o contador no alto do Pensa mostra quantas ainda tem. Quando aparecer **As ideias de hoje acabaram**, o Zappy descansa até amanhã. As missões continuam abrindo nas oficinas."
+            "body": "Cada mensagem usa uma ideia, e o contador no alto do Pensa mostra quantas ainda tem. Quando aparecer **As ideias de hoje acabaram**, o Zappy descansa até amanhã. Se aparecer **As ideias deste mês acabaram**, elas voltam no mês que vem. As missões continuam abrindo nas oficinas.",
+            "imageAlt": "Cartão As ideias de hoje acabaram com o Zappy dormindo, o selo 0 ideias hoje e o botão Ver o mapa das missões."
           },
           {
             "id": "tropeco",
             "title": "Se der um tropeço",
-            "body": "Se aparecer **Deu um tropeço. A sua pergunta está guardada.**, clique em **Tentar de novo**. O que você escreveu não se perde."
+            "body": "Se aparecer **Deu um tropeço. A sua pergunta está guardada.**, clique em **Tentar de novo**. O que você escreveu não se perde.",
+            "imageAlt": "Cartão Deu um tropeço. A sua pergunta está guardada. na conversa, com o botão Tentar de novo destacado."
           }
         ],
         "related": [
@@ -4099,12 +4410,14 @@
           {
             "id": "esperar",
             "title": "Quando a missão é de outra pessoa",
-            "body": "Aparece **Esperando a equipe** com o nome de quem está fazendo a parte. A sua missão abre quando essa parte ficar pronta. No Estúdio, as artes da equipe chegam pelo botão **Trazer da equipe**."
+            "body": "Aparece **Esperando a equipe** com o nome de quem está fazendo a parte. A sua missão abre quando essa parte ficar pronta. No Estúdio, quem programa encontra as artes da equipe em **Mais opções** → **Materiais** → **Imagens**, no botão **Trazer da equipe**.",
+            "imageAlt": "Cartão Esperando a equipe no jogo Cesta de Frutas, com o nome de quem está criando a parte e o botão Ver a equipe."
           },
           {
             "id": "sair",
             "title": "Para sair ou tirar alguém",
-            "body": "Quem entrou clica em **Sair da equipe** e depois em **Sair mesmo**. Quem criou o jogo pode clicar em **Tirar da equipe** ao lado de um nome e depois em **Tirar mesmo**."
+            "body": "Quem entrou clica em **Sair da equipe** e depois em **Sair mesmo**. Quem criou o jogo pode clicar em **Tirar da equipe** ao lado de um nome e depois em **Tirar mesmo**.",
+            "imageAlt": "Janela da equipe vista por quem entrou no jogo, com a frase Este jogo é de e o botão Sair da equipe destacado."
           }
         ],
         "related": [
@@ -4159,7 +4472,8 @@
           {
             "id": "conferir",
             "title": "Confira o jogo",
-            "body": "Antes de voltar, o Pensa guarda o jogo de agora. Depois aparece **Versão restaurada. Confira o seu jogo antes de continuar.** A missão de testar o jogo inteiro precisa ser feita de novo."
+            "body": "Antes de voltar, o Pensa guarda o jogo de agora. Depois aparece **Versão restaurada. Confira o seu jogo antes de continuar.** A missão de testar o jogo inteiro precisa ser feita de novo.",
+            "imageAlt": "Janela Versões guardadas com o aviso verde Versão restaurada. Confira o seu jogo antes de continuar. destacado."
           }
         ],
         "related": [
@@ -4255,37 +4569,47 @@
           "pincel",
           "cor",
           "desfazer",
-          "dicas"
+          "dicas",
+          "torus",
+          "rosca",
+          "argola",
+          "anel",
+          "cone"
         ],
         "steps": [
           {
             "id": "peca",
             "title": "Adicione uma peça",
-            "body": "Abra um modelo no Molda. Na aba **Modelar**, em **Adicionar**, à esquerda, clique numa forma: **Caixa**, **Rampa**, **Cilindro**, **Bola** ou **Plano**.",
-            "imageAlt": "Aba Modelar do Molda com as formas de Adicionar à esquerda e o botão Bola destacado."
+            "body": "Abra um modelo no Molda. Na aba **Modelar**, em **Adicionar**, à esquerda, clique numa forma: **Caixa**, **Rampa**, **Cilindro**, **Cone**, **Bola**, **Torus** ou **Plano**.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/molda-montar-e-pintar/peca-6b8dbc1b47bb7f9f.webp",
+            "imageAlt": "Aba Modelar do Molda com as formas de Adicionar à esquerda, do Caixa ao Plano com o Torus no meio, e o botão Bola destacado."
           },
           {
             "id": "mudar",
             "title": "Mude a peça",
             "body": "Clique na peça para escolher. Em **Ferramentas**, clique em **Mover**, **Girar** ou **Tamanho** e arraste as alças coloridas.",
-            "imageAlt": "Molda com uma peça escolhida, as alças coloridas de mover à vista e o botão Mover destacado em Ferramentas."
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/molda-montar-e-pintar/mudar-46496a80dc4609d7.webp",
+            "imageAlt": "Molda com uma peça escolhida, as alças coloridas de mover à vista e o botão Mover destacado em Ferramentas, na coluna da esquerda."
           },
           {
             "id": "duplicar",
             "title": "Copie ou apague",
             "body": "Com a peça escolhida, clique em **Duplicar**, no painel da direita, para fazer uma cópia. **Apagar** tira a peça do modelo.",
-            "imageAlt": "Cartão da peça no painel da direita do Molda com os botões Duplicar e Apagar destacados."
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/molda-montar-e-pintar/duplicar-de7584c4b222ceb6.webp",
+            "imageAlt": "Cartão da peça no painel da direita do Molda, abaixo de Paletas, com os botões Duplicar e Apagar destacados."
           },
           {
             "id": "pintar",
             "title": "Escolha a cor",
-            "body": "Clique na aba **Pintar** e depois na peça. Em **Escolha uma cor**, à direita, clique numa cor.",
-            "imageAlt": "Aba Pintar do Molda com a peça escolhida e, no painel da direita, a cor vermelha sendo escolhida em Escolha uma cor."
+            "body": "Clique na aba **Pintar** e depois na peça. Em **Escolha uma cor**, à direita, clique numa cor. Quer outras cores? Veja [como trocar a paleta](/como-fazer/molda-trocar-a-paleta).",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/molda-montar-e-pintar/pintar-715278bc360fb82d.webp",
+            "imageAlt": "Aba Pintar do Molda com a peça escolhida e, no painel da direita, a linha Paletas no alto e a cor vermelha sendo escolhida em Escolha uma cor."
           },
           {
             "id": "traco",
             "title": "Pinte seu modelo",
             "body": "Com o **Pincel** escolhido, arraste sobre a peça para pintar. Arraste no fundo para girar e ver outro lado. **Balde** enche uma área e **Pegar cor** copia uma cor do modelo.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/molda-montar-e-pintar/traco-c054c317b3b18b1e.webp",
             "imageAlt": "Molda na aba Pintar com o Pincel destacado à esquerda e um traço vermelho pintado sobre a peça."
           },
           {
@@ -4298,6 +4622,7 @@
             "id": "dicas",
             "title": "Veja mais dicas",
             "body": "Clique no ponto de interrogação **Primeiros passos**, no alto, à direita. Escolha **Como montar**, **Como pintar** ou **Como animar** e avance com **Próxima dica**.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/molda-montar-e-pintar/dicas-dfd5dbd305818913.webp",
             "imageAlt": "Molda com o painel Primeiros passos aberto pelo ponto de interrogação da barra, com Como montar e Próxima dica destacados."
           }
         ],
@@ -4305,15 +4630,81 @@
           "molda-pintar-de-perto",
           "molda-mudar-a-forma",
           "molda-salvar-e-reabrir",
-          "molda-usar-no-estudio"
+          "molda-usar-no-estudio",
+          "molda-juntar-e-separar-pecas",
+          "molda-trocar-a-paleta",
+          "molda-textura-da-peca"
         ],
+        "toolRef": "molda"
+      }
+    },
+    {
+      "slug": "molda-textura-da-peca",
+      "collection": "molda",
+      "position": 2,
+      "draft": {
+        "title": "Como criar ou trazer uma textura para uma peça no Molda",
+        "summary": "Dê a uma peça uma textura nova para pintar, ou use um desenho seu como textura.",
+        "keywords": [
+          "molda",
+          "textura",
+          "criar textura",
+          "importar textura",
+          "desenho",
+          "imagem",
+          "png",
+          "jpeg",
+          "pinta",
+          "densidade",
+          "pixels",
+          "pintar",
+          "peça"
+        ],
+        "steps": [
+          {
+            "id": "escolher",
+            "title": "Escolha a peça",
+            "body": "Abra seu modelo, clique na aba **Pintar** e depois na peça. À esquerda, embaixo das ferramentas, aparecem **Criar textura** e **Importar textura**.",
+            "imageAlt": "Coluna da esquerda da aba Pintar do Molda com os botões Criar textura e Importar textura destacados."
+          },
+          {
+            "id": "criar",
+            "title": "Crie uma textura nova",
+            "body": "Clique em **Criar textura**. Em **Nome da textura**, deixe o nome que já vem ou escreva outro.",
+            "imageAlt": "Janela Criar textura do Molda com o campo Nome da textura preenchido."
+          },
+          {
+            "id": "densidade",
+            "title": "Escolha o tamanho dos quadradinhos",
+            "body": "Em **Densidade de pixels**, **16px** faz quadradinhos grandes. Os números maiores fazem quadradinhos menores, para pintar mais detalhes. Depois clique em **Criar e aplicar**.",
+            "imageAlt": "Janela Criar textura com a lista Densidade de pixels e o botão Criar e aplicar destacado."
+          },
+          {
+            "id": "pintar",
+            "title": "Pinte a textura nova",
+            "body": "A peça ganha a textura nova, sem desenho, e o nome dela aparece à esquerda, em Textura ativa. Pinte com o **Pincel**, como sempre. A pintura de antes sai dessa peça: para trazer de volta, clique na seta curva de desfazer, no alto.",
+            "imageAlt": "Aba Pintar do Molda com a frase Textura ativa à esquerda e um traço novo na peça."
+          },
+          {
+            "id": "importar",
+            "title": "Ou traga um desenho seu",
+            "body": "Clique em **Importar textura** e escolha uma imagem PNG ou JPEG, como um desenho feito no Pinta. Confira o nome e o tamanho na prévia e clique em **Importar e aplicar**.",
+            "imageAlt": "Janela Importar textura do Molda com a prévia da imagem e o botão Importar e aplicar destacado."
+          },
+          {
+            "id": "aviso",
+            "title": "Se aparecer um aviso",
+            "body": "Se a imagem for pequena, o Molda pede uma densidade menor ou uma imagem maior: troque em **Densidade de pixels** e clique de novo. Se o aviso falar de faces tortas, marque **Dividir faces tortas, se necessário** e clique de novo."
+          }
+        ],
+        "related": ["molda-montar-e-pintar", "molda-pintar-de-perto", "pinta-criar-um-desenho"],
         "toolRef": "molda"
       }
     },
     {
       "slug": "molda-salvar-e-reabrir",
       "collection": "molda",
-      "position": 2,
+      "position": 3,
       "draft": {
         "title": "Como guardar e reabrir uma criação no Molda",
         "summary": "O Molda guarda sozinho. Confira se está salvo, volte à galeria e baixe uma cópia.",
@@ -4371,7 +4762,7 @@
     {
       "slug": "molda-usar-no-estudio",
       "collection": "molda",
-      "position": 3,
+      "position": 4,
       "draft": {
         "title": "Como levar uma criação do Molda para o Estúdio",
         "summary": "Traga seu modelo, sua textura ou seu céu para um projeto de jogo.",
@@ -4420,7 +4811,7 @@
     {
       "slug": "molda-pintar-de-perto",
       "collection": "molda",
-      "position": 4,
+      "position": 5,
       "draft": {
         "title": "Como pintar quadradinho por quadradinho no Molda",
         "summary": "Veja os quadradinhos da pintura e pinte uma face de perto, um pixel de cada vez.",
@@ -4443,31 +4834,35 @@
           {
             "id": "grade",
             "title": "Mostre os quadradinhos",
-            "body": "Na aba **Pintar**, clique na peça. Depois clique em **Quadradinhos**, à esquerda, para ver a grade da pintura sobre o modelo.",
-            "imageAlt": "Aba Pintar do Molda com o botão Quadradinhos ligado e a grade de quadradinhos aparecendo sobre a peça."
+            "body": "Na aba **Pintar**, clique na peça. No alto da área do modelo, à direita de **Enquadrar**, clique no botão de ajustes, o de três tracinhos com uma setinha. Depois clique em **Quadradinhos** para ver a grade da pintura sobre o modelo.",
+            "imageAlt": "Aba Pintar do Molda com o menu de ajustes aberto no alto, à direita, e o botão Quadradinhos ligado, com a grade de quadradinhos sobre a peça."
           },
           {
             "id": "tamanho",
             "title": "Escolha um traço fino",
             "body": "Em **Tamanho**, clique em **1** para pintar um quadradinho por vez. **2** e **3** fazem traços mais grossos.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/molda-pintar-de-perto/tamanho-cb4ab5cc55b58a72.webp",
             "imageAlt": "Coluna de ferramentas da aba Pintar com Tamanho e o botão 1 destacado."
           },
           {
             "id": "perto",
             "title": "Abra uma face de perto",
             "body": "Clique em **Pintar de perto** e depois numa face da peça. A face abre grande, em quadradinhos.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/molda-pintar-de-perto/perto-0767e95660ec8b7c.webp",
             "imageAlt": "Molda com o painel Pintar de perto aberto mostrando a face da peça em quadradinhos, e o botão Pintar de perto destacado."
           },
           {
             "id": "pixels",
             "title": "Pinte os quadradinhos",
-            "body": "Escolha uma cor e clique nos quadradinhos. Use **+** e **−** para mudar o zoom e marque **Grade de pixels** para ver as linhas. A pintura aparece no modelo 3D.",
+            "body": "Escolha uma cor e clique nos quadradinhos. Use os botões de mais e de menos para mudar o zoom e marque **Grade de pixels** para ver as linhas. A pintura aparece no modelo 3D.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/molda-pintar-de-perto/pixels-6527b1fbb222413b.webp",
             "imageAlt": "Painel Pintar de perto com alguns quadradinhos pintados, os botões de zoom e a opção Grade de pixels marcada."
           },
           {
             "id": "voltar",
             "title": "Volte ao modelo",
             "body": "Clique em **Voltar ao modelo** quando terminar. Errou um quadradinho? Clique em **Desfazer**, no alto.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/molda-pintar-de-perto/voltar-3d82894187bde179.webp",
             "imageAlt": "Painel Pintar de perto com o botão Voltar ao modelo destacado."
           }
         ],
@@ -4478,7 +4873,7 @@
     {
       "slug": "molda-apagar-e-vazar",
       "collection": "molda",
-      "position": 5,
+      "position": 6,
       "draft": {
         "title": "Como apagar a tinta ou deixar buracos na pintura do Molda",
         "summary": "Use a Borracha para apagar a tinta ou para deixar quadradinhos vazados, como uma janela.",
@@ -4502,6 +4897,7 @@
             "id": "borracha",
             "title": "Escolha a Borracha",
             "body": "Na aba **Pintar**, clique na peça e depois em **Borracha**, à esquerda.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/molda-apagar-e-vazar/borracha-7610c9f79ac342e5.webp",
             "imageAlt": "Aba Pintar do Molda com a peça escolhida e o botão Borracha destacado na coluna da esquerda."
           },
           {
@@ -4513,13 +4909,15 @@
           {
             "id": "arrastar",
             "title": "Arraste sobre a peça",
-            "body": "Arraste sobre a peça. Com **Deixar vazado**, os quadradinhos ficam vazados e dá para ver através deles. Use **Quadradinhos** e **Tamanho** **1** para fazer um buraco certinho.",
+            "body": "Arraste sobre a peça. Com **Deixar vazado**, os quadradinhos ficam vazados e dá para ver através deles. Para um buraco certinho, ligue **Quadradinhos** no botão de ajustes, no alto da área do modelo, e em **Tamanho** clique em **1**.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/molda-apagar-e-vazar/arrastar-a0c2048798c38de8.webp",
             "imageAlt": "Peça no Molda com uma janela vazada em quadradinhos, dando para ver o fundo através dela."
           },
           {
             "id": "preencher",
             "title": "Feche um buraco",
             "body": "Para fechar um buraco, clique em **Pincel** e pinte por cima. **Desfazer**, no alto, volta o traço inteiro de uma vez.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/molda-apagar-e-vazar/preencher-5625c6b08633082b.webp",
             "imageAlt": "Aba Pintar do Molda com o Pincel destacado e parte do buraco pintada de novo."
           }
         ],
@@ -4530,7 +4928,7 @@
     {
       "slug": "molda-movimento-pronto",
       "collection": "molda",
-      "position": 6,
+      "position": 7,
       "draft": {
         "title": "Como usar um movimento pronto no Molda",
         "summary": "Faça uma peça ou o modelo inteiro pular, balançar ou girar com poucos cliques.",
@@ -4546,7 +4944,8 @@
           "girar",
           "mexer",
           "andar",
-          "dançar"
+          "dançar",
+          "repetir"
         ],
         "steps": [
           {
@@ -4570,8 +4969,9 @@
           {
             "id": "escolher",
             "title": "Experimente um movimento",
-            "body": "Clique em **Pular**, **Balançar** ou **Girar uma volta**. A prévia toca sozinha. Para ajustar, use **Mais devagar**, **Mais rápido**, **Menos intenso** ou **Mais intenso**.",
-            "imageAlt": "Painel de movimentos prontos com Pular escolhido, os botões de ajuste à vista e o modelo pulando na prévia."
+            "body": "Clique em **Pular**, **Balançar** ou **Girar uma volta** e depois em **Preparar prévia**. Clique em **Reproduzir movimento**, na linha do tempo, para ver. Para ajustar, use **Mais devagar** ou **Mais rápido**. Em **Pular** e **Balançar** também aparecem **Menos intenso** e **Mais intenso**.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/molda-movimento-pronto/escolher-a9e63bc1154b8916.webp",
+            "imageAlt": "Painel de movimentos prontos com a prévia de Pular preparada e os botões Mais devagar, Mais rápido, Menos intenso e Mais intenso destacados."
           },
           {
             "id": "guardar",
@@ -4582,8 +4982,9 @@
           {
             "id": "tocar",
             "title": "Veja de novo",
-            "body": "Na linha do tempo, embaixo, clique em **Reproduzir movimento**, o botão de tocar. Marque **Repetir** para o movimento não parar.",
-            "imageAlt": "Linha do tempo da aba Animar com o botão Reproduzir movimento e a opção Repetir destacados."
+            "body": "Na linha do tempo, embaixo, clique em **Reproduzir movimento**, o botão de tocar. Ligue a chave **Repetir** para o movimento não parar.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/molda-movimento-pronto/tocar-62301255435a3c87.webp",
+            "imageAlt": "Linha do tempo da aba Animar com o botão de tocar Reproduzir movimento e a chave Repetir ligada, os dois destacados."
           }
         ],
         "related": ["molda-animar-com-poses", "molda-usar-no-estudio"],
@@ -4593,7 +4994,7 @@
     {
       "slug": "molda-animar-com-poses",
       "collection": "molda",
-      "position": 7,
+      "position": 8,
       "draft": {
         "title": "Como criar um movimento com poses no Molda",
         "summary": "Mova as peças em momentos diferentes, marque cada pose e veja o movimento tocar.",
@@ -4610,7 +5011,9 @@
           "chave",
           "keyframe",
           "movimento",
-          "mexer"
+          "mexer",
+          "duração",
+          "mais tempo"
         ],
         "steps": [
           {
@@ -4623,25 +5026,29 @@
             "id": "tempo",
             "title": "Escolha o momento",
             "body": "Na linha do tempo, embaixo, clique no momento em que a pose vai acontecer. Por exemplo, em 1 segundo.",
-            "imageAlt": "Linha do tempo da aba Animar com o marcador de tempo em 1 segundo destacado."
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/molda-animar-com-poses/tempo-8aab2cb1eefb7931.webp",
+            "imageAlt": "Linha do tempo da aba Animar com a régua dos segundos e o marcador de tempo em 1 segundo destacado."
           },
           {
             "id": "mover",
             "title": "Mexa a peça",
             "body": "Clique na peça. Em **Ferramentas**, clique em **Mover**, **Girar** ou **Tamanho** e arraste as alças.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/molda-animar-com-poses/mover-645809004f14cc48.webp",
             "imageAlt": "Aba Animar do Molda com uma peça escolhida, as alças de girar à vista e o botão Girar destacado."
           },
           {
             "id": "marcar",
             "title": "Marque a pose",
-            "body": "Clique em **Marcar pose**, o botão amarelo da linha do tempo. A pose do começo é guardada sozinha.",
-            "imageAlt": "Linha do tempo com o botão amarelo Marcar pose destacado e o selo Pose por marcar na barra de cima."
+            "body": "Clique em **Marcar pose**, o botão azul da linha do tempo, ao lado do botão de tocar. A pose do começo é guardada sozinha.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/molda-animar-com-poses/marcar-82aff6b227cd3c95.webp",
+            "imageAlt": "Linha do tempo com o botão azul Marcar pose destacado ao lado do botão de tocar, e o selo Pose por marcar na barra de cima."
           },
           {
             "id": "mais",
             "title": "Faça mais poses",
-            "body": "Clique em outro momento, mexa as peças e marque de novo. Para um movimento mais longo, clique em **Mais tempo · +2 s**, no painel da direita.",
-            "imageAlt": "Linha do tempo com várias poses marcadas como losangos coloridos e o botão Mais tempo · +2 s destacado no painel da direita."
+            "body": "Clique em outro momento, mexa as peças e marque de novo. Para um movimento mais longo, escolha outro tempo em **Duração**, na linha do tempo, ou clique em **Mais tempo · +2 s**, no painel da direita.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/molda-animar-com-poses/mais-b5dccc71de4a48df.webp",
+            "imageAlt": "Linha do tempo com várias poses marcadas como losangos coloridos e o campo Duração destacado ao lado da chave Repetir."
           },
           {
             "id": "tocar",
@@ -4663,10 +5070,10 @@
     {
       "slug": "molda-mudar-a-forma",
       "collection": "molda",
-      "position": 8,
+      "position": 9,
       "draft": {
         "title": "Como mudar a forma de uma peça com pontos, linhas e faces",
-        "summary": "Escolha pontos, linhas ou faces de uma peça e arraste para criar formas novas. Use o Cortar para ganhar faces.",
+        "summary": "Escolha pontos, linhas ou faces de uma peça e arraste para criar formas novas. Use o Raio-X para ver através da peça, o Puxar para esticar faces e o Cortar para ganhar faces.",
         "keywords": [
           "Molda",
           "malha",
@@ -4679,23 +5086,41 @@
           "faces",
           "plano",
           "cortar",
-          "loop cut",
           "deformar",
           "esticar",
-          "modelar"
+          "modelar",
+          "corte em faixa",
+          "loop cut",
+          "puxar",
+          "puxar face",
+          "extrudar",
+          "extrude",
+          "raio-x",
+          "raio x",
+          "transparente",
+          "ver através",
+          "torus"
         ],
         "steps": [
           {
             "id": "plano",
             "title": "Comece com um Plano",
             "body": "Na aba **Modelar**, em **Adicionar**, clique em **Plano**. Ele nasce deitado e fino como uma folha.",
-            "imageAlt": "Aba Modelar do Molda com o botão Plano destacado em Adicionar e um plano deitado no modelo."
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/molda-mudar-a-forma/plano-22b53b21c773e77b.webp",
+            "imageAlt": "Aba Modelar do Molda com o botão Plano destacado em Adicionar, logo abaixo do Torus, e um plano deitado no modelo."
           },
           {
             "id": "escolher",
             "title": "Escolha pontos, linhas ou faces",
-            "body": "Com a peça escolhida, clique em **Pontos**, **Linhas** ou **Faces**, no alto da área do modelo. Isso funciona no Plano e também na Caixa, na Rampa, no Cilindro e na Bola.",
+            "body": "Com a peça escolhida, clique em **Pontos**, **Linhas** ou **Faces**, no alto da área do modelo. Isso funciona no Plano e também na Caixa, na Rampa, no Cilindro, no Cone, na Bola e no Torus.",
             "imageAlt": "Alto da área do modelo no Molda com Escolher: Peça inteira, Pontos, Linhas e Faces, e Pontos destacado."
+          },
+          {
+            "id": "atras",
+            "title": "Veja através da peça",
+            "body": "Precisa escolher um ponto do lado de trás? Clique no botão do Raio-X, o de dois quadrados ao lado da grade, no alto da área do modelo. As peças ficam transparentes e o clique alcança o que está atrás. Clique de novo para desligar.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/molda-mudar-a-forma/atras-b27a208b846a4701.webp",
+            "imageAlt": "Alto da área do modelo no Molda com o botão Raio-X ligado ao lado da grade e a peça transparente, mostrando os pontos de trás."
           },
           {
             "id": "mover",
@@ -4704,10 +5129,18 @@
             "imageAlt": "Plano no Molda com um ponto escolhido sendo levantado pelas alças de mover, formando uma ponta."
           },
           {
+            "id": "puxar",
+            "title": "Puxe uma face",
+            "body": "Em **Faces**, clique numa face e arraste a própria face para fora. Ela cresce e cria lados novos. Você também pode clicar em **Puxar**, no painel da direita, e escrever a medida em **Quanto puxar**. Depois clique em **Aplicar**. Se o **Puxar** ainda não aparece para você, ele abre mais adiante na sua jornada.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/molda-mudar-a-forma/puxar-783364f14975da45.webp",
+            "imageAlt": "Caixa no Molda com uma face sendo puxada para fora e, no painel da direita, o campo Quanto puxar e o botão Aplicar destacados."
+          },
+          {
             "id": "cortar",
             "title": "Ganhe faces com o Cortar",
-            "body": "Para ter mais faces numa peça, clique em **Cortar**, à esquerda. Clique em **Loop cut**, passe o cursor por uma linha da peça e clique. Depois clique em **Aplicar corte**.",
-            "imageAlt": "Painel Cortar do Molda com Loop cut escolhido, a faixa de corte aparecendo na caixa e o botão Aplicar corte destacado."
+            "body": "Para ter mais faces numa peça, clique em **Cortar**, à esquerda. Clique em **Corte em faixa**, passe o cursor por uma linha da peça e clique. Depois clique em **Aplicar corte**.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/molda-mudar-a-forma/cortar-b0705a1feea132a2.webp",
+            "imageAlt": "Painel Cortar do Molda com Corte em faixa escolhido, a faixa de corte aparecendo na caixa e o botão Aplicar corte destacado."
           },
           {
             "id": "voltar",
@@ -4716,17 +5149,21 @@
             "imageAlt": "Alto da área do modelo no Molda com o botão Peça inteira destacado."
           }
         ],
-        "related": ["molda-montar-e-pintar", "molda-pintar-de-perto"],
+        "related": [
+          "molda-montar-e-pintar",
+          "molda-pintar-de-perto",
+          "molda-juntar-e-separar-pecas"
+        ],
         "toolRef": "molda"
       }
     },
     {
       "slug": "molda-trazer-modelo-3d",
       "collection": "molda",
-      "position": 9,
+      "position": 10,
       "draft": {
         "title": "Como trazer um modelo 3D de um arquivo para o Molda",
-        "summary": "Abra um arquivo GLB ou glTF na oficina, confira a prévia e use o modelo na sua criação.",
+        "summary": "Abra um arquivo GLB ou glTF, confira a prévia e junte o modelo às peças da sua criação.",
         "keywords": [
           "Molda",
           "importar",
@@ -4737,14 +5174,17 @@
           "trazer 3D",
           "abrir arquivo",
           "modelo baixado",
-          "carregar modelo"
+          "carregar modelo",
+          "adicionar modelo",
+          "juntar modelo"
         ],
         "steps": [
           {
             "id": "nova",
-            "title": "Comece uma criação nova",
-            "body": "O modelo do arquivo ocupa o lugar do que está na oficina. Por isso, comece uma criação nova. Veja [como começar uma criação](/como-fazer/molda-criar-uma-criacao).",
-            "imageAlt": "Janela Criar novo do Molda com o cartão Modelo destacado."
+            "title": "Abra a criação que vai receber o modelo",
+            "body": "O modelo do arquivo entra na criação aberta como um grupo novo, e as peças que já estão lá continuam. Para começar do zero, crie uma criação nova antes. Veja [como começar uma criação](/como-fazer/molda-criar-uma-criacao).",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/molda-trazer-modelo-3d/nova-ccc96a7b567ff359.webp",
+            "imageAlt": "Galeria Minhas criações 3D do Molda com a figura da criação minha-nave destacada para abrir."
           },
           {
             "id": "abrir",
@@ -4755,23 +5195,173 @@
           {
             "id": "escolher",
             "title": "Escolha o arquivo",
-            "body": "Clique em **Escolher modelo e arquivos** e escolha o arquivo .glb ou .gltf. Se for .gltf, escolha também os arquivos .bin e as imagens dele. Use modelos que você fez ou que pode usar.",
-            "imageAlt": "Janela Trazer um modelo para a oficina com o botão Escolher modelo e arquivos destacado."
+            "body": "Clique em **Escolher modelo e arquivos** e escolha o arquivo .glb ou .gltf. Se for .gltf, escolha também os arquivos .bin e as imagens dele. O nome do arquivo aparece em **Arquivo principal**. Use modelos que você fez ou que pode usar.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/molda-trazer-modelo-3d/escolher-ca03dc8bd975f2e6.webp",
+            "imageAlt": "Janela Trazer um modelo para a oficina com o botão Escolher modelo e arquivos e o Arquivo principal cubo-teste.glb destacados."
           },
           {
             "id": "previa",
             "title": "Veja a prévia",
-            "body": "Em **Cena do arquivo**, escolha a cena do modelo e clique em **Preparar prévia**. Arraste a prévia para olhar o modelo por outros lados. Ela não muda sua criação.",
-            "imageAlt": "Janela de importação do Molda com a prévia do modelo pronta e o resumo de partes e movimentos."
+            "body": "Escolha a cena em **Cena do arquivo**, por exemplo **Cena 1**. Clique em **Preparar prévia** e arraste a prévia para olhar o modelo por outros lados. Ela não muda sua criação.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/molda-trazer-modelo-3d/previa-47cb64d6c3a04553.webp",
+            "imageAlt": "Janela de importação do Molda com a Cena 1 escolhida em Cena do arquivo e o botão Preparar prévia destacado."
           },
           {
             "id": "usar",
-            "title": "Use o modelo",
-            "body": "Leia **O que foi adaptado**, marque **Revisei as adaptações e o aviso sobre os arquivos originais.** e clique em **Usar modelo nesta criação**. Mudou de ideia? **Desfazer** traz sua criação de volta.",
-            "imageAlt": "Fim da janela de importação com a caixa de confirmação marcada e o botão Usar modelo nesta criação destacado."
+            "title": "Junte o modelo à sua criação",
+            "body": "Leia **O que foi adaptado**, marque **Revisei as adaptações e o aviso sobre os arquivos originais.** e clique em **Adicionar modelo à cena**. O modelo entra como um grupo em **Peças e grupos**. Mudou de ideia? **Desfazer** tira o modelo de novo.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/molda-trazer-modelo-3d/usar-067a4cbdd7a99f87.webp",
+            "imageAlt": "Fim da janela de importação com a caixa de confirmação marcada e o botão Adicionar modelo à cena destacado."
           }
         ],
-        "related": ["molda-criar-uma-criacao", "molda-montar-e-pintar"],
+        "related": [
+          "molda-criar-uma-criacao",
+          "molda-montar-e-pintar",
+          "molda-juntar-e-separar-pecas"
+        ],
+        "toolRef": "molda"
+      }
+    },
+    {
+      "slug": "molda-juntar-e-separar-pecas",
+      "collection": "molda",
+      "position": 11,
+      "draft": {
+        "title": "Como juntar ou separar peças no Molda",
+        "summary": "Corte uma peça em duas, una várias peças numa só ou combine duas formas.",
+        "keywords": [
+          "Molda",
+          "separar",
+          "separar peça",
+          "cortar peça",
+          "dividir",
+          "partir",
+          "juntar",
+          "unir",
+          "unir peças",
+          "colar peças",
+          "grudar",
+          "combinar",
+          "união",
+          "interseção",
+          "diferença",
+          "furar",
+          "booleana",
+          "separar linha"
+        ],
+        "steps": [
+          {
+            "id": "separar",
+            "title": "Abra o Separar peça",
+            "body": "Na aba **Modelar**, clique na peça que vai cortar. À esquerda, abra **Seleção e organização** e clique em **Separar peça**.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/molda-juntar-e-separar-pecas/separar-b35036797f879d05.webp",
+            "imageAlt": "Coluna da esquerda da aba Modelar com Seleção e organização aberto e o botão Separar peça destacado."
+          },
+          {
+            "id": "marcar",
+            "title": "Marque por onde cortar",
+            "body": "Clique nas bordas da peça, nos lugares por onde ela vai se partir, e uma linha mostra o corte. Com **Grudar no meio** ligado, cada ponto fica bem no meio da borda.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/molda-juntar-e-separar-pecas/marcar-d7da901a8d4f15b3.webp",
+            "imageAlt": "Caixa no Molda com pontos marcados nas bordas, a linha do corte atravessando a peça e a barra escura Separar a peça embaixo."
+          },
+          {
+            "id": "confirmar",
+            "title": "Separe a peça",
+            "body": "Clique em **Separar**, na barra escura sobre o modelo. A peça vira duas peças fechadas, e **Desfazer** junta de novo. **Cancelar** desiste do corte.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/molda-juntar-e-separar-pecas/confirmar-9ae33ec9f37a1319.webp",
+            "imageAlt": "Barra escura do corte no Molda com o botão Separar destacado e a caixa já dividida em duas peças."
+          },
+          {
+            "id": "linha",
+            "title": "Ou separe por uma linha",
+            "body": "Em **Linhas**, marque **Selecionar loop inteiro**, no painel da direita, clique numa linha que dá a volta na peça e depois em **Separar linha**, no painel da direita. Confira a prévia e clique em **Separar**. **Separar linha**, **Unir peças** e **Combinar volumes** abrem mais adiante na sua jornada e, até lá, aparecem em **Ferramentas que vêm por aí**.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/molda-juntar-e-separar-pecas/linha-530ca2db5666e8e7.webp",
+            "imageAlt": "Molda no modo Linhas com uma volta de linhas escolhida na caixa e o botão Separar linha destacado no painel Editar peça."
+          },
+          {
+            "id": "varias",
+            "title": "Escolha mais de uma peça",
+            "body": "Para juntar, clique numa peça e, segurando a tecla Shift, clique nas outras. Elas ficam marcadas em **Peças e grupos**, à direita.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/molda-juntar-e-separar-pecas/varias-c07f65c47d63b7ff.webp",
+            "imageAlt": "Lista Peças e grupos do Molda com duas peças marcadas ao mesmo tempo."
+          },
+          {
+            "id": "unir",
+            "title": "Una as peças",
+            "body": "Clique em **Unir peças**, embaixo da lista. As peças viram uma só, e cada parte continua com a forma que já tinha.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/molda-juntar-e-separar-pecas/unir-914d8cd3717e937b.webp",
+            "imageAlt": "Painel da direita do Molda com duas peças escolhidas e o botão Unir peças destacado embaixo da lista."
+          },
+          {
+            "id": "combinar",
+            "title": "Combine duas formas",
+            "body": "Com duas peças escolhidas, use **Combinar volumes**, à direita. **União** junta, **Interseção** guarda só a parte em comum e **Diferença** tira a segunda peça da primeira, como um furo. Confira a prévia e clique em **Confirmar resultado**.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/molda-juntar-e-separar-pecas/combinar-24c8409177e67f9d.webp",
+            "imageAlt": "Cartão Combinar volumes do Molda com Diferença escolhida, a prévia do furo no modelo e o botão Confirmar resultado destacado."
+          }
+        ],
+        "related": ["molda-mudar-a-forma", "molda-montar-e-pintar"],
+        "toolRef": "molda"
+      }
+    },
+    {
+      "slug": "molda-trocar-a-paleta",
+      "collection": "molda",
+      "position": 12,
+      "draft": {
+        "title": "Como trocar as cores da paleta no Molda",
+        "summary": "Escolha outra paleta, crie a sua ou tire as cores de uma imagem.",
+        "keywords": [
+          "Molda",
+          "paleta",
+          "paletas",
+          "cores",
+          "trocar cores",
+          "minhas paletas",
+          "criar paleta",
+          "cores de uma imagem",
+          "importar paleta",
+          "cor da imagem",
+          "gerenciar"
+        ],
+        "steps": [
+          {
+            "id": "abrir",
+            "title": "Abra as paletas",
+            "body": "Na aba **Pintar**, clique em **Paletas**, no alto do cartão das cores, à direita. Ao lado aparece o nome da paleta que você usa agora. Na aba **Modelar** ela também fica no painel da direita.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/molda-trocar-a-paleta/abrir-f535d1e263ba447b.webp",
+            "imageAlt": "Painel da direita da aba Pintar com a linha Paletas aberta acima de Escolha uma cor."
+          },
+          {
+            "id": "escolher",
+            "title": "Escolha outra paleta",
+            "body": "Em **Escolher paleta**, escolha uma da lista. As cores da sua criação mudam junto, e **Desfazer** volta a paleta de antes.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/molda-trocar-a-paleta/escolher-53ef82db823c7f0c.webp",
+            "imageAlt": "Lista Escolher paleta aberta no Molda com outra paleta sendo escolhida e as cores dela na faixa embaixo."
+          },
+          {
+            "id": "criar",
+            "title": "Crie a sua paleta",
+            "body": "Clique em **+ Criar paleta**. Escreva um nome em **Nome da paleta**, clique numa cor para trocar e depois em **Criar paleta**.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/molda-trocar-a-paleta/criar-7fb60eba52b80926.webp",
+            "imageAlt": "Janela Criar paleta do Molda com o nome escrito, os quadradinhos de cor e o botão Criar paleta destacado."
+          },
+          {
+            "id": "imagem",
+            "title": "Use as cores de uma imagem",
+            "body": "Clique em **Cores de uma imagem** e escolha uma imagem. O Molda encontra até 32 cores. Dê um nome e clique em **Criar e usar**.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/molda-trocar-a-paleta/imagem-4d25650e98e2158e.webp",
+            "imageAlt": "Janela Cores de uma imagem do Molda com as cores encontradas na imagem e o botão Criar e usar destacado."
+          },
+          {
+            "id": "gerenciar",
+            "title": "Arrume suas paletas",
+            "body": "As paletas que você criou aparecem em **Minhas paletas**, na lista. Clique em **Gerenciar** para mudar o nome ou apagar uma delas. Apagar uma paleta não muda as criações que já usam as cores dela.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/molda-trocar-a-paleta/gerenciar-a88f84fd37390315.webp",
+            "imageAlt": "Janela Minhas paletas do Molda com uma paleta guardada e os botões Salvar nome e Apagar."
+          }
+        ],
+        "related": ["molda-montar-e-pintar", "pinta-trocar-as-cores"],
         "toolRef": "molda"
       }
     }

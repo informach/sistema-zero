@@ -1,6 +1,11 @@
 # Complete a busca
 
-**Direção atual, 25/10/2026:** vídeo conceitual → investigação guiada pelo Zappy → construção no Estúdio → previsão e comparação no quiz. Seguir [Descoberta guiada](../../aulas-interativas-tecnico/DESCOBERTA-GUIADA.md). A implementação e os materiais locais não significam mídia gravada ou curso publicado.
+## Atualização aplicada em 26/10/2026
+
+A versão vigente segue [exploração orientada por objetivos](../../aulas-interativas-tecnico/DESCOBERTA-GUIADA.md): vídeos conceituais explicam e convidam; a experiência oferece controles livres e orientação pelo estado; o Estúdio conserva a instrução completa de montagem. Edição da regra, entrada de quem joga e execução são gestos distintos. As notas datadas anteriores abaixo registram o histórico. O roteiro e o manifesto atualizados são a referência de produção; os clipes ainda precisam de gravação/edição/importação.
+
+
+**Direção atual, 26/10/2026:** vídeo conceitual → investigação guiada pelo Zappy → construção no Estúdio → previsão e comparação no quiz. Seguir [Descoberta guiada](../../aulas-interativas-tecnico/DESCOBERTA-GUIADA.md). A implementação e os materiais locais não significam mídia gravada ou curso publicado.
 
 O conceito central é guardar e atualizar um único valor. A variável achados guarda quantos personagens foram encontrados; o placar lê esse valor. A pessoa continua o projeto da Aula 1 e acrescenta a soma de um a cada novo encontro.
 
@@ -18,7 +23,7 @@ Reaproveitar o futebol. A professora explica a variável, a soma e a diferença 
 
 A experiência conserva o jardim, acrescenta o cartão de achados e a última operação antes → somar 1 → agora. Isso representa uma atualização, não vários valores guardados. O placar lê o único valor atual. O motor registra primeiro achado, outro achado, vazio, toque repetido e nova busca.
 
-O Zappy pede uma ação por vez conforme as descobertas realizadas. Recomeçar a busca é um botão secundário durante os demais testes e recebe a variante principal quando o balão pede o reinício. O reinício zera a contagem e conserva a regra. Desfazer e a retomada restauram a mesma situação e orientação. Após concluir, mostrar o resumo e manter a exploração disponível.
+Zappy descreve o último teste e sugere comparações ainda não observadas. É possível tocar no vazio, repetir um achado e recomeçar a busca a qualquer momento, inclusive antes de encontrar alguém. O botão sugerido usa a cor principal; os demais permanecem utilizáveis. Recomeçar a busca zera a contagem e conserva a regra e as descobertas. Desfazer restaura a cena e as descobertas daquele instante. Recomeçar experiência limpa o ensaio. Após concluir, mostrar o resumo e manter a exploração disponível.
 
 ## Construção e objetivos
 

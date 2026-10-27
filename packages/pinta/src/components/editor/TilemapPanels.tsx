@@ -298,19 +298,21 @@ export function TilemapSidebar({
                       aria-pressed={active}
                       onClick={() => onSelectLayer(layer.id)}
                       // A linha de camada da tela-modelo: a escolhida com a borda azul, as outras lisas.
-                      className={`flex min-h-11 flex-1 items-center gap-1 truncate rounded-xl border-2 px-3 text-left text-sm font-bold transition ${
+                      // `flex-wrap`: no painel estreito o selo (frente, objetos) desce para a linha de
+                      // baixo em vez de espremer o nome ("Decoração" virava "I", 26/10/2026).
+                      className={`flex min-h-11 min-w-0 flex-1 flex-wrap content-center items-center gap-x-1 overflow-hidden rounded-xl border-2 px-3 py-1 text-left text-sm font-bold transition ${
                         active ? 'border-pin-accent' : 'border-transparent hover:bg-pin-bg'
                       }`}
                     >
                       {objects ? <Shapes aria-hidden="true" className="size-4 shrink-0" /> : null}
-                      <span className="truncate">{layer.name}</span>
+                      <span className="max-w-full truncate">{layer.name}</span>
                       {layer.front ? (
-                        <span className="ml-1 rounded bg-pin-accent/20 px-1 text-[10px] font-bold text-pin-accent">
+                        <span className="rounded bg-pin-accent/20 px-1 text-[10px] font-bold text-pin-accent">
                           {COPY.tiles.frontBadge}
                         </span>
                       ) : null}
                       {objects ? (
-                        <span className="ml-1 rounded bg-pin-accent/20 px-1 text-[10px] font-bold text-pin-accent">
+                        <span className="rounded bg-pin-accent/20 px-1 text-[10px] font-bold text-pin-accent">
                           {COPY.tiles.objectLayerBadge}
                         </span>
                       ) : null}

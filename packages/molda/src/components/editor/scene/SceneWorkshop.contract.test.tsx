@@ -207,14 +207,15 @@ describe('inventário da oficina: o que a criança alcança', () => {
     // The requested Plano adds one visible creation button.
     expect(vazio.view.getByRole('button', { name: copy.plane })).toBeDefined()
     expect(vazio.view.getByRole('button', { name: copy.torus })).toBeDefined()
-    // Torus adds one visible shape control in Modelar.
+    expect(vazio.view.getByRole('button', { name: copy.cone })).toBeDefined()
+    // Torus and Cone each add one visible shape control in Modelar.
     // A biblioteca de paletas acrescenta um único gatilho recolhido no Modelar.
     // O Raio-X pedido acrescenta uma alternância de vista, ao lado da grade.
-    expect(controlInventory(vazio.view.container).length).toBeLessThanOrEqual(71)
+    expect(controlInventory(vazio.view.container).length).toBeLessThanOrEqual(72)
     expect(
       encaradosVazio.length,
       `encarados na abertura: ${encaradosVazio.join(' | ')}`,
-    ).toBeLessThanOrEqual(51)
+    ).toBeLessThanOrEqual(52)
     cleanup()
 
     const comPeca = mount(withPiece())
@@ -222,11 +223,11 @@ describe('inventário da oficina: o que a criança alcança', () => {
     const encaradosPeca = frontControls(comPeca.view.container)
     // 12 coordinate inputs are now available directly, with pivot and component tools.
     // Flip adds its disclosure, three axes and the in-place option, behind the disclosure.
-    expect(controlInventory(comPeca.view.container).length).toBeLessThanOrEqual(128)
+    expect(controlInventory(comPeca.view.container).length).toBeLessThanOrEqual(129)
     expect(
       encaradosPeca.length,
       `encarados com uma peça escolhida: ${encaradosPeca.join(' | ')}`,
-    ).toBeLessThanOrEqual(91)
+    ).toBeLessThanOrEqual(92)
   })
 
   /**
@@ -252,14 +253,15 @@ describe('inventário da oficina: o que a criança alcança', () => {
     // One explicit UV-simple action repairs an existing piece without exposing UV editing tools.
     // A ajuda da pintura abre em modal sem ocupar espaço permanente no painel.
     // Textura e camadas voltou ao nível avançado como uma revelação fechada (+1 montado).
-    expect(montados.length, montados.join(' | ')).toBeLessThanOrEqual(86)
+    // Criar e Importar textura são as duas ações agora visíveis na aba Pintar.
+    expect(montados.length, montados.join(' | ')).toBeLessThanOrEqual(88)
     // Scope (2), UV grid and hue/hex replace the native picker; saved swatches stay bounded.
     // Named UV/material/sheet areas and the visible contextual brush section add four controls.
     // Ready colors stay in front; the new palette library has one collapsed entry.
     // HSV, favorites, UV/materials and layers are now closed.
     // The requested X-ray adds one view toggle beside the grid.
     // A entrada fechada de Textura e camadas também fica à vista (+1 controle).
-    expect(encarados.length, encarados.join(' | ')).toBeLessThanOrEqual(60)
+    expect(encarados.length, encarados.join(' | ')).toBeLessThanOrEqual(62)
   })
 
   test('todo controle tem nome: sem nome, a criança não acha e o leitor de tela não fala', () => {

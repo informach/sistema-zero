@@ -7,7 +7,8 @@
  * ⚠️ Arquivo PURO (sem imports): o teste de conformância do members o alcança por caminho
  * relativo. Drift (peça/categoria/paleta/default/oclusão divergente) → CI vermelho.
  *
- * Assets reais (Quaternius CC0, via pack do WawaSensei) servidos do PRÓPRIO app
+ * Assets reais (Quaternius CC0, via pack do WawaSensei, mais as peças próprias modeladas no Blender
+ * em 26/10/2026 sobre o mesmo esqueleto) servidos do PRÓPRIO app
  * (`public/avatar3d/…`, same-origin) — sem CORS, sem URL por ambiente; `connect-src 'self'`
  * cobre. GLB SIMPLES (sem Draco/KTX2/meshopt — a CSP do kids não tem `wasm-unsafe-eval`).
  */
@@ -23,6 +24,7 @@ export const AVATAR_CATEGORIES = [
   'facialHair',
   'glasses',
   'hat',
+  'hairAccessory',
   'top',
   'bottom',
   'outfit',
@@ -43,6 +45,7 @@ export const AVATAR_CATEGORY_LABELS: Record<AvatarCategory, string> = {
   facialHair: 'Barba',
   glasses: 'Óculos',
   hat: 'Chapéu',
+  hairAccessory: 'Enfeite',
   top: 'Blusa',
   bottom: 'Calça',
   outfit: 'Vestido',
@@ -63,6 +66,9 @@ export const AVATAR_PART_INFO: Record<string, AvatarPartInfo> = {
   'head-02': { category: 'head', labelPt: 'Rosto 2' },
   'head-03': { category: 'head', labelPt: 'Rosto 3' },
   'head-04': { category: 'head', labelPt: 'Rosto 4' },
+  // Peças próprias (26/10/2026): o nome diz o que a peça é.
+  'head-05': { category: 'head', labelPt: 'Sorriso pequeno' },
+  'head-06': { category: 'head', labelPt: 'Sorriso fechado' },
   // Cabelo
   'hair-none': { category: 'hair', labelPt: 'Careca' },
   'hair-01': { category: 'hair', labelPt: 'Cabelo 1' },
@@ -76,6 +82,13 @@ export const AVATAR_PART_INFO: Record<string, AvatarPartInfo> = {
   'hair-09': { category: 'hair', labelPt: 'Cabelo 9' },
   'hair-10': { category: 'hair', labelPt: 'Cabelo 10' },
   'hair-11': { category: 'hair', labelPt: 'Cabelo 11' },
+  'hair-12': { category: 'hair', labelPt: 'Longo solto' },
+  'hair-13': { category: 'hair', labelPt: 'Rabo de cavalo alto' },
+  'hair-14': { category: 'hair', labelPt: 'Duas tranças' },
+  'hair-15': { category: 'hair', labelPt: 'Crespo volumoso' },
+  'hair-16': { category: 'hair', labelPt: 'Cachos curtos' },
+  'hair-17': { category: 'hair', labelPt: 'Coque alto' },
+  'hair-18': { category: 'hair', labelPt: 'Maria-chiquinha' },
   // Olhos
   'eyes-01': { category: 'eyes', labelPt: 'Olhos 1' },
   'eyes-02': { category: 'eyes', labelPt: 'Olhos 2' },
@@ -89,6 +102,8 @@ export const AVATAR_PART_INFO: Record<string, AvatarPartInfo> = {
   'eyes-10': { category: 'eyes', labelPt: 'Olhos 10' },
   'eyes-11': { category: 'eyes', labelPt: 'Olhos 11' },
   'eyes-12': { category: 'eyes', labelPt: 'Olhos 12' },
+  'eyes-13': { category: 'eyes', labelPt: 'Olhos com cílios' },
+  'eyes-14': { category: 'eyes', labelPt: 'Olhos com brilho' },
   // Sobrancelhas
   'eyebrow-01': { category: 'eyebrows', labelPt: 'Sobrancelha 1' },
   'eyebrow-02': { category: 'eyebrows', labelPt: 'Sobrancelha 2' },
@@ -100,11 +115,13 @@ export const AVATAR_PART_INFO: Record<string, AvatarPartInfo> = {
   'eyebrow-08': { category: 'eyebrows', labelPt: 'Sobrancelha 8' },
   'eyebrow-09': { category: 'eyebrows', labelPt: 'Sobrancelha 9' },
   'eyebrow-10': { category: 'eyebrows', labelPt: 'Sobrancelha 10' },
+  'eyebrow-11': { category: 'eyebrows', labelPt: 'Sobrancelha fina' },
   // Nariz
   'nose-01': { category: 'nose', labelPt: 'Nariz 1' },
   'nose-02': { category: 'nose', labelPt: 'Nariz 2' },
   'nose-03': { category: 'nose', labelPt: 'Nariz 3' },
   'nose-04': { category: 'nose', labelPt: 'Nariz 4' },
+  'nose-05': { category: 'nose', labelPt: 'Nariz pequeno' },
   // Pintura de rosto / máscara (decalque no rosto)
   'face-none': { category: 'faceDecor', labelPt: 'Nenhuma' },
   'face-01': { category: 'faceDecor', labelPt: 'Pintura 1' },
@@ -115,6 +132,8 @@ export const AVATAR_PART_INFO: Record<string, AvatarPartInfo> = {
   'face-06': { category: 'faceDecor', labelPt: 'Pintura 6' },
   'face-07': { category: 'faceDecor', labelPt: 'Pintura 7' },
   'face-08': { category: 'faceDecor', labelPt: 'Máscara' },
+  'face-09': { category: 'faceDecor', labelPt: 'Sardas' },
+  'face-10': { category: 'faceDecor', labelPt: 'Bochecha rosada' },
   // Barba
   'beard-none': { category: 'facialHair', labelPt: 'Nenhuma' },
   'beard-01': { category: 'facialHair', labelPt: 'Barba 1' },
@@ -130,6 +149,8 @@ export const AVATAR_PART_INFO: Record<string, AvatarPartInfo> = {
   'glasses-02': { category: 'glasses', labelPt: 'Óculos 2' },
   'glasses-03': { category: 'glasses', labelPt: 'Óculos 3' },
   'glasses-04': { category: 'glasses', labelPt: 'Óculos 4' },
+  'glasses-05': { category: 'glasses', labelPt: 'Óculos redondos' },
+  'glasses-06': { category: 'glasses', labelPt: 'Óculos gatinho' },
   // Chapéu
   'hat-none': { category: 'hat', labelPt: 'Nenhum' },
   'hat-01': { category: 'hat', labelPt: 'Chapéu 1' },
@@ -139,14 +160,26 @@ export const AVATAR_PART_INFO: Record<string, AvatarPartInfo> = {
   'hat-05': { category: 'hat', labelPt: 'Chapéu 5' },
   'hat-06': { category: 'hat', labelPt: 'Chapéu 6' },
   'hat-07': { category: 'hat', labelPt: 'Chapéu 7' },
+  // Enfeite de cabelo (aparece junto com o cabelo; o chapéu esconde)
+  'enfeite-none': { category: 'hairAccessory', labelPt: 'Nenhum' },
+  'enfeite-01': { category: 'hairAccessory', labelPt: 'Laço' },
+  'enfeite-02': { category: 'hairAccessory', labelPt: 'Tiara' },
+  'enfeite-03': { category: 'hairAccessory', labelPt: 'Coroa de flores' },
+  'enfeite-04': { category: 'hairAccessory', labelPt: 'Presilhas de estrela' },
+  'enfeite-05': { category: 'hairAccessory', labelPt: 'Orelhinhas de gato' },
   // Blusa
   'top-01': { category: 'top', labelPt: 'Blusa 1' },
   'top-02': { category: 'top', labelPt: 'Blusa 2' },
   'top-03': { category: 'top', labelPt: 'Blusa 3' },
+  'top-04': { category: 'top', labelPt: 'Manga longa' },
+  'top-05': { category: 'top', labelPt: 'Moletom com capuz' },
+  'top-06': { category: 'top', labelPt: 'Camiseta listrada' },
   // Calça
   'bottom-01': { category: 'bottom', labelPt: 'Calça 1' },
   'bottom-02': { category: 'bottom', labelPt: 'Calça 2' },
   'bottom-03': { category: 'bottom', labelPt: 'Calça 3' },
+  'bottom-04': { category: 'bottom', labelPt: 'Calça comprida' },
+  'bottom-05': { category: 'bottom', labelPt: 'Saia longa' },
   // Vestido / roupa única (esconde top+bottom)
   'outfit-none': { category: 'outfit', labelPt: 'Nenhum' },
   'outfit-01': { category: 'outfit', labelPt: 'Vestido' },
@@ -154,10 +187,13 @@ export const AVATAR_PART_INFO: Record<string, AvatarPartInfo> = {
   'outfit-03': { category: 'outfit', labelPt: 'Look 2' },
   'outfit-04': { category: 'outfit', labelPt: 'Look 3' },
   'outfit-05': { category: 'outfit', labelPt: 'Look 4' },
+  'outfit-06': { category: 'outfit', labelPt: 'Vestido longo' },
   // Calçado
   'shoes-01': { category: 'shoes', labelPt: 'Calçado 1' },
   'shoes-02': { category: 'shoes', labelPt: 'Calçado 2' },
   'shoes-03': { category: 'shoes', labelPt: 'Calçado 3' },
+  'shoes-04': { category: 'shoes', labelPt: 'Bota' },
+  'shoes-05': { category: 'shoes', labelPt: 'Sapatilha' },
   // Acessório
   'acc-none': { category: 'accessory', labelPt: 'Nenhum' },
   'acc-01': { category: 'accessory', labelPt: 'Brinco 1' },
@@ -168,6 +204,8 @@ export const AVATAR_PART_INFO: Record<string, AvatarPartInfo> = {
   'acc-06': { category: 'accessory', labelPt: 'Laço 2' },
   'acc-07': { category: 'accessory', labelPt: 'Brinco 5' },
   'acc-08': { category: 'accessory', labelPt: 'Brinco 6' },
+  'acc-09': { category: 'accessory', labelPt: 'Colar de coração' },
+  'acc-10': { category: 'accessory', labelPt: 'Cachecol' },
 }
 
 /** Paletas por categoria (mesmas cores do members — travado pela conformância). */
@@ -213,6 +251,8 @@ export const AVATAR_CATEGORY_PALETTES: Partial<Record<AvatarCategory, string[]>>
   bottom: GARMENT_PALETTE,
   outfit: GARMENT_PALETTE,
   shoes: GARMENT_PALETTE,
+  hairAccessory: GARMENT_PALETTE,
+  accessory: GARMENT_PALETTE,
 }
 
 export interface AvatarSlot {
@@ -231,16 +271,47 @@ export const DEFAULT_AVATAR_SLOTS: Record<AvatarCategory, AvatarSlot> = {
   facialHair: { asset: 'beard-none', color: '#6a4e35' },
   glasses: { asset: 'glasses-none', color: '#3498db' },
   hat: { asset: 'hat-none' },
+  hairAccessory: { asset: 'enfeite-none', color: '#e84393' },
   top: { asset: 'top-01', color: '#3498db' },
   bottom: { asset: 'bottom-01', color: '#34495e' },
   outfit: { asset: 'outfit-none', color: '#e84393' },
   shoes: { asset: 'shoes-01', color: '#2c3e50' },
-  accessory: { asset: 'acc-none' },
+  accessory: { asset: 'acc-none', color: '#e74c3c' },
 }
 
-/** Oclusão de render: chapéu real esconde o cabelo (espelha o members). */
+/**
+ * Peças de categoria COM paleta que têm a cor embutida (sem material `Color_`): os brincos de
+ * metal, os óculos 2 e as fantasias. Com uma delas vestida a fileira de cores some, porque
+ * escolher uma cor não mudaria nada. Só apresentação (o members segue aceitando a cor da paleta).
+ * ⚠️ Conferido contra os GLBs por `community-kids/tests/avatar3d-catalog.test.ts`: peça nova sem
+ * `Color_` numa categoria com paleta entra aqui, senão o teste reprova.
+ */
+export const AVATAR_FIXED_COLOR_PARTS: ReadonlySet<string> = new Set([
+  'acc-01',
+  'acc-02',
+  'acc-03',
+  'acc-04',
+  'acc-07',
+  'acc-08',
+  'glasses-02',
+  'outfit-02',
+  'outfit-03',
+  'outfit-04',
+  'outfit-05',
+])
+
+/** A paleta que vale para a peça vestida (nenhuma quando ela tem a cor embutida). */
+export function paletteForPart(
+  category: AvatarCategory,
+  asset: string | undefined,
+): string[] | undefined {
+  if (asset && AVATAR_FIXED_COLOR_PARTS.has(asset)) return undefined
+  return AVATAR_CATEGORY_PALETTES[category]
+}
+
+/** Oclusão de render: chapéu real esconde o cabelo e o enfeite (espelha o members). */
 export const AVATAR_HIDE_GROUPS: Partial<Record<AvatarCategory, AvatarCategory[]>> = {
-  hat: ['hair'],
+  hat: ['hair', 'hairAccessory'],
   outfit: ['top', 'bottom'],
 }
 
@@ -251,6 +322,7 @@ export const AVATAR_REMOVABLE_NONE: Partial<Record<AvatarCategory, string>> = {
   facialHair: 'beard-none',
   glasses: 'glasses-none',
   hat: 'hat-none',
+  hairAccessory: 'enfeite-none',
   outfit: 'outfit-none',
   accessory: 'acc-none',
 }

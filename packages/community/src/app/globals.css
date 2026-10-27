@@ -83,8 +83,8 @@
    componente (que o admin também usa). */
 @theme {
   --shadow-sm: 0 0 #0000;
-  /* A menor letra da comunidade adulta é de 17 px: com a base de 20 px, o `text-xs` (0,75rem)
-     dos componentes compartilhados daria 15 px. */
+  /* A menor letra da comunidade adulta é de 15 px: com a base de 18 px, o `text-xs` (0,75rem)
+     dos componentes compartilhados daria 13,5 px. */
   --text-xs: 0.85rem;
   --text-xs--line-height: 1.45;
 }
@@ -426,6 +426,67 @@ main:has(.sz-aula-adulto) {
     0 0 0 1px var(--border),
     0 18px 40px rgba(28, 48, 90, 0.24);
 }
+/* OBJETIVOS DO PROJETO (26/10/2026). O cartão do member-shell embaixo do Estúdio da parte
+   (`SectionProjectCheck`) só trazia a estrutura: aqui ele veste a bancada clara, com cada objetivo
+   numa linha de 44 px, o feito no verde de sucesso e o extra no amarelo de aviso. O estado nunca é
+   só cor: o ícone e a palavra seguem no componente. Fora de camada, como o resto da aula. */
+.sz-aula-adulto .sz-lesson-objectives {
+  border: 1px solid var(--border);
+  border-radius: 1.25rem;
+  background: var(--card);
+  box-shadow: 0 4px 0 var(--degrau-claro);
+  padding: 0.75rem 1rem;
+}
+.sz-aula-adulto .sz-lesson-objectives-title {
+  font-family: var(--font-display), system-ui, sans-serif;
+  font-size: 1.0625rem;
+  font-weight: 700;
+  color: var(--foreground);
+}
+.sz-aula-adulto .sz-lesson-objective {
+  min-height: 2.75rem;
+  padding: 0.55rem 0.8rem;
+  border: 1px solid transparent;
+  border-radius: 0.875rem;
+  background: var(--acao-tint);
+  font-size: 0.95rem;
+  color: var(--foreground);
+}
+.sz-aula-adulto .sz-lesson-objective[data-extra] {
+  background: var(--aviso-tint);
+}
+.sz-aula-adulto .sz-lesson-objective[data-state="passed"] {
+  background: var(--sucesso-tint);
+}
+.sz-aula-adulto .sz-lesson-objective[data-state="passed"] .sz-lesson-objective-icon {
+  color: var(--pen-ok-texto);
+}
+.sz-aula-adulto .sz-lesson-objective[data-state="failed"] .sz-lesson-objective-icon {
+  color: var(--pen-acao);
+}
+/* Mexeu no projeto depois de verificar: o resultado é de antes da mudança. */
+.sz-aula-adulto .sz-lesson-objective[data-stale] {
+  border-style: dashed;
+  border-color: var(--border);
+}
+.sz-aula-adulto .sz-lesson-objectives-extras-title {
+  font-weight: 700;
+  color: var(--foreground);
+}
+.sz-aula-adulto .sz-lesson-objectives-xp {
+  padding: 0.2rem 0.7rem;
+  border-radius: 9999px;
+  background: var(--aviso-tint);
+  color: var(--aviso-texto);
+  font-weight: 700;
+}
+.sz-aula-adulto .sz-lesson-objectives-feedback {
+  font-weight: 700;
+  color: var(--foreground);
+}
+.sz-aula-adulto .sz-lesson-objectives-feedback[data-tone="ok"] {
+  color: var(--pen-ok-texto);
+}
 /* MATERIAIS COMPLEMENTARES. O bloco também ganha cartão, como o texto e a cena — ele é uma
    lista, e sem moldura ela se mistura ao parágrafo de cima. O desenho é o mesmo componente do
    kids (`MaterialsBlockView`, sem cor por dentro); aqui ele sai sóbrio. */
@@ -600,25 +661,26 @@ main:has(.sz-aula-adulto) {
   * {
     @apply border-border outline-ring/50;
   }
-  /* ⭐ A LETRA BASE É DE 20 PX (direção de arte de 18/10/2026: adultos iniciantes, com o leitor de 50
-     a 70 anos como régua de leitura). Pela raiz, e não pelo corpo: o player da aula, os diálogos e
+  /* ⭐ A LETRA BASE É DE 18 PX (direção de arte de 18/10/2026: adultos iniciantes, com o leitor de 50
+     a 70 anos como régua de leitura; era 20 px até 26/10/2026, decisão dela: a página ficava
+     inflada, com pouco conteúdo por tela no notebook). Pela raiz, e não pelo corpo: o player da aula, os diálogos e
      os outros componentes compartilhados medem em rem e crescem juntos, sem mudar o layout que dividem com o Kids. As ferramentas de tela
      cheia (Estúdio, Pinta, Molda, Pensa e o avatar) são editores densos desenhados na base de
      16 px e voltam a ela. */
   html {
-    font-size: 125%;
+    font-size: 112.5%;
   }
   html:has(.sz-app[data-embedded="true"]),
   html:has([data-sz-public-player]) {
     font-size: 100%;
-    /* O `text-xs` maior (17 px) é da pele: nos editores volta ao padrão do Tailwind. */
+    /* O `text-xs` maior (15 px) é da pele: nos editores volta ao padrão do Tailwind. */
     --text-xs: 0.75rem;
     --text-xs--line-height: calc(1 / 0.75);
   }
   /* A tela de ferramenta fechada mora na rota da ferramenta, mas é uma página da comunidade: volta à
-     letra de 20 px (`tool-notice.tsx`). */
+     letra de 18 px (`tool-notice.tsx`). */
   html:has(.sz-app[data-embedded="true"] [data-sz-tool-notice]) {
-    font-size: 125%;
+    font-size: 112.5%;
     --text-xs: 0.85rem;
     --text-xs--line-height: 1.45;
   }
@@ -631,7 +693,7 @@ main:has(.sz-aula-adulto) {
     --font-mono:
       var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
       "Liberation Mono", "Courier New", monospace;
-    /* A letra de pixel, só em rótulos curtos de 17 px ou mais (sobretítulo, números de aula). */
+    /* A letra de pixel, só em rótulos curtos de 15 px ou mais (sobretítulo, números de aula). */
     --font-pixel: var(--font-silkscreen), var(--font-mono);
     font-family: var(--font-sans);
     line-height: 1.6;
@@ -1021,8 +1083,8 @@ input[type="password"]::-webkit-strong-password-auto-fill-button {
    A PELE DA COMUNIDADE ADULTA (direção de arte de 18/10/2026)
 
    O vocabulário das páginas do adulto: a faixa quadriculada do topo, o cartão branco, títulos na
-   Bricolage, botões RETANGULARES de 56 px (2,8rem na base de 20 px), selos com texto e a barra de
-   progresso. Medidas em rem: crescem com a raiz. A menor letra é de 17 px (0,85rem).
+   Bricolage, botões RETANGULARES de 50 px (2,8rem na base de 18 px), selos com texto e a barra de
+   progresso. Medidas em rem: crescem com a raiz. A menor letra é de 15 px (0,85rem).
    Em `@layer components` para o `className` de quem usa poder ajustar (a armadilha do kids).
    ============================================================================ */
 @layer components {
@@ -1094,7 +1156,8 @@ input[type="password"]::-webkit-strong-password-auto-fill-button {
     font-family: var(--font-display);
     color: var(--foreground);
   }
-  /* Escala de títulos (25/10/2026): 56, 44, 36, 26 e 22 px na base de 20 px. */
+  /* Escala de títulos (25/10/2026): 2,8, 2,2, 1,8, 1,3 e 1,1rem (50, 40, 32, 23 e 20 px na base de
+     18 px). */
   .sz-h1 {
     font-weight: 800;
     font-size: 2.8rem;
@@ -1239,7 +1302,7 @@ input[type="password"]::-webkit-strong-password-auto-fill-button {
     }
   }
   .sz-btn-sm {
-    min-height: 2.4rem;
+    min-height: 2.5rem;
     padding: 0 0.9rem;
     font-size: 0.9rem;
   }
@@ -1531,7 +1594,7 @@ input[type="password"]::-webkit-strong-password-auto-fill-button {
 }
 
 /* Os botões dos componentes compartilhados (`@sistemazero/ui`) seguem a mesma forma: retângulo de
-   cantos de 12 px e alvo de 48 px. Fora de camada para vencer as utilitárias do componente. O
+   cantos de 12 px e alvo de 45 px (2,5rem: nunca abaixo de 44 px). Fora de camada para vencer as utilitárias do componente. O
    escopo é a RAIZ (os diálogos vão para o `body` por portal, fora do `.sz-app`); os editores
    embarcados (`data-embedded`) e o jogo público ficam com o desenho deles. O escopo vai num
    `:where()`, sem peso: a regra do rodapé da aula (56 px), logo abaixo, precisa vencer esta.
@@ -1539,7 +1602,7 @@ input[type="password"]::-webkit-strong-password-auto-fill-button {
    classe do `Button` traz `[&_svg:not([class*='size-'])]:size-4`. */
 :where(:root:not(:has(.sz-app[data-embedded="true"], [data-sz-public-player])))
   [data-slot="button"] {
-  min-height: 2.4rem;
+  min-height: 2.5rem;
   border-radius: 0.6rem;
 }
 :where(:root:not(:has(.sz-app[data-embedded="true"], [data-sz-public-player])))
@@ -1549,16 +1612,16 @@ input[type="password"]::-webkit-strong-password-auto-fill-button {
     [class~="size-8"],
     [class~="size-9"]
   ) {
-  min-width: 2.4rem;
+  min-width: 2.5rem;
 }
-/* O `size="sm"` do `Button` usa `text-[0.8rem]` (16 px aqui): a menor letra da pele é 17 px. */
+/* O `size="sm"` do `Button` usa `text-[0.8rem]` (14 px aqui): a menor letra da pele é 15 px. */
 :where(:root:not(:has(.sz-app[data-embedded="true"], [data-sz-public-player])))
   [data-slot="button"][class~="text-[0.8rem]"] {
   font-size: 0.85rem;
 }
 
 /* O vídeo flutuante da aula calcula a geometria em px (`FLOAT_BAR_HEIGHT` 44 e `FLOAT_FRAME` 6, no
-   member-shell). Com a raiz a 20 px o `h-11` e o `px-1.5` dele cresceriam e o vídeo encostaria na
+   member-shell). Com a raiz a 18 px o `h-11` e o `px-1.5` dele cresceriam e o vídeo encostaria na
    borda da janela: a barra e a moldura ficam nas medidas da conta. */
 .sz-aula-adulto .sz-lesson-video-float {
   padding: 0 6px 6px;

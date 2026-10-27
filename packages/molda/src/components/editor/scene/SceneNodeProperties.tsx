@@ -146,6 +146,7 @@ export function SceneNodeProperties({
       {precise &&
         primary &&
         (geometry?.kind === 'cylinder' ||
+          geometry?.kind === 'cone' ||
           geometry?.kind === 'sphere' ||
           geometry?.kind === 'torus') && (
           <section

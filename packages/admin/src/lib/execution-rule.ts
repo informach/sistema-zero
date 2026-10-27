@@ -50,6 +50,9 @@ export function stepLabel(step: ExecutionStep): string {
       return `${step.holdMs ? `segurar ${keyLabel(step.key)} por ${step.holdMs} ms` : `apertar ${keyLabel(step.key)}`}`
     case 'click':
       return `clicar em ${step.x}, ${step.y}`
+    case 'approachObject3d':
+    case 'approachSprite':
+      return `levar ${step.actorPath || '(personagem)'} até ${step.targetPath || '(alvo)'} com as teclas`
     case 'clickTarget':
       switch (step.target.kind) {
         case 'sprite':

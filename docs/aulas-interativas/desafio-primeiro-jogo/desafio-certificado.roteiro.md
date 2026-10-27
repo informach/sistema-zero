@@ -2,9 +2,9 @@
 
 A professora grava toda a fala principal. Na edição kids, substituir apenas os trechos da tabela. Copie o arquivo .elevenlabs.txt para gerar a voz integral. Gravação e publicação desta revisão ainda não confirmadas.
 
-## Parte 1. As regras do seu curso
+## Parte 1. As regras do seu jogo
 
-**Recado na página (não gravar):** Você fez o personagem andar, pegar a chave e acender o farol. Agora vamos relembrar essas regras com quatro perguntas. Se errar alguma, leia o porquê, clique em Tentar de novo e responda outra vez.
+**Recado na página (não gravar):** Você fez o personagem andar, pegar a chave e acender o farol. Escolha uma resposta em cada pergunta e clique em Ver o que acontece. Compare com a cena e a explicação. Você pode tentar de novo.
 
 ## Parte 2. Comemore sua criação
 

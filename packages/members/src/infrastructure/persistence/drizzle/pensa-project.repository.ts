@@ -1,6 +1,7 @@
 import { createHash, randomUUID } from 'node:crypto'
 import * as P from '@sistemazero/core/pensa'
 import { and, count, desc, eq, inArray, isNull, ne, sql } from 'drizzle-orm'
+import { pensaOperationRetryable } from '../../../domain/pensa/operation-budget'
 import { pensaError } from '../../../domain/pensa/project.errors'
 import type { Database } from './db'
 import { lockPensaAccount, releasePensaReservation, releasePensaUsage } from './pensa-reservations'
@@ -52,6 +53,10 @@ export function operationView(row: typeof pensaOperations.$inferSelect): P.Pensa
     status: row.status,
     calls: row.calls,
     error: row.error,
+    // Só a falha SEM orçamento diz `retryable: false` (a mesma régua da reivindicação); ausente
+    // vale "pode tentar". O campo sai só nesse caso raro porque o Kids valida a view com schema
+    // estrito: o app ainda sem o campo, no meio de um deploy, recusaria qualquer falha.
+    ...(row.status === 'failed' && !pensaOperationRetryable(row) ? { retryable: false } : {}),
     createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt.toISOString(),
   })

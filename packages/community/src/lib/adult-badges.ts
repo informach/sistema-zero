@@ -71,15 +71,15 @@ const ADULT_BADGE_COPY: Record<BadgeSlug, { title: string; description: string }
   },
   'studio-first': {
     title: 'Criador de jogos',
-    description: 'Alcançou a meta de um projeto do Estúdio.',
+    description: 'Cumpriu os objetivos do Estúdio em uma aula.',
   },
   'studio-master-3': {
     title: 'Oficina de jogos',
-    description: 'Três projetos do Estúdio alcançaram a meta.',
+    description: 'Cumpriu os objetivos do Estúdio em três aulas.',
   },
   'studio-master-10': {
     title: 'Mestre do Estúdio',
-    description: 'Dez projetos do Estúdio alcançaram a meta.',
+    description: 'Cumpriu os objetivos do Estúdio em dez aulas.',
   },
   'coins-saver-300': {
     title: 'Reserva de moedas',
@@ -95,11 +95,11 @@ const ADULT_BADGE_COPY: Record<BadgeSlug, { title: string; description: string }
   },
   'pensa-first-launch': {
     title: 'Plano aprovado',
-    description: 'Organizou e aprovou a primeira versão do plano de um jogo.',
+    description: 'Concluiu o primeiro projeto com o Pensa.',
   },
   'pensa-creator-3': {
     title: 'Três planos',
-    description: 'Planejou três versões de jogo com o Pensa.',
+    description: 'Concluiu três projetos com o Pensa.',
   },
   'challenge-first': {
     title: 'Desafio do mês',

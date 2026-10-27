@@ -1,0 +1,386 @@
+{
+  "version": 5,
+  "courseSlug": "cade-todo-mundo",
+  "lessonSlug": "aula-2",
+  "retireBlockKeys": ["caderno"],
+  "title": "Complete a busca",
+  "blocks": [
+    {
+      "key": "experiencia-achados",
+      "content": {
+        "kind": "interactive",
+        "required": true,
+        "semPerguntaFinal": true,
+        "title": "Quantos você já encontrou?",
+        "instructions": "Encontre um personagem. Olhe o valor guardado em achados e o placar.",
+        "hints": [],
+        "activity": {
+          "type": "experimentation",
+          "scene": "found-counter",
+          "cenario": "jardim",
+          "setup": {
+            "goals": ["first-find", "second-find", "no-find", "repeat", "back-to-zero"]
+          }
+        }
+      }
+    }
+  ],
+  "sections": [
+    {
+      "key": "retomada",
+      "title": "Volte ao seu jardim",
+      "intent": "presentation",
+      "objective": "Ver que o jogo já revela os personagens, mas ainda não conta os achados.",
+      "blockKeys": ["video-a2-retomada", "ponte-a2-retomada"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-a2-retomada"]
+      }
+    },
+    {
+      "key": "variavel-achados",
+      "title": "Um número que acompanha a busca",
+      "intent": "exploration",
+      "objective": "Observar quando o valor atual de Achados muda e quando continua igual durante uma busca.",
+      "blockKeys": ["video-a2-variavel", "ponte-a2-variavel", "experiencia-achados"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-a2-variavel", "experiencia-achados"]
+      }
+    },
+    {
+      "key": "contar-achados",
+      "title": "Cada personagem vale um achado",
+      "intent": "application",
+      "objective": "Somar um no contador no mesmo evento do toque e testar até a mensagem de vitória.",
+      "blockKeys": ["video-a2-contagem", "ponte-a2-contagem"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-a2-contagem"],
+        "projectChecks": [
+          {
+            "id": "revelar-ao-toque",
+            "label": "O toque revela só o personagem daquele esconderijo.",
+            "hint": "No teste das pedras, só as pedras devem ficar invisíveis. Confira qual esconderijo a reação altera.",
+            "rule": {
+              "type": "behavior",
+              "steps": [
+                {
+                  "action": "clickTarget",
+                  "target": {
+                    "kind": "sprite",
+                    "path": "esconderijo2",
+                    "groupPath": "esconderijos"
+                  }
+                }
+              ],
+              "expect": {
+                "target": {
+                  "kind": "value",
+                  "path": "esconderijo2.opacity"
+                },
+                "compare": "equals",
+                "value": 0
+              },
+              "checkpoints": [
+                {
+                  "afterStep": 1,
+                  "expect": {
+                    "target": {
+                      "kind": "value",
+                      "path": "esconderijo1.opacity"
+                    },
+                    "compare": "notEquals",
+                    "value": 0
+                  }
+                },
+                {
+                  "afterStep": 1,
+                  "expect": {
+                    "target": {
+                      "kind": "value",
+                      "path": "esconderijo3.opacity"
+                    },
+                    "compare": "notEquals",
+                    "value": 0
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "id": "somar-achado",
+            "label": "Cada novo personagem acrescenta 1 a Achados.",
+            "hint": "Encontre personagens diferentes: Achados deve passar por 1, 2 e 3. Somar 1 é diferente de colocar 1.",
+            "rule": {
+              "type": "behavior",
+              "steps": [
+                {
+                  "action": "clickTarget",
+                  "target": {
+                    "kind": "sprite",
+                    "path": "esconderijo1",
+                    "groupPath": "esconderijos"
+                  }
+                },
+                {
+                  "action": "clickTarget",
+                  "target": {
+                    "kind": "sprite",
+                    "path": "esconderijo2",
+                    "groupPath": "esconderijos"
+                  }
+                },
+                {
+                  "action": "clickTarget",
+                  "target": {
+                    "kind": "sprite",
+                    "path": "esconderijo3",
+                    "groupPath": "esconderijos"
+                  }
+                }
+              ],
+              "expect": {
+                "target": {
+                  "kind": "value",
+                  "path": "achados"
+                },
+                "compare": "equals",
+                "value": 3
+              },
+              "checkpoints": [
+                {
+                  "afterStep": 1,
+                  "expect": {
+                    "target": {
+                      "kind": "value",
+                      "path": "achados"
+                    },
+                    "compare": "equals",
+                    "value": 1
+                  }
+                },
+                {
+                  "afterStep": 2,
+                  "expect": {
+                    "target": {
+                      "kind": "value",
+                      "path": "achados"
+                    },
+                    "compare": "equals",
+                    "value": 2
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "id": "nao-recontar",
+            "label": "Toques no vazio ou no mesmo lugar mantêm a contagem.",
+            "hint": "Depois de achar alguém, teste o mesmo lugar e o vazio. Nenhum desses toques deve executar outra soma.",
+            "rule": {
+              "type": "behavior",
+              "steps": [
+                {
+                  "action": "clickTarget",
+                  "target": {
+                    "kind": "sprite",
+                    "path": "esconderijo1",
+                    "groupPath": "esconderijos"
+                  }
+                },
+                {
+                  "action": "clickTarget",
+                  "target": {
+                    "kind": "lastPoint"
+                  }
+                },
+                {
+                  "action": "clickTarget",
+                  "target": {
+                    "kind": "outsideGroup",
+                    "path": "esconderijos"
+                  }
+                }
+              ],
+              "expect": {
+                "target": {
+                  "kind": "value",
+                  "path": "achados"
+                },
+                "compare": "equals",
+                "value": 1
+              },
+              "checkpoints": [
+                {
+                  "afterStep": 1,
+                  "expect": {
+                    "target": {
+                      "kind": "value",
+                      "path": "achados"
+                    },
+                    "compare": "equals",
+                    "value": 1
+                  }
+                },
+                {
+                  "afterStep": 2,
+                  "expect": {
+                    "target": {
+                      "kind": "value",
+                      "path": "achados"
+                    },
+                    "compare": "equals",
+                    "value": 1
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "id": "mensagem-tres-achados",
+            "label": "A mensagem aparece depois dos três achados.",
+            "hint": "Com dois achados, a mensagem ainda não deve aparecer. Ela aparece quando os três foram encontrados.",
+            "rule": {
+              "type": "behavior",
+              "steps": [
+                {
+                  "action": "wait",
+                  "ms": 600
+                },
+                {
+                  "action": "clickTarget",
+                  "target": {
+                    "kind": "sprite",
+                    "path": "esconderijo1",
+                    "groupPath": "esconderijos"
+                  }
+                },
+                {
+                  "action": "wait",
+                  "ms": 600
+                },
+                {
+                  "action": "clickTarget",
+                  "target": {
+                    "kind": "sprite",
+                    "path": "esconderijo2",
+                    "groupPath": "esconderijos"
+                  }
+                },
+                {
+                  "action": "wait",
+                  "ms": 600
+                },
+                {
+                  "action": "clickTarget",
+                  "target": {
+                    "kind": "sprite",
+                    "path": "esconderijo3",
+                    "groupPath": "esconderijos"
+                  }
+                },
+                {
+                  "action": "wait",
+                  "ms": 600
+                }
+              ],
+              "expect": {
+                "target": {
+                  "kind": "text",
+                  "selector": "#sz-game-hud-status [data-sz-hud-kind=\"label\"]"
+                },
+                "compare": "notEquals",
+                "value": ""
+              },
+              "checkpoints": [
+                {
+                  "afterStep": 1,
+                  "expect": {
+                    "target": {
+                      "kind": "text",
+                      "selector": "#sz-game-hud-status [data-sz-hud-kind=\"label\"]"
+                    },
+                    "compare": "equals",
+                    "value": ""
+                  }
+                },
+                {
+                  "afterStep": 3,
+                  "expect": {
+                    "target": {
+                      "kind": "text",
+                      "selector": "#sz-game-hud-status [data-sz-hud-kind=\"label\"]"
+                    },
+                    "compare": "equals",
+                    "value": ""
+                  }
+                },
+                {
+                  "afterStep": 5,
+                  "expect": {
+                    "target": {
+                      "kind": "text",
+                      "selector": "#sz-game-hud-status [data-sz-hud-kind=\"label\"]"
+                    },
+                    "compare": "equals",
+                    "value": ""
+                  }
+                },
+                {
+                  "afterStep": 7,
+                  "expect": {
+                    "target": {
+                      "kind": "value",
+                      "path": "achados"
+                    },
+                    "compare": "equals",
+                    "value": 3
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "personalizar",
+      "title": "Deixe o jogo com a sua cara",
+      "intent": "delivery",
+      "objective": "Escolher os bichos, esconderijos e a mensagem do final, testar e enviar o jogo completo.",
+      "blockKeys": ["video-a2-personalizar", "ponte-a2-personalizar", "projeto"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-a2-personalizar", "projeto"],
+        "submissionUpToDate": true
+      }
+    },
+    {
+      "key": "conclusao",
+      "title": "Seu jogo está pronto",
+      "intent": "closing",
+      "objective": "Concluir a aula com o projeto enviado; compartilhar no Mural é uma escolha.",
+      "blockKeys": ["video-a2-fecho", "ponte-a2-publicar", "ajuda-a2-publicar"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-a2-fecho"]
+      }
+    }
+  ]
+}

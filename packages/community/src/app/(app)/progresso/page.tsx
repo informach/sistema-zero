@@ -1,6 +1,7 @@
 import type { AdultJourneyView } from '@sistemazero/core/journey'
 import { isReadonlyImpersonation } from '@sistemazero/member-shell/lib/act'
-import type { MyCourseView } from '@sistemazero/member-shell/lib/types'
+import { isPrivilegedRole } from '@sistemazero/member-shell/lib/studio-tier'
+import type { CatalogCourseView, MyCourseView } from '@sistemazero/member-shell/lib/types'
 import { getSession } from '@/server/session'
 import { shell } from '@/server/shell'
 import { ProgressClient } from './progress-client'
@@ -59,10 +60,18 @@ export default async function ProgressPage() {
     shell.members.getGamificationReadonly({ withRanking: true }).catch(() => null),
   ])
   const progress = gamification?.status === 200 ? gamification.body : null
-  const courseTitles = await pendingCourseTitles(progress?.journey)
+  // No currículo o cartão da etapa atual mostra o próximo curso: ele precisa do catálogo e de Meus
+  // cursos. A jornada histórica só precisa dos nomes do que falta.
+  const curriculum = Boolean(progress?.journey?.curriculum)
+  const [courseTitles, catalog, mine] = await Promise.all([
+    curriculum ? {} : pendingCourseTitles(progress?.journey),
+    curriculum ? shell.members.listCatalog().catch(() => null) : null,
+    curriculum ? shell.members.listMyCourses().catch(() => null) : null,
+  ])
   return (
     <ProgressClient
       readOnly={Boolean(session && isReadonlyImpersonation(session))}
+      staff={isPrivilegedRole(session?.role)}
       missions={
         missions?.status === 200 && missions.body?.audience === 'adult'
           ? (missions.body ?? null)
@@ -70,6 +79,10 @@ export default async function ProgressPage() {
       }
       ranking={progress?.ranking ?? null}
       courseTitles={courseTitles}
+      catalog={
+        catalog?.status === 200 ? (catalog.body?.courses ?? []) : ([] as CatalogCourseView[])
+      }
+      mine={mine?.status === 200 ? (mine.body?.courses ?? []) : ([] as MyCourseView[])}
     />
   )
 }

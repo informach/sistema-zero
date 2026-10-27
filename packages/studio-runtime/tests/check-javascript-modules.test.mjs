@@ -31,7 +31,9 @@ async function fixture() {
 }
 test('the pinned package and its relative JS dependencies are available without external network', async () => {
   const { resolve } = await fixture()
-  expect(await resolve(new URL('https://esm.sh/three@0.180.0'))).toBeUndefined()
+  expect((await resolve(new URL('https://esm.sh/three@0.180.0'))).bytes.toString()).toBe(
+    "export * from '/three@0.180.0/build/three.module.js';",
+  )
   for (const file of [
     'build/three.module.js',
     'build/three.core.js',

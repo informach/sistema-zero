@@ -13,6 +13,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { AdminHeader } from '@/components/admin/admin-header'
 import { CreatorCurriculumEditor } from '@/components/admin/creator-curriculum-editor'
+import { LoadError } from '@/components/admin/empty-state'
 import { usePlatform } from '@/components/admin/platform-provider'
 import { type ApiError, apiGet, apiSend } from '@/lib/api'
 import { journeyLensHref } from '@/lib/platform-transition'
@@ -151,8 +152,14 @@ export function AdultJourneyEditor() {
   return (
     <div className="space-y-6">
       <AdminHeader
-        title="Jornada"
-        description="As etapas da Comunidade Sistema Zero: os cursos que cada etapa pede e o que ela libera."
+        title="Jornada do Criador"
+        description={
+          !draft
+            ? 'As etapas da Comunidade Sistema Zero e o que cada etapa libera.'
+            : draft.curriculum
+              ? 'As etapas da Comunidade Sistema Zero: os cursos da trilha, a missão, os Poderes e o que cada etapa libera. Você muda aqui e salva quando estiver tudo conferido.'
+              : 'As etapas da Comunidade Sistema Zero: os cursos que cada etapa pede e o que ela libera. Você muda aqui e salva quando estiver tudo conferido.'
+        }
       />
       {platform !== 'adult' ? (
         <p role="status" className="text-sm text-muted-foreground">
@@ -171,13 +178,20 @@ export function AdultJourneyEditor() {
                 : 'O Zappy e o Pensa pedem um curso avançado terminado nesta etapa ou numa anterior. O que o aluno já ganhou continua com ele quando a jornada muda.'}
             </p>
           </Card>
-          {error ? (
-            <p role="alert" className="text-destructive">
+          {error && draft ? (
+            <p
+              role="alert"
+              className="rounded-2xl bg-destructive/10 px-4 py-3 text-[15px] text-destructive"
+            >
               {error}
             </p>
           ) : null}
           {loading ? (
-            <p role="status">Carregando a jornada…</p>
+            <p role="status" className="text-sm text-muted-foreground">
+              Carregando a jornada…
+            </p>
+          ) : !draft && error ? (
+            <LoadError what="a jornada" onRetry={() => void load()} />
           ) : draft ? (
             <>
               {!courses.length ? (

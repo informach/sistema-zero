@@ -1,4 +1,5 @@
 import { describe, expect, test } from 'bun:test'
+import { isExecutionRule } from '../../../packages/core/src/learning'
 import { completeLibraryAssets } from '../../../packages/member-shell/src/lib/studio-lesson-seed'
 import {
   FAROL_BARCOS,
@@ -55,11 +56,14 @@ describe('personalização completa do Farol', () => {
     const light = condition.then.find((item) => item.type === 'g2d:setImage')
     if (light?.type !== 'g2d:setImage') throw new Error('Luz ausente')
     light.image = choice.farol.aceso
-    const result = evaluateStudioSectionProject(portaCompleta, {
-      ...project,
-      ir,
-      blocksState: buildWorkspaceStateFromIR(ir),
-    })
+    const result = evaluateStudioSectionProject(
+      portaCompleta.filter((check) => !isExecutionRule(check.rule)),
+      {
+        ...project,
+        ir,
+        blocksState: buildWorkspaceStateFromIR(ir),
+      },
+    )
     expect(result.every((item) => item.passed)).toBe(true)
     // A conferência da parte da troca (personalizar) aceita o par escolhido.
     const escolha = { ...project, ir, blocksState: buildWorkspaceStateFromIR(ir) }

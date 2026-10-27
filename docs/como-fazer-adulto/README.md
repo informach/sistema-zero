@@ -1,7 +1,7 @@
 # Como fazer: a biblioteca de ajuda da comunidade adulta
 
 `como-fazer.json` é o conteúdo da biblioteca **Como fazer** da comunidade adulta
-(`packages/community`, páginas `/ajuda` e `/como-fazer`): **8 coleções e 50 tutoriais** curtos, por
+(`packages/community`, páginas `/ajuda` e `/como-fazer`): **8 coleções e 67 tutoriais** curtos, por
 tarefa, em português do Brasil. O lote segue a prancha aprovada (Canvas "Comunidade adulta · direção
 de arte", quadros Como fazer e Tutorial). **Nada deste arquivo está publicado.**
 
@@ -9,12 +9,12 @@ de arte", quadros Como fazer e Tutorial). **Nada deste arquivo está publicado.*
 | --- | --- | --- |
 | 0 | `primeiros-passos` · Primeiros passos | 6 |
 | 1 | `aulas` · Aulas e cursos | 9 |
-| 2 | `estudio` · Estúdio | 8 |
-| 3 | `pinta` · Pinta | 4 |
-| 4 | `pensa` · Pensa | 4 |
-| 5 | `molda` · Molda | 4 |
-| 6 | `comunidade` · Comunidade e oficinas | 6 |
-| 7 | `conta` · Conta e acesso | 9 |
+| 2 | `estudio` · Estúdio | 10 |
+| 3 | `pinta` · Pinta | 7 |
+| 4 | `pensa` · Pensa | 8 |
+| 5 | `molda` · Molda | 6 |
+| 6 | `comunidade` · Comunidade e oficinas | 7 |
+| 7 | `conta` · Conta e acesso | 11 |
 
 ## O formato
 
@@ -28,14 +28,29 @@ e o `draft`, um `HelpTutorialDocument`). Ícones, tons e `toolRef` vêm das allo
 
 - Voz de "você", direta e calorosa, para adultos iniciantes. A régua de leitura é a de quem tem de
   50 a 70 anos e está chegando à tecnologia, sem nunca tratar a pessoa como idosa.
-- Vocabulário adulto: curso, aula, seção, professor, equipe, Recados, Mural. Nada de aventura,
-  fase, missão ou mascote, e "Mural" no lugar de "Mostra".
+- **Os mesmos nomes das duas comunidades** (desde 21/10/2026; Diretrizes Pedagógicas, seção 6,
+  "Mesmos nomes nas duas comunidades"): curso → módulo → aula → parte, com os rótulos **Próxima
+  parte**, **Partes da aula**, **Verificar projeto**, **Objetivos do projeto**, **Enviar meu
+  projeto**, **Enviar de novo**, **Concluir aula** e **Baixar meu certificado**, e o material
+  **Passo a passo do projeto**. Quem recebe e responde é **a equipe** (Recados), nunca "o
+  professor"; numa oficina ao vivo, quem conduz não tem gênero fixo ("quem conduz", ou o nome).
+  "Aventura" só descreve a história de um curso e "fase", um nível real de jogo. "Seção" só quando
+  a tela escreve assim (o contador da aula ainda diz **Seção 2 de 5**), e "missão" só onde ela é o
+  nome da tela (**Missões** em Seu progresso, as missões do Pensa). "Mural", nunca "Mostra".
+- O recurso tem nome, sem "IA" solta: **o Zappy** (o tutor do Estúdio), **o Pensa**,
+  **créditos** e **assistente virtual** (o vocabulário da comunidade adulta,
+  `packages/community/CLAUDE.md`).
+- O menu: no computador é o **menu da esquerda** (os seis destinos, Recados e, no pé, o cartão com
+  a foto que abre o menu do perfil); no celular são as **abas de baixo** (Início, Cursos, Criar,
+  Comunidade e **Mais**). Escreva "no menu" e, quando o caminho no celular for outro, diga qual.
 - Nome de botão, campo ou mensagem **em negrito, do jeito que está na tela**, conferido no código
-  atual (`packages/community`, `member-shell`, `studio` em pt-BR, Pinta, Pensa e Molda). As telas
-  que estão sendo redesenhadas (Mural, Meu avatar 3D e Meu espaço 3D) citam os rótulos das
-  pranchas aprovadas.
+  atual (`packages/community`, `member-shell`, `studio` em pt-BR, Pinta, Pensa e Molda). Rótulo
+  que só existe para o leitor de tela (`aria-label`, como a alça da lista de aulas) não vai em
+  negrito: descreva o que a pessoa vê. Botão e controle é "clique em", nunca "toque" ou "aperte".
 - De 3 a 6 passos por tutorial, sem travessão, sem números, prazos ou preços inventados.
-- Ainda não há imagens: as capturas das telas adultas entram pelo admin antes de publicar.
+- Ainda não há imagens: as capturas das telas adultas entram pelo admin antes de publicar. Cada
+  passo que vai ter print já traz o `imageAlt` que descreve a captura combinada; passo sem print
+  (atalho de teclado, passo que só aponta para outro tutorial) fica sem `imageAlt`.
 
 ## Como validar
 
@@ -45,14 +60,17 @@ bun docs/como-fazer-adulto/validar.ts
 
 Roda o mesmo validador que o members usa ao publicar (`validateHelpCollection`,
 `validateHelpTutorial`) e confere o lote inteiro: formato do import, coleções e posições, slugs
-únicos, `related` e links que existem, exatamente 50 tutoriais, pelo menos 3 por coleção, de 3 a 6
-passos e o vocabulário adulto (palavras do Kids, "Mostra", "senhor", "senhora", "vovó", "vovô",
-"idoso" e "criança" nos textos que a pessoa lê; as `keywords` ficam de fora, porque a busca precisa
-achar o que a pessoa digita). Sai com código 1 se algo reprovar.
+únicos, `related` e links que existem, exatamente 67 tutoriais, pelo menos 3 por coleção, de 3 a 6
+passos e o vocabulário adulto nos textos que a pessoa lê: os rótulos antigos de navegação e a
+concordância errada da troca de nomes (`palavras-da-escola.ts`, a mesma régua das aulas e do Kids),
+"professor(a)", "IA" solta, "toque/aperte em" num botão, "Mostra", "senhor", "senhora", "vovó",
+"vovô", "idoso" e "criança". As `keywords` ficam de fora, porque a busca precisa achar o que a
+pessoa digita ("professor", "seção", "IA"). Sai com código 1 se algo reprovar.
 
-As sugestões do `helpEditorialWarnings` não bloqueiam. Hoje aparecem duas, e as duas são esperadas:
-os 50 tutoriais ainda não têm imagem, e o tutorial de compras cita o botão **Cancelar assinatura**
-(a régua de "texto comercial" foi pensada para o Kids).
+As sugestões do `helpEditorialWarnings` não bloqueiam. Hoje aparecem quatro, e todas são esperadas:
+os tutoriais que ainda não têm imagem recebem a captura pelo admin, e três tutoriais citam a assinatura de propósito (o menu, que
+lista **Compras e assinatura**, o de compras, com o botão **Cancelar assinatura**, e o de trocar o
+cartão): a régua de "texto comercial" foi pensada para o Kids.
 
 ## Como importar
 

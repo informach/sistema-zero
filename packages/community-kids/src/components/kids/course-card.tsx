@@ -67,15 +67,7 @@ export function CourseCard({ course }: CourseCardProps) {
         <CourseBadgeChip course={course} only="publicar" className="absolute top-2 left-2" />
       </div>
       <div className="flex flex-1 flex-col p-5">
-        <p className="font-bold text-muted-foreground text-xs">
-          {course.journeyRole === 'extra'
-            ? 'Curso extra'
-            : course.careerSlot === 1
-              ? 'Primeira da trilha'
-              : typeof course.careerSlot === 'number'
-                ? 'Curso da jornada'
-                : 'Curso bônus'}
-        </p>
+        <p className="font-bold text-muted-foreground text-xs">{courseEyebrow(course)}</p>
         <h3 className="sz-display mt-1.5 text-lg md:text-xl">{course.title}</h3>
         {course.subtitle ? (
           <p className="mt-1.5 line-clamp-3 font-medium text-[0.8125rem] text-muted-foreground leading-snug">
@@ -111,4 +103,24 @@ export function CourseCard({ course }: CourseCardProps) {
       </div>
     </Link>
   )
+}
+
+/**
+ * O sobretítulo do cartão: no currículo, o papel do curso na trilha (as telas aprovadas de
+ * 25/10/2026); fora dele, o rótulo histórico da posição.
+ */
+function courseEyebrow(course: MyCourseView): string {
+  const role = course.curriculum?.role
+  if (role === 'base2d' || role === 'base3d') return 'Curso da trilha'
+  if (role === 'mission') return 'Missão da trilha'
+  if (role === 'power') return 'Poder'
+  if (role === 'extra') return 'Extra'
+  if (role) return 'Maestria'
+  return course.journeyRole === 'extra'
+    ? 'Curso extra'
+    : course.careerSlot === 1
+      ? 'Primeiro da trilha'
+      : typeof course.careerSlot === 'number'
+        ? 'Curso da jornada'
+        : 'Curso bônus'
 }

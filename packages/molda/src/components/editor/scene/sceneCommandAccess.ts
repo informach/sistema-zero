@@ -42,6 +42,7 @@ export const SCENE_COMMAND_ACCESS: Readonly<Record<SceneCommandId, SceneCommandF
   'add.box': 'model.pieces',
   'add.wedge': 'model.pieces',
   'add.cylinder': 'model.pieces',
+  'add.cone': 'model.pieces',
   'add.sphere': 'model.pieces',
   'add.locator': 'model.locator',
   'tool.select': 'always',

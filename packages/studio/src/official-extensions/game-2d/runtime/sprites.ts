@@ -169,6 +169,8 @@ export const gameTwoDSpritesRuntime = `  // ---- Imagens / assets ----
   // para o jogo, e o vazio encostava sem encostar. O Pinta mede onde de fato tem
   // pixel e manda a caixa em FRACAO do quadro; aqui ela so e aplicada.
   /** A caixa do desenho, se o Pinta mandou uma que caiba no quadro. */
+  var _managedArtHitboxes = new WeakSet();
+  var _markArtHitbox = _managedArtHitboxes.add.bind(_managedArtHitboxes);
   function _artHitboxOf(name) {
     if (!name || typeof name !== 'string') return null;
     var entry = ASSET_META[name];
@@ -177,7 +179,9 @@ export const gameTwoDSpritesRuntime = `  // ---- Imagens / assets ----
     var x = _finiteNumber(box.x, -1), y = _finiteNumber(box.y, -1);
     var w = _finiteNumber(box.w, 0), h = _finiteNumber(box.h, 0);
     if (x < 0 || y < 0 || w <= 0 || h <= 0 || x + w > 1 || y + h > 1) return null;
-    return { x: x, y: y, w: w, h: h };
+    var measured = { x: x, y: y, w: w, h: h };
+    _markArtHitbox(measured);
+    return measured;
   }
   /** Liga (ou desliga) a caixa do desenho no sprite. */
   function _applyArtHitbox(sprite, name) {

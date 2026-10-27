@@ -12,6 +12,7 @@
       "!**/migrations",
       "!bun.lock",
       "!packages/studio/src/monaco/pro/defaultLibraries.json",
+      "!packages/studio/src/arte/ilha-farol-scene.generated.ts",
       "!packages/studio-runtime/runtime/portable-path.generated.mjs",
       "!packages/studio-runtime/runtime/python-playtest.generated.mjs",
       "!packages/studio-runtime/runtime/execution-observation.generated.mjs",
@@ -79,6 +80,10 @@
   "overrides": [
     {
       "includes": ["packages/studio/src/examples/python/pygame/*/desenhos.pinta.json"],
+      "formatter": { "enabled": false }
+    },
+    {
+      "includes": ["docs/design/ilha-do-farol-molda/projetos/*.molda.json"],
       "formatter": { "enabled": false }
     },
     {

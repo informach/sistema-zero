@@ -1,5 +1,10 @@
 # Cadê Todo Mundo? | Certificado
 
+## Atualização aplicada em 26/10/2026
+
+A versão vigente segue [exploração orientada por objetivos](../../aulas-interativas-tecnico/DESCOBERTA-GUIADA.md): vídeos conceituais explicam e convidam; a experiência oferece controles livres e orientação pelo estado; o Estúdio conserva a instrução completa de montagem. Edição da regra, entrada de quem joga e execução são gestos distintos. As notas datadas anteriores abaixo registram o histórico. O roteiro e o manifesto atualizados são a referência de produção; os clipes ainda precisam de gravação/edição/importação.
+
+
 Duas seções na mesma aula: revisão final e certificado. O quiz tem três perguntas e não leva vídeo. A celebração conserva o vídeo, a ponte do Zappy e o bloco de certificado existentes.
 
 **Produção em 10/10/2026:** Debinha volta no vídeo de celebração, seguindo a alternância depois

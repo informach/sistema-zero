@@ -371,6 +371,7 @@ export function SceneWorkshop({
     return kind === 'box' ||
       kind === 'wedge' ||
       kind === 'cylinder' ||
+      kind === 'cone' ||
       kind === 'sphere' ||
       kind === 'torus' ||
       kind === 'path'
@@ -1026,6 +1027,7 @@ export function SceneWorkshop({
                       !workshop.paint.rotate &&
                       !workshop.paint.closeupTool,
                   }}
+                  onPaintGridChange={workshop.paint.setGrid}
                   detailPanel={
                     mode === 'paint' && workshop.paint.data && workshop.paint.closeUp ? (
                       <ScenePaintCloseUp

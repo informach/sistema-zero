@@ -133,6 +133,48 @@ const passarCinco = (m: Maos, unit: number) =>
   m.faz({ type: 'sample', kind: 'velocity', unit, guided: false })
 
 const CENAS: Record<SceneId, Cena> = {
+  'island-3d': {
+    pedidos: {
+      'other-view': {
+        texto: 'Compare a vista de frente com outra vista.',
+        faz: (m) => m.faz({ type: 'island-view', view: 'side' }),
+      },
+      'same-place': {
+        texto: 'Depois de comparar, responda o que mudou.',
+        faz: (m) => {
+          m.faz({ type: 'island-view', view: 'side' })
+          m.faz({ type: 'island-answer', answer: 'camera' })
+        },
+      },
+      ...Object.fromEntries(
+        (['x', 'y', 'z'] as const).map((axis) => [
+          `axis-${axis}`,
+          {
+            texto: `Aumente e diminua ${axis}, observando a chave.`,
+            faz: (m: Maos) => {
+              m.faz({ type: 'island-axis', axis, value: 4 })
+              m.faz({ type: 'island-axis', axis, value: 0 })
+            },
+          },
+        ]),
+      ),
+      'contact-apart': {
+        texto: 'Prepare uma separação e teste o encontro.',
+        faz: (m) => {
+          m.faz({ type: 'island-axis', axis: 'y', value: 4 })
+          m.faz({ type: 'island-test' })
+        },
+      },
+      'contact-touch': {
+        texto: 'Aproxime os objetos e teste o encontro.',
+        faz: (m) => {
+          m.faz({ type: 'island-axis', axis: 'y', value: 1 })
+          m.faz({ type: 'island-test' })
+        },
+      },
+    },
+    mostra: (s) => s.island3d?.view === 'side',
+  },
   'copy-vs-original': {
     pedidos: {
       exported: {
@@ -1030,6 +1072,20 @@ const CENAS: Record<SceneId, Cena> = {
   },
   'touch-response': {
     pedidos: {
+      'touched-bush': {
+        texto: 'Teste a reação no arbusto.',
+        faz: (m) => {
+          ligado(m, 'touch', true)
+          m.faz({ type: 'touch-hiding-place', id: 0 })
+        },
+      },
+      'touched-rocks': {
+        texto: 'Teste a reação nas pedras.',
+        faz: (m) => {
+          ligado(m, 'touch', true)
+          m.faz({ type: 'touch-hiding-place', id: 1 })
+        },
+      },
       'no-response': {
         texto: 'Toque no esconderijo antes de ligar a reação.',
         faz: (m) => {
@@ -1156,6 +1212,22 @@ const CENAS: Record<SceneId, Cena> = {
   },
   'lighthouse-position': {
     pedidos: {
+      'x-minus': {
+        texto: 'Mude o x para menos e compare o lugar da chave.',
+        faz: (m) => m.faz({ type: 'key-position', axis: 'x', value: m.estado.keyPosition.x - 20 }),
+      },
+      'x-plus': {
+        texto: 'Mude o x para mais e compare o lugar da chave.',
+        faz: (m) => m.faz({ type: 'key-position', axis: 'x', value: m.estado.keyPosition.x + 20 }),
+      },
+      'y-minus': {
+        texto: 'Mude o y para menos e compare o lugar da chave.',
+        faz: (m) => m.faz({ type: 'key-position', axis: 'y', value: m.estado.keyPosition.y - 20 }),
+      },
+      'y-plus': {
+        texto: 'Mude o y para mais e compare o lugar da chave.',
+        faz: (m) => m.faz({ type: 'key-position', axis: 'y', value: m.estado.keyPosition.y + 20 }),
+      },
       'mover-horizontal': {
         texto: 'Troque a Posição horizontal x para 160 e olhe a chave.',
         faz: (m) => m.faz({ type: 'key-position', axis: 'x', value: 160 }),
@@ -1171,6 +1243,31 @@ const CENAS: Record<SceneId, Cena> = {
   // tela mostrar o que o pedido manda olhar.
   'lighthouse-walk': {
     pedidos: {
+      'no-movement-command': {
+        texto: 'Compare um quadro com a tecla apertada e sem o bloco de mover.',
+        faz: (m) => {
+          m.faz({ type: 'movement-command', enabled: false })
+          m.faz({ type: 'hold-arrow', held: true })
+          m.faz({ type: 'walk-frames', count: 1 })
+        },
+      },
+      'stopped-after-release': {
+        texto: 'Depois de andar, solte a tecla e avance outro quadro.',
+        faz: (m) => {
+          m.faz({ type: 'hold-arrow', held: true })
+          m.faz({ type: 'walk-frames', count: 10 })
+          m.faz({ type: 'hold-arrow', held: false })
+          m.faz({ type: 'walk-frames', count: 1 })
+        },
+      },
+      'compared-command-order': {
+        texto: 'Compare o próximo quadro nas duas ordens dos blocos.',
+        faz: (m) => {
+          m.faz({ type: 'test-walk-order' })
+          m.faz({ type: 'walk-order', order: 'reverse' })
+          m.faz({ type: 'test-walk-order' })
+        },
+      },
       'still-without-arrow': {
         texto:
           'Com Segurar a seta para a direita desligado, clique em Avançar 1 quadro e olhe o x.',
@@ -2135,6 +2232,20 @@ const CENAS: Record<SceneId, Cena> = {
 }
 
 function startForGoal(scene: SceneId, goal: string): SceneStart {
+  if (scene === 'island-3d')
+    return {
+      scene,
+      setup: {
+        goals: goal.startsWith('axis-')
+          ? ['axis-x', 'axis-y', 'axis-z']
+          : goal.startsWith('contact-')
+            ? ['contact-apart', 'contact-touch']
+            : ['other-view', 'same-place'],
+        freeExploration: true,
+      },
+    }
+  if (['touched-bush', 'touched-rocks', 'x-minus', 'x-plus', 'y-minus', 'y-plus'].includes(goal))
+    return { scene, setup: { freeExploration: true } }
   if (scene === 'once-vs-always' && goal === 'lives-loop')
     return { scene, setup: { preset: ONCE_VS_ALWAYS_PRESETS['uma-ficha-vidas'] } }
   if (scene === 'once-vs-always' && ['on-event', 'key-fires', 'flood'].includes(goal))

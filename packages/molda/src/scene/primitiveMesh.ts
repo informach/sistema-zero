@@ -136,6 +136,36 @@ function cylinder(out: PrimitiveBuilder, segments: number) {
   }
 }
 
+function cone(out: PrimitiveBuilder, segments: number) {
+  const ring = (i: number) => `ring:bottom:${i % segments}`
+  const uvOn = (i: number): Vec2 => {
+    const angle = ((i % segments) / segments) * Math.PI * 2
+    return [(Math.sin(angle) + 1) / 2, (1 - Math.cos(angle)) / 2]
+  }
+  out.unitVertex('tip', [0, 1, 0])
+  out.unitVertex('center:bottom', [0, -1, 0])
+  for (let i = 0; i < segments; i++) {
+    const angle = (i / segments) * Math.PI * 2
+    out.unitVertex(ring(i), [Math.sin(angle), -1, Math.cos(angle)])
+    out.face(
+      `side:${i}`,
+      'side',
+      ['tip', ring(i), ring(i + 1)],
+      [
+        [(i + 0.5) / segments, 0],
+        [i / segments, 1],
+        [(i + 1) / segments, 1],
+      ],
+    )
+    out.face(
+      `bottom:${i}`,
+      'bottom',
+      ['center:bottom', ring(i + 1), ring(i)],
+      [[0.5, 0.5], uvOn(i + 1), uvOn(i)],
+    )
+  }
+}
+
 function sphere(out: PrimitiveBuilder, around: number, down: number) {
   const vertex = (i: number, j: number) =>
     j === 0 ? 'pole:top' : j === down ? 'pole:bottom' : `ring:${j}:${i % around}`
@@ -215,6 +245,7 @@ export function primitiveMesh(source: ScenePrimitiveGeometry) {
   else {
     const detail = primitiveDetail(source)
     if (source.kind === 'cylinder') cylinder(out, detail.around)
+    else if (source.kind === 'cone') cone(out, detail.around)
     else if (source.kind === 'sphere') sphere(out, detail.around, detail.down)
     else torus(out, detail.around, detail.down)
   }

@@ -11,6 +11,7 @@ import { createSceneProject } from './createProject'
 import type { MoldaSceneDocument, SceneMeshGeometry } from './document'
 import { paintSceneImage } from './imagePaint'
 import { mirrorMeshFaces } from './meshComponentOperations'
+import { pixelMeshUv } from './meshPixelUv'
 import { readSceneDocument } from './readDocument'
 import { simpleScenePaintUv } from './simplePaintUv'
 
@@ -92,6 +93,22 @@ test('simple UV transfers each old face into a continuous chart, retains layers,
   expect(mesh.vertices).toEqual(painted(document, f.nodeId).mesh.vertices)
   expect(Object.keys(mesh.faces)).toEqual(Object.keys(painted(document, f.nodeId).mesh.faces))
   expect(document).toEqual(before)
+  expect(simpleScenePaintUv(next, f.nodeId)).toBe(next)
+})
+
+test('organizing a piece keeps its own texture density when the project default differs', () => {
+  const f = fixture()
+  const source = {
+    ...f.document,
+    images: f.document.images.map((image) => ({ ...image, texelsPerUnit: 32 as const })),
+  }
+  const next = simpleScenePaintUv(source, f.nodeId)
+  const { mesh, image } = painted(next, f.nodeId)
+  const expected = pixelMeshUv(painted(source, f.nodeId).mesh, Object.keys(mesh.faces), 32)
+  expect(image.texelsPerUnit).toBe(32)
+  expect(image.width).toBe(expected.width)
+  for (const id of Object.keys(mesh.faces))
+    expect(mesh.faces[id]!.corners).toEqual(expected.mesh.faces[id]!.corners)
   expect(simpleScenePaintUv(next, f.nodeId)).toBe(next)
 })
 

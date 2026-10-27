@@ -27,7 +27,21 @@ const QuizChoiceImportSchema = z.strictObject({
 
 const QuizQuestionImportSchema = z
   .strictObject({
-    predictionScene: z.enum(['garden-touch', 'garden-count', 'garden-repeat']).optional(),
+    predictionScene: z
+      .enum([
+        'garden-touch',
+        'garden-count',
+        'garden-repeat',
+        'lighthouse-order',
+        'lighthouse-memory',
+        'lighthouse-door',
+        'lighthouse-retest',
+        'island-view',
+        'island-position',
+        'island-height',
+        'island-retest',
+      ])
+      .optional(),
     prompt: nonBlankMarkdown(5_000, 'Informe o enunciado.'),
     choices: z.array(QuizChoiceImportSchema).min(2, 'Adicione ao menos 2 alternativas.'),
     explanation: z.string().max(5_000, 'Use no máximo 5000 caracteres.').optional(),

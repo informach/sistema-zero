@@ -373,3 +373,24 @@ test('gradient shows both opacity controls, preview and contextual help', async 
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
   await page.screenshot({ path: '.cache/pintura-gradiente-opacidade-celular.png' })
 })
+
+test('short paint inspector keeps texture and gradient available while custom colors are open', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 640 })
+  await openPainting(page, false, undefined, 'architect')
+  await page.getByRole('button', { name: COPY.scene.select('caixa') }).click()
+  await page.getByText(COPY.scene.appearanceTitle, { exact: true }).click()
+  await page.getByRole('button', { name: COPY.scene.imageCreate, exact: true }).click()
+  const create = page.getByRole('dialog', { name: COPY.scene.imageCreate })
+  await create.getByText('Tamanho e cores da textura').click()
+  await create.getByRole('combobox', { name: COPY.scene.imageEncoding }).selectOption('rgba')
+  await create.getByRole('button', { name: COPY.scene.imageCreateApply }).click()
+  await page.getByText(paintCopy.customColor, { exact: true }).click()
+  const details = page.getByRole('region', { name: 'Ajustes do contexto' })
+  await expect(details.getByText(COPY.scene.appearanceTitle, { exact: true })).toBeInViewport()
+  await expect(
+    details.getByRole('button', { name: COPY.scene.paintShapeTools.gradient }),
+  ).toBeInViewport()
+  await page.screenshot({ path: '.cache/painel-pintar-altura-640.png' })
+})

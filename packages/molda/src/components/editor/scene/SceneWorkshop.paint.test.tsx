@@ -49,6 +49,36 @@ afterEach(() => {
   cleanup()
 })
 
+test('Pintar oferece criação de textura por peça com densidade de 16px a 512px', async () => {
+  const f = twoBoxes()
+  const { editor, view } = mount(f.document)
+  try {
+    fireEvent.click(screen.getByRole('button', { name: 'Pintar' }))
+    fireEvent.click(screen.getByRole('button', { name: COPY.scene.select('porta') }))
+    fireEvent.click(screen.getByRole('button', { name: 'Criar textura' }))
+    const dialog = screen.getByRole('dialog', { name: 'Criar textura' })
+    const density = within(dialog).getByRole('combobox', { name: 'Densidade de pixels' })
+    expect((density as HTMLSelectElement).options).toHaveLength(6)
+    fireEvent.change(density, { target: { value: '32' } })
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Criar e aplicar' }))
+    const first = editor.getState().asset
+    expect(first.images.at(-1)?.texelsPerUnit).toBe(32)
+    expect(first.nodes.find((node) => node.id === f.door && node.kind === 'mesh')).toBeDefined()
+    fireEvent.click(screen.getByRole('button', { name: COPY.scene.select('parede') }))
+    fireEvent.click(screen.getByRole('button', { name: 'Criar textura' }))
+    const secondDialog = screen.getByRole('dialog', { name: 'Criar textura' })
+    fireEvent.click(within(secondDialog).getByRole('button', { name: 'Criar e aplicar' }))
+    const second = editor.getState().asset
+    expect(second.images.at(-1)?.texelsPerUnit).toBe(1)
+    expect(second.images.find((image) => image.id === first.images.at(-1)?.id)?.texelsPerUnit).toBe(
+      32,
+    )
+  } finally {
+    view.unmount()
+    editor.getState().dispose()
+  }
+})
+
 test('Organizar quadradinhos respects inherited group locks as well as unlocked pieces', async () => {
   const f = twoBoxes()
   const grouped = groupSceneNodes(f.document, [f.door], { nextId: () => 'locked-group' })
@@ -289,6 +319,29 @@ const material = (document: MoldaSceneDocument, nodeId: string) => {
 }
 
 describe('a aba Pintar', () => {
+  test('grade e giro ficam nos controles do palco e da ferramenta, fora da barra de pincéis', async () => {
+    const { document, door } = twoBoxes()
+    const { editor, view, tap } = mount(document)
+    try {
+      tap(door)
+      fireEvent.click(screen.getByRole('button', { name: SCENE_PAINT_COPY.tab }))
+      const rail = view.container.querySelector('.mld-workshop-rail')
+      expect(rail?.textContent).not.toContain('Quadradinhos')
+      expect(rail?.textContent).not.toContain(SCENE_PAINT_COPY.rotate)
+      expect(rail?.textContent).not.toContain('Mais pincéis')
+      const rotate = screen.getByRole('button', { name: SCENE_PAINT_COPY.rotate })
+      expect(rotate.closest('.mld-workshop-rail')).toBeNull()
+      fireEvent.click(screen.getByText('Mais ajustes do palco'))
+      const grid = screen.getByRole('button', { name: 'Quadradinhos' })
+      expect(grid.getAttribute('aria-pressed')).toBe('false')
+      fireEvent.click(grid)
+      expect(grid.getAttribute('aria-pressed')).toBe('true')
+    } finally {
+      view.unmount()
+      editor.getState().dispose()
+    }
+  })
+
   test('um modelo aberto pode ganhar interior pintável em um passo de desfazer', async () => {
     const { document, door } = twoBoxes()
     const converted = convertSceneNodesToMesh(document, [door])

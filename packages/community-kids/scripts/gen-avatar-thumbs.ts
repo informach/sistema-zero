@@ -11,7 +11,7 @@
  */
 import { spawn } from 'node:child_process'
 import { mkdir } from 'node:fs/promises'
-import { join } from 'node:path'
+import { dirname, join, normalize } from 'node:path'
 import {
   AVATAR_PART_INFO,
   AVATAR_REMOVABLE_NONE,
@@ -19,8 +19,10 @@ import {
 } from '../src/lib/avatar3d-catalog'
 
 const PORT = 4599
-const THREE_VER = '0.184.0'
 const ROOT = join(import.meta.dir, '..')
+// O three.js da PRÓPRIA instalação do app (a mesma versão que desenha o avatar), servido por este
+// servidor: a página não depende de CDN nem de internet. Até 26/10/2026 vinha do esm.sh.
+const THREE_DIR = dirname(Bun.resolveSync('three/package.json', ROOT))
 const PUBLIC = join(ROOT, 'public')
 const THUMBS = join(PUBLIC, 'avatar3d', 'thumbs')
 const HEAD_DEFAULT = DEFAULT_AVATAR_SLOTS.head.asset
@@ -34,6 +36,7 @@ const HEAD_SITTING = new Set([
   'facialHair',
   'glasses',
   'hat',
+  'hairAccessory',
   'accessory',
 ])
 
@@ -78,6 +81,7 @@ const page = `<!doctype html><html lang="pt"><head><meta charset="utf-8">
 <div id="grid"></div>
 <div id="log"></div>
 <canvas id="c" width="256" height="256"></canvas>
+<script type="importmap">{"imports":{"three":"/vendor/three/build/three.module.js","three/addons/":"/vendor/three/examples/jsm/"}}</script>
 <script type="module">
 const PARTS = ${JSON.stringify(parts)};
 const HEAD_DEFAULT = ${JSON.stringify(HEAD_DEFAULT)};
@@ -86,9 +90,9 @@ const base = location.origin + '/avatar3d';
 const $ = (id) => document.getElementById(id);
 const log = (m) => { $('log').textContent += m + '\\n'; };
 
-const THREE = await import('https://esm.sh/three@${THREE_VER}');
-const { GLTFLoader } = await import('https://esm.sh/three@${THREE_VER}/examples/jsm/loaders/GLTFLoader.js');
-const { clone } = await import('https://esm.sh/three@${THREE_VER}/examples/jsm/utils/SkeletonUtils.js');
+const THREE = await import('three');
+const { GLTFLoader } = await import('three/addons/loaders/GLTFLoader.js');
+const { clone } = await import('three/addons/utils/SkeletonUtils.js');
 
 const canvas = $('c');
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, preserveDrawingBuffer: true });
@@ -195,6 +199,15 @@ const server = Bun.serve({
     const url = new URL(req.url)
     if (url.pathname === '/' || url.pathname === '/index.html') {
       return new Response(page, { headers: { 'content-type': 'text/html; charset=utf-8' } })
+    }
+    if (url.pathname.startsWith('/vendor/three/') && req.method === 'GET') {
+      // Só arquivos de dentro do pacote three (o normalize barra um `..` no caminho).
+      const rel = normalize(url.pathname.slice('/vendor/three/'.length))
+      if (rel.startsWith('..')) return new Response('not found', { status: 404 })
+      const file = Bun.file(join(THREE_DIR, rel))
+      return (await file.exists())
+        ? new Response(file, { headers: { 'content-type': 'text/javascript; charset=utf-8' } })
+        : new Response('not found', { status: 404 })
     }
     if (url.pathname.startsWith('/avatar3d/') && req.method === 'GET') {
       const file = Bun.file(join(PUBLIC, url.pathname))

@@ -7,6 +7,7 @@ export const COMMON_COURSE_SLUGS = [
   'nave-contra-asteroides',
   'corre-dino',
   'o-jogo-do-meu-jeito',
+  'jornada-faisca-base-3d',
 ] as const
 
 export interface DestinoManifesto {

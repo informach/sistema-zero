@@ -143,6 +143,55 @@ adulto e virou um dos swatches. O antigo par Padrão⇄Pink não existe mais.
   nas oito páginas, nos dois temas.
 - ⚠️ O admin (`globals.css` próprio), o `@sistemazero/ui` e o member-shell NÃO mudaram.
 
+## A Jornada do Criador no Estúdio à noite (26/10/2026)
+
+As telas do currículo voltaram ao visual da casa (o desenho aprovado da etapa, agora com o palco
+escuro). Peças em `components/community/journey/`: `creator.tsx` (as telas), `stepper.tsx`
+(`JourneyStepper` e `StageMedal`, que saíram do `progress-client`) e `unlock.tsx` (`UNLOCK_TILES`,
+que saiu da página da etapa). Nomes: **Cursos da trilha**, Missão, Poderes, Extras.
+
+- **`/cursos/etapa/[id]`** = `AdultCreatorTrail`: faixa `sz-band` com a borda da cor da etapa,
+  "Etapa N de 8 · gênero", o cartão "Para concluir a etapa" (cursos da trilha, missão e
+  `minimumPowers` Poderes, nunca "3"), "Nesta etapa você ganha" com as capacidades REAIS da etapa
+  (`normalizeJourney(journey).stages[].capabilities`, chave = `level`; capacidade sem cartão é
+  ignorada) e a próxima etapa ou a Lenda; a fita; os cursos da trilha em linhas; a missão (chips
+  2D, 3D, "Sem nota"); os Poderes em grade (6 e "Ver todos"); os extras; "Publicar no Mural é
+  opcional". `god`/`lenda` vão para `/maestrias`; posto desconhecido é 404.
+- **`/cursos`**: no palco, `AdultCreatorStepper` (a régua com a Lenda levando às Maestrias) e
+  `AdultCreatorNextStep`. **`/progresso`**: o mesmo no bloco `sz-palco`. **Início e Criar**:
+  `AdultCreatorNextStep` (as páginas leem o catálogo também, para o curso que ainda não está em
+  Meus cursos).
+- **`/maestrias`**: `AdultMasteryHub` (um `sz-card` por área, `sz-num` por nível, o botão do que
+  fazer ou o cadeado com a trilha que abre a área). **`/maestrias/[areaId]`**:
+  `AdultMasteryHowItWorks` + `AdultMasteryArea` (níveis em `<details>`, o atual aberto).
+- **Aula 423**: os dois recados (trava sequencial e Jornada) são `sz-card` com o `sz-btn`, sem as
+  classes do Kids. Os objetivos do projeto (`sz-lesson-objectives*`) ganharam regras sob
+  `.sz-aula-adulto` no `globals.css`.
+- ⚠️ Frase em `sz-chip` (o motivo do cadeado) leva `h-auto whitespace-normal`: o chip não quebra
+  linha e "Abre depois dos cursos da trilha Explorador(a) de Mundos" passava da tela a 390 px. A
+  régua das etapas tem `relative` e `contain: inline-size` (rola por dentro sem empurrar a página).
+- ⚠️ **A trava das etapas (pedido dela, 26/10/2026, a mesma do mapa do Kids):** na régua
+  (`AdultCreatorStepper`, `JourneyStepper` com o estado `bloqueada`), a etapa que a pessoa ainda
+  não alcançou fica cinza, com o cadeado e "Ainda bloqueada" para o leitor, e NÃO é link; a Lenda
+  só leva às Maestrias quando alcançada. `/cursos/etapa/<nível>` passa por `AdultCreatorPost`: a
+  etapa trancada mostra "Esta etapa ainda está bloqueada", com "O caminho até lá" (o próximo passo
+  da etapa atual) embaixo. A régua é `creatorStageOpen` do member-shell (a etapa atual, as
+  concluídas ou conquistadas e a etapa em que o servidor já abriu um curso: compra avulsa,
+  presente, acesso preservado; nessa, a frase diz que a etapa inteira abre depois). A EQUIPE
+  (`isPrivilegedRole(session.role)`, nas páginas `/cursos`, `/progresso` e da etapa) abre tudo;
+  numa sessão de suporte o papel é o da pessoa, então a trava vale. Com a Lenda trancada,
+  `AdultMasteriesOpen` ("Você já pode começar uma Maestria") é o caminho até `/maestrias` quando
+  uma área já abriu. A jornada histórica (sem currículo) não usa o estado novo.
+- **Níveis das Maestrias**: `HeadingDisclosure` do `@sistemazero/ui` (título `<h2>` com o botão
+  dentro), no lugar de `<details>`/`<summary>`, que escondia o título do leitor de tela.
+- **Poder com 2D e 3D**: cada versão ganha o seu botão ("2D: Abrir de novo", "3D: Começar"; o
+  cadeado diz o motivo por versão). As versões contam uma vez para a etapa, mas a pessoa pode
+  fazer as duas. "Abrir de novo" só na versão que ela concluiu.
+- **Etapa conquistada sem concluir tudo** (posto herdado, `earned` sem a lista completa): o
+  cartão vira "O que você fez aqui", sem a barra, e a frase de cima é a do resumo
+  (`creatorStageSummary`), nunca "Faça os cursos…" para quem já passou da etapa.
+- Testes: `tests/creator-journey-screens.test.tsx`; o e2e roda com a prévia (ver abaixo).
+
 ## Jornada do Criador com currículo (25/10/2026)
 
 Quando `AdultJourneyView.curriculum` existe, ele é a única autoridade dos postos e das
@@ -155,9 +204,9 @@ aplicam-se apenas a políticas históricas sem `curriculum`. Não reconstruir pr
 - `/maestrias` e `/maestrias/[areaId]` leem os seis caminhos do Members. Cada nível tem núcleo
   ou crédito validado, 2 oficinas distintas e projeto aprovado. Níveis em acordeões; o atual
   abre por padrão. Projetos são enviados por `evidenceId` de uma versão imutável já salva.
-- `@sistemazero/member-shell/components/creator-journey` compartilha apenas apresentação.
-  O adulto mantém PageBand/PageBody, palco escuro, bancada clara, fontes e mínimos de leitura
-  do Estúdio à noite. Não trocar os tokens do app por estilos do protótipo.
+- As telas são deste app (seção de 26/10/2026 acima); do member-shell vem só a régua
+  (`lib/creator-journey-presentation`). O adulto mantém PageBand/PageBody, palco escuro, bancada
+  clara, fontes e mínimos de leitura do Estúdio à noite.
 - Catálogo, curso e aula usam `careerLock` do servidor. `curriculum` no curso informa vínculo;
   `accessReason` explica compra direta, presente e acesso preservado. Acesso avulso não muda posto.
   Recados de bloqueio das Maestrias apontam ao nível e à área definidos no DTO, inclusive no
@@ -184,20 +233,21 @@ rótulos com texto), sem nada que fale de idade ou exclua a outra célula. O des
 o Canvas "Comunidade adulta · direção de arte" (todas as telas, desktop e celular); ele usa só o que
 a plataforma já faz.
 
-- ⭐ **Letra base de 20 px.** `html { font-size: 125% }` no `globals.css`: tudo que é `rem` (as
-  páginas, o `@sistemazero/ui`, o player e os blocos do member-shell) cresce junto, sem bifurcar
-  componente compartilhado. Menor letra permitida: **17 px** (`--text-xs` sobe para `0.85rem`; não
+- ⭐ **Letra base de 18 px** (era 20 px até 26/10/2026; decisão dela: a página ficava inflada, com
+  pouco conteúdo por tela no notebook). `html { font-size: 112.5% }` no `globals.css`: tudo que é
+  `rem` (as páginas, o `@sistemazero/ui`, o player e os blocos do member-shell) cresce junto, sem
+  bifurcar componente compartilhado. Menor letra permitida: **15 px** (`--text-xs` sobe para `0.85rem`; não
   use `text-[0.8rem]` ou menos; o `size="sm"` do `Button`, que usa `text-[0.8rem]`, é corrigido no
   `globals.css`). ⚠️ As telas cheias de ferramenta (`data-embedded`: Estúdio, Pinta, Molda, Pensa e
   o avatar; e o jogo público `/jogar`, por `data-sz-public-player`) voltam a 100% e ao `--text-xs`
   do Tailwind: são editores densos com medidas próprias. O Estúdio DENTRO da aula e da sala ao vivo
-  segue a raiz de 20 px, como o resto da aula; a letra dos blocos é do editor (zoom + e −).
+  segue a raiz de 18 px, como o resto da aula; a letra dos blocos é do editor (zoom + e −).
   ⚠️ Media query em `rem` continua medindo 16 px (`xl` = 1280 px), é regra do CSS, não da raiz.
   ⚠️ Medida em px no JS de componente compartilhado não cresce com a raiz: o vídeo flutuante da aula
   (`FLOAT_BAR_HEIGHT`/`FLOAT_FRAME` do member-shell) tem a barra e a moldura presas em px aqui.
 - **Fontes**: Atkinson Hyperlegible Next (texto, `--font-sans`), Bricolage Grotesque (títulos,
   `--font-display`, `.sz-display`) e, desde 25/10/2026, Silkscreen (`--font-pixel`, só rótulos curtos de
-  17 px ou mais: `sz-kicker`, `sz-num`, os números do palco), por `next/font/google` no layout raiz.
+  15 px ou mais: `sz-kicker`, `sz-num`, os números do palco), por `next/font/google` no layout raiz.
   Linha de 1.6.
 - **Vocabulário de classes** (bloco "A PELE DA COMUNIDADE ADULTA" do `globals.css`): `sz-page`
   (largura e respiro), `sz-band` (a faixa do topo de cada página), `sz-kicker`, `sz-h1`…`sz-h4`,
@@ -205,9 +255,9 @@ a plataforma já faz.
   `sz-iconbtn`, `sz-link`, `sz-chip` (+ `-ok`, `-acao`, `-aviso`, `-novo`, `-escuro`), `sz-num`,
   `sz-tile`, `sz-label` (⚠️ nunca `sz-bar`: é a barra de ferramentas do Estúdio, no mesmo CSS) e, do
   "Estúdio à noite", `sz-palco`, `sz-hud` e `sz-mira` (ver §Estúdio à noite).
-  Botão é retângulo de cantos de 14 px e 56 px de altura; desde 25/10/2026 o `sz-btn` é o AMARELO com
+  Botão é retângulo de cantos de 14 px e 50 px de altura (2,8rem); desde 25/10/2026 o `sz-btn` é o AMARELO com
   degrau (ver §Estúdio à noite); o `[data-slot="button"]` do
-  `@sistemazero/ui` segue a mesma forma (48 px), só nas páginas da comunidade (o escopo é a raiz
+  `@sistemazero/ui` segue a mesma forma (45 px, 2,5rem: alvo nunca abaixo de 44 px), só nas páginas da comunidade (o escopo é a raiz
   sem `data-embedded`, num `:where()` sem peso). Chip sempre com ícone ou palavra, nunca só cor.
   Tons: `--acao-tint` e `--sucesso-tint` por `color-mix`, `--aviso-tint` = o amarelo de superfície do
   `ui`, `--aviso-texto` um literal de tinta: ⚠️ nada de hexadecimal da PALETA aqui (o contrato do
@@ -217,7 +267,7 @@ a plataforma já faz.
   voltar, ações), `PageBody`, `BackLink`, `SectionHeader`. Cada página desenha a própria faixa de
   ponta a ponta e cuida da largura (`sz-page`): o `CommunityFrame` só dá a moldura antiga
   (`max-w-6xl`) à **aula** e à **sala ao vivo**, que são componentes do Kids e mantêm o layout.
-- **Aula**: mesmo layout do player compartilhado; muda só a pele (rodapé com botões de 56 px,
+- **Aula**: mesmo layout do player compartilhado; muda só a pele (rodapé com botões de 50 px,
   chips das atividades com fundo, a letra maior pela raiz). Nada de regra nova no member-shell.
 - **Créditos do Zappy e do Pensa**: o cálculo mora no `core` (`resolveAiCredits(view, { audience:
   'adult' })`) e chega ao Pensa e ao Zappy do Estúdio pelo `audience`. O cartão fica em **Meu
@@ -285,7 +335,7 @@ plataforma já faz (as sugestões de recurso novo do Canvas ficaram de fora, dec
   grande com mira, módulo atual com moldura amarela), Seu progresso (números com rótulo em pixel
   colorido; a Jornada como uma linha de etapas com "Você está aqui" e o cartão da etapa atual), Criar
   (as ferramentas no palco, cada uma com a arte na cor dela; a tela de ferramenta fechada,
-  `ToolNotice`, é um palco com a arte e o cadeado, e o `data-sz-tool-notice` devolve a letra de 20 px
+  `ToolNotice`, é um palco com a arte e o cadeado, e o `data-sz-tool-notice` devolve a letra de 18 px
   dentro da rota de tela cheia), Comunidade (Mural, Desafio do mês e Ranking em cartões com arte no
   palco; o Clube na bancada), Desafio do mês (palco com a faixa amarela e os passos), Ranking (a liga
   da semana no palco, com as linhas de quem sobe e de quem volta), Recados (ícone por tipo e a
@@ -342,7 +392,7 @@ Kids:
 
 Desde a unificação de 21/10/2026 as duas comunidades usam os mesmos nomes: **curso → módulo → aula →
 parte** ("módulo" para o grupo de aulas foi decidido em 23/10/2026 e vale também no Admin). Rótulos:
-**Próxima parte**, **Partes da aula**, **Verificar esta parte**, **Objetivos desta parte**, **Enviar meu
+**Próxima parte**, **Partes da aula**, **Verificar projeto**, **Objetivos do projeto**, **Enviar meu
 projeto**, **Enviar de novo**, **Concluir aula** e **Baixar meu certificado**; o material é **Passo a passo
 do projeto** e quem recebe e responde é **a equipe**. A comunidade adulta deixou de dizer "Próxima seção"
 e "professor" nas telas de aula. O contrato é o `COMMON_LESSON_COPY` do member-shell (o
@@ -398,7 +448,7 @@ avatar, espaço 3D, perfil público e Como fazer), na mesma régua da seção an
   (`FEATURED_SLUGS`, do lote `docs/como-fazer-adulto`); sem tutorial, só a busca. O tutorial aberto
   de uma aula (`?voltar=`, régua `resolveHelpReturn` do member-shell) mostra "Você veio da aula …"
   com "Voltar para a aula", e os "Veja também" levam a volta junto.
-- **Como fazer adulto**: o conteúdo (8 coleções, 50 tutoriais) está em `docs/como-fazer-adulto/`
+- **Como fazer adulto**: o conteúdo (8 coleções, 67 tutoriais) está em `docs/como-fazer-adulto/`
   (`como-fazer.json` + `validar.ts` + README). Publicar é manual: Admin → Como fazer → plataforma
   Adulto → importar → revisar e publicar. Os ícones `users` e `user` entraram na allowlist do core.
 

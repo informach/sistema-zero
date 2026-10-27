@@ -19,13 +19,17 @@ export const TORUS_PROFILE = {
   initialHalfHeight: 0.35,
 } as const
 
-export function readPrimitiveDetail(kind: 'cylinder', raw: unknown): { around: number }
+export function readPrimitiveDetail(kind: 'cylinder' | 'cone', raw: unknown): { around: number }
 export function readPrimitiveDetail(
   kind: 'sphere' | 'torus',
   raw: unknown,
 ): { around: number; down: number }
 export function readPrimitiveDetail(kind: SceneCurvedPrimitive['kind'], raw: unknown) {
-  const row = record(raw, 'tessellation', kind === 'cylinder' ? ['around'] : ['around', 'down'])
+  const row = record(
+    raw,
+    'tessellation',
+    kind === 'cylinder' || kind === 'cone' ? ['around'] : ['around', 'down'],
+  )
   const around = number(
     row.around,
     'tessellation.around',
@@ -33,7 +37,7 @@ export function readPrimitiveDetail(kind: SceneCurvedPrimitive['kind'], raw: unk
     PRIMITIVE_DETAIL_LIMITS.around.max,
     true,
   )
-  return kind !== 'cylinder'
+  return kind !== 'cylinder' && kind !== 'cone'
     ? {
         around,
         down: number(
@@ -60,7 +64,7 @@ export function primitiveDetail(source: SceneCurvedPrimitive): { around: number;
           : { around: 16, down: 8 }),
     )
   return {
-    ...readPrimitiveDetail('cylinder', source.tessellation ?? { around: CYLINDER_SEGMENTS }),
+    ...readPrimitiveDetail(source.kind, source.tessellation ?? { around: CYLINDER_SEGMENTS }),
     down: 1,
   }
 }
@@ -70,7 +74,9 @@ export function primitiveTriangleCount(source: ScenePrimitiveGeometry): number {
   const { around, down } = primitiveDetail(source)
   return source.kind === 'cylinder'
     ? around * 4
-    : source.kind === 'torus'
-      ? around * down * 2
-      : around * (down - 1) * 2
+    : source.kind === 'cone'
+      ? around * 2
+      : source.kind === 'torus'
+        ? around * down * 2
+        : around * (down - 1) * 2
 }

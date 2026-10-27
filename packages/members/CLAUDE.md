@@ -492,6 +492,10 @@ Preparação recomenda extensões oficiais; cursos e tutor ensinam a implementa�
   recusar corrida; exclusão de plano preserva criações independentes e dados financeiros.
 - Checkpoints usam prepare/copy/commit/abort e restore com CAS. Cópia falha ocupa cota
   até o job cleanupId do manifesto ser confirmado; tentar novamente exige novo pedido.
+- Operação falha SEM orçamento (`pensaOperationRetryable`, `domain/pensa/operation-budget.ts`)
+  sai com `retryable: false` e o app esconde "Tentar de novo"; o retry dela responde
+  `QUOTA_EXCEEDED`. ⚠️ O campo só é emitido quando é `false` (26/10/2026): o Kids valida a view
+  com `z.strictObject`, e um app ainda sem o campo, na janela do deploy, recusaria toda falha.
 - Migrations 0126–0128 substituem os dados operacionais anteriores, preservando criações,
   XP, contadores, reservas e outbox. DDL é gerada; não editar SQL/snapshots gerados.
 - Verificação: test:pensa-db exige PENSA_TEST_DATABASE_URL local/pensa_*, aplica migrations
@@ -1975,6 +1979,9 @@ estender o streak). Atividade ANTERIOR às migrations não tem marco retroativo
   travada por `tests/unit/catalog-conformance.test.ts`. Cosmético puro; kids-only (v1). O
   render 3D (GLB real — Quaternius CC0 via pack do WawaSensei — R3F) vive no community-kids; os
   ids casam 1:1 com `public/avatar3d/parts/<id>.glb` — aqui é só o portão.
+  **26/10/2026:** categoria nova `hairAccessory` (Enfeite: removível, paleta das roupas, o chapéu
+  esconde), paleta também no `accessory` (default `#e74c3c`; config antiga sem cor ganha a padrão na
+  leitura) e 32 peças próprias (lista em `docs/gamificacao.md` §6). Rosto delicado e `hair-12` grátis.
 - **Quarto virtual** (migration `0020`, `room_state` jsonb last-write-wins + `room_inventory`):
   grade 12×8, tema + móveis/decoração/plantas/luzes posicionáveis + 1 pet. **Visual 3D no kids
   (06/2026)** — o members ganhou catálogos À PARTE `ROOM_FLOORS` (pisos) e `ROOM_LIGHTINGS`

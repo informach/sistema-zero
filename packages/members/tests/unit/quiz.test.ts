@@ -164,3 +164,24 @@ describe('computeRetryAvailableAt', () => {
     expect(computeRetryAvailableAt({ ...base, lastPassed: true }, now)).toBeNull()
   })
 })
+
+test.each([
+  'lighthouse-order',
+  'lighthouse-memory',
+  'lighthouse-door',
+  'lighthouse-retest',
+  'island-view',
+  'island-position',
+  'island-height',
+  'island-retest',
+] as const)('%s preserves the scene without exposing the answer', (predictionScene) => {
+  const authored: QuizBlock = {
+    kind: 'quiz',
+    questions: [{ ...quiz.questions[0]!, predictionScene }],
+  }
+  const member = toMemberFacingQuizContent(authored)
+  expect(member.questions[0]?.predictionScene).toBe(predictionScene)
+  expect(JSON.stringify(member)).not.toContain('correctChoiceIds')
+  expect(JSON.stringify(member)).not.toContain('explanation')
+  expect(gradeQuizAttempt(authored, { q1: ['b'] }).questions[0]?.correct).toBe(true)
+})

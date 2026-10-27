@@ -108,7 +108,12 @@ export function parseCheckRequest(value: unknown): CheckRequest {
         )
       if (
         rule.type !== 'functionReturns' &&
-        rule.steps.some((step) => step.action === 'clickTarget')
+        rule.steps.some((step) => step.action === 'approachObject3d')
+      )
+        throw new InvalidBuildRequestError('Navegação 3D só vale no Jogo 3D clássico JavaScript.')
+      if (
+        rule.type !== 'functionReturns' &&
+        rule.steps.some((step) => step.action === 'clickTarget' || step.action === 'approachSprite')
       )
         throw new InvalidBuildRequestError(
           'Cliques em alvos só valem no Jogo 2D clássico JavaScript.',

@@ -81,6 +81,11 @@ export class ProBuildSandbox extends Sandbox {
   enableInternet = false
 }
 
+/** Capacity reserved for real-time 3D navigation checks. */
+export class ThreeDCheckSandbox extends Sandbox {
+  enableInternet = false
+}
+
 interface RateLimitBinding {
   limit(options: { key: string }): Promise<{ success: boolean }>
 }
@@ -99,6 +104,7 @@ export interface PythonInspectionJobNamespace {
 
 export interface Env {
   ProBuildSandbox: DurableObjectNamespace<ProBuildSandbox>
+  ThreeDCheckSandbox?: DurableObjectNamespace<ThreeDCheckSandbox>
   BUILD_RATE_LIMITER: RateLimitBinding
   INTERNAL_TOKEN: string
   PRO_ARTIFACTS: PublicationBucket
@@ -901,7 +907,12 @@ async function runProjectCheck(
       429,
     )
   const buildId = crypto.randomUUID().replace(/-/g, '')
-  const sandbox = sandboxFactory(env.ProBuildSandbox, `check-${buildId}`, {
+  const needs3dNavigation = input.objectives.some(
+    ({ rule }) => 'steps' in rule && rule.steps.some((step) => step.action === 'approachObject3d'),
+  )
+  const namespace = needs3dNavigation ? env.ThreeDCheckSandbox : env.ProBuildSandbox
+  if (!namespace) return checkFailed()
+  const sandbox = sandboxFactory(namespace, `check-${buildId}`, {
     enableDefaultSession: false,
     transport: 'rpc',
   })

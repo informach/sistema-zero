@@ -71,9 +71,14 @@ const { StudioLesson } = await import('../StudioLesson')
 const { createLocalPersistenceAdapter } = await import('../../state/projectStore')
 const { isProjectOpening } = await import('../../state/projectOpening')
 const { getProjectStorageScope } = await import('../../state/projectStorageRuntime')
-const { persistProject, loadProjectAssetsById, persistProjectAssets } = await import(
-  '../../state/persistence'
-)
+const {
+  persistProject,
+  loadProjectAssetsById,
+  loadProjectById,
+  loadProjectShellById,
+  persistProjectAssets,
+} = await import('../../state/persistence')
+const { setAutosaveDelayForTests } = await import('../../persistence/service')
 let sequence = 0
 function local() {
   const namespace = `ui-opening-${++sequence}`
@@ -186,6 +191,53 @@ test('same-id replacement owns a distinct preparation and stale completion canno
   expect(handle.current?.getProject()?.name).toBe('Third')
   expect(isProjectOpening(scope, original.id)).toBe(false)
 })
+for (const language of ['javascript', 'python'] as const)
+  test(`${language}: "Trazer o que eu enviei" grava o envio por cima do rascunho, sem conflito de outra aba`, async () => {
+    // Reprodução de 26/10/2026 (Cadê, aula 2, parte 3): uma aba só, o selo dizia "Salvo" e, depois
+    // de trocar pelo envio, virava "Erro ao salvar" com "alterado ou apagado em outra aba".
+    const draft = await fixture(language, 'classic')
+    const { scope, adapter } = local()
+    await persistProject(draft, {}, scope)
+    // O host da aula abre o rascunho do disco (com a linhagem da cabeça gravada).
+    const opened = await realPrepare(await loadProjectShellById(draft.id, scope), {})
+    if (!opened) throw new Error('draft missing')
+    const errors: string[] = []
+    const handle = createRef<StudioHandle>()
+    setAutosaveDelayForTests(10)
+    try {
+      render(
+        <StudioLesson
+          ref={handle}
+          initialProject={opened}
+          persistence={adapter}
+          autoRun={false}
+          onError={(error) => errors.push(error.message)}
+        />,
+      )
+      await act(async () => calls.at(-1)?.gate.resolve())
+      await waitFor(() => expect(handle.current?.getProject()?.id).toBe(draft.id))
+      // O envio chega da rede: JSON puro, sem linhagem local, re-chaveado para o id do bloco.
+      const submitted = { ...JSON.parse(JSON.stringify(draft)), name: 'O que eu enviei' }
+      act(() => handle.current?.replaceProject(submitted))
+      await act(async () => calls.at(-1)?.gate.resolve())
+      await waitFor(async () =>
+        expect((await loadProjectById(draft.id, scope))?.name).toBe('O que eu enviei'),
+      )
+      await waitFor(() => expect(handle.current?.isDirty()).toBe(false))
+      expect(errors).toEqual([])
+      // A checagem de conflito continua ligada: depois de uma escrita de outra aba, uma nova
+      // troca herda a base que este editor conhecia e falha em vez de sobrescrever.
+      const other = await realPrepare(await loadProjectShellById(draft.id, scope), {})
+      if (!other) throw new Error('saved project missing')
+      await persistProject({ ...other, name: 'Outra aba' }, {}, scope)
+      act(() => handle.current?.replaceProject({ ...submitted, name: 'Segunda troca' }))
+      await act(async () => calls.at(-1)?.gate.resolve())
+      await waitFor(() => expect(errors.join(' ')).toContain('outra aba'))
+      expect((await loadProjectById(draft.id, scope))?.name).toBe('Outra aba')
+    } finally {
+      setAutosaveDelayForTests(null)
+    }
+  })
 test('blocked lesson settles as policy refusal, with no onReady or storage error', async () => {
   const project = await fixture('javascript', 'classic')
   project.installedExtensions = [{ id: 'game-3d', version: '1.0.0', installedAt: 1 }]

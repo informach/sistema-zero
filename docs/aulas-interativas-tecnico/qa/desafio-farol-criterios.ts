@@ -5,6 +5,11 @@ import type {
 } from '../../../packages/core/src/learning/section-progression'
 import { FAROL_FAROIS } from '../../../packages/studio/src/arte/farol-assets'
 import { farolDirecaoObservada } from './desafio-farol-direcao'
+import {
+  memoriaFarolObservada,
+  portaComChaveObservada,
+  portaSemChaveObservada,
+} from './desafio-farol-observacao'
 
 const check = (id: string, label: string, rule: SectionStructureRule): SectionProjectCheck => ({
   id,
@@ -101,6 +106,7 @@ export const movimentoSemBorda: SectionProjectCheck[] = [
 
 /** Cada entrega conserva também as regras essenciais dos dias anteriores. */
 export const coleta: SectionProjectCheck[] = [
+  memoriaFarolObservada,
   ...movimento,
   check('memoria', 'Crie temChave começando em falso.', {
     type: 'usesBlock',
@@ -144,6 +150,7 @@ const porId = (id: string) => {
 }
 export const chaveRecolhida: SectionProjectCheck[] = [...movimento, porId('recolher')]
 export const coletaGuardada: SectionProjectCheck[] = [
+  memoriaFarolObservada,
   ...movimento,
   porId('memoria'),
   // Exige coleta e memória no mesmo evento; o aviso só é montado na seção seguinte.
@@ -157,6 +164,7 @@ export const coletaGuardada: SectionProjectCheck[] = [
 ]
 
 export const portaSemChave: SectionProjectCheck[] = [
+  portaSemChaveObservada,
   ...coleta,
   check(
     'condicao',
@@ -174,6 +182,7 @@ export const portaSemChave: SectionProjectCheck[] = [
 ]
 
 export const portaCompleta: SectionProjectCheck[] = [
+  portaComChaveObservada,
   ...portaSemChave,
   check(
     'encontro-farol',

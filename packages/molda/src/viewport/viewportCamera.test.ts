@@ -78,6 +78,42 @@ test('invalid resize projections leave both existing projection matrices unchang
 })
 
 describe('viewport camera', () => {
+  test('growing bounds stay between the clipping planes without resetting the orthographic view', () => {
+    const rig = new ViewportCamera('orthographic')
+    rig.frame({ min: [-1, 0, -1], max: [1, 2, 1] })
+    rig.camera.zoom = 3
+    rig.camera.updateProjectionMatrix()
+    const target = rig.target.clone()
+    const direction = rig.camera.position.clone().sub(target).normalize()
+    const nearCorner = target.clone().addScaledVector(direction, 30)
+    const farCorner = target.clone().addScaledVector(direction, -700)
+    const bounds = {
+      min: [
+        Math.min(nearCorner.x, farCorner.x),
+        Math.min(nearCorner.y, farCorner.y),
+        Math.min(nearCorner.z, farCorner.z),
+      ] as [number, number, number],
+      max: [
+        Math.max(nearCorner.x, farCorner.x),
+        Math.max(nearCorner.y, farCorner.y),
+        Math.max(nearCorner.z, farCorner.z),
+      ] as [number, number, number],
+    }
+
+    expect(Math.abs(nearCorner.project(rig.camera).z)).toBeGreaterThan(1)
+    expect(rig.keepBoundsInDepth(bounds)).toBe(true)
+    expect(rig.target).toEqual(target)
+    expect(rig.camera.zoom).toBe(3)
+    expect(rig.camera.position.clone().sub(target).normalize().distanceTo(direction)).toBeLessThan(
+      1e-12,
+    )
+    for (const x of [bounds.min[0], bounds.max[0]])
+      for (const y of [bounds.min[1], bounds.max[1]])
+        for (const z of [bounds.min[2], bounds.max[2]])
+          expect(Math.abs(new Vector3(x, y, z).project(rig.camera).z)).toBeLessThan(1)
+    expect(rig.keepBoundsInDepth(bounds)).toBe(false)
+  })
+
   test('named views are exactly orthogonal and fit every corner in portrait and landscape', () => {
     const rig = new ViewportCamera()
     const bounds = { min: [-12, 0, -3], max: [20, 8, 4] } as const

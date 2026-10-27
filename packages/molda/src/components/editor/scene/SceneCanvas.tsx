@@ -121,6 +121,7 @@ interface Props {
   paintTarget?: ScenePaintTarget | null
   paintScope?: import('../../../viewport/sceneViewportTypes').ScenePaintSurfaceScope | null
   paintGuides?: import('../../../viewport/ScenePaintGuides').ScenePaintGuideSettings | null
+  onPaintGridChange?(visible: boolean): void
   onPaintScopeChange?(mode: 'all' | 'selected'): void
   paint?: ScenePaintActions
   flipbook: SceneFlipbookPlayer
@@ -200,6 +201,7 @@ function SceneCanvasAttempt({
   paintTarget = null,
   paintScope = null,
   paintGuides = null,
+  onPaintGridChange,
   onPaintScopeChange,
   paintMirror = false,
   detailPanel = null,
@@ -743,6 +745,16 @@ function SceneCanvasAttempt({
         {shell && <ChevronDown aria-hidden="true" className="size-4" />}
       </summary>
       <SceneStageDropdown className={dropClass('settings')}>
+        {mode === 'paint' && onPaintGridChange && (
+          <Button
+            variant="ghost"
+            className="justify-start px-3 text-sm"
+            aria-pressed={paintGuides?.grid ?? false}
+            onClick={() => onPaintGridChange(!paintGuides?.grid)}
+          >
+            Quadradinhos
+          </Button>
+        )}
         {hints.hidden && (
           <>
             <Button className="text-sm" onClick={hints.restore}>

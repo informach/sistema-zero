@@ -21,9 +21,15 @@
  * 7. Cria a imagem indexada vazia e liga ao material.
  */
 import { newId } from '../core/id'
+import { isPaintTextureDensity, type PaintTextureDensity } from '../core/limits'
 import type { ShapeFaceId, Vec3 } from '../core/model'
 import { faceUnits } from '../model/shapes'
-import { copySceneMaterialForNode, createSceneColorImage } from './appearanceCommands'
+import {
+  copySceneMaterialForNode,
+  createSceneColorImage,
+  importSceneColorImage,
+  patchSceneMaterial,
+} from './appearanceCommands'
 import { sceneAppearanceUsage } from './appearanceUsage'
 import { allocateSceneId, finishSceneCommand } from './commandContext'
 import { editSceneMesh } from './commands'
@@ -38,6 +44,7 @@ import type {
   SceneUvTransform,
 } from './document'
 import { packSceneShelves } from './imageAtlas'
+import { type SceneRgbaRaster, validateSceneRgbaRaster } from './imageImport'
 import type { ScenePaintTarget } from './imagePaint'
 import { SCENE_LIMITS } from './limits'
 import { sceneMaterialImageIds } from './materialImages'
@@ -56,6 +63,12 @@ export interface ScenePaintSurfaceRequest {
   faceId?: string
   /** O consentimento para dividir as faces tortas em triângulos, na mesma revisão. */
   splitCrookedFaces?: boolean
+  /** Overrides the project's default for a new texture (16x through 512x). */
+  density?: PaintTextureDensity
+  /** Start a new texture while retaining the previous image in the document library. */
+  replaceExisting?: boolean
+  name?: string
+  raster?: SceneRgbaRaster
 }
 
 export type ScenePaintSurface =
@@ -220,7 +233,16 @@ function surfaceUnits(
             Math.PI * ((TORUS_PROFILE.tubeRadius * (size[0] + size[2])) / 4 + size[1] / 2),
           ] as [number, number])
         : null
-      : faceUnits(geometry.kind, size, surface)
+      : geometry.kind === 'cone'
+        ? surface === 'side'
+          ? ([
+              (Math.PI * (size[0] + size[2])) / 2,
+              Math.hypot(size[1], Math.max(size[0], size[2]) / 2),
+            ] as [number, number])
+          : surface === 'bottom'
+            ? ([size[0], size[2]] as [number, number])
+            : null
+        : faceUnits(geometry.kind, size, surface)
   if (!units) throw new Error(`Superfície ${surface} fora da forma ${geometry.kind}.`)
   return units
 }
@@ -232,8 +254,9 @@ function layOutShape(
   materialId: string,
   world: Readonly<AffineMatrix>,
   nextId: () => string,
+  density: PaintTextureDensity,
 ) {
-  const tpu = document.settings.texelsPerUnit
+  const tpu = density
   const keys = bindings(node, geometry)
     .filter(([, id]) => id === materialId)
     .map(([key]) => key as ShapeFaceId)
@@ -322,7 +345,12 @@ function layOutMesh(
       // Face sem área não desenha e não recebe folha; a UV dela fica como estava.
       const ids = uses(working).filter((key) => inspectMeshFaceFrame(working, key) === 'ok')
       requireScene(ids.length, 'faces', 'Essa peça não tem faces com área para pintar.')
-      const plan = pixelMeshUv(working, ids, document.settings.texelsPerUnit, world)
+      const plan = pixelMeshUv(
+        working,
+        ids,
+        request.density ?? document.settings.texelsPerUnit,
+        world,
+      )
       side = plan.width
       return plan.mesh
     },
@@ -336,10 +364,14 @@ export function ensureScenePaintSurface(
   request: ScenePaintSurfaceRequest,
   nextId: () => string = newId,
 ): ScenePaintSurface {
+  const density = request.density ?? document.settings.texelsPerUnit
+  requireScene(isPaintTextureDensity(density), 'density', 'Escolha uma densidade de pixels válida.')
+  const raster = request.raster === undefined ? undefined : validateSceneRgbaRaster(request.raster)
   let { usage, node, geometry } = paintNode(document, request.nodeId)
   let materialId = targetMaterial(node, geometry, request.faceId)
-  const ready =
-    request.faceId === undefined
+  const ready = request.replaceExisting
+    ? null
+    : request.faceId === undefined
       ? shownReadyTarget(usage, node, geometry)
       : readyTarget(usage, node.id, materialId)
   if (ready) return { status: 'ready', document, target: ready, created: false }
@@ -350,16 +382,30 @@ export function ensureScenePaintSurface(
     'material.maps',
     'Esta peça tem relevo, brilho ou metal pintados. Pinte nela pelo caminho avançado.',
   )
+  if (request.replaceExisting && material.colorImageId !== undefined)
+    requireScene(
+      images.size === 1,
+      'material.maps',
+      'Esta pintura tem mapas de detalhe. Ajuste-os juntos antes de criar outra textura.',
+    )
   let next = document
   if (
     !onlyThis(usage.materials.get(materialId), node.id) ||
-    [...images].some((id) => !onlyThis(usage.images.get(id), node.id))
+    (!request.replaceExisting && [...images].some((id) => !onlyThis(usage.images.get(id), node.id)))
   ) {
-    next = copySceneMaterialForNode(next, node.id, materialId, nextId)
+    next = copySceneMaterialForNode(next, node.id, materialId, nextId, {
+      copyImages: !request.replaceExisting,
+    })
     materialId = next.materials.at(-1)!.id
     ;({ usage, node, geometry } = paintNode(next, node.id))
     const copied = readyTarget(usage, node.id, materialId)
-    if (copied) return { status: 'ready', document: next, target: copied, created: true }
+    if (copied && !request.replaceExisting)
+      return { status: 'ready', document: next, target: copied, created: true }
+    material = usage.index.materials.get(materialId)!
+  }
+  if (request.replaceExisting && material.colorImageId !== undefined) {
+    next = patchSceneMaterial(next, materialId, { colorImageId: null })
+    ;({ usage, node, geometry } = paintNode(next, node.id))
     material = usage.index.materials.get(materialId)!
   }
   requireScene(
@@ -394,18 +440,93 @@ export function ensureScenePaintSurface(
       materialId,
       usage.index.scene.worldMatrices.get(node.id)!,
       nextId,
+      density,
     ))
-  next = createSceneColorImage(
-    next,
-    materialId,
-    { name: node.name, width, height, encoding: 'indexed' },
-    nextId,
-  )
+  if (raster) {
+    requireScene(
+      raster.width >= width && raster.height >= height,
+      'images',
+      `A imagem precisa ter pelo menos ${width} × ${height} pixels nesta densidade. Escolha uma densidade menor ou uma imagem maior.`,
+    )
+    if (raster.width !== width || raster.height !== height)
+      next = scalePaintUv(
+        next,
+        node.id,
+        materialId,
+        width / raster.width,
+        height / raster.height,
+        nextId,
+      )
+    next = importSceneColorImage(next, materialId, request.name ?? node.name, raster, nextId)
+  } else
+    next = createSceneColorImage(
+      next,
+      materialId,
+      { name: request.name ?? node.name, width, height, encoding: 'indexed' },
+      nextId,
+    )
   const image = next.images.at(-1)!
+  next = {
+    ...next,
+    images: next.images.map((entry) =>
+      entry.id === image.id ? { ...entry, texelsPerUnit: density } : entry,
+    ),
+  }
   return {
     status: 'ready',
     document: next,
     target: { nodeId: node.id, materialId, imageId: image.id, layerId: image.layers[0]!.id },
     created: true,
   }
+}
+
+/** Keep authored pixels untouched while mapping the generated template into a larger image. */
+function scalePaintUv(
+  document: MoldaSceneDocument,
+  nodeId: string,
+  materialId: string,
+  scaleU: number,
+  scaleV: number,
+  nextId: () => string,
+) {
+  const node = document.nodes.find((entry) => entry.id === nodeId)
+  requireScene(node?.kind === 'mesh', 'node', 'Essa peça mudou.')
+  const geometry = document.geometries.find((entry) => entry.id === node.geometryId)
+  requireScene(geometry, 'geometry', 'A geometria desta peça mudou.')
+  if (geometry.kind === 'mesh') {
+    const faces = Object.fromEntries(
+      Object.entries(geometry.faces).map(([id, face]) => [
+        id,
+        (face.materialId ?? node.materialId) !== materialId
+          ? face
+          : {
+              ...face,
+              corners: face.corners.map((corner) => ({
+                ...corner,
+                uv: [corner.uv[0] * scaleU, corner.uv[1] * scaleV] as [number, number],
+              })),
+            },
+      ]),
+    )
+    return replaceGeometry(document, nodeId, { ...geometry, faces }, nextId)
+  }
+  const surfaces = Object.fromEntries(
+    Object.entries(geometry.surfaces).map(([id, surface]) => {
+      if ((surface.materialId ?? node.materialId) !== materialId || !surface.uv)
+        return [id, surface]
+      const uv = surface.uv
+      return [
+        id,
+        {
+          ...surface,
+          uv: {
+            origin: [uv.origin[0] * scaleU, uv.origin[1] * scaleV] as [number, number],
+            u: [uv.u[0] * scaleU, uv.u[1] * scaleV] as [number, number],
+            v: [uv.v[0] * scaleU, uv.v[1] * scaleV] as [number, number],
+          },
+        },
+      ]
+    }),
+  )
+  return replaceGeometry(document, nodeId, { ...geometry, surfaces }, nextId)
 }

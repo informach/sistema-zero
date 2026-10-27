@@ -11,6 +11,7 @@ import {
   SHEET_CROP_WIDTHS,
 } from './actions'
 import { GESTOS_NO_PAPEL, MARCA_DO_PAPEL, MARCAS_NO_PAPEL, type MirrorAxis } from './atelie'
+import { type IslandState, initialIsland, isIslandState } from './island-3d'
 import {
   AIM_ORIGIN,
   CONTACT_HEARTS,
@@ -116,6 +117,11 @@ export interface SceneLighthousePosition {
  * de `SCENE_FRAME_RATE`), e quem para o "Rodar" é `sceneClockShouldStop`. O motor é puro.
  */
 export interface SceneLighthouseWalk {
+  /** Campos opcionais para ler retratos anteriores à exploração livre. */
+  movement?: boolean
+  order?: 'correct' | 'reverse'
+  testedOrders?: ('correct' | 'reverse')[]
+  orderResult?: boolean
   /** Quantos quadros passaram desde o começo (ou desde o Recomeçar). */
   frame: number
   /** O x do canto esquerdo do personagem, na tela de 480 do Farol. */
@@ -1377,6 +1383,7 @@ function isSceneSkinGame(value: unknown): value is SceneSkinGame {
 }
 
 export interface SceneState {
+  island3d?: IslandState
   evidence: SceneEvidence
   lighthouse: SceneLighthouseKey
   collection: SceneCollectionMemory
@@ -1858,6 +1865,7 @@ export function initialScene({ scene, initialImpulse, setup }: SceneStart): Scen
   const impulso = initialImpulse ?? (scene === 'jump-sound' ? SCENE_LIMITS.impulse.max : 9)
   return {
     evidence: { actions: 0, discoveries: [], observations: [], hints: 0 },
+    ...(scene === 'island-3d' ? { island3d: initialIsland(setup?.goals) } : {}),
     lighthouse: { ...LIGHTHOUSE_PADRAO },
     collection: { ...COLLECTION_PADRAO },
     walk: { ...WALK_PADRAO, trail: [...WALK_PADRAO.trail] },
@@ -2023,6 +2031,7 @@ export function initialScene({ scene, initialImpulse, setup }: SceneStart): Scen
  */
 export function cloneScene(state: SceneState): SceneState {
   return {
+    ...(state.island3d ? { island3d: structuredClone(state.island3d) } : {}),
     evidence: {
       ...state.evidence,
       discoveries: [...state.evidence.discoveries],
@@ -2032,7 +2041,11 @@ export function cloneScene(state: SceneState): SceneState {
     },
     lighthouse: { ...state.lighthouse },
     collection: { ...state.collection },
-    walk: { ...state.walk, trail: [...state.walk.trail] },
+    walk: {
+      ...state.walk,
+      trail: [...state.walk.trail],
+      ...(state.walk.testedOrders ? { testedOrders: [...state.walk.testedOrders] } : {}),
+    },
     keyPosition: {
       ...state.keyPosition,
       before: state.keyPosition.before ? { ...state.keyPosition.before } : null,
@@ -2238,6 +2251,14 @@ function isSceneLighthouseWalk(value: unknown): value is SceneLighthouseWalk {
     inteiro(run, frame as number) &&
     typeof arrow === 'boolean' &&
     typeof keepInside === 'boolean' &&
+    (value.movement === undefined || typeof value.movement === 'boolean') &&
+    (value.order === undefined || value.order === 'correct' || value.order === 'reverse') &&
+    (value.orderResult === undefined || typeof value.orderResult === 'boolean') &&
+    (value.testedOrders === undefined ||
+      (Array.isArray(value.testedOrders) &&
+        value.testedOrders.length <= 2 &&
+        new Set(value.testedOrders).size === value.testedOrders.length &&
+        value.testedOrders.every((v) => v === 'correct' || v === 'reverse'))) &&
     LIGHTHOUSE_WALK_SPEEDS.some((v) => v === speed) &&
     Array.isArray(trail) &&
     trail.length >= 1 &&
@@ -2264,6 +2285,7 @@ const numbers = (v: unknown, max: number): v is number[] =>
  */
 export function isSceneState(value: unknown): value is SceneState {
   if (!isRecord(value)) return false
+  if (value.island3d !== undefined && !isIslandState(value.island3d)) return false
   if (
     !isRecord(value.lighthouse) ||
     typeof value.lighthouse.hasKey !== 'boolean' ||

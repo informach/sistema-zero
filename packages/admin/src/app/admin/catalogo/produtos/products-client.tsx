@@ -38,6 +38,7 @@ const KIND_LABELS: Record<string, string> = {
   template_kit: 'Kit de templates',
   community: 'Comunidade',
   service: 'Serviço',
+  tool: 'Ferramenta',
   bundle: 'Combo',
   other: 'Outro',
 }

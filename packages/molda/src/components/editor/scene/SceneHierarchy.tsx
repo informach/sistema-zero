@@ -7,6 +7,7 @@ import {
   ChevronDown,
   ChevronRight,
   Circle,
+  Cone,
   Crosshair,
   Cylinder,
   Eye,
@@ -29,6 +30,7 @@ export type SceneHierarchyShape =
   | 'box'
   | 'wedge'
   | 'cylinder'
+  | 'cone'
   | 'sphere'
   | 'torus'
   | 'mesh'
@@ -41,6 +43,7 @@ export const SHAPE_LOOK: Record<SceneHierarchyShape, [LucideIcon, string]> = {
   box: [Box, 'var(--mld-shape-box)'],
   wedge: [TriangleRight, 'var(--mld-shape-wedge)'],
   cylinder: [Cylinder, 'var(--mld-shape-cylinder)'],
+  cone: [Cone, 'var(--mld-shape-cone)'],
   sphere: [Circle, 'var(--mld-shape-sphere)'],
   torus: [Torus, 'var(--mld-shape-torus)'],
   mesh: [Waypoints, 'var(--mld-shape-special)'],

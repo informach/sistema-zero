@@ -27,6 +27,12 @@
       "image": "./Dockerfile",
       "instance_type": "standard-1",
       "max_instances": 50
+    },
+    {
+      "class_name": "ThreeDCheckSandbox",
+      "image": "./Dockerfile",
+      "instance_type": "standard-4",
+      "max_instances": 10
     }
   ],
   "durable_objects": {
@@ -34,6 +40,10 @@
       {
         "class_name": "ProBuildSandbox",
         "name": "ProBuildSandbox"
+      },
+      {
+        "class_name": "ThreeDCheckSandbox",
+        "name": "ThreeDCheckSandbox"
       },
       {
         "class_name": "PythonInspectionJob",
@@ -49,6 +59,10 @@
     {
       "new_sqlite_classes": ["PythonInspectionJob"],
       "tag": "v2-python-inspection-jobs"
+    },
+    {
+      "new_sqlite_classes": ["ThreeDCheckSandbox"],
+      "tag": "v3-three-d-check-sandbox"
     }
   ],
   "ratelimits": [
@@ -105,6 +119,12 @@
           "image": "./Dockerfile",
           "instance_type": "standard-1",
           "max_instances": 50
+        },
+        {
+          "class_name": "ThreeDCheckSandbox",
+          "image": "./Dockerfile",
+          "instance_type": "standard-4",
+          "max_instances": 10
         }
       ],
       "durable_objects": {
@@ -112,6 +132,10 @@
           {
             "class_name": "ProBuildSandbox",
             "name": "ProBuildSandbox"
+          },
+          {
+            "class_name": "ThreeDCheckSandbox",
+            "name": "ThreeDCheckSandbox"
           },
           {
             "class_name": "PythonInspectionJob",

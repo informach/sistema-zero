@@ -57,6 +57,13 @@ function acoesConhecidas(): Map<SceneId, SceneAction[]> {
   }
   // Os controles são ações reais e precisam atravessar a mesma borda tipada.
   const acoesDosControles: SceneAction[] = [
+    { type: 'island-view', view: 'top' },
+    { type: 'island-axis', axis: 'y', value: 1.5 },
+    { type: 'island-hero', axis: 'x', value: -2.5 },
+    { type: 'island-answer', answer: 'camera' },
+    { type: 'island-test' },
+    { type: 'island-restart' },
+    { type: 'island-bounds', visible: true },
     { type: 'value-source', source: 'read' },
     { type: 'place-in-area', card: 'panel', area: 'start' },
     { type: 'command-target', subject: 'shot', target: 'group' },
@@ -105,6 +112,16 @@ function acoesConhecidas(): Map<SceneId, SceneAction[]> {
 
 describe('toda ação de cena conhecida atravessa a borda do members', () => {
   const porCena = acoesConhecidas()
+
+  test.each([
+    { type: 'island-view', view: 'invalid' },
+    { type: 'island-axis', axis: 'x', value: 4.1 },
+    { type: 'island-axis', axis: 'x', value: '1' },
+    { type: 'island-hero', axis: 'y', value: 1 },
+    { type: 'island-bounds', visible: 'true' },
+  ])('recusa ação 3D fora do contrato: %j', (action) => {
+    expect(validador.Check(blocoCom('island-3d', [action as unknown as SceneAction]))).toBe(false)
+  })
 
   test.each([-1, 2, 0.5, '1', null])('recusa esconderijo fora do contrato: %j', async (id) => {
     const bloco = blocoCom('touch-response', [
@@ -169,4 +186,24 @@ describe('toda ação de cena conhecida atravessa a borda do members', () => {
       isInteractiveBlock(blocoCom('world', [{ type: 'voar' } as unknown as SceneAction])),
     ).toBe(false)
   })
+})
+
+test('free exploration configuration survives the typed authoring route', async () => {
+  const block = blocoCom('lighthouse-walk', [{ type: 'movement-command', enabled: false }])
+  if (block.activity.type !== 'experimentation') throw Error('Invalid test activity')
+  block.activity.setup = {
+    ...block.activity.setup,
+    freeExploration: true,
+    goals: ['no-movement-command', 'stopped-after-release'],
+  }
+  expect(isInteractiveBlock(block)).toBe(true)
+  const response = await app.handle(
+    new Request('http://localhost/', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ content: block }),
+    }),
+  )
+  expect(response.status).toBe(200)
+  expect(await response.json()).toEqual({ content: block })
 })

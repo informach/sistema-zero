@@ -16,6 +16,8 @@ import { SceneButton } from './exploration-stage'
 import { useLessonPlayer } from './lesson-player-context'
 import { useLessonPreview } from './lesson-preview-context'
 import { GardenQuizScene } from './quiz-garden-scene'
+import { IslandQuizScene } from './quiz-island-scene'
+import { LighthouseQuizScene } from './quiz-lighthouse-scene'
 import { ZappyOuvirButton } from './zappy-ouvir-button'
 /** Same radio-card recipe as KidsQuiz; the approved prediction flow needs immediate feedback. */
 export function PredictionQuiz(props: {
@@ -48,6 +50,7 @@ function PredictionQuizSession({
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
   const checked = feedback !== null
+  const [scenePlaying, setScenePlaying] = useState(false)
   async function requestGrade(body: Record<string, string[]>, questionId?: string) {
     if (rehearsal) {
       const authored = { ...content, passingScore: content.passingScore || 100 }
@@ -217,19 +220,25 @@ function PredictionQuizSession({
         <h3 className="sz-display text-2xl" ref={heading} tabIndex={-1}>
           Você relembrou as regras.
         </h3>
-        <div className="sz-garden-remember">
-          <span>01</span>
-          <p>
-            O toque executa a reação no <strong>esconderijo escolhido</strong>.
-          </p>
-        </div>
-        <div className="sz-garden-remember">
-          <span>02</span>
-          <p>
-            <strong>Achados guarda um valor.</strong> Cada novo personagem soma 1.
-          </p>
-        </div>
-        <p className="text-sm">O toque vazio e o repetido não somam. Uma nova busca começa em 0.</p>
+        {questions.every((q) => q.predictionScene?.startsWith('garden-')) && (
+          <>
+            <div className="sz-garden-remember">
+              <span>01</span>
+              <p>
+                O toque executa a reação no <strong>esconderijo escolhido</strong>.
+              </p>
+            </div>
+            <div className="sz-garden-remember">
+              <span>02</span>
+              <p>
+                <strong>Achados guarda um valor.</strong> Cada novo personagem soma 1.
+              </p>
+            </div>
+            <p className="text-sm">
+              O toque vazio e o repetido não somam. Uma nova busca começa em 0.
+            </p>
+          </>
+        )}
         <p className="text-sm">Revisão concluída. Use o botão da aula para continuar.</p>
         <SceneButton
           onClick={() => {
@@ -298,11 +307,32 @@ function PredictionQuizSession({
             data-result={checked}
           >
             {checked ? <CheckCircle2 size={16} aria-hidden /> : <Hand size={16} aria-hidden />}
-            {checked ? 'Resultado da experiência' : 'Antes do toque'}
+            {checked ? 'Resultado da experiência' : 'Antes do teste'}
           </span>
-          <GardenQuizScene scene={question.predictionScene!} result={checked} />
+          {question.predictionScene?.startsWith('island-') ? (
+            <IslandQuizScene
+              key={question.id}
+              scene={question.predictionScene}
+              result={checked}
+              onAnimating={setScenePlaying}
+            />
+          ) : question.predictionScene?.startsWith('lighthouse-') ? (
+            <LighthouseQuizScene
+              key={question.id}
+              scene={question.predictionScene}
+              result={checked}
+              onAnimating={setScenePlaying}
+            />
+          ) : (
+            <GardenQuizScene
+              scene={question.predictionScene as 'garden-touch' | 'garden-count' | 'garden-repeat'}
+              result={checked}
+            />
+          )}
           <p className="sz-garden-caption">
-            {checked ? 'Observe o resultado antes de continuar.' : captions[sceneIndex]}
+            {checked
+              ? 'Observe o resultado antes de continuar.'
+              : (captions[sceneIndex] ?? 'Observe a situação antes de escolher a resposta.')}
           </p>
           {checked && sceneIndex === 1 && (
             <ol className="sz-garden-sequence">
@@ -406,7 +436,7 @@ function PredictionQuizSession({
           {!checked ? (
             <SceneButton
               tom="gesto"
-              disabled={selected === null || busy}
+              disabled={selected === null || busy || scenePlaying}
               onClick={() => void reveal()}
             >
               <Play size={16} aria-hidden />
@@ -430,7 +460,11 @@ function PredictionQuizSession({
                 )}
               </div>
               <div className="flex flex-wrap gap-2">
-                <SceneButton tom="gesto" disabled={busy} onClick={() => void advance()}>
+                <SceneButton
+                  tom="gesto"
+                  disabled={busy || scenePlaying}
+                  onClick={() => void advance()}
+                >
                   {correct
                     ? index === questions.length - 1
                       ? 'Concluir revisão'
@@ -440,7 +474,7 @@ function PredictionQuizSession({
                 </SceneButton>
                 {correct && (
                   <SceneButton
-                    disabled={busy}
+                    disabled={busy || scenePlaying}
                     onClick={() => {
                       setFeedback(null)
                       setSelected(null)

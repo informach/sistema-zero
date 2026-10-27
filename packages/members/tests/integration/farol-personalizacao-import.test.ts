@@ -62,7 +62,7 @@ test('o Dia 3 importa todas as escolhas de farol e a experiência da posição n
     kind: 'interactive',
     activity: {
       scene: 'lighthouse-position',
-      setup: { goals: ['mover-horizontal', 'mover-vertical'] },
+      setup: { freeExploration: true, goals: ['x-minus', 'x-plus', 'y-minus', 'y-plus'] },
     },
   })
 })

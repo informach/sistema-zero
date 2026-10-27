@@ -159,7 +159,16 @@ tema). O design espelha o projeto de referência `C:\Users\tocha\projects\comuni
 
 ## Componentes
 
-badge (variant `success` usa tokens `--success/*`) · **brand-logo**
+badge (variant `success` usa tokens `--success/*`) · **heading-disclosure**
+(`@sistemazero/ui/heading-disclosure`, 26/10/2026 — uma seção que abre e fecha com o TÍTULO de
+verdade: `<hN><button aria-expanded aria-controls>` e o painel `role="region"` logo abaixo. Existe
+porque o `<summary>` vira botão para o leitor de tela e apaga o `<h2>` que mora dentro dele (some
+da lista de títulos no VoiceOver e no JAWS). Encaixes em ReactNode (`leading`, `kicker`, `status`,
+`title`, `details`, `trailing`, `children`), nunca função: quem chama é Server Component. O nome do
+botão é `kicker` + `title` e a descrição é `status` + `details`. O grupo ganha `data-open` (a seta
+gira com `group-data-open/<grupo>:rotate-180`) e o painel fechado fica no DOM com `hidden` (o
+formulário pela metade não se perde). Usam: os níveis das Maestrias no Kids e no adulto. Teste:
+`tests/heading-disclosure.test.tsx`) · **brand-logo**
 (`@sistemazero/ui/brand-logo` — `<BrandLogo fundo="escuro"|"claro" label className instancia?>`: a logo
 oficial em SVG EMBUTIDO. Era do community e virou compartilhada em 18/09/2026, quando os painéis
 internos e o /admin do funil trocaram o `<img>` dos SVGs de `public/` — que traziam o verde-lima

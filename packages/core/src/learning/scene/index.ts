@@ -44,6 +44,7 @@ export * from './cenario'
 export * from './engine'
 export * from './evaluate'
 export * from './garden'
+export * from './island-3d'
 // O núcleo do Iniciante 2D do lote 5 do Raio-X: as réguas da tecla, do laço, da ficha, da câmera,
 // do encosto, da recarga, da mira, da diagonal e do mapa escrito.
 export * from './nucleo'
@@ -149,7 +150,10 @@ export function isSceneSetupAction(acao: unknown, scene: SceneId): acao is Scene
   // "Recomeçar" da bancada volta ao começo de fábrica, e um caso que abrisse fora da tela
   // poria a criança num lugar ao qual ela não consegue voltar. Sem tempo e sem seta, o x não
   // sai do começo.
-  if (scene === 'lighthouse-walk' && (acao.type === 'advance' || acao.type === 'hold-arrow'))
+  if (
+    scene === 'lighthouse-walk' &&
+    ['advance', 'hold-arrow', 'walk-frames', 'test-walk-order'].includes(acao.type)
+  )
     return false
   return true
 }
@@ -163,7 +167,21 @@ export function isSceneSetupAction(acao: unknown, scene: SceneId): acao is Scene
  */
 export function isSceneSetup(value: unknown, scene: SceneId): value is SceneSetup {
   if (!isRecord(value)) return false
-  const { actions, goals: alvo, preset, goalCopy } = value
+  const { actions, goals: alvo, preset, goalCopy, freeExploration } = value
+  if (
+    freeExploration !== undefined &&
+    (typeof freeExploration !== 'boolean' ||
+      ![
+        'island-3d',
+        'touch-response',
+        'found-counter',
+        'lighthouse-walk',
+        'lighthouse-position',
+        'collect-and-remember',
+        'lighthouse-key',
+      ].includes(scene))
+  )
+    return false
   if (actions !== undefined) {
     if (!Array.isArray(actions) || actions.length === 0 || actions.length > SETUP_LIMITS.actions)
       return false
@@ -198,8 +216,28 @@ export function isSceneSetup(value: unknown, scene: SceneId): value is SceneSetu
     }
   }
   if (alvo === undefined)
-    return actions !== undefined || preset !== undefined || goalCopy !== undefined
+    return (
+      actions !== undefined ||
+      preset !== undefined ||
+      goalCopy !== undefined ||
+      freeExploration !== undefined
+    )
   const disponiveis = sceneGoalIds(scene)
+  // Os três experimentos compartilham a cena, mas têm controles e metas diferentes.
+  if (
+    scene === 'island-3d' &&
+    Array.isArray(alvo) &&
+    new Set(
+      alvo.map((g) =>
+        typeof g === 'string' && g.startsWith('axis-')
+          ? 'position'
+          : typeof g === 'string' && g.startsWith('contact-')
+            ? 'contact'
+            : 'view',
+      ),
+    ).size > 1
+  )
+    return false
   const possiveis =
     scene === 'once-vs-always'
       ? ONCE_GOALS_BY_PRESET[oncePreset(preset as SceneSetup['preset']).id]
@@ -344,3 +382,5 @@ export function sceneHintsFor(activity: SceneActivity): readonly string[] {
   if (activity.scene === 'layers' && activity.pilha === 'camadas') return LAYERS_CAMADAS.hints
   return sceneModel(activity.scene).hints
 }
+
+export { discoveryGuidance, discoverySpeechSteps } from './discovery-guidance'

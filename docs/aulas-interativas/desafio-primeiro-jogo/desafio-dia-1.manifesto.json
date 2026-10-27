@@ -1710,14 +1710,14 @@
     },
     {
       "key": "video-d1-quadro",
-      "plannedVideo": "Título: Como o personagem anda\n\nMaster integral da professora. Roteiro: desafio-dia-1.roteiro.md. Substituições kids: [{\"id\":\"video-d1-quadro-K1\",\"clipe\":\"video-d1-quadro\",\"personagem\":\"Debinha\",\"ocorrencia\":1,\"ancoraAntes\":\"o bloco que move o personagem fica dentro de A cada quadro do jogo. Por isso, ele acontece de novo em todo quadro.\",\"ancoraDepois\":\"Vamos ver. Quando eu clico em Rodar, os quadros passam bem rápido, e o personagem parece andar sozinho, como num\",\"falaPrincipal\":\"E se eu clicar em Rodar?\",\"falaPersonagem\":\"E se eu clicar em Rodar?\",\"tags\":[\"[curious]\"]}]"
+      "plannedVideo": "Título: Como o personagem anda\n\nMaster integral da professora. Roteiro: desafio-dia-1.roteiro.md. Substituições kids: [{\"id\":\"video-d1-quadro-K1\",\"clipe\":\"video-d1-quadro\",\"personagem\":\"Debinha\",\"ocorrencia\":1,\"ancoraAntes\":\"colocar esse comando na regra. Outra coisa é usar a tecla durante o jogo. A tecla sozinha não diz quem deve se mover: é o bloco que dá essa instrução.\",\"ancoraDepois\":\"O bloco continua na regra. O que muda é a tecla que ele encontra no próximo quadro. Assim, a gente pode comparar o programa, as teclas e os passos do\",\"falaPrincipal\":\"E se eu soltar a tecla?\",\"falaPersonagem\":\"E se eu soltar a tecla?\",\"tags\":[\"[curious]\"]}]"
     },
     {
       "key": "ponte-d1-quadro",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Sua vez! Teste sem a seta e com a seta e repare no que acontece com o x. Quando terminar, clique em Próxima parte."
+        "text": "Sua vez! Compare a regra de movimento, a tecla e a passagem dos quadros. Quando terminar, clique em Próxima parte."
       }
     },
     {
@@ -1727,20 +1727,34 @@
         "required": true,
         "title": "Como o personagem anda",
         "semPerguntaFinal": true,
-        "instructions": "Deixe Segurar a seta para a direita desligado e clique em Avançar 1 quadro. Olhe o x. Depois ligue Segurar a seta para a direita e clique em Avançar 1 quadro algumas vezes. Por último, clique em Rodar.",
+        "instructions": "Compare o comando de mover na regra, a tecla do teclado de teste e a passagem dos quadros. Você escolhe a ordem e pode repetir quantas vezes quiser.",
         "hints": [],
         "activity": {
           "type": "experimentation",
           "scene": "lighthouse-walk",
           "cenario": "farol",
           "setup": {
-            "goals": ["still-without-arrow", "moves-each-frame"],
+            "freeExploration": true,
+            "actions": [
+              {
+                "type": "movement-command",
+                "enabled": false
+              }
+            ],
+            "goals": [
+              "no-movement-command",
+              "still-without-arrow",
+              "moves-each-frame",
+              "stopped-after-release"
+            ],
             "goalCopy": {
               "still-without-arrow": {
-                "label": "Sem a seta, o personagem ficou parado"
+                "label": "Com o bloco e a tecla solta, o personagem ficou parado",
+                "pedido": "Com o bloco na regra, solte a tecla e avance um quadro."
               },
               "moves-each-frame": {
-                "label": "Com a seta, o personagem andou a cada quadro"
+                "label": "Com o bloco e a tecla apertada, ele andou a cada quadro",
+                "pedido": "Adicione o bloco de mover, aperte a tecla no teclado de teste e avance vários quadros."
               }
             }
           }
@@ -1761,7 +1775,7 @@
     },
     {
       "key": "video-d1-limite",
-      "plannedVideo": "Título: Até onde ele pode ir?\n\nMaster integral da professora. Roteiro: desafio-dia-1.roteiro.md. Substituições kids: [{\"id\":\"video-d1-limite-K1\",\"clipe\":\"video-d1-limite\",\"personagem\":\"Debinha\",\"ocorrencia\":1,\"ancoraAntes\":\"Tá vendo? O personagem chega na borda e continua andando até sair da tela, porque nada segura ele dentro da janela.\",\"ancoraDepois\":\"Agora eu clico em Recomeçar, ligo Manter dentro da tela e clico em Rodar de novo. Olha só: dessa vez ele para na borda\",\"falaPrincipal\":\"Como eu faço ele parar na borda?\",\"falaPersonagem\":\"Como eu faço ele parar na borda?\",\"tags\":[\"[curious]\"]}]"
+      "plannedVideo": "Título: Até onde ele pode ir?\n\nMaster integral da professora. Roteiro: desafio-dia-1.roteiro.md. Substituições kids: [{\"id\":\"video-d1-limite-K1\",\"clipe\":\"video-d1-limite\",\"personagem\":\"Debinha\",\"ocorrencia\":1,\"ancoraAntes\":\"aparecendo, o jogo precisa conferir se ele ainda cabe na tela. O bloco de limite faz essa conferência e pode trazer o personagem de volta para dentro.\",\"ancoraDepois\":\"Faz. Uma regra pode conferir o limite antes do movimento ou depois dele. Na experiência, você vai comparar o resultado dessas duas ordens junto à bord\",\"falaPrincipal\":\"E a ordem dos blocos faz diferença?\",\"falaPersonagem\":\"E a ordem dos blocos faz diferença?\",\"tags\":[\"[curious]\"]}]"
     },
     {
       "key": "ponte-d1-limite",
@@ -1778,14 +1792,23 @@
         "required": true,
         "title": "Até onde ele pode ir?",
         "semPerguntaFinal": true,
-        "instructions": "Deixe Manter dentro da tela desligado, ligue Segurar a seta para a direita e clique em Rodar. Veja o que acontece na borda. Depois clique em Recomeçar, ligue Manter dentro da tela e clique em Rodar de novo.",
+        "instructions": "Compare o que acontece na borda com e sem o bloco de limite. Teste também as duas ordens dos blocos. Você pode repetir e mudar a regra durante o teste.",
         "hints": [],
         "activity": {
           "type": "experimentation",
           "scene": "lighthouse-walk",
           "cenario": "farol",
           "setup": {
-            "goals": ["left-the-screen", "stayed-inside"]
+            "freeExploration": true,
+            "goals": ["left-the-screen", "stayed-inside", "compared-command-order"],
+            "goalCopy": {
+              "left-the-screen": {
+                "pedido": "Retire o bloco de limite, use o teclado de teste e avance até a borda."
+              },
+              "stayed-inside": {
+                "pedido": "Adicione o bloco de limite e avance mais quadros na borda."
+              }
+            }
           }
         }
       }

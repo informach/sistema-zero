@@ -124,7 +124,18 @@ export interface QuizChoice {
 
 export interface QuizQuestion {
   id: string
-  predictionScene?: 'garden-touch' | 'garden-count' | 'garden-repeat'
+  predictionScene?:
+    | 'garden-touch'
+    | 'garden-count'
+    | 'garden-repeat'
+    | 'lighthouse-order'
+    | 'lighthouse-memory'
+    | 'lighthouse-door'
+    | 'lighthouse-retest'
+    | 'island-view'
+    | 'island-position'
+    | 'island-height'
+    | 'island-retest'
   prompt: string
   choices: QuizChoice[]
   correctChoiceIds: string[]
@@ -481,6 +492,37 @@ export interface MaterialsBlock {
   /** Exibe o primeiro PDF deste bloco em um leitor na outra coluna da seção. */
   bookPreview?: boolean
   items: MaterialItem[]
+}
+
+/**
+ * Troca os ids de anexo citados pelo conteúdo de um bloco (e-book e item de arquivo dos
+ * materiais). O clone de curso dá ids novos aos anexos; sem trocar aqui, o curso copiado
+ * apontava para os anexos da ORIGEM e o arquivo aparecia "sem uso" na aula copiada
+ * (26/10/2026). Id fora do mapa fica como está; sem troca, devolve o mesmo objeto.
+ */
+export function remapBlockAttachmentIds<T extends { kind: string }>(
+  content: T,
+  attachmentId: (id: string) => string | undefined,
+): T {
+  const block = content as unknown as LessonBlockContent
+  if (block.kind === 'ebook') {
+    const mapped = attachmentId(block.attachmentId)
+    return mapped && mapped !== block.attachmentId
+      ? ({ ...block, attachmentId: mapped } as unknown as T)
+      : content
+  }
+  if (block.kind === 'materials') {
+    let changed = false
+    const items = block.items.map((item) => {
+      if (item.kind !== 'file') return item
+      const mapped = attachmentId(item.attachmentId)
+      if (!mapped || mapped === item.attachmentId) return item
+      changed = true
+      return { ...item, attachmentId: mapped }
+    })
+    return changed ? ({ ...block, items } as unknown as T) : content
+  }
+  return content
 }
 
 /** União discriminada por `kind` — o conteúdo guardado na coluna `lesson_blocks.content`. */

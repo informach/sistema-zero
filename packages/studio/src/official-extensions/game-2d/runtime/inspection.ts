@@ -11,6 +11,7 @@ export const gameTwoDInspectionRuntime = `
     var _inspectCreate = Object.create;
     var _inspectFinite = Number.isFinite;
     var _inspectIsManagedGroup = _managedGroups.has.bind(_managedGroups);
+    var _inspectIsArtHitbox = _managedArtHitboxes.has.bind(_managedArtHitboxes);
     var _inspectIsManagedSprite = _managedSprites.has.bind(_managedSprites);
     var _inspectIsDestroyedSprite = _destroyedSprites.has.bind(_destroyedSprites);
     var _inspectSceneOwns = _spriteScene.owns.bind(_spriteScene);
@@ -93,11 +94,47 @@ export const gameTwoDInspectionRuntime = `
           !_inspectFinite(x.value) || !_inspectFinite(y.value)) return null;
       return { x: x.value, y: y.value, projected: _inspectSceneOwns(sprite) };
     }
+    /** Read collision geometry without evaluating authored accessors or changing the game.
+     * @param {import('./runtimeContract').GameTwoDSprite} sprite */
+    function _inspectContactBounds(sprite) {
+      if (!_inspectIsManagedSprite(sprite)) return null;
+      if (_inspectIsDestroyedSprite(sprite)) return { destroyed: true };
+      if (_inspectSceneOwns(sprite)) return null;
+      var raw = _inspectCreate(null), fields = ['x','y','w','h','_hitboxScale','_hitboxManual','direction','facing'];
+      for (var index=0;index<fields.length;index++) {
+        var field=fields[index], entry=_inspectOwnData(sprite,field);
+        if(entry.inaccessible)return null;
+        if(entry.found)_inspectDefineProperty(raw,field,{value:entry.value,enumerable:true});
+      }
+      for(var j=0;j<4;j++)if(typeof raw[fields[j]]!=='number'||!_inspectFinite(raw[fields[j]]))return null;
+      if(raw.w<=0||raw.h<=0)return null;
+      if(raw._hitboxScale!==undefined&&(typeof raw._hitboxScale!=='number'||!_inspectFinite(raw._hitboxScale)||raw._hitboxScale<=0||raw._hitboxScale>1))return null;
+      if(raw._hitboxManual!==undefined&&typeof raw._hitboxManual!=='boolean')return null;
+      if(raw.direction!==undefined&&typeof raw.direction!=='string')return null;
+      if(raw.facing!==undefined&&typeof raw.facing!=='number')return null;
+      var art=_inspectOwnData(sprite,'_hitboxArt'), box;
+      if(art.inaccessible)return null;
+      if(!raw._hitboxManual&&art.found&&art.value) {
+        if(!_inspectIsArtHitbox(art.value))return null;
+        var shape=_inspectCreate(null), axes=['x','y','w','h'];
+        for(var i=0;i<axes.length;i++) {
+          var a=axes[i], v=_inspectOwnData(art.value,a);
+          if(!v.found||typeof v.value!=='number'||!_inspectFinite(v.value)||v.value<0||v.value>1)return null;
+          _inspectDefineProperty(shape,a,{value:v.value,enumerable:true});
+        }
+        if(shape.w<=0||shape.h<=0||shape.x+shape.w>1||shape.y+shape.h>1)return null;
+        box=_artBoxOf(raw,shape);
+      } else {
+        var scale=raw._hitboxScale||1,w=raw.w*scale,h=raw.h*scale;
+        box={x:raw.x+(raw.w-w)/2,y:raw.y+(raw.h-h)/2,w:w,h:h};
+      }
+      return { destroyed:false,x:box.x,y:box.y,w:box.w,h:box.h,rawX:raw.x,rawY:raw.y,rawW:raw.w,rawH:raw.h };
+    }
     function _inspectLifecycle() {
       return { frame: _frameStamp, generation: _driverGeneration, errors: _observationErrors, paused: _paused };
     }
     var _inspection = _inspectFreeze({ ownData: _inspectOwnData, groupItems: _inspectGroupItems, spriteBounds: _inspectSpriteBounds, stage: _inspectStage,
-      spritePosition: _inspectSpritePosition, lifecycle: _inspectLifecycle });
+      contactBounds: _inspectContactBounds, spritePosition: _inspectSpritePosition, lifecycle: _inspectLifecycle });
     Object.defineProperty(_inspectors, 'game-2d:observation', {
       value: function () { return _inspection; }, enumerable: true, writable: false, configurable: false
     });

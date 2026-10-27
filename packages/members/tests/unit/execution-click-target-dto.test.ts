@@ -91,3 +91,33 @@ test('HTTP normalization never turns invalid adaptive targets or extra step fiel
     expect([400, 422]).toContain(response.status)
   }
 })
+
+test('adaptive movement survives normalization and the HTTP handler with its budgets and obstacles', async () => {
+  const input = rule([
+    {
+      action: 'approachSprite',
+      actorPath: 'personagem',
+      targetPath: 'farol',
+      avoidPaths: ['chave'],
+      timeoutMs: 4500,
+    },
+  ])
+  const validator = getSchemaValidator(SectionRule, { normalize: true })
+  const parsed = validator.safeParse(input)
+  expect(parsed.success).toBe(true)
+  if (parsed.success) expect(isDeepStrictEqual(parsed.data, input)).toBe(true)
+  const app = new Elysia().post('/', ({ body }) => body, { body: SectionRule })
+  const response = await app.handle(
+    new Request('http://members.test/', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(input),
+    }),
+  )
+  expect(response.status).toBe(200)
+  expect(await response.json()).toEqual(input)
+  for (const patch of [{ timeoutMs: 7501 }, { targetPath: 'farol.constructor' }, { extra: true }]) {
+    const invalid = rule([{ ...input.steps[0]!, ...patch } as ExecutionStep])
+    expect(validator.safeParse(invalid).success).toBe(false)
+  }
+})

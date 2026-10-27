@@ -88,6 +88,14 @@ const SceneActionSchema = t.Union([
   t.Object({ type: t.Literal('restart-collection') }),
   // O andar do Farol (05/10/2026): a velocidade é uma das duas do domínio.
   t.Object({ type: t.Literal('hold-arrow'), held: t.Boolean() }),
+  t.Object({ type: t.Literal('movement-command'), enabled: t.Boolean() }),
+  t.Object({ type: t.Literal('walk-frames'), count: t.Union([t.Literal(1), t.Literal(10)]) }),
+  t.Object({
+    type: t.Literal('walk-order'),
+    order: t.Union([t.Literal('correct'), t.Literal('reverse')]),
+  }),
+  t.Object({ type: t.Literal('test-walk-order') }),
+  t.Object({ type: t.Literal('restart-hiding-places') }),
   t.Object({
     type: t.Literal('walk-speed'),
     speed: t.Union(LIGHTHOUSE_WALK_SPEEDS.map((v) => t.Literal(v))),
@@ -391,6 +399,28 @@ const SceneActionSchema = t.Union([
     pitch: t.Integer({ minimum: L.pitch.min, maximum: L.pitch.max }),
   }),
   t.Object({ type: t.Literal('recenter') }),
+  t.Object({
+    type: t.Literal('island-view'),
+    view: t.Union([t.Literal('front'), t.Literal('side'), t.Literal('top')]),
+  }),
+  t.Object({
+    type: t.Literal('island-axis'),
+    axis: t.Union([t.Literal('x'), t.Literal('y'), t.Literal('z')]),
+    // O domínio também valida a faixa específica do eixo y na publicação.
+    value: t.Number({ minimum: -4, maximum: 4 }),
+  }),
+  t.Object({
+    type: t.Literal('island-hero'),
+    axis: t.Union([t.Literal('x'), t.Literal('z')]),
+    value: t.Number({ minimum: -4, maximum: 4 }),
+  }),
+  t.Object({
+    type: t.Literal('island-answer'),
+    answer: t.Union([t.Literal('camera'), t.Literal('key')]),
+  }),
+  t.Object({ type: t.Literal('island-test') }),
+  t.Object({ type: t.Literal('island-restart') }),
+  t.Object({ type: t.Literal('island-bounds'), visible: t.Boolean() }),
   // Lote 5 do Raio-X (G6): "Ver os pontos" em três degraus (`mesh`) e onde o estado das torres mora
   // (`entity-state`). Os degraus vêm do core, como as letras do mapa.
   t.Object({
@@ -463,6 +493,7 @@ const SceneSetupActions = t.Array(SceneActionSchema, {
   maxItems: SETUP_LIMITS.actions,
 })
 const SceneSetupSchema = t.Object({
+  freeExploration: t.Optional(t.Boolean()),
   actions: t.Optional(SceneSetupActions),
   preset: t.Optional(
     t.Union([
@@ -684,14 +715,36 @@ function sectionRuleSchema(context: ExecutionStepValidationContext) {
       }),
       t
         .Transform(
-          t.Object(
-            { action: t.Literal('clickTarget'), target: t.Unknown() },
-            { additionalProperties: true },
-          ),
+          t.Union([
+            t.Object(
+              { action: t.Literal('clickTarget'), target: t.Unknown() },
+              { additionalProperties: true },
+            ),
+            t.Object(
+              {
+                action: t.Union([t.Literal('approachSprite'), t.Literal('approachObject3d')]),
+                walkable: t.Optional(
+                  t.Array(
+                    t.Object({
+                      minX: t.Number(),
+                      maxX: t.Number(),
+                      minZ: t.Number(),
+                      maxZ: t.Number(),
+                    }),
+                  ),
+                ),
+                actorPath: t.String(),
+                targetPath: t.String(),
+                timeoutMs: t.Number(),
+                avoidPaths: t.Optional(t.Array(t.String())),
+              },
+              { additionalProperties: true },
+            ),
+          ]),
         )
         .Decode((value) => {
           if (!isExecutionStep(value, context))
-            throw new ValidationError('O clique em alvo tem valores inválidos.')
+            throw new ValidationError('A interação com sprite tem valores inválidos.')
           return value
         })
         .Encode((value) => value),

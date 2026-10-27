@@ -7,6 +7,7 @@ import {
   type PublicInteractiveBlock,
 } from '@sistemazero/core/learning'
 import {
+  discoveryGuidance,
   type ExperimentSession,
   evaluateExperimentation,
   falaDaInstrucao,
@@ -90,9 +91,13 @@ import {
 } from './scene-console'
 import { SceneDescobertas } from './scene-descobertas'
 import { SomDaBancada } from './scene-dino-controls'
+import { Door, Memory, Position, Walk } from './scene-discovery-controls'
+import { DiscoveryContext } from './scene-discovery-frame'
+import { ProposedGarden } from './scene-discovery-garden'
 import { sceneDisplaySamples } from './scene-display-samples'
 import { botoesDoMundo, SceneReadoutBand } from './scene-frame'
 import { LearningRecap } from './scene-garden-learning'
+import { IslandDiscovery } from './scene-island-discovery'
 import { LessonSceneControls } from './scene-lesson-controls'
 import { LugarReservado } from './scene-lugar-reservado'
 import {
@@ -395,13 +400,14 @@ export function SceneActivityView({
     [activity],
   )
 
-  const guided = gardenStep(m, visto)
+  const free = activity.setup?.freeExploration === true
+  const guided = free ? discoveryGuidance(activity, visto) : gardenStep(m, visto)
   const instruction = guided?.text ?? content.instructions
   /**
-   * Cada etapa recebe seu próprio balão e sua própria fila de voz. O app Kids acrescenta o
-   * mascote; fora dele o mesmo diálogo continua legível e falável sem duplicar a semântica.
+   * Cada etapa recebe seu próprio balão e sua própria fila de voz. Quando a parte adulta já
+   * apresenta um diálogo, a instrução preserva texto e áudio sem repetir o personagem.
    */
-  const renderDialogue = (text: string, speech: DialogueSpeech) => {
+  const renderDialogue = (text: string, speech: DialogueSpeech, semMascote = false) => {
     /**
      * A fala só recebe MP3 se continua sendo exatamente a fala estática gerada na autoria. Uma
      * legenda de parte, pista ou convite montado durante a cena pode mudar com o estado e nunca
@@ -414,7 +420,13 @@ export function SceneActivityView({
         : undefined
     const fala = { ...speech, vozes: activity.vozes, roteiros: roteiro ? [roteiro] : undefined }
     if (player?.renderInstruction) return player.renderInstruction(text, 'speaking', fala)
-    return <DialogueBlockView content={{ kind: 'dialogue', text }} speech={fala} />
+    return (
+      <DialogueBlockView
+        content={{ kind: 'dialogue', text }}
+        speech={fala}
+        mascot={secao?.temDialogo || semMascote ? undefined : player?.dialogueMascot?.('speaking')}
+      />
+    )
   }
   /**
    * O degrau `nivel` da escada, com a cena de AGORA: o texto e as metas a que ele serve (M1). A pista do
@@ -1006,6 +1018,7 @@ export function SceneActivityView({
           antesDoTique,
           controller.getSnapshot().state,
           activity.setup?.preset,
+          free && activity.setup?.goals?.includes('stopped-after-release'),
         )
       ) {
         setRunning(false)
@@ -1336,7 +1349,10 @@ export function SceneActivityView({
             </ConsoleVisual>
             <ConsoleActions>
               <ConsoleFala>
-                <PalpitePergunta prediction={palpite} renderDialogue={renderDialogue} />
+                <PalpitePergunta
+                  prediction={palpite}
+                  renderDialogue={(text, speech) => renderDialogue(text, speech, true)}
+                />
               </ConsoleFala>
               <div>
                 <PalpiteOpcoes
@@ -1367,209 +1383,250 @@ export function SceneActivityView({
                     pista, "Sua vez" com a bancada, a lista do que ela já descobriu com Uma pista e
                     Conferir, e o retorno (palpite, "Agora explique", comparação). A ordem do DOM
                     é a mesma no celular e na leitura assistiva. Anatomia e porquês no CLAUDE.md. */}
-                <SceneConsole>
-                  <ConsoleVisual>
-                    {hudDaCena}
-                    <ConsoleMundo>
-                      <RelogioDaArteProvider value={tempoDaArte}>
-                        <ExplorationStage activity={activity} state={visto} dispatch={dispatch} />
-                      </RelogioDaArteProvider>
-                      {/* ⚠️⚠️ Os avisos SOBREPOSTOS ao pé do palco (full review de experiência, M2), sem
+                {free ? (
+                  <DiscoveryContext.Provider
+                    value={{
+                      activity,
+                      state: visto,
+                      dispatch,
+                      running,
+                      setRunning,
+                      instruction,
+                      dialogue: (text) =>
+                        renderDialogue(text, {
+                          texts: [falaDaInstrucao(text)],
+                          fallbackToBrowser: true,
+                        }),
+                      tools: (
+                        <>
+                          {desfazer}
+                          {umaPista}
+                          {conferirOuContinuar}
+                          {hintText && <p>{hintText}</p>}
+                          {conferiu && <p role="status">{conferiu}</p>}
+                        </>
+                      ),
+                    }}
+                  >
+                    {m === 'island-3d' ? (
+                      <IslandDiscovery />
+                    ) : m === 'touch-response' || m === 'found-counter' ? (
+                      <ProposedGarden part={m === 'touch-response' ? 'touch' : 'count'} />
+                    ) : m === 'lighthouse-walk' ? (
+                      <Walk boundary={activity.setup?.goals?.includes('left-the-screen')} />
+                    ) : m === 'collect-and-remember' ? (
+                      <Memory />
+                    ) : m === 'lighthouse-key' ? (
+                      <Door />
+                    ) : (
+                      <Position />
+                    )}
+                  </DiscoveryContext.Provider>
+                ) : (
+                  <SceneConsole>
+                    <ConsoleVisual>
+                      {hudDaCena}
+                      <ConsoleMundo>
+                        <RelogioDaArteProvider value={tempoDaArte}>
+                          <ExplorationStage activity={activity} state={visto} dispatch={dispatch} />
+                        </RelogioDaArteProvider>
+                        {/* ⚠️⚠️ Os avisos SOBREPOSTOS ao pé do palco (full review de experiência, M2), sem
                         lugar reservado no fluxo: ver `AvisosDaCena`. */}
-                      {(avisoDescoberta || palpiteNaHora) && (
-                        <AvisosDaCena
-                          selo={avisoDescoberta}
-                          achou={palpite ? palpiteNaHora : ''}
-                          onFechar={() => {
-                            setAvisoDescoberta('')
-                            setPalpiteNaHora('')
-                          }}
-                        />
-                      )}
-                    </ConsoleMundo>
-                    {/* ⭐⭐ O PÉ DO MUNDO: as ferramentas que mexem no mundo e, embaixo delas, a
+                        {(avisoDescoberta || palpiteNaHora) && (
+                          <AvisosDaCena
+                            selo={avisoDescoberta}
+                            achou={palpite ? palpiteNaHora : ''}
+                            onFechar={() => {
+                              setAvisoDescoberta('')
+                              setPalpiteNaHora('')
+                            }}
+                          />
+                        )}
+                      </ConsoleMundo>
+                      {/* ⭐⭐ O PÉ DO MUNDO: as ferramentas que mexem no mundo e, embaixo delas, a
                         frase da SITUAÇÃO — o narrador do mundo, que morava longe dele, no fim da
                         coluna de ações. Decisão dela (30/09): a frase começa na esquerda e ocupa a
                         largura toda. */}
-                    <div className="sz-scene-mundo-rodape">
-                      <div className="sz-scene-mundo-ferramentas">
-                        {desfazer}
-                        {recomecar}
-                      </div>
-                      {/* Num lugar reservado, a frase pode passar de uma para duas linhas sem saltar.
+                      <div className="sz-scene-mundo-rodape">
+                        <div className="sz-scene-mundo-ferramentas">
+                          {desfazer}
+                          {recomecar}
+                        </div>
+                        {/* Num lugar reservado, a frase pode passar de uma para duas linhas sem saltar.
                           ⚠️⚠️ E o MOLDE são as frases que a cena atinge (full review de experiência, M3):
                           só crescer não bastava, porque a PRIMEIRA vez que a frase passava a duas linhas a
                           continuação descia 16 px no toque. */}
-                      <LugarReservado
-                        marca="situacao"
-                        className="sz-scene-situacao-lugar"
-                        molde={
-                          <div className="grid" aria-hidden>
-                            {situacoesDaCena.map((frase, i) => (
-                              // biome-ignore lint/suspicious/noArrayIndexKey: cada frase é um lugar fixo do molde
-                              <FraseDaSituacao key={i} className="[grid-area:1/1]">
-                                {frase}
-                              </FraseDaSituacao>
-                            ))}
-                          </div>
-                        }
-                        chave={situacoesDaCena.join('|')}
-                      >
-                        {/* ⚠️ A frase é o narrador: `role="status"`, e com o relógio andando `aria-live="off"`
-                            (seriam vinte frases por segundo); a final é dita uma vez quando ele para. */}
-                        <FraseDaSituacao
-                          role={running ? undefined : 'status'}
-                          aria-live={running ? 'off' : undefined}
+                        <LugarReservado
+                          marca="situacao"
+                          className="sz-scene-situacao-lugar"
+                          molde={
+                            <div className="grid" aria-hidden>
+                              {situacoesDaCena.map((frase, i) => (
+                                // biome-ignore lint/suspicious/noArrayIndexKey: cada frase é um lugar fixo do molde
+                                <FraseDaSituacao key={i} className="[grid-area:1/1]">
+                                  {frase}
+                                </FraseDaSituacao>
+                              ))}
+                            </div>
+                          }
+                          chave={situacoesDaCena.join('|')}
                         >
-                          {sceneSituation(activity.scene, visto, activity.cast)}
-                        </FraseDaSituacao>
-                      </LugarReservado>
-                    </div>
-                  </ConsoleVisual>
-                  <ConsoleActions>
-                    <ConsoleFala>{blocoDaInstrucao}</ConsoleFala>
-                    {/* ⭐⭐ A PISTA mora colada na fala do Zappy, e não no pé do bloco.
+                          {/* ⚠️ A frase é o narrador: `role="status"`, e com o relógio andando `aria-live="off"`
+                            (seriam vinte frases por segundo); a final é dita uma vez quando ele para. */}
+                          <FraseDaSituacao
+                            role={running ? undefined : 'status'}
+                            aria-live={running ? 'off' : undefined}
+                          >
+                            {sceneSituation(activity.scene, visto, activity.cast)}
+                          </FraseDaSituacao>
+                        </LugarReservado>
+                      </div>
+                    </ConsoleVisual>
+                    <ConsoleActions>
+                      <ConsoleFala>{blocoDaInstrucao}</ConsoleFala>
+                      {/* ⭐⭐ A PISTA mora colada na fala do Zappy, e não no pé do bloco.
                       Relato dela na maquete: "não consegui ver onde apareceu a pista". Ela
                       nascia depois do rodapé, longe da instrução que a criança acabou de ler e
                       fora do console — quem pede ajuda é justamente quem vai reler a instrução.
                       Aqui ela cai onde os olhos já estão. */}
-                    {hintText && !conclusao && (
-                      /* A escada de três degraus aparece COMO escada, logo abaixo do botão que a pediu e
+                      {hintText && !conclusao && (
+                        /* A escada de três degraus aparece COMO escada, logo abaixo do botão que a pediu e
                          sem empurrar o palco. A caixa some quando a cena conclui. ⚠️ Sem `role="status"`:
                          o texto é recalculado com a cena (o nível 1 cita a situação), e a cada "+100" o
                          leitor ouvia a situação duas vezes. Quem anuncia a pista é o clique. */
-                      <div
-                        ref={pistaRef}
-                        data-pista={pistaFeita ? 'feita' : 'aberta'}
-                        className="sz-scene-pista flex gap-3 rounded-2xl border border-amber-600/30 bg-amber-500/10 px-4 py-3"
-                      >
-                        {pistaFeita ? (
-                          <Check
-                            size={18}
-                            className="mt-0.5 shrink-0 text-success-foreground"
-                            aria-hidden
-                          />
-                        ) : (
-                          <Lightbulb
-                            size={18}
-                            className="mt-0.5 shrink-0 text-amber-700"
-                            aria-hidden
-                          />
-                        )}
-                        <p className="text-sm leading-relaxed">
-                          {!pistaFeita && (
-                            <>
-                              <span className="font-semibold">
-                                Pista {Math.min(hint, hints.length)} de {hints.length}.
-                              </span>{' '}
-                            </>
+                        <div
+                          ref={pistaRef}
+                          data-pista={pistaFeita ? 'feita' : 'aberta'}
+                          className="sz-scene-pista flex gap-3 rounded-2xl border border-amber-600/30 bg-amber-500/10 px-4 py-3"
+                        >
+                          {pistaFeita ? (
+                            <Check
+                              size={18}
+                              className="mt-0.5 shrink-0 text-success-foreground"
+                              aria-hidden
+                            />
+                          ) : (
+                            <Lightbulb
+                              size={18}
+                              className="mt-0.5 shrink-0 text-amber-700"
+                              aria-hidden
+                            />
                           )}
-                          {hintText}
-                        </p>
-                      </div>
-                    )}
-                    {pranchaDaCena}
-                    {guided?.id.endsWith('complete') &&
-                      (m === 'touch-response' || m === 'found-counter') && (
-                        <LearningRecap kind={m} />
+                          <p className="text-sm leading-relaxed">
+                            {!pistaFeita && (
+                              <>
+                                <span className="font-semibold">
+                                  Pista {Math.min(hint, hints.length)} de {hints.length}.
+                                </span>{' '}
+                              </>
+                            )}
+                            {hintText}
+                          </p>
+                        </div>
                       )}
-                    {/* ⭐⭐ O que ela já descobriu, com as ações da descoberta embaixo. A resposta do
+                      {pranchaDaCena}
+                      {guided?.id.endsWith('complete') &&
+                        (m === 'touch-response' || m === 'found-counter') && (
+                          <LearningRecap kind={m} />
+                        )}
+                      {/* ⭐⭐ O que ela já descobriu, com as ações da descoberta embaixo. A resposta do
                         Conferir mora aqui, ao lado do botão que a pediu (era um parágrafo solto
                         embaixo do console). */}
-                    <SceneDescobertas
-                      goals={goals}
-                      resposta={conferiu && !conclusao ? conferiu : ''}
-                      explicacao={
-                        revisita ? (
-                          <SceneExplicacao
-                            regra={fraseDeSucesso}
-                            explicacao={
-                              guardado?.verifiedBy === 'server' ? guardado.feedback : undefined
-                            }
-                          />
-                        ) : undefined
-                      }
-                    >
-                      {umaPista}
-                      {conferirOuContinuar}
-                    </SceneDescobertas>
-                    {/* ⚠️⚠️ O palpite CONGELADO mora DENTRO do console, depois da área de ação:
-                      ele retoma o que a criança pensou sem separar a instrução dos controles. */}
-                    {palpite && !(revisita && !prediction) && (
-                      <div className="sz-scene-console-conversa">
-                        <ScenePrediction
-                          prediction={palpite}
-                          escolha={prediction}
-                          trocavel={trocavel}
-                          revelado={revelado}
-                          onTrocar={() => {
-                            focarDialogoDoPalpite.current = true
-                            focarDialogoDaDescoberta.current = false
-                            gesto.current = false
-                            setRunning(false)
-                            action.current({ type: 'reset' })
-                            apagarPalpite(scope)
-                            setPrediction('')
-                            setHint(0)
-                            setPistaCongelada(null)
-                            setConferiu('')
-                            setPalpiteNaHora('')
-                            setAvisoDescoberta('')
-                            setAviso('')
-                          }}
-                        />
-                      </div>
-                    )}
-                    {/* ⚠️ A caixa só existe COM conclusão: vazia, criaria um vão morto depois da
-                      prancha em toda cena e o tempo todo. */}
-                    {!revisita && conclusao && (
-                      <div className="sz-scene-console-conversa">
-                        <SceneConclusion
-                          pergunta={content.checkpoint}
-                          regra={fraseDeSucesso}
-                          resposta={resposta}
-                          certa={respostaCerta}
-                          feedback={respostaFeedback}
-                          aguardaCena={aguardaCena}
-                          bloqueada={registered || conflict || !ready}
-                          faixaRef={faixaRef}
-                          perguntaRef={perguntaRef}
-                          onResponder={(escolha) => {
-                            respostaAtual.current = escolha
-                            setResposta(escolha)
-                            setRespostaFeedback('')
-                            setRespostaCerta(null)
-                            setAguardaCena(false)
-                            // ⚠️ Id novo por RESPOSTA: o servidor reavalia a tentativa pelo checkpoint dele, e
-                            // com o id fixo a primeira resposta errada seria devolvida para sempre.
-                            if (!registered) attemptId.current = crypto.randomUUID()
-                            void flush.current(escolha)
-                          }}
-                        />
-                      </div>
-                    )}
-                    {/* A cena NÃO acaba: o mundo segue vivo e a prancha segue aberta. */}
-                    {/* A comparação acompanha a bancada; ao ampliar, a cena continua visível. */}
-                    {reference && lab.trials.length > 0 && (
-                      <details
-                        open={compared}
-                        onToggle={(e) => setCompared(e.currentTarget.open)}
-                        className="rounded-2xl bg-background p-4"
+                      <SceneDescobertas
+                        goals={goals}
+                        resposta={conferiu && !conclusao ? conferiu : ''}
+                        explicacao={
+                          revisita ? (
+                            <SceneExplicacao
+                              regra={fraseDeSucesso}
+                              explicacao={
+                                guardado?.verifiedBy === 'server' ? guardado.feedback : undefined
+                              }
+                            />
+                          ) : undefined
+                        }
                       >
-                        <summary className="min-h-11 cursor-pointer text-sm font-semibold">
-                          Compare: o que você guardou × agora
-                        </summary>
-                        <div className="mt-4">
-                          <ExperienceComparison
-                            activity={activity}
-                            trials={lab.trials}
-                            current={state}
+                        {umaPista}
+                        {conferirOuContinuar}
+                      </SceneDescobertas>
+                      {/* ⚠️⚠️ O palpite CONGELADO mora DENTRO do console, depois da área de ação:
+                      ele retoma o que a criança pensou sem separar a instrução dos controles. */}
+                      {palpite && !(revisita && !prediction) && (
+                        <div className="sz-scene-console-conversa">
+                          <ScenePrediction
+                            prediction={palpite}
+                            escolha={prediction}
+                            trocavel={trocavel}
+                            revelado={revelado}
+                            onTrocar={() => {
+                              focarDialogoDoPalpite.current = true
+                              focarDialogoDaDescoberta.current = false
+                              gesto.current = false
+                              setRunning(false)
+                              action.current({ type: 'reset' })
+                              apagarPalpite(scope)
+                              setPrediction('')
+                              setHint(0)
+                              setPistaCongelada(null)
+                              setConferiu('')
+                              setPalpiteNaHora('')
+                              setAvisoDescoberta('')
+                              setAviso('')
+                            }}
                           />
                         </div>
-                      </details>
-                    )}
-                  </ConsoleActions>
-                </SceneConsole>
+                      )}
+                      {/* ⚠️ A caixa só existe COM conclusão: vazia, criaria um vão morto depois da
+                      prancha em toda cena e o tempo todo. */}
+                      {!revisita && conclusao && (
+                        <div className="sz-scene-console-conversa">
+                          <SceneConclusion
+                            pergunta={content.checkpoint}
+                            regra={fraseDeSucesso}
+                            resposta={resposta}
+                            certa={respostaCerta}
+                            feedback={respostaFeedback}
+                            aguardaCena={aguardaCena}
+                            bloqueada={registered || conflict || !ready}
+                            faixaRef={faixaRef}
+                            perguntaRef={perguntaRef}
+                            onResponder={(escolha) => {
+                              respostaAtual.current = escolha
+                              setResposta(escolha)
+                              setRespostaFeedback('')
+                              setRespostaCerta(null)
+                              setAguardaCena(false)
+                              // ⚠️ Id novo por RESPOSTA: o servidor reavalia a tentativa pelo checkpoint dele, e
+                              // com o id fixo a primeira resposta errada seria devolvida para sempre.
+                              if (!registered) attemptId.current = crypto.randomUUID()
+                              void flush.current(escolha)
+                            }}
+                          />
+                        </div>
+                      )}
+                      {/* A cena NÃO acaba: o mundo segue vivo e a prancha segue aberta. */}
+                      {/* A comparação acompanha a bancada; ao ampliar, a cena continua visível. */}
+                      {reference && lab.trials.length > 0 && (
+                        <details
+                          open={compared}
+                          onToggle={(e) => setCompared(e.currentTarget.open)}
+                          className="rounded-2xl bg-background p-4"
+                        >
+                          <summary className="min-h-11 cursor-pointer text-sm font-semibold">
+                            Compare: o que você guardou × agora
+                          </summary>
+                          <div className="mt-4">
+                            <ExperienceComparison
+                              activity={activity}
+                              trials={lab.trials}
+                              current={state}
+                            />
+                          </div>
+                        </details>
+                      )}
+                    </ConsoleActions>
+                  </SceneConsole>
+                )}
               </fieldset>
             </fieldset>
           </>

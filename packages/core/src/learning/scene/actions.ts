@@ -1,3 +1,4 @@
+import { type IslandAction, isIslandAction } from './island-3d'
 import type { OnceArea, OnceCardId, ScenePreset } from './presets'
 import type { SceneCopyColor } from './state'
 
@@ -16,6 +17,7 @@ import type { SceneCopyColor } from './state'
  *  para O Jogo do Meu Jeito, que não tinha UMA cena nativa. As onze últimas são o NÚCLEO do
  *  Iniciante 2D (15/09/2026): os degraus da escada que faltavam para os outros sete cursos. */
 export const SCENE_IDS = [
+  'island-3d',
   'coordinates',
   'screen-reader',
   'stage-size',
@@ -139,6 +141,7 @@ export const SCENE_PORTS = [
 export type ScenePort = (typeof SCENE_PORTS)[number]
 
 export type SceneAction =
+  | IslandAction
   | { type: 'place-in-area'; card: OnceCardId; area: OnceArea | 'outside' }
   | { type: 'trigger' }
   | { type: 'key-state'; hasKey: boolean }
@@ -149,6 +152,11 @@ export type SceneAction =
   | { type: 'restart-collection' }
   /** `lighthouse-walk`: a seta para a direita segurada (ou solta), como o teclado do jogo. */
   | { type: 'hold-arrow'; held: boolean }
+  | { type: 'movement-command'; enabled: boolean }
+  | { type: 'walk-frames'; count: 1 | 10 }
+  | { type: 'walk-order'; order: 'correct' | 'reverse' }
+  | { type: 'test-walk-order' }
+  | { type: 'restart-hiding-places' }
   /** `lighthouse-walk`: a velocidade do bloco de mover, 1 ou 3 (`LIGHTHOUSE_WALK_SPEEDS`). */
   | { type: 'walk-speed'; speed: LighthouseWalkSpeed }
   /** `lighthouse-walk`: o bloco "Manter o sprite dentro da tela" entra ou sai da regra. */
@@ -338,6 +346,7 @@ export const MESH_SKIN_LABELS: Record<MeshLevel, string> = {
 
 /** Quais portas cada cena oferece. Cena sem porta não tem bancada de fios. */
 const PORTS: Record<SceneId, readonly ScenePort[]> = {
+  'island-3d': [],
   'once-vs-always': [],
   'fixed-vs-read': [],
   'collision-pair': [],
@@ -690,6 +699,8 @@ const ANIMATIONS: readonly SceneId[] = ['frames', 'onion-skin']
  */
 export function isSceneAction(value: unknown, scene: SceneId): value is SceneAction {
   if (!isRecord(value)) return false
+  if (typeof value.type === 'string' && value.type.startsWith('island-'))
+    return scene === 'island-3d' && isIslandAction(value)
   const L = SCENE_LIMITS
   switch (value.type) {
     case 'place-in-area':
@@ -712,6 +723,16 @@ export function isSceneAction(value: unknown, scene: SceneId): value is SceneAct
     case 'leave-key':
     case 'restart-collection':
       return scene === 'collect-and-remember'
+    case 'movement-command':
+      return scene === 'lighthouse-walk' && typeof value.enabled === 'boolean'
+    case 'walk-frames':
+      return scene === 'lighthouse-walk' && (value.count === 1 || value.count === 10)
+    case 'walk-order':
+      return scene === 'lighthouse-walk' && (value.order === 'correct' || value.order === 'reverse')
+    case 'test-walk-order':
+      return scene === 'lighthouse-walk'
+    case 'restart-hiding-places':
+      return scene === 'touch-response'
     case 'hold-arrow':
       return scene === 'lighthouse-walk' && typeof value.held === 'boolean'
     case 'walk-speed':
@@ -1126,6 +1147,8 @@ export function scenePorts(scene: SceneId): readonly ScenePort[] {
  * ninguém fez, e uma experimentação passaria sozinha.
  */
 export interface SceneSetup {
+  /** Exploração livre com orientação por objetivos nos cursos introdutórios. */
+  freeExploration?: boolean
   /** O que já aconteceu quando a criança chega. `reset` não entra: ele volta para cá. */
   actions?: SceneAction[]
   /** Quais metas do modelo esta atividade cobra. Sem lista, são todas as do modelo. */

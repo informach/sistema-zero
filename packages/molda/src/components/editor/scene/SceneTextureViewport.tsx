@@ -1,6 +1,8 @@
 import { type ReactNode, useCallback, useEffect, useRef, useState } from 'react'
 import {
   fitTextureCamera,
+  fitTextureCameraBounds,
+  type TextureBounds,
   type TextureCamera,
   type TextureFrame,
   textureZoomStep,
@@ -21,6 +23,7 @@ export function SceneTextureViewport({
   view,
   onView,
   bounds,
+  contentBounds,
   onCancel,
   children,
 }: {
@@ -28,7 +31,8 @@ export function SceneTextureViewport({
   imageKey: string
   view: SceneTextureView | null
   onView(view: SceneTextureView): void
-  bounds?: { min: readonly number[]; max: readonly number[] }
+  bounds?: TextureBounds
+  contentBounds?: TextureBounds
   onCancel(): void
   children(scale: number): ReactNode
 }) {
@@ -48,7 +52,12 @@ export function SceneTextureViewport({
   const consumed = useRef(false)
   const latest = useRef({ view, onView, onCancel })
   latest.current = { view, onView, onCancel }
-  const camera = view?.key === imageKey ? view.camera : fitTextureCamera(frame, image)
+  const camera =
+    view?.key === imageKey
+      ? view.camera
+      : contentBounds
+        ? fitTextureCameraBounds(frame, image, contentBounds)
+        : fitTextureCamera(frame, image)
   const liveCamera = useRef(camera)
   liveCamera.current = camera
   function publish(next: TextureCamera) {
@@ -110,7 +119,10 @@ export function SceneTextureViewport({
       const measured = { width: element.clientWidth, height: element.clientHeight }
       setFrame(measured)
       if (measured.width > 0 && measured.height > 0 && latest.current.view?.key !== imageKey) {
-        const initial = fitTextureCamera(measured, { width: image.width, height: image.height })
+        const initialImage = { width: image.width, height: image.height }
+        const initial = contentBounds
+          ? fitTextureCameraBounds(measured, initialImage, contentBounds)
+          : fitTextureCamera(measured, initialImage)
         liveCamera.current = initial
         latest.current.onView({ key: imageKey, camera: initial })
       } else if (measured.width > 0 && measured.height > 0 && measuredFrame.current) {
@@ -131,7 +143,7 @@ export function SceneTextureViewport({
     const observer = new ResizeObserver(measure)
     observer.observe(element)
     return () => observer.disconnect()
-  }, [imageKey, image.width, image.height])
+  }, [imageKey, image.width, image.height, contentBounds])
   useEffect(() => {
     const element = root.current
     if (!element) return
@@ -164,14 +176,7 @@ export function SceneTextureViewport({
   }, [])
   function fitSelection() {
     if (!bounds) return
-    const width = Math.max(1, (bounds.max[0]! - bounds.min[0]!) * image.width)
-    const height = Math.max(1, (bounds.max[1]! - bounds.min[1]!) * image.height)
-    const next = fitTextureCamera(frame, { width, height })
-    publish({
-      ...next,
-      x: next.x - bounds.min[0]! * image.width * next.scale,
-      y: next.y - (1 - bounds.max[1]!) * image.height * next.scale,
-    })
+    publish(fitTextureCameraBounds(frame, image, bounds))
   }
   return (
     <div className="mld-texture-view">
@@ -304,8 +309,21 @@ export function SceneTextureViewport({
           }}
         >
           <Scan className="size-4" aria-hidden="true" />
-          Ajustar
+          {contentBounds ? 'Folha inteira' : 'Ajustar'}
         </Button>
+        {contentBounds && (
+          <Button
+            variant="ghost"
+            className="px-2 text-xs"
+            onClick={() => {
+              onCancel()
+              publish(fitTextureCameraBounds(frame, image, contentBounds))
+            }}
+          >
+            <Focus className="size-4" aria-hidden="true" />
+            Ver mapa
+          </Button>
+        )}
         {bounds && (
           <ToolButton
             icon={Focus}

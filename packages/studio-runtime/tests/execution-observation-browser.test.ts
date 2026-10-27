@@ -125,6 +125,12 @@ nativeTest(
     ]
     try {
       await writeFile(path.join(temporary, 'check-objectives.mjs'), childSource)
+      for (const file of [
+        'check-click-target.mjs',
+        'check-javascript-modules.mjs',
+        'check-approach.mjs',
+      ])
+        await writeFile(path.join(temporary, file), await readFile(path.join(runtime, file)))
       await writeFile(
         path.join(temporary, 'execution-observation.generated.mjs'),
         await readFile(path.join(runtime, 'execution-observation.generated.mjs')),
