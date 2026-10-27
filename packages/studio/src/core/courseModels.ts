@@ -51,13 +51,30 @@ export function courseModelDataUrl(
   return sha ? resolved.get(sha) : undefined
 }
 
-/** Referências do projeto que ainda não foram carregadas (e que esta versão conhece). */
-export function pendingCourseModels(assets: readonly ProjectAsset[] | null | undefined): string[] {
+/**
+ * O código usa este modelo? O bloco "Criar o objeto … com o modelo" gera o nome entre aspas.
+ * Um curso põe todas as variações no projeto (a personalização só troca o nome), e carregar
+ * as que o jogo não usa pesaria megabytes a cada prévia.
+ */
+function usedBy(code: string | undefined, name: string): boolean {
+  if (code === undefined) return true
+  return code.includes(JSON.stringify(name)) || code.includes(`'${name}'`)
+}
+
+/**
+ * Referências do projeto que ainda não foram carregadas (e que esta versão conhece). Com
+ * `code`, só as que o código usa; sem ele, todas.
+ */
+export function pendingCourseModels(
+  assets: readonly ProjectAsset[] | null | undefined,
+  code?: string,
+): string[] {
   if (!assets) return []
   const out: string[] = []
   for (const asset of assets) {
     const sha = courseModelSha(asset)
-    if (sha && !resolved.has(sha) && COURSE_MODEL_LOADERS[sha] && !out.includes(sha)) out.push(sha)
+    if (!sha || resolved.has(sha) || !COURSE_MODEL_LOADERS[sha] || out.includes(sha)) continue
+    if (usedBy(code, asset.name)) out.push(sha)
   }
   return out
 }
@@ -77,13 +94,15 @@ function load(sha: string): Promise<void> {
 }
 
 /**
- * Carrega os modelos da biblioteca que o projeto usa. Referência desconhecida (projeto feito
- * por um Estúdio mais novo) fica com o GLB mínimo: o jogo roda, sem aquela peça.
+ * Carrega os modelos da biblioteca que o projeto usa (com `code`, só os que o código cita).
+ * Referência desconhecida (projeto feito por um Estúdio mais novo) fica com o GLB mínimo: o
+ * jogo roda, sem aquela peça.
  */
 export async function preloadCourseModels(
   assets: readonly ProjectAsset[] | null | undefined,
+  code?: string,
 ): Promise<void> {
-  await Promise.all(pendingCourseModels(assets).map(load))
+  await Promise.all(pendingCourseModels(assets, code).map(load))
 }
 
 /** Os assets com o GLB completo no lugar das referências (para quem grava arquivos, como o Pro). */

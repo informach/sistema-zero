@@ -5,9 +5,11 @@ Identidade: `jornada-faisca-base-3d`, Faísca, três aulas, sem certificado. [Au
 ## Fontes
 
 - `qa/ilha-do-farol-conteudo.ts`: fala integral, notas de tela e passos do caderno.
-- `qa/ilha-do-farol-projeto.ts`: nove projetos progressivos; só IR de Programação e Jogo 3D.
-- `qa/ilha-do-farol-assets.ts`: exportação dos modelos individuais do Molda, dimensões e otimização.
-- `qa/gerar-ilha-artes.ts`: cena completa das experiências, carregada sob demanda pelo player.
+- `qa/ilha-do-farol-projeto.ts`: dez projetos progressivos (com `aparencia`, a troca dos modelos); só IR de Programação e Jogo 3D. `ILHA_ESCOLHAS_DO_VIDEO` é a combinação dos exemplos da personalização.
+- `docs/design/ilha-do-farol-blender/`: os modelos no Blender (cenários, faróis animados, barcos, chaves e personagens animados).
+- `qa/publicar-ilha-modelos.ts`: otimiza os GLBs do Blender, grava a biblioteca de modelos dos cursos (`packages/studio/src/core/course-models/`) e o `modelos.json` (sha, clipes, caixa).
+- `qa/ilha-do-farol-assets.ts`: as referências dos modelos no projeto (GLB mínimo + `libId`), com os nomes da Chave do Farol 2D.
+- `qa/gerar-ilha-artes.ts`: cena das experiências montada com os mesmos modelos e a bancada do Blender (nós `Chave`, `Aventureiro`, `Pedras`, `Bancada`), carregada sob demanda pelo player.
 - `qa/ilha-do-farol-criterios.ts` e `ilha-do-farol-observacao.ts`: montagem e execução real.
 - `qa/ilha-do-farol-quiz.ts`: perguntas, explicações e gabarito privado.
 - `core/learning/scene/island-3d.ts`: estado, ações, evidências e falas compartilhadas do Zappy.
@@ -17,14 +19,18 @@ Identidade: `jornada-faisca-base-3d`, Faísca, três aulas, sem certificado. [Au
 ## Regenerar
 
 ```powershell
-bun docs/aulas-interativas-tecnico/qa/gerar-ilha-artes.ts
+# Só quando um modelo mudar (precisa do Blender, ver docs/design/ilha-do-farol-blender/README.md):
+ILHA_OUT=./out /tmp/blender-venv/bin/python docs/design/ilha-do-farol-blender/build_all.py
+ILHA_OUT=./out bun docs/aulas-interativas-tecnico/qa/publicar-ilha-modelos.ts
+ILHA_OUT=./out bun docs/aulas-interativas-tecnico/qa/gerar-ilha-artes.ts
+# Sempre:
 bun docs/aulas-interativas-tecnico/qa/gerar-ilha-do-farol.ts
 bun docs/aulas-interativas-tecnico/qa/ilha-preview/build.ts
 bun docs/aulas-interativas-tecnico/recursos/ilha-farol/gerar-caderno.ts
 node docs/aulas-interativas-tecnico/recursos/ilha-farol/renderizar-caderno.mjs
 ```
 
-O PDF reutiliza o CSS, Nunito, Baloo 2, cartões e desenhos de encaixe do Cadê Todo Mundo. Chrome imprime o HTML; PyMuPDF ajuda na inspeção visual. O gerador recusa conteúdo cortado ou sobreposto ao rodapé. As dependências de otimização GLB são de autoria, não entram no runtime do aluno. Os modelos finais entregues pelo responsável devem seguir [o contrato de reintegração](../aulas-interativas/a-ilha-do-farol/reintegracao-molda.md).
+O PDF reutiliza o CSS, Nunito, Baloo 2, cartões e desenhos de encaixe do Cadê Todo Mundo; a galeria das escolhas usa as miniaturas de `docs/design/ilha-do-farol-blender/galeria/`. Chrome imprime o HTML; PyMuPDF ajuda na inspeção visual. O gerador recusa conteúdo cortado ou sobreposto ao rodapé. As dependências de otimização GLB são de autoria, não entram no runtime do aluno. Os modelos seguem o contrato do [README do Blender](../design/ilha-do-farol-blender/README.md): uma caixa por categoria, o farol com `acender`/`aceso` e o personagem com `parado`/`andando`.
 
 ## Verificar
 
@@ -37,6 +43,7 @@ bun test docs/aulas-interativas-tecnico/qa
 bun test packages/core/src/learning/scene packages/core/src/learning/project-execution-checkpoints.test.ts
 bun test packages/studio-runtime/tests/check-approach-3d.test.mjs packages/studio-runtime/tests/check-javascript-modules.test.mjs
 bun docs/aulas-interativas-tecnico/qa/ilha-do-farol-browser.ts
+bun docs/aulas-interativas-tecnico/qa/ilha-do-farol-browser.ts personalizado
 bun docs/aulas-interativas-tecnico/qa/ilha-do-farol-browser.ts outra-posicao
 bun docs/aulas-interativas-tecnico/qa/ilha-do-farol-browser.ts sem-memoria
 bun docs/aulas-interativas-tecnico/qa/ilha-do-farol-browser.ts chave-alta

@@ -513,6 +513,9 @@ const gameThreeDRuntimeBase = `import * as THREE from 'three';
         dir.shadow.camera.right = 20;
         dir.shadow.camera.top = 20;
         dir.shadow.camera.bottom = -20;
+        // Sem isto a superfície faz sombra nela mesma em listras (acne), mais visível nas
+        // faces quase de lado para o sol, como as paredes curvas de um modelo.
+        dir.shadow.normalBias = 0.05;
       }
       scene.add(dir);
     }
@@ -1485,6 +1488,7 @@ const gameThreeDRuntimeBase = `import * as THREE from 'three';
       d.shadow.camera.near = 0.5; d.shadow.camera.far = 60;
       d.shadow.camera.left = -20; d.shadow.camera.right = 20;
       d.shadow.camera.top = 20; d.shadow.camera.bottom = -20;
+      d.shadow.normalBias = 0.05;
     }
     var tracked = _trackLight(world, d);
     if (tracked && d.castShadow) {
@@ -3066,7 +3070,43 @@ const gameThreeDRuntimeBase = `import * as THREE from 'three';
     }
   }
   // Caixa real do objeto no mundo; reaproveita a caixa "target" quando vem uma.
-  function boxOf(obj, target) { return (target || new THREE.Box3()).setFromObject(obj); }
+  // Peça de EFEITO de um modelo (nó com szSemCaixa nos extras do .glb, como o feixe de luz
+  // de um farol) não entra: girando, ela faria a área de toque crescer e encolher, e o
+  // encontro com o objeto começaria e acabaria sozinho. Sem peça marcada, é o setFromObject.
+  // Por modelo montado (WeakMap: o userData é copiado por JSON nas cópias de grupo).
+  var _partBox = null;
+  var _noBoxByRoot = new WeakMap();
+  function hasNoBoxParts(obj) {
+    var s = obj && obj.userData && obj.userData.sz;
+    var root = s && s.modelRoot;
+    if (!root) return false;
+    var known = _noBoxByRoot.get(root);
+    if (known === undefined) {
+      known = false;
+      root.traverse(function (n) { if (n.userData && n.userData.szSemCaixa) known = true; });
+      _noBoxByRoot.set(root, known);
+    }
+    return known;
+  }
+  function expandWithoutEffects(box, o) {
+    if (o.userData && o.userData.szSemCaixa) return;
+    o.updateWorldMatrix(false, false);
+    var g = o.geometry;
+    if (g) {
+      if (g.boundingBox === null) g.computeBoundingBox();
+      if (!_partBox) _partBox = new THREE.Box3();
+      _partBox.copy(g.boundingBox).applyMatrix4(o.matrixWorld);
+      box.union(_partBox);
+    }
+    for (var i = 0; i < o.children.length; i++) expandWithoutEffects(box, o.children[i]);
+  }
+  function boxOf(obj, target) {
+    var box = target || new THREE.Box3();
+    if (!hasNoBoxParts(obj)) return box.setFromObject(obj);
+    box.makeEmpty();
+    expandWithoutEffects(box, obj);
+    return box;
+  }
 
   // ---- Modelos compostos do Kit Travessia (escala 1 tile = 1 unidade) ----
   function lambert(color, flat) {
@@ -3160,6 +3200,7 @@ const gameThreeDRuntimeBase = `import * as THREE from 'three';
       dir.shadow.camera.left = -20; dir.shadow.camera.right = 20;
       dir.shadow.camera.top = 20; dir.shadow.camera.bottom = -20;
       dir.shadow.camera.near = 1; dir.shadow.camera.far = 80;
+      dir.shadow.normalBias = 0.05;
     }
     world.scene.add(dir);
     world._shadowSun = dir;

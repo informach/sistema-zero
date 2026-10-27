@@ -21,7 +21,8 @@ describe('arquitetura do runtime do Jogo 3D Avançado', () => {
   it('os três runtimes 3D usam o MESMO carregador de modelos (decoder, GLTFLoader e HDR)', () => {
     const shared = source('../../three3dModelsRuntime.ts')
     expect(shared).toContain("from './assetRuntime'")
-    expect(shared).toContain('GLTFLoader().parse')
+    expect(shared).toContain('new mod.GLTFLoader()')
+    expect(shared).toContain('newGltfLoader(mod).parse')
     expect(source('../../assetRuntime.ts')).toContain('function dataUrlToBuffer(url)')
     const fragments: Record<string, string[]> = {
       'game-3d': ['runtime.ts', 'runtimeModelAssets.ts'],
@@ -33,6 +34,7 @@ describe('arquitetura do runtime do Jogo 3D Avançado', () => {
       for (const file of files) {
         const text = source(`../../${dir}/${file}`)
         expect(text).not.toContain('GLTFLoader().parse')
+        expect(text).not.toContain('newGltfLoader(')
         expect(text).not.toContain('HDRLoader().parse')
         expect(text).not.toContain('function dataUrlToBuffer')
         expect(text).not.toContain("from '../assetRuntime'")

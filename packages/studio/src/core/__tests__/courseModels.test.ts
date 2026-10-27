@@ -90,4 +90,17 @@ describe('biblioteca de modelos dos cursos', () => {
     expect(resolvidos[0]!.dataUrl).toBe(real)
     expect(resolvidos[1]).toBe(desconhecido)
   })
+
+  test('com o código, só os modelos que ele cita são carregados', async () => {
+    clearCourseModelCacheForTests()
+    const [a, b] = FILES.map((f) => f.slice(2, 66)) as [string, string]
+    const assets = [reference(a, [], 'pirata'), reference(b, [], 'robo')]
+    const code = 'const p=SZGame3D.createModelFile(cena,"pirata",1.66);'
+    expect(pendingCourseModels(assets, code)).toEqual([a])
+    expect(pendingCourseModels(assets, "createModelFile(cena,'robo',1)")).toEqual([b])
+    expect(pendingCourseModels(assets)).toEqual([a, b])
+    await preloadCourseModels(assets, code)
+    expect(pendingCourseModels(assets)).toEqual([b])
+    expect(asset3DManifest(assets).robo?.dataUrl).toBe(assets[1]!.dataUrl)
+  })
 })

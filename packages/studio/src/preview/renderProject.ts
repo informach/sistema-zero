@@ -81,7 +81,7 @@ export async function renderProjectToPreviewDocAsync(
     : undefined
   const assets = Array.isArray(playableProject.assets) ? playableProject.assets : undefined
   // Modelos da biblioteca dos cursos: o projeto guarda a referência, o jogo precisa do arquivo.
-  await preloadCourseModels(assets)
+  await preloadCourseModels(assets, files['script.js'])
   const resources = await loadJavaScriptClassicResources(
     installedExtensions.flatMap((e) => (e && typeof e.id === 'string' ? [e.id] : [])),
     resolveGameUiFontId({ ir: playableProject.ir, files }),

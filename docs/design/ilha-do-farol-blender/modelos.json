@@ -55,8 +55,8 @@
     "size": 4.2335
   },
   "farol-listrado": {
-    "sha": "1005213caeaa7c87f83b720edcc9a4a79917aa57ee787015fb078a5548c98bb0",
-    "bytes": 145816,
+    "sha": "f02bdf32b7cb8d3d6c85baa0e0d1dc6d6678039128c81335b0642330f5255ad9",
+    "bytes": 145904,
     "clips": [
       "acender",
       "aceso"
@@ -69,8 +69,8 @@
     "size": 5.3
   },
   "farol-de-pedra": {
-    "sha": "a6b2b1a092688f63f9b3b651923ab0e16b21e3b01662d5397528c498b85ebcf1",
-    "bytes": 236528,
+    "sha": "bb6d1f4bd64c0a8b42a203163bf27527008cfd3d558bf89767f7f6cb1d5d10eb",
+    "bytes": 236616,
     "clips": [
       "acender",
       "aceso"
@@ -83,8 +83,8 @@
     "size": 5.3
   },
   "farol-de-madeira": {
-    "sha": "0c0e84e8a355bca56f6307a538c51a1e700d1a32c7b4027c496f1c42759d04a5",
-    "bytes": 145804,
+    "sha": "85a8faeda61c842928b0ab3677e3342661eeabe986d49d7bdacd04a235be0cc7",
+    "bytes": 145888,
     "clips": [
       "acender",
       "aceso"
@@ -97,8 +97,8 @@
     "size": 5.3
   },
   "farol-colorido": {
-    "sha": "ba8774c9effa18b2f286a504bdc9c3f146218c5e686938a165c8698397fd0dfe",
-    "bytes": 144744,
+    "sha": "0a7901fa620987663c3917cf205780d1e1612da8fcbffe205471e9501b4a9ec9",
+    "bytes": 144828,
     "clips": [
       "acender",
       "aceso"

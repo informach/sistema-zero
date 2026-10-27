@@ -408,22 +408,22 @@ export function PreviewIframe(): JSX.Element {
   // Modelos da biblioteca dos cursos: o projeto guarda a referência e o arquivo é carregado
   // aqui antes do primeiro documento (com a referência só, o jogo abriria sem as peças).
   // Falhar ao carregar também libera: o jogo roda sem aquela peça em vez de ficar parado.
-  const [courseModelsSettledFor, setCourseModelsSettledFor] = useState<
-    readonly ProjectAsset[] | null
-  >(null)
+  // Só os modelos que o código cita (a personalização de um curso traz todas as variações).
+  const courseModelsPending = pendingCourseModels(assets, debouncedJs).join(',')
+  const [courseModelsSettled, setCourseModelsSettled] = useState('')
   const courseModelsReady =
-    courseModelsSettledFor === assets || pendingCourseModels(assets).length === 0
+    courseModelsPending === '' || courseModelsSettled === courseModelsPending
   useEffect(() => {
-    if (pendingCourseModels(assets).length === 0) return
+    if (!courseModelsPending) return
     let active = true
     const settle = () => {
-      if (active) setCourseModelsSettledFor(assets)
+      if (active) setCourseModelsSettled(courseModelsPending)
     }
-    void preloadCourseModels(assets).then(settle, settle)
+    void preloadCourseModels(assets, debouncedJs).then(settle, settle)
     return () => {
       active = false
     }
-  }, [assets])
+  }, [assets, debouncedJs, courseModelsPending])
   const models3dManifest = useMemo(
     () => (courseModelsReady ? asset3DManifest(assets) : {}),
     [assets, courseModelsReady],

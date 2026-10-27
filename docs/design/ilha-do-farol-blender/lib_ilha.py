@@ -525,7 +525,8 @@ def exportar_animado(pid, objs):
     bpy.ops.export_scene.gltf(filepath=path, export_format='GLB', use_selection=True, export_apply=True,
                               export_yup=True, export_texcoords=True, export_animations=True,
                               export_animation_mode='NLA_TRACKS', export_anim_slide_to_zero=True,
-                              export_force_sampling=True, export_optimize_animation_size=False)
+                              export_force_sampling=True, export_optimize_animation_size=False,
+                              export_extras=True)
     repouso_no_glb(path, repouso)
     tris = sum(len(p.vertices) - 2 for o in objs if o.type == 'MESH' for p in o.data.polygons)
     print('EXPORTADO', pid, tris, 'triângulos', os.path.getsize(path) // 1024, 'KB')

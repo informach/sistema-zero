@@ -225,12 +225,18 @@ const gameThreeDModelAssetsRuntimeTemplate = `
    * (um cubo de reserva registrado como qualquer outro) e troca a forma quando o
    * arquivo carrega. size = lado maior, em blocos.
    */
+  // Até 200 blocos: um CENÁRIO inteiro (a ilha com o mar e o céu em volta) é um modelo só.
+  // Acima de 64 ele não nasce como o cubo cinza: com a câmera dentro do cubo, a tela inteira
+  // ficaria cinza enquanto o arquivo carrega.
+  var MODEL_SIZE_MAX = 200;
+  var MODEL_CUBE_MAX = 64;
   function createModelFile(world, name, size) {
     if (!world || !world.scene) return null;
-    var s = positive(size, 1, 64);
+    var s = positive(size, 1, MODEL_SIZE_MAX);
     var k = String(name || '');
     var mesh = addMesh(world, new THREE.BoxGeometry(s, s, s), '#9ca3af', { hw: s / 2, hh: s / 2, hd: s / 2 });
     if (!mesh) return null;
+    if (s > MODEL_CUBE_MAX && mesh.material) mesh.material.visible = false;
     if (mesh.userData && mesh.userData.sz) {
       mesh.userData.sz.modelFile = k;
       mesh.userData.sz.modelSize = s;

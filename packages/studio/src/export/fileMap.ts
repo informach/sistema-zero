@@ -61,7 +61,7 @@ export async function buildClassicFileMap(
   const files: ExportFileMap = {}
   const warnings: string[] = []
   // O site exportado leva o modelo de verdade, não a referência da biblioteca dos cursos.
-  await preloadCourseModels(project.assets)
+  await preloadCourseModels(project.assets, project.files['script.js'])
 
   let rawHtml = project.files['index.html'] ?? ''
   const rawCss = project.files['style.css'] ?? ''

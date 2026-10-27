@@ -21,6 +21,15 @@ const equals = (path: string, value: boolean): ExecutionExpectation => ({
   compare: 'equals',
   value,
 })
+/**
+ * O farol aceso: o pedido de animação do objeto (`animWant`) é "acender" e, quando ele acaba, o
+ * laço pede "aceso". Os dois nomes começam com "ace"; apagado não há pedido nenhum.
+ */
+const lit = (on: boolean): ExecutionExpectation => ({
+  target: { kind: 'value', path: 'farol.userData.sz.animWant' },
+  compare: on ? 'contains' : 'notContains',
+  value: 'ace',
+})
 export const ilhaCollect: SectionProjectCheck = {
   id: 'coleta-em-jogo',
   label: 'Alcance a chave no lugar escolhido e recolha apenas ao encostar.',
@@ -63,7 +72,7 @@ export const ilhaMissing: SectionProjectCheck = {
     steps: [approach('farol', ['chave'])],
     checkpoints: [
       { afterStep: 1, expect: equals('temChave', false) },
-      { afterStep: 1, expect: equals('farolAceso.visible', false) },
+      { afterStep: 1, expect: lit(false) },
       { afterStep: 1, expect: { target: { kind: 'value', path: 'aviso' }, compare: 'changed' } },
     ],
     expect: equals('ganhou', false),
@@ -84,7 +93,7 @@ export const ilhaWin: SectionProjectCheck = {
     checkpoints: [
       { afterStep: 1, expect: equals('temChave', true) },
       { afterStep: 2, expect: equals('ganhou', true) },
-      { afterStep: 2, expect: equals('farolAceso.visible', true) },
+      { afterStep: 2, expect: lit(true) },
       { afterStep: 2, expect: { target: { kind: 'value', path: 'aviso' }, compare: 'changed' } },
       {
         afterStep: 3,
@@ -96,7 +105,7 @@ export const ilhaWin: SectionProjectCheck = {
       },
       { afterStep: 5, expect: equals('temChave', false) },
       { afterStep: 5, expect: equals('ganhou', false) },
-      { afterStep: 5, expect: equals('farolAceso.visible', false) },
+      { afterStep: 5, expect: lit(false) },
     ],
     expect: equals('chave.visible', true),
   },
