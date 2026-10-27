@@ -1,0 +1,608 @@
+{
+  "abobora": {
+    "grupo": "colheita",
+    "triangulos": 618,
+    "kb": 14.6,
+    "nos": {
+      "abobora": 618
+    },
+    "vazios": [],
+    "clipes": [],
+    "materiais": ["abobora", "cabinho", "casulo", "folhaEscura"],
+    "tamanho": [0.3, 0.256, 0.3]
+  },
+  "acai": {
+    "grupo": "comidas",
+    "triangulos": 1082,
+    "kb": 44.9,
+    "nos": {
+      "acai": 1082
+    },
+    "vazios": [],
+    "clipes": [],
+    "materiais": ["acai", "banana", "cuia", "granola", "metal"],
+    "tamanho": [0.22, 0.183, 0.218]
+  },
+  "alface": {
+    "grupo": "colheita",
+    "triangulos": 2472,
+    "kb": 45.9,
+    "nos": {
+      "alface": 2472
+    },
+    "vazios": [],
+    "clipes": [],
+    "materiais": ["folhaAlface", "folhaAlfaceEscura"],
+    "tamanho": [0.234, 0.166, 0.237]
+  },
+  "alga": {
+    "grupo": "colheita",
+    "triangulos": 892,
+    "kb": 18.5,
+    "nos": {
+      "alga": 892
+    },
+    "vazios": [],
+    "clipes": [],
+    "materiais": ["alga", "algaEscura", "corda"],
+    "tamanho": [0.08, 0.286, 0.085]
+  },
+  "batata-doce": {
+    "grupo": "colheita",
+    "triangulos": 366,
+    "kb": 10.1,
+    "nos": {
+      "batata-doce": 366
+    },
+    "vazios": [],
+    "clipes": [],
+    "materiais": ["batataDoce", "batataDoceClara", "cabinho", "folha"],
+    "tamanho": [0.427, 0.136, 0.122]
+  },
+  "bau": {
+    "grupo": "colecao",
+    "triangulos": 1088,
+    "kb": 43.6,
+    "nos": {
+      "bau": 684,
+      "tampa": 404
+    },
+    "vazios": [],
+    "clipes": ["abrir"],
+    "materiais": ["bauFaixa", "bauMadeira", "bauMadeiraClara", "bauMiolo", "ferro", "tesouro"],
+    "tamanho": [0.6, 0.458, 0.441]
+  },
+  "bolo-de-fuba": {
+    "grupo": "comidas",
+    "triangulos": 1312,
+    "kb": 30.9,
+    "nos": {
+      "bolo-de-fuba": 1312
+    },
+    "vazios": [],
+    "clipes": [],
+    "materiais": ["bolo", "boloTopo", "erva", "loucaAzul"],
+    "tamanho": [0.34, 0.12, 0.34]
+  },
+  "brigadeiro": {
+    "grupo": "comidas",
+    "triangulos": 1352,
+    "kb": 54.9,
+    "nos": {
+      "brigadeiro": 1352
+    },
+    "vazios": [],
+    "clipes": [],
+    "materiais": ["brigadeiro", "forminha", "granulado", "loucaBranca"],
+    "tamanho": [0.3, 0.086, 0.3]
+  },
+  "carta": {
+    "grupo": "colecao",
+    "triangulos": 384,
+    "kb": 20.0,
+    "nos": {
+      "carta": 384
+    },
+    "vazios": [],
+    "clipes": [],
+    "materiais": ["envelope", "lacre", "papelSombra", "tesouro", "tinta"],
+    "tamanho": [0.2, 0.02, 0.13]
+  },
+  "chave": {
+    "grupo": "colecao",
+    "triangulos": 908,
+    "kb": 23.1,
+    "nos": {
+      "chave": 908
+    },
+    "vazios": [],
+    "clipes": [],
+    "materiais": ["ouro", "tesouro"],
+    "tamanho": [0.224, 0.032, 0.103]
+  },
+  "colher-de-pau": {
+    "grupo": "cozinha",
+    "triangulos": 240,
+    "kb": 5.4,
+    "nos": {
+      "colher-de-pau": 240
+    },
+    "vazios": [],
+    "clipes": [],
+    "materiais": ["madeiraClara"],
+    "tamanho": [0.335, 0.025, 0.07]
+  },
+  "flor-de-algodao": {
+    "grupo": "colheita",
+    "triangulos": 1180,
+    "kb": 25.1,
+    "nos": {
+      "flor-de-algodao": 1180
+    },
+    "vazios": [],
+    "clipes": [],
+    "materiais": ["algodao", "algodaoSombra", "cabinho", "casulo"],
+    "tamanho": [0.15, 0.182, 0.153]
+  },
+  "fogao": {
+    "grupo": "cozinha",
+    "triangulos": 2414,
+    "kb": 99.2,
+    "nos": {
+      "fogao": 2272,
+      "fogo": 142
+    },
+    "vazios": [],
+    "clipes": [],
+    "materiais": [
+      "brasa",
+      "chapa",
+      "ferro",
+      "fogaoParede",
+      "fogaoTijolo",
+      "fogaoTijoloEscuro",
+      "fogo",
+      "lenha",
+      "madeiraClara",
+      "metal",
+      "metalEscuro"
+    ],
+    "tamanho": [1.185, 1.602, 0.685]
+  },
+  "frigideira": {
+    "grupo": "cozinha",
+    "triangulos": 320,
+    "kb": 10.5,
+    "nos": {
+      "frigideira": 320
+    },
+    "vazios": [],
+    "clipes": [],
+    "materiais": ["cabo", "ferro", "metalEscuro"],
+    "tamanho": [0.497, 0.096, 0.28]
+  },
+  "lanterna": {
+    "grupo": "ferramentas",
+    "triangulos": 994,
+    "kb": 33.1,
+    "nos": {
+      "lanterna": 994
+    },
+    "vazios": ["mao"],
+    "clipes": [],
+    "materiais": ["aro", "ferro", "luz"],
+    "tamanho": [0.14, 0.327, 0.14]
+  },
+  "luneta": {
+    "grupo": "lugares",
+    "triangulos": 1568,
+    "kb": 47.9,
+    "nos": {
+      "luneta": 280,
+      "tubo": 1288
+    },
+    "vazios": [],
+    "clipes": [],
+    "materiais": ["ferro", "luneta", "lunetaEscura", "madeira", "madeiraEscura", "vidroLente"],
+    "tamanho": [0.611, 1.248, 0.802]
+  },
+  "milho": {
+    "grupo": "colheita",
+    "triangulos": 764,
+    "kb": 36.8,
+    "nos": {
+      "milho": 764
+    },
+    "vazios": [],
+    "clipes": [],
+    "materiais": ["cabeloMilho", "cabinho", "milho", "palha", "palhaClara"],
+    "tamanho": [0.551, 0.135, 0.363]
+  },
+  "moeda": {
+    "grupo": "colecao",
+    "triangulos": 684,
+    "kb": 22.2,
+    "nos": {
+      "moeda": 684
+    },
+    "vazios": [],
+    "clipes": ["girar"],
+    "materiais": ["ouro", "tesouro"],
+    "tamanho": [0.12, 0.12, 0.02]
+  },
+  "moqueca": {
+    "grupo": "comidas",
+    "triangulos": 3468,
+    "kb": 70.6,
+    "nos": {
+      "moqueca": 3468
+    },
+    "vazios": [],
+    "clipes": [],
+    "materiais": [
+      "barro",
+      "barroEscuro",
+      "caldoMoqueca",
+      "cebola",
+      "coentro",
+      "peixe",
+      "pimentao",
+      "pimentaoVerde"
+    ],
+    "tamanho": [0.35, 0.09, 0.27]
+  },
+  "morango": {
+    "grupo": "colheita",
+    "triangulos": 842,
+    "kb": 19.0,
+    "nos": {
+      "morango": 842
+    },
+    "vazios": [],
+    "clipes": [],
+    "materiais": ["cabinho", "morango", "pintinha"],
+    "tamanho": [0.101, 0.132, 0.099]
+  },
+  "pa": {
+    "grupo": "ferramentas",
+    "triangulos": 508,
+    "kb": 19.1,
+    "nos": {
+      "pa": 508
+    },
+    "vazios": ["mao"],
+    "clipes": [],
+    "materiais": ["cabo", "lamina"],
+    "tamanho": [0.16, 0.952, 0.053]
+  },
+  "pagina-diario": {
+    "grupo": "colecao",
+    "triangulos": 524,
+    "kb": 17.0,
+    "nos": {
+      "pagina-diario": 524
+    },
+    "vazios": [],
+    "clipes": [],
+    "materiais": ["lacre", "loucaAzul", "papel", "tinta"],
+    "tamanho": [0.161, 0.033, 0.221]
+  },
+  "panela": {
+    "grupo": "cozinha",
+    "triangulos": 796,
+    "kb": 19.5,
+    "nos": {
+      "panela": 796
+    },
+    "vazios": [],
+    "clipes": [],
+    "materiais": ["ferro", "panela", "panelaInterna"],
+    "tamanho": [0.24, 0.195, 0.224]
+  },
+  "pao-de-queijo": {
+    "grupo": "comidas",
+    "triangulos": 1736,
+    "kb": 36.9,
+    "nos": {
+      "pao-de-queijo": 1736
+    },
+    "vazios": [],
+    "clipes": [],
+    "materiais": ["loucaBranca", "paoDeQueijo", "paoDeQueijoTopo"],
+    "tamanho": [0.32, 0.089, 0.32]
+  },
+  "peixe-com-coco": {
+    "grupo": "comidas",
+    "triangulos": 1308,
+    "kb": 35.9,
+    "nos": {
+      "peixe-com-coco": 1308
+    },
+    "vazios": [],
+    "clipes": [],
+    "materiais": [
+      "coco",
+      "cocoBranco",
+      "coentro",
+      "ferro",
+      "limao",
+      "loucaBranca",
+      "molhoCoco",
+      "peixeAssado",
+      "peixeAssadoEscuro"
+    ],
+    "tamanho": [0.36, 0.092, 0.36]
+  },
+  "pipoca": {
+    "grupo": "comidas",
+    "triangulos": 728,
+    "kb": 47.1,
+    "nos": {
+      "pipoca": 728
+    },
+    "vazios": [],
+    "clipes": [],
+    "materiais": ["pipoca", "pipocaMiolo", "saquinho", "saquinhoListra"],
+    "tamanho": [0.166, 0.227, 0.166]
+  },
+  "placa-quadro": {
+    "grupo": "lugares",
+    "triangulos": 296,
+    "kb": 19.2,
+    "nos": {
+      "placa": 252,
+      "texto": 44
+    },
+    "vazios": [],
+    "clipes": [],
+    "materiais": ["madeiraEscura", "placa", "placaFace"],
+    "tamanho": [1.0, 1.05, 0.148]
+  },
+  "placa-seta": {
+    "grupo": "lugares",
+    "triangulos": 266,
+    "kb": 16.7,
+    "nos": {
+      "placa": 242,
+      "texto": 24
+    },
+    "vazios": [],
+    "clipes": [],
+    "materiais": ["madeiraEscura", "placa", "placaFace"],
+    "tamanho": [0.655, 1.2, 0.122]
+  },
+  "placa-tabuleta": {
+    "grupo": "lugares",
+    "triangulos": 298,
+    "kb": 18.1,
+    "nos": {
+      "placa": 254,
+      "texto": 44
+    },
+    "vazios": [],
+    "clipes": [],
+    "materiais": ["corda", "madeiraEscura", "placa", "placaFace"],
+    "tamanho": [0.622, 1.35, 0.085]
+  },
+  "quadro-das-cores": {
+    "grupo": "lugares",
+    "triangulos": 2172,
+    "kb": 114.4,
+    "nos": {
+      "quadro": 388,
+      "cor-1": 284,
+      "cor-2": 284,
+      "cor-3": 316,
+      "cor-4": 284,
+      "cor-5": 300,
+      "cor-6": 316
+    },
+    "vazios": [],
+    "clipes": [],
+    "materiais": [
+      "cor-1",
+      "cor-2",
+      "cor-3",
+      "cor-4",
+      "cor-5",
+      "cor-6",
+      "madeira",
+      "madeiraEscura",
+      "papelSombra",
+      "quadro"
+    ],
+    "tamanho": [1.3, 1.528, 0.465]
+  },
+  "rede": {
+    "grupo": "ferramentas",
+    "triangulos": 988,
+    "kb": 42.5,
+    "nos": {
+      "rede": 988
+    },
+    "vazios": ["mao"],
+    "clipes": [],
+    "materiais": ["aro", "cabo", "rede"],
+    "tamanho": [0.32, 0.99, 0.212]
+  },
+  "regador": {
+    "grupo": "ferramentas",
+    "triangulos": 600,
+    "kb": 16.8,
+    "nos": {
+      "regador": 600
+    },
+    "vazios": ["mao"],
+    "clipes": [],
+    "materiais": ["metal", "regador", "regadorEscuro"],
+    "tamanho": [0.366, 0.227, 0.184]
+  },
+  "salada": {
+    "grupo": "comidas",
+    "triangulos": 2244,
+    "kb": 47.0,
+    "nos": {
+      "salada": 2244
+    },
+    "vazios": [],
+    "clipes": [],
+    "materiais": ["folhaAlface", "folhaAlfaceEscura", "loucaVerde", "milho", "tomate"],
+    "tamanho": [0.26, 0.118, 0.258]
+  },
+  "semente-abobora": {
+    "grupo": "sementes",
+    "triangulos": 938,
+    "kb": 25.7,
+    "nos": {
+      "semente-abobora": 938
+    },
+    "vazios": [],
+    "clipes": [],
+    "materiais": ["abobora", "cabinho", "casulo", "etiqueta", "folhaEscura", "pacoteAbobora"],
+    "tamanho": [0.14, 0.208, 0.077]
+  },
+  "semente-alface": {
+    "grupo": "sementes",
+    "triangulos": 1820,
+    "kb": 40.0,
+    "nos": {
+      "semente-alface": 1820
+    },
+    "vazios": [],
+    "clipes": [],
+    "materiais": ["etiqueta", "folhaAlface", "folhaAlfaceEscura", "pacoteAlface"],
+    "tamanho": [0.14, 0.208, 0.085]
+  },
+  "semente-alga": {
+    "grupo": "sementes",
+    "triangulos": 1030,
+    "kb": 26.5,
+    "nos": {
+      "semente-alga": 1030
+    },
+    "vazios": [],
+    "clipes": [],
+    "materiais": ["alga", "algaEscura", "corda", "etiqueta", "pacoteAlga"],
+    "tamanho": [0.14, 0.208, 0.068]
+  },
+  "semente-batata-doce": {
+    "grupo": "sementes",
+    "triangulos": 806,
+    "kb": 23.4,
+    "nos": {
+      "semente-batata-doce": 806
+    },
+    "vazios": [],
+    "clipes": [],
+    "materiais": [
+      "batataDoce",
+      "batataDoceClara",
+      "cabinho",
+      "etiqueta",
+      "folha",
+      "pacoteBatataDoce"
+    ],
+    "tamanho": [0.14, 0.208, 0.071]
+  },
+  "semente-flor-de-algodao": {
+    "grupo": "sementes",
+    "triangulos": 1204,
+    "kb": 31.1,
+    "nos": {
+      "semente-flor-de-algodao": 1204
+    },
+    "vazios": [],
+    "clipes": [],
+    "materiais": ["algodao", "algodaoSombra", "cabinho", "casulo", "etiqueta", "pacoteAlgodao"],
+    "tamanho": [0.14, 0.208, 0.075]
+  },
+  "semente-milho": {
+    "grupo": "sementes",
+    "triangulos": 1114,
+    "kb": 43.2,
+    "nos": {
+      "semente-milho": 1114
+    },
+    "vazios": [],
+    "clipes": [],
+    "materiais": [
+      "cabeloMilho",
+      "cabinho",
+      "etiqueta",
+      "milho",
+      "pacoteMilho",
+      "palha",
+      "palhaClara"
+    ],
+    "tamanho": [0.14, 0.208, 0.072]
+  },
+  "semente-morango": {
+    "grupo": "sementes",
+    "triangulos": 1318,
+    "kb": 32.9,
+    "nos": {
+      "semente-morango": 1318
+    },
+    "vazios": [],
+    "clipes": [],
+    "materiais": ["cabinho", "etiqueta", "morango", "pacoteMorango", "pintinha"],
+    "tamanho": [0.14, 0.208, 0.074]
+  },
+  "semente-tomate": {
+    "grupo": "sementes",
+    "triangulos": 936,
+    "kb": 25.7,
+    "nos": {
+      "semente-tomate": 936
+    },
+    "vazios": [],
+    "clipes": [],
+    "materiais": ["cabinho", "etiqueta", "pacoteTomate", "tomate", "tomateBrilho"],
+    "tamanho": [0.14, 0.208, 0.074]
+  },
+  "tabua-de-corte": {
+    "grupo": "cozinha",
+    "triangulos": 552,
+    "kb": 14.3,
+    "nos": {
+      "tabua-de-corte": 552
+    },
+    "vazios": [],
+    "clipes": [],
+    "materiais": ["madeira", "madeiraEscura", "tabua"],
+    "tamanho": [0.48, 0.03, 0.22]
+  },
+  "tomate": {
+    "grupo": "colheita",
+    "triangulos": 572,
+    "kb": 13.8,
+    "nos": {
+      "tomate": 572
+    },
+    "vazios": [],
+    "clipes": [],
+    "materiais": ["cabinho", "tomate", "tomateBrilho"],
+    "tamanho": [0.14, 0.163, 0.133]
+  },
+  "vara-de-pescar": {
+    "grupo": "ferramentas",
+    "triangulos": 844,
+    "kb": 26.2,
+    "nos": {
+      "vara-de-pescar": 844
+    },
+    "vazios": ["mao"],
+    "clipes": [],
+    "materiais": [
+      "boia",
+      "boiaBranca",
+      "ferro",
+      "linha",
+      "madeiraEscura",
+      "metal",
+      "molinete",
+      "vara"
+    ],
+    "tamanho": [0.128, 1.351, 0.305]
+  }
+}

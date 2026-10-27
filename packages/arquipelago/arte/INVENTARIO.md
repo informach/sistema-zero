@@ -60,12 +60,12 @@ até lá ficam na galeria de modelos do playground.
 
 | Peça | Estado | Observação |
 |---|---|---|
-| Sementes e colheita (alface, tomate, milho e as das outras ilhas) | ⬜ | também viram ícones do HUD |
-| Comidas: salada, pipoca, pão de queijo, bolo de fubá, brigadeiro, açaí, moqueca, peixe com coco | ⬜ | |
-| Ferramentas na mão: lanterna, regador, pá, rede, vara de pescar | ⬜ | |
-| Chave e carta da chegada, páginas do diário, baús, moedas | ⬜ | |
-| Luneta do píer, Quadro das Cores, placas | ⬜ | |
-| Fogão e utensílios da cozinha da casa | ⬜ | móveis do quarto vêm da plataforma |
+| Sementes e colheita (alface, tomate, milho e as das outras ilhas) | 🟡 | `arte/itens/colheita.py` e `sementes.py`: 8 colheitas (morango, alga, batata-doce, abóbora, flor de algodão nas outras ilhas) e 8 pacotinhos; ícones do HUD em `src/assets/icones` |
+| Comidas: salada, pipoca, pão de queijo, bolo de fubá, brigadeiro, açaí, moqueca, peixe com coco | 🟡 | `arte/itens/comidas.py`, cada uma no seu prato, tigela ou panela |
+| Ferramentas na mão: lanterna, regador, pá, rede, vara de pescar | 🟡 | `arte/itens/ferramentas.py`, nó vazio `mao` na pegada; a lanterna acende (`luz`) |
+| Chave e carta da chegada, páginas do diário, baús, moedas | 🟡 | `arte/itens/colecao.py`; baú com a `tampa` e o clipe `abrir`, moeda com `girar` |
+| Luneta do píer, Quadro das Cores, placas | 🟡 | `arte/itens/lugares.py`; luneta com o `tubo` que gira, quadro com `cor-1` a `cor-6`, três placas com a face `texto` |
+| Fogão e utensílios da cozinha da casa | 🟡 | `arte/itens/cozinha.py`: fogão a lenha com o nó `fogo`, panela, frigideira, colher de pau e tábua; móveis do quarto vêm da plataforma |
 
 ## Lote 6: as ilhas completas
 
