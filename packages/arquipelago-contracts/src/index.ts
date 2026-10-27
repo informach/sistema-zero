@@ -1,4 +1,6 @@
 export * from './api'
+export * from './aprenda'
+export * from './cartas-lumi'
 export * from './ilhas'
 export * from './limites'
 export * from './membros'

@@ -72,6 +72,8 @@ export function createArquipelagoRoutes(deps: { gateway: GatewayModule }) {
       PUT: comCorpo('/salvamento', 'PUT', CORPO_DO_SALVAMENTO),
     },
     arquipelagoTempo: { POST: comCorpo('/tempo', 'POST', CORPO_PEQUENO) },
+    /** Cartões da rotina dos Lumis (os de controle pelos blocos conquistados nos cursos). */
+    arquipelagoCartas: { GET: () => chamar('/cartas', 'GET') },
     /** Área dos pais: o app embrulha com o portão do responsável. */
     arquipelagoLimiteDaFamilia: {
       GET: () => chamar('/familia/limite', 'GET'),

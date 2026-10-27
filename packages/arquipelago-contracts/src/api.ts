@@ -62,3 +62,26 @@ export const LimiteDaFamiliaSchema = z.strictObject({
   limiteDiarioMinutos: z.number().int().positive(),
 })
 export type LimiteDaFamilia = z.infer<typeof LimiteDaFamiliaSchema>
+
+/** `GET /arquipelago/cartas`: os cartões da rotina dos Lumis e onde aprender os que faltam. */
+export const CartasDoJogadorSchema = z.strictObject({
+  cartas: z.array(
+    z.strictObject({
+      id: z.string().min(1).max(60),
+      nome: z.string().min(1).max(80),
+      tipo: z.enum(['quando', 'acao', 'controle']),
+      efeito: z.string().max(200),
+      conquistada: z.boolean(),
+      /** Só nos que faltam: os cursos que liberam o bloco do cartão. */
+      aprendaEm: z.array(
+        z.strictObject({
+          courseId: z.uuid(),
+          titulo: z.string().min(1).max(200),
+          slug: z.string().min(1).max(200),
+          posto: z.string().min(1).max(40).nullable(),
+        }),
+      ),
+    }),
+  ),
+})
+export type CartasDoJogador = z.infer<typeof CartasDoJogadorSchema>

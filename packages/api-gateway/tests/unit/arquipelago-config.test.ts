@@ -49,6 +49,9 @@ describe('Arquipélago Vagalume no gateway', () => {
       'arquipelago-acesso',
     )
     expect(registry.resolve('POST', '/arquipelago/tempo', 'v1')?.route.id).toBe('arquipelago-tempo')
+    expect(registry.resolve('GET', '/arquipelago/cartas', 'v1')?.route.id).toBe(
+      'arquipelago-cartas',
+    )
     expect(registry.resolve('PUT', '/arquipelago/familia/limite', 'v1')?.route.id).toBe(
       'arquipelago-familia-limite',
     )

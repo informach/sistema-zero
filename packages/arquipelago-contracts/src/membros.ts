@@ -27,6 +27,43 @@ export const JornadaDosMembrosSchema = z.strictObject({
 })
 export type JornadaDosMembros = z.infer<typeof JornadaDosMembrosSchema>
 
+const BlocoSchema = z.string().min(1).max(160)
+
+/** `GET /members/internal/arquipelago/jogador`: posição na jornada e blocos conquistados. */
+export const JogadorDosMembrosSchema = z.strictObject({
+  posicao: z.number().int().min(1).max(500),
+  total: z.number().int().min(1).max(500),
+  blocos: z.array(BlocoSchema).max(5000),
+})
+export type JogadorDosMembros = z.infer<typeof JogadorDosMembrosSchema>
+
+/** `GET /members/internal/arquipelago/curriculo-de-blocos`: que curso libera qual bloco. */
+export const CurriculoDeBlocosSchema = z.strictObject({
+  versao: z.number().int().min(0),
+  cursos: z
+    .array(
+      z.strictObject({
+        courseId: z.uuid(),
+        titulo: TituloSchema,
+        slug: z.string().min(1).max(200),
+        posto: z.string().min(1).max(40).nullable(),
+        papel: z.string().min(1).max(40).nullable(),
+        blocos: z.array(BlocoSchema).max(3000),
+      }),
+    )
+    .max(2000),
+  catalogo: z
+    .array(
+      z.strictObject({
+        type: BlocoSchema,
+        rotulo: z.string().max(300),
+        categoria: z.string().max(120),
+      }),
+    )
+    .max(10_000),
+})
+export type CurriculoDeBlocos = z.infer<typeof CurriculoDeBlocosSchema>
+
 export type ProblemaDoMapa =
   | { publico: 'kids'; tipo: 'politica-nao-publicada' }
   | { publico: 'kids'; tipo: 'postos-diferentes'; esperado: string[]; recebido: string[] }

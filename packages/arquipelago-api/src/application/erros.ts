@@ -24,3 +24,10 @@ export class SalvamentoIlegivelError extends Error {
     super('Salvamento guardado em formato desconhecido')
   }
 }
+
+/** O Members não está configurado ou não respondeu: desafios e cartões ficam fora por agora. */
+export class PlataformaIndisponivelError extends Error {
+  constructor(readonly causa?: unknown) {
+    super('Os desafios e os cartões não estão disponíveis agora')
+  }
+}

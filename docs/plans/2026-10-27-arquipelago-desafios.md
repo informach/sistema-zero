@@ -23,8 +23,12 @@ Lumis e o Admin do jogo").
    nos blocos do curso ou na lista da pessoa não tira o que ela fez). Rejogar é permitido.
 5. **Conferência no servidor**, com o mesmo executor das aulas. O gabarito nunca vai para o
    navegador.
-6. **Cartão do Lumi conquistado** quando o bloco dele está entre os conquistados (um cartão por
-   bloco, mesma fonte e mesma régua dos desafios).
+6. **Cartões dos Lumis** (`CARTAS_LUMI`, no contrato): os de QUANDO e de AÇÃO (voar até, regar,
+   colher, guardar) são do mundo do jogo e valem para todos; os de CONTROLE (repetir, para cada,
+   enquanto, se, escolha, esperar, guardar na memória, contar) são os mesmos conceitos dos blocos
+   do Estúdio, um cartão por bloco, e só ficam na mão de quem conquistou o bloco (mesma fonte e
+   mesma régua dos desafios). A tela do caderno no jogo entra com os Lumis (Fase 2 do projeto do
+   jogo); a leitura já existe (`GET /arquipelago/cartas`).
 
 ## Decisões tomadas no plano (reversíveis, anotadas para a dona)
 

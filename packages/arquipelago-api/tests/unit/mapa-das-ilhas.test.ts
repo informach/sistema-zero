@@ -18,6 +18,12 @@ const jornada: JornadaDosMembros = {
   },
 }
 const logger = () => ({ info: mock(), warn: mock() })
+/** Só a jornada importa aqui; as outras leituras não são chamadas. */
+const porta = (lerJornada: () => Promise<JornadaDosMembros>) => ({
+  lerJornada,
+  lerJogador: mock(),
+  lerCurriculo: mock(),
+})
 
 describe('mapa ilha → posto contra o core', () => {
   test('os postos do contrato são os da Jornada do Criador, na mesma ordem', () => {
@@ -34,7 +40,10 @@ describe('conferência no serviço', () => {
 
   test('jornada igual ao mapa: ok', async () => {
     const log = logger()
-    const c = new ConferenciaDoMapa({ lerJornada: async () => jornada }, log)
+    const c = new ConferenciaDoMapa(
+      porta(async () => jornada),
+      log,
+    )
     expect(c.situacao().situacao).toBe('pendente')
     expect((await c.conferir()).situacao).toBe('ok')
     expect(log.warn).toHaveBeenCalledTimes(0)
@@ -43,7 +52,7 @@ describe('conferência no serviço', () => {
   test('jornada diferente: com problemas e aviso no log', async () => {
     const log = logger()
     const c = new ConferenciaDoMapa(
-      { lerJornada: async () => ({ ...jornada, kids: { versao: 3, postos: ['noob'] } }) },
+      porta(async () => ({ ...jornada, kids: { versao: 3, postos: ['noob'] } })),
       log,
     )
     const r = await c.conferir()
@@ -53,11 +62,9 @@ describe('conferência no serviço', () => {
 
   test('Members fora: indisponível, sem derrubar nada', async () => {
     const c = new ConferenciaDoMapa(
-      {
-        lerJornada: async () => {
-          throw new MembrosIndisponiveisError('rede')
-        },
-      },
+      porta(async () => {
+        throw new MembrosIndisponiveisError('rede')
+      }),
       logger(),
     )
     expect((await c.conferir()).situacao).toBe('indisponivel')

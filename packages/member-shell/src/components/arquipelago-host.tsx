@@ -47,7 +47,7 @@ class ToolLoadBoundary extends Component<
 /** O repasse do BFF (`routes/arquipelago.ts`). */
 const BASE = '/api/arquipelago'
 /** As únicas rotas do serviço que o jogo chama (o limite da família é da área dos pais). */
-const CAMINHOS_DO_JOGO = new Set(['/acesso', '/salvamento', '/tempo'])
+const CAMINHOS_DO_JOGO = new Set(['/acesso', '/salvamento', '/tempo', '/cartas'])
 
 type Estado = EstadoDaPorta | 'pronto'
 

@@ -26,8 +26,15 @@ dois, o serviço sobe igual e as leituras ficam desligadas.
   mapa ilha → posto do contrato contra `GET /jornada` (`conferirMapaDasIlhas`). Problema vai ao log
   (`arquipelago.mapa_das_ilhas_invalido`) e ao `/readyz` (`mapaDasIlhas`: `desligada`, `pendente`,
   `ok`, `com-problemas`, `indisponivel`), que continua 200.
+- `application/leituras-dos-membros.ts` (`LeiturasDosMembros`): posto e blocos de quem joga
+  (`GET /jogador`, cache de 30 s por pessoa, teto de 5 mil no processo) e o currículo de blocos
+  (`GET /curriculo-de-blocos`, 5 min por público); pedidos iguais dividem a ida e falha não fica no
+  cache. Sem Members, ou com ele fora, `PlataformaIndisponivelError` → 424 (nunca 5xx: o disjuntor
+  do gateway contaria contra o jogo inteiro).
+- `application/servico-das-cartas.ts` (`ServicoDasCartas`): `GET /arquipelago/cartas`.
 - Testes: `tests/unit/mapa-das-ilhas.test.ts` (postos do contrato iguais ao `JOURNEY_LEVEL_SLUGS`
-  do core, conferência e adaptador).
+  do core, conferência e adaptador), `tests/unit/leituras-dos-membros.test.ts` e os cartões em
+  `tests/integration/http.test.ts`.
 
 ## Rotas (`/arquipelago/*`, todas exigem o `x-internal-token` em deploy)
 
@@ -37,6 +44,7 @@ dois, o serviço sobe igual e as leituras ficam desligadas.
 | `GET /salvamento` | jogador liberado | `{revisao, salvamento, atualizadoEm}` (revisão 0 = nada guardado) |
 | `PUT /salvamento` | jogador liberado | `{revisaoBase, salvamento}`; revisão velha → 409 `SALVAMENTO_DESATUALIZADO` com `atual` |
 | `POST /tempo` | jogador liberado | `{eventoId, dia, segundos}` (1 a 120); repetição não soma novamente, conflito retorna 409 e data futura é recusada; devolve o total de hoje e `acabou` |
+| `GET /cartas` | jogador liberado | os cartões da rotina dos Lumis: os do jogo sempre, os de controle pelos blocos conquistados (equipe vê todos), e "Aprenda isso em" nos que faltam; Members fora ou não configurado → 424 `PLATAFORMA_INDISPONIVEL` |
 | `GET\|PUT /familia/limite` | responsável do Kids | limite diário da família (padrão 30, de 10 a 240, passo 5) |
 | `GET /cliente/manifesto.json` e `/cliente/:arquivo` | página do jogo | o cliente compilado (manifesto sem cache, arquivos com hash em cache imutável; mapas só fora da produção) |
 

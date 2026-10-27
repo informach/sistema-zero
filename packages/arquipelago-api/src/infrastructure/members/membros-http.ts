@@ -1,5 +1,17 @@
-import { type JornadaDosMembros, JornadaDosMembrosSchema } from '@sistemazero/arquipelago-contracts'
-import { MembrosIndisponiveisError, type PortaDosMembros } from '../../domain/membros.port'
+import {
+  type CurriculoDeBlocos,
+  CurriculoDeBlocosSchema,
+  type JogadorDosMembros,
+  JogadorDosMembrosSchema,
+  type JornadaDosMembros,
+  JornadaDosMembrosSchema,
+} from '@sistemazero/arquipelago-contracts'
+import {
+  MembrosIndisponiveisError,
+  type PerguntaDoJogador,
+  type PortaDosMembros,
+  type PublicoDosMembros,
+} from '../../domain/membros.port'
 
 /** Uma leitura do Members nunca segura o jogo: passou disso, conta como indisponível. */
 export const TEMPO_DA_LEITURA_MS = 5_000
@@ -9,10 +21,35 @@ export class MembrosHttp implements PortaDosMembros {
   constructor(private readonly config: { url: string; token: string; fetch?: typeof fetch }) {}
 
   async lerJornada(signal?: AbortSignal): Promise<JornadaDosMembros> {
-    const corpo = await this.ler('/members/internal/arquipelago/jornada', signal)
-    const lido = JornadaDosMembrosSchema.safeParse(corpo)
-    if (!lido.success) throw new MembrosIndisponiveisError('formato')
-    return lido.data
+    return validar(
+      JornadaDosMembrosSchema,
+      await this.ler('/members/internal/arquipelago/jornada', signal),
+    )
+  }
+
+  async lerJogador(pergunta: PerguntaDoJogador, signal?: AbortSignal): Promise<JogadorDosMembros> {
+    const q = new URLSearchParams({
+      userId: pergunta.userId,
+      accountId: pergunta.accountId,
+      audience: pergunta.audience,
+    })
+    return validar(
+      JogadorDosMembrosSchema,
+      await this.ler(`/members/internal/arquipelago/jogador?${q}`, signal),
+    )
+  }
+
+  async lerCurriculo(
+    audience: PublicoDosMembros,
+    signal?: AbortSignal,
+  ): Promise<CurriculoDeBlocos> {
+    return validar(
+      CurriculoDeBlocosSchema,
+      await this.ler(
+        `/members/internal/arquipelago/curriculo-de-blocos?audience=${audience}`,
+        signal,
+      ),
+    )
   }
 
   private async ler(caminho: string, signal?: AbortSignal): Promise<unknown> {
@@ -33,4 +70,13 @@ export class MembrosHttp implements PortaDosMembros {
       throw new MembrosIndisponiveisError('formato')
     }
   }
+}
+
+function validar<T>(
+  schema: { safeParse(v: unknown): { success: true; data: T } | { success: false } },
+  corpo: unknown,
+): T {
+  const lido = schema.safeParse(corpo)
+  if (!lido.success) throw new MembrosIndisponiveisError('formato')
+  return lido.data
 }

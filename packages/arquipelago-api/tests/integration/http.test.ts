@@ -4,13 +4,18 @@ import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import {
+  CartasDoJogadorSchema,
   ConflitoDeSalvamentoSchema,
+  type CurriculoDeBlocos,
   criarSalvamentoInicial,
   SalvamentoGuardadoSchema,
 } from '@sistemazero/arquipelago-contracts'
 import { createLogger } from '@sistemazero/core/logging'
+import { LeiturasDosMembros } from '../../src/application/leituras-dos-membros'
+import { ServicoDasCartas } from '../../src/application/servico-das-cartas'
 import { ServicoDoJogo } from '../../src/application/servico-do-jogo'
 import type { PoliticaDeAcesso } from '../../src/domain/acesso'
+import { MembrosIndisponiveisError, type PortaDosMembros } from '../../src/domain/membros.port'
 import { createServer } from '../../src/interfaces/http/server'
 import { RepositorioEmMemoria } from '../fakes/memoria'
 
@@ -27,11 +32,36 @@ afterAll(() => rmSync(dir, { recursive: true, force: true }))
 let repo: RepositorioEmMemoria
 let politica: PoliticaDeAcesso
 let app: ReturnType<typeof createServer>
+let membros: PortaDosMembros | null
+
+const CURSO = '55555555-5555-4555-8555-555555555555'
+const curriculo: CurriculoDeBlocos = {
+  versao: 1,
+  cursos: [
+    {
+      courseId: CURSO,
+      titulo: 'Repetições',
+      slug: 'repeticoes',
+      posto: 'coder',
+      papel: 'base2d',
+      blocos: ['sz_js_repeat'],
+    },
+  ],
+  catalogo: [],
+}
+const membrosDeMentira = (blocos: string[]): PortaDosMembros => ({
+  lerJornada: async () => {
+    throw new Error('não usado')
+  },
+  lerJogador: async () => ({ posicao: 2, total: 8, blocos }),
+  lerCurriculo: async () => curriculo,
+})
 
 function montar(servirMapas = true) {
   app = createServer({
     logger: createLogger({ level: 'error' }),
     servico: new ServicoDoJogo(repo, politica, () => AGORA),
+    cartas: new ServicoDasCartas(politica, new LeiturasDosMembros(membros)),
     cliente: { dir, servirMapas },
     tokenInterno: TOKEN,
     readiness: async () => {},
@@ -41,6 +71,7 @@ function montar(servirMapas = true) {
 beforeEach(() => {
   repo = new RepositorioEmMemoria()
   politica = { modo: 'aberto', publicos: new Set(['kids']), lista: new Set() }
+  membros = membrosDeMentira(['sz_js_if_else'])
   montar()
 })
 
@@ -381,5 +412,51 @@ describe('cliente do jogo', () => {
     expect((await chamar('GET', '/arquipelago/cliente/nao-existe.js', h)).status).toBe(404)
     montar(false)
     expect((await chamar('GET', '/arquipelago/cliente/entrada-abc.js.map', h)).status).toBe(404)
+  })
+})
+
+describe('cartões dos Lumis', () => {
+  test('os do jogo sempre; os de controle pelos blocos; os que faltam dizem onde aprender', async () => {
+    const r = await chamar('GET', '/arquipelago/cartas', crianca())
+    expect(r.status).toBe(200)
+    const { cartas } = CartasDoJogadorSchema.parse(r.json)
+    const por = (id: string) => cartas.find((c) => c.id === id)
+    expect(por('regar')).toMatchObject({ conquistada: true, aprendaEm: [] })
+    expect(por('se')).toMatchObject({ conquistada: true, aprendaEm: [] })
+    expect(por('repetir')).toMatchObject({
+      conquistada: false,
+      aprendaEm: [{ courseId: CURSO, titulo: 'Repetições', slug: 'repeticoes', posto: 'coder' }],
+    })
+  })
+
+  test('equipe vê todos os cartões', async () => {
+    const r = await chamar('GET', '/arquipelago/cartas', {
+      ...crianca(),
+      'x-auth-user-role': 'staff',
+    })
+    const { cartas } = CartasDoJogadorSchema.parse(r.json)
+    expect(cartas.every((c) => c.conquistada)).toBe(true)
+  })
+
+  test('sem Members configurado ou com ele fora: 424, nunca 5xx', async () => {
+    membros = null
+    montar()
+    const r = await chamar('GET', '/arquipelago/cartas', crianca())
+    expect(r.status).toBe(424)
+    expect(r.json).toMatchObject({ error: { code: 'PLATAFORMA_INDISPONIVEL' } })
+    membros = {
+      ...membrosDeMentira([]),
+      lerJogador: async () => {
+        throw new MembrosIndisponiveisError('rede')
+      },
+    }
+    montar()
+    expect((await chamar('GET', '/arquipelago/cartas', crianca())).status).toBe(424)
+  })
+
+  test('jogo bloqueado para a pessoa: 403 como as outras rotas', async () => {
+    politica = { modo: 'desligado', publicos: new Set(['kids']), lista: new Set() }
+    montar()
+    expect((await chamar('GET', '/arquipelago/cartas', crianca())).status).toBe(403)
   })
 })

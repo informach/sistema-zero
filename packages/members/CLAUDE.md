@@ -12,8 +12,18 @@ estas rotas, teste em `tests/arquipelago-internal.routes.test.ts`). Sem o token,
   contrato). Política do Kids não publicada = versão 0 sem postos; outra falha sobe como erro.
 - ⚠️ Railway: `ARQUIPELAGO_MEMBERS_TOKEN` é nome novo; criar no painel (members e arquipelago-api)
   antes de entrar no `.railway/variables.ts`.
-- Próximas rotas (plano `docs/plans/2026-10-27-arquipelago-desafios.md`): `/jogador`,
-  `/curriculo-de-blocos`, `/objetivos/analisar` e `/objetivos/verificar`.
+- `GET /jogador?userId&accountId&audience` (`ArquipelagoReadsService.jogador`): posição na jornada
+  (Kids: `earned.level`; adulto: `adultJourneyPosition`) e os blocos conquistados pela leitura SÓ
+  de leitura `GetStudioUnlocksService.read` (a mesma união do Estúdio livre, sem congelar nada).
+  Jornada do Kids indisponível → 424 `JORNADA_INDISPONIVEL`.
+- `GET /curriculo-de-blocos?audience`: cursos GRAVADOS publicados com `studioUnlockBlocks`, com o
+  posto mais cedo no currículo (`lugarNoCurriculo`; política sem currículo = posto nulo) e o
+  catálogo do Estúdio (tipo, rótulo, categoria).
+- `tests/unit/arquipelago-cartas-conformance.test.ts` lê `arquipelago-contracts/src/cartas-lumi.ts`
+  PELO CAMINHO (o contrato não é dependência do Members) e confere que todo bloco de cartão existe
+  no `SERVER_BLOCK_CATALOG`.
+- Próximas rotas (plano `docs/plans/2026-10-27-arquipelago-desafios.md`): `/objetivos/analisar` e
+  `/objetivos/verificar`.
 
 ## Jornada com par 2D/3D e Maestrias (25/10/2026)
 

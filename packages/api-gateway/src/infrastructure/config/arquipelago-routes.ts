@@ -65,6 +65,13 @@ export function arquipelagoGateway(opts: {
       },
       {
         ...jogador,
+        id: 'arquipelago-cartas',
+        methods: ['GET'],
+        pathPattern: '/arquipelago/cartas',
+        rateLimit: { max: 60, windowMs: 60_000, by: 'principal' },
+      },
+      {
+        ...jogador,
         id: 'arquipelago-familia-limite',
         methods: ['GET', 'PUT'],
         pathPattern: '/arquipelago/familia/limite',

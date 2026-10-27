@@ -4,10 +4,12 @@ import { serializeError } from '@sistemazero/core/logging'
 import { Elysia } from 'elysia'
 import {
   AcessoBloqueadoError,
+  PlataformaIndisponivelError,
   SalvamentoGrandeDemaisError,
   SalvamentoIlegivelError,
   SomenteLeituraError,
 } from '../../application/erros'
+import type { ServicoDasCartas } from '../../application/servico-das-cartas'
 import type { ServicoDoJogo } from '../../application/servico-do-jogo'
 import { DataTempoInvalidaError, EventoTempoConflitanteError } from '../../domain/tempo-erros'
 import { rotasDoCliente } from './rotas-do-cliente'
@@ -16,6 +18,7 @@ import { CorpoInvalidoError, rotasDoJogo } from './rotas-do-jogo'
 export interface DependenciasHttp {
   logger: Logger
   servico: ServicoDoJogo
+  cartas: ServicoDasCartas
   cliente: { dir: string; servirMapas: boolean }
   tokenInterno?: string
   maxRequestBodyBytes?: number
@@ -42,6 +45,11 @@ export function createServer(deps: DependenciasHttp) {
       if (error instanceof AcessoBloqueadoError) {
         set.status = 403
         return { ...envelope('ACESSO_BLOQUEADO', error.message), motivo: error.motivo }
+      }
+      if (error instanceof PlataformaIndisponivelError) {
+        // 424, não 5xx: o disjuntor do gateway contaria a queda do Members contra o jogo inteiro.
+        set.status = 424
+        return envelope('PLATAFORMA_INDISPONIVEL', error.message)
       }
       if (error instanceof SomenteLeituraError) {
         set.status = 403
@@ -79,7 +87,9 @@ export function createServer(deps: DependenciasHttp) {
       return envelope('INTERNAL_ERROR', 'Erro interno')
     })
     .use(rotasDoCliente({ ...deps.cliente, tokenInterno: deps.tokenInterno }))
-    .use(rotasDoJogo({ servico: deps.servico, tokenInterno: deps.tokenInterno }))
+    .use(
+      rotasDoJogo({ servico: deps.servico, cartas: deps.cartas, tokenInterno: deps.tokenInterno }),
+    )
     .get('/healthz', () => ({ status: 'ok' }))
     .get('/readyz', async ({ set }) => {
       try {

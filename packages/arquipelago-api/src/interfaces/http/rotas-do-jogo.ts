@@ -6,6 +6,7 @@ import {
   RegistrarTempoSchema,
 } from '@sistemazero/arquipelago-contracts'
 import { Elysia } from 'elysia'
+import type { ServicoDasCartas } from '../../application/servico-das-cartas'
 import type { ServicoDoJogo } from '../../application/servico-do-jogo'
 import { exigirGateway, lerJogador, lerResponsavel } from './identidade'
 
@@ -28,12 +29,17 @@ function validar<T>(
  * Rotas do jogo, chamadas pelo navegador através do repasse da plataforma e do gateway. Quem é
  * a pessoa vem SEMPRE dos `x-auth-*` do gateway, nunca do corpo.
  */
-export function rotasDoJogo(deps: { servico: ServicoDoJogo; tokenInterno?: string }) {
+export function rotasDoJogo(deps: {
+  servico: ServicoDoJogo
+  cartas: ServicoDasCartas
+  tokenInterno?: string
+}) {
   const { servico } = deps
   return new Elysia({ prefix: '/arquipelago' })
     .onBeforeHandle(({ headers }) => exigirGateway(headers['x-internal-token'], deps.tokenInterno))
     .get('/acesso', ({ headers }) => servico.acesso(lerJogador(headers)))
     .get('/salvamento', ({ headers }) => servico.lerSalvamento(lerJogador(headers)))
+    .get('/cartas', ({ headers }) => deps.cartas.cartas(lerJogador(headers)))
     .put('/salvamento', async ({ headers, body, set }) => {
       const r = await servico.gravarSalvamento(
         lerJogador(headers),

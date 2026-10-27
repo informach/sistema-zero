@@ -1,0 +1,120 @@
+import { describe, expect, mock, test } from 'bun:test'
+import { JOURNEY_LEVEL_SLUGS } from '@sistemazero/core/journey'
+import {
+  ArquipelagoReadsService,
+  lugarNoCurriculo,
+} from '../../src/application/arquipelago/arquipelago-reads.service'
+
+const A = '00000000-0000-4000-8000-00000000000a'
+const B = '00000000-0000-4000-8000-00000000000b'
+const C = '00000000-0000-4000-8000-00000000000c'
+const D = '00000000-0000-4000-8000-00000000000d'
+const vazio = {
+  base2dCourseId: null,
+  base3dCourseId: null,
+  missionCourseId: null,
+  powers: [],
+  extras: [],
+}
+// Só o que `creatorJourneyCoursePlacements` lê: a trilha de cada posto e as Maestrias.
+const curriculo = {
+  stages: [
+    { ...vazio, level: 'coder', base2dCourseId: A },
+    { ...vazio, level: 'hacker', powers: [{ mechanicId: 'm', courseIds: [A, B] }] },
+    { ...vazio, level: 'explorer', extras: [{ courseId: C }] },
+  ],
+  masteries: [],
+} as never
+
+const curso = (id: string, over: Record<string, unknown> = {}) => ({
+  id,
+  title: `Curso ${id.slice(-1)}`,
+  slug: `curso-${id.slice(-1)}`,
+  modality: 'recorded',
+  metadata: { studioUnlockBlocks: ['move_right', 'move_right', 'jump'] },
+  ...over,
+})
+
+function servico(over: Partial<Record<string, unknown>> = {}) {
+  return new ArquipelagoReadsService({
+    kidsJourney: {
+      get: mock(async () => ({ earned: { level: 'hacker' } })),
+      publishedCurriculum: mock(async () => ({ version: 5, curriculum: curriculo })),
+    },
+    adultJourney: {
+      get: mock(async () => ({
+        configured: true,
+        stages: [
+          { id: 'a', title: 'A', completed: true },
+          { id: 'b', title: 'B', completed: false },
+        ],
+      })),
+      policy: mock(async () => ({ version: 2, policy: { stages: [] } })),
+    },
+    unlocks: { read: mock(async () => ({ blocks: ['move_right'] })) },
+    courses: {
+      listPublishedCourses: mock(async () => [
+        curso(A),
+        curso(B),
+        curso(C, { modality: 'live' }),
+        curso(D, { metadata: {} }),
+      ]),
+    },
+    ...over,
+  } as never)
+}
+
+describe('jogador', () => {
+  test('Kids: posição do posto conquistado e os blocos (leitura sem congelar)', async () => {
+    const s = servico()
+    expect(await s.jogador({ userId: A, accountId: B, audience: 'kids' })).toEqual({
+      posicao: JOURNEY_LEVEL_SLUGS.indexOf('hacker') + 1,
+      total: 8,
+      blocos: ['move_right'],
+    })
+  })
+
+  test('adulto: posição da etapa (a primeira não concluída)', async () => {
+    const r = await servico().jogador({ userId: A, accountId: A, audience: 'adult' })
+    expect(r.posicao).toBe(2)
+    expect(r.total).toBe(3)
+  })
+})
+
+describe('currículo de blocos', () => {
+  test('só cursos gravados com blocos, sem repetir bloco, com o posto mais cedo', async () => {
+    const r = await servico().curriculoDeBlocos('kids')
+    expect(r.versao).toBe(5)
+    expect(r.cursos).toEqual([
+      {
+        courseId: A,
+        titulo: 'Curso a',
+        slug: 'curso-a',
+        posto: 'coder',
+        papel: 'base2d',
+        blocos: ['move_right', 'jump'],
+      },
+      {
+        courseId: B,
+        titulo: 'Curso b',
+        slug: 'curso-b',
+        posto: 'hacker',
+        papel: 'power',
+        blocos: ['move_right', 'jump'],
+      },
+    ])
+    expect(r.catalogo.length).toBeGreaterThan(50)
+    expect(r.catalogo[0]).toMatchObject({ type: expect.any(String), rotulo: expect.any(String) })
+  })
+
+  test('política sem currículo: cursos aparecem sem posto', async () => {
+    const r = await servico().curriculoDeBlocos('adult')
+    expect(r.cursos.map((c) => c.posto)).toEqual([null, null])
+  })
+
+  test('lugar no currículo: o posto mais cedo; curso fora do currículo não tem lugar', () => {
+    expect(lugarNoCurriculo(curriculo, A)).toEqual({ posto: 'coder', papel: 'base2d' })
+    expect(lugarNoCurriculo(curriculo, C)).toEqual({ posto: 'explorer', papel: 'extra' })
+    expect(lugarNoCurriculo(curriculo, D)).toBeNull()
+  })
+})

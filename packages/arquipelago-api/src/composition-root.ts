@@ -1,5 +1,7 @@
 import { createLogger, type Logger } from '@sistemazero/core/logging'
+import { LeiturasDosMembros } from './application/leituras-dos-membros'
 import { ConferenciaDoMapa } from './application/mapa-das-ilhas'
+import { ServicoDasCartas } from './application/servico-das-cartas'
 import { ServicoDoJogo } from './application/servico-do-jogo'
 import type { Env } from './infrastructure/config/env'
 import { MembrosHttp } from './infrastructure/members/membros-http'
@@ -19,19 +21,22 @@ export function createApplication(env: Env): Application {
     createLogger({ level: env.NODE_ENV === 'production' ? 'info' : 'debug' }),
   )
   const connection = createDbConnection(env.DATABASE_URL, { max: env.DATABASE_POOL_MAX })
-  const servico = new ServicoDoJogo(new DrizzleRepositorioDoJogo(connection.db), {
+  const politica = {
     modo: env.ARQUIPELAGO_MODO,
     publicos: new Set(env.ARQUIPELAGO_PUBLICOS),
     lista: new Set(env.ARQUIPELAGO_LISTA),
-  })
+  }
+  const servico = new ServicoDoJogo(new DrizzleRepositorioDoJogo(connection.db), politica)
   const membros =
     env.MEMBERS_URL && env.ARQUIPELAGO_MEMBERS_TOKEN
       ? new MembrosHttp({ url: env.MEMBERS_URL, token: env.ARQUIPELAGO_MEMBERS_TOKEN })
       : null
   const mapa = new ConferenciaDoMapa(membros, logger)
+  const cartas = new ServicoDasCartas(politica, new LeiturasDosMembros(membros))
   const app = createServer({
     logger,
     servico,
+    cartas,
     cliente: { dir: env.ARQUIPELAGO_CLIENTE_DIR, servirMapas: env.ARQUIPELAGO_SERVIR_MAPAS },
     tokenInterno: env.INTERNAL_API_TOKEN,
     maxRequestBodyBytes: env.MAX_REQUEST_BODY_BYTES,

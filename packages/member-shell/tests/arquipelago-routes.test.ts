@@ -35,9 +35,11 @@ describe('repasse do Arquipélago', () => {
     expect(r.status).toBe(409)
     expect(await r.json()).toEqual({ error: { code: 'X' }, atual: {} })
     await routes.arquipelagoAcesso.GET()
+    await routes.arquipelagoCartas.GET()
     expect(chamadas).toEqual([
       { caminho: '/arquipelago/salvamento', metodo: 'PUT', corpo: { revisaoBase: 1 } },
       { caminho: '/arquipelago/acesso', metodo: 'GET', corpo: undefined },
+      { caminho: '/arquipelago/cartas', metodo: 'GET', corpo: undefined },
     ])
   })
 

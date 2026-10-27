@@ -6,7 +6,8 @@ O jogo mora em pacotes próprios (`docs/arquipelago.md`); aqui só fica a porta 
 
 - **`routes/arquipelago.ts`** (`createArquipelagoRoutes({ gateway })`, espalhado no `createShell`):
   `arquipelagoAcesso` (GET), `arquipelagoSalvamento` (GET/PUT), `arquipelagoTempo` (POST) e
-  `arquipelagoLimiteDaFamilia` (GET/PUT, o app embrulha com o portão dos pais) repassam ao gateway
+  `arquipelagoLimiteDaFamilia` (GET/PUT, o app embrulha com o portão dos pais) e `arquipelagoCartas`
+  (GET, os cartões da rotina dos Lumis, 27/10/2026) repassam ao gateway
   `/arquipelago/*` com a sessão; corpo JSON de até 96 KB, sem regra de jogo (quem decide acesso,
   revisão, tempo e suporte somente leitura é o `arquipelago-api`). `arquipelagoCliente` (GET
   `/api/arquipelago/cliente/:arquivo`) repassa o cliente compilado na mesma origem, só nomes do
@@ -14,7 +15,7 @@ O jogo mora em pacotes próprios (`docs/arquipelago.md`); aqui só fica a porta 
 - **`components/arquipelago-host.tsx`**: `ArquipelagoHost` lê o manifesto, importa a entrada com
   `webpackIgnore`/`turbopackIgnore` e chama `montarArquipelago`; `criarPlataformaDoArquipelago`
   monta a `Plataforma` do contrato com as MESMAS rotas das telas (avatar, quarto, gamificação) e o
-  serviço só em `/acesso`, `/salvamento` e `/tempo`. Ferramentas: Pinta, Molda e Estúdio abrem de
+  serviço só em `/acesso`, `/salvamento`, `/tempo` e `/cartas`. Ferramentas: Pinta, Molda e Estúdio abrem de
   verdade por cima do jogo (`arquipelago-creation-dialog.tsx`), com o jogo pausado.
 - **`components/arquipelago-porta.tsx`** (27/10/2026, polimento da Fase 0): `PortaDoArquipelago`
   desenha os estados antes de o jogo montar (abrindo, ainda não abriu, erro) na noite do

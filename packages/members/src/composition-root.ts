@@ -12,6 +12,7 @@ import { GetAiUsageStatsService } from './application/ai-usage/get-ai-usage-stat
 import { StudioAiAccountService } from './application/ai-usage/studio-ai-account.service'
 import { StudioAiUsageService } from './application/ai-usage/studio-ai-usage.service'
 import { GetCourseAnalyticsService } from './application/analytics/get-course-analytics.service'
+import { ArquipelagoReadsService } from './application/arquipelago/arquipelago-reads.service'
 import { BuyAvatarPartService } from './application/avatar/buy-avatar-part.service'
 import { EquipAvatarService } from './application/avatar/equip-avatar.service'
 import { GetAvatarService } from './application/avatar/get-avatar.service'
@@ -1160,6 +1161,12 @@ export async function createApplication(env: Env): Promise<Application> {
     arquipelagoInternal: {
       kidsJourney: kidsJourneyQuery,
       adultJourney,
+      leituras: new ArquipelagoReadsService({
+        kidsJourney: kidsJourneyQuery,
+        adultJourney,
+        unlocks: getStudioUnlocks,
+        courses,
+      }),
       token: env.ARQUIPELAGO_MEMBERS_TOKEN,
     },
     liveMaterials,
