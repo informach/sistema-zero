@@ -125,6 +125,8 @@ function bench(
     assets,
     isDisposed: () => disposed.value,
     trackPending: (promise: Promise<void>) => pendings.push(promise),
+    // A img do happy-dom nunca carrega: aqui as texturas seguem o carregador padrão.
+    texturesByImg: false,
     ...extra,
   })
   return {
@@ -221,10 +223,45 @@ describe('withThreeModelsRuntime', () => {
     for (const runtime of [gameThreeDRuntime, world3DRuntime, gameKit3DRuntime]) {
       expect(runtime).not.toContain('__SZ_THREE_MODELS_RUNTIME__')
       expect(runtime.match(/function createSzModels\(/g)).toHaveLength(1)
-      expect(runtime.match(/GLTFLoader\(\)\.parse/g)).toHaveLength(1)
+      expect(runtime.match(/new mod\.GLTFLoader\(\)/g)).toHaveLength(1)
+      expect(runtime.match(/newGltfLoader\(mod, host\)\.parse/g)).toHaveLength(1)
       expect(runtime.match(/HDRLoader\(\)\.parse/g)).toHaveLength(1)
       expect(runtime.match(/function dataUrlToBuffer\(/g)).toHaveLength(1)
     }
+  })
+
+  it('as texturas de dentro do .glb vêm pela img, não pelo fetch(blob:) que a CSP recusa', () => {
+    const newGltfLoader = new Function(
+      'THREE',
+      'setTimeout',
+      'clearTimeout',
+      `${threeModelsRuntimeSource}\nreturn newGltfLoader;`,
+    )(RealTHREE, setTimeout, clearTimeout) as (
+      mod: unknown,
+      host?: Record<string, unknown>,
+    ) => { plugins: ((parser: unknown) => { name: string })[] }
+    class GLTFLoader {
+      plugins: ((parser: unknown) => { name: string })[] = []
+      register(plugin: (parser: unknown) => { name: string }) {
+        this.plugins.push(plugin)
+      }
+    }
+    const manager = new RealTHREE.LoadingManager()
+    const parser = {
+      textureLoader: new RealTHREE.ImageBitmapLoader(manager) as unknown,
+      options: { manager, crossOrigin: 'anonymous' },
+    }
+    const loader = newGltfLoader({ GLTFLoader })
+    expect(loader.plugins).toHaveLength(1)
+    expect(loader.plugins[0]!(parser).name).toBe('sz_textures_by_img')
+    expect(parser.textureLoader).toBeInstanceOf(RealTHREE.TextureLoader)
+    expect((parser.textureLoader as RealTHREE.TextureLoader).crossOrigin).toBe('anonymous')
+    // Onde o GLTFLoader já usa a img (Safari), nada muda.
+    const safari = { textureLoader: new RealTHREE.TextureLoader(), options: parser.options }
+    const before = safari.textureLoader
+    newGltfLoader({ GLTFLoader }).plugins[0]!(safari)
+    expect(safari.textureLoader).toBe(before)
+    expect(newGltfLoader({ GLTFLoader }, { texturesByImg: false }).plugins).toHaveLength(0)
   })
 
   it('falha cedo quando o marcador está ausente ou duplicado', () => {

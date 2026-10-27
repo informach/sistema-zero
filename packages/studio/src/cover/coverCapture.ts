@@ -101,7 +101,7 @@ async function runCapture(
 ): Promise<string | null> {
   if (opts.requireIsolatedPreview && !opts.originAdapter) return null
   const ctx = await extensionContext(project)
-  await preloadCourseModels(project.assets)
+  await preloadCourseModels(project.assets, project.files['script.js'])
   const parentOrigin = window.location.origin
   const warmupMs = opts.warmupMs ?? DEFAULT_WARMUP_MS
   const timeoutMs = opts.timeoutMs ?? warmupMs + 4_000

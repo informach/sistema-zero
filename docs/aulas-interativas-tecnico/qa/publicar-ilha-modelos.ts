@@ -1,7 +1,7 @@
 /**
  * Publica os modelos do Blender da Ilha do Farol na biblioteca de modelos dos cursos.
  *
- *   ILHA_OUT=<pasta dos .glb> bun docs/aulas-interativas-tecnico/qa/publicar-ilha-modelos.ts
+ *   ILHA_OUT=<pasta dos .glb> bun docs/aulas-interativas-tecnico/qa/publicar-ilha-modelos.ts [--remover-antigos]
  *
  * Para cada peça de `docs/design/ilha-do-farol-blender` (gerada com `build_all.py`): otimiza o GLB
  * (solda, deduplica e quantiza, como a arte do Molda), grava o módulo da biblioteca
@@ -108,10 +108,15 @@ if (import.meta.main) {
     total += r.bytes.length
     console.log(id.padEnd(24), `${(r.bytes.length / 1024) | 0} KB`, r.clips.join(', '))
   }
-  // Versões antigas destas peças saem da biblioteca (nenhum projeto novo aponta para elas).
-  const vivos = new Set(Object.values(modelos).map((m) => m.sha))
-  for (const m of Object.values(anteriores))
-    if (!vivos.has(m.sha)) rmSync(resolve(COURSE_MODELS_DIR, `m-${m.sha}.generated.ts`), { force: true })
+  // ⚠️ Uma versão antiga continua na biblioteca: o projeto que uma criança já salvou aponta para
+  // ela, e sem o arquivo o jogo abriria sem a peça. Só antes de o curso sair (nenhum projeto
+  // salvo ainda) `--remover-antigos` tira as versões substituídas.
+  if (process.argv.includes('--remover-antigos')) {
+    const vivos = new Set(Object.values(modelos).map((m) => m.sha))
+    for (const m of Object.values(anteriores))
+      if (!vivos.has(m.sha))
+        rmSync(resolve(COURSE_MODELS_DIR, `m-${m.sha}.generated.ts`), { force: true })
+  }
   writeFileSync(MODELOS_JSON, `${JSON.stringify(modelos, null, 2)}\n`)
   writeCourseModelRegistry()
   console.log(`TOTAL ${(total / 1024) | 0} KB em ${ILHA_PECAS.length} modelos`)

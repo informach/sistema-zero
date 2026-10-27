@@ -15,6 +15,9 @@ import { evaluateStudioSectionProject } from '../../../packages/studio/src/block
 import { isBlockTypeAllowed } from '../../../packages/studio/src/core/levels'
 import { sanitizeProjectAssets } from '../../../packages/studio/src/core/projectAssets'
 import { SZIRInputSchema } from '../../../packages/studio/src/ir/schema'
+import { ILHA_SCENE_GLB } from '../../../packages/studio/src/arte/ilha-farol-scene.generated'
+import { isCourseModelLibId, knownCourseModels } from '../../../packages/studio/src/core/courseModels'
+import { readGlbSummary } from '../../../packages/studio/src/core/glbSummary'
 import { ILHA_ASSETS, ILHA_MODELS } from './ilha-do-farol-assets'
 import { ilhaChecks } from './ilha-do-farol-criterios'
 import { ILHA_PARTES, montarProjetoIlha } from './ilha-do-farol-projeto'
@@ -61,8 +64,8 @@ describe('A Ilha do Farol', () => {
       const parsed = SZIRInputSchema.safeParse(p.ir)
       expect(parsed.success, `${part}: ${parsed.success ? '' : parsed.error.message}`).toBe(true)
       expect(sanitizeProjectAssets(p.assets)).toHaveLength(ILHA_ASSETS.length)
-      expect(p.files['script.js']).toContain(JSON.stringify(ILHA_MODELS.coqueiroFrente.asset.name))
-      expect(p.files['script.js']).toContain(JSON.stringify(ILHA_MODELS.coqueiroTras.asset.name))
+      for (const model of Object.values(ILHA_MODELS))
+        expect(p.files['script.js']).toContain(JSON.stringify(model.asset.name))
       const source = JSON.stringify(p.blocksState)
       expect(source).not.toMatch(/sz_(html|css|canvas|js_raw)/)
       expect(p.ir!.html).toEqual([])
@@ -95,5 +98,30 @@ describe('A Ilha do Farol', () => {
         collect,
       )[0]?.passed,
     ).toBe(false)
+  })
+  test('o projeto leva só a referência dos modelos, com todas as variações da personalização', () => {
+    const p = montarProjetoIlha('personalizar')
+    expect(ILHA_ASSETS).toHaveLength(24)
+    for (const asset of p.assets) {
+      expect(asset.kind).toBe('model3d')
+      expect(isCourseModelLibId(asset.libId)).toBe(true)
+      expect(knownCourseModels()).toContain(asset.libId!.slice('modelo-curso:'.length))
+      expect(asset.dataUrl.length).toBeLessThan(600)
+    }
+    // Os nomes da Chave do Farol em 2D, para a criança reconhecer as opções.
+    expect(p.assets.map((a) => a.name)).toEqual(
+      expect.arrayContaining(['aventureiro', 'pirata', 'barco-pirata', 'chave-de-estrela', 'farol-de-pedra', 'noite-na-ilha']),
+    )
+    // O farol tem as duas animações; o personagem, parado e andando.
+    expect(readGlbSummary(ILHA_MODELS.farol.asset.dataUrl)?.clips).toEqual(['acender', 'aceso'])
+    expect(readGlbSummary(ILHA_MODELS.personagem.asset.dataUrl)?.clips).toEqual(['andando', 'parado'])
+    expect(JSON.stringify(p).length).toBeLessThan(60_000)
+  })
+  test('a cena das experiências tem os nós que a experiência move e esconde', () => {
+    const bytes = Buffer.from(ILHA_SCENE_GLB.split(',')[1]!, 'base64')
+    const json = JSON.parse(bytes.subarray(20, 20 + bytes.readUInt32LE(12)).toString('utf8'))
+    const roots = json.scenes[0].nodes.map((i: number) => json.nodes[i].name)
+    expect(roots).toEqual(expect.arrayContaining(['Chave', 'Aventureiro', 'Pedras', 'Bancada']))
+    expect(json.animations ?? []).toEqual([])
   })
 })

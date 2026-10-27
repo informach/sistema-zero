@@ -60,11 +60,20 @@ Use o teclado para jogar: setas ou WASD. R recomeça.
 ### Acenda o farol com a chave
 
 1. No encontro com portas, deixe à vista o então do Se temChave.
-2. Jogo 3D → Objetos → Aparência: encaixe Esconder o objeto farol.
-3. No mesmo então, encaixe Mostrar o objeto farolAceso.
-4. Depois de Mostrar farolAceso, encaixe Alterar variável, de Programação → Variáveis. Escolha ganhou. Encaixe verdadeiro ou falso, de Programação → Lógica e Se, e escolha verdadeiro.
+2. Jogo 3D → Objetos → 🎬 Animação do modelo: encaixe Tocar a animação dentro do então.
+3. No primeiro espaço, escolha acender. No objeto, escolha farol. No último, escolha uma vez.
+4. Depois dele, encaixe Alterar variável, de Programação → Variáveis. Escolha ganhou. Encaixe verdadeiro ou falso, de Programação → Lógica e Se, e escolha verdadeiro.
 5. Ainda no então, encaixe mais um Alterar variável e escolha aviso. No valor, encaixe Texto, de Programação → Valores, e escreva Você acendeu o farol! O barco pode chegar.
-6. Teste sem chave; depois recolha e volte ao farol. Confira a luz e a chegada do barco.
+6. Teste sem chave; depois recolha e volte ao farol. Confira a luz acendendo, o feixe girando e a chegada do barco.
+
+### Deixe o jogo com a sua cara
+
+1. Em Ao iniciar, deixe à vista Criar o objeto personagem com o modelo aventureiro. Clique em aventureiro e escolha outro personagem da lista.
+2. Faça o mesmo em Criar o objeto barco, chave e farol: clique no nome do modelo e escolha outro.
+3. Em Criar o objeto cenario, troque praia-tropical por outro cenário: costa-rochosa, ilha-nevada ou noite-na-ilha.
+4. Troque só o modelo. Deixe o nome do objeto, a cena e o tamanho como estão.
+5. Teste a combinação: vá ao farol sem a chave, depois busque a chave e volte. Confira a luz e o barco.
+6. Verifique o projeto e aguarde Salvo.
 
 ### Escolha seu esconderijo e teste de verdade
 

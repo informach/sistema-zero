@@ -138,6 +138,10 @@ def _farol_animado(pid, corpo, zl0, zl1):
         o.scale = z
     vidro.scale = (1, 1, QUASE_ZERO)
     feixe.rotation_euler = (0, 0, 0)
+    # Peças de efeito: o jogo as deixa fora da área de toque (o feixe girando faria o
+    # encontro com o farol começar e acabar sozinho). Vai nos extras do nó no GLB.
+    for o in (feixe, vidro, lamp):
+        o['szSemCaixa'] = True
     caixa_da_categoria([farol, feixe, vidro, lamp], farol, 'farol', pid)
     exportar_animado(pid, [farol, feixe, vidro, lamp])
 

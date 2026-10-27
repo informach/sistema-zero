@@ -33,6 +33,25 @@ const THREE_MODELS_TEMPLATE = `
 
 /*__SZ_DATA_URL_RUNTIME__*/
 
+  // As imagens de DENTRO do .glb: no Chrome o GLTFLoader as lê com fetch(blob:), que a CSP
+  // do preview (connect-src 'none') recusa, e o modelo sai sem textura, em silêncio. Pela
+  // img (o caminho que o próprio GLTFLoader usa no Safari) o img-src blob: deixa.
+  // host.texturesByImg === false existe só para o teste (a img do happy-dom nunca carrega).
+  function newGltfLoader(mod, host) {
+    var loader = new mod.GLTFLoader();
+    if (THREE.TextureLoader && loader.register && !(host && host.texturesByImg === false)) {
+      loader.register(function (parser) {
+        if (parser.textureLoader && parser.textureLoader.isImageBitmapLoader) {
+          var images = new THREE.TextureLoader(parser.options.manager);
+          images.setCrossOrigin(parser.options.crossOrigin);
+          parser.textureLoader = images;
+        }
+        return { name: 'sz_textures_by_img' };
+      });
+    }
+    return loader;
+  }
+
   function createSzModels(host) {
     var assets = host.assets || {};
     var note = host.fallbackNote || '';
@@ -581,7 +600,7 @@ const THREE_MODELS_TEMPLATE = `
         if (isGone()) { flush(null); return; }
         gltfMod = mod;
         try {
-          new mod.GLTFLoader().parse(buf, '', function (gltf) {
+          newGltfLoader(mod, host).parse(buf, '', function (gltf) {
             var install = function () {
               // O parse não cancela: uma conclusão tardia é dona destes recursos e os solta.
               if (settled || isGone()) {

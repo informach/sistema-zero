@@ -7,6 +7,12 @@
     "alvoDeEdicaoSegundos": 3,
     "duracaoGarantidaPelaTag": false
   },
-  "clipes": ["video-sem-chave", "video-decisao", "video-personalizar", "video-fecho"],
+  "clipes": [
+    "video-sem-chave",
+    "video-decisao",
+    "video-aparencia",
+    "video-personalizar",
+    "video-fecho"
+  ],
   "intervencoes": []
 }
