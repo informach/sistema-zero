@@ -9,8 +9,9 @@ reintegração): a área em que o personagem anda (x de -11 a 0,6 e z de -5 a 5,
 continua dentro da grama e da areia. O mar, o terreno, a ponte e as moitas ficam na origem; os
 coqueiros e as pedras têm o referencial próprio, com a base no chão.
 
-As pedras escondem a chave nas duas posições do curso, (-2, 1, -3) e (-3, 1, -2), vistas da
-câmera do jogo (0, 12, 21): o `verificar_pedra.py` confere isso a cada mudança.
+O coqueiro e as pedras seguem a FORMA das referências que a autora fez no Molda (`referencias/`);
+o acabamento é daqui. As pedras escondem a chave em (-2, 1, -3), vista da câmera do jogo
+(0, 12, 21): o `verificar_pedra.py` confere isso a cada mudança.
 """
 from lib_ilha import *
 
@@ -100,38 +101,101 @@ def ponte():
     export('ponte', p)
 
 
-def _coqueiro(pid, seed, lean, yaw0):
-    """Coqueiro do desenho: tronco liso e curvo afinando para cima, copa de folhas largas e lisas
-    em três verdes caindo em volta, e cocos escuros embaixo da copa."""
+def _coqueiro(pid, escala, giro):
+    """Coqueiro na forma da referência da autora (`referencias/coqueiro.glb`, feita no Molda):
+    tronco fino e alto, copa larga de folhas pontudas em dois andares e cocos embaixo da copa.
+
+    O acabamento é daqui: anéis no tronco, cada folha refeita com nervura dobrada, arco até a
+    ponta e as duas metades em tons diferentes (o jeito low-poly da referência, com luz), e três
+    cocos lapidados. A posição, o tamanho e a inclinação de cada folha são os da referência."""
     reset()
-    rnd = random.Random(seed)
+    ref = importar_referencia('coqueiro')
+    tronco = next(o for o in ref if o.name.startswith('Tronco'))
+    folhas = [o for o in ref if o.name.startswith('Plano')]
+    cocos = [o for o in ref if o.name.startswith('Coco')]
+    # A base do tronco vai para a origem (é onde o curso põe o coqueiro).
+    vs = [v.co for v in tronco.data.vertices]
+    zmin = min(v.z for v in vs)
+    base = [v for v in vs if v.z < zmin + 0.05]
+    bx, by = sum(v.x for v in base) / len(base), sum(v.y for v in base) / len(base)
+    for o in ref:
+        o.data.transform(Matrix.Translation((-bx, -by, -zmin)))
     p = []
-    H = 2.15
-    N = 12
-    pts = [(lean[0] * (t / N) ** 1.8, lean[1] * (t / N) ** 1.8, H * t / N) for t in range(N + 1)]
-    p.append(tube(pts, [0.16 - 0.065 * t / N for t in range(N + 1)], 'troncoLiso', seg=12))
-    top = Vector(pts[-1])
-    verdes = ['folhaEscura', 'folha', 'folhaClara']
-    for k in range(7):
-        yaw = yaw0 + 2 * math.pi * k / 7 + rnd.uniform(-0.12, 0.12)
-        L = rnd.uniform(1.3, 1.55)
-        p.append(leaf((top.x, top.y, top.z + 0.05), yaw, L, 0.3, verdes[k % 3],
-                      lift=0.5, droop=1.1 + rnd.uniform(-0.1, 0.15), fold=0.3, n=16))
-    for k in range(3):  # folhas novas, mais curtas e para cima
-        yaw = yaw0 + 2 * math.pi * (k + 0.5) / 3
-        p.append(leaf((top.x, top.y, top.z + 0.08), yaw, 0.75, 0.26, 'folhaClara', lift=0.6, droop=0.55, fold=0.3))
-    for k in range(3):  # cocos grandes logo abaixo da copa, à vista como no desenho
-        a = 2 * math.pi * k / 3 + 0.4 + yaw0
-        p.append(sphere(0.15, (top.x + 0.17 * math.cos(a), top.y + 0.17 * math.sin(a), top.z - 0.14), 'coco', subdiv=2))
+    # Tronco: a malha da referência, com anéis em dois tons a cada 0,26.
+    tronco.data.materials.clear()
+    tronco.data.materials.append(mat('troncoRef'))
+    tronco.data.materials.append(mat('troncoRefAnel'))
+    for f in tronco.data.polygons:
+        f.material_index = int(f.center.z / 0.26) % 2
+    p.append(tronco)
+    # Folhas: o eixo comprido de cada plano da referência vai do miolo da copa até a ponta.
+    topo = max((v.co for v in tronco.data.vertices), key=lambda v: v.z)
+    for k, o in enumerate(folhas):
+        pts = [v.co.copy() for v in o.data.vertices]
+        # As duas pontas do losango: os vértices mais distantes entre si.
+        a, b = max(((u, w) for u in pts for w in pts), key=lambda uw: (uw[0] - uw[1]).length)
+        if (a - topo).length > (b - topo).length:
+            a, b = b, a
+        # Largura e "cima" da folha: o vértice mais longe do eixo dá a largura e o lado.
+        eixo = (b - a).normalized()
+        lado = max(pts, key=lambda v: ((v - a) - eixo * (v - a).dot(eixo)).length)
+        meia = ((lado - a) - eixo * (lado - a).dot(eixo))
+        largura = meia.length
+        lado_dir = meia.normalized()
+        cima = eixo.cross(lado_dir).normalized()
+        if cima.z < 0:
+            cima = -cima
+        p += _folha_ref(a, b, lado_dir, cima, largura, k)
+        bpy.data.objects.remove(o)
+    p.append(sphere(0.13, tuple(topo + Vector((0, 0, 0.05))), 'troncoRefAnel', subdiv=1, smooth_it=False))
+    for c in cocos:
+        bpy.data.objects.remove(c)
+    for k in range(3):
+        a = 2 * math.pi * k / 3 + 0.5
+        p.append(sphere(0.15, (topo.x + 0.2 * math.cos(a), topo.y + 0.2 * math.sin(a), topo.z - 0.22),
+                        'cocoRef', subdiv=1, smooth_it=False))
+    place(p, rot_z=giro, scale=escala)
     export(pid, p)
 
 
+def _folha_ref(a, b, lado, cima, largura, k, n=6):
+    """Folha low-poly de A (junto do tronco) a B (ponta): losango comprido com a nervura funda,
+    arqueando para baixo até a ponta. Metade de cada lado num tom (a luz bate num lado só)."""
+    L = (b - a).length
+    eixo = (b - a).normalized()
+    bm_e, bm_d = bmesh.new(), bmesh.new()
+    nerv, borda_e, borda_d = [], [], []
+    for i in range(n + 1):
+        t = i / n
+        # Losango largo como o da referência: mais largo a 40% e afinando até a ponta.
+        w = largura * (0.2 + 0.8 * t / 0.4 if t < 0.4 else ((1 - t) / 0.6) ** 0.8)
+        arco = -0.22 * L * t * t + 0.06 * L * math.sin(math.pi * t)
+        c = a + eixo * L * t + cima * arco
+        nerv.append(c - cima * 0.025 * (1 - t))
+        borda_e.append(c + lado * w + cima * 0.05 * w)
+        borda_d.append(c - lado * w + cima * 0.05 * w)
+    for bm, borda in ((bm_e, borda_e), (bm_d, borda_d)):
+        vn = [bm.verts.new(v) for v in nerv]
+        vb = [bm.verts.new(v) for v in borda]
+        for i in range(n):
+            bm.faces.new((vn[i], vn[i + 1], vb[i + 1], vb[i]))
+        bmesh.ops.remove_doubles(bm, verts=bm.verts, dist=1e-5)
+    tons = [('folhaRefClara', 'folhaRef'), ('folhaRef', 'folhaRefEscura')][k % 2]
+    out = []
+    for bm, m in ((bm_e, tons[0]), (bm_d, tons[1])):
+        o = lib_q._obj('folha', bm, m)
+        lib_q.flat(o)
+        out.append(o)
+    return out
+
+
 def coqueiro_tras():
-    _coqueiro('coqueiro-tras', 51, (0.35, 0.15), 0.2)
+    # O projeto do Molda de trás é o mesmo coqueiro na escala 1,2 (o da frente é 1,15).
+    _coqueiro('coqueiro-tras', 1.2 / 1.15, R(40))
 
 
 def coqueiro_frente():
-    _coqueiro('coqueiro-frente', 52, (0.3, -0.2), 0.6)
+    _coqueiro('coqueiro-frente', 1.0, 0.0)
 
 
 def _moita(x, z, seed, s=1.0):
@@ -159,22 +223,33 @@ def vegetacao():
 
 
 def pedras():
+    """Pedras na forma da referência da autora (`referencias/pedras.glb`, feita no Molda): o
+    bloco grande azul-acinzentado com a cópia menor na frente e as duas colunas azul-marinho
+    atrás, à esquerda. O acabamento é daqui: quinas chanfradas que pegam luz, o tampo mais claro
+    e as faces dos lados em dois tons, como pedra lapidada, e três pedrinhas no pé."""
     reset()
+    ref = importar_referencia('pedras')
+    rnd = random.Random(71)
     p = []
-    # Pedra grande (alta o bastante para esconder a chave atrás dela) e a menor à esquerda.
-    p.append(rock((0.2, -0.04, 0), (2.6, 2.0, 2.85), 'pedra', seed=71, rough=0.16, flat_top=0.2, top_m='pedraClara'))
-    p.append(rock((-1.05, -0.3, 0), (1.5, 1.25, 2.1), 'pedra', seed=72, rough=0.18, flat_top=0.15, top_m='pedraClara'))
-    for x, y, s, sd in ((1.25, -0.85, 0.5, 73), (-0.3, -0.95, 0.38, 74), (1.55, 0.35, 0.42, 75)):
-        p.append(rock((x, y, 0), (s * 1.2, s, s * 0.75), 'pedraEscura', seed=sd, subdiv=1, rough=0.2, top_m='pedra'))
-    # Musgo no alto das pedras (liga as pedras à grama da ilha), pousado no topo de verdade: um raio
-    # de cima para baixo acha a altura da pedra em cada ponto.
-    bpy.context.view_layer.update()
-    deps = bpy.context.evaluated_depsgraph_get()
-    for (x, y), rr in (((0.0, -0.1), (0.55, 0.42, 0.09)), ((0.75, 0.3), (0.35, 0.3, 0.07)),
-                       ((-1.05, -0.3), (0.32, 0.27, 0.06))):
-        hit, loc, *_ = bpy.context.scene.ray_cast(deps, Vector((x, y, 10)), Vector((0, 0, -1)))
-        if hit:
-            p.append(ellipsoid((x, y, loc.z - rr[2] * 0.35), rr, 'musgo', seg=14, ring=8))
+    for o in ref:
+        marinho = 'menor' in o.name
+        base, clara, topo = (('pedraMarinho', 'pedraMarinhoClara', 'pedraMarinhoTopo') if marinho
+                             else ('pedraAzul', 'pedraAzulClara', 'pedraAzulTopo'))
+        bevel_mod(o, 0.035, segs=1, angle=25)
+        o.data.materials.clear()
+        for m in (base, clara, topo):
+            o.data.materials.append(mat(m))
+        for f in o.data.polygons:
+            if f.normal.z > 0.7:
+                f.material_index = 2
+            elif f.normal.z > -0.5:
+                f.material_index = 1 if rnd.random() < 0.4 else 0
+        lib_q.flat(o)
+        p.append(o)
+    for x, y, s, sd, m in ((0.15, -1.85, 0.36, 73, 'pedraAzul'), (-1.95, -1.15, 0.3, 74, 'pedraMarinho'),
+                           (1.95, -1.2, 0.26, 75, 'pedraAzul')):
+        p.append(rock((x, y, 0), (s * 1.3, s, s * 0.7), m, seed=sd, subdiv=1, rough=0.2,
+                      top_m=m.replace('pedraAzul', 'pedraAzulTopo').replace('pedraMarinho', 'pedraMarinhoTopo')))
     export('pedras', p)
 
 

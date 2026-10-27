@@ -22,6 +22,9 @@ import lib_q  # noqa: E402
 from lib_q import *  # noqa: E402,F401,F403  (box, cushion, cyl, sphere, uvball, cone, torus, tube, prism, join, export…)
 from lib_q import _obj  # noqa: E402
 
+# O `import *` acima traz o HERE do quarto; esta é a pasta da ilha.
+ILHA_DIR = HERE = os.path.dirname(os.path.abspath(__file__))
+
 R = math.radians
 
 # (cor, rugosidade, emissão, força). Os nomes descrevem o papel; as cores saem dos SVGs.
@@ -73,6 +76,19 @@ lib_q.PALETTE.update({
     'madeiraClara': ('#95633d', 0.85, None, 0),
     'madeiraEscura': ('#61432f', 0.85, None, 0),
     'corda': ('#d8b57a', 0.95, None, 0),
+    # pedras e coqueiro das referências do Molda (cores de lá, com um tom de luz e um de sombra)
+    'pedraAzul': ('#566c86', 0.9, None, 0),
+    'pedraAzulClara': ('#647b96', 0.9, None, 0),
+    'pedraAzulTopo': ('#7c93ae', 0.85, None, 0),
+    'pedraMarinho': ('#333c57', 0.9, None, 0),
+    'pedraMarinhoClara': ('#3d4766', 0.9, None, 0),
+    'pedraMarinhoTopo': ('#4f5b7d', 0.85, None, 0),
+    'troncoRef': ('#a67c47', 0.85, None, 0),
+    'troncoRefAnel': ('#8f6a3b', 0.85, None, 0),
+    'folhaRef': ('#3f9441', 0.8, None, 0),
+    'folhaRefClara': ('#4fae4c', 0.8, None, 0),
+    'folhaRefEscura': ('#337d36', 0.8, None, 0),
+    'cocoRef': ('#775e37', 0.7, None, 0),
     'pedra': ('#8d95a8', 0.85, None, 0),
     'pedraClara': ('#a9b0c0', 0.85, None, 0),
     'pedraEscura': ('#6c7488', 0.85, None, 0),
@@ -293,3 +309,33 @@ def lock(base, direction, length, r, m, bend=(0, 0, 0), n=5, seg=7):
         pts.append(tuple(Vector(base) + d * length * t + b * t * t))
         radii.append(max(0.004, r * (1 - t) ** 0.9 * (0.75 + 0.25 * math.sin(math.pi * min(1, t * 2.2)))))
     return tube(pts, radii, m, seg=seg)
+
+
+def importar_referencia(nome):
+    """Lê `referencias/<nome>.glb` (o projeto do Molda devolvido pela autora) e devolve as malhas
+    com a transformação do mundo já aplicada, sem os grupos. É a FORMA que a peça segue."""
+    antes = set(bpy.data.objects)
+    bpy.ops.import_scene.gltf(filepath=os.path.join(ILHA_DIR, 'referencias', f'{nome}.glb'))
+    novos = [o for o in bpy.data.objects if o not in antes]
+    bpy.context.view_layer.update()
+    malhas = []
+    for o in novos:
+        if o.type != 'MESH':
+            continue
+        M = o.matrix_world.copy()
+        o.parent = None
+        o.matrix_world = Matrix.Identity(4)
+        o.data.transform(M)
+        # O Molda exporta cada triângulo com vértices próprios: soldar devolve as quinas (sem
+        # elas o chanfro não acha aresta nenhuma) e junta os triângulos da mesma face.
+        bm = bmesh.new()
+        bm.from_mesh(o.data)
+        bmesh.ops.remove_doubles(bm, verts=bm.verts, dist=1e-4)
+        bmesh.ops.dissolve_limit(bm, angle_limit=R(1), verts=bm.verts, edges=bm.edges)
+        bm.to_mesh(o.data)
+        bm.free()
+        malhas.append(o)
+    for o in novos:
+        if o.type != 'MESH':
+            bpy.data.objects.remove(o)
+    return malhas

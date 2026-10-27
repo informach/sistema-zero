@@ -48,7 +48,8 @@ ILHA_OUT=./out /tmp/blender-venv/bin/python verificar_pedra.py         # a pedra
 | `cenario.py` | mar, terreno, ponte, coqueiros, moitas, pedras e a bancada das experiências |
 | `farol.py` | farol listrado, apagado e aceso |
 | `objetos.py` | chave, veleiro e aventureiro |
-| `verificar_pedra.py` | lança raios da câmera do jogo até cada vértice da chave e falha se algum ficar à vista |
+| `verificar_pedra.py` | lança raios da câmera do jogo até cada vértice da chave e falha se algum ficar à vista no esconderijo |
+| `referencias/` | coqueiro e pedras que a autora refez no Molda (27/10/2026): a FORMA dessas peças vem daqui, o acabamento é dos scripts |
 
 ## O contrato com o jogo
 
@@ -60,8 +61,13 @@ ILHA_OUT=./out /tmp/blender-venv/bin/python verificar_pedra.py         # a pedra
   porta abre quando as duas caixas se tocam).
 - O jogo não gira o personagem ao andar: ele fica de frente para a câmera, virado 25° para o farol,
   como no desenho de perfil.
-- As pedras precisam esconder a chave nas duas posições do curso. Mexeu nelas, rode
+- As pedras precisam esconder a chave em (-2, 1, -3), o esconderijo da aula 1. Em (-3, 1, -2),
+  a posição das partes seguintes, a chave já fica em parte à vista com as pedras do Molda, de
+  propósito ("a pedra pode esconder a chave dependendo de onde a gente olha"). Mexeu nelas, rode
   `verificar_pedra.py`.
+- O coqueiro e as pedras seguem as referências da autora (`referencias/*.glb`): o script lê o
+  GLB, solda os vértices (o Molda exporta cada triângulo solto) e refaz o acabamento por cima.
+  Uma referência nova é só trocar o arquivo e gerar de novo.
 
 ## Pendências para a integração (depois da aprovação)
 
