@@ -21,7 +21,7 @@ import {
 } from '../../../scene/pieceAppearance'
 import { RequiresTool } from '../../toolAccess'
 import { swatchClass } from '../../ui/interaction'
-import { scenePaletteSwatches } from './ScenePaintPalette'
+import { scenePaletteSwatches } from './ScenePaintColorBar'
 import type { useSceneWorkshop } from './useSceneWorkshop'
 
 /** A amostra de cada acabamento, na cor da peça: fosco é chapado, brilhante tem o reflexo, metal

@@ -82,7 +82,6 @@ export interface SceneCanvasSlots {
   toggles?: HTMLElement | null
   /** "Vista" e "Enquadrar seleção". */
   view?: HTMLElement | null
-  paintScope?: HTMLElement | null
   context?: HTMLElement | null
 }
 
@@ -124,7 +123,6 @@ interface Props {
   onPaintGridChange?(visible: boolean): void
   onOrganizePaintMap?(): void
   canOrganizePaintMap?: boolean
-  onPaintScopeChange?(mode: 'all' | 'selected'): void
   paint?: ScenePaintActions
   flipbook: SceneFlipbookPlayer
   animation?: SceneAnimationPlayer
@@ -206,7 +204,6 @@ function SceneCanvasAttempt({
   onPaintGridChange,
   onOrganizePaintMap,
   canOrganizePaintMap = false,
-  onPaintScopeChange,
   paintMirror = false,
   detailPanel = null,
   onEndPaint,
@@ -500,20 +497,23 @@ function SceneCanvasAttempt({
     setBrushMode('off')
     setTool(name)
   }
-  const toolTile = (name: SceneCanvasTool) => (
-    <SceneTile
-      key={name}
-      icon={TOOL_ICONS[name]}
-      label={toolLabel(name)}
-      keyHint={sceneCommand(`tool.${name}`).shortcut?.display}
-      aria-keyshortcuts={sceneCommand(`tool.${name}`).shortcut?.display}
-      pressed={
-        !skinPaintSettings && tool !== 'pivot' && tool !== 'cut' && !look && activeTool === name
-      }
-      disabled={toolDisabled(name)}
-      onClick={() => chooseTool(name)}
-    />
-  )
+  const toolTile = (name: SceneCanvasTool) => {
+    const key = sceneCommand(`tool.${name}`).shortcut?.display
+    return (
+      <SceneTile
+        key={name}
+        icon={TOOL_ICONS[name]}
+        label={toolLabel(name)}
+        title={key ? `${toolLabel(name)} (${key})` : undefined}
+        aria-keyshortcuts={key}
+        pressed={
+          !skinPaintSettings && tool !== 'pivot' && tool !== 'cut' && !look && activeTool === name
+        }
+        disabled={toolDisabled(name)}
+        onClick={() => chooseTool(name)}
+      />
+    )
+  }
   const toolButton = (name: SceneCanvasTool) => (
     <Button
       key={name}
@@ -1024,30 +1024,6 @@ function SceneCanvasAttempt({
     </>
   )
 
-  const paintScopeControl = (
-    <fieldset
-      className="mld-paint-scope flex items-center gap-1 text-xs font-bold"
-      aria-label="Pintar em"
-    >
-      <span className="px-2 text-mld-muted">Pintar em:</span>
-      <Button
-        variant="ghost"
-        className="px-3 text-xs"
-        aria-pressed={paintScope?.mode === 'all'}
-        onClick={() => onPaintScopeChange?.('all')}
-      >
-        Todas as peças
-      </Button>
-      <Button
-        variant="ghost"
-        className="px-3 text-xs"
-        aria-pressed={paintScope?.mode === 'selected'}
-        onClick={() => onPaintScopeChange?.('selected')}
-      >
-        Só a escolhida
-      </Button>
-    </fieldset>
-  )
   const poseCard = !shell && mode === 'animation' && animationPose && (
     <SceneAnimationPoseControls gesture={animationPose} enabled={canAnimate} />
   )
@@ -1081,13 +1057,6 @@ function SceneCanvasAttempt({
         event.preventDefault()
       }}
     >
-      {mode === 'paint' &&
-        onPaintScopeChange &&
-        place(slots?.paintScope, paintScopeControl, () => (
-          <div className="mld-float absolute top-3 right-3 z-20 max-w-[calc(100%-1.5rem)]">
-            {paintScopeControl}
-          </div>
-        ))}
       {/* Sem o lugar pedido, o `inline` não desenha nada: o grupo sai no palco, mais abaixo. */}
       {showTools && place(slots?.tools, mainTools.map(toolTile), () => null)}
       {showTools &&

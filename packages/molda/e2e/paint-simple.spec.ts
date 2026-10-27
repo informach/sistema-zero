@@ -187,7 +187,7 @@ for (const dark of [false, true]) {
     await page.getByRole('button', { name: COPY.editor.redo, exact: true }).click()
     expect((await savedProject(page)).images).toEqual(painted.images)
 
-    await page.locator('summary').getByText(paintCopy.customColor, { exact: true }).click()
+    await page.locator('summary').filter({ hasText: paintCopy.customColor }).click()
     await expect(page.getByLabel('Cor hexadecimal')).toBeVisible()
     await page.getByLabel('Cor hexadecimal').fill('#123456')
     await page.getByLabel('Cor hexadecimal').blur()
@@ -196,7 +196,7 @@ for (const dark of [false, true]) {
       page.getByRole('button', { name: paintCopy.saveColor, exact: true }),
     ).toBeDisabled()
     expect((await savedProject(page)).images).toEqual(painted.images)
-    await page.locator('summary').getByText(paintCopy.customColor, { exact: true }).click()
+    await page.locator('summary').filter({ hasText: paintCopy.customColor }).click()
 
     await page.getByRole('button', { name: 'Escolher caixa', exact: true }).click()
     await page.getByRole('button', { name: 'Folha de pintura', exact: true }).click()
@@ -218,7 +218,7 @@ test('ready colors fit a narrow screen and advanced workspaces remain optional',
     name: COPY.a11y.colorSwatch(2, resolvePaletteColors(source)[2]!),
     exact: true,
   })
-  await expect(page.getByText(paintCopy.chooseColor, { exact: true })).toBeVisible()
+  await expect(page.getByRole('region', { name: paintCopy.colors, exact: true })).toBeVisible()
   await red.click()
   await expect(red).toHaveAttribute('aria-pressed', 'true')
   await expect(page.getByLabel('Cor hexadecimal')).toBeHidden()
@@ -243,7 +243,7 @@ test('a bent piece changes its base color directly and offers one visible prepar
   const bounds = (await stage.boundingBox())!
   const point = { x: bounds.x + bounds.width / 2 - 20, y: bounds.y + bounds.height / 2 + 20 }
   await page.getByRole('button', { name: 'Balde', exact: true }).click()
-  await page.getByRole('radio', { name: 'Cor de fundo da peça', exact: true }).check()
+  await page.getByRole('button', { name: paintCopy.fillScopes.base, exact: true }).click()
   await page
     .getByRole('button', {
       name: COPY.a11y.colorSwatch(2, resolvePaletteColors(source)[2]!),
@@ -270,8 +270,8 @@ test('a bent piece changes its base color directly and offers one visible prepar
     await page.mouse.up()
   }
   await stroke()
-  const colors = page.getByRole('region', { name: paintCopy.colors, exact: true })
-  const prepare = colors.getByRole('button', { name: paintCopy.split, exact: true })
+  const card = page.getByRole('region', { name: paintCopy.pieceCard, exact: true })
+  const prepare = card.getByRole('button', { name: paintCopy.split, exact: true })
   await expect(prepare).toBeVisible()
   await expect(page.getByRole('alert')).toHaveCount(0)
   await page.screenshot({ path: '.cache/pintura-preparar-peca.png' })
@@ -407,11 +407,36 @@ test('short paint inspector keeps texture and gradient available while custom co
   await create.getByText('Tamanho e cores da textura').click()
   await create.getByRole('combobox', { name: COPY.scene.imageEncoding }).selectOption('rgba')
   await create.getByRole('button', { name: COPY.scene.imageCreateApply }).click()
-  await page.getByText(paintCopy.customColor, { exact: true }).click()
-  const details = page.getByRole('region', { name: 'Cores e ajustes de pintura' })
+  await page.locator('summary').filter({ hasText: paintCopy.customColor }).click()
+  const details = page.getByRole('region', { name: 'Peça e ajustes de pintura' })
   await expect(page.getByRole('button', { name: COPY.scene.paintCanvas })).toBeVisible()
   await expect(
     details.getByRole('button', { name: COPY.scene.paintShapeTools.gradient, exact: true }),
   ).toBeInViewport()
   await page.screenshot({ path: '.cache/painel-pintar-altura-640.png' })
 })
+
+for (const width of [1440, 1024, 768]) {
+  test(`the color bar sits under the stage and the toast clears the hint (${width}px)`, async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width, height: width === 768 ? 1024 : 900 })
+    await openPainting(page)
+    const bar = page.getByRole('region', { name: paintCopy.colors, exact: true })
+    await expect(bar).toBeVisible()
+    const stage = (await page.locator(`canvas[aria-label="${COPY.scene.viewport}"]`).boundingBox())!
+    const strip = (await bar.boundingBox())!
+    // Encaixada, não flutuante: começa onde o palco termina.
+    expect(strip.y).toBeGreaterThanOrEqual(stage.y + stage.height - 1)
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
+    // O aviso "Importei 1 projeto!" e a pílula de dica não se cruzam.
+    const toast = page.locator('.mld-toast-dock > div').filter({ hasText: /\S/ })
+    const hint = page.locator('.mld-stage-context').filter({ hasText: /\S/ })
+    if ((await toast.count()) > 0 && (await hint.count()) > 0) {
+      const a = (await toast.first().boundingBox())!
+      const b = (await hint.first().boundingBox())!
+      expect(a.y + a.height <= b.y || b.y + b.height <= a.y).toBe(true)
+    }
+    await page.screenshot({ path: `.cache/pintura-barra-${width}.png` })
+  })
+}

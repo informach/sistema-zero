@@ -1,6 +1,7 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import { expect, test } from '@playwright/test'
+import { SCENE_PAINT_COPY } from '../src/core/scenePaintCopy'
 import type { MoldaSceneJson } from '../src/scene/documentJson'
 
 test('criação rápida, montagem, pose de várias peças e telas menores', async ({
@@ -138,7 +139,7 @@ test('pintura real, cor composta, movimento e recuperação da pose após recarr
     )
     await page.getByRole('button', { name: /^Cor 2 / }).click()
     await page.getByRole('button', { name: 'Balde', exact: true }).click()
-    await page.getByRole('radio', { name: 'Cor de fundo da peça' }).check()
+    await page.getByRole('button', { name: SCENE_PAINT_COPY.fillScopes.base }).click()
     const point = await center()
     await page.mouse.click(point.x, point.y)
     const redBase = await snapshot()

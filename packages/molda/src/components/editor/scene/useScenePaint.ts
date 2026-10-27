@@ -398,7 +398,7 @@ export function useScenePaint(
   )
   const changeBaseColor = (nodeId: string) => {
     if (!can('model.finish')) {
-      setError('A cor de fundo não está disponível nesta oficina. Use Área desta face.')
+      setError('A cor de fundo não está disponível nesta oficina. Use Só esta área.')
       return
     }
     try {

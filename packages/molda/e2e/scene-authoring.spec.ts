@@ -1,6 +1,7 @@
 import { expect, test } from '@playwright/test'
 import { Vector3 } from 'three'
 import { COPY } from '../src/core/copy'
+import { SCENE_PAINT_COPY } from '../src/core/scenePaintCopy'
 import { sceneBounds } from '../src/scene/bounds'
 import { indexSceneDocument } from '../src/scene/documentIndex'
 import { sceneToJson } from '../src/scene/documentJson'
@@ -285,10 +286,9 @@ test('paint uses the real UV grid, saved palette, temporary picker and one undo 
   await page.getByRole('button', { name: 'Modelo Pintura real', exact: true }).click()
   await page.getByRole('button', { name: 'Escolher corpo', exact: true }).click()
   await page.getByRole('button', { name: 'Pintar', exact: true }).click()
-  await expect(page.getByRole('button', { name: 'Todas as peças', exact: true })).toHaveAttribute(
-    'aria-pressed',
-    'true',
-  )
+  await expect(
+    page.getByRole('button', { name: SCENE_PAINT_COPY.onlyThisPiece, exact: true }),
+  ).toHaveAttribute('aria-pressed', 'false')
   await page.locator('summary').filter({ hasText: 'Criar outra cor' }).click()
   await page.getByLabel('Cor hexadecimal', { exact: true }).fill('#f0352b')
   await page.getByLabel('Cor hexadecimal', { exact: true }).press('Enter')
@@ -354,7 +354,9 @@ test('paint uses the real UV grid, saved palette, temporary picker and one undo 
   await expect(page.getByRole('button', { name: COPY.editor.undo, exact: true })).toBeDisabled()
   for (const width of [1024, 768, 390]) {
     await page.setViewportSize({ width, height: 900 })
-    await expect(page.getByRole('button', { name: 'Todas as peças', exact: true })).toBeVisible()
+    await expect(
+      page.getByRole('button', { name: SCENE_PAINT_COPY.onlyThisPiece, exact: true }),
+    ).toBeVisible()
     const stage = (await page.locator('.mld-workshop-stage').boundingBox())!
     for (const control of await page.locator('.mld-stage-toolbar button:visible').all()) {
       const bounds = (await control.boundingBox())!
