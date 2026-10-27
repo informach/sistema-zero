@@ -1,6 +1,5 @@
 import { COPY } from '../../../core/copy'
 import type { ScenePaintRgba } from '../../../scene/imagePaint'
-import { Button } from '../../ui/Button'
 import { SceneHelpButton } from './SceneHelpButton'
 import { SceneRgbaColorInput } from './SceneRgbaColorInput'
 
@@ -13,17 +12,11 @@ export function SceneGradientColorControls({
   end,
   onStartChange,
   onEndChange,
-  transparentBase,
-  colorImage,
-  onMakeBaseTransparent,
 }: {
   start: ScenePaintRgba
   end: ScenePaintRgba
   onStartChange(color: ScenePaintRgba): void
   onEndChange(color: ScenePaintRgba): void
-  transparentBase: boolean
-  colorImage: boolean
-  onMakeBaseTransparent(): void
 }) {
   const copy = COPY.scene
   return (
@@ -61,21 +54,6 @@ export function SceneGradientColorControls({
         colorName="paintGradientColor"
         alphaName="paintGradientAlpha"
       />
-      {colorImage && (
-        <div className="rounded-lg border border-mld-border p-2">
-          <Button
-            className="w-full text-sm"
-            aria-pressed={transparentBase}
-            disabled={transparentBase}
-            onClick={onMakeBaseTransparent}
-          >
-            {copy.paintTransparentBase}
-          </Button>
-          <SceneHelpButton title={copy.paintTransparentBaseHelp}>
-            <p>{copy.paintTransparentBaseHint}</p>
-          </SceneHelpButton>
-        </div>
-      )}
     </section>
   )
 }

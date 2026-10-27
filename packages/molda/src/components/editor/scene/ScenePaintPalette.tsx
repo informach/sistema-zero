@@ -6,7 +6,7 @@ import { resolvePaletteColors } from '../../../core/sanitize'
 import { SCENE_PAINT_COPY } from '../../../core/scenePaintCopy'
 import { RequiresTool } from '../../toolAccess'
 import { Button } from '../../ui/Button'
-import { Grid3x3, Layers, Plus } from '../../ui/icons'
+import { Layers, Plus } from '../../ui/icons'
 import { swatchClass } from '../../ui/interaction'
 import { SceneColorPicker } from './SceneColorPicker'
 import { SceneHelpButton } from './SceneHelpButton'
@@ -43,16 +43,20 @@ export function ScenePaintPalette({
   palette,
   applyPalette,
   preparation,
-  mapping,
   interior,
+  prepared,
+  plane,
+  openSheet,
 }: {
   paint: ReturnType<typeof useScenePaint>
   pieceName?: string
   palette: MoldaPaletteFields
   applyPalette: React.ComponentProps<typeof ScenePaletteLibrary>['apply']
   preparation?: { faces: readonly string[]; apply(): void } | null
-  mapping?: { apply(): void; disabled: boolean } | null
   interior?: { apply(): void; disabled: boolean } | null
+  prepared?: boolean
+  plane?: boolean
+  openSheet?(): void
 }) {
   const busy = paint.drawing || paint.busy
   const hex = rgbToHex(paint.ink[0], paint.ink[1], paint.ink[2])
@@ -104,6 +108,7 @@ export function ScenePaintPalette({
                 : copy.choosePiece}
           </p>
           <SceneHelpButton title="Como pintar no modelo">
+            <p>{instruction}</p>
             <p>
               Escolha uma peça, uma cor e desenhe diretamente nela. O Molda prepara a textura quando
               você faz o primeiro traço.
@@ -115,23 +120,23 @@ export function ScenePaintPalette({
             <p>{COPY.scene.paintHint}</p>
             <p>{COPY.scene.paintShapeHint}</p>
             <p>{COPY.scene.paintGradientNeedsRgba}</p>
-            {mapping && <p>{copy.simpleUvHint}</p>}
+            <p>{copy.simpleUvHint}</p>
           </SceneHelpButton>
         </div>
-        {interior && (
-          <div className="space-y-2 rounded-xl border border-mld-border bg-mld-surface p-3">
-            <p className="text-sm font-bold">Pintar o lado interno separadamente</p>
-            <p className="text-xs text-mld-muted">
-              Crie faces internas para usar outra cor no verso. Isso também mostra o interior
-              transparente. A pintura de fora fica como está.
+        {prepared && pieceName && (
+          <div className="space-y-2 rounded-xl border border-mld-accent bg-mld-accent/5 p-3">
+            <p className="text-sm font-bold">
+              {plane ? 'Plano pronto para pintar' : 'Peça pronta para pintar'}
             </p>
-            <Button
-              className="w-full text-sm"
-              disabled={busy || interior.disabled}
-              onClick={interior.apply}
-            >
-              <Layers aria-hidden="true" className="size-4" /> Criar lado interno pintável
-            </Button>
+            <p className="text-xs text-mld-muted">
+              Arraste o pincel {plane ? 'sobre o plano' : 'sobre a peça'}. A textura é criada no
+              primeiro traço.
+            </p>
+            {openSheet && (
+              <Button className="w-full text-sm" onClick={openSheet}>
+                Abrir folha para pintar
+              </Button>
+            )}
           </div>
         )}
         <div className="space-y-3 rounded-xl border border-mld-border bg-mld-surface p-3">
@@ -210,84 +215,70 @@ export function ScenePaintPalette({
             <p className="text-xs text-mld-muted">Sua paleta chegou a 256 cores guardadas.</p>
           )}
         </div>
-        <div className="space-y-2 rounded-xl border border-mld-border p-3">
-          <p className="mld-kicker">Ferramenta atual</p>
-          <p className="text-sm text-mld-muted" aria-live="polite">
-            {instruction}
-          </p>
-          <Button
-            variant="ghost"
-            className="w-full justify-start text-sm"
-            data-paint-tool="paint.rotate"
-            aria-pressed={paint.rotate}
-            aria-keyshortcuts={rotateCommand.shortcut?.display}
-            title={`${rotateCommand.label}${rotateCommand.shortcut ? ` (${rotateCommand.shortcut.display})` : ''}`}
-            disabled={busy}
-            onClick={paint.setRotate}
-          >
-            <RotateIcon aria-hidden="true" className="size-4" />
-            {copy.rotate}
-          </Button>
-          {paint.fill && (
-            <fieldset className="space-y-1">
-              <legend className="text-sm font-bold">O que pintar?</legend>
-              <label className="flex min-h-11 items-center gap-2 text-sm">
-                <input
-                  type="radio"
-                  name="fill-scope"
-                  checked={paint.fillScope === 'area'}
-                  onChange={() => paint.setFillScope('area')}
-                />
-                Área desta face
-              </label>
-              {(paint.data?.imageKind ?? 'color') === 'color' && (
-                <RequiresTool family="model.finish">
-                  <label className="flex min-h-11 items-center gap-2 text-sm">
-                    <input
-                      type="radio"
-                      name="fill-scope"
-                      checked={paint.fillScope === 'base'}
-                      onChange={() => paint.setFillScope('base')}
-                    />
-                    Cor de fundo da peça
-                  </label>
-                </RequiresTool>
-              )}
-            </fieldset>
-          )}
-          {paint.eraser && (paint.data?.imageKind ?? 'color') === 'color' && (
-            <fieldset className="space-y-1">
-              <legend className="text-xs font-bold">Como apagar?</legend>
-              <div className="flex gap-1">
-                {(
-                  [
-                    ['paint', 'Apagar tinta'],
-                    ['cutout', 'Deixar vazado'],
-                  ] as const
-                ).map(([mode, label]) => (
-                  <Button
-                    key={mode}
-                    size="compact"
-                    variant="outline"
-                    aria-pressed={paint.eraseMode === mode}
-                    onClick={() => paint.setEraseMode(mode)}
-                  >
-                    {label}
-                  </Button>
-                ))}
-              </div>
-            </fieldset>
-          )}
-          {paint.eraser && paint.eraseMode !== 'cutout' && (
-            <p className="text-xs text-mld-muted">
-              Apaga só o desenho
-              {paint.data && paint.data.image.layers.length > 1
-                ? ` da camada “${paint.data.layer.name}”`
-                : ''}
-              . A cor de baixo aparece.
-            </p>
-          )}
-        </div>
+        {(paint.fill || paint.eraser) && (
+          <div className="space-y-2 rounded-xl border border-mld-border p-3">
+            <p className="mld-kicker">Ajustes da ferramenta</p>
+            {paint.fill && (
+              <fieldset className="space-y-1">
+                <legend className="text-sm font-bold">O que pintar?</legend>
+                <label className="flex min-h-11 items-center gap-2 text-sm">
+                  <input
+                    type="radio"
+                    name="fill-scope"
+                    checked={paint.fillScope === 'area'}
+                    onChange={() => paint.setFillScope('area')}
+                  />
+                  Área desta face
+                </label>
+                {(paint.data?.imageKind ?? 'color') === 'color' && (
+                  <RequiresTool family="model.finish">
+                    <label className="flex min-h-11 items-center gap-2 text-sm">
+                      <input
+                        type="radio"
+                        name="fill-scope"
+                        checked={paint.fillScope === 'base'}
+                        onChange={() => paint.setFillScope('base')}
+                      />
+                      Cor de fundo da peça
+                    </label>
+                  </RequiresTool>
+                )}
+              </fieldset>
+            )}
+            {paint.eraser && (paint.data?.imageKind ?? 'color') === 'color' && (
+              <fieldset className="space-y-1">
+                <legend className="text-xs font-bold">Como apagar?</legend>
+                <div className="flex gap-1">
+                  {(
+                    [
+                      ['paint', 'Apagar tinta'],
+                      ['cutout', 'Deixar vazado'],
+                    ] as const
+                  ).map(([mode, label]) => (
+                    <Button
+                      key={mode}
+                      size="compact"
+                      variant="outline"
+                      aria-pressed={paint.eraseMode === mode}
+                      onClick={() => paint.setEraseMode(mode)}
+                    >
+                      {label}
+                    </Button>
+                  ))}
+                </div>
+              </fieldset>
+            )}
+            {paint.eraser && paint.eraseMode !== 'cutout' && (
+              <p className="text-xs text-mld-muted">
+                Apaga só o desenho
+                {paint.data && paint.data.image.layers.length > 1
+                  ? ` da camada “${paint.data.layer.name}”`
+                  : ''}
+                . A cor de baixo aparece.
+              </p>
+            )}
+          </div>
+        )}
         {preparation && !(paint.fill && paint.fillScope === 'base') && (
           <div className="space-y-2 rounded-xl border border-mld-border bg-mld-surface p-3">
             <p role="status" className="text-sm text-mld-muted">
@@ -298,16 +289,43 @@ export function ScenePaintPalette({
             </Button>
           </div>
         )}
-        {mapping && (
-          <div className="space-y-1 rounded-xl border border-mld-border p-3">
-            <Button
-              className="w-full text-sm"
-              disabled={busy || mapping.disabled}
-              onClick={mapping.apply}
-            >
-              <Grid3x3 aria-hidden="true" className="size-4" /> {copy.simpleUv}
-            </Button>
-          </div>
+        {(interior || paint.data) && (
+          <details className="mld-disclosure">
+            <summary>Mais opções da peça</summary>
+            <div className="space-y-2 pb-2">
+              {interior && (
+                <div className="space-y-2">
+                  <SceneHelpButton title="Pintar o lado interno">
+                    <p>
+                      Cria faces internas para usar outra cor no verso. A pintura de fora permanece.
+                    </p>
+                  </SceneHelpButton>
+                  <Button
+                    className="w-full text-sm"
+                    disabled={busy || interior.disabled}
+                    onClick={interior.apply}
+                  >
+                    <Layers aria-hidden="true" className="size-4" /> Criar lado interno pintável
+                  </Button>
+                </div>
+              )}
+              {paint.data && (
+                <Button
+                  variant="ghost"
+                  className="w-full justify-start text-sm"
+                  data-paint-tool="paint.rotate"
+                  aria-pressed={paint.rotate}
+                  aria-keyshortcuts={rotateCommand.shortcut?.display}
+                  title={`${rotateCommand.label}${rotateCommand.shortcut ? ` (${rotateCommand.shortcut.display})` : ''}`}
+                  disabled={busy}
+                  onClick={paint.setRotate}
+                >
+                  <RotateIcon aria-hidden="true" className="size-4" />
+                  {copy.rotate}
+                </Button>
+              )}
+            </div>
+          </details>
         )}
       </section>
     </RequiresTool>

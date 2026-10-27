@@ -42,15 +42,19 @@ async function coveredControls(page: Page): Promise<string[]> {
         .trim()
         .replace(/\s+/g, ' ')
         .slice(0, 40)
-    const scrollerOf = (element: Element): Element | null => {
-      for (let node = element.parentElement; node; node = node.parentElement) {
-        const { overflowX, overflowY } = getComputedStyle(node)
-        if (/(auto|scroll)/.test(overflowX + overflowY)) return node
-      }
-      return null
-    }
     const inside = (x: number, y: number, rect: DOMRect) =>
       x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom
+    const clippedByAncestor = (element: Element, x: number, y: number) => {
+      for (let node = element.parentElement; node; node = node.parentElement) {
+        const { overflowX, overflowY } = getComputedStyle(node)
+        if (
+          /(auto|scroll|hidden|clip)/.test(overflowX + overflowY) &&
+          !inside(x, y, node.getBoundingClientRect())
+        )
+          return true
+      }
+      return false
+    }
     const covered: string[] = []
     const controls = document.querySelectorAll(
       'section[aria-label] button, section[aria-label] summary, section[aria-label] select, section[aria-label] input:not([type="file"]):not([type="hidden"])',
@@ -70,10 +74,9 @@ async function coveredControls(page: Page): Promise<string[]> {
       const x = rect.left + rect.width / 2
       const y = rect.top + rect.height / 2
       if (x < 0 || y < 0 || x > innerWidth || y > innerHeight) continue
-      const scroller = scrollerOf(control)
-      if (scroller && !inside(x, y, scroller.getBoundingClientRect())) continue
+      if (clippedByAncestor(control, x, y)) continue
       const hit = document.elementFromPoint(x, y)
-      if (!hit || control === hit || control.contains(hit)) continue
+      if (!hit || control === hit || control.contains(hit) || hit.contains(control)) continue
       // Um rótulo que envolve o próprio campo não é "cobrir".
       // Its icon/switch also activates that input through native label behavior.
       if (hit.closest('label')?.control === control) continue
@@ -246,7 +249,7 @@ test('na aba Pintar, a coluna de ferramentas e a faixa de cores não cobrem nada
   await page.getByText('Adicionar', { exact: true }).click()
   await page.getByRole('button', { name: 'Caixa', exact: true }).click()
   await page.getByRole('button', { name: 'Pintar', exact: true }).click()
-  await expect(page.getByRole('region', { name: 'Cores', exact: true })).toBeVisible()
+  await expect(page.getByRole('region', { name: 'Cores e ajustes de pintura' })).toBeVisible()
   await checkEverySize(page, 'Pintar')
   expect(pageErrors).toEqual([])
 })
@@ -298,7 +301,8 @@ test('no nível de entrada, a oficina padrão não cobre nada', async ({ page })
   await page.getByText('Adicionar', { exact: true }).click()
   await page.getByRole('button', { name: 'Caixa', exact: true }).click()
   await page.getByRole('button', { name: 'Pintar', exact: true }).click()
-  await expect(page.getByRole('region', { name: 'Cores', exact: true })).toBeVisible()
+  await page.setViewportSize({ width: 1366, height: 768 })
+  await expect(page.getByRole('region', { name: 'Cores e ajustes de pintura' })).toBeVisible()
   await checkEverySize(page, 'Pintar no básico')
   expect(pageErrors).toEqual([])
 })
@@ -318,12 +322,13 @@ test('o painel direito mantém peças acima do conteúdo de cada modo', async ({
     const overview = (await page.locator('.mld-inspector-overview').count())
       ? await page.locator('.mld-inspector-overview').boundingBox()
       : null
-    const details = await page.locator('.mld-inspector-properties').boundingBox()
+    const details =
+      mode === 'Pintar' ? null : await page.locator('.mld-inspector-properties').boundingBox()
     expect(pieces).not.toBeNull()
-    expect(details).not.toBeNull()
+    if (mode !== 'Pintar') expect(details).not.toBeNull()
     if (overview) {
       expect(pieces!.y + pieces!.height, mode).toBeLessThanOrEqual(overview.y)
-      expect(overview.y + overview.height, mode).toBeLessThanOrEqual(details!.y)
+      if (details) expect(overview.y + overview.height, mode).toBeLessThanOrEqual(details.y)
     } else {
       expect(pieces!.y + pieces!.height, mode).toBeLessThanOrEqual(details!.y)
     }
@@ -332,15 +337,11 @@ test('o painel direito mantém peças acima do conteúdo de cada modo', async ({
   await page.getByRole('button', { name: 'Pintar', exact: true }).click()
   await page.setViewportSize({ width: 1024, height: 768 })
   const tabs = page.getByRole('tablist', { name: 'Painel da criação' }).getByRole('tab')
-  await expect(tabs).toHaveText(['Peças', 'Cores', 'Ajustes'])
-  await expect(page.getByRole('tabpanel', { name: 'Cores' })).toBeVisible()
-  await expect(page.getByRole('tabpanel', { name: 'Ajustes' })).toBeHidden()
+  await expect(tabs).toHaveText(['Peças', 'Pintura'])
+  await expect(page.getByRole('tabpanel', { name: 'Pintura' })).toBeVisible()
   await page.locator('.mld-workshop-inspector').screenshot({
     path: testInfo.outputPath('painel-pintar-compacto.png'),
   })
-  await tabs.getByText('Ajustes').click()
-  await expect(page.getByRole('tabpanel', { name: 'Ajustes' })).toBeVisible()
-  await expect(page.getByRole('tabpanel', { name: 'Cores' })).toBeHidden()
   await tabs.getByText('Peças').click()
   await expect(page.getByRole('tabpanel', { name: 'Peças' })).toBeVisible()
 

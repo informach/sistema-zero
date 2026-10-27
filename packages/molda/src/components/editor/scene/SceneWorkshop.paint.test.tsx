@@ -87,14 +87,15 @@ test('Organizar quadradinhos respects inherited group locks as well as unlocked 
   try {
     fireEvent.click(await screen.findByRole('button', { name: COPY.scene.select('porta') }))
     fireEvent.click(screen.getByRole('button', { name: 'Pintar' }))
+    fireEvent.click(screen.getByText('Mais ajustes do palco'))
     const organize = screen.getByRole<HTMLButtonElement>('button', {
-      name: SCENE_PAINT_COPY.simpleUv,
+      name: 'Organizar mapa…',
     })
     expect(organize.disabled).toBe(true)
     expect(editor.getState().saveSnapshot()).toBe(source)
     fireEvent.click(screen.getByRole('button', { name: COPY.scene.select('parede') }))
     expect(
-      screen.getByRole<HTMLButtonElement>('button', { name: SCENE_PAINT_COPY.simpleUv }).disabled,
+      screen.getByRole<HTMLButtonElement>('button', { name: 'Organizar mapa…' }).disabled,
     ).toBe(false)
   } finally {
     view.unmount()
@@ -234,12 +235,8 @@ test('nível intermediário cria uma textura e continua pintando no modelo', asy
     await waitFor(() => expect(stage.callbacks).not.toBeNull())
     tap(door)
     fireEvent.click(screen.getByRole('button', { name: SCENE_PAINT_COPY.tab }))
-    const summary = await screen.findByText(COPY.scene.appearanceTitle, { selector: 'summary' })
-    const details = summary.closest('details')!
-    act(() => {
-      details.open = true
-      fireEvent(details, new Event('toggle'))
-    })
+    fireEvent.click(screen.getByRole('button', { name: 'Folha de pintura' }))
+    fireEvent.click(await screen.findByRole('button', { name: COPY.scene.appearanceTitle }))
     fireEvent.click(await screen.findByRole('button', { name: COPY.scene.imageCreate }))
     const dialog = screen.getByRole('dialog', { name: COPY.scene.imageCreate })
     fireEvent.click(within(dialog).getByRole('button', { name: COPY.scene.imageCreateApply }))
@@ -247,6 +244,7 @@ test('nível intermediário cria uma textura e continua pintando no modelo', asy
       expect(stage.target?.imageId).toBe(editor.getState().asset.images.at(-1)?.id),
     )
     expect(screen.queryByRole('dialog', { name: COPY.scene.imageCreate })).toBeNull()
+    expect(screen.getByRole('region', { name: 'Área Folha de pintura' })).toBeTruthy()
     expect(
       editor.getState().asset.materials.find((entry) => entry.id === stage.target?.materialId)
         ?.colorImageId,
@@ -329,10 +327,14 @@ describe('a aba Pintar', () => {
       expect(rail?.textContent).not.toContain('Quadradinhos')
       expect(rail?.textContent).not.toContain(SCENE_PAINT_COPY.rotate)
       expect(rail?.textContent).not.toContain('Mais pincéis')
+      const options = screen
+        .getByText('Mais opções da peça', { selector: 'summary' })
+        .closest('details')!
+      fireEvent.click(options.querySelector('summary')!)
       const rotate = screen.getByRole('button', { name: SCENE_PAINT_COPY.rotate })
       expect(rotate.closest('.mld-workshop-rail')).toBeNull()
       fireEvent.click(screen.getByText('Mais ajustes do palco'))
-      const grid = screen.getByRole('button', { name: 'Quadradinhos' })
+      const grid = screen.getByRole('button', { name: 'Mostrar quadradinhos' })
       expect(grid.getAttribute('aria-pressed')).toBe('false')
       fireEvent.click(grid)
       expect(grid.getAttribute('aria-pressed')).toBe('true')
@@ -355,6 +357,7 @@ describe('a aba Pintar', () => {
       await waitFor(() => expect(stage.callbacks).not.toBeNull())
       tap(door, 'px')
       fireEvent.click(screen.getByRole('button', { name: SCENE_PAINT_COPY.tab }))
+      fireEvent.click(screen.getByText('Mais opções da peça', { selector: 'summary' }))
       fireEvent.click(screen.getByRole('button', { name: 'Criar lado interno pintável' }))
       const current = editor.getState().asset
       const node = current.nodes.find((entry) => entry.id === door)!

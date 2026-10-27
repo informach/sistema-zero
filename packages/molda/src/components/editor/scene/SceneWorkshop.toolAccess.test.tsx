@@ -333,8 +333,8 @@ describe('a oficina no nível de entrada', () => {
     try {
       choosePiece(view.container)
       await openTab(SCENE_PAINT_COPY.tab)
-      const texture = await screen.findByText(copy.appearanceTitle)
-      fireEvent.click(texture)
+      fireEvent.click(screen.getByRole('button', { name: 'Folha de pintura' }))
+      fireEvent.click(await screen.findByRole('button', { name: copy.appearanceTitle }))
       expect(await screen.findByText('Pintura do modelo')).toBeTruthy()
     } finally {
       view.unmount()

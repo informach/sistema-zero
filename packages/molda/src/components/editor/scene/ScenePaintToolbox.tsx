@@ -1,8 +1,8 @@
 /**
  * As ferramentas da aba Pintar à vista: Lápis, Borracha, Balde e Conta-gotas, a largura do
  * traço, pintar de perto e espelho.
- * O resto (formas, área, degradê, carimbo, folha inteira) mora em "Mais
- * jeitos de pintar".
+ * Formas, área e carimbo moram em "Mais jeitos de pintar"; o gradiente fica no painel
+ * direito e textura e camadas ficam na Folha de pintura.
  *
  * Desde a casca das telas-modelo (11/09/2026) as ferramentas são LADRILHOS com o nome embaixo
  * do ícone (`SceneTile`), como as do Modelar: só o ícone não dizia o que "Girar a pintura da

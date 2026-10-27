@@ -24,7 +24,7 @@ import type {
 import { CAMERA_VIEWS, type CameraView } from '../../../viewport/types'
 import { useMoldaToolAccess } from '../../toolAccess'
 import { Button } from '../../ui/Button'
-import { isMoldaDialogOpen } from '../../ui/Dialog'
+import { Dialog, isMoldaDialogOpen } from '../../ui/Dialog'
 import {
   ArrowBigUpDash,
   Camera,
@@ -122,6 +122,8 @@ interface Props {
   paintScope?: import('../../../viewport/sceneViewportTypes').ScenePaintSurfaceScope | null
   paintGuides?: import('../../../viewport/ScenePaintGuides').ScenePaintGuideSettings | null
   onPaintGridChange?(visible: boolean): void
+  onOrganizePaintMap?(): void
+  canOrganizePaintMap?: boolean
   onPaintScopeChange?(mode: 'all' | 'selected'): void
   paint?: ScenePaintActions
   flipbook: SceneFlipbookPlayer
@@ -202,6 +204,8 @@ function SceneCanvasAttempt({
   paintScope = null,
   paintGuides = null,
   onPaintGridChange,
+  onOrganizePaintMap,
+  canOrganizePaintMap = false,
   onPaintScopeChange,
   paintMirror = false,
   detailPanel = null,
@@ -233,6 +237,7 @@ function SceneCanvasAttempt({
   // Raio-X, como no Blender: ver através das peças também alcança o que está atrás.
   const [xray, setXray] = useState(false)
   const [localLook, setLocalLook] = useState(false)
+  const [organizePaintOpen, setOrganizePaintOpen] = useState(false)
   const look = looking ?? localLook
   const setLook = onLookingChange ?? setLocalLook
   const [supportGuideOverride, setSupportGuideOverride] = useState<boolean | null>(null)
@@ -712,6 +717,19 @@ function SceneCanvasAttempt({
       <SceneStageDropdown
         className={dropClass(shell && slots.view === undefined ? 'stage' : 'right')}
       >
+        {mode === 'paint' && (
+          <Button
+            variant="ghost"
+            className="justify-start px-3 text-sm"
+            aria-pressed={look}
+            onClick={() => {
+              cancelPaint()
+              setLook(true)
+            }}
+          >
+            Girar modelo
+          </Button>
+        )}
         <Button variant="ghost" className="text-sm" onClick={() => view.viewport?.frame(true)}>
           Enquadrar só a escolhida
         </Button>
@@ -746,14 +764,26 @@ function SceneCanvasAttempt({
       </summary>
       <SceneStageDropdown className={dropClass('settings')}>
         {mode === 'paint' && onPaintGridChange && (
-          <Button
-            variant="ghost"
-            className="justify-start px-3 text-sm"
-            aria-pressed={paintGuides?.grid ?? false}
-            onClick={() => onPaintGridChange(!paintGuides?.grid)}
-          >
-            Quadradinhos
-          </Button>
+          <>
+            <Button
+              variant="ghost"
+              className="justify-start px-3 text-sm"
+              aria-pressed={paintGuides?.grid ?? false}
+              onClick={() => onPaintGridChange(!paintGuides?.grid)}
+            >
+              Mostrar quadradinhos
+            </Button>
+            {onOrganizePaintMap && (
+              <Button
+                variant="ghost"
+                className="justify-start px-3 text-sm"
+                disabled={!canOrganizePaintMap}
+                onClick={() => setOrganizePaintOpen(true)}
+              >
+                Organizar mapa…
+              </Button>
+            )}
+          </>
         )}
         {hints.hidden && (
           <>
@@ -1075,7 +1105,7 @@ function SceneCanvasAttempt({
       {place(
         slots?.view,
         <>
-          {lookButton}
+          {mode !== 'paint' && lookButton}
           {cameraMenu}
           {slots?.view !== undefined && gridButton}
           {slots?.view !== undefined && xrayButton}
@@ -1280,6 +1310,26 @@ function SceneCanvasAttempt({
           )}
         </ReferenceImageGuide>
       </div>
+      <Dialog
+        open={organizePaintOpen}
+        title="Organizar mapa"
+        onClose={() => setOrganizePaintOpen(false)}
+      >
+        <p className="text-sm text-mld-muted">{SCENE_PAINT_COPY.simpleUvHint}</p>
+        <div className="mt-4 flex flex-wrap gap-2">
+          <Button
+            onClick={() => {
+              setOrganizePaintOpen(false)
+              onOrganizePaintMap?.()
+            }}
+          >
+            Organizar mapa
+          </Button>
+          <Button variant="ghost" onClick={() => setOrganizePaintOpen(false)}>
+            Cancelar
+          </Button>
+        </div>
+      </Dialog>
     </section>
   )
 }

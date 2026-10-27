@@ -183,7 +183,7 @@ test('the unified sheet keeps the viewport and primitive intact, frames the UV m
     const zoom = within(sheet).getByLabelText('Zoom da folha', { exact: true }).textContent
     fireEvent.click(within(sheet).getByRole('button', { name: 'Ajustar mapa' }))
     await within(sheet).findByRole('button', { name: COPY.scene.uvCanvasControl })
-    expect(within(sheet).getByRole('button', { name: 'Organizar mapa' })).toBeTruthy()
+    expect(within(sheet).queryByRole('button', { name: 'Organizar mapa' })).toBeNull()
     expect(within(sheet).getByRole('button', { name: 'Ver mapa' })).toBeTruthy()
     expect(within(sheet).getByRole('button', { name: 'Folha inteira' })).toBeTruthy()
     fireEvent.click(within(sheet).getByRole('button', { name: 'Folha inteira' }))
