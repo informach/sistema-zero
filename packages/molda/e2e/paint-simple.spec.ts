@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test'
 import { COPY } from '../src/core/copy'
 import { resolvePaletteColors } from '../src/core/sanitize'
 import { SCENE_PAINT_COPY as paintCopy } from '../src/core/scenePaintCopy'
-import { addScenePrimitive } from '../src/scene/commands'
+import { addScenePrimitive, addSceneShape } from '../src/scene/commands'
 import { createSceneProject } from '../src/scene/createProject'
 import type { MoldaSceneDocument } from '../src/scene/document'
 import { sceneBentPaint } from '../src/testing/sceneBentPaint'
@@ -142,17 +142,17 @@ for (const dark of [false, true]) {
     const errors: string[] = []
     page.on('pageerror', (error) => errors.push(error.message))
     const source = await openPainting(page, dark)
-    const advanced = page.locator('details').filter({
-      has: page.locator('summary').getByText(paintCopy.more, { exact: true }),
-    })
-    expect(await advanced.evaluate((element) => element.hasAttribute('open'))).toBe(false)
     await expect(page.getByLabel('Cor hexadecimal')).toBeHidden()
     await expect(page.getByRole('button', { name: 'Materiais', exact: true })).toBeHidden()
     const hex = resolvePaletteColors(source)[2]!
     const red = page.getByRole('button', { name: COPY.a11y.colorSwatch(2, hex), exact: true })
     await red.click()
     await expect(red).toHaveAttribute('aria-pressed', 'true')
-    await expect(page.getByText(paintCopy.instructions.pencil, { exact: true })).toBeVisible()
+    await page.getByRole('button', { name: 'Como pintar no modelo' }).click()
+    await expect(page.getByRole('dialog', { name: 'Como pintar no modelo' })).toContainText(
+      paintCopy.instructions.pencil,
+    )
+    await page.getByRole('dialog', { name: 'Como pintar no modelo' }).press('Escape')
     const stage = page.locator(`canvas[aria-label="${COPY.scene.viewport}"]`)
     const bounds = (await stage.boundingBox())!
     const point = { x: bounds.x + bounds.width / 2 - 20, y: bounds.y + bounds.height / 2 + 20 }
@@ -167,11 +167,9 @@ for (const dark of [false, true]) {
     const painted = await savedProject(page)
     expect(inkCount(painted)).toBeGreaterThan(0)
     await expect(page.getByRole('alert')).toHaveCount(0)
-    expect(await advanced.evaluate((element) => element.hasAttribute('open'))).toBe(false)
     await page.screenshot({ path: `.cache/pintura-simples-${dark ? 'escura' : 'clara'}.png` })
 
     await page.getByRole('button', { name: 'Borracha', exact: true }).click()
-    await expect(page.getByText(paintCopy.instructions.eraser, { exact: true })).toBeVisible()
     await stroke()
     expect(inkCount(await savedProject(page))).toBeLessThan(inkCount(painted))
     await page.getByRole('button', { name: COPY.editor.undo, exact: true }).click()
@@ -180,7 +178,6 @@ for (const dark of [false, true]) {
     await page.getByRole('button', { name: 'Balde', exact: true }).click()
     const yellow = resolvePaletteColors(source)[5]!
     await page.getByRole('button', { name: COPY.a11y.colorSwatch(5, yellow), exact: true }).click()
-    await expect(page.getByText(paintCopy.instructions.fill, { exact: true })).toBeVisible()
     await page.mouse.click(point.x, point.y)
     expect((await savedProject(page)).images).not.toEqual(painted.images)
     await page.getByRole('button', { name: COPY.editor.undo, exact: true }).click()
@@ -206,7 +203,6 @@ for (const dark of [false, true]) {
     await expect(
       page.getByRole('button', { name: COPY.scene.paintCanvas, exact: true }),
     ).toBeVisible()
-    expect(await advanced.evaluate((element) => element.hasAttribute('open'))).toBe(false)
     expect(errors).toEqual([])
   })
 }
@@ -216,7 +212,7 @@ test('ready colors fit a narrow screen and advanced workspaces remain optional',
 }) => {
   await page.setViewportSize({ width: 390, height: 844 })
   const source = await openPainting(page)
-  const colors = page.getByRole('tab', { name: 'Cores', exact: true })
+  const colors = page.getByRole('tab', { name: 'Pintura', exact: true })
   if (await colors.isVisible()) await colors.click()
   const red = page.getByRole('button', {
     name: COPY.a11y.colorSwatch(2, resolvePaletteColors(source)[2]!),
@@ -300,10 +296,11 @@ test('a bent piece changes its base color directly and offers one visible prepar
   expect(errors).toEqual([])
 })
 
-test('intermediate texture creation returns to painting on the model', async ({ page }) => {
+test('intermediate texture creation stays beside the paint sheet', async ({ page }) => {
   await openPainting(page, false, undefined, 'architect')
   await page.getByRole('button', { name: COPY.scene.select('caixa') }).click()
-  await page.getByText(COPY.scene.appearanceTitle, { exact: true }).click()
+  await page.getByRole('button', { name: 'Folha de pintura' }).click()
+  await page.getByRole('button', { name: COPY.scene.appearanceTitle }).click()
   await page.getByRole('button', { name: COPY.scene.imageCreate, exact: true }).click()
   const dialog = page.getByRole('dialog', { name: COPY.scene.imageCreate })
   await expect(dialog).toBeVisible()
@@ -312,7 +309,7 @@ test('intermediate texture creation returns to painting on the model', async ({ 
   )
   await dialog.getByRole('button', { name: COPY.scene.imageCreateApply }).click()
   await expect(dialog).toHaveCount(0)
-  await expect(page.getByText(`Pintando no modelo: ${COPY.scene.imageDefaultName}`)).toBeVisible()
+  await expect(page.getByRole('button', { name: COPY.scene.paintCanvas })).toBeVisible()
   const document = await savedProject(page)
   expect(document.images.some((image) => image.name === COPY.scene.imageDefaultName)).toBe(true)
   await page.screenshot({ path: '.cache/pintura-textura-intermediaria.png' })
@@ -321,24 +318,48 @@ test('intermediate texture creation returns to painting on the model', async ({ 
 test('advanced painting keeps texture and layer tools available', async ({ page }) => {
   await openPainting(page, false, undefined, 'god')
   await page.getByRole('button', { name: COPY.scene.select('caixa') }).click()
-  await page.getByText(COPY.scene.appearanceTitle, { exact: true }).click()
+  await page.getByRole('button', { name: 'Folha de pintura' }).click()
+  await page.getByRole('button', { name: COPY.scene.appearanceTitle }).click()
   await expect(page.getByText('Pintura do modelo')).toBeVisible()
   await expect(
     page.getByRole('button', { name: COPY.scene.imageCreate, exact: true }),
   ).toBeVisible()
 })
 
+test('a new Plane exposes painting on its sheet before a texture exists', async ({ page }) => {
+  const source = addSceneShape(
+    createSceneProject({ kind: 'empty', name: 'Plano para pintar' }),
+    'plane',
+    'Plano',
+  )
+  await openPainting(page, false, source, 'architect')
+  await page.getByRole('button', { name: COPY.scene.select('Plano') }).click()
+  await expect(page.getByText('Plano pronto para pintar')).toBeVisible()
+  await page.getByRole('button', { name: 'Abrir folha para pintar' }).click()
+  const canvas = page.getByRole('button', { name: COPY.scene.paintCanvas })
+  await expect(canvas).toBeVisible()
+  expect((await savedProject(page)).images).toHaveLength(0)
+  await page.getByRole('button', { name: COPY.scene.appearanceTitle }).click()
+  const textures = page.getByRole('complementary', { name: COPY.scene.appearanceTitle })
+  await expect(textures.getByRole('button', { name: COPY.scene.imageCreate })).toBeVisible()
+  await textures.getByRole('button', { name: 'Fechar' }).click()
+  await canvas.press('Enter')
+  expect((await savedProject(page)).images.length).toBeGreaterThan(0)
+})
+
 test('gradient shows both opacity controls, preview and contextual help', async ({ page }) => {
   await openPainting(page, false, undefined, 'architect')
   await page.getByRole('button', { name: COPY.scene.select('caixa') }).click()
-  await page.getByText(COPY.scene.appearanceTitle, { exact: true }).click()
+  await page.getByRole('button', { name: 'Folha de pintura' }).click()
+  await page.getByRole('button', { name: COPY.scene.appearanceTitle }).click()
   await page.getByRole('button', { name: COPY.scene.imageCreate, exact: true }).click()
   const create = page.getByRole('dialog', { name: COPY.scene.imageCreate })
   await create.getByText('Tamanho e cores da textura').click()
   await create.getByRole('combobox', { name: COPY.scene.imageEncoding }).selectOption('rgba')
   await create.getByRole('button', { name: COPY.scene.imageCreateApply }).click()
-  await page.getByText(COPY.scene.paintShapes, { exact: true }).click()
-  await page.getByRole('button', { name: COPY.scene.paintShapeTools.gradient }).click()
+  const transparentBase = page.getByRole('button', { name: COPY.scene.paintTransparentBase })
+  await expect(transparentBase).toBeVisible()
+  await page.getByRole('button', { name: COPY.scene.paintShapeTools.gradient, exact: true }).click()
   const gradient = page.getByRole('region', { name: COPY.scene.paintGradientColors })
   await expect(gradient).toBeVisible()
   const start = gradient.getByRole('slider', { name: COPY.scene.paintGradientStartAlpha })
@@ -353,7 +374,6 @@ test('gradient shows both opacity controls, preview and contextual help', async 
   await expect(page.getByRole('dialog', { name: COPY.scene.paintGradientHelp })).toBeVisible()
   await page.getByRole('dialog', { name: COPY.scene.paintGradientHelp }).press('Escape')
   await page.screenshot({ path: '.cache/pintura-gradiente-opacidade.png' })
-  const transparentBase = gradient.getByRole('button', { name: COPY.scene.paintTransparentBase })
   await transparentBase.click()
   await expect(transparentBase).toHaveAttribute('aria-pressed', 'true')
   const transparent = await savedProject(page)
@@ -367,7 +387,7 @@ test('gradient shows both opacity controls, preview and contextual help', async 
   await expect(transparentBase).toHaveAttribute('aria-pressed', 'false')
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
   await page.setViewportSize({ width: 390, height: 844 })
-  await page.getByRole('tab', { name: 'Ajustes' }).click()
+  await page.getByRole('tab', { name: 'Pintura' }).click()
   await expect(gradient).toBeVisible()
   await gradient.scrollIntoViewIfNeeded()
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
@@ -380,17 +400,18 @@ test('short paint inspector keeps texture and gradient available while custom co
   await page.setViewportSize({ width: 1440, height: 640 })
   await openPainting(page, false, undefined, 'architect')
   await page.getByRole('button', { name: COPY.scene.select('caixa') }).click()
-  await page.getByText(COPY.scene.appearanceTitle, { exact: true }).click()
+  await page.getByRole('button', { name: 'Folha de pintura' }).click()
+  await page.getByRole('button', { name: COPY.scene.appearanceTitle }).click()
   await page.getByRole('button', { name: COPY.scene.imageCreate, exact: true }).click()
   const create = page.getByRole('dialog', { name: COPY.scene.imageCreate })
   await create.getByText('Tamanho e cores da textura').click()
   await create.getByRole('combobox', { name: COPY.scene.imageEncoding }).selectOption('rgba')
   await create.getByRole('button', { name: COPY.scene.imageCreateApply }).click()
   await page.getByText(paintCopy.customColor, { exact: true }).click()
-  const details = page.getByRole('region', { name: 'Ajustes do contexto' })
-  await expect(details.getByText(COPY.scene.appearanceTitle, { exact: true })).toBeInViewport()
+  const details = page.getByRole('region', { name: 'Cores e ajustes de pintura' })
+  await expect(page.getByRole('button', { name: COPY.scene.paintCanvas })).toBeVisible()
   await expect(
-    details.getByRole('button', { name: COPY.scene.paintShapeTools.gradient }),
+    details.getByRole('button', { name: COPY.scene.paintShapeTools.gradient, exact: true }),
   ).toBeInViewport()
   await page.screenshot({ path: '.cache/painel-pintar-altura-640.png' })
 })

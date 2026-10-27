@@ -365,6 +365,12 @@ export function SceneWorkshop({
       workshop.index.geometries.get(node.geometryId)?.kind !== 'mesh',
   )
   const geometries = workshop.index.geometries
+  const paintGeometry =
+    workshop.primary?.kind === 'mesh' ? geometries.get(workshop.primary.geometryId) : undefined
+  const paintPlane =
+    paintGeometry?.kind === 'mesh' &&
+    Object.keys(paintGeometry.faces).length === 1 &&
+    !!paintGeometry.faces.plane
   const shapeOf = (node: ModelSceneNode): SceneHierarchyShape => {
     if (node.kind !== 'mesh') return node.kind
     const kind = geometries.get(node.geometryId)?.kind
@@ -1027,6 +1033,13 @@ export function SceneWorkshop({
                       !workshop.paint.closeupTool,
                   }}
                   onPaintGridChange={workshop.paint.setGrid}
+                  onOrganizePaintMap={mode === 'paint' ? workshop.mapPaintUv : undefined}
+                  canOrganizePaintMap={
+                    workshop.primary?.kind === 'mesh' &&
+                    workshop.components.canEdit &&
+                    !workshop.paint.drawing &&
+                    !workshop.paint.busy
+                  }
                   detailPanel={
                     mode === 'paint' && workshop.paint.data && workshop.paint.closeUp ? (
                       <ScenePaintCloseUp
@@ -1131,13 +1144,12 @@ export function SceneWorkshop({
                       applyPalette={(next) =>
                         workshop.run((source) => setScenePalette(source, next))
                       }
-                      mapping={
-                        !sheetOpen && workshop.primary?.kind === 'mesh'
-                          ? {
-                              apply: workshop.mapPaintUv,
-                              disabled: !workshop.components.canEdit,
-                            }
-                          : null
+                      prepared={workshop.paintPreparationPending()}
+                      plane={paintPlane}
+                      openSheet={
+                        can('paint.sheet') && !sheetOpen
+                          ? () => workshop.openArea('sheet')
+                          : undefined
                       }
                       interior={
                         paintInteriorAvailable

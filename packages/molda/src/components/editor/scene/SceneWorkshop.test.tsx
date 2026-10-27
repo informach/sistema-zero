@@ -2902,110 +2902,32 @@ describe('scene workshop integration', () => {
       editor.getState().dispose()
     }
   })
-  test('flipbook form preserves pixels, previews without document redraw/history and pauses on blur/close/context loss', async () => {
-    let now = 0,
-      id = 0
-    const frames = new Map<number, FrameRequestCallback>()
-    const request = spyOn(globalThis, 'requestAnimationFrame').mockImplementation((fn) => {
-      frames.set(++id, fn)
-      return id
+  test('existing animated textures remain intact while their controls are hidden in Pintar', async () => {
+    const original = migrateLegacyModel(makeModel()).document
+    const image = original.images[0]!
+    const source = setSceneImageFlipbook(original, image.id, {
+      frameWidth: image.width / 2,
+      frameHeight: image.height / 2,
+      frames: [0, 3, 3, 1],
+      fps: 2.5,
+      loop: true,
     })
-    const cancel = spyOn(globalThis, 'cancelAnimationFrame').mockImplementation((id) => {
-      frames.delete(id)
-    })
-    const clock = spyOn(performance, 'now').mockImplementation(() => now)
-    const { editor, ports, view, openInspector } = setup()
+    const { editor, view, openInspector } = setup(source)
     try {
-      await waitFor(() => expect(ports.length).toBeGreaterThan(0))
       openInspector()
       fireEvent.click(screen.getByRole('button', { name: COPY.scene.select('corpo') }))
       fireEvent.click(screen.getByRole('button', { name: SCENE_PAINT_COPY.tab }))
-      await materialsWorkspaceButton()
-      const toggle = (open: boolean) => {
-        if (open && !screen.queryByRole('button', { name: 'Materiais' }))
-          fireEvent.click(screen.getByRole('button', { name: 'Opções' }))
-        fireEvent.click(screen.getByRole('button', { name: open ? 'Materiais' : 'Fechar área' }))
-      }
-      toggle(true)
-      await waitFor(() =>
-        expect(screen.queryByRole('combobox', { name: COPY.scene.materialChoose }) !== null).toBe(
-          true,
-        ),
-      )
-      const original = editor.getState().asset,
-        image = original.images[0]!
-      const material = original.materials.find((m) => m.colorImageId === image.id)!
-      fireEvent.change(screen.getByRole('combobox', { name: COPY.scene.materialChoose }), {
-        target: { value: material.id },
-      })
-      const settings = screen
-        .getByText(COPY.scene.flipbookSettings, { selector: 'summary' })
-        .closest('details')!
-      act(() => {
-        settings.open = true
-        fireEvent(settings, new Event('toggle'))
-      })
-      const width = screen.getByRole('spinbutton', { name: COPY.scene.flipbookWidth })
-      fireEvent.change(width, { target: { value: image.width / 2 } })
-      fireEvent.change(screen.getByRole('spinbutton', { name: COPY.scene.flipbookHeight }), {
-        target: { value: image.height / 2 },
-      })
-      fireEvent.change(screen.getByRole('textbox', { name: COPY.scene.flipbookSequence }), {
-        target: { value: '1, 4, 4, 2' },
-      })
-      fireEvent.change(screen.getByRole('spinbutton', { name: COPY.scene.flipbookFps }), {
-        target: { value: '2.5' },
-      })
-      fireEvent.submit(width.closest('form')!)
-      const animated = editor.getState().asset
-      expect(animated.images[0]!.flipbook).toEqual({
-        frameWidth: image.width / 2,
-        frameHeight: image.height / 2,
-        frames: [0, 3, 3, 1],
-        fps: 2.5,
-        loop: true,
-      })
-      expect(animated.images[0]!.layers).toBe(image.layers)
-      expect(animated.geometries).toBe(original.geometries)
-      const revision = editor.getState().contentRevision
-      fireEvent.change(screen.getByRole('combobox', { name: COPY.scene.flipbookChoose }), {
-        target: { value: '1' },
-      })
-      expect(ports.at(-1)!.frames.at(-1)).toEqual({ id: image.id, frame: 3 })
-      const documents = ports.at(-1)!.documentUpdates
-      fireEvent.click(screen.getByRole('button', { name: COPY.scene.flipbookPlay }))
-      expect(frames.size).toBe(1)
-      act(() => {
-        now = 400
-        const callbacks = [...frames.values()]
-        frames.clear()
-        for (const fn of callbacks) fn(now)
-      })
-      expect(
-        (screen.getByRole('combobox', { name: COPY.scene.flipbookChoose }) as HTMLSelectElement)
-          .value,
-      ).toBe('2')
-      expect(editor.getState().asset).toBe(animated)
-      expect(editor.getState().contentRevision).toBe(revision)
-      expect(ports.at(-1)!.documentUpdates).toBe(documents)
-      act(() => window.dispatchEvent(new Event('blur')))
-      expect(frames.size).toBe(0)
-      fireEvent.click(screen.getByRole('button', { name: COPY.scene.flipbookPlay }))
-      act(() => ports.at(-1)!.callbacks.contextLost(true))
-      expect(frames.size).toBe(0)
-      act(() => ports.at(-1)!.callbacks.contextLost(false))
-      fireEvent.click(screen.getByRole('button', { name: COPY.scene.flipbookPlay }))
-      toggle(false)
-      expect(frames.size).toBe(0)
-      fireEvent.click(screen.getByRole('button', { name: COPY.editor.undo }))
-      expect(editor.getState().asset.images).toEqual(original.images)
+      fireEvent.click(screen.getByRole('button', { name: 'Folha de pintura' }))
+      await screen.findByRole('button', { name: COPY.scene.paintCanvas })
+      fireEvent.click(screen.getByRole('button', { name: COPY.scene.appearanceTitle }))
+      expect(screen.queryByText(COPY.scene.flipbookSettings)).toBeNull()
+      expect(screen.queryByRole('button', { name: COPY.scene.flipbookPlay })).toBeNull()
+      expect(editor.getState().asset.images[0]!.flipbook).toEqual(source.images[0]!.flipbook)
+      expect(editor.getState().asset.images[0]!.layers).toEqual(source.images[0]!.layers)
       expect(editor.getState().canUndo).toBe(false)
     } finally {
       view.unmount()
       editor.getState().dispose()
-      request.mockRestore()
-      cancel.mockRestore()
-      clock.mockRestore()
     }
   })
   test('3D frame bounds clip wide brushes and fill while 2D sheet painting remains unrestricted', async () => {
@@ -3035,21 +2957,13 @@ describe('scene workshop integration', () => {
       fireEvent.change(screen.getByRole('combobox', { name: COPY.scene.materialChoose }), {
         target: { value: material.id },
       })
-      fireEvent.change(screen.getByRole('combobox', { name: COPY.scene.flipbookChoose }), {
-        target: { value: '1' },
-      })
-      fireEvent.click(screen.getByRole('button', { name: COPY.scene.paintLayer }))
       fireEvent.click(screen.getByRole('button', { name: 'Folha de pintura' }))
       const canvas = await screen.findByRole('button', { name: COPY.scene.paintCanvas })
       expect(screen.queryByRole('button', { name: COPY.scene.flipbookPlay }) === null).toBe(true)
-      expect(
-        (screen.getByRole('combobox', { name: COPY.scene.flipbookChoose }) as HTMLSelectElement)
-          .value,
-      ).toBe('1')
-      const bounds = sceneFlipbookRegion(source.images[0]!, 3)
+      const bounds = sceneFlipbookRegion(source.images[0]!, 0)
       const sample = {
         point: [bounds.x0, bounds.y0] as [number, number],
-        region: '3d-frame-3',
+        region: '3d-frame-0',
         bounds,
       }
       fireEvent.click(screen.getByRole('button', { name: SCENE_PAINT_COPY.width[3] }))
@@ -3063,7 +2977,7 @@ describe('scene workshop integration', () => {
       for (let y = 0; y < image.height; y++)
         for (let x = 0; x < image.width; x++)
           expect(painted[y * image.width + x]).toBe(
-            x >= bounds.x0 && x <= bounds.x0 + 1 && y <= 1 ? 7 : 1,
+            x >= bounds.x0 && x <= bounds.x0 + 1 && y >= bounds.y0 && y <= bounds.y0 + 1 ? 7 : 1,
           )
       fireEvent.click(screen.getByRole('button', { name: COPY.editor.undo }))
       fireEvent.click(screen.getByRole('button', { name: COPY.scene.paintFill }))
@@ -3074,7 +2988,9 @@ describe('scene workshop integration', () => {
       const filled = editor.getState().asset.images[0]!.layers[0]!.pixels
       for (let y = 0; y < image.height; y++)
         for (let x = 0; x < image.width; x++)
-          expect(filled[y * image.width + x]).toBe(x >= bounds.x0 && y <= bounds.y1 ? 7 : 1)
+          expect(filled[y * image.width + x]).toBe(
+            x >= bounds.x0 && x <= bounds.x1 && y >= bounds.y0 && y <= bounds.y1 ? 7 : 1,
+          )
       fireEvent.click(screen.getByRole('button', { name: COPY.editor.undo }))
       fireEvent.click(screen.getByRole('button', { name: COPY.scene.paintPencil }))
       fireEvent.keyDown(canvas, { key: 'Enter' })
@@ -3383,11 +3299,14 @@ describe('scene workshop integration', () => {
       ).toBe('true')
       fireEvent.click(screen.getByRole('button', { name: COPY.editor.undo }))
       expect(editor.getState().canUndo).toBe(false)
+      expect(screen.getByRole('button', { name: COPY.scene.paintTransparentBase })).toBeTruthy()
       expect(screen.queryByRole('button', { name: COPY.scene.paintShapeTools.gradient })).toBeNull()
       fireEvent.click(screen.getByRole('button', { name: COPY.scene.paintGradientConvertAction }))
       await waitFor(() => expect(screen.queryByText(COPY.scene.imageTaskBusy) === null).toBe(true))
       const converted = editor.getState().asset
       expect(converted.images[0]!.encoding).toBe('rgba')
+      // Transparência da base é uma ação da peça, sem depender do gradiente.
+      expect(screen.getByRole('button', { name: COPY.scene.paintTransparentBase })).toBeTruthy()
       const shapes = screen.getByText(COPY.scene.paintShapes).closest('details')!
       act(() => {
         shapes.open = true
@@ -3401,7 +3320,15 @@ describe('scene workshop integration', () => {
       key('Enter')
       expect(editor.getState().asset).toBe(converted)
       fireEvent.click(screen.getByRole('button', { name: COPY.scene.paintShapeTools.gradient }))
-      expect(screen.getByText(COPY.scene.paintGradientHint)).toBeTruthy()
+      fireEvent.click(screen.getAllByRole('button', { name: 'Como usar o gradiente' })[0]!)
+      expect(screen.getByRole('dialog', { name: 'Como usar o gradiente' }).textContent).toContain(
+        COPY.scene.paintGradientHint,
+      )
+      fireEvent.click(
+        within(screen.getByRole('dialog', { name: 'Como usar o gradiente' })).getByRole('button', {
+          name: 'Fechar',
+        }),
+      )
       const color = view.container.querySelector<HTMLInputElement>('input[name="paintColorRgba"]')!
       fireEvent.change(color, { target: { value: '#ff0000' } })
       fireEvent.change(screen.getByRole('slider', { name: COPY.scene.paintGradientStartAlpha }), {
@@ -3444,6 +3371,7 @@ describe('scene workshop integration', () => {
         (screen.getByRole('slider', { name: COPY.scene.paintAlpha }) as HTMLInputElement).value,
       ).toBe('100')
       fireEvent.click(screen.getByRole('button', { name: COPY.scene.paintShapeTools.gradient }))
+      expect(screen.getByRole('button', { name: COPY.scene.paintTransparentBase })).toBeTruthy()
       fireEvent.click(screen.getByRole('button', { name: COPY.scene.paintTransparentBase }))
       const transparent = editor.getState().asset
       expect(transparent.materials.find((entry) => entry.id === material.id)?.baseColor).toEqual({

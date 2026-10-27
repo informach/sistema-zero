@@ -1197,7 +1197,7 @@ export function useSceneWorkshop(editor: EditorStore<MoldaSceneDocument>) {
     },
     /** "Pintar nesta camada", o caminho avançado: abre a aba Pintar com aquele alvo exato. */
     openPaint: (target: ScenePaintTarget) => {
-      setWorkspaceArea(null)
+      setWorkspaceArea(area === 'sheet' ? 'sheet' : null)
       skinPaint.cancel()
       animation.pause()
       flipbook.pause()

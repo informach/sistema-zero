@@ -43,16 +43,29 @@ export function SceneInspectorSections({
       id={`${id}-overview`}
       role={compact ? 'tabpanel' : 'region'}
       aria-label={
-        compact ? undefined : mode === 'animation' ? 'Movimentos e atalhos' : 'Cores disponíveis'
+        compact
+          ? undefined
+          : mode === 'animation'
+            ? 'Movimentos e atalhos'
+            : 'Cores e ajustes de pintura'
       }
       aria-labelledby={compact ? `${id}-tab-overview` : undefined}
       hidden={compact && tab !== 'overview'}
-      className="mld-inspector-overview mld-scroll-y min-h-0 overflow-y-auto border-b border-mld-border px-1.5 pb-2"
+      className={`mld-inspector-overview min-h-0 border-b border-mld-border px-1.5 pb-2 ${mode === 'paint' ? 'flex flex-col overflow-hidden' : 'mld-scroll-y overflow-y-auto'}`}
     >
-      {overview}
+      {mode === 'paint' ? (
+        <>
+          <div className="mld-scroll-y max-h-[55%] shrink-0 space-y-2 overflow-y-auto pt-2">
+            {children}
+          </div>
+          <div className="mld-scroll-y min-h-0 flex-1 overflow-y-auto">{overview}</div>
+        </>
+      ) : (
+        overview
+      )}
     </section>
   )
-  const detailsSection = (
+  const detailsSection = mode !== 'paint' && (
     <section
       id={`${id}-details`}
       role={compact ? 'tabpanel' : 'region'}
@@ -115,21 +128,23 @@ export function SceneInspectorSections({
               className={INSPECTOR_TAB}
               onClick={() => setTab('overview')}
             >
-              {mode === 'paint' ? 'Cores' : 'Movimentos'}
+              {mode === 'paint' ? 'Pintura' : 'Movimentos'}
             </button>
           )}
-          <button
-            type="button"
-            role="tab"
-            id={`${id}-tab-details`}
-            aria-controls={`${id}-details`}
-            tabIndex={tab === 'details' ? 0 : -1}
-            aria-selected={tab === 'details'}
-            className={INSPECTOR_TAB}
-            onClick={() => setTab('details')}
-          >
-            {mode === 'paint' ? 'Ajustes' : mode === 'animation' ? 'Pose' : 'Ajustar'}
-          </button>
+          {mode !== 'paint' && (
+            <button
+              type="button"
+              role="tab"
+              id={`${id}-tab-details`}
+              aria-controls={`${id}-details`}
+              tabIndex={tab === 'details' ? 0 : -1}
+              aria-selected={tab === 'details'}
+              className={INSPECTOR_TAB}
+              onClick={() => setTab('details')}
+            >
+              {mode === 'animation' ? 'Pose' : 'Ajustar'}
+            </button>
+          )}
         </div>
       )}
       <div className="contents">

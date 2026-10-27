@@ -254,7 +254,8 @@ describe('inventário da oficina: o que a criança alcança', () => {
     // A ajuda da pintura abre em modal sem ocupar espaço permanente no painel.
     // Textura e camadas voltou ao nível avançado como uma revelação fechada (+1 montado).
     // Criar e Importar textura são as duas ações agora visíveis na aba Pintar.
-    expect(montados.length, montados.join(' | ')).toBeLessThanOrEqual(88)
+    // Deixar a base transparente também fica à vista sem ativar o gradiente (+1 controle).
+    expect(montados.length, montados.join(' | ')).toBeLessThanOrEqual(89)
     // Scope (2), UV grid and hue/hex replace the native picker; saved swatches stay bounded.
     // Named UV/material/sheet areas and the visible contextual brush section add four controls.
     // Ready colors stay in front; the new palette library has one collapsed entry.
