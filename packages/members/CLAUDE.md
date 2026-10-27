@@ -1,5 +1,20 @@
 # CLAUDE.md — @sistemazero/members
 
+## Leituras internas do Arquipélago (27/10/2026)
+
+`interfaces/http/routes/arquipelago-internal.routes.ts`, prefixo `/members/internal/arquipelago`
+(o mesmo da porta de moedas), S2S, nunca pelo gateway. Token PRÓPRIO
+`ARQUIPELAGO_MEMBERS_TOKEN` no `x-arquipelago-token` (quem lê não move moeda; o das moedas não abre
+estas rotas, teste em `tests/arquipelago-internal.routes.test.ts`). Sem o token, recusa tudo.
+
+- `GET /jornada`: `{kids: {versao, postos}, adulto: {versao, configurada, etapas}}`, no formato
+  `JornadaDosMembrosSchema` do contrato do jogo (validado do lado do jogo; o Members não importa o
+  contrato). Política do Kids não publicada = versão 0 sem postos; outra falha sobe como erro.
+- ⚠️ Railway: `ARQUIPELAGO_MEMBERS_TOKEN` é nome novo; criar no painel (members e arquipelago-api)
+  antes de entrar no `.railway/variables.ts`.
+- Próximas rotas (plano `docs/plans/2026-10-27-arquipelago-desafios.md`): `/jogador`,
+  `/curriculo-de-blocos`, `/objetivos/analisar` e `/objetivos/verificar`.
+
 ## Jornada com par 2D/3D e Maestrias (25/10/2026)
 
 Contrato em `docs/jornada-do-criador.md`; seed em `docs/jornada-criador-seed.md`.

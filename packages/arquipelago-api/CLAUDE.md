@@ -12,6 +12,23 @@ journal `arquipelago_migrations`. Bun + Elysia + Drizzle, no molde do `packages/
 - Formatos de entrada e saída: `@sistemazero/arquipelago-contracts` (os mesmos que o jogo e a
   plataforma de mentira usam).
 
+## Leituras do Members (desafios e cartões dos Lumis, 27/10/2026)
+
+Plano: `docs/plans/2026-10-27-arquipelago-desafios.md`. O serviço lê o Members pelas rotas
+internas `/members/internal/arquipelago/*` (nunca pelo gateway) com `MEMBERS_URL` e o token de
+LEITURA `ARQUIPELAGO_MEMBERS_TOKEN` (o mesmo nome dos dois lados, separado do das moedas). Sem os
+dois, o serviço sobe igual e as leituras ficam desligadas.
+
+- `domain/membros.port.ts` (`PortaDosMembros`, `MembrosIndisponiveisError` com o motivo) e
+  `infrastructure/members/membros-http.ts` (teto de `TEMPO_DA_LEITURA_MS`, resposta validada pelo
+  contrato: formato estranho conta como indisponível).
+- `application/mapa-das-ilhas.ts` (`ConferenciaDoMapa`): na subida, sem segurar o boot, confere o
+  mapa ilha → posto do contrato contra `GET /jornada` (`conferirMapaDasIlhas`). Problema vai ao log
+  (`arquipelago.mapa_das_ilhas_invalido`) e ao `/readyz` (`mapaDasIlhas`: `desligada`, `pendente`,
+  `ok`, `com-problemas`, `indisponivel`), que continua 200.
+- Testes: `tests/unit/mapa-das-ilhas.test.ts` (postos do contrato iguais ao `JOURNEY_LEVEL_SLUGS`
+  do core, conferência e adaptador).
+
 ## Rotas (`/arquipelago/*`, todas exigem o `x-internal-token` em deploy)
 
 | Rota | Quem | O quê |

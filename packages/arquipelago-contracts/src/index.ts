@@ -1,5 +1,6 @@
 export * from './api'
 export * from './ilhas'
 export * from './limites'
+export * from './membros'
 export * from './plataforma'
 export * from './salvamento'

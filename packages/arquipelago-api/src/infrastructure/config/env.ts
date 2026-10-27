@@ -55,6 +55,12 @@ const EnvSchema = z
         message: "deve ser 'true', 'false', '1' ou '0'",
       }),
 
+    // ── Members (rotas internas, nunca pelo gateway) ─────────────────────────
+    /** Sem os dois, o serviço segue sem as leituras do Members (desafios e cartões desligados). */
+    MEMBERS_URL: z.string().url().optional(),
+    /** Token de leitura do Members para o jogo; separado do das moedas. */
+    ARQUIPELAGO_MEMBERS_TOKEN: z.string().min(32).optional(),
+
     // ── Borda própria ────────────────────────────────────────────────────────
     /** Prova de origem do gateway (header-inject) nas rotas /arquipelago/*. */
     INTERNAL_API_TOKEN: z.string().min(16).optional(),

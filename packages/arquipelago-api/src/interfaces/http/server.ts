@@ -20,6 +20,8 @@ export interface DependenciasHttp {
   tokenInterno?: string
   maxRequestBodyBytes?: number
   readiness: () => Promise<void>
+  /** Situação da conferência do mapa ilha → posto (informativa: não derruba o `/readyz`). */
+  mapaDasIlhas?: () => string
 }
 
 /**
@@ -82,7 +84,7 @@ export function createServer(deps: DependenciasHttp) {
     .get('/readyz', async ({ set }) => {
       try {
         await deps.readiness()
-        return { status: 'ready' }
+        return { status: 'ready', mapaDasIlhas: deps.mapaDasIlhas?.() ?? 'desligada' }
       } catch {
         set.status = 503
         return { status: 'unavailable' }

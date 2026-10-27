@@ -3,8 +3,12 @@
 Tipos e validação (zod) de tudo o que atravessa a fronteira do jogo **Arquipélago Vagalume**:
 plataforma ↔ jogo ↔ serviço do jogo. Sem React, sem three, sem I/O.
 
-- `ilhas.ts`: as 8 ilhas (sua ilha no centro, 6 no anel, o farol), a posição da jornada que abre
-  cada uma e a conversão do posto Kids em posição.
+- `ilhas.ts`: as 8 ilhas (sua ilha no centro, 6 no anel, o farol), o POSTO que abre cada uma
+  (`POSTOS_DA_JORNADA`; o ÚNICO lugar do mapa ilha → posto, 27/10/2026), a posição derivada dele,
+  `ilhaDoPosto` e a conversão do posto Kids em posição.
+- `membros.ts`: formatos da conversa serviço do jogo ↔ Members (rotas internas) e
+  `conferirMapaDasIlhas` (o mapa contra a jornada publicada: postos do Kids iguais e na ordem;
+  no adulto, uma etapa por ilha antes do Farol, porque a ilha abre pela posição da etapa).
 - `limites.ts`: limite diário do tempo livre (padrão 30 min, de 10 a 240, passo 5) e o dia de
   São Paulo.
 - `salvamento.ts`: `SalvamentoV1` estrito, teto de 64 KB, salvamento inicial e migração.

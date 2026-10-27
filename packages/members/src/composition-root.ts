@@ -1157,6 +1157,11 @@ export async function createApplication(env: Env): Promise<Application> {
       repository: new ArquipelagoCoinsRepository(db),
       token: env.ARQUIPELAGO_COINS_TOKEN,
     },
+    arquipelagoInternal: {
+      kidsJourney: kidsJourneyQuery,
+      adultJourney,
+      token: env.ARQUIPELAGO_MEMBERS_TOKEN,
+    },
     liveMaterials,
     livePublication,
     liveBenefits,

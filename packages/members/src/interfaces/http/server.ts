@@ -26,6 +26,7 @@ import { type AdminRoutesDeps, adminRoutes } from './routes/admin.routes'
 import { adultJourneyRoutes } from './routes/adult-journey.routes'
 import { adultProfileRoutes } from './routes/adult-profile.routes'
 import { arquipelagoCoinsRoutes } from './routes/arquipelago-coins.routes'
+import { arquipelagoInternalRoutes } from './routes/arquipelago-internal.routes'
 import { type ContentRoutesDeps, contentRoutes } from './routes/content.routes'
 import { creationCleanupRoutes } from './routes/creation-cleanup.routes'
 import { type CreationsRoutesDeps, creationsRoutes } from './routes/creations.routes'
@@ -52,6 +53,7 @@ import { type WebhooksRoutesDeps, webhooksRoutes } from './routes/webhooks.route
 
 export interface HttpDeps {
   arquipelagoCoins?: Parameters<typeof arquipelagoCoinsRoutes>[0]
+  arquipelagoInternal?: Parameters<typeof arquipelagoInternalRoutes>[0]
   kidsJourney?: Parameters<typeof kidsJourneyRoutes>[0]
   kidsProfileAdmission?: Parameters<typeof kidsProfileAdmissionRoutes>[0]
   adultJourney?: Parameters<typeof adultJourneyRoutes>[0]
@@ -269,6 +271,9 @@ export function createServer(deps: HttpDeps) {
     .use(contentRoutes(deps.content))
     .use(internalRoutes(deps.internal))
     .use(deps.arquipelagoCoins ? arquipelagoCoinsRoutes(deps.arquipelagoCoins) : new Elysia())
+    .use(
+      deps.arquipelagoInternal ? arquipelagoInternalRoutes(deps.arquipelagoInternal) : new Elysia(),
+    )
     .use(
       deps.kidsProfileAdmission
         ? kidsProfileAdmissionRoutes(deps.kidsProfileAdmission)

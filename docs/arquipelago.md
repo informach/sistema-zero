@@ -100,6 +100,9 @@ Pendente:
 3. O cartão dos pais aparece para toda família quando o serviço responde, mesmo fora da lista:
    o serviço não diz ao responsável se alguma criança da família vê o jogo.
 4. `abrirFerramenta` com um molde (o objeto de partida da ferramenta) ainda responde indisponível.
+5. Desafios e cartões dos Lumis (plano em `docs/plans/2026-10-27-arquipelago-desafios.md`): o
+   token de leitura `ARQUIPELAGO_MEMBERS_TOKEN` (members e arquipelago-api) precisa ser criado no
+   painel do Railway antes de entrar no `.railway/variables.ts`.
 
 ## Rodar sozinho
 

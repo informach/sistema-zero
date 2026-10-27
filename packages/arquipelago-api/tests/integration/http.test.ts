@@ -90,7 +90,10 @@ describe('borda', () => {
 
   test('healthz e readyz', async () => {
     expect((await chamar('GET', '/healthz', {})).status).toBe(200)
-    expect((await chamar('GET', '/readyz', {})).json).toEqual({ status: 'ready' })
+    expect((await chamar('GET', '/readyz', {})).json).toEqual({
+      status: 'ready',
+      mapaDasIlhas: 'desligada',
+    })
   })
 })
 

@@ -1,6 +1,8 @@
 import { createLogger, type Logger } from '@sistemazero/core/logging'
+import { ConferenciaDoMapa } from './application/mapa-das-ilhas'
 import { ServicoDoJogo } from './application/servico-do-jogo'
 import type { Env } from './infrastructure/config/env'
+import { MembrosHttp } from './infrastructure/members/membros-http'
 import { withSentryMirror } from './infrastructure/observability/sentry'
 import { createDbConnection } from './infrastructure/persistence/drizzle/db'
 import { DrizzleRepositorioDoJogo } from './infrastructure/persistence/drizzle/repositorio'
@@ -22,6 +24,11 @@ export function createApplication(env: Env): Application {
     publicos: new Set(env.ARQUIPELAGO_PUBLICOS),
     lista: new Set(env.ARQUIPELAGO_LISTA),
   })
+  const membros =
+    env.MEMBERS_URL && env.ARQUIPELAGO_MEMBERS_TOKEN
+      ? new MembrosHttp({ url: env.MEMBERS_URL, token: env.ARQUIPELAGO_MEMBERS_TOKEN })
+      : null
+  const mapa = new ConferenciaDoMapa(membros, logger)
   const app = createServer({
     logger,
     servico,
@@ -31,6 +38,7 @@ export function createApplication(env: Env): Application {
     readiness: async () => {
       await connection.sql`select 1`
     },
+    mapaDasIlhas: () => mapa.situacao().situacao,
   })
 
   let server: ReturnType<typeof app.listen> | null = null
@@ -43,7 +51,10 @@ export function createApplication(env: Env): Application {
         appEnv: env.APP_ENV ?? 'dev',
         modo: env.ARQUIPELAGO_MODO,
         publicos: env.ARQUIPELAGO_PUBLICOS,
+        members: membros !== null,
       })
+      // Não segura a subida: o resultado sai no log e no /readyz.
+      void mapa.conferir()
     },
     async stop() {
       await server?.stop()
