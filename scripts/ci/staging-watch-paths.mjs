@@ -49,8 +49,8 @@ export function watchPathsPatch(plan, config, tree) {
 export async function reconcileWatchPaths(plan, config, tree, ports) {
   const patch = watchPathsPatch(plan, config, tree)
   const ids = Object.keys(patch.services)
-  if (!ids.length) return { count: 0 }
   await ports.assertIdle()
+  if (!ids.length) return { count: 0 }
   // O histórico pode demorar a ser consultado: reconfira a base imediatamente antes do POST.
   const fresh = watchPathsPatch(plan, await ports.config(), tree)
   if (!same(fresh, patch)) throw new Error('Plano mudou antes da atualização dos caminhos')
@@ -62,7 +62,9 @@ export async function reconcileWatchPaths(plan, config, tree, ports) {
   })
   if (typeof id !== 'string' || !id)
     throw new Error('Railway não confirmou a alteração dos caminhos')
+  ports.acknowledged?.(id)
   await ports.wait(id)
+  await ports.assertIdle()
   const actual = await ports.config()
   for (const serviceId of ids) {
     if (
@@ -142,19 +144,27 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
         input,
       )?.environmentPatchCommit
     },
+    acknowledged(id) {
+      console.log(`Railway confirmou a operação ${id}; aguardando conclusão sem repetir a mutação`)
+    },
     async wait(id) {
       const deadline = Date.now() + 120_000
       while (Date.now() < deadline) {
-        const item = api(
-          'query($id:String!){environmentPatch(id:$id){id environmentId status appliedAt}}',
-          { id },
-        )?.environmentPatch
-        if (item?.id !== id || item?.environmentId !== railwayEnvironments.staging)
-          throw new Error('Identidade do patch não corresponde ao staging')
-        if (item.status === 'FAILED') throw new Error('Railway não aplicou os caminhos')
-        if (item.status === 'COMMITTED' && item.appliedAt) return
-        if (!['COMMITTED', 'APPLYING'].includes(item.status))
-          throw new Error('Estado inesperado do patch')
+        // O retorno da mutação é o ID do workflow, não o ID do patch da configuração.
+        let item
+        try {
+          item = api('query($id:String!){workflowStatus(workflowId:$id){status}}', {
+            id,
+          })?.workflowStatus
+        } catch {
+          // Consulta somente leitura: aguardar indisponibilidade transitória nunca repete o POST.
+          await new Promise((resolve) => setTimeout(resolve, 2_000))
+          continue
+        }
+        if (item?.status === 'Complete') return
+        if (item?.status === 'Error') throw new Error('Railway não aplicou os caminhos')
+        if (!['Running', 'NotFound'].includes(item?.status))
+          throw new Error('Estado inesperado da operação')
         await new Promise((resolve) => setTimeout(resolve, 2_000))
       }
       throw new Error('Tempo esgotado aguardando os caminhos do Railway')

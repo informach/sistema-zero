@@ -67,7 +67,7 @@ test('reconcilia apenas os caminhos previstos sem iniciar deploy e confirma o es
     },
   })
   expect(result).toEqual({ count: 1, patchId: 'patch-1' })
-  expect(calls).toEqual(['idle', 'config', 'commit', 'wait', 'config'])
+  expect(calls).toEqual(['idle', 'config', 'commit', 'wait', 'idle', 'config'])
 })
 test('recusa alterações de deploy, serviço inesperado, ambiente, árvore ou configuração divergente', () => {
   const { plan, config } = fixture()
@@ -146,5 +146,22 @@ test('não envia alteração quando o ambiente está ocupado ou a base mudou', a
       },
     }),
   ).rejects.toThrow()
+  expect(commits).toBe(0)
+})
+
+test('mesmo plano vazio aguarda alterações em andamento antes de liberar o deploy', async () => {
+  const { plan, config } = fixture()
+  let commits = 0
+  await expect(
+    reconcileWatchPaths({ ...plan, changeSet: { ...plan.changeSet, changes: [] } }, config, tree, {
+      async assertIdle() {
+        throw new Error('ocupado')
+      },
+      async commit() {
+        commits++
+        return 'p'
+      },
+    }),
+  ).rejects.toThrow('ocupado')
   expect(commits).toBe(0)
 })
