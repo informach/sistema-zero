@@ -1,78 +1,24 @@
-import { expect, mock, test } from 'bun:test'
+import { expect, test } from 'bun:test'
+import { resolve } from 'node:path'
 
-let perfil = true
-let suporte = false
-let journey: object | null = null
-let tools: Array<{ id: string; state: string; studioCurriculum?: string }> = []
-mock.module('server-only', () => ({}))
-mock.module('@/server/session', () => ({
-  getSession: async () =>
-    perfil
-      ? {
-          activeProfile: { id: 'crianca' },
-          id: 'crianca',
-          kids: { kind: 'student' },
-          ...(suporte ? { act: { sub: 'equipe', mode: 'write' } } : {}),
-        }
-      : null,
-}))
-mock.module('@/server/creator-journey', () => ({
-  getCreativeTools: async () => ({ tools, journey }),
-}))
-mock.module('@/lib/molda-tool-access', () => ({
-  moldaToolAccessFor: () => ({ allow: ['basico'] }),
-}))
-mock.module('@/server/members', () => ({
-  getStudioUnlocksReadonly: async () => ({ status: 200, body: { blocks: [] } }),
-}))
-mock.module('@/server/studio-gate', () => ({
-  studioGate: () => ({ kind: 'open', tier: { freeStudio: true } }),
-}))
-mock.module('@/server/studio-services', () => ({
-  prepareStudioServices: () => async () => ({ zappyEnabled: false }),
-}))
-const { GET } = await import('../src/app/api/arquipelago/ferramentas/[ferramenta]/route')
-const requisitar = (ferramenta: string) =>
-  GET(new Request('http://local'), { params: Promise.resolve({ ferramenta }) })
-test('somente perfil autenticado consulta as ferramentas', async () => {
-  perfil = false
-  expect((await requisitar('pinta')).status).toBe(401)
-  perfil = true
-  expect((await requisitar('inexistente')).status).toBe(404)
-})
-test('respeita conquista, produto, paleta e indisponibilidade', async () => {
-  tools = [
-    { id: 'pinta', state: 'available' },
-    { id: 'molda', state: 'career-locked' },
-    { id: 'estudio-completo', state: 'available', studioCurriculum: 'empty' },
-  ]
-  expect(await (await requisitar('pinta')).json()).toEqual({
-    situacao: 'disponivel',
-    viewerId: 'crianca',
-    studioAvailable: false,
-  })
-  expect(await (await requisitar('molda')).json()).toEqual({ situacao: 'bloqueada' })
-  tools[1]!.state = 'available'
-  expect((await requisitar('molda')).status).toBe(503)
-  journey = {}
-  expect(await (await requisitar('molda')).json()).toEqual({
-    situacao: 'disponivel',
-    viewerId: 'crianca',
-    toolAccess: { allow: ['basico'] },
-    studioAvailable: false,
-  })
-  journey = null
-  expect(await (await requisitar('estudio')).json()).toEqual({ situacao: 'bloqueada' })
-  tools = [{ id: 'estudio-completo', state: 'available', studioCurriculum: 'ready' }]
-  journey = {}
-  expect(await (await requisitar('estudio')).json()).toMatchObject({
-    situacao: 'disponivel',
-    studioConfig: { viewerId: 'crianca', tier: { freeStudio: true } },
-  })
-  journey = null
-  tools = [{ id: 'pinta', state: 'unavailable' }]
-  expect((await requisitar('pinta')).status).toBe(503)
-  suporte = true
-  expect(await (await requisitar('pinta')).json()).toEqual({ situacao: 'bloqueada' })
-  suporte = false
-})
+test('as ferramentas do jogo respeitam os acessos do perfil Kids', async () => {
+  // O cache de mocks do Bun é compartilhado entre arquivos da suíte.
+  const child = Bun.spawn(
+    [process.execPath, 'test', resolve(import.meta.dirname, 'fixtures/arquipelago-tool-access.ts')],
+    { cwd: resolve(import.meta.dirname, '..'), stdout: 'pipe', stderr: 'pipe', windowsHide: true },
+  )
+  const deadline = setTimeout(() => child.kill(), 15_000)
+  try {
+    const [code, stdout, stderr] = await Promise.all([
+      child.exited,
+      new Response(child.stdout).text(),
+      new Response(child.stderr).text(),
+    ])
+    expect(code, stdout + stderr).toBe(0)
+    expect(stdout + stderr).toMatch(/\b2 pass\b/)
+  } finally {
+    clearTimeout(deadline)
+    if (child.exitCode === null) child.kill()
+    await child.exited
+  }
+}, 18_000)
