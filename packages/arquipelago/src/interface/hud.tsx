@@ -121,30 +121,47 @@ function Acao() {
   )
 }
 
+/** As ferramentas da plataforma que o jogo abre por cima dele (as de verdade, nunca cópias). */
+const FERRAMENTAS: ReadonlyArray<{
+  id: FerramentaDaPlataforma
+  nome: string
+  faz: string
+  emoji: string
+}> = [
+  { id: 'pinta', nome: 'Pinta', faz: 'Desenhar', emoji: '🎨' },
+  { id: 'molda', nome: 'Molda', faz: 'Modelar em 3D', emoji: '🧊' },
+  { id: 'estudio', nome: 'Estúdio', faz: 'Programar', emoji: '🧩' },
+]
+
+type Aviso = { tom: 'ok' | 'atencao'; texto: string } | null
+
 function Menu() {
   const { loja, plataforma } = useJogo()
   const aberto = useEstado((s) => s.menuAberto)
   const ferramentaAberta = useEstado((s) => s.ferramentaAberta)
-  const [aviso, setAviso] = useState('')
+  const [aviso, setAviso] = useState<Aviso>(null)
   async function abrirFerramenta(ferramenta: FerramentaDaPlataforma) {
     if (loja.getState().ferramentaAberta) return
-    setAviso('')
+    setAviso(null)
     loja.getState().definirFerramentaAberta(true)
     try {
       const resultado = await plataforma.abrirFerramenta({
         ferramenta,
         proposito: 'criar no Arquipélago',
       })
-      if (resultado.situacao === 'pronto') setAviso('Sua criação foi guardada.')
+      if (resultado.situacao === 'pronto')
+        setAviso({ tom: 'ok', texto: 'A sua criação foi guardada na sua conta.' })
       if (resultado.situacao === 'indisponivel')
-        setAviso(
-          resultado.motivo === 'acesso-necessario'
-            ? 'Confira seu acesso e sua jornada para usar esta ferramenta.'
-            : 'Esta ferramenta não está disponível para abrir agora.',
-        )
+        setAviso({
+          tom: 'atencao',
+          texto:
+            resultado.motivo === 'acesso-necessario'
+              ? 'Esta ferramenta ainda não abriu para você. Ela chega com a sua jornada.'
+              : 'Não deu para abrir esta ferramenta agora. Tente de novo daqui a pouco.',
+        })
     } catch (erro) {
       plataforma.relatarErro(erro, 'abrir-ferramenta')
-      setAviso('Não consegui abrir a ferramenta agora. Tente novamente.')
+      setAviso({ tom: 'atencao', texto: 'Não consegui abrir a ferramenta agora. Tente de novo.' })
     } finally {
       loja.getState().definirFerramentaAberta(false)
     }
@@ -160,37 +177,47 @@ function Menu() {
           <li>Usar o que está perto: E</li>
           <li>Girar a câmera: arraste na tela · Aproximar: roda do mouse</li>
         </ul>
-        <p>Crie com as ferramentas da plataforma:</p>
+        <h3 className="arq-menu-titulo">Criar com as ferramentas</h3>
         <div className="arq-ferramentas">
-          {(['pinta', 'molda', 'estudio'] as const).map((ferramenta) => (
+          {FERRAMENTAS.map((f) => (
             <button
-              key={ferramenta}
+              key={f.id}
               type="button"
-              className="arq-botao leve"
+              className="arq-ferramenta"
               disabled={ferramentaAberta}
-              onClick={() => void abrirFerramenta(ferramenta)}
+              onClick={() => void abrirFerramenta(f.id)}
             >
-              {ferramenta === 'pinta' ? 'Pinta' : ferramenta === 'molda' ? 'Molda' : 'Estúdio'}
+              <span className="arq-ferramenta-icone" aria-hidden="true">
+                {f.emoji}
+              </span>
+              <b>{f.nome}</b>
+              <small>{f.faz}</small>
             </button>
           ))}
         </div>
-        {aviso ? <p role="status">{aviso}</p> : null}
-        <button
-          type="button"
-          className="arq-botao"
-          disabled={ferramentaAberta}
-          onClick={() => loja.getState().abrirMenu(false)}
-        >
-          Continuar jogando
-        </button>
-        <button
-          type="button"
-          className="arq-botao leve"
-          disabled={ferramentaAberta}
-          onClick={() => plataforma.voltarParaPlataforma()}
-        >
-          Voltar para a plataforma
-        </button>
+        {aviso ? (
+          <p role="status" className={`arq-aviso ${aviso.tom}`}>
+            {aviso.texto}
+          </p>
+        ) : null}
+        <div className="arq-menu-acoes">
+          <button
+            type="button"
+            className="arq-botao"
+            disabled={ferramentaAberta}
+            onClick={() => loja.getState().abrirMenu(false)}
+          >
+            Continuar jogando
+          </button>
+          <button
+            type="button"
+            className="arq-botao leve"
+            disabled={ferramentaAberta}
+            onClick={() => plataforma.voltarParaPlataforma()}
+          >
+            Voltar para a plataforma
+          </button>
+        </div>
       </div>
     </div>
   )
