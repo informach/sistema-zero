@@ -1,6 +1,10 @@
 /** Local source generation only; importing and publishing are separate production operations. */
 import { mkdirSync } from 'node:fs'
 import { resolve } from 'node:path'
+import {
+  LEARNING_IMPORT_BODY_MAX_BYTES,
+  learningImportBodyBytes,
+} from '../../../packages/core/src/learning/authoring-manifest-projection'
 import { ISLAND_SPEECH } from '../../../packages/core/src/learning/scene/island-3d'
 import { derivadosDeVoz } from './gerar-falas-elevenlabs'
 import { gravarArquivo } from './gravar-arquivo'
@@ -250,6 +254,15 @@ for (const [i, aula] of ilhaAulas.entries()) {
     sections,
     ...(i > 0 ? { retireBlockKeys: ['materiais'] } : {}),
   }
+  if (
+    learningImportBodyBytes(
+      manifest,
+      'preserve',
+      'a'.repeat(64),
+      '00000000-0000-4000-8000-000000000000',
+    ) > LEARNING_IMPORT_BODY_MAX_BYTES
+  )
+    throw new Error(`O manifesto ${aula.slug} excede o limite real de importação.`)
   write(`${aula.slug}.manifesto.json`, manifest)
   let script = `# Roteiro de produção · ${aula.title}\n\nMaster integral da professora. Sem intervenções de personagens nesta versão. Gerar áudio, escutar, gravar e publicar são etapas pendentes. Teclado necessário no jogo.\n\n**Antes de gravar:** abra a aula numa aba nova após o deploy. Use uma sessão sem progresso na experiência e sem envio anterior nesta aula. Não preencha Recado (opcional) na tomada do envio. Mostre Salvo somente quando o estado aparecer de verdade. Para repetir um primeiro envio, use outro perfil de ensaio. Nas partes sem Estúdio, use a cena da própria parte; não simule botões ou estados na edição.\n\n`
   for (const [j, t] of aula.trechos.entries())

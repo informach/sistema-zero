@@ -33,3 +33,9 @@ A suíte do CI revelou que a borda de autoria do Members não aceitava ações d
 A suíte geral também presumia que todos os palcos fossem SVG e que todas as experiências compartilhassem um cenário 2D. A Ilha tem palco próprio WebGL; os testes agora verificam seu contêiner e controles, os caminhos próprios de descoberta e as amostras visuais sem atribuir um cenário 2D indevido. As 40 aulas permanecem verificadas, sem alteração de roteiro ou manifesto.
 
 Verificação local: núcleo 1.625 testes aprovados; member-shell 1.878 aprovados; Members 2.001 aprovados e 532 ignorados por dependerem de infraestrutura; três percursos da Ilha aprovados por HTTP em repositórios de teste. Esta evidência não substitui homologação no navegador ou no banco e nos serviços hospedados.
+
+## Correção do limite de importação
+
+O CI com PostgreSQL revelou que a aula 2 excedia o corpo de 2 MiB do Admin. Os GLBs passaram por reindexação após a quantização e os dois coqueiros, cujas fontes são iguais exceto identidade e escala, compartilham o binário enquanto essa equivalência se mantiver. Seus centros e tamanhos próprios continuam preservados. Se as fontes deixarem de ser equivalentes, a geração volta a usar dois modelos. Os três corpos compactos ficaram em 1.317.776, 1.973.884 e 1.664.473 bytes, antes dos poucos bytes da operação; o gerador e o teste verificam também a revisão e o ID de operação.
+
+O teste de importação de todos os manifestos passou com PostgreSQL descartável (250 asserções), incluindo repetição e preservação de vídeos. A suíte da Ilha passou com 244 asserções. No Chromium, os sete objetivos passaram para o jogo correto e reprovaram para o jogo sem movimento. A prova hospedada segue pendente.
