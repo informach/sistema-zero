@@ -1,6 +1,6 @@
 # Arquipélago Vagalume
 
-O jogo 3D das comunidades (começa pelo Kids). Proposta e decisões da dona no Canvas
+O jogo 3D das comunidades Kids e adulta. Proposta e decisões da dona no Canvas
 <https://claude.ai/artifact/5eNo1oqsndxmV6MPLxaz1W>. Este documento descreve o que existe no
 código depois da Fase 0 (27/10/2026).
 
@@ -15,7 +15,7 @@ código depois da Fase 0 (27/10/2026).
   interna do Members.
 - **Ferramentas de verdade:** melhorar o Pinta, o Molda ou o Estúdio tem que melhorar o jogo
   também. Por isso o jogo nunca carrega uma cópia delas: pede `plataforma.abrirFerramenta()` e a
-  página abre a ferramenta real por cima do jogo (na Fase 0 a resposta é "indisponível").
+  página abre a ferramenta real por cima do jogo, respeitando os acessos da comunidade.
 - **Tempo livre no Kids:** 30 minutos por dia por padrão; os pais mudam (10 a 240, passo 5). Na
   comunidade adulta não há limite.
 
@@ -64,23 +64,25 @@ salvamento por revisão e tempo livre: `packages/arquipelago-api/CLAUDE.md`.
 
 - **member-shell:** repasses de uma linha para o `avatar-quarto`; `routes/arquipelago.ts` (repasse
   do serviço e do cliente); `components/arquipelago-host.tsx` (a página que hospeda o jogo).
-- **community-kids:** página `/arquipelago` (fora do grupo com menu, sem item de menu por
-  enquanto), shims em `app/api/arquipelago/*` e `app/api/parents/arquipelago/limite` (portão dos
+- **community-kids:** página `/arquipelago`, item de menu condicionado à liberação do serviço,
+  shims em `app/api/arquipelago/*` e `app/api/parents/arquipelago/limite` (portão dos
   pais), `/arquipelago` nos prefixos protegidos, `api/arquipelago/cliente` fora do matcher do proxy,
   CSP própria da página com `'wasm-unsafe-eval'` garantido.
+- **community:** página e menu equivalentes para adultos, com as permissões próprias da comunidade
+  e sem limite de tempo familiar.
 - **api-gateway:** `src/infrastructure/config/arquipelago-routes.ts`, que só entra na config com
   `ARQUIPELAGO_URL` (sem a variável, o gateway fica idêntico). O escopo do Kids libera
   `/arquipelago/*` ao aluno (menos o limite da família) e só o limite ao responsável.
 - **CI:** os quatro pacotes entram sozinhos no typecheck e nos testes; o `ci.yml` ganhou os testes
   de banco do serviço e o build do cliente; o deploy de staging mapeia `avatar-quarto` e o contrato.
 
-## Ainda não ligado (rollout à parte)
+## Implantação e validação
 
-1. Criar o serviço `arquipelago-api` no Railway (banco, `INTERNAL_API_TOKEN`, pre-deploy
-   `db:migrate`, `ARQUIPELAGO_MODO`) e registrar em `.railway/`.
-2. No gateway: `ARQUIPELAGO_URL` e `ARQUIPELAGO_INTERNAL_TOKEN`.
-3. Item de menu e cartão do limite diário na área dos pais.
-4. Abrir as ferramentas de verdade por cima do jogo, moedas pela porta interna do Members.
+O código inclui entrada nas duas comunidades, cartão de limite familiar, ferramentas reais e
+porta interna de moedas no Members. A existência do código não confirma sua implantação ou o
+funcionamento em produção. A ordem da primeira implantação e as validações ainda necessárias estão
+em [arquipelago-first-deploy.md](operations/arquipelago-first-deploy.md). A ligação de recompensas
+às ações do jogo continua pendente e deve ser autorizada no servidor.
 
 ## Rodar sozinho
 
