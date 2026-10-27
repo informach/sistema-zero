@@ -28,25 +28,25 @@ até lá ficam na galeria de modelos do playground.
 
 | Peça | Estado | Observação |
 |---|---|---|
-| Íris, a faroleira (aparece no final e no retrato do diário) | ⬜ | |
-| Capi, capivara do Bosque dos Bichos | ⬜ | moradores: parado, andar, falar, acenar, feliz |
-| Bento, tamanduá confeiteiro da Vila Doce | ⬜ | |
-| Maré, tartaruga cartógrafa do Recife Coral | ⬜ | |
-| Floco, pinguim músico do Pico Gelado | ⬜ | |
-| Jade, coruja dos fósseis e ninhos do Vale dos Dinos | ⬜ | |
-| Iriê, arara que tece o arco-íris da Ilha das Nuvens | ⬜ | |
+| Íris, a faroleira (aparece no final e no retrato do diário) | 🟡 | `arte/personagens/iris.py`: peças do avatar no esqueleto dele, boné e lampião; bocas de fala |
+| Capi, capivara do Bosque dos Bichos | 🟡 | `arte/personagens`; todos: parado, andar, falar, acenar, feliz; olhos com piscar e feliz |
+| Bento, tamanduá confeiteiro da Vila Doce | 🟡 | chapéu, avental e batedor |
+| Maré, tartaruga cartógrafa do Recife Coral | 🟡 | óculos, bússola e mapa |
+| Floco, pinguim músico do Pico Gelado | 🟡 | cachecol e cavaquinho |
+| Jade, coruja dos fósseis e ninhos do Vale dos Dinos | 🟡 | chapéu de safári e lupa |
+| Iriê, arara que tece o arco-íris da Ilha das Nuvens | 🟡 | tear com o arco-íris |
 
 ## Lote 3: Lumis e o Cinza
 
 | Peça | Estado | Observação |
 |---|---|---|
-| Borrão de névoa do Cinza (flutuar, ser preso pela lanterna, virar Lumi) | ⬜ | |
-| Família de Lumis do Bosque (Pitanga e irmãos; comum e raro) | ⬜ | cada Lumi: parado, pular, seguir, trabalhar, brilho à noite |
-| Família da Vila Doce | ⬜ | |
-| Família do Recife | ⬜ | |
-| Família do Pico | ⬜ | |
-| Família do Vale dos Dinos | ⬜ | |
-| Família das Nuvens | ⬜ | |
+| Borrão de névoa do Cinza (flutuar, ser preso pela lanterna, virar Lumi) | 🟡 | `arte/lumis/borrao.py`: flutuar, fugir, preso, virar |
+| Família de Lumis do Bosque (Pitanga e irmãos; comum e raro) | 🟡 | Pitanga e Ipê; cada Lumi: parado, andar, pular, trabalhar, feliz e o material `luz` para a noite (`arte/lumis`) |
+| Família da Vila Doce | 🟡 | Quindim e Brigadeiro |
+| Família do Recife | 🟡 | Bolha e Pérola |
+| Família do Pico | 🟡 | Gelinho e Cristal |
+| Família do Vale dos Dinos | 🟡 | Ovinho e Brotinho |
+| Família das Nuvens | 🟡 | Algodão e Pluma |
 
 ## Lote 4: bichos
 
