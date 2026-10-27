@@ -68,7 +68,7 @@ Master integral da professora. Sem intervenções de personagens nesta versão. 
 
 Quiz sem vídeo: escolha, demonstração, explicação e nova tentativa.
 
-**Recado na página (não gravar):** Sua vez! Monte a regra, teste no seu jogo e clique em Verificar projeto. Depois de conferir os objetivos e aparecer Salvo, clique em Próxima parte.
+**Recado na página (não gravar):** Escolha uma resposta e clique em Ver o que acontece. Observe a cena e a explicação. Você pode tentar de novo.
 
 ## Parte 3. Deixe o jogo com a sua cara
 
@@ -108,7 +108,7 @@ Quiz sem vídeo: escolha, demonstração, explicação e nova tentativa.
 [confident, clear, unhurried voice] Depois clique em Verificar projeto. Se algum objetivo faltar, leia a indicação, ajuste e verifique novamente. Quando aparecer Objetivo cumprido! e depois Salvo, clique em Próxima parte.
 ```
 
-**Recado na página (não gravar):** Escolha uma resposta e clique em Ver o que acontece. Observe a cena e a explicação. Você pode tentar de novo.
+**Recado na página (não gravar):** Sua vez! Monte a regra, teste no seu jogo e clique em Verificar projeto. Depois de conferir os objetivos e aparecer Salvo, clique em Próxima parte.
 
 ## Parte 4. Escolha seu esconderijo e teste de verdade
 

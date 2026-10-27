@@ -57,7 +57,19 @@ Acenda o farol com a chave.
 
 **Zappy na página (não gravar):** Sua vez! Monte a regra, teste no seu jogo e clique em Verificar projeto. Depois de conferir os objetivos e aparecer Salvo, clique em Próxima parte.
 
-### Parte 3. Deixe o jogo com a sua cara
+### Parte 3. O que você descobriu no 3D
+
+Conferir ponto de vista, posição, altura e escolha de teste.
+
+- Intenção: explanation.
+- Blocos: ponte-quiz, quiz.
+- Conclusão: quiz.
+
+
+
+**Zappy na página (não gravar):** Escolha uma resposta e clique em Ver o que acontece. Observe a cena e a explicação. Você pode tentar de novo.
+
+### Parte 4. Deixe o jogo com a sua cara
 
 Deixe o jogo com a sua cara.
 
@@ -82,18 +94,6 @@ Deixe o jogo com a sua cara.
 - Recolha a chave, acenda o farol e recomece uma partida.
 
 **Zappy na página (não gravar):** Sua vez! Monte a regra, teste no seu jogo e clique em Verificar projeto. Depois de conferir os objetivos e aparecer Salvo, clique em Próxima parte.
-
-### Parte 4. O que você descobriu no 3D
-
-Conferir ponto de vista, posição, altura e escolha de teste.
-
-- Intenção: explanation.
-- Blocos: ponte-quiz, quiz.
-- Conclusão: quiz.
-
-
-
-**Zappy na página (não gravar):** Escolha uma resposta e clique em Ver o que acontece. Observe a cena e a explicação. Você pode tentar de novo.
 
 ### Parte 5. Escolha seu esconderijo e teste de verdade
 

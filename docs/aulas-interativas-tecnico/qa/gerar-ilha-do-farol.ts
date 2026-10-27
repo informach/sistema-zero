@@ -83,7 +83,8 @@ for (const [i, aula] of ilhaAulas.entries()) {
     })
   }
   for (const t of aula.trechos) {
-    if (i === 2 && t.kind === 'delivery') addQuiz()
+    // A revisão vem logo depois de o farol acender, antes da personalização.
+    if (i === 2 && t.key === 'aparencia') addQuiz()
     const vk = `video-${t.key}`,
       pk = `ponte-${t.key}`,
       keys = [vk, pk],

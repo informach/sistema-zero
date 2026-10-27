@@ -1,4 +1,6 @@
-# Receber as artes finais do Molda
+# Receber as artes finais do Molda (histórico)
+
+> **Substituído em 27/10/2026.** As artes do curso passaram a ser geradas no Blender, com as variações da personalização: ver [`docs/design/ilha-do-farol-blender/README.md`](../../design/ilha-do-farol-blender/README.md). O `ILHA_ART_SOURCES` e o `farolAceso` citados abaixo não existem mais; este texto fica como registro do fluxo anterior.
 
 Os projetos editáveis continuam em `docs/design/ilha-do-farol-molda/projetos/`. O curso consome esses projetos pelo mapa `ILHA_ART_SOURCES`, em `qa/ilha-do-farol-assets.ts`. Os nomes de jogo (`personagem`, `chave`, `farol`, `farolAceso` etc.) ficam separados dos nomes de arquivos.
 

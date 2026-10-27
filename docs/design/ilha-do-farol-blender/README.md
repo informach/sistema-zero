@@ -1,29 +1,28 @@
-# A Ilha do Farol feita no Blender (piloto, 27/10/2026)
+# A Ilha do Farol feita no Blender (27/10/2026)
 
 Scripts que geram as artes 3D do curso A Ilha do Farol com acabamento, fiéis aos desenhos 2D da
-Chave do Farol (`packages/studio/src/arte/assets/farol/*.svg`). Substituem os projetos do Molda de
-`../ilha-do-farol-molda/projetos/`, que eram montados com formas básicas.
+Chave do Farol (`packages/studio/src/arte/assets/farol/*.svg`), com as mesmas variações da
+personalização do 2D. Substituem os projetos do Molda de `../ilha-do-farol-molda/projetos/`.
 
-**Estado: piloto para aprovação.** As peças ainda NÃO estão ligadas ao curso:
-`docs/aulas-interativas-tecnico/qa/ilha-do-farol-assets.ts` continua lendo o Molda.
+**Estado: ligado ao curso.** Os modelos ficam na biblioteca de modelos dos cursos do Estúdio
+(`packages/studio/src/core/course-models/`, ver `core/courseModels.ts`): o projeto da criança leva
+só a referência de cada um, e o Estúdio carrega o arquivo na hora de rodar o jogo.
 
-| Peça (id do GLB) | Substitui (Molda) | Posição no curso |
+| Categoria | Peças (nome na lista do bloco) | Caixa comum (`lib_ilha.CAIXAS`) |
 |---|---|---|
-| `mar` | mar | origem |
-| `terreno` (praia tropical) | terreno | origem |
-| `ponte` | ponte | origem |
-| `coqueiro-tras`, `coqueiro-frente` | os dois coqueiros | (-7, 0, -4,2) e (-6,6, 0, 4,5) |
-| `vegetacao` | vegetação pequena | origem |
-| `pedras` | pedras | (-2, 0, -1) |
-| `farol-listrado-apagado`, `farol-listrado-aceso` | farol apagado e aceso | (5,2, 0, 0,1) |
-| `veleiro` | veleiro | (8,5, -0,1, 4,5) |
-| `aventureiro` | aventureiro | centro em (-6,5, 0,8, 0,75) |
-| `chave-dourada` | chave | centro em (-2, 1, -3) e (-3, 1, -2) |
-| `bancada` | bancada das experiências | origem, tampo em y = 0 (hoje a cena das experiências desenha uma caixa no código, `scene-island-world.tsx`) |
+| cenário | `praia-tropical`, `costa-rochosa`, `ilha-nevada`, `noite-na-ilha` (mar, ilha, ponte, árvores, pedras pequenas e céu) | x e y ±70, z de -0,5 a 67,7 (tamanho 140) |
+| farol | `farol-listrado`, `farol-de-pedra`, `farol-de-madeira`, `farol-colorido`, todos com os clipes `acender` e `aceso` | x e y ±0,9, z de 0 a 5,3 |
+| barco | `veleiro`, `barco-de-pesca`, `lancha`, `barco-pirata` | x ±1,55, y ±0,68, z de -0,38 a 2,7 |
+| chave | `chave-dourada`, `chave-prateada`, `chave-de-estrela` | x de -0,6 a 0,64, y ±0,12, z de -0,54 a 0,6 |
+| personagem | `aventureiro`, `menina-de-laco`, `marinheira`, `menino-de-bone`, `exploradora-de-chapeu`, `pirata`, `mergulhador`, `robo`, todos com `parado` e `andando` | x ±0,5, y ±0,6, z de -0,04 a 1,62 |
+| — | `pedras` (o esconderijo da chave) e `bancada` (o chão das experiências) | — |
 
-As imagens de `previa/` comparam o 2D, o 3D atual e o novo, renderizados com o three.js do jogo,
-a câmera do curso e as luzes do Jogo 3D: a cena inteira, o farol apagado e aceso, e todas as 13
-peças lado a lado (`comparacao-elementos-1` e `-2`; o atual sai do próprio GLB do Molda).
+Cada modelo de uma categoria leva dois marcos de 1 mm nos cantos da caixa da categoria
+(`caixa_da_categoria`): o build falha se uma peça passar da caixa, e a caixa que o jogo mede sai
+igual em todas. Assim a troca na personalização não muda tamanho, centro nem área de toque.
+
+`previa/` tem as comparações com o 2D e o 3D anterior; `galeria/` tem as miniaturas que o
+caderno da aula usa na página das escolhas.
 
 ## Preparar
 
@@ -34,51 +33,52 @@ uv venv --python 3.13 /tmp/blender-venv
 uv pip install --python /tmp/blender-venv/bin/python bpy==5.2.3
 ```
 
-## Gerar e conferir
+## Gerar, conferir e publicar
 
 ```sh
 ILHA_OUT=./out /tmp/blender-venv/bin/python build_all.py               # todas
 ILHA_OUT=./out /tmp/blender-venv/bin/python build_all.py -- veleiro    # só essa
 ILHA_OUT=./out /tmp/blender-venv/bin/python verificar_pedra.py         # a pedra esconde a chave?
+ILHA_OUT=./out bun docs/aulas-interativas-tecnico/qa/publicar-ilha-modelos.ts   # biblioteca + modelos.json
+ILHA_OUT=./out bun docs/aulas-interativas-tecnico/qa/gerar-ilha-artes.ts        # cena das experiências
+bun docs/aulas-interativas-tecnico/qa/gerar-ilha-do-farol.ts                    # aulas
 ```
+
+⚠️ Depois que o curso sair, um modelo substituído CONTINUA na biblioteca (o projeto salvo de uma
+criança aponta para o sha antigo). `--remover-antigos` no publicador só antes do lançamento.
 
 | Arquivo | O quê |
 |---|---|
-| `lib_ilha.py` | paleta tirada dos SVGs e formas da ilha (contorno orgânico em camadas, faixa, folha, pedra lapidada, superelipsoide, mecha); reaproveita `community-kids/scripts/room-blender/lib_q.py` |
-| `cenario.py` | mar, terreno, ponte, coqueiros, moitas, pedras e a bancada das experiências |
-| `farol.py` | farol listrado, apagado e aceso |
-| `objetos.py` | chave, veleiro e aventureiro |
+| `lib_ilha.py` | paleta tirada dos SVGs, formas (contorno em camadas, faixa, folha, pedra, superelipsoide, mecha), materiais em degradê, clipes por faixas do NLA, as caixas das categorias e a exportação |
+| `cenario.py` | os quatro cenários, as pedras e a bancada |
+| `farol.py` | os quatro faróis com a luz animada |
+| `barcos.py` | barco de pesca, lancha e barco pirata |
+| `objetos.py` | as três chaves, o veleiro e o aventureiro (com o esqueleto e os clipes que os outros personagens usam) |
+| `personagens.py` | os outros sete personagens |
 | `verificar_pedra.py` | lança raios da câmera do jogo até cada vértice da chave e falha se algum ficar à vista no esconderijo |
-| `referencias/` | coqueiro e pedras que a autora refez no Molda (27/10/2026): a FORMA dessas peças vem daqui, o acabamento é dos scripts |
+| `modelos.json` | o que o publicador gravou: sha, clipes e caixa de cada peça (o gerador do curso lê só isto) |
+| `referencias/` | coqueiro, pedras, farol aceso e veleiro que a autora fez no Molda: deles veio a forma do coqueiro e das pedras e a luz do farol; o veleiro é o nosso, com o acabamento que veio da referência |
 
 ## O contrato com o jogo
 
-- Mesmas unidades e referenciais dos projetos do Molda (`../ilha-do-farol-molda/mapa-de-reintegracao.json`).
-  No Blender, z é para cima e a frente olha para -Y; o exportador converte para o y para cima do
+- No Blender, z é para cima e a frente olha para -Y; o exportador converte para o y para cima do
   three.js e a frente vira +Z, o lado da câmera.
-- `createModelFile` encaixa o LADO MAIOR do modelo no tamanho pedido e usa a caixa do modelo como
-  área de contato. Por isso o aventureiro mantém ~0,8 x 1,58 x 0,65 e o pé do farol ~1,8 de lado (a
-  porta abre quando as duas caixas se tocam).
-- O jogo não gira o personagem ao andar: ele fica de frente para a câmera, virado 25° para o farol,
-  como no desenho de perfil.
-- As pedras precisam esconder a chave em (-2, 1, -3), o esconderijo da aula 1. Em (-3, 1, -2),
-  a posição das partes seguintes, a chave já fica em parte à vista com as pedras do Molda, de
-  propósito ("a pedra pode esconder a chave dependendo de onde a gente olha"). Mexeu nelas, rode
+- `createModelFile` encaixa o LADO MAIOR no tamanho pedido e centraliza a caixa no objeto. O projeto
+  soma o centro medido à posição (`placed` em `ilha-do-farol-projeto.ts`) para o modelo ficar onde
+  o Blender o desenhou. O cenário mede 140 (o motor aceita até 200 desde esta integração).
+- **Farol**: em repouso a luz tem tamanho ~0 (apagado). `acender` (1,25 s, "uma vez") acende o vidro
+  de baixo para cima e abre o feixe; `aceso` (6 s, laço) gira o feixe. O jogo toca `acender` no
+  encontro com a chave e passa para `aceso` quando `acender` termina. O feixe, o vidro aceso e a
+  lâmpada levam `szSemCaixa` nos extras: o Jogo 3D os deixa fora da área de toque.
+- **Personagem**: o laço pronto toca `andando` enquanto ele se move (e o vira para a direção do
+  movimento) e `parado` quando para.
+- As pedras precisam esconder a chave em (-2, 1, -3), o esconderijo da aula 1. Mexeu nelas, rode
   `verificar_pedra.py`.
-- O coqueiro e as pedras seguem as referências da autora (`referencias/*.glb`): o script lê o
-  GLB, solda os vértices (o Molda exporta cada triângulo solto) e refaz o acabamento por cima.
-  Uma referência nova é só trocar o arquivo e gerar de novo.
+- As texturas (o céu e o degradê da luz) vão dentro do GLB. O Jogo 3D e a cena das experiências as
+  leem pela img: o fetch(blob:) do GLTFLoader esbarra na CSP.
 
-## Pendências para a integração (depois da aprovação)
+## Decisão pendente
 
-1. **Ligar os GLBs ao curso**: `ilha-do-farol-assets.ts` passa a ler os GLBs daqui (mesmos nomes de
-   asset), e os projetos e a cena das experiências são gerados de novo.
-2. **Sombra listrada no Jogo 3D**: o `_setupWorld` de `game-3d/runtime.ts` não define
-   `shadow.normalBias`, e as superfícies curvas ficam listradas (shadow acne). O Jogo 3D Avançado e o
-   Mundo 3D já usam `normalBias = 0.05`; aplicar o mesmo no Jogo 3D.
-3. **Luz do curso**: com a luz de hoje (ambiente 0,65 do curso + 0,6 e sol 0,9 do motor), o three.js
-   entrega ~60% da cor e tudo sai apagado em relação ao 2D (vale também para a arte atual). A prévia
-   "luz ajustada" usa ambiente 1,4 e um "Adicionar sol" de 0,7 a mais (blocos que já existem).
-4. **Peso**: depois da quantização do `ilha-do-farol-assets.ts`, as peças da ilha somam ~730 KB, contra
-   ~216 KB das atuais, e todo projeto do curso leva os assets embutidos. Com as variações (8
-   personagens, 4 faróis, 4 barcos, 3 chaves, 4 cenários), embutir tudo em cada projeto não serve.
+**Luz do curso**: com a luz de hoje (ambiente 0,65 do curso + 0,6 e sol 0,9 do motor), o three.js
+entrega ~60% da cor e as peças saem mais apagadas que no 2D. A prévia "luz ajustada" usa ambiente
+1,4 e um "Adicionar sol" de 0,7 a mais (blocos que já existem). Fica como está até a decisão.

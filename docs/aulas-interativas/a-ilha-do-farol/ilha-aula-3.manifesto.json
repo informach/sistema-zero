@@ -29,18 +29,6 @@
       }
     },
     {
-      "key": "video-aparencia",
-      "plannedVideo": "Título: Deixe o jogo com a sua cara\n\nMaster integral da professora. Roteiro: ilha-aula-3.roteiro.md, clipe video-aparencia. Gravação pendente."
-    },
-    {
-      "key": "ponte-aparencia",
-      "content": {
-        "kind": "dialogue",
-        "pose": "speaking",
-        "text": "Sua vez! Monte a regra, teste no seu jogo e clique em Verificar projeto. Depois de conferir os objetivos e aparecer Salvo, clique em Próxima parte."
-      }
-    },
-    {
       "key": "ponte-quiz",
       "content": {
         "kind": "dialogue",
@@ -147,6 +135,18 @@
             "explanation": "Ver a chave não garante que o personagem consiga alcançá-la. Jogue até o novo lugar, confira a coleta e depois leve a chave ao farol."
           }
         ]
+      }
+    },
+    {
+      "key": "video-aparencia",
+      "plannedVideo": "Título: Deixe o jogo com a sua cara\n\nMaster integral da professora. Roteiro: ilha-aula-3.roteiro.md, clipe video-aparencia. Gravação pendente."
+    },
+    {
+      "key": "ponte-aparencia",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Sua vez! Monte a regra, teste no seu jogo e clique em Verificar projeto. Depois de conferir os objetivos e aparecer Salvo, clique em Próxima parte."
       }
     },
     {
@@ -16715,6 +16715,25 @@
       }
     },
     {
+      "key": "revisao",
+      "title": "O que você descobriu no 3D",
+      "intent": "explanation",
+      "objective": "Conferir ponto de vista, posição, altura e escolha de teste.",
+      "blockKeys": [
+        "ponte-quiz",
+        "quiz"
+      ],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": [
+          "quiz"
+        ]
+      }
+    },
+    {
       "key": "aparencia",
       "title": "Deixe o jogo com a sua cara",
       "intent": "application",
@@ -17437,25 +17456,6 @@
               }
             }
           }
-        ]
-      }
-    },
-    {
-      "key": "revisao",
-      "title": "O que você descobriu no 3D",
-      "intent": "explanation",
-      "objective": "Conferir ponto de vista, posição, altura e escolha de teste.",
-      "blockKeys": [
-        "ponte-quiz",
-        "quiz"
-      ],
-      "workspaceKey": null,
-      "externalTool": null,
-      "pendingMedia": [],
-      "completion": {
-        "version": 1,
-        "blockIds": [
-          "quiz"
         ]
       }
     },
